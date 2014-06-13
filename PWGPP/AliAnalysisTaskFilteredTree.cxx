@@ -13,6 +13,27 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/*
+   Class to process/filter reconstruction information from ESD, ESD friends, MC and provide them for later reprocessing
+   Filtering schema - low pt part is downscaled - to have flat pt specatra of selected topologies (tracks and V0s)
+   Downscaling schema is controlled by downscaling factors
+   Usage: 
+     1.) Filtering on Lego train
+     2.) expert QA for tracking (resolution efficnecy)
+     3.) pt reoslution studies using V0s 
+     4.) dEdx calibration using V0s
+     5.) pt resolution and dEdx studies using cosmic
+     +
+     6.) Info used for later raw data OFFLINE triggering  (highPt, V0, laser, cosmic, high dEdx)
+
+   Exported trees (with full objects and dereived variables):
+   1.) "highPt"     - filtered trees with esd tracks, derived variables(propagated tracks), optional MC info +optional space points
+   2.) "V0s" -      - filtered trees with selected V0s (rough KF chi2 cut), KF particle and corresponding esd tracks + optionla space points
+   3.) "Laser"      - dump laser tracks with space points if exests 
+   4.) "CosmicTree" - cosmic track candidate (random or triggered) + esdTracks(up/down)+ optional points
+   5.) "dEdx"       - tree with high dEdx tpc tracks
+*/
+
 #include "iostream"
 #include "TSystem.h"
 #include <TPDGCode.h>
@@ -109,6 +130,7 @@ ClassImp(AliAnalysisTaskFilteredTree)
   , fPtResCentPtTPC(0)
   , fPtResCentPtTPCc(0)
   , fPtResCentPtTPCITS(0)
+  , fCurrentFileName("")
   , fDummyTrack(0)
 {
   // Constructor
@@ -126,16 +148,9 @@ ClassImp(AliAnalysisTaskFilteredTree)
 //_____________________________________________________________________________
 AliAnalysisTaskFilteredTree::~AliAnalysisTaskFilteredTree()
 {
-  //the output trees not to be deleted in case of proof analysis
-  //Bool_t deleteTrees=kTRUE;
-  //if ((AliAnalysisManager::GetAnalysisManager()))
-  //{
-  //  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == 
-  //           AliAnalysisManager::kProofAnalysis)
-  //    deleteTrees=kFALSE;
-  //}
-  //if (deleteTrees) delete fTreeSRedirector;
-
+  //
+  // Destructor
+  //
   delete fFilteredTreeEventCuts;
   delete fFilteredTreeAcceptanceCuts;
   delete fFilteredTreeRecAcceptanceCuts;
@@ -145,15 +160,16 @@ AliAnalysisTaskFilteredTree::~AliAnalysisTaskFilteredTree()
 //____________________________________________________________________________
 Bool_t AliAnalysisTaskFilteredTree::Notify()
 {
+  //
+  //
   static Int_t count = 0;
   count++;
   TTree *chain = (TChain*)GetInputData(0);
-  if(chain)
-  {
+  if(chain){
     Printf("Processing %d. file: %s", count, chain->GetCurrentFile()->GetName());
-  }
-
-return kTRUE;
+  }  
+  fCurrentFileName=chain->GetCurrentFile()->GetName();
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -283,26 +299,18 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
     Printf("ERROR: ESD event not available");
     return;
   }
-
-  //// MC event
-  //if(fUseMCInfo) {
-  //  fMC = MCEvent();
-  //  if (!fMC) {
-  //    Printf("ERROR: MC event not available");
-  //    return;
-  //  }
-  //}
-
   //if MC info available - use it.
   fMC = MCEvent();
-
   if(fUseESDfriends) {
     //fESDfriend = dynamic_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
     fESDfriend = ESDfriend();
-
     if(!fESDfriend) {
       Printf("ERROR: ESD friends not available");
     }
+  }
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (!inputHandler){
+    return;
   }
 
   //if set, use the environment variables to set the downscaling factors
@@ -311,26 +319,22 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   //AliAnalysisTaskFilteredTree_fFriendDownscaling
   TString env;
   env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF");
-  if (!env.IsNull())
-  {
+  if (!env.IsNull()){
     fLowPtTrackDownscaligF=env.Atof();
     AliInfo(Form("fLowPtTrackDownscaligF=%f",fLowPtTrackDownscaligF));
   }
   env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF");
-  if (!env.IsNull())
-  {
+  if (!env.IsNull()){
     fLowPtV0DownscaligF=env.Atof();
     AliInfo(Form("fLowPtV0DownscaligF=%f",fLowPtTrackDownscaligF));
   }
-
   env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fFriendDownscaling");
-  if (!env.IsNull())
-  {
+  if (!env.IsNull()){
     fFriendDownscaling=env.Atof();
     AliInfo(Form(" fFriendDownscaling=%f",fFriendDownscaling));
   }
-
-
+  //
+  //
   //
   if(fProcessAll) { 
     ProcessAll(fESD,fMC,fESDfriend); // all track stages and MC
@@ -338,12 +342,10 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   else {
     Process(fESD,fMC,fESDfriend);    // only global and TPC tracks
   }
-
   //
   ProcessV0(fESD,fMC,fESDfriend);
   ProcessLaser(fESD,fMC,fESDfriend);
   ProcessdEdx(fESD,fMC,fESDfriend);
-
   if (fProcessCosmics) { ProcessCosmics(fESD,fESDfriend); }
   if(fMC) { ProcessMCEff(fESD,fMC,fESDfriend);}
   if (fProcessITSTPCmatchOut) ProcessITSTPCmatchOut(fESD, fESDfriend);
@@ -354,35 +356,10 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
 void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliESDfriend* esdFriend)
 {
   //
-  // Select real events with high-pT tracks 
+  // Find cosmic pairs (triggered or random) 
   //
-  if(!event) {
-    AliDebug(AliLog::kError, "event not available");
-    return;
-  }
-
-  // 
+  //
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!inputHandler)
-  {
-    Printf("ERROR: Could not receive input handler");
-    return;
-  }
-
-  // get file name
-  TTree *chain = (TChain*)GetInputData(0);
-  if(!chain) { 
-    Printf("ERROR: Could not receive input chain");
-    return;
-  }
-  TObjString fileName(chain->GetCurrentFile()->GetName());
-
-
-  // check for cosmic pairs
-  //
-  // find cosmic pairs trigger by random trigger
-  //
-  //
   AliESDVertex *vertexSPD =  (AliESDVertex *)event->GetPrimaryVertexSPD();
   AliESDVertex *vertexTPC =  (AliESDVertex *)event->GetPrimaryVertexTPC(); 
   const Double_t kMinPt=0.8;
@@ -390,9 +367,6 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
   const Double_t kMinNcl=50;
   const Double_t kMaxDelta[5]={2,600,0.02,0.02,0.1};
   Int_t ntracks=event->GetNumberOfTracks(); 
-  //  Float_t dcaTPC[2]={0,0};
-  // Float_t covTPC[3]={0,0,0};
-
   UInt_t specie = event->GetEventSpecie();  // skip laser events
   if (specie==AliRecoParam::kCalib) return;
 
@@ -453,10 +427,6 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
       if (!isPair) continue;
       TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
       Int_t eventNumber = event->GetEventNumberInFile(); 
-      //Bool_t hasFriend = kFALSE;
-      //Bool_t hasITS=(track0->GetNcls(0)+track1->GetNcls(0)>4);
-      //printf("DUMPHPTCosmic:%s|%f|%d|%d|%d\n",filename.Data(),(TMath::Min(track0->Pt(),track1->Pt())), eventNumber,hasFriend,hasITS);
-      //      const AliExternalTrackParam * trackIn1 = track1->GetInnerParam();      
       //
       //               
       Int_t ntracksSPD = vertexSPD->GetNContributors();
@@ -473,27 +443,6 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
       ULong64_t periodID     = (ULong64_t)event->GetPeriodNumber();
       ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
       
-      //
-      // Dump to the tree 
-      // vertex
-      // TPC-ITS tracks
-      //
-
-      //fCosmicPairsTree->Branch("fileName",&fileName,32000,0);
-      //fCosmicPairsTree->Branch("runNumber",&runNumber,"runNumber/I");
-      //fCosmicPairsTree->Branch("timeStamp",&timeStamp,"timeStamp/I");
-      //fCosmicPairsTree->Branch("eventNumber",&eventNumber,"eventNumber/I");
-      //fCosmicPairsTree->Branch("triggerMask",&triggerMask,32000,0);
-      //fCosmicPairsTree->Branch("triggerClass",&triggerClass,32000,0);
-      //fCosmicPairsTree->Branch("magField",&magField,"magField/F");
-      //fCosmicPairsTree->Branch("ntracksSPD",&ntracksSPD,"ntracksSPD/I");
-      //fCosmicPairsTree->Branch("ntracksTPC",&ntracksTPC,"ntracksTPC/I");
-      //fCosmicPairsTree->Branch("vertexSPD",vertexSPD,32000,0);
-      //fCosmicPairsTree->Branch("vertexTPC",vertexTPC,32000,0);
-      //fCosmicPairsTree->Branch("track0",track0,32000,0);
-      //fCosmicPairsTree->Branch("track1",track1,32000,0);
-      //
-      //fCosmicPairsTree->Fill();
 
       AliESDfriendTrack* friendTrack1=NULL;
       if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack1 = esdFriend->GetTrack(itrack1);} //this guy can be NULL
@@ -522,28 +471,26 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
 	  }
 	}
       }
-
-
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"CosmicPairs"<<
-        "gid="<<gid<<
-        "fileName.="<<&fileName<<         // file name
-        "runNumber="<<runNumber<<              //  run number	    
-        "evtTimeStamp="<<timeStamp<<            //  time stamp of event
-        "evtNumberInFile="<<eventNumber<<          //  event number	    
-        "trigger="<<triggerMask<<      //  trigger
-        "triggerClass="<<&triggerClass<<      //  trigger
-        "Bz="<<magField<<             //  magnetic field
+        "gid="<<gid<<                         // global id of track
+        "fileName.="<<&fCurrentFileName<<     // file name
+        "runNumber="<<runNumber<<             // run number	    
+        "evtTimeStamp="<<timeStamp<<          // time stamp of event
+        "evtNumberInFile="<<eventNumber<<     // event number	    
+        "trigger="<<triggerMask<<             // trigger mask
+        "triggerClass="<<&triggerClass<<      // trigger class
+        "Bz="<<magField<<                     // magnetic field
         //
-        "multSPD="<<ntracksSPD<<
-        "multTPC="<<ntracksTPC<<
-        "vertSPD.="<<vertexSPD<<         //primary vertex -SPD
-        "vertTPC.="<<vertexTPC<<         //primary vertex -TPC
-        "t0.="<<track0<<              //track0
-        "t1.="<<track1<<              //track1
-        "friendTrack0.="<<friendTrackStore0<<
-        "friendTrack1.="<<friendTrackStore1<<
+        "multSPD="<<ntracksSPD<<              // event ultiplicity
+        "multTPC="<<ntracksTPC<<              //  
+        "vertSPD.="<<vertexSPD<<              // primary vertex -SPD
+        "vertTPC.="<<vertexTPC<<              // primary vertex -TPC
+        "t0.="<<track0<<                      // first half of comsic trak
+        "t1.="<<track1<<                      // second half of cosmic track
+        "friendTrack0.="<<friendTrackStore0<< // friend information first track  + points
+        "friendTrack1.="<<friendTrackStore1<< // frined information first track  + points 
         "\n";      
     }
   }
@@ -556,10 +503,6 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
   //
   // Select real events with high-pT tracks 
   //
-  if(!esdEvent) {
-    AliDebug(AliLog::kError, "esdEvent not available");
-    return;
-  }
 
   // get selection cuts
   AliFilteredTreeEventCuts *evtCuts = GetEventCuts(); 
@@ -578,20 +521,6 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
 
   // 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!inputHandler)
-  {
-    Printf("ERROR: Could not receive input handler");
-    return;
-  }
-
-  // get file name
-  TTree *chain = (TChain*)GetInputData(0);
-  if(!chain) { 
-    Printf("ERROR: Could not receive input chain");
-    return;
-  }
-  TObjString fileName(chain->GetCurrentFile()->GetName());
-
   // trigger
   if(evtCuts->IsTriggerRequired())  
   {
@@ -742,30 +671,11 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       // TPC-ITS tracks
       //
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
-
-      //fHighPtTree->Branch("fileName",&fileName,32000,0);
-      //fHighPtTree->Branch("runNumber",&runNumber,"runNumber/I");
-      //fHighPtTree->Branch("evtTimeStamp",&evtTimeStamp,"evtTimeStamp/I");
-      //fHighPtTree->Branch("evtNumberInFile",&evtNumberInFile,"evtNumberInFile/I");
-      //fHighPtTree->Branch("triggerClass",&triggerClass,32000,0);
-      //fHighPtTree->Branch("Bz",&bz,"Bz/F");
-      //fHighPtTree->Branch("vtxESD",vtxESD,32000,0);
-      //fHighPtTree->Branch("IRtot",&ir1,"IRtot/I");
-      //fHighPtTree->Branch("IRint2",&ir2,"IRint2/I");
-      //fHighPtTree->Branch("mult",&mult,"mult/I");
-      //fHighPtTree->Branch("esdTrack",track,32000,0);
-      //fHighPtTree->Branch("centralityF",&centralityF,"centralityF/F");
-
-      //fHighPtTree->Fill();
-
-      //Double_t vtxX=vtxESD->GetX();
-      //Double_t vtxY=vtxESD->GetY();
-      //Double_t vtxZ=vtxESD->GetZ();
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"highPt"<<
         "gid="<<gid<<
-        "fileName.="<<&fileName<<            
+        "fileName.="<<&fCurrentFileName<<            
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
         "evtNumberInFile="<<evtNumberInFile<<
@@ -773,9 +683,6 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
         "Bz="<<bz<<                           //  magnetic field
         "vtxESD.="<<vtxESD<<
         "ntracksESD="<<ntracks<<              // number of tracks in the ESD
-        //  "vtxESDx="<<vtxX<<
-        //  "vtxESDy="<<vtxY<<
-        //  "vtxESDz="<<vtxZ<<
         "IRtot="<<ir1<<                      // interaction record history info
         "IRint2="<<ir2<<
         "mult="<<mult<<                      // multiplicity of tracks pointing to the primary vertex
@@ -796,25 +703,10 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
   //
   // Process laser events -> dump tracks and clusters  to the special tree
   //
-  if(!esdEvent) {
-    AliDebug(AliLog::kError, "esdEvent not available");
-    return;
-  }
-  // get file name
-  TTree *chain = (TChain*)GetInputData(0);
-  if(!chain) { 
-    Printf("ERROR: Could not receive input chain");
-    return;
-  }
-  TObjString fileName(chain->GetCurrentFile()->GetName());
-
   if(!fFillTree) return;
   if(!fTreeSRedirector) return;
-
-  // laser events 
   const AliESDHeader* esdHeader = esdEvent->GetHeader();
-  if(esdHeader && esdHeader->GetEventSpecie()==AliRecoParam::kCalib) 
-  {
+  if(esdHeader && esdHeader->GetEventSpecie()==AliRecoParam::kCalib) {
     Int_t countLaserTracks = 0;
     Int_t runNumber = esdEvent->GetRunNumber();
     Int_t evtTimeStamp = esdEvent->GetTimeStamp();
@@ -826,20 +718,15 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
     ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
     ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
     ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
-
-    for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
-    {
+    for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++){
       AliESDtrack *track = esdEvent->GetTrack(iTrack);
       if(!track) continue;
-
-      if(track->GetTPCInnerParam()) countLaserTracks++;
-      
+      if(track->GetTPCInnerParam()) countLaserTracks++;      
       AliESDfriendTrack* friendTrack=NULL;
-      if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack = esdFriend->GetTrack(iTrack);} //this guy can be NULL
-      
+      if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack = esdFriend->GetTrack(iTrack);} //this guy can be NULL      
       (*fTreeSRedirector)<<"Laser"<<
         "gid="<<gid<<                          // global identifier of event
-        "fileName.="<<&fileName<<              //
+        "fileName.="<<&fCurrentFileName<<              //
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
         "evtNumberInFile="<<evtNumberInFile<<
@@ -870,12 +757,6 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   //   track references at ITSin, TPCin; InnerParam at first TPC track reference, 
   //   particle ID, mother ID, production mechanism ...
   // 
-
-  if(!esdEvent) {
-    AliDebug(AliLog::kError, "esdEvent not available");
-    return;
-  }
-
   // get selection cuts
   AliFilteredTreeEventCuts *evtCuts = GetEventCuts(); 
   AliFilteredTreeAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
@@ -893,19 +774,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 
   // 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!inputHandler)
-  {
-    Printf("ERROR: Could not receive input handler");
-    return;
-  }
 
-  // get file name
-  TTree *chain = (TChain*)GetInputData(0);
-  if(!chain) { 
-    Printf("ERROR: Could not receive input chain");
-    return;
-  }
-  TObjString fileName(chain->GetCurrentFile()->GetName());
 
   // trigger
   if(evtCuts->IsTriggerRequired())  
@@ -1455,32 +1324,6 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           if (!particleITS) {particleITS=&dummyparticle;}
           if (!particleMotherITS) {particleMotherITS=&dummyparticle;}
         }
-        //the following are guaranteed to exist:
-        //if (!tpcInnerC) {tpcInnerC=&dummyexternaltrackparam;}
-        //if (!trackInnerC) {trackInnerC=&dummyexternaltrackparam;}
-        //if (!trackInnerC2) {trackInnerC2=&dummyexternaltrackparam;}
-        //if (!outerITSc) {outerITSc=&dummyexternaltrackparam;}
-        //if (!trackInnerC3) {trackInnerC3=&dummyexternaltrackparam;}
-        /////////////////////////
-
-        //Double_t vtxX=vtxESD->GetX();
-        //Double_t vtxY=vtxESD->GetY();
-        //Double_t vtxZ=vtxESD->GetZ();
-
-        //AliESDVertex* pvtxESD = (AliESDVertex*)vtxESD->Clone();
-        //AliESDtrack* ptrack=(AliESDtrack*)track->Clone();
-        //AliExternalTrackParam* ptpcInnerC = (AliExternalTrackParam*)tpcInnerC->Clone();
-        //AliExternalTrackParam* ptrackInnerC = (AliExternalTrackParam*)trackInnerC->Clone();
-        //AliExternalTrackParam* ptrackInnerC2 = (AliExternalTrackParam*)trackInnerC2->Clone();
-        //AliExternalTrackParam* pouterITSc = (AliExternalTrackParam*)outerITSc->Clone();
-        //AliExternalTrackParam* ptrackInnerC3 = (AliExternalTrackParam*)trackInnerC3->Clone();
-        //AliESDVertex* pvtxESD = new AliESDVertex(*vtxESD);
-        //AliESDtrack* ptrack= new AliESDtrack(*track);
-        //AliExternalTrackParam* ptpcInnerC = new AliExternalTrackParam(*tpcInnerC);
-        //AliExternalTrackParam* ptrackInnerC = new AliExternalTrackParam(*trackInnerC);
-        //AliExternalTrackParam* ptrackInnerC2 = new AliExternalTrackParam(*trackInnerC2);
-        //AliExternalTrackParam* pouterITSc =  new AliExternalTrackParam(*outerITSc);
-        //AliExternalTrackParam* ptrackInnerC3 = new AliExternalTrackParam(*trackInnerC3);
 
         Int_t ntracks = esdEvent->GetNumberOfTracks();
 
@@ -1493,34 +1336,16 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         // fill histograms
         FillHistograms(track, tpcInnerC, centralityF, (Double_t)chi2(0,0));
 
-        if(fTreeSRedirector && dumpToTree && fFillTree) 
-        {
-
-          //if (friendTrack)
-          //{
-          //  const AliTrackPointArray* array = friendTrack->GetTrackPointArray();
-          //  if (!array) {printf("we have a friend, but the ponits are empty\n"); continue;}
-          //  if (friendTrack==fDummyFriendTrack) printf("using the dummy friend track\n");
-          //  cout<<array->GetX()[0]<<" "<<array->GetX()[2]<<endl;
-          //}
-          //else
-          //{
-          //  printf("no friend track\n");
-          //}
-	  
-
+        if(fTreeSRedirector && dumpToTree && fFillTree) {
           (*fTreeSRedirector)<<"highPt"<<
             "gid="<<gid<<
-            "fileName.="<<&fileName<<                // name of the chunk file (hopefully full)
+            "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
             "runNumber="<<runNumber<<                // runNumber
             "evtTimeStamp="<<evtTimeStamp<<          // time stamp of event (in seconds)
             "evtNumberInFile="<<evtNumberInFile<<    // event number
             "triggerClass="<<&triggerClass<<         // trigger class as a string
             "Bz="<<bz<<                              // solenoid magnetic field in the z direction (in kGaus)
             "vtxESD.="<<vtxESD<<                    // vertexer ESD tracks (can be biased by TPC pileup tracks)
-            //"vtxESDx="<<vtxX<<
-            //"vtxESDy="<<vtxY<<
-            //"vtxESDz="<<vtxZ<<
             "IRtot="<<ir1<<                         // interaction record (trigger) counters - coutner 1
             "IRint2="<<ir2<<                        // interaction record (trigger) coutners - counter 2
             "mult="<<mult<<                         // multiplicity of tracks pointing to the primary vertex
@@ -1545,8 +1370,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             "chi2InnerC="<<chi2trackC(0,0)<<        // chi2s  of tracks TPCinner to the combined
             "chi2OuterITS="<<chi2OuterITS(0,0)<<    // chi2s  of tracks TPC at inner wall to the ITSout
             "centralityF="<<centralityF;
-          if (mcEvent)
-          {
+          if (mcEvent){
             static AliTrackReference refDummy;
             if (!refITS) refITS = &refDummy;
             if (!refTRD) refTRD = &refDummy;
@@ -1595,7 +1419,6 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           (*fTreeSRedirector)<<"highPt"<<"\n";
         }
         AliSysInfo::AddStamp("filteringTask",iTrack,numberOfTracks,numberOfFriendTracks,(friendTrackStore)?0:1);
-
         delete tpcInnerC;
         delete trackInnerC;
         delete trackInnerC2;
@@ -1603,7 +1426,6 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         delete trackInnerC3;
       }
   }
-
 }
 
 
@@ -1613,12 +1435,6 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   //
   // Fill tree for efficiency studies MC only
   AliInfo("we start!");
-
-  if(!esdEvent) {
-    AliDebug(AliLog::kError, "esdEvent not available");
-    return;
-  }
-
   if(!mcEvent) {
     AliDebug(AliLog::kError, "mcEvent not available");
     return;
@@ -1641,26 +1457,13 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 
   // 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!inputHandler)
-  {
-    Printf("ERROR: Could not receive input handler");
-    return;
-  }
 
-  // get file name
-  TTree *chain = (TChain*)GetInputData(0);
-  if(!chain) { 
-    Printf("ERROR: Could not receive input chain");
-    return;
-  }
-  TObjString fileName(chain->GetCurrentFile()->GetName());
 
   // trigger
   if(evtCuts->IsTriggerRequired())  
   {
     // always MB
     isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
-
     physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
     if(!physicsSelection) return;
 
@@ -1866,7 +1669,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
       //
       if(fTreeSRedirector && fFillTree) {
         (*fTreeSRedirector)<<"MCEffTree"<<
-          "fileName.="<<&fileName<<
+          "fileName.="<<&fCurrentFileName<<
           "triggerClass.="<<&triggerClass<<
           "runNumber="<<runNumber<<
           "evtTimeStamp="<<evtTimeStamp<<
@@ -1951,19 +1754,6 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
 
   // 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!inputHandler)
-  {
-    Printf("ERROR: Could not receive input handler");
-    return;
-  }
-
-  // get file name
-  TTree *chain = (TChain*)GetInputData(0);
-  if(!chain) { 
-    Printf("ERROR: Could not receive input chain");
-    return;
-  }
-  TObjString fileName(chain->GetCurrentFile()->GetName());
 
   // trigger
   if(evtCuts->IsTriggerRequired())  
@@ -2043,6 +1833,11 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
           friendTrack1 = esdFriend->GetTrack(v0->GetIndex(1)); //this guy can be NULL
         }
       }
+      if (track0->GetSign()<0) {
+        track1 = esdEvent->GetTrack(v0->GetIndex(0));
+        track0 = esdEvent->GetTrack(v0->GetIndex(1));
+      }
+
       //
       AliESDfriendTrack *friendTrackStore0=friendTrack0;    // store friend track0 for later processing
       AliESDfriendTrack *friendTrackStore1=friendTrack1;    // store friend track1 for later processing
@@ -2069,10 +1864,6 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
 	}
       }
 
-      if (track0->GetSign()<0) {
-        track1 = esdEvent->GetTrack(v0->GetIndex(0));
-        track0 = esdEvent->GetTrack(v0->GetIndex(1));
-      }
       //
       Bool_t isDownscaled = IsV0Downscaled(v0);
       if (isDownscaled) continue;
@@ -2084,19 +1875,19 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"V0s"<<
-        "gid="<<gid<<
-        "isDownscaled="<<isDownscaled<<
+        "gid="<<gid<<                         //  global id of event
+        "isDownscaled="<<isDownscaled<<       //  
         "triggerClass="<<&triggerClass<<      //  trigger
-        "Bz="<<bz<<
-        "fileName.="<<&fileName<<
-        "runNumber="<<run<<
-        "evtTimeStamp="<<time<<
-        "evtNumberInFile="<<evNr<<
-        "type="<<type<<
+        "Bz="<<bz<<                           //
+        "fileName.="<<&fCurrentFileName<<     //  full path - file name with ESD
+        "runNumber="<<run<<                   //
+        "evtTimeStamp="<<time<<               //  time stamp of event in secons
+        "evtNumberInFile="<<evNr<<            //  
+        "type="<<type<<                       // type of V0-
         "ntracks="<<ntracks<<
         "v0.="<<v0<<
         "kf.="<<&kfparticle<<
-        "track0.="<<track0<<
+        "track0.="<<track0<<                  // track
         "track1.="<<track1<<
         "friendTrack0.="<<friendTrackStore0<<
         "friendTrack1.="<<friendTrackStore1<<
@@ -2127,13 +1918,6 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
     return;
   }
 
-  // get file name
-  TTree *chain = (TChain*)GetInputData(0);
-  if(!chain) { 
-    Printf("ERROR: Could not receive input chain");
-    return;
-  }
-  TObjString fileName(chain->GetCurrentFile()->GetName());
 
   // trigger
   Bool_t isEventTriggered = kTRUE;
@@ -2142,11 +1926,6 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
 
   // 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!inputHandler)
-  {
-    Printf("ERROR: Could not receive input handler");
-    return;
-  }
 
   if(evtCuts->IsTriggerRequired())  
   {
@@ -2217,15 +1996,15 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
 
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
-      (*fTreeSRedirector)<<"dEdx"<<
-        "gid="<<gid<<
-        "fileName.="<<&fileName<<
+      (*fTreeSRedirector)<<"dEdx"<<           // high dEdx tree
+        "gid="<<gid<<                         // global id
+        "fileName.="<<&fCurrentFileName<<     // file name
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
         "evtNumberInFile="<<evtNumberInFile<<
         "triggerClass="<<&triggerClass<<      //  trigger
         "Bz="<<bz<<
-        "vtxESD.="<<vtxESD<<
+        "vtxESD.="<<vtxESD<<                  // 
         "mult="<<mult<<
         "esdTrack.="<<track<<
         "friendTrack.="<<friendTrack<<
@@ -2267,8 +2046,6 @@ Int_t   AliAnalysisTaskFilteredTree::GetKFParticle(AliESDv0 *const v0, AliESDEve
   if (TMath::Abs(track1->GetTgl())>1) return 0;
   if ((track0->GetTPCClusterInfo(2,1))<100) return 0;
   if ((track1->GetTPCClusterInfo(2,1))<100) return 0;
-  //if ((track0->GetITSclusters(0))<2) return 0;
-  //if ((track1->GetITSclusters(0))<2) return 0; 
   Float_t pos0[2]={0}, cov0[3]={0};
   Float_t pos1[2]={0}, cov1[3]={0};
   track0->GetImpactParameters(pos0,cov0);
@@ -2576,67 +2353,6 @@ void AliAnalysisTaskFilteredTree::FinishTaskOutput()
   // Called one at the end 
   // locally on working node
   //
-
-  //// must be deleted to store trees
-  //if(fTreeSRedirector)  delete fTreeSRedirector; fTreeSRedirector=0;
-
-  //// open temporary file and copy trees to the ouptut container
-
-  //TChain* chain = 0;
-  ////
-  //chain = new TChain("highPt");
-  //if(chain) { 
-  //  chain->Add("jotwinow_Temp_Trees.root");
-  //  fHighPtTree = chain->CopyTree("1");
-  //  delete chain; chain=0; 
-  //}
-  //if(fHighPtTree) fHighPtTree->Print();
-
-  ////
-  //chain = new TChain("V0s");
-  //if(chain) { 
-  //  chain->Add("jotwinow_Temp_Trees.root");
-  //  fV0Tree = chain->CopyTree("1");
-  //  delete chain; chain=0; 
-  //}
-  //if(fV0Tree) fV0Tree->Print();
-
-  ////
-  //chain = new TChain("dEdx");
-  //if(chain) { 
-  //  chain->Add("jotwinow_Temp_Trees.root");
-  //  fdEdxTree = chain->CopyTree("1");
-  //  delete chain; chain=0; 
-  //}
-  //if(fdEdxTree) fdEdxTree->Print();
-
-  ////
-  //chain = new TChain("Laser");
-  //if(chain) { 
-  //  chain->Add("jotwinow_Temp_Trees.root");
-  //  fLaserTree = chain->CopyTree("1");
-  //  delete chain; chain=0; 
-  //}
-  //if(fLaserTree) fLaserTree->Print();
-
-  ////
-  //chain = new TChain("MCEffTree");
-  //if(chain) { 
-  //  chain->Add("jotwinow_Temp_Trees.root");
-  //  fMCEffTree = chain->CopyTree("1");
-  //  delete chain; chain=0; 
-  //}
-  //if(fMCEffTree) fMCEffTree->Print();
-
-  ////
-  //chain = new TChain("CosmicPairs");
-  //if(chain) { 
-  //  chain->Add("jotwinow_Temp_Trees.root");
-  //  fCosmicPairsTree = chain->CopyTree("1");
-  //  delete chain; chain=0; 
-  //}
-  //if(fCosmicPairsTree) fCosmicPairsTree->Print();  
-
   Bool_t deleteTrees=kTRUE;
   if ((AliAnalysisManager::GetAnalysisManager()))
   {
@@ -2646,40 +2362,14 @@ void AliAnalysisTaskFilteredTree::FinishTaskOutput()
   }
   if (deleteTrees) delete fTreeSRedirector;
   fTreeSRedirector=NULL;
-
-  //OpenFile(1);
-
-  // Post output data.
-  //PostData(1, fHighPtTree);
-  //PostData(2, fV0Tree);
-  //PostData(3, fdEdxTree);
-  //PostData(4, fLaserTree);
-  //PostData(5, fMCEffTree);
-  //PostData(6, fCosmicPairsTree);
 }
 
 //_____________________________________________________________________________
 void AliAnalysisTaskFilteredTree::Terminate(Option_t *) 
 {
+  //
   // Called one at the end 
-  /*
-     fOutputSummary = dynamic_cast<TTree*> (GetOutputData(1));
-     if(fOutputSummary) delete fOutputSummary; fOutputSummary=0;
-     TChain* chain = new TChain("highPt");
-     if(!chain) return;
-     chain->Add("jotwinow_HighPt_TrackAndV0_Trees.root");
-     TTree *tree = chain->CopyTree("1");
-     if (chain) { delete chain; chain=0; }
-     if(!tree) return;
-     tree->Print();
-     fOutputSummary = tree;
-
-     if (!fOutputSummary) {
-     Printf("ERROR: AliAnalysisTaskFilteredTree::Terminate(): Output data not avaiable %p \n", GetOutputData(1));
-     return;
-     }
-     */
-
+  //
 }
 
 //_____________________________________________________________________________
