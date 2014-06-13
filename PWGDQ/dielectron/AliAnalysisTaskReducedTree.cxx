@@ -940,8 +940,8 @@ void AliAnalysisTaskReducedTree::FillDielectronPairInfo(AliDielectron* die, Shor
       // !!! hardcoded flag for dielectron id 
       reducedParticle->fCandidateId  = (iDie==0 ? AliReducedPair::kJpsiToEE : AliReducedPair::kPhiToKK);
       reducedParticle->fPairType     = (Char_t)values[AliDielectronVarManager::kPairType];
-      reducedParticle->fLegIds[0]    = (UShort_t)(static_cast<AliVTrack*>(pair->GetFirstDaughter()))->GetID();
-      reducedParticle->fLegIds[1]    = (UShort_t)(static_cast<AliVTrack*>(pair->GetSecondDaughter()))->GetID();
+      reducedParticle->fLegIds[0]    = (UShort_t)(static_cast<AliVTrack*>(pair->GetFirstDaughterP()))->GetID();
+      reducedParticle->fLegIds[1]    = (UShort_t)(static_cast<AliVTrack*>(pair->GetSecondDaughterP()))->GetID();
       reducedParticle->fMass[0]      = values[AliDielectronVarManager::kM];
       reducedParticle->fMass[1]      = -999.;
       reducedParticle->fMass[2]      = -999.;

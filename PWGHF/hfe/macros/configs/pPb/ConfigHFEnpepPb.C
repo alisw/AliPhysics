@@ -1,3 +1,23 @@
+Bool_t ReadContaminationFunctionsBeauty(TString filename, TF1 **functions, double sigma){
+  TFile *in = TFile::Open(Form("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
+  gROOT->cd();
+  int isig = static_cast<int>(sigma * 100.);
+  if (isig == -44) isig = -42;
+  if (isig == 6) isig = 9;
+  printf("Getting hadron background for the sigma cut: %d\n", isig);
+  bool status = kTRUE;
+  for(int icent = 0; icent < 12; icent++){
+    functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_%d_%d", isig, icent)));
+    if(functions[icent]) printf("Config for centrality class %d found\n", icent);
+    else{
+      printf("Config for the centrality class %d not found\n", icent);
+      status = kFALSE;
+    }
+  }
+  delete in;
+  return status;
+}
+
 Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma){
   TFile *in = TFile::Open(Form("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
   gROOT->cd();
@@ -16,21 +36,26 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
   return status;
 }
 
-AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix,
+
+AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty, TString appendix,
                 UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
                 UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000., 
                 Double_t* tpcdEdxcutlow=NULL, Double_t* tpcdEdxcuthigh=NULL, 
                 Double_t TOFs=3., Int_t TOFmis=0, 
                 Int_t itshitpixel = 0, Int_t icent, 
 		Double_t etami=-0.8, Double_t etama=0.8,
-                Double_t assETAm=-0.8, Double_t assETAp=0.8,
-                Int_t assITS=2, 
+		Double_t phimi=-1., Double_t phima=-1.,
+		Double_t assETAm=-0.8, Double_t assETAp=0.8,
+		Double_t assMinPt=0.2, Int_t assITS=2, 
                 Int_t assTPCcl=100, Int_t assTPCPIDcl=80, 
                 Double_t assDCAr=1.0, Double_t assDCAz=2.0, 
                 Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL, 
-                Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE)
+                Double_t assITSpid=-3., 
+		Double_t assTOFs=3.,
+                Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE, Int_t weightlevelback = -1, 
+	        Bool_t nonPhotonicElectronBeauty = kFALSE, Bool_t ipCharge = kFALSE, Bool_t ipOpp = kFALSE, Int_t ipsys = 0)
 {
-  Bool_t kAnalyseTaggedTracks = kFALSE;
+  Bool_t kAnalyseTaggedTracks = kTRUE;
   Bool_t kApplyPreselection = kFALSE;
 
   //***************************************//
@@ -48,12 +73,12 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   hfecuts->SetCutITSpixel(itshitpixel);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetEtaRange(etami,etama);
+  if(phimi >= 0. && phima >= 0) hfecuts->SetPhiRange(phimi,phima);
   hfecuts->SetRejectKinkDaughters();
   hfecuts->SetAcceptKinkMothers();
   if(isAOD) hfecuts->SetAODFilterBit(4);
   
   //if((iPixelAny==AliHFEextraCuts::kAny) || (iPixelAny==AliHFEextraCuts::kSecond))     
-  //hfecuts->SetProductionVertex(0,7,0,7);
  
   hfecuts->SetMaxImpactParam(DCAxy,DCAz);
   hfecuts->SetUseMixedVertex(kTRUE);
@@ -62,6 +87,14 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   hfecuts->SetUseCorrelationVertex();
   hfecuts->SetSPDVtxResolutionCut();
   hfecuts->SetpApileupCut();
+
+  Bool_t ipSig = kFALSE;
+
+  hfecuts->SetIPcutParam(0.0054,0.078,-0.56,0,ipSig,ipCharge,ipOpp);
+  if(ipsys==1) hfecuts->SetIPcutParam(0.0054,0.057,-0.66,0,ipSig,ipCharge,ipOpp);
+  if(ipsys==2) hfecuts->SetIPcutParam(0.012,0.088,-0.65,0,ipSig,ipCharge,ipOpp);
+
+  if(isBeauty) hfecuts->SetProductionVertex(0,100,0,100);
 
   // TOF settings:
   Int_t usetof=0;
@@ -132,7 +165,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   AliHFEvarManager *vm = task->GetVarManager();
   vm->AddVariable("pt", sizept, ptbinning);
   vm->AddVariable("eta", sizeeta, -0.8,0.8);
-  vm->AddVariable("phi",21, -0, 2*TMath::Pi());
+  vm->AddVariable("phi",18, -0, 2*TMath::Pi());
   vm->AddVariable("charge");
   vm->AddVariable("source");
   vm->AddVariable("centrality");
@@ -163,15 +196,22 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   Double_t paramsTPCdEdxcuthigh[12] ={3.0, 3.0, 3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};
   if(tpcdEdxcuthigh) memcpy(paramsTPCdEdxcuthigh,tpcdEdxcuthigh,sizeof(paramsTPCdEdxcuthigh));
 
-   char *cutmodel;
-  cutmodel="min(pol1(0),pol0(2))";
-  Double_t params[3];
-  //params[0]=-0.12; params[1]=0.14; params[2]=0.09;
-  params[0]=-0.21 + paramsTPCdEdxcutlow[0];
-  params[1]=0.14;
-  params[2]=paramsTPCdEdxcutlow[0];
-  pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
+  char *cutmodel;
 
+  if(useMC){ // constant (default) cut for MC
+      cutmodel="pol0(0)";
+      Double_t params[1];
+      params[0]=paramsTPCdEdxcutlow[0];
+      pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
+  } else { // correct for mean shift in data
+      cutmodel="min(pol1(0),pol0(2))";
+      Double_t params[3];
+      //params[0]=-0.12; params[1]=0.14; params[2]=0.09;
+      params[0]=-0.21 + paramsTPCdEdxcutlow[0];
+      params[1]=0.14;
+      params[2]=paramsTPCdEdxcutlow[0];
+      pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
+  }
   /*
   char *cutmodel;
   cutmodel="pol0";
@@ -208,6 +248,9 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
 	if (usetof)  status = ReadContaminationFunctions("hadroncontamination_AOD139_TOFPID_pPb_eta06.root", hBackground, tpcdEdxcutlow[0]);
 	else status = ReadContaminationFunctions("hadroncontamination_AOD139_noTOFPID_pPb_eta06.root", hBackground, tpcdEdxcutlow[0]);
     }
+    else if (isBeauty==1) {
+	status = ReadContaminationFunctionsBeauty("hadroncontamination_ESD_Beauty_TOFPID_pPb_eta06.root", hBackground, tpcdEdxcutlow[0]);
+    }
   else  status = ReadContaminationFunctions("hadroncontamination_TOFTPC_pPb_eta06_newsplines_try3.root", hBackground, tpcdEdxcutlow[0]);
     for(Int_t a=0;a<12;a++) {
       //printf("back %f \n",hBackground[a]);
@@ -225,7 +268,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   AliHFEcuts *hfeBackgroundCuts = new AliHFEcuts(Form("HFEBackSub%s",appendix.Data()),"Background sub Cuts");
   //  hfeBackgroundCuts->SetEtaRange(assETA);
   hfeBackgroundCuts->SetEtaRange(assETAm,assETAp);
-  hfeBackgroundCuts->SetPtRange(0.1,1e10);
+  hfeBackgroundCuts->SetPtRange(assMinPt,20.);
 
   hfeBackgroundCuts->SetMaxChi2perClusterTPC(4);
   hfeBackgroundCuts->SetMinNClustersITS(assITS);
@@ -237,7 +280,14 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
 
   AliHFEpid *pidbackground = backe->GetPIDBackground();
   if(useMC) pidbackground->SetHasMCData(kTRUE);
-  pidbackground->AddDetector("TPC", 0);
+
+  if (assTOFs>0.){
+    pidbackground->AddDetector("TOF", 0);
+    pidbackground->AddDetector("TPC", 1);
+  } else {
+    pidbackground->AddDetector("TPC", 0);
+  }
+
   Double_t paramsTPCdEdxcutlowAssoc[12] ={-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0,-3.0};
   if(assTPCSminus) memcpy(paramsTPCdEdxcutlowAssoc,assTPCSminus,sizeof(paramsTPCdEdxcutlowAssoc));
 
@@ -255,21 +305,36 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   }
   pidbackground->ConfigureTPCdefaultCut(cutmodelAssoc,paramsTPCdEdxcutlowAssoc,paramsTPCdEdxcuthighAssoc[0]); // After introducing the pPb flag, pPb is merged with pp and this line defines the cut
   //backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
+
+  if (assTOFs>0.){
+    pidbackground->ConfigureTOF(TOFs);
+  }
+
   backe->SetHFEBackgroundCuts(hfeBackgroundCuts);
 
   // Selection of associated tracks for the pool
   if(useCat1Tracks) backe->SelectCategory1Tracks(kTRUE);
   if(useCat2Tracks){
     backe->SelectCategory2Tracks(kTRUE);
-    backe-> SetITSMeanShift(-0.5);
+    backe->SetITSMeanShift(-0.5);
+    backe->SetITSnSigmaHigh(assITSpid);
+    Double_t assITSminus = -1.0 * assITSpid;
+    backe->SetITSnSigmaLow(assITSminus);
+    //backe->SetminPt(assMinPt);
   }
 
   // apply opening angle cut to reduce file size
   backe->SetMaxInvMass(0.3);
   backe->SetPtBinning(sizept, ptbinning);
   backe->SetEtaBinning(sizeeta, etabinning);
-
+  // MC weight
+  if(useMC) {
+    //printf("test put weight %d\n",weightlevelback);
+    if((weightlevelback >=0) && (weightlevelback < 3)) backe->SetWithWeights(weightlevelback);
+  }
   task->SetHFEBackgroundSubtraction(backe);
+
+  //task->SetWeightHist(); 
 
   //***************************************//
   //          V0 tagged tracks             //
@@ -299,8 +364,9 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   printf("task %p\n", task);
   task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
   task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
-  task->SwitchOnPlugin(AliAnalysisTaskHFE::kNonPhotonicElectron);
   task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);
+  if(nonPhotonicElectronBeauty) task->SwitchOnPlugin(AliAnalysisTaskHFE::kNonPhotonicElectronBeauty);
+  else task->SwitchOnPlugin(AliAnalysisTaskHFE::kNonPhotonicElectron);
 
   printf("*************************************\n");
   printf("Configuring standard Task:\n");

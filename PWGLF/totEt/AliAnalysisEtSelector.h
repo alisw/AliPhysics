@@ -96,11 +96,11 @@ public:
     
 protected:
   
-    const AliVEvent *fEvent; // Pointer to current event
+    const AliVEvent *fEvent; //! Pointer to current event
 
-    TRefArray *fClusterArray; // Array of clusters
+    TRefArray *fClusterArray; //! Array of clusters
 
-    AliAnalysisEtCuts *fCuts; // Pointer to the cuts object; DS: also in base class?
+    AliAnalysisEtCuts *fCuts; //! Pointer to the cuts object; DS: also in base class?
     
     Bool_t SuspiciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle& part, AliStack& stack) const;
     

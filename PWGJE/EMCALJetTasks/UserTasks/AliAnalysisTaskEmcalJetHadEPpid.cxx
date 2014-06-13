@@ -77,8 +77,8 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fDoEventMixing(0), fMixingTracks(50000),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
-  useAOD(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
-  doComments(0),
+  allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
+  doComments(0), doIOon(0),
   fLocalRhoVal(0),
   fTracksName(""), fJetsName(""),
   event(0),
@@ -88,6 +88,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fPoolMgr(0x0),
   fPIDResponse(0x0), fTPCResponse(),
   fESD(0), fAOD(0),
+  fHistEventQA(0),
   fHistTPCdEdX(0), fHistITSsignal(0), //fHistTOFsignal(0),
   fHistRhovsCent(0), fHistNjetvsCent(0), fHistCentrality(0),
   fHistZvtx(0), fHistMult(0),
@@ -163,8 +164,8 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   SetMakeGeneralHistograms(kTRUE);
   
   // define input and output slots here
-  DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
+  if(doIOon > 0 ) DefineInput(0, TChain::Class());
+  if(doIOon > 0 ) DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -177,8 +178,8 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fDoEventMixing(0), fMixingTracks(50000),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
-  useAOD(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
-  doComments(0),
+  allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
+  doComments(0), doIOon(0),
   fLocalRhoVal(0),
   fTracksName(""), fJetsName(""),
   event(0),
@@ -188,6 +189,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fPoolMgr(0x0),
   fPIDResponse(0x0), fTPCResponse(),
   fESD(0), fAOD(0),
+  fHistEventQA(0),
   fHistTPCdEdX(0), fHistITSsignal(0), //fHistTOFsignal(0),
   fHistRhovsCent(0), fHistNjetvsCent(0), fHistCentrality(0),
   fHistZvtx(0), fHistMult(0),
@@ -263,8 +265,8 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   SetMakeGeneralHistograms(kTRUE);
 
   // define input and output slots here
-  DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
+  if(doIOon > 0 ) DefineInput(0, TChain::Class());
+  if(doIOon > 0 ) DefineOutput(1, TList::Class());
 }
 
 //_______________________________________________________________________
@@ -298,7 +300,11 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   fHistJetHaddPhiIN = new TH1F("fHistJetHaddPhiIN","Jet-Hadron #Delta#varphi IN PLANE", 128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
   fHistJetHaddPhiOUT = new TH1F("fHistJetHaddPhiOUT","Jet-Hadron #Delta#varphi OUT PLANE",128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
   fHistJetHaddPhiMID = new TH1F("fHistJetHaddPhiMID","Jet-Hadron #Delta#varphi MIDDLE of PLANE",128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
-
+  
+  fHistEventQA = new TH1F("fHistEventQA", "Event Counter at checkpoints in code", 25, 0, 25);
+  SetfHistQAcounterLabels(fHistEventQA); 
+  fOutput->Add(fHistEventQA);
+ 
   // add to output lists
   fOutput->Add(fHistNjetvsCent);
   fOutput->Add(fHistJetHaddPHI);
@@ -551,7 +557,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   if(fDoEventMixing) fhnJH = NewTHnSparseD("fhnJH", bitcoded);
   if(fDoEventMixing) fOutput->Add(fhnJH);
 
-  bitcodeCorr = 1<<0 | 1<<1 | 1<<2; //| 1<<3 | 1<<4 | 1<<5;
+  bitcodeCorr = 1<<0 | 1<<1 | 1<<2 | 1<<3; // | 1<<4 | 1<<5;
   fhnCorr = NewTHnSparseDCorr("fhnCorr", bitcodeCorr);
   fOutput->Add(fhnCorr);
   
@@ -592,13 +598,13 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   } // end of do-eventmixing
 
   // variable binned pt
-  Double_t xlowjetPT[] = {-50,-45,-40,-35,-30,-25,-20,-18,-16,-14,-12,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30,35,40,45,50,60,70,80,90,100,120,140,160,180,200,250,300,350,400};
+  //Double_t xlowjetPT[] = {-50,-45,-40,-35,-30,-25,-20,-18,-16,-14,-12,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30,35,40,45,50,60,70,80,90,100,120,140,160,180,200,250,300,350,400};
   Double_t xlowtrPT[] = {0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.25,2.50,2.75,3.0,3.25,3.5,3.75,4.0,4.25,4.50,4.75,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,22.0,24.0,26.0,28.0,30.0,35.0,40.0,45.0,50.0,60.0,70.0,80.0,90.0,100.0};
 
   // number of bins you tell histogram should be (# in array - 1) because the last bin
   // is the right-most edge of the histogram 
   // i.e. this is for PT and there are 57 numbers (bins) thus we have 56 bins in our histo
-  Int_t nbinsjetPT = sizeof(xlowjetPT)/sizeof(Double_t) - 1;
+  //Int_t nbinsjetPT = sizeof(xlowjetPT)/sizeof(Double_t) - 1;
   Int_t nbinstrPT = sizeof(xlowtrPT)/sizeof(Double_t) - 1;
 
   // set up PID sparse
@@ -625,14 +631,20 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     SetfHistPIDcounterLabels(fHistPID);
     fOutput->Add(fHistPID);
 
-    bitcode = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 |
+    if(allpidAXIS) {
+      bitcode = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 |
               1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16 | 1<<17 | 1<<18 | 1<<19 |
-              1<<20 | 1<<21 | 1<<22;
-    fhnPID = NewTHnSparseDPID("fhnPID", bitcode);
+              1<<20;
+      fhnPID = NewTHnSparseDPID("fhnPID", bitcode);
+    } else {
+	  bitcode = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 |
+              1<<10 | 1<<11 | 1<<12 | 1<<13;
+      fhnPID = NewTHnSparseDPID("fhnPID", bitcode);
+	}
 
     if(dovarbinTHnSparse){
-     fhnPID->GetAxis(1)->Set(nbinsjetPT, xlowjetPT);
-     fhnPID->GetAxis(2)->Set(nbinstrPT, xlowtrPT);
+     //fhnPID->GetAxis(1)->Set(nbinsjetPT, xlowjetPT);
+     fhnPID->GetAxis(1)->Set(nbinstrPT, xlowtrPT);
     }
 
     fOutput->Add(fhnPID);
@@ -676,6 +688,9 @@ void AliAnalysisTaskEmcalJetHadEPpid::ExecOnce()
 Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 { // Main loop called for each event
   // TEST TEST TEST TEST for OBJECTS!
+ 
+  fHistEventQA->Fill(1); // All Events that get entered
+
   if(!fLocalRho){
     AliError(Form("Couldn't get fLocalRho object, try to get it from Event based on name\n"));
     fLocalRho = GetLocalRhoFromEvent(fLocalRhoName);
@@ -690,7 +705,13 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     return kTRUE;
   }
 
+  fHistEventQA->Fill(2); // events after object check
+
   // what kind of event do we have: AOD or ESD?
+  Bool_t useAOD; 
+  if (dynamic_cast<AliAODEvent*>(InputEvent())) useAOD = kTRUE;
+  else useAOD = kFALSE;
+
   // if we have ESD event, set up ESD object
   if(!useAOD){
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -709,15 +730,19 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     }
   }
 
+  fHistEventQA->Fill(3); // events after Aod/esd check
+
   // get centrality
   Int_t centbin = GetCentBin(fCent);
   if (makeQAhistos) fHistCentrality->Fill(fCent); // won't be filled in pp collision (Keep this in mind!)
 
   // for pp analyses we will just use the first centrality bin
-  if (centbin == -1) centbin = 0;
+  //if (centbin == -1) centbin = 0;
 
   // apply cut to event on Centrality > 90%
   if(fCent>90) return kTRUE;
+
+  fHistEventQA->Fill(4);  // events after centrality check
 
   // get vertex information
   Double_t fvertex[3]={0,0,0};
@@ -731,12 +756,16 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   // apply zVtx cut
   if(fabs(zVtx)>10.0) return kTRUE;
 
+  fHistEventQA->Fill(5); // events after zvertex check
+
   // create pointer to list of input event
   TList *list = InputEvent()->GetList();
   if(!list) {
     AliError(Form("ERROR: list not attached\n"));
     return kTRUE;
   }
+
+  fHistEventQA->Fill(6); // events after list check
 
   // initialize TClonesArray pointers to jets and tracks
   TClonesArray *jets = 0;
@@ -756,11 +785,15 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     return kTRUE;
   } // verify existence of jets
 
+  fHistEventQA->Fill(7);  // events after track/jet pointer check
+
   // get number of jets and tracks
   const Int_t Njets = jets->GetEntries(); 
   const Int_t Ntracks = tracks->GetEntries();
   if(Ntracks<1)   return kTRUE;
   if(Njets<1)	  return kTRUE;
+
+  fHistEventQA->Fill(8); // events after #track and jets < 1 check
 
   if (makeQAhistos) fHistMult->Fill(Ntracks);  // fill multiplicity distribution
 
@@ -837,6 +870,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   // accepted jets
   fHistNjetvsCent->Fill(fCent,NjetAcc);
   Int_t NJETAcc = 0;
+  fHistEventQA->Fill(9); // events after track/jet loop to get highest pt
+
 
   // loop over jets in event and make appropriate cuts
   for (Int_t ijet = 0; ijet < Njets; ++ijet) {
@@ -848,12 +883,14 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      // do we accept jet? apply jet cuts
      if (!AcceptMyJet(jet)) continue;
 
+     fHistEventQA->Fill(10); // accepted jets
+
      // check on lead jet
      Double_t leadjet=0;
      if (ijet==ijethi) leadjet=1;
 
      // check on leading hadron pt
-     leadhadronPT = GetLeadingHadronPt(jet);
+     if (ijet==ijethi) leadhadronPT = GetLeadingHadronPt(jet);
 
      // initialize and calculate various parameters: pt, eta, phi, rho, etc...
      Double_t jetphi = jet->Phi();      // phi of jet
@@ -862,10 +899,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      Double_t jeteta = jet->Eta();     // ETA of jet
      Double_t jetPt = -500; 
      Double_t jetPtGlobal = -500; 
-     Double_t jetPtLocal = -500;            // initialize corr jet pt
+     //Double_t jetPtLocal = -500;            // initialize corr jet pt
      jetPt = jet->Pt();
      jetPtGlobal = jet->Pt()-jet->Area()*fRhoVal;  // corrected pT of jet from rho value
-     jetPtLocal = jet->Pt()-jet->Area()*fLocalRhoVal; // corrected pT of jet using Rho modulated for V2 and V3
+     //jetPtLocal = jet->Pt()-jet->Area()*fLocalRhoVal; // corrected pT of jet using Rho modulated for V2 and V3
      Double_t dEP = -500;                    // initialize angle between jet and event plane
      dEP = RelativeEPJET(jetphi,fEPV0); // angle betweeen jet and event plane
 
@@ -915,12 +952,14 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     }
 
     // cut on HIGHEST jet pt in event (15 GeV default)
-    if (highestjetpt>fJetPtcut) {
+    //if (highestjetpt>fJetPtcut) {
+    if (jet->Pt() > fJetPtcut) {
+      fHistEventQA->Fill(11); // jets meeting pt threshold
 
       // does our max track or cluster pass the bias?
       if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
         // set up and fill Jet-Hadron Correction THnSparse
-        Double_t CorrEntries[3] = {fCent, jet->Pt(), dEP};
+        Double_t CorrEntries[4] = {fCent, jet->Pt(), dEP, zVtx};
         fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with Correction entries
       }
 
@@ -935,6 +974,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     	// apply track cuts
         if(TMath::Abs(track->Eta())>fTrkEta) continue;
         if (track->Pt()<0.15) continue;
+
+        fHistEventQA->Fill(12); // accepted tracks in events from trigger jets
 
         // calculate and get some track parameters
 		Double_t trCharge = -99;
@@ -999,7 +1040,6 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         }
 
         // some variables for PID
-   	    Double_t eta = -999; 
         Double_t pt = -999; 
         Double_t dEdx = -999;
         Double_t ITSsig = -999;
@@ -1014,12 +1054,13 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         if(doPID){
           // get parameters of track
           charge = track->Charge();    // charge of track
-          eta    = track->Eta();       // ETA of track
           pt     = track->Pt();        // pT of track
 
           // extra attempt 
           AliVEvent *vevent=InputEvent();
           if (!vevent||!fPIDResponse) return kTRUE; // just return, maybe put at beginning
+
+          fHistEventQA->Fill(13); // check for AliVEvent and fPIDresponse objects
 
           // get PID parameters, first check if AOD/ESD
 	      if (!useAOD) {
@@ -1166,13 +1207,24 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
  	      fHistPID->Fill(nPID);
 
           // PID sparse getting filled 
-          Double_t pid_Entries[23] = {fCent,jetPtLocal,pt,charge,eta,deta,dphijh,leadjet,zVtx,dEP,jetPt,
-                                      nSigmaPion_TPC, nSigmaProton_TPC, nSigmaKaon_TPC,  //nSig in TPC
-                                      nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  //nSig in ITS
-                                      nSigmaPion_TOF, nSigmaProton_TOF, nSigmaKaon_TOF,  //nSig in TOF
-				      				  nPIDtpc, nPIDits, nPIDtof                          //PID label for each detector
+          if (allpidAXIS) { // FILL ALL axis
+			Double_t pid_EntriesALL[21] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+                                      nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
+  				      				  nPIDtpc, nPIDits, nPIDtof,       // PID label for each detector
+ 									  nSigmaProton_TPC, nSigmaKaon_TPC,  // nSig in TPC
+                                      nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  // nSig in ITS
+                                      nSigmaProton_TOF, nSigmaKaon_TOF,  // nSig in TOF
+                                      }; //array for PID sparse     
+		    fhnPID->Fill(pid_EntriesALL);
+		  } else {
+            // PID sparse getting filled 
+            Double_t pid_Entries[14] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+                                      nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
+  				      				  nPIDtpc, nPIDits, nPIDtof       // PID label for each detector
                                       }; //array for PID sparse                           
-          fhnPID->Fill(pid_Entries);   // fill Sparse histo of PID tracks 
+            fhnPID->Fill(pid_Entries);   // fill Sparse histo of PID tracks 
+		  } // minimal pid sparse filling
+
        	} // end of doPID check
 
   	    // get track pt bin
@@ -1204,6 +1256,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
       } // loop over tracks found in event with highest JET pT > 10.0 GeV (change)
     } // jet pt cut
   } // jet loop
+
+  fHistEventQA->Fill(14); // events right before event mixing
 
 // ***************************************************************************************************************
 // ******************************** Event MIXING *****************************************************************
@@ -1247,6 +1301,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
       return kTRUE;
     }
 
+    fHistEventQA->Fill(15); // mixed events cases that have pool
+
     // use only jets from EMCal-triggered events (for lhc11a use AliVEvent::kEMC1)
 ///    if (trigger & AliVEvent::kEMC1) {
 //T    if (trigger & AliVEvent::kEMCEJE) {  // TEST
@@ -1266,12 +1322,16 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      	  if (jet->Pt()<0.1) continue;
     	  if (!AcceptMyJet(jet)) continue;
 
+          fHistEventQA->Fill(16); // event mixing jets
+
           Int_t nMix = pool->GetCurrentNEvents();  // how many particles in pool to mix
 
           // Fill for biased jet triggers only
           if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) {
             // Fill mixed-event histos here  
             for (Int_t jMix=0; jMix<nMix; jMix++) {
+				fHistEventQA->Fill(17); // event mixing nMix                 
+
                 TObjArray* bgTracks = pool->GetEvent(jMix);
                 const Int_t Nbgtrks = bgTracks->GetEntries();
                 for(Int_t ibg=0; ibg<Nbgtrks; ibg++) {
@@ -1289,6 +1349,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
                   Double_t triggerEntries[10] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
                   fhnMixedEvents->Fill(triggerEntries,1./nMix);   // fill Sparse histo of mixed events
                   
+				  fHistEventQA->Fill(18); // event mixing - nbgtracks
                   if(makeextraCORRhistos) fHistMEphieta->Fill(DPhi,DEta, 1./nMix);
                 } // end of background track loop
              } // end of filling mixed-event histo's
@@ -1310,7 +1371,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
   // print some stats on the event
   event++;
-  
+  fHistEventQA->Fill(19);  // events making it to end  
+
   if (doComments) {
     cout<<"Event #: "<<event<<"     Jet Radius: "<<fJetRad<<"     Constituent Pt Cut: "<<fConstituentCut<<endl;
     cout<<"# of jets: "<<Njets<<"      Highest jet pt: "<<highestjetpt<<"     leading hadron pt: "<<leadhadronPT<<endl;
@@ -1506,7 +1568,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParams(Int_t iEntry, TString &label,
 
    case 2:
       label = "Track p_{T}";
-      nbins = 750;
+      nbins = 300; // 750 pid
       xmin = 0.;
       xmax = 75.;
       break;
@@ -1678,157 +1740,143 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
       break;
 
    case 1:
-      label = "Corrected Jet p_{T}";
-      nbins = 216; 
-      xmin = -50.;
-      xmax = 166.;
-      break;
-
-   case 2:
       label = "Track p_{T}";
       nbins = 750; 
       xmin = 0.;
       xmax = 75.; 
       break;
 
-   case 3:
+   case 2:
       label = "Charge of Track";
       nbins = 3;
       xmin = -1.5;
       xmax = 1.5;
       break;
 
-   case 4:
-      label = "Track Eta";
-      nbins = 48;
-      xmin = -1.2;
-      xmax = 1.2;
-      break;
-
-   case 5:
+   case 3:
       label = "Relative Eta of Track and Jet";
       nbins = 48;
       xmin = -1.6;
       xmax = 1.6;
       break;
 
-   case 6:
+   case 4:
       label = "Relative Phi of Track and Jet";
       nbins = 72;
       xmin = -0.5*pi;
       xmax = 1.5*pi;
       break;
 
-   case 7:
+   case 5:
       label = "leading jet";
       nbins = 3;
       xmin = -.5;
       xmax = 2.5;
       break;
 
-   case 8:
+   case 6:
       label = "Z-vertex";
       nbins = 10;
       xmin = -10.;
       xmax = 10.;
       break;
 
-   case 9: 
+   case 7: 
       label = "Relative angle: Jet and Reaction Plane";
       nbins = 48;
       xmin = 0.;
       xmax = 0.5*pi;
       break;
 
-   case 10: 
-      label = "Jet Pt";
+   case 8: 
+      label = "Jet p_{T}";
       nbins = 216; 
       xmin = 0.;
       xmax = 216.;
       break;
 
-   case 11:
+   case 9:
       label = "N-Sigma of pions in TPC";
       nbins = 200;
       xmin = -10.0;
       xmax = 10.0; 
       break;
 
-   case 12:
-      label = "N-Sigma of protons in TPC";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 13:
-      label = "N-Sigma of kaons in TPC";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 14:
-      label = "N-Sigma of pions in ITS";
-      nbins = 200;
-      xmin = -10.0;
-      xmax = 10.0; 
-      break;
-
-   case 15:
-      label = "N-Sigma of protons in ITS";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 16:
-      label = "N-Sigma of kaons in ITS";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 17:
+   case 10:
       label = "N-Sigma of pions in TOF";
       nbins = 200;
       xmin = -10.;
       xmax = 10.; 
       break;
 
-   case 18:
-      label = "N-Sigma of protons in TOF";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 19:
-      label = "N-Sigma of kaons in TOF";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 20:
+   case 11:
       label = "TPC PID determination";
       nbins = 5;
       xmin = 0.;
       xmax = 5.;
       break;
 
-   case 21:
+   case 12:
       label = "ITS PID determination";
       nbins = 5;
       xmin = 0.;
       xmax = 5.;
       break;
 
-   case 22:
+   case 13:
       label = "TOF PID determination";
       nbins = 5;
       xmin = 0.;
       xmax = 5.;
+      break;
+
+   case 14:
+      label = "N-Sigma of protons in TPC";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
+      break;
+
+   case 15:
+      label = "N-Sigma of kaons in TPC";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
+      break;
+
+   case 16:
+      label = "N-Sigma of pions in ITS";
+      nbins = 200;
+      xmin = -10.0;
+      xmax = 10.0; 
+      break;
+
+   case 17:
+      label = "N-Sigma of protons in ITS";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
+      break;
+
+   case 18:
+      label = "N-Sigma of kaons in ITS";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
+      break;
+
+   case 19:
+      label = "N-Sigma of protons in TOF";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
+      break;
+
+   case 20:
+      label = "N-Sigma of kaons in TOF";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
       break;
 
    } // end of switch
@@ -1877,6 +1925,31 @@ void AliAnalysisTaskEmcalJetHadEPpid::SetfHistPIDcounterLabels(TH1* h) const
     h->GetXaxis()->SetBinLabel(12, "TOF: Proton"); // 11.5
     h->GetXaxis()->SetBinLabel(14, "Unidentified tracks"); //13.5
 
+}
+
+//void AliAnalysisTaskEmcalJetHadEPpid::FillAnalysisSummaryHistogram() const
+void AliAnalysisTaskEmcalJetHadEPpid::SetfHistQAcounterLabels(TH1* h) const
+{
+    // fill the analysis summary histrogram, saves all relevant analysis settigns
+    h->GetXaxis()->SetBinLabel(1, "All events started"); 
+    h->GetXaxis()->SetBinLabel(2, "object check"); 
+    h->GetXaxis()->SetBinLabel(3, "aod/esd check"); 
+    h->GetXaxis()->SetBinLabel(4, "centrality check"); 
+    h->GetXaxis()->SetBinLabel(5, "zvertex check"); 
+    h->GetXaxis()->SetBinLabel(6, "list check"); 
+    h->GetXaxis()->SetBinLabel(7, "track/jet pointer check"); 
+    h->GetXaxis()->SetBinLabel(8, "tracks & jets lets than 1 check"); 
+    h->GetXaxis()->SetBinLabel(9, "after track/jet loop to get highest pt"); 
+    h->GetXaxis()->SetBinLabel(10, "accepted jets"); 
+    h->GetXaxis()->SetBinLabel(11, "jets meeting pt threshold"); 
+    h->GetXaxis()->SetBinLabel(12, "accepted tracks in events from trigger jet"); 
+    h->GetXaxis()->SetBinLabel(13, "after AliVEvent and fPIDResponse"); 
+    h->GetXaxis()->SetBinLabel(14, "events before event mixing"); 
+    h->GetXaxis()->SetBinLabel(15, "mixed events having a pool"); 
+    h->GetXaxis()->SetBinLabel(16, "event mixing: jets"); 
+    h->GetXaxis()->SetBinLabel(17, "event mixing: nMix"); 
+    h->GetXaxis()->SetBinLabel(18, "event mixing: nbackground tracks"); 
+    h->GetXaxis()->SetBinLabel(19, "event mixing: THE END"); 
 }
 
 //______________________________________________________________________
@@ -1941,6 +2014,27 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsCorr(Int_t iEntry, TString &la
       xmin = 0.;
       xmax = 0.5*pi;
       break;
+
+   case 3:
+	  label = "Z-vertex";
+      nbins = 10;
+      xmin = -10.;
+      xmax = 10.;
+	  break;
+
+   case 4:
+	  label = "Jet p_{T} corrected with Local Rho";
+      nbins = 250;
+      xmin = -50.;
+      xmax = 200.;
+	  break;
+
+   case 5:
+	  label = "Jet p_{T} corrected with Global Rho";
+      nbins = 250;
+      xmin = -50.;
+      xmax = 200.;
+	  break;
 
    }// end of switch
 } // end of Correction (ME) sparse

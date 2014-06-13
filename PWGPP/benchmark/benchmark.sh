@@ -133,10 +133,9 @@ goCPass0()
     return 1  
   fi
   
-  #runpath=${PWD}/rundir_cpass0_${runNumber}_${jobindex}
   runpath=${outputDir}
-  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t cpass0.XXXXXX)
+  [[ ${reconstructInTemporaryDir} -eq 2 ]] && runpath=${PWD}/rundir_cpass0_${runNumber}_${jobindex}
   mkdir -p ${runpath}
   if [[ ! -d ${runpath} ]]; then
     touch ${doneFileTmp} 
@@ -277,8 +276,8 @@ goCPass0()
   # [dberzano] OK this is fine!
   echo rm -f ./${chunkName}
   rm -f ./${chunkName}
-  echo "cp -R ${runpath}/* ${outputDir}"
-  cp -p -R ${runpath}/* ${outputDir}
+  echo "paranoidCp ${runpath}/* ${outputDir}"
+  paranoidCp ${runpath}/* ${outputDir}
   echo
   
   #validate CPass0
@@ -373,10 +372,9 @@ goCPass1()
     return 1
   fi
   
-  #runpath=${PWD}/rundir_cpass1_${runNumber}_${jobindex}
   runpath=${outputDir}
-  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t cpass1.XXXXXX)
+  [[ ${reconstructInTemporaryDir} -eq 2 ]] && runpath=${PWD}/rundir_cpass1_${runNumber}_${jobindex}
 
   #MC
   if [[ "${infile}" =~ galice\.root ]]; then
@@ -572,8 +570,8 @@ goCPass1()
   /bin/ls
   echo rm -f ./${chunkName}
   rm -f ./${chunkName}
-  echo "cp -R ${runpath}/* ${outputDir}"
-  cp -pf -R ${runpath}/* ${outputDir}
+  echo "paranoidCp ${runpath}/* ${outputDir}"
+  paranoidCp ${runpath}/* ${outputDir}
   echo
 
   #validate CPass1
@@ -641,10 +639,9 @@ goMergeCPass0()
 
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
 
-  #runpath=${PWD}/rundir_cpass0_Merge_${runNumber}
   runpath=${outputDir}
-  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t mergeCPass0.XXXXXX)
+  [[ ${reconstructInTemporaryDir} -eq 2 ]] && runpath=${PWD}/rundir_mergeCPass0_${runNumber}
 
   mkdir -p ${runpath}
   if [[ ! -d ${runpath} ]]; then
@@ -747,7 +744,8 @@ goMergeCPass0()
   /bin/ls
 
   #copy all to output dir
-  cp -pf -R ${runpath}/* ${outputDir}
+  echo "paranoidCp ${runpath}/* ${outputDir}"
+  paranoidCp ${runpath}/* ${outputDir}
 
   if [[ -n ${generateMC} ]]; then
     goPrintValues sim ${commonOutputPath}/meta/sim.run${runNumber}.list ${commonOutputPath}/meta/cpass0.job*.run${runNumber}.done
@@ -807,10 +805,9 @@ goMergeCPass1()
 
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
 
-  #runpath=${PWD}/rundir_cpass1_Merge_${runNumber}
   runpath=${outputDir}
-  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t mergeCPass1.XXXXXX)
+  [[ ${reconstructInTemporaryDir} -eq 2 ]] && runpath=${PWD}/rundir_mergeCPass1_${runNumber}
 
   mkdir -p ${runpath}
   if [[ ! -d ${runpath} ]]; then
@@ -950,7 +947,8 @@ goMergeCPass1()
   /bin/ls
 
   #copy all to output dir
-  cp -pf -R ${runpath}/* ${outputDir}
+  echo "paranoidCp ${runpath}/* ${outputDir}"
+  paranoidCp ${runpath}/* ${outputDir}
   
   #validate merge cpass1
   cd ${outputDir}
@@ -2393,10 +2391,10 @@ done
   cp "$logTmp" "$logDest" || rm -f "$logTmp" "$logDest"
   
   #copy output files
-  cp -r QAplots ${commonOutputPath}
-  cp *.list ${commonOutputPath}
-  cp *.root ${commonOutputPath}
-  cp *.log ${commonOutputPath}
+  paranoidCp QAplots ${commonOutputPath}
+  paranoidCp *.list ${commonOutputPath}
+  paranoidCp *.root ${commonOutputPath}
+  paranoidCp *.log ${commonOutputPath}
 
   return 0
 )
@@ -2600,6 +2598,49 @@ aliroot()
   fi
   return 0
 }
+
+paranoidCp()
+(
+  #recursively copy files and directories
+  #to avoid using find and the like as they kill
+  #the performance on some cluster file systems
+  #does not copy links to avoid problems
+  sourceFiles=("${@}")
+  destination="${sourceFiles[@]:(-1)}" #last element
+  unset sourceFiles[${#sourceFiles[@]}-1] #remove last element (dst)
+  for src in "${sourceFiles[@]}"; do
+    if [[ -f "${src}" && ! -h  "${src}" ]]; then
+      paranoidCopyFile "${src}" "${destination}"
+    elif [[ -d "${src}" && ! -h "${src}" ]]; then
+      src="${src%/}"
+      dst="${destination}/${src##*/}"
+      mkdir -p "${dst}"
+      paranoidCp "${src}"/* "${dst}"
+    fi
+  done
+)
+
+paranoidCopyFile()
+(
+  #copy a single file to a target in an existing dir
+  #repeat a few times if copy fails
+  src="${1}"
+  dst="${2}"
+  [[ -d "${dst}" ]] && dst="${dst}/${src##*/}"
+  [[ -z "${maxCopyTries}" ]] && maxCopyTries=5
+  echo "maxCopyTries=${maxCopyTries}"
+  echo "cp ${src} ${dst}"
+  cp "${src}" "${dst}"
+  i=0
+  until cmp -s "${src}" "${dst}"; do
+    echo "try: ${i}"
+    [[ -f "${dst}" ]] && rm "${dst}"
+    cp "${src}" "${dst}"
+    [[ ${i} -gt ${maxCopyTries} ]] && ret=1 && return 1
+    (( i++ ))
+  done
+  return 0
+)
 
 guessRunData()
 {

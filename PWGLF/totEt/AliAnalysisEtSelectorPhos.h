@@ -46,11 +46,11 @@ private:
     int LoadGeometry(); // load geometry
     int LoadBadMaps(); // load bad maps
     
-    AliPHOSGeometry *fGeoUtils; // geo utils
+    AliPHOSGeometry *fGeoUtils; //! geo utils
     
-    TH2I *fBadMapM2; // Bad map
-    TH2I *fBadMapM3; // Bad map
-    TH2I *fBadMapM4; // Bad map
+    TH2I *fBadMapM2; //! Bad map
+    TH2I *fBadMapM3; //! Bad map
+    TH2I *fBadMapM4; //! Bad map
 
     Bool_t fMatrixInitialized; // matrix initialized
     

@@ -5,13 +5,22 @@ void sim(Int_t nev=100)
   }
 
   AliSimulation simulator;
-  simulator.SetTriggerConfig("MUON");
   simulator.SetRunQA("MUON:ALL");
   simulator.SetRunHLT("");
 
-  simulator.SetMakeSDigits("MUON");
-  simulator.SetMakeDigits("MUON");// ITS"); // ITS needed to propagate the simulated vertex
-  simulator.SetMakeDigitsFromHits("ITS"); // ITS needed to propagate the simulated vertex
+  if ( VAR_USE_ITS_RECO )
+  {
+    simulator.SetMakeSDigits("MUON T0 VZERO FMD"); // T0 and VZERO for trigger efficiencies, FMD for diffractive studies
+    simulator.SetMakeDigitsFromHits("ITS"); // ITS needed to propagate the simulated vertex
+    simulator.SetMakeDigits("MUON T0 VZERO FMD");// ITS"); // ITS needed to propagate the simulated vertex
+  }
+  else
+  {
+    simulator.SetTriggerConfig("MUON");
+    simulator.SetMakeSDigits("MUON");
+    simulator.SetMakeDigits("MUON");// ITS"); // ITS needed to propagate the simulated vertex
+  }
+  
 
   simulator.SetDefaultStorage(VAR_OCDB_PATH);
   
@@ -29,10 +38,13 @@ void sim(Int_t nev=100)
     // Mag.field from OCDB
     simulator.UseMagFieldFromGRP();
 
-    simulator.UseVertexFromCDB();  
+    if ( VAR_USE_ITS_RECO )
+    {
+      simulator.UseVertexFromCDB();
+    }
   }
   
-  // The rest
+   // The rest
   TStopwatch timer;
   timer.Start();
   simulator.Run(nev);

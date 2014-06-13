@@ -5,24 +5,24 @@
 //
 //   ------ Arguments
 //   --  icasType          =  0) Xi- 1) Xi+ 2) Omega- 3) Omega+
-//   --  collidingsystem   =  0) PbPb  1) pp
+//   --  collidingsystem   =  0) PbPb  1) pp  2) pPb
 //   --  fileDir           =  "Input file directory"
 //   --  filein            =  "Input file name"
 //
 //   ------ QATask output content
 //   The output produced by the QATask is a CFContainer with 4 steps and 21 variables.
 //   The meaning of each variable within the container are listed here:
-//   --  0   = Max DCA Cascade Daughters                 pp: 2.0     PbPb: 0.3
-//   --  1   = Min DCA Bach To PV                        pp: 0.01    PbPb: 0.03
-//   --  2   = Min Cascade Cosine Of PA                  pp: 0.98    PbPb: 0.999
-//   --  3   = Min Cascade Radius Fid. Vol.              pp: 0.2     PbPb: 0.9
-//   --  4   = Window Invariant Mass Lambda              pp: 0.008   PbPb: 0.0008
-//   --  5   = Max DCA V0 Daughters                      pp: 1.5     PbPb: 1.0
-//   --  6   = Min V0 Cosine Of PA To PV                 pp: pT dep. PbPb: 0.98
-//   --  7   = Min V0 Radius Fid. Vol.                   pp: 0.2     PbPb: 0.9
-//   --  8   = Min DCA V0 To PV                          pp: 0.01    PbPb: 0.05
-//   --  9   = Min DCA Pos To PV                         pp: 0.05    PbPb: 0.1
-//   --  10  = Min DCA Neg To PV                         pp: 0.05    PbPb: 0.1
+//   --  0   = Max DCA Cascade Daughters                 pp: 2.0     PbPb: 0.3     pPb: 2.0
+//   --  1   = Min DCA Bach To PV                        pp: 0.01    PbPb: 0.03    pPb: 0.03
+//   --  2   = Min Cascade Cosine Of PA                  pp: 0.98    PbPb: 0.999   pPb: 0.95
+//   --  3   = Min Cascade Radius Fid. Vol.              pp: 0.2     PbPb: 0.9     pPb: 0.4
+//   --  4   = Window Invariant Mass Lambda              pp: 0.008   PbPb: 0.0008  pPb: 0.010
+//   --  5   = Max DCA V0 Daughters                      pp: 1.5     PbPb: 1.0     pPb: 2.0
+//   --  6   = Min V0 Cosine Of PA To PV                 pp: pT dep. PbPb: 0.98    pPb: 0.95
+//   --  7   = Min V0 Radius Fid. Vol.                   pp: 0.2     PbPb: 0.9     pPb: 1.0
+//   --  8   = Min DCA V0 To PV                          pp: 0.01    PbPb: 0.05    pPb: 0.05
+//   --  9   = Min DCA Pos To PV                         pp: 0.05    PbPb: 0.1     pPb: 0.02
+//   --  10  = Min DCA Neg To PV                         pp: 0.05    PbPb: 0.1     pPb: 0.02
 //   --  11  = Invariant Mass distribution for Xi
 //   --  12  = Invariant Mass distribution for Omega
 //   --  13  = Transverse Momentum distribution
@@ -56,11 +56,10 @@
 //
 //   -- Third Canvas: InvMass, Transverse momentum, Cascade proper length, V0 proper length
 //
-//   In the end, only for thr PbPb collision the centrality distribution and the
-//   track multiplicity distribution are sored.
+//   -- Fourth Canvas: check on the invariant mass distribution
 //
-//   -- Fourth Canvas: Centrality, track multiplicity
-//
+//   -- Fifth Canvas: Centrality, track multiplicity
+//      (Only for PbPb collisions)
 //
 //////////////////////////////////////////////////////
 
@@ -69,37 +68,41 @@
 
 class AliCFContainer;
 
-void PostProcessQAMultistrange(Int_t   icasType        = 0,                             // 0) Xi- 1) Xi+ 2) Omega- 3) Omega+
-                               Int_t   collidingsystem = 0,                             // 0) PbPb  1) pp
-                               Char_t *fileDir         = "./",                          // Input file directory
-                               Char_t *filein          = "AnalysisResults_AOD.root"     // Input file name
+void PostProcessQAMultistrange(Int_t   icasType        = 2,                             // 0) Xi- 1) Xi+ 2) Omega- 3) Omega+
+                               Int_t   collidingsystem = 1,                             // 0) PbPb  1) pp 2) pPb
+                               Char_t *fileDir         = ".",                           // Input file directory
+                               Char_t *filein          = "AnalysisResults.root"         // Input file name
                               ) {
 
 
-      /////////////
-      gStyle->SetOptStat(1110);
-      gStyle->SetOptStat(kFALSE);
-      gStyle->SetOptTitle(kFALSE);
-      gStyle->SetFrameLineWidth(2.5);
-      gStyle->SetCanvasColor(0);
-      gStyle->SetPadColor(0);
-      gStyle->SetHistLineWidth(2.5);
-      gStyle->SetLabelSize(0.05, "x");
-      gStyle->SetLabelSize(0.05, "y");
-      gStyle->SetTitleSize(0.05, "x");
-      gStyle->SetTitleSize(0.05, "y");
-      gStyle->SetTitleOffset(1.1, "x");
-      gStyle->SetPadBottomMargin(0.14);
-      gSystem->Load("libANALYSIS.so");
-      gSystem->Load("libANALYSISalice.so");
-      gSystem->Load("libCORRFW.so");
+     //___________________
+     //DEFINE DRAW OPTIONS
+     gStyle->SetOptStat(1110);
+     gStyle->SetOptStat(kFALSE);
+     gStyle->SetOptTitle(kFALSE);
+     gStyle->SetFrameLineWidth(2.5);
+     gStyle->SetCanvasColor(0);
+     gStyle->SetPadColor(0);
+     gStyle->SetHistLineWidth(2.5);
+     gStyle->SetLabelSize(0.05, "x");
+     gStyle->SetLabelSize(0.05, "y");
+     gStyle->SetTitleSize(0.05, "x");
+     gStyle->SetTitleSize(0.05, "y");
+     gStyle->SetTitleOffset(1.1, "x");
+     gStyle->SetPadBottomMargin(0.14);
 
- 
+     //_______________________
+     //SOURCE USEFUL LIBRARIES
+     gSystem->Load("libANALYSIS.so");
+     gSystem->Load("libANALYSISalice.so");
+     gSystem->Load("libCORRFW.so");
 
+     //_________________________________
+     //SOURCE THE FILE AND THE CONTAINER
      TFile *f1 = new TFile(Form("%s/%s",fileDir,filein));
      AliCFContainer *cf = (AliCFContainer*) (f1->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeCuts"));
    
-
+     //____________
      //DEEFINE TEXT
      TLatex* t1 = new TLatex(0.6,0.55,"#color[3]{OK!!}");
      t1->SetTextSize(0.1);
@@ -124,7 +127,8 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
      tpdgmass->SetTextSize(0.07);
      tpdgmass->SetNDC();
      tpdgmass->SetTextColor(2);
- 
+
+     //________________________________ 
      //DEFINE 1st CANVAS AND DRAW PLOTS
      TCanvas *c1 = new TCanvas("c1","",1200,800);
      c1->Divide(2,3); 
@@ -136,6 +140,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        Double_t x0;
        if      (collidingsystem == 0) x0 = 0.3;
        else if (collidingsystem == 1) x0 = 2.0;
+       else if (collidingsystem == 2) x0 = 2.0;
        TLine *line0 = new TLine(x0,0.,x0,hvar0->GetBinContent(hvar0->GetMaximumBin()));
        line0->SetLineColor(kRed);
        line0->SetLineStyle(9);
@@ -154,6 +159,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        Double_t x1;
        if      (collidingsystem == 0) x1 = 0.03;
        else if (collidingsystem == 1) x1 = 0.01;
+       else if (collidingsystem == 2) x1 = 0.03;
        TLine *line1 = new TLine(x1,0.,x1,hvar1->GetBinContent(hvar1->GetMaximumBin()));
        line1->SetLineColor(kRed);
        line1->SetLineStyle(9);
@@ -172,6 +178,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        Double_t x2;
        if      (collidingsystem == 0) x2 = 0.999;
        else if (collidingsystem == 1) x2 = 0.98;
+       else if (collidingsystem == 2) x2 = 0.95;
        TLine *line2 = new TLine(x2,0.,x2,hvar2->GetBinContent(hvar2->GetMaximumBin()));
        line2->SetLineColor(kRed);
        line2->SetLineStyle(9);
@@ -190,6 +197,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        Double_t x3;
        if      (collidingsystem == 0) x3 = 0.9;
        else if (collidingsystem == 1) x3 = 0.2;
+       else if (collidingsystem == 2) x3 = 0.4;
        TLine *line3 = new TLine(x3,0.,x3,hvar3->GetBinContent(hvar3->GetMaximumBin()));
        line3->SetLineColor(kRed);
        line3->SetLineStyle(9);
@@ -208,7 +216,9 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        line41->SetLineStyle(9);
        line41->SetLineWidth(2.0);
        line41->Draw("same");
-       Double_t x42 = 1.115 - 0.008;
+       Double_t x42;
+       if      (collidingsystem < 2)  x42 = 1.115 - 0.008;
+       else if (collidingsystem == 2) x42 = 1.115 - 0.010;
        TLine *line42 = new TLine(x42,0.,x42,hvar4->GetBinContent(hvar4->GetMaximumBin()));
        line42->SetLineColor(kRed);
        line42->SetLineStyle(9);
@@ -226,6 +236,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        Double_t x5;
        if      (collidingsystem == 0) x5 = 1.0;
        else if (collidingsystem == 1) x5 = 1.5;
+       else if (collidingsystem == 2) x5 = 2.0;
        TLine *line5 = new TLine(x5,0.,x5,hvar5->GetBinContent(hvar5->GetMaximumBin()));
        line5->SetLineColor(kRed);
        line5->SetLineStyle(9);
@@ -236,8 +247,8 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
           else         { cout<<"The cut is NOT OK!!"<<endl; t2->Draw(); }
      c1->SaveAs("fig_lf_Multistrange.pdf(");
     
-
-     //DEFINE 2st CANVAS AND DRAW PLOTS
+     //________________________________
+     //DEFINE 2nd CANVAS AND DRAW PLOTS
      TCanvas *c2 = new TCanvas("c2","",1200,800);
      c2->Divide(2,3);
        //Pad 1: V0 cosine of Pointing Angle to PV
@@ -256,6 +267,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        Double_t x7;
        if      (collidingsystem == 0) x7 = 0.9;
        else if (collidingsystem == 1) x7 = 0.2;
+       else if (collidingsystem == 2) x7 = 0.4;
        TLine *line7 = new TLine(x7,0.,x7,hvar7->GetBinContent(hvar7->GetMaximumBin()));
        line7->SetLineColor(kRed);
        line7->SetLineStyle(9);
@@ -273,6 +285,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        Double_t x8;
        if      (collidingsystem == 0) x8 = 0.05;
        else if (collidingsystem == 1) x8 = 0.01;
+       else if (collidingsystem == 2) x8 = 0.05;
        TLine *line8 = new TLine(x8,0.,x8,hvar8->GetBinContent(hvar8->GetMaximumBin()));
        line8->SetLineColor(kRed);
        line8->SetLineStyle(9);
@@ -290,6 +303,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        Double_t x9;
        if      (collidingsystem == 0) x9 = 0.1;
        else if (collidingsystem == 1) x9 = 0.05;
+       else if (collidingsystem == 2) x9 = 0.02;
        TLine *line9 = new TLine(x9,0.,x9,hvar9->GetBinContent(hvar9->GetMaximumBin()));
        line9->SetLineColor(kRed);
        line9->SetLineStyle(9);
@@ -307,6 +321,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        Double_t x10;
        if      (collidingsystem == 0) x10 = 0.1;
        else if (collidingsystem == 1) x10 = 0.05;
+       else if (collidingsystem == 2) x10 = 0.02;
        TLine *line10 = new TLine(x10,0.,x10,hvar10->GetBinContent(hvar10->GetMaximumBin()));
        line10->SetLineColor(kRed);
        line10->SetLineStyle(9);
@@ -315,7 +330,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
           Bool_t check_10 = checkUnderTheLimit(hvar10, x10);
           if (check_10) { cout<<"The cut is OK!!"<<endl; t1->Draw(); }
           else         { cout<<"The cut is NOT OK!!"<<endl; t2->Draw(); }
-       //Pad 6: V0 cosine of Pointing Angle to XiV
+       //Pad 6: V0 cosine of Pointing Angle to Xi vtx
        c2->cd(6);
        gPad->SetLogy();
        TH1D *hvar20 = cf->ShowProjection(18,icasType);
@@ -324,7 +339,8 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        hvar20->Draw("histo");
      c2->SaveAs("fig_lf_Multistrange.pdf");
 
-     //DEFINE 3st CANVAS AND DRAW PLOTS
+     //________________________________
+     //DEFINE 3rd CANVAS AND DRAW PLOTS
      TCanvas *c3 = new TCanvas("c3","",1200,800);
      c3->Divide(2,3);
        //Pad 1: InvMass
@@ -361,90 +377,92 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        hvar19 = cf->ShowProjection(17,icasType);
        hvar19->GetXaxis()->SetRangeUser(0.,90.);
        hvar19->Draw("histo");
-      //Pad 6
-      // empty 
+       //Pad 6
+       // empty 
      c3->SaveAs("fig_lf_Multistrange.pdf");
 
-    
-     //DEFINE 4st CANVAS AND DRAW PLOTS
-    TCanvas *c4 = new TCanvas("c4","",600,400);
-    c4->Divide(2,1);
-      //Pad1: invariant mass fit
-      c4->cd(1);
-      TH1D *hvar18 = cf->ShowProjection(11+icasType/2,icasType);
-      hvar18->Draw("histo");
-       // - SOME PARAMETER VALUE
-       Bool_t kfitgauss = kFALSE;
-       Bool_t kfitleft  = kFALSE;
-       Bool_t kfitright = kFALSE;
-       Int_t  ptbinNarrowY = 0;
-       if (icasType < 2) ptbinNarrowY = 10;   // 6;
-       else              ptbinNarrowY =  3;   // 2;
-       // - SOME DEFINITIONS
-       Float_t lowlimmass;
-       Float_t uplimmass;
-       Float_t lowgausslim;
-       Float_t upgausslim;
-       if (icasType==0||icasType==1) {
-           lowlimmass=1.30;
-           uplimmass=1.34;
-           lowgausslim=1.312;
-           upgausslim=1.332;
-       } else {
-           lowlimmass=1.645;
-           uplimmass=1.70;
-           lowgausslim=1.668;
-           upgausslim=1.678;
-       }
-       TF1*  fitinvmass = new TF1("fitinvmass","gaus(0)+pol2(3)",lowlimmass,uplimmass);
-       fitinvmass->SetParName(0, "cnstntG");
-       fitinvmass->SetParName(1, "meanG");
-       fitinvmass->SetParName(2, "sigmaG");
-       fitinvmass->SetParLimits(0,0.,500000.);
-       if (icasType==0||icasType==1) {
-           fitinvmass->SetParameter(1, 1.32171);
-           fitinvmass->SetParLimits(1, 1.31,1.33);
-           fitinvmass->SetParLimits(2,0.001,0.005);
-       } else {
-           fitinvmass->SetParameter(1, 1.67245);
-           fitinvmass->SetParLimits(1, 1.664,1.68);
-           fitinvmass->SetParLimits(2,0.0008,0.006);
-       }
-       hvar18->Fit("fitinvmass","rimeN");
-       fitinvmass->SetLineColor(kRed);
-       fitinvmass->Draw("same");
-       Float_t meanGauss   = fitinvmass->GetParameter(1);
-       Float_t sigmaGauss  = fitinvmass->GetParameter(2);
+     //________________________________ 
+     //DEFINE 4th CANVAS AND DRAW PLOTS
+     TCanvas *c4 = new TCanvas("c4","",600,400);
+     c4->Divide(2,1);
+       //Pad1: invariant mass fit
+       c4->cd(1);
+       TH1D *hvar18 = cf->ShowProjection(11+icasType/2,icasType);
+       hvar18->Draw("histo");
+        // - SOME PARAMETER VALUE
+        Bool_t kfitgauss = kFALSE;
+        Bool_t kfitleft  = kFALSE;
+        Bool_t kfitright = kFALSE;
+        Int_t  ptbinNarrowY = 0;
+        if (icasType < 2) ptbinNarrowY = 10;   // 6;
+        else              ptbinNarrowY =  3;   // 2;
+        // - SOME DEFINITIONS
+        Float_t lowlimmass;
+        Float_t uplimmass;
+        Float_t lowgausslim;
+        Float_t upgausslim;
+        if (icasType==0||icasType==1) {
+            lowlimmass=1.30;
+            uplimmass=1.34;
+            lowgausslim=1.312;
+            upgausslim=1.332;
+        } else {
+            lowlimmass=1.645;
+            uplimmass=1.70;
+            lowgausslim=1.668;
+            upgausslim=1.678;
+        }
+        TF1*  fitinvmass = new TF1("fitinvmass","gaus(0)+pol2(3)",lowlimmass,uplimmass);
+        fitinvmass->SetParName(0, "cnstntG");
+        fitinvmass->SetParName(1, "meanG");
+        fitinvmass->SetParName(2, "sigmaG");
+        fitinvmass->SetParLimits(0,0.,500000.);
+        if (icasType==0||icasType==1) {
+            fitinvmass->SetParameter(1, 1.32171);
+            fitinvmass->SetParLimits(1, 1.31,1.33);
+            fitinvmass->SetParLimits(2,0.001,0.005);
+        } else {
+            fitinvmass->SetParameter(1, 1.67245);
+            fitinvmass->SetParLimits(1, 1.664,1.68);
+            fitinvmass->SetParLimits(2,0.0008,0.006);
+        }
+        hvar18->Fit("fitinvmass","rimeN");
+        fitinvmass->SetLineColor(kRed);
+        fitinvmass->Draw("same");
+        Float_t meanGauss   = fitinvmass->GetParameter(1);
+        Float_t sigmaGauss  = fitinvmass->GetParameter(2);
        cout<<"Mean: "<<meanGauss<<endl;
        cout<<"Sigma: "<<sigmaGauss<<endl;
-     //Pad2: Text
-      c4->cd(2);
+       //Pad2: Text
+       c4->cd(2);
        Float_t refwidth = 0.002;
-      TPaveText *pave1 = new TPaveText(0.05,0.3,0.95,0.5);
-      pave1->SetFillColor(0);
-      pave1->SetTextSize(0.04);
-      pave1->SetTextAlign(12);
-      if (icasType < 2) pave1->AddText("PDG mass: 1.32171 GeV/c^{2}");
-      else              pave1->AddText("PDG mass: 1.67245 GeV/c^{2}");
-      pave1->AddText(Form("#color[1]{Mass form Fit: %.5f #pm %.5f GeV/c^{2}}",meanGauss,sigmaGauss));
-      if (sigmaGauss > refwidth - 0.0003 && sigmaGauss < refwidth + 0.0003) pave1->AddText("#color[3]{OK!! The width is compatible with standard.}");
-      else                                                                  pave1->AddText("#color[2]{NOT OK!! Problem.}");
-      pave1->Draw();
-      cout<<"   "<<refwidth - 0.0003<<"<"<<sigmaGauss<<"<"<<refwidth + 0.0003<<endl;
-      c4->SaveAs("fig_lf_Multistrange.pdf");   
- 
-     //DEFINE 5st CANVAS AND DRAW PLOTS
+       if (icasType > 1) refwidth = 0.0025;
+       TPaveText *pave1 = new TPaveText(0.05,0.3,0.95,0.5);
+       pave1->SetFillColor(0);
+       pave1->SetTextSize(0.04);
+       pave1->SetTextAlign(12);
+       if (icasType < 2) pave1->AddText("PDG mass: 1.32171 GeV/c^{2}");
+       else              pave1->AddText("PDG mass: 1.67245 GeV/c^{2}");
+       pave1->AddText(Form("#color[1]{Mass form Fit: %.5f #pm %.5f GeV/c^{2}}",meanGauss,sigmaGauss));
+       if (sigmaGauss > refwidth - 0.0003 && sigmaGauss < refwidth + 0.0003) pave1->AddText("#color[3]{OK!! The width is compatible with standard.}");
+       else                                                                  pave1->AddText("#color[2]{NOT OK!! Problem.}");
+       pave1->Draw();
+       cout<<"   "<<refwidth - 0.0003<<"<"<<sigmaGauss<<"<"<<refwidth + 0.0003<<endl;
+     c4->SaveAs("fig_lf_Multistrange.pdf");   
+
+     //________________________________ 
+     //DEFINE 5th CANVAS AND DRAW PLOTS
      if (collidingsystem == 0) {
          TCanvas *c5 = new TCanvas("c5","",1200,270);
          c5->Divide(2,1);
-            //Pad 1: centrality
-            c5->cd(1);
-            TH1D *hvar16 = cf->ShowProjection(19,icasType);
-            hvar16->Draw("histo");
-            //Pad 2: track multiplicity
-            c5->cd(2);
-            TH1D *hvar17 = cf->ShowProjection(20,icasType);
-            hvar17->Draw("histo");
+           //Pad 1: centrality
+           c5->cd(1);
+           TH1D *hvar16 = cf->ShowProjection(19,icasType);
+           hvar16->Draw("histo");
+           //Pad 2: track multiplicity
+           c5->cd(2);
+           TH1D *hvar17 = cf->ShowProjection(20,icasType);
+           hvar17->Draw("histo");
          c5->SaveAs("fig_lf_Multistrange.pdf)");
      }
     
@@ -453,7 +471,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
 
 
 
-
+//______________________
 Bool_t checkUnderTheLimit(TH1D *lHist, Double_t limit) {
 
       Int_t binlimit = lHist->FindBin(limit);
@@ -468,7 +486,7 @@ Bool_t checkUnderTheLimit(TH1D *lHist, Double_t limit) {
 
 }
 
-
+//______________________
 Bool_t checkOverTheLimit(TH1D *lHist, Double_t limit) {
 
       Int_t binlimit = lHist->FindBin(limit);

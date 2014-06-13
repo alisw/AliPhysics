@@ -200,53 +200,100 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
       cutarray[ 1] = "0000012002092970028280400000"; mesonCutArray[1] = "01525065000000"; //variation psi pair 0.2
       cutarray[ 2] = "0000012002092970028250000000"; mesonCutArray[2] = "01525065000000"; //variation cosPA -1
       cutarray[ 3] = "0000012002092970028250400000"; mesonCutArray[3] = "01525055000000"; //variation alpha 0.75
+	} else if (trainConfig == 22) {
+      cutarray[ 0] = "0004011002092970028250400000"; mesonCutArray[0] = "01525065000000"; // trigger kTRD
+      cutarray[ 1] = "0005011002092970028250400000"; mesonCutArray[1] = "01525065000000"; // trigger kEMC
+      cutarray[ 2] = "0006011002092970028250400000"; mesonCutArray[2] = "01525065000000"; // trigger kPHI
+      cutarray[ 3] = "0007011002092970028250400000"; mesonCutArray[3] = "01525065000000"; // trigger kHighMult
+	} else if (trainConfig == 23) {
+      cutarray[ 0] = "0008011002092970028250400000"; mesonCutArray[0] = "01525065000000"; // trigger kEMCEGA
+      cutarray[ 1] = "0009011002092970028250400000"; mesonCutArray[1] = "01525065000000"; // trigger kEMCEJE
+      cutarray[ 2] = "0000011002092970028250400000"; mesonCutArray[2] = "01525065000000"; // minimum bias
+      cutarray[ 3] = "0001111002092970028250400000"; mesonCutArray[3] = "01525065000000"; // trigger kINT8
+	} else if (trainConfig == 24) {
+      cutarray[ 0] = "0004211002092970028250400000"; mesonCutArray[0] = "01525065000000"; // trigger kTRD CINT8 HEE
+      cutarray[ 1] = "0004411002092970028250400000"; mesonCutArray[1] = "01525065000000"; // trigger kTRD CINT8 HSE
+      cutarray[ 2] = "0004611002092970028250400000"; mesonCutArray[2] = "01525065000000"; // trigger kTRD CINT8 HJE
+      cutarray[ 3] = "0004811002092970028250400000"; mesonCutArray[3] = "01525065000000"; // trigger kTRD CINT8 HQU
+	} else if (trainConfig == 25) {
+      cutarray[ 0] = "0004111002092970028250400000"; mesonCutArray[0] = "01525065000000"; // trigger kTRD CINT7 HEE
+      cutarray[ 1] = "0004311002092970028250400000"; mesonCutArray[1] = "01525065000000"; // trigger kTRD CINT7 HSE
+      cutarray[ 2] = "0004511002092970028250400000"; mesonCutArray[2] = "01525065000000"; // trigger kTRD CINT7 HJE
+      cutarray[ 3] = "0004711002092970028250400000"; mesonCutArray[3] = "01525065000000"; // trigger kTRD CINT7 HQU
+	} else if (trainConfig == 26) {
+      cutarray[ 0] = "0005211002092970028250400000"; mesonCutArray[0] = "01525065000000"; // trigger kEMC7
+      cutarray[ 1] = "0005311002092970028250400000"; mesonCutArray[1] = "01525065000000"; // trigger kEMC8
+      cutarray[ 2] = "0006211002092970028250400000"; mesonCutArray[2] = "01525065000000"; // trigger kPHI7
+      cutarray[ 3] = "0006311002092970028250400000"; mesonCutArray[3] = "01525065000000"; // trigger kPHI8
+	} else if (trainConfig == 27) {
+      cutarray[ 0] = "0005111002092970028250400000"; mesonCutArray[0] = "01525065000000"; // trigger kEMC1
+      cutarray[ 1] = "0007111002092970028250400000"; mesonCutArray[1] = "01525065000000"; // trigger kSHM1
+      cutarray[ 2] = "0007211002092970028250400000"; mesonCutArray[2] = "01525065000000"; // trigger kSHM7
+      cutarray[ 3] = "0007311002092970028250400000"; mesonCutArray[3] = "01525065000000"; // trigger kSHM8
+	} else if (trainConfig == 28) {
+      cutarray[ 0] = "0008111002092970028250400000"; mesonCutArray[0] = "01525065000000"; // trigger kEMCEGA + CINT7
+      cutarray[ 1] = "0008211002092970028250400000"; mesonCutArray[1] = "01525065000000"; // trigger kEMCEGA + CINT8
+      cutarray[ 2] = "0008311002092970028250400000"; mesonCutArray[2] = "01525065000000"; // trigger kEMCEG1 + CINT7
+      cutarray[ 3] = "0008411002092970028250400000"; mesonCutArray[3] = "01525065000000"; // trigger kEMCEG1 + CINT8
+	} else if (trainConfig == 29) {
+      cutarray[ 0] = "0008511002092970028250400000"; mesonCutArray[0] = "01525065000000"; // trigger kEMCEG2 + CINT7
+      cutarray[ 1] = "0008611002092970028250400000"; mesonCutArray[1] = "01525065000000"; // trigger kEMCEG2 + CINT8
+      cutarray[ 2] = "0009111002092970028250400000"; mesonCutArray[2] = "01525065000000"; // trigger kEMCEJE + CINT7
+      cutarray[ 3] = "0009211002092970028250400000"; mesonCutArray[3] = "01525065000000"; // trigger kEMCEJE + CINT8
+	} else if (trainConfig == 30) {
+      cutarray[ 0] = "0009311002092970028250400000"; mesonCutArray[0] = "01525065000000"; // trigger kEMCEJ1 + CINT7
+      cutarray[ 1] = "0009411002092970028250400000"; mesonCutArray[1] = "01525065000000"; // trigger kEMCEJ1 + CINT8
+      cutarray[ 2] = "0009511002092970028250400000"; mesonCutArray[2] = "01525065000000"; // trigger kEMCEJ2 + CINT7
+      cutarray[ 3] = "0009611002092970028250400000"; mesonCutArray[3] = "01525065000000"; // trigger kEMCEJ2 + CINT8		
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
    }
 
-   TList *ConvCutList = new TList();
-   TList *MesonCutList = new TList();
+	TList *ConvCutList = new TList();
+	TList *MesonCutList = new TList();
 
-   TList *HeaderList = new TList();
-   TObjString *Header2 = new TObjString("BOX");
-   HeaderList->Add(Header2);
+	TList *HeaderList = new TList();
+	TObjString *Header2 = new TObjString("BOX");
+	HeaderList->Add(Header2);
 
-   ConvCutList->SetOwner(kTRUE);
-   AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];
-   MesonCutList->SetOwner(kTRUE);
-   AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
+	ConvCutList->SetOwner(kTRUE);
+	AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];
+	MesonCutList->SetOwner(kTRUE);
+	AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 
 
-   for(Int_t i = 0; i<numberOfCuts; i++){
-      analysisCuts[i] = new AliConversionCuts();
-      analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
-      ConvCutList->Add(analysisCuts[i]);
+	for(Int_t i = 0; i<numberOfCuts; i++){
+		analysisCuts[i] = new AliConversionCuts();
+		analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
+		ConvCutList->Add(analysisCuts[i]);
+		
+		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
+		
+		analysisMesonCuts[i] = new AliConversionMesonCuts();
+		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+		MesonCutList->Add(analysisMesonCuts[i]);
+		analysisMesonCuts[i]->SetFillCutHistograms("");
+		analysisCuts[i]->SetAcceptedHeader(HeaderList);
+		
+	}
 
-      analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-      analysisMesonCuts[i] = new AliConversionMesonCuts();
-      analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
-      MesonCutList->Add(analysisMesonCuts[i]);
-      analysisMesonCuts[i]->SetFillCutHistograms("");
-      analysisCuts[i]->SetAcceptedHeader(HeaderList);
-   }
+	task->SetConversionCutList(numberOfCuts,ConvCutList);
+	task->SetMesonCutList(numberOfCuts,MesonCutList);
+	task->SetMoveParticleAccordingToVertex(kTRUE);
+	task->SetDoMesonAnalysis(kTRUE);
+	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
+	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 
-   task->SetConversionCutList(numberOfCuts,ConvCutList);
-   task->SetMesonCutList(numberOfCuts,MesonCutList);
-   task->SetMoveParticleAccordingToVertex(kTRUE);
-   task->SetDoMesonAnalysis(kTRUE);
-   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+	//connect containers
+	AliAnalysisDataContainer *coutput =
+		mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
+							AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
 
-   //connect containers
-   AliAnalysisDataContainer *coutput =
-      mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
-                           AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
+	mgr->AddTask(task);
+	mgr->ConnectInput(task,0,cinput);
+	mgr->ConnectOutput(task,1,coutput);
 
-   mgr->AddTask(task);
-   mgr->ConnectInput(task,0,cinput);
-   mgr->ConnectOutput(task,1,coutput);
-
-   return;
+	return;
 
 }

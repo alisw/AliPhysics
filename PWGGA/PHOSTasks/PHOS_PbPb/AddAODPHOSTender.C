@@ -32,6 +32,10 @@ AliPHOSTenderTask* AddAODPHOSTender(const char* taskName = "PHOSTenderTask",
   if(isMC) //handle MC data
     PHOSSupply->SetMCProduction(options) ;
 
+
+  //Need MagFeild
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
+
   mgr->AddTask(tenderTask);
 
   // Connect input/output

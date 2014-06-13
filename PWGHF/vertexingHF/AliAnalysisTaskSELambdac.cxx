@@ -55,61 +55,98 @@
 #include "AliInputEventHandler.h"
 #include "AliPID.h"
 #include "AliNormalizationCounter.h"
-
+#include "AliVertexingHFUtils.h"
 ClassImp(AliAnalysisTaskSELambdac)
 
 
 //________________________________________________________________________
-  AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac():
-    AliAnalysisTaskSE(),
-    fOutput(0), 
-    fHistNEvents(0),
-    fhChi2(0),
-    fhMassPtGreater3(0),
-    fhMassPtGreater3TC(0),
-    fhMassPtGreater3Kp(0),
-    fhMassPtGreater3KpTC(0),
-    fhMassPtGreater3Lpi(0),
-    fhMassPtGreater3LpiTC(0),
-    fhMassPtGreater3Dk(0),
-    fhMassPtGreater3DkTC(0),
-    fhMassPtGreater33Pr(0),
-    fhMassPtGreater33PrTC(0),
-    fhMassPtGreater2(0),
-    fhMassPtGreater2TC(0),
-    fhMassPtGreater2Kp(0),
-    fhMassPtGreater2KpTC(0),
-    fhMassPtGreater2Lpi(0),
-    fhMassPtGreater2LpiTC(0),
-    fhMassPtGreater2Dk(0),
-    fhMassPtGreater2DkTC(0),
-    fhMassPtGreater23Pr(0),
-    fhMassPtGreater23PrTC(0),
-    fNtupleLambdac(0),
-    fUpmasslimit(2.486),
-    fLowmasslimit(2.086),
-    fNPtBins(0),
-    fRDCutsAnalysis(0),
-    fRDCutsProduction(0),
-    fListCuts(0),
-    fFillNtuple(kFALSE),
-    fReadMC(kFALSE),
-    fMCPid(kFALSE),
-    fRealPid(kFALSE),
-    fResPid(kTRUE),
-    fUseKF(kFALSE),
-    fAnalysis(kFALSE),
-    fVHF(0),
-    fFillVarHists(kFALSE),
-    fMultiplicityHists(kFALSE),
-    fPriorsHists(kFALSE),
-    fNentries(0),
-    fOutputMC(0),
-    fAPriori(0),
-    fMultiplicity(0),
-    //fUtilPid(0),
-    fPIDResponse(0),
-    fCounter(0)
+AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac():
+AliAnalysisTaskSE(),
+  fOutput(0), 
+  fHistNEvents(0),
+  fhChi2(0),
+  fhMassPtGreater3(0),
+  fhMassPtGreater3TC(0),
+  fhMassPtGreater3Kp(0),
+  fhMassPtGreater3KpTC(0),
+  fhMassPtGreater3Lpi(0),
+  fhMassPtGreater3LpiTC(0),
+  fhMassPtGreater3Dk(0),
+  fhMassPtGreater3DkTC(0),
+  fhMassPtGreater33Pr(0),
+  fhMassPtGreater33PrTC(0),
+  fhMassPtGreater2(0),
+  fhMassPtGreater2TC(0),
+  fhMassPtGreater2Kp(0),
+  fhMassPtGreater2KpTC(0),
+  fhMassPtGreater2Lpi(0),
+  fhMassPtGreater2LpiTC(0),
+  fhMassPtGreater2Dk(0),
+  fhMassPtGreater2DkTC(0),
+  fhMassPtGreater23Pr(0),
+  fhMassPtGreater23PrTC(0),
+  fhEta3Prong(0),
+  fhEta3ProngAcc(0),
+  fhEta3ProngProd(0),
+  fhEta3ProngAn(0),
+  fhRap3Prong(0),
+  fhRap3ProngAcc(0),
+  fhRap3ProngProd(0),
+  fhRap3ProngAn(0),
+  fhSelectBit(0),
+  fhProtonPtProngLcPt(0),
+  fhBProtonPtProngLcPt(0),
+  fhProtond0ProngLcPt(0),
+  fhBProtond0ProngLcPt(0),
+  fhKaonPtProngLcPt(0),
+  fhBKaonPtProngLcPt(0),
+  fhKaond0ProngLcPt(0),
+  fhBKaond0ProngLcPt(0),
+  fhPionPtProngLcPt(0),
+  fhBPionPtProngLcPt(0),
+  fhPiond0ProngLcPt(0),
+  fhBPiond0ProngLcPt(0),
+  fhDist12PrimLcPt(0),
+  fhBDist12PrimLcPt(0),
+  fhSigmaVertLcPt(0),
+  fhBSigmaVertLcPt(0),
+  fhdcasLcPt(0),
+  fhBdcasLcPt(0),
+  fhCosPointingAngleLcPt(0),
+  fhBCosPointingAngleLcPt(0),
+  fhDecayLengthLcPt(0),
+  fhBDecayLengthLcPt(0),
+  fhSum2LcPt(0),
+  fhBSum2LcPt(0),
+  fhPtMaxLcPt(0),
+  fhBPtMaxLcPt(0),
+  fNtupleLambdac(0),
+  fUpmasslimit(2.486),
+  fLowmasslimit(2.086),
+  fNPtBins(0),
+  fRDCutsAnalysis(0),
+  fRDCutsProduction(0),
+  fListCuts(0),
+  fFillNtuple(kFALSE),
+  fReadMC(kFALSE),
+  fMCPid(kFALSE),
+  fRealPid(kFALSE),
+  fResPid(kTRUE),
+  fUseKF(kFALSE),
+  fAnalysis(kFALSE),
+  fVHF(0),
+  fFillVarHists(kFALSE),
+  fMultiplicityHists(kFALSE),
+  fPriorsHists(kFALSE),
+  fLcCut(kFALSE),
+  fLcPIDCut(kFALSE),    
+  fNentries(0),
+  fOutputMC(0),
+  fAPriori(0),
+  fMultiplicity(0),
+//fUtilPid(0),
+  fPIDResponse(0),
+  fCounter(0)
 {
   // Default constructor
   Float_t ptlims[7]={0.,2.,4.,6.,8.,12.,24.};
@@ -155,6 +192,41 @@ AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac(const char *name,Bool_t fillN
   fhMassPtGreater2DkTC(0),
   fhMassPtGreater23Pr(0),
   fhMassPtGreater23PrTC(0),
+  fhEta3Prong(0),
+  fhEta3ProngAcc(0),
+  fhEta3ProngProd(0),
+  fhEta3ProngAn(0),
+  fhRap3Prong(0),
+  fhRap3ProngAcc(0),
+  fhRap3ProngProd(0),
+  fhRap3ProngAn(0),
+  fhSelectBit(0),
+  fhProtonPtProngLcPt(0),
+  fhBProtonPtProngLcPt(0),
+  fhProtond0ProngLcPt(0),
+  fhBProtond0ProngLcPt(0),
+  fhKaonPtProngLcPt(0),
+  fhBKaonPtProngLcPt(0),
+  fhKaond0ProngLcPt(0),
+  fhBKaond0ProngLcPt(0),
+  fhPionPtProngLcPt(0),
+  fhBPionPtProngLcPt(0),
+  fhPiond0ProngLcPt(0),
+  fhBPiond0ProngLcPt(0),
+  fhDist12PrimLcPt(0),
+  fhBDist12PrimLcPt(0),
+  fhSigmaVertLcPt(0),
+  fhBSigmaVertLcPt(0),
+  fhdcasLcPt(0),
+  fhBdcasLcPt(0),
+  fhCosPointingAngleLcPt(0),
+  fhBCosPointingAngleLcPt(0),
+  fhDecayLengthLcPt(0),
+  fhBDecayLengthLcPt(0),
+  fhSum2LcPt(0),
+  fhBSum2LcPt(0),
+  fhPtMaxLcPt(0),
+  fhBPtMaxLcPt(0),
   fNtupleLambdac(0),
   fUpmasslimit(2.486),
   fLowmasslimit(2.086),
@@ -173,6 +245,8 @@ AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac(const char *name,Bool_t fillN
   fFillVarHists(kFALSE),
   fMultiplicityHists(kFALSE),
   fPriorsHists(kFALSE),
+  fLcCut(kFALSE),
+  fLcPIDCut(kFALSE),
   fNentries(0),
   fOutputMC(0),
   fAPriori(0),
@@ -471,7 +545,31 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
     fOutput->Add(fMassHist3Pr[i]);
     fOutput->Add(fMassHist3PrTC[i]);
   }
+  fhEta3Prong		= new TH2F("hEta3Prong","hEta3Prong;3-Prong p_{T} GeV/c;3-Prong #eta",75,0.,15.,50,-2.0,2.0);
+  fhEta3ProngAcc	= new TH2F("hEta3ProngAcc","hEta3ProngAcc;3-Prong p_{T} GeV/c;3-Prong #eta",75,0.,15.,50,-2.0,2.0);
+  fhEta3ProngProd	= new TH2F("hEta3ProngProd","hEta3ProngProd;3-Prong p_{T} GeV/c;3-Prong #eta",75,0.,15.,50,-2.0,2.0);
+  fhEta3ProngAn	    = new TH2F("hEta3ProngAn","hEta3ProngAn;3-Prong p_{T} GeV/c;3-Prong #eta",75,0.,15.,50,-2.0,2.0);
+  fhRap3Prong		= new TH2F("hRap3Prong","hRap3Prong;3-Prong p_{T} GeV/c;3-Prong y",75,0.,15.,50,-2.0,2.0);
+  fhRap3ProngAcc	= new TH2F("hRap3ProngAcc","hRap3ProngAcc;3-Prong p_{T} GeV/c;3-Prong y",75,0.,15.,50,-2.0,2.0);
+  fhRap3ProngProd	= new TH2F("hRap3ProngProd","hRap3ProngProd;3-Prong p_{T} GeV/c;3-Prong y",75,0.,15.,50,-2.0,2.0);
+  fhRap3ProngAn	    = new TH2F("hRap3ProngAn","hRap3ProngAn;3-Prong p_{T} GeV/c;3-Prong y",75,0.,15.,50,-2.0,2.0);
+    
+  fhSelectBit			= new TH1F("hSelectBit","hSelectBit",5,-0.5,5.5);
+  fhSelectBit->GetXaxis()->SetBinLabel(2,"All");
+  fhSelectBit->GetXaxis()->SetBinLabel(3,"SelectionMap");
+  fhSelectBit->GetXaxis()->SetBinLabel(4,"!LcCut");
+  fhSelectBit->GetXaxis()->SetBinLabel(5,"!LcPID");
 
+  fOutput->Add(fhEta3Prong);
+  fOutput->Add(fhEta3ProngAcc);
+  fOutput->Add(fhEta3ProngProd);
+  fOutput->Add(fhEta3ProngAn);
+  fOutput->Add(fhRap3Prong);
+  fOutput->Add(fhRap3ProngAcc);
+  fOutput->Add(fhRap3ProngProd);
+  fOutput->Add(fhRap3ProngAn);
+  fOutput->Add(fhSelectBit);
+  
   fHistNEvents = new TH1F("fHistNEvents", "Number of processed events; ; Events",3,-1.5,1.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
@@ -810,6 +908,32 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
   TH2F *hBpiSigmaVspTPC=new TH2F(hisname.Data(),hisname.Data(),100,0.,5.0,100,-10.0,10.0);
   fOutputMC->Add(hBpiSigmaVspTPC);
 
+  //Jaime Lc specific
+  hisname.Form("hLcRealTot");
+  TH1F *hLambdaRealTot=new TH1F(hisname.Data(),hisname.Data(),100,0.,15.0);
+  fOutputMC->Add(hLambdaRealTot);
+  hisname.Form("hbLcRealTot");
+  TH1F *hbLambdaRealTot=new TH1F(hisname.Data(),hisname.Data(),100,0.,15.0);
+  fOutputMC->Add(hbLambdaRealTot);
+  hisname.Form("hLcIDTot");
+  TH1F *hLambdaIDTot=new TH1F(hisname.Data(),hisname.Data(),100,0.,15.0);
+  fOutputMC->Add(hLambdaIDTot);
+  hisname.Form("hbLcIDTot");
+  TH1F *hbLambdaIDTot=new TH1F(hisname.Data(),hisname.Data(),100,0.,15.0);
+  fOutputMC->Add(hbLambdaIDTot);
+  hisname.Form("hLcIDGood");
+  TH1F *hLambdaIDGood=new TH1F(hisname.Data(),hisname.Data(),100,0.,15.0);
+  fOutputMC->Add(hLambdaIDGood);
+  hisname.Form("hbLcIDGood");
+  TH1F *hbLambdaIDGood=new TH1F(hisname.Data(),hisname.Data(),100,0.,15.0);
+  fOutputMC->Add(hbLambdaIDGood);
+  hisname.Form("hLcnoID");
+  TH1F *hLambdanoID=new TH1F(hisname.Data(),hisname.Data(),100,0.,15.0);
+  fOutputMC->Add(hLambdanoID);
+  hisname.Form("hbLcnoID");
+  TH1F *hbLambdanoID=new TH1F(hisname.Data(),hisname.Data(),100,0.,15.0);
+  fOutputMC->Add(hbLambdanoID);
+  
   // other generic 
   hisname.Form("hLcpt");
   TH1F *hLcPt=new TH1F(hisname.Data(),hisname.Data(),100,0.,5.0);
@@ -866,7 +990,97 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
   TH1F *hBPtMax=new TH1F(hisname.Data(),hisname.Data(),100,0.,5.);
   fOutputMC->Add(hBPtMax);
 
+//2D Var x Lc Pt
+  hisname.Form("hpptProngLcPt");
+  fhProtonPtProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,5.0);
+  fOutputMC->Add(fhProtonPtProngLcPt);
+  hisname.Form("hbpptProngLcPt");
+  fhBProtonPtProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,5.0);
+  fOutputMC->Add(fhBProtonPtProngLcPt);
+  
+  hisname.Form("hpd0ProngLcPt");
+  fhProtond0ProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,-0.1,0.1);
+  fOutputMC->Add(fhProtond0ProngLcPt);
+  hisname.Form("hbpd0ProngLcPt");
+  fhBProtond0ProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,-0.1,0.1);
+  fOutputMC->Add(fhBProtond0ProngLcPt);
+ 
+  hisname.Form("hKptProngLcPt");
+  fhKaonPtProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,5.0);
+  fOutputMC->Add(fhKaonPtProngLcPt);
+  hisname.Form("hbKptProngLcPt");
+  fhBKaonPtProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,5.0);
+  fOutputMC->Add(fhBKaonPtProngLcPt);
+   
+  hisname.Form("hKd0ProngLcPt");
+  fhKaond0ProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,-0.1,0.1);
+  fOutputMC->Add(fhKaond0ProngLcPt);
+  hisname.Form("hbKd0ProngLcPt");
+  fhBKaond0ProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,-0.1,0.1);
+  fOutputMC->Add(fhBKaond0ProngLcPt);
 
+  hisname.Form("hpiptProngLcPt");
+  fhPionPtProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,5.0);
+  fOutputMC->Add(fhPionPtProngLcPt);
+  hisname.Form("hbpiptProngLcPt");
+  fhBPionPtProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,5.0);
+  fOutputMC->Add(fhBPionPtProngLcPt);
+
+  hisname.Form("hpid0ProngLcPt");
+  fhPiond0ProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,-0.1,-0.1);
+  fOutputMC->Add(fhPiond0ProngLcPt);
+  hisname.Form("hbpid0ProngLcPt");
+  fhBPiond0ProngLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,-0.1,0.1);
+  fOutputMC->Add(fhBPiond0ProngLcPt);
+ 
+  hisname.Form("hDist12toPrimLcPt");
+  fhDist12PrimLcPt = new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,1.0);
+  fOutputMC->Add(fhDist12PrimLcPt);
+  hisname.Form("hbDist12toPrimLcPt");
+  fhBDist12PrimLcPt = new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,1.0);
+  fOutputMC->Add(fhBDist12PrimLcPt);
+
+  hisname.Form("hSigmaVertLcPt");
+  fhSigmaVertLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,60,0.,0.06);
+  fOutputMC->Add(fhSigmaVertLcPt);
+  hisname.Form("hbSigmaVertLcPt");
+  fhBSigmaVertLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,60,0.,0.06);
+  fOutputMC->Add(fhBSigmaVertLcPt);
+
+  hisname.Form("hDCAsLcPt");
+  fhdcasLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,200,0.,0.1);
+  fOutputMC->Add(fhdcasLcPt);
+  hisname.Form("hbDCAsLcPt");
+  fhBdcasLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,200,0.,0.1);
+  fOutputMC->Add(fhBdcasLcPt);
+  
+  hisname.Form("hCosPointingAngleLcPt");
+  fhCosPointingAngleLcPt = new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,40,0.,1.);
+  fOutputMC->Add(fhCosPointingAngleLcPt);
+  hisname.Form("hbCosPointingAngleLcPt");
+  fhBCosPointingAngleLcPt = new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,40,0.,1.);
+  fOutputMC->Add(fhBCosPointingAngleLcPt);
+
+  hisname.Form("hDecayLengthLcPt");
+  fhDecayLengthLcPt	= new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,0.1);
+  fOutputMC->Add(fhDecayLengthLcPt);
+  hisname.Form("hbDecayLengthLcPt");
+  fhBDecayLengthLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,0.1);
+  fOutputMC->Add(fhBDecayLengthLcPt);
+
+  hisname.Form("hSum2LcPt");
+  fhSum2LcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,0.1);
+  fOutputMC->Add(fhSum2LcPt);
+  hisname.Form("hbSum2LcPt");
+  fhBSum2LcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,0.1);
+  fOutputMC->Add(fhBSum2LcPt);
+
+  hisname.Form("hptmaxLcPt");
+  fhPtMaxLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,5.);
+  fOutputMC->Add(fhPtMaxLcPt);
+  hisname.Form("hbptmaxLcPt");
+  fhBPtMaxLcPt=new TH2F(hisname.Data(),hisname.Data(),75,0.,15.,100,0.,5.);
+  fOutputMC->Add(fhBPtMaxLcPt); 
 
   fAPriori = new TList(); // AdC
   fAPriori->SetOwner(); // AdC
@@ -1207,16 +1421,27 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
       unsetvtx=kTRUE;
     }
 
-    //if(d->GetSelectionMap()) {if(!d->HasSelectionBit(AliRDHFCuts::kLcCuts)) continue;}
-    //if(d->GetSelectionMap()) {if(!d->HasSelectionBit(AliRDHFCuts::kLcPID)) continue;}
+    //Filter bit selection and QA:
+    fhSelectBit->Fill(1);
+    if(d->GetSelectionMap()){
+      fhSelectBit->Fill(2);
+      if(!d->HasSelectionBit(AliRDHFCuts::kLcCuts))  fhSelectBit->Fill(3);
+      if(!d->HasSelectionBit(AliRDHFCuts::kLcPID))   fhSelectBit->Fill(4);
+      if(fLcCut&&!d->HasSelectionBit(AliRDHFCuts::kLcCuts))		continue;
+      if(fLcPIDCut&&!d->HasSelectionBit(AliRDHFCuts::kLcPID))		continue;
+    }
 
     Int_t isSelectedTracks = fRDCutsProduction->IsSelected(d,AliRDHFCuts::kTracks,aod);
     if(!isSelectedTracks) continue;
-
+    fhEta3Prong->Fill(d->Pt(),d->Eta());
+    fhRap3Prong->Fill(d->Pt(),d->Y(4122));
+    
     isThereA3prongWithGoodTracks=kTRUE;
 
     if (fRDCutsProduction->IsInFiducialAcceptance(d->Pt(),d->Y(4122))) {fNentries->Fill(6);}else{continue;}
-
+    fhEta3ProngAcc->Fill(d->Pt(),d->Eta());
+    fhRap3ProngAcc->Fill(d->Pt(),d->Y(4122));
+    
     Int_t ptbin=fRDCutsProduction->PtBin(d->Pt());
     if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds
 
@@ -1586,7 +1811,7 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
 {
 
   //if MC PID or no PID, unset PID
-  if(!fRealPid) cuts->SetUsePID(kFALSE);
+  //if(!fRealPid) cuts->SetUsePID(kFALSE);
   Int_t selection=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod);
   if(selection>0){
     nSelectedloose[0]=nSelectedloose[0]+1;
@@ -1609,10 +1834,18 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
     Float_t xDecay=0.;
     Float_t yDecay=0.;
     Float_t zDecay=0.;
+    Bool_t IsInjected   = -1; 
+    Bool_t IsLc		= -1;
+    Bool_t IsLcfromLb	= 0;
 
     if(fReadMC){
+      AliAODMCHeader *mcHeader2 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      AliVertexingHFUtils *util = new AliVertexingHFUtils();
+      IsInjected = util->IsCandidateInjected(part,mcHeader2,arrayMC)?1:0;
+      delete util;
       labDp = MatchToMCLambdac(part,arrayMC);
       if(labDp>0){
+	IsLc = 1;
 	AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
 	AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(0));
 	AliAODMCParticle *dg1 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(1));
@@ -1626,7 +1859,12 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
 	pdgCode=TMath::Abs(partDp->GetPdgCode());
 	pdgCode1=TMath::Abs(dg0->GetPdgCode());
 	pdgCode2=TMath::Abs(dg1->GetPdgCode());
-
+	Int_t imother = partDp->GetMother();
+	if(imother>0){
+	  AliAODMCParticle *partMom = (AliAODMCParticle*)arrayMC->At(imother);
+	  if(TMath::Abs(partMom->GetPdgCode())==5122) IsLcfromLb =1;
+	  else IsLcfromLb=-1;
+	}
       }else{
 	pdgCode=-1;
       }
@@ -1696,33 +1934,39 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
    
     Int_t passTightCuts=0;
     if(fAnalysis) {
-     passTightCuts=fRDCutsAnalysis->IsSelected(part,AliRDHFCuts::kCandidate,aod);
-     if(fUseKF){
-      Int_t pdgs[3]={0,0,0};
-      if(invMasspKpi>0.){
-       pdgs[0]=2212;pdgs[1]=321;pdgs[2]=211;
-       if(!VertexingKF(part,pdgs,field)) {
-        invMasspKpi=-1.;
-	invMasspKpi3Pr=-1.;
-	invMasspKpiDk=-1.;
-	invMasspKpiLpi=-1.;
-	invMasspKpiKp=-1.;
-       }
+      passTightCuts=fRDCutsAnalysis->IsSelected(part,AliRDHFCuts::kCandidate,aod);
+      if(fUseKF){
+	Int_t pdgs[3]={0,0,0};
+	if(invMasspKpi>0.){
+	  pdgs[0]=2212;pdgs[1]=321;pdgs[2]=211;
+	  if(!VertexingKF(part,pdgs,field)) {
+	    invMasspKpi=-1.;
+	    invMasspKpi3Pr=-1.;
+	    invMasspKpiDk=-1.;
+	    invMasspKpiLpi=-1.;
+	    invMasspKpiKp=-1.;
+	  }
+	}
+	if(invMasspiKp>0.){
+	  pdgs[0]=211;pdgs[1]=321;pdgs[2]=2212;
+	  if(!VertexingKF(part,pdgs,field)) {
+	    invMasspiKp=-1.;
+	    invMasspiKp3Pr=-1.;
+	    invMasspiKpDk=-1.;
+	    invMasspiKpLpi=-1.;
+	    invMasspiKpKp=-1.;
+	  }
+	}
       }
-      if(invMasspiKp>0.){
-	pdgs[0]=211;pdgs[1]=321;pdgs[2]=2212;
-	if(!VertexingKF(part,pdgs,field)) {
-	  invMasspiKp=-1.;
-	  invMasspiKp3Pr=-1.;
-	  invMasspiKpDk=-1.;
-	  invMasspiKpLpi=-1.;
-	  invMasspiKpKp=-1.;
-       }
-     }
-   }
-    if(passTightCuts>0) nSelectedtight[0]=nSelectedtight[0]+1;
-  }
-
+      if(passTightCuts>0) nSelectedtight[0]=nSelectedtight[0]+1;
+    }
+    // Eta and y plots:
+    fhEta3ProngProd->Fill(part->Pt(),part->Eta());
+    fhRap3ProngProd->Fill(part->Pt(),part->Y(4122));
+    if(passTightCuts>0){
+      fhEta3ProngAn->Fill(part->Pt(),part->Eta());
+      fhRap3ProngAn->Fill(part->Pt(),part->Y(4122));
+    }
     Float_t tmp[24];
     if (fFillNtuple) {
       tmp[0]=pdgCode;
@@ -2162,7 +2406,10 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
   if(fReadMC)
     lab=part->MatchToMC(4122,arrMC,3,pdgDgLctopKpi); //return MC particle label if the array corresponds to a Lc, -1 if not (cf. AliAODRecoDecay.cxx)
 
-  Int_t isSelectedPID=cuts->IsSelectedPID(part); // 0 rejected, 1 Lc -> p K- pi+ (K at center because different sign is there),
+ // Int_t isSelectedPID=cuts->IsSelectedPID(part); // 0 rejected, 1 Lc -> p K- pi+ (K at center because different sign is there),
+                                                 // 2 Lc -> pi+ K- p (K at center because different sign is there),
+                                                 // 3 both (it should never happen...)
+  Int_t isSelectedPID=cuts->IsSelected(part,AliRDHFCuts::kPID,aod); // 0 rejected, 1 Lc -> p K- pi+ (K at center because different sign is there),
                                                  // 2 Lc -> pi+ K- p (K at center because different sign is there),
                                                  // 3 both (it should never happen...)
 
@@ -2208,52 +2455,73 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
   }
 
   //fill hRealTot ---> PID efficiency denominators
-  cuts->SetUsePID(kFALSE); //PAOLA
-  Int_t selectionCandidate=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod);//PAOLA
-  if(fReadMC && selectionCandidate>0) { // 3prongs candidate x Lc (no PID)
+  //cuts->SetUsePID(kFALSE); //PAOLA
+  Int_t selectionTrack = cuts->IsSelected(part,AliRDHFCuts::kTracks,aod);
+  
+  //IsInjected check	 
+  Bool_t IsInjected = 0;
+  if(fReadMC){
+    AliAODMCHeader *mcHeader2 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    AliVertexingHFUtils *util = new AliVertexingHFUtils();
+    IsInjected = util->IsCandidateInjected(part,mcHeader2,arrMC)?1:0;
+    delete util;
+  }
+  if(fReadMC && selectionTrack>0) { // 3prongs candidate x Lc (only track selection) Jaime
+    Int_t isReal=0;
     if(lab>0){ // Signal
       for (Int_t iprong=0; iprong<3; iprong++) {
 	switch (pdgProngMC[iprong]) {
 	case 2212:
 	  fillthis="hpRealTot";
 	  ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	  isReal++;
 	  break;
 	case 321:
 	  fillthis="hKRealTot";
 	  ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	  isReal++;
 	  break;
 	case 211:
 	  fillthis="hpiRealTot";
 	  ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	  isReal++;
 	  break;
 	default:
 	  break;
 	}
       }
-    } else { // bkg
+	fillthis="hLcRealTot";
+	if(isReal==3) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt());
+    //Marcel: Should we zero isReal
+    } else if(!IsInjected) { // bkg  // bkg
       for (Int_t iprong=0; iprong<3; iprong++) {
 	switch (pdgProngMC[iprong]) {
 	case 2212:
 	  fillthis="hbpRealTot";
 	  ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	  isReal++;
 	  break;
 	case 321:
 	  fillthis="hbKRealTot";
 	  ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	  isReal++;
 	  break;
 	case 211:
 	  fillthis="hbpiRealTot";
 	  ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	  isReal++;
 	  break;
 	default:
 	  break;
 	}
       }
+    fillthis="hbLcRealTot";
+	if(isReal==3) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt()); 
     }
   }
 
 
-  cuts->SetUsePID(kTRUE); //PAOLA
+  //cuts->SetUsePID(kTRUE); //PAOLA
   Int_t selection=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod);
 
   if ( (lab>0 && fReadMC) ||             // signal X MC
@@ -2278,7 +2546,8 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
     if (selection>0) { // 3prongs candidate x Lc (yes PID)
 
       Double_t ptmax=0.;
-
+      Int_t isID=0;
+      Int_t isCorrect=0;
       for (Int_t iprong=0; iprong<3; iprong++) {
 	if (part->PtProng(iprong)>ptmax) ptmax=part->PtProng(iprong);
 
@@ -2332,9 +2601,11 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 	                 //      hIDGood, hnoID ---> PID numerators
 	    fillthis="hpIDTot";
 	    ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	    isID++;
 	    if(pdgProngMC[iprong]==2212) { // id protons
 	      fillthis="hpIDGood";
 	      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	      isCorrect++;  
 	    }
 	    else { // misidentified electrons, muons, pions and kaons
 	      fillthis="hnopIDp";
@@ -2375,9 +2646,11 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 	                 //      hIDGood, hnoID ---> PID numerators
 	    fillthis="hKIDTot";
 	    ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	    isID++;
 	    if(pdgProngMC[iprong]==321) { // id kaons
 	      fillthis="hKIDGood";
 	      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	      isCorrect++;
 	    }
 	    else { // misidentified electrons, muons, pions and protons
 	      fillthis="hnokIDk";
@@ -2418,9 +2691,11 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 	                 //      hIDGood, hnoID ---> PID numerators
 	    fillthis="hpiIDTot";
 	    ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	    isID++;
 	    if(pdgProngMC[iprong]==211) { // id pions
 	      fillthis="hpiIDGood";
 	      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	      isCorrect++;
 	    }
 	    else { // misidentified electrons, muons, kaons and protons
 	      fillthis="hnopiIDpi";
@@ -2435,33 +2710,57 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 
       } //end loop on prongs
 
+      //Jaime Lc checks
+      fillthis="hLcIDTot";
+      if(isID==3) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt());
+      fillthis="hLcIDGood";
+      if(isCorrect==3) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt());
+      fillthis="hLcnoID";
+      if(isCorrect<3) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt());
+
       //now histograms where we don't need to check identity
+      fillthis="hLcpt";
+      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt());
       fillthis = "hDist12toPrim";
       ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->GetDist12toPrim());
       ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->GetDist23toPrim());
+      fillthis = "hDist12toPrimLcPt";
+      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),part->GetDist12toPrim());
+      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),part->GetDist23toPrim());
       fillthis = "hSigmaVert";
       ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->GetSigmaVert());
+      fillthis = "hSigmaVertLcPt";
+      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),part->GetSigmaVert());
       fillthis = "hDCAs";
       Double_t dcas[3];
       part->GetDCAs(dcas);
       for (Int_t idca=0;idca<3;idca++) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(dcas[idca]);
+      fillthis = "hDCAsLcPt";
+      for (Int_t idca=0;idca<3;idca++) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),dcas[idca]);
       fillthis = "hCosPointingAngle";
       ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->CosPointingAngle());
+      fillthis = "hCosPointingAngleLcPt";
+      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),part->CosPointingAngle());
       fillthis = "hDecayLength";
       ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->DecayLength());
+      fillthis = "hDecayLengthLcPt";
+      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),part->DecayLength());
       Double_t sum2=part->Getd0Prong(0)*part->Getd0Prong(0)+
 	part->Getd0Prong(1)*part->Getd0Prong(1)+
 	part->Getd0Prong(2)*part->Getd0Prong(2);
       fillthis = "hSum2";
       ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(sum2);
+      fillthis = "hSum2LcPt";
+      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),sum2);
       fillthis = "hptmax";
       ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(ptmax);
-      fillthis="hLcpt";
-      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt());
+      fillthis = "hptmaxLcPt";
+      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),ptmax);
+
 
     } // end if (selection)
 
-  } else if( lab<=0 && fReadMC) { // bkg x MC
+  }else if( lab<=0 && fReadMC && !IsInjected ) { // bkg x MC
 
     fillthis="hbMass";
 
@@ -2485,6 +2784,8 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
       if (selection>0) { // 3prongs candidate x Lc (yes PID)
 
 	Double_t ptmax=0.;
+	Int_t isID=0;
+	Int_t isCorrect=0;
 	for (Int_t iprong=0; iprong<3; iprong++) {
 	  if(part->PtProng(iprong)>ptmax)ptmax=part->PtProng(iprong);
 
@@ -2538,9 +2839,11 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 	                 //      hbIDGood, hbnoID ---> PID numerators
 	      fillthis="hbpIDTot";
 	      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	      isID++;
 	      if(pdgProngMC[iprong]==2212) { // id protons
 		fillthis="hbpIDGood";
 		((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+		isCorrect++;
 	      }
 	      else { // misidentified electrons, muons, pions and kaons
 		fillthis="hbnopIDp";
@@ -2580,9 +2883,11 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 	                   //      hIDGood, hnoID ---> PID numerators
 	      fillthis="hbKIDTot";
 	      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	      isID++;
 	      if(pdgProngMC[iprong]==321) { // id kaons
 		fillthis="hbKIDGood";
 		((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+		isCorrect++;
 	      }
 	      else { // misidentified electrons, muons, pions and protons
 		fillthis="hbnokIDk";
@@ -2597,6 +2902,8 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 	    fillthis="hbpiTPCSignal";
 	    ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(dedxTPC);
 	    fillthis="hbpiptProng";
+	    ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	    fillthis="hbpiptProngLcPt";
 	    ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
 	    fillthis="hbpid0Prong";
 	    ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Getd0Prong(iprong));
@@ -2622,9 +2929,11 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 	                   //      hIDGood, hnonIDTot ---> PID numerators
 	      fillthis="hbpiIDTot";
 	      ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+	      isID++;
 	      if(pdgProngMC[iprong]==211) { // id pions
 		fillthis="hbpiIDGood";
 		((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->PtProng(iprong));
+		isCorrect++;
 	      }
 	      else { // misidentified electrons, muons, kaons and protons
 		fillthis="hbnopiIDpi";
@@ -2638,32 +2947,53 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 	  }
 
 	} //end loop on prongs
+	
+	fillthis="hbLcIDTot";
+	if(isID==3) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt());	
+	fillthis="hbLcIDGood";
+	if(isCorrect==3) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt());
+	fillthis="hbLcnoID";
+	if(isCorrect<3) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt());
 
 	//now histograms where we don't need to check identity
 	fillthis="hbLcpt";
 	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt());
-
+	
 	fillthis = "hbDist12toPrim";
 	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->GetDist12toPrim());
 	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->GetDist23toPrim());
+	fillthis = "hbDist12toPrimLcPt";
+	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),part->GetDist12toPrim());
+	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),part->GetDist23toPrim());
 	fillthis = "hbSigmaVert";
 	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->GetSigmaVert());
+	fillthis = "hbSigmaVertLcPt";
+	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),part->GetSigmaVert());
 	fillthis = "hbDCAs";
 	Double_t dcas[3];
 	part->GetDCAs(dcas);
-	for (Int_t idca=0;idca<3;idca++)
-	  ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(dcas[idca]);
+	for (Int_t idca=0;idca<3;idca++) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(dcas[idca]);
+	fillthis = "hbDCAsLcPt";
+	for (Int_t idca=0;idca<3;idca++) ((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),dcas[idca]);
 	fillthis = "hbCosPointingAngle";
 	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->CosPointingAngle());
+	fillthis = "hbCosPointingAngleLcPt";
+	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),part->CosPointingAngle());
 	fillthis = "hbDecayLength";
 	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->DecayLength());
+	fillthis = "hbDecayLengthLcPt";
+	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),part->DecayLength());
 	Double_t sum2=part->Getd0Prong(0)*part->Getd0Prong(0)+
-	  part->Getd0Prong(1)*part->Getd0Prong(1)+
-	  part->Getd0Prong(2)*part->Getd0Prong(2);
+	part->Getd0Prong(1)*part->Getd0Prong(1)+
+	part->Getd0Prong(2)*part->Getd0Prong(2);
 	fillthis = "hbSum2";
 	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(sum2);
+	fillthis = "hbSum2LcPt";
+	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),sum2);
 	fillthis = "hbptmax";
 	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(ptmax);
+	fillthis = "hbptmaxLcPt";
+	((TH1F*)fOutputMC->FindObject(fillthis))->Fill(part->Pt(),ptmax);
 
       } // end if (selection)
 
@@ -2683,7 +3013,7 @@ void AliAnalysisTaskSELambdac::FillAPrioriConcentrations(AliAODRecoDecayHF3Prong
 {
 
   // FillAPrioriConcentrations
-  cuts->SetUsePID(kFALSE); //Annalisa
+  //cuts->SetUsePID(kFALSE); //Annalisa
   Int_t isSelected3ProngByLc=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod);
 
   TString fillthis="";
@@ -2724,7 +3054,7 @@ void AliAnalysisTaskSELambdac::FillAPrioriConcentrations(AliAODRecoDecayHF3Prong
     }
   }
 
-  cuts->SetUsePID(kTRUE); //Annalisa
+  //cuts->SetUsePID(kTRUE); //Annalisa
 
 }
 
@@ -2878,7 +3208,7 @@ void AliAnalysisTaskSELambdac::MultiplicityStudies(AliAODRecoDecayHF3Prong *part
   if(fReadMC)
     lab=part->MatchToMC(4122,arrMC,3,pdgDgLctopKpi); //return MC particle label if the array corresponds to a Lc, -1 if not (cf. AliAODRecoDecay.cxx)
 
-  cuts->SetUsePID(kFALSE); //Annalisa
+  //cuts->SetUsePID(kFALSE); //Annalisa
   Int_t isSelected3ProngByLc=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod);
 
   if(isSelected3ProngByLc>0 && fReadMC) {
@@ -3148,7 +3478,7 @@ void AliAnalysisTaskSELambdac::MultiplicityStudies(AliAODRecoDecayHF3Prong *part
   Double_t minvLcpKpi = part->InvMassLcpKpi();
   Double_t minvLcpiKp = part->InvMassLcpiKp();
 
-  cuts->SetUsePID(kTRUE); //Annalisa
+  //cuts->SetUsePID(kTRUE); //Annalisa
   Int_t isSelected3ProngByLcPID=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod);
   if (isSelected3ProngByLcPID>0) {
     if (TMath::Abs(minvLcpKpi-mPDG)<invmasscut || TMath::Abs(minvLcpiKp-mPDG)<invmasscut) {

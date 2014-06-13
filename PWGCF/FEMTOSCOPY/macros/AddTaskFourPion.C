@@ -17,8 +17,9 @@ AliFourPion *AddTaskFourPion(
 				 Float_t SigmaCutTOF=2.0,
 				 TString StWeightName="alien:///alice/cern.ch/user/d/dgangadh/WeightFile_FourPion.root",
 				 TString StMomResName="alien:///alice/cern.ch/user/d/dgangadh/MomResFile_FourPion.root",
-				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_FourPion.root"
-				 ) {
+				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_FourPion.root",
+				 TString StMuonName="alien:///alice/cern.ch/user/d/dgangadh/MuonCorrection_FourPion.root"
+			     ) {
   
   //===========================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -107,6 +108,17 @@ AliFourPion *AddTaskFourPion(
     momResHisto2D = (TH2D*)inputFileMomRes->Get("MRC_C2_SC");
     FourPionTask->SetMomResCorrections( kTRUE, momResHisto2D);
     ////////////////////////////////////////////////////
+
+    // Muon corrections
+    inputFileMuon = TFile::Open(StMuonName,"OLD");
+    if (!inputFileMuon){
+      cout << "Requested file:" << inputFileMuon << " was not opened. ABORT." << endl;
+      return NULL;
+    }
+    TH2D *muonHisto2D = 0;
+    muonHisto2D = (TH2D*)inputFileMuon->Get("WeightmuonCorrection");
+    FourPionTask->SetMuonCorrections( kTRUE, muonHisto2D);
+
   }// MCcase and TabulatePairs check
   
 

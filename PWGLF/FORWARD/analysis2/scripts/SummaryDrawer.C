@@ -1457,9 +1457,8 @@ protected:
 	  gSystem->AddIncludePath(Form("-I%s", subDir.Data()));
       }
     }
-    
+    gROOT->SetMacroPath(macPath);
     gROOT->LoadMacro(Form("%s%s", name.Data(), (force ? "++g" : "+")));
-    
   }
   //____________________________________________________________________
   virtual void DrawEventInspector(TCollection* parent)

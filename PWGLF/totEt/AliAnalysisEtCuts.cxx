@@ -40,7 +40,8 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
 				    //
   ,fGeometryEmcalEtaAccCut(0.6)
   ,fGeometryEmcalPhiAccMinCut(80.0) // rad 1.4
-  ,fGeometryEmcalPhiAccMaxCut(180.0) // rad 3.14
+  ,fGeometryEmcalPhiAccMaxCut(120.0) // rad 2.1
+				    //,fGeometryEmcalPhiAccMaxCut(180.0) // rad 3.14
   ,fGeometryEmcalDetectorRadius(440.0)
 				    //
   ,fReconstructedVertexXCut(0.5)
@@ -69,7 +70,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fMonteCarloSingleChargedParticle(3)
   ,fMonteCarloNeutralParticle(0)
 
-  ,fHistMakeTree(kTRUE)
+  ,fHistMakeTree(kFALSE)
   ,fHistMakeTreeDeposit(kFALSE)
   ,fHistNbinsMult(2000)
   ,fHistMinMult(-0.5)

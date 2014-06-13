@@ -66,7 +66,7 @@ ClassImp(AliPHOSCorrelations)
 //_______________________________________________________________________________
 AliPHOSCorrelations::AliPHOSCorrelations()
 :AliAnalysisTaskSE(),
-        fPHOSGeo(0x0),
+	fPHOSGeo(0x0),
 	fOutputContainer(0x0),
 	fMinClusterEnergy(0.3),
 	fMinBCDistance(0),
@@ -80,6 +80,7 @@ AliPHOSCorrelations::AliPHOSCorrelations()
 	fNEMRPBins(9),
 	fAssocBins(),	
 	fCheckHibridGlobal(kOnlyHibridTracks),
+	fPHOSEvent(false),
 	fPeriod(kUndefinedPeriod),
 	fInternalTriggerSelection(kNoSelection),
 	fMaxAbsVertexZ(10.),
@@ -87,8 +88,12 @@ AliPHOSCorrelations::AliPHOSCorrelations()
 	fCentCutoffDown(0.),
 	fCentCutoffUp(90),
 	fMassInvMean(0.135),
-	fMassInvSigma(0.01),
+	fMassInvSigma(0.05),
 	fSigmaWidth(0.),
+	fMassMeanP0(-20.9476),
+	fMassMeanP1(0.1300),
+	fMassSigmaP0(0.005),
+	fMassSigmaP1(-0.0001),
 	fEvent(0x0),
 	fEventESD(0x0),
 	fEventAOD(0x0),
@@ -99,7 +104,7 @@ AliPHOSCorrelations::AliPHOSCorrelations()
 	fV0Cpol(0.),fV0Apol(0.),
 	fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"),
 	fVertexVector(),
-        	fVtxBin(0),
+	fVtxBin(0),
 	fCentralityEstimator("V0M"),
 	fCentrality(0.),
 	fCentBin(0),
@@ -109,7 +114,7 @@ AliPHOSCorrelations::AliPHOSCorrelations()
 	fCaloPhotonsPHOS(0x0),
 	fTracksTPC(0x0),
 	fCaloPhotonsPHOSLists(0x0),
-  	fTracksTPCLists(0x0)
+	fTracksTPCLists(0x0)
 {
   //Deafult constructor, no memory allocations here
 }
@@ -117,7 +122,7 @@ AliPHOSCorrelations::AliPHOSCorrelations()
 //_______________________________________________________________________________
 AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 :AliAnalysisTaskSE(name),
-        fPHOSGeo(0x0),
+	fPHOSGeo(0x0),
 	fOutputContainer(0x0),
 	fMinClusterEnergy(0.3),
 	fMinBCDistance(0),
@@ -131,6 +136,7 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 	fNEMRPBins(9),
 	fAssocBins(),	
 	fCheckHibridGlobal(kOnlyHibridTracks),
+	fPHOSEvent(false),
 	fPeriod(period),
 	fInternalTriggerSelection(kNoSelection),
 	fMaxAbsVertexZ(10.),
@@ -138,8 +144,12 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 	fCentCutoffDown(0.),
 	fCentCutoffUp(90),
 	fMassInvMean(0.135),
-	fMassInvSigma(0.01),
+	fMassInvSigma(0.05),
 	fSigmaWidth(0.),
+	fMassMeanP0(-20.9476),
+	fMassMeanP1(0.1300),
+	fMassSigmaP0(0.005),
+	fMassSigmaP1(-0.0001),
 	fEvent(0x0),
 	fEventESD(0x0),
 	fEventAOD(0x0),
@@ -150,7 +160,7 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 	fV0Cpol(0.),fV0Apol(0.),
 	fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"),
 	fVertexVector(),
-        	fVtxBin(0),
+	fVtxBin(0),
 	fCentralityEstimator("V0M"),
 	fCentrality(0.),
 	fCentBin(0),
@@ -160,7 +170,7 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 	fCaloPhotonsPHOS(0x0),
 	fTracksTPC(0x0),
 	fCaloPhotonsPHOSLists(0x0),
-  	fTracksTPCLists(0x0)
+	fTracksTPCLists(0x0)
 {
 	// Constructor
 	// Output slots #0 write into a TH1 container
@@ -180,7 +190,9 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 
 	fVertex[0]=0; fVertex[1]=0; fVertex[2]=0; 
 
-	fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
+	SetGeometry();
+
+	ZeroingVariables();
 }
 //_______________________________________________________________________________
 AliPHOSCorrelations::~AliPHOSCorrelations()
@@ -223,6 +235,9 @@ void AliPHOSCorrelations::UserCreateOutputObjects()
 	// Create histograms
   	// Called once
 	const Int_t nRuns=200 ;
+	const Int_t  ptMult = 200;
+	const Double_t ptMin = 0.;
+	const Double_t ptMax = 20.;
 
 	// Create histograms
 	if(fOutputContainer != NULL) { delete fOutputContainer; }
@@ -237,14 +252,16 @@ void AliPHOSCorrelations::UserCreateOutputObjects()
 	fOutputContainer->Add(new TH2F("hSelEvents","Event selection", kTotalSelected+1, 0., double(kTotalSelected+1), nRuns,0.,float(nRuns))) ;
 	fOutputContainer->Add(new TH2F("hCentrality","Event centrality", 100,0.,100.,nRuns,0.,float(nRuns))) ;
  	fOutputContainer->Add(new TH2F("phiRPflat","RP distribution with TPC flat", 100, 0., 2.*TMath::Pi(),20,0.,100.)) ;
- 	fOutputContainer->Add(new TH2F("massWindow","mean & sigma", 100,0.1,0.18,100,0.,0.5));
+ 	fOutputContainer->Add(new TH2F("massWindow","mean & sigma", 100,0.095,0.185,500,0.,0.05));
+ 	fOutputContainer->Add(new TH2F("hCluEvsClu","ClusterMult vs E",200,0.,10.,100,0.,100.)) ;
   	
 
   	// Set hists, with track's and cluster's angle distributions.
+  	SetHistPtNumTrigger(ptMult, ptMin, ptMax);
 	SetHistEtaPhi();
 	SetHistPHOSClusterMap();
-	SetHistCutDistribution();
-	SetHistPtAssoc();
+	SetHistMass(ptMult, ptMin, ptMax);
+	SetHistPtAssoc(ptMult, ptMin, ptMax);
 
 	// Setup photon lists
 	Int_t kapacity = fNVtxZBins * GetNumberOfCentralityBins() * fNEMRPBins;
@@ -255,6 +272,18 @@ void AliPHOSCorrelations::UserCreateOutputObjects()
 	fTracksTPCLists->SetOwner();
 
 	PostData(1, fOutputContainer);
+}
+//_______________________________________________________________________________
+void AliPHOSCorrelations::SetHistPtNumTrigger(Int_t  ptMult, Double_t ptMin, Double_t ptMax)
+{
+	TString spid[4]={"all","cpv","disp","both"} ;
+	for(Int_t ipid=0; ipid<4; ipid++)	
+	{
+		fOutputContainer->Add(new TH2F(Form("nTrigger_%s", spid[ipid].Data()), Form("Num of trigger particle %s", spid[ipid].Data()), ptMult+300, ptMin, ptMax, 10000, 0, 1 ) );
+		TH2F *h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Pt [GEV]");
+		h->GetYaxis()->SetTitle("#varepsilon"); // 1/efficiensy
+	}
 }
 //_______________________________________________________________________________
 void AliPHOSCorrelations::SetHistEtaPhi() 
@@ -282,74 +311,126 @@ void AliPHOSCorrelations::SetHistEtaPhi()
 	h->GetYaxis()->SetTitle("#eta");
 } 
 //_______________________________________________________________________________
-void AliPHOSCorrelations::SetHistCutDistribution() 
+void AliPHOSCorrelations::SetHistMass(Int_t  ptMult, Double_t ptMin, Double_t ptMax) 
 {
 	// Set other histograms.
 	// cout<<"\nSetting output SetHist_CutDistribution...";
-
-	Int_t  PtMult = 100;
-	Double_t PtMin = 0.;
-	Double_t PtMax = 20.;
+	
 	Double_t massMin = fMassInvMean-fMassInvSigma;
 	Double_t massMax = fMassInvMean+fMassInvSigma;
 
+	TString spid[4]={"all","cpv","disp","both"} ;
 
-	// Real ++++++++++++++++++++++++++++++
+	TH2F * h;
 
-	fOutputContainer->Add(new TH2F("all_mpt"," Only standard cut's ", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	TH2F * h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+	for(Int_t ipid=0; ipid<4; ipid++)	
+	{
+		// Real ++++++++++++++++++++++++++++++
 
-	fOutputContainer->Add(new TH2F("cpv_mpt"," CPV cut ", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+		fOutputContainer->Add(new TH2F(Form("%s_mpt",spid[ipid].Data() )," real ", 100, massMin, massMax, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
 
-	fOutputContainer->Add(new TH2F("disp_mpt"," Disp cut ", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+		// MIX +++++++++++++++++++++++++
 
-	fOutputContainer->Add(new TH2F("both_mpt"," Both cuts (CPV + Disp) ", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+		fOutputContainer->Add(new TH2F(Form("mix_%s_mpt",spid[ipid].Data() )," mix ", 100, massMin, massMax, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+	    	h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
 
+		// Real ++++++++++++++++++++++++++++++
 
-	// MIX +++++++++++++++++++++++++
+		fOutputContainer->Add(new TH2F(Form("%s_mpt_left",spid[ipid].Data() )," real ", 100, 0.05, 0.1, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
 
-	fOutputContainer->Add(new TH2F("mix_all_mpt"," Only standard cut's (mix)", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+		fOutputContainer->Add(new TH2F(Form("%s_mpt_right",spid[ipid].Data() )," real ", 100, 0.2, 0.4, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
 
-	fOutputContainer->Add(new TH2F("mix_cpv_mpt"," CPV cut (mix)", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+		// MIX +++++++++++++++++++++++++
 
-	fOutputContainer->Add(new TH2F("mix_disp_mpt"," Disp cut (mix)", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+		fOutputContainer->Add(new TH2F(Form("mix_%s_mpt_left",spid[ipid].Data() )," mix ", 100, 0.05, 0.1, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
 
-	fOutputContainer->Add(new TH2F("mix_both_mpt"," Both cuts (CPV + Disp) (mix)", 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	h = static_cast<TH2F*>(fOutputContainer->Last()) ;
-    	h->GetXaxis()->SetTitle("Mass [GeV]");
-	h->GetYaxis()->SetTitle("Pt [GEV]");
+		fOutputContainer->Add(new TH2F(Form("mix_%s_mpt_right",spid[ipid].Data() )," mix ", 100, 0.2, 0.4, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
+	}
 
-
-	// Calibration Pi0peak {REAL}
+	// Calibration PHOS Module Pi0peak {REAL}
 	for(Int_t mod=1; mod<4; mod++){
-	  fOutputContainer->Add(new TH2F(Form("both%d_mpt",mod),Form("Both cuts (CPV + Disp) mod[%d]",mod), 100, massMin, massMax, PtMult, PtMin, PtMax ) );
+	  fOutputContainer->Add(new TH2F(Form("both%d_mpt",mod),Form("Both cuts (CPV + Disp) mod[%d]",mod), 100, massMin, massMax, ptMult, ptMin, ptMax ) );
 	  h = static_cast<TH2F*>(fOutputContainer->Last()) ;
     	  h->GetXaxis()->SetTitle("Mass [GeV]");
 	  h->GetYaxis()->SetTitle("Pt [GEV]");
 
- 	  // Calibration Pi0peak {MIX}
-	  fOutputContainer->Add(new TH2F(Form("mix_both%d_mpt",mod),Form(" Both cuts (CPV + Disp) mod[%d]",mod), 100, massMin, massMax, PtMult, PtMin, PtMax ) );
-	  h = static_cast<TH2F*>(fOutputContainer->FindObject("mix_both1_mpt")) ;
+ 	  // Calibration PHOS Module Pi0peak {MIX}
+	  fOutputContainer->Add(new TH2F(Form("mix_both%d_mpt",mod),Form(" Both cuts (CPV + Disp) mod[%d]",mod), 100, massMin, massMax, ptMult, ptMin, ptMax ) );
+	  h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+    	  h->GetXaxis()->SetTitle("Mass [GeV]");
+	  h->GetYaxis()->SetTitle("Pt [GEV]");
+	  
+	}
+
+	// For efficiensy.
+	for(Int_t ipid=0; ipid<4; ipid++)	
+	{
+		// Real ++++++++++++++++++++++++++++++
+
+		fOutputContainer->Add(new TH2F(Form("%s_mpt_eff",spid[ipid].Data() )," real ", 100, massMin, massMax, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
+
+		// MIX +++++++++++++++++++++++++
+
+		fOutputContainer->Add(new TH2F(Form("mix_%s_mpt_eff",spid[ipid].Data() )," mix ", 100, massMin, massMax, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+	    	h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
+
+		// Real ++++++++++++++++++++++++++++++
+
+		fOutputContainer->Add(new TH2F(Form("%s_mpt_left_eff",spid[ipid].Data() )," real ", 100, 0.05, 0.1, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
+
+		fOutputContainer->Add(new TH2F(Form("%s_mpt_right_eff",spid[ipid].Data() )," real ", 100, 0.2, 0.4, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
+
+		// MIX +++++++++++++++++++++++++
+
+		fOutputContainer->Add(new TH2F(Form("mix_%s_mpt_left_eff",spid[ipid].Data() )," mix ", 100, 0.05, 0.1, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
+
+		fOutputContainer->Add(new TH2F(Form("mix_%s_mpt_right_eff",spid[ipid].Data() )," mix ", 100, 0.2, 0.4, ptMult, ptMin, ptMax ) );
+		h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		h->GetXaxis()->SetTitle("Mass [GeV]");
+		h->GetYaxis()->SetTitle("Pt [GEV]");
+	}
+
+	// Calibration PHOS Module Pi0peak {REAL}
+	for(Int_t mod=1; mod<4; mod++){
+	  fOutputContainer->Add(new TH2F(Form("both%d_mpt_eff",mod),Form("Both cuts (CPV + Disp) mod[%d]",mod), 100, massMin, massMax, ptMult, ptMin, ptMax ) );
+	  h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+    	  h->GetXaxis()->SetTitle("Mass [GeV]");
+	  h->GetYaxis()->SetTitle("Pt [GEV]");
+
+ 	  // Calibration PHOS Module Pi0peak {MIX}
+	  fOutputContainer->Add(new TH2F(Form("mix_both%d_mpt_eff",mod),Form(" Both cuts (CPV + Disp) mod[%d]",mod), 100, massMin, massMax, ptMult, ptMin, ptMax ) );
+	   h = static_cast<TH2F*>(fOutputContainer->Last()) ;
     	  h->GetXaxis()->SetTitle("Mass [GeV]");
 	  h->GetYaxis()->SetTitle("Pt [GEV]");
 	  
@@ -358,7 +439,7 @@ void AliPHOSCorrelations::SetHistCutDistribution()
 	// cout<<"  OK!"<<endl;
 }
 //_______________________________________________________________________________
-void AliPHOSCorrelations::SetHistPtAssoc()
+void AliPHOSCorrelations::SetHistPtAssoc(Int_t  ptMult, Double_t ptMin, Double_t ptMax)
 {
 	Double_t pi = TMath::Pi();
 	
@@ -368,17 +449,15 @@ void AliPHOSCorrelations::SetHistPtAssoc()
 	Int_t EtaMult  =  20; 
 	Float_t EtaMin = -1.;
 	Float_t EtaMax =  1.;
-	Int_t PtTrigMult = 100;
-	Float_t PtTrigMin = 0.;
-	Float_t PtTrigMax = 20.;
 
 	TString spid[4]={"all","cpv","disp","both"} ;
+	Int_t PhotonsInMod[6] = {1, 2, 3, 12, 13, 23};
 	
 	for (int i = 0; i<fAssocBins.GetSize()-1; i++){
 	  for(Int_t ipid=0; ipid<4; ipid++){
 		fOutputContainer->Add(new TH3F(Form("%s_ptphieta_ptAssoc_%3.1f",spid[ipid].Data(),fAssocBins.At(i+1)),
 					       Form("%s_ptphieta_ptAssoc_%3.1f",spid[ipid].Data(),fAssocBins.At(i+1)), 
-					       PtTrigMult, PtTrigMin, PtTrigMax,  PhiMult, PhiMin, PhiMax, EtaMult, EtaMin, EtaMax ) );
+					       ptMult, ptMin, ptMax,  PhiMult, PhiMin, PhiMax, EtaMult, EtaMin, EtaMax ) );
 		TH3F * h = static_cast<TH3F*>(fOutputContainer->Last()) ;
     		h->GetXaxis()->SetTitle("Pt_{triger} [GEV]");
 		h->GetYaxis()->SetTitle("#phi [rad]");
@@ -386,12 +465,34 @@ void AliPHOSCorrelations::SetHistPtAssoc()
 
 		fOutputContainer->Add(new TH3F(Form("mix_%s_ptphieta_ptAssoc_%3.1f",spid[ipid].Data(),fAssocBins.At(i+1)),
 					       Form("Mixed %s_ptphieta_ptAssoc_%3.1f",spid[ipid].Data(),fAssocBins.At(i+1)),
-					       PtTrigMult, PtTrigMin, PtTrigMax,  PhiMult, PhiMin, PhiMax, EtaMult, EtaMin, EtaMax ) );
+					       ptMult, ptMin, ptMax,  PhiMult, PhiMin, PhiMax, EtaMult, EtaMin, EtaMax ) );
 		h = static_cast<TH3F*>(fOutputContainer->Last()) ;
     		h->GetXaxis()->SetTitle("Pt_{triger} [GEV]");
 		h->GetYaxis()->SetTitle("#phi [rad]");
 		h->GetZaxis()->SetTitle("#eta");
 
+
+		for(Int_t m=0; m<6; m++)
+		{
+			fOutputContainer->Add(new TH3F(Form("mix_%s_ptphieta_ptAssoc_%3.1f_mod%i",spid[ipid].Data(),fAssocBins.At(i+1), PhotonsInMod[m]),
+					       Form("Mixed %s_ptphieta_ptAssoc_%3.1f_mod%i",spid[ipid].Data(),fAssocBins.At(i+1), PhotonsInMod[m]),
+					       ptMult, ptMin, ptMax,  PhiMult, PhiMin, PhiMax, EtaMult, EtaMin, EtaMax ) );
+			h = static_cast<TH3F*>(fOutputContainer->Last()) ;
+	    		h->GetXaxis()->SetTitle("Pt_{triger} [GEV]");
+			h->GetYaxis()->SetTitle("#phi [rad]");
+			h->GetZaxis()->SetTitle("#eta");
+		}
+
+		for(Int_t itpc=1; itpc<3; itpc++)
+		{
+			fOutputContainer->Add(new TH3F(Form("mix_%s_ptphieta_ptAssoc_%3.1f_tpc%i",spid[ipid].Data(),fAssocBins.At(i+1), itpc),
+					       Form("Mixed %s_ptphieta_ptAssoc_%3.1f_tpc%i",spid[ipid].Data(),fAssocBins.At(i+1), itpc),
+					       ptMult, ptMin, ptMax,  PhiMult, PhiMin, PhiMax, EtaMult, EtaMin, EtaMax ) );
+			h = static_cast<TH3F*>(fOutputContainer->Last()) ;
+	    		h->GetXaxis()->SetTitle("Pt_{triger} [GEV]");
+			h->GetYaxis()->SetTitle("#phi [rad]");
+			h->GetZaxis()->SetTitle("#eta");
+		}
 	  }
 	}
 }
@@ -421,36 +522,20 @@ void AliPHOSCorrelations::UserExec(Option_t *)
 		PostData(1, fOutputContainer);
 		return ;
 	}
-        
+        	
+        	ZeroingVariables();
+
 	fEventESD = dynamic_cast<AliESDEvent*>(fEvent);
 	fEventAOD = dynamic_cast<AliAODEvent*>(fEvent);
 
-	{
-		FillHistogram("hTriggerPassedEvents",  0);
-
-		Bool_t isMB = (fEvent->GetTriggerMask() & (ULong64_t(1)<<1));
-		Bool_t isCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<4));
-		Bool_t isSemiCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<7));
-
-		if (isMB) FillHistogram("hTriggerPassedEvents",  2.);
-		if (isCentral) FillHistogram("hTriggerPassedEvents",  3.);
-		if (isSemiCentral) FillHistogram("hTriggerPassedEvents",  4.);
-	}
-
-	// For first event from data only:
-	if( fRunNumber<0)
-	{
-		if (fDebug >= 1) cout<<"Mean: "<< fMassInvMean << " Sigma: "<< fMassInvSigma
-					<<" Sigma Width: " <<fSigmaWidth <<endl;
-		if (!fSigmaWidth) FillHistogram("massWindow",  fMassInvMean, fMassInvSigma);
-		else FillHistogram("massWindow",  fMassInvMean, fMassInvSigma*fSigmaWidth);
-	}
+	TestTrigger();
 
   	// Step 1(done once):  
 	if( fRunNumber != fEvent->GetRunNumber() )
 	{
 		fRunNumber = fEvent->GetRunNumber();
 		fInternalRunNumber = ConvertToInternalRunNumber(fRunNumber);
+		//SetGeometry();
 		SetESDTrackCuts();
 	}
 	LogProgress(1);
@@ -491,7 +576,8 @@ void AliPHOSCorrelations::UserExec(Option_t *)
   	
 	// Step 5: Event Photons (PHOS Clusters) selectionMakeFlat
 	SelectPhotonClusters();
-	if( ! fCaloPhotonsPHOS->GetEntriesFast() )	LogSelection(kHasPHOSClusters, fInternalRunNumber);
+	if( ! fCaloPhotonsPHOS->GetEntriesFast() )	
+		LogSelection(kHasPHOSClusters, fInternalRunNumber);
 	LogProgress(6);
 
 	// Step 6: Event Associated particles (TPC Tracks) selection
@@ -503,13 +589,13 @@ void AliPHOSCorrelations::UserExec(Option_t *)
 	LogProgress(7);
 
 	// Step 7: Consider pi0 (photon/cluster) pairs.
-	ConsiderPi0s();
+	//ConsiderPi0s();
+	ConsiderPi0sME();
 	
 	// Step 8; Mixing
 	ConsiderPi0sMix();
-
 	ConsiderTracksMix();
-	//this->ConsiderPi0sTracksMix(); // Read how make mix events!
+	//ConsiderTracksMixME();
 	LogProgress(8);
 
 	// Step 9: Make TPC's mask
@@ -1100,7 +1186,7 @@ void AliPHOSCorrelations::SetVertex()
 	}
 	else
 	{
-//		AliError("Event has 0x0 Primary Vertex, defaulting to origo");
+		//AliError("Event has 0x0 Primary Vertex, defaulting to origo");
 		fVertex[0] = 0;
 		fVertex[1] = 0;
 		fVertex[2] = 0;
@@ -1238,18 +1324,28 @@ void AliPHOSCorrelations::SelectPhotonClusters()
 	// clear (or create) array for holding events photons/clusters
 	if(fCaloPhotonsPHOS)
 		fCaloPhotonsPHOS->Clear();
-	else{
+	else
+	{
 		fCaloPhotonsPHOS = new TClonesArray("AliCaloPhoton",200);
+		fCaloPhotonsPHOS->SetOwner();
 	}
 
-	Int_t nclu = fEvent->GetNumberOfCaloClusters() ;
 	Int_t inPHOS=0 ;
-	for (Int_t i=0;  i<nclu;  i++) {
+
+	for (Int_t i=0;  i<fEvent->GetNumberOfCaloClusters();  i++) 
+	{
 		AliVCluster *clu = fEvent->GetCaloCluster(i);	
-		if ( !clu->IsPHOS() ) continue ;
-		if( clu->E()< fMinClusterEnergy) continue; // reject cluster
+		if (!clu->IsPHOS() || clu->E()< fMinClusterEnergy) continue; // reject cluster
 
-
+		Float_t  position[3];
+		clu->GetPosition(position);
+		TVector3 global(position) ;
+		Int_t relId[4] ;
+		fPHOSGeo->GlobalPos2RelId(global,relId) ;
+		Int_t modPHOS  = relId[0] ;
+		Int_t cellXPHOS = relId[2];
+		Int_t cellZPHOS = relId[3] ;
+		
 		Double_t distBC=clu->GetDistanceToBadChannel();
 		if(distBC<fMinBCDistance)
 			continue ;
@@ -1262,10 +1358,15 @@ void AliPHOSCorrelations::SelectPhotonClusters()
 			if(TMath::Abs(tof) > fTOFCut ) continue ;
 		}
 		TLorentzVector lorentzMomentum;
-		Double_t ecore = clu->GetMCEnergyFraction();
+		Double_t ecore = clu->GetCoreEnergy();
+		//Double_t ecore = clu->E();
 
-		clu->GetMomentum(lorentzMomentum, fVertex);
-		lorentzMomentum*=ecore/lorentzMomentum.E() ;
+		FillHistogram("hCluEvsClu", clu->E(), clu->GetNCells()) ;
+
+		Double_t origo[3] = {0,0,0}; // don't rely on event vertex, assume (0,0,0) ?
+		//clu->GetMomentum(lorentzMomentum, fVertex);
+		clu->GetMomentum(lorentzMomentum, origo);
+	
 
 		if(inPHOS>=fCaloPhotonsPHOS->GetSize()){
 			fCaloPhotonsPHOS->Expand(inPHOS+50) ;
@@ -1275,22 +1376,16 @@ void AliPHOSCorrelations::SelectPhotonClusters()
 		inPHOS++ ;
 		ph->SetCluster(clu);
 
-		Float_t cellId=clu->GetCellAbsId(0) ;
-		Int_t mod = (Int_t)TMath:: Ceil(cellId/(56*64) ) ; 
-		ph->SetModule(mod) ;
+		/*Float_t cellId=clu->GetCellAbsId(0) ;
+		Int_t mod = (Int_t)TMath:: Ceil(cellId/(56*64) ) ; */
+		ph->SetModule(modPHOS) ;
 
-		ph->SetNCells(clu->GetNCells());
+		lorentzMomentum*=ecore/lorentzMomentum.E() ;
+
+		//ph->SetNCells(clu->GetNCells());
+		ph->SetMomV2(&lorentzMomentum) ;
 		ph->SetDispBit(clu->GetDispersion()<2.5) ;
 		ph->SetCPVBit(clu->GetEmcCpvDistance()>2.) ;
-
-		Float_t  position[3];
-		clu->GetPosition(position);
-		TVector3 global(position) ;
-		Int_t relId[4] ;
-		fPHOSGeo->GlobalPos2RelId(global,relId) ;
-		Int_t modPHOS  = relId[0] ;
-		Int_t cellXPHOS = relId[2];
-		Int_t cellZPHOS = relId[3] ;
 
 		FillHistogram(Form("QA_cluXZE_mod%i", modPHOS), cellXPHOS, cellZPHOS, lorentzMomentum.E() ) ;
 	}
@@ -1331,149 +1426,422 @@ void AliPHOSCorrelations::SelectAccosiatedTracks()
 //_______________________________________________________________________________
 void AliPHOSCorrelations::ConsiderPi0s()
 {
+	// Must consider only PHOS events in real distribution.
+	if (fPHOSEvent) 
+	{
+		const Int_t nPHOS=fCaloPhotonsPHOS->GetEntriesFast() ;
+		for(Int_t i1=0; i1 < nPHOS-1; i1++)
+		{
+			AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
+			for (Int_t i2=i1+1; i2<nPHOS; i2++)
+			{
+				AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
+				TLorentzVector p12  = *ph1  + *ph2;
 
-  const Int_t nPHOS=fCaloPhotonsPHOS->GetEntriesFast() ;
-  for(Int_t i1=0; i1 < nPHOS-1; i1++){
-     AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-     for (Int_t i2=i1+1; i2<nPHOS; i2++){
-	AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
-	TLorentzVector p12  = *ph1  + *ph2;
+				Double_t phiTrigger=p12.Phi() ;
+				Double_t etaTrigger=p12.Eta() ;
 
-	Double_t phiTrigger=p12.Phi() ;
-	Double_t etaTrigger=p12.Eta() ;
+				Double_t m=p12.M() ;
+				Double_t pt=p12.Pt() ;
+				Double_t eff = 1./GetEfficiency(pt);
+				int mod1 = ph1->Module() ;
+				int mod2 = ph2->Module() ;				
 
-	Double_t m=p12.M() ;
-	Double_t pt=p12.Pt() ;
-	int mod1 = ph1->Module() ;
-	int mod2 = ph2->Module() ;
-	
-
-	FillHistogram("clu_phieta",phiTrigger,etaTrigger);
-	FillHistogram("clusingle_phieta",ph1->Phi(), ph1->Eta());
-	FillHistogram("clusingle_phieta",ph2->Phi(), ph2->Eta());
+				FillHistogram("clu_phieta",phiTrigger,etaTrigger);
+				FillHistogram("clusingle_phieta",ph1->Phi(), ph1->Eta());
+				FillHistogram("clusingle_phieta",ph2->Phi(), ph2->Eta());
 
 
-	FillHistogram("all_mpt",m, pt);
-				
- 	if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-			FillHistogram("cpv_mpt",m, pt);
+				FillHistogram("all_mpt",m, pt);
+				FillHistogram("all_mpt_left",m, pt);
+				FillHistogram("all_mpt_right",m, pt);
 
-	if ( ph1->IsDispOK() && ph2->IsDispOK() ){
-           FillHistogram("disp_mpt",m, pt);
-	   if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) {
-     	      FillHistogram("both_mpt",m, pt);
-	      if(mod1 == mod2) FillHistogram(Form("both%d_mpt",mod1),m, pt);
-    	   }
+				FillHistogram("all_mpt_eff",m, pt, eff);
+				FillHistogram("all_mpt_left_eff",m, pt, eff);
+				FillHistogram("all_mpt_right_eff",m, pt, eff);
+
+			 	if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+			 	{
+			 		FillHistogram("cpv_mpt",m, pt);
+			 		FillHistogram("cpv_mpt_left",m, pt);
+					FillHistogram("cpv_mpt_right",m, pt);
+
+					FillHistogram("cpv_mpt_eff",m, pt, eff);
+			 		FillHistogram("cpv_mpt_left_eff",m, pt, eff);
+					FillHistogram("cpv_mpt_right_eff",m, pt, eff);
+				}
+
+				if ( ph1->IsDispOK() && ph2->IsDispOK() )
+				{
+					FillHistogram("disp_mpt",m, pt);
+					FillHistogram("disp_mpt_left",m, pt);
+					FillHistogram("disp_mpt_right",m, pt);
+
+					FillHistogram("disp_mpt_eff",m, pt, eff);
+					FillHistogram("disp_mpt_left_eff",m, pt, eff);
+					FillHistogram("disp_mpt_right_eff",m, pt, eff);
+					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+					{
+						FillHistogram("both_mpt",m, pt);
+						FillHistogram("both_mpt_left",m, pt);
+						FillHistogram("both_mpt_right",m, pt);
+
+						FillHistogram("both_mpt_eff",m, pt, eff);
+						FillHistogram("both_mpt_left_eff",m, pt, eff);
+						FillHistogram("both_mpt_right_eff",m, pt, eff);
+						if(mod1 == mod2) // for each module
+						{
+							FillHistogram(Form("both%d_mpt",mod1),m, pt);
+							FillHistogram(Form("both%d_mpt_eff",mod1),m, pt, eff);
+						}
+					}
+				}	
+
+				if(!TestMass(m,pt)) continue;
+
+				FillHistogram("nTrigger_all", pt, 1./eff);
+				if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+					FillHistogram("nTrigger_cpv", pt, 1./eff);
+				if ( ph1->IsDispOK() && ph2->IsDispOK() )
+				{
+					FillHistogram("nTrigger_disp", pt, 1./eff);
+					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+						FillHistogram("nTrigger_both", pt, 1./eff);
+				}
+
+			     	// Take track's angles and compare with cluster's angles.
+				for(Int_t i3=0; i3<fTracksTPC->GetEntriesFast(); i3++){
+					TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i3);
+
+					Double_t phiAssoc = track->Phi();
+					Double_t etaAssoc = track->Eta();
+					Double_t ptAssoc = track->Pt();
+
+					Double_t dPhi = phiTrigger - phiAssoc;
+					while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
+					while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
+
+					Double_t dEta = etaTrigger - etaAssoc; 		
+
+					Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
+					FillHistogram(Form("all_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
+					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+						FillHistogram(Form("cpv_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
+
+					if ( ph1->IsDispOK() && ph2->IsDispOK() ){
+						FillHistogram(Form("disp_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
+						if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+							FillHistogram(Form("both_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
+					}
+				}
+			}
+		}
 	}
-		  	
-	if(!TestMass(m,pt)) continue;
-
-     	// Take track's angles and compare with cluster's angles.
-	for(Int_t i3=0; i3<fTracksTPC->GetEntriesFast(); i3++){
-	   TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i3);
-
-	   Double_t phiAssoc = track->Phi();
-	   Double_t etaAssoc = track->Eta();
-	   Double_t ptAssoc = track->Pt();
-
-	   Double_t dPhi = phiAssoc - phiTrigger;
-	   while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
-                while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
-
-   	   Double_t dEta = etaAssoc - etaTrigger; 			
-	   
-	   Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
-	   FillHistogram(Form("all_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);			
-	   if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-	     FillHistogram(Form("cpv_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);			
-
- 	   if ( ph1->IsDispOK() && ph2->IsDispOK() ){
-	     FillHistogram(Form("disp_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);			
-	     if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-	       FillHistogram(Form("both_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);			
-   	   }
-	} 
-     }
-   }
 }
 
 //_______________________________________________________________________________
 void AliPHOSCorrelations::ConsiderPi0sMix()
 {
-  TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
-  for(Int_t evi=0; evi<arrayList->GetEntries();evi++){
-     TClonesArray * mixPHOS = static_cast<TClonesArray*>(arrayList->At(evi));
-     for (Int_t i1=0; i1 < fCaloPhotonsPHOS->GetEntriesFast(); i1++){
-	AliCaloPhoton * ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-	for(Int_t i2=0; i2<mixPHOS->GetEntriesFast(); i2++){
-	  AliCaloPhoton * ph2 = (AliCaloPhoton*)mixPHOS->At(i2) ;
-          TLorentzVector p12  = *ph1  + *ph2;
-	  Double_t m=p12.M() ;
- 	  Double_t pt=p12.Pt() ;
-	  int mod1 = ph1->Module() ;
-	  int mod2 = ph2->Module() ;
+	// We must consider only PHOS events in real distribution.
+	//UInt_t currentOfflineTriggerMask = GetCollisionCandidates(); 
+	if (fPHOSEvent) 
+	{
 
-          FillHistogram("mix_all_mpt", m, pt);
-	  if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-	    FillHistogram("mix_cpv_mpt",m, pt);
-	    if ( ph1->IsDispOK() && ph2->IsDispOK() ){
-	      FillHistogram("mix_disp_mpt",m, pt);
-	      if ( ph1->IsCPVOK() && ph2->IsCPVOK() ){
-		 FillHistogram("mix_both_mpt",m, pt);
-		 if (mod1 == mod2) FillHistogram(Form("mix_both%d_mpt",mod1),m, pt);
-	      }
-	    }
+		TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
+		for(Int_t evi=0; evi<arrayList->GetEntries();evi++)
+		{
+			TClonesArray * mixPHOS = static_cast<TClonesArray*>(arrayList->At(evi));
+			for (Int_t i1=0; i1 < fCaloPhotonsPHOS->GetEntriesFast(); i1++)
+			{
+				AliCaloPhoton * ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
+				for(Int_t i2=0; i2<mixPHOS->GetEntriesFast(); i2++)
+				{
+					AliCaloPhoton * ph2 = (AliCaloPhoton*)mixPHOS->At(i2) ;
+					TLorentzVector p12  = *ph1  + *ph2;
+					Double_t m=p12.M() ;
+					Double_t pt=p12.Pt() ;
+					Double_t eff = 1./GetEfficiency(pt);
+					
+					int mod1 = ph1->Module() ;
+					int mod2 = ph2->Module() ;
+
+					FillHistogram("mix_all_mpt", m, pt);
+					FillHistogram("mix_all_mpt_left",m, pt);
+					FillHistogram("mix_all_mpt_right",m, pt);
+
+					FillHistogram("mix_all_mpt_eff", m, pt, eff);
+					FillHistogram("mix_all_mpt_left_eff",m, pt, eff);
+					FillHistogram("mix_all_mpt_right_eff",m, pt, eff);
+
+					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+					{
+						FillHistogram("mix_cpv_mpt",m, pt);
+						FillHistogram("mix_cpv_mpt_left",m, pt);
+						FillHistogram("mix_cpv_mpt_right",m, pt);
+
+						FillHistogram("mix_cpv_mpt_eff",m, pt, eff);
+						FillHistogram("mix_cpv_mpt_left_eff",m, pt, eff);
+						FillHistogram("mix_cpv_mpt_right_eff",m, pt, eff);
+					}
+					if ( ph1->IsDispOK() && ph2->IsDispOK() )
+					{
+						FillHistogram("mix_disp_mpt",m, pt);
+						FillHistogram("mix_disp_mpt_left",m, pt);
+						FillHistogram("mix_disp_mpt_right",m, pt);
+
+						FillHistogram("mix_disp_mpt_eff",m, pt, eff);
+						FillHistogram("mix_disp_mpt_left_eff",m, pt, eff);
+						FillHistogram("mix_disp_mpt_right_eff",m, pt, eff);
+
+						if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+						{
+							FillHistogram("mix_both_mpt",m, pt);
+							FillHistogram("mix_both_mpt_left",m, pt);
+							FillHistogram("mix_both_mpt_right",m, pt);
+
+							FillHistogram("mix_both_mpt_eff",m, pt, eff);
+							FillHistogram("mix_both_mpt_left_eff",m, pt, eff);
+							FillHistogram("mix_both_mpt_right_eff",m, pt, eff);
+
+							if (mod1 == mod2) // for each module
+							{
+								FillHistogram(Form("mix_both%d_mpt",mod1),m, pt);
+								FillHistogram(Form("mix_both%d_mpt_eff",mod1),m, pt, eff);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
-     }
-  }
 }
 //_______________________________________________________________________________
 void AliPHOSCorrelations::ConsiderTracksMix()
 {
-  TList * arrayList = GetTracksTPCList(fVtxBin, fCentBin, fEMRPBin);
-  for (Int_t i1=0; i1 < fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-    for (Int_t i2=0; i2<fCaloPhotonsPHOS->GetEntriesFast(); i2++){
-      AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
-      TLorentzVector p12  = *ph1  + *ph2;
-      Double_t phiTrigger=p12.Phi() ;
-      Double_t etaTrigger=p12.Eta() ;
+	TList * arrayList = GetTracksTPCList(fVtxBin, fCentBin, fEMRPBin);
+	for (Int_t i1=0; i1 < fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
+		AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
+		for (Int_t i2=0; i2<fCaloPhotonsPHOS->GetEntriesFast(); i2++){
+			AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
+			TLorentzVector p12  = *ph1  + *ph2;
+			Double_t phiTrigger=p12.Phi() ;
+			Double_t etaTrigger=p12.Eta() ;
 
-      Double_t m=p12.M() ;
-      Double_t pt=p12.Pt() ;
+			Double_t m=p12.M() ;
+			Double_t pt=p12.Pt() ;
+			Double_t eff = 1./GetEfficiency(pt);
+			Int_t mod1 = ph1->Module();
+			Int_t mod2 = ph2->Module();
 
-      if(!TestMass(m,pt)) continue;
-      for(Int_t evi=0; evi<arrayList->GetEntries();evi++){
- 	TClonesArray * mixTracks = static_cast<TClonesArray*>(arrayList->At(evi));
-	for(Int_t i3=0; i3<mixTracks->GetEntriesFast(); i3++){
-  	  TLorentzVector * track = (TLorentzVector*)mixTracks->At(i3);		
 
-  	  Double_t phiAssoc = track->Phi();
- 	  Double_t etaAssoc = track->Eta();
-	  Double_t ptAssoc =  track->Pt();
+			if(!TestMass(m,pt)) continue;
 
-          Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
-	
-	  Double_t dPhi = phiAssoc - phiTrigger;
-	  while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
-	  while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
+			for(Int_t evi=0; evi<arrayList->GetEntries();evi++){
+				TClonesArray * mixTracks = static_cast<TClonesArray*>(arrayList->At(evi));
+				for(Int_t i3=0; i3<mixTracks->GetEntriesFast(); i3++){
+					TLorentzVector * track = (TLorentzVector*)mixTracks->At(i3);		
 
-  	  Double_t dEta = etaAssoc - etaTrigger; 			
-	  
-	  FillHistogram(Form("mix_all_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);				
- 	  if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
-	    FillHistogram(Form("mix_cpv_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);				
+					Double_t phiAssoc = track->Phi();
+					Double_t etaAssoc = track->Eta();
+					Double_t ptAssoc =  track->Pt();
 
-	  if ( ph1->IsDispOK() && ph2->IsDispOK() ){
-	    FillHistogram(Form("mix_disp_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);				
-	    if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
-	      FillHistogram(Form("mix_both_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta);				
-	  }
+					Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
+
+					Double_t dPhi = phiTrigger - phiAssoc;
+					while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
+					while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
+
+					Double_t dEta = etaTrigger - etaAssoc; 			
+
+					FillHistogram(Form("mix_all_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);	
+					FillHistogram(Form("mix_all_ptphieta_ptAssoc_%3.1f_mod%i",ptAssocBin, GetModCase(mod1, mod2)), pt, dPhi, dEta, eff);	
+					FillHistogram(Form("mix_all_ptphieta_ptAssoc_%3.1f_tpc%i",ptAssocBin, CheckTriggerEta(etaTrigger)), pt, dPhi, dEta, eff);		
+
+					if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+					{
+						FillHistogram(Form("mix_cpv_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);	
+						FillHistogram(Form("mix_cpv_ptphieta_ptAssoc_%3.1f_mod%i",ptAssocBin, GetModCase(mod1, mod2)), pt, dPhi, dEta, eff);	
+						FillHistogram(Form("mix_cpv_ptphieta_ptAssoc_%3.1f_tpc%i",ptAssocBin, CheckTriggerEta(etaTrigger)), pt, dPhi, dEta, eff);	
+					}			
+
+					if ( ph1->IsDispOK() && ph2->IsDispOK() ) {
+						FillHistogram(Form("mix_disp_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);	
+						FillHistogram(Form("mix_disp_ptphieta_ptAssoc_%3.1f_mod%i",ptAssocBin, GetModCase(mod1, mod2)), pt, dPhi, dEta, eff);	
+						FillHistogram(Form("mix_disp_ptphieta_ptAssoc_%3.1f_tpc%i",ptAssocBin, CheckTriggerEta(etaTrigger)), pt, dPhi, dEta, eff);				
+						if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+						{
+							FillHistogram(Form("mix_both_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);	
+							FillHistogram(Form("mix_both_ptphieta_ptAssoc_%3.1f_mod%i",ptAssocBin, GetModCase(mod1, mod2)), pt, dPhi, dEta, eff);
+							FillHistogram(Form("mix_both_ptphieta_ptAssoc_%3.1f_tpc%i",ptAssocBin, CheckTriggerEta(etaTrigger)), pt, dPhi, dEta, eff);	
+						}				
+					}
+				}
+			} 
+		}
 	}
-     } 
-   }
-  }
 }
+
+//_______________________________________________________________________________
+void AliPHOSCorrelations::ConsiderPi0sME()
+{
+	//Seek Most Energetic (ME) Pi0 and work whit it.
+	// Must consider only PHOS events in real distribution.
+	if (fPHOSEvent) 
+	{
+		const Int_t nPHOS=fCaloPhotonsPHOS->GetEntriesFast() ;
+		for(Int_t i1=0; i1 < nPHOS-1; i1++)
+		{
+			AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
+			for (Int_t i2=i1+1; i2<nPHOS; i2++)
+			{
+				AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
+				TLorentzVector p12  = *ph1  + *ph2;
+
+				Double_t phiTrigger=p12.Phi() ;
+				Double_t etaTrigger=p12.Eta() ;
+
+				Double_t m=p12.M() ;
+				Double_t pt=p12.Pt() ;
+				Double_t eff = 1./GetEfficiency(pt);
+				int mod1 = ph1->Module() ;
+				int mod2 = ph2->Module() ;				
+
+				FillHistogram("clu_phieta",phiTrigger,etaTrigger);
+				FillHistogram("clusingle_phieta",ph1->Phi(), ph1->Eta());
+				FillHistogram("clusingle_phieta",ph2->Phi(), ph2->Eta());
+
+
+				FillHistogram("all_mpt",m, pt);
+				FillHistogram("all_mpt_left",m, pt);
+				FillHistogram("all_mpt_right",m, pt);
+
+				FillHistogram("all_mpt_eff",m, pt, eff);
+				FillHistogram("all_mpt_left_eff",m, pt, eff);
+				FillHistogram("all_mpt_right_eff",m, pt, eff);
+
+			 	if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+			 	{
+			 		FillHistogram("cpv_mpt",m, pt);
+			 		FillHistogram("cpv_mpt_left",m, pt);
+					FillHistogram("cpv_mpt_right",m, pt);
+
+					FillHistogram("cpv_mpt_eff",m, pt, eff);
+			 		FillHistogram("cpv_mpt_left_eff",m, pt, eff);
+					FillHistogram("cpv_mpt_right_eff",m, pt, eff);
+				}
+
+				if ( ph1->IsDispOK() && ph2->IsDispOK() )
+				{
+					FillHistogram("disp_mpt",m, pt);
+					FillHistogram("disp_mpt_left",m, pt);
+					FillHistogram("disp_mpt_right",m, pt);
+
+					FillHistogram("disp_mpt_eff",m, pt, eff);
+					FillHistogram("disp_mpt_left_eff",m, pt, eff);
+					FillHistogram("disp_mpt_right_eff",m, pt, eff);
+					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+					{
+						FillHistogram("both_mpt",m, pt);
+						FillHistogram("both_mpt_left",m, pt);
+						FillHistogram("both_mpt_right",m, pt);
+
+						FillHistogram("both_mpt_eff",m, pt, eff);
+						FillHistogram("both_mpt_left_eff",m, pt, eff);
+						FillHistogram("both_mpt_right_eff",m, pt, eff);
+						if(mod1 == mod2) // for each module
+						{
+							FillHistogram(Form("both%d_mpt",mod1),m, pt);
+							FillHistogram(Form("both%d_mpt_eff",mod1),m, pt, eff);
+						}
+					}
+				}	
+				
+				if(!TestMass(m,pt)) continue;
+
+				Int_t modCase = GetModCase(mod1, mod2);
+
+				TestPi0ME(kPidAll, p12, modCase);
+				if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+					TestPi0ME(kPidCPV, p12, modCase);
+				if ( ph1->IsDispOK() && ph2->IsDispOK() )
+				{
+					TestPi0ME(kPidDisp, p12, modCase);
+					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+						TestPi0ME(kPidBoth, p12, modCase);
+				}
+			}
+		}
+
+		TString spid[4]={"all","cpv","disp","both"} ;
+		for (int ipid = 0; ipid < 4; ipid++)
+		{
+			if (fMEExists[ipid])
+				FillHistogram(Form("nTrigger_%s", spid[ipid].Data()), fMEPt[ipid], GetEfficiency(fMEPt[ipid]));
+		}
+
+		// Take track's angles and compare with cluster's angles.
+		for(Int_t i3=0; i3<fTracksTPC->GetEntriesFast(); i3++){
+			TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i3);
+
+			Double_t phiAssoc = track->Phi();
+			Double_t etaAssoc = track->Eta();
+			Double_t ptAssoc = track->Pt();
+
+			Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
+			Double_t dPhi(0.), dEta(0.);
+
+			for (int ipid = 0; ipid < 4; ipid++)
+			{
+				if (fMEExists[ipid])
+				{
+					dPhi = fMEPhi[ipid] - phiAssoc;
+					while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
+					while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
+					dEta = fMEEta[ipid] - etaAssoc; 	 			
+					FillHistogram(Form("%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), ptAssocBin),  fMEPt[ipid], dPhi, dEta, 1./GetEfficiency(fMEPt[ipid]) );	
+				}	
+			}
+		} 
+	}
+}
+//_______________________________________________________________________________
+void AliPHOSCorrelations::ConsiderTracksMixME()
+{
+	TString spid[4]={"all","cpv","disp","both"} ;
+
+	TList * arrayList = GetTracksTPCList(fVtxBin, fCentBin, fEMRPBin);
+
+	for(Int_t evi=0; evi<arrayList->GetEntries();evi++){
+		TClonesArray * mixTracks = static_cast<TClonesArray*>(arrayList->At(evi));
+		for(Int_t i3=0; i3<mixTracks->GetEntriesFast(); i3++){
+			TLorentzVector * track = (TLorentzVector*)mixTracks->At(i3);		
+
+			Double_t phiAssoc = track->Phi();
+			Double_t etaAssoc = track->Eta();
+			Double_t ptAssoc =  track->Pt();
+
+			Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
+
+			Double_t dPhi(0.), dEta(0.);
+
+			for (int ipid = 0; ipid < 4; ipid++)
+			{
+				if (fMEExists[ipid])
+				{
+					dPhi = fMEPhi[ipid] - phiAssoc;
+					while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
+					while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
+					dEta = fMEEta[ipid] - etaAssoc; 	 				
+
+					FillHistogram(Form("mix_%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), ptAssocBin), fMEPt[ipid], dPhi, dEta, 1./GetEfficiency(fMEPt[ipid]));	
+					FillHistogram(Form("mix_%s_ptphieta_ptAssoc_%3.1f_mod%i", spid[ipid].Data(), ptAssocBin, fMEModCase[ipid]), fMEPt[ipid], dPhi, dEta, 1./GetEfficiency(fMEPt[ipid]));	
+					FillHistogram(Form("mix_%s_ptphieta_ptAssoc_%3.1f_tpc%i", spid[ipid].Data(), ptAssocBin, CheckTriggerEta(fMEEta[ipid])), fMEPt[ipid], dPhi, dEta, 1./GetEfficiency(fMEPt[ipid]));	
+				}	
+			}
+		}
+	} 
+}
+
 //_______________________________________________________________________________
 TList* AliPHOSCorrelations::GetCaloPhotonsPHOSList(UInt_t vtxBin, UInt_t centBin, UInt_t rpBin){
 
@@ -1503,7 +1871,8 @@ TList* AliPHOSCorrelations::GetTracksTPCList(UInt_t vtxBin, UInt_t centBin, UInt
   }
 }
 //_______________________________________________________________________________
-Double_t AliPHOSCorrelations::GetAssocBin(Double_t pt){
+Double_t AliPHOSCorrelations::GetAssocBin(Double_t pt) const
+{
   //Calculates bin 
   for(Int_t i=1; i<fAssocBins.GetSize(); i++){
     if(pt>fAssocBins.At(i-1) && pt<fAssocBins.At(i))
@@ -1570,7 +1939,7 @@ Bool_t AliPHOSCorrelations::SelectESDTrack(AliESDtrack * t) const
 // Estimate if this track can be used for the RP calculation. If all right - return "TRUE"
 {
 	Float_t pt=t->Pt();
-	if(pt<0.5 || pt>10.) return kFALSE ;
+	if(pt<0.5 || pt>20.) return kFALSE ;
 	if(fabs( t->Eta() )>0.8) return kFALSE;
 	if(!fESDtrackCuts->AcceptTrack(t)) return kFALSE ;
 	return kTRUE ;
@@ -1580,7 +1949,7 @@ Bool_t AliPHOSCorrelations::SelectAODTrack(AliAODTrack * t) const
 // Estimate if this track can be used for the RP calculation. If all right - return "TRUE"
 {
 	Float_t pt=t->Pt();
-	if(pt<0.5 || pt>10.) return kFALSE ;
+	if(pt<0.5 || pt>20.) return kFALSE ;
 	if(fabs( t->Eta() )>0.8) return kFALSE;
 	if(fCheckHibridGlobal == kOnlyHibridTracks)
 	{
@@ -1597,12 +1966,6 @@ Bool_t AliPHOSCorrelations::SelectAODTrack(AliAODTrack * t) const
 	return kTRUE ;
 }
 //_______________________________________________________________________________
-void AliPHOSCorrelations::SetPeriod(Period period)
-{
-	fPeriod = period;
-}
-
-//_______________________________________________________________________________
 void AliPHOSCorrelations::LogProgress(int step)
 // Fill "step by step" hist
 {
@@ -1617,18 +1980,40 @@ void AliPHOSCorrelations::LogSelection(int step, int internalRunNumber)
   //FillHistogram("hTotSelEvents", step+0.5);
 }
 //_______________________________________________________________________________
-Bool_t AliPHOSCorrelations::TestMass(Double_t m, Double_t /*pt*/)
+Bool_t AliPHOSCorrelations::TestMass(Double_t m, Double_t pt)
 {
 	//Check if mair in pi0 peak window
 	//To make pT-dependent 
-	if (fSigmaWidth == 0.)
+	if (!fSigmaWidth)	// Default big window 
+	{
+		FillHistogram("massWindow", fMassInvMean, fMassInvSigma);
 		return (fMassInvMean-fMassInvSigma<m && m<fMassInvMean+fMassInvSigma) ; 
-	else
-		return (fMassInvMean-fMassInvSigma*fSigmaWidth<m && m<fMassInvMean+fMassInvSigma*fSigmaWidth) ; 
+	}
+	else			// Parametrization
+	{
+		FillHistogram("massWindow", MassMeanFunktion(pt), MassSigmaFunktion(pt)*fSigmaWidth);
+		/*cout 	<<"MinMass: " << MassMeanFunktion(pt)-MassSigmaFunktion(pt)*fSigmaWidth
+			<<" m: "<<m
+			<<" pt: "<<pt
+			<<" MaxMass "<< MassMeanFunktion(pt)+MassSigmaFunktion(pt)*fSigmaWidth<<endl;*/
+		return ( MassMeanFunktion(pt)-MassSigmaFunktion(pt)*fSigmaWidth<m && m<MassMeanFunktion(pt)+MassSigmaFunktion(pt)*fSigmaWidth ); 
+	}
 } 
 //_______________________________________________________________________________
-void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x)const
+Double_t AliPHOSCorrelations::MassMeanFunktion(Double_t &pt) const
 {
+	// Parametrization mean of mass window
+	return ( fMassMeanP1+TMath::Power(1.25,-pt+fMassMeanP0) );
+}
+//_______________________________________________________________________________
+Double_t AliPHOSCorrelations::MassSigmaFunktion(Double_t &pt) const
+{
+	// Parametrization sigma of mass window
+	//TODO:: Kill falling at large pT.
+	return ( fabs(fMassSigmaP0 + fMassSigmaP1*pt) );
+}
+//_____________________________________________________________________________
+void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x)const{
   //FillHistogram
   TH1 * hist = dynamic_cast<TH1*>(fOutputContainer->FindObject(key)) ;
   if(hist)
@@ -1636,32 +2021,46 @@ void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x)const
   else
     AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
-//_______________________________________________________________________________
-void AliPHOSCorrelations::FillHistogram(const char * key, Double_t x, Double_t y) const
-{
-  //Fills 2D histograms with key
+//_____________________________________________________________________________
+void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x,Double_t y)const{
+  //FillHistogram
+  TH1 * th1 = dynamic_cast<TH1*> (fOutputContainer->FindObject(key));
+  if(th1)
+    th1->Fill(x, y) ;
+  else
+    AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
+}
+
+//_____________________________________________________________________________
+void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const{
+  //Fills 1D histograms with key
   TObject * obj = fOutputContainer->FindObject(key);
- 
+  
   TH2 * th2 = dynamic_cast<TH2*> (obj);
   if(th2) {
-    th2->Fill(x, y) ;
+    th2->Fill(x, y, z) ;
     return;
   }
 
-  AliError(Form("can not find histogram (of instance TH2) <%s> ",key)) ;
-}
-//_______________________________________________________________________________
-void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const
-{
-  //Fills 3D histograms with key
-  TObject * obj = fOutputContainer->FindObject(key);
- 
   TH3 * th3 = dynamic_cast<TH3*> (obj);
   if(th3) {
     th3->Fill(x, y, z) ;
     return;
   }
- 
+  
+  AliError(Form("can not find histogram (of instance TH2) <%s> ",key)) ;
+}
+//_____________________________________________________________________________
+void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z, Double_t w) const{
+  //Fills 1D histograms with key
+  TObject * obj = fOutputContainer->FindObject(key);
+  
+  TH3 * th3 = dynamic_cast<TH3*> (obj);
+  if(th3) {
+    th3->Fill(x, y, z, w) ;
+    return;
+  }
+  
   AliError(Form("can not find histogram (of instance TH3) <%s> ",key)) ;
 }
 //_____________________________________________________________________________
@@ -1688,4 +2087,151 @@ void AliPHOSCorrelations::SetGeometry()
      }
   } 
 }
- 
+//_____________________________________________________________________________
+Double_t AliPHOSCorrelations::GetEfficiency(Double_t x) const {
+	//Efficiency for Both2core only!
+
+	Double_t e =1.;
+ 	// From 0 to 5 - 11h for different centrality.
+ 	/*0: 0-5%
+	1: 5-10%
+	2: 10-20%
+	3: 20-40%
+	4: 40-60%
+	5: 60-80%
+	6: 0-20%
+	7: 0-10%*/
+	Double_t par0[9] = {-798863, 339.714, 6407.1, -457.778, 1283.65, -117.075, -19.3764, 0, 0};
+	Double_t par1[9] = {-799344, -1852.1, 3326.29, -384.229, 504.046, 562.608, 130.518, 0, 0};
+	Double_t par2[9] = {-858904, -1923.28, 5350.74, -568.946, 945.497, 419.647, 101.911, 0, 0};
+	Double_t par3[9] = {-795652, -1495.97, 2926.46, -357.804, 478.961, 551.127, 128.86, 0, 0};
+	Double_t par4[9] = {-891951, 279626, -123110, -5464.75, 27470.8, 283264, 15355.1, 192762, 44828.6};
+	Double_t par5[9] = {-1.1094e+06, -986.915, 2127.71, -268.908, 375.594, 380.791, 89.4053, 0, 0};
+	// Double_t par6[7] = {4.86106e+09, 4.47013e+08, -1.48079e+09, 1.47233e+08, -2.62356e+08, -1.00639e+08, -2.45629e+07, 0, 0};
+	// Double_t par7[7] = {-1.36243e+06, -26011.1, 135838, -12161.3, 24956.8, 4985.4, 1285.57, 0, 0};
+
+ 	// 8 for pPb13 and 0-100%
+	 Double_t par8[9] = {6.87095e+06, 8.36553e+06, -3.29572e+06, 2.18688e+06, -739490, 521666, 106661, 0, 0};
+	 	
+	 
+	Double_t* pFitPoint;
+
+	if(fPeriod == kLHC11h)
+	{
+		if(x<1.) x = 1.; 
+
+		if (fCentrality<=5)  pFitPoint = &par0[0];
+		if (fCentrality>5 && fCentrality<=10) pFitPoint = &par1[0];
+		if (fCentrality>10 && fCentrality<=20) pFitPoint = &par2[0];
+		if (fCentrality>20 && fCentrality<=40) pFitPoint = &par3[0];
+		if (fCentrality>40 && fCentrality<=60) pFitPoint = &par4[0];
+		if (fCentrality>60) pFitPoint = &par5[0];
+
+		Double_t pFit[9];
+		for (int i = 0; i < 10; ++i)
+	 	{
+	 		pFit[i] = *(pFitPoint+i);
+	 	}
+
+		if (fCentrality>40 && fCentrality<=60)
+			e = TMath::Exp(-(((((1.+(pFit[1]*x))+(pFit[2]*(x*x)))+(pFit[5]*(x*(x*x))))+(pFit[7]*(x*(x*(x*x)))))/((((pFit[3]*x)+(pFit[4]*(x*x)))+(pFit[6]*(x*(x*x))))+(pFit[8]*(x*(x*(x*x))))))) ;
+		else
+			e = TMath::Exp(-((((1.+(pFit[1]*x))+(pFit[2]*(x*x)))+(pFit[5]*(x*(x*x))))/(((pFit[3]*x)+(pFit[4]*(x*x)))+(pFit[6]*(x*(x*x)))))) ;
+	}
+	else
+	if( fPeriod == kLHC13 ) 
+	{
+		pFitPoint = &par8[0];
+		Double_t pFit[9];
+		for( int i = 0; i < 10; i++ )
+	 	{
+	 		pFit[i] = *(pFitPoint+i);
+	 	}
+
+		e = TMath::Exp(-((((pFit[0]+(pFit[1]*x))+(pFit[2]*(x*x)))+(pFit[5]*(x*(x*x))))/(((1.+(pFit[3]*x))+(pFit[4]*(x*x)))+(pFit[6]*(x*(x*x)))))) ;
+	}
+	else
+	{
+		// No case
+		AliWarning(Form("No efficiensy choise."));
+		e = 1.;
+	}
+
+	return e;
+}
+//_____________________________________________________________________________
+Int_t AliPHOSCorrelations::GetModCase(Int_t &mod1, Int_t &mod2) const {
+
+	// Return modules pair namber.
+	if(mod1 == mod2)
+	{
+		if(mod1 == 1) return 1;
+		if(mod1 == 2) return 2;
+		if(mod1 == 3) return 3;
+	}
+	else
+	{
+		if(mod1 == 1 || mod2 == 1)
+			if(mod1 == 2 || mod2 == 2)
+				return 12;
+
+		if(mod1 == 1 || mod2 == 1)
+			if(mod1 == 3 || mod2 == 3)
+				return 13;
+		if(mod1 == 2 || mod2 == 2)
+			if(mod1 == 3 || mod2 == 3)
+				return 23;
+	}
+
+	AliError(Form("No choise for mod1 = %i, mod2 = %i", mod1, mod2));
+	return 1;
+}
+//_____________________________________________________________________________
+void AliPHOSCorrelations::TestTrigger(){
+	FillHistogram("hTriggerPassedEvents",  0);	// All events
+	if (fEvent->GetFiredTriggerClasses().Contains("PHI7") )
+		FillHistogram("hTriggerPassedEvents",  1.);	// 13 events
+	if (fEvent->GetFiredTriggerClasses().Contains("PHS") )
+		FillHistogram("hTriggerPassedEvents",  2.);	// 11h events
+
+	if (fEvent->GetFiredTriggerClasses().Contains("PHI7") || fEvent->GetFiredTriggerClasses().Contains("PHS"))
+		fPHOSEvent = true;
+
+	if( fDebug >= 2 )
+		AliInfo( Form("Event passed offline phos trigger test: %s ", fEvent->GetFiredTriggerClasses().Data() ) );
+
+	//fPHOSEvent = true;
+}
+//_____________________________________________________________________________
+Int_t AliPHOSCorrelations::CheckTriggerEta(Double_t eta){
+	if (eta>=0.) 
+		return 1;
+	return 2;
+}
+//_____________________________________________________________________________
+void AliPHOSCorrelations::TestPi0ME(Int_t ipid, TLorentzVector p12, Int_t modCase)
+{
+	Double_t phiTrigger=p12.Phi() ;
+	Double_t etaTrigger=p12.Eta() ;
+	Double_t pt=p12.Pt() ;
+
+	if (pt >= fMEPt[ipid])
+	{
+		fMEPt[ipid] = pt;
+		fMEPhi[ipid] = phiTrigger;
+		fMEEta[ipid] = etaTrigger;
+		fMEModCase[ipid] = modCase;
+		fMEExists[ipid] = true;
+	}
+}
+//_____________________________________________________________________________
+void AliPHOSCorrelations::ZeroingVariables(){
+	for (int i = 0; i < 4; ++i)
+	{
+		fMEPhi[i] = fMEEta[i] = fMEPt[i] = -99;
+		fMEModCase[i] = 1;
+		fMEExists[i] = false;
+
+	}
+}
+
