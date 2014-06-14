@@ -106,8 +106,8 @@ Bool_t AliTPCDigitizer::Init()
 //------------------------------------------------------------------------
 void AliTPCDigitizer::Digitize(Option_t* option)
 {
-  DigitizeFast(option);  
-  //DigitizeWithTailAndCrossTalk(option);
+  //DigitizeFast(option);  
+  DigitizeWithTailAndCrossTalk(option);
   
 }
 //------------------------------------------------------------------------
@@ -983,7 +983,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       
       
       // fill info for degugging
-      if (AliTPCReconstructor::StreamLevel()==1) {
+      if (AliTPCReconstructor::StreamLevel()==1 && q > zerosup ) {
         TTreeSRedirector &cstream = *fDebugStreamer;
         cstream <<"ionTailXtalk"<<
 	  "sec="       << sector              <<   //
