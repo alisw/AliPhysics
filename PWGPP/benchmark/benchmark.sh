@@ -2202,7 +2202,7 @@ stackTraceTree()
 # benchmark.sh stackTraceTree /foo/*/rec.log
   gawk '
        BEGIN { 
-               print "frame/I:method/C:line/C:cpass/I:aliroot/I";
+               print "frame/I:method/C:line/C:cpass/I:aliroot/I:file/C";
                RS="#[0-9]*";
                aliroot=0;
                read=1;
@@ -2212,7 +2212,7 @@ stackTraceTree()
       read==1 { 
                if ($3 ~ /Ali*/) aliroot=1; else aliroot=0;
                gsub("#","",RT); 
-               if ($NF!="" && RT!="" && $3!="") print RT" "$3" "$NF" "0" "aliroot
+               if ($NF!="" && RT!="" && $3!="") print RT" "$3" "$NF" "0" "aliroot" "FILENAME
              }
       ' "$@" 2>/dev/null
 )
