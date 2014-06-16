@@ -38,7 +38,7 @@ maxSshConnectAttempts=400
 maxVmAddressWait=120
 
 # working directory prefix
-sessionPrefix='/tmp/alirelval'
+sessionPrefix="$HOME/.alice-release-validation"
 
 # screen name for the validation
 screenName='AliceReleaseValidation'
