@@ -34,6 +34,9 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   if(!branchRecJets.Contains("noRecJets")) task->SetBranchRecJets(branchRecJets);
 
   // Double_t V0EtaCut, Double_t jetEtaCut, Bool_t IsMC, Double_t DeltaVtxZCut can be set externally
+
+  fJetAreaMin = 0.6*TMath::Pi()*jetradius*jetradius;//calculate jetareamin cut value for FF task
+  task->SetJetMinArea(fJetAreaMin);//cut on jet area, applied together with all other jet cuts in jet finding by AliAnalysisTaskFragmentationFunction.cxx
   task->SetCutJetEta(jetEtaCut);
   task->SetDeltaZVertexCut(DeltaVtxZCut);
   task->SetBranchRecBackClusters("clustersAOD_KT04_B0_Filter00768_Cut00150_Skip00"); 
@@ -54,6 +57,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetFilterMask(filtermask);//2011 Track FilterMask
 
   //Cuts---------------------------------
+
   
   task->SetTrackCuts(0.15, -0.9, 0.9, 0., 2*TMath::Pi());// (pt Cut, daughtertrack rap's, phi min max cuts)
   task->SetJetCuts(5., (-1)*jetEtaCut, jetEtaCut, 0., 2*TMath::Pi());//(jet pt Cut, jet acceptance, phi min max cuts)

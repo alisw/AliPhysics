@@ -29,6 +29,7 @@ class TString;
 class TList;
 class AliAODMCParticle;
 class AliAODTrack;
+class TRandom3;
 
 #include "AliAnalysisTaskFragmentationFunction.h"
 #include "AliPID.h"
@@ -119,8 +120,14 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Int_t  IsTrackInjected(AliAODv0 *v0, AliAODMCHeader *header, TClonesArray *arrayMC);
   TString GetGenerator(Int_t label, AliAODMCHeader* header);
   Double_t SmearJetPt(Double_t jetPt, Int_t cl, Double_t jetRadius, Double_t ptmintrack, Double_t& jetPtSmear);
+  Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const;
+  Bool_t IsRCJCOverlap(TList* recjetlist, const AliVParticle* part, Double_t dDistance) const;
+  AliAODJet* GetRandomCone(TList* jetlist, Double_t dEtaConeMax, Double_t dDistance) const;
+
   AliAODJet* GetMedianCluster();
-  
+  Double_t AreaCircSegment(Double_t dRadius, Double_t dDistance) const;  
+
+
   virtual void SetK0Type(Int_t i){ fK0Type = i; }
   virtual void SetFilterMaskK0(UInt_t i) {fFilterMaskK0 = i;}
 
@@ -169,11 +176,13 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
     fFFIMLaNBinsXi = nXi; fFFIMLaXiMin = xiMin; fFFIMLaXiMax = xiMax; fFFIMLaNBinsZ  = nZ;  fFFIMLaZMin  = zMin;  fFFIMLaZMax  = zMax; }
 
 
+  //TRandom3* nRandom; //random number for UE estimation
 
   // consts
 
  
   //--
+  TRandom3* fRandom;          // TRandom3 for background estimation 
   Bool_t   fAnalysisMC;
   Double_t fDeltaVertexZ;
   Double_t fCutjetEta;
@@ -236,17 +245,17 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   AliFragFuncQATrackHistos*  fV0QAK0;                      //! track QA: V0s in K0 inv mass range
   AliFragFuncHistos*         fFFHistosRecCutsK0Evt;        //! inclusive FF for K0 evt
-  AliFragFuncHistosInvMass*  fFFHistosIMK0AllEvt;          //! K0 pt spec for all events
-  AliFragFuncHistosInvMass*  fFFHistosIMK0Jet;             //! K0 FF all dPhi   
-  AliFragFuncHistosInvMass*  fFFHistosIMK0Cone;            //! K0 FF jet cone   
+  //AliFragFuncHistosInvMass*  fFFHistosIMK0AllEvt;          //! K0 pt spec for all events
+  //AliFragFuncHistosInvMass*  fFFHistosIMK0Jet;             //! K0 FF all dPhi   
+  //AliFragFuncHistosInvMass*  fFFHistosIMK0Cone;            //! K0 FF jet cone   
   
   Int_t fLaType;                                           // La cuts
   UInt_t fFilterMaskLa;                                    //! La legs cuts
   TList* fListLa;                                          //! La list 
   
-  AliFragFuncHistosInvMass*  fFFHistosIMLaAllEvt;          //! La pt spec for all events
-  AliFragFuncHistosInvMass*  fFFHistosIMLaJet;             //! La FF all dPhi   
-  AliFragFuncHistosInvMass*  fFFHistosIMLaCone;            //! La FF jet cone   
+  //AliFragFuncHistosInvMass*  fFFHistosIMLaAllEvt;          //! La pt spec for all events
+  //AliFragFuncHistosInvMass*  fFFHistosIMLaJet;             //! La FF all dPhi   
+  //AliFragFuncHistosInvMass*  fFFHistosIMLaCone;            //! La FF jet cone   
   
   Int_t fALaType;                                          // ALa cuts
 
@@ -265,13 +274,13 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   Bool_t IsArmenterosSelected;                             //Armenteros-Podolanski Cut (is/isn't) applied  
  
-  AliFragFuncHistosInvMass*  fFFHistosIMALaAllEvt;          //! ALa pt spec for all events
-  AliFragFuncHistosInvMass*  fFFHistosIMALaJet;             //! ALa FF all dPhi   
-  AliFragFuncHistosInvMass*  fFFHistosIMALaCone;            //! ALa FF jet cone   
+  //AliFragFuncHistosInvMass*  fFFHistosIMALaAllEvt;          //! ALa pt spec for all events
+  //AliFragFuncHistosInvMass*  fFFHistosIMALaJet;             //! ALa FF all dPhi   
+  // AliFragFuncHistosInvMass*  fFFHistosIMALaCone;            //! ALa FF jet cone   
   
   // histogram bins 
   
-
+ 
 
   //--K0s 
   
@@ -332,17 +341,20 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1JetEta;        
   TH1F* fh1JetPhi;                   
   TH2F* fh2JetEtaPhi;  
-  TH1F* fh1V0JetPt; 
+  // TH1F* fh1V0JetPt; 
+  TH1F* fh1IMK0Cone; //jet pt distribution for normalisation by number of jets
+  TH1F* fh1IMLaCone;
+  TH1F* fh1IMALaCone;
   TH2F* fh2FFJetTrackEta; //charged jet track eta distribution                 
-  TH1F* fh1trackPosNCls;             
-  TH1F* fh1trackNegNCls; 
+  //  TH1F* fh1trackPosNCls;             
+  //  TH1F* fh1trackNegNCls; 
   TH1F* fh1trackPosRap;              
   TH1F* fh1trackNegRap;              
-  TH1F* fh1V0Rap;              
+  // TH1F* fh1V0Rap;              
   TH1F* fh1trackPosEta;              
   TH1F* fh1trackNegEta;              
   TH1F* fh1V0Eta;                    
-  TH1F* fh1V0totMom;                 
+  // TH1F* fh1V0totMom;                 
   TH1F* fh1CosPointAngle;            
   TH1F* fh1DecayLengthV0;            
   TH2F* fh2ProperLifetimeK0sVsPtBeforeCut;
@@ -363,9 +375,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1EtaK0s;
   TH1F* fh1EtaLa;
   TH1F* fh1EtaALa;  
-  TH3F* fh3InvMassEtaTrackPtK0s;
-  TH3F* fh3InvMassEtaTrackPtLa;
-  TH3F* fh3InvMassEtaTrackPtALa;
+  THnSparse* fhnInvMassEtaTrackPtK0s;
+  THnSparse* fhnInvMassEtaTrackPtLa;
+  THnSparse* fhnInvMassEtaTrackPtALa;
   TH1F* fh1TrackMultCone;
   TH2F* fh2TrackMultCone;
   TH2F* fh2NJK0;
@@ -377,37 +389,45 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH2F* fh2MCEtagenK0Cone;
   TH2F* fh2MCEtagenLaCone;
   TH2F* fh2MCEtagenALaCone;
-  TH1F* fh1FFIMK0ConeSmear;
-  TH1F* fh1FFIMLaConeSmear;
-  TH1F* fh1FFIMALaConeSmear;
-  TH3F* fh3MCrecK0Cone;
-  TH3F* fh3MCrecLaCone;
-  TH3F* fh3MCrecALaCone;
-  TH3F* fh3MCrecK0ConeSmear;
-  TH3F* fh3MCrecLaConeSmear;
-  TH3F* fh3MCrecALaConeSmear;
-  TH3F* fh3SecContinCone;
-  TH3F* fh3StrContinCone;
+  TH1F* fh1IMK0ConeSmear; //histos for normalisation by number of smeared jets
+  TH1F* fh1IMLaConeSmear;
+  TH1F* fh1IMALaConeSmear;
+  THnSparse* fhnMCrecK0Cone;
+  THnSparse* fhnMCrecLaCone;
+  THnSparse* fhnMCrecALaCone;
+  THnSparse* fhnMCrecK0ConeSmear;
+  THnSparse* fhnMCrecLaConeSmear;
+  THnSparse* fhnMCrecALaConeSmear;
+  THnSparse* fhnK0sSecContinCone;
+  THnSparse* fhnLaSecContinCone;
+  THnSparse* fhnALaSecContinCone;
   THnSparse* fhnK0sIncl;
   THnSparse* fhnK0sCone;
   THnSparse* fhnLaIncl;
   THnSparse* fhnLaCone;
   THnSparse* fhnALaIncl;
   THnSparse* fhnALaCone;
-  TH3F* fh3IMK0PerpCone;
-  TH3F* fh3IMLaPerpCone;
-  TH3F* fh3IMALaPerpCone;
-  TH3F* fh3IMK0MedianCone;
-  TH3F* fh3IMLaMedianCone;
-  TH3F* fh3IMALaMedianCone;
+  THnSparse* fhnK0sPC;
+  THnSparse* fhnLaPC;
+  THnSparse* fhnALaPC;
+  THnSparse* fhnK0sMCC;
+  THnSparse* fhnLaMCC;
+  THnSparse* fhnALaMCC;
+  THnSparse* fhnK0sRC;
+  THnSparse* fhnLaRC;
+  THnSparse* fhnALaRC;
+  THnSparse* fhnK0sOC;
+  THnSparse* fhnLaOC;
+  THnSparse* fhnALaOC;
+  TH1F* fh1AreaExcluded;
   TH1F* fh1MedianEta;
   TH1F* fh1JetPtMedian; //for normalisation by total number of median cluster jets TH3F* fh3IMALaMedianCone;
   TH1F* fh1MCMultiplicityPrimary;
   TH1F* fh1MCMultiplicityTracks;
-  TH3F* fh3FeedDownLa;
-  TH3F* fh3FeedDownALa; 
-  TH3F* fh3FeedDownLaCone;
-  TH3F* fh3FeedDownALaCone;   
+  THnSparse* fhnFeedDownLa;
+  THnSparse* fhnFeedDownALa;
+  THnSparse* fhnFeedDownLaCone;
+  THnSparse* fhnFeedDownALaCone;
   TH1F* fh1MCProdRadiusK0s;
   TH1F* fh1MCProdRadiusLambda;
   TH1F* fh1MCProdRadiusAntiLambda;
@@ -427,7 +447,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1MCEtaK0s; 
   TH1F* fh1MCEtaLambda;
   TH1F* fh1MCEtaAntiLambda;
-
 
 
   ClassDef(AliAnalysisTaskJetChem, 3);
