@@ -599,7 +599,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 								 vCascade,
 								 kTRUE,  // usedForVtxFit = kFALSE ? FIXME
 								 vtx->UsesTrack(esdCascadeBach->GetID()),
-								 AliAODTrack::kSecondary,
+								 AliAODTrack::kFromDecayVtx,
 								 selectInfo);
       aodTrack->SetPIDForTracking(esdCascadeBach->GetPIDForTracking());
       aodTrack->SetTPCFitMap(esdCascadeBach->GetTPCFitMap());
@@ -680,7 +680,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 								   vV0FromCascade,
 								   kTRUE,  // usedForVtxFit = kFALSE ? FIXME
 								   vtx->UsesTrack(esdCascadePos->GetID()),
-								   AliAODTrack::kSecondary,
+								   AliAODTrack::kFromDecayVtx,
 								   selectInfo);
 	aodTrack->SetPIDForTracking(esdCascadePos->GetPIDForTracking());
         aodTrack->SetTPCFitMap(esdCascadePos->GetTPCFitMap());
@@ -732,7 +732,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 								   vV0FromCascade,
 								   kTRUE,  // usedForVtxFit = kFALSE ? FIXME
 								   vtx->UsesTrack(esdCascadeNeg->GetID()),
-								   AliAODTrack::kSecondary,
+								   AliAODTrack::kFromDecayVtx,
 								   selectInfo);
 	aodTrack->SetPIDForTracking(esdCascadeNeg->GetPIDForTracking());
         aodTrack->SetTPCFitMap(esdCascadeNeg->GetTPCFitMap());
@@ -949,7 +949,7 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 								    vV0,
 								    kTRUE,  // check if this is right
 								    vtx->UsesTrack(esdV0Pos->GetID()),
-								    AliAODTrack::kSecondary,
+								    AliAODTrack::kFromDecayVtx,
 								    selectInfo);
 	    aodTrack->SetPIDForTracking(esdV0Pos->GetPIDForTracking());
 	    aodTrack->SetTPCFitMap(esdV0Pos->GetTPCFitMap());
@@ -996,7 +996,7 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 							      vV0,
 							      kTRUE,  // check if this is right
 							      vtx->UsesTrack(esdV0Neg->GetID()),
-							      AliAODTrack::kSecondary,
+							      AliAODTrack::kFromDecayVtx,
 							      selectInfo);
       aodTrack->SetPIDForTracking(esdV0Neg->GetPIDForTracking());
       aodTrack->SetTPCFitMap(esdV0Neg->GetTPCFitMap());
@@ -1780,7 +1780,7 @@ void AliAnalysisTaskESDfilter::ConvertKinks(const AliESDEvent& esd)
 								    vkink,
 								    kTRUE, // check if this is right
 								    vtx->UsesTrack(esdTrack->GetID()),
-								    AliAODTrack::kSecondary,
+								    AliAODTrack::kFromDecayVtx,
 								    selectInfo);
 	    daughter->SetPIDForTracking(esdTrackD->GetPIDForTracking());
             daughter->SetTPCFitMap(esdTrackD->GetTPCFitMap());
