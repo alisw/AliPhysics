@@ -454,7 +454,7 @@ macro(ALICE_BuildLibrary)
   include_directories(SYSTEM ${ROOTINCDIR})
   include_directories(${PINC})  
   include_directories(${EINCLUDE})
-  include_directories(${CMAKE_INCLUDE_EXPORT_DIRECTORY})
+  include_directories(${CMAKE_INCLUDE_EXPORT_DIRECTORY}/FromTemplate)
   include_directories(${CMAKE_SOURCE_DIR})
   
   add_library(${PACKAGE} SHARED ${PCS} ${PFS} ${PS} ${PDS})
