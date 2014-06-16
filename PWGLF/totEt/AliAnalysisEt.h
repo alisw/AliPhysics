@@ -132,6 +132,7 @@ public:
     Int_t ReadCorrections(TString filename);  // Read in corrections
     
     void SetFsub(Float_t val){fsub=val;};//function for setting fsub for EMCal/PHOS hadronic corrections
+    void SetFsubForMeanHadE(Float_t val){fsubmeanhade=val;};//function for setting fsub for EMCal/PHOS hadronic corrections
 
 protected:
 
@@ -314,6 +315,7 @@ protected:
     AliPIDResponse *fPIDResponse;//
 
     Float_t fsub;
+    Float_t fsubmeanhade;
     
 
 
