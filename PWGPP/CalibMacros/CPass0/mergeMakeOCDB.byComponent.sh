@@ -351,7 +351,9 @@ do
 
   #merge in parallel, use a simple lockfile
   #echo "waitIfLocked $runningMergeByComponentLockFile" | tee -a merge.log
-  waitIfLocked $runningMergeByComponentLockFile
+  #waitIfLocked $runningMergeByComponentLockFile
+  echo "waiting" | tee -a merge.log
+  wait $!
   if [[ $isLocal -eq 1 ]]; then
     #locally we don't need to run in parallel since we dont download,
     #besides it causes problems on some filesystems (like lustre) with file sync
@@ -362,8 +364,10 @@ do
 done
 
 #merge all the subfiles into one, wait for the last one to complete
-echo "waitIfLocked $runningMergeByComponentLockFile" | tee -a merge.log
-waitIfLocked $runningMergeByComponentLockFile
+#echo "waitIfLocked $runningMergeByComponentLockFile" | tee -a merge.log
+#waitIfLocked $runningMergeByComponentLockFile
+echo "waiting" | tee -a merge.log
+wait $!
 if [[ "$components" =~ ALL && -f CalibObjects_ALL.root ]]; then
   mv -f CalibObjects_ALL.root CalibObjects.root
 else
