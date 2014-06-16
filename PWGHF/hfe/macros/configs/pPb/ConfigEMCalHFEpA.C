@@ -1,6 +1,6 @@
 ///*******************************************************
 ///Config Description
-
+/// 16 June 2014
 ///*******************************************************
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
@@ -57,8 +57,12 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//Additional Cuts
 	hfecuts->SetPtRange(2, 1e6);								                    //Transversal momentum range in GeV/c
+	
+		
 	//DCA cut included in the analysis 12 March 2014
-	hfecuts->SetMaxImpactParam(1,2); 							                    //DCA to vertex
+	if(configIndex==18) hfecuts->SetMaxImpactParam(2,4); 
+	else if (configIndex==19) hfecuts->SetMaxImpactParam(0.5,1);
+	else hfecuts->SetMaxImpactParam(1,2); 							                //DCA to vertex
 	
 	//Event Selection
 	hfecuts->SetVertexRange(10.);													//
@@ -98,12 +102,12 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//nonHFE cuts
 	if(configIndex==20) task->SetNonHFEmassCut(0.05);
-	else if(configIndex==21) task->SetNonHFEmassCut(0.15);
+	else if(configIndex==21) task->SetNonHFEmassCut(0.10);
 	else if(configIndex==22) task->SetNonHFEmassCut(0.03);
 	else if(configIndex==23) task->SetNonHFEmassCut(0.18);
 	else if(configIndex==24) task->SetNonHFEmassCut(0.01);
 	else if(configIndex==25) task->SetNonHFEmassCut(0.2);
-	else task->SetNonHFEmassCut(0.1);
+	else task->SetNonHFEmassCut(0.15);
 	
 	if(configIndex==26) task->SetNonHFEangleCut(0.1);
 	if(configIndex==27) task->SetNonHFEangleCut(0.15);
@@ -111,17 +115,17 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//partner cuts
 	
-	if(configIndex==29) task->SetAdditionalCuts(0,80);
+	if(configIndex==29) task->SetAdditionalCuts(0.3,80);
 	if(configIndex==30) task->SetAdditionalCuts(0.5,80);
 	if(configIndex==31) task->SetAdditionalCuts(0.7,80);
 	if(configIndex==32) task->SetAdditionalCuts(0.9,80);
 	
-	if(configIndex==33) task->SetAdditionalCuts(0.3,60);
-	if(configIndex==34) task->SetAdditionalCuts(0.3,70);
-	if(configIndex==35) task->SetAdditionalCuts(0.3,90);
-	if(configIndex==36) task->SetAdditionalCuts(0.3,100);
+	if(configIndex==33) task->SetAdditionalCuts(0,60);
+	if(configIndex==34) task->SetAdditionalCuts(0,70);
+	if(configIndex==35) task->SetAdditionalCuts(0,90);
+	if(configIndex==36) task->SetAdditionalCuts(0,100);
 	 
-	 task->SetAdditionalCuts(0.3,80);
+	 task->SetAdditionalCuts(0,80);
 	 
 	
 	//eta cuts
