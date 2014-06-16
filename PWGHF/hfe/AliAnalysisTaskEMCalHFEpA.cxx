@@ -2483,11 +2483,11 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 
 			Int_t type=aod_track->GetType();
 			if(type==AliAODTrack::kPrimary) fPtPrim->Fill(aod_track->Pt());
-			if(type==AliAODTrack::kSecondary) fPtSec->Fill(aod_track->Pt());
+			if(type==AliAODTrack::kFromDecayVtx) fPtSec->Fill(aod_track->Pt());
 		
 				//Int_t type2=track->GetType();
 			if(type==AliAODTrack::kPrimary) fPtPrim2->Fill(track->Pt());
-			if(type==AliAODTrack::kSecondary) fPtSec2->Fill(track->Pt());
+			if(type==AliAODTrack::kFromDecayVtx) fPtSec2->Fill(track->Pt());
 		}
 			
 		

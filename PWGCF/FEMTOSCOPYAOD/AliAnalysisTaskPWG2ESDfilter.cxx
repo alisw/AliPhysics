@@ -396,7 +396,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 									   vV0FromCascade,
 									   kTRUE,  // check if this is right
 									   kFALSE, // check if this is right
-									   AliAODTrack::kSecondary)
+									   AliAODTrack::kFromDecayVtx)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}
@@ -431,7 +431,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 									   vV0FromCascade,
 									   kTRUE,  // check if this is right
 									   kFALSE, // check if this is right
-									   AliAODTrack::kSecondary)
+									   AliAODTrack::kFromDecayVtx)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}
@@ -468,7 +468,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 								     vcascade,
 								     kTRUE,  // check if this is right
 								     kFALSE, // check if this is right
-								     AliAODTrack::kSecondary)
+								     AliAODTrack::kFromDecayVtx)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}
@@ -536,7 +536,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 								vV0,
 								kTRUE,  // check if this is right
 								kFALSE, // check if this is right
-								AliAODTrack::kSecondary)
+								AliAODTrack::kFromDecayVtx)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}
@@ -571,7 +571,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 								vV0,
 								kTRUE,  // check if this is right
 								kFALSE, // check if this is right
-								AliAODTrack::kSecondary)
+								AliAODTrack::kFromDecayVtx)
 		);
 	    aodTrack->ConvertAliPIDtoAODPID();
 	}
