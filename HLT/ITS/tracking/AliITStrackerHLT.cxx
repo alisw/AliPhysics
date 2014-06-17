@@ -199,9 +199,9 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
   } // end loop on layers
 
   
-  Double_t xyzVtx[]={ fRecoParam->GetXVdef(),
-		      fRecoParam->GetYVdef(),
-		      fRecoParam->GetZVdef()}; 
+  Double_t xyzVtx[]={ fRecoParam->GetXdef(),
+		      fRecoParam->GetYdef(),
+		      fRecoParam->GetZdef()}; 
   Double_t ersVtx[]={ fRecoParam->GetSigmaXVdef(),
 		      fRecoParam->GetSigmaYVdef(),
 		      fRecoParam->GetSigmaZVdef()}; 

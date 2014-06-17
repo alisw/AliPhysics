@@ -30,6 +30,17 @@ public:
   virtual Double_t GetChi2() const = 0;
   virtual Int_t    GetNDF() const = 0;
 
+  virtual Bool_t IsFromVertexer3D() const {
+        TString title = GetTitle();
+        if(title.Contains("vertexer: 3D")) return kTRUE;
+        else return kFALSE;
+    }
+  virtual Bool_t IsFromVertexerZ() const {
+        TString title = GetTitle();
+        if(title.Contains("vertexer: Z")) return kTRUE;
+        else return kFALSE;
+    }
+
   virtual Int_t    GetNContributors() const = 0;
   virtual void     PrintIndices() const = 0;
   virtual void     Print(Option_t* option = "") const = 0;

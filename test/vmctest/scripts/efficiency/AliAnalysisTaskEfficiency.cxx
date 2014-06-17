@@ -1026,7 +1026,7 @@ Bool_t AliAnalysisTaskEfficiency::SelectJouri(AliESDtrack* track)
   const AliESDVertex *vtx=esdE->GetPrimaryVertexSPD();
   if (!vtx->GetStatus()) selected = kFALSE;
     
-  Double_t zv=vtx->GetZv();
+  Double_t zv=vtx->GetZ();
 
     
   const AliExternalTrackParam *ct=track->GetTPCInnerParam();
