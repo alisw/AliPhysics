@@ -2711,6 +2711,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
     if(fNeutralCorr && pi0list && pi0list->GetEntriesFast() > 0)
       okneutral = MakeNeutralCorrelation(particle, pi0list,kFALSE);
     
+    if( GetDebug() > 1 ) AliInfo(Form("Charged correlation OK %d; Neutral correlation OK %d",okcharged,okneutral));
+    
   }//Correlate leading
   
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - End fill AODs \n");
@@ -3413,7 +3415,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
   Float_t eta  = -100. ;
   Float_t xE   = -100. ; 
   Float_t hbpXE= -100. ; 
-  Float_t hbpZT= -100. ; 
+  //Float_t hbpZT= -100. ;
 
   Float_t ptTrig  = aodParticle->Pt();
   Float_t phiTrig = aodParticle->Phi();
@@ -3482,10 +3484,10 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
       //if(xE <0.)xE =-xE;
       
       hbpXE = -100;
-      hbpZT = -100;
+      //hbpZT = -100;
       
       if(xE > 0 ) hbpXE = TMath::Log(1./xE); 
-      if(zT > 0 ) hbpZT = TMath::Log(1./zT); 
+      //if(zT > 0 ) hbpZT = TMath::Log(1./zT);
       
       if(fPi0Trigger && decayFound)
         FillDecayPhotonCorrelationHistograms(pt, phi, decayMom1,decayMom2,kFALSE) ;
