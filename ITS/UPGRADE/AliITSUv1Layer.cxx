@@ -571,7 +571,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleInnerB(Double_t xmod,
 //
 
   Double_t zchip;
-  Double_t zpos, zlen;
+  Double_t zpos;
   char volname[30];
 
   // First create the single chip
@@ -586,7 +586,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleInnerB(Double_t xmod,
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSModulePattern(), fLayerNumber);
   TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
 
-  zlen = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
+  //  zlen = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
   for (Int_t j=0; j<fgkIBChipsPerRow; j++) {
     zpos = -zmod + j*2*zchip + zchip;
     modVol->AddNode(chipVol, j, new TGeoTranslation(0, 0, zpos));

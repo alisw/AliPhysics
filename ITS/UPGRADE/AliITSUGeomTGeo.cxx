@@ -688,9 +688,8 @@ TGeoPNEntry* AliITSUGeomTGeo::GetPNEntry(Int_t index) const
 void AliITSUGeomTGeo::BuildITS(Bool_t loadSegm)
 {
   // exract upg ITS parameters from TGeo
-  if (fVersion!=kITSVNA) {AliWarning("Already built"); return; // already initialized}
-    if (!gGeoManager) AliFatal("Geometry is not loaded");
-  }
+  if (fVersion!=kITSVNA) {AliWarning("Already built"); return;} // already initialized
+  if (!gGeoManager) AliFatal("Geometry is not loaded");
   fNLayers    = ExtractNumberOfLayers();
   if (!fNLayers) return;
   //
