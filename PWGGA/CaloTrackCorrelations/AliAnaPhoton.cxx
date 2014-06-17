@@ -1368,7 +1368,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
   }// if track-matching was of, check effect of matching residual cut
   
   
-  if(!fFillOnlySimpleSSHisto){
+  if(!fFillOnlySimpleSSHisto)
+  {
     if(energy < 2)
     {
       fhNCellsLam0LowE ->Fill(ncells,lambda0);
@@ -1394,6 +1395,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
       fhPhiLam0HighE   ->Fill(phi, lambda0);
     }
   }
+  
   if(IsDataMC())
   {
     AliVCaloCells* cells = 0;
@@ -1427,11 +1429,11 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
     }  // embedded fraction
     
     // Get the fraction of the cluster energy that carries the cell with highest energy
-    Int_t   absID           =-1 ;
     Float_t maxCellFraction = 0.;
+    Int_t absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
     
-    absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
-    
+    if( absID < 0 ) AliFatal("Wrong absID");
+      
     // Check the origin and fill histograms
     
     Int_t mcIndex = -1;
@@ -3950,8 +3952,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     fhPtEventPlanePhoton ->Fill(ptcluster,ep ) ;
     
     //Get original cluster, to recover some information
-    Int_t absID             = 0;
-    Float_t maxCellFraction = 0;
     AliVCaloCells* cells    = 0;
     TObjArray * clusters    = 0;
     if(fCalorimeter == "EMCAL")
@@ -3969,12 +3969,15 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     AliVCluster *cluster = FindCluster(clusters,ph->GetCaloLabel(0),iclus);
     if(cluster)
     {
-      absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
-      
+      Float_t maxCellFraction = 0;
+      Int_t absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster, maxCellFraction);
+      if( absID < 0 ) AliFatal("Wrong absID");
+
       // Control histograms
       fhMaxCellDiffClusterE->Fill(ph->E() ,maxCellFraction);
       fhNCellsE            ->Fill(ph->E() ,cluster->GetNCells());
       fhTimePt             ->Fill(ph->Pt(),cluster->GetTOF()*1.e9);
+
       if(cells)
       {
         for(Int_t icell = 0; icell <  cluster->GetNCells(); icell++)
