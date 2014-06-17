@@ -59,32 +59,50 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   //PID Sparse
   virtual THnSparse*      NewTHnSparseDHF(const char* name, UInt_t entries);
   virtual void            GetDimParamsHF(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
+  
+  //JetQA Sparse
+  virtual THnSparse*      NewTHnSparseDJetQA(const char* name, UInt_t entries);
+  virtual void            GetDimParamsJetQA(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
+
 
   // setters
+  virtual void SetdoGlobalPID(Bool_t PID)  { doGlobalPID = PID; }  //Global PID fpr all tracks and clusters in event
   void SetJetPt(Double_t jpt)           { fJetHIpt = jpt; }  // jet threshold pt cut
   void SetTrackPtCut(Double_t trpt)     { fTrackPtCut = trpt; } // track pt threshold to do PID on  
   virtual void            SetTrackEta(Double_t e)                 { fTrackEta   = e; }  //eta range of the associated tracks   
-
-  // event no.   
+  virtual void            SetTrackQACut(Double_t trkQAcut)            { fTrkQAcut = trkQAcut;}
+  
+  // eta and phi limits of jets - setters
+  virtual void            SetJetEta(Double_t emin, Double_t emax)  { fEtamin = emin; fEtamax = emax; }
+  virtual void            SetJetPhi(Double_t pmin, Double_t pmax)  { fPhimin = pmin; fPhimax = pmax; }
+  
+  // event no.
   Int_t event;          // event number (processed)
   Int_t fillHist;
 
  protected:
   Bool_t                 Run();
   virtual void           Terminate(Option_t *);
-  virtual Int_t          GetCentBin(Double_t cent) const;
+  virtual Int_t          AcceptMyJet(AliEmcalJet *jet);   // applies basic jet tests/cuts before accepting
+  virtual Int_t          GetCentBin(Double_t cent) const;  // Get Centrality bin
   void 			ExecOnce();
   
   // data type switch
-  Bool_t	     useAOD;
+  Bool_t       doGlobalPID;
   
-  AliAnalysisEtCuts *fCuts; // keeper of basic cuts
+  AliAnalysisEtCuts *fCuts;                            // keeper of basic cuts
 
   // cuts
+  Double_t              fPhimin;
+  Double_t              fPhimax;
+  Double_t              fEtamin;
+  Double_t              fEtamax;
+  Double_t              fAreacut;                     //area cut
   Double_t              fJetHIpt;                    // high jet pt 
   Double_t              fTrackPtCut;                 // track pt cut to do PID on
   Double_t              fTrackEta;  
-
+  Double_t              fTrkQAcut;                    //trkQA cut
+  
   // PID                                                                                                                                    
   AliPIDResponse        *fPIDResponse;   // PID response object                                                                             
   AliTPCPIDResponse     *fTPCResponse;   // TPC pid response object
@@ -130,9 +148,14 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   //HF_PID Sparse
   THnSparse             *fhnPIDHF;//!          // PID sparse
   //QA Sparse
-  THnSparse             *fhnQA;//!             //  QA sparse
-  
+  //QA Sparse
+  THnSparse             *fhnQA;             //  QA sparse
+  THnSparse             *fhnJetQA;          //Jet QA Sparse
+  THnSparse             *fhnClusQA;         // cluster QA sparse
+  THnSparse             *fhnTrackQA;        // track QA sparse
+  THnSparse             *fhnGlobalPID;     //Global Track PID
   //Declare it private to avoid compilation warning
+  
   AliAnalysisTaskEmcalJetHF(const AliAnalysisTaskEmcalJetHF & g) ; // cpy ctor
   AliAnalysisTaskEmcalJetHF& operator=(const AliAnalysisTaskEmcalJetHF&); // not implemented
   

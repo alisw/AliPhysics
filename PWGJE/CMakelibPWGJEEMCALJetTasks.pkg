@@ -97,8 +97,6 @@ endif(FASTJET_FOUND)
 
 set ( DHDR  PWGJEEMCALJetTasksLinkDef.h)
 
-string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
-
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 if(FASTJET_FOUND)
@@ -109,3 +107,4 @@ else()
   set ( EINCLUDE PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)
 endif(FASTJET_FOUND)
 
+SET ( EXPORT ${HDRS} )

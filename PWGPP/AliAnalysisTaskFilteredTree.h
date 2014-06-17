@@ -64,6 +64,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   void ProcessCosmics(AliESDEvent *const esdEvent=0, AliESDfriend* esdFriend=0); 
 
   void ProcessITSTPCmatchOut(AliESDEvent *const esdEvent=0,  AliESDfriend *const esdFriend=0);
+  void ProcessTrackMatch(AliESDEvent *const esdEvent=0,  AliESDfriend *const esdFriend=0);
 
   void SetEventCuts(AliFilteredTreeEventCuts* const cuts)              { fFilteredTreeEventCuts = cuts; }
   void SetAcceptanceCuts(AliFilteredTreeAcceptanceCuts* const cuts)    { fFilteredTreeAcceptanceCuts = cuts; }
@@ -97,6 +98,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
 
   void SetLowPtTrackDownscaligF(Double_t fact) { fLowPtTrackDownscaligF = fact; }
   void SetLowPtV0DownscaligF(Double_t fact)    { fLowPtV0DownscaligF = fact; }
+  void SetFriendDownscaling(Double_t fact)    { fFriendDownscaling = fact; }
   
   void   SetProcessCosmics(Bool_t flag) { fProcessCosmics = flag; }
   Bool_t GetProcessCosmics() { return fProcessCosmics; }
@@ -138,7 +140,8 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
 
   Double_t fLowPtTrackDownscaligF; // low pT track downscaling factor
-  Double_t fLowPtV0DownscaligF; // low pT V0 downscaling factor
+  Double_t fLowPtV0DownscaligF;    // low pT V0 downscaling factor
+  Double_t fFriendDownscaling;     // friend info downscaling )absolute value used), Modes>=1 downscaling in respect to the amount of tracks, Mode<=-1 (downscaling in respect to the data volume)
   Double_t fProcessAll; // Calculate all track properties including MC
   
   Bool_t fProcessCosmics; // look for cosmic pairs from random trigger
@@ -162,13 +165,11 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   TH3D* fPtResCentPtTPC;    //! sigma(pt)/pt vs Cent vs Pt for prim. TPC tracks
   TH3D* fPtResCentPtTPCc;   //! sigma(pt)/pt vs Cent vs Pt for prim. TPC contrained to vertex tracks
   TH3D* fPtResCentPtTPCITS; //! sigma(pt)/pt vs Cent vs Pt for prim. TPC+ITS tracks
+  TObjString fCurrentFileName; // cached value of current file name
+  AliESDtrack* fDummyTrack; //! dummy track for tree init
 
   AliAnalysisTaskFilteredTree(const AliAnalysisTaskFilteredTree&); // not implemented
   AliAnalysisTaskFilteredTree& operator=(const AliAnalysisTaskFilteredTree&); // not implemented
-  
-  AliESDfriendTrack* fDummyFriendTrack; //! needed for proper init of the output tree
-  AliESDtrack* fDummyTrack; //! dummy track for tree init
-
   ClassDef(AliAnalysisTaskFilteredTree, 1); // example of analysis
 };
 

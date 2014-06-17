@@ -149,6 +149,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH3D *fPionPionK3; //!
     //
     TH2D *fTwoPartNorm; //!
+    TH2D *fTwoPartNegNorm; //!
     TH2D *fTwoPartNormErr; //!
   };
   struct St7 {
@@ -187,6 +188,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH3D *fPionPionK4; //!
     //
     TH2D *fTwoPartNorm; //!
+    TH2D *fTwoPartNegNorm; //!
     TH2D *fTwoPartNormErr; //!
   };
   struct St_EDB {
@@ -231,7 +233,6 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fPbPbcase;
   Bool_t fGenerateSignal;
   Bool_t fGeneratorOnly;
-  Bool_t fPdensityPairCut;
   Bool_t fTabulatePairs;
   Int_t fRMax;
   Float_t ffcSq;

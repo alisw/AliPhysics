@@ -758,8 +758,7 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
                                                             track->GetUsedForVtxFit(),
                                                             track->GetUsedForPrimVtxFit(),
                                                             (AliAODTrack::AODTrk_t) track->GetType(), 
-                                                            track->GetFilterMap(),
-                                                            track->Chi2perNDF());
+                                                            track->GetFilterMap());
       
       
       aodTrack->SetPIDForTracking(track->GetPIDForTracking());
