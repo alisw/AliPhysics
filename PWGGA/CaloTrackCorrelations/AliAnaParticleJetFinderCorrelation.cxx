@@ -1042,7 +1042,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     if(indexMostEneJet>=0 && indexMostEnePhoton>=0){
       particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(indexMostEnePhoton));
       jet = dynamic_cast<AliAODJet*>(aodRecJets-> At(indexMostEneJet));
-      particle->SetRefJet(jet);
+      if(jet)particle->SetRefJet(jet);
     }
   }//end of take most energetic photon and most ene. jet after bkg subtraction
   
@@ -1058,7 +1058,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
         //isJetFound=kTRUE;
         if(GetDebug() > 2) printf ("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Jet with index %d selected \n",ijet);
         AliAODJet *jet = dynamic_cast<AliAODJet*>(aodRecJets-> At(ijet));
-        particle->SetRefJet(jet);
+        if(jet)particle->SetRefJet(jet);
         //printf("Most opposite found\n");
       }
     } // input aod loop
@@ -1489,7 +1489,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
         //jet = event->GetJet(ijet);
         jet = dynamic_cast<AliAODJet*>(aodRecJets-> At(ijet));
         
-        particlecorr->SetRefJet(jet);
+       if(jet) particlecorr->SetRefJet(jet);
         
       }
     }
@@ -1589,6 +1589,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     fGamNtracks=0;
     for(itrack = 0; itrack < nCTSTracks ; itrack++){
       aodtrack = dynamic_cast <AliAODTrack*>(GetCTSTracks()->At(itrack));
+      if(!aodtrack) continue;
       fhSelectedTrackPhiVsEta->Fill(aodtrack->Phi(),aodtrack->Eta());//fill histogram here
       //      if(aodtrack->Pt()<0.15) continue;//hardcoded
       if(aodtrack->Pt()<fPtThresholdInCone) continue;
