@@ -16,7 +16,7 @@
 
 #include <iostream>
 #include "TauolaParticle.h"
-#include "f_Init.h"
+#include "f_InitTauola.h"
 #include "f_Variables.h"
 
 namespace Tauolapp

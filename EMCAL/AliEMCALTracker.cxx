@@ -336,12 +336,11 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
   }
 	
   // step 1: collect clusters
-  Int_t okLoadClusters, nClusters;
-  
+  Int_t okLoadClusters = 0;  
   if (!fClusters || (fClusters && fClusters->IsEmpty()))
     okLoadClusters = LoadClusters(esd);
   
-  nClusters = fClusters->GetEntries();
+  Int_t nClusters = fClusters->GetEntries();
 		
   // step 2: collect ESD tracks
   Int_t nTracks, okLoadTracks;

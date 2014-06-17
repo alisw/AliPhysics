@@ -32,13 +32,13 @@ exampleCase(){
 # 
    source $ALICE_ROOT/TPC/fastSimul/simul.sh
    makeEnvLocal
-   makeSubmitRUN 80 400
+   makeSubmitRUN 80 400 0.3
    ls `pwd`/MC*/trackerSimul.root >  trackerSimul.list
 
 }
 
 
-
+ 
 runJob()
 {
 #runFastMCJob      
@@ -47,9 +47,11 @@ runJob()
     which aliroot
     echo PWD `pwd`
     ntracks=$1
+    diffFactor=$2
     echo Submitting ntracks = $ntracks
-    echo command aliroot  -q -b  "$mcPath/simul.C\($ntracks\)"    
-    command aliroot  -q -b  "$mcPath/simul.C($ntracks)"    
+    echo Submitting diffFactor = $diffFactor
+    echo command aliroot  -q -b  "$mcPath/simul.C\($ntracks,$diffFactor\)"    
+    command aliroot  -q -b  "$mcPath/simul.C($ntracks,$diffFactor)"    
     return;
 }
 
@@ -74,12 +76,13 @@ makeSubmitRUN(){
     wdir=`pwd`;
     njobs=$1
     ntracks=$2
+    diffFactor=$3
     for (( job=1; job <= $njobs; job++ ));  do  
 	echo $job;  
 	mkdir $wdir/MC$job
 	cd $wdir/MC$job
- 	echo $batchCommand    -o  toyMC.log  $mcPath/simul.sh runJob  $ntracks
- 	$batchCommand    -o  toyMC.log  $mcPath/simul.sh runJob $ntracks
+ 	echo $batchCommand    -o  toyMC.log  $mcPath/simul.sh runJob  $ntracks $diffFactor
+ 	$batchCommand    -o  toyMC.log  $mcPath/simul.sh runJob $ntracks $diffFactor
 	cd $wdir
     done 
 }
