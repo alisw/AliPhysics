@@ -3177,70 +3177,70 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhEIsoPileUp[i]   = new TH1F(Form("hEPileUp%s",pileUpName[i].Data()),
                                 Form("Number of isolated particles vs E for #it{R} =  %2.2f, #it{p}_{T}^{th} = %2.2f, #it{p}_{T}^{fr} = %2.2f, pile-up event by %s",r,ptthre,ptfrac,pileUpName[i].Data()),
                                 nptbins,ptmin,ptmax); 
-      fhEIsoPileUp[i]->SetYTitle("dN / dE");
+      fhEIsoPileUp[i]->SetYTitle("d#it{N} / d#it{E}");
       fhEIsoPileUp[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhEIsoPileUp[i]) ; 
       
       fhPtIsoPileUp[i]  = new TH1F(Form("hPtPileUp%s",pileUpName[i].Data()),
                                 Form("Number of isolated particles vs #it{p}_{T} for #it{R} =  %2.2f, #it{p}_{T}^{th} = %2.2f, #it{p}_{T}^{fr}= %2.2f, pile-up event by %s ",r,ptthre,ptfrac,pileUpName[i].Data()),
                                 nptbins,ptmin,ptmax); 
-      fhPtIsoPileUp[i]->SetYTitle("dN / #it{p}_{T}");
+      fhPtIsoPileUp[i]->SetYTitle("d#it{N} / #it{p}_{T}");
       fhPtIsoPileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtIsoPileUp[i]) ; 
       
       fhENoIsoPileUp[i]   = new TH1F(Form("hENoIsoPileUp%s",pileUpName[i].Data()),
                                   Form("Number of not isolated particles vs E for #it{R} =  %2.2f, #it{p}_{T}^{th} = %2.2f, #it{p}_{T}^{fr} = %2.2f, pile-up event by %s",r,ptthre,ptfrac,pileUpName[i].Data()),
                                   nptbins,ptmin,ptmax); 
-      fhENoIsoPileUp[i]->SetYTitle("dN / dE");
+      fhENoIsoPileUp[i]->SetYTitle("d#it{N} / dE");
       fhENoIsoPileUp[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhENoIsoPileUp[i]) ; 
       
       fhPtNoIsoPileUp[i]  = new TH1F(Form("hPtNoIsoPileUp%s",pileUpName[i].Data()),
                                   Form("Number of not isolated particles vs #it{p}_{T} for #it{R} =  %2.2f, #it{p}_{T}^{th} = %2.2f, #it{p}_{T}^{fr}= %2.2f, pile-up event by %s ",r,ptthre,ptfrac,pileUpName[i].Data()),
                                   nptbins,ptmin,ptmax); 
-      fhPtNoIsoPileUp[i]->SetYTitle("dN / #it{p}_{T}");
+      fhPtNoIsoPileUp[i]->SetYTitle("d#it{N} / #it{p}_{T}");
       fhPtNoIsoPileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtNoIsoPileUp[i]) ;     
     }
     
     fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
     fhTimeENoCut->SetXTitle("#it{E} (GeV)");
-    fhTimeENoCut->SetYTitle("time (ns)");
+    fhTimeENoCut->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeENoCut);  
     
     fhTimeESPD  = new TH2F ("hTimeE_SPD","time of cluster vs E of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
     fhTimeESPD->SetXTitle("#it{E} (GeV)");
-    fhTimeESPD->SetYTitle("time (ns)");
+    fhTimeESPD->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeESPD);  
     
     fhTimeESPDMulti  = new TH2F ("hTimeE_SPDMulti","time of cluster vs E of clusters, SPD multi cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
     fhTimeESPDMulti->SetXTitle("#it{E} (GeV)");
-    fhTimeESPDMulti->SetYTitle("time (ns)");
+    fhTimeESPDMulti->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeESPDMulti);  
     
     fhTimeNPileUpVertSPD  = new TH2F ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50); 
     fhTimeNPileUpVertSPD->SetYTitle("# vertex ");
-    fhTimeNPileUpVertSPD->SetXTitle("time (ns)");
+    fhTimeNPileUpVertSPD->SetXTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeNPileUpVertSPD);  
     
     fhTimeNPileUpVertTrack  = new TH2F ("hTime_NPileUpVertTracks","time of cluster vs N pile-up Tracks vertex", ntimebins,timemin,timemax, 50,0,50 ); 
     fhTimeNPileUpVertTrack->SetYTitle("# vertex ");
-    fhTimeNPileUpVertTrack->SetXTitle("time (ns)");
+    fhTimeNPileUpVertTrack->SetXTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeNPileUpVertTrack);  
     
     fhTimeNPileUpVertContributors  = new TH2F ("hTime_NPileUpVertContributors","time of cluster vs N constributors to pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50); 
     fhTimeNPileUpVertContributors->SetYTitle("# vertex ");
-    fhTimeNPileUpVertContributors->SetXTitle("time (ns)");
+    fhTimeNPileUpVertContributors->SetXTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeNPileUpVertContributors);  
     
     fhTimePileUpMainVertexZDistance  = new TH2F ("hTime_PileUpMainVertexZDistance","time of cluster vs distance in Z pile-up SPD vertex - main SPD vertex",ntimebins,timemin,timemax,100,0,50); 
-    fhTimePileUpMainVertexZDistance->SetYTitle("distance Z (cm) ");
-    fhTimePileUpMainVertexZDistance->SetXTitle("time (ns)");
+    fhTimePileUpMainVertexZDistance->SetYTitle("distance #it{z} (cm) ");
+    fhTimePileUpMainVertexZDistance->SetXTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePileUpMainVertexZDistance);  
     
     fhTimePileUpMainVertexZDiamond  = new TH2F ("hTime_PileUpMainVertexZDiamond","time of cluster vs distance in Z pile-up SPD vertex - z diamond",ntimebins,timemin,timemax,100,0,50); 
-    fhTimePileUpMainVertexZDiamond->SetYTitle("diamond distance Z (cm) ");
-    fhTimePileUpMainVertexZDiamond->SetXTitle("time (ns)");
+    fhTimePileUpMainVertexZDiamond->SetYTitle("diamond distance #it{z} (cm) ");
+    fhTimePileUpMainVertexZDiamond->SetXTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePileUpMainVertexZDiamond);  
   }
   
