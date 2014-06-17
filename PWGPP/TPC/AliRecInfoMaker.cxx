@@ -1080,7 +1080,7 @@ Int_t AliRecInfoMaker::BuildV0Info(Int_t eventNr)
   TBranch * branch = fTreeCmpV0->GetBranch("RC.");
   branch->SetAddress(&fRecV0Info); // set all pointers
   const AliESDVertex * esdvertex = fEvent->GetVertex();
-  Float_t vertex[3]= {static_cast<Float_t>(esdvertex->GetXv()), static_cast<Float_t>(esdvertex->GetYv()),static_cast<Float_t>(esdvertex->GetZv())};
+  Float_t vertex[3]= {static_cast<Float_t>(esdvertex->GetX()), static_cast<Float_t>(esdvertex->GetY()),static_cast<Float_t>(esdvertex->GetZ())};
   
   //
   while (entry < nParticlesTR) {

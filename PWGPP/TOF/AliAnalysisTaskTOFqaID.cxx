@@ -620,7 +620,7 @@ Bool_t  AliAnalysisTaskTOFqaID::IsEventSelected(AliESDEvent * event)
     if(fVertex->GetNContributors()<1) fVertex = 0x0;
   }
   if (!fVertex) return kFALSE; 
-  if (TMath::Abs(fVertex->GetZv())<10.0) return kTRUE;
+  if (TMath::Abs(fVertex->GetZ())<10.0) return kTRUE;
   else return kFALSE;
 }
 

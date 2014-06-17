@@ -485,9 +485,9 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosMC()
 	isGoodMult = kFALSE;
 
       // Check if the distance to vertex is inferior to 1 cm
-      Double_t distanceToVertex = TMath::Sqrt((particle->Xv() - vertex->GetXv())*(particle->Xv() - vertex->GetXv()) + 
-					      (particle->Yv() - vertex->GetYv())*(particle->Yv() - vertex->GetYv()) + 
-					      (particle->Zv() - vertex->GetZv())*(particle->Zv() - vertex->GetZv()));
+      Double_t distanceToVertex = TMath::Sqrt((particle->Xv() - vertex->GetX())*(particle->Xv() - vertex->GetX()) + 
+					      (particle->Yv() - vertex->GetY())*(particle->Yv() - vertex->GetY()) + 
+					      (particle->Zv() - vertex->GetZ())*(particle->Zv() - vertex->GetZ()));
       if (distanceToVertex > 1.0)
 	isGoodMult = kFALSE;
 	

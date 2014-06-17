@@ -385,9 +385,9 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
   if(isESD) eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
   if(isAOD) eventVtx = const_cast<AliAODVertex*>(aodEvent->GetPrimaryVertex());
   if(eventVtx) {
-    fReducedEvent->fVtx[0] = (isESD ? ((AliESDVertex*)eventVtx)->GetXv() : ((AliAODVertex*)eventVtx)->GetX());
-    fReducedEvent->fVtx[1] = (isESD ? ((AliESDVertex*)eventVtx)->GetYv() : ((AliAODVertex*)eventVtx)->GetY());
-    fReducedEvent->fVtx[2] = (isESD ? ((AliESDVertex*)eventVtx)->GetZv() : ((AliAODVertex*)eventVtx)->GetZ());
+    fReducedEvent->fVtx[0] = (isESD ? ((AliESDVertex*)eventVtx)->GetX() : ((AliAODVertex*)eventVtx)->GetX());
+    fReducedEvent->fVtx[1] = (isESD ? ((AliESDVertex*)eventVtx)->GetY() : ((AliAODVertex*)eventVtx)->GetY());
+    fReducedEvent->fVtx[2] = (isESD ? ((AliESDVertex*)eventVtx)->GetZ() : ((AliAODVertex*)eventVtx)->GetZ());
     fReducedEvent->fNVtxContributors = eventVtx->GetNContributors();
   }
   if(isESD) {
@@ -399,9 +399,9 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
     fReducedEvent->fIRIntClosestIntMap[0] = esdEvent->GetHeader()->GetIRInt1ClosestInteractionMap();
     fReducedEvent->fIRIntClosestIntMap[1] = esdEvent->GetHeader()->GetIRInt2ClosestInteractionMap();
     if(eventVtx) {
-      fReducedEvent->fVtxTPC[0] = ((AliESDVertex*)eventVtx)->GetXv();
-      fReducedEvent->fVtxTPC[1] = ((AliESDVertex*)eventVtx)->GetYv();
-      fReducedEvent->fVtxTPC[2] = ((AliESDVertex*)eventVtx)->GetZv();
+      fReducedEvent->fVtxTPC[0] = ((AliESDVertex*)eventVtx)->GetX();
+      fReducedEvent->fVtxTPC[1] = ((AliESDVertex*)eventVtx)->GetY();
+      fReducedEvent->fVtxTPC[2] = ((AliESDVertex*)eventVtx)->GetZ();
       fReducedEvent->fNVtxTPCContributors = eventVtx->GetNContributors();
     }
     fReducedEvent->fTimeStamp     = esdEvent->GetTimeStamp();

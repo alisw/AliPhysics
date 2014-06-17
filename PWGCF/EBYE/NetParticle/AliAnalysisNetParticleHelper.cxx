@@ -478,7 +478,7 @@ Bool_t AliAnalysisNetParticleHelper::IsEventRejected() {
   // -- 3 - Vertex z outside cut window
   ++iCut;
   if (vtxESD){
-    if(TMath::Abs(vtxESD->GetZv()) > fVertexZMax) 
+    if(TMath::Abs(vtxESD->GetZ()) > fVertexZMax) 
       aEventCuts[iCut] = 1;
   }
   else if(vtxAOD){
