@@ -1205,7 +1205,7 @@ Int_t AliAnalysisTaskDiHadron::TrackCutsAOD(const AliAODEvent *rAOD, Float_t *rP
     if(fDCA2D==1&&(sb[0]*sb[0]/fMaxDCAXY/fMaxDCAXY+sb[1]*sb[1]/fMaxDCAZ/fMaxDCAZ)>1)continue;
     if(fDCA2D==2&&(0.35+0.42*std::pow(double(sPt),-0.9))<(sb[0])*sb[0])continue;
     //if(eSDtrack->GetKinkIndex(0)>0)continue;//removes kinked tracks
-    if(!aodTrack->IsPrimaryCandidate())continue;//I assume this removes kinks
+    //if(!aodTrack->IsPrimaryCandidate())continue;//I assume this removes kinks // commented out, method removed in AliAODTrack
     //if(!aodTrack->GetStatus()&AliAODTrack::kTPCrefit&&fTPCRefit)continue;//refit in TPC
     //if((fITSRefit==1||(fITSRefit==2&&sPt>5))&&!aodTrack->GetStatus()&AliAODTrack::kITSrefit)continue;//refit of its tracks either for none,all, or >5 GeV/c
     if(fDEBUG)Printf("SPD %d %d ", aodTrack->HasPointOnITSLayer(0), aodTrack->HasPointOnITSLayer(1));

@@ -122,7 +122,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    SetRebinSwapHistoOnTheFly(Bool_t r)             {fRebinSwapHistoOnTheFly = r; }
         void                    SetSaveThisPercentageOfFits(Float_t p)          {fPercentageOfFits = p; }
         void                    SetUseV0EventPlaneFromHeader(Bool_t h)          {fUseV0EventPlaneFromHeader = h;}
-        void                    SetExplicitOutlierCutForYear(Int_t y)           {fExplicitOutlierCut = y;}
+//        void                    SetExplicitOutlierCutForYear(Int_t y)           {fExplicitOutlierCut = y;}
         // getters - these are used as well by AliAnalyisTaskJetFlow, so be careful when changing them
         TString                 GetJetsName() const                             {return GetJetContainer()->GetArrayName(); }
         TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
@@ -192,7 +192,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
             return (jet && jet->Pt() > 1. && jet->Eta() > minEta && jet->Eta() < maxEta && jet->Phi() > minPhi && jet->Phi() < maxPhi && jet->Area() > .557*GetJetRadius()*GetJetRadius()*TMath::Pi());
         }
         Bool_t                  PassesCuts(AliVEvent* event);
-        Bool_t                  PassesCuts(Int_t year);
+        /*Bool_t                  PassesCuts(Int_t year);*/
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
         void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
@@ -292,7 +292,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Bool_t                  fRebinSwapHistoOnTheFly;       // rebin swap histo on the fly
         Float_t                 fPercentageOfFits;      // save this percentage of fits
         Bool_t                  fUseV0EventPlaneFromHeader;    // use the vzero event plane from the header
-        Int_t                   fExplicitOutlierCut;    // cut on correlation of tpc and global multiplicity
+//        Int_t                   fExplicitOutlierCut;    // cut on correlation of tpc and global multiplicity
         // transient object pointers
         TList*                  fOutputList;            //! output list
         TList*                  fOutputListGood;        //! output list for local analysis
@@ -363,7 +363,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskJetV2(const AliAnalysisTaskJetV2&);                  // not implemented
         AliAnalysisTaskJetV2& operator=(const AliAnalysisTaskJetV2&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetV2, 1);
+        ClassDef(AliAnalysisTaskJetV2, 2);
 };
 
 #endif

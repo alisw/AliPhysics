@@ -314,8 +314,9 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
   Int_t *motherids=0;
   if (mcP) {
-    motherids = new Int_t[((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel()];
-    for (int ip=0; ip<mcP->GetEntries(); ip++) motherids[ip] = 0;
+    const int motherTabSize = ((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel();
+    motherids = new int[motherTabSize+1];
+    for (int ip=0; ip<motherTabSize+1; ip++) motherids[ip] = 0;
 
     // Read in mother ids
     AliAODMCParticle *motherpart;
