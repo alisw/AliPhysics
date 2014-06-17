@@ -501,7 +501,7 @@ Int_t AliHMPIDTracker::ReconFromKin(AliESDEvent *pEsd,TObjArray *pClus,TObjArray
   Double_t cluLORS[2]={0};
   Int_t nMipClusTot=0;
   Double_t qthre = 0;   Double_t nmean=0; Int_t hvsec=0;
-  Int_t nClusCh[AliHMPIDParam::kMaxCh+1];
+  //Int_t nClusCh[AliHMPIDParam::kMaxCh+1];
 
   Bool_t tsRight = kTRUE;
   
@@ -516,7 +516,7 @@ Int_t AliHMPIDTracker::ReconFromKin(AliESDEvent *pEsd,TObjArray *pClus,TObjArray
    
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){                                        //loop on the ESD tracks in the event
            
-    Double_t dmin=999999,bz=0,distCut=1,distParams[5]={1};
+    Double_t dmin=999999,distCut=1,distParams[5]={1};
 
     Bool_t isOkDcut=kFALSE;
     Bool_t isOkQcut=kFALSE;
@@ -526,7 +526,7 @@ Int_t AliHMPIDTracker::ReconFromKin(AliESDEvent *pEsd,TObjArray *pClus,TObjArray
     AliESDtrack *pTrk = pEsd->GetTrack(iTrk);                                                     //get reconstructed track   
     
     AliHMPIDtrack *hmpTrk = new AliHMPIDtrack(*pTrk);                                             //create a hmpid track to be used for propagation and matching 
-    bz=AliTracker::GetBz();  
+   // bz=AliTracker::GetBz();  
 //initial flags for HMPID ESD infos    
     pTrk->SetHMPIDtrk(0,0,0,0);                                                                //no intersection found
     pTrk->SetHMPIDmip(0,0,0,0);                                                                //store mip info in any case 
@@ -543,7 +543,7 @@ Int_t AliHMPIDTracker::ReconFromKin(AliESDEvent *pEsd,TObjArray *pClus,TObjArray
     
     TClonesArray *pMipCluLst=(TClonesArray *)pClus->At(ipCh);                                   //get the list of clusters
     nMipClusTot = pMipCluLst->GetEntries();                                                     //total number of clusters in the given chamber
-    nClusCh[ipCh] = nMipClusTot;
+   // nClusCh[ipCh] = nMipClusTot;
     
     if(nMipClusTot==0) {delete hmpTrk;hmpTrk=0x0;continue;}                                                                         
     
