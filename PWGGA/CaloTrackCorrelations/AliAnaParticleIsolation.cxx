@@ -3633,7 +3633,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 {
   //Fill acceptance histograms if MC data is available
   
-  Double_t photonY   = -100 ;
+  //Double_t photonY   = -100 ;
   Double_t photonE   = -1 ;
   Double_t photonPt  = -1 ;
   Double_t photonPhi =  100 ;
@@ -3675,7 +3675,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           //Get photon kinematics
           if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception
           
-          photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+          //photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
           photonE   = prim->Energy() ;
           photonPt  = prim->Pt() ;
           photonPhi = TMath::RadToDeg()*prim->Phi() ;
@@ -3845,7 +3845,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           //Get photon kinematics
           if(prim->E() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception
           
-          photonY   = 0.5*TMath::Log((prim->E()-prim->Pz())/(prim->E()+prim->Pz())) ;
+          //photonY   = 0.5*TMath::Log((prim->E()-prim->Pz())/(prim->E()+prim->Pz())) ;
           photonE   = prim->E() ;
           photonPt  = prim->Pt() ;
           photonPhi = prim->Phi() ;
