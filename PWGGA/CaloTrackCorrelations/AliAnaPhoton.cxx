@@ -461,7 +461,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
           photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
           photonE   = prim->Energy() ;
           photonPt  = prim->Pt() ;
-          photonPhi = TMath::RadToDeg()*prim->Phi() ;
+          photonPhi = prim->Phi() ;
           if(photonPhi < 0) photonPhi+=TMath::TwoPi();
           photonEta = prim->Eta() ;
           
