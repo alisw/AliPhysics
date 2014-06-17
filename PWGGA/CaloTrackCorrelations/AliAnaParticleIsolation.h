@@ -287,6 +287,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   //MC
 
   TH2F *   fhEtaPrimMC  [7];                      //! Pt vs Eta of generated photon
+  TH2F *   fhPhiPrimMC  [7];                      //! Pt vs Phi of generated photon
   TH1F *   fhEPrimMC    [7];                      //! Number of generated photon vs E
   TH1F *   fhPtPrimMCiso[7];                      //! Number of generated isolated photon vs pT
   TH1F *   fhPtIsoPrompt;                         //! Number of isolated prompt gamma 

@@ -284,6 +284,7 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
     fhPtPrimMCiso[i] = 0;
     fhEPrimMC    [i] = 0;
     fhEtaPrimMC  [i] = 0;
+    fhPhiPrimMC  [i] = 0;
   }
   
   // Pile-Up
@@ -2696,6 +2697,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhEtaPrimMC[i]->SetYTitle("#eta");
         fhEtaPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhEtaPrimMC[i]) ;
+        
+        fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
+                                   Form("primary photon %s : #phi vs #it{p}_{T}",pptype[i].Data()),
+                                   nptbins,ptmin,ptmax,200,0.,TMath::TwoPi());
+        fhPhiPrimMC[i]->SetYTitle("#phi");
+        fhPhiPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPhiPrimMC[i]) ;
       }
       
     }//Histos with MC
@@ -3678,7 +3686,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           //photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
           photonE   = prim->Energy() ;
           photonPt  = prim->Pt() ;
-          photonPhi = TMath::RadToDeg()*prim->Phi() ;
+          photonPhi = prim->Phi() ;
           if(photonPhi < 0) photonPhi+=TMath::TwoPi();
           photonEta = prim->Eta() ;
           
@@ -3728,6 +3736,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(inacceptance)
           {
             fhEtaPrimMC[kmcPPhoton]->Fill(photonPt , photonEta) ;
+            fhPhiPrimMC[kmcPPhoton]->Fill(photonPt , photonPhi) ;
             fhEPrimMC  [kmcPPhoton]->Fill(photonE) ;
           }
           
@@ -3785,8 +3794,6 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
             //   continue;
             
             dR = GetIsolationCut()->Radius(photonEta, photonPhi, mcisop->Eta(), mcisop->Phi());
-
-            //dR = TMath::Sqrt((photonPhi-mcisop->Phi())*(photonPhi-mcisop->Phi())+(photonEta-mcisop->Eta())*(photonEta-mcisop->Eta()));
             
             if(dR > GetIsolationCut()->GetConeSize())
             continue;
@@ -3799,6 +3806,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(inacceptance)
           {
             fhEtaPrimMC[mcIndex]->Fill(photonPt , photonEta) ;
+            fhPhiPrimMC[mcIndex]->Fill(photonPt , photonPhi) ;
             fhEPrimMC  [mcIndex]->Fill(photonE ) ;
             
             if(sumpt < GetIsolationCut()->GetPtThreshold())
@@ -3901,6 +3909,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(inacceptance)
           {
             fhEtaPrimMC[kmcPPhoton]->Fill(photonPt, photonEta) ;
+            fhPhiPrimMC[kmcPPhoton]->Fill(photonPt, photonPhi) ;
             fhEPrimMC  [kmcPPhoton]->Fill(photonE) ;
           }
           
@@ -3957,8 +3966,6 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
             //   continue;
 
             dR = GetIsolationCut()->Radius(photonEta, photonPhi, mcisop->Eta(), mcisop->Phi());
-
-            //dR = TMath::Sqrt((photonPhi-mcisop->Phi())*(photonPhi-mcisop->Phi())+(photonEta-mcisop->Eta())*(photonEta-mcisop->Eta()));
             
             if(dR> GetIsolationCut()->GetConeSize())
               continue;
@@ -3970,6 +3977,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(inacceptance)
           {
             fhEtaPrimMC[mcIndex]->Fill(photonPt , photonEta) ;
+            fhPhiPrimMC[mcIndex]->Fill(photonPt , photonPhi) ;
             fhEPrimMC  [mcIndex]->Fill(photonE) ;
             
             if(sumpt < GetIsolationCut()->GetPtThreshold())
