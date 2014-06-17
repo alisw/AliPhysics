@@ -97,7 +97,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 	int owncuts = 0; 
 	int owndca = 0;
 
-	int gammacut = 1;	// cut na ee z gamma 
+	int gammacut = 0;	// cut na ee z gamma 
 	
 	double shqmax = 0.5; 
 	int nbinssh = 100;
@@ -166,6 +166,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 					anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 30, multbins[imult], multbins[imult+1]);
 					anetaphitpc[aniter]->SetNumEventsToMix(10);
 					anetaphitpc[aniter]->SetMinSizePartCollection(1);
+					anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 
 					//*** Event cut ***
 					mecetaphitpc[aniter] = new AliFemtoBasicEventCut();

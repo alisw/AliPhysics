@@ -25,13 +25,14 @@ AliAnalysisTaskParticleEfficiency *AddTaskQAPartEff(const char* outfilename="Ana
   if (!outfilename)
     outfilename = AliAnalysisManager::GetCommonFileName();
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("MyList", TList::Class(),AliAnalysisManager::kOutputContainer,outfilename);
+  //AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("MyList", TList::Class(),AliAnalysisManager::kOutputContainer,outfilename);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("MyList", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
 
  mgr->AddTask(ana);
   
 
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (ana, 0, coutput1 );
+  mgr->ConnectOutput (ana, 1, coutput1 );
  
   return ana;
 
