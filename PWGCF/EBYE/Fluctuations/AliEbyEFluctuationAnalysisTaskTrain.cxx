@@ -136,9 +136,9 @@ void AliEbyEFluctuationAnalysisTaskTrain::UserExec(Option_t *) {
 	    if(vertex->GetNContributors() > 0) {
 	      if(vertex->GetZRes() != 0) {
 		fHistEventStats->Fill(3); //events with a proper vertex
-		if(TMath::Abs(vertex->GetXv()) < fVxMax) {
-		  if(TMath::Abs(vertex->GetYv()) < fVyMax) {
-		    if(TMath::Abs(vertex->GetZv()) < fVzMax) {
+		if(TMath::Abs(vertex->GetX()) < fVxMax) {
+		  if(TMath::Abs(vertex->GetY()) < fVyMax) {
+		    if(TMath::Abs(vertex->GetZ()) < fVzMax) {
 		      fHistEventStats->Fill(4); //analyzed events
 		      
 		      Printf("Centrality percentile: %lf - Centrality: %d - Total tracks: %d",

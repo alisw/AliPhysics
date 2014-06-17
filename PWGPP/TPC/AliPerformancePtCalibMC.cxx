@@ -370,9 +370,9 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
    // Double_t tPrimaryVtxCov[3];
    const AliESDVertex *primaryVtx = esdEvent->GetPrimaryVertexTPC();
  
-   tPrimaryVtxPosition[0] = primaryVtx->GetXv();
-   tPrimaryVtxPosition[1] = primaryVtx->GetYv();
-   tPrimaryVtxPosition[2] = primaryVtx->GetZv();
+   tPrimaryVtxPosition[0] = primaryVtx->GetX();
+   tPrimaryVtxPosition[1] = primaryVtx->GetY();
+   tPrimaryVtxPosition[2] = primaryVtx->GetZ();
   
    fHistPrimaryVertexPosX->Fill(tPrimaryVtxPosition[0]);
    fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);

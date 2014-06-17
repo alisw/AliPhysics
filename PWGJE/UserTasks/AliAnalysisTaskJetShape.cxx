@@ -2400,9 +2400,9 @@ Bool_t AnalysisJetMain::GetVertex(const AliESDEvent* esd,  Double_t Vxyz[3], Int
   }
 
  
-   Vxyz[0] = vtx->GetXv();
-   Vxyz[1] = vtx->GetYv();
-   Vxyz[2] = vtx->GetZv();
+   Vxyz[0] = vtx->GetX();
+   Vxyz[1] = vtx->GetY();
+   Vxyz[2] = vtx->GetZ();
  
    return kTRUE;
 }

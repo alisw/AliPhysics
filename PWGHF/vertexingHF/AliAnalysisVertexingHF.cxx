@@ -2240,7 +2240,7 @@ AliAODVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkA
       return vertexAOD;
     }
     
-    Double_t vertRadius2=vertexESD->GetXv()*vertexESD->GetXv()+vertexESD->GetYv()*vertexESD->GetYv();
+    Double_t vertRadius2=vertexESD->GetX()*vertexESD->GetX()+vertexESD->GetY()*vertexESD->GetY();
     if(vertRadius2>8.){
       // vertex outside beam pipe, reject candidate to avoid propagation through material
       delete vertexESD; vertexESD=NULL;

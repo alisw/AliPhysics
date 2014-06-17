@@ -1278,7 +1278,7 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
     //        if ( fSetIncludeEventTreeInOutput )
     //        {
     //            fSimpleEvent->SetHeader( fNsimpleEvents, -1, -1, lCentralityPercentile, lReactionPlane );
-    //            fSimpleEvent->SetVertexPos( vertex->GetXv(), vertex->GetYv(), vertex->GetZv() );
+    //            fSimpleEvent->SetVertexPos( vertex->GetX(), vertex->GetY(), vertex->GetZ() );
     //            fNsimpleEvents++;
     //            fSimpleEvent->StartEventFilling();
     //        }
