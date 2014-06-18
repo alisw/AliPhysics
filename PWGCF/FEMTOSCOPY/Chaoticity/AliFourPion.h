@@ -77,6 +77,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   //
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
+  void SetInterpolationType(Bool_t linearInterp) {fLinearInterpolation = linearInterp;}
   void SetPbPbCase(Bool_t pbpb) {fPbPbcase = pbpb;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
   void SetGeneratorOnly(Bool_t genOnly) {fGeneratorOnly = genOnly;}
@@ -116,7 +117,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetFillBins4(Int_t, Int_t, Int_t, Int_t, Int_t&, Int_t&, Int_t&, Int_t&, Int_t, Bool_t[13]);
   void SetFSIindex(Float_t);
   //
-  
+  Float_t cubicInterpolate(Float_t[4], Float_t);
+  Float_t nCubicInterpolate(Int_t, Float_t*, Float_t[]);
   
   const char* fname;// name of class
   AliAODEvent            *fAOD; //!    // AOD object
@@ -234,6 +236,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fGenerateSignal;
   Bool_t fGeneratorOnly;
   Bool_t fTabulatePairs;
+  Bool_t fLinearInterpolation;
   Int_t fRMax;
   Float_t ffcSq;
   UInt_t fFilterBit;
@@ -298,6 +301,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t fKT3transition;
   Float_t fKT4transition;
   
+  Float_t farrP1[4][4][4];
+  Float_t farrP2[4][4][4];
   
   /* bool LowQPairSwitch_E0E0[kMultLimitPbPb][kMultLimitPbPb];//!
   bool LowQPairSwitch_E0E1[kMultLimitPbPb][kMultLimitPbPb];//!
