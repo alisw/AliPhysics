@@ -534,11 +534,11 @@ void AliEbyEHigherMomentsEffContTask::doAODEvent(){
 	fTPCSig->Fill(newAodTrack->GetTPCmomentum(),tpcSignal);
 	
 	Float_t nsigmaTPCPID = -999.;
-	Float_t nsigmaTOFPID = -999.;
+	//Float_t nsigmaTOFPID = -999.;
 	//Float_t nsigmaTPCTOFPID = -999.;
 	
 	nsigmaTPCPID = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,fParticleSpecies));
-	nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
+	//nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
 	
 	if ( nsigmaTPCPID < fNSigmaCut  ){
 	  
@@ -552,8 +552,8 @@ void AliEbyEHigherMomentsEffContTask::doAODEvent(){
   
   
   
-  Double_t fContainerCh[3] = { static_cast<Double_t>(fCentrality), nPlusCharge, nMinusCharge};
-  Double_t fContainerPid[3] = { static_cast<Double_t>(fCentrality), nPartile, nAntiParticle};
+  Double_t fContainerCh[3] = { fCentrality, nPlusCharge, nMinusCharge};
+  Double_t fContainerPid[3] = { fCentrality, nPartile, nAntiParticle};
   
   if( fUsePid ){
     
@@ -773,11 +773,11 @@ void AliEbyEHigherMomentsEffContTask::doMCAODEvent(){
       fTPCSig->Fill(newAodTrack->GetTPCmomentum(),tpcSignal);
       
       Float_t nsigmaTPCPID = -999.;
-      Float_t nsigmaTOFPID = -999.;
+      //Float_t nsigmaTOFPID = -999.;
       //Float_t nsigmaTPCTOFPID = -999.;
       
       nsigmaTPCPID = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,fParticleSpecies));
-      nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
+      //nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
       
       if ( nsigmaTPCPID < fNSigmaCut  ){
 	
@@ -803,8 +803,8 @@ void AliEbyEHigherMomentsEffContTask::doMCAODEvent(){
   
   //cout << "nCentrality "<< fCentrality <<", nParticle="<< nPartile << ", nMinusParticle=" << nAntiParticle << endl; 
   
-  Double_t fContainerCh[3] = { static_cast<Double_t>(fCentrality), nPlusCharge, nMinusCharge};
-  Double_t fContainerPid[3] = { static_cast<Double_t>(fCentrality), nPartile, nAntiParticle};
+  Double_t fContainerCh[3] = { fCentrality, nPlusCharge, nMinusCharge};
+  Double_t fContainerPid[3] = { fCentrality, nPartile, nAntiParticle};
   
   if( fUsePid ){
     
@@ -957,7 +957,7 @@ void AliEbyEHigherMomentsEffContTask::FillEffSparse(){
     
     //Fill ThnSparse----
     
-    Double_t EffContainer[15] = {static_cast<Double_t>(fCentrality), partMC->Eta(), partMC->Y(), partMC->Phi(), partMC->Pt(), static_cast<Double_t>(sign),static_cast<Double_t>(findable), static_cast<Double_t>(recStatus), static_cast<Double_t>(recPid), static_cast<Double_t>(etaRec), static_cast<Double_t>(phiRec), static_cast<Double_t>(ptRec), partMC->Eta()-etaRec, partMC->Phi()-phiRec, partMC->Pt()-ptRec};
+    Double_t EffContainer[15] = {fCentrality, partMC->Eta(), partMC->Y(), partMC->Phi(), partMC->Pt(), sign,findable, recStatus, recPid, etaRec, phiRec, ptRec, partMC->Eta()-etaRec, partMC->Phi()-phiRec, partMC->Pt()-ptRec};
     
     fTHnEff->Fill(EffContainer);   
     
@@ -1038,7 +1038,7 @@ void AliEbyEHigherMomentsEffContTask::CheckContTrackAOD(Int_t label, Float_t sig
   } 	
   
   // -- Fill THnSparse
-  Double_t ContContainer[14] = { static_cast<Double_t>(fCentrality), particle->Eta(), particle->Y(), particle->Phi(), particle->Pt(), static_cast<Double_t>(sign), static_cast<Double_t>(contPart), static_cast<Double_t>(contSign), static_cast<Double_t>(etaRec), static_cast<Double_t>(phiRec), static_cast<Double_t>(ptRec), particle->Eta()-etaRec, particle->Phi()-phiRec, particle->Pt()-ptRec };
+  Double_t ContContainer[14] = { fCentrality, particle->Eta(), particle->Y(), particle->Phi(), particle->Pt(), sign, contPart, contSign, etaRec, phiRec, ptRec, particle->Eta()-etaRec, particle->Phi()-phiRec, particle->Pt()-ptRec };
   
   fTHnCont->Fill(ContContainer);
   
