@@ -1113,7 +1113,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    
   // ------------------- add always ---------------------------//
   //THnF
-  Double_t piForAx = TMath::Pi();
+  Double_t piForAx = 2.0*TMath::Pi();
   Int_t binsTHnV0K0s[4] = {150,100,50,18};
   Int_t binsTHnV0L[4] = {100,100,50,18};
 
