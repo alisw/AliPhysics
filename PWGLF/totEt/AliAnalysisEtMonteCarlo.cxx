@@ -30,6 +30,9 @@
 #include "AliPHOSGeometry.h"
 #include "TFile.h"
 #include "AliESDtrackCuts.h"
+#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenEventHeader.h"
 using namespace std;
 
 ClassImp(AliAnalysisEtMonteCarlo);
@@ -40,6 +43,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,nChargedHadronsMeasured(0)
 						  ,nChargedHadronsTotal(0)
 						  ,fIsMC(kTRUE)
+						  ,checkLabelForHIJING(kFALSE)
     ,fImpactParameter(0)
     ,fNcoll(0)
     ,fNpart(0)
@@ -393,6 +397,8 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
     ,fHistFracKaonsVsNTotalTracks(0)
     ,fHistFracSecondariesVsNTotalTracks(0)
     ,fHistRCorrVsPtVsCent(0)
+						  ,fNMCProducedMin(0)
+						  ,fNMCProducedMax(0)
 {
 }
 
@@ -697,20 +703,22 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     for (Int_t iPart = 0; iPart < nPrim; iPart++)
     {
 
+	//Some productions have signals added in.  This switch allows the explicit exclusion of these added in signals when running over the data.
+	if(checkLabelForHIJING && !IsHIJINGLabel(iPart,event,stack) ) continue;
         TParticle *part = stack->Particle(iPart);
 	
 	
 
         if (!part)
         {
-            Printf("ERROR: Could not get particle %d", iPart);
+	  Printf("ERROR: Could not get particle %d", iPart);
             continue;
         }
         TParticlePDG *pdg = part->GetPDG(0);
 
         if (!pdg)
         {
-            Printf("ERROR: Could not get particle PDG %d", iPart);
+	  //Printf("ERROR: Could not get particle PDG %d", iPart);
             continue;
         }
 
@@ -831,7 +839,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         AliFatal("ERROR: mcEvent or realEvent does not exist");
        
     }
-
+    if(checkLabelForHIJING) SetGeneratorMinMaxParticles(mcEvent);
     std::vector<Int_t> foundGammas;
     
     fSelector->SetEvent(realEvent);
@@ -843,6 +851,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     TObjArray* list = fEsdtrackCutsTPC->GetAcceptedTracks(realEvent);
     Int_t nGoodTracks = list->GetEntries();
 
+    //cout<<"fcuts max phi "<<fCuts->GetGeometryEmcalPhiAccMaxCut()<<endl;
     //Note that this only returns clusters for the selected detector.  fSelector actually calls the right GetClusters... for the detector
     //It does not apply any cuts on these clusters
     TRefArray *caloClusters = fSelector->GetClusters();
@@ -921,6 +930,9 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         fNClusters++;
         //const UInt_t iPart = (UInt_t)TMath::Abs(fSelector->GetLabel(caloCluster));//->GetLabel());
 	const UInt_t iPart = fSelector->GetLabel(caloCluster,stack);
+	//if(checkLabelForHIJING) cerr<<"I am checking the label"<<endl;
+	//Some productions have signals added in.  This switch allows the explicit exclusion of these added in signals when running over the data.
+	if(checkLabelForHIJING && !IsHIJINGLabel(iPart,mcEvent,stack) ) continue;
 	//const UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
         TParticle *part  =  stack->Particle(iPart);
 
@@ -989,6 +1001,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    matchedTrackp = track->P();
 	    matchedTrackpt = track->Pt();
 	    UInt_t trackLabel = (UInt_t)TMath::Abs(track->GetLabel());
+	    if(checkLabelForHIJING && !IsHIJINGLabel(trackLabel,mcEvent,stack) ) nottrackmatched = kTRUE;//if this was matched to something we don't want to count
 	    TParticle  *trackSimPart  = stack->Particle(trackLabel);
 	    Int_t fTrackDepositedCode = trackSimPart->GetPdgCode();
 	    //if(!nottrackmatched) cout<<"Matched track p: "<<matchedTrackp<<" sim "<<part->P()<<endl;
@@ -999,7 +1012,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    Int_t n=caloCluster->GetNLabels() ;
 	    //if(fReconstructedE - fsub* track->P() > 0.0){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
 	    //cout<<"was matched"<<endl;
-	    if(fSelector->PassMinEnergyCut( (fReconstructedE - fsub* track->P())*TMath::Sin(cp.Theta()) )){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
+	    if(fSelector->PassMinEnergyCut( (fReconstructedE - fsub* track->P())*TMath::Sin(cp.Theta()) ) ){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
 	      //then we say the cluster was not track matched but correct the energy
 	      nottrackmatched = kTRUE;
 	      //but we don't want to double count the matched tracks...
@@ -1073,6 +1086,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	for(UInt_t i = 0; i < caloCluster->GetNLabels(); i++)
 	{
 	  Int_t pIdx = caloCluster->GetLabelAt(i);
+	  //Some productions have signals added in.  This switch allows the explicit exclusion of these added in signals when running over the data.
+	  if(checkLabelForHIJING && !IsHIJINGLabel(pIdx,mcEvent,stack) ) continue;
 	  //Int_t initialLabel = pIdx;
 	  //TParticle *p = stack->Particle(pIdx);
 	  
@@ -1165,7 +1180,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	pdg = primPart->GetPDG(0);
         if (!pdg)
         {
-            Printf("ERROR: Could not get particle PDG %d", iPart);
+	  //Printf("ERROR: Could not get particle PDG %d", iPart);
             continue;
         }
 	//Int_t code = primPart->GetPdgCode();
@@ -1645,19 +1660,21 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     {
 
 	if(!stack->IsPhysicalPrimary(iPart)) continue;
+	//Some productions have signals added in.  This switch allows the explicit exclusion of these added in signals when running over the data.
+	if(checkLabelForHIJING && !IsHIJINGLabel(iPart,mcEvent,stack) ) continue;
 	
 	TParticle *part = stack->Particle(iPart);
 
         if (!part)
         {
-            Printf("ERROR: Could not get particle %d", iPart);
+	  //Printf("ERROR: Could not get particle %d", iPart);
             continue;
         }
         TParticlePDG *pdg = part->GetPDG(0);
 
         if (!pdg)
         {
-            Printf("ERROR: Could not get particle PDG %d", iPart);
+	  //Printf("ERROR: Could not get particle PDG %d", iPart);
             continue;
         }
         
@@ -1699,6 +1716,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
       Int_t nEtCuts = 11;
       //loop over simulated particles in order to find K0S
       for (Int_t iPart = 0; iPart < stack->GetNtrack(); iPart++){
+	//Some productions have signals added in.  This switch allows the explicit exclusion of these added in signals when running over the data.
+	if(checkLabelForHIJING && !IsHIJINGLabel(iPart,mcEvent,stack) ) continue;
 	TParticle *part = stack->Particle(iPart);
 	if (!part){
 	  //Printf("ERROR: Could not get particle %d", iPart);
@@ -2866,4 +2885,116 @@ Int_t AliAnalysisEtMonteCarlo::PrintMothersShort(Int_t partIdx, AliStack* stack,
     else{return 0;}
     return PrintMothersShort(mothIdx, stack, gen+1) + 1;
 }
+
+
+void AliAnalysisEtMonteCarlo::SetGeneratorMinMaxParticles(AliMCEvent *eventMC){
+  // In case of access only to hijing particles in cocktail
+  // get the min and max labels
+  // TODO: Check when generator is not the first one ...
+  
+  fNMCProducedMin = 0;
+  fNMCProducedMax = 0;
+  
+  AliGenEventHeader * eventHeader = eventMC->GenEventHeader();
+  
+  AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
+  
+  if(!cocktail) return ;
+    
+  TList *genHeaders = cocktail->GetHeaders();
+  
+  Int_t nGenerators = genHeaders->GetEntries();
+  //printf("N generators %d \n", nGenerators);
+  
+  for(Int_t igen = 0; igen < nGenerators; igen++)
+    {
+      AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
+      TString name = eventHeader2->GetName();
+      
+      //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader2->ClassName(), name.Data(), eventHeader2->GetTitle());
+      
+      fNMCProducedMin = fNMCProducedMax;
+      fNMCProducedMax+= eventHeader2->NProduced();
+      
+      if(name.Contains("Hijing",TString::kIgnoreCase)){
+	cout<<"Found HIJING event and set range "<<fNMCProducedMin<<"-"<<fNMCProducedMax<<endl;
+	return ;
+      }
+    }
+        
+}
+AliGenEventHeader* AliAnalysisEtMonteCarlo::GetGenEventHeader(AliMCEvent *eventMC) const
+{
+  // Return pointer to Generated event header
+  // If requested and cocktail, search for the hijing generator
+  AliGenEventHeader * eventHeader = eventMC->GenEventHeader();
+  AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
+  
+  if(!cocktail) return 0x0 ;
+  
+  TList *genHeaders = cocktail->GetHeaders();
+  
+  Int_t nGenerators = genHeaders->GetEntries();
+  //printf("N generators %d \n", nGenerators);
+  
+  for(Int_t igen = 0; igen < nGenerators; igen++)
+    {
+      AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
+      TString name = eventHeader2->GetName();
+      
+      //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader2->ClassName(), name.Data(), eventHeader2->GetTitle());
+      
+      if(name.Contains("Hijing",TString::kIgnoreCase)) return eventHeader2 ;
+    }
+  
+  return 0x0;
+  
+}
+Bool_t AliAnalysisEtMonteCarlo::IsHIJINGLabel(Int_t label,AliMCEvent *eventMC,AliStack *stack)
+{
+ 
+  // Find if cluster/track was generated by HIJING
+  
+  AliGenHijingEventHeader*  hijingHeader =  dynamic_cast<AliGenHijingEventHeader *> (GetGenEventHeader(eventMC));
+  
+  //printf("header %p, label %d\n",hijingHeader,label);
+  
+  if(!hijingHeader || label < 0 ) return kFALSE;
+  
+  
+  //printf("pass a), N produced %d\n",nproduced);
+  
+  if(label >= fNMCProducedMin && label < fNMCProducedMax)
+  {
+    //printf(" accept!, label is smaller than produced, N %d\n",nproduced);
+
+    return kTRUE;
+  }
+  
+  if(!stack) return kFALSE;
+  
+  Int_t nprimaries = stack->GetNtrack();
+  
+  if(label > nprimaries) return kFALSE;
+    
+  TParticle * mom = stack->Particle(label);
+    
+  Int_t iMom = label;
+  Int_t iParent = mom->GetFirstMother();
+  while(iParent!=-1){
+    if(iParent >= fNMCProducedMin && iParent < fNMCProducedMax){
+      return kTRUE;
+    }
+      
+    iMom = iParent;
+    mom = stack->Particle(iMom);
+    iParent = mom->GetFirstMother();
+  }
+    
+  return kFALSE ;
+    
+}
+
+
+
 
