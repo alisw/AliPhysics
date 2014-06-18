@@ -963,8 +963,8 @@ Bool_t AliConversionMesonCuts::SetRapidityMesonCut(Int_t RapidityMesonCut){
    case 7:  //
       fRapidityCutMeson   = 0.3;
       break;
-   case 8:  //
-      fRapidityCutMeson   = 0.35;
+   case 8:  //changed, before 0.35
+      fRapidityCutMeson   = 0.25;
       break;
    case 9:  //
       fRapidityCutMeson   = 0.4;
