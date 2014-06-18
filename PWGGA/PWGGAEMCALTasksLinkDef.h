@@ -27,7 +27,6 @@
 #pragma link C++ class AliStaPart+;
 #pragma link C++ class AliStaTrigger+;
 #pragma link C++ class AliStaVertex+;
-#pragma link C++ class AliCaloTrackParticle+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0V2ShSh+;
 #pragma link C++ class AliEMCalpi0ClusterEvaluationTask+;
 #pragma link C++ class AliAnalysisTaskEMCALIsolation+;
