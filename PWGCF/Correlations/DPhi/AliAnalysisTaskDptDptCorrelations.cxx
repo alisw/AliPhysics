@@ -22,6 +22,7 @@
 #include "TH3D.h"
 #include "THnSparse.h"
 #include "TCanvas.h"
+#include "TRandom.h"
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -36,7 +37,6 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TH3D.h>
-#include <TRandom.h>
 #include "AliAnalysisManager.h"
 
 #include "AliAODHandler.h"
@@ -123,7 +123,7 @@ _mult4    ( 0 ),
 _mult4a    ( 0 ),
 _mult5    ( 0 ),
 _mult6    ( 0 ),
-arraySize ( 2000),
+arraySize ( 2500),
 _id_1(0),       
 _charge_1(0),    
 _iEtaPhi_1(0),    
@@ -408,7 +408,7 @@ _mult4    ( 0 ),
 _mult4a    ( 0 ),
 _mult5    ( 0 ),
 _mult6    ( 0 ),
-arraySize ( 2000),
+arraySize ( 2500),
 _id_1(0),       
 _charge_1(0),    
 _iEtaPhi_1(0),    
@@ -1167,7 +1167,6 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       
       //*********************************************************
       TExMap *trackMap = new TExMap();//Mapping matrix----                                            
-      //TRandom *ran = new TRandom(); //random eff. correction
 
       //1st loop track for Global tracks                                                                                
       for(Int_t i = 0; i < _nTracks; i++)
@@ -1191,20 +1190,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	    AliError(Form("Could not receive track %d", iTrack));
 	    continue;
 	  }
-	  
+
 	  bitOK  = t->TestFilterBit(_trackFilterBit);
 	  if (!bitOK) continue; //128bit or 272bit
-
-	  /* //------- Eff. test----------
-	  Double_t yy = (1-0.7)/1.8;
-          Double_t zz = (pt-0.2);
-          //Double_t effValue = 0.7+yy*zz;  //Slope
-	  Double_t effValue = 0.7;          //Flat
-          Double_t R = ran->Uniform(0,1);
-
-          if(R > effValue) continue;
-	  //---------------------------
-	  */
 
 	  Int_t gID = t->GetID();
 	  newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
@@ -1234,7 +1222,6 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	     && nsigmaproton > fNSigmaCut ) continue;
 	  
 	  if(charge == 0) continue;
-	  
 	  // Kinematics cuts used                                                                                        
 	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
 	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;
@@ -1253,6 +1240,12 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	      DCAXY    >  _dcaXYMax ) continue; 
 
 
+	    //------- Eff. test---------- //just for checking
+	  Double_t effValue = 0.7;
+	  Double_t R = gRandom->Rndm();
+          if(R > effValue) continue;
+	  //---------------------------	  
+	  
 	  //==== QA ===========================
 	  //_dcaz->Fill(DCAZ);
 	  //_dcaxy->Fill(DCAXY);
@@ -1262,7 +1255,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  //*************************************************
 	  	  
 	  //Particle 1
-	  if (_requestedCharge_1 == charge) 
+	  if (_requestedCharge_1 == charge &&
+	      eta >= _min_eta_1 &&
+	      eta < _max_eta_1) 
 	    {
 	      
 	      iPhi   = int( phi/_width_phi_1);
@@ -1333,7 +1328,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 		}
 	    }
 	  
-	  if (!_sameFilter && _requestedCharge_2 == charge)  
+	  if (!_sameFilter && _requestedCharge_2 == charge &&
+	      eta >= _min_eta_2 &&
+	      eta < _max_eta_2)  
 	    {
 	      
 	      iPhi   = int( phi/_width_phi_2);
