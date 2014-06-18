@@ -2386,12 +2386,13 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
   }
 
   // pt associated
-  if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.))
+  if((ptAssociatedMin != -1.)&&(ptAssociatedMax != -1.)){
     fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
     fHistPN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRangeUser(ptAssociatedMin,ptAssociatedMax-0.00001);
-    
+  }
+
   //0:step, 1: Delta eta, 2: Delta phi
   TH2D *gHistNN = dynamic_cast<TH2D *>(fHistNN->Project(0,1,2));
   if(!gHistNN){

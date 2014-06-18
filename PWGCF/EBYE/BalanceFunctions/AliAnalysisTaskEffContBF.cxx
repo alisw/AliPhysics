@@ -150,7 +150,7 @@ void AliAnalysisTaskEffContBF::UserCreateOutputObjects() {
   Int_t detaBin = 16;
   Int_t dphiBin = 100;
   Double_t nArrayDPhi[dphiBin+1];
-  for(Int_t iBin = 0; iBin <= phiBin; iBin++) 
+  for(Int_t iBin = 0; iBin <= dphiBin; iBin++) 
     nArrayDPhi[iBin] = iBin*TMath::TwoPi()/dphiBin;
   Double_t nArrayDEta[17]={0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6}; 
   //====================================================//
