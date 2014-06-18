@@ -3664,7 +3664,7 @@ Bool_t AliShuttle::TouchFile()
 	// checking whether directory for touch command exists
         TGridResult* resultLs = gGrid->Ls(dir.Data());
 	if (!resultLs){ // unfortunately we don't get this for ls of a non existing dir
-		Log("SHUTTLE",Form("No result for %s command, returning without touching",commandLs.Data()));
+		Log("SHUTTLE",Form("No result for \"Ls(\"%s\")\", returning without touching", dir.Data()));
 		return kFALSE;
 	}
 
