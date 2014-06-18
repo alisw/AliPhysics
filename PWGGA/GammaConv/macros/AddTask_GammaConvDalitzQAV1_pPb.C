@@ -74,7 +74,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    ConvCutnumber = "8000000060084001001500000000";   //Online  V0 finder
    }
    
-   TString ElecCuts      = "9000540000000200000";            //Electron Cuts
+   TString ElecCuts      = "90005400000002000000";            //Electron Cuts
    Bool_t doEtaShift = kFALSE;
 
 
@@ -197,167 +197,175 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    
    
 if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
-	
-									     
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+										     
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 	
 }  else if( trainConfig == 2 ) {  // No eta shift |Y| < 0.8
   
-	ConvCutarray[0] = "8000011032093603007200000000"; ElecCutarray[0] = "9047540023910262371"; MesonCutarray[0] = "01033035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.6 and |Gamma_eta| < 0.65 and |e+_eta| < 0.65 and |e-_eta| < 0.65 
+	ConvCutarray[0] = "8000011032093603007200000000"; ElecCutarray[0] = "90475400239102623710"; MesonCutarray[0] = "01033035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.6 and |Gamma_eta| < 0.65 and |e+_eta| < 0.65 and |e-_eta| < 0.65 
 	
 }  else if( trainConfig == 3 ) {  // No eta shift |Y| < 0.8
   
-	ConvCutarray[0] = "8000011042093603007200000000"; ElecCutarray[0] = "9047540023510262371"; MesonCutarray[0] = "01032035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.7 and |Gamma_eta| < 0.75 and |e+_eta| < 0.75 and |e-_eta| < 0.75
+	ConvCutarray[0] = "8000011042093603007200000000"; ElecCutarray[0] = "90475400235102623710"; MesonCutarray[0] = "01032035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.7 and |Gamma_eta| < 0.75 and |e+_eta| < 0.75 and |e-_eta| < 0.75
 
 }  else if( trainConfig == 4 ) {  // No eta shift  |Y| < 0.8
   
-	ConvCutarray[0] = "8000011012093603007200000000"; ElecCutarray[0] = "9047540023610262371"; MesonCutarray[0] = "01034035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.5 and |Gamma_eta| < 0.60 and |e+_eta| < 0.60 and |e-_eta| < 0.60  
+	ConvCutarray[0] = "8000011012093603007200000000"; ElecCutarray[0] = "90475400236102623710"; MesonCutarray[0] = "01034035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.5 and |Gamma_eta| < 0.60 and |e+_eta| < 0.60 and |e-_eta| < 0.60  
     
 } else if ( trainConfig == 5 ) {
 
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310262331"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233102623310"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 
 } else if ( trainConfig == 6 ) {  // No eta shift |Y| < 0.8
 	
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310264371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233102643710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 	
 } else if ( trainConfig == 7 ) {
   
-	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "90475400233102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 	
 } else if ( trainConfig == 8 ) {  // No eta shift |Y| < 0.8
 	
-	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540023310264371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "90475400233102643710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 	
 } else if ( trainConfig == 9  ) {
 	
-	ConvCutarray[0] = "8000011102093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+	ConvCutarray[0] = "8000011102093603007200000000"; ElecCutarray[0] = "90475400233102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 	
 } else if ( trainConfig == 10 ) {
 
-        ConvCutarray[0] = "8000012102093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+        ConvCutarray[0] = "8000012102093603007200000000"; ElecCutarray[0] = "90475400233102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 
 } else if ( trainConfig == 11  ) {
 	
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310262301"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233102623010"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 	
 } else if ( trainConfig == 12 ) {
 
-        ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540023310262301"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+        ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "90475400233102623010"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 
 }  else if ( trainConfig == 13 ) {
 	
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540053310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400533102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls
 	
 }  else if ( trainConfig == 14 ) {
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540073310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls no Any
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400733102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls no Any
 	
 }  else if ( trainConfig == 15 ) {
 
-	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540053310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls
+	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "90475400533102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls
 	
 }  else if ( trainConfig == 16 ) {
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540083300262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth  +  No psipair
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400833002623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth  +  No psipair
 		
 }  else if ( trainConfig == 17 ) {
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540083310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400833102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth
 	
 } else if ( trainConfig  == 18 ) {
 
-        ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540093310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + 4ITS cls
+        ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400933102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + 4ITS cls
 
 } else if ( trainConfig  == 19 ) {
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540013310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kFirts
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400133102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kFirts
 	
 } else if ( trainConfig  == 20 ) {
 
-	ConvCutarray[0] = "8000011002092170008260400000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01621035009000"; // standard cut Annika analysis:
+	ConvCutarray[0] = "8000011002092170008260400000"; ElecCutarray[0] = "90475400233102623710"; MesonCutarray[0] = "01621035009000"; // standard cut Annika analysis:
 	
 } else if ( trainConfig  == 21 ) {
 
-	ConvCutarray[0] = "8000011002092170008260400000"; ElecCutarray[0] = "9047540013310262371"; MesonCutarray[0] = "01621035009000"; // standard cut Annika analysis: + kFirst
+	ConvCutarray[0] = "8000011002092170008260400000"; ElecCutarray[0] = "90475400133102623710"; MesonCutarray[0] = "01621035009000"; // standard cut Annika analysis: + kFirst
 	
 } else if ( trainConfig  == 22 ){
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540015310262171"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kFirtst
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400153102621710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kFirtst
 
 } else if ( trainConfig  == 23 ) {
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540085310262171"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kBoth
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400853102621710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kBoth
 	
 } else if ( trainConfig  == 24 ){
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540015310262170"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kFirtst No weights
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400153102621700"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kFirtst No weights
 
 } else if ( trainConfig  == 25 ) {
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540085310262170"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kBoth No weights
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400853102621700"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kBoth No weights
 	
 } else if ( trainConfig  == 26 ) {
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540013310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kFirts + No weights
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400133102623700"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kFirts + No weights
 	
 } else if ( trainConfig  == 27 ) {
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540083310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth  +  No weights
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400833102623700"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth  +  No weights
 	
 } else if ( trainConfig  == 28 ) {
   
-	ConvCutarray[0] = "8000011002493603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt > 0.075
+	ConvCutarray[0] = "8000011002493603007200000000"; ElecCutarray[0] = "90475400233102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt > 0.075
 	
 } else if ( trainConfig  == 29 ) {
   
-	ConvCutarray[0] = "8000011002193603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt > 0.100
+	ConvCutarray[0] = "8000011002193603007200000000"; ElecCutarray[0] = "90475400233102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt > 0.100
 	
 } else if ( trainConfig  == 30 ) {
       
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310263371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt{e} > 0.150
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233102633710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt{e} > 0.150
 	
 } else if ( trainConfig  == 31 ) {
 	
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310265371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt{e} > 0.175
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233102653710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt{e} > 0.175
 	
 } else if ( trainConfig  == 32  ) {
   
-	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + Photon R > 35 cm
+	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "90475400233102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + Photon R > 35 cm
   
 } else if ( trainConfig  == 33  ) {
   
-	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540083310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm 
+	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "90475400833102623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm 
 	
 } else if ( trainConfig  == 34  ) {
   
-	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540083310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm + No weights 
+	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "90475400833102623700"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm + No weights 
 	
 } else if ( trainConfig  == 35 ) {						
 									     
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540083300262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth  + NoPsiPair + No weights
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400833002623700"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth  + NoPsiPair + No weights
 	
 } else if ( trainConfig  == 36 ) {
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny no Weights
-}
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233102623700"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny no Weights
 
+} else if ( trainConfig  == 37 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400833102623711"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + smearing photon virtual
 
+} else if ( trainConfig  == 38 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400133102623711"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kFirts + smearing photon virtual
+	
+} else if( trainConfig   == 39 ) {  
+					     
+        ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233102623711"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + kAny  + smearing photon virtual 
 
-
-
-
+}   
 
 
    TList *ConvCutList  = new TList();
    TList *MesonCutList = new TList();
    TList *ElecCutList  = new TList();
+   
 
    TList *HeaderList = new TList();
    TObjString *Header1 = new TObjString("pi0_1");
    HeaderList->Add(Header1);
    TObjString *Header3 = new TObjString("eta_2");
    HeaderList->Add(Header3);
+   
    
    ConvCutList->SetOwner(kTRUE);
    AliConversionCuts **analysisCuts             = new AliConversionCuts*[numberOfCuts];
@@ -374,8 +382,8 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
           analysisCuts[i] = new AliConversionCuts();
       
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9 ||  trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 16 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 || trainConfig == 22 || trainConfig == 23 ||
-		  trainConfig == 28 || trainConfig == 29 || trainConfig == 30 || trainConfig == 31 || trainConfig == 32 || trainConfig == 33 )
+	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9  ||  trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 16 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 || trainConfig == 22 || trainConfig == 23 ||
+		  trainConfig == 28 || trainConfig == 29 || trainConfig == 30 ||  trainConfig == 31  || trainConfig == 32 || trainConfig == 33 || trainConfig == 37 || trainConfig == 38 || trainConfig == 39 )
 	  ){
 	    
 	    if (doWeighting){

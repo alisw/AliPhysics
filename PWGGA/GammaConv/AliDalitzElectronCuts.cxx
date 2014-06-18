@@ -122,6 +122,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fMassCutPtMin(-100.0),
     fMassMinCut(-999.),
     fDoWeights(kFALSE),
+    fUseVPhotonMCPSmearing(kFALSE),
     fCutString(NULL),
     hCutIndex(NULL),
     hdEdxCuts(NULL),
@@ -961,7 +962,14 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
                         return kTRUE;
                 } else return kFALSE;
                
-		
+  case kuseVPhotonMCPSmearing:
+    
+		  if( SetUseVPhotonMCPmearing(value)) {
+                        fCuts[kuseVPhotonMCPSmearing] = value;
+                        UpdateCutString(cutID, value);
+                        return kTRUE;
+                  } else return kFALSE;
+		  
   case kNCuts:
 		cout << "Error:: Cut id out of range"<< endl;
 		return kFALSE;
@@ -1881,7 +1889,24 @@ Bool_t AliDalitzElectronCuts::SetMassCut(Int_t massCut)
     }
     return kTRUE;
 }
-
+Bool_t AliDalitzElectronCuts::SetUseVPhotonMCPmearing(Int_t useMCPSmearing)
+{// Set Cut
+   switch(useMCPSmearing){
+     
+   case 0:
+      fUseVPhotonMCPSmearing=kFALSE;
+      break;
+   case 1:
+      fUseVPhotonMCPSmearing=kTRUE;
+      break;
+      
+   default: cout<<"Warning: MassCut not defined "<<useMCPSmearing<<endl;
+	    return kFALSE;
+      
+   }
+   
+   return kTRUE;
+}
 
 
 ///________________________________________________________________________
