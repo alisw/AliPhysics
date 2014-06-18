@@ -31,6 +31,8 @@
 #include "AliAODHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisHelperJetTasks.h"
+#include "AliInputEventHandler.h"
 #endif
 
 #include <time.h>
@@ -206,13 +208,28 @@ Double_t AliAnalysisTaskHJetSpectra::GetPtHard(){
       }
    }
    if(pythiaHeader){
-      fCrossSection = pythiaHeader->GetXsection();
-      if(fCrossSection>0.){ //save cross-section and the number of trials
-         fTrials = pythiaHeader->Trials();
-         fh1Xsec->Fill("<#sigma>", fCrossSection);
-         fh1Trials->Fill("#sum{ntrials}",fTrials);
-      }
 
+      TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+
+      if(tree){
+         TFile *curfile = tree->GetCurrentFile();
+         if(!curfile) {
+            Error("Notify","No current file");
+            return kFALSE;
+         }
+         Float_t xsection = 0.0;
+         Float_t trials  = 1.0;
+
+         AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,trials);
+
+         fCrossSection = (Double_t) xsection;//pythiaHeader->GetXsection();
+
+         if(fCrossSection>0.){ //save cross-section and the number of trials
+            fTrials = (Double_t) trials; //pythiaHeader->Trials();
+            fh1Xsec->Fill("<#sigma>", fCrossSection);
+            fh1Trials->Fill("#sum{ntrials}",fTrials);
+         }
+      }
       return pythiaHeader->GetPtHard();
    }
    AliWarning(Form("In task %s: GetPtHard() failed!", GetName()));
