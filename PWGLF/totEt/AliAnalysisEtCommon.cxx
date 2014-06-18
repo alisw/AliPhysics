@@ -240,7 +240,7 @@ void AliAnalysisEtCommon::ResetEventValues()
 {//Resets event values of et to zero
   
   if (!fCuts) { // some Init's needed
-    cout << __FILE__ << ":" << __LINE__ << " : Init " << endl;
+    //cout << __FILE__ << ":" << __LINE__ << " : Init " << endl;
     if (!fCuts) {
       cout << " setting up Cuts " << endl;
       fCuts = new AliAnalysisEtCuts();
