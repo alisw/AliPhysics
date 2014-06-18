@@ -38,7 +38,6 @@ set ( SRCS
  EMCALTasks/AliAnalysisTaskTrgContam.cxx
  EMCALTasks/AliStaObjects.cxx
  EMCALTasks/AliCaloTrackParticle.cxx
- EMCALTasks/AliAnalysisTaskEMCALCaloTrackCorr.cxx
  EMCALTasks/AliAnalysisTaskEMCALPi0V2ShSh.cxx
  EMCALTasks/AliEMCalpi0ClusterEvaluationTask.cxx
  EMCALTasks/AliAnalysisTaskEMCALIsolation.cxx
