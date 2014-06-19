@@ -318,6 +318,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	fClusterEnergyCent->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
         Bool_t matched = kTRUE;//default to no track matched
 	Bool_t countasmatched = kFALSE;
+	Bool_t correctedcluster = kFALSE;
 
 	Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();//find the index of the matched track
 	matched = !(fSelector->PassTrackMatchingCut(*cluster));//PassTrackMatchingCut is false if there is a matched track
@@ -332,13 +333,21 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      fHistRecoRCorrVsPtVsCent->Fill(rcorr,track->Pt(), fCentClass);
 	      if(fSelector->PassMinEnergyCut( (fReconstructedE - fsub* track->P())*TMath::Sin(cp.Theta()) )  ){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
 		// 	      if(fReconstructedE - fsub* track->P() > 0.0){
+		//cout<<"match corrected"<<endl;
 		fReconstructedE = fReconstructedE - fsub* track->P();
 		matched = kFALSE;
 		countasmatched = kTRUE;
+		correctedcluster = kTRUE;
 		lostEnergy = fsub* track->P();
 		lostTrackPt = track->Pt();
 		fClusterEnergyModifiedTrackMatchesCent->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
 	      }
+// 	      else{
+// 		    cerr<<"match passed ";
+// 		    cerr<<"E "<<fReconstructedE<<" fsubmeanhad "<<fsub<<" p "<< track->P();
+// 		    if(correctedcluster) cout<<" corrected";
+// 		    cerr<<endl;
+// 	      }
 	    }
 	  }
 	}
@@ -394,7 +403,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		  cluster->GetPosition(pos);	  
 		  TVector3 p2(pos);
 		  uncorrEt += TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
-		  if(fSelector->PassMinEnergyCut( (fReconstructedE - fsubmeanhade* track->P())*TMath::Sin(cp.Theta()) ) && (fReconstructedE - fsubmeanhade* track->P())*TMath::Sin(cp.Theta())>0.0 ){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster and the corrected energy is greater than zero
+		  if(correctedcluster || fReconstructedE <fsubmeanhade* track->P() ){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster and the corrected energy is greater than zero
 		    fHistMatchedTracksEvspTvsCent->Fill(track->P(),TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
 		    fHistMatchedTracksEvspTvsCentEffCorr->Fill(track->P(),effCorrEt,cent);
 		    //Weighed by the number of tracks we didn't find
@@ -409,7 +418,6 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		    }
 		    if(uncorrEt>=0.5) fHistMatchedTracksEvspTvsCentEffTMCorr500MeV->Fill(track->P(), effCorrEt,cent, (1/eff-1) );
 		  }
-		  //else{cerr<<"Did not count cluster as track matched because it was too high"<<endl;}
 		  const Double_t *pidWeights = track->PID();
 		  
 		  Double_t maxpidweight = 0;
