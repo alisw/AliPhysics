@@ -29,4 +29,11 @@
 #define DEFAULT_LOGBOOK_USER "dqm"
 #define DEFAULT_LOGBOOK_PASS "nopass"
 
+namespace AliEventServerUtil
+{
+
+// return full path to the server configuration file
+const char* GetPathToServerConf();
+}
+
 #endif /* __ALIEVENTSERVER_UTIL_H__ */

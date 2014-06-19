@@ -33,6 +33,7 @@ set ( SRCS
     AliDimIntNotifier.cxx 
     AliChildProcTerminator.cxx
     AliEventServerPreferencesWindow.cxx
+    AliEventServerUtil.cxx
     AliTestChildProc.cxx 
     )
 
