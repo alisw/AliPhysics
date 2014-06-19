@@ -36,7 +36,7 @@ public:
 	TCondition*					Condition() { return fCond; }
 	
 private:
-	static void* RunThrdWrite(void* arg);
+	void RunThrdWrite();
 	
 	AliReconstruction* fReco;
 

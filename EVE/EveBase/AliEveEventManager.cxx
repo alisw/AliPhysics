@@ -128,7 +128,7 @@ bool AliEveEventManager::ConnectToServer(const char* host, int port)
 
 #ifdef ZMQ
 	// make a zeromq socket
-    fgSubContext = new zmq::context_t;
+	  fgSubContext = new zmq::context_t(1);
     fgSubSock = new AliSocket(&*fgSubContext, ZMQ_SUB);
     fgSubSock->Subscribe("");
     fgSubSock->Connect(Form("%s:%d", host, port) );
