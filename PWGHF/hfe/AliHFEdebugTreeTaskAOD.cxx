@@ -498,12 +498,14 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
       eR = TMath::Sqrt(vx*vx+vy*vy);
       
       // Get Mother PDG code of the particle
+      /*
       Int_t motherPdg = 0;
       Int_t motherlabel = TMath::Abs(mctrack->GetMother());
       if(motherlabel >= 0 && motherlabel < fAODArrayMCInfo->GetEntriesFast()){
         AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(motherlabel));
         if(mother) motherPdg = mother->GetPdgCode();
       }
+      */
       
       // derive source
       source = 5;
