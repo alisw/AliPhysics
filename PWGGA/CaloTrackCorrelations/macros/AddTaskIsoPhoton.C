@@ -13,6 +13,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Bool_t   tm            = kTRUE,
                                                       const Int_t    minCen        = -1,
                                                       const Int_t    maxCen        = -1,
+						      const Float_t  deltaphicut   = 0.03,
+						      const Float_t  deltaetacut   = 0.02,
                                                       const Int_t    nlmMax        =  2,
                                                       const Bool_t   qaan          = kFALSE,
                                                       const Int_t    debug         = -1,
@@ -46,7 +48,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
 
   // Name for containers
   
-  kAnaIsoPhotonName = Form("%s_Trig%s_TM%d_R%1.1f_Pt%1.1f",calorimeter.Data(), trigger.Data(),tm,cone,pth);
+  kAnaIsoPhotonName = Form("%s_Trig%s_TM%d_%1.3f_R%1.1f_Pt%1.1f",calorimeter.Data(), trigger.Data(),tm,deltaphicut,cone,pth);
 
   if(maxCen>=0) kAnaIsoPhotonName+=Form("Cen%d_%d",minCen,maxCen);
     
@@ -218,6 +220,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
   // Tracks
   reader->SwitchOnCTS();
 
+
   reader->SwitchOffRecalculateVertexBC();
   reader->SwitchOffVertexBCEventSelection();
   
@@ -366,7 +369,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
 }
 
 //_____________________________________
-AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm = kFALSE, Int_t nlmMax = 2, Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
+AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm = kFALSE, Float_t deltaphicut = 0.02, Float_t deltaetacut = 0.03,Int_t nlmMax = 2, Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
 {
   
   AliAnaPhoton *ana = new AliAnaPhoton();
@@ -419,8 +422,10 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm =
   caloPID->SetEMCALLambda0CutMax(10.);
   caloPID->SetEMCALLambda0CutMin(0.10);
   
-  caloPID->SetEMCALDEtaCut(0.025);
-  caloPID->SetEMCALDPhiCut(0.030);
+  // caloPID->SetEMCALDEtaCut(0.025);
+  // caloPID->SetEMCALDPhiCut(0.030);
+  caloPID->SetEMCALDEtaCut(deltaetacut);
+  caloPID->SetEMCALDPhiCut(deltaphicut);
 
   ana->SwitchOnFillShowerShapeHistograms();  // Filled before photon shower shape selection
   if(!simu) ana->SwitchOnFillPileUpHistograms();
