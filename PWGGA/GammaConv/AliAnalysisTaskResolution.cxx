@@ -119,7 +119,6 @@ void AliAnalysisTaskResolution::UserCreateOutputObjects()
 	fTreeEvent->Branch("primVtxZ",&fPrimVtxZ,"fPrimVtxZ/F");
 	fTreeEvent->Branch("nContrVtx",&fNContrVtx,"fNContrVtx/I");
 	fTreeEvent->Branch("nGoodTracksEta09",&fNESDtracksEta09,"fNESDtracksEta09/I");
-	fTreeEvent->Branch("nGoodTracksEta0914",&fNESDtracksEta0914,"fNESDtracksEta0914/I");
 	fTreeEvent->Branch("nGoodTracksEta14",&fNESDtracksEta14,"fNESDtracksEta14/I");
 	fEventList->Add(fTreeEvent);
 	
@@ -129,7 +128,8 @@ void AliAnalysisTaskResolution::UserCreateOutputObjects()
 		fResolutionList->SetOwner(kTRUE);
 		fOutputList->Add(fResolutionList);
 								
-		fTreeResolution = new TTree("Resolution","Resolution");   
+		fTreeResolution = new TTree("Resolution","Resolution");
+		fTreeResolution->Branch("nGoodTracksEta09",&fNESDtracksEta09,"fNESDtracksEta09/I");
 		fTreeResolution->Branch("RecCoords",&fGammaRecCoords);
 		fTreeResolution->Branch("MCCoords",&fGammaMCCoords);
 		fTreeResolution->Branch("chi2ndf",&fChi2ndf,"fChi2ndf/F");
@@ -190,9 +190,9 @@ void AliAnalysisTaskResolution::UserExec(Option_t *){
 	}
 	fPrimVtxZ = fESDEvent->GetPrimaryVertex()->GetZ();
 	
-	if (fIsHeavyIon == 2){
-		if (!(fNESDtracksEta09 > 20 && fNESDtracksEta09 < 80)) return;
-	}	
+// 	if (fIsHeavyIon == 2){
+// 		if (!(fNESDtracksEta09 > 20 && fNESDtracksEta09 < 80)) return;
+// 	}	
 
 	
 	if (fTreeEvent){
@@ -213,6 +213,7 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
 		AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
 		if (gamma ==NULL) continue;
 		if(!fConversionCuts->PhotonIsSelected(gamma,fESDEvent)) continue;
+		fNESDtracksEta09 = CountTracks09(); // Estimate Event Multiplicity
 		fGammaRecCoords(0) = gamma->GetPhotonPt();
 		fGammaRecCoords(1) = gamma->GetPhotonPhi();
 		fGammaRecCoords(2) = gamma->GetPhotonEta();
