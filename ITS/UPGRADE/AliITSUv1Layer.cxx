@@ -471,8 +471,11 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
  
   // Mechanical stave structure
     mechStaveVol = CreateStaveStructInnerB(xlen,zlen); 
-    if (mechStaveVol)
-      staveVol->AddNode(mechStaveVol, fNChips, new TGeoCombiTrans(0, -0.15-ylen, 0, new TGeoRotation("",0, 0, 180)));
+    if (mechStaveVol) {
+      ypos = ((TGeoBBox*)(modVol->GetShape()))->GetDY() +
+             ((TGeoBBox*)(mechStaveVol->GetShape()))->GetDY();
+      staveVol->AddNode(mechStaveVol, 1, new TGeoCombiTrans(0, -ypos, 0, new TGeoRotation("",0, 0, 180)));
+    }
   }
 
   else{
@@ -571,7 +574,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleInnerB(Double_t xmod,
 //
 
   Double_t zchip;
-  Double_t zpos;
+  Double_t zpos, zlen;
   char volname[30];
 
   // First create the single chip
@@ -586,7 +589,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleInnerB(Double_t xmod,
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSModulePattern(), fLayerNumber);
   TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
 
-  //  zlen = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
+  zlen = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
   for (Int_t j=0; j<fgkIBChipsPerRow; j++) {
     zpos = -zmod + j*2*zchip + zchip;
     modVol->AddNode(chipVol, j, new TGeoTranslation(0, 0, zpos));
