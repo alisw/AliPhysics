@@ -15,6 +15,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Int_t    maxCen        = -1,
 						      const Float_t  deltaphicut   = 0.03,
 						      const Float_t  deltaetacut   = 0.02,
+ 						      const Int_t    disttobad     = 0,
                                                       const Int_t    nlmMax        =  2,
                                                       const Bool_t   qaan          = kFALSE,
                                                       const Int_t    debug         = -1,
@@ -48,7 +49,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
 
   // Name for containers
   
-  kAnaIsoPhotonName = Form("%s_Trig%s_TM%d_%1.3f_R%1.1f_Pt%1.1f",calorimeter.Data(), trigger.Data(),tm,deltaphicut,cone,pth);
+  kAnaIsoPhotonName = Form("%s_Trig%s_TM%d_%1.3f_dB%d_R%1.1f_Pt%1.1f",calorimeter.Data(), trigger.Data(),tm,deltaphicut,disttobad,cone,pth);
 
   if(maxCen>=0) kAnaIsoPhotonName+=Form("Cen%d_%d",minCen,maxCen);
     
@@ -74,7 +75,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   Int_t thresType  = AliIsolationCut::kSumPtIC ; 
   
   // Photon analysis
-  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,nlmMax,simu,debug,print), n++); // Photon cluster selection
+  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,deltaphicut,deltaetacut,disttobad,nlmMax,simu,debug,print), n++); // Photon cluster selection
   
   // Isolation analysis
   maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,kFALSE,simu,debug,print), n++); // Photon isolation
@@ -369,7 +370,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
 }
 
 //_____________________________________
-AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm = kFALSE, Float_t deltaphicut = 0.02, Float_t deltaetacut = 0.03,Int_t nlmMax = 2, Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
+AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm = kFALSE, Float_t deltaphicut = 0.02, Float_t deltaetacut = 0.03,Int_t disttobad=0,Int_t nlmMax = 2, Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
 {
   
   AliAnaPhoton *ana = new AliAnaPhoton();
@@ -395,7 +396,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm =
     ana->SetMaxEnergy(1000); 
     //    ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off 
     // restrict to less than 100 ns when time calibration is on 
-    ana->SetMinDistanceToBadChannel(2, 4, 6); 
+    ana->SetMinDistanceToBadChannel(disttobad, 4, 6); 
     
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     // Not needed if M02 cut is already strong or clusterizer V2
