@@ -68,14 +68,13 @@ AddTaskCentraldNdeta(const char* config    = "dNdetaConfig.C",
   //    kEventLevel         Normalise to all events in selected range 
   //    kBackground         Also correct for background triggers 
   //    kTriggerEfficiency  Correct for trigger efficiency 
-  //    kShape              Correct shape 
   // 
   // kNone and kEventLevel are mutually exclusive.  If kEventLevel is
   // not specified, then kNone is assumed.  kBackground only makes
   // sense with kEventLevel. Furthermore, there
   // are some constants that encode the common cases
   //     
-  //    kFull    = kEventLevel |  kBackground | kShape | kTriggerEfficiency
+  //    kFull    = kEventLevel |  kBackground | kTriggerEfficiency
   // 
   // Default is kFull
   task->SetNormalizationScheme(AliBasedNdetaTask::kFull);

@@ -46,7 +46,8 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
 
 //____________________________________________________________________
 AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
-  : AliBaseESDTask(name, "", &(AliForwardCorrectionManager::Instance())), 
+  : AliBaseESDTask(name, "AliFMDEnergyFitterTask", 
+		   &(AliForwardCorrectionManager::Instance())), 
     fEventInspector("event"),
     fESDFixer("esdFizer"),
     fEnergyFitter("energy"),

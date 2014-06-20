@@ -16,7 +16,7 @@
 #ifndef TRAINSETUP_C
 #define TRAINSETUP_C
 #ifndef __CINT__
-# include "Helper.C"
+# include "Railway.C"
 # include "Option.C"
 # include <TDatime.h>
 # include <TUrl.h>
@@ -34,7 +34,7 @@
 # include <AliMCEventHandler.h>
 # include <ctime>
 #else 
-struct Helper;
+struct Railway;
 struct OptionList;
 class TDatime;
 class TUrl;
@@ -66,7 +66,7 @@ struct TrainSetup
       fEscapedName(name),
       fDatimeString(""),
       fOptions(),
-      fHelper(0),
+      fRailway(0),
       fMonitored("")
   {
     fOptions.Add("help", "Show help", false);
@@ -92,7 +92,7 @@ struct TrainSetup
       fEscapedName(o.fEscapedName), 
       fDatimeString(o.fDatimeString),
       fOptions(o.fOptions), 
-      fHelper(o.fHelper),
+      fRailway(o.fRailway),
       fMonitored(o.fMonitored)
   {}
   /** 
@@ -109,7 +109,7 @@ struct TrainSetup
     fEscapedName  = o.fEscapedName;
     fDatimeString = o.fDatimeString;
     fOptions      = o.fOptions;
-    fHelper       = o.fHelper;
+    fRailway       = o.fRailway;
     fMonitored    = o.fMonitored;
     return *this;
   }
@@ -135,21 +135,21 @@ struct TrainSetup
     TString  url     = fOptions.Get("url");
     Int_t    verbose = fOptions.AsInt("verbose");
 
-    fHelper = Helper::Create(url.Data(), verbose);
-    if (!fHelper) { 
+    fRailway = Railway::Create(url.Data(), verbose);
+    if (!fRailway) { 
       Error("Init", "Failed to make the worker for URL %s", url.Data());
       return false;
     }
 
     // --- Check the type, if possible -------------------------------
-    UShort_t type    = fHelper->InputType();
-    Bool_t   mc      = fHelper->IsMC();
+    UShort_t type    = fRailway->InputType();
+    Bool_t   mc      = fRailway->IsMC();
     if (fOptions.Has("type")) { 
       const TString& it = fOptions.Get("type");
-      if      (it.EqualTo("ESD",TString::kIgnoreCase)) type = Helper::kESD;
-      else if (it.EqualTo("AOD",TString::kIgnoreCase)) type = Helper::kAOD;
+      if      (it.EqualTo("ESD",TString::kIgnoreCase)) type = Railway::kESD;
+      else if (it.EqualTo("AOD",TString::kIgnoreCase)) type = Railway::kAOD;
       else if (it.EqualTo("user",TString::kIgnoreCase)) 
-	type = Helper::kUser;
+	type = Railway::kUser;
     }
 
     // --- Rewrite the escpaed name ----------------------------------
@@ -163,13 +163,13 @@ struct TrainSetup
     if (!SetupWorkingDirectory()) return false;
 
     // --- Do initial helper setup -----------------------------------
-    if (!fHelper->PreSetup()) return false;
+    if (!fRailway->PreSetup()) return false;
 
     // --- Load ROOT libraries ---------------------------------------
-    if (!fHelper->LoadROOT()) return false;
+    if (!fRailway->LoadROOT()) return false;
     
     // --- Load AliROOT libraries ------------------------------------
-    if (!fHelper->LoadAliROOT()) return false;
+    if (!fRailway->LoadAliROOT()) return false;
 
     // --- Create analysis manager -----------------------------------
     AliAnalysisManager *mgr  = CreateAnalysisManager(fEscapedName);
@@ -178,7 +178,7 @@ struct TrainSetup
     // if (oper == kTest)  mgr->SetNSysInfo(1); 
     if (verbose  >  0)      mgr->SetDebugLevel(verbose);
     mgr->SetAutoBranchLoading(!fOptions.Has("branches"));
-    if (fHelper->Mode() == Helper::kLocal) 
+    if (fRailway->Mode() == Railway::kLocal) 
       mgr->SetUseProgressBar(kTRUE, 100);
    
     // --- ESD input handler ------------------------------------------
@@ -198,10 +198,10 @@ struct TrainSetup
 			     cwd.Data(), gROOT->GetMacroPath()));
 
     // --- Physics selction - only for ESD ---------------------------
-    if (type == Helper::kESD) CreatePhysicsSelection(mc, mgr);
+    if (type == Railway::kESD) CreatePhysicsSelection(mc, mgr);
     
     // --- Create centrality task ------------------------------------
-    CreateCentralitySelection(mc, mgr);
+    CreateCentralitySelection(mc);
 
     // --- Create tasks ----------------------------------------------
     CreateTasks(mgr);
@@ -210,7 +210,7 @@ struct TrainSetup
     CreateMonitors();
 
     // --- Post set-up initialization of helper ----------------------
-    if (!fHelper->PostSetup()) return false;
+    if (!fRailway->PostSetup()) return false;
 
     // --- Set debug level on defined tasks --------------------------
     if (verbose > 0) {
@@ -234,7 +234,7 @@ struct TrainSetup
     }
 
     // --- Enable progress bar ---------------------------------------
-    if (fHelper->Mode() != Helper::kGrid) 
+    if (fRailway->Mode() != Railway::kGrid) 
       mgr->SetUseProgressBar(true, 100);
 
     // --- Save setup to disk ----------------------------------------
@@ -242,7 +242,7 @@ struct TrainSetup
 
     // --- Some information ------------------------------------------
     mgr->PrintStatus();
-    if (fHelper->Mode() != Helper::kLocal) {
+    if (fRailway->Mode() != Railway::kLocal) {
       TIter next(mgr->GetTasks());
       AliAnalysisTask* sub = 0;
       while ((sub = static_cast<AliAnalysisTask*>(next()))) { 
@@ -291,7 +291,7 @@ struct TrainSetup
       // if (r) SaveSetup(*r, nEvents, asShell);
       
       Long64_t nEvents = fOptions.AsLong("events", -1);
-      Long64_t ret     = fHelper->Run(nEvents);
+      Long64_t ret     = fRailway->Run(nEvents);
       PrintTimer(timer, "Processing");
       timer.Continue();
       
@@ -334,7 +334,7 @@ struct TrainSetup
     std::cout << "Train: " << fName << " (" << fEscapedName << ")" 
 	      << std::endl;
     fOptions.Show(std::cout);
-    if (fHelper) fHelper->Print();
+    if (fRailway) fRailway->Print();
   }
   /** 
    * Show the help 
@@ -355,25 +355,25 @@ struct TrainSetup
     fOptions.Help(o, asProg ? "  --" : "  ");
     o << "\n";
 
-    if (!fHelper && fOptions.Has("url")) {
+    if (!fRailway && fOptions.Has("url")) {
       TString url = fOptions.Get("url");
-      fHelper = Helper::Create(url.Data());
+      fRailway = Railway::Create(url.Data());
     }
-    if (fHelper) { 
-      o << fHelper->Desc() << " URL form:\n\n"
-	<< "    " << fHelper->UrlHelp() << "\n\n"
+    if (fRailway) { 
+      o << fRailway->Desc() << " URL form:\n\n"
+	<< "    " << fRailway->UrlHelp() << "\n\n"
 	<< "Options:\n";
-      fHelper->Options().Help(o, "    ");
+      fRailway->Options().Help(o, "    ");
       o << "\n";
     }
     else { 
       o << "Possible URL forms:\n\n";
-      Helper::ShowUrlHelp("LocalHelper");
-      Helper::ShowUrlHelp("ProofHelper");
-      Helper::ShowUrlHelp("LiteHelper");
-      Helper::ShowUrlHelp("AAFHelper");
-      Helper::ShowUrlHelp("AAFPluginHelper");
-      Helper::ShowUrlHelp("GridHelper");
+      Railway::ShowUrlHelp("LocalRailway");
+      Railway::ShowUrlHelp("ProofRailway");
+      Railway::ShowUrlHelp("LiteRailway");
+      Railway::ShowUrlHelp("AAFRailway");
+      Railway::ShowUrlHelp("AAFPluginRailway");
+      Railway::ShowUrlHelp("GridRailway");
       o << "\n";
     }
     return false;
@@ -482,9 +482,9 @@ protected:
   virtual AliVEventHandler* CreateInputHandler(UShort_t type)
   {
     switch (type) {
-    case Helper::kESD:  return new AliESDInputHandler(); 
-    case Helper::kAOD:  return new AliAODInputHandler(); 
-    case Helper::kUser: return 0;
+    case Railway::kESD:  return new AliESDInputHandler(); 
+    case Railway::kAOD:  return new AliAODInputHandler(); 
+    case Railway::kUser: return 0;
     }
     return 0;
   }
@@ -515,13 +515,13 @@ protected:
   {
     AliAODHandler* ret = new AliAODHandler();
     switch (type) { 
-    case Helper::kESD: 
+    case Railway::kESD: 
       ret->SetOutputFileName("AliAOD.root");
       break;
-    case Helper::kAOD: 
+    case Railway::kAOD: 
       ret->SetOutputFileName("AliAOD.pass2.root");
       break;
-    case Helper::kUser: 
+    case Railway::kUser: 
       break;
     }
     
@@ -548,7 +548,7 @@ protected:
 
       return;
     }
-    gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
+    CoupleCar("AddTaskPhysicsSelection.C", Form("%d", mc));
     mgr->RegisterExtraFile("event_stat.root");
     mgr->AddStatisticsTask(AliVEvent::kAny);
   }
@@ -559,12 +559,11 @@ protected:
    * @param mc Whether this is for MC 
    * @param mgr Manager
    */
-  virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
+  virtual void CreateCentralitySelection(Bool_t mc)
   {
-    gROOT->Macro("AddTaskCentrality.C(true)");
-    const char* name = "CentralitySelection";
+    AliAnalysisTask* task = CoupleCar("AddTaskCentrality.C","true");
     AliCentralitySelectionTask* ctask = 
-      dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask(name));
+      dynamic_cast<AliCentralitySelectionTask*>(task);
     if (!ctask) return;
     if (mc) ctask->SetMCInput();
   }
@@ -583,12 +582,12 @@ protected:
    * 
    * @return Created task or null
    */
-  virtual AliAnalysisTask* AddTask(const TString& macro, 
-				   const TString& args)
+  virtual AliAnalysisTask* CoupleCar(const TString& macro, 
+				     const TString& args)
   {
     TString p = gSystem->Which(gROOT->GetMacroPath(), macro.Data());
     if (p.IsNull()) { 
-      Error("AddTask", "Macro %s not found", macro.Data());
+      Error("CoupleCar", "Macro %s not found", macro.Data());
       return 0;
     }
     TString cmd(p);
@@ -598,7 +597,7 @@ protected:
     Int_t err;
     Long_t ret = gROOT->Macro(cmd.Data(), &err, false);
     if (!ret) { 
-      Error("AddTask", "Failed to execute %s (%ld)", cmd.Data(), ret);
+      Error("CoupleCar", "Failed to execute %s (%ld)", cmd.Data(), ret);
       return 0;
     }
     return reinterpret_cast<AliAnalysisTask*>(ret);
@@ -610,10 +609,10 @@ protected:
    * 
    * @return The added task, if any
    */
-  virtual AliAnalysisTask* AddTask(const TString& macro)
+  virtual AliAnalysisTask* CoupleCar(const TString& macro)
   {
     TString args;
-    return AddTask(macro, args);
+    return CoupleCar(macro, args);
   }
   /** 
    * Add a single event analysis task to the train, passing the
@@ -624,10 +623,10 @@ protected:
    * 
    * @return The added task, if any 
    */
-  virtual AliAnalysisTaskSE* AddSETask(const TString& macro, 
+  virtual AliAnalysisTaskSE* CoupleSECar(const TString& macro, 
 				       const TString& args)
   {
-    return dynamic_cast<AliAnalysisTaskSE*>(AddTask(macro, args));
+    return dynamic_cast<AliAnalysisTaskSE*>(CoupleCar(macro, args));
   }
   /** 
    * Add a single event task to the train with no arguments passed to
@@ -637,10 +636,32 @@ protected:
    * 
    * @return The added task, if any
    */
-  virtual AliAnalysisTaskSE* AddSETask(const TString& macro)
+  virtual AliAnalysisTaskSE* CoupleSECar(const TString& macro)
   {
     TString args;
-    return AddSETask(macro, args);
+    return CoupleSECar(macro, args);
+  }
+  /** 
+   * Find an already added task 
+   * 
+   * @param name    Name of the task 
+   * @param verbose If true, 
+   * 
+   * @return 
+   */
+  virtual AliAnalysisTask* FindCar(const TString& name, 
+				    Bool_t verbose=true) const
+  {
+    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+    if (!mgr) {
+      ::Warning("FindCar", "No manager defined");
+      return 0;
+    }
+    AliAnalysisTask* task = mgr->GetTask(name);
+    if (!task && verbose)
+      ::Warning("FindCar", "Task \"%s\" not found in train", 
+		name.Data());
+    return task;
   }
   /** 
    * Check if we have an MC handler attached 
@@ -671,7 +692,7 @@ protected:
   virtual void CreateMonitors() 
   {
     if (fMonitored.IsNull()) return;
-    if (fHelper->Mode() != Helper::kProof) return;
+    if (fRailway->Mode() != Railway::kProof) return;
 
     TObjArray* tokens = fMonitored.Tokenize(":");
     TObject*   token  = 0;
@@ -764,7 +785,7 @@ protected:
 
     // Check if the directory exists already 
     Bool_t exists = gSystem->AccessPathName(nam.Data()) == 0;
-    if (fHelper->Operation() == Helper::kTerminate && !exists) {
+    if (fRailway->Operation() == Railway::kTerminate && !exists) {
       Error("SetupWorkingDirectory", "File/directory %s does not exists", 
 	    nam.Data());
       return false;
@@ -805,7 +826,7 @@ protected:
   virtual void SaveSetup(Bool_t asShellScript)
   {
     OptionList tmp(fOptions);
-    const OptionList* uopts = (fHelper ? &fHelper->Options() : 0);
+    const OptionList* uopts = (fRailway ? &fRailway->Options() : 0);
     if (tmp.Find("overwrite")) tmp.Set("overwrite");
     if (tmp.Find("date") && fEscapedName.Length() > fName.Length()+1) {
       Int_t n = fName.Length()+1;
@@ -814,7 +835,7 @@ protected:
     if (asShellScript) 
       SaveSetupShell("rerun", ClassName(), fName, tmp, uopts);
     SaveSetupROOT("ReRun", ClassName(), fName, tmp, uopts);
-    if (fHelper) fHelper->AuxSave(fEscapedName, asShellScript);
+    if (fRailway) fRailway->AuxSave(fEscapedName, asShellScript);
     SavePostShellScript();
   }
   /** 
@@ -994,7 +1015,7 @@ protected:
   TString      fEscapedName;
   TString      fDatimeString;
   OptionList   fOptions;
-  Helper*      fHelper;
+  Railway*      fRailway;
   TString      fMonitored;
 };
 #endif

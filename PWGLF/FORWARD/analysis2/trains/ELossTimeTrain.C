@@ -32,35 +32,35 @@ public:
    */
   void CreateTasks(AliAnalysisManager*)
   {
-    if (!fHelper->LoadLibrary("PWGLFforward2")) 
+    if (!fRailway->LoadLibrary("PWGLFforward2")) 
       Fatal("CreateTasks", "Failed to load PWGLFforward2");
     
-    if (!ParUtilities::MakeScriptPAR(fHelper->Mode() == Helper::kLocal,
+    if (!ParUtilities::MakeScriptPAR(fRailway->Mode() == Railway::kLocal,
 				     "EventTimeTask.C",
 				     // Gui because of CDB - sigh!
 				     // XMLParser because of CDB 
 				     "Gui,XMLParser,"
 				     "STEERBase,CDB,ESD,AOD,ANALYSIS,OADB,"
 				     "ANALYSISalice",
-				     fHelper)) 
+				     fRailway)) 
       Fatal("","Failed to make support PAR");
-    if (!fHelper->LoadLibrary("EventTimeTask")) 
+    if (!fRailway->LoadLibrary("EventTimeTask")) 
       Fatal("CreateTasks", "Failed to load EventTimeTask");
 
-    if (!ParUtilities::MakeScriptPAR(fHelper->Mode() == Helper::kLocal,
+    if (!ParUtilities::MakeScriptPAR(fRailway->Mode() == Railway::kLocal,
 				     "ELossTimeTask.C",
 				     "Gui,STEERBase,CDB,ESD,AOD,ANALYSIS,OADB,"
 				     "ANALYSISalice,PWGLFforward2,"
 				     "EventTimeTask",
-				     fHelper)) 
+				     fRailway)) 
       Fatal("","Failed to make PAR");
-    if (!fHelper->LoadLibrary("ELossTimeTask")) 
+    if (!fRailway->LoadLibrary("ELossTimeTask")) 
       Fatal("CreateTasks", "Failed to load ELossTimeTask");
 
     TString mapfile = fOptions.Get("map");
     gROOT->ProcessLine(Form("ELossTimeTask::Create(\"%s\")", mapfile.Data()));
 
-    fHelper->LoadAux(mapfile.Data(), true);
+    fRailway->LoadAux(mapfile.Data(), true);
   }
   /** 
    * Do not create a physics selection
@@ -69,7 +69,7 @@ public:
   /** 
    * Do not create a centrality selection
    */
-  void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  void CreateCentralitySelection(Bool_t) {}
   /** 
    * Do not create an output handler
    */

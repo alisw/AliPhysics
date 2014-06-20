@@ -566,11 +566,13 @@ protected:
    */
   void ClearCanvas()
   {
-    fTop->Clear();
-    fTop->SetNumber(1);
-    fTop->SetFillColor(kBlue-5);
-    fTop->SetBorderSize(0);
-    fTop->SetBorderMode(0);
+    if (fTop) {
+      fTop->Clear();
+      fTop->SetNumber(1);
+      fTop->SetFillColor(kBlue-5);
+      fTop->SetBorderSize(0);
+      fTop->SetBorderMode(0);
+    }
 
     fBody->Clear();
     fBody->SetNumber(2);
@@ -604,7 +606,8 @@ protected:
    */
   void CreateCanvas(const TString& pname, 
 		    Bool_t landscape=false, 
-		    Bool_t pdf=true)
+		    Bool_t pdf=true,
+		    Bool_t useTop=true)
   {
     // Info("CreateCanvas", "Creating canvas");
     fLandscape = landscape;
@@ -641,15 +644,17 @@ protected:
     gStyle->SetFrameBorderMode(1);
     gStyle->SetPalette(1);
 
-    Float_t dy = .05;
-    fTop = new TPad("top", "Top", 0, 1-dy, 1, 1, 0, 0);
-    fTop->SetNumber(1);
-    fTop->SetFillColor(kBlue-5);
-    fTop->SetBorderSize(0);
-    fTop->SetBorderMode(0);
-    fCanvas->cd();
-    fTop->Draw();
-    
+    Float_t dy = useTop ? .05 : 0;
+    if (useTop) {
+      fTop = new TPad("top", "Top", 0, 1-dy, 1, 1, 0, 0);
+      fTop->SetNumber(1);
+      fTop->SetFillColor(kBlue-5);
+      fTop->SetBorderSize(0);
+      fTop->SetBorderMode(0);
+      fCanvas->cd();
+      fTop->Draw();
+    }
+
     fBody = new TPad("body", "Body", 0, 0, 1, 1-dy, 0, 0);
     fBody->SetNumber(2);
     fBody->SetFillColor(0);
@@ -715,9 +720,11 @@ protected:
    */
   void PrintCanvas(const TString& title, Float_t size=.7)
   {
-    fTop->cd();
-    fHeader->SetTextSize(size);
-    fHeader->DrawLatex(.5,.5,title);
+    if (fTop) {
+      fTop->cd();
+      fHeader->SetTextSize(size);
+      fHeader->DrawLatex(.5,.5,title);
+    }
   
     fCanvas->Modified();
     fCanvas->Update();
@@ -892,6 +899,16 @@ protected:
     }
     x2 = TMath::Min(x1 + dX, xR);
   } 
+  //__________________________________________________________________
+  /** 
+   * Make a legend 
+   * 
+   * @param p 
+   * @param flags 
+   * @param autoFill 
+   * 
+   * @return 
+   */
   TLegend* MakeLegend(TVirtualPad* p, UInt_t flags, Bool_t autoFill)
   {
     Double_t x1 = fParVal->GetX();
@@ -1487,7 +1504,7 @@ protected:
     GetParameter(c, "field", field);
     GetParameter(c, "runNo", runNo);
     GetParameter(c, "lowFlux", lowFlux);
-    GetParameter(c, "ipMethod", ipMethod);
+    GetParameter(c, "ipMethod", ipMethod, false);
     GetParameter(c, "v0and", v0and);
     GetParameter(c, "nPileUp", nPileUp);
     GetParameter(c, "dPileup", dPileUp);
@@ -1567,12 +1584,19 @@ protected:
       DrawInPad(fBody, 6, GetH1(c, "type"),            "hist text");
 
     TH1* cent     = GetH1(c, "cent");
-    TH2* centQual = GetH2(c, "centVsQuality");
-    if (cent && centQual) { 
+    if (cent) { 
       cent->Scale(1, "width");
-      centQual->Scale(1, "width");
       DrawInPad(fBody, 7, cent, "", kLogy);
-      DrawInPad(fBody, 8, centQual, "colz", kLogz);
+    }
+
+    TH1* pileupStatus = GetH1(c, "pileupStatus", false);
+    if (pileupStatus) DrawInPad(fBody, 8, pileupStatus, "hist text30");
+    else {
+      TH2* centQual = GetH2(c, "centVsQuality");
+      if (centQual) { 
+	centQual->Scale(1, "width");
+	DrawInPad(fBody, 8, centQual, "colz", kLogz);
+      }
     }
     
     PrintCanvas("EventInspector - Histograms");  
@@ -1677,12 +1701,13 @@ protected:
     fParVal->SetTextSize(save);
   }
   //____________________________________________________________________
-  void DrawTrackDensity(TCollection* parent)
+  void DrawTrackDensity(TCollection* parent, 
+			const char* folderName="mcTrackDensity")
   {
     Info("DrawTrackDensity", "Drawing track density");
 
     // --- MC --------------------------------------------------------
-    TCollection* mc = GetCollection(parent, "mcTrackDensity", false);
+    TCollection* mc = GetCollection(parent, folderName, false);
     if (!mc) return; // Not MC 
 
     fBody->Divide(2,3);

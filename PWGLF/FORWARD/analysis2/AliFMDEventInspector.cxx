@@ -86,6 +86,7 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHStatus(0),
     fHVtxStatus(0),
     fHTrgStatus(0), 
+    fHPileup(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.2),
     fList(0),
@@ -98,13 +99,14 @@ AliFMDEventInspector::AliFMDEventInspector()
     fVtxMethod(kNormal),
     // fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
+  fPileupFlags(0x5),
     fMinPileupContrib(3), 
     fMinPileupDistance(0.8),
 // fUseDisplacedVertices(false),
     fDisplacedVertex(),
     fCollWords(),
     fBgWords(),
-    fCentMethod("V0M"),
+    fCentMethod("default"),
     fMinCent(-1.0),
     fMaxCent(-1.0),
 // fUsepA2012Vertex(false),
@@ -138,6 +140,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHStatus(0),
     fHVtxStatus(0),
     fHTrgStatus(0),
+    fHPileup(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.2),
     fList(0),
@@ -150,13 +153,14 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fVtxMethod(kNormal),
 // fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
+    fPileupFlags(0x5),
     fMinPileupContrib(3), 
     fMinPileupDistance(0.8),
 // fUseDisplacedVertices(false),
   fDisplacedVertex(),
   fCollWords(),
   fBgWords(),
-  fCentMethod("V0M"),
+  fCentMethod("default"),
   fMinCent(-1.0),
   fMaxCent(-1.0),
 // fUsepA2012Vertex(false),
@@ -214,7 +218,7 @@ AliFMDEventInspector::SetCentralityMethod(ECentMethod m)
   case kV0vsFMD: 	fCentMethod = "V0MvsFMD"; break; // VZERO versus FMD   
   case kV0vsNTracks: 	fCentMethod = "TKLvsVOM"; break; // Tracks versus VZERO
   case kZEMvsZDC:	fCentMethod = "ZEMvsZDC"; break; // ZDC		     
-  default:              fCentMethod = "V0M"; break;
+  default:              fCentMethod = "default"; break;
   }
 }
 
@@ -457,6 +461,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
 		     kPileUp +1,
 		     kMCNSD  +1,
 		     kSatellite+1,
+		     kSpdOutlier+1,
 		     kOffline+1 };
   const char* binLbl[] = { "INEL",	 
 			   "INEL>0",
@@ -470,6 +475,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
 			   "Pileup",
 			   "NSD_{MC}", 
 			   "Satellite",
+			   "SPD outlier",
 			   "Offline" };
   for (Int_t i = 0; i < kOffline+1; i++) {
     fHTriggers->GetXaxis()->SetBinLabel(binNum[i], binLbl[i]);
@@ -576,6 +582,17 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   xAxis->SetBinLabel(kOther,	        "Other");
   fList->Add(fHTrgStatus);
 
+  fHPileup = new TH1I("pileupStatus", "Pile-up status", 3, 0, 3);
+  fHPileup->SetFillColor(kYellow+2);
+  fHPileup->SetFillStyle(3001);
+  fHPileup->SetStats(0);
+  fHPileup->SetDirectory(0);
+  xAxis = fHPileup->GetXaxis();
+  xAxis->SetBinLabel(1,	"SPD tracklets");
+  xAxis->SetBinLabel(2,	"Tracks"); 
+  xAxis->SetBinLabel(3,	"Out-of-bunch");
+  fList->Add(fHPileup);
+
   if (AllowDisplaced()) fDisplacedVertex.SetupForData(fList, "", false);
 }
 
@@ -597,6 +614,7 @@ AliFMDEventInspector::StoreInformation()
   fList->Add(AliForwardUtil::MakeParameter("ipMethod", fVtxMethod));
   //fList->Add(AliForwardUtil::MakeParameter("fpVtx",fUseFirstPhysicsVertex));
   fList->Add(AliForwardUtil::MakeParameter("v0and",fUseV0AND));
+  fList->Add(AliForwardUtil::MakeParameter("pileup",   fPileupFlags));
   fList->Add(AliForwardUtil::MakeParameter("nPileUp", fMinPileupContrib));
   fList->Add(AliForwardUtil::MakeParameter("dPileup", fMinPileupDistance));
   fList->Add(AliForwardUtil::MakeParameter("satellite", AllowDisplaced()));
@@ -935,6 +953,11 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
     CheckINELGT0(esd, nClusters, triggers);
   }
   
+  AliTriggerAnalysis ta;
+  if (ta.IsSPDClusterVsTrackletBG(&esd, false)) 
+    // SPD outlier 
+    triggers |= AliAODForwardMult::kSPDOutlier;
+
   CheckNSD(esd,triggers);
   CheckPileup(esd, triggers);
   CheckEmpty(trigStr, triggers);
@@ -945,20 +968,21 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
 
 #define TEST_TRIG_BIN(RET,BIN,TRIGGERS) \
   do { switch (BIN) { \
-    case kInel:     RET = triggers & AliAODForwardMult::kInel;      break; \
-    case kInelGt0:  RET = triggers & AliAODForwardMult::kInelGt0;   break; \
-    case kNSD:      RET = triggers & AliAODForwardMult::kNSD;       break; \
-    case kV0AND:    RET = triggers & AliAODForwardMult::kV0AND;     break; \
-    case kEmpty:    RET = triggers & AliAODForwardMult::kEmpty;     break; \
-    case kA:        RET = triggers & AliAODForwardMult::kA;         break; \
-    case kB:        RET = triggers & AliAODForwardMult::kB;         break; \
-    case kC:        RET = triggers & AliAODForwardMult::kC;         break; \
-    case kE:        RET = triggers & AliAODForwardMult::kE;         break; \
-    case kPileUp:   RET = triggers & AliAODForwardMult::kPileUp;    break; \
-    case kMCNSD:    RET = triggers & AliAODForwardMult::kMCNSD;     break; \
-    case kSatellite:RET = triggers & AliAODForwardMult::kSatellite; break; \
-    case kOffline:  RET = triggers & AliAODForwardMult::kOffline;   break; \
-    default:        RET = false; } } while(false)
+    case kInel:      RET = triggers & AliAODForwardMult::kInel;       break; \
+    case kInelGt0:   RET = triggers & AliAODForwardMult::kInelGt0;    break; \
+    case kNSD:       RET = triggers & AliAODForwardMult::kNSD;        break; \
+    case kV0AND:     RET = triggers & AliAODForwardMult::kV0AND;      break; \
+    case kEmpty:     RET = triggers & AliAODForwardMult::kEmpty;      break; \
+    case kA:         RET = triggers & AliAODForwardMult::kA;          break; \
+    case kB:         RET = triggers & AliAODForwardMult::kB;          break; \
+    case kC:         RET = triggers & AliAODForwardMult::kC;          break; \
+    case kE:         RET = triggers & AliAODForwardMult::kE;          break; \
+    case kPileUp:    RET = triggers & AliAODForwardMult::kPileUp;     break; \
+    case kMCNSD:     RET = triggers & AliAODForwardMult::kMCNSD;      break; \
+    case kSatellite: RET = triggers & AliAODForwardMult::kSatellite;  break; \
+    case kSpdOutlier:RET = triggers & AliAODForwardMult::kSPDOutlier; break; \
+    case kOffline:   RET = triggers & AliAODForwardMult::kOffline;    break; \
+    default:         RET = false; } } while(false)
       
   if (!fHTriggers) { 
     AliWarning("Histogram of triggers not defined - has init been called");
@@ -985,15 +1009,15 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
 Bool_t
 AliFMDEventInspector::CheckFastPartition(bool fastonly) const
 {
-  // For the 2.76 TeV p+p run, the FMD ran in the slow partition 
+  // For the 2.76 TeV p+p run (LHC11a), the FMD ran in the slow partition 
   // so it received no triggers from the fast partition. Therefore
   // the fast triggers are removed here but not for MC where all 
   // triggers are fast.
   if (TMath::Abs(fEnergy - 2750.) > 20) return false;
   if (fCollisionSystem != AliForwardUtil::kPP) return false;
   if (fMC) return false; // All MC events for pp @ 2.76TeV are `fast'
-  if (fastonly)
-    DMSG(fDebug,1,"Fast trigger in pp @ sqrt(s)=2.76TeV removed");
+  // if (fastonly)
+  //   DMSG(fDebug,1,"Fast trigger in pp @ sqrt(s)=2.76TeV removed");
 
   return fastonly;
 }
@@ -1017,6 +1041,7 @@ AliFMDEventInspector::CheckINELGT0(const AliESDEvent& esd,
 				   UShort_t& nClusters, 
 				   UInt_t& triggers) const
 {
+  Int_t nTracklets = 0;
   nClusters = 0;
 
   // If this is inel, see if we have a tracklet 
@@ -1033,10 +1058,11 @@ AliFMDEventInspector::CheckINELGT0(const AliESDEvent& esd,
   // Also count tracklets as a single cluster 
   Int_t n = spdmult->GetNumberOfTracklets();
   for (Int_t j = 0; j < n; j++) { 
-    if(TMath::Abs(spdmult->GetEta(j)) < 1) nClusters++;
+    if(TMath::Abs(spdmult->GetEta(j)) < 1) nTracklets++;
   }
   // If we at this point had non-zero nClusters, it's INEL>0
-  if (nClusters > 0) triggers |= AliAODForwardMult::kInelGt0;
+  if (nTracklets > 0) triggers |= AliAODForwardMult::kInelGt0;
+  nClusters = nTracklets;
 
   // Loop over single clusters 
   n = spdmult->GetNumberOfSingleClusters();
@@ -1073,19 +1099,32 @@ AliFMDEventInspector::CheckPileup(const AliESDEvent& esd,
   // contributors and at least 0.8cm from the primary vertex
   // if(fCollisionSystem != AliForwardUtil::kPP) return false;
 
-  // Check for standard SPD pile-up
-  Bool_t spdPileup = esd.IsPileupFromSPD(fMinPileupContrib,fMinPileupDistance);
+  UInt_t locTrig = 0;
+  // Check for standard SPD pile-up  
+  if ((fPileupFlags & kSPD) && 
+      esd.IsPileupFromSPD(fMinPileupContrib,fMinPileupDistance)) {
+    fHPileup->Fill(0.5, 1);
+    locTrig |= AliAODForwardMult::kPileupSPD;
+  }
 
   // Check for multi-vertex pileup 
-  Bool_t mvPileup  = false; // CheckMultiVertex(esd);
+  if ((fPileupFlags & kTracks) && CheckMultiVertex(esd)) {
+    fHPileup->Fill(1.5, 1);
+    locTrig |= AliAODForwardMult::kPileupTrack;
+  }
 
   // Check for out-of-bunch pileup
-  Bool_t outPileup = (esd.GetHeader()->GetIRInt2ClosestInteractionMap() != 0 ||
-		      esd.GetHeader()->GetIRInt1ClosestInteractionMap() != 0);
-
+  if ((fPileupFlags & kOutOfBunch) && 
+      (esd.GetHeader()->GetIRInt2ClosestInteractionMap() != 0 ||
+       esd.GetHeader()->GetIRInt1ClosestInteractionMap() != 0)) {
+    fHPileup->Fill(2.5, 1);
+    locTrig |= AliAODForwardMult::kPileupBC;
+  }
+  
   // Our result
-  Bool_t pileup    = spdPileup || mvPileup || outPileup;
-  if (pileup) triggers |= AliAODForwardMult::kPileUp;
+  triggers      |= locTrig;
+  Bool_t pileup =  locTrig != 0;
+  if (pileup)    triggers |= AliAODForwardMult::kPileUp;
   return pileup;
 }
 
@@ -1166,7 +1205,8 @@ AliFMDEventInspector::CheckMultiVertex(const AliESDEvent& esd,
 Bool_t
 AliFMDEventInspector::CheckEmpty(const TString& trigStr, UInt_t& triggers) const
 {
-  if (trigStr.Contains("CBEAMB-ABCE-NOPF-ALL")) {
+  if (trigStr.Contains("CBEAMB-ABCE-NOPF-ALL")|| 
+      trigStr.Contains("CBEAMB-B-NOPF-ALLNOTRD")) {
     triggers |= AliAODForwardMult::kEmpty;
     return true;
   }
@@ -1321,14 +1361,14 @@ AliFMDEventInspector::CheckpA2013Vertex(const AliESDEvent& esd,
   if (!primVtx) return kNoVtx;
   if (primVtx->GetNContributors() <= nMinContrib) return kFewContrib;
   
-  const AliESDVertex* spdVtx = esd.GetPrimaryVertex();
+  const AliESDVertex* spdVtx = esd.GetPrimaryVertexSPD();
   if (!spdVtx) return kNoSPDVtx;
   if (spdVtx->GetNContributors() <= nMinContrib) return kFewContrib;
   
-  TString vtxTyp = spdVtx->GetTitle();
-  if (vtxTyp.Contains("vertexer: Z")) {
-    if (spdVtx->GetZRes()>0.25) return kUncertain;
-  }
+  // TString vtxTyp = spdVtx->GetTitle();
+  // if (vtxTyp.Contains("vertexer:Z")) {
+  if (spdVtx->IsFromVertexerZ() && spdVtx->GetZRes()>0.25) return kUncertain;
+
   Bool_t correlateVtx = true;
   if (correlateVtx) { 
     if (TMath::Abs(spdVtx->GetZ() - primVtx->GetZ()) > 0.5) return kUncertain;
@@ -1410,6 +1450,27 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
 							     cms);
   fField           = AliForwardUtil::ParseMagneticField(fld);
   fRunNumber       = esd->GetRunNumber();
+  
+  Int_t a0 = esd->GetBeamParticleA(0);
+  Int_t a1 = esd->GetBeamParticleA(1);
+  Int_t z0 = esd->GetBeamParticleZ(0);
+  Int_t z1 = esd->GetBeamParticleZ(1);
+  if (fCentMethod.EqualTo("default", TString::kIgnoreCase)) {
+    if (fCollisionSystem == 1 || fCollisionSystem == 2) 
+      SetCentralityMethod("V0M");
+    if (fCollisionSystem == 3) { 
+      if (a0 != 0 && a1 != 0) 
+	SetCentralityMethod(a0 > a1 ? "ZNC" : "ZNA");
+      else 
+	SetCentralityMethod("V0M");    
+    }
+  }
+  // store the beam species 
+  fList->Add(AliForwardUtil::MakeParameter("beam0a", a0));
+  fList->Add(AliForwardUtil::MakeParameter("beam0z", z0));
+  fList->Add(AliForwardUtil::MakeParameter("beam1a", a1));
+  fList->Add(AliForwardUtil::MakeParameter("beam1z", z1));
+
   StoreProduction();
   StoreInformation();
   if (fCollisionSystem   == AliForwardUtil::kUnknown) { 
@@ -1484,6 +1545,10 @@ AliFMDEventInspector::Print(Option_t*) const
   PF("Vertex Range", "[%+6.1f,%+6.1f]", fVtxAxis.GetXmin(), fVtxAxis.GetXmax());
   PFV("Low flux cut",		fLowFluxCut );
   PFV("Max(delta v_z)",		fMaxVzErr );
+  PF("Pile-up methods",	        "spd:%s,tracks:%s,out-of-bunch:%s", 
+     (fPileupFlags & kSPD        ? "yes" : "no"),
+     (fPileupFlags & kTracks     ? "yes" : "no"),
+     (fPileupFlags & kOutOfBunch ? "yes" : "no"));
   PFV("Min(nContrib_pileup)",	fMinPileupContrib );
   PFV("Min(v-pileup)",		fMinPileupDistance );
   PFV("System", AliForwardUtil::CollisionSystemString(fCollisionSystem));

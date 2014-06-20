@@ -34,10 +34,16 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
   AliForwardQATask* task = new AliForwardQATask("forwardQA");
 
   // --- Cuts --------------------------------------------------------
-  AliFMDMultCuts cHigh(AliFMDMultCuts::kLandauWidth, 2,2,2,2,2);
-  AliFMDMultCuts cLow(AliFMDMultCuts::kFixed,0.15);
-  AliFMDMultCuts cDensity(AliFMDMultCuts::kLandauWidth, 4,4,4,4,4);
-  
+  // Note, the absolute lowest signal to consider - ever -
+  // irrespective of MC or real data, is 0.15.  Signals below this
+  // will contain remenants of the pedestal (yes, the width of the
+  // pedestal is small, but there are many _many_ channels with only
+  // pedestal value in them, so the absolute number of high-value
+  // pedestal signals is large - despite the low probablity).
+  AliFMDMultCuts cSharingLow(AliFMDMultCuts::kFixed,0.15);
+  AliFMDMultCuts cSharingHigh(AliFMDMultCuts::kLandauSigmaWidth,1);
+  AliFMDMultCuts cDensity(AliFMDMultCuts::kLandauSigmaWidth,1);
+
   // --- Set parameters on the algorithms ----------------------------
   // Set the number of SPD tracklets for which we consider the event a
   // low flux event
@@ -77,9 +83,9 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
   // Disable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
   // Enable use of angle corrected signals in the algorithm 
-  task->GetSharingFilter().SetHCuts(cHigh);
+  task->GetSharingFilter().SetHCuts(cSharingHigh);
   // Lower cuts from object
-  task->GetSharingFilter().SetLCuts(cLow);
+  task->GetSharingFilter().SetLCuts(cSharingLow);
   // Whether to use simple merging algorithm
   task->GetSharingFilter().SetUseSimpleSharing(true);
   // Whether to allow for 3 strip hits - deprecated

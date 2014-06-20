@@ -584,14 +584,18 @@ AliFMDSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
   TH2* lowCuts  = static_cast<TH2*>(d->FindObject("lowCuts"));
   TH2* highCuts = static_cast<TH2*>(d->FindObject("highCuts"));
   if (lowCuts && nFiles) {
-    lowCuts->Scale(1. / nFiles->GetVal());
-    out->Add(lowCuts->Clone());
+    TH1* oh = static_cast<TH1*>(lowCuts->Clone());
+    oh->Scale(1. / nFiles->GetVal());	
+    oh->SetBit(BIT(20));
+    out->Add(oh);
   }
   else 
     AliWarning("low cuts histogram not found in input list");
   if (highCuts && nFiles) {
-    highCuts->Scale(1. / nFiles->GetVal());
-    out->Add(highCuts->Clone());
+    TH1* oh = static_cast<TH1*>(highCuts->Clone());
+    oh->Scale(1. / nFiles->GetVal());
+    oh->SetBit(BIT(20));
+    out->Add(oh);
   }
   else 
     AliWarning("high cuts histogram not found in input list");
@@ -613,12 +617,15 @@ AliFMDSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
     sum->SetYTitle("#sum_{c} #Delta/#Delta_{mip}");
     sums->Add(sum);
 
-    sum = o->fSumESD->ProjectionX(o->GetName(), 1, o->fSumESD->GetNbinsY(),"e");
-    sum->Scale(1., "width");
-    sum->SetTitle(o->GetName());
-    sum->SetDirectory(0);
-    sum->SetYTitle("#sum_{s} #Delta/#Delta_{mip}");
-    sumsESD->Add(sum);
+
+    if (o->fSumESD) { 
+      sum = o->fSumESD->ProjectionX(o->GetName(), 1, o->fSumESD->GetNbinsY(),"e");
+      sum->Scale(1., "width");
+      sum->SetTitle(o->GetName());
+      sum->SetDirectory(0);
+      sum->SetYTitle("#sum_{s} #Delta/#Delta_{mip}");
+      sumsESD->Add(sum);
+    }
   }
   out->Add(sums);
   out->Add(sumsESD);

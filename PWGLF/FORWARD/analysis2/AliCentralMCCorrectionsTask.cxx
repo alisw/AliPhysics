@@ -37,14 +37,6 @@
 #include <iostream>
 
 //====================================================================
-namespace {
-  const char* GetEventName(Bool_t tr, Bool_t vtx) 
-  {
-    return Form("nEvents%s%s", (tr ? "Tr" : ""), (vtx ? "Vtx" : ""));
-  }
-}
-
-//====================================================================
 AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask()
   : AliBaseMCCorrectionsTask(),
     fTrackDensity(),

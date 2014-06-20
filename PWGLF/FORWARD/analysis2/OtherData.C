@@ -358,7 +358,7 @@ struct RefData
 			      UShort_t centHigh=0, 
 			      UShort_t experiments=0x7)
   {
-    Bool_t verbose = true;
+    Bool_t verbose = false;
     UShort_t trg = (triggers & 0xF7);
     if (triggers & 0x2000) trg |= 0x4;
 

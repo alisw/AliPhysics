@@ -14,14 +14,14 @@
 #include "ParUtilities.C"
 #include "OutputUtilities.C" 
 #include "Option.C"
-#include "Helper.C" 
-#include "LocalHelper.C" 
-#include "ProofHelper.C" 
-#include "LiteHelper.C"
-#include "AAFHelper.C" 
-#include "PluginHelper.C"
-#include "AAFPluginHelper.C" 
-#include "GridHelper.C"
+#include "Railway.C" 
+#include "LocalRailway.C" 
+#include "ProofRailway.C" 
+#include "LiteRailway.C"
+#include "AAFRailway.C" 
+#include "PluginRailway.C"
+#include "AAFPluginRailway.C" 
+#include "GridRailway.C"
 #include "TrainSetup.C"
 
 #include <TGApplication.h>
@@ -245,7 +245,7 @@ main(int argc, char** argv)
   }
   else if (!batch) {
     // Info("main", "Creating GUI application");
-    app = new TGApplication("runTrain", 0, 0);
+    app = new TApplication("runTrain", 0, 0);
   }
   if (app && !batch) app->InitializeGraphics();
 

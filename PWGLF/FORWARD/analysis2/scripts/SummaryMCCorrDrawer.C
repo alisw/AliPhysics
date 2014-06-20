@@ -282,8 +282,10 @@ protected:
 	acc->SetMaximum(accMax);
 	accAlt->SetMaximum(accMax);
 
-	DrawInPad(fBody, 1, secMap,    "colz", kGridx);
-	DrawInPad(fBody, 2, secMapAlt, "colz", kGridx);
+	if (secMap->GetMean(1) > 0 && secMap->GetMean(2) > 0)
+	  DrawInPad(fBody, 1, secMap,    "colz", kGridx);
+	if (secMapAlt->GetMean(1) > 0 && secMapAlt->GetMean(2) > 0)
+	  DrawInPad(fBody, 2, secMapAlt, "colz", kGridx);
 
 	TVirtualPad* p = fBody;
 	TVirtualPad* pp = p->cd(1);
@@ -309,17 +311,22 @@ protected:
 	ppp->SetLeftMargin(0.10);
 	DrawInPad(fBody, 6, accAlt, "", kGridx|kGridy);
 
-	DrawInPad(fBody, 7, GetH2(c, "diagnostics"), "colz");
+	TH2* diag = GetH2(c, "diagnostics");
+	if (diag->GetMean(1) > 0 && diag->GetMean(2) > 0) 
+	  DrawInPad(fBody, 7, diag, "colz");
 
-	TH2* ratio = static_cast<TH2*>(secMap->Clone("ratio"));
-	ratio->Add(secMapAlt, -1);
-	ratio->Divide(secMapAlt);
-	ratio->SetTitle("Relative difference between maps");
-	ratio->SetZTitle("#frac{S - S_{alt}}{S_{alt}}");
+	if (secMap->GetMean(1) > 0 && secMap->GetMean(2) > 0 &&
+	    secMapAlt->GetMean(1) > 0 && secMapAlt->GetMean(2) > 0) {
+	  TH2* ratio = static_cast<TH2*>(secMap->Clone("ratio"));
+	  ratio->Add(secMapAlt, -1);
+	  ratio->Divide(secMapAlt);
+	  ratio->SetTitle("Relative difference between maps");
+	  ratio->SetZTitle("#frac{S - S_{alt}}{S_{alt}}");
 	
-	pp = p->cd(8);
-	pp->SetLeftMargin(0.10);
-	DrawInPad(fBody, 8, ratio, "colz");
+	  pp = p->cd(8);
+	  pp->SetLeftMargin(0.10);
+	  DrawInPad(fBody, 8, ratio, "colz");
+	}
       }
       PrintCanvas(Form("%s results - IP_{z} bin %+5.1f - %+5.1f",
 		       (forward ? "Forward" : "Central"),

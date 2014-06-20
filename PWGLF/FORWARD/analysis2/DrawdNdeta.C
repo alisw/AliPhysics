@@ -74,7 +74,7 @@ struct dNdetaDrawer
     kOldFormat      = 0x01000,
     kVerbose        = 0x02000,
     kHiRes          = 0x04000,
-    kExtraWhite      = 0x08000,
+    kExtraWhite     = 0x08000,
     kLogo           = 0x10000,
     kNoCentral      = 0x20000,
     kNoLabels       = 0x40000,
@@ -199,6 +199,7 @@ struct dNdetaDrawer
       fSysString(0),         // Collision system string (read or set)
       fVtxAxis(0),           // Vertex cuts (read or set)
       fCentAxis(0),          // Centrality axis
+      fCentMeth(0),          // Centrality axis
       fTriggerEff(1),        // Trigger efficency 
       fExtTriggerEff(false), // True if fTriggerEff was read 
       fCentMin(0),           // Least centrality to plot
@@ -249,6 +250,7 @@ struct dNdetaDrawer
     if (fSysString)  { delete fSysString;  fSysString  = 0; }
     if (fVtxAxis)    { delete fVtxAxis;    fVtxAxis    = 0; }
     if (fCentAxis)   { delete fCentAxis;   fCentAxis   = 0; }
+    if (fCentMeth)   { delete fCentMeth;   fCentMeth   = 0; }
     if (fResults)    { delete fResults;    fResults    = 0; }
     if (fRatios)     { delete fRatios;     fRatios     = 0; }
     if (fOthers)     { delete fOthers;     fOthers     = 0; }
@@ -373,9 +375,9 @@ struct dNdetaDrawer
    */
   void SetTrigger(UShort_t trig)
   {
-    fTrigString = new TNamed("trigString", (trig & 0x1 ? "INEL" : 
+    fTrigString = new TNamed("trigString", (trig & 0x1 ? "MBOR" : 
 					    trig & 0x2 ? "INEL>0" : 
-					    trig & 0x4 ? "NSD" :
+					    trig & 0x4 ? "MBAND5" :
 					    trig & 0x2000 ? "V0-AND" :
 					    "unknown"));
     fTrigString->SetUniqueID(trig);
@@ -675,26 +677,28 @@ struct dNdetaDrawer
 		empUrl.GetUrl());
 	fEmpirical = "";
       }
-      const char* empPath = empUrl.GetAnchor();
-      TObject*    fwdObj  = empirical->Get(Form("Forward/%s", empPath));
-      TObject*    cenObj  = empirical->Get(Form("Central/%s", empPath));
-      if (!(fwdObj &&
-	    (fwdObj->IsA()->InheritsFrom(TH1::Class()) || 
-	     fwdObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
-	Warning("Run", "Didn't get the object Forward/%s from %s", 
-		empPath, empUrl.GetUrl());
-	fEmpirical = "";
-      }
-      if (useCen && !(cenObj &&
-	  (cenObj->IsA()->InheritsFrom(TH1::Class()) || 
-	   cenObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
-	Warning("Run", "Didn't get the object Central/%s from %s", 
-		empPath, empUrl.GetUrl());
-	fEmpirical = "";
-      }
       else {
-	fwdEmp = fwdObj;
-	cenEmp = fwdObj;
+	const char* empPath = empUrl.GetAnchor();
+	TObject*    fwdObj  = empirical->Get(Form("Forward/%s", empPath));
+	TObject*    cenObj  = empirical->Get(Form("Central/%s", empPath));
+	if (!(fwdObj &&
+	      (fwdObj->IsA()->InheritsFrom(TH1::Class()) || 
+	       fwdObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
+	  Warning("Run", "Didn't get the object Forward/%s from %s", 
+		  empPath, empUrl.GetUrl());
+	  fEmpirical = "";
+	}
+	if (useCen && !(cenObj &&
+			(cenObj->IsA()->InheritsFrom(TH1::Class()) || 
+	   cenObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
+	  Warning("Run", "Didn't get the object Central/%s from %s", 
+		  empPath, empUrl.GetUrl());
+	  fEmpirical = "";
+	}
+	else {
+	  fwdEmp = fwdObj;
+	  cenEmp = fwdObj;
+	}
       }
     }
     if (!fEmpCorr && !fEmpirical.EqualTo("__task__")) 
@@ -822,8 +826,20 @@ struct dNdetaDrawer
       fSysString  = static_cast<TNamed*>(results->FindObject("sys"));
     if (!fVtxAxis)
       fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
-    if (!fCentAxis) 
-      fCentAxis   = static_cast<TAxis*>(results->FindObject("centAxis"));
+    if (!fCentAxis) {
+      TObject* cO = results->FindObject("centAxis");
+      if (cO) {
+	if (cO->IsA()->InheritsFrom(TH1::Class())) {
+	  TH1* cH     = static_cast<TH1*>(cO);
+	  fCentAxis   = cH->GetXaxis();
+	}
+	else if (cO->IsA()->InheritsFrom(TAxis::Class())) 
+	  fCentAxis   = static_cast<TAxis*>(cO);
+      }
+    }
+    if (!fCentMeth) 
+      fCentMeth = results->FindObject("centEstimator");
+
     if (fTriggerEff < 0) { 
       // Allow complete overwrite by passing negative number 
       SetTriggerEfficiency(TMath::Abs(fTriggerEff));
@@ -867,6 +883,15 @@ struct dNdetaDrawer
       fCentAxis->Set(nBins, bins.GetArray());
     }
 	
+    if (fTrigString) { 
+      UInt_t mask = 0x200f & fTrigString->GetUniqueID();
+      if      (mask == 0x2)      fTrigString->SetTitle("INEL>0");
+      else if (fTriggerEff != 1) {
+	if      (mask == 0x1)    fTrigString->SetTitle("INEL");
+	else if (mask == 0x2000) fTrigString->SetTitle("NSD");
+	else if (mask == 0x4)    fTrigString->SetTitle("NSD");
+      }
+    }
 
     if (true /*fOptions & kVerbose*/) {
       TString centTxt("none");
@@ -1709,7 +1734,7 @@ struct dNdetaDrawer
     }
 
     // --- Put trigger efficiency on the plot (only pp and if != 1) --
-    if (fTriggerEff > 0 && fTriggerEff <= 1 && !HasCent()) { 
+    if (fTriggerEff > 0 && fTriggerEff < 1 && !HasCent()) { 
       TLatex* ef = new TLatex(xR, yR, Form("#varepsilon_{%s} = %5.3f", 
 					 fTrigString->GetTitle(), 
 					 fTriggerEff));
@@ -2804,7 +2829,11 @@ struct dNdetaDrawer
    */
   Bool_t HasCent() const 
   { 
-    return fCentAxis && fCentAxis->GetNbins() > 0 && !(fOptions & kForceMB); 
+    return (!(fOptions & kForceMB) && 
+	    fCentAxis && 
+	    (fCentAxis->GetNbins() > 1 ||
+	     (fCentAxis->GetNbins() == 1 && 
+	      fCentAxis->GetXmin() <= fCentAxis->GetXmax()))); 
   }
 
 
@@ -2841,6 +2870,7 @@ struct dNdetaDrawer
   TNamed*      fSysString;    // Collision system string (read or set)
   TAxis*       fVtxAxis;      // Vertex cuts (read or set)
   TAxis*       fCentAxis;     // Centrality axis
+  TObject*     fCentMeth;     // Centrality method 
   Float_t      fTriggerEff;   // Trigger efficiency 
   Bool_t       fExtTriggerEff;// True if read externally 
   UShort_t     fCentMin;      // Least centrality to plot

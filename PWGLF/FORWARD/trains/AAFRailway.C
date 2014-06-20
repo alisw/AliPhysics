@@ -1,5 +1,5 @@
 /**
- * @file   AAFHelper.C
+ * @file   AAFRailway.C
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Tue Oct 16 19:02:14 2012
  * 
@@ -10,7 +10,7 @@
  */
 #ifndef AAFHELPER_C
 #define AAFHELPER_C
-#include "ProofHelper.C"
+#include "ProofRailway.C"
 #ifndef __CINT__
 # include "AvailableSoftware.C"
 # include <TUrl.h>
@@ -69,7 +69,7 @@ class AliAnalysisAlien;
  *
  * @ingroup pwglf_forward_trains_helper
  */
-struct AAFHelper : public ProofHelper
+struct AAFRailway : public ProofRailway
 {
   /** 
    * Constructor 
@@ -77,14 +77,14 @@ struct AAFHelper : public ProofHelper
    * @param url  Url 
    * @param verbose Verbosity 
    */
-  AAFHelper(const TUrl& url, Int_t verbose)
-    : ProofHelper(url, verbose)
+  AAFRailway(const TUrl& url, Int_t verbose)
+    : ProofRailway(url, verbose)
   {
     fOptions.Add("aliroot", "VERSION", "AliROOT version", "last");
     fOptions.Add("root",    "VERISON", "ROOT version", "last");
     fOptions.Add("nocache", "Disable tree cache");
   }
-  virtual ~AAFHelper() {}
+  virtual ~AAFRailway() {}
   /** 
    * Get the name of the AliROOT par file to use 
    * 
@@ -99,7 +99,7 @@ struct AAFHelper : public ProofHelper
     return true;
   }
   /** 
-   * Set-up done before task set-ups. Overload ProofHelper::PreSetup
+   * Set-up done before task set-ups. Overload ProofRailway::PreSetup
    * to specify the ROOT version using TProofMgr::SetROOTVersion
    * 
    * @return true on success 
@@ -123,7 +123,7 @@ struct AAFHelper : public ProofHelper
     TProof::Mgr(fUrl.GetHost())
       ->SetROOTVersion(Form("VO_ALICE@ROOT::%s", root.Data()));
 
-    if (!ProofHelper::PreSetup()) return false;
+    if (!ProofRailway::PreSetup()) return false;
 
     if (fOptions.Has("nocache")) 
       gProof->SetParameter("PROOF_UseTreeCache", 0);

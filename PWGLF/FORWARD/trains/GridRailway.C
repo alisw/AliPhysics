@@ -1,16 +1,16 @@
 /**
- * @file   GridHelper.C
+ * @file   GridRailway.C
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Tue Oct 16 19:01:27 2012
  * 
- * @brief  Grid Analysis Helper
+ * @brief  Grid Analysis Railway
  * 
  * @ingroup pwglf_forward_trains_helper
  * 
  */
 #ifndef GRIDHELPER_C
 #define GRIDHELPER_C
-#include "PluginHelper.C"
+#include "PluginRailway.C"
 #ifndef __CINT__
 # include <TUrl.h>
 # include <TString.h>
@@ -72,7 +72,7 @@ class AliAnalysisAlien;
  *
  * @ingroup pwglf_forward_trains_helper
  */
-struct GridHelper : public PluginHelper
+struct GridRailway : public PluginRailway
 {
   /** 
    * Constructor 
@@ -80,8 +80,8 @@ struct GridHelper : public PluginHelper
    * @param url  Url 
    * @param verbose Verbosity level
    */
-  GridHelper(const TUrl& url, Int_t verbose)
-    : PluginHelper(url, verbose), fRuns()
+  GridRailway(const TUrl& url, Int_t verbose)
+    : PluginRailway(url, verbose), fRuns()
   {
     // Note, split, merge, and ttl are by default set to values
     // optimized for AOD production on real PbPb data.
@@ -97,17 +97,18 @@ struct GridHelper : public PluginHelper
     fOptions.Add("ttl",    "N|max",  "Time to live",                   "6h");
     fOptions.Add("pattern","GLOB",   "File/directory name pattern", "");
     fOptions.Add("concat", "Concatenate all runs");
+    fOptions.Add("exclude", "GLOB","Comma separated list of merge excludes","");
   }
-  GridHelper(const GridHelper& o)
-    : PluginHelper(o), fRuns()
+  GridRailway(const GridRailway& o)
+    : PluginRailway(o), fRuns()
   {}
-  GridHelper& operator=(const GridHelper& o)
+  GridRailway& operator=(const GridRailway& o)
   {
     if (&o == this) return *this;
-    PluginHelper::operator=(o);
+    PluginRailway::operator=(o);
     return *this;
   }
-  virtual ~GridHelper() {}
+  virtual ~GridRailway() {}
   /** 
    * Get the mode identifier 
    * 
@@ -148,7 +149,7 @@ struct GridHelper : public PluginHelper
   virtual Int_t RegisterRuns()
   {
     if (!fOptions.Find("run")) {
-      Error("GridHelper::RegisterRuns", "No runs specified");
+      Error("GridRailway::RegisterRuns", "No runs specified");
       return -1;
     }
     Int_t       nRuns  = 0;
@@ -158,24 +159,24 @@ struct GridHelper : public PluginHelper
     TIter       next(tokens);
     Bool_t      range  = false;
     Bool_t      individual = false;
-    // Info("GridHelper::RegisterRuns", "Runs specified are %s", runs.Data());
+    // Info("GridRailway::RegisterRuns", "Runs specified are %s", runs.Data());
     while ((part = static_cast<TObjString*>(next()))) {
       TString& s = part->String();
       if (s.Contains("-")) { // Run range 
 	if (range) { 
-	  Warning("GridHelper::RegisterRuns", "Run range already specified, "
+	  Warning("GridRailway::RegisterRuns", "Run range already specified, "
 		  "ignoring %s", s.Data());
 	  continue;
 	}
 	if (individual) { 
-	  Warning("GridHelper::RegisterRuns", 
+	  Warning("GridRailway::RegisterRuns", 
 		  "Run ranges and individual run specs do not mix, "
 		  "ignoring %s", s.Data());
 	  continue;
 	}
 	TObjArray* ranges = s.Tokenize("-");
 	if (ranges->GetEntriesFast() > 2) { 
-	  Warning("GridHelper::RegisterRuns", "Invalid run range: %s", 
+	  Warning("GridRailway::RegisterRuns", "Invalid run range: %s", 
 		  s.Data());
 	  ranges->Delete();
 	  continue;
@@ -183,7 +184,7 @@ struct GridHelper : public PluginHelper
 	Int_t first = static_cast<TObjString*>(ranges->At(0))->String().Atoi();
 	Int_t last  = static_cast<TObjString*>(ranges->At(1))->String().Atoi();
 	nRuns       = last-first+1;
-	// Info("GridHelper::RegisterRuns", "Run range %d -> %d", first, last);
+	// Info("GridRailway::RegisterRuns", "Run range %d -> %d", first, last);
 	fHandler->SetRunRange(first, last);
 	ranges->Delete();
 	range = true;
@@ -192,7 +193,7 @@ struct GridHelper : public PluginHelper
       }
       if (s.IsDigit()) { // single run
 	if (range) { 
-	  Warning("GridHelper::RegisterRuns", 
+	  Warning("GridRailway::RegisterRuns", 
 		  "Run ranges and individual run specs do not mix, "
 		  "ignoring %s", s.Data());
 	  continue;
@@ -205,19 +206,19 @@ struct GridHelper : public PluginHelper
 	continue;
       }
       if (range) { 
-	Warning("GridHelper::RegisterRuns", "Run ranges and list file "
+	Warning("GridRailway::RegisterRuns", "Run ranges and list file "
 		"do not mix, ignoring %s", s.Data());
 	continue;
       }
 
       // We assume this part is a file 
-      // Info("GridHelper::RegisterRuns", "Reading runs from %s", s.Data());
+      // Info("GridRailway::RegisterRuns", "Reading runs from %s", s.Data());
       std::ifstream in(s.Data());
       if (!in) { 
 	s.Prepend("../");
 	in.open(s.Data());
 	if (!in) {
-	  Warning("GridHelper::RegisterRuns", "Failed to open %s", s.Data());
+	  Warning("GridRailway::RegisterRuns", "Failed to open %s", s.Data());
 	  continue;
 	}
       }
@@ -246,7 +247,7 @@ struct GridHelper : public PluginHelper
       while (!in.eof()) { 
 	Int_t r;
 	in >> r;
-	// Info("GridHelper::RegisterRuns", "Read %d, adding", r);
+	// Info("GridRailway::RegisterRuns", "Read %d, adding", r);
 	fHandler->AddRunNumber(r);
 	StoreRun(r);
 	nRuns++;
@@ -267,18 +268,18 @@ struct GridHelper : public PluginHelper
    */
   virtual Bool_t PreSetup() 
   {
-    if (!PluginHelper::PreSetup()) return false;
+    if (!PluginRailway::PreSetup()) return false;
     
     // --- Add system library dir to load path -----------------------
     gSystem->AddDynamicPath("/usr/lib");
 
     // --- Open a connection to the grid -----------------------------
     if (!TGrid::Connect(Form("%s://", fUrl.GetProtocol()))) { 
-      Error("GridHelper::PreSetup", "Failed to connect to AliEN");
+      Error("GridRailway::PreSetup", "Failed to connect to AliEN");
       return false;
     }
     if (!gGrid || !gGrid->IsConnected()) { 
-      Error("GridHelper::PreSetup", "Failed to connect to AliEN");
+      Error("GridRailway::PreSetup", "Failed to connect to AliEN");
       return false;
     }
 
@@ -291,14 +292,14 @@ struct GridHelper : public PluginHelper
    */
   virtual Bool_t PostSetup() 
   {
-    // Info("GridHelper::PostSetup", "Calling super.PostSetup");
-    if (!PluginHelper::PostSetup()) return false;
+    // Info("GridRailway::PostSetup", "Calling super.PostSetup");
+    if (!PluginRailway::PostSetup()) return false;
 
     // --- API version -----------------------------------------------
     fHandler->SetAPIVersion(fOptions.Get("alien"));
     
     // --- Get the name ----------------------------------------------
-    // Info("GridHelper", "Proceeding with plugin setup");
+    // Info("GridRailway", "Proceeding with plugin setup");
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     TString name(mgr->GetName());
 
@@ -403,8 +404,14 @@ struct GridHelper : public PluginHelper
 	fHandler->SetMaxMergeFiles(fOptions.AsInt("merge"));
       }
     }
-    fHandler->SetMergeExcludes("AliAOD.root *EventStat*.root "
-			       "*event_stat*.root");
+    TString exclude="AliAOD.root *EventStat*.root *event_stat*.root";
+    if (fOptions.Has("exclude")) { 
+      TString exOpt = fOptions.Get("exclude");
+      exOpt.ReplaceAll(",", " ");
+      exclude.Append(" ");
+      exclude.Append(exOpt);
+    }
+    fHandler->SetMergeExcludes(exclude);
     
     // --- Set number of runs per master - 1 or all ------------------
     fHandler->SetNrunsPerMaster(fOptions.Has("concat") ? nRun+1 : 1);
@@ -430,7 +437,7 @@ struct GridHelper : public PluginHelper
     else {
       TString treeName(fUrl.GetAnchor());
       if (treeName.IsNull()) { 
-	Warning("GridHelper::PreSetup", "No tree name specified, assuming T");
+	Warning("GridRailway::PreSetup", "No tree name specified, assuming T");
 	treeName = "T";
       }
       if      (treeName.EqualTo("esdTree")) pattern = "AliESD";
@@ -526,7 +533,7 @@ struct GridHelper : public PluginHelper
    */
   virtual Bool_t AuxFile(const TString& name, bool copy=false)
   {
-    if (!Helper::AuxFile(name, copy)) return false;
+    if (!Railway::AuxFile(name, copy)) return false;
     // We need to add this file as an additional 'library', so that the 
     // file is uploaded to the users Grid working directory. 
     fHandler->AddAdditionalLibrary(gSystem->BaseName(name.Data()));
@@ -540,7 +547,7 @@ struct GridHelper : public PluginHelper
   {
     TString ret;
     if (!fHandler) {
-      Warning("GridHelper::OutputLocation", "No AliEn handler");
+      Warning("GridRailway::OutputLocation", "No AliEn handler");
       return ret;
     }
     ret = fHandler->GetGridOutputDir();
@@ -548,7 +555,7 @@ struct GridHelper : public PluginHelper
 
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) { 
-      Warning("GridHelper::OutputLocation", "No analysis manager");
+      Warning("GridRailway::OutputLocation", "No analysis manager");
       return ret;
     }
     ret.Prepend(Form("%s/",  mgr->GetName()));
@@ -607,11 +614,11 @@ struct GridHelper : public PluginHelper
     TString macDir("$ALICE_ROOT/PWGLF/FORWARD/trains");
     std::ofstream t("Terminate.C");
     if (!t) { 
-      Error("GridHelper::AuxSave", "Failed to make terminate ROOT script");
+      Error("GridRailway::AuxSave", "Failed to make terminate ROOT script");
       return;
     }
 
-    t << "// Generated by GridHelper\n"
+    t << "// Generated by GridRailway\n"
       << "Bool_t Terminate(Bool_t localMerge=false)\n"
       << "{\n"
       << "  TString name = \"" << escaped << "\";\n"
@@ -650,10 +657,10 @@ struct GridHelper : public PluginHelper
 
     std::ofstream d("Download.C");
     if (!d) { 
-      Error("GridHelper::AuxSave", "Failed to make ROOT script Download.C");
+      Error("GridRailway::AuxSave", "Failed to make ROOT script Download.C");
       return;
     }
-    d << "// Generated by GridHelper\n"
+    d << "// Generated by GridRailway\n"
       << "void Download(Bool_t unpack=true)\n"
       << "{\n"
       << "  TString base = \"" << fUrl.GetProtocol() << "://" 
@@ -668,10 +675,10 @@ struct GridHelper : public PluginHelper
 
     std::ofstream w("Watch.C");
     if (!w) {
-      Error("GridHelper::AuxSave", "Failed to make ROOT script Watch.C");
+      Error("GridRailway::AuxSave", "Failed to make ROOT script Watch.C");
       return;
     }
-    w << "// Generated by GridHelper\n"
+    w << "// Generated by GridRailway\n"
       << "void Watch(Bool_t batch=false, Int_t delay=5*60)\n"
       << "{\n"
       << "  TString name = \"" << escaped << "\";\n"

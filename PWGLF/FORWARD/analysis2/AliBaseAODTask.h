@@ -37,7 +37,7 @@ public:
    * 
    * @return true on success, false otherwise
    */
-  virtual Bool_t Configure(const char* macro="dNdetaConfig.C");
+  virtual Bool_t Configure(const char* macro="-default-");
   /** 
    * @{ 
    * @name Set parameters 
@@ -256,7 +256,21 @@ protected:
    * 
    * @return true if we have one or more centrality bins 
    */
-  Bool_t HasCentrality() const { return fCentAxis.GetNbins() >= 1; }
+  Bool_t HasCentrality() const 
+  { 
+    return (fCentAxis.GetNbins() >= 1 && 
+	    fCentAxis.GetXbins() && 
+	    fCentAxis.GetXbins()->GetArray()); 
+  }
+  /** 
+   * Get the name of the default configuration script to use.
+   * Sub-classes can override this to give another default
+   * configuration script.  Note, it should problably only return the
+   * base name (not full path) of the script.
+   * 
+   * @return Name of the configuration script to use. 
+   */
+  virtual const char* DefaultConfig() const { return "dNdetaConfig.C"; }
 
   UInt_t   fTriggerMask;   // Trigger mask 
   Double_t fMinIpZ;        // Least z--coordiante of interaction point

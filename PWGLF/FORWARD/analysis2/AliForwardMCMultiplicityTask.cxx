@@ -36,6 +36,16 @@
 # define DEFINE(N,C) do { } while(false)
 # define POST(N,O)   do { } while(false)
 #endif
+#ifndef ENABLE_TIMING
+# define MAKE_SW(NAME) do {} while(false)
+# define START_SW(NAME) do {} while(false)
+# define FILL_SW(NAME,WHICH) do {} while(false)
+#else
+# define MAKE_SW(NAME) TStopwatch NAME
+# define START_SW(NAME) if (fDoTiming) NAME.Start(true)
+# define FILL_SW(NAME,WHICH)				\
+  if (fDoTiming) fHTiming->Fill(WHICH,NAME.CpuTime())
+#endif
 
 //====================================================================
 AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask()
@@ -197,6 +207,10 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   // Parameters:
   //    option Not used
   //  
+  MAKE_SW(total);
+  MAKE_SW(individual);
+  START_SW(total);
+  START_SW(individual);
 
   // Read production details 
     
@@ -223,13 +237,22 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   fEventInspector.ProcessMC(mcEvent, triggers, ivzMC, vzMC, b, cMC,
 			    npart, nbin, phiR);
   fEventInspector.CompareResults(ip.Z(), vzMC, cent, cMC, b, npart, nbin);
+  FILL_SW(individual,kTimingEventInspector);
   
   //Store all events
   MarkEventForStore();
   
   Bool_t isAccepted = true;
-  if (found & AliFMDEventInspector::kNoEvent)    isAccepted = false; // return;
-  if (found & AliFMDEventInspector::kNoTriggers) isAccepted = false; // return;
+  if (found & AliFMDEventInspector::kNoEvent)    {
+    fHStatus->Fill(1);
+    isAccepted = false;
+    // return;
+  }
+  if (found & AliFMDEventInspector::kNoTriggers) {
+    fHStatus->Fill(2);
+    isAccepted = false; 
+    // return;
+  }
   //MarkEventForStore();
   // Always set the B trigger - each MC event _is_ a collision 
   triggers |= AliAODForwardMult::kB;
@@ -248,8 +271,16 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   
   // Disable this check on SPD - will bias data 
   // if (found & AliFMDEventInspector::kNoSPD)  isAccepted = false; // return;
-  if (found & AliFMDEventInspector::kNoFMD)     isAccepted = false; // return;
-  if (found & AliFMDEventInspector::kNoVertex)  isAccepted = false; // return;
+  if (found & AliFMDEventInspector::kNoFMD)     {
+    fHStatus->Fill(4);
+    isAccepted = false; 
+    // return;
+  }
+  if (found & AliFMDEventInspector::kNoVertex)  {
+    fHStatus->Fill(5);
+    isAccepted = false; 
+    // return;
+  }
 
   if (isAccepted) {
     fAODFMD.SetIpZ(ip.Z());
@@ -269,12 +300,15 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   GetESDFixer().Fix(*esdFMD, ip.Z());
 
   // Apply the sharing filter (or hit merging or clustering if you like)
+  START_SW(individual);
   if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD,ip.Z())){
     AliWarning("Sharing filter failed!");
+    fHStatus->Fill(8);
     return false;
   }
   if (!fSharingFilter.FilterMC(*esdFMD, *mcEvent, ip.Z(),fMCESDFMD,fPrimary)){
     AliWarning("MC Sharing filter failed!");
+    fHStatus->Fill(8);
     return false;
   }
 
@@ -284,53 +318,84 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   fPrimary->SetBinContent(fPrimary->GetNbinsX()+1,fPrimary->GetNbinsY(),cMC);
   
 
-  if (!isAccepted) 
+  if (!isAccepted) {
     // Exit on MC event w/o trigger, vertex, data - since there's no more 
     // to be done for MC 
+    FILL_SW(individual,kTimingSharingFilter);
     return false; 
+  }
   
   //MarkEventForStore();
   fSharingFilter.CompareResults(fESDFMD, fMCESDFMD);
+  FILL_SW(individual,kTimingSharingFilter);
+
 
   // Calculate the inclusive charged particle density 
+  START_SW(individual);
   if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     AliWarning("Density calculator failed!");
+    fHStatus->Fill(9);
     return false;
   }
   if (!fDensityCalculator.CalculateMC(fMCESDFMD, fMCHistos)) { 
     AliWarning("MC Density calculator failed!");
+    fHStatus->Fill(9);
     return false;
   }
   fDensityCalculator.CompareResults(fHistos, fMCHistos);
+  FILL_SW(individual,kTimingDensityCalculator);
   
   if (fEventInspector.GetCollisionSystem() == AliFMDEventInspector::kPbPb) {
+    START_SW(individual);
     if (!fEventPlaneFinder.FindEventplane(&esd, fAODEP, 
-					  &(fAODFMD.GetHistogram()), &fHistos))
+					  &(fAODFMD.GetHistogram()), &fHistos)){
       AliWarning("Eventplane finder failed!");
+      fHStatus->Fill(10);
+    } 
+    FILL_SW(individual,kTimingEventPlaneFinder);   
   }
 
   // Do the secondary and other corrections. 
+  START_SW(individual);
   if (!fCorrections.Correct(fHistos, ivz)) { 
     AliWarning("Corrections failed");
+    fHStatus->Fill(12);
     return false;
   }
   if (!fCorrections.CorrectMC(fMCHistos, ivz)) { 
     AliWarning("MC Corrections failed");
+    fHStatus->Fill(12);
     return false;
   }
   fCorrections.CompareResults(fHistos, fMCHistos);
-    
-  if (!fHistCollector.Collect(fHistos, fRingSums, 
-			      ivz, fAODFMD.GetHistogram(),
-			      fAODFMD.GetCentrality())) {
+  FILL_SW(individual,kTimingCorrections);
+
+  // Collect our 'super' histogram
+  Bool_t add = fAODFMD.IsTriggerBits(AliAODForwardMult::kInel);
+  START_SW(individual);
+  if (!fHistCollector.Collect(fHistos, 
+			      fRingSums, 
+			      ivz, 
+			      fAODFMD.GetHistogram(),
+			      fAODFMD.GetCentrality(),
+			      false,
+			      add)) {
     AliWarning("Histogram collector failed");
+    fHStatus->Fill(13);
     return false;
   }
-  if (!fHistCollector.Collect(fMCHistos, fMCRingSums, 
-			      ivz, fMCAODFMD.GetHistogram(), -1, true)) {
+  if (!fHistCollector.Collect(fMCHistos, 
+			      fMCRingSums, 
+			      ivz, 
+			      fMCAODFMD.GetHistogram(), 
+			      -1, 
+			      true,
+			      add)) {
     AliWarning("MC Histogram collector failed");
+    fHStatus->Fill(13);
     return false;
   }
+  FILL_SW(individual,kTimingHistCollector);
 #if 0
   // Copy underflow bins to overflow bins - always full phi coverage 
   TH2&  hMC  = fMCAODFMD.GetHistogram();
@@ -341,8 +406,14 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   }
 #endif
 
-  if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel))
+  if (add) {
     fHData->Add(&(fAODFMD.GetHistogram()));
+    fHStatus->Fill(15);
+  }
+  else {
+    fHStatus->Fill(14);
+  }
+  FILL_SW(total,kTimingTotal);
 
   return true;
 }

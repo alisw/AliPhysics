@@ -348,7 +348,10 @@ struct ChainBuilder
     if (!chain) return;
     TDirectory* savDir = gDirectory;
     TFile* out = TFile::Open(output, "RECREATE");
-    
+    if (!out) { 
+      Error("", "Failed to open %s for output", output.Data());
+      return;
+    }
     TFileCollection* collection = new TFileCollection(chain->GetName());
     TObjArray*       files      = chain->GetListOfFiles();
     TChainElement*   element    = 0;
@@ -695,9 +698,10 @@ struct ChainBuilder
 
       // If this file does not contain AliESDs, ignore 
       if (!name.Contains(wild)) { 
-	Info("ChainBuilder::ScanDirectory", 
-	     "%s does not match pattern %s", 
-	     name.Data(), pattern.Data());
+	if ((flags & kVerbose))
+	  Info("ChainBuilder::ScanDirectory", 
+	       "%s does not match pattern %s", 
+	       name.Data(), pattern.Data());
 	continue;
       }
     

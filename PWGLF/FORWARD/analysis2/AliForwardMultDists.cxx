@@ -51,6 +51,7 @@ namespace {
     }
     return 1;
   }
+#if 0
   /** 
    * Get the marker option bits from a ROOT style 
    * 
@@ -76,6 +77,7 @@ namespace {
     }
     return bits;
   }
+#endif 
   static Int_t GetIndexMarker(Int_t idx)
   {
     const UShort_t nMarkers = 7;
@@ -91,6 +93,7 @@ namespace {
 
     return markers[idx % nMarkers];
   }
+#if 0
   /** 
    * Flip the 'hollow-ness' of a marker 
    * 
@@ -104,6 +107,7 @@ namespace {
     Int_t    ret  = GetMarkerStyle(bits ^ kHollow);
     return ret;
   }
+#endif
 }
 
 //====================================================================

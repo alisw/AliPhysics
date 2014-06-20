@@ -41,6 +41,10 @@ public:
     fOptions.Add("tpc-ep", "Use TPC event plane");
     fOptions.Add("satelitte", "Use satelitte interactions");
     fOptions.Add("corr", "DIR", "Corrections dir", "");
+    fOptions.Add("secmap", "Use secondary maps to correct", false);
+    fOptions.Add("mc-tracks", "Enable MC track filter", false);
+    fOptions.Add("max-strips", "NUMBER", 
+                 "Maximum consequtive strips (MC)", 2); 
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -55,7 +59,7 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward.root");
 
     // --- Load libraries/pars ---------------------------------------
-    fHelper->LoadLibrary("PWGLFforward2");
+    fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -67,37 +71,59 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
     
     // --- Add TPC eventplane task
-    if (fOptions.Has("tpc-ep")) gROOT->Macro("AddTaskEventplane.C");
+    if (fOptions.Has("tpc-ep")) CoupleCar("AddTaskEventplane.C","");
 
     // --- Task to copy header information ---------------------------
-    gROOT->Macro("AddTaskCopyHeader.C");
+    CoupleCar("AddTaskCopyHeader.C", "");
 
     // --- Get options -----------------------------------------------
-    ULong_t  run = fOptions.AsInt("run", 0);
-    UShort_t sys = fOptions.AsInt("sys", 0);
-    UShort_t sNN = fOptions.AsInt("snn", 0);
-    UShort_t fld = fOptions.AsInt("field", 0);
-    TString  cor = "";
+    ULong_t  run  = fOptions.AsInt("run", 0);
+    UShort_t sys  = fOptions.AsInt("sys", 0);
+    UShort_t sNN  = fOptions.AsInt("snn", 0);
+    UShort_t fld  = fOptions.AsInt("field", 0);
+    UShort_t mSt  = fOptions.AsInt("max-strips", 2);
+    Bool_t   sec  = fOptions.Has("secmap");
+    TString  cor  = "";
     if (fOptions.Has("corr")) cor = fOptions.Get("corr"); 
     
     // --- Add the task ----------------------------------------------
     TString fwdConfig = fOptions.Get("forward-config");
-    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%ld,%d,%d,%d,\"%s\",\"%s\")", 
-		      mc, run, sys, sNN, fld, fwdConfig.Data(), cor.Data()));
-    fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
+    AliAnalysisTask* fwd = CoupleCar("AddTaskForwardMult.C",
+				   Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
+					mc, run, sys, sNN, fld, 
+					fwdConfig.Data(), cor.Data()));
+    if (!fwd)
+      Fatal("CoupleCars", "Failed to add forward task");
+
+    gROOT->ProcessLine(Form("((AliForwardMultiplicityBase*)%p)"
+			    "->GetCorrections().SetUseSecondaryMap(%d)",
+			    fwd, sec));
+    if (mc) { 
+      gROOT->ProcessLine(Form("((AliForwardMCMultiplicityTask*)%p)"
+			      "->GetTrackDensity()"
+			      ".SetMaxConsequtiveStrips(%d)", 
+			      fwd, mSt));
+    }
+    fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
 
     // --- Add the task ----------------------------------------------
     TString cenConfig = fOptions.Get("central-config");
-    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%ld,%d,%d,%d,\"%s\",\"%s\")", 
-		      mc, run, sys, sNN, fld, cenConfig.Data(), cor.Data()));
-    fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig), true);
+    AliAnalysisTask* cen = CoupleCar("AddTaskCentralMult.C",
+				   Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
+					  mc, run, sys, sNN, fld, 
+					  cenConfig.Data(), cor.Data()));
+    if (cen)
+      fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig), true);
 
     // --- Add MC particle task --------------------------------------
-    if (mc) gROOT->Macro("AddTaskMCParticleFilter.C");
+    if (mc && fOptions.Has("mc-tracks")) 
+      CoupleCar("AddTaskMCParticleFilter.C","");
 
     if (!cor.IsNull()) {
-      fHelper->LoadAux(Form("%s/fmd_corrections.root",cor.Data()), true);
-      fHelper->LoadAux(Form("%s/spd_corrections.root",cor.Data()), true);
+      if (fwd) 
+	fRailway->LoadAux(Form("%s/fmd_corrections.root",cor.Data()), true);
+      if (cen) 
+	fRailway->LoadAux(Form("%s/spd_corrections.root",cor.Data()), true);
     }
   }
   //__________________________________________________________________
@@ -123,19 +149,6 @@ protected:
     if (!ps) 
       Fatal("CreatePhysicsSelection", "Couldn't get PhysicsSelection (%p)",ps);
 
-    // --- Special for pPb pilot run Sep. 2012 -----------------------
-    UShort_t sys = fOptions.AsInt("sys", 0);
-    if (sys == 3) { 
-      Warning("CreatePhysicsSelection", 
-	      "Special setup for pPb pilot run September, 2012");
-      gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/ANALYSIS/macros",
-			       gROOT->GetMacroPath()));
-      gROOT->LoadMacro("PhysicsSelectionOADB_CINT5_pA.C");
-      gROOT->ProcessLine(Form("((AliPhysicsSelection*)%p)"
-			      "->SetCustomOADBObjects("
-			      "OADBSelection_CINT5_V0A(),0);", ps));
-      ps->SetSkipTriggerClassSelection(true);
-    }
     // --- Ignore trigger class when selecting events.  This means ---
     // --- that we get offline+(A,C,E) events too --------------------
     // ps->SetSkipTriggerClassSelection(true);
@@ -147,10 +160,10 @@ protected:
    * @param mc  Monte-Carlo truth flag 
    * @param mgr Manager
    */
-  void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
+  void CreateCentralitySelection(Bool_t mc)
   {
     if (!fOptions.Has("cent")) return;
-    TrainSetup::CreateCentralitySelection(mc, mgr);
+    TrainSetup::CreateCentralitySelection(mc);
   }
   //__________________________________________________________________
   const char* ClassName() const { return "MakeAODTrain"; }
@@ -164,8 +177,16 @@ protected:
   void SaveSetup(Bool_t asShellScript)
   {
     TrainSetup::SaveSetup(asShellScript);
+    SaveSummarize();
+    SavedNdeta(asShellScript);
 
-    if (!fHelper) { 
+    if (!fRailway || fRailway->Mode() != Railway::kGrid) return;
+
+    SaveDownloadAODs();
+  }
+  void SavedNdeta(Bool_t asShellScript)
+  {
+    if (!fRailway) { 
       Warning("MakeAODTrain::SaveSetup", 
 	      "Cannot make dNdeta.C script without helper");
       return;
@@ -173,15 +194,13 @@ protected:
     
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     Bool_t              mc  = mgr && (mgr->GetMCtruthEventHandler() != 0);
-    OptionList          uopts(fHelper->Options());
+    OptionList          uopts(fRailway->Options());
     OptionList          opts(fOptions);
     TString             cls("MakedNdetaTrain");
     TString             name(fName);
     Int_t               sys = fOptions.AsInt("sys", 0);
     if (name.Contains("aod")) name.ReplaceAll("aod", "dndeta");
     else                      name.Append("_dndeta");
-    opts.Remove("forward-config");
-    opts.Remove("central-config");
     opts.Remove("run");
     opts.Remove("sys");
     opts.Remove("snn");
@@ -189,22 +208,22 @@ protected:
     opts.Remove("bare-ps");
     opts.Remove("tpc-ep");
     opts.Remove("corr");
+    opts.Add("satellite", "Restrict analysis to satellite events", false);
     opts.Add("trig", "TRIGGER", "Trigger type", "INEL");
     opts.Add("vzMin", "CENTIMETER", "Lower bound on Ip Z", -10.);
     opts.Add("vzMax", "CENTIMETER", "Upper bound on Ip Z", +10.);
-    opts.Add("scheme", "FLAGS", "Normalization scheme", 
-	     "TRIGGER EVENT BACKGROUND");
-    opts.Add("cut-edges", "Cut edges of acceptance", true);
+    opts.Add("scheme", "FLAGS", "Normalization scheme", "TRIGGER,EVENT");
     opts.Add("trigEff", "EFFICIENCY", "Trigger efficiency", 1.);
     opts.Add("trigEff0", "EFFICIENCY", "0-bin trigger efficiency", 1.);
-    opts.Add("mc", "Also analyse MC truth", fHelper->IsMC());
+    opts.Add("mc", "Also analyse MC truth", fRailway->IsMC());
+    opts.Add("truth-config", "FILE", "MC-Truth configuration", "");
     
     // Rewrite our URL 
-    TString outString = fHelper->OutputLocation();
+    TString outString = fRailway->OutputLocation();
     if (outString.IsNull()) outString = fEscapedName;
     TUrl    outUrl(outString);
     
-    if (uopts.Find("pattern") && outString.EndsWith("AliAOD.root")) 
+    if (uopts.Find("pattern")) // && outString.EndsWith("AliAOD.root")) 
       uopts.Set("pattern", "*/AliAOD.root");
     if (uopts.Find("concat")) uopts.Set("concat", true);
 
@@ -212,14 +231,18 @@ protected:
     uopts.Store(s, "", "&", false, true);
     outUrl.SetOptions(s.str().c_str());
       
+    const char* defConfig="$ALICE_ROOT/PWGLF/FORWARD/analysis2/dNdetaConfig.C";
     opts.Set("url", outUrl.GetUrl());
     opts.Set("type", "AOD");
+    opts.Set("forward-config",defConfig);
+    opts.Set("central-config",defConfig);
+    opts.Set("truth-config",defConfig);
     if (!fDatimeString.IsNull()) opts.Set("date", fDatimeString);
 
     if (sys != 1) {
-      opts.Set("cent", true);
-      opts.Set("trig", "");
-      opts.Set("scheme", "");
+      opts.Set("cent", "default");
+      opts.Set("trig", "INEL");
+      opts.Set("scheme", "default");
       SaveSetupROOT("dNdeta", cls, name, opts, &uopts);
       if (asShellScript) 
 	SaveSetupShell("dndeta", cls, name, opts, &uopts);
@@ -232,23 +255,16 @@ protected:
       
       name.ReplaceAll("inel", "nsd");
       opts.Set("trig", "V0AND");
-      opts.Set("scheme", "EVENT TRIGGER");
       SaveSetupROOT("dNdetaNSD", cls, name, opts, &uopts);
       if (asShellScript) 
 	SaveSetupShell("dndeta_nsd", cls, name, opts, &uopts);
       
       name.ReplaceAll("nsd", "inelgt0");
       opts.Set("trig", "INELGT0");
-      opts.Set("scheme", "EVENT TRIGGER");
       SaveSetupROOT("dNdetaINELGt0", cls, name, opts, &uopts);
       if (asShellScript) 
 	SaveSetupShell("dndeta_inelgt0", cls, name, opts, &uopts);
     }
-
-    SaveSummarize();
-    if (!fHelper || fHelper->Mode() != Helper::kGrid) return;
-
-    SaveDownloadAODs();
   }
   /** 
    * Write a ROOT script to draw summary 
@@ -302,7 +318,7 @@ protected:
       << "    Error(\"DownloadAODs\",\"Failed to connect to AliEn\");\n"
       << "    return;\n"
       << "  }\n\n"
-      << "  TString dir(\"" << fHelper->OutputPath() << "\");\n"
+      << "  TString dir(\"" << fRailway->OutputPath() << "\");\n"
       << "  TString pat(\"*/AliAOD.root\");\n"
       << "  TGridResult* r = gGrid->Query(dir,pat);\n"
       << "  if (!r) {\n"

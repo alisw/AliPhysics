@@ -28,10 +28,9 @@ public:
   MakeFMDELossTrain(const char* name  = "FMD Energy Loss")
     : TrainSetup(name)
   {
-    fOptions.Add("cent", "Use centrality");
     fOptions.Add("only-mb", "Only collect statistics from MB events");
-    fOptions.Add("residuals", "MODE", "Optional calculation of residuals", "");
-    fOptions.Add("corr", "DIR", "Corrections dir", "");
+    fOptions.Add("config",  "FILE", "Configuration", "elossFitConfig.C");
+    fOptions.Add("corr",    "DIR",  "Corrections dir", "");
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -61,7 +60,7 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_eloss.root");
 
     // --- Load libraries/pars ---------------------------------------
-    fHelper->LoadLibrary("PWGLFforward2");
+    fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -69,24 +68,20 @@ protected:
 
     // --- Check if this is MC ---------------------------------------
     Bool_t   mc     = HasMCHandler();
-    Bool_t   cent   = fOptions.Has("cent");
     Bool_t   onlyMB = fOptions.AsBool("only-mb");
-    Int_t    verb   = fOptions.AsInt("verbose");
+    TString  config = fOptions.Get("config"); 
     TString  corrs  = "";
-    if (fOptions.Has("corr")) {
-      corrs = fOptions.Get("corr"); 
-    }
-    TString  resi   = "";
-    if (fOptions.Has("residuals")) resi = fOptions.Get("residuals"); 
+    if (fOptions.Has("corr")) corrs = fOptions.Get("corr"); 
 
     // --- Add the task ----------------------------------------------
-    AddTask("AddTaskFMDELoss.C", Form("%d,%d,%d,%d,\"%s\",\"%s\"", 
-				      mc, cent, onlyMB, verb, 
-				      resi.Data(), corrs.Data()));
-
-    if (!corrs.IsNull()) {
-      fHelper->LoadAux(Form("%s/fmd_corrections.root",corrs.Data()), true);
-    }
+    CoupleCar("AddTaskFMDELoss.C", Form("%d,%d,\"%s\",\"%s\"", 
+					mc, onlyMB,  
+					config.Data(), 
+					corrs.Data()));
+    fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), config), true);
+    if (!corrs.IsNull())
+      fRailway->LoadAux(Form("%s/fmd_corrections.root",corrs.Data()), true);
+    
   }
   /** 
    * Create entrality selection if enabled 
@@ -94,17 +89,10 @@ protected:
    * @param mc   Whether this is MC or not
    * @param mgr  Analysis manager 
    */
-  virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
+  virtual void CreateCentralitySelection(Bool_t mc)
   {
     if (!fOptions.Has("cent")) return;
-
-    const char* name = "CentralitySelection";
-    gROOT->Macro("AddTaskCentrality.C");
-    AliCentralitySelectionTask* ctask = 
-      dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask(name));
-    if (!ctask) return;
-    // ctask->SetPass(fESDPass);
-    if (mc) ctask->SetMCInput();
+    TrainSetup::CreateCentralitySelection(mc);    
   }
   /** 
    * Crete output handler - we don't want one here. 

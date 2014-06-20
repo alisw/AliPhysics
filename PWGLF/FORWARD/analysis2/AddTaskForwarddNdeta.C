@@ -70,7 +70,6 @@ AddTaskForwarddNdeta(const char* config   = "dNdetaConfig.C",
   //    kEventLevel     Normalise to all events in selected range 
   //    kAltEventLevel  Normalise to all events in selected range 
   //    kBackground     Also correct for background triggers 
-  //    kShape          Correct shape 
   // 
   // kNone, kEventLevel, and kAltEventLevel are mutually exclusive.
   // If neither kEventLevel, nor kAltEventLevel is specified, then
@@ -78,8 +77,8 @@ AddTaskForwarddNdeta(const char* config   = "dNdetaConfig.C",
   // sense with kEventLevel and kAltEventLevel.  Furthermore, there
   // are some constants that encode the common cases
   //     
-  //    kFull    = kEventLevel |  kBackground | kShape 
-  //    kAltFull = kAltEventLevel |  kBackground | kShape 
+  //    kFull    = kEventLevel |  kBackground  
+  //    kAltFull = kAltEventLevel |  kBackground  
   // 
   // Default is kFull
   task->SetNormalizationScheme(AliBasedNdetaTask::kFull);

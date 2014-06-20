@@ -34,13 +34,11 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC()
     fHistdNdedpMC(),       // MC particle d^2N/detadphi histogram
     fHistFMDMCCorr(),      // FMD MC correlation
     fHistSPDMCCorr(),      // SPD MC correlation
-    fWeights(),            // Flow weights
+    fWeights(0),            // Flow weights
     fImpactParToCent(),    // Impact parameter to centrality graph
     fUseImpactPar(0),      // Use impact par for centrality
     fUseMCVertex(0),       // Get vertex from MC header?
-    fAddFlow(0),           // Add flow to MC particles
-    fAddType(0),           // Add type of flow to MC particles
-    fAddOrder(0)           // Add order of flow to MC particles        
+    fUseFlowWeights(0)     // Add flow to MC particles
 {} 
   //
   // Default Constructor
@@ -55,13 +53,11 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC(const char* name)
     fHistdNdedpMC(),       // MC particles d^2N/detadphi histogram
     fHistFMDMCCorr(),      // FMD MC correlation
     fHistSPDMCCorr(),      // SPD MC correlation
-    fWeights(),            // Flow weights
+    fWeights(0),            // Flow weights
     fImpactParToCent(),    // Impact parameter to centrality graph
     fUseImpactPar(0),      // Use impact par for centrality
     fUseMCVertex(0),       // Get vertex from MC header?
-    fAddFlow(0),           // Add flow to MC particles
-    fAddType(0),           // Add type of flow to MC particles
-    fAddOrder(0)           // Add order of flow to MC particles        
+    fUseFlowWeights(0)     // Add flow to MC particles
 { 
   // 
   // Constructor
@@ -95,9 +91,7 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC(const AliForwardMCFlowTaskQC& o)
     fImpactParToCent(o.fImpactParToCent),  // Impact parameter to centrality
     fUseImpactPar(o.fUseImpactPar),        // Use impact par for centrality
     fUseMCVertex(o.fUseMCVertex),          // Get vertex from MC header?
-    fAddFlow(o.fAddFlow),                  // Add flow to MC particles
-    fAddType(o.fAddType),                  // Add type of flow to MC particles
-    fAddOrder(o.fAddOrder)                 // Add order of flow to MC particles
+    fUseFlowWeights(o.fUseFlowWeights)     // Add flow to MC particles
 {
   //
   // Copy Constructor
@@ -121,9 +115,7 @@ AliForwardMCFlowTaskQC::operator=(const AliForwardMCFlowTaskQC& o)
   fImpactParToCent = o.fImpactParToCent;
   fUseImpactPar    = o.fUseImpactPar;
   fUseMCVertex     = o.fUseMCVertex;
-  fAddFlow         = o.fAddFlow;
-  fAddType         = o.fAddType;
-  fAddOrder        = o.fAddOrder;
+  fUseFlowWeights  = o.fUseFlowWeights;
   return *this;
 }
 //_____________________________________________________________________
@@ -192,11 +184,12 @@ void AliForwardMCFlowTaskQC::InitHists()
   while ((bin = static_cast<VertexBin*>(nextMC()))) {
     bin->AddOutput(fSumList, fCentAxis);
   }
-
-  TList* wList = new TList();
-  wList->SetName("FlowWeights");
-  fWeights.Init(wList);
-  fSumList->Add(wList);
+  if (fWeights) {
+    TList* wList = new TList();
+    wList->SetName("FlowWeights");
+    fWeights->Init(wList);
+    fSumList->Add(wList);
+  }
 
 }
 //_____________________________________________________________________
@@ -235,9 +228,9 @@ Bool_t AliForwardMCFlowTaskQC::Analyze()
   // Run analysis on MC branch
   if (!FillMCHist()) return kFALSE;
   if ((fFlowFlags & kStdQC)) {
-    FillVtxBinList(fBinsMC, fHistdNdedpMC, vtx);
+    FillVtxBinList(fBinsMC, fHistdNdedpMC, vtx, kMC);
   } else if ((fFlowFlags & kEtaGap)) {
-    FillVtxBinListEtaGap(fBinsMC, fHistdNdedpMC, fHistdNdedpMC, vtx);
+    FillVtxBinListEtaGap(fBinsMC, fHistdNdedpMC, fHistdNdedpMC, vtx, kMC);
   } else if ((fFlowFlags & k3Cor)) {
     FillVtxBinList3Cor(fBinsMC, fHistdNdedpMC, fHistdNdedpMC, vtx);
   }
@@ -381,21 +374,13 @@ Bool_t AliForwardMCFlowTaskQC::FillMCHist()
   Int_t ntracks = mcArray->GetEntriesFast();
 //  Double_t rp = -1, b = -1;
   if (fAODMCHeader) {
-//    rp = header->GetReactionPlaneAngle();
-//    b = header->GetImpactParameter();
+//    rp = fAODMCHeader->GetReactionPlaneAngle();
+//    b = fAODMCHeader->GetImpactParameter();
     if (fAODMCHeader->GetNCocktailHeaders() > 1) {
       ntracks = fAODMCHeader->GetCocktailHeader(0)->NProduced();
     }
   }
   
-  UShort_t flowFlags = 0;
-  if (fAddFlow.Length() > 1) {
-    if (fAddFlow.Contains("pt"))   flowFlags |= AliForwardFlowWeights::kPt;
-    if (fAddFlow.Contains("pid"))  flowFlags |= AliForwardFlowWeights::kPt;
-    if (fAddFlow.Contains("eta"))  flowFlags |= AliForwardFlowWeights::kEta;
-    if (fAddFlow.Contains("cent")) flowFlags |= AliForwardFlowWeights::kCent;
-  }
-
   for (Int_t it = 0; it < ntracks; it++) { // Track loop
     Double_t weight = 1;
     AliAODMCParticle* particle = (AliAODMCParticle*)mcArray->At(it);
@@ -405,20 +390,16 @@ Bool_t AliForwardMCFlowTaskQC::FillMCHist()
     }
     if (!particle->IsPrimary()) continue;
     if (particle->Charge() == 0) continue;
-    //Double_t pT = particle->Pt();
+//    Double_t pT = particle->Pt();
     Double_t eta = particle->Eta();
     Double_t phi = particle->Phi();
     if (eta >= minEta && eta < maxEta) {
       // Add flow if it is in the argument
       // FLOW WEIGHTS DISABLED IN THE VERSION - COMING BACK SOON
-//      if (flowFlags != 0) { 
-//	weight = fWeights.CalcWeight(eta, pT, phi, particle->PdgCode(), 
-//				     rp, fCent, fAddType, fAddOrder, 
-//				     flowFlags) + 1;
-//        weight = fWeights.CalcWeight(eta, pT, phi, particle->PdgCode(),
-//                                    rp, b); 
+      if (fUseFlowWeights && fWeights) { 
+        weight = 1.;//fWeights->CalcWeight(eta, pT, phi, particle->PdgCode(), rp, b); 
 //      Printf("%f", weight);
-//      }
+      }
       fHistdNdedpMC.Fill(eta, phi, weight);
     }
   }

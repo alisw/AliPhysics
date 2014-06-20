@@ -6,6 +6,7 @@
 # include <TArrow.h>
 #else
 class TGraph;
+class TFile;
 #endif
 
 /**
@@ -40,6 +41,138 @@ public:
       fSums(0),
       fResults(0)
   {}
+  //__________________________________________________________________
+  TFile* Init(const char* fname)
+  {
+    // --- Open the file ---------------------------------------------
+    TString filename(fname);
+    TFile*  file = TFile::Open(filename, "READ");
+    if (!file) { 
+      Error("Run", "Failed to open \"%s\"", filename.Data());
+      return 0;
+    }
+
+    // --- Get top-level collection ----------------------------------
+    fSums = GetCollection(file, "ForwardSums");
+    if (!fSums) {
+      Info("Run", "Trying old name Forward");
+      fSums = GetCollection(file, "Forward");
+      if (!fSums) return 0;
+    }
+
+    // --- Do the results ----------------------------------------------
+    fResults = GetCollection(file, "ForwardResults");
+    if (!fResults) fResults = fSums; // Old-style
+
+    return file;
+  }
+  void SummarizeSharing(const char* fname, UShort_t what=0)
+  {
+    // --- Initialize ------------------------------------------------
+    TFile* file = 0;
+    if (!(file = Init(fname))) return;
+
+    // --- Make our canvas -------------------------------------------
+    TString pdfName("sharing.pdf");
+    pdfName.ReplaceAll(".root", ".pdf");
+    CreateCanvas(pdfName, what & kLandscape, true, false);
+    
+    TCollection* c = GetCollection(fSums, "fmdSharingFilter");
+    if (!c) return;
+    TCollection* rc = GetCollection(fResults, "fmdSharingFilter");
+    if (!rc) rc = c;
+
+    Int_t    nFiles = 0;
+    TParameter<int>* pnFiles = 
+      static_cast<TParameter<int>*>(GetObject(c, "nFiles"));
+    if (pnFiles) {
+      nFiles = pnFiles->GetVal();
+    }
+
+    TCollection* lc    = GetCollection(c, "lCuts");
+    TCollection* hc    = GetCollection(c, "hCuts");
+    Int_t        lm    = 0;
+    Int_t        hm    = 0;
+    TH2*         hLow  = GetH2(c, "lowCuts");
+    TH2*         hHigh = GetH2(c, "highCuts");
+    GetParameter(lc, "method", lm);
+    GetParameter(hc, "method", hm);
+    if (hLow  && nFiles > 0 && !hLow->TestBit(BIT(20)))
+      hLow->Scale(1. / nFiles);
+    if (hHigh && nFiles > 0 && !hHigh->TestBit(BIT(20))) 
+      hHigh->Scale(1. / nFiles);
+    
+    DivideForRings(true,true);
+    const char** ptr   = GetRingNames(false);
+    UShort_t     iq    = 1;
+    while (*ptr) { 
+      TCollection* sc = GetCollection(c, *ptr);
+      if (!sc) { ptr++; iq++; continue; }
+      UShort_t d = Int_t((*ptr)[3])-48;
+      Char_t   r = (*ptr)[4];
+      
+      TH1*     esdELoss = GetH1(sc, "esdEloss");
+      TH1*     anaELoss = GetH1(sc, "anaEloss");
+      TGraph*  lowCut   = CreateCutGraph(lm, iq,  hLow,  esdELoss, kYellow+1);
+      TGraph*  highCut  = CreateCutGraph(hm, iq,  hHigh, esdELoss, kCyan+1);
+      // Double_t ignCut   = TMath::Max(lowCut->GetX()[3],0.);
+      // Int_t    esdLow   = esdELoss->FindBin(ignCut);
+      // Int_t    anaLow   = anaELoss->FindBin(ignCut);
+      // Double_t esdInt   = esdELoss->Integral(esdLow,esdELoss->GetNbinsX()+1);
+      // Double_t anaInt   = anaELoss->Integral(anaLow,anaELoss->GetNbinsX()+1);
+      // Double_t frac     = esdInt > 0 ? (esdInt-anaInt)/esdInt : 1;
+      esdELoss->GetXaxis()->SetRangeUser(-.1, 2);
+      
+      DrawInRingPad(d,r, esdELoss, "", kLogy, *ptr);
+      // 		    "#Delta/#Delta_{mip} reconstructed and merged");
+      DrawInRingPad(d, r, anaELoss, "same");
+      DrawInRingPad(d, r, lowCut,  "lf same"); 
+      DrawInRingPad(d, r, highCut, "lf same"); 
+      ptr++;
+      iq++;
+    }
+    TVirtualPad* p = RingPad(0,0);
+    p->cd();
+    TLegend* l = new TLegend(0.1, 0.1, 0.98, 0.98, "");
+    l->SetFillStyle(0);
+    l->SetFillColor(0);
+    l->SetBorderSize(0);
+    TLegendEntry* e = 0;
+    e = l->AddEntry("dummy", "ESD signal", "f");
+    e->SetFillStyle(3002);
+    e->SetFillColor(kBlack);
+    e = l->AddEntry("dummy", "Merged signal", "f");
+    e->SetFillStyle(3001);
+    e->SetFillColor(kBlack);
+    e = l->AddEntry("dummy", "Low cut", "f");
+    e->SetFillStyle(3002);
+    e->SetFillColor(kYellow+1);
+    e->SetLineWidth(0);
+    e->SetLineColor(kWhite);
+    e = l->AddEntry("dummy", "High cut", "f");
+    e->SetFillStyle(3002);
+    e->SetFillColor(kCyan+1);
+    e->SetLineWidth(0);
+    e->SetLineColor(kWhite);
+    l->Draw();
+    
+    PrintCanvas("Summary of sharing filter");
+    CloseCanvas();
+    
+  }
+  void SummarizeSteps(const char* fname, UShort_t what=0)
+  {
+    // --- Initialize ------------------------------------------------
+    TFile* file = 0;
+    if (!(file = Init(fname))) return;
+
+    // --- Make our canvas -------------------------------------------
+    TString pdfName("steps.pdf");
+    pdfName.ReplaceAll(".root", ".pdf");
+    CreateCanvas(pdfName, what & kLandscape, true, false);
+    DrawSteps();
+    CloseCanvas();
+  }
   
   //__________________________________________________________________
   /** 
@@ -50,29 +183,12 @@ public:
    */
   void Run(const char* fname, UShort_t what=kNormal)
   {
-    // --- Open the file ---------------------------------------------
-    TString filename(fname);
-    TFile*  file = TFile::Open(filename, "READ");
-    if (!file) { 
-      Error("Run", "Failed to open \"%s\"", filename.Data());
-      return;
-    }
-   
-
-    // --- Get top-level collection ----------------------------------
-    fSums = GetCollection(file, "ForwardSums");
-    if (!fSums) {
-      Info("Run", "Trying old name Forward");
-      fSums = GetCollection(file, "Forward");
-      if (!fSums) return;
-    }
-
-    // --- Do the results ----------------------------------------------
-    fResults = GetCollection(file, "ForwardResults");
-    if (!fResults) fResults = fSums; // Old-style
+    // --- Initialize ------------------------------------------------
+    TFile* file = 0;
+    if (!(file = Init(fname))) return;
 
     // --- Make our canvas -------------------------------------------
-    TString pdfName(filename);
+    TString pdfName(fname);
     pdfName.ReplaceAll(".root", ".pdf");
     CreateCanvas(pdfName, what & kLandscape);
     DrawTitlePage(file);
@@ -88,6 +204,15 @@ public:
     
     // --- Set pause flag --------------------------------------------
     fPause = what & kPause;
+
+    // Plot status if found 
+    TH1* hStatus = GetH1(fSums, "status", false);
+    if (hStatus) { 
+      hStatus->SetMaximum(hStatus->GetMaximum()*1.2);
+      fBody->SetRightMargin(0.10);
+      DrawInPad(fBody,0,hStatus, "hist text30");
+      PrintCanvas("Status");
+    }
 
     // --- Do each sub-algorithm -------------------------------------
     if (what & kEventInspector)    DrawEventInspector(fSums);
@@ -182,13 +307,14 @@ protected:
     Double_t y1  = eloss->GetMaximum();
     Double_t min = 1000;
     Double_t max = 0;
+    Int_t    iiy = (iy == 4 ? 5 : iy == 5 ? 4 : iy);
     if (method == 0) { // Fixed value
-      max = cuts->GetBinContent(1, iy);
+      max = cuts->GetBinContent(1, iiy);
       min = eloss->GetXaxis()->GetXmin();
     }
     else {
       for (Int_t ix=1; ix <= cuts->GetNbinsX(); ix++) {
-	Double_t c = cuts->GetBinContent(ix, iy);
+	Double_t c = cuts->GetBinContent(ix, iiy);
 	if (c <= 0.0001) continue;
 	min = TMath::Min(c, min);
 	max = TMath::Max(c, max);
@@ -236,10 +362,15 @@ protected:
     const char** pcut   = cuts;
     while (*pcut) { 
       Double_t cut;
-      GetParameter(c, *pcut, cut);
+      GetParameter(c, *pcut, cut, false);
       if (pcut != cuts) params.Append(", ");
       params.Append(Form("%5.2f", cut));
       pcut++;
+    }
+    if (params.IsNull()) {
+      Double_t frac = 0;
+      GetParameter(c, "frac", frac);
+      params = Form("%f", frac);
     }
     DrawParameter(y, "Parameters", params, size);
     return method;
@@ -295,7 +426,7 @@ protected:
       nFiles = pnFiles->GetVal();
       DrawParameter(y, "# files merged", Form("%d", nFiles));    
     }
-    if (GetParameter(c, "disabled", disabled)) 
+    if (GetParameter(c, "disabled", disabled, false)) 
       DrawParameter(y, "Merging disabled", (disabled ? "yes" : "no"));
 
     Int_t lm    = 0;
@@ -315,8 +446,10 @@ protected:
       hm              = PrintCut(hc, y, "High cut");
       hLow            = GetH2(c, "lowCuts");
       hHigh           = GetH2(c, "highCuts");
-      if (hLow  && nFiles > 0) hLow->Scale(1. / nFiles);
-      if (hHigh && nFiles > 0) hHigh->Scale(1. / nFiles);
+      if (hLow  && nFiles > 0 && !hLow->TestBit(BIT(20)))
+	hLow->Scale(1. / nFiles);
+      if (hHigh && nFiles > 0 && !hHigh->TestBit(BIT(20))) 
+	hHigh->Scale(1. / nFiles);
       DrawCut(fBody, 2, hLow);
       DrawCut(fBody, 3, hHigh);
     }
@@ -339,12 +472,15 @@ protected:
 	
 	TH1*    esdELoss = GetH1(sc, "esdEloss");
 	TH1*    anaELoss = GetH1(sc, "anaEloss");
-	Double_t esdInt  = esdELoss->Integral(0,esdELoss->GetNbinsX()+1);
-	Double_t anaInt  = anaELoss->Integral(0,anaELoss->GetNbinsX()+1);
-	Double_t frac    = esdInt > 0 ? (esdInt-anaInt)/esdInt : 1;
-	esdELoss->GetXaxis()->SetRangeUser(-.1, 2);
 	TGraph* lowCut   = CreateCutGraph(lm, iq,  hLow,  esdELoss, kYellow+1);
 	TGraph* highCut  = CreateCutGraph(hm, iq,  hHigh, esdELoss, kCyan+1);
+	Double_t ignCut  = TMath::Max(lowCut->GetX()[3],0.);
+	Int_t    esdLow  = esdELoss->FindBin(ignCut);
+	Int_t    anaLow  = anaELoss->FindBin(ignCut);
+	Double_t esdInt  = esdELoss->Integral(esdLow,esdELoss->GetNbinsX()+1);
+	Double_t anaInt  = anaELoss->Integral(anaLow,anaELoss->GetNbinsX()+1);
+	Double_t frac    = esdInt > 0 ? (esdInt-anaInt)/esdInt : 1;
+	esdELoss->GetXaxis()->SetRangeUser(-.1, 2);
 	
 	DrawInPad(fBody, 1, esdELoss, "", kLogy,
 		  "#Delta/#Delta_{mip} reconstructed and merged");
@@ -358,6 +494,8 @@ protected:
 	l->SetNDC();
 	l->SetTextAlign(32);
 	l->Draw();
+	l->DrawLatex(1-p->GetRightMargin(), 0.45,
+		     Form("%f #rightarrow #infty", ignCut));
 
 	TH1*     singles  = GetH1(sc, "singleEloss");
 	TH1*     doubles  = GetH1(sc, "doubleEloss");
@@ -400,11 +538,18 @@ protected:
 	  nB->GetXaxis()->SetRangeUser(0,2); 
 	  nB->GetYaxis()->SetRangeUser(0,2); 
 	}
-	DrawInPad(fBody, 5, nB, "colz cont3", kLogz);
-	DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "col same", kLogz,
-		  "Correlation of neighbors before and after merging");
+	DrawInPad(fBody, 5, nB, "colz cont3", kLogz,
+		  "Correlation of neighbors before merging");
 
-	DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   kLogz);
+	TH2* nA = GetH2(sc, "neighborsAfter");
+	if (nA) { 
+	  nA->GetXaxis()->SetRangeUser(0,2); 
+	  nA->GetYaxis()->SetRangeUser(0,2); 
+	}
+	DrawInPad(fBody, 6, nA, "colz cont3", kLogz,
+		  "Correlation of neighbors after merging");
+
+	// DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   kLogz);
 	
 	PrintCanvas(Form("Sharing filter - %s", *ptr));
 	ptr++;
@@ -416,12 +561,25 @@ protected:
 
     // --- MC --------------------------------------------------------
     TCollection* cc = GetCollection(c, "esd_mc_comparion", false); // Spelling!
-    if (!cc) return; // Not MC 
+    if (!cc) {
+      cc = GetCollection(c, "esd_mc_comparison", false); // Spelling!
+      if (!cc) return; // Not MC 
+    }
 
     DivideForRings(false, false);
     const char** ptr = GetRingNames(false);
     while (*ptr) { 
-      DrawInRingPad(GetH2(cc, Form("%s_corr", *ptr)), "colz", kLogz);
+      TString nam(Form("%s_corr", *ptr));
+      TH2* hc = GetH2(cc, nam, false);
+      if (!hc) {
+	nam[4] = (nam[4] == 'I' ? 'i' : 'o');
+	hc = GetH2(cc, nam, false);
+	if (!hc) { 
+	  ptr++;
+	  continue;
+	}
+      }
+      DrawInRingPad(hc, "colz", kLogz);
       ptr++;
     }
 
@@ -447,15 +605,25 @@ protected:
 		    Double_t cut=-1)
   {
     if (!h) return;
+    TAxis* indep = (inY ? h->GetXaxis() : h->GetYaxis());
+    TAxis* dep   = (inY ? h->GetYaxis() : h->GetXaxis());
+    
 
     TObjArray* fits = new TObjArray;
     fits->SetOwner();
-    if (inY) h->FitSlicesY(0, 1, -1, 10, "QN", fits);
-    else     h->FitSlicesX(0, 1, -1, 10, "QN", fits);
+    // FitSlicesX sets onX to true.  If onX is true, then it calls
+    // ProjectionX for each Y bin.  That is, we fit each X slice. 
+    Int_t minB = dep->FindBin(0.)+1;
+    Int_t maxB = dep->GetNbins();
+    Info("", "Bin range: %d - %d", minB, maxB);
+    if (inY) h->FitSlicesY(0, minB, maxB, 10, "QN", fits);
+    else     h->FitSlicesX(0, minB, maxB, 10, "QN", fits);
     if (!fits) { 
       Warning("ShowSliceFit", "No fits returned");
       return;
     }
+
+    // If inY is true then this is the mean,variance as a function of X
     TH1* mean = static_cast<TH1*>(fits->At(1));
     TH1* var  = static_cast<TH1*>(fits->At(2));
     if (!mean || !var) {
@@ -463,6 +631,21 @@ protected:
       fits->Delete();
       return;
     }
+#if 0
+    TH1* hh[] = { mean, var, 0 };
+    for (Int_t ib=1; ib<=mean->GetNbinsX();ib++) { 
+      TH1** hp = hh;
+      while (*hp) { 
+	if ((*hp)->GetBinContent(ib) <= 0) { 
+	  (*hp)->SetBinContent(ib,0);
+	  (*hp)->SetBinError(ib,0);
+	}
+	hp++;
+      }
+    }
+#endif
+
+    // If inY is true then this is the mean,variance as a function of X
     TF1* fmean = new TF1("mean", "pol1");
     TF1* fvar  = new TF1("var",  "pol1");
     mean->Fit(fmean, "Q0+");
@@ -475,15 +658,13 @@ protected:
 
     TGraphErrors* g = new TGraphErrors(h->GetNbinsX());
     g->SetName(Form("g%s", h->GetName()));
-    TString xTit = h->GetXaxis()->GetTitle();
-    TString yTit = h->GetYaxis()->GetTitle();
-    g->SetTitle(Form("Correlation of %s and %s",
-		     inY  ? xTit.Data() : yTit.Data(), 
-		     !inY ? xTit.Data() : yTit.Data()));
+    TString xTit = indep->GetTitle();
+    TString yTit = dep->GetTitle();
+    g->SetTitle(Form("Correlation of %s and %s",xTit.Data(),yTit.Data()));
     g->SetFillColor(kBlue-10);
     g->SetFillStyle(3001);
-    TGraph* up  = (cut > 0 ? new TGraph(h->GetNbinsX()) : 0);
-    TGraph* low = (cut > 0 ? new TGraph(h->GetNbinsX()) : 0);
+    TGraph* up  = (cut > 0 ? new TGraph(indep->GetNbins()) : 0);
+    TGraph* low = (cut > 0 ? new TGraph(indep->GetNbins()) : 0);
     if (up)  { 
       up ->SetLineColor(kBlack); 
       up ->SetLineWidth(2); 
@@ -495,21 +676,34 @@ protected:
       low->SetLineStyle(2); 
     }
     for (Int_t i = 1; i <= h->GetNbinsX(); i++) { 
-      Double_t x  = h->GetXaxis()->GetBinCenter(i);
+      Double_t x  = indep->GetBinCenter(i);
       Double_t y  = fmean->Eval(x);
       Double_t e  = fvar->Eval(x);
+      // Double_t y  = mean->GetBinContent(i);
+      // Double_t e  = var->GetBinContent(i); 
       Double_t ee = nVar * e;
       if (flags & 0x8000) ee *= e > 0 ? TMath::Log10(e) : 1;
-      g->SetPoint(i-1, x, y);
-      g->SetPointError(i-1, 0, ee);
-
-      if (up)  up ->SetPoint(i-1,x,x+cut*x);
-      if (low) low->SetPoint(i-1,x,x-cut*x);
+      if (inY) {
+	g->SetPoint(i-1, x, y);
+	g->SetPointError(i-1, 0, ee);
+      }
+      else { 
+	g->SetPoint(i-1, y, x);
+	g->SetPointError(i-1, ee, 0);
+      }
+      if (up)  {
+	if (inY) up->SetPoint(i-1,x,x+cut*x);
+	else     up->SetPoint(i-1,y+cut*y,y);
+      }
+      if (low) {
+	if (inY) low->SetPoint(i-1,x,x-cut*x);
+	else     low->SetPoint(i-1,y-cut*y,y);
+      }
     }
     DrawInPad(p, sub, g, "3", flags);
     if (up)  DrawInPad(p, sub, up, "l", flags);
     if (low) DrawInPad(p, sub, low, "l", flags);
-    fmean->SetRange(h->GetXaxis()->GetXmin(), h->GetXaxis()->GetXmax());
+    fmean->SetRange(indep->GetXmin(), indep->GetXmax());
     fmean->SetLineWidth(2);
     DrawInPad(p, sub, fmean, "same", flags);
 
@@ -523,7 +717,7 @@ protected:
 				fmean->GetParameter(1), xTit.Data()));
     l->SetNDC();
     l->SetTextAlign(13);
-    l->SetTextSize(0.04);
+    l->SetTextSize(fParVal->GetTextSize());
     l->SetTextFont(42);
     l->Draw();
     l->DrawLatex(0.15, y-0.07, 
@@ -551,7 +745,7 @@ protected:
     Double_t y = .9;
     Int_t maxParticles=0, phiAcceptance=0, etaLumping=0, phiLumping=0;
     Bool_t method=false, recalcPhi=false;
-    Double_t maxOutliers=0, outlierCut=0;
+    Double_t maxOutliers=0, outlierCut=-1;
     Double_t size = fLandscape ? 0.05 : 0.03;
   
     GetParameter(c, "maxParticle", maxParticles);
@@ -568,10 +762,11 @@ protected:
       DrawParameter(y, "Method", (method ? "Poisson" : "#DeltaE"),   size); 
     if (GetParameter(c, "recalcPhi", recalcPhi))
       DrawParameter(y, "Recalculate #phi",(recalcPhi ? "yes" : "no"),size); 
-    if (GetParameter(c, "maxOutliers", maxOutliers))
+    if (GetParameter(c, "maxOutliers", maxOutliers, false))
       DrawParameter(y, "Max relative N_{outlier}",
 		    Form("%5.3f",maxOutliers),size);
-    if (GetParameter(c, "outlierCut", outlierCut))
+    Bool_t hasOutCut = false;
+    if ((hasOutCut = GetParameter(c, "outlierCut", outlierCut, false)))
       DrawParameter(y, "Max relative deviation",Form("%5.3f",outlierCut),size);
 
 
@@ -606,6 +801,8 @@ protected:
     DrawCut(p, 4, maxW);
   
     PrintCanvas("Density calculator");
+    Float_t save = fParVal->GetTextSize();
+    fParVal->SetTextSize(0.03);
 
     UShort_t iq = 1;
     const char** ptr   = GetRingNames(false);
@@ -617,9 +814,9 @@ protected:
       else            fBody->Divide(2,3);
     
       TH2* corr      = GetH2(sc, "elossVsPoisson");
-      TH2* corrOut   = GetH2(sc, "elossVsPoissonOutlier");
+      TH2* corrOut   = GetH2(sc, "elossVsPoissonOutlier", false);
       TH1* diff      = GetH1(sc, "diffElossPoisson");
-      TH1* diffOut   = GetH1(sc, "diffElossPoissonOutlier");
+      TH1* diffOut   = GetH1(sc, "diffElossPoissonOutlier", false);
       TH1* eloss     = GetH1(sc, "eloss");
       TH1* elossUsed = GetH1(sc, "elossUsed");
       TH1* occ       = GetH1(sc, "occupancy");
@@ -627,14 +824,18 @@ protected:
       if (elossUsed) elossUsed->SetLineWidth(1);
       if (eloss)     eloss->GetXaxis()->SetRangeUser(0.05, 2);
       
-      DrawInPad(fBody, 1, corr,    "colz",        kLogz);
-      DrawInPad(fBody, 1, corrOut, "same",        kLogz);
+      corr->SetXTitle("N_{ch,#Delta}");
+      corr->SetYTitle("N_{ch,Poisson}");
+      DrawInPad(fBody,  1, corr,    "colz",        kLogz);
+      if (corrOut) 
+	DrawInPad(fBody,1, corrOut, "same",        kLogz);
       ShowSliceFit(true, corr, 10, fBody, 1, kLogz, outlierCut);
 
-      DrawInPad(fBody, 2, diff,    "HIST E",      kLogy);
-      DrawInPad(fBody, 2, diffOut, "HIST E SAME", kLogy|kLegend|kNorth|kWest);
-      DrawInPad(fBody, 3, occ,      "",           kLogy);
-      DrawInPad(fBody, 4, eloss,    "",           kLogy, 
+      DrawInPad(fBody,  2, diff,    "HIST E",      kLogy);
+      if (diffOut) 
+	DrawInPad(fBody,2, diffOut, "HIST E SAME", kLogy|kLegend|kNorth|kWest);
+      DrawInPad(fBody,  3, occ,      "",           kLogy);
+      DrawInPad(fBody,  4, eloss,    "",           kLogy, 
 		"#Delta/#Delta_{mip} before and after cuts");
       DrawInPad(fBody, 4, elossUsed, "same",      kLogy);
       TGraph* thres = CreateCutGraph(tm, iq,  lCuts,  eloss, kYellow+1);
@@ -658,7 +859,7 @@ protected:
 
       TH1* phiB = GetH1(sc, "phiBefore");
       TH1* phiA = GetH1(sc, "phiAfter");
-      TH1* outliers = GetH1(sc, "outliers");
+      TH1* outliers = GetH1(sc, "outliers", false);
       if (outliers) 
 	DrawInPad(fBody, 5, outliers, "hist", kLogy);
       else if (phiB && phiA) { 
@@ -699,21 +900,105 @@ protected:
     }
 
     TCollection* cc = GetCollection(c, "esd_mc_comparison", false); 
-    if (!cc) return; // Not MC 
-
-    fBody->Divide(2,5);
-    ptr   = GetRingNames(false);
-    Int_t cnt = 0;
-    while (*ptr) { 
-      DrawInPad(fBody, 2*cnt+1, GetH2(cc, Form("%s_corr_mc_esd", *ptr)),
-		"colz", kLogz);
-      DrawInPad(fBody, 2*(cnt+1), GetH2(cc, Form("%s_diff_mc_esd", *ptr)),
-		"", kLogz);
-      ptr++;
-      cnt++;
+    if (!cc) {
+      fParVal->SetTextSize(save);
+      return; // Not MC 
     }
 
-    PrintCanvas("Density calculator - MC vs Reco");
+    ptr   = GetRingNames(false);
+    THStack* profiles = new THStack("profiles", "MC-ESD");
+    // Int_t cnt = 0;
+    while (*ptr) { 
+      fBody->Divide(2,1);
+
+      TH2* corr = GetH2(cc, Form("%s_corr_mc_esd", *ptr));
+      if (corr) { 
+	// corr->GetXaxis()->SetRangeUser(-1,51);
+	// corr->GetYaxis()->SetRangeUser(-1,51);
+	corr->SetXTitle("MC");
+	corr->SetYTitle("ANA");
+	TH1* h = new TH1F("",Form("Correlation of N_{ch,incl} for %s", *ptr),
+			  corr->GetNbinsX(), 
+			  corr->GetXaxis()->GetXmin(), 
+			  corr->GetXaxis()->GetXmax());
+	h->SetMinimum(corr->GetYaxis()->GetXmin());
+	h->SetMaximum(1.2*corr->GetYaxis()->GetXmax());
+	h->SetXTitle("MC"); // corr->GetXaxis()->GetTitle());
+	h->SetYTitle(corr->GetYaxis()->GetTitle());
+	DrawInPad(fBody, 1, h, "", kLogz);
+	DrawInPad(fBody, 1, corr,  "colz same", kLogz);
+	ShowSliceFit(true, corr, 1, fBody, 1, 0, -1);
+      }
+      TH1* diff = GetH1(cc, Form("%s_diff_mc_esd", *ptr));
+      if (diff && diff->GetEntries() > 0) {
+	// diff->Rebin(2);
+	diff->Smooth(3);
+	diff->Scale(1./diff->GetEntries(), "width");
+	TF1* f = new TF1(Form("%s_tri", *ptr), 
+			 "[0]*TMath::Exp(-TMath::Abs(x-[1])/[2])",-20,20);
+	f->SetParNames("A", "x_{0}", "w");
+	f->SetParameters(1, diff->GetMean(), diff->GetRMS());
+	diff->Fit(f,"RQ0+");
+	DrawInPad(fBody, 2, diff, "", kLogy);
+	DrawInPad(fBody, 2, f, "same", kLogy);
+	Double_t py = .88;
+	TLatex* l = new TLatex(.89, py, "Ae^{-|x-x_{0}|/w}");
+	l->SetTextAlign(33);
+	l->SetTextSize(fParVal->GetTextSize());
+	l->SetTextFont(42);
+	l->SetNDC();
+	l->Draw();
+	py -= fParVal->GetTextSize();
+	l->DrawLatex(.89, py, Form("#chi^{2}/#nu=%f",  f->GetNDF()>0 ? 
+				   f->GetChisquare()/f->GetNDF() : 0));
+	for (Int_t i = 0; i < 3; i++) { 
+	  py -= fParVal->GetTextSize();
+	  l->DrawLatex(.89, py, Form("%s: %f #pm %f", f->GetParName(i), 
+				     f->GetParameter(i), f->GetParError(i)));
+	}	       
+      }
+      TH2* vs = GetH2(cc, Form("%s_esd_vs_mc", *ptr));
+      if (vs) { 
+	const Double_t lVs = -0.3;
+	const Double_t hVs = +0.4;
+	Int_t nX = vs->GetNbinsX();
+	Int_t nY = vs->GetNbinsY();
+	TProfile* vsp = new TProfile(Form("%s_esd_vs_mc_px", *ptr), *ptr,
+				   nX, vs->GetXaxis()->GetXmin(),
+				   vs->GetXaxis()->GetXmax());
+	vsp->SetXTitle(vs->GetXaxis()->GetTitle());
+	vsp->SetYTitle("#LT#deltaN_{ch}#GT");
+	vsp->SetLineColor(diff->GetLineColor());
+	vsp->SetMarkerColor(diff->GetLineColor());
+	vsp->SetFillColor(diff->GetLineColor());
+	vsp->SetDirectory(0);
+	Bool_t hasSome = false;
+	for (Int_t ix = 1; ix <= nX; ix++) { 	
+	  Double_t vsx = vs->GetXaxis()->GetBinCenter(ix);
+	  for (Int_t iy = 1; iy <= nY; iy++) { 
+	    Double_t vsc = vs->GetBinContent(ix, iy);
+	    Double_t vse = vs->GetBinError(ix, iy);
+	    if (vsc < lVs || vsc > hVs) continue;
+	    hasSome = true;
+	    vsp->Fill(vsx, vsc, vse);
+	  }
+	}
+	if (hasSome) profiles->Add(vsp);
+	else delete vsp;
+      }
+      PrintCanvas(Form("Density calculator - MC vs Reco - %s", *ptr));
+      ptr++;
+      // cnt++;
+    }
+    if (profiles->GetHists() && profiles->GetHists()->GetEntries() > 0) {
+      Double_t pmax = profiles->GetMaximum("nostack")*1.3;
+      profiles->SetMaximum(+pmax);
+      profiles->SetMinimum(-pmax);
+      DrawInPad(fBody, 0, profiles, "nostack");
+      PrintCanvas("Density calculator - MC vs Reco - All");
+    }
+      
+    fParVal->SetTextSize(save);
   }
 
   //____________________________________________________________________
@@ -798,7 +1083,7 @@ protected:
 
     // p->cd(2);
     // Printf("Drawing skipped");
-    TH1* skipped = GetH1(c, "skipped");
+    TH1* skipped = GetH1(c, "skipped", false);
     if (skipped) { 
       skipped->SetFillColor(kRed+1);
       skipped->SetFillStyle(3001);
@@ -1079,19 +1364,21 @@ protected:
     // MakeChapter(can, "Steps");
 
     THStack* esds    = GetStack(GetCollection(fResults, "fmdSharingFilter"), 
-				"sumsESD", "summedESD");
+				"sumsESD", "summedESD",false);
     THStack* deltas  = GetStack(GetCollection(fResults, "fmdSharingFilter"), 
-				"sums", "summed");
+				"sums", "summed",false);
     THStack* nchs    = GetStack(GetCollection(fResults, 
 					      "fmdDensityCalculator"), 
-				"sums", "inclDensity");
+				"sums", "inclDensity",false);
     THStack* prims   = GetStack(GetCollection(fResults, "fmdCorrector"), 
-				"sums", "primaryDensity");
-    THStack* rings   = GetStack(GetCollection(fResults, "ringResults"), "all");
+				"sums", "primaryDensity",false);
+    THStack* rings   = GetStack(GetCollection(fResults, "ringResults"), 
+				"all",0, false);
     THStack* mcRings = GetStack(GetCollection(fResults, "mcRingResults", false),
 				"all","dndeta_eta", false);
-    TH1*     dndeta  = GetH1(fResults, "dNdeta");
+    TH1*     dndeta  = GetH1(fResults, "dNdeta", false);
     if (dndeta) dndeta->SetMarkerColor(kBlack);
+    if (!(esds || deltas || nchs || prims || rings)) return;
 
     FixStack(esds,   "#sum_{s} #Delta/#Delta_{mip}", "",     20);
     FixStack(deltas, "#sum_{c} #Delta/#Delta_{mip}", "",     21);
@@ -1124,48 +1411,31 @@ protected:
     l->SetBorderSize(0);
     TLegendEntry* e = 0;
 
-    TH1* h = 0;
-    if (mcRings) {
-      h = static_cast<TH1*>(mcRings->GetHists()->At(0));
-      AddLegendEntry(l, h, mcRings->GetTitle());
+    THStack* stacks[] = { mcRings, 
+			  esds, 
+			  deltas, 
+			  nchs, 
+			  prims, 
+			  rings };
+    
+    Int_t nHist = 0;
+    for (Int_t i = 0; i < 6; i++) {
+      if (!stacks[i]) continue;
+      TH1* h = static_cast<TH1*>(stacks[i]->GetHists()->At(0));
+      AddLegendEntry(l, h, stacks[i]->GetTitle());
+      nHist++;
     }
-
-    if (esds) {
-      h = static_cast<TH1*>(esds->GetHists()->At(0));
-      AddLegendEntry(l, h, esds->GetTitle());
-    }
-
-    if (deltas) {
-      h = static_cast<TH1*>(deltas->GetHists()->At(0));
-      AddLegendEntry(l, h, deltas->GetTitle());    
-    }
-
-    if (nchs) {
-      h = static_cast<TH1*>(nchs->GetHists()->At(0));
-      AddLegendEntry(l, h, nchs->GetTitle());    
-    }
-
-    if (prims) {
-      h = static_cast<TH1*>(prims->GetHists()->At(0));
-      AddLegendEntry(l, h, prims->GetTitle());    
-    }
-
-    if (rings) {
-      h = static_cast<TH1*>(rings->GetHists()->At(0));
-      AddLegendEntry(l, h, rings->GetTitle());    
-    }
-
     if (res) {
-      h = res;
-      AddLegendEntry(l, h, h->GetTitle());
+      AddLegendEntry(l, res, res->GetTitle());
+      nHist++;
     }
     
-    TObject* objs[] = { mcRings, 
-			esds, 
-			deltas, 
-			nchs, 
-			prims, 
-			rings, 
+    TObject* objs[] = { stacks[0], 
+			stacks[1], 
+			stacks[2], 
+			stacks[3], 
+			stacks[4], 
+			stacks[5], 
 			dndeta };
     const char* titles[] = { /* 1 */ "MC",  
 			     /* 2 */ "ESD input",
@@ -1174,7 +1444,7 @@ protected:
 			     /* 5 */ "After corrections", 
 			     /* 6 */ "After normalization", 
 			     /* 7 */ "After combining" };
-    Int_t nY = mcRings ? 4 : 3;
+    Int_t nY = nHist > 6 ? 4 : 3;
     Int_t nX = 2;
     if (fLandscape) {
       Int_t tmp = nX;

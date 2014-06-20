@@ -170,7 +170,8 @@ public:
    * @param vtxBin   Vertex bin (1 based)
    * @param out      Output histogram
    * @param cent     Centrality
-   * @param eta2phi    Copy eta coverage to phi acceptance 
+   * @param eta2phi  Copy eta coverage to phi acceptance 
+   * @param add      If true, add to internal caches
    * 
    * @return true on successs 
    */
@@ -179,7 +180,8 @@ public:
 			 UShort_t                      vtxBin, 
 			 TH2D&                         out,
 			 Double_t 		       cent=-1.0,
-			 Bool_t                        eta2phi=false);
+			 Bool_t                        eta2phi=false,
+			 Bool_t                        add=true);
   /** 
    * Output diagnostic histograms to directory 
    * 
@@ -385,6 +387,7 @@ protected:
      * @param skips      Which rings to skip
      * @param byCent     List (or null) of per centrality sums
      * @param eta2phi    Copy eta coverage to phi acceptance 
+     * @param add      If true, add to internal caches
      *
      * @return true on success
      */
@@ -397,7 +400,8 @@ protected:
 		   MergeMethod                   m,
 		   UShort_t                      skips,
 		   TList*                        byCent,
-		   Bool_t                        eta2phi);
+		   Bool_t                        eta2phi,
+		   Bool_t                        add);
     /** 
      * Check if there's an overlap between detector @a d, ring @a r
      * and some other ring for the given @f$\eta@f$ @a bin.  If so,

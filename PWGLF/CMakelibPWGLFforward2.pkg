@@ -111,6 +111,11 @@ set ( SRCS
   FORWARD/analysis2/AliForwardCreateResponseMatrices.cxx
   FORWARD/analysis2/AliForwardMultiplicityDistribution.cxx
   FORWARD/analysis2/AliForwardMultDists.cxx
+  # MC investigations 
+  FORWARD/analysis2/AliFMDMCTrackELoss.cxx
+  FORWARD/analysis2/AliFMDMCTrackInspector.cxx 
+  FORWARD/analysis2/AliFMDMCTrackInspectorTask.cxx 
+  # Photons 
   FORWARD/photons/AliAnalysisTaskPMD.cxx
   FORWARD/photons/AliAnalysisTaskPMDSim.cxx
 )
@@ -118,6 +123,7 @@ set ( SRCS
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( HDRS ${HDRS} 
   FORWARD/analysis2/AliFMDStripIndex.h 
+  FORWARD/analysis2/AliFMDEncodedEdx.h 
   FORWARD/analysis2/AliLandauGaus.h 
   FORWARD/analysis2/AliLandauGausFitter.h 
   FORWARD/analysis2/AliFMDCorrNoiseGain.h
@@ -263,6 +269,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
                 FORWARD/analysis2/AddTaskCopyHeader.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
 		FORWARD/analysis2/AddTaskFMDEventPlane.C
+		FORWARD/analysis2/AddTaskFMDMCTracks.C
 		FORWARD/analysis2/AddTaskForwardFlowQC.C
   		FORWARD/analysis2/AddTaskForwardMCCorr.C
                 FORWARD/analysis2/AddTaskForwardMult.C

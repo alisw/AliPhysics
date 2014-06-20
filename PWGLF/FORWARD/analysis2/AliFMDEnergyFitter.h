@@ -195,7 +195,7 @@ public:
    * 
    * @param n Max number of particle to try to fit 
    */
-  void SetNParticles(UShort_t n) { fNParticles = (n<1 ? 1 : (n>5 ? 5 : n)); }
+  void SetNParticles(UShort_t n) { fNParticles = (n<1 ? 1 : (n>7 ? 7 : n)); }
   /** 
    * Set the minimum number of entries each histogram must have 
    * before we try to fit our response function to it
@@ -553,7 +553,14 @@ protected:
 				 EResidualMethod residuals,
 				 Bool_t          scaleToPeak=true,
 				 TObjArray*      best=0) const;
-     
+    /** 
+     * Do scaling of histogram before fitting.  This can be
+     * overwritten to do some smoothing or the like. By default, this
+     * simply scales to the bin width.
+     * 
+     * @param dist Histogram to scale. 
+     */     
+    virtual void Scale(TH1* dist) const;
     /** 
      * Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
      * maximum bin content in the range @f$ [E_{min},\infty]@f$ is

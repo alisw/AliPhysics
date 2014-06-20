@@ -27,10 +27,12 @@ public:
    * @param name     Name of train (free form)
    */
   MakeMCCorrTrain(const  char* name) 
-  : TrainSetup(name)
+    : TrainSetup(name)
   {
     fOptions.Set("type", "ESD");
     fOptions.Add("eff", "Effective SPD correction", false);
+    fOptions.Add("max-strips", "NUMBER", 
+                 "Maximum consequtive strips", 2); 
   }
 protected:
   /** 
@@ -44,11 +46,15 @@ protected:
     AliAnalysisManager::SetCommonFileName("forward_mccorr.root");
 
     // --- Load libraries/pars ---------------------------------------
-    fHelper->LoadLibrary("PWGLFforward2");
+    fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
+  
+    // --- Options ---------------------------------------------------
+    Bool_t   spdEffective = fOptions.Has("eff");
+    UShort_t maxStrips    = fOptions.AsInt("max-strips");
 
     // --- Check if this is MC ---------------------------------------
     if (!mgr->GetMCtruthEventHandler()) return;
@@ -57,10 +63,10 @@ protected:
     // gROOT->Macro("AddTaskCopyHeader.C");
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro("AddTaskForwardMCCorr.C"); 
+    CoupleCar("AddTaskForwardMCCorr.C",Form("%d", maxStrips)); 
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskCentralMCCorr.C(%d)", fOptions.Has("eff")));
+    CoupleCar("AddTaskCentralMCCorr.C", Form("%d", spdEffective));
   }
   //__________________________________________________________________
   /** 
@@ -98,7 +104,7 @@ protected:
   /** 
    * Do not the centrality selection
    */
-  // void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  // void CreateCentralitySelection(Bool_t) {}
   //__________________________________________________________________
   const char* ClassName() const { return "MakeMCCorrTrain"; }
   //__________________________________________________________________

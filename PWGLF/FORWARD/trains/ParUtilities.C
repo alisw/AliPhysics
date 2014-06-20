@@ -20,15 +20,15 @@
 # include <TROOT.h>
 # include <fstream>
 # include <cstdlib>
-# include "Helper.C"
+# include "Railway.C"
 #else
 class TString;
-class Helper;
+class Railway;
 #endif
 
 // ===================================================================
 /**
- * Helper to set-up and load PARs
+ * Railway to set-up and load PARs
  *
  * @ingroup pwglf_forward_trains_util
  */
@@ -203,14 +203,14 @@ struct ParUtilities
    * @param script  Script to upload and compile in the PAR
    * @param deps    Dependency pars 
    * @param isLocal Local build 
-   * @param helper  Helper 
+   * @param helper  Railway 
    * 
    * @return true on success. 
    */
   static Bool_t MakeScriptPAR(Bool_t         isLocal, 
 			      const TString& script, 
 			      const TString& deps, 
-			      Helper*        helper)
+			      Railway*        helper)
   {
     TObjArray* depList = deps.Tokenize(", ");
     

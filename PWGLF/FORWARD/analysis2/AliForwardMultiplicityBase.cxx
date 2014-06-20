@@ -56,7 +56,9 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
     fAODEP(false),
     fRingSums(),
     fDoTiming(false),
-    fHTiming(0)
+  fHTiming(0),
+  fHStatus(0),
+    fAddMask(AliAODForwardMult::kInel)
 {
   DGUARD(fDebug, 3,"Named CTOR of AliForwardMultiplicityBase %s",name);
 
@@ -143,6 +145,31 @@ AliForwardMultiplicityBase::Book()
     xaxis->SetBinLabel(kTimingTotal, "Total");
     fList->Add(fHTiming);
   }
+  fHStatus = new TH1I("status", "Status of task",15, .5, 15.5);
+  fHStatus->SetDirectory(0);
+  fHStatus->SetFillColor(kCyan+2);
+  fHStatus->SetFillStyle(3001);
+  fHStatus->SetLineColor(kBlack);
+  fHStatus->SetMarkerStyle(20);
+  fHStatus->SetMarkerColor(kBlack);
+  fHStatus->SetYTitle("Events");
+  TAxis* a = fHStatus->GetXaxis();
+  a->SetBinLabel(1,"No event");
+  a->SetBinLabel(2,"No triggers");
+  a->SetBinLabel(3,"No SPD (not used)");
+  a->SetBinLabel(4,"No FMD");
+  a->SetBinLabel(5,"No Vertex");
+  a->SetBinLabel(6,"Pile-up");
+  a->SetBinLabel(7,"IP_{z} out of range");
+  a->SetBinLabel(8,"Merger failed");
+  a->SetBinLabel(9,"N_{ch} estimator failed");
+  a->SetBinLabel(10,"#Phi_{R} estimator failed");
+  a->SetBinLabel(11,"Too many outliers");
+  a->SetBinLabel(12,"Corrector failed");
+  a->SetBinLabel(13,"Histogram collector failed");
+  a->SetBinLabel(14,"Not added");
+  a->SetBinLabel(15,"All through");
+  fList->Add(fHStatus);
 
   POST(AOD_SLOT);
   return true;
@@ -298,6 +325,11 @@ AliForwardMultiplicityBase::Finalize()
   TList* output = fResults;
   Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
   MakeSimpledNdeta(list, output, nTr, nTrVtx, nAcc);
+  AliInfoF("\n"
+	   "\t# events w/trigger:                 %f\n"
+	   "\t# events w/trigger+vertex:          %f\n"
+	   "\t# events accepted by cuts:          %f", 
+	   nTr, nTrVtx, nAcc);
 
   EstimatedNdeta(list, output);
 
@@ -305,11 +337,12 @@ AliForwardMultiplicityBase::Finalize()
   GetDensityCalculator().Terminate(list,output,Int_t(nTrVtx));
   GetCorrections()	.Terminate(list,output,Int_t(nTrVtx));
 
-  TProfile* timing = static_cast<TProfile*>(list->FindObject("timing"));
-  if (timing) { 
+  TProfile* timing  = static_cast<TProfile*>(list->FindObject("timing"));
+  Int_t     nTiming = (timing ? timing->GetBinContent(timing->GetNbinsX()) : 0);
+  if (timing && nTiming > 0) { 
     TProfile* p = static_cast<TProfile*>(timing->Clone());
     p->SetDirectory(0);
-    p->Scale(100. / p->GetBinContent(p->GetNbinsX()));
+    p->Scale(100. / nTiming);
     p->SetYTitle("#LTt_{part}#GT/#LTt_{total}#GT [%]");
     p->SetTitle("Relative timing of task");
     output->Add(p);
@@ -338,6 +371,7 @@ AliForwardMultiplicityBase::MakeSimpledNdeta(const TList* input,
   TH1I* hEventsTrVtx = 0;
   TH1I* hEventsAcc   = 0;
   TH1I* hTriggers    = 0;
+  TH1*  hStatus      = dynamic_cast<TH1*>(input->FindObject("status"));
   if (!GetEventInspector().FetchHistograms(input, 
 					   hEventsTr, 
 					   hEventsTrVtx, 
@@ -349,10 +383,17 @@ AliForwardMultiplicityBase::MakeSimpledNdeta(const TList* input,
     input->ls();
     return false;
   }
-  nTr             = hEventsTr->Integral();
-  nTrVtx          = hEventsTrVtx->Integral();
-  nAcc            = hEventsAcc->Integral();
-  Double_t vtxEff = nTrVtx / nTr;
+  nTr              = hEventsTr->Integral();
+  nTrVtx           = hEventsTrVtx->Integral();
+  nAcc             = hEventsAcc->Integral();
+  Double_t vtxEff  = nTrVtx / nTr;
+  Double_t vtxEff2 = 0;
+  if (hStatus) {
+    Double_t nTrg    = hStatus->Integral(3,15);
+    Double_t nTrgVtx = hStatus->Integral(6,15);
+    vtxEff2          = (nTrg > 0 ? nTrgVtx / nTrg : 0);
+  }
+    
   TH2D*   hData   = static_cast<TH2D*>(input->FindObject("d2Ndetadphi"));
   if (!hData) { 
     AliError(Form("Couldn't get our summed histogram from output "
@@ -406,6 +447,12 @@ AliForwardMultiplicityBase::MakeSimpledNdeta(const TList* input,
   dNdeta_->SetStats(0);
   dNdeta_->Scale(vtxEff, "width");
 
+  AliInfoF("All\n"
+	   "\tNormalization eta:  %d\n"
+	   "\tNormalization phi:  %d\n"
+	   "\tVertex efficiency:  %f (%f)",
+	   Int_t(norm->GetMaximum()), Int_t(phi->GetMaximum()), 
+	   vtxEff, vtxEff2);
   output->Add(dNdeta);
   output->Add(dNdeta_);
   output->Add(norm);
@@ -520,6 +567,13 @@ AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input,
     thisList->Add(resPhi);
     thisList->Add(phiAcc);
     dndetaRings->Add(resPhi);
+
+    AliInfoF("%s\n"
+	     "\tNormalization eta:  %d\n"
+	     "\tNormalization phi:  %d\n",
+	     *ptr, 
+	     Int_t(etaCov->GetMaximum()), Int_t(phiAcc->GetMaximum()));
+
     ptr++;
   }
   out->Add(dndetaRings);
@@ -529,6 +583,10 @@ AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input,
     AliForwardUtil::PrintName(N);					\
     std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
   } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
 //____________________________________________________________________
 void
 AliForwardMultiplicityBase::Print(Option_t* option) const
@@ -544,6 +602,7 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   PFB("Enable low flux code", fEnableLowFlux);
   PFB("Store per-ring hists", fStorePerRing);
   PFB("Make timing histogram", fDoTiming);
+  PFV("Trigger mask for adding", AliAODForwardMult::GetTriggerString(fAddMask));
   // gROOT->IncreaseDirLevel();
   GetESDFixer()         .Print(option);        
   GetSharingFilter()    .Print(option);

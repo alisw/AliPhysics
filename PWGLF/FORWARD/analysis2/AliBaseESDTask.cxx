@@ -37,7 +37,11 @@ AliBaseESDTask::AliBaseESDTask(const char* name, const char* title,
     fCloneList(false),
     fCorrManager(0)
 {
-  SetTitle(title && title[0] != '\0' ? title : this->ClassName());
+  // The line below doesn't actually do the job - when we're
+  // constructing, the derived class ins't set yet and this explicitly
+  // points to an object of _this_ class.
+  // SetTitle(title && title[0] != '\0' ? title : this->ClassName());
+  SetTitle(title && title[0] != '\0' ? title : "");
   fCorrManager = manager;
   // if (!manager) 
   //   AliFatal("Must pass in a valid correction manager object!");
@@ -51,7 +55,8 @@ AliBaseESDTask::AliBaseESDTask(const char* name, const char* title,
 //____________________________________________________________________
 Bool_t
 AliBaseESDTask::Connect(const char* sumFile, 
-			const char* resFile)
+			const char* resFile,
+			Bool_t      old)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -80,15 +85,17 @@ AliBaseESDTask::Connect(const char* sumFile,
 
   // Connect sum list unless the output 'none' is specified
   if (!sumOut.EqualTo("none", TString::kIgnoreCase)) {
+    TString sumName(Form("%s%s", old ? "Forward" : GetName(), old ? "" : "Sums"));
     AliAnalysisDataContainer* sumCon = 
-      mgr->CreateContainer(Form("%sSums", GetName()), TList::Class(), 
+      mgr->CreateContainer(sumName, TList::Class(), 
 			   AliAnalysisManager::kOutputContainer, sumOut);
     mgr->ConnectOutput(this, 1, sumCon);
   }
   // Connect the result list unless the output 'none' is specified
   if (!resOut.EqualTo("none", TString::kIgnoreCase)) {
+    TString resName(Form("%sResults", GetName()));
     AliAnalysisDataContainer* resCon = 
-      mgr->CreateContainer(Form("%sResults", GetName()), TList::Class(), 
+      mgr->CreateContainer(resName, TList::Class(), 
 			   AliAnalysisManager::kParamContainer, resOut);
     mgr->ConnectOutput(this, 2, resCon);
   }
@@ -135,13 +142,13 @@ AliBaseESDTask::Configure(const char* macro)
     gROOT->SetMacroPath(macroPath);
   }
   TString mac(macro);
-  if (mac.EqualTo("-default-")) 
-    mac = "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/ForwardAODConfig.C";
+  if (mac.EqualTo("-default-")) mac = DefaultConfig();
   const char* config = gSystem->Which(gROOT->GetMacroPath(), mac.Data());
   if (!config) {
     AliWarningF("%s not found in %s", mac.Data(), gROOT->GetMacroPath());
     return false;
   }
+  if (fTitle.IsNull()) fTitle = this->ClassName();
 
   AliInfoF("Loading configuration of '%s' from %s",  ClassName(), config);
   gROOT->Macro(Form("%s((%s*)%p)", config, GetTitle(), this));
@@ -159,6 +166,7 @@ void
 AliBaseESDTask::LocalInit() 
 { 
   fFirstEvent = true; 
+  DGUARD(fDebug,1,"Doing local initialization");
   Setup(); 
 }
 

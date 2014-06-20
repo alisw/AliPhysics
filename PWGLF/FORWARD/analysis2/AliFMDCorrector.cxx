@@ -30,7 +30,7 @@ AliFMDCorrector::AliFMDCorrector()
     fRingHistos(),
     fUseSecondaryMap(true),
     fUseVertexBias(false),
-    fUseAcceptance(true),
+    fUseAcceptance(false),
     fUseMergingEfficiency(false),
     fDebug(0)
 {
@@ -44,7 +44,7 @@ AliFMDCorrector::AliFMDCorrector(const char* title)
     fRingHistos(), 
     fUseSecondaryMap(true),
     fUseVertexBias(false),
-    fUseAcceptance(true),
+    fUseAcceptance(false),
     fUseMergingEfficiency(false),
     fDebug(0)
 {

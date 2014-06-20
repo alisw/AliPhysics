@@ -375,7 +375,7 @@ public:
    * @deprecated Use Run instead 
    */
   static void Summarize(const TString& what   = "", 
-			Bool_t         mc     = false,
+			Bool_t         /*mc*/ = false,
 			const TString& output = "",
 			const TString& local  = "fmd_corrections.root",
 			Option_t*      options= "")
@@ -397,7 +397,7 @@ public:
    * @deprecated Use Run instead 
    */
   static void Summarize(UShort_t       what, 
-			Bool_t         mc = false,
+			Bool_t         /*mc*/ = false,
 			const TString& output = "",
 			const TString& local  = "fmd_corrections.root",
 			Option_t*      options= "")
@@ -726,7 +726,7 @@ protected:
       PrintCanvas("#LTsecondary map#GT");
     }
   }
-  virtual void DrawIt(const AliFMDCorrNoiseGain* corr, bool details) 
+  virtual void DrawIt(const AliFMDCorrNoiseGain* corr, bool /*details*/) 
   {
     if (!corr) {
       Warning("CorrDrawer","No noise-gain correction available");
