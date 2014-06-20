@@ -42,6 +42,14 @@
 #include <Varargs.h> // platform independent definition of va_copy
 
 #include "AliLog.h"
+// STD
+#include <iostream>
+#include <algorithm>
+#include <sstream>
+#include <stdexcept>
+#include <functional>
+
+
 
 using std::endl;
 using std::cout;
@@ -421,11 +429,13 @@ void AliLog::EnableDebug(Bool_t enabled)
 void AliLog::EnableCoreDump(Bool_t enabled)
 {
 // enable or disable debug output
-
+  gSystem->Exec("ulimit -c unlimited");
   fgCoreEnabled = enabled;
   gSystem->ResetSignal(kSigFloatingException,enabled);
   gSystem->ResetSignal(kSigSegmentationViolation,enabled);
-  if (enabled) printf("Core dump enabled\n");
+  if (enabled) {
+    printf("Core dump enabled\n");
+  }
   else { 
     printf("Core dump disabled\n");
   }
@@ -1221,5 +1231,19 @@ void AliLog::MakeCoreDump(const char *fout){
     gSystem->Exec(Form("gcore -o %s  %d",fout, gSystem->GetPid()));
   }else{
     gSystem->Exec(Form("gcore   %d", gSystem->GetPid()));
+  }
+}
+
+
+void AliLog::TestException(Int_t level){
+  //
+  // Dummy function to throw exception
+  //
+  printf("AliLog::TestException(%d)\n",level);
+  if (level>0){
+    level--;
+    TestException(level);
+  }else{
+    throw std::runtime_error("Test exception");
   }
 }

@@ -38,6 +38,7 @@
 #include "AliLog.h"
 #include "TGraphErrors.h"
 #include "AliTPCcalibDB.h"
+#include "AliTPCROC.h"
 #include "AliMathBase.h"
 
 TObjArray *AliTPCParam::fBBParam = 0;
@@ -824,6 +825,87 @@ Int_t AliTPCParam::GetNPadsUp(Int_t irow) const
   else
     return 0;
 }
+
+Int_t AliTPCParam::GetWireSegment(Int_t sector, Int_t row) const
+{
+  //
+  // Get Anode wire segment index IROC --> 4 segments in [0,3], 7 segments OROC[4,10]
+  // 
+  // To  be speed-up using caching lookup table
+  //
+  Int_t wireIndex = -1;  
+  // check if the given set of sector and row is OK
+  if ( (sector<0 || sector>=72) || (row<0 || row>95) || (sector<36 && row>64) ){
+    AliError("No matching anode wire segment for this set of sector-row \n");
+    return wireIndex;
+  }  
+  // find the wire index for given sector-row
+  if ( sector<36 ){                               // IROC anode wire segments 
+    if (row<16) wireIndex=0;
+    else if (row>=16 && row<32) wireIndex=1;
+    else if (row>=32 && row<48) wireIndex=2;
+    else wireIndex=3;    
+  } else {                                        // OROC anode wire segments    
+    if (row<16) wireIndex=4;
+    else if ( row>=16 && row<32) wireIndex=5;
+    else if ( row>=32 && row<48) wireIndex=6;
+    else if ( row>=48 && row<64) wireIndex=7;
+    else if ( row>=64 && row<75) wireIndex=8;
+    else if ( row>=75 && row<85) wireIndex=9;
+    else wireIndex=10;
+  }    
+  return wireIndex;  
+}
+
+Int_t AliTPCParam::GetNPadsPerSegment(Int_t wireSegmentID) const
+{
+  //
+  // Get the number of pads in a given anode wire segment
+  //
+  // check if the given segment index is OK 
+  // To be done (if needed) - cache the lookup table
+  //
+  if ( wireSegmentID<0 || wireSegmentID>10 ){
+    AliError("Wrong anode wire segment index. it should be [0,10] \n");
+    return -1;
+  }
+  // get sector type from wireSegmentID
+  Int_t sector = (wireSegmentID<4) ? 0 : 36; // ROC [0,35] --> IROC, ROC [36,71] --> OROC  
+  // get the upper and lower row number for the given wireSegmentID
+  Int_t segRowDown = 0;
+  Int_t segRowUp   = 0;
+  
+  if ( wireSegmentID == 0 || wireSegmentID == 4 ) {
+    segRowDown = 0;
+    segRowUp   = 16;
+  } else if ( wireSegmentID == 1 || wireSegmentID == 5 ) {
+    segRowDown = 16;
+    segRowUp   = 32;
+  } else if ( wireSegmentID == 2 || wireSegmentID == 6 ) {
+    segRowDown = 32;
+    segRowUp   = 48;
+  } else if ( wireSegmentID == 3 || wireSegmentID == 7 ) {
+    segRowDown = 48;
+    segRowUp   = 64;
+  } else if ( wireSegmentID == 8 ) {
+    segRowDown = 64;
+    segRowUp   = 75;
+  } else if ( wireSegmentID == 9 ) {
+    segRowDown = 75;
+    segRowUp   = 85;
+  } else {
+    segRowDown = 85;
+    segRowUp   = 95;
+  }  
+  // count the number of pads on the given segment
+  AliTPCROC *r=AliTPCROC::Instance();
+  Int_t nPads=0;
+  for (Int_t irow = segRowDown; irow < segRowUp ; irow++){
+    nPads += r->GetNPads(sector,irow);
+  }
+  return nPads;
+}
+
 Float_t AliTPCParam::GetYInner(Int_t irow) const
 {
   return fYInner[irow];

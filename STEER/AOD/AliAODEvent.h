@@ -233,8 +233,8 @@ class AliAODEvent : public AliVEvent {
     {new((*fJets)[fJets->GetEntriesFast()]) AliAODJet(*vtx); return fJets->GetEntriesFast()-1;}
 
   // -- Tracklets
-  AliAODTracklets *GetTracklets() const { return fTracklets; }
-
+  AliAODTracklets *GetTracklets() const { return fTracklets; }  
+  AliAODTracklets *GetMultiplicity() const {return GetTracklets();}
   // -- Calorimeter Cells
   AliAODCaloCells *GetEMCALCells() const { return fEmcalCells; }
   AliAODCaloCells *GetPHOSCells() const { return fPhosCells; }

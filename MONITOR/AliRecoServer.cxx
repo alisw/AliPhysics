@@ -34,7 +34,11 @@ AliRecoServer::AliRecoServer()
   fSettings(0),
   fRecoTh(0)
 {
-	fContext = new zmq::context_t;
+#if (ZMQ_VERSION_MAJOR>=3)
+		fContext = new zmq::context_t;
+#else
+		fContext = new zmq::context_t(1);
+#endif /* (ZMQ_VERSION_MAJOR>=3) */
 }
 
 AliRecoServer::~AliRecoServer()

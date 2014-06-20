@@ -58,13 +58,14 @@ class AliT0Reconstructor: public AliReconstructor {
   Float_t *fTimeSigmaShift;
 
   AliESDTZEROfriend*  fESDTZEROfriend; // ESD friend object 
-  AliESDTZERO*        fESDTZERO;       // ESD output object  
+  AliESDTZERO*        fESDTZERO;       // ESD output object 
  
+  Bool_t fIsCDFfromGRP; //mean CFD position from OCDB or GRP
  private:
   AliT0Reconstructor( const AliT0Reconstructor&r ); //Not implemented
   AliT0Reconstructor& operator=(const AliT0Reconstructor&r); //Not implemented
 
-  ClassDef(AliT0Reconstructor, 8)   // class for the T0 reconstruction
+  ClassDef(AliT0Reconstructor, 9)   // class for the T0 reconstruction
 
 };
 

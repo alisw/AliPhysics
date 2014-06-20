@@ -131,7 +131,7 @@ public:
     virtual Bool_t    IsFromBGEvent(Int_t index);
     Int_t  GetCocktailList(TList*& lista);
     TString  GetGenerator(Int_t index); 
-     Bool_t GetCocktailGenerator(Int_t index,TString &nameGen);
+    Bool_t GetCocktailGenerator(Int_t index,TString &nameGen);
     virtual Bool_t    IsSecondaryFromWeakDecay(Int_t index);
     virtual Bool_t    IsSecondaryFromMaterial(Int_t index);
     // External particle array
@@ -141,6 +141,7 @@ public:
      virtual void SetExternalHeader(AliVHeader* aodmcHeader)
        {fAODMCHeader=aodmcHeader;}  
   virtual AliGenEventHeader *FindHeader(Int_t ipart);
+  virtual void AssignGeneratorIndex();    
     //Following needed only for mixed event
   virtual Int_t        EventIndex(Int_t)       const {return 0;}
   virtual Int_t        EventIndexForCaloCluster(Int_t) const {return 0;}
@@ -151,7 +152,7 @@ public:
 
   virtual AliVVZERO    *GetVZEROData() const {return 0;}
   virtual AliVZDC      *GetZDCData()   const {return 0;}
-    
+
 
 private:
     virtual void      ReorderAndExpandTreeTR();
@@ -179,7 +180,6 @@ private:
     static   Int_t        fgkBgLabelOffset;  // Standard branch name    
     mutable  AliVVertex*  fVertex;           // MC Vertex
     Int_t             fNBG;              //! Background particles in current event
-    
     ClassDef(AliMCEvent, 2)              // AliVEvent realisation for MC data
 };
 

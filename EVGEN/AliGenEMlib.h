@@ -23,12 +23,12 @@ public:
     
   enum Particle_t{kPizero=0, kEta, kRho, kOmega, kEtaprime, kPhi, kJpsi, kDirectRealGamma, kDirectVirtGamma };
   enum Centrality_t{kpp=0x0, k0005=0x1, k0510=0x2, k1020=0x3, k2030=0x4, k3040=0x5, k4050=0x6, k5060=0x7, k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, kCentralities=0x10};
-  enum PtParamSet_t{kPizero7TeVpp=0x10, kPizeroEta7TeVpp=0x20, kPizero7TeVpplow=0x30, kPizeroEta7TeVpplow=0x40, kPizero7TeVpphigh=0x50, kPizeroEta7TeVpphigh=0x60, kPizero2760GeVpp=0x70, kPizeroEta2760GeVpp=0x80, kPizero2760GeVpplow=0x90, kPizeroEta2760GeVpplow=0xA0, kPizero2760GeVpphigh=0xB0, kPizeroEta2760GeVpphigh=0xC0, kPichargedPbPb=0xD0, kPizeroPbPb=0xE0, kPichargedPPb=0xF0 };
+  enum PtParamSet_t{kPizero7TeVpp=0x00, kPizeroEta7TeVpp=0x10, kPizero7TeVpplow=0x20, kPizeroEta7TeVpplow=0x30, kPizero7TeVpphigh=0x40, kPizeroEta7TeVpphigh=0x50, kPizero2760GeVpp=0x60, kPizeroEta2760GeVpp=0x70, kPizero2760GeVpplow=0x80, kPizeroEta2760GeVpplow=0x90, kPizero2760GeVpphigh=0xA0, kPizeroEta2760GeVpphigh=0xB0, kPiOldChargedPbPb=0xC0, kPichargedPbPb=0xD0, kPizeroPbPb=0xE0, kPichargedPPb=0xF0 };
   enum v2Sys_t{kLoV2Sys=-1, kNoV2Sys=0, kUpV2Sys=+1};
   
   AliGenEMlib() { } ;
 
-  static void SelectParams(Int_t ptSelect, Int_t centSelect=kpp, Int_t v2sys=kNoV2Sys) 
+  static void SelectParams(PtParamSet_t ptSelect, Centrality_t centSelect=kpp, Int_t v2sys=kNoV2Sys) 
   { fgSelectedPtParam=ptSelect; fgSelectedCentrality=centSelect; fgSelectedV2Systematic=v2sys; }
 
     GenFunc   GetPt(Int_t param, const char * tname=0) const;
@@ -154,9 +154,10 @@ public:
   static Double_t CrossOverLc(double a, double b, double x);
   static Double_t CrossOverRc(double a, double b, double x);
 
-  static const Double_t fgkV2param[16][15];          // parameters of pi v2
-  static const Double_t fgkRawPtOfV2Param[16][10];   // parameters of the raw pt spectrum of v2 analysys
-  static const Double_t fgkThermPtParam[16][2];      // parameters of thermal gamma pt
+  static const Double_t fgkPtParam[kCentralities][10];          // parameters of pi pt spectrum
+  static const Double_t fgkV2param[kCentralities][16];          // parameters of pi v2 spectrum
+  static const Double_t fgkRawPtOfV2Param[kCentralities][10];   // parameters of the raw pt spectrum of v2 analysis
+  static const Double_t fgkThermPtParam[kCentralities][2];      // parameters of thermal gamma pt
   static const Double_t fgkHM[8];                    // particle masses
   static const Double_t fgkMtFactor[2][8];           // mt scaling factor
 

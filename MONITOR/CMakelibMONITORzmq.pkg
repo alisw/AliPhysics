@@ -62,3 +62,9 @@ set (ELIBS ${ELIBS} ${ZEROMQ_LIBRARIES} )
 
 # this must be set in a better way
 set ( ELIBSDIR ${ELIBSDIR}  /usr/lib64)
+
+set (EXPORT 
+		AliSocket.h
+		AliNetMessage.h
+  	AliThreadedSocket.h
+  )

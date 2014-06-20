@@ -90,6 +90,8 @@ public:
   void Close();
   static void Test();
   static void Test2();
+  static void UnitTestSparse(Double_t scale);
+  static void UnitTest();
   void StoreObject(TObject* object);
   TFile * GetFile() {return fDirectory->GetFile();}
   TDirectory * GetDirectory() {return fDirectory;}

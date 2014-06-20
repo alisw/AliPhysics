@@ -47,7 +47,8 @@ AliVParticle(),
   fVx(0),
   fVy(0),
   fVz(0),
-  fVt(0)
+  fVt(0),
+  fGeneratorIndex(-1)
 {
   // Default Constructor
   fDaughter[0] =   fDaughter[1] = 0;
@@ -67,7 +68,8 @@ AliAODMCParticle::AliAODMCParticle(const AliMCParticle* mcpart, Int_t label,Int_
     fVx(mcpart->Particle()->Vx()),
     fVy(mcpart->Particle()->Vy()),
     fVz(mcpart->Particle()->Vz()),
-    fVt(mcpart->Particle()->T())
+    fVt(mcpart->Particle()->T()),
+    fGeneratorIndex(mcpart->GetGeneratorIndex())
 {
     // Constructor
   fDaughter[0] =  mcpart->GetFirstDaughter(); 
@@ -88,7 +90,8 @@ AliAODMCParticle::AliAODMCParticle(const AliAODMCParticle& mcPart) :
     fVx(mcPart.fVx),
     fVy(mcPart.fVy),
     fVz(mcPart.fVz),
-    fVt(mcPart.fVt)
+    fVt(mcPart.fVt),
+    fGeneratorIndex(-1)
 {
   // Copy constructor
   fDaughter[0] = mcPart.fDaughter[0]; 
@@ -114,6 +117,7 @@ AliAODMCParticle& AliAODMCParticle::operator=(const AliAODMCParticle& mcPart)
     fVy         = mcPart.fVy;
     fVz         = mcPart.fVz;
     fVt         = mcPart.fVt;
+    fGeneratorIndex = mcPart.fGeneratorIndex;
     fDaughter[0] = mcPart.fDaughter[0]; 
     fDaughter[1] = mcPart.fDaughter[1]; 
   }  

@@ -377,6 +377,7 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
   if (iSM < 0 || iphi < 0 || ieta < 0 ) {
     AliFatal(Form("Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",
                   iSM,ieta,iphi));
+    return kFALSE; // trick coverity
   }
   
   //Check rows/phi
@@ -1761,7 +1762,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
             
       if (fAODTPCOnlyTracks) { // Match with TPC only tracks, default from May 2013, before filter bit 32
         //printf("Match with TPC only tracks, accept? %d, test bit 128 <%d> \n", aodTrack->IsTPCOnly(), aodTrack->TestFilterMask(128));
-        if (!aodTrack->IsTPCOnly()) continue ;
+        if (!aodTrack->IsTPCConstrained()) continue ;
       } else if (fAODHybridTracks) { // Match with hybrid tracks
         //printf("Match with Hybrid tracks, accept? %d \n", aodTrack->IsHybridGlobalConstrainedGlobal());
         if (!aodTrack->IsHybridGlobalConstrainedGlobal()) continue ;

@@ -9,7 +9,7 @@
 Int_t  kmarkes[5]={20,21,24,25,23};
 Int_t  kcolors[5]={1,2,4,3,6};
 
-void simul(Int_t npoints){ 
+void simul(Int_t npoints, Double_t diffFactor){ 
   //
   // simulation submit script
   //
@@ -22,7 +22,7 @@ void simul(Int_t npoints){
   AliTPCclusterFast::fPRF->SetParameters(1,0,0.5);
   AliTPCclusterFast::fTRF->SetParameters(1,0,0.5);
   //
-  AliTPCtrackFast::Simul("trackerSimul.root",npoints); 
+  AliTPCtrackFast::Simul("trackerSimul.root",npoints, diffFactor); 
 }
 
 

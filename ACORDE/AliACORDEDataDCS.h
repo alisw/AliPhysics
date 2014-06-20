@@ -2,6 +2,10 @@
  AliACORDEDataDCS class
  	Pointer to the DCS objects
  Author: Pedro Gonzalez (CIEMAT, Madrid)
+ Last update: June 13th 2014 from Mario Rodríguez Cahuantzi (CINVESTAV, mrodriguez@fis.cinvestav.mx)
+	==> wrong ACORDE aliases for AMANDA fixed (https://alice.its.cern.ch/jira/browse/ALIROOT-5479)
+		-- old alias: ACO_HV_MODULE[0..59]_VMON
+		-- new alias: ACO_HV_MODULE[0..59]_INSIDE_VMON ()/ ACO_HV_MODULE[0..59]_OUTSIDE_VMON
  Last updated: March 21 th 2010
 	Fixing coding violatgion
 	Mario Rodriguez (FCFM-BUAP, Puebla MX)
@@ -15,7 +19,7 @@
 #include <TMap.h>
 class AliACORDEDataDCS : public TObject {
 public:
-	enum {kNAliases=60, kNHistos=60, kNGraphs=60, kNFunctions=2};
+	enum {kNAliases=120, kNHistos=120, kNGraphs=120, kNFunctions=2};
 	enum {kHvMin=0, kHvMax=20};
 
 	AliACORDEDataDCS();

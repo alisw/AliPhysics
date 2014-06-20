@@ -1,0 +1,113 @@
+This README contains list of changes required to compare against benchmark
+files located in subdirectories of "examples/testing". All tests require that
+appropriate NAME_BENCHMARK provided at the top of the Makefile is uncommented.
+
+Description of changes attributed to particular benchmark root files
+listed  below:
+
+1)  Change to be introduced  in Makefile of testing sub-directory:
+
+    ONE_PHOTON_MODE = 0 ( or 1 )
+    SPECIAL_MODE    = 0 ( or $(NLO_MODE) )
+
+
+
+
+2)  Require change in SETUP.C:
+
+    CUTOFF
+
+    Line:            Setup::UTA_params[0]=0.01/<M>; //10 MeV 
+    Changed to:      Setup::UTA_params[0]= <NEW_VALUE> ;
+
+    ( <M>: either 80.403 or 91.187 depending if W or Z decay is monitored )
+
+############################ Basic benchmark files ###########################
+  One (or more) of the changes listed above may be needed. If nothing is 
+  listed next to benchmark file name, then the file can be compared with 
+  the results of run without any initialization changes
+##############################################################################
+
+Htautau/mc-tester.benchmark.Htautau.root
+ScalarNLO/mc-tester.root-1000M-NLO-EXP
+ScalarNLO/mc-tester.root-1000M-NLO-1-phot                  ONE_PHOTON_MODE = 1
+ScalarNLO/mc-tester.root-1000M-LO-EXP                      SPECIAL_MODE    = 0
+ScalarNLO/mc-tester.root-1000M-LO-1-phot                   ONE_PHOTON_MODE = 1
+                                                           SPECIAL_MODE    = 0
+ttbar/mc-tester.root-ttbar-10M
+Wenu/mc-tester.root-Wenu-photos-100M-sym-10MeV
+Wmunu/mc-tester.root-Wmunu-photos-100M-sym-10MeV
+WmunuNLO/mc-tester.root-Wmunu-photos-100M-nosym-10MeV-1-phot-NLO
+WmunuNLO/mc-tester.root-Wmunu-photos-100M-sym-10MeV        SPECIAL_MODE    = 0
+                                                           ONE_PHOTON_MODE = 0
+WmunuNLO/mc-tester.root-Wmunu-photos-100M-1-phot-NLO       CUTOFF = 0.005
+WmunuNLO/mc-tester.root-Wmunu-photos-100M-1-phot           CUTOFF = 0.005
+Zee/mc-tester.root-Zee-10M-nosym-10MeV
+Zee/mc-tester.root-Zee-photos-100M-sym-10MeV
+Zee/mc-tester.root-Zee-kkmc-sym-1GeV                       CUTOFF = 1./91.187
+Zmumu/mc-tester.root-Zmumu-photos-F77-100M-sym-10MeV
+Zmumu/mc-tester.root-Zmumu-kkmc-F77-10M-sym-1GeV           CUTOFF = 1./91.187
+Zmumu/mc-tester.root-Zmumu-CEEX1-100M-nosym-1GeV           CUTOFF = 1./91.187
+Zmumu/mc-tester.root-Zmumu-CEEX2-100M-nosym-1GeV           CUTOFF = 1./91.187
+ZmumuNLO/mc-tester.root-Zmumu-photos-F77-100M-sym-10MeV
+ZmumuNLO/mc-tester.root-Zmumu-NLO-100M
+ZmumuNLO/mc-tester.root-Zmumu-1-phot-NLO-100M              ONE_PHOTON_MODE = 1
+ZmumuNLO/mc-tester.root-Zmumu-LO-100M                      SPECIAL_MODE    = 0
+ZmumuNLO/mc-tester.root-Zmumu-1-phot-LO-100M               ONE_PHOTON_MODE = 1
+                                                           SPECIAL_MODE    = 0
+ZmumuNLO/mc-tester.root-Zmumu-CEEX1-100M-nosym-1GeV        CUTOFF = 1./91.187
+ZmumuNLO/mc-tester.root-Zmumu-CEEX2-100M-nosym-1GeV        CUTOFF = 1./91.187
+ZmumuNLO/mc-tester.root-Zmumu-kkmc-F77-10M-sym-1GeV        CUTOFF = 1./91.187
+Ztautau/mc-tester.root-pispectr-RCall
+
+########################## Further benchmark files ###########################
+                        Require more advanced changes
+##############################################################################
+
+1)
+The following two tests reqire recompilation of "photos_test.c"
+with additional options added:
+
+Ztautau/mc-tester.root-pispectr-RCno
+------------------------------------
+
+// Suppress processing of whole Z0 decay
+Photos::suppressBremForBranch(0,23);
+
+Ztautau/mc-tester.root-pispectr-RCtau
+-------------------------------------
+
+// Suppress processing of whole Z0 decay
+// leaving only the Z0 -> tau+ tau- decay and whole branch starting
+// from tau- to be processed
+Photos::suppressBremForBranch(0,23);
+Photos::forceBremForDecay (2,23,15,-15);
+Photos::forceBremForBranch(0,15);
+
+2)
+The following tests require similar steps to be performed in their
+repsective directories:
+
+Wmunu/mc-tester.root-Wmunu-photos-F77-100M-1-phot-5MeV
+WmunuNLO/mc-tester.root-Wmunu-photos-F77-100M-1-phot-5MeV-NLO
+Zmumu/mc-tester.root-Zmumu-photos-F77-1-phot-EXP-1GeV
+ZmumuNLO/mc-tester.root-Zmumu-koralz-100M-1-phot-1GeV-NLO
+ZmumuNLO/mc-tester.root-Zmumu-photos-F77-100M-1-phot-1GeV-NLO
+ZmumuNLO/mc-tester.root-Zmumu-kkmc-F77-100M-nosym-1GeV-NLO
+-------------------------------------------------------------
+
+In Makefile, uncomment line:
+
+#CONF=pythia_W_resonance_peak.conf    (or 'Z')
+ONE_PHOTON_MODE = 1
+
+In SETUP.C,  uncomment block of code provided at the end of the file.
+
+ZmumuNLO/mc-tester.root-Zmumu-kkmc-F77-100M-nosym-1GeV-NLO
+-------------------------------------------------------------
+
+Same as with above examples, but ONE_PHOTON_MODE = 0
+
+Note that for this example, second set of options located
+at the end of ZmumuNLO/SETUP.C must be used
+

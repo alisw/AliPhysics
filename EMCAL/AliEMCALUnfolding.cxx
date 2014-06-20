@@ -779,10 +779,16 @@ Bool_t AliEMCALUnfolding::FindFitV2(AliEMCALRecPoint * recPoint, AliEMCALDigit *
   Int_t iphi    =  0 ;//x direction
   Int_t ieta    =  0 ;//z direstion
 
-  for(iDigit = 0; iDigit < nDigits; iDigit++){
+  for(iDigit = 0; iDigit < nDigits; iDigit++)
+  {
     digit = maxAt[iDigit];
-    if(digit==0) AliError("energy of digit = 0!");
-    fGeom->GetCellIndex(digit->GetId(),iSupMod,iTower,iIphi,iIeta); 
+    if(!digit)
+    {
+      AliError("Null digit pointer");
+      continue;
+    }
+    
+    fGeom->GetCellIndex(digit->GetId(),iSupMod,iTower,iIphi,iIeta);
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
 				       iIphi, iIeta,iphi,ieta);
 

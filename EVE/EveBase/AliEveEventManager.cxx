@@ -1,4 +1,4 @@
-// $Id: AliEveEventManager.cxx 59994 2012-12-14 10:03:06Z quark $
+// $Id: AliEveEventManager.cxx 64557 2013-10-16 20:03:08Z hristov $
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
@@ -58,6 +58,11 @@
 #include <TString.h>
 #include <TMap.h>
 
+#ifdef ZMQ
+#include <AliNetMessage.h>
+#include <AliSocket.h>
+#endif
+
 //==============================================================================
 //==============================================================================
 // AliEveEventManager
@@ -115,27 +120,25 @@ Bool_t   AliEveEventManager::fgUniformField = kFALSE;
 AliEveEventManager* AliEveEventManager::fgMaster  = 0;
 AliEveEventManager* AliEveEventManager::fgCurrent = 0;
 
-//zmq::context_t* AliEveEventManager::fgSubContext=0;
-//zmq::socket_t* AliEveEventManager::fgSubSock=0;
+zmq::context_t* AliEveEventManager::fgSubContext=0;
+AliSocket* AliEveEventManager::fgSubSock=0;
 
-bool AliEveEventManager::ConnectToServer()
+bool AliEveEventManager::ConnectToServer(const char* host, int port)
 {
-/*
+
+#ifdef ZMQ
 	// make a zeromq socket
-    fgSubContext = new zmq::context_t(1);
-    fgSubSock = new zmq::socket_t(*fgSubContext, ZMQ_SUB);
-    fgSubSock->setsockopt(ZMQ_SUBSCRIBE, "", 0); //filter, strlen (filter));
-    fgSubSock->connect("tcp://*:5024");
-    return true;
-    */
+	  fgSubContext = new zmq::context_t(1);
+    fgSubSock = new AliSocket(&*fgSubContext, ZMQ_SUB);
+    fgSubSock->Subscribe("");
+    fgSubSock->Connect(Form("%s:%d", host, port) );
+#else
+	fgSubContext=0;
+	fgSubSock =0;
+#endif
+	
+  return true;
 }
-
-/*
-zmq::socket_t* AliEveEventManager::AssertSubscriber()
-{
-	return fgCurrent->fgSubSock;
-}
-*/
 
 void AliEveEventManager::InitInternals()
 {
@@ -255,7 +258,6 @@ void AliEveEventManager::SetAODFileName(const TString& aod)
     fgAODFileName = aod;
     
     if (aod.EndsWith(".zip")) fgAODFileName.Form("%s#AliAOD.root",aod.Data());
-    
     
 }
 
@@ -582,13 +584,22 @@ void AliEveEventManager::Open()
         }
         else
         {
-            throw (kEH + "unknown run number.");
+            fExternalCtrl = kTRUE;
+             fEventId = 0;
+            return;
         }
     }
 
     // Initialize OCDB ... only in master event-manager
+		InitOCDB(runNo);
 
-    if (this == fgMaster)
+    fIsOpen = kTRUE;
+}
+
+void AliEveEventManager::InitOCDB(int runNo)
+{
+		static const TEveException kEH("AliEveEventManager::InitOCDB ");
+    //if (this == fgMaster)
     {
         AliCDBManager* cdb = AliCDBManager::Instance();
         if (cdb->IsDefaultStorageSet() == kTRUE)
@@ -644,8 +655,6 @@ void AliEveEventManager::Open()
             }
         }
     }
-
-    fIsOpen = kTRUE;
 }
 
 void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf)
@@ -661,6 +670,8 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
         Warning(kEH, "Event-files were open. Closing and switching to external control.");
         Close();
     }
+
+			Info(kEH,"setting it!!! ============================");
 
     fRunLoader = runLoader;
     fRawReader = rawReader;
@@ -679,6 +690,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
     AfterNewEventLoaded();
 
     if (fAutoLoad) StartAutoLoadTimer();
+    
 }
 
 Int_t AliEveEventManager::GetMaxEventId(Bool_t refreshESD) const
@@ -942,9 +954,48 @@ void AliEveEventManager::NextEvent()
     {
         // !!! This should really go somewhere else. It is done in GotoEvent(),
         // so here we should do it in SetEvent().
-        DestroyElements();
-        gSystem->ExitLoop();
+          DestroyElements();
+        
+        		#ifdef ZMQ
+        		AliNetMessage *mess;
+        		fgSubSock->Recv(mess);
+        
+        
+				    AliESDEvent* data = (AliESDEvent*)(mess->ReadObjectAny(AliESDEvent::Class()));
 
+          	if (data){
+          	    printf("Got DATA:\n");
+
+          	    printf("Event Number in File:%d Run:%d ObjectsInList:%d\n", data->GetEventNumberInFile(),  data->GetRunNumber(), data->GetList()->GetEntries());
+          	   	
+          	   	TTree* tree= new TTree("esdTree", "esdTree");
+          	    data->WriteToTree(tree);
+          	    tree-> Fill();
+          	    //tree->Write();
+          	   	
+          	   	printf("======================= Tree has %d entries\n", tree->GetEntries());
+          	   	
+          	   	AliESDEvent* event= new AliESDEvent();
+								event->ReadFromTree(tree);
+							
+					     	tree->GetEntry(0);
+          	   	
+          	   	InitOCDB(event->GetRunNumber());
+          	   	
+          	   	printf("======================= setting event to %d\n", fEventId);
+          	   	SetEvent(0,0,event,0);
+        	    
+		       	    delete event;
+        	    	delete tree;
+        	    	
+          	}
+          	else
+          	   printf("NO DATA!!!\n");
+        	          	     
+        	delete data; data=0;
+        	delete mess; mess=0;
+        	#endif
+        	
     }
     else if ((fESDTree!=0) || (fHLTESDTree!=0))
     {
@@ -958,6 +1009,8 @@ void AliEveEventManager::NextEvent()
     {
         GotoEvent(fEventId + 1);
     }
+    
+     gSystem->ProcessEvents();
 }
 
 void AliEveEventManager::PrevEvent()
@@ -1242,6 +1295,11 @@ AliRecoParam* AliEveEventManager::AssertRecoParams()
     return fgRecoParam;
 }
 
+AliSocket* AliEveEventManager::AssertSubscriber()
+{
+	return fgSubSock;
+}
+
 Bool_t AliEveEventManager::InitRecoParam()
 {
     // This is mostly a reap-off from reconstruction
@@ -1249,7 +1307,7 @@ Bool_t AliEveEventManager::InitRecoParam()
     // the available reco-param objects from there.
 
     fgRecoParam = new AliRecoParam;
-    const Int_t  kNDetectors = 15;
+    const Int_t  kNDetectors = 14;
 
     static const TEveException kEH("AliEveEventManager::InitRecoParam");
 
@@ -1289,7 +1347,7 @@ Bool_t AliEveEventManager::InitRecoParam()
         }
     }
 
-    const char* fgkDetectorName[kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE", "AD" };
+    const char* fgkDetectorName[kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE" };
 
 
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
@@ -1542,7 +1600,9 @@ void AliEveEventManager::AutoLoadNextEvent()
     // Called from auto-load timer, so it has to be public.
     // Do NOT call it directly.
 
-    static const TEveException kEH("AliEveEventManager::AutoLoadNextEvent ");
+	  static const TEveException kEH("AliEveEventManager::AutoLoadNextEvent ");
+	  
+	  	Info(kEH, "called!");
 
     if ( ! fAutoLoadTimerRunning || ! fAutoLoadTimer->HasTimedOut())
     {
@@ -1552,7 +1612,7 @@ void AliEveEventManager::AutoLoadNextEvent()
 
     StopAutoLoadTimer();
     NextEvent();
-    if (fAutoLoad && !fExternalCtrl)
+    if (fAutoLoad)
         StartAutoLoadTimer();
 }
 
@@ -1569,6 +1629,8 @@ void AliEveEventManager::AfterNewEventLoaded()
 
     static const TEveException kEH("AliEveEventManager::AfterNewEventLoaded ");
 
+  Info(kEH, "------------------!!!------------");
+                      
     NewEventDataLoaded();
 
     if (fExecutor)
@@ -1594,10 +1656,13 @@ void AliEveEventManager::AfterNewEventLoaded()
                 Error(kEH, "Getting event %d for sub-event-manager '%s' failed: '%s'.",
                       fEventId, fgCurrent->GetName(), exc.Data());
             }
+              Info(kEH, "------------------!!! while() gEve->SetCurrentEvent() ------------");
         }
         fgCurrent = fgMaster;
+        Info(kEH, "------------------!!! while() gEve->SetCurrentEvent(MASTER) ------------");
         gEve->SetCurrentEvent(fgMaster);
     }
+    
 }
 
 void AliEveEventManager::NewEventDataLoaded()

@@ -285,16 +285,22 @@ AliEMCALGeometry & AliEMCALGeometry::operator = (const AliEMCALGeometry  & /*rva
 AliEMCALGeometry::~AliEMCALGeometry(void)
 {
   // dtor
-  if (this==fgGeom) {
+  if (this==fgGeom)
+  {
     AliError("Do not call delete on me");
     return;
   }
-  if (fEMCGeometry){ 
-    for(Int_t smod = 0 ; smod < fEMCGeometry->GetNumberOfSuperModules(); smod++){
+  
+  if (fEMCGeometry)
+  {
+    for(Int_t smod = 0 ; smod < fEMCGeometry->GetNumberOfSuperModules(); smod++)
+    {
       if(fkSModuleMatrix[smod])
         delete fkSModuleMatrix[smod] ;
-        fkSModuleMatrix[smod]=0 ;
+      
+      fkSModuleMatrix[smod]=0 ;
     }
+    
     delete fEMCGeometry; // fEMCGeometry = 0 ;
   }
 }

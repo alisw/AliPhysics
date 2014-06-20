@@ -339,7 +339,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   Double_t rdistance2  = rdistancey2+rdistancez2;
   //Int_t  accept =0;
   
-  if (AliTPCReconstructor::StreamLevel()>2) {
+  if (AliTPCReconstructor::StreamLevel()>2 && ( (fIteration>0)|| (seed->GetNumberOfClusters()>20))) {
     //  if (AliTPCReconstructor::StreamLevel()>2 && seed->GetNumberOfClusters()>20) {
     Float_t rmsy2 = seed->GetCurrentSigmaY2();
     Float_t rmsz2 = seed->GetCurrentSigmaZ2();
@@ -7938,6 +7938,7 @@ Bool_t AliTPCtracker::IsFindable(AliTPCseed & track){
 
 void AliTPCtracker::AddCovariance(AliTPCseed * seed){
   //
+  return;
   // Adding systematic error estimate to the covariance matrix
   //                !!!! the systematic error for element 4 is in 1/GeV 
   // 03.03.2012     MI changed in respect to the previous versions

@@ -149,6 +149,7 @@ void AliITSQASSDChecker::CheckRaws(TH1* histo) {
     else if (histo->GetMean()<minMeanDDLDataSize||histo->GetMean()>maxMeanDDLDataSize) AliWarning(Form("Mean data size of DDL %s is %-.2g kB",histname(histname.Length()-3,3).Data(), histo->GetMean()));
   }
 
+  /* Lines below commented out because nothing was checked with them since the AliWarning was commented (F. Prino, June 18 2014)
   if (histname.Contains("SSDAverageOccupancy")) {
  
     const char* side = "";
@@ -174,7 +175,7 @@ void AliITSQASSDChecker::CheckRaws(TH1* histo) {
       }//module loop
     }//ladder loop
   }
-
+  */
 }
 
 
