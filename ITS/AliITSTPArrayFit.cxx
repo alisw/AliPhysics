@@ -1199,7 +1199,7 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
     Double_t normS[3];
     //
     // Positive t-params: along the track direction for negative track, against for positive
-    Double_t pcur = ptot, ecurr = etot;
+    //   Double_t pcur = ptot, ecurr = etot;
     for (int ip=fFirstPosT;ip<fNElsPnt;ip++) {
       int tID = fElsId[ip];
       Double_t t = fCurT[ tID ];
@@ -1216,8 +1216,8 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
     }
     //
     // negaive t-params: against the track direction for negative track, along for positive
-    pcur  = ptot;
-    ecurr = etot;
+    //    pcur  = ptot;
+    //    ecurr = etot;
     for (int ip=fFirstPosT;ip--;) {
       int tID = fElsId[ip];
       Double_t t = fCurT[ tID ];
