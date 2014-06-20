@@ -1665,7 +1665,7 @@ Bool_t AliITSUTrackerGlo::AddSeedBranch(AliITSUSeed* seed)
     AliITSUSeed** tmpArr = fLayerCandidates;
     fLayerCandidates = new AliITSUSeed*[fLayerMaxCandidates];
     memcpy(fLayerCandidates,tmpArr,(fNCandidatesAdded+fNBranchesAdded)*sizeof(AliITSUSeed*));
-    delete tmpArr; // delete only array, not objects
+    delete[] tmpArr; // delete only array, not objects
   }
   AliITSUSeed** branches = &fLayerCandidates[fNCandidatesAdded]; // note: fNCandidatesAdded is incremented after adding all branches of current seed
   int slot=fNBranchesAdded++;

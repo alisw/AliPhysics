@@ -131,7 +131,7 @@ public:
     virtual Bool_t    IsFromBGEvent(Int_t index);
     Int_t  GetCocktailList(TList*& lista);
     TString  GetGenerator(Int_t index); 
-     Bool_t GetCocktailGenerator(Int_t index,TString &nameGen);
+    Bool_t GetCocktailGenerator(Int_t index,TString &nameGen);
     virtual Bool_t    IsSecondaryFromWeakDecay(Int_t index);
     virtual Bool_t    IsSecondaryFromMaterial(Int_t index);
     // External particle array

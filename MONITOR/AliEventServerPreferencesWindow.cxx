@@ -355,7 +355,7 @@ void AliEventServerPreferencesWindow::onUnCheckAllDetectors()
 Int_t AliEventServerPreferencesWindow::ReadSettings()
 {
 	TEnv settings;
-	int readStatus = settings.ReadFile(Form("%s/MONITOR/%s", gSystem->Getenv("ALICE_ROOT"), ALIEVENTSERVER_CONF), kEnvLocal);
+	int readStatus = settings.ReadFile(AliEventServerUtil::GetPathToServerConf(), kEnvUser);
 	//check if there was an error reading the file
 	if(readStatus!=0) return readStatus;
 	
@@ -483,7 +483,9 @@ Int_t AliEventServerPreferencesWindow::WriteSettings()
 	settings.SetValue("logbook.user", fEntryLogbookUser->GetText());
 	settings.SetValue("logbook.pass", fEntryLogbookPass->GetText());
 	
-	return settings.WriteFile(Form("%s/MONITOR/%s", gSystem->Getenv("ALICE_ROOT"), ALIEVENTSERVER_CONF));
+	printf("Writting settings to file: %s\n", Form("%s/MONITOR/%s", gSystem->Getenv("ALICE_ROOT"), ALIEVENTSERVER_CONF) );
+	
+	return settings.WriteFile(AliEventServerUtil::GetPathToServerConf());
 }
 
 void AliEventServerPreferencesWindow::RestoreDefaults()

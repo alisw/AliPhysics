@@ -855,7 +855,8 @@ void AliTRDCalibTask::UserExec(Option_t *)
       Int_t nbtracklets = 0;
       
       // Check some stuff
-      Bool_t standalonetracklet = kFALSE;  
+      // Coverity
+      //Bool_t standalonetracklet = kFALSE;  
       const AliTRDseedV1 *tracklet = 0x0;
       //////////////////////////////////////
       // Loop tracklets
@@ -872,8 +873,9 @@ void AliTRDCalibTask::UserExec(Option_t *)
 	if(!(tracklet = fTrdTrack->GetTracklet(itr))) continue;
 	if(!tracklet->IsOK()) continue;
 	++nbtracklets;
-	standalonetracklet = kFALSE; 
-	if(tracklet->IsStandAlone()) standalonetracklet = kTRUE;
+        // Coverity
+	//standalonetracklet = kFALSE; 
+	//if(tracklet->IsStandAlone()) standalonetracklet = kTRUE;
 	
 	nbclusters = 0;
 	memset(phtb, 0, AliTRDseedV1::kNtb*sizeof(Double_t));
@@ -1493,7 +1495,8 @@ Bool_t AliTRDCalibTask::FindP1TrackPHtrackletV1Test(const AliTRDseedV1 *tracklet
   ////////////
   // results of the linear fit
   Double_t dydt                       = 0.0;                                // dydt tracklet after straight line fit
-  Double_t errorpar                   = 0.0;                                // error after straight line fit on dy/dt
+  // Coverity
+  //Double_t errorpar                   = 0.0;                                // error after straight line fit on dy/dt
   Double_t pointError                 = 0.0;                                // error after straight line fit 
   // pad row problemes: avoid tracklet that cross pad rows, tilting angle in the constant
   Int_t    crossrow                   = 0;                                  // if it crosses a pad row
@@ -1567,7 +1570,8 @@ Bool_t AliTRDCalibTask::FindP1TrackPHtrackletV1Test(const AliTRDseedV1 *tracklet
   linearFitterTracklet.Eval();
   linearFitterTracklet.GetParameters(pars);
   pointError  =  TMath::Sqrt(linearFitterTracklet.GetChisquare()/(nbli-2));
-  errorpar    =  linearFitterTracklet.GetParError(1)*pointError;
+  // Coverity
+  //errorpar    =  linearFitterTracklet.GetParError(1)*pointError;
   dydt        = pars[1]; 
   //printf("chis %f, nbli %d, pointError %f, parError %f, errorpar %f\n",linearFitterTracklet->GetChisquare(),nbli,pointError,linearFitterTracklet->GetParError(1),errorpar);
   linearFitterTracklet.ClearPoints();  

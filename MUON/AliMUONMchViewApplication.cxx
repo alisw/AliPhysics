@@ -497,6 +497,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.14");
+  rn->AddLine("");
+  rn->AddLine("Fixing anti-aliasing problem on MacOSX");
+  rn->AddLine("");
+
   rn->AddLine("1.13");
   rn->AddLine("");
   rn->AddLine("Make default OCDB = 2013 one");
