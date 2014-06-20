@@ -1023,7 +1023,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 
     AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(lcK0spr->Getv0PositiveTrack());
     AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(lcK0spr->Getv0NegativeTrack());
-    if (!v0Neg || !v0Neg) {
+    if (!v0Neg || !v0Pos) {
       AliDebug(2,Form("V0 by cascade %d has no V0positive of V0negative object",iLctopK0s));
       continue;
     }
@@ -1226,13 +1226,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   UInt_t detUsed = fPIDCombined->ComputeProbabilities(bachelor, fPIDResponse, probTPCTOF);
   AliDebug(2, Form("detUsed (TPCTOF case) = %d", detUsed));
   Double_t probProton = -1.;
-  Double_t probPion = -1.;
-  Double_t probKaon = -1.;
+  //  Double_t probPion = -1.;
+  //  Double_t probKaon = -1.;
   if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask() ) {
     AliDebug(2, Form("We have found the detector mask for TOF + TPC: probProton will be set to %f", probTPCTOF[AliPID::kProton]));
     probProton = probTPCTOF[AliPID::kProton];
-    probPion = probTPCTOF[AliPID::kPion];
-    probKaon = probTPCTOF[AliPID::kKaon];
+    // probPion = probTPCTOF[AliPID::kPion];
+    // probKaon = probTPCTOF[AliPID::kKaon];
   }
   else { // if you don't have both TOF and TPC, try only TPC
     fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
@@ -1241,8 +1241,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     AliDebug(2,Form(" detUsed (TPC case) = %d", detUsed));
     if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) {
       probProton = probTPCTOF[AliPID::kProton];
-      probPion = probTPCTOF[AliPID::kPion];
-      probKaon = probTPCTOF[AliPID::kKaon];
+      // probPion = probTPCTOF[AliPID::kPion];
+      // probKaon = probTPCTOF[AliPID::kKaon];
       AliDebug(2, Form("TPC only worked: probProton will be set to %f", probTPCTOF[AliPID::kProton]));
     }
     else {
@@ -1637,9 +1637,9 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
     }  
   }
   
-  Double_t xn, xp, dca;
+  Double_t xn=0., xp=0.;//, dca;
   AliDebug(2, Form("bField = %f, esdv0Daugh1 = %p, esdv0Daugh2 = %p", fBField, esdv0Daugh1, esdv0Daugh2));
-  dca = esdv0Daugh1->GetDCA(esdv0Daugh2, fBField, xn, xp);
+  //  dca = esdv0Daugh1->GetDCA(esdv0Daugh2, fBField, xn, xp);
     
   AliExternalTrackParam tr1(*esdv0Daugh1);
   AliExternalTrackParam tr2(*esdv0Daugh2);
@@ -1717,11 +1717,13 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
     if (!tmpdaughv02 && labelsv0daugh[1] > 0){
       AliDebug(2, "Could not access MC info for second daughter of V0, continuing");
     }
-    Double_t xPionMC = tmpdaughv01->Xv(); //Production vertex of Pion --> Where K0S decays
-    Double_t yPionMC = tmpdaughv01->Yv();
-    Double_t zPionMC = tmpdaughv01->Zv();
-    //Printf("Got MC vtx for Pion");
-    Printf("Vertices: MC:  x = %f, y = %f, z = %f", xPionMC, yPionMC, zPionMC);
+    if(tmpdaughv01){
+      Double_t xPionMC = tmpdaughv01->Xv(); //Production vertex of Pion --> Where K0S decays
+      Double_t yPionMC = tmpdaughv01->Yv();
+      Double_t zPionMC = tmpdaughv01->Zv();
+      //Printf("Got MC vtx for Pion");
+      Printf("Vertices: MC:  x = %f, y = %f, z = %f", xPionMC, yPionMC, zPionMC);
+    }
   }
   else {
     Printf("Not a true V0");

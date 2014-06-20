@@ -59,6 +59,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
     jetCont->ConnectParticleContainer(trackCont);
     jetCont->ConnectClusterContainer(clusterCont);
     jetCont->SetLeadingHadronType(leadhadtype);
+    jetCont->SetMaxTrackPt(1000);
   }
 
   //-------------------------------------------------------

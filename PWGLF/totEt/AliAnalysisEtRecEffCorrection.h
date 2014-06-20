@@ -74,8 +74,8 @@ public:
 private:
 
     // Energy correction function
-    TF1 *fEnergyCorrection;//!
-    TH2F *fRecoEff;//!Reconstruction efficiency, x axis = pT, y axis = multiplicity, z = efficiency
+    TF1 *fEnergyCorrection;//
+    TH2F *fRecoEff;//Reconstruction efficiency, x axis = pT, y axis = multiplicity, z = efficiency
     
     
     

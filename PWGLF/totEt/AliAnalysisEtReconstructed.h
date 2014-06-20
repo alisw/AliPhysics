@@ -75,6 +75,7 @@ protected:
     TH2D *fClusterPositionAllEnergy;//! // Position of clusters
     TH1F *fClusterEnergy;//! // Distribution of cluster energies
     TH2F *fClusterEnergyCent;//! // Distribution of cluster energies vs centrality bin
+    TH2F *fClusterEnergyModifiedTrackMatchesCent;//! // Distribution of cluster energies vs centrality bin
     TH2F *fClusterEnergyCentMatched;//! // Distribution of cluster energies vs centrality bin
     TH2F *fClusterEnergyCentNotMatched;//! // Distribution of cluster energies vs centrality bin
     TH1F *fClusterEt;//! // Distribution of cluster energies

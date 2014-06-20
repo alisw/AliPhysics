@@ -2,6 +2,16 @@
 #define AliAnalysisPionKinksMCESD_h
 
 
+/*  See cxx source for full Copyright notice */
+
+//-----------------------------------------------------------------
+//                 AliAnalysisPionKinksMCESD class
+//         This task is an example of an analysis task
+//                  for kink topology Study
+//          Authors: Eftychios Cheiladakis, under the supervision
+//           of Martha's Spyropoulou-Stassinaki   
+//          Physics Department of Athens University
+//------------------------------------------------------------------
 class AliESDEvent;
 class TF1;
 class TH1;

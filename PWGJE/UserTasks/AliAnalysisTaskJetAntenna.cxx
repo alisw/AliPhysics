@@ -106,7 +106,7 @@ fkNbranches(2),
 fkEvtClasses(12),
 fOutputList(0x0),
 fHistEvtSelection(0x0),
-fh1JetEntries(0x0),
+fh2JetEntries(0x0),
 fh2Circularity(0x0),
 fhnJetTM(0x0)
 {
@@ -165,7 +165,7 @@ fkNbranches(2),
 fkEvtClasses(12),
 fOutputList(0x0),
 fHistEvtSelection(0x0),
-fh1JetEntries(0x0),
+fh2JetEntries(0x0),
 fh2Circularity(0x0),
 fhnJetTM(0x0)
  {
@@ -222,15 +222,20 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   fHistEvtSelection->GetXaxis()->SetBinLabel(5,"centrality (rejected)");
   fHistEvtSelection->GetXaxis()->SetBinLabel(6,"multiplicity (rejected)");
   fOutputList->Add(fHistEvtSelection);
-  fh1JetEntries=new TH1F("JetEntries","",150,0,150);
-  fOutputList->Add(fh1JetEntries);
+  fh2JetEntries=new TH2F("JetEntries","",150,0,150,10,-0.5,9.5);
+  fOutputList->Add(fh2JetEntries);
   fh2Circularity=new TH2F("Circcularity","",10,0,1,150,0,150);
   fOutputList->Add(fh2Circularity);
-  Int_t nbinsJet[8]={10,9,7,9,36,10,2,10};
-  Double_t binlowJet[8]= {0,0, 0, 0,-0.5*TMath::Pi(),0,0,-0.5};
-  Double_t binupJet[8]= {100,0.9, 150,150,1.5*TMath::Pi(),1,200,9.5};
-  fhnJetTM = new THnSparseF("fhnJetTM", "fhnJetTM; cent;dr;pt_jet;pt_track;phi;circ;nc;pthard",8,nbinsJet,binlowJet,binupJet);
-  Double_t *xPt3=new Double_t[10];
+  fh2JetAxisPhi=new TH2F("JetAxisSmearPhi","",9,0,TMath::Pi(),10,-0.5,9.5);
+  fOutputList->Add(fh2JetAxisPhi);
+  
+
+  Int_t nbinsJet[9]={3,9,7,9,36,10,2,10,20};
+  Double_t binlowJet[9]= {0,0, 0, 0,-0.5*TMath::Pi(),0,0,-0.5,0};
+  Double_t binupJet[9]= {100,0.9, 150,150,1.5*TMath::Pi(),1,200,9.5,200};
+  fhnJetTM = new THnSparseF("fhnJetTM", "fhnJetTM; cent;dr;pt_jet;pt_track;phi;circ;nc;pthard",9,nbinsJet,binlowJet,binupJet);
+ 
+ Double_t *xPt3=new Double_t[10];
   xPt3[0] = 0.;
   for(Int_t i = 1;i<=9;i++){
     if(xPt3[i-1]<2)xPt3[i] = xPt3[i-1] + 0.4; // 1 - 5
@@ -250,9 +255,22 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   xPt2[7]=150; 
   
   fhnJetTM->SetBinEdges(2,xPt2);
-  fOutputList->Add(fhnJetTM);
+ 
+
+  Double_t *xPt4=new Double_t[4];
+  xPt4[0] = 0.;
+  xPt4[1]=10;
+  xPt4[2]=30;
+  xPt4[3]=50;
+
+  
+  fhnJetTM->SetBinEdges(0,xPt4);
+
+
+   fOutputList->Add(fhnJetTM);
    delete [] xPt3;
    delete [] xPt2;
+   delete [] xPt4;
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutputList->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fOutputList->At(i));
@@ -475,11 +493,15 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
     Double_t areabig=0;
     Double_t phibig=0.;
     Double_t pxbig,pybig,pzbig;
-
+    Double_t phitrue=0;
+    Double_t etatrue=0;
+    Double_t smearphi=0;
 
     AliAODJet* jetbig = (AliAODJet*)(fListJets[0]->At(i));
     etabig  = jetbig->Eta();
     phibig  = jetbig->Phi();
+    phitrue=phibig;
+    etatrue=etabig;
     ptbig   = jetbig->Pt();
     if(ptbig==0) continue;
     areabig = jetbig->EffectiveAreaCharged();
@@ -508,10 +530,22 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
       
     }
     if(!jetAccepted) continue;
+    etabig=jetmatched->Eta();
+    phibig=jetmatched->Phi();
     pxbig=jetmatched->Px();
     pybig=jetmatched->Py();
     pzbig=jetmatched->Pz();
-    ptbig=jetmatched->Pt()-rho*jetmatched->EffectiveAreaCharged();}
+    ptbig=jetmatched->Pt()-rho*jetmatched->EffectiveAreaCharged();
+
+
+   
+      
+
+    smearphi=RelativePhi(phitrue,jetmatched->Phi());
+    smearphi=TMath::Abs(smearphi);
+   
+
+}
 
 
 
@@ -530,7 +564,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
     Float_t mxy    = 0.;
     Int_t   nc     = 0;
     Float_t sump2  = 0.;
-
+    Float_t ptmax=-10;
     for(int it = 0;it<ParticleList.GetEntries();++it){
       AliVParticle *track = (AliVParticle*)ParticleList.At(it);
       TVector3 pp(track->Px(), track->Py(), track->Pz());
@@ -541,9 +575,11 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
       Float_t dphi = RelativePhi(phi,phibig);
       if(TMath::Abs(dphi)>=0.5*TMath::Pi()) continue;
       Float_t r = TMath::Sqrt(dphi * dphi + deta * deta);
-      if (r < 0.4 && pt>fCutTM) {
+     
+       if (r < 0.4 && pt>fCutTM) {
 	//longitudinal and perpendicular component of the track pT in the
 	//local frame
+        if(pt>ptmax) ptmax=pt;
 	TVector3 pLong = pp.Dot(ppJ1) / ppJ1.Mag2() * ppJ1;
 	TVector3 pPerp = pp - pLong;
 	//projection onto the two perpendicular vectors defined above
@@ -556,7 +592,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
 	mxy += (ppjX * ppjY / ppjT);
 	nc++;
 	sump2 += ppjT;}
-      // max pt
+      
       if(nc<2) continue;
 
     } // 1st Track Loop
@@ -581,14 +617,21 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
     if(jev==1) circ=2*eval[0];
     if(jev==0) circ=2*eval[1];
     fh2Circularity->Fill(circ,ptbig);
-    fh1JetEntries->Fill(ptbig);
+    fh2JetEntries->Fill(ptbig,pthardbin);
+
+
+    if(fDoMatching) fh2JetAxisPhi->Fill(smearphi,pthardbin);
+    
+
+    
     for (Int_t ip = 0; ip < ParticleList.GetEntries(); ip++) {
       AliVParticle *track = (AliVParticle*)ParticleList.At(ip);
+   
       TVector3 pp(track->Px(), track->Py(), track->Pz());
       Float_t phi = track->Phi();
       Float_t eta = track->Eta();
       Float_t pt  = track->Pt();
-
+    
       Float_t deta = eta - etabig;
       Float_t dphi = RelativePhi(phi,phibig);
       if(TMath::Abs(dphi)>=0.5*TMath::Pi()) continue;
@@ -606,7 +649,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
       if(phistr<-0.5*TMath::Pi()) phistr += 2*TMath::Pi();
       if(phistr>1.5*TMath::Pi()) phistr -= 2*TMath::Pi();
 
-      double jetEntries[8] = {centValue,dRR,ptbig,pt,phistr,circ,static_cast<double>(nc),pthardbin};
+      double jetEntries[9] = {centValue,dRR,ptbig,pt,phistr,circ,static_cast<double>(nc),pthardbin,ptmax};
       fhnJetTM->Fill(jetEntries);
 
     } // 2nd Track loop
@@ -717,6 +760,7 @@ Int_t  AliAnalysisTaskJetAntenna::GetListOfTracksExtra(TList *list){
 	iCount++;
       }
     
+      list->Sort();
      return iCount;
 }
 

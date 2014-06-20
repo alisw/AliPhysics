@@ -301,9 +301,6 @@ Bool_t AliPrimaryPionCuts::PionIsSelected(AliESDtrack* lTrack){
 	Float_t dcaToVertexZ  = b[1];
 	Double_t clsToF = GetNFindableClustersTPC(lTrack);
 
-	if (fHistTrackDCAxyPtbefore) fHistTrackDCAxyPtbefore->Fill(dcaToVertexXY,lTrack->Pt());
-	if (fHistTrackDCAzPtbefore) fHistTrackDCAzPtbefore->Fill( dcaToVertexZ, lTrack->Pt());
-	if (fHistTrackNFindClsPtTPCbefore) fHistTrackNFindClsPtTPCbefore->Fill( clsToF, lTrack->Pt());
 
 	if (fHistCutIndex) fHistCutIndex->Fill(kPionIn);
 
@@ -311,6 +308,10 @@ Bool_t AliPrimaryPionCuts::PionIsSelected(AliESDtrack* lTrack){
 		if (fHistCutIndex) fHistCutIndex->Fill(kNoTracks);
 		return kFALSE;  
 	}   
+	if (fHistTrackDCAxyPtbefore) fHistTrackDCAxyPtbefore->Fill(dcaToVertexXY,lTrack->Pt());
+	if (fHistTrackDCAzPtbefore) fHistTrackDCAzPtbefore->Fill( dcaToVertexZ, lTrack->Pt());
+	if (fHistTrackNFindClsPtTPCbefore) fHistTrackNFindClsPtTPCbefore->Fill( clsToF, lTrack->Pt());
+
 	
 	if ( ! lTrack->GetConstrainedParam() ){
 		return kFALSE;

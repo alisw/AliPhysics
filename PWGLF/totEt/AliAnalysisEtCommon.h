@@ -61,7 +61,7 @@ protected:
     
     TString fHistogramNameSuffix; /** The suffix for the histogram names */
 
-    AliAnalysisEtCuts *fCuts; //! keeper of basic cuts
+    AliAnalysisEtCuts *fCuts; // keeper of basic cuts
 
     Int_t fDataSet;//Integer corresponding to data set.  Used as a switch to set appropriate track cuts.  By default set to 2010 p+p
     //2009 = 900 GeV p+p data from 2009
