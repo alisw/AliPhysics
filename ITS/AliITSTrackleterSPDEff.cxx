@@ -1095,13 +1095,13 @@ TParticle* part = stack->Particle(ipart);
 
   Int_t nret=0;
   TParticle* dau = 0;
-  Int_t nDau = 0;
+  //  Int_t nDau = 0;
   Int_t pdgDau;
   Int_t firstDau = part->GetFirstDaughter(); // if no daugther stored then no way to understand i
                                              // its real fate ! But you have to take it !
   if (firstDau > 0) { // if it has daugther(s) try to infer if it is "detectable" as a tracklet
     Int_t lastDau = part->GetLastDaughter();
-    nDau = lastDau - firstDau + 1;
+    //    nDau = lastDau - firstDau + 1;
     Double_t distMax=0.;
     Int_t jmax=0;
     for(Int_t j=firstDau; j<=lastDau; j++)  {
