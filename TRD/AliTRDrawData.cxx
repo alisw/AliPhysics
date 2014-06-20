@@ -187,7 +187,8 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 
   Bool_t newEvent = kFALSE;  // only for correct readout tree
   Bool_t newSM    = kFALSE;  // new SM flag, for writing SM index words
-  Bool_t newStack = kFALSE;  // new stack flag, for writing stack index words
+  // Coverity
+  //Bool_t newStack = kFALSE;  // new stack flag, for writing stack index words
 
   // Get digits parameter
   fDigitsParam = digitsManager->GetDigitsParam();
@@ -267,7 +268,8 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 	}
 	
 	if ( stack==0 && layer==0 ) newSM = kTRUE;  // new SM flag
-	if ( layer==0 ) newStack = kTRUE;           // new stack flag
+        // Coverity
+	//if ( layer==0 ) newStack = kTRUE;           // new stack flag
 	AliDebug(15, Form("stack : %d, layer : %d, iDec : %d\n",stack,layer,iDet));
 	// Get the digits array
 	AliTRDarrayADC *digits = (AliTRDarrayADC *) digitsManager->GetDigits(iDet);
