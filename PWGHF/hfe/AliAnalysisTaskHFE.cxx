@@ -1095,13 +1095,13 @@ void AliAnalysisTaskHFE::ProcessESD(){
     fQACollection->Fill("Kinkafter", track->Pt(), kinkstatus); 
 
     // production radius
-    Double_t pradius[3] = {fCentralityF,track->Pt(),-1.};
+    Double_t pradius[3] = {(Double_t)fCentralityF,track->Pt(),-1.};
     Bool_t fill = kFALSE;
     if(HasMCData()){
       Int_t labelr = track->GetLabel();
       if(labelr >=0) {
 	AliMCParticle *mctrackk = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(labelr));
-	if((mctrackk>=0) && (TMath::Abs(mctrackk->Particle()->GetPdgCode()) == 11)) {
+	if(mctrackk && (TMath::Abs(mctrackk->Particle()->GetPdgCode()) == 11)) {
 	  Int_t motherlabel = mctrackk->Particle()->GetFirstMother();
 	  if(motherlabel >= 0){
 	    AliMCParticle *mothertrack = NULL;
@@ -1680,7 +1680,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     fQACollection->Fill("Kinkafter", track->Pt(), kinkstatus); 
 
     // production radius
-    Double_t pradius[3] = {fCentralityF,track->Pt(),-1.};
+    Double_t pradius[3] = {(Double_t)fCentralityF,track->Pt(),-1.};
     Bool_t fill = kFALSE;
     if(HasMCData()){
       Int_t labelr = track->GetLabel();

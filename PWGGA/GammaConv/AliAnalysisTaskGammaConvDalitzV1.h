@@ -74,12 +74,13 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
                 void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
                 void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
     		void ProcessElectronCandidates();
+		void ProcessVirtualGammasCandidates();
 		void ProcessMCParticles();
 		void CountESDTracks();
                 void CalculatePi0DalitzCandidates();
                 void CalculateBackground();
                 void UpdateEventByEventData();
-		void FillElectronQAHistos(AliAODConversionPhoton *Vgamma) const;
+		void FillElectronQAHistos(AliAODConversionMother *Pi0Candidate,AliAODConversionPhoton *Vgamma) const;
                 Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
 		Bool_t IsDalitz(TParticle *fMCMother) const;
                 Bool_t IsPi0DalitzDaughter( Int_t label ) const;
@@ -146,6 +147,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1F **hESDMotherPhi;
     TH2F **hESDEposEnegPsiPairDPhi;
     TH2F **hESDEposEnegInvMassPt;
+    TH2F **hESDEposEnegAfterMassCutInvMassPi0Pt;
     TH2F **hESDEposEnegLikeSignBackInvMassPt;
     TH2F **hESDMotherInvMassPt;
     TH2F **hESDPi0MotherInvMassPt;
@@ -184,6 +186,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH2F **hESDEposEnegTruePhotonInvMassPt;
     TH2F **hESDEposEnegTrueInvMassPt;
     TH2F **hESDEposEnegTruePhotonPsiPairDPhi;
+    TH2F **hESDEposEnegTruePhotonPsiPairDPhiPtCut;
     TH2F **hESDEposEnegTrueJPsiInvMassPt;
     TH2F **hESDTrueMotherChiCInvMassPt;
     TH2F **hESDTrueMotherChiCDiffInvMassPt;
@@ -228,6 +231,12 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     Double_t *fUnsmearedPy;
     Double_t *fUnsmearedPz;
     Double_t *fUnsmearedE;
+    Double_t *fUnsmearedVPx;
+    Double_t *fUnsmearedVPy;
+    Double_t *fUnsmearedVPz;
+    Double_t *fUnsmearedVE;
+    
+    
     Int_t fnCuts;
     Int_t fiCut;
     Int_t fNumberOfESDTracks;

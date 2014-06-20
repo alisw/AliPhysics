@@ -60,6 +60,7 @@ AliAnalysisTaskSE(),
   fGenerateSignal(kFALSE),
   fGeneratorOnly(kFALSE),
   fTabulatePairs(kFALSE),
+  fLinearInterpolation(kTRUE),
   fRMax(11),
   ffcSq(0.7),
   fFilterBit(7),
@@ -124,6 +125,8 @@ AliAnalysisTaskSE(),
   fDummyB(0),
   fKT3transition(0.3),
   fKT4transition(0.3),
+  farrP1(),
+  farrP2(),
   fDefaultsCharSwitch(),
   fLowQPairSwitch_E0E0(),
   fLowQPairSwitch_E0E1(),
@@ -231,6 +234,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fGenerateSignal(kFALSE),
   fGeneratorOnly(kFALSE),
   fTabulatePairs(kFALSE),
+  fLinearInterpolation(kTRUE),
   fRMax(11),
   ffcSq(0.7),
   fFilterBit(7),
@@ -295,6 +299,8 @@ AliFourPion::AliFourPion(const Char_t *name)
   fDummyB(0),
   fKT3transition(0.3),
   fKT4transition(0.3),
+  farrP1(),
+  farrP2(),
   fDefaultsCharSwitch(),
   fLowQPairSwitch_E0E0(),
   fLowQPairSwitch_E0E1(),
@@ -406,6 +412,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fGenerateSignal(obj.fGenerateSignal),
     fGeneratorOnly(obj.fGeneratorOnly),
     fTabulatePairs(obj.fTabulatePairs),
+    fLinearInterpolation(obj.fLinearInterpolation),
     fRMax(obj.fRMax),
     ffcSq(obj.ffcSq),
     fFilterBit(obj.fFilterBit),
@@ -470,6 +477,8 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fDummyB(obj.fDummyB),
     fKT3transition(obj.fKT3transition),
     fKT4transition(obj.fKT4transition),
+    farrP1(),
+    farrP2(),
     fDefaultsCharSwitch(),
     fLowQPairSwitch_E0E0(),
     fLowQPairSwitch_E0E1(),
@@ -528,6 +537,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fGenerateSignal = obj.fGenerateSignal;
   fGeneratorOnly = obj.fGeneratorOnly;
   fTabulatePairs = obj.fTabulatePairs;
+  fLinearInterpolation = obj.fLinearInterpolation;
   fRMax = obj.fRMax;
   ffcSq = obj.ffcSq;
   fFilterBit = obj.fFilterBit;
@@ -2579,8 +2589,11 @@ void AliFourPion::UserExec(Option_t *)
 			  weightTotal = 2*G*(1-G)*(T12 + T13 + T23) + pow(1-G,2)*(T12*T12 + T13*T13 + T23*T23);
 			  weightTotal += 2*G*pow(1-G,2)*(T12*T13 + T12*T23 + T13*T23) + 2*pow(1-G,3)*T12*T13*T23;
 			}else{
-			  weightTotal = (1-G*G)*(weight12CC[2] + weight13CC[2] + weight23CC[2]);
-			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3)) * sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]);
+			  T12 = sqrt(weight12CC[2] / (1-G*G));
+			  T13 = sqrt(weight13CC[2] / (1-G*G));
+			  T23 = sqrt(weight23CC[2] / (1-G*G));
+			  weightTotal = (1-G*G)*(T12*T12 + T13*T13 + T23*T23);
+			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3)) * T12*T13*T23;
 			}
 			if(Positive1stTripletWeights){
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(FillBin, q3, weightTotal);
@@ -2887,15 +2900,21 @@ void AliFourPion::UserExec(Option_t *)
 			  weightTotal += 2*G*pow(1-G,3)*(T14*T13*T23 + T14*T13*T24 + T13*T23*T24 + T14*T24*T23);// 4-pion
 			  weightTotal += 2*pow(1-G,4)*(T12*T13*T24*T34 + T12*T14*T23*T34 + T13*T14*T23*T24);// 4-pion fully chaotic
 			}else{// Rcoh=Rch
-			  weightTotal = (1-G*G)*(weight12CC[2] + weight13CC[2] + weight14CC[2] + weight23CC[2] + weight24CC[2] + weight34CC[2]);// 2-pion
-			  weightTotal += (4*G*pow(1-G,3)+pow(1-G,4))*(weight12CC[2]*weight34CC[2] + weight13CC[2]*weight24CC[2] + weight14CC[2]*weight23CC[2]);// 2-pair
-			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]));// 3-pion
-			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight12CC[2]*weight14CC[2]*weight24CC[2]));// 3-pion
-			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight13CC[2]*weight14CC[2]*weight34CC[2]));// 3-pion
-			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight23CC[2]*weight24CC[2]*weight34CC[2]));// 3-pion
-			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(sqrt(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2]));// 4-pion
-			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(sqrt(weight12CC[2]*weight14CC[2]*weight23CC[2]*weight34CC[2]));// 4-pion
-			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(sqrt(weight13CC[2]*weight14CC[2]*weight23CC[2]*weight24CC[2]));// 4-pion
+			  T12 = sqrt(weight12CC[2] / (1-G*G));
+			  T13 = sqrt(weight13CC[2] / (1-G*G));
+			  T14 = sqrt(weight14CC[2] / (1-G*G));
+			  T23 = sqrt(weight23CC[2] / (1-G*G));
+			  T24 = sqrt(weight24CC[2] / (1-G*G));
+			  T34 = sqrt(weight34CC[2] / (1-G*G));
+			  weightTotal = (1-G*G)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
+			  weightTotal += (4*G*pow(1-G,3)+pow(1-G,4))*(pow(T12,2)*pow(T34,2) + pow(T13,2)*pow(T24,2) + pow(T14,2)*pow(T23,2));// 2-pair
+			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T12*T13*T23);// 3-pion
+			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T12*T14*T24);// 3-pion
+			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T13*T14*T34);// 3-pion
+			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T23*T24*T34);// 3-pion
+			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T12*T13*T24*T34);// 4-pion
+			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T12*T14*T23*T34);// 4-pion
+			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T13*T14*T23*T24);// 4-pion
 			}
 			if(Positive1stTripletWeights && Positive2ndTripletWeights){
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(FillBin, q4, weightTotal);
@@ -3245,13 +3264,12 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   }
   wd = (kt-fKmeanT[fKtIndexL])/(fKmeanT[fKtIndexH]-fKmeanT[fKtIndexL]);
   //
-  /////////
   if(qOut < fQmean[0]) {fQoIndexL=0; fQoIndexH=0; xd=0;}
   else if(qOut >= fQmean[kQbinsWeights-1]) {fQoIndexL=kQbinsWeights-1; fQoIndexH=kQbinsWeights-1; xd=1;}
   else {
     for(Int_t i=0; i<kQbinsWeights-1; i++){
       if((qOut >= fQmean[i]) && (qOut < fQmean[i+1])) {fQoIndexL=i; fQoIndexH=i+1; break;}
-    }
+      }
     xd = (qOut-fQmean[fQoIndexL])/(fQmean[fQoIndexH]-fQmean[fQoIndexL]);
   }
   //
@@ -3273,29 +3291,51 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
     zd = (qLong-fQmean[fQlIndexL])/(fQmean[fQlIndexH]-fQmean[fQlIndexL]);
   }
   //
-
-   
-  //
-  // w interpolation (kt)
-  Float_t c000 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*wd;
-  Float_t c100 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*wd;
-  Float_t c010 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*wd;
-  Float_t c001 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*wd;
-  Float_t c110 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*wd;
-  Float_t c101 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*wd;
-  Float_t c011 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*wd;
-  Float_t c111 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*wd;
-  // x interpolation (qOut)
-  Float_t c00 = c000*(1-xd) + c100*xd;
-  Float_t c10 = c010*(1-xd) + c110*xd;
-  Float_t c01 = c001*(1-xd) + c101*xd;
-  Float_t c11 = c011*(1-xd) + c111*xd;
-  // y interpolation (qSide)
-  Float_t c0 = c00*(1-yd) + c10*yd;
-  Float_t c1 = c01*(1-yd) + c11*yd;
-  // z interpolation (qLong)
-  wgt = (c0*(1-zd) + c1*zd);
-  
+  if(fLinearInterpolation){// Linear Interpolation of osl
+    // w interpolation (kt)
+    Float_t c000 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*wd;
+    Float_t c100 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*wd;
+    Float_t c010 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*wd;
+    Float_t c001 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*wd;
+    Float_t c110 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*wd;
+    Float_t c101 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*wd;
+    Float_t c011 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*wd;
+    Float_t c111 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*wd;
+    // x interpolation (qOut)
+    Float_t c00 = c000*(1-xd) + c100*xd;
+    Float_t c10 = c010*(1-xd) + c110*xd;
+    Float_t c01 = c001*(1-xd) + c101*xd;
+    Float_t c11 = c011*(1-xd) + c111*xd;
+    // y interpolation (qSide)
+    Float_t c0 = c00*(1-yd) + c10*yd;
+    Float_t c1 = c01*(1-yd) + c11*yd;
+    // z interpolation (qLong)
+    wgt = (c0*(1-zd) + c1*zd);
+  }else{// cubic interpolation of osl
+    
+    for(Int_t x=0; x<4; x++){
+      for(Int_t y=0; y<4; y++){
+	for(Int_t z=0; z<4; z++){
+	  Int_t binO = fQoIndexL + x;
+	  Int_t binS = fQsIndexL + y;
+	  Int_t binL = fQlIndexL + z;
+	  if(binO<=0) binO = 1;
+	  if(binS<=0) binS = 1;
+	  if(binL<=0) binL = 1;
+	  if(binO>kQbinsWeights) binO = kQbinsWeights;
+	  if(binS>kQbinsWeights) binS = kQbinsWeights;
+	  if(binL>kQbinsWeights) binL = kQbinsWeights;
+	  farrP1[x][y][z] = fNormWeight[fKtIndexL][fMbin]->GetBinContent(binO,binS,binL);
+	  farrP2[x][y][z] = fNormWeight[fKtIndexH][fMbin]->GetBinContent(binO,binS,binL);
+	}
+      }
+    }
+    Float_t coord[3]={xd, yd, zd}; 
+    Float_t c0 = nCubicInterpolate(3, (Float_t*) farrP1, coord);
+    Float_t c1 = nCubicInterpolate(3, (Float_t*) farrP2, coord);
+    // kT interpolation
+    wgt = c0*(1-wd) + c1*wd;
+  }
   ////
   
   // simplified stat error 
@@ -4018,4 +4058,24 @@ void AliFourPion::SetMuonCorrections(Bool_t legoCase, TH2D *tempMuon){
     MuonFile->Close();
   }
   cout<<"Done reading Muon file"<<endl;
+}
+//________________________________________________________________________
+Float_t AliFourPion::cubicInterpolate (Float_t p[4], Float_t x) {
+  return p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0])));// Paulinternet
+}
+//________________________________________________________________________
+Float_t AliFourPion::nCubicInterpolate (Int_t n, Float_t* p, Float_t coordinates[]) {
+ 
+  if (n == 1) {
+    return cubicInterpolate(p, *coordinates);
+  }
+  else {
+    Float_t arr[4];
+    Int_t skip = 1 << (n - 1) * 2;
+    arr[0] = nCubicInterpolate(n - 1, p, coordinates + 1);
+    arr[1] = nCubicInterpolate(n - 1, p + skip, coordinates + 1);
+    arr[2] = nCubicInterpolate(n - 1, p + 2*skip, coordinates + 1);
+    arr[3] = nCubicInterpolate(n - 1, p + 3*skip, coordinates + 1);
+    return cubicInterpolate(arr, *coordinates);
+  }
 }

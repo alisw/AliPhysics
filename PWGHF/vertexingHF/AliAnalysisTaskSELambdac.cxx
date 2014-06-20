@@ -422,11 +422,11 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
 
   TString hisname;
   Int_t index=0;
-  Int_t indexLS=0;
+  //  Int_t indexLS=0;
   for(Int_t i=0;i<fNPtBins;i++){
 
     index=GetHistoIndex(i);
-    indexLS=GetLSHistoIndex(i);
+    //    indexLS=GetLSHistoIndex(i);
 
     hisname.Form("hMassPt%d",i);
     fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
@@ -1391,9 +1391,8 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
   fCounter->StoreEvent(aod,fRDCutsProduction,fReadMC);
   TString trigclass=aod->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNentries->Fill(14);
-  Bool_t isEvSelAnCuts,isEvSelProdCuts;
-  isEvSelProdCuts=fRDCutsProduction->IsEventSelected(aod);
-  isEvSelAnCuts=fRDCutsAnalysis->IsEventSelected(aod);
+  Bool_t isEvSelProdCuts=fRDCutsProduction->IsEventSelected(aod);
+  //Bool_t  isEvSelAnCuts=fRDCutsAnalysis->IsEventSelected(aod);
   if(!isEvSelProdCuts){
     if(fRDCutsProduction->GetWhyRejection()==1) // rejected for pileup
       fNentries->Fill(13);
@@ -1554,14 +1553,14 @@ void AliAnalysisTaskSELambdac::Terminate(Option_t */*option*/)
 Int_t AliAnalysisTaskSELambdac::MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const{
   // check if the candidate is a Lambdac decaying in pKpi or in the resonant channels
   Int_t lambdacLab[3]={0,0,0};
-  Int_t pdgs[3]={0,0,0};
+  //  Int_t pdgs[3]={0,0,0};
   for(Int_t i=0;i<3;i++){
     AliAODTrack *daugh=(AliAODTrack*)d->GetDaughter(i);
     Int_t lab=daugh->GetLabel();
     if(lab<0) return 0;
     AliAODMCParticle *part= (AliAODMCParticle*)arrayMC->At(lab);
     if(!part) continue;
-    pdgs[i]=part->GetPdgCode();
+    //    pdgs[i]=part->GetPdgCode();
     Int_t partPdgcode = TMath::Abs(part->GetPdgCode());
     if(partPdgcode==211 || partPdgcode==321 || partPdgcode==2212){
       Int_t motherLabel=part->GetMother();
@@ -1594,9 +1593,9 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
   // check if the particle is a lambdac and if its decay mode is the correct one 
   Int_t numberOfLambdac=0;
   if(TMath::Abs(part->GetPdgCode())!=4122) return kFALSE;
-  Int_t daughTmp[2];
-  daughTmp[0]=part->GetDaughter(0);
-  daughTmp[1]=part->GetDaughter(1);
+  // Int_t daughTmp[2];
+  // daughTmp[0]=part->GetDaughter(0);
+  // daughTmp[1]=part->GetDaughter(1);
   Int_t nDaugh = (Int_t)part->GetNDaughters();
   if(nDaugh<2) return kFALSE;
   if(nDaugh>3) return kFALSE;

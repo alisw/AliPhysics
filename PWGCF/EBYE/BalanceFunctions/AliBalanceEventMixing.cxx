@@ -442,7 +442,6 @@ void AliBalanceEventMixing::CalculateBalance(Float_t fCentrality,vector<Double_t
 	      const Float_t kLimit = 0.02 * 3;
 	      
 	      Float_t dphistarminabs = 1e5;
-	      Float_t dphistarmin = 1e5;
 
 	      if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0 )
 		{
@@ -453,7 +452,6 @@ void AliBalanceEventMixing::CalculateBalance(Float_t fCentrality,vector<Double_t
 		      
 		      if (dphistarabs < dphistarminabs)
 			{
-			  dphistarmin = dphistar;
 			  dphistarminabs = dphistarabs;
 			}
 		    }
@@ -773,7 +771,6 @@ TGraphErrors *AliBalanceEventMixing::DrawBalance(Int_t iAnalysisType) {
 //____________________________________________________________________//
 void AliBalanceEventMixing::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
   //Prints the calculated width of the BF and its error
-  Double_t x[MAXIMUM_NUMBER_OF_STEPS];
   Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
   Double_t gSumBiXi2 = 0.0, gSumBi2Xi2 = 0.0;
   Double_t gSumDeltaBi2 = 0.0, gSumXi2DeltaBi2 = 0.0;
@@ -782,7 +779,6 @@ void AliBalanceEventMixing::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance
   
   cout<<"=================================================="<<endl;
   for(Int_t i = 1; i <= fNumberOfBins[iAnalysisType]; i++) { 
-    x[i-1] = fP2Start[iAnalysisType] + fP2Step[iAnalysisType]*i + fP2Step[iAnalysisType]/2;
     //cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<gHistBalance->GetBinCenter(i)<<endl;
   } 
   //cout<<"=================================================="<<endl;

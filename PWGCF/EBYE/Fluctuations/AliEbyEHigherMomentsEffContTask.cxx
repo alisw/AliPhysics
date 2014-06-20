@@ -534,11 +534,11 @@ void AliEbyEHigherMomentsEffContTask::doAODEvent(){
 	fTPCSig->Fill(newAodTrack->GetTPCmomentum(),tpcSignal);
 	
 	Float_t nsigmaTPCPID = -999.;
-	Float_t nsigmaTOFPID = -999.;
+	//Float_t nsigmaTOFPID = -999.;
 	//Float_t nsigmaTPCTOFPID = -999.;
 	
 	nsigmaTPCPID = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,fParticleSpecies));
-	nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
+	//nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
 	
 	if ( nsigmaTPCPID < fNSigmaCut  ){
 	  
@@ -773,11 +773,11 @@ void AliEbyEHigherMomentsEffContTask::doMCAODEvent(){
       fTPCSig->Fill(newAodTrack->GetTPCmomentum(),tpcSignal);
       
       Float_t nsigmaTPCPID = -999.;
-      Float_t nsigmaTOFPID = -999.;
+      //Float_t nsigmaTOFPID = -999.;
       //Float_t nsigmaTPCTOFPID = -999.;
       
       nsigmaTPCPID = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,fParticleSpecies));
-      nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
+      //nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
       
       if ( nsigmaTPCPID < fNSigmaCut  ){
 	

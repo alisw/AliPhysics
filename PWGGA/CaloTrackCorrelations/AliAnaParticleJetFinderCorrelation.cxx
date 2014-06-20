@@ -871,18 +871,22 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   }
   else
   {
-    if(GetDebug() > 3) printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - There are no jets available for this analysis\n");
+    if(GetDebug() > 3) AliInfo("There are no jets available for this analysis");
     return;
   }
   
-  if(!GetInputAODBranch() || !event){
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
-    abort();
+  if(!GetInputAODBranch() || !event)
+  {
+    AliFatal(Form("No input particles in AOD with name branch < %s > \n",
+                  GetInputAODName().Data()));
+    return; // Trick coverity
   }
   
-  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation")){
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
-    abort();
+  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation"))
+  {
+    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s>",
+                  GetInputAODBranch()->GetClass()->GetName()));
+    return; // Trick coverity
   }
   
   //
@@ -891,12 +895,14 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   Int_t nJets=-1;
   TClonesArray *aodRecJets = 0;
   if(IsNonStandardJetFromReader()){//jet branch from reader
-    if(GetDebug() > 3) printf("GetNonStandardJets function (from reader) is called\n");
+    if(GetDebug() > 3) AliInfo(Form("GetNonStandardJets function (from reader) is called"));
     aodRecJets = GetNonStandardJets();
-    if(GetDebug() > 3) printf("aodRecJets %p\n",aodRecJets);
-    if(aodRecJets==0x0){
+    if(GetDebug() > 3) AliInfo(Form("aodRecJets %p",aodRecJets));
+    if(aodRecJets==0x0)
+    {
       if(GetDebug() > 3) event->Print();
-      abort();
+      AliFatal("List of jets is null");
+      return;
     }
     nJets=aodRecJets->GetEntries();
     if(GetDebug() > 3) printf("nJets %d\n",nJets);

@@ -1406,10 +1406,10 @@ Int_t AliFlowTrackCuts::Count(AliVEvent* event)
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrackCuts* AliFlowTrackCuts::GetAODTrackCutsForFilterBit(UInt_t bit)
+AliFlowTrackCuts* AliFlowTrackCuts::GetAODTrackCutsForFilterBit(UInt_t bit, TString suffix)
 {
   // object which in its default form only cuts on filterbit (for AOD analysis)
-  AliFlowTrackCuts* cuts = new AliFlowTrackCuts(Form("AOD fitlerbit %i", (int)bit));
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts(Form("AOD fitlerbit %i, %s", (int)bit, suffix.Data()));
   cuts->SetMinimalTPCdedx(-999999999);
   cuts->SetAODfilterBit(bit);
   cuts->SetParamType(AliFlowTrackCuts::kAODFilterBit);
@@ -1436,7 +1436,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010()
   //step 2 is available only for n==2 and n==3, for the higher harmonics the user
   //is repsonsible for making sure the q-sub distributions are (sufficiently) flat
   //or a sensible NUA procedure is applied !
-  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2010");
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts");
   cuts->SetParamType(AliFlowTrackCuts::kVZERO);
   cuts->SetEtaRange( -10, +10 );
   cuts->SetEtaGap(-1., 1.);

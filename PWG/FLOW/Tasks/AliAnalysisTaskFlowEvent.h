@@ -28,7 +28,7 @@ class AliESDpid;
 class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFlowEvent();
-  AliAnalysisTaskFlowEvent(const char *name, TString RPtype, Bool_t QAon, UInt_t seed=666, Bool_t bCandidates=kFALSE);
+  AliAnalysisTaskFlowEvent(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, UInt_t seed=666, Bool_t bCandidates=kFALSE);
   virtual ~AliAnalysisTaskFlowEvent();
   
   virtual void   UserCreateOutputObjects();
