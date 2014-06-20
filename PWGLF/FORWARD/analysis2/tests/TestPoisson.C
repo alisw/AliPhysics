@@ -31,8 +31,10 @@ void
 TestPoisson(Double_t o=.3, bool useWeights=false, bool correct=true)
 {
   const char* load = "$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C";
-  gROOT->Macro(load);
-  gROOT->GetInterpreter()->UnloadFile(gSystem->ExpandPathName(load));
+  if (!gROOT->GetClass("AliAODForwardMult")) {
+    gROOT->Macro(load);
+    gROOT->GetInterpreter()->UnloadFile(gSystem->ExpandPathName(load));
+  }
   
   // --- Parameters of this script -----------------------------------
   Int_t      nBin =  5;  // Our detector matrix size 

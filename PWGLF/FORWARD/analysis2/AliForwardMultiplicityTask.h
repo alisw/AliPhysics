@@ -180,6 +180,12 @@ public:
   /** 
    * @} 
    */
+  /** 
+   * Set whether to make a timing histogram 
+   * 
+   * @param enable 
+   */
+  virtual void SetDoTiming(Bool_t enable=true);
 protected: 
   /** 
    * Copy constructor 
