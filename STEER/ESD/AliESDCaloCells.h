@@ -39,17 +39,19 @@ class AliESDCaloCells : public AliVCaloCells
   void            SetType(Char_t t){ fType = t                   ; }
   
   inline Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time, Int_t &mclabel,      Double_t &efrac) const;
-  Bool_t          SetCell(Short_t pos, Short_t  cellNumber, Double_t  amplitude, Double_t  time, Int_t  mclabel = -1, Double_t  efrac = 0.);
+  Bool_t          SetCell(Short_t pos, Short_t  cellNumber, Double_t  amplitude, Double_t  time, Int_t  mclabel = -1, Double_t  efrac = 0., Bool_t isHG=kFALSE);
   
   Short_t         GetNumberOfCells() const  { return fNCells ; }
   void            SetNumberOfCells(Int_t n) { fNCells = n    ; }
   
   
   inline Double_t GetCellAmplitude(Short_t cellNumber);
+  inline Bool_t   GetCellHighGain(Short_t cellNumber);  //is this cell High Gain
   inline Short_t  GetCellPosition(Short_t cellNumber);
   inline Double_t GetCellTime(Short_t cellNumber);
   
   inline Double_t GetAmplitude(Short_t pos) const;
+  inline Bool_t   GetHighGain(Short_t pos) const;
   inline Double_t GetTime(Short_t pos) const;
   inline Short_t  GetCellNumber(Short_t pos) const;
 
@@ -66,6 +68,7 @@ class AliESDCaloCells : public AliVCaloCells
  protected:
   
   Int_t       fNCells;       // Number of cells
+  Bool_t     *fHGLG;         //[fNCells] if sell HG or LG
   Short_t    *fCellNumber;   //[fNCells] array of cell numbers
   Double32_t *fAmplitude;    //[fNCells][0.,0.,16] array with cell amplitudes (= energy!)
   Double32_t *fTime;         //[fNCells][0.,0.,16] array with cell times
@@ -115,6 +118,21 @@ Double_t AliESDCaloCells::GetCellAmplitude(Short_t cellNumber)
   }
 }
 
+Bool_t AliESDCaloCells::GetCellHighGain(Short_t cellNumber)
+{ 
+  if (!fIsSorted) {
+    Sort();
+    fIsSorted=kTRUE;
+  }
+
+  Short_t pos = TMath::BinarySearch(fNCells, fCellNumber, cellNumber);
+  if (pos>=0 && pos < fNCells && fCellNumber[pos] == cellNumber ) {
+    return fHGLG[pos];
+  } else {
+    return 0.;
+  }
+}
+
 Double_t AliESDCaloCells::GetCellTime(Short_t cellNumber)
 { 
   if (!fIsSorted) {
@@ -134,6 +152,14 @@ Double_t AliESDCaloCells::GetAmplitude(Short_t pos) const
 { 
   if (pos>=0 && pos<fNCells) {
     return fAmplitude[pos];
+  } else {
+    return 0.;
+  }
+}
+Bool_t AliESDCaloCells::GetHighGain(Short_t pos) const 
+{ 
+  if (pos>=0 && pos<fNCells) {
+    return fHGLG[pos];
   } else {
     return 0.;
   }

@@ -26,7 +26,7 @@ ClassImp(AliAODCaloCells)
 
 //_______________________________________________________
 AliAODCaloCells::AliAODCaloCells() : 
-    AliVCaloCells(), fNCells(0), fCellNumber(0), 
+    AliVCaloCells(), fNCells(0), fHGLG(0), fCellNumber(0), 
     fAmplitude(0), fTime(0), fEFraction(0), fMCLabel(0),
     fIsSorted(kTRUE), fType(kUndef)
 {
@@ -35,7 +35,7 @@ AliAODCaloCells::AliAODCaloCells() :
 
 //_____________________________________________________________________________________
 AliAODCaloCells::AliAODCaloCells(const char* name, const char* title, VCells_t ttype) :
-    AliVCaloCells(name, title), fNCells(0), fCellNumber(0), 
+    AliVCaloCells(name, title), fNCells(0), fHGLG(0), fCellNumber(0), 
     fAmplitude(0), fTime(0), fEFraction(0), fMCLabel(0),
     fIsSorted(kTRUE), fType(ttype)
 {
@@ -44,11 +44,12 @@ AliAODCaloCells::AliAODCaloCells(const char* name, const char* title, VCells_t t
 
 //________________________________________________________________
 AliAODCaloCells::AliAODCaloCells(const AliAODCaloCells& cells) :
-    AliVCaloCells(cells), fNCells(cells.fNCells), fCellNumber(0),
+    AliVCaloCells(cells), fNCells(cells.fNCells), fHGLG(0), fCellNumber(0),
     fAmplitude(0), fTime(0), fEFraction(0), fMCLabel(0),
     fIsSorted(cells.fIsSorted), fType(cells.fType)
 {
 // Copy constructor
+  fHGLG       = new Bool_t[fNCells] ;
   fCellNumber = new Short_t[fNCells];
   fAmplitude  = new Double32_t[fNCells]; 
   fTime       = new Double32_t[fNCells]; 
@@ -56,6 +57,7 @@ AliAODCaloCells::AliAODCaloCells(const AliAODCaloCells& cells) :
   fEFraction  = new Double32_t[fNCells]; 
 
   for (Int_t i = 0; i < fNCells; i++) {
+    fHGLG[i]          = cells.fHGLG[i];     
     fCellNumber[i]    = cells.fCellNumber[i];
     fAmplitude[i]     = cells.fAmplitude[i];
     if(cells.fTime)  fTime[i]      = cells.fTime[i];
@@ -74,6 +76,7 @@ AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& source)
     
     if(fNCells != source.fNCells) 
     {
+      delete [] fHGLG ;
       delete [] fCellNumber;
       delete [] fAmplitude;
       delete [] fTime;
@@ -82,6 +85,7 @@ AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& source)
 
       fNCells     = source.fNCells;
       
+      fHGLG       = new Bool_t[fNCells] ;
       fCellNumber = new Short_t[fNCells];
       fAmplitude  = new Double32_t[fNCells];
       fTime       = new Double32_t[fNCells];
@@ -89,6 +93,7 @@ AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& source)
       fEFraction  = new Double32_t[fNCells];
     }
     
+    memcpy(fCellNumber,source.fHGLG,fNCells*sizeof(Bool_t));
     memcpy(fCellNumber,source.fCellNumber, fNCells*sizeof(Short_t));
     memcpy(fAmplitude, source.fAmplitude,  fNCells*sizeof(Double32_t));
     if(source.fTime      && fTime)      memcpy(fTime,      source.fTime,      fNCells*sizeof(Double32_t));
@@ -181,6 +186,7 @@ void AliAODCaloCells::CreateContainer(Short_t nCells)
 
   fNCells = nCells;
 
+  fHGLG       = new Bool_t[fNCells];
   fCellNumber = new Short_t[fNCells];
   fAmplitude  = new Double32_t[fNCells];
   fTime       = new Double32_t[fNCells];
@@ -190,6 +196,7 @@ void AliAODCaloCells::CreateContainer(Short_t nCells)
   // set to zero
   for(int i = 0;i<fNCells;++i)
   {
+    fHGLG[i]=kFALSE ;
     fAmplitude [i] =  0.; 
     fCellNumber[i] = -1 ; 
     fEFraction [i] =  0.;
@@ -202,6 +209,10 @@ void AliAODCaloCells::CreateContainer(Short_t nCells)
 void AliAODCaloCells::DeleteContainer()
 {
   // deletes allocated memory
+  if(fHGLG){
+    delete[] fHGLG;
+    fHGLG = 0 ;
+  }
 
   if (fCellNumber)
   {
@@ -246,6 +257,7 @@ void AliAODCaloCells::Sort()
   Int_t *idxArray = new Int_t[fNCells];
   TMath::Sort(fNCells,fCellNumber,idxArray,kFALSE);
   
+  Bool_t     *newHGLG      = new Bool_t[fNCells];
   Short_t    *newIndex     = new Short_t[fNCells];
   Double32_t *newAmplitude = new Double32_t[fNCells];
   
@@ -258,6 +270,7 @@ void AliAODCaloCells::Sort()
   
   for (Int_t i=0; i < fNCells; i++) 
   {
+    newHGLG[i]      = fHGLG[idxArray[i]];
     newIndex[i]     = fCellNumber[idxArray[i]];
     newAmplitude[i] = fAmplitude [idxArray[i]];
     if(fTime)      newTime[i]      = fTime     [idxArray[i]];
@@ -265,12 +278,14 @@ void AliAODCaloCells::Sort()
     if(fEFraction) newEFraction[i] = fEFraction[idxArray[i]];  
   }
   
+  delete [] fHGLG;
   delete [] fCellNumber;
   delete [] fAmplitude;
   delete [] fTime;
   delete [] fMCLabel;
   delete [] fEFraction;
 
+  fHGLG = newHGLG;
   fCellNumber = newIndex;
   fAmplitude  = newAmplitude;
   if(fTime)      fTime       = newTime;
@@ -284,12 +299,13 @@ void AliAODCaloCells::Sort()
 
 //________________________________________________________________________________________
 Bool_t AliAODCaloCells::SetCell(Short_t pos,     Short_t cellNumber, Double32_t amplitude, 
-                                Double32_t time, Int_t mclabel,    Double32_t efrac)
+                                Double32_t time, Int_t mclabel,    Double32_t efrac, Bool_t isHG)
 {
   // Sets a cell at the given position
 
   if (pos>=0 && pos < fNCells) 
   {
+    fHGLG[pos]=isHG ;
     fCellNumber[pos] = cellNumber;
     fAmplitude[pos]  = amplitude;
     

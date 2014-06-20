@@ -31,16 +31,18 @@ class AliAODCaloCells : public AliVCaloCells
   void            Sort();
   
   inline Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude,  Double_t &time, Int_t &mclabel,      Double_t &efrac) const ;
-  Bool_t          SetCell(Short_t pos, Short_t  cellNumber, Double_t  amplitude,  Double_t  time, Int_t  mclabel = -1, Double_t  efrac = 0.)  ;
+  Bool_t          SetCell(Short_t pos, Short_t  cellNumber, Double_t  amplitude, Double_t  time, Int_t  mclabel = -1, Double_t  efrac = 0., Bool_t isHG=kFALSE);
   
   Short_t         GetNumberOfCells() const  { return fNCells ; }
   void            SetNumberOfCells(Int_t n) { fNCells = n    ; }
   
   inline Double_t GetCellAmplitude(Short_t cellNumber);
+  inline Bool_t   GetCellHighGain(Short_t cellNumber);  //is this cell High Gain
   inline Short_t  GetCellPosition(Short_t cellNumber);
   inline Double_t GetCellTime(Short_t cellNumber);
   
   inline Double_t GetAmplitude(Short_t pos) const;
+  inline Bool_t   GetHighGain(Short_t pos) const;
   inline Short_t  GetCellNumber(Short_t pos) const;
   inline Double_t GetTime(Short_t pos) const;
   
@@ -63,6 +65,7 @@ class AliAODCaloCells : public AliVCaloCells
  protected:
   
   Int_t       fNCells;       // Number of cells
+  Bool_t     *fHGLG;         //[fNCells] if sell HG or LG
   Short_t    *fCellNumber;   //[fNCells] array of cell numbers
   Double32_t *fAmplitude;    //[fNCells][0.,0.,16] array with cell amplitudes (= energy!)
   Double32_t *fTime;         //[fNCells][0.,0.,16] array with cell times
@@ -111,6 +114,20 @@ Double_t AliAODCaloCells::GetCellAmplitude(Short_t cellNumber)
     return 0.;
   }
 }
+Bool_t AliAODCaloCells::GetCellHighGain(Short_t cellNumber)
+{ 
+  if (!fIsSorted) {
+    Sort();
+    fIsSorted=kTRUE;
+  }
+
+  Short_t pos = TMath::BinarySearch(fNCells, fCellNumber, cellNumber);
+  if (pos>=0 && pos < fNCells && fCellNumber[pos] == cellNumber ) {
+    return fHGLG[pos];
+  } else {
+    return 0.;
+  }
+}
 
 Double_t AliAODCaloCells::GetCellTime(Short_t cellNumber)
 { 
@@ -137,6 +154,15 @@ Double_t AliAODCaloCells::GetAmplitude(Short_t pos) const
     return 0.;
   }
 }
+Bool_t AliAODCaloCells::GetHighGain(Short_t pos) const 
+{ 
+  if (pos>=0 && pos<fNCells) {
+    return fHGLG[pos];
+  } else {
+    return 0.;
+  }
+}
+
 
 Double_t AliAODCaloCells::GetTime(Short_t pos) const 
 { 
