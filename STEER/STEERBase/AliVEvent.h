@@ -181,6 +181,7 @@ public:
 
   // Tracklets
   virtual AliVMultiplicity* GetMultiplicity() const {return 0;}
+  virtual Int_t             GetNumberOfITSClusters(Int_t) const {return 0;}
 
   virtual Bool_t IsPileupFromSPDInMultBins() const {
     return kFALSE;    

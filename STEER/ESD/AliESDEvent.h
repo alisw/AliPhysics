@@ -314,6 +314,7 @@ public:
   void SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster[],Int_t *mapping=NULL);
   Int_t GetNTOFclusters() const {return fESDTOFClusters ? fESDTOFClusters->GetEntriesFast() : 0;}
 
+  Int_t GetNumberOfITSClusters(Int_t lr) const {return fSPDMult ? fSPDMult->GetNumberOfITSClusters(lr) : 0;}
   void SetMultiplicity(const AliMultiplicity *mul);
 
   AliMultiplicity *GetMultiplicity() const {return fSPDMult;}

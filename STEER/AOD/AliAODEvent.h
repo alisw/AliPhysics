@@ -130,7 +130,7 @@ class AliAODEvent : public AliVEvent {
   Double_t  GetZDCP2Energy()        const { return fHeader ? fHeader->GetZDCP2Energy() : -999.; }
   Double_t  GetZDCEMEnergy(Int_t i) const { return fHeader ? fHeader->GetZDCEMEnergy(i) : -999.; }
   Int_t     GetNumberOfESDTracks()  const { return fHeader ? fHeader->GetNumberOfESDTracks() : 0; }
-  
+  Int_t     GetNumberOfITSClusters(Int_t lr) const {return fHeader ? (int)fHeader->GetNumberOfITSClusters(lr) : 0;}
   void SetTOFHeader(const AliTOFHeader * tofEventTime);
   const AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
   Float_t GetEventTimeSpread() const {if (fTOFHeader) return fTOFHeader->GetT0spread(); else return 0.;}
