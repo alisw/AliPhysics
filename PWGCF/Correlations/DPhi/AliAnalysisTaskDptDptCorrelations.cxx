@@ -1241,7 +1241,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 
 
 	    //------- Eff. test---------- //just for checking
-	  Double_t effValue = 0.7;
+	  Double_t yy = (1 - 0.7)/1.8;
+	  Double_t zz = (pt - 0.2);
+	  Double_t effValue = 0.7 + yy*zz;
 	  Double_t R = gRandom->Rndm();
           if(R > effValue) continue;
 	  //---------------------------	  
