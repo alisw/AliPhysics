@@ -61,9 +61,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 	const int numOfChTypes = 13;
 	const int numOfkTbins = 3;
 
-
-
-	char *parameter[10];
+	char *parameter[15];
 	if(strlen(params)!=0)
 	  {
 	    parameter[0] = strtok(params, ","); // Splits spaces between words in params
@@ -74,12 +72,44 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 	    cout<<"Parameter [2] (multdep):"<<parameter[2]<<" "<<endl;	  
 	    parameter[3] = strtok(NULL, ",");
 	    cout<<"Parameter [3]: (MinPlpContribSPD)"<<parameter[3]<<" "<<endl;
+	    parameter[4] = strtok(NULL, ",");
+	    cout<<"Parameter [4]: (multbino)"<<parameter[4]<<" "<<endl;
+	    parameter[5] = strtok(NULL, ",");
+	    cout<<"Parameter [5]: (zvertbino)"<<parameter[5]<<" "<<endl;
+	    parameter[6] = strtok(NULL, ",");
+	    cout<<"Parameter [6]: (ifGlobalTracks=true/false)"<<parameter[6]<<" "<<endl;
+	    parameter[7] = strtok(NULL, ",");
+	    cout<<"Parameter [7]: (shareQuality)"<<parameter[7]<<" "<<endl;
+	    parameter[8] = strtok(NULL, ",");
+	    cout<<"Parameter [8]: (shareFraction)"<<parameter[8]<<" "<<endl;
+	    parameter[9] = strtok(NULL, ",");
+	    cout<<"Parameter [9]: (ifElectronRejection)"<<parameter[9]<<" "<<endl;
+	    parameter[10] = strtok(NULL, ",");
+	    cout<<"Parameter [10]: (nSigma)"<<parameter[10]<<" "<<endl;
+	    parameter[11] = strtok(NULL, ",");
+	    cout<<"Parameter [12]: (etaMin)"<<parameter[11]<<" "<<endl;
+	    parameter[12] = strtok(NULL, ",");
+	    cout<<"Parameter [12]: (etaMax)"<<parameter[12]<<" "<<endl;
+	    parameter[13] = strtok(NULL, ",");
+	    cout<<"Parameter [13]: (ispileup)"<<parameter[13]<<" "<<endl;
 	  }
-
-	int runmultdep = atoi(parameter[2]);
+	int filterbit = atoi(parameter[0]); //96 / 768 / 128 
+	int runktdep = atoi(parameter[1]); //0
+	int runmultdep = atoi(parameter[2]); //0
+	int minPlpContribSPD = atoi(parameter[3]); //3
+	int multbino = atoi(parameter[4]); //30
+	int zvertbino = atoi(parameter[5]); //10
+	Bool_t ifGlobalTracks=kFALSE; if(atoi(parameter[6]))ifGlobalTracks=kTRUE;//kTRUE 
+	double shareQuality = atof(parameter[7]); //0.00
+	double shareFraction = atof(parameter[8]); //0.05
+	bool ifElectronRejection = atoi(parameter[9]); //true
+	double nSigmaVal = atof(parameter[10]); //3.0
+	double nEtaMin = atof(parameter[11]); //-0.8
+	double nEtaMax = atof(parameter[12]);  //0.8
+	bool ifIsPileUp = atoi(parameter[13]); //true
 
 	int runmults[numOfMultBins] = {0, 0, 0, 0, 1};
-	if(runmultdep)	  {	    runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
+	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
 	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,150};
 
 
@@ -87,7 +117,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed" };
 	
 
-	int runktdep = atoi(parameter[1]);
+	
 	double ktrng[numOfkTbins+1] = {0.0, 0.75, 2.0, 100.0};
 
 	int runqinv = 1;
@@ -107,11 +137,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 
 
 	AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
-	Reader->SetFilterMask(atoi(parameter[0]));
-	Reader->SetDCAglobalTrack(kTRUE); //false for FB7, true for the rest //we do not use DCA at all
+	Reader->SetFilterMask(filterbit);
+	Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
 	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
-	Reader->SetMinPlpContribSPD(atoi(parameter[3]));
-	Reader->SetIsPileUpEvent(kTRUE);
+	Reader->SetMinPlpContribSPD(minPlpContribSPD);
+	Reader->SetIsPileUpEvent(ifIsPileUp);
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
@@ -161,12 +191,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 			{
 				if (runch[ichg])
 				{
-
 					aniter = ichg * numOfMultBins + imult;
-					anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 30, multbins[imult], multbins[imult+1]);
+					anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(zvertbino, -10.0, 10.0, multbino, multbins[imult], multbins[imult+1]);
 					anetaphitpc[aniter]->SetNumEventsToMix(10);
 					anetaphitpc[aniter]->SetMinSizePartCollection(1);
-					anetaphitpc[aniter]->SetVerboseMode(kFALSE);
+					anetaphitpc[aniter]->SetVerboseMode(kTRUE);//~~~~~~~~~~~~~~~~
 
 					//*** Event cut ***
 					mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
@@ -191,20 +220,20 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc3etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
-					dtc1etaphitpc[aniter]->SetNsigma(3.0);
-					dtc2etaphitpc[aniter]->SetNsigma(3.0);
-					dtc3etaphitpc[aniter]->SetNsigma(3.0);
+					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal);
+					dtc2etaphitpc[aniter]->SetNsigma(nSigmaVal);
+					//dtc3etaphitpc[aniter]->SetNsigma(3.0);
 
 					dtc1etaphitpc[aniter]->SetCharge(1.0);
 					dtc2etaphitpc[aniter]->SetCharge(-1.0);
 
-					dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
-					dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
-					dtc3etaphitpc[aniter]->SetEta(-0.8,0.8);
+					dtc1etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
+					dtc2etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
+					dtc3etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 
-					dtc1etaphitpc[aniter]->SetElectronRejection(true);	
-					dtc2etaphitpc[aniter]->SetElectronRejection(true);
-					dtc3etaphitpc[aniter]->SetElectronRejection(true); 
+					dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);	
+					dtc2etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
+					dtc3etaphitpc[aniter]->SetElectronRejection(ifElectronRejection); 
 
                                         if (ichg == 0 ||ichg == 1 ||ichg == 2)//protons 0-2
                                           {
@@ -322,8 +351,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 					//sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
 					sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
 				
-					sqpcetaphitpc[aniter]->SetShareQualityMax(0.0);		// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany   
-					sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);	//  ile moga miec wspolnych klastrow //1 - wylaczany, 0.05 - wlaczany
+					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);		// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany   
+					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);	//  ile moga miec wspolnych klastrow //1 - wylaczany, 0.05 - wlaczany
 					sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
 					/*sqpcetaphitpc[aniter]->SetMaximumRadius(2.51);
 					sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);

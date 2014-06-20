@@ -1705,7 +1705,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       {
         
         fhMCE[i]  = new TH1F
-        (Form("h#it{E}_MC%s",pname[i].Data()),
+        (Form("hE_MC%s",pname[i].Data()),
          Form("Identified as #pi^{0} (#eta), cluster from %s",
               ptype[i].Data()),
          nptbins,ptmin,ptmax);
@@ -2198,7 +2198,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         outputContainer->Add(fhMCPtAsymmetry[i]);
         
         fhMCSplitE[i]  = new TH1F
-        (Form("hSplit#it{E}_MC%s",pname[i].Data()),
+        (Form("hSplitE_MC%s",pname[i].Data()),
          Form("cluster from %s, energy sum of split sub-clusters",ptype[i].Data()),
          nptbins,ptmin,ptmax);
         fhMCSplitE[i]->SetYTitle("counts");

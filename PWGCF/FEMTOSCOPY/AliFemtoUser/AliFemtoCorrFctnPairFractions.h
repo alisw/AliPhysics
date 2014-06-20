@@ -37,7 +37,7 @@ public:
 
 private:
   TH1F *fPairFractions;
-
+  TH1F *fPairFractionsDen;
 
   double fphiL;
   double fphiT;

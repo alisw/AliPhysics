@@ -20,7 +20,7 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         enum detectorType       {kVZEROA, kVZEROC, kVZEROComb};  // detector that was used
         // constructors, destructor
         AliAnalysisTaskJetFlowMC();
-        AliAnalysisTaskJetFlowMC(const char *name);
+        AliAnalysisTaskJetFlowMC(const char *name, Int_t seed = 0);
         virtual ~AliAnalysisTaskJetFlowMC();
         // mirror image of PickTrackMaker
         void    UserCreateOutputObjects();
