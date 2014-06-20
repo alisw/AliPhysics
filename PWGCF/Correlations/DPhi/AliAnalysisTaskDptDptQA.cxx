@@ -44,9 +44,6 @@
 
 ClassImp(AliAnalysisTaskDptDptQA)
 
-using std::cout;
-using std::endl;
-
 AliAnalysisTaskDptDptQA::AliAnalysisTaskDptDptQA()
 : AliAnalysisTaskSE(),
 fAODEvent(0), 
@@ -615,8 +612,6 @@ void AliAnalysisTaskDptDptQA::UserCreateOutputObjects()
   _outputHistoList = new TList();
   _outputHistoList->SetOwner();
   
-  //if (_useWeights) DefineInput(2, TList::Class());
-  
   //Setup the parameters of the histograms
   _nBins_M0 = 500; _min_M0   = 0.;    _max_M0    = 5000.;  _width_M0 = (_max_M0-_min_M0)/_nBins_M0;
   _nBins_M1 = 500; _min_M1   = 0.;    _max_M1    = 5000.;  _width_M1 = (_max_M1-_min_M1)/_nBins_M1;
@@ -801,54 +796,57 @@ void AliAnalysisTaskDptDptQA::UserCreateOutputObjects()
   
   if (_useWeights)
     {
-    int iZ, iEtaPhi, iPt;
-    int iZ1,iEtaPhi1,iPt1;
-    int a, b;
-    if (_weight_1)
-      {
-      _correctionWeight_1 = new float[_nBins_vertexZ*_nBins_etaPhi_1*_nBins_pt_1];
-      a = _nBins_pt_1;
-      b = _nBins_etaPhi_1*_nBins_pt_1;
-      for (iZ=0,iZ1=1; iZ<_nBins_vertexZ; iZ++, iZ1++)
-        {
-        for (iEtaPhi=0,iEtaPhi1=1; iEtaPhi<_nBins_etaPhi_1; iEtaPhi++, iEtaPhi1++)
-          {
-          for (iPt=0,iPt1=1; iPt<_nBins_pt_1; iPt++, iPt1++)
-            {
-            _correctionWeight_1[iZ*b+iEtaPhi*a+iPt] = _weight_1->GetBinContent(iZ1,iEtaPhi1,iPt1);
-            }      
-          }
-        }
-      } // _weight_1
-    else
-      {
-      AliError("AliAnalysisTaskDptDptQA:: _weight_1 is a null pointer.");
-      return;
-      }
-    if (!_sameFilter) 
-      {
-      if (_weight_2)
-        {
-        _correctionWeight_2 = new float[_nBins_vertexZ*_nBins_etaPhi_2*_nBins_pt_2];
-        a = _nBins_pt_2;
-        b = _nBins_etaPhi_2*_nBins_pt_2;
-        for (iZ=0,iZ1=1; iZ<_nBins_vertexZ; iZ++, iZ1++)
-          {
-          for (iEtaPhi=0,iEtaPhi1=1; iEtaPhi<_nBins_etaPhi_2; iEtaPhi++, iEtaPhi1++)
-            {
-            for (iPt=0,iPt1=1; iPt<_nBins_pt_2; iPt++, iPt1++)
-              {
-              _correctionWeight_2[iZ*b+iEtaPhi*a+iPt] = _weight_2->GetBinContent(iZ1,iEtaPhi1,iPt1);
-              }      
-            }
-          }
-        } // _weight_2
+      int iZ, iEtaPhi, iPt;
+      int iZ1,iEtaPhi1,iPt1;
+      int a, b;
+      if (_weight_1)
+	{
+
+	  cout<<"Prabhat Sanu weeding is here *************"<<"   "<<endl;
+
+	  _correctionWeight_1 = new float[_nBins_vertexZ*_nBins_etaPhi_1*_nBins_pt_1];
+	  a = _nBins_pt_1;
+	  b = _nBins_etaPhi_1*_nBins_pt_1;
+	  for (iZ=0,iZ1=1; iZ<_nBins_vertexZ; iZ++, iZ1++)
+	    {
+	      for (iEtaPhi=0,iEtaPhi1=1; iEtaPhi<_nBins_etaPhi_1; iEtaPhi++, iEtaPhi1++)
+		{
+		  for (iPt=0,iPt1=1; iPt<_nBins_pt_1; iPt++, iPt1++)
+		    {
+		      _correctionWeight_1[iZ*b+iEtaPhi*a+iPt] = _weight_1->GetBinContent(iZ1,iEtaPhi1,iPt1);
+		    }      
+		}
+	    }
+	} // _weight_1
       else
-        {
-        AliError("AliAnalysisTaskDptDptQA:: _weight_1 is a null pointer.");
-        return;
-        }
-      }
+	{
+	  AliError("AliAnalysisTaskDptDptQA:: _weight_1 is a null pointer.");
+	  return;
+	}
+      if (!_sameFilter) 
+	{
+	  if (_weight_2)
+	    {
+	      _correctionWeight_2 = new float[_nBins_vertexZ*_nBins_etaPhi_2*_nBins_pt_2];
+	      a = _nBins_pt_2;
+	      b = _nBins_etaPhi_2*_nBins_pt_2;
+	      for (iZ=0,iZ1=1; iZ<_nBins_vertexZ; iZ++, iZ1++)
+		{
+		  for (iEtaPhi=0,iEtaPhi1=1; iEtaPhi<_nBins_etaPhi_2; iEtaPhi++, iEtaPhi1++)
+		    {
+		      for (iPt=0,iPt1=1; iPt<_nBins_pt_2; iPt++, iPt1++)
+			{
+			  _correctionWeight_2[iZ*b+iEtaPhi*a+iPt] = _weight_2->GetBinContent(iZ1,iEtaPhi1,iPt1);
+			}      
+		    }
+		}
+	    } // _weight_2
+	  else
+	    {
+	      AliError("AliAnalysisTaskDptDptQA:: _weight_1 is a null pointer.");
+	      return;
+	    }
+	}
     }
   
   createHistograms();
@@ -884,39 +882,38 @@ void  AliAnalysisTaskDptDptQA::createHistograms()
   
   name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
   name = "Phi";     _phidis   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-
+  
   if (_singlesOnly)
     {
-    name = n1Name+part_1_Name+vsPt;              _n1_1_vsPt              = createHisto1F(name,name, _nBins_pt_1,  _min_pt_1,  _max_pt_1,   _title_pt_1,  _title_AvgN_1);
-    name = n1Name+part_1_Name+vsZ+vsEtaPhi+vsPt; _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F(name,name, _nBins_vertexZ,_min_vertexZ,_max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);
-    //name = "dedxVsP_1";                          _dedxVsP_1              = createHisto2F(name,name,400,-2.,2.,120,0.,120.,"p (GeV/c)", "dedx", "counts");
-    //name = "corrDedxVsP_1";                      _corrDedxVsP_1          = createHisto2F(name,name,400,-2.,2.,120,0.,120.,"p (GeV/c)", "dedx", "counts");
-    //name = "betaVsP_1";                          _betaVsP_1              = createHisto2F(name,name,400,-2.,2.,120,0.5,1.1,"p (GeV/c)", "beta", "counts");
-
-    name = n1Name+part_2_Name+vsPt;              _n1_2_vsPt              = createHisto1F(name,name, _nBins_pt_2,  _min_pt_2,  _max_pt_2,   _title_pt_2,  _title_AvgN_2);
-    name = n1Name+part_2_Name+vsZ+vsEtaPhi+vsPt; _n1_2_vsZVsEtaVsPhiVsPt = createHisto3F(name,name, _nBins_vertexZ,_min_vertexZ,_max_vertexZ, _nBins_etaPhi_2, 0., double(_nBins_etaPhi_2), _nBins_pt_2, _min_pt_2, _max_pt_2, "zVertex", _title_etaPhi_2,  _title_pt_2);
-    //name = "dedxVsP_2";                          _dedxVsP_2              = createHisto2F(name,name,400,-2.,2.,120,0.,120.,"p (GeV/c)", "dedx", "counts");
-    //name = "corrDedxVsP_2";                      _corrDedxVsP_2          = createHisto2F(name,name,400,-2.,2.,120,0.,120.,"p (GeV/c)", "dedx", "counts");
-    //name = "betaVsP_2";                          _betaVsP_2              = createHisto2F(name,name,400,-2.,2.,120,0.5,1.1,"p (GeV/c)", "beta", "counts");
-
+      name = n1Name+part_1_Name+vsPt;              _n1_1_vsPt              = createHisto1F(name,name, _nBins_pt_1,  _min_pt_1,  _max_pt_1,   _title_pt_1,  _title_AvgN_1);
+      name = n1Name+part_1_Name+vsZ+vsEtaPhi+vsPt; _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F(name,name, _nBins_vertexZ,_min_vertexZ,_max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);
+      //name = "dedxVsP_1";                          _dedxVsP_1              = createHisto2F(name,name,400,-2.,2.,120,0.,120.,"p (GeV/c)", "dedx", "counts");
+      //name = "corrDedxVsP_1";                      _corrDedxVsP_1          = createHisto2F(name,name,400,-2.,2.,120,0.,120.,"p (GeV/c)", "dedx", "counts");
+      //name = "betaVsP_1";                          _betaVsP_1              = createHisto2F(name,name,400,-2.,2.,120,0.5,1.1,"p (GeV/c)", "beta", "counts");
+      
+      name = n1Name+part_2_Name+vsPt;              _n1_2_vsPt              = createHisto1F(name,name, _nBins_pt_2,  _min_pt_2,  _max_pt_2,   _title_pt_2,  _title_AvgN_2);
+      name = n1Name+part_2_Name+vsZ+vsEtaPhi+vsPt; _n1_2_vsZVsEtaVsPhiVsPt = createHisto3F(name,name, _nBins_vertexZ,_min_vertexZ,_max_vertexZ, _nBins_etaPhi_2, 0., double(_nBins_etaPhi_2), _nBins_pt_2, _min_pt_2, _max_pt_2, "zVertex", _title_etaPhi_2,  _title_pt_2);
+      //name = "dedxVsP_2";                          _dedxVsP_2              = createHisto2F(name,name,400,-2.,2.,120,0.,120.,"p (GeV/c)", "dedx", "counts");
+      //name = "corrDedxVsP_2";                      _corrDedxVsP_2          = createHisto2F(name,name,400,-2.,2.,120,0.,120.,"p (GeV/c)", "dedx", "counts");
+      //name = "betaVsP_2";                          _betaVsP_2              = createHisto2F(name,name,400,-2.,2.,120,0.5,1.1,"p (GeV/c)", "beta", "counts");
     }
   else
     {
-    name = n1Name+part_1_Name+vsEtaPhi;       _n1_1_vsEtaVsPhi      = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgN_1);
-    name = s1ptName+part_1_Name+vsEtaPhi;     _s1pt_1_vsEtaVsPhi    = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgSumPt_1);
-    name = n1Name+part_1_Name+vsM;            _n1_1_vsM             = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
-    name = s1ptName+part_1_Name+vsM;          _s1pt_1_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
-    name = n1NwName+part_1_Name+vsM;          _n1Nw_1_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
-    name = s1ptNwName+part_1_Name+vsM;        _s1ptNw_1_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
-
-    name = n1Name+part_2_Name+vsEtaPhi;       _n1_2_vsEtaVsPhi      = createHisto2F(name,name, _nBins_eta_2, _min_eta_2, _max_eta_2,  _nBins_phi_2, _min_phi_2, _max_phi_2,  _title_eta_2,  _title_phi_2,  _title_AvgN_2);
-    name = s1ptName+part_2_Name+vsEtaPhi;     _s1pt_2_vsEtaVsPhi    = createHisto2F(name,name, _nBins_eta_2, _min_eta_2, _max_eta_2,  _nBins_phi_2, _min_phi_2, _max_phi_2,  _title_eta_2,  _title_phi_2,  _title_AvgSumPt_2);
-    name = n1Name+part_2_Name + vsM;          _n1_2_vsM             = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_2);
-    name = s1ptName+part_2_Name + vsM;        _s1pt_2_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_2);
-    name = n1NwName+part_2_Name+vsM;          _n1Nw_2_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
-    name = s1ptNwName+part_2_Name+vsM;        _s1ptNw_2_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
-
-    name = n2Name+pair_12_Name+vsEtaPhi;      _n2_12_vsEtaPhi       = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12, _title_AvgN2_12);        
+      name = n1Name+part_1_Name+vsEtaPhi;       _n1_1_vsEtaVsPhi      = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgN_1);
+      name = s1ptName+part_1_Name+vsEtaPhi;     _s1pt_1_vsEtaVsPhi    = createHisto2F(name,name, _nBins_eta_1, _min_eta_1, _max_eta_1,  _nBins_phi_1, _min_phi_1, _max_phi_1,  _title_eta_1,  _title_phi_1,  _title_AvgSumPt_1);
+      name = n1Name+part_1_Name+vsM;            _n1_1_vsM             = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
+      name = s1ptName+part_1_Name+vsM;          _s1pt_1_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
+      name = n1NwName+part_1_Name+vsM;          _n1Nw_1_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
+      name = s1ptNwName+part_1_Name+vsM;        _s1ptNw_1_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
+      
+      name = n1Name+part_2_Name+vsEtaPhi;       _n1_2_vsEtaVsPhi      = createHisto2F(name,name, _nBins_eta_2, _min_eta_2, _max_eta_2,  _nBins_phi_2, _min_phi_2, _max_phi_2,  _title_eta_2,  _title_phi_2,  _title_AvgN_2);
+      name = s1ptName+part_2_Name+vsEtaPhi;     _s1pt_2_vsEtaVsPhi    = createHisto2F(name,name, _nBins_eta_2, _min_eta_2, _max_eta_2,  _nBins_phi_2, _min_phi_2, _max_phi_2,  _title_eta_2,  _title_phi_2,  _title_AvgSumPt_2);
+      name = n1Name+part_2_Name + vsM;          _n1_2_vsM             = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_2);
+      name = s1ptName+part_2_Name + vsM;        _s1pt_2_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_2);
+      name = n1NwName+part_2_Name+vsM;          _n1Nw_2_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
+      name = s1ptNwName+part_2_Name+vsM;        _s1ptNw_2_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
+      
+      name = n2Name+pair_12_Name+vsEtaPhi;      _n2_12_vsEtaPhi       = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12, _title_AvgN2_12);        
     name = s2PtPtName+pair_12_Name + vsEtaPhi;_s2PtPt_12_vsEtaPhi   = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgSumPtPt_12);    
     name = s2PtNName+pair_12_Name + vsEtaPhi; _s2PtN_12_vsEtaPhi    = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgSumPtN_12);    
     name = s2NPtName+pair_12_Name + vsEtaPhi; _s2NPt_12_vsEtaPhi    = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgNSumPt_12);    
@@ -1190,8 +1187,10 @@ void  AliAnalysisTaskDptDptQA::UserExec(Option_t */*option*/)
       _etadis->Fill(eta);                                                                          
       _phidis->Fill(phi);   
       
-      //Particle 1
-      if (_requestedCharge_1 == charge) 
+      //Particle 1 
+      if (_requestedCharge_1 == charge &&
+	  eta      >=  0.2 &&
+	  eta      <   0.3)
         {
 	  iPhi   = int( phi/_width_phi_1);
 	  
@@ -1263,8 +1262,10 @@ void  AliAnalysisTaskDptDptQA::UserExec(Option_t */*option*/)
 	    }
         }
       
-      if (!_sameFilter && _requestedCharge_2 == charge)  
-        {
+      if (!_sameFilter && _requestedCharge_2 == charge &&
+          eta      >=  -0.8 &&
+	  eta      <   0.8)        
+	{
 	  iPhi   = int( phi/_width_phi_2);
 	  if (iPhi<0 || iPhi>=_nBins_phi_2 ) 
 	    {
