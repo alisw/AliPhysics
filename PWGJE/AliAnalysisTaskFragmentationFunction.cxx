@@ -94,6 +94,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fJetEtaMax(0)
    ,fJetPhiMin(0)
    ,fJetPhiMax(0)
+   ,fJetMinArea(0)
    ,fFFRadius(0)
    ,fFFMinLTrackPt(-1)
    ,fFFMaxTrackPt(-1)
@@ -295,6 +296,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fJetEtaMax(0)
   ,fJetPhiMin(0)
   ,fJetPhiMax(0)
+  ,fJetMinArea(0)
   ,fFFRadius(0)
   ,fFFMinLTrackPt(-1)
   ,fFFMaxTrackPt(-1)
@@ -497,6 +499,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fJetEtaMax(copy.fJetEtaMax)
   ,fJetPhiMin(copy.fJetPhiMin)
   ,fJetPhiMax(copy.fJetPhiMax)
+  ,fJetMinArea(copy.fJetMinArea)
   ,fFFRadius(copy.fFFRadius)
   ,fFFMinLTrackPt(copy.fFFMinLTrackPt)
   ,fFFMaxTrackPt(copy.fFFMaxTrackPt)
@@ -703,6 +706,7 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fJetEtaMax                     = o.fJetEtaMax;
     fJetPhiMin                     = o.fJetPhiMin;
     fJetPhiMax                     = o.fJetPhiMin;
+    fJetMinArea                    = o.fJetMinArea;
     fFFRadius                      = o.fFFRadius;
     fFFMinLTrackPt                 = o.fFFMinLTrackPt;
     fFFMaxTrackPt                  = o.fFFMaxTrackPt;
@@ -3027,6 +3031,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
       if(!tmp) continue;
 
       if( tmp->Pt() < fJetPtCut ) continue;
+      if( tmp->EffectiveAreaCharged() < fJetMinArea ) continue;
       if( type == kJetsRecAcceptance &&
 	  (    tmp->Eta() < fJetEtaMin
 	    || tmp->Eta() > fJetEtaMax
@@ -3133,6 +3138,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
       if(!tmp) continue;
 	  
       if( tmp->Pt() < fJetPtCut ) continue;
+      if( tmp->EffectiveAreaCharged() < fJetMinArea ) continue;
       if( type == kJetsGenAcceptance &&
 	  (    tmp->Eta() < fJetEtaMin
 	    || tmp->Eta() > fJetEtaMax
@@ -3173,6 +3179,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
       if(!tmp) continue;
 
       if( tmp->Pt() < fJetPtCut ) continue;
+      if( tmp->EffectiveAreaCharged() < fJetMinArea ) continue;
       if(    tmp->Eta() < fJetEtaMin
 	  || tmp->Eta() > fJetEtaMax
 	  || tmp->Phi() < fJetPhiMin

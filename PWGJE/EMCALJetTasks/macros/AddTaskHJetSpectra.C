@@ -2,7 +2,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            jetRadius               = 0.4,  //radius of analyzed jets
   Double_t            jetRadiusBg             = 0.3,  //radius of jets to be removed when estimating cell median bg
   Int_t               trigger                 = AliVEvent::kINT7,  //trigger
-  Bool_t              isMC                    = kFALSE,  //MC flag
+  Int_t               isMC                    = 0,  //MC flag
   Double_t            randomConeR             = 0.4,  //random cone for deltaPt + perp cone bg
   const char*         containerSuffix         = "",   //tag to the name of container
   const char*         usedTracks              = "PicoTracks",  //tracks
@@ -15,7 +15,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            ttHigh                  = 50.0,     // trigger hadron high pT
   Int_t               ttType                  = 0,        // 0= single inclusive hadron trigger, else inclusive hadron trigger
   Double_t            dphi                    = 0.6, // |Delta phi_jet, trigger|< pi-0.6
-  Double_t            binning                 = 0    //binning of jet histograms 0=2GeV width  1=1GeV width
+  Bool_t              binning                 = 0    //binning of jet histograms 0=2GeV width  1=1GeV width
 ){
 
 
@@ -82,7 +82,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
                                                                0.4,  //jet radius
                                                              "TPC",  //cut type
                                                                 0.,  //jet area cut
-                                                               10.,  //jet pt cut ????????
+                                                               15.,  //jet pt cut ????????
                                                                  0,  //enareacut 
                                                                  0,  //sfunc
                                                                  1,  //excl Jets  //FK// ????????
@@ -116,7 +116,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    //task->SetMC(isMC);
    task->SetNofRandomCones(1);
 
-   if(isMC) task->SetAnalyzePythia(1);
+   if(isMC) task->SetAnalyzeMC(isMC);
 
    // output container
    contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChJetSpectra%s", AliAnalysisManager::GetCommonFileName(), myContName.Data()));

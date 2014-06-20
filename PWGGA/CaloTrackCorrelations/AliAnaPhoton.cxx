@@ -461,7 +461,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
           photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
           photonE   = prim->Energy() ;
           photonPt  = prim->Pt() ;
-          photonPhi = TMath::RadToDeg()*prim->Phi() ;
+          photonPhi = prim->Phi() ;
           if(photonPhi < 0) photonPhi+=TMath::TwoPi();
           photonEta = prim->Eta() ;
           
@@ -1368,7 +1368,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
   }// if track-matching was of, check effect of matching residual cut
   
   
-  if(!fFillOnlySimpleSSHisto){
+  if(!fFillOnlySimpleSSHisto)
+  {
     if(energy < 2)
     {
       fhNCellsLam0LowE ->Fill(ncells,lambda0);
@@ -1394,6 +1395,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
       fhPhiLam0HighE   ->Fill(phi, lambda0);
     }
   }
+  
   if(IsDataMC())
   {
     AliVCaloCells* cells = 0;
@@ -1427,11 +1429,11 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
     }  // embedded fraction
     
     // Get the fraction of the cluster energy that carries the cell with highest energy
-    Int_t   absID           =-1 ;
     Float_t maxCellFraction = 0.;
+    Int_t absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
     
-    absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
-    
+    if( absID < 0 ) AliFatal("Wrong absID");
+      
     // Check the origin and fill histograms
     
     Int_t mcIndex = -1;
@@ -1801,8 +1803,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhClusterCuts[i] = new TH1F(Form("hCut_%d_%s", i, cut[i].Data()),
                                 Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
                                 nptbins,ptmin,ptmax);
-    fhClusterCuts[i]->SetYTitle("dN/dE ");
-    fhClusterCuts[i]->SetXTitle("E (GeV)");
+    fhClusterCuts[i]->SetYTitle("d#it{N}/d#it{E} ");
+    fhClusterCuts[i]->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhClusterCuts[i]) ;
   }
   
@@ -1810,73 +1812,73 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
                           nptbins,ptmin,ptmax,
                           GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
   fhEClusterSM->SetYTitle("SuperModule ");
-  fhEClusterSM->SetXTitle("E (GeV)");
+  fhEClusterSM->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhEClusterSM) ;
 
-  fhPtClusterSM = new TH2F("hPtClusterSM","Raw clusters p_{T} and super-module number",
+  fhPtClusterSM = new TH2F("hPtClusterSM","Raw clusters #it{p}_[T] and super-module number",
                           nptbins,ptmin,ptmax,
                           GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
   fhPtClusterSM->SetYTitle("SuperModule ");
-  fhPtClusterSM->SetXTitle("E (GeV)");
+  fhPtClusterSM->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhPtClusterSM) ;
   
   fhEPhotonSM = new TH2F("hEPhotonSM","Selected clusters E and super-module number",
                           nptbins,ptmin,ptmax,
                           GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
   fhEPhotonSM->SetYTitle("SuperModule ");
-  fhEPhotonSM->SetXTitle("E (GeV)");
+  fhEPhotonSM->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhEPhotonSM) ;
   
-  fhPtPhotonSM = new TH2F("hPtPhotonSM","Selected clusters p_{T} and super-module number",
+  fhPtPhotonSM = new TH2F("hPtPhotonSM","Selected clusters #it{p}_[T] and super-module number",
                            nptbins,ptmin,ptmax,
                            GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
   fhPtPhotonSM->SetYTitle("SuperModule ");
-  fhPtPhotonSM->SetXTitle("E (GeV)");
+  fhPtPhotonSM->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhPtPhotonSM) ;
   
   fhNCellsE  = new TH2F ("hNCellsE","# of cells in cluster vs E of clusters", nptbins,ptmin,ptmax, nbins,nmin,nmax);
-  fhNCellsE->SetXTitle("E (GeV)");
+  fhNCellsE->SetXTitle("#it{E} (GeV)");
   fhNCellsE->SetYTitle("# of cells in cluster");
   outputContainer->Add(fhNCellsE);
   
   fhCellsE  = new TH2F ("hCellsE","energy of cells in cluster vs E of clusters", nptbins,ptmin,ptmax, nptbins*2,ptmin,ptmax);
-  fhCellsE->SetXTitle("E_{cluster} (GeV)");
-  fhCellsE->SetYTitle("E_{cell} (GeV)");
+  fhCellsE->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhCellsE->SetYTitle("#it{E}_{cell} (GeV)");
   outputContainer->Add(fhCellsE);
   
   fhTimePt  = new TH2F ("hTimePt","time of cluster vs pT of clusters", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-  fhTimePt->SetXTitle("p_{T} (GeV/c)");
-  fhTimePt->SetYTitle("time (ns)");
+  fhTimePt->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+  fhTimePt->SetYTitle("#it{time} (ns)");
   outputContainer->Add(fhTimePt);
   
   fhMaxCellDiffClusterE  = new TH2F ("hMaxCellDiffClusterE","energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",
                                      nptbins,ptmin,ptmax, 500,0,1.);
-  fhMaxCellDiffClusterE->SetXTitle("E_{cluster} (GeV) ");
-  fhMaxCellDiffClusterE->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster}");
+  fhMaxCellDiffClusterE->SetXTitle("#it{E}_{cluster} (GeV) ");
+  fhMaxCellDiffClusterE->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
   outputContainer->Add(fhMaxCellDiffClusterE);
   
   fhEPhoton  = new TH1F("hEPhoton","Number of #gamma over calorimeter vs energy",nptbins,ptmin,ptmax);
-  fhEPhoton->SetYTitle("N");
-  fhEPhoton->SetXTitle("E_{#gamma}(GeV)");
+  fhEPhoton->SetYTitle("#it{counts}");
+  fhEPhoton->SetXTitle("#it{E}_{#gamma}(GeV)");
   outputContainer->Add(fhEPhoton) ;
   
-  fhPtPhoton  = new TH1F("hPtPhoton","Number of #gamma over calorimeter vs p_{T}",nptbins,ptmin,ptmax);
-  fhPtPhoton->SetYTitle("N");
-  fhPtPhoton->SetXTitle("p_{T #gamma}(GeV/c)");
+  fhPtPhoton  = new TH1F("hPtPhoton","Number of #gamma over calorimeter vs #it{p}_[T]",nptbins,ptmin,ptmax);
+  fhPtPhoton->SetYTitle("#it{counts}");
+  fhPtPhoton->SetXTitle("p_{T #gamma}(GeV/#it{c})");
   outputContainer->Add(fhPtPhoton) ;
   
-  fhPtCentralityPhoton  = new TH2F("hPtCentralityPhoton","centrality vs p_{T}",nptbins,ptmin,ptmax, 100,0,100);
+  fhPtCentralityPhoton  = new TH2F("hPtCentralityPhoton","centrality vs #it{p}_[T]",nptbins,ptmin,ptmax, 100,0,100);
   fhPtCentralityPhoton->SetYTitle("Centrality");
-  fhPtCentralityPhoton->SetXTitle("p_{T}(GeV/c)");
+  fhPtCentralityPhoton->SetXTitle("#it{p}_[T](GeV/#it{c})");
   outputContainer->Add(fhPtCentralityPhoton) ;
   
-  fhPtEventPlanePhoton  = new TH2F("hPtEventPlanePhoton","centrality vs p_{T}",nptbins,ptmin,ptmax, 100,0,TMath::Pi());
+  fhPtEventPlanePhoton  = new TH2F("hPtEventPlanePhoton","centrality vs #it{p}_[T]",nptbins,ptmin,ptmax, 100,0,TMath::Pi());
   fhPtEventPlanePhoton->SetYTitle("Event plane angle (rad)");
-  fhPtEventPlanePhoton->SetXTitle("p_{T} (GeV/c)");
+  fhPtEventPlanePhoton->SetXTitle("#it{p}_[T] (GeV/#it{c})");
   outputContainer->Add(fhPtEventPlanePhoton) ;
   
   fhEtaPhi  = new TH2F
-  ("hEtaPhi","cluster,E > 0.5 GeV, #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax);
+  ("hEtaPhi","cluster,#it{E} > 0.5 GeV, #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax);
   fhEtaPhi->SetYTitle("#phi (rad)");
   fhEtaPhi->SetXTitle("#eta");
   outputContainer->Add(fhEtaPhi) ;
@@ -1884,19 +1886,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if(fCalorimeter=="EMCAL" && fFillEMCALBCHistograms)
   {
     fhEtaPhiEMCALBC0  = new TH2F
-    ("hEtaPhiEMCALBC0","cluster,E > 2 GeV, #eta vs #phi, for clusters with |time| < 25 ns, EMCAL-BC=0",netabins,etamin,etamax,nphibins,phimin,phimax);
+    ("hEtaPhiEMCALBC0","cluster,#it{E} > 2 GeV, #eta vs #phi, for clusters with |time| < 25 ns, EMCAL-BC=0",netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiEMCALBC0->SetYTitle("#phi (rad)");
     fhEtaPhiEMCALBC0->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiEMCALBC0) ;
     
     fhEtaPhiEMCALBC1  = new TH2F
-    ("hEtaPhiEMCALBC1","cluster,E > 2 GeV, #eta vs #phi, for clusters with 25 < |time| < 75 ns, EMCAL-BC=1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    ("hEtaPhiEMCALBC1","cluster,#it{E} > 2 GeV, #eta vs #phi, for clusters with 25 < |time| < 75 ns, EMCAL-BC=1",netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiEMCALBC1->SetYTitle("#phi (rad)");
     fhEtaPhiEMCALBC1->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiEMCALBC1) ;
     
     fhEtaPhiEMCALBCN  = new TH2F
-    ("hEtaPhiEMCALBCN","cluster,E > 2 GeV, #eta vs #phi, for clusters with |time| > 75 ns, EMCAL-BC>1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    ("hEtaPhiEMCALBCN","cluster,#it{E} > 2 GeV, #eta vs #phi, for clusters with |time| > 75 ns, EMCAL-BC>1",netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiEMCALBCN->SetYTitle("#phi (rad)");
     fhEtaPhiEMCALBCN->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiEMCALBCN) ;
@@ -1905,7 +1907,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     {
       fhEtaPhiTriggerEMCALBC[i] = new TH2F
       (Form("hEtaPhiTriggerEMCALBC%d",i-iBCShift),
-       Form("cluster E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=%d",i-iBCShift),
+       Form("cluster #it{E} > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=%d",i-iBCShift),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBC[i]->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBC[i]->SetXTitle("#eta");
@@ -1913,23 +1915,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBC[i] = new TH2F
       (Form("hTimeTriggerEMCALBC%d",i-iBCShift),
-       Form("cluster time vs E of clusters, Trigger EMCAL-BC=%d",i-iBCShift),
+       Form("cluster #it{time} vs #it{E} of clusters, Trigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBC[i]->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBC[i]->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBC[i]->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBC[i]->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBC[i]);
       
       fhTimeTriggerEMCALBCPileUpSPD[i] = new TH2F
       (Form("hTimeTriggerEMCALBC%dPileUpSPD",i-iBCShift),
-       Form("cluster time vs E of clusters, Trigger EMCAL-BC=%d",i-iBCShift),
+       Form("cluster #it{time} vs #it{E} of clusters, Trigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCPileUpSPD[i]->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCPileUpSPD[i]->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCPileUpSPD[i]->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCPileUpSPD[i]->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCPileUpSPD[i]);
       
       fhEtaPhiTriggerEMCALBCUM[i] = new TH2F
       (Form("hEtaPhiTriggerEMCALBC%d_UnMatch",i-iBCShift),
-       Form("cluster E > 2 GeV, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-iBCShift),
+       Form("cluster #it{E} > 2 GeV, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-iBCShift),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCUM[i]->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCUM[i]->SetXTitle("#eta");
@@ -1937,10 +1939,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCUM[i] = new TH2F
       (Form("hTimeTriggerEMCALBC%d_UnMatch",i-iBCShift),
-       Form("cluster time vs E of clusters, unmatched trigger EMCAL-BC=%d",i-iBCShift),
+       Form("cluster #it{time} vs #it{E} of clusters, unmatched trigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCUM[i]->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCUM[i]->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCUM[i]->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCUM[i]->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCUM[i]);
       
       fhEtaPhiTriggerEMCALBCCluster[i] = new TH2F
@@ -1961,22 +1963,22 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     }
     
     fhTimeTriggerEMCALBCCluster = new TH2F("hTimeTriggerEMCALBC_OnlyTrigger",
-                                           "trigger cluster time vs E of clusters",
+                                           "trigger cluster #it{time} vs #it{E} of clusters",
                                            nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCCluster->SetYTitle("time (ns)");
+    fhTimeTriggerEMCALBCCluster->SetXTitle("#it{E} (GeV)");
+    fhTimeTriggerEMCALBCCluster->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeTriggerEMCALBCCluster);
     
     fhTimeTriggerEMCALBCUMCluster = new TH2F("hTimeTriggerEMCALBC_OnlyTrigger_UnMatch",
-                                             "trigger cluster time vs E of clusters, unmatched trigger",
+                                             "trigger cluster #it{time} vs #it{E} of clusters, unmatched trigger",
                                              nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMCluster->SetYTitle("time (ns)");
+    fhTimeTriggerEMCALBCUMCluster->SetXTitle("#it{E} (GeV)");
+    fhTimeTriggerEMCALBCUMCluster->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeTriggerEMCALBCUMCluster);
     
     fhEtaPhiTriggerEMCALBCClusterOverTh = new TH2F
     ("hEtaPhiTriggerEMCALBC0_OnlyTrigger_OverThreshold",
-     "trigger cluster E > trigger threshold, #eta vs #phi, Trigger EMCAL-BC=0",
+     "trigger cluster #it{E} > trigger threshold, #eta vs #phi, Trigger EMCAL-BC=0",
      netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiTriggerEMCALBCClusterOverTh->SetYTitle("#phi (rad)");
     fhEtaPhiTriggerEMCALBCClusterOverTh->SetXTitle("#eta");
@@ -1984,7 +1986,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     fhEtaPhiTriggerEMCALBCUMClusterOverTh = new TH2F
     ("hEtaPhiTriggerEMCALBC0_OnlyTrigger_OverThreshold_UnMatch",
-     "trigger cluster E > trigger threshold, #eta vs #phi, unmatched trigger EMCAL-BC=0",
+     "trigger cluster #it{E} > trigger threshold, #eta vs #phi, unmatched trigger EMCAL-BC=0",
      netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiTriggerEMCALBCUMClusterOverTh->SetYTitle("#phi (rad)");
     fhEtaPhiTriggerEMCALBCUMClusterOverTh->SetXTitle("#eta");
@@ -1992,7 +1994,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     fhEtaPhiTriggerEMCALBCClusterBelowTh1 = new TH2F
     ("hEtaPhiTriggerEMCALBC0_OnlyTrigger_BelowThreshold1",
-     "trigger cluster thresh-1 < E < thres, #eta vs #phi, Trigger EMCAL-BC=0",
+     "trigger cluster thresh-1 < #it{E} < thres, #eta vs #phi, Trigger EMCAL-BC=0",
      netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiTriggerEMCALBCClusterBelowTh1->SetYTitle("#phi (rad)");
     fhEtaPhiTriggerEMCALBCClusterBelowTh1->SetXTitle("#eta");
@@ -2000,7 +2002,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     fhEtaPhiTriggerEMCALBCUMClusterBelowTh1 = new TH2F
     ("hEtaPhiTriggerEMCALBC0_OnlyTrigger_BelowThreshold1_UnMatch",
-     "trigger cluster thresh-1 < E < thres, #eta vs #phi, unmatched trigger EMCAL-BC=0",
+     "trigger cluster thresh-1 < #it{E} < thres, #eta vs #phi, unmatched trigger EMCAL-BC=0",
      netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiTriggerEMCALBCUMClusterBelowTh1->SetYTitle("#phi (rad)");
     fhEtaPhiTriggerEMCALBCUMClusterBelowTh1->SetXTitle("#eta");
@@ -2008,7 +2010,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     fhEtaPhiTriggerEMCALBCClusterBelowTh2 = new TH2F
     ("hEtaPhiTriggerEMCALBC0_OnlyTrigger_BelowThreshold2",
-     "trigger cluster thresh-2 < E < thres, #eta vs #phi, Trigger EMCAL-BC=0",
+     "trigger cluster thresh-2 < #it{E} < thres, #eta vs #phi, Trigger EMCAL-BC=0",
      netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiTriggerEMCALBCClusterBelowTh2->SetYTitle("#phi (rad)");
     fhEtaPhiTriggerEMCALBCClusterBelowTh2->SetXTitle("#eta");
@@ -2016,7 +2018,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     fhEtaPhiTriggerEMCALBCUMClusterBelowTh2 = new TH2F
     ("hEtaPhiTriggerEMCALBC0_OnlyTrigger_BelowThreshold2_UnMatch",
-     "trigger cluster thresh-2 < E < thres, #eta vs #phi, unmatched trigger EMCAL-BC=0",
+     "trigger cluster thresh-2 < #it{E} < thres, #eta vs #phi, unmatched trigger EMCAL-BC=0",
      netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiTriggerEMCALBCUMClusterBelowTh2->SetYTitle("#phi (rad)");
     fhEtaPhiTriggerEMCALBCUMClusterBelowTh2->SetXTitle("#eta");
@@ -2026,7 +2028,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     {
       fhEtaPhiTriggerEMCALBCExotic = new TH2F
       ("hEtaPhiTriggerExotic",
-       "cluster E > 2 GeV, #eta vs #phi, Trigger Exotic",
+       "cluster #it{E} > 2 GeV, #eta vs #phi, Trigger Exotic",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCExotic->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCExotic->SetXTitle("#eta");
@@ -2034,15 +2036,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCExotic = new TH2F
       ("hTimeTriggerExotic",
-       "cluster time vs E of clusters, Trigger Exotic ",
+       "cluster #it{time} vs #it{E} of clusters, Trigger Exotic ",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCExotic->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCExotic->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCExotic->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCExotic->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCExotic);
       
       fhEtaPhiTriggerEMCALBCUMExotic = new TH2F
       ("hEtaPhiTriggerExotic_UnMatch",
-       "cluster E > 2 GeV, #eta vs #phi, unmatched trigger Exotic",
+       "cluster #it{E} > 2 GeV, #eta vs #phi, unmatched trigger Exotic",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCUMExotic->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCUMExotic->SetXTitle("#eta");
@@ -2050,15 +2052,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCUMExotic = new TH2F
       ("hTimeTriggerExotic_UnMatch",
-       "cluster time vs E of clusters, unmatched trigger Exotic",
+       "cluster #it{time} vs #it{E} of clusters, unmatched trigger Exotic",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCUMExotic->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCUMExotic->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCUMExotic->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCUMExotic->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCUMExotic);
       
       fhEtaPhiTriggerEMCALBCExoticCluster = new TH2F
       ("hEtaPhiTriggerExotic_OnlyTrigger",
-       "trigger cluster E > 2 GeV, #eta vs #phi, Trigger Exotic",
+       "trigger cluster #it{E} > 2 GeV, #eta vs #phi, Trigger Exotic",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCExoticCluster->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCExoticCluster->SetXTitle("#eta");
@@ -2066,15 +2068,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCExoticCluster = new TH2F
       ("hTimeTriggerExotic_OnlyTrigger",
-       "trigger cluster time vs E of clusters, Trigger Exotic",
+       "trigger cluster #it{time} vs #it{E} of clusters, Trigger Exotic",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCExoticCluster->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCExoticCluster->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCExoticCluster->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCExoticCluster->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCExoticCluster);
       
       fhEtaPhiTriggerEMCALBCUMExoticCluster = new TH2F
       ("hEtaPhiTriggerExotic_OnlyTrigger_UnMatch",
-       "trigger cluster E > 2 GeV, #eta vs #phi, unmatched trigger Exotic",
+       "trigger cluster #it{E} > 2 GeV, #eta vs #phi, unmatched trigger Exotic",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCUMExoticCluster->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCUMExoticCluster->SetXTitle("#eta");
@@ -2082,15 +2084,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCUMExoticCluster = new TH2F
       ("hTimeTriggerExotic_OnlyTrigger_UnMatch",
-       "trigger cluster time vs E of clusters, unmatched trigger Exotic",
+       "trigger cluster #it{time} vs #it{E} of clusters, unmatched trigger Exotic",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCUMExoticCluster->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCUMExoticCluster->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCUMExoticCluster->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCUMExoticCluster->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCUMExoticCluster);
       
       fhEtaPhiTriggerEMCALBCBad = new TH2F
       ("hEtaPhiTriggerBad",
-       "cluster E > 2 GeV, #eta vs #phi, Trigger Bad",
+       "cluster #it{E} > 2 GeV, #eta vs #phi, Trigger Bad",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCBad->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCBad->SetXTitle("#eta");
@@ -2098,15 +2100,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCBad = new TH2F
       ("hTimeTriggerBad",
-       "cluster time vs E of clusters, Trigger Bad ",
+       "cluster #it{time} vs #it{E} of clusters, Trigger Bad ",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCBad->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCBad->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCBad->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCBad->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCBad);
       
       fhEtaPhiTriggerEMCALBCUMBad = new TH2F
       ("hEtaPhiTriggerBad_UnMatch",
-       "cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad",
+       "cluster #it{E} > 2 GeV, #eta vs #phi, unmatched trigger Bad",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCUMBad->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCUMBad->SetXTitle("#eta");
@@ -2114,15 +2116,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCUMBad = new TH2F
       ("hTimeTriggerBad_UnMatch",
-       "cluster time vs E of clusters, unmatched trigger Bad",
+       "cluster #it{time} vs #it{E} of clusters, unmatched trigger Bad",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCUMBad->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCUMBad->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCUMBad->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCUMBad->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCUMBad);
       
       fhEtaPhiTriggerEMCALBCBadCluster = new TH2F
       ("hEtaPhiTriggerBad_OnlyTrigger",
-       "trigger cluster E > 2 GeV, #eta vs #phi, Trigger Bad",
+       "trigger cluster #it{E} > 2 GeV, #eta vs #phi, Trigger Bad",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCBadCluster->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCBadCluster->SetXTitle("#eta");
@@ -2130,15 +2132,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCBadCluster = new TH2F
       ("hTimeTriggerBad_OnlyTrigger",
-       "trigger cluster time vs E of clusters, Trigger Bad",
+       "trigger cluster #it{time} vs #it{E} of clusters, Trigger Bad",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCBadCluster->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCBadCluster->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCBadCluster->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCBadCluster->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCBadCluster);
       
       fhEtaPhiTriggerEMCALBCUMBadCluster = new TH2F
       ("hEtaPhiTriggerBad_OnlyTrigger_UnMatch",
-       "trigger cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad",
+       "trigger cluster #it{E} > 2 GeV, #eta vs #phi, unmatched trigger Bad",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCUMBadCluster->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCUMBadCluster->SetXTitle("#eta");
@@ -2146,15 +2148,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCUMBadCluster = new TH2F
       ("hTimeTriggerBad_OnlyTrigger_UnMatch",
-       "trigger cluster time vs E of clusters, unmatched trigger Bad",
+       "trigger cluster time vs #it{E} of clusters, unmatched trigger Bad",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCUMBadCluster->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCUMBadCluster->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCUMBadCluster->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCUMBadCluster->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCUMBadCluster);
       
       fhEtaPhiTriggerEMCALBCBadExotic = new TH2F
       ("hEtaPhiTriggerBadExotic",
-       "cluster E > 2 GeV, #eta vs #phi, Trigger Bad&Exotic",
+       "cluster #it{E} > 2 GeV, #eta vs #phi, Trigger Bad&Exotic",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCBadExotic->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCBadExotic->SetXTitle("#eta");
@@ -2162,15 +2164,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCBadExotic = new TH2F
       ("hTimeTriggerBadExotic",
-       "cluster time vs E of clusters, Trigger Bad&Exotic ",
+       "cluster #it{time} vs #it{E} of clusters, Trigger Bad&Exotic ",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCBadExotic->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCBadExotic->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCBadExotic->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCBadExotic->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCBadExotic);
       
       fhEtaPhiTriggerEMCALBCUMBadExotic = new TH2F
       ("hEtaPhiTriggerBadExotic_UnMatch",
-       "cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad&Exotic",
+       "cluster #it{E} > 2 GeV, #eta vs #phi, unmatched trigger Bad&Exotic",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCUMBadExotic->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCUMBadExotic->SetXTitle("#eta");
@@ -2178,15 +2180,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCUMBadExotic = new TH2F
       ("hTimeTriggerBadExotic_UnMatch",
-       "cluster time vs E of clusters, unmatched trigger Bad&Exotic",
+       "cluster #it{time} vs #it{E} of clusters, unmatched trigger Bad&Exotic",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCUMBadExotic->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCUMBadExotic->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCUMBadExotic->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCUMBadExotic->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCUMBadExotic);
       
       fhEtaPhiTriggerEMCALBCBadExoticCluster = new TH2F
       ("hEtaPhiTriggerBadExotic_OnlyTrigger",
-       "trigger cluster E > 2 GeV, #eta vs #phi, Trigger Bad&Exotic",
+       "trigger cluster #it{E} > 2 GeV, #eta vs #phi, Trigger Bad&Exotic",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCBadExoticCluster->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCBadExoticCluster->SetXTitle("#eta");
@@ -2194,15 +2196,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCBadExoticCluster = new TH2F
       ("hTimeTriggerBadExotic_OnlyTrigger",
-       "trigger cluster time vs E of clusters, Trigger Bad&Exotic",
+       "trigger cluster #it{time} vs #it{E} of clusters, Trigger Bad&Exotic",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCBadExoticCluster->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCBadExoticCluster->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCBadExoticCluster->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCBadExoticCluster->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCBadExoticCluster);
       
       fhEtaPhiTriggerEMCALBCUMBadExoticCluster = new TH2F
       ("hEtaPhiTriggerBadExotic_OnlyTrigger_UnMatch",
-       "trigger cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad&Exotic",
+       "trigger cluster #it{E} > 2 GeV, #eta vs #phi, unmatched trigger Bad&Exotic",
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCUMBadExoticCluster->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCUMBadExoticCluster->SetXTitle("#eta");
@@ -2210,51 +2212,51 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimeTriggerEMCALBCUMBadExoticCluster = new TH2F
       ("hTimeTriggerBadExotic_OnlyTrigger_UnMatch",
-       "trigger cluster time vs E of clusters, unmatched trigger Bad&Exotic",
+       "trigger cluster #it{time} vs #it{E} of clusters, unmatched trigger Bad&Exotic",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCUMBadExoticCluster->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCUMBadExoticCluster->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCUMBadExoticCluster->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCUMBadExoticCluster->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCUMBadExoticCluster);
       
       fhTimeTriggerEMCALBCBadMaxCell = new TH2F
       ("hTimeTriggerBadMaxCell",
-       "cluster time vs E of clusters, Trigger BadMaxCell",
+       "cluster #it{time} vs #it{E} of clusters, Trigger BadMaxCell",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCBadMaxCell->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCBadMaxCell->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCBadMaxCell->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCBadMaxCell->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCBadMaxCell);
       
       fhTimeTriggerEMCALBCUMBadMaxCell = new TH2F
       ("hTimeTriggerBadMaxCell_UnMatch",
-       "cluster time vs E of clusters, unmatched trigger BadMaxCell",
+       "cluster #it{time} vs #it{E} of clusters, unmatched trigger BadMaxCell",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCUMBadMaxCell->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCUMBadMaxCell->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCUMBadMaxCell->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCUMBadMaxCell->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCUMBadMaxCell);
       
       
       fhTimeTriggerEMCALBCBadMaxCellExotic = new TH2F
       ("hTimeTriggerBadMaxCellExotic",
-       "cluster time vs E of clusters, Trigger BadMaxCell&Exotic",
+       "cluster #it{time} vs #it{E} of clusters, Trigger BadMaxCell&Exotic",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCBadMaxCellExotic->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCBadMaxCellExotic->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCBadMaxCellExotic->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCBadMaxCellExotic->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCBadMaxCellExotic);
       
       fhTimeTriggerEMCALBCUMBadMaxCellExotic = new TH2F
       ("hTimeTriggerBadMaxCellExotic_UnMatch",
-       "cluster time vs E of clusters, unmatched trigger BadMaxCell&Exotic",
+       "cluster #it{time} vs #it{E} of clusters, unmatched trigger BadMaxCell&Exotic",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeTriggerEMCALBCUMBadMaxCellExotic->SetXTitle("E (GeV)");
-      fhTimeTriggerEMCALBCUMBadMaxCellExotic->SetYTitle("time (ns)");
+      fhTimeTriggerEMCALBCUMBadMaxCellExotic->SetXTitle("#it{E} (GeV)");
+      fhTimeTriggerEMCALBCUMBadMaxCellExotic->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCUMBadMaxCellExotic);
       
       fhTimeNoTrigger = new TH2F
       ("hTimeNoTrigger",
        "events with no foundable trigger, time vs e of clusters",
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimeNoTrigger->SetXTitle("E (GeV)");
-      fhTimeNoTrigger->SetYTitle("time (ns)");
+      fhTimeNoTrigger->SetXTitle("#it{E} (GeV)");
+      fhTimeNoTrigger->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeNoTrigger);
       
       fhEtaPhiNoTrigger = new TH2F
@@ -2267,82 +2269,82 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     }
     
     fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster = new TH2F("hEtaPhiTriggerEMCALBC0_OnlyTrigger_UnMatch_ReMatch_OpenTime",
-                                                       "cluster E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=0, un match, rematch open time",
+                                                       "cluster #it{E} > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=0, un match, rematch open time",
                                                        netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster->SetYTitle("#phi (rad)");
     fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster) ;
     
     fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster = new TH2F("hTimeTrigger_OnlyTrigger_UnMatch_ReMatch_OpenTime",
-                                                     "cluster time vs E of clusters, no match, rematch open time",
+                                                     "cluster #it{time} vs #it{E} of clusters, no match, rematch open time",
                                                      nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster->SetYTitle("time (ns)");
+    fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster->SetXTitle("#it{E} (GeV)");
+    fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster);
     
     
     fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster = new TH2F("hEtaPhiTriggerEMCALBC0_OnlyTrigger_UnMatch_ReMatch_CheckNeighbours",
-                                                         "cluster E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=0, un match, rematch with neighbour patches",
+                                                         "cluster #it{E} > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=0, un match, rematch with neighbour patches",
                                                          netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster->SetYTitle("#phi (rad)");
     fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster) ;
     
     fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster = new TH2F("hTimeTrigger_OnlyTrigger_UnMatch_ReMatch_CheckNeighbours",
-                                                       "cluster time vs E of clusters, no match, rematch with neigbour parches",
+                                                       "cluster #it{time} vs #it{E} of clusters, no match, rematch with neigbour parches",
                                                        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster->SetYTitle("time (ns)");
+    fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster->SetXTitle("#it{E} (GeV)");
+    fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster);
     
     fhEtaPhiTriggerEMCALBCUMReMatchBothCluster = new TH2F("hEtaPhiTriggerEMCALBC0_OnlyTrigger_UnMatch_ReMatch_Both",
-                                                   "cluster E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=0, un match, rematch open time and neighbour",
+                                                   "cluster #it{E} > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=0, un match, rematch open time and neighbour",
                                                    netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiTriggerEMCALBCUMReMatchBothCluster->SetYTitle("#phi (rad)");
     fhEtaPhiTriggerEMCALBCUMReMatchBothCluster->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiTriggerEMCALBCUMReMatchBothCluster) ;
     
     fhTimeTriggerEMCALBCUMReMatchBothCluster = new TH2F("hTimeTrigger_OnlyTrigger_UnMatch_ReMatch_Both",
-                                                 "cluster time vs E of clusters, no match, rematch open time and neigbour",
+                                                 "cluster #it{time} vs #it{E} of clusters, no match, rematch open time and neigbour",
                                                  nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMReMatchBothCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMReMatchBothCluster->SetYTitle("time (ns)");
+    fhTimeTriggerEMCALBCUMReMatchBothCluster->SetXTitle("#it{E} (GeV)");
+    fhTimeTriggerEMCALBCUMReMatchBothCluster->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeTriggerEMCALBCUMReMatchBothCluster);
     
     fhTimeTriggerEMCALBC0UMReMatchOpenTime = new TH2F("hTimeTriggerBC0_UnMatch_ReMatch_OpenTime",
-                                                            "cluster time vs E of clusters, no match, rematch open time",
+                                                            "cluster #it{time} vs #it{E} of clusters, no match, rematch open time",
                                                             nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBC0UMReMatchOpenTime->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBC0UMReMatchOpenTime->SetYTitle("time (ns)");
+    fhTimeTriggerEMCALBC0UMReMatchOpenTime->SetXTitle("#it{E} (GeV)");
+    fhTimeTriggerEMCALBC0UMReMatchOpenTime->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeTriggerEMCALBC0UMReMatchOpenTime);
     
         
     fhTimeTriggerEMCALBC0UMReMatchCheckNeigh = new TH2F("hTimeTriggerBC0_UnMatch_ReMatch_CheckNeighbours",
-                                                              "cluster time vs E of clusters, no match, rematch with neigbour parches",
+                                                              "cluster #it{time} vs #it{E} of clusters, no match, rematch with neigbour parches",
                                                               nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBC0UMReMatchCheckNeigh->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBC0UMReMatchCheckNeigh->SetYTitle("time (ns)");
+    fhTimeTriggerEMCALBC0UMReMatchCheckNeigh->SetXTitle("#it{E} (GeV)");
+    fhTimeTriggerEMCALBC0UMReMatchCheckNeigh->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeTriggerEMCALBC0UMReMatchCheckNeigh);
         
     fhTimeTriggerEMCALBC0UMReMatchBoth = new TH2F("hTimeTriggerBC0_UnMatch_ReMatch_Both",
-                                                        "cluster time vs E of clusters, no match, rematch open time and neigbour",
+                                                        "cluster #it{time} vs #it{E} of clusters, no match, rematch open time and neigbour",
                                                         nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBC0UMReMatchBoth->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBC0UMReMatchBoth->SetYTitle("time (ns)");
+    fhTimeTriggerEMCALBC0UMReMatchBoth->SetXTitle("#it{E} (GeV)");
+    fhTimeTriggerEMCALBC0UMReMatchBoth->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeTriggerEMCALBC0UMReMatchBoth);
     
   }
   
   fhPhiPhoton  = new TH2F
-  ("hPhiPhoton","#phi_{#gamma} vs p_{T}",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+  ("hPhiPhoton","#phi_{#gamma} vs #it{p}_[T]",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
   fhPhiPhoton->SetYTitle("#phi (rad)");
-  fhPhiPhoton->SetXTitle("p_{T #gamma} (GeV/c)");
+  fhPhiPhoton->SetXTitle("p_{T #gamma} (GeV/#it{c})");
   outputContainer->Add(fhPhiPhoton) ;
   
   fhEtaPhoton  = new TH2F
-  ("hEtaPhoton","#eta_{#gamma} vs p_{T}",nptbins,ptmin,ptmax,netabins,etamin,etamax);
+  ("hEtaPhoton","#eta_{#gamma} vs #it{p}_[T]",nptbins,ptmin,ptmax,netabins,etamin,etamax);
   fhEtaPhoton->SetYTitle("#eta");
-  fhEtaPhoton->SetXTitle("p_{T #gamma} (GeV/c)");
+  fhEtaPhoton->SetXTitle("p_{T #gamma} (GeV/#it{c})");
   outputContainer->Add(fhEtaPhoton) ;
   
   fhEtaPhiPhoton  = new TH2F
@@ -2362,19 +2364,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if(fCalorimeter=="EMCAL" && fFillEMCALBCHistograms)
   {
     fhEtaPhiPhotonEMCALBC0  = new TH2F
-    ("hEtaPhiPhotonEMCALBC0","identified photon, E > 2 GeV, #eta vs #phi, for clusters with |time| < 25 ns, EMCAL-BC=0",netabins,etamin,etamax,nphibins,phimin,phimax);
+    ("hEtaPhiPhotonEMCALBC0","identified photon, #it{E} > 2 GeV, #eta vs #phi, for clusters with |time| < 25 ns, EMCAL-BC=0",netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiPhotonEMCALBC0->SetYTitle("#phi (rad)");
     fhEtaPhiPhotonEMCALBC0->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiPhotonEMCALBC0) ;
     
     fhEtaPhiPhotonEMCALBC1  = new TH2F
-    ("hEtaPhiPhotonEMCALBC1","identified photon, E > 2 GeV, #eta vs #phi, for clusters with 25 < |time| < 75 ns, EMCAL-BC=1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    ("hEtaPhiPhotonEMCALBC1","identified photon, #it{E} > 2 GeV, #eta vs #phi, for clusters with 25 < |time| < 75 ns, EMCAL-BC=1",netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiPhotonEMCALBC1->SetYTitle("#phi (rad)");
     fhEtaPhiPhotonEMCALBC1->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiPhotonEMCALBC1) ;
     
     fhEtaPhiPhotonEMCALBCN  = new TH2F
-    ("hEtaPhiPhotonEMCALBCN","identified photon, E > 2 GeV, #eta vs #phi, for clusters with |time| > 75 ns, EMCAL-BC>1",netabins,etamin,etamax,nphibins,phimin,phimax);
+    ("hEtaPhiPhotonEMCALBCN","identified photon, #it{E} > 2 GeV, #eta vs #phi, for clusters with |time| > 75 ns, EMCAL-BC>1",netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiPhotonEMCALBCN->SetYTitle("#phi (rad)");
     fhEtaPhiPhotonEMCALBCN->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiPhotonEMCALBCN) ;
@@ -2383,7 +2385,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     {
       fhEtaPhiPhotonTriggerEMCALBC[i] = new TH2F
       (Form("hEtaPhiPhotonTriggerEMCALBC%d",i-iBCShift),
-       Form("photon E > 2 GeV, #eta vs #phi, PhotonTrigger EMCAL-BC=%d",i-iBCShift),
+       Form("photon #it{E} > 2 GeV, #eta vs #phi, PhotonTrigger EMCAL-BC=%d",i-iBCShift),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiPhotonTriggerEMCALBC[i]->SetYTitle("#phi (rad)");
       fhEtaPhiPhotonTriggerEMCALBC[i]->SetXTitle("#eta");
@@ -2391,23 +2393,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimePhotonTriggerEMCALBC[i] = new TH2F
       (Form("hTimePhotonTriggerEMCALBC%d",i-iBCShift),
-       Form("photon time vs E of clusters, PhotonTrigger EMCAL-BC=%d",i-iBCShift),
+       Form("photon #it{time} vs #it{E} of clusters, PhotonTrigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimePhotonTriggerEMCALBC[i]->SetXTitle("E (GeV)");
-      fhTimePhotonTriggerEMCALBC[i]->SetYTitle("time (ns)");
+      fhTimePhotonTriggerEMCALBC[i]->SetXTitle("#it{E} (GeV)");
+      fhTimePhotonTriggerEMCALBC[i]->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimePhotonTriggerEMCALBC[i]);
       
       fhTimePhotonTriggerEMCALBCPileUpSPD[i] = new TH2F
       (Form("hTimePhotonTriggerEMCALBC%dPileUpSPD",i-iBCShift),
-       Form("photon time vs E, PhotonTrigger EMCAL-BC=%d",i-iBCShift),
+       Form("photon #it{time} vs #it{E}, PhotonTrigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimePhotonTriggerEMCALBCPileUpSPD[i]->SetXTitle("E (GeV)");
-      fhTimePhotonTriggerEMCALBCPileUpSPD[i]->SetYTitle("time (ns)");
+      fhTimePhotonTriggerEMCALBCPileUpSPD[i]->SetXTitle("#it{E} (GeV)");
+      fhTimePhotonTriggerEMCALBCPileUpSPD[i]->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimePhotonTriggerEMCALBCPileUpSPD[i]);
       
       fhEtaPhiPhotonTriggerEMCALBCUM[i] = new TH2F
       (Form("hEtaPhiPhotonTriggerEMCALBC%d_UnMatch",i-iBCShift),
-       Form("photon E > 2 GeV, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-iBCShift),
+       Form("photon #it{E} > 2 GeV, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-iBCShift),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiPhotonTriggerEMCALBCUM[i]->SetYTitle("#phi (rad)");
       fhEtaPhiPhotonTriggerEMCALBCUM[i]->SetXTitle("#eta");
@@ -2415,34 +2417,34 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhTimePhotonTriggerEMCALBCUM[i] = new TH2F
       (Form("hTimePhotonTriggerEMCALBC%d_UnMatch",i-iBCShift),
-       Form("photon time vs E, unmatched trigger EMCAL-BC=%d",i-iBCShift),
+       Form("photon #it{time} vs #it{E}, unmatched trigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-      fhTimePhotonTriggerEMCALBCUM[i]->SetXTitle("E (GeV)");
-      fhTimePhotonTriggerEMCALBCUM[i]->SetYTitle("time (ns)");
+      fhTimePhotonTriggerEMCALBCUM[i]->SetXTitle("#it{E} (GeV)");
+      fhTimePhotonTriggerEMCALBCUM[i]->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimePhotonTriggerEMCALBCUM[i]);
       
     }
     
     fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime = new TH2F("hTimePhotonTriggerBC0_UnMatch_ReMatch_OpenTime",
-                                                      "cluster time vs E of photons, no match, rematch open time",
+                                                      "cluster #it{time} vs #it{E} of photons, no match, rematch open time",
                                                       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime->SetXTitle("E (GeV)");
-    fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime->SetYTitle("time (ns)");
+    fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime->SetXTitle("#it{E} (GeV)");
+    fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime);
     
     
     fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh = new TH2F("hTimePhotonTriggerBC0_UnMatch_ReMatch_CheckNeighbours",
-                                                        "cluster time vs E of photons, no match, rematch with neigbour parches",
+                                                        "cluster #it{time} vs #it{E} of photons, no match, rematch with neigbour parches",
                                                         nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh->SetXTitle("E (GeV)");
-    fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh->SetYTitle("time (ns)");
+    fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh->SetXTitle("#it{E} (GeV)");
+    fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh);
     
     fhTimePhotonTriggerEMCALBC0UMReMatchBoth = new TH2F("hTimePhotonTriggerBC0_UnMatch_ReMatch_Both",
-                                                  "cluster time vs E of photons, no match, rematch open time and neigbour",
+                                                  "cluster #it{time} vs #it{E} of photons, no match, rematch open time and neigbour",
                                                   nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePhotonTriggerEMCALBC0UMReMatchBoth->SetXTitle("E (GeV)");
-    fhTimePhotonTriggerEMCALBC0UMReMatchBoth->SetYTitle("time (ns)");
+    fhTimePhotonTriggerEMCALBC0UMReMatchBoth->SetXTitle("#it{E} (GeV)");
+    fhTimePhotonTriggerEMCALBC0UMReMatchBoth->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePhotonTriggerEMCALBC0UMReMatchBoth);
 
   }
@@ -2450,7 +2452,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
                        nptbins,ptmin,ptmax,10,0,10);
   fhNLocMax ->SetYTitle("N maxima");
-  fhNLocMax ->SetXTitle("E (GeV)");
+  fhNLocMax ->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhNLocMax) ;
   
   //Shower shape
@@ -2458,34 +2460,34 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   {
     fhLam0E  = new TH2F ("hLam0E","#lambda_{0}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
     fhLam0E->SetYTitle("#lambda_{0}^{2}");
-    fhLam0E->SetXTitle("E (GeV)");
+    fhLam0E->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhLam0E);
     
     fhLam1E  = new TH2F ("hLam1E","#lambda_{1}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
     fhLam1E->SetYTitle("#lambda_{1}^{2}");
-    fhLam1E->SetXTitle("E (GeV)");
+    fhLam1E->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhLam1E);
     
     fhDispE  = new TH2F ("hDispE"," dispersion^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
     fhDispE->SetYTitle("D^{2}");
-    fhDispE->SetXTitle("E (GeV) ");
+    fhDispE->SetXTitle("#it{E} (GeV) ");
     outputContainer->Add(fhDispE);
     
     if(!fRejectTrackMatch)
     {
       fhLam0ETM  = new TH2F ("hLam0ETM","#lambda_{0}^{2} vs E, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
       fhLam0ETM->SetYTitle("#lambda_{0}^{2}");
-      fhLam0ETM->SetXTitle("E (GeV)");
+      fhLam0ETM->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam0ETM);
       
       fhLam1ETM  = new TH2F ("hLam1ETM","#lambda_{1}^{2} vs E, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
       fhLam1ETM->SetYTitle("#lambda_{1}^{2}");
-      fhLam1ETM->SetXTitle("E (GeV)");
+      fhLam1ETM->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam1ETM);
       
       fhDispETM  = new TH2F ("hDispETM"," dispersion^{2} vs E, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
       fhDispETM->SetYTitle("D^{2}");
-      fhDispETM->SetXTitle("E (GeV) ");
+      fhDispETM->SetXTitle("#it{E} (GeV) ");
       outputContainer->Add(fhDispETM);
     }
     
@@ -2493,34 +2495,34 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     {
       fhLam0ETRD  = new TH2F ("hLam0ETRD","#lambda_{0}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
       fhLam0ETRD->SetYTitle("#lambda_{0}^{2}");
-      fhLam0ETRD->SetXTitle("E (GeV)");
+      fhLam0ETRD->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam0ETRD);
       
       fhLam1ETRD  = new TH2F ("hLam1ETRD","#lambda_{1}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
       fhLam1ETRD->SetYTitle("#lambda_{1}^{2}");
-      fhLam1ETRD->SetXTitle("E (GeV)");
+      fhLam1ETRD->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam1ETRD);
       
       fhDispETRD  = new TH2F ("hDispETRD"," dispersion^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
       fhDispETRD->SetYTitle("Dispersion^{2}");
-      fhDispETRD->SetXTitle("E (GeV) ");
+      fhDispETRD->SetXTitle("#it{E} (GeV) ");
       outputContainer->Add(fhDispETRD);
       
       if(!fRejectTrackMatch)
       {
         fhLam0ETMTRD  = new TH2F ("hLam0ETMTRD","#lambda_{0}^{2} vs E, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhLam0ETMTRD->SetYTitle("#lambda_{0}^{2}");
-        fhLam0ETMTRD->SetXTitle("E (GeV)");
+        fhLam0ETMTRD->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhLam0ETMTRD);
         
         fhLam1ETMTRD  = new TH2F ("hLam1ETMTRD","#lambda_{1}^{2} vs E, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhLam1ETMTRD->SetYTitle("#lambda_{1}^{2}");
-        fhLam1ETMTRD->SetXTitle("E (GeV)");
+        fhLam1ETMTRD->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhLam1ETMTRD);
         
         fhDispETMTRD  = new TH2F ("hDispETMTRD"," dispersion^{2} vs E, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhDispETMTRD->SetYTitle("Dispersion^{2}");
-        fhDispETMTRD->SetXTitle("E (GeV) ");
+        fhDispETMTRD->SetXTitle("#it{E} (GeV) ");
         outputContainer->Add(fhDispETMTRD);
       }
     }
@@ -2532,7 +2534,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhNCellsLam0LowE->SetYTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhNCellsLam0LowE);
       
-      fhNCellsLam0HighE  = new TH2F ("hNCellsLam0HighE","N_{cells} in cluster vs #lambda_{0}^{2}, E > 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
+      fhNCellsLam0HighE  = new TH2F ("hNCellsLam0HighE","N_{cells} in cluster vs #lambda_{0}^{2}, #it{E} > 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
       fhNCellsLam0HighE->SetXTitle("N_{cells}");
       fhNCellsLam0HighE->SetYTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhNCellsLam0HighE);
@@ -2542,7 +2544,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhNCellsLam1LowE->SetYTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhNCellsLam1LowE);
       
-      fhNCellsLam1HighE  = new TH2F ("hNCellsLam1HighE","N_{cells} in cluster vs #lambda_{1}^{2}, E > 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
+      fhNCellsLam1HighE  = new TH2F ("hNCellsLam1HighE","N_{cells} in cluster vs #lambda_{1}^{2}, #it{E} > 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
       fhNCellsLam1HighE->SetXTitle("N_{cells}");
       fhNCellsLam1HighE->SetYTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhNCellsLam1HighE);
@@ -2567,12 +2569,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhPhiLam0LowE->SetXTitle("#phi");
       outputContainer->Add(fhPhiLam0LowE);
       
-      fhEtaLam0HighE  = new TH2F ("hEtaLam0HighE","#eta vs #lambda_{0}^{2}, E > 2 GeV", netabins,etamin,etamax, ssbins,ssmin,ssmax);
+      fhEtaLam0HighE  = new TH2F ("hEtaLam0HighE","#eta vs #lambda_{0}^{2}, #it{E} > 2 GeV", netabins,etamin,etamax, ssbins,ssmin,ssmax);
       fhEtaLam0HighE->SetYTitle("#lambda_{0}^{2}");
       fhEtaLam0HighE->SetXTitle("#eta");
       outputContainer->Add(fhEtaLam0HighE);
       
-      fhPhiLam0HighE  = new TH2F ("hPhiLam0HighE","#phi vs #lambda_{0}^{2}, E > 2 GeV", nphibins,phimin,phimax, ssbins,ssmin,ssmax);
+      fhPhiLam0HighE  = new TH2F ("hPhiLam0HighE","#phi vs #lambda_{0}^{2}, #it{E} > 2 GeV", nphibins,phimin,phimax, ssbins,ssmin,ssmax);
       fhPhiLam0HighE->SetYTitle("#lambda_{0}^{2}");
       fhPhiLam0HighE->SetXTitle("#phi");
       outputContainer->Add(fhPhiLam0HighE);
@@ -2582,7 +2584,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhLam1Lam0LowE->SetXTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhLam1Lam0LowE);
       
-      fhLam1Lam0HighE  = new TH2F ("hLam1Lam0HighE","#lambda_{0}^{2} vs #lambda_{1}^{2} in cluster of E > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
+      fhLam1Lam0HighE  = new TH2F ("hLam1Lam0HighE","#lambda_{0}^{2} vs #lambda_{1}^{2} in cluster of #it{E} > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
       fhLam1Lam0HighE->SetYTitle("#lambda_{0}^{2}");
       fhLam1Lam0HighE->SetXTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhLam1Lam0HighE);
@@ -2592,7 +2594,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhLam0DispLowE->SetYTitle("D^{2}");
       outputContainer->Add(fhLam0DispLowE);
       
-      fhLam0DispHighE  = new TH2F ("hLam0DispHighE","#lambda_{0}^{2} vs dispersion^{2} in cluster of E > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
+      fhLam0DispHighE  = new TH2F ("hLam0DispHighE","#lambda_{0}^{2} vs dispersion^{2} in cluster of #it{E} > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
       fhLam0DispHighE->SetXTitle("#lambda_{0}^{2}");
       fhLam0DispHighE->SetYTitle("D^{2}");
       outputContainer->Add(fhLam0DispHighE);
@@ -2602,7 +2604,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhDispLam1LowE->SetYTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhDispLam1LowE);
       
-      fhDispLam1HighE  = new TH2F ("hDispLam1HighE","Dispersion^{2} vs #lambda_{1^{2}} in cluster of E > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
+      fhDispLam1HighE  = new TH2F ("hDispLam1HighE","Dispersion^{2} vs #lambda_{1^{2}} in cluster of #it{E} > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
       fhDispLam1HighE->SetXTitle("D^{2}");
       fhDispLam1HighE->SetYTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhDispLam1HighE);
@@ -2610,51 +2612,51 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       if(fCalorimeter == "EMCAL")
       {
         fhDispEtaE  = new TH2F ("hDispEtaE","#sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",  nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
-        fhDispEtaE->SetXTitle("E (GeV)");
+        fhDispEtaE->SetXTitle("#it{E} (GeV)");
         fhDispEtaE->SetYTitle("#sigma^{2}_{#eta #eta}");
         outputContainer->Add(fhDispEtaE);
         
         fhDispPhiE  = new TH2F ("hDispPhiE","#sigma^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i} - <#phi>)^{2} / #Sigma w_{i} vs E",  nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
-        fhDispPhiE->SetXTitle("E (GeV)");
+        fhDispPhiE->SetXTitle("#it{E} (GeV)");
         fhDispPhiE->SetYTitle("#sigma^{2}_{#phi #phi}");
         outputContainer->Add(fhDispPhiE);
         
         fhSumEtaE  = new TH2F ("hSumEtaE","#delta^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i})^{2} / #Sigma w_{i} - <#eta>^{2} vs E",  nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
-        fhSumEtaE->SetXTitle("E (GeV)");
+        fhSumEtaE->SetXTitle("#it{E} (GeV)");
         fhSumEtaE->SetYTitle("#delta^{2}_{#eta #eta}");
         outputContainer->Add(fhSumEtaE);
         
         fhSumPhiE  = new TH2F ("hSumPhiE","#delta^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i})^{2}/ #Sigma w_{i} - <#phi>^{2} vs E",
                                nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
-        fhSumPhiE->SetXTitle("E (GeV)");
+        fhSumPhiE->SetXTitle("#it{E} (GeV)");
         fhSumPhiE->SetYTitle("#delta^{2}_{#phi #phi}");
         outputContainer->Add(fhSumPhiE);
         
         fhSumEtaPhiE  = new TH2F ("hSumEtaPhiE","#delta^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",
                                   nptbins,ptmin,ptmax, 2*ssbins,-ssmax,ssmax);
-        fhSumEtaPhiE->SetXTitle("E (GeV)");
+        fhSumEtaPhiE->SetXTitle("#it{E} (GeV)");
         fhSumEtaPhiE->SetYTitle("#delta^{2}_{#eta #phi}");
         outputContainer->Add(fhSumEtaPhiE);
         
         fhDispEtaPhiDiffE  = new TH2F ("hDispEtaPhiDiffE","#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta} vs E",
                                        nptbins,ptmin,ptmax,200, -10,10);
-        fhDispEtaPhiDiffE->SetXTitle("E (GeV)");
+        fhDispEtaPhiDiffE->SetXTitle("#it{E} (GeV)");
         fhDispEtaPhiDiffE->SetYTitle("#sigma^{2}_{#phi #phi}-#sigma^{2}_{#eta #eta}");
         outputContainer->Add(fhDispEtaPhiDiffE);
         
         fhSphericityE  = new TH2F ("hSphericityE","(#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi}) vs E",
                                    nptbins,ptmin,ptmax, 200, -1,1);
-        fhSphericityE->SetXTitle("E (GeV)");
+        fhSphericityE->SetXTitle("#it{E} (GeV)");
         fhSphericityE->SetYTitle("s = (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi})");
         outputContainer->Add(fhSphericityE);
         
         fhDispSumEtaDiffE  = new TH2F ("hDispSumEtaDiffE","#sigma^{2}_{#eta #eta} - #delta^{2}_{#eta #eta} / average vs E",  nptbins,ptmin,ptmax, 200,-0.01,0.01);
-        fhDispSumEtaDiffE->SetXTitle("E (GeV)");
+        fhDispSumEtaDiffE->SetXTitle("#it{E} (GeV)");
         fhDispSumEtaDiffE->SetYTitle("#sigma^{2}_{#eta #eta} - #delta^{2}_{#eta #eta} / average");
         outputContainer->Add(fhDispSumEtaDiffE);
         
         fhDispSumPhiDiffE  = new TH2F ("hDispSumPhiDiffE","#sigma^{2}_{#phi #phi} - #delta^{2}_{#phi #phi} / average vs E",  nptbins,ptmin,ptmax, 200,-0.01,0.01);
-        fhDispSumPhiDiffE->SetXTitle("E (GeV)");
+        fhDispSumPhiDiffE->SetXTitle("#it{E} (GeV)");
         fhDispSumPhiDiffE->SetYTitle("#sigma^{2}_{#phi #phi} - #delta^{2}_{#phi #phi} / average");
         outputContainer->Add(fhDispSumPhiDiffE);
         
@@ -2695,14 +2697,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
        Form("d#eta of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
       fhTrackMatchedDEta[i]->SetYTitle("d#eta");
-      fhTrackMatchedDEta[i]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDEta[i]->SetXTitle("#it{E}_{cluster} (GeV)");
       
       fhTrackMatchedDPhi[i]  = new TH2F
       (Form("hTrackMatchedDPhi%s",cutTM[i].Data()),
        Form("d#phi of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
       fhTrackMatchedDPhi[i]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhi[i]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDPhi[i]->SetXTitle("#it{E}_{cluster} (GeV)");
       
       fhTrackMatchedDEtaDPhi[i]  = new TH2F
       (Form("hTrackMatchedDEtaDPhi%s",cutTM[i].Data()),
@@ -2716,14 +2718,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
        Form("d#eta of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
       fhTrackMatchedDEtaPos[i]->SetYTitle("d#eta");
-      fhTrackMatchedDEtaPos[i]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDEtaPos[i]->SetXTitle("#it{E}_{cluster} (GeV)");
       
       fhTrackMatchedDPhiPos[i]  = new TH2F
       (Form("hTrackMatchedDPhiPos%s",cutTM[i].Data()),
        Form("d#phi of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
       fhTrackMatchedDPhiPos[i]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiPos[i]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDPhiPos[i]->SetXTitle("#it{E}_{cluster} (GeV)");
       
       fhTrackMatchedDEtaDPhiPos[i]  = new TH2F
       (Form("hTrackMatchedDEtaDPhiPos%s",cutTM[i].Data()),
@@ -2737,14 +2739,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
        Form("d#eta of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
       fhTrackMatchedDEtaNeg[i]->SetYTitle("d#eta");
-      fhTrackMatchedDEtaNeg[i]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDEtaNeg[i]->SetXTitle("#it{E}_{cluster} (GeV)");
       
       fhTrackMatchedDPhiNeg[i]  = new TH2F
       (Form("hTrackMatchedDPhiNeg%s",cutTM[i].Data()),
        Form("d#phi of cluster-track vs cluster energy, %s",cutTM[i].Data()),
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
       fhTrackMatchedDPhiNeg[i]->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhiNeg[i]->SetXTitle("E_{cluster} (GeV)");
+      fhTrackMatchedDPhiNeg[i]->SetXTitle("#it{E}_{cluster} (GeV)");
       
       fhTrackMatchedDEtaDPhiNeg[i]  = new TH2F
       (Form("hTrackMatchedDEtaDPhiNeg%s",cutTM[i].Data()),
@@ -2755,12 +2757,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhdEdx[i]  = new TH2F (Form("hdEdx%s",cutTM[i].Data()),Form("matched track <dE/dx> vs cluster E, %s",cutTM[i].Data()),
                              nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
-      fhdEdx[i]->SetXTitle("E (GeV)");
+      fhdEdx[i]->SetXTitle("#it{E} (GeV)");
       fhdEdx[i]->SetYTitle("<dE/dx>");
       
       fhEOverP[i]  = new TH2F (Form("hEOverP%s",cutTM[i].Data()),Form("matched track E/p vs cluster E, %s",cutTM[i].Data()),
                                nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
-      fhEOverP[i]->SetXTitle("E (GeV)");
+      fhEOverP[i]->SetXTitle("#it{E} (GeV)");
       fhEOverP[i]->SetYTitle("E/p");
       
       outputContainer->Add(fhTrackMatchedDEta[i]) ;
@@ -2782,20 +2784,20 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
          Form("d#eta of cluster-track vs cluster energy, SM behind TRD, %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
         fhTrackMatchedDEtaTRD[i]->SetYTitle("d#eta");
-        fhTrackMatchedDEtaTRD[i]->SetXTitle("E_{cluster} (GeV)");
+        fhTrackMatchedDEtaTRD[i]->SetXTitle("#it{E}_{cluster} (GeV)");
         
         fhTrackMatchedDPhiTRD[i]  = new TH2F
         (Form("hTrackMatchedDPhiTRD%s",cutTM[i].Data()),
          Form("d#phi of cluster-track vs cluster energy, SM behing TRD, %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
         fhTrackMatchedDPhiTRD[i]->SetYTitle("d#phi (rad)");
-        fhTrackMatchedDPhiTRD[i]->SetXTitle("E_{cluster} (GeV)");
+        fhTrackMatchedDPhiTRD[i]->SetXTitle("#it{E}_{cluster} (GeV)");
         
         fhEOverPTRD[i]  = new TH2F
         (Form("hEOverPTRD%s",cutTM[i].Data()),
          Form("matched track E/p vs cluster E, behind TRD, %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
-        fhEOverPTRD[i]->SetXTitle("E (GeV)");
+        fhEOverPTRD[i]->SetXTitle("#it{E} (GeV)");
         fhEOverPTRD[i]->SetYTitle("E/p");
         
         outputContainer->Add(fhTrackMatchedDEtaTRD[i]) ;
@@ -2810,14 +2812,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
          Form("d#eta of cluster-track vs cluster energy, no other MC particles overlap %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
         fhTrackMatchedDEtaMCNoOverlap[i]->SetYTitle("d#eta");
-        fhTrackMatchedDEtaMCNoOverlap[i]->SetXTitle("E_{cluster} (GeV)");
+        fhTrackMatchedDEtaMCNoOverlap[i]->SetXTitle("#it{E}_{cluster} (GeV)");
         
         fhTrackMatchedDPhiMCNoOverlap[i]  = new TH2F
         (Form("hTrackMatchedDPhiMCNoOverlap%s",cutTM[i].Data()),
          Form("d#phi of cluster-track vs cluster energy, no other MC particles overlap %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
         fhTrackMatchedDPhiMCNoOverlap[i]->SetYTitle("d#phi (rad)");
-        fhTrackMatchedDPhiMCNoOverlap[i]->SetXTitle("E_{cluster} (GeV)");
+        fhTrackMatchedDPhiMCNoOverlap[i]->SetXTitle("#it{E}_{cluster} (GeV)");
         
         outputContainer->Add(fhTrackMatchedDEtaMCNoOverlap[i]) ;
         outputContainer->Add(fhTrackMatchedDPhiMCNoOverlap[i]) ;
@@ -2826,14 +2828,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
          Form("d#eta of cluster-track vs cluster energy, several MC particles overlap %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
         fhTrackMatchedDEtaMCOverlap[i]->SetYTitle("d#eta");
-        fhTrackMatchedDEtaMCOverlap[i]->SetXTitle("E_{cluster} (GeV)");
+        fhTrackMatchedDEtaMCOverlap[i]->SetXTitle("#it{E}_{cluster} (GeV)");
         
         fhTrackMatchedDPhiMCOverlap[i]  = new TH2F
         (Form("hTrackMatchedDPhiMCOverlap%s",cutTM[i].Data()),
          Form("d#phi of cluster-track vs cluster energy, several MC particles overlap %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
         fhTrackMatchedDPhiMCOverlap[i]->SetYTitle("d#phi (rad)");
-        fhTrackMatchedDPhiMCOverlap[i]->SetXTitle("E_{cluster} (GeV)");
+        fhTrackMatchedDPhiMCOverlap[i]->SetXTitle("#it{E}_{cluster} (GeV)");
         
         outputContainer->Add(fhTrackMatchedDEtaMCOverlap[i]) ;
         outputContainer->Add(fhTrackMatchedDPhiMCOverlap[i]) ;
@@ -2843,14 +2845,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
          Form("d#eta of cluster-track vs cluster energy, no other MC particles overlap appart from conversions %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
         fhTrackMatchedDEtaMCConversion[i]->SetYTitle("d#eta");
-        fhTrackMatchedDEtaMCConversion[i]->SetXTitle("E_{cluster} (GeV)");
+        fhTrackMatchedDEtaMCConversion[i]->SetXTitle("#it{E}_{cluster} (GeV)");
         
         fhTrackMatchedDPhiMCConversion[i]  = new TH2F
         (Form("hTrackMatchedDPhiMCConversion%s",cutTM[i].Data()),
          Form("d#phi of cluster-track vs cluster energy, no other MC particles overlap appart from conversions %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
         fhTrackMatchedDPhiMCConversion[i]->SetYTitle("d#phi (rad)");
-        fhTrackMatchedDPhiMCConversion[i]->SetXTitle("E_{cluster} (GeV)");
+        fhTrackMatchedDPhiMCConversion[i]->SetXTitle("#it{E}_{cluster} (GeV)");
         
         outputContainer->Add(fhTrackMatchedDEtaMCConversion[i]) ;
         outputContainer->Add(fhTrackMatchedDPhiMCConversion[i]) ;
@@ -2859,7 +2861,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         (Form("hTrackMatchedMCParticle%s",cutTM[i].Data()),
          Form("Origin of particle vs energy %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,8,0,8);
-        fhTrackMatchedMCParticle[i]->SetXTitle("E (GeV)");
+        fhTrackMatchedMCParticle[i]->SetXTitle("#it{E} (GeV)");
         //fhTrackMatchedMCParticle[i]->SetYTitle("Particle type");
         
         fhTrackMatchedMCParticle[i]->GetYaxis()->SetBinLabel(1 ,"Photon");
@@ -2884,66 +2886,66 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     for(Int_t i = 0 ; i < 7 ; i++)
     {
       fhPtPileUp[i]  = new TH1F(Form("hPtPileUp%s",pileUpName[i].Data()),
-                                Form("Cluster  p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
-      fhPtPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+                                Form("Cluster  #it{p}_[T] distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtPileUp[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
       outputContainer->Add(fhPtPileUp[i]);
       
       fhPtChargedPileUp[i]  = new TH1F(Form("hPtChargedPileUp%s",pileUpName[i].Data()),
-                                       Form("Charged clusters p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
-      fhPtChargedPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+                                       Form("Charged clusters #it{p}_[T] distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtChargedPileUp[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
       outputContainer->Add(fhPtChargedPileUp[i]);
       
       fhPtPhotonPileUp[i]  = new TH1F(Form("hPtPhotonPileUp%s",pileUpName[i].Data()),
-                                      Form("Selected photon p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
-      fhPtPhotonPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+                                      Form("Selected photon #it{p}_[T] distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtPhotonPileUp[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
       outputContainer->Add(fhPtPhotonPileUp[i]);
       
       
       fhClusterEFracLongTimePileUp[i]  = new TH2F(Form("hClusterEFracLongTimePileUp%s",pileUpName[i].Data()),
                                                   Form("Cluster E vs fraction of cluster energy from large T cells, %s Pile-Up event",pileUpName[i].Data()),
                                                   nptbins,ptmin,ptmax,200,0,1);
-      fhClusterEFracLongTimePileUp[i]->SetXTitle("E (GeV)");
+      fhClusterEFracLongTimePileUp[i]->SetXTitle("#it{E} (GeV)");
       fhClusterEFracLongTimePileUp[i]->SetYTitle("E(large time) / E");
       outputContainer->Add(fhClusterEFracLongTimePileUp[i]);
       
       fhClusterCellTimePileUp[i]  = new TH2F(Form("hClusterCellTimePileUp%s",pileUpName[i].Data()),
                                              Form("Cluster E vs cell time in cluster, %s Pile-Up event",pileUpName[i].Data()),
                                              nptbins,ptmin,ptmax,ntimebins,timemin,timemax);
-      fhClusterCellTimePileUp[i]->SetXTitle("E (GeV)");
+      fhClusterCellTimePileUp[i]->SetXTitle("#it{E} (GeV)");
       fhClusterCellTimePileUp[i]->SetYTitle("t_{cell} (ns)");
       outputContainer->Add(fhClusterCellTimePileUp[i]);
       
       fhClusterTimeDiffPileUp[i]  = new TH2F(Form("hClusterTimeDiffPileUp%s",pileUpName[i].Data()),
                                              Form("Cluster E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
                                              nptbins,ptmin,ptmax,400,-200,200);
-      fhClusterTimeDiffPileUp[i]->SetXTitle("E (GeV)");
+      fhClusterTimeDiffPileUp[i]->SetXTitle("#it{E} (GeV)");
       fhClusterTimeDiffPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
       outputContainer->Add(fhClusterTimeDiffPileUp[i]);
       
       fhClusterTimeDiffChargedPileUp[i]  = new TH2F(Form("hClusterTimeDiffChargedPileUp%s",pileUpName[i].Data()),
                                                     Form("Charged clusters E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
                                                     nptbins,ptmin,ptmax,400,-200,200);
-      fhClusterTimeDiffChargedPileUp[i]->SetXTitle("E (GeV)");
+      fhClusterTimeDiffChargedPileUp[i]->SetXTitle("#it{E} (GeV)");
       fhClusterTimeDiffChargedPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
       outputContainer->Add(fhClusterTimeDiffChargedPileUp[i]);
       
       fhClusterTimeDiffPhotonPileUp[i]  = new TH2F(Form("hClusterTimeDiffPhotonPileUp%s",pileUpName[i].Data()),
                                                    Form("Selected photon E vs t_{max}-t_{cell} in cluster, %s Pile-Up event",pileUpName[i].Data()),
                                                    nptbins,ptmin,ptmax,400,-200,200);
-      fhClusterTimeDiffPhotonPileUp[i]->SetXTitle("E (GeV)");
+      fhClusterTimeDiffPhotonPileUp[i]->SetXTitle("#it{E} (GeV)");
       fhClusterTimeDiffPhotonPileUp[i]->SetYTitle("t_{max}-t_{cell} (ns)");
       outputContainer->Add(fhClusterTimeDiffPhotonPileUp[i]);
       
       fhLambda0PileUp[i]  = new TH2F(Form("hLambda0PileUp%s",pileUpName[i].Data()),
                                      Form("Cluster E vs #lambda^{2}_{0} in cluster, %s Pile-Up event",pileUpName[i].Data()),
                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLambda0PileUp[i]->SetXTitle("E (GeV)");
+      fhLambda0PileUp[i]->SetXTitle("#it{E} (GeV)");
       fhLambda0PileUp[i]->SetYTitle("#lambda^{2}_{0}");
       outputContainer->Add(fhLambda0PileUp[i]);
       
       fhLambda0ChargedPileUp[i]  = new TH2F(Form("hLambda0ChargedPileUp%s",pileUpName[i].Data()),
                                             Form("Charged clusters E vs #lambda^{2}_{0}in cluster, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLambda0ChargedPileUp[i]->SetXTitle("E (GeV)");
+      fhLambda0ChargedPileUp[i]->SetXTitle("#it{E} (GeV)");
       fhLambda0ChargedPileUp[i]->SetYTitle("#lambda^{2}_{0}");
       outputContainer->Add(fhLambda0ChargedPileUp[i]);
       
@@ -2980,48 +2982,48 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhEtaPhiBCMinusPileUpSPD);
     
     fhTimePtNoCut  = new TH2F ("hTimePt_NoCut","time of cluster vs pT of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePtNoCut->SetXTitle("p_{T} (GeV/c)");
-    fhTimePtNoCut->SetYTitle("time (ns)");
+    fhTimePtNoCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhTimePtNoCut->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePtNoCut);
     
     fhTimePtSPD  = new TH2F ("hTimePt_SPD","time of cluster vs pT of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePtSPD->SetXTitle("p_{T} (GeV/c)");
-    fhTimePtSPD->SetYTitle("time (ns)");
+    fhTimePtSPD->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhTimePtSPD->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePtSPD);
     
     fhTimePtPhotonNoCut  = new TH2F ("hTimePtPhoton_NoCut","time of photon cluster vs pT of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePtPhotonNoCut->SetXTitle("p_{T} (GeV/c)");
-    fhTimePtPhotonNoCut->SetYTitle("time (ns)");
+    fhTimePtPhotonNoCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhTimePtPhotonNoCut->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePtPhotonNoCut);
     
     fhTimePtPhotonSPD  = new TH2F ("hTimePtPhoton_SPD","time of  photon cluster vs pT of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePtPhotonSPD->SetXTitle("p_{T} (GeV/c)");
-    fhTimePtPhotonSPD->SetYTitle("time (ns)");
+    fhTimePtPhotonSPD->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhTimePtPhotonSPD->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePtPhotonSPD);
         
     fhTimeNPileUpVertSPD  = new TH2F ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,20,0,20);
     fhTimeNPileUpVertSPD->SetYTitle("# vertex ");
-    fhTimeNPileUpVertSPD->SetXTitle("time (ns)");
+    fhTimeNPileUpVertSPD->SetXTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeNPileUpVertSPD);
     
     fhTimeNPileUpVertTrack  = new TH2F ("hTime_NPileUpVertTracks","time of cluster vs N pile-up Tracks vertex", ntimebins,timemin,timemax, 20,0,20 );
     fhTimeNPileUpVertTrack->SetYTitle("# vertex ");
-    fhTimeNPileUpVertTrack->SetXTitle("time (ns)");
+    fhTimeNPileUpVertTrack->SetXTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeNPileUpVertTrack);
     
     fhTimeNPileUpVertContributors  = new TH2F ("hTime_NPileUpVertContributors","time of cluster vs N constributors to pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50);
     fhTimeNPileUpVertContributors->SetYTitle("# vertex ");
-    fhTimeNPileUpVertContributors->SetXTitle("time (ns)");
+    fhTimeNPileUpVertContributors->SetXTitle("#it{time} (ns)");
     outputContainer->Add(fhTimeNPileUpVertContributors);
     
     fhTimePileUpMainVertexZDistance  = new TH2F ("hTime_PileUpMainVertexZDistance","time of cluster vs distance in Z pile-up SPD vertex - main SPD vertex",ntimebins,timemin,timemax,100,0,50);
     fhTimePileUpMainVertexZDistance->SetYTitle("distance Z (cm) ");
-    fhTimePileUpMainVertexZDistance->SetXTitle("time (ns)");
+    fhTimePileUpMainVertexZDistance->SetXTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePileUpMainVertexZDistance);
     
     fhTimePileUpMainVertexZDiamond  = new TH2F ("hTime_PileUpMainVertexZDiamond","time of cluster vs distance in Z pile-up SPD vertex - z diamond",ntimebins,timemin,timemax,100,0,50);
     fhTimePileUpMainVertexZDiamond->SetYTitle("diamond distance Z (cm) ");
-    fhTimePileUpMainVertexZDiamond->SetXTitle("time (ns)");
+    fhTimePileUpMainVertexZDiamond->SetXTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePileUpMainVertexZDiamond);
     
     TString title[] = {"no |t diff| cut","|t diff|<20 ns","|t diff|>20 ns","|t diff|>40 ns"};
@@ -3029,90 +3031,90 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     for(Int_t i = 0; i < 4; i++)
     {
       fhClusterMultSPDPileUp[i] = new TH2F(Form("fhClusterMultSPDPileUp_%s", name[i].Data()),
-                                           Form("Number of clusters per pile up event with E > 0.5 and %s respect cluster max vs cluster max E ",title[i].Data()),
+                                           Form("Number of clusters per pile up event with #it{E} > 0.5 and %s respect cluster max vs cluster max E ",title[i].Data()),
                                            nptbins,ptmin,ptmax,100,0,100);
       fhClusterMultSPDPileUp[i]->SetYTitle("n clusters ");
-      fhClusterMultSPDPileUp[i]->SetXTitle("E_{cluster max} (GeV)");
+      fhClusterMultSPDPileUp[i]->SetXTitle("#it{E}_{cluster max} (GeV)");
       outputContainer->Add(fhClusterMultSPDPileUp[i]) ;
       
       fhClusterMultNoPileUp[i] = new TH2F(Form("fhClusterMultNoPileUp_%s", name[i].Data()),
-                                          Form("Number of clusters per non pile up event with E > 0.5 and %s respect cluster max vs cluster max E ",title[i].Data()),
+                                          Form("Number of clusters per non pile up event with #it{E} > 0.5 and %s respect cluster max vs cluster max E ",title[i].Data()),
                                           nptbins,ptmin,ptmax,100,0,100);
       fhClusterMultNoPileUp[i]->SetYTitle("n clusters ");
-      fhClusterMultNoPileUp[i]->SetXTitle("E_{cluster max} (GeV)");
+      fhClusterMultNoPileUp[i]->SetXTitle("#it{E}_{cluster max} (GeV)");
       outputContainer->Add(fhClusterMultNoPileUp[i]) ;
     }
     
     fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex",
                                    nptbins,ptmin,ptmax,20,0,20);
     fhPtNPileUpSPDVtx->SetYTitle("# vertex ");
-    fhPtNPileUpSPDVtx->SetXTitle("p_{T} (GeV/c)");
+    fhPtNPileUpSPDVtx->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpSPDVtx);
 	  
     fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex",
                                    nptbins,ptmin,ptmax, 20,0,20 );
     fhPtNPileUpTrkVtx->SetYTitle("# vertex ");
-    fhPtNPileUpTrkVtx->SetXTitle("p_{T} (GeV/c)");
+    fhPtNPileUpTrkVtx->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpTrkVtx);
     
     fhPtNPileUpSPDVtxTimeCut  = new TH2F ("hPt_NPileUpVertSPD_TimeCut","pT of cluster vs N pile-up SPD vertex, |tof| < 25 ns",
                                           nptbins,ptmin,ptmax,20,0,20);
     fhPtNPileUpSPDVtxTimeCut->SetYTitle("# vertex ");
-    fhPtNPileUpSPDVtxTimeCut->SetXTitle("p_{T} (GeV/c)");
+    fhPtNPileUpSPDVtxTimeCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpSPDVtxTimeCut);
 	  
     fhPtNPileUpTrkVtxTimeCut  = new TH2F ("hPt_NPileUpVertTracks_TimeCut","pT of cluster vs N pile-up Tracks vertex, |tof| < 25 ns",
                                           nptbins,ptmin,ptmax, 20,0,20 );
     fhPtNPileUpTrkVtxTimeCut->SetYTitle("# vertex ");
-    fhPtNPileUpTrkVtxTimeCut->SetXTitle("p_{T} (GeV/c)");
+    fhPtNPileUpTrkVtxTimeCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpTrkVtxTimeCut);
     
 		fhPtNPileUpSPDVtxTimeCut2  = new TH2F ("hPt_NPileUpVertSPD_TimeCut2","pT of cluster vs N pile-up SPD vertex, -25 < tof < 75 ns",
                                            nptbins,ptmin,ptmax,20,0,20);
     fhPtNPileUpSPDVtxTimeCut2->SetYTitle("# vertex ");
-    fhPtNPileUpSPDVtxTimeCut2->SetXTitle("p_{T} (GeV/c)");
+    fhPtNPileUpSPDVtxTimeCut2->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpSPDVtxTimeCut2);
 	  
     fhPtNPileUpTrkVtxTimeCut2  = new TH2F ("hPt_NPileUpVertTracks_TimeCut2","pT of cluster vs N pile-up Tracks vertex, -25 < tof < 75 ns",
                                            nptbins,ptmin,ptmax, 20,0,20 );
     fhPtNPileUpTrkVtxTimeCut2->SetYTitle("# vertex ");
-    fhPtNPileUpTrkVtxTimeCut2->SetXTitle("p_{T} (GeV/c)");
+    fhPtNPileUpTrkVtxTimeCut2->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpTrkVtxTimeCut2);
     
     fhPtPhotonNPileUpSPDVtx  = new TH2F ("hPtPhoton_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex",
                                          nptbins,ptmin,ptmax,20,0,20);
     fhPtPhotonNPileUpSPDVtx->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpSPDVtx->SetXTitle("p_{T} (GeV/c)");
+    fhPtPhotonNPileUpSPDVtx->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpSPDVtx);
 	  
     fhPtPhotonNPileUpTrkVtx  = new TH2F ("hPtPhoton_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex",
                                          nptbins,ptmin,ptmax, 20,0,20 );
     fhPtPhotonNPileUpTrkVtx->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpTrkVtx->SetXTitle("p_{T} (GeV/c)");
+    fhPtPhotonNPileUpTrkVtx->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpTrkVtx);
 	  
     fhPtPhotonNPileUpSPDVtxTimeCut  = new TH2F ("hPtPhoton_NPileUpVertSPD_TimeCut","pT of cluster vs N pile-up SPD vertex, |tof| < 25 ns",
                                                 nptbins,ptmin,ptmax,20,0,20);
     fhPtPhotonNPileUpSPDVtxTimeCut->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpSPDVtxTimeCut->SetXTitle("p_{T} (GeV/c)");
+    fhPtPhotonNPileUpSPDVtxTimeCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpSPDVtxTimeCut);
 	  
     fhPtPhotonNPileUpTrkVtxTimeCut  = new TH2F ("hPtPhoton_NPileUpVertTracks_TimeCut","pT of cluster vs N pile-up Tracks vertex, |tof| < 25 ns",
                                                 nptbins,ptmin,ptmax, 20,0,20 );
     fhPtPhotonNPileUpTrkVtxTimeCut->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpTrkVtxTimeCut->SetXTitle("p_{T} (GeV/c)");
+    fhPtPhotonNPileUpTrkVtxTimeCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpTrkVtxTimeCut);
 	  
     fhPtPhotonNPileUpSPDVtxTimeCut2  = new TH2F ("hPtPhoton_NPileUpVertSPD_TimeCut2","pT of cluster vs N pile-up SPD vertex, -25 < tof < 75 ns",
                                                  nptbins,ptmin,ptmax,20,0,20);
     fhPtPhotonNPileUpSPDVtxTimeCut2->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpSPDVtxTimeCut2->SetXTitle("p_{T} (GeV/c)");
+    fhPtPhotonNPileUpSPDVtxTimeCut2->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpSPDVtxTimeCut2);
 	  
     fhPtPhotonNPileUpTrkVtxTimeCut2  = new TH2F ("hPtPhoton_NPileUpVertTracks_TimeCut2","pT of cluster vs N pile-up Tracks vertex,  -25 < tof < 75 ns",
                                                  nptbins,ptmin,ptmax, 20,0,20 );
     fhPtPhotonNPileUpTrkVtxTimeCut2->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpTrkVtxTimeCut2->SetXTitle("p_{T} (GeV/c)");
+    fhPtPhotonNPileUpTrkVtxTimeCut2->SetXTitle("#it{p}_[T] (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpTrkVtxTimeCut2);
     
   }
@@ -3132,56 +3134,56 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhMCE[i]  = new TH1F(Form("hE_MC%s",pname[i].Data()),
                            Form("cluster from %s : E ",ptype[i].Data()),
                            nptbins,ptmin,ptmax);
-      fhMCE[i]->SetXTitle("E (GeV)");
+      fhMCE[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhMCE[i]) ;
       
       fhMCPt[i]  = new TH1F(Form("hPt_MC%s",pname[i].Data()),
-                            Form("cluster from %s : p_{T} ",ptype[i].Data()),
+                            Form("cluster from %s : #it{p}_[T] ",ptype[i].Data()),
                             nptbins,ptmin,ptmax);
-      fhMCPt[i]->SetXTitle("p_{T} (GeV/c)");
+      fhMCPt[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
       outputContainer->Add(fhMCPt[i]) ;
       
       fhMCEta[i]  = new TH2F(Form("hEta_MC%s",pname[i].Data()),
                              Form("cluster from %s : #eta ",ptype[i].Data()),
                              nptbins,ptmin,ptmax,netabins,etamin,etamax);
       fhMCEta[i]->SetYTitle("#eta");
-      fhMCEta[i]->SetXTitle("E (GeV)");
+      fhMCEta[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhMCEta[i]) ;
       
       fhMCPhi[i]  = new TH2F(Form("hPhi_MC%s",pname[i].Data()),
                              Form("cluster from %s : #phi ",ptype[i].Data()),
                              nptbins,ptmin,ptmax,nphibins,phimin,phimax);
       fhMCPhi[i]->SetYTitle("#phi (rad)");
-      fhMCPhi[i]->SetXTitle("E (GeV)");
+      fhMCPhi[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhMCPhi[i]) ;
       
       
       fhMCDeltaE[i]  = new TH2F (Form("hDeltaE_MC%s",pname[i].Data()),
                                  Form("MC - Reco E from %s",pname[i].Data()),
                                  nptbins,ptmin,ptmax, 200,-50,50);
-      fhMCDeltaE[i]->SetYTitle("#Delta E (GeV)");
-      fhMCDeltaE[i]->SetXTitle("E (GeV)");
+      fhMCDeltaE[i]->SetYTitle("#Delta #it{E} (GeV)");
+      fhMCDeltaE[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhMCDeltaE[i]);
       
       fhMCDeltaPt[i]  = new TH2F (Form("hDeltaPt_MC%s",pname[i].Data()),
-                                  Form("MC - Reco p_{T} from %s",pname[i].Data()),
+                                  Form("MC - Reco #it{p}_[T] from %s",pname[i].Data()),
                                   nptbins,ptmin,ptmax, 200,-50,50);
-      fhMCDeltaPt[i]->SetXTitle("p_{T,rec} (GeV/c)");
-      fhMCDeltaPt[i]->SetYTitle("#Delta p_{T} (GeV/c)");
+      fhMCDeltaPt[i]->SetXTitle("p_{T,rec} (GeV/#it{c})");
+      fhMCDeltaPt[i]->SetYTitle("#Delta #it{p}_[T] (GeV/#it{c})");
       outputContainer->Add(fhMCDeltaPt[i]);
       
       fhMC2E[i]  = new TH2F (Form("h2E_MC%s",pname[i].Data()),
                              Form("E distribution, reconstructed vs generated from %s",pname[i].Data()),
                              nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
-      fhMC2E[i]->SetXTitle("E_{rec} (GeV)");
-      fhMC2E[i]->SetYTitle("E_{gen} (GeV)");
+      fhMC2E[i]->SetXTitle("#it{E}_{rec} (GeV)");
+      fhMC2E[i]->SetYTitle("#it{E}_{gen} (GeV)");
       outputContainer->Add(fhMC2E[i]);
       
       fhMC2Pt[i]  = new TH2F (Form("h2Pt_MC%s",pname[i].Data()),
                               Form("p_T distribution, reconstructed vs generated from %s",pname[i].Data()),
                               nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
-      fhMC2Pt[i]->SetXTitle("p_{T,rec} (GeV/c)");
-      fhMC2Pt[i]->SetYTitle("p_{T,gen} (GeV/c)");
+      fhMC2Pt[i]->SetXTitle("p_{T,rec} (GeV/#it{c})");
+      fhMC2Pt[i]->SetYTitle("p_{T,gen} (GeV/#it{c})");
       outputContainer->Add(fhMC2Pt[i]);
       
       
@@ -3198,68 +3200,68 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhEPrimMC[i]  = new TH1F(Form("hEPrim_MC%s",ppname[i].Data()),
                                Form("primary photon %s : E ",pptype[i].Data()),
                                nptbins,ptmin,ptmax);
-      fhEPrimMC[i]->SetXTitle("E (GeV)");
+      fhEPrimMC[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhEPrimMC[i]) ;
       
       fhPtPrimMC[i]  = new TH1F(Form("hPtPrim_MC%s",ppname[i].Data()),
-                                Form("primary photon %s : p_{T} ",pptype[i].Data()),
+                                Form("primary photon %s : #it{p}_[T] ",pptype[i].Data()),
                                 nptbins,ptmin,ptmax);
-      fhPtPrimMC[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtPrimMC[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
       outputContainer->Add(fhPtPrimMC[i]) ;
       
       fhYPrimMC[i]  = new TH2F(Form("hYPrim_MC%s",ppname[i].Data()),
                                Form("primary photon %s : Rapidity ",pptype[i].Data()),
                                nptbins,ptmin,ptmax,200,-2,2);
       fhYPrimMC[i]->SetYTitle("Rapidity");
-      fhYPrimMC[i]->SetXTitle("E (GeV)");
+      fhYPrimMC[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhYPrimMC[i]) ;
       
       fhEtaPrimMC[i]  = new TH2F(Form("hEtaPrim_MC%s",ppname[i].Data()),
                                Form("primary photon %s : #eta",pptype[i].Data()),
                                nptbins,ptmin,ptmax,200,-2,2);
       fhEtaPrimMC[i]->SetYTitle("#eta");
-      fhEtaPrimMC[i]->SetXTitle("E (GeV)");
+      fhEtaPrimMC[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhEtaPrimMC[i]) ;
       
       fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
                                  Form("primary photon %s : #phi ",pptype[i].Data()),
                                  nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
       fhPhiPrimMC[i]->SetYTitle("#phi (rad)");
-      fhPhiPrimMC[i]->SetXTitle("E (GeV)");
+      fhPhiPrimMC[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhPhiPrimMC[i]) ;
       
       
       fhEPrimMCAcc[i]  = new TH1F(Form("hEPrimAcc_MC%s",ppname[i].Data()),
                                   Form("primary photon %s in acceptance: E ",pptype[i].Data()),
                                   nptbins,ptmin,ptmax);
-      fhEPrimMCAcc[i]->SetXTitle("E (GeV)");
+      fhEPrimMCAcc[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhEPrimMCAcc[i]) ;
       
       fhPtPrimMCAcc[i]  = new TH1F(Form("hPtPrimAcc_MC%s",ppname[i].Data()),
-                                   Form("primary photon %s in acceptance: p_{T} ",pptype[i].Data()),
+                                   Form("primary photon %s in acceptance: #it{p}_[T] ",pptype[i].Data()),
                                    nptbins,ptmin,ptmax);
-      fhPtPrimMCAcc[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtPrimMCAcc[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
       outputContainer->Add(fhPtPrimMCAcc[i]) ;
       
       fhYPrimMCAcc[i]  = new TH2F(Form("hYPrimAcc_MC%s",ppname[i].Data()),
                                   Form("primary photon %s in acceptance: Rapidity ",pptype[i].Data()),
                                   nptbins,ptmin,ptmax,100,-1,1);
       fhYPrimMCAcc[i]->SetYTitle("Rapidity");
-      fhYPrimMCAcc[i]->SetXTitle("E (GeV)");
+      fhYPrimMCAcc[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhYPrimMCAcc[i]) ;
 
       fhEtaPrimMCAcc[i]  = new TH2F(Form("hEtaPrimAcc_MC%s",ppname[i].Data()),
                                   Form("primary photon %s in acceptance: #eta ",pptype[i].Data()),
                                   nptbins,ptmin,ptmax,netabins,etamin,etamax);
       fhEtaPrimMCAcc[i]->SetYTitle("#eta");
-      fhEtaPrimMCAcc[i]->SetXTitle("E (GeV)");
+      fhEtaPrimMCAcc[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhEtaPrimMCAcc[i]) ;
       
       fhPhiPrimMCAcc[i]  = new TH2F(Form("hPhiPrimAcc_MC%s",ppname[i].Data()),
                                     Form("primary photon %s in acceptance: #phi ",pptype[i].Data()),
                                     nptbins,ptmin,ptmax,nphibins,phimin,phimax);
       fhPhiPrimMCAcc[i]->SetYTitle("#phi (rad)");
-      fhPhiPrimMCAcc[i]->SetXTitle("E (GeV)");
+      fhPhiPrimMCAcc[i]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhPhiPrimMCAcc[i]) ;
       
     }
@@ -3276,35 +3278,35 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
                                     Form("cluster from %s : E vs #lambda_{0}^{2}",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhMCELambda0[i]->SetYTitle("#lambda_{0}^{2}");
-        fhMCELambda0[i]->SetXTitle("E (GeV)");
+        fhMCELambda0[i]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMCELambda0[i]) ;
         
         fhMCELambda1[i]  = new TH2F(Form("hELambda1_MC%s",pnamess[i].Data()),
                                     Form("cluster from %s : E vs #lambda_{1}^{2}",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhMCELambda1[i]->SetYTitle("#lambda_{1}^{2}");
-        fhMCELambda1[i]->SetXTitle("E (GeV)");
+        fhMCELambda1[i]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMCELambda1[i]) ;
         
         fhMCEDispersion[i]  = new TH2F(Form("hEDispersion_MC%s",pnamess[i].Data()),
                                        Form("cluster from %s : E vs dispersion^{2}",ptypess[i].Data()),
                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhMCEDispersion[i]->SetYTitle("D^{2}");
-        fhMCEDispersion[i]->SetXTitle("E (GeV)");
+        fhMCEDispersion[i]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMCEDispersion[i]) ;
         
         fhMCNCellsE[i]  = new TH2F (Form("hNCellsE_MC%s",pnamess[i].Data()),
                                     Form("# of cells in cluster from %s vs E of clusters",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax, nbins,nmin,nmax);
-        fhMCNCellsE[i]->SetXTitle("E (GeV)");
+        fhMCNCellsE[i]->SetXTitle("#it{E} (GeV)");
         fhMCNCellsE[i]->SetYTitle("# of cells in cluster");
         outputContainer->Add(fhMCNCellsE[i]);
         
         fhMCMaxCellDiffClusterE[i]  = new TH2F (Form("hMaxCellDiffClusterE_MC%s",pnamess[i].Data()),
                                                 Form("energy vs difference of cluster energy from %s - max cell energy / cluster energy, good clusters",ptypess[i].Data()),
                                                 nptbins,ptmin,ptmax, 500,0,1.);
-        fhMCMaxCellDiffClusterE[i]->SetXTitle("E_{cluster} (GeV) ");
-        fhMCMaxCellDiffClusterE[i]->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster}");
+        fhMCMaxCellDiffClusterE[i]->SetXTitle("#it{E}_{cluster} (GeV) ");
+        fhMCMaxCellDiffClusterE[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
         outputContainer->Add(fhMCMaxCellDiffClusterE[i]);
         
         if(!fFillOnlySimpleSSHisto)
@@ -3313,42 +3315,42 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
                                                            Form("cluster from %s : #lambda^{2}_{0} vs fraction of energy carried by max cell, E < 2 GeV",ptypess[i].Data()),
                                                            ssbins,ssmin,ssmax,500,0,1.);
           fhMCLambda0vsClusterMaxCellDiffE0[i]->SetXTitle("#lambda_{0}^{2}");
-          fhMCLambda0vsClusterMaxCellDiffE0[i]->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster}");
+          fhMCLambda0vsClusterMaxCellDiffE0[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
           outputContainer->Add(fhMCLambda0vsClusterMaxCellDiffE0[i]) ;
           
           fhMCLambda0vsClusterMaxCellDiffE2[i]  = new TH2F(Form("hLambda0vsClusterMaxCellDiffE2_MC%s",pnamess[i].Data()),
                                                            Form("cluster from %s : #lambda^{2}_{0} vs fraction of energy carried by max cell, 2< E < 6 GeV",ptypess[i].Data()),
                                                            ssbins,ssmin,ssmax,500,0,1.);
           fhMCLambda0vsClusterMaxCellDiffE2[i]->SetXTitle("#lambda_{0}^{2}");
-          fhMCLambda0vsClusterMaxCellDiffE2[i]->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster}");
+          fhMCLambda0vsClusterMaxCellDiffE2[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
           outputContainer->Add(fhMCLambda0vsClusterMaxCellDiffE2[i]) ;
           
           fhMCLambda0vsClusterMaxCellDiffE6[i]  = new TH2F(Form("hLambda0vsClusterMaxCellDiffE6_MC%s",pnamess[i].Data()),
-                                                           Form("cluster from %s : #lambda^{2}_{0} vs fraction of energy carried by max cell, E > 6 GeV",ptypess[i].Data()),
+                                                           Form("cluster from %s : #lambda^{2}_{0} vs fraction of energy carried by max cell, #it{E} > 6 GeV",ptypess[i].Data()),
                                                            ssbins,ssmin,ssmax,500,0,1.);
           fhMCLambda0vsClusterMaxCellDiffE6[i]->SetXTitle("#lambda_{0}^{2}");
-          fhMCLambda0vsClusterMaxCellDiffE6[i]->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster}");
+          fhMCLambda0vsClusterMaxCellDiffE6[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
           outputContainer->Add(fhMCLambda0vsClusterMaxCellDiffE6[i]) ;
           
           fhMCNCellsvsClusterMaxCellDiffE0[i]  = new TH2F(Form("hNCellsvsClusterMaxCellDiffE0_MC%s",pnamess[i].Data()),
                                                           Form("cluster from %s : N cells in cluster vs fraction of energy carried by max cell, E < 2 GeV",ptypess[i].Data()),
                                                           nbins/5,nmin,nmax/5,500,0,1.);
           fhMCNCellsvsClusterMaxCellDiffE0[i]->SetXTitle("N cells in cluster");
-          fhMCNCellsvsClusterMaxCellDiffE0[i]->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster}");
+          fhMCNCellsvsClusterMaxCellDiffE0[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
           outputContainer->Add(fhMCNCellsvsClusterMaxCellDiffE0[i]) ;
           
           fhMCNCellsvsClusterMaxCellDiffE2[i]  = new TH2F(Form("hNCellsvsClusterMaxCellDiffE2_MC%s",pnamess[i].Data()),
                                                           Form("cluster from %s : N cells in cluster vs fraction of energy carried by max cell, 2< E < 6 GeV",ptypess[i].Data()),
                                                           nbins/5,nmin,nmax/5,500,0,1.);
           fhMCNCellsvsClusterMaxCellDiffE2[i]->SetXTitle("N cells in cluster");
-          fhMCNCellsvsClusterMaxCellDiffE2[i]->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster}");
+          fhMCNCellsvsClusterMaxCellDiffE2[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
           outputContainer->Add(fhMCNCellsvsClusterMaxCellDiffE2[i]) ;
           
           fhMCNCellsvsClusterMaxCellDiffE6[i]  = new TH2F(Form("hNCellsvsClusterMaxCellDiffE6_MC%s",pnamess[i].Data()),
-                                                          Form("cluster from %s : N cells in cluster vs fraction of energy carried by max cell, E > 6 GeV",ptypess[i].Data()),
+                                                          Form("cluster from %s : N cells in cluster vs fraction of energy carried by max cell, #it{E} > 6 GeV",ptypess[i].Data()),
                                                           nbins/5,nmin,nmax/5,500,0,1.);
           fhMCNCellsvsClusterMaxCellDiffE6[i]->SetXTitle("N cells in cluster");
-          fhMCNCellsvsClusterMaxCellDiffE6[i]->SetYTitle("E (GeV)");
+          fhMCNCellsvsClusterMaxCellDiffE6[i]->SetYTitle("#it{E} (GeV)");
           outputContainer->Add(fhMCNCellsvsClusterMaxCellDiffE6[i]) ;
           
           if(fCalorimeter=="EMCAL")
@@ -3356,35 +3358,35 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
             fhMCEDispEta[i]  = new TH2F (Form("hEDispEtaE_MC%s",pnamess[i].Data()),
                                          Form("cluster from %s : #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",ptypess[i].Data()),
                                          nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
-            fhMCEDispEta[i]->SetXTitle("E (GeV)");
+            fhMCEDispEta[i]->SetXTitle("#it{E} (GeV)");
             fhMCEDispEta[i]->SetYTitle("#sigma^{2}_{#eta #eta}");
             outputContainer->Add(fhMCEDispEta[i]);
             
             fhMCEDispPhi[i]  = new TH2F (Form("hEDispPhiE_MC%s",pnamess[i].Data()),
                                          Form("cluster from %s : #sigma^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i} - <#phi>)^{2} / #Sigma w_{i} vs E",ptypess[i].Data()),
                                          nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
-            fhMCEDispPhi[i]->SetXTitle("E (GeV)");
+            fhMCEDispPhi[i]->SetXTitle("#it{E} (GeV)");
             fhMCEDispPhi[i]->SetYTitle("#sigma^{2}_{#phi #phi}");
             outputContainer->Add(fhMCEDispPhi[i]);
             
             fhMCESumEtaPhi[i]  = new TH2F (Form("hESumEtaPhiE_MC%s",pnamess[i].Data()),
                                            Form("cluster from %s : #delta^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",ptypess[i].Data()),
                                            nptbins,ptmin,ptmax, 2*ssbins,-ssmax,ssmax);
-            fhMCESumEtaPhi[i]->SetXTitle("E (GeV)");
+            fhMCESumEtaPhi[i]->SetXTitle("#it{E} (GeV)");
             fhMCESumEtaPhi[i]->SetYTitle("#delta^{2}_{#eta #phi}");
             outputContainer->Add(fhMCESumEtaPhi[i]);
             
             fhMCEDispEtaPhiDiff[i]  = new TH2F (Form("hEDispEtaPhiDiffE_MC%s",pnamess[i].Data()),
                                                 Form("cluster from %s : #sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta} vs E",ptypess[i].Data()),
                                                 nptbins,ptmin,ptmax,200,-10,10);
-            fhMCEDispEtaPhiDiff[i]->SetXTitle("E (GeV)");
+            fhMCEDispEtaPhiDiff[i]->SetXTitle("#it{E} (GeV)");
             fhMCEDispEtaPhiDiff[i]->SetYTitle("#sigma^{2}_{#phi #phi}-#sigma^{2}_{#eta #eta}");
             outputContainer->Add(fhMCEDispEtaPhiDiff[i]);
             
             fhMCESphericity[i]  = new TH2F (Form("hESphericity_MC%s",pnamess[i].Data()),
                                             Form("cluster from %s : (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi}) vs E",ptypess[i].Data()),
                                             nptbins,ptmin,ptmax, 200,-1,1);
-            fhMCESphericity[i]->SetXTitle("E (GeV)");
+            fhMCESphericity[i]->SetXTitle("#it{E} (GeV)");
             fhMCESphericity[i]->SetYTitle("s = (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi})");
             outputContainer->Add(fhMCESphericity[i]);
             
@@ -3421,21 +3423,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
                                                 "cluster from Photon : E vs #lambda_{0}^{2}",
                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhMCPhotonELambda0NoOverlap->SetYTitle("#lambda_{0}^{2}");
-        fhMCPhotonELambda0NoOverlap->SetXTitle("E (GeV)");
+        fhMCPhotonELambda0NoOverlap->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMCPhotonELambda0NoOverlap) ;
         
         fhMCPhotonELambda0TwoOverlap  = new TH2F("hELambda0_MCPhoton_TwoOverlap",
                                                  "cluster from Photon : E vs #lambda_{0}^{2}",
                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhMCPhotonELambda0TwoOverlap->SetYTitle("#lambda_{0}^{2}");
-        fhMCPhotonELambda0TwoOverlap->SetXTitle("E (GeV)");
+        fhMCPhotonELambda0TwoOverlap->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMCPhotonELambda0TwoOverlap) ;
         
         fhMCPhotonELambda0NOverlap  = new TH2F("hELambda0_MCPhoton_NOverlap",
                                                "cluster from Photon : E vs #lambda_{0}^{2}",
                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhMCPhotonELambda0NOverlap->SetYTitle("#lambda_{0}^{2}");
-        fhMCPhotonELambda0NOverlap->SetXTitle("E (GeV)");
+        fhMCPhotonELambda0NOverlap->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMCPhotonELambda0NOverlap) ;
         
       } //No embedding
@@ -3447,63 +3449,63 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
                                                    "Energy Fraction of embedded signal versus cluster energy",
                                                    nptbins,ptmin,ptmax,100,0.,1.);
         fhEmbeddedSignalFractionEnergy->SetYTitle("Fraction");
-        fhEmbeddedSignalFractionEnergy->SetXTitle("E (GeV)");
+        fhEmbeddedSignalFractionEnergy->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbeddedSignalFractionEnergy) ;
         
         fhEmbedPhotonELambda0FullSignal  = new TH2F("hELambda0_EmbedPhoton_FullSignal",
                                                     "cluster from Photon embedded with more than 90% energy in cluster : E vs #lambda_{0}^{2}",
                                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhEmbedPhotonELambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPhotonELambda0FullSignal->SetXTitle("E (GeV)");
+        fhEmbedPhotonELambda0FullSignal->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0FullSignal) ;
         
         fhEmbedPhotonELambda0MostlySignal  = new TH2F("hELambda0_EmbedPhoton_MostlySignal",
                                                       "cluster from Photon embedded with 50% to 90% energy in cluster : E vs #lambda_{0}^{2}",
                                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhEmbedPhotonELambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPhotonELambda0MostlySignal->SetXTitle("E (GeV)");
+        fhEmbedPhotonELambda0MostlySignal->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0MostlySignal) ;
         
         fhEmbedPhotonELambda0MostlyBkg  = new TH2F("hELambda0_EmbedPhoton_MostlyBkg",
                                                    "cluster from Photon embedded with 10% to 50% energy in cluster : E vs #lambda_{0}^{2}",
                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhEmbedPhotonELambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPhotonELambda0MostlyBkg->SetXTitle("E (GeV)");
+        fhEmbedPhotonELambda0MostlyBkg->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0MostlyBkg) ;
         
         fhEmbedPhotonELambda0FullBkg  = new TH2F("hELambda0_EmbedPhoton_FullBkg",
                                                  "cluster from Photonm embedded with 0% to 10% energy in cluster : E vs #lambda_{0}^{2}",
                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhEmbedPhotonELambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPhotonELambda0FullBkg->SetXTitle("E (GeV)");
+        fhEmbedPhotonELambda0FullBkg->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0FullBkg) ;
         
         fhEmbedPi0ELambda0FullSignal  = new TH2F("hELambda0_EmbedPi0_FullSignal",
                                                  "cluster from Pi0 embedded with more than 90% energy in cluster : E vs #lambda_{0}^{2}",
                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhEmbedPi0ELambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPi0ELambda0FullSignal->SetXTitle("E (GeV)");
+        fhEmbedPi0ELambda0FullSignal->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0FullSignal) ;
         
         fhEmbedPi0ELambda0MostlySignal  = new TH2F("hELambda0_EmbedPi0_MostlySignal",
                                                    "cluster from Pi0 embedded with 50% to 90% energy in cluster : E vs #lambda_{0}^{2}",
                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhEmbedPi0ELambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPi0ELambda0MostlySignal->SetXTitle("E (GeV)");
+        fhEmbedPi0ELambda0MostlySignal->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0MostlySignal) ;
         
         fhEmbedPi0ELambda0MostlyBkg  = new TH2F("hELambda0_EmbedPi0_MostlyBkg",
                                                 "cluster from Pi0 embedded with 10% to 50% energy in cluster : E vs #lambda_{0}^{2}",
                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhEmbedPi0ELambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPi0ELambda0MostlyBkg->SetXTitle("E (GeV)");
+        fhEmbedPi0ELambda0MostlyBkg->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0MostlyBkg) ;
         
         fhEmbedPi0ELambda0FullBkg  = new TH2F("hELambda0_EmbedPi0_FullBkg",
                                               "cluster from Pi0 embedded with 0% to 10% energy in cluster : E vs #lambda_{0}^{2}",
                                               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhEmbedPi0ELambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPi0ELambda0FullBkg->SetXTitle("E (GeV)");
+        fhEmbedPi0ELambda0FullBkg->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0FullBkg) ;
         
       }// embedded histograms
@@ -3950,8 +3952,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     fhPtEventPlanePhoton ->Fill(ptcluster,ep ) ;
     
     //Get original cluster, to recover some information
-    Int_t absID             = 0;
-    Float_t maxCellFraction = 0;
     AliVCaloCells* cells    = 0;
     TObjArray * clusters    = 0;
     if(fCalorimeter == "EMCAL")
@@ -3969,12 +3969,15 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     AliVCluster *cluster = FindCluster(clusters,ph->GetCaloLabel(0),iclus);
     if(cluster)
     {
-      absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
-      
+      Float_t maxCellFraction = 0;
+      Int_t absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster, maxCellFraction);
+      if( absID < 0 ) AliFatal("Wrong absID");
+
       // Control histograms
       fhMaxCellDiffClusterE->Fill(ph->E() ,maxCellFraction);
       fhNCellsE            ->Fill(ph->E() ,cluster->GetNCells());
       fhTimePt             ->Fill(ph->Pt(),cluster->GetTOF()*1.e9);
+
       if(cells)
       {
         for(Int_t icell = 0; icell <  cluster->GetNCells(); icell++)

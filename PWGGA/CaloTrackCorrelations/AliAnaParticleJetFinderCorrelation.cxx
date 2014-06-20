@@ -797,6 +797,11 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
   
   for(Int_t ijet = 0; ijet < njets ; ijet++){
     jet = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
+    if(!jet)
+    {
+      AliInfo("Jet not in container");
+      continue;
+    }
     fhCuts2->Fill(2.,1.);
     jetPt=jet->Pt();
     if(fBackgroundJetFromReader ){
@@ -866,18 +871,22 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   }
   else
   {
-    if(GetDebug() > 3) printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - There are no jets available for this analysis\n");
+    if(GetDebug() > 3) AliInfo("There are no jets available for this analysis");
     return;
   }
   
-  if(!GetInputAODBranch() || !event){
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
-    abort();
+  if(!GetInputAODBranch() || !event)
+  {
+    AliFatal(Form("No input particles in AOD with name branch < %s > \n",
+                  GetInputAODName().Data()));
+    return; // Trick coverity
   }
   
-  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation")){
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
-    abort();
+  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation"))
+  {
+    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s>",
+                  GetInputAODBranch()->GetClass()->GetName()));
+    return; // Trick coverity
   }
   
   //
@@ -886,12 +895,14 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   Int_t nJets=-1;
   TClonesArray *aodRecJets = 0;
   if(IsNonStandardJetFromReader()){//jet branch from reader
-    if(GetDebug() > 3) printf("GetNonStandardJets function (from reader) is called\n");
+    if(GetDebug() > 3) AliInfo(Form("GetNonStandardJets function (from reader) is called"));
     aodRecJets = GetNonStandardJets();
-    if(GetDebug() > 3) printf("aodRecJets %p\n",aodRecJets);
-    if(aodRecJets==0x0){
+    if(GetDebug() > 3) AliInfo(Form("aodRecJets %p",aodRecJets));
+    if(aodRecJets==0x0)
+    {
       if(GetDebug() > 3) event->Print();
-      abort();
+      AliFatal("List of jets is null");
+      return;
     }
     nJets=aodRecJets->GetEntries();
     if(GetDebug() > 3) printf("nJets %d\n",nJets);
@@ -978,7 +989,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
         photonRhoArrayIndex++;
       }
       if(photonRhoArrayIndex>0) medianPhotonRho=TMath::Median(photonRhoArrayIndex,photonRhoArr);
-      delete photonRhoArr;
+      delete [] photonRhoArr;
     }
   }//end of if background calculation for gamma
   fGamRho = medianPhotonRho;
@@ -1019,6 +1030,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     //Double_t ptCorrect=0.;
     for(Int_t ijet = 0; ijet < nJets ; ijet++){
       jet = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
+      if(!jet) continue;
       if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
       if(jet->EffectiveAreaCharged()<fJetAreaFraction*TMath::Pi()*fJetConeSize*fJetConeSize) continue;
       if(jet->Pt()<fJetMinPt) continue;
@@ -1036,7 +1048,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     if(indexMostEneJet>=0 && indexMostEnePhoton>=0){
       particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(indexMostEnePhoton));
       jet = dynamic_cast<AliAODJet*>(aodRecJets-> At(indexMostEneJet));
-      particle->SetRefJet(jet);
+      if(jet)particle->SetRefJet(jet);
     }
   }//end of take most energetic photon and most ene. jet after bkg subtraction
   
@@ -1052,7 +1064,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
         //isJetFound=kTRUE;
         if(GetDebug() > 2) printf ("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Jet with index %d selected \n",ijet);
         AliAODJet *jet = dynamic_cast<AliAODJet*>(aodRecJets-> At(ijet));
-        particle->SetRefJet(jet);
+        if(jet)particle->SetRefJet(jet);
         //printf("Most opposite found\n");
       }
     } // input aod loop
@@ -1105,7 +1117,8 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     aodRecJets = GetNonStandardJets();
     if(aodRecJets==0x0){
       if(GetDebug() > 3) event->Print();
-      abort();
+      AliFatal("Jets container not found");
+      return; // trick coverity
     }
     nJets=aodRecJets->GetEntries();
   }
@@ -1113,7 +1126,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     //    printf("Why number of jets = 0? Check what type of collision it is. If PbPb -problem.\n");
     GetReader()->FillInputNonStandardJets();
     aodRecJets = GetNonStandardJets();
-    nJets=aodRecJets->GetEntries();
+    if(aodRecJets) nJets=aodRecJets->GetEntries();
     //    printf("nJets = %d\n",nJets);
     return;
   }
@@ -1161,6 +1174,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     Double_t sumTrackPt=0;
     for(itrack = 0; itrack < nCTSTracks ; itrack++){
       aodtrack = dynamic_cast <AliAODTrack*>(GetCTSTracks()->At(itrack));
+      if(!aodtrack) continue;
       fhTrackPhiVsEta->Fill(aodtrack->Phi(),aodtrack->Eta());
       sumTrackPt+=aodtrack->Pt();
     }
@@ -1186,6 +1200,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   Int_t itrk=0;
   for(Int_t ijet = 0; ijet < nJets ; ijet++){
     jettmp = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
+    if(!jettmp) continue;
     fhJetPtBefore->Fill(jettmp->Pt());
     jetPttmp  = jettmp->Pt() - rhoEvent * jettmp->EffectiveAreaCharged();//<<---changed here
     
@@ -1215,7 +1230,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     
     for(itrack = 0; itrack < nCTSTracks ; itrack++){
       aodtrack = dynamic_cast <AliAODTrack*>(GetCTSTracks()->At(itrack));
-      fhJetDeltaEtaDeltaPhiAllTracks->Fill(jettmp->Eta()-aodtrack->Eta(),jettmp->Phi()-aodtrack->Phi());
+      if(aodtrack) fhJetDeltaEtaDeltaPhiAllTracks->Fill(jettmp->Eta()-aodtrack->Eta(),jettmp->Phi()-aodtrack->Phi());
     }
     
     
@@ -1363,7 +1378,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
       photonRhoArrayIndex++;
     }
     if(photonRhoArrayIndex>0) medianPhotonRho=TMath::Median(photonRhoArrayIndex,photonRhoArr);
-    delete photonRhoArr;
+    delete [] photonRhoArr;
     fhPhotonNgammaMoreAverageToNgamma->Fill((Double_t)counterGamma / (Double_t)ntrig);
     fhPhotonNgammaMoreAverageMinus1ToNgamma->Fill((Double_t)counterGammaMinus1 / (Double_t)ntrig);
   }
@@ -1480,7 +1495,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
         //jet = event->GetJet(ijet);
         jet = dynamic_cast<AliAODJet*>(aodRecJets-> At(ijet));
         
-        particlecorr->SetRefJet(jet);
+       if(jet) particlecorr->SetRefJet(jet);
         
       }
     }
@@ -1580,6 +1595,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     fGamNtracks=0;
     for(itrack = 0; itrack < nCTSTracks ; itrack++){
       aodtrack = dynamic_cast <AliAODTrack*>(GetCTSTracks()->At(itrack));
+      if(!aodtrack) continue;
       fhSelectedTrackPhiVsEta->Fill(aodtrack->Phi(),aodtrack->Eta());//fill histogram here
       //      if(aodtrack->Pt()<0.15) continue;//hardcoded
       if(aodtrack->Pt()<fPtThresholdInCone) continue;

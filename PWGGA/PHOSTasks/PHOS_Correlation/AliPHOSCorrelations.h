@@ -35,6 +35,7 @@ public:
   enum Period { kUndefinedPeriod, kLHC10h, kLHC11h, kLHC13 };
   enum EventSelection { kTotal, kInternalTriggerMaskSelection, kHasVertex, kHasAbsVertex, kHasCentrality,  kCentUnderUpperBinUpperEdge, kHasPHOSClusters, kHasTPCTracks, kTotalSelected };
   enum HibridCheckVeriable { kOnlyHibridTracks, kWithOutHibridTracks, kAllTracks };
+  enum PID { kPidAll, kPidCPV, kPidDisp, kPidBoth};
   enum TriggerSelection { kNoSelection, kCentralInclusive, kCentralExclusive, kSemiCentralInclusive, kSemiCentralExclusive, kMBInclusive, kMBExclusive };
 
 
@@ -53,7 +54,9 @@ public:
   void EnableTOFCut(Bool_t enable = kTRUE, Double_t TOFCut = 100.e-9){fTOFCutEnabled=enable; fTOFCut=TOFCut;}
   void SetMassWindow(Double_t massMean = 0.135, Double_t massSigma = 0.01) { fMassInvMean = massMean; fMassInvSigma = massSigma; }
   void SetSigmaWidth(Double_t sigmaWidth= 0) { fSigmaWidth = sigmaWidth; }
-  void SetPeriod(Period period);
+  void SetMassMeanParametrs(Double_t p0 = -20.9476, Double_t p1 = 0.1300) {fMassMeanP0 = p0; fMassMeanP1 = p1;}   // from mass fit
+  void SetMassSigmaParametrs(Double_t p0 = 0.005, Double_t p1 = -0.0001) {fMassSigmaP0 = p0; fMassSigmaP1 = p1;}    // from mass fit
+  void SetPeriod(Period period) { fPeriod = period; }
   void SetCentralityBorders (double down = 0., double up = 90.) ;
   void SetPtAssocBins(TArrayD * arr){fAssocBins.Set(arr->GetSize(), arr->GetArray()) ;} 
 
@@ -67,23 +70,32 @@ protected:
   AliPHOSCorrelations& operator=(const AliPHOSCorrelations&); // not implemented
   
   // Histograms and trees.
-    void SetHistPtAssoc();                      // Set massive of histograms (1-5).
-    void SetHistCutDistribution();              // Set other histograms.
+    void SetHistPtNumTrigger(Int_t  ptMult, Double_t ptMin, Double_t ptMax);                      // Set massive of histograms (1-5).
+    void SetHistPtAssoc(Int_t  ptMult, Double_t ptMin, Double_t ptMax);                      // Set massive of histograms (1-5).
+    void SetHistMass(Int_t  ptMult, Double_t ptMin, Double_t ptMax);              // Set other histograms.
     void SetHistEtaPhi();                       // Set hists, with track's and cluster's angle distributions.
-    void FillTrackEtaPhi();                     // Distribution by track's angles.
     void SetHistPHOSClusterMap();       // XZE distribution in PHOS.
-    void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key.
+    void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
     void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
-    void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key.
+    void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
+    void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z, Double_t w) const ; //Fill 3D histogram witn name key
+    void FillTrackEtaPhi();                     // Distribution by track's angles.
 
     void SetESDTrackCuts(); // AliESDtrack cuts ( for esd data )
     
     Bool_t TestMass(Double_t m, Double_t pt) ;
-    Double_t GetAssocBin(Double_t pt) ;
+    Double_t MassMeanFunktion(Double_t &pt) const ;
+    Double_t MassSigmaFunktion(Double_t &pt) const ;
+
+    Double_t GetAssocBin(Double_t pt) const ;
+
+    Double_t GetEfficiency(Double_t pt) const ;  // Return Pi0 efficiency for current pT.
+
+    Int_t GetModCase(Int_t &mod1, Int_t &mod2) const; // Produce part of module neme for pTetaPhi histogram in mixed events.
 
     Int_t ConvertToInternalRunNumber(Int_t run);
 
-    void FillTriggerProgress();
+    void TestTrigger();
     Bool_t RejectTriggerMaskSelection(); 
 
     void    SetVertex();
@@ -104,13 +116,19 @@ protected:
     Double_t ApplyFlatteningV0A(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening.
     Double_t ApplyFlatteningV0C(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening.
 
+    void ZeroingVariables();
     
     virtual void SelectPhotonClusters();
     void SelectAccosiatedTracks();
 
     void ConsiderPi0s();
+    void ConsiderPi0sME();
     void ConsiderPi0sMix();           // MIX for catch Mass
     void ConsiderTracksMix();       // MIX for catch Yeild
+    void ConsiderTracksMixME();
+
+    void TestPi0ME(Int_t ipid, TLorentzVector p12, Int_t modCase);
+    Int_t CheckTriggerEta(Double_t eta);
     
     TList* GetCaloPhotonsPHOSList(UInt_t vtxBin, UInt_t centBin, UInt_t rpBin);
     TList* GetTracksTPCList(UInt_t vtxBin, UInt_t centBin, UInt_t rpBin);
@@ -155,6 +173,7 @@ private:
 
   // Control variables
     Int_t fCheckHibridGlobal;      // For checking/dischecking/passingcheck: t->IsHybridGlobalConstrainedGlobal();
+    Bool_t fPHOSEvent;              // PHOS event trigger.
 
   // Behavior / cuts
     Period fPeriod;
@@ -168,6 +187,12 @@ private:
     Double_t fMassInvMean ;      //
     Double_t fMassInvSigma ;      // 
     Double_t fSigmaWidth;       // 0 = wide
+
+  // Funktion of window mass parametrs: [mass, pt]
+    Double_t fMassMeanP0;
+    Double_t fMassMeanP1;
+    Double_t fMassSigmaP0;
+    Double_t fMassSigmaP1;
 
     AliVEvent* fEvent;          //! Current event
     AliESDEvent* fEventESD;     //! Current event, if ESD.
@@ -194,6 +219,10 @@ private:
     Bool_t fHaveTPCRP ; //! Is TPC RP defined?
     Float_t fRP ;       //! Reaction plane calculated with full TPC
     Int_t fEMRPBin;     //! Event Mixing Reaction Plane Bin
+
+    Double_t fMEPhi[4], fMEEta[4], fMEPt[4];
+    Bool_t fMEExists[4];
+    Int_t fMEModCase[4];
 
     TClonesArray * fCaloPhotonsPHOS ;      //! PHOS photons in current event
     TClonesArray * fTracksTPC ;            //! TPC Tracks in current event

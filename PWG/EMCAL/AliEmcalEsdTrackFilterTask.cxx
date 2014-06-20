@@ -129,12 +129,6 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
         if (!etrack)
           continue;
 
-	if (fTrackEfficiency < 1) {
-	  Double_t r = gRandom->Rndm();
-	  if (fTrackEfficiency < r)
-	    continue;
-	}
-
         if (!fEsdTrackCuts->AcceptTrack(etrack))
           continue;
 
@@ -159,6 +153,13 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
           delete ntrack;
           continue;
         }
+
+	if (fTrackEfficiency < 1) {
+	  Double_t r = gRandom->Rndm();
+	  if (fTrackEfficiency < r)
+	    continue;
+	}
+
 	if (fDoPropagation) 	
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(ntrack,fDist);
         new ((*fTracks)[ntrnew++]) AliESDtrack(*ntrack);
@@ -170,13 +171,16 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
         AliESDtrack *etrack = fEsdEv->GetTrack(i);
         if (!etrack)
           continue;
+
+	if ((fEsdTrackCuts!=0) && !fEsdTrackCuts->AcceptTrack(etrack))
+          continue;
+	
 	if (fTrackEfficiency < 1) {
 	  Double_t r = gRandom->Rndm();
 	  if (fTrackEfficiency < r)
 	    continue;
 	}
-	if ((fEsdTrackCuts!=0) && !fEsdTrackCuts->AcceptTrack(etrack))
-          continue;
+
         AliESDtrack *ntrack = new ((*fTracks)[ntrnew++]) AliESDtrack(*etrack);
 	if (fDoPropagation) 	
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(ntrack,fDist);
@@ -192,12 +196,6 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
       if (!etrack) 
 	continue;
 
-      if (fTrackEfficiency < 1) {
-	Double_t r = gRandom->Rndm();
-	if (fTrackEfficiency < r)
-	  continue;
-      }
-
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
         AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 
@@ -211,6 +209,13 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 	UInt_t status = etrack->GetStatus();
 	if (!fIncludeNoITS && ((status&AliESDtrack::kITSrefit)==0))
 	  continue;
+
+	if (fTrackEfficiency < 1) {
+	  Double_t r = gRandom->Rndm();
+	  if (fTrackEfficiency < r)
+	    continue;
+	}
+
 	AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 	
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);

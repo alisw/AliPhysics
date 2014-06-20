@@ -838,7 +838,7 @@ void AliAnalysisTask3PCorrelations::UserCreateOutputObjects()
       b = _nBins_etaPhi_3*_nBins_pt_3;
       for (iZ=0,iZ1=1; iZ<_nBins_vertexZ; iZ++, iZ1++)
         {
-        for (iPhi=0,iPhi1=1; iPhi<_nBins_etaPhi_2; iPhi++, iPhi1++)
+        for (iPhi=0,iPhi1=1; iPhi<_nBins_etaPhi_3; iPhi++, iPhi1++)
           {
           for (iPt=0,iPt1=1; iPt<_nBins_pt_3; iPt++, iPt1++)
             {

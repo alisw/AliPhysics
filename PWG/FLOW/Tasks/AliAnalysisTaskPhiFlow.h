@@ -22,6 +22,7 @@ class AliEventPoolManager;
 class AliPIDCombined;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliFlowEventCuts.h"
 
 class AliPhiMesonHelperTrack : public TObject
 {
@@ -71,35 +72,23 @@ public:
 //   template <typename T> Double_t       DeltaDipAngle(const T* track1, const T* track2) const;
 //   template <typename T> Bool_t         CheckDeltaDipAngle(const T* track1, const T* track2) const;
    template <typename T> Bool_t         CheckCandidateEtaPtCut(const T* track1, const T* track2) const;
-   void                                 SetCentralityParameters(Double_t min, Double_t max, const char* a, const char* b, Bool_t c, Bool_t d) { 
-                                                                                          fCentralityMin = min; 
-                                                                                          fCentralityMax = max; 
-                                                                                          fkCentralityMethodA = a; 
-                                                                                          fkCentralityMethodB = b;
-                                                                                          fCentralityCut2010 = c; 
-                                                                                          fCentralityCut2011 = d;}
+   void                                 SetCentralityParameters(Double_t min, Double_t max, AliFlowEventCuts::refMultMethod method) {
+      if(!fCutsEvent) fCutsEvent = AliFlowEventCuts::StandardCuts();
+      fCutsEvent->SetCentralityPercentileRange(min, max);
+      fCutsEvent->SetCentralityPercentileMethod(method); }
    void                                 SetCurrentCentralityBin(Double_t c) {fCentrality = c; }
-   Double_t                             GetCenMin() const {return fCentralityMin; }
-   Double_t                             GetCenMax() const {return fCentralityMax; }
-   const char*                          GetCentralityMethod() const {return fkCentralityMethodA; }
-   void                                 SetVertexZ(Float_t z) { fVertexRange = z; }
-   Float_t                              GetVertexZ() const { return fVertexRange; }
 //   void                                 SetMaxDeltaDipAngleAndPt(Float_t a, Float_t pt) { fDeltaDipAngle = a;
 //                                                                                          fDeltaDipPt = pt;
 //                                                                                          fApplyDeltaDipCut = kTRUE; };
 //   Float_t                              GetDeltaDipAngle() const {return fDeltaDipAngle; }
 //   Float_t                              GetDeltaDipPt() const {return fDeltaDipPt; }
-   template <typename T> Bool_t         EventCut(T* event);
    template <typename T> void           PlotMultiplcities(const T* event) const;
-   template <typename T> Bool_t         CheckVertex(const T* event);
-   template <typename T> Bool_t         CheckCentrality(T* event);
    void                                 InitializeBayesianPID(AliAODEvent* event);
    template <typename T> Bool_t         PassesTPCbayesianCut(T* track) const;
    Bool_t                               PassesDCACut(AliAODTrack* track) const;
    Bool_t                               IsKaon(AliAODTrack* track) const;
    template <typename T> Double_t       PhiPt(const T* track_1, const T* track_2) const;
    template <typename T> void           PtSelector(Int_t _track_type, const T* track_1, const T* track_2) const;
-   template <typename T> Bool_t         PhiTrack(T* track) const;
    template <typename T> void           SetNullCuts(T* esd);
    void                                 PrepareFlowEvent(Int_t iMulti);
    void                                 VZEROSubEventAnalysis();
@@ -109,6 +98,7 @@ public:
    virtual void                         Terminate(Option_t *);
    void                                 SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
    void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
+   void                                 SetEventCuts(AliFlowEventCuts* cutsEvent) { fCutsEvent = cutsEvent; }
    AliFlowTrackCuts*                    GetPOICuts() const {return fPOICuts;}
    AliFlowTrackCuts*                    GetRPCuts() const {return fCutsRP;}
    void                                 SetPIDConfiguration(Double_t prob[7]) { for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = prob[i]; }
@@ -132,12 +122,19 @@ public:
                                                                                                                         fMinMass = minMass;
                                                                                                                         fMaxMass= maxMass; }
    void                                 IsMC();
-   Bool_t                               SetQA(Bool_t qa) {fQA = qa; return fQA;}
-   void                                 SetSkipEventSelection(Bool_t s) {
-       fSkipEventSelection = s;
+   Bool_t                               SetQA(Bool_t qa) {
+       fQA = qa; 
+       if(fCutsEvent)   fCutsEvent->SetQA(kTRUE);
+       if(fCutsRP)      fCutsRP->SetQA(kTRUE);
+       if(fPOICuts)     fPOICuts->SetQA(kTRUE);
+       return fQA;}
+   void                                 SetSkipEventSelection() {
+       if (fCutsEvent) delete fCutsEvent;
+       fCutsEvent = 0x0;
        fUsePidResponse = kTRUE; // bayesian pid object will require some event info
        fCentrality = 5.;}        // should be set by user, skipping event selection will also forego centrality selection
    void                                 SetUsePidResponse(Bool_t s)     {fUsePidResponse = s;}
+   void                                 SetUseTrackCutsPID(Bool_t s)    {fUseTrackCutsPID = s;}
 
 private:
 
@@ -151,6 +148,7 @@ private:
    Double_t             fMinMass; // mass range
    Double_t             fMaxMass; // mass range
    AliFlowTrackCuts     *fCutsRP; // track cuts for reference particles
+   AliFlowEventCuts     *fCutsEvent; // event cuts
    AliFlowTrackCuts     *fNullCuts; // dummy cuts for flow event tracks
    AliPIDResponse       *fPIDResponse; //! pid response object
    AliFlowEvent         *fFlowEvent; //! flow events (one for each inv mass band)
@@ -190,14 +188,7 @@ private:
    TH1F                 *fPtKN; //! QA histogram of p_t distribution of negative kaons
    TH2F                 *fMultCorAfterCuts; //! QA profile global and tpc multiplicity after outlier cut
    TH2F                 *fMultvsCentr; //! QA profile of centralty vs multiplicity
-   Double_t             fCentralityMin; // lower bound of cenrality bin
-   Double_t             fCentralityMax; // upper bound of centrality bin
-   const char           *fkCentralityMethodA; // method used to determine centrality, default
-   const char           *fkCentralityMethodB; // method used to determine centrality, fallback
-   Bool_t               fCentralityCut2010; // cut away the multiplicity outliers 2010
-   Bool_t               fCentralityCut2011; // cut away the multiplicity outliers 2011
    AliFlowTrackCuts     *fPOICuts; // cuts for particles of interest (flow package)
-   Float_t              fVertexRange; // absolute value of maximum distance of vertex along the z-axis
    TH1F                 *fPhi; //! QA plot of azimuthal distribution of tracks used for event plane estimation
    TH1F                 *fPt; //! QA plot of p_t sectrum of tracks used for event plane estimation
    TH1F                 *fEta; //! QA plot of eta distribution of tracks used for event plane estimation
@@ -215,14 +206,14 @@ private:
    TH2F                 *fDCAMaterial; //!dca material (mc) all (data)
    TProfile             *fSubEventDPhiv2; //! subevent resolution info for v2
    TProfile             *fV0Data[18][2]; //! profiles for vzero vn(minv)
-   Bool_t               fSkipEventSelection;// skip event selection and set bayesian pid object to MC mode
    Bool_t               fUsePidResponse;//use pid response instead of aliflowbayesianpid object for pid
+   Bool_t               fUseTrackCutsPID;//use pid directly from aliflowtrackcuts
    AliPIDCombined*      fPIDCombined;   // pid combined
    AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
    AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
    void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[]) const;
 
-   ClassDef(AliAnalysisTaskPhiFlow, 7);
+   ClassDef(AliAnalysisTaskPhiFlow, 8);
 };
 
 #endif
