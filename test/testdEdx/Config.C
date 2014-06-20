@@ -2,7 +2,7 @@
 
 enum PprRun_t 
 {
-    test50,
+  test50, testdEdx,
     kParam_8000,   kParam_4000,  kParam_2000, 
     kHijing_cent1, kHijing_cent2, 
     kHijing_per1,  kHijing_per2, kHijing_per3, kHijing_per4,  kHijing_per5,
@@ -23,7 +23,7 @@ enum PprRun_t
 };
 
 const char* pprRunName[] = {
-    "test50",
+  "test50", "testdEdx",
     "kParam_8000",   "kParam_4000",  "kParam_2000", 
     "kHijing_cent1", "kHijing_cent2", 
     "kHijing_per1",  "kHijing_per2", "kHijing_per3", "kHijing_per4",  
@@ -61,7 +61,7 @@ const char * pprTrigConfName[] = {
 // This part for configuration    
 
 //static PprRun_t srun = kPythia6;
-static PprRun_t srun = test50;
+static PprRun_t srun = testdEdx;
 static PprRad_t srad = kGluonRadiation;
 static AliMagF::BMap_t smag = AliMagF::k5kG;
 static Int_t    sseed = 12345; //Set 0 to use the current time
@@ -421,6 +421,24 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gGener=gener;
       }
       break;
+    case testdEdx:
+      {
+        // generator for the dEdx simulation study
+	gSystem->Getenv("TestdEdxNTracks");
+	Int_t ntracks =50;
+        if (gSystem->Getenv("TestdEdxNTracks")) ntracks= atoi(gSystem->Getenv("TestdEdxNTracks"));
+	comment = comment.Append(":HIJINGparam test N particles");
+	AliGenHIJINGpara *gener = new AliGenHIJINGpara(ntracks);
+	gener->SetMomentumRange(0, 999999.);
+	gener->SetPhiRange(0., 360.);
+	// Set pseudorapidity range from -8 to 8.
+	Float_t thmin = EtaToTheta(2);   // theta min. <---> eta max
+	Float_t thmax = EtaToTheta(-2);  // theta max. <---> eta min 
+	gener->SetThetaRange(thmin,thmax);
+	gGener=gener;
+      }
+      break;
+
     case kParam_8000:
       {
 	comment = comment.Append(":HIJINGparam N=8000");
