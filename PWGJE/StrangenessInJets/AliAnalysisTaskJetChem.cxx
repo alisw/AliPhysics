@@ -223,9 +223,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fhnInvMassEtaTrackPtALa(0)
    ,fh1TrackMultCone(0)
    ,fh2TrackMultCone(0)
-   ,fh2NJK0(0)
-   ,fh2NJLa(0)
-   ,fh2NJALa(0)
+   ,fhnNJK0(0)
+   ,fhnNJLa(0)
+   ,fhnNJALa(0)
    ,fh2MCgenK0Cone(0)
    ,fh2MCgenLaCone(0)
    ,fh2MCgenALaCone(0) 
@@ -445,9 +445,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fhnInvMassEtaTrackPtALa(0)
   ,fh1TrackMultCone(0)
   ,fh2TrackMultCone(0)
-  ,fh2NJK0(0)
-  ,fh2NJLa(0)
-  ,fh2NJALa(0)
+  ,fhnNJK0(0)
+  ,fhnNJLa(0)
+  ,fhnNJALa(0)
   ,fh2MCgenK0Cone(0)
   ,fh2MCgenLaCone(0)
   ,fh2MCgenALaCone(0)
@@ -670,9 +670,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fhnInvMassEtaTrackPtALa(copy.fhnInvMassEtaTrackPtALa)
   ,fh1TrackMultCone(copy.fh1TrackMultCone)
   ,fh2TrackMultCone(copy.fh2TrackMultCone)
-  ,fh2NJK0(copy.fh2NJK0)
-  ,fh2NJLa(copy.fh2NJLa)
-  ,fh2NJALa(copy.fh2NJALa)
+  ,fhnNJK0(copy.fhnNJK0)
+  ,fhnNJLa(copy.fhnNJLa)
+  ,fhnNJALa(copy.fhnNJALa)
   ,fh2MCgenK0Cone(copy.fh2MCgenK0Cone)
   ,fh2MCgenLaCone(copy.fh2MCgenLaCone)
   ,fh2MCgenALaCone(copy.fh2MCgenALaCone)
@@ -890,9 +890,9 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fhnInvMassEtaTrackPtALa         = o.fhnInvMassEtaTrackPtALa;
     fh1TrackMultCone                = o.fh1TrackMultCone;
     fh2TrackMultCone                = o.fh2TrackMultCone;
-    fh2NJK0                         = o.fh2NJK0;
-    fh2NJLa                         = o.fh2NJLa;
-    fh2NJALa                        = o.fh2NJALa;
+    fhnNJK0                         = o.fhnNJK0;
+    fhnNJLa                         = o.fhnNJLa;
+    fhnNJALa                        = o.fhnNJALa;
     fh2MCgenK0Cone                  = o.fh2MCgenK0Cone;
     fh2MCgenLaCone                  = o.fh2MCgenLaCone;
     fh2MCgenALaCone                 = o.fh2MCgenALaCone; 
@@ -1346,11 +1346,20 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
   fh2TrackMultCone              = new TH2F("fh2TrackMultCone","track multiplicity in jet cone vs. jet momentum; number of tracks; jet it{p}_{T} (GeV/it{c})",50,0.,50.,19,5.,100.);
 
-  fh2NJK0                       = new TH2F("fh2NJK0","#it{K}^{0}_{s} in events with no selected jets; invM (GeV/#it{c^{2}}; #it{p}_{T} (GeV/#it{c})", 200, 0.3, 0.7,200,0.,20.); 
+  Int_t binsNJK0[3] = {200, 200, 200};
+  Double_t xminNJK0[3] = {0.3, 0., -1.};
+  Double_t xmaxNJK0[3] = {0.7, 20., 1.};
+  fhnNJK0                       = new THnSparseF("fhnNJK0","K0s candidates in events wo selected jets;",3,binsNJK0,xminNJK0,xmaxNJK0);
 
-  fh2NJLa                       = new TH2F("fh2NJLa","#Lambda in events with no selected jets; invM (GeV/#it{c^{2}}; #it{p}_{T} (GeV/#it{c})", 200, 1.05, 1.25,200,0.,20.);
+  Int_t binsNJLa[3] = {200, 200, 200};
+  Double_t xminNJLa[3] = {1.05, 0., -1.};
+  Double_t xmaxNJLa[3] = {1.25, 20., 1.};
+  fhnNJLa                    = new THnSparseF("fhnNJLa","La candidates in events wo selected jets; ",3,binsNJLa,xminNJLa,xmaxNJLa);
 
-  fh2NJALa                      = new TH2F("fh2NJALa","#bar{#Lambda} in events with no selected jets; invM (GeV/#it{c^{2}}; #it{p}_{T} (GeV/#it{c})", 200, 1.05, 1.25,200,0.,20.);
+  Int_t binsNJALa[3] = {200, 200, 200};
+  Double_t xminNJALa[3] = {1.05, 0., -1.};
+  Double_t xmaxNJALa[3] = {1.25, 20., 1.};
+  fhnNJALa                    = new THnSparseF("fhnNJALa","ALa candidates in events wo selected jets; ",3,binsNJALa,xminNJALa,xmaxNJALa);
 
   fFFHistosRecCuts   	        = new AliFragFuncHistos("RecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						     fFFNBinsPt, fFFPtMin, fFFPtMax, 
@@ -1444,7 +1453,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1IMLaConeSmear              = new TH1F("fh1IMLaConeSmear","Smeared jet pt study for La-in-cone-jets; smeared jet #it{p}_{T}", 19,5.,100.);
   fh1IMALaConeSmear             = new TH1F("fh1IMALaConeSmear","Smeared jet pt study for ALa-in-cone-jets; smeared jet #it{p}_{T}", 19,5.,100.);
   
-  //8 neue Histogramme: Cone, Incl, Lambda, Antilambda, Hijing, Injected:
+  //8 new histograms: Cone, Incl, Lambda, Antilambda, Hijing, Injected:
    
   Int_t binsrecMCHijingLaIncl[3] = {200, 200, 200};
   Double_t xminrecMCHijingLaIncl[3] = {1.05, 0., -1.};
@@ -1686,9 +1695,9 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fhnInvMassEtaTrackPtALa);
     fCommonHistList->Add(fh1TrackMultCone);
     fCommonHistList->Add(fh2TrackMultCone);
-    fCommonHistList->Add(fh2NJK0);
-    fCommonHistList->Add(fh2NJLa);
-    fCommonHistList->Add(fh2NJALa);
+    fCommonHistList->Add(fhnNJK0);
+    fCommonHistList->Add(fhnNJLa);
+    fCommonHistList->Add(fhnNJALa);
     fCommonHistList->Add(fh2MCgenK0Cone);
     fCommonHistList->Add(fh2MCgenLaCone);
     fCommonHistList->Add(fh2MCgenALaCone);
@@ -1698,6 +1707,14 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1IMK0ConeSmear);
     fCommonHistList->Add(fh1IMLaConeSmear);
     fCommonHistList->Add(fh1IMALaConeSmear);
+    fCommonHistList->Add(fhnrecMCHijingLaIncl);
+    fCommonHistList->Add(fhnrecMCHijingLaCone);
+    fCommonHistList->Add(fhnrecMCHijingALaIncl);
+    fCommonHistList->Add(fhnrecMCHijingALaCone);
+    fCommonHistList->Add(fhnrecMCInjectLaIncl);
+    fCommonHistList->Add(fhnrecMCInjectLaCone);
+    fCommonHistList->Add(fhnrecMCInjectALaIncl);
+    fCommonHistList->Add(fhnrecMCInjectALaCone);
     fCommonHistList->Add(fhnrecMCHijingLaIncl);
     fCommonHistList->Add(fhnrecMCHijingLaCone);
     fCommonHistList->Add(fhnrecMCHijingALaIncl);
@@ -2551,7 +2568,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       Double_t invMK0s =0;
       Double_t trackPt=0;
       CalculateInvMass(v0, kK0, invMK0s, trackPt);
-      fh2NJK0->Fill(invMK0s, trackPt);
+      Double_t fEta = v0->Eta();
+
+      Double_t vNJK0[3] = {invMK0s,trackPt,fEta}; //fill all K0s in events wo selected jets
+      fhnNJK0->Fill(vNJK0);
       
     }
     
@@ -2563,8 +2583,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       Double_t invMLa =0;
       Double_t trackPt=0;	
       CalculateInvMass(v0, kLambda, invMLa, trackPt);
-      fh2NJLa->Fill(invMLa, trackPt);
-      
+      Double_t fEta = v0->Eta();
+
+      Double_t vNJLa[3] = {invMLa,trackPt,fEta}; //fill all K0s in events wo selected jets
+      fhnNJLa->Fill(vNJLa);
+
     } 
     
     for(Int_t it=0; it<fListALa->GetSize(); ++it){ // loop all ALa 
@@ -2575,7 +2598,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       Double_t invMALa =0;
       Double_t trackPt=0;	
       CalculateInvMass(v0, kAntiLambda, invMALa, trackPt);
-      fh2NJALa->Fill(invMALa, trackPt);
+
+      Double_t fEta = v0->Eta();
+
+      Double_t vNJALa[3] = {invMALa,trackPt,fEta}; //fill all K0s in events wo selected jets
+      fhnNJALa->Fill(vNJALa);
+   
       
     } 
     
