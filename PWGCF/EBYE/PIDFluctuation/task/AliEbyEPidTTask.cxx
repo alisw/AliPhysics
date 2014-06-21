@@ -95,7 +95,7 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
   fThnList = new TList();
   fThnList->SetOwner(kTRUE);
 
-  fEventCounter = new TH1D("fEventCounter","EventCounter", 300, 0.5,300.5);
+  fEventCounter = new TH1D("fEventCounter","EventCounter", 70, 0.5,70.5);
   fThnList->Add(fEventCounter);
 
   TList *ll = (TList*)fHelperPID->GetOutputList();
@@ -144,6 +144,8 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     return;
   }
 
+  fEventCounter->Fill(2);
+
   Int_t gCent   = -1;
   Float_t gRefMul = -1;
   
@@ -151,10 +153,11 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   gCent = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
   gRefMul = aodHeader->GetRefMultiplicity();
   if (gCent < 0 || gCent > 100) return;
-  if (isQA) fEventCounter->Fill(2);  
+  fEventCounter->Fill(3);  
 
   const AliAODVertex *vertex = event->GetPrimaryVertex();
   if(!vertex) return;
+  fEventCounter->Fill(4);
   Bool_t vtest = kFALSE;
   Double32_t fCov[6];
   vertex->GetCovarianceMatrix(fCov);
@@ -165,8 +168,12 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   }
   if(!vtest)return;
   
+  fEventCounter->Fill(5);
+
   AliCentrality *centrality = event->GetCentrality();
   if (centrality->GetQuality() != 0) return;
+
+  fEventCounter->Fill(6);
 
   fRunNumber = event->GetRunNumber();
   fFilterBit = fAODtrackCutBit;
@@ -178,10 +185,14 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   Int_t iTracks = 0; 
   for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
     AliAODTrack* track = dynamic_cast<AliAODTrack *>(event->GetTrack(itrk));
+    fEventCounter->Fill(10);
     if (!track) continue;
+    fEventCounter->Fill(11);
     if (!AcceptTrack(track)) continue;
+    fEventCounter->Fill(12);
     Int_t a = fHelperPID->GetParticleSpecies((AliVTrack*) track,kTRUE);
     if(a < 0 || a > 2) continue;
+    fEventCounter->Fill(13);
     Int_t icharge = track->Charge() > 0 ? 0 : 1;
 
     // cout << icharge << "  " << track->Charge() << endl;
@@ -196,25 +207,31 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   fNumberOfTracks = iTracks;
 
   if(isMC) {
+    fEventCounter->Fill(21);
     TClonesArray *arrayMC= 0; 
     arrayMC = dynamic_cast<TClonesArray*> (event->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
     if (!arrayMC) {
       Printf("Error: MC particles branch not found!\n");
       return;
     }
+    fEventCounter->Fill(22);
     AliAODMCHeader *mcHdr=0;
     mcHdr=(AliAODMCHeader*)event->GetList()->FindObject(AliAODMCHeader::StdBranchName());  
     if(!mcHdr) {
       Printf("MC header branch not found!\n");
       return;
     }
+
+    fEventCounter->Fill(23);
     
      Int_t nMC = arrayMC->GetEntries();
      Int_t mTracks = 0; 
     for (Int_t iMC = 0; iMC < nMC; iMC++) {
+      fEventCounter->Fill(24);
        AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
        if(!AcceptMCTrack(partMC)) continue;
 
+       fEventCounter->Fill(25);
        Int_t a  = partMC->GetPdgCode();
 
        // Int_t a = fHelperPID->GetMCParticleSpecie((AliVEvent*) event,(AliVTrack*)partMC,1);
@@ -232,10 +249,12 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
 	   
        mTracks++;
     }
+    fEventCounter->Fill(26);
     fNumberOfTracksM = mTracks;
   }
   
-  //  fEventTree->Fill();
+  fEventCounter->Fill(30);
+  fEventTree->Fill();
   
   PostData(1, fThnList);  
   PostData(2, fEventTree);
