@@ -2917,7 +2917,7 @@ void AliAnalysisEtMonteCarlo::SetGeneratorMinMaxParticles(AliMCEvent *eventMC){
       fNMCProducedMax+= eventHeader2->NProduced();
       
       if(name.Contains("Hijing",TString::kIgnoreCase)){
-	cout<<"Found HIJING event and set range "<<fNMCProducedMin<<"-"<<fNMCProducedMax<<endl;
+	//cout<<"Found HIJING event and set range "<<fNMCProducedMin<<"-"<<fNMCProducedMax<<endl;
 	return ;
       }
     }
