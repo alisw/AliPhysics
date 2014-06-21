@@ -291,8 +291,8 @@ main()
     fi
 
     if [[ $unzipFiles -eq 1 ]]; then
-      echo unzip $tmpdestination -d $destinationdir
-      unzip $tmpdestination -d $destinationdir
+      echo unzip ${destination} -d ${destinationdir}
+      unzip ${destination} -d ${destinationdir}
     fi
 
     echo
