@@ -158,6 +158,27 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
   fTreeCascVarkITSRefitNegative(0),
   fTreeCascVarkITSRefitPositive(0),
 
+//Debug information
+//Part A: EbyE info, Run number
+fTreeCascVarRunNumber(0),
+fTreeCascVarEventNumber(0),
+
+//Part B: Shared Clusters
+fTreeCascVarNegSharedClusters(0),
+fTreeCascVarPosSharedClusters(0),
+fTreeCascVarBachSharedClusters(0),
+
+//Part C: All momenta
+fTreeCascVarNegPx(0),
+fTreeCascVarNegPy(0),
+fTreeCascVarNegPz(0),
+fTreeCascVarPosPx(0),
+fTreeCascVarPosPy(0),
+fTreeCascVarPosPz(0),
+fTreeCascVarBachPx(0),
+fTreeCascVarBachPy(0),
+fTreeCascVarBachPz(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -272,6 +293,27 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fTreeCascVarkITSRefitBachelor(0),
    fTreeCascVarkITSRefitNegative(0),
    fTreeCascVarkITSRefitPositive(0),
+
+    //Debug information
+    //Part A: EbyE info, Run number
+    fTreeCascVarRunNumber(0),
+    fTreeCascVarEventNumber(0),
+
+    //Part B: Shared Clusters
+    fTreeCascVarNegSharedClusters(0),
+    fTreeCascVarPosSharedClusters(0),
+    fTreeCascVarBachSharedClusters(0),
+
+    //Part C: All momenta
+    fTreeCascVarNegPx(0),
+    fTreeCascVarNegPy(0),
+    fTreeCascVarNegPz(0),
+    fTreeCascVarPosPx(0),
+    fTreeCascVarPosPy(0),
+    fTreeCascVarPosPz(0),
+    fTreeCascVarBachPx(0),
+    fTreeCascVarBachPy(0),
+    fTreeCascVarBachPz(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -436,14 +478,37 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
 /*28*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaPion",&fTreeCascVarBachNSigmaPion,"fTreeCascVarBachNSigmaPion/F");
 /*29*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaKaon",&fTreeCascVarBachNSigmaKaon,"fTreeCascVarBachNSigmaKaon/F");
     
-/*30*/		fTreeCascade->Branch("fTreeCascVarBachTransMom",&fTreeCascVarBachTransMom,"fTreeCascVarBachTransMom/F");
-/*30*/		fTreeCascade->Branch("fTreeCascVarPosTransMom",&fTreeCascVarPosTransMom,"fTreeCascVarPosTransMom/F");
-/*31*/		fTreeCascade->Branch("fTreeCascVarNegTransMom",&fTreeCascVarNegTransMom,"fTreeCascVarNegTransMom/F");
+        //Commented out: not needed since all momenta provided! (less info)
+/*30*/		//fTreeCascade->Branch("fTreeCascVarBachTransMom",&fTreeCascVarBachTransMom,"fTreeCascVarBachTransMom/F");
+/*30*/		//fTreeCascade->Branch("fTreeCascVarPosTransMom",&fTreeCascVarPosTransMom,"fTreeCascVarPosTransMom/F");
+/*31*/		//fTreeCascade->Branch("fTreeCascVarNegTransMom",&fTreeCascVarNegTransMom,"fTreeCascVarNegTransMom/F");
 
 /*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitBachelor",&fTreeCascVarkITSRefitBachelor,"fTreeCascVarkITSRefitBachelor/O");
 /*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitNegative",&fTreeCascVarkITSRefitNegative,"fTreeCascVarkITSRefitNegative/O");
 /*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitPositive",&fTreeCascVarkITSRefitPositive,"fTreeCascVarkITSRefitPositive/O");
 
+    //-----------Debugging information----------------
+    //Part A: Event-by-event, run-by-run debugging
+    fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
+    fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
+    
+    //Part B: Shared Clusters for all daughter tracks
+    fTreeCascade->Branch("fTreeCascVarNegSharedClusters",&fTreeCascVarNegSharedClusters,"fTreeCascVarNegSharedClusters/I");
+    fTreeCascade->Branch("fTreeCascVarPosSharedClusters",&fTreeCascVarPosSharedClusters,"fTreeCascVarPosSharedClusters/I");
+    fTreeCascade->Branch("fTreeCascVarBachSharedClusters",&fTreeCascVarBachSharedClusters,"fTreeCascVarBachSharedClusters/I");
+    
+    //Part C: All Momenta of all daughters
+    fTreeCascade->Branch("fTreeCascVarNegPx",&fTreeCascVarNegPx,"fTreeCascVarNegPx/F");
+    fTreeCascade->Branch("fTreeCascVarNegPy",&fTreeCascVarNegPy,"fTreeCascVarNegPy/F");
+    fTreeCascade->Branch("fTreeCascVarNegPz",&fTreeCascVarNegPz,"fTreeCascVarNegPz/F");
+    fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
+    fTreeCascade->Branch("fTreeCascVarPosPy",&fTreeCascVarPosPy,"fTreeCascVarPosPy/F");
+    fTreeCascade->Branch("fTreeCascVarPosPz",&fTreeCascVarPosPz,"fTreeCascVarPosPz/F");
+    fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
+    fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
+    fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
+    //------------------------------------------------
+    
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -746,13 +811,13 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
       return;
    }
 
-/* --- Acquisition of exact event ID
-   fTreeVariableRunNumber = lESDevent->GetRunNumber();
-   fTreeVariableEventNumber =  
+    //--- Acquisition of exact event ID
+   fTreeCascVarRunNumber = lESDevent->GetRunNumber();
+   fTreeCascVarEventNumber =
     ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
       ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
         ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
-*/
+
         
 //------------------------------------------------
 // Multiplicity Information Acquistion
@@ -1112,10 +1177,26 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
       fTreeCascVarNegEta = nTrackXi->Eta();
       fTreeCascVarBachEta = bachTrackXi->Eta();
       
+      //Save shared clusters information
+      fTreeCascVarNegSharedClusters = nTrackXi->GetTPCnclsS(0,159);
+      fTreeCascVarPosSharedClusters = pTrackXi->GetTPCnclsS(0,159);
+      fTreeCascVarBachSharedClusters = bachTrackXi->GetTPCnclsS(0,159);
+      
       Double_t lBMom[3], lNMom[3], lPMom[3];
       xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
       xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
       xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
+      
+      //Save all momentum information
+      fTreeCascVarNegPx = lNMom[0];
+      fTreeCascVarNegPx = lNMom[1];
+      fTreeCascVarNegPx = lNMom[2];
+      fTreeCascVarPosPx = lPMom[0];
+      fTreeCascVarPosPx = lPMom[1];
+      fTreeCascVarPosPx = lPMom[2];
+      fTreeCascVarBachPx = lBMom[0];
+      fTreeCascVarBachPx = lBMom[1];
+      fTreeCascVarBachPx = lBMom[2];
       
       fTreeCascVarBachTransMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] );
       fTreeCascVarPosTransMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] );
