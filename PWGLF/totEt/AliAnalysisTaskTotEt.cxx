@@ -197,11 +197,15 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
     if(fMCAnalysis && fMCAnalysis->GetCuts()){
       fMCAnalysis->GetCuts()->SetGeometryEmcalPhiAccMinCut(80);
       fMCAnalysis->GetCuts()->SetGeometryEmcalPhiAccMaxCut(80+100);
+      fMCAnalysis->GetSelector()->GetCuts()->SetGeometryEmcalPhiAccMinCut(80);
+      fMCAnalysis->GetSelector()->GetCuts()->SetGeometryEmcalPhiAccMaxCut(80+100);
     }
     else{if(fMCAnalysis)cerr<<"Error!  MC fCuts does not exist!"<<endl;}
     if(fRecAnalysis->GetCuts()){
       fRecAnalysis->GetCuts()->SetGeometryEmcalPhiAccMinCut(80);
       fRecAnalysis->GetCuts()->SetGeometryEmcalPhiAccMaxCut(80+100);
+      fRecAnalysis->GetSelector()->GetCuts()->SetGeometryEmcalPhiAccMinCut(80);
+      fRecAnalysis->GetSelector()->GetCuts()->SetGeometryEmcalPhiAccMaxCut(80+100);
     }
     else{cerr<<"Error!  Reco fCuts does not exist!"<<endl;}
   }
