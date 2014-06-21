@@ -164,8 +164,29 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
 
   Bool_t fTreeCascVarkITSRefitBachelor; //! 
   Bool_t fTreeCascVarkITSRefitNegative; //! 
-  Bool_t fTreeCascVarkITSRefitPositive; //! 
-
+  Bool_t fTreeCascVarkITSRefitPositive; //!
+    
+    //Debugging information, if requested
+    //Part A: EbyE info, Run number
+    Int_t     fTreeCascVarRunNumber; //!
+    ULong64_t fTreeCascVarEventNumber; //!
+    
+    //Part B: Shared Clusters
+    Int_t fTreeCascVarNegSharedClusters; //!
+    Int_t fTreeCascVarPosSharedClusters; //!
+    Int_t fTreeCascVarBachSharedClusters; //!
+    
+    //Part C: All momenta
+    Float_t fTreeCascVarNegPx; //!
+    Float_t fTreeCascVarNegPy; //!
+    Float_t fTreeCascVarNegPz; //!
+    Float_t fTreeCascVarPosPx; //!
+    Float_t fTreeCascVarPosPy; //!
+    Float_t fTreeCascVarPosPz; //!
+    Float_t fTreeCascVarBachPx; //!
+    Float_t fTreeCascVarBachPy; //!
+    Float_t fTreeCascVarBachPz; //!
+    
 //===========================================================================================
 //   Histograms
 //===========================================================================================
