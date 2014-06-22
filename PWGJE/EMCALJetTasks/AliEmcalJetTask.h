@@ -3,6 +3,7 @@
 
 class TClonesArray;
 class AliVEvent;
+class AliRhoParameter;
 
 namespace fastjet {
   class PseudoJet;
@@ -10,6 +11,7 @@ namespace fastjet {
 
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliFJWrapper.h"
 
 class AliEmcalJetTask : public AliAnalysisTaskSE {
  public:
@@ -42,6 +44,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetAlgo(Int_t a)                 { if (a==0) fJetType |= kKT; else fJetType |= kAKT; }  // for backward compatibility only
   void                   SetClusName(const char *n)       { fCaloName      = n     ; }
   void                   SetJetsName(const char *n)       { fJetsName      = n     ; }
+  void                   SetJetsSubName(const char *n)    { fJetsSubName   = n     ; }
   void                   SetJetType(UInt_t t)             { fJetType       = t     ; }
   void                   SetMarkConstituents(UInt_t m)    { fMarkConst     = m     ; }
   void                   SetMinJetArea(Double_t a)        { fMinJetArea    = a     ; }
@@ -74,11 +77,18 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
       fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
     }
   }
-  void                   SetLegacyMode(Bool_t mode)       { fLegacyMode ^= mode; }
+  void                   SetLegacyMode(Bool_t mode)       { fLegacyMode = mode; }
   void                   SetCodeDebug(Bool_t val)         { fCodeDebug = val; }
+
+  void                   SetRhoName(const char *n)              { fRhoName      = n            ; }
+  void                   SetRhomName(const char *n)             { fRhomName     = n            ; }
+  void                   SetGenericSubtraction(Bool_t b)        { fDoGenericSubtraction     = b; }
+  void                   SetConstituentSubtraction(Bool_t b)    { fDoConstituentSubtraction = b; }
+  void                   SetUseExternalBkg(Bool_t b, Double_t rho, Double_t rhom) { fUseExternalBkg = b; fRho = rho; fRhom = rhom;}
 
   UInt_t                 GetJetType()                     { return fJetType; }
   Bool_t                 GetLegacyMode()                  { return fLegacyMode; }
+  TString                GetJetsSubName()                 { return fJetsSubName; }
 
   const char*            GetJetsName()                    { return fJetsName.Data(); }
   Double_t               GetRadius()                      { return fRadius; }
@@ -115,6 +125,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
   TString                fJetsName;               // name of jet collection
+  TString                fJetsSubName;            // name of subtracted jet collection
   UInt_t                 fJetType;                // jet type (algorithm, radius, constituents)
   UInt_t                 fConstSel;               // select constituents from a previous jet finding
   UInt_t                 fMCConstSel;             // select MC constituents (label!=0) from a previous jet finding
@@ -142,15 +153,27 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
   Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
   Bool_t                 fCodeDebug;              // use nontested code changes 
+
+  Bool_t                 fDoGenericSubtraction;   // calculate generic subtraction
+  Bool_t                 fDoConstituentSubtraction; // calculate constituent subtraction
+  Bool_t                 fUseExternalBkg;         // use external background for generic subtractor
+  TString                fRhoName;                // name of rho
+  TString                fRhomName;               // name of rhom
+  Double_t               fRho;                    // pT background density
+  Double_t               fRhom;                   // mT background density
+
   TClonesArray          *fJets;                   //!jet collection
+  TClonesArray          *fJetsSub;                //!subtracted jet collection
   AliVEvent             *fEvent;                  //!current event
   TClonesArray          *fTracks;                 //!tracks collection
   TClonesArray          *fClus;                   //!cluster collection
+  AliRhoParameter       *fRhoParam;               //!event rho
+  AliRhoParameter       *fRhomParam;              //!event rhom
 
  private:
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 11) // Jet producing task
+  ClassDef(AliEmcalJetTask, 12) // Jet producing task
 };
 #endif
