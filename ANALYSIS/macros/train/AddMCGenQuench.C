@@ -23,7 +23,7 @@
 //If you want k in fm then you have to divide by the squared of hbarc (hbar c=0.197 GeV fm)
 // This gives k=4.4e^6 fm, which is the quench value we set in SetQhat
 
-AliGenerator* AddMCGenQuench(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 0., Int_t fpythia = 1, Double_t quench=4.4e6, ,Int_t ianglepyquen = 2) 
+AliGenerator* AddMCGenQuench(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 0., Int_t fpythia = 1, Double_t quench=4.4e6, Int_t ianglepyquen = 2) 
 {
   //Add Pythia generator: pt-hard bin or min bias
 
