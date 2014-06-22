@@ -210,7 +210,6 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   AliEmcalJetTask *jetFinderKt;
   AliEmcalJetTask *jetFinderAKt;
   jetFinderAKt  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data(),1.);
-  jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
   jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
   if(kPeriod.EqualTo("lhc13b") || kPeriod.EqualTo("lhc13c") || kPeriod.EqualTo("lhc13d") || kPeriod.EqualTo("lhc13e") || kPeriod.EqualTo("lhc13f")) {
     jetFinderKt   = AddTaskEmcalJet(kTracksName, "", kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data(),0.);
@@ -263,6 +262,7 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
 
     rhoTaskBase = dynamic_cast<AliAnalysisTaskRhoBase*>rhoTask;
   }
+  jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
   if(tag.EqualTo("JetPythia")) {
     jetFinderKt->SelectConstituents(TObject::kBitMask, 0);
     jetFinderAKt->SelectConstituents(TObject::kBitMask, 0);
