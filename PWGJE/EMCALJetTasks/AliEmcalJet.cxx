@@ -39,7 +39,12 @@ AliEmcalJet::AliEmcalJet() :
   fTagStatus(-1),
   fPtSub(0),
   fPtVectSub(0),
-  fTriggers(0)
+  fTriggers(0),
+  fJetShapeMassFirstDer(0),
+  fJetShapeMassSecondDer(0),
+  fJetShapeMassFirstSub(0),
+  fJetShapeMassSecondSub(0),
+  fLabel(-1)
 {
   // Constructor.
 
@@ -78,7 +83,12 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fTagStatus(-1),
   fPtSub(0),
   fPtVectSub(0),
-  fTriggers(0)
+  fTriggers(0),
+  fJetShapeMassFirstDer(0),
+  fJetShapeMassSecondDer(0),
+  fJetShapeMassFirstSub(0),
+  fJetShapeMassSecondSub(0),
+  fLabel(-1)
 {    
   // Constructor.
 
@@ -123,7 +133,12 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fTagStatus(-1),
   fPtSub(0),
   fPtVectSub(0),
-  fTriggers(0)
+  fTriggers(0),
+  fJetShapeMassFirstDer(0),
+  fJetShapeMassSecondDer(0),
+  fJetShapeMassFirstSub(0),
+  fJetShapeMassSecondSub(0),
+  fLabel(-1)
 {
   // Constructor.
 
@@ -165,7 +180,12 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fTagStatus(jet.fTagStatus),
   fPtSub(jet.fPtSub),
   fPtVectSub(jet.fPtVectSub),
-  fTriggers(jet.fTriggers)
+  fTriggers(jet.fTriggers),
+  fJetShapeMassFirstDer(jet.fJetShapeMassFirstDer),
+  fJetShapeMassSecondDer(jet.fJetShapeMassSecondDer),
+  fJetShapeMassFirstSub(jet.fJetShapeMassFirstSub),
+  fJetShapeMassSecondSub(jet.fJetShapeMassSecondSub),
+  fLabel(jet.fLabel)
 {
   // Copy constructor.
 
@@ -212,6 +232,11 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fPtSub              = jet.fPtSub;
     fPtVectSub          = jet.fPtVectSub;
     fTriggers           = jet.fTriggers;
+    fJetShapeMassFirstDer  = jet.fJetShapeMassFirstDer;
+    fJetShapeMassSecondDer = jet.fJetShapeMassSecondDer;
+    fJetShapeMassFirstSub  = jet.fJetShapeMassFirstSub;
+    fJetShapeMassSecondSub = jet.fJetShapeMassSecondSub;
+    fLabel              = jet.fLabel;
   }
 
   return *this;
