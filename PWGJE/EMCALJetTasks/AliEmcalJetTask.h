@@ -40,30 +40,33 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   UserExec(Option_t *option);
   void                   Terminate(Option_t *option);
 
-  void                   SelectConstituents(UInt_t constSel, UInt_t MCconstSel)  { fConstSel = constSel; fMCConstSel = MCconstSel; };
-  void                   SetAlgo(Int_t a)                 { if (a==0) fJetType |= kKT; else fJetType |= kAKT; }  // for backward compatibility only
-  void                   SetClusName(const char *n)       { fCaloName      = n     ; }
-  void                   SetJetsName(const char *n)       { fJetsName      = n     ; }
+  Bool_t                 IsLocked()                       { if(fLocked) {AliFatal("Jet finder task is locked! Changing properties is not allowed."); return kTRUE;} else return kFALSE;};
+  void                   SetLocked()                      { fLocked = kTRUE;}
+  void                   SelectConstituents(UInt_t constSel, UInt_t MCconstSel)  { if(IsLocked()) return; fConstSel = constSel; fMCConstSel = MCconstSel; };
+  void                   SetAlgo(Int_t a)                 { if(IsLocked()) return; if (a==0) fJetType |= kKT; else fJetType |= kAKT; }  // for backward compatibility only
+  void                   SetClusName(const char *n)       { if(IsLocked()) return; fCaloName      = n     ; }
+  void                   SetJetsName(const char *n)       { if(IsLocked()) return; fJetsName      = n     ; }
   void                   SetJetsSubName(const char *n)    { fJetsSubName   = n     ; }
-  void                   SetJetType(UInt_t t)             { fJetType       = t     ; }
-  void                   SetMarkConstituents(UInt_t m)    { fMarkConst     = m     ; }
-  void                   SetMinJetArea(Double_t a)        { fMinJetArea    = a     ; }
-  void                   SetMinJetClusPt(Double_t min)    { fMinJetClusPt  = min   ; }
-  void                   SetMinJetPt(Double_t j)          { fMinJetPt      = j     ; }
-  void                   SetMinJetTrackPt(Double_t min)   { fMinJetTrackPt = min   ; }
-  void                   SetRadius(Double_t r)            { fRadius        = r     ; if ((fJetType & (kRX1Jet|kRX2Jet|kRX3Jet)) == 0) AliWarning("Radius value will be ignored if jet type is not set to a user defined radius (kRX1Jet,kRX2Jet,kRX3Jet)."); }
-  void                   SetTrackEfficiency(Double_t t)   { fTrackEfficiency = t   ; }
-  void                   SetTracksName(const char *n)     { fTracksName    = n     ; }
-  void                   SetType(Int_t t)                 { if (t==0) fJetType |= kFullJet; 
+  void                   SetJetType(UInt_t t)             { if(IsLocked()) return; fJetType       = t     ; }
+  void                   SetMarkConstituents(UInt_t m)    { if(IsLocked()) return; fMarkConst     = m     ; }
+  void                   SetMinJetArea(Double_t a)        { if(IsLocked()) return; fMinJetArea    = a     ; }
+  void                   SetMinJetClusPt(Double_t min)    { if(IsLocked()) return; fMinJetClusPt  = min   ; }
+  void                   SetMinJetPt(Double_t j)          { if(IsLocked()) return; fMinJetPt      = j     ; }
+  void                   SetMinJetTrackPt(Double_t min)   { if(IsLocked()) return; fMinJetTrackPt = min   ; }
+  void                   SetRadius(Double_t r)            { if(IsLocked()) return; fRadius        = r     ; if ((fJetType & (kRX1Jet|kRX2Jet|kRX3Jet)) == 0) AliWarning("Radius value will be ignored if jet type is not set to a user defined radius (kRX1Jet,kRX2Jet,kRX3Jet)."); }
+  void                   SetTrackEfficiency(Double_t t)   { if(IsLocked()) return; fTrackEfficiency = t   ; }
+  void                   SetTracksName(const char *n)     { if(IsLocked()) return; fTracksName    = n     ; }
+  void                   SetType(Int_t t)                 { if(IsLocked()) return; 
+                                                            if (t==0) fJetType |= kFullJet; 
                                                             else if (t==1) fJetType |= kChargedJet; 
                                                             else if (t==2) fJetType |= kNeutralJet; } // for backward compatibility only
-  void                   SetEtaRange(Double_t emi, Double_t ema) {fEtaMin = emi; fEtaMax = ema; }
-  void                   SetPhiRange(Double_t pmi, Double_t pma) {fPhiMin = pmi; fPhiMax = pma; }
-  void                   SetJetEtaRange(Double_t emi, Double_t ema) {fJetEtaMin = emi; fJetEtaMax = ema; }
-  void                   SetJetPhiRange(Double_t pmi, Double_t pma) {fJetPhiMin = pmi; fJetPhiMax = pma; }
-  void                   SetGhostArea(Double_t gharea)    { fGhostArea      = gharea;  }
-  void                   SetMinMCLabel(Int_t s)           { fMinMCLabel     = s     ;  }
-  void                   SetRecombScheme(Int_t scheme)    { fRecombScheme   = scheme;  }
+  void                   SetEtaRange(Double_t emi, Double_t ema) {if(IsLocked()) return; fEtaMin = emi; fEtaMax = ema; }
+  void                   SetPhiRange(Double_t pmi, Double_t pma) {if(IsLocked()) return; fPhiMin = pmi; fPhiMax = pma; }
+  void                   SetJetEtaRange(Double_t emi, Double_t ema) {if(IsLocked()) return; fJetEtaMin = emi; fJetEtaMax = ema; }
+  void                   SetJetPhiRange(Double_t pmi, Double_t pma) {if(IsLocked()) return; fJetPhiMin = pmi; fJetPhiMax = pma; }
+  void                   SetGhostArea(Double_t gharea)    { if(IsLocked()) return; fGhostArea      = gharea;  }
+  void                   SetMinMCLabel(Int_t s)           { if(IsLocked()) return; fMinMCLabel     = s     ;  }
+  void                   SetRecombScheme(Int_t scheme)    { if(IsLocked()) return; fRecombScheme   = scheme;  }
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB)
   {
     if(!fIsPSelSet)
@@ -77,7 +80,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
       fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
     }
   }
-  void                   SetLegacyMode(Bool_t mode)       { fLegacyMode = mode; }
+  void                   SetLegacyMode(Bool_t mode)       { if(IsLocked()) return; fLegacyMode = mode; }
   void                   SetCodeDebug(Bool_t val)         { fCodeDebug = val; }
 
   void                   SetRhoName(const char *n)              { fRhoName      = n            ; }
@@ -148,6 +151,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Int_t                  fRecombScheme;           // recombination scheme used by fastjet
   Double_t               fTrackEfficiency;        // artificial tracking inefficiency (0...1)
   Bool_t                 fIsInit;                 //!=true if already initialized
+  Bool_t                 fLocked;                 // true if lock is set
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
   Bool_t                 fIsMcPart;               //!=true if MC particles are given as input
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
@@ -174,6 +178,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 12) // Jet producing task
+  ClassDef(AliEmcalJetTask, 13) // Jet producing task
 };
 #endif
