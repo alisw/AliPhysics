@@ -42,7 +42,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
 
   Bool_t                 IsLocked()                       { if(fLocked) {AliFatal("Jet finder task is locked! Changing properties is not allowed."); return kTRUE;} else return kFALSE;};
   void                   SetLocked()                      { fLocked = kTRUE;}
-  void                   SelectConstituents(UInt_t constSel, UInt_t MCconstSel)  { return; fConstSel = constSel; fMCConstSel = MCconstSel; };
+  void                   SelectConstituents(UInt_t constSel, UInt_t MCconstSel)  { fConstSel = constSel; fMCConstSel = MCconstSel; };
   void                   SetAlgo(Int_t a)                 { if(IsLocked()) return; if (a==0) fJetType |= kKT; else fJetType |= kAKT; }  // for backward compatibility only
   void                   SetClusName(const char *n)       { if(IsLocked()) return; fCaloName      = n     ; }
   void                   SetJetsName(const char *n)       { if(IsLocked()) return; fJetsName      = n     ; }
