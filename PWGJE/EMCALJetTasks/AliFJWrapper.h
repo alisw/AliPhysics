@@ -552,10 +552,8 @@ Int_t AliFJWrapper::DoConstituentSubtraction() {
   //Do constituent subtraction
 #ifdef FASTJET_VERSION
   fj::contrib::ConstituentSubtractor *subtractor;
-  if(fUseExternalBkg)  {
-    Printf("Using external background rho: %f  rhom: %f",fRho,fRhom);
+  if(fUseExternalBkg)
     subtractor     = new fj::contrib::ConstituentSubtractor(fRho,fRhom,kFALSE,kTRUE);
-  }
   else                 subtractor     = new fj::contrib::ConstituentSubtractor(fBkrdEstimator);
 
   //clear constituent subtracted jets
