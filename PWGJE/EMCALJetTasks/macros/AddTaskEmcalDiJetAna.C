@@ -51,8 +51,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   AliEmcalJetTask *jetFinderAKt;
   AliAnalysisTaskRhoSparse *rhoTask;
   if(rhoType==1) {
-    jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus);
-    jetFinderKt->SetMinJetPt(0.);
+    jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",0.);
     jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
     jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
     jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
