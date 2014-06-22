@@ -128,6 +128,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
     jetTask->SetRadius(radius);
   jetTask->SetGhostArea(ghostArea);
   jetTask->SetRecombScheme(recombScheme);
+  jetTask->SetLocked();
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
