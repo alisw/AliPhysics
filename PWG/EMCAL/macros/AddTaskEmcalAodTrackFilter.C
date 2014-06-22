@@ -63,6 +63,9 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
   } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {
     aodTask->SetAODfilterBits(256,16); // hybrid tracks
     includeNoITS = kTRUE;
+  }  else if{runPeriod == "lhc11d") {
+    aodTask->SetAODfilterBits(256,16); // hybrid tracks (MV: not 100% sure)
+    includeNoITS = kFALSE;
   } else if (runPeriod.Contains("lhc12a15a")) {
     aodTask->SetAODfilterBits(256,16); // hybrid tracks
     aodTask->SetMC(kTRUE);
