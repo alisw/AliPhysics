@@ -208,6 +208,7 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   kPeriod.ToLower();
 
   // Add kt jet finder and rho task in case we want background subtraction
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");  
   AliEmcalJetTask *jetFinderKt;
   AliEmcalJetTask *jetFinderAKt;
   jetFinderKt   = AddTaskEmcalJet(kTracksName, "", kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
