@@ -142,16 +142,16 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kBeamType           = "pp",
   AliAnalysisTaskRhoBase *rhoTaskBase;
 
   // Add kt jet finder and rho task in case we want background subtraction
+  Double_t minJetPt = 0.1;
+  if(kBeamType == "pPb") minJetPt = 0.;
   AliEmcalJetTask *jetFinderKt;
   AliEmcalJetTask *jetFinderAKt;
-  jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+  jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",minJetPt);
   jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
   jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
   jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
 
   if(kBeamType == "pPb") {
-    jetFinderKt->SetMinJetPt(0.);
-
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
     TF1 *fScale = new TF1("fScale","1.28",0.,100.); //scale factor for pPb
     AliAnalysisTaskRhoSparse *rhoTaskSparse = AddTaskRhoSparse(
