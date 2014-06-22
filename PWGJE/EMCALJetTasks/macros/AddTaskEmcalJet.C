@@ -40,7 +40,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
     //    minJetPt = 0.1;
   } else if ((type & AliEmcalJetTask::kAKT) != 0) {
     algoString = "AKT";
-    //inJetPt = 1.0;
+    //    minJetPt = 1.0;
   }
 
   char *typeString;
