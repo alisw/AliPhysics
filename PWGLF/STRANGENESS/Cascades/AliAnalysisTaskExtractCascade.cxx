@@ -1189,14 +1189,14 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
       
       //Save all momentum information
       fTreeCascVarNegPx = lNMom[0];
-      fTreeCascVarNegPx = lNMom[1];
-      fTreeCascVarNegPx = lNMom[2];
+      fTreeCascVarNegPy = lNMom[1];
+      fTreeCascVarNegPz = lNMom[2];
       fTreeCascVarPosPx = lPMom[0];
-      fTreeCascVarPosPx = lPMom[1];
-      fTreeCascVarPosPx = lPMom[2];
+      fTreeCascVarPosPy = lPMom[1];
+      fTreeCascVarPosPz = lPMom[2];
       fTreeCascVarBachPx = lBMom[0];
-      fTreeCascVarBachPx = lBMom[1];
-      fTreeCascVarBachPx = lBMom[2];
+      fTreeCascVarBachPy = lBMom[1];
+      fTreeCascVarBachPz = lBMom[2];
       
       fTreeCascVarBachTransMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] );
       fTreeCascVarPosTransMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] );
