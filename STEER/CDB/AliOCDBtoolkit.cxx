@@ -101,6 +101,7 @@ using namespace std;
 #include "TString.h"
 #include "TTree.h"
 #include "TMessage.h"
+#include "TGrid.h"
 //
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -465,6 +466,7 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
   TString cdbPath="";
   TObjString *ostr;
   AliCDBEntry *cdbEntry=0;
+  TGrid *myGrid = NULL;
   UInt_t hash;
   TMessage * file;
   Int_t size; 
@@ -476,6 +478,13 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
     if(!ostr) ostr = (TObjString*)cdbMap0->GetValue("default");
     cdbPath = ostr->GetString();
     if(cdbPath.Contains("local://"))cdbPath=cdbPath(8,cdbPath.Length()).Data();
+    if(!myGrid && cdbPath.Contains("alien://")){        //check if connection to alien is initialized
+        myGrid = TGrid::Connect("alien://");            //Oddly this will return also a pointer if connection fails
+        if(myGrid->GetPort()==0){                       //if connection fails port 0 is saved, using this to check for successful connection
+            cerr << "Cannot connect to grid!" << endl;
+            continue;
+        }
+    }
     try {
       cdbEntry = (AliCDBEntry*) man->Get(*CDBId,kTRUE);
     }catch(const exception &e){
