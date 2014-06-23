@@ -333,9 +333,6 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhMCEtaPtOrigin ;           //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
   TH2F         * fhMCPi0ProdVertex;          //! Spectrum of selected pi0 vs production vertex
   TH2F         * fhMCEtaProdVertex;          //! Spectrum of selected eta vs production vertex
-  TH2F         * fhMCPi0ProdVertexInner;     //! Spectrum of selected pi0 vs production vertex, below 50 cm
-  TH2F         * fhMCEtaProdVertexInner;     //! Spectrum of selected eta vs production vertex, below 50 cm
-
   
   // Weight studies
   
