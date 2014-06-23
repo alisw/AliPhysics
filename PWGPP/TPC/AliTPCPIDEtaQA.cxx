@@ -463,7 +463,7 @@ void AliTPCPIDEtaQA::UserExec(Option_t *)
     }
     
     // MC PID, SelectSpecies, P(TPC_inner), multiplicity, deltaPrimeSpecies, eta
-    Double_t entry[6] = { binMC, 0, pTPC, multiplicity, deltaPrimeEl, eta };
+    Double_t entry[6] = { (Double_t)binMC, 0., pTPC, (Double_t)multiplicity, deltaPrimeEl, eta };
     
     if (fMC)  {
       fhPIDdataAll->Fill(entry);
