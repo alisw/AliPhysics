@@ -19,6 +19,7 @@
 //                                                                       //
 // Authors:                                                              //
 //   Jens Wiechula <Jens.Wiechula@cern.ch>                               //
+//   Julian Book   <Julian.Book@cern.ch>                                 //
 /*
 
 
@@ -28,7 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
-#include <TH1.h>
+#include <THnBase.h>
 
 #include "AliDielectronVarCuts.h"
 #include "AliDielectronMC.h"
@@ -118,15 +119,18 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
     SETBIT(fSelectedCutsMask,iCut);
     if ( !fUpperCut[iCut] && ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
     else if ( fUpperCut[iCut]) {
-      // use a TH1 inherited cut object
-      Float_t x=0.,y=0.,z=0.;
-      switch (fUpperCut[iCut]->GetDimension()) {
-      case 3: z=values[fUpperCut[iCut]->GetZaxis()->GetUniqueID()];
-      case 2: y=values[fUpperCut[iCut]->GetYaxis()->GetUniqueID()];
-      case 1: x=values[fUpperCut[iCut]->GetXaxis()->GetUniqueID()];
+      // use a THnBase inherited cut object
+      Double_t *vals = new Double_t[fUpperCut[iCut]->GetNdimensions()];//={-1};
+      // get array of values for the corresponding dimensions using axis names
+      for(Int_t idim=0; idim<fUpperCut[iCut]->GetNdimensions(); idim++) {
+	vals[idim] = values[AliDielectronVarManager::GetValueType(fUpperCut[iCut]->GetAxis(idim)->GetName())];
+	// printf(" \t %s %.3f ",fUpperCut[iCut]->GetAxis(idim)->GetName(),vals[idim]);
       }
-      Int_t bin = fUpperCut[iCut]->FindBin(x,y,z);
-      if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>fUpperCut[iCut]->GetBinContent(bin)))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
+      // find bin for values (w/o creating it in case it is not filled)
+      Long_t bin = fUpperCut[iCut]->GetBin(vals,kFALSE);
+      Double_t cutMax = (bin>0 ? fUpperCut[iCut]->GetBinContent(bin) : -999. );
+      if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>cutMax))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
+      delete [] vals;
     }
     if ( fCutType==kAll && !TESTBIT(fSelectedCutsMask,iCut) ) return kFALSE; // option to (minor) speed improvement
   }
@@ -158,7 +162,7 @@ void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Doub
 }
 
 //________________________________________________________________________
-void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, TH1 * const max,  Bool_t excludeRange)
+void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, THnBase * const max,  Bool_t excludeRange)
 {
   //
   // Set cut range and activate it
@@ -169,25 +173,13 @@ void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Doub
   SETBIT(fActiveCutsMask,fNActiveCuts);
   fActiveCuts[fNActiveCuts]=(UShort_t)type;
   fUsedVars->SetBitNumber(type,kTRUE);
-  // cut dependencies
-  UInt_t var =0;
-  switch(max->GetDimension()) {
-  case 3:
-  case 2:
-    var=AliDielectronVarManager::GetValueType(max->GetZaxis()->GetName());
-    fUsedVars->SetBitNumber(var,kTRUE);
-    max->GetZaxis()->SetUniqueID(var);
-  case 1:
-    var=AliDielectronVarManager::GetValueType(max->GetYaxis()->GetName());
-    fUsedVars->SetBitNumber(var,kTRUE);
-    max->GetYaxis()->SetUniqueID(var);
-  /*case 1:*/
-    var=AliDielectronVarManager::GetValueType(max->GetXaxis()->GetName());
-    fUsedVars->SetBitNumber(var,kTRUE);
-    max->GetXaxis()->SetUniqueID(var);
+
+  fUpperCut[fNActiveCuts]=max;
+  // fill used variables into map
+  for(Int_t idim=0; idim<fUpperCut[fNActiveCuts]->GetNdimensions(); idim++) {
+    TString var(fUpperCut[fNActiveCuts]->GetAxis(idim)->GetName());
+    fUsedVars->SetBitNumber(AliDielectronVarManager::GetValueType(var.Data()), kTRUE);
   }
-  fUpperCut[fNActiveCuts]=(TH1*)max->Clone("histCut");
-  fUpperCut[fNActiveCuts]->SetDirectory(0x0);
   ++fNActiveCuts;
 }
 
