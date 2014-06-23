@@ -3410,7 +3410,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
   }  
   
   Float_t pt   = -100. ;
-  Float_t zT   = -100. ; 
+//  Float_t zT   = -100. ;
   Float_t phi  = -100. ;
   Float_t eta  = -100. ;
   Float_t xE   = -100. ; 
@@ -3478,7 +3478,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
       
       FillNeutralAngularCorrelationHistograms(pt, ptTrig, phi, phiTrig, deltaPhi, eta, etaTrig);
       
-      zT  = pt/ptTrig ;
+      //zT  = pt/ptTrig ;
       xE  =-pt/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
       
       //if(xE <0.)xE =-xE;
