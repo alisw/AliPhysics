@@ -796,7 +796,7 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfStaves(Int_t lay) const
   char laynam[30];
   snprintf(laynam, 30, "%s%d",GetITSLayerPattern(),lay);
   TGeoVolume* volLr = gGeoManager->GetVolume(laynam);
-  if (!volLr) AliFatal(Form("can't find %s volume",laynam));
+  if (!volLr) { AliFatal(Form("can't find %s volume",laynam)); return -1; }
   //
   // Loop on all layer nodes, count Stave volumes by checking names
   Int_t nNodes = volLr->GetNodes()->GetEntries();
