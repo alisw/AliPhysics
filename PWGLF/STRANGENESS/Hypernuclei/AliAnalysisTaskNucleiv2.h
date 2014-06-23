@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKOVERPROTON_H
-#define ALIANALYSISTASKOVERPROTON_H
+#ifndef ALIANALYSISTASKNUCLEIV2_H
+#define ALIANALYSISTASKNUCLEIV2_H
 
 /*  See cxx source for full Copyright notice */
 
