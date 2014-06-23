@@ -64,6 +64,9 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   //Task Configuration: Meant to enable quick re-execution of vertexer if needed
   void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) { fkRunVertexers = lRunVertexers; }
 //---------------------------------------------------------------------------------------
+  //Set Debug Mode
+  void SetDebugMode ( Bool_t lDebugMode = kTRUE) { fkDebugMode = lDebugMode; }
+//---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
   void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0VertexerSels[0] = lParameter; }
   void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ){ fV0VertexerSels[1] = lParameter; }
@@ -105,8 +108,10 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   Double_t fEtaRefMult; //Reference multiplicity eta
   //Objects Controlling Task Behaviour: has to be streamed! 
   Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
+  Bool_t    fkDebugMode; //Store extra debugging information in tree
   Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
   Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+
 
 	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
@@ -186,6 +191,13 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
     Float_t fTreeCascVarBachPx; //!
     Float_t fTreeCascVarBachPy; //!
     Float_t fTreeCascVarBachPz; //!
+
+    Float_t fTreeCascVarV0DecayX; //!
+    Float_t fTreeCascVarV0DecayY; //!
+    Float_t fTreeCascVarV0DecayZ; //!
+    Float_t fTreeCascVarCascadeDecayX; //!
+    Float_t fTreeCascVarCascadeDecayY; //!
+    Float_t fTreeCascVarCascadeDecayZ; //!
     
 //===========================================================================================
 //   Histograms
