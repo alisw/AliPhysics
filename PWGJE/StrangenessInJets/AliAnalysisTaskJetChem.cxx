@@ -5671,7 +5671,6 @@ AliAODJet* AliAnalysisTaskJetChem::GetMedianCluster()
   // get median cluster
 
   AliAODJet* medianCluster = 0;
-  Double_t   medianDensity = 0;
 
   if(TMath::Odd(nBckgClusters)){
 
@@ -5681,8 +5680,6 @@ AliAODJet* AliAnalysisTaskJetChem::GetMedianCluster()
     
     Double_t clusterPt = medianCluster->Pt();
     Double_t area      = medianCluster->EffectiveAreaCharged();
-    
-    if(area>0) medianDensity = clusterPt/area;
   }
   else{
 
@@ -5701,8 +5698,6 @@ AliAODJet* AliAnalysisTaskJetChem::GetMedianCluster()
     Double_t clusterPt2 = medianCluster2->Pt();
     Double_t area2      = medianCluster2->EffectiveAreaCharged();
     if(area2>0) density2 = clusterPt2/area2;
-    
-    medianDensity = 0.5*(density1+density2);
     
     medianCluster = ( (gRandom->Rndm()>0.5) ? medianCluster1 : medianCluster2 );  // select one randomly to avoid adding areas
   }
