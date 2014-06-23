@@ -73,6 +73,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   TH2F          **fh2MSubPtTrue;                                   //! subtracted jet mass vs true jet pT for matched jets
   TH2F          **fh2MTruePtTrue;                                  //! true jet mass vs true jet pT for matched jets
   TH2F          **fh2PtTrueDeltaM;                                 //! true jet pT vs (Msub - Mtrue)
+  TH2F          **fh2PtTrueDeltaMRel;                              //! true jet pT vs (Msub - Mtrue)/Mtrue
   THnSparse     **fhnMassResponse;                                 //! Msub vs Mtrue vs PtCorr vs PtTrue
 
   TH2F          **fh2PtTrueSubFacV1;                               //! true pT vs -(rho+rhom)*V1
