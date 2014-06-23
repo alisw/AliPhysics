@@ -2823,7 +2823,7 @@ THnSparse* AliHFEspectrum::GetCharmWeights(){
 void AliHFEspectrum::SetParameterizedEff(AliCFContainer *container, AliCFContainer *containermb, AliCFContainer *containeresd, AliCFContainer *containeresdmb, Int_t *dimensions){
 
    // TOF PID efficiencies
-   Int_t ptpr;
+   Int_t ptpr=0;
    if(fBeamType==0) ptpr=0;
    if(fBeamType==1) ptpr=1;
 
