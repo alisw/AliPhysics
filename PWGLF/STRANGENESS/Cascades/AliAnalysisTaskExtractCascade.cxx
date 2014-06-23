@@ -104,6 +104,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fkpAVertexSelection( kFALSE ),
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
+   fkDebugMode (kTRUE),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -179,6 +180,14 @@ fTreeCascVarBachPx(0),
 fTreeCascVarBachPy(0),
 fTreeCascVarBachPz(0),
 
+fTreeCascVarV0DecayX(0),
+fTreeCascVarV0DecayY(0),
+fTreeCascVarV0DecayZ(0),
+
+fTreeCascVarCascadeDecayX(0),
+fTreeCascVarCascadeDecayY(0),
+fTreeCascVarCascadeDecayZ(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -240,6 +249,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fkpAVertexSelection( kFALSE ),
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
+   fkDebugMode (kTRUE),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -314,6 +324,15 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
     fTreeCascVarBachPx(0),
     fTreeCascVarBachPy(0),
     fTreeCascVarBachPz(0),
+
+    fTreeCascVarV0DecayX(0),
+    fTreeCascVarV0DecayY(0),
+    fTreeCascVarV0DecayZ(0),
+
+    fTreeCascVarCascadeDecayX(0),
+    fTreeCascVarCascadeDecayY(0),
+    fTreeCascVarCascadeDecayZ(0),
+
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -488,26 +507,39 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
 /*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitPositive",&fTreeCascVarkITSRefitPositive,"fTreeCascVarkITSRefitPositive/O");
 
     //-----------Debugging information----------------
-    //Part A: Event-by-event, run-by-run debugging
-    fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
-    fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
-    
-    //Part B: Shared Clusters for all daughter tracks
-    fTreeCascade->Branch("fTreeCascVarNegSharedClusters",&fTreeCascVarNegSharedClusters,"fTreeCascVarNegSharedClusters/I");
-    fTreeCascade->Branch("fTreeCascVarPosSharedClusters",&fTreeCascVarPosSharedClusters,"fTreeCascVarPosSharedClusters/I");
-    fTreeCascade->Branch("fTreeCascVarBachSharedClusters",&fTreeCascVarBachSharedClusters,"fTreeCascVarBachSharedClusters/I");
-    
-    //Part C: All Momenta of all daughters
-    fTreeCascade->Branch("fTreeCascVarNegPx",&fTreeCascVarNegPx,"fTreeCascVarNegPx/F");
-    fTreeCascade->Branch("fTreeCascVarNegPy",&fTreeCascVarNegPy,"fTreeCascVarNegPy/F");
-    fTreeCascade->Branch("fTreeCascVarNegPz",&fTreeCascVarNegPz,"fTreeCascVarNegPz/F");
-    fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
-    fTreeCascade->Branch("fTreeCascVarPosPy",&fTreeCascVarPosPy,"fTreeCascVarPosPy/F");
-    fTreeCascade->Branch("fTreeCascVarPosPz",&fTreeCascVarPosPz,"fTreeCascVarPosPz/F");
-    fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
-    fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
-    fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
-    //------------------------------------------------
+
+  if(fkDebugMode){ 
+      //Only save this if requested - can be turned off
+
+      //Part A: Event-by-event, run-by-run debugging
+      fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
+      fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
+      
+      //Part B: Shared Clusters for all daughter tracks
+      fTreeCascade->Branch("fTreeCascVarNegSharedClusters",&fTreeCascVarNegSharedClusters,"fTreeCascVarNegSharedClusters/I");
+      fTreeCascade->Branch("fTreeCascVarPosSharedClusters",&fTreeCascVarPosSharedClusters,"fTreeCascVarPosSharedClusters/I");
+      fTreeCascade->Branch("fTreeCascVarBachSharedClusters",&fTreeCascVarBachSharedClusters,"fTreeCascVarBachSharedClusters/I");
+      
+      //Part C: All Momenta of all daughters
+      fTreeCascade->Branch("fTreeCascVarNegPx",&fTreeCascVarNegPx,"fTreeCascVarNegPx/F");
+      fTreeCascade->Branch("fTreeCascVarNegPy",&fTreeCascVarNegPy,"fTreeCascVarNegPy/F");
+      fTreeCascade->Branch("fTreeCascVarNegPz",&fTreeCascVarNegPz,"fTreeCascVarNegPz/F");
+      fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
+      fTreeCascade->Branch("fTreeCascVarPosPy",&fTreeCascVarPosPy,"fTreeCascVarPosPy/F");
+      fTreeCascade->Branch("fTreeCascVarPosPz",&fTreeCascVarPosPz,"fTreeCascVarPosPz/F");
+      fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
+      fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
+      fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
+      
+      //Part D: Decay positions
+      fTreeCascade->Branch("fTreeCascVarV0DecayX",&fTreeCascVarV0DecayX,"fTreeCascVarV0DecayX/F");
+      fTreeCascade->Branch("fTreeCascVarV0DecayY",&fTreeCascVarV0DecayY,"fTreeCascVarV0DecayY/F");
+      fTreeCascade->Branch("fTreeCascVarV0DecayZ",&fTreeCascVarV0DecayZ,"fTreeCascVarV0DecayZ/F");
+      fTreeCascade->Branch("fTreeCascVarCascadeDecayX",&fTreeCascVarCascadeDecayX,"fTreeCascVarCascadeDecayX/F");
+      fTreeCascade->Branch("fTreeCascVarCascadeDecayY",&fTreeCascVarCascadeDecayY,"fTreeCascVarCascadeDecayY/F");
+      fTreeCascade->Branch("fTreeCascVarCascadeDecayZ",&fTreeCascVarCascadeDecayZ,"fTreeCascVarCascadeDecayZ/F");
+      //------------------------------------------------
+  }
     
 //------------------------------------------------
 // Particle Identification Setup
@@ -1146,6 +1178,10 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  xi->GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] ); 
 	  lXiRadius			= TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );		
 
+    fTreeCascVarCascadeDecayX = lPosXi[0];
+    fTreeCascVarCascadeDecayY = lPosXi[1];
+    fTreeCascVarCascadeDecayZ = lPosXi[2];
+
 		// - II.Step 3 : around the tracks : Bach + V0 (ESD)
 		// ~ Necessary variables for ESDcascade data members coming from the ESDv0 part (inheritance)
 		//-------------
@@ -1274,6 +1310,10 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  xi->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] ); 
 	  lV0RadiusXi		= TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
 	
+    fTreeCascVarV0DecayX = lPosV0Xi[0];
+    fTreeCascVarV0DecayY = lPosV0Xi[1];
+    fTreeCascVarV0DecayZ = lPosV0Xi[2];
+
 	  lDcaPosToPrimVertexXi 	= TMath::Abs( pTrackXi	->GetD(	lBestPrimaryVtxPos[0], 
 						   		lBestPrimaryVtxPos[1], 
 						   		lMagneticField  )     ); 
