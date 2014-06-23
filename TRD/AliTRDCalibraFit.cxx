@@ -5762,8 +5762,9 @@ void AliTRDCalibraFit::FitTnpRange(Double_t *arraye, Double_t *arraym, Double_t 
     TVectorD pars0;
     linearfitter.Eval();
     linearfitter.GetParameters(pars0);
-    Double_t pointError0  =  TMath::Sqrt(linearfitter.GetChisquare()/npoints);
-    Double_t errorsx0     =  linearfitter.GetParError(2)*pointError0;
+    // Coverity
+    //Double_t pointError0  =  TMath::Sqrt(linearfitter.GetChisquare()/npoints);
+    //Double_t errorsx0     =  linearfitter.GetParError(2)*pointError0;
     Double_t min0         = 0.0;
     // Coverity
     //Double_t ermin0       = 0.0;
