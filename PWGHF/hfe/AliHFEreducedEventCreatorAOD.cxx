@@ -259,7 +259,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   // Get Primary Vertex
   AliDebug(1, "Get Primary Vertex\n");
   const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
-  Double_t vtx[3];
+  Double_t vtx[3]={0.,0.,0.};
   Double_t vcov[6];
   Int_t ncontrib = -1;
   if(vertex) {
