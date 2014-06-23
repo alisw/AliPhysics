@@ -2263,12 +2263,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     lV0Position[1]= v0->DecayVertexV0Y();  
     lV0Position[2]= v0->DecayVertexV0Z();
     
-    Double_t fV0mom[3];
-    
-    fV0mom[0]=v0->MomV0X();
-    fV0mom[1]=v0->MomV0Y();
-    fV0mom[2]=v0->MomV0Z();
-    //    Double_t fV0TotalMomentum = TMath::Sqrt(fV0mom[0]*fV0mom[0]+fV0mom[1]*fV0mom[1]+fV0mom[2]*fV0mom[2]);
     Double_t fV0DecayLength = v0->DecayLengthV0(lPrimaryVtxPosition);
     fV0Radius  = TMath::Sqrt(lV0Position[0]*lV0Position[0]+lV0Position[1]*lV0Position[1]);
 
@@ -2379,13 +2373,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     // Double_t jetPt = fFFIMJetPtMin; // assign pro forma jet energy
     // Double_t fRap = v0->Y(3122);
     
-    
-    Double_t fV0mom[3];
-    
-    fV0mom[0]=v0->MomV0X();
-    fV0mom[1]=v0->MomV0Y();
-    fV0mom[2]=v0->MomV0Z();
-    //Double_t fV0TotalMomentum = TMath::Sqrt(fV0mom[0]*fV0mom[0]+fV0mom[1]*fV0mom[1]+fV0mom[2]*fV0mom[2]);
     Double_t fV0DecayLength = v0->DecayLengthV0(lPrimaryVtxPosition);
     Double_t fV0cosPointAngle = v0->CosPointingAngle(lPrimaryVtxPosition);
     lV0Position[0]= v0->DecayVertexV0X();  
@@ -2494,13 +2481,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     //      Double_t fRap = v0->Y(-3122);
 
     
-    Double_t fV0mom[3];
-    
-    fV0mom[0]=v0->MomV0X();
-    fV0mom[1]=v0->MomV0Y();
-    fV0mom[2]=v0->MomV0Z();
-    //Double_t fV0TotalMomentum = TMath::Sqrt(fV0mom[0]*fV0mom[0]+fV0mom[1]*fV0mom[1]+fV0mom[2]*fV0mom[2]);
-
     Double_t fV0cosPointAngle = v0->CosPointingAngle(lPrimaryVtxPosition);
     lV0Position[0]= v0->DecayVertexV0X();  
     lV0Position[1]= v0->DecayVertexV0Y();  
