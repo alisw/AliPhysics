@@ -664,7 +664,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       nclus10++;
     Float_t ceiso, cephiband, cecore;
     Float_t triso, trphiband, trcore;
-    Float_t alliso, allphiband, allcore;
+    Float_t alliso, allphiband;//, allcore;
     Float_t phibandArea = (1.4 - 2*fIsoConeR)*2*fIsoConeR;
     Float_t netConeArea = TMath::Pi()*(fIsoConeR*fIsoConeR - 0.04*0.04);
     GetCeIso(clsVec, id, ceiso, cephiband, cecore);
@@ -677,7 +677,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     }
     alliso = ceiso + triso;
     allphiband = cephiband + trphiband;
-    allcore = cecore + trcore;
+    //allcore = cecore + trcore;
     Float_t ceisoue =  cephiband/phibandArea*netConeArea;
     Float_t trisoue =  trphiband/phibandArea*netConeArea;
     Float_t allisoue =  allphiband/phibandArea*netConeArea;
