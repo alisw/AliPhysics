@@ -61,6 +61,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fh2MSubPtTrue(0x0),
   fh2MTruePtTrue(0x0),
   fh2PtTrueDeltaM(0x0),
+  fh2PtTrueDeltaMRel(0x0),
   fhnMassResponse(0x0)
 {
   // Default constructor.
@@ -71,6 +72,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fh2MSubPtTrue       = new TH2F*[fNcentBins];
   fh2MTruePtTrue      = new TH2F*[fNcentBins];
   fh2PtTrueDeltaM     = new TH2F*[fNcentBins];
+  fh2PtTrueDeltaMRel  = new TH2F*[fNcentBins];
   fhnMassResponse     = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
@@ -80,6 +82,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
     fh2MSubPtTrue[i]       = 0;
     fh2MTruePtTrue[i]      = 0;
     fh2PtTrueDeltaM[i]     = 0;
+    fh2PtTrueDeltaMRel[i]  = 0;
     fhnMassResponse[i]     = 0;
   }
 
@@ -112,6 +115,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fh2MSubPtTrue(0x0),
   fh2MTruePtTrue(0x0),
   fh2PtTrueDeltaM(0x0),
+  fh2PtTrueDeltaMRel(0x0),
   fhnMassResponse(0x0)
 {
   // Standard constructor.
@@ -122,6 +126,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fh2MSubPtTrue       = new TH2F*[fNcentBins];
   fh2MTruePtTrue      = new TH2F*[fNcentBins];
   fh2PtTrueDeltaM     = new TH2F*[fNcentBins];
+  fh2PtTrueDeltaMRel  = new TH2F*[fNcentBins];
   fhnMassResponse     = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
@@ -131,6 +136,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
     fh2MSubPtTrue[i]       = 0;
     fh2MTruePtTrue[i]      = 0;
     fh2PtTrueDeltaM[i]     = 0;
+    fh2PtTrueDeltaMRel[i]  = 0;
     fhnMassResponse[i]     = 0;
   }
 
@@ -200,6 +206,11 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
     histTitle = Form("fh2PtTrueDeltaM_%d;#it{p}_{T,true};#it{M}_{sub}-#it{M}_{true}",i);
     fh2PtTrueDeltaM[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,100,-50.,50.);
     fOutput->Add(fh2PtTrueDeltaM[i]);
+
+    histName = Form("fh2PtTrueDeltaMRel_%d",i);
+    histTitle = Form("fh2PtTrueDeltaMRel_%d;#it{p}_{T,true};(#it{M}_{sub}-#it{M}_{true})/#it{M}_{true}",i);
+    fh2PtTrueDeltaMRel[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,200,-1.,1.);
+    fOutput->Add(fh2PtTrueDeltaMRel[i]);
 
     histName = Form("fhnMassResponse_%d",i);
     histTitle = Form("fhnMassResponse_%d;#it{M}_{sub};#it{M}_{true};#it{p}_{T,sub};#it{p}_{T,true}",i);
@@ -309,6 +320,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 	  fh2MSubPtTrue[fCentBin]->Fill(jetS->M(),jet2->Pt());
 	  fh2MTruePtTrue[fCentBin]->Fill(jet2->M(),jet2->Pt());
 	  fh2PtTrueDeltaM[fCentBin]->Fill(jet2->Pt(),jetS->M()-jet2->M());
+	  if(jet2->M()>0.) fh2PtTrueDeltaMRel[fCentBin]->Fill(jet2->Pt(),(jetS->M()-jet2->M())/jet2->M());
 	  Double_t var[4] = {jetS->M(),jet2->M(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area(),jet2->Pt()};
 	  fhnMassResponse[fCentBin]->Fill(var);
 	}
