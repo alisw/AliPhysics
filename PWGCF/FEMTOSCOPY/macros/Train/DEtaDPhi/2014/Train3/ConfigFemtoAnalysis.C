@@ -119,8 +119,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
 	double ktrngAll[numOfkTbins+1] = {0.0, 0.8, 1.0, 1.5, 2.5, 100.0};
 	double ktrngPion[numOfkTbins+1] = {0.0, 0.7, 0.9, 1.1, 1.6, 100.0};
-	double ktrngKaon[numOfkTbins+1] = {0.0, 2.3, 3.2, 10, 0, 0};
-	double ktrngProton[numOfkTbins+1] = {0.0, 3.0, 0, 0, 0};
+	double ktrngKaon[numOfkTbins+1] = {0.0, 2.3, 3.2, 100.0, 0, 0};
+	double ktrngProton[numOfkTbins+1] = {0.0, 3.0, 100, 0, 0};
 
 	int runqinv = 1;
 	int runshlcms = 1;// 0:PRF(PAP), 1:LCMS(PP,APAP)
@@ -178,6 +178,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 	AliFemtoQinvCorrFctn					*cqinvkttpc[320];
 	AliFemtoQinvCorrFctn					*cqinvtpc[320];
 	AliFemtoCorrFctnDEtaDPhi			*cdedpetaphi[320];
+	AliFemtoCorrFctnDEtaDPhi			*cdedpetaphiPt[1320];
 
 
 	
@@ -448,9 +449,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 							//cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 							//anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
 
-							cdedpetaphi[ktm] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%ipT%i", chrgs[ichg], imult,ikt),35, 35);
-							cdedpetaphi[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-							anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[ktm]);
+							cdedpetaphiPt[ktm] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%ipT%i", chrgs[ichg], imult,ikt),35, 35);
+							cdedpetaphiPt[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+							anetaphitpc[aniter]->AddCorrFctn(cdedpetaphiPt[ktm]);
 
 						}
 					}		
