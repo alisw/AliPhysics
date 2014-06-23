@@ -244,6 +244,11 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, THnBase *
     return;
   }
   fMapElectronCutLow[fNcuts]=histLow;
+  // fill used variables into map
+  for(Int_t idim=0; idim<fMapElectronCutLow[fNcuts]->GetNdimensions(); idim++) {
+    TString vari(fMapElectronCutLow[fNcuts]->GetAxis(idim)->GetName());
+    fUsedVars->SetBitNumber(AliDielectronVarManager::GetValueType(vari.Data()), kTRUE);
+  }
   AddCut(det,type,0.,nSigmaUp,min,max,exclude,pidBitType,var);
 }
 //______________________________________________
@@ -319,13 +324,6 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     fUsedVars->SetBitNumber(fgFunWdthCorr->GetXaxis()->GetUniqueID(), kTRUE);
     fUsedVars->SetBitNumber(fgFunWdthCorr->GetYaxis()->GetUniqueID(), kTRUE);
     fUsedVars->SetBitNumber(fgFunWdthCorr->GetZaxis()->GetUniqueID(), kTRUE);
-  }
-  for(UChar_t icut=0; icut<fNcuts; ++icut) {
-    if(!fMapElectronCutLow[icut]) continue;
-    for(Int_t idim=0; idim<fMapElectronCutLow[icut]->GetNdimensions(); idim++) {
-      TString var(fMapElectronCutLow[icut]->GetAxis(idim)->GetName());
-      fUsedVars->SetBitNumber(AliDielectronVarManager::GetValueType(var.Data()), kTRUE);
-    }
   }
 
   //Fill values
