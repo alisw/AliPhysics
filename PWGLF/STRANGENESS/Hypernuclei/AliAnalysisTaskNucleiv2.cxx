@@ -811,15 +811,15 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   
   Double_t rpangleTPC    =0;
   Double_t rpangleVZERO  =0;
-  Double_t rpangleeventA =0;
 
-  Double_t rpangleeventBTPC =0;
   Double_t rpangleeventATPC =0;
+  Double_t rpangleeventBTPC =0;
   Double_t deltaPsiTPC      =0;
   Double_t planeresoTPC     =0;
 
-  Double_t rpangleeventCVZERO =0;
+  Double_t rpangleeventAVZERO =0;
   Double_t rpangleeventBVZERO =0;
+  Double_t rpangleeventCVZERO =0;
   Double_t deltaPsiVZERO      =0;
   Double_t planeresoVZERO     =0;
 
@@ -837,10 +837,8 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
     }
   }
   
-  //TPC resolution --> Half or full it depends on the arguments od the add task
-  
-  rpangleeventA = rpangleTPC;
- 
+  //TPC resolution 
+   
   hRPangleTPCvsCentrality->Fill(rpangleTPC,percentile);
 
   qsub1 = pl->GetQsub1();
@@ -868,21 +866,19 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
     
     hPlaneResoTPCvsCentrality->Fill(planeresoTPC,percentile);
   
-    //VZERO event plane : Use events with eta>0 
+    //VZERO event plane
   
     rpangleVZERO = GetPhi0Pi(pl->GetEventplane("V0",lESDevent,2));
-    hRPangleVZEROvsCentrality->Fill(rpangleVZERO,percentile);
-
-    rpangleeventCVZERO=rpangleVZERO;
     rpangleeventBVZERO=GetPhi0Pi(pl->GetEventplane("V0A",lESDevent,2));
     rpangleeventCVZERO=GetPhi0Pi(pl->GetEventplane("V0C",lESDevent,2));
 
+    hRPangleVZEROvsCentrality->Fill(rpangleVZERO,percentile);
     hRPangleVZEROAvsCentrality->Fill(rpangleeventBVZERO,percentile);
     hRPangleVZEROCvsCentrality->Fill(rpangleeventCVZERO,percentile);
-    
-    //V0M
 
-    deltaPsiVZERO =rpangleeventATPC-rpangleVZERO;
+    //Resolution V0 : V0M - V0A
+    rpangleeventAVZERO = rpangleVZERO;
+    deltaPsiVZERO =rpangleeventAVZERO-rpangleeventBVZERO;
 
     if(TMath::Abs(deltaPsiVZERO)>TMath::Pi()/2.){
       if(deltaPsiVZERO>0.) deltaPsiVZERO-=TMath::Pi();
@@ -893,9 +889,9 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
 
     hPlaneResoVZEROvsCentrality->Fill(planeresoVZERO,percentile);
 
-    //V0A
+    //Resolution V0 : V0M - V0C
 
-    deltaPsiVZERO =rpangleeventATPC-rpangleeventBVZERO;
+    deltaPsiVZERO =rpangleeventAVZERO-rpangleeventCVZERO;
 
     if(TMath::Abs(deltaPsiVZERO)>TMath::Pi()/2.){
       if(deltaPsiVZERO>0.) deltaPsiVZERO-=TMath::Pi();
@@ -906,9 +902,9 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
 
     hPlaneResoVZEROAvsCentrality->Fill(planeresoVZERO,percentile);
     
-    //V0C
+    //Resolution V0 : V0A - V0C
 
-    deltaPsiVZERO =rpangleeventATPC-rpangleeventBVZERO;
+    deltaPsiVZERO =rpangleeventBVZERO-rpangleeventCVZERO;
 
     if(TMath::Abs(deltaPsiVZERO)>TMath::Pi()/2.){
       if(deltaPsiVZERO>0.) deltaPsiVZERO-=TMath::Pi();
