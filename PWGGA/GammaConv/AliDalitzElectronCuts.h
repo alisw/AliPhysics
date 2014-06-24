@@ -245,6 +245,10 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TH2F *hTrackDCAzPtafter;
   TH2F *hTrackNFindClsPtTPCbefore;
   TH2F *hTrackNFindClsPtTPCafter;
+  TH1F *hTrackPosEtabeforeDedx;
+  TH1F *hTrackNegEtabeforeDedx;
+  TH1F *hTrackPosEtaafterDedx;
+  TH1F *hTrackNegEtaafterDedx;
   
   
 

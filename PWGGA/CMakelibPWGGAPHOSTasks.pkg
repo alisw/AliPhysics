@@ -58,7 +58,7 @@ set ( DHDR  PWGGAPHOSTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWGGA/PWGGAUtils PWGGA/PHOSTasks/PHOS_pp_pi0 PWGGA/PHOSTasks/CaloCellQA PWGGA/PHOSTasks/omega3pi PHOS STEER/ESD STEER/STEERBase ANALYSIS)
+set ( EINCLUDE  PWGGA/PWGGAUtils PWGGA/PHOSTasks/PHOS_pp_pi0 PWGGA/PHOSTasks/CaloCellQA PWGGA/PHOSTasks/omega3pi PWGGA/PHOSTasks/PHOS_PbPb_MC PHOS STEER/ESD STEER/STEERBase ANALYSIS ANALYSIS/Tender)
 
 install (FILES PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C 
 	       PHOSTasks/CaloCellQA/macros/AddTaskPHOSQA.C 

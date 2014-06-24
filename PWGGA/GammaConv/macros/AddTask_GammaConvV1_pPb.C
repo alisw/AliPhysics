@@ -990,7 +990,17 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8000012007092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // min R =35 cm
 		cutarray[ 1] = "8000012007092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // min R =35 cm & only photon quality 1
 		cutarray[ 2] = "8000012007092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // min R =35 cm & only photon quality 2
-		cutarray[ 3] = "8000012007092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // min R =35 cm & only photon quality 3
+		cutarray[ 3] = "8000012007092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // min R =35 cm & only photon quality 3 
+	} else if (trainConfig == 179) {
+	        cutarray[ 0] = "8000011002092170008260400000"; mesonCutArray[ 0] = "01628035009000"; //new standard rapidity 0-0.5 in cms
+	        cutarray[ 1] = "8000011005092170008260400000"; mesonCutArray[ 1] = "01621035009000"; //new standard RCut=10cm
+	        cutarray[ 2] = "8000011008092170008260400000"; mesonCutArray[ 2] = "01621035009000"; //new standard RCut=12.5cm
+	        cutarray[ 3] = "8000011006092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //new standard RCut=20cm
+	} else if (trainConfig == 180) {
+	        cutarray[ 0] = "8000012002092170008260400000"; mesonCutArray[ 0] = "01628035009000"; //new standard rapidity 0-0.5 in cms
+	        cutarray[ 1] = "8000012005092170008260400000"; mesonCutArray[ 1] = "01621035009000"; //new standard RCut=10cm
+	        cutarray[ 2] = "8000012008092170008260400000"; mesonCutArray[ 2] = "01621035009000"; //new standard RCut=12.5cm
+	        cutarray[ 3] = "8000012006092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //new standard RCut=20cm
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -1028,7 +1038,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisCuts[i] = new AliConversionCuts();
-		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17|| trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 || trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177  ){
+		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17|| trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 || trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
@@ -1037,7 +1047,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 				}
 			}
 		}   
-		if ( trainConfig == 2 || trainConfig == 4 || trainConfig == 6 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12 || trainConfig == 14 || trainConfig == 16|| trainConfig == 18|| trainConfig == 20|| trainConfig == 22 || trainConfig == 134 || trainConfig == 136 || trainConfig == 138 || trainConfig == 140 || trainConfig == 142 || trainConfig == 144 || trainConfig == 146 || trainConfig == 148 || trainConfig == 150 || trainConfig == 152 || trainConfig == 174 || trainConfig == 176 || trainConfig == 178){
+		if ( trainConfig == 2 || trainConfig == 4 || trainConfig == 6 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12 || trainConfig == 14 || trainConfig == 16|| trainConfig == 18|| trainConfig == 20|| trainConfig == 22 || trainConfig == 134 || trainConfig == 136 || trainConfig == 138 || trainConfig == 140 || trainConfig == 142 || trainConfig == 144 || trainConfig == 146 || trainConfig == 148 || trainConfig == 150 || trainConfig == 152 || trainConfig == 174 || trainConfig == 176 || trainConfig == 178 || trainConfig == 180){
 			if (doWeighting){
 				analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
 			}
@@ -1117,6 +1127,10 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		if (doEtaShiftIndCuts) {
 			analysisCuts[i]->DoEtaShift(doEtaShiftIndCuts);
 			analysisCuts[i]->SetEtaShift(stringShift);
+		}
+		if (trainConfig == 179 || trainConfig == 180) {
+			analysisCuts[0]->DoEtaShift(kTRUE);
+			analysisCuts[0]->SetEtaShift(-0.215);
 		}
 		
 		ConvCutList->Add(analysisCuts[i]);
