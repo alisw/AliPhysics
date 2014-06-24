@@ -710,7 +710,7 @@ void AliDielectronPID::SetCorrVal(Double_t run)
   if (fgdEdxRunCorr){
     fgCorrdEdx=fgdEdxRunCorr->Eval(run);
     if (run<fgdEdxRunCorr->GetX()[0]) fgCorrdEdx=fgdEdxRunCorr->GetY()[0];
-    if (run>fgdEdxRunCorr->GetX()[fgFitCorr->GetN()-1]) fgCorrdEdx=fgdEdxRunCorr->GetY()[fgdEdxRunCorr->GetN()-1];
+    if (run>fgdEdxRunCorr->GetX()[fgdEdxRunCorr->GetN()-1]) fgCorrdEdx=fgdEdxRunCorr->GetY()[fgdEdxRunCorr->GetN()-1];
   }
 }
 
