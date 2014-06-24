@@ -896,14 +896,14 @@ Bool_t AliITSRealignTracks::FirstAlignmentLayers(const Bool_t *layers,Int_t minN
 
   sequence->Set(nMod);
 
- Int_t ilayer,imod;
+  // Int_t imod;
   for(Int_t iter=0;iter<iterations;iter++){
     if(iter>0&&fDraw)UpdateDraw(sequence,iter,iter);
     modAligned=0;
     for(Int_t k=0;k<nMod;k++){
       TArrayI *volFit3;
       voluid=sequence->At(k);
-      ilayer=AliGeomManager::VolUIDToLayer(voluid,imod);
+      //      ilayer=AliGeomManager::VolUIDToLayer(voluid,imod);
       volIn->AddAt(voluid,0);
       found=0;
       if(!fitall){
@@ -1006,13 +1006,12 @@ Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,
   }
   sequence->Set(nMod);
   
-  Int_t ilayer,imod;
   for(Int_t iter=0;iter<iterations;iter++){ 
     modAligned=0;
     for(Int_t k=0;k<nMod;k++){
       TArrayI *volFit3;
       voluid=sequence->At(k);
-      ilayer=AliGeomManager::VolUIDToLayer(voluid,imod);
+      //      ilayer=AliGeomManager::VolUIDToLayer(voluid,imod);
       volIn->AddAt(voluid,0);
       found=0;
       if(!fitall){
@@ -1112,7 +1111,7 @@ Bool_t AliITSRealignTracks::AlignVolumesITS(const TArrayI *volids, const TArrayI
   Double_t frac;
 
   TGeoHMatrix hM;
-  Double_t phiglob,smearing,rotorig[9],normplanevect[3]={0.,0.,0.},normplanevect2[3]={0.,0.,0.};  
+  Double_t smearing,rotorig[9],normplanevect[3]={0.,0.,0.},normplanevect2[3]={0.,0.,0.};  
   Double_t *deltarot;
   TMatrixDSym covmatrx(6);
   AliAlignObj *modAlign;
@@ -1160,7 +1159,7 @@ Bool_t AliITSRealignTracks::AlignVolumesITS(const TArrayI *volids, const TArrayI
 	  normplanevect[2]=0.;
     }
     
-    phiglob=TMath::ATan2(normplanevect[1],normplanevect[0]);
+    //    phiglob=TMath::ATan2(normplanevect[1],normplanevect[0]);
     
     modAlign=GetAlignObj(volids->At(0));
     modAlign->GetMatrix(hM);
@@ -1749,7 +1748,7 @@ AliAlignObjParams* AliITSRealignTracks::MediateAlignObj(const TArrayI *volIDs,In
   // defined by the array volIDs up to lastVolid position in this array
   //The aim of such a method is to look for collective movement of a given set of modules
 
-  UShort_t volid;
+  //  UShort_t volid;
 
   TGeoHMatrix hm;
   Double_t *rot,*transl;
@@ -1758,7 +1757,7 @@ AliAlignObjParams* AliITSRealignTracks::MediateAlignObj(const TArrayI *volIDs,In
 
 
   for(Int_t ivol=0;ivol<lastVolid;ivol++){
-    volid=volIDs->At(ivol);
+    //    volid=volIDs->At(ivol);
   
     GetAlignObj(volIDs->At(ivol))->GetMatrix(hm); 
    

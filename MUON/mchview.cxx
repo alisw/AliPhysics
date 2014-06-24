@@ -39,6 +39,7 @@
 #include "AliMpDataStreams.h"
 #include "AliMpDDLStore.h"
 #include "AliMpManuStore.h"
+#include "TEnv.h"
 
 //______________________________________________________________________________
 Int_t Usage()
@@ -60,6 +61,9 @@ Int_t Usage()
 int main(int argc, char** argv)
 {
   /// Main function for the program
+  
+  gEnv->SetValue("Cocoa.EnableAntiAliasing","auto");
+
   TObjArray args;
   
   for ( int i = 1; i < argc; ++i ) 

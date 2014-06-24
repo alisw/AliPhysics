@@ -3058,10 +3058,7 @@ void AliESDtrack::AddTOFcluster(Int_t icl)
   for(Int_t i=0;i < fNtofClusters-1;i++) fTOFcluster[i] = old[i];
   fTOFcluster[fNtofClusters-1] = icl;
 
-  if(fNtofClusters-1){ // delete previous content    
-    delete old;
-    old = NULL;
-  }
+  if(fNtofClusters-1)  delete[] old; // delete previous content    
  
 }
 

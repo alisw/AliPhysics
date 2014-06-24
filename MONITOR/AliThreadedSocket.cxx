@@ -18,17 +18,15 @@ AliThreadedSocket::AliThreadedSocket(zmq::context_t *context, EOpenMode mode)
 
 AliThreadedSocket::~AliThreadedSocket()
 {
+	Wait();
 	Stop();
 }
 
 Bool_t AliThreadedSocket::Start()
 {
 	if(!fThread){
-		if(fOpenMode==READ)
-  		fThread = new TThread("AliThreadedSocket", (void(*) (void *) ) &RunThrdRead, (void*)  this );
-  	else
-  		fThread = new TThread("AliThreadedSocket", (void(*) (void *) ) &RunThrdWrite,(void*)  this );
-  		
+  		fThread = new TThread("AliThreadedSocket", (void(*) (void *) ) &Dispatch, (void*)  this );
+  
   	if(fThread->Run()==0){ 
 	  	Emit("Started()");
   		return kTRUE; 
@@ -40,6 +38,11 @@ Bool_t AliThreadedSocket::Start()
 
 Bool_t AliThreadedSocket::Stop()
 {
+	if(fThread){
+		fThread->Delete();
+		fThread=0;
+	}
+
 	Emit("Stopped()");
 	return kTRUE;
 }
@@ -59,6 +62,14 @@ Bool_t AliThreadedSocket::Kill()
 void AliThreadedSocket::Continue()
 {
 	
+}
+
+void AliThreadedSocket::Wait()
+{
+	if(fThread && fThread->GetState()==TThread::kRunningState)
+	{
+		fThread->Join();
+	}
 }
 
 zmq::context_t* AliThreadedSocket::GetContext() const
@@ -81,34 +92,28 @@ void AliThreadedSocket::Stopped()
 	Emit("Stopped()");
 }
 
-void* AliThreadedSocket::RunThrdRead(void* arg)
+void AliThreadedSocket::RunThrdRead()
 {
 	AliNetMessage* mess=0;
-	AliThreadedSocket* thsock = (AliThreadedSocket*)arg;
-	zmq::context_t* context = thsock->GetContext();
-	
-	AliSocket sock(context, ZMQ_SUB);
+	AliSocket sock(fContext, ZMQ_SUB);
 		
 	do{
 		sock.Recv(mess);
 	}
 	while(mess==0);
 	
-	thsock->Stopped();
+	Stopped();
 }
 
-void* AliThreadedSocket::RunThrdWrite(void* arg)
+void AliThreadedSocket::RunThrdWrite()
 {
 	AliNetMessage* mess=0;
-	AliThreadedSocket* thsock = (AliThreadedSocket*)arg;
-	zmq::context_t* context = thsock->GetContext();
-	
-	AliSocket sock(context, ZMQ_PUB);
+	AliSocket sock(fContext, ZMQ_PUB);
 	
 	do{
 		sock.Send(*mess);
 	}
 	while(1);
 	
-	thsock->Emit("Stopped()");
+	Stopped();
 }

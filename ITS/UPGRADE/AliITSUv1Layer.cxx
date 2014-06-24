@@ -471,8 +471,11 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
  
   // Mechanical stave structure
     mechStaveVol = CreateStaveStructInnerB(xlen,zlen); 
-    if (mechStaveVol)
-      staveVol->AddNode(mechStaveVol, fNChips, new TGeoCombiTrans(0, -0.15-ylen, 0, new TGeoRotation("",0, 0, 180)));
+    if (mechStaveVol) {
+      ypos = ((TGeoBBox*)(modVol->GetShape()))->GetDY() +
+             ((TGeoBBox*)(mechStaveVol->GetShape()))->GetDY();
+      staveVol->AddNode(mechStaveVol, 1, new TGeoCombiTrans(0, -ypos, 0, new TGeoRotation("",0, 0, 180)));
+    }
   }
 
   else{
