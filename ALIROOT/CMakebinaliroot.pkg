@@ -67,7 +67,7 @@ set (ARLIBS ${AFILES})
 list(APPEND SRCS ${GFILES})
 set ( SHLIBS  ${BINLIBDIRS} EVGEN -lEGPythia6 Pythia6 -lpythia6 AliPythia6 lhapdf THijing hijing THerwig herwig TPHIC FASTSIM microcern)
 
-set ( EINCLUDE STEER/STEER )
+set ( EINCLUDE STEER/STEER ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/FromTemplate/)
 #
 # EOF
 #
