@@ -552,6 +552,6 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   AliAnalysisTaskV0ForRAA(const AliAnalysisTaskV0ForRAA&);
   AliAnalysisTaskV0ForRAA&operator=(const AliAnalysisTaskV0ForRAA&);
    
-  ClassDef(AliAnalysisTaskV0ForRAA, 0); 
+  ClassDef(AliAnalysisTaskV0ForRAA, 1); 
 };
 #endif
