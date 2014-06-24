@@ -33,6 +33,9 @@
 #include "AliTPCPIDResponse.h" 
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 //class AliPWG0Helper;
 //#include "$ALICE_ROOT/PWG0/AliPWG0Helper.h"
 
@@ -45,6 +48,9 @@ Int_t AliAnalysisHadEtMonteCarlo::fgNumSmearWidths = 4;
 Float_t AliAnalysisHadEtMonteCarlo::fgSmearWidths[4] = {0.005,0.006,0.007,0.008};
 
 AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
+							,checkLabelForHIJING(kFALSE)
+							,fNMCProducedMin(0)
+							,fNMCProducedMax(0)
 							,fSimPiKPEt(0)
 							,fSimRawEtTPC(0)
 							,fSimRawEtITS(0)
@@ -97,6 +103,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     return 0;
   }
   AliStack *stack = mcEvent->Stack();
+
+  if(checkLabelForHIJING) SetGeneratorMinMaxParticles(mcEvent);
   fCentBin= -1;
   fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
   if(fDataSet==20100){//If this is Pb+Pb
@@ -167,6 +175,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     for (Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++)
       {
 	AliESDtrack *track = dynamic_cast<AliESDtrack*> (list->At(iTrack));
+	UInt_t label = (UInt_t)TMath::Abs(track->GetLabel());
+	if(checkLabelForHIJING && !IsHIJINGLabel(label,mcEvent,stack) ){cout<<"I am rejecting this particle because it is not HIJING"<<endl;}
+	if(checkLabelForHIJING && !IsHIJINGLabel(label,mcEvent,stack) ) continue;
 	if (!track)
 	  {
 	    Printf("ERROR: Could not get track %d", iTrack);
@@ -218,7 +229,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
 	  FillHisto2D(Form("dEdxAll%s",cutName->Data()),track->P(),dEdx,1.0);
 
-	  UInt_t label = (UInt_t)TMath::Abs(track->GetLabel());
 	    TParticle  *simPart  = stack->Particle(label);
 	  if(!simPart) {
 	    Printf("no MC particle\n"); 	 	
@@ -1059,6 +1069,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     // Let's play with the stack!
     AliStack *stack = mcEvent->Stack();
 
+
     Int_t nPrim = stack->GetNtrack();
 
     Float_t fSimPiKPEtPtSmeared = 0;
@@ -1077,6 +1088,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     {
 
       TParticle *part = stack->Particle(iPart);//This line is identified as a loss of memory by valgrind, however, the pointer still belongs to the stack, so it's the stack's problem
+
+	if(checkLabelForHIJING && !IsHIJINGLabel(iPart,mcEvent,stack) ) continue;
 
         if (!part)
 	  {
@@ -2494,4 +2507,115 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   }
 
 }
+
+void AliAnalysisHadEtMonteCarlo::SetGeneratorMinMaxParticles(AliMCEvent *eventMC){
+  // In case of access only to hijing particles in cocktail
+  // get the min and max labels
+  // TODO: Check when generator is not the first one ...
+  
+  fNMCProducedMin = 0;
+  fNMCProducedMax = 0;
+  
+  AliGenEventHeader * eventHeader = eventMC->GenEventHeader();
+  
+  AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
+  
+  if(!cocktail) return ;
+    
+  TList *genHeaders = cocktail->GetHeaders();
+  
+  Int_t nGenerators = genHeaders->GetEntries();
+  //printf("N generators %d \n", nGenerators);
+  
+  for(Int_t igen = 0; igen < nGenerators; igen++)
+    {
+      AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
+      TString name = eventHeader2->GetName();
+      
+      //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader2->ClassName(), name.Data(), eventHeader2->GetTitle());
+      
+      fNMCProducedMin = fNMCProducedMax;
+      fNMCProducedMax+= eventHeader2->NProduced();
+      
+      if(name.Contains("Hijing",TString::kIgnoreCase)){
+	//cout<<"Found HIJING event and set range "<<fNMCProducedMin<<"-"<<fNMCProducedMax<<endl;
+	return ;
+      }
+    }
+        
+}
+AliGenEventHeader* AliAnalysisHadEtMonteCarlo::GetGenEventHeader(AliMCEvent *eventMC) const
+{
+  // Return pointer to Generated event header
+  // If requested and cocktail, search for the hijing generator
+  AliGenEventHeader * eventHeader = eventMC->GenEventHeader();
+  AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
+  
+  if(!cocktail) return 0x0 ;
+  
+  TList *genHeaders = cocktail->GetHeaders();
+  
+  Int_t nGenerators = genHeaders->GetEntries();
+  //printf("N generators %d \n", nGenerators);
+  
+  for(Int_t igen = 0; igen < nGenerators; igen++)
+    {
+      AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
+      TString name = eventHeader2->GetName();
+      
+      //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader2->ClassName(), name.Data(), eventHeader2->GetTitle());
+      
+      if(name.Contains("Hijing",TString::kIgnoreCase)) return eventHeader2 ;
+    }
+  
+  return 0x0;
+  
+}
+Bool_t AliAnalysisHadEtMonteCarlo::IsHIJINGLabel(Int_t label,AliMCEvent *eventMC,AliStack *stack)
+{
+ 
+  // Find if cluster/track was generated by HIJING
+  
+  AliGenHijingEventHeader*  hijingHeader =  dynamic_cast<AliGenHijingEventHeader *> (GetGenEventHeader(eventMC));
+  
+  //printf("header %p, label %d\n",hijingHeader,label);
+  
+  if(!hijingHeader || label < 0 ) return kFALSE;
+  
+  
+  //printf("pass a), N produced %d\n",nproduced);
+  
+  if(label >= fNMCProducedMin && label < fNMCProducedMax)
+  {
+    //printf(" accept!, label is smaller than produced, N %d\n",nproduced);
+
+    return kTRUE;
+  }
+  
+  if(!stack) return kFALSE;
+  
+  Int_t nprimaries = stack->GetNtrack();
+  
+  if(label > nprimaries) return kFALSE;
+    
+  TParticle * mom = stack->Particle(label);
+    
+  Int_t iMom = label;
+  Int_t iParent = mom->GetFirstMother();
+  while(iParent!=-1){
+    if(iParent >= fNMCProducedMin && iParent < fNMCProducedMax){
+      return kTRUE;
+    }
+      
+    iMom = iParent;
+    mom = stack->Particle(iMom);
+    iParent = mom->GetFirstMother();
+  }
+    
+  return kFALSE ;
+    
+}
+
+
+
 
