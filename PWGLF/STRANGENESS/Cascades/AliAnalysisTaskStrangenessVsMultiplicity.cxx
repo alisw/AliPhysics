@@ -114,6 +114,14 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
   fRefMultEta5(0),
   fRefMultEta8(0),
   fRunNumber(0),
+  fEvSel_HasAtLeastSPDVertex(0), 
+  fEvSel_VtxZCut(0), 
+  fEvSel_IsNotPileup(0), 
+  fEvSel_IsNotPileupInMultBins(0),
+  fEvSel_HasVtxContributor(0),  
+  fEvSel_nTracklets(0),  
+  fEvSel_nSPDClusters(0),  
+
   //---> Variables for fTreeV0
 	fTreeVariableChi2V0(0),
 	fTreeVariableDcaV0Daughters(0),
@@ -226,6 +234,14 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
   fRefMultEta5(0),
   fRefMultEta8(0),
   fRunNumber(0),
+  fEvSel_HasAtLeastSPDVertex(0), 
+  fEvSel_VtxZCut(0), 
+  fEvSel_IsNotPileup(0), 
+  fEvSel_IsNotPileupInMultBins(0),
+  fEvSel_HasVtxContributor(0),  
+  fEvSel_nTracklets(0),  
+  fEvSel_nSPDClusters(0),  
+  
   //---> Variables for fTreeV0
 	fTreeVariableChi2V0(0),
 	fTreeVariableDcaV0Daughters(0),
@@ -402,6 +418,17 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
   //Run Number
   fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
 
+  //Booleans for Event Selection
+  fTreeEvent->Branch("fEvSel_HasAtLeastSPDVertex", &fEvSel_HasAtLeastSPDVertex, "fEvSel_HasAtLeastSPDVertex/O");
+  fTreeEvent->Branch("fEvSel_VtxZCut", &fEvSel_VtxZCut, "fEvSel_VtxZCut/O");
+  fTreeEvent->Branch("fEvSel_IsNotPileup", &fEvSel_IsNotPileup, "fEvSel_IsNotPileup/O");
+  fTreeEvent->Branch("fEvSel_IsNotPileupInMultBins", &fEvSel_IsNotPileupInMultBins, "fEvSel_IsNotPileupInMultBins/O");
+  fTreeEvent->Branch("fEvSel_HasVtxContributor", &fEvSel_HasVtxContributor, "fEvSel_HasVtxContributor/O");
+
+  //Tracklets vs clusters test
+  fTreeEvent->Branch("fEvSel_nTracklets", &fEvSel_nTracklets, "fEvSel_nTracklets/I");
+  fTreeEvent->Branch("fEvSel_nSPDClusters", &fEvSel_nSPDClusters, "fEvSel_nSPDClusters/I");
+
   //Create Basic V0 Output Tree
   fTreeV0 = new TTree( "fTreeV0", "V0 Candidates");
 
@@ -557,6 +584,16 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
   // Called for each event
 
    AliESDEvent *lESDevent = 0x0;
+
+  //Zero all booleans, etc
+  fEvSel_HasAtLeastSPDVertex    = kFALSE; 
+  fEvSel_VtxZCut                = kFALSE; 
+  fEvSel_IsNotPileup            = kFALSE; 
+  fEvSel_IsNotPileupInMultBins  = kFALSE; 
+  fEvSel_HasVtxContributor      = kFALSE; 
+
+  fEvSel_nTracklets   = -1; 
+  fEvSel_nSPDClusters = -1; 
   
   // Connect to the InputEvent   
   // After these lines, we should have an ESD/AOD event + the number of V0s in it.
@@ -629,6 +666,11 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     return;
   }
 
+  if(! (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus()) ){ 
+    //Passed selection!
+    fEvSel_HasAtLeastSPDVertex = kTRUE; 
+  }
+
   //Has SPD or Tracking Vertex
   fHistEventCounter -> Fill(2.5); 
 
@@ -640,6 +682,11 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     PostData(3, fTreeV0);
     PostData(4, fTreeCascade);
     return;
+  }
+
+  if(TMath::Abs(lBestPrimaryVtxPos[2]) <= 10.0 ){ 
+    //Passed selection!
+    fEvSel_VtxZCut = kTRUE;
   }
 
   //Fill Event selected counter
@@ -659,6 +706,10 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     PostData(4, fTreeCascade);
     return; 
   }
+
+  if( !lESDevent->IsPileupFromSPD()           ) fEvSel_IsNotPileup           = kTRUE; 
+  if( !lESDevent->IsPileupFromSPDInMultBins() ) fEvSel_IsNotPileupInMultBins = kTRUE; 
+
   //Fill Event isn't pileup counter
   fHistEventCounter -> Fill(4.5);
 
@@ -725,6 +776,10 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     fCentrality_V0MEq = centrality->GetCentralityPercentile( "V0MEq" ); 
   }
   
+  //Tracklets vs Clusters Exploratory data
+  fEvSel_nTracklets     = lESDevent->GetMultiplicity()->GetNumberOfTracklets();
+  fEvSel_nSPDClusters   = lESDevent->GetNumberOfITSClusters(0) + lESDevent->GetNumberOfITSClusters(1);
+
   //Event-level fill 
   fTreeEvent->Fill() ;
   
