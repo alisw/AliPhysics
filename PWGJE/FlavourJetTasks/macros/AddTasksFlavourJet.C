@@ -74,6 +74,7 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
    // -- 
    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
    AliEmcalSetupTask *taskSetupEMCal = AddTaskEmcalSetup();
+   //taskSetupEMCal->SetOcdbPath("raw://"); //needed for period LHC12h and i
    taskSetupEMCal->SetGeoPath("$ALICE_ROOT/OADB/EMCAL");
    taskSetupEMCal->SelectCollisionCandidates(uTriggerMask);
    

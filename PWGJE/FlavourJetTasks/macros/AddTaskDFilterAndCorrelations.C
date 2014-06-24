@@ -10,6 +10,7 @@ void *AddTaskDFilterAndCorrelations(
   Float_t R = 0.4,
   Float_t jptcut = 10.,
   const char *cutType = "TPC",
+  Int_t thnsparse=1, /*-1 = no thnsparse, 0 = heavy, 1 = light*/
   Double_t percjetareacut = 1.,
   AliAnalysisTaskEmcal::TriggerType trType=AliAnalysisTaskEmcal::kND,
   Int_t typeDjet=2
@@ -97,6 +98,10 @@ void *AddTaskDFilterAndCorrelations(
      taskCorr->SetCaloTriggerPatchInfoName("EmcalTriggers");
      taskCorr->SetTriggerTypeSel(trType);
   }
+  if(thnsparse==-1)taskCorr->TurnOffTHnSparse();
+  if(thnsparse==0) taskCorr->HeavyTHnSparse();
+  if(thnsparse==1) taskCorr->LightTHnSparse();   
+    
   mgr->AddTask(taskCorr);
 
   if(theMCon) {
