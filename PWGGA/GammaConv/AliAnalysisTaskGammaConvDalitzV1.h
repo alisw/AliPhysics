@@ -80,7 +80,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
                 void CalculatePi0DalitzCandidates();
                 void CalculateBackground();
                 void UpdateEventByEventData();
-		void FillElectronQAHistos(AliAODConversionMother *Pi0Candidate,AliAODConversionPhoton *Vgamma) const;
+		void FillElectronQAHistos(AliAODConversionPhoton *Vgamma) const;
                 Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
 		Bool_t IsDalitz(TParticle *fMCMother) const;
                 Bool_t IsPi0DalitzDaughter( Int_t label ) const;
@@ -148,6 +148,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH2F **hESDEposEnegPsiPairDPhi;
     TH2F **hESDEposEnegInvMassPt;
     TH2F **hESDEposEnegAfterMassCutInvMassPi0Pt;
+    TH2F **hESDEposEnegInvMassPi0Pt;
     TH2F **hESDEposEnegLikeSignBackInvMassPt;
     TH2F **hESDMotherInvMassPt;
     TH2F **hESDPi0MotherInvMassPt;
@@ -241,6 +242,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     Int_t fiCut;
     Int_t fNumberOfESDTracks;
     Int_t fNumberOfESDTrackskBoth;
+    Int_t fNVirtualGammas;
     Bool_t fMoveParticleAccordingToVertex;
     Bool_t fIsHeavyIon;
     Bool_t fDoMesonAnalysis;
