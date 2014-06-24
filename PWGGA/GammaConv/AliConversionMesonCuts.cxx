@@ -1431,3 +1431,39 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
    photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
    photon->SetE(photon->P());
 }
+///________________________________________________________________________
+void AliConversionMesonCuts::SmearVirtualPhoton(AliAODConversionPhoton* photon)
+{
+
+   if (photon==NULL) return;
+   Double_t facPBrem = 1.;
+   Double_t facPSig = 0.;
+
+   Double_t phi=0.;
+   Double_t theta=0.;
+   Double_t P=0.;
+
+
+   P=photon->P();
+   phi=photon->Phi();
+   if( photon->P()!=0){
+      theta=acos( photon->Pz()/ photon->P());
+   }
+
+   if( fPSigSmearing != 0. || fPSigSmearingCte!=0. ){
+      facPSig = TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.);
+   }
+
+   if( fPBremSmearing != 1.){
+      if(fBrem!=NULL){
+         facPBrem = fBrem->GetRandom();
+      }
+   }
+
+   photon->SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
+   photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
+   photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
+   
+   
+}
+
