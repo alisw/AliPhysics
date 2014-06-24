@@ -33,7 +33,7 @@ set ( DHDR PWGGlauberLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWG/Glauber )
+set ( EINCLUDE  PWG/Glauber STEER/STEER)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	

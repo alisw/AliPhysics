@@ -226,6 +226,7 @@ set ( EINCLUDE
   TOF 
   TRD/Cal 
   TRD/info 
+  EMCAL
   ANALYSIS/Tender 
   ANALYSIS
   PWG/CaloTrackCorrBase 
