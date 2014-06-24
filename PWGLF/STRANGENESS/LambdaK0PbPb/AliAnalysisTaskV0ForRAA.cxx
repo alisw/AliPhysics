@@ -1055,9 +1055,6 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   fOutputContainer->SetName(GetName()) ;
   fOutputContainer->SetOwner();
   
-  TH1::SetDefaultSumw2();
-  TH2::SetDefaultSumw2();
-
   Int_t mchist = 1;// for Data
   if((fMCMode && fMCTruthMode) || fMCTruthMode) mchist = 2;//for MC to create sec. Lambda histos	
 
@@ -1113,27 +1110,27 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    
   // ------------------- add always ---------------------------//
   //THnF
-  Double_t piForAx = TMath::Pi();
+  Double_t piForAx = 2.0*TMath::Pi();
   Int_t binsTHnV0K0s[4] = {150,100,50,18};
   Int_t binsTHnV0L[4] = {100,100,50,18};
 
-  Int_t binsTHnV0DauEtaK0s[4] = {150,100,50,50};
-  Int_t binsTHnV0DauEtaL[4] = {100,100,50,50};
+  Int_t binsTHnV0DauEtaK0s[4] = {150,100,40,40};
+  Int_t binsTHnV0DauEtaL[4] = {100,100,40,40};
 
   Int_t binsTHnV0DauPhiK0s[5] = {150, 18,18, 7,7};
   Int_t binsTHnV0DauPhiL[5] = {100, 18,18, 7,7};
 
   Double_t minK0s[4] = {0.35,0.0,-1.0,0.0};
   Double_t maxK0s[4] = {0.65,50.0,1.0,piForAx};
-  Double_t minK0sDauEta[4] = {0.35, 0.0,-1.0,-1.0};
-  Double_t maxK0sDauEta[4] = {0.65,50.0, 1.0, 1.0};
+  Double_t minK0sDauEta[4] = {0.35, 0.0,-0.8,-0.8};
+  Double_t maxK0sDauEta[4] = {0.65,50.0, 0.8, 0.8};
   Double_t minK0sDauPhi[5] = {0.35,0.0,0.0,-0.5,-0.5};
   Double_t maxK0sDauPhi[5] = {0.65,piForAx,piForAx,6.5,6.5};
 
   Double_t minL[4] = {1.07, 0.0,-1.0,0.0};
   Double_t maxL[4] = {1.17,50.0, 1.0,piForAx};
-  Double_t minLDauEta[4] = {1.07, 0.0,-1.0,-1.0};
-  Double_t maxLDauEta[4] = {1.17,50.0, 1.0, 1.0};
+  Double_t minLDauEta[4] = {1.07, 0.0,-0.8,-0.8};
+  Double_t maxLDauEta[4] = {1.17,50.0, 0.8, 0.8};
   Double_t minLDauPhi[5] = {1.07,0.0,0.0,-0.5,-0.5};
   Double_t maxLDauPhi[5] = {1.17,piForAx,piForAx,6.5, 6.5};
   
@@ -2388,10 +2385,6 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
     const  Double_t xyzMC[3] = {x,y,z};
     // Double_t rMC = p00->R();
       
-    //-- phi --//
-    Double_t pi = TMath::Pi();
-    Double_t phi = p0->Phi();
-    if(phi>pi) phi -=2*pi;
 
     //-------------------- V0 variables ----------------//
     Double_t rapidity = p0->Y();
@@ -2821,6 +2814,10 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
   //    Int_t on =0,off=0;
   Bool_t stopLoop = kFALSE;
   Int_t trackID[sizenV0][2];
+
+  //----------- loop over V0 for daughter track position mapping ------------//
+  //tbd
+
   //---------------------- for MC mode only ------------------//
   AliStack *stackRec = NULL;
   if(fMCMode && !fMCTruthMode) stackRec = fMCev->Stack();
@@ -3473,15 +3470,11 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     //    if( ppTrack.Angle(pmTrack)<0.001) continue;  
     //    if( ppTrack.Angle(pmTrack)<0.004) continue;   
       
-          
-    Double_t phiK0s =  v0K0.Phi();
-    Double_t phiL =  v0Lambda.Phi();
-    Double_t phiAL =  v0ALambda.Phi();
-      
-    Double_t etaK0s =  v0K0.Eta();
-    Double_t etaL =  v0Lambda.Eta();
-    Double_t etaAL =  v0ALambda.Eta();
-            
+    Double_t px = v0K0.Px();
+    Double_t py = v0K0.Py();
+    Double_t phi  = TMath::Pi()+TMath::ATan2(-py, -px);
+    Double_t eta =  v0K0.Eta();
+
     /*     
     //introduce more histo
     Double_t errOnMassK0s = v0MIs->ChangeMassHypothesis(310);
@@ -3675,13 +3668,14 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	    fHistPiPiPtVSY->Fill(rapK0s,ptK0s);
 	    fHistPiPiDecayLengthVsMass->Fill(massK0s,dim2V0Radius);//decayLength);
 	    // fHistPiPiPhiPosVsPtPosVsMass->Fill(massK0s,ctTK0,ptV0MC);//,ctK0);//posDaughterPhi);//xxx
-	    Double_t valTHnK0s[4]= {massK0s,ptV0MC,etaK0s,phiK0s};
-	    fTHnFK0s->Fill(valTHnK0s);	    
+	    Double_t valTHnK0s[4]= {massK0s,ptV0MC,eta,phi};
 	    Double_t valTHnK0sDauEta[4]= {massK0s,ptV0MC,posDaughterEta,negDaughterEta};
 	    Double_t valTHnK0sDauPhi[5]= {massK0s,posDaughterPhi,negDaughterPhi,double(nclsITSPos),double(nclsITSNeg)};
-
-	    fTHnFK0sDauEta->Fill(valTHnK0sDauEta);
-	    fTHnFK0sDauPhi->Fill(valTHnK0sDauPhi);
+	    if(massK0s >=0.35 && massK0s <= 0.65){
+	      fTHnFK0s->Fill(valTHnK0s);	    
+	      fTHnFK0sDauEta->Fill(valTHnK0sDauEta);
+	      fTHnFK0sDauPhi->Fill(valTHnK0sDauPhi);
+	    }
 	    /*
 	      if(fMCMode && !fMCTruthMode){
 	      fHistPiPiPDGCode->Fill(pdgBG);
@@ -3815,13 +3809,14 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	    fHistPiPMassVSY[isSecd]->Fill(massLambda,rapL);
 	    fHistPiPPtVSY[isSecd]->Fill(rapL,ptLambda);
 	    //fHistPiPDecayLengthVsPt[isSecd]->Fill(ptLambda,ctL);
-	    Double_t valTHnL[4]= {massLambda,ptV0MC,etaL,phiL};
+	    Double_t valTHnL[4]= {massLambda,ptV0MC,eta,phi};
 	    Double_t valTHnLDauEta[4]= {massLambda,ptV0MC,posDaughterEta,negDaughterEta};
 	    Double_t valTHnLDauPhi[5]= {massLambda,posDaughterPhi,negDaughterPhi,double(nclsITSPos),double(nclsITSNeg)};
-
-	    fTHnFL->Fill(valTHnL);
-	    fTHnFLDauEta->Fill(valTHnLDauEta);
-	    fTHnFLDauPhi->Fill(valTHnLDauPhi);
+	    if(massLambda >=1.07 && massLambda <= 1.17){
+	      fTHnFL->Fill(valTHnL);
+	      fTHnFLDauEta->Fill(valTHnLDauEta);
+	      fTHnFLDauPhi->Fill(valTHnLDauPhi);
+	    }
 	    /*	      
 		      if(fMCMode && !fMCTruthMode) {
 		      fHistPiPPDGCode->Fill(pdgBG);
@@ -3969,14 +3964,14 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	    //	if(fMCTruthMode) fHistPiAPPhiPosVsPtPosVsMass->Fill(massLambda,ctTL,ptV0MC);
 	    // }	      
 
-	    Double_t valTHnAL[4]= {massALambda,ptV0MC,etaAL,phiAL};
+	    Double_t valTHnAL[4]= {massALambda,ptV0MC,eta,phi};
 	    Double_t valTHnALDauEta[4]={massALambda,ptV0MC,posDaughterEta,negDaughterEta};
 	    Double_t valTHnALDauPhi[5]={massALambda,posDaughterPhi,negDaughterPhi,double(nclsITSPos),double(nclsITSNeg)};
-
-	    fTHnFALDauEta->Fill(valTHnALDauEta);
-	    fTHnFALDauPhi->Fill(valTHnALDauPhi);
-	    fTHnFAL->Fill(valTHnAL);
-
+	    if(massALambda >=1.07 && massALambda <= 1.17){
+	      fTHnFALDauEta->Fill(valTHnALDauEta);
+	      fTHnFALDauPhi->Fill(valTHnALDauPhi);
+	      fTHnFAL->Fill(valTHnAL);
+	    }
 	    if(fMCMode && !fMCTruthMode) fHistPiAPPDGCode->Fill(pdgBG);
 	    if( massALambda>1.108 && massALambda<1.123 )  fHistPiAPDecayLengthVsPt[isSecd]->Fill(ptV0MC,dim2V0Radius);//decayLength);
 	    fHistPiAPDecayLengthVsMass[isSecd]->Fill(massALambda,dim2V0Radius);//decayLength);
