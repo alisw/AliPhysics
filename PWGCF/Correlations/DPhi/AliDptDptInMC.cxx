@@ -1524,7 +1524,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      	      
 	      //==== QA ===========================                                          
 	      _dcaz->Fill(DCAZ);                                                           
-	      _dcaxy->Fill(DCAXY)
+	      _dcaxy->Fill(DCAXY);
 	      _etadis->Fill(eta);                                                          
 	      _phidis->Fill(phi); 
 	      //===================================   
