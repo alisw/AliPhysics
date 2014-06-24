@@ -107,7 +107,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   if(checkLabelForHIJING) SetGeneratorMinMaxParticles(mcEvent);
   fCentBin= -1;
   fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
-  if(fDataSet==20100){//If this is Pb+Pb
+  if(fDataSet==20100 ||fDataSet==2011 ){//If this is Pb+Pb
     AliCentrality *centrality = realEvent->GetCentrality();
     if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
     else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
@@ -176,7 +176,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
       {
 	AliESDtrack *track = dynamic_cast<AliESDtrack*> (list->At(iTrack));
 	UInt_t label = (UInt_t)TMath::Abs(track->GetLabel());
-	if(checkLabelForHIJING && !IsHIJINGLabel(label,mcEvent,stack) ){cout<<"I am rejecting this particle because it is not HIJING"<<endl;}
+	//if(checkLabelForHIJING && !IsHIJINGLabel(label,mcEvent,stack) ){cout<<"I am rejecting this particle because it is not HIJING"<<endl;}
 	if(checkLabelForHIJING && !IsHIJINGLabel(label,mcEvent,stack) ) continue;
 	if (!track)
 	  {
@@ -1724,7 +1724,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     FillHisto1D("SimPiKPEt",fSimPiKPEt,1.0);
     FillHisto1D("SimRawEtTPC",fSimRawEtTPC,1.0);
     FillHisto1D("SimRawEtITS",fSimRawEtITS,1.0);
-    if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND){
+    if((fDataSet!=20100 || fDataSet==2011) && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND){
       FillHisto1D("SimHadEtND",fSimHadEt,1.0);
       FillHisto1D("SimTotEtND",fSimTotEt,1.0);
       FillHisto1D("NEventsND",0.5,1);
@@ -1748,7 +1748,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	FillHisto1D("SimRawEtNDMBITS",fSimRawEtITS,1.0);
       }
     }
-    if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kSD){
+    if((fDataSet!=20100||fDataSet==2011) && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kSD){
       FillHisto1D("SimHadEtSD",fSimHadEt,1.0);
       FillHisto1D("SimTotEtSD",fSimTotEt,1.0);
       FillHisto1D("NEventsSD",0.5,1);
@@ -1772,7 +1772,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	FillHisto1D("SimRawEtSDMBITS",fSimRawEtITS,1.0);
       }
     }
-    if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kDD){
+    if((fDataSet!=20100 || fDataSet==2011) && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kDD){
       FillHisto1D("SimHadEtDD",fSimHadEt,1.0);
       FillHisto1D("SimTotEtDD",fSimTotEt,1.0);
       FillHisto1D("NEventsDD",0.5,1);
@@ -1866,7 +1866,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
       CreateEtaPtHisto2D("EtNSimulatedAntiProtonEnhanced","Number of simulated #bar{p}");
     }
     CreateEtaPtHisto2D("EtNSimulatedChargedHadron","Number of simulated charged hadrons");
-    if(fDataSet==20100){//If this is Pb+Pb
+    if(fDataSet==20100 || fDataSet==2011){//If this is Pb+Pb
       Int_t width = 5;
       if(fNCentBins<21) width = 10;
       for(Int_t i=0;i<fNCentBins;i++){
@@ -2038,7 +2038,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 	CreateEtaPtHisto2D(Form("EtNReconstructed%sAntiProtonEnhanced",cutName->Data()),"Reconstructed E_{T} from #bar{p}");
       }
       CreateEtaPtHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),"Reconstructed E_{T} from charged hadrons");
-      if(fDataSet==20100){//If this is Pb+Pb
+      if(fDataSet==20100||fDataSet==2011){//If this is Pb+Pb
 	Int_t width = 5;
 	if(fNCentBins<21) width = 10;
 	for(Int_t j=0;j<fNCentBins;j++){
@@ -2115,7 +2115,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   Float_t maxEt = 100.0;
   Float_t minEtPiKP = 0.0;
   Float_t maxEtPiKP = 100.0;
-  if(fDataSet==20100){
+  if(fDataSet==20100 || fDataSet==2011){
     maxEt=4000.0;
     maxEtPiKP = 2500;
   }
@@ -2148,7 +2148,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   TString *sPHOS = new TString("PHOS");
   float etDiff = 1.5;
   float etDiffLow = etDiff;
-  if(fDataSet!=20100){//If this is p+p
+  if(fDataSet!=20100 && fDataSet!=2011){//If this is p+p
     etDiffLow = 2.5;
   }
 
@@ -2278,7 +2278,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateHisto1D("SimHadEtDDV0AND","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimTotEtDDMB","Simulated Total E_{T}","Simulated Total E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEtDDMB","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
-  if(fDataSet==20100){
+  if(fDataSet==20100||fDataSet==2011){
     Int_t width = 5;
     if(fNCentBins<21) width = 10;
     for(Int_t j=0;j<fNCentBins;j++){
@@ -2492,7 +2492,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreatePtHisto1D("pTrecITS","p_{T}^{rec}","p_{T}^{rec}","Number of particles");
     CreatePtHisto1D("pTrecTPC","p_{T}^{rec}","p_{T}^{rec}","Number of particles");
     CreatePtHisto1D("pTrecTPCITS","p_{T}^{rec}","p_{T}^{rec}","Number of particles");
-    if(fDataSet==20100){
+    if(fDataSet==20100||fDataSet==2011){
       Int_t width = 5;
       if(fNCentBins<21) width = 10;
       for(Int_t j=0;j<fNCentBins;j++){
