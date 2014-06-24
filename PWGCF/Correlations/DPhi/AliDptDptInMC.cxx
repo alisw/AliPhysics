@@ -1451,6 +1451,23 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	    AliError("ERROR: Could not retrieve MC event");
 	  }
 
+	  TExMap *trackMap = new TExMap();//Mapping matrix----
+          //1st loop track for Global tracks                                                              
+                                                                                                           
+          for(Int_t i = 0; i < fAODEvent->GetNumberOfTracks(); i++)
+            {
+              AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
+              if(!aodTrack) {
+                AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
+                continue;
+              }
+              Int_t gID = aodTrack->GetID();
+              if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks                       
+                                                                                                           
+            }
+
+          AliAODTrack* newAodTrack;
+
 	  for (int iTrack=0; iTrack < fAODEvent->GetNumberOfTracks(); iTrack++)
 	    {
 	      
@@ -1473,8 +1490,11 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      pz     = t->Pz();
 	      eta    = t->Eta();
 	      //Float_t dcaXY = t->DCA();  
-	      Float_t dcaZ  = t->ZAtDCA(); 
+	      //Float_t dcaZ  = t->ZAtDCA(); 
 	      
+	      Int_t gID = t->GetID();
+              newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
+
 	      // Kinematics cuts                                                                                 
 	      if( pt < 0.2 || pt > 2.0)      continue;
 	      if( eta < _min_eta_1 || eta > _max_eta_1)  continue;
@@ -1482,17 +1502,29 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      //W/Wo Secondaries
 	      //if (!AODmcTrack->IsPhysicalPrimary()) continue;
 
+	      
+	      Double_t pos[3];
+              newAodTrack->GetXYZ(pos);
+
+              Double_t DCAX = pos[0] - vertexX;
+              Double_t DCAY = pos[1] - vertexY;
+              Double_t DCAZ = pos[2] - vertexZ;
+
+              Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+
 	      Int_t label = TMath::Abs(t->GetLabel());
 	      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
-
+	      if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;	     
+	      
 	      if(fExcludeResonancesInMC)
 		{
 		  if (AODmcTrack->IsSecondaryFromWeakDecay()) continue;
+		  //if (AODmcTrack->IsSecondaryFromMaterial()) continue;
 		}
-	      if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
-	      
+	      	      
 	      //==== QA ===========================                                          
-	      _dcaz->Fill(dcaZ);                                                           
+	      _dcaz->Fill(DCAZ);                                                           
+	      _dcaxy->Fill(DCAXY)
 	      _etadis->Fill(eta);                                                          
 	      _phidis->Fill(phi); 
 	      //===================================   
