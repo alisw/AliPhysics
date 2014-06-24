@@ -844,6 +844,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
 
   fEvent->GetPrimaryVertex()->GetPosition(fV1);
   //  fEvent->GetPrimaryVertex()->GetXYZ(fV1);
+  tFemtoTrack->SetPrimaryVertex(fV1);
 
   tFemtoTrack->SetCharge(tAodTrack->Charge());
 

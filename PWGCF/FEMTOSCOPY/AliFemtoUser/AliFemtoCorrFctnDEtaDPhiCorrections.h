@@ -13,6 +13,10 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TH3F.h"
+#include "THn.h"
 #include "THnSparse.h"
 #include "TFile.h"
 #include "AliFemtoCorrFctn.h"
@@ -38,6 +42,9 @@ public:
   void SetDoCorrections(bool doCorr);
   void SetDoCorrectionsHist(CorrectionType doCorr);
   double CalculateCorrectionWeight(double pT1, double pT2);
+  double CalculateCorrectionWeight(double pT1, double pT2, double eta1, double eta2, double phi1, double phi2, double zvert1, double zvert2);
+  void LoadCorrectionTabFromROOTFile1D(const char *file, ParticleType partType1, ParticleType partType2);
+  void LoadCorrectionTabFromROOTFile(const char *file, ParticleType partType1, ParticleType partType2, bool doPtCorr, bool doEtaCorr, bool doPhiCorr, bool doZVertCorr);
   void LoadCorrectionTabFromFile(const char *pTtab, const char *corrTab);
   void SetCorrectionTab(ParticleType partType);
   
@@ -83,10 +90,24 @@ private:
   double fphiL;
   double fphiT;
 
+  TFile *ifileCorrTab;
+  bool fdoPtCorr;
+  bool fdoEtaCorr;
+  bool fdoPhiCorr;
+  bool fdoZVertCorr;
+  int fpartType1;
+  int fpartType2;
 
-
-
-
+  THnT<float>* fhntReco1;
+  THnT<float>* fhntReco2;
+  TH1F *fh1Reco1;
+  TH1F *fh1Reco2;
+  TH2F *fh2Reco1;
+  TH2F *fh2Reco2;
+  TH3F *fh3Reco1;
+  TH3F *fh3Reco2;
+  TH1D *fhCont1;
+  TH1D *fhCont2;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnDEtaDPhiCorrections, 1)
