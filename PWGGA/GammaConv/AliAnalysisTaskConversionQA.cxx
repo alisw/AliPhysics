@@ -747,18 +747,17 @@ void AliAnalysisTaskConversionQA::CountTracks(){
       delete EsdTrackCuts;
       EsdTrackCuts=0x0;
    }
-   else if(fInputEvent->IsA()==AliAODEvent::Class()){
+   else if(fInputEvent->IsA()==AliAODEvent::Class()){      
       fNumberOfESDTracks = 0;
       for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
          AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
-         if(!curTrack->IsPrimaryCandidate()) continue;
+         if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+         if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
          if(abs(curTrack->Eta())>0.8) continue;
          if(curTrack->Pt()<0.15) continue;
-         if(abs(curTrack->ZAtDCA())>2) continue;
          fNumberOfESDTracks++;
       }
    }
-   
    return;
 }
 

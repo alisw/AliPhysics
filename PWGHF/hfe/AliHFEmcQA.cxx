@@ -190,8 +190,8 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
   Int_t iBin[2];
   iBin[0] = 44; // bins in pt for log binning
   iBin[1] = 23; // bins in pt for pi0 measurement binning
-  Double_t* binEdges[1];
-  binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
+  //Double_t* binEdges[1];
+  //binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
 
   // bin size is chosen to consider ALICE D measurement
   const Int_t nptbins = 15;
@@ -310,13 +310,13 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark)
   kqEtaRangeLabel[1] = "mcqa_barrel_";
   kqEtaRangeLabel[2] = "mcqa_unitY_";
 
-  const Double_t kPtbound[2] = {0.1, 20.}; //bin taken for considering inclusive e analysis binning
+  //const Double_t kPtbound[2] = {0.1, 20.}; //bin taken for considering inclusive e analysis binning
   const Int_t nptbinning1 = 35;
   Int_t iBin[2];
   iBin[0] = 44; // bins in pt
   iBin[1] = nptbinning1; // bins in pt
-  Double_t* binEdges[1];
-  binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
+  //Double_t* binEdges[1];
+  //binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
 
   // new binning for final electron analysis
   const Double_t kPtbinning1[nptbinning1+1] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
@@ -1849,31 +1849,32 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
       }
-     }
 
-     if ( TMath::Abs(maPdgcode) == 111 ) {
-       if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-       return kGammaPi0;
-     } 
-     else if ( TMath::Abs(maPdgcode) == 221 ) {
-       if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-       return kGammaEta;
-     } 
-     else if ( TMath::Abs(maPdgcode) == 223 ) {
-       if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-       return kGammaOmega;
-     } 
-     else if ( TMath::Abs(maPdgcode) == 333 ) {
-       if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-       return kGammaPhi;
-     }
-     else if ( TMath::Abs(maPdgcode) == 331 ) {
-       if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
-       return kGammaEtaPrime; 
-     }
-     else if ( TMath::Abs(maPdgcode) == 113 ) {
-       if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
-       return kGammaRho0;
+      if ( TMath::Abs(maPdgcode) == 111 ) {
+        if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+        return kGammaPi0;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 221 ) {
+        if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+        return kGammaEta;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 223 ) {
+        if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+        return kGammaOmega;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 333 ) {
+        if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+        return kGammaPhi;
+      }
+      else if ( TMath::Abs(maPdgcode) == 331 ) {
+        if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
+        return kGammaEtaPrime; 
+      }
+      else if ( TMath::Abs(maPdgcode) == 113 ) {
+        if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
+        return kGammaRho0;
+      }
+      else origin = kElse;
      }
      else origin = kElse;
      return origin;
@@ -1898,38 +1899,37 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart, Bool_t isElec) const
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kB2M;
        if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kD2M;
       }
-     }
 
-     if ( TMath::Abs(maPdgcode) == 111 ) {
-       if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-       return kPi0;
-     } 
-     else if ( TMath::Abs(maPdgcode) == 221 ) {
-       if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-       return kEta;
-     } 
-     else if ( TMath::Abs(maPdgcode) == 223 ) {
-       if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-       return kOmega;
-     } 
-     else if ( TMath::Abs(maPdgcode) == 333 ) {
-       if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-       return kPhi;
-     } 
-     else if ( TMath::Abs(maPdgcode) == 331 ) {
-       if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
-       return kEtaPrime;
-     } 
-     else if ( TMath::Abs(maPdgcode) == 113 ) {
-       if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
-       return kRho0;
-     } 
-     else if ( TMath::Abs(maPdgcode) == 321 || TMath::Abs(maPdgcode) == 130 ) {
-       return kKe3;
+      if ( TMath::Abs(maPdgcode) == 111 ) {
+        if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+        return kPi0;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 221 ) {
+        if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+        return kEta;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 223 ) {
+        if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+        return kOmega;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 333 ) {
+        if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+        return kPhi;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 331 ) {
+        if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
+        return kEtaPrime;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 113 ) {
+        if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
+        return kRho0;
+      } 
+      else if ( TMath::Abs(maPdgcode) == 321 || TMath::Abs(maPdgcode) == 130 ) {
+        return kKe3;
+      }
+      else origin = kElse;
      }
-     else{ 
-      origin = kElse;
-     }
+     else origin = kElse;
 
    }
    return origin;
@@ -2104,32 +2104,33 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart, Bool_t is
 	    }
 	   }
 	}
-      }
-    }
 
-    if ( TMath::Abs(maPdgcode) == 111 ) {
-      if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-      return kGammaPi0;
-    } 
-    else if ( TMath::Abs(maPdgcode) == 221 ) {
-      if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-      return kGammaEta;
-    } 
-    else if ( TMath::Abs(maPdgcode) == 223 ) {
-      if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-      return kGammaOmega;
-    } 
-    else if ( TMath::Abs(maPdgcode) == 333 ) {
-      if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-      return kGammaPhi;
-    }
-    else if ( TMath::Abs(maPdgcode) == 331 ) {
-      if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
-      return kGammaEtaPrime; 
-    }
-    else if ( TMath::Abs(maPdgcode) == 113 ) {
-      if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
-      return kGammaRho0;
+        if ( TMath::Abs(maPdgcode) == 111 ) {
+          if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+          return kGammaPi0;
+        } 
+        else if ( TMath::Abs(maPdgcode) == 221 ) {
+          if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+          return kGammaEta;
+        } 
+        else if ( TMath::Abs(maPdgcode) == 223 ) {
+          if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+          return kGammaOmega;
+        } 
+        else if ( TMath::Abs(maPdgcode) == 333 ) {
+          if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+          return kGammaPhi;
+        }
+        else if ( TMath::Abs(maPdgcode) == 331 ) {
+          if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
+          return kGammaEtaPrime; 
+        }
+        else if ( TMath::Abs(maPdgcode) == 113 ) {
+          if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
+          return kGammaRho0;
+        }
+        else origin = kElse;
+      }
     }
     else origin = kElse;
    
@@ -2167,40 +2168,38 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart, Bool_t is
 	     }
 	   }
 	 }
-       }
 
-       
-       if ( TMath::Abs(maPdgcode) == 111 ) {
-         if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-	 return kPi0;
-       } 
-       else if ( TMath::Abs(maPdgcode) == 221 ) {
-         if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-	 return kEta;
-       } 
-       else if ( TMath::Abs(maPdgcode) == 223 ) {
-         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-	 return kOmega;
-       } 
-       else if ( TMath::Abs(maPdgcode) == 333 ) {
-         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-	 return kPhi;
-       } 
-       else if ( TMath::Abs(maPdgcode) == 331 ) {
-         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
-	 return kEtaPrime;
-       } 
-       else if ( TMath::Abs(maPdgcode) == 113 ) {
-         if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
-	 return kRho0;
-       } 
-       else if ( TMath::Abs(maPdgcode) == 321 || TMath::Abs(maPdgcode) == 130 ) {
-	 return kKe3;
-       }
-       else{ 
-	 origin = kElse;
+         if ( TMath::Abs(maPdgcode) == 111 ) {
+           if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+	   return kPi0;
+         } 
+         else if ( TMath::Abs(maPdgcode) == 221 ) {
+           if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+	   return kEta;
+         } 
+         else if ( TMath::Abs(maPdgcode) == 223 ) {
+           if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+	   return kOmega;
+         } 
+         else if ( TMath::Abs(maPdgcode) == 333 ) {
+           if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+	   return kPhi;
+         } 
+         else if ( TMath::Abs(maPdgcode) == 331 ) {
+           if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
+  	   return kEtaPrime;
+         } 
+         else if ( TMath::Abs(maPdgcode) == 113 ) {
+           if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
+	   return kRho0;
+         } 
+         else if ( TMath::Abs(maPdgcode) == 321 || TMath::Abs(maPdgcode) == 130 ) {
+	   return kKe3;
+         }
+         else origin = kElse;
        }
      }
+     else origin = kElse;
    }
   return origin;
 }

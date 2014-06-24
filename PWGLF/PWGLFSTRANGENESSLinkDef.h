@@ -45,4 +45,5 @@
 #pragma link C++ class AliAnalysisTaskReadNuclexAOD+;
 #pragma link C++ class AliAnalysisTaskAntiHe4+;
 #pragma link C++ class AliAnalysisTaskNucleiv2+;
+#pragma link C++ class AliAnalysisTaskNucleiv2SP+;
 #endif

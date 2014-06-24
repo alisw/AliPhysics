@@ -44,16 +44,16 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   AliEmcalJetTask* jetFinderTask1;
   AliEmcalJetTask* jetFinderTask2;
   if(kClusName.IsNull()) {  //particle level jets
-    jetFinderTask1 = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
-    jetFinderTask2 = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+    jetFinderTask1 = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
+    jetFinderTask2 = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
   }
   else if(kTracksName.IsNull()) { //neutral/calo jets
-    jetFinderTask1 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kNEUTRALJETS, ptminTrack, etminClus);
-    jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
+    jetFinderTask1 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kNEUTRALJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
+    jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
   }
   else { //full jets
-    jetFinderTask1 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
-    jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+    jetFinderTask1 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
+    jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
   }
   jetFinderTask1->SelectCollisionCandidates(AliVEvent::kAny);
   jetFinderTask2->SelectCollisionCandidates(AliVEvent::kAny);
@@ -142,16 +142,16 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kBeamType           = "pp",
   AliAnalysisTaskRhoBase *rhoTaskBase;
 
   // Add kt jet finder and rho task in case we want background subtraction
+  Double_t minJetPt = 0.1;
+  if(kBeamType == "pPb") minJetPt = 0.;
   AliEmcalJetTask *jetFinderKt;
   AliEmcalJetTask *jetFinderAKt;
-  jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus);
-  jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+  jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",minJetPt);
+  jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
   jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
   jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
 
   if(kBeamType == "pPb") {
-    jetFinderKt->SetMinJetPt(0.);
-
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
     TF1 *fScale = new TF1("fScale","1.28",0.,100.); //scale factor for pPb
     AliAnalysisTaskRhoSparse *rhoTaskSparse = AddTaskRhoSparse(

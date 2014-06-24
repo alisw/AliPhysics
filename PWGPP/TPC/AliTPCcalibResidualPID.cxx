@@ -657,7 +657,8 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
       if (iPart == 4 && ((mcEvent && fUseMCinfo) || abs(trackESD->Eta()) > 0.2))
         continue;
       
-      Double_t vecHistQA[7] = {precin, processedTPCsignal[iPart], particleID, iPart, tpcQA[iPart], tofQA[iPart], nTotTracks};
+      Double_t vecHistQA[7] = {precin, processedTPCsignal[iPart], (Double_t)particleID, (Double_t)iPart, tpcQA[iPart], tofQA[iPart],
+                               (Double_t)nTotTracks};
       if (fProduceGlobal) fHistPidQA->Fill(vecHistQA);
       vecHistQA[1] = signal[0]; vecHistQA[4] = ncl[0];
       if ((fProduceAllPadTypes || fProduceShortPads)) fHistPidQAshort->Fill(vecHistQA);
@@ -674,7 +675,7 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     
     if (isV0) {
       // Fill QA hists for shared clusters dE/dx
-      Double_t vecHistQA[4] = { precin, -1, trackESD->GetTPCSharedMap().CountBits(), -1 };
+      Double_t vecHistQA[4] = { precin, -1., (Double_t)trackESD->GetTPCSharedMap().CountBits(), -1. };
       THnSparse* currHist = fHistSharedClusQAV0Pi;
       
       if (isV0pi) {

@@ -567,7 +567,7 @@ Int_t AliHFENonPhotonicElectron::CountPoolAssociated(AliVEvent *inputEvent, Int_
 
   if(fnumberfound > 0) //!count only events with an inclusive electron
   {
-    Double_t valueAssElectron[4] = { binct, -1, -1};		//Centrality	Pt	Source
+    Double_t valueAssElectron[4] = { (Double_t)binct, -1, -1};		//Centrality	Pt	Source
     Int_t iTrack2 = 0;
     Int_t indexmother2 = -1;
     AliVTrack *track2 = 0x0;
@@ -637,10 +637,10 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   fkPIDRespons = fPIDBackground->GetPIDResponse();
 
   //Set Fill-Arrays for THnSparse
-  Double_t valueIncElectron[4]	= { binct, track1->Pt(), source, track1->Eta()};	//Centrality	Pt	Source	P	
-  Double_t valueSign[9]		= { deltaphi, binct, track1->Pt(), -1, source, -1, -1, track1->Eta(), -1};			//DeltaPhi	Centrality	Pt	InvariantMass	Source	Angle	Pt
+  Double_t valueIncElectron[4]	= { (Double_t)binct, track1->Pt(), (Double_t)source, track1->Eta()};	//Centrality	Pt	Source	P	
+  Double_t valueSign[9]		= { deltaphi, (Double_t)binct, track1->Pt(), -1, (Double_t)source, -1, -1, track1->Eta(), -1};			//DeltaPhi	Centrality	Pt	InvariantMass	Source	Angle	Pt
   //Double_t valueAngle[3]	= { -1, binct, source};	
-  Double_t valueradius[4]	= { binct, track1->Pt(), 0.,source};	
+  Double_t valueradius[4]	= { (Double_t)binct, track1->Pt(), 0.,(Double_t)source};	
   
 
   Int_t pdg1 = CheckPdg(TMath::Abs(track1->GetLabel()));
@@ -772,8 +772,8 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   }
 
   // Fill counted
-  Double_t valCountsLS[3] = {binct, track1->Pt(), countsMatchLikesign},
-           valCountsUS[3] = {binct, track1->Pt(), countsMatchUnlikesign}; 
+  Double_t valCountsLS[3] = {(Double_t)binct, track1->Pt(), (Double_t)countsMatchLikesign},
+    valCountsUS[3] = {(Double_t)binct, track1->Pt(), (Double_t)countsMatchUnlikesign}; 
   fUSmatches->Fill(valCountsUS);
   fLSmatches->Fill(valCountsLS);
 

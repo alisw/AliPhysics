@@ -126,6 +126,7 @@ public:
     }
     
     AliAnalysisEtCuts * GetCuts() const { return fCuts; }
+    AliAnalysisEtSelector *GetSelector() const {return fSelector;}
     
 
     // Read in corrections
