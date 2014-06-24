@@ -29,7 +29,8 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    TString cutType			  = "EMCAL",
    Bool_t   Comments		  = 0,
    Bool_t   IO				  = 0,
-   Int_t esdcuts			  = 10001006
+   Int_t esdcuts			  = 10001006,
+   const char *tag			  = ""
 )
 {  
   
@@ -54,7 +55,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("Correlations_%s", nJets));
+  TString name(Form("Correlations_%s%s", nJets, tag));
   AliAnalysisTaskEmcalJetHadEPpid *correlationtask = new AliAnalysisTaskEmcalJetHadEPpid(name);
   correlationtask->SetJetsName(nJets);
   correlationtask->SetTracksName(nTracks);
@@ -106,6 +107,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   AliESDtrackCuts *esdTrackCuts = 0x0;
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
   esdTrackCuts = CreateTrackCutsPWGJE(esdcuts);
+  correlationtask->SetTrackCuts(esdTrackCuts);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

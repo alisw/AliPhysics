@@ -21,6 +21,7 @@ class AliAODEvent;
 class AliEMCALGeometry;
 class AliEMCALRecoUtils;
 class AliESDtrack;
+class AliESDtrackCuts;
 
 // container classes
 class AliJetContainer;
@@ -37,6 +38,7 @@ class AliClusterContainer;
 #include <TMath.h>
 #include <TRandom3.h>
 #include <AliLog.h>
+#include "AliESDtrackCuts.h"
 
 // Local Rho includes
 #include "AliAnalysisTaskLocalRho.h"
@@ -77,6 +79,9 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   void					  SetcutType(TString cut)				{ fcutType = cut; }    // EMCAL / TPC acceptance cut
   void                    SetdoPID(Bool_t p)                    { doPID = p; }   // do PID switch
   void 					  SetdoPIDtrackBIAS(Bool_t PIDbias)     { doPIDtrackBIAS = PIDbias; } // do PID track bias switch
+
+  // esd track cuts setters
+  void SetTrackCuts(AliESDtrackCuts *cuts)                      { fesdTrackCuts = cuts; }
 
   // give comments setter
   void					  SetdoComments(Bool_t comm)			{ doComments = comm; } // give comment switch
@@ -142,6 +147,9 @@ protected:
   Double_t				 fJetRad;				   // jet radius
   Double_t				 fConstituentCut;          // jet constituent cut
 
+  // esd track cuts
+  AliESDtrackCuts       *fesdTrackCuts;			   // esdTrackCuts
+
   // event mixing
   Int_t			 fDoEventMixing;
   Int_t			 fMixingTracks;
@@ -187,6 +195,7 @@ protected:
   // event pool
   TObjArray		    *CloneAndReduceTrackList(TObjArray* tracks);
   AliEventPoolManager   *fPoolMgr;//!  // event pool Manager object
+
 
   // PID
   AliPIDResponse	*fPIDResponse;   // PID response object
