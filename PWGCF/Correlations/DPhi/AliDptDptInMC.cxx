@@ -52,7 +52,7 @@
 #include "AliDptDptInMC.h"
 
 #include "AliPID.h"
-#include "AliPIDResponse.h"
+//#include "AliPIDResponse.h"
 
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
@@ -75,7 +75,7 @@
 #include "AliGenEventHeader.h"
 #include "AliPID.h"
 #include "AliAODPid.h"
-#include "AliPIDResponse.h"
+//#include "AliPIDResponse.h"
 #include "AliAODpidUtil.h"
 #include "AliPIDCombined.h"
 
@@ -89,7 +89,7 @@ AliDptDptInMC::AliDptDptInMC()
 fAODEvent(0), 
 fESDEvent(0),             //! ESD Event
 fInputHandler(0),
-fPIDResponse(0x0),
+//fPIDResponse(0x0),
 _outputHistoList(0),
 fArrayMC (0),
 _twoPi         ( 2.0 * 3.1415927),
@@ -384,7 +384,7 @@ AliDptDptInMC::AliDptDptInMC(const TString & name)
 fAODEvent(0), 
 fESDEvent(0),  
 fInputHandler(0),
-fPIDResponse(0),
+  //fPIDResponse(0),
 _outputHistoList(0),
 fArrayMC (0),
 _twoPi         ( 2.0 * 3.1415927),
@@ -1150,11 +1150,11 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
     {
       return;
     }
-  fPIDResponse =inputHandler->GetPIDResponse();
-  if (!fPIDResponse){
-    AliFatal("This Task needs the PID response attached to the inputHandler");
-    return;
-  }
+  //  fPIDResponse =inputHandler->GetPIDResponse();
+  //if (!fPIDResponse){
+  //AliFatal("This Task needs the PID response attached to the inputHandler");
+  //return;
+  //}
   // count all events looked at here                                                                                                        
   _eventCount++;
 
@@ -1272,37 +1272,23 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      // Kinematics cuts from ESD track cuts                                                           
 	      if( pt < 0.2 || pt > 2.0)      continue;
 	      if( eta < -0.8 || eta > 0.8)  continue;
-
-	      _etadis->Fill(eta);
-              _phidis->Fill(phi); 
+	      
 	      // Remove neutral tracks                                                                                         
 	       if(q == 0) continue;  
 
 	      if(fExcludeResonancesInMC)
                 {
-                  //cout<<"***************Prabhat on Weak Decay Particles ************"<<endl;                               
-		  Int_t gMotherIndex = aodTrack->GetMother();
-                  if(gMotherIndex != -1) {
-                    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
-                    if(motherTrack) {
-                      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
-		      
-                      if(pdgCodeOfMother == 311  ||
-                         pdgCodeOfMother == -311 ||
-                         pdgCodeOfMother == 310  ||
-                         pdgCodeOfMother == 3122 ||
-                         pdgCodeOfMother == -3122 ||
-			 pdgCodeOfMother == 111 ||
-			 pdgCodeOfMother == 22 ) continue;
-                    }
-                  }
-                }
+		  if (aodTrack->IsSecondaryFromWeakDecay()) continue;
+		}
 	      //Exclude electrons with PDG                                                                                   
                                                                                                                                
               if(fExcludeElectronsInMC) {
                 if(TMath::Abs(aodTrack->GetPdgCode()) == 11) continue;
               }
 
+	      _etadis->Fill(eta);
+              _phidis->Fill(phi);
+ 
 	      //Particle loop 1st particle
               if (q > 0)
                 {
@@ -1465,22 +1451,24 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	    AliError("ERROR: Could not retrieve MC event");
 	  }
 
-	  TExMap *trackMap = new TExMap();//Mapping matrix---- 
-	  //1st loop track for Global tracks                                                                                                    
-	  for(Int_t i = 0; i < fAODEvent->GetNumberOfTracks(); i++)
-	    {
-	      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
-	      if(!aodTrack) {
-		AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
-		continue;
-	      }
-	      Int_t gID = aodTrack->GetID();
-	      if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks                                                             
-	    }
-	  
-	  AliAODTrack* newAodTrack;
-	  
-	  for (int iTrack=0; iTrack< fAODEvent->GetNumberOfTracks(); iTrack++)
+	  TExMap *trackMap = new TExMap();//Mapping matrix----
+          //1st loop track for Global tracks                                                              
+                                                                                                           
+          for(Int_t i = 0; i < fAODEvent->GetNumberOfTracks(); i++)
+            {
+              AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
+              if(!aodTrack) {
+                AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
+                continue;
+              }
+              Int_t gID = aodTrack->GetID();
+              if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks                       
+                                                                                                           
+            }
+
+          AliAODTrack* newAodTrack;
+
+	  for (int iTrack=0; iTrack < fAODEvent->GetNumberOfTracks(); iTrack++)
 	    {
 	      
 	      AliAODTrack *t = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(iTrack));
@@ -1504,78 +1492,43 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      //Float_t dcaXY = t->DCA();  
 	      //Float_t dcaZ  = t->ZAtDCA(); 
 	      
-	      // get the electron nsigma                                                                                                
-	      Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kElectron));
-	      Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kPion));
-              Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kKaon));
-              Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kProton));
-	      
-	      //Make the decision based on the n-sigma of electrons exclusively 
-              if(nSigma < fNSigmaCut
-                 && nSigmaPions   > fNSigmaCut
-                 && nSigmaKaons   > fNSigmaCut
-                 && nSigmaProtons > fNSigmaCut ) continue;
-	      
 	      Int_t gID = t->GetID();
-	      newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
-	      
+              newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
+
 	      // Kinematics cuts                                                                                 
 	      if( pt < 0.2 || pt > 2.0)      continue;
 	      if( eta < _min_eta_1 || eta > _max_eta_1)  continue;
 	      
+	      //W/Wo Secondaries
+	      //if (!AODmcTrack->IsPhysicalPrimary()) continue;
+
+	      
 	      Double_t pos[3];
-	      newAodTrack->GetXYZ(pos);
+              newAodTrack->GetXYZ(pos);
+
+              Double_t DCAX = pos[0] - vertexX;
+              Double_t DCAY = pos[1] - vertexY;
+              Double_t DCAZ = pos[2] - vertexZ;
+
+              Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+
+	      Int_t label = TMath::Abs(t->GetLabel());
+	      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+	      if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;	     
 	      
-	      Double_t DCAX = pos[0] - vertexX;
-	      Double_t DCAY = pos[1] - vertexY;
-	      Double_t DCAZ = pos[2] - vertexZ;
-	      
-	      Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
-	      
-	      if (DCAZ     <  _dcaZMin ||
-		  DCAZ     >  _dcaZMax ||
-		  DCAXY    >  _dcaXYMax ) continue;
+	      if(fExcludeResonancesInMC)
+		{
+		  if (AODmcTrack->IsSecondaryFromWeakDecay()) continue;
+		  //if (AODmcTrack->IsSecondaryFromMaterial()) continue;
+		}
 	      	      
 	      //==== QA ===========================                                          
 	      _dcaz->Fill(DCAZ);                                                           
-	      _dcaxy->Fill(DCAXY);                                                         
+	      _dcaxy->Fill(DCAXY);
 	      _etadis->Fill(eta);                                                          
 	      _phidis->Fill(phi); 
 	      //===================================   
-	      
-	      //W/Wo Secondaries
-	      //if (!AODmcTrack->IsPhysicalPrimary()) continue;
-	      
-	      //cout<<"***************Prabhat on Weak Decay Particles ************"<<endl;
-	      if(fExcludeResonancesInMC)
-		{
-		  Int_t label = TMath::Abs(t->GetLabel());
-		  AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
-		  
-		  Int_t gMotherIndex = AODmcTrack->GetMother();
-		  if(gMotherIndex != -1) {
-		    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
-		    if(motherTrack) {
-		      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
-		      
-		      if(pdgCodeOfMother == 311  ||
-			 pdgCodeOfMother == -311 ||
-			 pdgCodeOfMother == 310  ||
-			 pdgCodeOfMother == 3122 ||
-			 pdgCodeOfMother == -3122 ||
-			 pdgCodeOfMother == 111 ||
-			 pdgCodeOfMother == 22 ) continue;
-		    }
-		  }
-		}
-	      
-	      Int_t label = TMath::Abs(t->GetLabel());
-	      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
-	      if (AODmcTrack)
-		{
-		  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
-		}
-	      
+
 	      //Particle 1                                                                                                                  
 	      if (t->Charge() > 0)
 		{

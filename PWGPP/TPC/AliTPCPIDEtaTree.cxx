@@ -434,7 +434,7 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
       Double_t nSigmaTOF = hasTOF ? fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton) : 999;
       
       // p_vert, p_TPC, eta, nSigmaTOF, beta, multiplicity
-      Double_t entry[6] = { track->P(), fPtpc, track->Eta(), nSigmaTOF, beta, fMultiplicity };
+      Double_t entry[6] = { track->P(), fPtpc, track->Eta(), nSigmaTOF, beta, (Double_t)fMultiplicity };
       fhTOFqa->Fill(entry);
     }
     

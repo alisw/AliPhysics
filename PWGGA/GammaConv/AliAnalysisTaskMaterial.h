@@ -36,9 +36,9 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
 			fConversionCuts=conversionCuts;
 			fIsHeavyIon = IsHeavyIon;
 		}
-
+		
 	private:
-
+		
 		void ProcessPhotons();
 		void ProcessMCPhotons();
 		void FillMCTree(Int_t stackPos);

@@ -325,41 +325,65 @@ Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet) const
 
    // Return true if jet is accepted.
 
-   if (!jet)
-      return kFALSE;
+  if (!jet) {
+    AliDebug(11,"No jet found");
+    return kFALSE;
+  }
 
-   if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap)
-      return kFALSE;
+  if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap) {
+    AliDebug(11,"Cut rejecting jet: Bit map");
+    return kFALSE;
+  }
 
-   if (jet->Pt() <= fJetPtCut) 
-      return kFALSE;
+  if (jet->Pt() <= fJetPtCut) {
+    AliDebug(11,"Cut rejecting jet: JetPtCut");
+    return kFALSE;
+  }
 
-   if (jet->Area() <= fJetAreaCut) 
-      return kFALSE;
+  if (jet->Area() <= fJetAreaCut)  {
+    AliDebug(11,"Cut rejecting jet: Area");
+    return kFALSE;
+  }
 
-   if (jet->AreaEmc() < fAreaEmcCut)
-      return kFALSE;
+  if (jet->AreaEmc() < fAreaEmcCut) {
+    AliDebug(11,"Cut rejecting jet: AreaEmc");
+    return kFALSE;
+  }
    
-   if (fZLeadingChCut < 1 && GetZLeadingCharged(jet) > fZLeadingChCut)
-      return kFALSE;
+  if (fZLeadingChCut < 1 && GetZLeadingCharged(jet) > fZLeadingChCut) {
+    AliDebug(11,"Cut rejecting jet: ZLeading");
+    return kFALSE;
+  }
    
-   if (fZLeadingEmcCut < 1 && GetZLeadingEmc(jet) > fZLeadingEmcCut)
-      return kFALSE;
+  if (fZLeadingEmcCut < 1 && GetZLeadingEmc(jet) > fZLeadingEmcCut) {
+    AliDebug(11,"Cut rejecting jet: ZLeadEmc");
+    return kFALSE;
+  }
 
-   if (jet->NEF() < fNEFMinCut || jet->NEF() > fNEFMaxCut)
-      return kFALSE;
+  if (jet->NEF() < fNEFMinCut || jet->NEF() > fNEFMaxCut) {
+    AliDebug(11,"Cut rejecting jet: NEF");
+    return kFALSE;
+  }
    
-   if (!AcceptBiasJet(jet))
-      return kFALSE;
-   
-   if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt)
-      return kFALSE;
-   
-   if (fFlavourSelection != 0 && !jet->TestFlavourTag(fFlavourSelection))
-      return kFALSE;
+  if (!AcceptBiasJet(jet)) {
+    AliDebug(11,"Cut rejecting jet: Bias");
+    return kFALSE;
+  }
 
-   if(fTagStatus>-1 && jet->GetTagStatus()!=fTagStatus)
-     return kFALSE;
+  if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt) {
+    AliDebug(11,"Cut rejecting jet: MaxTrClPt");
+    return kFALSE;
+  }
+   
+  if (fFlavourSelection != 0 && !jet->TestFlavourTag(fFlavourSelection)) {
+    AliDebug(11,"Cut rejecting jet: Flavour");
+    return kFALSE;
+  }
+   
+  if(fTagStatus>-1 && jet->GetTagStatus()!=fTagStatus) {
+    AliDebug(11,"Cut rejecting jet: tag status");
+    return kFALSE;
+  }
    
    Double_t jetPhi = jet->Phi();
    Double_t jetEta = jet->Eta();
@@ -503,6 +527,28 @@ void AliJetContainer::SetJetEtaPhiTPC()
 
   SetJetEtaLimits(-0.9+fJetRadius, 0.9-fJetRadius);
   SetJetPhiLimits(-10, 10);
+}
+
+//________________________________________________________________________
+void AliJetContainer::PrintCuts() 
+{
+  // Reset cuts to default values
+
+  Printf("PtBiasJetTrack: %f",fPtBiasJetTrack);
+  Printf("PtBiasJetClus: %f",fPtBiasJetClus);
+  Printf("JetPtCut: %f", fJetPtCut);
+  Printf("JetAreaCut: %f",fJetAreaCut);
+  Printf("AreaEmcCut: %f",fAreaEmcCut);
+  Printf("JetMinEta: %f", fJetMinEta);
+  Printf("JetMaxEta: %f", fJetMaxEta);
+  Printf("JetMinPhi: %f", fJetMinPhi);
+  Printf("JetMaxPhi: %f", fJetMaxPhi);
+  Printf("MaxClusterPt: %f",fMaxClusterPt);
+  Printf("MaxTrackPt: %f",fMaxTrackPt);
+  Printf("LeadingHadronType: %d",fLeadingHadronType);
+  Printf("ZLeadingEmcCut: %f",fZLeadingEmcCut);
+  Printf("ZLeadingChCut: %f",fZLeadingChCut);
+
 }
 
 //________________________________________________________________________

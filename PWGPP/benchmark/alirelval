@@ -38,7 +38,7 @@ maxSshConnectAttempts=400
 maxVmAddressWait=120
 
 # working directory prefix
-sessionPrefix='/tmp/alirelval'
+sessionPrefix="$HOME/.alice-release-validation"
 
 # screen name for the validation
 screenName='AliceReleaseValidation'
@@ -193,6 +193,7 @@ function RunVM() {
 function PrepareSession() {
   local aliRootTag sessionTag sessionDir
   aliRootTag="$1"
+  shift
   sessionTag="${aliRootTag}_$(ndate)"
   sessionDir="$sessionPrefix/$sessionTag"
 
@@ -228,6 +229,24 @@ function PrepareSession() {
       echo ''
     ) >> "$sessionDir/benchmark.config"
   done
+
+  # command-line options override the configuration
+  if [ $# != 0 ] ; then
+    pr "Note: the following command-line options will override the corresponding ones in the config files:"
+    ( echo ''
+      echo "### from the command line ###"
+      while [ $# -gt 0 ] ; do
+        extraName="${1%%=*}"
+        extraVal="${1#*=}"
+        if [ "$extraName" != "$1" ] ; then
+          pr " * $extraName = $extraVal"
+          echo "$1"
+        fi
+        shift
+      done
+      echo ''
+    ) >> "$sessionDir/benchmark.config"
+  fi
 
   # success: return the session tag and move to the session directory
   pr "*** Creating new working session: $sessionTag ***"
@@ -535,7 +554,7 @@ function Help() {
   pr "$Prog -- by Dario Berzano <dario.berzano@cern.ch>"
   pr 'Controls the Release Validation workflow on the cloud for AliRoot.'
   pr
-  pr "Usage 1: $Prog [--prepare|--launch] --aliroot <aliroot_tag>"
+  pr "Usage 1: $Prog [--prepare|--launch] --aliroot <aliroot_tag> [-- arbitraryOpt1=value [arbitraryOpt2=value2...]]"
   pr
   pr 'A new session is created to validate the specified AliRoot tag.'
   pr
@@ -544,6 +563,10 @@ function Help() {
   pr '  --launch   : launches the full validation process: prepares session,'
   pr '              runs the virtual machine, launches the validation program'
   pr '  --aliroot  : the AliRoot tag to validate, in the form "vAN-20140610"'
+  pr
+  pr 'Arbitrary options (in the form variable=value) can be specified after the'
+  pr 'double dash and will override the corresponding options in any of the'
+  pr 'configuration files.'
   pr ; pr
   pr "Usage 2: $Prog [--runvm|--validate|--shell|--status] --session <session_tag>"
   pr
@@ -634,13 +657,18 @@ function Main() {
         exit 0
       ;;
 
+      # end of options
+      --)
+        shift
+        break
+      ;;
+
       *)
         pr "Invalid option: $1. Use --help for assistance."
         return $errInvalidOpt
       ;;
     esac
   done
-  shift # --
 
   # check for the presence of the required tools in the $PATH
   for T in euca-describe-instances euca-describe-regions euca-run-instances euca-create-keypair euca-delete-keypair rsync ; do
@@ -683,7 +711,7 @@ function Main() {
         pr 'Cannot use --session with --prepare. Use --help for assistance.'
         return $errInvalidOpt
       fi
-      sessionTag=$( RunAction "$A" "$aliRootTag" )
+      sessionTag=$( RunAction "$A" "$aliRootTag" "$@" )
       ret=$?
     else
       if [ "$sessionTag" == '' ] ; then

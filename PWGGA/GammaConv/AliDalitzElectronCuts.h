@@ -59,6 +59,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
         kDCACut,
         kmassCut,
         kWeights,
+	kuseVPhotonMCPSmearing,
 	kNCuts
   };
 
@@ -144,6 +145,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetNumberOfRotations(Int_t NumberOfRotations);
   Bool_t SetMassCut(Int_t massCut);
   Bool_t SetDoWeights(Int_t opc);
+  Bool_t SetUseVPhotonMCPmearing(Int_t useMCPSmearing);
   
   // Request Flags
 
@@ -162,6 +164,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t GetPtMinMassCut(){return fMassCutPtMin;}
   Double_t GetMassMinCut(){return fMassMinCut;}
   Bool_t   DoWeights(){return fDoWeights;}
+  Bool_t   GetUseVPhotonMCPmearing(){return fUseVPhotonMCPSmearing; }
   
 
   
@@ -221,6 +224,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fMassCutPtMin;
   Double_t fMassMinCut;
   Bool_t   fDoWeights;
+  Bool_t   fUseVPhotonMCPSmearing;
 
 
   // Histograms

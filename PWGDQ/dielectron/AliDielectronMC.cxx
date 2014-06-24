@@ -1227,7 +1227,7 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   if(signalMC->GetGrandMotherPDG(2)!=0 || signalMC->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
     if(!mcG1 && mcM1) {
       labelG1 = GetMothersLabel(labelM1);
-      if(labelG2>-1) mcG1 = GetMCTrackFromMCEvent(labelG1);
+      if(labelG1>-1) mcG1 = GetMCTrackFromMCEvent(labelG1);
     }
     crossTerm = crossTerm && (mcG1 || signalMC->GetGrandMotherPDGexclude(2))
                 && ComparePDG((mcG1 ? mcG1->PdgCode() : 0),signalMC->GetGrandMotherPDG(2),signalMC->GetGrandMotherPDGexclude(2),signalMC->GetCheckBothChargesGrandMothers(2))

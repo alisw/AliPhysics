@@ -70,6 +70,8 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeConst.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetV2.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMass.cxx

@@ -114,11 +114,13 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Int_t  GetListOfMCParticles(TList *outputlist, Int_t particletype, AliAODEvent* mcaodevent);
   void   GetTracksInCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPt, Double_t minPt, Double_t maxPt, Bool_t& isBadPt);
   void   GetTracksInPerpCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPerpPt);
-  Bool_t MCLabelCheck(AliAODv0* v0, Int_t particletype, const AliAODTrack* trackNeg, const AliAODTrack* trackPos, TList *listmc, Int_t& negDaughterpdg, Int_t& posDaughterpdg, Int_t& motherType, Int_t& v0Label, Double_t& MCPt, Bool_t& fPhysicalPrimary, Int_t& MCv0PDGCode);
+  Bool_t MCLabelCheck(AliAODv0* v0, Int_t particletype, const AliAODTrack* trackNeg, const AliAODTrack* trackPos, TList *listmc, Int_t& negDaughterpdg, Int_t& posDaughterpdg, Int_t& motherType, Int_t& v0Label, Double_t& MCPt, Bool_t& fPhysicalPrimary, Int_t& MCv0PDGCode, TString& generatorName, Bool_t& isinjected);
   Bool_t IsParticleMatching(const AliAODMCParticle* mcp0, Int_t v0Label);
   Bool_t DaughterTrackCheck(AliAODv0* v0, Int_t& nnum, Int_t& pnum);
-  Int_t  IsTrackInjected(AliAODv0 *v0, AliAODMCHeader *header, TClonesArray *arrayMC);
+  //Int_t  SplitCocktail(AliAODMCParticle *mcv0,  Int_t v0Label, AliAODMCHeader *header, TClonesArray *arrayMC);
   TString GetGenerator(Int_t label, AliAODMCHeader* header);
+  void GetTrackPrimaryGenerator(Int_t lab, AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
+  Bool_t IsTrackInjected(Int_t lab, AliAODMCHeader *header,TClonesArray *arrayMC, TString &nameGen);
   Double_t SmearJetPt(Double_t jetPt, Int_t cl, Double_t jetRadius, Double_t ptmintrack, Double_t& jetPtSmear);
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const;
   Bool_t IsRCJCOverlap(TList* recjetlist, const AliVParticle* part, Double_t dDistance) const;
@@ -380,9 +382,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   THnSparse* fhnInvMassEtaTrackPtALa;
   TH1F* fh1TrackMultCone;
   TH2F* fh2TrackMultCone;
-  TH2F* fh2NJK0;
-  TH2F* fh2NJLa;
-  TH2F* fh2NJALa;
+  THnSparse* fhnNJK0;
+  THnSparse* fhnNJLa;
+  THnSparse* fhnNJALa;
   TH2F* fh2MCgenK0Cone;
   TH2F* fh2MCgenLaCone;
   TH2F* fh2MCgenALaCone;
@@ -392,6 +394,14 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1IMK0ConeSmear; //histos for normalisation by number of smeared jets
   TH1F* fh1IMLaConeSmear;
   TH1F* fh1IMALaConeSmear;
+  THnSparse* fhnrecMCHijingLaIncl;
+  THnSparse* fhnrecMCHijingLaCone;
+  THnSparse* fhnrecMCHijingALaIncl;
+  THnSparse* fhnrecMCHijingALaCone;
+  THnSparse* fhnrecMCInjectLaIncl;
+  THnSparse* fhnrecMCInjectLaCone;
+  THnSparse* fhnrecMCInjectALaIncl;
+  THnSparse* fhnrecMCInjectALaCone;
   THnSparse* fhnMCrecK0Cone;
   THnSparse* fhnMCrecLaCone;
   THnSparse* fhnMCrecALaCone;
@@ -440,9 +450,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH2F* fh2MCEtaVsPtK0s;
   TH2F* fh2MCEtaVsPtLa;
   TH2F* fh2MCEtaVsPtALa;
-  TH1F* fh1MCRapK0s; 
-  TH1F* fh1MCRapLambda;
-  TH1F* fh1MCRapAntiLambda;
+  // TH1F* fh1MCRapK0s; 
+  //TH1F* fh1MCRapLambda;
+  //TH1F* fh1MCRapAntiLambda;
   TH1F* fh1MCEtaAllK0s; 
   TH1F* fh1MCEtaK0s; 
   TH1F* fh1MCEtaLambda;

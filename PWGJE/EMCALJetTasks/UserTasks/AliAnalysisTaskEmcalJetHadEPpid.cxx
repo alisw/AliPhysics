@@ -47,6 +47,7 @@
 #include "AliESDInputHandler.h"
 #include "AliPicoTrack.h"
 #include "AliEventPoolManager.h"
+#include "AliESDtrackCuts.h"
 
 // PID includes
 #include "AliPIDResponse.h"
@@ -74,6 +75,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fEtamin(-0.9), fEtamax(0.9),
   fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
+  fesdTrackCuts(0),
   fDoEventMixing(0), fMixingTracks(50000),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
@@ -175,6 +177,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fEtamin(-0.9), fEtamax(0.9),
   fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
+  fesdTrackCuts(0),
   fDoEventMixing(0), fMixingTracks(50000),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
@@ -547,6 +550,19 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
       fOutput->Add(fHistJetPtNconBiasEm[i]);
     } // extra Correlations histos switch
   }
+
+  // variable binned pt for THnSparse's
+  //Double_t xlowjetPT[] = {-50,-45,-40,-35,-30,-25,-20,-18,-16,-14,-12,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30,35,40,45,50,60,70,80,90,100,120,140,160,180,200,250,300,350,400};
+  //Double_t xlowtrPT[] = {0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.25,2.50,2.75,3.0,3.25,3.5,3.75,4.0,4.25,4.50,4.75,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,22.0,24.0,26.0,28.0,30.0,35.0,40.0,45.0,50.0,60.0,70.0,80.0,90.0,100.0};
+  Double_t xlowjetPT[] = {0, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 45, 50, 55, 60, 65, 70, 75, 80, 100, 150, 200, 300};
+  Double_t xlowtrPT[] = {0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,6.5,7.0,7.5,8.0,9.0,10.0,12.0,14.0,16.0,18.0,20.0,25.0,30.0,40.0,50.0,75.0};
+
+  // tracks: 54, jets: 27
+  // number of bins you tell histogram should be (# in array - 1) because the last bin
+  // is the right-most edge of the histogram 
+  // i.e. this is for PT and there are 57 numbers (bins) thus we have 56 bins in our histo
+  Int_t nbinsjetPT = sizeof(xlowjetPT)/sizeof(Double_t) - 1;
+  Int_t nbinstrPT = sizeof(xlowtrPT)/sizeof(Double_t) - 1;
   
   // set up jet-hadron sparse
   UInt_t bitcoded = 0; // bit coded, see GetDimParams() below
@@ -554,11 +570,20 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   UInt_t bitcode = 0;  // bit coded, see GetDimParamsPID() below
   UInt_t bitcodeCorr = 0; // bit coded, see GetDimparamsCorr() below
   bitcoded = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8; // | 1<<9;
-  if(fDoEventMixing) fhnJH = NewTHnSparseD("fhnJH", bitcoded);
-  if(fDoEventMixing) fOutput->Add(fhnJH);
+  if(fDoEventMixing) {
+    fhnJH = NewTHnSparseD("fhnJH", bitcoded);
+  
+    if(dovarbinTHnSparse){
+      fhnJH->GetAxis(1)->Set(nbinsjetPT, xlowjetPT);
+      fhnJH->GetAxis(2)->Set(nbinstrPT, xlowtrPT);
+    }
+	
+    fOutput->Add(fhnJH);
+  }
 
   bitcodeCorr = 1<<0 | 1<<1 | 1<<2 | 1<<3; // | 1<<4 | 1<<5;
   fhnCorr = NewTHnSparseDCorr("fhnCorr", bitcodeCorr);
+  if(dovarbinTHnSparse) fhnCorr->GetAxis(1)->Set(nbinsjetPT, xlowjetPT);
   fOutput->Add(fhnCorr);
   
 /*
@@ -594,18 +619,14 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   if(fDoEventMixing){
     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8; // | 1<<9;
     fhnMixedEvents = NewTHnSparseD("fhnMixedEvents", cifras);  
+
+    if(dovarbinTHnSparse){
+     fhnMixedEvents->GetAxis(1)->Set(nbinsjetPT, xlowjetPT);
+     fhnMixedEvents->GetAxis(2)->Set(nbinstrPT, xlowtrPT);
+    }
+
     fOutput->Add(fhnMixedEvents);
   } // end of do-eventmixing
-
-  // variable binned pt
-  //Double_t xlowjetPT[] = {-50,-45,-40,-35,-30,-25,-20,-18,-16,-14,-12,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30,35,40,45,50,60,70,80,90,100,120,140,160,180,200,250,300,350,400};
-  Double_t xlowtrPT[] = {0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.25,2.50,2.75,3.0,3.25,3.5,3.75,4.0,4.25,4.50,4.75,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,22.0,24.0,26.0,28.0,30.0,35.0,40.0,45.0,50.0,60.0,70.0,80.0,90.0,100.0};
-
-  // number of bins you tell histogram should be (# in array - 1) because the last bin
-  // is the right-most edge of the histogram 
-  // i.e. this is for PT and there are 57 numbers (bins) thus we have 56 bins in our histo
-  //Int_t nbinsjetPT = sizeof(xlowjetPT)/sizeof(Double_t) - 1;
-  Int_t nbinstrPT = sizeof(xlowtrPT)/sizeof(Double_t) - 1;
 
   // set up PID sparse
   if(doPID){
@@ -643,8 +664,8 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
 	}
 
     if(dovarbinTHnSparse){
-     //fhnPID->GetAxis(1)->Set(nbinsjetPT, xlowjetPT);
      fhnPID->GetAxis(1)->Set(nbinstrPT, xlowtrPT);
+     fhnPID->GetAxis(8)->Set(nbinsjetPT, xlowjetPT);
     }
 
     fOutput->Add(fhnPID);
@@ -803,7 +824,25 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
   // loop over tracks - to get hardest track (highest pt)
   for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++){
-    AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
+	AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
+
+/* track quality cuts
+    if(!useAOD) {
+      AliESDtrack* esdtrack = fESD->GetTrack(iTracks);
+      if (!esdtrack) {
+        AliError(Form("Couldn't get ESD track %d\n", iTracks));
+        continue;
+      }
+
+      if(!fesdTrackCuts->AcceptTrack(esdtrack)) continue;
+      track = static_cast<AliVTrack*>(esdtrack);
+    }
+
+    if(useAOD) {
+	  track = static_cast<AliVTrack*>(tracks->At(iTracks));
+    }
+*/ // track quality cuts
+    
     if (!track) {
       AliError(Form("Couldn't get VTrack track %d\n", iTracks));        
       continue;
@@ -871,7 +910,6 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   fHistNjetvsCent->Fill(fCent,NjetAcc);
   Int_t NJETAcc = 0;
   fHistEventQA->Fill(9); // events after track/jet loop to get highest pt
-
 
   // loop over jets in event and make appropriate cuts
   for (Int_t ijet = 0; ijet < Njets; ++ijet) {
@@ -965,6 +1003,32 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
       // loop over all track for an event containing a jet with a pT>fJetPtCut  (15)GeV
       for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
+/* track quality cuts
+
+        AliVTrack* track; 
+
+        if(!useAOD) {
+          AliESDtrack* esdtrack = fESD->GetTrack(iTracks);
+          if (!esdtrack) {
+            AliError(Form("Couldn't get ESD track %d\n", iTracks));
+            continue;
+          }
+
+          if(!fesdTrackCuts->AcceptTrack(esdtrack)) continue;
+          track = static_cast<AliVTrack*>(esdtrack);
+        }
+
+        if(useAOD) {
+	      track = static_cast<AliVTrack*>(tracks->At(iTracks));
+        }
+    
+        if (!track) {
+          AliError(Form("Couldn't get VTrack track %d\n", iTracks));        
+          continue;
+        } // verify existence of tracks
+
+*/ // track quality cuts 
+
         AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
         if (!track) {
           AliError(Form("Couldn't get AliVtrack %d\n", iTracks));
@@ -1633,28 +1697,45 @@ TObjArray* AliAnalysisTaskEmcalJetHadEPpid::CloneAndReduceTrackList(TObjArray* t
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
 
-  /*
-  Int_t nTrax = fESD->GetNumberOfTracks();
+  //AliVParticle* particle = 
+  //Int_t nTrax = fESD->GetNumberOfTracks();
   //cout << "nTrax " << nTrax <<endl;
-  
-  for (Int_t i = 0; i < nTrax; ++i) 
-    {
-      AliESDtrack* esdtrack = fESD->GetTrack(i);
-      if (!esdtrack) 
-        {
-          AliError(Form("Couldn't get ESD track %d\n", i));
-          continue;
-        }
 
-      AliESDtrack *particle = GetAcceptTrack(esdtrack);
+  // Need to test, not sure if this is working
+  // check whether aod or esd first
+  // what kind of event do we have: AOD or ESD?
+/*
+  Bool_t useAOD; 
+  if (dynamic_cast<AliAODEvent*>(InputEvent())) useAOD = kTRUE;
+  else useAOD = kFALSE;  
+
+  for (Int_t i = 0; i < nTrax; ++i) {
+    if(!useAOD) { // esd info already here
+      AliESDtrack* esdtrack = fESD->GetTrack(i);
+      if (!esdtrack) {
+        AliError(Form("Couldn't get ESD track %d\n", i));
+        continue;
+      }
+
+      if(!fesdTrackCuts->AcceptTrack(esdtrack)) continue;
+      const AliESDtrack *particle = static_cast<const AliESDtrack *>(esdtrack);
+      //AliESDtrack *particle = GetAcceptTrack(esdtrack);
       if(!particle) continue;
-  
-      cout << "RM Hybrid track : " << i << "  " << particle->Pt() << endl;
-  */
+    }
+
+    if(useAOD) {
+      AliVParticle* particle = (AliVParticle*) tracks->At(i); 
+      if(!particle) continue;
+    }
+*/    
+
+// ===============================
+
+//      cout << "RM Hybrid track : " << i << "  " << particle->Pt() << endl;  
 
   //cout << "nEntries " << tracks->GetEntriesFast() <<endl;
-  for (Int_t i=0; i<tracks->GetEntriesFast(); i++) {
-    AliVParticle* particle = (AliVParticle*) tracks->At(i);
+  for (Int_t i=0; i<tracks->GetEntriesFast(); i++) {         // AOD/general case
+    AliVParticle* particle = (AliVParticle*) tracks->At(i);  // AOD/general case
     if(TMath::Abs(particle->Eta())>fTrkEta) continue;
     if(particle->Pt()<0.15)continue;
 
@@ -1741,7 +1822,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
 
    case 1:
       label = "Track p_{T}";
-      nbins = 750; 
+      nbins = 300; // 750 
       xmin = 0.;
       xmax = 75.; 
       break;
@@ -1895,10 +1976,6 @@ Int_t AliAnalysisTaskEmcalJetHadEPpid::AcceptMyJet(AliEmcalJet *jet) {
   if ((jet->Eta()<fEtamin)||(jet->Eta()>fEtamax)) return 0;
   if (jet->Area()<fAreacut) return 0;
   // prevents 0 area jets from sneaking by when area cut == 0
-  if (jet->Area()==0) return 0;
-  //exclude jets with extremely high pt tracks which are likely misreconstructed
-  if(jet->MaxTrackPt()>100) return 0;
-  //prevents 0 area jets from sneaking by when area cut == 0
   if (jet->Area()==0) return 0;
   //exclude jets with extremely high pt tracks which are likely misreconstructed
   if(jet->MaxTrackPt()>100) return 0;
