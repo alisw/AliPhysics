@@ -2015,7 +2015,6 @@ THnF* AliAnalysisTaskChargedJetsPA::AddCutHistogram(const char* name, const char
 
   THnF * histo = new THnF(name, title, 5, bins, minEdges, maxEdges);
   BinLogAxis(histo, 1);
-  fCurrentOutputList->Add(histo);
 
   for (Int_t iaxis=0; iaxis<5;iaxis++){
     histo->GetAxis(iaxis)->SetName(axisName[iaxis]);

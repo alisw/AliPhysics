@@ -72,23 +72,10 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
     AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
     AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,0.150,0.300); // kt
 
-    if(jetRadius < 0.1)
-    {
-      jetFinderTask->SetMinJetArea(0.0);
-      jetFinderTaskKT->SetMinJetArea(0.0);
-      jetFinderTask->SetMinJetPt(0.15);
-      jetFinderTaskKT->SetMinJetPt(0.15);
-      jetFinderTask->SetGhostArea(0.001);
-      jetFinderTaskKT->SetGhostArea(0.001);
-    }
-
-    jetFinderTaskKT->SetMinJetPt(0.0); // Necessary to see ghost jets
-
     // #### Define external rho task
     TString myRhoName("ExternalRhoTask");
     AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,0.150,0.300); // anti-kt
     AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,0.150,0.300); // kt
-    jetFinderRhoKT->SetMinJetPt(0);
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
     AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), NULL, usedTracks, "", myRhoName.Data(), 0.4,"TPC", 0., 5., 0, 0,2,kFALSE,myRhoName.Data(),kTRUE);
   }
