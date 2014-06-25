@@ -1227,7 +1227,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
       continue;
     }
     fEmcClusEClusCuts->Fill(c->E(),cuts[2],1);
-    if(TMath::Abs(maxt)>3e-9)
+    if(TMath::Abs(maxt)>30e-9)
       continue;
     fEmcClusEClusCuts->Fill(c->E(),cuts[3],1);
     if(c->GetM02()>0.1)
