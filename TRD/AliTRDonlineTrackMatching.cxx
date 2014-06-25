@@ -481,6 +481,10 @@ Bool_t AliTRDonlineTrackMatching::ProcessEvent(AliESDEvent *esdEvent, Bool_t upd
 	(trdTrack->GetLabel() != label))
       continue;
 
+    if ((trdTrack->GetSector() < 0) || (trdTrack->GetSector() > 17) ||
+	(trdTrack->GetStack() < 0) || (trdTrack->GetStack() > 4))
+      continue;
+
     stack = TrdSecSiLsi(trdTrack->GetSector(), trdTrack->GetStack());
     trdPt = (esdEvent->GetMagneticField() > 0.) ? (-1.*trdTrack->Pt()) : trdTrack->Pt();
     matchTrack = NULL;
