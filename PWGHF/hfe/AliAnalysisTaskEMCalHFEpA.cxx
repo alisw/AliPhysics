@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: June 04, 2014.								      //
+	//		version: June 18, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -197,6 +197,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPC_p(0)
 ,fTPCnsigma_pt(0)
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_TPC(0)
+,fTPCnsigma_p_TPC_on_EMCal_acc(0)
+,fTPCnsigma_p_TPC_EoverP_cut(0)
 ,fTPCnsigma_pt_2D(0)
 ,fShowerShapeCut(0)
 ,fShowerShapeM02_EoverP(0)
@@ -480,6 +483,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPC_p(0)
 ,fTPCnsigma_pt(0)
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_TPC(0)
+,fTPCnsigma_p_TPC_on_EMCal_acc(0)
+,fTPCnsigma_p_TPC_EoverP_cut(0)
 ,fTPCnsigma_pt_2D(0)
 ,fShowerShapeCut(0)
 ,fShowerShapeM02_EoverP(0)
@@ -796,6 +802,13 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fPtTrigger_Inc = new TH1F("fPtTrigger_Inc","pT dist for Hadron Contamination; p_{t} (GeV/c); Count",300,0,30);
 	fTPCnsigma_pt_2D = new TH2F("fTPCnsigma_pt_2D",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+	
+	//new histos for TPC signal -> Can be used for any p range
+	fTPCnsigma_p_TPC = new TH2F("fTPCnsigma_p_TPC",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
+	fTPCnsigma_p_TPC_on_EMCal_acc = new TH2F("fTPCnsigma_p_TPC_on_EMCal_acc",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
+	fTPCnsigma_p_TPC_EoverP_cut = new TH2F("fTPCnsigma_p_TPC_EoverP_cut",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
+	
+	
 	fShowerShapeCut = new TH2F("fShowerShapeCut","Shower Shape;M02;M20",500,0,1.8,500,0,1.8);
 	fEtaPhi_num=new TH2F("fEtaPhi_num","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
 	fEtaPhi_den=new TH2F("fEtaPhi_den","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
@@ -883,6 +896,13 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fOutputList->Add(fPtTrigger_Inc);
 	fOutputList->Add(fTPCnsigma_pt_2D);
+	
+	fOutputList->Add(fTPCnsigma_p_TPC);
+	fOutputList->Add(fTPCnsigma_p_TPC_on_EMCal_acc);
+	fOutputList->Add(fTPCnsigma_p_TPC_EoverP_cut);
+	
+	
+	
 	fOutputList->Add(fShowerShapeCut);
 	
 	fOutputList->Add(fCharge_n);
@@ -2083,7 +2103,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 		
 	
-	if(fUseTrigger && fIsAOD){
+	if(fIsAOD){
 		
 			//AliAODHeader * aodh = fAOD->GetHeader();
 			//Int_t bc= aodh->GetBunchCrossNumber();
@@ -2124,7 +2144,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				if(clust->GetNCells()<5 && clust->E()>15.0){
 					fECluster_exotic->Fill(clust->E());
 				}
-				//Marcel cut
+				//Marcel cut (another approximation to remove exotics)
 				else if((clust->GetNCells())> ((clust->E())/3+1)){
 					fECluster_not_exotic1->Fill(clust->E());
 				}
@@ -2154,7 +2174,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			
 			//end of bad cells
 			//______________________________________________________________________
-*/
+			*/
 			
 		}
 	}
@@ -2590,6 +2610,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			}
 		}
 		
+		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
+		
 		//new pt bins for trigger data
 		
 			for(Int_t i = 0; i < 10; i++)
@@ -2607,12 +2629,26 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				}
 			}
 		
+			
+			//new way to calculate TPCnsigma distribution: TPCnsigma in function of p, with/without E/p cut 
+			fTPCnsigma_p_TPC->Fill(fP, fTPCnSigma);
+			if(fEMCflag){
+			
+				fTPCnsigma_p_TPC_on_EMCal_acc->Fill(fP, fTPCnSigma);
+			
+				if((fClus->E() / fP) >= fEoverPCutMin && (fClus->E() / fP) <= fEoverPCutMax){
+					fTPCnsigma_p_TPC_EoverP_cut->Fill(fP, fTPCnSigma);
+				}
 		
-			///QA plots after track selection
-			///_____________________________________________________________
+			}//close EMCflag
 		
-			//_______________________________________________________
-			//Correlation Analysis - DiHadron
+		}//close eta cut
+			
+		///QA plots after track selection
+		///_____________________________________________________________
+		
+		//_______________________________________________________
+		//Correlation Analysis - DiHadron
 		if(!fUseEMCal)
 		{
 			if(fTPCnSigma < 3.5 && fCorrelationFlag)
