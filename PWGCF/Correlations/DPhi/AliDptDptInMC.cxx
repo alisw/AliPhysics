@@ -1155,6 +1155,24 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
   //AliFatal("This Task needs the PID response attached to the inputHandler");
   //return;
   //}
+
+  //--------------------------- //New Chage
+  fArrayMC = dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (!fArrayMC) {
+    AliFatal("Error: MC particles branch not found!\n");
+    return;
+  }
+
+  AliAODMCHeader *mcHdr=NULL;
+  mcHdr=(AliAODMCHeader*)fAODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if(!mcHdr) {
+    printf("MC header branch not found!\n");
+    return;
+  }
+
+  //------------------------
+
+
   // count all events looked at here                                                                                                        
   _eventCount++;
 
@@ -1245,13 +1263,13 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
       //MC AOD Truth 
       if(fAnalysisType == "MCAOD")
         { 
-	  AliMCEvent* mcEvent = MCEvent();
-	  _nTracks = mcEvent->GetNumberOfTracks();
+	 _nTracks = fArrayMC->GetEntriesFast();
           _mult3    = _nTracks;
+
           //loop over tracks starts here                                                                                                       
           for (int iTrack=0; iTrack< _nTracks; iTrack++)
             {
-              AliAODMCParticle *aodTrack = (AliAODMCParticle*) mcEvent->GetTrack(iTrack);
+	      AliAODMCParticle *aodTrack = (AliAODMCParticle*) fArrayMC->At(iTrack);
 
               if (!aodTrack)
                 {
