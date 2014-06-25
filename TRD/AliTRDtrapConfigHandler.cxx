@@ -207,8 +207,8 @@ Int_t AliTRDtrapConfigHandler::LoadConfig()
     fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBSF, 1, iDet);  // 0: store filtered; 1: store unfiltered
 
     // zs applied to data stored in event buffer (sel. by EBSF)
-    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIS, 15 << 2, iDet); // single indicator threshold (plus two digits)
-    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIT, 30 << 2, iDet); // sum indicator threshold (plus two digits)
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIS, 15, iDet); // single indicator threshold (plus two digits)
+    fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIT, 30, iDet); // sum indicator threshold (plus two digits)
     fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIL, 0xf0, iDet);   // lookup table
     fTrapConfig->SetTrapReg(AliTRDtrapConfig::kEBIN, 0, iDet);      // neighbour sensitivity
 
