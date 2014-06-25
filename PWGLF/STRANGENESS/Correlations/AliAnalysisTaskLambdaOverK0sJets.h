@@ -209,15 +209,15 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fK0sMCPt;                      //! K0s MC: pt
   TH3F*   fK0sMCPtRap;                   //! K0s MC: pt vs rapidity
   TH3F*   fK0sMCPtRap2;                  //! K0s MC: pt vs rapidity (is Natural)
-  TH3F*   fK0sMCPtRapVtx;                //! K0s MC: pt vs Z vtx position  vs centrality
+  TH3F*   fK0sMCPtRapVtx[kNCent];        //! K0s MC: pt vs Z vtx position  vs centrality
   TH3F*   fK0sMCPtRapEmbeded;            //! K0s MC: pt vs rapidity  (embeded particles)
-  TH3F*   fK0sMCPtRapVtxEmbeded;         //! K0s MC: pt vs Z vtx position rapidity  vs centrality (embeded particles)
+  TH3F*   fK0sMCPtRapVtxEmbeded[kNCent]; //! K0s MC: pt vs Z vtx position rapidity  vs centrality (embeded particles)
   TH3F*   fK0sMCPtPhiEta[kNCent];        //! K0s MC: pt vs pseudo-rapidity
 
   TH1F*   fK0sAssocPt;                         //! K0s Assoc: pt
   TH3F*   fK0sAssocPtArm;                      //! K0s Assoc: pt vs rapidity vs centrality (arm. pod. cut)
   TH3F*   fK0sAssocPtRap;                      //! K0s Assoc: pt vs rapidity vs centrality
-  TH3F*   fK0sAssocPtRapEmbeded;                      //! K0s Assoc: pt vs rapidity vs centrality  (embeded particles)
+  TH3F*   fK0sAssocPtRapEmbeded;               //! K0s Assoc: pt vs rapidity vs centrality  (embeded particles)
   TH3F*   fK0sAssocPtPhiEta[kNCent];           //! K0s Assoc: pt vs pseudo-rapidity
 
   THnSparse*  fK0sAssocPtMassArm[kNCent];          //! K0s Assoc: mass vs pt vs centrality
@@ -239,14 +239,14 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
 
   //           Lambda            //
-  TH1F*   fLambdaMCPt;                   //! Lambda MC: pt
-  TH3F*   fLambdaMCPtRap;                //! Lambda MC: pt vs rapidity
-  TH3F*   fLambdaMCPtRap2;               //! Lambda MC: pt vs rapidity  (is Natural)
-  TH3F*   fLambdaMCPtRapVtx;             //! Lambda MC: pt vs Z vtx position rapidity vs centrality
-  TH3F*   fLambdaMCPtRapEmbeded;         //! Lambda MC: pt vs rapidity (embeded particles)
-  TH3F*   fLambdaMCPtRapVtxEmbeded;      //! Lambda MC: pt vs Z vtx position vs centrality  (embeded particles)
-  TH2F*   fLambdaMCFromXi;               //! Lambda MC: coming from Xi
-  TH3F*   fLambdaMCPtPhiEta[kNCent];     //! Lambda MC: pt vs pseudo-rapidity
+  TH1F*   fLambdaMCPt;                        //! Lambda MC: pt
+  TH3F*   fLambdaMCPtRap;                     //! Lambda MC: pt vs rapidity
+  TH3F*   fLambdaMCPtRap2;                    //! Lambda MC: pt vs rapidity  (is Natural)
+  TH3F*   fLambdaMCPtRapVtx[kNCent];          //! Lambda MC: pt vs Z vtx position rapidity vs centrality
+  TH3F*   fLambdaMCPtRapEmbeded;              //! Lambda MC: pt vs rapidity (embeded particles)
+  TH3F*   fLambdaMCPtRapVtxEmbeded[kNCent];   //! Lambda MC: pt vs Z vtx position vs centrality  (embeded particles)
+  TH2F*   fLambdaMCFromXi;                    //! Lambda MC: coming from Xi
+  TH3F*   fLambdaMCPtPhiEta[kNCent];          //! Lambda MC: pt vs pseudo-rapidity
 
   TH1F*   fLambdaAssocPt;                //! Lambda Assoc: pt
   TH3F*   fLambdaAssocPtRap;             //! Lambda Assoc: pt vs rapidity
@@ -276,11 +276,11 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fAntiLambdaMCPt;                  //! AntiLambda MC: pt
   TH3F*   fAntiLambdaMCPtRap;               //! AntiLambda MC: pt vs rapidity
   TH3F*   fAntiLambdaMCPtRap2;              //! AntiLambda MC: pt vs rapidity  (is Natural)
-  TH3F*   fAntiLambdaMCPtRapVtx;            //! AntiLambda MC: pt vs rapidity vs Z vtx position
-  TH3F*   fAntiLambdaMCPtRapEmbeded;        //! AntiLambda MC: pt vs rapidity (embeded particles)
-  TH3F*   fAntiLambdaMCPtRapVtxEmbeded;     //! AntiLambda MC: pt vs rapidity  vs Z vtx position 
-  TH2F*   fAntiLambdaMCFromXi;              //! AntiLambda MC: coming from Xi
-  TH3F*   fAntiLambdaMCPtPhiEta[kNCent];    //! AntiLambda MC: pt vs pseudo-rapidity
+  TH3F*   fAntiLambdaMCPtRapVtx[kNCent];          //! AntiLambda MC: pt vs rapidity vs Z vtx position
+  TH3F*   fAntiLambdaMCPtRapEmbeded;              //! AntiLambda MC: pt vs rapidity (embeded particles)
+  TH3F*   fAntiLambdaMCPtRapVtxEmbeded[kNCent];   //! AntiLambda MC: pt vs rapidity  vs Z vtx position 
+  TH2F*   fAntiLambdaMCFromXi;                    //! AntiLambda MC: coming from Xi
+  TH3F*   fAntiLambdaMCPtPhiEta[kNCent];          //! AntiLambda MC: pt vs pseudo-rapidity
 
   TH1F*   fAntiLambdaAssocPt;                 //! AntiLambda Assoc: pt
   TH3F*   fAntiLambdaAssocPtRap;              //! AntiLambda Assoc: pt vs rapidity vscentrality
