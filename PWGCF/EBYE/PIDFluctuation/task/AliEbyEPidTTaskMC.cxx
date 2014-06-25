@@ -56,8 +56,6 @@ AliEbyEPidTTaskMC::AliEbyEPidTTaskMC( const char *name ) : AliAnalysisTaskSE( na
   fHelperPID(0x0),
   fEventCounter(NULL), 
   fEventTree(NULL),
-  isQA(kFALSE), 
-  fDebug(kFALSE), 
   fRunNumber(0),
   fNumberOfTracks(8000),
   fNumberOfTracksM(8000),
@@ -78,16 +76,16 @@ AliEbyEPidTTaskMC::AliEbyEPidTTaskMC( const char *name ) : AliAnalysisTaskSE( na
     fTrackChargeM[kTrack];
     fTrackPidM[kTrack];
   */
- 
-  DefineOutput(1, TList::Class()); //! Connect Outpput....
-  DefineOutput(2, TTree::Class()); //! Connect Outpput....
+  DefineInput(0,TChain::Class());
+  DefineOutput(1, TList::Class()); 
+  DefineOutput(2, TTree::Class()); 
 }
 
 AliEbyEPidTTaskMC::~AliEbyEPidTTaskMC() {
   //!   Cleaning up
-  if (fThnList)   delete fThnList;
-  if (fHelperPID) delete fHelperPID;
-  //  if (fEventTree) delete fEventTree;
+   if (fThnList)   delete fThnList;
+   if (fHelperPID) delete fHelperPID;
+   if (fEventTree) delete fEventTree;
 }
 
 //---------------------------------------------------------------------------------
@@ -102,9 +100,11 @@ void AliEbyEPidTTaskMC::UserCreateOutputObjects() {
   for (Int_t ikey = 0; ikey < ll->GetEntries(); ikey++) {
     fThnList->Add(ll->At(ikey));
   }
-  
+  TDirectory *owd = gDirectory;
+  OpenFile(1);  
   fEventTree = new TTree("fEventTree","fEventTree");
-  
+  owd->cd();
+ 
   fEventTree->Branch("fRunNumber",      &fRunNumber,     "fRunNumber/I");
   fEventTree->Branch("fFilterBit",      &fFilterBit,     "fFilterBit/I");
   fEventTree->Branch("fNumberOfTracks", &fNumberOfTracks,"fNumberOfTracks/I");
@@ -135,14 +135,14 @@ void AliEbyEPidTTaskMC::UserCreateOutputObjects() {
 //----------------------------------------------------------------------------------
 void AliEbyEPidTTaskMC::UserExec( Option_t * ){
 
-   fEventCounter->Fill(1);
-
+  fEventCounter->Fill(1);
+   
   AliAODEvent* event = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!event) {
     Printf("ERROR 01: AOD not found ");
     return;
   }
-
+  
   fEventCounter->Fill(2);
 
   Int_t gCent   = -1;
@@ -173,7 +173,7 @@ void AliEbyEPidTTaskMC::UserExec( Option_t * ){
   if (centrality->GetQuality() != 0) return;
 
   fEventCounter->Fill(6);
-
+  
   fRunNumber = event->GetRunNumber();
   fFilterBit = fAODtrackCutBit;
   fCentPercentile = gCent;
@@ -206,58 +206,59 @@ void AliEbyEPidTTaskMC::UserExec( Option_t * ){
   fNumberOfTracks = iTracks;
   
   fEventCounter->Fill(21);
-    TClonesArray *arrayMC= 0; 
-    arrayMC = dynamic_cast<TClonesArray*> (event->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
-    if (!arrayMC) {
-      Printf("Error: MC particles branch not found!\n");
+  
+  TClonesArray *arrayMC= 0; 
+  arrayMC = dynamic_cast<TClonesArray*> (event->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+  if (!arrayMC) {
+    Printf("Error: MC particles branch not found!\n");
       return;
-    }
-    fEventCounter->Fill(22);
-    AliAODMCHeader *mcHdr=0;
-    mcHdr=(AliAODMCHeader*)event->GetList()->FindObject(AliAODMCHeader::StdBranchName());  
-    if(!mcHdr) {
+  }
+  fEventCounter->Fill(22);
+  AliAODMCHeader *mcHdr=0;
+  mcHdr=(AliAODMCHeader*)event->GetList()->FindObject(AliAODMCHeader::StdBranchName());  
+  if(!mcHdr) {
       Printf("MC header branch not found!\n");
       return;
-    }
-    
-    fEventCounter->Fill(23);
-    
-    Int_t nMC = arrayMC->GetEntries();
-    Int_t mTracks = 0; 
-    for (Int_t iMC = 0; iMC < nMC; iMC++) {
-      fEventCounter->Fill(24);
-      AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
-      if(!AcceptMCTrack(partMC)) continue;
-      
-      fEventCounter->Fill(25);
-      Int_t a  = partMC->GetPdgCode();
-      
-      // Int_t a = fHelperPID->GetMCParticleSpecie((AliVEvent*) event,(AliVTrack*)partMC,1);
-      
-      //if(a < 0 || a > 2) continue;
-      Int_t icharge = a > 0 ? 0 : 1;
-      
-      //  cout << a << "  " << icharge << endl;
-      
-      fTrackPtM[mTracks]     = (Float_t)partMC->Pt();
-      fTrackPhiM[mTracks]    = (Float_t)partMC->Phi();
-      fTrackEtaM[mTracks]    = (Float_t)partMC->Eta();
-      fTrackChargeM[mTracks] = icharge;
-      fTrackPidM[mTracks] = a;
-      
-      mTracks++;
-    }
-    fEventCounter->Fill(26);
-    fNumberOfTracksM = mTracks;
+  }
   
+  fEventCounter->Fill(23);
+  
+  
+  Int_t mTracks = 0; 
+
+  Int_t nMC = arrayMC->GetEntries();
+  
+  for (Int_t iMC = 0; iMC < nMC; iMC++) {
+    //fEventCounter->Fill(24);
+    AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
+    // if(!partMC) continue;
+    if(!AcceptMCTrack(partMC)) continue;
+    // fEventCounter->Fill(25);
+    Int_t a  = partMC->GetPdgCode();
+    //Int_t a = 0;      
+    // Int_t a = fHelperPID->GetMCParticleSpecie((AliVEvent*) event,(AliVTrack*)partMC,1);
+    
+    //if(a < 0 || a > 2) continue;
+    Int_t icharge = a > 0 ? 0 : 1;
+    //  cout << a << "  " << icharge << "  " << iMC << "  " << mTracks << endl;
+    
+    fTrackPtM[mTracks]     = (Float_t)partMC->Pt();
+    fTrackPhiM[mTracks]    = (Float_t)partMC->Phi();
+    fTrackEtaM[mTracks]    = (Float_t)partMC->Eta();
+    fTrackChargeM[mTracks] = icharge;
+    fTrackPidM[mTracks] = a;
+    mTracks++;
+  }
+  //  cout << mTracks << "  " << nMC << endl;
+  fEventCounter->Fill(26);
+  fNumberOfTracksM = mTracks;
   
   fEventCounter->Fill(30);
   fEventTree->Fill();
   
   if(isMC) fEventCounter->Fill(46);
   else fEventCounter->Fill(48);
-
-
+     
   PostData(1, fThnList);  
   PostData(2, fEventTree);
 }
@@ -272,6 +273,7 @@ Bool_t AliEbyEPidTTaskMC::AcceptTrack(AliAODTrack *track) const {
   if(!track)                                  return kFALSE;
   if (track->Charge() == 0 )                  return kFALSE;
   if (!track->TestFilterBit(fAODtrackCutBit)) return kFALSE;
+  if (TMath::Abs(track->Eta()) > 3) return kFALSE;
   return kTRUE;
 }
 
@@ -281,5 +283,6 @@ Bool_t AliEbyEPidTTaskMC::AcceptMCTrack(AliAODMCParticle *track) const {
   if(!track) return kFALSE;
   if(!track->IsPhysicalPrimary()) return kFALSE;
   if (track->Charge() == 0 ) return kFALSE;
+  if (TMath::Abs(track->Eta()) > 3) return kFALSE;
   return kTRUE;
 }
