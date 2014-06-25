@@ -279,10 +279,10 @@ void AliPHOSCorrelations::SetHistPtNumTrigger(Int_t  ptMult, Double_t ptMin, Dou
 	TString spid[4]={"all","cpv","disp","both"} ;
 	for(Int_t ipid=0; ipid<4; ipid++)	
 	{
-		fOutputContainer->Add(new TH2F(Form("nTrigger_%s", spid[ipid].Data()), Form("Num of trigger particle %s", spid[ipid].Data()), ptMult+300, ptMin, ptMax, 10000, 0, 1 ) );
-		TH2F *h = static_cast<TH2F*>(fOutputContainer->Last()) ;
+		fOutputContainer->Add(new TH1F(Form("nTrigger_%s", spid[ipid].Data()), Form("Num of trigger particle %s", spid[ipid].Data()), ptMult+300, ptMin, ptMax ) );
+		TH1F *h = static_cast<TH1F*>(fOutputContainer->Last()) ;
 		h->GetXaxis()->SetTitle("Pt [GEV]");
-		h->GetYaxis()->SetTitle("#varepsilon"); // 1/efficiensy
+		//h->GetYaxis()->SetTitle("#varepsilon"); // 1/efficiensy
 	}
 }
 //_______________________________________________________________________________
@@ -502,7 +502,7 @@ void AliPHOSCorrelations::SetHistPHOSClusterMap()
 	for(int i =  0; i<3; i++)
 	{
 		//  Cluster X/Z/E distribution.
-		fOutputContainer->Add(new TH3F(Form("QA_cluXZE_mod%i", i+1),Form("PHOS Clusters XZE distribution of module %i", i+1), 100, 0, 100, 100, 0, 100, 100, 0, 10 ) );
+		fOutputContainer->Add(new TH3F(Form("QA_cluXZE_mod%i", i+1),Form("PHOS Clusters XZE distribution of module %i", i+1), 70, 0, 70, 60, 0, 60, 200, 0, 20 ) );
 		TH3F *h = static_cast<TH3F*>(fOutputContainer->Last()) ;
 	    	h->GetXaxis()->SetTitle("X");
 		h->GetYaxis()->SetTitle("Z");
@@ -523,7 +523,7 @@ void AliPHOSCorrelations::UserExec(Option_t *)
 		return ;
 	}
         	
-        	ZeroingVariables();
+    ZeroingVariables();
 
 	fEventESD = dynamic_cast<AliESDEvent*>(fEvent);
 	fEventAOD = dynamic_cast<AliAODEvent*>(fEvent);
@@ -588,15 +588,20 @@ void AliPHOSCorrelations::UserExec(Option_t *)
 	LogSelection(kTotalSelected, fInternalRunNumber);
 	LogProgress(7);
 
+
+
 	// Step 7: Consider pi0 (photon/cluster) pairs.
 	//ConsiderPi0s();
 	ConsiderPi0sME();
 	
 	// Step 8; Mixing
 	ConsiderPi0sMix();
-	ConsiderTracksMix();
-	//ConsiderTracksMixME();
+
+	//ConsiderTracksMix();
+	ConsiderTracksMixME();
 	LogProgress(8);
+
+
 
 	// Step 9: Make TPC's mask
 	FillTrackEtaPhi();
@@ -1427,7 +1432,7 @@ void AliPHOSCorrelations::SelectAccosiatedTracks()
 void AliPHOSCorrelations::ConsiderPi0s()
 {
 	// Must consider only PHOS events in real distribution.
-	if (fPHOSEvent) 
+	//if (fPHOSEvent)
 	{
 		const Int_t nPHOS=fCaloPhotonsPHOS->GetEntriesFast() ;
 		for(Int_t i1=0; i1 < nPHOS-1; i1++)
@@ -1499,14 +1504,14 @@ void AliPHOSCorrelations::ConsiderPi0s()
 
 				if(!TestMass(m,pt)) continue;
 
-				FillHistogram("nTrigger_all", pt, 1./eff);
+				FillHistogram("nTrigger_all", pt, eff);
 				if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-					FillHistogram("nTrigger_cpv", pt, 1./eff);
+					FillHistogram("nTrigger_cpv", pt, eff);
 				if ( ph1->IsDispOK() && ph2->IsDispOK() )
 				{
-					FillHistogram("nTrigger_disp", pt, 1./eff);
+					FillHistogram("nTrigger_disp", pt, eff);
 					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-						FillHistogram("nTrigger_both", pt, 1./eff);
+						FillHistogram("nTrigger_both", pt, eff);
 				}
 
 			     	// Take track's angles and compare with cluster's angles.
@@ -1776,7 +1781,7 @@ void AliPHOSCorrelations::ConsiderPi0sME()
 		for (int ipid = 0; ipid < 4; ipid++)
 		{
 			if (fMEExists[ipid])
-				FillHistogram(Form("nTrigger_%s", spid[ipid].Data()), fMEPt[ipid], GetEfficiency(fMEPt[ipid]));
+				FillHistogram(Form("nTrigger_%s", spid[ipid].Data()), fMEPt[ipid], 1./GetEfficiency(fMEPt[ipid]));
 		}
 
 		// Take track's angles and compare with cluster's angles.
@@ -2158,6 +2163,7 @@ Double_t AliPHOSCorrelations::GetEfficiency(Double_t x) const {
 	}
 
 	return e;
+	// return 1.; // For test.
 }
 //_____________________________________________________________________________
 Int_t AliPHOSCorrelations::GetModCase(Int_t &mod1, Int_t &mod2) const {
@@ -2191,10 +2197,22 @@ void AliPHOSCorrelations::TestTrigger(){
 	FillHistogram("hTriggerPassedEvents",  0);	// All events
 	if (fEvent->GetFiredTriggerClasses().Contains("PHI7") )
 		FillHistogram("hTriggerPassedEvents",  1.);	// 13 events
+	else
 	if (fEvent->GetFiredTriggerClasses().Contains("PHS") )
 		FillHistogram("hTriggerPassedEvents",  2.);	// 11h events
+	else
+	if (fEvent->GetFiredTriggerClasses().Contains("CSEMI") )
+		FillHistogram("hTriggerPassedEvents",  3.);	// 11h events
+	else
+	if (fEvent->GetFiredTriggerClasses().Contains("CCENT") )
+		FillHistogram("hTriggerPassedEvents",  4.);	// 11h events
+	else
+		FillHistogram("hTriggerPassedEvents",  10.); // other events
 
 	if (fEvent->GetFiredTriggerClasses().Contains("PHI7") || fEvent->GetFiredTriggerClasses().Contains("PHS"))
+		fPHOSEvent = true;
+
+	if (fEvent->GetFiredTriggerClasses().Contains("CSEMI") || fEvent->GetFiredTriggerClasses().Contains("CCENT"))
 		fPHOSEvent = true;
 
 	if( fDebug >= 2 )
