@@ -1337,7 +1337,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
 
 
-  fh1AreaExcluded               = new TH1F("fh1AreaExcluded","area excluded for selected jets in event acceptance",100,0.,5.);
+  fh1AreaExcluded               = new TH1F("fh1AreaExcluded","area excluded for selected jets in event acceptance",50,0.,1.);
 
   fh1MedianEta                  = new TH1F("fh1MedianEta","Median cluster axis ;#eta",200,-1.,1.);
   fh1JetPtMedian                = new TH1F("fh1JetPtMedian"," (selected) jet it{p}_{T} distribution for MCC method; #GeV/it{c}",19,5.,100.);
@@ -1517,13 +1517,13 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fhnMCrecK0ConeSmear                = new THnSparseF("fhnMCrecK0ConeSmear", "MC rec {K^{0}}^{s} #it{p}_{T}  in cone around jet axis matching MC gen particle; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2};#it{p}_{T}",4,binsMCrecK0ConeSmear,xminMCrecK0ConeSmear,xmaxMCrecK0ConeSmear);  
 
   Int_t binsMCrecLaConeSmear[4] = {19, 200, 200, 200};
-  Double_t xminMCrecLaConeSmear[4] = {5.,0.3, 0., -1.};
-  Double_t xmaxMCrecLaConeSmear[4] = {100.,0.7, 20., 1.};
+  Double_t xminMCrecLaConeSmear[4] = {5.,1.05, 0., -1.};
+  Double_t xmaxMCrecLaConeSmear[4] = {100.,1.25, 20., 1.};
   fhnMCrecLaConeSmear                = new THnSparseF("fhnMCrecLaConeSmear", "MC rec {#Lambda #it{p}_{T}  in cone around jet axis matching MC gen particle; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2};#it{p}_{T}",4,binsMCrecLaConeSmear,xminMCrecLaConeSmear,xmaxMCrecLaConeSmear); 
 
   Int_t binsMCrecALaConeSmear[4] = {19, 200, 200, 200};
-  Double_t xminMCrecALaConeSmear[4] = {5.,0.3, 0., -1.};
-  Double_t xmaxMCrecALaConeSmear[4] = {100.,0.7, 20., 1.};
+  Double_t xminMCrecALaConeSmear[4] = {5.,1.05, 0., -1.};
+  Double_t xmaxMCrecALaConeSmear[4] = {100.,1.25, 20., 1.};
   fhnMCrecALaConeSmear                = new THnSparseF("fhnMCrecALaConeSmear", "MC rec {#bar{#Lambda} #it{p}_{T}  in cone around jet axis matching MC gen particle; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2};#it{p}_{T}",4,binsMCrecALaConeSmear,xminMCrecALaConeSmear,xmaxMCrecALaConeSmear); 
 
   Int_t binsK0sSecContinCone[3] = {19, 200, 200};
@@ -3043,7 +3043,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	    CalculateInvMass(v0, kLambda, invMMedianLa, trackPt);  //function to calculate invMass with TLorentzVector class
 	    
-	    Double_t vLaMCC[4] = {jetPt, invMMedianLa,trackPt,fEta};
+	    Double_t vLaMCC[3] = {invMMedianLa,trackPt,fEta};
 	    fhnLaMCC->Fill(vLaMCC);
 	  }
 	  
@@ -3081,7 +3081,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    fEta = v0->Eta();
 
 	    CalculateInvMass(v0, kAntiLambda, invMMedianALa, trackPt);  //function to calculate invMass with TLorentzVector class
-	    Double_t vALaMCC[4] = {jetPt, invMMedianALa,trackPt,fEta};
+	    Double_t vALaMCC[3] = {invMMedianALa,trackPt,fEta};
 	    fhnALaMCC->Fill(vALaMCC); 
 	    
 	  }
@@ -3652,13 +3652,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    }
 
 	  }//fill TH1F for normalization purposes 
-	}
+	}//end MC analysis part
 	
 	if(incrementJetPt==kTRUE){
 	  fh1IMLaCone->Fill(jetPt);}//normalisation by number of selected jets
-
+	
 	//fFFHistosIMLaCone->FillFF(trackPt, invMLa, jetPt, incrementJetPt);   
-       
+  	Double_t vLaCone[4] = {jetPt, invMLa,trackPt,fEta};
+	fhnLaCone->Fill(vLaCone);     
       }
 
       if(jetConeLalist->GetSize() == 0){ // no La: increment jet pt spectrum 
@@ -5664,6 +5665,7 @@ AliAODJet* AliAnalysisTaskJetChem::GetMedianCluster()
 
     bgrDensity[ij] = density;
     indices[ij]    = ij;
+
   }
    
   TMath::Sort(nBckgClusters, bgrDensity, indices); 
@@ -5678,8 +5680,8 @@ AliAODJet* AliAnalysisTaskJetChem::GetMedianCluster()
 
     medianCluster = (AliAODJet*)(fBckgJetsRec->At(medianIndex));
     
-    Double_t clusterPt = medianCluster->Pt();
-    Double_t area      = medianCluster->EffectiveAreaCharged();
+    //Double_t clusterPt = medianCluster->Pt();
+    //Double_t area      = medianCluster->EffectiveAreaCharged();
   }
   else{
 
