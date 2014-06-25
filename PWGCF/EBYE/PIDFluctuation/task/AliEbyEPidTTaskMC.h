@@ -13,17 +13,14 @@ class TH1D;
 class TH2F;
 class TH3F;
 class TString;
-class AliAODEvent;
 class AliAODTrack;
 class AliAODMCParticle;
 class TList;
 class TTree;
-class AliESDtrackCuts;
 class AliHelperPID;
 
 #include "AliAnalysisTaskSE.h"
-#include "AliPID.h"
-#include "THnSparse.h"
+
 
 class AliEbyEPidTTaskMC: public AliAnalysisTaskSE {
  public:
@@ -37,27 +34,21 @@ class AliEbyEPidTTaskMC: public AliAnalysisTaskSE {
   void SetAODtrackCutBit(Int_t bit) {fAODtrackCutBit = bit; }
   void SetCentralityEstimator(const char* cent) { fCentralityEstimator = cent;}
   void SetAnalysisType(Bool_t ismc) {isMC = ismc;}
-  void RunQA() {isQA = kTRUE;}
-  void Debug() {fDebug = kTRUE;}
   void SetHelperPID(AliHelperPID* pid){fHelperPID = pid;}
 
-  static const Int_t kTrack = 8000;
+  static const Int_t kTrack = 90000;
 
  private:
-
  
-  Bool_t       AcceptTrack(AliAODTrack *track) const; //! accept track
-  Bool_t       AcceptMCTrack(AliAODMCParticle *track) const; //! accept track
+  Bool_t       AcceptTrack(AliAODTrack *track) const; 
+  Bool_t       AcceptMCTrack(AliAODMCParticle *track) const; 
   TList        *fThnList;
-  Bool_t       isMC;          //! "AOD = 0", "AODMC = 1"
-  TString      fCentralityEstimator;   //! "V0M","TRK","TKL","ZDC","FMD"  
+  Bool_t       isMC;                   
+  TString      fCentralityEstimator;   
   Int_t        fAODtrackCutBit;
   AliHelperPID *fHelperPID;
   TH1D         *fEventCounter;
   TTree        *fEventTree;
-  
-  Bool_t  isQA;
-  Bool_t  fDebug;   
   
   Int_t   fRunNumber;
   Int_t   fNumberOfTracks;
