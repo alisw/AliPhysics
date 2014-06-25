@@ -1,4 +1,5 @@
-AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Int_t    minnTPCcls             = 70,
+AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Bool_t   isMC                   = kFALSE,
+                                                      Int_t    minnTPCcls             = 70,
                                                       Float_t  centrlowlim            = 0.,
                                                       Float_t  centruplim             = 90.,
                                                       TString  centrest               = "V0M",
@@ -7,8 +8,8 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Int_t    minnTPCcls       
                                                       TString  collidingSystem        = "PbPb",
                                                       Bool_t   SDDSelection           = kFALSE,
                                                       Bool_t   withSDD                = kFALSE,
-                                                      Float_t  minptondaughtertracks  = 1.,
-                                                      Float_t  etacutondaughtertracks = 9999999.) {
+                                                      Float_t  minptondaughtertracks  = 0.,
+                                                      Float_t  etacutondaughtertracks = 0.8) {
 
    // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -30,6 +31,7 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Int_t    minnTPCcls       
    // Create and configure the task
    AliAnalysisTaskQAMultistrange *taskcheckcascade = new AliAnalysisTaskQAMultistrange("TaskCheckCascade");
 
+   taskcheckcascade->SetIsMC                       (isMC);
    taskcheckcascade->SetAnalysisType               (type);
    taskcheckcascade->SetCollidingSystem            (collidingSystem);
    taskcheckcascade->SetSDDselection               (SDDSelection);
@@ -47,7 +49,6 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Int_t    minnTPCcls       
    taskcheckcascade->SetVertexRange                (vtxlim);
    taskcheckcascade->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  
    taskcheckcascade->SetEtaCutOnDaughterTracks     (etacutondaughtertracks);
-   taskcheckcascade->SelectCollisionCandidates();
 
    mgr->AddTask(taskcheckcascade);
 
@@ -58,20 +59,21 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange( Int_t    minnTPCcls       
    // User file name (if need be)
    
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   
    outputFileName += ":PWGLFStrangeness.outputCheckCascade";
-   
-   Printf("AddTaskCheckCascade - Set OutputFileName : \n %s\n", outputFileName.Data() );
 
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cfcontCuts",
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
-
+   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontMCgen",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
    
    mgr->ConnectInput( taskcheckcascade, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskcheckcascade, 1, coutput1);
-   
+   mgr->ConnectOutput(taskcheckcascade, 2, coutput2);  
+ 
    return taskcheckcascade;
 }   
 
