@@ -1289,7 +1289,9 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
    //AddTaskContainers(); //Add conatiner
 
    for(Int_t iCut = 0; iCut<fnCuts; iCut++){
-      fiCut = iCut;
+     
+     
+     fiCut = iCut;
       
       fNVirtualGammas = 0;
 
@@ -1409,10 +1411,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
                ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetPy(fUnsmearedVPy[Vgamma]);
                ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetPz(fUnsmearedVPz[Vgamma]);
                ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->SetE(fUnsmearedVE[Vgamma]);
-            }
-            
-             //cout<<"Entro virtual photon smearing2"<<endl;
-            
+            } 
             delete[] fUnsmearedVPx; fUnsmearedVPx = 0x0;
             delete[] fUnsmearedVPy; fUnsmearedVPy = 0x0;
             delete[] fUnsmearedVPz; fUnsmearedVPz = 0x0;
@@ -1707,11 +1706,10 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessVirtualGammasCandidates(){
 	      
 	   
 	     hESDEposEnegPsiPairDPhi[fiCut]->Fill(deltaPhi,psiPair);   
-	     hESDEposEnegInvMassPt[fiCut]->Fill(Vgamma->GetMass(),Vgamma->Pt());
+	     hESDEposEnegInvMassPt[fiCut]->Fill(Vgamma->M(),Vgamma->Pt());
 	     
 	     
-	     cout<<"GetMass() "<<Vgamma->GetMass()<<" M "<<Vgamma->M()<<endl;
-			 
+	    	 
 	     
 	      if( fMCEvent ) {
 
