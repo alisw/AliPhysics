@@ -530,6 +530,9 @@ Bool_t AliTRDonlineTrackMatching::ProcessEvent(AliESDEvent *esdEvent, Bool_t upd
     }
 
     if ((matchTrack) && (matchRating >= fMinMatchRating)){
+      AliDebug(1, Form("S%02d-%d  trd %d - esd %d   match!    pt:  %.2f  %.2f",
+		       trdTrack->GetSector(), trdTrack->GetStack(), iTrdTrack, matchEsdTrackIndexInStack,
+		       trdPt, matchTrack->GetSignedPt()));
 #ifdef TRD_TM_DEBUG
       printf("#TRACKMATCHING  S%02d-%d  trd %d - esd %d   match!    pt:  %.2f  %.2f\n",
 	     trdTrack->GetSector(), trdTrack->GetStack(), iTrdTrack, matchEsdTrackIndexInStack,
