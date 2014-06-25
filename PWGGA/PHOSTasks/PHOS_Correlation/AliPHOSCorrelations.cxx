@@ -2143,7 +2143,7 @@ Double_t AliPHOSCorrelations::GetEfficiency(Double_t x) const {
 	{
 		pFitPoint = &par8[0];
 		Double_t pFit[9];
-		for( int i = 0; i < 10; i++ )
+		for( int i = 0; i < 9; i++ )
 	 	{
 	 		pFit[i] = *(pFitPoint+i);
 	 	}

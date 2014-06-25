@@ -1884,6 +1884,7 @@ Double_t AliAnalysisTaskPi0DiffEfficiency::TestCPV(Double_t dx, Double_t dz, Dou
               6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
   Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
   AliAODEvent *event = dynamic_cast<AliAODEvent*>(InputEvent());
+  if(!event)AliFatal("Can not get ESD event") ;
   Double_t mf = event->GetMagneticField(); //Positive for ++ and negative for --
 
   if(mf<0.){ //field --
