@@ -232,10 +232,10 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   fOutputList->Add(fh2JetAxisPhi);
   
 
-  Int_t nbinsJet[10]={3,9,7,9,36,10,2,10,20,2};
+  Int_t nbinsJet[10]={3,9,7,9,36,5,7,10,10,2};
   Double_t binlowJet[10]= {0,0, 0, 0,-0.5*TMath::Pi(),0,0,-0.5,0,0};
-  Double_t binupJet[10]= {100,0.9, 150,150,1.5*TMath::Pi(),1,200,9.5,200,2};
-  fhnJetTM = new THnSparseF("fhnJetTM", "fhnJetTM; cent;dr;pt_jet;pt_track;phi;circ;nc;pthard",10,nbinsJet,binlowJet,binupJet);
+  Double_t binupJet[10]= {100,0.9, 150,150,1.5*TMath::Pi(),1,150,9.5,200,2};
+  fhnJetTM = new THnSparseF("fhnJetTM", "fhnJetTM; cent;dr;pt_jet;pt_track;phi;circ;ptrue;pthard;ptlead;isemebed",10,nbinsJet,binlowJet,binupJet);
  
  Double_t *xPt3=new Double_t[10];
   xPt3[0] = 0.;
@@ -268,11 +268,24 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   
   fhnJetTM->SetBinEdges(0,xPt4);
 
+  Double_t *xPt5=new Double_t[10];
+  xPt5[0] = 0.;
+  xPt5[1]=20;
+  xPt5[2]=40;
+  xPt5[3]=60;
+  xPt5[4]=80;
+  xPt5[5]=100;
+  xPt5[6]=120;
+  xPt5[7]=150; 
+  
+  fhnJetTM->SetBinEdges(7,xPt5);
+
 
    fOutputList->Add(fhnJetTM);
    delete [] xPt3;
    delete [] xPt2;
    delete [] xPt4;
+   delete [] xPt5;
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutputList->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fOutputList->At(i));
@@ -498,7 +511,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
     Double_t phitrue=0;
     Double_t etatrue=0;
     Double_t smearphi=0;
-
+    Double_t ptrue=0;
     AliAODJet* jetbig = (AliAODJet*)(fListJets[0]->At(i));
     etabig  = jetbig->Eta();
     phibig  = jetbig->Phi();
@@ -531,7 +544,9 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
     if(jetmatched->Eta()>fJetEtaMax || jetmatched->Eta()<fJetEtaMin)  jetAccepted = kFALSE;
       
     }
+    ptrue=ptbig;
     if(!jetAccepted) continue;
+    
     etabig=jetmatched->Eta();
     phibig=jetmatched->Phi();
     pxbig=jetmatched->Px();
@@ -652,7 +667,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
       if(phistr<-0.5*TMath::Pi()) phistr += 2*TMath::Pi();
       if(phistr>1.5*TMath::Pi()) phistr -= 2*TMath::Pi();
 
-      double jetEntries[10] = {centValue,dRR,ptbig,pt,phistr,circ,static_cast<double>(nc),pthardbin,ptmax,isembed};
+      double jetEntries[10] = {centValue,dRR,ptbig,pt,phistr,circ,ptrue,pthardbin,ptmax,isembed};
       fhnJetTM->Fill(jetEntries);
 
     } // 2nd Track loop
