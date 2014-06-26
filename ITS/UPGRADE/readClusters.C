@@ -69,7 +69,7 @@ void readClusters(int nev=-1,int evStart=0)
       //
       for (int icl=0;icl<nClu;icl++) {
 	AliITSUClusterPix *cl = (AliITSUClusterPix*)clr->At(icl);
-	printf("#%4d | ",icl); cl->Print("glo");
+	printf("#%4d | ",icl); cl->Print("glo p");
 	Float_t loc[3];
 	cl->GetLocalXYZ(loc);
 	Float_t glob[3]; 
