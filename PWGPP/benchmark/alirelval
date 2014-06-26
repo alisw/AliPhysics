@@ -96,7 +96,7 @@ function RunVM() {
   userData="$3"
   keyName="$4"
   keyFile="$5"
-  local raw iip iid ret attempt createdKeypair
+  local raw iip iid ret attempt createdKeypair error
 
   # keypair part: if file does not exist, create keypair
   if [ ! -e "$keyFile" ] ; then
@@ -124,6 +124,7 @@ function RunVM() {
     fi
 
     pr -n " * Launching VM (attempt #$attempt/$maxVmLaunchAttempts)..."
+    error=0
 
     raw=$( euca-run-instances "$imageId" -t "$profile" -d "$userData" -k "$keyName" 2>&1 )
     ret=$?
@@ -150,7 +151,8 @@ function RunVM() {
       # error state?
       echo "$raw" | grep -i error -q
       if [ $? == 0 ] ; then
-        pr ; pr -n " * VM went to error state"
+        pr ; pr " * VM went to error state"
+        error=1
         break
       fi
 
@@ -173,7 +175,8 @@ function RunVM() {
     fi
 
     # we don't: terminate (timeout)
-    pr 'timeout' ; pr " * Terminating instance $iid"
+    [ "$error" != 1 ] && pr 'timeout'
+    pr " * Terminating instance $iid"
     euca-terminate-instances "$iid" > /dev/null 2>&1
 
   done
