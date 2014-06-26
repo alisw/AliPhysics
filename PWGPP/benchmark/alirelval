@@ -41,8 +41,8 @@ maxVmAddressWait=120
 # working directory prefix
 sessionPrefix="$HOME/.alice-release-validation"
 
-# screen name for the validation
-screenName='AliceReleaseValidation'
+# screen name: <screenPrefix>-<sessionTag>
+screenPrefix='AliRelVal'
 
 # program name
 Prog=$(basename "$0")
@@ -398,8 +398,9 @@ function Shell() {
 
 # Checks status of the validation
 function Status() {
-  local raw ret screen exitcode
-  raw=$( VMSSH -t "screen -ls 2> /dev/null | grep -q .$screenName && echo -n 'screen_yes ' || echo -n 'screen_no ' ; cat $sessionTag/validation.done 2> /dev/null || echo 'not_done' ; true" 2> /dev/null )
+  local raw ret screen exitcode sessionTag
+  sessionTag="$1"
+  raw=$( VMSSH -t "screen -ls 2> /dev/null | grep -q .${screenPrefix}-${sessionTag} && echo -n 'screen_yes ' || echo -n 'screen_no ' ; cat $sessionTag/validation.done 2> /dev/null || echo 'not_done' ; true" 2> /dev/null )
   raw=$( echo "$raw" | tr -cd '[:alnum:]_ ' ) # garbage removal
   ret=$?
 
@@ -481,7 +482,7 @@ _EoF_
   # open a screen that does something; note that the command is not executed if
   # the screen already exists, which is what we want
   # note: sleep necessary to avoid "dead" screens
-  VMSSH -t "screen -wipe > /dev/null 2>&1 ; if screen -ls | grep -q $screenName ; then ret=42 ; else screen -dmS AliceReleaseValidation $sessionTag/run-benchmark.sh ; ret=0 ; sleep 3 ; fi ; exit \$ret"
+  VMSSH -t "screen -wipe > /dev/null 2>&1 ; if screen -ls | grep -q ${screenPrefix}-${sessionTag} ; then ret=42 ; else screen -dmS ${screenPrefix}-${sessionTag} $sessionTag/run-benchmark.sh ; ret=0 ; sleep 3 ; fi ; exit \$ret"
   ret=$?
 
   # message
@@ -509,7 +510,7 @@ function Attach() {
   local sessionTag
   sessionTag="$1"
 
-  VMSSH -t "( screen -wipe ; screen -rx $screenName ) > /dev/null 2>&1"
+  VMSSH -t "( screen -wipe ; screen -rx ${screenPrefix}-${sessionTag} ) > /dev/null 2>&1"
 
   if [ $? != 0 ] ; then
     pr "Cannot attach screen: check if validation is running with:"
