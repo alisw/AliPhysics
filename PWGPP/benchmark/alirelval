@@ -380,7 +380,7 @@ function Shell() {
 # Checks status of the validation
 function Status() {
   local raw ret screen exitcode
-  raw=$( VMSSH -t "screen -ls 2> /dev/null | grep -q .$screenName && echo -n 'screen_yes ' || echo -n 'screen_no ' ; cat alirelval/validation.done 2> /dev/null || echo 'not_done' ; true" 2> /dev/null )
+  raw=$( VMSSH -t "screen -ls 2> /dev/null | grep -q .$screenName && echo -n 'screen_yes ' || echo -n 'screen_no ' ; cat $sessionTag/validation.done 2> /dev/null || echo 'not_done' ; true" 2> /dev/null )
   raw=$( echo "$raw" | tr -cd '[:alnum:]_ ' ) # garbage removal
   ret=$?
 
@@ -457,12 +457,12 @@ _EoF_
 
   # transfer files
   pr 'Transferring files to the VM'
-  rsync -av -e "$(VMSSH --rsync-cmd)" $PWD/ $cloudUserName@$instanceIp:alirelval/ || return $errLaunchValidation
+  rsync -av -e "$(VMSSH --rsync-cmd)" $PWD/ $cloudUserName@$instanceIp:$sessionTag/ || return $errLaunchValidation
 
   # open a screen that does something; note that the command is not executed if
   # the screen already exists, which is what we want
   # note: sleep necessary to avoid "dead" screens
-  VMSSH -t "screen -wipe > /dev/null 2>&1 ; if screen -ls | grep -q $screenName ; then ret=42 ; else screen -dmS AliceReleaseValidation alirelval/run-benchmark.sh ; ret=0 ; sleep 3 ; fi ; exit \$ret"
+  VMSSH -t "screen -wipe > /dev/null 2>&1 ; if screen -ls | grep -q $screenName ; then ret=42 ; else screen -dmS AliceReleaseValidation $sessionTag/run-benchmark.sh ; ret=0 ; sleep 3 ; fi ; exit \$ret"
   ret=$?
 
   # message
