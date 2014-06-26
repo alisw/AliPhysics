@@ -1625,6 +1625,9 @@ void AliDielectron::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
       //histogram array for the pair
       if (fHistoArray) fHistoArray->Fill(i,pair);
 
+      // fill map
+      AliDielectronVarManager::SetFillMap(fUsedVars);
+
       //fill pair information
       if (pairClass){
         AliDielectronVarManager::Fill(pair, values);
