@@ -70,7 +70,8 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* t
   fh3Reco1(0),
   fh3Reco2(0),
   fhCont1(0),
-  fhCont2(0)
+  fhCont2(0),
+  fCorr1D(kFALSE)
 {
 
   fphiL = (-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
@@ -212,7 +213,8 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
   fh3Reco1(0),
   fh3Reco2(0),
   fhCont1(0),
-  fhCont2(0)
+  fhCont2(0),
+  fCorr1D(kFALSE)
 {
   // copy constructor
   if (aCorrFctn.fDPhiDEtaNumerator)
@@ -491,13 +493,20 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
 
    double corrweight;
    //if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2);
-  if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2, eta1, eta2, phi1, phi2, vert1[2], vert2[2]);
+  if (fIfCorrection) 
+    {
+      corrweight = CalculateCorrectionWeight(pt1, pt2, eta1, eta2, phi1, phi2, vert1[2], vert2[2]);
+    }
+  else if(fCorr1D)
+    {
+      corrweight = CalculateCorrectionWeight(pt1, pt2);
+    }
 /*   double ptmin = pt1>pt2 ? pt2 : pt1;
 
    double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
      sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
 */
-   if (fIfCorrection)
+   if (fIfCorrection || fCorr1D)
       fDPhiDEtaNumerator->Fill(dphi, deta, corrweight);
    else
       fDPhiDEtaNumerator->Fill(dphi, deta);
@@ -577,10 +586,17 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddMixedPair( AliFemtoPair* pair){
 
    double corrweight=-999;
    //if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2);
-  if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2, eta1, eta2, phi1, phi2, vert1[2], vert2[2]);
+  if (fIfCorrection) 
+    {
+      corrweight = CalculateCorrectionWeight(pt1, pt2, eta1, eta2, phi1, phi2, vert1[2], vert2[2]);
+    }
+  else if(fCorr1D)
+    {
+      corrweight = CalculateCorrectionWeight(pt1, pt2);
+    }
   
   
-   if(fIfCorrection)
+   if(fIfCorrection || fCorr1D)
       fDPhiDEtaDenominator->Fill(dphi, deta, corrweight);
    else
       fDPhiDEtaDenominator->Fill(dphi, deta);
@@ -709,10 +725,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoPtAnalysis(int do2d)
 
 }
 
-void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoCorrections(bool doCorr)
-{
-  fIfCorrection = doCorr;
-}
+
 
 void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoCorrectionsHist(CorrectionType doCorr)
 {
@@ -723,6 +736,8 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoCorrectionsHist(CorrectionType do
 
 void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const char *file, ParticleType partType1, ParticleType partType2, bool doPtCorr, bool doEtaCorr, bool doPhiCorr, bool doZVertCorr)
 {
+ 
+  fIfCorrection = kTRUE;
  
   ifileCorrTab = TFile::Open(file);
   fdoPtCorr = doPtCorr;
@@ -895,6 +910,8 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
 
 void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile1D(const char *file, ParticleType partType1, ParticleType partType2)
 {
+  fCorr1D = kTRUE;
+
   ifileCorrTab = TFile::Open(file);
 
   fpartType1 = partType1;
