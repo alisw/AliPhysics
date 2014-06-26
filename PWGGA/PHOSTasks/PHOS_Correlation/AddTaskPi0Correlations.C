@@ -1,7 +1,7 @@
-AliPHOSCorrelationsTest* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
+AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 						const char* options = "11h",
 						UInt_t offlineTriggerMask = AliVEvent::kCentral,
-						AliPHOSCorrelationsTest::TriggerSelection internalTriggerSelection = AliPHOSCorrelationsTest::kNoSelection,
+						AliPHOSCorrelations::TriggerSelection internalTriggerSelection = AliPHOSCorrelations::kNoSelection,
 						Double_t sigmaWidth = 3.,
 						Int_t downCentLimit = 0,
 						Int_t upCentLimit = 90 )
@@ -35,18 +35,18 @@ AliPHOSCorrelationsTest* AddTaskPi0Correlations (   	const char* name = "Pi0Corr
 	TString sName = TString (name) + sigmaBorder + centralityBorder ;
 
 
-	AliPHOSCorrelationsTest* task = new AliPHOSCorrelationsTest(Form("%sTask", sName.Data()),internalTriggerSelection);
+	AliPHOSCorrelations* task = new AliPHOSCorrelations(Form("%sTask", sName.Data()),internalTriggerSelection);
 
 	if( TString(options).Contains("10h") )	{
-		task->SetPeriod( AliPHOSCorrelationsTest::kLHC10h );
+		task->SetPeriod( AliPHOSCorrelations::kLHC10h );
 		task->SetCentralityEstimator("V0M");
 	}
 	if( TString(options).Contains("11h") )	{
-		task->SetPeriod( AliPHOSCorrelationsTest::kLHC11h );
+		task->SetPeriod( AliPHOSCorrelations::kLHC11h );
 		task->SetCentralityEstimator("V0M");
 	}
 	if( TString(options).Contains("13") )	{
-		task->SetPeriod( AliPHOSCorrelationsTest::kLHC13 );
+		task->SetPeriod( AliPHOSCorrelations::kLHC13 );
 		task->SetCentralityEstimator("V0A");
 	}
 
