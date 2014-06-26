@@ -282,8 +282,6 @@ goCPass0()
   
   #validate CPass0
   cd ${outputDir}
-  touch ${doneFileTmp}
-  echo "dir ${outputDir}" >> ${doneFileTmp}
   if summarizeLogs >> ${doneFileTmp}; then
     [[ -f ${outputDirMC}/galice.root ]] && echo "sim ${outputDirMC}/galice.root" >> ${doneFileTmp}
     [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFileTmp}
@@ -576,8 +574,6 @@ goCPass1()
 
   #validate CPass1
   cd ${outputDir}
-  touch ${doneFileTmp}
-  echo "dir ${outputDir}" >> ${doneFileTmp}
   if summarizeLogs >> ${doneFileTmp}; then
     [[ -f AliESDs_Barrel.root ]] && echo "esd ${outputDir}/AliESDs_Barrel.root" >> ${doneFileTmp}
     [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFileTmp}
@@ -753,8 +749,6 @@ goMergeCPass0()
 
   #validate merging cpass0
   cd ${outputDir}
-  touch ${doneFileTmp}
-  echo "dir ${outputDir}" >> ${doneFileTmp}
   if summarizeLogs >> ${doneFileTmp}; then
     [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFileTmp}
     [[ -f dcsTime.root ]] && echo "dcsTree ${outputDir}/dcsTime.root" >> ${doneFileTmp}
@@ -952,8 +946,6 @@ goMergeCPass1()
   
   #validate merge cpass1
   cd ${outputDir}
-  touch ${doneFileTmp}
-  echo "dir ${outputDir}" >> ${doneFileTmp}
   if summarizeLogs >>  ${doneFileTmp}; then
     [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFileTmp}
     [[ -f ${qaMergedOutputFileName} ]] && echo "qafile ${outputDir}/${qaMergedOutputFileName}" >> ${doneFileTmp}
@@ -1444,6 +1436,9 @@ summarizeLogs()
             "stderr"
   )
 
+  #put dir information in the output
+  echo "dir $PWD"
+
   #check logs
   local logstatus=0
   for log in ${logFiles[*]}; do
@@ -1600,7 +1595,6 @@ EOF
   fi
   pwd
   /bin/ls
-  touch ${doneFile}
   summarizeLogs >>  ${doneFile}
   
   #echo mv -f * ${outputDir}
