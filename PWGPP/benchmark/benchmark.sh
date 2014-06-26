@@ -1044,6 +1044,15 @@ goSubmitMakeflow()
   else 
     echo "no makeflow!"
   fi
+  
+  #summarize the run based on the makeflow log
+  #and add it to the end of summary log
+  awk '/STARTED/   {startTime=$3} 
+       /COMPLETED/ {endTime=$3} 
+       END         {print "makeflow running time: "(endTime-startTime)/1000000/3600" hours"}' \
+      benchmark.makeflow.makeflowlog | tee -a summary.log
+  paranoidCp summary.log ${commonOutputPath}
+
   return 0
 }
 
@@ -2391,10 +2400,12 @@ done
   cp "$logTmp" "$logDest" || rm -f "$logTmp" "$logDest"
   
   #copy output files
+  exec &> >(tee fileCopy.log)
   paranoidCp QAplots ${commonOutputPath}
   paranoidCp *.list ${commonOutputPath}
   paranoidCp *.root ${commonOutputPath}
   paranoidCp *.log ${commonOutputPath}
+  paranoidCp fileCopy.log ${commonOutputPath}
 
   return 0
 )
@@ -2628,7 +2639,7 @@ paranoidCopyFile()
   dst="${2}"
   [[ -d "${dst}" ]] && dst="${dst}/${src##*/}"
   [[ -z "${maxCopyTries}" ]] && maxCopyTries=5
-  echo "maxCopyTries=${maxCopyTries}"
+  #echo "maxCopyTries=${maxCopyTries}"
   echo "cp ${src} ${dst}"
   cp "${src}" "${dst}"
   i=0
