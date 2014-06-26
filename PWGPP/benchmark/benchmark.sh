@@ -2316,7 +2316,7 @@ goMakeSummary()
   echo per run stats:
   /bin/ls -1 ${commonOutputPath}/meta/merge.cpass0.run*.done | while read x 
 do
-  dir=$(goPrintValues calibfile - ${x})
+  dir=$(goPrintValues dir - ${x})
   runNumber=$(guessRunNumber ${dir})
   [[ -z ${runNumber} ]] && continue
 
