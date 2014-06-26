@@ -25,6 +25,7 @@ errStatusUnavailable=10
 errPickSession=11
 errCopyKey=12
 errAttachScreen=13
+errRecycleSession=14
 
 # error codes not treated as errors (100 to 140)
 errStatusRunning=100
@@ -261,6 +262,24 @@ function PrepareSession() {
 # Undo the previous action
 function PrepareSession_Undo() {
   rm -rf "$sessionPrefix/$1"
+}
+
+# Recycle the VM from an existing session
+function RecycleSession() {
+  local sessionTag="$1"
+  local fromSessionTag="$2"
+  local fromSessionDir="$sessionPrefix/$fromSessionTag"
+  local f
+
+  for f in 'instance-id.txt' 'instance-address.txt' 'key.pem' ; do
+    cp "$fromSessionDir/$f" "$f" > /dev/null 2>&1
+    if [ $? != 0 ] ; then
+      pr "Cannot copy $f from the source session dir $fromSessionDir"
+      return $errRecycleSession
+    fi
+  done
+
+  return 0
 }
 
 # Move into the session tag directory. Usage:
@@ -505,7 +524,8 @@ function Attach() {
 
 # Pick session interactively
 function PickSession() {
-  local sessionTag sess listSessions
+  local sessionTag sess listSessions mess
+  mess="$1"
   listSessions=()
   mkdir -p "$sessionPrefix"
 
@@ -518,6 +538,9 @@ function PickSession() {
     pr "No session available in session directory $sessionPrefix"
     return $errPickSession
   fi
+
+  # print user message if provided
+  [ "$mess" != '' ] && pr "$mess"
 
   pr 'Available sessions (most recent first):'
   for ((i=0; i<${#listSessions[@]}; i++)) ; do
@@ -557,14 +580,17 @@ function Help() {
   pr "$Prog -- by Dario Berzano <dario.berzano@cern.ch>"
   pr 'Controls the Release Validation workflow on the cloud for AliRoot.'
   pr
-  pr "Usage 1: $Prog [--prepare|--launch] --aliroot <aliroot_tag> [-- arbitraryOpt1=value [arbitraryOpt2=value2...]]"
+  pr "Usage 1: $Prog [--prepare|--launch|--recycle] [--from-session] --aliroot <aliroot_tag> [-- arbitraryOpt1=value [arbitraryOpt2=value2...]]"
   pr
   pr 'A new session is created to validate the specified AliRoot tag.'
   pr
   pr '  --prepare  : prepares the session directory containing the files needed'
-  pr '              for the validation'
+  pr '               for the validation'
+  pr '  --recycle  : prepares a new session by recycling the head node from an'
+  pr '               existing one. Source session is specified via the'
+  pr '               --from-session switch or it can be interactively selected'
   pr '  --launch   : launches the full validation process: prepares session,'
-  pr '              runs the virtual machine, launches the validation program'
+  pr '               runs the virtual machine, launches the validation program'
   pr '  --aliroot  : the AliRoot tag to validate, in the form "vAN-20140610"'
   pr
   pr 'Arbitrary options (in the form variable=value) can be specified after the'
@@ -606,7 +632,7 @@ function Help() {
 function Main() {
 
   # local variables
-  local Args aliRootTag EnterShell Actions sessionTag
+  local Args aliRootTag EnterShell Actions sessionTag fromSessionTag
   Actions=()
 
   # parse command line options
@@ -622,6 +648,10 @@ function Main() {
         sessionTag="$2"
         shift 2
       ;;
+      --from-session)
+        fromSessionTag="$2"
+        shift 2
+      ;;
 
       # actions
       --launch)
@@ -631,6 +661,10 @@ function Main() {
       ;;
       --prepare)
         Actions=( PrepareSession MoveToSessionDir )
+        shift
+      ;;
+      --recycle)
+        Actions=( PrepareSession MoveToSessionDir RecycleSession )
         shift
       ;;
       --runvm)
@@ -716,11 +750,20 @@ function Main() {
       fi
       sessionTag=$( RunAction "$A" "$aliRootTag" "$@" )
       ret=$?
+    elif [ "$A" == 'RecycleSession' ] ; then
+      # special action requiring additional parameters
+      if [ "$fromSessionTag" == '' ] ; then
+        fromSessionTag=$( PickSession 'Select a source session to recycle.' )
+        ret=$?
+        [ $ret != 0 ] && break
+      fi
+      RunAction "$A" "$sessionTag" "$fromSessionTag"
+      ret=$?
     else
       if [ "$sessionTag" == '' ] ; then
         sessionTag=$( PickSession )
         ret=$?
-        [ $ret != 0 ] && return $ret
+        [ $ret != 0 ] && break
       fi
       RunAction "$A" "$sessionTag"
       ret=$?
