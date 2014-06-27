@@ -16,8 +16,18 @@ AliITSUClusterPix::AliITSUClusterPix()
   : fCharge(0)
   , fRecoInfo(0)
   , fNxNzN(0)
+#ifdef _ClusterTopology_
+  ,fPatternNRows(0)
+  ,fPatternNCols(0)
+  ,fPatternMinRow(0)
+  ,fPatternMinCol(0)
+#endif
 {
   // default constructor
+#ifdef _ClusterTopology_
+  memset(fPattern,0,kMaxPatternBytes*sizeof(UChar_t));
+#endif
+
 }
 
 //_____________________________________________________
@@ -32,8 +42,17 @@ AliITSUClusterPix::AliITSUClusterPix(const AliITSUClusterPix& cluster)
   ,fCharge(cluster.fCharge)
   ,fRecoInfo(cluster.fRecoInfo)
   ,fNxNzN(cluster.fNxNzN)
+#ifdef _ClusterTopology_
+  ,fPatternNRows(cluster.fPatternNRows)
+  ,fPatternNCols(cluster.fPatternNCols)
+  ,fPatternMinRow(cluster.fPatternMinRow)
+  ,fPatternMinCol(cluster.fPatternMinCol)
+#endif
 {
   // copy constructor
+#ifdef _ClusterTopology_
+  memcpy(fPattern,cluster.fPattern,kMaxPatternBytes*sizeof(UChar_t));
+#endif
 }
 
 //______________________________________________________________________________
@@ -44,6 +63,15 @@ AliITSUClusterPix& AliITSUClusterPix::operator=(const AliITSUClusterPix& cluster
   fNxNzN = cluster.fNxNzN;
   fCharge = cluster.fCharge;
   fRecoInfo = cluster.fRecoInfo;
+  //
+#ifdef _ClusterTopology_
+  memcpy(fPattern,cluster.fPattern,kMaxPatternBytes*sizeof(UChar_t));
+  fPatternNRows = cluster.fPatternNRows;
+  fPatternNCols = cluster.fPatternNCols;
+  fPatternMinRow = cluster.fPatternMinRow;
+  fPatternMinCol = cluster.fPatternMinCol;
+#endif
+  //
   TObject::operator=(cluster);
   AliCluster::operator=(cluster);
   return *this;
@@ -85,7 +113,75 @@ void AliITSUClusterPix::Print(Option_t* option) const
   if (TestBit(kSplit)) printf(" Spl");
   printf("\n");
   //
+#ifdef _ClusterTopology_
+  if (str.Contains("p")) { // print pattern
+    int nr = GetPatternRowSpan();
+    int nc = GetPatternColSpan();    
+    printf("Pattern: %d rows from %d",nr,fPatternMinRow);
+    if (IsPatternRowsTruncated()) printf("(truncated)");
+    printf(", %d columns from %d",nc,fPatternMinCol);
+    if (IsPatternColsTruncated()) printf("(truncated)");
+    printf("\n");
+    for (int ir=0;ir<nr;ir++) {
+      for (int ic=0;ic<nc;ic++) printf("%c",TestPixel(ir,ic) ? '+':'-');
+      printf("\n");
+    }
+  }
+#endif
+  //
 }
+
+#ifdef _ClusterTopology_
+//______________________________________________________________________________
+void AliITSUClusterPix::ResetPattern()
+{
+  // reset pixels pattern
+  memset(fPattern,0,kMaxPatternBytes*sizeof(UChar_t));
+}
+
+//______________________________________________________________________________
+Bool_t AliITSUClusterPix::TestPixel(UShort_t row,UShort_t col) const
+{
+  // test if pixel at relative row,col is fired
+  int nbits = row*GetPatternColSpan()+col;
+  if (nbits>=kMaxPatternBits) return kFALSE;
+  int bytn = nbits>>3; // 1/8  
+  int bitn = nbits%8;
+  return (fPattern[bytn]&(0x1<<bitn))!=0;
+  //
+}
+
+//______________________________________________________________________________
+void AliITSUClusterPix::SetPixel(UShort_t row,UShort_t col, Bool_t fired) 
+{
+  // test if pixel at relative row,col is fired
+  int nbits = row*GetPatternColSpan()+col;
+  if (nbits>=kMaxPatternBits) return;
+  int bytn = nbits>>3; // 1/8  
+  int bitn = nbits%8;
+  if (nbits>=kMaxPatternBits) exit(1);
+  if (fired) fPattern[bytn] |= (0x1<<bitn);
+  else       fPattern[bytn] &= (0xff ^ (0x1<<bitn));
+  //
+}
+
+//______________________________________________________________________________
+void AliITSUClusterPix::SetPatternRowSpan(UShort_t nr, Bool_t truncated)
+{
+  // set pattern span in rows, flag if truncated
+  fPatternNRows = kSpanMask&nr;
+  if (truncated) fPatternNRows |= kTruncateMask; 
+}
+
+//______________________________________________________________________________
+void AliITSUClusterPix::SetPatternColSpan(UShort_t nc, Bool_t truncated)
+{
+  // set pattern span in columns, flag if truncated
+  fPatternNCols = kSpanMask&nc;
+  if (truncated) fPatternNCols |= kTruncateMask; 
+}
+
+#endif
 
 //______________________________________________________________________________
 Bool_t AliITSUClusterPix::GetGlobalXYZ(Float_t xyz[3]) const
