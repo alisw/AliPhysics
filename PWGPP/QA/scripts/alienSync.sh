@@ -49,7 +49,7 @@ main()
 
   #lock
   lockFile=$logOutputPath/runningNow.lock
-  [[ -f $lockFile ]] && echo "locked. Another process running? ($lockFile)" | tee -a $logFile && exit 1
+  [[ -f $lockFile && ${allowConcurrent} -ne 1 ]] && echo "locked. Another process running? ($lockFile)" | tee -a $logFile && exit 1
   touch $lockFile
   [[ ! -f $lockFile ]] && echo "unable to create lock. exiting..." | tee -a $logFile && exit 1
 
@@ -161,6 +161,12 @@ main()
     destinationdir=${destination%/*}
     [[ -n $softLinkName ]] && softlinktodestination=${destinationdir}/${softLinkName}
     tmpdestination="${destination}.aliensyncTMP"
+    
+    #if we allow concurrent running (DANGEROUS) check if somebody is already trying to process this file
+    if [[ -f ${tmpdestination} && ${allowConcurrent} -eq 1 ]]; then 
+      echo "$tmpdestination exists - concurrent donwload? skipping..."
+      continue
+    fi
 
     if [[ -n ${destinationModifyCommand} ]]; then
       #find the candidate in the database, in case there are more files trying to go to the same
@@ -289,6 +295,8 @@ main()
       echo ${alienFile} >> ${failedDownloadList}
       continue
     fi
+
+    [[ -f $tmpdestination ]] && echo "WARNING: tmpdestination should not still be here! removing..." && rm -r ${tmpdestination}
 
     if [[ $unzipFiles -eq 1 ]]; then
       echo unzip -o ${destination} -d ${destinationdir}
@@ -518,7 +526,6 @@ parseConfig()
   localPathPrefix="${PWD}"
   #define alienSync_localPathPrefix in your env to have a default central location
   [[ -n ${alienSync_localPathPrefix} ]] && localPathPrefix=${alienSync_localPathPrefix}
-  logOutputPath="${localPathPrefix}/alienSyncLogs"
   unzipFiles=0
   allOutputToLog=0
 
@@ -548,6 +555,9 @@ parseConfig()
     echo "${var} = ${value}"
     export ${var}="${value}"
   done
+
+  #things that by default depend on other variables should be set here, after the dependencies
+  [[ -z ${logOutputPath} ]] && logOutputPath="${localPathPrefix}/alienSyncLogs"
 }
 
 checkMD5sum()
