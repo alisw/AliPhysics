@@ -39,7 +39,6 @@ public:
 
   virtual void Finish();
   void SetDoPtAnalysis(int do2d);
-  void SetDoCorrections(bool doCorr);
   void SetDoCorrectionsHist(CorrectionType doCorr);
   double CalculateCorrectionWeight(double pT1, double pT2);
   double CalculateCorrectionWeight(double pT1, double pT2, double eta1, double eta2, double phi1, double phi2, double zvert1, double zvert2);
@@ -108,6 +107,8 @@ private:
   TH3F *fh3Reco2;
   TH1D *fhCont1;
   TH1D *fhCont2;
+
+  bool fCorr1D;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnDEtaDPhiCorrections, 1)

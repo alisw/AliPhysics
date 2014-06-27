@@ -36,6 +36,7 @@ AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask() :
   AliJetModelBaseTask("AliJetEmbeddingFromGenTask"),
   fGen(0),
   fMassless(kFALSE),
+  fHistPt(0),
   fHistTrials(0),
   fHistXsection(0),
   fHistPtHard(0)
@@ -49,6 +50,7 @@ AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask(const char *name, Bool_t 
   AliJetModelBaseTask(name,drawqa),
   fGen(0),
   fMassless(kFALSE),
+  fHistPt(0),
   fHistTrials(0),
   fHistXsection(0),
   fHistPtHard(0)
@@ -72,6 +74,9 @@ void AliJetEmbeddingFromGenTask::UserCreateOutputObjects()
     return;
 
   AliJetModelBaseTask::UserCreateOutputObjects();
+
+  fHistPt = new TH1F("fHistpt","fHistPt;#it{p}_{T};N",100,0.,100.);
+  fOutput->Add(fHistPt);
 
   fHistTrials = new TH1F("fHistTrials", "fHistTrials", 1, 0, 1);
   fHistTrials->GetYaxis()->SetTitle("trials");
@@ -157,6 +162,7 @@ void AliJetEmbeddingFromGenTask::Run()
       continue;
     Double_t mass = part->GetMass();
     if(fMassless) mass = 0.;
+    fHistPt->Fill(pt);
     AddTrack(pt, eta, phi,0,0,0,0,0,0,c,mass);
   }
 
