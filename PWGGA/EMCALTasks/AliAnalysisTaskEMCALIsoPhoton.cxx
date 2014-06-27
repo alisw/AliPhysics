@@ -1204,7 +1204,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     Double_t ceta = clsVec.Eta();
     Short_t id;
     GetMaxCellEnergy( c, id);
-    fEmcClusEClusCuts->Fill(c->E(),cuts[0],1);
+    fEmcClusEClusCuts->Fill(c->E(),0);
     fEmcClusEPhi->Fill(c->E(), cphi);
     fEmcClusEEta->Fill(c->E(), ceta);
     if(fMaxEClus>fECut){
@@ -1219,19 +1219,19 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     if(IsExotic(c))
       continue;
     fEmcClusNotExo->Fill(c->E());
-    fEmcClusEClusCuts->Fill(c->E(),cuts[1],1);
+    fEmcClusEClusCuts->Fill(c->E(),1);
     if(fClusIdFromTracks.Contains(Form("%d",ic)))
       fEmcClusETM2->Fill(c->E());
     if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
       fEmcClusETM1->Fill(c->E());
       continue;
     }
-    fEmcClusEClusCuts->Fill(c->E(),cuts[2],1);
+    fEmcClusEClusCuts->Fill(c->E(),2);
     if(TMath::Abs(maxt)>30e-9)
       continue;
-    fEmcClusEClusCuts->Fill(c->E(),cuts[3],1);
+    fEmcClusEClusCuts->Fill(c->E(),3);
     if(c->GetM02()>0.1)
-      fEmcClusEClusCuts->Fill(c->E(),cuts[4],1);
+      fEmcClusEClusCuts->Fill(c->E(),4);
   }
 }
 //________________________________________________________________________

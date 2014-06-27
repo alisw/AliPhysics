@@ -73,9 +73,9 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaCaloTrackCorrBaseClass {
   // Settings for non standard jet branch
   TString  GetJetBranchName()            const { return fJetBranchName             ; }
   void     SetJetBranchName(const char *name)  { fJetBranchName = name             ; }
-  void     SwitchOnNonStandardJetFromReader()  { fNonStandardJetFromReader = kTRUE ; }
-  void     SwitchOffNonStandardJetFromReader() { fNonStandardJetFromReader = kFALSE; }
-  Bool_t   IsNonStandardJetFromReader()        { return fNonStandardJetFromReader  ; }
+  //void     SwitchOnNonStandardJetFromReader()  { fNonStandardJetFromReader = kTRUE ; }
+  //void     SwitchOffNonStandardJetFromReader() { fNonStandardJetFromReader = kFALSE; }
+  //Bool_t   IsNonStandardJetFromReader()        { return fNonStandardJetFromReader  ; }
 
   TString  GetBkgJetBranchName()           const { return fBkgJetBranchName          ; }
   void     SetBkgJetBranchName(const char *name) { fBkgJetBranchName = name          ; }
@@ -131,7 +131,7 @@ private:
   Double_t   fJetConeSize ;       //! Reconstructed jet cone size 
   Double_t   fJetMinPt ;          //! Minumum jet pt, default 5GeV/c
   Double_t   fJetAreaFraction ;   //! Jet area fraction X in X*pi*R^2, default 0.6
-  Bool_t     fNonStandardJetFromReader; //! use non standard jet from reader //new
+  //Bool_t     fNonStandardJetFromReader; //! use non standard jet from reader //new
   TString    fJetBranchName ;//! name of jet branch not set in reader part //new
   Bool_t     fBackgroundJetFromReader; //! use background jet from reader //new
   TString    fBkgJetBranchName ;//! name of background jet branch not set in reader part //new

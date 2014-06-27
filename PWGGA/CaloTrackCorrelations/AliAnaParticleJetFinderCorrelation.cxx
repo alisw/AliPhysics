@@ -15,7 +15,8 @@
 
 //_________________________________________________________________________
 // Class for the analysis of particle (direct gamma) -jet (jet found with finder) correlations
-//*-- Author: Gustavo Conesa (LNF-INFN) 
+//*-- Author: Gustavo Conesa (LNF-INFN)
+//*-- Modified: Adam Matyja (INP PAN Cracow) 
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -48,7 +49,8 @@ AliAnaCaloTrackCorrBaseClass(),
   fConeSize(0), fPtThresholdInCone(0),fUseJetRefTracks(0),
   fMakeCorrelationInHistoMaker(0), fSelectIsolated(0),
   fJetConeSize(0.4),fJetMinPt(5),fJetAreaFraction(0.6),
-  fNonStandardJetFromReader(kTRUE), fJetBranchName("jets"),
+  //fNonStandardJetFromReader(kTRUE),
+  fJetBranchName("jets"),
   fBackgroundJetFromReader(kTRUE),fBkgJetBranchName("jets"),
   fGammaConeSize(0.3),fUseBackgroundSubtractionGamma(0),fSaveGJTree(0),
   fMostEnergetic(kFALSE),fMostOpposite(kTRUE), fUseHistogramJetBkg(kTRUE),
@@ -894,19 +896,19 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   //
   Int_t nJets=-1;
   TClonesArray *aodRecJets = 0;
-  if(IsNonStandardJetFromReader()){//jet branch from reader
-    if(GetDebug() > 3) AliInfo(Form("GetNonStandardJets function (from reader) is called"));
-    aodRecJets = GetNonStandardJets();
-    if(GetDebug() > 3) AliInfo(Form("aodRecJets %p",aodRecJets));
-    if(aodRecJets==0x0)
+  //if(IsNonStandardJetFromReader()){//jet branch from reader
+  if(GetDebug() > 3) AliInfo(Form("GetNonStandardJets function (from reader) is called"));
+  aodRecJets = GetNonStandardJets();
+  if(GetDebug() > 3) AliInfo(Form("aodRecJets %p",aodRecJets));
+  if(aodRecJets==0x0)
     {
       if(GetDebug() > 3) event->Print();
       AliFatal("List of jets is null");
       return;
     }
-    nJets=aodRecJets->GetEntries();
-    if(GetDebug() > 3) printf("nJets %d\n",nJets);
-  }
+  nJets=aodRecJets->GetEntries();
+  if(GetDebug() > 3) printf("nJets %d\n",nJets);
+  //}
   //end of new part
   
   if(nJets==0) {
@@ -1112,16 +1114,16 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   
   Int_t nJets=-1;
   TClonesArray *aodRecJets = 0;
-  if(IsNonStandardJetFromReader()){//branch read in reader from reader
-    if (GetDebug() > 3) printf("GetNonStandardJets function (from reader) is called\n");
-    aodRecJets = GetNonStandardJets();
-    if(aodRecJets==0x0){
-      if(GetDebug() > 3) event->Print();
-      AliFatal("Jets container not found");
-      return; // trick coverity
-    }
-    nJets=aodRecJets->GetEntries();
+  //if(IsNonStandardJetFromReader()){//branch read in reader from reader
+  if (GetDebug() > 3) printf("GetNonStandardJets function (from reader) is called\n");
+  aodRecJets = GetNonStandardJets();
+  if(aodRecJets==0x0){
+    if(GetDebug() > 3) event->Print();
+    AliFatal("Jets container not found");
+    return; // trick coverity
   }
+  nJets=aodRecJets->GetEntries();
+  //}
   if(nJets==0) {
     //    printf("Why number of jets = 0? Check what type of collision it is. If PbPb -problem.\n");
     GetReader()->FillInputNonStandardJets();
@@ -1748,9 +1750,9 @@ void AliAnaParticleJetFinderCorrelation::Print(const Option_t * opt) const
   printf("Reconstructed jet minimum pt = %3.2f\n", fJetMinPt) ;
   printf("Reconstructed jet minimum area fraction = %3.2f\n", fJetAreaFraction) ;
 
-  if(!fNonStandardJetFromReader){
+//  if(!fNonStandardJetFromReader){
     printf("fJetBranchName =   %s\n", fJetBranchName.Data()) ;
-  }
+//  }
   if(!fBackgroundJetFromReader){
     printf("fBkgJetBranchName =   %s\n", fBkgJetBranchName.Data()) ;
   }
@@ -1847,7 +1849,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad = TMath::Sqrt((gammaEta-refEta)*(gammaEta-refEta) + (gammaPhi-refPhi)*(gammaPhi-refPhi));
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
-    } while (rad<fJetConeSize+fGammaConeSize || rad2<fJetConeSize+fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
+    } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
     fhRandomPhiEta[2]->Fill(refPhi,refEta);
 
   }
@@ -1860,7 +1862,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //check if reference is not within jet cone or gamma cone +0.4
       //example: FF fConeSize=0.4, fJetConeSize=0.4, fIsoGammaConeSize=0.3
-    } while (rad<fJetConeSize+fGammaConeSize || rad2<fJetConeSize+fJetConeSize);
+    } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize);
     //photon:0.7=0.4+0.3; jets:0.8=0.4 +0.4 //rad<fConeSize+fJetConeSize rad2<fConeSize+0.3
     fhRandomPhiEta[0]->Fill(refPhi,refEta);
   }
@@ -1921,7 +1923,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad = TMath::Sqrt((gammaEta-refEta)*(gammaEta-refEta) + (gammaPhi-refPhi)*(gammaPhi-refPhi));
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
-    } while (rad<fJetConeSize+fGammaConeSize || rad2<fJetConeSize+fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
+    } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
     fhRandomPhiEta[1]->Fill(refPhi,refEta);
 
   }
@@ -1967,7 +1969,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
     rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
 
-    if (rad<fJetConeSize+fGammaConeSize || rad2<fJetConeSize+fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize) fhRandomPhiEta[3]->Fill(refPhi,refEta);
+    if (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize) fhRandomPhiEta[3]->Fill(refPhi,refEta);
   }
   else if(type==5){//tmp                                                                                                                                                   
     //printf("vertex: %f %f %f \n",vertex[0],vertex[1],vertex[2]);                                                                                                         
@@ -2011,7 +2013,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad = TMath::Sqrt((gammaEta-refEta)*(gammaEta-refEta) + (gammaPhi-refPhi)*(gammaPhi-refPhi));
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
-    } while (rad<fJetConeSize+fGammaConeSize || rad2<fJetConeSize+fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
+    } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
     fhRandomPhiEta[4]->Fill(refPhi,refEta);
   }
 

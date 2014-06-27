@@ -104,7 +104,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     public:
         AlipAJetHistos();
         AlipAJetHistos(const char *name);
-        AlipAJetHistos(const char *name, const char *centag, Bool_t doNEF=kFALSE);
+        AlipAJetHistos(const char *name, TString centag, Bool_t doNEF=kFALSE);
         
         virtual ~AlipAJetHistos();
         
@@ -124,7 +124,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         
         // Setters
         void SetName(const char *name);
-        void SetCentralityTag(const char *name);
+        void SetCentralityTag(TString name);
         void SetCentralityRange(Int_t bins, Double_t low, Double_t up);
         void SetPtRange(Int_t bins, Double_t low, Double_t up);
         void SetRhoPtRange(Int_t bins, Double_t low, Double_t up);
@@ -136,7 +136,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         void SetSignalTrackPtBias(Bool_t chargedBias);
         void SetNEFJetDimensions(Int_t n);
         void SetNEFClusterDimensions(Int_t n);
-
+        void SetRhoValue(Double_t value);
+        
         // User Defined Functions
         TList* GetOutputHistos();  //!
         Double_t GetRho();
@@ -216,7 +217,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
 
         // Variables
         const char *fName;  //!
-        const char *fCentralityTag;  //!
+        TString fCentralityTag; 
         
         Int_t fCentralityBins;
         Double_t fCentralityLow;
@@ -335,9 +336,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     };
     
     // Used to set the Centrality Tag
-    inline void SetCentralityTag(const char *centag)
+    inline void SetCentralityTag(TString centag)
     {
-        fCentralityTag = centag;
+        fCentralityTag = centag.Data();
     };
     
     // Used to set apriori Scaling Factor
@@ -594,7 +595,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     Double_t fClusterMinPt;
     Double_t fNEFSignalJetCut;
     
-    const char *fCentralityTag;  //!
+    TString fCentralityTag; 
     Int_t fCentralityBins;
     Double_t fCentralityLow;
     Double_t fCentralityUp;
