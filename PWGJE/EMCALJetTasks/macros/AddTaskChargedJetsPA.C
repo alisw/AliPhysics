@@ -49,17 +49,20 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   if (strcmp(containerSuffix,""))
     containerNameSuffix = Form("_%s", containerSuffix);
 
+  TString bgrdName("");
   TString myContName("");
   TString myContJPName("");
   TString myContTCName("");
   if(isMC)
   {
+    bgrdName = Form("BackgroundR0%2.0f_%s_MC%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContName = Form("AnalysisR0%2.0f_%s_MC%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContJPName = Form("JetProfileR0%2.0f_%s_MC%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContTCName = Form("TrackcutsR0%2.0f_%s_MC%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
   }
   else
   {
+    bgrdName = Form("BackgroundR0%2.0f_%s_MC%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContName = Form("AnalysisR0%2.0f_%s%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContJPName = Form("JetProfileR0%2.0f_%s%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContTCName = Form("TrackcutsR0%2.0f_%s%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
@@ -73,11 +76,14 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
     AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,0.150,0.300); // kt
 
     // #### Define external rho task
-    TString myRhoName("ExternalRhoTask");
-    AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,0.150,0.300); // anti-kt
-    AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,0.150,0.300); // kt
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
-    AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), NULL, usedTracks, "", myRhoName.Data(), 0.4,"TPC", 0., 5., 0, 0,2,kFALSE,myRhoName.Data(),kTRUE);
+    AliAnalysisTaskSE* mgrTask = manager->GetTask(bgrdName.Data());
+    if (!mgrTask)
+    {
+      AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,0.150,0.300); // anti-kt
+      AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,0.150,0.300); // kt
+      gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
+      AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), NULL, usedTracks, "", bgrdName.Data(), 0.4,"TPC", 0., 5., 0, 0,2,kFALSE,bgrdName.Data(),kTRUE);
+    }
   }
 
   // #### Define analysis task
@@ -91,7 +97,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   if(doJetAnalysis)
   {
     task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA_%s_%s", jetFinderTask->GetName(), triggerName.Data()), usedTracks, jetFinderTask->GetName(),jetFinderTaskKT->GetName(), doJetProfileAnalysis, doTrackcutAnalysis);
-    task->SetExternalRhoTaskName(myRhoName.Data());
+    task->SetExternalRhoTaskName(bgrdName.Data());
   }
   else
     task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA_%s_%s", "", triggerName.Data()), usedTracks, "","", doJetProfileAnalysis, doTrackcutAnalysis);
