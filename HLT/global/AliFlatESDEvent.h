@@ -63,7 +63,7 @@ class AliFlatESDEvent: public AliVVevent {
   } 
 
   const AliFlatESDVertex* GetPrimaryVertexTracks() const { 
-    return (fPrimaryVertexMask & 0x2) ? reinterpret_cast<const AliFlatESDVertex*>(fContent + CountBits(fPrimaryVertexMask, 0x1)) : NULL;
+    return (fPrimaryVertexMask & 0x2) ? reinterpret_cast<const AliFlatESDVertex*>(fContent) + CountBits(fPrimaryVertexMask, 0x1) : NULL;
   } 
 
   Int_t GetNumberOfV0s() const {return fNV0s;}
