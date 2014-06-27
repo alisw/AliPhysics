@@ -876,7 +876,7 @@ void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, T
   if (charge<0) cLabel.Form("neg"); else if (charge>0) cLabel.Form("pos"); else cLabel.Form("all");
   
   TH1F* hMatchedP  = new TH1F(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p", cLabel.Data()), 1000,0.,10.) ;  
-  HistogramMakeUp(hMatchedP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "L (cm)","tracks");
+  HistogramMakeUp(hMatchedP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p (GeV/c)","tracks");
   list->AddLast(hMatchedP) ; 
 
   TH1F* hMatchedPt  = new TH1F(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T}", cLabel.Data()), 1000,0.,10.) ;  
@@ -896,7 +896,7 @@ void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, T
   list->AddLast(hMatchedPtVsOutPhi) ;
    
   TH1F* hPrimaryP  = new TH1F(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p", cLabel.Data()), 1000,0.,10.) ;  
-  HistogramMakeUp(hPrimaryP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "L (cm)","tracks");
+  HistogramMakeUp(hPrimaryP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p (GeV/c)","tracks");
   list->AddLast(hPrimaryP) ; 
 
   TH1F* hPrimaryPt  = new TH1F(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T}", cLabel.Data()), 1000,0.,10.) ;  
