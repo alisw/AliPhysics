@@ -6,8 +6,7 @@
 #include "AliLog.h"
 
 #include "AliPID.h"
-//#include "AliPIDResponse.h"
-
+#include "AliPIDResponse.h"
 
 class AliAODEvent;
 class AliESDEvent;
@@ -139,7 +138,7 @@ protected:
   AliESDEvent*             fESDEvent;             //! ESD Event 
   AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler 
   
-  //AliPIDResponse*          fPIDResponse;
+  AliPIDResponse*          fPIDResponse;
 
   // Histogram settings
   //TList*              _inputHistoList;
@@ -280,6 +279,7 @@ protected:
   double __s2PtNNw_12;
   
   double * __n1_1_vsPt;   //!
+
   double * __n1_1_vsEtaPhi;     //! 
   double * __s1pt_1_vsEtaPhi;    //!
   float  * __n1_1_vsZEtaPhiPt;    //!
