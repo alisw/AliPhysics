@@ -788,7 +788,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 	printf("Opening file %s\n",qafilename);
 	if (!fin) {
 		printf("ERROR: QA output not found. Exiting with status -1\n");
-		return -1;
+		return 1;
 	} else {
 		printf("INFO: QA output file %s open. \n",fin->GetName());
 	}
@@ -862,14 +862,15 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 	TH1F*hMulti= (TH1F*) generalList->At(0);
 
 	TH1F* hFractionEventsWhits=new TH1F("hFractionEventsWhits","hFractionEventsWhits;fraction of events with hits (%)",200,0.,100.);
+	if (hMulti->GetEntries()<1) return 2;
 	Float_t fraction=0.0;
 	if (hMulti->GetEntries()>0.0) fraction=((Float_t) hMulti->GetBinContent(1))/((Float_t) hMulti->GetEntries());
 	else fraction=0.0;
 	hFractionEventsWhits->Fill(fraction*100.);
-
 	//-------------------------------------------------------------
 	/*GENERAL MONITOR - TIMING AND GEOMETRY*/
 	TH1F * hTime = (TH1F*) generalList->At(1);
+	if (hTime->GetEntries()<1) return 2;
 	hTime->SetMarkerStyle(8);
 	hTime->SetMarkerSize(0.7);
 	hTime->SetMarkerColor(kBlue);
@@ -1509,6 +1510,7 @@ Double_t GetGoodTOFChannelsRatio(Int_t run, Bool_t saveMap = kFALSE)
   calibHisto.LoadCalibHisto();
   AliTOFcalib calib;
   calib.Init();
+
   Int_t sector, sectorStrip, padx, fea;
   Float_t hitmapx, hitmapy;
   for (Int_t i = 0; i <  array->GetSize(); i++) {
