@@ -1005,6 +1005,8 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
     double w1=0., w2=0.;
     double eps1=0., eps2=0;
     double cont1=0., cont2=0; //w=(1-cont)/eps
+    phi1 += TMath::Pi();
+    phi2 += TMath::Pi();
 
     if(pT1 > fhCont1->GetXaxis()->GetXmin() && pT1 < fhCont1->GetXaxis()->GetXmax() && pT2 > fhCont2->GetXaxis()->GetXmin() && pT2 < fhCont2->GetXaxis()->GetXmax())
       {
