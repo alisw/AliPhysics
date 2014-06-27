@@ -21,8 +21,9 @@ main()
     echo "expert: ${0##*/} alienFindCommand=\"alien_find /some/path/ file\" [opt=value]"
     echo "        ${0##*/} alienFindCommand=\"alien_find /some/path/ file\" localPathPrefix=\${PWD}"
     echo
-    echo "by default files are downloaded to current dir, or \${alienSync_localPathPrefix} if set."
+    echo "by default files are downloaded to current dir, or \${alienSync_localPathPrefix}, if set."
     echo "At least specify alienFindCommand, either on command line or in the configFile."
+    echo "the logs go by default to localPathPrefix/alienSyncLogs"
     return
   fi
   
