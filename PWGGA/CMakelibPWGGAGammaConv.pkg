@@ -33,6 +33,7 @@ set ( SRCS
 	GammaConv/AliAODConversionPhoton.cxx
 	GammaConv/AliKFConversionPhoton.cxx
 	GammaConv/AliKFConversionMother.cxx
+        GammaConv/AliCaloPhotonCuts.cxx
 	GammaConv/AliConversionCuts.cxx
 	GammaConv/AliConversionSelection.cxx
 	GammaConv/AliConversionMesonCuts.cxx
@@ -57,6 +58,7 @@ set ( SRCS
 	GammaConv/AliPrimaryPionSelector.cxx
 	GammaConv/AliPrimaryPionCuts.cxx
 	GammaConv/AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
+        GammaConv/AliAnalysisTaskGammaConvCalo.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -65,4 +67,4 @@ set ( DHDR  PWGGAGammaConvLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWGGA/GammaConv CORRFW STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)
+set ( EINCLUDE  PWGGA/PWGGAUtils PWGGA/GammaConv PWG/TRD PWG/EMCAL EMCAL OADB STEER/STEER CORRFW STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)

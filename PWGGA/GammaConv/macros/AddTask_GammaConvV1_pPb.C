@@ -992,15 +992,15 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 2] = "8000012007092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // min R =35 cm & only photon quality 2
 		cutarray[ 3] = "8000012007092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // min R =35 cm & only photon quality 3 
 	} else if (trainConfig == 179) {
-	        cutarray[ 0] = "8000011002092170008260400000"; mesonCutArray[ 0] = "01628035009000"; //new standard rapidity 0-0.5 in cms
-	        cutarray[ 1] = "8000011005092170008260400000"; mesonCutArray[ 1] = "01621035009000"; //new standard RCut=10cm
-	        cutarray[ 2] = "8000011008092170008260400000"; mesonCutArray[ 2] = "01621035009000"; //new standard RCut=12.5cm
-	        cutarray[ 3] = "8000011006092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //new standard RCut=20cm
+		cutarray[ 0] = "8000011002092170008260400000"; mesonCutArray[ 0] = "01628035009000"; //new standard rapidity 0-0.5 in cms
+		cutarray[ 1] = "8000011005092170008260400000"; mesonCutArray[ 1] = "01621035009000"; //new standard RCut=10cm
+		cutarray[ 2] = "8000011008092170008260400000"; mesonCutArray[ 2] = "01621035009000"; //new standard RCut=12.5cm
+		cutarray[ 3] = "8000011006092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //new standard RCut=20cm
 	} else if (trainConfig == 180) {
-	        cutarray[ 0] = "8000012002092170008260400000"; mesonCutArray[ 0] = "01628035009000"; //new standard rapidity 0-0.5 in cms
-	        cutarray[ 1] = "8000012005092170008260400000"; mesonCutArray[ 1] = "01621035009000"; //new standard RCut=10cm
-	        cutarray[ 2] = "8000012008092170008260400000"; mesonCutArray[ 2] = "01621035009000"; //new standard RCut=12.5cm
-	        cutarray[ 3] = "8000012006092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //new standard RCut=20cm
+		cutarray[ 0] = "8000012002092170008260400000"; mesonCutArray[ 0] = "01628035009000"; //new standard rapidity 0-0.5 in cms
+		cutarray[ 1] = "8000012005092170008260400000"; mesonCutArray[ 1] = "01621035009000"; //new standard RCut=10cm
+		cutarray[ 2] = "8000012008092170008260400000"; mesonCutArray[ 2] = "01621035009000"; //new standard RCut=12.5cm
+		cutarray[ 3] = "8000012006092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //new standard RCut=20cm
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
