@@ -169,6 +169,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TH2D>("hTrackPtPhiEta", "Track p_{T} angular distribution", "LEGO2", 100, 0., 2*TMath::Pi(),100, -2.5, 2.5, "#phi","#eta","dp_{T}^{Tracks}/(d#phi d#eta)");
     AddHistogram2D<TH2D>("hTrackPhiPtCut", "Track #phi distribution for different pT cuts", "LEGO2", 360, 0, TMath::TwoPi(), 20, 0, 20, "#phi", "p_{T} lower cut", "dN^{Tracks}/d#phi dp_{T}");
     AddHistogram2D<TH2D>("hTrackPhiTrackType", "Track #phi distribution for different track types", "LEGO2", 360, 0, TMath::TwoPi(), 3, 0, 3, "#phi", "Label", "dN^{Tracks}/d#phi");
+    AddHistogram2D<TH2D>("hTrackPtTrackType", "Track p_{T} distribution for different track types", "LEGO2", 1000, 0., 250., 3, 0, 3, "p_{T} (GeV/c)", "Label", "dN^{Tracks}/dp_{T}");
     AddHistogram2D<TH2D>("hTrackEta", "Track #eta distribution", "COLZ", 180, fMinEta, fMaxEta, fNumberOfCentralityBins, 0., 100., "#eta", "Centrality", "dN^{Tracks}/d#eta");
 
     // Jet QA plots
@@ -1497,6 +1498,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     if (IsTrackInAcceptance(track))
     {
       FillHistogram("hTrackPt", track->Pt(), centralityPercentile);
+
       if(track->Eta() >= 0)
         FillHistogram("hTrackPtPosEta", track->Pt(), centralityPercentile);
       else
@@ -1506,7 +1508,10 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
       FillHistogram("hTrackPhi", track->Phi());
       
       if(static_cast<AliPicoTrack*>(track))
+      {
         FillHistogram("hTrackPhiTrackType", track->Phi(), (static_cast<AliPicoTrack*>(track))->GetTrackType());
+        FillHistogram("hTrackPtTrackType", track->Pt(), (static_cast<AliPicoTrack*>(track))->GetTrackType());
+      }
 
       for(Int_t j=0;j<20;j++)
         if(track->Pt() > j)
