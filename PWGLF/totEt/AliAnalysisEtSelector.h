@@ -94,6 +94,7 @@ public:
     // Get correct cluster label - PHOS needs different method
     virtual UInt_t GetLabel(const AliESDCaloCluster *cluster, AliStack *stack){if(!stack){return 0;}else{return TMath::Abs(cluster->GetLabel());}}
     
+    AliAnalysisEtCuts * GetCuts() const { return fCuts; }
 protected:
   
     const AliVEvent *fEvent; //! Pointer to current event

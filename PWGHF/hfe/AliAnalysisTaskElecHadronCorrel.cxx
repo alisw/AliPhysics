@@ -2045,14 +2045,15 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack 
 
     if(ktracks == itrack) continue; //do not select the same electron
 
-    Double_t ptHad= -999, pHad=-999., dEdxHad = -999;
+    //Double_t ptHad= -999, pHad=-999., dEdxHad = -999;
+    Double_t ptHad= -999;
     Double_t ptEle = -999;
     Double_t phiEle = -999, phiHad = -999, Dphi = -999;
     Double_t pi = 3.14;
 
-    dEdxHad = trackHad->GetTPCsignal();
+    //dEdxHad = trackHad->GetTPCsignal();
     ptHad = trackHad->Pt();
-    pHad = trackHad->P();
+    //pHad = trackHad->P();
     ptEle = track->Pt();
 
     //    if(ptHad <2) continue;

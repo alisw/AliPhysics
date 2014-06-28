@@ -3,13 +3,19 @@
 //  This macro was written by Domenico Colella (domenico.colella@cern.ch).
 //  12 November 2013
 //
-//   ------ Arguments
+//   ------------------------
+//   ------ Arguments -------
+//   ------------------------
 //   --  icasType          =  0) Xi- 1) Xi+ 2) Omega- 3) Omega+
 //   --  collidingsystem   =  0) PbPb  1) pp  2) pPb
+//   --  isMC              =  kTRUE if running on MC production 
 //   --  fileDir           =  "Input file directory"
 //   --  filein            =  "Input file name"
 //
-//   ------ QATask output content
+//
+//   -------------------------------------
+//   ------ QATask output content --------
+//   -------------------------------------
 //   The output produced by the QATask is a CFContainer with 4 steps and 21 variables.
 //   The meaning of each variable within the container are listed here:
 //   --  0   = Max DCA Cascade Daughters                 pp: 2.0     PbPb: 0.3     pPb: 2.0
@@ -34,32 +40,50 @@
 //   --  19  = Centrality
 //   --  20  = ESD track multiplicity
 //   The last two variables are empty in the case proton-proton collisions.
+//   In case of MC production one more CFContainer is produced, containing infos on the 
+//   generated particles. As the previous container, this one is composed by 4 steps, one
+//   for each cascade and 7 variables:
+//    -- 0   = Total momentum
+//    -- 1   = Transverse momentum
+//    -- 2   = Rapidity
+//    -- 3   = Pseudo-rapidity
+//    -- 4   = Theta angle
+//    -- 5   = Phi angle
+//    -- 6   = Centrality
+//    The previous container is still produced with the informations from the reconstructed
+//    particles.
 //
-//   ------ Present Macro Check
-//   With this macro are produced the plots of the distributions for the topological
-//   variables used during the reconstruction of the cascades and defined in the two
-//   classes AliCascadeVertexer.cxx and AliV0vertexer.cxx contained in /STEER/ESD/ 
-//   folder in Aliroot.
 //
-//   -- First Canvas: DCA cascade daughters, Bachelor IP to PV, Cascade cosine of PA
-//                    Cascade radius of fiducial volume, Invariant mass Lambda,
-//                    DCA V0 daughters.
-//   -- Second Canvas: V0 cosine of PA to PV, Min V0 Radius Fid. Vol., Min DCA V0 To PV
-//                     Min DCA Pos To PV, Min DCA Neg To PV, V0 cosine of PA to XiV
-//
-//   In this plots, in correspondence to the min/max cut value adopted in the reconstruction
-//   a line is drawn, to check if there is same problem in the cuts definition.
-//
-//   Also, other specific distribution for the selected cascades are ploted as: the
-//   invariant mass distribution, the transverse momentum distribution, the rapidity
-//   distribution, proper length distribution for the cascade and the v0.
-//
-//   -- Third Canvas: InvMass, Transverse momentum, Cascade proper length, V0 proper length
-//
-//   -- Fourth Canvas: check on the invariant mass distribution
-//
-//   -- Fifth Canvas: Centrality, track multiplicity
-//      (Only for PbPb collisions)
+//   -----------------------------------
+//   ------ Present Macro Checks -------
+//   -----------------------------------
+//   Using this macro many checks on the cascade topological reconstruction procedure
+//   can be performed. In particular, the shape and the limit for the topological 
+//   variable distributions as well as other kinematical variable distributions. The
+//   reconstruction of the cascades are performed using two classes AliCascadeVertexer.cxx 
+//   and AliV0vertexer.cxx contained in /STEER/ESD/ folder in Aliroot.
+//   In the following are listed the contents of each page of the produced pdf:
+//   
+//   -- [Page 1] Distributions for the variables: 
+//                DCA cascade daughters,  Bachelor IP to PV, 
+//                Cascade cosine of PA,   Cascade radius of fiducial volume, 
+//                Invariant mass Lambda,  DCA V0 daughters.
+//   -- [Page 2] Distributions for the variables:
+//                V0 cosine of PA to PV,  Min V0 Radius fiducial volume, 
+//                Min DCA V0 To PV,       Min DCA positive To PV, 
+//                Min DCA negative To PV, V0 cosine of PA to XiV
+//   -- [Page 3] Distributions for the variables;
+//                InvMass,                Transverse momentum,
+//                Rapidity,               Cascade proper length, 
+//                V0 proper length.
+//   -- [Page 4] Check on the invariant mass distribution fit.
+//   -- [Page 5] Only in case of PbPb or pPb collisions, the event centrality
+//               distribution.
+//   -- [Page 6] Only in case of MC production, distributions for the MC generated
+//               particles, of the variables:
+//                Total momentum,         Transverse momentum,
+//                Rapidity,               Pseudo-rapidity,
+//                Theta angle,            Phi angle,
 //
 //////////////////////////////////////////////////////
 
@@ -68,8 +92,9 @@
 
 class AliCFContainer;
 
-void PostProcessQAMultistrange(Int_t   icasType        = 2,                             // 0) Xi- 1) Xi+ 2) Omega- 3) Omega+
-                               Int_t   collidingsystem = 1,                             // 0) PbPb  1) pp 2) pPb
+void PostProcessQAMultistrange(Int_t   icasType        = 0,                             // 0) Xi- 1) Xi+ 2) Omega- 3) Omega+
+                               Int_t   collidingsystem = 0,                             // 0) PbPb  1) pp 2) pPb
+                               Bool_t  isMC            = kFALSE,                         // kTRUE-->MC and kFALSE-->Exp.
                                Char_t *fileDir         = ".",                           // Input file directory
                                Char_t *filein          = "AnalysisResults.root"         // Input file name
                               ) {
@@ -100,8 +125,8 @@ void PostProcessQAMultistrange(Int_t   icasType        = 2,                     
      //_________________________________
      //SOURCE THE FILE AND THE CONTAINER
      TFile *f1 = new TFile(Form("%s/%s",fileDir,filein));
-     AliCFContainer *cf = (AliCFContainer*) (f1->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeCuts"));
-   
+     AliCFContainer *cf = (AliCFContainer*) (f1->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeCuts"));  
+ 
      //____________
      //DEEFINE TEXT
      TLatex* t1 = new TLatex(0.6,0.55,"#color[3]{OK!!}");
@@ -210,7 +235,9 @@ void PostProcessQAMultistrange(Int_t   icasType        = 2,                     
        c1->cd(5);
        TH1D *hvar4 = cf->ShowProjection(4,icasType);
        hvar4->Draw("histo");
-       Double_t x41 = 1.116 + 0.008;
+       Double_t x41;
+       if      (collidingsystem < 2)  x41 = 1.116 + 0.008;
+       else if (collidingsystem == 2) x41 = 1.116 + 0.010;
        TLine *line41 = new TLine(x41,0.,x41,hvar4->GetBinContent(hvar4->GetMaximumBin()));
        line41->SetLineColor(kRed);
        line41->SetLineStyle(9);
@@ -224,8 +251,8 @@ void PostProcessQAMultistrange(Int_t   icasType        = 2,                     
        line42->SetLineStyle(9);
        line42->SetLineWidth(2.0);
        line42->Draw("same");
-          Bool_t check_4_1 = checkUnderTheLimit(hvar3, x3);
-          Bool_t check_4_2 = checkOverTheLimit(hvar0, x0);
+          Bool_t check_4_1 = checkUnderTheLimit(hvar4, x42);
+          Bool_t check_4_2 = checkOverTheLimit(hvar4, x41);
           if (check_4_1 && check_4_2) { cout<<"The cut is OK!!"<<endl; t1->Draw(); }
           else                        { cout<<"The cut is NOT OK!!"<<endl; t2->Draw(); }
        //Pad 6: DCA V0 daughters
@@ -452,20 +479,53 @@ void PostProcessQAMultistrange(Int_t   icasType        = 2,                     
 
      //________________________________ 
      //DEFINE 5th CANVAS AND DRAW PLOTS
-     if (collidingsystem == 0) {
-         TCanvas *c5 = new TCanvas("c5","",1200,270);
-         c5->Divide(2,1);
-           //Pad 1: centrality
-           c5->cd(1);
-           TH1D *hvar16 = cf->ShowProjection(19,icasType);
-           hvar16->Draw("histo");
-           //Pad 2: track multiplicity
-           c5->cd(2);
-           TH1D *hvar17 = cf->ShowProjection(20,icasType);
-           hvar17->Draw("histo");
-         c5->SaveAs("fig_lf_Multistrange.pdf)");
+     if (collidingsystem == 0 || collidingsystem == 2) {
+         TCanvas *c5 = new TCanvas("c5","",600,720);//1200,270);
+         c5->cd(1);
+         TH1D *hvar16 = cf->ShowProjection(19,icasType);
+         hvar16->Draw("histo");
+         if      (!isMC) c5->SaveAs("fig_lf_Multistrange.pdf)");
+         else if (isMC) c5->SaveAs("fig_lf_Multistrange.pdf");
      }
     
+
+
+     //_______________________________
+     //CHECK ON MONTE CARLO PRODUCTION
+     if (isMC) { 
+           
+            AliCFContainer *cfMC = (AliCFContainer*) (f1->Get("PWGLFStrangeness.outputCheckCascade/fCFContCascadeMCgen"));
+            //DEFINE 6th CANVAS AND DRAW PLOTS
+            TCanvas *c6 = new TCanvas("c6","",1200,800);
+            c6->Divide(2,3);
+            //Pad 1: Total Momentum
+            c6->cd(1);
+            TH1D *hvar17 = cfMC->ShowProjection(0,icasType);
+            hvar17->Draw("histo");
+            tcasc->Draw();
+            //Pad 2: Transverse Momentum
+            c6->cd(2);
+            TH1D *hvar18 = cfMC->ShowProjection(1,icasType);
+            hvar18->Draw("histo");
+            //Pad 3: Rapidity (y)
+            c6->cd(3);
+            TH1D *hvar19 = cfMC->ShowProjection(2,icasType);
+            hvar19->Draw("histo");
+            //Pad 4: Pseudo-rapidity (eta)
+            c6->cd(4);
+            TH1D *hvar20 = cfMC->ShowProjection(3,icasType);
+            hvar20->Draw("histo");
+            //Pad 5: Theta
+            c6->cd(5);
+            TH1D *hvar21 = cfMC->ShowProjection(4,icasType);
+            hvar21->Draw("histo");
+            //Pad 6: Phi
+            c6->cd(6);
+            TH1D *hvar22 = cfMC->ShowProjection(5,icasType);
+            hvar22->Draw("histo");
+            c6->SaveAs("fig_lf_Multistrange.pdf)");
+     }
+
 
 }
 

@@ -1,7 +1,7 @@
 //
 // Emcal jet finder task.
 //
-// Authors: C.Loizides, S.Aiola
+// Authors: C.Loizides, S.Aiola, M. Verweij
 
 #include <vector>
 #include "AliEmcalJetTask.h"
@@ -24,6 +24,7 @@
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 #include "AliVParticle.h"
+#include "AliRhoParameter.h"
 using std::cout;
 using std::endl;
 using std::cerr;
@@ -36,6 +37,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
+  fJetsSubName(""),
   fJetType(kNone),
   fConstSel(0),
   fMCConstSel(0),
@@ -58,15 +60,26 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fRecombScheme(fastjet::pt_scheme),
   fTrackEfficiency(1.),
   fIsInit(0),
+  fLocked(0),
   fIsPSelSet(0),
   fIsMcPart(0),
   fIsEmcPart(0),
   fLegacyMode(kFALSE),
   fCodeDebug(kFALSE),
+  fDoGenericSubtraction(kFALSE),
+  fDoConstituentSubtraction(kFALSE),
+  fUseExternalBkg(kFALSE),
+  fRhoName(""),
+  fRhomName(""),
+  fRho(0),
+  fRhom(0),
   fJets(0),
+  fJetsSub(0),
   fEvent(0),
   fTracks(0),
-  fClus(0)
+  fClus(0),
+  fRhoParam(0),
+  fRhomParam(0)
 {
   // Default constructor.
 }
@@ -77,6 +90,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
+  fJetsSubName(""),
   fJetType(kAKT|kFullJet|kRX1Jet),
   fConstSel(0),
   fMCConstSel(0),
@@ -99,15 +113,26 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fRecombScheme(fastjet::pt_scheme),
   fTrackEfficiency(1.),
   fIsInit(0),
+  fLocked(0),
   fIsPSelSet(0),
   fIsMcPart(0),
   fIsEmcPart(0),
   fLegacyMode(kFALSE),
   fCodeDebug(kFALSE),
+  fDoGenericSubtraction(kFALSE),
+  fDoConstituentSubtraction(kFALSE),
+  fUseExternalBkg(kFALSE),
+  fRhoName(""),
+  fRhomName(""),
+  fRho(0),
+  fRhom(0),
   fJets(0),
+  fJetsSub(0),
   fEvent(0),
   fTracks(0),
-  fClus(0)
+  fClus(0),
+  fRhoParam(0),
+  fRhomParam(0)
 {
   // Standard constructor.
 
@@ -127,6 +152,11 @@ void AliEmcalJetTask::UserCreateOutputObjects()
 
   fJets = new TClonesArray("AliEmcalJet");
   fJets->SetName(fJetsName);
+
+  if(!fJetsSubName.IsNull()) {
+    fJetsSub = new TClonesArray("AliEmcalJet");
+    fJetsSub->SetName(fJetsSubName);
+  }
 }
 
 //________________________________________________________________________
@@ -141,6 +171,7 @@ void AliEmcalJetTask::UserExec(Option_t *)
 
   // clear the jet array (normally a null operation)
   fJets->Delete();
+  if(fJetsSub) fJetsSub->Delete();
 
   FindJets();
 }
@@ -159,6 +190,11 @@ void AliEmcalJetTask::FindJets()
     cout << "WARNING NO TRACKS OR CLUSTERS:"  <<endl;
     return;
   }
+
+ if (fRhoParam)
+    fRho = fRhoParam->GetVal();
+  if (fRhomParam)
+    fRhom = fRhomParam->GetVal();
 
   TString name("kt");
   fastjet::JetAlgorithm jalgo(fastjet::kt_algorithm);
@@ -345,6 +381,18 @@ void AliEmcalJetTask::FindJets()
   // run jet finder
   fjw.Run();
 
+  //run generic subtractor
+  if(fDoGenericSubtraction) {
+    fjw.SetUseExternalBkg(fUseExternalBkg,fRho,fRhom);
+    fjw.DoGenericSubtractionJetMass();
+  }
+
+  //run constituent subtractor
+  if(fDoConstituentSubtraction) {
+    fjw.SetUseExternalBkg(fUseExternalBkg,fRho,fRhom);
+    fjw.DoConstituentSubtraction();
+  }
+
   // get geometry
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
   if (!geom) {
@@ -373,6 +421,21 @@ void AliEmcalJetTask::FindJets()
 
     AliEmcalJet *jet = new ((*fJets)[jetCount]) 
       AliEmcalJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
+    jet->SetLabel(ij);
+
+    //do generic subtraction if requested
+    if(fDoGenericSubtraction) {
+#ifdef FASTJET_VERSION
+      std::vector<fastjet::contrib::GenericSubtractorInfo> jetMassInfo = fjw.GetGenSubtractorInfoJetMass();
+      UInt_t n = (UInt_t)jetMassInfo.size();
+      if(n>ij && n>0) {
+	jet->SetFirstDerivative(jetMassInfo[ij].first_derivative());
+	jet->SetSecondDerivative(jetMassInfo[ij].second_derivative());
+	jet->SetFirstOrderSubtracted(jetMassInfo[ij].first_order_subtracted());
+	jet->SetSecondOrderSubtracted(jetMassInfo[ij].second_order_subtracted());
+      }
+#endif
+    }
 
     // loop over constituents
     std::vector<fastjet::PseudoJet> constituents(fjw.GetJetConstituents(ij));
@@ -530,6 +593,30 @@ void AliEmcalJetTask::FindJets()
     jetCount++;
   }
   //fJets->Sort();
+
+  //run constituent subtractor if requested
+  if(fDoConstituentSubtraction) {
+#ifdef FASTJET_VERSION
+    if(!fJetsSub) AliWarning(Form("No jet branch to write to for subtracted jets. fJetsSubName: %s",fJetsSubName.Data()));
+    else {
+      std::vector<fastjet::PseudoJet> jets_sub;
+      jets_sub = fjw.GetConstituentSubtrJets();
+      AliDebug(1,Form("%d constituent subtracted jets found", (Int_t)jets_sub.size()));
+      for (UInt_t ijet=0, jetCount=0; ijet<jets_sub.size(); ++ijet) {
+	//Only storing 4-vector and jet area of unsubtracted jet	
+	AliEmcalJet *jet_sub = new ((*fJetsSub)[jetCount]) 
+	  AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
+	jet_sub->SetLabel(ijet);
+	fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
+	jet_sub->SetArea(area.perp());
+	jet_sub->SetAreaEta(area.eta());
+	jet_sub->SetAreaPhi(area.phi());
+	jet_sub->SetAreaEmc(area.perp());
+	jetCount++;
+      }
+    }
+#endif
+  } //constituent subtraction
 }
 
 //________________________________________________________________________
@@ -580,6 +667,9 @@ Bool_t AliEmcalJetTask::DoInit()
     return 0;
   }
 
+  if (!(fEvent->FindListObject(fJetsSubName)) && fJetsSub)
+    fEvent->AddObject(fJetsSub);
+
   if (fTracksName == "Tracks")
     am->LoadBranch("Tracks");
   if (!fTracks && !fTracksName.IsNull()) {
@@ -610,5 +700,20 @@ Bool_t AliEmcalJetTask::DoInit()
       fIsEmcPart = 1;
   }
 
+  if (!fRhoName.IsNull() && !fRhoParam) { // get rho from the event
+    fRhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
+    if (!fRhoParam) {
+      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
+      return 0;
+    }
+  }
+  if (!fRhomName.IsNull() && !fRhomParam) { // get rhom from the event
+    fRhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhomName));
+    if (!fRhomParam) {
+      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhomName.Data()));
+      return 0;
+    }
+  }
+  
   return 1;
 }

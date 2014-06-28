@@ -927,7 +927,7 @@ Int_t AliAnalysisTaskSEDvsMultiplicity::CheckOrigin(TClonesArray* arrayMC, AliAO
   Int_t istep = 0;
   Int_t abspdgGranma =0;
   Bool_t isFromB=kFALSE;
-  Bool_t isQuarkFound=kFALSE;
+  //  Bool_t isQuarkFound=kFALSE;
   while (mother >0 ){
     istep++;
     AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
@@ -937,7 +937,7 @@ Int_t AliAnalysisTaskSEDvsMultiplicity::CheckOrigin(TClonesArray* arrayMC, AliAO
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
 	isFromB=kTRUE;
       }
-      if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
+      //      if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
       mother = mcGranma->GetMother();
     }else{
       AliError("Failed casting the mother particle!");

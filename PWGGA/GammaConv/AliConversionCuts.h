@@ -158,9 +158,6 @@ class AliConversionCuts : public AliAnalysisCuts {
    void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(hEtaDistV0sAfterdEdxCuts)hEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
    void SetEtaShift(Double_t etaShift) {
       fEtaShift = etaShift;
-      fLineCutZRSlope = tan(2*atan(exp(-fEtaCut + etaShift)));
-      if(fEtaCutMin > -0.1)
-         fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin + etaShift)));
    }
    void SetEtaShift(TString pPbOrPbp) {
       Double_t etaShift = 0.0;
@@ -168,9 +165,6 @@ class AliConversionCuts : public AliAnalysisCuts {
       else if(!pPbOrPbp.CompareTo("Pbp")) etaShift =  0.465;
       
       fEtaShift = etaShift;
-      fLineCutZRSlope = tan(2*atan(exp(-fEtaCut + etaShift)));
-      if(fEtaCutMin > -0.1)
-         fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin + etaShift)));
    }
    Double_t GetEtaShift() {return fEtaShift;}
    Bool_t GetDoEtaShift(){return fDoEtaShift;}

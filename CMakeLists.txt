@@ -216,7 +216,7 @@ else()
  message("AliRoot sources not downloaded from a Version Control System. I can't tell which revision you are using!")
 endif(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
 
-configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/FromTemplate/ARVersion.h @ONLY)
 
 string (REPLACE "-" "." ALIROOT_BRANCH_SPEC "${ALIROOT_BRANCH}")
 

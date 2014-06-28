@@ -849,7 +849,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   Double_t binLimAngle[nBinsAngle+1];
   for(Int_t i=0; i<=nBinsAngle; i++) {
     binLimAngle[i]=(Double_t)minAngle + (maxAngle-minAngle)/nBinsAngle*(Double_t)i ;
-    AliDebug(2,Form("bin phi is %f for %d",binLimPhi[i],i));
+    AliDebug(2,Form("bin phi is %f for %d",binLimAngle[i],i));
   }
 
   Int_t nBinsCharge = 2;

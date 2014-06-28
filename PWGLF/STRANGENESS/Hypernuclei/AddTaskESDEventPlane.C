@@ -1,4 +1,4 @@
-AliEPSelectionTask *AddTaskEventplane(Bool_t useEtaGap=kTRUE,Float_t etaGap=0.4,Bool_t posTPC=kFALSE,TString containername = "EPStat")
+AliEPSelectionTask *AddTaskESDEventPlane(Bool_t useEtaGap=kTRUE,Float_t etaGap=0.4,Bool_t posTPC=kFALSE,TString containername = "EPStat")
 {
   // Macro to connect an event plane selection task to an existing analysis manager.
 

@@ -279,6 +279,7 @@ protected:
   double __s2PtNNw_12;
   
   double * __n1_1_vsPt;   //!
+
   double * __n1_1_vsEtaPhi;     //! 
   double * __s1pt_1_vsEtaPhi;    //!
   float  * __n1_1_vsZEtaPhiPt;    //!

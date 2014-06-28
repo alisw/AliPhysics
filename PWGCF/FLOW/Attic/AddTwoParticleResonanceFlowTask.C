@@ -197,7 +197,14 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
    }
    if(debug) cout << "    --> cutsPOI " << cutsPOI << endl;
    task->SetPOICuts(cutsPOI);
-   //set POI cuts for aods XY Z - 3 distinct cases
+
+   // set event cuts for flow package analysis
+   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("event cuts");
+   task->SetCentralityParameters(centrMin, centrMax, centralityName);
+   task->SetQA(kTRUE);
+
+
+  //set POI cuts for aods XY Z - 3 distinct cases
    Float_t POIDCA[] = {0., 0., 0., 0., 0.};
    if(DCA == "none" ) { // 1 --- do nothing
        if (debug) cout << " --> No DCA cut on POI's <-- " << endl;

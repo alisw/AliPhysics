@@ -145,7 +145,6 @@ void AliAnalysisTaskMaterial::UserCreateOutputObjects()
 	fTreeEvent->Branch("primVtxZ",&fPrimVtxZ,"fPrimVtxZ/F");
 	fTreeEvent->Branch("nContrVtx",&fNContrVtx,"fNContrVtx/I");
 	fTreeEvent->Branch("nGoodTracksEta09",&fNESDtracksEta09,"fNESDtracksEta09/I");
-	fTreeEvent->Branch("nGoodTracksEta0914",&fNESDtracksEta0914,"fNESDtracksEta0914/I");
 	fTreeEvent->Branch("nGoodTracksEta14",&fNESDtracksEta14,"fNESDtracksEta14/I");
 	fEventList->Add(fTreeEvent);
 	
@@ -155,6 +154,7 @@ void AliAnalysisTaskMaterial::UserCreateOutputObjects()
 	fOutputList->Add(fRecGammaList);
 		
 	fTreeMaterialRec = new TTree("ConvPointRec","ConvPointRec");   
+	fTreeMaterialRec->Branch("nGoodTracksEta09",&fNESDtracksEta09,"fNESDtracksEta09/I");
 	fTreeMaterialRec->Branch("recCords",&fRecCords);
 	fTreeMaterialRec->Branch("daughterProp",&fDaughterProp);
 	fTreeMaterialRec->Branch("pt",&fGammaPt,"fGammaPt/F");
@@ -165,33 +165,33 @@ void AliAnalysisTaskMaterial::UserCreateOutputObjects()
 	}   
 	fRecGammaList->Add(fTreeMaterialRec);
 	
-	if (fIsMC) {
-		fAllMCGammaList = new TList();
-		fAllMCGammaList->SetName("AllMCGammaList");
-		fAllMCGammaList->SetOwner(kTRUE);
-		fOutputList->Add(fAllMCGammaList);
-		
-		fTreeMaterialAllGamma = new TTree("AllGamma","AllGamma");   
-		fTreeMaterialAllGamma->Branch("pt",&fGammaMCPt,"fGammaMCPt/F");
-		fTreeMaterialAllGamma->Branch("theta",&fGammaMCTheta,"fGammaMCTheta/F");
-		fAllMCGammaList->Add(fTreeMaterialAllGamma);
-		
-		fAllMCConvGammaList = new TList();
-		fAllMCConvGammaList->SetName("AllMCGammaConvList");
-		fAllMCConvGammaList->SetOwner(kTRUE);
-		fOutputList->Add(fAllMCConvGammaList);
-
-	//       fMCConvCords = new Float_t[5];
-	//       fMCConvDaughterProp = new Float_t[4];
-
-		
-		fTreeMaterialConvGamma = new TTree("ConvGammaMC","ConvGammaMC");   
-		fTreeMaterialConvGamma->Branch("Cords",&fMCConvCords);
-		fTreeMaterialConvGamma->Branch("daughterProp",&fMCConvDaughterProp);
-		fTreeMaterialConvGamma->Branch("Pt",&fGammaMCConvPt,"fGammaMCConvPt/F");
-		fTreeMaterialConvGamma->Branch("Theta",&fGammaMCConvTheta,"fGammaMCConvTheta/F");   
-		fAllMCConvGammaList->Add(fTreeMaterialConvGamma);
-	}
+// 	if (fIsMC) {
+// 		fAllMCGammaList = new TList();
+// 		fAllMCGammaList->SetName("AllMCGammaList");
+// 		fAllMCGammaList->SetOwner(kTRUE);
+// 		fOutputList->Add(fAllMCGammaList);
+// 		
+// 		fTreeMaterialAllGamma = new TTree("AllGamma","AllGamma");   
+// 		fTreeMaterialAllGamma->Branch("pt",&fGammaMCPt,"fGammaMCPt/F");
+// 		fTreeMaterialAllGamma->Branch("theta",&fGammaMCTheta,"fGammaMCTheta/F");
+// 		fAllMCGammaList->Add(fTreeMaterialAllGamma);
+// 		
+// 		fAllMCConvGammaList = new TList();
+// 		fAllMCConvGammaList->SetName("AllMCGammaConvList");
+// 		fAllMCConvGammaList->SetOwner(kTRUE);
+// 		fOutputList->Add(fAllMCConvGammaList);
+// 
+// 	//       fMCConvCords = new Float_t[5];
+// 	//       fMCConvDaughterProp = new Float_t[4];
+// 
+// 		
+// 		fTreeMaterialConvGamma = new TTree("ConvGammaMC","ConvGammaMC");   
+// 		fTreeMaterialConvGamma->Branch("Cords",&fMCConvCords);
+// 		fTreeMaterialConvGamma->Branch("daughterProp",&fMCConvDaughterProp);
+// 		fTreeMaterialConvGamma->Branch("Pt",&fGammaMCConvPt,"fGammaMCConvPt/F");
+// 		fTreeMaterialConvGamma->Branch("Theta",&fGammaMCConvTheta,"fGammaMCConvTheta/F");   
+// 		fAllMCConvGammaList->Add(fTreeMaterialConvGamma);
+// 	}
 	
 	PostData(1, fOutputList);
    
@@ -248,9 +248,9 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
 	}
 	fPrimVtxZ = fESDEvent->GetPrimaryVertex()->GetZ();
 	
-	if (fIsHeavyIon == 2){
-		if (!(fNESDtracksEta09 > 20 && fNESDtracksEta09 < 80)) return;
-	}	
+// 	if (fIsHeavyIon == 2){
+// 		if (!(fNESDtracksEta09 > 20 && fNESDtracksEta09 < 80)) return;
+// 	}	
 	
 	
 	if (fTreeEvent){
@@ -259,69 +259,69 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
 		
 	fConversionGammas=fV0Reader->GetReconstructedGammas();
 	ProcessPhotons();
-	if(MCEvent()){
-		ProcessMCPhotons();
-	}
+// 	if(MCEvent()){
+// 		ProcessMCPhotons();
+// 	}
 	PostData(1, fOutputList);
 }
 
-///________________________________________________________________________
-void AliAnalysisTaskMaterial::FillMCTree(Int_t stackPos){
-	AliStack *MCStack = fMCEvent->Stack();
-	TParticle* candidate = (TParticle *)MCStack->Particle(stackPos);
-	
-	if(fConversionCuts->PhotonIsSelectedMC(candidate,MCStack,kFALSE)){
-		fGammaMCPt = candidate->Pt();
-		fGammaMCTheta = candidate->Theta();
-		if (fTreeMaterialAllGamma){
-			fTreeMaterialAllGamma->Fill();
-		}	
-	}
-	if(fConversionCuts->PhotonIsSelectedMC(candidate,MCStack,kTRUE)){
-		fGammaMCConvPt = candidate->Pt();
-		fGammaMCConvTheta = candidate->Theta();
-		TParticle* daughter1 = (TParticle *)MCStack->Particle(candidate->GetFirstDaughter()); 
-		TParticle* daughter2 = (TParticle *)MCStack->Particle(candidate->GetLastDaughter()); 
-		fMCConvCords(0) = (Float_t)daughter1->Vx();
-		fMCConvCords(1) = (Float_t)daughter1->Vy();
-		fMCConvCords(2) = (Float_t)daughter1->Vz();
-		fMCConvCords(3) = (Float_t)daughter1->R();
-		fMCConvCords(4) = (Float_t)daughter1->Phi();
-		
-		fMCConvDaughterProp(0) = (Float_t)daughter1->Pt();
-		fMCConvDaughterProp(1) = (Float_t)daughter1->Theta();
-		fMCConvDaughterProp(2) = (Float_t)daughter2->Pt();
-		fMCConvDaughterProp(3) = (Float_t)daughter2->Theta();      
-			
-		if (fTreeMaterialConvGamma){
-			fTreeMaterialConvGamma->Fill();
-		}
-	} // Converted MC Gamma		
-}
-
-///________________________________________________________________________
-void AliAnalysisTaskMaterial::ProcessMCPhotons(){
-	// Loop over all primary MC particle
-	AliStack *ffMCStack = fMCEvent->Stack();
-	for(Int_t i = 0; i < ffMCStack->GetNprimary(); i++) {
-		TParticle* particle = (TParticle *)ffMCStack->Particle(i);
-		if (!particle) continue;
-		Int_t isMCFromMBHeader = -1;
-		if(fConversionCuts->GetSignalRejection() != 0){
-			isMCFromMBHeader
-				= fConversionCuts->IsParticleFromBGEvent(i, ffMCStack, fESDEvent);
-			if(isMCFromMBHeader == 0) continue;
-		}		
-		if (particle->GetPdgCode() == 111 && particle->GetFirstDaughter() >= ffMCStack->GetNprimary()){
-// 			cout << "Undecayed pi0 found with mother: " << particle->GetMother(0) << endl;
-			for (Int_t j = 0; j < 2 ; j++){
- 				FillMCTree(particle->GetDaughter(j));
-			}
-		} else {
-			FillMCTree(i);
-		}	
-	}	
-}
+// ///________________________________________________________________________
+// void AliAnalysisTaskMaterial::FillMCTree(Int_t stackPos){
+// 	AliStack *MCStack = fMCEvent->Stack();
+// 	TParticle* candidate = (TParticle *)MCStack->Particle(stackPos);
+// 	
+// 	if(fConversionCuts->PhotonIsSelectedMC(candidate,MCStack,kFALSE)){
+// 		fGammaMCPt = candidate->Pt();
+// 		fGammaMCTheta = candidate->Theta();
+// 		if (fTreeMaterialAllGamma){
+// 			fTreeMaterialAllGamma->Fill();
+// 		}	
+// 	}
+// 	if(fConversionCuts->PhotonIsSelectedMC(candidate,MCStack,kTRUE)){
+// 		fGammaMCConvPt = candidate->Pt();
+// 		fGammaMCConvTheta = candidate->Theta();
+// 		TParticle* daughter1 = (TParticle *)MCStack->Particle(candidate->GetFirstDaughter()); 
+// 		TParticle* daughter2 = (TParticle *)MCStack->Particle(candidate->GetLastDaughter()); 
+// 		fMCConvCords(0) = (Float_t)daughter1->Vx();
+// 		fMCConvCords(1) = (Float_t)daughter1->Vy();
+// 		fMCConvCords(2) = (Float_t)daughter1->Vz();
+// 		fMCConvCords(3) = (Float_t)daughter1->R();
+// 		fMCConvCords(4) = (Float_t)daughter1->Phi();
+// 		
+// 		fMCConvDaughterProp(0) = (Float_t)daughter1->Pt();
+// 		fMCConvDaughterProp(1) = (Float_t)daughter1->Theta();
+// 		fMCConvDaughterProp(2) = (Float_t)daughter2->Pt();
+// 		fMCConvDaughterProp(3) = (Float_t)daughter2->Theta();      
+// 			
+// 		if (fTreeMaterialConvGamma){
+// 			fTreeMaterialConvGamma->Fill();
+// 		}
+// 	} // Converted MC Gamma		
+// }
+// 
+// ///________________________________________________________________________
+// void AliAnalysisTaskMaterial::ProcessMCPhotons(){
+// 	// Loop over all primary MC particle
+// 	AliStack *ffMCStack = fMCEvent->Stack();
+// 	for(Int_t i = 0; i < ffMCStack->GetNprimary(); i++) {
+// 		TParticle* particle = (TParticle *)ffMCStack->Particle(i);
+// 		if (!particle) continue;
+// 		Int_t isMCFromMBHeader = -1;
+// 		if(fConversionCuts->GetSignalRejection() != 0){
+// 			isMCFromMBHeader
+// 				= fConversionCuts->IsParticleFromBGEvent(i, ffMCStack, fESDEvent);
+// 			if(isMCFromMBHeader == 0) continue;
+// 		}		
+// 		if (particle->GetPdgCode() == 111 && particle->GetFirstDaughter() >= ffMCStack->GetNprimary()){
+// // 			cout << "Undecayed pi0 found with mother: " << particle->GetMother(0) << endl;
+// 			for (Int_t j = 0; j < 2 ; j++){
+//  				FillMCTree(particle->GetDaughter(j));
+// 			}
+// 		} else {
+// 			FillMCTree(i);
+// 		}	
+// 	}	
+// }
 
 ///________________________________________________________________________
 void AliAnalysisTaskMaterial::ProcessPhotons(){
@@ -332,6 +332,7 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 		if (gamma ==NULL) continue;
 		if(!fConversionCuts->PhotonIsSelected(gamma,fESDEvent)) continue;
 
+		fNESDtracksEta09 = CountTracks09();
 		fGammaPt = gamma->GetPhotonPt();
 		fGammaTheta = gamma->GetPhotonTheta();
 		fGammaChi2NDF = gamma->GetChi2perNDF();
@@ -423,6 +424,7 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 				} else fKind = 9; //garbage
 			}					
 		}
+				
 		if (fTreeMaterialRec){
 			fTreeMaterialRec->Fill();
 		}
@@ -463,17 +465,7 @@ Int_t AliAnalysisTaskMaterial::CountTracks09(){
 		}
 		delete EsdTrackCuts;
 		EsdTrackCuts=0x0;
-	} else if(fInputEvent->IsA()==AliAODEvent::Class()){
-		for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
-			AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
-			if(!curTrack->IsPrimaryCandidate()) continue;
-			if(abs(curTrack->Eta())>0.9) continue;
-			if(curTrack->Pt()<0.15) continue;
-			if(abs(curTrack->ZAtDCA())>2) continue;
-			fNumberOfESDTracks++;
-		}
-	}
-
+	} 
 	return fNumberOfESDTracks;
 }
 
@@ -525,15 +517,7 @@ Int_t AliAnalysisTaskMaterial::CountTracks0914(){
 		}
 		delete EsdTrackCuts;
 		EsdTrackCuts=0x0;
-	} else if(fInputEvent->IsA()==AliAODEvent::Class()){
-		for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
-			AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
-			if(abs(curTrack->Eta())<0.9 || abs(curTrack->Eta())>1.4 ) continue;
-			if(curTrack->Pt()<0.15) continue;
-			if(abs(curTrack->ZAtDCA())>5) continue;
-			fNumberOfESDTracks++;
-		}
-	}
+	} 
 	
 	return fNumberOfESDTracks;
 }
