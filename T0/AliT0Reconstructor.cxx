@@ -65,7 +65,8 @@ ClassImp(AliT0Reconstructor)
 					     fTimeMeanShift(0x0),
 					     fTimeSigmaShift(0x0),
                                              fESDTZEROfriend(NULL),
-                                             fESDTZERO(NULL)
+                                             fESDTZERO(NULL),
+					     fIsCDFfromGRP(kFALSE)
 
 {
   for (Int_t i=0; i<24; i++)  fTime0vertex[i] =0;
@@ -115,7 +116,10 @@ ClassImp(AliT0Reconstructor)
   AliDebug(2,Form(" LatencyL1 %f latencyL1A %f latencyL1C %f latencyHPTDC %f \n",fLatencyL1, fLatencyL1A, fLatencyL1C, fLatencyHPTDC));
  
   for (Int_t i=0; i<24; i++) {
-     if( fTime0vertex[i] < 500 || fTime0vertex[i] > 60000) fTime0vertex[i] =( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
+     if( fTime0vertex[i] < 500 || fTime0vertex[i] > 60000)
+       { fTime0vertex[i] =( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
+	 fIsCDFfromGRP=kTRUE;
+       }
      AliDebug(2,Form("OCDB mean CFD time %i %f \n",i, fTime0vertex[i]));
   }
   //here real Z position
@@ -317,7 +321,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   
   Int_t timeDelayCFD[24]; 
   Int_t corridor = GetRecoParam() -> GetCorridor();  
-  //  printf("!!!! corridor %i \n",corridor);
+  if(fIsCDFfromGRP) corridor *=5;
+  AliDebug(10,Form("fIsCDFfromGRP %i  corridor %i \n",fIsCDFfromGRP, corridor) );
   Int_t badpmt[24];
   //Bad channel
   for (Int_t i=0; i<24; i++) {
@@ -325,7 +330,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     timeDelayCFD[i] =  Int_t (fParam->GetTimeDelayCFD(i));
   }
   Int_t equalize = GetRecoParam() -> GetEq();
-  printf( "AliT0Reconstructor::Reconstruct::: RecoParam %i \n",equalize);
+  AliDebug(10,Form( "AliT0Reconstructor::Reconstruct::: RecoParam %i \n",equalize ) );
   fCalib->SetEq(equalize);
   Int_t low[500], high[500];
   Float_t timefull=-99999;;
@@ -427,11 +432,18 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    for (Int_t iHit=0; iHit<5; iHit++) 
 	      {
                 if (allData[2*in+26][iHit] > fTime0vertex[0]+2000 &&  
-		allData[2*in+26][iHit] <fTime0vertex[0]+3000 &&
-		allData[2*in+25][iHit] > fTime0vertex[0]+3000)		
+		    allData[2*in+26][iHit] <fTime0vertex[0]+3000 ) {
+		    chargeQT1[in]=allData[2*in+26][0];
+		    break;
+		}
+	      }
+
+	    for (Int_t iHit=0; iHit<5; iHit++) 
+	      {
+		if( (allData[2*in+25][iHit] -  chargeQT1[in])>800 
+		    &&  chargeQT1[in]>0)		
 		  {
 		    chargeQT0[in]=allData[2*in+25][0];
-		    chargeQT1[in]=allData[2*in+26][0];
 		    AliDebug(25, Form(" readed Raw %i %i %i",
 				      in, chargeQT0[in],chargeQT1[in]));
 		    break;
@@ -442,17 +454,24 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  {
      	    for (Int_t iHit=0; iHit<5; iHit++) 
 	      {
-           if (allData[2*in+58][iHit] > fTime0vertex[0]+2000 &&  
-		allData[2*in+58][iHit] <fTime0vertex[0]+3000 &&
-		allData[2*in+57][iHit] > fTime0vertex[0]+3000)
-	    {
-	      chargeQT0[in]=allData[2*in+57][0];
-	      chargeQT1[in]=allData[2*in+58][0];
-	      AliDebug(25, Form(" readed Raw %i %i %i",
-				in, chargeQT0[in],chargeQT1[in]));
-	      break;
-	    }
-	    }
+		if (allData[2*in+58][iHit] > fTime0vertex[0]+2000 &&  
+		    allData[2*in+58][iHit] <fTime0vertex[0]+3000 )
+		  {
+		    chargeQT1[in]=allData[2*in+58][0];
+		    break;
+		  }
+	      }
+    	    for (Int_t iHit=0; iHit<5; iHit++) 
+	      {
+		if( (allData[2*in+57][iHit] -  chargeQT1[in])>800 && 
+		    chargeQT1[in]>0 )
+		  {
+		    chargeQT0[in]=allData[2*in+57][0];
+		    AliDebug(25, Form(" readed Raw %i %i %i",
+				      in, chargeQT0[in],chargeQT1[in]));
+		    break;
+		  }
+	      }
 	  }
 	
 	onlineMean = allData[49][0];
@@ -481,6 +500,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   else 
 	     frecpoints.SetTime(ipmt, Float_t(time[ipmt] + fTime0vertex[ipmt]) );
 	   // frecpoints.SetTime(ipmt, Float_t(time[ipmt] ) );
+	   if(qtMip<0) qtMip=0;
 	   frecpoints.SetAmp(ipmt, Double32_t( qtMip)); 
 	   adcmip[ipmt]=qtMip;
 	   frecpoints.SetAmpLED(ipmt, Double32_t(ampMip));	     
@@ -625,24 +645,44 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       
       
       //Set MPD
+      Float_t mpda_start=0, mpdc_start=0;
       for (Int_t iHit=0; iHit<5; iHit++) 
 	{
 	  if (allData[54][iHit] > fTime0vertex[0]+2000 &&  
-	      allData[54][iHit] <fTime0vertex[0]+3000 &&
-	      allData[53][iHit] > fTime0vertex[0]+3000) {
-	    frecpoints.SetMultA(allData[53][iHit]-allData[54][iHit]);
+	      allData[54][iHit] <fTime0vertex[0]+3000 ) {
+	    mpda_start=Float_t(allData[54][iHit]);
+	    AliDebug(15,Form("Reconstruct :::  T0 MPD iHit %i MPDA start %f",iHit, mpda_start ));
+
 	    break;
 	  }
 	}
       for (Int_t iHit=0; iHit<5; iHit++) 
-	if (allData[106][iHit] > fTime0vertex[0]+2000 &&  
-	    allData[106][iHit] <fTime0vertex[0]+3000 &&
-	    allData[105][iHit] > fTime0vertex[0]+3000)
-	  {
-	    frecpoints.SetMultC(allData[105][iHit]-allData[106][iHit]);
+	{
+	  if(allData[53][iHit] > fTime0vertex[0]+3000 && 
+	     (allData[53][iHit]-mpda_start)>800 && mpda_start>0 && tr[1]) {
+	    frecpoints.SetMultA(Float_t(allData[53][iHit] - mpda_start) );
+	    AliDebug(15,Form("Reconstruct :::  T0 MPD iHit %i MPDA stop %i MPD %f",iHit, allData[53][iHit],Float_t(allData[53][iHit] - mpda_start) ));
 	    break;
 	  }
-      
+	}
+      for (Int_t iHit=0; iHit<5; iHit++) 
+	{
+	  if (allData[106][iHit] > fTime0vertex[0]+2000 &&  
+	      allData[106][iHit] <fTime0vertex[0]+3000 ) {
+	    mpdc_start=allData[54][iHit];
+	    AliDebug(15,Form("Reconstruct :::  T0 MPD iHit %i MPDC start %f ",iHit, mpdc_start));
+	    break;
+	  }
+	}
+      for (Int_t iHit=0; iHit<5; iHit++) 
+	{
+	  if(allData[105][iHit] > fTime0vertex[0]+3000 && 
+	     (allData[105][iHit]-mpdc_start)>800 && mpdc_start>0 && tr[2]) {
+	    frecpoints.SetMultC(Float_t(allData[105][iHit] - mpdc_start) );
+	    AliDebug(15,Form("Reconstruct :::  T0 MPD iHit %i MPDC stop %i MPD %f",iHit, allData[105][iHit],Float_t(allData[105][iHit] - mpdc_start) ));
+	    break;
+	  }
+	}
     } // if (else )raw data
   recTree->Fill();
 }

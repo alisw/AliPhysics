@@ -4,8 +4,14 @@
 #include "AliCluster.h"
 #include <TMath.h>
 
+// uncomment this to have cluster topology in stored
+//#define _ClusterTopology_  
+
+#define CLUSTER_VERSION 2 
+
 class TGeoHMatrix;
 class AliITSUGeomTGeo;
+
 
 
 class AliITSUClusterPix : public AliCluster
@@ -24,7 +30,10 @@ class AliITSUClusterPix : public AliCluster
     ,kSortIdTrkYZ = BIT(1)    // sort according to ID, then Y,Z of tracking frame
     ,kSortBits = kSortIdLocXZ|kSortIdTrkYZ
   };
-
+#ifdef _ClusterTopology_
+  enum {kMaxPatternBits=32*16, kMaxPatternBytes=kMaxPatternBits/8,
+	kSpanMask=0x7fff,kTruncateMask=0x8000};
+#endif
  public:
   AliITSUClusterPix();
   AliITSUClusterPix(const AliITSUClusterPix& cluster);
@@ -86,6 +95,21 @@ class AliITSUClusterPix : public AliCluster
   static  SortMode_t           SortModeIdTrkYZ()            {return kSortIdTrkYZ;}
   static  SortMode_t           SortModeIdLocXZ()            {return kSortIdLocXZ;}
   //
+#ifdef _ClusterTopology_
+  Int_t    GetPatternRowSpan()                       const  {return fPatternNRows&kSpanMask;}
+  Int_t    GetPatternColSpan()                       const  {return fPatternNCols&kSpanMask;}
+  Bool_t   IsPatternRowsTruncated()                  const  {return fPatternNRows&kTruncateMask;}
+  Bool_t   IsPatternColsTruncated()                  const  {return fPatternNRows&kTruncateMask;}
+  Bool_t   IsPatternTruncated()                      const  {return IsPatternRowsTruncated()||IsPatternColsTruncated();}
+  void     SetPatternRowSpan(UShort_t nr, Bool_t truncated);
+  void     SetPatternColSpan(UShort_t nc, Bool_t truncated);
+  void     SetPatternMinRow(UShort_t row)            {fPatternMinRow = row;}
+  void     SetPatternMinCol(UShort_t col)            {fPatternMinCol = col;}
+  void     ResetPattern();
+  Bool_t   TestPixel(UShort_t row,UShort_t col)      const;
+  void     SetPixel(UShort_t row,UShort_t col, Bool_t fired=kTRUE);
+#endif
+  //
  protected:
   //
   UShort_t                fCharge;        //  charge (for MC studies only)
@@ -95,7 +119,17 @@ class AliITSUClusterPix : public AliCluster
   static UInt_t           fgMode;         //! general mode (sorting mode etc)
   static AliITSUGeomTGeo* fgGeom;         //! pointer on the geometry data
 
-  ClassDef(AliITSUClusterPix,2)
+#ifdef  _ClusterTopology_
+  UShort_t fPatternNRows;                 // pattern span in rows
+  UShort_t fPatternNCols;                 // pattern span in columns
+  UShort_t fPatternMinRow;                // pattern start row
+  UShort_t fPatternMinCol;                // pattern start column
+  UChar_t  fPattern[kMaxPatternBytes];    //  cluster topology
+  //
+  ClassDef(AliITSUClusterPix,CLUSTER_VERSION+1)
+#else
+  ClassDef(AliITSUClusterPix,CLUSTER_VERSION)
+#endif
 };
 
 //______________________________________________________

@@ -606,7 +606,20 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
     return mcParticle;
 }
 
-AliGenEventHeader* AliMCEvent::GenEventHeader() const {return (fHeader->GenEventHeader());}
+AliGenEventHeader* AliMCEvent::GenEventHeader() const 
+{
+  if (!fExternal) {
+    // ESD
+    return (fHeader->GenEventHeader());
+  } else {
+    // AOD
+    if (fAODMCHeader) {
+      TList * lh = fAODMCHeader->GetCocktailHeaders();
+      if (lh) {return ((AliGenEventHeader*) lh->At(0));}
+    }
+  }
+  return 0;
+}
 
 
 void AliMCEvent::AddSubsidiaryEvent(AliMCEvent* event) 
@@ -813,37 +826,41 @@ Bool_t AliMCEvent::IsFromBGEvent(Int_t index)
 }
 
 
-    Int_t AliMCEvent::GetCocktailList(TList*& lh){
-    //gives the CocktailHeaders when reading ESDs/AODs (corresponding to fExteral=kFALSE/kTRUE)
-    //the AODMC header (and the aodmc array) is passed as an instance to MCEvent by the AliAODInputHandler
-    if(fExternal==kFALSE) { 
-    AliGenCocktailEventHeader* coHeader =dynamic_cast<AliGenCocktailEventHeader*> (GenEventHeader());
-    if(!coHeader) return 0;
-    lh=coHeader->GetHeaders();}
-    if(fExternal==kTRUE){ 
-    if(!fAODMCHeader) return 0;
-    lh=fAODMCHeader->GetCocktailHeaders();}
-    return 1;  }
+    Int_t AliMCEvent::GetCocktailList(TList*& lh)
+    {
+      //gives the CocktailHeaders when reading ESDs/AODs (corresponding to fExteral=kFALSE/kTRUE)
+      //the AODMC header (and the aodmc array) is passed as an instance to MCEvent by the AliAODInputHandler
+      if(fExternal==kFALSE) { 
+	AliGenCocktailEventHeader* coHeader =dynamic_cast<AliGenCocktailEventHeader*> (GenEventHeader());
+	if(!coHeader) return 0;
+	lh=coHeader->GetHeaders();}
+      if(fExternal==kTRUE){ 
+	if(!fAODMCHeader) return 0;
+	lh=fAODMCHeader->GetCocktailHeaders();}
+      return 1;  
+    }
 
 
 
 
-    TString AliMCEvent::GetGenerator(Int_t index){
-    Int_t nsumpart=0;
-     
-    TList* lh;
-    Int_t nt= GetCocktailList(lh);
-    if(nt==0){ TString noheader="nococktailheader";
-                                                 return noheader;}
-    Int_t nh=lh->GetEntries();
-    for(Int_t i=0;i<nh;i++){
-     AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+TString AliMCEvent::GetGenerator(Int_t index)
+{
+  Int_t nsumpart=0;
+  
+  TList* lh;
+  Int_t nt= GetCocktailList(lh);
+  if(nt==0){ TString noheader="nococktailheader";
+    return noheader;}
+  Int_t nh=lh->GetEntries();
+  for(Int_t i=0;i<nh;i++){
+    AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
      TString genname=gh->GetName();
      Int_t npart=gh->NProduced();
      if(index>=nsumpart && index<(nsumpart+npart)) return genname;
      nsumpart+=npart;}
-    TString empty="";
-    return empty;}
+  TString empty="";
+  return empty;
+}
 
 void AliMCEvent::AssignGeneratorIndex() {
   //

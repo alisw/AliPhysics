@@ -1583,11 +1583,12 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide s
   Bool_t znabadhit = kFALSE;
   Bool_t zncbadhit = kFALSE;
 
-  Float_t tdcC=999, tdcCcorr=999, tdcA=999, tdcAcorr=999;
+  //  Float_t tdcC=999, tdcA=999;
+  Float_t tdcCcorr=999, tdcAcorr=999;
   for(Int_t i = 0; i < 4; ++i) {
     if (zdcData->GetZDCTDCData(10,i) != 0) {
       znc = kTRUE;
-      tdcC = 0.025*(zdcData->GetZDCTDCData(10,i)-zdcData->GetZDCTDCData(14,i));
+      //      tdcC = 0.025*(zdcData->GetZDCTDCData(10,i)-zdcData->GetZDCTDCData(14,i));
       tdcCcorr = zdcData->GetZDCTDCCorrected(10,i);
       if((TMath::Abs(tdcCcorr)<fZDCCutZNCTimeCorrMax) && (TMath::Abs(tdcCcorr)>fZDCCutZNCTimeCorrMin)) zncbadhit = kTRUE;
     }
@@ -1595,7 +1596,7 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide s
   for(Int_t j = 0; j < 4; ++j) {
     if (zdcData->GetZDCTDCData(12,j) != 0) {
       zna = kTRUE;
-      tdcA = 0.025*(zdcData->GetZDCTDCData(12,j)-zdcData->GetZDCTDCData(14,j));
+      //      tdcA = 0.025*(zdcData->GetZDCTDCData(12,j)-zdcData->GetZDCTDCData(14,j));
       tdcAcorr = zdcData->GetZDCTDCCorrected(12,j);
       if((TMath::Abs(tdcAcorr)<fZDCCutZNATimeCorrMax) && (TMath::Abs(tdcAcorr)>fZDCCutZNATimeCorrMin)) znabadhit = kTRUE;
     }

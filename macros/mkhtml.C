@@ -80,7 +80,6 @@ void mkhtml (char *macro=0, Int_t force=0) {
 
     // PWGLF
     gSystem->Load("libPWGLFSTRANGENESS.so");
-    gSystem->Load("libPWGLFforward.so");
     gSystem->Load("libPWGLFforward2.so");
     gSystem->Load("libPWGLFresonances.so");
     gSystem->Load("libPWGLFrsnextra.so");

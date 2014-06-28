@@ -8,6 +8,11 @@
   ACORDE-DCS creator: Mario Ivan Martinez Hdez
 			<mim@fcfm.buap.mx>
 
+  Last update: June 13th 2014 from Mario Rodríguez Cahuantzi (CINVESTAV, mrodriguez@fis.cinvestav.mx)
+	==> wrong ACORDE aliases for AMANDA fixed (https://alice.its.cern.ch/jira/browse/ALIROOT-5479)
+		-- old alias: ACO_HV_MODULE[0..59]_VMON
+		-- new alias: ACO_HV_MODULE[0..59]_INSIDE_VMON ()/ ACO_HV_MODULE[0..59]_OUTSIDE_VMON
+
   Last update: Fix of coding violations
   Mario Rodriguez C. (FCFM-BUAP)
   <mrodrigu@mail.cern.ch>
@@ -201,8 +206,13 @@ void AliACORDEDataDCS::Init()
         TString aliasName;
 
 	for(int i=0;i<kNAliases;i++){
-
-                aliasName.Form("ACO_HV_MODULE%02d_VMON",i); 
+		if (i<kNAliases/2)
+		{
+                	aliasName.Form("ACO_HV_MODULE%02d_INSIDE_VMON",i);  //!::: first 60 entries for inside PMT's
+		}else
+		{
+	               	aliasName.Form("ACO_HV_MODULE%02d_OUTSIDE_VMON",i-60); //!::: last 60 entries for outside PMT's
+		}
 		fAliasNames[i] = aliasName;
 	}
 

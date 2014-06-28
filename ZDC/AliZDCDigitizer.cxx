@@ -476,7 +476,7 @@ void AliZDCDigitizer::ReadPMTGains()
   }
   fclose(fdata);
   
-  if(((fBeamType.CompareTo("P-P")) == 0)){
+  if(((fBeamType.CompareTo("P-P")) == 0) || ((fBeamType.CompareTo("p-p")) == 0)){
     for(int i=0; i<12; i++){
       if(beam[i]==0 && fBeamEnergy!=0.){
         if(det[i]!=31 && det[i]!=32){

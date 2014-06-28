@@ -610,7 +610,7 @@ Int_t AliITSUTrackerCooked::LoadClusters(TTree *cTree) {
 
   for (Int_t i=0; i<kNLayers; i++) {
       TBranch *br = cTree->GetBranch(Form("ITSRecPoints%d",i));
-      if (!br) AliFatal(Form("No cluster branch for layer %d",i));
+      if (!br) {AliFatal(Form("No cluster branch for layer %d",i)); return 1;}
       br->SetAddress(&clusters);
       br->GetEvent(0);
       switch (i) {

@@ -770,6 +770,7 @@ Bool_t AliAnalysisAlien::LoadFriendLibs() const
       for (Int_t ilib=0; ilib<list->GetEntriesFast(); ilib++) {
          lib = list->At(ilib)->GetName();
          lib.ReplaceAll(".so","");
+         lib.ReplaceAll(".dylib","");
          lib.ReplaceAll(" ","");
          if (lib.BeginsWith("lib")) lib.Remove(0, 3);
          lib.Prepend("lib");
@@ -1757,7 +1758,8 @@ Bool_t AliAnalysisAlien::CreateJDL()
          arr = fAdditionalLibs.Tokenize(" ");
          TIter next(arr);
          while ((os=(TObjString*)next())) {
-            if (os->GetString().Contains(".so")) continue;
+            if (os->GetString().Contains(".so") ||
+                os->GetString().Contains(".dylib")) continue;
             fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), os->GetString().Data()));
             fMergingJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), os->GetString().Data()));
          }   
@@ -1922,7 +1924,8 @@ Bool_t AliAnalysisAlien::CreateJDL()
          TObjString *os;
          TIter next(arr);
          while ((os=(TObjString*)next())) {
-            if (os->GetString().Contains(".so")) continue;
+            if (os->GetString().Contains(".so") ||
+                os->GetString().Contains(".dylib")) continue;
             Info("CreateJDL", "\n#####   Copying dependency: <%s> to your alien workspace", os->GetString().Data());
             if (FileExists(os->GetString())) gGrid->Rm(os->GetString());
 //            TFile::Cp(Form("file:%s",os->GetString().Data()), Form("alien://%s/%s", workdir.Data(), os->GetString().Data()));
@@ -2691,7 +2694,8 @@ void AliAnalysisAlien::SetFriendChainName(const char *name, const char *libnames
    
    fFriendLibs = libnames;
    if (fFriendLibs.Length()) {
-     if(!fFriendLibs.Contains(".so"))
+     if(!fFriendLibs.Contains(".so") && 
+        !fFriendLibs.Contains(".dylib"))
        Fatal("SetFriendChainName()", "You should provide explicit library names (with extension)");
      fFriendLibs.ReplaceAll(",", " ");
      fFriendLibs.Strip();
@@ -3377,7 +3381,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          TString extraLibs;
          Bool_t parMode = kFALSE;
          if (!alirootMode.IsNull()) extraLibs = "ANALYSIS:OADB:ANALYSISalice";
-         // Parse the extra libs for .so
+         // Parse the extra libs for .so or .dylib
          if (fAdditionalLibs.Length()) {
             TString additionalLibs = fAdditionalLibs;
             additionalLibs.Strip();
@@ -3388,7 +3392,8 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             TIter next(list);
             TObjString *str;
             while((str=(TObjString*)next())) {
-               if (str->GetString().Contains(".so")) {
+               if (str->GetString().Contains(".so") ||
+                   str->GetString().Contains(".dylib") ) {
                   if (parMode) {
                      Warning("StartAnalysis", "Plugin does not support loading libs after par files in PROOF mode. Library %s and following will not load on workers", str->GetName());
                      break;
@@ -3396,6 +3401,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
                   TString stmp = str->GetName();
                   if (stmp.BeginsWith("lib")) stmp.Remove(0,3);
                   stmp.ReplaceAll(".so","");
+                  stmp.ReplaceAll(".dylib","");
                   if (!extraLibs.IsNull()) extraLibs += ":";
                   extraLibs += stmp;
                   continue;
@@ -3475,7 +3481,8 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             if (list) delete list; 
          }
       } else {
-         if (fAdditionalLibs.Contains(".so") && !testMode) {
+         if ((fAdditionalLibs.Contains(".so") || fAdditionalLibs.Contains(".dylib")) && 
+             !testMode) {
             Error("StartAnalysis", "You request additional libs to be loaded but did not enabled any AliRoot mode. Please refer to: \
                    \n http://aaf.cern.ch/node/83 and use a parameter for SetAliRootMode()");
             return kFALSE;       
@@ -4079,7 +4086,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          TIter next(list);
          TObjString *str;
          while((str=(TObjString*)next())) {
-            if (str->GetString().Contains(".so"))
+            if (str->GetString().Contains(".so") || str->GetString().Contains(".dylib"))
             out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
          }
          if (list) delete list;
@@ -4189,7 +4196,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          TIter next(list);
          TObjString *str;
          while((str=(TObjString*)next())) {
-            if (str->GetString().Contains(".so"))
+            if (str->GetString().Contains(".so") || str->GetString().Contains(".dylib"))
                out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
             if (str->GetString().Contains(".par"))
                out << "   if (!" << setupPar << "(\"" << str->GetString() << "\")) return;" << endl;
@@ -4473,7 +4480,7 @@ void AliAnalysisAlien::WriteMergingMacro()
          TIter next(list);
          TObjString *str;
          while((str=(TObjString*)next())) {
-            if (str->GetString().Contains(".so"))
+            if (str->GetString().Contains(".so") || str->GetString().Contains(".dylib"))
             out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
          }
          if (list) delete list;
@@ -4584,7 +4591,7 @@ void AliAnalysisAlien::WriteMergingMacro()
          TIter next(list);
          TObjString *str;
          while((str=(TObjString*)next())) {
-            if (str->GetString().Contains(".so"))
+            if (str->GetString().Contains(".so") || str->GetString().Contains(".dylib"))
                out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
          }
          if (list) delete list;

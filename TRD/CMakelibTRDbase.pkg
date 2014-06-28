@@ -112,7 +112,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TRDbaseLinkDef.h)
 
-set ( EINCLUDE  RAW TRD/Cal STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  RAW TRD/Cal STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase )
 
 if (TRD_RAW_CRC)
   message ( STATUS "CRC support for AliTRDrawStream enabled" )
