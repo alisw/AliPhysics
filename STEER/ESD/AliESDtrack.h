@@ -233,6 +233,7 @@ public:
   }
   void  SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo); 
   Double_t  GetdEdxInfo(Int_t regionID, Int_t calibID, Int_t qID,Int_t valueID);
+  Double_t GetdEdxInfoTRD(Int_t method, Double_t p0, Double_t p1, Double_t p2);
 
   AliTPCdEdxInfo * GetTPCdEdxInfo() const {return fTPCdEdxInfo;}
   Double_t GetTPCsignal() const {return fTPCsignal;}

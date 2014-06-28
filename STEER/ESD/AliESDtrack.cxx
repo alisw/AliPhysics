@@ -3302,3 +3302,56 @@ Double_t  AliESDtrack::GetdEdxInfo(Int_t regionID, Int_t calibID, Int_t qID, Int
   if (!fIp) return 0;
   return fTPCdEdxInfo->GetdEdxInfo(fIp, regionID, calibID, qID, valueID);
 }
+
+
+Double_t AliESDtrack::GetdEdxInfoTRD(Int_t method, Double_t p0, Double_t p1, Double_t p2){
+  //
+  // Methods
+  // mean values:
+  //     0.)   linear
+  //     1.)   logarithmic
+  //     2.)   1/sqrt
+  //     3.)   power()
+  // time COG:
+  //     4.)   linear
+  //     5.)   logarithmic
+  //     6.)   square
+  Int_t nSlicesPerLayer=GetNumberOfTRDslices();
+  Int_t nSlicesAll=GetNumberOfTRDslices()*kTRDnPlanes;
+
+  if (method<=3){
+    Double_t sumAmp=0;
+    Int_t    sumW=0;
+    for (Int_t ibin=0; ibin<nSlicesAll; ibin++){
+      if (fTRDslices[ibin]<=0) continue; 
+      sumW++;
+      if (method==0) sumAmp+=fTRDslices[ibin];
+      if (method==1) sumAmp+=TMath::Log(TMath::Abs(fTRDslices[ibin])+p0);
+      if (method==2) sumAmp+=1/TMath::Sqrt(TMath::Abs(fTRDslices[ibin])+p0);
+      if (method==3) sumAmp+=TMath::Power(TMath::Abs(fTRDslices[ibin])+p0,p1);
+    }
+    if (sumW==0) return 0;
+    Double_t dEdx=sumAmp/sumW;
+    if (method==1) dEdx= TMath::Exp(dEdx);
+    if (method==2) dEdx= 1/(dEdx*dEdx);
+    if (method==3) dEdx= TMath::Power(dEdx,1/p1);
+    return dEdx;
+  }
+  if (method>3){
+    Double_t sumWT=0;
+    Double_t sumW=0;
+    for (Int_t ibin=0; ibin<nSlicesAll; ibin++){
+      if (fTRDslices[ibin]<=0) continue; 
+      Double_t time=(ibin%nSlicesPerLayer);
+      Double_t weight=fTRDslices[ibin];
+      if (method==5) weight=TMath::Log((weight+p0)/p0);
+      if (method==6) weight=TMath::Power(weight+p0,p1);
+      sumWT+=time*weight;
+      sumW+=weight;
+    }
+    if (sumW<=0) return 0;
+    Double_t meanTime=sumWT/sumW;
+    return meanTime;
+  }
+  return 0;
+}
