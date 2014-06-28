@@ -3,7 +3,7 @@
 #include "TFile.h"
 
 
-int runFlowOnTheFlyExample(Int_t nEvts=200, Int_t mult=500, Float_t v2=0.05, Int_t iseed=7669)
+int runFlowOnTheFlyExample(Int_t nEvts=2000, Int_t mult=1000, Float_t v2=0.05, Int_t iseed=7669)
 {
   TStopwatch timer;
   timer.Start();
@@ -42,10 +42,9 @@ int runFlowOnTheFlyExample(Int_t nEvts=200, Int_t mult=500, Float_t v2=0.05, Int
       // creating the event with above settings:
       AliFlowEventSimple* event = new AliFlowEventSimple(mult,AliFlowEventSimple::kGenerate);
        event->AddV2(v2);
-      // select the particles for the reference flow ("for the event plane determination")
-      event->TagRP(cutsRP);
-      // select the particles for which we want to calculate the differential flow
+      //event->TagTracks(cutsRP, cutsPOI);
       event->TagPOI(cutsPOI);
+      event->TagRP(cutsRP);
       // event->Print();
       
       // do flow analysis for various methods:

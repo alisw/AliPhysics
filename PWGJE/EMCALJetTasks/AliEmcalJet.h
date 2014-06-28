@@ -47,7 +47,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          Eta()                        const { return fEta;    }
   Double_t          Y()                          const { return 0.5*TMath::Log((E()+Pz())/(E()-Pz()));    }
   Short_t           Charge()                     const { return 0;       }
-  Int_t             GetLabel()                   const { return -1;      }
+  Int_t             GetLabel()                   const { return fLabel;  }
   Int_t             PdgCode()                    const { return 0;       }
   const Double_t   *PID()                        const { return 0;       }
   void              GetMom(TLorentzVector &vec)  const;
@@ -97,6 +97,8 @@ class AliEmcalJet : public AliVParticle
   void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); fTrackIDs.Set(0); fClosestJets[0] = 0; fClosestJets[1] = 0; 
                                                          fClosestJetsDist[0] = 0; fClosestJetsDist[1] = 0; fMatched = 0; fPtSub = 0; }
   Double_t          DeltaR(const AliVParticle* part) const;
+
+  void              SetLabel(Int_t l)                  { fLabel = l;                       }
   void              SetArea(Double_t a)                { fArea    = a;                     }
   void              SetAreaEta(Double_t a)             { fAreaEta = a;                     }
   void              SetAreaPhi(Double_t a)             { fAreaPhi = a;                     }
@@ -142,6 +144,16 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJet*      GetTaggedJet()                            const { return fTaggedJet                               ; }
   Int_t             GetTagStatus()                            const { return fTagStatus                               ; }
 
+  //jet shape derivatives
+  void              SetFirstDerivative(Double_t d)                  { fJetShapeMassFirstDer = d                       ; }
+  void              SetSecondDerivative(Double_t d)                 { fJetShapeMassSecondDer = d                      ; }
+  void              SetFirstOrderSubtracted(Double_t d)             { fJetShapeMassFirstSub = d                       ; }
+  void              SetSecondOrderSubtracted(Double_t d)            { fJetShapeMassSecondSub = d                      ; }
+  Double_t          GetFirstDerivative()                      const { return fJetShapeMassFirstDer                    ; }
+  Double_t          GetSecondDerivative()                     const { return fJetShapeMassSecondDer                   ; }
+  Double_t          GetFirstOrderSubtracted()                 const { return fJetShapeMassFirstSub                    ; }
+  Double_t          GetSecondOrderSubtracted()                const { return fJetShapeMassSecondSub                   ; }
+
  protected:
   Double32_t        fPt;                  //[0,0,12]   pt 
   Double32_t        fEta;                 //[-1,1,12]  eta
@@ -172,6 +184,11 @@ class AliEmcalJet : public AliVParticle
   Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside) 
   Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside) 
   UInt_t            fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
+  Double_t          fJetShapeMassFirstDer;  //!        result from shape derivatives for jet mass: 1st derivative
+  Double_t          fJetShapeMassSecondDer; //!        result from shape derivatives for jet mass: 2nd derivative
+  Double_t          fJetShapeMassFirstSub;  //!        result from shape derivatives for jet mass: 1st order subtracted
+  Double_t          fJetShapeMassSecondSub; //!        result from shape derivatives for jet mass: 2nd order subtracted
+  Int_t             fLabel;               //           label to inclusive jet for constituent subtracted jet    
 
   private:
     struct sort_descend
@@ -180,6 +197,6 @@ class AliEmcalJet : public AliVParticle
         bool operator () (const std::pair<Double_t, Int_t>& p1, const std::pair<Double_t, Int_t>& p2)  { return p1.first > p2.first ; }
         };
 
-  ClassDef(AliEmcalJet,13) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,14) // Emcal jet class in cylindrical coordinates
 };
 #endif

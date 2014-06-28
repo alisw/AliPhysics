@@ -171,13 +171,13 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
 
   Int_t kNdim = 3;
   Int_t kNcentr =1;
-  Int_t ptpr =0;
+  //Int_t ptpr =0;
   if(fBeamType==0) kNdim=3;
   if(fBeamType==1)
   {
       kNdim=4;
       kNcentr=11;
-      ptpr=1;
+      //ptpr=1;
   }
 
   Int_t dims[kNdim];
@@ -2823,7 +2823,7 @@ THnSparse* AliHFEspectrum::GetCharmWeights(){
 void AliHFEspectrum::SetParameterizedEff(AliCFContainer *container, AliCFContainer *containermb, AliCFContainer *containeresd, AliCFContainer *containeresdmb, Int_t *dimensions){
 
    // TOF PID efficiencies
-   Int_t ptpr;
+   Int_t ptpr=0;
    if(fBeamType==0) ptpr=0;
    if(fBeamType==1) ptpr=1;
 
@@ -3169,11 +3169,11 @@ THnSparse* AliHFEspectrum::GetBeautyIPEff(Bool_t isMCpt){
   const Int_t nCentralitybinning=11;//number of centrality bins
   Double_t kPtRange[nPtbinning1+1] = { 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};//pt bin limits
   Double_t kCentralityRange[nCentralitybinning+1] = {0.,1.,2., 3., 4., 5., 6., 7.,8.,9., 10., 11.};
-  Int_t ptpr = 0;
+  //Int_t ptpr = 0;
   Int_t nDim=1;  //dimensions of the efficiency weighting grid
   if(fBeamType==1)
   {
-    ptpr=1;
+    //ptpr=1;
     nDim=2; //dimensions of the efficiency weighting grid
   }
   Int_t nBin[1] = {nPtbinning1};
@@ -3292,11 +3292,11 @@ THnSparse* AliHFEspectrum::GetPIDxIPEff(Int_t source){
     const Int_t nCentralitybinning=11;//number of centrality bins
     Double_t kPtRange[nPtbinning1+1] = { 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};//pt bin limits
     Double_t kCentralityRange[nCentralitybinning+1] = {0.,1.,2., 3., 4., 5., 6., 7.,8.,9., 10., 11.};
-    Int_t ptpr = 0;
+    //Int_t ptpr = 0;
     Int_t nDim=1;  //dimensions of the efficiency weighting grid
     if(fBeamType==1)
     {
-	ptpr=1;
+      //ptpr=1;
 	nDim=2; //dimensions of the efficiency weighting grid
     }
     Int_t nBin[1] = {nPtbinning1};

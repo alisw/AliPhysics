@@ -212,14 +212,8 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fMUONtracks->Clear();
   fTPCtracks->Clear();
   fEventStatistics->Fill("before cuts",1);
-  AliVEvent* event = fInputHandler->GetEvent();
-  if (!event) return;
-  AliAODEvent* aod =  fIsAOD ? (AliAODEvent*) event : 0;
-  AliESDEvent* esd = !fIsAOD ? (AliESDEvent*) event : 0;
   
-  fEventStatistics->Fill("after event check",1);
-  
-  TString trigger = event->GetFiredTriggerClasses();
+  TString trigger = fInputEvent->GetFiredTriggerClasses();
 
   for (Int_t i=0;i<NTRIGGERS;i++) fTriggerFired[i]=0;
   fTriggerFired[ 0] = 1;
@@ -230,7 +224,7 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fTriggerFired[ 5] = trigger.Contains("CMSL7-B-NOPF-MUON");
   fTriggerFired[ 6] = trigger.Contains("CMSL7-B-NOPF-ALLNOTRD");
 
-  fRunNumber  = event->GetRunNumber();
+  fRunNumber  = fInputEvent->GetRunNumber();
   Bool_t isTrigger=0;
   for (Int_t i=0;i<NTRIGGERS;i++){
     if (!fTriggerFired[i]) continue;
@@ -241,25 +235,24 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   if (!isTrigger && !fIsMC) { PostData(1,fListOfHistos); return; }
   fEventStatistics->Fill("after trigger check",1);
 
-  fNofTracklets = fIsAOD ? aod->GetTracklets()->GetNumberOfTracklets() :  esd->GetMultiplicity()->GetNumberOfTracklets();
 
   if (fNofTracklets>1 && fTriggerFired[5]) { PostData(1,fListOfHistos); return; }
   if (fNofTracklets>1 && fTriggerFired[6]) { PostData(1,fListOfHistos); return; }
   
   fEventStatistics->Fill("after tracklet check",1);
 
-  fPeriod     = event->GetPeriodNumber();
-  fOrbit      = event->GetOrbitNumber();
-  fBC         = event->GetBunchCrossNumber();
-  fL0inputs   = fIsAOD ? aod->GetHeader()->GetL0TriggerInputs() : esd->GetHeader()->GetL0TriggerInputs();
-  fL1inputs   = fIsAOD ? aod->GetHeader()->GetL1TriggerInputs() : esd->GetHeader()->GetL1TriggerInputs();
+  fPeriod       = fInputEvent->GetPeriodNumber();
+  fOrbit        = fInputEvent->GetOrbitNumber();
+  fBC           = fInputEvent->GetBunchCrossNumber();
+  fL0inputs     = fInputEvent->GetHeader()->GetL0TriggerInputs();
+  fL1inputs     = fInputEvent->GetHeader()->GetL1TriggerInputs();
+  fIR1          = fInputEvent->GetHeader()->GetIRInt1InteractionMap();
+  fIR2          = fInputEvent->GetHeader()->GetIRInt2InteractionMap();
+  fNofTracklets = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
   
-  for (Int_t i=0;i<6;i++) fNofITSClusters[i] = fIsAOD ? aod->GetHeader()->GetNumberOfITSClusters(i) : esd->GetMultiplicity()->GetNumberOfITSClusters(i);
+  for (Int_t i=0;i<6;i++) fNofITSClusters[i] = fInputEvent->GetNumberOfITSClusters(i);
   
-  fIR1 = fIsAOD ? aod->GetHeader()->GetIRInt1InteractionMap() : esd->GetHeader()->GetIRInt1InteractionMap();
-  fIR2 = fIsAOD ? aod->GetHeader()->GetIRInt2InteractionMap() : esd->GetHeader()->GetIRInt2InteractionMap();
-  
-  AliVVZERO* vzero = event->GetVZEROData();
+  AliVVZERO* vzero = fInputEvent->GetVZEROData();
   for (Int_t i=0; i<32; i++){
     fV0AMult[i] = vzero->GetMultiplicityV0A(i);
     fV0CMult[i] = vzero->GetMultiplicityV0C(i);
@@ -288,7 +281,7 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fV0CDecision = vzero->GetV0CDecision();
 
   // ZDC data
-  AliVZDC* zdc = event->GetZDCData();
+  AliVZDC* zdc = fInputEvent->GetZDCData();
   fZNAenergy  = zdc->GetZNAEnergy();
   fZNCenergy  = zdc->GetZNCEnergy();
   fZPAenergy  = zdc->GetZPAEnergy();
@@ -317,29 +310,25 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
       if (esdzdc->GetZDCTDCData(13,i)) fZPAtdc  = kTRUE;
     }
   }
+
+  const AliVVertex* vertex  = fInputEvent->GetPrimaryVertex();
+  fVtxX   = vertex->GetX();
+  fVtxY   = vertex->GetY();
+  fVtxZ   = vertex->GetZ();
+  fVtxTPC = TString(vertex->GetName()).CompareTo("PrimaryVertex") && TString(vertex->GetName()).CompareTo("SPDVertex");
   
+  AliESDEvent* esd = !fIsAOD ? (AliESDEvent*) fInputEvent : 0;
+//  AliAODEvent* aod =  fIsAOD ? (AliAODEvent*) fInputEvent : 0;
+
   if (!esd) return; // AOD not yet implemented
   
   fEventInFile = esd->GetHeader()->GetEventNumberInFile();
   fChunkFileName->SetString(((TTree*) GetInputData(0))->GetCurrentFile()->GetName());
   
-  const AliESDVertex* vertex  = esd->GetPrimaryVertex();
-  fVtxX  = -1000;
-  fVtxY  = -1000;
-  fVtxZ  = -1000;
-  fVtxTPC = 1;
-  if (vertex) {
-    fVtxX  = vertex->GetX();
-    fVtxY  = vertex->GetY();
-    fVtxZ  = vertex->GetZ();
-    TString name(vertex->GetName());
-    fVtxTPC = name.CompareTo("PrimaryVertex") && name.CompareTo("SPDVertex");
-  }
-  
   fFOmap = esd->GetMultiplicity()->GetFastOrFiredChips();
   fFiredChipMap = esd->GetMultiplicity()->GetFiredChipMap();
   
-  for (Int_t itr=0;itr<event->GetNumberOfTracks();itr++){
+  for (Int_t itr=0;itr<esd->GetNumberOfTracks();itr++){
     AliESDtrack* track = (AliESDtrack*) esd->GetTrack(itr);
     Float_t pt   = track->Pt();
     Float_t eta  = track->Eta();

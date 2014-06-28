@@ -84,10 +84,13 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
 
   AliAnalysisTaskSELambdac(const AliAnalysisTaskSELambdac &source);
   AliAnalysisTaskSELambdac& operator=(const AliAnalysisTaskSELambdac& source); 
-  Int_t GetHistoIndex(Int_t iPtBin) const { return iPtBin*3;}
-  Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*3+1;}
-  Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*3+2;}
-  Int_t GetLSHistoIndex(Int_t iPtBin)const { return iPtBin*5;}
+  Int_t GetHistoIndex(Int_t iPtBin) const { return iPtBin*6;}
+  Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*6+1;}
+  Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*6+2;}
+  Int_t GetLbHistoIndex(Int_t iPtBin) const { return iPtBin*6+3;}
+  Int_t GetcOnlyHistoIndex(Int_t iPtBin) const { return iPtBin*6+4;}
+  Int_t GetNoQuarkHistoIndex(Int_t iPtBin) const { return iPtBin*6+5;}
+  //  Int_t GetLSHistoIndex(Int_t iPtBin)const { return iPtBin*7;}
 
   Bool_t ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const;
   void FillAPrioriConcentrations(AliAODRecoDecayHF3Prong *part, AliRDHFCutsLctopKpi *cuts,
@@ -121,8 +124,8 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   TH1F    *fhMassPtGreater2DkTC; //!hist. for No. of events
   TH1F    *fhMassPtGreater23Pr; //!hist. for No. of events
   TH1F    *fhMassPtGreater23PrTC; //!hist. for No. of events
-  TH1F *fMassHist[3*kMaxPtBins]; //!hist. for inv mass (LC)
-  TH1F *fMassHistTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
+  TH1F *fMassHist[6*kMaxPtBins]; //!hist. for inv mass (LC)
+  TH1F *fMassHistTC[6*kMaxPtBins]; //!hist. for inv mass (TC)
   TH1F *fMassHistLpi[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH1F *fMassHistLpiTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
   TH1F *fMassHistKp[3*kMaxPtBins]; //!hist. for inv mass (LC)

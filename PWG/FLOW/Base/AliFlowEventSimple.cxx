@@ -1024,6 +1024,13 @@ void AliFlowEventSimple::TagPOI( const AliFlowTrackSimpleCuts* cuts, Int_t poiTy
 }
 
 //_____________________________________________________________________________
+void AliFlowEventSimple::TagTracks( const AliFlowTrackSimpleCuts* cutsRP, const AliFlowTrackSimpleCuts* cutsPOI)
+{
+    // simple interface to tagging poi's and rp's
+    TagPOI(cutsRP, 0);
+    TagPOI(cutsPOI, 1);
+}
+//_____________________________________________________________________________
 void AliFlowEventSimple::DefineDeadZone( Double_t etaMin,
                                          Double_t etaMax,
                                          Double_t phiMin,

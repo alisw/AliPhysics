@@ -188,11 +188,11 @@ struct Extractor
    * 
    * @return number of converted objects 
    */
-  virtual Int_t Extract()
+  virtual Int_t Extract(const char* prefix="$ALICE_ROOT/PWGLF/FORWARD/corrections")
   {
     Scanner s;
-    TString dir = TString::Format("$ALICE_ROOT/PWGLF/FORWARD/corrections/%s",
-				  fDirName.Data());
+    TString dir = TString::Format("%s/%s",
+				  prefix, fDirName.Data());
     TList* l = s.Scan(dir, fCorrName);
     if (!l) {
       Warning("Extract", "No files matching %s found in %s",  
