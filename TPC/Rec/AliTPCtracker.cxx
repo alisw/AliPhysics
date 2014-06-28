@@ -113,6 +113,7 @@
 #include <TFile.h>
 #include <TObjArray.h>
 #include <TTree.h>
+#include <TMatrixD.h>
 #include <TGraphErrors.h>
 #include <TTimeStamp.h>
 #include "AliLog.h"
@@ -210,6 +211,8 @@ AliTPCtracker::AliTPCtracker()
 		 fkParam(0),
 		 fDebugStreamer(0),
 		 fUseHLTClusters(4),
+         fCrossTalkSignalArray(0),
+         fCrossTalkSignal(0),
 		 fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
@@ -222,6 +225,21 @@ AliTPCtracker::AliTPCtracker()
     fXRow[irow]=0;
     fYMax[irow]=0;
     fPadLength[irow]=0;
+  }
+  
+  // crosstalk array and matrix initialization
+  Int_t nROCs   = 72;
+  Int_t nTimeBinsAll  = 1100;
+  Int_t nWireSegments = 11;
+  fCrossTalkSignalArray = new TObjArray(nROCs);  // for 36 sectors 
+  fCrossTalkSignalArray->SetOwner(kTRUE); 
+  for (Int_t isector=0; isector<nROCs; isector++){
+    fCrossTalkSignal = new TMatrixD(nWireSegments,nTimeBinsAll);
+    for (Int_t imatrix = 0; imatrix<11; imatrix++)
+      for (Int_t jmatrix = 0; jmatrix<nTimeBinsAll; jmatrix++){
+      (*fCrossTalkSignal)[imatrix][jmatrix]=0.;
+      }
+      fCrossTalkSignalArray->AddAt(fCrossTalkSignal,isector);
   }
 
 }
@@ -436,9 +454,11 @@ AliTracker(),
 		 fSeeds(0),
 		 fIteration(0),
 		 fkParam(0),
-                 fDebugStreamer(0),
-                 fUseHLTClusters(4),
-                 fSeedsPool(0),
+         fDebugStreamer(0),
+         fUseHLTClusters(4),
+         fCrossTalkSignalArray(0),
+         fCrossTalkSignal(0),
+         fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
 		 fLastSeedID(-1)
@@ -498,9 +518,11 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
 		 fSeeds(0),
 		 fIteration(0),
 		 fkParam(0),
-                 fDebugStreamer(0),
-                 fUseHLTClusters(4),
-                 fSeedsPool(0),
+         fDebugStreamer(0),
+         fUseHLTClusters(4),
+         fCrossTalkSignalArray(0),
+         fCrossTalkSignal(0),
+         fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
 		 fLastSeedID(-1)
@@ -534,6 +556,8 @@ AliTPCtracker::~AliTPCtracker() {
     fSeeds->Clear(); 
     delete fSeeds;
   }
+  if (fCrossTalkSignalArray) delete fCrossTalkSignalArray;
+  if (fCrossTalkSignal) delete fCrossTalkSignal;
   if (fDebugStreamer) delete fDebugStreamer;
   if (fSeedsPool) delete fSeedsPool;
 }
@@ -1346,8 +1370,17 @@ Int_t  AliTPCtracker::LoadClusters()
     //  
     Int_t sec,row;
     fkParam->AdjustSectorRow(clrow->GetID(),sec,row);
+    
+    // wire segmentID and nPadsPerSegment to be used for Xtalk calculation
+    Int_t wireSegmentID     = fkParam->GetWireSegment(sec,row);
+    Float_t nPadsPerSegment = (Float_t)(fkParam->GetNPadsPerSegment(wireSegmentID));
+    TMatrixD &crossTalkSignal =  *((TMatrixD*)fCrossTalkSignalArray->At(sec));
     for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
-      Transform((AliTPCclusterMI*)(clrow->GetArray()->At(icl)));
+      AliTPCclusterMI *clXtalk= static_cast<AliTPCclusterMI*>(clrow->GetArray()->At(icl));
+      Int_t timeBinXtalk = clXtalk->GetTimeBin();
+      Double_t qTotXtalk = clXtalk->GetQ();    
+      crossTalkSignal[wireSegmentID][timeBinXtalk]+= qTotXtalk/nPadsPerSegment; 
+      Transform((AliTPCclusterMI*)(clXtalk));
     }
     //
     AliTPCtrackerRow * tpcrow=0;

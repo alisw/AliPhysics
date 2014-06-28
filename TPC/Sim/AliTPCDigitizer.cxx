@@ -771,6 +771,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROC");
   Float_t factorIROC      = (atof(rocFactorIROC->GetTitle()));
   Float_t factorOROC      = (atof(rocFactorOROC->GetTitle()));
+  Int_t nIonTailBins =0;
   TObjArray timeResFunc(nROCs); 
   for (Int_t isec = 0;isec<nROCs;isec++){        //loop overs sectors
     // Array of TGraphErrors for a given sector
@@ -786,6 +787,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     TObjArray *timeResArr = new TObjArray(20);  timeResArr -> SetOwner(kTRUE); 
     for (Int_t ires = 0;ires<20;ires++) timeResArr->AddAt(graphRes[ires],ires);
     timeResFunc.AddAt(timeResArr,isec); // Fill all trfs into a single TObjArray 
+    nIonTailBins = graphRes[3]->GetN();
     delete timeResArr;
   }
 
@@ -795,7 +797,6 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   
   TObjArray   crossTalkSignalArray(nROCs);  // for 36 sectors 
   TVectorD  * qTotSectorOld  = new TVectorD(nROCs);
-  TVectorD  * qTotSectorNew  = new TVectorD(nROCs);  
   Float_t qTotTPC = 0.;
   Float_t qTotPerSector = 0.;
   Int_t nTimeBinsAll = 1100;
@@ -966,11 +967,10 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       // Crosstalk correction 
       qXtalk = (*(TMatrixD*)crossTalkSignalArray.At(sector))[wireSegmentID][timeBin];
       qTotPerSector = qTotSectorOld -> GetMatrixArray()[sector];    
-      q -= qXtalk;
+      //q -= qXtalk;
       
-      // Ion tail correction:
-      //   elem=padNumber*nTimeBins+timeBin;
-      //    lowerElem=elem-nIonTailBins;    
+      // Ion tail correction: being elem=padNumber*nTimeBins+timeBin;
+      Int_t lowerElem=elem-nIonTailBins;    
       //    if (lowerElem<0) lowerElem=0;
       //    if (lowerElem in previospad) lowerElem = padNumber*nTimeBins;
       // 
@@ -1022,7 +1022,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       ptr1++;
     }
      
-   if (AliTPCReconstructor::StreamLevel()==1 && q > zerosup ) { 
+   if (AliTPCReconstructor::StreamLevel()==1 && qOrig > zerosup ) { 
       cout << " sector = " << sector  << " row = " << padRow << " localPad = " << localPad << " SegmentID = " << wireSegmentID << " nPadsPerSegment = " <<  nPadsPerSegment << endl;
       cout << " qXtalk =   " <<  qXtalk ;
       cout << " qOrig = " <<  qOrig ;

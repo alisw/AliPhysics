@@ -14,6 +14,7 @@
 //-------------------------------------------------------
 
 #include <TArrayI.h>
+#include <TMatrixD.h>
 #include "AliTracker.h"
 #include "AliTPCreco.h"
 #include "AliTPCclusterMI.h"
@@ -219,6 +220,11 @@ private:
    TTreeSRedirector *fDebugStreamer;     //!debug streamer
    Int_t  fUseHLTClusters;              // use HLT clusters instead of offline clusters
    //
+  
+   TObjArray * fCrossTalkSignalArray;  // for 36 sectors 
+   TMatrixD * fCrossTalkSignal;               // matrix holds total charge in a given anode wire segment for a given timebin
+
+   
    TClonesArray* fSeedsPool;            //! pool of seeds
    TArrayI fFreeSeedsID;                //! array of ID's of freed seeds
    Int_t fNFreeSeeds;                   //! number of seeds freed in the pool
