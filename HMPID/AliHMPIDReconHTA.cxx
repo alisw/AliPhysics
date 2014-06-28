@@ -592,7 +592,7 @@ void AliHMPIDReconHTA::InitDatabase()
       Double_t xmip = xrad + sizeCh*TMath::Tan(thTrk)*TMath::Cos(phTrk);
       Double_t ymip = yrad + sizeCh*TMath::Tan(thTrk)*TMath::Sin(phTrk);
 
-      Double_t dist1,dist2;
+      Double_t dist2;
       //
       //first point at phi=0
       //
@@ -600,12 +600,15 @@ void AliHMPIDReconHTA::InitDatabase()
       TVector2 pos;
       pos=rec.TracePhot(thetaC,0);
 
-      if(pos.X()==-999) {
+      /*if(pos.X()==-999) {
         dist1 = 0;            //open ring...only the distance btw mip and point at 180 will be considered
       } else {
         x[0] = pos.X(); y[0] = pos.Y();
         dist1   = TMath::Sqrt((x[0]-xmip)*(x[0]-xmip)+(y[0]-ymip)*(y[0]-ymip));
-      }
+      }*/
+      
+      if(pos.X()!=-999) {x[0] = pos.X(); y[0] = pos.Y();}
+      
       //
       //second point at phi=180
       //

@@ -329,7 +329,7 @@ void AliHMPIDCalib::FillPedestal(Int_t abspad,Int_t q)
         fpedQ0[nDDL][row][dil][adr]++;                                                 //Count how many times a pad charge is zero
       }
       
-     Int_t histocnt=0;   histocnt=(nDDL)*11520+(row-1)*480+(dil-1)*48+adr;             //Histo counter for a single DDL  
+    // Int_t histocnt=0;   histocnt=(nDDL)*11520+(row-1)*480+(dil-1)*48+adr;             //Histo counter for a single DDL  
     
 }//FillPedestal()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

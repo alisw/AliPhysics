@@ -11,6 +11,7 @@
 //-------------------------------------------------------------------------
 
 #include <TNamed.h>
+#include <TBits.h>
 class TList;
 class AliVHeader : public TNamed {
 
@@ -35,6 +36,12 @@ class AliVHeader : public TNamed {
   virtual void SetTriggerCluster(UChar_t trigClus) = 0;
   virtual void SetEventType(UInt_t evttype)        = 0;
   */
+  virtual UInt_t   GetL0TriggerInputs() const {return 0;}
+  virtual UInt_t   GetL1TriggerInputs() const {return 0;}
+  virtual UShort_t GetL2TriggerInputs() const {return 0;}
+  virtual TBits  GetIRInt2InteractionMap() const { static TBits dummy; return dummy; }
+  virtual TBits  GetIRInt1InteractionMap() const { static TBits dummy; return dummy; }
+
 
   virtual void Print(Option_t* option = "") const  = 0;
     

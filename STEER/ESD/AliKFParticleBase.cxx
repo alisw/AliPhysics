@@ -813,7 +813,7 @@ void AliKFParticleBase::AddDaughterWithEnergyCalc( const AliKFParticleBase &Daug
 
     //Double_t Dvv[3][3]; do not need this
     Double_t mDvp[3][3];
-    Double_t mDpv[3][3];
+    //    Double_t mDpv[3][3];
     Double_t mDpp[3][3];
     Double_t mDe[7];
 
@@ -822,7 +822,7 @@ void AliKFParticleBase::AddDaughterWithEnergyCalc( const AliKFParticleBase &Daug
       for(int j=0; j<3; j++)
       {
         mDvp[i][j] = km0[i+3]*mCCHt0[j] + km1[i+3]*mCCHt1[j] + km2[i+3]*mCCHt2[j];
-        mDpv[i][j] = km0[i]*mCCHt0[j+3] + km1[i]*mCCHt1[j+3] + km2[i]*mCCHt2[j+3];
+	//        mDpv[i][j] = km0[i]*mCCHt0[j+3] + km1[i]*mCCHt1[j+3] + km2[i]*mCCHt2[j+3];
         mDpp[i][j] = km0[i+3]*mCCHt0[j+3] + km1[i+3]*mCCHt1[j+3] + km2[i+3]*mCCHt2[j+3];
       }
     }
@@ -2817,10 +2817,10 @@ void AliKFParticleBase::GetArmenterosPodolanski(AliKFParticleBase& positive, Ali
   Double_t spz = positive.GetPz() + negative.GetPz();
   Double_t sp  = sqrt(spx*spx + spy*spy + spz*spz);
   if( sp == 0.0) return;
-  Double_t pn, pp, pln, plp;
+  Double_t pn, pln, plp; // ,pp;
 
   pn = TMath::Sqrt(negative.GetPx()*negative.GetPx() + negative.GetPy()*negative.GetPy() + negative.GetPz()*negative.GetPz());
-  pp = TMath::Sqrt(positive.GetPx()*positive.GetPx() + positive.GetPy()*positive.GetPy() + positive.GetPz()*positive.GetPz());
+  //  pp = TMath::Sqrt(positive.GetPx()*positive.GetPx() + positive.GetPy()*positive.GetPy() + positive.GetPz()*positive.GetPz());
   pln  = (negative.GetPx()*spx+negative.GetPy()*spy+negative.GetPz()*spz)/sp;
   plp  = (positive.GetPx()*spx+positive.GetPy()*spy+positive.GetPz()*spz)/sp;
 

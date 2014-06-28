@@ -1725,7 +1725,8 @@ void AliTRDCalibraFit::RemoveOutliers(Int_t type, Bool_t perdetector){
     return;
   }
   Int_t detector = -1;
-  Int_t sector = -1;
+  // Coverity
+  //Int_t sector = -1;
   Float_t value  = 0.0;
 
   /////////////////////////////////
@@ -1741,7 +1742,8 @@ void AliTRDCalibraFit::RemoveOutliers(Int_t type, Bool_t perdetector){
   ////////////
   for (Int_t k = 0; k < loop; k++) {
     detector  = ((AliTRDFitInfo *) fVectorFit.At(k))->GetDetector();
-    sector = GetSector(detector);
+    // Coverity
+    //sector = GetSector(detector);
     if(perdetector){
       value = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef()[0];
       if(value > 0.0) {
@@ -1778,7 +1780,8 @@ void AliTRDCalibraFit::RemoveOutliers(Int_t type, Bool_t perdetector){
   if(type==1) defaultvalue = -1.5;
   for (Int_t k = 0; k < loop; k++) {
     detector  = ((AliTRDFitInfo *) fVectorFit.At(k))->GetDetector();
-    sector = GetSector(detector);
+    // Coverity
+    //sector = GetSector(detector);
     Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
     Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
     Float_t *coef = ((AliTRDFitInfo *) fVectorFit.At(k))->GetCoef();
@@ -1807,7 +1810,8 @@ void AliTRDCalibraFit::RemoveOutliers2(Bool_t perdetector){
     return;
   }
   Int_t detector = -1;
-  Int_t sector = -1;
+  // Coverity
+  //Int_t sector = -1;
   Float_t value  = 0.0;
 
   /////////////////////////////////
@@ -1823,7 +1827,8 @@ void AliTRDCalibraFit::RemoveOutliers2(Bool_t perdetector){
   ////////////
   for (Int_t k = 0; k < loop; k++) {
     detector  = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetDetector();
-    sector = GetSector(detector);
+    // Coverity
+    //sector = GetSector(detector);
     if(perdetector){
       value = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetCoef()[0];
       if(value < 70.0) {
@@ -1857,7 +1862,8 @@ void AliTRDCalibraFit::RemoveOutliers2(Bool_t perdetector){
   ////////////////////////////////////////////////
   for (Int_t k = 0; k < loop; k++) {
     detector  = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetDetector();
-    sector = GetSector(detector);
+    // Coverity
+    //sector = GetSector(detector);
     Int_t rowMax    = fGeo->GetRowMax(GetLayer(detector),GetStack(detector),GetSector(detector));
     Int_t colMax    = fGeo->GetColMax(GetLayer(detector));
     Float_t *coef = ((AliTRDFitInfo *) fVectorFit2.At(k))->GetCoef();
@@ -5756,15 +5762,18 @@ void AliTRDCalibraFit::FitTnpRange(Double_t *arraye, Double_t *arraym, Double_t 
     TVectorD pars0;
     linearfitter.Eval();
     linearfitter.GetParameters(pars0);
-    Double_t pointError0  =  TMath::Sqrt(linearfitter.GetChisquare()/npoints);
-    Double_t errorsx0     =  linearfitter.GetParError(2)*pointError0;
+    // Coverity
+    //Double_t pointError0  =  TMath::Sqrt(linearfitter.GetChisquare()/npoints);
+    //Double_t errorsx0     =  linearfitter.GetParError(2)*pointError0;
     Double_t min0         = 0.0;
-    Double_t ermin0       = 0.0;
+    // Coverity
+    //Double_t ermin0       = 0.0;
     //Double_t prfe0      = 0.0;
     Double_t prf0         = 0.0;
     if((pars0[2] > 0.000000000001) && (TMath::Abs(pars0[1]) >= 0.000000000001)) {
       min0 = -pars0[1]/(2*pars0[2]);
-      ermin0 = TMath::Abs(min0*(errorsx0/pars0[2]+linearfitter.GetParError(1)*pointError0/pars0[1]));
+      // Coverity
+      //ermin0 = TMath::Abs(min0*(errorsx0/pars0[2]+linearfitter.GetParError(1)*pointError0/pars0[1]));
       prf0 = pars0[0]+pars0[1]*min0+pars0[2]*min0*min0;
       if(prf0 > 0.0) {
 	/*
@@ -5979,12 +5988,14 @@ void AliTRDCalibraFit::FitLandau(TH1 *projch, Double_t mean, Double_t nentries)
  
   fCurrentCoef[0]  = 0.0;
   fCurrentCoefE    = 0.0;
-  Double_t chisqrl = 0.0;
+  // Coverity
+  //Double_t chisqrl = 0.0;
   
   projch->Fit("landau","WWQ+",""
              ,(Double_t) mean/fBeginFitCharge
              ,lastvalue);
-  chisqrl = projch->GetFunction("landau")->GetChisquare();
+  // Coverity
+  //chisqrl = projch->GetFunction("landau")->GetChisquare();
  
   if (fDebugLevel == 1) {
     TCanvas *cp = new TCanvas("cp","cp",50,50,600,800);

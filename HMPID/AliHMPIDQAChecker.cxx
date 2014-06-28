@@ -249,7 +249,7 @@ Double_t AliHMPIDQAChecker::CheckRaw(Int_t specie, TObjArray* list)
   // in AMORE. But we can pu undividual labels.
   //
   
-  Int_t raqQualFlag = AliQAv1::kNULLBit;
+  //Int_t raqQualFlag = AliQAv1::kNULLBit;
   
   Int_t hmpQaFlags[4]={-1}; //init for the 4 shifter histos
   
@@ -281,7 +281,7 @@ Double_t AliHMPIDQAChecker::CheckRaw(Int_t specie, TObjArray* list)
       if(h1) {
       if( h1->Integral() > 1 ) {
       // no entres -> fatal
-      if( h1->GetEntries() == 0) {raqQualFlag = AliQAv1::kFATAL;}
+      //if( h1->GetEntries() == 0) {raqQualFlag = AliQAv1::kFATAL;}
       h1->SetStats(0);
       
       
@@ -362,7 +362,7 @@ Double_t AliHMPIDQAChecker::CheckRaw(Int_t specie, TObjArray* list)
        if(h1) {
        if( h1->Integral() > 1 ) {
       // no entres -> fatal
-      if( h1->GetEntries() == 0) {raqQualFlag = AliQAv1::kFATAL;}
+      //if( h1->GetEntries() == 0) {raqQualFlag = AliQAv1::kFATAL;}
        h1->SetStats(0);
       // clean up the text, stat, lines, ...
       if( h1->GetListOfFunctions() ) h1->GetListOfFunctions()->Clear();
@@ -438,7 +438,7 @@ Double_t AliHMPIDQAChecker::CheckRaw(Int_t specie, TObjArray* list)
       if(h2) {
         if( h2->Integral() > 1 ) {
       // no entres -> fatal
-      if( h2->GetEntries() == 0) {raqQualFlag = AliQAv1::kFATAL;}
+     // if( h2->GetEntries() == 0) {raqQualFlag = AliQAv1::kFATAL;}
        h2->SetStats(0);
       // clean up the text, stat, lines, ...
       if( h2->GetListOfFunctions() ) h2->GetListOfFunctions()->Clear();
@@ -518,7 +518,7 @@ Double_t AliHMPIDQAChecker::CheckRaw(Int_t specie, TObjArray* list)
       if(h2) {
         if(h2->Integral() > 0 ) {
       // no entres -> fatal
-      if( h2->GetEntries() == 0) {raqQualFlag = AliQAv1::kFATAL;}
+     // if( h2->GetEntries() == 0) {raqQualFlag = AliQAv1::kFATAL;}
              h2->SetStats(0);
       // clean up the text, stat, lines, ...
       if( h2->GetListOfFunctions() ) h2->GetListOfFunctions()->Clear();

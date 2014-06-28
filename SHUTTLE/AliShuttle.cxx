@@ -3662,22 +3662,14 @@ Bool_t AliShuttle::TouchFile()
 	TString dir;
 	dir.Form("%s%d/SHUTTLE_DONE", fConfig->GetAlienPath(), GetCurrentYear());
 	// checking whether directory for touch command exists
-	TString commandLs;
-	commandLs.Form("ls %s",dir.Data());
-	TGridResult *resultLs = dynamic_cast<TGridResult*>(gGrid->Command(commandLs));
-	if (!resultLs){
-		Log("SHUTTLE",Form("No result for %s command, returning without touching",commandLs.Data()));
+        TGridResult* resultLs = gGrid->Ls(dir.Data());
+	if (!resultLs){ // unfortunately we don't get this for ls of a non existing dir
+		Log("SHUTTLE",Form("No result for \"Ls(\"%s\")\", returning without touching", dir.Data()));
 		return kFALSE;
 	}
-	TMap *mapLs = dynamic_cast<TMap*>(resultLs->At(0));
-	if (!mapLs){
-		Log("SHUTTLE",Form("No map for %s command, returning without touching",commandLs.Data()));
-		delete resultLs;
-		resultLs = 0x0;
-		return kFALSE;
-	}
-	TObjString *valueLsPath = dynamic_cast<TObjString*>(mapLs->GetValue("path"));
-	if (!valueLsPath || (valueLsPath->GetString()).CompareTo(dir)!=1){ 
+
+        if ( resultLs->GetEntries() == 1 && !resultLs->GetFileName(0) ) {
+          // this is what we currently get for ls of a non existing dir
 		Log("SHUTTLE",Form("No directory %s found, creating it",dir.Data()));
 
 		// creating the directory

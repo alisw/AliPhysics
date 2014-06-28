@@ -688,9 +688,8 @@ TGeoPNEntry* AliITSUGeomTGeo::GetPNEntry(Int_t index) const
 void AliITSUGeomTGeo::BuildITS(Bool_t loadSegm)
 {
   // exract upg ITS parameters from TGeo
-  if (fVersion!=kITSVNA) {AliWarning("Already built"); return; // already initialized}
-    if (!gGeoManager) AliFatal("Geometry is not loaded");
-  }
+  if (fVersion!=kITSVNA) {AliWarning("Already built"); return;} // already initialized
+  if (!gGeoManager) AliFatal("Geometry is not loaded");
   fNLayers    = ExtractNumberOfLayers();
   if (!fNLayers) return;
   //
@@ -797,7 +796,7 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfStaves(Int_t lay) const
   char laynam[30];
   snprintf(laynam, 30, "%s%d",GetITSLayerPattern(),lay);
   TGeoVolume* volLr = gGeoManager->GetVolume(laynam);
-  if (!volLr) AliFatal(Form("can't find %s volume",laynam));
+  if (!volLr) { AliFatal(Form("can't find %s volume",laynam)); return -1; }
   //
   // Loop on all layer nodes, count Stave volumes by checking names
   Int_t nNodes = volLr->GetNodes()->GetEntries();

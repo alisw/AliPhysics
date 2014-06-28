@@ -410,7 +410,7 @@ Bool_t  AliESD::RemoveTrack(Int_t rm) {
   if (rm==last) return kTRUE;
 
   AliESDtrack *t=GetTrack(last);
-  if (!t) {AliFatal(Form("NULL pointer for ESD track %d",last));}
+  if (!t) {AliFatal(Form("NULL pointer for ESD track %d",last)); return kFALSE;}
   t->SetID(rm);
   new (a[rm]) AliESDtrack(*t);
   delete a.RemoveAt(last);
@@ -530,7 +530,7 @@ Bool_t AliESD::Clean(Float_t *cleanPars) {
   Int_t nTracks=GetNumberOfTracks();
   for (Int_t i=nTracks-1; i>=0; i--) {
     AliESDtrack *track=GetTrack(i);
-    if (!track) {AliFatal(Form("NULL pointer for ESD track %d",i));}
+    if (!track) {AliFatal(Form("NULL pointer for ESD track %d",i)); return kFALSE;}
     Float_t xy,z; track->GetImpactParameters(xy,z);
     if ((TMath::Abs(xy) > dmax) || (vtxOK && (TMath::Abs(z) > zmax))) {
       if (RemoveTrack(i)) rc=kTRUE;

@@ -31,7 +31,7 @@
 
 ClassImp(AliRecoServerThread)
 AliRecoServerThread::AliRecoServerThread(zmq::context_t *context, AliReconstruction* reco)
-  : AliThreadedSocket(context, AliThreadedSocket::WRITE),
+  : AliThreadedSocket(context, AliThreadedSocket::kWRITE),
   	fReco(0),
     fCond(0)
 {
@@ -50,41 +50,35 @@ Bool_t AliRecoServerThread::Start(const char* endpoint)
 	return AliThreadedSocket::Start();
 }
 
-void* AliRecoServerThread::RunThrdWrite(void* arg)
+void AliRecoServerThread::RunThrdWrite()
 {
 	TThread::SetCancelAsynchronous();
 	TThread::SetCancelOn();
 	
-	AliRecoServerThread* recoTh = (AliRecoServerThread*)arg;
-	
-	const char* host = recoTh->GetHost();
-	zmq::context_t* context = recoTh->GetContext();
-	AliReconstruction* reco = recoTh->GetReconstruction();
-
  // generate a publish socket
-	AliSocket publisher(context, ZMQ_PUB);
-	publisher.Bind(host);
+	AliSocket publisher(fContext, ZMQ_PUB);
+	publisher.Bind(fHost);
 	
-  if(reco==0) return 0;
+  if(fReco==0) return;
   
   AliESDEvent* event;
   
-	reco->Begin(NULL);
-  if (reco->GetAbort() != TSelector::kContinue) return 0;
+	fReco->Begin(NULL);
+  if (fReco->GetAbort() != TSelector::kContinue) return;
   
-  reco->SlaveBegin(NULL);
-	if (reco->GetAbort() != TSelector::kContinue) return 0;
+  fReco->SlaveBegin(NULL);
+	if (fReco->GetAbort() != TSelector::kContinue) return;
   
   //******* The loop over events
     Int_t iEvent = 0;
-    while ( reco->HasNextEventAfter(iEvent) ) {
+    while ( fReco->HasNextEventAfter(iEvent) ) {
       // check if process has enough resources 
-      if (!reco->HasEnoughResources(iEvent)) break;
-      Bool_t status = reco->ProcessEvent(iEvent);
+      if (!fReco->HasEnoughResources(iEvent)) break;
+      Bool_t status = fReco->ProcessEvent(iEvent);
       
       if (status)
       {
-		    event = reco->GetESDEvent();
+		    event = fReco->GetESDEvent();
 		    
       	AliNetMessage tmess(kMESS_OBJECT);
   			tmess.Reset();
@@ -95,18 +89,18 @@ void* AliRecoServerThread::RunThrdWrite(void* arg)
    			sleep(1);
      }
       else {
-        reco->Abort("ProcessEvent",TSelector::kAbortFile);
+        fReco->Abort("ProcessEvent",TSelector::kAbortFile);
       }
       		
-      reco->CleanProcessedEvent();
-      if(recoTh->Condition()->TimedWaitRelative(500)==0){
+      fReco->CleanProcessedEvent();
+      if(fCond->TimedWaitRelative(500)==0){
 				break;
 			}			
       iEvent++;
     }
-    reco->SlaveTerminate();
-    if (reco->GetAbort() != TSelector::kContinue) return 0;
-    reco->Terminate();
-    if (reco->GetAbort() != TSelector::kContinue) return 0;
+    fReco->SlaveTerminate();
+    if (fReco->GetAbort() != TSelector::kContinue) return;
+    fReco->Terminate();
+    if (fReco->GetAbort() != TSelector::kContinue) return;
   
 }

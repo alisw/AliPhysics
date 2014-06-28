@@ -921,7 +921,7 @@ Bool_t AliCDBGrid::PutInCvmfs(TString &filename, TFile *cdbFile) const {
   // Tar the file with the right prefix path
   cdbFile->Cp( basename.Data() );
   TString tarFileName("cdbObjectToAdd.tar.gz");
-  // tarCommand should be e.g.: tar --transform 's,^,/cvmfs/alice-ocdb.cern.ch/calibration/data/2010/OCDB,S' -cvzf objecttoadd.tar.gz basename
+  // tarCommand should be e.g.: tar --transform 's,^,/cvmfs/alice-ocdb.cern.ch/calibration/data/2010/OCDB/,S' -cvzf objecttoadd.tar.gz basename
   Int_t result = gSystem->Exec ( Form( "tar --transform 's,^,%s,S' -cvzf %s %s", cvmfsDirname.Data(), tarFileName.Data(), basename.Data() ) );
   if ( result != 0 ) {
     AliError ( Form ( "Could not create the tarball for the object \"%s\"", filename.Data() ) );

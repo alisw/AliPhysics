@@ -892,10 +892,11 @@ Bool_t AliTRDCalibraVector::FindTheMaxEntries(Int_t i, Int_t &detectormax, Int_t
   // Find detectormax and groupmax with the biggest number of entries
   //
 
-  Int_t numberofTB = 0;
-  if(i==0) numberofTB = (Int_t) GetNumberBinCharge();
-  if(i==1) numberofTB = GetTimeMax();
-  if(i==2) numberofTB = GetNumberBinPRF();
+  // Coverity
+  //Int_t numberofTB = 0;
+  //if(i==0) numberofTB = (Int_t) GetNumberBinCharge();
+  //if(i==1) numberofTB = GetTimeMax();
+  //if(i==2) numberofTB = GetNumberBinPRF();
   if((i!=0) && (i!=1) && (i!=2)) AliInfo("Didn't understand i");
 
 

@@ -1303,11 +1303,11 @@ GetPredictedChi2(const AliExternalTrackParam *t) const {
   // and estimated at the same reference plane.
   //----------------------------------------------------------------
 
-  if (TMath::Abs(1. - t->GetAlpha()/GetAlpha()) > FLT_EPSILON) {
+  if (TMath::Abs(GetAlpha()-GetAlpha()) > FLT_EPSILON) {
       AliError("The reference systems of the tracks differ !");
       return kVeryBig;
   }
-  if (TMath::Abs(1. - t->GetX()/GetX()) > FLT_EPSILON) {
+  if (TMath::Abs(t->GetX()-GetX()) > FLT_EPSILON) {
       AliError("The reference of the tracks planes differ !");
       return kVeryBig;
   }
