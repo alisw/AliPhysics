@@ -43,6 +43,7 @@
 #include "TH1.h"
 #include "TClonesArray.h"
 #include "TTreeStream.h"
+#include "TGrid.h"
 
 class AliTPCclusterFast: public TObject {
 public:
@@ -166,12 +167,17 @@ void AliTPCtrackFast::MakeTrack(){
   //
   //
   if (!fCl) fCl = new TClonesArray("AliTPCclusterFast",160);
+  //
+  // 0.) Init data structure
+  //
   for (Int_t i=0;i<fN;i++){
     AliTPCclusterFast * cluster = (AliTPCclusterFast*) fCl->UncheckedAt(i);
     if (!cluster) cluster =   new ((*fCl)[i]) AliTPCclusterFast;
     cluster->Init();
   }
-
+  //
+  // 1.) Create hits - with crosstalk diffusion
+  //
   for (Int_t i=0;i<fN;i++){
     Double_t tY = i*fAngleY;
     Double_t tZ = i*fAngleZ;
@@ -185,8 +191,15 @@ void AliTPCtrackFast::MakeTrack(){
     cluster->SetParam(fMNprim,fDiff, fDiffLong, posY,posZ,fAngleY,fAngleZ); 
     //
     cluster->GenerElectrons(cluster, clusterm, clusterp);
+  }
+  //
+  // 2.) make digitization
+  //
+  for (Int_t i=0;i<fN;i++){
+    AliTPCclusterFast * cluster = (AliTPCclusterFast*) fCl->UncheckedAt(i);
     cluster->Digitize();
   }
+
 }
 
 Double_t  AliTPCtrackFast::CookdEdxNtot(Double_t f0,Float_t f1){
@@ -471,6 +484,7 @@ void AliTPCclusterFast::Init(){
     fPosY[i]=0;
     fPosZ[i]=0;
     fGain[i]=0;
+    fSec[i]=0;
   }
 }
 
@@ -492,7 +506,7 @@ Double_t AliTPCclusterFast::GetNsec(){
   // Generate number of secondary electrons
   // copy of procedure implemented in geant
   //
-  const Double_t FPOT=20.77E-9, EEND=10E-6, EEXPO=2.2, EEND1=1E-6;
+  const Double_t FPOT=20.77E-9, EEND=10E-6, EEXPO=2.2; // EEND1=1E-6;
   const Double_t XEXPO=-EEXPO+1, YEXPO=1/XEXPO;
   const Double_t W=20.77E-9;
   Float_t RAN = gRandom->Rndm();
@@ -509,17 +523,17 @@ void AliTPCclusterFast::GenerElectrons(AliTPCclusterFast *cl0, AliTPCclusterFast
   //
   const Int_t knMax=1000;
   cl0->fNprim = gRandom->Poisson(cl0->fMNprim);  //number of primary electrons
-  cl0->fNtot=0; //total number of electrons
-  cl0->fQtot=0; //total number of electrons after gain multiplification
+  // cl0->fNtot=0; //total number of electrons
+  // cl0->fQtot=0; //total number of electrons after gain multiplification
   //
   Double_t sumQ=0;
   Double_t sumYQ=0;
   Double_t sumZQ=0;
   Double_t sumY2Q=0;
   Double_t sumZ2Q=0;
-  for (Int_t i=0;i<knMax;i++){ 
-    cl0->fSec[i]=0;
-  }
+  //  for (Int_t i=0;i<knMax;i++){ 
+  //  cl0->fSec[i]=0;
+  //}
   for (Int_t iprim=0; iprim<cl0->fNprim;iprim++){
     Float_t dN   =  cl0->GetNsec();
     cl0->fSec[iprim]=dN;
@@ -545,11 +559,11 @@ void AliTPCclusterFast::GenerElectrons(AliTPCclusterFast *cl0, AliTPCclusterFast
       cl->fQtot+=gg;
       cl->fNtot++;
       //
-  //     cl->sumQ+=gg;
-//       cl->sumYQ+=gg*y;
-//       cl->sumY2Q+=gg*y*y;
-//       cl->sumZQ+=gg*z;
-//       cl->sumZ2Q+=gg*z*z;
+      //     cl->sumQ+=gg;
+      //       cl->sumYQ+=gg*y;
+      //       cl->sumY2Q+=gg*y*y;
+      //       cl->sumZQ+=gg*z;
+      //       cl->sumZ2Q+=gg*z*z;
       if (cl->fNtot>=knMax) continue;
     }
     if (cl0->fNtot>=knMax) break;
