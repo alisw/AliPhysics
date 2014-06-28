@@ -412,7 +412,7 @@ void AliTRDonlineTrackletQA::Exec(const Option_t * /* option */)
 
       // search for the best match
       AliESDTrdTracklet *trackletMatch = 0x0;
-      Int_t dyMax = 20;
+      // Int_t dyMax = 20;
       Int_t yMax = 100;
       for (Int_t iTrackletSim = 0; iTrackletSim < trackletsSim[iDetector].GetEntries(); iTrackletSim++) {
 	AliESDTrdTracklet *trackletSim = (AliESDTrdTracklet*) trackletsSim[iDetector].At(iTrackletSim);
@@ -428,7 +428,7 @@ void AliTRDonlineTrackletQA::Exec(const Option_t * /* option */)
 
 	trackletMatch = trackletSim;
 	yMax  = TMath::Abs(trackletRaw->GetBinY()  - trackletSim->GetBinY());
-	dyMax = TMath::Abs(trackletRaw->GetBinDy() - trackletSim->GetBinDy());
+	// dyMax = TMath::Abs(trackletRaw->GetBinDy() - trackletSim->GetBinDy());
       }
       if (trackletMatch) {
 	fHistYdiff->Fill(trackletRaw->GetBinY()  - trackletMatch->GetBinY());

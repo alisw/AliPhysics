@@ -111,6 +111,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  fNBinsPt;               // set the number of bins in axis of histograms filled with pt (or Et)
   Double_t               fPtBinLowEdge;          // low edge of the first pt (Et) bin
   Double_t               fPtBinHighEdge;         // high edge of the first pt (Et) bin
+  Int_t                  fNCuts;                 // number of cuts (QA purposes)
+  TString                fCuts;                  //string to hol cuts names
 
 
   
@@ -158,6 +160,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fEmcClusETM1;      //!emcal track matched cluster energy (TracDx,z method)
   TH1F        *fEmcClusETM2;      //!emcal track matched cluster energy (track->GetEMCALcluster() method)
   TH1F        *fEmcClusNotExo;    //!cluster energy (exotics removed)
+  TH2F        *fEmcClusEClusCuts; //!cluster E spectrum per cluster cut (none, exotic, exo+cpv1, exo+cpv1+time, exo+cpv1+time+m02)
   TH2F        *fEmcClusEPhi;      //!cluster E spectrum vs. phi
   TH2F        *fEmcClusEPhiCut;   //!cluster E spectrum vs. phi in "triggered event"
   TH2F        *fEmcClusEEta;      //!cluster E spectrum vs. eta

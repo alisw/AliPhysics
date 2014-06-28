@@ -3,7 +3,8 @@ AliFourPion *AddTaskFourPion(
 				 Bool_t MCcase=kFALSE, 
 				 Bool_t PbPbcase=kTRUE, 
 				 Bool_t GenerateSignal=kFALSE, 
-				 Bool_t TabulatePairs=kFALSE, 
+				 Bool_t TabulatePairs=kFALSE,
+				 Bool_t LinearInterpolate=kTRUE,
 				 Int_t CentBinLowLimit=0, 
 				 Int_t CentBinHighLimit=1,
 				 Int_t RMax=11,
@@ -38,6 +39,7 @@ AliFourPion *AddTaskFourPion(
   FourPionTask->SetPbPbCase(PbPbcase);
   FourPionTask->SetGenerateSignal(GenerateSignal);
   FourPionTask->SetTabulatePairs(TabulatePairs);
+  FourPionTask->SetInterpolationType(LinearInterpolate);
   FourPionTask->SetCentBinRange(CentBinLowLimit, CentBinHighLimit);
   FourPionTask->SetRMax(RMax);
   FourPionTask->SetfcSq(fcSq);

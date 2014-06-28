@@ -48,7 +48,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliFlowTrackCuts& operator=(const AliFlowTrackCuts& someCuts);
   virtual ~AliFlowTrackCuts();
 
-  static AliFlowTrackCuts* GetAODTrackCutsForFilterBit(UInt_t bit = 1);
+  static AliFlowTrackCuts* GetAODTrackCutsForFilterBit(UInt_t bit = 1, TString suffix = "");
   static AliFlowTrackCuts* GetStandardTPCStandaloneTrackCuts();
   static AliFlowTrackCuts* GetStandardTPCStandaloneTrackCuts2010();
   static AliFlowTrackCuts* GetStandardGlobalTrackCuts2010();
@@ -69,7 +69,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kVZERO, //forward VZERO detector
                             kMUON,  // XZhang 20120604
                             kKink,
-                            kAODFilterBit
+                            kAODFilterBit,
+                            kUserA, // reserved for custom cuts
+                            kUserB  // reserved for custom cuts
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 

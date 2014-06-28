@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskFemto *AddTaskFemto(TString *configMacroName="ConfigFemtoAnalysis.C", TString containerName="femtolist", const char *configMacroParameters="")
+AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName="ConfigFemtoAnalysis.C", TString containerName="femtolist", const char *configMacroParameters="")
 {
 // Creates a proton analysis task and adds it to the analysis manager.
   

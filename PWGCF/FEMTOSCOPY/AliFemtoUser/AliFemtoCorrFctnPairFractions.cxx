@@ -25,6 +25,7 @@ ClassImp(AliFemtoCorrFctnPairFractions)
 AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(char* title):
 AliFemtoCorrFctn(),
   fPairFractions(0),
+  fPairFractionsDen(0),
   fphiL(0),
   fphiT(0)
 {
@@ -34,26 +35,40 @@ AliFemtoCorrFctn(),
 
   TString  hname  = "hPairFraction"; hname+= title;
   TString  htitle = "Pair Fraction "; htitle+= title;
-  fPairFractions = new TH1F(hname.Data(),htitle.Data(), 7, 0, 7);
+  fPairFractions = new TH1F(hname.Data(),htitle.Data(), 9, 0, 9);
   fPairFractions->GetXaxis()->SetBinLabel(1,"#pi#pi, MC");
   fPairFractions->GetXaxis()->SetBinLabel(2,"KK, MC");
   fPairFractions->GetXaxis()->SetBinLabel(3,"pp, MC");
   fPairFractions->GetXaxis()->SetBinLabel(4,"#pi K, MC");
   fPairFractions->GetXaxis()->SetBinLabel(5,"#pi p, MC");
   fPairFractions->GetXaxis()->SetBinLabel(6,"Kp, MC");
-  fPairFractions->GetXaxis()->SetBinLabel(7,"Other, MC");
+  fPairFractions->GetXaxis()->SetBinLabel(7,"e+, MC");
+  fPairFractions->GetXaxis()->SetBinLabel(8,"#mu+, MC");
+  fPairFractions->GetXaxis()->SetBinLabel(9,"Other, MC");
 
+  hname  = "hPairFractionDen"; hname+= title;
+  htitle = "Pair Fraction in Mixing "; htitle+= title;
+  fPairFractionsDen = new TH1F(hname.Data(),htitle.Data(), 9, 0, 9);
+  fPairFractionsDen->GetXaxis()->SetBinLabel(1,"#pi#pi, MC");
+  fPairFractionsDen->GetXaxis()->SetBinLabel(2,"KK, MC");
+  fPairFractionsDen->GetXaxis()->SetBinLabel(3,"pp, MC");
+  fPairFractionsDen->GetXaxis()->SetBinLabel(4,"#pi K, MC");
+  fPairFractionsDen->GetXaxis()->SetBinLabel(5,"#pi p, MC");
+  fPairFractionsDen->GetXaxis()->SetBinLabel(6,"Kp, MC");
+  fPairFractionsDen->GetXaxis()->SetBinLabel(7,"e+, MC");
+  fPairFractionsDen->GetXaxis()->SetBinLabel(8,"#mu+, MC");
+  fPairFractionsDen->GetXaxis()->SetBinLabel(9,"Other, MC");
 
   // to enable error bar calculation...
-
   fPairFractions->Sumw2();
-  fPairFractions->Sumw2();
+  fPairFractionsDen->Sumw2();
 }
 
 //____________________________
 AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const AliFemtoCorrFctnPairFractions& aCorrFctn) :
   AliFemtoCorrFctn(),
   fPairFractions(0),
+  fPairFractionsDen(0),
   fphiL(0),
   fphiT(0)
 {
@@ -76,8 +91,10 @@ AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const AliFemtoCorrF
 //____________________________
 AliFemtoCorrFctnPairFractions::~AliFemtoCorrFctnPairFractions(){
   // destructor
-  delete fPairFractions;
-  delete fPairFractions;
+  if(fPairFractions)
+    delete fPairFractions;
+  if(fPairFractionsDen)
+    delete fPairFractionsDen;  
 }
 //_________________________
 AliFemtoCorrFctnPairFractions& AliFemtoCorrFctnPairFractions::operator=(const AliFemtoCorrFctnPairFractions& aCorrFctn)
@@ -91,6 +108,10 @@ AliFemtoCorrFctnPairFractions& AliFemtoCorrFctnPairFractions::operator=(const Al
   else
     fPairFractions = 0;
 
+  if (aCorrFctn.fPairFractionsDen)
+    fPairFractionsDen = new TH1F(*aCorrFctn.fPairFractionsDen);
+  else
+    fPairFractionsDen = 0;
   
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
@@ -135,7 +156,6 @@ void AliFemtoCorrFctnPairFractions::AddRealPair( AliFemtoPair* pair){
   Int_t pdg1=0;
   AliFemtoModelHiddenInfo *info1 = ( AliFemtoModelHiddenInfo *) pair->Track1()->GetHiddenInfo();
   if(info1)pdg1 = info1->GetPDGPid();
-
   Int_t pdg2=0;
   AliFemtoModelHiddenInfo *info2 = ( AliFemtoModelHiddenInfo *) pair->Track2()->GetHiddenInfo();
   if(info2)pdg2 = info2->GetPDGPid();
@@ -146,15 +166,20 @@ void AliFemtoCorrFctnPairFractions::AddRealPair( AliFemtoPair* pair){
       fPairFractions->Fill(1.5);
   else if(abs(pdg1)==2212 && abs(pdg2)==2212)// p p
       fPairFractions->Fill(2.5);
-  else if(abs(pdg1)==211 && abs(pdg2)==321)// pi K
+  else if((abs(pdg1)==211 && abs(pdg2)==321)||(abs(pdg1)==321 && abs(pdg2)==211))// pi K
       fPairFractions->Fill(3.5);
-  else if(abs(pdg1)==211 && abs(pdg2)==2212)// pi p
+  else if((abs(pdg1)==211 && abs(pdg2)==2212)||(abs(pdg1)==2212 && abs(pdg2)==211))// pi p
       fPairFractions->Fill(4.5);
-  else if(abs(pdg1)==321 && abs(pdg2)==2212)//K p
+  else if((abs(pdg1)==321 && abs(pdg2)==2212)||(abs(pdg1)==2212 && abs(pdg2)==321))//K p
       fPairFractions->Fill(5.5);
-  else //other
+  else if(abs(pdg1)==13 || abs(pdg2)==13)//one particle from the pair is electron
       fPairFractions->Fill(6.5);
-
+ else if(abs(pdg1)==11 || abs(pdg2)==11)//one particle from the pair is muon
+      fPairFractions->Fill(7.5);
+  else //other
+    {
+      fPairFractions->Fill(8.5);
+    }
   /*double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
   double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
@@ -188,6 +213,36 @@ void AliFemtoCorrFctnPairFractions::AddMixedPair( AliFemtoPair* pair){
   if (fPairCut)
     if (!fPairCut->Pass(pair)) return;
 
+
+
+  Int_t pdg1=0;
+  AliFemtoModelHiddenInfo *info1 = ( AliFemtoModelHiddenInfo *) pair->Track1()->GetHiddenInfo();
+  if(info1)pdg1 = info1->GetPDGPid();
+  Int_t pdg2=0;
+  AliFemtoModelHiddenInfo *info2 = ( AliFemtoModelHiddenInfo *) pair->Track2()->GetHiddenInfo();
+  if(info2)pdg2 = info2->GetPDGPid();
+
+  if(abs(pdg1)==211 && abs(pdg2)==211) //pi pi
+    fPairFractionsDen->Fill(0.5);
+  else if(abs(pdg1)==321 && abs(pdg2)==321)// K K
+    fPairFractionsDen->Fill(1.5);
+  else if(abs(pdg1)==2212 && abs(pdg2)==2212)// p p
+    fPairFractionsDen->Fill(2.5);
+  else if((abs(pdg1)==211 && abs(pdg2)==321)||(abs(pdg1)==321 && abs(pdg2)==211))// pi K
+    fPairFractionsDen->Fill(3.5);
+  else if((abs(pdg1)==211 && abs(pdg2)==2212)||(abs(pdg1)==2212 && abs(pdg2)==211))// pi p
+    fPairFractionsDen->Fill(4.5);
+  else if((abs(pdg1)==321 && abs(pdg2)==2212)||(abs(pdg1)==2212 && abs(pdg2)==321))//K p
+    fPairFractionsDen->Fill(5.5);
+  else if(abs(pdg1)==13 || abs(pdg2)==13)//one particle from the pair is electron
+    fPairFractionsDen->Fill(6.5);
+  else if(abs(pdg1)==11 || abs(pdg2)==11)//one particle from the pair is muon
+    fPairFractionsDen->Fill(7.5);
+  else //other
+    {
+      fPairFractionsDen->Fill(8.5);
+    }
+
 }
 
 
@@ -195,6 +250,7 @@ void AliFemtoCorrFctnPairFractions::WriteHistos()
 {
   // Write out result histograms
   fPairFractions->Write();
+  fPairFractionsDen->Write();
 }
 
 TList* AliFemtoCorrFctnPairFractions::GetOutputList()
@@ -203,7 +259,7 @@ TList* AliFemtoCorrFctnPairFractions::GetOutputList()
   TList *tOutputList = new TList();
 
   tOutputList->Add(fPairFractions);
-
+  tOutputList->Add(fPairFractionsDen);
 
   return tOutputList;
 

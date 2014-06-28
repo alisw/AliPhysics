@@ -187,9 +187,7 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
   // Fills QA histograms
 
 
-  Short_t  vCharge;
   Double_t vEta;
-  Double_t vY;
   Double_t vPhi;
   Double_t vPt;
   Double_t vDCAconstrainedxy;
@@ -225,9 +223,7 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
     }
 
     // track parameters
-    vCharge = aodTrack->Charge();
     vEta    = aodTrack->Eta();
-    vY      = aodTrack->Y();
     vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
     vPt     = aodTrack->Pt();
     vDCAconstrainedxy  = aodTrack->DCA();     

@@ -122,6 +122,18 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
   Int_t fRefMultEta5;              //!
   Int_t fRefMultEta8;              //!   
   Int_t fRunNumber;                //!
+    
+    //Event Characterization Variables - optional
+    Bool_t fEvSel_HasAtLeastSPDVertex;      //!
+    Bool_t fEvSel_VtxZCut;                  //!
+    Bool_t fEvSel_IsNotPileup;              //!
+    Bool_t fEvSel_IsNotPileupInMultBins;    //!
+    Bool_t fEvSel_HasVtxContributor;        //!
+    
+    //Other Selections: more dedicated filtering to be studied!
+    Int_t fEvSel_nTracklets;              //!
+    Int_t fEvSel_nSPDClusters;            //!
+    
 
 //===========================================================================================
 //   Variables for V0 Tree

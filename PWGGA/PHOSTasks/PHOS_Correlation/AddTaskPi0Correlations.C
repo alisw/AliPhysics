@@ -52,6 +52,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 
 
 	// Binning 
+	// TODO: Make other binning for 0-10% and 20-50%
 	//Any:
 	if( AliVEvent::kAny == offlineTriggerMask ) 
 	{
