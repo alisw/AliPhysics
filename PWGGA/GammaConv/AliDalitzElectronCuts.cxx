@@ -122,6 +122,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fMassCutPtMin(-100.0),
     fMassMinCut(-999.),
     fDoWeights(kFALSE),
+    fUseVPhotonMCPSmearing(kFALSE),
     fCutString(NULL),
     hCutIndex(NULL),
     hdEdxCuts(NULL),
@@ -138,7 +139,11 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     hTrackDCAzPtbefore(NULL),
     hTrackDCAzPtafter(NULL),
     hTrackNFindClsPtTPCbefore(NULL),
-    hTrackNFindClsPtTPCafter(NULL)
+    hTrackNFindClsPtTPCafter(NULL),
+    hTrackPosEtabeforeDedx(NULL),
+    hTrackNegEtabeforeDedx(NULL),
+    hTrackPosEtaafterDedx(NULL),
+    hTrackNegEtaafterDedx(NULL)
    {
     InitPIDResponse();
     for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -310,6 +315,18 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     hTrackNFindClsPtTPCafter = new TH2F(Form("hTrack_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",60,0,1.5,kPtBins,binsPtDummy);
     fHistograms->Add(hTrackNFindClsPtTPCafter); 
     
+    hTrackPosEtabeforeDedx = new TH1F("hTrack_Pos_Eta_before_Dedx","hTrack_Pos_Eta_before_Dedx",600,-1.5,1.5);
+    fHistograms->Add(hTrackPosEtabeforeDedx);
+    
+    hTrackNegEtabeforeDedx = new TH1F("hTrack_Neg_Eta_before_Dedx","hTrack_Neg_Eta_before_Dedx",600,-1.5,1.5);
+    fHistograms->Add(hTrackNegEtabeforeDedx);
+    
+    hTrackPosEtaafterDedx  = new TH1F("hTrack_Pos_Eta_after_Dedx","hTrack_Pos_Eta_after_Dedx",600,-1.5,1.5);
+    fHistograms->Add(hTrackPosEtaafterDedx);
+    
+    hTrackNegEtaafterDedx  = new TH1F("hTrack_Neg_Eta_afterDedx","hTrack_Neg_Eta_after_Dedx",600,-1.5,1.5);
+    fHistograms->Add(hTrackNegEtaafterDedx);
+    
     
 
     TAxis *AxisAfter = hTPCdEdxafter->GetXaxis(); 
@@ -426,13 +443,35 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
          return kFALSE;
     }
 
-
+    if( lTrack->GetSign() > 0.0 ){
+       
+     if (hTrackPosEtabeforeDedx) hTrackPosEtabeforeDedx->Fill(lTrack->Eta());
+      
+    } else{
+      
+      if(hTrackNegEtabeforeDedx) hTrackNegEtabeforeDedx->Fill(lTrack->Eta());
+      
+    }
+    
+    
     // dEdx Cuts
     if( ! dEdxCuts( track ) ) {
          if(hCutIndex)hCutIndex->Fill(kdEdxCuts);
          return kFALSE;
 
     }
+    
+    if( lTrack->GetSign() > 0.0 ){
+       
+      if( hTrackPosEtaafterDedx) hTrackPosEtaafterDedx->Fill(lTrack->Eta());
+      
+    } else{
+      
+      if( hTrackNegEtaafterDedx) hTrackNegEtaafterDedx->Fill(lTrack->Eta());
+      
+    }
+    
+    
 
     //Electron passed the cuts
     if(hCutIndex)hCutIndex->Fill(kElectronOut);
@@ -961,7 +1000,14 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
                         return kTRUE;
                 } else return kFALSE;
                
-		
+  case kuseVPhotonMCPSmearing:
+    
+		  if( SetUseVPhotonMCPmearing(value)) {
+                        fCuts[kuseVPhotonMCPSmearing] = value;
+                        UpdateCutString(cutID, value);
+                        return kTRUE;
+                  } else return kFALSE;
+		  
   case kNCuts:
 		cout << "Error:: Cut id out of range"<< endl;
 		return kFALSE;
@@ -1881,7 +1927,24 @@ Bool_t AliDalitzElectronCuts::SetMassCut(Int_t massCut)
     }
     return kTRUE;
 }
-
+Bool_t AliDalitzElectronCuts::SetUseVPhotonMCPmearing(Int_t useMCPSmearing)
+{// Set Cut
+   switch(useMCPSmearing){
+     
+   case 0:
+      fUseVPhotonMCPSmearing=kFALSE;
+      break;
+   case 1:
+      fUseVPhotonMCPSmearing=kTRUE;
+      break;
+      
+   default: cout<<"Warning: MassCut not defined "<<useMCPSmearing<<endl;
+	    return kFALSE;
+      
+   }
+   
+   return kTRUE;
+}
 
 
 ///________________________________________________________________________

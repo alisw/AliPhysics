@@ -15,8 +15,9 @@ AliAnalysisTaskEmcalJetHF* AddTaskEmcalJetHF(
    const Double_t trptcut     = 2.0,
    const Double_t trketa      = 0.9,
    const Int_t    trkQAcut     = 10041006,
-   const Bool_t   isESD        = 1,
-   const char *tag	      = ""
+   Bool_t   isESD              = 1,
+   Bool_t   GlobalPID          = 1,
+   const char *tag	           = ""
 )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -53,14 +54,15 @@ AliAnalysisTaskEmcalJetHF* AddTaskEmcalJetHF(
   spectratask->SetClusName(nClusters);
   spectratask->SetAnaType(type);
   spectratask->SetRhoName(nRhosChEm);
-  spectratask->SetJetPhiLimits(minPhi,maxPhi);
-  spectratask->SetJetEtaLimits(minEta,maxEta);
+  spectratask->SetJetPhi(minPhi,maxPhi);
+  spectratask->SetJetEta(minEta,maxEta);
   spectratask->SetJetAreaCut(minArea);
   spectratask->SetTracksName(nTracks);
   spectratask->SetJetPt(hiPTjet); 
   spectratask->SetTrackPtCut(trptcut);
   spectratask->SetTrackEta(trketa);
   spectratask->SetTrackQACut(trkQAcut);
+  spectratask->SetdoGlobalPID(GlobalPID);
   //spectratask->SetDataType(isESD);
 
   //-------------------------------------------------------

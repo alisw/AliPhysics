@@ -61,7 +61,11 @@ AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF() :
   event(0),
   fillHist(0),
   //isESD(0),
+  doGlobalPID(0),
   fCuts(0),
+  fPhimin(-10), fPhimax(10),
+  fEtamin(-0.9), fEtamax(0.9),
+  fAreacut(0.0),
   fJetHIpt(50.0),
   fTrackPtCut(2.0),
   fTrackEta(0.9),
@@ -85,7 +89,7 @@ AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF() :
   fHistTrackPhivEta(0),
   fHistClusterPhivEta(0),
   fHistnJetTrackvnJetClusters(0),
-  fhnPIDHF(0x0), fhnQA(0x0), fhnJetQA(0x0), fhnClusQA(0x0), fhnTrackQA(0x0)
+  fhnPIDHF(0x0), fhnQA(0x0), fhnJetQA(0x0), fhnClusQA(0x0), fhnTrackQA(0x0), fhnGlobalPID(0x0)
 {
   // Default constructor.
   for (Int_t i = 0;i<6;++i){
@@ -107,7 +111,11 @@ AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF(const char *name) :
   event(0),
   fillHist(0),
   //isESD(0),
+  doGlobalPID(0),
   fCuts(0),
+  fPhimin(-10), fPhimax(10),
+  fEtamin(-0.9), fEtamax(0.9),
+  fAreacut(0.0),
   fJetHIpt(50.0),
   fTrackPtCut(2.0),
   fTrackEta(0.9),
@@ -131,7 +139,7 @@ AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF(const char *name) :
   fHistTrackPhivEta(0),
   fHistClusterPhivEta(0),
   fHistnJetTrackvnJetClusters(0),
-  fhnPIDHF(0x0), fhnQA(0x0), fhnJetQA(0x0), fhnClusQA(0x0), fhnTrackQA(0x0)
+  fhnPIDHF(0x0), fhnQA(0x0), fhnJetQA(0x0), fhnClusQA(0x0), fhnTrackQA(0x0), fhnGlobalPID(0x0)
 { 
   for (Int_t i = 0;i<6;++i){
     fHistJetPtvsTrackPt[i]      = 0;
@@ -292,6 +300,7 @@ void AliAnalysisTaskEmcalJetHF::UserCreateOutputObjects()
   fOutput->Add(fhnJetQA);
   fOutput->Add(fhnClusQA);
   fOutput->Add(fhnTrackQA);
+  fOutput->Add(fhnGlobalPID);
 
 
   PostData(1, fOutput);
@@ -311,26 +320,9 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
   // check to see if we have any tracks
   if (!fTracks)  return kTRUE;
   if (!fJets)  return kTRUE;
-/*
-  if(isESD){
-    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-    if (!fESD) {
-      AliError(Form("ERROR: fESD not available\n"));
-      return kTRUE;
-    }
-  }
   
-  // if we have AOD event, set up AOD object
-  if(!isESD){
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!fAOD) {
-      AliError(Form("ERROR: fAOD not available\n"));
-      return kTRUE;
-    }
-  }
-*/
   // what kind of event do we have: AOD or ESD?
-  //Bool_t useAOD;
+  Bool_t useAOD;
   if (dynamic_cast<AliAODEvent*>(InputEvent())) useAOD = kTRUE;
   else useAOD = kFALSE;
   
@@ -429,7 +421,10 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
   if(fillHist>0) fHistEP0A[centbin]->Fill(fEPV0A);
   if(fillHist>0) fHistEP0C[centbin]->Fill(fEPV0C);
   if(fillHist>0) fHistEPAvsC[centbin]->Fill(fEPV0A,fEPV0C);
-
+  
+  event++;
+  cout<<"Event #: "<<event<<endl;
+  
   // get number of jets and tracks                                                                                                          
   const Int_t Njets = jets->GetEntries();
   const Int_t Ntracks = tracks->GetEntries();
@@ -437,115 +432,112 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
   if(Ntracks<1)   return kTRUE;
   if(Njets<1)     return kTRUE;
   //if(Nclusters<1)  return kTRUE;
-  event++;
-    
-  //cout<<"Event #: "<<event<<endl;
-    
-/*
-  // loop over tracks in the event
+  
+  if(doGlobalPID){
+  // loop over Globap tracks in the event for PID: Runs ON ESD's
   for (int i = 0;i<Ntracks;i++){
     //AliVParticle *track = static_cast<AliVParticle*>(fTracks->At(i));
-    AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(i));
+    AliVTrack *trackGlobal = static_cast<AliVTrack*>(fTracks->At(i));
     //AliESDtrack* track = fESD->GetTrack(i);
-    if (! track) {
+    if (! trackGlobal) {
       AliError(Form("Couldn't get ESD track %d\n", i));
       continue;
     }
     
 
     // apply track cuts                                                                                                        
-    if(TMath::Abs(track->Eta())>fTrackEta) continue;
-    if (track->Pt()<0.15) continue;
+    if(TMath::Abs(trackGlobal->Eta())>fTrackEta) continue;
+    if (trackGlobal->Pt()<0.15) continue;
 
     // initialize track info 
-    Double_t dEdx = -99;
-    Double_t trackphi = -99;
-    Double_t trackpt = 0;
-    Double_t p = track->P();
-    Double_t fClsE = -99;
-    Double_t EovP = -99;
+    Double_t dEdxGlobal = -99;
+    Double_t trackphiGlobal = -99;
+    Double_t trackptGlobal = 0;
+    Double_t p = trackGlobal->P();
+    Double_t fClsEGlobal = -99;
+    Double_t EovPGlobal = -99;
 
     // distance of closest approach
-    Float_t DCAxy = -999; 
-    Float_t DCAz = -999;
-    Double_t DCAXY = -999;
-    Double_t DCAZ = -999;
+    Float_t DCAxyGlobal = -999;
+    Float_t DCAzGlobal = -999;
+    //Double_t DCAXYGlobal = -999;
+    //Double_t DCAZGlobal = -999;
     
     // track info    
-    track->GetTPCsignal();
-    track->GetImpactParameters(DCAxy, DCAz);
-    dEdx = track->GetTPCsignal();
-    trackpt = track->Pt();
-    trackphi = track->Phi();
+    trackGlobal->GetTPCsignal();
+    //trackGlobal->GetImpactParameters(DCAxyGlobal, DCAzGlobal);
+    dEdxGlobal = trackGlobal->GetTPCsignal();
+    trackptGlobal = trackGlobal->Pt();
+    trackphiGlobal = trackGlobal->Phi();
 
     // fill track histo's
-    if(fillHist>0) fHistdEdx->Fill(dEdx);
-    if(fillHist>0) fHistdEdxvPt->Fill(trackpt,dEdx);
-    if(fillHist>0) fHistTrackPt[centbin]->Fill(track->Pt());
+    //if(fillHist>0) fHistdEdx->Fill(dEdx);
+    //if(fillHist>0) fHistdEdxvPt->Fill(trackpt,dEdx);
+    //if(fillHist>0) fHistTrackPt[centbin]->Fill(track->Pt());
 
     // clusters                                                                                                        
-    Int_t nMatchClus = -1;
-    AliESDCaloCluster *matchedClus = NULL;
+    Int_t nMatchClusGlobal = -1;
+    AliESDCaloCluster *matchedClusGlobal = NULL;
                                                                                                                                    
     //////////////////////////////////////////////////////////////////////////                                                                            
  
     // cut on 1.5 GeV for EMCal Cluster                                                                                                                        //if(track->GetEMCALcluster()<0 || pt<1.5) continue;                                                                                            
     //////////////////////////////////////////////////////////////////////////                                                                                   
     // particles in TOF                                                                                                                                    
-    Double_t nSigmaPion_TOF, nSigmaProton_TOF, nSigmaKaon_TOF = -1.;
+    //Double_t nSigmaPion_TOFGlobal, nSigmaProton_TOFGlobal, nSigmaKaon_TOFGlobal = -1.;
 
     // misc quantities                                                                                                                                     
-    Double_t TOFsig  = -1.;
-    Double_t nClustersTPC = -1;     // why is this type double? got from Irakli/Aronson                                                            
-    Int_t charge     = 0;
-    Int_t trackCuts  = 0;     // set to 0 to get to run                                                                                                    
-    Int_t myPID      = 0;     // set to 0 because myPID is to compare with MC unless I hard code in cuts                                                   
-    Double_t nSigmaElectron_TPC = -999;
-    Double_t nSigmaElectron_TOF = -999;
-    Double_t nSigmaElectron_EMCAL = -999;
+    //Double_t TOFsigGlobal  = -1.;
+    //Double_t nClustersTPCGlobal = -1;
+    //Int_t chargeGlobal     = 0;
+    //Int_t trackCutsGlobal  = 0;     // set to 0 to get to run
+    //Int_t myPIDGlboal      = 0;     // set to 0 because myPID is to compare with MC unless I hard code in cuts
+    Double_t nSigmaElectron_TPCGlobal = -999;
+    Double_t nSigmaElectron_TOFGlobal = -999;
+    //Double_t nSigmaElectron_EMCALGlobal = -999;
 
     // get clusters                                                                                                                                       
-    Int_t clusi = track->GetEMCALcluster();
-    nClustersTPC = track->GetTPCclusters(0);
+    //Int_t clusiGlobal = trackGlobal->GetEMCALcluster();
+    //nClustersTPCGlobal = trackGlobal->GetTPCclusters(0);
     
     AliESDtrack *trackESD = fESD->GetTrack(Ntracks);
  
-    nSigmaElectron_TPC = fPIDResponse->NumberOfSigmasTPC(trackESD,AliPID::kElectron);
-    nSigmaElectron_TOF = fPIDResponse->NumberOfSigmasTOF(trackESD,AliPID::kElectron);
+    nSigmaElectron_TPCGlobal = fPIDResponse->NumberOfSigmasTPC(trackESD,AliPID::kElectron);
+    nSigmaElectron_TOFGlobal = fPIDResponse->NumberOfSigmasTOF(trackESD,AliPID::kElectron);
     
     //for EMCAL
-    nMatchClus = track->GetEMCALcluster();
-    if(nMatchClus > 0){
-      matchedClus = (AliESDCaloCluster*)fESD->GetCaloCluster(nMatchClus);
+    nMatchClusGlobal = trackGlobal->GetEMCALcluster();
+    if(nMatchClusGlobal > 0){
+      matchedClusGlobal = (AliESDCaloCluster*)fESD->GetCaloCluster(nMatchClusGlobal);
       //AliESDCaloCluster* matchedClus = fESD->GetCaloCluster(clusi);                                                                                                                                                                                    
-      double eop2 = -1;
-      double ss[4]={0.,0.,0.,0.};
+      //double eop2Global = -1;
+      //double ssGl[4]={0.,0.,0.,0.};
       //Double_t nSigmaEop = fPID->GetPIDResponse()-m >NumberOfSigmasEMCAL(track,AliPID::kElectron,eop2,ss);
 
-      fClsE       = matchedClus->E();
-      EovP        = fClsE/p;
-      nSigmaElectron_EMCAL = fPIDResponse->NumberOfSigmasEMCAL(trackESD,AliPID::kElectron,eop2,ss);
-      if(fillHist>0) fHistEovPTracks->Fill(EovP);
-      if(fillHist>0) fHistEovPvsPtTracks->Fill(trackpt,EovP);
+      fClsEGlobal       = matchedClusGlobal->E();
+      EovPGlobal        = fClsEGlobal/p;
+      //nSigmaElectron_EMCALGlobal = fPIDResponse->NumberOfSigmasEMCAL(trackESD,AliPID::kElectron,eop2,ss);
+      //if(fillHist>0) fHistEovPTracks->Fill(EovP);
+      //if(fillHist>0) fHistEovPvsPtTracks->Fill(trackpt,EovP);
     }
 
-    if(fillHist>0) fHistnsigelectron->Fill(nSigmaElectron_TPC);
-    if(fillHist>0) fHistnSigElecPt->Fill(trackpt,nSigmaElectron_TPC);
+    //if(fillHist>0) fHistnsigelectron->Fill(nSigmaElectron_TPC);
+    //if(fillHist>0) fHistnSigElecPt->Fill(trackpt,nSigmaElectron_TPC);
 
     // extra attempt                                                                                                                                      
-    AliVEvent *event=InputEvent();
-    if (!event||!fPIDResponse) return kTRUE; // just return, maybe put at beginning                                                                                 
+    AliVEvent *eventQA=InputEvent();
+    if (!eventQA||!fPIDResponse) return kTRUE; // just return, maybe put at beginning
     //////////////////////////////////////////////////////////////////////////                                                                             
         // cut on 1.5 GeV for EMCal Cluster
-    if(track->Pt() < fTrackPtCut) continue;
+    if(trackGlobal->Pt() < fTrackPtCut) continue;
 
-    Double_t HF_tracks[12] = {fCent, track->Pt(), track->P() ,track->Eta(), track->Phi(), EovP, DCAxy, DCAz, dEdx, nSigmaElectron_TPC, nSigmaElectron_TOF, nSigmaElectron_EMCAL};
-    fhnPIDHF->Fill(HF_tracks);    // fill Sparse Histo with trigger entries                  
+    Double_t HF_tracks[12] = {fCent, trackGlobal->Pt(), trackGlobal->P() ,trackGlobal->Eta(), trackGlobal->Phi(), EovPGlobal, DCAxyGlobal, DCAzGlobal, dEdxGlobal, nSigmaElectron_TPCGlobal, nSigmaElectron_TOFGlobal, 0};//nSigmaElectron_EMCAL};
+    fhnGlobalPID->Fill(HF_tracks);    // fill Sparse Histo with trigger entries
 
   } // Loop over tracks
-*/
+  }//PID Switch
   
-
+    //  Start Jet Analysis
     // initialize jet parameters
     Int_t ijethi=-1;
     Double_t highestjetpt=0.0;
@@ -555,17 +547,10 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
         // get our jets
         AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
         if (!jet) continue;
-        
-        // apply jet cuts
-        if (jet->Area()==0) // make sure jet has an area
-            continue;
-        if (jet->Pt()<0.1) // (should probably be higher..., but makes a cut on jet pT)
-            continue;
-        if (jet->MaxTrackPt()>100) // elminates fake tracks
-            continue;
-        if (! AcceptJet(jet)) // sees if jet is accepted
-            continue;
       
+        // apply jet cuts
+        if(!AcceptMyJet(jet)) continue;
+ 
         Double_t JetQA[5] = {0, jet->GetNumberOfTracks(), jet->GetNumberOfClusters(),jet->Eta(), jet->Phi()};
         fhnJetQA->Fill(JetQA);
       
@@ -633,15 +618,9 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
      // phi of jet, constrained to 1.6 < Phi < 2.94
      float jetphi = jet->Phi();      // phi of jet 
   
-     if (jet->Area()==0) // make sure jet has an area
-       continue;
-     if (jet->Pt()<0.1) // (should probably be higher..., but makes a cut on jet pT)
-       continue;
-     if (jet->MaxTrackPt()>100) // elminates fake tracks
-       continue;
-     if (! AcceptJet(jet)) // sees if jet is accepted
-       continue;
-    
+    // apply jet cuts
+    if(!AcceptMyJet(jet)) continue;
+ 
     Int_t JetClusters = jet->GetNumberOfClusters();
     Int_t JetTracks = jet -> GetNumberOfTracks();
     fHistnJetTrackvnJetClusters->Fill(JetClusters,JetTracks);
@@ -660,7 +639,7 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
      if(fillHist>0) fHistCorJetPt->Fill(jetPt);
      fHistJetPt->Fill(jetptraw);
     
-      //if(iJets == ijethi) {
+      if(jet->Pt() > fJetHIpt) {
         
       //loop over clusters
       //for (int i = 0; i < njetclusters; i++){
@@ -678,7 +657,6 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
           if(! IsJetCluster(jet, iCluster, kFALSE)) continue;
         
           AliESDtrack *track = 0;
-          ////////talk to joel
           if (caloCluster->GetTrackMatchedIndex() > 0) // tender's matching
           track = fESD->GetTrack(caloCluster->GetTrackMatchedIndex());
           Double_t fclusE = -999;
@@ -743,7 +721,7 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
               Double_t nSigmaElectron_TOF = -999;
               Double_t nSigmaElectron_EMCAL = -999;
   
-           // if(!useAOD){
+            if(!useAOD){
               
               AliESDtrack *trackESD = fESD->GetTrack(Ntracks);
               
@@ -751,18 +729,19 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
               trackESD->GetImpactParameters(DCAxy, DCAz);
               nSigmaElectron_TPC = fPIDResponse->NumberOfSigmasTPC(trackESD,AliPID::kElectron);
               nSigmaElectron_TOF = fPIDResponse->NumberOfSigmasTOF(trackESD,AliPID::kElectron);
-           // }
-           /* if (!useAOD) {
+            }
+           if (useAOD) {
               AliAODTrack *trackAOD = fAOD->GetTrack(Ntracks);
               
               // get detector signals
               dEdx = trackAOD->GetTPCsignal();
-              
+             
+             //trackAOD->GetImpactParameters(DCAxy,DCAz);
               nSigmaElectron_TPC = fPIDResponse->NumberOfSigmasTPC(trackAOD,AliPID::kElectron);
               nSigmaElectron_TOF = fPIDResponse->NumberOfSigmasTOF(trackAOD,AliPID::kElectron);
               
             } // end of AOD pid
-      */
+      
               //double eop2 = -1;
               //double ss[4]={0.,0.,0.,0.};
               EovP        = fclusE/p;
@@ -782,7 +761,7 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
       } // loop over jet clusters
     
           
-      //} // highest pt jet cut
+      } // highest pt jet cut
   } // LOOP over JETS in event
 
   return kTRUE;
@@ -796,6 +775,21 @@ void AliAnalysisTaskEmcalJetHF::Terminate(Option_t *)
   cout<<"###########################"<<endl;
   cout<<"###########################"<<endl;
 } // end of terminate
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskEmcalJetHF::AcceptMyJet(AliEmcalJet *jet) {
+  //applies all jet cuts except pt
+  if ((jet->Phi()<fPhimin)||(jet->Phi()>fPhimax)) return 0;
+  if ((jet->Eta()<fEtamin)||(jet->Eta()>fEtamax)) return 0;
+  if (jet->Area()<fAreacut) return 0;
+  // prevents 0 area jets from sneaking by when area cut == 0
+  if (jet->Area()==0) return 0;
+  //exclude jets with extremely high pt tracks which are likely misreconstructed
+  if(jet->MaxTrackPt()>100) return 0;
+  
+  //passed all above cuts
+  return 1;
+}
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskEmcalJetHF::GetCentBin(Double_t cent) const

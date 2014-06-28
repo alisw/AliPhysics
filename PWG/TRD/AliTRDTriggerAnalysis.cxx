@@ -93,32 +93,34 @@ Bool_t AliTRDTriggerAnalysis::CalcTriggers(const AliVEvent *event)
   if (esdEvent) {
     AliESDTrdTrigger* trdTriggerInfo = esdEvent->GetTrdTrigger();
 
-    for (Int_t iSector = 0; iSector < 18; ++iSector) {
-      UInt_t  trgFlags = trdTriggerInfo->GetFlags(iSector);
+    if (trdTriggerInfo) {
+      for (Int_t iSector = 0; iSector < 18; ++iSector) {
+	UInt_t  trgFlags = trdTriggerInfo->GetFlags(iSector);
 
-      UInt_t trgContribs = fTriggerContribs[iSector] = trgFlags & 0xfff;
-      header |= trgContribs;
-      if (fVerbosity > 0)
-	printf("sector %2i: %5s %5s %5s %5s %5s %5s %5s %5s (0x%03x)\n", iSector,
-	       trgContribs & (1 << 7) ? "TO" : "--",
-	       trgContribs & (1 << 6) ? "E2" : "--",
-	       trgContribs & (1 << 5) ? "E1" : "--",
-	       trgContribs & (1 << 4) ? "J1" : "--",
-	       trgContribs & (1 << 3) ? "H2" : "--",
-	       trgContribs & (1 << 2) ? "H1" : "--",
-	       trgContribs & (1 << 1) ? "E3" : "--",
-	       trgContribs & (1 << 0) ? "M1" : "--",
-	       trgContribs);
+	UInt_t trgContribs = fTriggerContribs[iSector] = trgFlags & 0xfff;
+	header |= trgContribs;
+	if (fVerbosity > 0)
+	  printf("sector %2i: %5s %5s %5s %5s %5s %5s %5s %5s (0x%03x)\n", iSector,
+		 trgContribs & (1 << 7) ? "TO" : "--",
+		 trgContribs & (1 << 6) ? "E2" : "--",
+		 trgContribs & (1 << 5) ? "E1" : "--",
+		 trgContribs & (1 << 4) ? "J1" : "--",
+		 trgContribs & (1 << 3) ? "H2" : "--",
+		 trgContribs & (1 << 2) ? "H1" : "--",
+		 trgContribs & (1 << 1) ? "E3" : "--",
+		 trgContribs & (1 << 0) ? "M1" : "--",
+		 trgContribs);
 
-      // trackingDoneTimeSMU = ((trgFlags >> 12) & 0x3ff) * 1./120.;
+	// trackingDoneTimeSMU = ((trgFlags >> 12) & 0x3ff) * 1./120.;
 
-      // for (Int_t iStack = 0; iStack < 5; ++iStack) {
-      //   trackingDoneTMU = ((trgFlags >> 27) & (1 << iStack)) ? kTRUE : kFALSE;  // TMU-level tracking done flag
-      //   trackingDoneSMUStack = ((trgFlags >> 22) & (1 << iStack)) ? kTRUE : kFALSE;  // SMU-level stack-related tracking done flag
+	// for (Int_t iStack = 0; iStack < 5; ++iStack) {
+	//   trackingDoneTMU = ((trgFlags >> 27) & (1 << iStack)) ? kTRUE : kFALSE;  // TMU-level tracking done flag
+	//   trackingDoneSMUStack = ((trgFlags >> 22) & (1 << iStack)) ? kTRUE : kFALSE;  // SMU-level stack-related tracking done flag
 
-      //   lmeFlags = trdTriggerInfo->GetLME(iStack) & 0xffffff;
-      //   crcErrorFlags = (~(trdTriggerInfo->GetLME(iStack) >> 24)) & 0x3;
-      // }
+	//   lmeFlags = trdTriggerInfo->GetLME(iStack) & 0xffffff;
+	//   crcErrorFlags = (~(trdTriggerInfo->GetLME(iStack) >> 24)) & 0x3;
+	// }
+      }
     }
     if (fVerbosity > 0) {
       printf("------------------------------------------------------------------\n");

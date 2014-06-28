@@ -984,10 +984,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       
       if(fReadMC){
 	if(isFidAcc){
-	  Int_t correlIndex=0;
 	  if(labDp>=0) {
 	    index=GetSignalHistoIndex(iPtBin);
-	    correlIndex=1;
 	    if(passTightCuts&&fDoImpPar){
 	      if(isPrimary) fHistMassPtImpParTC[1]->Fill(arrayForSparse);
 	      else{
@@ -997,7 +995,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    }
 	  }else{
 	    index=GetBackgroundHistoIndex(iPtBin);
-	    correlIndex=2;
 	    if(passTightCuts&&fDoImpPar)fHistMassPtImpParTC[4]->Fill(arrayForSparse);
 	  }
 	  
@@ -1250,7 +1247,7 @@ Int_t AliAnalysisTaskSEDplus::CheckOrigin(TClonesArray* arrayMC, const AliAODMCP
   Int_t istep = 0;
   Int_t abspdgGranma =0;
   Bool_t isFromB=kFALSE;
-  Bool_t isQuarkFound=kFALSE;
+  //  Bool_t isQuarkFound=kFALSE;
   while (mother >0 ){
     istep++;
     AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
@@ -1260,7 +1257,7 @@ Int_t AliAnalysisTaskSEDplus::CheckOrigin(TClonesArray* arrayMC, const AliAODMCP
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
 	isFromB=kTRUE;
       }
-      if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
+      //     if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
       mother = mcGranma->GetMother();
     }else{
       AliError("Failed casting the mother particle!");

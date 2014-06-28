@@ -693,13 +693,14 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
     ph->SetDisp2Bit(TestLambda2(clu->E(),m20,m02)) ;
 
     Double_t distBC=clu->GetDistanceToBadChannel();
-    if(distBC>2.)
+    if(distBC>2.){
       FillHistogram(Form("hPhotAll_DistBad2_cen%d",fCenBin),ph->Pt()) ;
-      if(distBC>4.)
+      if(distBC>4.){
         FillHistogram(Form("hPhotAll_DistBad4_cen%d",fCenBin),ph->Pt()) ;
         if(distBC>6.)
           FillHistogram(Form("hPhotAll_DistBad6_cen%d",fCenBin),ph->Pt()) ;
-    
+      }
+    }
     if(ph->IsDispOK()){
       FillHistogram(Form("hCluDispM%d",mod),cellX,cellZ,1.);
     }
@@ -991,7 +992,7 @@ void AliPHOSHijingEfficiency::UserExec(Option_t *)
         }
         if(ph2->IsDispOK()){
           FillHistogram(Form("hMiSingleDisp_cen%d",fCenBin),m,pt2,w) ;
-          if(ph1->IsntUnfolded()){
+          if(ph2->IsntUnfolded()){
             FillHistogram(Form("hMiSingleDispwou_cen%d",fCenBin),m,pt2,w) ;
 	  }
           FillHistogram(Form("hMiSingleDispcore_cen%d",fCenBin),mv,ptv2,w) ;

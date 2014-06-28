@@ -1162,9 +1162,8 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
       if(fDebug > 1)
         printf("AliMCAnalysisUtils::GetJets() - PythiaEventHeader: Njets: %d\n",nTriggerJets);
       
-      Int_t iparton = -1;
-      for(Int_t i = 0; i< nTriggerJets; i++){
-        iparton=-1;
+      for(Int_t i = 0; i< nTriggerJets; i++)
+      {
         pygeh->TriggerJet(i, tmpjet);
         jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
         //Assign an outgoing parton as mother
@@ -1180,11 +1179,13 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
       }
     }//Pythia triggered jets
     //HERWIG
-    else if (fMCGenerator=="HERWIG"){
+    else if (fMCGenerator=="HERWIG")
+    {
       Int_t pdg = -1;		
       //Check parton 1
       TParticle * tmp = parton1;
-      if(parton1->GetPdgCode()!=22){
+      if(parton1->GetPdgCode()!=22)
+      {
         while(pdg != 94){
           if(tmp->GetFirstDaughter()==-1) return fJetsList;
           tmp = stack->Particle(tmp->GetFirstDaughter());
@@ -1207,14 +1208,15 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
       //Check parton 2
       pdg = -1;
       tmp = parton2;
-      Int_t i = -1;
-      if(parton2->GetPdgCode()!=22){
-        while(pdg != 94){
+      if(parton2->GetPdgCode()!=22)
+      {
+        while(pdg != 94)
+        {
           if(tmp->GetFirstDaughter()==-1) return fJetsList;
-          i = tmp->GetFirstDaughter();
           tmp = stack->Particle(tmp->GetFirstDaughter());
           pdg = tmp->GetPdgCode();
         }//while
+        
         //Add found jet to list
         TParticle *jet2 = new TParticle(*tmp);
         jet2->SetFirstMother(7);

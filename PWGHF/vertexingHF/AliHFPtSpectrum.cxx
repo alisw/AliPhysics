@@ -652,14 +652,14 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
   Double_t value=0, errValue=0, errvalueMax=0., errvalueMin=0.;
   Double_t errvalueExtremeMax=0., errvalueExtremeMin=0.;
   Double_t errvalueConservativeMax=0., errvalueConservativeMin=0.;
-  Double_t errvalueStatUncEffc=0., errvalueStatUncEffb=0.;
+  Double_t errvalueStatUncEffc=0.;
   for(Int_t ibin=1; ibin<=nbins; ibin++){
     
     // Variables initialization
     value=0.; errValue=0.; errvalueMax=0.; errvalueMin=0.;
     errvalueExtremeMax=0.; errvalueExtremeMin=0.;
     errvalueConservativeMax=0.; errvalueConservativeMin=0.;
-    errvalueStatUncEffc=0.; errvalueStatUncEffb=0.;
+    errvalueStatUncEffc=0.;
 
     // Sigma calculation
     //   Sigma = ( 1. / (lumi * delta_y * BR_c * ParticleAntiPartFactor * eff_trig * eff_c ) ) * spectra (corrected for feed-down)
@@ -704,7 +704,6 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
 
       // stat unc of the efficiencies, separately
       errvalueStatUncEffc = value * (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) ;
-      errvalueStatUncEffb = 0.;
 
     }
     else {

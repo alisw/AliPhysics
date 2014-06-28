@@ -977,13 +977,13 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
           if(TrStat==0)
             {
-             EopFake->Fill(pt,eop);
-             MatchFake->Fill(pt,rmatch);
+             EopFake->Fill(pt,eop,mcWeight);
+             MatchFake->Fill(pt,rmatch,mcWeight);
             }  
           else
             {
-             EopTrue->Fill(pt,eop);
-             MatchTrue->Fill(pt,rmatch);
+             EopTrue->Fill(pt,eop,mcWeight);
+             MatchTrue->Fill(pt,rmatch,mcWeight);
             }  
 
         } 
@@ -1623,19 +1623,19 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fFakeRejection2->Sumw2();
   fOutputList->Add(fFakeRejection2);
 
-  EopFake = new TH2D("EopFake","negative track Eop",200,0,20,200,0,2);
+  EopFake = new TH2D("EopFake","negative track Eop",20,0,20,200,0,2);
   EopFake->Sumw2();
   fOutputList->Add(EopFake);
  
-  EopTrue = new TH2D("EopTrue","true track Eop",200,0,20,200,0,2);
+  EopTrue = new TH2D("EopTrue","true track Eop",20,0,20,200,0,2);
   EopTrue->Sumw2();
   fOutputList->Add(EopTrue);
 
-  MatchFake = new TH2D("MatchFake","negative track Match",200,0,20,100,0,0.05);
+  MatchFake = new TH2D("MatchFake","negative track Match",20,0,20,100,0,0.05);
   MatchFake->Sumw2();
   fOutputList->Add(MatchFake);
  
-  MatchTrue = new TH2D("MatchTrue","true track Match",200,0,20,100,0,05);
+  MatchTrue = new TH2D("MatchTrue","true track Match",20,0,20,100,0,0.05);
   MatchTrue->Sumw2();
   fOutputList->Add(MatchTrue);
 

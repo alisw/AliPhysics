@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: May 30, 2014.								      //
+	//		version: June 18, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -191,10 +191,15 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fpid(0)
 ,fEoverP_pt(0)
 ,fEoverP_tpc(0)
+,fEoverP_tpc_p_trigger(0)
+,fEoverP_tpc_pt_trigger(0)
 ,fTPC_pt(0)
 ,fTPC_p(0)
 ,fTPCnsigma_pt(0)
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_TPC(0)
+,fTPCnsigma_p_TPC_on_EMCal_acc(0)
+,fTPCnsigma_p_TPC_EoverP_cut(0)
 ,fTPCnsigma_pt_2D(0)
 ,fShowerShapeCut(0)
 ,fShowerShapeM02_EoverP(0)
@@ -472,10 +477,15 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fpid(0)
 ,fEoverP_pt(0)
 ,fEoverP_tpc(0)
+,fEoverP_tpc_p_trigger(0)
+,fEoverP_tpc_pt_trigger(0)
 ,fTPC_pt(0)
 ,fTPC_p(0)
 ,fTPCnsigma_pt(0)
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_TPC(0)
+,fTPCnsigma_p_TPC_on_EMCal_acc(0)
+,fTPCnsigma_p_TPC_EoverP_cut(0)
 ,fTPCnsigma_pt_2D(0)
 ,fShowerShapeCut(0)
 ,fShowerShapeM02_EoverP(0)
@@ -792,6 +802,13 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fPtTrigger_Inc = new TH1F("fPtTrigger_Inc","pT dist for Hadron Contamination; p_{t} (GeV/c); Count",300,0,30);
 	fTPCnsigma_pt_2D = new TH2F("fTPCnsigma_pt_2D",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+	
+	//new histos for TPC signal -> Can be used for any p range
+	fTPCnsigma_p_TPC = new TH2F("fTPCnsigma_p_TPC",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
+	fTPCnsigma_p_TPC_on_EMCal_acc = new TH2F("fTPCnsigma_p_TPC_on_EMCal_acc",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
+	fTPCnsigma_p_TPC_EoverP_cut = new TH2F("fTPCnsigma_p_TPC_EoverP_cut",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
+	
+	
 	fShowerShapeCut = new TH2F("fShowerShapeCut","Shower Shape;M02;M20",500,0,1.8,500,0,1.8);
 	fEtaPhi_num=new TH2F("fEtaPhi_num","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
 	fEtaPhi_den=new TH2F("fEtaPhi_den","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
@@ -879,6 +896,13 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fOutputList->Add(fPtTrigger_Inc);
 	fOutputList->Add(fTPCnsigma_pt_2D);
+	
+	fOutputList->Add(fTPCnsigma_p_TPC);
+	fOutputList->Add(fTPCnsigma_p_TPC_on_EMCal_acc);
+	fOutputList->Add(fTPCnsigma_p_TPC_EoverP_cut);
+	
+	
+	
 	fOutputList->Add(fShowerShapeCut);
 	
 	fOutputList->Add(fCharge_n);
@@ -1012,6 +1036,12 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		//pt bin
 	Int_t fPtBin[7] = {1,2,4,6,8,10,15};
 	
+	
+	Int_t fPtBin_trigger[11] = {1,2,4,6,8,10,12,14,16,18,20};
+	fEoverP_tpc_p_trigger = new TH2F *[10];
+	fEoverP_tpc_pt_trigger = new TH2F *[10];
+	
+	
 	fEoverP_tpc = new TH2F *[6];
 	fTPC_pt = new TH1F *[6];
 	fTPCnsigma_pt = new TH1F *[6];
@@ -1102,6 +1132,18 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fOpAngleBack2);
 		
 	}
+	
+		//new histo for trigger data
+	
+	for(Int_t i = 0; i < 10; i++)
+	{
+			fEoverP_tpc_pt_trigger[i] = new TH2F(Form("fEoverP_tpc_pt_trigger%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
+			fEoverP_tpc_p_trigger[i] = new TH2F(Form("fEoverP_tpc_p_trigger%d",i),Form("%d < p < %d GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
+			fOutputList->Add(fEoverP_tpc_pt_trigger[i]);
+			fOutputList->Add(fEoverP_tpc_p_trigger[i]);
+
+	}
+	
 	
 	for(Int_t i = 0; i < 6; i++)
 	{
@@ -1617,7 +1659,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	//______________________________________________________________________
 	//new track loop to select events
 	//track pt cut (at least 2)
-	/*
+	
 	if(fUseTrigger){
 		if(fIsAOD){
 			double fTrackMulti=0;
@@ -1729,7 +1771,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	}
 	fNevent->Fill(16);	
 //______________________________________________________________________
-	*/
+	
 	
 //______________________________________________________________________
 //Centrality Selection
@@ -2061,10 +2103,10 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 		
 	
-	if(fUseTrigger && fIsAOD){
+	if(fIsAOD){
 		
-	  //AliAODHeader * aodh = fAOD->GetHeader();
-	  //Int_t bc= aodh->GetBunchCrossNumber();
+			//AliAODHeader * aodh = fAOD->GetHeader();
+			//Int_t bc= aodh->GetBunchCrossNumber();
 
 		
 		Int_t ClsNo_aod = -999;
@@ -2102,7 +2144,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				if(clust->GetNCells()<5 && clust->E()>15.0){
 					fECluster_exotic->Fill(clust->E());
 				}
-				//Marcel cut
+				//Marcel cut (another approximation to remove exotics)
 				else if((clust->GetNCells())> ((clust->E())/3+1)){
 					fECluster_not_exotic1->Fill(clust->E());
 				}
@@ -2132,7 +2174,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			
 			//end of bad cells
 			//______________________________________________________________________
-*/
+			*/
 			
 		}
 	}
@@ -2433,6 +2475,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		fTPC_p[1]->Fill(fPt,fTPCsignal);
 		fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
 		Double_t fPtBin[7] = {1,2,4,6,8,10,15};
+		Double_t fPtBin_trigger[11] = {1,2,4,6,8,10,12,14,16,18,20};
 		
 		TPCNcls = track->GetTPCNcls();
 		Float_t pos2[3]={0,0,0};
@@ -2561,19 +2604,51 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			if(fPt>=fPtBin[i] && fPt<fPtBin[i+1])
 			{
 				if(fEMCflag) fEoverP_tpc[i]->Fill(fTPCnSigma,(fClus->E() / fP));
-				
-				
 				fTPC_pt[i]->Fill(fTPCsignal);
 				fTPCnsigma_pt[i]->Fill(fTPCnSigma);
 				
 			}
 		}
 		
-			///QA plots after track selection
-			///_____________________________________________________________
+		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
 		
-			//_______________________________________________________
-			//Correlation Analysis - DiHadron
+		//new pt bins for trigger data
+		
+			for(Int_t i = 0; i < 10; i++)
+			{
+				if(fP>=fPtBin_trigger[i] && fP<fPtBin_trigger[i+1])
+				{
+					if(fEMCflag)fEoverP_tpc_p_trigger[i]->Fill(fTPCnSigma,(fClus->E() / fP));
+								
+				}
+				 
+				if(fPt>=fPtBin_trigger[i] && fPt<fPtBin_trigger[i+1])
+				{
+					if(fEMCflag)fEoverP_tpc_pt_trigger[i]->Fill(fTPCnSigma,(fClus->E() / fP));
+					
+				}
+			}
+		
+			
+			//new way to calculate TPCnsigma distribution: TPCnsigma in function of p, with/without E/p cut 
+			fTPCnsigma_p_TPC->Fill(fP, fTPCnSigma);
+			if(fEMCflag){
+			
+				fTPCnsigma_p_TPC_on_EMCal_acc->Fill(fP, fTPCnSigma);
+			
+				if((fClus->E() / fP) >= fEoverPCutMin && (fClus->E() / fP) <= fEoverPCutMax){
+					fTPCnsigma_p_TPC_EoverP_cut->Fill(fP, fTPCnSigma);
+				}
+		
+			}//close EMCflag
+		
+		}//close eta cut
+			
+		///QA plots after track selection
+		///_____________________________________________________________
+		
+		//_______________________________________________________
+		//Correlation Analysis - DiHadron
 		if(!fUseEMCal)
 		{
 			if(fTPCnSigma < 3.5 && fCorrelationFlag)
@@ -3345,14 +3420,18 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						
 							
 						//________________________________________________________________
-						//correction for d3 based on data //from Jan
+						//correction for d3 based on data 
 						
 							if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
 								Double_t x=mPt;
-								
 								mweight=CalculateWeight(111, x);
 																
 							}
+						    if(TMath::Abs(fMCparticleMother->GetPdgCode())==221){
+							    Double_t x=mPt;
+							    mweight=CalculateWeight(221, x);
+						    	
+						    }
 						
 						//________________________________________________________________
 						
@@ -3373,6 +3452,10 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
 								Double_t x=gmPt;
 								gmweight=CalculateWeight(111, x);
+							}
+							if(TMath::Abs(fMCparticleGMother->GetPdgCode())==221){
+								Double_t x=gmPt;
+								gmweight=CalculateWeight(221, x);
 							}
 						
 						
@@ -3493,10 +3576,14 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							
 								
 							 //----------------------------------------------------------------------------
-							 //correction based on data only for pi0
+							 //correction based on data only 
 								if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
 									Double_t x=mPt;
 									weight=CalculateWeight(111, x);
+								}
+								if(TMath::Abs(fMCparticleMother->GetPdgCode())==221){
+									Double_t x=mPt;
+									weight=CalculateWeight(221, x);
 								}
 								
 							
@@ -3526,6 +3613,10 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 									Double_t x=gmPt;
 									weight=CalculateWeight(111, x);
 								}
+								if(TMath::Abs(fMCparticleGMother->GetPdgCode())==221){
+									Double_t x=gmPt;
+									weight=CalculateWeight(221, x);
+							}
 							
 							
 							
@@ -3562,12 +3653,17 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 							 //----------------------------------------------------------------------------
 							
-							//correction based on data only for pi0 for d3
+							//correction based on data for d3
 							
 								if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
 									Double_t x=mPt;
 									weight=CalculateWeight(111, x);
 																											
+								}
+								if(TMath::Abs(fMCparticleMother->GetPdgCode())==221){
+									Double_t x=mPt;
+									weight=CalculateWeight(221, x);
+								
 								}
 							
 							
@@ -3591,9 +3687,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							
 								if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
 									Double_t x=gmPt;
-									
 									weight=CalculateWeight(111, x);
-									
+								}
+							
+							
+								if(TMath::Abs(fMCparticleGMother->GetPdgCode())==221){
+									Double_t x=gmPt;
+									weight=CalculateWeight(221, x);
 								}
 							
 							//----------------------------------------------------------------------------
@@ -3654,13 +3754,26 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 																																	
 											
 										}
+										if(TMath::Abs(fMCparticleMother->GetPdgCode())==221){
+											Double_t x=mPt;
+											weight=CalculateWeight(221, x);
+											
+											
+										}
 										
 										//weight for grandmother
-										Double_t gmPt=fMCparticleGMother->Pt();
-										if(TMath::Abs((fMCparticleMother->GetMother()>0) && ((fMCparticleGMother->GetPdgCode())==111))){
+										
+										if((fMCparticleMother->GetMother()>0) && TMath::Abs(((fMCparticleGMother->GetPdgCode())==111))){
+											Double_t gmPt=fMCparticleGMother->Pt();
 											Double_t x=gmPt;
 											weight=CalculateWeight(111, x);
 																											
+										}
+										if((fMCparticleMother->GetMother()>0) && TMath::Abs(((fMCparticleGMother->GetPdgCode())==221))){
+											Double_t gmPt=fMCparticleGMother->Pt();
+											Double_t x=gmPt;
+											weight=CalculateWeight(221, x);
+											
 										}
 										
 										
@@ -4518,7 +4631,51 @@ Double_t AliAnalysisTaskEMCalHFEpA::CalculateWeight(Int_t pdg_particle, Double_t
 			
 		}
 	    else if(pdg_particle==221){
-		   weight=1;
+			if(x>= 0.100000 &&  x < 0.112797 ) weight=2.159358;
+			if(x>= 0.112797 &&  x < 0.127231 ) weight=2.145546;
+			if(x>= 0.127231 &&  x < 0.143512 ) weight=2.132390;
+			if(x>= 0.143512 &&  x < 0.161877 ) weight=2.109918;
+			if(x>= 0.161877 &&  x < 0.182592 ) weight=2.084920;
+			if(x>= 0.182592 &&  x < 0.205957 ) weight=2.054302;
+			if(x>= 0.205957 &&  x < 0.232313 ) weight=2.015202;
+			if(x>= 0.232313 &&  x < 0.262041 ) weight=1.966068;
+			if(x>= 0.262041 &&  x < 0.295573 ) weight=1.912255;
+			if(x>= 0.295573 &&  x < 0.333397 ) weight=1.844087;
+			if(x>= 0.333397 &&  x < 0.376060 ) weight=1.767913;
+			if(x>= 0.376060 &&  x < 0.424183 ) weight=1.680366;
+			if(x>= 0.424183 &&  x < 0.478465 ) weight=1.583468;
+			if(x>= 0.478465 &&  x < 0.539692 ) weight=1.475131;
+			if(x>= 0.539692 &&  x < 0.608754 ) weight=1.361436;
+			if(x>= 0.608754 &&  x < 0.686654 ) weight=1.244388;
+			if(x>= 0.686654 &&  x < 0.774523 ) weight=1.125973;
+			if(x>= 0.774523 &&  x < 0.873636 ) weight=1.015769;
+			if(x>= 0.873636 &&  x < 0.985432 ) weight=0.914579;
+			if(x>= 0.985432 &&  x < 1.111534 ) weight=0.830529;
+			if(x>= 1.111534 &&  x < 1.253773 ) weight=0.766397;
+			if(x>= 1.253773 &&  x < 1.414214 ) weight=0.723663;
+			if(x>= 1.414214 &&  x < 1.595185 ) weight=0.701236;
+			if(x>= 1.595185 &&  x < 1.799315 ) weight=0.695605;
+			if(x>= 1.799315 &&  x < 2.029567 ) weight=0.707578;
+			if(x>= 2.029567 &&  x < 2.289283 ) weight=0.735194;
+			if(x>= 2.289283 &&  x < 2.582235 ) weight=0.781052;
+			if(x>= 2.582235 &&  x < 2.912674 ) weight=0.842350;
+			if(x>= 2.912674 &&  x < 3.285398 ) weight=0.923676;
+			if(x>= 3.285398 &&  x < 3.705818 ) weight=1.028317;
+			if(x>= 3.705818 &&  x < 4.180038 ) weight=1.154029;
+			if(x>= 4.180038 &&  x < 4.714942 ) weight=1.296915;
+			if(x>= 4.714942 &&  x < 5.318296 ) weight=1.463674;
+			if(x>= 5.318296 &&  x < 5.998859 ) weight=1.651985;
+			if(x>= 5.998859 &&  x < 6.766511 ) weight=1.847912;
+			if(x>= 6.766511 &&  x < 7.632396 ) weight=2.066284;
+			if(x>= 7.632396 &&  x < 8.609086 ) weight=2.202231;
+			if(x>= 8.609086 &&  x < 9.710759 ) weight=2.399942;
+			if(x>= 9.710759 &&  x < 10.953409 ) weight=2.555106;
+			if(x>= 10.953409 &&  x < 12.355077 ) weight=2.632377;
+			if(x>= 12.355077 &&  x < 13.936111 ) weight=2.609660;
+			if(x>= 13.936111 &&  x < 15.719464 ) weight=2.656343;
+			if(x>= 15.719464 &&  x < 17.731026 ) weight=2.615438;
+			if(x>= 17.731026 &&  x < 20.000000 ) weight=2.576269;
+			
 		}
 	    else weight=1;
 	

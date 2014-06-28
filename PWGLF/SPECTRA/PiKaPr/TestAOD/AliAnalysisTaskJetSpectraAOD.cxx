@@ -123,7 +123,7 @@ void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
   //dimensions of THnSparse for jets
   const Int_t nvarjet=6;
   //                                        pt_raw    pt_corr           cent             Q vec            rho          pt_lead
-  Int_t    binsHistRealJet[nvarjet] = {    nptBins,   nptBins,       fnCentBins,      fnQvecBins,          40.,    fnptLeadBins};
+  Int_t    binsHistRealJet[nvarjet] = {    nptBins,   nptBins,       fnCentBins,      fnQvecBins,          40,     fnptLeadBins};
   Double_t xminHistRealJet[nvarjet] = {         0.,        0.,             0.,                0.,           0.,              0.};
   Double_t xmaxHistRealJet[nvarjet] = {       200.,      200.,           100.,     fQvecUpperLim,         200.,             20.};    
   THnSparseF* NSparseHistJet = new THnSparseF("NSparseHistJet","NSparseHistJet",nvarjet,binsHistRealJet,xminHistRealJet,xmaxHistRealJet);
@@ -146,7 +146,7 @@ void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
   //dimensions of THnSparse for the normalization
   const Int_t nvarev=3;
   //                                             cent         Q vec         rho
-  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,       40.};
+  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,       40 };
   Double_t xminHistRealEv[nvarev] = {           0.,               0.,        0.};
   Double_t xmaxHistRealEv[nvarev] = {         100.,      fQvecUpperLim,    200.};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);

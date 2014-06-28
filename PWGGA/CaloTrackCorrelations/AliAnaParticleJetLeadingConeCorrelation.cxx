@@ -426,13 +426,14 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
   
   //Different pt cut for jet particles in different collisions systems
   //Only needed when jet is recalculated from AODs
-  Float_t ptcut = fJetPtThreshold;
-  if(fPbPb && !fSeveralConeAndPtCuts && ptTrig > fPtTriggerSelectionCut)  ptcut = fJetPtThresPbPb ;
+  //Float_t ptcut = fJetPtThreshold;
+  //if(fPbPb && !fSeveralConeAndPtCuts && ptTrig > fPtTriggerSelectionCut)  ptcut = fJetPtThresPbPb ;
   
   TVector3 p3;
   Int_t nTracksInCone = 0; 
   
-  for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ ){
+  for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ )
+  {
     AliVTrack* track = dynamic_cast<AliVTrack *>(pl->At(ipr)) ;
     if(track)p3.SetXYZ(track->Px(),track->Py(),track->Pz());
     else printf("AliAnaParticleJetLeadingConeCorrelation::FillJetHistos() - Track not available\n");
@@ -452,7 +453,8 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
     
   }//track loop
   
-  if(nTracksInCone > 0) {
+  if(nTracksInCone > 0)
+  {
     TH2F *hd = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sNTracksInCone%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
     if(hd)hd->Fill(ptTrig, nTracksInCone);
   }
