@@ -349,7 +349,7 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   if (fProcessCosmics) { ProcessCosmics(fESD,fESDfriend); }
   if(fMC) { ProcessMCEff(fESD,fMC,fESDfriend);}
   if (fProcessITSTPCmatchOut) ProcessITSTPCmatchOut(fESD, fESDfriend);
-  printf("processed event %d\n", Entry());
+  printf("processed event %d\n", Int_t(Entry()));
 }
 
 //_____________________________________________________________________________
@@ -359,7 +359,6 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
   // Find cosmic pairs (triggered or random) 
   //
   //
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   AliESDVertex *vertexSPD =  (AliESDVertex *)event->GetPrimaryVertexSPD();
   AliESDVertex *vertexTPC =  (AliESDVertex *)event->GetPrimaryVertexTPC(); 
   const Double_t kMinPt=0.8;
@@ -703,6 +702,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
   //
   // Process laser events -> dump tracks and clusters  to the special tree
   //
+  const Double_t kMinPt = 5; 
   if(!fFillTree) return;
   if(!fTreeSRedirector) return;
   const AliESDHeader* esdHeader = esdEvent->GetHeader();
@@ -723,6 +723,10 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
       if(!track) continue;
       if(track->GetTPCInnerParam()) countLaserTracks++;      
       AliESDfriendTrack* friendTrack=NULL;
+      // suppress beam background and CE random reacks
+      if (track->GetInnerParam()->Pt()>kMinPt) continue;
+      Bool_t skipTrack=gRandom->Rndm()>1/(1+TMath::Abs(fFriendDownscaling));
+      if (skipTrack) continue;
       if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack = esdFriend->GetTrack(iTrack);} //this guy can be NULL      
       (*fTreeSRedirector)<<"Laser"<<
         "gid="<<gid<<                          // global identifier of event
@@ -733,7 +737,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
         "triggerClass="<<&triggerClass<<        //  trigger
         "Bz="<<bz<<                             //  magnetic field
         "multTPCtracks="<<countLaserTracks<<    //  multiplicity of tracks
-	"track=."<<track<<                      //  track parameters
+	"track.="<<track<<                      //  track parameters
         "friendTrack.="<<friendTrack<<          //  friend track information
         "\n";
     }
