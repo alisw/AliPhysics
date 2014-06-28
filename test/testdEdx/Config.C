@@ -64,7 +64,7 @@ const char * pprTrigConfName[] = {
 static PprRun_t srun = testdEdx;
 static PprRad_t srad = kGluonRadiation;
 static AliMagF::BMap_t smag = AliMagF::k5kG;
-static Int_t    sseed = 12345; //Set 0 to use the current time
+static Int_t    sseed = 0; //Set 0 to use the current time
 static PprTrigConf_t strig = kDefaultPPTrig; // default pp trigger configuration
 
 // Comment line 
