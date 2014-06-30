@@ -139,6 +139,10 @@ set ( SRCS8
   TPC/AliTPCtaskPID.cxx
   TPC/AliTPCtaskQA.cxx
   TPC/AliTreeDraw.cxx
+  TPC/AliTPCPIDBase.cxx
+  TPC/AliTPCPIDEtaTree.cxx
+  TPC/AliTPCPIDEtaQA.cxx
+  TPC/AliTPCcalibResidualPID.cxx
   )
 #file ( GLOB SRCS9 "TOF/*.cxx" )
 set ( SRCS9
@@ -222,6 +226,7 @@ set ( EINCLUDE
   TOF 
   TRD/Cal 
   TRD/info 
+  EMCAL
   ANALYSIS/Tender 
   ANALYSIS
   PWG/CaloTrackCorrBase 

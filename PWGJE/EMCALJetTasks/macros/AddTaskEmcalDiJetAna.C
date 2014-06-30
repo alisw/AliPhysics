@@ -36,8 +36,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   // #### Add necessary jet finder tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
 
-  AliEmcalJetTask* jetFinderTaskFull    = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
-  AliEmcalJetTask* jetFinderTaskCharged = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+  AliEmcalJetTask* jetFinderTaskFull    = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
+  AliEmcalJetTask* jetFinderTaskCharged = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
   jetFinderTaskFull->SelectCollisionCandidates(AliVEvent::kAny);
   jetFinderTaskCharged->SelectCollisionCandidates(AliVEvent::kAny);
 
@@ -51,9 +51,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   AliEmcalJetTask *jetFinderAKt;
   AliAnalysisTaskRhoSparse *rhoTask;
   if(rhoType==1) {
-    jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus);
-    jetFinderKt->SetMinJetPt(0.);
-    jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+    jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",0.);
+    jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
     jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
     jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
 

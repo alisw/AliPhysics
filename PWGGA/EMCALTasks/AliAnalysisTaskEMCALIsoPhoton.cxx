@@ -82,6 +82,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fNBinsPt(200),
   fPtBinLowEdge(-0.25),
   fPtBinHighEdge(99.75),
+  fNCuts(5),
+  fCuts(""),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -121,6 +123,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fEmcClusETM1(0),
   fEmcClusETM2(0),
   fEmcClusNotExo(0),
+  fEmcClusEClusCuts(0),
   fEmcClusEPhi(0),    
   fEmcClusEPhiCut(0), 
   fEmcClusEEta(0),    
@@ -176,6 +179,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fNBinsPt(200),
   fPtBinLowEdge(-0.25),
   fPtBinHighEdge(99.75),
+  fNCuts(5),
+  fCuts(""),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -215,6 +220,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fEmcClusETM1(0),
   fEmcClusETM2(0),
   fEmcClusNotExo(0),
+  fEmcClusEClusCuts(0),
   fEmcClusEPhi(0),    
   fEmcClusEPhiCut(0), 
   fEmcClusEEta(0),    
@@ -392,7 +398,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fTrackPtEtaCut = new TH2F("fTrackPtEtaCut",";p_{T} [GeV/c];#eta",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,18,-0.9,0.9);     
   fTrackPtEtaCut->Sumw2();
   fQAList->Add(fTrackPtEtaCut);
-
+  fEmcClusEClusCuts = new TH2F("fEmcClusEClusCuts",";GeV;cut",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,fNCuts,-0.5,fNCuts-0.5);
+  fEmcClusEClusCuts->Sumw2();
+  fQAList->Add(fEmcClusEClusCuts);
 
   fMaxCellEPhi = new TH2F("fMaxCellEPhi","Most energetic cell in event; GeV;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,63,0,6.3); 
   fMaxCellEPhi->Sumw2();
@@ -664,7 +672,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       nclus10++;
     Float_t ceiso, cephiband, cecore;
     Float_t triso, trphiband, trcore;
-    Float_t alliso, allphiband, allcore;
+    Float_t alliso, allphiband;//, allcore;
     Float_t phibandArea = (1.4 - 2*fIsoConeR)*2*fIsoConeR;
     Float_t netConeArea = TMath::Pi()*(fIsoConeR*fIsoConeR - 0.04*0.04);
     GetCeIso(clsVec, id, ceiso, cephiband, cecore);
@@ -677,7 +685,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     }
     alliso = ceiso + triso;
     allphiband = cephiband + trphiband;
-    allcore = cecore + trcore;
+    //allcore = cecore + trcore;
     Float_t ceisoue =  cephiband/phibandArea*netConeArea;
     Float_t trisoue =  trphiband/phibandArea*netConeArea;
     Float_t allisoue =  allphiband/phibandArea*netConeArea;
@@ -1146,7 +1154,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
 {
 
   TObjArray *clusters = fESDClusters;
-
+  //"none", "exotic", "exo+cpv1", "exo+cpv1+time", "exo+cpv1+time+m02"),
+  TString cuts[] = {"none", "exotic", "exo+cpv1", "exo+cpv1+time", "exo+cpv1+time+m02"};
   if (!clusters){
     clusters = fAODClusters;
     if(fDebug)
@@ -1162,7 +1171,6 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
   const int ntracks = fSelPrimTracks->GetEntriesFast();
   const int ncells = fNCells50;//fESDCells->GetNumberOfCells();
   const Int_t nclus = clusters->GetEntries();
-
   fNTracks->Fill(ntracks);
   fEmcNCells->Fill(ncells);
   fEmcNClus->Fill(nclus);
@@ -1194,18 +1202,36 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     TVector3 clsVec(clsPos);
     Double_t cphi = clsVec.Phi();
     Double_t ceta = clsVec.Eta();
-    if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02)
-      fEmcClusETM1->Fill(c->E());
-    if(fClusIdFromTracks.Contains(Form("%d",ic)))
-      fEmcClusETM2->Fill(c->E());
-    if(!IsExotic(c))
-      fEmcClusNotExo->Fill(c->E());
+    Short_t id;
+    GetMaxCellEnergy( c, id);
+    fEmcClusEClusCuts->Fill(c->E(),0);
     fEmcClusEPhi->Fill(c->E(), cphi);
     fEmcClusEEta->Fill(c->E(), ceta);
     if(fMaxEClus>fECut){
       fEmcClusEPhiCut->Fill(c->E(), cphi);
       fEmcClusEEtaCut->Fill(c->E(), ceta);
     }
+    Double_t maxt=0;
+    if(fESDCells)
+      maxt = fESDCells->GetCellTime(id);
+    else if(fAODCells)
+      maxt = fAODCells->GetCellTime(id);
+    if(IsExotic(c))
+      continue;
+    fEmcClusNotExo->Fill(c->E());
+    fEmcClusEClusCuts->Fill(c->E(),1);
+    if(fClusIdFromTracks.Contains(Form("%d",ic)))
+      fEmcClusETM2->Fill(c->E());
+    if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
+      fEmcClusETM1->Fill(c->E());
+      continue;
+    }
+    fEmcClusEClusCuts->Fill(c->E(),2);
+    if(TMath::Abs(maxt)>30e-9)
+      continue;
+    fEmcClusEClusCuts->Fill(c->E(),3);
+    if(c->GetM02()>0.1)
+      fEmcClusEClusCuts->Fill(c->E(),4);
   }
 }
 //________________________________________________________________________

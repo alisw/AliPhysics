@@ -69,7 +69,10 @@ AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResp
   fHistoList->SetOwner(kTRUE);
 
   DefineInput(0, TChain::Class());
-  DefineOutput(0, TList::Class());
+  // DefineOutput(0, TTree::Class()); 
+  DefineOutput(1, TList::Class());
+
+ 
 }
 
 //_______________________________________________________
@@ -241,7 +244,7 @@ void AliAnalysisTaskParticleEfficiency::UserCreateOutputObjects()
 
   // ************************
 
-  PostData(0, fHistoList);
+  PostData(1, fHistoList);
 }
 
 
@@ -358,7 +361,6 @@ bool IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsig
 
 void AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
 {
-
 
   /***Get Event****/
   //AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
@@ -514,8 +516,6 @@ void AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
       labels[aodtrack->GetID()] = i;
     }
   }
-
-
 
   //RECONSTRUCTED TRACKS 
 
@@ -925,7 +925,7 @@ void AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
       }
     
   }
-  PostData(0, fHistoList);
+  PostData(1, fHistoList);
 }
 //-----------------------------------------------------------------
 

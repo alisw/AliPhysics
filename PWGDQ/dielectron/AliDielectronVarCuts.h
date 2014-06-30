@@ -27,7 +27,7 @@
 #include <AliAnalysisCuts.h>
 #include "AliDielectronVarManager.h"
 
-class TH1;
+class THnBase;
 class AliDielectronVarCuts : public AliAnalysisCuts {
 public:
   // Whether all cut criteria have to be fulfilled of just any
@@ -39,7 +39,7 @@ public:
   //TODO: make copy constructor and assignment operator public
   void AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max, Bool_t excludeRange=kFALSE);
   void AddCut(AliDielectronVarManager::ValueTypes type, Double_t value, Bool_t excludeRange=kFALSE);
-  void AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, TH1 * const max,  Bool_t excludeRange=kFALSE);
+  void AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, THnBase * const max,  Bool_t excludeRange=kFALSE);
   
   // setters
   void    SetCutOnMCtruth(Bool_t mc=kTRUE) { fCutOnMCtruth=mc; }
@@ -48,7 +48,9 @@ public:
   // getters
   Bool_t  GetCutOnMCtruth() const { return fCutOnMCtruth; }
   CutType GetCutType()      const { return fCutType;      }
-  
+
+  Int_t GetNCuts() { return fNActiveCuts; }
+
   //
   //Analysis cuts interface
   //
@@ -82,12 +84,12 @@ public:
   Double_t fCutMin[AliDielectronVarManager::kNMaxValues];           // minimum values for the cuts
   Double_t fCutMax[AliDielectronVarManager::kNMaxValues];           // maximum values for the cuts
   Bool_t fCutExclude[AliDielectronVarManager::kNMaxValues];         // inverse cut logic?
-  TH1    *fUpperCut[AliDielectronVarManager::kNMaxValues];          // use object as upper cut
+  THnBase  *fUpperCut[AliDielectronVarManager::kNMaxValues];          // use object as upper cut
 
   AliDielectronVarCuts(const AliDielectronVarCuts &c);
   AliDielectronVarCuts &operator=(const AliDielectronVarCuts &c);
   
-  ClassDef(AliDielectronVarCuts,4)         //Cut class providing cuts to all infomation available for the AliVParticle interface
+  ClassDef(AliDielectronVarCuts,5)         //Cut class providing cuts to all infomation available for the AliVParticle interface
 };
 
 

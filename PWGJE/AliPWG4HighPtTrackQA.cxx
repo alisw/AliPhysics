@@ -1288,10 +1288,12 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD()
     fVariables->SetAt(dca[1],4);
     fVariables->SetAt((float)aodtrack->GetTPCNcls(),5);
     fVariables->SetAt((float)aodtrack->GetITSNcls(),6);
-    fVariables->SetAt(aodtrack->Chi2perNDF(),7);
+    fVariables->SetAt(0.,7); //ConstrainedChi2TPC -> not available in AOD
     fVariables->SetAt(0.,8);
     fVariables->SetAt(GetTrackLengthTPC(aodtrack),9);
-    fVariables->SetAt(aodtrack->Chi2perNDF(),10);
+    Float_t chi2pndf = aodtrack->Chi2perNDF();
+    //if(fVariables->At(5)>0.) chi2pndf = aodtrack->GetTPCchi2()/fVariables->At(5);
+    fVariables->SetAt(chi2pndf,10);
     fVariables->SetAt(GetTPCClusterInfo(aodtrack,2,1,0,159,kFALSE),11);
     Float_t crossedRowsTPCNClsF = 0.;
     if(aodtrack->GetTPCNclsF()>0.) crossedRowsTPCNClsF = fVariables->At(11)/aodtrack->GetTPCNclsF();

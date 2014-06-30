@@ -59,8 +59,8 @@ AliAnalysisTaskSE(),
   fPbPbcase(kTRUE),
   fGenerateSignal(kFALSE),
   fGeneratorOnly(kFALSE),
-  fPdensityPairCut(kTRUE),
   fTabulatePairs(kFALSE),
+  fLinearInterpolation(kTRUE),
   fRMax(11),
   ffcSq(0.7),
   fFilterBit(7),
@@ -125,6 +125,8 @@ AliAnalysisTaskSE(),
   fDummyB(0),
   fKT3transition(0.3),
   fKT4transition(0.3),
+  farrP1(),
+  farrP2(),
   fDefaultsCharSwitch(),
   fLowQPairSwitch_E0E0(),
   fLowQPairSwitch_E0E1(),
@@ -231,8 +233,8 @@ AliFourPion::AliFourPion(const Char_t *name)
   fPbPbcase(kTRUE),
   fGenerateSignal(kFALSE),
   fGeneratorOnly(kFALSE),
-  fPdensityPairCut(kTRUE),
   fTabulatePairs(kFALSE),
+  fLinearInterpolation(kTRUE),
   fRMax(11),
   ffcSq(0.7),
   fFilterBit(7),
@@ -297,6 +299,8 @@ AliFourPion::AliFourPion(const Char_t *name)
   fDummyB(0),
   fKT3transition(0.3),
   fKT4transition(0.3),
+  farrP1(),
+  farrP2(),
   fDefaultsCharSwitch(),
   fLowQPairSwitch_E0E0(),
   fLowQPairSwitch_E0E1(),
@@ -319,7 +323,7 @@ AliFourPion::AliFourPion(const Char_t *name)
 {
   // Main constructor
   fAODcase=kTRUE;
-  fPdensityPairCut = kTRUE;
+  
   
 
   for(Int_t mb=0; mb<fMbins; mb++){
@@ -407,8 +411,8 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fPbPbcase(obj.fPbPbcase),
     fGenerateSignal(obj.fGenerateSignal),
     fGeneratorOnly(obj.fGeneratorOnly),
-    fPdensityPairCut(obj.fPdensityPairCut),
     fTabulatePairs(obj.fTabulatePairs),
+    fLinearInterpolation(obj.fLinearInterpolation),
     fRMax(obj.fRMax),
     ffcSq(obj.ffcSq),
     fFilterBit(obj.fFilterBit),
@@ -473,6 +477,8 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fDummyB(obj.fDummyB),
     fKT3transition(obj.fKT3transition),
     fKT4transition(obj.fKT4transition),
+    farrP1(),
+    farrP2(),
     fDefaultsCharSwitch(),
     fLowQPairSwitch_E0E0(),
     fLowQPairSwitch_E0E1(),
@@ -530,8 +536,8 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fPbPbcase = obj.fPbPbcase; 
   fGenerateSignal = obj.fGenerateSignal;
   fGeneratorOnly = obj.fGeneratorOnly;
-  fPdensityPairCut = obj.fPdensityPairCut;
   fTabulatePairs = obj.fTabulatePairs;
+  fLinearInterpolation = obj.fLinearInterpolation;
   fRMax = obj.fRMax;
   ffcSq = obj.ffcSq;
   fFilterBit = obj.fFilterBit;
@@ -1005,303 +1011,312 @@ void AliFourPion::UserCreateOutputObjects()
   fOutputList->Add(fMCWeight3DTerm4MCden);
 
 
-  if(fPdensityPairCut){
+      
+  for(Int_t mb=0; mb<fMbins; mb++){
+    if((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit)) continue;
     
-    for(Int_t mb=0; mb<fMbins; mb++){
-      if((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit)) continue;
-
-      for(Int_t edB=0; edB<fEDbins; edB++){
-	for(Int_t c1=0; c1<2; c1++){
-	  for(Int_t c2=0; c2<2; c2++){
-	    for(Int_t term=0; term<2; term++){
-		
-	      TString *nameEx2 = new TString("TwoParticle_Charge1_");
-	      *nameEx2 += c1;
-	      nameEx2->Append("_Charge2_");
-	      *nameEx2 += c2;
-	      nameEx2->Append("_M_");
-	      *nameEx2 += mb;
-	      nameEx2->Append("_ED_");
-	      *nameEx2 += edB;
-	      nameEx2->Append("_Term_");
-	      *nameEx2 += term+1;
-	      
-	      if( (c1+c2)==1 ) {if(c1!=0) continue;}// skip degenerate histogram
-	      
-	      
-	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2 = new TH2D(nameEx2->Data(),"Two Particle Distribution",20,0,1, fQbinsQ2,0,fQupperBoundQ2);
-	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2);
-	      TString *nameEx2QW=new TString(nameEx2->Data());
-	      nameEx2QW->Append("_QW");
-	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW = new TH2D(nameEx2QW->Data(),"Two Particle Distribution",20,0,1, fQbinsQ2,0,fQupperBoundQ2);
-	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW);
-	      TString *nameAvgP=new TString(nameEx2->Data());
-	      nameAvgP->Append("_AvgP");
-	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fAvgP = new TProfile2D(nameAvgP->Data(),"",10,0,1, fQbinsQ2,0,fQupperBoundQ2, 0.,1.0,"");
-	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fAvgP);
-	      
-	      TString *nameUnitMult=new TString(nameEx2->Data());
-	      nameUnitMult->Append("_UnitMult");
-	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fUnitMultBin = new TH2D(nameUnitMult->Data(),"Two Particle Distribution",21,0.5,21.5, fQbinsQ2,0,fQupperBoundQ2);
-	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fUnitMultBin);
-	      
-	      if(fMCcase){
-		// Momentum resolution histos
-		TString *nameIdeal = new TString(nameEx2->Data());
-		nameIdeal->Append("_Ideal");
-		Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fIdeal = new TH2D(nameIdeal->Data(),"Two Particle Distribution",11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
-		if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fIdeal);
-		TString *nameSmeared = new TString(nameEx2->Data());
-		nameSmeared->Append("_Smeared");
-		Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fSmeared = new TH2D(nameSmeared->Data(),"Two Particle Distribution",11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
-		if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fSmeared);
-		//
-		// Muon correction histos
-		TString *nameMuonIdeal=new TString(nameEx2->Data());
-		nameMuonIdeal->Append("_MuonIdeal");
-		Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonIdeal = new TH2D(nameMuonIdeal->Data(),"", 11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
-		if(mb==0 && edB==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonIdeal);
-		TString *nameMuonSmeared=new TString(nameEx2->Data());
-		nameMuonSmeared->Append("_MuonSmeared");
-		Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonSmeared = new TH2D(nameMuonSmeared->Data(),"", 11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
-		if(mb==0 && edB==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonSmeared);
-		//
-		TString *nameMuonPionK2=new TString(nameEx2->Data());
-		nameMuonPionK2->Append("_MuonPionK2");
-		Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonPionK2 = new TH2D(nameMuonPionK2->Data(),"", 11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
-		if(mb==0 && edB==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonPionK2);
-		//
-		TString *namePionPionK2=new TString(nameEx2->Data());
-		namePionPionK2->Append("_PionPionK2");
-		Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPionPionK2 = new TH2D(namePionPionK2->Data(),"", 11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
-		if(mb==0 && edB==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPionPionK2);
-		//
-		//
-		TString *nameEx2MC=new TString(nameEx2->Data());
-		nameEx2MC->Append("_MCqinv");
-		Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMCqinv = new TH1D(nameEx2MC->Data(),"", fQbinsQ2,0,fQupperBoundQ2);
-		fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMCqinv);
-		TString *nameEx2MCQW=new TString(nameEx2->Data());
-		nameEx2MCQW->Append("_MCqinvQW");
-		Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW = new TH1D(nameEx2MCQW->Data(),"", fQbinsQ2,0,fQupperBoundQ2);
-		fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW);
-		//
-		TString *nameEx2PIDpurityDen=new TString(nameEx2->Data());
-		nameEx2PIDpurityDen->Append("_PIDpurityDen");
-		Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPIDpurityDen = new TH2D(nameEx2PIDpurityDen->Data(),"Two Particle Distribution",20,0,1, fQbinsQ2,0,fQupperBoundQ2);
-		fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPIDpurityDen);
-		TString *nameEx2PIDpurityNum=new TString(nameEx2->Data());
-		nameEx2PIDpurityNum->Append("_PIDpurityNum");
-		Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum = new TH3D(nameEx2PIDpurityNum->Data(),"Two Particle Distribution",16,0.5,16.5, 20,0,1, fQbinsQ2,0,fQupperBoundQ2);
-		fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum);
-	      }
-	      TString *nameEx2OSLB1 = new TString(nameEx2->Data()); 
-	      nameEx2OSLB1->Append("_osl_b1");
-	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fTerms2OSL = new TH3D(nameEx2OSLB1->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
-	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fTerms2OSL);
-	      nameEx2OSLB1->Append("_QW");
-	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fTerms2OSLQW = new TH3D(nameEx2OSLB1->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
-	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fTerms2OSLQW);
+    for(Int_t edB=0; edB<fEDbins; edB++){
+      for(Int_t c1=0; c1<2; c1++){
+	for(Int_t c2=0; c2<2; c2++){
+	  for(Int_t term=0; term<2; term++){
+	    
+	    TString *nameEx2 = new TString("TwoParticle_Charge1_");
+	    *nameEx2 += c1;
+	    nameEx2->Append("_Charge2_");
+	    *nameEx2 += c2;
+	    nameEx2->Append("_M_");
+	    *nameEx2 += mb;
+	    nameEx2->Append("_ED_");
+	    *nameEx2 += edB;
+	    nameEx2->Append("_Term_");
+	    *nameEx2 += term+1;
+	    
+	    if( (c1+c2)==1 ) {if(c1!=0) continue;}// skip degenerate histogram
+	    
+	    
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2 = new TH2D(nameEx2->Data(),"Two Particle Distribution",20,0,1, fQbinsQ2,0,fQupperBoundQ2);
+	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2);
+	    TString *nameEx2QW=new TString(nameEx2->Data());
+	    nameEx2QW->Append("_QW");
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW = new TH2D(nameEx2QW->Data(),"Two Particle Distribution",20,0,1, fQbinsQ2,0,fQupperBoundQ2);
+	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW);
+	    TString *nameAvgP=new TString(nameEx2->Data());
+	    nameAvgP->Append("_AvgP");
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fAvgP = new TProfile2D(nameAvgP->Data(),"",10,0,1, fQbinsQ2,0,fQupperBoundQ2, 0.,1.0,"");
+	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fAvgP);
+	    
+	    TString *nameUnitMult=new TString(nameEx2->Data());
+	    nameUnitMult->Append("_UnitMult");
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fUnitMultBin = new TH2D(nameUnitMult->Data(),"Two Particle Distribution",21,0.5,21.5, fQbinsQ2,0,fQupperBoundQ2);
+	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fUnitMultBin);
+	    
+	    if(fMCcase){
+	      // Momentum resolution histos
+	      TString *nameIdeal = new TString(nameEx2->Data());
+	      nameIdeal->Append("_Ideal");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fIdeal = new TH2D(nameIdeal->Data(),"Two Particle Distribution",11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
+	      if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fIdeal);
+	      TString *nameSmeared = new TString(nameEx2->Data());
+	      nameSmeared->Append("_Smeared");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fSmeared = new TH2D(nameSmeared->Data(),"Two Particle Distribution",11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
+	      if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fSmeared);
 	      //
-	      TString *nameEx2OSLB2 = new TString(nameEx2->Data()); 
-	      nameEx2OSLB2->Append("_osl_b2");
-	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fTerms2OSL = new TH3D(nameEx2OSLB2->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
-	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fTerms2OSL);
-	      nameEx2OSLB2->Append("_QW");
-	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fTerms2OSLQW = new TH3D(nameEx2OSLB2->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
-	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fTerms2OSLQW);
+	      // Muon correction histos
+	      TString *nameMuonIdeal=new TString(nameEx2->Data());
+	      nameMuonIdeal->Append("_MuonIdeal");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonIdeal = new TH2D(nameMuonIdeal->Data(),"", 11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
+	      if(mb==0 && edB==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonIdeal);
+	      TString *nameMuonSmeared=new TString(nameEx2->Data());
+	      nameMuonSmeared->Append("_MuonSmeared");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonSmeared = new TH2D(nameMuonSmeared->Data(),"", 11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
+	      if(mb==0 && edB==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonSmeared);
+	      //
+	      TString *nameMuonPionK2=new TString(nameEx2->Data());
+	      nameMuonPionK2->Append("_MuonPionK2");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonPionK2 = new TH2D(nameMuonPionK2->Data(),"", 11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
+	      if(mb==0 && edB==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMuonPionK2);
+	      //
+	      TString *namePionPionK2=new TString(nameEx2->Data());
+	      namePionPionK2->Append("_PionPionK2");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPionPionK2 = new TH2D(namePionPionK2->Data(),"", 11,0.5,11.5, fQbinsQ2,0,fQupperBoundQ2);
+	      if(mb==0 && edB==0) fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPionPionK2);
+	      //
+	      //
+	      TString *nameEx2MC=new TString(nameEx2->Data());
+	      nameEx2MC->Append("_MCqinv");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMCqinv = new TH1D(nameEx2MC->Data(),"", fQbinsQ2,0,fQupperBoundQ2);
+	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMCqinv);
+	      TString *nameEx2MCQW=new TString(nameEx2->Data());
+	      nameEx2MCQW->Append("_MCqinvQW");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW = new TH1D(nameEx2MCQW->Data(),"", fQbinsQ2,0,fQupperBoundQ2);
+	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fMCqinvQW);
+	      //
+	      TString *nameEx2PIDpurityDen=new TString(nameEx2->Data());
+	      nameEx2PIDpurityDen->Append("_PIDpurityDen");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPIDpurityDen = new TH2D(nameEx2PIDpurityDen->Data(),"Two Particle Distribution",20,0,1, fQbinsQ2,0,fQupperBoundQ2);
+	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPIDpurityDen);
+	      TString *nameEx2PIDpurityNum=new TString(nameEx2->Data());
+	      nameEx2PIDpurityNum->Append("_PIDpurityNum");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum = new TH3D(nameEx2PIDpurityNum->Data(),"Two Particle Distribution",16,0.5,16.5, 20,0,1, fQbinsQ2,0,fQupperBoundQ2);
+	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum);
+	    }
+	    TString *nameEx2OSLB1 = new TString(nameEx2->Data()); 
+	    nameEx2OSLB1->Append("_osl_b1");
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fTerms2OSL = new TH3D(nameEx2OSLB1->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
+	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fTerms2OSL);
+	    nameEx2OSLB1->Append("_QW");
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fTerms2OSLQW = new TH3D(nameEx2OSLB1->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
+	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fTerms2OSLQW);
+	    //
+	    TString *nameEx2OSLB2 = new TString(nameEx2->Data()); 
+	    nameEx2OSLB2->Append("_osl_b2");
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fTerms2OSL = new TH3D(nameEx2OSLB2->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
+	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fTerms2OSL);
+	    nameEx2OSLB2->Append("_QW");
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fTerms2OSLQW = new TH3D(nameEx2OSLB2->Data(),"Two Particle Distribution",kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights, kQbinsWeights,0,fQupperBoundWeights);
+	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[1].fTerms2OSLQW);
+	    
+	  }// term_2
+	  
+	  
+	  
+	  // skip 3-particle if Tabulate6DPairs is true
+	  if(fTabulatePairs) continue;
+	  
+	  for(Int_t c3=0; c3<2; c3++){
+	    for(Int_t term=0; term<5; term++){
 	      
-	    }// term_2
+	      TString *namePC3 = new TString("ThreeParticle_Charge1_");
+	      *namePC3 += c1;
+	      namePC3->Append("_Charge2_");
+	      *namePC3 += c2;
+	      namePC3->Append("_Charge3_");
+	      *namePC3 += c3;
+	      namePC3->Append("_M_");
+	      *namePC3 += mb;
+	      namePC3->Append("_ED_");
+	      *namePC3 += edB;
+	      namePC3->Append("_Term_");
+	      *namePC3 += term+1;
+	      
+	      ///////////////////////////////////////
+	      // skip degenerate histograms
+	      if( (c1+c2+c3)==1) {if(c3!=1) continue;}
+	      if( (c1+c2+c3)==2) {if(c1!=0) continue;}
+	      /////////////////////////////////////////
+	      
+	      
+	      TString *nameNorm=new TString(namePC3->Data());
+	      nameNorm->Append("_Norm");
+	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fNorm3 = new TH1D(nameNorm->Data(),"Norm",1,-0.5,0.5);
+	      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fNorm3);
+	      //
+	      
+	      TString *name1DQ=new TString(namePC3->Data());
+	      name1DQ->Append("_1D");
+	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTerms3 = new TH1D(name1DQ->Data(),"", fQbinsQ3,0,fQupperBoundQ3);
+	      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTerms3);
+	      //
+	      TString *nameKfactor=new TString(namePC3->Data());
+	      nameKfactor->Append("_Kfactor");
+	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactor = new TProfile(nameKfactor->Data(),"", fQbinsQ3,0,fQupperBoundQ3, 0,100, "");
+	      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactor);
+	      //
+	      TString *nameMeanQinv=new TString(namePC3->Data());
+	      nameMeanQinv->Append("_MeanQinv");
+	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMeanQinv = new TProfile(nameMeanQinv->Data(),"", fQbinsQ3,0,fQupperBoundQ3, 0,.2, "");
+	      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMeanQinv);
+	      
+	      if(fMCcase==kTRUE){
+		// Momentum resolution correction histos
+		TString *nameMomResIdeal=new TString(namePC3->Data());
+		nameMomResIdeal->Append("_Ideal");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fIdeal = new TH2D(nameMomResIdeal->Data(),"", 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
+		if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fIdeal);
+		TString *nameMomResSmeared=new TString(namePC3->Data());
+		nameMomResSmeared->Append("_Smeared");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fSmeared = new TH2D(nameMomResSmeared->Data(),"", 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
+		if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fSmeared);
+		// Muon correction histos
+		TString *nameMuonIdeal=new TString(namePC3->Data());
+		nameMuonIdeal->Append("_MuonIdeal");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonIdeal = new TH3D(nameMuonIdeal->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
+		if(mb==0 && edB==0 && term<4) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonIdeal);
+		TString *nameMuonSmeared=new TString(namePC3->Data());
+		nameMuonSmeared->Append("_MuonSmeared");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonSmeared = new TH3D(nameMuonSmeared->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
+		if(mb==0 && edB==0 && term<4) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonSmeared);
+		//
+		TString *nameMuonPionK3=new TString(namePC3->Data());
+		nameMuonPionK3->Append("_MuonPionK3");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonPionK3 = new TH3D(nameMuonPionK3->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
+		if(mb==0 && edB==0 && term<4) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonPionK3);
+		//
+		TString *namePionPionK3=new TString(namePC3->Data());
+		namePionPionK3->Append("_PionPionK3");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fPionPionK3 = new TH3D(namePionPionK3->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
+		if(mb==0 && edB==0 && term<4) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fPionPionK3);
+		
+	      }// MCcase
+	      //
+	      if(c1==c2 && c1==c3 && term==4 ){
+		TString *nameTwoPartNorm=new TString(namePC3->Data());
+		nameTwoPartNorm->Append("_TwoPartNorm");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNorm = new TH2D(nameTwoPartNorm->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0,fQupperBoundQ3);
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNorm);
+		//
+		TString *nameTwoPartNegNorm=new TString(namePC3->Data());
+		nameTwoPartNegNorm->Append("_TwoPartNegNorm");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNegNorm = new TH2D(nameTwoPartNegNorm->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0,fQupperBoundQ3);
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNegNorm);
+		//
+		TString *nameTwoPartNormErr=new TString(namePC3->Data());
+		nameTwoPartNormErr->Append("_TwoPartNormErr");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNormErr = new TH2D(nameTwoPartNormErr->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0,fQupperBoundQ3);
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNormErr);
+	      }// term=4
+	      
+	    }// term_3
 	    
-	    
-	    
-	    // skip 3-particle if Tabulate6DPairs is true
-	    if(fTabulatePairs) continue;
-	    
-	    for(Int_t c3=0; c3<2; c3++){
-	      for(Int_t term=0; term<5; term++){
-				
-		TString *namePC3 = new TString("ThreeParticle_Charge1_");
-		*namePC3 += c1;
-		namePC3->Append("_Charge2_");
-		*namePC3 += c2;
-		namePC3->Append("_Charge3_");
-		*namePC3 += c3;
-		namePC3->Append("_M_");
-		*namePC3 += mb;
-		namePC3->Append("_ED_");
-		*namePC3 += edB;
-		namePC3->Append("_Term_");
-		*namePC3 += term+1;
+	    for(Int_t c4=0; c4<2; c4++){
+	      for(Int_t term=0; term<13; term++){
+		
+		TString *namePC4 = new TString("FourParticle_Charge1_");
+		*namePC4 += c1;
+		namePC4->Append("_Charge2_");
+		*namePC4 += c2;
+		namePC4->Append("_Charge3_");
+		*namePC4 += c3;
+		namePC4->Append("_Charge4_");
+		*namePC4 += c4;
+		namePC4->Append("_M_");
+		*namePC4 += mb;
+		namePC4->Append("_ED_");
+		*namePC4 += edB;
+		namePC4->Append("_Term_");
+		*namePC4 += term+1;
 		
 		///////////////////////////////////////
 		// skip degenerate histograms
-		if( (c1+c2+c3)==1) {if(c3!=1) continue;}
-		if( (c1+c2+c3)==2) {if(c1!=0) continue;}
+		if( (c1+c2+c3+c4)==1) {if(c4!=1) continue;}
+		if( (c1+c2+c3+c4)==2) {if(c3+c4!=2) continue;}
+		if( (c1+c2+c3+c4)==3) {if(c1!=0) continue;}
 		/////////////////////////////////////////
 		
-				
-		TString *nameNorm=new TString(namePC3->Data());
+		TString *nameNorm=new TString(namePC4->Data());
 		nameNorm->Append("_Norm");
-		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fNorm3 = new TH1D(nameNorm->Data(),"Norm",1,-0.5,0.5);
-		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fNorm3);
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fNorm4 = new TH1D(nameNorm->Data(),"Norm",1,-0.5,0.5);
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fNorm4);
 		//
-		
-		TString *name1DQ=new TString(namePC3->Data());
+		TString *name1DQ=new TString(namePC4->Data());
 		name1DQ->Append("_1D");
-		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTerms3 = new TH1D(name1DQ->Data(),"", fQbinsQ3,0,fQupperBoundQ3);
-		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTerms3);
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTerms4 = new TH1D(name1DQ->Data(),"", fQbinsQ4,0,fQupperBoundQ4);
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTerms4);
 		//
-		TString *nameKfactor=new TString(namePC3->Data());
+		TString *nameKfactor=new TString(namePC4->Data());
 		nameKfactor->Append("_Kfactor");
-		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactor = new TProfile(nameKfactor->Data(),"", fQbinsQ3,0,fQupperBoundQ3, 0,100, "");
-		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactor);
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor = new TProfile(nameKfactor->Data(),"", fQbinsQ4,0,fQupperBoundQ4, 0,100, "");
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor);
 		//
-		TString *nameMeanQinv=new TString(namePC3->Data());
-		nameMeanQinv->Append("_MeanQinv");
-		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMeanQinv = new TProfile(nameMeanQinv->Data(),"", fQbinsQ3,0,fQupperBoundQ3, 0,.2, "");
-		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMeanQinv);
+		if(c1==c2 && c1==c3 && c1==c4 && term==12 ){
+		  TString *nameTwoPartNorm=new TString(namePC4->Data());
+		  nameTwoPartNorm->Append("_TwoPartNorm");
+		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm = new TH2D(nameTwoPartNorm->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
+		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm);
+		  //
+		  TString *nameTwoPartNegNorm=new TString(namePC4->Data());
+		  nameTwoPartNegNorm->Append("_TwoPartNegNorm");
+		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNegNorm = new TH2D(nameTwoPartNegNorm->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
+		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNegNorm);
+		  //
+		  TString *nameTwoPartNormErr=new TString(namePC4->Data());
+		  nameTwoPartNormErr->Append("_TwoPartNormErr");
+		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNormErr = new TH2D(nameTwoPartNormErr->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
+		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNormErr);
+		}
 		
 		if(fMCcase==kTRUE){
 		  // Momentum resolution correction histos
-		  TString *nameMomResIdeal=new TString(namePC3->Data());
+		  TString *nameMomResIdeal=new TString(namePC4->Data());
 		  nameMomResIdeal->Append("_Ideal");
-		  Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fIdeal = new TH2D(nameMomResIdeal->Data(),"", 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
-		  if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fIdeal);
-		  TString *nameMomResSmeared=new TString(namePC3->Data());
+		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fIdeal = new TH2D(nameMomResIdeal->Data(),"", 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
+		  if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fIdeal);
+		  TString *nameMomResSmeared=new TString(namePC4->Data());
 		  nameMomResSmeared->Append("_Smeared");
-		  Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fSmeared = new TH2D(nameMomResSmeared->Data(),"", 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
-		  if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fSmeared);
+		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fSmeared = new TH2D(nameMomResSmeared->Data(),"", 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
+		  if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fSmeared);
 		  // Muon correction histos
-		  TString *nameMuonIdeal=new TString(namePC3->Data());
+		  TString *nameMuonIdeal=new TString(namePC4->Data());
 		  nameMuonIdeal->Append("_MuonIdeal");
-		  Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonIdeal = new TH3D(nameMuonIdeal->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
-		  if(mb==0 && edB==0 && term<4) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonIdeal);
-		  TString *nameMuonSmeared=new TString(namePC3->Data());
+		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonIdeal = new TH3D(nameMuonIdeal->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
+		  if(mb==0 && edB==0 && term<12) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonIdeal);
+		  TString *nameMuonSmeared=new TString(namePC4->Data());
 		  nameMuonSmeared->Append("_MuonSmeared");
-		  Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonSmeared = new TH3D(nameMuonSmeared->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
-		  if(mb==0 && edB==0 && term<4) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonSmeared);
+		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonSmeared = new TH3D(nameMuonSmeared->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
+		  if(mb==0 && edB==0 && term<12) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonSmeared);
 		  //
-		  TString *nameMuonPionK3=new TString(namePC3->Data());
-		  nameMuonPionK3->Append("_MuonPionK3");
-		  Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonPionK3 = new TH3D(nameMuonPionK3->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
-		  if(mb==0 && edB==0 && term<4) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMuonPionK3);
+		  TString *nameMuonPionK4=new TString(namePC4->Data());
+		  nameMuonPionK4->Append("_MuonPionK4");
+		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonPionK4 = new TH3D(nameMuonPionK4->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
+		  if(mb==0 && edB==0 && term<12) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonPionK4);
 		  //
-		  TString *namePionPionK3=new TString(namePC3->Data());
-		  namePionPionK3->Append("_PionPionK3");
-		  Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fPionPionK3 = new TH3D(namePionPionK3->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ3,0,fQupperBoundQ3);
-		  if(mb==0 && edB==0 && term<4) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fPionPionK3);
+		  TString *namePionPionK4=new TString(namePC4->Data());
+		  namePionPionK4->Append("_PionPionK4");
+		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fPionPionK4 = new TH3D(namePionPionK4->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
+		  if(mb==0 && edB==0 && term<12) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fPionPionK4);
 		  
 		}// MCcase
-		//
-		if(c1==c2 && c1==c3 && term==4 ){
-		  TString *nameTwoPartNorm=new TString(namePC3->Data());
-		  nameTwoPartNorm->Append("_TwoPartNorm");
-		  Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNorm = new TH2D(nameTwoPartNorm->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0,fQupperBoundQ3);
-		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNorm);
-		  //
-		  TString *nameTwoPartNormErr=new TString(namePC3->Data());
-		  nameTwoPartNormErr->Append("_TwoPartNormErr");
-		  Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNormErr = new TH2D(nameTwoPartNormErr->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0,fQupperBoundQ3);
-		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNormErr);
-		}// term=4
 		
-	      }// term_3
-	      
-	      for(Int_t c4=0; c4<2; c4++){
-		for(Int_t term=0; term<13; term++){
-				
-		  TString *namePC4 = new TString("FourParticle_Charge1_");
-		  *namePC4 += c1;
-		  namePC4->Append("_Charge2_");
-		  *namePC4 += c2;
-		  namePC4->Append("_Charge3_");
-		  *namePC4 += c3;
-		  namePC4->Append("_Charge4_");
-		  *namePC4 += c4;
-		  namePC4->Append("_M_");
-		  *namePC4 += mb;
-		  namePC4->Append("_ED_");
-		  *namePC4 += edB;
-		  namePC4->Append("_Term_");
-		  *namePC4 += term+1;
-		  
-		  ///////////////////////////////////////
-		  // skip degenerate histograms
-		  if( (c1+c2+c3+c4)==1) {if(c4!=1) continue;}
-		  if( (c1+c2+c3+c4)==2) {if(c3+c4!=2) continue;}
-		  if( (c1+c2+c3+c4)==3) {if(c1!=0) continue;}
-		  /////////////////////////////////////////
-		 
-		  TString *nameNorm=new TString(namePC4->Data());
-		  nameNorm->Append("_Norm");
-		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fNorm4 = new TH1D(nameNorm->Data(),"Norm",1,-0.5,0.5);
-		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fNorm4);
-		  //
-		  TString *name1DQ=new TString(namePC4->Data());
-		  name1DQ->Append("_1D");
-		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTerms4 = new TH1D(name1DQ->Data(),"", fQbinsQ4,0,fQupperBoundQ4);
-		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTerms4);
-		  //
-		  TString *nameKfactor=new TString(namePC4->Data());
-		  nameKfactor->Append("_Kfactor");
-		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor = new TProfile(nameKfactor->Data(),"", fQbinsQ4,0,fQupperBoundQ4, 0,100, "");
-		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor);
-		  //
-		  if(c1==c2 && c1==c3 && c1==c4 && term==12 ){
-		    TString *nameTwoPartNorm=new TString(namePC4->Data());
-		    nameTwoPartNorm->Append("_TwoPartNorm");
-		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm = new TH2D(nameTwoPartNorm->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
-		    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm);
-		    //
-		    TString *nameTwoPartNormErr=new TString(namePC4->Data());
-		    nameTwoPartNormErr->Append("_TwoPartNormErr");
-		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNormErr = new TH2D(nameTwoPartNormErr->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
-		    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNormErr);
-		  }
-		  
-		  if(fMCcase==kTRUE){
-		    // Momentum resolution correction histos
-		    TString *nameMomResIdeal=new TString(namePC4->Data());
-		    nameMomResIdeal->Append("_Ideal");
-		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fIdeal = new TH2D(nameMomResIdeal->Data(),"", 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
-		    if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fIdeal);
-		    TString *nameMomResSmeared=new TString(namePC4->Data());
-		    nameMomResSmeared->Append("_Smeared");
-		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fSmeared = new TH2D(nameMomResSmeared->Data(),"", 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
-		    if(mb==0) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fSmeared);
-		    // Muon correction histos
-		    TString *nameMuonIdeal=new TString(namePC4->Data());
-		    nameMuonIdeal->Append("_MuonIdeal");
-		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonIdeal = new TH3D(nameMuonIdeal->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
-		    if(mb==0 && edB==0 && term<12) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonIdeal);
-		    TString *nameMuonSmeared=new TString(namePC4->Data());
-		    nameMuonSmeared->Append("_MuonSmeared");
-		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonSmeared = new TH3D(nameMuonSmeared->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
-		    if(mb==0 && edB==0 && term<12) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonSmeared);
-		    //
-		    TString *nameMuonPionK4=new TString(namePC4->Data());
-		    nameMuonPionK4->Append("_MuonPionK4");
-		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonPionK4 = new TH3D(nameMuonPionK4->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
-		    if(mb==0 && edB==0 && term<12) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fMuonPionK4);
-		    //
-		    TString *namePionPionK4=new TString(namePC4->Data());
-		    namePionPionK4->Append("_PionPionK4");
-		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fPionPionK4 = new TH3D(namePionPionK4->Data(),"", 2,0.5,2.5, 11,0.5,11.5, fQbinsQ4,0,fQupperBoundQ4);
-		    if(mb==0 && edB==0 && term<12) fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fPionPionK4);
-		    
-		  }// MCcase
-		  
-		  
-		}
+		
 	      }
+	    }
+	    
+	  }//c3
+	}//c2
+      }//c1
+    }// ED
+  }// mbin
 
-	    }//c3
-	  }//c2
-	}//c1
-      }// ED
-    }// mbin
-  }// Pdensity Method
 
   
   if(fTabulatePairs){
@@ -1370,6 +1385,34 @@ void AliFourPion::UserCreateOutputObjects()
 
   TH1D *fDistPionParents4 = new TH1D("fDistPionParents4","",4,0.5,4.5);
   fOutputList->Add(fDistPionParents4);
+
+  TH2D *fDistTPCNclsFindable = new TH2D("fDistTPCNclsFindable","", 100,0,0.5, 201,-0.5,200.5);
+  fDistTPCNclsFindable->GetXaxis()->SetTitle("pT (GeV/c)"); fDistTPCNclsFindable->GetYaxis()->SetTitle("Ncls Findable");
+  fOutputList->Add(fDistTPCNclsFindable);
+  TProfile *fProfileTPCNclsFindable = new TProfile("fProfileTPCNclsFindable","",100,0,0.5, 0,200, "");
+  fProfileTPCNclsFindable->GetXaxis()->SetTitle("pT (GeV/c)"); fProfileTPCNclsFindable->GetYaxis()->SetTitle("<Ncls Findable>");
+  fOutputList->Add(fProfileTPCNclsFindable);
+  //
+  TH2D *fDistTPCNclsCrossed = new TH2D("fDistTPCNclsCrossed","",100,0,0.5, 201,-0.5,200.5);
+  fDistTPCNclsCrossed->GetXaxis()->SetTitle("pT (GeV/c)"); fDistTPCNclsCrossed->GetYaxis()->SetTitle("Ncls Crossed");
+  fOutputList->Add(fDistTPCNclsCrossed);
+  TProfile *fProfileTPCNclsCrossed = new TProfile("fProfileTPCNclsCrossed","",100,0,0.5, 0,200, "");
+  fProfileTPCNclsCrossed->GetXaxis()->SetTitle("pT (GeV/c)"); fProfileTPCNclsCrossed->GetYaxis()->SetTitle("<Ncls Crossed>");
+  fOutputList->Add(fProfileTPCNclsCrossed);
+  //
+  TH2D *fDistTPCNclsFindableRatio = new TH2D("fDistTPCNclsFindableRatio","",100,0,0.5, 100,0,1);
+  fDistTPCNclsFindableRatio->GetXaxis()->SetTitle("pT (GeV/c)"); fDistTPCNclsFindableRatio->GetYaxis()->SetTitle("Ncls / Ncls Findable");
+  fOutputList->Add(fDistTPCNclsFindableRatio);
+  TProfile *fProfileTPCNclsFindableRatio = new TProfile("fProfileTPCNclsFindableRatio","",100,0,0.5, 0,1, "");
+  fProfileTPCNclsFindableRatio->GetXaxis()->SetTitle("pT (GeV/c)"); fProfileTPCNclsFindableRatio->GetYaxis()->SetTitle("<Ncls / Ncls Findable>");
+  fOutputList->Add(fProfileTPCNclsFindableRatio);
+  //
+  TH2D *fDistTPCNclsCrossedRatio = new TH2D("fDistTPCNclsCrossedRatio","",100,0,0.5, 100,0,1);
+  fDistTPCNclsCrossedRatio->GetXaxis()->SetTitle("pT (GeV/c)"); fDistTPCNclsCrossedRatio->GetYaxis()->SetTitle("Ncls / Ncls Crossed");
+  fOutputList->Add(fDistTPCNclsCrossedRatio);
+  TProfile *fProfileTPCNclsCrossedRatio = new TProfile("fProfileTPCNclsCrossedRatio","",100,0,0.5, 0,1, "");
+  fProfileTPCNclsCrossedRatio->GetXaxis()->SetTitle("pT (GeV/c)"); fProfileTPCNclsCrossedRatio->GetYaxis()->SetTitle("<Ncls / Ncls Crossed>");
+  fOutputList->Add(fProfileTPCNclsCrossedRatio);
 
   ////////////////////////////////////
   ///////////////////////////////////  
@@ -1620,6 +1663,9 @@ void AliFourPion::UserExec(Option_t *)
 	    aodTrack2->GetIntegratedTimes(integratedTimesTOF);
 	  }else fTempStruct[myTracks].fTOFhit = kFALSE;
 	  
+	  //if(aodTrack2->Pt()<0.2) cout<<aodTrack2->GetTPCNclsF()<<"  "<<aodTrack2->GetTPCNCrossedRows()<<"  "<<aodTrack2->GetTPCNcls()<<"  "<<aodTrack2->GetTPCFoundFraction()<<endl;
+
+
 	}// aodTrack2
       }// FilterBit 7 PID workaround
      
@@ -1669,8 +1715,21 @@ void AliFourPion::UserExec(Option_t *)
       ((TH3F*)fOutputList->FindObject("fPhiPtDist"))->Fill(aodtrack->Charge(), aodtrack->Phi(), aodtrack->Pt());
       ((TH3F*)fOutputList->FindObject("fPtEtaDist"))->Fill(aodtrack->Charge(), aodtrack->Pt(), aodtrack->Eta());
       
-     
-    
+      ((TH2D*)fOutputList->FindObject("fDistTPCNclsFindable"))->Fill(aodtrack->Pt(), aodtrack->GetTPCNclsF());
+      ((TProfile*)fOutputList->FindObject("fProfileTPCNclsFindable"))->Fill(aodtrack->Pt(), aodtrack->GetTPCNclsF());
+      //
+      ((TH2D*)fOutputList->FindObject("fDistTPCNclsCrossed"))->Fill(aodtrack->Pt(), aodtrack->GetTPCNCrossedRows());
+      ((TProfile*)fOutputList->FindObject("fProfileTPCNclsCrossed"))->Fill(aodtrack->Pt(), aodtrack->GetTPCNCrossedRows());
+      //
+      if(aodtrack->GetTPCNclsF() > 0){
+	((TH2D*)fOutputList->FindObject("fDistTPCNclsFindableRatio"))->Fill(aodtrack->Pt(), double(aodtrack->GetTPCNcls())/double(aodtrack->GetTPCNclsF()));
+	((TProfile*)fOutputList->FindObject("fProfileTPCNclsFindableRatio"))->Fill(aodtrack->Pt(), double(aodtrack->GetTPCNcls())/double(aodtrack->GetTPCNclsF()));
+      }      
+      // 
+      ((TH2D*)fOutputList->FindObject("fDistTPCNclsCrossedRatio"))->Fill(aodtrack->Pt(), aodtrack->GetTPCFoundFraction());
+      ((TProfile*)fOutputList->FindObject("fProfileTPCNclsCrossedRatio"))->Fill(aodtrack->Pt(), aodtrack->GetTPCFoundFraction());
+      
+
       if(fTempStruct[myTracks].fPion) {// pions
 	fTempStruct[myTracks].fEaccepted = sqrt(pow(fTempStruct[myTracks].fMom,2) + pow(fTrueMassPi,2)); 
 	fTempStruct[myTracks].fKey = 1;
@@ -1758,7 +1817,7 @@ void AliFourPion::UserExec(Option_t *)
  
   //cout<<"There are "<<myTracks<<"  myTracks"<<endl;
   //cout<<"pionCount = "<<pionCount<<"   kaonCount = "<<kaonCount<<"   protonCount = "<<protonCount<<endl;
-  
+  //return;
 
   /////////////////////////////////////////
   // Pion Multiplicity Cut (To ensure all Correlation orders are present in each event)
@@ -1869,7 +1928,7 @@ void AliFourPion::UserExec(Option_t *)
   Float_t FSICorr12=0, FSICorr13=0, FSICorr14=0, FSICorr23=0, FSICorr24=0, FSICorr34=0;
   Bool_t pionParent1=kFALSE, pionParent2=kFALSE, pionParent3=kFALSE, pionParent4=kFALSE;
   Bool_t FilledMCpair12=kFALSE, FilledMCtriplet123=kFALSE;
-  Bool_t GoodTripletWeights=kFALSE;
+  Bool_t Positive1stTripletWeights=kTRUE, Positive2ndTripletWeights=kTRUE;
   Float_t T12=0, T13=0, T14=0, T23=0, T24=0, T34=0;
   //
   AliAODMCParticle *mcParticle1=0x0;
@@ -2439,7 +2498,7 @@ void AliFourPion::UserExec(Option_t *)
 		
 		// r3 denominator
 		if(ENsum==6 && ch1==ch2 && ch1==ch3){
-		  GoodTripletWeights = kFALSE;
+		  Positive1stTripletWeights = kTRUE;
 		  //
 		  GetWeight(pVect1, pVect2, weight12, weight12Err);
 		  GetWeight(pVect1, pVect3, weight13, weight13Err);
@@ -2497,48 +2556,62 @@ void AliFourPion::UserExec(Option_t *)
 		    weight23CC[2] = ((weight23+1)*MomResCorr23 - ffcSq*FSICorr23 - (1-ffcSq));
 		    weight23CC[2] /= FSICorr23*ffcSq;
 		    weight23CC[2] *= MuonCorr23;
+		    
 		    if(weight12CC[2] < 0 || weight13CC[2] < 0 || weight23CC[2] < 0) {// C2^QS can never be less than unity
 		      if(fMbin==0 && bin1==0) {
 			((TH1D*)fOutputList->FindObject("fTPNRejects3pion2"))->Fill(q3, sqrt(fabs(weight12CC[2]*weight13CC[2]*weight23CC[2])));
 		      }
-		    }else{
-		      GoodTripletWeights = kTRUE;
-		      /////////////////////////////////////////////////////
-		      weightTotal = sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]);
-		      /////////////////////////////////////////////////////
+		      if(weight12CC[2] < 0) weight12CC[2]=0;
+		      if(weight13CC[2] < 0) weight13CC[2]=0;
+		      if(weight23CC[2] < 0) weight23CC[2]=0;
+		      Positive1stTripletWeights = kFALSE;
+		    }
+		    /////////////////////////////////////////////////////
+		    weightTotal = sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]);
+		    /////////////////////////////////////////////////////
+		    if(Positive1stTripletWeights){
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(3, q3, weightTotal);
-		      //
-		      // Full Weight reconstruction
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(4, q3, 1);
-		      for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
-			for(Int_t GIndex=0; GIndex<20; GIndex++){
-			  Int_t FillBin = 5 + RcohIndex*20 + GIndex;
-			  Float_t G = 0.02*GIndex;
-			  if(RcohIndex==0){
-			    T12 = (-2*G*(1-G) + sqrt(pow(2*G*(1-G),2) + 4*pow(1-G,2)*weight12CC[2])) / (2*pow(1-G,2));
-			    T13 = (-2*G*(1-G) + sqrt(pow(2*G*(1-G),2) + 4*pow(1-G,2)*weight13CC[2])) / (2*pow(1-G,2));
-			    T23 = (-2*G*(1-G) + sqrt(pow(2*G*(1-G),2) + 4*pow(1-G,2)*weight23CC[2])) / (2*pow(1-G,2));
-			    weightTotal = 2*G*(1-G)*(T12 + T13 + T23) + pow(1-G,2)*(T12*T12 + T13*T13 + T23*T23);
-			    weightTotal += 2*G*pow(1-G,2)*(T12*T13 + T12*T23 + T13*T23) + 2*pow(1-G,3)*T12*T13*T23;
-			  }else{
-			    weightTotal = (1-G*G)*(weight12CC[2] + weight13CC[2] + weight23CC[2]);
-			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3)) * sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]);
-			  }
+		    }else{
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNegNorm->Fill(4, q3, 1);
+		    }
+		    //
+		    // Full Weight reconstruction
+		    
+		    for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
+		      for(Int_t GIndex=0; GIndex<20; GIndex++){
+			Int_t FillBin = 5 + RcohIndex*20 + GIndex;
+			Float_t G = 0.02*GIndex;
+			if(RcohIndex==0){
+			  T12 = (-2*G*(1-G) + sqrt(pow(2*G*(1-G),2) + 4*pow(1-G,2)*weight12CC[2])) / (2*pow(1-G,2));
+			  T13 = (-2*G*(1-G) + sqrt(pow(2*G*(1-G),2) + 4*pow(1-G,2)*weight13CC[2])) / (2*pow(1-G,2));
+			  T23 = (-2*G*(1-G) + sqrt(pow(2*G*(1-G),2) + 4*pow(1-G,2)*weight23CC[2])) / (2*pow(1-G,2));
+			  weightTotal = 2*G*(1-G)*(T12 + T13 + T23) + pow(1-G,2)*(T12*T12 + T13*T13 + T23*T23);
+			  weightTotal += 2*G*pow(1-G,2)*(T12*T13 + T12*T23 + T13*T23) + 2*pow(1-G,3)*T12*T13*T23;
+			}else{
+			  T12 = sqrt(weight12CC[2] / (1-G*G));
+			  T13 = sqrt(weight13CC[2] / (1-G*G));
+			  T23 = sqrt(weight23CC[2] / (1-G*G));
+			  weightTotal = (1-G*G)*(T12*T12 + T13*T13 + T23*T23);
+			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3)) * T12*T13*T23;
+			}
+			if(Positive1stTripletWeights){
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(FillBin, q3, weightTotal);
+			}else{
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNegNorm->Fill(FillBin, q3, weightTotal);
 			}
 		      }
-		      //
-		      /*weight12CC_e = weight12Err*MomResCorr12 / FSICorr12 / ffcSq * MuonCorr12;
+		    }
+		    //
+		    /*weight12CC_e = weight12Err*MomResCorr12 / FSICorr12 / ffcSq * MuonCorr12;
 		      weight13CC_e = weight13Err*MomResCorr13 / FSICorr13 / ffcSq * MuonCorr13;
 		      weight23CC_e = weight23Err*MomResCorr23 / FSICorr23 / ffcSq * MuonCorr23;
 		      if(weight12CC[2]*weight13CC[2]*weight23CC[2] > 0){
-			weightTotalErr = pow(2 * sqrt(3) * weight12CC_e*weight13CC[2]*weight23CC[2] / sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]),2);
+		      weightTotalErr = pow(2 * sqrt(3) * weight12CC_e*weight13CC[2]*weight23CC[2] / sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]),2);
 		      }
 		      weightTotalErr += pow(weight12CC_e,2) + pow(weight13CC_e,2) + pow(weight23CC_e,2);
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNormErr->Fill(4, q3, weightTotalErr);*/
-		    }// 2nd r3 den check
 		    
-		   
 		  }// 1st r3 den check
 		  
 		}// r3 den
@@ -2719,7 +2792,9 @@ void AliFourPion::UserExec(Option_t *)
 		  
 		  /////////////////////////////////////////////////////////////
 		  // r4{2}
-		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6 && GoodTripletWeights){
+		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6){
+		    Positive2ndTripletWeights=kTRUE;
+		    //
 		    GetWeight(pVect1, pVect4, weight14, weight14Err);
 		    GetWeight(pVect2, pVect4, weight24, weight24Err);
 		    GetWeight(pVect3, pVect4, weight34, weight34Err);
@@ -2784,68 +2859,85 @@ void AliFourPion::UserExec(Option_t *)
 		      if(fMbin==0 && bin1==0 && KT4index==0) {
 			((TH1D*)fOutputList->FindObject("fTPNRejects4pion1"))->Fill(q4, sqrt(fabs(weight12CC[2]*weight23CC[2]*weight34CC[2]*weight14CC[2])));
 		      }
-		    }else{
-		      /////////////////////////////////////////////////////
-		      weightTotal  = sqrt(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2]);
-		      weightTotal += sqrt(weight12CC[2]*weight14CC[2]*weight23CC[2]*weight34CC[2]);
-		      weightTotal += sqrt(weight13CC[2]*weight14CC[2]*weight23CC[2]*weight24CC[2]);
-		      weightTotal /= 3.;
+		      if(weight14CC[2] < 0) weight14CC[2]=0;
+		      if(weight24CC[2] < 0) weight24CC[2]=0;
+		      if(weight34CC[2] < 0) weight34CC[2]=0;
+		      Positive2ndTripletWeights=kFALSE;
+		    }
+		    /////////////////////////////////////////////////////
+		    weightTotal  = sqrt(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2]);
+		    weightTotal += sqrt(weight12CC[2]*weight14CC[2]*weight23CC[2]*weight34CC[2]);
+		    weightTotal += sqrt(weight13CC[2]*weight14CC[2]*weight23CC[2]*weight24CC[2]);
+		    weightTotal /= 3.;
+		    if(Positive1stTripletWeights && Positive2ndTripletWeights){
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(3, q4, weightTotal);
-		      /////////////////////////////////////////////////////
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(4, q4, 1);
-		      // Full Weight reconstruction
-		      for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
-			for(Int_t GIndex=0; GIndex<20; GIndex++){
-			  Int_t FillBin = 5 + RcohIndex*20 + GIndex;
-			  Float_t G = 0.02*GIndex;
-			  if(RcohIndex==0){// Rcoh=0
-			    Float_t a = pow(1-G,2);
-			    Float_t b = 2*G*(1-G);
-			    T12 = (-b + sqrt(pow(b,2) + 4*a*weight12CC[2])) / (2*a);
-			    T13 = (-b + sqrt(pow(b,2) + 4*a*weight13CC[2])) / (2*a);
-			    T14 = (-b + sqrt(pow(b,2) + 4*a*weight14CC[2])) / (2*a);
-			    T23 = (-b + sqrt(pow(b,2) + 4*a*weight23CC[2])) / (2*a);
-			    T24 = (-b + sqrt(pow(b,2) + 4*a*weight24CC[2])) / (2*a);
-			    T34 = (-b + sqrt(pow(b,2) + 4*a*weight34CC[2])) / (2*a);
-			    weightTotal = 2*G*(1-G)*(T12 + T13 + T14 + T23 + T24 + T34) + pow(1-G,2)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
-			    weightTotal += 2*G*pow(1-G,3)*(T12*T34*T34 + T12*T12*T34 + T13*T24*T24 + T13*T13*T24 + T14*T23*T23 + T14*T14*T23);// 2-pair
-			    weightTotal += pow(1-G,4)*(pow(T12,2)*pow(T34,2) + pow(T13,2)*pow(T24,2) + pow(T14,2)*pow(T23,2));// 2-pair fully chaotic
-			    weightTotal += 2*G*pow(1-G,2)*(T12*T13 + T12*T23 + T13*T23  + T12*T14 + T12*T24 + T14*T24);// 3-pion
-			    weightTotal += 2*G*pow(1-G,2)*(T13*T14 + T13*T34 + T14*T34  + T23*T24 + T23*T34 + T24*T34);// 3-pion
-			    weightTotal += 2*pow(1-G,3)*(T12*T13*T23 + T12*T14*T24 + T13*T14*T34 + T23*T24*T34);// 3-pion fully chaotic
-			    weightTotal += 2*G*pow(1-G,3)*(T12*T14*T34 + T12*T14*T23 + T12*T23*T34 + T14*T23*T34);// 4-pion
-			    weightTotal += 2*G*pow(1-G,3)*(T12*T13*T34 + T12*T34*T24 + T12*T24*T13 + T13*T24*T34);// 4-pion
-			    weightTotal += 2*G*pow(1-G,3)*(T14*T13*T23 + T14*T13*T24 + T13*T23*T24 + T14*T24*T23);// 4-pion
-			    weightTotal += 2*pow(1-G,4)*(T12*T13*T24*T34 + T12*T14*T23*T34 + T13*T14*T23*T24);// 4-pion fully chaotic
-			  }else{// Rcoh=Rch
-			    weightTotal = (1-G*G)*(weight12CC[2] + weight13CC[2] + weight14CC[2] + weight23CC[2] + weight24CC[2] + weight34CC[2]);// 2-pion
-			    weightTotal += (4*G*pow(1-G,3)+pow(1-G,4))*(weight12CC[2]*weight34CC[2] + weight13CC[2]*weight24CC[2] + weight14CC[2]*weight23CC[2]);// 2-pair
-			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]));// 3-pion
-			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight12CC[2]*weight14CC[2]*weight24CC[2]));// 3-pion
-			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight13CC[2]*weight14CC[2]*weight34CC[2]));// 3-pion
-			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight23CC[2]*weight24CC[2]*weight34CC[2]));// 3-pion
-			    weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(sqrt(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2]));// 4-pion
-			    weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(sqrt(weight12CC[2]*weight14CC[2]*weight23CC[2]*weight34CC[2]));// 4-pion
-			    weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(sqrt(weight13CC[2]*weight14CC[2]*weight23CC[2]*weight24CC[2]));// 4-pion
-			  }
+		    }else{
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNegNorm->Fill(4, q4, 1);
+		    }
+		    // Full Weight reconstruction
+		    for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
+		      for(Int_t GIndex=0; GIndex<20; GIndex++){
+			Int_t FillBin = 5 + RcohIndex*20 + GIndex;
+			Float_t G = 0.02*GIndex;
+			if(RcohIndex==0){// Rcoh=0
+			  Float_t a = pow(1-G,2);
+			  Float_t b = 2*G*(1-G);
+			  T12 = (-b + sqrt(pow(b,2) + 4*a*weight12CC[2])) / (2*a);
+			  T13 = (-b + sqrt(pow(b,2) + 4*a*weight13CC[2])) / (2*a);
+			  T14 = (-b + sqrt(pow(b,2) + 4*a*weight14CC[2])) / (2*a);
+			  T23 = (-b + sqrt(pow(b,2) + 4*a*weight23CC[2])) / (2*a);
+			  T24 = (-b + sqrt(pow(b,2) + 4*a*weight24CC[2])) / (2*a);
+			  T34 = (-b + sqrt(pow(b,2) + 4*a*weight34CC[2])) / (2*a);
+			  weightTotal = 2*G*(1-G)*(T12 + T13 + T14 + T23 + T24 + T34) + pow(1-G,2)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
+			  weightTotal += 2*G*pow(1-G,3)*(T12*T34*T34 + T12*T12*T34 + T13*T24*T24 + T13*T13*T24 + T14*T23*T23 + T14*T14*T23);// 2-pair
+			  weightTotal += pow(1-G,4)*(pow(T12,2)*pow(T34,2) + pow(T13,2)*pow(T24,2) + pow(T14,2)*pow(T23,2));// 2-pair fully chaotic
+			  weightTotal += 2*G*pow(1-G,2)*(T12*T13 + T12*T23 + T13*T23  + T12*T14 + T12*T24 + T14*T24);// 3-pion
+			  weightTotal += 2*G*pow(1-G,2)*(T13*T14 + T13*T34 + T14*T34  + T23*T24 + T23*T34 + T24*T34);// 3-pion
+			  weightTotal += 2*pow(1-G,3)*(T12*T13*T23 + T12*T14*T24 + T13*T14*T34 + T23*T24*T34);// 3-pion fully chaotic
+			  weightTotal += 2*G*pow(1-G,3)*(T12*T14*T34 + T12*T14*T23 + T12*T23*T34 + T14*T23*T34);// 4-pion
+			  weightTotal += 2*G*pow(1-G,3)*(T12*T13*T34 + T12*T34*T24 + T12*T24*T13 + T13*T24*T34);// 4-pion
+			  weightTotal += 2*G*pow(1-G,3)*(T14*T13*T23 + T14*T13*T24 + T13*T23*T24 + T14*T24*T23);// 4-pion
+			  weightTotal += 2*pow(1-G,4)*(T12*T13*T24*T34 + T12*T14*T23*T34 + T13*T14*T23*T24);// 4-pion fully chaotic
+			}else{// Rcoh=Rch
+			  T12 = sqrt(weight12CC[2] / (1-G*G));
+			  T13 = sqrt(weight13CC[2] / (1-G*G));
+			  T14 = sqrt(weight14CC[2] / (1-G*G));
+			  T23 = sqrt(weight23CC[2] / (1-G*G));
+			  T24 = sqrt(weight24CC[2] / (1-G*G));
+			  T34 = sqrt(weight34CC[2] / (1-G*G));
+			  weightTotal = (1-G*G)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
+			  weightTotal += (4*G*pow(1-G,3)+pow(1-G,4))*(pow(T12,2)*pow(T34,2) + pow(T13,2)*pow(T24,2) + pow(T14,2)*pow(T23,2));// 2-pair
+			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T12*T13*T23);// 3-pion
+			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T12*T14*T24);// 3-pion
+			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T13*T14*T34);// 3-pion
+			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T23*T24*T34);// 3-pion
+			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T12*T13*T24*T34);// 4-pion
+			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T12*T14*T23*T34);// 4-pion
+			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T13*T14*T23*T24);// 4-pion
+			}
+			if(Positive1stTripletWeights && Positive2ndTripletWeights){
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(FillBin, q4, weightTotal);
+			}else{
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNegNorm->Fill(FillBin, q4, weightTotal);
 			}
 		      }
-		      // stat errors
-		      /*weight14CC_e = weight14Err*MomResCorr14 / FSICorr14 / ffcSq * MuonCorr14;
+		    }
+		    // stat errors
+		    /*weight14CC_e = weight14Err*MomResCorr14 / FSICorr14 / ffcSq * MuonCorr14;
 		      weight24CC_e = weight24Err*MomResCorr24 / FSICorr24 / ffcSq * MuonCorr24;
 		      weight34CC_e = weight34Err*MomResCorr34 / FSICorr34 / ffcSq * MuonCorr34;
 		      if(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2] > 0){
-			weightTotalErr = pow( 6 * 2 * weight12CC_e*weight13CC[2]*weight24CC[2]*weight34CC[2] / sqrt(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2]),2);
+		      weightTotalErr = pow( 6 * 2 * weight12CC_e*weight13CC[2]*weight24CC[2]*weight34CC[2] / sqrt(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2]),2);
 		      }
 		      if(weight12CC[2]*weight13CC[2]*weight23CC[2] > 0){
-			weightTotalErr += pow( 8 * sqrt(3) * weight12CC_e*weight13CC[2]*weight23CC[2] / sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]),2);
+		      weightTotalErr += pow( 8 * sqrt(3) * weight12CC_e*weight13CC[2]*weight23CC[2] / sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]),2);
 		      }
 		      weightTotalErr += 2*(pow(weight12CC_e*weight34CC[2],2) + pow(weight13CC_e*weight24CC[2],2) + pow(weight14CC_e*weight23CC[2],2));
 		      weightTotalErr += pow(weight12CC_e,2) + pow(weight13CC_e,2) + pow(weight14CC_e,2) + pow(weight23CC_e,2) + pow(weight24CC_e,2) + pow(weight34CC_e,2);
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNormErr->Fill(4, q4, weightTotalErr);
-		      */
-		    }
+		    */
+		    
 		  }
 		  /////////////////////////////////////////////////////////////
 		  
@@ -3172,13 +3264,12 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   }
   wd = (kt-fKmeanT[fKtIndexL])/(fKmeanT[fKtIndexH]-fKmeanT[fKtIndexL]);
   //
-  /////////
   if(qOut < fQmean[0]) {fQoIndexL=0; fQoIndexH=0; xd=0;}
   else if(qOut >= fQmean[kQbinsWeights-1]) {fQoIndexL=kQbinsWeights-1; fQoIndexH=kQbinsWeights-1; xd=1;}
   else {
     for(Int_t i=0; i<kQbinsWeights-1; i++){
       if((qOut >= fQmean[i]) && (qOut < fQmean[i+1])) {fQoIndexL=i; fQoIndexH=i+1; break;}
-    }
+      }
     xd = (qOut-fQmean[fQoIndexL])/(fQmean[fQoIndexH]-fQmean[fQoIndexL]);
   }
   //
@@ -3200,29 +3291,51 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
     zd = (qLong-fQmean[fQlIndexL])/(fQmean[fQlIndexH]-fQmean[fQlIndexL]);
   }
   //
-
-   
-  //
-  // w interpolation (kt)
-  Float_t c000 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*wd;
-  Float_t c100 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*wd;
-  Float_t c010 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*wd;
-  Float_t c001 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*wd;
-  Float_t c110 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*wd;
-  Float_t c101 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*wd;
-  Float_t c011 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*wd;
-  Float_t c111 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*wd;
-  // x interpolation (qOut)
-  Float_t c00 = c000*(1-xd) + c100*xd;
-  Float_t c10 = c010*(1-xd) + c110*xd;
-  Float_t c01 = c001*(1-xd) + c101*xd;
-  Float_t c11 = c011*(1-xd) + c111*xd;
-  // y interpolation (qSide)
-  Float_t c0 = c00*(1-yd) + c10*yd;
-  Float_t c1 = c01*(1-yd) + c11*yd;
-  // z interpolation (qLong)
-  wgt = (c0*(1-zd) + c1*zd);
-  
+  if(fLinearInterpolation){// Linear Interpolation of osl
+    // w interpolation (kt)
+    Float_t c000 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*wd;
+    Float_t c100 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*wd;
+    Float_t c010 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*wd;
+    Float_t c001 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*wd;
+    Float_t c110 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*wd;
+    Float_t c101 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*wd;
+    Float_t c011 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*wd;
+    Float_t c111 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*wd;
+    // x interpolation (qOut)
+    Float_t c00 = c000*(1-xd) + c100*xd;
+    Float_t c10 = c010*(1-xd) + c110*xd;
+    Float_t c01 = c001*(1-xd) + c101*xd;
+    Float_t c11 = c011*(1-xd) + c111*xd;
+    // y interpolation (qSide)
+    Float_t c0 = c00*(1-yd) + c10*yd;
+    Float_t c1 = c01*(1-yd) + c11*yd;
+    // z interpolation (qLong)
+    wgt = (c0*(1-zd) + c1*zd);
+  }else{// cubic interpolation of osl
+    
+    for(Int_t x=0; x<4; x++){
+      for(Int_t y=0; y<4; y++){
+	for(Int_t z=0; z<4; z++){
+	  Int_t binO = fQoIndexL + x;
+	  Int_t binS = fQsIndexL + y;
+	  Int_t binL = fQlIndexL + z;
+	  if(binO<=0) binO = 1;
+	  if(binS<=0) binS = 1;
+	  if(binL<=0) binL = 1;
+	  if(binO>kQbinsWeights) binO = kQbinsWeights;
+	  if(binS>kQbinsWeights) binS = kQbinsWeights;
+	  if(binL>kQbinsWeights) binL = kQbinsWeights;
+	  farrP1[x][y][z] = fNormWeight[fKtIndexL][fMbin]->GetBinContent(binO,binS,binL);
+	  farrP2[x][y][z] = fNormWeight[fKtIndexH][fMbin]->GetBinContent(binO,binS,binL);
+	}
+      }
+    }
+    Float_t coord[3]={xd, yd, zd}; 
+    Float_t c0 = nCubicInterpolate(3, (Float_t*) farrP1, coord);
+    Float_t c1 = nCubicInterpolate(3, (Float_t*) farrP2, coord);
+    // kT interpolation
+    wgt = c0*(1-wd) + c1*wd;
+  }
   ////
   
   // simplified stat error 
@@ -3945,4 +4058,24 @@ void AliFourPion::SetMuonCorrections(Bool_t legoCase, TH2D *tempMuon){
     MuonFile->Close();
   }
   cout<<"Done reading Muon file"<<endl;
+}
+//________________________________________________________________________
+Float_t AliFourPion::cubicInterpolate (Float_t p[4], Float_t x) {
+  return p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0])));// Paulinternet
+}
+//________________________________________________________________________
+Float_t AliFourPion::nCubicInterpolate (Int_t n, Float_t* p, Float_t coordinates[]) {
+ 
+  if (n == 1) {
+    return cubicInterpolate(p, *coordinates);
+  }
+  else {
+    Float_t arr[4];
+    Int_t skip = 1 << (n - 1) * 2;
+    arr[0] = nCubicInterpolate(n - 1, p, coordinates + 1);
+    arr[1] = nCubicInterpolate(n - 1, p + skip, coordinates + 1);
+    arr[2] = nCubicInterpolate(n - 1, p + 2*skip, coordinates + 1);
+    arr[3] = nCubicInterpolate(n - 1, p + 3*skip, coordinates + 1);
+    return cubicInterpolate(arr, *coordinates);
+  }
 }

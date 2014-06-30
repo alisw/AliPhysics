@@ -1905,13 +1905,19 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kv0C0v0C3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0C0rpH2] - 
 								     values[AliDielectronVarManager::kv0C3rpH2]) ); 
 
-  Double_t ZDCqvec[3][2];
-  memset(ZDCqvec, 255, sizeof(ZDCqvec));
+  Double_t ZDCqvec[3][2] = {{999., 999.}, {999., 999.}, {999., 999.} };
   GetZDCRP(event, ZDCqvec);
 
   values[AliDielectronVarManager::kZDCArpH1] = TMath::ATan2(ZDCqvec[0][1], ZDCqvec[0][0]);
   values[AliDielectronVarManager::kZDCCrpH1] = TMath::ATan2(ZDCqvec[1][1], ZDCqvec[1][0]);
   values[AliDielectronVarManager::kZDCACrpH1] = TMath::ATan2(ZDCqvec[2][1], ZDCqvec[2][0]);
+
+  if(TMath::Abs(ZDCqvec[0][0] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[0][1] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[1][0] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[1][1] - 999.) < 1e-10){
+    values[AliDielectronVarManager::kZDCArpH1] = 999;
+    values[AliDielectronVarManager::kZDCCrpH1] = 999;
+    values[AliDielectronVarManager::kZDCACrpH1] = 999;
+  }
+
 
 
   values[AliDielectronVarManager::kv0ZDCrpRes] = cos(2*(values[AliDielectronVarManager::kZDCArpH1] - values[AliDielectronVarManager::kv0ArpH2]));
@@ -2404,15 +2410,16 @@ inline void AliDielectronVarManager::InitZDCRecenteringHistograms(Int_t runNo) {
         fgZDCRecentering[i][j] = 0x0;
       }
 
-  TFile file(fgZDCRecenteringFile.Data());
-  if (!file.IsOpen()) return;
+  TFile* file=TFile::Open(fgZDCRecenteringFile.Data());
+  if(!file) return;
 
-  fgZDCRecentering[0][0] = (TProfile3D*)file.Get(Form("RUN%06d_QxA_Recent", runNo));
-  fgZDCRecentering[0][1] = (TProfile3D*)file.Get(Form("RUN%06d_QyA_Recent", runNo));
-  fgZDCRecentering[1][0] = (TProfile3D*)file.Get(Form("RUN%06d_QxC_Recent", runNo));
-  fgZDCRecentering[1][1] = (TProfile3D*)file.Get(Form("RUN%06d_QyC_Recent", runNo));
-  fgZDCRecentering[2][0] = (TProfile3D*)file.Get(Form("RUN%06d_QxAC_Recent", runNo));
-  fgZDCRecentering[2][1] = (TProfile3D*)file.Get(Form("RUN%06d_QyAC_Recent", runNo));
+
+  fgZDCRecentering[0][0] = (TProfile3D*)file->Get(Form("RUN%06d_QxA_Recent", runNo));
+  fgZDCRecentering[0][1] = (TProfile3D*)file->Get(Form("RUN%06d_QyA_Recent", runNo));
+  fgZDCRecentering[1][0] = (TProfile3D*)file->Get(Form("RUN%06d_QxC_Recent", runNo));
+  fgZDCRecentering[1][1] = (TProfile3D*)file->Get(Form("RUN%06d_QyC_Recent", runNo));
+  fgZDCRecentering[2][0] = (TProfile3D*)file->Get(Form("RUN%06d_QxAC_Recent", runNo));
+  fgZDCRecentering[2][1] = (TProfile3D*)file->Get(Form("RUN%06d_QyAC_Recent", runNo));
 
 
   if (fgZDCRecentering[0][0]) fgZDCRecentering[0][0]->SetDirectory(0x0);
@@ -2421,6 +2428,8 @@ inline void AliDielectronVarManager::InitZDCRecenteringHistograms(Int_t runNo) {
   if (fgZDCRecentering[1][1]) fgZDCRecentering[1][1]->SetDirectory(0x0);
   if (fgZDCRecentering[2][0]) fgZDCRecentering[2][0]->SetDirectory(0x0);
   if (fgZDCRecentering[2][1]) fgZDCRecentering[2][1]->SetDirectory(0x0);
+
+  delete file;
 
 }
 

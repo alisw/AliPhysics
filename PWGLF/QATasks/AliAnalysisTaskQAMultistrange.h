@@ -44,7 +44,8 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  
+
+  void SetIsMC                       (Bool_t isMC                       = kFALSE) { fisMC                        = isMC;                       } 
   void SetAnalysisType               (const char* analysisType          = "ESD" ) { fAnalysisType                = analysisType;               }
   void SetCollidingSystem            (const char* collidingSystem       = "PbPb") { fCollidingSystem             = collidingSystem;            }
   void SetSDDselection               (Bool_t SDDSelection               = kFALSE) { fkSDDSelectionOn             = SDDSelection;               }
@@ -69,8 +70,8 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
         // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
 
 
+        Bool_t          fisMC;                          // Boolean : kTRUE = is a MC production
         TString         fAnalysisType;                  // "ESD" or "AOD" analysis type	
-        AliESDtrackCuts *fESDtrackCuts;                 // ESD track cuts used for primary track definition
         TString         fCollidingSystem;               // "PbPb", "pPb" or "pp" colliding system
         AliPIDResponse *fPIDResponse;                   //! PID response object
         Bool_t          fkSDDSelectionOn;               // Boolean : kTRUE = apply the selection on SDD status
@@ -90,9 +91,8 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
         Float_t         fEtaCutOnDaughterTracks;        // pseudorapidity cut on daughter tracks
        
 
-        
 	AliCFContainer  *fCFContCascadeCuts;            //! Container meant to store all the relevant distributions corresponding to the cut variables
-	
+        AliCFContainer  *fCFContCascadeMCgen;           //! Container meant to store general variables for MC generated particles 
 	
 
   AliAnalysisTaskQAMultistrange(const AliAnalysisTaskQAMultistrange&);            // not implemented

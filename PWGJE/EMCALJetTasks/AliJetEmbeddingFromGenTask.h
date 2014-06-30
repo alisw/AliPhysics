@@ -29,6 +29,7 @@ class AliJetEmbeddingFromGenTask : public AliJetModelBaseTask {
   AliGenerator  *fGen;                    //generator
   Bool_t         fMassless;               //make particles massless
 
+  TH1F          *fHistPt;                 //!pT spectrum of embedded particles
   TH1F          *fHistTrials;             //!trials from generator
   TProfile      *fHistXsection;           //!x-section from generator
   TH1           *fHistPtHard;             //!pt hard distribution
@@ -37,6 +38,6 @@ class AliJetEmbeddingFromGenTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromGenTask(const AliJetEmbeddingFromGenTask&);            // not implemented
   AliJetEmbeddingFromGenTask &operator=(const AliJetEmbeddingFromGenTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromGenTask, 2) // Jet embedding task
+  ClassDef(AliJetEmbeddingFromGenTask, 3) // Jet embedding task
 };
 #endif

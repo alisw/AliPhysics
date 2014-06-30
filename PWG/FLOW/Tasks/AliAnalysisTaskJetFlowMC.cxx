@@ -39,7 +39,7 @@ AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC() : AliAnalysisTaskSE("AliAna
     }
 }
 //_____________________________________________________________________________
-AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC(const char *name) : AliAnalysisTaskSE(name), fTracksOutName("JetFlowMC"), fTracksInName("PicoTrack"), fTracksIn(0), fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kVZEROC), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
+AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC(const char *name, Int_t seed) : AliAnalysisTaskSE(name), fTracksOutName("JetFlowMC"), fTracksInName("PicoTrack"), fTracksIn(0), fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kVZEROC), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
     // constructor
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -55,6 +55,11 @@ AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC(const char *name) : AliAnalys
         fHistOriginalDeltaPhi[i]        = 0x0;
         fHistToyDeltaPhi[i]             = 0x0;
         fHistToyVn[i]                   = 0x0;
+    }
+    // by default construction replace gRandom
+    if(seed > -1) {
+        if(gRandom) delete gRandom;
+        gRandom = new TRandom3(seed);
     }
 }
 //_____________________________________________________________________________

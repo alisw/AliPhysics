@@ -842,10 +842,10 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSt
    if (particle->GetPdgCode() == 22){
 
 
-      if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
+     if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) )
          return kFALSE;
       if(fEtaCutMin>-0.1){
-         if( particle->Eta() < (fEtaCutMin + fEtaShift) && particle->Eta() > (-fEtaCutMin + fEtaShift) )
+         if( particle->Eta() < (fEtaCutMin) && particle->Eta() > (-fEtaCutMin) )
             return kFALSE;
       }
 
@@ -884,13 +884,13 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSt
          return kFALSE; // no reconstruction below the Pt cut
       }
 
-      if( ePos->Eta() > (fEtaCut + fEtaShift) || ePos->Eta() < (-fEtaCut + fEtaShift) ||
-          eNeg->Eta() > (fEtaCut + fEtaShift) || eNeg->Eta() < (-fEtaCut + fEtaShift) )
+      if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ||
+          eNeg->Eta() > (fEtaCut) || eNeg->Eta() < (-fEtaCut) )
          return kFALSE;
 
       if(fEtaCutMin > -0.1){
-         if( (ePos->Eta() < (fEtaCutMin + fEtaShift) && ePos->Eta() > (-fEtaCutMin + fEtaShift)) ||
-             (eNeg->Eta() < (fEtaCutMin + fEtaShift) && eNeg->Eta() > (-fEtaCutMin + fEtaShift)) )
+         if( (ePos->Eta() < (fEtaCutMin) && ePos->Eta() > (-fEtaCutMin)) ||
+             (eNeg->Eta() < (fEtaCutMin) && eNeg->Eta() > (-fEtaCutMin)) )
             return kFALSE;
       }
 
@@ -929,10 +929,10 @@ Bool_t AliConversionCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClon
    if(!aodmcArray)return kFALSE;
 
    if (particle->GetPdgCode() == 22){
-      if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
+      if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) )
          return kFALSE;
       if(fEtaCutMin>-0.1){
-         if( particle->Eta() < (fEtaCutMin + fEtaShift) && particle->Eta() > (-fEtaCutMin + fEtaShift) )
+         if( particle->Eta() < (fEtaCutMin) && particle->Eta() > (-fEtaCutMin) )
             return kFALSE;
       }
 
@@ -973,13 +973,13 @@ Bool_t AliConversionCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClon
          return kFALSE; // no reconstruction below the Pt cut
       }
 
-      if( ePos->Eta() > (fEtaCut + fEtaShift) || ePos->Eta() < (-fEtaCut + fEtaShift) ||
-          eNeg->Eta() > (fEtaCut + fEtaShift) || eNeg->Eta() < (-fEtaCut + fEtaShift) )
+      if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ||
+          eNeg->Eta() > (fEtaCut) || eNeg->Eta() < (-fEtaCut) )
          return kFALSE;
 
       if(fEtaCutMin > -0.1){
-         if( (ePos->Eta() < (fEtaCutMin + fEtaShift) && ePos->Eta() > (-fEtaCutMin + fEtaShift)) ||
-             (eNeg->Eta() < (fEtaCutMin + fEtaShift) && eNeg->Eta() > (-fEtaCutMin + fEtaShift)) )
+         if( (ePos->Eta() < (fEtaCutMin) && ePos->Eta() > (-fEtaCutMin)) ||
+             (eNeg->Eta() < (fEtaCutMin) && eNeg->Eta() > (-fEtaCutMin)) )
             return kFALSE;
       }
 
@@ -1279,12 +1279,12 @@ Bool_t AliConversionCuts::AcceptanceCuts(AliConversionPhotonBase *photon) {
    cutIndex++;
 
 
-   if( photon->GetPhotonEta() > (fEtaCut + fEtaShift)    || photon->GetPhotonEta() < (-fEtaCut + fEtaShift) ){
+   if( photon->GetPhotonEta() > (fEtaCut)    || photon->GetPhotonEta() < (-fEtaCut) ){
       if(hAcceptanceCuts)hAcceptanceCuts->Fill(cutIndex);
       return kFALSE;
    }
    if(fEtaCutMin>-0.1){
-      if( photon->GetPhotonEta() < (fEtaCutMin + fEtaShift) && photon->GetPhotonEta() > (-fEtaCutMin + fEtaShift) ){
+      if( photon->GetPhotonEta() < (fEtaCutMin) && photon->GetPhotonEta() > (-fEtaCutMin) ){
          if(hAcceptanceCuts)hAcceptanceCuts->Fill(cutIndex);
          return kFALSE;
       }
@@ -1368,14 +1368,14 @@ Bool_t AliConversionCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrack * po
    cutIndex++;
 
    // Acceptance
-   if( posTrack->Eta() > (fEtaCut + fEtaShift) || posTrack->Eta() < (-fEtaCut + fEtaShift) ||
-       negTrack->Eta() > (fEtaCut + fEtaShift) || negTrack->Eta() < (-fEtaCut + fEtaShift) ){
+   if( posTrack->Eta() > (fEtaCut) || posTrack->Eta() < (-fEtaCut) ||
+       negTrack->Eta() > (fEtaCut) || negTrack->Eta() < (-fEtaCut) ){
       if(hTrackCuts)hTrackCuts->Fill(cutIndex);
       return kFALSE;
    }
    if(fEtaCutMin>-0.1){
-      if( (posTrack->Eta() < (fEtaCutMin + fEtaShift) && posTrack->Eta() > (-fEtaCutMin + fEtaShift)) ||
-          (negTrack->Eta() < (fEtaCutMin + fEtaShift) && negTrack->Eta() > (-fEtaCutMin + fEtaShift)) ){
+      if( (posTrack->Eta() < (fEtaCutMin) && posTrack->Eta() > (-fEtaCutMin)) ||
+          (negTrack->Eta() < (fEtaCutMin) && negTrack->Eta() > (-fEtaCutMin)) ){
          if(hTrackCuts)hTrackCuts->Fill(cutIndex);
          return kFALSE;
       }
@@ -1690,23 +1690,23 @@ Bool_t AliConversionCuts::AcceptanceCut(TParticle *particle, TParticle * ePos,TP
    }
 
 
-   if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) ){
+   if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) ){
       return kFALSE;
    }
-   if( ePos->Eta() > (fEtaCut + fEtaShift) || ePos->Eta() < (-fEtaCut + fEtaShift) ){
+   if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ){
       return kFALSE;
    }
-   if( eNeg->Eta() > (fEtaCut + fEtaShift) || eNeg->Eta() < (-fEtaCut + fEtaShift) ){
+   if( eNeg->Eta() > (fEtaCut) || eNeg->Eta() < (-fEtaCut) ){
       return kFALSE;
    }
    if(fEtaCutMin>-0.1){
-      if( particle->Eta() < (fEtaCutMin + fEtaShift) && particle->Eta() > (-fEtaCutMin + fEtaShift) ){
+      if( particle->Eta() < (fEtaCutMin) && particle->Eta() > (-fEtaCutMin) ){
          return kFALSE;
       }
-      if( ePos->Eta() < (fEtaCutMin + fEtaShift) && ePos->Eta() > (-fEtaCutMin + fEtaShift) ){
+      if( ePos->Eta() < (fEtaCutMin) && ePos->Eta() > (-fEtaCutMin) ){
          return kFALSE;
       }
-      if( eNeg->Eta() < (fEtaCutMin + fEtaShift) && eNeg->Eta() > (-fEtaCutMin + fEtaShift) ){
+      if( eNeg->Eta() < (fEtaCutMin) && eNeg->Eta() > (-fEtaCutMin) ){
          return kFALSE;
       }
    }
