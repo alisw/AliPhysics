@@ -392,6 +392,8 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     v0QAadded[i] = kFALSE;
   
   Int_t nTotTracks = esdEvent->GetNumberOfTracks();
+  const Int_t nTotESDTracks = esdEvent->GetNumberOfESDTracks();
+  
   for (Int_t iTracks = 0; iTracks < nTotTracks; iTracks++){//begin track loop 
     AliESDtrack *trackESD = esdEvent->GetTrack(iTracks);
     if(!trackESD) {
@@ -658,7 +660,7 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
         continue;
       
       Double_t vecHistQA[7] = {precin, processedTPCsignal[iPart], (Double_t)particleID, (Double_t)iPart, tpcQA[iPart], tofQA[iPart],
-                               (Double_t)nTotTracks};
+                               (Double_t)nTotESDTracks};
       if (fProduceGlobal) fHistPidQA->Fill(vecHistQA);
       vecHistQA[1] = signal[0]; vecHistQA[4] = ncl[0];
       if ((fProduceAllPadTypes || fProduceShortPads)) fHistPidQAshort->Fill(vecHistQA);
