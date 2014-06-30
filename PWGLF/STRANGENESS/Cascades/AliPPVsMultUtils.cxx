@@ -134,6 +134,15 @@ Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliESDEvent *event, TString 
 Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
 //To be called if starting analysis on a new run
 {
+    //If Histograms exist, de-allocate to prevent memory leakage
+    if( fBoundaryHisto_V0M ) {fBoundaryHisto_V0M->Delete(); fBoundaryHisto_V0M = 0x0; }
+    if( fBoundaryHisto_V0A ) {fBoundaryHisto_V0A->Delete(); fBoundaryHisto_V0A = 0x0; }
+    if( fBoundaryHisto_V0C ) {fBoundaryHisto_V0C->Delete(); fBoundaryHisto_V0C = 0x0; } 
+    if( fBoundaryHisto_V0MEq ) {fBoundaryHisto_V0MEq->Delete(); fBoundaryHisto_V0MEq = 0x0; } 
+    if( fBoundaryHisto_V0AEq ) {fBoundaryHisto_V0AEq->Delete(); fBoundaryHisto_V0AEq = 0x0; } 
+    if( fBoundaryHisto_V0CEq ) {fBoundaryHisto_V0CEq->Delete(); fBoundaryHisto_V0CEq = 0x0; } 
+
+
     AliInfo(Form( "Loading calibration file for run %i",lLoadThisCalibration) );
     TFile *lCalibFile_V0M = 0x0;
     TFile *lCalibFile_V0A = 0x0;
@@ -157,6 +166,14 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     fBoundaryHisto_V0AEq   = (TH1F*)lCalibFile_V0AEq  -> Get(Form("histocalib%i",fRunNumber)) -> Clone("fBoundaryHisto_V0AEq");
     fBoundaryHisto_V0CEq   = (TH1F*)lCalibFile_V0CEq  -> Get(Form("histocalib%i",fRunNumber)) -> Clone("fBoundaryHisto_V0CEq");
     
+    //Careful with manual cleanup if needed: to be implemented
+    fBoundaryHisto_V0M->SetDirectory(0);
+    fBoundaryHisto_V0A->SetDirectory(0);
+    fBoundaryHisto_V0C->SetDirectory(0);
+    fBoundaryHisto_V0MEq->SetDirectory(0);
+    fBoundaryHisto_V0AEq->SetDirectory(0);
+    fBoundaryHisto_V0CEq->SetDirectory(0);
+
     if ( !fBoundaryHisto_V0M   || !fBoundaryHisto_V0A   || !fBoundaryHisto_V0C ||
         !fBoundaryHisto_V0MEq || !fBoundaryHisto_V0AEq || !fBoundaryHisto_V0CEq ){
         AliFatal(Form("No calibration for run %i exists at the moment!",fRunNumber));
