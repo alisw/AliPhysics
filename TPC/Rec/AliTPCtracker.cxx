@@ -226,22 +226,6 @@ AliTPCtracker::AliTPCtracker()
     fYMax[irow]=0;
     fPadLength[irow]=0;
   }
-  
-  // crosstalk array and matrix initialization
-  Int_t nROCs   = 72;
-  Int_t nTimeBinsAll  = 1100;
-  Int_t nWireSegments = 11;
-  fCrossTalkSignalArray = new TObjArray(nROCs);  // for 36 sectors 
-  fCrossTalkSignalArray->SetOwner(kTRUE); 
-  for (Int_t isector=0; isector<nROCs; isector++){
-    fCrossTalkSignal = new TMatrixD(nWireSegments,nTimeBinsAll);
-    for (Int_t imatrix = 0; imatrix<11; imatrix++)
-      for (Int_t jmatrix = 0; jmatrix<nTimeBinsAll; jmatrix++){
-      (*fCrossTalkSignal)[imatrix][jmatrix]=0.;
-      }
-      fCrossTalkSignalArray->AddAt(fCrossTalkSignal,isector);
-  }
-
 }
 //_____________________________________________________________________
 
@@ -326,6 +310,7 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
     TTreeSRedirector &cstream = *fDebugStreamer;
     cstream<<"Update"<<
       "cl.="<<c<<
+      "event="<<event<<
       "track.="<<&param<<
       "\n";
   }
@@ -496,6 +481,22 @@ AliTracker(),
   }
   //
   fSeedsPool = new TClonesArray("AliTPCseed",1000);
+
+  // crosstalk array and matrix initialization
+  Int_t nROCs   = 72;
+  Int_t nTimeBinsAll  = par->GetMaxTBin();
+  Int_t nWireSegments = 11;
+  fCrossTalkSignalArray = new TObjArray(nROCs);  // for 36 sectors 
+  fCrossTalkSignalArray->SetOwner(kTRUE);
+  for (Int_t isector=0; isector<nROCs; isector++){
+    fCrossTalkSignal = new TMatrixD(nWireSegments,nTimeBinsAll);
+    for (Int_t imatrix = 0; imatrix<11; imatrix++)
+      for (Int_t jmatrix = 0; jmatrix<nTimeBinsAll; jmatrix++){
+        (*fCrossTalkSignal)[imatrix][jmatrix]=0.;
+      }
+    fCrossTalkSignalArray->AddAt(fCrossTalkSignal,isector);
+  }
+
 }
 //________________________________________________________________________
 AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
@@ -1375,12 +1376,20 @@ Int_t  AliTPCtracker::LoadClusters()
     Int_t wireSegmentID     = fkParam->GetWireSegment(sec,row);
     Float_t nPadsPerSegment = (Float_t)(fkParam->GetNPadsPerSegment(wireSegmentID));
     TMatrixD &crossTalkSignal =  *((TMatrixD*)fCrossTalkSignalArray->At(sec));
+    Int_t nCols=crossTalkSignal.GetNcols();
     for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
       AliTPCclusterMI *clXtalk= static_cast<AliTPCclusterMI*>(clrow->GetArray()->At(icl));
-      Int_t timeBinXtalk = clXtalk->GetTimeBin();
-      Double_t qTotXtalk = clXtalk->GetQ();    
-      crossTalkSignal[wireSegmentID][timeBinXtalk]+= qTotXtalk/nPadsPerSegment; 
       Transform((AliTPCclusterMI*)(clXtalk));
+
+      Int_t timeBinXtalk = clXtalk->GetTimeBin();
+      Double_t qTotXtalk = 0.;   
+      Double_t rmsTime   = TMath::Sqrt(clXtalk->GetSigmaZ2()); 
+      Double_t norm= 2*TMath::Exp(1.0/(2.*rmsTime))+1.;
+      for (Int_t itb=timeBinXtalk-1, idelta=-1; itb<=timeBinXtalk+1; itb++,idelta++) {        
+        if (itb<0 || itb>=nCols) continue;
+        qTotXtalk = clXtalk->GetQ()*TMath::Exp(-idelta*idelta/(2*rmsTime))/norm;
+        crossTalkSignal[wireSegmentID][itb]+= qTotXtalk/nPadsPerSegment; 
+      }       
     }
     //
     AliTPCtrackerRow * tpcrow=0;
@@ -1409,6 +1418,7 @@ Int_t  AliTPCtracker::LoadClusters()
   LoadOuterSectors();
   LoadInnerSectors();
   if (AliTPCReconstructor::GetRecoParam()->GetUseIonTailCorrection()) ApplyTailCancellation();
+  if (AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()!=0.) ApplyXtalkCorrection();
   return 0;
 }
 
@@ -1529,6 +1539,44 @@ void   AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   }
 }
 
+void  AliTPCtracker::ApplyXtalkCorrection(){
+  //
+  // ApplyXtalk correction 
+  // Loop over all clusters
+  //      add to each cluster signal corresponding to common Xtalk mode for given time bin at given wire segment
+  Int_t nclALL=0;
+  // cluster loop
+  for (Int_t isector=0; isector<36; isector++){  //loop tracking sectors
+    for (Int_t iside=0; iside<2; iside++){       // loop over sides A/C
+      AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
+      Int_t nrows     = sector.GetNRows();       
+      for (Int_t row = 0;row<nrows;row++){           // loop over rows       
+	AliTPCtrackerRow&  tpcrow = sector[row];     // row object   
+	Int_t ncl = tpcrow.GetN1();                  // number of clusters in the row
+	if (iside>0) ncl=tpcrow.GetN2();
+	Int_t xSector=0;    // sector number in the TPC convention 0-72
+	if (isector<18){  //if IROC
+	  xSector=isector+(iside>0)*18;
+	}else{
+	  xSector=isector+18;  // isector -18 +36   
+	  if (iside>0) xSector+=18;
+	}	
+	TMatrixD &crossTalkMatrix= *((TMatrixD*)fCrossTalkSignalArray->At(xSector));
+	Int_t wireSegmentID     = fkParam->GetWireSegment(xSector,row);
+	for (Int_t i=0;i<ncl;i++) {
+	  AliTPCclusterMI *cluster= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
+	  Int_t iTimeBin=TMath::Nint(cluster->GetTimeBin());
+	  Double_t xTalk= crossTalkMatrix[wireSegmentID][iTimeBin];
+	  cluster->SetMax(cluster->GetMax()+xTalk);
+	  const Double_t kDummy=3;
+	  Double_t sumxTalk=xTalk*kDummy; // should be calculated via time response function
+	  cluster->SetQ(cluster->GetQ()+sumxTalk);
+	}
+      }
+    }
+  }
+}
+
 void  AliTPCtracker::ApplyTailCancellation(){
   //
   // Correct the cluster charge for the ion tail effect 
@@ -1621,8 +1669,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
             
             if (!cl0) continue;
             Int_t nclPad=0;                       
-            for (Int_t icl1=0; icl1<ncl;icl1++){  // second loop over clusters
-	   
+            for (Int_t icl1=0; icl1<ncl;icl1++){  // second loop over clusters	   
               AliTPCclusterMI *cl1= static_cast<AliTPCclusterMI*>(rowClusterArray->At(sortedClusterIndex[icl1]));
 	      if (!cl1) continue;
 	      if (TMath::Abs(cl0->GetPad()-cl1->GetPad())>4) continue;           // no contribution if far away in pad direction
@@ -1694,8 +1741,10 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
 
   //
   // Function in order to calculate the amount of the correction to be added for a given cluster, return values are ionTailTaoltal and ionTailMax
+  // Parameters:
+  // cl0 -  cluster to be modified
+  // cl1 -  source cluster ion tail of this cluster will be added to the cl0 (accroding time and pad response function)
   // 
-
   const Double_t kMinPRF    = 0.5;                           // minimal PRF width
   ionTailTotal              = 0.;                            // correction value to be added to Qtot of cl0
   ionTailMax                = 0.;                            // correction value to be added to Qmax of cl0
@@ -1709,7 +1758,8 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
   const Int_t deltaTimebin  =  TMath::Nint(TMath::Abs(cl1->GetTimeBin()-cl0->GetTimeBin()))+12;  //distance between pads of cl1 and cl0 increased by 12 bins
   Double_t rmsPad1          = (cl1->GetSigmaY2()==0)?kMinPRF:(TMath::Sqrt(cl1->GetSigmaY2())/padWidth);
   Double_t rmsPad0          = (cl0->GetSigmaY2()==0)?kMinPRF:(TMath::Sqrt(cl0->GetSigmaY2())/padWidth);
- 
+  
+   
   
   Double_t sumAmp1=0.;
   for (Int_t idelta =-2; idelta<=2;idelta++){

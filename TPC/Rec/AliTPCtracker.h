@@ -1,3 +1,4 @@
+
 #ifndef ALITPCTRACKER_H
 #define ALITPCTRACKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -59,6 +60,7 @@ public:
   virtual void FillClusterArray(TObjArray* array) const;
   void   Transform(AliTPCclusterMI * cluster);
   void ApplyTailCancellation();
+  void ApplyXtalkCorrection();
   void GetTailValue(Float_t ampfactor,Double_t &ionTailMax,Double_t &ionTailTotal,TGraphErrors **graphRes,Float_t *indexAmpGraphs,AliTPCclusterMI *cl0,AliTPCclusterMI *cl1);
   //
   void FillESD(const TObjArray* arr);
