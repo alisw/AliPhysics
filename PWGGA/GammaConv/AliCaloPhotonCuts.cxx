@@ -76,21 +76,33 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fClusterType(0),
 	fMinEtaCut(-10),
 	fMaxEtaCut(10),
+	fUseEtaCut(0),
 	fMinPhiCut(-10000),
 	fMaxPhiCut(-10000),
+	fUsePhiCut(0),
 	fMinDistanceToBadChannel(0),
+	fUseDistanceToBadChannel(0),
 	fMaxTimeDiff(10e10),
+	fUseTimeDiff(0),
 	fMinDistTrackToCluster(0),
+	fUseDistTrackToCluster(0),
 	fExoticCell(0),
+	fUseExoticCell(0),
 	fMinEnergy(0),
+	fUseMinEnergy(0),
 	fMinNCells(0),
+	fUseNCells(0),
 	fMaxM02(1000),
 	fMinM02(0),
+	fUseM02(0),
 	fMaxM20(1000),
 	fMinM20(0),
+	fUseM20(0),
 	fMaxDispersion(1000),
+	fUseDispersion(0),
 	fMinNLM(0),
 	fMaxNLM(1000),
+	fUseNLM(0),
 	fCutString(NULL),
 	fHistCutIndex(NULL),
 	fHistAcceptanceCuts(NULL),
@@ -127,24 +139,36 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
    AliAnalysisCuts(ref),
  	fHistograms(NULL),	
-	fClusterType(ref.fClusterType),
+ 	fClusterType(ref.fClusterType),
 	fMinEtaCut(ref.fMinEtaCut),
 	fMaxEtaCut(ref.fMaxEtaCut),
+	fUseEtaCut(ref.fUseEtaCut),
 	fMinPhiCut(ref.fMinPhiCut),
 	fMaxPhiCut(ref.fMaxPhiCut),
+	fUsePhiCut(ref.fUsePhiCut),
 	fMinDistanceToBadChannel(ref.fMinDistanceToBadChannel),
+	fUseDistanceToBadChannel(ref.fUseDistanceToBadChannel),
 	fMaxTimeDiff(ref.fMaxTimeDiff),
+	fUseTimeDiff(ref.fUseTimeDiff),
 	fMinDistTrackToCluster(ref.fMinDistTrackToCluster),
+	fUseDistTrackToCluster(ref.fUseDistTrackToCluster),
 	fExoticCell(ref.fExoticCell),
+	fUseExoticCell(ref.fUseExoticCell),
 	fMinEnergy(ref.fMinEnergy),
+	fUseMinEnergy(ref.fUseMinEnergy),
 	fMinNCells(ref.fMinNCells),
+	fUseNCells(ref.fUseNCells),
 	fMaxM02(ref.fMaxM02),
 	fMinM02(ref.fMinM02),
+	fUseM02(ref.fUseM02),
 	fMaxM20(ref.fMaxM20),
 	fMinM20(ref.fMinM20),
+	fUseM20(ref.fUseDispersion),
 	fMaxDispersion(ref.fMaxDispersion),
+	fUseDispersion(ref.fUseDispersion),
 	fMinNLM(ref.fMinNLM),
 	fMaxNLM(ref.fMaxNLM),
+	fUseNLM(ref.fUseNLM),
 	fCutString(NULL),
 	fHistCutIndex(NULL),
 	fHistAcceptanceCuts(NULL),
@@ -229,17 +253,18 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	fHistograms->Add(fHistAcceptanceCuts);
 
 	// Cluster Cuts
-	fHistClusterIdentificationCuts =new TH1F(Form("ClusterQualityCuts %s",GetCutNumber().Data()),"ClusterQualityCuts",10,-0.5,9.5);
+	fHistClusterIdentificationCuts =new TH1F(Form("ClusterQualityCuts %s",GetCutNumber().Data()),"ClusterQualityCuts",11,-0.5,10.5);
 	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(1,"in");
 	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(2,"timing");
 	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(3,"track matching");
 	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(4,"Exotics");
 	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(5,"minimum energy");
-	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(6,"M02");
-	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(7,"M20");
-	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(8,"dispersion");
-	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(9,"NLM");
-	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(10,"out");
+	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(6,"minimum NCells");
+	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(7,"M02");
+	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(8,"M20");
+	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(9,"dispersion");
+	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(10,"NLM");
+	fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(11,"out");
 	fHistograms->Add(fHistClusterIdentificationCuts);
 
 	// Acceptance related histogramms
@@ -502,17 +527,21 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 // 	if(fHistNLMBeforeQA) fHistNLMBeforeQA->Fill(cluster->GetNExMax());
 	
 	// Check wether timing is ok
-	if(abs(cluster->GetTOF()) > fMaxTimeDiff && !isMC){
-		if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //1
-		return kFALSE;
-	}
+	if (fUseTimeDiff){
+		if(abs(cluster->GetTOF()) > fMaxTimeDiff && !isMC){
+			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //1
+			return kFALSE;
+		}
+	}	
 	cutIndex++; //2, next cut
 
 	// Minimum distance to track
-	if(cluster->GetEmcCpvDistance() < fMinDistTrackToCluster){
-		if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //2
-		return kFALSE;
-	}
+	if (fUseDistTrackToCluster){
+		if(cluster->GetEmcCpvDistance() < fMinDistTrackToCluster){
+			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //2
+			return kFALSE;
+		}
+	}	
 	cutIndex++;//3, next cut
 
 	// exotic cell cut --IMPLEMENT LATER---
@@ -523,45 +552,57 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	cutIndex++; //4, next cut
 	
 	// minimum cell energy cut
-	if(cluster->E() < fMinEnergy){
-		if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //4
-		return kFALSE;
-	}
+	if (fUseMinEnergy){
+		if(cluster->E() < fMinEnergy){
+			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //4
+			return kFALSE;
+		}
+	}	
 	cutIndex++; //5, next cut
 	
 	// minimum number of cells
-	if(cluster->GetNCells() < fMinNCells) {
-		if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //5
-		return kFALSE;
-	}
+	if (fUseNCells){
+		if(cluster->GetNCells() < fMinNCells) {
+			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //5
+			return kFALSE;
+		}
+	}	
 	cutIndex++; //6, next cut
 	
 	// M02 cut
-	if( cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02 ) {
-		if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //6
-		return kFALSE;
-	}
+	if (fUseM02){
+		if( cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02 ) {
+			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //6
+			return kFALSE;
+		}
+	}	
 	cutIndex++; //7, next cut
 	
 	// M20 cut
-	if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 ) {
-		if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //7
-		return kFALSE;
-	}
+	if (fUseM20){
+		if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 ) {
+			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //7
+			return kFALSE;
+		}
+	}	
 	cutIndex++; //8, next cut
 	
 	// dispersion cut
-	if( cluster->GetDispersion()> fMaxDispersion) {
-		if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //8
-		return kFALSE;
-	}
+	if (fUseDispersion){
+		if( cluster->GetDispersion()> fMaxDispersion) {
+			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //8
+			return kFALSE;
+		}
+	}	
 	cutIndex++; //9, next cut
 	
 	// NLM cut --IMPLEMENT LATER---
-	if( cluster->GetDispersion()> fMaxDispersion) {
-		if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //9
-		return kFALSE;
-	}
+// 	if (fUseNLM){
+// 		if( cluster->GetDispersion()> fMaxDispersion) {
+// 			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //9
+// 			return kFALSE;
+// 		}
+// 	}	
 	cutIndex++; //9, next cut
 	
 	// DONE with selecting photons
@@ -615,10 +656,12 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
 		//Select EMCAL cluster
 		if (fClusterType == 1 && !cluster->IsEMCAL()){
 			FillClusterCutIndex(kDetector);
+			return kFALSE;
 		}
 		//Select PHOS cluster
 		if (fClusterType == 2 && !cluster->IsPHOS()){
 			FillClusterCutIndex(kDetector);
+			return kFALSE;
 		}
 	}
 	
@@ -658,16 +701,16 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event)
 	Double_t phiCluster = clusterVector.Phi();
 	
 	// check eta range
-	if (fMinEtaCut !=-10 && fMaxEtaCut !=10 ){
+	if (fUseEtaCut){
 		if (etaCluster < fMinEtaCut || etaCluster > fMaxEtaCut){
 			if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
 			return kFALSE;
 		}
-	}	
+	}
 	cutIndex++;
 	
 	// check phi range
-	if (fMinPhiCut !=-10000 && fMaxPhiCut !=-10000 ){
+	if (fUsePhiCut ){
 		if (phiCluster < fMinPhiCut || phiCluster > fMaxEtaCut){
 			if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
 			return kFALSE;
@@ -676,11 +719,13 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event)
 	cutIndex++;
 	
 	// check distance to bad channel
-	if (cluster->GetDistanceToBadChannel() < fMinDistanceToBadChannel){
-		if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
-		return kFALSE;
-	}	
-
+	if (fUseDistanceToBadChannel){
+		if (cluster->GetDistanceToBadChannel() < fMinDistanceToBadChannel){
+			if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
+			return kFALSE;
+		}	
+	}
+	cutIndex++;
 	if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
 
 	// Histos after cuts
@@ -874,15 +919,23 @@ void AliCaloPhotonCuts::PrintCuts() {
 void AliCaloPhotonCuts::PrintCutsWithValues() {
 	// Print out current Cut Selection with value
 	printf("Acceptance cuts: \n");
-	printf("\t%3.2f < eta_{cluster} < %3.2f\n", fMinEtaCut, fMaxEtaCut );
-	printf("\t%3.2f < phi_{cluster} < %3.2f\n", fMinPhiCut, fMaxPhiCut );
-	printf("\tmin distance to bad channel > %3.2f\n", fMinDistanceToBadChannel );
+	if (fClusterType == 0) printf("\tall calorimeter clusters are used\n");
+	if (fClusterType == 1) printf("\tEMCAL calorimeter clusters are used\n");
+	if (fClusterType == 2) printf("\tPHOS calorimeter clusters are used\n");
+	if (fUseEtaCut) printf("\t%3.2f < eta_{cluster} < %3.2f\n", fMinEtaCut, fMaxEtaCut );
+	if (fUsePhiCut) printf("\t%3.2f < phi_{cluster} < %3.2f\n", fMinPhiCut, fMaxPhiCut );
+	if (fUseDistanceToBadChannel) printf("\tcut on exotics applied \n");
 	
 	printf("Cluster Quality cuts: \n");
-	printf("\t time difference < %3.2f\n", fMaxTimeDiff );
-	printf("\t min distance to track > %3.2f\n", fMinDistTrackToCluster );
-    printf("\t E_{cluster} > %3.2f\n", fMinEnergy );
-	printf("\t %3.2f < M02 < %3.2f\n", fMinM02, fMaxM02 );
+	if (fUseTimeDiff) printf("\t time difference < %3.2f\n", fMaxTimeDiff );
+	if (fUseDistTrackToCluster) printf("\tmin distance to track > %3.2f\n", fMinDistTrackToCluster );
+	if (fUseExoticCell)printf("\t min distance to track > %3.2f\n", fMinDistTrackToCluster );
+    if (fUseMinEnergy)printf("\t E_{cluster} > %3.2f\n", fMinEnergy );
+	if (fUseNCells) printf("\t number of cells per cluster > %d\n", fMinNCells );
+	if (fUseM02) printf("\t %3.2f < M02 < %3.2f\n", fMinM02, fMaxM02 );
+	if (fUseM20) printf("\t %3.2f < M20 < %3.2f\n", fMinM20, fMaxM20 );
+	if (fUseDispersion) printf("\t dispersion < %3.2f\n", fMaxDispersion );
+	if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
 	
 }
 
@@ -915,13 +968,20 @@ Bool_t AliCaloPhotonCuts::SetClusterTypeCut(Int_t clusterType)
 Bool_t AliCaloPhotonCuts::SetMinEtaCut(Int_t minEta)
 {
 	switch(minEta){
-	case 0: 
+	case 0:
+		if (!fUseEtaCut) fUseEtaCut=0;
+		fMinEtaCut=-10.;
+		break;
+	case 1:
+		if (!fUseEtaCut) fUseEtaCut=1;
 		fMinEtaCut=-0.6687;
 		break;
-	case 1: 
+	case 2: 
+		if (!fUseEtaCut) fUseEtaCut=1;
 		fClusterType=-0.5;
 		break;
-	case 2: 
+	case 3: 
+		if (!fUseEtaCut) fUseEtaCut=1;
 		fClusterType=-2;
 		break;
 	default:
@@ -937,12 +997,19 @@ Bool_t AliCaloPhotonCuts::SetMaxEtaCut(Int_t maxEta)
 {
 	switch(maxEta){
 	case 0: 
+		if (!fUseEtaCut) fUseEtaCut=0;
+		fMaxEtaCut=10;
+		break;		
+	case 1:
+		if (!fUseEtaCut) fUseEtaCut=1;
 		fMaxEtaCut=0.66465;
 		break;
-	case 1: 
+	case 2: 
+		if (!fUseEtaCut) fUseEtaCut=1;
 		fMaxEtaCut=0.5;
 		break;
-	case 2: 
+	case 3: 
+		if (!fUseEtaCut) fUseEtaCut=1;
 		fMaxEtaCut=2;
 		break;
 	default:
@@ -957,9 +1024,11 @@ Bool_t AliCaloPhotonCuts::SetMinPhiCut(Int_t minPhi)
 {
 	switch(minPhi){
 	case 0: 
+		if (!fUsePhiCut) fUsePhiCut=0;
 		fMinPhiCut=-10000;
 		break;
 	case 1: 
+		if (!fUsePhiCut) fUsePhiCut=1;
 		fMinPhiCut=1.39626;
 		break;
 	default:
@@ -974,9 +1043,11 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
 {
 	switch(maxPhi){
 	case 0: 
+		if (!fUsePhiCut) fUsePhiCut=0;
 		fMaxPhiCut=-10000;
 		break;
 	case 1: 
+		if (!fUsePhiCut) fUsePhiCut=1;
 		fMaxPhiCut=3.125;
 		break;
 	default:
@@ -991,9 +1062,11 @@ Bool_t AliCaloPhotonCuts::SetDistanceToBadChannelCut(Int_t distanceToBadChannel)
 {
 	switch(distanceToBadChannel){
 	case 0: 
+		fUseDistanceToBadChannel=0;
 		fMinDistanceToBadChannel=0;
 		break;
 	case 1: 
+		if (!fUseDistanceToBadChannel) fUseDistanceToBadChannel=1;
 		fMinDistanceToBadChannel=5;
 		break;
 	default:
@@ -1008,21 +1081,27 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
 {
 	switch(timing){
 	case 0: 
+		fUseTimeDiff=0;
 		fMaxTimeDiff=500;
 		break;
 	case 1: 
+		if (!fUseTimeDiff) fUseTimeDiff=1;
 		fMaxTimeDiff=10e-7; //1000ns
 		break;
 	case 2: 
+		if (!fUseTimeDiff) fUseTimeDiff=1;
 		fMaxTimeDiff=50e-8; //500ns
 		break;
 	case 3: 
+		if (!fUseTimeDiff) fUseTimeDiff=1;
 		fMaxTimeDiff=20e-8; //200ns
 		break;
 	case 4: 
+		if (!fUseTimeDiff) fUseTimeDiff=1;
 		fMaxTimeDiff=10e-8; //100ns
 		break;
 	case 5: 
+		if (!fUseTimeDiff) fUseTimeDiff=1;
 		fMaxTimeDiff=50e-9; //50ns
 		break;
 
@@ -1038,9 +1117,11 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
 {
 	switch(trackMatching){
 	case 0: 
+		fUseDistTrackToCluster=0;
 		fMinDistTrackToCluster=0;
 		break;
 	case 1: 
+		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
 		fMinDistTrackToCluster=5; 
 		break;
 	default:
@@ -1055,9 +1136,11 @@ Bool_t AliCaloPhotonCuts::SetExoticCellCut(Int_t exoticCell)
 {
 	switch(exoticCell){
 	case 0: 
+		fUseExoticCell=0;
 		fExoticCell=0;
 		break;
 	case 1: 
+		if (!fUseExoticCell) fUseExoticCell=1;
 		fExoticCell=5; 
 		break;
 	default:
@@ -1072,33 +1155,43 @@ Bool_t AliCaloPhotonCuts::SetMinEnergyCut(Int_t minEnergy)
 {
 	switch(minEnergy){
 	case 0: 
+		if (!fUseMinEnergy) fUseMinEnergy=0;
 		fMinEnergy=0;
 		break;
 	case 1: 
+		if (!fUseMinEnergy) fUseMinEnergy=1;
 		fMinEnergy=0.05; 
 		break;
 	case 2: 
+		if (!fUseMinEnergy) fUseMinEnergy=1;
 		fMinEnergy=0.1; 
 		break;
 	case 3: 
+		if (!fUseMinEnergy) fUseMinEnergy=1;
 		fMinEnergy=0.15; 
 		break;
 	case 4: 
+		if (!fUseMinEnergy) fUseMinEnergy=1;
 		fMinEnergy=0.2; 
 		break;
 	case 5: 
+		if (!fUseMinEnergy) fUseMinEnergy=1;
 		fMinEnergy=0.3; 
 		break;
 	case 6: 
+		if (!fUseMinEnergy) fUseMinEnergy=1;
 		fMinEnergy=0.5; 
 		break;
 	case 7: 
+		if (!fUseMinEnergy) fUseMinEnergy=1;
 		fMinEnergy=0.75; 
 		break;
 	case 8: 
+		if (!fUseMinEnergy) fUseMinEnergy=1;
 		fMinEnergy=1.; 
 		break;
 	case 9: 
+		if (!fUseMinEnergy) fUseMinEnergy=1;
 		fMinEnergy=1.25; 
 		break;
 	default:
@@ -1112,25 +1205,32 @@ Bool_t AliCaloPhotonCuts::SetMinEnergyCut(Int_t minEnergy)
 Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
 {
 	switch(minNCells){
-	case 0: 
+	case 0:
+		if (!fUseNCells) fUseNCells=0;
 		fMinNCells=0;
 		break;
 	case 1: 
+		if (!fUseNCells) fUseNCells=1;
 		fMinNCells=1; 
 		break;
 	case 2: 
+		if (!fUseNCells) fUseNCells=1;
 		fMinNCells=2; 
 		break;
 	case 3: 
+		if (!fUseNCells) fUseNCells=1;
 		fMinNCells=3; 
 		break;
 	case 4: 
+		if (!fUseNCells) fUseNCells=1;
 		fMinNCells=4; 
 		break;
 	case 5: 
+		if (!fUseNCells) fUseNCells=1;
 		fMinNCells=5; 
 		break;
 	case 6: 
+		if (!fUseNCells) fUseNCells=1;
 		fMinNCells=6; 
 		break;
 
@@ -1146,21 +1246,25 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
 {
 	switch(maxM02){
 	case 0: 
+		if (!fUseM02) fUseM02=0;
 		fMaxM02=100;
 		break;
 	case 1: 
+		if (!fUseM02) fUseM02=1;
 		fMaxM02=1.; 
 		break;
 	case 2: 
+		if (!fUseM02) fUseM02=1;
 		fMaxM02=0.7; 
 		break;
 	case 3: 
+		if (!fUseM02) fUseM02=1;
 		fMaxM02=0.5; 
 		break;
 	case 4: 
+		if (!fUseM02) fUseM02=1;
 		fMaxM02=0.4; 
 		break;
-
 	default:
 		AliError(Form("Max M02 Cut not defined %d",maxM02));
 		return kFALSE;
@@ -1173,9 +1277,11 @@ Bool_t AliCaloPhotonCuts::SetMinM02(Int_t minM02)
 {
 	switch(minM02){
 	case 0: 
+		if (!fUseM02) fUseM02=0;
 		fMinM02=0;
 		break;
 	case 1: 
+		if (!fUseM02) fUseM02=1;
 		fMinM02=0.002; 
 		break;
 	default:
@@ -1190,9 +1296,11 @@ Bool_t AliCaloPhotonCuts::SetMaxM20(Int_t maxM20)
 {
 	switch(maxM20){
 	case 0: 
+		if (!fUseM20) fUseM20=0;
 		fMaxM20=100;
 		break;
 	case 1: 
+		if (!fUseM20) fUseM20=1;
 		fMaxM20=0.5; 
 		break;
 	default:
@@ -1207,9 +1315,11 @@ Bool_t AliCaloPhotonCuts::SetMinM20(Int_t minM20)
 {
 	switch(minM20){
 	case 0: 
+		if (!fUseM20) fUseM20=0;
 		fMinM20=0;
 		break;
 	case 1: 
+		if (!fUseM20) fUseM20=1;
 		fMinM20=0.002; 
 		break;
 	default:
@@ -1224,9 +1334,11 @@ Bool_t AliCaloPhotonCuts::SetDispersion(Int_t dispersion)
 {
 	switch(dispersion){
 	case 0: 
+		if (!fUseDispersion) fUseDispersion=0;
 		fMaxDispersion =100;
 		break;
 	case 1: 
+		if (!fUseDispersion) fUseDispersion=1;
 		fMaxDispersion=2.; 
 		break;
 	default:
@@ -1241,10 +1353,12 @@ Bool_t AliCaloPhotonCuts::SetNLM(Int_t nlm)
 {
 	switch(nlm){
 	case 0: 
+		if (!fUseNLM) fUseNLM=0;
 		fMinNLM =0;
 		fMaxNLM =100;
 		break;
 	case 1: 
+		if (!fUseNLM) fUseNLM=1;
 		fMinNLM =0;
 		fMaxNLM =1;
 		break;
