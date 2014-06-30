@@ -223,10 +223,7 @@ private:
    Int_t  fUseHLTClusters;              // use HLT clusters instead of offline clusters
    //
   
-   TObjArray * fCrossTalkSignalArray;  // for 36 sectors 
-   TMatrixD * fCrossTalkSignal;               // matrix holds total charge in a given anode wire segment for a given timebin
-
-   
+   TObjArray * fCrossTalkSignalArray;  // for 36 sectors    
    TClonesArray* fSeedsPool;            //! pool of seeds
    TArrayI fFreeSeedsID;                //! array of ID's of freed seeds
    Int_t fNFreeSeeds;                   //! number of seeds freed in the pool

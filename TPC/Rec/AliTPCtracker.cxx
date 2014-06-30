@@ -212,7 +212,6 @@ AliTPCtracker::AliTPCtracker()
 		 fDebugStreamer(0),
 		 fUseHLTClusters(4),
          fCrossTalkSignalArray(0),
-         fCrossTalkSignal(0),
 		 fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
@@ -442,7 +441,6 @@ AliTracker(),
          fDebugStreamer(0),
          fUseHLTClusters(4),
          fCrossTalkSignalArray(0),
-         fCrossTalkSignal(0),
          fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
@@ -489,12 +487,12 @@ AliTracker(),
   fCrossTalkSignalArray = new TObjArray(nROCs);  // for 36 sectors 
   fCrossTalkSignalArray->SetOwner(kTRUE);
   for (Int_t isector=0; isector<nROCs; isector++){
-    fCrossTalkSignal = new TMatrixD(nWireSegments,nTimeBinsAll);
+    TMatrixD * crossTalkSignal = new TMatrixD(nWireSegments,nTimeBinsAll);
     for (Int_t imatrix = 0; imatrix<11; imatrix++)
       for (Int_t jmatrix = 0; jmatrix<nTimeBinsAll; jmatrix++){
-        (*fCrossTalkSignal)[imatrix][jmatrix]=0.;
+        (*crossTalkSignal)[imatrix][jmatrix]=0.;
       }
-    fCrossTalkSignalArray->AddAt(fCrossTalkSignal,isector);
+    fCrossTalkSignalArray->AddAt(crossTalkSignal,isector);
   }
 
 }
@@ -522,7 +520,6 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
          fDebugStreamer(0),
          fUseHLTClusters(4),
          fCrossTalkSignalArray(0),
-         fCrossTalkSignal(0),
          fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
@@ -558,7 +555,6 @@ AliTPCtracker::~AliTPCtracker() {
     delete fSeeds;
   }
   if (fCrossTalkSignalArray) delete fCrossTalkSignalArray;
-  if (fCrossTalkSignal) delete fCrossTalkSignal;
   if (fDebugStreamer) delete fDebugStreamer;
   if (fSeedsPool) delete fSeedsPool;
 }
@@ -1357,6 +1353,12 @@ Int_t  AliTPCtracker::LoadClusters()
   //
   //  TTree * tree = fClustersArray.GetTree();
   AliInfo("LoadClusters()\n");
+  // reset crosstalk matrix
+  //
+  for (Int_t isector=0; isector<72; isector++){  //set all ellemts of crosstalk matrix to 0
+    TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
+    if (crossTalkMatrix)(*crossTalkMatrix)*=0;
+  }
 
   TTree * tree = fInput;
   TBranch * br = tree->GetBranch("Segment");
@@ -1544,7 +1546,6 @@ void  AliTPCtracker::ApplyXtalkCorrection(){
   // ApplyXtalk correction 
   // Loop over all clusters
   //      add to each cluster signal corresponding to common Xtalk mode for given time bin at given wire segment
-  Int_t nclALL=0;
   // cluster loop
   for (Int_t isector=0; isector<36; isector++){  //loop tracking sectors
     for (Int_t iside=0; iside<2; iside++){       // loop over sides A/C
