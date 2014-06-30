@@ -55,6 +55,9 @@ class AliTPCPIDEtaTree : public AliTPCPIDBase {
   void SetPtpcPionCut(Double_t pTPCpionCut) { fPtpcPionCut = pTPCpionCut; };
   
  private:
+  Short_t fNumEtaCorrReqErrorsIssued;  // Number of times the error about eta correction issues have been displayed
+  Short_t fNumMultCorrReqErrorsIssued; // Number of times the error about multiplicity correction issues have been displayed
+  
   Bool_t fStoreMultiplicity; // Store multiplicity in tree?
   Bool_t fStoreNumOfSubthresholdclusters; // Store number of subthreshold clusters in tree?
   Bool_t fStoreNumClustersInActiveVolume; // Store number of clusters in active volume in tree?

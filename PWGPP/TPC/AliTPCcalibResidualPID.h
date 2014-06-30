@@ -36,7 +36,7 @@ class TGraphErrors;
 class AliESDEvent;
 class AliMCEvent;
 class AliESDtrackCuts;
-class AliESDpid;
+class AliPIDResponse;
 class AliESD;
 class AliAnalysisTask;
 class AliESDInputHandler;
@@ -95,10 +95,17 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   Bool_t GetCorrectdEdxMultiplicityDependence() const { return fCorrectdEdxMultiplicityDependence; };
   virtual void SetCorrectdEdxMultiplicityDependence(Bool_t flag) { fCorrectdEdxMultiplicityDependence = flag; };
   
+  Bool_t GetCutOnProdRadiusForV0el() const { return fCutOnProdRadiusForV0el; };
+  virtual void SetCutOnProdRadiusForV0el(Bool_t flag) { fCutOnProdRadiusForV0el = flag; };
+  
   virtual Char_t GetV0tag(Int_t trackIndex) const;
 
   Bool_t GetUseMCinfo() const { return fUseMCinfo; };
   virtual void SetUseMCinfo(Bool_t flag) { fUseMCinfo = flag; };
+  
+  Bool_t GetWriteAdditionalOutput() const { return fWriteAdditionalOutput; };
+  virtual void   SetWriteAdditionalOutput(Bool_t flag = kTRUE) { fWriteAdditionalOutput = flag; };
+
   
   virtual Int_t GetV0motherIndex(Int_t trackIndex) const;
   virtual Int_t GetV0motherPDG(Int_t trackIndex) const;
@@ -159,8 +166,11 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   TObjArray * fOutputContainer;        //! output data container
   AliESDtrackCuts * fESDtrackCuts;     // basic cut variables for all non-V0 tracks
   AliESDtrackCuts * fESDtrackCutsV0;   // basic cut variables for all V0 tracks
-  AliESDpid * fESDpid;                 //! PID handling
+  AliPIDResponse* fPIDResponse;        //! PID handling
   //
+  
+  Short_t fNumEtaCorrReqErrorsIssued;  // Number of times the error about eta correction issues have been displayed
+  Short_t fNumMultCorrReqErrorsIssued; // Number of times the error about multiplicity correction issues have been displayed
   
   Bool_t fUseTPCCutMIGeo;   // Use geometrical cut for TPC 
   
@@ -170,6 +180,7 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   Double_t fZvtxCutEvent;  // Vertex z cut for the event (cm)
   
   AliESDv0KineCuts *fV0KineCuts;       //! ESD V0 kine cuts
+  Bool_t fCutOnProdRadiusForV0el;      // Cut on production radius for V0 electrons
   Int_t fNumTagsStored;     // Number of entries of fV0tags
   Char_t* fV0tags;         //! Pointer to array with tags for identified particles from V0 decays
   Int_t* fV0motherIndex;   //! Pointer to array with index of the mother V0
@@ -189,6 +200,8 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   //
   //
   
+  Bool_t fWriteAdditionalOutput; // Also fill histos/trees for QA etc. and write them
+  
   // QA histos
   TObjArray* fQAList;           //! Array with QA histos
   TH1F* fhInvMassGamma;         //! Histogram with inv. mass of gamma
@@ -207,9 +220,29 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   THnSparseF* fHistSharedClusQAV0Pr;  //! Histogram with shared clusters QA for V0 pr
   THnSparseF* fHistSharedClusQAV0El;  //! Histogram with shared clusters QA for V0 el
   
+  // TTree stuff for advanced studies (local track density, ...)
+  TTree* fTreeV0El;               //! Tree with V0 el and closest neighbour tracks and V0 sisters
+  TTree* fTreeV0Pi;               //! Tree with V0 pi and closest neighbour tracks and V0 sisters
+  TTree* fTreeV0Pr;               //! Tree with V0 pr and closest neighbour tracks and V0 sisters
+  Double_t fTree_dEdx_tr;         //! Tree: dEdx of track
+  Double_t fTree_dEdx_nb;         //! Tree: dEdx of neighbour
+  Double_t fTree_dEdx_vs;         //! Tree: dEdx of V0 sister
+  Double_t fTree_dEdxExpected_tr; //! Tree: dEdx_expected of track
+  Double_t fTree_p_TPC_tr;        //! Tree: TPC momentum of track
+  Double_t fTree_p_TPC_nb;        //! Tree: TPC momentum of neighbour
+  Double_t fTree_p_TPC_vs;        //! Tree: TPC momentum of V0 sister
+  Double_t fTree_BtimesChargeOverPt_tr; //! Tree: mag field times charge/pT of track
+  Double_t fTree_BtimesChargeOverPt_nb; //! Tree: mag field times charge/pT of neighbour
+  Double_t fTree_BtimesChargeOverPt_vs; //! Tree: mag field times charge/pT of V0 sister
+  Double_t fTree_tanTheta_tr;     //! Tree: tan(theta) of track
+  Double_t fTree_tanTheta_nb;     //! Tree: tan(theta) of neighbour
+  Double_t fTree_tanTheta_vs;     //! Tree: tan(theta) of V0 sister
+  Double_t fTree_distance_nb;     //! Tree: distance on TPC cylinder of track and neighbour
+  Double_t fTree_distance_vs;     //! Tree: distance on TPC cylinder of track and V0 sister
+  
   AliTPCcalibResidualPID(const AliTPCcalibResidualPID&); // not implemented
   AliTPCcalibResidualPID& operator=(const AliTPCcalibResidualPID&); // not implemented
   
-  ClassDef(AliTPCcalibResidualPID, 4); 
+  ClassDef(AliTPCcalibResidualPID, 5); 
 };
 #endif
