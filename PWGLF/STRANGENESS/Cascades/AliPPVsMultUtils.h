@@ -18,7 +18,7 @@ public:
     AliPPVsMultUtils &operator=(const AliPPVsMultUtils &c);
 
     //Utility functions
-    Float_t GetMultiplicityQuantile(AliESDEvent *event, TString lMethod);
+    Float_t GetMultiplicityPercentile(AliESDEvent *event, TString lMethod);
     Bool_t LoadCalibration(Int_t lLoadThisCalibration);
     
 private:
