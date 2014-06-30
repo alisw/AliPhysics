@@ -127,21 +127,33 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Int_t	fClusterType;						// which cluster do we have
 		Double_t fMinEtaCut; 						// min eta cut
 		Double_t fMaxEtaCut; 						// max eta cut
+		Bool_t fUseEtaCut;							// flag for switching on eta cut
 		Double_t fMinPhiCut; 						// phi cut
 		Double_t fMaxPhiCut; 						// phi cut
+		Bool_t fUsePhiCut;							// flag for switching on phi cut
 		Double_t fMinDistanceToBadChannel; 			// minimum distance to bad channel
+		Bool_t fUseDistanceToBadChannel;			// flag for switching on distance to bad channel cut
 		Double_t fMaxTimeDiff; 						// maximum time difference to triggered collision
+		Bool_t fUseTimeDiff;						// flag for switching on time difference cut
 		Double_t fMinDistTrackToCluster; 			// minimum distance between track and cluster
+		Bool_t fUseDistTrackToCluster;				// flag for switching on distance between track and cluster cut
 		Double_t fExoticCell;						// exotic cell cut
+		Bool_t fUseExoticCell;						// flag for switching on exotic cell cut
 		Double_t fMinEnergy;						// minium energy per cluster
+		Bool_t fUseMinEnergy;						// flag for switching on minimum energy cut
 		Int_t fMinNCells;							// minimum number of cells 
+		Bool_t fUseNCells;							// flag for switching on minimum N Cells cut
 		Double_t fMaxM02;							// maximum M02
 		Double_t fMinM02;							// minimum M02
+		Bool_t fUseM02;								// flag for switching on M02 cut
 		Double_t fMaxM20;							// maximum M20
 		Double_t fMinM20;							// minimum M20
+		Bool_t fUseM20;								// flag for switching on M20 cut
 		Double_t fMaxDispersion;					// maximum dispersion
+		Bool_t fUseDispersion;						// flag for switching on dispersion cut
 		Int_t fMinNLM;								// minimum number of local maxima in cluster
 		Int_t fMaxNLM;								// maximum number of local maxima in cluster
+		Bool_t fUseNLM;								// flag for switching on NLM cut
 		
 		// CutString
 		TObjString *fCutString; 					// cut number used for analysis

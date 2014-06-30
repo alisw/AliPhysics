@@ -102,12 +102,20 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 	// meson cuts
 	// meson type (Dalitz or not), BG scheme, pool depth, rotation degrees, rapidity cut, radius cut, alpha, chi2, shared electrons, reject to close v0, MC smearing, dca, dca, dca
   
-	if (trainConfig == 1){ 
+	if (trainConfig == 1){ // EMCAL clusters
 		cutarray[ 0] = "6010001002092970028250400000"; clustercutarray[0] = "10000040022030000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
 		cutarray[ 1] = "6120001002092970028250400000"; clustercutarray[1] = "10000040022030000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
 		cutarray[ 2] = "5010001002092970028250400000"; clustercutarray[2] = "10000040022030000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
 		cutarray[ 3] = "5240001002092970028250400000"; clustercutarray[3] = "10000040022030000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
 		cutarray[ 4] = "5250001002092970028250400000"; clustercutarray[4] = "10000040022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
+	} else if (trainConfig == 2){ // PHOS clusters
+		cutarray[ 0] = "6010001002092970028250400000"; clustercutarray[0] = "20000040022030000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		cutarray[ 1] = "6120001002092970028250400000"; clustercutarray[1] = "20000040022030000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		cutarray[ 2] = "5010001002092970028250400000"; clustercutarray[2] = "20000040022030000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		cutarray[ 3] = "5240001002092970028250400000"; clustercutarray[3] = "20000040022030000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
+		cutarray[ 4] = "5250001002092970028250400000"; clustercutarray[4] = "20000040022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
+
+		
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

@@ -105,8 +105,11 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	// 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
 	
 	if (trainConfig == 1){ 
-		cutarray[ 0] = "8000001002092970028250400000"; clustercutarray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7
-		cutarray[ 1] = "8005201002092970028250400000"; clustercutarray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7
+		cutarray[ 0] = "8000001002092970028250400000"; clustercutarray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
+		cutarray[ 1] = "8005201002092970028250400000"; clustercutarray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters
+	} else if (trainConfig == 2) {	
+		cutarray[ 0] = "8000001002092970028250400000"; clustercutarray[0] = "20000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // PHOS clusters
+		cutarray[ 1] = "8006201002092970028250400000"; clustercutarray[1] = "20000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kPHI7	// PHOS clusters	
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

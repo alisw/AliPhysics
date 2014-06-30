@@ -1254,7 +1254,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 	Int_t nclus = 0;
 	nclus = fInputEvent->GetNumberOfCaloClusters();
 	
-	cout << nclus << endl;
+// 	cout << nclus << endl;
 	
 	if(nclus == 0)	return;
 	
@@ -1284,7 +1284,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 		if(fIsMC){
 			mclab[0] = clus->GetLabel();
 			mclab[1] = clus->GetLabel();
-			cout << "mclabels: " << mclab[0] << " " << mclab[1] << endl;
+// 			cout << "mclabels: " << mclab[0] << " " << mclab[1] << endl;
 		}
 		
 		PhotonCandidate->SetMCLabel(mclab);
