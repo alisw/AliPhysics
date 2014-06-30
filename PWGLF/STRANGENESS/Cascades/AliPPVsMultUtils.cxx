@@ -68,7 +68,7 @@ AliPPVsMultUtils &AliPPVsMultUtils::operator=(const AliPPVsMultUtils &c)
 }
 
 //______________________________________________________________________
-Float_t AliPPVsMultUtils::GetMultiplicityQuantile(AliESDEvent *event, TString lMethod = "V0M")
+Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliESDEvent *event, TString lMethod = "V0M")
 {
     Int_t lRequestedRunNumber = event->GetRunNumber();
     if( lRequestedRunNumber != fRunNumber ) LoadCalibration( lRequestedRunNumber );
