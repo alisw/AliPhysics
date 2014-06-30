@@ -3317,7 +3317,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
     TObjArray* bgCalo   = 0;
 
     // Check if the particle is isolated in the mixed event, it not, do not fill the histograms
-    if(OnlyIsolated() || fFillNeutralEventMixPool)
+    if((OnlyIsolated() || fFillNeutralEventMixPool) && poolCalo)
     {
       if(pool->GetSize()!=poolCalo->GetSize()) 
         printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Different size of calo and track pools\n");
