@@ -220,7 +220,7 @@ void AliTPCPIDEtaQA::UserExec(Option_t *)
   // Fill V0 arrays with V0s
   FillV0PIDlist();
   
-  Int_t multiplicity = fESD->GetNumberOfTracks();
+  Int_t multiplicity = fESD->GetNumberOfESDTracks();
   
   // Track loop to fill a Train spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
