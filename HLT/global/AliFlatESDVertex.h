@@ -13,7 +13,8 @@
 #include "AliVVvertex.h"
 #include "AliESDVertex.h"
 
-class AliFlatESDVertex: public AliVVvertex
+//class AliFlatESDVertex: public AliVVvertex
+class AliFlatESDVertex
 {
   public:
   Double32_t fPosition[3];    // vertex position
