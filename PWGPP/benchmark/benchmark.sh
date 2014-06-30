@@ -2206,7 +2206,7 @@ stackTraceTree()
     echo 'example usage:'
     echo 'benchmark.sh stackTraceTree /foo/*/rec.log'
     echo 'benchmark.sh stackTraceTree $(cat file.list)'
-    echo 'benchmark.sh stackTraceTree `cat file.list)`'
+    echo 'benchmark.sh stackTraceTree `cat file.list`'
     return 0
   fi
   gawk '
