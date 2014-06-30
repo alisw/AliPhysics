@@ -244,10 +244,10 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
   if(primaryVertex->GetNContributors() <= 0) 
     return;
   
-  fMultiplicity = fESD->GetNumberOfTracks(); 
+  fMultiplicity = fESD->GetNumberOfESDTracks(); 
     
   if (fDoAdditionalQA) {
-    Int_t nTotTracks = fESD->GetNumberOfTracks();
+    Int_t nTotTracks = fESD->GetNumberOfESDTracks();
     fhMultiplicityQA->Fill(primaryVertex->GetNContributors(), nTotTracks);
   }
   
