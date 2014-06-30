@@ -182,6 +182,13 @@ fUseAODMerging(kFALSE)
   SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P2","0.141776");
   SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P3","0.0130173");
 
+  // some default values for GenBox
+  
+  SetVar("VAR_GENMUBOX_PTMIN","0");
+  SetVar("VAR_GENMUBOX_PTMAX","20");
+  SetVar("VAR_GENMUBOX_YMIN","-4.1");
+  SetVar("VAR_GENMUBOX_YMAX","-2.4");
+
   SetVar("VAR_PYTHIA8_CMS_ENERGY","8000");
   SetVar("VAR_PYTHIA6_CMS_ENERGY","8000");
   
