@@ -159,12 +159,12 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     lCalibFile_V0CEq = TFile::Open("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0CEq.root");
     
     //check memory consumption later... 
-    fBoundaryHisto_V0M   = (TH1F*)lCalibFile_V0M  -> Get(Form("histocalib%i",fRunNumber)) -> Clone("fBoundaryHisto_V0M");
-    fBoundaryHisto_V0A   = (TH1F*)lCalibFile_V0A  -> Get(Form("histocalib%i",fRunNumber)) -> Clone("fBoundaryHisto_V0A");
-    fBoundaryHisto_V0C   = (TH1F*)lCalibFile_V0C  -> Get(Form("histocalib%i",fRunNumber)) -> Clone("fBoundaryHisto_V0C");
-    fBoundaryHisto_V0MEq   = (TH1F*)lCalibFile_V0MEq  -> Get(Form("histocalib%i",fRunNumber)) -> Clone("fBoundaryHisto_V0MEq");
-    fBoundaryHisto_V0AEq   = (TH1F*)lCalibFile_V0AEq  -> Get(Form("histocalib%i",fRunNumber)) -> Clone("fBoundaryHisto_V0AEq");
-    fBoundaryHisto_V0CEq   = (TH1F*)lCalibFile_V0CEq  -> Get(Form("histocalib%i",fRunNumber)) -> Clone("fBoundaryHisto_V0CEq");
+    fBoundaryHisto_V0M   = (TH1F*)lCalibFile_V0M  -> Get(Form("histocalib%i",fRunNumber));
+    fBoundaryHisto_V0A   = (TH1F*)lCalibFile_V0A  -> Get(Form("histocalib%i",fRunNumber));
+    fBoundaryHisto_V0C   = (TH1F*)lCalibFile_V0C  -> Get(Form("histocalib%i",fRunNumber));
+    fBoundaryHisto_V0MEq   = (TH1F*)lCalibFile_V0MEq  -> Get(Form("histocalib%i",fRunNumber));
+    fBoundaryHisto_V0AEq   = (TH1F*)lCalibFile_V0AEq  -> Get(Form("histocalib%i",fRunNumber));
+    fBoundaryHisto_V0CEq   = (TH1F*)lCalibFile_V0CEq  -> Get(Form("histocalib%i",fRunNumber));
     
     //Careful with manual cleanup if needed: to be implemented
     fBoundaryHisto_V0M->SetDirectory(0);
