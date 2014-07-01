@@ -18,6 +18,7 @@
  * see macros in PWGCF/FLOW/Documentation/examples/manual/ttree/macros
  * for usage info
  * author: redmer alexander bertens (rbertens@cern.ch)
+ * based on code received from Alexandru Dorbin
  */
 
 
