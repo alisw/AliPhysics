@@ -29,7 +29,7 @@ class AliVVvertex
   virtual void Clear(Option_t* /*option*/) = 0;
   virtual Int_t    GetNContributors() const { return 0; }
 
-  //  ClassDef(AliVVvertex, 1)   
+  ClassDef(AliVVvertex, 1)   // base class for vertex data
 
 };
 
