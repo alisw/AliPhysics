@@ -26,6 +26,8 @@ class AliFlatESDVertex: public AliVVvertex
     Char_t fBCID;     // BC ID assigned to vertex
   */
 
+	AliFlatESDVertex(Bool_t){}
+
   AliFlatESDVertex() :fNContributors(0), fChi2(0){
     for( int i=0; i<3; i++) fPosition[i] = -9999;
     for( int i=0; i<6; i++) fCov[i] = -9999;

@@ -63,6 +63,8 @@
 #include "AliHLTTPCClusterMCData.h"
 #include "AliHLTTPCTransform.h"
 
+#include "AliSysInfo.h"
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalFlatEsdConverterComponent)
 
@@ -263,7 +265,13 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 						    AliHLTUInt32_t& size,
 						    AliHLTComponentBlockDataList& outputBlocks)
 {
+
   // see header file for class documentation
+
+
+AliSysInfo::AddStamp("DoEvent.Start");
+
+
   int iResult=0;
   bool benchmark = true;
 
@@ -430,7 +438,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType| kAliHLTDataOriginTPC);
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
-      //fBenchmark.AddInput(pBlock->fSize);
+      fBenchmark.AddInput(pBlock->fSize);
       UInt_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(*pBlock); 
       UInt_t patch  = AliHLTTPCDefinitions::GetMinPatchNr(*pBlock);
       if( slice >= kNSlices || patch>= kNPatches ){
@@ -442,7 +450,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo| kAliHLTDataOriginTPC);
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
-      //fBenchmark.AddInput(pBlock->fSize);
+      fBenchmark.AddInput(pBlock->fSize);
       UInt_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(*pBlock); 
       UInt_t patch  = AliHLTTPCDefinitions::GetMinPatchNr(*pBlock);
       if( slice >= kNSlices || patch>= kNPatches ){
@@ -554,11 +562,17 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	}
 	
 	AliFlatESDTrack *flatTrack = flatEsd->GetNextTrackPointer();
+	//cout<<"flatTrack: "<<flatTrack<<endl;
+
+	//cout<<"GetNumberOfTPCClusters before: "<<flatTrack->GetNumberOfTPCClusters()<<endl;
 
 	UInt_t nClustersTPC = tpcTrack->GetNumberOfPoints();
 	UInt_t nClustersITS = itsRefit ?itsRefit->GetNumberOfPoints() :0;
 
 	flatTrack->SetNumberOfITSClusters( nClustersITS );
+	//flatTrack->SetNumberOfTPCClusters(0);
+
+	//cout<<"GetNumberOfTPCClusters: "<<flatTrack->GetNumberOfTPCClusters()<<endl;
 
 	if( flatEsd->GetSize() + flatTrack->EstimateSize( kTRUE, nClustersTPC ) >= maxOutputSize ){
 		cout<<endl<<endl<<"NOT ENOUGH MEMORY!!!!"<<endl<<endl;
@@ -589,7 +603,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 		 continue;
 	      } 
 	      const AliHLTTPCSpacePointData &cIn = clusterBlock->fSpacePoints[iCluster];
-	      AliFlatTPCCluster *c= flatTrack->GetNextTPCClusterPointer();
+
+	      AliFlatTPCCluster *c= flatTrack->GetTPCCluster( flatTrack->GetNumberOfTPCClusters() );;
 	      c->fX = cIn.GetX();
 	      c->fY = cIn.GetY();
 	      c->fZ = cIn.GetZ();
@@ -602,6 +617,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	   }
 	}
 
+		//	cout<<"number of tpc clusters: "<<flatTrack->GetNumberOfTPCClusters()<<endl;
+			//cout<<"number of its clusters: "<<flatTrack->GetNumberOfITSClusters()<<endl;
  	
 	flatEsd->StoreLastTrack();
 	
@@ -615,6 +632,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   {    
     const AliHLTComponentBlockData* pP = GetFirstInputBlock(kAliHLTDataTypeGlobalVertexer|kAliHLTDataOriginOut);
     if (pP && pP->fSize && pP->fPtr) {
+		fBenchmark.AddInput(pP->fSize);
       const AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerData *data = reinterpret_cast<AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerData*>(pP->fPtr);
       const int* v0s = data->fTrackIndices + data->fNPrimTracks;
       nV0s = data->fNV0s;
@@ -633,6 +651,12 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   for( const AliHLTComponentBlockData *i= GetFirstInputBlock(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); i!=NULL; i=GetNextInputBlock() ){
     fBenchmark.AddInput(i->fSize);
   }
+  // Get Track vertex
+  for( const AliHLTComponentBlockData *i= GetFirstInputBlock(kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut); i!=NULL; i=GetNextInputBlock() ){
+    fBenchmark.AddInput(i->fSize);
+  }
+
+
 
   /*
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); iter != NULL; iter = GetNextInputObject() ) {
@@ -732,9 +756,15 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	  
 	//  FillBenchmarkHistos( statistics, names);
 	  fBenchmark.Reset();
+
+	AliSysInfo::AddStamp("DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]) );
   
   }
   return iResult;
+
+
+
+
 }
 
 

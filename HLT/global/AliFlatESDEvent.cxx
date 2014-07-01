@@ -72,6 +72,19 @@ AliFlatESDEvent::AliFlatESDEvent() :
 {
 }
 
+/*
+AliFlatESDEvent::AliFlatESDEvent(const AliFlatESDEvent& ev) :
+  // Default constructor
+  fPrimaryVertexMask(ev.fPrimaryVertexMask),
+  fNTracks(ev.fNTracks),
+  fTracksPointer(ev.fTracksPointer),
+  fNV0s(ev.fNV0s),
+  fV0Pointer(ev.fV0Pointer),
+  fSize(ev.fSize),
+  fContent() 
+{
+}
+*/
 // _______________________________________________________________________________________________________
 AliFlatESDEvent::AliFlatESDEvent(AliESDEvent *esd) :
   // Constructor
@@ -145,6 +158,7 @@ void AliFlatESDEvent::FillPrimaryVertex(const AliESDVertex *v, Byte_t flag)
   if (!v) return;
 
   AliFlatESDVertex *vtx = reinterpret_cast<AliFlatESDVertex*> (fContent + fSize);
+  new(vtx) AliFlatESDVertex;
   vtx->Set( *v );    
   fPrimaryVertexMask |= flag;
   fSize += sizeof(AliFlatESDVertex);
@@ -155,8 +169,8 @@ Int_t AliFlatESDEvent::FillNextTrack( const AliESDtrack* esdTrack, AliESDfriendT
 {
   // fill next track
 
-  AliFlatESDTrack *flatTrack = reinterpret_cast<AliFlatESDTrack*>(fContent+fSize);
-  //new (flatTrack) AliFlatESDTrack;
+  AliFlatESDTrack * flatTrack = reinterpret_cast<AliFlatESDTrack*>(fContent+fSize);
+  new(flatTrack) AliFlatESDTrack;
   flatTrack->Fill(esdTrack, friendTrack);
   fSize += flatTrack->GetSize();
   ++fNTracks;

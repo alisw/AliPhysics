@@ -128,8 +128,8 @@ void AliHLTComponentBenchmark::GetStatisticsData( Double_t* statistics, TString*
   if( fNEvents<=0 ) return ;
 
   statistics[0] = fNEvents;
-  statistics[1] = fTotalInput/fNEvents/1024;
-  statistics[2] = fTotalOutput/fNEvents/1024;
+  statistics[1] = fTotalInput/fNEvents;
+  statistics[2] = fTotalOutput/fNEvents;
   
   if( fNTimers<=0 ) return ;
   

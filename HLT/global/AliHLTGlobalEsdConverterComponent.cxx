@@ -390,7 +390,7 @@ AliSysInfo::AddStamp("DoEvent.Start", evtData.fStructSize);
 	//  FillBenchmarkHistos( statistics, names);
 	  fBenchmark.Reset();
   
-	AliSysInfo::AddStamp("DoEvent.Stop", (int)(1000*statistics[1]), (int)(1000*statistics[2]) );
+	AliSysInfo::AddStamp("DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]),pESD->GetNumberOfV0s(),pESD->GetNumberOfTracks() );
   }
   
   

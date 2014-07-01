@@ -14,6 +14,7 @@
 
 struct AliFlatESDV0: public AliVVv0
 {
+  AliFlatESDV0(Bool_t){}
   Int_t fNegTrackID;
   Int_t fPosTrackID;
 };

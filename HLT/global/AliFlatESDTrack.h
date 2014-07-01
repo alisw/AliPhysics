@@ -31,6 +31,7 @@ class AliFlatESDTrack: public AliVVtrack {
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
   AliFlatESDTrack();   
+  AliFlatESDTrack(Bool_t){}   
   AliFlatESDTrack(const AliESDtrack* track, AliESDfriendTrack* friendTrack); 
   ~AliFlatESDTrack();  
 
@@ -91,9 +92,11 @@ class AliFlatESDTrack: public AliVVtrack {
   AliFlatTPCCluster *GetTPCClusters() {
     return reinterpret_cast< AliFlatTPCCluster*>(fContent + sizeof(AliFlatExternalTrackParam)*CountBits(fTrackParamMask));
   } 
+
+
   
   AliFlatTPCCluster *GetTPCCluster(Int_t ind) {
-    return GetTPCClusters() + ind*sizeof(AliFlatTPCCluster);
+    return  reinterpret_cast< AliFlatTPCCluster*>( GetTPCClusters() ) + ind ;
   }
 
   Int_t GetNumberOfITSClusters() {
@@ -103,13 +106,20 @@ class AliFlatESDTrack: public AliVVtrack {
   
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
   
-  AliFlatESDTrack *GetNextTrack() {return reinterpret_cast<AliFlatESDTrack*>(fContent+fSize);}
+  AliFlatESDTrack *GetNextTrack() 
+{	
+	
+	AliFlatESDTrack * t = reinterpret_cast<AliFlatESDTrack*> (fContent + fSize);
+	new(t)  AliFlatESDTrack(kTRUE);
+	return t;
+}
   
   // --------------------------------------------------------------------------------
   // -- Size methods
   static ULong64_t EstimateSize(Bool_t useESDFriends = kTRUE, Int_t nTPCClusters = 160 );
          ULong64_t GetSize()  {return fContent -  reinterpret_cast<Byte_t*>(this) + fSize;}
     
+
  private:
   AliFlatESDTrack(const AliFlatESDTrack&);
   AliFlatESDTrack& operator=(const AliFlatESDTrack&);
