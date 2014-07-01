@@ -343,6 +343,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
       if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
       if(fisPileUp)
 	if(anaUtil->IsPileUpEvent(fEvent)) return; //Pile-up rejection.
+      delete anaUtil;
     }
 
   // Primary Vertex position
