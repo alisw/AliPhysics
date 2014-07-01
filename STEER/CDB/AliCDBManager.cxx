@@ -1867,3 +1867,26 @@ AliCDBParam::~AliCDBParam() {
 
 }
 
+void AliCDBManager::ExtractBaseFolder(TString& url)
+{
+  // TBD RS
+  // remove everything but the url - 
+  // Exact copy of the AliReconstuction::Rectify.... (to be removed)
+  // 
+  //
+  TString sbs;
+  if (!(sbs=url("\\?User=[^?]*")).IsNull())                url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?DBFolder=[^?]*")).IsNull())            url.ReplaceAll("?DB","");
+  if (!(sbs=url("\\?SE=[^?]*")).IsNull())                  url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?CacheFolder=[^?]*")).IsNull())         url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?OperateDisconnected=[^?]*")).IsNull()) url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?CacheSize=[^?]*")).IsNull())           url.ReplaceAll(sbs,"");  
+  if (!(sbs=url("\\?CleanupInterval=[^?]*")).IsNull())     url.ReplaceAll(sbs,"");  
+  Bool_t slash=kFALSE,space=kFALSE;
+  while ( (slash=url.EndsWith("/")) || (space=url.EndsWith(" ")) ) {
+    if (slash) url = url.Strip(TString::kTrailing,'/');
+    if (space) url = url.Strip(TString::kTrailing,' ');
+  }
+  //url.ToLower();
+  //
+}

@@ -106,7 +106,7 @@ using namespace std;
 #include "AliCDBEntry.h"
 #include "AliOCDBtoolkit.h"
 #include "AliCDBStorage.h"
-
+#include "TRegexp.h"
 
 void AliOCDBtoolkit::MakeDiffExampleUseCase(){
   //
@@ -158,7 +158,13 @@ void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput, const TString fType, co
   //
   //
   AliCDBManager * man = AliCDBManager::Instance();
-
+  if (fInput.Contains("alien://") && gGrid==0){
+    TGrid *myGrid = TGrid::Connect("alien://");            //Oddly this will return also a pointer if connection fails
+    if(myGrid->GetPort()==0){                       //if connection fails port 0 is saved, using this to check for successful connection
+      cerr << "Cannot connect to grid!" << endl;
+      return;
+    }
+  }
   if(fType.EqualTo("MC",TString::kIgnoreCase)){
         file = TFile::Open(fInput.Data());
         cdbMap = (TMap*)file->Get("cdbMap");
@@ -183,7 +189,7 @@ void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput, const TString fType, co
 	printf("cdbMap does not exist in input file\t%s. Exiting\n",fInput.Data());
 	return;
       }
-      man->SetDefaultStorage(((TPair*)cdbMap->FindObject("default"))->Value()->GetName());
+      AliOCDBtoolkit::SetStorage(cdbMap);
       TList *cdbListESD0= (TList*)listESD->FindObject("cdbList"); // this is list of TObjStrings
       cdbList = ConvertListStringToCDBId(cdbListESD0);              // convert to the TObjArray  of AliCDBids
     }
@@ -355,17 +361,33 @@ void AliOCDBtoolkit::LoadOCDBFromLog(const char *logName, Int_t verbose){
 
 void  AliOCDBtoolkit::SetStorage(const TMap *cdbMap){
   //
-  // Set storages as speified in the map - TO CHECK.. Should go to the AliCDBmanager if not alreadyhhere
+  //  Set storages as specified in the map - TO CHECK.. 
+  //  Should go to the AliCDBmanager if not alreadyhhere +++MI
   //   
+  //  In case OCDB_PATH local variable is defined
+  //  alien storage is replaced by OCDB_PATH prefix: e.g:  local:///cvmfs/alice.gsi.de/
+  //
+  //  Regexp extensivelly used - see documentation in ????
+  //       http://wwwacs.gantep.edu.tr/guides/programming/root/htmldoc/examples/tstring.C.html
   AliCDBManager * man = AliCDBManager::Instance();  
   TIter iter(cdbMap->GetTable());
   TPair* aPair=0;
   while ((aPair = (TPair*) iter.Next())) {
     //    aPair->Value();
     //aPair->Print();
-    if (TString(aPair->GetName())=="default") man->SetDefaultStorage(aPair->Value()->GetName());
+    TString urlOrig = aPair->Value()->GetName();
+    TString url=urlOrig; // e.g TString  url="alien://?User=?DBFolder=/alice/data/2010/OCDB?SE=default?CacheFolder=?OperateDisconnected=1?CacheSize=1073741824?CleanupInterval=0"
+    man->ExtractBaseFolder(url); // url==alien://Folder=/alice/data/2010/OCDB"
+    TString ocdbPrefix(gSystem->Getenv("OCDB_PATHTEST"));
+    if (url.Length()>0){
+      TRegexp alienPrefix("^alien://Folder=");      
+      url(alienPrefix)=ocdbPrefix+"";
+    }
+
+    printf("%s\t%s\t%s\n", aPair->GetName(), urlOrig.Data(), url.Data());
+    if (TString(aPair->GetName())=="default") man->SetDefaultStorage(url);
     else
-      man->SetSpecificStorage(aPair->GetName(), aPair->Value()->GetName());
+      man->SetSpecificStorage(aPair->GetName(), url);
   }  
 }
  
@@ -788,3 +810,4 @@ void AliOCDBtoolkit::MakeSnapshotFromTxt(const TString fInput, const TString out
   man->DumpToSnapshotFile(outfile.Data(), singleKeys);
 
 }
+
