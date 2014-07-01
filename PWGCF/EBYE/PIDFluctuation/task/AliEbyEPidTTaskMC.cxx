@@ -172,6 +172,25 @@ void AliEbyEPidTTaskMC::UserExec( Option_t * ){
   AliCentrality *centrality = event->GetCentrality();
   if (centrality->GetQuality() != 0) return;
 
+ fEventCounter->Fill(21);
+  
+  TClonesArray *arrayMC= 0; 
+  arrayMC = dynamic_cast<TClonesArray*> (event->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+  if (!arrayMC) {
+    Printf("Error: MC particles branch not found!\n");
+      return;
+  }
+  fEventCounter->Fill(22);
+  AliAODMCHeader *mcHdr=0;
+  mcHdr=(AliAODMCHeader*)event->GetList()->FindObject(AliAODMCHeader::StdBranchName());  
+  if(!mcHdr) {
+      Printf("MC header branch not found!\n");
+      return;
+  }
+
+
+
+
   fEventCounter->Fill(6);
   
   fRunNumber = event->GetRunNumber();
@@ -190,37 +209,39 @@ void AliEbyEPidTTaskMC::UserExec( Option_t * ){
     if (!AcceptTrack(track)) continue;
     fEventCounter->Fill(12);
     Int_t a = fHelperPID->GetParticleSpecies((AliVTrack*) track,kTRUE);
-    if(a < 0 || a > 2) continue;
+    //  if(a < 0 || a > 2) continue;
     fEventCounter->Fill(13);
-    Int_t icharge = track->Charge() > 0 ? 0 : 1;
+    //Int_t icharge = track->Charge() > 0 ? 0 : 1;
+    Int_t b = -999;
+    if (a == 0 ) b = 1;
+    else if (a == 1 ) b = 2;
+    else if (a == 2 ) b = 3;
+    else b = 4;
 
-    // cout << icharge << "  " << track->Charge() << endl;
+    if (track->Charge()  < 0 ) b = -1*b;
+   
+    Int_t isph=-999;
+    if (arrayMC) {
+      AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
+      if (!partMC) {
+        AliError("Cannot get MC particle");
+        continue;
+      }
+      isph=partMC->IsPhysicalPrimary();
+    }
+
+    //  cout << b << "  " << track->Charge() << "  " << isph << endl;
 
     fTrackPt[iTracks]     = (Float_t)track->Pt();
     fTrackPhi[iTracks]    = (Float_t)track->Phi();
     fTrackEta[iTracks]    = (Float_t)track->Eta();
-    fTrackCharge[iTracks] = icharge;
-    fTrackPid[iTracks] = a;
+    fTrackCharge[iTracks] = isph;
+    fTrackPid[iTracks] = b;
     iTracks++;
   }
   fNumberOfTracks = iTracks;
   
-  fEventCounter->Fill(21);
-  
-  TClonesArray *arrayMC= 0; 
-  arrayMC = dynamic_cast<TClonesArray*> (event->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
-  if (!arrayMC) {
-    Printf("Error: MC particles branch not found!\n");
-      return;
-  }
-  fEventCounter->Fill(22);
-  AliAODMCHeader *mcHdr=0;
-  mcHdr=(AliAODMCHeader*)event->GetList()->FindObject(AliAODMCHeader::StdBranchName());  
-  if(!mcHdr) {
-      Printf("MC header branch not found!\n");
-      return;
-  }
-  
+   
   fEventCounter->Fill(23);
   
   
@@ -234,18 +255,31 @@ void AliEbyEPidTTaskMC::UserExec( Option_t * ){
     // if(!partMC) continue;
     if(!AcceptMCTrack(partMC)) continue;
     // fEventCounter->Fill(25);
-    Int_t a  = partMC->GetPdgCode();
+    Int_t b  = partMC->GetPdgCode();
+    Int_t k = -99;
+    k = partMC->IsPhysicalPrimary();
+   
+    Int_t a = -999;
+    if (b == 211 )   a =  1;
+    else if (b == -211 )  a = -1;
+    else if (b == 2212 )  a =  3;
+    else if (b == -2212 ) a = -3;
+    else if (b == 321 )   a =  2;
+    else if (b == -321 )  a = -2;
+    else if (b > 0 )  a = 4;
+    else if (b < 0 )  a = -4;
+
     //Int_t a = 0;      
     // Int_t a = fHelperPID->GetMCParticleSpecie((AliVEvent*) event,(AliVTrack*)partMC,1);
     
     //if(a < 0 || a > 2) continue;
-    Int_t icharge = a > 0 ? 0 : 1;
-    //  cout << a << "  " << icharge << "  " << iMC << "  " << mTracks << endl;
+    // Int_t icharge = a > 0 ? 0 : 1;
+    //  cout << a << "  " << b << "  " << iMC << "  " << mTracks << "  " << k << endl;
     
     fTrackPtM[mTracks]     = (Float_t)partMC->Pt();
     fTrackPhiM[mTracks]    = (Float_t)partMC->Phi();
     fTrackEtaM[mTracks]    = (Float_t)partMC->Eta();
-    fTrackChargeM[mTracks] = icharge;
+    fTrackChargeM[mTracks] = k;
     fTrackPidM[mTracks] = a;
     mTracks++;
   }
@@ -273,7 +307,7 @@ Bool_t AliEbyEPidTTaskMC::AcceptTrack(AliAODTrack *track) const {
   if(!track)                                  return kFALSE;
   if (track->Charge() == 0 )                  return kFALSE;
   if (!track->TestFilterBit(fAODtrackCutBit)) return kFALSE;
-  if (TMath::Abs(track->Eta()) > 3) return kFALSE;
+  if (TMath::Abs(track->Eta()) > 0.8) return kFALSE;
   return kTRUE;
 }
 
@@ -281,8 +315,7 @@ Bool_t AliEbyEPidTTaskMC::AcceptTrack(AliAODTrack *track) const {
 //___________________________________________________________
 Bool_t AliEbyEPidTTaskMC::AcceptMCTrack(AliAODMCParticle *track) const {
   if(!track) return kFALSE;
-  if(!track->IsPhysicalPrimary()) return kFALSE;
   if (track->Charge() == 0 ) return kFALSE;
-  if (TMath::Abs(track->Eta()) > 3) return kFALSE;
+  if (TMath::Abs(track->Eta()) > 0.8) return kFALSE;
   return kTRUE;
 }
