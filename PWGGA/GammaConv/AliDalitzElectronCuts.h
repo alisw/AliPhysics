@@ -165,6 +165,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t GetMassMinCut(){return fMassMinCut;}
   Bool_t   DoWeights(){return fDoWeights;}
   Bool_t   GetUseVPhotonMCPmearing(){return fUseVPhotonMCPSmearing; }
+  Bool_t   GetUseElectronMCSmearing(){ return fUseElectronMCPSmearing;}
   
 
   
@@ -225,6 +226,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fMassMinCut;
   Bool_t   fDoWeights;
   Bool_t   fUseVPhotonMCPSmearing;
+  Bool_t   fUseElectronMCPSmearing;
 
 
   // Histograms
