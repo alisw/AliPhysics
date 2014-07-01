@@ -105,7 +105,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         AlipAJetHistos();
         AlipAJetHistos(const char *name);
         AlipAJetHistos(const char *name, TString centag, Bool_t doNEF=kFALSE);
-        
+        AlipAJetHistos(const char *name, TString centag, Bool_t doNEF, Bool_t doNEFSignalOnly, Bool_t doTHnSparse);
+
         virtual ~AlipAJetHistos();
         
         // User Defined Sub-Routines
@@ -137,6 +138,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         void SetNEFJetDimensions(Int_t n);
         void SetNEFClusterDimensions(Int_t n);
         void SetRhoValue(Double_t value);
+        void DoTHnSparse(Bool_t doTHnSparse);
         
         // User Defined Functions
         TList* GetOutputHistos();  //!
@@ -193,19 +195,25 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         TProfile *fpLJetRho; //!
         
         // Jet Profile
+        TH3F *fhJetPtEtaPhi; //!
         TH2F *fhJetPtArea; //!
-
         TH2F *fhJetConstituentPt; //!
         TH2F *fhJetTracksPt; //!
         TH2F *fhJetClustersPt; //!
         TH2F *fhJetConstituentCounts; //!
         TH2F *fhJetTracksCounts; //!
         TH2F *fhJetClustersCounts; //!
+        TH2F *fhJetPtZConstituent; //!
         TH2F *fhJetPtZTrack; //!
         TH2F *fhJetPtZCluster; //!
+        TH2F *fhJetPtZLeadingConstituent; //!
+        TH2F *fhJetPtZLeadingTrack; //!
+        TH2F *fhJetPtZLeadingCluster; //!
         
         // Histograms for Neutral Energy Fraction
         TList *fNEFOutput; //! NEF QA Plots
+        
+        TH2F *fhJetPtNEF; //!
         
         THnSparse *fhJetNEFInfo; //! Jet NEF Information Histogram
         THnSparse *fhJetNEFSignalInfo; //! Signal Jet NEF Information Histogram
@@ -252,7 +260,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         Bool_t fDoNEFQAPlots;
         Bool_t fDoNEFSignalOnly;
         Bool_t fSignalTrackBias;
-
+        Bool_t fDoTHnSparse;
+        
         Int_t fNEFBins;
         Double_t fNEFLow;
         Double_t fNEFUp;
@@ -451,6 +460,11 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         fJetRAccept = r;
     };
     
+    inline void DoTHnSparse(Bool_t doTHnSparse)
+    {
+        fDoTHnSparse = doTHnSparse;
+    };
+    
     private:
     TList *fOutput; //! Output list
     TList *flTrack; //! Track QA List
@@ -559,6 +573,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     Int_t fCalculateRhoJet;
     Bool_t fDoVertexRCut;
     Bool_t fMCPartLevel;
+    Bool_t fDoTHnSparse;
     
     // Protected Global Variables
     Double_t fEMCalPhiMin;
