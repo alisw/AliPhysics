@@ -664,7 +664,7 @@ Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysi
       if(!SetCut(cutIds(ii),fCuts[ii]))return kFALSE;
    }
 
-   //PrintCuts();
+   PrintCutsWithValues();
    return kTRUE;
 }
 ///________________________________________________________________________
@@ -781,6 +781,37 @@ void AliConversionMesonCuts::PrintCuts() {
       printf("%-30s : %d \n", fgkCutNames[ic], fCuts[ic]);
    }
 }
+
+///________________________________________________________________________
+void AliConversionMesonCuts::PrintCutsWithValues() {
+   // Print out current Cut Selection with values
+	printf("\nMeson cutnumber \n");
+	for(Int_t ic = 0; ic < kNCuts; ic++) {
+		printf("%d",fCuts[ic]);
+	}
+	printf("\n\n");
+	
+	printf("Meson cuts \n");
+	printf("\t |y| < %3.2f \n", fRapidityCutMeson);
+	printf("\t theta_{open} < %3.2f\n", fOpeningAngle);
+	if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
+	printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
+	printf("\t dca_{R, prim Vtx} > %3.2f\n", fDCARMesonPrimVtxCut); 
+	printf("\t dca_{Z, prim Vtx} > %3.2f\n\n", fDCAZMesonPrimVtxCut); 
+	
+	 printf("Meson BG settings \n");
+	 if (!fDoBG){
+		if (!fUseRotationMethodInBG  & !fUseTrackMultiplicityForBG) printf("\t BG scheme: mixing V0 mult \n");
+		if (!fUseRotationMethodInBG  & fUseTrackMultiplicityForBG) printf("\t BG scheme: mixing track mult \n");
+		if (fUseRotationMethodInBG )printf("\t BG scheme: rotation \n");
+		if (fdoBGProbability) printf("\t -> use BG probability \n");
+		if (fBackgroundHandler) printf("\t -> use new BG handler \n");
+		printf("\t depth of pool: %d\n", fNumberOfBGEvents);
+		if (fUseRotationMethodInBG )printf("\t degree's for BG rotation: %d\n", fnDegreeRotationPMForBG);
+	 }
+	 
+}
+
 
 ///________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){

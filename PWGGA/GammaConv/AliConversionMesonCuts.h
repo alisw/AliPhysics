@@ -83,7 +83,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Bool_t MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
   Bool_t MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
   void PrintCuts();
-
+  void PrintCutsWithValues();
+  
   void InitCutHistograms(TString name="",Bool_t additionalHists=kFALSE);
   void SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
   TList *GetCutHistograms(){return fHistograms;}
@@ -169,7 +170,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 private:
 
 
-  ClassDef(AliConversionMesonCuts,4)
+  ClassDef(AliConversionMesonCuts,5)
 };
 
 
