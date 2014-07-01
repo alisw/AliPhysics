@@ -2055,6 +2055,13 @@ void AliConversionCuts::PrintCuts() {
 
 void AliConversionCuts::PrintCutsWithValues() {
    // Print out current Cut Selection with value
+	printf("\nConversion cutnumber \n");
+	for(Int_t ic = 0; ic < kNCuts; ic++) {
+		printf("%d",fCuts[ic]);
+	}
+	printf("\n\n");
+
+	
    if (fIsHeavyIon == 0) {
       printf("Running in pp mode \n");
       if (fSpecialTrigger == 0){
@@ -2114,18 +2121,25 @@ void AliConversionCuts::PrintCutsWithValues() {
 	else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
 	else if (fRejectExtraSignals > 1) printf("\t special header have been selected \n");
 	
-   printf("Electron cuts: \n");
+   printf("Electron cuts & Secondary Track Cuts - only track from secondaries enter analysis: \n");
+   printf("\t no like sign pairs from V0s \n");
+   if (!fUseCorrectedTPCClsInfo) printf("\t # TPC clusters > %3.2f \n", fMinClsTPC);
    if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{e} < %3.2f\n", fEtaCutMin, fEtaCut );
      else printf("\t eta_{e} < %3.2f\n", fEtaCut );
    printf("\t p_{T,e} > %3.2f\n", fSinglePtCut );
-   printf("\t %3.2f < n sigma e < %3.2f\n", fPIDnSigmaBelowElectronLine, fPIDnSigmaAboveElectronLine );
+   printf("\t TPC refit \n");
+   printf("\t no kinks \n");
+   printf("\t accept: %3.2f < n sigma_{e,TPC} < %3.2f\n", fPIDnSigmaBelowElectronLine, fPIDnSigmaAboveElectronLine );
+   printf("\t reject: %3.2f < p_{e,T} < %3.2f, n sigma_{pi,TPC} < %3.2f\n", fPIDMinPnSigmaAbovePionLine, fPIDMaxPnSigmaAbovePionLine, fPIDnSigmaAbovePionLine );
+   printf("\t reject: p_{e,T} > %3.2f, n sigma_{pi,TPC} < %3.2f\n", fPIDMaxPnSigmaAbovePionLine, fPIDnSigmaAbovePionLineHighPt );
+   if (fDoPionRejectionLowP) printf("\t reject: p_{e,T} < %3.2f, -%3.2f < n sigma_{pi,TPC} < %3.2f\n", fPIDMinPPionRejectionLowP, fPIDnSigmaAtLowPAroundPionLine, fPIDnSigmaAtLowPAroundPionLine );
+   if (fDoKaonRejectionLowP) printf("\t reject: -%3.2f < n sigma_{K,TPC} < %3.2f\n", fPIDnSigmaAtLowPAroundKaonLine, fPIDnSigmaAtLowPAroundKaonLine );
+   if (fDoProtonRejectionLowP) printf("\t reject: -%3.2f < n sigma_{K,TPC} < %3.2f\n", fPIDnSigmaAtLowPAroundProtonLine, fPIDnSigmaAtLowPAroundProtonLine );
+   if (fUseTOFpid) printf("\t accept: %3.2f < n sigma_{e,TOF} < %3.2f\n", fTofPIDnSigmaBelowElectronLine, fTofPIDnSigmaAboveElectronLine);
    
    printf("Photon cuts: \n");
-   printf("\t %3.2f < R_{conv} < %3.2f\n", fMinR, fMaxR );
-   printf("\t Z_{conv} < %3.2f\n", fMaxZ );
-   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{conv} < %3.2f\n", fEtaCutMin, fEtaCut );
-     else printf("\t eta_{conv} < %3.2f\n", fEtaCut );
-   printf("\t p_{T,gamma} > %3.2f\n", fPtCut );	 
+   if (fUseOnFlyV0Finder) printf("\t using Onfly V0 finder \n");
+   else printf("\t using Offline V0 finder \n");
    if (fDo2DQt){
 	  printf("\t 2 dimensional q_{T} cut applied with maximum of %3.2f \n", fQtMax );
    } else {
@@ -2136,7 +2150,14 @@ void AliConversionCuts::PrintCutsWithValues() {
    } else {
       printf("\t chi^{2} max cut chi^{2} < %3.2f \n", fChi2CutConversion ); 
 	  printf("\t psi_{pair} max cut |psi_{pair}| < %3.2f \n", fPsiPairCut ); 
-   }	   
+   }	      
+   printf("\t %3.2f < R_{conv} < %3.2f\n", fMinR, fMaxR );
+   printf("\t Z_{conv} < %3.2f\n", fMaxZ );
+   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{conv} < %3.2f\n", fEtaCutMin, fEtaCut );
+     else printf("\t eta_{conv} < %3.2f\n", fEtaCut );
+   if (fDoPhotonAsymmetryCut) printf("\t for p_{T,track} > %3.2f,  A_{gamma} < %3.2f \n", fMinPPhotonAsymmetryCut, fMinPhotonAsymmetry  );
+   if (fUseCorrectedTPCClsInfo) printf("\t #cluster TPC/ #findable clusters TPC (corrected for radius) > %3.2f\n", fMinClsTPCToF );
+   printf("\t p_{T,gamma} > %3.2f\n", fPtCut );	 
    printf("\t cos(Theta_{point}) > %3.2f \n", fCosPAngleCut );
    printf("\t dca_{R} < %3.2f \n", fDCARPrimVtxCut );
    printf("\t dca_{Z} < %3.2f \n", fDCAZPrimVtxCut );
