@@ -273,13 +273,10 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     if(dig->GetId() <= knEMC && 
        Calibrate(dig->GetEnergy(),dig->GetId()) > GetRecoParam()->GetEMCMinE() ){
       Int_t primary = dig->GetPrimary(1) ;
-      //For real data always primary==-1, we use this field to mark cells with overflow
-      //in HG channel. This is not needed in MC simulations,
-      if(primary==-1 && dig->IsLG())
-	primary=-2 ;
       phsCells.SetCell(idignew,dig->GetId(), Calibrate(dig->GetEnergy(),dig->GetId()),
                                              CalibrateT(dig->GetTime(),dig->GetId(),dig->IsLG()),
-                                             primary) ;
+                                             primary,0.,!dig->IsLG()) ;
+					     
       idignew++;
     }
   }

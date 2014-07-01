@@ -861,10 +861,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   Float_t eMax=0. ;
   for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
     Int_t absId=clu->GetCellAbsId(iDigit) ;
-    Bool_t isHG=kTRUE ;
-    if(cells->GetCellMCLabel(absId)==-2){ //This is LG digit. 
-      isHG=kFALSE ;   
-    }
+    Bool_t isHG=cells->GetCellHighGain(absId) ;
     if( elist[iDigit]>eMax){
       tMax=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
       eMax=elist[iDigit] ;
@@ -879,10 +876,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   Double_t t = 0. ;
   for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
     Int_t absId=clu->GetCellAbsId(iDigit) ;
-    Bool_t isHG=kTRUE ;
-    if(cells->GetCellMCLabel(absId)==-2){ //This is LG digit. 
-      isHG=kFALSE ;
-    }
+    Bool_t isHG=cells->GetCellHighGain(absId) ;
       
     Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
     if(TMath::Abs(ti-tMax)>50.e-9) //remove soft cells with wrong time
