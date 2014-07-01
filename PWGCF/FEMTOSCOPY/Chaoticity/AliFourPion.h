@@ -99,6 +99,7 @@ class AliFourPion : public AliAnalysisTaskSE {
 
   void ParInit();
   Bool_t AcceptPair(AliFourPionTrackStruct, AliFourPionTrackStruct);
+  Bool_t AcceptPairPM(AliFourPionTrackStruct, AliFourPionTrackStruct);
   Float_t Gamov(Int_t, Int_t, Float_t);
   void Shuffle(Int_t*, Int_t, Int_t);
   Float_t GetQinv(Float_t[], Float_t[]);

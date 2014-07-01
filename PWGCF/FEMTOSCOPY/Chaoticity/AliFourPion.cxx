@@ -907,11 +907,23 @@ void AliFourPion::UserCreateOutputObjects()
   TH3F *fTPCResponse = new TH3F("fTPCResponse","TPCsignal",20,0,100, 200,0,2, 1000,0,1000);
   fOutputList->Add(fTPCResponse);
  
-  TH1F *fRejectedPairs = new TH1F("fRejectedPairs","",200,0,2);
+  TH1F *fRejectedPairs = new TH1F("fRejectedPairs","",400,0,2);
   fOutputList->Add(fRejectedPairs);
+  TH1F *fRejectedPairsWeighting = new TH1F("fAcceptedPairsWeighting","",400,0,2);
+  fOutputList->Add(fRejectedPairsWeighting);
+  TH1F *fTotalPairsWeighting = new TH1F("fTotalPairsWeighting","",400,0,2);
+  fOutputList->Add(fTotalPairsWeighting);
+  //
+  TH1F *fRejectedPairsMC = new TH1F("fRejectedPairsMC","",400,0,2);
+  fOutputList->Add(fRejectedPairsMC);
+  TH1F *fRejectedPairsWeightingMC = new TH1F("fAcceptedPairsWeightingMC","",400,0,2);
+  fOutputList->Add(fRejectedPairsWeightingMC);
+  TH1F *fTotalPairsWeightingMC = new TH1F("fTotalPairsWeightingMC","",400,0,2);
+  fOutputList->Add(fTotalPairsWeightingMC);
+  
   TH1I *fRejectedEvents = new TH1I("fRejectedEvents","",fMbins,0.5,fMbins+.5);
   fOutputList->Add(fRejectedEvents);
-  
+    
   TH3F *fPairsDetaDPhiNum = new TH3F("fPairsDetaDPhiNum","",10,-.5,9.5, 200,-0.2,0.2, 600,-0.3,0.3);
   if(fMCcase) fOutputList->Add(fPairsDetaDPhiNum);
   TH3F *fPairsDetaDPhiDen = new TH3F("fPairsDetaDPhiDen","",10,-.5,9.5, 200,-0.2,0.2, 600,-0.3,0.3);
@@ -1986,10 +1998,22 @@ void AliFourPion::UserExec(Option_t *)
 	  
 	  if(qinv12 < fQLowerCut && !fMCcase) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
 	  if(ch1 == ch2 && !fGeneratorOnly && !fMCcase){
+	    Int_t tempChGroup[2]={0,0};
+	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fTotalPairsWeighting"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
 	    if(!AcceptPair((fEvt+en1)->fTracks[i], (fEvt+en2)->fTracks[j])) {
 	      if(en1==0 && en2==0) ((TH1F*)fOutputList->FindObject("fRejectedPairs"))->Fill(qinv12);
 	      continue;
 	    }
+	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fAcceptedPairsWeighting"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
+	  }
+	  if(ch1 != ch2 && !fGeneratorOnly && !fMCcase){// remove +- low-q pairs to keep balance between ++ and +- contributions to multi-particle Q3,Q4 projections
+	    Int_t tempChGroup[2]={0,1};
+	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fTotalPairsWeightingMC"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
+	    if(!AcceptPairPM((fEvt+en1)->fTracks[i], (fEvt+en2)->fTracks[j])) {
+	      if(en1==0 && en2==0) ((TH1F*)fOutputList->FindObject("fRejectedPairsMC"))->Fill(qinv12);
+	      continue;
+	    }
+	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fAcceptedPairsWeightingMC"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
 	  }
 	  
 	  GetQosl(pVect1, pVect2, qout, qside, qlong);
@@ -2090,8 +2114,12 @@ void AliFourPion::UserExec(Option_t *)
   
   if(fTabulatePairs) return;
 
-    
-  
+  /*TF1 *SCpairWeight = new TF1("SCpairWeight","[0] + [1]*x + [2]*exp(-[3]*x)",0,0.2);// same-charge pair weight for monte-carlo data without two-track cuts.
+  SCpairWeight->FixParameter(0, 0.959);
+  SCpairWeight->FixParameter(1, 0.278);
+  SCpairWeight->FixParameter(2, -1.759);
+  SCpairWeight->FixParameter(3, 115.107);*/
+
   ////////////////////////////////////////////////////
   ////////////////////////////////////////////////////
   // Normalization counting of 3- and 4-particle terms
@@ -2526,6 +2554,7 @@ void AliFourPion::UserExec(Option_t *)
 		      MuonCorr13 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin13);
 		      MuonCorr23 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin23);
 		    }
+		    
 		    // no MRC, no Muon Correction
 		    weight12CC[0] = ((weight12+1) - ffcSq*FSICorr12 - (1-ffcSq));
 		    weight12CC[0] /= FSICorr12*ffcSq;
@@ -2646,6 +2675,11 @@ void AliFourPion::UserExec(Option_t *)
 		    q3MC = sqrt(pow(qinv12MC,2)+pow(qinv13MC,2)+pow(qinv23MC,2));
 		    if(q3<0.1 && ch1==ch2 && ch1==ch3) ((TH2D*)fOutputList->FindObject("fQ3Res"))->Fill(KT3, q3-q3MC);
 		    
+		    Float_t TripletWeightTTC=1.0;// same-charge weights to mimic two-track depletion of same-charge pairs
+		    //if(ch1==ch2 && qinv12>0.006) TripletWeightTTC *= SCpairWeight->Eval(qinv12);
+		    //if(ch1==ch3 && qinv13>0.006) TripletWeightTTC *= SCpairWeight->Eval(qinv13);
+		    //if(ch2==ch3 && qinv23>0.006) TripletWeightTTC *= SCpairWeight->Eval(qinv23);
+		    
 		    Int_t chGroup3[3]={ch1,ch2,ch3};
 		    Float_t QinvMCGroup3[3]={qinv12MC,qinv13MC,qinv23MC};
 		    //Float_t kTGroup3[3]={float(sqrt(pow(pVect1MC[1]+pVect2MC[1],2) + pow(pVect1MC[2]+pVect2MC[2],2))/2.),
@@ -2693,15 +2727,15 @@ void AliFourPion::UserExec(Option_t *)
 			    Float_t WInput = MCWeight3(term, Rvalue, 1.0, chGroup3, parentQinvGroup3, parentkTGroup3);
 			    Float_t WInputParentFSI = MCWeightFSI3(term, Rvalue, 1.0, chGroup3, parentQinvGroup3);
 			    Float_t WInputFSI = MCWeightFSI3(term, Rvalue, 1.0, chGroup3, QinvMCGroup3);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonSmeared->Fill(1, Rvalue, q3MC, WInput);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonIdeal->Fill(1, Rvalue, parentQ3, WInput);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonPionK3->Fill(1, Rvalue, q3MC, WInputFSI);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fPionPionK3->Fill(1, Rvalue, parentQ3, WInputParentFSI);
+			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonSmeared->Fill(1, Rvalue, q3MC, WInput*TripletWeightTTC);
+			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonIdeal->Fill(1, Rvalue, parentQ3, WInput*TripletWeightTTC);
+			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonPionK3->Fill(1, Rvalue, q3MC, WInputFSI*TripletWeightTTC);
+			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fPionPionK3->Fill(1, Rvalue, parentQ3, WInputParentFSI*TripletWeightTTC);
 			    //
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonSmeared->Fill(2, Rvalue, q3MC);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonIdeal->Fill(2, Rvalue, parentQ3);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonPionK3->Fill(2, Rvalue, q3MC);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fPionPionK3->Fill(2, Rvalue, parentQ3);
+			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonSmeared->Fill(2, Rvalue, q3MC, TripletWeightTTC);
+			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonIdeal->Fill(2, Rvalue, parentQ3, TripletWeightTTC);
+			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonPionK3->Fill(2, Rvalue, q3MC, TripletWeightTTC);
+			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fPionPionK3->Fill(2, Rvalue, parentQ3, TripletWeightTTC);
 			  }// Riter
 			}// term loop
 		    
@@ -2713,8 +2747,8 @@ void AliFourPion::UserExec(Option_t *)
 		      for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			Float_t Rvalue = 5+Riter;
 			Float_t WInput = MCWeight3(term, Rvalue, 0.65, chGroup3, QinvMCGroup3, kTGroup3);
-			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fIdeal->Fill(Rvalue, q3MC, WInput);
-			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fSmeared->Fill(Rvalue, q3, WInput);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fIdeal->Fill(Rvalue, q3MC, WInput*TripletWeightTTC);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fSmeared->Fill(Rvalue, q3, WInput*TripletWeightTTC);
 		      }
 		    }
 		    
@@ -2976,6 +3010,16 @@ void AliFourPion::UserExec(Option_t *)
 			((TH2D*)fOutputList->FindObject("DistQinvMC4pion"))->Fill(3, qinv14MC); ((TH2D*)fOutputList->FindObject("DistQinvMC4pion"))->Fill(4, qinv23MC);
 			((TH2D*)fOutputList->FindObject("DistQinvMC4pion"))->Fill(5, qinv24MC); ((TH2D*)fOutputList->FindObject("DistQinvMC4pion"))->Fill(6, qinv34MC);
 		      }
+
+		      Float_t QuadWeightTTC=1.0;// same-charge weights to mimic two-track depletion of same-charge pairs
+		      //if(ch1==ch2 && qinv12>0.006) QuadWeightTTC *= SCpairWeight->Eval(qinv12);
+		      //if(ch1==ch3 && qinv13>0.006) QuadWeightTTC *= SCpairWeight->Eval(qinv13);
+		      //if(ch1==ch4 && qinv14>0.006) QuadWeightTTC *= SCpairWeight->Eval(qinv14);
+		      //if(ch2==ch3 && qinv23>0.006) QuadWeightTTC *= SCpairWeight->Eval(qinv23);
+		      //if(ch2==ch4 && qinv24>0.006) QuadWeightTTC *= SCpairWeight->Eval(qinv24);
+		      //if(ch3==ch4 && qinv34>0.006) QuadWeightTTC *= SCpairWeight->Eval(qinv34);
+		      
+
 		      Int_t chGroup4[4]={ch1,ch2,ch3,ch4};
 		      Float_t QinvMCGroup4[6]={qinv12MC, qinv13MC, qinv14MC, qinv23MC, qinv24MC, qinv34MC};
 		      Float_t kTGroup4[6]={0};
@@ -3024,15 +3068,15 @@ void AliFourPion::UserExec(Option_t *)
 			      Float_t WInput = MCWeight4(term, Rvalue, 1.0, chGroup4, parentQinvGroup4, parentkTGroup4);
 			      Float_t WInputParentFSI = MCWeightFSI4(term, Rvalue, 1.0, chGroup4, parentQinvGroup4);
 			      Float_t WInputFSI = MCWeightFSI4(term, Rvalue, 1.0, chGroup4, QinvMCGroup4);
-			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonSmeared->Fill(1, Rvalue, q4MC, WInput);
-			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonIdeal->Fill(1, Rvalue, parentQ4, WInput);
-			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonPionK4->Fill(1, Rvalue, q4MC, WInputFSI);
-			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fPionPionK4->Fill(1, Rvalue, parentQ4, WInputParentFSI);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonSmeared->Fill(1, Rvalue, q4MC, WInput*QuadWeightTTC);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonIdeal->Fill(1, Rvalue, parentQ4, WInput*QuadWeightTTC);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonPionK4->Fill(1, Rvalue, q4MC, WInputFSI*QuadWeightTTC);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fPionPionK4->Fill(1, Rvalue, parentQ4, WInputParentFSI*QuadWeightTTC);
 			      //
-			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonSmeared->Fill(2, Rvalue, q4MC);
-			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonIdeal->Fill(2, Rvalue, parentQ4);
-			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonPionK4->Fill(2, Rvalue, q4MC);
-			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fPionPionK4->Fill(2, Rvalue, parentQ4);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonSmeared->Fill(2, Rvalue, q4MC, QuadWeightTTC);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonIdeal->Fill(2, Rvalue, parentQ4, QuadWeightTTC);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fMuonPionK4->Fill(2, Rvalue, q4MC, QuadWeightTTC);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[0].FourPT[term-1].fPionPionK4->Fill(2, Rvalue, parentQ4, QuadWeightTTC);
 			    }// Riter
 			  }// term loop
 			  
@@ -3044,8 +3088,8 @@ void AliFourPion::UserExec(Option_t *)
 			for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			  Float_t Rvalue = 5+Riter;
 			  Float_t WInput = MCWeight4(term, Rvalue, 0.65, chGroup4, QinvMCGroup4, kTGroup4);
-			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fIdeal->Fill(Rvalue, q4MC, WInput);
-			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fSmeared->Fill(Rvalue, q4, WInput);
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fIdeal->Fill(Rvalue, q4MC, WInput*QuadWeightTTC);
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fSmeared->Fill(Rvalue, q4, WInput*QuadWeightTTC);
 			}
 		      }
 		      
@@ -3147,6 +3191,46 @@ Bool_t AliFourPion::AcceptPair(AliFourPionTrackStruct first, AliFourPionTrackStr
   return kTRUE;
   
 
+}
+//________________________________________________________________________
+Bool_t AliFourPion::AcceptPairPM(AliFourPionTrackStruct first, AliFourPionTrackStruct second)
+{// optional pair cuts for +- pairs
+  
+  if(fabs(first.fEta-second.fEta) > fMinSepPairEta) return kTRUE;
+  
+  // propagate through B field to r=1m
+  Float_t phi1 = first.fPhi - asin(1.*(0.1*fBfield)*0.15/first.fPt);// 0.15 for D=1m
+  if(phi1 > 2*PI) phi1 -= 2*PI;
+  if(phi1 < 0) phi1 += 2*PI;
+  Float_t phi2 = second.fPhi - asin(1.*(0.1*fBfield)*0.15/second.fPt);// 0.15 for D=1m 
+  if(phi2 > 2*PI) phi2 -= 2*PI;
+  if(phi2 < 0) phi2 += 2*PI;
+  
+  Float_t deltaphi = phi1 - phi2;
+  if(deltaphi > PI) deltaphi -= 2*PI;
+  if(deltaphi < -PI) deltaphi += 2*PI;
+  deltaphi = fabs(deltaphi);
+
+  if(deltaphi < fMinSepPairPhi) return kFALSE;// Min Separation
+    
+  
+  // propagate through B field to r=1.6m
+  phi1 = first.fPhi - asin(1.*(0.1*fBfield)*0.24/first.fPt);// mine. 0.24 for D=1.6m
+  if(phi1 > 2*PI) phi1 -= 2*PI;
+  if(phi1 < 0) phi1 += 2*PI;
+  phi2 = second.fPhi - asin(1.*(0.1*fBfield)*0.24/second.fPt);// mine. 0.24 for D=1.6m 
+  if(phi2 > 2*PI) phi2 -= 2*PI;
+  if(phi2 < 0) phi2 += 2*PI;
+  
+  deltaphi = phi1 - phi2;
+  if(deltaphi > PI) deltaphi -= 2*PI;
+  if(deltaphi < -PI) deltaphi += 2*PI;
+  deltaphi = fabs(deltaphi);
+
+  if(deltaphi < fMinSepPairPhi) return kFALSE;// Min Separation
+  
+  return kTRUE;
+  
 }
 //________________________________________________________________________
 Float_t AliFourPion::Gamov(Int_t chargeBin1, Int_t chargeBin2, Float_t qinv)
@@ -3834,8 +3918,8 @@ void AliFourPion::SetMomResCorrections(Bool_t legoCase, TH2D *temp2D){
   
   for(Int_t bx=1; bx<=fMomResC2->GetNbinsX(); bx++){
     for(Int_t by=1; by<=fMomResC2->GetNbinsY(); by++){
-      if(fMomResC2->GetBinContent(bx,by) > 1.5) fMomResC2->SetBinContent(bx,by, 1.5);// Maximum is ~1.02 
-      if(fMomResC2->GetBinContent(bx,by) < 0.95) fMomResC2->SetBinContent(bx,by, 0.95);// Minimum is ~0.98
+      if(fMomResC2->GetBinContent(bx,by) > 1.5) fMomResC2->SetBinContent(bx,by, 1.0);// Maximum is ~1.02 
+      if(fMomResC2->GetBinContent(bx,by) < 0.8) fMomResC2->SetBinContent(bx,by, 1.0);// Minimum is ~0.8
     }
   }
 
