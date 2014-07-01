@@ -282,15 +282,19 @@ public:
   TH1F *   fhNCells;                          //! Number of towers/crystals with signal
   TH1F *   fhNCellsCutAmpMin;                 //! Number of towers/crystals with signal, with min amplitude
   TH1F *   fhAmplitude;                       //! Amplitude measured in towers/crystals
-  TH2F *   fhAmpId;                           //! Amplitude measured in towers/crystals vs id of tower.	
+  TH2F *   fhAmpId;                           //! Amplitude measured in towers/crystals vs id of tower.
   TH3F *   fhEtaPhiAmp;                       //! eta vs phi vs amplitude, cells
    
   TH1F *   fhTime;                            //! Time measured in towers/crystals
   TH2F *   fhTimeVz;                          //! Time measured in towers/crystals vs vertex z component, for E > 0.5
   TH2F *   fhTimeId;                          //! Time vs Absolute cell Id
-  TH2F *   fhTimeAmp;                         //! Time vs Amplitude 
+  TH2F *   fhTimeAmp;                         //! Time vs Amplitude
   
-  TH2F *   fhCellECross;                      //! 1 - Energy in cross around cell /  cell energy 
+  TH2F *   fhAmpIdLowGain;                    //! Amplitude measured in towers/crystals vs id of tower, low gain towers
+  TH2F *   fhTimeIdLowGain;                   //! Time vs Absolute cell Id, low gain
+  TH2F *   fhTimeAmpLowGain;                  //! Time vs Amplitude, low gain
+
+  TH2F *   fhCellECross;                      //! 1 - Energy in cross around cell /  cell energy
   
   //Calorimeters Correlation
   TH2F *   fhCaloCorrNClusters;               //! EMCAL vs PHOS, number of clusters	
@@ -337,6 +341,9 @@ public:
   TH2F *   fhGridCells ;                      //! Cells ordered in column/row for different module, Reco
   TH2F *   fhGridCellsE ;                     //! Cells ordered in column/row for different module, weighted with energy, Reco
   TH2F *   fhGridCellsTime ;                  //! Cells ordered in column/row for different module, weighted with time, Reco
+  TH2F *   fhGridCellsLowGain ;               //! Cells ordered in column/row for different module, Reco, low gain
+  TH2F *   fhGridCellsELowGain ;              //! Cells ordered in column/row for different module, weighted with energy, Reco, low gain
+  TH2F *   fhGridCellsTimeLowGain ;           //! Cells ordered in column/row for different module, weighted with time, Reco, low gain
   TH2F **  fhTimeAmpPerRCU;                   //! Time vs Amplitude measured in towers/crystals different RCU
   TH2F **  fhIMMod;                           //! cluster pairs invariant mass, different module,
 	
