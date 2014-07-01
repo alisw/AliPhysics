@@ -52,7 +52,7 @@ class AliVVevent {
   virtual ULong64_t GetSize() {return 0;};
   //virtual AliVVeventFriend* FindFriend() const { return NULL; }
 
-  //  ClassDef(AliVVevent,1)  // base class for AliEvent data
+  ClassDef(AliVVevent,1)  // base class for event data
 
 };
 #endif

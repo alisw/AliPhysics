@@ -14,6 +14,7 @@
 class AliVVv0: public AliVVtrack
 {
 
+  ClassDef(AliVVv0,1)  // base class for v0 data
 };
 
 #endif

@@ -12,7 +12,8 @@
 #include "Rtypes.h"
 #include "AliVVv0.h"
 
-struct AliFlatESDV0: public AliVVv0
+//struct AliFlatESDV0: public AliVVv0
+struct AliFlatESDV0
 {
   AliFlatESDV0(Bool_t){}
   Int_t fNegTrackID;

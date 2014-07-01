@@ -26,7 +26,8 @@ class AliESDtrack;
 class AliESDfriendTrack;
 class AliExternalTrackParam;
 
-class AliFlatESDTrack: public AliVVtrack {
+//class AliFlatESDTrack: public AliVVtrack {
+class AliFlatESDTrack {
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors

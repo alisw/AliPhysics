@@ -85,7 +85,7 @@ class AliVVtrack {
   virtual Int_t GetNFoundable() const {return 0;} 
   virtual Double_t GetdEdx()  const {return 0.;}
 
-  //  ClassDef(AliVVtrack, 1)   
+  ClassDef(AliVVtrack, 1)   // base class for track data
 
 };
 #endif
