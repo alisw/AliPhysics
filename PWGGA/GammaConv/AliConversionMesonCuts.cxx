@@ -1464,6 +1464,56 @@ void AliConversionMesonCuts::SmearVirtualPhoton(AliAODConversionPhoton* photon)
    photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
    photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
    
+}
+///________________________________________________________________________
+TLorentzVector AliConversionMesonCuts::SmearElectron(TLorentzVector particle)
+{
+
+   //if (particle==0) return;
+   Double_t facPBrem = 1.;
+   Double_t facPSig = 0.;
+
+   Double_t phi=0.;
+   Double_t theta=0.;
+   Double_t P=0.;
+
+
+   P=particle.P();
+   
+   
+   phi=particle.Phi();
+   if (phi < 0.) phi += 2. * TMath::Pi();
+   
+   if( particle.P()!=0){
+      theta=acos( particle.Pz()/ particle.P());
+   }
+
+   
+   Double_t fPSigSmearingHalf    =  fPSigSmearing  / 2.0;  //The parameter was set for gammas with 2 particles and here we have just one electron
+   Double_t sqrtfPSigSmearingCteHalf =  fPSigSmearingCte / 2.0 ;  //The parameter was set for gammas with 2 particles and here we have just one electron
+
+   
+   
+   if( fPSigSmearingHalf != 0. || sqrtfPSigSmearingCteHalf!=0. ){
+      facPSig = TMath::Sqrt(sqrtfPSigSmearingCteHalf*sqrtfPSigSmearingCteHalf+fPSigSmearingHalf*fPSigSmearingHalf*P*P)*fRandom.Gaus(0.,1.);
+   }
+
+   if( fPBremSmearing != 1.){
+      if(fBrem!=NULL){
+         facPBrem = fBrem->GetRandom();
+      }
+   }
+   
+   TLorentzVector SmearedParticle;
+   
+   SmearedParticle.SetXYZM( facPBrem* (1+facPSig)* P*sin(theta)*cos(phi) , facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)  , 
+			  facPBrem* (1+facPSig)* P*cos(theta) , TDatabasePDG::Instance()->GetParticle(  ::kElectron   )->Mass()) ;
+   
+   //particle.SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
+   //particle.SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
+   //particle.SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
+   
+   return SmearedParticle;
    
 }
 

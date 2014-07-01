@@ -123,6 +123,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fMassMinCut(-999.),
     fDoWeights(kFALSE),
     fUseVPhotonMCPSmearing(kFALSE),
+    fUseElectronMCPSmearing(kFALSE),
     fCutString(NULL),
     hCutIndex(NULL),
     hdEdxCuts(NULL),
@@ -1690,6 +1691,13 @@ Bool_t AliDalitzElectronCuts::SetPsiPairCut(Int_t psiCut) {
         fDeltaPhiCutMin = 0.0;
         fDeltaPhiCutMax = 0.12;
         break;
+  case 5:
+	fDoPsiPairCut = kTRUE;
+        fPsiPairCut = 0.60;
+        fDeltaPhiCutMin = 0.0;
+        fDeltaPhiCutMax = 0.06;
+	break;
+	
     
   default:
       cout<<"Warning: PsiPairCut not defined "<<fPsiPairCut<<endl;
@@ -1933,12 +1941,19 @@ Bool_t AliDalitzElectronCuts::SetUseVPhotonMCPmearing(Int_t useMCPSmearing)
      
    case 0:
       fUseVPhotonMCPSmearing=kFALSE;
+      fUseElectronMCPSmearing=kFALSE;
       break;
    case 1:
       fUseVPhotonMCPSmearing=kTRUE;
+      fUseElectronMCPSmearing=kFALSE;
       break;
+   case 2:
+      fUseVPhotonMCPSmearing=kFALSE;
+      fUseElectronMCPSmearing=kTRUE;
+      break;
+       
       
-   default: cout<<"Warning: MassCut not defined "<<useMCPSmearing<<endl;
+   default: cout<<"Warning: Virtual Photon SMearing not defined "<<useMCPSmearing<<endl;
 	    return kFALSE;
       
    }
