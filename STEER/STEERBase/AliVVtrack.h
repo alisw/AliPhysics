@@ -23,67 +23,67 @@ class AliVVtrack {
 
   // --------------------------------------------------------------------------------
   // -- Getter methods
-  virtual AliFlatExternalTrackParam* GetTrackParamRefitted() { return NULL; } 
-  virtual AliFlatExternalTrackParam* GetTrackParamIp() { return NULL; } 
-  virtual AliFlatExternalTrackParam* GetTrackParamTPCInner() { return NULL; } 
-  virtual AliFlatExternalTrackParam* GetTrackParamOp() { return NULL; } 
-  virtual AliFlatExternalTrackParam* GetTrackParamCp() { return NULL; } 
-  virtual AliFlatExternalTrackParam* GetTrackParamITSOut() { return NULL; } 
+  virtual AliFlatExternalTrackParam* GetTrackParamRefitted() ;
+  virtual AliFlatExternalTrackParam* GetTrackParamIp() ;
+  virtual AliFlatExternalTrackParam* GetTrackParamTPCInner() ;
+  virtual AliFlatExternalTrackParam* GetTrackParamOp() ;
+  virtual AliFlatExternalTrackParam* GetTrackParamCp() ;
+  virtual AliFlatExternalTrackParam* GetTrackParamITSOut() ;
 
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
-  virtual Int_t GetNumberOfTPCClusters() { return 0; } 
-  virtual AliFlatTPCCluster* GetTPCClusters() { return NULL; } 
-  virtual AliFlatTPCCluster* GetTPCCluster(Int_t /*ind*/) { return NULL; } 
-  virtual Int_t GetNumberOfITSClusters() { return 0; }
-  virtual AliVVtrack *GetNextTrack() {return NULL; }
+  virtual Int_t GetNumberOfTPCClusters() ;
+  virtual AliFlatTPCCluster* GetTPCClusters() ;
+  virtual AliFlatTPCCluster* GetTPCCluster(Int_t /*ind*/) ;
+  virtual Int_t GetNumberOfITSClusters() ;
+  virtual AliVVtrack *GetNextTrack() ;
 
-  virtual Bool_t GetXYZ(Double_t* /*p*/) const {return kFALSE;}
-  virtual void  GetXYZ(Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) const {}
-  virtual Double_t GetTgl()  const {return 0.;}
-  virtual UShort_t GetTPCNclsF() const { return 0;}
+  virtual Bool_t GetXYZ(Double_t* /*p*/) const ;
+  virtual void  GetXYZ(Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) const ;
+  virtual Double_t GetTgl()  const ;
+  virtual UShort_t GetTPCNclsF() const ;
 
-  virtual Double_t GetTOFsignalDz() const {return 0.;}
-  virtual void GetImpactParameters(Float_t& /*xy*/,Float_t& /*z*/) const {}
+  virtual Double_t GetTOFsignalDz() const ;
+  virtual void GetImpactParameters(Float_t& /*xy*/,Float_t& /*z*/) const ;
   //TODO:
-  virtual void GetDZ(Double_t /*x*/,Double_t /*y*/,Double_t /*z*/,Double_t /*b*/, Float_t dz[2]) const {if (dz[0]==0) return;}
+  virtual void GetDZ(Double_t /*x*/,Double_t /*y*/,Double_t /*z*/,Double_t /*b*/, Float_t dz[2]) const ;
 
-  virtual Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159, Int_t bitType=0 ) const {return 0.*nNeighbours*type*row0*row1*bitType;}
-  virtual UShort_t GetTPCncls(Int_t row0=0,Int_t row1=159) const {return 0*row0*row1;}
-  virtual Bool_t IsOn(Int_t /*mask*/) const {return kFALSE;}
-  virtual void GetDirection(Double_t d[3]) const {if (d[0]==0) return;}
-  virtual const Double_t *GetParameter() const {return 0;}
-  virtual void GetImpactParametersTPC(Float_t& /*xy*/,Float_t& /*z*/) const {}
-  virtual Int_t GetNumberOfClusters() const {return 0;} 
-  virtual const AliVVtrack* GetTPCInnerParam() const {return NULL;}
-  virtual Double_t Pt() const {return 0.;}
-  virtual Double_t GetP() const {return 0.;}
-  virtual Double_t GetTPCmomentum() const {return 0.;}
-  virtual ULong_t GetStatus() const {return 0;}
-  virtual const AliVVtrack * GetOuterParam() const { return NULL;}
-  virtual const AliVVtrack * GetInnerParam() const { return NULL;}
-  virtual Int_t GetKinkIndex(Int_t /*i*/) const { return 0;}
-  virtual Double_t Eta() const {return 0.;}
-  virtual Double_t GetY() const {return 0.;}
+  virtual Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159, Int_t bitType=0 ) const ;
+  virtual UShort_t GetTPCncls(Int_t row0=0,Int_t row1=159) const ;
+  virtual Bool_t IsOn(Int_t /*mask*/) const ;
+  virtual void GetDirection(Double_t d[3]) const ;
+  virtual const Double_t *GetParameter() const ;
+  virtual void GetImpactParametersTPC(Float_t& /*xy*/,Float_t& /*z*/) const ;
+  virtual Int_t GetNumberOfClusters() const ;
+  virtual const AliVVtrack* GetTPCInnerParam() const ;
+  virtual Double_t Pt() const ;
+  virtual Double_t GetP() const ;
+  virtual Double_t GetTPCmomentum() const ;
+  virtual ULong_t GetStatus() const ;
+  virtual const AliVVtrack * GetOuterParam() const ;
+  virtual const AliVVtrack * GetInnerParam() const ;
+  virtual Int_t GetKinkIndex(Int_t /*i*/) const ;
+  virtual Double_t Eta() const ;
+  virtual Double_t GetY() const ;
   
-  virtual Double_t GetX() const {return 0.;}
-  virtual Double_t GetZ() const {return 0.;}
-  virtual Int_t GetNcls(Int_t /*idet*/) const {return 0;}
-  virtual void GetIntegratedTimes(Double_t* /*times*/, Int_t nspec=AliPID::kSPECIES) const {if (nspec<0) return;}
-  virtual Double_t GetSigned1Pt()  const {return 0.;}  
-  virtual Double_t GetLinearD(Double_t /*xv*/, Double_t /*yv*/) const {return 0.;}
-  virtual const AliVVtrack *GetConstrainedParam() const {return NULL;}
-  virtual Double_t GetAlpha() const {return 0.;}
-  virtual Char_t GetITSclusters(Int_t* /*idx*/) const {return 0;}
-  virtual Double_t GetSign() const {return 0.;}
-  virtual UShort_t GetTPCNcls() const { return 0;}
-  virtual Float_t GetTPCCrossedRows() const {return 0.;}
-  virtual Double_t GetTPCsignal() const {return 0.;}
-  virtual Double_t GetTOFsignal() const {return 0.;}
-  virtual UChar_t GetTRDclusters(Int_t* /*idx*/) const {return 0;}
+  virtual Double_t GetX() const ;
+  virtual Double_t GetZ() const ;
+  virtual Int_t GetNcls(Int_t /*idet*/) const ;
+  virtual void GetIntegratedTimes(Double_t* /*times*/, Int_t nspec=AliPID::kSPECIES) const ;
+  virtual Double_t GetSigned1Pt()  const ;
+  virtual Double_t GetLinearD(Double_t /*xv*/, Double_t /*yv*/) const ;
+  virtual const AliVVtrack *GetConstrainedParam() const ;
+  virtual Double_t GetAlpha() const ;
+  virtual Char_t GetITSclusters(Int_t* /*idx*/) const ;
+  virtual Double_t GetSign() const ;
+  virtual UShort_t GetTPCNcls() const ;
+  virtual Float_t GetTPCCrossedRows() const ;
+  virtual Double_t GetTPCsignal() const ;
+  virtual Double_t GetTOFsignal() const ;
+  virtual UChar_t GetTRDclusters(Int_t* /*idx*/) const ;
   
   //AliTPCtrack
-  virtual Int_t GetNFoundable() const {return 0;} 
-  virtual Double_t GetdEdx()  const {return 0.;}
+  virtual Int_t GetNFoundable() const ;
+  virtual Double_t GetdEdx()  const ;
 
   ClassDef(AliVVtrack, 1)   // base class for track data
 
