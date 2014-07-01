@@ -34,7 +34,7 @@ void runTTreeFilter() {
     chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0007/AliAOD.root");
     chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0008/AliAOD.root");
     chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0009/AliAOD.root");
-    chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0010/AliAOD.root"); 
+    chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0010/AliAOD.root");
     // create an input handler
     AliVEventHandler* inputH = new AliAODInputHandler();
     // and connect it to the manager
@@ -64,24 +64,11 @@ void runTTreeFilter() {
     gROOT->LoadMacro("../objects/AliFlowTTreeTrack.cxx+");
     gROOT->LoadMacro("../objects/AliAnalysisTaskTTreeFilter.cxx+");
 
-    AliAnalysisTaskTTreeFilter* filter = new AliAnalysisTaskTTreeFilter("filter");
-    // add the task to the manager
-    mgr->AddTask(filter);
-    // set the trigger selection
-    filter->SelectCollisionCandidates(AliVEvent::kAnyINT);
+    // load the addtask
+    gROOT->LoadMacro("AddTaskTTreeFilter.C");
 
-    // get the common input container from the analysis manager
-    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  
-    AliAnalysisDataContainer *coutput = mgr->CreateContainer(
-        "Tree",
-        TTree::Class(),
-        AliAnalysisManager::kOutputContainer,
-        "myFilteredTree.root");
-    // connect the input data to the flow event task
-    mgr->ConnectInput(filter, 0, cinput);
-    // and connect the output to the flow event task
-    mgr->ConnectOutput(filter, 1, coutput);
+    // launch the task
+    AddTaskTTreeFilter();
 
     // check if we can initialize the manager
     if(!mgr->InitAnalysis()) return;   
