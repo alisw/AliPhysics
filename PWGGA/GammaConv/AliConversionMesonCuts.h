@@ -89,6 +89,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   TList *GetCutHistograms(){return fHistograms;}
   void SmearParticle(AliAODConversionPhoton * photon);
   void SmearVirtualPhoton(AliAODConversionPhoton* photon);
+  TLorentzVector SmearElectron(TLorentzVector particle);
   ///Cut functions
   Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
   Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
