@@ -109,11 +109,11 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 		cutarray[ 3] = "5240001002092970028250400000"; clustercutarray[3] = "10000040022030000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
 		cutarray[ 4] = "5250001002092970028250400000"; clustercutarray[4] = "10000040022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
 	} else if (trainConfig == 2){ // PHOS clusters
-		cutarray[ 0] = "6010001002092970028250400000"; clustercutarray[0] = "20000040022030000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		cutarray[ 1] = "6120001002092970028250400000"; clustercutarray[1] = "20000040022030000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		cutarray[ 2] = "5010001002092970028250400000"; clustercutarray[2] = "20000040022030000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		cutarray[ 3] = "5240001002092970028250400000"; clustercutarray[3] = "20000040022030000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
-		cutarray[ 4] = "5250001002092970028250400000"; clustercutarray[4] = "20000040022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
+		cutarray[ 0] = "6010001002092970028250400000"; clustercutarray[0] = "20000030022000000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		cutarray[ 1] = "6120001002092970028250400000"; clustercutarray[1] = "20000030022000000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		cutarray[ 2] = "5010001002092970028250400000"; clustercutarray[2] = "20000030022000000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		cutarray[ 3] = "5240001002092970028250400000"; clustercutarray[3] = "20000030022000000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
+		cutarray[ 4] = "5250001002092970028250400000"; clustercutarray[4] = "20000030022000000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
 
 		
 	} else {
@@ -122,6 +122,7 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 	}
 
 	TList *ConvCutList = new TList();
+	TList *ClusterCutList = new TList();
 	TList *MesonCutList = new TList();
 
 	TList *HeaderList = new TList();
