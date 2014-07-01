@@ -32,13 +32,13 @@ ocdbMakeTable(){
     local inFlag=${2}
     local outFile=${3}
     shift 3
-    if [ ! -f ${inFile} ] ; then 
-        echo ${inFile} not found!
-        return 1
-    fi
-    if [ -f ${outFile} ] ; then 
-        >${outFile}
-    fi
+    #if [ ! -f ${inFile} ] ; then 
+    #    echo ${inFile} not found!
+    #    return 1
+    #fi
+    #if [ -f ${outFile} ] ; then 
+    #    >${outFile}
+    #fi
 
     tmpscript=$(mktemp)
     cat > ${tmpscript} <<HEREDOC
