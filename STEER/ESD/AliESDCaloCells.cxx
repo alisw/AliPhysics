@@ -58,12 +58,16 @@ AliESDCaloCells::AliESDCaloCells(const AliESDCaloCells& c) :
 
   for(Int_t i = 0; i < fNCells; i++)
   {
-    fHGLG[i]          = c.fHGLG[i];     
     fCellNumber[i]    = c.fCellNumber[i];
     fAmplitude[i]     = c.fAmplitude[i];
     fTime[i]          = c.fTime[i];
     if(c.fMCLabel)  fMCLabel[i]   = c.fMCLabel[i];
     if(c.fEFraction)fEFraction[i] = c.fEFraction[i];
+  }
+  if(c.fHGLG){
+    for(Int_t i = 0; i < fNCells; i++){
+      fHGLG[i]          = c.fHGLG[i];   
+    }
   }
 }
 
@@ -78,7 +82,8 @@ AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)
     
     if(fNCells != source.fNCells) 
     {
-      delete [] fHGLG ;
+      if(fHGLG)
+        delete [] fHGLG ;
       delete [] fCellNumber;
       delete [] fAmplitude;
       delete [] fTime;
@@ -86,8 +91,9 @@ AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)
       delete [] fEFraction;
       
       fNCells = source.fNCells;
-      
-      fHGLG       = new Bool_t[fNCells] ;
+  
+      if(source.fHGLG)
+        fHGLG       = new Bool_t[fNCells] ;
       fCellNumber = new Short_t[fNCells];
       fAmplitude  = new Double32_t[fNCells];
       fTime       = new Double32_t[fNCells];
@@ -95,7 +101,8 @@ AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)
       fEFraction  = new Double32_t[fNCells];
     }
     
-    memcpy(fCellNumber,source.fHGLG,fNCells*sizeof(Bool_t));
+    if(source.fHGLG)
+      memcpy(fCellNumber,source.fHGLG,fNCells*sizeof(Bool_t));
     memcpy(fCellNumber,source.fCellNumber,fNCells*sizeof(Short_t));
     memcpy(fAmplitude, source.fAmplitude, fNCells*sizeof(Double32_t));
     memcpy(fTime,      source.fTime,      fNCells*sizeof(Double32_t));
@@ -257,7 +264,6 @@ void AliESDCaloCells::Sort()
   Int_t *idxArray = new Int_t[fNCells];
   TMath::Sort(fNCells,fCellNumber,idxArray,kFALSE);
   
-  Bool_t     *newHGLG      = new Bool_t[fNCells];
   Short_t    *newIndex     = new Short_t[fNCells];
   Double32_t *newAmplitude = new Double32_t[fNCells];
   Double32_t *newTime      = new Double32_t[fNCells];
@@ -269,22 +275,27 @@ void AliESDCaloCells::Sort()
     
   for (Int_t i=0; i < fNCells; i++) 
   {
-    newHGLG[i]      = fHGLG[idxArray[i]];
     newIndex[i]     = fCellNumber[idxArray[i]];
     newAmplitude[i] = fAmplitude [idxArray[i]];
     newTime[i]      = fTime      [idxArray[i]];
     if(fMCLabel)   newMCLabel[i]   = fMCLabel  [idxArray[i]];
     if(fEFraction) newEFraction[i] = fEFraction[idxArray[i]];
   }
+  if(fHGLG){
+    Bool_t     *newHGLG      = new Bool_t[fNCells];
+    for (Int_t i=0; i < fNCells; i++) {
+      newHGLG[i]      = fHGLG[idxArray[i]];
+    }
+    delete [] fHGLG;  
+    fHGLG = newHGLG;
+  }
   
-  delete [] fHGLG;
   delete [] fCellNumber;
   delete [] fAmplitude;
   delete [] fTime;
   delete [] fMCLabel;
   delete [] fEFraction;
 
-  fHGLG = newHGLG;
   fCellNumber = newIndex;
   fAmplitude  = newAmplitude;
   fTime       = newTime;
@@ -304,7 +315,8 @@ Bool_t AliESDCaloCells::SetCell(Short_t pos,     Short_t cellNumber, Double32_t 
 
   if (pos>=0 && pos < fNCells) 
   {
-    fHGLG[pos]=isHG ;
+    if(fHGLG)
+      fHGLG[pos]=isHG ;
     fCellNumber[pos] = cellNumber;
     fAmplitude[pos]  = amplitude;
     fTime[pos]       = time;

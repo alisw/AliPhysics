@@ -48,8 +48,9 @@ class AliVCaloCells : public TNamed
   virtual Bool_t   GetCellHighGain(Short_t cellNumber)   = 0;
   virtual Double_t GetCellTime(Short_t cellNumber)       = 0;
   virtual Short_t  GetCellPosition(Short_t cellNumber)   = 0;
-  
+    
   virtual Double_t GetAmplitude(Short_t pos)  const      = 0;
+  virtual Bool_t   GetHighGain(Short_t pos)   const      = 0;
   virtual Double_t GetTime(Short_t pos)       const      = 0;
   virtual Short_t  GetCellNumber(Short_t pos) const      = 0;
 
