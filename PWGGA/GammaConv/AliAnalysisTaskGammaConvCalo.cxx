@@ -641,7 +641,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		}
 
 		fTagOutputList[iCut] = new TList();
-		fTagOutputList[iCut]->SetName(Form("Tagging Output Cut Number %s_%s_%s",cutstring.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
+		fTagOutputList[iCut]->SetName(Form("%s_%s_%s Tagging Output",cutstring.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
 		fTagOutputList[iCut]->SetOwner(1);
 		fCutFolder[iCut]->Add(fTagOutputList[iCut]);
 		
