@@ -104,9 +104,9 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 		cutarray[ 1] = "0005101002092970028250400000"; clustercutarray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, kEMC1 // EMCAL clusters
 		cutarray[ 2] = "0002001002092970028250400000"; clustercutarray[2] = "10000040022030000"; mesonCutArray[2] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, SDD V0OR // EMCAL clusters
 	} else if (trainConfig == 2){ 
-		cutarray[ 0] = "0000001002092970028250400000"; clustercutarray[0] = "20000040022030000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, kMB   // PHOS clusters
-		cutarray[ 1] = "0006101002092970028250400000"; clustercutarray[1] = "20000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, kPHI1 // PHOS clusters
-		cutarray[ 2] = "0002001002092970028250400000"; clustercutarray[2] = "20000040022030000"; mesonCutArray[2] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, SDD V0OR //PHOS clusters
+		cutarray[ 0] = "0000001002092970028250400000"; clustercutarray[0] = "20000030022000000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, kMB   // PHOS clusters
+		cutarray[ 1] = "0006101002092970028250400000"; clustercutarray[1] = "20000030022000000"; mesonCutArray[1] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, kPHI1 // PHOS clusters
+		cutarray[ 2] = "0002001002092970028250400000"; clustercutarray[2] = "20000030022000000"; mesonCutArray[2] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, SDD V0OR //PHOS clusters
 
 		
 	} else {
@@ -115,6 +115,7 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 	}
 
 	TList *ConvCutList = new TList();
+	TList *ClusterCutList = new TList();
 	TList *MesonCutList = new TList();
 
 	TList *HeaderList = new TList();

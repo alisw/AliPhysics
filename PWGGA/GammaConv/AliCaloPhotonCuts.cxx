@@ -918,6 +918,12 @@ void AliCaloPhotonCuts::PrintCuts() {
 
 void AliCaloPhotonCuts::PrintCutsWithValues() {
 	// Print out current Cut Selection with value
+	printf("\nCluster cutnumber \n");
+	for(Int_t ic = 0; ic < kNCuts; ic++) {
+		printf("%d",fCuts[ic]);
+	}
+	printf("\n\n");
+
 	printf("Acceptance cuts: \n");
 	if (fClusterType == 0) printf("\tall calorimeter clusters are used\n");
 	if (fClusterType == 1) printf("\tEMCAL calorimeter clusters are used\n");

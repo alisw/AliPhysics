@@ -108,8 +108,8 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		cutarray[ 0] = "8000001002092970028250400000"; clustercutarray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
 		cutarray[ 1] = "8005201002092970028250400000"; clustercutarray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters
 	} else if (trainConfig == 2) {	
-		cutarray[ 0] = "8000001002092970028250400000"; clustercutarray[0] = "20000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // PHOS clusters
-		cutarray[ 1] = "8006201002092970028250400000"; clustercutarray[1] = "20000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kPHI7	// PHOS clusters	
+		cutarray[ 0] = "8000001002092970028250400000"; clustercutarray[0] = "20000030022000000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // PHOS clusters
+		cutarray[ 1] = "8006201002092970028250400000"; clustercutarray[1] = "20000030022000000"; mesonCutArray[1] = "01525065000000"; //standard cut, kPHI7	// PHOS clusters	
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -147,8 +147,6 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-		
-		Printf("here %d %s\n", i, clustercutarray[i].Data() );
 		
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clustercutarray[i].Data());
