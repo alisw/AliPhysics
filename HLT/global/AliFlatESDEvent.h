@@ -21,8 +21,8 @@ class AliESDV0;
 class TString;
 class AliVVv0;
 
-//class AliFlatESDEvent: public AliVVevent {
-class AliFlatESDEvent {
+class AliFlatESDEvent: public AliVVevent {
+//class AliFlatESDEvent {
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
