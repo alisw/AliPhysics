@@ -59,6 +59,7 @@ void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameF
     Byte_t *mem = new Byte_t[AliFlatESDEvent::EstimateSize(esd, useESDFriends)];
 
     flatEsd = reinterpret_cast<AliFlatESDEvent*>(mem);    
+	new (flatEsd) AliFlatESDEvent(1);
 
     // -- Fill AliFlatESDEvent
     flatEsd->Fill(esd, useESDFriends);  

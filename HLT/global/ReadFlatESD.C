@@ -47,6 +47,8 @@ void ReadFlatESD(const char* filename="outFlatESD.dat") {
     int iEvent = 0;
     while( curr < endBuff ){
       AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent *>(curr);
+			new (flatEsd) AliFlatESDEvent(1);
+
       cout<<"Reading event "<<iEvent<<":"<<endl;
       cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetPrimaryVertexSPD()
 	  <<" vtx tracks: "<<(Bool_t) flatEsd->GetPrimaryVertexTracks()	
