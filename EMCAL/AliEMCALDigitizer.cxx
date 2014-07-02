@@ -770,101 +770,107 @@ void AliEMCALDigitizer::CalibrateADCTime(Float_t & adc, Float_t & time, const In
 
 
 //____________________________________________________________________________
-void AliEMCALDigitizer::Digitize(Option_t *option) 
-{ 
+void AliEMCALDigitizer::Digitize(Option_t *option)
+{
   // Steering method to process digitization for events
   // in the range from fFirstEvent to fLastEvent.
   // This range is optionally set by SetEventRange().
   // if fLastEvent=-1, then process events until the end.
   // by default fLastEvent = fFirstEvent (process only one event)
-
-  if (!fInit) { // to prevent overwrite existing file
+  
+  if (!fInit)
+  { // to prevent overwrite existing file
     Error( "Digitize", "Give a version name different from %s", fEventFolderName.Data() ) ;
     return ;
-  } 
-
-  if (strstr(option,"print")) {
-
+  }
+  
+  if (strstr(option,"print"))
+  {
     Print();
-    return ; 
+    return ;
   }
   
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALDigitizer");
-
+  
   AliRunLoader *rl = AliRunLoader::Instance();
+  
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
-  Int_t nEvents = 0;
   if(!emcalLoader)
   {
     AliFatal("Did not get the  Loader");
+    return; // coverity
   }
-  else
-  {
-    if (fLastEvent == -1)
-      fLastEvent = rl->GetNumberOfEvents() - 1 ;
-    else if (fDigInput)
-      fLastEvent = fFirstEvent ; // what is this ??
-    
-    nEvents = fLastEvent - fFirstEvent + 1;
-    Int_t ievent  = -1;
-
-    AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-    if(!geom)
-    {
-      AliFatal("Geometry pointer null");
-      return; // fix for coverity
-    }
-    
-    const Int_t nTRU = geom->GetNTotalTRU();
-    TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",    nTRU*96);
-    TClonesArray* digitsTRG = new TClonesArray("AliEMCALRawDigit", nTRU*96);
-
-    rl->LoadSDigits("EMCAL");
-    for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-      
-      rl->GetEvent(ievent);
-      
-      Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
-      
-      WriteDigits() ;
-      
-      //Trigger Digits
-      //-------------------------------------
-     
-
-      Digits2FastOR(digitsTMP, digitsTRG);  
-      
-      WriteDigits(digitsTRG);
-      
-      (emcalLoader->TreeD())->Fill();
-      
-      emcalLoader->WriteDigits(   "OVERWRITE");
-      
-      Unload();
-      
-      digitsTRG  ->Delete();
-      digitsTMP  ->Delete();
-      
-      //-------------------------------------
-      
-      if(strstr(option,"deb"))
-        PrintDigits(option);
-      if(strstr(option,"table")) gObjectTable->Print();
-      
-      //increment the total number of Digits per run 
-      fDigitsInRun += emcalLoader->Digits()->GetEntriesFast() ;  
-    }//loop
-       
-  }//loader exists
   
-  if(strstr(option,"tim")){
+  if (fLastEvent == -1)
+    fLastEvent = rl->GetNumberOfEvents() - 1 ;
+  else if (fDigInput)
+    fLastEvent = fFirstEvent ; // what is this ??
+  
+  Int_t nEvents = fLastEvent - fFirstEvent + 1;
+  Int_t ievent  = -1;
+  
+  AliEMCAL * emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
+  if(!emcal)
+  {
+    AliFatal("Did not get the AliEMCAL pointer");
+    return; // coverity
+  }
+  
+  AliEMCALGeometry *geom = emcal->GetGeometry();
+  if(!geom)
+  {
+    AliFatal("Geometry pointer null");
+    return; // fix for coverity
+  }
+  
+  const Int_t nTRU = geom->GetNTotalTRU();
+  TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",    nTRU*96);
+  TClonesArray* digitsTRG = new TClonesArray("AliEMCALRawDigit", nTRU*96);
+  
+  rl->LoadSDigits("EMCAL");
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++)
+  {
+    rl->GetEvent(ievent);
+    
+    Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
+    
+    WriteDigits() ;
+    
+    //Trigger Digits
+    //-------------------------------------
+    
+    Digits2FastOR(digitsTMP, digitsTRG);
+    
+    WriteDigits(digitsTRG);
+    
+    (emcalLoader->TreeD())->Fill();
+    
+    emcalLoader->WriteDigits(   "OVERWRITE");
+    
+    Unload();
+    
+    digitsTRG  ->Delete();
+    digitsTMP  ->Delete();
+    
+    //-------------------------------------
+    
+    if(strstr(option,"deb"))
+      PrintDigits(option);
+    if(strstr(option,"table")) gObjectTable->Print();
+    
+    //increment the total number of Digits per run
+    fDigitsInRun += emcalLoader->Digits()->GetEntriesFast() ;
+  }//loop
+  
+  if(strstr(option,"tim"))
+  {
     gBenchmark->Stop("EMCALDigitizer");
     Float_t cputime   = gBenchmark->GetCpuTime("EMCALDigitizer");
     Float_t avcputime = cputime;
     if(nEvents==0) avcputime = 0 ;
     AliInfo(Form("Digitize: took %f seconds for Digitizing %f seconds per event", cputime, avcputime)) ;
-  } 
+  }
 }
 
 //__________________________________________________________________
