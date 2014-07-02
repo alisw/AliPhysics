@@ -2066,7 +2066,7 @@ goSubmitBatch()
   echo "submit make a summary"
   echo
 
-  [[ -z ${alirootEnvQA} ]] && alirootEnvQA=$(encSpaces ${alirootEnv})
+  [[ -z ${alirootEnvQA} ]] && alirootEnvQA=$(encSpaces "${alirootEnv}")
   submit "${JOBID6}" 1 1 "${LASTJOB}" "${alirootEnvQA} ${self}" MakeSummary ${configFile} "commonOutputPath=${commonOutputPath}"
   LASTJOB=${JOBID6}
   #################################################################################
