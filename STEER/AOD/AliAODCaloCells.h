@@ -74,7 +74,7 @@ class AliAODCaloCells : public AliVCaloCells
   Bool_t      fIsSorted;     //! true if cell arrays are sorted by index
   Char_t      fType;         // Cell type
   
-  ClassDef(AliAODCaloCells, 4);
+  ClassDef(AliAODCaloCells, 5);
   
 };
 

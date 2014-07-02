@@ -77,7 +77,7 @@ class AliESDCaloCells : public AliVCaloCells
   Bool_t      fIsSorted;     //! true if cell arrays are sorted by index
   Char_t      fType;         // Cell type
 
-  ClassDef(AliESDCaloCells, 4);
+  ClassDef(AliESDCaloCells, 5);
 };
 
 
