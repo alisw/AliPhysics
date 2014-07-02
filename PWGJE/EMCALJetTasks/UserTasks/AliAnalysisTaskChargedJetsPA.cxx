@@ -233,7 +233,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_noPtDep(0)
+AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fNumberOfCentralityBins(20), fCentralityType("V0A"), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_noPtDep(0)
 {
   #ifdef DEBUGMODE
     AliInfo("Calling constructor.");
@@ -297,7 +297,7 @@ void AliAnalysisTaskChargedJetsPA::InitializeTrackcuts()
 
   //pPb
   fTrackCutsPA_global = static_cast<AliESDtrackCuts*>(commonTrackCuts->Clone("fTrackCutsPA_global"));
-  fTrackCutsPA_global->SetMinNCrossedRowsTPC(70);
+  fTrackCutsPA_global->SetMinNCrossedRowsTPC(fMinNCrossedRows);
   fTrackCutsPA_global->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
   fTrackCutsPA_complementary = static_cast<AliESDtrackCuts*>(fTrackCutsPA_global->Clone("fTrackCutsPA_complementary"));
   fTrackCutsPA_complementary->SetRequireITSRefit(kFALSE);

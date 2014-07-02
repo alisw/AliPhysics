@@ -77,6 +77,9 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   TH2F *hCos2DeltaVzATPCvsCentrality;
   TH2F *hCos2DeltaVzCTPCvsCentrality;
   TH2F *hCos2DeltaVzCVzAvsCentrality;
+  TH2F *hCos2DeltaVzMTPCpvsCentrality;
+  TH2F *hCos2DeltaVzMTPCnvsCentrality;
+  TH2F *hCos2DeltaTPCpTPCnvsCentrality;
 
   // For SP resolution
 

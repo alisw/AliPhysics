@@ -2006,7 +2006,7 @@ void AliFourPion::UserExec(Option_t *)
 	    }
 	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fAcceptedPairsWeighting"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
 	  }
-	  if(ch1 != ch2 && !fGeneratorOnly && !fMCcase){// remove +- low-q pairs to keep balance between ++ and +- contributions to multi-particle Q3,Q4 projections
+	  /*if(ch1 != ch2 && !fGeneratorOnly && !fMCcase){// remove +- low-q pairs to keep balance between ++ and +- contributions to multi-particle Q3,Q4 projections
 	    Int_t tempChGroup[2]={0,1};
 	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fTotalPairsWeightingMC"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
 	    if(!AcceptPairPM((fEvt+en1)->fTracks[i], (fEvt+en2)->fTracks[j])) {
@@ -2014,7 +2014,7 @@ void AliFourPion::UserExec(Option_t *)
 	      continue;
 	    }
 	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fAcceptedPairsWeightingMC"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
-	  }
+	    }*/
 	  
 	  GetQosl(pVect1, pVect2, qout, qside, qlong);
 	  if( (en1+en2==0)) {
