@@ -2054,6 +2054,7 @@ void AliAnalysisTaskChargedJetsPA::BinLogAxis(const THn *h, Int_t axisNumber)
 //________________________________________________________________________
 void AliAnalysisTaskChargedJetsPA::Terminate(Option_t *)
 {
+/*
   PostData(1, fOutputLists[0]);
   fOutputLists[0] = dynamic_cast<TList*> (GetOutputData(1)); // >1 refers to output slots
 
@@ -2075,6 +2076,7 @@ void AliAnalysisTaskChargedJetsPA::Terminate(Option_t *)
       fOutputLists[1] = dynamic_cast<TList*> (GetOutputData(2)); // >1 refers to output slots
     }
   }
+*/
 }
 
 //________________________________________________________________________
@@ -2082,12 +2084,14 @@ AliAnalysisTaskChargedJetsPA::~AliAnalysisTaskChargedJetsPA()
 {
   // Destructor. Clean-up the output list, but not the histograms that are put inside
   // (the list is owner and will clean-up these histograms). Protect in PROOF case.
+/*
   delete fHybridESDtrackCuts;
   delete fHybridESDtrackCuts_noPtDep;
 
   for(Int_t i=0; i<static_cast<Int_t>(fOutputLists.size()); i++)
     if (fOutputLists[i] && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
       delete fOutputLists[i];
+*/
 }
 
 //________________________________________________________________________
