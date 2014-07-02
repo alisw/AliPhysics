@@ -59,7 +59,7 @@ class AliESDHybridTrackcuts {
 class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
  public:
   // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
-  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_noPtDep(0)
+  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fNumberOfCentralityBins(20), fCentralityType("V0A"), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_noPtDep(0)
   {
   // dummy
   }
@@ -82,6 +82,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        SetCentralityToOne (Bool_t val) {fSetCentralityToOne = val;}
   void        SetNoExternalBackground (Bool_t val) {fNoExternalBackground = val;}
   void        SetBackgroundForJetProfile (Bool_t val) {fBackgroundForJetProfile = val;}
+  void        SetMinNCrossedRows(Int_t val) {fMinNCrossedRows = val;}
   void        SetNumberOfCentralityBins(Int_t val) {fNumberOfCentralityBins = val;} 
   void        SetTrackMinPt(Double_t minPt) {fMinJetPt = minPt;}
   void        SetSignalJetMinPt(Double_t minPt) {fMinJetPt = minPt;}
@@ -216,6 +217,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Double_t            fMinJetPt;              // Min jet pt to be accepted
   Double_t            fMinJetArea;            // Min jet area to be accepted
   Double_t            fMinBackgroundJetPt;    // Min jet pt to be accepted as background jet
+  Int_t               fMinNCrossedRows;       // Min number of crossed TPC rows for trackcut analysis
   Int_t               fNumberOfCentralityBins;// Number of centrality bins used for histograms
   TString             fCentralityType;        // Used centrality estimate (V0A, V0C, V0M, ...)
 
