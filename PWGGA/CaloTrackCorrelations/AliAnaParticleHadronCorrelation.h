@@ -253,7 +253,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPhiLeading;                   //! phi distribution vs pT of leading particles
   TH2F *       fhEtaLeading;                   //! eta distribution vs pT of leading particles
   
-  TH1F *       fhPtLeadingMC[6];               //! pT distribution of leading particles, check the origin of the cluster : decay photon (pi0, eta, other), merged photon (pi0), hadron, rest of photons (prompt, FSR, ISR)
+  TH1F *       fhPtLeadingMC[7];               //! pT distribution of leading particles, check the origin of the cluster : "Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"
 
   TH2F *       fhPtLeadingCentrality;          //! pT distribution of leading particles vs centrality
   TH2F *       fhPtLeadingEventPlane;          //! pT distribution of leading particles vs centrality

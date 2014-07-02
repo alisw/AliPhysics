@@ -1669,7 +1669,7 @@ Now that the flow event task is connected to input data, the flow analysis tasks
 \end{description}
 
 \section{Flow analysis in ROOT: Using TTree's and TNTuples}
-As stated at the beginning of this chapter, every flow analysis in the flow package starts by filling the flow event. The flow event base class, \texttt{AliFlowEventSimple}\index{AliFlowEventSimple}, is a class in \texttt{libPWGflowBase} which has no dependencies other than some \texttt{ROOT} libraries; the same is true for the implementation of the flow analysis methods. This means that when you do not need the \texttt{AliROOT} interface for e.g. track and event selection, the flow package can be used by just invoking the \texttt{libPWGflowBase.so} library in \texttt{ROOT}\footnote{A makefile to compile the \texttt{libPWGflowBase.so} library from the command line will be added to \texttt{\$ALICE\_ROOT/PWGCF/FLOW/macros/ ...}}. The steps that are necessary to use the flow package in a bare \texttt{ROOT} environment are similar to those explained in chapter \ref{sec:onthefly}, with the exception that instead of generating events on-the-fly, we need to fill the flow event with information from the source of data which we want to analyze. In the next two subsections we will take a look at how to do a flow analysis on generic data in just \texttt{ROOT}. To start, pseudo-code of how to setup an analysis on a \texttt{TTree} will filled with particles be given. This example can be used as a starting point for running the flow package on any kind of input data. After this, we will work through an example of reading and analyzing \texttt{STAR} data. 
+As stated at the beginning of this chapter, every flow analysis in the flow package starts by filling the flow event. The flow event base class, \texttt{AliFlowEventSimple}\index{AliFlowEventSimple}, is a class in \texttt{libPWGflowBase} which has no dependencies other than some \texttt{ROOT} libraries; the same is true for the implementation of the flow analysis methods. This means that when you do not need the \texttt{AliROOT} interface for e.g. track and event selection, the flow package can be used by just invoking the \texttt{libPWGflowBase.so} library in \texttt{ROOT}\footnote{A makefile to compile the \texttt{libPWGflowBase.so} library from the command line will be added to \texttt{\$ALICE\_ROOT/PWGCF/FLOW/macros/ ...}}. The steps that are necessary to use the flow package in a bare \texttt{ROOT} environment are similar to those explained in chapter \ref{sec:onthefly}, with the exception that instead of generating events on-the-fly, we need to fill the flow event with information from the source of data which we want to analyze. In the next two subsections we will take a look at how to do a flow analysis on generic data in just \texttt{ROOT}. To start, pseudo-code of how to setup an analysis on a \texttt{TTree} will filled with particles be given. This example can be used as a starting point for running the flow package on any kind of input data. After this, we will work through an example of reading and analyzing \texttt{STAR} data. The last subsection of this chapter will point you to a fully working starting point for doing flow analysis on \texttt{TTree}'s, which firstly converts data to a \texttt{TTree} and after this reads the stored \texttt{TTree} from file and performs flow analysis in it in \texttt{ROOT}.
 
 \subsection{A custom class derived from AliFlowEventSimple}
 In this example, an analysis on a \texttt{TTree} is performed by deriving a class from the flow event class \textt{AliFlowEventSimple}, \texttt{MyFlowEvent}, which can read a specific input format (in this case a branch\texttt{TTree!branch} of a \texttt{TTree}) and fills the flow event from this input. Of course you can design your task in a different way, but in this section we will stick to that example. Note that the following suggestions are all written in pseudo-code, so copy-pasting it will lead to nothing ...
@@ -1858,6 +1858,26 @@ AliFlowEventStar::AliFlowEventStar( const AliStarEvent* starevent,
   }
 }\end{lstlisting}
 
+\subsection{Getting started yourself}
+To get started with flow analysis on \texttt{TTree's} yourself, a set of example macros and classes is provided at \texttt{\$ALICE\_ROOT/PWGCF/FLOW/Documentation/examples/manual/ttree}. These classes and macros will guide you through creating a \texttt{TTree} with data from \texttt{ALICE} events in the analysis framework, and performing a flow analysis on them using only \texttt{ROOT}. The example is set up as follows:
+\begin{itemize}
+\item There are two macros (in macros folder)
+\begin{itemize}
+\item run: runs (in \texttt{AliROOT}) and fills a \text{TTree} with kinematic info from \texttt{AliVEvent}
+\item read: reads (in just \texttt{ROOT}) the \text{TTree} info and performs a flow analysis with the flow package
+\end{itemize}
+\item There are two analysis classes
+\begin{itemize}
+\item  \texttt{AliAnalysisTaskTTreeFilter}\index{AliAnalysisTaskTTreeFilter}, an analysis task for AliROOT which converts input events to a \texttt{TTree}
+\item \texttt{AliFlowEventSimpleFromTTree}\index{AliFlowEventSimpleFromTTree} a task for ROOT, fills flow events with \texttt{TTree} input
+\end{itemize}
+\item and lastly two helper classes which should serve as a starting point
+\begin{itemize}
+\item \texttt{AliFlowTTreeEvent}\index{AliFlowTTreeEvent}, a simple event class
+\item \texttt{AliFlowTTreeTrack}\index{AliFlowTTreeTrack}, a simple track class
+\end{itemize}
+\end{itemize}
+As these are helper classes designed to get the user started, they are not compiled by default. The run and read macro will them compile on-the-fly.
 
 \chapter{Methods}\index{flow analysis methods}\index{methods}
 \label{sec:methods}
