@@ -364,10 +364,21 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 					     
         ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233102623712"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + kAny  + smearing photon virtual electrons 
 
-} else if ( trainConfig  == 43 ) {
+} else if( trainConfig  == 43 ) {
   
-	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400833502623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  kBoth + smearing photon virtual
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400833502623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  kBoth + New psi pair cut  fPsiPairCut = 0.60;    fDeltaPhiCutMin = 0.0; fDeltaPhiCutMax = 0.06;
 
+} else if( trainConfig  == 44 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400833502623712"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + New psi pair cut  fPsiPairCut = 0.60;     fDeltaPhiCutMin = 0.0; fDeltaPhiCutMax = 0.06; +  Electron Smearing
+	
+} else if( trainConfig   == 45 ) {  
+					     
+        ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233502623710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + kAny  + New psi pair cut + New psi pair cut  fPsiPairCut = 0.60    fDeltaPhiCutMin = 0.0 fDeltaPhiCutMax = 0.06
+
+} else if( trainConfig   == 46 ) {  
+
+        ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "90475400233502623712"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + kAny  + New psi pair cut + New psi pair cut  fPsiPairCut = 0.60;    fDeltaPhiCutMin = 0.0; fDeltaPhiCutMax = 0.06; + photon virtual electrons 
 } 
 
 
@@ -400,7 +411,8 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
       
 
 	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9  ||  trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 16 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 || trainConfig == 22 || trainConfig == 23 ||
-		  trainConfig == 28 || trainConfig == 29 || trainConfig == 30 ||  trainConfig == 31  || trainConfig == 32 || trainConfig == 33 || trainConfig == 37 || trainConfig == 38 || trainConfig == 39 || trainConfig == 40 || trainConfig == 41 || trainConfig == 41 || trainConfig == 43 )
+		  trainConfig == 28 || trainConfig == 29 || trainConfig == 30 ||  trainConfig == 31  || trainConfig == 32 || trainConfig == 33 || trainConfig == 37 || trainConfig == 38 || trainConfig == 39 || trainConfig == 40 || trainConfig == 41 || trainConfig == 41 || trainConfig == 43 || trainConfig == 44 ||
+		  trainConfig == 45 || trainConfig == 46 )
 	  ){
 	    
 	    if (doWeighting){
