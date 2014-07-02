@@ -181,13 +181,13 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       hDeDxExp[iB][i] = new TProfile(name_hDeDxExp[i],title_hDeDxExp[i],1,0,5,0,1,"");//,500,0,5,0,1000,""); toram
     }
 
-    Char_t name_fNsigmaTpc[nPart][200];
-    Char_t title_fNsigmaTpc[nPart][200];
+    Char_t name_fNsigmaTpc[nSpec][200];
+    Char_t title_fNsigmaTpc[nSpec][200];
     if(kSignalCheck==1) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=100; hbins[1]=100;} toram
-    else {hbins[0]=1; hbins[1]=1;}
-    for(Int_t i=0;i<nPart;i++) {
-      snprintf(name_fNsigmaTpc[i],200,"NsigmaTpc_%s",namePart[i]);
-      snprintf(title_fNsigmaTpc[i],200,"NsigmaTpc_%s;p_{TPC}/|z| (GeV/c);n_{#sigma_{TPC}}^{%s}",namePart[i],namePart[i]);
+    else {hbins[0]=100; hbins[1]=100;}//temp!
+    for(Int_t i=0;i<nSpec;i++) {
+      snprintf(name_fNsigmaTpc[i],200,"NsigmaTpc_%s",name[i]);
+      snprintf(title_fNsigmaTpc[i],200,"NsigmaTpc_%s;p_{TPC}/|z| (GeV/c);n_{#sigma_{TPC}}^{%s}",name[i],name[i]);
       fNsigmaTpc[iB][i] = new TH2F(name_fNsigmaTpc[i],title_fNsigmaTpc[i],hbins[0],0,5,hbins[1],-5,5);
     }
     
@@ -310,7 +310,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       }
     }
 
-    const Int_t BinM2pT[nPart]={1,1,1,1000,1000,500,1,400,1};//1,1,600,250,500,500,1000,400,600//1,1,1,250,500,500,1,400,1
+    const Int_t BinM2pT[nPart]={1,1,1,1000,500,500,1,400,1};//1,1,600,250,500,500,1000,400,600//1,1,1,250,500,500,1,400,1
     const Double_t RangeM2min[nPart]={0.0,0.0,-0.1,0.0,0.0,0.0,0.0,0.0,0.0};
     const Double_t RangeM2max[nPart]={1.0,1.0,0.5,2.0,4.0,6.0,12.0,4.0,6.0};
 
@@ -391,7 +391,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     fList[iB]->Add(hNTrdSlices[iB]);
     //for(Int_t i=0;i<2;i++) fList[iB]->Add(fdEdxVSp[iB][i]);
     //for(Int_t i=0;i<nPart;i++) fList[iB]->Add(hDeDxExp[iB][i]);
-    //for(Int_t i=0;i<nPart;i++) fList[iB]->Add(fNsigmaTpc[iB][i]);
+    for(Int_t i=0;i<nSpec;i++) fList[iB]->Add(fNsigmaTpc[iB][i]);
     for(Int_t i=0;i<nPart;i++) {
       if(kSignalCheck!=1) 
 	if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
@@ -604,11 +604,13 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	expdedx[iS] = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, (AliPID::EParticleType) iS, AliTPCPIDResponse::kdEdxDefault, kTRUE);
 	hDeDxExp[iBconf][iS]->Fill(pTPC,expdedx[iS]);
 	nsigmaTPC[iS] = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType) iS);
-	fNsigmaTpc[iBconf][iS]->Fill(pTPC,nsigmaTPC[iS]);
+	//fNsigmaTpc[iBconf][iS]->Fill(pTPC,nsigmaTPC[iS]);
 	if(charge>0) {//positive particle
+	  fNsigmaTpc[iBconf][iS]->Fill(pTPC,nsigmaTPC[iS]);
 	  if(kTOF && (TMath::Abs(DCAxy)<DCAxyCut)) fNsigmaTpc_kTOF[iBconf][iS]->Fill(p,nsigmaTPC[iS]);
 	}
 	else {//negative particle
+	  fNsigmaTpc[iBconf][iS+nPart]->Fill(pTPC,nsigmaTPC[iS]);
 	  if(kTOF && (TMath::Abs(DCAxy)<DCAxyCut)) fNsigmaTpc_kTOF[iBconf][iS+nPart]->Fill(p,nsigmaTPC[iS]);
 	}
 	/*
