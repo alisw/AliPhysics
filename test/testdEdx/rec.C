@@ -1,3 +1,7 @@
+const char * recoStorage="local:///cvmfs/alice.gsi.de/alice/data/2010/OCDB";
+Int_t run=0;
+
+
 void ModifyRecoParam(TObjArray* recoArray, Bool_t useIonTail, Double_t crossTalkCorrection){
   //
   // Modify reco param - and store it in the OCDB in local directory
@@ -8,7 +12,7 @@ void ModifyRecoParam(TObjArray* recoArray, Bool_t useIonTail, Double_t crossTalk
     p->SetUseIonTailCorrection(useIonTail);
     p->SetCrosstalkCorrection(crossTalkCorrection);
   }
-  TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDBrec";
   AliCDBStorage*pocdbStorage = AliCDBManager::Instance()->GetStorage(localStorage.Data());  
   AliCDBMetaData *metaData= new AliCDBMetaData();
   AliCDBId*   id1=new AliCDBId("TPC/Calib/RecoParam/", man->GetRun(), man->GetRun());
@@ -22,8 +26,6 @@ void rec(Bool_t useIonTail, Double_t crossTalkCorrection) {
   // run reconstruction
   // Parameters:
   //   useIonTail - switch for using ion tail correction - OCDB entry will be overritten in  
-  Int_t run=0;
-  const char * recoStorage="local:///cvmfs/alice.gsi.de/alice/data/2010/OCDB";
   //
   // stard reco setting
   //
@@ -66,7 +68,5 @@ void rec(Bool_t useIonTail, Double_t crossTalkCorrection) {
   for (Int_t i=0; i<4; i++){
     AliTPCRecoParam* recoParam = ( AliTPCRecoParam*)recoArray->At(i);
     printf("ipar=%d\t%d\t%f\n",i,recoParam->GetUseIonTailCorrection(), recoParam->GetCrosstalkCorrection());
-  }
-
-
+  } 
 }

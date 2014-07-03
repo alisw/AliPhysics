@@ -13,6 +13,7 @@
 # global variables to be set
 DATE=`date +%Y_%m_%d_%H`
 nEvents=1               #fixed to 1 to make an event by event job submission
+
 ###############################################################################
 submitIonTailXTalkScan()
 {
@@ -94,19 +95,26 @@ runSim(){
 
 
   ## main body of the simulation part
-  rm -rf *.root *.dat *.log fort* hlt hough raw* recraw/*.root recraw/*.log
-  echo aliroot -b -q sim.C\($nevents,$ionTail,$xTalk\)     
+  rm -rf *.root *.dat *.log fort* hlt hough raw* recraw/*.root recraw/*.log GRP* 
+  printf   "\n ======================================================================\n\n"
+  echo Running: aliroot -b -q sim.C\($nevents,$ionTail,$xTalk\)     
   aliroot -b -q sim.C\($nevents,$ionTail,$xTalk\)            2>&1 | tee sim.log
   mv syswatch.log simwatch.log
-  echo aliroot -b -q rec.C\($ionTail\,$xTalk\) 
+  printf   "\n ======================================================================\n\n"
+  echo Running: aliroot -b -q rec.C\($ionTail\,$xTalk\) 
   aliroot -b -q rec.C\($ionTail\,$xTalk\)    2>&1 | tee rec.log    
   mv syswatch.log recwatch.log
-
   ## OCDB entries to be dumped in human readable format
   source $ALICE_ROOT/PWGPP/CalibMacros/AliOCDBtoolkit.sh
+  printf   "\n ======================================================================\n\n"
+  echo Running: ocdbMakeTable AliESDs.root "ESD" OCDBrec.list
   ocdbMakeTable AliESDs.root "ESD" OCDBrec.list
+  printf   "\n ======================================================================\n\n"
+  echo Running: ocdbMakeTable galice.root MC OCDBsim.list
   ocdbMakeTable galice.root MC OCDBsim.list
   ocdbFileName=$(cat OCDBrec.list | grep "TPC/Calib/RecoParam" | gawk '{print $2"/"$3}' )
+  printf   "\n ======================================================================\n\n"
+  echo Running: dumpObject $ocdbFileName  "object" "XML" RecoParam
   dumpObject $ocdbFileName  "object" "XML" RecoParam
 
   return 1;
