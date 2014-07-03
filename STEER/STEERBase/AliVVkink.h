@@ -11,7 +11,8 @@
 
 class AliVVkink
 {
-
+	public:
+  virtual ~AliVVkink() {}
   //  ClassDef(AliVVkink, 0)  // base class for kink data
 
 };

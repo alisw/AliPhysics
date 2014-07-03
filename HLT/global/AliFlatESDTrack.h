@@ -110,9 +110,7 @@ class AliFlatESDTrack: public AliVVtrack {
   AliFlatESDTrack *GetNextTrack() 
 {	
 	
-	AliFlatESDTrack * t = reinterpret_cast<AliFlatESDTrack*> (fContent + fSize);
-	new(t)  AliFlatESDTrack(kTRUE);
-	return t;
+	return reinterpret_cast<AliFlatESDTrack*> (fContent + fSize);
 }
   
   // --------------------------------------------------------------------------------

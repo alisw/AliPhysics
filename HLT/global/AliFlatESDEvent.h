@@ -48,9 +48,7 @@ class AliFlatESDEvent: public AliVVevent {
 
  
   AliFlatESDTrack *GetNextTrackPointer(){ 
-	AliFlatESDTrack * t = reinterpret_cast<AliFlatESDTrack*> (fContent + fSize);
-	new(t)  AliFlatESDTrack(kTRUE);
-	return t;
+		return  reinterpret_cast<AliFlatESDTrack*> (fContent + fSize);
   }
 
   void StoreLastTrack(){ 
@@ -60,9 +58,7 @@ class AliFlatESDEvent: public AliVVevent {
   }
 
   AliFlatESDV0 *GetNextV0Pointer(){
-	AliFlatESDV0 * t = reinterpret_cast<AliFlatESDV0*> (fContent + fSize);
-	new(t)  AliFlatESDV0(kTRUE);
-	return t;
+	return reinterpret_cast<AliFlatESDV0*> (fContent + fSize);
 }
 
   void StoreLastV0(){ 
@@ -75,18 +71,14 @@ class AliFlatESDEvent: public AliVVevent {
 
    const AliFlatESDVertex* GetPrimaryVertexSPD() const {
     if (fPrimaryVertexMask & 0x1){
-		 AliFlatESDVertex * t = reinterpret_cast< AliFlatESDVertex*> (const_cast<Byte_t*>(fContent));
-		new(t)  AliFlatESDVertex(kTRUE);
-		return t;
+		 return reinterpret_cast< AliFlatESDVertex*> (const_cast<Byte_t*>(fContent));
 	}
 	else return NULL;
   } 
 
   const  AliFlatESDVertex* GetPrimaryVertexTracks() const { 
     if (fPrimaryVertexMask & 0x2){
-		 AliFlatESDVertex * t = reinterpret_cast< AliFlatESDVertex*> (const_cast<Byte_t*>(fContent)) + CountBits(fPrimaryVertexMask, 0x1);
-		new(t)  AliFlatESDVertex(kTRUE);
-		return t;
+		 return reinterpret_cast< AliFlatESDVertex*> (const_cast<Byte_t*>(fContent)) + CountBits(fPrimaryVertexMask, 0x1);
 	}
 	else return NULL;
    } 
@@ -96,9 +88,7 @@ class AliFlatESDEvent: public AliVVevent {
   Int_t GetNumberOfTracks() const {return fNTracks;}
   
   AliFlatESDTrack *GetTracks() {
-	AliFlatESDTrack * t = reinterpret_cast<AliFlatESDTrack*> (fContent + fTracksPointer);
-	new(t)  AliFlatESDTrack(kTRUE);
-	return t;
+	return reinterpret_cast<AliFlatESDTrack*> (fContent + fTracksPointer);
 }
 
   const AliVVvertex* GetPrimaryVertex() const {return NULL;}
