@@ -160,7 +160,6 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
   Float_t muonMass = 0.105658389;
   Double_t thetaX, thetaY, pYZ;
   Double_t fPxRec1, fPyRec1, fPzRec1, fE1;
-  Int_t fZ1;
   
   AliESDEvent* fESD = new AliESDEvent();
   TTree* tree = (TTree*) esdFile->Get("esdTree");
@@ -287,7 +286,6 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
       fPzRec1  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaY));
       fPxRec1  = fPzRec1 * TMath::Tan(thetaX);
       fPyRec1  = fPzRec1 * TMath::Tan(thetaY);
-      fZ1 = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
       fE1 = TMath::Sqrt(muonMass * muonMass + fPxRec1 * fPxRec1 + fPyRec1 * fPyRec1 + fPzRec1 * fPzRec1);
       fV1.SetPxPyPzE(fPxRec1, fPyRec1, fPzRec1, fE1);
       // -----------> transverse momentum
