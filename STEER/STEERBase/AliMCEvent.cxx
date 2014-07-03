@@ -880,7 +880,12 @@ void AliMCEvent::AssignGeneratorIndex() {
     for(Int_t i = nh-1; i >= 0; i--){
       AliGenEventHeader* gh = (AliGenEventHeader*)list->At(i);
       Int_t npart = gh->NProduced();
-      if (i==0) npart = nsumpart;
+      if (i==0) {
+	if (npart != nsumpart) {
+	  //	  printf("Header inconsistent ! %5d %5d \n", npart, nsumpart);
+	}
+	npart = nsumpart;
+      }
       //
       // Loop over primary particles for generator i
       for (Int_t j = nsumpart-1; j >= nsumpart-npart; j--) {
@@ -899,10 +904,10 @@ void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
   for (Int_t k = dmin; k <= dmax; k++) {
     AliVParticle* dpart = GetTrack(k);
     dpart->SetGeneratorIndex(index);
-    Int_t dmin = dpart->GetFirstDaughter();
-    Int_t dmax = dpart->GetLastDaughter();
-    if (dmin > -1) {
-      AssignGeneratorIndex(index, dmin, dmax);
+    Int_t d1 = dpart->GetFirstDaughter();
+    Int_t d2 = dpart->GetLastDaughter();
+    if (d1 > -1) {
+      AssignGeneratorIndex(index, d1, d2);
     }
   }
 }
