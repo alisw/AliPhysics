@@ -1,5 +1,7 @@
 void config_Flat( TString directory="outFlat", TString fileName="outFlatHLT.dat")
 {
+
+  cout<<"Now entering config_Flat"<<endl;
   // set up HLT system to enable configuration registration
   AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
 

@@ -147,7 +147,8 @@ Int_t AliFlatESDTrack::Fill(const AliESDtrack* track, AliESDfriendTrack* friendT
 	  tmpCl.fX = currentCl->GetX();
 	  tmpCl.fY = currentCl->GetY();
 	  tmpCl.fZ = currentCl->GetZ();	  
-	  tmpCl.fPadRow  = idxRow; // TO BE CHECKED IF THIS NEEDED or currentCl->GetRow();
+	 // tmpCl.fPadRow  = idxRow; // TO BE CHECKED IF THIS NEEDED or currentCl->GetRow();
+	  tmpCl.fPadRow  = currentCl->GetRow();
 	  tmpCl.fSigmaY2 = currentCl->GetSigmaY2();
 	  tmpCl.fSigmaZ2 = currentCl->GetSigmaZ2();
 	  tmpCl.fCharge  = currentCl->GetQ();
@@ -193,7 +194,7 @@ Int_t AliFlatESDTrack::Fill(const AliESDtrack* track, AliESDfriendTrack* friendT
     //    Printf("DEBUG: Number of clusters for track = %d", fNTPCClusters);
 
     // -- Sorting clusters according to user defined function (increasing pad row numbering)
-    std::sort(GetTPCClusters(), GetTPCClusters()+fNTPCClusters, AliFlatTPCCluster::SortClusters);
+  //  std::sort(GetTPCClusters(), GetTPCClusters()+fNTPCClusters, AliFlatTPCCluster::SortClusters);
   }
 
   return iResult;

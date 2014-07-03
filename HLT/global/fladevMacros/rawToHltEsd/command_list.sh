@@ -20,7 +20,7 @@ if [ $# -lt 3 ]
     fi
 if [ $# -lt 4 ]
     then
-        ocdb="local://$OCDB10"
+        ocdb="local://$OCDB10local"
     else
 				ocdb=$4
     fi
@@ -45,19 +45,25 @@ do
   #  dir=${dir%*/}
   #  echo ${dir##*/}
   echo "Now processing ${file}"
-  rm galice.root
   mkdir ${iFile}
   
   if [ $config = "flat" ]
 	then
 	  echo "using flat ESD converter"
 	  aliroot -q -b ../config_Flat.C'("'${iFile}'","'${ouputfileName}'")' $ALICE_ROOT/HLT/exa/recraw-local.C'("'${file}'","'${ocdb}'", '${start}', '${end}', "HLT", "chains=RootWriter  ignore-hltout")' 2>&1|tee recraw-local.log -a
-	  cat ${iFile}/* >> outFlatESD.dat
+	  cat ${iFile}/*.dat >> outFlatESD.dat
 	else
 	  echo "using normal ESD converter"
 	  aliroot -b -q -l $ALICE_ROOT/HLT/exa/recraw-local.C'("'${file}'","'${ocdb}'", '${start}', '${end}', "HLT","chains=GLOBAL-esd-converter ignore-hltout")' 2>&1|tee recraw-local.log -a
 	  mv AliESD* ${iFile}/
 	fi
-  
+	mv syswatch.log ${iFile}/syswatch.log 
+	if [ $iFile -eq 1 ]
+		then
+			cp 1/syswatch.log syswatch_merged.log
+		else
+			sed 1d $iFile/syswatch.log >> syswatch_merged.log
+		fi
+	mv *.root ${iFile}/
   iFile=$((iFile+1))
 done

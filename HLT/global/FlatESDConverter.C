@@ -128,14 +128,19 @@ Int_t nCl = track->GetNumberOfTPCClusters();
 
     // -- Fill cluster
     if (seed) {
+    
+    Int_t idxRow2=0;
       for (Int_t idxRow = 0; idxRow <  nCl; idxRow++){
       AliFlatTPCCluster * cl = track->GetTPCCluster(idxRow);
+      
 
 			 	cout<<" idx fX fY fZ  fSigmaY2 fSigmaZ2 fCharge fQMax fPadRow" <<endl;
 				cout<< idxRow <<" "<< cl->GetX()<<" "<< cl->GetY()<<" "<< cl->GetZ()<<" "<< cl->GetSigmaY2()<<" "<< cl->GetSigmaZ2()<<" "<< cl->GetCharge()<<" "<< cl->GetQMax() <<" "<< cl->GetPadRow()<<endl;
 				
-				AliTPCclusterMI* cl2 =seed->GetClusterPointer( cl->GetPadRow());
-      
+				AliTPCclusterMI* cl2 = NULL; 
+      while(!cl2 && idxRow2<160){
+      	cl2 = seed->GetClusterPointer(idxRow2++);
+      }
 	if (cl2) {
 	  //cout<<" normalCl fX fY fZ fPadRow fSigmaY2 fSigmaZ2 fCharge fQMax" <<endl;
 				cout<< idxRow <<" "<< cl2->GetX()<<" "<< cl2->GetY()<<" "<< cl2->GetZ()<<" "<< cl2->GetSigmaY2()<<" "<< cl2->GetSigmaZ2()<<" "<< cl2->GetQ()<<" "<< cl2->GetMax()<<" "<< cl2->GetRow() <<endl<<endl;
