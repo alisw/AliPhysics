@@ -63,6 +63,7 @@ AliAnalysisTaskSE(),
   fLinearInterpolation(kTRUE),
   fRMax(11),
   ffcSq(0.7),
+  ffcSqMRC(0.6),
   fFilterBit(7),
   fMaxChi2NDF(10),
   fMinTPCncls(0),
@@ -144,7 +145,8 @@ AliAnalysisTaskSE(),
   fNormQPairSwitch_E1E2(),
   fNormQPairSwitch_E1E3(),
   fNormQPairSwitch_E2E3(),
-  fMomResC2(0x0),
+  fMomResC2SC(0x0),
+  fMomResC2MC(0x0),
   fWeightmuonCorrection(0x0)
 {
   // Default constructor
@@ -237,6 +239,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fLinearInterpolation(kTRUE),
   fRMax(11),
   ffcSq(0.7),
+  ffcSqMRC(0.6),
   fFilterBit(7),
   fMaxChi2NDF(10),
   fMinTPCncls(0),
@@ -318,7 +321,8 @@ AliFourPion::AliFourPion(const Char_t *name)
   fNormQPairSwitch_E1E2(),
   fNormQPairSwitch_E1E3(),
   fNormQPairSwitch_E2E3(),
-  fMomResC2(0x0),
+  fMomResC2SC(0x0),
+  fMomResC2MC(0x0),
   fWeightmuonCorrection(0x0)
 {
   // Main constructor
@@ -415,6 +419,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fLinearInterpolation(obj.fLinearInterpolation),
     fRMax(obj.fRMax),
     ffcSq(obj.ffcSq),
+    ffcSqMRC(obj.ffcSqMRC),
     fFilterBit(obj.fFilterBit),
     fMaxChi2NDF(obj.fMaxChi2NDF),
     fMinTPCncls(obj.fMinTPCncls),
@@ -496,7 +501,8 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fNormQPairSwitch_E1E2(),
     fNormQPairSwitch_E1E3(),
     fNormQPairSwitch_E2E3(),
-    fMomResC2(obj.fMomResC2),
+    fMomResC2SC(obj.fMomResC2SC),
+    fMomResC2MC(obj.fMomResC2MC),
     fWeightmuonCorrection(obj.fWeightmuonCorrection)
 {
   // Copy Constructor
@@ -540,6 +546,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fLinearInterpolation = obj.fLinearInterpolation;
   fRMax = obj.fRMax;
   ffcSq = obj.ffcSq;
+  ffcSqMRC = obj.ffcSqMRC;
   fFilterBit = obj.fFilterBit;
   fMaxChi2NDF = obj.fMaxChi2NDF;
   fMinTPCncls = obj.fMinTPCncls;
@@ -591,7 +598,8 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fDummyB = obj.fDummyB;
   fKT3transition = obj.fKT3transition;
   fKT4transition = obj.fKT4transition;
-  fMomResC2 = obj.fMomResC2;
+  fMomResC2SC = obj.fMomResC2SC;
+  fMomResC2MC = obj.fMomResC2MC;
   fWeightmuonCorrection = obj.fWeightmuonCorrection;
   
   for(Int_t i=0; i<12; i++){
@@ -618,7 +626,8 @@ AliFourPion::~AliFourPion()
   if(fEvt) delete fEvt;
   if(fTempStruct) delete [] fTempStruct;
   if(fRandomNumber) delete fRandomNumber;
-  if(fMomResC2) delete fMomResC2;
+  if(fMomResC2SC) delete fMomResC2SC;
+  if(fMomResC2MC) delete fMomResC2MC;
   if(fWeightmuonCorrection) delete fWeightmuonCorrection;
 
   for(Int_t j=0; j<kMultLimitPbPb; j++){
@@ -1174,6 +1183,11 @@ void AliFourPion::UserCreateOutputObjects()
 	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactor = new TProfile(nameKfactor->Data(),"", fQbinsQ3,0,fQupperBoundQ3, 0,100, "");
 	      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactor);
 	      //
+	      TString *nameKfactorW=new TString(namePC3->Data());
+	      nameKfactorW->Append("_KfactorWeighted");
+	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactorWeighted = new TProfile(nameKfactorW->Data(),"", fQbinsQ3,0,fQupperBoundQ3, 0,100, "");
+	      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactorWeighted);
+	      //
 	      TString *nameMeanQinv=new TString(namePC3->Data());
 	      nameMeanQinv->Append("_MeanQinv");
 	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fMeanQinv = new TProfile(nameMeanQinv->Data(),"", fQbinsQ3,0,fQupperBoundQ3, 0,.2, "");
@@ -1269,6 +1283,11 @@ void AliFourPion::UserCreateOutputObjects()
 		nameKfactor->Append("_Kfactor");
 		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor = new TProfile(nameKfactor->Data(),"", fQbinsQ4,0,fQupperBoundQ4, 0,100, "");
 		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor);
+		//
+		TString *nameKfactorW=new TString(namePC4->Data());
+		nameKfactorW->Append("_KfactorWeighted");
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactorWeighted = new TProfile(nameKfactorW->Data(),"", fQbinsQ4,0,fQupperBoundQ4, 0,100, "");
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactorWeighted);
 		//
 		if(c1==c2 && c1==c3 && c1==c4 && term==12 ){
 		  TString *nameTwoPartNorm=new TString(namePC4->Data());
@@ -1942,6 +1961,8 @@ void AliFourPion::UserExec(Option_t *)
   Bool_t FilledMCpair12=kFALSE, FilledMCtriplet123=kFALSE;
   Bool_t Positive1stTripletWeights=kTRUE, Positive2ndTripletWeights=kTRUE;
   Float_t T12=0, T13=0, T14=0, T23=0, T24=0, T34=0;
+  Int_t momBin12=1, momBin13=1, momBin14=1, momBin23=1, momBin24=1, momBin34=1;
+  Float_t MomResCorr12=1.0, MomResCorr13=1.0, MomResCorr14=1.0, MomResCorr23=1.0, MomResCorr24=1.0, MomResCorr34=1.0;
   //
   AliAODMCParticle *mcParticle1=0x0;
   AliAODMCParticle *mcParticle2=0x0;
@@ -1996,24 +2017,24 @@ void AliFourPion::UserExec(Option_t *)
 	  kT12 = sqrt(pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.;
 	  SetFillBins2(ch1, ch2, bin1, bin2);
 	  
-	  if(qinv12 < fQLowerCut && !fMCcase) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
-	  if(ch1 == ch2 && !fGeneratorOnly && !fMCcase){
+	  if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
+	  if(ch1 == ch2 && !fGeneratorOnly){
 	    Int_t tempChGroup[2]={0,0};
-	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fTotalPairsWeighting"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
+	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fTotalPairsWeighting"))->Fill(qinv12, MCWeight(tempChGroup, 10, ffcSqMRC, qinv12, 0.));
 	    if(!AcceptPair((fEvt+en1)->fTracks[i], (fEvt+en2)->fTracks[j])) {
 	      if(en1==0 && en2==0) ((TH1F*)fOutputList->FindObject("fRejectedPairs"))->Fill(qinv12);
 	      continue;
 	    }
-	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fAcceptedPairsWeighting"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
+	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fAcceptedPairsWeighting"))->Fill(qinv12, MCWeight(tempChGroup, 10, ffcSqMRC, qinv12, 0.));
 	  }
 	  /*if(ch1 != ch2 && !fGeneratorOnly && !fMCcase){// remove +- low-q pairs to keep balance between ++ and +- contributions to multi-particle Q3,Q4 projections
 	    Int_t tempChGroup[2]={0,1};
-	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fTotalPairsWeightingMC"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
+	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fTotalPairsWeightingMC"))->Fill(qinv12, MCWeight(tempChGroup, 10, ffcSqMRC, qinv12, 0.));
 	    if(!AcceptPairPM((fEvt+en1)->fTracks[i], (fEvt+en2)->fTracks[j])) {
 	      if(en1==0 && en2==0) ((TH1F*)fOutputList->FindObject("fRejectedPairsMC"))->Fill(qinv12);
 	      continue;
 	    }
-	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fAcceptedPairsWeightingMC"))->Fill(qinv12, MCWeight(tempChGroup, 10, 0.65, qinv12, 0.));
+	    if(en1==0 && en2==1) ((TH1F*)fOutputList->FindObject("fAcceptedPairsWeightingMC"))->Fill(qinv12, MCWeight(tempChGroup, 10, ffcSqMRC, qinv12, 0.));
 	    }*/
 	  
 	  GetQosl(pVect1, pVect2, qout, qside, qlong);
@@ -2069,7 +2090,7 @@ void AliFourPion::UserExec(Option_t *)
 	    if((kTbin>=fKbinsT) || (kYbin>=fKbinsY)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
 	    if(fGenerateSignal && en2==0) {
 	      Int_t chGroup2[2]={ch1,ch2};
-	      Float_t WInput = MCWeight(chGroup2, fRMax, 0.65, qinv12, kT12);
+	      Float_t WInput = MCWeight(chGroup2, fRMax, ffcSqMRC, qinv12, kT12);
 	      KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong), WInput);
 	    }else KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
 	  }
@@ -2360,8 +2381,8 @@ void AliFourPion::UserExec(Option_t *)
 		    else rForQW=2;
 		    
 		    
-		    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fMCqinv->Fill(qinv12MC, MCWeight(chGroup2, rForQW, 0.65, qinv12MC, 0.));// was 4,5
-		    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fMCqinvQW->Fill(qinv12MC, qinv12MC*MCWeight(chGroup2, rForQW, 0.65, qinv12MC, 0.));// was 4,5
+		    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fMCqinv->Fill(qinv12MC, MCWeight(chGroup2, rForQW, ffcSqMRC, qinv12MC, 0.));// was 4,5
+		    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fMCqinvQW->Fill(qinv12MC, qinv12MC*MCWeight(chGroup2, rForQW, ffcSqMRC, qinv12MC, 0.));// was 4,5
 		    // pion purity
 		    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fPIDpurityDen->Fill(kT12, qinv12);
 		    Int_t SCNumber = 1;
@@ -2442,7 +2463,8 @@ void AliFourPion::UserExec(Option_t *)
 		    // momentum resolution
 		    for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 		      Float_t Rvalue = 5+Riter;
-		      Float_t WInput = MCWeight(chGroup2, Rvalue, 0.65, qinv12MC, 0.);
+		      Float_t WInput = MCWeight(chGroup2, Rvalue, ffcSqMRC, qinv12MC, 0.);
+		      //if(Riter==fRVALUES-1 && qinv12MC<0.015 && ch1==ch2) cout<<qinv12MC<<"  "<<(MCWeight(chGroup2, Rvalue, 0.65, qinv12MC, 0.)-1.) / (MCWeight(chGroup2, Rvalue, ffcSqMRC, qinv12MC, 0.)-1.)<<endl;
 		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[0].fIdeal->Fill(Rvalue, qinv12MC, WInput);
 		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[1].fIdeal->Fill(Rvalue, qinv12MC);
 		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[0].fSmeared->Fill(Rvalue, qinv12, WInput);
@@ -2488,10 +2510,26 @@ void AliFourPion::UserExec(Option_t *)
 		
 		FSICorr13 = FSICorrelation(ch1,ch3, qinv13);
 		FSICorr23 = FSICorrelation(ch2,ch3, qinv23);
-
+		if(!fGenerateSignal && !fMCcase) {
+		  momBin12 = fMomResC2SC->GetYaxis()->FindBin(qinv12);
+		  momBin13 = fMomResC2SC->GetYaxis()->FindBin(qinv13);
+		  momBin23 = fMomResC2SC->GetYaxis()->FindBin(qinv23);		  
+		  if(momBin12 >= 20) momBin12 = 19;
+		  if(momBin13 >= 20) momBin13 = 19;
+		  if(momBin23 >= 20) momBin23 = 19;
+		  //
+		  if(ch1==ch2) MomResCorr12 = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin12);
+		  else MomResCorr12 = fMomResC2MC->GetBinContent(rBinForTPNMomRes, momBin12);
+		  if(ch1==ch3) MomResCorr13 = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin13);
+		  else MomResCorr13 = fMomResC2MC->GetBinContent(rBinForTPNMomRes, momBin13);
+		  if(ch2==ch3) MomResCorr23 = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin23);
+		  else MomResCorr23 = fMomResC2MC->GetBinContent(rBinForTPNMomRes, momBin23);
+		}
+		
 		if(ENsum==0) {
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fTerms3->Fill(q3); 
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fKfactor->Fill(q3, 1/(FSICorr12*FSICorr13*FSICorr23));
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fKfactorWeighted->Fill(q3, 1/(FSICorr12*FSICorr13*FSICorr23), MomResCorr12*MomResCorr13*MomResCorr23);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fMeanQinv->Fill(q3, qinv12);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fMeanQinv->Fill(q3, qinv13);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fMeanQinv->Fill(q3, qinv23);
@@ -2506,18 +2544,21 @@ void AliFourPion::UserExec(Option_t *)
 		  if(fill2) {
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fTerms3->Fill(q3);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fKfactor->Fill(q3, 1/(FSICorr12));
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fKfactorWeighted->Fill(q3, 1/(FSICorr12), MomResCorr12);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fMeanQinv->Fill(q3, qinv12);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fMeanQinv->Fill(q3, qinv13);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fMeanQinv->Fill(q3, qinv23);
 		  }if(fill3) {
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fTerms3->Fill(q3);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fKfactor->Fill(q3, 1/(FSICorr12));
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fKfactorWeighted->Fill(q3, 1/(FSICorr12), MomResCorr12);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fMeanQinv->Fill(q3, qinv12);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fMeanQinv->Fill(q3, qinv13);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fMeanQinv->Fill(q3, qinv23);
 		  }if(fill4) {
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fTerms3->Fill(q3);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fKfactor->Fill(q3, 1/(FSICorr12));
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fKfactorWeighted->Fill(q3, 1/(FSICorr12), MomResCorr12);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fMeanQinv->Fill(q3, qinv12);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fMeanQinv->Fill(q3, qinv13);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fMeanQinv->Fill(q3, qinv23);
@@ -2538,18 +2579,8 @@ void AliFourPion::UserExec(Option_t *)
 		    }
 		  }else{
 		    
-		    Float_t MomResCorr12=1.0, MomResCorr13=1.0, MomResCorr23=1.0;
 		    Float_t MuonCorr12=1.0, MuonCorr13=1.0, MuonCorr23=1.0;
 		    if(!fGenerateSignal && !fMCcase) {
-		      Int_t momBin12 = fMomResC2->GetYaxis()->FindBin(qinv12);
-		      Int_t momBin13 = fMomResC2->GetYaxis()->FindBin(qinv13);
-		      Int_t momBin23 = fMomResC2->GetYaxis()->FindBin(qinv23);		  
-		      if(momBin12 >= 20) momBin12 = 19;
-		      if(momBin13 >= 20) momBin13 = 19;
-		      if(momBin23 >= 20) momBin23 = 19;
-		      MomResCorr12 = fMomResC2->GetBinContent(rBinForTPNMomRes, momBin12);
-		      MomResCorr13 = fMomResC2->GetBinContent(rBinForTPNMomRes, momBin13);
-		      MomResCorr23 = fMomResC2->GetBinContent(rBinForTPNMomRes, momBin23);
 		      MuonCorr12 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin12);
 		      MuonCorr13 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin13);
 		      MuonCorr23 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin23);
@@ -2746,7 +2777,7 @@ void AliFourPion::UserExec(Option_t *)
 		    for(Int_t term=1; term<=5; term++){
 		      for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			Float_t Rvalue = 5+Riter;
-			Float_t WInput = MCWeight3(term, Rvalue, 0.65, chGroup3, QinvMCGroup3, kTGroup3);
+			Float_t WInput = MCWeight3(term, Rvalue, ffcSqMRC, chGroup3, QinvMCGroup3, kTGroup3);
 			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fIdeal->Fill(Rvalue, q3MC, WInput*TripletWeightTTC);
 			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fSmeared->Fill(Rvalue, q3, WInput*TripletWeightTTC);
 		      }
@@ -2807,20 +2838,46 @@ void AliFourPion::UserExec(Option_t *)
 		  FSICorr14 = FSICorrelation(ch1,ch4, qinv14);
 		  FSICorr24 = FSICorrelation(ch2,ch4, qinv24);
 		  FSICorr34 = FSICorrelation(ch3,ch4, qinv34);
-
+		  
+		  if(!fGenerateSignal && !fMCcase) {
+		    momBin14 = fMomResC2SC->GetYaxis()->FindBin(qinv14);
+		    momBin24 = fMomResC2SC->GetYaxis()->FindBin(qinv24);
+		    momBin34 = fMomResC2SC->GetYaxis()->FindBin(qinv34);		  
+		    if(momBin14 >= 20) momBin14 = 19;
+		    if(momBin24 >= 20) momBin24 = 19;
+		    if(momBin34 >= 20) momBin34 = 19;
+		    //
+		    if(ch1==ch4) MomResCorr14 = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin14);
+		    else MomResCorr14 = fMomResC2MC->GetBinContent(rBinForTPNMomRes, momBin14);
+		    if(ch2==ch4) MomResCorr24 = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin24);
+		    else MomResCorr24 = fMomResC2MC->GetBinContent(rBinForTPNMomRes, momBin24);
+		    if(ch3==ch4) MomResCorr34 = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin34);
+		    else MomResCorr34 = fMomResC2MC->GetBinContent(rBinForTPNMomRes, momBin34);
+		  }
+		  
 		  Bool_t FillTerms[13]={kFALSE};
 		  SetFillBins4(ch1, ch2, ch3, ch4, bin1, bin2, bin3, bin4, ENsum, FillTerms);
 		  //
 		  for(int ft=0; ft<13; ft++) {
 		    Float_t FSIfactor = 1.0;
-		    if(ft==0) FSIfactor = 1/(FSICorr12 * FSICorr13 * FSICorr14 * FSICorr23 * FSICorr24 * FSICorr34);
-		    else if(ft<=4) FSIfactor = 1/(FSICorr12 * FSICorr13 * FSICorr23);
-		    else if(ft<=10) FSIfactor = 1/(FSICorr12);
-		    else if(ft==11) FSIfactor = 1/(FSICorr12 * FSICorr34);
-		    else FSIfactor = 1.0;
+		    Float_t MomResWeight = 1.0;
+		    if(ft==0) {
+		      FSIfactor = 1/(FSICorr12 * FSICorr13 * FSICorr14 * FSICorr23 * FSICorr24 * FSICorr34);
+		      MomResWeight = MomResCorr12 * MomResCorr13 * MomResCorr14 * MomResCorr23 * MomResCorr24 * MomResCorr34;
+		    }else if(ft<=4) {
+		      FSIfactor = 1/(FSICorr12 * FSICorr13 * FSICorr23);
+		      MomResWeight = MomResCorr12 * MomResCorr13 * MomResCorr23;
+		    }else if(ft<=10) {
+		      FSIfactor = 1/(FSICorr12);
+		      MomResWeight = MomResCorr12;
+		    }else if(ft==11) {
+		      FSIfactor = 1/(FSICorr12 * FSICorr34);
+		      MomResWeight = MomResCorr12 * MomResCorr34;
+		    }else {FSIfactor = 1.0; MomResWeight = 1.0;}
 		    if(FillTerms[ft]) {
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fTerms4->Fill(q4);
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fKfactor->Fill(q4, FSIfactor);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fKfactorWeighted->Fill(q4, FSIfactor, MomResWeight);
 		    }
 		  }
 		  
@@ -2833,18 +2890,8 @@ void AliFourPion::UserExec(Option_t *)
 		    GetWeight(pVect2, pVect4, weight24, weight24Err);
 		    GetWeight(pVect3, pVect4, weight34, weight34Err);
 		    
-		    Float_t MomResCorr14=1.0, MomResCorr24=1.0, MomResCorr34=1.0;
 		    Float_t MuonCorr14=1.0, MuonCorr24=1.0, MuonCorr34=1.0;
 		    if(!fGenerateSignal && !fMCcase) {
-		      Int_t momBin14 = fMomResC2->GetYaxis()->FindBin(qinv14);
-		      Int_t momBin24 = fMomResC2->GetYaxis()->FindBin(qinv24);
-		      Int_t momBin34 = fMomResC2->GetYaxis()->FindBin(qinv34);		  
-		      if(momBin14 >= 20) momBin14 = 19;
-		      if(momBin24 >= 20) momBin24 = 19;
-		      if(momBin34 >= 20) momBin34 = 19;
-		      MomResCorr14 = fMomResC2->GetBinContent(rBinForTPNMomRes, momBin14);
-		      MomResCorr24 = fMomResC2->GetBinContent(rBinForTPNMomRes, momBin24);
-		      MomResCorr34 = fMomResC2->GetBinContent(rBinForTPNMomRes, momBin34);
 		      MuonCorr14 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin14);
 		      MuonCorr24 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin24);
 		      MuonCorr34 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin34);
@@ -3087,7 +3134,7 @@ void AliFourPion::UserExec(Option_t *)
 		      for(Int_t term=1; term<=13; term++){
 			for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			  Float_t Rvalue = 5+Riter;
-			  Float_t WInput = MCWeight4(term, Rvalue, 0.65, chGroup4, QinvMCGroup4, kTGroup4);
+			  Float_t WInput = MCWeight4(term, Rvalue, ffcSqMRC, chGroup4, QinvMCGroup4, kTGroup4);
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fIdeal->Fill(Rvalue, q4MC, WInput*QuadWeightTTC);
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fSmeared->Fill(Rvalue, q4, WInput*QuadWeightTTC);
 			}
@@ -3894,13 +3941,15 @@ Float_t AliFourPion::MCWeightFSI4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4
   
 }
 //________________________________________________________________________
-void AliFourPion::SetMomResCorrections(Bool_t legoCase, TH2D *temp2D){
+void AliFourPion::SetMomResCorrections(Bool_t legoCase, TH2D *temp2DSC, TH2D *temp2DMC){
   
  
   if(legoCase){
     cout<<"LEGO call to SetMomResCorrections"<<endl;
-    fMomResC2 = (TH2D*)temp2D->Clone();
-    fMomResC2->SetDirectory(0);
+    fMomResC2SC = (TH2D*)temp2DSC->Clone();
+    fMomResC2SC->SetDirectory(0);
+    fMomResC2MC = (TH2D*)temp2DMC->Clone();
+    fMomResC2MC->SetDirectory(0);
   }else {
     TFile *momResFile = new TFile("MomResFile.root","READ");
     if(!momResFile->IsOpen()) {
@@ -3908,21 +3957,27 @@ void AliFourPion::SetMomResCorrections(Bool_t legoCase, TH2D *temp2D){
       AliFatal("No momentum resolution file found.  Kill process.");
     }else {cout<<"Good Momentum Resolution File Found!"<<endl;}
     
-    TH2D *temp2D2 = (TH2D*)momResFile->Get("MRC_C2_SC");
-    fMomResC2 = (TH2D*)temp2D2->Clone();
-    fMomResC2->SetDirectory(0);
-    
+    TH2D *temp2DSC2 = (TH2D*)momResFile->Get("MRC_C2_SC");
+    fMomResC2SC = (TH2D*)temp2DSC2->Clone();
+    fMomResC2SC->SetDirectory(0);
+    //
+    TH2D *temp2DMC2 = (TH2D*)momResFile->Get("MRC_C2_MC");
+    fMomResC2MC = (TH2D*)temp2DMC2->Clone();
+    fMomResC2MC->SetDirectory(0);
+    //
     momResFile->Close();
   }
 
   
-  for(Int_t bx=1; bx<=fMomResC2->GetNbinsX(); bx++){
-    for(Int_t by=1; by<=fMomResC2->GetNbinsY(); by++){
-      if(fMomResC2->GetBinContent(bx,by) > 1.5) fMomResC2->SetBinContent(bx,by, 1.0);// Maximum is ~1.02 
-      if(fMomResC2->GetBinContent(bx,by) < 0.8) fMomResC2->SetBinContent(bx,by, 1.0);// Minimum is ~0.8
+  for(Int_t bx=1; bx<=fMomResC2SC->GetNbinsX(); bx++){
+    for(Int_t by=1; by<=fMomResC2SC->GetNbinsY(); by++){
+      if(fMomResC2SC->GetBinContent(bx,by) > 1.5) fMomResC2SC->SetBinContent(bx,by, 1.0);// Maximum is ~1.02 
+      if(fMomResC2SC->GetBinContent(bx,by) < 0.8) fMomResC2SC->SetBinContent(bx,by, 1.0);// Minimum is ~0.8
+      if(fMomResC2MC->GetBinContent(bx,by) > 1.5) fMomResC2MC->SetBinContent(bx,by, 1.0);// Maximum is ~1.02 
+      if(fMomResC2MC->GetBinContent(bx,by) < 0.8) fMomResC2MC->SetBinContent(bx,by, 1.0);// Minimum is ~0.8
     }
   }
-
+  
   cout<<"Done reading momentum resolution file"<<endl;
 }
 //________________________________________________________________________
