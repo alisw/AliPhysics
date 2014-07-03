@@ -291,6 +291,15 @@ Float_t AliPIDResponse::NumberOfSigmasTPC( const AliVParticle *vtrack,
 }
 
 //______________________________________________________________________________
+Float_t AliPIDResponse::NumberOfSigmasTRD(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  //
+  // Calculate the number of sigmas in the TRD
+  //
+  return NumberOfSigmas(kTRD, vtrack, type);
+}
+
+//______________________________________________________________________________
 Float_t AliPIDResponse::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const
 {
   //
@@ -399,6 +408,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDelta(EDetector detector,
   switch (detector){
     case kITS:   return GetSignalDeltaITS(track,type,val,ratio); break;
     case kTPC:   return GetSignalDeltaTPC(track,type,val,ratio); break;
+    case kTRD:   return GetSignalDeltaTRD(track,type,val,ratio); break;
     case kTOF:   return GetSignalDeltaTOF(track,type,val,ratio); break;
     case kHMPID: return GetSignalDeltaHMPID(track,type,val,ratio); break;
     default: return kDetNoSignal;
@@ -2055,6 +2065,7 @@ Float_t AliPIDResponse::GetNumberOfSigmas(EDetector detector, const AliVParticle
   switch (detector){
     case kITS:   return GetNumberOfSigmasITS(track, type);   break;
     case kTPC:   return GetNumberOfSigmasTPC(track, type);   break;
+    case kTRD:   return GetNumberOfSigmasTRD(track, type);   break;
     case kTOF:   return GetNumberOfSigmasTOF(track, type);   break;
     case kHMPID: return GetNumberOfSigmasHMPID(track, type); break;
     case kEMCAL: return GetNumberOfSigmasEMCAL(track, type); break;
@@ -2098,6 +2109,21 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
     this->GetTPCsignalTunedOnData(track);
   
   return fTPCResponse.GetNumberOfSigmas(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection);
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetNumberOfSigmasTRD(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  //
+  // Calculate the number of sigmas in the TRD
+  //
+  
+  AliVTrack *track=(AliVTrack*)vtrack;
+  
+  const EDetPidStatus pidStatus=GetTRDPIDStatus(track);
+  if (pidStatus!=kDetPidOk) return -999.;
+  
+  return fTRDResponse.GetNumberOfSigmas(track,type);
 }
 
 //______________________________________________________________________________
@@ -2182,6 +2208,18 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTPC(const AliVPartic
   val=fTPCResponse.GetSignalDelta(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, ratio);
   
   return GetTPCPIDStatus(track);
+}
+
+//______________________________________________________________________________
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTRD(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val, Bool_t ratio/*=kFALSE*/) const
+{
+  //
+  // Signal minus expected Signal for TRD
+  //
+  AliVTrack *track=(AliVTrack*)vtrack;
+  val=fTRDResponse.GetSignalDelta(track,type,ratio);
+  
+  return GetTRDPIDStatus(track);
 }
 
 //______________________________________________________________________________
