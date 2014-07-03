@@ -868,7 +868,6 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       }
       Int_t padNumber = elem/nTimeBins;
       Int_t timeBin   = elem%nTimeBins;      
-      q/=16.;                                              //conversion factor
       Float_t gain = gainROC->GetValue(padRow,padNumber);  // get gain for given - pad-row pad
       q*= gain;
       
@@ -933,22 +932,15 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     Short_t *pdig1= digrow->GetDigits();
     Int_t   *ptr1= digrow->GetTracks() ;
     // loop over elements i.e pad-timebin space of a row
-    for (Int_t elem=0;elem<nElems; elem++) 
-    {     
+    for (Int_t elem=0;elem<nElems; elem++)     {     
       q=0; 
       labptr=0;
       // looop over digits 
-      for (Int_t i=0;i<nInputs; i++) if (active[i]) 
-      { 
-        //          q  += digarr[i]->GetDigitFast(rows,col);
+      for (Int_t i=0;i<nInputs; i++) if (active[i]){ 
         q  += *(pdig[i]);
-
-        for (Int_t tr=0;tr<3;tr++) 
-        {
-          //             Int_t lab = digarr[i]->GetTrackIDFast(rows,col,tr);
+        for (Int_t tr=0;tr<3;tr++)         {
           Int_t lab = ptr[i][tr*nElems];
-          if ( (lab > 1) && *(pdig[i])>zerosup) 
-          {
+          if ( (lab > 1) && *(pdig[i])>zerosup) {
             label[labptr]=lab+masks[i];
             labptr++;
           }          
@@ -959,8 +951,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       Int_t padNumber = elem/nTimeBins;
       Int_t timeBin   = elem%nTimeBins;
       localPad = padNumber-nPads/2;
-
-      q/=16.;                                              //conversion factor
+      
       Float_t gain = gainROC->GetValue(padRow,padNumber);  // get gain for given - pad-row pad
       //if (gain<0.5){
       //printf("problem\n");
@@ -974,17 +965,26 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       
       // Ion tail correction: being elem=padNumber*nTimeBins+timeBin;
       Int_t lowerElem=elem-nIonTailBins;    
-      //    if (lowerElem<0) lowerElem=0;
-      //    if (lowerElem in previospad) lowerElem = padNumber*nTimeBins;
+      Int_t zeroElem =(elem/nTimeBins)*nTimeBins;
+      if (lowerElem<zeroElem) lowerElem=zeroElem;
+      if (lowerElem) lowerElem = padNumber*nTimeBins;
       // 
-      // for (Int_t celem=elem-1; celem>lowerElem; celem--){
-      //  Int_t deltaT=elem-celem;
-      //
-      // }
+      qIonTail=0;
+      if (recoParam->GetUseIonTailCorrection()){
+	for (Int_t i=0;i<nInputs; i++) if (active[i]){
+	  Short_t *pdigC= digarr[i]->GetDigits();
+	    for (Int_t celem=elem-1; celem>lowerElem; celem--){
+	      //for Mesut - her we substact the ion tail	
+	      Double_t qCElem=pdigC[celem];
+	      //if (graph->GetY()[elem-celem]<0 )qIonTail+=qCElem*graph->GetY()[elem-celem];
+	    }
+	}
+      }
       //
       Float_t noisePad = noiseROC->GetValue(padRow,padNumber);
       //       Float_t noise  = gRandom->Gaus(0,param->GetNoise()*param->GetNoiseNormFac());  
       Float_t noise  = pTPC->GetNoise();
+      q/=16.;                                              //conversion factor
       q+=noise*noisePad;	
       q=TMath::Nint(q);  // round to the nearest integer
       
