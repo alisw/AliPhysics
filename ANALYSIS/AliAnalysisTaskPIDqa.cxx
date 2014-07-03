@@ -65,6 +65,7 @@ fListQAitsPureSA(0x0),
 fListQAtpc(0x0),
 fListQAtrd(0x0),
 fListQAtrdNsig(0x0),
+fListQAtrdNsigTPCTOF(0x0),
 fListQAtof(0x0),
 fListQAt0(0x0),
 fListQAemcal(0x0),
@@ -95,6 +96,7 @@ fListQAitsPureSA(0x0),
 fListQAtpc(0x0),
 fListQAtrd(0x0),
 fListQAtrdNsig(0x0),
+fListQAtrdNsigTPCTOF(0x0),
 fListQAtof(0x0),
 fListQAt0(0x0),
 fListQAemcal(0x0),
@@ -181,6 +183,10 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fListQAtrdNsig=new TList;
   fListQAtrdNsig->SetOwner();
   fListQAtrdNsig->SetName("TRDnSigma");
+  
+  fListQAtrdNsigTPCTOF=new TList;
+  fListQAtrdNsigTPCTOF->SetOwner();
+  fListQAtrdNsigTPCTOF->SetName("TRDnSigma_TPCTOF");
   
   fListQAtof=new TList;
   fListQAtof->SetOwner();
@@ -539,9 +545,16 @@ void AliAnalysisTaskPIDqa::FillTRDqa()
     //=== nSigma and signal ===
     for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
       TH2 *h=(TH2*)fListQAtrdNsig->At(ispecie);
-      if (!h) continue;
-      Double_t nSigma=fPIDResponse->NumberOfSigmas(AliPIDResponse::kTRD, track, (AliPID::EParticleType)ispecie);
-      h->Fill(momentum,nSigma);
+      TH2 *hTPCTOF=(TH2*)fListQAtrdNsigTPCTOF->At(ispecie);
+      if (!h || !hTPCTOF) continue;
+      Float_t nSigmaTPC=fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType)ispecie);
+      Float_t nSigmaTRD=fPIDResponse->NumberOfSigmas(AliPIDResponse::kTRD, track, (AliPID::EParticleType)ispecie);
+      Float_t nSigmaTOF=fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType)ispecie);
+      h->Fill(momentum,nSigmaTRD);
+
+      if (TMath::Abs(nSigmaTPC)<3 && TMath::Abs(nSigmaTOF)<3) {
+        hTPCTOF->Fill(momentum,nSigmaTRD);
+      }
     }
 
     TH2 *h=(TH2*)fListQAtrdNsig->Last();
@@ -1246,6 +1259,17 @@ void AliAnalysisTaskPIDqa::SetupTRDqa()
   fListQAtrdNsig->Add(hSig);
 
   fListQAtrd->Add(fListQAtrdNsig);
+
+  // === Same after 3 sigma in TPC and TOF
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+    TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TRD_TPCTOF_%s",AliPID::ParticleName(ispecie)),
+                              Form("TRD n#sigma %s vs. p after 3#sigma cut in TPC&TOF;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
+                              vX->GetNrows()-1,vX->GetMatrixArray(),
+                              100,-10,10);
+    fListQAtrdNsigTPCTOF->Add(hNsigmaP);
+  }
+  
+  fListQAtrd->Add(fListQAtrdNsigTPCTOF);
   
   delete vX;
 }
