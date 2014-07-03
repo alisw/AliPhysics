@@ -30,7 +30,7 @@ void ReadFlatESD(const char* filename="outFlatESD.dat", Bool_t verbose=kFALSE) {
     is.seekg (0, is.end);
     int length = is.tellg();
     is.seekg (0, is.beg);
-    std::cout << "length"<<length<<endl;
+    std::cout << "length "<<length<<endl;
     char * buffer = new char [length];
     
     std::cout << "Reading " << length << " characters... ";
@@ -47,12 +47,15 @@ void ReadFlatESD(const char* filename="outFlatESD.dat", Bool_t verbose=kFALSE) {
     char *curr = buffer;
     char *endBuff = buffer+length;
     int iEvent = 0;
+    
     while( curr < endBuff ){
-      cout<<"Reading event "<<iEvent<<":"<<endl;
+      cout<<endl<<"Reading event "<<iEvent<<":"<<endl;
+    Printf("curr: %p \t endBuff: %p \t diff %p ", curr, endBuff, endBuff-curr);
       AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent *>(curr);
 			new (flatEsd) AliFlatESDEvent(1);
 
-      cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetPrimaryVertexSPD()
+      
+cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetPrimaryVertexSPD()
 	  <<" vtx tracks: "<<(Bool_t) flatEsd->GetPrimaryVertexTracks()	
 	  <<" ntracks: "<<flatEsd->GetNumberOfTracks()
 	  <<" nV0's: "<<flatEsd->GetNumberOfV0s()
@@ -65,6 +68,7 @@ void ReadFlatESD(const char* filename="outFlatESD.dat", Bool_t verbose=kFALSE) {
 if(verbose){
 	static const int nExt = 4;
 	  AliFlatESDTrack *track = flatEsd->GetTracks();
+	  new (track)AliFlatESDTrack(1);
     for (Int_t idxTrack = 0; idxTrack < flatEsd->GetNumberOfTracks() && track; ++idxTrack) { 
 
 		AliFlatExternalTrackParam* ext[nExt] ={
@@ -89,62 +93,43 @@ cout<<endl<<iExt<<endl;
 
 
 		cout<<" alpha"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetAlpha() : -9999) <<endl;
-			
-
-		
 cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
-
-
-		
 	cout<<" 1/pt"<<iExt<<" :"  <<  (ext[iExt] ? ext[iExt]->GetSigned1Pt(): -9999)  <<endl;
 			
 
 }
 	
 		cout<<" nTPCclusters: "<<track->GetNumberOfTPCClusters()<< endl;
+		cout<<" nITSclusters: "<<track->GetNumberOfITSClusters()<< endl;
 
-	 	cout<<" nITSclusters: "<<track->GetNumberOfITSClusters()<< endl;
+// read clusters
 
+	Int_t nCl = track->GetNumberOfTPCClusters();
+	if(nCl && verbose > 1){
+	
+      for (Int_t idxRow = 0; idxRow <  nCl; idxRow++){
+      cout<<"rowNr "<< idxRow<<endl;
+      
+      AliFlatTPCCluster * cl = track->GetTPCCluster(idxRow);
 
-// compare clusters
-	if(  track->GetNumberOfTPCClusters()){
-		for (Int_t idxCluster = 0; idxCluster < track->GetNumberOfTPCClusters(); ++idxCluster){
-			AliFlatTPCCluster * cl = track->GetTPCCluster(idxCluster);
-
-			 	cout<<" clusterNr fX fY fZ fPadRow fSigmaY2 fSigmaZ2 fCharge fQMax" <<endl;
-				cout<< idxCluster<<" "<< cl->GetX()<<" "<< cl->GetY()<<" "<< cl->GetZ()<<" "<< cl->GetPadRow()<<" "<< cl->GetSigmaY2()<<" "<< cl->GetSigmaZ2()<<" "<< cl->GetCharge()<<" "<< cl->GetQMax() <<endl;
-				
-		}
-	  }
+			 	cout<<" idx fX fY fZ  fSigmaY2 fSigmaZ2 fCharge fQMax fPadRow" <<endl;
+				if(cl) cout<< idxRow <<" "<< cl->GetX()<<" "<< cl->GetY()<<" "<< cl->GetZ()<<" "<< cl->GetSigmaY2()<<" "<< cl->GetSigmaZ2()<<" "<< cl->GetCharge()<<" "<< cl->GetQMax() <<" "<< cl->GetPadRow()<<endl;
+				else cout <<"----------------------------------------------------"<<endl;
+    }
+	}
      
+      cout<<"get next track"<<endl;
       track = track->GetNextTrack();
+	  	new (track)AliFlatESDTrack(1);
 	  
 	  
 	  }
 }
 
-
-
-
-
-
-
-
-
-
-
+    Printf("curr: %p \t + %d = %p , diff:%p", curr, flatEsd->GetSize() ,curr+ flatEsd->GetSize(), endBuff-(curr+ flatEsd->GetSize())   );
       curr=curr+ flatEsd->GetSize();
       iEvent++;
     }
-
-
-
-
-
-
-
-
-
 
 
     delete[] buffer;

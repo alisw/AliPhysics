@@ -22,6 +22,7 @@
 #include "./AliFlatTPCCluster.h"
 #include "./AliFlatExternalTrackParam.h"
 #include "Riostream.h"
+#include "AliSysInfo.h"
 #endif   
 
 void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameFriends="AliESDfriends.root",const char* filenameOut="out.dat", Bool_t useESDFriends = kTRUE, Bool_t useHLTtree = kFALSE,Int_t verbose = 0) {
@@ -55,14 +56,14 @@ void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameF
   // -- Event Loop
   for (Int_t idxEvent = 0; idxEvent < esdTree->GetEntries(); idxEvent++) {
   
-  AliSysInfo::AddStamp("getEntry",0,0,edxEvent);
+  AliSysInfo::AddStamp("getEntry",0,0,idxEvent);
     esdTree->GetEntry(idxEvent);
     // -- Book memory for AliFlatESDEvent
    // -- TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     Byte_t *mem = new Byte_t[AliFlatESDEvent::EstimateSize(esd, useESDFriends)];
     
-AliSysInfo::AddStamp("DoEvent.Start",0,0,edxEvent);
+AliSysInfo::AddStamp("DoEvent.Start",0,0,idxEvent);
     flatEsd = reinterpret_cast<AliFlatESDEvent*>(mem);    
 	new (flatEsd) AliFlatESDEvent(1);
 
@@ -70,7 +71,7 @@ AliSysInfo::AddStamp("DoEvent.Start",0,0,edxEvent);
     flatEsd->Fill(esd, useESDFriends);  
     
     
-AliSysInfo::AddStamp("DoEvent.Start",0,0,edxEvent);
+AliSysInfo::AddStamp("DoEvent.Stop",0,flatEsd->GetSize(),idxEvent);
 if(verbose){
      Printf("TEST: Event %d || Tracks %d | FRIEND Tracks %d || estimated size %llu || sizeof(AliFlatESDEvent) %llu", 
 	   idxEvent, esd->GetNumberOfTracks(), esdFriend->GetNumberOfTracks(), 
@@ -137,7 +138,7 @@ Int_t nCl = track->GetNumberOfTPCClusters();
       
 	if (cl2) {
 	  //cout<<" normalCl fX fY fZ fPadRow fSigmaY2 fSigmaZ2 fCharge fQMax" <<endl;
-				cout<< idxRow <<" "<< cl2->GetX()<<" "<< cl2->GetY()<<" "<< cl2->GetZ()<<" "<< cl2->GetSigmaY2()<<" "<< cl2->GetSigmaZ2()<<" "<< cl2->GetQ()<<" "<< cl2->GetMax()<<" "<< cl2->GetRow()<<" "<< cl2->GetPad() <<endl<<endl;
+				cout<< idxRow <<" "<< cl2->GetX()<<" "<< cl2->GetY()<<" "<< cl2->GetZ()<<" "<< cl2->GetSigmaY2()<<" "<< cl2->GetSigmaZ2()<<" "<< cl2->GetQ()<<" "<< cl2->GetMax()<<" "<< cl2->GetRow() <<endl<<endl;
 	}
 		else
 		  	cout<<idxRow<<"---------------------------------"<<endl<<endl;	
@@ -145,13 +146,6 @@ Int_t nCl = track->GetNumberOfTPCClusters();
     }
 	}
 	
-	
-	
-/*
-	for (Int_t idxCluster = 0; idxCluster < track->GetNumberOfTPCClusters(); ++idxCluster){
-	  
-	  }
-	*/  
       }
       track = track->GetNextTrack();
     }

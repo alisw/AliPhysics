@@ -562,6 +562,7 @@ AliSysInfo::AddStamp("DoEvent.Start");
 	}
 	
 	AliFlatESDTrack *flatTrack = flatEsd->GetNextTrackPointer();
+	new(flatTrack) AliFlatESDTrack;
 	//cout<<"flatTrack: "<<flatTrack<<endl;
 
 	//cout<<"GetNumberOfTPCClusters before: "<<flatTrack->GetNumberOfTPCClusters()<<endl;
