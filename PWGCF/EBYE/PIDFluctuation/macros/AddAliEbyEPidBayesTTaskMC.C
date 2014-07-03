@@ -40,7 +40,7 @@ void AddAliEbyEPidBayesTTaskMC(Double_t ptl                 = 0,
   TString type = mgr->GetInputEventHandler()->GetDataType(); 
   TString basefilename = AliAnalysisManager::GetCommonFileName();
   
-  AliHelperPID* help = new AliHelperPID();
+   AliHelperPID* help = new AliHelperPID();
   help->SetNSigmaCut(nSigmaCut);
   help->SetPIDType(pidtype);        
   if (requestTofPid) help->SetfRequestTOFPID(requestTofPid);
@@ -52,6 +52,20 @@ void AddAliEbyEPidBayesTTaskMC(Double_t ptl                 = 0,
     pidc->SetDefaultTPCPriors();
     help->SetPIDCombined(pidc);
   }
+  
+
+ /* AliHelperPID *pid=new AliHelperPID();
+  pid->SetName(Form("HelperPID"));
+  pid->SetNSigmaCut(3);
+  pid->SetPIDType(3);
+  pid->SetfPtTOFPID(0.3);
+  AliPIDCombined *pidc=new AliPIDCombined();
+  pidc->SetDefaultTPCPriors();
+  pid->SetPIDCombined(pidc);
+  
+*/
+
+
 
 
   AliEbyEPidTTaskMC *taskqa;
