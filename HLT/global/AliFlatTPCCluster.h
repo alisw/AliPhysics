@@ -15,7 +15,7 @@
 class AliFlatTPCCluster: public AliVVcluster
 {
   public:
-  AliFlatTPCCluster(Bool_t):AliVVcluster() {}
+  AliFlatTPCCluster(Bool_t) {}
   virtual ~AliFlatTPCCluster() {}
   Float_t fX;       // X coordinate in local coordinates
   Float_t fY;       // Y coordinate in local coordinates
