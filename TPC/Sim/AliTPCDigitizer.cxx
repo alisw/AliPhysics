@@ -617,13 +617,16 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   //       Wire segmentationn is obtatined from the      
   //       AliTPCParam::GetWireSegment(Int_t sector, Int_t row); // to be implemented
   //       AliTPCParam::GetNPadsPerSegment(Int_t segmentID); // to be implemented
+  //   3.) Substract form the signal contribution from the previous tracks - Ion tail in case speified in the AliTPCRecoParam
+  //        AliTPCRecoParam::GetUseIonTailCorrection()
   //
   // Ion tail simulation:
   //    1.) Needs signal from pad+-1, taking signal from history
   // merge input tree's with summable digits
   // output stored in TreeTPCD
-  //
-  
+  //  
+  AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
+  AliTPCRecoParam *recoParam = calib->GetRecoParam(0); 
   cout << " =================  DigitizeWithTailAndCrossTalk is being processed  ================ " << endl;
   
   Int_t nROCs = 72;
@@ -967,7 +970,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       // Crosstalk correction 
       qXtalk = (*(TMatrixD*)crossTalkSignalArray.At(sector))[wireSegmentID][timeBin];
       qTotPerSector = qTotSectorOld -> GetMatrixArray()[sector];    
-      //q -= qXtalk;
+      q -= qXtalk*recoParam->GetCrosstalkCorrection();
       
       // Ion tail correction: being elem=padNumber*nTimeBins+timeBin;
       Int_t lowerElem=elem-nIonTailBins;    
