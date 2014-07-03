@@ -72,6 +72,29 @@ AliFlatESDEvent::AliFlatESDEvent() :
 {
 }
 
+// _______________________________________________________________________________________________________
+AliFlatESDEvent::AliFlatESDEvent(Bool_t)
+{
+  //special constructor, used to restore the vtable pointer
+  //uses the special dummy constructors of contained objects
+  AliFlatESDVertex* vertexSPD = const_cast<AliFlatESDVertex*>(GetPrimaryVertexSPD());
+  if (vertexSPD ) { new (vertexSPD) AliFlatESDVertex(1); }
+  AliFlatESDVertex* vertexTracks = const_cast<AliFlatESDVertex*>(GetPrimaryVertexTracks());
+  if (vertexTracks ) { new (vertexTracks) AliFlatESDVertex(1); }
+  AliFlatESDTrack* track = GetTracks();
+  for (Int_t i=0; i<GetNumberOfTracks(); i++)
+  {
+    new (track) AliFlatESDTrack(1);
+    track += track->GetSize();
+  }
+  AliFlatESDV0* v0 = GetV0s();
+  for (Int_t i=0; i<GetNumberOfV0s(); i++)
+  {
+    new (v0) AliFlatESDV0(1);
+    v0 += sizeof(AliFlatESDV0);
+  }
+}
+
 /*
 AliFlatESDEvent::AliFlatESDEvent(const AliFlatESDEvent& ev) :
   // Default constructor

@@ -27,14 +27,13 @@ class AliESDfriendTrack;
 class AliExternalTrackParam;
 
 class AliFlatESDTrack: public AliVVtrack {
-//class AliFlatESDTrack {
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
-  AliFlatESDTrack();   
-  AliFlatESDTrack(Bool_t){}   
+  AliFlatESDTrack();
+  AliFlatESDTrack(Bool_t);
   AliFlatESDTrack(const AliESDtrack* track, AliESDfriendTrack* friendTrack); 
-  ~AliFlatESDTrack();  
+  virtual ~AliFlatESDTrack();  
 
   // --------------------------------------------------------------------------------
   // -- Fill / Set methods
@@ -104,6 +103,10 @@ class AliFlatESDTrack: public AliVVtrack {
     return fNITSClusters;
   } 
   
+  AliFlatTPCCluster *GetITSClusters() {
+    return reinterpret_cast< AliFlatTPCCluster*>(fContent + sizeof(AliFlatExternalTrackParam)*CountBits(fTrackParamMask));
+  } 
+
   
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
   
@@ -143,4 +146,5 @@ class AliFlatESDTrack: public AliVVtrack {
   Byte_t fContent[1];                  // Variale size object, which contains all data
 
 };
+
 #endif

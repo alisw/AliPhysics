@@ -10,9 +10,13 @@
  */
 
 #include "Rtypes.h"
+#include "AliVVcluster.h"
 
-struct AliFlatTPCCluster
+class AliFlatTPCCluster: public AliVVcluster
 {
+  public:
+  AliFlatTPCCluster(Bool_t):AliVVcluster() {}
+  virtual ~AliFlatTPCCluster() {}
   Float_t fX;       // X coordinate in local coordinates
   Float_t fY;       // Y coordinate in local coordinates
   Float_t fZ;       // Z coordinate in local coordinates
@@ -22,6 +26,7 @@ struct AliFlatTPCCluster
   UInt_t  fCharge;  // total charge of cluster
   UInt_t  fQMax;    // QMax of cluster
 
+  public:
   void SetX(Float_t x)             {fX = x;}
   void SetY(Float_t y)             {fY = y;}
   void SetZ(Float_t z)             {fZ = z;}
@@ -50,7 +55,5 @@ struct AliFlatTPCCluster
     return (padrowfirst < padrowsecond);
   }
 };
-
-typedef struct AliFlatTPCCluster AliFlatTPCCluster;
 
 #endif

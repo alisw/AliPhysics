@@ -6,6 +6,8 @@ set ( SRCS
     STEERBase/AliVVvertex.cxx
     STEERBase/AliVVv0.cxx
     STEERBase/AliVVkink.cxx
+    STEERBase/AliVVcluster.cxx
+    STEERBase/AliVVexternalTrackParam.cxx
     STEERBase/AliVParticle.cxx 
     STEERBase/AliVTrack.cxx 
     STEERBase/AliEventplane.cxx 

@@ -12,14 +12,15 @@
 #include "Rtypes.h"
 #include "AliVVv0.h"
 
-struct AliFlatESDV0: public AliVVv0
-//struct AliFlatESDV0
+class AliFlatESDV0: public AliVVv0
 {
+  public:
   AliFlatESDV0(Bool_t){}
+  virtual ~AliFlatESDV0() {}
   Int_t fNegTrackID;
   Int_t fPosTrackID;
 };
 
-typedef struct AliFlatESDV0 AliFlatESDV0;
+//typedef struct AliFlatESDV0 AliFlatESDV0;
 
 #endif

@@ -28,14 +28,14 @@ class AliFlatESDEvent: public AliVVevent {
   // -- Constructor / Destructors
   AliFlatESDEvent();   
 
-// empty constructor, to be called by placement new,
+// special constructor, to be called by placement new,
 // when accessing information after reinterpret_cast
 // so that vtable is generated, but values are not overwritten
-	AliFlatESDEvent(Bool_t){}
+	AliFlatESDEvent(Bool_t);
 
   AliFlatESDEvent(AliESDEvent *esd);   
   AliFlatESDEvent(AliESDEvent *esd, Bool_t useESDFriends);   
-  ~AliFlatESDEvent();  
+  virtual ~AliFlatESDEvent();  
 
   // --------------------------------------------------------------------------------
   // -- Fill / Set methods
@@ -87,6 +87,10 @@ class AliFlatESDEvent: public AliVVevent {
 
   Int_t GetNumberOfTracks() const {return fNTracks;}
   
+  AliFlatESDV0* GetV0s() {
+  AliFlatESDV0* v = reinterpret_cast<AliFlatESDV0*> (fContent + fV0Pointer);
+  }
+
   AliFlatESDTrack *GetTracks() {
 	return reinterpret_cast<AliFlatESDTrack*> (fContent + fTracksPointer);
 }

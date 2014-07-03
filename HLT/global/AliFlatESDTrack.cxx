@@ -56,6 +56,33 @@ AliFlatESDTrack::AliFlatESDTrack() :
 }
 
 // _______________________________________________________________________________________________________
+AliFlatESDTrack::AliFlatESDTrack(Bool_t)
+{
+  //special contructor
+  //use to restore the vtable pointer
+  
+  AliFlatExternalTrackParam* trackParam = GetTrackParamRefitted();
+  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
+  trackParam = GetTrackParamIp();
+  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
+  trackParam = GetTrackParamTPCInner();
+  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
+  trackParam = GetTrackParamOp();
+  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
+  trackParam = GetTrackParamCp();
+  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
+  trackParam = GetTrackParamITSOut();
+  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
+  
+  AliFlatTPCCluster* clusterTPC = GetTPCClusters();
+  for (Int_t i=0; i<GetNumberOfTPCClusters(); i++)
+  {
+    new (clusterTPC) AliFlatTPCCluster(1);
+    clusterTPC += sizeof(AliFlatTPCCluster);
+  }
+}
+
+// _______________________________________________________________________________________________________
 AliFlatESDTrack::AliFlatESDTrack(const AliESDtrack* track, AliESDfriendTrack* friendTrack) :
   // Constructor
   fTrackParamMask(0),
