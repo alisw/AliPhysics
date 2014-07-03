@@ -71,7 +71,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Int_t GetNumCentBins() const {return AliFourPion::fCentBins;}
   Int_t GetNumEDBins() const {return AliFourPion::fEDbins;}
   void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0);
-  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0);
+  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2DSC=0x0, TH2D *temp2DMC=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH1D *tempss[12]=0x0, TH1D *tempos[12]=0x0);
   void SetMuonCorrections(Bool_t legoCase=kTRUE, TH2D *tempMuon=0x0);
   //
@@ -142,6 +142,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH1D *fNorm3; //!
     TH1D *fTerms3; //!
     TProfile *fKfactor; //!
+    TProfile *fKfactorWeighted; //!
     TProfile *fMeanQinv; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
@@ -182,6 +183,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH1D *fNorm4; //!
     TH1D *fTerms4; //!
     TProfile *fKfactor; //!
+    TProfile *fKfactorWeighted; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
     //
@@ -240,6 +242,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fLinearInterpolation;
   Int_t fRMax;
   Float_t ffcSq;
+  Float_t ffcSqMRC;
   UInt_t fFilterBit;
   Float_t fMaxChi2NDF;
   Int_t fMinTPCncls;
@@ -343,7 +346,8 @@ class AliFourPion : public AliAnalysisTaskSE {
 
 
  public:
-  TH2D *fMomResC2;
+  TH2D *fMomResC2SC;
+  TH2D *fMomResC2MC;
   TH2D *fWeightmuonCorrection;
   TH1D *fFSIss[12];
   TH1D *fFSIos[12];
