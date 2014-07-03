@@ -1291,10 +1291,10 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 		gPad->SetLogy();
 		hMass->Draw("HIST BAR");
   
-		TLegend * lPid=new TLegend(0.75,0.75,0.95,0.95,"PID");
-		lPid->AddEntry(profDiffTimePi,"#pi^{#pm}","l");
-		lPid->AddEntry(profDiffTimeKa,"K^{#pm}","l");
-		lPid->AddEntry(profDiffTimePro,"p^{#pm}","l");
+		// TLegend * lPid=new TLegend(0.75,0.75,0.95,0.95,"PID");
+		// lPid->AddEntry(profDiffTimePi,"#pi^{#pm}","l");
+		// lPid->AddEntry(profDiffTimeKa,"K^{#pm}","l");
+		// lPid->AddEntry(profDiffTimePro,"p^{#pm}","l");
 
 		gStyle->SetOptStat(10);
 		TCanvas *cPidPerformance2= new TCanvas("cPidPerformance2","summary of pid performance - tracking",700,700);
