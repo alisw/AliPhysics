@@ -40,6 +40,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODHeader.h"
 #include "AliAODpidUtil.h"
+#include "AliPIDCombined.h"
 #include "AliHelperPID.h"
 using std::endl;
 using std::cout;
@@ -188,9 +189,6 @@ void AliEbyEPidTTaskMC::UserExec( Option_t * ){
       return;
   }
 
-
-
-
   fEventCounter->Fill(6);
   
   fRunNumber = event->GetRunNumber();
@@ -199,7 +197,10 @@ void AliEbyEPidTTaskMC::UserExec( Option_t * ){
   fVertexX = vertex->GetX();
   fVertexY = vertex->GetY();
   fVertexZ = vertex->GetZ();
-  
+ 
+//Default TPC priors
+  if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
+ 
   Int_t iTracks = 0; 
   for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
     AliAODTrack* track = dynamic_cast<AliAODTrack *>(event->GetTrack(itrk));
@@ -209,7 +210,7 @@ void AliEbyEPidTTaskMC::UserExec( Option_t * ){
     if (!AcceptTrack(track)) continue;
     fEventCounter->Fill(12);
     Int_t a = fHelperPID->GetParticleSpecies((AliVTrack*) track,kTRUE);
-    //  if(a < 0 || a > 2) continue;
+    // if(a < 0 || a > 2) continue;
     fEventCounter->Fill(13);
     //Int_t icharge = track->Charge() > 0 ? 0 : 1;
     Int_t b = -999;
@@ -230,7 +231,7 @@ void AliEbyEPidTTaskMC::UserExec( Option_t * ){
       isph=partMC->IsPhysicalPrimary();
     }
 
-    //  cout << b << "  " << track->Charge() << "  " << isph << endl;
+    //   cout << b << "  " << track->Charge() << "  " << isph << endl;
 
     fTrackPt[iTracks]     = (Float_t)track->Pt();
     fTrackPhi[iTracks]    = (Float_t)track->Phi();
