@@ -820,45 +820,45 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
     {
       if(fdoPtCorr == 1 && fdoEtaCorr == 1)
 	{
-	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(0,1))->Clone();
-	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(0,1))->Clone();	  
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(1,0))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(1,0))->Clone();	  
 	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
 	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
 	}
 
-      if(fdoPtCorr == 1 && fdoPhiCorr == 1)
+      else if(fdoPtCorr == 1 && fdoPhiCorr == 1)
 	{
-	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(0,2))->Clone();
-	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(0,2))->Clone();
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(2,0))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(2,0))->Clone();
 	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
 	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());	 
 	}
 
       else if(fdoPtCorr == 1 && fdoZVertCorr == 1)
 	{
-	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(0,3))->Clone();
-	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(0,3))->Clone();
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(3,0))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(3,0))->Clone();
 	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
 	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
 	}
       else if(fdoEtaCorr == 1 && fdoPhiCorr == 1)
 	{
-	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(1,2))->Clone();
-	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(1,2))->Clone();
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(2,1))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(2,1))->Clone();
 	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
 	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
 	}
       else if(fdoEtaCorr == 1 && fdoZVertCorr == 1)
 	{
-	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(1,3))->Clone();
-	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(1,3))->Clone();
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(3,1))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(3,1))->Clone();
 	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
 	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
 	}
       else if(fdoPhiCorr == 1 && fdoZVertCorr == 1)
 	{
-	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(2,3))->Clone();
-	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(2,3))->Clone();
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(3,2))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(3,2))->Clone();
 	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
 	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
 	}
@@ -873,6 +873,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
 	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(0,1,2))->Clone(); 
 	  fh3Reco1->Scale(1./fhntReco1_nbins*fh3Reco1->GetNbinsX()*fh3Reco1->GetNbinsY()*fh3Reco1->GetNbinsZ());
 	  fh3Reco2->Scale(1./fhntReco2_nbins*fh3Reco2->GetNbinsX()*fh3Reco2->GetNbinsY()*fh3Reco2->GetNbinsZ());
+
 	}
 
       else if(fdoPtCorr == 1 && fdoEtaCorr == 1 && fdoZVertCorr == 1)
@@ -1033,7 +1034,6 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 		
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
-
 		return w1*w2;
 	      }
 	    else
@@ -1095,12 +1095,12 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
       {
 	if(fdoPtCorr == 1 && fdoEtaCorr == 1)
 	  {
-	    if(pT1 > fh2Reco1->GetXaxis()->GetXmin() && pT1 < fh2Reco1->GetXaxis()->GetXmax() && pT2 > fh2Reco2->GetXaxis()->GetXmin() && pT2 < fh2Reco2->GetXaxis()->GetXmax() && eta1 > fh2Reco1->GetYaxis()->GetXmin() && eta1 < fh2Reco1->GetYaxis()->GetXmax() && eta2 > fh2Reco2->GetXaxis()->GetXmin() && eta2 < fh2Reco2->GetXaxis()->GetXmax())
+	    if(pT1 > fh2Reco1->GetXaxis()->GetXmin() && pT1 < fh2Reco1->GetXaxis()->GetXmax() && pT2 > fh2Reco2->GetXaxis()->GetXmin() && pT2 < fh2Reco2->GetXaxis()->GetXmax() && eta1 > fh2Reco1->GetYaxis()->GetXmin() && eta1 < fh2Reco1->GetYaxis()->GetXmax() && eta2 > fh2Reco2->GetYaxis()->GetXmin() && eta2 < fh2Reco2->GetYaxis()->GetXmax())
 	      {
 		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(pT1),fh2Reco1->GetYaxis()->FindFixBin(eta1));
 		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(pT2),fh2Reco2->GetYaxis()->FindFixBin(eta2));
 
-		w1 = (1-cont1)/eps1;
+		w1 = (1-cont1)/eps1; 
 		w2 = (1-cont2)/eps2;
 
 		return w1*w2;
@@ -1113,7 +1113,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 	if(fdoPtCorr == 1 && fdoPhiCorr == 1)
 	  {
 	 
-	    if(pT1 > fh2Reco1->GetXaxis()->GetXmin() && pT1 < fh2Reco1->GetXaxis()->GetXmax() && pT2 > fh2Reco2->GetXaxis()->GetXmin() && pT2 < fh2Reco2->GetXaxis()->GetXmax() && phi1 > fh2Reco1->GetYaxis()->GetXmin() && phi1 < fh2Reco1->GetYaxis()->GetXmax() && phi2 > fh2Reco2->GetXaxis()->GetXmin() && phi2 < fh2Reco2->GetXaxis()->GetXmax())
+	    if(pT1 > fh2Reco1->GetXaxis()->GetXmin() && pT1 < fh2Reco1->GetXaxis()->GetXmax() && pT2 > fh2Reco2->GetXaxis()->GetXmin() && pT2 < fh2Reco2->GetXaxis()->GetXmax() && phi1 > fh2Reco1->GetYaxis()->GetXmin() && phi1 < fh2Reco1->GetYaxis()->GetXmax() && phi2 > fh2Reco2->GetYaxis()->GetXmin() && phi2 < fh2Reco2->GetYaxis()->GetXmax())
 	      {
 		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(pT1),fh2Reco1->GetYaxis()->FindFixBin(phi1));
 		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(pT2),fh2Reco2->GetYaxis()->FindFixBin(phi2));
@@ -1131,7 +1131,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 	else if(fdoPtCorr == 1 && fdoZVertCorr == 1)
 	  {
 
-	    if(pT1 > fh2Reco1->GetXaxis()->GetXmin() && pT1 < fh2Reco1->GetXaxis()->GetXmax() && pT2 > fh2Reco2->GetXaxis()->GetXmin() && pT2 < fh2Reco2->GetXaxis()->GetXmax() && zvert1 > fh2Reco1->GetYaxis()->GetXmin() && zvert1 < fh2Reco1->GetYaxis()->GetXmax() && zvert2 > fh2Reco2->GetXaxis()->GetXmin() && zvert2 < fh2Reco2->GetXaxis()->GetXmax())
+	    if(pT1 > fh2Reco1->GetXaxis()->GetXmin() && pT1 < fh2Reco1->GetXaxis()->GetXmax() && pT2 > fh2Reco2->GetXaxis()->GetXmin() && pT2 < fh2Reco2->GetXaxis()->GetXmax() && zvert1 > fh2Reco1->GetYaxis()->GetXmin() && zvert1 < fh2Reco1->GetYaxis()->GetXmax() && zvert2 > fh2Reco2->GetYaxis()->GetXmin() && zvert2 < fh2Reco2->GetYaxis()->GetXmax())
 	      {
 		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(pT1),fh2Reco1->GetYaxis()->FindFixBin(zvert1));
 		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(pT2),fh2Reco2->GetYaxis()->FindFixBin(zvert2));
@@ -1147,7 +1147,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 	else if(fdoEtaCorr == 1 && fdoPhiCorr == 1)
 	  {
 
-	    if(eta1 > fh2Reco1->GetXaxis()->GetXmin() && eta1 < fh2Reco1->GetXaxis()->GetXmax() && eta2 > fh2Reco2->GetXaxis()->GetXmin() && eta2 < fh2Reco2->GetXaxis()->GetXmax() && phi1 > fh2Reco1->GetYaxis()->GetXmin() && phi1 < fh2Reco1->GetYaxis()->GetXmax() && phi2 > fh2Reco2->GetXaxis()->GetXmin() && phi2 < fh2Reco2->GetXaxis()->GetXmax())
+	    if(eta1 > fh2Reco1->GetXaxis()->GetXmin() && eta1 < fh2Reco1->GetXaxis()->GetXmax() && eta2 > fh2Reco2->GetXaxis()->GetXmin() && eta2 < fh2Reco2->GetXaxis()->GetXmax() && phi1 > fh2Reco1->GetYaxis()->GetXmin() && phi1 < fh2Reco1->GetYaxis()->GetXmax() && phi2 > fh2Reco2->GetYaxis()->GetXmin() && phi2 < fh2Reco2->GetYaxis()->GetXmax())
 	      {
 		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(eta1),fh2Reco1->GetYaxis()->FindFixBin(phi1));
 		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(eta2),fh2Reco2->GetYaxis()->FindFixBin(phi2));
@@ -1293,7 +1293,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
-		    
+		cout<<fhCont1->GetName()<<" w1: "<<w1<<" w2:"<<w2<<" eps1:"<<eps1<<" eps2:"<<eps2<<" con1:"<<cont1<<endl;
 		return w1*w2;
 		  
 	      }
