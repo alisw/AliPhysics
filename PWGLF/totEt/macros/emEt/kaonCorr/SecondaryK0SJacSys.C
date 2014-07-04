@@ -12,7 +12,7 @@ TLegend *GetLegend(float x1, float y1, float x2, float y2);
 Bool_t doLevy = kFALSE;//for debugging
 Bool_t doBlast = kTRUE;//for debugging
 void Draw(TH1 *data, TF1 *fLevy, TF1 *fBlast,int centbin,char *pid,char *name);
-void PrintLatex(int etCutNum, char *det);
+void PrintLatex(int etCutNum, char *det,Bool_t effCorr);
 void PrintArrays();
 
 // Centrality dependent factors
@@ -25,13 +25,13 @@ Double_t etBlastk02D[2][10] = {{0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},{0.0,0.
 //0.250,0.300, 0.350, 0.400, 0.450
 //0.500
 //counting is integer and starts are 1
-
+//                        1     2      3      4      5       6PHOS 7EMCal 8      9      10      11Alt
 Double_t etCutOffs[11] = {0.00, 0.050, 0.100, 0.150, 0.200,  0.250,0.300, 0.350, 0.400, 0.450,  0.500};
 
 Double_t kaonDeposits[2][10] = {{0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}};
 
 //note:  Not at all sensitive to which Jacobian is used, which also means the pT used doesn't really matter
-void SecondaryK0SJacSys(char *inputfilename = "../workingdir/rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.Run139465.root", char *det = "EMCal", int whichjacobian = 1, int etCutNum = 7, Bool_t longRun = kFALSE){//Kaon collection: 0=K0S, -1=K-, +1=K+
+void SecondaryK0SJacSys(char *inputfilename = "../workingdir/rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.Run139465.root", char *det = "EMCal", int whichjacobian = 1, int etCutNum = 7, Bool_t longRun = kFALSE, Bool_t effCorr = kFALSE){//Kaon collection: 0=K0S, -1=K-, +1=K+
   Int_t kaonSelection = 1;
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -214,7 +214,7 @@ void SecondaryK0SJacSys(char *inputfilename = "../workingdir/rootFiles/LHC11a10a
   //==================THROWING RANDOM SPECTRA========================== 
   // number of particles to put in histogram (will change later)
   int nParticles = 1e3; // for quick runs
-  if(longRun) nParticles = 1e7;   //for statistics
+  if(longRun) nParticles = 1e8;   //for statistics
 
   // set parameters of setstyles
   int marker1 = 21; int marker2 = 24;
@@ -223,8 +223,18 @@ void SecondaryK0SJacSys(char *inputfilename = "../workingdir/rootFiles/LHC11a10a
   
   TFile *f = TFile::Open(inputfilename, "READ");
   TList *l = (TList*)f->Get("out1");
-  TH3F *fHistK0EDepositsVsPtInAcceptance = l->FindObject("fHistK0EDepositsVsPtInAcceptance");
-  TH3F *fHistK0EDepositsVsPtOutOfAcceptance = l->FindObject("fHistK0EDepositsVsPtOutOfAcceptance");
+  TH3F *fHistK0EDepositsVsPtInAcceptance;
+  TH3F *fHistK0EDepositsVsPtOutOfAcceptance;
+  if(effCorr){
+    fHistK0EDepositsVsPtInAcceptance =(TH3F*) l->FindObject("fHistK0EDepositsVsPtInAcceptance");
+    fHistK0EDepositsVsPtOutOfAcceptance =(TH3F*) l->FindObject("fHistK0EDepositsVsPtOutOfAcceptance");
+  }
+  else{
+    fHistK0EDepositsVsPtInAcceptance =(TH3F*) l->FindObject("fHistK0EGammaVsPtInAcceptance");
+    fHistK0EDepositsVsPtOutOfAcceptance =(TH3F*) l->FindObject("fHistK0EGammaVsPtOutOfAcceptance");
+  }
+  if(!fHistK0EDepositsVsPtOutOfAcceptance) cerr<<"Warning!  did not find fHistK0EDepositsVsPtOutOfAcceptance"<<endl;
+  if(!fHistK0EDepositsVsPtInAcceptance) cerr<<"Warning!  did not find fHistK0EDepositsVsPtInAcceptance"<<endl;
   fHistK0EDepositsVsPtInAcceptance->GetZaxis()->SetRange(etCutNum,etCutNum);
   TH2D *my2DhistoK0S = (TH2D*) fHistK0EDepositsVsPtInAcceptance->Project3D("yx");
   fHistK0EDepositsVsPtOutOfAcceptance->GetZaxis()->SetRange(etCutNum,etCutNum);
@@ -360,7 +370,7 @@ void SecondaryK0SJacSys(char *inputfilename = "../workingdir/rootFiles/LHC11a10a
     float minJacobian = overallAverageJac[0]/totK0S;
     float maxJacobian = overallAverageJac[0]/totK0S;
     cout<<"Average jacobians: ";
-    for(int i=0;i<=4;i++){
+    for(int i=0;i<=3;i++){
       cout<<" "<< overallAverageJac[i]/totK0S;
       if(minJacobian>overallAverageJac[i]/totK0S) minJacobian = overallAverageJac[i]/totK0S;
       if(maxJacobian<overallAverageJac[i]/totK0S) maxJacobian = overallAverageJac[i]/totK0S;
@@ -413,8 +423,8 @@ void SecondaryK0SJacSys(char *inputfilename = "../workingdir/rootFiles/LHC11a10a
 	histoETCspectrumK0S->Fill(etcK0S);
 	//here we deal with a problem.  The get random function gets confused for zeros.  It gives a small but non-zero value.  But we can never have a deposit less than the minimum energy!
 	//this doesn't mess up the kaons in the 
-	if(etK0S<etCutOffs[etCutNum-1]){etK0S = 0.0;}
-	if(etcK0SOutOfAcc<etCutOffs[etCutNum-1]){etcK0SOutOfAcc = 0.0;}
+	if(etCutNum>0 && etK0S<etCutOffs[etCutNum-1]){etK0S = 0.0;}
+	if(etCutNum>0 && etcK0SOutOfAcc<etCutOffs[etCutNum-1]){etcK0SOutOfAcc = 0.0;}
 
 	//if(etcK0SOutOfAcc>0){cout<<"et dep "<<etcK0SOutOfAcc<<" scale "<<scaleForOutOfAcc<<" pT "<<ptK0S<<endl;}
 	//else{cout<<"No energy deposited"<<endl;}
@@ -469,6 +479,7 @@ void SecondaryK0SJacSys(char *inputfilename = "../workingdir/rootFiles/LHC11a10a
     float fracerrFromInOutVariance = 0.2*meanETperkaonOutOfAcc/(meanETperkaonInAcc+meanETperkaonOutOfAcc);
     float fracerr = TMath::Sqrt(TMath::Power(kaonFracErr[centbin],2)+TMath::Power(errJacobian/meanJacobian,2)+TMath::Power(etaRangeWeightErr/etaRangeWeightMean,2));
     float fracerrTotal = TMath::Sqrt(TMath::Power(kaonFracErr[centbin],2)+TMath::Power(errJacobian/meanJacobian,2)+TMath::Power(etaRangeWeightErr/etaRangeWeightMean,2)+TMath::Power(fracerrFromInOutVariance,2));
+    cout<<"Errors : Yield: "<<kaonFracErr[centbin]<<" Jacobian "<<errJacobian/meanJacobian<<" eta range "<<etaRangeWeightErr/etaRangeWeightMean<<" InOutVariance "<<fracerrFromInOutVariance<<endl;
     cout<<"Total ET deposited in acc: "<<meanETperkaonInAcc*scale<<" +/- "<<meanETperkaonInAcc*fracerr*scale<<endl;
     cout<<"Total ET deposited out of acc: "<<meanETperkaonOutOfAcc*scale<<" +/- "<<meanETperkaonOutOfAcc*fracerr*scale<<endl;
     cout<<"Total ET deposited: "<<meanETperkaon*scale<<" +/- "<<meanETperkaon*fracerrTotal*scale<<endl;
@@ -486,7 +497,7 @@ void SecondaryK0SJacSys(char *inputfilename = "../workingdir/rootFiles/LHC11a10a
   }
 
 
-  PrintLatex(etCutNum,det); 
+  PrintLatex(etCutNum,det,effCorr); 
 }
 
 
@@ -552,11 +563,16 @@ void Draw(TH1 *data, TF1 *fLevy, TF1 *fBlast, int centbin,char *pid,char *name){
   delete canvas;
 }
 
-void PrintLatex(int etCutNum, char *det){
+void PrintLatex(int etCutNum, char *det,Bool_t effCorr){
+  TString cutNumString = Form("%i",etCutNum);
   ofstream myfile;
-  myfile.open(Form("datatablesKaonCut%i%s.tex",etCutNum,det));
+  TString tag = "";
+  if(!effCorr){tag = "NoEffCorr";}
+  TString tmpName = Form("datatablesKaonCut%i%s.tex",etCutNum,det);
+  myfile.open(tmpName);
+  cout<<"Creating "<<tmpName<<endl;
 
-  myfile<<Form("%3.2f",etCutOffs[etCutNum]);
+  myfile<<Form("%3.2f",etCutOffs[etCutNum-1]);
   myfile<<"& ";
   //myfile<<"K$^{0}_{S}$  ";
   for(int j=0;j<nbins;j++){
@@ -568,6 +584,54 @@ void PrintLatex(int etCutNum, char *det){
   myfile<<endl<<endl;
 
   myfile.close();
+  cout<<"kaonCorr["<<nbins<<"] = {";
+  for(int j=0;j<nbins;j++){
+    cout<<kaonDeposits[0][j];
+    if(j!=nbins-1) cout<<",";
+  }
+  cout<<"};"<<endl;
+  cout<<"kaonError["<<nbins<<"] = {";
+  for(int j=0;j<nbins;j++){
+    cout<<kaonDeposits[1][j];
+    if(j!=nbins-1) cout<<",";
+  }
+  cout<<"};"<<endl;
+  cerr<<"I got here 587"<<endl;
+  ofstream myfile2;
+  cerr<<"I got here 589"<<endl;
+  cerr<<"cut num "<<etCutNum<<" string "<<cutNumString<<endl;
+  TString textfilename2 = Form("KaonCut%i%s%s.dat",etCutNum,det,tag.Data());
+  //TString textfilename2 = "Kaons"+det+Form("%i",etCutNum)+".dat";
+  cerr<<"I got here 590"<<endl;
+  cout<<"Creating "<<textfilename2<<endl;
+  myfile2.open (textfilename2.Data());
+  for(int j=0;j<nbins;j++){
+    myfile2<<Form("%2.3f %2.3f",kaonDeposits[0][j],kaonDeposits[1][j])<<endl;
+  }
+  myfile2.close();
+//   ofstream myfile3;
+//   TString textfilename2 = Form("KaonCut%i%sShort.dat",etCutNum,det);
+//   //TString textfilename = "Kaons"+det+Form("CutNum%i",etCutNum)+"Short.dat";
+//   cout<<"Creating "<<textfilename<<endl;
+//   myfile3.open (textfilename.Data());
+//   int startbin = 0;
+//   for(int j=0;j<10;j++){
+//     float mean = 0;
+//     float err = 0;
+//     if(j>1){ 
+//       startbin+=2;
+//       mean = (kaonDeposits[0][startbin]+kaonDeposits[0][startbin+1])/2.0;
+//       err = (kaonDeposits[1][startbin]+kaonDeposits[1][startbin+1])/2.0;
+//     }
+//     else{
+//       mean = kaonDeposits[0][startbin];
+//       err = kaonDeposits[1][startbin];
+//       startbin++;
+//     }
+//     myfile3<<Form("%2.3f %2.3f",kaonDeposits[0][j],kaonDeposits[1][j])<<endl;
+//   }
+//   myfile3.close();
+
 }
 
 void PrintArrays(){

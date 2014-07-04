@@ -38,6 +38,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
 #include "AliAODHeader.h"
 #include "AliAODpidUtil.h"
 #include "AliHelperPID.h"
@@ -87,7 +88,7 @@ AliEbyEPidTTask::~AliEbyEPidTTask() {
   //!   Cleaning up
   if (fThnList)   delete fThnList;
   if (fHelperPID) delete fHelperPID;
-  //  if (fEventTree) delete fEventTree;
+  if (fEventTree) delete fEventTree;
 }
 
 //---------------------------------------------------------------------------------
@@ -102,9 +103,11 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
   for (Int_t ikey = 0; ikey < ll->GetEntries(); ikey++) {
     fThnList->Add(ll->At(ikey));
   }
-  
+  TDirectory *owd = gDirectory;
+  OpenFile(1);
   fEventTree = new TTree("fEventTree","fEventTree");
-  
+  owd->cd();
+
   fEventTree->Branch("fRunNumber",      &fRunNumber,     "fRunNumber/I");
   fEventTree->Branch("fFilterBit",      &fFilterBit,     "fFilterBit/I");
   fEventTree->Branch("fNumberOfTracks", &fNumberOfTracks,"fNumberOfTracks/I");
@@ -182,6 +185,12 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   fVertexY = vertex->GetY();
   fVertexZ = vertex->GetZ();
   
+//Default TPC priors
+  if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
+
+
+
+
   Int_t iTracks = 0; 
   for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
     AliAODTrack* track = dynamic_cast<AliAODTrack *>(event->GetTrack(itrk));
@@ -202,14 +211,14 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     
     if (track->Charge()  < 0 ) b = -1*b;
     
-       Int_t icharge = track->Charge() > 0 ? 0 : 1;
+    //    Int_t icharge = track->Charge() > 0 ? 0 : 1;
 
     // cout << icharge << "  " << track->Charge() << endl;
 
     fTrackPt[iTracks]     = (Float_t)track->Pt();
     fTrackPhi[iTracks]    = (Float_t)track->Phi();
     fTrackEta[iTracks]    = (Float_t)track->Eta();
-    fTrackCharge[iTracks] = icharge;
+    fTrackCharge[iTracks] = track->Charge();
     fTrackPid[iTracks] = b;
     iTracks++;
   }
