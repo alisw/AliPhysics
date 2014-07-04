@@ -532,7 +532,6 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   //Select photons
   //Fill QA histograms
   //Fill Tagging histogsms
-
   
   const Double_t kEcrossCut=0.98 ;
   const Double_t kTOFMaxCut= 100.e-9 ;  
@@ -721,7 +720,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     p->SetDistToBad((Int_t)(1.+clu->GetDistanceToBadChannel()/2.2));
     p->SetBC(i) ; //reference to CaloCluster
-    p->SetTagInfo(0); //Strict PID pi0 partner not found
+    p->SetTagInfo(0); //No pi0 partners found so far
     p->SetTagged(kFALSE);   //Reconstructed pairs found
     
     p->SetFiducialArea(fidArea) ;
@@ -1223,6 +1222,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       //Tagging: 1,2,3 sigma
       //Emin=100,200,300 Mev
       //InPi0Band(mass, Ptphoton, type Emin cut
+      //Set Bits to 1 if tagged
       Int_t tag1=0 ;
       for(Int_t eminType=0; eminType<3; eminType++){
         if(p2->E()>0.1*(eminType+1)){
@@ -1237,6 +1237,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	  }
 	}
       }
+      
       p1->SetTagInfo(tag1) ;
       Int_t tag2=0 ;
       for(Int_t eminType=0; eminType<3; eminType++){
@@ -1252,6 +1253,8 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	  }
 	}
       }
+      Int_t oldTag2=p2->GetTagInfo() ;
+      tag2=tag2|oldTag2 ;
       p2->SetTagInfo(tag2) ;
       
       if(tag1 & (1<<7)){ //2 sigma, Emin=0.3: default tagging
