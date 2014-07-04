@@ -136,7 +136,8 @@ Double_t AliTRDPIDResponse::GetNumberOfSigmas(const AliVTrack *track, AliPID::EP
   }
 
   const Double_t sigma = mean*res;
-  return delta/sigma;
+  const Double_t eps = 1e-12;
+  return delta/(sigma + eps);
 }
 
 //____________________________________________________________
@@ -212,8 +213,10 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
     info[1]= ResolutiondEdxTR(&ncls, respars);
   }
 
+  const Double_t eps = 1e-10;
+
   if(ratio){
-    return track->GetTRDsignal()/expsig;
+    return track->GetTRDsignal()/(expsig +  eps);
   }
   else{
     return track->GetTRDsignal() - expsig;
