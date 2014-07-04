@@ -195,19 +195,28 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
  
  if(GIT_FOUND)
   get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-  message(STATUS "Aliroot branch - ${GIT_REFSPEC} Revision - ${GIT_SHA1} ")
+
+  # GIT_REFSPEC is empty for detached mode = tags in detached mode or checkout to specific hash
+ 
+
+  # returns the closest reference to the current hash
+  # name of the current tag or heads/branch in the case of branches
+  git_describe(ALIROOT_GIT_TAG "--all" "--abbrev=0")
 
   STRING(REGEX REPLACE "^(.+/)(.+)/(.*)$" "\\2" BRANCH_TYPE "${GIT_REFSPEC}" )
-  
+
+  # the revision is not set in the case of a branch, it means we are doing development
+  # and the revision will trigger a reconfiguration
   if(BRANCH_TYPE STREQUAL "heads")
    set(ALIROOT_REVISION "ThisIsaBranchNoRevisionProvided")
+   STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
   else()
+   set(SHORT_BRANCH ${ALIROOT_GIT_TAG})
    set(ALIROOT_REVISION ${GIT_SHA1})
   endif()
 
-  STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
-
   set(ALIROOT_BRANCH ${SHORT_BRANCH})
+  message(STATUS "Aliroot branch/tag: \"${ALIROOT_BRANCH}\" - Revision:  \"${GIT_SHA1}\" ")
 
  else()
   message("Git not installed. I can't tell you which revision you are using!")
