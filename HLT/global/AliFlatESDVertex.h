@@ -28,6 +28,7 @@ class AliFlatESDVertex: public AliVVvertex
   */
 
 	AliFlatESDVertex(Bool_t){}
+  virtual ~AliFlatESDVertex() {}
 
   AliFlatESDVertex() :fNContributors(0), fChi2(0){
     for( int i=0; i<3; i++) fPosition[i] = -9999;

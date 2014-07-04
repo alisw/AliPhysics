@@ -13,7 +13,10 @@
 
 class AliVVv0: public AliVVtrack
 {
-
+  public:
+  AliVVv0() {}
+  AliVVv0(Bool_t) {}
+  virtual ~AliVVv0() {}
   ClassDef(AliVVv0,1)  // base class for v0 data
 };
 

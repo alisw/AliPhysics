@@ -10,9 +10,14 @@
  */
 
 #include "Rtypes.h"
+#include "AliVVexternalTrackParam.h"
 
-struct AliFlatExternalTrackParam
+class AliFlatExternalTrackParam: public AliVVexternalTrackParam
 {
+  public:
+  AliFlatExternalTrackParam() {}
+  AliFlatExternalTrackParam(Bool_t) {}
+  virtual ~AliFlatExternalTrackParam() {}
   Float_t fAlpha;     // azimuthal angle of reference frame
   Float_t fX;         // x: radial distance
   Float_t fY;         // local Y-coordinate of a track (cm)
@@ -42,6 +47,6 @@ struct AliFlatExternalTrackParam
   Float_t  GetCovEntry(Int_t idx) const {return (idx >= 0 && idx < 15) ? fC[idx] : 0.;}
 };
 
-typedef struct AliFlatExternalTrackParam AliFlatExternalTrackParam;
+//typedef struct AliFlatExternalTrackParam AliFlatExternalTrackParam;
 
 #endif

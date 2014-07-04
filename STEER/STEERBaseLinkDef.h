@@ -143,6 +143,8 @@
 #pragma link C++ class AliVVevent+;
 #pragma link C++ class AliVVkink+;
 #pragma link C++ class AliVVv0+;
+#pragma link C++ class AliVVcluster+;
+#pragma link C++ class AliVVexternalTrackParam+;
 
 #endif
 
