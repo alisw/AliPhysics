@@ -286,7 +286,7 @@ AliSysInfo::AddStamp("DoEvent.Start");
   size = 0;
 
   AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent*>(outputPtr); 
-  new (flatEsd) AliFlatESDEvent;    
+  new (flatEsd) AliFlatESDEvent(); //standard ctor to initialize an empty event   
 
   /*
   pESD->Reset(); 
@@ -606,6 +606,7 @@ AliSysInfo::AddStamp("DoEvent.Start");
 	      const AliHLTTPCSpacePointData &cIn = clusterBlock->fSpacePoints[iCluster];
 
 	      AliFlatTPCCluster *c= flatTrack->GetTPCCluster( flatTrack->GetNumberOfTPCClusters() );;
+        new (c) AliFlatTPCCluster(1);
 	      c->fX = cIn.GetX();
 	      c->fY = cIn.GetY();
 	      c->fZ = cIn.GetZ();

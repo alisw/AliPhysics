@@ -75,7 +75,7 @@ AliFlatESDTrack::AliFlatESDTrack(Bool_t)
   if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
   
   AliFlatTPCCluster* clusterTPC = GetTPCClusters();
-  for (Int_t i=0; i<GetNumberOfTPCClusters(); i++)
+  for (Int_t i=0; i<fNTPCClusters; i++)
   {
     new (clusterTPC) AliFlatTPCCluster(1);
     clusterTPC += sizeof(AliFlatTPCCluster);
@@ -274,6 +274,7 @@ Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param
   //Printf("  DEBUG: CONTENT %d >> %p + 0x%07llx = %p", flag, fContent, fSize, fContent + fSize);
 
   AliFlatExternalTrackParam * current = reinterpret_cast<AliFlatExternalTrackParam*> (fContent + fSize);
+  new (current) AliFlatExternalTrackParam(1);
   current->SetAlpha(param->GetAlpha());
   current->SetX(param->GetX());
   current->SetY(param->GetY());

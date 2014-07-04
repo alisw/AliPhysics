@@ -48,7 +48,7 @@ class AliFlatESDEvent: public AliVVevent {
 
  
   AliFlatESDTrack *GetNextTrackPointer(){ 
-		return  reinterpret_cast<AliFlatESDTrack*> (fContent + fSize);
+    return reinterpret_cast<AliFlatESDTrack*> (fContent + fSize);
   }
 
   void StoreLastTrack(){ 
@@ -93,7 +93,7 @@ class AliFlatESDEvent: public AliVVevent {
 
   AliFlatESDTrack *GetTracks() {
 	return reinterpret_cast<AliFlatESDTrack*> (fContent + fTracksPointer);
-}
+  }
 
   const AliVVvertex* GetPrimaryVertex() const {return NULL;}
   const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}

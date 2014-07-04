@@ -15,6 +15,7 @@
 class AliFlatExternalTrackParam: public AliVVexternalTrackParam
 {
   public:
+  AliFlatExternalTrackParam() {}
   AliFlatExternalTrackParam(Bool_t) {}
   virtual ~AliFlatExternalTrackParam() {}
   Float_t fAlpha;     // azimuthal angle of reference frame

@@ -73,7 +73,7 @@ AliFlatESDEvent::AliFlatESDEvent() :
 }
 
 // _______________________________________________________________________________________________________
-AliFlatESDEvent::AliFlatESDEvent(Bool_t)
+AliFlatESDEvent::AliFlatESDEvent(Bool_t):AliVVevent()
 {
   //special constructor, used to restore the vtable pointer
   //uses the special dummy constructors of contained objects
