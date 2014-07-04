@@ -164,9 +164,9 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   TList           *fOutputContainer;    // output data container
    
   //----------------------------histograms --------------------------------------------//
-  THnF *fTHnFK0s; 
-  THnF *fTHnFL; 
-  THnF *fTHnFAL; 
+  // THnF *fTHnFK0s; 
+  //THnF *fTHnFL; 
+  //THnF *fTHnFAL; 
 
   THnF *fTHnFK0sDauEta; 
   THnF *fTHnFLDauEta; 

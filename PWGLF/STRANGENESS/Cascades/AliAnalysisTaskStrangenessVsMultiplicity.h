@@ -35,6 +35,7 @@ class THnSparse;
 class AliESDpid;
 class AliESDtrackCuts;
 class AliAnalysisUtils;
+class AliPPVsMultUtils;
 class AliESDEvent;
 class AliPhysicsSelection;
 class AliCFContainer;
@@ -95,6 +96,8 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
 
   AliPIDResponse *fPIDResponse;     // PID response object
   AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
+  AliPPVsMultUtils *fPPVsMultUtils; //
+  AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
 
   //Objects Controlling Task Behaviour 
   Bool_t fkSaveV0Tree;              //if true, save TTree
@@ -118,7 +121,9 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
   Float_t fCentrality_V0M;         //! 
   Float_t fCentrality_V0AEq;       //! 
   Float_t fCentrality_V0CEq;       //! 
-  Float_t fCentrality_V0MEq;       //! 
+  Float_t fCentrality_V0MEq;       //!
+  Float_t fCustomCentrality_V0M; //!
+  Float_t fCustomCentrality_V0MEq; //!
   Int_t fRefMultEta5;              //!
   Int_t fRefMultEta8;              //!   
   Int_t fRunNumber;                //!
@@ -127,6 +132,7 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
     Bool_t fEvSel_HasAtLeastSPDVertex;      //!
     Bool_t fEvSel_VtxZCut;                  //!
     Bool_t fEvSel_IsNotPileup;              //!
+    Bool_t fEvSel_IsNotPileupMV;            //!
     Bool_t fEvSel_IsNotPileupInMultBins;    //!
     Bool_t fEvSel_HasVtxContributor;        //!
     

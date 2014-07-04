@@ -97,7 +97,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   //TPC info:
   TH2F *fdEdxVSp[nBconf][2];                      //! dedx vs pTpc
   TProfile *hDeDxExp[nBconf][9];                  //! TPC spline used
-  TH2F *fNsigmaTpc[nBconf][9];                    //! NsigmaTPC vs. pTpc
+  TH2F *fNsigmaTpc[nBconf][18];                    //! NsigmaTPC vs. pTpc
   TH2F *fNsigmaTpc_kTOF[nBconf][18];              //! NsigmaTPC vs. pt when kTOF is required and in DCAxyCut 
   
   //TOF info:
@@ -112,8 +112,8 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   TH2F *fM2vsZ[nBconf][10];                       //! M2 vs. Z in various pT bins
 
   //DCA distributions
-  TH1D *hDCAxy[nBconf][18][nbin];                 //! DCAxy distribution with NsigmaTpcCut for each particle species, in pT bins
-  TH1D *hDCAz[nBconf][18][nbin];                  //! DCAz distribution with NsigmaTpcCut for each particle species, in pT bins
+  TH1D *hDCAxy[nBconf][18][nbin];                 //! DCAxy distribution with NsigmaTpcCut for each particle species, in p bins
+  TH1D *hDCAz[nBconf][18][nbin];                  //! DCAz distribution with NsigmaTpcCut for each particle species, in p bins
   
   //TOF mass distributions
   TH1D *hM2CutDCAxy[nBconf][18][nbin];            //! Tof m2 distribution in DCAxyCut and with NsigmaTpcCut

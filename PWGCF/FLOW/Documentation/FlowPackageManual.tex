@@ -102,9 +102,9 @@
             hyperindex=true,linktocpage]{hyperref}
 \hypersetup{
     bookmarks=true,         % show bookmarks bar?
-    unicode=false,          % non-Latin characters in Acrobat’s bookmarks
-    pdftoolbar=true,        % show Acrobat’s toolbar?
-    pdfmenubar=true,        % show Acrobat’s menu?
+    unicode=false,          % non-Latin characters in Acrobatâs bookmarks
+    pdftoolbar=true,        % show Acrobatâs toolbar?
+    pdfmenubar=true,        % show Acrobatâs menu?
     pdffitwindow=false,     % window fit to page when opened
     pdfstartview={FitH},    % fits the width of the page to the window
     pdftitle={AliROOT Flow Package manual and documentation},    % title
@@ -190,13 +190,13 @@ with excerpts from other manuals, authors of those are mentioned in text
 The \texttt{ALICE flow package}\index{flow package}\index{ALICE flow package|see{flow package}}\footnote{The \texttt{ALICE} flow package is part of \texttt{AliROOT}\index{AliROOT}, the ALICE extension of the \texttt{ROOT} framework, which can be obtained from \href{http://git.cern.ch/pub/AliRoot}{http://git.cern.ch/pub/AliRoot}. The flow package itself is located in the folder \texttt{\$ALICE\_ROOT/PWG/FLOW/}, where \texttt{\$ALICE\_ROOT} refers to the source directory of \texttt{AliROOT}.} contains most known flow analysis methods. The package itself consists of two parts
 \begin{enumerate}
     \item The `tasks' library, which can be considered to be the \texttt{ALICE} interface to the package and takes care of e.g. track cuts, event cuts, etc;
-    \item The `base' library, which is the core of the package and contains the actual implementtaion of flow analysis methods such as the scalar product method, Q-cumulant method, etc. This part of the package has no dependencies other than \texttt{ROOT} and can be used on any type of input data.
+    \item The `base' library, which is the core of the package and contains the actual implementation of flow analysis methods such as the scalar product method, Q-cumulant method, etc. This part of the package has no dependencies other than \texttt{ROOT} and can be used on any type of input data.
 \end{enumerate}
 \section{This manual}
 This manual is designed to get you started with using the flow package. It is written in the following way:
 \begin{itemize}
     \item Chapter \ref{sec:onthefly} is designed to get you started on a short Monte Carlo example. In this example you will use the flow package to generate toy Monte Carlo events and analyze them;
-    \item Chapter \ref{sec:program} describes the flow package itself in detail. This includes a brief discussion on the structure of the package, sections on track and event cuts, an explanation of some relevant code sections and ending with an example analysis of $v_2(p_t)$ of charged pions with the Q-cumulant method. Most of this chapter pertains to the `tasks (the \texttt{AliROOT})' part of the flow package (i.e. event cuts, track cuts, PID, etc);
+    \item Chapter \ref{sec:program} describes the flow package itself in detail. This includes a brief discussion on the structure of the package, sections on track and event cuts, an explanation of some relevant code sections and ending with an example analysis of $v_2(p_t)$ of charged pions with the Q-cumulant method. Most of this chapter pertains to the `tasks (the \texttt{AliROOT})' part of the flow package (i.e. event cuts, track cuts, PID, etc), but it is also explained how to do flow analysis in \texttt{ROOT} only on a \texttt{TTree}\index{TTree};
     \item Chapter \ref{sec:methods} gives an overview of the available flow analysis methods. For the theory behind the methods references to papers are given. Settings relevant to the specific implementation are given as well. 
     \item Lastly, chapter \ref{sec:exotic} explains how the flow package can be put to use in more `exotic' environments, such as an invariant mass method estimate of flow of rapidly decaying particles. 
     \end{itemize}
@@ -217,7 +217,7 @@ The steps which will be followed in this example will be the same as the steps w
 \end{enumerate}
 In this Monte Carlo exercise, the flow event class will not receive data from a detector, but instead generate toy events itself. 
 
-We will now go through these step one-by-one. All the code that is used can also be foud in the macro \texttt{runFlowOnTheFlyExample.C}\index{On the fly}\index{runFlowOnTheFlyExample.C}\footnote{In aliroot, this macro can be found at \\ \texttt{\$ALICE\_ROOT/PWGCF/FLOW/Documentation/examples/manual/runFlowOnTheFlyExample}}.
+We will now go through these step one-by-one. All the code that is used can also be found in the macro \texttt{runFlowOnTheFlyExample.C}\index{On the fly}\index{runFlowOnTheFlyExample.C}\footnote{In aliroot, this macro can be found at \\ \texttt{\$ALICE\_ROOT/PWGCF/FLOW/Documentation/examples/manual/runFlowOnTheFlyExample}}.
 \begin{enumerate}
 	\item To use the flow code the flow library needs to be loaded. In\index{libraries, AliROOT} \texttt{AliROOT}:
 	\begin{lstlisting}[language=C, numbers=left]
@@ -288,9 +288,9 @@ mcep->WriteHistograms();
 TFile *outputFile = new TFile("outputQCanalysis.root","RECREATE");
 qc->WriteHistograms();\end{lstlisting}
 
-Please note that this will create a new output file, and overwrite any existing filse called \texttt{AnalysisResults.root}.
+Please note that this will create a new output file, and overwrite any existing file called \texttt{AnalysisResults.root}.
 
-\item  To write the output of multiple analyses into subdirectories of one file, one can do the following:
+\item  To write the output of multiple analyses into sub-directories of one file, one can do the following:
 \begin{lstlisting}[language=C, numbers=left]
 TFile *outputFile = new TFile("AnalysisResults.root","RECREATE");
 TDirectoryFile* dirQC = new TDiretoryFile("outputQCanalysis", "outputQCanalysis");
@@ -372,7 +372,7 @@ Objects of two types are stored in the output of the flow analysis\footnote{Make
 The \texttt{AliFlowCommonHist} and \texttt{AliFlowCommonHistResults} classes are derived from the generic \texttt{TNamed}\index{TNamed} \texttt{ROOT} object and can be written to a \texttt{ROOT} file. The flow analysis tasks will, as output, write the complete \texttt{AliFlowCommonHist} and \texttt{AliFlowCommonHistResults} objects to file at the end of an analysis. To read the content of these objects, the \texttt{libPWGflowBase} library must be loaded in your \texttt{ROOT} session. 
 
 \subsubsection{Comparing flow results}
-A convenient way of comparing the results of the different flow analysis strategies that have been used is invoking the macro \texttt{compareFlowResults.C}\footnote{\texttt{\$ALICE\_ROOT/PWGCF/FLOW/macros/compareFlowResults.C}}\index{compareFlowResults}.  This macro will read the analysis output file \texttt{AnalysisResults.root}, extract the requested results from it and plot them. For a full overview of what can be done with the macro, the reader is referred to the macro itself and its ample documentation. To run the macro on the dataset that we have just generated, simply do
+A convenient way of comparing the results of the different flow analysis strategies that have been used is invoking the macro \texttt{compareFlowResults.C}\footnote{\texttt{\$ALICE\_ROOT/PWGCF/FLOW/macros/compareFlowResults.C}}\index{compareFlowResults}.  This macro will read the analysis output file \texttt{AnalysisResults.root}, extract the requested results from it and plot them. For a full overview of what can be done with the macro, the reader is referred to the macro itself and its ample documentation. To run the macro on the data-set that we have just generated, simply do
 \begin{lstlisting}[language=C, numbers=left]
 .L compareFlowResults.C
 compareFlowResults(TSring(""))	// the empty suffix indicates on the fly events \end{lstlisting}
@@ -402,8 +402,11 @@ Figure \ref{fig:flowchart} gives a simple schematic representation\index{flowcha
 \end{description}
 Some tools, such as the flow event or track cuts, have a `base' component which name ends with the suffix `simple', and an `tasks' (\texttt{AliROOT}) component which does not have this suffix. The `tasks' class in these cases inherits from the `base' class. 
 
-\section{Flow Event}\index{flow event}
-Every flow analysis in the flow package starts with the flow event. As mentioned earlier, the flow event is a simple container class which holds a collection of flow tracks, which are in turn fed to the flow analysis methods. 
+Every flow analysis in the flow package starts with the flow event. As mentioned earlier, the flow event is a simple container class which holds a collection of flow tracks, which are in turn fed to the flow analysis methods. In the next section it will be explained how the flow event can be filled with \texttt{ALICE} data in the \texttt{AliROOT} analysis framework. The section after that will explain how the flow event can be filled with \emph{any} type of data using just \texttt{ROOT}
+
+\section{Analysis in the ALICE analysis framework}\index{flow event}
+In this section, you will see how a flow analysis can be performed in the \texttt{AliROOT} analysis framework.
+
 \subsection{Input data}\index{input data}
 Before passing the flow event to the flow analysis methods, it needs to be filled with a set of flow tracks. In general, a distinction is made between \emph{reference particles} (or \emph{RP's}), which are particles that are used to build the \textbf{Q} vector(s), and \emph{particles of interest} (or \emph{POI's}), which are the particles of which you'll calculate the differential flow. The flow event and the flow analysis methods are designed to keep track of which flow tracks are POI's, RP's (or even both at the same time), which is important to avoid auto-correlation effects which can distort the $v_n$ measurement. The user of the flow package however is responsible for properly setting up the analysis! 
 
@@ -523,26 +526,26 @@ To use the event cuts object in combination with the \texttt{AliAnalysisTaskFlow
 Some caveats\index{event selection!caveats} and remarks about using the event cuts object
 \begin{description}
 \item[Default behavior] By default, the event cuts object accepts all events. All desired cuts have to be set by the user. This is also reflected in the design of the setters: most of the setters will, when called, set a \texttt{Bool\_t} to true which enables a cut on a certain parameter;
-\item[Applicability of cuts to different datatypes] \index{event selection!data types}Not all the cuts can be applied to all input data types. In e.g. the process of filtering \texttt{AODs} from \texttt{ESDs}, `technical' event cuts are made and not all events are stored in the \texttt{AOD} format. Because of this, information that can be rqeuired from \texttt{ESDs} might not be available (as it is not necessary) in \texttt{AODs}. To see whether or not a cut you set is actually applied to the datatype you're using, take a look at
+\item[Applicability of cuts to different data types] \index{event selection!data types}Not all the cuts can be applied to all input data types. In e.g. the process of filtering \texttt{AODs} from \texttt{ESDs}, `technical' event cuts are made and not all events are stored in the \texttt{AOD} format. Because of this, information that can be required from \texttt{ESDs} might not be available (as it is not necessary) in \texttt{AODs}. To see whether or not a cut you set is actually applied to the data type you're using, take a look at
 \begin{lstlisting}[language=C, numbers=left]
 Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, ALIMCEvent *mcevent)\end{lstlisting}
 This function determines whether or not an event is accepted: it starts by converting the virtual event type that is passed as argument to either an \texttt{ESD} or \texttt{AOD} event, and goes through selection criteria accordingly. 
 \item[Event cuts outside of the \texttt{AliAnalysisTaskFlowEvent} class]
-When you perform a flow analysis without using the \texttt{AliAnalysisTaskFlowEvent} class (which is done e.g. in the analyses explained in section \ref{sec:exotic}), you can still use the event cuts class by creating an instance of the object, passing it to your analsyis class and `manually' checking the return value of the function 
+When you perform a flow analysis without using the \texttt{AliAnalysisTaskFlowEvent} class (which is done e.g. in the analyses explained in section \ref{sec:exotic}), you can still use the event cuts class by creating an instance of the object, passing it to your analysis class and `manually' checking the return value of the function 
 \begin{lstlisting}[language=C, numbers=left]
 Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, ALIMCEvent *mcevent)\end{lstlisting}
-\item[Data taking period] Most event cuts will be tuned specifically to the LHC10h or LHC11h data taking periods. The event cuts class might need to be updated to accomodate specific cuts for different periods - do not hesitate write patches for this!
+\item[Data taking period] Most event cuts will be tuned specifically to the LHC10h or LHC11h data taking periods. The event cuts class might need to be updated to accommodate specific cuts for different periods - do not hesitate write patches for this!
 \end{description}
 for e.g. each event that is passed to your \texttt{::UserExec()} function.
 
-\section{Track cuts and the track cuts object}\index{track selection}
-As explained in the previous subsection, flow events are filled with tracks which fulfill certain track selection criteria. These criteria are checked using the \texttt{AliFlowTrackCuts} class. The \texttt{AliFlowTrackCuts} class can handle different types of input from diffferent data-types (e.g. \texttt{ESD} or \texttt{AOD}) and information from different sub-detector systems. All input is in the end converted to \texttt{AliFlowSimpleTracks} which are added to the flow event. To understand how the \texttt{AliFlowTrackCuts}\index{AliFlowTrackCuts} object works and how it should be configured, it is good to make a few distinctions and remarks. 
+\subsection{Track cuts and the track cuts object}\index{track selection}
+As explained in the previous subsection, flow events are filled with tracks which fulfill certain track selection criteria. These criteria are checked using the \texttt{AliFlowTrackCuts} class. The \texttt{AliFlowTrackCuts} class can handle different types of input from different data-types (e.g. \texttt{ESD} or \texttt{AOD}) and information from different sub-detector systems. All input is in the end converted to \texttt{AliFlowSimpleTracks} which are added to the flow event. To understand how the \texttt{AliFlowTrackCuts}\index{AliFlowTrackCuts} object works and how it should be configured, it is good to make a few distinctions and remarks. 
 
 The term `track' is generally used for reconstructed particle trajectories which are constructed from information coming from the tracking detectors in central barrel of the \texttt{ALICE} detector (more specifically from information from the \texttt{ITS} and \texttt{TPC} detectors). Tracks are the most commonly used data source, and the translation from `track' to \texttt{AliFlowTrackSimple} is trivial, as it merely comprises copying  kinematic information ($p_t$, $\varphi$, $\eta$) from the barrel track to the \texttt{AliFlowTrackSimple} object. 
 
 When using information that is not coming from tracking detectors, e.g. information from the \texttt{VZERO}\index{VZERO} system, this procedure of simply copying variables is not suitable as the \texttt{VZERO} system does not measure $p_t$, $\varphi$, $\eta$ of particles, but is an array of scintillators with limited spatial resolution. Nevertheless, the \texttt{AliFlowTrackCuts} class converts the \texttt{VZERO} signal to \texttt{AliFlowTrackSimples} which are, to the flow event, indistinguishable from barrel tracks. As the procedure of accepting these tracks is very different from the procedure of accepting barrel tracks, they will be treated separately in the following subsections. 
 
-\subsection{ESD tracks as data source}\index{track selection!ESD tracks}
+\subsubsection{ESD tracks as data source}\index{track selection!ESD tracks}
 The safest and most convenient way of using \texttt{ESD} tracks as a data source is by using one of the pre-defined track cuts sets that are available in the \texttt{AliFlowTrackCuts} class. These sets of track cuts mimic the cuts that are defined in the \texttt{AliESDtrackCuts} class\footnote{\texttt{\$ALICE\_ROOT/ANALYSIS/AliESDtrackCuts.cxx}}. The following default track cuts sets are available:
 \begin{lstlisting}[language=C, numbers=left]
   static AliFlowTrackCuts* GetStandardTPCStandaloneTrackCuts();
@@ -597,8 +600,8 @@ The configuration falls into three categories:
 Note that \texttt{kV0} is reserved to denote a decay vertex of a neutral particle, and \texttt{kVZERO} is used to indicate the VZERO detector system. kUserA and kUserB are additional flags which can selected for `custom' track selection sets.
 \end{enumerate}
 
-\subsection{AOD tracks as data source}\index{track selection!AOD tracks}
-\texttt{AOD} tracks are derived from \texttt{ESD} tracks via process called `fitlering'. If an \texttt{ESD} track meets a pre-defined set of track cuts, it is converted to an \texttt{AOD} track which is stored in an \texttt{AOD} event. The \texttt{AOD} track carries a specific flag (called \texttt{filterbit}) which corresponds to the specific set of cuts that was applied to create accept the track. A full list of track selection criteria corresponding to distinct filterbits can be found \href{}{here}. Note that different \texttt{AOD} productions might have different filterbit definitions!
+\subsubsection{AOD tracks as data source}\index{track selection!AOD tracks}
+\texttt{AOD} tracks are derived from \texttt{ESD} tracks via process called `filtering'. If an \texttt{ESD} track meets a pre-defined set of track cuts, it is converted to an \texttt{AOD} track which is stored in an \texttt{AOD} event. The \texttt{AOD} track carries a specific flag (called \texttt{filterbit}) which corresponds to the specific set of cuts that was applied to create accept the track. A full list of track selection criteria corresponding to distinct filterbits can be found \href{}{here}. Note that different \texttt{AOD} productions might have different filterbit definitions!
 
 In \texttt{AOD} analysis it generally suffices to select tracks of a certain filterbit, instead of checking quality criteria `by-hand' as is done in \texttt{ESD} analyses (some variables which one would cut on in \texttt{ESD} tracks might not even be available in the \texttt{AOD} tracks as the \texttt{AOD} is designed to be a light-weight `end-user' data format). To get an instance of the \texttt{AliFlowTrackCuts} object which only selects tracks based on a specific filterbit\index{track selection!AOD filterbit}\index{filterbit}, one can call
 \begin{lstlisting}[language=C, numbers=left]
@@ -694,7 +697,7 @@ void AliFlowTrackCuts::SetNumberOfSigmas(Float_t val);\end{lstlisting}
 \subsubsection{Caveats and notes}
 \index{particle identification!caveats}
 \begin{description}
-\item[Applicability of cuts to different data types] Just as not all event and track cuts that are available for all data types. For the track quality cuts this has been explained in the previous subsections, but one has to reqlize that in addition, not all particle identification methods are available for all types of data. At the time of writing, the \texttt{ESD} particle identification is more elaborate than the \texttt{AOD} counterpart. To see which PID methods exist for the different data types, check the \texttt{AliFlowTrackCuts::Passes$\ast$pidCut()} functions,  printed below for your convenience.
+\item[Applicability of cuts to different data types] Just as not all event and track cuts that are available for all data types. For the track quality cuts this has been explained in the previous subsections, but one has to realize that in addition, not all particle identification methods are available for all types of data. At the time of writing, the \texttt{ESD} particle identification is more elaborate than the \texttt{AOD} counterpart. To see which PID methods exist for the different data types, check the \texttt{AliFlowTrackCuts::Passes$\ast$pidCut()} functions,  printed below for your convenience.
 
 \begin{lstlisting}[language=C, numbers=left]
 Bool_t AliFlowTrackCuts::PassesAODpidCut(const AliAODTrack* track )
@@ -797,7 +800,7 @@ In general, a \textbf{Q} vector is defined as
 \begin{equation}\label{qvzero}
 \mbox{\textbf{Q}} = \sum_{\mbox{tracks}} w_i \exp \left( i n \varphi \right)
 \end{equation}
-where $w_i$ is a track weight, $n$ is the harmonic, and $\varphi$ is the azimuthal angle of a track.  As explained, in the case of VZERO tiles, $\varphi$ is derived from the position of the VZERO tile and $w_i$ is the VZERO signal which is proportional to multiplicity. However, not all VZERO tiles are equally sensitive, and the sensitivity (can have) a runnumber dependence, which results in a non-flat VZERO \textbf{Q} vector distribution. As this effect might be different run-by-run, it cannot be corrected by applying a non-uniform acceptance correction at the end of your analysis, as an analysis generally comprises running over multiple runnumers and the non-uniform acceptance correction corrects only for non-uniformity which is equal for all runs. Hence, the VZERO non-uniformity needs to be corrected\index{VZERO!calibration} at the time of the construction of the \textbf{Q} vectors.
+where $w_i$ is a track weight, $n$ is the harmonic, and $\varphi$ is the azimuthal angle of a track.  As explained, in the case of VZERO tiles, $\varphi$ is derived from the position of the VZERO tile and $w_i$ is the VZERO signal which is proportional to multiplicity. However, not all VZERO tiles are equally sensitive, and the sensitivity (can have) a run-number dependence, which results in a non-flat VZERO \textbf{Q} vector distribution. As this effect might be different run-by-run, it cannot be corrected by applying a non-uniform acceptance correction at the end of your analysis, as an analysis generally comprises running over multiple run-numbers and the non-uniform acceptance correction corrects only for non-uniformity which is equal for all runs. Hence, the VZERO non-uniformity needs to be corrected\index{VZERO!calibration} at the time of the construction of the \textbf{Q} vectors.
 
 The functions in the flow package which are responsible for building the \textbf{Q} vectors (or sub-event \textbf{Q} vectors, the use of which will be described in subsection \ref{sec:scalar_product}) are
 \begin{lstlisting}[language=C, numbers=left]
@@ -834,7 +837,7 @@ These functions are called by the flow analysis tasks and generally not by the u
     \item [LHC10h]\index{VZERO!calibration!LHC10h}
 The calibration of LHC10h data is a two-step procedure. 
 \begin{itemize}
-\item The first step is evaluating the \textbf{Q} vector using equation \ref{qvzero}. However, the VZERO signal of each tile is \emph{re-weighted} before it is used as a weigth in equation \ref{qvzero}. The re-weighting comprises 
+\item The first step is evaluating the \textbf{Q} vector using equation \ref{qvzero}. However, the VZERO signal of each tile is \emph{re-weighted} before it is used as a weight in equation \ref{qvzero}. The re-weighting comprises 
 \begin{enumerate}
 \item Taking a \texttt{TProfile} with average multiplicity per cell (these profiles are stored in a \texttt{OADB} file for each run-number)
 \item Fitting a constant line per disc (or ring) $y = a$ (see next slide for example)
@@ -843,7 +846,7 @@ The calibration of LHC10h data is a two-step procedure.
 \mbox{track weight} = \frac{\mbox{cell multiplicity} * a}{\mbox{average multiplicity in a cell}} 
 \end{equation}
 \end{enumerate}
-\item After the \textbf{Q} vectors have been built, they are recentered. Re-centering is basically a small adjustment of the components of the \textbf{Q} vector, changing its angle event-by-event so that on average a flat \textbf{Q} vector distribution is obtained. The steps that are taken for re-centering are the following:
+\item After the \textbf{Q} vectors have been built, they are re-centered. Re-centering is basically a small adjustment of the components of the \textbf{Q} vector, changing its angle event-by-event so that on average a flat \textbf{Q} vector distribution is obtained. The steps that are taken for re-centering are the following:
 \begin{enumerate}
 \item Retrieve the average mean and spread of the \textbf{Q} vector distribution from a database file;
 \item The corrected \textbf{Q} vectors can now be obtained by doing
@@ -856,7 +859,7 @@ where brackets denote the one-run average, and $\sigma_{Q_n}$ the standard devia
 Note that the calibration is only available for $n=2$ and $n=3$. For higher harmonics, the flow package will use the equalized VZERO multiplicity
 \begin{lstlisting}[language=C, numbers=left]
 AliVEvent::GetVZEROEqMultiplicity(Int_t i);\end{lstlisting}
-to build the \textbf{Q} vectors, whether this is satisfactory for an analysis, or if non-uniform acceptance effects can be reverted by performing a correction on a run-by-run basis is up to the analyzer. The \textbf{Q} vector distributions of total \textbf{Q} vectors and subevent vectors can always be checked via the \texttt{AliFlowCommonHists} classes (see section \ref{sec:commonhists}) via
+to build the \textbf{Q} vectors, whether this is satisfactory for an analysis, or if non-uniform acceptance effects can be reverted by performing a correction on a run-by-run basis is up to the analyzer. The \textbf{Q} vector distributions of total \textbf{Q} vectors and sub-event vectors can always be checked via the \texttt{AliFlowCommonHists} classes (see section \ref{sec:commonhists}) via
 \begin{lstlisting}[language=C, numbers=left]
   TH1F*     GetHistQ()               {return fHistQ; } ;  
   TH1F*     GetHistAngleQ()          {return fHistAngleQ; }
@@ -872,7 +875,7 @@ Note that for LHC11h data, calibration is performed only for the second harmonic
 After describing how and why calibration is performed, it is now time to indicate how to set up this calibration routine. Just as selecting barrel tracks, this can be done by creating an \texttt{AliFlowTrackCuts} object via a \texttt{static} access method,
 \begin{lstlisting}[language=C, numbers=left]
 AliFlowTrackCuts* cutsVZERO = GetStandardVZEROOnlyTrackCuts();\end{lstlisting}
-At run-time, the flow package will detector whether LHC10h or LHC11h data is used by reading the analyzed events' runnumber. This can be convenient when having these cuts defined in a script which is designed to run on multiple types of input data. However, one can also call the LHC10h or LHC11h specific cuts directly via dedicated functions, which are reprinted here as the comments are important
+At run-time, the flow package will detector whether LHC10h or LHC11h data is used by reading the analyzed events' run-number. This can be convenient when having these cuts defined in a script which is designed to run on multiple types of input data. However, one can also call the LHC10h or LHC11h specific cuts directly via dedicated functions, which are reprinted here as the comments are important
 
 \begin{lstlisting}[language=C, numbers=left]
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010()
@@ -939,9 +942,9 @@ Using the VZERO as reference detector in a flow analysis certainly has its benef
 \item[Applicability to flow analysis methods] As the calibration affects the information that is returned by the function
 \begin{lstlisting}[language=C, numbers=left]
 void AliFlowEvent::Get2Qsub()\end{lstlisting}
-only flow analysis methods which call this function (and thus use sub-events) can use the calibrated VZERO signal. Most notably, this is the scalar product method. In combination with this, one should keep in mind that the two VZERO detectors have different $\eta$ coverage. For the recent \texttt{ALICE} paper on the flow of identified particles, the scalar product method with VZERO subevents was used, where the two VZERO detectors comprised the two sub-events. For more information on this, take a look at the description of the scalar product method in subsection \ref{sec:scalar_product}. 
+only flow analysis methods which call this function (and thus use sub-events) can use the calibrated VZERO signal. Most notably, this is the scalar product method. In combination with this, one should keep in mind that the two VZERO detectors have different $\eta$ coverage. For the recent \texttt{ALICE} paper on the flow of identified particles, the scalar product method with VZERO sub-events was used, where the two VZERO detectors comprised the two sub-events. For more information on this, take a look at the description of the scalar product method in subsection \ref{sec:scalar_product}. 
 \item[VZERO as RP source] The VZERO signal should only be used as source for reference flow. Although technically there is no objection to using the VZERO signal as POI's (you will probably get output) there is no guarantee that this makes sense from a `physics' viewpoint;
-\item[Tuning of the calibration] The calibration in the LHC11h data is taken from an external class and therefore, as far as the flow package is considered, as-is (although the calibration can be disabeled). The LHC10h calibration however is done within the package, and can be tuned quite a bit. 
+\item[Tuning of the calibration] The calibration in the LHC11h data is taken from an external class and therefore, as far as the flow package is considered, as-is (although the calibration can be disabled). The LHC10h calibration however is done within the package, and can be tuned quite a bit. 
 
 Tuning the calibration is done by functions of the \texttt{AliFlowTrackCuts} class. Some of these functions apply to both LHC10h and LHC11h data but can have slightly different effects:
 \begin{lstlisting}[language=C, numbers=left]
@@ -1167,7 +1170,7 @@ To introduce non-flow effects to using the afterburner, tracks can be cloned. To
 Effectively this will result in $n$ tracks appearing twice in the track sample, mimicking the effects of e.g. resonance decays of track splitting on $v_n$.
 
 \subsection{Relevant pieces of code}
-The best way of getting familiar with the flwo package is perhaps browsing the source code, but it can be difficult to find a good starting point for this. Two relevant pieces of code have been selected here which are at the heart of the flow package: 
+The best way of getting familiar with the flow package is perhaps browsing the source code, but it can be difficult to find a good starting point for this. Two relevant pieces of code have been selected here which are at the heart of the flow package: 
 \begin{enumerate}\index{AliAnalysisTaskFlowEvent::UserExec()}
 \item The AliAnalysisTaskFlowEvent::UserExec() function, which is called for each event that enters an analysis train;
 \item AliFlowEvent::Fill(), which selects POI's and RP's following the track selection criteria and fills the flow event which is passed to the analysis methods. The functions are shortened and simplified and provided with additional lines of comments.
@@ -1353,7 +1356,7 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
   }
 }\end{lstlisting}
 
-\section{The flow package in the ALICE analysis framework}
+\subsection{Some words on the ALICE analysis framework}
 Many of the classes which are described in the previous section deal with \texttt{ALICE} data (e.g. event and track selection). Generally, this data is analyzed in \texttt{ALICE} analysis framework. This framework is setup in the following way
 \begin{enumerate}
 \item An analysis manager \texttt{analysis manager} is created; 
@@ -1368,7 +1371,7 @@ In this case of the flow package, the most common way of using this framework is
 \item Analyzing these events using the \texttt{AliROOT} interface to the generic flow analysis tasks. 
 \end{itemize}
 
-\subsection{AliAnalysisTaskSE}
+\subsubsection{AliAnalysisTaskSE}
 All analysis tasks that are called by the analysis manager have to be derived from a common class, the \texttt{AliAnalysisTaskSE}\footnote{This section is very brief an incomplete, but keep in mind that this is a flow package manual, and not an \texttt{AliROOT} tutorial.} (where the suffix `SE' stands for `single event'). \texttt{AliAnalysisTaskSE} has a few virtual functions which can be called in user tasks by the analysis manager at specific times. Most notably these are
 \begin{description}
 \item[UserCreateOutputObjects] \index{UserCreateOutputObjects}This function is called \emph{before} the analysis starts;
@@ -1395,7 +1398,7 @@ When doing the analysis in the analysis framework, you will not use the \texttt{
 All of this may still seem a bit abstract at this point, but in principle you now know all you need to know about the structure of the flow package. It is recommended however that you take a look at the example in \ref{sec:example}, to get a step-by-step explanation of how these things work in the real world.
 
 \subsubsection{Analysys on grid: redoFinish.C}
-As explained in \ref{sec:onthefly} and in the previoius subsection, a flow analysis is finished by a call to \texttt{Finish()}. Although the exact implementation of \texttt{Finish()} is different for each flow analysis method, the general principle method in most methods is that calculations on event-averaged values are performed to end up with a final value for an observable. 
+As explained in \ref{sec:onthefly} and in the previous subsection, a flow analysis is finished by a call to \texttt{Finish()}. Although the exact implementation of \texttt{Finish()} is different for each flow analysis method, the general principle method in most methods is that calculations on event-averaged values are performed to end up with a final value for an observable. 
 
 \index{redoFinish.C} When an analysis is run in parallel on many nodes (e.g. when running on \texttt{GRID}\index{GRID}) the output of the flow analysis tasks in \texttt{AnalysisResults.root} is typically wrong, as merging files via \texttt{ROOT's} \texttt{TFileMerger}\index{TFileMerger} will trivially sum up results in all histograms. 
 
@@ -1483,7 +1486,7 @@ A script which contains all the steps described below and should work `out-of-th
   
 The next step will be adding specific analyses to the analysis manager. This is usually done by calling an \texttt{AddTask$\ast$.C} macro, which creates instances of analysis tasks, connects input (events from the analysis manager) to these tasks, and then connects output from the task back to the analysis manager (which will take care of writing the analysis to a common output file). These next steps show what would be in your \texttt{AddTask$\ast$.C} macro.
   
-The heart of our flow analysis will be the flow event. To fill a flow event from the input AOD events, we will use the \texttt{AliAnalysisTaskFlowEvent}\index{example!AliAnalysisTaskFlowEvent} class. The AOD input events have to be supplied by the analysis manager, so first things first, retrieve the manager to which you will connect your flow analysis tasks\footnote{In the example macro this is a not necessary as you already have a pointer to the manager in your macro. However, if you split the macro into a steering macro and AddTask macro, the AddTask macro needs to retrieve a pointer to the manager which is craeted in the steering macro.}:
+The heart of our flow analysis will be the flow event. To fill a flow event from the input AOD events, we will use the \texttt{AliAnalysisTaskFlowEvent}\index{example!AliAnalysisTaskFlowEvent} class. The AOD input events have to be supplied by the analysis manager, so first things first, retrieve the manager to which you will connect your flow analysis tasks\footnote{In the example macro this is a not necessary as you already have a pointer to the manager in your macro. However, if you split the macro into a steering macro and AddTask macro, the AddTask macro needs to retrieve a pointer to the manager which is created in the steering macro.}:
 
 \begin{lstlisting}[language=C, numbers=left]
   // the manager is static, so get the existing manager via the static method
@@ -1508,8 +1511,6 @@ The manager and input data are present, so we can create the flow event task and
   AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent("FlowEventTask", "", doQA);
   // add the task to the manager
   mgr->AddTask(taskFE);
-  // enable QA plots (will give you more insight into what you're doing)
-  taskFE->SetQAOn(kTRUE);
   // set the trigger selection
   taskFE->SelectCollisionCandidates(AliVEvent::kMB);\end{lstlisting}
 Note that in the last step you have set the trigger configuration\index{example!trigger selection}. Always make sure that you run on a trigger that makes sense for your analysis. A general remark is that the non-uniform acceptance correction methods that are implemented in the flow package, assume a flat \textbf{Q} vector distribution. Specific triggers (e.g. EMCal triggers) result in a \textbf{Q} vector bias which should \emph{not} be corrected as they invalidate that assumption\footnote{The actual event selection based on triggers is done in the \texttt{AliAnalysisTaskSE} class (to be specific, the trigger is checked in \texttt{AliAnalysisTaskSE::Exec()}) from which the \texttt{AliAnalysisTaskFlowEvent} is derived. The full set of available triggers can be found in the virtual event header \texttt{AliVEvent.h}. }.
@@ -1583,7 +1584,7 @@ Now that the track cuts for both POI's and RP's are defined, we can connect them
   // connect the RP's to the flow event task
   taskFE->SetCutsRP(cutsRP);
   // connect the POI's to the flow event task
-  taskFE->SEtCutsPOI(cutsPOI);\end{lstlisting}
+  taskFE->SetCutsPOI(cutsPOI);\end{lstlisting}
   
   \item [Connecting input and output]\index{InputContainer}\index{OutputContainer}\index{ExchangeContainer}\index{example!connecting containers}\index{connecting containers}
   At this point, the event and track cuts have been set and connected to the flow event task. The next step will be connecting the flow event task to the analysis manager (so that it can receive input events) and subsequently connecting the flow event task to flow analysis tasks, so that the flow events can be analyzed by our favorite flow analysis methods. 
@@ -1626,7 +1627,7 @@ Now that the flow event task is connected to input data, the flow analysis tasks
   AliAnalysisDataContainer *coutputQC[3];
   AliAnalysisTaskQCumulants *taskQC[3];
 
-  // the tasks will be creaated and added to the manager in a loop
+  // the tasks will be created and added to the manager in a loop
   for(Int_t i = 0; i < 3; i++) {
       // create the flow analysis tasks
       taskQC[i] = new AliAnalysisTaskQCumulants(Form("TaskQCumulants_n=%i", i+2));
@@ -1667,6 +1668,217 @@ Now that the flow event task is connected to input data, the flow analysis tasks
   mgr->StartAnalysis("local", chain);\end{lstlisting}
 \end{description}
 
+\section{Flow analysis in ROOT: Using TTree's and TNTuples}
+As stated at the beginning of this chapter, every flow analysis in the flow package starts by filling the flow event. The flow event base class, \texttt{AliFlowEventSimple}\index{AliFlowEventSimple}, is a class in \texttt{libPWGflowBase} which has no dependencies other than some \texttt{ROOT} libraries; the same is true for the implementation of the flow analysis methods. This means that when you do not need the \texttt{AliROOT} interface for e.g. track and event selection, the flow package can be used by just invoking the \texttt{libPWGflowBase.so} library in \texttt{ROOT}\footnote{A makefile to compile the \texttt{libPWGflowBase.so} library from the command line will be added to \texttt{\$ALICE\_ROOT/PWGCF/FLOW/macros/ ...}}. The steps that are necessary to use the flow package in a bare \texttt{ROOT} environment are similar to those explained in chapter \ref{sec:onthefly}, with the exception that instead of generating events on-the-fly, we need to fill the flow event with information from the source of data which we want to analyze. In the next two subsections we will take a look at how to do a flow analysis on generic data in just \texttt{ROOT}. To start, pseudo-code of how to setup an analysis on a \texttt{TTree} will filled with particles be given. This example can be used as a starting point for running the flow package on any kind of input data. After this, we will work through an example of reading and analyzing \texttt{STAR} data. The last subsection of this chapter will point you to a fully working starting point for doing flow analysis on \texttt{TTree}'s, which firstly converts data to a \texttt{TTree} and after this reads the stored \texttt{TTree} from file and performs flow analysis in it in \texttt{ROOT}.
+
+\subsection{A custom class derived from AliFlowEventSimple}
+In this example, an analysis on a \texttt{TTree} is performed by deriving a class from the flow event class \textt{AliFlowEventSimple}, \texttt{MyFlowEvent}, which can read a specific input format (in this case a branch\texttt{TTree!branch} of a \texttt{TTree}) and fills the flow event from this input. Of course you can design your task in a different way, but in this section we will stick to that example. Note that the following suggestions are all written in pseudo-code, so copy-pasting it will lead to nothing ...
+
+Let's start with writing an an event loop. In this example the assumption is made that you have a \texttt{TTree} with events, called `myTree', which contains a branch holding a \texttt{TClonesArray}\index{TClonesArray} of `myParticle' objects, which contain kinematic information. The `myParticle' class could look a bit like
+\begin{lstlisting}[language=C, numbers=left]
+class myParticle : public TObject
+{
+public:
+        myParticle(Float_t eta, Float_t phi, Float_t pt, Int_t charge) : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge) {  }
+    ~myParticle() {}
+    virtual Double_t P()                const { return fp; }
+    virtual Double_t Pt()               const { return fpT; }
+    virtual Double_t Phi()              const { return fPhi; }
+    virtual Double_t Eta()              const { return fEta; }
+    virtual Int_t Charge()              const { return fCharge; }
+private:
+    Float_t                             fEta;      // eta
+    Float_t                             fPhi;      // phi
+    Float_t                             fpT;       // pT
+    Int_t                               fCharge;   // charge
+    ClassDef(myParticle, 1); // example class
+};\end{lstlisting}
+Note that the members of this class ($p_t$, $\eta$, $\varphi$, charge) are all the information that an \texttt{AliFlowTrackSimple} needs to hold.
+
+In the event loop, we'll retrieve the track array from the \texttt{TTree} and pass it to your derived flow event class. As we have seen in earlier examples, tracks in a flow event are classified as POI's or RP's via track cuts objects. We'll initialize these classes as well.
+\begin{lstlisting}[language=C, numbers=left]
+  // first, define a set of simple cuts (the kinematic cuts)
+  // which will define our poi and rp selection
+  AliFlowTrackSimpleCuts *cutsRP = new AliFlowTrackSimpleCuts();
+  AliFlowTrackSimpleCuts *cutsPOI = new AliFlowTrackSimpleCuts();
+  cutsPOI->SetPtMin(0.2);
+  cutsPOI->SetPtMax(2.0);
+  // get number of entries from your ttree
+  Int_t nEvents = myTree->GetEntries();
+  // loop over all entries
+  for(Int_t i = 0; i < nEvents; i++) {
+      // get the track array from the ttree
+      TClonesArray* particleArray = 0x0;
+      // get the branch address by name
+      myTree->SetBranchAddress("myParticles", &particleArray);
+      // switch to the tree's i-th entry
+      myTree->GetEntry(i);
+      // now we do some magic: with a dedicated inherited class
+      // we construct a flow event from your ttree
+      AliFlowEventSimple* flowEvent = new MyFlowEvent(particleArray, cutsPOI, cutsRP);
+      // and from here we know how to proceed: connect the flow event
+      // to the flow analysis classes, and do the analysis
+      qc->Make(flowEvent);
+      // memory management
+      delete flowEvent;
+      }
+  qc->Finish();
+  }\end{lstlisting}
+So what is `the magic'? This is filling your flow event from the \texttt{TTree}. As we have seen in the previous sections, filling means that need to select our tracks, tag them as POI's and RP's, and add them to the flow event. Our derived class, AliFlowEventSimple::MyFlowEvent will take care of this. A possible constructor for this class, which performs the `magic', could look like the following piece of pseudo-code:
+
+\begin{lstlisting}[language=C, numbers=left]
+// class constructor of an example class which reads a ttree, 
+// selects poi's and rp's and fills a flow event. 
+// this class is derived from the flow event simple class
+// and therefore can be passed to the flow analysis methods
+
+// we'll feed to class with your custom particles, 
+// so this include will be necessary
+#include myParticle.h
+
+// this is the class constructor
+MyFlowEvent::MyFlowEvent(
+    // start with the input tracks
+    TClonesArray* particleArray,
+    // and pass the poi and rp cuts
+    const AliStarTrackCuts* cutsRP,
+    const AliStarTrackCuts* cutsPOI) :
+  // derived from AliFlowEventSimple, initialized to hold a certain number of 
+  // tracks
+  AliFlowEventSimple(particleArray->GetEntries())
+{
+  // the next step will be filling the flow event
+  // with POI's and RP's according to our 
+  // POI and RP cuts  
+  
+  for (Int_t i = 0; i < particleArray->GetEntries(); i++)
+  {
+    // get a particle from the particle array
+    const myParticle* part = static_cast<myParticle*>particleArray->At(i);
+    if (!myParticle) continue;
+    
+    // build flow track simple (for the flow event)
+    AliFlowTrackSimple* flowtrack = new AliFlowTrackSimple();
+    // copy the kinematic information from the star track
+    flowtrack->SetPhi(part->Phi());
+    flowtrack->SetEta(part->Eta());
+    flowtrack->SetPt(part->Pt());
+    flowtrack->SetCharge(part->Charge());
+    // see if the track is a reference track
+    if (cutsRP)
+    {
+      Bool_t pass = rpCuts->PassesCuts(flowtrack);
+      flowtrack->TagRP(pass); //tag RPs
+      if (pass) IncrementNumberOfPOIs(0);
+    }
+    // see if the track is a particle of interest
+    if (poiCuts)
+    {
+      flowtrack->TagPOI(poiCuts->PassesCuts(flowtrack));
+    }
+    // add the track to the flow event
+    AddTrack(flowtrack);
+  }
+}\end{lstlisting}
+That's it! Following (variations on) these steps, you'll be able to connect any type of input data to the flow package. Note that compiling the scripts in which you define these steps will be much faster than running your code in the interpreter mode of \texttt{ROOT}. The next subsection will show these steps in action in the for of a flow analysis on \texttt{STAR} data.
+
+\subsection{A realistic example: flow package analysis on STAR data}
+The following section will show you how to use non-\texttt{ALICE} data in a realistic example, using events from the \texttt{STAR} experiment at \texttt{RHIC}. \texttt{STAR} data is stored in a \texttt{TTree}. To use the flow package for flow analysis on this data, the information from the \texttt{TTree} needs to be converted into an \texttt{AliFlowEventSimple}. In the specific case of the \texttt{STAR} data, things are a bit more complicated than in the pseudo-code example given in the previous section. Event- and track-level cuts still have to be applied to the \texttt{STAR} data, therefore a \texttt{reader} class is written which reads data from file, applies track and event cuts and converts the \texttt{STAR} data to `star flow events'. This reading is left to a dedicated class, \texttt{AliStarEventReader}\index{AliStarEventReader}, which reads a \texttt{TTree} and for each event creates an \texttt{AliStarEvent}\index{AliStarEvent}. The \texttt{AliStarEvent} is a derived class which inherits from \texttt{AliFlowEventSimple} (similar to the \texttt{MyFlowEvent} class from the example in the previous subsection). To understand this process a bit better, we'll take a look at a few code snippets from the relevant classes and macros which are currently present in \texttt{AliROOT}. A macro which reads \texttt{STAR} data and performs a flow analysis can be found at \texttt{\$ALICE\_ROOT/PWGCF/FLOW/macros/runStarFlowAnalysis.C}.
+\index{runStarFlowAnalysis.C} 
+
+\begin{lstlisting}[language=C, numbers=left]
+  // connect the class which can read and understand your ttree to
+  // the input data
+  AliStarEventReader starReader(inputDataFiles) ;
+  // loop as long as there are events
+  while ( starReader.GetNextEvent() )                                // Get next event
+  {
+    // read a star event from the ttree
+    AliStarEvent* starEvent = starReader.GetEvent();
+    // see if the event meets event cuts (of course these are 
+    // specific for STAR analysis, whether or not your ttree would
+    // need such a cut is up to you
+    if ( !starEventCuts->PassesCuts(starEvent) ) continue;
+
+    // this is where flow package comes into play. 
+    // at this moment, a star event has been read from a ttree, 
+    // and is stored as a 'AliStarEvent'
+    // in the next step, we'll create an AliFlowEventSimple from 
+    // this star event using the AliFlowEventStar class, which is derived
+    // from the AliFlowEventSimple class. 
+    // as input, the AliFlowEventStar class receives the star event,
+    // and a set of poi and rp cuts
+    AliFlowEventSimple* flowEvent = new AliFlowEventStar(starEvent,rpCuts,poiCuts);  // make a flow event from a star event (aka "the magic")
+    // for the scalar product method, we need to tag subevents
+    flowEvent->TagSubeventsInEta(minA, maxA, minB, maxB );
+
+    qc->Make(flowEvent);
+    delete flowEvent;
+  }\end{lstlisting}
+The most important piece of the code snippet printed here is the routine where the \texttt{AliFlowEventSimple} is formed from the \texttt{AliStarEvent}. What happens in the  \texttt{AliFlowEventStar} class is the following:
+
+\begin{lstlisting}[language=C, numbers=left]
+// class constructor
+AliFlowEventStar::AliFlowEventStar( const AliStarEvent* starevent,
+                                    const AliStarTrackCuts* rpCuts,
+                                    const AliStarTrackCuts* poiCuts ):
+  // derived from AliFlowEventSimple, initialized to hold a certain number of 
+  // tracks
+  AliFlowEventSimple(starevent->GetNumberOfTracks())
+{
+  //construct the flow event from the star event information
+  SetReferenceMultiplicity(starevent->GetRefMult());
+  // track loop
+  for (Int_t i=0; i<starevent->GetNumberOfTracks(); i++)
+  {
+    // get star track from the star event
+    const AliStarTrack* startrack = starevent->GetTrack(i);
+    if (!startrack) continue;
+    // build flow track simple (for the flow event)
+    AliFlowTrackSimple* flowtrack = new AliFlowTrackSimple();
+    // copy the kinematic information from the star track
+    flowtrack->SetPhi(startrack->GetPhi());
+    flowtrack->SetEta(startrack->GetEta());
+    flowtrack->SetPt(startrack->GetPt());
+    flowtrack->SetCharge(startrack->GetCharge());
+    // see if the track is a reference track
+    if (rpCuts)
+    {
+      Bool_t pass = rpCuts->PassesCuts(startrack);
+      flowtrack->TagRP(pass); //tag RPs
+      if (pass) IncrementNumberOfPOIs(0);
+    }
+    // see if the track is a particle of interest
+    if (poiCuts)
+    {
+      flowtrack->TagPOI(poiCuts->PassesCuts(startrack)); //tag POIs
+    }
+    // add the track to the flow event
+    AddTrack(flowtrack);
+  }
+}\end{lstlisting}
+
+\subsection{Getting started yourself}
+To get started with flow analysis on \texttt{TTree's} yourself, a set of example macros and classes is provided at \texttt{\$ALICE\_ROOT/PWGCF/FLOW/Documentation/examples/manual/ttree}. These classes and macros will guide you through creating a \texttt{TTree} with data from \texttt{ALICE} events in the analysis framework, and performing a flow analysis on them using only \texttt{ROOT}. The example is set up as follows:
+\begin{itemize}
+\item There are two macros (in macros folder)
+\begin{itemize}
+\item run: runs (in \texttt{AliROOT}) and fills a \text{TTree} with kinematic info from \texttt{AliVEvent}
+\item read: reads (in just \texttt{ROOT}) the \text{TTree} info and performs a flow analysis with the flow package
+\end{itemize}
+\item There are two analysis classes
+\begin{itemize}
+\item  \texttt{AliAnalysisTaskTTreeFilter}\index{AliAnalysisTaskTTreeFilter}, an analysis task for AliROOT which converts input events to a \texttt{TTree}
+\item \texttt{AliFlowEventSimpleFromTTree}\index{AliFlowEventSimpleFromTTree} a task for ROOT, fills flow events with \texttt{TTree} input
+\end{itemize}
+\item and lastly two helper classes which should serve as a starting point
+\begin{itemize}
+\item \texttt{AliFlowTTreeEvent}\index{AliFlowTTreeEvent}, a simple event class
+\item \texttt{AliFlowTTreeTrack}\index{AliFlowTTreeTrack}, a simple track class
+\end{itemize}
+\end{itemize}
+As these are helper classes designed to get the user started, they are not compiled by default. The run and read macro will them compile on-the-fly.
+
 \chapter{Methods}\index{flow analysis methods}\index{methods}
 \label{sec:methods}
 The flow package aims at providing the user with most of the known flow analysis methods. Detailed theoretical overview of the methods can be found in the following papers, which are included in the folder \texttt{\$ALICE\_ROOT/PWGCF/FLOW/Documentation/otherdocs/}
@@ -1694,13 +1906,13 @@ There is no specific information on the implementation here, for details the rea
 
 \section{AliFlowAnalysisWithQCumulants}\label{sec:QC}\index{AliFlowAnalysisWithQCumulants}\index{methods!AliFlowAnalysisWithQCumulants}
 \subsection{Implementation}
-A how-to of the QC method in the flow-package is written by the author of the analysis software and is available on the FLOW-PAG twiki page (\href{https://twiki.cern.ch/twiki/bin/view/ALICE/FlowPackageHowto}{https://twiki.cern.ch/twiki/bin/view/ALICE/FlowPackageHowto}). This section is copied from the twiki page (and may therefore overlap with other parts of this manual).
+\emph{A how-to of the QC method in the flow-package is written by the author of the analysis software and is available on the FLOW-PAG twiki page} (\href{https://twiki.cern.ch/twiki/bin/view/ALICE/FlowPackageHowto}{https://twiki.cern.ch/twiki/bin/view/ALICE/FlowPackageHowto}). \emph{This section is copied from the twiki page (and may therefore overlap with other parts of this manual).}
 
  To get the first feeling how the FLOW package and QC output are organized, perhaps you can just trivially execute one 'on-the-fly' example 
 
  Essentially, you have to do two things: 
 	\begin{lstlisting}[language=C, numbers=left]
-cp $ALICE_ROOT/PWGCF/FLOW/macros/runFlowAnalysisOnTheFly.C
+cp $ALICE_ROOT/PWGCF/FLOW/macros/runFlowAnalysisOnTheFly.C .
 aliroot runFlowAnalysisOnTheFly.C \end{lstlisting}
 
  In the analysis on-the-fly particles are sampled from hardwired Fourier-like p.d.f, so input vn harmonics are completely under control. Please have a look at the steering macro runFlowAnalysisOnTheFly.C and corresponding class AliFlowEventSimpleMakerOnTheFly.cxx in the FLOW package, which are easily written (no fancy C++ features in my code!), and well documented. 
@@ -1836,7 +2048,7 @@ AliAnalysisTaskScalarProduct::SetBehaveAsEP()\end{lstlisting}
  *************************************************/ \end{lstlisting}
 
 \subsection{Implementation}
-There is no specific information on the implementation here, for details the reader is referred to the source code.
+There is no specific information on the implementation here, for details the reader is referred to the source code. Do not confuse this method with the often used Q-cumulant method!
 \section{AliFlowAnalysisWithMixedHarmonics}\index{AliFlowAnalysisWithMixedHarmonics}\index{methods!AliFlowAnalysisWithMixedHarmonics}
 \subsection{Theory}
 There is no specific information on the theory here, for details the reader is referred to the source code.
@@ -1889,7 +2101,12 @@ There is no specific information on the implementation here, for details the rea
 //////////////////////////////////////////////////////////////////// \end{lstlisting}
 \subsection{Implementation}
 There is no specific information on the implementation here, for details the reader is referred to the source code.
-
+This method requires two passes over the data. You can take a look at the on-the-fly analysis example macro to see how these two steps can be set up:
+\begin{lstlisting}
+Bool_t LYZ1SUM = kTRUE; // Lee-Yang Zero (sum generating function), first pass over the data
+Bool_t LYZ1PROD = kTRUE; // Lee-Yang Zero (product generating function), first pass over the data
+Bool_t LYZ2SUM = kFALSE; // Lee-Yang Zero (sum generating function), second pass over the data
+Bool_t LYZ2PROD = kFALSE; // Lee-Yang Zero (product generating function), second pass over the data\end{lstlisting}
 \section{AliFlowAnalysisWithLYZEventPlane}\index{AliFlowAnalysisWithLYZEventPlane}\index{methods!AliFlowAnalysisWithLYZEventPlane}
 \subsection{Theory}
 \begin{lstlisting}[language=C, numbers=left]
@@ -1911,7 +2128,7 @@ Of course this list of flow analysis methods could be extended. Adding a new flo
 \chapter{More exotic uses}\label{sec:exotic}
 This chapter deals with more `exotic' uses of the flow package. 
 \section{Flow analysis in the LEGO framework: re-tagging your POI and RP selections}\index{LEGO framework}\index{AliAnalysisTaskFilterFE}
-To save resources, it is beneficial to construct analysis trains in which just one flow event is created which is passed to multiple analysis tasks. This can be inconvenient when the different analysis tasks require different POI and RP selections\footnote{A noteble example of this is doing an invariant mass analysis, which will briefly be touched in the next section.}. To overcome this, a filter task, \texttt{AliAnalysisTaskFilterFE}, has been developed, which can run between the \texttt{AliAnalysisTaskFlowEvent} and a specific flow analysis task, and can re-tag POI's and RP's. The re-tagging is performed by looping over all tracks in an event and checking whether or not these tracks pass a selection of simple cuts. The filter task can only re-tag existing tracks in the flow event, it cannot add new tracks to the flow event. To illustrate the functionality of the filtertask, we'll take the example of section \ref{sec:example} but perform the analysis using different $\vert \eta \vert$ windows for RP's.
+To save resources, it is beneficial to construct analysis trains in which just one flow event is created which is passed to multiple analysis tasks. This can be inconvenient when the different analysis tasks require different POI and RP selections\footnote{A notable example of this is doing an invariant mass analysis, which will briefly be touched in the next section.}. To overcome this, a filter task, \texttt{AliAnalysisTaskFilterFE}, has been developed, which can run between the \texttt{AliAnalysisTaskFlowEvent} and a specific flow analysis task, and can re-tag POI's and RP's. The re-tagging is performed by looping over all tracks in an event and checking whether or not these tracks pass a selection of simple cuts. The filter task can only re-tag existing tracks in the flow event, it cannot add new tracks to the flow event. To illustrate the functionality of the filtertask, we'll take the example of section \ref{sec:example} but perform the analysis using different $\vert \eta \vert$ windows for RP's.
 
 The first step towards filtering is setting up the filtering criteria. These are defined using the \texttt{AliFlowTrackSimpleCuts}\index{AliFlowTrackSimpleCuts} object:
 \begin{lstlisting}[language=C, numbers=left]
@@ -1949,7 +2166,7 @@ AliAnalysisTaskFilterFE::SetSubeventEtaRange(Double_t minA, Double_t maxA, Doubl
     {this->fMinA = minA; this->fMaxA = maxA; this->fMinB = minB; this->fMaxB = maxB; }\end{lstlisting}
 If yo use the filter task for a flow analysis method which uses sub-events, make sure that you set the correct $\eta$ ranges! Otherwise, the default values will be used, which may (or may not) be correct for your analysis. 
 
-The \texttt{UserExec()} of the fitler task is as follows:
+The \texttt{UserExec()} of the filter task is as follows:
 \begin{lstlisting}[language=C, numbers=left]
 void AliAnalysisTaskFilterFE::UserExec(Option_t *)
 {
@@ -2001,7 +2218,7 @@ Under the assumption that signal and background flow are additive, their contrib
 \begin{equation}
 v_2^{T}(m_{inv})  = v_2^{S} \frac{N^{S} }{N^{S} + N^{B}}(m_{inv})  + v_2^{B}(m_{inv}) \frac{ N^{B}}{N^{S} + N^{B}}(m_{inv})
 \end{equation}
-for $v_2^{S}$. To do so, $v_2^{T}(m_{inv})$ must be measured. This can be done by measuring the $v_2$ of all possible $\pi + \mbox{p}$ pairs in different invariant mass intervals. When a flow event is filled by-hand with $\pi + \mbox{p}$ pairs, the filter task can then be in turn be used to split the flow event into invariant mass intervals and perform flow analysis on those separately, thereby extracting all necessary information. Examples of such analyses are e.g. the $\varhi$-meson flow analysis (\texttt{\$ALICE\_ROOT/PWG/FLOW/Tasks/AliAnalylsisTaskPhiFlow}) or the $\Lambda$ and $\K^0$ flow task (\texttt{\$ALICE\_ROOT/PWG/FLOW/Tasks/AliAnalysisTaskFlowStrange}).
+for $v_2^{S}$. To do so, $v_2^{T}(m_{inv})$ must be measured. This can be done by measuring the $v_2$ of all possible $\pi + \mbox{p}$ pairs in different invariant mass intervals. When a flow event is filled by-hand with $\pi + \mbox{p}$ pairs, the filter task can then be in turn be used to split the flow event into invariant mass intervals and perform flow analysis on those separately, thereby extracting all necessary information. Examples of such analyses are e.g. the $\varhi$-meson flow analysis (\texttt{\$ALICE\_ROOT/PWG/FLOW/Tasks/AliAnalylsisTaskPhiFlow}) or the $\Lambda$ and $K^0$ flow task (\texttt{\$ALICE\_ROOT/PWG/FLOW/Tasks/AliAnalysisTaskFlowStrange}).
 
 \section{Non-uniform acceptance correction}\index{NUA} \index{non uniform acceptance} 
 In practice a detector can have inefficiencies which result in a non-uniform acceptance which might bias the measured $v_n$ signal. One way of compensating for this is using track weights (as explained in section \ref{sec:weights}. Another way of correcting for these effects is by adjusting the \texttt{Q} vectors based on the assumption that the underlying \texttt{Q} vector distribution itself is flat. 
@@ -2093,10 +2310,10 @@ After reading the documentation, you should have a general feeling of how the fl
 \appendix		
 	\chapter{About this document}
         \section{Specifics and webpage}
-        Typeset using \LaTeX, converted to HTML using \texttt{pandoc} via \texttt{pandoc -r latex -w html -S -s -m -N --toc --highlight-style tango --indented-code-classes numberLines --self-contained -o outfile.html FLOW.tex}
+        Typeset using \LaTeX, converted to HTML using \texttt{pandoc} via \texttt{pandoc -r latex -w html -S -s -m -N --toc --highlight-style tango --indented-code-classes numberLines --self-contained -o FlowPackageManual.html FlowPackageManual.tex}
         
         \chapter{Flow analysis `on-the-fly'}\label{sec:ante}
-        	The original `on-the-fly' manual by Ante Biland\zic is reprinted here in this appendix
+        	The original `on-the-fly' manual by Ante Biland\v zi\'c is reprinted here in this appendix
 
         \section{Introduction}
 Flow analysis `on the fly' is a feature in the \textit{ALICE flow package}\footnote{\texttt{http://alisoft.cern.ch/viewvc/trunk/PWG2/FLOW/?root=AliRoot .}} which can serve both as a demo for the potential users of the package and as an important debugging tool for the core flow code developers. Underlying idea is very simple: To simulate events of interest for flow analysis (in what follows we shall refer to such events as \textit{flow events}) in the computers memory and than pass them `on the fly' to the implemented methods for flow analysis. Benefits of this approach include: 

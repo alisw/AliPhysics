@@ -206,6 +206,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddCutHistogram("hCutsChi2TPC", "Trackcut histogram: #chi^{2} per TPC cluster", "#chi^{2}", 40, 0, 8);
     AddCutHistogram("hCutsChi2ITS", "Trackcut histogram: #chi^{2} per ITS cluster", "#chi^{2}", 25, 0., 50);
     AddCutHistogram("hCutsChi2Constrained", "Trackcut histogram: #chi^{2} for global constrained tracks", "#chi^{2}", 60, 0, 60);
+    AddCutHistogram("hCutsDCAXY", "Trackcut histogram: Max. DCA xy for prim. vertex", "DCA xy", 20, 0, 4);
     AddCutHistogram("hCutsDCAZ", "Trackcut histogram: Max. DCA z for prim. vertex", "DCA z", 20, 0, 4);
     AddCutHistogram("hCutsSPDHit", "Trackcut histogram: Hit in SPD layer", "Hit or not", 2, -0.5, 1.5);
     AddCutHistogram("hCutsNumberCrossedRows", "Trackcut histogram: Number of crossed rows", "Number of crossed rows", 40, 20, 160);
@@ -214,7 +215,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddCutHistogram("hCutsTPCRefit", "Trackcut histogram: TPC refit", "Has TPC refit", 2, -0.5, 1.5);
     AddCutHistogram("hCutsTPCLength", "Trackcut histogram: TPC length", "TPC length", 40, 0, 170);
     AddCutHistogram("hCutsTrackConstrained", "Trackcut histogram: Tracks constrained to vertex", "Track is constrained", 2, -0.5, 1.5);
-    AddCutHistogram("hCutsClustersPtDependence", "Trackcut histogram: Use pT dependence for Number of clusters cut", "Use pT dependence", 2, -0.5, 1.5);
+    AddCutHistogram("hCutsClustersPtDependence", "Trackcut histogram: pT dependence for number of clusters/crossed rows cut.", "Value at 20 GeV: 90, 100, 110, or 120", 4, -0.5, 3.5);
 
     SetCurrentOutputList(0);
   }
@@ -233,7 +234,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_noPtDep(0)
+AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
 {
   #ifdef DEBUGMODE
     AliInfo("Calling constructor.");
@@ -292,12 +293,14 @@ void AliAnalysisTaskChargedJetsPA::InitializeTrackcuts()
   AliESDtrackCuts*    fTrackCutsPA_complementary = NULL;
   AliESDtrackCuts*    fTrackCutsPP_global = NULL;
   AliESDtrackCuts*    fTrackCutsPP_complementary = NULL;
-  AliESDtrackCuts*    fTrackCutsPP_global_noPtDep = NULL;
-  AliESDtrackCuts*    fTrackCutsPP_complementary_noPtDep = NULL;
+  AliESDtrackCuts*    fTrackCutsPP_global_variedPtDep = NULL;
+  AliESDtrackCuts*    fTrackCutsPP_complementary_variedPtDep = NULL;
+  AliESDtrackCuts*    fTrackCutsPP_global_variedPtDep2 = NULL;
+  AliESDtrackCuts*    fTrackCutsPP_complementary_variedPtDep2 = NULL;
 
   //pPb
   fTrackCutsPA_global = static_cast<AliESDtrackCuts*>(commonTrackCuts->Clone("fTrackCutsPA_global"));
-  fTrackCutsPA_global->SetMinNCrossedRowsTPC(70);
+  fTrackCutsPA_global->SetMinNCrossedRowsTPC(fMinNCrossedRows);
   fTrackCutsPA_global->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
   fTrackCutsPA_complementary = static_cast<AliESDtrackCuts*>(fTrackCutsPA_global->Clone("fTrackCutsPA_complementary"));
   fTrackCutsPA_complementary->SetRequireITSRefit(kFALSE);
@@ -315,32 +318,49 @@ void AliAnalysisTaskChargedJetsPA::InitializeTrackcuts()
   fTrackCutsPP_complementary->SetRequireITSRefit(kFALSE);
   fTrackCutsPP_complementary->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
 
-  //pp, no pT dependence
+  //pp, different pT dependence of number clusters cut, No. I
 
-  fTrackCutsPP_global_noPtDep = static_cast<AliESDtrackCuts*>(commonTrackCuts->Clone("fTrackCutsPP_global_noPtDep"));
-  fTrackCutsPP_global_noPtDep->SetMinNClustersTPC(70);
-  fTrackCutsPP_global_noPtDep->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
-  fTrackCutsPP_global_noPtDep->SetEtaRange(-0.9,0.9);
-  fTrackCutsPP_global_noPtDep->SetPtRange(0.15, 1e15);
-  fTrackCutsPP_complementary_noPtDep = static_cast<AliESDtrackCuts*>(fTrackCutsPP_global_noPtDep->Clone("fTrackCutsPP_complementary_noPtDep"));
-  fTrackCutsPP_complementary_noPtDep->SetRequireITSRefit(kFALSE);
-  fTrackCutsPP_complementary_noPtDep->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+  fTrackCutsPP_global_variedPtDep = static_cast<AliESDtrackCuts*>(commonTrackCuts->Clone("fTrackCutsPP_global_variedPtDep"));
+  TFormula *f1NClustersTPCLinearPtDep2 = new TFormula("f1NClustersTPCLinearPtDep2","70.+20./20.*x");
+  fTrackCutsPP_global_variedPtDep->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep2,20.);
+  fTrackCutsPP_global_variedPtDep->SetMinNClustersTPC(70);
+  fTrackCutsPP_global_variedPtDep->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
+  fTrackCutsPP_global_variedPtDep->SetEtaRange(-0.9,0.9);
+  fTrackCutsPP_global_variedPtDep->SetPtRange(0.15, 1e15);
+  fTrackCutsPP_complementary_variedPtDep = static_cast<AliESDtrackCuts*>(fTrackCutsPP_global_variedPtDep->Clone("fTrackCutsPP_complementary_variedPtDep"));
+  fTrackCutsPP_complementary_variedPtDep->SetRequireITSRefit(kFALSE);
+  fTrackCutsPP_complementary_variedPtDep->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+
+  //pp, different pT dependence of number clusters cut, No. II
+
+  fTrackCutsPP_global_variedPtDep2 = static_cast<AliESDtrackCuts*>(commonTrackCuts->Clone("fTrackCutsPP_global_variedPtDep2"));
+  TFormula *f1NClustersTPCLinearPtDep3 = new TFormula("f1NClustersTPCLinearPtDep3","70.+40./20.*x");
+  fTrackCutsPP_global_variedPtDep2->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep3,20.);
+  fTrackCutsPP_global_variedPtDep2->SetMinNClustersTPC(70);
+  fTrackCutsPP_global_variedPtDep2->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
+  fTrackCutsPP_global_variedPtDep2->SetEtaRange(-0.9,0.9);
+  fTrackCutsPP_global_variedPtDep2->SetPtRange(0.15, 1e15);
+  fTrackCutsPP_complementary_variedPtDep2 = static_cast<AliESDtrackCuts*>(fTrackCutsPP_global_variedPtDep2->Clone("fTrackCutsPP_complementary_variedPtDep2"));
+  fTrackCutsPP_complementary_variedPtDep2->SetRequireITSRefit(kFALSE);
+  fTrackCutsPP_complementary_variedPtDep2->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
 
   fHybridESDtrackCuts = new AliESDHybridTrackcuts();
-  fHybridESDtrackCuts_noPtDep = new AliESDHybridTrackcuts();
   if(fIsPA)
   {
     fHybridESDtrackCuts->SetMainCuts(fTrackCutsPA_global);
     fHybridESDtrackCuts->SetAdditionalCuts(fTrackCutsPA_complementary);
-    fHybridESDtrackCuts_noPtDep->SetMainCuts(fTrackCutsPA_global);
-    fHybridESDtrackCuts_noPtDep->SetAdditionalCuts(fTrackCutsPA_complementary);
   }
   else
   {
+    fHybridESDtrackCuts_variedPtDep = new AliESDHybridTrackcuts();
+    fHybridESDtrackCuts_variedPtDep2 = new AliESDHybridTrackcuts();
+
     fHybridESDtrackCuts->SetMainCuts(fTrackCutsPP_global);
     fHybridESDtrackCuts->SetAdditionalCuts(fTrackCutsPP_complementary);
-    fHybridESDtrackCuts_noPtDep->SetMainCuts(fTrackCutsPP_global_noPtDep);
-    fHybridESDtrackCuts_noPtDep->SetAdditionalCuts(fTrackCutsPP_complementary_noPtDep);
+    fHybridESDtrackCuts_variedPtDep->SetMainCuts(fTrackCutsPP_global_variedPtDep);
+    fHybridESDtrackCuts_variedPtDep->SetAdditionalCuts(fTrackCutsPP_complementary_variedPtDep);
+    fHybridESDtrackCuts_variedPtDep2->SetMainCuts(fTrackCutsPP_global_variedPtDep2);
+    fHybridESDtrackCuts_variedPtDep2->SetAdditionalCuts(fTrackCutsPP_complementary_variedPtDep2);
   }
 
   delete commonTrackCuts;
@@ -415,11 +435,60 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
 
     // ################################################################
     // ################################################################
+
+    if(fIsPA)
+    {
+      trackType = fHybridESDtrackCuts->AcceptTrack(track);
+      Double_t tmpThreshold90  = 70. + 20./20. * pT;
+      Double_t tmpThreshold100 = 70. + 30./20. * pT;
+      Double_t tmpThreshold110 = 70. + 40./20. * pT;
+      Double_t tmpThreshold120 = 70. + 50./20. * pT;
+
+      if(pT>20.)
+      {
+        tmpThreshold90 = 70. + 20.;
+        tmpThreshold100 = 70. + 30.;
+        tmpThreshold110 = 70. + 40.;
+        tmpThreshold120 = 70. + 50.;
+      }
+
+      if (trackType)
+      {
+        if(ncrTPC>=tmpThreshold90)
+          FillCutHistogram("hCutsClustersPtDependence", 0, pT, eta, phi, trackType-1);
+        if(ncrTPC>=tmpThreshold100)
+          FillCutHistogram("hCutsClustersPtDependence", 1, pT, eta, phi, trackType-1);
+        if(ncrTPC>=tmpThreshold110)
+          FillCutHistogram("hCutsClustersPtDependence", 2, pT, eta, phi, trackType-1);
+        if(ncrTPC>=tmpThreshold120)
+          FillCutHistogram("hCutsClustersPtDependence", 3, pT, eta, phi, trackType-1);
+      }
+
+      if(fUsePtDepCrossedRowsCut && (ncrTPC<tmpThreshold100)) // pT dep crossed rows cut is not fulfilled
+        continue; // next track
+    }
+    else
+    {
+      trackType = fHybridESDtrackCuts_variedPtDep->AcceptTrack(track);
+      if (trackType)
+        FillCutHistogram("hCutsClustersPtDependence", 0, pT, eta, phi, trackType-1);
+
+      trackType = fHybridESDtrackCuts->AcceptTrack(track);
+      if (trackType)
+        FillCutHistogram("hCutsClustersPtDependence", 1, pT, eta, phi, trackType-1);
+
+      trackType = fHybridESDtrackCuts_variedPtDep2->AcceptTrack(track);
+      if (trackType)
+        FillCutHistogram("hCutsClustersPtDependence", 2, pT, eta, phi, trackType-1);
+    }
+
+    // ################################################################
+    // ################################################################
     Int_t minNclsTPC = fHybridESDtrackCuts->GetMainCuts()->GetMinNClusterTPC();
     Int_t minNclsTPC_Additional = fHybridESDtrackCuts->GetAdditionalCuts()->GetMinNClusterTPC();
     fHybridESDtrackCuts->GetMainCuts()->SetMinNClustersTPC(0);
     fHybridESDtrackCuts->GetAdditionalCuts()->SetMinNClustersTPC(0);
-    
+
     trackType = fHybridESDtrackCuts->AcceptTrack(track);
     if (trackType)
       FillCutHistogram("hCutsNumberClusters", nclsTPC, pT, eta, phi, trackType-1);
@@ -467,6 +536,21 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
 
     fHybridESDtrackCuts->GetMainCuts()->SetMaxDCAToVertexZ(maxDcaZ);
     fHybridESDtrackCuts->GetAdditionalCuts()->SetMaxDCAToVertexZ(maxDcaZ_Additional);
+
+    // ################################################################
+    // ################################################################
+    Float_t maxDcaXY = fHybridESDtrackCuts->GetMainCuts()->GetMaxDCAToVertexXY();
+    Float_t maxDcaXY_Additional = fHybridESDtrackCuts->GetAdditionalCuts()->GetMaxDCAToVertexXY();
+    fHybridESDtrackCuts->GetMainCuts()->SetMaxDCAToVertexXY(999.);
+    fHybridESDtrackCuts->GetAdditionalCuts()->SetMaxDCAToVertexXY(999.);
+
+    trackType = fHybridESDtrackCuts->AcceptTrack(track);
+    if (trackType)
+      FillCutHistogram("hCutsDCAXY", TMath::Abs(dca[0]), pT, eta, phi, trackType-1);
+
+    fHybridESDtrackCuts->GetMainCuts()->SetMaxDCAToVertexXY(maxDcaXY);
+    fHybridESDtrackCuts->GetAdditionalCuts()->SetMaxDCAToVertexXY(maxDcaXY_Additional);
+
     // ################################################################
     // ################################################################
     AliESDtrackCuts::ITSClusterRequirement clusterReq = fHybridESDtrackCuts->GetMainCuts()->GetClusterRequirementITS(AliESDtrackCuts::kSPD);
@@ -574,19 +658,6 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
     fHybridESDtrackCuts->GetMainCuts()->SetMinLengthActiveVolumeTPC(minTpcLength);
     fHybridESDtrackCuts->GetAdditionalCuts()->SetMinLengthActiveVolumeTPC(minTpcLength_Additional);
 
-    // ################################################################
-    // ################################################################
-
-    if(!fIsPA)
-    {
-      trackType = fHybridESDtrackCuts->AcceptTrack(track);
-      if (trackType)
-        FillCutHistogram("hCutsClustersPtDependence", 1, pT, eta, phi, trackType-1);
-
-      trackType = fHybridESDtrackCuts_noPtDep->AcceptTrack(track);
-      if (trackType)
-        FillCutHistogram("hCutsClustersPtDependence", 0, pT, eta, phi, trackType-1);
-    }
     // ################################################################
     // ################################################################
     if((fHybridESDtrackCuts->GetMainCuts()->GetClusterRequirementITS(AliESDtrackCuts::kSPD) == AliESDtrackCuts::kOff)
@@ -2054,6 +2125,7 @@ void AliAnalysisTaskChargedJetsPA::BinLogAxis(const THn *h, Int_t axisNumber)
 //________________________________________________________________________
 void AliAnalysisTaskChargedJetsPA::Terminate(Option_t *)
 {
+/*
   PostData(1, fOutputLists[0]);
   fOutputLists[0] = dynamic_cast<TList*> (GetOutputData(1)); // >1 refers to output slots
 
@@ -2075,6 +2147,7 @@ void AliAnalysisTaskChargedJetsPA::Terminate(Option_t *)
       fOutputLists[1] = dynamic_cast<TList*> (GetOutputData(2)); // >1 refers to output slots
     }
   }
+*/
 }
 
 //________________________________________________________________________
@@ -2082,12 +2155,14 @@ AliAnalysisTaskChargedJetsPA::~AliAnalysisTaskChargedJetsPA()
 {
   // Destructor. Clean-up the output list, but not the histograms that are put inside
   // (the list is owner and will clean-up these histograms). Protect in PROOF case.
+/*
   delete fHybridESDtrackCuts;
-  delete fHybridESDtrackCuts_noPtDep;
+  delete fHybridESDtrackCuts_variedPtDep;
 
   for(Int_t i=0; i<static_cast<Int_t>(fOutputLists.size()); i++)
     if (fOutputLists[i] && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
       delete fOutputLists[i];
+*/
 }
 
 //________________________________________________________________________

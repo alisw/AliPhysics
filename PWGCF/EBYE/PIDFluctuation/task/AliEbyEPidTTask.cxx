@@ -191,9 +191,18 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     if (!AcceptTrack(track)) continue;
     fEventCounter->Fill(12);
     Int_t a = fHelperPID->GetParticleSpecies((AliVTrack*) track,kTRUE);
-    if(a < 0 || a > 2) continue;
+    //  if(a < 0 || a > 2) continue;
     fEventCounter->Fill(13);
-    Int_t icharge = track->Charge() > 0 ? 0 : 1;
+    
+    Int_t b = -999;
+    if (a == 0 ) b = 1;
+    else if (a == 1 ) b = 2;
+    else if (a == 2 ) b = 3;
+    else b = 4;
+    
+    if (track->Charge()  < 0 ) b = -1*b;
+    
+       Int_t icharge = track->Charge() > 0 ? 0 : 1;
 
     // cout << icharge << "  " << track->Charge() << endl;
 
@@ -201,7 +210,7 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     fTrackPhi[iTracks]    = (Float_t)track->Phi();
     fTrackEta[iTracks]    = (Float_t)track->Eta();
     fTrackCharge[iTracks] = icharge;
-    fTrackPid[iTracks] = a;
+    fTrackPid[iTracks] = b;
     iTracks++;
   }
   fNumberOfTracks = iTracks;
@@ -221,33 +230,33 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
       Printf("MC header branch not found!\n");
       return;
     }
-
+    
     fEventCounter->Fill(23);
     
-     Int_t nMC = arrayMC->GetEntries();
-     Int_t mTracks = 0; 
+    Int_t nMC = arrayMC->GetEntries();
+    Int_t mTracks = 0; 
     for (Int_t iMC = 0; iMC < nMC; iMC++) {
       fEventCounter->Fill(24);
-       AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
-       if(!AcceptMCTrack(partMC)) continue;
-
-       fEventCounter->Fill(25);
-       Int_t a  = partMC->GetPdgCode();
-
-       // Int_t a = fHelperPID->GetMCParticleSpecie((AliVEvent*) event,(AliVTrack*)partMC,1);
-       
-       //if(a < 0 || a > 2) continue;
-       Int_t icharge = a > 0 ? 0 : 1;
-
-       //  cout << a << "  " << icharge << endl;
-
-       fTrackPtM[mTracks]     = (Float_t)partMC->Pt();
-       fTrackPhiM[mTracks]    = (Float_t)partMC->Phi();
-       fTrackEtaM[mTracks]    = (Float_t)partMC->Eta();
-       fTrackChargeM[mTracks] = icharge;
-       fTrackPidM[mTracks] = a;
-	   
-       mTracks++;
+      AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
+      if(!AcceptMCTrack(partMC)) continue;
+      
+      fEventCounter->Fill(25);
+      Int_t a  = partMC->GetPdgCode();
+      
+      // Int_t a = fHelperPID->GetMCParticleSpecie((AliVEvent*) event,(AliVTrack*)partMC,1);
+      
+      //if(a < 0 || a > 2) continue;
+      Int_t icharge = a > 0 ? 0 : 1;
+      
+      //  cout << a << "  " << icharge << endl;
+      
+      fTrackPtM[mTracks]     = (Float_t)partMC->Pt();
+      fTrackPhiM[mTracks]    = (Float_t)partMC->Phi();
+      fTrackEtaM[mTracks]    = (Float_t)partMC->Eta();
+      fTrackChargeM[mTracks] = icharge;
+      fTrackPidM[mTracks] = a;
+      
+      mTracks++;
     }
     fEventCounter->Fill(26);
     fNumberOfTracksM = mTracks;

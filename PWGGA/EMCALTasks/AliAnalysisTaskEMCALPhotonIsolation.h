@@ -58,7 +58,7 @@ public:
     AliAnalysisTaskEMCALPhotonIsolation(const char *name, Bool_t histo=kFALSE);
     virtual ~AliAnalysisTaskEMCALPhotonIsolation();
     
- void                     UserCreateOutputObjects();
+    void                     UserCreateOutputObjects();
                     
     void                     SetIsoConeRadius(Float_t r)                                     { fIsoConeRadius = r ;}
     void                     SetCTMdeltaEta (Float_t r)                                      { fdetacut = r ;}
@@ -73,23 +73,23 @@ public:
 
 protected:
     
-    void                     EtIsoCellPhiBand(TLorentzVector c, Float_t &EtIso, Float_t &PhiBand);    //EIsoCone via Cells UE via PhiBand EMCAL
-    void                     EtIsoCellEtaBand(TLorentzVector c, Float_t &EtIso, Float_t &EtaBand);    //EIsoCone via Cells UE via EtaBand EMCAL
-    void                     EtIsoClusPhiBand(TLorentzVector c, Float_t &EtIso, Float_t &EtaBand, Int_t index);    //EIsoCone via Clusters UE via EtaBand EMCAL
-    void                     EtIsoClusEtaBand(TLorentzVector c, Float_t &EtIso, Float_t &EtaBand, Int_t index);    //EIsoCone via Clusters UE via EtaBand EMCAL
-    void                     PtIsoTrackPhiBand(TLorentzVector c, Float_t &PtIso, Float_t &PhiBand);   //PIsoCone via Track UE via PhiBand TPC
-    void                     PtIsoTrackEtaBand(TLorentzVector c, Float_t &PtIso, Float_t &EtaBand);   //PIsoCone via Track UE via EtaBand TPC
-  //  void                     PtIsoTraClusPhiBand(TLorentzVector c, Float_t &PtIso, Float_t &PhiBand); //(P+E)IsoCone via Track/Clus UE via PhiBand TPC+EMCAL
-  //  void                     PtIsoTraClusEtaBand(TLorentzVector c, Float_t &PtIso, Float_t &EtaBand); //(P+E)IsoCone via Track/Clus UE via EtaBand TPC+EMCAL
-    void                     PtIsoTrackOrthCones(TLorentzVector c, Float_t &PtIso, Float_t &Cones);   //PIsoCone via Tracks UE via Orthogonal Cones in Phi
-    void                     PtIsoTrackFullTPC(TLorentzVector c, Float_t &PtIso, Float_t &Full);      //PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
+    void                     EtIsoCellPhiBand(TLorentzVector c, Float_t &etIso, Float_t &phiBand);    //EIsoCone via Cells UE via PhiBand EMCAL
+    void                     EtIsoCellEtaBand(TLorentzVector c, Float_t &etIso, Float_t &etaBand);    //EIsoCone via Cells UE via EtaBand EMCAL
+    void                     EtIsoClusPhiBand(TLorentzVector c, Float_t &etIso, Float_t &etaBand, Int_t index);    //EIsoCone via Clusters UE via EtaBand EMCAL
+    void                     EtIsoClusEtaBand(TLorentzVector c, Float_t &etIso, Float_t &etaBand, Int_t index);    //EIsoCone via Clusters UE via EtaBand EMCAL
+    void                     PtIsoTrackPhiBand(TLorentzVector c, Float_t &ptIso, Float_t &phiBand);   //PIsoCone via Track UE via PhiBand TPC
+    void                     PtIsoTrackEtaBand(TLorentzVector c, Float_t &ptIso, Float_t &etaBand);   //PIsoCone via Track UE via EtaBand TPC
+  //  void                     PtIsoTraClusPhiBand(TLorentzVector c, Float_t &ptIso, Float_t &phiBand); //(P+E)IsoCone via Track/Clus UE via PhiBand TPC+EMCAL
+  //  void                     PtIsoTraClusEtaBand(TLorentzVector c, Float_t &ptIso, Float_t &etaBand); //(P+E)IsoCone via Track/Clus UE via EtaBand TPC+EMCAL
+    void                     PtIsoTrackOrthCones(TLorentzVector c, Float_t &ptIso, Float_t &cones);   //PIsoCone via Tracks UE via Orthogonal Cones in Phi
+    void                     PtIsoTrackFullTPC(TLorentzVector c, Float_t &ptIso, Float_t &full);      //PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
     Bool_t                   ClustTrackMatching(AliVCluster *cluster);
-    Bool_t                   CheckBoundaries(TLorentzVector VecCOI);
-   // void                     FillNCOutput(AliVCluster *COI, TLorentzVector VecCOI, Int_t index);
+    Bool_t                   CheckBoundaries(TLorentzVector vecCOI);
+   // void                     FillNCOutput(AliVCluster *COI, TLorentzVector vecCOI, Int_t index);
     
     Float_t*                 GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const;
     void                     ExecOnce();   
-    Bool_t                     Run();
+    Bool_t                   Run();
      
     using AliAnalysisTaskEmcal::FillGeneralHistograms;
     Bool_t FillGeneralHistograms(AliVCluster *COI, TLorentzVector VecCOI, Int_t index);
@@ -100,14 +100,11 @@ protected:
     TClonesArray               *fNCluster;                       // Neutral clusters
     
     Int_t       fWho;           // MODE for the Output Object (TTree or THnSparse)
-   
   
-    
-    
-    
+  
 		//IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
    //    TList       *fOutputList; //! Output list
-    TGeoHMatrix *fGeomMatrix[12];//! Geometry misalignment matrices for EMCal
+//    TGeoHMatrix *fGeomMatrix[12];//! Geometry misalignment matrices for EMCal
     
     
     TH1        *fTrackMult;                      //!Track Multiplicity ---QA
@@ -140,7 +137,7 @@ protected:
     TH1        *fEtIsolatedCells;                //! Isolated photons, isolation with cells
     TH1        *fEtIsolatedClust;                //! Isolated photons, isolation with clusters
     TH1        *fEtIsolatedTracks;                //! Isolated photons, isolation with tracks
-    TH1        *fTest;					//!
+    TH1        *fTest;					                 //! Test
     
     THnSparse   *fOutputTHnS;                    //! 1st Method 4 Output
     THnSparse   *fOutPTMAX;                      //! 1st Method 4 Isolation on pTMax
@@ -161,20 +158,21 @@ protected:
     Int_t       fUEMethod;                       //0=PhiBand, 1=EtaBand, (EMCAL or TPC) 2= Ort Cones, 3=FullTPC (only with TPC)
     Double_t    *fVertex;                        //!event vertex
     Int_t       fNDimensions;                    //!number of Dimensions for the THnSPARSE
-    Bool_t      fisLCAnalysis;                  // Flag to pass from Leading Clusters Analysis to a NC One
+    Bool_t      fisLCAnalysis;                   // Flag to pass from Leading Clusters Analysis to a NC One
 
 // Initialization for TTree variables
-    Int_t       fevents;
-    Double_t    flambda0T;
-    Double_t    fEtT;
-    Double_t    fPtT;
-    Double_t    fEtisoT;
-    Double_t    fPtisoT;
-    Double_t    fetaT;
-    Double_t    fphiT;
-    Double_t    fsumEtisoconeT;
-    Double_t    fsumEtUE;
-    //    AliParticleContainer       *fTracksCont;     //!Tracks
+    Int_t       fevents;                         // N events
+    Double_t    flambda0T;                       // M02
+    Double_t    fEtT;                            // Et
+    Double_t    fPtT;                            // Pt
+    Double_t    fEtisoT;                         // Iso Et
+    Double_t    fPtisoT;                         // Iso Pt
+    Double_t    fetaT;                           // Eta
+    Double_t    fphiT;                           // Phi
+    Double_t    fsumEtisoconeT;                  // Iso sum cone
+    Double_t    fsumEtUE;                        // sum UE
+  
+    //  AliParticleContainer       *fTracksCont;     //!Tracks
     //  AliParticleContainer       *fclusters;                       //!Container for Particle container 4 clusters
 
 private:

@@ -77,7 +77,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //Orig Kch in PbPb
   //int multbins[cMu+1] = {0, 100, 300, 500, 900};
   //Test for flat part of centrality distribution....
-  int multbins[5] = {0, 100, 300, 500, 900};
+  int multbins[5] = {0, 50, 300, 500, 900};
  // int multbins[5] = {0, 50, 300, 500, 900};
   //.................................................
 

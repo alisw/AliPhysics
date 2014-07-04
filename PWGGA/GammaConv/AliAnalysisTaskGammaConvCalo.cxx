@@ -641,7 +641,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		}
 
 		fTagOutputList[iCut] = new TList();
-		fTagOutputList[iCut]->SetName(Form("Tagging Output Cut Number %s_%s_%s",cutstring.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
+		fTagOutputList[iCut]->SetName(Form("%s_%s_%s Tagging Output",cutstring.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
 		fTagOutputList[iCut]->SetOwner(1);
 		fCutFolder[iCut]->Add(fTagOutputList[iCut]);
 		
@@ -1254,7 +1254,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 	Int_t nclus = 0;
 	nclus = fInputEvent->GetNumberOfCaloClusters();
 	
-	cout << nclus << endl;
+// 	cout << nclus << endl;
 	
 	if(nclus == 0)	return;
 	
@@ -1284,7 +1284,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 		if(fIsMC){
 			mclab[0] = clus->GetLabel();
 			mclab[1] = clus->GetLabel();
-			cout << "mclabels: " << mclab[0] << " " << mclab[1] << endl;
+// 			cout << "mclabels: " << mclab[0] << " " << mclab[1] << endl;
 		}
 		
 		PhotonCandidate->SetMCLabel(mclab);

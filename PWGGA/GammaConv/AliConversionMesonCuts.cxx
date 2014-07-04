@@ -664,7 +664,7 @@ Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysi
       if(!SetCut(cutIds(ii),fCuts[ii]))return kFALSE;
    }
 
-   //PrintCuts();
+   PrintCutsWithValues();
    return kTRUE;
 }
 ///________________________________________________________________________
@@ -781,6 +781,37 @@ void AliConversionMesonCuts::PrintCuts() {
       printf("%-30s : %d \n", fgkCutNames[ic], fCuts[ic]);
    }
 }
+
+///________________________________________________________________________
+void AliConversionMesonCuts::PrintCutsWithValues() {
+   // Print out current Cut Selection with values
+	printf("\nMeson cutnumber \n");
+	for(Int_t ic = 0; ic < kNCuts; ic++) {
+		printf("%d",fCuts[ic]);
+	}
+	printf("\n\n");
+	
+	printf("Meson cuts \n");
+	printf("\t |y| < %3.2f \n", fRapidityCutMeson);
+	printf("\t theta_{open} < %3.2f\n", fOpeningAngle);
+	if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
+	printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
+	printf("\t dca_{R, prim Vtx} > %3.2f\n", fDCARMesonPrimVtxCut); 
+	printf("\t dca_{Z, prim Vtx} > %3.2f\n\n", fDCAZMesonPrimVtxCut); 
+	
+	 printf("Meson BG settings \n");
+	 if (!fDoBG){
+		if (!fUseRotationMethodInBG  & !fUseTrackMultiplicityForBG) printf("\t BG scheme: mixing V0 mult \n");
+		if (!fUseRotationMethodInBG  & fUseTrackMultiplicityForBG) printf("\t BG scheme: mixing track mult \n");
+		if (fUseRotationMethodInBG )printf("\t BG scheme: rotation \n");
+		if (fdoBGProbability) printf("\t -> use BG probability \n");
+		if (fBackgroundHandler) printf("\t -> use new BG handler \n");
+		printf("\t depth of pool: %d\n", fNumberOfBGEvents);
+		if (fUseRotationMethodInBG )printf("\t degree's for BG rotation: %d\n", fnDegreeRotationPMForBG);
+	 }
+	 
+}
+
 
 ///________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
@@ -1464,6 +1495,56 @@ void AliConversionMesonCuts::SmearVirtualPhoton(AliAODConversionPhoton* photon)
    photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
    photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
    
+}
+///________________________________________________________________________
+TLorentzVector AliConversionMesonCuts::SmearElectron(TLorentzVector particle)
+{
+
+   //if (particle==0) return;
+   Double_t facPBrem = 1.;
+   Double_t facPSig = 0.;
+
+   Double_t phi=0.;
+   Double_t theta=0.;
+   Double_t P=0.;
+
+
+   P=particle.P();
+   
+   
+   phi=particle.Phi();
+   if (phi < 0.) phi += 2. * TMath::Pi();
+   
+   if( particle.P()!=0){
+      theta=acos( particle.Pz()/ particle.P());
+   }
+
+   
+   Double_t fPSigSmearingHalf    =  fPSigSmearing  / 2.0;  //The parameter was set for gammas with 2 particles and here we have just one electron
+   Double_t sqrtfPSigSmearingCteHalf =  fPSigSmearingCte / 2.0 ;  //The parameter was set for gammas with 2 particles and here we have just one electron
+
+   
+   
+   if( fPSigSmearingHalf != 0. || sqrtfPSigSmearingCteHalf!=0. ){
+      facPSig = TMath::Sqrt(sqrtfPSigSmearingCteHalf*sqrtfPSigSmearingCteHalf+fPSigSmearingHalf*fPSigSmearingHalf*P*P)*fRandom.Gaus(0.,1.);
+   }
+
+   if( fPBremSmearing != 1.){
+      if(fBrem!=NULL){
+         facPBrem = fBrem->GetRandom();
+      }
+   }
+   
+   TLorentzVector SmearedParticle;
+   
+   SmearedParticle.SetXYZM( facPBrem* (1+facPSig)* P*sin(theta)*cos(phi) , facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)  , 
+			  facPBrem* (1+facPSig)* P*cos(theta) , TDatabasePDG::Instance()->GetParticle(  ::kElectron   )->Mass()) ;
+   
+   //particle.SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
+   //particle.SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
+   //particle.SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
+   
+   return SmearedParticle;
    
 }
 

@@ -61,43 +61,46 @@ using std::endl;
     
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP() 
-  : AliAnalysisTaskSE(), 
-    fListHist(0), 
-    fHistEventMultiplicity(0), 
-    fHistTrackMultiplicity(0),
-    fHistTrackMultiplicityCentral(0),    
-    fHistTrackMultiplicitySemiCentral(0),
-    fHistTrackMultiplicityMB(0),
-    fhBB(0),
-    fhBBDeu(0),
-    fhPtDeu(0),
-    fhTOF(0),
-    fhMassTOF(0),
-    EPVzAvsCentrality(0), 
-    EPVzCvsCentrality(0), 
-    EPTPCvsCentrality(0), 
-    EPVzvsCentrality(0), 
-    EPTPCpvsCentrality(0), 
-    EPTPCnvsCentrality(0), 
-    hEvPlaneTPCvsEvPVz05(0),                      
-    hEvPlaneTPCvsEvPVz075(0), 
-    hEvPlaneTPCvsEvPVz1530(0),
-    hEvPlaneTPCvsEvPVz3050(0),                      
-    hEvPlaneTPCvsEvPVz2040(0),                      
-    hEvPlaneTPCvsEvPVz4060(0),       
-    hCos2DeltaTPCVzAvsCentrality(0),
-    hCos2DeltaTPCVzCvsCentrality(0),
-    hCos2DeltaVzAVzCvsCentrality(0),
-    hCos2DeltaVzMVzAvsCentrality(0),
-    hCos2DeltaVzMVzCvsCentrality(0),
-    hCos2DeltaVzATPCvsCentrality(0),
-    hCos2DeltaVzCTPCvsCentrality(0),
-    hCos2DeltaVzCVzAvsCentrality(0),
-    hQVzAQVzCvsCentrality(0),
-    fHistRealTracks(0),
-    fESDtrackCuts(0),
-    fESDtrackCutsEP(0),
-    fPIDResponse(0)
+: AliAnalysisTaskSE(), 
+  fListHist(0), 
+  fHistEventMultiplicity(0), 
+  fHistTrackMultiplicity(0),
+  fHistTrackMultiplicityCentral(0),    
+  fHistTrackMultiplicitySemiCentral(0),
+  fHistTrackMultiplicityMB(0),
+  fhBB(0),
+  fhBBDeu(0),
+  fhPtDeu(0),
+  fhTOF(0),
+  fhMassTOF(0),
+  EPVzAvsCentrality(0), 
+  EPVzCvsCentrality(0), 
+  EPTPCvsCentrality(0), 
+  EPVzvsCentrality(0), 
+  EPTPCpvsCentrality(0), 
+  EPTPCnvsCentrality(0), 
+  hEvPlaneTPCvsEvPVz05(0),                      
+  hEvPlaneTPCvsEvPVz075(0), 
+  hEvPlaneTPCvsEvPVz1530(0),
+  hEvPlaneTPCvsEvPVz3050(0),                      
+  hEvPlaneTPCvsEvPVz2040(0),                      
+  hEvPlaneTPCvsEvPVz4060(0),       
+  hCos2DeltaTPCVzAvsCentrality(0),
+  hCos2DeltaTPCVzCvsCentrality(0),
+  hCos2DeltaVzAVzCvsCentrality(0),
+  hCos2DeltaVzMVzAvsCentrality(0),
+  hCos2DeltaVzMVzCvsCentrality(0),
+  hCos2DeltaVzATPCvsCentrality(0),
+  hCos2DeltaVzCTPCvsCentrality(0),
+  hCos2DeltaVzCVzAvsCentrality(0),
+  hCos2DeltaVzMTPCpvsCentrality(0),
+  hCos2DeltaVzMTPCnvsCentrality(0),
+  hCos2DeltaTPCpTPCnvsCentrality(0),
+  hQVzAQVzCvsCentrality(0),
+  fHistRealTracks(0),
+  fESDtrackCuts(0),
+  fESDtrackCutsEP(0),
+  fPIDResponse(0)
 {
   // Dummy Constructor 
   fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
@@ -107,45 +110,46 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
 
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name) 
-  :  AliAnalysisTaskSE(name), 
-     fListHist(0), 
-     fHistEventMultiplicity(0), 
-     fHistTrackMultiplicity(0),
-     fHistTrackMultiplicityCentral(0),    
-     fHistTrackMultiplicitySemiCentral(0),
-     fHistTrackMultiplicityMB(0),
-     fhBB(0),
-     fhBBDeu(0),
-     fhPtDeu(0),
-     fhTOF(0),
-     fhMassTOF(0),
-     EPVzAvsCentrality(0), 
-     EPVzCvsCentrality(0), 
-     EPTPCvsCentrality(0), 
-     EPVzvsCentrality(0), 
-     EPTPCpvsCentrality(0), 
-     EPTPCnvsCentrality(0), 
-     hEvPlaneTPCvsEvPVz05(0),                      
-     hEvPlaneTPCvsEvPVz075(0), 
-     hEvPlaneTPCvsEvPVz1530(0),
-     hEvPlaneTPCvsEvPVz3050(0),                      
-     hEvPlaneTPCvsEvPVz2040(0),                      
-     hEvPlaneTPCvsEvPVz4060(0),       
-     hCos2DeltaTPCVzAvsCentrality(0),
-     hCos2DeltaTPCVzCvsCentrality(0),
-     hCos2DeltaVzAVzCvsCentrality(0),
-     hCos2DeltaVzMVzAvsCentrality(0),
-     hCos2DeltaVzMVzCvsCentrality(0),
-     hCos2DeltaVzATPCvsCentrality(0),
-     hCos2DeltaVzCTPCvsCentrality(0),
-     hCos2DeltaVzCVzAvsCentrality(0),
-     hQVzAQVzCvsCentrality(0),
-     fHistRealTracks(0),
-     fESDtrackCuts(0),
-     fESDtrackCutsEP(0),
-     fPIDResponse(0)
-     
-     
+:  AliAnalysisTaskSE(name), 
+  fListHist(0), 
+  fHistEventMultiplicity(0), 
+  fHistTrackMultiplicity(0),
+  fHistTrackMultiplicityCentral(0),    
+  fHistTrackMultiplicitySemiCentral(0),
+  fHistTrackMultiplicityMB(0),
+  fhBB(0),
+  fhBBDeu(0),
+  fhPtDeu(0),
+  fhTOF(0),
+  fhMassTOF(0),
+  EPVzAvsCentrality(0), 
+  EPVzCvsCentrality(0), 
+  EPTPCvsCentrality(0), 
+  EPVzvsCentrality(0), 
+  EPTPCpvsCentrality(0), 
+  EPTPCnvsCentrality(0), 
+  hEvPlaneTPCvsEvPVz05(0),                      
+  hEvPlaneTPCvsEvPVz075(0), 
+  hEvPlaneTPCvsEvPVz1530(0),
+  hEvPlaneTPCvsEvPVz3050(0),                      
+  hEvPlaneTPCvsEvPVz2040(0),                      
+  hEvPlaneTPCvsEvPVz4060(0),       
+  hCos2DeltaTPCVzAvsCentrality(0),
+  hCos2DeltaTPCVzCvsCentrality(0),
+  hCos2DeltaVzAVzCvsCentrality(0),
+  hCos2DeltaVzMVzAvsCentrality(0),
+  hCos2DeltaVzMVzCvsCentrality(0),
+  hCos2DeltaVzATPCvsCentrality(0),
+  hCos2DeltaVzCTPCvsCentrality(0),
+  hCos2DeltaVzCVzAvsCentrality(0),
+  hCos2DeltaVzMTPCpvsCentrality(0),
+  hCos2DeltaVzMTPCnvsCentrality(0),
+  hCos2DeltaTPCpTPCnvsCentrality(0),
+  hQVzAQVzCvsCentrality(0),
+  fHistRealTracks(0),
+  fESDtrackCuts(0),
+  fESDtrackCutsEP(0),
+  fPIDResponse(0)
 {
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -323,14 +327,17 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   fListHist->Add(hEvPlaneTPCvsEvPVz2040);                      
   fListHist->Add(hEvPlaneTPCvsEvPVz4060);   
 
-  hCos2DeltaTPCVzAvsCentrality = new TH2F("hCos2DeltaTPCVzAvsCentrality","hCos2DeltaTPCVzAvsCentrality",100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaTPCVzCvsCentrality = new TH2F("hCos2DeltaTPCVzCvsCentrality","hCos2DeltaTPCVzCvsCentrality",100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzAVzCvsCentrality = new TH2F("hCos2DeltaVzAVzCvsCentrality","hCos2DeltaVzAVzCvsCentrality",100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzMVzAvsCentrality = new TH2F("hCos2DeltaVzMVzAvsCentrality","hCos2DeltaVzMVzAvsCentrality",100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzMVzCvsCentrality = new TH2F("hCos2DeltaVzMVzCvsCentrality","hCos2DeltaVzMVzCvsCentrality",100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzATPCvsCentrality = new TH2F("hCos2DeltaVzATPCvsCentrality","hCos2DeltaVzATPCvsCentrality",100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzCTPCvsCentrality = new TH2F("hCos2DeltaVzCTPCvsCentrality","hCos2DeltaVzCTPCvsCentrality",100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzCVzAvsCentrality = new TH2F("hCos2DeltaVzCVzAvsCentrality","hCos2DeltaVzCVzAvsCentrality",100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaTPCVzAvsCentrality   = new TH2F("hCos2DeltaTPCVzAvsCentrality"  ,"hCos2DeltaTPCVzAvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaTPCVzCvsCentrality   = new TH2F("hCos2DeltaTPCVzCvsCentrality"  ,"hCos2DeltaTPCVzCvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaVzAVzCvsCentrality   = new TH2F("hCos2DeltaVzAVzCvsCentrality"  ,"hCos2DeltaVzAVzCvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaVzMVzAvsCentrality   = new TH2F("hCos2DeltaVzMVzAvsCentrality"  ,"hCos2DeltaVzMVzAvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaVzMVzCvsCentrality   = new TH2F("hCos2DeltaVzMVzCvsCentrality"  ,"hCos2DeltaVzMVzCvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaVzATPCvsCentrality   = new TH2F("hCos2DeltaVzATPCvsCentrality"  ,"hCos2DeltaVzATPCvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaVzCTPCvsCentrality   = new TH2F("hCos2DeltaVzCTPCvsCentrality"  ,"hCos2DeltaVzCTPCvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaVzCVzAvsCentrality   = new TH2F("hCos2DeltaVzCVzAvsCentrality"  ,"hCos2DeltaVzCVzAvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaVzMTPCpvsCentrality  = new TH2F("hCos2DeltaVzMTPCpvsCentrality" ,"hCos2DeltaVzMTPCpvsCentrality" ,100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaVzMTPCnvsCentrality  = new TH2F("hCos2DeltaVzMTPCnvsCentrality" ,"hCos2DeltaVzMTPCnvsCentrality" ,100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaTPCpTPCnvsCentrality = new TH2F("hCos2DeltaTPCpTPCnvsCentrality","hCos2DeltaTPCpTPCnvsCentrality",100,-1.1,1.1,105,-0.5,105.5);
 
   fListHist->Add(hCos2DeltaTPCVzAvsCentrality);
   fListHist->Add(hCos2DeltaTPCVzCvsCentrality);
@@ -340,15 +347,18 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   fListHist->Add(hCos2DeltaVzATPCvsCentrality);
   fListHist->Add(hCos2DeltaVzCTPCvsCentrality);
   fListHist->Add(hCos2DeltaVzCVzAvsCentrality);
+  fListHist->Add(hCos2DeltaVzMTPCpvsCentrality);  
+  fListHist->Add(hCos2DeltaVzMTPCnvsCentrality); 
+  fListHist->Add(hCos2DeltaTPCpTPCnvsCentrality);
 
  
   hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-5,5,105,-0.5,105.5);
   fListHist->Add(hQVzAQVzCvsCentrality);
   
   
-     Int_t binsHistReal[11] = { 105  , 120 , 100 ,  100,  100 ,   6   ,  110        ,  110       ,  110        ,  110         , 100};
-  Double_t xminHistReal[11] = {-0.5  ,  0  ,-0.6 ,  -10,  -10 ,  -2.5 ,   0         ,   0        ,   0         ,   0          , -3};
-  Double_t xmaxHistReal[11] = { 105.5,  6  , 0.6 ,   10,   10 ,   2.5 , TMath::Pi() , TMath::Pi(),TMath::Pi()  ,TMath::Pi()   ,  3};
+     Int_t binsHistReal[11] = { 105  , 120 , 100 ,  100,  100 ,   6   ,   100 ,  100 ,  100   ,  100  , 100};
+  Double_t xminHistReal[11] = {-0.5  ,  0  ,-0.6 ,  -10,  -10 ,  -2.5 ,  -1.1 , -1.1 , -1.1   , -1.1  , -3};
+  Double_t xmaxHistReal[11] = { 105.5,  6  , 0.6 ,   10,   10 ,   2.5 ,   1.1 ,  1.1 ,  1.1   ,  1.1  ,  3};
   fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",11,binsHistReal,xminHistReal,xmaxHistReal);
   fListHist->Add(fHistRealTracks);
  
@@ -459,8 +469,6 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   
   if(eventtype!=1 && eventtype!=2 && eventtype!=3 )return;
   
-  //RAMONA QUI
-  
   AliEventplane *pl=lESDevent->GetEventplane();
   
   
@@ -473,7 +481,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   
   Double_t qxEPa = 0, qyEPa = 0;
   Double_t qxEPc = 0, qyEPc = 0;
-  Double_t qxEP = 0, qyEP = 0;
+  Double_t qxEP = 0 , qyEP = 0;
   
   Double_t evPlAngV0A = pl->CalculateVZEROEventPlane(lESDevent, 8, 2, qxEPa, qyEPa);
   Double_t evPlAngV0C = pl->CalculateVZEROEventPlane(lESDevent, 9, 2, qxEPc, qyEPc);
@@ -507,10 +515,11 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       Qx2n += TMath::Cos(2*track->Phi());
       Qy2n += TMath::Sin(2*track->Phi());
     }
-    
-    Qx2 += TMath::Cos(2*track->Phi());
-    Qy2 += TMath::Sin(2*track->Phi());
-    
+
+    if(track->Eta()>0 && track->Eta()<0.8){ //half TPC
+      Qx2 += TMath::Cos(2*track->Phi());
+      Qy2 += TMath::Sin(2*track->Phi());
+    }
   }
   
   Double_t evPlAngTPC  = TMath::ATan2(Qy2, Qx2)/2.;
@@ -549,6 +558,9 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   hCos2DeltaVzATPCvsCentrality->Fill(TMath::Cos(2.*(evPlAngV0A-evPlAngTPC)), percentile);
   hCos2DeltaVzCTPCvsCentrality->Fill(TMath::Cos(2.*(evPlAngV0C-evPlAngTPC)), percentile);
   hCos2DeltaVzCVzAvsCentrality->Fill(TMath::Cos(2.*(evPlAngV0C-evPlAngV0A)), percentile);
+  hCos2DeltaVzMTPCpvsCentrality ->Fill(TMath::Cos(2.*(evPlAngV0-evPlAngTPCp)), percentile);
+  hCos2DeltaVzMTPCnvsCentrality ->Fill(TMath::Cos(2.*(evPlAngV0-evPlAngTPCn)), percentile);
+  hCos2DeltaTPCpTPCnvsCentrality->Fill(TMath::Cos(2.*(evPlAngTPCp-evPlAngTPCn)), percentile);
 
   //Scalar Product
   
@@ -562,7 +574,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   q = pl->GetQVector();
 
   Int_t isTOF=0;
-  Int_t isoutTPC=0;
+  //  Int_t isoutTPC=0;
   Float_t deutExp  = -999;
   Double_t pullTPC = -999;
   Float_t deltaphiTPC = -3;
@@ -582,7 +594,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
     
     isTPC    = (((status) & AliESDtrack::kTPCin)   != 0);
     isTOF    = ((((status) & AliESDtrack::kTOFout) != 0) && (((status) & AliESDtrack::kTIME) != 0));
-    isoutTPC = (((status) & AliESDtrack::kTPCout)  != 0);
+    //isoutTPC = (((status) & AliESDtrack::kTPCout)  != 0);
       
     TPCSignal=esdtrack->GetTPCsignal(); 
       
@@ -638,10 +650,10 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       //Remove AutoCorrelation
       evPlAngTPC = GetEventPlaneForCandidate(esdtrack,q,pl);
       
-      deltaphiTPC=2*GetPhi0Pi(tPhi-evPlAngTPC);
-      deltaphiV0 =2*GetPhi0Pi(tPhi-evPlAngV0);
-      deltaphiV0A=2*GetPhi0Pi(tPhi-evPlAngV0A);
-      deltaphiV0C=2*GetPhi0Pi(tPhi-evPlAngV0C);
+      deltaphiTPC=TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngTPC));
+      deltaphiV0 =TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngV0 ));
+      deltaphiV0A=TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngV0A));
+      deltaphiV0C=TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngV0C));
       
       // SP
       

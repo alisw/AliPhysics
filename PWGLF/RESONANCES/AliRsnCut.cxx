@@ -13,6 +13,7 @@
 //          Martin Vala (martin.vala@cern.ch)
 //
 
+#include <TFormula.h>
 #include "AliRsnCut.h"
 
 ClassImp(AliRsnCut)
@@ -26,6 +27,12 @@ AliRsnCut::AliRsnCut(const char *name, RSNTARGET target) :
    fMaxD(0.),
    fCutValueI(0),
    fCutValueD(0.0),
+   fPtDepCut(kFALSE),
+   fRefPtValueD(0.0),
+   fMaxPt(1E20),
+   fMinPt(0.0),
+   fPtDepCutMaxFormula(""),
+   fPtDepCutMinFormula(""),
    fCutResult(kTRUE)
 {
 //
@@ -43,6 +50,12 @@ AliRsnCut::AliRsnCut
    fMaxD(dmax),
    fCutValueI(0),
    fCutValueD(0.0),
+   fPtDepCut(kFALSE),
+   fRefPtValueD(0.0),
+   fMaxPt(1E20),
+   fMinPt(0.0),
+   fPtDepCutMaxFormula(""),
+   fPtDepCutMinFormula(""),
    fCutResult(kTRUE)
 {
 //
@@ -61,6 +74,12 @@ AliRsnCut::AliRsnCut
    fMaxD(dmax),
    fCutValueI(0),
    fCutValueD(0.0),
+   fPtDepCut(kFALSE),
+   fRefPtValueD(0.0),
+   fMaxPt(1E20),
+   fMinPt(0.0),
+   fPtDepCutMaxFormula(""),
+   fPtDepCutMinFormula(""),
    fCutResult(kTRUE)
 {
 //
@@ -78,6 +97,12 @@ AliRsnCut::AliRsnCut(const AliRsnCut &copy) :
    fMaxD(copy.fMaxD),
    fCutValueI(copy.fCutValueI),
    fCutValueD(copy.fCutValueD),
+   fPtDepCut(copy.fPtDepCut),
+   fRefPtValueD(copy.fRefPtValueD),
+   fMaxPt(copy.fMaxPt),
+   fMinPt(copy.fMinPt),
+   fPtDepCutMaxFormula(copy.fPtDepCutMaxFormula),
+   fPtDepCutMinFormula(copy.fPtDepCutMinFormula),
    fCutResult(copy.fCutResult)
 {
 //
@@ -104,6 +129,12 @@ AliRsnCut &AliRsnCut::operator=(const AliRsnCut &copy)
    fMaxD      = copy.fMaxD;
    fCutValueI = copy.fCutValueI;
    fCutValueD = copy.fCutValueD;
+   fPtDepCut = copy.fPtDepCut;
+   fRefPtValueD = copy.fRefPtValueD;
+   fMaxPt = copy.fMaxPt;
+   fMinPt = copy.fMinPt;
+   fPtDepCutMaxFormula = copy.fPtDepCutMaxFormula;
+   fPtDepCutMinFormula = copy.fPtDepCutMinFormula;
    fCutResult = copy.fCutResult;
 
    return (*this);
@@ -132,7 +163,24 @@ Bool_t AliRsnCut::OkValueI()
 //
 
    // eval result
-   fCutResult = (fCutValueI == fMinI);
+   
+   if (fPtDepCut){
+   	if(fRefPtValueD > fMaxPt) {
+    	AliDebug(2,Form("pt = %f (> %f), cutting at %d\n",fRefPtValueD, fMaxPt, fMinI)); 
+    	fCutResult = (fCutValueI == fMinI);
+  	} else if (fRefPtValueD < fMinPt){
+	AliDebug(2,Form("pt = %f (< %f), cutting at %d\n",fRefPtValueD, fMinPt, fMinI));
+	fCutResult = (fCutValueI == fMinI);
+	}else{ 
+	TString str(fPtDepCutMinFormula);
+        str.ReplaceAll("pt", "x");
+        TFormula ptdepcut(Form("%s_ptdepcut", GetName()), str.Data());
+        fMinI = static_cast<int> (ptdepcut.Eval(fRefPtValueD));	
+    	AliDebug(2,Form("pt = %f (> %f and < %f), cutting  at %d\n",fRefPtValueD, fMinPt, fMaxPt, fMinI)); 
+    	fCutResult = (fCutValueI == fMinI);
+  	}
+  }
+  else fCutResult = (fCutValueI == fMinI);
 
    // print debug message
    AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ========================================================");
@@ -154,7 +202,24 @@ Bool_t AliRsnCut::OkValueD()
 //
 
    // eval result
-   fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
+   
+    if (fPtDepCut){
+   	if(fRefPtValueD > fMaxPt) {
+    	AliDebug(2,Form("pt = %f (> %f), cutting at %f\n",fRefPtValueD, fMaxPt, fMinD)); 
+    	fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
+  	} else if (fRefPtValueD < fMinPt){
+	AliDebug(2,Form("pt = %f (< %f), cutting at %f\n",fRefPtValueD, fMinPt, fMinD));
+	fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
+	}else{
+	TString str(fPtDepCutMinFormula);
+        str.ReplaceAll("pt", "x");
+        TFormula ptdepcut(Form("%s_ptdepcut", GetName()), str.Data());
+        fMinD = ptdepcut.Eval(fRefPtValueD);	
+    	AliDebug(2,Form("pt = %f (> %f and < %f), cutting  at %f\n",fRefPtValueD, fMinPt, fMaxPt, fMinD)); 
+    	fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
+  	}
+  }
+  else fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
 
    // print debug message
    AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG =======================================================");
@@ -174,8 +239,30 @@ Bool_t AliRsnCut::OkRangeI()
 // This method is used to compare a value with an integer range.
 //
 
-   // eval result
-   fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
+  // eval result
+  if (fPtDepCut){
+    if(fRefPtValueD > fMaxPt) {
+      AliDebug(2,Form("pt = %f (> %f), cutting between [%d, %d]\n",fRefPtValueD, fMaxPt, fMinI, fMaxI)); 
+      fCutResult = ((fCutValueI >= fMinI) && (fCutValueD <= fMaxI));
+    } else if (fRefPtValueD < fMinPt){
+      AliDebug(2,Form("pt = %f (< %f), cutting between [%d, %d]\n",fRefPtValueD, fMinPt, fMinI, fMaxI));
+      fCutResult = ((fCutValueI >= fMinI) && (fCutValueD <= fMaxI));
+    } else {
+      TString str(fPtDepCutMinFormula);
+      str.ReplaceAll("pt", "x");
+      TFormula ptdepcut(Form("%s_ptdepcut", GetName()), str.Data());
+      fMinI = static_cast<int> (ptdepcut.Eval(fRefPtValueD));
+	
+      TString str2(fPtDepCutMaxFormula);
+      str2.ReplaceAll("pt", "x");
+      TFormula ptdepcut2(Form("%s_ptdepcut", GetName()), str2.Data());
+      fMaxI = static_cast<int> (ptdepcut2.Eval(fRefPtValueD));
+    		    
+      AliDebug(2,Form("pt = %f (> %f and < %f), cutting  according to the fiducial zone [%d, %d]\n",fRefPtValueD, fMinPt, fMaxPt, fMinI, fMaxI)); 
+      fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
+    }
+  }
+  else fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
 
    // print debug message
    AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ========================================================");
@@ -195,8 +282,31 @@ Bool_t AliRsnCut::OkRangeD()
 // This method is used to compare a value with a double-float range.
 //
 
-   // eval result
-   fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
+  // eval result
+   
+  if (fPtDepCut){
+    if(fRefPtValueD > fMaxPt) {
+      AliDebug(2,Form("pt = %f (> %f), cutting between [%f, %f]\n",fRefPtValueD, fMaxPt, fMinD, fMaxD)); 
+      fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
+    } else if (fRefPtValueD < fMinPt) {
+      AliDebug(2,Form("pt = %f (< %f), cutting between [%f, %f]\n",fRefPtValueD, fMinPt, fMinD, fMaxD));
+      fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
+    } else {
+      TString str(fPtDepCutMinFormula);
+      str.ReplaceAll("pt", "x");
+      TFormula ptdepcut(Form("%s_ptdepcut", GetName()), str.Data());
+      fMinD = ptdepcut.Eval(fRefPtValueD);
+      
+      TString str2(fPtDepCutMaxFormula);
+      str2.ReplaceAll("pt", "x");
+      TFormula ptdepcut2(Form("%s_ptdepcut", GetName()), str2.Data());
+      fMaxD = ptdepcut2.Eval(fRefPtValueD);   
+      
+      AliDebug(2,Form("pt = %f (> %f and < %f), cutting  according to the fiducial zone [%f, %f]\n",fRefPtValueD, fMinPt, fMaxPt, fMinD, fMaxD)); 
+      fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
+    }
+  }
+  else fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
 
    // print debug message
    AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ========================================================");
@@ -208,6 +318,7 @@ Bool_t AliRsnCut::OkRangeD()
 
    return fCutResult;
 }
+
 
 //______________________________________________________________________________
 void AliRsnCut::Print(Option_t *) const
@@ -222,5 +333,6 @@ void AliRsnCut::Print(Option_t *) const
    AliInfo(Form("Cut target   : [%s]", GetTargetTypeName()));
    AliInfo(Form("Cut edges [D]: [%f - %f]", fMinD, fMaxD));
    AliInfo(Form("Cut edges [I]: [%d - %d]", fMinI, fMaxI));
+   AliInfo(Form("Cut pt dependent: %s", (fPtDepCut ? "YES" : "NO")));
    AliInfo("====================================================");
 }

@@ -36,11 +36,11 @@ void runEMCalJetAnalysis(
          const char*    runNumbers          = "167903 167915",             // considered run numbers (used on grid)
          UInt_t         numLocalFiles       = 50,                          // number of files analyzed locally  
          const char*    runPeriod           = "LHC11h",                    // set the run period (used on grid)
-         const char*    uniqueName          = "EMCalJF_LEGOTrainTest",     // sets base string for the name of the task on the grid
-         UInt_t         pSel                = AliVEvent::kAny,             // used event selection for every task except for the analysis tasks
+         const char*    uniqueName          = "EMCalJF_LEGOTrainTest",     // sets base string for the name of the train on the grid
+         UInt_t         pSel                = AliVEvent::kAny,             // used event selection for every task
          Bool_t         useTender           = kTRUE,                       // trigger, if tender, track and cluster selection should be used (always)
          Bool_t         isMC                = kFALSE,                      // trigger, if MC handler should be used
-	 Bool_t         doBkg               = kTRUE,
+         Bool_t         doBkg               = kTRUE,
          // Here you have to specify additional code files you want to use but that are not in aliroot
          const char*    addCXXs             = "",
          const char*    addHs               = "",
@@ -154,7 +154,7 @@ void runEMCalJetAnalysis(
   }
 
   // Names of the different objects passed around; these are the default names; added here mostly for documentation purposes
-  // rhoName is only set if the background subtraction is switched on (doBkg)
+  // rhoName is only set if the background calculation is switched on (doBkg)
   TString tracksName = "PicoTracks";
   TString clustersName = "EmcCaloClusters";
   TString clustersCorrName = "CaloClustersCorr";
@@ -162,7 +162,9 @@ void runEMCalJetAnalysis(
 
   // ################# Now: Call jet preparation macro (picotracks, hadronic corrected caloclusters, ...) 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
-  AddTaskJetPreparation(runPeriod, tracksName, "MCParticlesSelected", clustersName, clustersCorrName);
+  TString particlesMCName = "";
+  if(isMC) particlesMCName = "MCParticlesSelected";
+  AddTaskJetPreparation(runPeriod, tracksName, particlesMCName.Data(), clustersName, clustersCorrName);
 
   // ################# Now: Add jet finders+analyzers
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
@@ -170,9 +172,9 @@ void runEMCalJetAnalysis(
 
   if (doBkg) {
     rhoName = "Rho";
-    AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(tracksName, clustersCorrName, kKT, 0.2, kCHARGEDJETS, 0.150, 0.300);
+    AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(tracksName, clustersCorrName, kKT, 0.2, kCHARGEDJETS, 0.150, 0.300);
 
-    TString kTpcKtJetsName(Form("Jet_KTChargedR020_%s_pT0150_%s_ET0300_pt_scheme",tracksName.Data(),clustersCorrName.Data())); 
+    TString kTpcKtJetsName = jetFinderTaskKT->GetName();
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
     rhotask = (AliAnalysisTaskRho*) AddTaskRho(kTpcKtJetsName, tracksName, clustersCorrName, rhoName, 0.2, "TPC", 0.01, 0, 0, 2, kTRUE);
     //rhotask__->SetScaleFunction(sfunc);

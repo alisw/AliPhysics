@@ -16,15 +16,16 @@
 #include <fastjet/SISConePlugin.hh>
 #include <fastjet/CDFMidPointPlugin.hh>
 #ifdef FASTJET_VERSION
-//if FJ_VERSION>2
 #include <fastjet/Selector.hh>
 #include <fastjet/FunctionOfPseudoJet.hh>
 #include <fastjet/tools/JetMedianBackgroundEstimator.hh>
 #include <fastjet/tools/BackgroundEstimatorBase.hh>
 #include <fastjet/tools/Subtractor.hh>
+#ifdef FASTJET_CONTRIB
 #include <fastjet/contrib/GenericSubtractor.hh>
 #include <fastjet/contrib/ShapeWithComponents.hh>
 #include <fastjet/contrib/ConstituentSubtractor.hh>
+#endif
 #endif
 #endif
 

@@ -53,6 +53,7 @@ public:
     kTOFPidPtDep,
     kTPCRejPtDepTOFNsigma,
     kTPCNsigmaTOFVetoPtDep,
+    kTPCTOFpidLstar,//cuts for L* in pA
     kNDaughterCuts
   };
 
