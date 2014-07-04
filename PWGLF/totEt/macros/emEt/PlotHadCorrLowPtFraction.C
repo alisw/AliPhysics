@@ -6,18 +6,32 @@ void SetStyles(TH1 *histo,int marker, int color){
   //histo->GetXaxis()->SetTitle(xtitle);
   //histo->GetYaxis()->SetTitle(ytitle);
 }
-void PlotHadCorrLowPtFraction(Bool_t isPhos = kFALSE){
+void PlotHadCorrLowPtFraction(Bool_t isPhos = kFALSE, Int_t mycase = 0){
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
   TString filename, detname;
-  if(isPhos){
-    detname = "PHOS";
-    filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOS.LHC11a10a_bis.Run139465.root";
+  if(mycase==0){
+    if(isPhos){
+      detname = "PHOS";
+      //filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOS.LHC11a10a_bis.Run139465.root";
+      filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOSOldHadMethod.LHC11a10a_bis.root";
+    }
+    else{
+      //filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.Run139465.root";
+      filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCalOldHadMethod.LHC11a10a_bis.root";
+      detname = "EMCal";
+    }
   }
   else{
-    filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.Run139465.root";
-    detname = "EMCal";
+    if(isPhos){
+      detname = "PHOS";
+	filename = "rootFiles/LHC13e1abcCombined/Et.ESD.simPbPb.PHOS.LHC13e1abc.root";
+    }
+    else{
+      filename = "rootFiles/LHC13e1abcCombined/Et.ESD.simPbPb.EMCal.LHC13e1abc.root";
+      detname = "EMCal";
+    }
   }
   
   TFile *f = TFile::Open(filename, "READ");
@@ -77,9 +91,12 @@ void PlotHadCorrLowPtFraction(Bool_t isPhos = kFALSE){
     SetStyles(profyfHistChargedTrackDepositsAllVsPtClone,29,TColor::kRed);
     Float_t low = 1.0;
     Float_t high = 0.0;
-    for(int bin = 1;bin<19;bin++){
+    for(int bin = 1;bin<17;bin++){
       if(profyfHistChargedTrackDepositsAllVsPtClone->GetBinContent(bin)<low) low = profyfHistChargedTrackDepositsAllVsPtClone->GetBinContent(bin);
       if(profyfHistChargedTrackDepositsAllVsPtClone->GetBinContent(bin)>high) high = profyfHistChargedTrackDepositsAllVsPtClone->GetBinContent(bin);
     }
-    cout<<"low "<<low<<" high "<<high<<" mean "<<(low+high)/2.0<<" +/- "<<(high-low)/2.0<<endl;
+    //cout<<"low "<<low<<" high "<<high<<" mean "<<(low+high)/2.0<<" +/- "<<(high-low)/2.0<<endl;
+    cout<<"corrfac = "<<(low+high)/2.0<<";"<<endl;
+    cout<<"corrfacerr = "<<(high-low)/2.0<<";"<<endl;
+    cout<<Form("%2.3f $\\pm$ %2.3f",(low+high)/2.0,(high-low)/2.0)<<endl;
 }
