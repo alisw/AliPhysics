@@ -1694,6 +1694,10 @@ void AliGlauberMC::Run(Int_t nevents)
                       "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:Stoa:VarEColl:VarECom:VarEPart:VarEPartColl:VarEPartCom:dNdEta:dNdEtaGBW:dNdEtaTwoNBD:xsect:tAA:Epsl2:Epsl3:Epsl4:Epsl5:E2Coll:E3Coll:E4Coll:E5Coll:E2Com:E3Com:E4Com:E5Com:Psi2:Psi3:Psi4:Psi5:BNN:signn:Ncollw");
     fnt->SetDirectory(0);
   }
+  TObjArray *arrNucleons = 0;
+  if (fSaveNucleonsInNtuple) {
+    fnt->Branch("Nucleons",&arrNucleons,256000,99);
+  }
   Int_t q = 0;
   Int_t u = 0;
   for (Int_t i = 0; i<nevents; i++)
@@ -1769,11 +1773,127 @@ void AliGlauberMC::Run(Int_t nevents)
     v[46] = fXSect;
     v[47] = fNcollw;
 
+    // if nulceons were requested, Get the array
+    if(fSaveNucleonsInNtuple) {
+      arrNucleons = GetNucleons();
+    }
+
     //always at the end
     fnt->Fill(v);
 
+    if(fSaveNucleonsInNtuple) {
+      arrNucleons->Delete();
+    }
+
     if ((i%100)==0) std::cout << "Generating Event # " << i << "... \r" << flush;
   }
+  std::cout << "Generating Event # " << nevents << "... \r" << endl << "Done! Succesfull events:  " << q << "  discarded events:  " << u <<"."<< endl;
+}
+
+void AliGlauberMC::RunAndSaveTreeWithNucleons(Int_t nevents, const char * filename)
+{
+  //example run
+  cout << "Generating " << nevents << " events..." << endl;
+  TString name(Form("nt_%s_%s",fANucleus.GetName(),fBNucleus.GetName()));
+  TString title(Form("%s + %s (x-sect = %d mb)",fANucleus.GetName(),fBNucleus.GetName(),(Int_t) fXSect));
+
+  typedef struct {
+    Float_t Npart,Ncoll,B,MeanX,MeanY,MeanX2,MeanY2,MeanXY,VarX,VarY,VarXY,MeanXSystem,MeanYSystem,MeanXA,MeanYA,MeanXB,MeanYB,VarE,Stoa,VarEColl,VarECom,VarEPart,VarEPartColl,VarEPartCom,dNdEta,dNdEtaGBW,dNdEtaTwoNBD,xsect,tAA,Epsl2,Epsl3,Epsl4,Epsl5,E2Coll,E3Coll,E4Coll,E5Coll,E2Com,E3Com,E4Com,E5Com,Psi2,Psi3,Psi4,Psi5,BNN,signn,Ncollw;
+  } GLAUBER;
+
+  static GLAUBER glauberData;
+  TFile * fOut = TFile::Open(filename, "recreate");
+  TTree * tree = new TTree (name, title);
+  tree->Branch("glauber",&glauberData,"Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:Stoa:VarEColl:VarECom:VarEPart:VarEPartColl:VarEPartCom:dNdEta:dNdEtaGBW:dNdEtaTwoNBD:xsect:tAA:Epsl2:Epsl3:Epsl4:Epsl5:E2Coll:E3Coll:E4Coll:E5Coll:E2Com:E3Com:E4Com:E5Com:Psi2:Psi3:Psi4:Psi5:BNN:signn:Ncollw");
+  TObjArray *arrNucleons = 0;
+  tree->Branch("Nucleons",&arrNucleons,256000,99);
+
+  Int_t q = 0;
+  Int_t u = 0;
+  for (Int_t i = 0; i<nevents; i++)
+  {
+
+    if(!NextEvent())
+    {
+      u++;
+      continue;
+    }
+
+    q++;
+
+    glauberData.Npart            = GetNpart();
+    glauberData.Ncoll            = GetNcoll();
+    glauberData.B                = fBMC;
+    glauberData.MeanX            = fMeanXParts;
+    glauberData.MeanY            = fMeanYParts;
+    glauberData.MeanX2           = fMeanX2Parts;
+    glauberData.MeanY2           = fMeanY2Parts;
+    glauberData.MeanXY           = fMeanXYParts;
+    glauberData.VarX             = fSx2Parts;
+    glauberData.VarY             = fSy2Parts;
+    glauberData.VarXY            = fSxyParts;
+    glauberData.MeanXSystem      = fMeanXSystem;
+    glauberData.MeanYSystem      = fMeanYSystem;
+    glauberData.MeanXA           = fMeanXA;
+    glauberData.MeanYA           = fMeanYA;
+    glauberData.MeanXB           = fMeanXB;
+    glauberData.MeanYB           = fMeanYB;
+    glauberData.VarE             = GetEccentricity();
+    glauberData.Stoa             = GetStoa();
+    glauberData.VarEColl         = GetEccentricityColl();
+    glauberData.VarECom          = GetEccentricityCom();
+    glauberData.VarEPart         = GetEccentricityPart();
+    glauberData.VarEPartColl     = GetEccentricityPartColl();
+    glauberData.VarEPartCom      = GetEccentricityPartCom();
+         
+    if (fDoPartProd)
+    {
+      glauberData.dNdEta         = GetdNdEta();
+      glauberData.dNdEtaGBW      = GetdNdEta();
+      glauberData.dNdEtaTwoNBD   = glauberData.dNdEta+glauberData.dNdEtaGBW;
+    }
+    else
+    {
+      glauberData.dNdEta         = 0;
+      glauberData.dNdEtaGBW      = 0;
+      glauberData.dNdEtaTwoNBD   = 0;
+    }
+    glauberData.xsect =fXSect;
+    
+    Float_t mytAA=-999;
+    if (GetNcoll()>0) mytAA=GetNcoll()/fXSect;
+    glauberData.tAA =mytAA;
+    //_____________epsilon2,3,4,4_______
+    glauberData.Epsl2    = GetEpsilon2Part();
+    glauberData.Epsl3    = GetEpsilon3Part();
+    glauberData.Epsl4    = GetEpsilon4Part();
+    glauberData.Epsl5    = GetEpsilon5Part();
+    glauberData.E2Coll   = GetEpsilon2Coll();
+    glauberData.E3Coll   = GetEpsilon3Coll();
+    glauberData.E4Coll   = GetEpsilon4Coll();
+    glauberData.E5Coll   = GetEpsilon5Coll();
+    glauberData.E2Com    = GetEpsilon2Com();
+    glauberData.E3Com    = GetEpsilon3Com();
+    glauberData.E4Com    = GetEpsilon4Com();
+    glauberData.E5Com    = GetEpsilon5Com();
+    glauberData.Psi2     = GetPsi2();
+    glauberData.Psi3     = GetPsi3();
+    glauberData.Psi4     = GetPsi4();
+    glauberData.Psi5     = GetPsi5();
+    glauberData.BNN      = fBNN;
+    glauberData.signn    = fXSect;
+    glauberData.Ncollw   = fNcollw;
+
+    arrNucleons = GetNucleons();
+
+    //always at the end
+    tree->Fill();
+    
+    if ((i%100)==0) std::cout << "Generating Event # " << i << "... \r" << flush;
+  }
+  fOut->cd();
+  tree->Write();
+  fOut->Close();
   std::cout << "Generating Event # " << nevents << "... \r" << endl << "Done! Succesfull events:  " << q << "  discarded events:  " << u <<"."<< endl;
 }
 
