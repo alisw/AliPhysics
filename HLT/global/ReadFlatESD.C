@@ -22,7 +22,7 @@
 #include "Riostream.h"
 #endif   
 
-void ReadFlatESD(const char* filename="outFlatESD.dat", Bool_t verbose=kFALSE) {
+void ReadFlatESD(const char* filename="outFlatESD.dat", Int_t verbose=0) {
 
   ifstream is(filename, std::ifstream::binary | std::ifstream::in);
   if (is){
@@ -68,7 +68,7 @@ cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetPrimaryVertexSPD()
 if(verbose){
 	static const int nExt = 4;
 	  AliFlatESDTrack *track = flatEsd->GetTracks();
-	  new (track)AliFlatESDTrack(1);
+	  //new (track)AliFlatESDTrack(1);
     for (Int_t idxTrack = 0; idxTrack < flatEsd->GetNumberOfTracks() && track; ++idxTrack) { 
 
 		AliFlatExternalTrackParam* ext[nExt] ={
@@ -120,7 +120,7 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
      
       cout<<"get next track"<<endl;
       track = track->GetNextTrack();
-	  	new (track)AliFlatESDTrack(1);
+	  //	new (track)AliFlatESDTrack(1);
 	  
 	  
 	  }
