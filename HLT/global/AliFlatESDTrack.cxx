@@ -78,7 +78,7 @@ AliFlatESDTrack::AliFlatESDTrack(Bool_t)
   for (Int_t i=0; i<fNTPCClusters; i++)
   {
     new (clusterTPC) AliFlatTPCCluster(1);
-    clusterTPC += sizeof(AliFlatTPCCluster);
+    clusterTPC++;
   }
 }
 

@@ -85,13 +85,13 @@ AliFlatESDEvent::AliFlatESDEvent(Bool_t):AliVVevent()
   for (Int_t i=0; i<GetNumberOfTracks(); i++)
   {
     new (track) AliFlatESDTrack(1);
-    track += track->GetSize();
+    track = track->GetNextTrack();
   }
   AliFlatESDV0* v0 = GetV0s();
   for (Int_t i=0; i<GetNumberOfV0s(); i++)
   {
     new (v0) AliFlatESDV0(1);
-    v0 += sizeof(AliFlatESDV0);
+    v0 ++;
   }
 }
 
