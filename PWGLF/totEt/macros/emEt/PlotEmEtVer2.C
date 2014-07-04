@@ -5,6 +5,8 @@ Int_t colors[] = {TColor::kRed, TColor::kOrange, TColor::kGreen+3, TColor::kBlue
 Int_t markers[] = {20,21,22,23,33, 24,25,26,32,27, 20,21,22,23,33, 24,25,26,32,27};
 Int_t CutSet = 0;//Defaults: 250 MeV for PHOS and 300 MeV for EMCal
 //1:  350 MeV for both
+Float_t fem = 0.246;
+Float_t femerr = 0.028;
 void SetStyles(TGraph *graph, Int_t marker, Int_t color){
   graph->SetMarkerStyle(marker);
   graph->SetMarkerColor(color);
@@ -55,8 +57,9 @@ Float_t npartAlt1[20],npartAlt2[20],npartAlt3[20];
 TGraphErrors *GetPionEtGraph(){
   for(int i=0;i<10;i++){
     pionEt[i] = (pionPlusEt[i]+pionMinusEt[i])/2.0;
-    emEtFromPions[i] = pionEt[i]*1.085;
-    emEtFromPionsErr[i] = emEtFromPions[i]*TMath::Sqrt(TMath::Power(0.030/1.085,2)+TMath::Power(pionEtError[i]/pionEt[i],2));
+    //emEtFromPions[i] = pionEt[i]*1.085;
+    emEtFromPions[i] = pionEt[i]*1.171;
+    emEtFromPionsErr[i] = emEtFromPions[i]*TMath::Sqrt(TMath::Power(0.11/1.171,2)+TMath::Power(pionEtError[i]/pionEt[i],2));
     ypion[i] = pionEt[i]/(npartShort[i]/2);
     ypionerr[i] = pionEtError[i]/(npartShort[i]/2);
     emEtFromPionsPerNpart[i] = emEtFromPions[i]/(npartShort[i]/2);
@@ -82,6 +85,7 @@ TGraphErrors *GetPionEmEtGraph(){
 
 }
 //========================Reading in corrections========================================
+Float_t energyscaleerror = 0.02;
 Float_t nonLinError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t nonLinErrorShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 //Float_t signalFraction[20] = {0.4,0.4,0.4,0.4,0.4, 0.4,0.4,0.4,0.4,0.4, 0.4,0.4,0.4,0.4,0.4, 0.4,0.4,0.4,0.4,0.4};
@@ -180,6 +184,9 @@ Double_t kaonMinusEt[2][10] = {{90.4723,74.9444,55.9463,37.286,23.6591,14.0413,7
 Float_t averageHadEnergy = -1;
 Float_t averageHadEnergyError = -1;
 
+ofstream myfileHadCorrTable;
+
+
 void ReadMinEtCorrections(){
   cout<<"Reading in min et corrections..."<<endl;
   string inline;
@@ -264,8 +271,8 @@ void ReadInNeutronCorrections(){
 	  neutronCorr[i] = value;
 	  neutronError[i] = error;
 	  if(trackmultiplicity[i]>0){
-	    neutronCorrPerNCh[i] = value/(trackmultiplicity[i]);
-	    neutronErrorPerNCh[i] = error/(trackmultiplicity[i]);
+	    neutronCorrPerNCh[i] = value/(trackmultiplicity[i])/2.0;
+	    neutronErrorPerNCh[i] = error/(trackmultiplicity[i])/2.0;
 	  }
 	}
 
@@ -288,8 +295,8 @@ void ReadInNeutronCorrections(){
 	if(i<10){
 	  neutronCorrShort[i] = value;
 	  neutronErrorShort[i] = error;
-	  neutronCorrPerNChShort[i] = value/(trackmultiplicityShort[i]);
-	  neutronErrorPerNChShort[i] = error/(trackmultiplicityShort[i]);
+	  neutronCorrPerNChShort[i] = value/(trackmultiplicityShort[i])/2.0;
+	  neutronErrorPerNChShort[i] = error/(trackmultiplicityShort[i])/2.0;
 	}
 	//cout<<"neutroncorr cb "<<i<<" "<<neutronCorrShort[i]<<" +/- "<<neutronErrorShort[i]<<endl;
 	i++;
@@ -313,8 +320,8 @@ void ReadInNeutronCorrections(){
 	  neutronCorrNoEffCorr[i] = value;
 	  neutronErrorNoEffCorr[i] = error;
 	  if(trackmultiplicity[i]>0){
-	    neutronCorrPerNChNoEffCorr[i] = value/(trackmultiplicity[i]);
-	    neutronErrorPerNChNoEffCorr[i] = error/(trackmultiplicity[i]);
+	    neutronCorrPerNChNoEffCorr[i] = value/(trackmultiplicity[i])/2.0;
+	    neutronErrorPerNChNoEffCorr[i] = error/(trackmultiplicity[i])/2.0;
 	  }
 	}
 
@@ -337,8 +344,8 @@ void ReadInNeutronCorrections(){
 	if(i<10){
 	  neutronCorrShortNoEffCorr[i] = value;
 	  neutronErrorShortNoEffCorr[i] = error;
-	  neutronCorrPerNChShortNoEffCorr[i] = value/(trackmultiplicityShort[i]);
-	  neutronErrorPerNChShortNoEffCorr[i] = error/(trackmultiplicityShort[i]);
+	  neutronCorrPerNChShortNoEffCorr[i] = value/(trackmultiplicityShort[i])/2;
+	  neutronErrorPerNChShortNoEffCorr[i] = error/(trackmultiplicityShort[i])/2;
 	}
 	//cout<<"neutroncorr cb "<<i<<" "<<neutronCorrShortNoEffCorr[i]<<" +/- "<<neutronErrorShortNoEffCorr[i]<<endl;
 	i++;
@@ -458,9 +465,9 @@ void ReadInKaonCorrections(){
   if(CutSet==2){
     cutstring = "9";
   }
-  TString kaonInfileName = "../spectrafits/KaonCut"+cutstring+"EMCal.dat";
+  TString kaonInfileName = "../spectrafits/KaonCut"+cutstring+"EMCalCorr."+year+".dat";
   if(detector.Contains("P")){
-    kaonInfileName = "../spectrafits/KaonCut"+cutstring+"PHOS.dat";
+    kaonInfileName = "../spectrafits/KaonCut"+cutstring+"PHOSCorr."+year+".dat";
   }
   cout<<"Reading in "<<kaonInfileName<<endl;
     ifstream mykaonfile (kaonInfileName.Data());
@@ -509,6 +516,7 @@ void ReadInKaonCorrections(){
     //cout<<"kaoncorr cb "<<i<<" "<<kaonCorr[i]<<" +/- "<<kaonError[i]<<endl;
     kaonCorrPerNCh[i] = kaonCorr[i]/(trackmultiplicity[i]);
     kaonErrorPerNCh[i] = kaonError[i]/(trackmultiplicity[i]);
+    //cout<<" track multiplicity "<<trackmultiplicity[i]<<" kaon corr/mult*1000 "<<kaonCorrPerNCh[i]*1000<<" +/- "<<kaonErrorPerNCh[i]*1000<<endl;
     //cout<<"min et corr cb "<<i<<" "<< kaonCorr[i]<<" +/- "<<kaonError[i]<<endl;
     //cout<<endl;
   }
@@ -525,7 +533,7 @@ void ReadInKaonCorrections(){
       kaonEtPerNChErr[i] = err/(trackmultiplicityShort[i])/10;
     }
     //corrections for no eff corr
-  TString kaonInfileName3 = "../spectrafits/KaonCut"+cutstring+"EMCalNoEffCorr.dat";
+  TString kaonInfileName3 = "../spectrafits/KaonCut"+cutstring+"EMCalNoEffCorr."+year+".dat";
   if(detector.Contains("P")){
     kaonInfileName3 = "../spectrafits/KaonCut"+cutstring+"PHOSNoEffCorr.dat";
   }
@@ -546,7 +554,8 @@ void ReadInKaonCorrections(){
 	    kaonErrorShortNoEffCorr[i] = error;
 	    kaonCorrPerNChShortNoEffCorr[i] = value/(trackmultiplicityShort[i]);
 	    kaonErrorPerNChShortNoEffCorr[i] = error/(trackmultiplicityShort[i]);
-	    //cout<<"kaoncorr cb "<<i<<" "<<value<<" +/- "<<error<<endl;
+	    //cout<<"kaoncorr cb "<<i<<" "<<value<<" +/- "<<error;
+	    //cout<<endl;
 	}
 	i++;
       }
@@ -584,84 +593,147 @@ void ReadInKaonCorrections(){
 
 
 }
-void CalculateHadronicCorrectionForOneBin(Int_t centbin1, Int_t centbin2, Bool_t isPhos, Bool_t isOver500MeV, Float_t &correction, Float_t &error, Bool_t effCorr){
+void CalculateHadronicCorrectionForOneBin(Int_t centbin1, Int_t centbin2, Bool_t isPhos, Bool_t isOver500MeV, Float_t &correction, Float_t &error, Bool_t effCorr, Bool_t writeTable){
   //cout<<"cb "<<centbin1<<" - "<<centbin2;
-    fHistMatchedTracksEvspTvsCentEffCorr->GetZaxis()->SetRange(centbin1,centbin2);
-    fHistMatchedTracksEvspTvsCentEffCorr500MeV->GetZaxis()->SetRange(centbin1,centbin2);
-    fHistMatchedTracksEvspTvsCent->GetZaxis()->SetRange(centbin1,centbin2);
-    TH1D *dataEffCorrTmp = NULL;
-    TH1D *dataEffCorrTmp2 = NULL;
-    TH1D *dataTmp = NULL;
-    TH1D *foundTmp = NULL;
-    TH1D *notfoundTmp = NULL;
-    dataTmp = (TH1D*)fHistMatchedTracksEvspTvsCent->Project3D("y");
-    dataTmp->SetName(Form("dataTmp%i",centbin1));
-    if(isOver500MeV){
-      dataEffCorrTmp =(TH1D*) fHistMatchedTracksEvspTvsCentEffCorr500MeV->Project3D("y");
-      dataEffCorrTmp2 =(TH1D*) fHistMatchedTracksEvspTvsCentEffCorr->Project3D("y");
-      foundTmp = fHistFoundHadronsvsCent500MeV->ProjectionX(Form("Found%iTmp",centbin1),centbin1,centbin2);
-      notfoundTmp = fHistNotFoundHadronsvsCent500MeV->ProjectionX(Form("NotFound%iTmp",centbin1),centbin1,centbin2);
+  //cout<<"entries "<<fHistMatchedTracksEvspTvsCentEffCorr->GetEntries()<<endl;
+  fHistMatchedTracksEvspTvsCentEffCorr->GetZaxis()->SetRange(centbin1,centbin2);
+  fHistPeripheralMatchedTracksEvspTvsCentEffCorr->GetZaxis()->SetRange(centbin1,centbin2);
+  fHistMatchedTracksEvspTvsCentEffCorr500MeV->GetZaxis()->SetRange(centbin1,centbin2);
+  fHistMatchedTracksEvspTvsCent->GetZaxis()->SetRange(centbin1,centbin2);
+  TH1D *dataEffCorrTmp = NULL;
+  TH1D *dataEffCorrTmp2 = NULL;
+  TH1D *dataEffCorrPeripheralTmp = (TH1D*)fHistPeripheralMatchedTracksEvspTvsCentEffCorr->Project3D("y");
+  float myDataEffCorrFromPeripheral = dataEffCorrPeripheralTmp->GetMean();
+  TH1D *dataTmp = NULL;
+  TH1D *foundTmp = NULL;
+  TH1D *notfoundTmp = NULL;
+  dataTmp = (TH1D*)fHistMatchedTracksEvspTvsCent->Project3D("y");
+  dataTmp->SetName(Form("dataTmp%i",centbin1));
+  if(isOver500MeV){
+    dataEffCorrTmp =(TH1D*) fHistMatchedTracksEvspTvsCentEffCorr500MeV->Project3D("y");
+    dataEffCorrTmp2 =(TH1D*) fHistMatchedTracksEvspTvsCentEffCorr->Project3D("y");
+    dataEffCorrTmp2->SetName("dataEffCorrNotOver500");
+    dataEffCorrTmp->SetName("dataEffCorrOver500");
+    foundTmp = fHistFoundHadronsvsCent500MeV->ProjectionX(Form("Found%iTmp",centbin1),centbin1,centbin2);
+    notfoundTmp = fHistNotFoundHadronsvsCent500MeV->ProjectionX(Form("NotFound%iTmp",centbin1),centbin1,centbin2);
+  }
+  else{
+    if(effCorr){            
+      dataEffCorrTmp = (TH1D*)fHistMatchedTracksEvspTvsCentEffCorr->Project3D("y");
+      dataEffCorrTmp->SetName("dataEffCorr");
     }
     else{
-      if(effCorr){            
-	dataEffCorrTmp = (TH1D*)fHistMatchedTracksEvspTvsCentEffCorr->Project3D("y");
-      }
-      else{
-	dataEffCorrTmp = (TH1D*)fHistMatchedTracksEvspTvsCent->Project3D("y");
-      }
-      dataEffCorrTmp2 = dataEffCorrTmp;
-      foundTmp = fHistFoundHadronsvsCent->ProjectionX(Form("Found%iTmp",centbin1),centbin1,centbin2);
-      notfoundTmp = fHistNotFoundHadronsvsCent->ProjectionX(Form("NotFound%iTmp",centbin1),centbin1,centbin2);
+      dataEffCorrTmp = (TH1D*)fHistMatchedTracksEvspTvsCent->Project3D("y");
+      dataEffCorrTmp->SetName("dataNoEffCorr");
     }
-    float nfound = foundTmp->GetMean();//fHistFoundHadronsvsCent->GetBinContent(bin);
-    float nnotfound = notfoundTmp->GetMean();//fHistNotFoundHadronsvsCent->GetBinContent(bin);
-    //cout<<" nfound "<<nfound<<" nnotfound "<<nnotfound<<" total "<<nfound+nnotfound;
-    float scaleLow = 0;
-    float scaleHigh = 0;
-    if(centbin1>=refBin){//for peripheral
-      scaleHigh = 1.01;
-      scaleLow = 0.97;
+    dataEffCorrTmp2 = dataEffCorrTmp;
+    //cout<<" Using "<<dataEffCorrTmp2->GetName()<<" entries "<<dataEffCorrTmp2->GetEntries()<<endl;
+    foundTmp = fHistFoundHadronsvsCent->ProjectionX(Form("Found%iTmp",centbin1),centbin1,centbin2);
+    notfoundTmp = fHistNotFoundHadronsvsCent->ProjectionX(Form("NotFound%iTmp",centbin1),centbin1,centbin2);
+  }
+  float nfound = foundTmp->GetMean();//fHistFoundHadronsvsCent->GetBinContent(bin);
+  float nnotfound = notfoundTmp->GetMean();//fHistNotFoundHadronsvsCent->GetBinContent(bin);
+  //cout<<" nfound "<<nfound<<" nnotfound "<<nnotfound<<" total "<<nfound+nnotfound;
+  float scaleLow = 0;
+  float scaleHigh = 0;
+  float scale1 = 1.0;
+  float scale2 = 1.0;
+  Float_t effectiveEfficiencyThis = 1;
+  Float_t effectiveEfficiencyReference = 1;
+  if(centbin1>=refBin){//for peripheral just rescale 
+    scaleHigh = 1.01;
+    scaleLow = 0.99;
+  }
+  else{
+    //float refData = ((TH1D*)data[refBin])->GetMean();
+    float refData =dataRefBin->GetMean();
+    float myData = ((TH1D*)dataTmp)->GetMean();
+    //float refDataEffCorr = ((TH1D*)dataEffCorr[refBin])->GetMean();
+    //cout<<" ref bin n entries "<<((TH1D*)dataEffCorr[refBin])->GetEntries()<<", "<<dataEffCorrRefBin->GetEntries()<<" ";
+    float refDataEffCorr = dataEffCorrRefBin->GetMean();
+    float myDataEffCorr = ((TH1D*)dataEffCorrTmp2)->GetMean();
+    //cout<<"ranges "<<refDataEffCorr<<", "<<myDataEffCorr<<", "<<myDataEffCorrFromPeripheral;//<<endl;
+    effectiveEfficiencyThis = myData/myDataEffCorr;
+    effectiveEfficiencyReference = refData/refDataEffCorr;
+    Float_t scale3 = 0;
+    //cout<<"efficiency this "<<effectiveEfficiencyThis<<" efficiency ref "<<effectiveEfficiencyReference;
+    //cout<<"data Eff corr "<<myDataEffCorr<<" data eff corr ref "<<refDataEffCorr<<" data "<<myData<<" dataRef "<<refData<<endl;
+    if(TMath::Abs(myData)>1e-5) scale1 = refData/myData;//scale without efficiency correction -> weights peripheral data by average efficiency of central bin
+    if(TMath::Abs(myDataEffCorr)>1e-5){
+      //dataEffCorrRefBin->GetMean()/dataEffCorrTmp->GetMean()* dataEffCorrTmp->GetMean();
+      scale2 = refDataEffCorr/myDataEffCorr;//scale with efficiency correction ->actual data range
+      scale3 = myDataEffCorrFromPeripheral/myDataEffCorr;
+    }
+    //cout<<" scale1 (uncorr ref) "<<scale1<<" scale2 (ref) "<<scale2<<" scale3 "<<scale3;
+    //       if(scale1<scale2){
+    // 	scaleLow = scale1;
+    // 	scaleHigh = scale2;
+    //       }
+    //       else{
+    // 	scaleLow = scale2;
+    // 	scaleHigh = scale1;
+    //       }
+    if(scale3<scale2){
+      scaleLow = scale3;
+      scaleHigh = scale2;
     }
     else{
-      float scale1 = 1.0;
-      float scale2 = 1.0;
-      float refData = ((TH1D*)data[refBin])->GetMean();
-      float myData = ((TH1D*)dataTmp)->GetMean();
-      float refDataEffCorr = ((TH1D*)dataEffCorr[refBin])->GetMean();
-      float myDataEffCorr = ((TH1D*)dataEffCorrTmp2)->GetMean();
-      cout<<"data Eff corr "<<myDataEffCorr<<" data eff corr ref "<<refDataEffCorr<<endl;
-      if(TMath::Abs(myData)>1e-5) scale1 = refData/myData;
-      if(TMath::Abs(myDataEffCorr)>1e-5) scale2 = refDataEffCorr/myDataEffCorr;
-      if(scale1<scale2){
-	scaleLow = 0.99*scale1;
-	scaleHigh = scale2;
-      }
-      else{
-	scaleLow = 0.99*scale2;
-	scaleHigh = scale1;
-      }
+	scaleLow = scale2;
+	scaleHigh = scale3;
     }
+    //cout<<" scale low "<<scaleLow<<" scale High "<<scaleHigh<<" averge scale "<<(scaleLow+scaleHigh)/2.0;//<<" ref eff "<<effectiveEfficiencyReference<<" this ref "<<effectiveEfficiencyThis<<" refeff/thiseff*scale2 "<<effectiveEfficiencyReference/effectiveEfficiencyThis<<" this/ref "<<effectiveEfficiencyThis/effectiveEfficiencyReference<<endl;
+    //cout<<"scale 1 "<<scale1<<" scale 2 "<<scale2<<endl;
+    
+  }
+    //For EMCal the reference efficiency is lower than the central efficiency because of energy resolution
+    //For PHOS the reference efficiency is higher than the central efficiency
+    //The average background cluster has lower energy than the average signal cluster
+    //For the EMCal the dominant effect is bad track matches.  For that reason the energy deposited in the current bin is an upper bound.
+    //For the PHOS the dominant effect is the efficiency.  If the true cluster energy is lower than that observed, the estimate will overestimate the correction.
+    if(isPhos){//for the PHOS - leave it alone, this is already a pretty good estimate.  One bound is the reference data (scale2) and the other is the current bin but taking into account that the efficiencies are different in the two bins (scale1).
+      //scaleLow = scale2;
+      //scaleHigh = scale1;
+    }
+    else{//For the EMCal the range is the reference range up to the current bin
+      //scaleLow = scale1;
+      //scaleHigh = 1;
+    }
+    //cout<<" scaleLow "<<scaleLow<<" scaleHigh "<<scaleHigh;
     //    if(averageHadEnergy<0){//if this hasn't been filled yet
       Float_t low = 100;
       Float_t high = -1;
       
-      for(int i=refBinHigh;i<=refBin;i++){
-	Float_t val = ((TH1D*)dataEffCorr[i])->GetMean();
-	cout<<" i "<<val;
-	if(val<low) low = val;
-	if(val>high) high = val;
-      }
-      cout<<endl;
-      averageHadEnergy =0.97* (low+high)/2.0;
-      averageHadEnergyError = 0.97*(high-low)/2.0;
-      cout<<" AVERAGE HAD ENERGY "<<averageHadEnergy<<"+/-"<<averageHadEnergyError<<endl;
+//       for(int i=refBinHigh;i<=refBin;i++){
+// 	Float_t val = ((TH1D*)dataEffCorr[i])->GetMean();
+// 	//cout<<" i "<<val;
+// 	if(val<low) low = val;
+// 	if(val>high) high = val;
+//       }
+      //cout<<endl;
       //}
     float myavg = dataEffCorrTmp->GetMean();
+    //if(myavg>high && !isPhos) high = myavg;
+    averageHadEnergy = (low+high)/2.0;
+    averageHadEnergyError = (high-low)/2.0;
+    //cout<<" AVERAGE HAD ENERGY "<<averageHadEnergy<<"+/-"<<averageHadEnergyError;
+    //this assumes that the reference bin is right
+
+//     if(!isPhos){
+//       scaleLow = 0.90;
+//       scaleHigh = 1.0;
+//     }
+//    cout<<" ranges "<<scaleLow*myavg<<", "<<scaleHigh*myavg<<", "<<myDataEffCorrFromPeripheral<<endl;
     float avg = (scaleLow+scaleHigh)/2.0*myavg;
     float err = TMath::Abs((scaleLow-scaleHigh))/2.0*myavg;
-    cout<<"Nominal value "<<avg<<"+/-"<<err<<endl;
-    //avg = averageHadEnergy;
-    //err = averageHadEnergyError;
+//     float avg = (scaleHigh*myavg+myDataEffCorrFromPeripheral)/2.0;
+//     float err = TMath::Abs((scaleHigh*myavg-myDataEffCorrFromPeripheral)/2.0);
+    //cout<<" Nominal value "<<avg<<"+/-"<<err<<" this bin "<<myavg<<endl;
+//     avg = averageHadEnergy;
+//     err = averageHadEnergyError;
+    // if(isPhos){//for the PHOS, false matches are actually rare, so we will use the value from this bin
+    //averageHadEnergy = (0.97*low+high)/2.0;
+      //averageHadEnergyError = (high-low*0.97)/2.0;
+      // }
     //cout<<" avg "<<avg<<" +/- "<<err;
     if(TMath::Abs(avg)<1e-3){
       avg = 1e-3;
@@ -669,20 +741,27 @@ void CalculateHadronicCorrectionForOneBin(Int_t centbin1, Int_t centbin2, Bool_t
     }
     //factor is the fraction to reduce the track-matched ET by to get the true background ET
     //corrfac is the factor to multiply by in order to get the fraction of hadrons leaving deposits which come from low pT
-    float percentEfficiencyError = 0.04;
+    float percentEfficiencyError = 0.05;
     //    float  factor = 1-0.04;
         float  factor = 1-0.03;
 //         float corrfac = 1.275-1;
 //     float corrfacerr = 0.059 ;
-        float corrfac = 0.208938;
-	float corrfacerr = 0.0357719 ;
+//         float corrfac = 0.208938;
+// 	float corrfacerr = 0.0357719 ;
+	//corrfac = 0.183584;
+	//corrfacerr = 0.0393219;
+// 	corrfac = 0.323685;
+// 	corrfacerr = 0.0760131;
     float eLowAverage = avg;
     float eLowAverageErr = err;
+    cout<<"eLowAverage "<<avg<<" +/- "<<err<<" % "<<err/avg*100.0<<endl;
     if(isPhos){
       factor = 1-0.02;
       //factor = 1-0.03;
-      corrfac = 0.183584;
-      corrfacerr = 0.0393219;
+//       corrfac = 0.183584;
+//       corrfacerr = 0.0393219;
+//       corrfac = 0.169776;
+//       corrfacerr = 0.0468306;
 //       corrfac = 1.300-1;
 //       corrfacerr = 0.065;
     }
@@ -702,6 +781,7 @@ void CalculateHadronicCorrectionForOneBin(Int_t centbin1, Int_t centbin2, Bool_t
 	corrfacerr = corrfac * TMath::Sqrt(TMath::Power(corrfacerrtmp/corrfac,2)+TMath::Power(eLowAverageErr/eLowAverage,2));
       }
     }
+    // cout<<" nfound "<<nfound<<" nnotfound "<<nnotfound<<" total n "<<nfound+nnotfound<<" eff "<<nfound/(nfound+nnotfound);
     //the energy from low pT is the fraction of tracks that come from low pT tracks times the average energy of these tracks
     float eLow = corrfac * (nfound+nnotfound)*eLowAverage;
     float eLowErr = TMath::Sqrt(TMath::Power(corrfacerr*(nfound+nnotfound)*eLowAverage,2)+TMath::Power(eLowAverageErr*corrfac* (nfound+nnotfound),2)+TMath::Power(eLow*percentEfficiencyError,2));//error on the hadronic correction
@@ -716,18 +796,40 @@ void CalculateHadronicCorrectionForOneBin(Int_t centbin1, Int_t centbin2, Bool_t
     //cout<<"error "<<finalerr/y<<endl;
     //error = 0.0;
     //cout<<" corr fac "<<corrfac<<" +/- "<<corrfacerr;
-    //cout<<" eLow "<<eLow<<" +/- "<<eLowErr<<"("<<eLowErr/y<<") eHigh "<<eNotFound<<" +/- "<<eNotFoundErr<<"("<<eNotFoundErr/y<<") total "<<y<<" +/- "<<finalerr<<"("<<finalerr/y <<")";//<<" frac low "<<eLow/y<<endl;
+    //cout<<" AVERAGE eLow "<<eLow<<" +/- "<<eLowErr<<" % "<<eLowErr/y*100.0<<") eHigh "<<eNotFound<<" +/- "<<eNotFoundErr<<"("<<eNotFoundErr/y<<") total "<<y<<" +/- "<<finalerr<<"("<<finalerr/y <<")"<<endl;//<<" frac low "<<eLow/y<<endl;
     //cout<<endl;
+    //correction = N(notfound)*<Enotfound> + fnotfound*Etotal
+    //centrality, Nnotfound, <Enotfound>, fnotcound, Etotal, correction
+    if(writeTable){
+      myfileHadCorrTable<<Form("%i-%i",(centbin1-1)*5,centbin2*5)<<"\\% & ";
+      myfileHadCorrTable<<Form("%2.1f $\\pm$ %2.1f",nnotfound,percentEfficiencyError*nnotfound)<<" & ";
+      myfileHadCorrTable<<Form("%2.3f $\\pm$ %2.3f",avg,err)<<" & ";
+      myfileHadCorrTable<<Form("%2.3f $\\pm$ %2.3f",corrfac,corrfacerr)<<" & ";
+      myfileHadCorrTable<<Form("%2.1f $\\pm$ %2.1f",(nfound+nnotfound)*avg,(nfound+nnotfound)*avg*TMath::Sqrt(percentEfficiencyError*percentEfficiencyError+err*err/avg/avg))<<" & ";
+      myfileHadCorrTable<<Form("%2.1f $\\pm$ %2.1f",correction,error)<<" \\\\ "<<endl;
+    }
+
+
+    //myfileHadCorrTable<<Form("%i-%i",(centbin1-1)*5,centbin2*5)<<"\\% & "<<Form("%2.3f",((TH1D *)data[centbin1])->GetMean())<<" & "<<Form("%2.3f",((TH1D *)dataEffCorr[centbin1])->GetMean())<<Form(" &  %2.3f $\\pm$ %2.3f",avg,err);
+    //myfileHadCorrTable<<" & "<< Form("%2.1f $\\pm$ %2.1f",eLow,eLowErr);
+    //myfileHadCorrTable<<" & "<< Form("%2.2f $\\pm$ %2.2f",eNotFound,eNotFoundErr);
+    //myfileHadCorrTable<<"& "<< Form("%2.2f $\\pm$ %2.2f",y,finalerr);
+    //myfileHadCorrTable<<" & "<< Form("%2.3f $\\pm$ %2.3f",y/npart[centbin1],finalerr/npart[centbin1]) <<"\\\\"<<endl;
+
     delete dataEffCorrTmp;
     delete foundTmp;
     delete notfoundTmp;
+    delete dataEffCorrPeripheralTmp;
 }
 void CalculateHadronCorrections(Bool_t isPhos){
+  
+  TString texfilename = "/tmp/energydepositstable"+detector+".tex";
+  myfileHadCorrTable.open (texfilename.Data());
   float plotscale = 5.0;
   for(int i=0;i<19;i++){
     Float_t correction = 0;
     Float_t error = 0;//not above 500 GeV, with eff corr
-    CalculateHadronicCorrectionForOneBin(i+1,i+1,isPhos,kFALSE,correction,error,kTRUE);
+    CalculateHadronicCorrectionForOneBin(i+1,i+1,isPhos,kFALSE,correction,error,kTRUE,kTRUE);
     hadCorr[i] = correction;//hadCorrEmcal[i];
     hadError[i] = error;//hadErrorEmcal[i];
     hadronCorrPerNCh[i] = correction/(trackmultiplicity[i])/plotscale;//hadCorrEmcal[i];
@@ -751,7 +853,7 @@ void CalculateHadronCorrections(Bool_t isPhos){
     }
     Float_t correction = 0;
     Float_t error = 0;//not above 500 GeV, with eff corr, 10 bins
-    CalculateHadronicCorrectionForOneBin(centbinlow,centbinhigh,isPhos,kFALSE,correction,error,kTRUE);
+    CalculateHadronicCorrectionForOneBin(centbinlow,centbinhigh,isPhos,kFALSE,correction,error,kTRUE,kFALSE);
     hadCorrShort[i] = correction;//hadCorrEmcal[i];
     hadErrorShort[i] = error;//hadErrorEmcal[i];
     hadronCorrPerNChShort[i] = correction/(trackmultiplicityShort[i])/plotscale;//hadCorrEmcal[i];
@@ -762,7 +864,7 @@ void CalculateHadronCorrections(Bool_t isPhos){
   for(int i=0;i<19;i++){
     Float_t correction = 0;
     Float_t error = 0;//not above 500 GeV, without eff corr
-    CalculateHadronicCorrectionForOneBin(i+1,i+1,isPhos,kFALSE,correction,error,kFALSE);
+    CalculateHadronicCorrectionForOneBin(i+1,i+1,isPhos,kFALSE,correction,error,kFALSE,kFALSE);
     hadCorrNoEffCorr[i] = correction;//hadCorrEmcalNoEffCorr[i];
     hadErrorNoEffCorr[i] = error;//hadErrorEmcalNoEffCorr[i];
     hadronCorrPerNChNoEffCorr[i] = correction/(trackmultiplicity[i])/plotscale;//hadCorrEmcalNoEffCorr[i];
@@ -786,13 +888,15 @@ void CalculateHadronCorrections(Bool_t isPhos){
     }
     Float_t correction = 0;
     Float_t error = 0;//not above 500 GeV, without eff corr, 10 bins
-    CalculateHadronicCorrectionForOneBin(centbinlow,centbinhigh,isPhos,kFALSE,correction,error,kFALSE);
+    CalculateHadronicCorrectionForOneBin(centbinlow,centbinhigh,isPhos,kFALSE,correction,error,kFALSE,kFALSE);
     hadCorrShortNoEffCorr[i] = correction;//hadCorrEmcalNoEffCorr[i];
     hadErrorShortNoEffCorr[i] = error;//hadErrorEmcalNoEffCorr[i];
     hadronCorrPerNChShortNoEffCorr[i] = correction/(trackmultiplicityShort[i])/plotscale;//hadCorrEmcalNoEffCorr[i];
     hadronErrorPerNChShortNoEffCorr[i] = error/(trackmultiplicityShort[i])/plotscale;//hadErrorEmcalNoEffCorr[i];
     //cout<<"had cor "<<i<<" "<<correction<<" +/- "<<error<< "  "<<  correction/(trackmultiplicityShortNoEffCorr[i])<< " +/- "<<  error/(trackmultiplicityShort[i]) <<endl;
   }
+
+  myfileHadCorrTable.close();
 
 }
 
@@ -965,11 +1069,17 @@ Float_t totaltrackmultiplicityPerNCl[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0
 Float_t partialCorrEtValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t partialCorrEtValuesShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t partialCorrEtError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t partialCorrEtStatError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t partialCorrEtErrorShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t partialCorrEtStatErrorShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t partialCorrEtPerNChValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t partialCorrEtPerNChValuesShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t partialCorrEtPerNChError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t partialCorrEtPerNChErrorShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t partialCorrEtPerNPartValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t partialCorrEtPerNPartValuesShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t partialCorrEtPerNPartError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t partialCorrEtPerNPartErrorShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t partialCorrEtPerNClValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t partialCorrEtPerNClValuesShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t partialCorrEtPerNClError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
@@ -991,25 +1101,37 @@ Float_t rawEtNoEffCorrValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.
 Float_t rawEtNoEffCorrError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtNoEffCorrPerNChValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtNoEffCorrPerNChError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t rawEtNoEffCorrPerNPartValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t rawEtNoEffCorrPerNPartError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtNoEffCorrPerNClValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtNoEffCorrPerNClError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllNoEffCorrValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllNoEffCorrError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllNoEffCorrPerNChValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllNoEffCorrPerNChError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t rawEtAllNoEffCorrPerNPartValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t rawEtAllNoEffCorrPerNPartError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllNoEffCorrPerNClValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllNoEffCorrPerNClError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllPerNChValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllPerNChError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t rawEtAllPerNPartValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t rawEtAllPerNPartError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllPerNClValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t rawEtAllPerNClError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 
 Float_t corrEtValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t corrEtValuesShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t corrEtError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t corrEtStatError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t corrEtErrorShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t corrEtStatErrorShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t totEtValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t totEtValuesShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t totEtError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
+Float_t totEtErrorShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t corrEtPerNPartPairValues[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t corrEtPerNPartPairValuesShort[10] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
 Float_t corrEtPerNPartPairError[20] = {0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,0.0,0.0};
@@ -1035,16 +1157,23 @@ TH2F *fHistTotAllRawEtNoEffCorr;
 TH2F *fHistTotRawEt500MeV;
 TH3F  *fHistMatchedTracksEvspTvsCent;
 TH3F  *fHistMatchedTracksEvspTvsCentEffCorr;
+TH3F  *fHistPeripheralMatchedTracksEvspTvsCentEffCorr;
 TH3F  *fHistMatchedTracksEvspTvsCentEffCorr500MeV;
 TH2F *fHistFoundHadronsvsCent;
 TH2F *fHistNotFoundHadronsvsCent;
 TH2F *fHistFoundHadronsvsCent500MeV;
-Int_t refBin = 15;//Reference bin for scaling
-Int_t refBinHigh = 8;//Reference bin for scaling
+//old default: bin 18 = centrality bin 17
+//ref bins in compiled code:  centrality bins 11-16
+Int_t refBin = 12;//Reference bin for scaling
+Int_t refBinHigh = 17;//Reference bin for scaling
+Float_t corrfac = 0;//fraction of hadronic ET which is from low pT tracks
+Float_t corrfacerr = 0;
 TObjArray data(21);
 TObjArray dataFits(21);
 TObjArray dataEffCorr(21);
 TObjArray dataEffCorr500MeV(21);
+TH1D *dataRefBin = NULL;
+TH1D *dataEffCorrRefBin = NULL;
 TObjArray rawEt(21);
 TObjArray rawEtShort(11);
 TObjArray rawEtNoEffCorr(21);
@@ -1055,6 +1184,10 @@ void ReadInData(char *filename,TString det){
   cout<<"Reading in data..."<<endl;
   Bool_t isPhos = kTRUE;
   if(det.Contains("Emc")){isPhos=kFALSE;}
+  else{
+    refBin = 12;
+    cout<<"Decided this is PHOS and am using reference bin 12"<<endl;
+  }
 
   TFile *f = TFile::Open(filename, "READ");
     if (!f)
@@ -1084,11 +1217,19 @@ void ReadInData(char *filename,TString det){
 
     fHistMatchedTracksEvspTvsCent =(TH3F*) l->FindObject("fHistMatchedTracksEvspTvsCent");
     fHistMatchedTracksEvspTvsCentEffCorr =(TH3F*) l->FindObject("fHistMatchedTracksEvspTvsCentEffTMCorr");
+    fHistPeripheralMatchedTracksEvspTvsCentEffCorr =(TH3F*) l->FindObject("fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr");
     fHistMatchedTracksEvspTvsCentEffCorr500MeV = (TH3F*) l->FindObject("fHistMatchedTracksEvspTvsCentEffTMCorr500MeV");
     fHistFoundHadronsvsCent = (TH2F*)l->FindObject("fHistFoundHadronsvsCent");
     fHistNotFoundHadronsvsCent = (TH2F*)l->FindObject("fHistNotFoundHadronsvsCent");
     fHistFoundHadronsvsCent500MeV = (TH2F*)l->FindObject("fHistFoundHadronsvsCent500MeV");
     fHistNotFoundHadronsvsCent500MeV = (TH2F*)l->FindObject("fHistNotFoundHadronsvsCent500MeV");
+    fHistMatchedTracksEvspTvsCent->GetZaxis()->SetRange(refBin,refBinHigh);
+    dataRefBin =  (TH1D*) fHistMatchedTracksEvspTvsCent->Project3D("y");
+    dataRefBin->SetName("dataRefBin");
+    fHistMatchedTracksEvspTvsCentEffCorr->GetZaxis()->SetRange(refBin,refBinHigh);
+    dataEffCorrRefBin =(TH1D*) fHistMatchedTracksEvspTvsCentEffCorr->Project3D("y");
+    dataEffCorrRefBin->SetName("dataEffCorrRefBin");
+    cout<<"Using reference centrality bins "<<refBin-1<<" - "<<refBinHigh-1<<endl;
     int nbins = 20;
     for(int bin = 1; bin<=nbins;bin++){
       fHistMatchedTracksEvspTvsCent->GetZaxis()->SetRange(bin,bin);
@@ -1099,6 +1240,8 @@ void ReadInData(char *filename,TString det){
       dataEffCorr500MeV[bin] = fHistMatchedTracksEvspTvsCentEffCorr500MeV->Project3D("y");
       ((TH1D*)data[bin])->SetName(Form("DataEff%i",bin));
       ((TH1D*)dataEffCorr[bin])->SetName(Form("DataEffCorr%i",bin));
+      Int_t nentries = ((TH1D*)dataEffCorr[bin])->GetEntries();
+      cout<<"centbin "<<bin<<" number of matched tracks "<<nentries<<endl;
       ((TH1D*)dataEffCorr500MeV[bin])->SetName(Form("DataEffCorr500MeV%i",bin));
 
       rawEt[bin]= fHistTotRawEt->ProjectionX(Form("RawEt%i",bin),bin,bin);
@@ -1198,6 +1341,9 @@ void ReadInData(char *filename,TString det){
       partialCorrEtPerNChValuesShort[cb] = partialCorrEtValuesShort[cb]/(trackmultiplicityShort[cb])/2.0;
       partialCorrEtPerNChErrorShort[cb]  =  partialCorrEtErrorShort[cb]/(trackmultiplicityShort[cb])/2.0;
 
+      partialCorrEtPerNPartValuesShort[cb] = partialCorrEtValuesShort[cb]/(npart[cb])/2.0;
+      partialCorrEtPerNPartErrorShort[cb]  =  partialCorrEtErrorShort[cb]/(npart[cb])/2.0;
+
       partialCorrEtPerNPartPairValuesShort[cb] = partialCorrEtValues[cb]/(npart[cb])/2.0*10;
       partialCorrEtPerNPartPairErrorShort[cb]  =  partialCorrEtError[cb]/(npart[cb])/2.0*10;
 
@@ -1219,9 +1365,9 @@ void ReadInData(char *filename,TString det){
       delete temp;
       float nonlinfracerr = 0;
       if(nonlinhigh >0 || nonlinlow >0) nonlinfracerr = TMath::Abs(nonlinhigh-nonlinlow)/(nonlinhigh+nonlinlow);
-      if(isPhos){
-	nonlinfracerr = 0.005;
-      }
+//       if(isPhos){ 
+// 	nonlinfracerr = 0.005;
+//       }
       float efffracerr = 0;
       if(effhigh >0 || efflow>0)efffracerr = TMath::Abs(effhigh-efflow)/(effhigh+efflow);
       nonLinErrorShort[cb] = nonlinfracerr;
@@ -1252,12 +1398,20 @@ void ApplyCorrections(Float_t scale){//scale takes into account the acceptance i
     if(trackmultiplicity[cb]>0){
       partialCorrEtPerNChValues[cb] = partialCorrEtValues[cb]/(trackmultiplicity[cb]);
       partialCorrEtPerNChError[cb]  =  partialCorrEtError[cb]/(trackmultiplicity[cb]);
+      partialCorrEtPerNPartValues[cb] = partialCorrEtValues[cb]/(npart[cb]);
+      partialCorrEtPerNPartError[cb]  =  partialCorrEtError[cb]/(npart[cb]);
       rawEtNoEffCorrPerNChValues[cb] = rawEtNoEffCorrValues[cb]/(trackmultiplicity[cb]);
       rawEtNoEffCorrPerNChError[cb]  =  rawEtNoEffCorrError[cb]/(trackmultiplicity[cb]);
       rawEtAllNoEffCorrPerNChValues[cb] = rawEtAllNoEffCorrValues[cb]/(trackmultiplicity[cb]);
       rawEtAllNoEffCorrPerNChError[cb]  =  rawEtAllNoEffCorrError[cb]/(trackmultiplicity[cb]);
       rawEtAllPerNChValues[cb] = rawEtAllValues[cb]/(trackmultiplicity[cb]);
       rawEtAllPerNChError[cb]  =  rawEtAllError[cb]/(trackmultiplicity[cb]);
+      rawEtNoEffCorrPerNPartValues[cb] = rawEtNoEffCorrValues[cb]/(npart[cb]);
+      rawEtNoEffCorrPerNPartError[cb]  =  rawEtNoEffCorrError[cb]/(npart[cb]);
+      rawEtAllNoEffCorrPerNPartValues[cb] = rawEtAllNoEffCorrValues[cb]/(npart[cb]);
+      rawEtAllNoEffCorrPerNPartError[cb]  =  rawEtAllNoEffCorrError[cb]/(npart[cb]);
+      rawEtAllPerNPartValues[cb] = rawEtAllValues[cb]/(npart[cb]);
+      rawEtAllPerNPartError[cb]  =  rawEtAllError[cb]/(npart[cb]);
       matchedtrackmultiplicityPerNCh[cb] = matchedtrackmultiplicity[cb]/(trackmultiplicity[cb]);
       notmatchedtrackmultiplicityPerNCh[cb] = notmatchedtrackmultiplicity[cb]/(trackmultiplicity[cb]);
     }
@@ -1276,20 +1430,42 @@ void ApplyCorrections(Float_t scale){//scale takes into account the acceptance i
 
     totaltrackmultiplicityPerNCh[cb] = matchedtrackmultiplicityPerNCh[cb] + notmatchedtrackmultiplicityPerNCh[cb];
     totaltrackmultiplicityPerNCl[cb] = matchedtrackmultiplicityPerNCl[cb] + notmatchedtrackmultiplicityPerNCl[cb];
-
+//     if(scale<4.0){
+//       kaonCorr[cb] = 100.0/40.0*kaonCorr[cb];
+//       kaonError[cb] = 100.0/40.0*kaonError[cb];
+//     }
     //cout<<"cb "<<cb<<" "<<partialCorrEtValues[cb]<<" "<<rawEtNoEffCorrValues[cb]<<" "<<rawEtAllNoEffCorrValues[cb]<<" "<<rawEtAllValues[cb]<<endl;
     //cout<<"cb "<<cb<<" "<<partialCorrEtPerNChValues[cb]<<" "<<rawEtNoEffCorrPerNChValues[cb]<<" "<<rawEtAllNoEffCorrPerNChValues[cb]<<" "<<rawEtAllPerNChValues[cb]<<endl;
       //cout<<"cb "<<cb<<" "<<partialCorrEtPerNChValues[cb]<<" "<< partialCorrEtValues[cb]<<" "<< partialCorrEtError[cb]<<" "<<trackmultiplicity[cb] <<endl;
     corrEtValues[cb] = scale*(partialCorrEtValues[cb] - hadCorr[cb] - kaonCorr[cb] - neutronCorr[cb] - secondaryCorr[cb])/minEtCorr[cb];
+    if(rawEtAllNoEffCorr[cb]){
+      float fracraw = (partialCorrEtValues[cb] - hadCorr[cb] - kaonCorr[cb] - neutronCorr[cb] - secondaryCorr[cb])/rawEtAllNoEffCorrValues[cb];
+      float fracraw2 = (partialCorrEtValues[cb] - hadCorr[cb] - kaonCorr[cb] - neutronCorr[cb] - secondaryCorr[cb])/rawEtAllValues[cb];
+      float fracraw3 = fracraw/fem*scale/minEtCorr[cb];//~0.28/0.23*6.5
+      //if(cb>9) 
+      fracraw3 = 15.0;
+      //cout<<"cb "<<cb<<" frac raw "<<fracraw<<" frac raw 2 "<<fracraw2<<" frac raw 3 "<<fracraw3<<" raw et "<<rawEtAllNoEffCorrValues[cb]<<" test "<<fracraw3*rawEtAllValues[cb]<<endl;
+    }
+    //else{cerr<<"cannot calc fracraw"<<" raw et "<<rawEtAllNoEffCorrValues[cb]<<endl;}
+    corrEtStatError[cb] = scale*(partialCorrEtError[cb])/minEtCorr[cb];
+    totEtValues[cb] = scale*(partialCorrEtValues[cb] - hadCorr[cb] - kaonCorr[cb] - neutronCorr[cb] - secondaryCorr[cb])/minEtCorr[cb]/fem;
     //cout<<"cb "<<cb<<"\t"<<corrEtValues[cb]<<" = \t"<<scale<<"*\t("<<partialCorrEtValues[cb]<<" -\t"<<hadCorr[cb]<<" -\t"<<kaonCorr[cb]<<" -\t"<<neutronCorr[cb]<<" -\t"<<secondaryCorr[cb]<<")\t/"<<minEtCorr[cb]<<endl;
+    //cout<<"cb "<<cb<<"\t"<<corrEtValues[cb]<<" = \t"<<scale<<"*\t("<<partialCorrEtValues[cb]<<" -\t"<<hadCorr[cb]/partialCorrEtValues[cb]<<" -\t"<<kaonCorr[cb]/partialCorrEtValues[cb]<<" -\t"<<neutronCorr[cb]/partialCorrEtValues[cb]<<" -\t"<<secondaryCorr[cb]/partialCorrEtValues[cb]<<")\t/"<<minEtCorr[cb]<<endl;
     corrEtValuesFormulaB[cb] = scale*(rawEtNoEffCorrValues[cb] - hadCorrNoEffCorr[cb] - kaonCorrNoEffCorr[cb] - neutronCorrNoEffCorr[cb] - secondaryCorrNoEffCorr[cb])/minEtCorr[cb]/averageEfficiency[cb];
     //cout<<"cb "<<corrEtValuesFormulaB[cb]<<" = "<<scale<<"*("<<rawEtNoEffCorrValues[cb]<<" - "<<hadCorrNoEffCorr[cb]<<" - "<<kaonCorrNoEffCorr[cb]<<" - "<<neutronCorrNoEffCorr[cb]<<" - "<<secondaryCorrNoEffCorr[cb]<<")/"<<minEtCorr[cb]<<"/"<<averageEfficiency[cb]<<endl;
     //cout<<" fractions: had "<< hadCorrNoEffCorr[cb]/rawEtNoEffCorrValues[cb] <<" kaon "<<kaonCorrNoEffCorr[cb]/rawEtNoEffCorrValues[cb]<<" neutron "<<neutronCorrNoEffCorr[cb]/rawEtNoEffCorrValues[cb]<<" secondary "<<secondaryCorrNoEffCorr[cb]/rawEtNoEffCorrValues[cb]<<endl;
     //signalFraction[cb] = (1.0 - (hadCorrNoEffCorr[cb] + kaonCorrNoEffCorr[cb] + neutronCorrNoEffCorr[cb] + secondaryCorrNoEffCorr[cb])/rawEtNoEffCorrValues[cb]);
-    signalFraction[cb] = (1.0 - (hadCorr[cb] + kaonCorr[cb] + neutronCorr[cb] + secondaryCorr[cb])/partialCorrEtValues[cb]);
-    //signalFraction[cb] = 0.25;
+    //signalFraction[cb] = (1.0 - (hadCorr[cb] + kaonCorr[cb] + neutronCorr[cb] + secondaryCorr[cb])/partialCorrEtValues[cb]);
     //cout<<"cb "<<cb<<" fractions: \thad "<< hadCorr[cb]/partialCorrEtValues[cb]<<"+/-" << hadError[cb]/partialCorrEtValues[cb]<<"\tkaon "<<kaonCorr[cb]/partialCorrEtValues[cb]<<"+/-"<<kaonError[cb]/partialCorrEtValues[cb]<<"\tneutron "<<neutronCorr[cb]/partialCorrEtValues[cb]<<"+/-"<<neutronError[cb]/partialCorrEtValues[cb]<<"\tsecondary "<<secondaryCorr[cb]/partialCorrEtValues[cb]<<"+/-"<<secondaryError[cb]/partialCorrEtValues[cb]<<endl;//rawEtValues
-    corrEtValuesFormulaC[cb] = scale*partialCorrEtValues[cb]*signalFraction[cb]/minEtCorr[cb];
+    //corrEtValuesFormulaC[cb] = scale*partialCorrEtValues[cb]*signalFraction[cb]/minEtCorr[cb];
+//     signalFraction[cb] = 0.215;
+//     corrEtValuesFormulaC[cb] = scale*rawEtAllValues[cb]*signalFraction[cb]/minEtCorr[cb];
+//     //signalFraction[cb] = 0.32;
+//     corrEtValuesFormulaC[cb] = scale*rawEtAllNoEffCorrValues[cb]*signalFraction[cb]/minEtCorr[cb];
+    //signalFraction[cb] = (partialCorrEtValues[cb] - hadCorr[cb] - kaonCorr[cb] - neutronCorr[cb] - secondaryCorr[cb])/rawEtAllNoEffCorrValues[cb];
+    signalFraction[cb]= (partialCorrEtValues[cb] - hadCorr[cb] - kaonCorr[cb] - neutronCorr[cb] - secondaryCorr[cb])/rawEtAllValues[cb];
+    //signalFraction[cb]= (partialCorrEtValues[cb] - hadCorr[cb] - kaonCorr[cb] - neutronCorr[cb] - secondaryCorr[cb])/rawEtAllValues[cb];
+    //cout<<" f "<<
     //corrEtValuesFormulaC[cb] = scale*rawEtNoEffCorrValues[cb]*signalFraction[cb]/minEtCorr[cb]/0.22;
     //cout<<"cb "<<cb<<" "<<corrEtValuesFormulaC[cb]<<" = "<<scale<<"*"<<rawEtNoEffCorrValues[cb]<<"*"<<signalFraction[cb]<<"/"<<minEtCorr[cb]<<"/"<<averageEfficiency[cb]<<endl;
 
@@ -1298,6 +1474,17 @@ void ApplyCorrections(Float_t scale){//scale takes into account the acceptance i
     //this comes up enough in the error calculations we'll just make a variable for it
     float  partialEt = scale*(partialCorrEtValues[cb])/minEtCorr[cb];
     float  partialEtNoEffCorr = scale*(rawEtNoEffCorrValues[cb])/minEtCorr[cb];
+    //the lower the fraction EM ET is of the overall signal the higher the corrections are due to kaons, charged hadrons, neutrons, and secondaries
+    float nominalTotEt = scale/minEtCorr[cb]*(partialCorrEtValues[cb]-hadCorr[cb]-kaonCorr[cb]-neutronCorr[cb]-secondaryCorr[cb])/(fem);
+    float partialTotEtLow = (partialCorrEtValues[cb]-hadCorr[cb]-hadError[cb]-kaonCorr[cb]-kaonError[cb]-neutronCorr[cb]-neutronError[cb]-secondaryCorr[cb]-secondaryError[cb])/(fem-femerr);
+    //and the higher it is the lower the corrections will be
+    float partialTotEtHigh = (partialCorrEtValues[cb]-hadCorr[cb]+hadError[cb]-kaonCorr[cb]+kaonError[cb]-neutronCorr[cb]+neutronError[cb]-secondaryCorr[cb]+secondaryError[cb])/(fem+femerr);
+    float partialTotEtAvg = (partialTotEtHigh+partialTotEtLow)/2.0;
+    float partialTotEtErr = TMath::Abs(partialTotEtHigh-partialTotEtLow)/2.0;
+    //cout<<"cb old "<<totEtValues[cb];
+    totEtValues[cb] = scale/minEtCorr[cb]*partialTotEtAvg;
+    totEtError[cb] = totEtValues[cb] * TMath::Sqrt(TMath::Power(minEtError[cb]/minEtCorr[cb],2)+TMath::Power(partialTotEtErr/partialTotEtAvg,2)+TMath::Power(nonLinError[cb],2)+TMath::Power(efficiencyError[cb],2));
+    //cout<<" new "<<totEtValues[cb]<<endl;
     //add up the error squared
     float err = 0;
     float partialerr = 0;
@@ -1305,41 +1492,66 @@ void ApplyCorrections(Float_t scale){//scale takes into account the acceptance i
     float errNoEffCorr = 0;
     float partialerrNoEffCorr = 0;
     float totalcorrpartialerrNoEffCorr = 0;
+    float totaletvariance = 0;
+    float femkaoncorrelation = -1.0;//fractional correlation, says these are 100% anticorrelated
+    float femhadroncorrelation = -0.0;//fractional correlation, says these are 100% anticorrelated
+    float femneutroncorrelation = -1;//fractional correlation, says these are 100% anticorrelated
+    float femsecondarycorrelation = 0;//fractional correlation, says these are 100% anticorrelated
+
     bool writeerror = false;
+    bool writetoteterror = false;
     if(writeerror){
       cout<<"fraction errors: min et "<<minEtError[cb]/minEtCorr[cb];
     }
     //if(writeerror)cout<<"partialEt "<<partialEt<<" err^2 = ";
     //Et min correction
-    //partialerr += TMath::Power(minEtError[cb]/minEtCorr[cb]*corrEtValues[cb],2);
     partialerr = TMath::Power(minEtError[cb]/minEtCorr[cb]*corrEtValues[cb],2.0);
     partialerrNoEffCorr = TMath::Power(minEtError[cb]/minEtCorr[cb]*corrEtValuesFormulaB[cb],2.0);
-    //if(writeerror)cout<<partialerr<<"+";
     err+=partialerr;
     errNoEffCorr+=partialerrNoEffCorr;
+    partialerr = TMath::Power(minEtError[cb]/minEtCorr[cb]*totEtValues[cb],2.0);
+    totaletvariance += partialerr;//the error from min et is not correlated with femet
+    if(writetoteterror){cout<<"min et "<<partialerr;}
     //nonlinearity correction - this is saved as a fractional error
     partialerr = TMath::Power(nonLinError[cb]*corrEtValues[cb],2.0);
     partialerrNoEffCorr = TMath::Power(nonLinError[cb]*corrEtValuesFormulaB[cb],2.0);
     if(writeerror){cout<<" nonlinearity "<<TMath::Sqrt(partialerr)/corrEtValues[cb];}
-    //if(writeerror)cout<<partialerr<<"+";
     err+=partialerr;
     errNoEffCorr+=partialerrNoEffCorr;
+    partialerr = TMath::Power(nonLinError[cb]*totEtValues[cb],2.0);
+    totaletvariance += partialerr;//the error from nonlinearity is not correlated with femet
+    if(writetoteterror){cout<<" nonlinearity "<<partialerr;}
+    //energy scale - this is saved as a fractional error
+    partialerr = TMath::Power(energyscaleerror*corrEtValues[cb],2.0);
+    partialerrNoEffCorr = TMath::Power(energyscaleerror*corrEtValuesFormulaB[cb],2.0);
+    if(writeerror){cout<<" scale error "<<TMath::Sqrt(partialerr)/corrEtValues[cb];}
+    err+=partialerr;
+    errNoEffCorr+=partialerrNoEffCorr;
+    partialerr = TMath::Power(energyscaleerror*totEtValues[cb],2.0);
+    totaletvariance += partialerr;//the error from nonlinearity is not correlated with femet
+    if(writetoteterror){cout<<" scale error "<<partialerr;}
     //efficiency correction - this is also saved as a fractional error
     partialerr = TMath::Power(efficiencyError[cb]*corrEtValues[cb],2);
     partialerrNoEffCorr = TMath::Power(efficiencyError[cb]*corrEtValues[cb],2);
     if(writeerror){cout<<" efficiency "<<TMath::Sqrt(partialerr)/corrEtValues[cb];}
-    //if(writeerror)cout<<partialerr<<"+";
     err+=partialerr;
     errNoEffCorr+=partialerrNoEffCorr;
+    partialerr = TMath::Power(efficiencyError[cb]*totEtValues[cb],2);
+    totaletvariance += partialerr;//the error from efficiency is not correlated with femet
+    if(writetoteterror){cout<<" efficiency "<<partialerr;}
     //hadron correction
     partialerr = TMath::Power(hadError[cb]*scale/minEtCorr[cb],2);
     partialerrNoEffCorr = TMath::Power(hadErrorNoEffCorr[cb]*scale/minEtCorr[cb],2);
     totalcorrpartialerr += TMath::Power(hadError[cb],2);
     totalcorrpartialerrNoEffCorr += TMath::Power(hadErrorNoEffCorr[cb],2);
     if(writeerror){cout<<" hadronic corr "<<TMath::Sqrt(partialerr)/corrEtValues[cb];}
-    //if(writeerror)cout<<partialerr<<"+";
     err+=partialerr;
     errNoEffCorr+=partialerrNoEffCorr;
+    //correlation term is variance due to had ET + correlation fraction * df/dfem * error(fem) * df/dhadcorr * error(hadcorr)
+    partialerr = TMath::Power(hadError[cb]*scale/minEtCorr[cb]/fem,2)+femhadroncorrelation * 2 * TMath::Abs(nominalTotEt*femerr/fem * scale/minEtCorr[cb]/fem*hadError[cb]);
+    //cout<<" variance had "<<partialerr<<" = "<<TMath::Sqrt(TMath::Abs(partialerr))<<"^2 = "<<TMath::Power(hadError[cb]*scale/minEtCorr[cb]/fem,2)<<" + "<<femhadroncorrelation * TMath::Abs(nominalTotEt*femerr/fem * scale/minEtCorr[cb]/fem*hadError[cb])<<" first part sqrt "<<hadError[cb]*scale/minEtCorr[cb]/fem<<" second part "<<femhadroncorrelation <<" * "<<nominalTotEt*femerr/fem<<" * "<<scale/minEtCorr[cb]/fem*hadError[cb]<<" ";
+    totaletvariance += partialerr;//the error from hadd corr IS correlated with femet
+    if(writetoteterror){cout<<" hadronic corr "<<partialerr;}
     //neutron correction
     partialerr = TMath::Power(neutronError[cb]*scale/minEtCorr[cb],2);
     totalcorrpartialerr += TMath::Power(neutronError[cb],2);
@@ -1349,6 +1561,10 @@ void ApplyCorrections(Float_t scale){//scale takes into account the acceptance i
     //if(writeerror)cout<<partialerr<<"+";
     err+=partialerr;
     errNoEffCorr+=partialerrNoEffCorr;
+    //correlation term is variance due to had ET + correlation fraction * df/dfem * error(fem) * df/dneutroncorr * error(neutroncorr)
+    partialerr = TMath::Power(neutronError[cb]*scale/minEtCorr[cb]/fem,2)+femneutroncorrelation * 2 * TMath::Abs(nominalTotEt*femerr/fem * scale/minEtCorr[cb]/fem*neutronError[cb]);
+    totaletvariance += partialerr;//the error from neutron corr IS correlated with femet
+    if(writetoteterror){cout<<" neutron corr "<<partialerr;}
     //kaon correction
     partialerr = TMath::Power(kaonError[cb]*scale/minEtCorr[cb],2);
     totalcorrpartialerr += TMath::Power(kaonError[cb],2);
@@ -1358,6 +1574,10 @@ void ApplyCorrections(Float_t scale){//scale takes into account the acceptance i
     //if(writeerror)cout<<partialerr<<"+";
     err+=partialerr;
     errNoEffCorr+=partialerrNoEffCorr;
+    //correlation term is variance due to had ET + correlation fraction * df/dfem * error(fem) * df/dkaoncorr * error(kaoncorr)
+    partialerr =TMath::Power(kaonError[cb]*scale/minEtCorr[cb]/fem,2)+femkaoncorrelation * 2 * TMath::Abs(nominalTotEt*femerr/fem * scale/minEtCorr[cb]/fem*kaonError[cb]);
+    totaletvariance += partialerr;//the error from kaon corr IS correlated with femet
+    if(writetoteterror){cout<<" kaon corr "<<partialerr;}
     //secondary correction
     partialerr = TMath::Power(secondaryError[cb]*scale/minEtCorr[cb],2);
     totalcorrpartialerr += TMath::Power(secondaryError[cb],2);
@@ -1367,6 +1587,14 @@ void ApplyCorrections(Float_t scale){//scale takes into account the acceptance i
     //if(writeerror)cout<<partialerr;
     err+=partialerr;
     errNoEffCorr+=partialerrNoEffCorr;
+    //correlation term is variance due to had ET + correlation fraction * df/dfem * error(fem) * df/dkaoncorr * error(kaoncorr)
+    partialerr = TMath::Power(secondaryError[cb]*scale/minEtCorr[cb]/fem,2)+femsecondarycorrelation * 2 * TMath::Abs(nominalTotEt*femerr/fem * scale/minEtCorr[cb]/fem*secondaryError[cb]);
+    totaletvariance += partialerr;//the error from kaon corr IS correlated with femet
+    if(writetoteterror){cout<<" secondary corr "<<partialerr;}
+
+    partialerr = TMath::Power(nominalTotEt*femerr/fem,2);
+    totaletvariance += partialerr;//the error from kaon corr IS correlated with femet
+    if(writetoteterror){cout<<" fem "<<partialerr;}
     //And take the square root
     err = TMath::Sqrt(err);
     errNoEffCorr = TMath::Sqrt(errNoEffCorr);
@@ -1374,6 +1602,12 @@ void ApplyCorrections(Float_t scale){//scale takes into account the acceptance i
     totalCorrectionPerNPartPairErrorNoEffCorr[cb] = TMath::Sqrt(totalcorrpartialerrNoEffCorr);
     if(writeerror)cout<<" = "<<err/corrEtValues[cb]<<endl;
     signalFractionError[cb] = totalCorrectionPerNPartPairError[cb]/partialCorrEtValues[cb];
+    cout<<"tot et "<<cb<<" "<<totEtValues[cb]<<" +/- "<<totEtError[cb]<<" vs ";
+    totEtValues[cb] = nominalTotEt;
+    if(totaletvariance>0) totEtError[cb] = TMath::Sqrt(totaletvariance);
+    else{cout<<" var err "<<totaletvariance<<" ";}
+    //totEtError[cb] = totaletvariance;
+    cout<<totEtValues[cb]<<" +/- "<<totEtError[cb]<<endl;
     //cout<<"signal fraction "<<signalFraction[cb]<<" +/- ";
     //cout<<"cb "<<cb<<" fractions: \thad "<< hadCorr[cb]/partialCorrEtValues[cb]<<"+/-" << hadError[cb]/partialCorrEtValues[cb]<<"\tkaon "<<kaonCorr[cb]/partialCorrEtValues[cb]<<"+/-"<<kaonError[cb]/partialCorrEtValues[cb]<<"\tneutron "<<neutronCorr[cb]/partialCorrEtValues[cb]<<"+/-"<<neutronError[cb]/partialCorrEtValues[cb]<<"\tsecondary "<<secondaryCorr[cb]/partialCorrEtValues[cb]<<"+/-"<<secondaryError[cb]/partialCorrEtValues[cb]<<"\tsignalfrac "<<signalFraction[cb]<<"+/-"<<signalFractionError[cb]<<endl;//rawEtValues
     if(partialCorrEtValues[cb]>0)cout<<totalCorrectionPerNPartPairError[cb]/partialCorrEtValues[cb];
@@ -1431,6 +1665,12 @@ TGraphErrors *GetPartialCorrEtPerNChGraph(){
     SetStyles(gr3,25,1);
     return gr3;
 }
+TGraphErrors *GetPartialCorrEtPerNPartGraph(){
+    TGraphErrors *gr3 = new TGraphErrors(20,npart,partialCorrEtPerNPartValues,npartErr,partialCorrEtPerNPartError);
+    //TGraphErrors *gr3 = new TGraphErrors(10,trackmultiplicityShort,kaonEtPerNCh,trackmultiplicityShortError,kaonEtPerNChErr);
+    SetStyles(gr3,25,1);
+    return gr3;
+}
 TGraphErrors *GetPartialCorrEtPerNClGraph(){
     TGraphErrors *gr3 = new TGraphErrors(20,clustermultiplicity,partialCorrEtPerNClValues,clustermultiplicityError,partialCorrEtPerNClError);
     //TGraphErrors *gr3 = new TGraphErrors(10,trackmultiplicityShort,kaonEtPerNCh,trackmultiplicityShortError,kaonEtPerNChErr);
@@ -1440,6 +1680,11 @@ TGraphErrors *GetPartialCorrEtPerNClGraph(){
 }
 TGraphErrors *GetRawEtNoEffCorrPerNChGraph(){
     TGraphErrors *gr3 = new TGraphErrors(20,trackmultiplicity,rawEtNoEffCorrPerNChValues,trackmultiplicityError,rawEtNoEffCorrPerNChError);
+    SetStyles(gr3,21,1);
+    return gr3;
+}
+TGraphErrors *GetRawEtNoEffCorrPerNPartGraph(){
+    TGraphErrors *gr3 = new TGraphErrors(20,npart,rawEtNoEffCorrPerNPartValues,npartErr,rawEtNoEffCorrPerNPartError);
     SetStyles(gr3,21,1);
     return gr3;
 }
@@ -1456,6 +1701,11 @@ TGraphErrors *GetRawEtAllNoEffCorrPerNChGraph(){
     SetStyles(gr3,26,1);
     return gr3;
 }
+TGraphErrors *GetRawEtAllNoEffCorrPerNPartGraph(){
+    TGraphErrors *gr3 = new TGraphErrors(20,npart,rawEtAllNoEffCorrPerNPartValues,npartErr,rawEtAllNoEffCorrPerNPartError);
+    SetStyles(gr3,26,1);
+    return gr3;
+}
 TGraphErrors *GetRawEtAllNoEffCorrPerNClGraph(){
     TGraphErrors *gr3 = new TGraphErrors(20,clustermultiplicity,rawEtAllNoEffCorrPerNClValues,clustermultiplicityError,rawEtAllNoEffCorrPerNClError);
     SetStyles(gr3,26,1);
@@ -1466,6 +1716,11 @@ TGraphErrors *GetRawEtAllPerNChGraph(){
     SetStyles(gr3,26,1);
     return gr3;
 }
+TGraphErrors *GetRawEtAllPerNPartGraph(){
+    TGraphErrors *gr3 = new TGraphErrors(20,npart,rawEtAllPerNPartValues,npartErr,rawEtAllPerNPartError);
+    SetStyles(gr3,26,1);
+    return gr3;
+}
 TGraphErrors *GetRawEtAllPerNClGraph(){
     TGraphErrors *gr3 = new TGraphErrors(20,clustermultiplicity,rawEtAllPerNClValues,clustermultiplicityError,rawEtAllPerNClError);
     SetStyles(gr3,22,1);
@@ -1473,6 +1728,11 @@ TGraphErrors *GetRawEtAllPerNClGraph(){
 }
 TGraphErrors *GetMatchedTracksPerNChGraph(){
     TGraphErrors *gr3 = new TGraphErrors(20,trackmultiplicity,matchedtrackmultiplicityPerNCh,trackmultiplicityError,arrayofzeros);
+    SetStyles(gr3,20,1);
+    return gr3;
+}
+TGraphErrors *GetMatchedTracksPerNPartGraph(){
+    TGraphErrors *gr3 = new TGraphErrors(20,npart,matchedtrackmultiplicityPerNPart,npartErr,arrayofzeros);
     SetStyles(gr3,20,1);
     return gr3;
 }
@@ -1520,6 +1780,7 @@ TGraphErrors *GetTotalCorrectionPerNChGraphNoEffCorr(){
 Bool_t sim = false;
 //Bool_t isPhos = kFALSE;
 TString detector = "";
+TString year = "2010";
 //void PlotEmEtVer2(TString filename = "rootFiles/LHC10hPass2/Et.ESD.realPbPb.EMCal.LHC10hPass2.Run139465.root")
 void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0)
 {
@@ -1532,7 +1793,8 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
   if(cutset==0){
     if(isPhos){
       if(isMC){
-	filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOS.LHC11a10a_bis.Run139465.root";
+	//filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOS.LHC11a10a_bis.Run139465.root";
+	filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOS.LHC11a10a_bis.root";
       }
       else{
 	filename = "rootFiles/LHC10hPass2/Et.ESD.realPbPb.PHOS.LHC10hPass2.Run139465.root";
@@ -1575,14 +1837,65 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
       simfilename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal400MeVCut.LHC11a10a_bis.Run139465.root";
     }
   }
+  if(cutset==3){
+    if(isPhos){
+      filename = "rootFiles/LHC10hPass2/Et.ESD.realPbPb.PHOSOldHadMethod.LHC10hPass2.Run139465.root";
+      simfilename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOSOldHadMethod.LHC11a10a_bis.root";
+      corrfac = 0.174236;
+      corrfacerr = 0.0423712;
+    }
+    else{
+      //filename = "rootFiles/LHC10hPass2/Et.ESD.realPbPb.EMCal.LHC10hPass2.Run139465.LooseTrackMatchCuts.root";
+      //simfilename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.Run139465.LooseTrackMatchCuts.root";
+      filename = "rootFiles/LHC10hPass2/Et.ESD.realPbPb.EMCalOldHadMethod.LHC10hPass2.Run139465.root";
+      simfilename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCalOldHadMethod.LHC11a10a_bis.root";
+      corrfac = 0.283921;
+      corrfacerr = 0.0362492;
+    }
+  }
+  if(cutset==4){
+    year = "2011";
+    if(isPhos){
+      if(isMC){
+	filename = "rootFiles/LHC13e1abcCombined/Et.ESD.simPbPb.PHOS.LHC13e1abc.root";
+      }
+      else{
+	filename = "rootFiles/LHC11hPass2/Et.ESD.realPbPb.PHOS.LHC11hPass2.Run168464.root";
+      }
+      corrfac = 0.16382;
+      corrfacerr = 0.0830542;
+      simfilename = "rootFiles/LHC13e1abcCombined/Et.ESD.simPbPb.PHOS.LHC13e1abc.root";
+    }
+    else{
+      if(isMC){
+	filename = "rootFiles/LHC13e1abcCombined/Et.ESD.simPbPb.EMCal.LHC13e1abc.root";
+      }
+      else{
+      //filename = "rootFiles/LHC10hPass2/Et.ESD.realPbPb.EMCal.LHC10hPass2.Run139465.LooseTrackMatchCuts.root";
+      //simfilename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.Run139465.LooseTrackMatchCuts.root";
+	filename = "rootFiles/LHC11hPass2/Et.ESD.realPbPb.EMCal.LHC11hPass2.Run168464.root";
+      }
+      corrfac = 0.196084;
+      corrfacerr = 0.0410244;
+      simfilename = "rootFiles/LHC13e1abcCombined/Et.ESD.simPbPb.EMCal.LHC13e1abc.root";
+    }
+  }
   cout<<"data file name = "<<filename<<endl;
   cout<<" sim file name = "<<simfilename<<endl;
   TString detector = "Emcal";
-  Float_t scale = 360.0/40.0/1.2;//Azimuthal acceptance over eta range
+  Float_t scale = 360.0/40.0/1.2*1.02;//Azimuthal acceptance over eta range, times energy scale correction
   if(filename.Contains("PHOS")){
     detector = "Phos";
     //isPhos = kTRUE;
     scale = 360.0/60/0.24;//Azimuthal acceptance over eta range
+    energyscaleerror = 0.005;
+  }
+  else{
+    if(cutset==4){//2011 data
+      cout<<"scale "<<scale<<endl;
+      scale = 360.0/100.0/1.2*1.02;//Azimuthal acceptance over eta range, times energy scale correction
+      cout<<"scale "<<scale<<endl;
+    }
   }
   TString det = detector;
   //gROOT->LoadMacro("macros/PlotSecondariesCorr.C");
@@ -1614,6 +1927,9 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
   //graphKaonCorrectionShort->SetMaximim(0.02);
   //graphKaonCorrectionShort->GetYaxis()->SetRange(1,graphKaonCorrectionShort->GetYaxis()->FindBin(0.02));
   float emcalmax = 0.006;
+  if(cutset==4){//2011 data
+    emcalmax = 7.65/scale*emcalmax;
+  }
   graphKaonCorrectionShort->GetHistogram()->SetMaximum(emcalmax);
   //set scales the same within naive geometric scaling
   if(isPhos) graphKaonCorrectionShort->GetHistogram()->SetMaximum(emcalmax*0.24/1.2*60.0/40.0);
@@ -1646,7 +1962,7 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
   leg->SetTextSize(0.03);
   leg->SetTextSize(0.038682);
   leg->AddEntry(graphKaonCorrectionShort,"Kaon correction/N_{ch}","P");
-  leg->AddEntry(graphNeutronCorrectionShort,"Neutron correction/N_{ch}","P");
+  leg->AddEntry(graphNeutronCorrectionShort,"Neutron correction/2.0 N_{ch}","P");
   leg->AddEntry(graphSecondaryCorrectionShort,"Secondary correction/5.0 N_{ch}","P");
   leg->AddEntry(graphHadronCorrectionShort,"Hadron correction/5.0 N_{ch}","P");
   leg->AddEntry(graphTotalCorrection,"(E_{T}^{kaon}+E_{T}^{n}+E_{T}^{secondary}+E_{T}^{h})/20.0 N_{ch}","P");
@@ -1717,28 +2033,28 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
 //   leg2->Draw();
 //   TString corrplotname1 = "/tmp/CorrectionsVsNch"+detector+"NoEffCorr.eps";
 //   c1a->SaveAs(corrplotname1.Data());
-  TCanvas *c2 = new TCanvas("c2","Min Et Correction",600,400);
-  c2->SetTopMargin(0.02);
-  c2->SetRightMargin(0.02);
-  c2->SetBorderSize(0);
-  c2->SetFillColor(0);
-  c2->SetFillColor(0);
-  c2->SetBorderMode(0);
-  c2->SetFrameFillColor(0);
-  c2->SetFrameBorderMode(0);
-  c2->SetLogx();
-  TGraphErrors *graphMinEtCorrectionShort = GetMinEtCorrectionGraphShort();
-  graphMinEtCorrectionShort->GetXaxis()->SetTitle("f_{ETmin}");
-  graphMinEtCorrectionShort->GetYaxis()->SetTitle("Correction/N_{Ch}");
-//   graphMinEtCorrectionShort->GetHistogram()->SetMaximum(1.0);
-//   graphMinEtCorrectionShort->GetHistogram()->SetMinimum(0.0);
-  graphMinEtCorrectionShort->Draw("AP");
-  graphKaonCorrectionShort->GetXaxis()->SetTitle("N_{Ch}");
-  graphKaonCorrectionShort->GetYaxis()->SetTitle("f_{EtMin}");
-  TGraphErrors *graphMinEtCorrection = GetMinEtCorrectionGraph();
-  graphMinEtCorrection->Draw("P same");
-  TString corrplotname2 = "/tmp/EtMinVsNch"+detector+".eps";
-  c2->SaveAs(corrplotname2.Data());
+//   TCanvas *c2 = new TCanvas("c2","Min Et Correction",600,400);
+//   c2->SetTopMargin(0.02);
+//   c2->SetRightMargin(0.02);
+//   c2->SetBorderSize(0);
+//   c2->SetFillColor(0);
+//   c2->SetFillColor(0);
+//   c2->SetBorderMode(0);
+//   c2->SetFrameFillColor(0);
+//   c2->SetFrameBorderMode(0);
+//   c2->SetLogx();
+//   TGraphErrors *graphMinEtCorrectionShort = GetMinEtCorrectionGraphShort();
+//   graphMinEtCorrectionShort->GetXaxis()->SetTitle("f_{ETmin}");
+//   graphMinEtCorrectionShort->GetYaxis()->SetTitle("Correction/N_{Ch}");
+// //   graphMinEtCorrectionShort->GetHistogram()->SetMaximum(1.0);
+// //   graphMinEtCorrectionShort->GetHistogram()->SetMinimum(0.0);
+//   graphMinEtCorrectionShort->Draw("AP");
+//   graphKaonCorrectionShort->GetXaxis()->SetTitle("N_{Ch}");
+//   graphKaonCorrectionShort->GetYaxis()->SetTitle("f_{EtMin}");
+//   TGraphErrors *graphMinEtCorrection = GetMinEtCorrectionGraph();
+//   graphMinEtCorrection->Draw("P same");
+//   TString corrplotname2 = "/tmp/EtMinVsNch"+detector+".eps";
+//   c2->SaveAs(corrplotname2.Data());
 
 //   TCanvas *c3 = new TCanvas("c3","Kaon Correction",600,400);
 //   c3->SetTopMargin(0.02);
@@ -1813,6 +2129,8 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
   leg2->Draw();
   TString corrplotname4 = "/tmp/EtVsNpart"+detector+".eps";
   c4->SaveAs(corrplotname4.Data());
+  TString corrplotname4a = "/tmp/EtVsNpart"+detector+".png";
+  c4->SaveAs(corrplotname4a.Data());
 
 //   TCanvas *c5 = new TCanvas("c5", "Raw Et Vs NCh",1200, 400);
 //   c5->SetTopMargin(0.02);
@@ -1947,13 +2265,13 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
   graphSignalFraction->GetYaxis()->SetTitle("Correction/N_{Ch}");
   graphSignalFraction->GetHistogram()->SetMaximum(0.4);//so PHOS and EMCal scales are similar...
   graphSignalFraction->GetHistogram()->SetMinimum(0.0);//so PHOS and EMCal scales are similar...
-//   graphSignalFraction->GetHistogram()->SetMaximum(1.0);
-//   graphSignalFraction->GetHistogram()->SetMinimum(0.0);
+  //graphSignalFraction->GetHistogram()->SetMaximum(1.0);
+  //graphSignalFraction->GetHistogram()->SetMinimum(0.0);
   graphSignalFraction->Draw("AP");
   TString corrplotname8 = "/tmp/SignalFraction"+detector+".eps";
   c8->SaveAs(corrplotname8.Data());
 
-  TCanvas *c9 = new TCanvas("c9","Signal Fraction",600,400);
+  TCanvas *c9 = new TCanvas("c9","Event by event ET distribution",600,400);
   c9->SetTopMargin(0.02);
   c9->SetRightMargin(0.02);
   c9->SetBorderSize(0);
@@ -1967,17 +2285,17 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
   int nbins = 15;
   if(isPhos) nbins = 8;
   //nbins = 20;
-//   for(bin = 1; bin<=nbins;bin++){
-//     dataFits[bin] = new TF1(Form("Fit%i",bin),"[0]*exp(-(x-[1])*(x-[1])/[2])",0,250);
-//     ((TF1*)dataFits[bin])->SetParameter(0,1e3);
-//     ((TF1*)dataFits[bin])->SetParameter(1,partialCorrEtValues[bin-1]);
-//     ((TF1*)dataFits[bin])->SetParameter(2,20);
-//     ((TH1D*)rawEt[bin])->Fit(((TF1*)dataFits[bin]));
-//   }
+  for(bin = 1; bin<=nbins;bin++){
+    dataFits[bin] = new TF1(Form("Fit%i",bin),"[0]*exp(-(x-[1])*(x-[1])/[2])",0,250);
+    ((TF1*)dataFits[bin])->SetParameter(0,1e3);
+    ((TF1*)dataFits[bin])->SetParameter(1,partialCorrEtValues[bin-1]);
+    ((TF1*)dataFits[bin])->SetParameter(2,20);
+    //((TH1D*)rawEt[bin])->Fit(((TF1*)dataFits[bin]));
+  }
   int bin = 1;
   ((TH1D*)rawEt[bin])->GetXaxis()->SetTitle("E_{T}^{raw}");
-  if(isPhos){((TH1D*)rawEt[bin])->GetXaxis()->SetRange(1,((TH1D*)rawEt[bin])->GetXaxis()->FindBin(100));}
-  else{((TH1D*)rawEt[bin])->GetXaxis()->SetRange(1,((TH1D*)rawEt[bin])->GetXaxis()->FindBin(200));}
+  //if(isPhos){((TH1D*)rawEt[bin])->GetXaxis()->SetRange(1,((TH1D*)rawEt[bin])->GetXaxis()->FindBin(100));}
+  //else{((TH1D*)rawEt[bin])->GetXaxis()->SetRange(1,((TH1D*)rawEt[bin])->GetXaxis()->FindBin(200));}
   ((TH1D*)rawEt[bin])->Draw();
   ((TH1D*)rawEt[bin])->SetMaximum(5e4);
   for(bin = 1; bin<=nbins;bin+=1){
@@ -1988,8 +2306,79 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
     //Float_t mostlikely = GetMostLikelyValue((TH1D*)rawEt[bin]);
     //cout<<"cb "<<bin-1<<" average: "<<partialCorrEtValues[bin-1]<<" most likely "<<mostlikely<<" fit "<<((TF1*)dataFits[bin])->GetParameter(1)<<endl;
   }
-  TString name9 = "/tmp/ETDistribution"+detector+".png";
+  TString name9 = "ananotepics/emEt/ETDistribution"+detector+".eps";
   c9->SaveAs(name9.Data());
+
+
+//   TCanvas *c10 = new TCanvas("c10", "Raw Et Vs NPart",1200, 400);
+//   c10->SetTopMargin(0.02);
+//   c10->SetRightMargin(0.02);
+//   c10->SetBorderSize(0);
+//   c10->SetFillColor(0);
+//   c10->SetFillColor(0);
+//   c10->SetBorderMode(0);
+//   c10->SetFrameFillColor(0);
+//   c10->SetFrameBorderMode(0);
+//   c10->Divide(2);
+//   c10->cd(1);
+//   TGraphErrors *partialCorrEtPerNPart = GetPartialCorrEtPerNPartGraph();
+//   partialCorrEtPerNPart->GetHistogram()->SetMaximum(0.1*7.5/scale);//so PHOS and EMCal scales are similar...  partialCorrEtPerNPart->GetHistogram()->SetMinimum(0.0);
+//   partialCorrEtPerNPart->GetHistogram()->GetXaxis()->SetTitle("N_{Ch}");
+//   partialCorrEtPerNPart->GetHistogram()->GetYaxis()->SetTitle("(E_{T}/#epsilon f_{nonlin})/N_{Ch}");
+//   partialCorrEtPerNPart->Draw("AP");
+//   TGraphErrors *graphRawNoEffCorrNPart = GetRawEtNoEffCorrPerNPartGraph();
+//   graphRawNoEffCorrNPart->Draw("P same");
+//   TGraphErrors *graphRawAllNoEffCorrNPart = GetRawEtAllNoEffCorrPerNPartGraph();
+//   graphRawAllNoEffCorrNPart->Draw("P same");
+//   TGraphErrors *graphRawAllNPart = GetRawEtAllPerNPartGraph();
+//   graphRawAllNPart->Draw("P same");
+//   TLegend *leg5 = new TLegend(0.416667,0.173077,0.62069,0.396853);
+//   leg5->SetFillStyle(0);
+//   leg5->SetFillColor(0);
+//   leg5->SetBorderSize(0);
+//   leg5->SetTextSize(0.03);
+//   leg5->SetTextSize(0.038682);
+//   leg5->AddEntry(partialCorrEtPerNPart,"E_{T}#delta_{TM}/#epsilon f_{nonlin}","P");
+//   leg5->AddEntry(graphRawNoEffCorrNPart,"E_{T}#delta_{TM}/ f_{nonlin}","P");
+//   leg5->AddEntry(graphRawAllNPart,"E_{T}/#epsilon f_{nonlin}","P");
+//   leg5->AddEntry(graphRawAllNoEffCorrNPart,"E_{T}/f_{nonlin}","P");
+//   leg5->Draw();
+//   TString corrplotname10 = "/tmp/RawEtVsNPart"+detector+".eps";
+//   c10->SaveAs(corrplotname10.Data());
+
+
+  TCanvas *c11 = new TCanvas("c11","Event by event ET distribution",600,400);
+  c11->SetTopMargin(0.02);
+  c11->SetRightMargin(0.02);
+  c11->SetBorderSize(0);
+  c11->SetFillColor(0);
+  c11->SetFillColor(0);
+  c11->SetBorderMode(0);
+  c11->SetFrameFillColor(0);
+  c11->SetFrameBorderMode(0);
+  c11->SetLogy();
+  c11->SetLogx();
+  int nbins = 15;
+  if(isPhos) nbins = 8;
+  int bin = 1;
+  ((TH1D*)rawEtAllNoEffCorr[bin])->GetXaxis()->SetTitle("E_{T}^{raw}");
+  //if(isPhos){((TH1D*)rawEtAllNoEffCorr[bin])->GetXaxis()->SetRange(1,((TH1D*)rawEtAllNoEffCorr[bin])->GetXaxis()->FindBin(100));}
+  //else{((TH1D*)rawEtAllNoEffCorr[bin])->GetXaxis()->SetRange(1,((TH1D*)rawEtAllNoEffCorr[bin])->GetXaxis()->FindBin(200));}
+  ((TH1D*)rawEtAllNoEffCorr[bin])->Draw();
+  ((TH1D*)rawEtAllNoEffCorr[bin])->SetMaximum(5e4);
+  for(bin = 1; bin<=nbins;bin+=1){
+    ((TH1D*)rawEtAllNoEffCorr[bin])->Draw("same");
+    ((TH1D*)rawEtAllNoEffCorr[bin])->SetLineColor(colors[bin-1]);
+    ((TH1D*)rawEtAllNoEffCorr[bin])->SetMarkerColor(colors[bin-1]);
+    //((TF1*)dataFits[bin])->SetLineColor(colors[bin-1]);
+    //Float_t mostlikely = GetMostLikelyValue((TH1D*)rawEtAllNoEffCorr[bin]);
+    //cout<<"cb "<<bin-1<<" average: "<<partialCorrEtValues[bin-1]<<" most likely "<<mostlikely<<" fit "<<((TF1*)dataFits[bin])->GetParameter(1)<<endl;
+  }
+  TString name9 = "/tmp/RawETDistribution"+detector+".png";
+  c11->SaveAs(name9.Data());
+
+
+
   //Create correction file with fractional corrections so that I can use them for cross checks
   ofstream myfile;
   TString texfilename = "SignalFrac"+detector+".dat";
@@ -2008,16 +2397,22 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
   myfile.open (texfilename.Data());
   //neutron, hadron, kaon, secondaries
   for(int i=0;i<20;i++){
-    myfile <<neutronCorr[i]<<"\t";
-    myfile <<hadCorr[i]<<"\t";
-    myfile <<kaonCorr[i]<<"\t";
-    myfile <<secondaryCorr[i]<<endl;
+    //ETem = 1/facc * scale & 1/fminet [sum(1/eff*1/nonlin) - neutron - hadron - kaon - secondary ]
+    myfile <<partialCorrEtValues[i]<<"\t"<<partialCorrEtError[i]<<"\t";
+    myfile <<scale<<"\t";
+    myfile <<energyscaleerror<<"\t";
+    myfile <<minEtCorr[i]<<"\t"<<minEtError[i]<<"\t";
+    myfile <<nonLinError[i]<<"\t";
+    myfile <<neutronCorr[i]<<"\t"<<neutronError[i]<<"\t";
+    myfile <<hadCorr[i]<<"\t"<<hadError[i]<<"\t";
+    myfile <<kaonCorr[i]<<"\t"<<kaonError[i]<<"\t";
+    myfile <<secondaryCorr[i]<<"\t"<<secondaryError[i]<<endl;
   }
   myfile.close();
   //from spectra calc
   //0.232 $\pm$ 0.029
-  Float_t fem = 0.232;
-  Float_t femerr = 0.029;
+//   Float_t fem = 0.232;
+//   Float_t femerr = 0.029;
   ofstream myfile2;
   ofstream myfile3;
   //EmEtFromSpectra.dat
@@ -2027,20 +2422,26 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
   myfile3.open (texfilename3.Data());
   Int_t maxcb = 10;
   if(isPhos) maxcb = 6;
+  else{if(cutset==4){maxcb = 12;}}
   //neutron, hadron, kaon, secondaries
   for(int i=0;i<maxcb;i++){
     int cb1 = i*5;
     int cb2 = (i+1)*5;
     myfile2 <<cb1<<"\t"<<cb2<<"\t";
     myfile2 <<corrEtValues[i]<<"\t";
+    myfile2 <<corrEtStatError[i]<<"\t";
     myfile2 <<corrEtError[i]<<"\t";
     myfile2 <<endl;
     
-    Float_t value = corrEtValues[i]/fem;
-    Float_t error = value * TMath::Sqrt(TMath::Power(corrEtError[i]/corrEtValues[i],2)+TMath::Power(femerr/fem,2));
+    //Float_t value = corrEtValues[i]/fem;
+    //Float_t error = value * TMath::Sqrt(TMath::Power(corrEtError[i]/corrEtValues[i],2)+TMath::Power(femerr/fem,2));
+    //cout<<"cb "<<i<<" old "<<value<<" +/- "<<error<<" ("<<error/value*100<<")"<<" new "<<totEtValues[i]<<" +/- "<<totEtError[i]<<" ("<<totEtError[i]/totEtValues[i]<<")"<<endl;
     myfile3 <<cb1<<"\t"<<cb2<<"\t";
-    myfile3 <<value<<"\t";
-    myfile3 <<error<<"\t";
+    //myfile3 <<value<<"\t";
+    //myfile3 <<error<<"\t";
+    myfile3 <<totEtValues[i]<<"\t";
+    myfile3 <<0<<"\t";//Will be statistical error
+    myfile3 <<totEtError[i]<<"\t";
     myfile3 <<endl;
   }
   myfile2.close();
@@ -2052,62 +2453,73 @@ void PlotEmEtVer2(Bool_t isPhos = kFALSE, Bool_t isMC = kFALSE, Int_t cutset = 0
 
 void WriteLatex(){
   TString detector = "Emcal";
-    string inline;
-    //FinalemetsEmcal.dat
-    TString finalemetInfileName = "EmEtFrom"+detector+".dat";
-    ifstream myfinalemetfile3 (finalemetInfileName.Data());
-    Float_t value = 0;
-    Float_t error = 0;
-    Float_t junk1 = 0;
-    Float_t junk2 = 0;
-    Int_t i=0;
-    if (myfinalemetfile3.is_open()){
-      while ( myfinalemetfile3.good() )
-	{
-	  getline (myfinalemetfile3,inline);
-	  istringstream tmp(inline);
-	  tmp >> junk1;
-	  tmp >> junk2;
-	  tmp >> value;
-	  tmp >> error;
-	  if(i<20){
-	    //cout<<"value "<<value<<" +/- "<<error<<endl;
-	    finalemetCorrEmcal[i] = value;
-	    finalemetErrorEmcal[i] = error;
-	  }
-	  i++;
+  string inline;
+  //FinalemetsEmcal.dat
+  TString finalemetInfileName = "EmEtFrom"+detector+".dat";
+  ifstream myfinalemetfile3 (finalemetInfileName.Data());
+  Float_t value = 0;
+  Float_t error = 0;
+  Float_t junk1 = 0;
+  Float_t junk2 = 0;
+  Int_t i=0;
+  if (myfinalemetfile3.is_open()){
+    while ( myfinalemetfile3.good() )
+      {
+	getline (myfinalemetfile3,inline);
+	istringstream tmp(inline);
+	tmp >> junk1;
+	tmp >> junk2;
+	tmp >> value;
+	tmp >> error;
+	if(i<20){
+	  //cout<<"value "<<value<<" +/- "<<error<<endl;
+	  finalemetCorrEmcal[i] = value;
+	  finalemetErrorEmcal[i] = error;
 	}
-        myfinalemetfile3.close();
-    }
+	i++;
+      }
+    myfinalemetfile3.close();
+  }
 
-    detector = "Phos";
-    finalemetInfileName = "EmEtFrom"+detector+".dat";
-    ifstream myfinalemetfile4 (finalemetInfileName.Data());
-    Float_t value = 0;
-    Float_t error = 0;
-    Int_t i=0;
-    if (myfinalemetfile4.is_open()){
-      while ( myfinalemetfile4.good() )
-	{
-	  getline (myfinalemetfile4,inline);
-	  istringstream tmp(inline);
-	  tmp >> junk1;
-	  tmp >> junk2;
-	  tmp >> value;
-	  tmp >> error;
-	  if(i<20){
-	    finalemetCorrPhos[i] = value;
-	    finalemetErrorPhos[i] = error;
-	  }
-	  i++;
+  detector = "Phos";
+  finalemetInfileName = "EmEtFrom"+detector+".dat";
+  ifstream myfinalemetfile4 (finalemetInfileName.Data());
+  Float_t value = 0;
+  Float_t error = 0;
+  Int_t i=0;
+  if (myfinalemetfile4.is_open()){
+    while ( myfinalemetfile4.good() )
+      {
+	getline (myfinalemetfile4,inline);
+	istringstream tmp(inline);
+	tmp >> junk1;
+	tmp >> junk2;
+	tmp >> value;
+	tmp >> error;
+	if(i<20){
+	  finalemetCorrPhos[i] = value;
+	  finalemetErrorPhos[i] = error;
 	}
-        myfinalemetfile4.close();
-    }
-    for(int i=0;i<20;i++){
-      TString line = Form("%i-%i & %2.3f $\\pm$ %2.3f & %2.3f $\\pm$ %2.3f \\\\",i*5,(i+1)*5,finalemetCorrPhos[i],finalemetErrorPhos[i],finalemetCorrEmcal[i],finalemetErrorEmcal[i]);
-      cout<<line.Data()<<endl;
-    }
+	i++;
+      }
+    myfinalemetfile4.close();
+  }
 
+  ofstream myfile3;
+  myfile3.open ("EmEt.tex");
+  for(int i=0;i<20;i++){
+    if(finalemetCorrPhos[i] > 1e-3 || finalemetCorrEmcal[i] > 1e-3){
+      if(finalemetCorrPhos[i] > 1e-3){
+	TString line = Form("%i-%i\\% & %2.3f $\\pm$ %2.3f & %2.3f $\\pm$ %2.3f \\\\",i*5,(i+1)*5,finalemetCorrPhos[i],finalemetErrorPhos[i],finalemetCorrEmcal[i],finalemetErrorEmcal[i]);
+	myfile3<<line.Data()<<endl;
+      }
+      else{
+	TString line = Form("%i-%i\\% & -- & %2.3f $\\pm$ %2.3f \\\\",i*5,(i+1)*5,finalemetCorrEmcal[i],finalemetErrorEmcal[i]);
+	myfile3<<line.Data()<<endl;
+      }
+    }
+  }
+  myfile3.close();
 
 
 
@@ -2115,62 +2527,72 @@ void WriteLatex(){
 
 
   detector = "Emcal";
-    string inline;
-    //FinaltotaletsEmcal.dat
-    TString finaltotaletInfileName = "TotEtFrom"+detector+".dat";
-    ifstream myfinaltotaletfile5 (finaltotaletInfileName.Data());
-     value = 0;
-     error = 0;
-     junk1 = 0;
-     junk2 = 0;
-    Int_t i=0;
-    if (myfinaltotaletfile5.is_open()){
-      while ( myfinaltotaletfile5.good() )
-	{
-	  getline (myfinaltotaletfile5,inline);
-	  istringstream tmp(inline);
-	  tmp >> junk1;
-	  tmp >> junk2;
-	  tmp >> value;
-	  tmp >> error;
-	  if(i<20){
-	    //cout<<"value "<<value<<" +/- "<<error<<endl;
-	    finaltotaletCorrEmcal[i] = value;
-	    finaltotaletErrorEmcal[i] = error;
-	  }
-	  i++;
+  string inline;
+  //FinaltotaletsEmcal.dat
+  TString finaltotaletInfileName = "TotEtFrom"+detector+".dat";
+  ifstream myfinaltotaletfile5 (finaltotaletInfileName.Data());
+  value = 0;
+  error = 0;
+  junk1 = 0;
+  junk2 = 0;
+  Int_t i=0;
+  if (myfinaltotaletfile5.is_open()){
+    while ( myfinaltotaletfile5.good() )
+      {
+	getline (myfinaltotaletfile5,inline);
+	istringstream tmp(inline);
+	tmp >> junk1;
+	tmp >> junk2;
+	tmp >> value;
+	tmp >> error;
+	if(i<20){
+	  //cout<<"value "<<value<<" +/- "<<error<<endl;
+	  finaltotaletCorrEmcal[i] = value;
+	  finaltotaletErrorEmcal[i] = error;
 	}
-        myfinaltotaletfile5.close();
-    }
+	i++;
+      }
+    myfinaltotaletfile5.close();
+  }
 
-    detector = "Phos";
-    finaltotaletInfileName = "TotEtFrom"+detector+".dat";
-    ifstream myfinaltotaletfile6 (finaltotaletInfileName.Data());
-     value = 0;
-     error = 0;
-    Int_t i=0;
-    if (myfinaltotaletfile6.is_open()){
-      while ( myfinaltotaletfile6.good() )
-	{
-	  getline (myfinaltotaletfile6,inline);
-	  istringstream tmp(inline);
-	  tmp >> junk1;
-	  tmp >> junk2;
-	  tmp >> value;
-	  tmp >> error;
-	  if(i<20){
-	    finaltotaletCorrPhos[i] = value;
-	    finaltotaletErrorPhos[i] = error;
-	  }
-	  i++;
+  detector = "Phos";
+  finaltotaletInfileName = "TotEtFrom"+detector+".dat";
+  ifstream myfinaltotaletfile6 (finaltotaletInfileName.Data());
+  value = 0;
+  error = 0;
+  Int_t i=0;
+  if (myfinaltotaletfile6.is_open()){
+    while ( myfinaltotaletfile6.good() )
+      {
+	getline (myfinaltotaletfile6,inline);
+	istringstream tmp(inline);
+	tmp >> junk1;
+	tmp >> junk2;
+	tmp >> value;
+	tmp >> error;
+	if(i<20){
+	  finaltotaletCorrPhos[i] = value;
+	  finaltotaletErrorPhos[i] = error;
 	}
-        myfinaltotaletfile6.close();
+	i++;
+      }
+    myfinaltotaletfile6.close();
+  }
+  ofstream myfile4;
+  myfile4.open ("TotEtFromCalorimeters.tex");
+  for(int i=0;i<20;i++){
+    if(finaltotaletCorrPhos[i] > 1e-3 || finaltotaletCorrEmcal[i] > 1e-3){
+      if(finaltotaletCorrPhos[i] > 1e-3){
+	TString line = Form("%i-%i\\% & %2.3f $\\pm$ %2.3f & %2.3f $\\pm$ %2.3f \\\\",i*5,(i+1)*5,finaltotaletCorrPhos[i],finaltotaletErrorPhos[i],finaltotaletCorrEmcal[i],finaltotaletErrorEmcal[i]);
+	myfile4<<line.Data()<<endl;
+      }
+      else{
+	TString line = Form("%i-%i\\% & -- & %2.3f $\\pm$ %2.3f \\\\",i*5,(i+1)*5,finaltotaletCorrEmcal[i],finaltotaletErrorEmcal[i]);
+	myfile4<<line.Data()<<endl;
+      }
     }
-    for(int i=0;i<20;i++){
-      TString line = Form("%i-%i & %2.3f $\\pm$ %2.3f & %2.3f $\\pm$ %2.3f \\\\",i*5,(i+1)*5,finaltotaletCorrPhos[i],finaltotaletErrorPhos[i],finaltotaletCorrEmcal[i],finaltotaletErrorEmcal[i]);
-      cout<<line.Data()<<endl;
-    }
-
+  }
+  myfile4.close();
 
 
 
