@@ -46,10 +46,11 @@ TStyle *AliFigure::fgStyle;
 
 AliFigure::AliFigure(const char* name, const char* title, Int_t ww, Int_t wh) :
   TCanvas(name, title, ww, wh),
+  fDisabled(kFALSE),
   isMC(kFALSE),
   fStatus(kWorkInProgress),
   fDateFormat("%d/%m/%Y"),
-  fTextSize(16),
+  fTextSize(20),
   fTextColor(kBlack),
   fLogoFilename(),
   fLogoPosX(0.2),
@@ -66,12 +67,14 @@ AliFigure::AliFigure(const char* name, const char* title, Int_t ww, Int_t wh) :
   // default ctor
 
   fStatusString[kWorkInProgress] = "work in progress";
+  fStatusString[kThisWork]       = "- this work -";
   fStatusString[kPerformance]    = "Performance";
   fStatusString[kPreliminary]    = "Preliminary";
   fStatusString[kFinal]          = "";
 
   fLogoFilename[kWorkInProgress] = "$ALICE_ROOT/PWG/Tools/fig/2011-Nov-24-ALICE_logo_WithoutStrapline.eps";
-  fLogoFilename[kPerformance] = "$ALICE_ROOT/PWG/Tools/fig/2011-Nov-24-ALICE_logo_WithoutStrapline.eps";
+  fLogoFilename[kThisWork]       = "";
+  fLogoFilename[kPerformance]    = "$ALICE_ROOT/PWG/Tools/fig/2011-Nov-24-ALICE_logo_WithoutStrapline.eps";
   // fLogoFilename[kPerformance]    = "$ALICE_ROOT/PWG/Tools/fig/2011-Nov-24-ALICE_PERFORMANCE_logo_BLACK_small_usage_design.eps";
   fLogoFilename[kPreliminary]    = "$ALICE_ROOT/PWG/Tools/fig/2011-Nov-24-ALICE_PRELIMINARY_logo_BLACK_small_usage_design.eps";
   fLogoFilename[kFinal]          = "";
@@ -181,6 +184,9 @@ void AliFigure::Update()
   // while updating make sure that the additional logo and text
   // get drawn last
 
+  if (fDisabled)
+    return;
+
   this->UpdateLogoPos();
   this->UpdatePad(this);
 
@@ -188,10 +194,10 @@ void AliFigure::Update()
     this->GetListOfPrimitives()->Add(fLogoPad);
   }
   this->GetListOfPrimitives()->Add(fCollSystem);
-  if ((fStatus == kWorkInProgress))
+  if ((fStatus == kWorkInProgress) || (fStatus == kThisWork))
     this->GetListOfPrimitives()->Add(fStatusPad);
   this->GetListOfPrimitives()->Add(fDataSample);
-  this->GetListOfPrimitives()->Add(fDate);
+  // this->GetListOfPrimitives()->Add(fDate);
   this->GetListOfPrimitives()->Add(fTag);
 
   this->Modified(kTRUE);
@@ -271,13 +277,13 @@ void AliFigure::SetLogoPos(Pos_t pos)
     SetLogoPos(0.5, 0.2);
     break;
   case kSW:
-    SetLogoPos(0.2, 0.2);
+    SetLogoPos(0.25, 0.2);
     break;
   case kW:
-    SetLogoPos(0.2, 0.5);
+    SetLogoPos(0.25, 0.5);
     break;
   case kNW:
-    SetLogoPos(0.2, 0.8);
+    SetLogoPos(0.25, 0.8);
     break;
   case kCenter:
     SetLogoPos(0.5, 0.5);
@@ -329,17 +335,20 @@ TStyle* AliFigure::Style()
     fgStyle->SetName("alice");
     fgStyle->SetTitle("ALICE figure style");
 
-    int font = 42;
+    const int font = 43;
     fgStyle->SetFrameBorderMode(0);
     fgStyle->SetFrameFillColor(0);
     fgStyle->SetCanvasBorderMode(0);
     fgStyle->SetPadBorderMode(0);
     fgStyle->SetPadColor(10);
     fgStyle->SetCanvasColor(10);
-    fgStyle->SetOptTitle(1);
+    fgStyle->SetOptTitle(0);
     fgStyle->SetTitleFillColor(10);
     fgStyle->SetTitleBorderSize(0);
-    fgStyle->SetTitleFontSize(0.08);
+    if ((font % 10) == 3)
+      fgStyle->SetTitleFontSize(30);
+    else
+      fgStyle->SetTitleFontSize(0.08);
     fgStyle->SetStatColor(10);
     fgStyle->SetStatBorderSize(1);
     // legend settings
@@ -357,12 +366,18 @@ TStyle* AliFigure::Style()
     fgStyle->SetStatW(0.3);
     fgStyle->SetTickLength(0.02,"y");
     fgStyle->SetEndErrorSize(3);
-    fgStyle->SetLabelSize(0.05,"xyz");
+    if ((font % 10) == 3)
+      fgStyle->SetLabelSize(30, "xyz");
+    else
+      fgStyle->SetLabelSize(0.05,"xyz");
     fgStyle->SetLabelFont(font,"xyz");
     fgStyle->SetLabelOffset(0.01,"xyz");
     fgStyle->SetTitleFont(font,"xyz");
-    fgStyle->SetTitleOffset(1.0,"xyz");
-    fgStyle->SetTitleSize(0.06,"xyz");
+    fgStyle->SetTitleOffset(1.,"xyz");
+    if ((font % 10) == 3)
+      fgStyle->SetTitleSize(34, "xyz");
+    else
+      fgStyle->SetTitleSize(0.06,"xyz");
     fgStyle->SetMarkerSize(1);
     fgStyle->SetPalette(1,0);
     if (kFALSE) {
@@ -416,6 +431,10 @@ void AliFigure::UpdateLogoPos()
     fStatusPad->SetY(fLogoPosY - height/2 + offset);
     offset -= (1.2*fTextSize)/this->GetWh();
   }
+  else if (fStatus == kThisWork) {
+    fStatusPad->SetX(0.25);
+    fStatusPad->SetY(0.95);
+  }
 
   fDate->SetX(fLogoPosX);
   fDate->SetY(fLogoPosY - height/2 + offset);
@@ -436,8 +455,9 @@ void AliFigure::UpdatePad(TPad *pad)
   // set the geometry for the pad
   pad->SetLeftMargin(0.15);
   pad->SetRightMargin(0.04);
-  pad->SetRightMargin(0.04);
   pad->SetBottomMargin(0.15);
+
+  fCollSystem->SetX(.96);
 
   // now walk through all the children
   TList *listOfPrimitives = pad->GetListOfPrimitives();
@@ -460,11 +480,15 @@ void AliFigure::UpdatePad(TPad *pad)
       //   // graph->SetLineColor(currentLineColor);
       // }
       if (obj->InheritsFrom("TPad")) {
-	this->UpdatePad((TPad*) obj);
+	// this->UpdatePad((TPad*) obj);
+      }
+      else if (obj->InheritsFrom("TH2")) {
+        pad->SetRightMargin(.18);
+	fCollSystem->SetX(.82);
       }
       else if (obj->InheritsFrom("TLegend")) {
         TLegend *leg = (TLegend*) obj;
-        leg->SetTextFont(43);
+        // leg->SetTextFont(43);
         leg->SetBorderSize(1);
         leg->SetFillStyle(0);
         leg->SetFillColor(1);
