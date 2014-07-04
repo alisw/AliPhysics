@@ -110,6 +110,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   virtual Bool_t   AcceptTrack(AliAODTrack *t); 
   virtual Bool_t   AcceptTrackV0(const AliAODTrack *t);
   virtual Bool_t   AcceptV0(AliAODVertex *vtx, const AliAODv0 *v0);
+  virtual Bool_t   GoodTPCSharedMap(const AliAODTrack *t);
+  virtual Bool_t   GoodTPCSharedMap(AliAODTrack *t);
+  //virtual Float_t  GetFractionTPCSharedCls(AliAODTrack *track1,const AliAODTrack *track2);
   virtual void     RecCascade(AliAODTrack *trk1,const AliAODTrack *trk2,const AliAODTrack *trkBch,TString histo);
   virtual void     V0Loop(V0LoopStep_t step, Bool_t isTriggered, Int_t iArray, Int_t idTrig);
   virtual void     TriggerParticle();
@@ -171,6 +174,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fCentrality;                   //! Event centrality per centil
   TH1F*   fCentrality2;                  //! Event centrality per centil with |VtxZ|<10cm
   TH2F*   fCentralityTrig;               //! Event centrality per trigger
+  TH2F*   fPrimayVtxGlobalvsSPD;         //! Zvtx tracking vs Zvtx SPD
   TH1F*   fPrimaryVertexX;               //! Primary vertex position in X
   TH1F*   fPrimaryVertexY;               //! Primary vertex position in Y
   TH1F*   fPrimaryVertexZ;               //! Primary vertex position in Z
@@ -322,6 +326,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fK0sMassPtPhi;                 //! K0s: mass vs pt vs phi
 
   TH2F*   fK0sDaughtersPt;               //! K0s: pt of daughters
+  TH3F*   fSharedClsTrigDaug;            //! Splitting studies according to the TPC Shared Bit Map for K0s Lambda and AntiLambda
+  THnSparse* fK0sPosDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fK0sNegDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
   TH3F*   fK0sDCADaugToPrimVtx;          //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fK0sSpatialRes;                //! K0s: Spatial resolution  
    
@@ -348,6 +355,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaMassPtPhi;              //! Lambda: mass vs pt vs phi 
 
   TH2F*   fLambdaDaughtersPt;            //! Lambda: pt of daughters
+  THnSparse* fLambdaPosDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fLambdaNegDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
   TH3F*   fLambdaDCADaugToPrimVtx;       //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fLambdaSpatialRes;             //! Lambda: Spatial resolution  
 
@@ -375,6 +384,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaMassPtPhi;                //! Lambda: mass vs phi 
 
   TH2F*   fAntiLambdaDaughtersPt;              //! AntiLambda: pt of daughters
+  THnSparse* fAntiLambdaPosDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fAntiLambdaNegDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
   TH3F*   fAntiLambdaDCADaugToPrimVtx;         //! AntiLambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fAntiLambdaSpatialRes;               //! AntiLambda: Spatial resolution  
 
