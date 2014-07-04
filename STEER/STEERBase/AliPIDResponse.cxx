@@ -67,7 +67,7 @@ fITSPIDmethod(kITSTruncMean),
 fTuneMConData(kFALSE),
 fTuneMConDataMask(kDetTOF|kDetTPC),
 fIsMC(isMC),
-fCachePID(kTRUE),
+fCachePID(kFALSE),
 fOADBPath(),
 fCustomTPCpidResponse(),
 fBeamType("PP"),
@@ -2100,7 +2100,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasTPC(const AliVParticle *vtrack, AliPID:
   AliVTrack *track=(AliVTrack*)vtrack;
 
   const EDetPidStatus pidStatus=GetTPCPIDStatus(track);
-  if (pidStatus!=kDetPidOk) return -999.;
+  if (pidStatus==kDetNoSignal) return -999.;
 
   // the following call is needed in order to fill the transient data member
   // fTPCsignalTuned which is used in the TPCPIDResponse to judge
@@ -2329,7 +2329,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   
   const EDetPidStatus pidStatus=GetTPCPIDStatus(track);
-  if (pidStatus!=kDetPidOk) return pidStatus;
+  if (pidStatus==kDetNoSignal) return pidStatus;
   
   Double_t dedx=track->GetTPCsignal();
   Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
@@ -2357,7 +2357,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
     for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   }
   
-  return kDetPidOk;
+  return pidStatus;
 }
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
@@ -2594,7 +2594,7 @@ Float_t AliPIDResponse::GetTOFMismatchProbability(const AliVTrack *track) const
 
   //mismatch
   const EDetPidStatus tpcStatus=GetTPCPIDStatus(track);
-  if (tpcStatus!=kDetPidOk) return 0.;
+  if (tpcStatus==kDetNoSignal) return 0.;
   
   const Double_t meanCorrFactor = 0.11/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
   Bool_t mismatch = kTRUE/*, heavy = kTRUE*/;
