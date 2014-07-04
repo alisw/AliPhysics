@@ -39,6 +39,7 @@ public:
    void         Draw(Option_t* option);
 
    void         Run(Int_t nevents);
+   void         RunAndSaveTreeWithNucleons(Int_t nevents, const char * filename);
    Bool_t       NextEvent(Double_t bgen=-1);
    Bool_t       CalcEvent(Double_t bgen);
 
@@ -100,6 +101,7 @@ public:
    void   Seta(Double_t a)  {fANucleus.SetA(a); fBNucleus.SetA(a);}
    void   SetDoFluc(Double_t omega, Double_t sig0, Double_t lam, Bool_t on=kTRUE) 
             {fDoFluc=on;fOmega=omega;fSig0=sig0;fLambda=lam;}
+   void   SetSaveNucleonsInNtuple (Bool_t var) { fSaveNucleonsInNtuple = var;}
    static void       PrintVersion()         {cout << "AliGlauberMC " << Version() << endl;}
    static const char *Version()             {return "v1.2";}
    static void       RunAndSaveNtuple( Int_t n,
@@ -252,8 +254,11 @@ private:
    Double_t     fLambda;         //lambda parameter
    TF1         *fSigFluc;        //!parameterization for fluctuating sigNN
    Bool_t       CalcResults(Double_t bgen);
+  
+  Bool_t fSaveNucleonsInNtuple; // if true, a tclonesArray of nucleons is saved to the Glauber ntuple
 
-   ClassDef(AliGlauberMC,4)
+
+   ClassDef(AliGlauberMC,5)
 };
 
 #endif
