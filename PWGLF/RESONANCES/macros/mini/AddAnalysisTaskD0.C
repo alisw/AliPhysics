@@ -21,7 +21,6 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Bool_t      isPP,
    Bool_t      ispPb,
    TString     centrality = "V0M",
-   Float_t     cutV = 10.0,
    Int_t       aodFilterBit = 5,  
    Float_t     nsigmaTPCPi = 3.0,
    Float_t     nsigmaTPCKa = 3.0,
@@ -56,14 +55,16 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
-   Int_t       aodN = 0,
-   TString     outNameSuffix = "D0"
+   TString     outNameSuffix = "D0"  
 )
 {  
   //
   // -- INITIALIZATION ----------------------------------------------------------------------------
   // retrieve analysis manager
   //
+  Float_t     cutV = 10.0;
+  Int_t       aodN = 0;
+  
   
   UInt_t trigger = 0;
   
