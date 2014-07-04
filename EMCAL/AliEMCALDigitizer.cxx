@@ -770,95 +770,107 @@ void AliEMCALDigitizer::CalibrateADCTime(Float_t & adc, Float_t & time, const In
 
 
 //____________________________________________________________________________
-void AliEMCALDigitizer::Digitize(Option_t *option) 
-{ 
+void AliEMCALDigitizer::Digitize(Option_t *option)
+{
   // Steering method to process digitization for events
   // in the range from fFirstEvent to fLastEvent.
   // This range is optionally set by SetEventRange().
   // if fLastEvent=-1, then process events until the end.
   // by default fLastEvent = fFirstEvent (process only one event)
-
-  if (!fInit) { // to prevent overwrite existing file
+  
+  if (!fInit)
+  { // to prevent overwrite existing file
     Error( "Digitize", "Give a version name different from %s", fEventFolderName.Data() ) ;
     return ;
-  } 
-
-  if (strstr(option,"print")) {
-
+  }
+  
+  if (strstr(option,"print"))
+  {
     Print();
-    return ; 
+    return ;
   }
   
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALDigitizer");
-
-  AliRunLoader *rl = AliRunLoader::Instance();
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
-  Int_t nEvents = 0;
-  if(!emcalLoader){
-    AliFatal("Did not get the  Loader");
-  }
-  else{
-    
-    if (fLastEvent == -1)  {
-      fLastEvent = rl->GetNumberOfEvents() - 1 ;
-    }
-    else if (fDigInput) 
-      fLastEvent = fFirstEvent ; // what is this ??
-    
-    nEvents = fLastEvent - fFirstEvent + 1;
-    Int_t ievent  = -1;
-
-    AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-    const Int_t nTRU = geom->GetNTotalTRU();
-    TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",    nTRU*96);
-    TClonesArray* digitsTRG = new TClonesArray("AliEMCALRawDigit", nTRU*96);
-
-    rl->LoadSDigits("EMCAL");
-    for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-      
-      rl->GetEvent(ievent);
-      
-      Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
-      
-      WriteDigits() ;
-      
-      //Trigger Digits
-      //-------------------------------------
-     
-
-      Digits2FastOR(digitsTMP, digitsTRG);  
-      
-      WriteDigits(digitsTRG);
-      
-      (emcalLoader->TreeD())->Fill();
-      
-      emcalLoader->WriteDigits(   "OVERWRITE");
-      
-      Unload();
-      
-      digitsTRG  ->Delete();
-      digitsTMP  ->Delete();
-      
-      //-------------------------------------
-      
-      if(strstr(option,"deb"))
-        PrintDigits(option);
-      if(strstr(option,"table")) gObjectTable->Print();
-      
-      //increment the total number of Digits per run 
-      fDigitsInRun += emcalLoader->Digits()->GetEntriesFast() ;  
-    }//loop
-       
-  }//loader exists
   
-  if(strstr(option,"tim")){
+  AliRunLoader *rl = AliRunLoader::Instance();
+  
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+  if(!emcalLoader)
+  {
+    AliFatal("Did not get the  Loader");
+    return; // coverity
+  }
+  
+  if (fLastEvent == -1)
+    fLastEvent = rl->GetNumberOfEvents() - 1 ;
+  else if (fDigInput)
+    fLastEvent = fFirstEvent ; // what is this ??
+  
+  Int_t nEvents = fLastEvent - fFirstEvent + 1;
+  Int_t ievent  = -1;
+  
+  AliEMCAL * emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
+  if(!emcal)
+  {
+    AliFatal("Did not get the AliEMCAL pointer");
+    return; // coverity
+  }
+  
+  AliEMCALGeometry *geom = emcal->GetGeometry();
+  if(!geom)
+  {
+    AliFatal("Geometry pointer null");
+    return; // fix for coverity
+  }
+  
+  const Int_t nTRU = geom->GetNTotalTRU();
+  TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",    nTRU*96);
+  TClonesArray* digitsTRG = new TClonesArray("AliEMCALRawDigit", nTRU*96);
+  
+  rl->LoadSDigits("EMCAL");
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++)
+  {
+    rl->GetEvent(ievent);
+    
+    Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
+    
+    WriteDigits() ;
+    
+    //Trigger Digits
+    //-------------------------------------
+    
+    Digits2FastOR(digitsTMP, digitsTRG);
+    
+    WriteDigits(digitsTRG);
+    
+    (emcalLoader->TreeD())->Fill();
+    
+    emcalLoader->WriteDigits(   "OVERWRITE");
+    
+    Unload();
+    
+    digitsTRG  ->Delete();
+    digitsTMP  ->Delete();
+    
+    //-------------------------------------
+    
+    if(strstr(option,"deb"))
+      PrintDigits(option);
+    if(strstr(option,"table")) gObjectTable->Print();
+    
+    //increment the total number of Digits per run
+    fDigitsInRun += emcalLoader->Digits()->GetEntriesFast() ;
+  }//loop
+  
+  if(strstr(option,"tim"))
+  {
     gBenchmark->Stop("EMCALDigitizer");
     Float_t cputime   = gBenchmark->GetCpuTime("EMCALDigitizer");
     Float_t avcputime = cputime;
     if(nEvents==0) avcputime = 0 ;
     AliInfo(Form("Digitize: took %f seconds for Digitizing %f seconds per event", cputime, avcputime)) ;
-  } 
+  }
 }
 
 //__________________________________________________________________
@@ -892,6 +904,11 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
   if (!emcalLoader) AliFatal("Did not get the  Loader");
   
   const  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+  if(!geom)
+  {
+    AliFatal("Geometry pointer null");
+    return; // fix for coverity
+  }
   
   // build FOR from simulated digits
   // and xfer to the corresponding TRU input (mapping)
@@ -912,7 +929,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
     Int_t id = digit->GetId();
     
     Int_t trgid;
-    if (geom && geom->GetFastORIndexFromCellIndex(id , trgid))
+    if (geom->GetFastORIndexFromCellIndex(id , trgid))
     {
       AliDebug(1,Form("trigger digit id: %d from cell id: %d\n",trgid,id));
       
@@ -1245,7 +1262,8 @@ void AliEMCALDigitizer::WriteDigits()
 
 //__________________________________________________________________
 void AliEMCALDigitizer::WriteDigits(TClonesArray* digits, const char* branchName)
-{ // overloaded method
+{
+  // overloaded method
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
   if(emcalLoader){
     
@@ -1276,59 +1294,43 @@ void AliEMCALDigitizer::WriteDigits(TClonesArray* digits, const char* branchName
 //__________________________________________________________________
 Bool_t AliEMCALDigitizer::IsDead(AliEMCALDigit *digit) 
 {
-  AliRunLoader *runLoader = AliRunLoader::Instance();
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));
-  if (!emcalLoader) AliFatal("Did not get the  Loader");
-  
-  AliCaloCalibPedestal *caloPed = emcalLoader->PedestalData();
-  if (!caloPed) {
-    AliWarning("Could not access pedestal data! No dead channel removal applied");
-    return kFALSE;
-  }
-  
-	// Load Geometry
-  const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
-  if (!geom) AliFatal("Did not get geometry from EMCALLoader");
-  
+  // Check if cell is defined as dead, so that it is not included
+  // input is digit
   Int_t absId   = digit->GetId();
-  Int_t iSupMod = -1;
-  Int_t nModule = -1;
-  Int_t nIphi   = -1;
-  Int_t nIeta   = -1;
-  Int_t iphi    = -1;
-  Int_t ieta    = -1;
-	
-  Bool_t bCell = geom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
-	
-  if (!bCell) Error("IsDead","Wrong cell id number : absId %i ", absId) ;
-  geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
 
-  Int_t channelStatus = (Int_t)(caloPed->GetDeadMap(iSupMod))->GetBinContent(ieta,iphi);
-
-  if (channelStatus == AliCaloCalibPedestal::kDead) 
-    return kTRUE;
-  else
-    return kFALSE;
+  return IsDead(absId);
+  
 }
 
 
 //__________________________________________________________________
 Bool_t AliEMCALDigitizer::IsDead(Int_t absId)
 {
+  // Check if cell absID is defined as dead, so that it is not included
+
     AliRunLoader *runLoader = AliRunLoader::Instance();
     AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));
-    if (!emcalLoader) AliFatal("Did not get the  Loader");
-    
+    if (!emcalLoader)
+    {
+      AliFatal("Did not get the  Loader");
+      return kTRUE;
+    }
+  
     AliCaloCalibPedestal *caloPed = emcalLoader->PedestalData();
-    if (!caloPed) {
+    if (!caloPed)
+    {
         AliWarning("Could not access pedestal data! No dead channel removal applied");
         return kFALSE;
     }
     
 	// Load Geometry
     const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
-    if (!geom) AliFatal("Did not get geometry from EMCALLoader");
-    
+    if (!geom)
+    {
+      AliFatal("Did not get geometry from EMCALLoader");
+      return kTRUE; //coverity
+    }
+  
     Int_t iSupMod = -1;
     Int_t nModule = -1;
     Int_t nIphi   = -1;

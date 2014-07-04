@@ -74,6 +74,7 @@ public:
    *  @return     always kTRUE;
    */
   Bool_t IsSortable() const  { return kTRUE; }
+  virtual Bool_t IsPrimary()  const  { return kFALSE; }
   
 
   // coordinate system conversions

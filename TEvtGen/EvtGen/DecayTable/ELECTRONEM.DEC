@@ -1,0 +1,38 @@
+#####
+Decay pi0
+0.011738247 e+      e-      gamma                           PI0_DALITZ; #[Reconstructed PDG2011]
+0.000033392 e+      e+      e-      e-                      PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000000065 e+      e-                                      PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay eta
+0.007000000 gamma   e+      e-                              PHSP; #[Reconstructed PDG2011]
+0.000214200 pi+     pi-     e+      e-                      PHSP; #[Reconstructed PDG2011]
+Enddecay
+
+Decay rho0
+0.0000472           e+      e-                              PHSP;
+0.00001     pi0     e+      e-                              PHSP;
+Enddecay
+
+Decay omega
+0.000770000 pi0     e+      e-                              PHOTOS PHSP; #[Reconstructed PDG2011]
+0.000072800 e+      e-                                      PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay eta'
+0.002400000 pi+     pi-     e+      e-                      PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay phi
+0.000295400 e+      e-                                      PHOTOS      VLL; #[Reconstructed PDG2011]
+0.000115000 eta     e+      e-                              PHSP; #[Reconstructed PDG2011]
+0.000011200 pi0     e+      e-                              PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay J/psi
+0.059400000 e+      e-                                      PHOTOS   VLL; #[Reconstructed PDG2011]
+0.008800000 gamma   e+      e-                              PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+End

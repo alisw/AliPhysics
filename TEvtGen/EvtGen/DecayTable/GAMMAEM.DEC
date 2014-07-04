@@ -1,0 +1,47 @@
+#####
+Decay pi0
+0.988228297 gamma   gamma                                   PHSP; #[Reconstructed PDG2011]
+0.011738247 e+      e-      gamma                           PI0_DALITZ; #[Reconstructed PDG2011]
+Enddecay
+
+Decay eta
+0.393100000 gamma   gamma                                   PHSP; #[Reconstructed PDG2011]
+0.046000000 gamma   pi-     pi+                             PHSP; #[Reconstructed PDG2011]
+0.007000000 gamma   e+      e-                              PHSP; #[Reconstructed PDG2011]
+0.000310000 gamma   mu+     mu-                             PHSP; #[Reconstructed PDG2011]
+0.000270000 gamma   gamma   pi0                             PHSP; #[Reconstructed PDG2011]
+Enddecay
+
+Decay rho0
+0.0099        pi+        pi-         gamma            PHSP;
+0.0006        pi0        gamma                        PHSP;
+0.0003        eta        gamma                        PHSP;
+0.00005       pi0        pi0         gamma            PHSP;
+Enddecay
+
+Decay omega
+0.082800000 pi0     gamma                                   VSP_PWAVE; #[Reconstructed PDG2011]
+0.000460000 eta     gamma                                   VSP_PWAVE; #[Reconstructed PDG2011]
+0.00150    pi+  pi- gamma                  PHSP;
+0.000066000 pi0     pi0     gamma                           PHSP; #[Reconstructed PDG2011]
+Enddecay
+
+Decay eta'
+0.293511000 rho0    gamma                                   SVP_HELAMP  1.0 0.0 1.0 0.0; #[Reconstructed PDG2011]
+0.027500000 omega   gamma                                   SVP_HELAMP  1.0 0.0 1.0 0.0; #[Reconstructed PDG2011]
+0.022200000 gamma   gamma                                   PHSP; #[Reconstructed PDG2011]
+0.000109000 gamma   mu-     mu+                             PHOTOS   PHSP; #[Reconstructed PDG2011]
+Enddecay
+
+Decay phi
+0.013090000 eta     gamma                                   VSP_PWAVE; #[Reconstructed PDG2011]
+0.000687600 pi0     gamma                                   VSP_PWAVE; #[Reconstructed PDG2011]
+0.000113000 pi0     pi0     gamma                           PHSP; #[Reconstructed PDG2011]
+0.000322000 f_0     gamma                                   PHSP; #[Reconstructed PDG2011]
+0.000041000 pi+     pi-     gamma                           PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000072700 pi0     eta     gamma                           PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000062500 eta'    gamma                                   PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.000014000 mu+     mu-     gamma                           PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+End

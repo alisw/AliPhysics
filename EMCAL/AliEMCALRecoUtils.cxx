@@ -2488,8 +2488,13 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliVEvent *event)
     for (Int_t iTrk=0; iTrk<nTracks; ++iTrk) 
     {
       AliVTrack* track = dynamic_cast<AliVTrack*>(event->GetTrack(iTrk));
-      if (iTrk == matchTrackIndex) continue;
-      if (track->GetEMCALcluster() == iClus) {
+      
+      if( !track ) continue;
+      
+      if ( iTrk == matchTrackIndex ) continue;
+      
+      if ( track->GetEMCALcluster() == iClus )
+      {
         arrayTrackMatched[nMatched] = iTrk;
         ++nMatched;
       }

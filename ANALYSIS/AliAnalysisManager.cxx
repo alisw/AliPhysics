@@ -303,8 +303,8 @@ void AliAnalysisManager::CreateReadCache()
       return;
    }
    gEnv->SetValue("TFile.AsyncPrefetching",(Int_t)fAsyncReading);
-   if (fAsyncReading) gEnv->SetValue("Cache.Directory",Form("file://%s/cache", gSystem->WorkingDirectory()));
-   if (fAsyncReading) gEnv->SetValue("TFile.AsyncReading",1);
+//   if (fAsyncReading) gEnv->SetValue("Cache.Directory",Form("file://%s/cache", gSystem->WorkingDirectory()));
+//   if (fAsyncReading) gEnv->SetValue("TFile.AsyncReading",1);
    fTree->SetCacheSize(fCacheSize);
    TTreeCache::SetLearnEntries(1);  //<<< we can take the decision after 1 entry
    if (!fAutoBranchHandling && !fRequestedBranches.IsNull()) {

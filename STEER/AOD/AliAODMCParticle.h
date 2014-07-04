@@ -101,7 +101,7 @@ class AliAODMCParticle: public AliVParticle {
       if(b)fFlag |= kPrimary;
       else fFlag &= ~kPrimary;
     }
-    Bool_t IsPrimary() const {return ((fFlag&kPrimary)==kPrimary);} 
+    virtual Bool_t IsPrimary() const {return ((fFlag&kPrimary)==kPrimary);} 
 
     void SetPhysicalPrimary(Bool_t b = kTRUE){
      if(b)fFlag |= kPhysicalPrim;

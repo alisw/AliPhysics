@@ -483,7 +483,7 @@ void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
   Double_t prob[AliPID::kSPECIESC]={0.};
   EDetPidStatus pidStatus=ComputePIDProbability(kTPC, esdtr, AliPID::kSPECIESC, prob);
   // check if a valid signal was found, otherwise return pion mass
-  if (pidStatus!=kDetPidOk) {
+  if (pidStatus!=kDetNoSignal) { //kDetPidOk) {
     esdtr->SetPIDForTracking(AliPID::kPion);
     return;
   }
