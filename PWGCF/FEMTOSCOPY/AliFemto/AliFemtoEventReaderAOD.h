@@ -72,7 +72,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
 				    AliFemtoTrack *tFemtoTrack
 				    //				    AliPWG2AODTrack *tPWG2AODTrack
 				    );
-  virtual void CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFemtoV0);
+  virtual AliFemtoV0* CopyAODtoFemtoV0(AliAODv0 *tAODv0);
   virtual void CopyPIDtoFemtoTrack( AliAODTrack *tAodTrack,
 				   AliFemtoTrack *tFemtoTrack);
 

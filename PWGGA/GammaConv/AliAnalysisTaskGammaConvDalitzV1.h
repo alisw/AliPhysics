@@ -123,7 +123,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1F **hESDDalitzElectronAfterPt;
     TH1F **hESDDalitzPositronAfterPt;
     TH1F **hESDDalitzElectronAfterEta;
+    TH1F **hESDDalitzElectronAfterEtaPCut;
     TH1F **hESDDalitzPositronAfterEta;
+    TH1F **hESDDalitzPositronAfterEtaPCut;
     TH1F **hESDDalitzElectronAfterPhi;
     TH1F **hESDDalitzPositronAfterPhi;
     TH1F **hESDDalitzElectronAfterNClsITS;

@@ -9,46 +9,41 @@ const Float_t etamax = 0.9;
 const Int_t   mintrackrefsTPC = 0;
 const Int_t   mintrackrefsITS = 0;
 
-void AddTaskPWG4HighPtSpectra(TString year = "2011", char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0, UInt_t triggerMask = AliVEvent::kMB,Bool_t bSelectHijingParticles = kFALSE,Bool_t usePythiaxsec = kFALSE)
+/* AddTask setting up the containers and adding the tasks for computing the efficiency of the Hybrid Tracks. Tasks works on ESDs and AODs (datatype established automatically).
+Input:
+hybridTrackDef: "2010" or "2011", indicates whether the 2010 definition or the 2011 definition of the hybrid tracks should be used. Only important in ESD.
+prodType: Data or MC period, 
+beamType: "pp", "pPb" or "PbPb"
+triggerMask: Event Selection Trigger Mask
+bSelHijingParticles: kTRUE, select only particles from Hijing event. kFALSE, select all particles of the cocktail
+usePythiaxsec: kFALSE, do not use the Pythia cross section information file. This might reduce the number of errors and file opening issues. 
+*/
+
+void AddTaskHybridTrackEfficiency(TString hybridTrackDef = "2011", char *prodType = "LHC11h", TString beamType = "PbPb", UInt_t triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
 {
-  int cent = 10;
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    Error("AddTaskPWG4HighPtSpectra", "No analysis manager to connect to.");
+    return NULL;
+  }  
+  TString dataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
-  if(year.Contains("2011")) {
-    AddTaskPWG4HighPtSpectra2011(prodType,isPbPb,iAODanalysis,bSelectHijingParticles,usePythiaxsec);
+  if(dataType=="AOD") {
+    AddTaskHybridTrackEfficiencyAOD(prodType, beamType, triggerMask, bSelHijingParticles, usePythiaxsec);
   }
-  else {
-
-    AliPWG4HighPtSpectra *taskSpectra00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-    AliPWG4HighPtSpectra *taskSpectra01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-    //  AliPWG4HighPtSpectra *taskSpectra02cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-    //  AliPWG4HighPtSpectra *taskSpectra10cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-    //  AliPWG4HighPtSpectra *taskSpectra20cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-    AliPWG4HighPtSpectra *taskSpectra70cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-    AliPWG4HighPtSpectra *taskSpectra71cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-    AliPWG4HighPtSpectra *taskSpectra72cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-
-    if(isPbPb) {
-      for(cent=0; cent<4; cent++) {
-	AliPWG4HighPtSpectra *taskSpectra00 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-	AliPWG4HighPtSpectra *taskSpectra01 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-	//      AliPWG4HighPtSpectra *taskSpectra02 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-	//      AliPWG4HighPtSpectra *taskSpectra10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-	//      AliPWG4HighPtSpectra *taskSpectra20 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-	AliPWG4HighPtSpectra *taskSpectra70 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-	AliPWG4HighPtSpectra *taskSpectra71 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-	AliPWG4HighPtSpectra *taskSpectra72 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2,triggerMask,bSelectHijingParticles,iAODanalysis,usePythiaxsec);
-      }
-    }
+  if(dataType=="ESD") {
+    if(hybridTrackDef.Contains("2010"))
+      AddTaskHybridTrackEfficiencyESD2010(prodType, beamType, triggerMask, bSelHijingParticles, usePythiaxsec);
+    if(hybridTrackDef.Contains("2011"))
+      AddTaskHybridTrackEfficiencyESD2011(prodType, beamType, triggerMask, bSelHijingParticles, usePythiaxsec);
   }
 }
 
-void AddTaskPWG4HighPtSpectraQA_AOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, UInt_t triggerMask = AliVEvent::kMB,Bool_t bSelectHijingParticles = kFALSE,Bool_t usePythiaxsec = kFALSE)
+void AddTaskHybridTrackEfficiencyAOD(char *prodType = "LHC11h", TString beamType = "PbPb", UInt_t triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
 {
   Int_t filterMask1; //standard global tracks
   Int_t filterMask2; //complementary tracks
   Int_t filterMask; //the sum: hybrid tracks
-
-  Bool_t bIncludeNoITS = kFALSE;
 
   TString strRunPeriod = TString(prodType);
   strRunPeriod.ToLower();
@@ -78,79 +73,95 @@ void AddTaskPWG4HighPtSpectraQA_AOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRU
     return NULL;
   }
 
-  AliPWG4HighPtSpectra   *taskSpectraSUM   = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,10,0,0,triggerMask,bSelectHijingParticles,kTRUE,usePythiaxsec,filterMask ); //Sum: the hybrid tracks.
-  AliPWG4HighPtSpectra   *taskSpectraRESTR = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,10,0,5,triggerMask,bSelectHijingParticles,kTRUE,usePythiaxsec,filterMask1); //With SPD and ITS refit.
-  AliPWG4HighPtSpectra   *taskSpectraNOSPD = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,10,7,5,triggerMask,bSelectHijingParticles,kTRUE,usePythiaxsec,filterMask2); //Only ITS refit, not SPD.
-  if(isPbPb) { //also vary the centrality
-    AliPWG4HighPtSpectra *taskSpectraCent0 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,0 ,0,0,triggerMask,bSelectHijingParticles,kTRUE,usePythiaxsec,filterMask );
-    AliPWG4HighPtSpectra *taskSpectraCent1 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,1 ,0,0,triggerMask,bSelectHijingParticles,kTRUE,usePythiaxsec,filterMask );
-    AliPWG4HighPtSpectra *taskSpectraCent2 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,2 ,0,0,triggerMask,bSelectHijingParticles,kTRUE,usePythiaxsec,filterMask );
-    AliPWG4HighPtSpectra *taskSpectraCent3 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,3 ,0,0,triggerMask,bSelectHijingParticles,kTRUE,usePythiaxsec,filterMask );
-  }
-}
-
-void AddTaskPWG4HighPtSpectra2011(char *prodType = "LHC10h", Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
-{
-
-  int cent = 10;
-
-  UInt_t iPhysicsSelectionFlag = AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral;
-  UInt_t iPhysicsSelectionFlagEMCEJE = AliVEvent::kEMCEJE;
-
-  AliPWG4HighPtSpectra *taskSpectra00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectra01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectra70cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectra71cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectra72cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectra05cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,5,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectra74cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,4,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectra75cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,5,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectra40cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,4,0,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-
-  AliPWG4HighPtSpectra *taskSpectraEMCJE00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectraEMCJE01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectraEMCJE70cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectraEMCJE71cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectraEMCJE72cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectraEMCJE05cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,5,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectraEMCJE74cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,4,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectraEMCJE75cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,5,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-  AliPWG4HighPtSpectra *taskSpectraEMCJE40cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,4,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-
-
-  if(isPbPb) {
-    for(cent=0; cent<4; cent++) {
-
-      AliPWG4HighPtSpectra *taskSpectra00 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectra01 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectra70 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectra71 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectra72 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectra05 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,5,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectra74 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,4,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectra75 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,5,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectra40 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,4,0,iPhysicsSelectionFlag,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-
-      AliPWG4HighPtSpectra *taskSpectraEMCJE00 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectraEMCJE01 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectraEMCJE70 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectraEMCJE71 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectraEMCJE72 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectraEMCJE05 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,5,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectraEMCJE74 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,4,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectraEMCJE75 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,5,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectraEMCJE40 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,4,0,iPhysicsSelectionFlagEMCEJE,bSelHijingParticles,iAODanalysis,usePythiaxsec);
-
+  AliPWG4HighPtSpectra   *taskSpectraSUM   = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,1,triggerMask,"CENT_10_SUM",bSelHijingParticles,usePythiaxsec,filterMask ); //Sum: the hybrid tracks.
+  AliPWG4HighPtSpectra   *taskSpectraRESTR = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,5,triggerMask,"CENT_10_RESTR",bSelHijingParticles,usePythiaxsec,filterMask1); //High quality tracks
+  AliPWG4HighPtSpectra   *taskSpectraNOSPD = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,7,5,triggerMask,"CENT_10_COMPL",bSelHijingParticles,usePythiaxsec,filterMask2); //Complementary tracks
+  if(beamType=="PbPb" || beamType=="pPb") { //also vary the centrality
+    for(int cent = 0; cent<4; cent++) {
+      AliPWG4HighPtSpectra *taskSpectraCent0 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,0,1,triggerMask,Form("CENT_%d_SUM",cent),bSelHijingParticles,usePythiaxsec,filterMask );
+      AliPWG4HighPtSpectra *taskSpectraCent0 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,0,5,triggerMask,Form("CENT_%d_RESTR",cent),bSelHijingParticles,usePythiaxsec,filterMask1 );
+      AliPWG4HighPtSpectra *taskSpectraCent0 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,7,5,triggerMask,Form("CENT_%d_COMPL",cent),bSelHijingParticles,usePythiaxsec,filterMask2 );
     }
-
   }
-
 }
 
+void AddTaskHybridTrackEfficiencyESD2010(char *prodType = "LHC10h", TString beamType = "PbPb", UInt_t triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
+{
+  AliPWG4HighPtSpectra *taskSpectra00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,0,triggerMask,"CENT_10_RAA"  ,bSelHijingParticles,usePythiaxsec); // RAA track cuts
+  AliPWG4HighPtSpectra *taskSpectra01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,1,triggerMask,"CENT_10_RESTR",bSelHijingParticles,usePythiaxsec); // High quality tracks
+  AliPWG4HighPtSpectra *taskSpectra70cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,7,0,triggerMask,"CENT_10_NOITS",bSelHijingParticles,usePythiaxsec); // Complementary tracks. Subtype: no ITS refit
+  AliPWG4HighPtSpectra *taskSpectra71cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,7,1,triggerMask,"CENT_10_NOSPD",bSelHijingParticles,usePythiaxsec); // Complementary tracks. Subtype: no SPD requirement
 
-AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool_t isPbPb=kTRUE,Int_t centClass = 0, 
+  if(beamType=="PbPb" || beamType=="pPb") { //also vary the centrality
+    for(int cent=0; cent<4; cent++) {
+      AliPWG4HighPtSpectra *taskSpectra00 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,0,0,triggerMask,Form("CENT_%d_RAA"  ,cent),bSelHijingParticles,usePythiaxsec);
+      AliPWG4HighPtSpectra *taskSpectra01 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,0,1,triggerMask,Form("CENT_%d_RESTR",cent),bSelHijingParticles,usePythiaxsec);
+      AliPWG4HighPtSpectra *taskSpectra70 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,7,0,triggerMask,Form("CENT_%d_NOITS",cent),bSelHijingParticles,usePythiaxsec);
+      AliPWG4HighPtSpectra *taskSpectra71 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,7,1,triggerMask,Form("CENT_%d_NOSPD",cent),bSelHijingParticles,usePythiaxsec);
+    }
+  }
+}
+
+void AddTaskHybridTrackEfficiencyESD2011(char *prodType = "LHC10h", TString beamType = "PbPb", UInt_t triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
+{
+  AliPWG4HighPtSpectra *taskSpectra00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,0,triggerMask,"CENT_10_RAA"  ,bSelHijingParticles,usePythiaxsec); // RAA track cuts
+  AliPWG4HighPtSpectra *taskSpectra01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,1,triggerMask,"CENT_10_RESTR",bSelHijingParticles,usePythiaxsec); // High quality tracks
+  AliPWG4HighPtSpectra *taskSpectra71cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,7,1,triggerMask,"CENT_10_NOITS",bSelHijingParticles,usePythiaxsec); // Complementary tracks. Subtype: no SPD requirement
+
+  if(beamType=="PbPb" || beamType=="pPb") { //also vary the centrality
+    for(int cent=0; cent<4; cent++) {
+      AliPWG4HighPtSpectra *taskSpectra00 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,0,0,triggerMask,Form("CENT_%d_RAA"  ,cent),bSelHijingParticles,usePythiaxsec);
+      AliPWG4HighPtSpectra *taskSpectra01 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,0,1,triggerMask,Form("CENT_%d_RESTR",cent),bSelHijingParticles,usePythiaxsec);
+      AliPWG4HighPtSpectra *taskSpectra71 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,7,1,triggerMask,Form("CENT_%d_NOITS",cent),bSelHijingParticles,usePythiaxsec);
+    }
+  }
+}
+
+void AddTaskHybridTrackEfficiencyQA_AOD_train(char *prodType = "LHC11h", TString beamType = "PbPb", UInt_t triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
+{
+  Int_t filterMask1; //standard global tracks
+  Int_t filterMask2; //complementary tracks
+  Int_t filterMask; //the sum: hybrid tracks
+
+  TString strRunPeriod = TString(prodType);
+  strRunPeriod.ToLower();
+
+  if (strRunPeriod == "lhc10h" || strRunPeriod == "lhc11h" ||
+      strRunPeriod == "lhc12a" || strRunPeriod == "lhc12b" || strRunPeriod == "lhc12c" || strRunPeriod == "lhc12d" ||
+      strRunPeriod == "lhc12e" || strRunPeriod == "lhc12f" || strRunPeriod == "lhc12g" || strRunPeriod == "lhc12g" ||
+      strRunPeriod == "lhc12h" || strRunPeriod == "lhc12i" ||
+      strRunPeriod == "lhc13b" || strRunPeriod == "lhc13c" || strRunPeriod == "lhc13d" || strRunPeriod == "lhc13e" ||
+      strRunPeriod == "lhc13f" || strRunPeriod == "lhc13g" ||
+      strRunPeriod == "lhc12a15e" || strRunPeriod == "lhc13b4" || strRunPeriod == "lhc13b4_fix" ||
+      strRunPeriod == "lhc13b4_plus" || strRunPeriod == "lhc12a15f" || strRunPeriod.Contains("lhc12a17") || strRunPeriod.Contains("lhc14a1")) {
+    filterMask  = 768;
+    filterMask1 = 256;
+    filterMask2 = 512;
+  }
+  else if (strRunPeriod == "lhc11a" || strRunPeriod == "lhc10hold" || strRunPeriod == "lhc12a15a" || strRunPeriod.Contains("lhc11a2")) {
+    filterMask  = 272;
+    filterMask1 = 16;
+    filterMask2 = 256;
+  }
+  else {
+    ::Error("AddTaskPWG4HighPtSpectra","Period string not of predefined type. Add it to the list in this macro.");
+    return NULL;
+  }
+
+  AliPWG4HighPtSpectra   *taskSpectraSUM   = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,1,triggerMask,"SUM"  ,bSelHijingParticles,usePythiaxsec,filterMask ); //Sum: the hybrid tracks.
+  AliPWG4HighPtSpectra   *taskSpectraRESTR = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,5,triggerMask,"RESTR",bSelHijingParticles,usePythiaxsec,filterMask1); //With SPD and ITS refit.
+  AliPWG4HighPtSpectra   *taskSpectraNOSPD = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,7,5,triggerMask,"NOSPD",bSelHijingParticles,usePythiaxsec,filterMask2); //Only ITS refit, not SPD.
+  if(beamType=="PbPb" || beamType=="pPb") { //also vary the centrality
+    AliPWG4HighPtSpectra *taskSpectraCent0 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,0 ,0,1,triggerMask,"CENT0",bSelHijingParticles,usePythiaxsec,filterMask );
+    AliPWG4HighPtSpectra *taskSpectraCent1 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,1 ,0,1,triggerMask,"CENT1",bSelHijingParticles,usePythiaxsec,filterMask );
+    AliPWG4HighPtSpectra *taskSpectraCent2 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,2 ,0,1,triggerMask,"CENT2",bSelHijingParticles,usePythiaxsec,filterMask );
+    AliPWG4HighPtSpectra *taskSpectraCent3 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,3 ,0,1,triggerMask,"CENT3",bSelHijingParticles,usePythiaxsec,filterMask );
+  }
+}
+
+AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", TString beamType = "PbPb", Int_t centClass = 0, 
 						     Int_t trackType = 0, Int_t cuts = 0, UInt_t triggerMask = AliVEvent::kMB,
-						     Bool_t bSelectHijingParticles = kFALSE, Int_t iAODanalysis = 0,
+						     TString taskName, Bool_t bSelHijingParticles = kFALSE,
                                                      Bool_t usePythiaxsec = kTRUE, Int_t filterMask = 0)
 {
 
@@ -183,6 +194,7 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
     Error("AddTaskPWG4HighPtSpectra", "No analysis manager to connect to.");
     return NULL;
   }  
+  TString dataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
   // B. Check the analysis type using the event handlers connected to the analysis
   //    manager. The availability of MC handler can also be checked here.
@@ -191,13 +203,6 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
     ::Error("AddTaskPWG4HighPtSpectra", "This task requires an input event handler");
     return NULL;
   }  
-  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  const char *analysisType = "ESD";//"TPC"
-
-  if( (type=="AOD" && iAODanalysis==0) || (type=="ESD" && iAODanalysis==1) ) { //check if iAODanalysis is configured correctly. TODO: this can be simplified by removing the iAODanalysis variable.
-    ::Error("AddTaskPWG4HighPtSpectra", Form("Ordering to perform the analysis on wrong datatype. This is an %s!", type));
-    return NULL;
-  }
 
   // C. Create the task, add it to manager.
   //===========================================================================
@@ -293,7 +298,7 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
   AliESDtrackCuts *trackCutsReject = 0x0;
 
-  if(!iAODanalysis) {
+  if(dataType=="ESD") {
     //Standard Cuts
     //Set track cuts for global tracks
     if(trackType==0 && cuts==0) {
@@ -422,9 +427,9 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
     trigName += "kEMCEGA";
 
 
-  AliPWG4HighPtSpectra *taskPWG4HighPtSpectra = new AliPWG4HighPtSpectra(Form("AliPWG4HighPtSpectraCent%dTrackType%dCuts%dPSF%s",centClass,trackType,cuts,trigName.Data()));
+  AliPWG4HighPtSpectra *taskPWG4HighPtSpectra = new AliPWG4HighPtSpectra(Form("AliPWG4HighPtSpectra%s_%s",taskName.Data(),trigName.Data()));
   taskPWG4HighPtSpectra->SetTrackType(trackType);
-  if(iAODanalysis)
+  if(dataType=="AOD")
     taskPWG4HighPtSpectra->SetFilterMask(filterMask);
   else {
     taskPWG4HighPtSpectra->SetCuts(trackCuts);
@@ -433,12 +438,12 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   taskPWG4HighPtSpectra->SetCFManagerPos(manPos); //here is set the CF manager +
   taskPWG4HighPtSpectra->SetCFManagerNeg(manNeg); //here is set the CF manager -
   taskPWG4HighPtSpectra->SetTriggerMask(triggerMask);
-  taskPWG4HighPtSpectra->SelectHIJINGOnly(bSelectHijingParticles);
-  taskPWG4HighPtSpectra->SetReadAODData(iAODanalysis==0? kFALSE : kTRUE);
+  taskPWG4HighPtSpectra->SelectHIJINGOnly(bSelHijingParticles);
+  taskPWG4HighPtSpectra->SetReadAODData(dataType=="AOD"? kTRUE : kFALSE);
   if(!usePythiaxsec)
     taskPWG4HighPtSpectra->SetNoPythiaInfo();
 
-  if(isPbPb) {
+  if(beamType=="PbPb" || beamType=="pPb") {
     taskPWG4HighPtSpectra->SetIsPbPb(kTRUE);
     taskPWG4HighPtSpectra->SetCentralityClass(centClass);
   }
@@ -451,17 +456,17 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
 
   //------ output containers ------
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  outputfile += Form(":PWG4_HighPtSpectraCent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data());
+  outputfile += Form(":PWG4_HighPtSpectra%s_%s",taskName.Data(),trigName.Data());
 
   AliAnalysisDataContainer *coutput0 = 0x0;
   AliAnalysisDataContainer *coutput1 = 0x0;
   AliAnalysisDataContainer *coutput2 = 0x0;
-  AliAnalysisDataContainer *cout_cuts0 = 0x0; 
+  AliAnalysisDataContainer *cout_cuts0 = 0x0;
 
-  coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectraCent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectraCent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data()), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectraCent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data()), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCutsCent%dTrackType%dCuts%d%s",centClass,trackType,cuts,trigName.Data()), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
+  coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectra%s_%s",taskName.Data(),trigName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectra%s_%s",taskName.Data(),trigName.Data()), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectra%s_%s",taskName.Data(),trigName.Data()), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCuts%s_%s",taskName.Data(),trigName.Data()), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
   
   mgr->AddTask(taskPWG4HighPtSpectra);
 

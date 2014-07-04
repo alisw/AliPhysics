@@ -22,6 +22,7 @@ Bool_t ConfigD0
    Float_t         	   trackDCAcutMin = 0.0,
    Float_t		   trackDCAZcutMax = 2.0,
    Int_t           	   NTPCcluster = 70,
+   Int_t		   minSPDclt = 0,
    Double_t                minpt = 0.15,
    Short_t     		   maxSisters = 2,
    Bool_t                  checkP = kTRUE,
@@ -73,7 +74,7 @@ Bool_t ConfigD0
    cutQuality->SetPtRange(minpt,1E20);
    cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
-   cutQuality->SetSPDminNClusters(1);
+   cutQuality->SetSPDminNClusters(minSPDclt);
    cutQuality->SetITSminNClusters(0);
    cutQuality->SetITSmaxChi2(1E+20);
    cutQuality->SetTPCmaxChi2(4.0);
@@ -107,7 +108,7 @@ Bool_t ConfigD0
    cutQuality->SetPtRange(minpt,1E20);
    cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
-   cutQuality->SetSPDminNClusters(1);
+   cutQuality->SetSPDminNClusters(minSPDclt);
    cutQuality->SetITSminNClusters(0);
    cutQuality->SetITSmaxChi2(1E+20);
    cutQuality->SetTPCmaxChi2(4.0);
@@ -384,7 +385,7 @@ void AddMonitorOutput_PionEta(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // PionEta
    AliRsnValueDaughter *axisPionEta = new AliRsnValueDaughter("pion_eta", AliRsnValueDaughter::kEta);
-   axisPionEta->SetBins(-1.0,1.0,0.01);
+   axisPionEta->SetBins(-1.0,1.0,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionEta = new AliRsnListOutput("Pion_Eta", AliRsnListOutput::kHistoDefault);
@@ -401,7 +402,7 @@ void AddMonitorOutput_PionY(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *
 
    // PionY
    AliRsnValueDaughter *axisPionY = new AliRsnValueDaughter("pion_y", AliRsnValueDaughter::kY);
-   axisPionY->SetBins(-1.0,1.0,0.01);
+   axisPionY->SetBins(-1.0,1.0,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionY = new AliRsnListOutput("Pion_Y", AliRsnListOutput::kHistoDefault);
@@ -418,7 +419,7 @@ void AddMonitorOutput_PionMinPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaught
 
    // PionMinPt
    AliRsnValueDaughter *axisPionMinPt = new AliRsnValueDaughter("pion_minpt", AliRsnValueDaughter::kPt);
-   axisPionMinPt->SetBins(0.0,1,0.01);
+   axisPionMinPt->SetBins(0.0,1,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionMinPt = new AliRsnListOutput("Pion_MinPt", AliRsnListOutput::kHistoDefault);
@@ -435,7 +436,7 @@ void AddMonitorOutput_PionDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // PionDCA
    AliRsnValueDaughter *axisPionDCA = new AliRsnValueDaughter("pion_dca", AliRsnValueDaughter::kDCAXY);
-   axisPionDCA->SetBins(-1.0,1,0.01);
+   axisPionDCA->SetBins(-1.0,1,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionDCA = new AliRsnListOutput("Pion_DCA", AliRsnListOutput::kHistoDefault);
@@ -503,7 +504,7 @@ void AddMonitorOutput_KaonEta(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // KaonEta
    AliRsnValueDaughter *axisKaonEta = new AliRsnValueDaughter("kaon_eta", AliRsnValueDaughter::kEta);
-   axisKaonEta->SetBins(-1.0,1.0,0.01);
+   axisKaonEta->SetBins(-1.0,1.0,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonEta = new AliRsnListOutput("Kaon_Eta", AliRsnListOutput::kHistoDefault);
@@ -520,7 +521,7 @@ void AddMonitorOutput_KaonY(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *
 
    // KaonY
    AliRsnValueDaughter *axisKaonY = new AliRsnValueDaughter("kaon_y", AliRsnValueDaughter::kY);
-   axisKaonY->SetBins(-1.0,1.0,0.01);
+   axisKaonY->SetBins(-1.0,1.0,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonY = new AliRsnListOutput("Kaon_Y", AliRsnListOutput::kHistoDefault);
@@ -537,7 +538,7 @@ void AddMonitorOutput_KaonMinPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaught
 
    // KaonMinPt
    AliRsnValueDaughter *axisKaonMinPt = new AliRsnValueDaughter("kaon_minpt", AliRsnValueDaughter::kPt);
-   axisKaonMinPt->SetBins(0.0,1,0.01);
+   axisKaonMinPt->SetBins(0.0,1,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonMinPt = new AliRsnListOutput("Kaon_MinPt", AliRsnListOutput::kHistoDefault);
@@ -554,7 +555,7 @@ void AddMonitorOutput_KaonDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // KaonDCA
    AliRsnValueDaughter *axisKaonDCA = new AliRsnValueDaughter("kaon_dca", AliRsnValueDaughter::kDCAXY);
-   axisKaonDCA->SetBins(-1.0,1,0.01);
+   axisKaonDCA->SetBins(-1.0,1,0.05);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonDCA = new AliRsnListOutput("Kaon_DCA", AliRsnListOutput::kHistoDefault);

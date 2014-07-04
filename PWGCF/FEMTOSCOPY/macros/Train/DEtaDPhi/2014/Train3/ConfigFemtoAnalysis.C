@@ -219,11 +219,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 					// ***** single particle track cuts *********
 					dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
 					dtc2etaphitpc[aniter] = new AliFemtoESDTrackCut();
-					dtc3etaphitpc[aniter] = new AliFemtoESDTrackCut();
 
 					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
-					dtc3etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal);
 					dtc2etaphitpc[aniter]->SetNsigma(nSigmaVal);
 					//dtc3etaphitpc[aniter]->SetNsigma(3.0);
@@ -233,11 +231,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 
 					dtc1etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 					dtc2etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
-					dtc3etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 
 					dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);	
 					dtc2etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
-					dtc3etaphitpc[aniter]->SetElectronRejection(ifElectronRejection); 
 
                                         if (ichg == 0 ||ichg == 1 ||ichg == 2)//protons 0-2
                                           {
@@ -273,6 +269,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
                                           }
                                         if (ichg == 9)//all
                                           {
+
+					    dtc3etaphitpc[aniter] = new AliFemtoESDTrackCut();
+					    dtc3etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
+					    dtc3etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
+					    dtc3etaphitpc[aniter]->SetElectronRejection(ifElectronRejection); 
                                             dtc3etaphitpc[aniter]->SetPt(0.2,4);
                                           }
                                         if (ichg == 10 ||ichg == 11 ||ichg == 12)//plus,minus,mixed
@@ -289,8 +290,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 					  dtc1etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
 					  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
 					  dtc2etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
-					  dtc3etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
-					  dtc3etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
+					  if (ichg == 9){dtc3etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  dtc3etaphitpc[aniter]->SetMaxImpactZ(2);}	//DCA Z
 					}
 					//****** Track quality cuts ******
 
@@ -311,14 +312,15 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 					  //	dtc2etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
 					  dtc2etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
 					  //	dtc2etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
-					
-					  dtc3etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
-					  dtc3etaphitpc[aniter]->SetminTPCncls(70);
-					  dtc3etaphitpc[aniter]->SetRemoveKinks(kTRUE);
-					  dtc3etaphitpc[aniter]->SetLabel(kFALSE);
-					  //	dtc3etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
-					  dtc3etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
-					  //	dtc3etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
+					  if (ichg == 9){
+					    dtc3etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
+					    dtc3etaphitpc[aniter]->SetminTPCncls(70);
+					    dtc3etaphitpc[aniter]->SetRemoveKinks(kTRUE);
+					    dtc3etaphitpc[aniter]->SetLabel(kFALSE);
+					    //	dtc3etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
+					    dtc3etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
+					    //	dtc3etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
+					  }
 	
 					}
 					//**************** track Monitors ***************
@@ -326,28 +328,33 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 					
 					if(1)//ichg>8)
 					  {
-					    cutPass3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass%stpcM%i", chrgs[ichg], imult),PionMass);
-					    cutFail3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail%stpcM%i", chrgs[ichg], imult),PionMass);
+					    if(ichg<2 || ichg==3||ichg==4 || ichg==6|| ichg==7||ichg==9||ichg==10||ichg==11){ 
+					      cutPass3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass%stpcM%i", chrgs[ichg], imult),PionMass);
+					      cutFail3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail%stpcM%i", chrgs[ichg], imult),PionMass);
+					    }
 					    if(ichg==9) dtc3etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 					    if(ichg==0||ichg==3||ichg==6||ichg==10) dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 					    if(ichg==1||ichg==4||ichg==7||ichg==11) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 
-					    if(ichg<3){
+					    if(ichg<2){ //PP, PaP
 					      cutPass3PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", chrgs[ichg], imult),2);//0-pion,1-kaon,2-proton
 					      cutFail3PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", chrgs[ichg], imult),2);
+					      if(ichg==0) dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
+					      if(ichg==1) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
 		    			    }
-					    else if(ichg>=3 && ichg<=5){
+					    else if(ichg>=3 && ichg<=4){//KpKp, KmKm
 					      cutPass3PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", chrgs[ichg], imult),1);//0-pion,1-kaon,2-proton
 					      cutFail3PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", chrgs[ichg], imult),1);
+					      if(ichg==3) dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
+					      if(ichg==4) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
 					    }
-					    else{
+					    else if(ichg==6||ichg==10||ichg==7||ichg==11||ichg==9){ //pions, all
 					      cutPass3PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", chrgs[ichg], imult),0);//0-pion,1-kaon,2-proton
 					      cutFail3PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", chrgs[ichg], imult),0);
-
+					      if(ichg==6||ichg==10) dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
+					      if(ichg==7||ichg==11) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
+					      if(ichg==9) dtc3etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
 					    }
-					    if(ichg==9) dtc3etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
-					    if(ichg==0||ichg==3||ichg==6||ichg==10) dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
-					    if(ichg==1||ichg==4||ichg==7||ichg==11) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
 					  }
 					 
 					//******** Two - track cuts ************

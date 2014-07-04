@@ -414,6 +414,22 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	      imost = 7;
 
 	  }
+	  else if (fMostProbable == 8) { // TOF matching
+	    if(track->NSigmaTOFPi() != -1000 || track->Pt()<0.5){
+	      imost = 8;
+	    }
+	  }
+	  else if (fMostProbable == 9) { // Other: no kaons, no pions, no protons
+	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+	      imost = -1;
+	    else if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK()))
+	      imost = -1;
+	    else if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+	      imost = -1;
+	    else if(track->NSigmaTOFPi() != -1000 || track->Pt()<0.5){
+	      imost = 9;
+	    }
+	  }
 	}
 
 

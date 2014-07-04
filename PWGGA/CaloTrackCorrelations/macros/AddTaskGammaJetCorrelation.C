@@ -5,8 +5,10 @@
 //new macro
 TString kGammaJetCorrelationName          = "";//done
 
-AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  isoCone          = 0.4,
-								const Float_t  isoPth           = 0.5,
+AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  isoCone       = 0.4,
+								const Float_t  isoPth        = 0.5,
+								const Double_t maxLambda0Cut = 0.5,
+								const Int_t    maxNLMcut     = 2,
 								const Bool_t   timecut       = kFALSE,
 								const TString  calorimeter   = "EMCAL",
 								const Bool_t   simulation    = kFALSE,
@@ -52,12 +54,12 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
 //    inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
   //input jets
-  TString     kDeltaAODJetName   = "AliAOD.Jets.root"; //Jet input AOD name
-  if(kDeltaAODJetName.Length()!=0)
+  TString     deltaAODJetName   = "AliAOD.Jets.root"; //Jet input AOD name
+  if(deltaAODJetName.Length()!=0)
     {
       // External file with Jets
-     // aodHandler->AddFriend(kDeltaAODJetName.Data());
-      mgr->RegisterExtraFile(kDeltaAODJetName.Data());
+     // aodHandler->AddFriend(deltaAODJetName.Data());
+      mgr->RegisterExtraFile(deltaAODJetName.Data());
       cout<<"Jet file registered "<<endl;
       cout<<"Extra files: "<<mgr->GetExtraFiles()<<endl;
     }
@@ -85,7 +87,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
   maker->SetScaleFactor(scaleFactor); // for MC, negative (not scaled) by default
   
   // General frame setting and configuration
-  maker->SetReader   (ConfigureReader(mgr->GetInputEventHandler()->GetDataType(),calorimeter,useKinematics,simulation,eventsel,nonlin,timecut,collision,trigger,firedTrigger,clustersArray,mix,minCen,maxCen,debug,printSettings)   ); 
+  maker->SetReader   (ConfigureReader(mgr->GetInputEventHandler()->GetDataType(),calorimeter,useKinematics,simulation,eventsel,nonlin,timecut,collision,trigger,firedTrigger,clustersArray,jetBranchName,jetBkgBranchName,mix,minCen,maxCen,debug,printSettings)   ); 
   maker->SetCaloUtils(ConfigureCaloUtils(clustersArray,collision,nonlin,exotic,simulation,timecut,debug,printSettings)); 
   
   // Analysis tasks setting and configuration
@@ -97,9 +99,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
   //Float_t isoCone = -1;
   //Float_t isoPth  = -1;
   
-  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,simulation,debug,printSettings), n++); // Photon cluster selection
+  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,simulation,maxLambda0Cut,maxNLMcut,debug,printSettings), n++); // Photon cluster selection
   maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,collision,"Photon", partInCone,thresType, isoCone, isoPth,tm,kFALSE,simulation,debug,printSettings), n++); // Photon isolation   
-  maker->AddAnalysis(ConfigurePhotonJetAnalysis(simulation,debug,printSettings), n++);// photon-jet correlation analysis
+  maker->AddAnalysis(ConfigurePhotonJetAnalysis(calorimeter,isoCone,simulation,debug,printSettings), n++);// photon-jet correlation analysis
 
   maker->SetAnaDebug(debug)  ;
   maker->SwitchOnHistogramsMaker()  ;
@@ -152,13 +154,13 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
 //____________________________________
 AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calorimeter = "EMCAL",Bool_t useKinematics = kFALSE,Bool_t simulation = kFALSE,Bool_t   eventsel      = kFALSE,Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
 				     TString  collision     = "pp",TString trigger="MB",TString firedTrigger="EG1",
-				     TString  clustersArray = "V1",
-				     Bool_t  mix           = kFALSE;
+				     TString  clustersArray = "V1", TString  jetBranchName = "jets", TString  jetBkgBranchName = "jets",
+				     Bool_t  mix           = kFALSE,
 				     Float_t minCen = -1, Float_t maxCen = -1,
 				     Int_t debug = -1,Bool_t printSettings = kFALSE)
 {
   
-  if(simu)
+  if(simulation)
   {
     if (!useKinematics && inputDataType=="AOD") useKinematics = kTRUE; //AOD primary should be available ...
   }
@@ -414,7 +416,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
 }
 
 //_______________________________________
-AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  collision     = "pp",Bool_t nonlin = kTRUE,Bool_t exotic = kTRUE ,Bool_t simulation = kFALSE,Bool_t timecut = kFALSE,Int_t debug = -1,Bool_t print = kFALSE)
+AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  collision     = "pp",Bool_t nonlin = kTRUE,Bool_t exotic = kTRUE ,Bool_t simulation = kFALSE,Bool_t timecut = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE)
 {
   
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
@@ -507,7 +509,7 @@ AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  
 }
 
 //_____________________________________
-AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = kFALSE,Bool_t simulation = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE)
+AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = kFALSE,Bool_t simulation = kFALSE,Double_t maxLambda0Cut=0.5,Int_t maxNLMcut=2,Int_t debug = -1,Bool_t printSettings = kFALSE)
 {
   
   AliAnaPhoton *ana = new AliAnaPhoton();
@@ -529,16 +531,15 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = 
   else 
   {//EMCAL
     ana->SetNCellCut(1);// At least 2 cells
-    //ana->SetNCellCut(0);// At least 2 cells <<<----changed here 
     ana->SetMinEnergy(0.3); // avoid mip peak at E = 260 MeV
     ana->SetMaxEnergy(1000); 
-    ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off 
+    //ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off //<<<---modified here
     // restrict to less than 100 ns when time calibration is on 
     ana->SetMinDistanceToBadChannel(2, 4, 6); 
     // Not useful if M02 cut is already strong
-    //ana->SetNLMCut(1, 2) ;
+    ana->SetNLMCut(1, maxNLMcut) ;//[1,2]
     //ana->SetNLMCut(1, 10) ;//<<<----changed here 
-    ana->SetNLMCut(1, 1) ;//<<<----changed here 
+    //ana->SetNLMCut(1, 1) ;//<<<----changed here 
   }
   
   if(tm)
@@ -554,13 +555,12 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = 
   
   
   //PID cuts (shower shape)
-  //ana->SwitchOffCaloPID(); //<<<----changed here 
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
   //Not used in bayesian
   
   //EMCAL
-  caloPID->SetEMCALLambda0CutMax(0.50);//0.27 was before//0.50//<<<----changed here
+  caloPID->SetEMCALLambda0CutMax(maxLambda0Cut);//0.27 was before//0.50//<<<----changed here
   caloPID->SetEMCALLambda0CutMin(0.10);
   
   caloPID->SetEMCALDEtaCut(0.025);
@@ -569,7 +569,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = 
   //PHOS
   caloPID->SetPHOSDispersionCut(2.5);
   caloPID->SetPHOSRCut(2.);
-  if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
+  //if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
       
   ana->SwitchOnFillShowerShapeHistograms();  // Filled before photon shower shape selection <<<--- changed here
   //ana->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
@@ -579,8 +579,8 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = 
   
   //if(!kData.Contains("delta")) 
   //{
-  //  ana->SetOutputAODName(Form("Photon%s",kGammaJetCorrelationName.Data()));
-  //  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODName(Form("Photon%s",kGammaJetCorrelationName.Data()));
+  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   //  //ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
   //}
   //else 
@@ -618,7 +618,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
 {
   
   AliAnaParticleIsolation *ana = new AliAnaParticleIsolation();
-  //ana->SetDebug(debug);
   ana->SetDebug(debug);
     
   ana->SwitchOnFiducialCut();
@@ -635,7 +634,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
       ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 0, 360) ;    
   }
   
-  ana->SetMinPt(3);//<<---changed here
+  ana->SetMinPt(10);//<<---changed here
   
   // Input / output delta AOD settings
   
@@ -888,7 +887,7 @@ UInt_t SetTriggerMaskFromName(TString trigger)
 
 }
 
-AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis(Bool_t simulation = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE){
+AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis(TString calorimeter = "EMCAL",Float_t gammaConeSize = 0.3,Bool_t simulation = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE){
 
   AliAnaParticleJetFinderCorrelation *ana = new AliAnaParticleJetFinderCorrelation();
   ana->SetDebug(debug);
@@ -906,7 +905,7 @@ AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis(Bool_t simulation
   ana->SetJetMinPt(5);//min jet pt
   ana->SetJetAreaFraction(0.8);//min area fraction was 0.6
   ana->SetMinPt(0.3);//min cluster pt repeated from reader
-  ana->SetGammaConeSize(0.3);//isolation cone repeated from isolation ana
+  ana->SetGammaConeSize(gammaConeSize);//isolation cone repeated from isolation ana
 
 
   ana->SetRatioCutRange(0.01,5.); //Mostly Open Cuts //0.01-5//<<---- change here
@@ -917,15 +916,15 @@ AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis(Bool_t simulation
   //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
 
-  ana->SwitchOnNonStandardJetFromReader();
+  //  ana->SwitchOnNonStandardJetFromReader();
   ana->SwitchOnBackgroundJetFromReader();
   //background subtraction for photons
   //ana->SwitchOnBackgroundSubtractionGamma();
   ana->SwitchOffBackgroundSubtractionGamma();
 
   ana->SwitchOnSaveGJTree();
-  //ana->SwitchOnMostOpposite();
-  ana->SwitchOnMostEnergetic();
+  ana->SwitchOnMostOpposite();
+  //ana->SwitchOnMostEnergetic();
 
 
   //if(useKinematics) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms

@@ -278,7 +278,7 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   xPt5[6]=120;
   xPt5[7]=150; 
   
-  fhnJetTM->SetBinEdges(7,xPt5);
+  fhnJetTM->SetBinEdges(6,xPt5);
 
 
    fOutputList->Add(fhnJetTM);

@@ -319,6 +319,14 @@ protected:
   TH1F * _phidis;
   TH1F * _dcaz;
   TH1F * _dcaxy;  
+  TH1F * _etadis2;
+  TH1F * _phidis2;
+  TH1F * _dcaz2;
+  TH1F * _dcaxy2;  
+  TH1F * _etadis3;
+  TH1F * _phidis3;
+  TH1F * _dcaz3;
+  TH1F * _dcaxy3;  
 
 
   // PARTICLE 1 (satisfies filter 1)
