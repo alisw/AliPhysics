@@ -1,0 +1,10 @@
+###
+Decay Lambda0
+1.000 p+      pi-                                     PHSP; #[Reconstructed PDG2011]
+Enddecay
+#
+Decay anti-Lambda0
+1.000 anti-p- pi+                                     PHSP; #[Reconstructed PDG2011]
+Enddecay
+
+End
