@@ -105,6 +105,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
    fkCheckSwapping( kFALSE ),
+   fkSelectPeripheral ( kFALSE ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -368,6 +369,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
    fkCheckSwapping( kFALSE ),
+   fkSelectPeripheral ( kFALSE ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -1743,6 +1745,16 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
         return;
       }
    }
+    
+    if( fkSelectPeripheral ){
+        if( lMultiplicity < 60 || lMultiplicity >= 80. ){
+            //Event is outside 60-80% centrality in V0M!
+            PostData(1, fListHist);
+            PostData(2, fTreeCascade);
+            return;
+        }
+    }
+    
   
    //Set variable for filling tree afterwards!
    //---> pp case......: GetReferenceMultiplicity

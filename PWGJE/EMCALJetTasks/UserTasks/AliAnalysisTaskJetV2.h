@@ -42,6 +42,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         virtual                 ~AliAnalysisTaskJetV2();
         // setting up the task and technical aspects
         void                    ExecOnce();
+        virtual Bool_t          Notify();
         Bool_t                  InitializeAnalysis();
         virtual void            UserCreateOutputObjects();
         virtual Bool_t          Run();
