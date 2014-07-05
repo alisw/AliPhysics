@@ -61,15 +61,14 @@ cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetPrimaryVertexSPD()
 	  <<" nV0's: "<<flatEsd->GetNumberOfV0s()
 	  <<endl;
 
-
-
-
 // compare tracks
 if(verbose){
 	static const int nExt = 4;
 	  AliFlatESDTrack *track = flatEsd->GetTracks();
 	  //new (track)AliFlatESDTrack(1);
     for (Int_t idxTrack = 0; idxTrack < flatEsd->GetNumberOfTracks() && track; ++idxTrack) { 
+
+	cout<<"track nr "<<idxTrack<<endl;
 
 		AliFlatExternalTrackParam* ext[nExt] ={
 			
@@ -113,14 +112,14 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
       AliFlatTPCCluster * cl = track->GetTPCCluster(idxRow);
 
 			 	cout<<" idx fX fY fZ  fSigmaY2 fSigmaZ2 fCharge fQMax fPadRow" <<endl;
-				if(cl) cout<< idxRow <<" "<< cl->GetX()<<" "<< cl->GetY()<<" "<< cl->GetZ()<<" "<< cl->GetSigmaY2()<<" "<< cl->GetSigmaZ2()<<" "<< cl->GetCharge()<<" "<< cl->GetQMax() <<" "<< cl->GetPadRow()<<endl;
+				if(cl) {
+				cout<< idxRow <<" "<< cl->GetX()<<" "<< cl->GetY()<<" "<< cl->GetZ()<<" "<< cl->GetSigmaY2()<<" "<< cl->GetSigmaZ2()<<" "<< cl->GetCharge()<<" "<< cl->GetQMax() <<" "<< cl->GetPadRow()<<endl;
+				
+				}
 				else cout <<"----------------------------------------------------"<<endl;
     }
 	}
-     
-      cout<<"get next track"<<endl;
       track = track->GetNextTrack();
-	  //	new (track)AliFlatESDTrack(1);
 	  
 	  
 	  }

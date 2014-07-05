@@ -76,8 +76,10 @@ AliFlatESDTrack::AliFlatESDTrack(AliFlatESDSpecialConstructorFlag f)
 		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
 		
 		AliFlatTPCCluster* clusterTPC = GetTPCClusters();
-		for (Int_t i=0; i<fNTPCClusters; i++)
-		  new (clusterTPC++) AliFlatTPCCluster(f);
+		for (Int_t i=0; i<fNTPCClusters; i++){
+		  new (clusterTPC) AliFlatTPCCluster(f);
+		  clusterTPC++;
+		 }
 	}
 	else AliFlatESDTrack();
 }

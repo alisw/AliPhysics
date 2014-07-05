@@ -84,14 +84,17 @@ AliFlatESDEvent::AliFlatESDEvent(AliFlatESDSpecialConstructorFlag f)
 		AliFlatESDVertex* vertexTracks = const_cast<AliFlatESDVertex*>(GetPrimaryVertexTracks());
 		if (vertexTracks ) { new (vertexTracks) AliFlatESDVertex(f); }
 		AliFlatESDTrack* track = GetTracks();
+		
 		for (Int_t i=0; i<GetNumberOfTracks(); i++)
 		{
-			new (track++) AliFlatESDTrack(f);
+			new (track) AliFlatESDTrack(f);
+			track= track->GetNextTrack();
 		}
   	AliFlatESDV0* v0 = GetV0s();
   	for (Int_t i=0; i<GetNumberOfV0s(); i++)
   	{
-			new (v0++) AliFlatESDV0(f);
+			new (v0) AliFlatESDV0(f);
+			v0++;
 		}
 	}
 	else{

@@ -46,7 +46,7 @@ class AliFlatTPCCluster: public AliVVcluster
   }
   
   private:
-  AliFlatTPCCluster(AliFlatESDSpecialConstructorFlag) {}
+  AliFlatTPCCluster(AliFlatESDSpecialConstructorFlag);
   virtual ~AliFlatTPCCluster() {}
   Float_t fX;       // X coordinate in local coordinates
   Float_t fY;       // Y coordinate in local coordinates

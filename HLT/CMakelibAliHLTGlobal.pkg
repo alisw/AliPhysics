@@ -45,11 +45,12 @@ set ( CLASS_HDRS
     AliHLTVertexFinderBase.h
     AliHLTPrimaryVertexFinderComponent.h
     AliHLTV0FinderComponent.h
-   # AliFlatESDMisc.h
     AliFlatESDEvent.h
     AliFlatESDVertex.h
     AliFlatESDTrack.h
     AliFlatESDV0.h
+    AliFlatExternalTrackParam.h
+    AliFlatTPCCluster.h
     physics/AliHLTV0HistoComponent.h
     physics/AliHLTCaloHistoComponent.h
     physics/AliHLTCaloHistoProducer.h
