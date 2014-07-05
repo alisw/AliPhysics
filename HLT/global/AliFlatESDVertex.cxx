@@ -11,4 +11,7 @@ void AliFlatESDVertex::Set(const AliESDVertex &v )
   fNContributors = v.GetNContributors();
   fChi2 = v.GetChi2();
 }
-
+AliFlatESDVertex::AliFlatESDVertex(AliFlatESDSpecialConstructorFlag f){
+	if(f == AliFlatESDReinitialize);
+  else AliFlatESDVertex();
+}

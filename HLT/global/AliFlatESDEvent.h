@@ -14,6 +14,7 @@
 #include "AliFlatESDV0.h"
 #include "AliVVevent.h"
 #include "AliFlatESDVertex.h"
+#include "AliFlatESDMisc.h"
 
 class AliESDEvent;
 class AliESDVertex;
@@ -28,10 +29,6 @@ class AliFlatESDEvent: public AliVVevent {
   // -- Constructor / Destructors
   AliFlatESDEvent();   
 
-// special constructor, to be called by placement new,
-// when accessing information after reinterpret_cast
-// so that vtable is generated, but values are not overwritten
-	AliFlatESDEvent(Bool_t);
 
   AliFlatESDEvent(AliESDEvent *esd);   
   AliFlatESDEvent(AliESDEvent *esd, Bool_t useESDFriends);   
@@ -58,7 +55,7 @@ class AliFlatESDEvent: public AliVVevent {
   }
 
   AliFlatESDV0 *GetNextV0Pointer(){
-	return reinterpret_cast<AliFlatESDV0*> (fContent + fSize);
+		return reinterpret_cast<AliFlatESDV0*> (fContent + fSize);
 }
 
   void StoreLastV0(){ 
@@ -88,11 +85,11 @@ class AliFlatESDEvent: public AliVVevent {
   Int_t GetNumberOfTracks() const {return fNTracks;}
   
   AliFlatESDV0* GetV0s() {
-  AliFlatESDV0* v = reinterpret_cast<AliFlatESDV0*> (fContent + fV0Pointer);
+  	return reinterpret_cast<AliFlatESDV0*> (fContent + fV0Pointer);
   }
 
   AliFlatESDTrack *GetTracks() {
-	return reinterpret_cast<AliFlatESDTrack*> (fContent + fTracksPointer);
+		return reinterpret_cast<AliFlatESDTrack*> (fContent + fTracksPointer);
   }
 
   const AliVVvertex* GetPrimaryVertex() const {return NULL;}
@@ -118,11 +115,26 @@ class AliFlatESDEvent: public AliVVevent {
          ULong64_t GetSize()    {return fContent - reinterpret_cast<Byte_t*>(this) + fSize;}
 
 
+//
+// Initializing function
+//
+// to be called after event is received via reinterpret_cast from memory
+
+void Reinitialize()
+  {
+    new (this) AliFlatESDEvent(AliFlatESDReinitialize);
+  }
+
 
 
  private:
   AliFlatESDEvent(const AliFlatESDEvent&);
   AliFlatESDEvent& operator=(const AliFlatESDEvent&);
+  
+// special constructor, to be called by placement new,
+// when accessing information after reinterpret_cast
+// so that vtable is generated, but values are not overwritten
+	AliFlatESDEvent(AliFlatESDSpecialConstructorFlag);
 
   void FillPrimaryVertex(const AliESDVertex *v, Byte_t flag);
   Int_t FillNextTrack( const AliESDtrack* esdTrack,  AliESDfriendTrack* friendTrack);

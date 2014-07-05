@@ -286,7 +286,7 @@ AliSysInfo::AddStamp("DoEvent.Start");
   size = 0;
 
   AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent*>(outputPtr); 
-  new (flatEsd) AliFlatESDEvent(); //standard ctor to initialize an empty event   
+  new (flatEsd) AliFlatESDEvent; //standard ctor to initialize an empty event   
 
   /*
   pESD->Reset(); 
@@ -606,15 +606,15 @@ AliSysInfo::AddStamp("DoEvent.Start");
 	      const AliHLTTPCSpacePointData &cIn = clusterBlock->fSpacePoints[iCluster];
 
 	      AliFlatTPCCluster *c= flatTrack->GetTPCCluster( flatTrack->GetNumberOfTPCClusters() );;
-        new (c) AliFlatTPCCluster(1);
-	      c->fX = cIn.GetX();
-	      c->fY = cIn.GetY();
-	      c->fZ = cIn.GetZ();
-	      c->fPadRow  = cIn.GetPadRow() + AliHLTTPCTransform::GetFirstRow(iPatch);
-	      c->fSigmaY2 = cIn.GetSigmaY2();
-	      c->fSigmaZ2 = cIn.GetSigmaZ2();
-	      c->fCharge  = cIn.GetCharge();
-	      c->fQMax    = cIn.GetQMax();
+        new (c) AliFlatTPCCluster;
+	      c->SetX(cIn.GetX());
+	      c->SetY(cIn.GetY());
+	      c->SetZ(cIn.GetZ());
+	      c->SetPadRow(cIn.GetPadRow() + AliHLTTPCTransform::GetFirstRow(iPatch));
+	      c->SetSigmaY2(cIn.GetSigmaY2());
+	      c->SetSigmaZ2(cIn.GetSigmaZ2());
+	      c->SetCharge(cIn.GetCharge());
+	      c->SetQMax(cIn.GetQMax());
 	      flatTrack->StoreLastTPCCluster();
 	   }
 	}

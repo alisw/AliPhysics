@@ -45,6 +45,7 @@ set ( CLASS_HDRS
     AliHLTVertexFinderBase.h
     AliHLTPrimaryVertexFinderComponent.h
     AliHLTV0FinderComponent.h
+   # AliFlatESDMisc.h
     AliFlatESDEvent.h
     AliFlatESDVertex.h
     AliFlatESDTrack.h

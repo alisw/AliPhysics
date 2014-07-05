@@ -11,21 +11,11 @@
 
 #include "Rtypes.h"
 #include "AliVVcluster.h"
+#include "AliFlatESDMisc.h"
 
 class AliFlatTPCCluster: public AliVVcluster
 {
-  public:
-  AliFlatTPCCluster(Bool_t) {}
-  virtual ~AliFlatTPCCluster() {}
-  Float_t fX;       // X coordinate in local coordinates
-  Float_t fY;       // Y coordinate in local coordinates
-  Float_t fZ;       // Z coordinate in local coordinates
-  UChar_t fPadRow;  // Pad row number
-  Float_t fSigmaY2; // error (former width) of the clusters
-  Float_t fSigmaZ2; // error (former width) of the clusters
-  UInt_t  fCharge;  // total charge of cluster
-  UInt_t  fQMax;    // QMax of cluster
-
+ friend class AliFlatESDTrack;
   public:
   void SetX(Float_t x)             {fX = x;}
   void SetY(Float_t y)             {fY = y;}
@@ -54,6 +44,21 @@ class AliFlatTPCCluster: public AliVVcluster
     Int_t padrowsecond = second.GetPadRow();
     return (padrowfirst < padrowsecond);
   }
+  
+  private:
+  AliFlatTPCCluster(AliFlatESDSpecialConstructorFlag) {}
+  virtual ~AliFlatTPCCluster() {}
+  Float_t fX;       // X coordinate in local coordinates
+  Float_t fY;       // Y coordinate in local coordinates
+  Float_t fZ;       // Z coordinate in local coordinates
+  UChar_t fPadRow;  // Pad row number
+  Float_t fSigmaY2; // error (former width) of the clusters
+  Float_t fSigmaZ2; // error (former width) of the clusters
+  UInt_t  fCharge;  // total charge of cluster
+  UInt_t  fQMax;    // QMax of cluster
+  
+  
+  
 };
 
 #endif

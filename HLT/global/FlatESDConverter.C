@@ -55,6 +55,8 @@ void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameF
 
   // -- Event Loop
   for (Int_t idxEvent = 0; idxEvent < esdTree->GetEntries(); idxEvent++) {
+  Printf("Processing event nr %d", idxEvent);
+  
   
   AliSysInfo::AddStamp("getEntry",0,0,idxEvent);
     esdTree->GetEntry(idxEvent);
@@ -64,14 +66,23 @@ void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameF
     Byte_t *mem = new Byte_t[AliFlatESDEvent::EstimateSize(esd, useESDFriends)];
     
 AliSysInfo::AddStamp("DoEvent.Start",0,0,idxEvent);
-    flatEsd = reinterpret_cast<AliFlatESDEvent*>(mem);    
-	new (flatEsd) AliFlatESDEvent(1);
 
+
+  Printf("getting event from memory");
+    flatEsd = reinterpret_cast<AliFlatESDEvent*>(mem);
+  Printf("calling special constructor");    
+	new (flatEsd) AliFlatESDEvent;
+
+  Printf("filling event");    
     // -- Fill AliFlatESDEvent
     flatEsd->Fill(esd, useESDFriends);  
     
     
 AliSysInfo::AddStamp("DoEvent.Stop",0,flatEsd->GetSize(),idxEvent);
+
+
+
+
 if(verbose){
      Printf("TEST: Event %d || Tracks %d | FRIEND Tracks %d || estimated size %llu || sizeof(AliFlatESDEvent) %llu", 
 	   idxEvent, esd->GetNumberOfTracks(), esdFriend->GetNumberOfTracks(), 
@@ -90,7 +101,7 @@ if(verbose){
 
       if (track ) {
 	
-	/*
+	
 	AliFlatExternalTrackParam* exp1 = track->GetTrackParamCp();
 	AliFlatExternalTrackParam* exp2 = track->GetTrackParamIp();
 	AliFlatExternalTrackParam* exp3 = track->GetTrackParamTPCInner();
@@ -113,11 +124,11 @@ if(verbose){
 	Printf("  TEST: Old Track %d > Alpha %f %f %f %f", idxTrack, alphaOLD[0], alphaOLD[1], alphaOLD[2], alphaOLD[3]);
 	Printf("  TEST: Diff      %d > Alpha %f %f %f %f", idxTrack, 
 	       alphaFLAT[0]-alphaOLD[0], alphaFLAT[1]-alphaOLD[1], alphaFLAT[2]-alphaOLD[2], alphaFLAT[3]-alphaOLD[3]);
-*/
+
 
 Int_t nCl = track->GetNumberOfTPCClusters();
 	Printf("  TEST: FlatTrack %d has %d FlatClusters", idxTrack,  nCl );
-	if(nCl && verbose > 1){
+	if(nCl && useESDFriends && verbose > 1){
 	
 	  TObject* calibObject = NULL;
     AliTPCseed* seed = NULL;
@@ -132,11 +143,13 @@ Int_t nCl = track->GetNumberOfTPCClusters();
     Int_t idxRow2=0;
       for (Int_t idxRow = 0; idxRow <  nCl; idxRow++){
       AliFlatTPCCluster * cl = track->GetTPCCluster(idxRow);
-      
-
 			 	cout<<" idx fX fY fZ  fSigmaY2 fSigmaZ2 fCharge fQMax fPadRow" <<endl;
-				cout<< idxRow <<" "<< cl->GetX()<<" "<< cl->GetY()<<" "<< cl->GetZ()<<" "<< cl->GetSigmaY2()<<" "<< cl->GetSigmaZ2()<<" "<< cl->GetCharge()<<" "<< cl->GetQMax() <<" "<< cl->GetPadRow()<<endl;
-				
+			 	if(cl){
+					cout<< idxRow <<" "<< cl->GetX()<<" "<< cl->GetY()<<" "<< cl->GetZ()<<" "<< cl->GetSigmaY2()<<" "<< cl->GetSigmaZ2()<<" "<< cl->GetCharge()<<" "<< cl->GetQMax() <<" "<< cl->GetPadRow()<<endl;
+					}
+				else{
+					cout<<idxRow<<"---------------------------------"<<endl<<endl;		
+				}
 				AliTPCclusterMI* cl2 = NULL; 
       while(!cl2 && idxRow2<160){
       	cl2 = seed->GetClusterPointer(idxRow2++);

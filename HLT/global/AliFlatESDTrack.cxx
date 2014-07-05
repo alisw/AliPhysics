@@ -56,30 +56,30 @@ AliFlatESDTrack::AliFlatESDTrack() :
 }
 
 // _______________________________________________________________________________________________________
-AliFlatESDTrack::AliFlatESDTrack(Bool_t)
+AliFlatESDTrack::AliFlatESDTrack(AliFlatESDSpecialConstructorFlag f)
 {
   //special contructor
   //use to restore the vtable pointer
   
-  AliFlatExternalTrackParam* trackParam = GetTrackParamRefitted();
-  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
-  trackParam = GetTrackParamIp();
-  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
-  trackParam = GetTrackParamTPCInner();
-  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
-  trackParam = GetTrackParamOp();
-  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
-  trackParam = GetTrackParamCp();
-  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
-  trackParam = GetTrackParamITSOut();
-  if (trackParam) { new (trackParam) AliFlatExternalTrackParam(1); }
-  
-  AliFlatTPCCluster* clusterTPC = GetTPCClusters();
-  for (Int_t i=0; i<fNTPCClusters; i++)
-  {
-    new (clusterTPC) AliFlatTPCCluster(1);
-    clusterTPC++;
-  }
+  if(f == AliFlatESDReinitialize){
+		AliFlatExternalTrackParam* trackParam = GetTrackParamRefitted();
+		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		trackParam = GetTrackParamIp();
+		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		trackParam = GetTrackParamTPCInner();
+		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		trackParam = GetTrackParamOp();
+		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		trackParam = GetTrackParamCp();
+		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		trackParam = GetTrackParamITSOut();
+		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		
+		AliFlatTPCCluster* clusterTPC = GetTPCClusters();
+		for (Int_t i=0; i<fNTPCClusters; i++)
+		  new (clusterTPC++) AliFlatTPCCluster(f);
+	}
+	else AliFlatESDTrack();
 }
 
 // _______________________________________________________________________________________________________
@@ -170,16 +170,17 @@ Int_t AliFlatESDTrack::Fill(const AliESDtrack* track, AliESDfriendTrack* friendT
       for (Int_t idxRow = 0; idxRow < 160; idxRow++){
 	AliTPCclusterMI* currentCl = seed->GetClusterPointer(idxRow);
 	if (currentCl) {
-	  AliFlatTPCCluster &tmpCl = *GetNextTPCClusterPointer();
-	  tmpCl.fX = currentCl->GetX();
-	  tmpCl.fY = currentCl->GetY();
-	  tmpCl.fZ = currentCl->GetZ();	  
-	 // tmpCl.fPadRow  = idxRow; // TO BE CHECKED IF THIS NEEDED or currentCl->GetRow();
-	  tmpCl.fPadRow  = currentCl->GetRow();
-	  tmpCl.fSigmaY2 = currentCl->GetSigmaY2();
-	  tmpCl.fSigmaZ2 = currentCl->GetSigmaZ2();
-	  tmpCl.fCharge  = currentCl->GetQ();
-	  tmpCl.fQMax    = currentCl->GetMax();
+	  AliFlatTPCCluster* tmpCl = GetNextTPCClusterPointer();
+	  new(tmpCl) AliFlatTPCCluster;
+	  tmpCl->SetX(currentCl->GetX());
+	  tmpCl->SetY(currentCl->GetY());
+	  tmpCl->SetZ(currentCl->GetZ());	  
+	 // tmpCl->SetPadRow(idxRow); // TO BE CHECKED IF THIS NEEDED or currentCl->GetRow();
+	  tmpCl->SetPadRow(currentCl->GetRow());
+	  tmpCl->SetSigmaY2(currentCl->GetSigmaY2());
+	  tmpCl->SetSigmaZ2(currentCl->GetSigmaZ2());
+	  tmpCl->SetCharge(currentCl->GetQ());
+	  tmpCl->SetQMax(currentCl->GetMax());
 	  StoreLastTPCCluster();
 	}
 	//	else
@@ -275,7 +276,7 @@ Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param
   //Printf("  DEBUG: CONTENT %d >> %p + 0x%07llx = %p", flag, fContent, fSize, fContent + fSize);
 
   AliFlatExternalTrackParam * current = reinterpret_cast<AliFlatExternalTrackParam*> (fContent + fSize);
-  new (current) AliFlatExternalTrackParam(1);
+  new (current) AliFlatExternalTrackParam;
   current->SetAlpha(param->GetAlpha());
   current->SetX(param->GetX());
   current->SetY(param->GetY());

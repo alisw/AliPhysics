@@ -11,12 +11,14 @@
 
 #include "Rtypes.h"
 #include "AliVVexternalTrackParam.h"
+#include "AliFlatESDMisc.h"
+
 
 class AliFlatExternalTrackParam: public AliVVexternalTrackParam
 {
-  public:
+ friend class AliFlatESDTrack;
+ public:
   AliFlatExternalTrackParam() {}
-  AliFlatExternalTrackParam(Bool_t) {}
   virtual ~AliFlatExternalTrackParam() {}
   Float_t fAlpha;     // azimuthal angle of reference frame
   Float_t fX;         // x: radial distance
@@ -45,6 +47,10 @@ class AliFlatExternalTrackParam: public AliVVexternalTrackParam
   Float_t  GetSigned1Pt()         const {return fSigned1Pt;}
   Float_t* GetCov()               const {return const_cast<Float_t*>(fC);}
   Float_t  GetCovEntry(Int_t idx) const {return (idx >= 0 && idx < 15) ? fC[idx] : 0.;}
+  
+ private:
+ 	AliFlatExternalTrackParam(AliFlatESDSpecialConstructorFlag f);
+  
 };
 
 //typedef struct AliFlatExternalTrackParam AliFlatExternalTrackParam;

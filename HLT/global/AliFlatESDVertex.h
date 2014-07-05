@@ -12,11 +12,13 @@
 #include "Rtypes.h"
 #include "AliVVvertex.h"
 #include "AliESDVertex.h"
+#include "AliFlatESDMisc.h"
 
 class AliFlatESDVertex: public AliVVvertex
 //class AliFlatESDVertex
 {
-  public:
+ friend class AliFlatESDEvent;
+ public:
   Double32_t fPosition[3];    // vertex position
   Double32_t fCov[6];  // vertex covariance matrix
   Int_t    fNContributors;  // # of tracklets/tracks used for the estimate   
@@ -27,7 +29,6 @@ class AliFlatESDVertex: public AliVVvertex
     Char_t fBCID;     // BC ID assigned to vertex
   */
 
-	AliFlatESDVertex(Bool_t){}
   virtual ~AliFlatESDVertex() {}
 
   AliFlatESDVertex() :fNContributors(0), fChi2(0){
@@ -94,7 +95,9 @@ class AliFlatESDVertex: public AliVVvertex
   Double_t GetWDist(const AliESDVertex* v) const;
   */
 
-
+ private:
+  
+	AliFlatESDVertex(AliFlatESDSpecialConstructorFlag f);
  
 };
 

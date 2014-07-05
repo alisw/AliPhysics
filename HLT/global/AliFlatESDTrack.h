@@ -21,17 +21,18 @@ Op - Track parameters estimated at the point of maximal radial coordinate reache
 #include "AliFlatTPCCluster.h"
 #include "AliFlatExternalTrackParam.h"
 #include "AliVVtrack.h"
+#include "AliFlatESDMisc.h"
 
 class AliESDtrack;
 class AliESDfriendTrack;
 class AliExternalTrackParam;
 
 class AliFlatESDTrack: public AliVVtrack {
+ friend class AliFlatESDEvent;
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
   AliFlatESDTrack();
-  AliFlatESDTrack(Bool_t);
   AliFlatESDTrack(const AliESDtrack* track, AliESDfriendTrack* friendTrack); 
   virtual ~AliFlatESDTrack();  
 
@@ -125,6 +126,7 @@ class AliFlatESDTrack: public AliVVtrack {
  private:
   AliFlatESDTrack(const AliFlatESDTrack&);
   AliFlatESDTrack& operator=(const AliFlatESDTrack&);
+  AliFlatESDTrack(AliFlatESDSpecialConstructorFlag);
 
   Int_t FillExternalTrackParam(const AliExternalTrackParam* param, UShort_t flag);
 

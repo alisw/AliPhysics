@@ -15,18 +15,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliFlatESDV0.h"
+#include "AliFlatTPCCluster.h"
 
-AliFlatESDV0::AliFlatESDV0(AliFlatESDSpecialConstructorFlag f){
+AliFlatTPCCluster::AliFlatTPCCluster(AliFlatESDSpecialConstructorFlag f){
 	if(f == AliFlatESDReinitialize);
-  else AliFlatESDV0();
-}
+  else AliFlatTPCCluster();
 
-
-AliFlatESDV0::AliFlatESDV0():
-// Default constructor
-	fNegTrackID(0),
-	fPosTrackID(0){
 }
 
 

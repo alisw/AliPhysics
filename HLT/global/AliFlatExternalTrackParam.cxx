@@ -15,18 +15,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliFlatESDV0.h"
-
-AliFlatESDV0::AliFlatESDV0(AliFlatESDSpecialConstructorFlag f){
+#include "AliFlatExternalTrackParam.h"
+AliFlatExternalTrackParam::AliFlatExternalTrackParam(AliFlatESDSpecialConstructorFlag f){
 	if(f == AliFlatESDReinitialize);
-  else AliFlatESDV0();
-}
+  else AliFlatExternalTrackParam();
 
-
-AliFlatESDV0::AliFlatESDV0():
-// Default constructor
-	fNegTrackID(0),
-	fPosTrackID(0){
 }
 
 

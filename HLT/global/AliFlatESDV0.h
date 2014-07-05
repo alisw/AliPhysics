@@ -11,14 +11,18 @@
 
 #include "Rtypes.h"
 #include "AliVVv0.h"
+#include "AliFlatESDMisc.h"
 
 class AliFlatESDV0: public AliVVv0
 {
-  public:
-  AliFlatESDV0(Bool_t){}
+ friend class AliFlatESDEvent;
+ public:
+  AliFlatESDV0();
   virtual ~AliFlatESDV0() {}
   Int_t fNegTrackID;
   Int_t fPosTrackID;
+ private:
+ 	AliFlatESDV0(AliFlatESDSpecialConstructorFlag f );
 };
 
 //typedef struct AliFlatESDV0 AliFlatESDV0;
