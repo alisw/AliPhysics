@@ -59,6 +59,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fMinMCLabel(0),
   fRecombScheme(fastjet::pt_scheme),
   fTrackEfficiency(1.),
+  fMCFlag(0),
+  fGeneratorIndex(-1),
   fIsInit(0),
   fLocked(0),
   fIsPSelSet(0),
@@ -112,6 +114,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fMinMCLabel(0),
   fRecombScheme(fastjet::pt_scheme),
   fTrackEfficiency(1.),
+  fMCFlag(0),
+  fGeneratorIndex(-1),
   fIsInit(0),
   fLocked(0),
   fIsPSelSet(0),
@@ -263,7 +267,15 @@ void AliEmcalJetTask::FindJets()
 	else {
 	  AliDebug(2,Form("Track %d matches the bit mask (%d, %d)", iTracks, fConstSel, t->TestBits(TObject::kBitMask)));	    
 	}
-      }	    
+      }
+      if ((t->GetFlag() & fMCFlag) != fMCFlag) { 
+	AliDebug(2,Form("Skipping track %d because it does not match the MC flags", iTracks));
+	continue;
+      }
+      if (fGeneratorIndex >= 0 && t->GetGeneratorIndex() != fGeneratorIndex) { 
+	AliDebug(2,Form("Skipping track %d because it does not match the MC generator index", iTracks));
+	continue;
+      }
       if (t->Pt() < fMinJetTrackPt) 
         continue;
       Double_t eta = t->Eta();
