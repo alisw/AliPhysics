@@ -14,6 +14,9 @@
 class AliTrackPointArray;
 class AliKalmanTrack;
 class TObjArrray;
+class AliTPCseed;
+class AliTRDseedV1;
+
 //_____________________________________________________________________________
 class AliESDfriendTrack : public TObject {
 public:
@@ -42,6 +45,10 @@ public:
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
   TObject * GetCalibObject(Int_t index);
+  void AddTPCseed(AliTPCseed* /*seed*/) {}
+  void AddTRDseed(AliTRDseedV1* /*seed*/) {}
+  AliTPCseed* GetTPCseed() const {return NULL;}
+  AliTRDseedV1* GetTRDseed() const {return NULL;}
   //
   // parameters backup
   void SetTPCOut(const AliExternalTrackParam &param);
