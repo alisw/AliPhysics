@@ -178,6 +178,7 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
       if (label == 0) 
 	AliDebug(2,Form("Track %d with label==0", iTracks));
     }
+    newt->SetLabel(label);
     if (type==0) {
       newt->SetBit(BIT(22),0);
       newt->SetBit(BIT(23),0);
