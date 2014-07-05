@@ -483,7 +483,7 @@ void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
   Double_t prob[AliPID::kSPECIESC]={0.};
   EDetPidStatus pidStatus=ComputePIDProbability(kTPC, esdtr, AliPID::kSPECIESC, prob);
   // check if a valid signal was found, otherwise return pion mass
-  if (pidStatus!=kDetNoSignal) { //kDetPidOk) {
+  if (pidStatus==kDetNoSignal) { //kDetPidOk) {
     esdtr->SetPIDForTracking(AliPID::kPion);
     return;
   }
@@ -492,14 +492,17 @@ void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
   // pidProb.ComputeProbabilities(esdtr, this, p);
 
   // find max probability
-  Float_t max=0.;
+  Float_t max=0.,min=1.e9;
   Int_t pid=-1;
-  for (Int_t i=0; i<AliPID::kSPECIESC; ++i) if (prob[i]>max) {pid=i; max=prob[i];}
+  for (Int_t i=0; i<AliPID::kSPECIESC; ++i) {
+    if (prob[i]>max) {pid=i; max=prob[i];}
+    if (prob[i]<min) min=prob[i];
+  }
 
   //int pid = AliPID::kPion; // this should be substituted by real most probable TPC pid (e,mu -> pion) or poin if no PID possible
 
   //
-  if (pid>AliPID::kSPECIESC-1) pid = AliPID::kPion;
+  if (pid>AliPID::kSPECIESC-1 || (min>=max)) pid = AliPID::kPion;
   //
   esdtr->SetPIDForTracking( pid );
   //
