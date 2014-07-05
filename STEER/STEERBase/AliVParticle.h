@@ -75,7 +75,8 @@ public:
    */
   Bool_t IsSortable() const  { return kTRUE; }
   virtual Bool_t IsPrimary()  const  { return kFALSE; }
-  
+  virtual void    SetFlag(UInt_t) {;}
+  virtual UInt_t  GetFlag() const {return 0;}  
 
   // coordinate system conversions
   Bool_t   Local2GlobalMomentum(Double_t p[3], Double_t alpha) const;
