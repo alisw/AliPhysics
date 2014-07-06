@@ -27,10 +27,10 @@ AliEmcalMCTrackSelector* AddTaskMCTrackSelector(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  TString name("AliEmcalMCTrackSelector");
+  TString name("AliEmcalMCTrackSelector_");
   name += outname;
   AliEmcalMCTrackSelector *eTask = new AliEmcalMCTrackSelector(name);
-  eTask->SetTracksOutName(outname);
+  eTask->SetParticlesOutName(outname);
   eTask->SetRejectNK(nk);
   eTask->SetChargedMC(ch);
   eTask->SetEtaMax(etamax);
