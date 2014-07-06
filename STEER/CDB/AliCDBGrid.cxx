@@ -918,22 +918,27 @@ Bool_t AliCDBGrid::PutInCvmfs( TString& filename, TFile* cdbFile ) const
     AliError(Form("OCDB folder set for an invalid OCDB storage:\n   %s", cvmfsDirname.Data()));
     return kFALSE;
   }
-  // now cvmfsDirname is the full dirname in cvmfs (trailing slash included)
+  // now cvmfsDirname is the full dirname in cvmfs
   AliDebug(3, Form("Publishing \"%s\" in \"%s\"", basename.Data(), cvmfsDirname.Data()));
 
   // Tar the file with the right prefix path. Include the directory structure in the tarball
-  // to cover the case of a containing directory being new in cvmfs.
+  // to cover the case of a containing directory being new in cvmfs, plus a container directory
+  // to avoid clashing with stuff present in the local directory
   TString firstLevel(threeLevels(0, threeLevels.First('/')));
-  gSystem->Exec( Form("rm -r %s", firstLevel.Data()) );
-  Int_t result = gSystem->Exec( Form("mkdir -p %s", threeLevels.Data()) );
+  TString tempDir("tmpToCvmfsOcdbs");
+  gSystem->Exec( Form("rm -r %s > /dev/null 2>&1", tempDir.Data()) ); //to be sure not to publish other stuff in cvmfs
+  Int_t result = gSystem->Exec( Form("mkdir -p %s/%s", tempDir.Data(), threeLevels.Data()) );
   if ( result != 0 ) {
-    AliError ( Form ( "Could not create the directory \"%s\"", threeLevels.Data() ) );
+    AliError ( Form ( "Could not create the directory \"%s/%s\"", tempDir.Data(), threeLevels.Data() ) );
     return kFALSE;
   }
-  cdbFile->Cp(Form("%s/%s", threeLevels.Data(), basename.Data() ));
+  cdbFile->Cp(Form("%s/%s/%s", tempDir.Data(), threeLevels.Data(), basename.Data() ));
   TString tarFileName("cdbObjectToAdd.tar.gz");
+  TString cvmfsBaseFolder(cvmfsDirname(0, cvmfsDirname.Last('/')));
+  cvmfsBaseFolder = cvmfsBaseFolder(0, cvmfsBaseFolder.Last('/'));
+  cvmfsBaseFolder = cvmfsBaseFolder(0, cvmfsBaseFolder.Last('/'));
   // tarCommand should be e.g.: tar --transform 's,^,/cvmfs/alice-ocdb.cern.ch/calibration/data/2010/OCDB/,S' -cvzf objecttoadd.tar.gz basename
-  result = gSystem->Exec ( Form( "tar --transform 's,^,%s/,S' -cvzf %s %s", cvmfsDirname.Data(), tarFileName.Data(), firstLevel.Data() ) );
+  result = gSystem->Exec ( Form( "tar --transform 's,^%s,%s,S' -cvzf %s %s", tempDir.Data(), cvmfsBaseFolder.Data(), tarFileName.Data(), tempDir.Data() ) );
   if ( result != 0 ) {
     AliError ( Form ( "Could not create the tarball for the object \"%s\"", filename.Data() ) );
     return kFALSE;
@@ -947,7 +952,7 @@ Bool_t AliCDBGrid::PutInCvmfs( TString& filename, TFile* cdbFile ) const
   }
 
   // Remove the local file and the tar-file
-  gSystem->Exec( Form( "rm -r %s", firstLevel.Data() ) );
+  gSystem->Exec( Form( "rm -r %s", tempDir.Data() ) );
   gSystem->Exec( Form( "rm %s", tarFileName.Data() ) );
 
   return kTRUE;
