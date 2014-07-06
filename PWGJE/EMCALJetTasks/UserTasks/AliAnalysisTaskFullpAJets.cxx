@@ -148,6 +148,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fDoVertexRCut(0),
     fMCPartLevel(0),
     fDoTHnSparse(0),
+    fDoJetRhoDensity(0),
     fEMCalPhiMin(1.39626),
     fEMCalPhiMax(3.26377),
     fEMCalPhiTotal(1.86750),
@@ -328,6 +329,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fDoVertexRCut(0),
     fMCPartLevel(0),
     fDoTHnSparse(0),
+    fDoJetRhoDensity(0),
     fEMCalPhiMin(1.39626),
     fEMCalPhiMax(3.26377),
     fEMCalPhiTotal(1.86750),
@@ -751,30 +753,33 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
             fOutput->Add(fRhoChargedCMS->GetOutputHistos());
         }
 
-        Double_t fullEDR = fFullEDJetR *100;
-        Double_t chargedEDR = fChargedEDJetR *100;
-        const Int_t fullEDBins = (Int_t) fullEDR;
-        const Int_t chargedEDBins = (Int_t) chargedEDR;
-
-        fpFullJetEDProfile = new TProfile3D("fpFullJetEDProfile","Jet ED Profile for #varphi_{jet}#in(#varphi_{EMCal min} + R,#varphi_{EMCal max} - R) & #eta_{jet}#in(#eta_{EMCal min} + R,#eta_{EMCal max} - R)",fParticlePtBins,fParticlePtLow,fParticlePtUp,fCentralityBins,fCentralityLow,fCentralityUp,fullEDBins,0,fFullEDJetR);
-        fpFullJetEDProfile->GetXaxis()->SetTitle("p_{T,jet}^{ch+em} (GeV)");
-        fpFullJetEDProfile->GetYaxis()->SetTitle(fCentralityTag.Data());
-        fpFullJetEDProfile->GetZaxis()->SetTitle("R");
-
-        fpChargedJetEDProfile = new TProfile3D("fpChargedJetEDProfile","Charged Jet ED Profile for #eta_{jet}#in(#eta_{TPC min} + R,#eta_{TPC max} - R)",fParticlePtBins,fParticlePtLow,fParticlePtUp,fCentralityBins,fCentralityLow,fCentralityUp,chargedEDBins,0,fChargedEDJetR);
-        fpChargedJetEDProfile->GetXaxis()->SetTitle("p_{T,jet}^{ch} (GeV)");
-        fpChargedJetEDProfile->GetYaxis()->SetTitle(fCentralityTag.Data());
-        fpChargedJetEDProfile->GetZaxis()->SetTitle("R");
-
-        fpChargedJetEDProfileScaled = new TProfile3D("fpChargedJetEDProfileScaled","Charged Jet ED Profile x SF for #eta_{jet}#in(#eta_{TPC min} + R,#eta_{TPC max} - R)",fParticlePtBins,fParticlePtLow,fParticlePtUp,fCentralityBins,fCentralityLow,fCentralityUp,chargedEDBins,0,fChargedEDJetR);
-        fpChargedJetEDProfileScaled->GetXaxis()->SetTitle("p_{T,jet}^{ch} (GeV)");
-        fpChargedJetEDProfileScaled->GetYaxis()->SetTitle(fCentralityTag.Data());
-        fpChargedJetEDProfileScaled->GetZaxis()->SetTitle("R");
-
+        if (fDoJetRhoDensity == kTRUE)
+        {
+            Double_t fullEDR = fFullEDJetR *100;
+            Double_t chargedEDR = fChargedEDJetR *100;
+            const Int_t fullEDBins = (Int_t) fullEDR;
+            const Int_t chargedEDBins = (Int_t) chargedEDR;
+            
+            fpFullJetEDProfile = new TProfile3D("fpFullJetEDProfile","Jet ED Profile for #varphi_{jet}#in(#varphi_{EMCal min} + R,#varphi_{EMCal max} - R) & #eta_{jet}#in(#eta_{EMCal min} + R,#eta_{EMCal max} - R)",fParticlePtBins,fParticlePtLow,fParticlePtUp,fCentralityBins,fCentralityLow,fCentralityUp,fullEDBins,0,fFullEDJetR);
+            fpFullJetEDProfile->GetXaxis()->SetTitle("p_{T,jet}^{ch+em} (GeV)");
+            fpFullJetEDProfile->GetYaxis()->SetTitle(fCentralityTag.Data());
+            fpFullJetEDProfile->GetZaxis()->SetTitle("R");
+            
+            fpChargedJetEDProfile = new TProfile3D("fpChargedJetEDProfile","Charged Jet ED Profile for #eta_{jet}#in(#eta_{TPC min} + R,#eta_{TPC max} - R)",fParticlePtBins,fParticlePtLow,fParticlePtUp,fCentralityBins,fCentralityLow,fCentralityUp,chargedEDBins,0,fChargedEDJetR);
+            fpChargedJetEDProfile->GetXaxis()->SetTitle("p_{T,jet}^{ch} (GeV)");
+            fpChargedJetEDProfile->GetYaxis()->SetTitle(fCentralityTag.Data());
+            fpChargedJetEDProfile->GetZaxis()->SetTitle("R");
+            
+            fpChargedJetEDProfileScaled = new TProfile3D("fpChargedJetEDProfileScaled","Charged Jet ED Profile x SF for #eta_{jet}#in(#eta_{TPC min} + R,#eta_{TPC max} - R)",fParticlePtBins,fParticlePtLow,fParticlePtUp,fCentralityBins,fCentralityLow,fCentralityUp,chargedEDBins,0,fChargedEDJetR);
+            fpChargedJetEDProfileScaled->GetXaxis()->SetTitle("p_{T,jet}^{ch} (GeV)");
+            fpChargedJetEDProfileScaled->GetYaxis()->SetTitle(fCentralityTag.Data());
+            fpChargedJetEDProfileScaled->GetZaxis()->SetTitle("R");
+            
+            fOutput->Add(fpFullJetEDProfile);
+            fOutput->Add(fpChargedJetEDProfile);
+            fOutput->Add(fpChargedJetEDProfileScaled);
+        }
         fOutput->Add(fRhoChargedScale->GetOutputHistos());
-        fOutput->Add(fpFullJetEDProfile);
-        fOutput->Add(fpChargedJetEDProfile);
-        fOutput->Add(fpChargedJetEDProfileScaled);
     }
     if (fCalculateRhoJet>=2 && fMCPartLevel==kFALSE) // Charged Rho & Raw Jet Spectra
     {
@@ -1068,8 +1073,11 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     if (fCalculateRhoJet>=1)
     {
         EstimateChargedRhoScale();
-        ChargedJetEnergyDensityProfile();
-        FullJetEnergyDensityProfile();
+        if (fDoJetRhoDensity == kTRUE)
+        {
+            ChargedJetEnergyDensityProfile();
+            FullJetEnergyDensityProfile();
+        }
     }
     if (fCalculateRhoJet>=2)
     {
@@ -5089,7 +5097,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillMiscJetStats(TClonesArray *j
         {
             AliVCluster *vcluster = (AliVCluster*) myJet->ClusterAt(j,clusterList);
             vcluster->GetMomentum(*cluster_vec,vertex);
-            fhJetConstituentPt->Fill(myJet->Pt(),vcluster->E());
+            fhJetConstituentPt->Fill(myJet->Pt(),cluster_vec->Pt());
             fhJetClustersPt->Fill(myJet->Pt(),vcluster->E());
             fhJetPtZCluster->Fill(myJet->Pt(),cluster_vec->Pt()/myJet->Pt());
             fhJetPtZConstituent->Fill(myJet->Pt(),cluster_vec->Pt()/myJet->Pt());
