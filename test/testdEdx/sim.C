@@ -18,7 +18,7 @@ void ModifyRecoParam(TObjArray* recoArray, Bool_t useIonTail, Double_t crossTalk
   TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDBsim";
   AliCDBStorage*pocdbStorage = AliCDBManager::Instance()->GetStorage(localStorage.Data());  
   AliCDBMetaData *metaData= new AliCDBMetaData();
-  AliCDBId*   id1=new AliCDBId("TPC/Calib/RecoParam/", man->GetRun(), man->GetRun());
+  AliCDBId*   id1=new AliCDBId("TPC/Calib/RecoParam/", man->GetRun(), AliCDBRunRange::Infinity());
   pocdbStorage->Put(recoArray, (*id1), metaData);
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/RecoParam/",localStorage.Data());
 }
@@ -33,15 +33,17 @@ void sim(Int_t nev, Bool_t useIonTail, Double_t crossTalkCorrection) {
   gSystem->Load("libTHijing");
   gSystem->Load("libgeant321");
 
-  AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  man->SetSpecificStorage("TPC/Calib/RecoParam/",recoStorage);
-  man->SetRun(run);
-  AliCDBEntry* e = man->Get("TPC/Calib/RecoParam/",run); // get default
-  // modify content
-  TObjArray* recoArray = (TObjArray*)e->GetObject();
-  ModifyRecoParam(recoArray, useIonTail, crossTalkCorrection);
-
+  if (nev<0){
+    AliCDBManager * man = AliCDBManager::Instance();
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    man->SetSpecificStorage("TPC/Calib/RecoParam/",recoStorage);
+    man->SetRun(run);
+    AliCDBEntry* e = man->Get("TPC/Calib/RecoParam/",run); // get default
+    // modify content
+    TObjArray* recoArray = (TObjArray*)e->GetObject();
+    ModifyRecoParam(recoArray, useIonTail, crossTalkCorrection);
+    return;
+  }
 
   if (gSystem->Getenv("EVENT")) nev = atoi(gSystem->Getenv("EVENT")) ;   
   
@@ -52,6 +54,8 @@ void sim(Int_t nev, Bool_t useIonTail, Double_t crossTalkCorrection) {
 
   simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
+  TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDBsim";
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/RecoParam/",localStorage.Data());
   
   simulator.SetRunQA(":") ; 
   

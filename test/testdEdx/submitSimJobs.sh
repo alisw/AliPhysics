@@ -98,6 +98,7 @@ runSim(){
   rm -rf *.root *.dat *.log fort* hlt hough raw* recraw/*.root recraw/*.log GRP* 
   printf   "\n ======================================================================\n\n"
   echo Running: aliroot -b -q sim.C\($nevents,$ionTail,$xTalk\)     
+  aliroot -b -q sim.C\(-1,$ionTail,$xTalk\)            2>&1 | tee sim.log    #  make a specific OCDB for simulation
   aliroot -b -q sim.C\($nevents,$ionTail,$xTalk\)            2>&1 | tee sim.log
   mv syswatch.log simwatch.log
   printf   "\n ======================================================================\n\n"
