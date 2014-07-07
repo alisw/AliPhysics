@@ -22,19 +22,20 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
  public:
  
   AliAnalysisTaskNucleiv2SP();
-  AliAnalysisTaskNucleiv2SP(const char *name);
+  AliAnalysisTaskNucleiv2SP(const char *name, Int_t ptc); //select ptc 1 = d; 2 = t ; 3 = 3He
   virtual ~AliAnalysisTaskNucleiv2SP() {}
   
   virtual void  UserCreateOutputObjects();
   virtual void  Initialize();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
-  
+   
   Float_t GetEventPlaneForCandidate(AliESDtrack* track0, const TVector2* q,AliEventplane *pl);
   Float_t GetPhi0Pi(Float_t phi);
 
  private:
-  
+  Double_t fptc;
+
   TList	*fListHist;	           //! List of  histograms
  
   TH1F  *fHistEventMultiplicity;           //! event multiplicity
