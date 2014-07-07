@@ -135,10 +135,12 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
     Bool_t fEvSel_IsNotPileupMV;            //!
     Bool_t fEvSel_IsNotPileupInMultBins;    //!
     Bool_t fEvSel_HasVtxContributor;        //!
+    Bool_t fEvSel_Triggered;                //!
     
     //Other Selections: more dedicated filtering to be studied!
     Int_t fEvSel_nTracklets;              //!
     Int_t fEvSel_nSPDClusters;            //!
+    Float_t fEvSel_VtxZ; //! the actual value
     
 
 //===========================================================================================
