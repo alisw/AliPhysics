@@ -6,6 +6,8 @@
 class AliVEvent;
 class AliVParticle;
 
+#include "AliAODMCParticle.h"
+
 #include "AliEmcalContainer.h"
 
 class AliParticleContainer : public AliEmcalContainer {
@@ -37,6 +39,11 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        SetParticleEtaLimits(Double_t min, Double_t max)  { fParticleMaxEta = max ; fParticleMinEta = min ; }
   void                        SetParticlePhiLimits(Double_t min, Double_t max)  { fParticleMaxPhi = max ; fParticleMinPhi = min ; }
   void                        SetTrackBitMap(UInt_t m)                          { fTrackBitMap     = m ; }
+  void                        SetMCFlag(UInt_t m)                               { fMCFlag          = m ; }
+  void                        SelectHIJING(Bool_t s)                            { if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
+  void                        SetGeneratorIndex(Short_t i)                      { fGeneratorIndex = i  ; }
+  void                        SelectPhysicalPrimaries(Bool_t s)                 { if (s) fMCFlag |=  AliAODMCParticle::kPhysicalPrim ; 
+                                                                                  else   fMCFlag &= ~AliAODMCParticle::kPhysicalPrim ; }
 
  protected:
   Double_t                    fParticlePtCut;                 // cut on particle pt
@@ -47,12 +54,14 @@ class AliParticleContainer : public AliEmcalContainer {
   UInt_t                      fTrackBitMap;                   // bit map of accepted tracks (non MC)
   UInt_t                      fMCTrackBitMap;                 // bit map of accepted MC tracks
   Int_t                       fMinMCLabel;                    // minimum MC label value for the tracks/clusters being considered MC particles
+  UInt_t                      fMCFlag;                        // select MC particles with flags
+  Short_t                     fGeneratorIndex;                // select MC particles with generator index (default = -1 = switch off selection)
 
  private:
   AliParticleContainer(const AliParticleContainer& obj); // copy constructor
   AliParticleContainer& operator=(const AliParticleContainer& other); // assignment
 
-  ClassDef(AliParticleContainer,1);
+  ClassDef(AliParticleContainer,2);
 
 };
 

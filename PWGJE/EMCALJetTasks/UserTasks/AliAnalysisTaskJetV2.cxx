@@ -157,15 +157,15 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) :
 AliAnalysisTaskJetV2::~AliAnalysisTaskJetV2()
 {
     // destructor
-    if(fOutputList)             delete fOutputList;
-    if(fOutputListGood)         delete fOutputListGood;
-    if(fOutputListBad)          delete fOutputListBad;
-    if(fFitModulation)          delete fFitModulation;
-    if(fHistSwap)               delete fHistSwap;
-    if(fCentralityClasses)      delete fCentralityClasses;
-    if(fExpectedRuns)           delete fExpectedRuns;
-    if(fExpectedSemiGoodRuns)   delete fExpectedSemiGoodRuns;
-    if(fFitControl)             delete fFitControl;
+    if(fOutputList)             {delete fOutputList;            fOutputList = 0x0;}
+    if(fOutputListGood)         {delete fOutputListGood;        fOutputListGood = 0x0;}
+    if(fOutputListBad)          {delete fOutputListBad;         fOutputListBad = 0x0;}
+    if(fFitModulation)          {delete fFitModulation;         fFitModulation = 0x0;}
+    if(fHistSwap)               {delete fHistSwap;              fHistSwap = 0x0;}
+    if(fCentralityClasses)      {delete fCentralityClasses;     fCentralityClasses = 0x0;}
+    if(fExpectedRuns)           {delete fExpectedRuns;          fExpectedRuns = 0x0;}
+    if(fExpectedSemiGoodRuns)   {delete fExpectedSemiGoodRuns;  fExpectedSemiGoodRuns = 0x0;}
+    if(fFitControl)             {delete fFitControl;            fFitControl = 0x0;}
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::ExecOnce()
@@ -182,6 +182,66 @@ void AliAnalysisTaskJetV2::ExecOnce()
     AliAnalysisTaskEmcalJet::ExecOnce();        // init the base class
     AliAnalysisTaskEmcalJet::SetVzRange(-1.*fAbsVertexZ, fAbsVertexZ);
     if(!GetJetContainer()) AliFatal(Form("%s: Couldn't find jet container. Aborting !", GetName()));
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskJetV2::Notify()
+{
+    // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
+    if(fRunNumber != InputEvent()->GetRunNumber()) {
+        fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
+        if(fDebug > 0) printf("__FUNC__ %s > NEW RUNNUMBER DETECTED \n ", __func__);
+        // reset the cuts. should be a pointless operation except for the case where the run number changes
+        // from semi-good back to good on one node, which is not a likely scenario (unless trains will
+        // run as one masterjob)
+        AliAnalysisTaskEmcal::SetTrackPhiLimits(-10., 10.);
+        switch (fAnalysisType) {
+            case kCharged: {
+                AliAnalysisTaskEmcalJet::SetJetPhiLimits(-10., 10.);   
+            } break;
+            case kFull: {
+                AliAnalysisTaskEmcalJet::SetJetPhiLimits(1.405 + GetJetRadius(), 3.135 - GetJetRadius());
+            } break;
+            default: break;
+        }
+        if(fCachedRho) {                // if there's a cached rho, it's the default, so switch back
+            if(fDebug > 0) printf("__FUNC__ %s > replacing rho with cached rho \n ", __func__);
+            fRho = fCachedRho;          // reset rho back to cached value. again, should be pointless
+        }
+        Bool_t flaggedAsSemiGood(kFALSE);       // not flagged as anything
+        for(Int_t i(0); i < fExpectedSemiGoodRuns->GetSize(); i++) {
+            if(fExpectedSemiGoodRuns->At(i) == fRunNumber) { // run is semi-good
+               if(fDebug > 0) printf("__FUNC__ %s > semi-good tpc run detected, adjusting acceptance \n ", __func__);
+                flaggedAsSemiGood = kTRUE;
+                switch (fAnalysisType) {
+                    // for full jets the jet acceptance does not have to be changed as emcal does not
+                    // cover the tpc low voltage readout strips
+                    case kCharged: {
+                        AliAnalysisTaskEmcalJet::SetJetPhiLimits(fSemiGoodJetMinPhi, fSemiGoodJetMaxPhi);       // just an acceptance cut, jets are obtained from full azimuth, so no edge effects
+                    } break;
+                    default: break;
+                }
+                AliAnalysisTaskEmcal::SetTrackPhiLimits(fSemiGoodTrackMinPhi, fSemiGoodTrackMaxPhi);    // only affects vn extraction, NOT jet finding
+                // for semi-good runs, also try to get the 'small rho' estimate, if it is available
+                AliRhoParameter* tempRho(dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fNameSmallRho.Data())));
+                if(tempRho) {
+                    if(fDebug > 0) printf("__FUNC__ %s > switching to small rho, caching normal rho \n ", __func__);
+                    fHistAnalysisSummary->SetBinContent(54, 1.);        // bookkeep the fact that small rho is used
+                    fCachedRho = fRho;          // cache the original rho ...
+                    fRho = tempRho;             // ... and use the small rho
+                }
+            }
+        }
+        if(!flaggedAsSemiGood) {
+            // in case the run is not a semi-good run, check if it is recognized as another run
+            // only done to catch unexpected runs
+            for(Int_t i(0); i < fExpectedRuns->GetSize(); i++) {
+                if(fExpectedRuns->At(i) == fRunNumber) break; // run is known, break the loop else store the number in a random bin
+                fHistUndeterminedRunQA->SetBinContent(TMath::Nint(10.*gRandom->Uniform(0.,.9))+1, fRunNumber);
+            }
+            fHistAnalysisSummary->SetBinContent(53, 1.);                // bookkeep which rho estimate is used 
+        }
+    }
+    return kTRUE;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskJetV2::InitializeAnalysis() 
@@ -1366,63 +1426,6 @@ Bool_t AliAnalysisTaskJetV2::PassesCuts(AliVEvent* event)
 {
     // event cuts
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
-    // only done if the runnumber changes, could be moved to a call to AliAnalysisTaskSE::Notify()
-    if(fRunNumber != InputEvent()->GetRunNumber()) {
-        fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
-        if(fDebug > 0) printf("__FUNC__ %s > NEW RUNNUMBER DETECTED \n ", __func__);
-        // reset the cuts. should be a pointless operation except for the case where the run number changes
-        // from semi-good back to good on one node, which is not a likely scenario (unless trains will
-        // run as one masterjob)
-        AliAnalysisTaskEmcal::SetTrackPhiLimits(-10., 10.);
-        switch (fAnalysisType) {
-            case kCharged: {
-                AliAnalysisTaskEmcalJet::SetJetPhiLimits(-10., 10.);   
-            } break;
-            case kFull: {
-                AliAnalysisTaskEmcalJet::SetJetPhiLimits(1.405 + GetJetRadius(), 3.135 - GetJetRadius());
-            } break;
-            default: break;
-        }
-        if(fCachedRho) {                // if there's a cached rho, it's the default, so switch back
-            if(fDebug > 0) printf("__FUNC__ %s > replacing rho with cached rho \n ", __func__);
-            fRho = fCachedRho;          // reset rho back to cached value. again, should be pointless
-        }
-        Bool_t flaggedAsSemiGood(kFALSE);       // not flagged as anything
-        for(Int_t i(0); i < fExpectedSemiGoodRuns->GetSize(); i++) {
-            if(fExpectedSemiGoodRuns->At(i) == fRunNumber) { // run is semi-good
-               if(fDebug > 0) printf("__FUNC__ %s > semi-good tpc run detected, adjusting acceptance \n ", __func__);
-                flaggedAsSemiGood = kTRUE;
-                switch (fAnalysisType) {
-                    // for full jets the jet acceptance does not have to be changed as emcal does not
-                    // cover the tpc low voltage readout strips
-                    case kCharged: {
-                        AliAnalysisTaskEmcalJet::SetJetPhiLimits(fSemiGoodJetMinPhi, fSemiGoodJetMaxPhi);       // just an acceptance cut, jets are obtained from full azimuth, so no edge effects
-                    } break;
-                    default: break;
-                }
-                AliAnalysisTaskEmcal::SetTrackPhiLimits(fSemiGoodTrackMinPhi, fSemiGoodTrackMaxPhi);    // only affects vn extraction, NOT jet finding
-                // for semi-good runs, also try to get the 'small rho' estimate, if it is available
-                AliRhoParameter* tempRho(dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fNameSmallRho.Data())));
-                if(tempRho) {
-                    if(fDebug > 0) printf("__FUNC__ %s > switching to small rho, caching normal rho \n ", __func__);
-                    fHistAnalysisSummary->SetBinContent(54, 1.);        // bookkeep the fact that small rho is used
-                    fCachedRho = fRho;          // cache the original rho ...
-                    fRho = tempRho;             // ... and use the small rho
-                }
-            }
-        }
-        if(!flaggedAsSemiGood) {
-            // in case the run is not a semi-good run, check if it is recognized as another run
-            // only done to catch unexpected runs
-            for(Int_t i(0); i < fExpectedRuns->GetSize(); i++) {
-                if(fExpectedRuns->At(i) == fRunNumber) break; // run is known, break the loop else store the number in a random bin
-                fHistUndeterminedRunQA->SetBinContent(TMath::Nint(10.*gRandom->Uniform(0.,.9))+1, fRunNumber);
-            }
-            fHistAnalysisSummary->SetBinContent(53, 1.);                // bookkeep which rho estimate is used 
-        }
-    }
-    // continue with event selection 
     if(!event || !AliAnalysisTaskEmcal::IsEventSelected()) return kFALSE;
     if(TMath::Abs(InputEvent()->GetPrimaryVertex()->GetZ()) > 10.) return kFALSE;
     // aod and esd specific checks
