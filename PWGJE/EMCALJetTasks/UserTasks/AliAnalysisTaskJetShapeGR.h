@@ -46,11 +46,13 @@ class AliAnalysisTaskJetShapeGR : public AliAnalysisTaskEmcalJet {
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
   Bool_t                              FillHistograms();
+  Bool_t                              FillTrueJets();
 
   AliVParticle*                       GetEmbeddedConstituent(AliEmcalJet *jet);
 
   Double_t                            CalcGR(AliEmcalJet *jet, Int_t ic);
-  Double_t                            CalcDeltaGR(AliEmcalJet *jet, Int_t ic);
+  Double_t                            CalcDeltaGR(AliEmcalJet *jet, Int_t ic, TArrayF *fNum, TArrayF *fDen);//Double_t *num, Double_t *den);
+  Double_t                            GetDeltaPhi(Double_t phi1,Double_t phi2);
 
   Int_t                               fContainerBase;              // jets to be analyzed
   Int_t                               fContainerSub;               // subtracted jets to be analyzed
@@ -70,15 +72,42 @@ class AliAnalysisTaskJetShapeGR : public AliAnalysisTaskEmcalJet {
   Float_t         fRhoM;                                           // rho_m
   Int_t           fNConst;                                         // N constituents in jet1
   Int_t           fMatch;                                          // 1: matched to MC jet; 0: no match
+  Double_t        fDRStep;                                         // step width
+  Double_t        fMaxR;                                           // max R
 
-  TH2F          **fh2GRSubMatch;                                    //! subtracted jet mass vs match index (0: no match; 1:match)
-  TH2F          **fh2GRSubPtRawAll;                                 //! subtracted jet mass vs subtracted jet pT
-  TH2F          **fh2GRSubPtRawMatch;                               //! subtracted jet mass vs subtracted jet pT for matched jets
-  TH2F          **fh2GRSubPtTrue;                                   //! subtracted jet mass vs true jet pT for matched jets
-  TH2F          **fh2GRTruePtTrue;                                  //! true jet mass vs true jet pT for matched jets
   TH2F          **fh2PtTrueDeltaGR;                                 //! true jet pT vs (Msub - Mtrue)
   TH2F          **fh2PtTrueDeltaGRRel;                              //! true jet pT vs (Msub - Mtrue)/Mtrue
   THnSparse     **fhnGRResponse;                                    //! Msub vs Mtrue vs PtCorr vs PtTrue
+
+  //Histos for true jets
+  TH1F          **fh1PtTrue;                                        //! bookkeep number of jets vs Pt
+  TH3F          **fh3DeltaGRNumRPtTrue;                             //! Numerator of DeltaGR vs R vs Pt
+  TH3F          **fh3DeltaGRDenRPtTrue;                             //! Denomerator of DeltaGR vs R vs Pt
+  TH2F          **fh2DeltaGRNumRPtTrue;                             //! Numerator of DeltaGR vs R vs Pt : filled with weights of sum
+  TH2F          **fh2DeltaGRDenRPtTrue;                             //! Denomerator of DeltaGR vs R vs Pt : filled with weights of sum
+
+  //Histos for raw AA jets
+  TH1F          **fh1PtRaw;                                       //! bookkeep number of jets vs Pt
+  TH3F          **fh3DeltaGRNumRPtRaw;                            //! Numerator of DeltaGR vs R vs Pt
+  TH3F          **fh3DeltaGRDenRPtRaw;                            //! Denomerator of DeltaGR vs R vs Pt
+  TH2F          **fh2DeltaGRNumRPtRaw;                            //! Numerator of DeltaGR vs R vs Pt : filled with weights of sum
+  TH2F          **fh2DeltaGRDenRPtRaw;                            //! Denomerator of DeltaGR vs R vs Pt : filled with weights of sum
+
+  //Histos for raw AA jets matched to MC
+  TH1F          **fh1PtRawMatch;                                  //! bookkeep number of jets vs Pt
+  TH3F          **fh3DeltaGRNumRPtRawMatch;                       //! Numerator of DeltaGR vs R vs Pt
+  TH3F          **fh3DeltaGRDenRPtRawMatch;                       //! Denomerator of DeltaGR vs R vs Pt
+  TH2F          **fh2DeltaGRNumRPtRawMatch;                       //! Numerator of DeltaGR vs R vs Pt : filled with weights of sum
+  TH2F          **fh2DeltaGRDenRPtRawMatch;                       //! Denomerator of DeltaGR vs R vs Pt : filled with weights of sum
+
+  //Histos for matched jets and subtracted
+  TH1F          **fh1PtMatch;                                       //! bookkeep number of jets vs Pt
+  TH3F          **fh3DeltaGRNumRPtMatch;                            //! Numerator of DeltaGR vs R vs Pt
+  TH3F          **fh3DeltaGRDenRPtMatch;                            //! Denomerator of DeltaGR vs R vs Pt
+  TH2F          **fh2DeltaGRNumRPtMatch;                            //! Numerator of DeltaGR vs R vs Pt : filled with weights of sum
+  TH2F          **fh2DeltaGRDenRPtMatch;                            //! Denomerator of DeltaGR vs R vs Pt : filled with weights of sum
+  TH2F          **fh2DeltaGRNumRPtTrueMatch;                            //! Numerator of DeltaGR vs R vs Pt : filled with weights of sum
+  TH2F          **fh2DeltaGRDenRPtTrueMatch;                            //! Denomerator of DeltaGR vs R vs Pt : filled with weights of sum
 
  private:
   AliAnalysisTaskJetShapeGR(const AliAnalysisTaskJetShapeGR&);            // not implemented

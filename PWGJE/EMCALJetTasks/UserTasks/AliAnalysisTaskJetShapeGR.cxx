@@ -56,35 +56,88 @@ AliAnalysisTaskJetShapeGR::AliAnalysisTaskJetShapeGR() :
   fRhoM(0),
   fNConst(0),
   fMatch(0),
-  fh2GRSubMatch(0x0),
-  fh2GRSubPtRawAll(0x0),
-  fh2GRSubPtRawMatch(0x0),
-  fh2GRSubPtTrue(0x0),
-  fh2GRTruePtTrue(0x0),
+  fDRStep(0.04),
+  fMaxR(2.),
   fh2PtTrueDeltaGR(0x0),
   fh2PtTrueDeltaGRRel(0x0),
-  fhnGRResponse(0x0)
+  fhnGRResponse(0x0),
+  fh1PtTrue(0x0),
+  fh3DeltaGRNumRPtTrue(0x0),
+  fh3DeltaGRDenRPtTrue(0x0),
+  fh2DeltaGRNumRPtTrue(0x0),
+  fh2DeltaGRDenRPtTrue(0x0),
+  fh1PtRaw(0x0),
+  fh3DeltaGRNumRPtRaw(0x0),
+  fh3DeltaGRDenRPtRaw(0x0),
+  fh2DeltaGRNumRPtRaw(0x0),
+  fh2DeltaGRDenRPtRaw(0x0),
+  fh1PtRawMatch(0x0),
+  fh3DeltaGRNumRPtRawMatch(0x0),
+  fh3DeltaGRDenRPtRawMatch(0x0),
+  fh2DeltaGRNumRPtRawMatch(0x0),
+  fh2DeltaGRDenRPtRawMatch(0x0),
+  fh1PtMatch(0x0),
+  fh3DeltaGRNumRPtMatch(0x0),
+  fh3DeltaGRDenRPtMatch(0x0),
+  fh2DeltaGRNumRPtMatch(0x0),
+  fh2DeltaGRDenRPtMatch(0x0),
+  fh2DeltaGRNumRPtTrueMatch(0x0),
+  fh2DeltaGRDenRPtTrueMatch(0x0)
 {
   // Default constructor.
 
-  fh2GRSubMatch        = new TH2F*[fNcentBins];
-  fh2GRSubPtRawAll     = new TH2F*[fNcentBins];
-  fh2GRSubPtRawMatch   = new TH2F*[fNcentBins];
-  fh2GRSubPtTrue       = new TH2F*[fNcentBins];
-  fh2GRTruePtTrue      = new TH2F*[fNcentBins];
   fh2PtTrueDeltaGR     = new TH2F*[fNcentBins];
   fh2PtTrueDeltaGRRel  = new TH2F*[fNcentBins];
-  fhnGRResponse     = new THnSparse*[fNcentBins];
+  fhnGRResponse        = new THnSparse*[fNcentBins];
+  fh1PtTrue            = new TH1F*[fNcentBins];
+  fh3DeltaGRNumRPtTrue = new TH3F*[fNcentBins];
+  fh3DeltaGRDenRPtTrue = new TH3F*[fNcentBins];
+  fh2DeltaGRNumRPtTrue = new TH2F*[fNcentBins];
+  fh2DeltaGRDenRPtTrue = new TH2F*[fNcentBins];
+  fh1PtRaw            = new TH1F*[fNcentBins];
+  fh3DeltaGRNumRPtRaw = new TH3F*[fNcentBins];
+  fh3DeltaGRDenRPtRaw = new TH3F*[fNcentBins];
+  fh2DeltaGRNumRPtRaw = new TH2F*[fNcentBins];
+  fh2DeltaGRDenRPtRaw = new TH2F*[fNcentBins];
+  fh1PtRawMatch            = new TH1F*[fNcentBins];
+  fh3DeltaGRNumRPtRawMatch = new TH3F*[fNcentBins];
+  fh3DeltaGRDenRPtRawMatch = new TH3F*[fNcentBins];
+  fh2DeltaGRNumRPtRawMatch = new TH2F*[fNcentBins];
+  fh2DeltaGRDenRPtRawMatch = new TH2F*[fNcentBins];
+  fh1PtMatch            = new TH1F*[fNcentBins];
+  fh3DeltaGRNumRPtMatch = new TH3F*[fNcentBins];
+  fh3DeltaGRDenRPtMatch = new TH3F*[fNcentBins];
+  fh2DeltaGRNumRPtMatch = new TH2F*[fNcentBins];
+  fh2DeltaGRDenRPtMatch = new TH2F*[fNcentBins];
+  fh2DeltaGRNumRPtTrueMatch = new TH2F*[fNcentBins];
+  fh2DeltaGRDenRPtTrueMatch = new TH2F*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
-    fh2GRSubMatch[i]        = 0;
-    fh2GRSubPtRawAll[i]     = 0;
-    fh2GRSubPtRawMatch[i]   = 0;
-    fh2GRSubPtTrue[i]       = 0;
-    fh2GRTruePtTrue[i]      = 0;
     fh2PtTrueDeltaGR[i]     = 0;
     fh2PtTrueDeltaGRRel[i]  = 0;
-    fhnGRResponse[i]     = 0;
+    fhnGRResponse[i]        = 0;
+    fh1PtTrue[i]            = 0;
+    fh3DeltaGRNumRPtTrue[i] = 0;
+    fh3DeltaGRDenRPtTrue[i] = 0;
+    fh2DeltaGRNumRPtTrue[i] = 0;
+    fh2DeltaGRDenRPtTrue[i] = 0;
+    fh1PtRaw[i]            = 0;
+    fh3DeltaGRNumRPtRaw[i] = 0;
+    fh3DeltaGRDenRPtRaw[i] = 0;
+    fh2DeltaGRNumRPtRaw[i] = 0;
+    fh2DeltaGRDenRPtRaw[i] = 0;
+    fh1PtRawMatch[i]            = 0;
+    fh3DeltaGRNumRPtRawMatch[i] = 0;
+    fh3DeltaGRDenRPtRawMatch[i] = 0;
+    fh2DeltaGRNumRPtRawMatch[i] = 0;
+    fh2DeltaGRDenRPtRawMatch[i] = 0;
+    fh1PtMatch[i]            = 0;
+    fh3DeltaGRNumRPtMatch[i] = 0;
+    fh3DeltaGRDenRPtMatch[i] = 0;
+    fh2DeltaGRNumRPtMatch[i] = 0;
+    fh2DeltaGRDenRPtMatch[i] = 0;
+    fh2DeltaGRNumRPtTrueMatch[i] = 0;
+    fh2DeltaGRDenRPtTrueMatch[i] = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -111,35 +164,88 @@ AliAnalysisTaskJetShapeGR::AliAnalysisTaskJetShapeGR(const char *name) :
   fRhoM(0),
   fNConst(0),
   fMatch(0),
-  fh2GRSubMatch(0x0),
-  fh2GRSubPtRawAll(0x0),
-  fh2GRSubPtRawMatch(0x0),
-  fh2GRSubPtTrue(0x0),
-  fh2GRTruePtTrue(0x0),
+  fDRStep(0.04),
+  fMaxR(2.),
   fh2PtTrueDeltaGR(0x0),
   fh2PtTrueDeltaGRRel(0x0),
-  fhnGRResponse(0x0)
+  fhnGRResponse(0x0),
+  fh1PtTrue(0x0),
+  fh3DeltaGRNumRPtTrue(0x0),
+  fh3DeltaGRDenRPtTrue(0x0),
+  fh2DeltaGRNumRPtTrue(0x0),
+  fh2DeltaGRDenRPtTrue(0x0),
+  fh1PtRaw(0x0),
+  fh3DeltaGRNumRPtRaw(0x0),
+  fh3DeltaGRDenRPtRaw(0x0),
+  fh2DeltaGRNumRPtRaw(0x0),
+  fh2DeltaGRDenRPtRaw(0x0),
+  fh1PtRawMatch(0x0),
+  fh3DeltaGRNumRPtRawMatch(0x0),
+  fh3DeltaGRDenRPtRawMatch(0x0),
+  fh2DeltaGRNumRPtRawMatch(0x0),
+  fh2DeltaGRDenRPtRawMatch(0x0),
+  fh1PtMatch(0x0),
+  fh3DeltaGRNumRPtMatch(0x0),
+  fh3DeltaGRDenRPtMatch(0x0),
+  fh2DeltaGRNumRPtMatch(0x0),
+  fh2DeltaGRDenRPtMatch(0x0),
+  fh2DeltaGRNumRPtTrueMatch(0x0),
+  fh2DeltaGRDenRPtTrueMatch(0x0)
 {
   // Standard constructor.
 
-  fh2GRSubMatch        = new TH2F*[fNcentBins];
-  fh2GRSubPtRawAll     = new TH2F*[fNcentBins];
-  fh2GRSubPtRawMatch   = new TH2F*[fNcentBins];
-  fh2GRSubPtTrue       = new TH2F*[fNcentBins];
-  fh2GRTruePtTrue      = new TH2F*[fNcentBins];
   fh2PtTrueDeltaGR     = new TH2F*[fNcentBins];
   fh2PtTrueDeltaGRRel  = new TH2F*[fNcentBins];
-  fhnGRResponse     = new THnSparse*[fNcentBins];
+  fhnGRResponse        = new THnSparse*[fNcentBins];
+  fh1PtTrue            = new TH1F*[fNcentBins];
+  fh3DeltaGRNumRPtTrue = new TH3F*[fNcentBins];
+  fh3DeltaGRDenRPtTrue = new TH3F*[fNcentBins];
+  fh2DeltaGRNumRPtTrue = new TH2F*[fNcentBins];
+  fh2DeltaGRDenRPtTrue = new TH2F*[fNcentBins];
+  fh1PtRaw            = new TH1F*[fNcentBins];
+  fh3DeltaGRNumRPtRaw = new TH3F*[fNcentBins];
+  fh3DeltaGRDenRPtRaw = new TH3F*[fNcentBins];
+  fh2DeltaGRNumRPtRaw = new TH2F*[fNcentBins];
+  fh2DeltaGRDenRPtRaw = new TH2F*[fNcentBins];
+  fh1PtRawMatch            = new TH1F*[fNcentBins];
+  fh3DeltaGRNumRPtRawMatch = new TH3F*[fNcentBins];
+  fh3DeltaGRDenRPtRawMatch = new TH3F*[fNcentBins];
+  fh2DeltaGRNumRPtRawMatch = new TH2F*[fNcentBins];
+  fh2DeltaGRDenRPtRawMatch = new TH2F*[fNcentBins];
+  fh1PtMatch            = new TH1F*[fNcentBins];
+  fh3DeltaGRNumRPtMatch = new TH3F*[fNcentBins];
+  fh3DeltaGRDenRPtMatch = new TH3F*[fNcentBins];
+  fh2DeltaGRNumRPtMatch = new TH2F*[fNcentBins];
+  fh2DeltaGRDenRPtMatch = new TH2F*[fNcentBins];
+  fh2DeltaGRNumRPtTrueMatch = new TH2F*[fNcentBins];
+  fh2DeltaGRDenRPtTrueMatch = new TH2F*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
-    fh2GRSubMatch[i]        = 0;
-    fh2GRSubPtRawAll[i]     = 0;
-    fh2GRSubPtRawMatch[i]   = 0;
-    fh2GRSubPtTrue[i]       = 0;
-    fh2GRTruePtTrue[i]      = 0;
     fh2PtTrueDeltaGR[i]     = 0;
     fh2PtTrueDeltaGRRel[i]  = 0;
-    fhnGRResponse[i]     = 0;
+    fhnGRResponse[i]        = 0;
+    fh1PtTrue[i]            = 0;
+    fh3DeltaGRNumRPtTrue[i] = 0;
+    fh3DeltaGRDenRPtTrue[i] = 0;
+    fh2DeltaGRNumRPtTrue[i] = 0;
+    fh2DeltaGRDenRPtTrue[i] = 0;
+    fh1PtRaw[i]            = 0;
+    fh3DeltaGRNumRPtRaw[i] = 0;
+    fh3DeltaGRDenRPtRaw[i] = 0;
+    fh2DeltaGRNumRPtRaw[i] = 0;
+    fh2DeltaGRDenRPtRaw[i] = 0;
+    fh1PtRawMatch[i]            = 0;
+    fh3DeltaGRNumRPtRawMatch[i] = 0;
+    fh3DeltaGRDenRPtRawMatch[i] = 0;
+    fh2DeltaGRNumRPtRawMatch[i] = 0;
+    fh2DeltaGRDenRPtRawMatch[i] = 0;
+    fh1PtMatch[i]            = 0;
+    fh3DeltaGRNumRPtMatch[i] = 0;
+    fh3DeltaGRDenRPtMatch[i] = 0;
+    fh2DeltaGRNumRPtMatch[i] = 0;
+    fh2DeltaGRDenRPtMatch[i] = 0;
+    fh2DeltaGRNumRPtTrueMatch[i] = 0;
+    fh2DeltaGRDenRPtTrueMatch[i] = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -170,6 +276,14 @@ void AliAnalysisTaskJetShapeGR::UserCreateOutputObjects()
   const Double_t minM = -50.;
   const Double_t maxM = 100.;
 
+  const Int_t nBinsR  = 50;
+  const Double_t minR = 0.;
+  const Double_t maxR = 2.;
+
+  const Int_t nBinsDGR  = 100;
+  const Double_t minDGR = 0.;
+  const Double_t maxDGR = 10.;
+
   //Binning for THnSparse
   const Int_t nBinsSparse0 = 4;
   const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt};
@@ -179,31 +293,6 @@ void AliAnalysisTaskJetShapeGR::UserCreateOutputObjects()
   TString histName = "";
   TString histTitle = "";
   for (Int_t i = 0; i < fNcentBins; i++) {
-    histName = Form("fh2GRSubMatch_%d",i);
-    histTitle = Form("fh2GRSubMatch_%d;#it{G(R)}_{sub};match",i);
-    fh2GRSubMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,2,-0.5,1.5);
-    fOutput->Add(fh2GRSubMatch[i]);
-
-    histName = Form("fh2GRSubPtRawAll_%d",i);
-    histTitle = Form("fh2GRSubPtRawAll_%d;#it{G(R)}_{sub};#it{p}_{T}",i);
-    fh2GRSubPtRawAll[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt);
-    fOutput->Add(fh2GRSubPtRawAll[i]);
-
-    histName = Form("fh2GRSubPtRawMatch_%d",i);
-    histTitle = Form("fh2GRSubPtRawMatch_%d;#it{G(R)}_{sub};#it{p}_{T}",i);
-    fh2GRSubPtRawMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt);
-    fOutput->Add(fh2GRSubPtRawMatch[i]);
-
-    histName = Form("fh2GRSubPtTrue_%d",i);
-    histTitle = Form("fh2GRSubPtTrue_%d;#it{G(R)}_{sub};#it{p}_{T}",i);
-    fh2GRSubPtTrue[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt);
-    fOutput->Add(fh2GRSubPtTrue[i]);
-
-    histName = Form("fh2GRTruePtTrue_%d",i);
-    histTitle = Form("fh2GRTruePtTrue_%d;#it{G(R)}_{sub};#it{p}_{T}",i);
-    fh2GRTruePtTrue[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt);
-    fOutput->Add(fh2GRTruePtTrue[i]);
-
     histName = Form("fh2PtTrueDeltaGR_%d",i);
     histTitle = Form("fh2PtTrueDeltaGR_%d;#it{p}_{T,true};#it{G(R)}_{sub}-#it{G(R)}_{true}",i);
     fh2PtTrueDeltaGR[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,100,-50.,50.);
@@ -218,6 +307,121 @@ void AliAnalysisTaskJetShapeGR::UserCreateOutputObjects()
     histTitle = Form("fhnGRResponse_%d;#it{G(R)}_{sub};#it{G(R)}_{true};#it{p}_{T,sub};#it{p}_{T,true}",i);
     fhnGRResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnGRResponse[i]);
+
+    //Histos for true jets
+    histName = Form("fh1PtTrue_%d",i);
+    histTitle = Form("%s;#it{p}_{T};#it{N}",histName.Data());
+    fh1PtTrue[i] = new TH1F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt);
+    fOutput->Add(fh1PtTrue[i]);
+
+    histName = Form("fh3DeltaGRNumRPtTrue_%d",i);
+    histTitle = Form("%s;#Sigma#it{p}_{Tk,i}#it{p}_{Tk,j}#Delta#it{R}_{ij}^{2}#delta_{dR}(#it{r}-#it{R}_{ij});#it{r};#it{p}_{T,true}",histName.Data());
+    fh3DeltaGRNumRPtTrue[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsDGR,minDGR,maxDGR,nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh3DeltaGRNumRPtTrue[i]);
+
+    histName = Form("fh3DeltaGRDenRPtTrue_%d",i);
+    histTitle = Form("%s;#Sigma#it{p}_{Tk,i}#it{p}_{Tk,j}#Delta#it{R}_{ij}^{2}#Theta_{dR}(#it{r}-#it{R}_{ij});#it{r};#it{p}_{T,true}",histName.Data());
+    fh3DeltaGRDenRPtTrue[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsDGR,minDGR,maxDGR,nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh3DeltaGRDenRPtTrue[i]);
+
+    histName = Form("fh2DeltaGRNumRPtTrue_%d",i);
+    histTitle = Form("%s;#it{r};#it{p}_{T,true}",histName.Data());
+    fh2DeltaGRNumRPtTrue[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2DeltaGRNumRPtTrue[i]);
+
+    histName = Form("fh2DeltaGRDenRPtTrue_%d",i);
+    histTitle = Form("%s;#it{r};#it{p}_{T,true}",histName.Data());
+    fh2DeltaGRDenRPtTrue[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2DeltaGRDenRPtTrue[i]);
+
+    //Histos for raw AA jets
+    histName = Form("fh1PtRaw_%d",i);
+    histTitle = Form("%s;#it{p}_{T};#it{N}",histName.Data());
+    fh1PtRaw[i] = new TH1F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt);
+    fOutput->Add(fh1PtRaw[i]);
+
+    histName = Form("fh3DeltaGRNumRPtRaw_%d",i);
+    histTitle = Form("%s;#Sigma#it{p}_{Tk,i}#it{p}_{Tk,j}#Delta#it{R}_{ij}^{2}#delta_{dR}(#it{r}-#it{R}_{ij});#it{r};#it{p}_{T,true}",histName.Data());
+    fh3DeltaGRNumRPtRaw[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsDGR,minDGR,maxDGR,nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh3DeltaGRNumRPtRaw[i]);
+
+    histName = Form("fh3DeltaGRDenRPtRaw_%d",i);
+    histTitle = Form("%s;#Sigma#it{p}_{Tk,i}#it{p}_{Tk,j}#Delta#it{R}_{ij}^{2}#Theta_{dR}(#it{r}-#it{R}_{ij});#it{r};#it{p}_{T,true}",histName.Data());
+    fh3DeltaGRDenRPtRaw[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsDGR,minDGR,maxDGR,nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh3DeltaGRDenRPtRaw[i]);
+
+    histName = Form("fh2DeltaGRNumRPtRaw_%d",i);
+    histTitle = Form("%s;#it{r};#it{p}_{T,true}",histName.Data());
+    fh2DeltaGRNumRPtRaw[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2DeltaGRNumRPtRaw[i]);
+
+    histName = Form("fh2DeltaGRDenRPtRaw_%d",i);
+    histTitle = Form("%s;#it{r};#it{p}_{T,true}",histName.Data());
+    fh2DeltaGRDenRPtRaw[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2DeltaGRDenRPtRaw[i]);
+
+    //Histos for raw AA jets matched to MC jet
+    histName = Form("fh1PtRawMatch_%d",i);
+    histTitle = Form("%s;#it{p}_{T};#it{N}",histName.Data());
+    fh1PtRawMatch[i] = new TH1F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt);
+    fOutput->Add(fh1PtRawMatch[i]);
+
+    histName = Form("fh3DeltaGRNumRPtRawMatch_%d",i);
+    histTitle = Form("%s;#Sigma#it{p}_{Tk,i}#it{p}_{Tk,j}#Delta#it{R}_{ij}^{2}#delta_{dR}(#it{r}-#it{R}_{ij});#it{r};#it{p}_{T,true}",histName.Data());
+    fh3DeltaGRNumRPtRawMatch[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsDGR,minDGR,maxDGR,nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh3DeltaGRNumRPtRawMatch[i]);
+
+    histName = Form("fh3DeltaGRDenRPtRawMatch_%d",i);
+    histTitle = Form("%s;#Sigma#it{p}_{Tk,i}#it{p}_{Tk,j}#Delta#it{R}_{ij}^{2}#Theta_{dR}(#it{r}-#it{R}_{ij});#it{r};#it{p}_{T,true}",histName.Data());
+    fh3DeltaGRDenRPtRawMatch[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsDGR,minDGR,maxDGR,nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh3DeltaGRDenRPtRawMatch[i]);
+
+    histName = Form("fh2DeltaGRNumRPtRawMatch_%d",i);
+    histTitle = Form("%s;#it{r};#it{p}_{T,true}",histName.Data());
+    fh2DeltaGRNumRPtRawMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2DeltaGRNumRPtRawMatch[i]);
+
+    histName = Form("fh2DeltaGRDenRPtRawMatch_%d",i);
+    histTitle = Form("%s;#it{r};#it{p}_{T,true}",histName.Data());
+    fh2DeltaGRDenRPtRawMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2DeltaGRDenRPtRawMatch[i]);
+
+    //Histos for matched jets
+    histName = Form("fh1PtMatch_%d",i);
+    histTitle = Form("%s;#it{p}_{T};#it{N}",histName.Data());
+    fh1PtMatch[i] = new TH1F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt);
+    fOutput->Add(fh1PtMatch[i]);
+
+    histName = Form("fh3DeltaGRNumRPtMatch_%d",i);
+    histTitle = Form("%s;#Sigma#it{p}_{Tk,i}#it{p}_{Tk,j}#Delta#it{R}_{ij}^{2}#delta_{dR}(#it{r}-#it{R}_{ij});#it{r};#it{p}_{T,true}",histName.Data());
+    fh3DeltaGRNumRPtMatch[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsDGR,minDGR,maxDGR,nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh3DeltaGRNumRPtMatch[i]);
+
+    histName = Form("fh3DeltaGRDenRPtMatch_%d",i);
+    histTitle = Form("%s;#Sigma#it{p}_{Tk,i}#it{p}_{Tk,j}#Delta#it{R}_{ij}^{2}#Theta_{dR}(#it{r}-#it{R}_{ij});#it{r};#it{p}_{T,true}",histName.Data());
+    fh3DeltaGRDenRPtMatch[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsDGR,minDGR,maxDGR,nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh3DeltaGRDenRPtMatch[i]);
+
+    histName = Form("fh2DeltaGRNumRPtMatch_%d",i);
+    histTitle = Form("%s;#it{r};#it{p}_{T,true}",histName.Data());
+    fh2DeltaGRNumRPtMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2DeltaGRNumRPtMatch[i]);
+
+    histName = Form("fh2DeltaGRDenRPtMatch_%d",i);
+    histTitle = Form("%s;#it{r};#it{p}_{T,true}",histName.Data());
+    fh2DeltaGRDenRPtMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2DeltaGRDenRPtMatch[i]);
+
+    histName = Form("fh2DeltaGRNumRPtTrueMatch_%d",i);
+    histTitle = Form("%s;#it{r};#it{p}_{T,true}",histName.Data());
+    fh2DeltaGRNumRPtTrueMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2DeltaGRNumRPtTrueMatch[i]);
+
+    histName = Form("fh2DeltaGRDenRPtTrueMatch_%d",i);
+    histTitle = Form("%s;#it{r};#it{p}_{T,true}",histName.Data());
+    fh2DeltaGRDenRPtTrueMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2DeltaGRDenRPtTrueMatch[i]);
+
   }
 
   // =========== Switch on Sumw2 for all histos ===========
@@ -263,6 +467,7 @@ Bool_t AliAnalysisTaskJetShapeGR::Run()
 Bool_t AliAnalysisTaskJetShapeGR::FillHistograms()
 {
   // Fill histograms.
+  FillTrueJets();
 
   AliEmcalJet* jet1 = NULL;
   AliEmcalJet *jet2 = NULL;
@@ -270,28 +475,12 @@ Bool_t AliAnalysisTaskJetShapeGR::FillHistograms()
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   AliJetContainer *jetContS = GetJetContainer(fContainerSub);
   AliDebug(11,Form("NJets  Incl: %d  Csub: %d",jetCont->GetNJets(),jetContS->GetNJets()));
-  if(jetCont) {
+  if(jetCont && jetContS) {
     jetCont->ResetCurrentID();
+    Double_t rmax = jetCont->GetJetRadius()+0.2;
+    Double_t wr = 0.04;
+    Int_t nr = TMath::CeilNint(rmax/wr);
     while((jet1 = jetCont->GetNextAcceptJet())) {
-
-      //Get constituent subtacted version of jet
-      Int_t ifound = 0;
-      Int_t ilab = -1;
-      for(Int_t i = 0; i<jetContS->GetNJets(); i++) {
-	//if(ifound==1) continue;
-	jetS = jetContS->GetJet(i);
-	if(jetS->GetLabel()==jet1->GetLabel()) { // && jetS->Pt()>0.) {
-	  ifound++;
-	  if(ifound==1) ilab = i;
-	}
-      }
-      if(ifound>1) AliDebug(2,Form("Found %d partners",ifound));
-      if(ifound==0) jetS = 0x0;
-      else jetS = jetContS->GetJet(ilab);
-
-      //Fill histograms for all AA jets
-      fh2GRSubPtRawAll[fCentBin]->Fill(jetS->M(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area());
-
       Double_t fraction = 0.;
       fMatch = 0;
       fJet2Vec->SetPtEtaPhiM(0.,0.,0.,0.);
@@ -303,6 +492,8 @@ Bool_t AliAnalysisTaskJetShapeGR::FillHistograms()
 	}
       } else {
 	jet2 = jet1->ClosestJet();
+	if(!jet2) continue;
+
 	fraction = jetCont->GetFractionSharedPt(jet1);
 	fMatch = 1;
 	if(fMinFractionShared>0.) {
@@ -314,22 +505,54 @@ Bool_t AliAnalysisTaskJetShapeGR::FillHistograms()
 	}
       }
 
-      //Fill histograms for matched jets
-      fh2GRSubMatch[fCentBin]->Fill(jetS->M(),fMatch);
-      if(fMatch==1) {
-	fh2GRSubPtRawMatch[fCentBin]->Fill(jetS->M(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area());
-	if(jet2) {
-	  fh2GRSubPtTrue[fCentBin]->Fill(jetS->M(),jet2->Pt());
-	  Double_t gr = CalcGR(jet2,fContainerTrue);
-	  Printf("G(R): %f",gr);
-	  fh2GRTruePtTrue[fCentBin]->Fill(gr,jet2->Pt());
-	  fh2PtTrueDeltaGR[fCentBin]->Fill(jet2->Pt(),jetS->M()-jet2->M());
-	  if(jet2->M()>0.) fh2PtTrueDeltaGRRel[fCentBin]->Fill(jet2->Pt(),(jetS->M()-jet2->M())/jet2->M());
-	  Double_t var[4] = {0.,0.,jet1->Pt()-jetCont->GetRhoVal()*jet1->Area(),jet2->Pt()};
-	  fhnGRResponse[fCentBin]->Fill(var);
+      //Fill histograms for all AA jets
+      Double_t ptcorr = jet1->Pt()-jetCont->GetRhoVal()*jet1->Area();
+      fh1PtRaw[fCentBin]->Fill(ptcorr);
+      if(fMatch==1) fh1PtRawMatch[fCentBin]->Fill(ptcorr);
+
+      TArrayF numRaw = jet1->GetGRNumerator();
+      TArrayF denRaw = jet1->GetGRDenominator();
+      if(numRaw.GetSize()>0) {
+	for(Int_t i = 0; i<nr; i++) {
+	  Double_t r = i*wr + 0.5*wr;
+	  fh3DeltaGRNumRPtRaw[fCentBin]->Fill(numRaw[i],r,ptcorr);
+	  fh3DeltaGRDenRPtRaw[fCentBin]->Fill(denRaw[i],r,ptcorr);
+	  fh2DeltaGRNumRPtRaw[fCentBin]->Fill(r,ptcorr,numRaw[i]);
+	  fh2DeltaGRDenRPtRaw[fCentBin]->Fill(r,ptcorr,denRaw[i]);
+	  if(fMatch==1) {
+	    fh3DeltaGRNumRPtRawMatch[fCentBin]->Fill(numRaw[i],r,ptcorr);
+	    fh3DeltaGRDenRPtRawMatch[fCentBin]->Fill(denRaw[i],r,ptcorr);
+	    fh2DeltaGRNumRPtRawMatch[fCentBin]->Fill(r,ptcorr,numRaw[i]);
+	    fh2DeltaGRDenRPtRawMatch[fCentBin]->Fill(r,ptcorr,denRaw[i]);
+	  }
 	}
       }
-      
+
+      //Fill histograms for matched jets
+      if(fMatch==1) {
+	fh1PtMatch[fCentBin]->Fill(ptcorr);
+
+	//now get second derivative vs R and do final calculation
+	TArrayF num = jet1->GetGRNumeratorSub();
+	TArrayF den = jet1->GetGRDenominatorSub();
+	Printf("Got numerator size: nr: %d",nr);
+	cout << "size: " << num.GetSize() << endl;
+	if(num.GetSize()>0) {
+	  for(Int_t i = 0; i<nr; i++) {
+	    Double_t r = i*wr + 0.5*wr;
+	    fh3DeltaGRNumRPtMatch[fCentBin]->Fill(num[i],r,ptcorr);
+	    fh3DeltaGRDenRPtMatch[fCentBin]->Fill(den[i],r,ptcorr);
+	    fh2DeltaGRNumRPtMatch[fCentBin]->Fill(r,ptcorr,num[i]);
+	    fh2DeltaGRDenRPtMatch[fCentBin]->Fill(r,ptcorr,den[i]);
+	    fh2DeltaGRNumRPtTrueMatch[fCentBin]->Fill(r,jet2->Pt(),num[i]);
+	    fh2DeltaGRDenRPtTrueMatch[fCentBin]->Fill(r,jet2->Pt(),den[i]);
+
+	    Double_t dGR = 0.;
+	    fh2PtTrueDeltaGR[fCentBin]->Fill(jet2->Pt(),dGR);
+	  }
+	}
+      }
+
       if(fCreateTree) {      
 	fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
 	if(jetS && jetS->Pt()>0.) fJetSubVec->SetPtEtaPhiM(jetS->Pt(),jetS->Eta(),jetS->Phi(),jetS->M());
@@ -349,6 +572,93 @@ Bool_t AliAnalysisTaskJetShapeGR::FillHistograms()
   return kTRUE;
 }
 
+//________________________________________________________________________
+Bool_t AliAnalysisTaskJetShapeGR::FillTrueJets() {
+
+  AliEmcalJet* jet1 = NULL;
+  AliJetContainer *jetCont = GetJetContainer(fContainerTrue);
+  if(!jetCont) {
+    Printf("cannot find container");
+    return kFALSE;
+  }
+
+  AliDebug(11,Form("NJets True: %d",jetCont->GetNJets()));
+
+  //create arrays
+  const Int_t nr = TMath::CeilNint(fMaxR/fDRStep);
+  TArrayF *fNum = new TArrayF(nr);
+  TArrayF *fDen = new TArrayF(nr);
+
+  if(jetCont) {
+    jetCont->ResetCurrentID();
+    while((jet1 = jetCont->GetNextAcceptJet())) {
+      fh1PtTrue[fCentBin]->Fill(jet1->Pt());
+      
+      Double_t dev = CalcDeltaGR(jet1,fContainerTrue,fNum,fDen);//num,den);
+      for(Int_t i = 0; i<nr; i++) {
+	Double_t r = i*fDRStep + 0.5*fDRStep;
+	fh3DeltaGRNumRPtTrue[fCentBin]->Fill(fNum->At(i),r,jet1->Pt());
+	fh3DeltaGRDenRPtTrue[fCentBin]->Fill(fDen->At(i),r,jet1->Pt());
+	fh2DeltaGRNumRPtTrue[fCentBin]->Fill(r,jet1->Pt(),fNum->At(i));
+	fh2DeltaGRDenRPtTrue[fCentBin]->Fill(r,jet1->Pt(),fDen->At(i));
+      }
+    }
+  }
+  if(fNum)  delete fNum;
+  if(fDen)  delete fDen;
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskJetShapeGR::CalcDeltaGR(AliEmcalJet *jet, Int_t ic, TArrayF *fNum, TArrayF *fDen) { //Double_t *num, Double_t *den) {
+  //Calculate G(R)
+
+  //First clear the arrays
+  const Int_t nr = TMath::CeilNint(fMaxR/fDRStep);
+  for(Int_t i = 0; i<nr; i++) {
+    fNum->SetAt(0.,i);
+    fDen->SetAt(0.,i);
+  }
+
+  AliJetContainer *jetCont = GetJetContainer(ic); 
+  AliVParticle *vp1 = 0x0;
+  AliVParticle *vp2 = 0x0;
+  Double_t A = 0.; Double_t B = 0.;
+  if(jet->GetNumberOfTracks()<2) return 0.;
+  //  Printf("jet pt: %f  nconst: %d",jet->Pt(),jet->GetNumberOfTracks());
+  for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
+    vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
+    if(!vp1) continue;
+    for(Int_t j=i+1; j<jet->GetNumberOfTracks(); j++) {
+      vp2 = static_cast<AliVParticle*>(jet->TrackAt(j, jetCont->GetParticleContainer()->GetArray()));
+      if(!vp2) continue;
+      Double_t dphi = GetDeltaPhi(vp1->Phi(),vp2->Phi());
+      Double_t dr2 = (vp1->Eta()-vp2->Eta())*(vp1->Eta()-vp2->Eta()) + dphi*dphi;
+      //      Printf("dr2: %f  dEta: %f  dphi: %f",dr2,vp1->Eta()-vp2->Eta(),dphi);
+      if(dr2>0.) {
+	for(Int_t k = 0; k<nr; k++) {
+	  Double_t r = k*fDRStep + 0.5*fDRStep;
+	  //	Double_t x = jetCont->GetJetRadius()-TMath::Sqrt(dr2);
+	  Double_t dr = TMath::Sqrt(dr2);
+	  Double_t x = r-dr;
+	  //noisy function
+	  Double_t noise = TMath::Exp(-x*x/(2*fDRStep*fDRStep))/(TMath::Sqrt(2.*TMath::Pi())*fDRStep);
+	  //error function
+	  Double_t erf = 0.5*(1.+TMath::Erf(x/(TMath::Sqrt(2.)*fDRStep)));
+	  
+	  A = vp1->Pt()*vp2->Pt()*dr2*noise;
+	  B = vp1->Pt()*vp2->Pt()*dr2*erf;
+	  fNum->AddAt(fNum->At(k)+A,k);
+	  fDen->AddAt(fDen->At(k)+B,k);
+	}
+      }
+    }
+  }
+
+  Double_t deltaGR = 0.;
+  if(B>0.) deltaGR = A/B; //useless
+  return deltaGR;
+}
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskJetShapeGR::CalcGR(AliEmcalJet *jet, Int_t ic) {
@@ -362,14 +672,15 @@ Double_t AliAnalysisTaskJetShapeGR::CalcGR(AliEmcalJet *jet, Int_t ic) {
   Double_t grArr[nr];
   for(Int_t i = 0; i<nr; i++) {
     grArr[i] = 0.;
-    Printf("bin up edge %d=%f",i,wr+i*wr);
+    //Printf("bin up edge %d=%f",i,wr+i*wr);
   }
-  Printf("jet pt: %f  nconst: %d",jet->Pt(),jet->GetNumberOfTracks());
+  //  Printf("jet pt: %f  nconst: %d",jet->Pt(),jet->GetNumberOfTracks());
   for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
     vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
     for(Int_t j=i; j<jet->GetNumberOfTracks(); j++) {
       vp2 = static_cast<AliVParticle*>(jet->TrackAt(j, jetCont->GetParticleContainer()->GetArray()));
-      Double_t dr2 = (vp1->Eta()-vp2->Eta())*(vp1->Eta()-vp2->Eta()) + (vp1->Phi()-vp2->Phi())*(vp1->Phi()-vp2->Phi());
+      Double_t dphi = GetDeltaPhi(vp1->Phi(),vp2->Phi());
+      Double_t dr2 = (vp1->Eta()-vp2->Eta())*(vp1->Eta()-vp2->Eta()) + dphi*dphi;
       Int_t bin = TMath::FloorNint(TMath::Sqrt(dr2)/wr);
       Double_t gr = vp1->Pt()*vp2->Pt()*dr2;
       if(bin<nr) grArr[bin]+=gr;
@@ -378,47 +689,8 @@ Double_t AliAnalysisTaskJetShapeGR::CalcGR(AliEmcalJet *jet, Int_t ic) {
 	gR += gr;
     }
   }
-  for(Int_t i = 0; i<nr; i++) {
-    Printf("grArr[%d]=%f",i,grArr[i]);
-  }
   return gR;
 }
-
-//________________________________________________________________________
-Double_t AliAnalysisTaskJetShapeGR::CalcDeltaGR(AliEmcalJet *jet, Int_t ic) {
-  //Calculate G(R)
-  AliJetContainer *jetCont = GetJetContainer(ic); 
-  AliVParticle *vp1 = 0x0;
-  AliVParticle *vp2 = 0x0;
-  Double_t gR = 0.;
-  Double_t wr = 0.04;
-  const Int_t nr = TMath::CeilNint(jetCont->GetJetRadius()/wr);
-  Double_t grArr[nr];
-  for(Int_t i = 0; i<nr; i++) {
-    grArr[i] = 0.;
-    Printf("bin up edge %d=%f",i,wr+i*wr);
-  }
-  Printf("jet pt: %f  nconst: %d",jet->Pt(),jet->GetNumberOfTracks());
-  for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
-    vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
-    for(Int_t j=i; j<jet->GetNumberOfTracks(); j++) {
-      vp2 = static_cast<AliVParticle*>(jet->TrackAt(j, jetCont->GetParticleContainer()->GetArray()));
-      Double_t dr2 = (vp1->Eta()-vp2->Eta())*(vp1->Eta()-vp2->Eta()) + (vp1->Phi()-vp2->Phi())*(vp1->Phi()-vp2->Phi());
-      Int_t bin = TMath::FloorNint(TMath::Sqrt(dr2)/wr);
-      Double_t gr = vp1->Pt()*vp2->Pt()*dr2;
-      if(bin<nr) grArr[bin]+=gr;
-      
-      if(TMath::Sqrt(dr2)<jetCont->GetJetRadius())
-	gR += gr;
-    }
-  }
-  for(Int_t i = 0; i<nr; i++) {
-    Printf("grArr[%d]=%f",i,grArr[i]);
-  }
-  return gR;
-}
-
-
 
 //________________________________________________________________________
 AliVParticle* AliAnalysisTaskJetShapeGR::GetEmbeddedConstituent(AliEmcalJet *jet) {
@@ -436,6 +708,20 @@ AliVParticle* AliAnalysisTaskJetShapeGR::GetEmbeddedConstituent(AliEmcalJet *jet
   }
   AliDebug(11,Form("Found %d embedded particles",nc));
   return vpe;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskJetShapeGR::GetDeltaPhi(Double_t phi1,Double_t phi2) {
+  //
+  // Calculate azimuthal angle difference
+  //
+
+  Double_t dPhi = phi1-phi2;
+
+  if(dPhi <-1.*TMath::Pi())  dPhi += TMath::TwoPi();
+  if(dPhi > 1.*TMath::Pi())  dPhi -= TMath::TwoPi();
+
+  return dPhi;
 }
 
 
