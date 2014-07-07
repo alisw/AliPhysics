@@ -964,12 +964,24 @@ void  AliMCEvent::SetParticleArray(TClonesArray* mcParticles)
     fNparticles = fMCParticles->GetEntries(); 
     fExternal = kTRUE; 
     fNprimaries = 0;
-    for (Int_t i = 0; i < mcParticles->GetEntries(); i++) 
-      if  (((AliVParticle*) mcParticles->At(i))->IsPrimary()) fNprimaries++;
+    struct Local {
+      static Int_t binaryfirst(TClonesArray* a, Int_t low, Int_t high)
+      {
+	Int_t mid  = low + (high - low)/2;
+	if (!((AliVParticle*) a->At(mid))->IsPrimary()) {
+	  if (mid > 1 && !((AliVParticle*) a->At(mid-1))->IsPrimary()) {
+	    return binaryfirst(a, low, mid-1);
+	  } else {
+	    return mid;
+	  } 
+	} else {
+	  return binaryfirst(a, mid+1, high);
+	}
+      }
+    };
+    fNprimaries = Local::binaryfirst(mcParticles, 0, mcParticles->GetEntries()-1);
     AssignGeneratorIndex();
   }
-
-
 
 
 ClassImp(AliMCEvent)
