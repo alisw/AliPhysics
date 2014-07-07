@@ -58,11 +58,11 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
 
   virtual void            UserCreateOutputObjects();
   // THnSparse Setup
-  virtual THnSparse*      NewTHnSparseD(const char* name, UInt_t entries);
+  virtual THnSparse*      NewTHnSparseF(const char* name, UInt_t entries);
   virtual void            GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
-  virtual THnSparse*      NewTHnSparseDPID(const char* name, UInt_t entries);
+  virtual THnSparse*      NewTHnSparseFPID(const char* name, UInt_t entries);
   virtual void            GetDimParamsPID(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
-  virtual THnSparse*      NewTHnSparseDCorr(const char* name, UInt_t entries);
+  virtual THnSparse*      NewTHnSparseFCorr(const char* name, UInt_t entries);
   virtual void            GetDimParamsCorr(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
 
   // set a bun of histogram switches up
