@@ -49,8 +49,6 @@ set ( CLASS_HDRS
     AliFlatESDVertex.h
     AliFlatESDTrack.h
     AliFlatESDV0.h
-    AliFlatExternalTrackParam.h
-    AliFlatTPCCluster.h
     physics/AliHLTV0HistoComponent.h
     physics/AliHLTCaloHistoComponent.h
     physics/AliHLTCaloHistoProducer.h

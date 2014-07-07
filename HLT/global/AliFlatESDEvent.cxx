@@ -73,34 +73,33 @@ AliFlatESDEvent::AliFlatESDEvent() :
 }
 
 // _______________________________________________________________________________________________________
-AliFlatESDEvent::AliFlatESDEvent(AliFlatESDSpecialConstructorFlag f)
+void AliFlatESDEvent::Reinitialize()
 {
-  //special constructor, used to restore the vtable pointer
-  //uses the special dummy constructors of contained objects
+//
+// Initializing function
+//
+// to be called after event is received via reinterpret_cast from memory
   
-	if(f == AliFlatESDReinitialize){
+  
+  	new (this) AliFlatESDEvent(AliFlatESDReinitialize);
 		AliFlatESDVertex* vertexSPD = const_cast<AliFlatESDVertex*>(GetPrimaryVertexSPD());
-		if (vertexSPD ) { new (vertexSPD) AliFlatESDVertex(f); }
+		if (vertexSPD ) {vertexSPD->Reinitialize(); }
 		AliFlatESDVertex* vertexTracks = const_cast<AliFlatESDVertex*>(GetPrimaryVertexTracks());
-		if (vertexTracks ) { new (vertexTracks) AliFlatESDVertex(f); }
+		if (vertexTracks ) { vertexTracks->Reinitialize(); }
 		AliFlatESDTrack* track = GetTracks();
 		
 		for (Int_t i=0; i<GetNumberOfTracks(); i++)
 		{
-			new (track) AliFlatESDTrack(f);
+			track->Reinitialize();
 			track= track->GetNextTrack();
 		}
   	AliFlatESDV0* v0 = GetV0s();
   	for (Int_t i=0; i<GetNumberOfV0s(); i++)
   	{
-			new (v0) AliFlatESDV0(f);
+			v0->Reinitialize();
 			v0++;
 		}
 	}
-	else{
-		AliFlatESDEvent();
-	}
-}
 
 /*
 AliFlatESDEvent::AliFlatESDEvent(const AliFlatESDEvent& ev) :

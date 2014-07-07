@@ -28,7 +28,6 @@ class AliESDfriendTrack;
 class AliExternalTrackParam;
 
 class AliFlatESDTrack: public AliVVtrack {
- friend class AliFlatESDEvent;
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
@@ -121,12 +120,14 @@ class AliFlatESDTrack: public AliVVtrack {
   // -- Size methods
   static ULong64_t EstimateSize(Bool_t useESDFriends = kTRUE, Int_t nTPCClusters = 160 );
          ULong64_t GetSize()  {return fContent -  reinterpret_cast<Byte_t*>(this) + fSize;}
-    
+         
+         
+  void Reinitialize();
 
  private:
   AliFlatESDTrack(const AliFlatESDTrack&);
-  AliFlatESDTrack& operator=(const AliFlatESDTrack&);
-  AliFlatESDTrack(AliFlatESDSpecialConstructorFlag);
+  AliFlatESDTrack& operator=(const AliFlatESDTrack&);	
+  AliFlatESDTrack(AliFlatESDSpecialConstructorFlag){}
 
   Int_t FillExternalTrackParam(const AliExternalTrackParam* param, UShort_t flag);
 

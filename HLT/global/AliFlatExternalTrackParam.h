@@ -16,7 +16,6 @@
 
 class AliFlatExternalTrackParam: public AliVVexternalTrackParam
 {
- friend class AliFlatESDTrack;
  public:
   AliFlatExternalTrackParam() {}
   virtual ~AliFlatExternalTrackParam() {}
@@ -37,6 +36,10 @@ class AliFlatExternalTrackParam: public AliVVexternalTrackParam
   void SetTgl(Float_t tgl)                 {fTgl = tgl;}
   void SetSigned1Pt(Float_t signed1Pt)     {fSigned1Pt = signed1Pt;}
   void SetCovEntry(Int_t idx, Float_t cov) {(idx >= 0 && idx < 15) ? fC[idx] = cov : 0.;}
+  
+  void Reinitialize(){
+  	new (this) AliFlatExternalTrackParam(AliFlatESDReinitialize);
+  }
 
   Float_t  GetAlpha()             const {return fAlpha;}
   Float_t  GetX()                 const {return fX;}
@@ -49,8 +52,7 @@ class AliFlatExternalTrackParam: public AliVVexternalTrackParam
   Float_t  GetCovEntry(Int_t idx) const {return (idx >= 0 && idx < 15) ? fC[idx] : 0.;}
   
  private:
- 	AliFlatExternalTrackParam(AliFlatESDSpecialConstructorFlag f);
-  
+ 	AliFlatExternalTrackParam(AliFlatESDSpecialConstructorFlag){}
 };
 
 //typedef struct AliFlatExternalTrackParam AliFlatExternalTrackParam;
