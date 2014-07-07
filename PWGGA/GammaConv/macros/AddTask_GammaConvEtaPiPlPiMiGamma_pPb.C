@@ -8,6 +8,7 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 										TString cutnumberAODBranch = "0000000060084001001500000"
 										) {
 
+	////////////////////CURRENTLY NOT WORKING ///////////////////////////////
 
 	// ================= Load Librariers =================================
 	gSystem->Load("libCore.so");  
@@ -28,6 +29,8 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 	gSystem->Load("libTENDER.so");
 	gSystem->Load("libTENDERSupplies.so");
 
+	Int_t isHeavyIon = 2;
+	
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
@@ -45,7 +48,8 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString ConvCutnumber = "8000000060081001001500000000";   //Online  V0 finder
+	TString cutnumberPhoton = "060084001001500000000";
+	TString cutnumberEvent = "8000000";
 	TString PionCuts      = "000000200";            //Electron Cuts
 		
 	Bool_t doEtaShift = kFALSE;
@@ -65,17 +69,29 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 			return;
 		}
 
+		AliConvEventCuts *fEventCuts=NULL;
+		if(cutnumberEvent!=""){
+			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
+			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+			if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
+				fEventCuts->DoEtaShift(doEtaShift);
+				fV0ReaderV1->SetEventCuts(fEventCuts);
+				fEventCuts->SetFillCutHistograms("",kTRUE);
+			}
+		}
+
 		// Set AnalysisCut Number
-		AliConversionCuts *fCuts=NULL;
-		if( ConvCutnumber !=""){
-			fCuts= new AliConversionCuts(ConvCutnumber.Data(),ConvCutnumber.Data());
+		AliConversionPhotonCuts *fCuts=NULL;
+		if(cutnumberPhoton!=""){
+			fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
 			fCuts->SetPreSelectionCutFlag(kTRUE);
-			if(fCuts->InitializeCutsFromCutString(ConvCutnumber.Data())){
-				fCuts->DoEtaShift(doEtaShift);
+			fCuts->SetIsHeavyIon(isHeavyIon);
+			if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
 			}
 		}
+
 		if(inputHandler->IsA()==AliAODInputHandler::Class()){
 		// AOD mode
 			fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
@@ -129,9 +145,10 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 1;
+
+	TString *eventCutArray = new TString[numberOfCuts];
 	TString *ConvCutarray    = new TString[numberOfCuts];
 	TString *PionCutarray    = new TString[numberOfCuts];
-
 	TString *MesonCutarray   = new TString[numberOfCuts];
 
 	Bool_t doEtaShiftIndCuts = kFALSE;
@@ -143,15 +160,16 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 	stringShift = "pPb";
 
 	if( trainConfig == 1 ) {
-		ConvCutarray[0] = "8000011002091170008260400000"; PionCutarray[0] = "000000400"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000400"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
 	} else if( trainConfig == 1 ) {
-		ConvCutarray[0] = "8000011002091170008260400000"; PionCutarray[0] = "000000403"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000403"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
 	} else if( trainConfig == 1 ) {
-		ConvCutarray[0] = "8000011002091170008260400000"; PionCutarray[0] = "000000404"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000404"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
 	} else if( trainConfig == 1 ) {
-		ConvCutarray[0] = "8000011002091170008260400000"; PionCutarray[0] = "000000405"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000405"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
 	}
-		
+	
+	TList *EventCutList = new TList();
 	TList *ConvCutList  = new TList();
 	TList *MesonCutList = new TList();
 	TList *PionCutList  = new TList();
@@ -162,23 +180,29 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 	TObjString *Header3 = new TObjString("eta_2");
 	HeaderList->Add(Header3);
 	
+	EventCutList->SetOwner(kTRUE);
+	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
 	ConvCutList->SetOwner(kTRUE);
-	AliConversionCuts **analysisCuts             = new AliConversionCuts*[numberOfCuts];
+	AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
 	MesonCutList->SetOwner(kTRUE);
 	AliConversionMesonCuts **analysisMesonCuts   = new AliConversionMesonCuts*[numberOfCuts];
 	PionCutList->SetOwner(kTRUE);
 	AliPrimaryPionCuts **analysisPionCuts     = new AliPrimaryPionCuts*[numberOfCuts];
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
+		analysisEventCuts[i] = new AliConvEventCuts();   
+		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+		EventCutList->Add(analysisEventCuts[i]);
+		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
-		analysisCuts[i] = new AliConversionCuts();
+		analysisCuts[i] = new AliConversionPhotonCuts();
 		if( ! analysisCuts[i]->InitializeCutsFromCutString(ConvCutarray[i].Data()) ) {
 				cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
 				return 0;
 		} else {				
 			ConvCutList->Add(analysisCuts[i]);
 			analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-			analysisCuts[i]->SetAcceptedHeader(HeaderList);
+			
 		}
 
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
@@ -190,9 +214,9 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 			MesonCutList->Add(analysisMesonCuts[i]);
 			analysisMesonCuts[i]->SetFillCutHistograms("");
 		}
-
-
-		TString cutName( Form("%s_%s_%s",ConvCutarray[i].Data(),PionCutarray[i].Data(),MesonCutarray[i].Data() ) );
+		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+		
+		TString cutName( Form("%s_%s_%s_%s",eventCutArray[i].Data(), ConvCutarray[i].Data(),PionCutarray[i].Data(),MesonCutarray[i].Data() ) );
 		analysisPionCuts[i] = new AliPrimaryPionCuts();
 		if( !analysisPionCuts[i]->InitializeCutsFromCutString(PionCutarray[i].Data())) {
 			cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<endl;
@@ -205,7 +229,7 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 
 	}
 
-
+	task->SetEventCutList(numberOfCuts,EventCutList);
 	task->SetConversionCutList(numberOfCuts,ConvCutList);
 	task->SetMesonCutList(MesonCutList);
 	task->SetPionCutList(PionCutList);

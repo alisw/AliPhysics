@@ -984,11 +984,11 @@ Bool_t AliCaloPhotonCuts::SetMinEtaCut(Int_t minEta)
 		break;
 	case 2: 
 		if (!fUseEtaCut) fUseEtaCut=1;
-		fClusterType=-0.5;
+		fMinEtaCut=-0.5;
 		break;
 	case 3: 
 		if (!fUseEtaCut) fUseEtaCut=1;
-		fClusterType=-2;
+		fMinEtaCut=-2;
 		break;
 	default:
 		AliError(Form("MinEta Cut not defined %d",minEta));

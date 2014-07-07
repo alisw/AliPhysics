@@ -3,6 +3,9 @@
 class AliAnalysisTaskPi0v2;
 class AliV0ReaderV1;
 
+////////////////////CURRENTLY NOT WORKING ///////////////////////////////
+
+
 // Settings
 Int_t nBinsPhi=6;
 Int_t epselectionmask[4]={1,1,1,1};// TPC,TPCEtaGap,V0A,V0C
