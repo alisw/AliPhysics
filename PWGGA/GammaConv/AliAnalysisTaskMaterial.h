@@ -9,7 +9,8 @@
 #include "AliLog.h"
 #include <vector>
 #include "AliV0ReaderV1.h"
-#include "AliConversionCuts.h"
+#include "AliConversionPhotonCuts.h"
+#include "AliConvEventCuts.h"
 #include "TList.h"
 #include "AliStack.h"
 #include "TClonesArray.h"
@@ -32,8 +33,12 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
 
 		void SetIsMC(Bool_t isMC){fIsMC=isMC;}
 		void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
-		void SetConversionCuts(AliConversionCuts* conversionCuts,Int_t IsHeavyIon ){
+		void SetConversionCuts(AliConversionPhotonCuts* conversionCuts,Int_t IsHeavyIon ){
 			fConversionCuts=conversionCuts;
+			fIsHeavyIon = IsHeavyIon;
+		}
+		void SetEventCuts(AliConvEventCuts* conversionCuts,Int_t IsHeavyIon ){
+			fEventCuts=conversionCuts;
 			fIsHeavyIon = IsHeavyIon;
 		}
 		
@@ -45,47 +50,46 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
 		Int_t CountTracks0914();
 		Int_t CountTracks09();
 
-		AliV0ReaderV1 *fV0Reader;
-		TClonesArray *fConversionGammas; //Reconstructed Photons;
-		AliConversionCuts *fConversionCuts; // Cuts used by the V0Reader
-		TList *fOutputList; 
-		TList *fEventList;
-		TList *fRecGammaList;
-		TList *fAllMCGammaList;
-		TList *fAllMCConvGammaList;
-		TTree* fTreeEvent;
-		TTree* fTreeMaterialRec;
-		TTree* fTreeMaterialAllGamma;
-		TTree* fTreeMaterialConvGamma;
-		Float_t fPrimVtxZ;
-		Int_t fNContrVtx;
-		Int_t fNESDtracksEta09;
-		Int_t fNESDtracksEta0914;
-		Int_t fNESDtracksEta14;
-		Float_t fGammaMCPt;
-		Float_t fGammaMCTheta;
-		Float_t fGammaMCConvPt;
-		Float_t fGammaMCConvTheta;
-		TVectorF fMCConvCords;
-		TVectorF fMCConvDaughterProp;
-		Float_t fGammaPt;
-		Float_t fGammaTheta;
-		Float_t fGammaChi2NDF;
-		TVectorF fRecCords;
-		TVectorF fDaughterProp;
-		UChar_t fKind;
-		
-		
-		Int_t fIsHeavyIon;
-		Bool_t fIsMC;
-		AliESDEvent *fESDEvent;
-		AliMCEvent *fMCEvent;
+		AliV0ReaderV1 				*fV0Reader;					// 
+		TClonesArray 				*fConversionGammas; 		// Reconstructed Photons;
+		AliConversionPhotonCuts 	*fConversionCuts; 			// Cuts used by the V0Reader
+		AliConvEventCuts 			*fEventCuts; 				// Cuts used by the V0Reader
+		TList 						*fOutputList; 				//
+		TList 						*fEventList;				//
+		TList 						*fRecGammaList;				//
+		TList 						*fAllMCGammaList;			//
+		TList 						*fAllMCConvGammaList;		//
+		TTree* 						fTreeEvent;					//
+		TTree* 						fTreeMaterialRec;			//
+		TTree* 						fTreeMaterialAllGamma;		//
+		TTree* 						fTreeMaterialConvGamma;		//
+		Float_t 					fPrimVtxZ;					//
+		Int_t 						fNContrVtx;					//
+		Int_t 						fNESDtracksEta09;			//
+		Int_t 						fNESDtracksEta0914;			//
+		Int_t 						fNESDtracksEta14;			//
+		Float_t 					fGammaMCPt;					//
+		Float_t 					fGammaMCTheta;				//
+		Float_t 					fGammaMCConvPt;				//
+		Float_t 					fGammaMCConvTheta;			//
+		TVectorF 					fMCConvCords;				//
+		TVectorF 					fMCConvDaughterProp;		//
+		Float_t 					fGammaPt;					//
+		Float_t 					fGammaTheta;				//
+		Float_t 					fGammaChi2NDF;				//
+		TVectorF 					fRecCords;					//
+		TVectorF 					fDaughterProp;				//
+		UChar_t 					fKind;						//
+		Int_t 						fIsHeavyIon;				//
+		Bool_t 						fIsMC;						//
+		AliESDEvent 				*fESDEvent;					//
+		AliMCEvent 					*fMCEvent;					//
 
 		AliAnalysisTaskMaterial(const AliAnalysisTaskMaterial&); // not implemented
 		AliAnalysisTaskMaterial& operator=(const AliAnalysisTaskMaterial&); // not implemented
 
 
-		ClassDef(AliAnalysisTaskMaterial, 1);
+		ClassDef(AliAnalysisTaskMaterial, 2);
 };
 
 #endif

@@ -5,7 +5,8 @@
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionPhoton.h"
 #include "AliConversionAODBGHandlerRP.h"
-#include "AliConversionCuts.h"
+#include "AliConvEventCuts.h"
+#include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "TRandom3.h"
 #include "AliVEvent.h"
@@ -17,8 +18,8 @@ class AliConversionSelection : public TObject{
 
 public:
 
-    AliConversionSelection(AliConversionCuts *convCut=NULL, AliConversionMesonCuts *mesonCut=NULL);
-    AliConversionSelection(TString convCut, TString mesonCut);
+    AliConversionSelection(AliConvEventCuts *evtCut=NULL, AliConversionPhotonCuts *convCut=NULL, AliConversionMesonCuts *mesonCut=NULL);
+    AliConversionSelection(TString evtCut, TString convCut, TString mesonCut);
     AliConversionSelection(const AliConversionSelection&);
     AliConversionSelection& operator=(const AliConversionSelection&); // not implemented
 
@@ -28,7 +29,6 @@ public:
     Bool_t ProcessEvent(TClonesArray *photons,AliVEvent *inputEvent,AliMCEvent *mcEvent);
    
     // public getter functions
-
     Int_t GetNumberOfPi0s(){return fPi0Candidates->GetEntriesFast();}
     Int_t GetNumberOfBGs(){return fBGPi0s->GetEntriesFast();}
     Int_t GetNumberOfPhotons(){return fGoodGammas->GetEntriesFast();}
@@ -47,7 +47,6 @@ public:
     void SetInvMassRange(Double_t range[2]){SetInvMassRange(range[0],range[1]);};
 
     Double_t* GetInvMassRange(){return fInvMassRange;}
-
     TObjArray *GetGoodGammas(){return fGoodGammas;}
 
     Int_t GetNumberOfChargedTracks(AliVEvent *inputEvent);
@@ -68,21 +67,22 @@ protected:
 
     Bool_t MesonInMassWindow(AliAODConversionMother *pi0cand);
 
-    AliVEvent *fInputEvent;
-    AliMCEvent *fMCEvent;
-    AliConversionCuts *fConversionCut;
-    AliConversionMesonCuts *fMesonCut;
-    AliESDtrackCuts *fESDTrackCuts;
-    TObjArray *fGoodGammas; // Pointer to selected photons
-    TClonesArray *fPi0Candidates;
-    TClonesArray *fBGPi0s;
-    TRandom3 *fRandomizer; // Randomizer for Rotation
-    AliConversionAODBGHandlerRP *fBGHandler;
-    Double_t fInvMassRange[2];
-    Int_t fCurrentEventNumber; // Current Event Number
-    Bool_t fIsOwner; // Cuts will be deleted when the destructor is called
+    AliVEvent 					*fInputEvent;				//
+    AliMCEvent 					*fMCEvent;					//
+	AliConvEventCuts		 	*fEventCut;					//
+    AliConversionPhotonCuts 	*fConversionCut;			//
+    AliConversionMesonCuts 		*fMesonCut;					//
+    AliESDtrackCuts 			*fESDTrackCuts;				//
+    TObjArray 					*fGoodGammas; 				// Pointer to selected photons
+    TClonesArray 				*fPi0Candidates;			//
+    TClonesArray 				*fBGPi0s;					//
+    TRandom3 					*fRandomizer; 				// Randomizer for Rotation
+    AliConversionAODBGHandlerRP *fBGHandler;				//
+    Double_t 					fInvMassRange[2];			//
+    Int_t	 					fCurrentEventNumber; 		// Current Event Number
+    Bool_t 						fIsOwner; 					// Cuts will be deleted when the destructor is called
 
-    ClassDef(AliConversionSelection, 2); // example of analysis
+    ClassDef(AliConversionSelection, 3); 					// example of analysis
 };
 
 #endif

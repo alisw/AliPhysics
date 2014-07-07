@@ -12,6 +12,8 @@
 #pragma link C++ class AliKFConversionPhoton+;
 #pragma link C++ class AliKFConversionMother+;
 #pragma link C++ class AliCaloPhotonCuts+;
+#pragma link C++ class AliConvEventCuts+;
+#pragma link C++ class AliConversionPhotonCuts+;
 #pragma link C++ class AliConversionCuts+;
 #pragma link C++ class AliConversionSelection+;
 #pragma link C++ class AliV0ReaderV1+;

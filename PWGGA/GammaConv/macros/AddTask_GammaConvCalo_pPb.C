@@ -27,6 +27,8 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	gSystem->Load("libTENDER.so");
 	gSystem->Load("libTENDERSupplies.so");
 		
+	Int_t isHeavyIon = 2;
+	
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
@@ -40,13 +42,15 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	//========= Add PID Reponse to ANALYSIS manager ====
 	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
 		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-		AddTaskPIDResponse(isMC,1,0,4,0,"",1,1,4);
+		AddTaskPIDResponse(isMC);
 	}
 	
 	Printf("here \n");
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumber = "8000000060084001001500000000"; 
+	TString cutnumberPhoton = "060084001001500000000";
+	TString cutnumberEvent = "8000000";
+	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -62,12 +66,24 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 			return;
 		}
 
+		AliConvEventCuts *fEventCuts=NULL;
+		if(cutnumberEvent!=""){
+			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
+			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+			if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
+				fEventCuts->DoEtaShift(doEtaShift);
+				fV0ReaderV1->SetEventCuts(fEventCuts);
+				fEventCuts->SetFillCutHistograms("",kTRUE);
+			}
+		}
+
 		// Set AnalysisCut Number
-		AliConversionCuts *fCuts=NULL;
-		if(cutnumber!=""){
-			fCuts= new AliConversionCuts(cutnumber.Data(),cutnumber.Data());
+		AliConversionPhotonCuts *fCuts=NULL;
+		if(cutnumberPhoton!=""){
+			fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
 			fCuts->SetPreSelectionCutFlag(kTRUE);
-			if(fCuts->InitializeCutsFromCutString(cutnumber.Data())){
+			fCuts->SetIsHeavyIon(isHeavyIon);
+			if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
 			}
@@ -91,13 +107,14 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	//================================================
 	AliAnalysisTaskGammaConvCalo *task=NULL;
 	task= new AliAnalysisTaskGammaConvCalo(Form("GammaConvCalo_%i",trainConfig));
-	task->SetIsHeavyIon(2);
+	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
 
-	TString *cutarray = new TString[numberOfCuts];
-	TString *clustercutarray = new TString[numberOfCuts];
+	TString *eventCutArray = new TString[numberOfCuts];
+	TString *photonCutArray = new TString[numberOfCuts];
+	TString *clusterCutArray = new TString[numberOfCuts];
 	TString *mesonCutArray = new TString[numberOfCuts];
 
 	// cluster cuts
@@ -105,16 +122,17 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	// 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
 	
 	if (trainConfig == 1){ 
-		cutarray[ 0] = "8000001002092970028250400000"; clustercutarray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
-		cutarray[ 1] = "8005201002092970028250400000"; clustercutarray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters
+		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
+		eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters
 	} else if (trainConfig == 2) {	
-		cutarray[ 0] = "8000001002092970028250400000"; clustercutarray[0] = "20000030022000000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // PHOS clusters
-		cutarray[ 1] = "8006201002092970028250400000"; clustercutarray[1] = "20000030022000000"; mesonCutArray[1] = "01525065000000"; //standard cut, kPHI7	// PHOS clusters	
+		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000030022000000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // PHOS clusters
+		eventCutArray[ 1] = "8006201"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000030022000000"; mesonCutArray[1] = "01525065000000"; //standard cut, kPHI7	// PHOS clusters	
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}
 
+	TList *EventCutList = new TList();
 	TList *ConvCutList = new TList();
 	TList *ClusterCutList = new TList();
 	TList *MesonCutList = new TList();
@@ -135,21 +153,29 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		HeaderList->Add(Header3);
 	}
 
+	EventCutList->SetOwner(kTRUE);
+	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
 	ConvCutList->SetOwner(kTRUE);
-	AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];
+	AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
 	ClusterCutList->SetOwner(kTRUE);
 	AliCaloPhotonCuts **analysisClusterCuts = new AliCaloPhotonCuts*[numberOfCuts];
 	MesonCutList->SetOwner(kTRUE);
 	AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
-		analysisCuts[i] = new AliConversionCuts();
-		analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
+		analysisEventCuts[i] = new AliConvEventCuts();   
+		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+		EventCutList->Add(analysisEventCuts[i]);
+		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+		
+		analysisCuts[i] = new AliConversionPhotonCuts();
+		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-		
+	
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
-		analysisClusterCuts[i]->InitializeCutsFromCutString(clustercutarray[i].Data());
+		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 		
@@ -157,9 +183,10 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
 		MesonCutList->Add(analysisMesonCuts[i]);
 		analysisMesonCuts[i]->SetFillCutHistograms("");
-		analysisCuts[i]->SetAcceptedHeader(HeaderList);
+		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
 	}
 
+	task->SetEventCutList(numberOfCuts,EventCutList);
 	task->SetConversionCutList(numberOfCuts,ConvCutList);
 	task->SetCaloCutList(numberOfCuts,ClusterCutList);
 	task->SetMesonCutList(numberOfCuts,MesonCutList);
