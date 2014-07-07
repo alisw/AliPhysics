@@ -269,19 +269,21 @@ AliFemtoEvent* AliFemtoEventReaderAOD::ReturnHbtEvent()
 
   hbtEvent = new AliFemtoEvent;
 
-  CopyAODtoFemtoEvent(hbtEvent);
+  hbtEvent = CopyAODtoFemtoEvent();
   fCurEvent++;
 
 
   return hbtEvent;
 }
 
-void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
+AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 {
 
   // A function that reads in the AOD event
   // and transfers the neccessary information into
   // the internal AliFemtoEvent
+
+  AliFemtoEvent *tEvent = new AliFemtoEvent();
 
   // setting global event characteristics
   tEvent->SetRunNumber(fEvent->GetRunNumber());
@@ -336,19 +338,19 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
       if(fMinVtxContr)
 	anaUtil->SetMinVtxContr(fMinVtxContr);
       if(fpA2013)
-	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) return; //Vertex rejection for pA analysis.
+	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) return NULL; //Vertex rejection for pA analysis.
       if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
       else anaUtil->SetUseMVPlpSelection(kFALSE);
       if(fMinPlpContribMV) anaUtil->SetMinPlpContribMV(fMinPlpContribMV);
       if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
       if(fisPileUp)
-	if(anaUtil->IsPileUpEvent(fEvent)) return; //Pile-up rejection.
+	if(anaUtil->IsPileUpEvent(fEvent)) return NULL; //Pile-up rejection.
       delete anaUtil;
     }
 
   // Primary Vertex position
   const AliAODVertex* aodvertex = (AliAODVertex*) fEvent->GetPrimaryVertex();
-  if(!aodvertex || aodvertex->GetNContributors() < 1) return; //Bad vertex, skip event.
+  if(!aodvertex || aodvertex->GetNContributors() < 1) return NULL; //Bad vertex, skip event.
 
   aodvertex->GetPosition(fV1);
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
@@ -376,7 +378,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     {
       // cout << "Centrality " << cent->GetCentralityPercentile("V0M") << " outside of preselection range " << fCentRange[0] << " - " << fCentRange[1] << endl;
 
-      return;
+      return NULL;
     }
   }
 
@@ -384,7 +386,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 //flatten centrality dist.
   if(percent < 9){
     if(fFlatCent){
-      if(RejectEventCentFlat(fEvent->GetMagneticField(),percent)) return;
+      if(RejectEventCentFlat(fEvent->GetMagneticField(),percent)) return NULL;
     }
   }
 
@@ -571,7 +573,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
       delete trk_clone;
     }
 
-    CopyAODtoFemtoTrack(aodtrack, trackCopy);
+    trackCopy = CopyAODtoFemtoTrack(aodtrack);
 
     // copying PID information from the correspondent track
     //	const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
@@ -830,15 +832,16 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     }
   }
 
+  return tEvent;
 }
 
-void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
-                                                 AliFemtoTrack *tFemtoTrack
+AliFemtoTrack* AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack
                                                  //						 AliPWG2AODTrack *tPWG2AODTrack
   )
 {
   // Copy the track information from the AOD into the internal AliFemtoTrack
   // If it exists, use the additional information from the PWG2 AOD
+  AliFemtoTrack *tFemtoTrack = new AliFemtoTrack();
 
   // Primary Vertex position
 
@@ -989,7 +992,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
     tFemtoTrack->SetITSHitOnLayer(ii,tAodTrack->HasPointOnITSLayer(ii));
   }
 
-
+  return tFemtoTrack;
 }
 
 AliFemtoV0* AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0 )
