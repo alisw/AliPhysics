@@ -1425,9 +1425,9 @@ Int_t AliESDtrack::GetTOFBunchCrossing(Double_t b, Bool_t pidTPConly) const
   const double kSpacing = 25e3; // min interbanch spacing
   const double kShift = 0;
   Int_t bcid = kTOFBCNA; // defualt one
-  if (!IsOn(kTOFout) || !IsOn(kESDpid)) return bcid; // no info
+  if (!IsOn(kTOFout)/* || !IsOn(kESDpid)*/) return bcid; // no info
   //
-  double tdif = fTOFsignal;
+  double tdif = GetTOFsignal();
   if (IsOn(kTIME)) { // integrated time info is there
     int pid = GetPID(pidTPConly);
     Double_t times[AliPID::kSPECIESC];
