@@ -8,6 +8,8 @@
 #include "AliGammaConversionAODBGHandler.h"
 #include "AliConversionAODBGHandlerRP.h"
 #include "AliCaloPhotonCuts.h"
+#include "AliConvEventCuts.h"
+#include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
@@ -54,6 +56,12 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
 		
 	    // Setting the cut lists for the conversion photons
+		void SetEventCutList(Int_t nCuts, TList *CutArray){
+			fnCuts = nCuts;
+			fEventCutArray = CutArray;
+		}
+
+		// Setting the cut lists for the conversion photons
 		void SetConversionCutList(Int_t nCuts, TList *CutArray){
 			fnCuts = nCuts;
 			fCutArray = CutArray;
@@ -118,8 +126,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TClonesArray 						*fReaderGammas;						// Array with conversion photons selected by V0Reader Cut
 		TList 								*fGammaCandidates;					// current list of photon candidates
 		TList 								*fClusterCandidates; 				//! current list of cluster candidates
+		TList 								*fEventCutArray;					// List with Event Cuts
+		AliConvEventCuts 					*fEventCuts;						// EventCutObject
 		TList 								*fCutArray;							// List with Conversion Cuts
-		AliConversionCuts 					*fConversionCuts;					// ConversionCutObject
+		AliConversionPhotonCuts 			*fConversionCuts;					// ConversionCutObject
 		TList 								*fClusterCutArray;					// List with Cluster Cuts
 		AliCaloPhotonCuts 					*fCaloPhotonCuts;					// CaloPhotonCutObject
 		TList 								*fMesonCutArray;					// List with Meson Cuts
@@ -294,7 +304,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 1);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 2);
 };
 
 #endif
