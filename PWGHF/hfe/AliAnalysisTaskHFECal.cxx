@@ -832,7 +832,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     if (clsId>=0){
       AliESDCaloCluster *clust = fESD->GetCaloCluster(clsId);
-      AliESDCaloCluster *clust_ESD = fESD->GetCaloCluster(clsId_ESD);
 
       if(clust && clust->IsEMCAL()){
 
@@ -840,8 +839,14 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                 if(clustE==maxE)MaxEmatch = kTRUE;
                 eop = clustE/fabs(mom);
 
-                   double eop_ESD = clust_ESD->E()/fabs(mom);
+
                    MatchTrCheck->Fill(clsId_ESD,clsId);
+                   double eop_ESD = -10.0;
+                   if(clsId_ESD>=0)
+                     {
+                       AliESDCaloCluster *clust_ESD = fESD->GetCaloCluster(clsId_ESD);
+                       eop_ESD = clust_ESD->E()/fabs(mom);
+                     }
                    if(fTPCnSigma>-1 && fTPCnSigma<3 && pt>3.0)MatchTrEop->Fill(eop_ESD,eop);
 
                 //double clustT = clust->GetTOF();
