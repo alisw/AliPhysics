@@ -60,6 +60,10 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
 //---------------------------------------------------------------------------------------
   //Task Configuration: Meant to enable quick re-execution of vertexer if needed
   void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) { fkRunVertexers = lRunVertexers; }
+    
+//---------------------------------------------------------------------------------------
+    //Task Configuration: Skip Event Selections after trigger (VZERO test)
+    void SetSkipEventSelection ( Bool_t lSkipEventSelection = kTRUE) { fkSkipEventSelection = lSkipEventSelection; }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
   void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0VertexerSels[0] = lParameter; }
@@ -98,7 +102,8 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Bool_t fkSaveCascadeTree;         //if true, save TTree
 
   //Objects Controlling Task Behaviour: has to be streamed! 
-  Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! *** 
+  Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
+  Bool_t    fkSkipEventSelection;     // if true, will only perform TRIGGER selection (currently kMB, to change)
   Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
   Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
 
@@ -122,6 +127,15 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Int_t fTrueMultVZEROA;           //!
   Int_t fTrueMultVZEROC;           //!  
   Int_t fRunNumber;                //!
+    
+    //Event Characterization Variables - optional
+    Bool_t fEvSel_HasAtLeastSPDVertex;      //!
+    Bool_t fEvSel_VtxZCut;                  //!
+    Bool_t fEvSel_IsNotPileup;              //!
+    Bool_t fEvSel_IsNotPileupMV;            //!
+    Bool_t fEvSel_IsNotPileupInMultBins;    //!
+    Bool_t fEvSel_HasVtxContributor;        //!
+    Bool_t fEvSel_Triggered;                //!
 
 //===========================================================================================
 //   Variables for V0 Tree
