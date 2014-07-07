@@ -232,7 +232,7 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   fOutputList->Add(fh2JetAxisPhi);
   
 
-  Int_t nbinsJet[10]={3,9,7,9,36,5,7,10,10,2};
+  Int_t nbinsJet[10]={3,9,75,9,36,5,7,10,50,2};
   Double_t binlowJet[10]= {0,0, 0, 0,-0.5*TMath::Pi(),0,0,-0.5,0,0};
   Double_t binupJet[10]= {100,0.9, 150,150,1.5*TMath::Pi(),1,150,9.5,200,2};
   fhnJetTM = new THnSparseF("fhnJetTM", "fhnJetTM; cent;dr;pt_jet;pt_track;phi;circ;ptrue;pthard;ptlead;isemebed",10,nbinsJet,binlowJet,binupJet);
@@ -246,17 +246,17 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   }
   fhnJetTM->SetBinEdges(3,xPt3);
 
-  Double_t *xPt2=new Double_t[10];
-  xPt2[0] = 0.;
-  xPt2[1]=20;
-  xPt2[2]=40;
-  xPt2[3]=60;
-  xPt2[4]=80;
-  xPt2[5]=100;
-  xPt2[6]=120;
-  xPt2[7]=150; 
+  // Double_t *xPt2=new Double_t[10];
+  // xPt2[0] = 0.;
+  // xPt2[1]=20;
+  // xPt2[2]=40;
+  // xPt2[3]=60;
+  // xPt2[4]=80;
+  // xPt2[5]=100;
+  // xPt2[6]=120;
+  // xPt2[7]=150; 
   
-  fhnJetTM->SetBinEdges(2,xPt2);
+  //fhnJetTM->SetBinEdges(2,xPt2);
  
 
   Double_t *xPt4=new Double_t[4];
@@ -283,7 +283,7 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
 
    fOutputList->Add(fhnJetTM);
    delete [] xPt3;
-   delete [] xPt2;
+   // delete [] xPt2;
    delete [] xPt4;
    delete [] xPt5;
   // =========== Switch on Sumw2 for all histos ===========
