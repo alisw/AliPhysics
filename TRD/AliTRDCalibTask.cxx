@@ -115,6 +115,7 @@ AliTRDCalibTask::AliTRDCalibTask(const char *name)
   fNbTrackletsOffline(0),
   fNbTrackletsStandalone(0),
   fAbsoluteGain(0),
+  fTOFbc(0),
   fCH2dSum(0),
   fPH2dSum(0),
   fCH2dSM(0),
@@ -145,6 +146,7 @@ AliTRDCalibTask::AliTRDCalibTask(const char *name)
   fMinNbContributors(0),
   fRangePrimaryVertexZ(9999999.0),
   fRejectPileUpWithSPD(kFALSE),
+  fRejectPileUpWithTOF(kFALSE),
   fMinNbTracks(9),
   fMaxNbTracks(999999999),
   fCutWithVdriftCalib(kFALSE),
@@ -224,6 +226,7 @@ AliTRDCalibTask::~AliTRDCalibTask()
   if(fNbTrackletsOffline) delete fNbTrackletsOffline;
   if(fNbTrackletsStandalone) delete fNbTrackletsStandalone;
   if(fAbsoluteGain) delete fAbsoluteGain;
+  if(fTOFbc) delete fTOFbc;
   if(fCH2dSum) delete fCH2dSum;
   if(fPH2dSum) delete fPH2dSum;
   if(fCH2dSM) delete fCH2dSM;
@@ -364,6 +367,14 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   fAbsoluteGain->SetStats(0);
   fAbsoluteGain->Sumw2();
   fListHist->Add(fAbsoluteGain);
+
+  fTOFbc = new TH2F(Form("TOFbc_%s",(const char*)fName),"TOFbc", 200, -150., 50., nBinsPt, binLimPt);
+  fTOFbc->SetYTitle("Momentum");
+  fTOFbc->SetXTitle("TOF bc");
+  fTOFbc->SetZTitle("counts");
+  fTOFbc->SetStats(0);
+  fTOFbc->Sumw2();
+  fListHist->Add(fTOFbc);
   
   if(IsPHQon()){
     printf("\n        AliTRDCalibTask PHQ is on!!     \n\n");
@@ -808,6 +819,13 @@ void AliTRDCalibTask::UserExec(Option_t *)
     if((fEsdTrackCuts) && (!fEsdTrackCuts->IsSelected((AliVParticle *)fkEsdTrack))) {
       //printf("Not a good track\n");
       continue;
+    }
+    
+    Int_t nbcrossing = fkEsdTrack->GetTOFBunchCrossing();
+    fTOFbc->Fill(nbcrossing,fkEsdTrack->Pt());
+    // TOF pile-up rejection is asked
+    if(fRejectPileUpWithTOF) {
+      if(TMath::Abs(nbcrossing)>0.5) continue;
     }
 
     // First Absolute gain calibration
