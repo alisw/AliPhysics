@@ -257,7 +257,7 @@ void PlotSecondariesCorr(TString filename = "rootFiles/LHC11a10a_bis/Et.ESD.simP
 	nSecondariesShortClMultScaledSim[currentShortCB] += neventsBinn*meanet;
 	neventsShort[0] +=neventsBinn;
       }
-      nSecondariesClMultScaledSim[cb] = nSecondariesClMultScaledSim[cb]/nevents;
+      if(nevents>0) nSecondariesClMultScaledSim[cb] = nSecondariesClMultScaledSim[cb]/nevents;
 
 
 
@@ -272,7 +272,7 @@ void PlotSecondariesCorr(TString filename = "rootFiles/LHC11a10a_bis/Et.ESD.simP
 	nSecondariesShortTrMultScaledSim[currentShortCB] += neventsBinn*meanet;
 	neventsShort[1] +=neventsBinn;
       }
-      nSecondariesTrMultScaledSim[cb] = nSecondariesTrMultScaledSim[cb]/nevents;
+      if(nevents>0) nSecondariesTrMultScaledSim[cb] = nSecondariesTrMultScaledSim[cb]/nevents;
 
       nbins = ((TH1*)clustermultiplicity[cb])->GetNbinsX();
       nevents = 0.0;
@@ -289,11 +289,11 @@ void PlotSecondariesCorr(TString filename = "rootFiles/LHC11a10a_bis/Et.ESD.simP
 	nSecondariesShortClMultScaledData[currentShortCB] += neventsBinn*meanet;
  	neventsShort[2] +=neventsBinn;
       }
-      meanmult = meanmult/nevents;
+      if(nevents>0) meanmult = meanmult/nevents;
       //nSecondariesClMultScaledData[cb] = nSecondariesClMultScaledData[cb]/nevents;
       //cout<<")/"<<nevents<<endl;
       //cout<<"cb "<<cb<<" = "<<nSecondariesClMultScaledData[cb]<<"/"<<nevents;
-      nSecondariesClMultScaledData[cb] = nSecondariesClMultScaledData[cb]/nevents;//<<" = ";
+      if(nevents>0) nSecondariesClMultScaledData[cb] = nSecondariesClMultScaledData[cb]/nevents;//<<" = ";
       //cout<<" " << nSecondariesClMultScaledData[cb];
       //cout<<" mean "<<((TH1*)clustermultiplicityData[cb])->GetMean()<<" mean2 "<<meanmult<<" mean method "<< profNCl->GetBinContent(profNCl->FindBin(meanmult));
       //cout<<" mean method "<< profNCl->GetBinContent(profNCl->FindBin(((TH1*)trackmultiplicityData[cb])->GetMean()));
@@ -312,7 +312,7 @@ void PlotSecondariesCorr(TString filename = "rootFiles/LHC11a10a_bis/Et.ESD.simP
       }
 
 //       cout<<"cb "<<cb<<" = "<<nSecondariesTrMultScaledData[cb]<<"/"<<nevents;
-      nSecondariesTrMultScaledData[cb] = nSecondariesTrMultScaledData[cb]/nevents;
+      if(nevents>0) nSecondariesTrMultScaledData[cb] = nSecondariesTrMultScaledData[cb]/nevents;
 //       cout<<" " << nSecondariesTrMultScaledData[cb];
 //       cout<<" mean "<<((TH1*)trackmultiplicityData[cb])->GetMean()<<" mean method "<< profNCh->GetBinContent(profNCh->FindBin(((TH1*)trackmultiplicityData[cb])->GetMean()));
 //       cout<<endl<<endl;
@@ -334,10 +334,10 @@ void PlotSecondariesCorr(TString filename = "rootFiles/LHC11a10a_bis/Et.ESD.simP
 
       //return;
       if(cb<2 || (cb+1)%2==0){//For combined bins, 
-	nSecondariesShortClMultScaledSim[currentShortCB] = nSecondariesShortClMultScaledSim[currentShortCB]/neventsShort[0];
-	nSecondariesShortTrMultScaledSim[currentShortCB] = nSecondariesShortTrMultScaledSim[currentShortCB]/neventsShort[1];
-	nSecondariesShortClMultScaledData[currentShortCB] = nSecondariesShortClMultScaledData[currentShortCB]/neventsShort[2];
-	nSecondariesShortTrMultScaledData[currentShortCB] = nSecondariesShortTrMultScaledData[currentShortCB]/neventsShort[3];
+	if(neventsShort[0]>0)nSecondariesShortClMultScaledSim[currentShortCB] = nSecondariesShortClMultScaledSim[currentShortCB]/neventsShort[0];
+	if(neventsShort[1]>0)nSecondariesShortTrMultScaledSim[currentShortCB] = nSecondariesShortTrMultScaledSim[currentShortCB]/neventsShort[1];
+	if(neventsShort[2]>0)nSecondariesShortClMultScaledData[currentShortCB] = nSecondariesShortClMultScaledData[currentShortCB]/neventsShort[2];
+	if(neventsShort[3]>0)nSecondariesShortTrMultScaledData[currentShortCB] = nSecondariesShortTrMultScaledData[currentShortCB]/neventsShort[3];
 	cout<<"cb Short "<<currentShortCB<<" ET from secondaries "<< nSecondariesShortClMultScaledSim[currentShortCB];// <<endl;
 	cout<<" "<< nSecondariesShortTrMultScaledSim[currentShortCB];
 
@@ -413,11 +413,14 @@ void WriteLatex(){
 	}
         mysecondaryfile4.close();
     }
+    ofstream myfile3;
+    myfile3.open ("Secondaries.tex");
+
     for(int i=0;i<20;i++){
       TString line = Form("%i-%i & %2.3f $\\pm$ %2.3f & %2.3f $\\pm$ %2.3f \\\\",i*5,(i+1)*5,secondaryCorrPhos[i],secondaryErrorPhos[i],secondaryCorrEmcal[i],secondaryErrorEmcal[i]);
-      cout<<line.Data()<<endl;
-
+      myfile3<<line.Data()<<endl;
     }
+    myfile3.close();
 
 
 }

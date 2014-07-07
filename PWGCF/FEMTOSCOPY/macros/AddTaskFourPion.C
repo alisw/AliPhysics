@@ -106,9 +106,11 @@ AliFourPion *AddTaskFourPion(
     }
     ////////////////////////////////////////////////////
     // Momentum Resolution File
-    TH2D *momResHisto2D = 0;
-    momResHisto2D = (TH2D*)inputFileMomRes->Get("MRC_C2_SC");
-    FourPionTask->SetMomResCorrections( kTRUE, momResHisto2D);
+    TH2D *momResHisto2DSC = 0;
+    TH2D *momResHisto2DMC = 0;
+    momResHisto2DSC = (TH2D*)inputFileMomRes->Get("MRC_C2_SC");
+    momResHisto2DMC = (TH2D*)inputFileMomRes->Get("MRC_C2_MC");
+    FourPionTask->SetMomResCorrections( kTRUE, momResHisto2DSC, momResHisto2DMC );
     ////////////////////////////////////////////////////
 
     // Muon corrections

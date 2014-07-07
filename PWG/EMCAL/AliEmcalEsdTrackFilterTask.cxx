@@ -29,6 +29,7 @@ AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask() :
   fDoPropagation(kFALSE),
   fDist(440),
   fTrackEfficiency(1),
+  fIsMC(kFALSE),
   fEsdEv(0),
   fTracks(0)
 {
@@ -46,6 +47,7 @@ AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask(const char *name) :
   fDoPropagation(kFALSE),
   fDist(440),
   fTrackEfficiency(1),
+  fIsMC(kFALSE),
   fEsdEv(0),
   fTracks(0)
 {
@@ -231,6 +233,7 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 	  newTrack->SetBit(BIT(22),1); //type 1
 	  newTrack->SetBit(BIT(23),0);
 	}
+	if (!fIsMC) newTrack->SetLabel(0);
 	++ntrnew;
       }
     }

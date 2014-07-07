@@ -43,6 +43,14 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
       case kRapidityRangeMC:
          fCutValueD = pair->Y(1);
          return OkRangeD();
+      case kRapidityFiducialRegion:
+         fCutValueD = pair->Y(0);
+	 fRefPtValueD = pair->Pt(0);
+         return OkRangeD();
+      case kRapidityFiducialRegionMC:
+         fCutValueD = pair->Y(1);
+	 fRefPtValueD = pair->Pt(1);
+         return OkRangeD();  
       case kMomentumComparison:
          AliWarning("TODO: implement this");
          return kTRUE;
