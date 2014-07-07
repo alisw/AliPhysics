@@ -764,7 +764,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     else{
       res = new TGridResult();	
       
-      command = Form("find %s/*%s -name %s | xargs", alienBaseDir.Data(), run.Data(), QAFileName);
+      command = Form("find %s/*%s/ -name %s | xargs", alienBaseDir.Data(), run.Data(), QAFileName);
       TString foundFiles = gSystem->GetFromPipe(command.Data());
       TObjArray* arr = foundFiles.Tokenize(" ");
       for ( Int_t iarr=0; iarr<arr->GetEntries(); iarr++ ) {
@@ -795,7 +795,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
 	continue;
       }
       
-      if ( ! selectRuns.Contains(Form("%i",run.Atoi())) ) continue;
+      if ( run.IsDigit() && ! selectRuns.Contains(Form("%i",run.Atoi())) ) continue;
       
       // open the outfile for this run
       TFile *runFile = TFile::Open(objs->GetString());
