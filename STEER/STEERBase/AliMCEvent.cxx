@@ -977,6 +977,7 @@ void  AliMCEvent::SetParticleArray(TClonesArray* mcParticles)
       static Int_t binaryfirst(TClonesArray* a, Int_t low, Int_t high)
       {
 	Int_t mid  = low + (high - low)/2;
+	if (low > a->GetEntries()-1) return (a->GetEntries()-1);
 	if (!((AliVParticle*) a->At(mid))->IsPrimary()) {
 	  if (mid > 1 && !((AliVParticle*) a->At(mid-1))->IsPrimary()) {
 	    return binaryfirst(a, low, mid-1);
