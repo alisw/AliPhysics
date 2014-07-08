@@ -125,6 +125,7 @@ fListOfHistos(0x0),
 // event QA
 fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default) 
 fZVertex(7.),
+fAcceptOnlyMuEvents(kFALSE),
 fCentralityMethod("V0M"),
 // track cuts
 fTrackEtaCut(0.8),
@@ -416,6 +417,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   TTree *settingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
   settingsTree->Branch("fnTracksVertex", &fnTracksVertex,"nTracksVertex/I");
   settingsTree->Branch("fZVertex", &fZVertex,"ZVertex/D");
+  settingsTree->Branch("fAcceptOnlyMuEvents", &fAcceptOnlyMuEvents,"AcceptOnlyMuEvents/O");
   //settingsTree->Branch("fCentralityMethod", fCentralityMethod.Data(),"CentralityMethod/C");
   settingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
   settingsTree->Branch("fTrackEtaCutMin", &fTrackEtaCutMin, "TrackEtaCutMin/D");
@@ -555,8 +557,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     
   if (!fAnalyseUE->VertexSelection(vertexSupplier, 0, fZVertex)) 
     return;
-  
-  Float_t zVtx = 0;
+    
+    Float_t zVtx = 0;
   if (fAOD)
     zVtx = ((AliAODMCHeader*) vertexSupplier)->GetVtxZ();
   else
@@ -1142,6 +1144,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
   }
   
+  // Reject events without a muon in the muon arm ************************************************
+  if(fAcceptOnlyMuEvents && !IsMuEvent())return;
+  
   // Vertex selection *************************************************
   if(!fAnalyseUE->VertexSelection(inputEvent, fnTracksVertex, fZVertex)) return;
   
@@ -1552,3 +1557,24 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
   return obj;  
 }
 
+//____________________________________________________________________
+Bool_t AliAnalysisTaskPhiCorrelations::IsMuEvent(){
+  
+  if(!fAOD)
+    AliFatal("Muon selection only implemented on AOD");//FIXME to be implemented also for ESDs as in AliAnalyseLeadingTrackUE::GetAcceptedPArticles
+  for (Int_t iTrack = 0; iTrack < fAOD->GetNTracks(); iTrack++) {
+    AliAODTrack* track = fAOD->GetTrack(iTrack);
+    if (!track->IsMuonTrack()) continue;
+    //Float_t dca    = track->DCA();
+    //Float_t chi2   = track->Chi2perNDF();
+    Float_t rabs   = track->GetRAtAbsorberEnd();
+    Float_t eta    = track->Eta();
+    Int_t   matching   = track->GetMatchTrigger();
+    if (rabs < 17.6 || rabs > 89.5) continue;
+    if (eta < -4 || eta > -2.5) continue;
+    if (matching < 2) continue;
+    return kTRUE;
+  }
+  return kFALSE;
+  
+}

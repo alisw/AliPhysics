@@ -87,6 +87,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     // for event QA
     void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
     void   SetZVertex( Double_t val )    { fZVertex = val; }
+    void   SetAcceptOnlyMuEvents( Bool_t val )    { fAcceptOnlyMuEvents = val; }
     
     // track cuts
     void   SetTrackEtaCut( Double_t val )    { fTrackEtaCut = val; }
@@ -154,6 +155,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t AcceptEventCentralityWeight(Double_t centrality);
     void ShiftTracks(TObjArray* tracks, Double_t angle);
     TObjArray* GetParticlesFromDetector(AliVEvent* inputEvent, Int_t idet);
+    Bool_t IsMuEvent();
 
     // General configuration
     Int_t               fDebug;           //  Debug flag
@@ -197,9 +199,10 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     TList*              fListOfHistos;    //  Output list of containers 
     
     // Event QA cuts
-    Int_t          	fnTracksVertex;        // QA tracks pointing to principal vertex
-    Double_t       	fZVertex;              // Position of Vertex in Z direction
-    TString             fCentralityMethod;     // Method to determine centrality
+    Int_t          	fnTracksVertex;          // QA tracks pointing to principal vertex
+    Double_t       	fZVertex;                 // Position of Vertex in Z direction
+    Bool_t       	fAcceptOnlyMuEvents;   // Only Events with at least one muon are accepted
+    TString             fCentralityMethod;      // Method to determine centrality
     
     // Track cuts
     Double_t      	fTrackEtaCut;          // Maximum Eta cut on particles
@@ -245,7 +248,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 45); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 46); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
