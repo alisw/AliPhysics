@@ -357,10 +357,10 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
     printf("ConfigureCaloUtils() - Apply non linearity to EMCAL\n");
     cu->SwitchOnCorrectClusterLinearity();
   }
-    
+  /*   
   printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
   printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
-  
+  */
   cu->SetNumberOfSuperModulesUsed(10);
 
   if(print) cu->Print("");
