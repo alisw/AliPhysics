@@ -109,6 +109,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 	double nEtaMax = atof(parameter[12]);  //0.8
 	bool ifIsPileUp = atoi(parameter[13]); //true
 
+
 	printf("*** Connect to AliEn ***\n");
 	TGrid::Connect("alien://");
 
@@ -116,7 +117,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
 	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,150};
 	
-	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+	int runch[numOfChTypes] = {0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed" };
 	
 	int runktdep = 1;
@@ -428,20 +429,20 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 
 					cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),35, 35);
 					if(ichg==0 || ichg==1 || ichg==2)
-					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/FB768/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,0*/);
-					//cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton,1,1,1,1);
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,0*/);
+					//cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton,1,1,1,1);
 					else if(ichg==3 || ichg==4 || ichg==5)
-					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/FB768/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon/*,1,1,1,0*/);
-					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon,1,1,1,1);	
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon/*,1,1,1,0*/);
+					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon,1,1,1,1);	
 					 
 					else if(ichg==6 || ichg==7 || ichg==8)
-					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/FB768/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion/*,1,1,1,0*/);
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion/*,1,1,1,0*/);
 					
-					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion,1,1,1,1);	
+					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion,1,1,1,1);	
 					
 					else
-					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/FB768/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll/*,1,1,1,0*/);
-					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll,1,1,1,1);
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll/*,1,1,1,0*/);
+					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll,1,1,1,1);
 					
 			     
 
@@ -485,13 +486,13 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 							cdedpetaphiPt[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 
 							if(ichg==0 || ichg==1 || ichg==2)
-							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/FB768/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,1*/);
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,1*/);
 							else if(ichg==3 || ichg==4 || ichg==5)
-							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/FB768/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon);
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon);
 							else if(ichg==6 || ichg==7 || ichg==8)
-							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/FB768/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kPion);
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kPion);
 							else
-							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/FB768/4Dmap_MCOnly.root", AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll);
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Data/AOD/SystematicStudies/PIDSqrtNsigma/Corrections/4D/4Dmap_DataDCA.root.root", AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll);
 				
 
 							/*if(ichg==0 || ichg==1 || ichg==2)

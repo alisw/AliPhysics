@@ -553,7 +553,12 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fGammaEnergyAdded = GetGammaContribution(fNeutralMultiplicity);
     fHistGammaEnergyAdded->Fill(fGammaEnergyAdded, fNeutralMultiplicity);
 
-    Double_t removedEnergy = GetChargedContribution(cent) + GetNeutralContribution(cent) + GetGammaContribution(cent) + GetSecondaryContribution(cent);//fNeutralMultiplicity
+    //Double_t removedEnergy = GetChargedContribution(cent) + GetNeutralContribution(cent) + GetGammaContribution(cent) + GetSecondaryContribution(cent);//fNeutralMultiplicity
+    Double_t removedEnergy = GetHadronContribution(cent) + GetNeutronContribution(cent) + GetKaonContribution(cent) + GetSecondaryContribution(cent);//fNeutralMultiplicity
+    //cout<<" centbin "<<cent<<" removed energy ch "<< GetHadronContribution(cent)<<" n " << GetNeutronContribution(cent) <<" kaon "<< GetKaonContribution(cent)<<" secondary "<< GetSecondaryContribution(cent);//fNeutralMultiplicity
+    //cout<<" test min et "<<fTmCorrections->GetMinEtCorrection(cent);
+    //cout<<" test neutral "<<fTmCorrections->NeutralContr(cent);
+    //cout<<" test neutron "<<fTmCorrections->NeutralContr(cent);
     fHistRemovedEnergy->Fill(removedEnergy);
     
     fTotNeutralEtAcc = fTotNeutralEt;
@@ -567,7 +572,9 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fHistTotAllRawEtEffCorr->Fill(fTotAllRawEtEffCorr,cent);
     //cout<<"fTotAllRawEtEffCorr "<<fTotAllRawEtEffCorr<<" fTotAllRawEt "<<fTotAllRawEt<<" fTotRawEtEffCorr "<<fTotRawEtEffCorr<<"("<<fTotNeutralEt<<")"<<" fTotRawEt "<<fTotRawEt<<endl;
     //cout<<"uncorr "<<uncorrEt<<" raw "<<nominalRawEt<<" tot raw "<<fTotNeutralEt;
-    fTotNeutralEt =  (fTotNeutralEt - removedEnergy)/GetMinEtCorrection(cent);
+    //cout<<" raw "<<fTotNeutralEt<<" removed "<<removedEnergy<<" etmin "<<GetMinEtCorrection(cent)<<" final ";
+    if(GetMinEtCorrection(cent)>0) fTotNeutralEt =  (fTotNeutralEt - removedEnergy)/GetMinEtCorrection(cent);
+    //cout<<fTotNeutralEt<<endl;
     //cout<<" tot corr "<<fTotNeutralEt<<endl;
     fTotEt = fTotChargedEt + fTotNeutralEt;
 // Fill the histograms...0
