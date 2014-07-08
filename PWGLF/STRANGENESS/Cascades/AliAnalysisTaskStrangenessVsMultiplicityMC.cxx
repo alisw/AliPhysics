@@ -1045,6 +1045,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
    AliMCEvent  *lMCevent  = 0x0; 
    AliStack    *lMCstack  = 0x0; 
   
+    //Zero all booleans, etc
+    fEvSel_HasAtLeastSPDVertex    = kFALSE;
+    fEvSel_VtxZCut                = kFALSE;
+    fEvSel_IsNotPileup            = kFALSE;
+    fEvSel_IsNotPileupInMultBins  = kFALSE;
+    fEvSel_HasVtxContributor      = kFALSE;
+    fEvSel_Triggered              = kFALSE;
   // Connect to the InputEvent   
   // After these lines, we should have an ESD/AOD event + the number of V0s in it.
 

@@ -109,6 +109,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params="") {
 	double nEtaMax = atof(parameter[12]);  //0.8
 	bool ifIsPileUp = atoi(parameter[13]); //true
 
+
+	printf("*** Connect to AliEn ***\n");
+	TGrid::Connect("alien://");
+
 	int runmults[numOfMultBins] = {0, 0, 0, 0, 1};
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
 	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,150};

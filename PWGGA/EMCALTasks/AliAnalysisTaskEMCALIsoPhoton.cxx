@@ -82,6 +82,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fNBinsPt(200),
   fPtBinLowEdge(-0.25),
   fPtBinHighEdge(99.75),
+  fRemMatchClus(kFALSE),
+  fMinIsoClusE(0),
   fNCuts(5),
   fCuts(""),
   fESD(0),
@@ -179,6 +181,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fNBinsPt(200),
   fPtBinLowEdge(-0.25),
   fPtBinHighEdge(99.75),
+  fRemMatchClus(kFALSE),
+  fMinIsoClusE(0),
   fNCuts(5),
   fCuts(""),
   fESD(0),
@@ -798,10 +802,12 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
       continue;
     if(!c->IsEMCAL())
       continue;
+    if(c->E()<fMinIsoClusE)
+      continue;
     Short_t id;
     GetMaxCellEnergy( c, id);
     Double_t maxct = cells->GetCellTime(id);
-    if(TMath::Abs(maxtcl-maxct)>2.5e-9)
+    if(TMath::Abs(maxtcl-maxct)>2.5e-9 && (!fIsMc))
       continue;
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
@@ -815,6 +821,8 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     if(maxid==id)
       continue;
     Double_t matchedpt =  GetTrackMatchedPt(c->GetTrackMatchedIndex());
+    if(matchedpt>0 && fRemMatchClus)
+      continue;
     Double_t nEt = TMath::Max(Et-matchedpt, 0.0);
     if(nEt<0)
       printf("nEt=%1.1f\n",nEt);
