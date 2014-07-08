@@ -1004,6 +1004,10 @@ void AliFourPion::UserCreateOutputObjects()
   fOutputList->Add(fKT3AvgpT);
   TProfile2D *fKT4AvgpT = new TProfile2D("fKT4AvgpT","",fMbins,.5,fMbins+.5, 2,-0.5,1.5, 0.,1.0,"");
   fOutputList->Add(fKT4AvgpT);
+  TH3D* fQ3AvgpT = new TH3D("fQ3AvgpT","", 2,-0.5,1.5, fQbinsQ3,0,fQupperBoundQ3, 180,0.1,1.0);
+  fOutputList->Add(fQ3AvgpT);
+  TH3D* fQ4AvgpT = new TH3D("fQ4AvgpT","", 2,-0.5,1.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
+  fOutputList->Add(fQ4AvgpT);
 
 
   TH1D *fMCWeight3DTerm1SC = new TH1D("fMCWeight3DTerm1SC","", 20,0,0.2);
@@ -2639,8 +2643,8 @@ void AliFourPion::UserExec(Option_t *)
 		    // Full Weight reconstruction
 		    
 		    for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
-		      for(Int_t GIndex=0; GIndex<20; GIndex++){
-			Int_t FillBin = 5 + RcohIndex*20 + GIndex;
+		      for(Int_t GIndex=0; GIndex<50; GIndex++){
+			Int_t FillBin = 5 + RcohIndex*50 + GIndex;
 			Float_t G = 0.02*GIndex;
 			if(RcohIndex==0){
 			  T12 = (-2*G*(1-G) + sqrt(pow(2*G*(1-G),2) + 4*pow(1-G,2)*weight12CC[2])) / (2*pow(1-G,2));
@@ -2679,14 +2683,20 @@ void AliFourPion::UserExec(Option_t *)
 
 		if(ch1==ch2 && ch1==ch3 && ENsum==0){
 		  ((TH3D*)fOutputList->FindObject("fKT3DistTerm1"))->Fill(fMbin+1, KT3, q3);
-		  if(q3<0.06){
+		  if(q3<0.1){
 		    Float_t pt1=sqrt(pow(pVect1[1],2)+pow(pVect1[2],2));
 		    Float_t pt2=sqrt(pow(pVect2[1],2)+pow(pVect2[2],2));
 		    Float_t pt3=sqrt(pow(pVect3[1],2)+pow(pVect3[2],2));
 		    ((TProfile2D*)fOutputList->FindObject("fKT3AvgpT"))->Fill(fMbin+1, KT3index, pt1);
 		    ((TProfile2D*)fOutputList->FindObject("fKT3AvgpT"))->Fill(fMbin+1, KT3index, pt2);
 		    ((TProfile2D*)fOutputList->FindObject("fKT3AvgpT"))->Fill(fMbin+1, KT3index, pt3);
+		    if(fMbin==0){
+		      ((TH3D*)fOutputList->FindObject("fQ3AvgpT"))->Fill(KT3index, q3, pt1);
+		      ((TH3D*)fOutputList->FindObject("fQ3AvgpT"))->Fill(KT3index, q3, pt2);
+		      ((TH3D*)fOutputList->FindObject("fQ3AvgpT"))->Fill(KT3index, q3, pt3);
+		    }
 		  }
+		  
 		}
 		if(ch1==ch2 && ch1==ch3 && ENsum==6) ((TH3D*)fOutputList->FindObject("fKT3DistTerm5"))->Fill(fMbin+1, KT3, q3);
 	      	
@@ -2958,8 +2968,8 @@ void AliFourPion::UserExec(Option_t *)
 		    }
 		    // Full Weight reconstruction
 		    for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
-		      for(Int_t GIndex=0; GIndex<20; GIndex++){
-			Int_t FillBin = 5 + RcohIndex*20 + GIndex;
+		      for(Int_t GIndex=0; GIndex<50; GIndex++){
+			Int_t FillBin = 5 + RcohIndex*50 + GIndex;
 			Float_t G = 0.02*GIndex;
 			if(RcohIndex==0){// Rcoh=0
 			  Float_t a = pow(1-G,2);
@@ -3024,7 +3034,7 @@ void AliFourPion::UserExec(Option_t *)
 		  
 		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==0){
 		    ((TH3D*)fOutputList->FindObject("fKT4DistTerm1"))->Fill(fMbin+1, KT4, q4);
-		    if(q4<0.085){
+		    if(q4<0.105){
 		      Float_t pt1=sqrt(pow(pVect1[1],2)+pow(pVect1[2],2));
 		      Float_t pt2=sqrt(pow(pVect2[1],2)+pow(pVect2[2],2));
 		      Float_t pt3=sqrt(pow(pVect3[1],2)+pow(pVect3[2],2));
@@ -3033,6 +3043,12 @@ void AliFourPion::UserExec(Option_t *)
 		      ((TProfile2D*)fOutputList->FindObject("fKT4AvgpT"))->Fill(fMbin+1, KT4index, pt2);
 		      ((TProfile2D*)fOutputList->FindObject("fKT4AvgpT"))->Fill(fMbin+1, KT4index, pt3);
 		      ((TProfile2D*)fOutputList->FindObject("fKT4AvgpT"))->Fill(fMbin+1, KT4index, pt4);
+		      if(fMbin==0){
+			((TH3D*)fOutputList->FindObject("fQ4AvgpT"))->Fill(KT4index, q4, pt1);
+			((TH3D*)fOutputList->FindObject("fQ4AvgpT"))->Fill(KT4index, q4, pt2);
+			((TH3D*)fOutputList->FindObject("fQ4AvgpT"))->Fill(KT4index, q4, pt3);
+			((TH3D*)fOutputList->FindObject("fQ4AvgpT"))->Fill(KT4index, q4, pt4);
+		      }
 		    }
 		  }
 		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6) ((TH3D*)fOutputList->FindObject("fKT4DistTerm13"))->Fill(fMbin+1, KT4, q4);
