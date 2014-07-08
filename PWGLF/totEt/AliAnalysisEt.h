@@ -101,6 +101,11 @@ public:
         fCentrality = cent;
     }
 
+    /** Get min ET correction */
+    Double_t GetMinEtCorrection(Int_t clusterMultiplicity) {
+        return fTmCorrections->GetMinEtCorrection(clusterMultiplicity);
+    }
+
     /** Get contribution from non-removed charged particles */
     Double_t GetChargedContribution(Int_t clusterMultiplicity) {
         return fTmCorrections->ChargedContr(clusterMultiplicity);
