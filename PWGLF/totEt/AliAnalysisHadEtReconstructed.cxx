@@ -337,7 +337,9 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     doublediff = (Int_t) AliPWG0Helper::kDD;
     singlediff = (Int_t) AliPWG0Helper::kSD;
   }
-  if(eventtype == nondiff && fGoodEvent){
+//  cout<<"event type "<<eventtype<<" nondiff event type "<<nondiff<<" data set "<<fDataSet<<" good event "<<fGoodEvent<<endl;
+  if((eventtype == nondiff|| fDataSet==20100 || fDataSet==2011)  && fGoodEvent){
+    //cout<<"Filling "<<endl;
     FillHisto1D("RecoHadEtFullAcceptanceTPCND",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
     FillHisto1D("RecoPiKPEtFullAcceptanceTPCND",GetCorrectedPiKPEtFullAcceptanceTPC(),1.0);
     FillHisto1D("RecoTotEtFullAcceptanceTPCND",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
