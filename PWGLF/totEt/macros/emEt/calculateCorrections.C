@@ -251,18 +251,37 @@ int calculateCorrections(TString filename="rootFiles/LHC11a10a_bis/Et.ESD.simPbP
   Float_t hadroncorr = 0;
   Float_t kaoncorr = 0;
   Float_t secondarycorr = 0;
+  Float_t minetcorr = 0;
+  Float_t junk = 0;
   i=0;
   if (myfile.is_open()){
     while ( myfile.good() )
       {
 	getline (myfile,inline);
 	istringstream tmp(inline);
-	tmp >> neutroncorr;
-	tmp >> hadroncorr;
-	tmp >> kaoncorr;
-	tmp >> secondarycorr;
+// 	tmp >> neutroncorr;
+// 	tmp >> hadroncorr;
+// 	tmp >> kaoncorr;
+// 	tmp >> secondarycorr;
+
+	tmp >> junk;
+	tmp >> junk;
+	tmp >> junk;
+	tmp >> junk;
+	tmp >> minetcorr;
+	tmp >> junk;//phosMinEtError[i];
+	tmp >> junk;//phosNonLinError[i];
+	tmp >> neutroncorr;//phosNeutronCorr[i];
+	tmp >> junk;//phosNeutronError[i];
+	tmp >> hadroncorr;//phosHadronCorr[i];
+	tmp >> junk;//phosHadronError[i];
+	tmp >> kaoncorr;//phosKaonCorr[i];
+	tmp >> junk;//phosKaonError[i];
+	tmp >> secondarycorr;//phosSecondaryCorr[i];
+	tmp >> junk;//phosSecondaryError[i];
 	if(i<20){
-	  //cout<<" cb "<<i<<" "<<neutroncorr<<" "<<hadroncorr<<" "<<kaoncorr<<" "<<secondarycorr<<endl;
+	  //cout<<" cb "<<i<<" "<<minetcorr<<" "<<neutroncorr<<" "<<hadroncorr<<" "<<kaoncorr<<" "<<secondarycorr<<endl;
+	  cor->SetMinEtCorrection(i,minetcorr);
  	  cor->SetNeutronCorrection(i,neutroncorr);
  	  cor->SetHadronCorrection(i,hadroncorr);
  	  cor->SetKaonCorrection(i,kaoncorr);
