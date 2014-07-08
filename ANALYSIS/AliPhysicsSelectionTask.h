@@ -22,6 +22,7 @@ class AliPhysicsSelectionTask : public AliAnalysisTaskSE {
     virtual void   UserExec(Option_t*);
     virtual void   FinishTaskOutput();
     virtual void   Terminate(Option_t*);
+    virtual void   NotifyRun();
 
     void SetOption(const char* opt) { fOption = opt; }
     
@@ -35,7 +36,6 @@ class AliPhysicsSelectionTask : public AliAnalysisTaskSE {
     TString fOption;                 // option string  
     Bool_t  fUseSpecialOutput;       // do we use special output instead of merging?
     AliPhysicsSelection* fPhysicsSelection; // event selection class
-
  private:
     AliPhysicsSelectionTask(const AliPhysicsSelectionTask&);
     AliPhysicsSelectionTask& operator=(const AliPhysicsSelectionTask&);

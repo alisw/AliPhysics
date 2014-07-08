@@ -131,6 +131,7 @@ ClassImp(AliPhysicsSelection)
 
 AliPhysicsSelection::AliPhysicsSelection() :
   AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
+  fPassName(""),
   fCurrentRun(-1),
   fMC(kFALSE),
   fCollTrigClasses(),
@@ -906,7 +907,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     AliInfo("Using Standard OADB");
     AliOADBContainer * psContainer = (AliOADBContainer*) foadb->Get("physSel");
     if (!psContainer) AliFatal("Cannot fetch OADB container for Physics selection");
-    fPSOADB = (AliOADBPhysicsSelection*) psContainer->GetObject(runNumber, fIsPP ? "oadbDefaultPP" : "oadbDefaultPbPb");
+    fPSOADB = (AliOADBPhysicsSelection*) psContainer->GetObject(runNumber, fIsPP ? "oadbDefaultPP" : "oadbDefaultPbPb",fPassName);
     if (!fPSOADB) AliFatal(Form("Cannot find physics selection object for run %d", runNumber));
   } else {
     AliInfo("Using Custom OADB");
@@ -914,13 +915,13 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
   if(!fFillOADB || !fUsingCustomClasses) { // if it's already set and custom class is required, we use the one provided by the user
     AliOADBContainer * fillContainer = (AliOADBContainer*) foadb->Get("fillScheme");
     if (!fillContainer) AliFatal("Cannot fetch OADB container for filling scheme");
-    fFillOADB = (AliOADBFillingScheme*) fillContainer->GetObject(runNumber, "Default");
+    fFillOADB = (AliOADBFillingScheme*) fillContainer->GetObject(runNumber, "Default",fPassName);
     if (!fFillOADB) AliFatal(Form("Cannot find  filling scheme object for run %d", runNumber));
   }
   if(!fTriggerOADB || !fUsingCustomClasses) { // if it's already set and custom class is required, we use the one provided by the user
     AliOADBContainer * triggerContainer = (AliOADBContainer*) foadb->Get("trigAnalysis");
     if (!triggerContainer) AliFatal("Cannot fetch OADB container for trigger analysis");
-    fTriggerOADB = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(runNumber, "Default");
+    fTriggerOADB = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(runNumber, "Default",fPassName);
     fTriggerOADB->Print();
     if (!fTriggerOADB) AliFatal(Form("Cannot find  trigger analysis object for run %d", runNumber));
   }
