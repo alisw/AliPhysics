@@ -872,6 +872,10 @@ void AliMCEvent::AssignGeneratorIndex() {
   // Assign the generator index to each particle
   //
   TList* list = GetCocktailList();
+  if (fNprimaries <= 0) {
+    AliWarning(Form("AliMCEvent::AssignGeneratorIndex: no primaries %10d\n", fNprimaries));
+    return;
+}
   if (!list) {
     return;
   } else {
@@ -890,6 +894,11 @@ void AliMCEvent::AssignGeneratorIndex() {
       // Loop over primary particles for generator i
       for (Int_t j = nsumpart-1; j >= nsumpart-npart; j--) {
 	AliVParticle* part = GetTrack(j);
+	if (!part) {
+	  AliWarning(Form("AliMCEvent::AssignGeneratorIndex: 0-pointer to particle j %8d npart %8d nsumpart %8d Nprimaries %8d\n", 
+			  j, npart, nsumpart, fNprimaries));
+	  break;
+	}
 	part->SetGeneratorIndex(i);
 	Int_t dmin = part->GetFirstDaughter();
 	Int_t dmax = part->GetLastDaughter();
