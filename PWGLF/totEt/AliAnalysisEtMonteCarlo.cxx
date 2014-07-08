@@ -762,7 +762,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                 Double_t et = part->Energy() * TMath::Sin(part->Theta()) + particleMassPart;
 
 
-                if(code == fgGammaCode || code == fgPi0Code || code == fgEtaCode)
+                if(code == fgGammaCode || code == fgPi0Code || code == fgEtaCode || code==fgOmega0Code || code==fgEPlusCode || code==fgEMinusCode)
                 {
 
                     if(fSelector->CutGeometricalAcceptance(*part) )

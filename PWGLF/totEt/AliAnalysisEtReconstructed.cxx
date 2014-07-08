@@ -553,7 +553,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fGammaEnergyAdded = GetGammaContribution(fNeutralMultiplicity);
     fHistGammaEnergyAdded->Fill(fGammaEnergyAdded, fNeutralMultiplicity);
 
-    Double_t removedEnergy = GetChargedContribution(fNeutralMultiplicity) + GetNeutralContribution(fNeutralMultiplicity) + GetGammaContribution(fNeutralMultiplicity) + GetSecondaryContribution(fNeutralMultiplicity);
+    Double_t removedEnergy = GetChargedContribution(cent) + GetNeutralContribution(cent) + GetGammaContribution(cent) + GetSecondaryContribution(cent);//fNeutralMultiplicity
     fHistRemovedEnergy->Fill(removedEnergy);
     
     fTotNeutralEtAcc = fTotNeutralEt;
@@ -567,7 +567,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fHistTotAllRawEtEffCorr->Fill(fTotAllRawEtEffCorr,cent);
     //cout<<"fTotAllRawEtEffCorr "<<fTotAllRawEtEffCorr<<" fTotAllRawEt "<<fTotAllRawEt<<" fTotRawEtEffCorr "<<fTotRawEtEffCorr<<"("<<fTotNeutralEt<<")"<<" fTotRawEt "<<fTotRawEt<<endl;
     //cout<<"uncorr "<<uncorrEt<<" raw "<<nominalRawEt<<" tot raw "<<fTotNeutralEt;
-    fTotNeutralEt = fGeomCorrection * fEMinCorrection * (fTotNeutralEt - removedEnergy);
+    fTotNeutralEt =  (fTotNeutralEt - removedEnergy)/GetMinEtCorrection(cent);
     //cout<<" tot corr "<<fTotNeutralEt<<endl;
     fTotEt = fTotChargedEt + fTotNeutralEt;
 // Fill the histograms...0
