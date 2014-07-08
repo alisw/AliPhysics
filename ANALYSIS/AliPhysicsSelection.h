@@ -105,6 +105,7 @@ public:
   
   static const char * GetOADBFileName() {   static TString filename; filename.Form("%s/COMMON/PHYSICSSELECTION/data/physicsSelection.root", AliAnalysisManager::GetOADBPath()); return filename.Data();};
 
+  void SetPassName(const TString passName) { fPassName = passName; }
 protected:
   UInt_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const;
   Bool_t EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline);
@@ -112,7 +113,7 @@ protected:
   Int_t GetStatRow(const char * triggerBXClass, UInt_t offlineTriggerType, UInt_t ** rowIDs) const;
   const char * GetTriggerString(TObjString * obj);
 
-
+  TString fPassName;      // pass name for current run
   Int_t fCurrentRun;      // run number for which the object is initialized
   Bool_t fMC;             // flag if MC is analyzed
   TList fCollTrigClasses; // trigger class identifying collision candidates
@@ -153,7 +154,7 @@ protected:
   TPRegexp* fRegexp; //! regular expression for trigger tokens
   TList* fCashedTokens; //! trigger token lookup list
 
-  ClassDef(AliPhysicsSelection, 15)
+  ClassDef(AliPhysicsSelection, 16)
     
     private:
   AliPhysicsSelection(const AliPhysicsSelection&);

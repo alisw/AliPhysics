@@ -131,6 +131,7 @@ ClassImp(AliPhysicsSelection)
 
 AliPhysicsSelection::AliPhysicsSelection() :
   AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
+  fPassName(""),
   fCurrentRun(-1),
   fMC(kFALSE),
   fCollTrigClasses(),
