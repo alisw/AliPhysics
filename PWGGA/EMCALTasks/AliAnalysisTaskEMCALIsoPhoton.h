@@ -70,7 +70,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                  SetEtPtHistoBinning(Int_t n, 
 					    Double_t lowx, 
 					    Double_t highx)     { fNBinsPt = n; fPtBinLowEdge = lowx; fPtBinHighEdge = highx; }
-
+  void                  SetRemoveMatchClus(Bool_t b)            { fRemMatchClus       = b;       }
+  void                  SetMinIsoClusE(Double_t emin)           { fMinIsoClusE        = emin;    }
 
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
@@ -111,6 +112,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  fNBinsPt;               // set the number of bins in axis of histograms filled with pt (or Et)
   Double_t               fPtBinLowEdge;          // low edge of the first pt (Et) bin
   Double_t               fPtBinHighEdge;         // high edge of the first pt (Et) bin
+  Bool_t                 fRemMatchClus;          // flag to remove completely a cluster matched from the isolation
+  Double_t               fMinIsoClusE;           // minimum energy for a cluster to be counted in the iso cone
   Int_t                  fNCuts;                 // number of cuts (QA purposes)
   TString                fCuts;                  //string to hol cuts names
 
