@@ -141,6 +141,7 @@ void AliPhysicsSelectionTask::Terminate(Option_t *)
 }
 
 void AliPhysicsSelectionTask::NotifyRun(){
+  if (fPhysicsSelection->IsMC()) return;
   TObject* prodInfoData = fInputHandler->GetUserInfo()->FindObject("alirootVersion");
   TString filePath;
   if (prodInfoData) {
@@ -163,6 +164,7 @@ void AliPhysicsSelectionTask::NotifyRun(){
   }
 
   TString passName="";
+
   TObjArray* tokens = filePath.Tokenize("/");
   for (Int_t i=0;i<=tokens->GetLast();i++) {
     TObjString* stObj = (TObjString*) tokens->At(i);
@@ -181,7 +183,7 @@ void AliPhysicsSelectionTask::NotifyRun(){
     AliError("      --> If these are real data: ");
     AliError("          (a) please insert pass number inside the path of your local file OR");
     AliError("          (b) specify reconstruction pass number when adding physics selection task");
-    AliFatal(" no pass number specified for this data file, abort. Asserting AliFatal");
+    AliError(" Using default pass parameters for physics selection (PS will probably fail for LHC10h pass1 and pass2 data)!");
   }
   fPhysicsSelection->SetPassName(passName);
 }
