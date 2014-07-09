@@ -106,9 +106,8 @@ const TString& AliMpTriggerReader::GetKeywordFlipY()
 //
 
 //_____________________________________________________________________________
-AliMpTriggerReader::AliMpTriggerReader(const AliMpDataStreams& dataStreams, AliMpSlatMotifMap* motifMap) 
+AliMpTriggerReader::AliMpTriggerReader(AliMpSlatMotifMap* motifMap)
 : TObject(),
-  fkDataStreams(dataStreams),
   fMotifMap(motifMap),
   fLocalBoardMap()
 {
@@ -129,7 +128,8 @@ AliMpTriggerReader::~AliMpTriggerReader()
 
 //_____________________________________________________________________________
 AliMpSlat*
-AliMpTriggerReader::BuildSlat(const char* slatName,
+AliMpTriggerReader::BuildSlat(const AliMpDataStreams&  dataStreams, 
+                              const char* slatName,
                               AliMp::PlaneType planeType,
                               const TList& lines,
                               Double_t scale)
@@ -178,7 +178,7 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
         pcbName = s.str().c_str();
       }
       
-      AliMpPCB* pcbType = ReadPCB(pcbName.Data());	  
+      AliMpPCB* pcbType = ReadPCB(dataStreams, pcbName.Data());
       if (!pcbType)
       {
         AliErrorClass(Form("Cannot read pcbType=%s",pcbName.Data()));
@@ -205,7 +205,7 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
           std::ostringstream name;
           name << localBoards(0,pos-1) << localBoardNumbers[i];
           AliDebugClass(3,name.str().c_str());
-          localBoardNumbers[i] = LocalBoardNumber(name.str().c_str());
+          localBoardNumbers[i] = LocalBoardNumber(dataStreams,name.str().c_str());
           AliDebugClass(3,Form("LOCALBOARDNUMBER %d\n",localBoardNumbers[i]));
           allLocalBoards.Set(allLocalBoards.GetSize()+1);
           allLocalBoards[allLocalBoards.GetSize()-1] = localBoardNumbers[i];
@@ -258,7 +258,8 @@ AliMpTriggerReader::GetBoardNameFromPCBLine(const TString& s)
   
 //_____________________________________________________________________________
 void
-AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
+AliMpTriggerReader::FlipLines(const AliMpDataStreams&  dataStreams,
+                              TList& lines, Bool_t flipX, Bool_t flipY,
                               Int_t srcLine, Int_t destLine)
 {
   ///
@@ -349,7 +350,7 @@ AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
               {
                 std::ostringstream bs;
                 bs << boardName(0,boardName.Length()-1) << b;
-                if ( LocalBoardNumber(bs.str().c_str()) >= 0 )
+                if ( LocalBoardNumber(dataStreams,bs.str().c_str()) >= 0 )
                 {
                   AliDebugClass(4,Form("Replacing %s by %s in %s\n",
                                   boardName(boardName.Length()-2,2).Data(),
@@ -364,7 +365,7 @@ AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
             }  
             // Check that the replacement we did is ok. If not,
             // skip the line.
-            Int_t lbn = LocalBoardNumber(GetBoardNameFromPCBLine(s));
+            Int_t lbn = LocalBoardNumber(dataStreams,GetBoardNameFromPCBLine(s));
             if ( lbn < 0 )
             {
               AliDebugClass(4,Form("Removing line %s\n",s.Data()));
@@ -474,13 +475,14 @@ AliMpTriggerReader::GetLine(const TString& slatType)
 
 //_____________________________________________________________________________
 int
-AliMpTriggerReader::LocalBoardNumber(const char* localBoardName)
+AliMpTriggerReader::LocalBoardNumber(const AliMpDataStreams&  dataStreams,
+                                     const char* localBoardName)
 {
   /// From local board name to local board number
 
   if ( !fLocalBoardMap.GetSize() ) 
   {
-    ReadLocalBoardMapping();
+    ReadLocalBoardMapping(dataStreams);
   }
   
   TPair* pair = (TPair*)fLocalBoardMap.FindObject(localBoardName);
@@ -494,7 +496,8 @@ AliMpTriggerReader::LocalBoardNumber(const char* localBoardName)
 
 //_____________________________________________________________________________
 void 
-AliMpTriggerReader::ReadLines(const char* slatType,
+AliMpTriggerReader::ReadLines(const AliMpDataStreams&  dataStreams,
+                              const char* slatType,
                               AliMp::PlaneType planeType,
                               TList& lines,
                               Double_t& scale,
@@ -511,7 +514,7 @@ AliMpTriggerReader::ReadLines(const char* slatType,
                        srcLine,destLine));
   
   istream& in 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::SlatFilePath(
                              AliMp::kStationTrigger,slatType, planeType));
   
@@ -550,7 +553,8 @@ AliMpTriggerReader::ReadLines(const char* slatType,
     }
     else if ( isScaleLine > 0 && slatType2 != slatType )
     {
-      ReadLines(slatType2.Data(),planeType,lines,scale,flipX,flipY,srcLine,destLine);
+      ReadLines(dataStreams,
+                slatType2.Data(),planeType,lines,scale,flipX,flipY,srcLine,destLine);
     }
     else    
     {
@@ -566,7 +570,8 @@ AliMpTriggerReader::ReadLines(const char* slatType,
         }
         flipX |= fx;
         flipY |= fy;
-        ReadLines(slatType2.Data(),planeType,lines,scale,flipX,flipY,srcLine,destLine);
+        ReadLines(dataStreams,
+                  slatType2.Data(),planeType,lines,scale,flipX,flipY,srcLine,destLine);
       }
       else
       {
@@ -580,7 +585,7 @@ AliMpTriggerReader::ReadLines(const char* slatType,
                                         
 //_____________________________________________________________________________
 void
-AliMpTriggerReader::ReadLocalBoardMapping()
+AliMpTriggerReader::ReadLocalBoardMapping(const AliMpDataStreams&  dataStreams)
 {
   /// Reads the file that contains the mapping local board name <-> number
 
@@ -589,7 +594,7 @@ AliMpTriggerReader::ReadLocalBoardMapping()
   UShort_t mask;
   
   istream& in 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::LocalTriggerBoardMapping());
 
   char line[80];
@@ -633,7 +638,8 @@ AliMpTriggerReader::ReadLocalBoardMapping()
 
 //_____________________________________________________________________________
 AliMpPCB*
-AliMpTriggerReader::ReadPCB(const char* pcbType)
+AliMpTriggerReader::ReadPCB(const AliMpDataStreams&  dataStreams,
+                            const char* pcbType)
 { 
   ///
   /// Create a new AliMpPCB object, by reading it from file.
@@ -654,12 +660,11 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
   }
   
   istream& in 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::SlatPCBFilePath(
                              AliMp::kStationTrigger,pcbName));
  
-  AliMpMotifReader reader(fkDataStreams,
-                          AliMp::kStationTrigger, AliMq::kNotSt12, AliMp::kNonBendingPlane); 
+  AliMpMotifReader reader(AliMp::kStationTrigger, AliMq::kNotSt12, AliMp::kNonBendingPlane); 
   // note that the nonbending
   // parameter is of no use for trigger, as far as reading motif is 
   // concerned, as all motifs are supposed to be in the same directory
@@ -717,7 +722,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
         {
           AliDebug(1,Form("Reading motifType %s (%s) from file",
                           sMotifType.Data(),id.Data()));
-          motifType = reader.BuildMotifType(sMotifType.Data());
+          motifType = reader.BuildMotifType(dataStreams,sMotifType.Data());
           fMotifMap->AddMotifType(motifType);
         }
         else
@@ -725,7 +730,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
           AliDebug(1,Form("Got motifType %s (%s) from motifMap",
                           sMotifType.Data(),id.Data()));        
         }
-        specialMotif = reader.BuildMotifSpecial(sMotifSpecial,motifType,scale);
+        specialMotif = reader.BuildMotifSpecial(dataStreams,sMotifSpecial,motifType,scale);
         fMotifMap->AddMotif(specialMotif);
       }
       else
@@ -752,7 +757,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
       if ( !motifType)
       {
         AliDebug(1,Form("Reading motifType %s from file",sMotifType.Data()));
-        motifType = reader.BuildMotifType(sMotifType.Data());
+        motifType = reader.BuildMotifType(dataStreams,sMotifType.Data());
         fMotifMap->AddMotifType(motifType);
       }
       else
@@ -776,7 +781,8 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
 
 //_____________________________________________________________________________
 AliMpTrigger*
-AliMpTriggerReader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
+AliMpTriggerReader::ReadSlat(const AliMpDataStreams&  dataStreams,
+                             const char* slatType, AliMp::PlaneType planeType)
 {
   ///
   /// Create a new AliMpTrigger object, by reading it from file.
@@ -792,7 +798,8 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
   
   // Read the file and its include (if any) and store the result
   // in a TObjArray of TObjStrings.
-  ReadLines(slatType,planeType,lines,scale,flipX,flipY,srcLine,destLine);
+  ReadLines(dataStreams,
+            slatType,planeType,lines,scale,flipX,flipY,srcLine,destLine);
 
   // Here some more sanity checks could be done.
   // For the moment we only insure that the first line contains 
@@ -807,7 +814,7 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
   
   AliDebugClass(2,Form("Scale=%g\n",scale));
   
-  FlipLines(lines,flipX,flipY,srcLine,destLine);
+  FlipLines(dataStreams,lines,flipX,flipY,srcLine,destLine);
   
   // Now splits the lines in packets corresponding to different layers 
   // (if any), and create sub-slats.
@@ -842,7 +849,8 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
     TList& lines1 = *((TList*)layers.At(ilayer));
     std::ostringstream slatName;
     slatName << slatType << "-LAYER" << ilayer;
-    AliMpSlat* slat = BuildSlat(slatName.str().c_str(),planeType,lines1,scale);
+    AliMpSlat* slat = BuildSlat(dataStreams,
+                                slatName.str().c_str(),planeType,lines1,scale);
     if ( slat )
     {
       Bool_t ok = triggerSlat->AdoptLayer(slat);

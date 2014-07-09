@@ -34,15 +34,16 @@ class AliMpDataStreams;
 class AliMpMotifReader : public TObject
 {
   public:
-    AliMpMotifReader(const AliMpDataStreams& dataStreams,
-                     AliMp::StationType station, 
+    AliMpMotifReader(AliMp::StationType station,
                      AliMq::Station12Type station12,
                      AliMp::PlaneType plane);
     virtual ~AliMpMotifReader();
   
     // methods   
-    AliMpMotifType*     BuildMotifType(const TString& motifTypeId);
-    AliMpMotifSpecial*  BuildMotifSpecial(const TString& motifID,
+    AliMpMotifType*     BuildMotifType(const AliMpDataStreams& dataStreams,
+                                       const TString& motifTypeId);
+    AliMpMotifSpecial*  BuildMotifSpecial(const AliMpDataStreams& dataStreams,
+                                          const TString& motifID,
                                           AliMpMotifType* motifType,
                                           Double_t scale=1.0);
     TString MotifSpecialName(const TString& motifID, Double_t scale);
@@ -56,7 +57,6 @@ class AliMpMotifReader : public TObject
     AliMpMotifReader&  operator = (const AliMpMotifReader& right);
 
     // data members  
-    const AliMpDataStreams& fkDataStreams;///< data streams
     AliMp::StationType    fStationType;   ///< station type 
     AliMq::Station12Type  fStation12Type; ///< station12 type 
     AliMp::PlaneType      fPlaneType;     ///< plane type 
