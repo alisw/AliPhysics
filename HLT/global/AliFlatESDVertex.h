@@ -17,7 +17,6 @@
 class AliFlatESDVertex: public AliVVvertex
 //class AliFlatESDVertex
 {
- friend class AliFlatESDEvent;
  public:
   Double32_t fPosition[3];    // vertex position
   Double32_t fCov[6];  // vertex covariance matrix
@@ -37,7 +36,11 @@ class AliFlatESDVertex: public AliVVvertex
   }
 
   void Set(const AliESDVertex &v );
-
+  
+  void Reinitialize(){
+  	new (this) AliFlatESDVertex(AliFlatESDReinitialize);
+  }
+  
   Double32_t GetX() const { return fPosition[0]; }
   Double32_t GetY() const { return fPosition[1]; }
   Double32_t GetZ() const { return fPosition[2]; }
@@ -97,8 +100,7 @@ class AliFlatESDVertex: public AliVVvertex
 
  private:
   
-	AliFlatESDVertex(AliFlatESDSpecialConstructorFlag f);
- 
+	AliFlatESDVertex(AliFlatESDSpecialConstructorFlag){}
 };
 
 #endif

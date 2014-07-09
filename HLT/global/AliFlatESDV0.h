@@ -15,16 +15,17 @@
 
 class AliFlatESDV0: public AliVVv0
 {
- friend class AliFlatESDEvent;
  public:
   AliFlatESDV0();
   virtual ~AliFlatESDV0() {}
+  void Reinitialize(){
+  	new (this) AliFlatESDV0(AliFlatESDReinitialize);
+  }
   Int_t fNegTrackID;
   Int_t fPosTrackID;
  private:
- 	AliFlatESDV0(AliFlatESDSpecialConstructorFlag f );
+ 	AliFlatESDV0(AliFlatESDSpecialConstructorFlag){}
 };
-
 //typedef struct AliFlatESDV0 AliFlatESDV0;
 
 #endif

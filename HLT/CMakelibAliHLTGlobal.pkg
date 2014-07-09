@@ -50,8 +50,6 @@ set ( CLASS_HDRS
     AliFlatESDVertex.h
     AliFlatESDTrack.h
     AliFlatESDV0.h
-    AliFlatExternalTrackParam.h
-    AliFlatTPCCluster.h
     AliFlatESDFriend.h
     AliFlatESDFriendTrack.h
     physics/AliHLTV0HistoComponent.h

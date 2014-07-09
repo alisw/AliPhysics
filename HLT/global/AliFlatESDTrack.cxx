@@ -56,32 +56,33 @@ AliFlatESDTrack::AliFlatESDTrack() :
 }
 
 // _______________________________________________________________________________________________________
-AliFlatESDTrack::AliFlatESDTrack(AliFlatESDSpecialConstructorFlag f)
+void AliFlatESDTrack::Reinitialize()
 {
-  //special contructor
-  //use to restore the vtable pointer
+//
+// Initializing function
+//
+// to be called after track is received via reinterpret_cast from memory
   
-  if(f == AliFlatESDReinitialize){
+  
+  	new (this) AliFlatESDTrack(AliFlatESDReinitialize);
 		AliFlatExternalTrackParam* trackParam = GetTrackParamRefitted();
-		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		if (trackParam) { trackParam->Reinitialize(); }
 		trackParam = GetTrackParamIp();
-		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		if (trackParam) { trackParam->Reinitialize(); }
 		trackParam = GetTrackParamTPCInner();
-		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		if (trackParam) { trackParam->Reinitialize(); }
 		trackParam = GetTrackParamOp();
-		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		if (trackParam) { trackParam->Reinitialize(); }
 		trackParam = GetTrackParamCp();
-		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		if (trackParam) { trackParam->Reinitialize(); }
 		trackParam = GetTrackParamITSOut();
-		if (trackParam) { new (trackParam) AliFlatExternalTrackParam(f); }
+		if (trackParam) { trackParam->Reinitialize(); }
 		
 		AliFlatTPCCluster* clusterTPC = GetTPCClusters();
 		for (Int_t i=0; i<fNTPCClusters; i++){
-		  new (clusterTPC) AliFlatTPCCluster(f);
+		  clusterTPC->Reinitialize();
 		  clusterTPC++;
 		 }
-	}
-	else AliFlatESDTrack();
 }
 
 // _______________________________________________________________________________________________________

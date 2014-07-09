@@ -15,7 +15,6 @@
 
 class AliFlatTPCCluster: public AliVVcluster
 {
- friend class AliFlatESDTrack;
   public:
   void SetX(Float_t x)             {fX = x;}
   void SetY(Float_t y)             {fY = y;}
@@ -25,6 +24,10 @@ class AliFlatTPCCluster: public AliVVcluster
   void SetSigmaZ2(Float_t sigmaZ2) {fSigmaZ2 = sigmaZ2;}
   void SetCharge(UShort_t charge)  {fCharge = charge;}
   void SetQMax(UShort_t qmax)      {fQMax = qmax;}
+  
+  void Reinitialize(){
+  	new (this) AliFlatTPCCluster(AliFlatESDReinitialize);
+  }
 
   Float_t  GetX()       const      {return fX;}
   Float_t  GetY()       const      {return fY;}
@@ -46,7 +49,7 @@ class AliFlatTPCCluster: public AliVVcluster
   }
   
   private:
-  AliFlatTPCCluster(AliFlatESDSpecialConstructorFlag);
+  AliFlatTPCCluster(AliFlatESDSpecialConstructorFlag){}
   virtual ~AliFlatTPCCluster() {}
   Float_t fX;       // X coordinate in local coordinates
   Float_t fY;       // Y coordinate in local coordinates

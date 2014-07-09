@@ -120,12 +120,7 @@ class AliFlatESDEvent: public AliVVevent {
 //
 // to be called after event is received via reinterpret_cast from memory
 
-void Reinitialize()
-  {
-    new (this) AliFlatESDEvent(AliFlatESDReinitialize);
-  }
-
-
+void Reinitialize();
 
  private:
   AliFlatESDEvent(const AliFlatESDEvent&);
@@ -134,7 +129,7 @@ void Reinitialize()
 // special constructor, to be called by placement new,
 // when accessing information after reinterpret_cast
 // so that vtable is generated, but values are not overwritten
-	AliFlatESDEvent(AliFlatESDSpecialConstructorFlag);
+	AliFlatESDEvent(AliFlatESDSpecialConstructorFlag){}
 
   void FillPrimaryVertex(const AliESDVertex *v, Byte_t flag);
   Int_t FillNextTrack( const AliESDtrack* esdTrack,  AliESDfriendTrack* friendTrack);
