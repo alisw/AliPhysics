@@ -73,10 +73,11 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
 
   // Weights:              
   void SetWeightsHist(TH1D* const hist, const char *type, const char *variable); // .cxx
-  TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)
+  TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production)
   {
+   fProduction = TString(production);
    AliFlowAnalysisWithMultiparticleCorrelations *mpc = new AliFlowAnalysisWithMultiparticleCorrelations();
-   return mpc->GetHistogramWithWeights(filePath,listName,type,variable);
+   return mpc->GetHistogramWithWeights(filePath,listName,type,variable,production);
   };
 
   // Correlations:
@@ -187,6 +188,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Weights:
   Bool_t fUseWeights[2][3]; // use weights [RP,POI][phi,pt,eta]
   TH1D *fWeightsHist[2][3]; // histograms holding weights [RP,POI][phi,pt,eta]
+  TString fProduction;      // TBI most likely an overkill
 
   // Correlations:
   Bool_t fCalculateCorrelations;      // calculate and store correlations, or perhaps not, if the weather is bad...

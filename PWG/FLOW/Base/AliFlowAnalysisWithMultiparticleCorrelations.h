@@ -289,7 +289,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   static void DumpPointsForDurham(TH1D *h);
   static void DumpPointsForDurham(TH1F *h);
   virtual void DumpThePoints(AliFlowEventSimple *anEvent);
-  TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable);
+  TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production);
 
  private:
   AliFlowAnalysisWithMultiparticleCorrelations(const AliFlowAnalysisWithMultiparticleCorrelations& afawQc);
