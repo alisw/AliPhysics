@@ -47,17 +47,17 @@ const double kBinCent[kNCent+1] = {0.0,5.0,10.0,20.0,40.0};
 //  Inv. Mass width as function of the centrality
 //  Linear polimomial dependence: sigma(pt) = a0 * a1*pt
 
-const double kCteK0s2010[kNCent] = {0.00367, 0.00363, 0.00358, 0.00348};
-const double kLinearK0s2010[kNCent] = {6.148E-4, 5.937E-4, 5.741E-4, 5.693E-4};
+const double kCteK0s2010[kNCent] = {0.00348, 0.00351, 0.00346, 0.00318};
+const double kLinearK0s2010[kNCent] = {8.024E-4, 7.403E-4, 7.250E-4, 7.665E-4};
 
-const double kCteK0s2011[kNCent] = {0.00354, 0.00348, 0.00360, 0.00352};
-const double kLinearK0s2011[kNCent] = {6.526E-4, 6.497E-4, 5.853E-4, 5.808E-4};
+const double kCteK0s2011[kNCent] = {0.00338, 0.00328, 0.00333, 0.00326};
+const double kLinearK0s2011[kNCent] = {8.336E-4, 8.385E-4, 7.891E-4, 7.851E-4};
 
-const double kCteLambda2010[kNCent] = {0.00113, 0.00114, 0.00119, 0.00119};
-const double kLinearLambda2010[kNCent] = {3.062E-4, 2.900E-4, 2.629E-4, 2.440E-4};
+const double kCteLambda2010[kNCent] = {0.00145, 0.00122, 0.00140, 0.00135};
+const double kLinearLambda2010[kNCent] = {2.233E-4, 2.836-4, 2.105-4, 2.076E-4};
 
-const double kCteLambda2011[kNCent] = {9.81E-4, 9.212E-4, 9.876E-4, 0.00106};
-const double kLinearLambda2011[kNCent] = {3.878E-4, 3.965E-4, 3.611E-4 , 3.351E-4};
+const double kCteLambda2011[kNCent] = {0.00130, 0.00123, 0.00114, 0.00121};
+const double kLinearLambda2011[kNCent] = {3.002E-4, 3.067E-4, 3.207E-4, 2.813E-4};
 
 const double kCteAntiLambda2010[kNCent] = {0.00109, 0.00134, 0.00117, 0.00116};
 const double kLinearAntiLambda2010[kNCent] = {3.245E-4, 2.308E-4, 2.707E-4, 2.562E-4};
