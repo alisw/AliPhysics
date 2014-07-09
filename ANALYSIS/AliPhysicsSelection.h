@@ -106,6 +106,7 @@ public:
   static const char * GetOADBFileName() {   static TString filename; filename.Form("%s/COMMON/PHYSICSSELECTION/data/physicsSelection.root", AliAnalysisManager::GetOADBPath()); return filename.Data();};
 
   void SetPassName(const TString passName) { fPassName = passName; }
+  Bool_t IsMC() const { return fMC; }
 protected:
   UInt_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const;
   Bool_t EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline);
