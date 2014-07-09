@@ -388,7 +388,6 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   TH1D* fhEventsTriggerSel; //! Histo holding the number of events passing trigger selection
   TH1D* fhEventsTriggerSelVtxCut; //! Histo holding the number of events passing trigger selection and vtx cut
   
-  TH2D* fhSkippedTracksForSignalGeneration; //! Number of tracks that have been skipped for the signal generation
   THnSparseD* fhMCgeneratedYieldsPrimaries; //! Histo holding the generated (no reco, no cuts) primary particle yields in considered eta range
   
   TH2D* fh2FFJetPtRec;            //! Number of reconstructed jets vs. jetPt and centrality
