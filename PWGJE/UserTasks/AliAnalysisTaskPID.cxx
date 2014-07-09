@@ -14,11 +14,11 @@
 
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
-#include "AliESDInputHandler.h"
+#include "AliESDtrackCuts.h"
+#include "AliAnalysisFilter.h"
 #include "AliInputEventHandler.h"
 
 #include "AliVVertex.h"
-#include "AliAnalysisFilter.h"
 #include "AliPID.h"
 #include "AliPIDCombined.h"
 #include "AliPIDResponse.h"
@@ -594,8 +594,17 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
            26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };
   
   const Int_t nCentBins = 12;
-  //-1 for pp; 90-100 has huge electro-magnetic impurities
-  Double_t binsCent[nCentBins+1] = {-1, 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 }; 
+  //-1 for pp (unless explicitely requested); 90-100 has huge electro-magnetic impurities
+  Double_t binsCent[nCentBins+1] =                {-1, 0,  5, 10, 20, 30, 40, 50, 60, 70, 80,  90, 100 };
+  
+  // This centrality estimator deals with integers! This implies that the ranges are always [lowlim, uplim - 1]
+  Double_t binsCentITSTPCTracklets[nCentBins+1] = { 0, 7, 13, 20, 29, 40, 50, 60, 72, 83, 95, 105, 115 };
+  
+  if (fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0) {
+    // Special binning for this centrality estimator; but keep number of bins!
+    for (Int_t i = 0; i < nCentBins+1; i++)
+      binsCent[i] = binsCentITSTPCTracklets[i];
+  }
 
   const Int_t nJetPtBins = 11;
   Double_t binsJetPt[nJetPtBins+1] = {0, 2, 5, 10, 15, 20, 30, 40, 60, 80, 120, 200};
@@ -1003,8 +1012,21 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     return;
   
   Double_t centralityPercentile = -1;
-  if (fStoreCentralityPercentile)
-    centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
+  if (fStoreCentralityPercentile) {
+    if (fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0) {
+      // Special pp centrality estimator
+      AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esdEvent) {
+        AliError("Not esd event -> Cannot use tracklet multiplicity estimator!");
+        centralityPercentile = -1;
+      }
+      else {
+        centralityPercentile = AliESDtrackCuts::GetReferenceMultiplicity(esdEvent, AliESDtrackCuts::kTrackletsITSTPC, fEtaAbsCutUp);
+      }
+    }
+    else
+      centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
+  }
   
   IncrementEventCounter(centralityPercentile, kTriggerSel);
   
