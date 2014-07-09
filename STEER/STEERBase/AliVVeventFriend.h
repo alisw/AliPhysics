@@ -3,25 +3,26 @@
 
 class AliVVVZEROfriend;
 class AliVVTZEROfriend;
+class AliVVfriendTrack;
 
 //_____________________________________________________________________________
 class AliVVfriend {
 public:
-  AliVVfriend();
-  virtual ~AliVVfriendEvent();
+  AliVVfriend() {}
+  virtual ~AliVVfriend() {}
 
   virtual Int_t GetNumberOfTracks() const {return 0;}
   AliVVfriendTrack* GetTrack(Int_t /*i*/) const {return NULL;}
   virtual Int_t GetEntriesInTracks() const {return 0;}
   
-  virtual AliESDVZEROfriend *GetVZEROfriend(){ return NULL; }
-  virtual AliESDTZEROfriend *GetTZEROfriend(){ return NULL; }
+  virtual AliVVVZEROfriend *GetVZEROfriend(){ return NULL; }
+  virtual AliVVTZEROfriend *GetTZEROfriend(){ return NULL; }
 
-  virtual void Ls() {}
+  virtual void Ls() const {}
 
   virtual void Reset() {}
   
-  Bool_t TestSkipBit() {return kFALSE;}
+  Bool_t TestSkipBit() const { return kFALSE; }
 
   virtual Int_t GetNclustersTPC(UInt_t /*sector*/) const {return 0;}
   virtual Int_t GetNclustersTPCused(UInt_t /*sector*/) const {return 0;}

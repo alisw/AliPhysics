@@ -28,6 +28,7 @@
 #--------------------------------------------------------------------------------#
 
 set ( CLASS_HDRS
+    AliHLTGlobalFlatEsdTestComponent.h
     AliHLTGlobalFlatEsdConverterComponent.h
     AliHLTGlobalEsdConverterComponent.h
     AliHLTGlobalTrackMergerComponent.h
@@ -51,6 +52,8 @@ set ( CLASS_HDRS
     AliFlatESDV0.h
     AliFlatExternalTrackParam.h
     AliFlatTPCCluster.h
+    AliFlatESDFriend.h
+    AliFlatESDFriendTrack.h
     physics/AliHLTV0HistoComponent.h
     physics/AliHLTCaloHistoComponent.h
     physics/AliHLTCaloHistoProducer.h

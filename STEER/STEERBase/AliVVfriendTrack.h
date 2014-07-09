@@ -2,22 +2,28 @@
 #define ALIVVFRIENDTRACK_H
 
 //_____________________________________________________________________________
+
+class AliVVTPCseed;
+class AliVVTRDseed;
+class AliTrackPointArray;
+class AliExternalTrackParam;
+
 class AliVVfriendTrack {
 public:
-  AliVVfriendTrack();
-  virtual ~AliVVfriendTrack();
+  AliVVfriendTrack(){}
+  virtual ~AliVVfriendTrack(){}
 
   //used in calibration
   virtual AliVVTPCseed* GetTPCseed() const {return NULL;}
   virtual AliVVTRDseed* GetTRDseed() const {return NULL;}
-  virtual const AliTrackPointArray *GetTrackPointArray() const {return fPoints;}
-  virtual const AliExternalTrackParam * GetITSOut() const {return fITSOut;} 
-  virtual const AliExternalTrackParam * GetTPCOut() const {return  fTPCOut;} 
-  virtual const AliExternalTrackParam * GetTRDIn()  const {return fTRDIn;} 
+  virtual const AliTrackPointArray *GetTrackPointArray() const {return NULL;}
+  virtual const AliExternalTrackParam * GetITSOut() const {return NULL;} 
+  virtual const AliExternalTrackParam * GetTPCOut() const {return  NULL;} 
+  virtual const AliExternalTrackParam * GetTRDIn()  const {return NULL;} 
 
 private: 
-  AliVVfriendTrack(const AliVVfriendTrack &);
-  AliVVfriendTrack& operator=(const AliVVfriendTrack& esd);  
+  AliVVfriendTrack(const AliVVfriendTrack &){}
+  AliVVfriendTrack& operator=(const AliVVfriendTrack& ){}
 };
 
 #endif

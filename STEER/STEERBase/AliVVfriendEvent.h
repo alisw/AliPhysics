@@ -13,7 +13,7 @@ public:
   //used in calibration
   virtual Bool_t TestSkipBit() {return kFALSE;}
   virtual Int_t GetNumberOfTracks() const {return 0;}
-  virtual AliESDfriendTrack *GetTrack(Int_t /*i*/) const {return NULL;}
+  virtual const AliESDfriendTrack *GetTrack(Int_t /*i*/) const {return NULL;}
 
 private: 
   AliVVfriendEvent(const AliVVfriendEvent &);

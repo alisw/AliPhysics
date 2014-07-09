@@ -27,6 +27,7 @@
 #include "AliHLTConfigurationHandler.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "AliHLTGlobalFlatEsdTestComponent.h"
 
 // header files of library components
 #include "AliHLTGlobalTrackMergerComponent.h"
@@ -76,6 +77,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   // see header file for class documentation
   assert(pHandler);
   if (!pHandler) return -EINVAL;
+  pHandler->AddComponent(new AliHLTGlobalFlatEsdTestComponent);
   pHandler->AddComponent(new AliHLTGlobalTrackMergerComponent);
   pHandler->AddComponent(new AliHLTGlobalFlatEsdConverterComponent);
   pHandler->AddComponent(new AliHLTGlobalEsdConverterComponent);
@@ -162,6 +164,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
 
   pHandler->CreateConfiguration("GLOBAL-flat-esd-converter", "GlobalFlatEsdConverter", esdInputs.Data(), "");
   pHandler->CreateConfiguration("GLOBAL-esd-converter", "GlobalEsdConverter", esdInputs.Data(), "");
+  pHandler->CreateConfiguration("GLOBAL-flat-esd-test", "GlobalFlatEsdTest", "GLOBAL-esd-converter GLOBAL-flat-esd-converter", "");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
