@@ -125,10 +125,14 @@ Bool_t AliAODCaloCells::GetCellHighGain(Short_t cellNumber)
   if (pos>=0 && pos < fNCells && fCellNumber[pos] == cellNumber ) {
     if(fHGLG)
       return fHGLG[pos];
-    else //old version of AOD, 
-      return !(fMCLabel[pos]==-2) ;
+    else{
+      if(fMCLabel) //old version of AOD, 
+         return !(fMCLabel[pos]==-2) ;
+      else
+	 return kTRUE ;
+    }
   } else {
-    return 0.;
+    return kFALSE;
   }
 }
 
@@ -162,10 +166,14 @@ Bool_t AliAODCaloCells::GetHighGain(Short_t pos) const
   if (pos>=0 && pos<fNCells) {
     if(fHGLG)
       return fHGLG[pos];
-    else //Old version of AOD store this flag in MCLabel
-      return !(fMCLabel[pos]==-2) ;
+    else{
+      if(fMCLabel)    //Old version of AOD store this flag in MCLabel
+        return !(fMCLabel[pos]==-2) ;
+      else
+	return kTRUE ;
+    }
   } else {
-    return 0.;
+    return kFALSE;
   }
 }
 

@@ -129,10 +129,14 @@ Bool_t AliESDCaloCells::GetCellHighGain(Short_t cellNumber)
   if (pos>=0 && pos < fNCells && fCellNumber[pos] == cellNumber ) {
     if(fHGLG)
       return fHGLG[pos];
-    else //old version of ESD, for data HG flag stored in MCLabel 
-      return !(fMCLabel[pos]==-2) ;
+    else{
+      if(fMCLabel)//old version of ESD, for data HG flag stored in MCLabel 
+        return !(fMCLabel[pos]==-2) ;
+      else
+	return kTRUE ;
+    }
   } else {
-    return 0.;
+    return kFALSE;
   }
 }
 
@@ -164,10 +168,14 @@ Bool_t AliESDCaloCells::GetHighGain(Short_t pos) const
   if (pos>=0 && pos<fNCells) {
     if(fHGLG)
       return fHGLG[pos];
-    else //old version of ESD, for data HG flag stored in MCLabel 
-      return !(fMCLabel[pos]==-2) ;
+    else{
+      if(fMCLabel)//old version of ESD, for data HG flag stored in MCLabel 
+        return !(fMCLabel[pos]==-2) ;
+      else
+	return kTRUE ;
+    }
   } else {
-    return 0.;
+    return kFALSE;
   }
 }
 
