@@ -539,7 +539,7 @@ Int_t AliTRDseedV1::GetChargeGaps(Float_t sz[kNtb], Float_t pos[kNtb], Int_t isz
 
 
 //____________________________________________________________________
-Double_t AliTRDseedV1::EstimatedCrossPoint(AliTRDpadPlane *pp)
+Double_t AliTRDseedV1::EstimatedCrossPoint(AliTRDpadPlane *pp, Float_t bz)
 {
 // Algorithm to estimate cross point in the x-z plane for pad row cross tracklets or the z coordinate of pad row without pad row cross in the local chamber coordinates.
 // Returns variance of the radial offset from anode wire in case of raw cross or 0 otherwise.
@@ -633,7 +633,7 @@ Double_t AliTRDseedV1::EstimatedCrossPoint(AliTRDpadPlane *pp)
   fZfit[1] = (fZfit[0]+zoff)/dx; 
 
   // correct dzdx for the bias
-  UnbiasDZDX(IsRowCross());
+  UnbiasDZDX(IsRowCross(), bz);
   if(IsRowCross()){
     // correct x_cross/sigma(x_cross) for the bias in dzdx
     const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam();
@@ -652,32 +652,28 @@ Double_t AliTRDseedV1::EstimatedCrossPoint(AliTRDpadPlane *pp)
 }
 
 //____________________________________________________________________
-void AliTRDseedV1::UnbiasDZDX(Bool_t rc)
+void AliTRDseedV1::UnbiasDZDX(Bool_t rc, Float_t bz)
 {
   // correct dzdx for the bias in z according to MC
   const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam();
   if(!recoParam) return;
-  fZfit[1] *= recoParam->GetCorrDZDX(rc);
+  fZfit[1] *= recoParam->GetCorrDZDX(rc)-(bz>0?0.01:0.);
   if(rc) fZfit[1] += recoParam->GetCorrDZDXbiasRC(fZfit[1]<0);
 }
 
 //____________________________________________________________________
-Double_t AliTRDseedV1::UnbiasY(Bool_t rc, Bool_t sgn, Int_t chg)
+Double_t AliTRDseedV1::UnbiasY(Bool_t rc, Float_t bz)
 {
 // correct y coordinate for tail cancellation. This should be fixed by considering TC as a function of q/pt. 
 //  rc : TRUE if tracklet crosses rows
-// sgn : TRUE if track has same sign with magnetic field
-// chg : -1 for negative particles, +1 for the rest
+// bz : magnetic field z component
   
   const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam();
   if(!recoParam) return 0.;
-  Double_t par[2]={0.};
-  if(rc) recoParam->GetYcorrTailCancel(2, par);
-  else{
-    if(sgn && 1./fPt > 1.5)  recoParam->GetYcorrTailCancel(1, par);
-    else if(!sgn)  recoParam->GetYcorrTailCancel(0, par);
-  }
-  return par[0]+par[1]*chg/fPt;
+  Double_t par[3]={0.};
+  Int_t idx(2*(rc?1:0)+Int_t(bz>0));
+  recoParam->GetYcorrTailCancel(idx, par);
+  return par[0]*TMath::Sin(par[1]*fYref[1])+par[2];
 }
 
 
@@ -2161,7 +2157,7 @@ Bool_t AliTRDseedV1::Fit(UChar_t opt)
 
 
 //____________________________________________________________________
-Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Bool_t sgn, Int_t chg, Int_t opt)
+Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, TGeoHMatrix *mDet, Float_t bz, Int_t chg, Int_t opt)
 {
 //
 // Linear fit of the clusters attached to the tracklet
@@ -2199,7 +2195,7 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Bool_t sgn, Int_t chg, Int_t 
   Double_t freq(cp?cp->GetSamplingFrequency():10.);
       
   // evaluate locally z and dzdx from TRD only information
-  if(EstimatedCrossPoint(pp)<0.) return kFALSE;
+  if(EstimatedCrossPoint(pp, bz)<0.) return kFALSE;
   
   //printf("D%03d RC[%c] dzdx[%f %f] opt[%d]\n", fDet, IsRowCross()?'y':'n', fZref[1], fZfit[1], opt);
   Double_t //xchmb = 0.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick(),
@@ -2210,13 +2206,11 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Bool_t sgn, Int_t chg, Int_t 
   Double_t xc[kNclusters], yc[kNclusters], dz(0.), dzdx(0.), 
            s2dz(0.), s2dzdx(0.), sy[kNclusters],
            s2x((8.33e-2/freq/freq+1.56e-2)*fVD*fVD),  // error of 1tb + error of mean time (TRF)
-           t2(fPad[2]*fPad[2]),
-           cs(0.);
+           t2(fPad[2]*fPad[2]), loc[3]={0.};
   Int_t n(0),          // clusters used in fit 
-        row[]={-1, -1},// pad row spanned by the tracklet
-        col(-1);       // pad column of current cluster
-  Double_t ycorr(UnbiasY(IsRowCross(), sgn, chg)),
-           kS2Ycorr(recoParam->GetS2Ycorr(sgn));
+        row[]={-1, -1};// pad row spanned by the tracklet
+  Double_t ycorr(UnbiasY(IsRowCross(), bz)),
+           kS2Ycorr(recoParam->GetS2Ycorr(IsRowCross(), chg>0));
         
   AliTRDcluster *c(NULL), **jc = &fClusters[0];
   for(Int_t ic=0; ic<kNtb; ic++, ++jc) {
@@ -2245,14 +2239,12 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Bool_t sgn, Int_t chg, Int_t 
           break;
       }    
     }
-    if(col != c->GetPadCol()){
-      col = c->GetPadCol();
-      cs  = pp->GetColSize(col);
-    }
-    //Use local cluster coordinates - the code should be identical with AliTRDtransform::Transform() !!!
-    //A.Bercuci 27.11.13
-    xc[n] = c->GetXloc(fT0, fVD); // c->GetX();
-    yc[n] = c->GetYloc(pp->GetColPos(col) + .5*cs, fS2PRF, cs) - xc[n]*fExB; //c->GetY();
+    //Use local cluster coordinates 
+    //A.Bercuci 27.11.13/30.06.14
+    Double_t trk[] = {c->GetX(), c->GetY(), c->GetZ()};
+    mDet->MasterToLocal(trk, loc);
+    xc[n] = AliTRDgeometry::AnodePos()-loc[0]; //c->GetXloc(fT0, fVD); // c->GetX();
+    yc[n] = loc[1]; //c->GetYloc(pp->GetColPos(col) + .5*cs, fS2PRF, cs) - xc[n]*fExB; //c->GetY();
     yc[n]-= fPad[2]*(dz+xc[n]*dzdx);
     yc[n]-= ycorr;
     if(IsRowCross()){ // estimate closest distance to anode wire
@@ -2293,14 +2285,13 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Bool_t sgn, Int_t chg, Int_t 
           break;
       }    
     }  
-    if(col != c->GetPadCol()){
-      col = c->GetPadCol();
-      cs  = pp->GetColSize(col);
-    }
+
     //Use local cluster coordinates - the code should be identical with AliTRDtransform::Transform() !!!
     //A.Bercuci 27.11.13
-    xc[n] = c->GetXloc(fT0, fVD); // c->GetX();
-    yc[n] = c->GetYloc(pp->GetColPos(col) + .5*cs, fS2PRF, cs) - xc[n]*fExB ;
+    Double_t trk[] = {c->GetX(), c->GetY(), c->GetZ()};
+    mDet->MasterToLocal(trk, loc);
+    xc[n] = AliTRDgeometry::AnodePos()-loc[0]; //c->GetXloc(fT0, fVD); // c->GetX();
+    yc[n] = loc[1]; //c->GetYloc(pp->GetColPos(col) + .5*cs, fS2PRF, cs) - xc[n]*fExB; //c->GetY();
     yc[n]-= fPad[2]*(dz+xc[n]*dzdx);
     yc[n]-= ycorr;
 
