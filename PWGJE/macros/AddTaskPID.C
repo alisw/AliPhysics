@@ -73,9 +73,13 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
     printf("Collision type different from pPb/Pbp detected -> Using standard vertex cuts!\n");
   }
   
-  // Do not store centrality percentile for pp (will be set to -1 for all events)
-  if (listOfFiles.Contains("pp"))
-    task->SetStoreCentralityPercentile(kFALSE);
+  // Do not store centrality percentile for pp (will be set to -1 for all events) - or use special centrality estimator and store
+  if (listOfFiles.Contains("pp")) {
+    //task->SetStoreCentralityPercentile(kFALSE);
+    
+    task->SetStoreCentralityPercentile(kTRUE);
+    task->SetCentralityEstimator("ITSTPCtracklets");
+  }
   else
     task->SetStoreCentralityPercentile(kTRUE);
   
