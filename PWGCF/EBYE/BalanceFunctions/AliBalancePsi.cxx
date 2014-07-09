@@ -2873,5 +2873,4 @@ Double_t AliBalancePsi::GetFWHM(Int_t gDeltaEtaPhi, TH1D* gHist,
     }
   }
   return fwhm_spline;
-  return fwhmError;
 }

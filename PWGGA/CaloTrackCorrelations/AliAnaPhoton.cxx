@@ -236,7 +236,8 @@ fhPtClusterSM(0),                     fhPtPhotonSM(0)
   
   for(Int_t i = 0; i < 5; i++)
   {
-    fhClusterCuts[i] = 0;
+    fhClusterCutsE [i] = 0;
+    fhClusterCutsPt[i] = 0;
   }
   
   // Track matching residuals
@@ -294,6 +295,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   Float_t l0cluster  = calo->GetM02();
   Float_t etacluster = mom.Eta();
   Float_t phicluster = mom.Phi();
+
   if(phicluster < 0) phicluster+=TMath::TwoPi();
   Float_t tofcluster   = calo->GetTOF()*1.e9;
   
@@ -304,7 +306,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
            GetReader()->GetEventNumber(),
            ecluster,ptcluster, phicluster*TMath::RadToDeg(),etacluster);
   
-  fhClusterCuts[1]->Fill(ecluster);
+  fhClusterCutsE [1]->Fill( ecluster);
+  fhClusterCutsPt[1]->Fill(ptcluster);
   
   if(ecluster > 0.5) fhEtaPhi->Fill(etacluster, phicluster);
   
@@ -323,7 +326,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   
   if(GetDebug() > 2) printf("\t Cluster %d Pass E Cut \n",calo->GetID());
   
-  fhClusterCuts[2]->Fill(ecluster);
+  fhClusterCutsE [2]->Fill( ecluster);
+  fhClusterCutsPt[2]->Fill(ptcluster);
   
   FillClusterPileUpHistograms(calo,matched,ptcluster,etacluster,phicluster,l0cluster);
   
@@ -334,19 +338,22 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   
   if(GetDebug() > 2)  printf("\t Cluster %d Pass Time Cut \n",calo->GetID());
   
-  fhClusterCuts[3]->Fill(ecluster);
+  fhClusterCutsE [3]->Fill( ecluster);
+  fhClusterCutsPt[3]->Fill(ptcluster);
   
   //.......................................
   if(calo->GetNCells() <= fNCellsCut && GetReader()->GetDataType() != AliCaloTrackReader::kMC) return kFALSE;
   
   if(GetDebug() > 2) printf("\t Cluster %d Pass NCell Cut \n",calo->GetID());
   
-  fhClusterCuts[4]->Fill(ecluster);
+  fhClusterCutsE [4]->Fill( ecluster);
+  fhClusterCutsPt[4]->Fill(ptcluster);
   
   if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) return kFALSE ;
   if(GetDebug() > 2) printf(" \t Cluster %d pass NLM %d of out of range \n",calo->GetID(), nMaxima);
   
-  fhClusterCuts[5]->Fill(ecluster);
+  fhClusterCutsE [5]->Fill( ecluster);
+  fhClusterCutsPt[5]->Fill(ptcluster);
   
   //.......................................
   //Check acceptance selection
@@ -358,7 +365,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   
   if(GetDebug() > 2) printf("\t Fiducial cut passed \n");
   
-  fhClusterCuts[6]->Fill(ecluster);
+  fhClusterCutsE [6]->Fill( ecluster);
+  fhClusterCutsPt[6]->Fill(ptcluster);
   
   //.......................................
   //Skip matched clusters with tracks
@@ -377,7 +385,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
       if(GetDebug() > 2)  printf(" Track-matching cut passed \n");
   }// reject matched clusters
   
-  fhClusterCuts[7]->Fill(ecluster);
+  fhClusterCutsE [7]->Fill( ecluster);
+  fhClusterCutsPt[7]->Fill(ptcluster);
   
   if(fFillPileUpHistograms)
   {
@@ -400,7 +409,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   }
   else if(GetDebug() > 2) printf("\t Bad channel cut passed %4.2f > %2.2f \n",distBad, fMinDist);
   
-  fhClusterCuts[8]->Fill(ecluster);
+  fhClusterCutsE [8]->Fill( ecluster);
+  fhClusterCutsPt[8]->Fill(ptcluster);
   
   if(GetDebug() > 0)
     printf("AliAnaPhoton::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f\n",
@@ -1800,12 +1810,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","PID"};
   for (Int_t i = 0; i < 10 ;  i++)
   {
-    fhClusterCuts[i] = new TH1F(Form("hCut_%d_%s", i, cut[i].Data()),
+    fhClusterCutsE[i] = new TH1F(Form("hE_Cut_%d_%s", i, cut[i].Data()),
                                 Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
                                 nptbins,ptmin,ptmax);
-    fhClusterCuts[i]->SetYTitle("d#it{N}/d#it{E} ");
-    fhClusterCuts[i]->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhClusterCuts[i]) ;
+    fhClusterCutsE[i]->SetYTitle("d#it{N}/d#it{E} ");
+    fhClusterCutsE[i]->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhClusterCutsE[i]) ;
+    
+    fhClusterCutsPt[i] = new TH1F(Form("hPt_Cut_%d_%s", i, cut[i].Data()),
+                                Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
+                                nptbins,ptmin,ptmax);
+    fhClusterCutsPt[i]->SetYTitle("d#it{N}/d#it{E} ");
+    fhClusterCutsPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhClusterCutsPt[i]) ;
   }
   
   fhEClusterSM = new TH2F("hEClusterSM","Raw clusters E and super-module number",
@@ -3590,15 +3607,29 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   }
   
   FillPileUpHistogramsPerEvent();
-  
+
+  TLorentzVector mom;
+
   // Loop on raw clusters before filtering in the reader and fill control histogram
   if((GetReader()->GetEMCALClusterListName()=="" && fCalorimeter=="EMCAL") || fCalorimeter=="PHOS")
   {
     for(Int_t iclus = 0; iclus < GetReader()->GetInputEvent()->GetNumberOfCaloClusters(); iclus++ )
     {
       AliVCluster * clus = GetReader()->GetInputEvent()->GetCaloCluster(iclus);
-      if     (fCalorimeter == "PHOS"  && clus->IsPHOS()  && clus->E() > GetReader()->GetPHOSPtMin() ) fhClusterCuts[0]->Fill(clus->E());
-      else if(fCalorimeter == "EMCAL" && clus->IsEMCAL() && clus->E() > GetReader()->GetEMCALPtMin()) fhClusterCuts[0]->Fill(clus->E());
+      if     (fCalorimeter == "PHOS"  && clus->IsPHOS()  && clus->E() > GetReader()->GetPHOSPtMin() )
+      {
+        fhClusterCutsE [0]->Fill(clus->E());
+        
+        clus->GetMomentum(mom,GetVertex(0)) ;
+        fhClusterCutsPt[0]->Fill(mom.Pt());
+      }
+      else if(fCalorimeter == "EMCAL" && clus->IsEMCAL() && clus->E() > GetReader()->GetEMCALPtMin())
+      {
+        fhClusterCutsE [0]->Fill(clus->E());
+        
+        clus->GetMomentum(mom,GetVertex(0)) ;
+        fhClusterCutsPt[0]->Fill(mom.Pt());
+      }
     }
   }
   else
@@ -3616,7 +3647,13 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       for (Int_t iclus =  0; iclus <  nclusters; iclus++)
       {
         AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));
-        if(clus)fhClusterCuts[0]->Fill(clus->E());
+        if(clus)
+        {
+          fhClusterCutsE [0]->Fill(clus->E());
+          
+          clus->GetMomentum(mom,GetVertex(0)) ;
+          fhClusterCutsPt[0]->Fill(mom.Pt());
+        }
       }
     }
   }
@@ -3703,7 +3740,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   } // study bad/exotic trigger BC
   
   //Init arrays, variables, get number of clusters
-  TLorentzVector mom, mom2 ;
+  TLorentzVector mom2 ;
   Int_t nCaloClusters = pl->GetEntriesFast();
   
   if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - input %s cluster entries %d\n", fCalorimeter.Data(), nCaloClusters);
@@ -3822,7 +3859,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",
                               aodph.Pt(), aodph.GetIdentifiedParticleType());
     
-    fhClusterCuts[9]->Fill(calo->E());
+    fhClusterCutsE [9]->Fill(calo->E());
+    fhClusterCutsPt[9]->Fill(mom.Pt());
     
     Int_t   nSM  = GetModuleNumber(calo);
     if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)

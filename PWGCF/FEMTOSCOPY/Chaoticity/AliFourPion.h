@@ -56,7 +56,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kQbinsWeights = 40,
     kNDampValues = 16,
     kRmin = 5,// EW min radii 5 fm
-    kDENtypes = 44,
+    kDENtypes = 104,// was 44
   };
 
   static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!

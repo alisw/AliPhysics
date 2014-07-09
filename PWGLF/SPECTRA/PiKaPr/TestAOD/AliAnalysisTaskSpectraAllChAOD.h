@@ -42,7 +42,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
     fIsAOD160(1),
     fnDCABins(60),
     fDCAmin(-3),
-    fDCAmax(3)
+    fDCAmax(3),
+    fDCAzCut(0)
       {}
   AliAnalysisTaskSpectraAllChAOD(const char *name);
   virtual ~AliAnalysisTaskSpectraAllChAOD() {
@@ -87,6 +88,7 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   void SetDCAmin(Double_t val)                        { fDCAmin = val; }
   void SetDCAmax(Double_t val)                        { fDCAmax = val; }
   Bool_t GetDCA(const AliAODTrack* trk, Double_t * p);
+  void SetDCAzCut(Double_t val)                        { fDCAzCut = val; }
 
  private:
   
@@ -109,10 +111,11 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   Int_t                            fnDCABins;              // number of bins for DCA axis
   Double_t                         fDCAmin;                // min DCA value
   Double_t                         fDCAmax;                // max DCA value
+  Double_t                         fDCAzCut;               //cut on DCA z
   AliAnalysisTaskSpectraAllChAOD(const AliAnalysisTaskSpectraAllChAOD&);
   AliAnalysisTaskSpectraAllChAOD& operator=(const AliAnalysisTaskSpectraAllChAOD&);
   
-  ClassDef(AliAnalysisTaskSpectraAllChAOD, 8);
+  ClassDef(AliAnalysisTaskSpectraAllChAOD, 9);
 };
 
 #endif
