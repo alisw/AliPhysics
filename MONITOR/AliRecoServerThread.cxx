@@ -40,6 +40,7 @@ AliRecoServerThread::AliRecoServerThread(zmq::context_t *context, AliReconstruct
 
 AliRecoServerThread::~AliRecoServerThread()
 {
+	Wait();
 	Stop();
 }
 
@@ -93,9 +94,10 @@ void AliRecoServerThread::RunThrdWrite()
       }
       		
       fReco->CleanProcessedEvent();
+      /*
       if(fCond->TimedWaitRelative(500)==0){
 				break;
-			}			
+				}			*/
       iEvent++;
     }
     fReco->SlaveTerminate();
