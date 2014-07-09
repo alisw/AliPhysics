@@ -1192,7 +1192,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
       }
 
       Int_t MClabel = TMath::Abs(track->GetLabel());
-      if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;
+      MClabel -= fMCLabelShift;
       if (MClabel != 0) continue;
 
       // this is not a MC particle; remove it completely
@@ -1218,7 +1218,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	Double_t cellFrac = clus->GetCellAmplitudeFraction(iCell);
 
 	Int_t MClabel = TMath::Abs(fCaloCells->GetCellMCLabel(cellId));
-	if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;
+	MClabel -= fMCLabelShift;
 	if (MClabel != 0) continue;
 
 	// this is not a MC particle; remove it completely
@@ -1239,7 +1239,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
       clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
 	  
       Int_t MClabel = TMath::Abs(clus->GetLabel());
-      if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;
+      MClabel -= fMCLabelShift;
       if (MClabel != 0) continue;
 
       // this is not a MC particle; remove it completely
@@ -1261,7 +1261,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	continue;
       }
       Int_t MClabel = TMath::Abs(track->GetLabel());
-      if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;	  
+      MClabel -= fMCLabelShift;	  
       if (MClabel <= 0) continue;
 
       Int_t index = -1;
@@ -1302,7 +1302,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	  Double_t cellFrac = clus->GetCellAmplitudeFraction(iCell);
 	
 	  Int_t MClabel = TMath::Abs(fCaloCells->GetCellMCLabel(cellId));
-	  if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;
+	  MClabel -= fMCLabelShift;
 	  if (MClabel <= 0) continue;
 	  
 	  Int_t index1 = -1;
@@ -1339,7 +1339,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
 	clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
       
 	Int_t MClabel = TMath::Abs(clus->GetLabel());
-	if (MClabel > fMCLabelShift) MClabel -= fMCLabelShift;	    
+	MClabel -= fMCLabelShift;	    
 	if (MClabel <= 0) continue;
 
 	Int_t index = -1;
