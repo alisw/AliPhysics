@@ -240,11 +240,9 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *
     }
     if(HasTrkltRefit()){
       //      if(!tr->FitRobust(tt.Charge()>0.)) printf("W - AliTRDcheckTRK::PropagateKalman :: FitRobust() failed for Det[%03d]\n", det);
-      if(!tr->FitRobust(AliTRDgeometry::GetPadPlane(det), prod>0., tt.Charge())) printf("W - AliTRDcheckTRK::PropagateKalman :: FitRobust() failed for Det[%03d]\n", det);
-      else {
-	TGeoHMatrix *matrix = AliTRDgeometry::GetClusterMatrix(det);
-	if (matrix) tr->SetXYZ(matrix);
-      }
+      TGeoHMatrix *matrix = AliTRDgeometry::GetClusterMatrix(det);
+      if(!tr->FitRobust(AliTRDgeometry::GetPadPlane(det), matrix, tt.GetBz(), tt.Charge())) printf("W - AliTRDcheckTRK::PropagateKalman :: FitRobust() failed for Det[%03d]\n", det);
+      else tr->SetXYZ(matrix);
     }
     if(!AliTRDtrackerV1::PropagateToX(tt, tr->GetX0(), fgKalmanStep)) continue;
     if(!tt.GetTrackIn()) tt.SetTrackIn();
