@@ -321,7 +321,7 @@ void AliAnalysisTaskChargedJetsPA::InitializeTrackcuts()
   //pp, different pT dependence of number clusters cut, No. I
 
   fTrackCutsPP_global_variedPtDep = static_cast<AliESDtrackCuts*>(commonTrackCuts->Clone("fTrackCutsPP_global_variedPtDep"));
-  TFormula *f1NClustersTPCLinearPtDep2 = new TFormula("f1NClustersTPCLinearPtDep2","70.+20./20.*x");
+  TFormula *f1NClustersTPCLinearPtDep2 = new TFormula("f1NClustersTPCLinearPtDep2","70.+15./20.*x");
   fTrackCutsPP_global_variedPtDep->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep2,20.);
   fTrackCutsPP_global_variedPtDep->SetMinNClustersTPC(70);
   fTrackCutsPP_global_variedPtDep->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
@@ -334,7 +334,7 @@ void AliAnalysisTaskChargedJetsPA::InitializeTrackcuts()
   //pp, different pT dependence of number clusters cut, No. II
 
   fTrackCutsPP_global_variedPtDep2 = static_cast<AliESDtrackCuts*>(commonTrackCuts->Clone("fTrackCutsPP_global_variedPtDep2"));
-  TFormula *f1NClustersTPCLinearPtDep3 = new TFormula("f1NClustersTPCLinearPtDep3","70.+40./20.*x");
+  TFormula *f1NClustersTPCLinearPtDep3 = new TFormula("f1NClustersTPCLinearPtDep3","70.+45./20.*x");
   fTrackCutsPP_global_variedPtDep2->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep3,20.);
   fTrackCutsPP_global_variedPtDep2->SetMinNClustersTPC(70);
   fTrackCutsPP_global_variedPtDep2->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
@@ -389,7 +389,6 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
     Double_t phi                 = track->Phi();
 
     // Number of clusters
-    Double_t nclsTPC             = track->GetTPCncls();
     Double_t nclsITS             = track->GetITSclusters(0);
 
     // Crossed rows
@@ -401,24 +400,31 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
     // Chi2 of tracks
     Double_t chi2ITS             = 999.; 
     if (nclsITS)
-      chi2ITS = track->GetITSchi2()/nclsITS; 
+      chi2ITS = track->GetITSchi2()/nclsITS;
     Double_t chi2TPC             = 999.;
-    if (nclsTPC)
-      chi2TPC = track->GetTPCchi2()/nclsTPC; 
     Double_t chi2TPCConstrained  = track->GetChi2TPCConstrainedVsGlobal(static_cast<const AliESDVertex*>(fPrimaryVertex));
 
     // Misc
     Double_t SharedTPCClusters = 999.;
     Double_t nClustersTPC = 0;
-    if(fHybridESDtrackCuts->GetMainCuts()->GetRequireTPCStandAlone()) {
+
+    if(fHybridESDtrackCuts->GetMainCuts()->GetRequireTPCStandAlone())
+    {
       nClustersTPC = track->GetTPCNclsIter1();
+      if(nClustersTPC)
+        chi2TPC = track->GetTPCchi2Iter1()/nClustersTPC;
     }
-    else {
+    else 
+    {
       nClustersTPC = track->GetTPCclusters(0);
+      if(nClustersTPC)
+        chi2TPC = track->GetTPCchi2()/nClustersTPC;
     }
 
-    if(track->GetTPCncls())
+    if(nClustersTPC)
       SharedTPCClusters = static_cast<Double_t>(track->GetTPCnclsS())/static_cast<Double_t>(nClustersTPC);
+
+
     Double_t tpcLength   = 0.;
     if (track->GetInnerParam() && track->GetESDEvent()) {
       tpcLength = track->GetLengthInActiveZone(1, 1.8, 220, track->GetESDEvent()->GetMagneticField());
@@ -491,7 +497,7 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
 
     trackType = fHybridESDtrackCuts->AcceptTrack(track);
     if (trackType)
-      FillCutHistogram("hCutsNumberClusters", nclsTPC, pT, eta, phi, trackType-1);
+      FillCutHistogram("hCutsNumberClusters", nClustersTPC, pT, eta, phi, trackType-1);
 
     fHybridESDtrackCuts->GetMainCuts()->SetMinNClustersTPC(minNclsTPC);
     fHybridESDtrackCuts->GetAdditionalCuts()->SetMinNClustersTPC(minNclsTPC_Additional);
