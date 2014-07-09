@@ -105,6 +105,23 @@ public:
     Double_t GetMinEtCorrection(Int_t clusterMultiplicity) {
         return fTmCorrections->GetMinEtCorrection(clusterMultiplicity);
     }
+    /** Get contribution from non-removed neutrons */
+    Double_t GetNeutronContribution(Int_t clusterMultiplicity) {
+        return fTmCorrections->GetNeutronCorrection(clusterMultiplicity);
+    }
+    /** Get contribution from non-removed hadrons */
+    Double_t GetHadronContribution(Int_t clusterMultiplicity) {
+        return fTmCorrections->GetHadronCorrection(clusterMultiplicity);
+    }
+    /** Get contribution from non-removed kaons */
+    Double_t GetKaonContribution(Int_t clusterMultiplicity) {
+        return fTmCorrections->GetKaonCorrection(clusterMultiplicity);
+    }//hadron
+    /** Get contribution from non-removed secondarys */
+    Double_t GetSecondaryContribution(Int_t clusterMultiplicity) {
+        return fTmCorrections->GetSecondaryCorrection(clusterMultiplicity);
+    }//hadron
+
 
     /** Get contribution from non-removed charged particles */
     Double_t GetChargedContribution(Int_t clusterMultiplicity) {
@@ -119,11 +136,6 @@ public:
     /** Get contribution from removed gammas */
     Double_t GetGammaContribution(Int_t clusterMultiplicity) {
         return fTmCorrections->GammaContr(clusterMultiplicity);
-    }
-
-    /** Get contribution from secondaries */
-    Double_t GetSecondaryContribution(Int_t clusterMultiplicity) {
-        return fTmCorrections->SecondaryContr(clusterMultiplicity);
     }
 
     void MakeSparseHistograms() {

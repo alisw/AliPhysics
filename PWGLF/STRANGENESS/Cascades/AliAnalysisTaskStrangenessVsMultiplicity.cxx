@@ -99,7 +99,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
   : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0), 
   fkSaveV0Tree      ( kFALSE ),
   fkSaveCascadeTree ( kTRUE  ),
-  fkRunVertexers    ( kTRUE  ), 
+  fkRunVertexers    ( kTRUE  ),
   fkSkipEventSelection( kFALSE ),
   //---> Variables for fTreeEvent
   fAmplitude_V0A   (0),   
@@ -623,7 +623,8 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
   fEvSel_VtxZCut                = kFALSE; 
   fEvSel_IsNotPileup            = kFALSE; 
   fEvSel_IsNotPileupInMultBins  = kFALSE; 
-  fEvSel_HasVtxContributor      = kFALSE; 
+  fEvSel_HasVtxContributor      = kFALSE;
+  fEvSel_Triggered              = kFALSE;
 
   fEvSel_nTracklets   = -1; 
   fEvSel_nSPDClusters = -1; 
