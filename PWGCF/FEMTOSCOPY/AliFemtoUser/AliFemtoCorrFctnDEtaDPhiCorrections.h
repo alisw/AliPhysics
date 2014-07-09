@@ -38,8 +38,7 @@ public:
   virtual void AddMixedPair(AliFemtoPair* aPair);
 
   virtual void Finish();
-  void SetDoPtAnalysis(int do2d);
-  void SetDoCorrectionsHist(CorrectionType doCorr);
+  void SetDoFullAnalysis(Bool_t do2d);
   double CalculateCorrectionWeight(double pT1, double pT2);
   double CalculateCorrectionWeight(double pT1, double pT2, double eta1, double eta2, double phi1, double phi2, double zvert1, double zvert2);
   void LoadCorrectionTabFromROOTFile1D(const char *file, ParticleType partType1, ParticleType partType2);
@@ -60,13 +59,7 @@ private:
   TH1D *fDCosNumerator;              // Numerator of colinearity correlation
   TH1D *fDCosDenominator;            // Denominator of colinearity correlation
 
-  int   fDoPtAnalysis;               // set to 1 to do 2D Pt analysis
-
-  TH2D *fDPhiPtNumerator;            // Numerator of dPhi correlation vs. Pt min
-  TH2D *fDPhiPtDenominator;          // Denominator of dPhi correlation vs. Pt min
-
-  TH2D *fDCosPtNumerator;            // Numerator of colinearity correlation vs. Pt min
-  TH2D *fDCosPtDenominator;          // Denominator of colinearity correlation vs. Pt min
+  Bool_t   fDoFullAnalysis;               // set to 1 to do 2D Pt analysis
 
   TH1D *fPhi;
   TH1D *fEta;
@@ -74,7 +67,6 @@ private:
   TH2D *fYtYtNumerator;
   TH2D *fYtYtDenominator; 
 
-  CorrectionType fIfCorrectionHist;
   bool fIfCorrection;
   THnSparseF *fPtCorrectionsNum;
   THnSparseF *fPtCorrectionsDen;
