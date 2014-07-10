@@ -826,7 +826,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     Int_t clsId_ESD = track->GetEMCALcluster();
     Int_t clsId = -9999;
-    if(phi>1.0 && phi<3.5)clsId = TrMatch(track);
+    if(phi>1.0 && phi<3.5 && fabs(eta)<0.75)clsId = TrMatch(track);
 
     //cout << "match ID" << clsId << " ; " << clsId_Tender << endl;
 
@@ -2322,6 +2322,8 @@ int AliAnalysisTaskHFECal::TrMatch(AliESDtrack *tr)
   Double_t trkPos[3];
   int matchID = -1;
   Double_t MaxR = 0.05;
+  Double_t MaxEta = 0.025;
+  Double_t MaxPhi = 0.05;
 
   Double_t  magF = fESD->GetMagneticField();
   Double_t magSign = 1.0;
@@ -2356,12 +2358,18 @@ int AliAnalysisTaskHFECal::TrMatch(AliESDtrack *tr)
    Double_t delEmcphi = clsPosVec.Phi()-trkPosVec.Phi();  // track cluster matching
    Double_t delEmceta = clsPosVec.Eta()-trkPosVec.Eta();  // track cluster matching
 
+   if(fabs(delEmcphi)>0.05)continue;
+   if(fabs(delEmceta)>0.025)continue;
+
    double rmatch = sqrt(pow(delEmcphi,2)+pow(delEmceta,2));
    
-   if(rmatch<MaxR)
+   //if(rmatch<MaxR)
+   if(fabs(delEmcphi)<MaxPhi && fabs(delEmceta)<MaxEta )
      {
       matchID = icl;
-      MaxR = rmatch;
+      //MaxR = rmatch;
+      MaxPhi = fabs(delEmcphi);
+      MaxEta = fabs(delEmceta);
      }
   }
  
