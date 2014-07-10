@@ -85,7 +85,7 @@ AliVParticle* AliParticleContainer::GetParticle(Int_t i) const
 {
   //Get i^th jet in array
 
-  if(i<0 || i>fClArray->GetEntriesFast()) return 0;
+  if(i<0 || i>=fClArray->GetEntriesFast()) return 0;
   AliVParticle *vp = static_cast<AliVParticle*>(fClArray->At(i));
   return vp;
 

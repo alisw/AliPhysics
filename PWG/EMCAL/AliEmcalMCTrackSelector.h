@@ -44,6 +44,7 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   AliVEvent                *fEvent;                //!event
   AliMCEvent               *fMC;                   //!MC event (ESD)
   Bool_t                    fIsESD;                //!ESD or AOD analysis
+  Bool_t                    fDisabled;             //!Disable task if a problem occurs at initialization
 
  private:
   AliEmcalMCTrackSelector(const AliEmcalMCTrackSelector&);            // not implemented

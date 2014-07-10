@@ -1,5 +1,6 @@
 AliEmcalTrackingQATask* AddTaskTrackingQA(const char *nGenLev      = "mcparticles",
-					  const char *nDetLev      = "PicoTracks")
+					  const char *nDetLev      = "PicoTracks",
+					  Bool_t      selHIJING    = kTRUE)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -26,6 +27,8 @@ AliEmcalTrackingQATask* AddTaskTrackingQA(const char *nGenLev      = "mcparticle
   AliEmcalTrackingQATask *qaTask = new AliEmcalTrackingQATask(name);
   qaTask->SetGeneratorLevelName(nGenLev);
   qaTask->SetDetectorLevelName(nDetLev);
+  qaTask->SetSelectHIJING(selHIJING);
+  qaTask->SetVzRange(-10,10);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

@@ -20,7 +20,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   Float_t  dcaDaug     = 1.0;
   Float_t  dca2PrmVtx  = 0.095;  // tighter cut
   Float_t  nclsDaug    = 70;     
-  Float_t  minPtDaughter = 0.;
+  Float_t  minPtDaughter = 0.16;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
