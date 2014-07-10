@@ -56,6 +56,7 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
   qaTask->SetCaloCellsName(ncells);
   qaTask->SetRhoName(nrho,-1);
+  qaTask->SetVzRange(-10,10);
 
   AliParticleContainer *partCont = qaTask->AddParticleContainer(ntracks);
   if (partCont) partCont->SetParticlePtCut(trackptcut);
