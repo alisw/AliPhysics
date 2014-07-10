@@ -106,13 +106,13 @@ void AddTaskHybridTrackEfficiencyESD2011(char *prodType = "LHC10h", TString beam
 {
   AliPWG4HighPtSpectra *taskSpectra00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,0,triggerMask,"CENT_10_RAA"  ,bSelHijingParticles,usePythiaxsec); // RAA track cuts
   AliPWG4HighPtSpectra *taskSpectra01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,1,triggerMask,"CENT_10_RESTR",bSelHijingParticles,usePythiaxsec); // High quality tracks
-  AliPWG4HighPtSpectra *taskSpectra71cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,7,1,triggerMask,"CENT_10_NOITS",bSelHijingParticles,usePythiaxsec); // Complementary tracks. Subtype: no SPD requirement
+  AliPWG4HighPtSpectra *taskSpectra71cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,7,1,triggerMask,"CENT_10_NOSPD",bSelHijingParticles,usePythiaxsec); // Complementary tracks. Subtype: no SPD requirement
 
   if(beamType=="PbPb" || beamType=="pPb") { //also vary the centrality
     for(int cent=0; cent<4; cent++) {
       AliPWG4HighPtSpectra *taskSpectra00 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,0,0,triggerMask,Form("CENT_%d_RAA"  ,cent),bSelHijingParticles,usePythiaxsec);
       AliPWG4HighPtSpectra *taskSpectra01 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,0,1,triggerMask,Form("CENT_%d_RESTR",cent),bSelHijingParticles,usePythiaxsec);
-      AliPWG4HighPtSpectra *taskSpectra71 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,7,1,triggerMask,Form("CENT_%d_NOITS",cent),bSelHijingParticles,usePythiaxsec);
+      AliPWG4HighPtSpectra *taskSpectra71 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,cent,7,1,triggerMask,Form("CENT_%d_NOSPD",cent),bSelHijingParticles,usePythiaxsec);
     }
   }
 }
