@@ -57,14 +57,7 @@ ClassImp(AliAnaChargedParticles)
     fhPtSPDRefit(0),         fhPtNoSPDRefit(0),         fhPtNoSPDNoRefit(0),
     fhEtaPhiSPDRefitPt02(0), fhEtaPhiNoSPDRefitPt02(0), fhEtaPhiNoSPDNoRefitPt02(0),
     fhEtaPhiSPDRefitPt3(0),  fhEtaPhiNoSPDRefitPt3(0),  fhEtaPhiNoSPDNoRefitPt3(0),
-    //MC
-    fhPtPion(0),       fhPhiPion(0),         fhEtaPion(0),
-    fhPtProton(0),     fhPhiProton(0),       fhEtaProton(0),
-    fhPtElectron(0),   fhPhiElectron(0),     fhEtaElectron(0),
-    fhPtKaon(0),       fhPhiKaon(0),         fhEtaKaon(0),
-    fhPtUnknown(0),    fhPhiUnknown(0),      fhEtaUnknown(0),
-    fhMCPt(0),         fhMCPhi(0),           fhMCEta(0),
-    fhMCRecPt(0),
+
     //TOF
     fhTOFSignal(0),    fhTOFSignalPtCut(0),  fhTOFSignalBCOK(0),
     fhPtTOFSignal(0),  fhPtTOFSignalDCACut(0),
@@ -115,6 +108,17 @@ ClassImp(AliAnaChargedParticles)
     fhPtDCAVtxInBC0PileUpNoTOFHit [i] = 0 ;
   }
   
+  // MC
+  for(Int_t imcPart = 0; imcPart < 6; imcPart++)
+  {
+    fhPtMCPart     [imcPart] = 0;
+    fhPtMCPrimPart [imcPart] = 0;
+    fhPhiMCPart    [imcPart] = 0;
+    fhPhiMCPrimPart[imcPart] = 0;
+    fhEtaMCPart    [imcPart] = 0;
+    fhEtaMCPrimPart[imcPart] = 0;
+  }
+  
   //Initialize parameters
   InitParameters();
 
@@ -128,7 +132,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   
   
   TList * outputContainer = new TList() ; 
-  outputContainer->SetName("ExampleHistos") ; 
+  outputContainer->SetName("ChargedParticleHistos") ;
   
   Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins(); Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins(); Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();
   Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
@@ -553,81 +557,54 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
 
   if(IsDataMC())
   {
-    fhPtPion  = new TH1F ("hPtMCPion","p_T distribution from #pi", nptbins,ptmin,ptmax); 
-    fhPtPion->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtPion);
-    
-    fhPhiPion  = new TH2F ("hPhiMCPion","#phi distribution from #pi",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhPhiPion->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhiPion);
-    
-    fhEtaPion  = new TH2F ("hEtaMCPion","#eta distribution from #pi",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-    fhEtaPion->SetXTitle("#eta ");
-    outputContainer->Add(fhEtaPion);
-    
-    fhPtProton  = new TH1F ("hPtMCProton","p_T distribution from proton", nptbins,ptmin,ptmax); 
-    fhPtProton->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtProton);
-    
-    fhPhiProton  = new TH2F ("hPhiMCProton","#phi distribution from proton",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhPhiProton->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhiProton);
-    
-    fhEtaProton  = new TH2F ("hEtaMCProton","#eta distribution from proton",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-    fhEtaProton->SetXTitle("#eta ");
-    outputContainer->Add(fhEtaProton);
-    
-    fhPtKaon  = new TH1F ("hPtMCKaon","p_T distribution from kaon", nptbins,ptmin,ptmax); 
-    fhPtKaon->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtKaon);
-    
-    fhPhiKaon  = new TH2F ("hPhiMCKaon","#phi distribution from kaon",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhPhiKaon->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhiKaon);
-    
-    fhEtaKaon  = new TH2F ("hEtaMCKaon","#eta distribution from kaon",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-    fhEtaKaon->SetXTitle("#eta ");
-    outputContainer->Add(fhEtaKaon);
-    
-    fhPtElectron  = new TH1F ("hPtMCElectron","p_T distribution from electron", nptbins,ptmin,ptmax); 
-    fhPtElectron->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtElectron);
-    
-    fhPhiElectron  = new TH2F ("hPhiMCElectron","#phi distribution from electron",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhPhiElectron->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhiElectron);
-    
-    fhEtaElectron  = new TH2F ("hEtaMCElectron","#eta distribution from electron",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-    fhEtaElectron->SetXTitle("#eta ");
-    outputContainer->Add(fhEtaElectron);
-    
-    fhPtUnknown  = new TH1F ("hPtMCUnknown","p_T distribution from unknown", nptbins,ptmin,ptmax); 
-    fhPtUnknown->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtUnknown);
-    
-    fhPhiUnknown  = new TH2F ("hPhiMCUnknown","#phi distribution from unknown",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhPhiUnknown->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhiUnknown);
-    
-    fhEtaUnknown  = new TH2F ("hEtaMCUnknown","#eta distribution from unknown",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-    fhEtaUnknown->SetXTitle("#eta ");
-    outputContainer->Add(fhEtaUnknown);
+    //enum mvType{kmcPion = 0, kmcProton = 1, kmcKaon = 2, kmcMuon = 3, kmcElectron = 4, kmcUnknown = 4 };
 
-    fhMCPt  = new TH1F ("hMCPt","p_T distribution from MC", nptbins,ptmin,ptmax); 
-    fhMCPt->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhMCPt);
-
-    fhMCPhi  = new TH2F ("hMCPhi","#phi distribution from MC",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhMCPhi->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhMCPhi);
-   
-    fhMCEta  = new TH2F ("hMCEta","#eta distribution from MC",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-    fhMCEta->SetXTitle("#eta (rad)");
-    outputContainer->Add(fhMCEta);
-
-    fhMCRecPt  = new TH1F ("hMCRecPt","p_T distribution from Rec MC", nptbins,ptmin,ptmax); 
-    fhMCRecPt->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhMCRecPt);
+    TString histoName[] = {"Pion","Proton","Kaon","Muon","Electron","Unknown"};
+    TString titleName[] = {"#pi^{#pm}","p^{#pm}","K^{#pm}","#mu^{#pm}","e^{#pm}","x^{#pm}"};
+    
+    for(Int_t imcPart = 0; imcPart < 6; imcPart++)
+    {
+      fhPtMCPart[imcPart]  = new TH1F (Form("hPtMC%s",histoName[imcPart].Data()),
+                                       Form("reconstructed #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                       nptbins,ptmin,ptmax);
+      fhPtMCPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtMCPart[imcPart]);
+      
+      fhPhiMCPart[imcPart]  = new TH2F (Form("hPhiMC%s",histoName[imcPart].Data()),
+                                        Form("reconstructed #phi vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                        nptbins,ptmin,ptmax, nphibins,phimin,phimax);
+      fhPhiMCPart[imcPart]->SetYTitle("#phi (rad)");
+      fhPhiMCPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPhiMCPart[imcPart]);
+      
+      fhEtaMCPart[imcPart]  = new TH2F (Form("hEtaMC%s",histoName[imcPart].Data()),
+                                        Form("reconstructed #eta vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                        nptbins,ptmin,ptmax, netabins,etamin,etamax);
+      fhEtaMCPart[imcPart]->SetYTitle("#eta ");
+      fhEtaMCPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhEtaMCPart[imcPart]);
+      
+      fhPtMCPrimPart[imcPart]  = new TH1F (Form("hPtMCPrimary%s",histoName[imcPart].Data()),
+                                           Form("generated #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                           nptbins,ptmin,ptmax);
+      fhPtMCPrimPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtMCPrimPart[imcPart]);
+      
+      fhPhiMCPrimPart[imcPart]  = new TH2F (Form("hPhiMCPrimary%s",histoName[imcPart].Data()),
+                                            Form("generated #phi vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                            nptbins,ptmin,ptmax, nphibins,phimin,phimax);
+      fhPhiMCPrimPart[imcPart]->SetYTitle("#phi (rad)");
+      fhPhiMCPrimPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPhiMCPrimPart[imcPart]);
+      
+      fhEtaMCPrimPart[imcPart]  = new TH2F (Form("hEtaMCPrimary%s",histoName[imcPart].Data()),
+                                            Form("generated #eta vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                            nptbins,ptmin,ptmax, netabins,etamin,etamax);
+      fhEtaMCPrimPart[imcPart]->SetYTitle("#eta ");
+      fhEtaMCPrimPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhEtaMCPrimPart[imcPart]);
+    }
+    
   }
   
   fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex",
@@ -1156,7 +1133,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
 } 
 
 //__________________________________________________________________
-void  AliAnaChargedParticles::MakeAnalysisFillHistograms() 
+void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
 {
   //Do analysis and fill histograms
   
@@ -1165,7 +1142,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   
   fhNtracks->Fill(GetReader()->GetTrackMultiplicity()) ;
   
-  if(GetDebug() > 0) 
+  if(GetDebug() > 0)
     printf("AliAnaChargedParticles::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   
   Float_t pt  = 0;
@@ -1205,103 +1182,109 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(pt);}
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(pt);}
     }
-
+    
     
     if(IsDataMC())
     {
       //Play with the MC stack if available
       Int_t mompdg = -1;
       Int_t label  = track->GetLabel();
-
-      if(label >= 0)
-	{
-	  if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
-	    {
-	      TParticle * mom = GetMCStack()->Particle(label);
-	      mompdg =TMath::Abs(mom->GetPdgCode());
-	    }
-	  else if(GetReader()->ReadAODMCParticles())
-	    {
-	      AliAODMCParticle * aodmom = 0;
-	      //Get the list of MC particles
-	      aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
-	      mompdg =TMath::Abs(aodmom->GetPdgCode());
-	    }
-	}
-
-      if(mompdg==211 || mompdg==2212 || mompdg==321 || mompdg==11){
-	if(TMath::Abs(eta) < 0.8 && phi < 3.145) fhMCRecPt->Fill(pt);
-      } 
       
-      if(mompdg==211)
+      if(label >= 0)
       {
-        fhPtPion ->Fill(pt);
-        fhPhiPion->Fill(pt, phi);
-        fhEtaPion->Fill(pt, eta);
+        if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
+        {
+          TParticle * mom = GetMCStack()->Particle(label);
+          mompdg =TMath::Abs(mom->GetPdgCode());
+        }
+        else if(GetReader()->ReadAODMCParticles())
+        {
+          AliAODMCParticle * aodmom = 0;
+          //Get the list of MC particles
+          aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
+          mompdg =TMath::Abs(aodmom->GetPdgCode());
+        }
       }
-      else if(mompdg==2212)
-      {
-        fhPtProton ->Fill(pt);
-        fhPhiProton->Fill(pt, phi);
-        fhEtaProton->Fill(pt, eta);
-      }
-      else if(mompdg==321)
-      {
-        fhPtKaon ->Fill(pt);
-        fhPhiKaon->Fill(pt, phi);
-        fhEtaKaon->Fill(pt, eta);
-      }
-      else if(mompdg==11)
-      {
-        fhPtElectron ->Fill(pt);
-        fhPhiElectron->Fill(pt, phi);
-        fhEtaElectron->Fill(pt, eta);
-      }
-      else
-      {
-        fhPtUnknown ->Fill(pt);
-        fhPhiUnknown->Fill(pt, phi);
-        fhEtaUnknown->Fill(pt, eta);
-      }     
+      
+      Int_t mcType = kmcUnknown;
+      if     (mompdg==211 ) mcType = kmcPion;
+      else if(mompdg==2212) mcType = kmcProton;
+      else if(mompdg==321 ) mcType = kmcKaon;
+      else if(mompdg==11  ) mcType = kmcElectron;
+      else if(mompdg==13  ) mcType = kmcMuon;
+      
+      fhPtMCPart [mcType]->Fill(pt);
+      fhEtaMCPart[mcType]->Fill(pt,eta);
+      fhPhiMCPart[mcType]->Fill(pt,phi);
+      
     }//Work with stack also
     
   }// aod branch loop
   
   if(IsDataMC())
+  {
+    Int_t primpdg = -1;
+    TLorentzVector mom;
+    if(GetReader()->ReadStack())
     {
-      Int_t primpdg = -1;
-      if(GetReader()->ReadStack()) {	
-	AliStack * stack = GetMCStack();
-	if(stack) {
-	  for(Int_t i=0 ; i<stack->GetNtrack(); i++){
-	    TParticle *prim = stack->Particle(i);
-	    primpdg = TMath::Abs(prim->GetPdgCode());
-	    if(primpdg == 211 || primpdg == 2212 || primpdg == 321 || primpdg == 11){
-	      if(prim->IsPrimary() && TMath::Abs(prim->Eta()) < 0.8 && prim->Phi() < 3.145){
-		fhMCPt->Fill(prim->Pt());
-		fhMCPhi->Fill(prim->Pt(),prim->Phi());
-		fhMCEta->Fill(prim->Pt(),prim->Eta());
-	      }
-	    }
-	  }
-	}
+      AliStack * stack = GetMCStack();
+      if(stack) {
+        for(Int_t i=0 ; i<stack->GetNtrack(); i++)
+        {
+          TParticle *prim = stack->Particle(i);
+          if(prim->IsPrimary())
+          {
+            primpdg = TMath::Abs(prim->GetPdgCode());
+            
+            Int_t mcType = kmcUnknown;
+            if     (primpdg==211 ) mcType = kmcPion;
+            else if(primpdg==2212) mcType = kmcProton;
+            else if(primpdg==321 ) mcType = kmcKaon;
+            else if(primpdg==11  ) mcType = kmcElectron;
+            else if(primpdg==13  ) mcType = kmcMuon;
+            
+            prim->Momentum(mom);
+            Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+            
+            Float_t ptPrim = prim->Pt();
+            if(in) fhPtMCPrimPart [mcType]->Fill(ptPrim);
+            fhEtaMCPrimPart[mcType]->Fill(ptPrim,prim->Eta());
+            fhPhiMCPrimPart[mcType]->Fill(ptPrim,prim->Phi());
+          }
+        }
       }
-      else if(GetReader()->ReadAODMCParticles()){
-	TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-	if(mcparticles){
-	  Int_t nprim = mcparticles->GetEntriesFast();
-	  for(Int_t i=0; i < nprim; i++){
-	    AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i); 
-	    primpdg = TMath::Abs(prim->GetPdgCode());
-	    if(primpdg == 211 || primpdg == 2212 || primpdg == 321 || primpdg == 11){
-	      if(prim->IsPhysicalPrimary() && TMath::Abs(prim->Eta()) < 0.8 && prim->Phi() < 3.145){
-		fhMCPt->Fill(prim->Pt());
-		fhMCPhi->Fill(prim->Pt(),prim->Phi());
-		fhMCEta->Fill(prim->Pt(),prim->Eta());
-	      }
-	    }
-	  }
-	}
+    }
+    else if(GetReader()->ReadAODMCParticles())
+    {
+      TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
+      if(mcparticles)
+      {
+        Int_t nprim = mcparticles->GetEntriesFast();
+        for(Int_t i=0; i < nprim; i++)
+        {
+          AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
+ 
+          if(prim->IsPrimary())
+          {
+            primpdg = TMath::Abs(prim->GetPdgCode());
+            
+            Int_t mcType = kmcUnknown;
+            if     (primpdg==211 ) mcType = kmcPion;
+            else if(primpdg==2212) mcType = kmcProton;
+            else if(primpdg==321 ) mcType = kmcKaon;
+            else if(primpdg==11  ) mcType = kmcElectron;
+            else if(primpdg==13  ) mcType = kmcMuon;
+            
+            mom.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
+            Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+            
+            Float_t ptPrim = prim->Pt();
+            if(in) fhPtMCPrimPart [mcType]->Fill(ptPrim);
+            fhEtaMCPrimPart[mcType]->Fill(ptPrim,prim->Eta());
+            fhPhiMCPrimPart[mcType]->Fill(ptPrim,prim->Phi());
+          }
+        }
       }
     }
   }
+}
