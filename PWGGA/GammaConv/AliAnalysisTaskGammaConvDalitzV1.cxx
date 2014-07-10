@@ -1171,6 +1171,11 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 				fCutFolder[iCut]->Add( ((AliConversionPhotonCuts*)fCutGammaArray->At(iCut))->GetCutHistograms()  );
 			}
 		}
+		
+		if( fCutEventArray )
+		if( ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetCutHistograms()){
+			fCutFolder[iCut]->Add(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetCutHistograms());
+		}
 	}
 
 	PostData(1, fOutputContainer);
@@ -1216,7 +1221,12 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
 		fiCut = iCut;
 		fNVirtualGammas = 0;
 
-		Int_t eventNotAccepted = ((AliConvEventCuts*)fCutGammaArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
+		Int_t eventNotAccepted =
+			((AliConvEventCuts*)fCutEventArray->At(iCut))
+			->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
+		
+		
+		//Int_t eventNotAccepted = ((AliConvEventCuts*)fCutGammaArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
 		
 		if(eventNotAccepted){
 			// 			cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;

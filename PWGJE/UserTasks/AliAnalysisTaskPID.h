@@ -62,6 +62,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   enum ptResolutionAxes { kPtResJetPt = 0, kPtResGenPt = 1, kPtResRecPt = 2, kPtResCharge = 3, kPtResCentrality = 4, kPtResNumAxes = 5 };
   
+  enum qaSharedClsAxes { kQASharedClsJetPt = 0, kQASharedClsPt = 1, kQASharedClsNumSharedCls = 2, kQASharedClsPadRow = 3,
+                         kQASharedClsNumAxes = 4 };
+  
   enum dEdxCheckAxes { kDeDxCheckPID = 0, kDeDxCheckP = 1, kDeDxCheckJetPt = 2, kDeDxCheckEtaAbs = 3 , kDeDxCheckDeDx = 4,
                        kDeDxCheckNumAxes = 5 };
   
@@ -260,6 +263,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const;
+  virtual void SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const;
   virtual void SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const;
   virtual void SetUpPIDcombined();
   
@@ -267,9 +271,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   static const Double_t fgkEpsilon; // Double_t threshold above zero
   static const Int_t fgkMaxNumGenEntries; // Maximum number of generated detector responses per track and delta(Prime) and associated species
 
- private:
   static const Double_t fgkOneOverSqrt2; // = 1. / TMath::Sqrt2();
   
+ private:
   Int_t fRun; // Current run number
   AliPIDCombined* fPIDcombined; //! PID combined object
   
@@ -384,7 +388,6 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   TH1D* fhEventsTriggerSel; //! Histo holding the number of events passing trigger selection
   TH1D* fhEventsTriggerSelVtxCut; //! Histo holding the number of events passing trigger selection and vtx cut
   
-  TH2D* fhSkippedTracksForSignalGeneration; //! Number of tracks that have been skipped for the signal generation
   THnSparseD* fhMCgeneratedYieldsPrimaries; //! Histo holding the generated (no reco, no cuts) primary particle yields in considered eta range
   
   TH2D* fh2FFJetPtRec;            //! Number of reconstructed jets vs. jetPt and centrality
@@ -396,6 +399,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliCFContainer* fContainerEff; //! Container for efficiency determination
   
   THnSparseD* fPtResolution[AliPID::kSPECIES]; //! Pt Resolution for the individual species
+  THnSparseD* fQASharedCls; //! QA for shared clusters
   
   THnSparseD* fDeDxCheck; //! dEdx check
   
@@ -406,7 +410,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 19);
+  ClassDef(AliAnalysisTaskPID, 20);
 };
 
 

@@ -34,7 +34,8 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
   fParticlesMap(0),
   fEvent(0),
   fMC(0),
-  fIsESD(kFALSE)
+  fIsESD(kFALSE),
+  fDisabled(kFALSE)
 {
   // Constructor.
 }
@@ -55,7 +56,8 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) :
   fParticlesMap(0),
   fEvent(0),
   fMC(0),
-  fIsESD(kFALSE)
+  fIsESD(kFALSE),
+  fDisabled(kFALSE)
 {
   // Constructor.
 }
@@ -77,6 +79,8 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
 {
   // Main loop, called for each event.
 
+  if (fDisabled) return;
+
   if (!fInit) {
     fEvent = InputEvent();
     if (!fEvent) {
@@ -89,7 +93,8 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
 
     TObject *obj = fEvent->FindListObject(fParticlesOutName);
     if (obj) { // the output array is already present in the array!
-      AliFatal(Form("The output array %s is already present in the array!", fParticlesOutName.Data()));
+      AliError(Form("The output array %s is already present in the event! Task will be disabled.", fParticlesOutName.Data()));
+      fDisabled = kTRUE;
       return;
     }
     else {  // copy the array from the standard ESD/AOD collections, and filter if requested      
@@ -100,17 +105,28 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
 
       fParticlesMapName = fParticlesOutName;
       fParticlesMapName += "_Map";
-      fParticlesMap = new AliNamedArrayI(fParticlesMapName, 99999);
-      
+
+      if (fEvent->FindListObject(fParticlesMapName)) {
+	AliError(Form("The output array map %s is already present in the event! Task will be disabled.", fParticlesMapName.Data()));
+	fDisabled = kTRUE;
+	return;
+      }
+      else {
+	fParticlesMap = new AliNamedArrayI(fParticlesMapName, 99999);
+	fEvent->AddObject(fParticlesMap);
+      }
+
       if (!fIsESD) {
 	fParticlesIn = static_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
 	if (!fParticlesIn) {
-	  AliFatal("Could not retrieve AOD MC particles! Returning");
+	  AliError("Could not retrieve AOD MC particles! Task will be disabled.");
+	  fDisabled = kTRUE;
 	  return;
 	}
 	TClass *cl = fParticlesIn->GetClass();
 	if (!cl->GetBaseClass("AliAODMCParticle")) {
-	  AliFatal(Form("%s: Collection %s does not contain AliAODMCParticle!", GetName(), AliAODMCParticle::StdBranchName())); 
+	  AliError(Form("%s: Collection %s does not contain AliAODMCParticle! Task will be disabled.", GetName(), AliAODMCParticle::StdBranchName())); 
+	  fDisabled = kTRUE;
 	  fParticlesIn = 0;
 	  return;
 	}
@@ -119,7 +135,8 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
 
     fMC = MCEvent();
     if (!fMC) {
-      AliFatal("Could not retrieve MC event! Returning");
+      AliError("Could not retrieve MC event! Returning");
+      fDisabled = kTRUE;
       return;
     }
 
@@ -148,6 +165,8 @@ void AliEmcalMCTrackSelector::ConvertMCParticles()
 
   // loop over particles
   for (Int_t iPart = 0, nacc = 0; iPart < Nparticles; iPart++) {
+
+    fParticlesMap->AddAt(-1, iPart);
 
     AliMCParticle* part = static_cast<AliMCParticle*>(fMC->GetTrack(iPart));
 

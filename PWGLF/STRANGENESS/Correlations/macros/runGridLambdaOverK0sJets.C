@@ -5,19 +5,20 @@
 class AliAnalysisAlien;
 
 void runGridLambdaOverK0sJets(TString  runMode    = "full", 
-			      TString  alirootVer = "v5-05-38-AN",
-			      TString  rootVer    = "v5-34-11",
-			      TString  dataPath   = "AOD124/*/AliAOD.root"/*"ESDs/pass2/AOD115/* /AliAOD.root"*/,
-			      TString  dataDir    = "/alice/sim/2012/LHC12a17d_fix"/*"/alice/data/2011/LHC11h_2"*/,		      
+			      TString  alirootVer = "vAN-20140708",
+			      TString  rootVer    = "v5-34-08-6",
+			      TString  dataPath   = /*"AOD124/* /AliAOD.root"*/"ESDs/pass2/AOD115/*/AliAOD.root",
+			      TString  dataDir    = /*"/alice/sim/2012/LHC12a17d_fix"*/"/alice/data/2011/LHC11h_2",		      
 			      TString  workDir    = "test",
 			      TString  name       = "LambdaOverK0sRatio", 
 			      TString  data       = "PbPb2011",
 			      Float_t  minCen     = 0.,
 			      Float_t  maxCen     = 40.,
 			      Bool_t   sepInjec   = kFALSE,
-			      Bool_t   isMC       = kTRUE,
+			      Bool_t   isMC       = kFALSE,
 			      Bool_t   usePID     = kFALSE,
 			      Bool_t   doQA       = kTRUE,
+			      Bool_t   useEtaCut  = kFALSE,
 			      Int_t    run        = 169838/*137530*//*138624*/){
 
 
@@ -53,7 +54,7 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
   gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx++g"); 
   //gSystem->Load("libPWGLFSTRANGENESS");
   gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
-  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,data,minCen,maxCen,sepInjec,isMC,doQA);
+  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,data,minCen,maxCen,sepInjec,isMC,doQA,useEtaCut);
    // _____________________________________________________ //
  
    if (!mgr->InitAnalysis()) return;
@@ -141,7 +142,7 @@ AliAnalysisAlien* CreateAlienHandler(TString runMode,TString alirootVer,
   plugin->SetAnalysisMacro("AnalysisProduction.C");
   //plugin->SetAnalysisMacro("mytask.C");
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-  plugin->SetSplitMaxInputFileNumber(5);
+  plugin->SetSplitMaxInputFileNumber(20);
   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
   plugin->SetMaxInitFailed(12);
   // Optionally resubmit threshold.

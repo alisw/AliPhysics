@@ -20,6 +20,7 @@ ClassImp(AliEmcalTrackingQATask)
 //________________________________________________________________________
 AliEmcalTrackingQATask::AliEmcalTrackingQATask() : 
   AliAnalysisTaskEmcal("AliEmcalTrackingQA", kTRUE),
+  fSelectHIJING(kTRUE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
   fTracksAll(0),
@@ -37,6 +38,7 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
 //________________________________________________________________________
 AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) : 
   AliAnalysisTaskEmcal(name, kTRUE),
+  fSelectHIJING(kTRUE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
   fTracksAll(0),
@@ -85,12 +87,14 @@ void AliEmcalTrackingQATask::UserCreateOutputObjects()
       fTracksAll[i][j]->GetZaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
       fOutput->Add(fTracksAll[i][j]);
 
-      histname = Form("fTracksSelected_%d_%d",i,j);
-      fTracksSelected[i][j] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
-      fTracksSelected[i][j]->GetXaxis()->SetTitle("#eta");
-      fTracksSelected[i][j]->GetYaxis()->SetTitle("#phi");
-      fTracksSelected[i][j]->GetZaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-      fOutput->Add(fTracksSelected[i][j]);
+      if (fSelectHIJING) {
+	histname = Form("fTracksSelected_%d_%d",i,j);
+	fTracksSelected[i][j] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
+	fTracksSelected[i][j]->GetXaxis()->SetTitle("#eta");
+	fTracksSelected[i][j]->GetYaxis()->SetTitle("#phi");
+	fTracksSelected[i][j]->GetZaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+	fOutput->Add(fTracksSelected[i][j]);
+      }
     }
 
     histname = Form("fParticlesAllPhysPrim_%d",i);
@@ -100,12 +104,14 @@ void AliEmcalTrackingQATask::UserCreateOutputObjects()
     fParticlesAllPhysPrim[i]->GetZaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fOutput->Add(fParticlesAllPhysPrim[i]);
 
-    histname = Form("fParticlesSelected_%d",i);
-    fParticlesSelected[i] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
-    fParticlesSelected[i]->GetXaxis()->SetTitle("#eta");
-    fParticlesSelected[i]->GetYaxis()->SetTitle("#phi");
-    fParticlesSelected[i]->GetZaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    fOutput->Add(fParticlesSelected[i]);
+    if (fSelectHIJING) {
+      histname = Form("fParticlesSelected_%d",i);
+      fParticlesSelected[i] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
+      fParticlesSelected[i]->GetXaxis()->SetTitle("#eta");
+      fParticlesSelected[i]->GetYaxis()->SetTitle("#phi");
+      fParticlesSelected[i]->GetZaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+      fOutput->Add(fParticlesSelected[i]);
+    }
   }
 
   AllocateFindableParticlesTHnSparse();
@@ -259,7 +265,6 @@ void AliEmcalTrackingQATask::SetDetectorLevelName(const char* name)
       fDetectorLevel = AddParticleContainer(name);
     }
     fDetectorLevel->SetClassName("AliPicoTrack");
-    fDetectorLevel->SelectPhysicalPrimaries(kTRUE);
   }
   fDetectorLevel->SetArrayName(name);
 }
@@ -333,7 +338,7 @@ void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double
     else if (title=="(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}")
       contents[i] = (partPt - trackPt) / partPt;
     else if (title=="track type")
-      contents[i] = trackType;
+      contents[i] = (Double_t)trackType;
     else 
       AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), fParticlesMatched->GetName()));
   }
@@ -354,14 +359,15 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
 
       Int_t label = TMath::Abs(track->GetLabel());
 
-      if (label==0 || track->GetGeneratorIndex() == 0) {  // reject particles generated from other generator in the cocktail but keep fake tracks (label == 0)
+      if (fSelectHIJING && (label==0 || track->GetGeneratorIndex() == 0)) {  
+	// reject particles generated from other generators in the cocktail but keep fake tracks (label == 0)
 	fTracksSelected[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
       }
       
       if (label > 0) {
 	AliAODMCParticle *part =  static_cast<AliAODMCParticle*>(fGeneratorLevel->GetAcceptParticleWithLabel(label));
 	if (part) {
-	  if (part->GetGeneratorIndex() == 0) {
+	  if (!fSelectHIJING || part->GetGeneratorIndex() == 0) {
 	    Int_t pdg = TMath::Abs(part->PdgCode());
 	    // select charged pions, protons, kaons , electrons, muons
 	    if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) {
@@ -381,9 +387,8 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
   AliAODMCParticle *part = static_cast<AliAODMCParticle*>(fGeneratorLevel->GetNextAcceptParticle(0));
   while (part != 0) {
     fParticlesAllPhysPrim[fCentBin]->Fill(part->Eta(), part->Phi(), part->Pt());
-
-    if (part->GetGeneratorIndex() == 0) {
-      fParticlesSelected[fCentBin]->Fill(part->Eta(), part->Phi(), part->Pt());
+    if (!fSelectHIJING || part->GetGeneratorIndex() == 0) {
+      if (fSelectHIJING) fParticlesSelected[fCentBin]->Fill(part->Eta(), part->Phi(), part->Pt());
 
       Int_t pdg = TMath::Abs(part->PdgCode());
       // select charged pions, protons, kaons , electrons, muons

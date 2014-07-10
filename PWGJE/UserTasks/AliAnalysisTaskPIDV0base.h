@@ -93,6 +93,9 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   static Bool_t TPCnclCut(const AliVTrack* track);
   
  protected:
+  void FillV0PIDlist(AliESDEvent* esdEvent = 0x0);
+  void ClearV0PIDlist();
+  
   static Double_t fgCutGeo;   // Cut variable for TPCCutMIGeo concerning geometry
   static Double_t fgCutNcr; // Cut variable for TPCCutMIGeo concerning num crossed rows
   static Double_t fgCutNcl;  // Cut variable for TPCCutMIGeo concerning num clusters
@@ -127,9 +130,6 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   Int_t* fV0motherIndex; //! Pointer to array with index of the mother V0
   
  private:
-  void FillV0PIDlist(AliESDEvent* esdEvent = 0x0);
-  void ClearV0PIDlist();
-  
   AliAnalysisTaskPIDV0base(const AliAnalysisTaskPIDV0base&); // not implemented
   AliAnalysisTaskPIDV0base& operator=(const AliAnalysisTaskPIDV0base&); // not implemented
   
