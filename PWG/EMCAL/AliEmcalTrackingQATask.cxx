@@ -259,7 +259,6 @@ void AliEmcalTrackingQATask::SetDetectorLevelName(const char* name)
       fDetectorLevel = AddParticleContainer(name);
     }
     fDetectorLevel->SetClassName("AliPicoTrack");
-    fDetectorLevel->SelectPhysicalPrimaries(kTRUE);
   }
   fDetectorLevel->SetArrayName(name);
 }
@@ -333,7 +332,7 @@ void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double
     else if (title=="(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}")
       contents[i] = (partPt - trackPt) / partPt;
     else if (title=="track type")
-      contents[i] = trackType;
+      contents[i] = (Double_t)trackType;
     else 
       AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), fParticlesMatched->GetName()));
   }
@@ -354,7 +353,7 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
 
       Int_t label = TMath::Abs(track->GetLabel());
 
-      if (label==0 || track->GetGeneratorIndex() == 0) {  // reject particles generated from other generator in the cocktail but keep fake tracks (label == 0)
+      if (label==0 || track->GetGeneratorIndex() == 0) {  // reject particles generated from other generators in the cocktail but keep fake tracks (label == 0)
 	fTracksSelected[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
       }
       
