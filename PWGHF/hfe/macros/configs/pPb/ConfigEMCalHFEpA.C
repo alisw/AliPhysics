@@ -30,7 +30,9 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	else if(configIndex==3) 	hfecuts->SetMinNClustersTPC(80);
 	else if(configIndex==4) 	hfecuts->SetMinNClustersTPC(85);
 	else if(configIndex==5) 	hfecuts->SetMinNClustersTPC(115);
-	else if(configIndex==6) 	hfecuts->SetMinNClustersTPC(120);					//Minimum number of clusters on TPC
+	else if(configIndex==6) 	hfecuts->SetMinNClustersTPC(120);
+	else if(configIndex==80) 	hfecuts->SetMinNClustersTPC(130);
+	else if(configIndex==81) 	hfecuts->SetMinNClustersTPC(140);//Minimum number of clusters on TPC
 	else hfecuts->SetMinNClustersTPC(100);							                //Minimum number of clusters on TPC
 	
 	if(configIndex==7) hfecuts->SetMinNClustersTPCPID(70); 
@@ -45,6 +47,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//ITS
 	if(configIndex==13) hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);			//Require at least one cluster on SPD
+	else if(configIndex==82) hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
 	else hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);							//Require at least one cluster on SPD
 	//hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 			                    //Require at least one cluster on SDD
 	hfecuts->SetCheckITSLayerStatus(kFALSE); 
@@ -60,8 +63,9 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 		
 	//DCA cut included in the analysis 12 March 2014
-	if(configIndex==18) hfecuts->SetMaxImpactParam(2,4); 
-	else if (configIndex==19) hfecuts->SetMaxImpactParam(0.5,1);
+	if(configIndex==18) hfecuts->SetMaxImpactParam(2,5); 
+	else if(configIndex==19) hfecuts->SetMaxImpactParam(0.5,1);
+	else if(configIndex==83) hfecuts->SetMaxImpactParam(0.1,0.2);
 	else hfecuts->SetMaxImpactParam(1,2); 							                //DCA to vertex
 	
 	//Event Selection
@@ -116,16 +120,16 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	//partner cuts
 	
 	if(configIndex==29) task->SetAdditionalCuts(0.3,80);
-	if(configIndex==30) task->SetAdditionalCuts(0.5,80);
-	if(configIndex==31) task->SetAdditionalCuts(0.7,80);
-	if(configIndex==32) task->SetAdditionalCuts(0.9,80);
+	else if(configIndex==30) task->SetAdditionalCuts(0.5,80);
+	else if(configIndex==31) task->SetAdditionalCuts(0.7,80);
+	else if(configIndex==32) task->SetAdditionalCuts(0.9,80);
 	
-	if(configIndex==33) task->SetAdditionalCuts(0,60);
-	if(configIndex==34) task->SetAdditionalCuts(0,70);
-	if(configIndex==35) task->SetAdditionalCuts(0,90);
-	if(configIndex==36) task->SetAdditionalCuts(0,100);
+	else if(configIndex==33) task->SetAdditionalCuts(0,60);
+	else if(configIndex==34) task->SetAdditionalCuts(0,70);
+	else if(configIndex==35) task->SetAdditionalCuts(0,90);
+	else if(configIndex==36) task->SetAdditionalCuts(0,100);
 	 
-	 task->SetAdditionalCuts(0,80);
+	else task->SetAdditionalCuts(0,80);
 	 
 	
 	//eta cuts
@@ -214,7 +218,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 ///_______________________________________________________________________________________________________________
 /// New configurations for random cuts -- March, 05, 2014 -- Values in the macro "Random_configurations.C"
-	
+	/*
 	if (configIndex==80){
 		hfecuts->SetMinNClustersTPC(86);
 		hfecuts->SetMinNClustersTPCPID(76);
@@ -395,6 +399,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 		Double_t params[0]=-1.15;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
+	 */
 	
 	
 ///_______________________________________________________________________________________________________________
