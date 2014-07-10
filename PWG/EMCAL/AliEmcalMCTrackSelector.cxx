@@ -216,6 +216,8 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
 
   const Int_t Nparticles = fParticlesIn->GetEntriesFast();
 
+  if (fParticlesMap->GetSize() <= Nparticles) fParticlesMap->Set(Nparticles*2);
+
   // loop over particles
   for (Int_t iPart = 0, nacc = 0; iPart < Nparticles; iPart++) {
 
