@@ -166,6 +166,8 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   fEventnobaryon(0),
   fEventnomeson(0),
  fhistJetTrigestimate(0),
+fTwoTrackDistancePtdip(0x0),
+fTwoTrackDistancePtdipmix(0x0),
   fCentralityCorrelation(0x0),
  fHistVZEROAGainEqualizationMap(0),
   fHistVZEROCGainEqualizationMap(0),
@@ -304,8 +306,11 @@ fAnalysisUtils(0x0),
     fTrackHistEfficiency[i] = NULL;
     effcorection[i]=NULL;
     //effmap[i]=NULL;
-
   }
+ for ( Int_t i = 0; i < 2; i++ ){
+   fTwoTrackDistancePt[i]=NULL;
+   fTwoTrackDistancePtmix[i]=NULL;
+}
 
  for(Int_t ipart=0;ipart<NSpecies;ipart++)
     for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++)
@@ -405,6 +410,8 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fEventnobaryon(0),
   fEventnomeson(0),
   fhistJetTrigestimate(0),
+fTwoTrackDistancePtdip(0x0),
+fTwoTrackDistancePtdipmix(0x0),
   fCentralityCorrelation(0x0),
  fHistVZEROAGainEqualizationMap(0),
   fHistVZEROCGainEqualizationMap(0),
@@ -546,6 +553,11 @@ for ( Int_t i = 0; i < 6; i++ ){
     effcorection[i]=NULL;
     //effmap[i]=NULL;
   }
+
+for ( Int_t i = 0; i < 2; i++ ){
+   fTwoTrackDistancePt[i]=NULL;
+   fTwoTrackDistancePtmix[i]=NULL;
+}
 
  for(Int_t ipart=0;ipart<NSpecies;ipart++)
     for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++)
@@ -1317,7 +1329,23 @@ fOutput->Add(fEventnomeson);
 fhistJetTrigestimate=new TH2F("fhistJetTrigestimate","fhistJetTrigestimate",iBinPair[0],dBinsPair[0],6,-0.5,5.5);
 fOutput->Add(fhistJetTrigestimate);
 
+   fTwoTrackDistancePtdip = new TH3F("fTwoTrackDistancePtdip", ";#Delta#eta;#Delta#varphi;#Delta p_{T}", 36, -1.8, 1.8, 72,-TMath::Pi()/2, 3*TMath::Pi()/2, 40, 0, 10);
+  fOutput->Add(fTwoTrackDistancePtdip);
 
+fTwoTrackDistancePtdipmix = new TH3F("fTwoTrackDistancePtdipmix", ";#Delta#eta;#Delta#varphi;#Delta p_{T}", 36, -1.8, 1.8, 72,-TMath::Pi()/2, 3*TMath::Pi()/2, 40, 0, 10);
+  fOutput->Add(fTwoTrackDistancePtdipmix);
+
+  TString Histttrname;
+for(Int_t jj=0;jj<2;jj++)// PID type binning
+    {
+  Histttrname="fTwoTrackDistancePt";Histttrname+=jj;
+  fTwoTrackDistancePt[jj] = new TH3F(Histttrname.Data(), ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.15, 0.15, 100, -0.05, 0.05, 20, 0, 10);
+  fOutput->Add(fTwoTrackDistancePt[jj]);
+
+ Histttrname="fTwoTrackDistancePtmix";Histttrname+=jj;
+  fTwoTrackDistancePtmix[jj] = new TH3F(Histttrname.Data(), ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.15, 0.15, 100, -0.05, 0.05, 20, 0, 10);
+  fOutput->Add(fTwoTrackDistancePtmix[jj]);
+    }
 //Mixing
 //DefineEventPool();
 
@@ -3052,13 +3080,16 @@ if (fRejectResonanceDaughters > 0)
 		  dphistarminabs = dphistarabs;
 		}
 	      }
+	      if(mixcase==kFALSE)  fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));//for same event
+	      if(mixcase==kTRUE)  fTwoTrackDistancePtmix[0]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));//for mixed event
 
 if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEfficiencyCutValue)
 	      {
 // 		Printf("Removed track pair %d %d with %f %f %f %f %f %f %f %f %f", i, j, deta, dphistarminabs, phi1, pt1, charge1, phi2, pt2, charge2, bSign);
 		continue;
 	      }
-//fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));
+             if(mixcase==kFALSE) fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));//for same event
+             if(mixcase==kTRUE) fTwoTrackDistancePtmix[1]->Fill(deta, dphistarmin, TMath::Abs(pt1 - pt2));//for mixed event
 
 	    }
 	  }
@@ -3070,6 +3101,11 @@ if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEf
 	//cout<<"*******************trackeffasso="<<trackeffasso<<endl;
         Float_t deleta=trigeta-eta[j];
 	Float_t delphi=PhiRange(trigphi-asso->Phi()); 
+
+	Float_t delpt=trigpt-asso->Pt();
+	//fill it with/without two track efficiency cut	   
+	if(mixcase==kFALSE)  fTwoTrackDistancePtdip->Fill(deleta, delphi, TMath::Abs(delpt));//for same event
+	if(mixcase==kTRUE)  fTwoTrackDistancePtdipmix->Fill(deleta, delphi, TMath::Abs(delpt));//for mixed event
 
  //here get the two particle efficiency correction factor
 	Float_t effweight=trackefftrig*trackeffasso*weightperevent;
