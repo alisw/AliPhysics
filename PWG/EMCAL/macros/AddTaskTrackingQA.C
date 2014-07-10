@@ -26,6 +26,7 @@ AliEmcalTrackingQATask* AddTaskTrackingQA(const char *nGenLev      = "mcparticle
   AliEmcalTrackingQATask *qaTask = new AliEmcalTrackingQATask(name);
   qaTask->SetGeneratorLevelName(nGenLev);
   qaTask->SetDetectorLevelName(nDetLev);
+  qaTask->SetVzRange(-10,10);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
