@@ -63,6 +63,7 @@ private:
 
   TH1D *fPhi;
   TH1D *fEta;
+  TH1D *fPtSumDist;
 
   TH2D *fYtYtNumerator;
   TH2D *fYtYtDenominator; 

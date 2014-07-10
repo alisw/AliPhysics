@@ -267,7 +267,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::ReturnHbtEvent()
   fTree->GetEvent(fCurEvent);//getting next event
   //  cout << "Read event " << fEvent << " from file " << fTree << endl;
 
-  hbtEvent = new AliFemtoEvent;
+  //hbtEvent = new AliFemtoEvent;
 
   hbtEvent = CopyAODtoFemtoEvent();
   fCurEvent++;
@@ -338,19 +338,23 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if(fMinVtxContr)
 	anaUtil->SetMinVtxContr(fMinVtxContr);
       if(fpA2013)
-	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) return NULL; //Vertex rejection for pA analysis.
+	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) 
+	  {
+	    delete tEvent;
+	    return NULL; //Vertex rejection for pA analysis.
+	  }
       if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
       else anaUtil->SetUseMVPlpSelection(kFALSE);
       if(fMinPlpContribMV) anaUtil->SetMinPlpContribMV(fMinPlpContribMV);
       if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
       if(fisPileUp)
-	if(anaUtil->IsPileUpEvent(fEvent)) return NULL; //Pile-up rejection.
+	if(anaUtil->IsPileUpEvent(fEvent)) { delete tEvent;return NULL;} //Pile-up rejection.
       delete anaUtil;
     }
 
   // Primary Vertex position
   const AliAODVertex* aodvertex = (AliAODVertex*) fEvent->GetPrimaryVertex();
-  if(!aodvertex || aodvertex->GetNContributors() < 1) return NULL; //Bad vertex, skip event.
+  if(!aodvertex || aodvertex->GetNContributors() < 1) { delete tEvent;return NULL;} //Bad vertex, skip event.
 
   aodvertex->GetPosition(fV1);
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
@@ -377,7 +381,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         (cent->GetCentralityPercentile("V0M")*10 > fCentRange[1]))
     {
       // cout << "Centrality " << cent->GetCentralityPercentile("V0M") << " outside of preselection range " << fCentRange[0] << " - " << fCentRange[1] << endl;
-
+      delete tEvent;
       return NULL;
     }
   }
@@ -386,7 +390,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 //flatten centrality dist.
   if(percent < 9){
     if(fFlatCent){
-      if(RejectEventCentFlat(fEvent->GetMagneticField(),percent)) return NULL;
+      if(RejectEventCentFlat(fEvent->GetMagneticField(),percent)) { delete tEvent; return NULL;}
     }
   }
 
@@ -408,7 +412,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   int tNormMult = 0;
   for (int i=0;i<nofTracks;i++)
   {
-    AliFemtoTrack* trackCopy = new AliFemtoTrack();
+    AliFemtoTrack* trackCopy;// = new AliFemtoTrack();
 
 //       if (fPWG2AODTracks) {
 // 	// Read tracks from the additional pwg2 specific AOD part
@@ -543,12 +547,12 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     if (aodtrack->IsPrimaryCandidate()) tracksPrim++;
 
     if (fFilterBit && !aodtrack->TestFilterBit(fFilterBit)) {
-      delete trackCopy;
+      //delete trackCopy;
       continue;
     }
 
     if (fFilterMask && !aodtrack->TestFilterBit(fFilterMask)) {
-      delete trackCopy;
+      //delete trackCopy;
       continue;
     }
 
