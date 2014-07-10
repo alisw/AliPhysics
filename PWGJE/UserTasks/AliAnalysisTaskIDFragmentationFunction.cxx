@@ -186,6 +186,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fh1nGenBckgJets(0)
    ,fh2PtRecVsGenPrim(0)
    ,fh2PtRecVsGenSec(0)
+   ,fhDCA_XY(0)
+   ,fhDCA_Z(0)
    ,fQATrackHistosRecEffGen(0)  
    ,fQATrackHistosRecEffRec(0)
    ,fQATrackHistosSecRecNS(0)   
@@ -277,6 +279,12 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     fIDFFHistosRecCuts[i] = 0x0;
     fIDFFHistosGen[i] = 0x0;
+    
+    fhDCA_XY_prim_MCID[i] = 0x0;
+    fhDCA_Z_prim_MCID[i] = 0x0;
+    
+    fhDCA_XY_sec_MCID[i] = 0x0;
+    fhDCA_Z_sec_MCID[i] = 0x0;
   }
 }
 
@@ -406,6 +414,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fh1nGenBckgJets(0)
   ,fh2PtRecVsGenPrim(0)
   ,fh2PtRecVsGenSec(0)
+  ,fhDCA_XY(0)
+  ,fhDCA_Z(0)
   ,fQATrackHistosRecEffGen(0)  
   ,fQATrackHistosRecEffRec(0)
   ,fQATrackHistosSecRecNS(0) 
@@ -494,6 +504,12 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     fIDFFHistosRecCuts[i] = 0x0;
     fIDFFHistosGen[i] = 0x0;
+    
+    fhDCA_XY_prim_MCID[i] = 0x0;
+    fhDCA_Z_prim_MCID[i] = 0x0;
+    
+    fhDCA_XY_sec_MCID[i] = 0x0;
+    fhDCA_Z_sec_MCID[i] = 0x0;
   }
   
   DefineOutput(1,TList::Class());
@@ -625,6 +641,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fh1nGenBckgJets(copy.fh1nGenBckgJets)
   ,fh2PtRecVsGenPrim(copy.fh2PtRecVsGenPrim)
   ,fh2PtRecVsGenSec(copy.fh2PtRecVsGenSec)
+  ,fhDCA_XY(copy.fhDCA_XY)
+  ,fhDCA_Z(copy.fhDCA_Z)
   ,fQATrackHistosRecEffGen(copy.fQATrackHistosRecEffGen)  
   ,fQATrackHistosRecEffRec(copy.fQATrackHistosRecEffRec)  
   ,fQATrackHistosSecRecNS(copy.fQATrackHistosSecRecNS)  
@@ -719,6 +737,23 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
     fIDFFHistosGen[i] = 0x0;
     if (copy.fIDFFHistosGen[i])
       fIDFFHistosGen[i] = copy.fIDFFHistosGen[i];
+    
+    
+    fhDCA_XY_prim_MCID[i] = 0x0;
+    if (copy.fhDCA_XY_prim_MCID[i])
+      fhDCA_XY_prim_MCID[i] = copy.fhDCA_XY_prim_MCID[i];
+    
+    fhDCA_Z_prim_MCID[i] = 0x0;
+    if (copy.fhDCA_Z_prim_MCID[i])
+      fhDCA_Z_prim_MCID[i] = copy.fhDCA_Z_prim_MCID[i];
+    
+    fhDCA_XY_sec_MCID[i] = 0x0;
+    if (copy.fhDCA_XY_sec_MCID[i])
+      fhDCA_XY_sec_MCID[i] = copy.fhDCA_XY_sec_MCID[i];
+    
+    fhDCA_Z_sec_MCID[i] = 0x0;
+    if (copy.fhDCA_Z_sec_MCID[i])
+      fhDCA_Z_sec_MCID[i] = copy.fhDCA_Z_sec_MCID[i];
   }
   
   if (fNumInclusivePIDtasks > 0) {
@@ -908,6 +943,8 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fh2DeltaPtVsJetPtEmbedded      = o.fh2DeltaPtVsJetPtEmbedded;
     fh2DeltaPtVsRecJetPtEmbedded   = o.fh2DeltaPtVsRecJetPtEmbedded;
     fh1DeltaREmbedded              = o.fh1DeltaREmbedded;
+    fhDCA_XY                       = o.fhDCA_XY;
+    fhDCA_Z                        = o.fhDCA_Z;
     fQABckgHisto0RecCuts           = o.fQABckgHisto0RecCuts;  
     fQABckgHisto0Gen               = o.fQABckgHisto0Gen;      
     fQABckgHisto1RecCuts           = o.fQABckgHisto1RecCuts;  
@@ -969,6 +1006,22 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
       fIDFFHistosGen[i] = 0x0;
       if (o.fIDFFHistosGen[i])
         fIDFFHistosGen[i] = o.fIDFFHistosGen[i];
+      
+      fhDCA_XY_prim_MCID[i] = 0x0;
+      if (o.fhDCA_XY_prim_MCID[i])
+        fhDCA_XY_prim_MCID[i] = o.fhDCA_XY_prim_MCID[i];
+      
+      fhDCA_Z_prim_MCID[i] = 0x0;
+      if (o.fhDCA_Z_prim_MCID[i])
+        fhDCA_Z_prim_MCID[i] = o.fhDCA_Z_prim_MCID[i];
+      
+      fhDCA_XY_sec_MCID[i] = 0x0;
+      if (o.fhDCA_XY_sec_MCID[i])
+        fhDCA_XY_sec_MCID[i] = o.fhDCA_XY_sec_MCID[i];
+      
+      fhDCA_Z_sec_MCID[i] = 0x0;
+      if (o.fhDCA_Z_sec_MCID[i])
+        fhDCA_Z_sec_MCID[i] = o.fhDCA_Z_sec_MCID[i];
     }
   }
   
@@ -2246,20 +2299,6 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
     }
   }
 
-  // =========== Switch on Sumw2 for all histos ===========
-  for (Int_t i=0; i<fCommonHistList->GetEntries(); ++i){
-    TH1 *h1 = dynamic_cast<TH1*>(fCommonHistList->At(i));
-    if (h1) h1->Sumw2();
-    else{
-      THnSparse *hnSparse = dynamic_cast<THnSparse*>(fCommonHistList->At(i));
-      if(hnSparse) hnSparse->Sumw2();
-    }
-  }
-  
-  TH1::AddDirectory(oldStatus);
-  
-  
-  
   // Load PID framework if desired
   if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Loading PID framework");
   
@@ -2319,6 +2358,59 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
       }
     }
   }
+  
+  if (fUseJetPIDtask) {
+    const Int_t nPtBins = 68;
+    Double_t binsPt[nPtBins+1] = {0. ,  0.05, 0.1,  0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45,
+           0.5,  0.55, 0.6,  0.65, 0.7,  0.75, 0.8,  0.85, 0.9,  0.95,
+           1.0,  1.1 , 1.2,  1.3 , 1.4,  1.5 , 1.6,  1.7 , 1.8,  1.9 ,
+           2.0,  2.2 , 2.4,  2.6 , 2.8,  3.0 , 3.2,  3.4 , 3.6,  3.8 ,
+           4.0,  4.5 , 5.0,  5.5 , 6.0,  6.5 , 7.0,  8.0 , 9.0,  10.0,
+           11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
+           26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };
+    
+    const Int_t DCAbins = 320;
+    const Double_t DCA_Z_max = 3.5;
+    const Double_t DCA_XY_max = 2.5;
+    
+    fhDCA_XY = new TH2F("fhDCA_XY", "All rec. tracks;#it{p}_{T} (GeV/#it{c});DCA_{XY}", nPtBins, binsPt,  DCAbins, -DCA_XY_max, DCA_XY_max);
+    fhDCA_Z = new TH2F("fhDCA_Z",   "All rec. tracks;#it{p}_{T} (GeV/#it{c});DCA_{Z}",  nPtBins, binsPt,  DCAbins, -DCA_Z_max,  DCA_Z_max);
+    fCommonHistList->Add(fhDCA_XY);
+    fCommonHistList->Add(fhDCA_Z);
+    
+    for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+      fhDCA_XY_prim_MCID[i] = new TH2F(Form("fhDCA_XY_prim_MCID_%s", AliPID::ParticleShortName(i)),
+                                       Form("Rec. %s (prim.);#it{p}_{T} (GeV/#it{c});DCA_{XY}", AliPID::ParticleLatexName(i)),
+                                       nPtBins, binsPt,  DCAbins, -DCA_XY_max, DCA_XY_max);
+      fhDCA_Z_prim_MCID[i]  = new TH2F(Form("fhDCA_Z_prim_MCID_%s", AliPID::ParticleShortName(i)),
+                                       Form("Rec. %s (prim.);#it{p}_{T} (GeV/#it{c});DCA_{Z}", AliPID::ParticleLatexName(i)),
+                                       nPtBins, binsPt,  DCAbins, -DCA_Z_max, DCA_Z_max);
+      fCommonHistList->Add(fhDCA_XY_prim_MCID[i]);
+      fCommonHistList->Add(fhDCA_Z_prim_MCID[i]);
+      
+      fhDCA_XY_sec_MCID[i] = new TH2F(Form("fhDCA_XY_sec_MCID_%s", AliPID::ParticleShortName(i)),
+                                      Form("Rec. %s (sec.);#it{p}_{T} (GeV/#it{c});DCA_{XY}", AliPID::ParticleLatexName(i)),
+                                      nPtBins, binsPt,  DCAbins, -DCA_XY_max, DCA_XY_max);
+      fhDCA_Z_sec_MCID[i]  = new TH2F(Form("fhDCA_Z_sec_MCID_%s", AliPID::ParticleShortName(i)),
+                                      Form("Rec. %s (sec.);#it{p}_{T} (GeV/#it{c});DCA_{Z}", AliPID::ParticleLatexName(i)),
+                                      nPtBins, binsPt,  DCAbins, -DCA_Z_max, DCA_Z_max);
+      fCommonHistList->Add(fhDCA_XY_sec_MCID[i]);
+      fCommonHistList->Add(fhDCA_Z_sec_MCID[i]);
+    }
+  }
+  
+  
+  // =========== Switch on Sumw2 for all histos ===========
+  for (Int_t i=0; i<fCommonHistList->GetEntries(); ++i){
+    TH1 *h1 = dynamic_cast<TH1*>(fCommonHistList->At(i));
+    if (h1) h1->Sumw2();
+    else{
+      THnSparse *hnSparse = dynamic_cast<THnSparse*>(fCommonHistList->At(i));
+      if(hnSparse) hnSparse->Sumw2();
+    }
+  }
+  
+  TH1::AddDirectory(oldStatus);
 
   if(fDebug > 2) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Posting Output");
   
@@ -3261,12 +3353,51 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           }
         }
         
+        Bool_t filledDCA = kFALSE;
+        
         for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
           if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
               (survivedTPCCutMIGeo && fJetPIDtask[i]->GetUseTPCCutMIGeo()) ||
               (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut())) {
-                if (fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(aodtrack->Eta())))
-                  fJetPIDtask[i]->ProcessTrack(aodtrack, pdg, centPercent, jetPt);
+            if (fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(aodtrack->Eta()))) {
+                fJetPIDtask[i]->ProcessTrack(aodtrack, pdg, centPercent, jetPt);
+                  
+              // Fill DCA histo (once) if at least one of the PID tasks accecpts the track
+              if (!filledDCA) {
+                filledDCA = kTRUE;
+                
+                Double_t dca[2] = {0., 0.}; // 0: xy; 1: z
+                if (aodtrack->IsGlobalConstrained()) {
+                  dca[0] = aodtrack->DCA();
+                  dca[1] = aodtrack->ZAtDCA();
+                }
+                else {
+                  Double_t v[3]   = {0, };
+                  Double_t pos[3] = {0, };
+                  primVtx->GetXYZ(v);
+                  aodtrack->GetXYZ(pos);
+                  dca[0] = pos[0] - v[0];
+                  dca[1] = pos[1] - v[1];
+                }
+                
+                // "Unidentified" for data and MC
+                fhDCA_XY->Fill(pT, dca[0]);
+                fhDCA_Z->Fill(pT, dca[1]);
+                
+                // "Identified" for MC
+                if (gentrack && mcID != AliPID::kUnknown) {
+                  // MC
+                  if (gentrack->IsPhysicalPrimary()) {
+                    fhDCA_XY_prim_MCID[mcID]->Fill(pT, dca[0]);
+                    fhDCA_Z_prim_MCID[mcID]->Fill(pT, dca[1]);
+                  }
+                  else {
+                    fhDCA_XY_sec_MCID[mcID]->Fill(pT, dca[0]);
+                    fhDCA_Z_sec_MCID[mcID]->Fill(pT, dca[1]);
+                  }
+                }
+              }
+            }
           }
         }
         
