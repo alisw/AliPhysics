@@ -223,6 +223,8 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
 
     AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fParticlesIn->At(iPart));
 
+    fParticlesMap->AddAt(-1, iPart);
+
     if (!part) continue;
 
     if (fEtaMax > 0. && TMath::Abs(part->Eta()) > fEtaMax) continue;
