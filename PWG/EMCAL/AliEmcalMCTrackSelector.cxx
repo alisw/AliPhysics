@@ -93,7 +93,7 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
 
     TObject *obj = fEvent->FindListObject(fParticlesOutName);
     if (obj) { // the output array is already present in the array!
-      AliError(Form("The output array %s is already present in the array! Task will be disabled.", fParticlesOutName.Data()));
+      AliError(Form("The output array %s is already present in the event! Task will be disabled.", fParticlesOutName.Data()));
       fDisabled = kTRUE;
       return;
     }
@@ -105,8 +105,17 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
 
       fParticlesMapName = fParticlesOutName;
       fParticlesMapName += "_Map";
-      fParticlesMap = new AliNamedArrayI(fParticlesMapName, 99999);
-      
+
+      if (fEvent->FindListObject(fParticlesMapName)) {
+	AliError(Form("The output array map %s is already present in the event! Task will be disabled.", fParticlesMapName.Data()));
+	fDisabled = kTRUE;
+	return;
+      }
+      else {
+	fParticlesMap = new AliNamedArrayI(fParticlesMapName, 99999);
+	fEvent->AddObject(fParticlesMap);
+      }
+
       if (!fIsESD) {
 	fParticlesIn = static_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
 	if (!fParticlesIn) {
@@ -156,6 +165,8 @@ void AliEmcalMCTrackSelector::ConvertMCParticles()
 
   // loop over particles
   for (Int_t iPart = 0, nacc = 0; iPart < Nparticles; iPart++) {
+
+    fParticlesMap->AddAt(-1, iPart);
 
     AliMCParticle* part = static_cast<AliMCParticle*>(fMC->GetTrack(iPart));
 
