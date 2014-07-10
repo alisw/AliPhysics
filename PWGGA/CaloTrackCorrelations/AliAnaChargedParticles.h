@@ -83,30 +83,16 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiNoSPDNoRefitPt3; //! eta-phi distribution of constrained tracks with no SPD requierement and without ITSRefit,  pT > 3 GeV
 
   //MC
-  TH1F * fhPtPion;      //! pT distribution
-  TH2F * fhPhiPion;     //! phi distribution vs pT
-  TH2F * fhEtaPion;     //! eta distribution vs pT
   
-  TH1F * fhPtProton;    //! pT distribution
-  TH2F * fhPhiProton;   //! phi distribution vs pT
-  TH2F * fhEtaProton;   //! eta distribution vs pT
-  
-  TH1F * fhPtElectron;  //! pT distribution
-  TH2F * fhPhiElectron; //! phi distribution vs pT
-  TH2F * fhEtaElectron; //! eta distribution vs pT
-  
-  TH1F * fhPtKaon;      //! pT distribution
-  TH2F * fhPhiKaon;     //! phi distribution vs pT
-  TH2F * fhEtaKaon;     //! eta distribution vs pT
-  
-  TH1F * fhPtUnknown;   //! pT distribution
-  TH2F * fhPhiUnknown;  //! phi distribution vs pT
-  TH2F * fhEtaUnknown;  //! eta distribution vs pT
+  enum mvType{kmcPion = 0, kmcProton = 1, kmcKaon = 2, kmcMuon = 3, kmcElectron = 4, kmcUnknown = 4 };
 
-  TH1F * fhMCPt; //! Number of generated charged hadrons vs pT coming from MC particle
-  TH2F * fhMCPhi; //! Number of generated charged hadrons vs phi coming from MC particle
-  TH2F * fhMCEta; //! Number of generated charged hadrons vs eta coming from MC particle
-  TH1F * fhMCRecPt; //! Number of reconstructed charged hadrons vs pT coming from MC particle
+  TH1F * fhPtMCPart [6];     //! pT distribution, 6 hadron ID
+  TH2F * fhPhiMCPart[6];     //! phi distribution vs pT, 6 hadron ID
+  TH2F * fhEtaMCPart[6];     //! eta distribution vs pT, 6 hadron ID
+  
+  TH1F * fhPtMCPrimPart [6]; //! Number of generated charged hadrons vs pT coming from MC particle, 6 hadron ID
+  TH2F * fhPhiMCPrimPart[6]; //! Number of generated charged hadrons vs phi coming from MC particle, 6 hadron ID
+  TH2F * fhEtaMCPrimPart[6]; //! Number of generated charged hadrons vs eta coming from MC particle, 6 hadron ID
 
   // TOF
   TH1F * fhTOFSignal;                    //! TOF signal
@@ -162,7 +148,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles(              const AliAnaChargedParticles & ch) ; // cpy ctor
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ; // cpy assignment
   
-  ClassDef(AliAnaChargedParticles,9)
+  ClassDef(AliAnaChargedParticles,10)
 
 } ;
 
