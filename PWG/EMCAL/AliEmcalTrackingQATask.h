@@ -17,6 +17,7 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcal {
   void                   UserCreateOutputObjects();
   void                   SetGeneratorLevelName(const char* name);
   void                   SetDetectorLevelName(const char* name);
+  void                   SetSelectHIJING(Bool_t s)  {fSelectHIJING=s;}
 
  protected:
   Bool_t                 FillHistograms()                               ;
@@ -28,6 +29,7 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcal {
 						       Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType);
 
   // Task configuration
+  Bool_t                fSelectHIJING          ; //  select HIJING particles
 
   // Service fields (non-streamed)
   AliParticleContainer* fGeneratorLevel        ; //! generator level container
