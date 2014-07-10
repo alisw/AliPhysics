@@ -26,6 +26,7 @@
 // --- ROOT system ---
 #include "TParticle.h"
 #include "TH2F.h"
+#include "TDatabasePDG.h"
 
 //---- AliRoot system ----
 #include "AliAnaChargedParticles.h"
@@ -1235,66 +1236,86 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   {
     Int_t primpdg = -1;
     TLorentzVector mom;
+
     if(GetReader()->ReadStack())
     {
       AliStack * stack = GetMCStack();
-      if(stack) {
-        for(Int_t i=0 ; i<stack->GetNtrack(); i++)
-        {
-          TParticle *prim = stack->Particle(i);
-          if(prim->IsPrimary())
-          {
-            primpdg = TMath::Abs(prim->GetPdgCode());
-            
-            Int_t mcType = kmcUnknown;
-            if     (primpdg==211 ) mcType = kmcPion;
-            else if(primpdg==2212) mcType = kmcProton;
-            else if(primpdg==321 ) mcType = kmcKaon;
-            else if(primpdg==11  ) mcType = kmcElectron;
-            else if(primpdg==13  ) mcType = kmcMuon;
-            
-            prim->Momentum(mom);
-            Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
-            
-            Float_t ptPrim = prim->Pt();
-            if(in) fhPtMCPrimPart [mcType]->Fill(ptPrim);
-            fhEtaMCPrimPart[mcType]->Fill(ptPrim,prim->Eta());
-            fhPhiMCPrimPart[mcType]->Fill(ptPrim,prim->Phi());
-          }
-        }
+      if(!stack)
+      {
+        AliFatal("stack not available");
+        return;
       }
-    }
+      
+      for(Int_t i = 0 ; i<stack->GetNtrack(); i++)
+      {
+        TParticle *prim = stack->Particle(i);
+        
+        //if(prim->IsPrimary())
+        if( prim->GetStatusCode() != 1  ) continue;
+        
+        Int_t charge = (Int_t )TDatabasePDG::Instance()->GetParticle(prim->GetPdgCode())->Charge();
+        if( TMath::Abs(charge) == 0 ) continue;
+        
+        primpdg = TMath::Abs(prim->GetPdgCode());
+        
+        Int_t mcType = kmcUnknown;
+        if     (primpdg==211 ) mcType = kmcPion;
+        else if(primpdg==2212) mcType = kmcProton;
+        else if(primpdg==321 ) mcType = kmcKaon;
+        else if(primpdg==11  ) mcType = kmcElectron;
+        else if(primpdg==13  ) mcType = kmcMuon;
+        
+        //printf("pdg %d, charge %f, mctype %d\n",primpdg, charge, mcType);
+        
+        prim->Momentum(mom);
+        Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+        
+        Float_t ptPrim = prim->Pt();
+        if(in) fhPtMCPrimPart [mcType]->Fill(ptPrim);
+        fhEtaMCPrimPart[mcType]->Fill(ptPrim,prim->Eta());
+        fhPhiMCPrimPart[mcType]->Fill(ptPrim,prim->Phi());
+        
+      } // particle loop
+    } // ESD
     else if(GetReader()->ReadAODMCParticles())
     {
       TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-      if(mcparticles)
+      if(!mcparticles)
       {
-        Int_t nprim = mcparticles->GetEntriesFast();
-        for(Int_t i=0; i < nprim; i++)
-        {
-          AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
- 
-          if(prim->IsPrimary())
-          {
-            primpdg = TMath::Abs(prim->GetPdgCode());
-            
-            Int_t mcType = kmcUnknown;
-            if     (primpdg==211 ) mcType = kmcPion;
-            else if(primpdg==2212) mcType = kmcProton;
-            else if(primpdg==321 ) mcType = kmcKaon;
-            else if(primpdg==11  ) mcType = kmcElectron;
-            else if(primpdg==13  ) mcType = kmcMuon;
-            
-            mom.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
-            Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
-            
-            Float_t ptPrim = prim->Pt();
-            if(in) fhPtMCPrimPart [mcType]->Fill(ptPrim);
-            fhEtaMCPrimPart[mcType]->Fill(ptPrim,prim->Eta());
-            fhPhiMCPrimPart[mcType]->Fill(ptPrim,prim->Phi());
-          }
-        }
+        AliFatal("MC AOD particle list not available");
+        return;
       }
-    }
-  }
+      
+      Int_t nprim = mcparticles->GetEntriesFast();
+      for(Int_t i=0; i < nprim; i++)
+      {
+        AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
+        
+        //if(prim->IsPrimary())
+        if( prim->GetStatus() != 1) continue;
+        
+        if(TMath::Abs(prim->Charge()) == 0 ) continue;
+        
+        primpdg = TMath::Abs(prim->GetPdgCode());
+        
+        Int_t mcType = kmcUnknown;
+        if     (primpdg==211 ) mcType = kmcPion;
+        else if(primpdg==2212) mcType = kmcProton;
+        else if(primpdg==321 ) mcType = kmcKaon;
+        else if(primpdg==11  ) mcType = kmcElectron;
+        else if(primpdg==13  ) mcType = kmcMuon;
+        
+        //printf("pdg %d, charge %f, mctype %d\n",primpdg, charge, mcType);
+        
+        mom.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
+        Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+        
+        Float_t ptPrim = prim->Pt();
+        if(in) fhPtMCPrimPart [mcType]->Fill(ptPrim);
+        fhEtaMCPrimPart[mcType]->Fill(ptPrim,prim->Eta());
+        fhPhiMCPrimPart[mcType]->Fill(ptPrim,prim->Phi());
+      } // particle loop
+      
+    } // AOD
+  } // MC
 }
