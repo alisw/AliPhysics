@@ -37,6 +37,7 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* t
   fDoFullAnalysis(kFALSE),
   fPhi(0),
   fEta(0),
+  fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
   fIfCorrection(0),
@@ -81,19 +82,14 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* t
   strncat(tTitDenD,title, 100);
   fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
 
-  char tTitPhi[101] = "Phi";
-  strncat(tTitPhi,title, 100);
-  fPhi = new TH1D(tTitPhi,title,90,-TMath::Pi(),TMath::Pi());
-
-  char tTitEta[101] = "Eta";
-  strncat(tTitEta,title, 100);
-  fEta = new TH1D(tTitEta,title,90,-1.2,1.2);
-  
+    // set up numerator
+  char tTitNum[101] = "PtSumDist";
+  strncat(tTitNum,title, 100);
+  fPtSumDist = new TH1D(tTitNum,title,200,0,10);
 
   fDPhiDEtaNumerator->Sumw2();
   fDPhiDEtaDenominator->Sumw2();
-  fPhi->Sumw2();
-  fEta->Sumw2();
+  fPtSumDist->Sumw2();
 
 
 
@@ -116,6 +112,7 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
   fDoFullAnalysis(kFALSE),
   fPhi(0),
   fEta(0),
+  fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
   fIfCorrection(0),
@@ -184,6 +181,11 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
   else
     fEta = 0;
 
+ if (aCorrFctn.fPtSumDist)
+   fPtSumDist = new TH1D(*aCorrFctn.fPtSumDist);
+ else
+   fPtSumDist = 0;
+
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
  else 
@@ -217,8 +219,7 @@ AliFemtoCorrFctnDEtaDPhiCorrections::~AliFemtoCorrFctnDEtaDPhiCorrections(){
   // destructor
   delete fDPhiDEtaNumerator;
   delete fDPhiDEtaDenominator;
-  delete fPhi;
-  delete fEta;
+  delete fPtSumDist;
 
   if (fDoFullAnalysis) {
     delete fDPhiNumerator;
@@ -228,7 +229,8 @@ AliFemtoCorrFctnDEtaDPhiCorrections::~AliFemtoCorrFctnDEtaDPhiCorrections(){
 
     delete fYtYtNumerator;
     delete fYtYtDenominator;
-
+    delete fPhi;
+    delete fEta;
     delete fPtCorrectionsNum;
     delete fPtCorrectionsDen;
     delete fEtaCorrectionsNum;
@@ -292,6 +294,11 @@ AliFemtoCorrFctnDEtaDPhiCorrections& AliFemtoCorrFctnDEtaDPhiCorrections::operat
     fEta = new TH1D(*aCorrFctn.fEta);
   else
     fEta = 0;
+
+ if (aCorrFctn.fPtSumDist)
+   fPtSumDist = new TH1D(*aCorrFctn.fPtSumDist);
+ else
+   fPtSumDist = 0;
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
@@ -379,6 +386,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
 
   double pt1 = TMath::Hypot(px1, py1);
   double pt2 = TMath::Hypot(px2, py2);
+  fPtSumDist->Fill(pt1+pt2);
 
   double vert1[3];
   pair->Track1()->Track()->GetPrimaryVertex(vert1);
@@ -417,11 +425,10 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
     double yt2 = TMath::Log(sqrt(1+(pt2/PionMass)*(pt2/PionMass))+(pt2/PionMass));
     fYtYtNumerator->Fill(yt1,yt2);
 
+
+    fPhi->Fill(phi1);
+    fEta->Fill(eta1);
   }
-
-  fPhi->Fill(phi1);
-  fEta->Fill(eta1);
-
 
 }
 //____________________________
@@ -457,7 +464,6 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddMixedPair( AliFemtoPair* pair){
   double pt1 = TMath::Hypot(px1, py1);
   double pt2 = TMath::Hypot(px2, py2);
   //   double ptmin = pt1>pt2 ? pt2 : pt1;
-
   //   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
   //     sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
 
@@ -503,6 +509,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::WriteHistos()
   // Write out result histograms
   fDPhiDEtaNumerator->Write();
   fDPhiDEtaDenominator->Write();
+  fPtSumDist->Write();
   /*fDPhiNumerator->Write();
   fDPhiDenominator->Write();
   fDCosNumerator->Write();
@@ -513,8 +520,8 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::WriteHistos()
     fDCosPtNumerator->Write();
     fDCosPtDenominator->Write();
     }*/
-  fPhi->Write();
-  fEta->Write();
+  // fPhi->Write();
+  // fEta->Write();
   
 }
 
@@ -525,8 +532,7 @@ TList* AliFemtoCorrFctnDEtaDPhiCorrections::GetOutputList()
 
   tOutputList->Add(fDPhiDEtaNumerator);
   tOutputList->Add(fDPhiDEtaDenominator);
-  tOutputList->Add(fPhi);
-  tOutputList->Add(fEta);
+  tOutputList->Add(fPtSumDist);
  
   if (fDoFullAnalysis) {
     // tOutputList->Add(fDPhiPtNumerator);
@@ -540,6 +546,8 @@ TList* AliFemtoCorrFctnDEtaDPhiCorrections::GetOutputList()
 
     tOutputList->Add(fYtYtNumerator);
     tOutputList->Add(fYtYtDenominator);
+    tOutputList->Add(fPhi);
+    tOutputList->Add(fEta);
   }
 
 
@@ -588,6 +596,14 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoFullAnalysis(Bool_t do2d)
       fYtYtDenominator = new TH2D(tTitYtYtDen,title,aPhiBins,1,5,aEtaBins,1,5);
 
 
+      char tTitPhi[101] = "Phi";
+      strncat(tTitPhi,title, 100);
+      fPhi = new TH1D(tTitPhi,title,90,-TMath::Pi(),TMath::Pi());
+
+      char tTitEta[101] = "Eta";
+      strncat(tTitEta,title, 100);
+      fEta = new TH1D(tTitEta,title,90,-1.2,1.2);
+
       char tTitPtCorrectionsNum[101] = "NumpT1pT2EtaPhi";
       strncat(tTitPtCorrectionsNum,title, 100);
       char tTitPtCorrectionsDen[101] = "DenpT1pT2EtaPhi";
@@ -620,6 +636,8 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoFullAnalysis(Bool_t do2d)
       fDCosNumerator->Sumw2();
       fDCosDenominator->Sumw2();
       fYtYtNumerator->Sumw2();
+      fPhi->Sumw2();
+      fEta->Sumw2();
       fYtYtDenominator->Sumw2();
       fPtCorrectionsNum->Sumw2();
       fPtCorrectionsDen->Sumw2();
@@ -642,8 +660,8 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
   fpartType1 = partType1;
   fpartType2 = partType2;
 
-  char type1[10];
-  char type2[10];
+  char* type1 = new char[10];
+  char* type2 = new char[10];
 
 
   if(fpartType1==kPion) strcpy(type1,"Pion");
@@ -664,6 +682,9 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
   fhntReco2 = (THnT<float>*)(ifileCorrTab->Get(Form("fCorrectionMapData%s",type2)))->Clone();
   fhCont1 = (TH1D*)(ifileCorrTab->Get(Form("SecondariesContamination%s",type1)))->Clone();
   fhCont2 = (TH1D*)(ifileCorrTab->Get(Form("SecondariesContamination%s",type2)))->Clone();
+
+  delete type1;
+  delete type2;
 
   double fhntReco1_nbins = fhntReco1->GetNbins();
   double fhntReco2_nbins = fhntReco2->GetNbins();
@@ -830,8 +851,8 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile1D(const 
   else if (fpartType2==kAll) strcpy(type2,"All");
   else strcpy(type1,"");
 
-  fhCont1 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type1)))->Clone();
-  fhCont2 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type2)))->Clone();
+  fhCont1 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type1)));//->Clone();
+  fhCont2 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type2)));//->Clone();
   
   ifileCorrTab->Close();
 

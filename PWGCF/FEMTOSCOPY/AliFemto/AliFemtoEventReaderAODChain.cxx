@@ -89,8 +89,7 @@ AliFemtoEvent* AliFemtoEventReaderAODChain::ReturnHbtEvent()
 
   // cout<<"starting to read event "<<fCurEvent<<endl;
 
-  hbtEvent = new AliFemtoEvent;
-
+  //hbtEvent = new AliFemtoEvent;
   hbtEvent = CopyAODtoFemtoEvent();
 
   fCurEvent++;
