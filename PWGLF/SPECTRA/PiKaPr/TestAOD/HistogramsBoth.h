@@ -125,6 +125,8 @@ namespace AliSpectraNameSpaceBoth
       kNHistNSig=kHistNSigProtonPtTPCTOF,    
       
       kHistGenMulvsRawMul,
+
+      kHistDoubleCounts,			
                                 
       kNHist,                                   // Total number of histos
    };  // Type of events plotted in Pt Histogram
