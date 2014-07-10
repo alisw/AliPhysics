@@ -16,6 +16,7 @@
 #include "AliPicoTrack.h"
 #include "AliVTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliNamedArrayI.h"
 
 ClassImp(AliEmcalPicoTrackMaker)
 
@@ -36,6 +37,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   fTracksIn(0),
   fTracksOut(0),
   fMCParticles(0),
+  fMCParticlesMap(0),
   fInit(kFALSE)
 {
   // Constructor.
@@ -61,6 +63,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
   fTracksIn(0),
   fTracksOut(0),
   fMCParticles(0),
+  fMCParticlesMap(0),
   fInit(kFALSE)
 {
   // Constructor.
@@ -118,6 +121,10 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	AliError(Form("%s: Collection %s does not contain AliVParticle objects!", GetName(), fMCParticlesName.Data()));
 	fMCParticles = 0;
       }
+      
+      TString mapName(fMCParticlesName);
+      mapName += "_Map";
+      fMCParticlesMap = dynamic_cast<AliNamedArrayI*>(InputEvent()->FindListObject(mapName));
     }
 
     fInit = kTRUE;
@@ -183,6 +190,9 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 AliVParticle* AliEmcalPicoTrackMaker::GetMCParticle(Int_t label) 
 {
   if (!fMCParticles) return 0;
-  AliVParticle *part = static_cast<AliVParticle*>(fMCParticles->At(label));
+  Int_t index = label;
+  if (fMCParticlesMap) index = fMCParticlesMap->At(label);
+  if (index < 0 || index >= fMCParticles->GetEntriesFast()) return 0;
+  AliVParticle *part = static_cast<AliVParticle*>(fMCParticles->At(index));
   return part;
 }

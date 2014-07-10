@@ -3,6 +3,7 @@
 
 class TClonesArray;
 class AliVParticle;
+class AliNamedArrayI;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -42,7 +43,8 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   Bool_t             fCopyMCFlag;           // copy MC flag
   TClonesArray      *fTracksIn;             //!track array in
   TClonesArray      *fTracksOut;            //!track array out
-  TClonesArray      *fMCParticles;          //!MC particle array, used by IsHIJINGParticle
+  TClonesArray      *fMCParticles;          //!MC particle array
+  AliNamedArrayI    *fMCParticlesMap;       //!MC particle map
   Bool_t             fInit;                 //!true = task initialized
 
  private:
