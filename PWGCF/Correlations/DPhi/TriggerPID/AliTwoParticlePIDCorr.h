@@ -225,7 +225,10 @@ fPtTOFPIDmax=PtTOFPIDmax;
  void SetEffcorectionfilePathName(TString efffilename) {fefffilename=efffilename;}
  
 
- 
+  //PID Type
+  void SetPIDType(PIDType PIDmethod) { fPIDType = PIDmethod; }
+  PIDType GetPIDType() {return fPIDType; }
+  //NSigma cut
   //set cut on beyesian probability
   void SetBayesCut(Double_t cut){fBayesCut=cut;}
   void SetdiffPIDcutvalues(Bool_t diffPIDcutvalues,Double_t PIDCutval1, Double_t PIDCutval2, Double_t PIDCutval3,Double_t PIDCutval4){
@@ -327,6 +330,10 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TH2F *fEventnobaryon;//!
     TH2F *fEventnomeson;//!
     TH2F *fhistJetTrigestimate;//!
+    TH3F* fTwoTrackDistancePtdip;//!
+    TH3F* fTwoTrackDistancePtdipmix;//!
+    TH3F* fTwoTrackDistancePt[2];    //! control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
+    TH3F* fTwoTrackDistancePtmix[2];    //! control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
 
     TH2D* fCentralityCorrelation;  //! centrality vs Tracks multiplicity
  //VZERO calibration
