@@ -84,7 +84,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
 
   //MC
   
-  enum mvType{kmcPion = 0, kmcProton = 1, kmcKaon = 2, kmcMuon = 3, kmcElectron = 4, kmcUnknown = 4 };
+  enum mvType{kmcPion = 0, kmcProton = 1, kmcKaon = 2, kmcMuon = 3, kmcElectron = 4, kmcUnknown = 5 };
 
   TH1F * fhPtMCPart [6];                    //! pT distribution, 6 hadron ID
   TH2F * fhPhiMCPart[6];                    //! phi distribution vs pT, 6 hadron ID
