@@ -886,7 +886,7 @@ Int_t AliTPCParam::GetNPadsPerSegment(Int_t wireSegmentID) const
     segRowUp   = 48;
   } else if ( wireSegmentID == 3 || wireSegmentID == 7 ) {
     segRowDown = 48;
-    segRowUp   = 64;
+    segRowUp   = 63;
   } else if ( wireSegmentID == 8 ) {
     segRowDown = 64;
     segRowUp   = 75;
