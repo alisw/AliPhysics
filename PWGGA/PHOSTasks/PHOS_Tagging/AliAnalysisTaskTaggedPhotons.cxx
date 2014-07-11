@@ -235,6 +235,20 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   const Int_t nM=400 ;
   const Double_t mMax=1. ;
 
+  //QA histograms
+   for(Int_t iPID=0; iPID<4; iPID++){
+    fOutputContainer->Add(new TH1F(Form("hPhotM1_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M1",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM2_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M2",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M3",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM1A2_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M1",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM2A2_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M2",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM3A2_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M3",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM1A3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M1",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM2A3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M2",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH1F(Form("hPhotM3A3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M3",nPt,0.,ptMax)) ;
+   }
+  
+  
   const Int_t nCenBin=5;
   for(Int_t cen=0; cen<nCenBin; cen++){
 
@@ -337,7 +351,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
       fOutputContainer->Add(new TH2F("hMCGammaPi0MisConvR","Converted photons",400,0.,40.,600,0.,600.)) ;
  
   for(Int_t ipart=0; ipart<11; ipart++){  
-    fOutputContainer->Add(new TH2F(Form("hMC%s_ptrap",partName[ipart]),"Spectrum of primary photons",100,0.,10.,100,-2.,2.)) ;
+    fOutputContainer->Add(new TH2F(Form("hMC%s_ptrap",partName[ipart]),"Spectrum of primary photons",100,0.,10.,200,-1.,1.)) ;
     fOutputContainer->Add(new TH2F(Form("hMC%s_ptphi",partName[ipart]),"Spectrum of primary photons",100,0.,10.,100,0.,TMath::TwoPi())) ;
     fOutputContainer->Add(new TH2F(Form("hMC_%s_vertex",partName[ipart]),"vertex",nPt,0.,ptMax,150,0.,600.)) ;
     for(Int_t cen=0; cen<nCenBin; cen++){
@@ -758,7 +772,42 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     //PID criteria
     p->SetDispBit(clu->Chi2()<2.5) ;
     p->SetTOFBit(TestTOF(clu->GetTOF(),clu->E())) ;
-    p->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;      
+    p->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;   
+    
+    FillHistogram(Form("hPhotM%d_All",mod),p->Pt()) ;
+    if(fidArea>1){
+     FillHistogram(Form("hPhotM%dA2_All",mod),p->Pt()) ;
+      if(fidArea>2){
+        FillHistogram(Form("hPhotM%dA3_All",mod),p->Pt()) ;
+      }
+    }
+    if(p->IsDispOK()){
+      FillHistogram(Form("hPhotM%d_Disp",mod),p->Pt()) ;
+      if(fidArea>1){
+       FillHistogram(Form("hPhotM%dA2_Disp",mod),p->Pt()) ;
+        if(fidArea>2){
+          FillHistogram(Form("hPhotM%dA3_Disp",mod),p->Pt()) ;
+        }
+      }
+      if(p->IsCPVOK()){
+        FillHistogram(Form("hPhotM%d_Both",mod),p->Pt()) ;
+        if(fidArea>1){
+         FillHistogram(Form("hPhotM%dA2_Both",mod),p->Pt()) ;
+          if(fidArea>2){
+            FillHistogram(Form("hPhotM%dA3_Both",mod),p->Pt()) ;
+          }
+        }
+      }
+    } 
+    if(p->IsCPVOK()){
+      FillHistogram(Form("hPhotM%d_CPV",mod),p->Pt()) ;
+      if(fidArea>1){
+       FillHistogram(Form("hPhotM%dA2_CPV",mod),p->Pt()) ;
+        if(fidArea>2){
+          FillHistogram(Form("hPhotM%dA3_CPV",mod),p->Pt()) ;
+        }
+      }
+    }
   }
   FillHistogram("hPHOSCentrality",fCentrality,inList+0.5) ;
   
@@ -1237,7 +1286,8 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	  }
 	}
       }
-      
+      Int_t oldTag1=p1->GetTagInfo() ;
+      tag1=tag1|oldTag1 ;
       p1->SetTagInfo(tag1) ;
       Int_t tag2=0 ;
       for(Int_t eminType=0; eminType<3; eminType++){
