@@ -1023,8 +1023,10 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
         // Rho's
         if (fCalculateRhoJet>=1)
         {
-            ChargedJetEnergyDensityProfile();
-            
+            if (fDoJetRhoDensity == kTRUE)
+            {
+                ChargedJetEnergyDensityProfile();
+            }
             if (fMCPartLevel==kTRUE)
             {
                 EstimateChargedRhoCMS();
