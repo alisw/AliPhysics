@@ -34,6 +34,8 @@
 
 #include "AliAnalysisTaskEMCALPhotonIsolation.h"
 
+using std::cout;
+using std::endl;
 
 ClassImp(AliAnalysisTaskEMCALPhotonIsolation)
 

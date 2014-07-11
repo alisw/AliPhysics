@@ -53,6 +53,9 @@
 #include "TGeoGlobalMagField.h"
 #include "AliMagF.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEmcalJetHF)
 
 //________________________________________________________________________
@@ -551,7 +554,7 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
         // apply jet cuts
         if(!AcceptMyJet(jet)) continue;
  
-        Double_t JetQA[5] = {0, jet->GetNumberOfTracks(), jet->GetNumberOfClusters(),jet->Eta(), jet->Phi()};
+        Double_t JetQA[5] = {0, static_cast<Double_t>(jet->GetNumberOfTracks()), static_cast<Double_t>(jet->GetNumberOfClusters()),jet->Eta(), jet->Phi()};
         fhnJetQA->Fill(JetQA);
       
       
@@ -582,7 +585,7 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
               continue;
             }
             if(!IsJetTrack(jet,itrack,kFALSE)) continue;
-            Double_t ClusQA[6] = {caloCluster->E(),cp.PseudoRapidity() ,cp.Phi(), caloCluster->IsEMCAL(), NtrMatched, trackcluster->Phi()};
+            Double_t ClusQA[6] = {caloCluster->E(),cp.PseudoRapidity() ,cp.Phi(), static_cast<Double_t>(caloCluster->IsEMCAL()), NtrMatched, trackcluster->Phi()};
             fhnClusQA->Fill(ClusQA); //,1./Njets);    // fill Sparse Histo with trigger entries
           }//loop over tracks for JetQA
 
@@ -598,7 +601,7 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
           continue;
         }
         if(!IsJetTrack(jet,iTrack,kFALSE)) continue;
-        Double_t trackQA[5] = {jetTrack->Pt(), jetTrack->Eta(), jetTrack->Phi(), jetTrack->IsEMCAL(), jetTrack->GetEMCALcluster()};
+        Double_t trackQA[5] = {jetTrack->Pt(), jetTrack->Eta(), jetTrack->Phi(), static_cast<Double_t>(jetTrack->IsEMCAL()), static_cast<Double_t>(jetTrack->GetEMCALcluster())};
         fhnTrackQA->Fill(trackQA); //,1./Njets);
         
       }//track loop for TrackQA
