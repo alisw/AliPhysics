@@ -60,6 +60,8 @@ class AliAODv0;
 #include "AliAODTrack.h"
 #include "AliESDpid.h"
 
+using std::cout;
+using std::endl;
 
 #include "AliAnalysisTaskQAMultistrange.h"
 
