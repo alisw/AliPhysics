@@ -81,7 +81,7 @@ AliTPCDigitizer::AliTPCDigitizer(AliDigitizationInput* digInput)
 // ctor which should be used
 //  
   AliDebug(2,"(AliDigitizationInput* digInput) was processed");
-  if (AliTPCReconstructor::StreamLevel()>0)  fDebugStreamer = new TTreeSRedirector("TPCDigitDebug.root");
+  if (AliTPCReconstructor::StreamLevel()>0)  fDebugStreamer = new TTreeSRedirector("TPCDigitDebug.root","recreate");
 
 }
 
@@ -627,11 +627,8 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   //  
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
   AliTPCRecoParam *recoParam = calib->GetRecoParam(0); 
-  cout << " ====================================================================================================================================== " << endl;
-  cout << " ============================================  DigitizeWithTailAndCrossTalk is being processed  ======================================= " << endl;
-  cout << " ====================================================================================================================================== " << endl;
-  cout << " recoParam->GetCrosstalkCorrection()  =   " << recoParam->GetCrosstalkCorrection()  << endl; 
-  cout << " recoParam->GetUseIonTailCorrection() =   " << recoParam->GetUseIonTailCorrection() << endl;
+  AliDebug(1, Form(" recoParam->GetCrosstalkCorrection()  =   %f", recoParam->GetCrosstalkCorrection())); 
+  AliDebug(1,Form(" recoParam->GetUseIonTailCorrection() =  %f ", recoParam->GetUseIonTailCorrection()));
   Int_t nROCs = 72;
   char s[100]; 
   char ss[100];
@@ -795,7 +792,6 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     for (Int_t ires = 0;ires<20;ires++) timeResArr->AddAt(graphRes[ires],ires);
     timeResFunc.AddAt(timeResArr,isec); // Fill all trfs into a single TObjArray 
     nIonTailBins = graphRes[3]->GetN();
-    cout << " nIonTailBins = " << nIonTailBins << "  sector = " << isec << "   bin 30 =  " << graphRes[3]->GetY()[30] <<  endl;
   }
 
   //
@@ -831,7 +827,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     // structure with mean signal per pad to be filled for each timebin in first loop (11 anodeWireSegment and 1100 timebin)
     TMatrixD &crossTalkSignal =  *((TMatrixD*)crossTalkSignalArray.At(sector));
     AliTPCCalROC * gainROC = gainTPC->GetCalROC(sector);  // pad gains per given sector
-    digrow->SetID(globalRowID);
+    //  digrow->SetID(globalRowID);
     Int_t nTimeBins = 0;
     Int_t nPads = 0;
     Bool_t digitize = kFALSE;
@@ -851,7 +847,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       if (GetRegionOfInterest() && !digitize) break;
     }   
     if (!digitize) continue;
-    digrow->Allocate(nTimeBins,nPads);
+    //digrow->Allocate(nTimeBins,nPads);
     Float_t q    = 0;
     Int_t labptr = 0;
     Int_t nElems = nTimeBins*nPads; // element is a unit of a given row's pad-timebin space        
@@ -870,11 +866,11 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
         q  += *(pdig[i]);
         pdig[i]++;
       }
+      if (q<=0) continue;   
       Int_t padNumber = elem/nTimeBins;
       Int_t timeBin   = elem%nTimeBins;      
       Float_t gain = gainROC->GetValue(padRow,padNumber);  // get gain for given - pad-row pad
       q*= gain;
-      
       crossTalkSignal[wireSegmentID][timeBin]+= q/nPadsPerSegment;        // Qtot per segment for a given timebin
       qTotSectorOld -> GetMatrixArray()[sector] += q;                      // Qtot for each sector
       qTotTPC += q;                                                        // Qtot for whole TPC       
@@ -964,20 +960,21 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       //}
       q*= gain;
       qOrig = q;
+      Float_t noisePad = noiseROC->GetValue(padRow,padNumber);
+      Float_t noise  = pTPC->GetNoise()*noisePad;
+      if ( (q/16.+noise)< zerosup) continue;
       // Crosstalk correction 
       qXtalk = (*(TMatrixD*)crossTalkSignalArray.At(sector))[wireSegmentID][timeBin];
       qTotPerSector = qTotSectorOld -> GetMatrixArray()[sector];    
-      q -= qXtalk*recoParam->GetCrosstalkCorrection();
       
       // Ion tail correction: being elem=padNumber*nTimeBins+timeBin;
       Int_t lowerElem=elem-nIonTailBins;    
       Int_t zeroElem =(elem/nTimeBins)*nTimeBins;
       if (zeroElem<0) zeroElem=0;
       if (lowerElem<zeroElem) lowerElem=zeroElem;
-      if (lowerElem) lowerElem = padNumber*nTimeBins;
       // 
       qIonTail=0;
-      if (recoParam->GetUseIonTailCorrection()){
+      if (q>0 && recoParam->GetUseIonTailCorrection()){
 	for (Int_t i=0;i<nInputs; i++) if (active[i]){
 	  Short_t *pdigC= digarr[i]->GetDigits();
 	    for (Int_t celem=elem-1; celem>lowerElem; celem--){
@@ -988,11 +985,10 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
 	}
       }
       //
+      q -= qXtalk*recoParam->GetCrosstalkCorrection();
       q+=qIonTail;
-      Float_t noisePad = noiseROC->GetValue(padRow,padNumber);
-      Float_t noise  = pTPC->GetNoise();
       q/=16.;                                              //conversion factor
-      q+=noise*noisePad;	
+      q+=noise;	
       q=TMath::Nint(q);  // round to the nearest integer
       
       
