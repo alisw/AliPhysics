@@ -55,6 +55,7 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
 	SPECTRA/PiKaPr/TestAOD/AliSpectraAODPID.cxx
 	SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskSpectraAOD.cxx
         SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskSpectraAllChAOD.cxx
+        SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskV2AllChAOD.cxx
         SPECTRA/Kinks/AliAnalysisKinkESDat.cxx
         SPECTRA/Kinks/AliAnalysisKinkESDMC.cxx
 	SPECTRA/PiKaPr/TestAOD/AliSpectraBothTrackCuts.cxx
