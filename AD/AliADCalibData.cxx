@@ -15,25 +15,53 @@
 
 /* $Id: AliADCalibData.cxx,                                            */
 
+#include <TMath.h>
+#include <TObjString.h>
+#include <TMap.h>
+#include <TH1F.h>
+#include <TH2F.h>
 
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliADCalibData.h"
-#include "TList.h"
-#include "TCanvas.h"
+#include "AliADConst.h"
+#include "AliLog.h"
 
 ClassImp(AliADCalibData)
 
 
 //________________________________________________________________
-AliADCalibData::AliADCalibData()
+AliADCalibData::AliADCalibData():
+  fLightYields(NULL),
+  fPMGainsA(NULL),
+  fPMGainsB(NULL)
 {
- 	for (Int_t imod = 0; imod < 60; imod++)
-	{
-		fEfficiencies[imod]=0.;
-		fRates[imod]=0.;
-		fModulesActivity[imod]=0.;
-	} 
-}
+  // default constructor
+  
+    for(int t=0; t<16; t++) {
+        fMeanHV[t]      = 100.0;
+        fWidthHV[t]     = 0.0; 
+	fTimeOffset[t]  = 5.0;
+        fTimeGain[t]    = 1.0;
+	fDeadChannel[t]= kFALSE;
+	fDiscriThr[t]  = 2.5;
+    }
+    for(int t=0; t<32; t++) {
+        fPedestal[t]    = 0.0;     
+        fSigma[t]       = 0.0;        
+        fADCmean[t]     = 0.0;      
+        fADCsigma[t]    = 0.0;
+    }
+    for(int i=0; i<kNCIUBoards ;i++) {
+	fTimeResolution[i]  = 25./256.;     // Default time resolution
+	fWidthResolution[i] = 25./64.;     // Default time width resolution
+	fMatchWindow[i] = 4;
+	fSearchWindow[i] = 16;
+	fTriggerCountOffset[i] = 3247;
+	fRollOver[i] = 3563;
+    }
 
+}
 //________________________________________________________________
 void AliADCalibData::Reset()
 {
@@ -42,41 +70,77 @@ void AliADCalibData::Reset()
 
 //________________________________________________________________
 AliADCalibData::AliADCalibData(const char* name) :
-  TNamed()
+  fLightYields(NULL),
+  fPMGainsA(NULL),
+  fPMGainsB(NULL)
 {
-  TString namst = "Calib_";
-  namst += name;
-  SetName(namst.Data());
-  SetTitle(namst.Data());
-
+  // Constructor
+   TString namst = "Calib_";
+   namst += name;
+   SetName(namst.Data());
+   SetTitle(namst.Data());
+   for(int t=0; t<16; t++) {
+       fMeanHV[t]      = 100.0;
+       fWidthHV[t]     = 0.0; 
+       fTimeOffset[t]  = 5.0;
+       fTimeGain[t]    = 1.0;
+       fDeadChannel[t]= kFALSE;
+       fDiscriThr[t]  = 2.5;
+    }
+   for(int t=0; t<32; t++) {
+       fPedestal[t]    = 0.0;     
+       fSigma[t]       = 0.0;        
+       fADCmean[t]     = 0.0;      
+       fADCsigma[t]    = 0.0;
+   }
+   for(int i=0; i<kNCIUBoards ;i++) {
+       fTimeResolution[i]  = 25./256.;    // Default time resolution in ns / channel
+       fWidthResolution[i] = 25./64.;     // Default time width resolution in ns / channel
+       fMatchWindow[i] = 4;
+       fSearchWindow[i] = 16;
+       fTriggerCountOffset[i] = 3247;
+       fRollOver[i] = 3563;
+   }
 }
 
 //________________________________________________________________
 AliADCalibData::AliADCalibData(const AliADCalibData& calibda) :
-  TNamed(calibda)
+  TNamed(calibda),
+  fLightYields(NULL),
+  fPMGainsA(NULL),
+  fPMGainsB(NULL)
 {
 // copy constructor
 
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   
-  // there are 60 modules. Note that number of first module is 1 (one)
-  for(int t=0; t<60; t++) 
-  {
-  	fEfficiencies[t] =calibda.GetEfficiency(t);
-  	fRates[t] = calibda.GetRate(t);
-	fModulesActivity[t] = calibda.GetModuleActivity(t);
+  for(int t=0; t<32; t++) { 
+      fPedestal[t] = calibda.GetPedestal(t);
+      fSigma[t]    = calibda.GetSigma(t);
+      fADCmean[t]  = calibda.GetADCmean(t);
+      fADCsigma[t] = calibda.GetADCsigma(t); }
+      
+  for(int t=0; t<16; t++) { 
+      fMeanHV[t]       = calibda.GetMeanHV(t);
+      fWidthHV[t]      = calibda.GetWidthHV(t);        
+      fTimeOffset[t]   = calibda.GetTimeOffset(t);
+      fTimeGain[t]     = calibda.GetTimeGain(t); 
+      fDeadChannel[t]  = calibda.IsChannelDead(t);
+      fDiscriThr[t]    = calibda.GetDiscriThr(t);
+  }  
+  
+  for(int i=0; i<kNCIUBoards ;i++) {
+      fTimeResolution[i]  = calibda.GetTimeResolution(i);
+      fWidthResolution[i] = calibda.GetWidthResolution(i);	  
+      fMatchWindow[i] = calibda.GetMatchWindow(i);
+      fSearchWindow[i] = calibda.GetSearchWindow(i);
+      fTriggerCountOffset[i] = calibda.GetTriggerCountOffset(i);
+      fRollOver[i] = calibda.GetRollOver(i);
   }
+  
 }
-//_______________________________________________________________
-void AliADCalibData::Draw(Option_t *)
-{
- 
 
-  //fHits->Draw();
-
- 
-}
 //________________________________________________________________
 AliADCalibData &AliADCalibData::operator =(const AliADCalibData& calibda)
 {
@@ -84,54 +148,148 @@ AliADCalibData &AliADCalibData::operator =(const AliADCalibData& calibda)
 
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
-  // there are 60 modules. Note that number of first module is 1 (one)
-  for(int t=0; t<60; t++) 
-  {
-  	fEfficiencies[t] =calibda.GetEfficiency(t);
-  	fRates[t] = calibda.GetRate(t);
-	fModulesActivity[t] = calibda.GetModuleActivity(t);
+  
+  for(int t=0; t<32; t++) {
+      fPedestal[t] = calibda.GetPedestal(t);
+      fSigma[t]    = calibda.GetSigma(t);
+      fADCmean[t]  = calibda.GetADCmean(t);
+      fADCsigma[t] = calibda.GetADCsigma(t); }
+      
+  for(int t=0; t<16; t++) {
+      fMeanHV[t]       = calibda.GetMeanHV(t);
+      fWidthHV[t]      = calibda.GetWidthHV(t);        
+      fTimeOffset[t]   = calibda.GetTimeOffset(t);
+      fTimeGain[t]     = calibda.GetTimeGain(t); 
+      fDeadChannel[t]  = calibda.IsChannelDead(t);
+      fDiscriThr[t]    = calibda.GetDiscriThr(t);
+  }   
+  for(int i=0; i<kNCIUBoards ;i++) {
+      fTimeResolution[i]  = calibda.GetTimeResolution(i);
+      fWidthResolution[i] = calibda.GetWidthResolution(i);	  
+      fMatchWindow[i] = calibda.GetMatchWindow(i);
+      fSearchWindow[i] = calibda.GetSearchWindow(i);
+      fTriggerCountOffset[i] = calibda.GetTriggerCountOffset(i);
+      fRollOver[i] = calibda.GetRollOver(i);
   }
-  return *this;
-}
-//_______________________________________________________________
-/*void AliADCalibData::AddHisto(TH1D *fHist)
-{
-    
-
-
- = (TH1D*)fHist->Clone("hnew");
-
-     
    
- 
+  return *this;
+  
 }
-*/
 
 //________________________________________________________________
 AliADCalibData::~AliADCalibData()
 {
-  
+  // destructor
+  if (fLightYields)
+    delete [] fLightYields;
+  if (fPMGainsA)
+    delete [] fPMGainsA;
+  if (fPMGainsB)
+    delete [] fPMGainsB;
 }
-
-                                                                                   
 
 //________________________________________________________________
-void AliADCalibData::SetEfficiencies(Float_t* Eff)
+Int_t AliADCalibData::GetBoardNumber(Int_t channel)
 {
-  // there are 60 modules. Note that number of first module is 1 (one)
-  if(Eff) for(int t=0; t<60; t++) fEfficiencies[t] = Eff[t];
-  else for(int t=0; t<60; t++) fEfficiencies[t] = 0.0;
+  // Get FEE board number
+  // from offline channel index
+  if (channel >= 0 && channel < 16) return (channel);
+  //if (channel >=8 && channel < 16) return (channel / 2);
+
+  AliErrorClass(Form("Wrong channel index: %d",channel));
+  return -1;
 }
 
-void AliADCalibData::SetRates(Float_t* Rt)
+//________________________________________________________________
+Float_t AliADCalibData::GetLightYields(Int_t channel)
 {
-   if(Rt) for (int t=0;t<60; t++) fRates[t] = Rt[t];
-else for (int t=0;t<60; t++) fRates[t] = 0.0;
+  // Get the light yield efficiency
+  // for a given channel
+  if (!fLightYields) InitLightYields();
+
+  if (channel >= 0 && channel < 64) {
+    return fLightYields[channel];
+  }
+
+  AliError(Form("Wrong channel index: %d",channel));
+  return 0;
 }
 
-void AliADCalibData::SetModulesActivity(Float_t* Mac)
+//________________________________________________________________
+void  AliADCalibData::InitLightYields()
 {
-	if(Mac) for (int t=0;t<60;t++) fModulesActivity[t] = Mac[t];
-	else for (int t=0;t<60;t++) fModulesActivity[t] = 0.0;
+  // Initialize the light yield factors
+  // Read from a separate OCDB entry
+  if (fLightYields) return;
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("VZERO/Calib/LightYields");
+  if (!entry) AliFatal("AD light yields are not found in OCDB !");
+  TH1F *yields = (TH1F*)entry->GetObject();
+
+  fLightYields = new Float_t[16];
+  for(Int_t i = 0 ; i < 16; ++i) {
+    fLightYields[i] = yields->GetBinContent(i+1);
+  }
 }
 
+//________________________________________________________________
+void  AliADCalibData::InitPMGains()
+{
+  // Initialize the PM gain factors
+  // Read from a separate OCDB entry
+  if (fPMGainsA) return;
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("VZERO/Calib/PMGains");
+  if (!entry) AliFatal("VZERO PM gains are not found in OCDB !");
+  TH2F *gains = (TH2F*)entry->GetObject();
+
+  fPMGainsA = new Float_t[16];
+  fPMGainsB = new Float_t[16];
+  for(Int_t i = 0 ; i < 16; ++i) {
+    fPMGainsA[i] = gains->GetBinContent(i+1,1);
+    fPMGainsB[i] = gains->GetBinContent(i+1,2);
+  }
+}
+
+//________________________________________________________________
+Float_t AliADCalibData::GetGain(Int_t channel)
+{
+  // Computes the PM gains
+  // Argument passed is the PM number (aliroot numbering)
+  if (!fPMGainsA) InitPMGains();
+
+  // High Voltage retrieval from Calibration Data Base:  
+  Float_t hv = fMeanHV[channel];
+  Float_t gain = 0;
+  if (hv>0)
+    gain = TMath::Exp(fPMGainsA[channel]+fPMGainsB[channel]*TMath::Log(hv));
+  return gain;
+}
+
+//________________________________________________________________
+Float_t AliADCalibData::GetCalibDiscriThr(Int_t channel, Bool_t scaled)
+{
+  // The method returns actual TDC discri threshold
+  // extracted from the data.
+  //
+  // In case scaled flag is set the threshold is scaled
+  // so that to get 4.0 for a FEE threshold of 4.0.
+  // In this way we avoid a change in the slewing correction
+  // for the entire 2010 p-p data.
+  //
+  // The method is to be moved to OCDB object.
+
+  Float_t thr = GetDiscriThr(channel);
+
+  Float_t calThr = 0;
+  if (thr <= 1.) 
+    calThr = 3.1;
+  else if (thr >= 2.)
+    calThr = (3.1+1.15*thr-1.7);
+  else
+    calThr = (3.1-0.3*thr+0.3*thr*thr);
+
+  if (scaled) calThr *= 4./(3.1+1.15*4.-1.7);
+
+  return calThr;
+}
