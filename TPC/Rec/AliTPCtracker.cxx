@@ -1367,6 +1367,7 @@ Int_t  AliTPCtracker::LoadClusters()
   // Conversion of pad, row coordinates in local tracking coords.
   // Could be skipped here; is already done in clusterfinder
 
+
   Int_t j=Int_t(tree->GetEntries());
   for (Int_t i=0; i<j; i++) {
     br->GetEntry(i);
@@ -1385,11 +1386,11 @@ Int_t  AliTPCtracker::LoadClusters()
 
       Int_t timeBinXtalk = clXtalk->GetTimeBin();
       Double_t qTotXtalk = 0.;   
-      Double_t rmsTime   = TMath::Sqrt(clXtalk->GetSigmaZ2()); 
-      Double_t norm= 2*TMath::Exp(1.0/(2.*rmsTime))+1.;
-      for (Int_t itb=timeBinXtalk-1, idelta=-1; itb<=timeBinXtalk+1; itb++,idelta++) {        
+      Double_t rmsTime2   = clXtalk->GetSigmaZ2()/(fkParam->GetZWidth()*fkParam->GetZWidth()); 
+      Double_t norm= 2.*TMath::Exp(-1.0/(2.*rmsTime2))+2.*TMath::Exp(-4.0/(2.*rmsTime2))+1.;
+      for (Int_t itb=timeBinXtalk-2, idelta=-2; itb<=timeBinXtalk+2; itb++,idelta++) {        
         if (itb<0 || itb>=nCols) continue;
-        qTotXtalk = clXtalk->GetQ()*TMath::Exp(-idelta*idelta/(2*rmsTime))/norm;
+        qTotXtalk = clXtalk->GetQ()*TMath::Exp(-idelta*idelta/(2*rmsTime2))/norm;
         crossTalkSignal[wireSegmentID][itb]+= qTotXtalk/nPadsPerSegment; 
       }       
     }
@@ -1419,6 +1420,12 @@ Int_t  AliTPCtracker::LoadClusters()
   clrow->Clear("C");
   LoadOuterSectors();
   LoadInnerSectors();
+
+  cout << " =================================================================================================================================== " << endl;
+  cout << " AliTPCReconstructor::GetRecoParam()->GetUseIonTailCorrection() =  " << AliTPCReconstructor::GetRecoParam()->GetUseIonTailCorrection() << endl;
+  cout << " AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()  =  " << AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()  << endl;
+  cout << " =================================================================================================================================== " << endl;
+
   if (AliTPCReconstructor::GetRecoParam()->GetUseIonTailCorrection()) ApplyTailCancellation();
   if (AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()!=0.) ApplyXtalkCorrection();
   return 0;
@@ -1569,9 +1576,33 @@ void  AliTPCtracker::ApplyXtalkCorrection(){
 	  Int_t iTimeBin=TMath::Nint(cluster->GetTimeBin());
 	  Double_t xTalk= crossTalkMatrix[wireSegmentID][iTimeBin];
 	  cluster->SetMax(cluster->GetMax()+xTalk);
-	  const Double_t kDummy=3;
+	  const Double_t kDummy=4;
 	  Double_t sumxTalk=xTalk*kDummy; // should be calculated via time response function
 	  cluster->SetQ(cluster->GetQ()+sumxTalk);
+
+
+          if (AliTPCReconstructor::StreamLevel()==1) {
+            TTreeSRedirector &cstream = *fDebugStreamer;
+            if (gRandom->Rndm() > 0.){
+              cstream<<"Xtalk"<<
+                "isector=" << isector <<               // sector [0,36]
+                "iside=" << iside <<                   // side A or C
+                "row=" << row <<                       // padrow
+                "i=" << i <<                           // index of the cluster 
+                "xSector=" << xSector <<               // sector [0,72] 
+                "wireSegmentID=" << wireSegmentID <<   // anode wire segment id [0,10] 
+                "iTimeBin=" << iTimeBin <<             // timebin of the corrected cluster 
+                "xTalk=" << xTalk <<                   // Xtalk contribution added to Qmax
+                "sumxTalk=" << sumxTalk <<             // Xtalk contribution added to Qtot (roughly 3*Xtalk) 
+                "cluster.=" << cluster <<              // corrected cluster object 
+                "\n";
+            }
+          }// dump the results to the debug streamer if in debug mode
+
+
+
+
+
 	}
       }
     }
