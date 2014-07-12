@@ -57,7 +57,7 @@ const char * AliSpectraAODTrackCuts::kBinLabel[] ={"TrkBit",
 ClassImp(AliSpectraAODTrackCuts)
 
 
-AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
+AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fRequestSPDcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
   fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0), fPIDResponse(0)
 {
   // Constructor
@@ -87,6 +87,7 @@ AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, 
   fPtCutTOFMatching=0.6; //default value fot matching with TOF
   fYCut       = 100000.0; // default value of y cut ~ no cut 
   fMinTPCcls=70; // ncls in TPC
+  fRequestSPDcls=kFALSE; //request a hit in the SPD
 }
 
 //_______________________________________________________
@@ -145,7 +146,7 @@ Bool_t AliSpectraAODTrackCuts::CheckTrackCuts()
 {
   // Check additional track Cuts
   Bool_t PassTrackCuts=kTRUE;
-  if (!fTrack->HasPointOnITSLayer(0) && !fTrack->HasPointOnITSLayer(1))PassTrackCuts=kFALSE; //FIXME 1 SPD for the moment
+  if (!fTrack->HasPointOnITSLayer(0) && !fTrack->HasPointOnITSLayer(1)  && !fRequestSPDcls)PassTrackCuts=kFALSE; //FIXME 1 SPD for the moment
   if (fTrack->GetTPCNcls()<fMinTPCcls)PassTrackCuts=kFALSE;
   return PassTrackCuts;
 }
