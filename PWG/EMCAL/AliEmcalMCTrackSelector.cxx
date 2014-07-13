@@ -239,7 +239,8 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
 
     fParticlesMap->AddAt(nacc, iPart);
 
-    new ((*fParticlesOut)[nacc]) AliAODMCParticle(*part);	  
+    AliAODMCParticle *newPart = new ((*fParticlesOut)[nacc]) AliAODMCParticle(*part);
+    newPart->SetGeneratorIndex(part->GetGeneratorIndex());
 
     nacc++;
   }
