@@ -417,7 +417,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   TProfile *fDiffCorrelationsPro[2][4];  // multi-particle correlations [0=cos,1=sin][1p,2p,3p,4p]
   UInt_t fDiffBinNo;                     // differential bin number
 
-  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,1);
+  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,2);
 
 };
 

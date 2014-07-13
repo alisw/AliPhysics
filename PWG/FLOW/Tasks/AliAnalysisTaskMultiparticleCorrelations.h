@@ -229,7 +229,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   Int_t fnDiffBins;                      // number of differential bins in pt or in eta (when non-default binning is used)
   Double_t *fRangesDiffBins;             // ranges for differential bins in pt or in eta (when non-default binning is used)
 
-  ClassDef(AliAnalysisTaskMultiparticleCorrelations,1); 
+  ClassDef(AliAnalysisTaskMultiparticleCorrelations,2); 
 
 };
 
