@@ -962,26 +962,27 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       qOrig = q;
       Float_t noisePad = noiseROC->GetValue(padRow,padNumber);
       Float_t noise  = pTPC->GetNoise()*noisePad;
-      if ( (q/16.+noise)< zerosup) continue;
-      // Crosstalk correction 
-      qXtalk = (*(TMatrixD*)crossTalkSignalArray.At(sector))[wireSegmentID][timeBin];
-      qTotPerSector = qTotSectorOld -> GetMatrixArray()[sector];    
-      
-      // Ion tail correction: being elem=padNumber*nTimeBins+timeBin;
-      Int_t lowerElem=elem-nIonTailBins;    
-      Int_t zeroElem =(elem/nTimeBins)*nTimeBins;
-      if (zeroElem<0) zeroElem=0;
-      if (lowerElem<zeroElem) lowerElem=zeroElem;
-      // 
-      qIonTail=0;
-      if (q>0 && recoParam->GetUseIonTailCorrection()){
-	for (Int_t i=0;i<nInputs; i++) if (active[i]){
-	  Short_t *pdigC= digarr[i]->GetDigits();
+      if ( (q/16.+noise)> zerosup){
+	// Crosstalk correction 
+	qXtalk = (*(TMatrixD*)crossTalkSignalArray.At(sector))[wireSegmentID][timeBin];
+	qTotPerSector = qTotSectorOld -> GetMatrixArray()[sector];    
+	
+	// Ion tail correction: being elem=padNumber*nTimeBins+timeBin;
+	Int_t lowerElem=elem-nIonTailBins;    
+	Int_t zeroElem =(elem/nTimeBins)*nTimeBins;
+	if (zeroElem<0) zeroElem=0;
+	if (lowerElem<zeroElem) lowerElem=zeroElem;
+	// 
+	qIonTail=0;
+	if (q>0 && recoParam->GetUseIonTailCorrection()){
+	  for (Int_t i=0;i<nInputs; i++) if (active[i]){
+	    Short_t *pdigC= digarr[i]->GetDigits();
 	    for (Int_t celem=elem-1; celem>lowerElem; celem--){
 	      //for Mesut - her we substact the ion tail	
 	      Double_t qCElem=pdigC[celem];
-            if (graphTRF->GetY()[elem-celem]<0)qIonTail+=qCElem*graphTRF->GetY()[elem-celem];
+	      if (graphTRF->GetY()[elem-celem]<0)qIonTail+=qCElem*graphTRF->GetY()[elem-celem];
 	    }
+	  }
 	}
       }
       //
