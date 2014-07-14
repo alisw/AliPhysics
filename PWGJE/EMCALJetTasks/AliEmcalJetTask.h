@@ -105,6 +105,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Double_t               GetRadius()                      { return fRadius; }
   const char*            GetTracksName()                  { return fTracksName.Data(); }
   const char*            GetClusName()                    { return fCaloName.Data(); }
+  const char*            GetRhoName()                     { return fRhoName.Data(); }
   UInt_t                 GetMarkConstituents()            { return fMarkConst; }
   Double_t               GetMinJetArea()                  { return fMinJetArea; }
   Double_t               GetMinJetClusPt()                { return fMinJetClusPt; }
