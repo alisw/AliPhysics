@@ -1346,7 +1346,7 @@ UInt_t AliGRPPreprocessor::ProcessDqmFxs()
 
 	// TriggerClassesAndHistosToClone
 	TList* list = GetFileSources(kDQM, "TriggerClassesAndHistosToClone");
-	Bool_t storeResult = kTRUE;
+	Bool_t openFileResult = kTRUE;
 	Bool_t storeResultQAThr = kTRUE;
 	if (list !=0x0 && list->GetEntries()!=0){
 		AliInfo("The following sources produced files with the id TriggerClassesAndHistosToClone for GRP");
@@ -1367,7 +1367,7 @@ UInt_t AliGRPPreprocessor::ProcessDqmFxs()
 				}
 				else {
 					AliError("Can't open file");
-					storeResult = kFALSE;
+					openFileResult = kFALSE;
 				}
 			}
 			else{
@@ -1460,7 +1460,9 @@ UInt_t AliGRPPreprocessor::ProcessDqmFxs()
 		Printf("No valid QAThresholds entries found, storing nothing in the OCDB");
 	}
 
-	//	return storeResult;
+	Printf("openFileResult for QAThr processing would be %d, but we return kTRUE anyway", (Int_t)openFileResult);
+	Printf("storeResultQAThr for QAThr processing would be %d, but we return kTRUE anyway", (Int_t)storeResultQAThr);
+	//	return storeResultQAThr;
 	return kTRUE;  // temporary!!
 }
 
@@ -2447,6 +2449,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 		}
 	}
 
+	AliDebug(2, Form("nentriesUsed = %d", nentriesUsed));
 	Float_t temp = 0;
 	Float_t temp1 = 0;
 	Float_t sumweights = 0; 
