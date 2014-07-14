@@ -72,6 +72,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fTOFmode(1)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
+  , fPileUpRejectionType(AliAnalysisTaskPIDV0base::kPileUpRejectionOff)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
   , fSystematicScalingSplinesThreshold(50.)
   , fSystematicScalingSplinesBelowThreshold(1.0)
@@ -137,6 +138,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fhEventsProcessed(0x0)
   , fhEventsTriggerSel(0x0)
   , fhEventsTriggerSelVtxCut(0x0) 
+  , fhEventsProcessedNoPileUpRejection(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
   , fh2FFJetPtGen(0x0)
@@ -206,6 +208,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fTOFmode(1)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
+  , fPileUpRejectionType(AliAnalysisTaskPIDV0base::kPileUpRejectionOff)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
   , fSystematicScalingSplinesThreshold(50.)
   , fSystematicScalingSplinesBelowThreshold(1.0)
@@ -271,6 +274,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fhEventsProcessed(0x0)
   , fhEventsTriggerSel(0x0)
   , fhEventsTriggerSelVtxCut(0x0) 
+  , fhEventsProcessedNoPileUpRejection(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
   , fh2FFJetPtGen(0x0)
@@ -542,7 +546,7 @@ Bool_t AliAnalysisTaskPID::CalculateMaxEtaVariationMapFromPIDResponse()
     fhMaxEtaVariation->SetBinContent(binY, maxAbs);
   }
   
-  printf("AliAnalysisTaskPID: Calculated max eta variation.\n");
+  printf("AliAnalysisTaskPID: Calculated max eta variation from map \"%s\".\n", hEta->GetTitle());
   
   return kTRUE;
 }
@@ -557,23 +561,13 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   if(fDebug > 1)
     printf("File: %s, Line: %d: UserCreateOutputObjects\n", (char*)__FILE__, __LINE__);
   
+  // Setup basic things, like PIDResponse
+  AliAnalysisTaskPIDV0base::UserCreateOutputObjects();
+  
+  if (!fPIDResponse)
+    AliFatal("PIDResponse object was not created");
+  
   SetUpPIDcombined();
-
-  // Input handler
-  AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
-  
-  if (!inputHandler)
-    AliFatal("Input handler needed");
-  else {
-    // PID response object
-    fPIDResponse = inputHandler->GetPIDResponse();
-    if (!fPIDResponse)
-      AliFatal("PIDResponse object was not created");
-  }
-  
-  if(fDebug > 2)
-    printf("File: %s, Line: %d: UserCreateOutputObjects -> Retrieved PIDresponse object\n", (char*)__FILE__, __LINE__);
   
   OpenFile(1);
   
@@ -759,7 +753,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   
   
   fhEventsProcessed = new TH1D("fhEventsProcessed",
-                               "Number of events passing trigger selection, vtx and zvtx cuts;Centrality percentile", 
+                               "Number of events passing trigger selection, vtx and zvtx cuts and pile-up rejection;Centrality percentile", 
                                nCentBins, binsCent);
   fhEventsProcessed->Sumw2();
   fOutputContainer->Add(fhEventsProcessed);
@@ -775,6 +769,13 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
                                 nCentBins, binsCent);
   fOutputContainer->Add(fhEventsTriggerSel);
   fhEventsTriggerSel->Sumw2();
+  
+  
+  fhEventsProcessedNoPileUpRejection = new TH1D("fhEventsProcessedNoPileUpRejection",
+                                                "Number of events passing trigger selection, vtx and zvtx cuts;Centrality percentile", 
+                                                nCentBins, binsCent);
+  fOutputContainer->Add(fhEventsProcessedNoPileUpRejection);
+  fhEventsProcessedNoPileUpRejection->Sumw2();
   
   
   // Generated yields within acceptance
@@ -980,19 +981,6 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   if(fDebug > 1)
     printf("File: %s, Line: %d: UserExec\n", (char*)__FILE__, __LINE__);
   
-  Int_t run = InputEvent()->GetRunNumber();
-  
-  if (run != fRun){
-    // If systematics on eta is investigated, need to calculate the maxEtaVariationMap
-    if ((TMath::Abs(fSystematicScalingEtaCorrectionLowMomenta - 1.0) > fgkEpsilon) ||
-        (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - 1.0) > fgkEpsilon)) {
-      if (!CalculateMaxEtaVariationMapFromPIDResponse())
-        AliFatal("Systematics on eta correction requested, but failed to calculate max eta varation map!");
-    }
-  }
-  
-  fRun = run;
-  
   // No processing of event, if input is fed in directly from another task
   if (fInputFromOtherTask)
     return;
@@ -1005,6 +993,8 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     Printf("ERROR: fEvent not available");
     return;
   }
+  
+  ConfigureTaskForCurrentEvent(fEvent);
   
   fMC = dynamic_cast<AliMCEvent*>(MCEvent());
   
@@ -1046,6 +1036,14 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   
   // Now check again, but also require z position to be in desired range
   if (!GetVertexIsOk(fEvent, kTRUE))
+    return;
+  
+  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
+  //TODO ATTENTION: Is this the right place for the pile-up rejection? Important to have still the proper bin-0 correction,
+  // which is done solely with sel and selVtx, since the zvtx selection does ~not change the spectra. The question is whether the pile-up
+  // rejection changes the spectra. If not, then it is perfectly fine to put it here and keep the usual histo for the normalisation to number
+  // of events. But if it does change the spectra, this must somehow be corrected for.
+  if (GetIsPileUp(fEvent, fPileUpRejectionType))
     return;
   
   IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
@@ -1251,6 +1249,31 @@ void AliAnalysisTaskPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
+}
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskPID::ConfigureTaskForCurrentEvent(AliVEvent* event)
+{
+  // Configure the task for the current event. In particular, this is needed if the run number changes
+  
+  if (!event) {
+    AliError("Could not set up task: no event!");
+    return;
+  }
+  
+  Int_t run = event->GetRunNumber();
+  
+  if (run != fRun){
+    // If systematics on eta is investigated, need to calculate the maxEtaVariationMap
+    if ((TMath::Abs(fSystematicScalingEtaCorrectionLowMomenta - 1.0) > fgkEpsilon) ||
+        (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - 1.0) > fgkEpsilon)) {
+      if (!CalculateMaxEtaVariationMapFromPIDResponse())
+        AliFatal("Systematics on eta correction requested, but failed to calculate max eta varation map!");
+    }
+  }
+  
+  fRun = run;
 }
 
 
@@ -2226,6 +2249,10 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   
   printf("\n");
   
+  printf("Pile up rejection type: %d\n", (Int_t)fPileUpRejectionType);
+  
+  printf("\n");
+  
   printf("Use MC-ID for signal generation: %d\n", GetUseMCidForGeneration());
   printf("Use ITS: %d\n", GetUseITS());
   printf("Use TOF: %d\n", GetUseTOF());
@@ -2345,8 +2372,9 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Double_t dEdxTPC = tuneOnDataTPC ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
   
   if (dEdxTPC <= 0) {
-    Printf("Skipping track with strange dEdx value: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), pTPC,
-           track->Eta(), track->GetTPCsignalN());
+    if (fDebug > 1)
+      Printf("Skipping track with strange dEdx value: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), pTPC,
+             track->Eta(), track->GetTPCsignalN());
     return kFALSE;
   }
   
@@ -2357,8 +2385,9 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   
   if ((pTPC >= 0.3 && (nSigmaPr > 10 && nSigmaEl > 10)) ||
       (pTPC <  0.3 && (nSigmaPr > 15 && nSigmaEl > 15))) {
-    Printf("Skipping track which seems to be a light nucleus: dEdx %f, pTPC %f, pT %f, eta %f, ncl %d, nSigmaPr %f, nSigmaEl %f\n",
-           track->GetTPCsignal(), pTPC, pT, track->Eta(), track->GetTPCsignalN(), nSigmaPr, nSigmaEl);
+    if (fDebug > 1)
+      Printf("Skipping track which seems to be a light nucleus: dEdx %f, pTPC %f, pT %f, eta %f, ncl %d, nSigmaPr %f, nSigmaEl %f\n",
+             track->GetTPCsignal(), pTPC, pT, track->Eta(), track->GetTPCsignalN(), nSigmaPr, nSigmaEl);
     return kFALSE;
   }
   

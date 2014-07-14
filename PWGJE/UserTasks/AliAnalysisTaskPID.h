@@ -78,7 +78,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum TOFpidInfo { kNoTOFinfo = -2, kNoTOFpid = -1, kTOFpion = 0, kTOFkaon = 1, kTOFproton = 2, kNumTOFspecies = 3,
                     kNumTOFpidInfoBins = 5 };
   
-  enum EventCounterType { kTriggerSel = 0, kTriggerSelAndVtxCut = 1, kTriggerSelAndVtxCutAndZvtxCut = 2 };
+  enum EventCounterType { kTriggerSel = 0, kTriggerSelAndVtxCut = 1, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection = 2,
+                          kTriggerSelAndVtxCutAndZvtxCut = 3 };
   
   static Int_t PDGtoMCID(Int_t pdg);
   
@@ -88,6 +89,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   static Double_t GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliMCParticle* daughter);
   
   static Bool_t IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent, Int_t partLabel);
+  
+  virtual void ConfigureTaskForCurrentEvent(AliVEvent* event);
   
   Int_t GetIndexOfChargeAxisData() const
     { return fStoreAdditionalJetInformation ? kDataCharge : kDataCharge - fgkNumJetAxes; };
@@ -190,6 +193,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t SetEtaAbsCutRange(Double_t lowerLimit, Double_t upperLimit);
   
   Bool_t IsInAcceptedEtaRange(Double_t etaAbs) const { return (etaAbs >= fEtaAbsCutLow && etaAbs <= fEtaAbsCutUp); };
+  
+  AliAnalysisTaskPIDV0base::PileUpRejectionType GetPileUpRejectionType() const { return fPileUpRejectionType; };
+  void SetPileUpRejectionType(AliAnalysisTaskPIDV0base::PileUpRejectionType newType) { fPileUpRejectionType = newType; };
   
   Double_t GetSystematicScalingSplinesThreshold() const { return fSystematicScalingSplinesThreshold; };
   void SetSystematicScalingSplinesThreshold(Double_t threshold) { fSystematicScalingSplinesThreshold = threshold; };
@@ -309,6 +315,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Double_t fEtaAbsCutLow; // Lower cut value on |eta|
   Double_t fEtaAbsCutUp;  // Upper cut value on |eta|
   
+  AliAnalysisTaskPIDV0base::PileUpRejectionType fPileUpRejectionType; // Which pile-up rejection is used (if any)
+  
   // For systematic studies
   Bool_t   fDoAnySystematicStudiesOnTheExpectedSignal; // Internal flag indicating whether any systematic studies are going to be performed
   Double_t fSystematicScalingSplinesThreshold;         // beta-gamma threshold for the systematic spline scale factor
@@ -384,9 +392,10 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   TAxis* fDeltaPrimeAxis; //! Axis holding the deltaPrime binning
   TH1D* fhMaxEtaVariation; //! Histo holding the maximum deviation of the eta correction factor from unity vs. 1/dEdx(splines)
   
-  TH1D* fhEventsProcessed; //! Histo holding the number of processed events (i.e. passing trigger selection, vtx and zvtx cuts
+  TH1D* fhEventsProcessed; //! Histo holding the number of processed events (i.e. passing trigger selection, vtx and zvtx cuts and (if enabled) pile-up rejection)
   TH1D* fhEventsTriggerSel; //! Histo holding the number of events passing trigger selection
   TH1D* fhEventsTriggerSelVtxCut; //! Histo holding the number of events passing trigger selection and vtx cut
+  TH1D* fhEventsProcessedNoPileUpRejection; //! Histo holding the number of processed events before pile-up rejection
   
   THnSparseD* fhMCgeneratedYieldsPrimaries; //! Histo holding the generated (no reco, no cuts) primary particle yields in considered eta range
   
@@ -410,7 +419,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 20);
+  ClassDef(AliAnalysisTaskPID, 21);
 };
 
 
@@ -536,6 +545,14 @@ inline Bool_t AliAnalysisTaskPID::IncrementEventCounter(Double_t centralityPerce
     }
     
     fhEventsProcessed->Fill(centralityPercentile);
+  }
+  else if (type == kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection) {
+    if (!fhEventsProcessedNoPileUpRejection) {
+      AliError("Histogram for number of events (kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection) not initialised -> cannot be incremented!");
+      return kFALSE;
+    }
+    
+    fhEventsProcessedNoPileUpRejection->Fill(centralityPercentile);
   }
   
   
