@@ -11,12 +11,13 @@
 #include <TClonesArray.h>
 
 #include "AliESDfriendTrack.h"
+#include "AliVVfriendEvent.h"
 
 class AliESDVZEROfriend;
 class AliESDTZEROfriend;
 
 //_____________________________________________________________________________
-class AliESDfriend : public TObject {
+class AliESDfriend : public TObject, public AliVVfriendEvent {
 public:
   AliESDfriend();
   AliESDfriend(const AliESDfriend &);

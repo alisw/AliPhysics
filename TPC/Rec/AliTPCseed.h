@@ -20,6 +20,7 @@
 #include "AliTPCtrack.h"
 #include "AliComplexCluster.h"
 #include "AliPID.h"
+#include "AliVVTPCseed.h"
 
 class TFile;
 class AliTPCParam;

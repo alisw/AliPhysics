@@ -17,15 +17,6 @@ class AliVVexternalTrackParam
   AliVVexternalTrackParam() {}
   AliVVexternalTrackParam(Bool_t) {}
   virtual ~AliVVexternalTrackParam() {}
-  virtual void SetAlpha(Float_t /*alpha*/)                 {}
-  virtual void SetX(Float_t /*x*/)                         {}
-  virtual void SetY(Float_t /*y*/)                         {}
-  virtual void SetZ(Float_t /*z*/)                         {}
-  virtual void SetSnp(Float_t /*snp*/)                     {}
-  virtual void SetTgl(Float_t /*tgl*/)                     {}
-  virtual void SetSigned1Pt(Float_t /*signed1Pt*/)         {}
-  virtual void SetCovEntry(Int_t /*idx*/, Float_t /*cov*/) {}
-
   virtual Float_t  GetAlpha()             const {return 0.;}
   virtual Float_t  GetX()                 const {return 0.;}
   virtual Float_t  GetY()                 const {return 0.;}

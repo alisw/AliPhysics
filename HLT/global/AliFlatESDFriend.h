@@ -11,14 +11,14 @@
 
 #include "Rtypes.h"
 #include "AliFlatESDMisc.h"
-#include "AliVVeventFriend.h"
+#include "AliVVfriendEvent.h"
 #include "AliFlatESDFriendTrack.h"
 
 class AliVVVZEROfriend;
 class AliVVTZEROfriend;
 
 //_____________________________________________________________________________
-class AliFlatESDFriend : public AliVVfriend {
+class AliFlatESDFriend : public AliVVfriendEvent {
 public:
   AliFlatESDFriend();
   ~AliFlatESDFriend() {}

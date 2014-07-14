@@ -37,8 +37,12 @@ class AliVVtrack {
   virtual Int_t GetNumberOfITSClusters() ;
   virtual AliVVtrack *GetNextTrack() ;
 
-  virtual Bool_t GetXYZ(Double_t* /*p*/) const ;
-  virtual void  GetXYZ(Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) const ;
+  virtual Bool_t GetXYZ(Double_t* p) const ;
+  virtual Bool_t GetXYZAt(Double_t x, Double_t y, Double_t* z) const ;
+
+  //AliESDv0
+  virtual void  GetXYZ(Double_t& x, Double_t& y, Double_t& z) const ;
+
   virtual Double_t GetTgl()  const ;
   virtual UShort_t GetTPCNclsF() const ;
 

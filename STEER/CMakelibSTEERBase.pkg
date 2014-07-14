@@ -3,11 +3,16 @@
 set ( SRCS  
     STEERBase/AliVVevent.cxx
     STEERBase/AliVVtrack.cxx
+    STEERBase/AliVVfriendEvent.cxx
+    STEERBase/AliVVfriendTrack.cxx
     STEERBase/AliVVvertex.cxx
     STEERBase/AliVVv0.cxx
     STEERBase/AliVVkink.cxx
     STEERBase/AliVVcluster.cxx
     STEERBase/AliVVexternalTrackParam.cxx
+    STEERBase/AliVVtrackPointArray.cxx
+    STEERBase/AliVVtrackPoint.cxx
+    STEERBase/AliVVTPCseed.cxx
     STEERBase/AliVParticle.cxx 
     STEERBase/AliVTrack.cxx 
     STEERBase/AliEventplane.cxx 

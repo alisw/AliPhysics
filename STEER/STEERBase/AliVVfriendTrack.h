@@ -4,13 +4,15 @@
 //_____________________________________________________________________________
 #include "AliVVMisc.h"
 
+#include "Rtypes.h"
 class AliVVTPCseed;
-class AliVVTRDseed;
-class AliTrackPointArray;
-class AliExternalTrackParam;
+class AliVVtrackPointArray;
+class AliVVtrack;
 
+//_____________________________________________________________________________
 class AliVVfriendTrack {
 public:
+
   AliVVfriendTrack(){}
   AliVVfriendTrack(const AliVVfriendTrack &){}
   AliVVfriendTrack& operator=(const AliVVfriendTrack& ){}
@@ -20,14 +22,17 @@ public:
   virtual ~AliVVfriendTrack(){}
 
   //used in calibration
-  virtual AliVVTPCseed* GetTPCseed() const {return NULL;}
-  virtual AliVVTRDseed* GetTRDseed() const {return NULL;}
-  virtual const AliTrackPointArray *GetTrackPointArray() const {return NULL;}
-  virtual const AliExternalTrackParam * GetITSOut() const {return NULL;} 
-  virtual const AliExternalTrackParam * GetTPCOut() const {return  NULL;} 
-  virtual const AliExternalTrackParam * GetTRDIn()  const {return NULL;} 
+  virtual AliVVtrack* GetTPCseed() const {return NULL;}
+  virtual const AliVVtrackPointArray *GetTrackPointArray() const {return NULL;}
+  virtual const AliVVtrack * GetITSOut() const {return NULL;} 
+  virtual const AliVVtrack * GetTPCOut() const {return  NULL;} 
+  virtual const AliVVtrack * GetTRDIn()  const {return NULL;} 
 
 private: 
+  AliVVfriendTrack(const AliVVfriendTrack &);
+  AliVVfriendTrack& operator=(const AliVVfriendTrack& esd);  
+
+  ClassDef(AliVVfriendTrack,1);
 };
 
 #endif
