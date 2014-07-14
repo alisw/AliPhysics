@@ -2001,7 +2001,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     }
     Float_t scale = 1;//scale up histograms if EMCal 2011 so we have the right range
     if(fDataSet==2011   && !fHistogramNameSuffix.Contains("P")){
-      scale = 2.5;
+      scale = 3.0;
     }
 
 
@@ -2270,15 +2270,15 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
       fHistNeutronsEtVsCent = new TH2F("fHistNeutronsEtVsCent","Neutrons and anti-neutrons - deposited ET vs Centrality bin",100*scale,0,4.0*scale,20,-0.5,19.5);
       fHistNeutronsNumVsCent = new TH2F("fHistNeutronsNumVsCent","Neutrons and anti-neutrons - number vs Centrality bin",20,-0.5,19.5,20,-0.5,19.5);
       fHistNotNeutronsNumVsCent = new TH2F("fHistNotNeutronsNumVsCent","Neutral particles not otherwise classified - number vs Centrality bin",20,-0.5,19.5,20,-0.5,19.5);
-      Int_t nbinsEt = 125*scale;
-      Float_t maxEtRange = 125*scale;
-      Float_t maxEtRangeShort = 50*scale;
+      Int_t nbinsEt = 150*scale;
+      Float_t maxEtRange = 150*scale;
+      Float_t maxEtRangeShort = 60*scale;
       Float_t minEtRange = 0;
       Int_t nbinsMult = 100*scale;
       Float_t maxMult = 3000*scale;
       Float_t minMult = 0;
-      Int_t nbinsCl = 250*scale;
-      Float_t maxCl = 500*scale;
+      Int_t nbinsCl = 300*scale;
+      Float_t maxCl = 600*scale;
       Float_t minCl = 0;
       fHistPiKPDepositedVsNch = new TH2F("fHistPiKPDepositedVsNch","#pi,K,p E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
       fHistPiKPNotTrackMatchedDepositedVsNch = new TH2F("fHistPiKPNotTrackMatchedDepositedVsNch","#pi,K,p E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
