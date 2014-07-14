@@ -199,8 +199,8 @@ void AliGenExtFile::Generate()
     } // track loop
 
     // Generated event header
-    
-    AliGenEventHeader * header = new AliGenEventHeader();
+    AliGenEventHeader * header = fReader->GetGenEventHeader();
+    if (!header) header = new AliGenEventHeader();
     header->SetNProduced(fNprimaries);
     header->SetPrimaryVertex(fVertex);
     header->SetInteractionTime(fTime);
