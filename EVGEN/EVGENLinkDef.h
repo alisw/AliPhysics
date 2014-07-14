@@ -71,4 +71,6 @@
 #pragma link C++ class  AliGenLcLib+;
 #pragma link C++ class  AliGenITSULib;
 #pragma link C++ class  AliGenTunedOnPbPb;
+#pragma link C++ class  AliGenReaderHepMC++;
+
 #endif
