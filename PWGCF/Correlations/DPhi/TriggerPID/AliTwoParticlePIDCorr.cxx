@@ -717,7 +717,7 @@ TString gmultName[4] = {"V0A_MANUAL","V0C_MANUAL","V0M_MANUAL","TRACKS_MANUAL"};
   }
   fOutput->Add(fHistRefmult);
 
-
+ if(fCentralityMethod == "V0A_MANUAL" || fCentralityMethod == "V0M_MANUAL" || fCentralityMethod == "V0C_MANUAL" ){
  //TPC vs EQVZERO multiplicity
     fHistEQVZEROvsTPCmultiplicity = new TH2F("fHistEQVZEROvsTPCmultiplicity","EqVZERO vs TPC multiplicity",10001,-0.5,10000.5,4001,-0.5,4000.5);
     fHistEQVZEROvsTPCmultiplicity->GetXaxis()->SetTitle("EqVZERO multiplicity (a.u.)");
@@ -765,11 +765,10 @@ fHistEQVZEROCvsEQVZEROAmultiplicity = new TH2F("fHistEQVZEROCvsEQVZEROAmultiplic
 
  fHistVZEROSignal = new TH2F("fHistVZEROSignal","VZERO signal vs VZERO channel;VZERO channel; Signal (a.u.)",64,0.5,64.5,3001,-0.5,30000.5);
   fOutput->Add(fHistVZEROSignal);
+ }
 }
 
  if(fRequestEventPlane){
-
-
 //Event plane
  
   fHistPsiMinusPhi = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
@@ -1015,8 +1014,8 @@ Double_t ZvrtxBins[NofVrtxBins+1]={ -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6
 
 if(fCentralityMethod.EndsWith("_MANUAL"))
    {
- const Int_t NofCentBins=9;
- Double_t CentralityBins[NofCentBins+1]={0.,9.,14.,19.,26.,34.,44.,58.,80.,500.};//Is This binning is fine for pp, or we don't require them....
+ const Int_t NofCentBins=10;
+ Double_t CentralityBins[NofCentBins+1]={0.,9.,14.,19.,26.,34.,44.,58.,80.,500.,1000.};//Is This binning is fine for pp, or we don't require them....
 if(fRequestEventPlane){
     // Event plane angle (Psi) bins
   /*
@@ -1543,7 +1542,6 @@ fileT->Close();
     }
 
   //nsigmaDC plot
-  if(fUseExclusiveNSigma) {
   for(Int_t ipart=0;ipart<NSpecies;ipart++){
     for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
       Double_t miny=-10;
@@ -1556,7 +1554,7 @@ fileT->Close();
       fOutputList->Add(fHistoNSigma);
     }
   }
-  }  
+  
   //nsigmaMC plot
  if (fAnalysisType == "MCAOD"){
   for(Int_t ipart=0;ipart<NSpecies;ipart++){
@@ -4125,7 +4123,7 @@ Double_t AliTwoParticlePIDCorr::GetEqualizationFactor(Int_t run, const char* sid
 }
 //________________________________________________________________________
 Double_t AliTwoParticlePIDCorr::GetReferenceMultiplicityVZEROFromAOD(AliAODEvent *event){
-  //Function that returns the reference multiplicity from AODs (data or reco MC)
+  //Function that returns the reference multiplicity from AODs (data or reco MC, Not for Truth)
   //Different ref. mult. implemented: V0M, V0A, V0C, TPC
   Double_t gRefMultiplicity = 0., gRefMultiplicityTPC = 0.;
   Double_t gRefMultiplicityVZERO = 0., gRefMultiplicityVZEROA = 0., gRefMultiplicityVZEROC = 0.;
@@ -4152,6 +4150,7 @@ Double_t AliTwoParticlePIDCorr::GetReferenceMultiplicityVZEROFromAOD(AliAODEvent
 
  }//track looop ends
 
+ if(fCentralityMethod == "V0A_MANUAL" || fCentralityMethod == "V0M_MANUAL" || fCentralityMethod == "V0C_MANUAL" ){
   //VZERO segmentation in two detectors (0-31: VZERO-C, 32-63: VZERO-A)
   for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
     fHistVZEROSignal->Fill(iChannel,event->GetVZEROEqMultiplicity(iChannel));
@@ -4187,22 +4186,26 @@ Double_t AliTwoParticlePIDCorr::GetReferenceMultiplicityVZEROFromAOD(AliAODEvent
 
   //EQVZEROC vs EQVZEROA multiplicity
   fHistEQVZEROCvsEQVZEROAmultiplicity->Fill(gRefMultiplicityVZEROC,gRefMultiplicityVZEROA);
+ }
 
-
-  if(fCentralityMethod == "TRACKS_MANUAL") 
+ if(fCentralityMethod == "TRACKS_MANUAL") {
     gRefMultiplicity = gRefMultiplicityTPC;
-  else if(fCentralityMethod == "V0M_MANUAL")
+    fHistRefmult->Fill(3.,gRefMultiplicityTPC);
+ }
+ else if(fCentralityMethod == "V0M_MANUAL"){
     gRefMultiplicity = gRefMultiplicityVZERO;
-  else if(fCentralityMethod == "V0A_MANUAL")
-    gRefMultiplicity = gRefMultiplicityVZEROA;
-  else if(fCentralityMethod == "V0C_MANUAL")
-    gRefMultiplicity = gRefMultiplicityVZEROC;
+    fHistRefmult->Fill(2.,gRefMultiplicityVZERO);
 
-      //ref mult QA
-      fHistRefmult->Fill(0.,gRefMultiplicityVZEROA);
-      fHistRefmult->Fill(1.,gRefMultiplicityVZEROC);
-      fHistRefmult->Fill(2.,gRefMultiplicityVZERO);
-      fHistRefmult->Fill(3.,gRefMultiplicityTPC);
+ }
+ else if(fCentralityMethod == "V0A_MANUAL"){
+    gRefMultiplicity = gRefMultiplicityVZEROA;
+    fHistRefmult->Fill(0.,gRefMultiplicityVZEROA);
+
+ }
+ else if(fCentralityMethod == "V0C_MANUAL"){
+    gRefMultiplicity = gRefMultiplicityVZEROC;
+    fHistRefmult->Fill(1.,gRefMultiplicityVZEROC);
+ }
 
   
   return gRefMultiplicity;
@@ -4355,7 +4358,7 @@ isduplicate=kTRUE;
 }
 //-----------------------------------------------------------------------------------------
 Double_t AliTwoParticlePIDCorr::GetAcceptedEventMultiplicity(AliAODEvent *aod,Bool_t truth){
-
+  //do the event selection(zvtx, pileup, centrality/multiplicity cut) and then return the value of the centrality of that event
   if(!aod) return -1;
 
   Float_t gRefMultiplicity = -1.;
@@ -4447,9 +4450,9 @@ fHistQA[0]->Fill((trkVtx->GetX()));fHistQA[1]->Fill((trkVtx->GetY()));fHistQA[2]
  fHistQA[3]->Fill((trkVtx->GetX()));fHistQA[4]->Fill((trkVtx->GetY()));fHistQA[5]->Fill((trkVtx->GetZ()));//after vertex cut,for trkVtx only
 
  //get the centrality or multiplicity
- if(truth)  {gRefMultiplicity = GetRefMultiOrCentrality(aod,kTRUE);}//kTRUE-->for Truth case(only meaningful in case of ref multiplicity)
+ if(truth)  {gRefMultiplicity = GetRefMultiOrCentrality(aod,kTRUE);}//kTRUE-->for Truth case(only meaningful in case of ref multiplicity,in case of centrality it has no meaning)
 
- else {gRefMultiplicity = GetRefMultiOrCentrality(aod,kFALSE);}//kFALSE-->for data and RecoMc case(only meaningful in case of ref multiplicity)
+ else {gRefMultiplicity = GetRefMultiOrCentrality(aod,kFALSE);}//kFALSE-->for data and RecoMc case(only meaningful in case of ref multiplicity,in case of centrality it has no meaning)
 
   if(gRefMultiplicity<0) return -1;
 
