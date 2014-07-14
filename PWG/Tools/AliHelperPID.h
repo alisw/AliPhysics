@@ -121,7 +121,7 @@ class AliHelperPID : public TNamed
   Double_t fNSigmaPID; // number of sigma for PID cut
   Double_t fBayesCut; // Cut on Bayesian probability
   AliPIDResponse   *fPIDResponse;     // ! PID response object
-  AliPIDCombined   *fPIDCombined;     // ! PIDCombined  //FIXME, this object should not be transient
+  AliPIDCombined   *fPIDCombined;     // PIDCombined
   TList     *fOutputList;  // List Histo's
   Double_t fnsigmas[kNSpecies][kNSigmaPIDType+1]; //nsigma values
   Bool_t fHasDoubleCounting[kNSpecies];//array with compatible identities
@@ -134,7 +134,7 @@ class AliHelperPID : public TNamed
   AliHelperPID(const AliHelperPID&);
   AliHelperPID& operator=(const AliHelperPID&);
   
-  ClassDef(AliHelperPID, 5);
+  ClassDef(AliHelperPID, 6);
   
 };
 #endif
