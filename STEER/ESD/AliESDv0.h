@@ -76,6 +76,7 @@ public:
   void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetNPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetPPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
+  using AliVVtrack::GetXYZ;
   void     GetXYZ(Double_t &x, Double_t &y, Double_t &z) const;
   Float_t  GetD(Double_t x0,Double_t y0) const;
   Float_t  GetD(Double_t x0,Double_t y0,Double_t z0) const;

@@ -41,6 +41,7 @@
 
   Bool_t AliVVtrack::GetXYZ(Double_t* /*p*/) const {return kFALSE;}
   void  AliVVtrack::GetXYZ(Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) const {}
+  Bool_t AliVVtrack::GetXYZAt(Double_t /*x*/, Double_t /*y*/, Double_t* /*z*/) const {return kFALSE;}
   Double_t AliVVtrack::GetTgl()  const {return 0.;}
   UShort_t AliVVtrack::GetTPCNclsF() const { return 0;}
 

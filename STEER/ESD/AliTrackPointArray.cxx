@@ -220,7 +220,7 @@ Bool_t AliTrackPointArray::AddPoint(Int_t i, const AliTrackPoint *p)
 
 
 //______________________________________________________________________________
-Bool_t AliTrackPointArray::GetPoint(AliTrackPoint &p, Int_t i) const
+Bool_t AliTrackPointArray::GetPoint(AliVVtrackPoint &p, Int_t i) const
 {
   // Get the point at position i
   //
@@ -433,7 +433,7 @@ void AliTrackPoint::GetXYZ(Float_t *xyz, Float_t *cov) const
 }
 
 //______________________________________________________________________________
-Float_t AliTrackPoint::GetResidual(const AliTrackPoint &p, Bool_t weighted) const
+Float_t AliTrackPoint::GetResidual(const AliVVtrackPoint &p, Bool_t weighted) const
 {
   // This method calculates the track to space-point residuals. The track
   // interpolation is also stored as AliTrackPoint. Using the option
@@ -478,7 +478,7 @@ Float_t AliTrackPoint::GetResidual(const AliTrackPoint &p, Bool_t weighted) cons
 }
 
 //_____________________________________________________________________________
-Bool_t AliTrackPoint::GetPCA(const AliTrackPoint &p, AliTrackPoint &out) const
+Bool_t AliTrackPoint::GetPCA(const AliVVtrackPoint &p, AliVVtrackPoint &out) const
 {
   //
   // Get the intersection point between this point and

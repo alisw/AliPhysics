@@ -10,15 +10,16 @@
 #include <TObject.h>
 #include <TClonesArray.h>
 #include <AliExternalTrackParam.h>
+#include "AliVVfriendTrack.h"
+#include "AliTrackPointArray.h"
 
-class AliTrackPointArray;
 class AliKalmanTrack;
 class TObjArrray;
-class AliTPCseed;
-class AliTRDseedV1;
+class AliVVtrack;
+
 
 //_____________________________________________________________________________
-class AliESDfriendTrack : public TObject {
+class AliESDfriendTrack : public TObject, public AliVVfriendTrack {
 public:
   enum {
     kMaxITScluster=12,
@@ -45,10 +46,7 @@ public:
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
   TObject * GetCalibObject(Int_t index);
-  void AddTPCseed(AliTPCseed* /*seed*/) {}
-  void AddTRDseed(AliTRDseedV1* /*seed*/) {}
-  AliTPCseed* GetTPCseed() const {return NULL;}
-  AliTRDseedV1* GetTRDseed() const {return NULL;}
+  AliVVtrack* GetTPCseed() const {return NULL;}
   //
   // parameters backup
   void SetTPCOut(const AliExternalTrackParam &param);

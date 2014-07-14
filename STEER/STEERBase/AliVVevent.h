@@ -15,7 +15,7 @@ class AliVVvertex;
 class AliVVtrack;
 class AliMultiplicity;
 class AliVVkink;
-class AliVVeventFriend;
+class AliVVfriendEvent;
 
 class AliVVevent {
  public:
@@ -50,7 +50,7 @@ class AliVVevent {
   virtual UInt_t GetTimeStamp() const { return 0;}
   virtual UInt_t GetEventSpecie() const { return 0;}
   virtual ULong64_t GetSize() {return 0;};
-  //virtual AliVVeventFriend* FindFriend() const { return NULL; }
+  virtual AliVVfriendEvent* FindFriend() const { return NULL; }
 
   ClassDef(AliVVevent,1)  // base class for event data
 

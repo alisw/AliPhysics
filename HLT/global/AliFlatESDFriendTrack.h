@@ -25,6 +25,8 @@ Op - Track parameters estimated at the point of maximal radial coordinate reache
 class AliESDtrack;
 class AliESDfriendTrack;
 class AliExternalTrackParam;
+class AliTrackPointArray;
+class AliVVtrack;
 
 class AliFlatESDFriendTrack :public AliVVfriendTrack 
 {
@@ -34,12 +36,16 @@ class AliFlatESDFriendTrack :public AliVVfriendTrack
 
   //implementation of AliVVfriendTrack methods 
 
-  AliVVTPCseed* GetTPCseed() const {return NULL;}
-  AliVVTRDseed* GetTRDseed() const {return NULL;}
-  const AliTrackPointArray *GetTrackPointArray() const { return NULL; }
-  const AliExternalTrackParam * GetITSOut() const { return NULL; } 
-  const AliExternalTrackParam * GetTPCOut() const { return  NULL; } 
-  const AliExternalTrackParam * GetTRDIn()  const { return NULL; } 
+  //AliVVTPCseed* GetTPCseed() const {return NULL;}
+  AliVVtrack* GetTPCseed() const {return NULL;}
+  //AliVVTRDseed* GetTRDseed() const {return NULL;}
+  const AliVVtrackPointArray *GetTrackPointArray() const { return NULL; }
+  //const AliExternalTrackParam * GetITSOut() const { return NULL; } 
+  //const AliExternalTrackParam * GetTPCOut() const { return  NULL; } 
+  //const AliExternalTrackParam * GetTRDIn()  const { return NULL; } 
+  const AliVVtrack * GetITSOut() const { return NULL; } 
+  const AliVVtrack * GetTPCOut() const { return  NULL; } 
+  const AliVVtrack * GetTRDIn()  const { return NULL; } 
 
   // own methods
 

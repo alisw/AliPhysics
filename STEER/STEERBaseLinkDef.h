@@ -138,13 +138,18 @@
 #pragma link C++ class  AliVTOFMatch+;
 #pragma link C++ class AliVTOFcluster+;
 
-#pragma link C++ class AliVVtrack+;
-#pragma link C++ class AliVVvertex+;
 #pragma link C++ class AliVVevent+;
+#pragma link C++ class AliVVtrack+;
+#pragma link C++ class AliVVfriendEvent+;
+#pragma link C++ class AliVVfriendTrack+;
+#pragma link C++ class AliVVvertex+;
 #pragma link C++ class AliVVkink+;
 #pragma link C++ class AliVVv0+;
 #pragma link C++ class AliVVcluster+;
 #pragma link C++ class AliVVexternalTrackParam+;
+#pragma link C++ class AliVVtrackPointArray+;
+#pragma link C++ class AliVVtrackPoint+;
+#pragma link C++ class AliVVTPCseed+;
 
 #endif
 

@@ -14,10 +14,13 @@
 
 #include <TObject.h>
 #include <TMatrixDSym.h>
+#include "AliVVtrackPointArray.h"
+#include "AliVVtrackPoint.h"
+#include "Rtypes.h"
 
 class TGeoRotation;
 
-class AliTrackPoint : public TObject {
+class AliTrackPoint : public AliVVtrackPoint, public TObject {
 
  public:
   AliTrackPoint();
@@ -51,8 +54,8 @@ class AliTrackPoint : public TObject {
   Int_t    GetClusterType() const { return fClusterType;}
   Bool_t   IsExtra() const { return fIsExtra;}
 
-  Float_t  GetResidual(const AliTrackPoint &p, Bool_t weighted = kFALSE) const;
-  Bool_t   GetPCA(const AliTrackPoint &p, AliTrackPoint &out) const;
+  Float_t  GetResidual(const AliVVtrackPoint &p, Bool_t weighted = kFALSE) const;
+  Bool_t   GetPCA(const AliVVtrackPoint &p, AliVVtrackPoint &out) const;
 
   Float_t  GetAngle() const;
   Bool_t   GetRotMatrix(TGeoRotation& rot) const;
@@ -88,7 +91,7 @@ class AliTrackPoint : public TObject {
 //   cvetan.cheshkov@cern.ch 3/11/2005                                      //
 //////////////////////////////////////////////////////////////////////////////
 
-class AliTrackPointArray : public TObject {
+class AliTrackPointArray : public TObject, public AliVVtrackPointArray {
 
  public:
 
@@ -103,7 +106,7 @@ class AliTrackPointArray : public TObject {
 
   Int_t     GetNPoints() const { return fNPoints; }
   Int_t     GetCovSize() const { return fSize; }
-  Bool_t    GetPoint(AliTrackPoint &p, Int_t i) const;
+  Bool_t    GetPoint(AliVVtrackPoint &p, Int_t i) const;
   // Getters for fast access to the coordinate arrays
   const Float_t*  GetX() const { return &fX[0]; }
   const Float_t*  GetY() const { return &fY[0]; }

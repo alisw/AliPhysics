@@ -48,10 +48,8 @@
 #include "AliESDTOFMatch.h"
 #include "AliESDv0.h"
 #include "AliESDkink.h"
+#include "AliESDfriend.h"
 
-
-
-class AliESDfriend;
 class AliESDHLTtrack;
 class AliESDVertex;
 class AliESDPmdTrack;
@@ -280,7 +278,7 @@ public:
 
   void SetESDfriend(const AliESDfriend *f) const;
   void GetESDfriend(AliESDfriend *f) const;
-  //AliESDfriend* FindFriend() const { return static_cast<AliESDfriend*>(FindListObject("AliESDfriend")); }
+  AliESDfriend* FindFriend() const { return static_cast<AliESDfriend*>(FindListObject("AliESDfriend")); }
 
   void SetPrimaryVertexTPC(const AliESDVertex *vertex); 
   const AliESDVertex *GetPrimaryVertexTPC() const {return fTPCVertex;}
