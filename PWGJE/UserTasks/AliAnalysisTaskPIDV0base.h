@@ -21,6 +21,7 @@ class AliPIDResponse;
 class AliESDv0KineCuts;
 class AliPID;
 class AliAnalysisFilter;
+class AliAnalysisUtils;
 class AliVTrack;
 
 #include <TTreeStream.h>
@@ -30,6 +31,7 @@ class AliVTrack;
 
 class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
  public:
+  enum PileUpRejectionType { kPileUpRejectionOff = 0, kPileUpRejectionSPD = 1, kPileUpRejectionMV = 2 };
   enum TPCcutType { kNoCut = 0, kTPCCutMIGeo = 1, kTPCnclCut = 2 };
   AliAnalysisTaskPIDV0base();
   AliAnalysisTaskPIDV0base(const char *name);
@@ -40,6 +42,8 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   virtual void   Terminate(const Option_t*);
   
   virtual Bool_t GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcut = kTRUE) const;
+ 
+  virtual Bool_t GetIsPileUp(AliVEvent* event, PileUpRejectionType pileUpRejectionType) const;
   
   virtual Bool_t GetIsPbpOrpPb() const { return fIsPbpOrpPb; };
   virtual void SetIsPbpOrpPb(Bool_t newValue) { fIsPbpOrpPb = newValue; };
@@ -109,6 +113,8 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   AliPIDResponse *fPIDResponse;    //! PID response Handler
   AliESDv0KineCuts *fV0KineCuts;       //! ESD V0 kine cuts
   
+  AliAnalysisUtils *fAnaUtils; //! Object to use analysis utils like pile-up rejection
+  
   Bool_t fIsPbpOrpPb;       // Pbp/pPb collision or something else?
   Bool_t fUsePhiCut;        // Use cut on phi (useful for TPC)
   TPCcutType fTPCcutType;   // Type of TPC cut to be used
@@ -133,7 +139,7 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   AliAnalysisTaskPIDV0base(const AliAnalysisTaskPIDV0base&); // not implemented
   AliAnalysisTaskPIDV0base& operator=(const AliAnalysisTaskPIDV0base&); // not implemented
   
-  ClassDef(AliAnalysisTaskPIDV0base, 1);
+  ClassDef(AliAnalysisTaskPIDV0base, 2);
 };
 
 

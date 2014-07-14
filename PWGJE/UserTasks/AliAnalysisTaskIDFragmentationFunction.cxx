@@ -2617,7 +2617,22 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
 	if (fIsPP)
 		centPercent = -1;
 
-
+  
+  
+  // Call ConfigureTaskForCurrentEvent of PID tasks to ensure that everything is set up properly for the current event
+  // (e.g. run/period dependence of max eta variation map)
+  if (fUseInclusivePIDtask) {
+    for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
+      fInclusivePIDtask[i]->ConfigureTaskForCurrentEvent(fAOD);
+  }
+  
+  if (fUseJetPIDtask) {
+    for (Int_t i = 0; i < fNumJetPIDtasks; i++)
+      fJetPIDtask[i]->ConfigureTaskForCurrentEvent(fAOD);
+  }
+  
+  
+  
   //___ get MC information __________________________________________________________________
 
   fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
