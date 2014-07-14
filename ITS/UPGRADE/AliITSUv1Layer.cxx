@@ -72,7 +72,7 @@ const Double_t AliITSUv1Layer::fgkOBCarbonPlateThick  =   0.012*fgkcm;
 const Double_t AliITSUv1Layer::fgkOBGlueThick         =   0.03 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBModuleZLength     =  21.06 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBHalfStaveYTrans   =   1.76 *fgkmm;
-const Double_t AliITSUv1Layer::fgkOBHalfStaveXOverlap =   2.3  *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBHalfStaveXOverlap =   4.3  *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBGraphiteFoilThick =  30.0  *fgkmicron;
 const Double_t AliITSUv1Layer::fgkOBCoolTubeInnerD    =   2.67 *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBCoolTubeThick     =  64.0  *fgkmicron;
@@ -330,7 +330,7 @@ void AliITSUv1Layer::CreateLayer(TGeoVolume *moth){
 
   // Now build up the layer
   alpha = 360./fNStaves;
-  Double_t r = fLayRadius + ((TGeoBBox*)stavVol->GetShape())->GetDY() + 0.2;
+  Double_t r = fLayRadius + ((TGeoBBox*)stavVol->GetShape())->GetDY();
   for (Int_t j=0; j<fNStaves; j++) {
     Double_t phi = j*alpha + fPhi0;
     xpos = r*CosD(phi);// r*SinD(-phi);
@@ -486,8 +486,8 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
     } else { // (if fStaveModel) Create new stave struct as in TDR
       xpos = ((TGeoBBox*)(hstaveVol->GetShape()))->GetDX()
 	   - fgkOBHalfStaveXOverlap/2;
-      ypos = 2*((TGeoBBox*)(hstaveVol->GetShape()))->GetDY()
-	   + fgkOBSpaceFrameTotHigh/2;
+      // ypos is CF height as computed in CreateSpaceFrameOuterB1
+      ypos = (fgkOBSpaceFrameTotHigh - fgkOBHalfStaveYTrans)/2;
       staveVol->AddNode(hstaveVol, 0, new TGeoTranslation(-xpos, ypos, 0));
       staveVol->AddNode(hstaveVol, 1, new TGeoTranslation( xpos, ypos+fgkOBHalfStaveYTrans, 0));
       fHierarchy[kHalfStave] = 2; // RS 
@@ -2788,7 +2788,8 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
     {
       zpos = -module->GetDZ() + zchip + k*(2*zchip + zGap);
       modVol->AddNode(chipVol, 2*k  , new TGeoTranslation( xpos, ypos, zpos));
-      modVol->AddNode(chipVol, 2*k+1, new TGeoTranslation(-xpos, ypos, zpos));
+      modVol->AddNode(chipVol, 2*k+1, 
+      new TGeoCombiTrans(-xpos, ypos, zpos, new TGeoRotation("",0,180,180)));
       fHierarchy[kChip]+=2;
     }
 
