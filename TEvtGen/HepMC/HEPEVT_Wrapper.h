@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------
 
 #ifndef HEPEVT_EntriesAllocation
-#define HEPEVT_EntriesAllocation 10000
+#define HEPEVT_EntriesAllocation 20000
 #endif  // HEPEVT_EntriesAllocation
 
 //--------------------------------------------------------------------------

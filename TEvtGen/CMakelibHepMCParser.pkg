@@ -25,68 +25,11 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  HepMC/CompareGenEvent.cc
-HepMC/filterEvent.cc
-HepMC/Flow.cc
-HepMC/GenCrossSection.cc
-HepMC/GenEvent.cc
-HepMC/GenEventStreamIO.cc
-HepMC/GenParticle.cc
-HepMC/GenRanges.cc
-HepMC/GenVertex.cc
-HepMC/HeavyIon.cc
-HepMC/HEPEVT_Wrapper.cc
-HepMC/HerwigWrapper.cc
-HepMC/IO_AsciiParticles.cc
-HepMC/IO_GenEvent.cc
-HepMC/IO_HEPEVT.cc
-HepMC/IO_HERWIG.cc
-HepMC/PdfInfo.cc
-HepMC/Polarization.cc
-HepMC/SearchVector.cc
-HepMC/SimpleVector.icc
-HepMC/StreamHelpers.cc
-HepMC/StreamInfo.cc
-HepMC/WeightContainer.cc
-HepMC/Units.cc
-)
+set ( SRCS  THepMCParser.cxx)
 
+set ( HDRS THepMCParser.h)
 
-
-set ( HDRS HepMC/CompareGenEvent.h
-HepMC/enable_if.h
-HepMC/Flow.h
-HepMC/GenCrossSection.h
-HepMC/GenEvent.h
-HepMC/GenParticle.h
-HepMC/GenRanges.h
-HepMC/GenVertex.h
-HepMC/HeavyIon.h
-HepMC/HEPEVT_Wrapper.h
-HepMC/HepMCDefs.h
-HepMC/HerwigWrapper.h
-HepMC/IO_AsciiParticles.h
-HepMC/IO_BaseClass.h
-HepMC/IO_Exception.h
-HepMC/IO_GenEvent.h
-HepMC/IO_HEPEVT.h
-HepMC/IO_HERWIG.h
-HepMC/is_arithmetic.h
-HepMC/IteratorRange.h
-HepMC/PdfInfo.h
-HepMC/Polarization.h
-HepMC/PythiaWrapper6_4.h
-HepMC/PythiaWrapper6_4_WIN32.h
-HepMC/PythiaWrapper.h
-HepMC/SearchVector.h
-HepMC/SimpleVector.h
-HepMC/StreamHelpers.h
-HepMC/StreamInfo.h
-HepMC/TempParticleMap.h
-HepMC/Units.h
-HepMC/Version.h
-HepMC/WeightContainer.h
-)
+set ( DHDR  THepMCParserLinkDef.h)
 
 set ( EINCLUDE TEvtGen TEvtGen/HepMC) 
 
