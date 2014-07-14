@@ -20,7 +20,7 @@ Op - Track parameters estimated at the point of maximal radial coordinate reache
 
 #include "AliFlatTPCCluster.h"
 #include "AliVVfriendTrack.h"
-#include "AliFlatESDMisc.h"
+#include "AliVVMisc.h"
 
 class AliESDtrack;
 class AliESDfriendTrack;
@@ -31,6 +31,8 @@ class AliFlatESDFriendTrack :public AliVVfriendTrack
  public:
   AliFlatESDFriendTrack();
   ~AliFlatESDFriendTrack() {}
+  // constructor for reinitialisation of vtable
+  AliFlatESDFriendTrack( AliVVConstructorReinitialisationFlag );
 
   //implementation of AliVVfriendTrack methods 
 
@@ -43,19 +45,12 @@ class AliFlatESDFriendTrack :public AliVVfriendTrack
 
   // own methods
 
-  void Reinitialize()
-  {
-    new (this) AliFlatESDFriendTrack(AliFlatESDReinitialize);
-  }
+  void Reinitialize() { new (this) AliFlatESDFriendTrack( AliVVReinitialize ); }
+  
+ private: 
 
-private: 
   AliFlatESDFriendTrack(const AliFlatESDFriendTrack &);
-  AliFlatESDFriendTrack& operator=(const AliFlatESDFriendTrack& );   
-
-  // special constructor, to be called by placement new,
-  // when accessing information after reinterpret_cast
-  // so that vtable is generated, but values are not overwritten
-  AliFlatESDFriendTrack(AliFlatESDSpecialConstructorFlag);
+  AliFlatESDFriendTrack& operator=(const AliFlatESDFriendTrack& ); 
 
 };
 

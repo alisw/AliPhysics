@@ -70,6 +70,8 @@ public:
   virtual ~AliVTrack() { }
   AliVTrack(const AliVTrack& vTrack); 
   AliVTrack& operator=(const AliVTrack& vTrack);
+  // constructor for reinitialisation of vtable
+  AliVTrack( AliVVConstructorReinitialisationFlag f) :AliVParticle(f){}
 
   virtual const AliVEvent* GetEvent() const {return 0;}
   virtual Int_t    GetID() const = 0;

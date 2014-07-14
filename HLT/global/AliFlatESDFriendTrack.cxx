@@ -42,20 +42,8 @@ AliFlatESDFriendTrack::AliFlatESDFriendTrack() :
   // Default constructor
 }
 
-
-// _______________________________________________________________________________________________________
-AliFlatESDFriendTrack::AliFlatESDFriendTrack(AliFlatESDSpecialConstructorFlag f) :
-  AliVVfriendTrack()
+AliFlatESDFriendTrack::AliFlatESDFriendTrack( AliVVConstructorReinitialisationFlag f ) :
+AliVVfriendTrack( f )
 {
-  //special constructor, used to restore the vtable pointer
-  //uses the special dummy constructors of contained objects
-
-  // the vtable pointer for this AliFlatESDFriend object is already reset when this constructor is called
-  // we should only initialise vtable pointers for all contained objects
-
-  if(f == AliFlatESDReinitialize){   
-  }
-  else{
-    AliFlatESDFriendTrack();
-  }
+  // constructor for reinitialisation of vtable
 }

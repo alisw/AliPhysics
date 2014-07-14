@@ -2,6 +2,7 @@
 #define ALIVVFRIENDTRACK_H
 
 //_____________________________________________________________________________
+#include "AliVVMisc.h"
 
 class AliVVTPCseed;
 class AliVVTRDseed;
@@ -11,6 +12,11 @@ class AliExternalTrackParam;
 class AliVVfriendTrack {
 public:
   AliVVfriendTrack(){}
+  AliVVfriendTrack(const AliVVfriendTrack &){}
+  AliVVfriendTrack& operator=(const AliVVfriendTrack& ){}
+  // constructor for reinitialisation of vtable
+  AliVVfriendTrack( AliVVConstructorReinitialisationFlag ){}
+
   virtual ~AliVVfriendTrack(){}
 
   //used in calibration
@@ -22,8 +28,6 @@ public:
   virtual const AliExternalTrackParam * GetTRDIn()  const {return NULL;} 
 
 private: 
-  AliVVfriendTrack(const AliVVfriendTrack &){}
-  AliVVfriendTrack& operator=(const AliVVfriendTrack& ){}
 };
 
 #endif
