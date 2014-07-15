@@ -101,10 +101,10 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   
   //dimensions of THnSparse for tracks
   const Int_t nvartrk=8;
-  //                                             pt          cent          Q vec     IDrec      IDgen       isph         y        DCA 
-  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,     fnQvecBins,        4,        3,         3,        2,     fnDCABins};
-  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,              0.,       -.5,      -0.5,      0.5,    -0.5,    fDCAmin};
-  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,     fQvecUpperLim,       3.5,      2.5,       3.5,     0.5,      fDCAmax};    
+  //                                             pt          cent          Q vec       IDrec          IDgen        isph         y             DCA 
+  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,     fnQvecBins,        4,             3,          3,        2,        fnDCABins};
+  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,              0.,       -.5,          -0.5,        0.5,      -0.5,          fDCAmin};
+  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,     fQvecUpperLim,       3.5,      2.5,        3.5,      0.5,         fDCAmax};    
   THnSparseF* NSparseHistTrk = new THnSparseF("NSparseHistTrk","NSparseHistTrk",nvartrk,binsHistRealTrk,xminHistRealTrk,xmaxHistRealTrk);
   NSparseHistTrk->GetAxis(0)->SetTitle("#it{p}_{T,rec}");
   NSparseHistTrk->GetAxis(0)->SetName("pT_rec");
@@ -188,7 +188,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
 
   //Default TPC priors
-  if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
+  //if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
   
   Double_t Qvec=0.;//in case of MC we save space in the memory
   if(!fIsMC){

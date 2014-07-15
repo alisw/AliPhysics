@@ -61,7 +61,7 @@ AliAnalysisTaskSpectraAllChAOD* AddTaskSpectraAllChAOD(
   if(PIDtype==3){
     AliPIDCombined *pidc=new AliPIDCombined(Form("PIDCombined%s",opt.Data()),Form("PIDCombined%s",opt.Data()));
     pidc->SetDefaultTPCPriors();
-    pid->SetPIDCombined(pidc);
+    pid->SetPIDCombined(pidc);//not implemented
   }
   
   AliAnalysisTaskSpectraAllChAOD *task = new AliAnalysisTaskSpectraAllChAOD(Form("TaskAODSpectraCent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_TrBit%d%s",	
