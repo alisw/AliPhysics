@@ -1,6 +1,6 @@
 ///*******************************************************
 ///Config Description
-/// 16 June 2014
+/// 14 July 2014
 ///*******************************************************
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
@@ -120,6 +120,12 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	//partner cuts
 	
 	if(configIndex==29) task->SetAdditionalCuts(0.3,80);
+	
+	else if(configIndex==84) task->SetAdditionalCuts(0.1,80);
+	else if(configIndex==85) task->SetAdditionalCuts(0.2,80);
+	else if(configIndex==86) task->SetAdditionalCuts(0.4,80);
+	else if(configIndex==87) task->SetAdditionalCuts(0.6,80);
+	
 	else if(configIndex==30) task->SetAdditionalCuts(0.5,80);
 	else if(configIndex==31) task->SetAdditionalCuts(0.7,80);
 	else if(configIndex==32) task->SetAdditionalCuts(0.9,80);
