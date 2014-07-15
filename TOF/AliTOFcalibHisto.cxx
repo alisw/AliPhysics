@@ -663,7 +663,7 @@ AliTOFcalibHisto::GetCorrection(Int_t corr, Int_t index, Double_t tot)
 {
   /* apply correction */
 
-  Int_t ddl, chain, tdc, channel, hptdc, pbCh, feaIndex, sector, plate, padx, trm, icIndex, sectorStrip;
+  Int_t ddl, chain, tdc, channel, hptdc, pbCh, feaIndex, sector, padx, trm, icIndex, sectorStrip;
   Double_t slewing;
   
   switch (corr) {
@@ -694,7 +694,6 @@ AliTOFcalibHisto::GetCorrection(Int_t corr, Int_t index, Double_t tot)
       return GetCalibPar(kLeftFEAchDelayPar, pbCh);
   case kFEAdelayCorr:
     sector = (Int_t)GetCalibMap(kSector, index);
-    plate = (Int_t)GetCalibMap(kPlate, index);
     sectorStrip = (Int_t)GetCalibMap(kSectorStrip, index);
     padx = (Int_t)GetCalibMap(kPadX, index);
     feaIndex = padx / 12 + 4 * sectorStrip + 364 * sector;      

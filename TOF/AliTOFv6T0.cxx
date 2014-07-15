@@ -2131,7 +2131,7 @@ void AliTOFv6T0::StepManager()
   Float_t hits[14];
   Int_t   vol[5];
   Int_t   sector, plate, padx, padz, strip;
-  Int_t   copy, padzid, padxid, stripid, i;
+  Int_t   copy, i;
   Int_t   *idtmed = fIdtmed->GetArray()-499;
   Float_t incidenceAngle;
 
@@ -2155,15 +2155,12 @@ void AliTOFv6T0::StepManager()
 
     // getting information about hit volumes
     
-    padzid=TVirtualMC::GetMC()->CurrentVolOffID(1,copy);
     padz=copy;
     padz--;
 
-    padxid=TVirtualMC::GetMC()->CurrentVolOffID(0,copy);
     padx=copy; 
     padx--;
     
-    stripid=TVirtualMC::GetMC()->CurrentVolOffID(4,copy);
     strip=copy; 
     strip--;
 
