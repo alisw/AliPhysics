@@ -22,6 +22,7 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcal {
  protected:
   Bool_t                 FillHistograms()                               ;
   void                   ExecOnce()                                     ;
+  void                   GenerateHistoBins()                            ;
   void                   AllocateFindableParticlesTHnSparse()           ;
   void                   AllocateMatchedParticlesTHnSparse()            ;
   void                   FillFindableParticlesTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt);
@@ -34,6 +35,19 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcal {
   // Service fields (non-streamed)
   AliParticleContainer* fGeneratorLevel        ; //! generator level container
   AliParticleContainer* fDetectorLevel         ; //! detector level container
+  Int_t                 fNPtHistBins           ; //! number of pt bins
+  Double_t*             fPtHistBins            ; //! pt bins
+  Int_t                 fNEtaHistBins          ; //! number of eta bins
+  Double_t*             fEtaHistBins           ; //! eta bins
+  Int_t                 fNPhiHistBins          ; //! number of phi bins
+  Double_t*             fPhiHistBins           ; //! phi bins
+  Int_t                 fNCentHistBins         ; //! number of cent bins
+  Double_t*             fCentHistBins          ; //! cent bins
+  Int_t                 fNPtResHistBins        ; //! number of pt res bins
+  Double_t*             fPtResHistBins         ; //! pt res bins
+  Int_t                 fNIntegerHistBins      ; //! number of integer bins
+  Double_t*             fIntegerHistBins       ; //! integer bins
+
 
   // Histograms
   TH3***                fTracksAll             ; //! all tracks
