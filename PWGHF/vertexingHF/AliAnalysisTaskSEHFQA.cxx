@@ -1848,15 +1848,15 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  !((trStatus & AliVTrack::kITSrefit) == AliVTrack::kITSrefit)){
 	selTrack=kFALSE;
       }
-
+      if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){ // BIT(4) standard cuts with very loose DCA
+      	 selTrack=kFALSE;
+      }
       Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
       Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
       if (track->GetTPCNclsF()>0) {
 	ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
       }
-      if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ){
-	selTrack=kFALSE;	
-      }
+
       if(selTrack){
 	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)){
 	  ((TH1F*)fOutputTrack->FindObject("hd0TracksTPCITSSPDany"))->Fill(d0z0[0]);
@@ -1952,7 +1952,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	}//if TOF status
 	//}
       
-	if(pidHF && pidHF->CheckStatus(track,"TPC")){ 
+	if(pidHF && pidHF->CheckStatus(track,"TPC") && selTrack){ 
 
 	  Double_t TPCp=pid->GetTPCmomentum();
 	  Double_t TPCsignal=pid->GetTPCsignal();
