@@ -84,6 +84,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
 
  protected:
+  Double_t*                   GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
+  void                        GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array) const;
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
   Bool_t                      AcceptCluster(AliVCluster *clus, Int_t c = 0)      const;
   Bool_t                      AcceptTrack(AliVParticle *track, Int_t c = 0)      const;
