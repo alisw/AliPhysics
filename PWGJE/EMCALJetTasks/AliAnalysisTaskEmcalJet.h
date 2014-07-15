@@ -53,7 +53,6 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   AliJetContainer            *GetJetContainer(const char* name)                                        const;
 
  protected:
-  Float_t*                    GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const;
   virtual Bool_t              AcceptJet(AliEmcalJet* jet, Int_t c =0);
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet, Int_t c =0);
   Double_t                    GetLeadingHadronPt(AliEmcalJet* jet, Int_t c =0);
