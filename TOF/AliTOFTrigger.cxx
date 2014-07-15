@@ -585,9 +585,6 @@ void AliTOFTrigger::CreateLTMMatrixFromRaw(AliRawReader *fRawReader) {
     
     Int_t dummy = -1;
     Int_t detectorIndex[5] = {-1, -1, -1, -1, -1};
-    Int_t digit[2];
-    //Int_t track = -1;
-    //Int_t last = -1;
     
     Int_t indexDDL = 0;
     Int_t iRawData = 0;
@@ -612,9 +609,6 @@ void AliTOFTrigger::CreateLTMMatrixFromRaw(AliRawReader *fRawReader) {
         dummy = detectorIndex[3];
         detectorIndex[3] = detectorIndex[4];//padz
         detectorIndex[4] = dummy;//padx
-
-        digit[0] = tofRawDatum->GetTOF();
-        digit[1] = tofRawDatum->GetTOT();
 
         dummy = detectorIndex[3];
         detectorIndex[3] = detectorIndex[4];//padx

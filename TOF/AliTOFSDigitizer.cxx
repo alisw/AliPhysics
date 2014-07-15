@@ -1153,10 +1153,6 @@ void AliTOFSDigitizer::SimulateDetectorResponseOLD(Float_t z0, Float_t x0, Float
   //         res[iPad] - resolution of the pad, ns
   //         timeWalk[iPad] - time walk of the pad, ns
   //         timeDelay[iPad] - time delay for neighbouring pad to hited pad, ns
-  //         PadId[iPad] - Pad Identifier
-  //                    E | F    -->   PadId[iPad] = 5 | 6
-  //                    A | B    -->   PadId[iPad] = 1 | 2
-  //                    C | D    -->   PadId[iPad] = 3 | 4
   //         nTail[iPad] - the tail number, = 1 for tailA, = 2 for tailB
   //         qCenterPad - charge extimated for each pad, arb. units
   //         weightsSum - sum of weights extimated for each pad fired, arb. units
@@ -1169,7 +1165,6 @@ void AliTOFSDigitizer::SimulateDetectorResponseOLD(Float_t z0, Float_t x0, Float
   Float_t logOfqInd = 0.;
   Float_t weightsSum = 0.;
   Int_t nTail[4]  = {0,0,0,0};
-  Int_t padId[4]  = {0,0,0,0};
   Float_t eff[4]  = {0.,0.,0.,0.};
   Float_t res[4]  = {0.,0.,0.,0.};
   //  Float_t qCenterPad = fMinimumCharge * fMinimumCharge;
@@ -1193,7 +1188,6 @@ void AliTOFSDigitizer::SimulateDetectorResponseOLD(Float_t z0, Float_t x0, Float
   nActivatedPads++;
   nPlace[nActivatedPads-1] = (iz - 1) * AliTOFGeometry::NpadX() + ix;
   qInduced[nActivatedPads-1] = qCenterPad;
-  padId[nActivatedPads-1] = 1;
   
   if (fEdgeEffect == 0) {
     eff[nActivatedPads-1] = fEffCenter;
@@ -1288,7 +1282,6 @@ void AliTOFSDigitizer::SimulateDetectorResponseOLD(Float_t z0, Float_t x0, Float
 	} else {
 	  timeDelay[nActivatedPads-1] = 0.;
 	}
-	padId[nActivatedPads-1] = 2;
       }
     }
 
@@ -1326,7 +1319,6 @@ void AliTOFSDigitizer::SimulateDetectorResponseOLD(Float_t z0, Float_t x0, Float
 	} else {
 	  timeDelay[nActivatedPads-1] = 0.;
 	}
-	padId[nActivatedPads-1] = 3;
 
 	//     D:
 	if(z < k && z > 0) {
@@ -1357,7 +1349,6 @@ void AliTOFSDigitizer::SimulateDetectorResponseOLD(Float_t z0, Float_t x0, Float
 	    } else {
 	      timeDelay[nActivatedPads-1] = 0.;
 	    }
-	    padId[nActivatedPads-1] = 4;
 	  }
 	}  // end D
       }  // end C
@@ -1382,7 +1373,6 @@ void AliTOFSDigitizer::SimulateDetectorResponseOLD(Float_t z0, Float_t x0, Float
 	} else {
 	  timeDelay[nActivatedPads-1] = 0.;
 	}
-	padId[nActivatedPads-1] = 5;
 
 
 	//     F:
@@ -1413,7 +1403,6 @@ void AliTOFSDigitizer::SimulateDetectorResponseOLD(Float_t z0, Float_t x0, Float
 	    } else {
 	      timeDelay[nActivatedPads-1] = 0.;
 	    }
-	    padId[nActivatedPads-1] = 6;
 	  }
 	}  // end F
       }  // end E

@@ -1043,10 +1043,6 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
   Float_t pos[3] = {0.,0.,0.};
 
   Int_t jj = 0;
-  Int_t interestingPadX[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingPadX[jj] = -1;
-  Int_t interestingPadZ[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingPadZ[jj] = -1;
   Double_t interestingTOT[kMaxNumberOfInterestingPads];
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingTOT[jj] = 0;
   Double_t interestingADC[kMaxNumberOfInterestingPads];
@@ -1062,9 +1058,6 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingY[jj] = 0;
   Float_t interestingZ[kMaxNumberOfInterestingPads];
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingZ[jj] = 0;
-
-  Float_t interDigit[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interDigit[jj] = 0;
 
   Int_t padsCluster[11];
   padsCluster[0] = nSector;
@@ -1508,10 +1501,6 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
   Float_t pos[3] = {0.,0.,0.};
 
   Int_t jj = 0;
-  Int_t interestingPadX[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingPadX[jj] = -1;
-  Int_t interestingPadZ[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingPadZ[jj] = -1;
   Double_t interestingTOT[kMaxNumberOfInterestingPads];
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingTOT[jj] = 0;
   Double_t interestingADC[kMaxNumberOfInterestingPads];
@@ -1527,9 +1516,6 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingY[jj] = 0;
   Float_t interestingZ[kMaxNumberOfInterestingPads];
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingZ[jj] = 0;
-
-  Float_t interDigit[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interDigit[jj] = 0;
 
   Int_t padsCluster[11];
   padsCluster[0] = nSector;
@@ -1915,10 +1901,6 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
   Float_t pos[3] = {0.,0.,0.};
 
   Int_t jj = 0;
-  Int_t interestingPadX[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingPadX[jj] = -1;
-  Int_t interestingPadZ[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingPadZ[jj] = -1;
   Double_t interestingTOT[kMaxNumberOfInterestingPads];
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingTOT[jj] = 0;
   Double_t interestingADC[kMaxNumberOfInterestingPads];
@@ -1934,9 +1916,6 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingY[jj] = 0;
   Float_t interestingZ[kMaxNumberOfInterestingPads];
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingZ[jj] = 0;
-
-  Float_t interDigit[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interDigit[jj] = 0;
 
   Int_t padsCluster[11];
   padsCluster[0] = nSector;
@@ -2333,10 +2312,6 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
   Float_t pos[3] = {0.,0.,0.};
 
   Int_t jj = 0;
-  Int_t interestingPadX[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingPadX[jj] = -1;
-  Int_t interestingPadZ[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingPadZ[jj] = -1;
   Double_t interestingTOT[kMaxNumberOfInterestingPads];
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingTOT[jj] = 0;
   Double_t interestingADC[kMaxNumberOfInterestingPads];
@@ -2352,9 +2327,6 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingY[jj] = 0;
   Float_t interestingZ[kMaxNumberOfInterestingPads];
   for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interestingZ[jj] = 0;
-
-  Float_t interDigit[kMaxNumberOfInterestingPads];
-  for (jj=0; jj<kMaxNumberOfInterestingPads; jj++) interDigit[jj] = 0;
 
   Int_t padsCluster[11];
   padsCluster[0] = nSector;
