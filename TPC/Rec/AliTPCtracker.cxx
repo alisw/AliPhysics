@@ -1380,6 +1380,7 @@ Int_t  AliTPCtracker::LoadClusters()
     Float_t nPadsPerSegment = (Float_t)(fkParam->GetNPadsPerSegment(wireSegmentID));
     TMatrixD &crossTalkSignal =  *((TMatrixD*)fCrossTalkSignalArray->At(sec));
     Int_t nCols=crossTalkSignal.GetNcols();
+    Double_t missingChargeFactor= AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrectionMissingCharge();
     for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
       AliTPCclusterMI *clXtalk= static_cast<AliTPCclusterMI*>(clrow->GetArray()->At(icl));
       Transform((AliTPCclusterMI*)(clXtalk));
@@ -1387,10 +1388,20 @@ Int_t  AliTPCtracker::LoadClusters()
       Int_t timeBinXtalk = clXtalk->GetTimeBin();
       Double_t qTotXtalk = 0.;   
       Double_t rmsTime2   = clXtalk->GetSigmaZ2()/(fkParam->GetZWidth()*fkParam->GetZWidth()); 
+      Double_t rmsPad2    = clXtalk->GetSigmaY2()/(fkParam->GetPadPitchWidth(sec)*fkParam->GetPadPitchWidth(sec)); 
+
       Double_t norm= 2.*TMath::Exp(-1.0/(2.*rmsTime2))+2.*TMath::Exp(-4.0/(2.*rmsTime2))+1.;
       for (Int_t itb=timeBinXtalk-2, idelta=-2; itb<=timeBinXtalk+2; itb++,idelta++) {        
         if (itb<0 || itb>=nCols) continue;
-        qTotXtalk = clXtalk->GetQ()*TMath::Exp(-idelta*idelta/(2*rmsTime2))/norm;
+        Double_t missingCharge=0;
+	Double_t trf= TMath::Exp(-idelta*idelta/(2.*rmsTime2));
+        if (missingChargeFactor>0) for (Int_t dpad=-2; dpad<=2; dpad++){
+	  Double_t qPad =   clXtalk->GetMax()*TMath::Exp(-dpad*dpad/(2*rmsPad2));
+          if (qPad*trf<fkParam->GetZeroSup()){
+	    missingCharge+=qPad*missingChargeFactor;
+	  }
+	}
+        qTotXtalk = (clXtalk->GetQ()+missingCharge)*trf/norm;
         crossTalkSignal[wireSegmentID][itb]+= qTotXtalk/nPadsPerSegment; 
       }       
     }

@@ -102,8 +102,9 @@ AliTPCRecoParam::AliTPCRecoParam():
   fUseMultiplicityCorrectionDedx(kTRUE), // use Dedx multiplicity correction
   fUseAlignmentTime(kTRUE),              // use time dependent alignment correction
   fUseIonTailCorrection(0),   // no ion tail correction for now
-  fCrosstalkCorrection(0),   // crosstalk correction factor (fro each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
-  //
+  fCrosstalkCorrection(0),   // crosstalk correction factor (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
+  fCrosstalkCorrectionMissingCharge(1),   // crosstalk correction factor - missing charge (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
+ //
   fUseTotCharge(kTRUE),          // switch use total or max charge
   fMinFraction(0.01),           // truncated mean - lower threshold
   fMaxFaction(0.7),            // truncated mean - upper threshold

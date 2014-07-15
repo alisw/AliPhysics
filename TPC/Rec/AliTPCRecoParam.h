@@ -108,7 +108,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseTOFCorrection(Bool_t flag) {fUseTOFCorrection = flag;}
   void  SetUseIonTailCorrection(Int_t flag) {fUseIonTailCorrection = flag;}
   void  SetCrosstalkCorrection(Float_t crosstalkCorrection) {fCrosstalkCorrection= crosstalkCorrection; }
-  //
+  void  SetCrosstalkCorrectionMissingCharge(Float_t crosstalkCorrection) {fCrosstalkCorrectionMissingCharge= crosstalkCorrection; }
+ //
   Int_t GetUseFieldCorrection() const {return fUseFieldCorrection;}
   Int_t GetUseComposedCorrection() const {return fUseComposedCorrection;}
   Int_t GetUseRPHICorrection() const {return fUseRPHICorrection;}
@@ -122,6 +123,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t GetUseTOFCorrection() {return fUseTOFCorrection;}
   Int_t GetUseIonTailCorrection() const {return fUseIonTailCorrection;}
   Double_t GetCrosstalkCorrection() const {return fCrosstalkCorrection;}
+ Double_t GetCrosstalkCorrectionMissingCharge() const {return fCrosstalkCorrectionMissingCharge;}
 
   Bool_t GetUseMultiplicityCorrectionDedx() const {return fUseMultiplicityCorrectionDedx;}
   Int_t  GetGainCorrectionHVandPTMode() const  { return   fGainCorrectionHVandPTMode;}
@@ -208,7 +210,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t fUseAlignmentTime;              // use time dependent alignment correction
   Int_t fUseIonTailCorrection;   // use ion tail correction
   Double_t fCrosstalkCorrection;   // crosstalk correction factor (fro each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
-  //
+  Double_t fCrosstalkCorrectionMissingCharge;   // crosstalk correction factor - missing charge factor (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing  capacitors in 2012
+ //
   // dEdx switches
   //
   Bool_t   fUseTotCharge;          // switch use total or max charge
