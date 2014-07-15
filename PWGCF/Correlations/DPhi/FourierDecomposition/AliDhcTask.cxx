@@ -442,11 +442,15 @@ void AliDhcTask::UserExec(Option_t *)
     Int_t nClass = arrClass->GetEntries();
     
     TString strOneClass;
+    Bool_t bAccEvent = kFALSE;
     for (Int_t iClass=0; iClass<nClass; iClass++) {
       strOneClass = arrClass->At(iClass)->GetName();
-      if (!strFiredClass.Contains(strOneClass))
-        return;
+      if (strFiredClass.Contains(strOneClass))
+        bAccEvent = kTRUE;
     }
+    
+    if (!bAccEvent)
+      return;
     
     if (fVerbosity > 10) {
       AliInfo(Form("After trigger class selection: This event has classes %s", strFiredClass.Data()));
