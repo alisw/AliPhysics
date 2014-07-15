@@ -425,14 +425,32 @@ void AliDhcTask::UserExec(Option_t *)
     return;
   }
 
+  // select specific trigger classes?
   if (fClassName.Length()>0) {
-    TString cls;
+    TString strFiredClass;
     if (fESD)
-      cls = fESD->GetFiredTriggerClasses();
+      strFiredClass = fESD->GetFiredTriggerClasses();
     else
-      cls = fAOD->GetFiredTriggerClasses();
-    if (!cls.Contains(fClassName))
-      return;
+      strFiredClass = fAOD->GetFiredTriggerClasses();
+    
+    if (fVerbosity > 10) {
+      AliInfo(Form("Trigger class selection: This event has classes %s", strFiredClass.Data()));
+      AliInfo(Form("Trigger class selection: selecting classes %s", fClassName.Data()));
+    }
+
+    TObjArray *arrClass = fClassName.Tokenize(",");
+    Int_t nClass = arrClass->GetEntries();
+    
+    TString strOneClass;
+    for (Int_t iClass=0; iClass<nClass; iClass++) {
+      strOneClass = arrClass->At(iClass)->GetName();
+      if (!strFiredClass.Contains(strOneClass))
+        return;
+    }
+    
+    if (fVerbosity > 10) {
+      AliInfo(Form("After trigger class selection: This event has classes %s", strFiredClass.Data()));
+    }
   }
 
   Bool_t mcgen = 0;
