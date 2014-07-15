@@ -36,6 +36,7 @@
 
 // --- AliRoot header files ---
 #include "AliRun.h"
+#include "AliDetector.h"
 #include "AliAD.h"
 #include "AliADhit.h"
 #include "AliADConst.h"
@@ -443,6 +444,7 @@ void AliADDigitizer::ReadSDigits()
       sdigitsBranch->GetEntry(entry);
       // Get the number of sdigits 
       Int_t nsdigits = sdigitsArray->GetEntries();
+      
       for (Int_t sdigit = 0; sdigit < nsdigits; sdigit++) {
 	AliADSDigit* sDigit = static_cast<AliADSDigit*>(sdigitsArray->UncheckedAt(sdigit));
 	Int_t pmNumber = sDigit->PMNumber();
@@ -455,7 +457,6 @@ void AliADDigitizer::ReadSDigits()
 	// Sum the charges
 	Float_t *charges = sDigit->GetCharges();
 	for(Int_t iBin = 0; iBin < nbins; ++iBin) fTime[pmNumber][iBin] += charges[iBin];
-	//for(Int_t iBin = 0; iBin < nbins; ++iBin) AliWarning(Form("Charge %e ",fTime[pmNumber][iBin]));
 	// and the labels
 	Int_t *labels = sDigit->GetTracks();
 	Int_t j = 0;
@@ -486,6 +487,7 @@ void AliADDigitizer::WriteDigits(AliLoader *loader)
   TTree* treeD  = loader->TreeD();
   DigitsArray();
   treeD->Branch("ADDigit", &fDigits); 
+  //fAD->MakeBranchInTree(treeD,"AD",&fDigits,1000,"");
   
   Short_t *chargeADC = new Short_t[kNClocks];
   for (Int_t i=0; i<16; i++) {      
@@ -517,6 +519,7 @@ void AliADDigitizer::WriteSDigits(AliLoader *loader)
   TTree* treeS  = loader->TreeS();
   SDigitsArray();
   treeS->Branch("ADSDigit", &fDigits); 
+  //fAD->MakeBranchInTree(treeS,"AD",&fDigits,8000,"");
   
   for (Int_t ipmt = 0; ipmt < 16; ++ipmt) {
     AddSDigit(ipmt,fNBins[ipmt],fTime[ipmt],fLabels[ipmt]);
