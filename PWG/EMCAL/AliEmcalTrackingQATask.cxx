@@ -23,6 +23,18 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
   fSelectHIJING(kTRUE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
+  fNPtHistBins(0),
+  fPtHistBins(0),
+  fNEtaHistBins(0),
+  fEtaHistBins(0),
+  fNPhiHistBins(0),
+  fPhiHistBins(0),
+  fNCentHistBins(0),
+  fCentHistBins(0),
+  fNPtResHistBins(0),
+  fPtResHistBins(0),
+  fNIntegerHistBins(0),
+  fIntegerHistBins(0),
   fTracksAll(0),
   fTracksSelected(0),
   fParticlesAllPhysPrim(0),
@@ -33,6 +45,8 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
   // Default constructor.
 
   SetMakeGeneralHistograms(kTRUE);
+
+  GenerateHistoBins();
 }
 
 //________________________________________________________________________
@@ -41,6 +55,18 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) :
   fSelectHIJING(kTRUE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
+  fNPtHistBins(0),
+  fPtHistBins(0),
+  fNEtaHistBins(0),
+  fEtaHistBins(0),
+  fNPhiHistBins(0),
+  fPhiHistBins(0),
+  fNCentHistBins(0),
+  fCentHistBins(0),
+  fNPtResHistBins(0),
+  fPtResHistBins(0),
+  fNIntegerHistBins(0),
+  fIntegerHistBins(0),
   fTracksAll(0),
   fTracksSelected(0),
   fParticlesAllPhysPrim(0),
@@ -51,12 +77,51 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) :
   // Standard constructor.
 
   SetMakeGeneralHistograms(kTRUE);
+
+  GenerateHistoBins();
 }
 
 //________________________________________________________________________
 AliEmcalTrackingQATask::~AliEmcalTrackingQATask()
 {
   // Destructor.
+}
+
+//________________________________________________________________________
+void AliEmcalTrackingQATask::GenerateHistoBins()
+{
+  fNPtHistBins = 79;
+  fPtHistBins = new Double_t[fNPtHistBins+1];
+  GenerateFixedBinArray(10, 0, 1, fPtHistBins);
+  GenerateFixedBinArray(10, 1, 3, fPtHistBins+10);
+  GenerateFixedBinArray(14, 3, 10, fPtHistBins+20);
+  GenerateFixedBinArray(10, 10, 20, fPtHistBins+34);
+  GenerateFixedBinArray(15, 20, 50, fPtHistBins+44);
+  GenerateFixedBinArray(20, 50, 150, fPtHistBins+59);
+
+  fNEtaHistBins = 100;
+  fEtaHistBins = new Double_t[fNEtaHistBins+1];
+  GenerateFixedBinArray(fNEtaHistBins, -1, 1, fEtaHistBins);
+
+  fNPhiHistBins = 101;
+  fPhiHistBins = new Double_t[fNPhiHistBins+1];
+  GenerateFixedBinArray(fNPhiHistBins, 0, TMath::Pi() * 2.02, fPhiHistBins);
+
+  fNCentHistBins = 4;
+  fCentHistBins = new Double_t[fNCentHistBins+1];
+  fCentHistBins[0] = 0;
+  fCentHistBins[1] = 10;
+  fCentHistBins[2] = 30;
+  fCentHistBins[3] = 50;
+  fCentHistBins[4] = 90;
+
+  fNPtResHistBins = 200;
+  fPtResHistBins = new Double_t[fNPtResHistBins+1];
+  GenerateFixedBinArray(fNPtResHistBins, -2, 2, fPtResHistBins);
+
+  fNIntegerHistBins = 10;
+  fIntegerHistBins = new Double_t[fNIntegerHistBins+1];
+  GenerateFixedBinArray(fNIntegerHistBins, -0.5, 9.5, fIntegerHistBins);
 }
 
 //________________________________________________________________________
@@ -81,7 +146,7 @@ void AliEmcalTrackingQATask::UserCreateOutputObjects()
     fTracksSelected[i] = new TH3*[3];
     for (Int_t j = 0; j < 3; j++) {
       histname = Form("fTracksAll_%d_%d",i,j);
-      fTracksAll[i][j] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
+      fTracksAll[i][j] = new TH3F(histname, histname, fNEtaHistBins, fEtaHistBins, fNPhiHistBins, fPhiHistBins, fNPtHistBins, fPtHistBins);
       fTracksAll[i][j]->GetXaxis()->SetTitle("#eta");
       fTracksAll[i][j]->GetYaxis()->SetTitle("#phi");
       fTracksAll[i][j]->GetZaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
@@ -89,7 +154,7 @@ void AliEmcalTrackingQATask::UserCreateOutputObjects()
 
       if (fSelectHIJING) {
 	histname = Form("fTracksSelected_%d_%d",i,j);
-	fTracksSelected[i][j] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
+	fTracksSelected[i][j] = new TH3F(histname, histname, fNEtaHistBins, fEtaHistBins, fNPhiHistBins, fPhiHistBins, fNPtHistBins, fPtHistBins);
 	fTracksSelected[i][j]->GetXaxis()->SetTitle("#eta");
 	fTracksSelected[i][j]->GetYaxis()->SetTitle("#phi");
 	fTracksSelected[i][j]->GetZaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
@@ -98,7 +163,7 @@ void AliEmcalTrackingQATask::UserCreateOutputObjects()
     }
 
     histname = Form("fParticlesAllPhysPrim_%d",i);
-    fParticlesAllPhysPrim[i] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
+    fParticlesAllPhysPrim[i] = new TH3F(histname, histname, fNEtaHistBins, fEtaHistBins, fNPhiHistBins, fPhiHistBins, fNPtHistBins, fPtHistBins);
     fParticlesAllPhysPrim[i]->GetXaxis()->SetTitle("#eta");
     fParticlesAllPhysPrim[i]->GetYaxis()->SetTitle("#phi");
     fParticlesAllPhysPrim[i]->GetZaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
@@ -106,7 +171,7 @@ void AliEmcalTrackingQATask::UserCreateOutputObjects()
 
     if (fSelectHIJING) {
       histname = Form("fParticlesSelected_%d",i);
-      fParticlesSelected[i] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
+      fParticlesSelected[i] = new TH3F(histname, histname, fNEtaHistBins, fEtaHistBins, fNPhiHistBins, fPhiHistBins, fNPtHistBins, fPtHistBins);
       fParticlesSelected[i]->GetXaxis()->SetTitle("#eta");
       fParticlesSelected[i]->GetYaxis()->SetTitle("#phi");
       fParticlesSelected[i]->GetZaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
@@ -126,38 +191,36 @@ void AliEmcalTrackingQATask::AllocateFindableParticlesTHnSparse()
   Int_t dim = 0;
   TString title[20];
   Int_t nbins[20] = {0};
-  Double_t min[20] = {0};
-  Double_t max[20] = {0};
+  Double_t *binEdges[20] = {0};
   
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
-    nbins[dim] = 101;
-    min[dim] = 0;
-    max[dim] = 101;
+    nbins[dim] = fNCentHistBins;
+    binEdges[dim] = fCentHistBins;
     dim++;
   }
 
   title[dim] = "#it{p}_{T} (GeV/#it{c})";
-  nbins[dim] = fNbins;
-  min[dim] = fMinBinPt;
-  max[dim] = fMaxBinPt;
+  nbins[dim] = fNPtHistBins;
+  binEdges[dim] = fPtHistBins;
   dim++;
 
   title[dim] = "#eta";
-  nbins[dim] = 100;
-  min[dim] = -1;
-  max[dim] = 1;
+  nbins[dim] = fNEtaHistBins;
+  binEdges[dim] = fEtaHistBins;
   dim++;
 
   title[dim] = "#phi";
-  nbins[dim] = 101;
-  min[dim] = 0;
-  max[dim] = TMath::Pi() * 2.02;
+  nbins[dim] = fNPhiHistBins;
+  binEdges[dim] = fPhiHistBins;
   dim++;
  
-  fParticlesFindable = new THnSparseF("fParticlesFindable","fParticlesFindable",dim,nbins,min,max);
-  for (Int_t i = 0; i < dim; i++)
+  fParticlesFindable = new THnSparseF("fParticlesFindable","fParticlesFindable",dim,nbins);
+  for (Int_t i = 0; i < dim; i++) {
     fParticlesFindable->GetAxis(i)->SetTitle(title[i]);
+    fParticlesFindable->SetBinEdges(i, binEdges[i]);
+  }
+
   fOutput->Add(fParticlesFindable);
 }
 
@@ -167,68 +230,61 @@ void AliEmcalTrackingQATask::AllocateMatchedParticlesTHnSparse()
   Int_t dim = 0;
   TString title[20];
   Int_t nbins[20] = {0};
-  Double_t min[20] = {0};
-  Double_t max[20] = {0};
+  Double_t *binEdges[20] = {0};
   
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
-    nbins[dim] = 101;
-    min[dim] = 0;
-    max[dim] = 101;
+    nbins[dim] = fNCentHistBins;
+    binEdges[dim] = fCentHistBins;
     dim++;
   }
 
   title[dim] = "#it{p}_{T}^{gen} (GeV/#it{c})";
-  nbins[dim] = fNbins;
-  min[dim] = fMinBinPt;
-  max[dim] = fMaxBinPt;
+  nbins[dim] = fNPtHistBins;
+  binEdges[dim] = fPtHistBins;
   dim++;
 
   title[dim] = "#eta^{gen}";
-  nbins[dim] = 100;
-  min[dim] = -1;
-  max[dim] = 1;
+  nbins[dim] = fNEtaHistBins;
+  binEdges[dim] = fEtaHistBins;
   dim++;
 
   title[dim] = "#phi^{gen}";
-  nbins[dim] = 101;
-  min[dim] = 0;
-  max[dim] = TMath::Pi() * 2.02;
+  nbins[dim] = fNPhiHistBins;
+  binEdges[dim] = fPhiHistBins;
   dim++;
 
   title[dim] = "#it{p}_{T}^{det} (GeV/#it{c})";
-  nbins[dim] = fNbins;
-  min[dim] = fMinBinPt;
-  max[dim] = fMaxBinPt;
+  nbins[dim] = fNPtHistBins;
+  binEdges[dim] = fPtHistBins;
   dim++;
 
   title[dim] = "#eta^{det}";
-  nbins[dim] = 100;
-  min[dim] = -1;
-  max[dim] = 1;
+  nbins[dim] = fNEtaHistBins;
+  binEdges[dim] = fEtaHistBins;
   dim++;
 
   title[dim] = "#phi^{det}";
-  nbins[dim] = 101;
-  min[dim] = 0;
-  max[dim] = TMath::Pi() * 2.02;
+  nbins[dim] = fNPhiHistBins;
+  binEdges[dim] = fPhiHistBins;
   dim++;
 
   title[dim] = "(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}";
-  nbins[dim] = fNbins;
-  min[dim] = -1;
-  max[dim] = 1;
+  nbins[dim] = fNPtResHistBins;
+  binEdges[dim] = fPtResHistBins;
   dim++;
 
   title[dim] = "track type";
   nbins[dim] = 3;
-  min[dim] = -0.5;
-  max[dim] = 2.5;
+  binEdges[dim] = fIntegerHistBins;
   dim++;
 
-  fParticlesMatched = new THnSparseF("fParticlesMatched","fParticlesMatched",dim,nbins,min,max);
-  for (Int_t i = 0; i < dim; i++)
+  fParticlesMatched = new THnSparseF("fParticlesMatched","fParticlesMatched",dim,nbins);
+  for (Int_t i = 0; i < dim; i++) {
     fParticlesMatched->GetAxis(i)->SetTitle(title[i]);
+    fParticlesMatched->SetBinEdges(i, binEdges[i]);
+  }
+
   fOutput->Add(fParticlesMatched);
 }
 
