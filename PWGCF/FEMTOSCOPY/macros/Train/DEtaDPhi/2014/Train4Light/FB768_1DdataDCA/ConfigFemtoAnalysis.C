@@ -490,11 +490,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 							cdedpetaphiPt[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 
 							if(ichg==0 || ichg==1 || ichg==2)
-							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train4Light/1Dmap_FB768_DCA.root", AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,1*/);
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train4Light/1Dmap_FB768_DCA.root", AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,1*/);
 							else if(ichg==3 || ichg==4 || ichg==5)
 							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train4Light/1Dmap_FB768_DCA.root", AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon);
 							else if(ichg==6 || ichg==7 || ichg==8)
-							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train4Light/1Dmap_FB768_DCA.root", AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kPion);
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train4Light/1Dmap_FB768_DCA.root", AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion);
 							else
 							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D("alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train4Light/1Dmap_FB768_DCA.root", AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll);
 				
