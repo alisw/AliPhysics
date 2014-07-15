@@ -44,7 +44,7 @@ const char * kParticleSpeciesName[]={"Pions","Kaons","Protons","Undefined"} ;
 
 ClassImp(AliHelperPID)
 
-AliHelperPID::AliHelperPID() : TNamed("HelperPID", "PID object"),fisMC(0), fPIDType(kNSigmaTPCTOF), fNSigmaPID(3), fBayesCut(0.8), fPIDResponse(0), fPIDCombined(0),fOutputList(0),fRequestTOFPID(1),fRemoveTracksT0Fill(0),fUseExclusiveNSigma(0),fPtTOFPID(.6),fHasTOFPID(0){
+AliHelperPID::AliHelperPID() : TNamed("HelperPID", "PID object"),fisMC(0), fPIDType(kNSigmaTPCTOF), fNSigmaPID(3), fBayesCut(0.8), fPIDResponse(0x0), fPIDCombined(0x0),fOutputList(0x0),fRequestTOFPID(1),fRemoveTracksT0Fill(0),fUseExclusiveNSigma(0),fPtTOFPID(.6),fHasTOFPID(0){
   
   for(Int_t ipart=0;ipart<kNSpecies;ipart++)
     for(Int_t ipid=0;ipid<=kNSigmaPIDType;ipid++)
@@ -142,7 +142,11 @@ AliHelperPID::AliHelperPID() : TNamed("HelperPID", "PID object"),fisMC(0), fPIDT
     fHistoPID->GetYaxis()->SetTitle(Form("%s signal",kDetectorName[idet]));
     fOutputList->Add(fHistoPID);
   }
-  
+
+  // ------- setup PIDCombined
+  fPIDCombined=new AliPIDCombined;
+  fPIDCombined->SetDefaultTPCPriors();
+  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);  
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -177,7 +181,8 @@ Int_t AliHelperPID::GetParticleSpecies(AliVTrack * trk, Bool_t FIllQAHistos){
   if(fPIDType==kBayes){//use bayesianPID
     
     if(!fPIDCombined) {
-      AliFatal("PIDCombined object has to be set in the steering macro");
+      //AliFatal("PIDCombined object has to be set in the steering macro");
+      AliFatal("PIDCombined object not found");
     }
     
     ID = GetIDBayes(trk,FIllQAHistos);
