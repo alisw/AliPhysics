@@ -1851,12 +1851,15 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){ // BIT(4) standard cuts with very loose DCA
       	 selTrack=kFALSE;
       }
+      if(TMath::Abs(track->Eta())>0.9){
+      	 selTrack=kFALSE;
+      }
       Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
       Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
       if (track->GetTPCNclsF()>0) {
 	ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
       }
-
+      
       if(selTrack){
 	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)){
 	  ((TH1F*)fOutputTrack->FindObject("hd0TracksTPCITSSPDany"))->Fill(d0z0[0]);
