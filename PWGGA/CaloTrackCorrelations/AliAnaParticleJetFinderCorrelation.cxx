@@ -49,9 +49,10 @@ AliAnaCaloTrackCorrBaseClass(),
   fConeSize(0), fPtThresholdInCone(0),fUseJetRefTracks(0),
   fMakeCorrelationInHistoMaker(0), fSelectIsolated(0),
   fJetConeSize(0.4),fJetMinPt(5),fJetAreaFraction(0.6),
-  //fNonStandardJetFromReader(kTRUE),
+//fNonStandardJetFromReader(kTRUE), 
   fJetBranchName("jets"),
-  fBackgroundJetFromReader(kTRUE),fBkgJetBranchName("jets"),
+  fBackgroundJetFromReader(kTRUE),
+  fBkgJetBranchName("jets"),
   fGammaConeSize(0.3),fUseBackgroundSubtractionGamma(0),fSaveGJTree(0),
   fMostEnergetic(kFALSE),fMostOpposite(kTRUE), fUseHistogramJetBkg(kTRUE),
   fUseHistogramTracks(kTRUE),fUseHistogramJetTracks(kTRUE),fGenerator(0),
@@ -111,7 +112,7 @@ fGamRho(0)
 
 {
   //Default Ctor
-  //  printf("constructor\n");
+  //printf("constructor\n");
   
   //Initialize parameters
   InitParameters();
@@ -134,7 +135,7 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
 {  
   // Create histograms to be saved in output file and 
   // store them in fOutputContainer
-  //  printf("GetCreateOutputObjects\n");    
+  //printf("GetCreateOutputObjects\n");    
 
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ParticleJetFinderHistos") ; 
@@ -734,7 +735,7 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
 //_______________________________________________________
 void AliAnaParticleJetFinderCorrelation::InitParameters()
 {
-  //  printf("InitParameters\n");
+  //printf("InitParameters\n");
   //Initialize the parameters of the analysis.
   SetInputAODName("PWG4Particle");
   AddToHistogramsName("AnaJetFinderCorr_");
@@ -769,7 +770,7 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
 {
   //Input for jets is TClonesArray *aodRecJets
   //Returns the index of the jet that is opposite to the particle
-  //  printf(" SelectJet ");
+  //printf(" SelectJet ");
   
   Double_t particlePt=particle->Pt();
   if(fUseBackgroundSubtractionGamma) {
@@ -806,16 +807,15 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
     }
     fhCuts2->Fill(2.,1.);
     jetPt=jet->Pt();
+    if(jetPt<fJetMinPt) continue;
+    fhCuts2->Fill(3.,1.);
     if(fBackgroundJetFromReader ){
       jetPt-= (fJetRho * jet->EffectiveAreaCharged() );
     }
     if(jetPt<0.) continue;
     //put jet eta requirement here |eta_jet|<0.9-jet_cone_size
-    fhCuts2->Fill(3.,1.);
-    if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
     fhCuts2->Fill(4.,1.);
-    //    if(jet->Pt()<5) continue;
-    if(jetPt<fJetMinPt) continue;
+    if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
     fhCuts2->Fill(5.,1.);
     if(jet->EffectiveAreaCharged()<fJetAreaFraction*TMath::Pi()*fJetConeSize*fJetConeSize) continue;
     fhCuts2->Fill(6.,1.);
@@ -926,7 +926,8 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     if(GetDebug() > 3) printf("aodBkgJets %p\n",aodBkgJets);
     if(aodBkgJets==0x0){
       if(GetDebug() > 3) event->Print();
-      abort();
+      AliFatal("No jet background found\n");
+      return; // Trick coverity        
     }
     if(GetDebug() > 3) aodBkgJets->Print("c");
   }
@@ -1033,9 +1034,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     for(Int_t ijet = 0; ijet < nJets ; ijet++){
       jet = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
       if(!jet) continue;
+      if(jet->Pt()<fJetMinPt) continue;
       if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
       if(jet->EffectiveAreaCharged()<fJetAreaFraction*TMath::Pi()*fJetConeSize*fJetConeSize) continue;
-      if(jet->Pt()<fJetMinPt) continue;
       ptCorrect = jet->Pt() - rhoEvent * jet->EffectiveAreaCharged();
       if(ptCorrect > mostEneJetPt){
         mostEneJetPt = ptCorrect;
@@ -1085,7 +1086,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     printf("I use MakeAnalysisFillHistograms\n");
     printf("ntracks before iso %d\n",GetCTSTracks()->GetEntriesFast() );
   }
-  
+
   //Get the event, check if there are AODs available, if not, skip this analysis
   AliAODEvent * event = NULL;
   
@@ -1108,8 +1109,10 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   }
   
   if(!GetInputAODBranch() || !event){
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
-    abort();
+
+    AliFatal(Form("No input particles in AOD with name branch < %s > \n",
+                  GetInputAODName().Data()));
+    return; // Trick coverity        
   }
   
   Int_t nJets=-1;
@@ -1119,7 +1122,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   aodRecJets = GetNonStandardJets();
   if(aodRecJets==0x0){
     if(GetDebug() > 3) event->Print();
-    AliFatal("Jets container not found");
+    AliFatal("Jets container not found\n");
     return; // trick coverity
   }
   nJets=aodRecJets->GetEntries();
@@ -1143,7 +1146,8 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     if(GetDebug() > 3) printf("aodBkgJets %p\n",aodBkgJets);
     if(aodBkgJets==0x0){
       if(GetDebug() > 3) event->Print();
-      abort();
+      AliFatal("No jet background container found");
+      return; // trick coverity  
     }
     if(GetDebug() > 3) aodBkgJets->Print("c");
   }
@@ -1747,12 +1751,12 @@ void AliAnaParticleJetFinderCorrelation::Print(const Option_t * opt) const
   printf("fMakeCorrelationInHistoMaker	   =     %d\n",    fMakeCorrelationInHistoMaker) ;	
   printf("Isolated Trigger?  %d\n", fSelectIsolated) ;
   printf("Reconstructed jet cone size = %3.2f\n", fJetConeSize) ;
-  printf("Reconstructed jet minimum pt = %3.2f\n", fJetMinPt) ;
+  printf("Reconstructed jet minimum pt before background subtraction = %3.2f\n", fJetMinPt) ;
   printf("Reconstructed jet minimum area fraction = %3.2f\n", fJetAreaFraction) ;
 
-//  if(!fNonStandardJetFromReader){
-    printf("fJetBranchName =   %s\n", fJetBranchName.Data()) ;
-//  }
+  //if(!fNonStandardJetFromReader){
+  printf("fJetBranchName =   %s\n", fJetBranchName.Data()) ;
+  //}
   if(!fBackgroundJetFromReader){
     printf("fBkgJetBranchName =   %s\n", fBkgJetBranchName.Data()) ;
   }
