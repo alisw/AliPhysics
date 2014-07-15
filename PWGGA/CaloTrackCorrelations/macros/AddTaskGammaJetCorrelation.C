@@ -25,6 +25,11 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
 								const Int_t    maxCen        = -1,
 								const TString  jetBranchName = "clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00",
 								const TString  jetBkgBranchName = "jeteventbackground_clustersAOD_KT04_B0_Filter00768_Cut00150_Skip00",
+                                                                const Float_t  jetMinPt      = 0,
+                                                                const Float_t  minDeltaPhi   = 1.5,
+								const Float_t  maxDeltaPhi   = 4.5,
+								const Float_t  minPtRatio    = 0,
+								const Float_t  maxPtRatio    = 5,   
 								const Int_t    debug         = -1,
 								const Bool_t   printSettings = kFALSE,
 								const Double_t scaleFactor   = -1
@@ -101,7 +106,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
   
   maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,simulation,maxLambda0Cut,maxNLMcut,debug,printSettings), n++); // Photon cluster selection
   maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,collision,"Photon", partInCone,thresType, isoCone, isoPth,tm,kFALSE,simulation,debug,printSettings), n++); // Photon isolation   
-  maker->AddAnalysis(ConfigurePhotonJetAnalysis(calorimeter,isoCone,simulation,debug,printSettings), n++);// photon-jet correlation analysis
+  maker->AddAnalysis(ConfigurePhotonJetAnalysis(calorimeter,isoCone,jetMinPt,minDeltaPhi,maxDeltaPhi,minPtRatio,maxPtRatio,simulation,debug,printSettings), n++);// photon-jet correlation analysis
 
   maker->SetAnaDebug(debug)  ;
   maker->SwitchOnHistogramsMaker()  ;
@@ -887,7 +892,10 @@ UInt_t SetTriggerMaskFromName(TString trigger)
 
 }
 
-AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis(TString calorimeter = "EMCAL",Float_t gammaConeSize = 0.3,Bool_t simulation = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE){
+AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis(TString calorimeter = "EMCAL",Float_t gammaConeSize = 0.3, Float_t  jetMinPt  = 0, 
+							       Float_t  minDeltaPhi   = 1.5,Float_t  maxDeltaPhi   = 4.5,
+							       Float_t  minPtRatio    = 0,Float_t  maxPtRatio    = 5,
+							       Bool_t simulation = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE){
 
   AliAnaParticleJetFinderCorrelation *ana = new AliAnaParticleJetFinderCorrelation();
   ana->SetDebug(debug);
@@ -900,15 +908,16 @@ AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis(TString calorimet
   ana->SelectIsolated(kTRUE); // do correlation with isolated photons <<---changed here
   ana->SetMakeCorrelationInHistoMaker(kFALSE);
   ana->SetPtThresholdInCone(0.150);//<<---- change here
-  ana->SetDeltaPhiCutRange(TMath::Pi()/2.,TMath::Pi()*3./2.);//Mostly Open Cuts 
+  //ana->SetDeltaPhiCutRange(TMath::Pi()/2.,TMath::Pi()*3./2.);//Mostly Open Cuts 
+  ana->SetDeltaPhiCutRange(minDeltaPhi,maxDeltaPhi);  // Delta phi cut for correlation
   ana->SetJetConeSize(0.4);//jet cone size / check the reco jet name
-  ana->SetJetMinPt(5);//min jet pt
+  ana->SetJetMinPt(jetMinPt);//min jet pt
   ana->SetJetAreaFraction(0.8);//min area fraction was 0.6
   ana->SetMinPt(0.3);//min cluster pt repeated from reader
   ana->SetGammaConeSize(gammaConeSize);//isolation cone repeated from isolation ana
+  //ana->SetRatioCutRange(0.01,5.); //Mostly Open Cuts //0.01-5//<<---- change here
+  ana->SetRatioCutRange(minPtRatio,maxPtRatio); // Delta pt cut for correlation
 
-
-  ana->SetRatioCutRange(0.01,5.); //Mostly Open Cuts //0.01-5//<<---- change here
   ana->UseJetRefTracks(kTRUE); //Working now
   //Set Histograms bins and ranges
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below 0,100,200
