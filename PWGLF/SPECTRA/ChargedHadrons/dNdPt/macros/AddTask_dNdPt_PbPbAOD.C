@@ -3,7 +3,8 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
 						Int_t iFilterBit = AliAODTrack::kTrkGlobal,
 						char *contName = "dNdPtPbPbAOD",
 						Double_t dNClustersTPC = 0,
-						Bool_t bDoCutTPCLength = kTRUE
+						Bool_t bDoCutTPCLength = kTRUE,
+						Double_t dPrefactorLengthInTPC = 0.85
 											  )
 {
   // Creates, configures and attaches to the train a cascades check task.
@@ -36,8 +37,9 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
   task->SetCutMinNCrossedRowsTPC(dNCrossedRowsTPC);
   task->SetCutMinNClustersTPC(dNClustersTPC);
   task->SetCutLengthInTPCPtDependent(bDoCutTPCLength);
+  task->SetPrefactorLengthInTPCPtDependent(dPrefactorLengthInTPC);
   //task->SetCutLengthInTPCPtDependent();
-  //task->SetPrefactorLengthInTPCPtDependent(0.85);
+  //
 //   task->EnableRelativeCuts();
 //   task->SetCutPercMinNClustersTPC(1.0);
 //   task->SetCutPercMinNCrossedRowsTPC(1.0);

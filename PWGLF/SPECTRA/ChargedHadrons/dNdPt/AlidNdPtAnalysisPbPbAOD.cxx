@@ -1179,9 +1179,9 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   
   Double_t dLengthInTPC = 0;
   if ( DoCutLengthInTPCPtDependent() ) { dLengthInTPC = dummy.GetLengthInActiveZone(&par,3,236, bMagZ ,0,0); }
-  
+   
   Double_t dNClustersTPC = tr->GetTPCNcls();
-  Double_t dCrossedRowsTPC = tr->GetTPCClusterInfo(2,1);
+  Double_t dCrossedRowsTPC = tr->GetTPCNCrossedRows();//GetTPCClusterInfo(2,1);
   Double_t dFindableClustersTPC = tr->GetTPCNclsF();
   Double_t dChi2PerClusterTPC = (dNClustersTPC>0)?tr->Chi2perNDF()*(dNClustersTPC-5)/dNClustersTPC:-1.; // see AliDielectronVarManager.h
   Double_t dOneOverPt = tr->OneOverPt();
