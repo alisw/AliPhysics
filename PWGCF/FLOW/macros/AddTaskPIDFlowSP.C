@@ -69,9 +69,9 @@ for(int icentr=0;icentr<ncentr;icentr++){
     cutsEvent[icentr]->SetLHC11h(is2011);
     cutsEvent[icentr]->SetCentralityPercentileRange(centrMin[icentr],centrMax[icentr]);
     cutsEvent[icentr]->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-    //  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kVZERO);
-    //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
-    //cutsEvent->SetNContributorsRange(2);
+    //  cutsEvent[icentr]->SetRefMultMethod(AliFlowEventCuts::kVZERO);
+    //cutsEvent[icentr]->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
+    //cutsEvent[icentr]->SetNContributorsRange(2);
     cutsEvent[icentr]->SetPrimaryVertexZrange(-10.,10.);
     cutsEvent[icentr]->SetQA(doQA);
     cutsEvent[icentr]->SetCutTPCmultiplicityOutliers();
@@ -85,8 +85,8 @@ for(int icentr=0;icentr<ncentr;icentr++){
         cutsRP[icentr]->SetPtRange(0.2,5.);
         cutsRP[icentr]->SetEtaRange(etamin,etamax);
         cutsRP[icentr]->SetMinNClustersTPC(70);
-        cutsRP->SetMinChi2PerClusterTPC(0.1);
-        cutsRP->SetMaxChi2PerClusterTPC(4.0);
+        cutsRP[icentr]->SetMinChi2PerClusterTPC(0.1);
+        cutsRP[icentr]->SetMaxChi2PerClusterTPC(4.0);
         cutsRP[icentr]->SetMaxDCAToVertexXY(2.4);
         cutsRP[icentr]->SetMaxDCAToVertexZ(3.0);
         cutsRP[icentr]->SetAcceptKinkDaughters(kFALSE);
