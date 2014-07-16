@@ -410,7 +410,7 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
   AliPicoTrack *track = static_cast<AliPicoTrack*>(fDetectorLevel->GetNextAcceptParticle(0));
   while (track != 0) {
     Byte_t type = track->GetTrackType();
-    if (type<= 2 && type >= 0) {
+    if (type <= 2) {
       fTracksAll[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
 
       Int_t label = TMath::Abs(track->GetLabel());
