@@ -2768,6 +2768,7 @@ Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 		}
 	}
 
+	AliDebug(2, Form("nentriesUsed = %d", nentriesUsed));
 	AliInfo(Form("mean = %f ", aDCSArrayMean));
 	return aDCSArrayMean;
 
@@ -2929,6 +2930,7 @@ Float_t AliGRPPreprocessor::ProcessUInt(const TObjArray* array)
 		}
 	}
 
+	AliDebug(2, Form("nentriesUsed = %d", nentriesUsed));
 	AliInfo(Form("mean = %f ",aDCSArrayMean));
 	return aDCSArrayMean;
 
