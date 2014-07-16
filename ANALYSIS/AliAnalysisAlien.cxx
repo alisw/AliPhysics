@@ -3242,13 +3242,6 @@ void AliAnalysisAlien::SetOutputArchive(const char *list)
 }
 
 //______________________________________________________________________________
-void AliAnalysisAlien::SetPreferedSE(const char */*se*/)
-{
-// Setting a prefered output SE is not allowed anymore.
-   Warning("SetPreferedSE", "Setting a preferential SE is not allowed anymore via the plugin. Use SetNumberOfReplicas() and SetDefaultOutputs()");
-}
-
-//______________________________________________________________________________
 void AliAnalysisAlien::SetProofParameter(const char *pname, const char *value)
 {
 // Set some PROOF special parameter.
