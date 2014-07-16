@@ -199,6 +199,11 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 	continue;
 
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
+	if (fTrackEfficiency < 1) {
+	  Double_t r = gRandom->Rndm();
+	  if (fTrackEfficiency < r)
+	    continue;
+	}
         AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
