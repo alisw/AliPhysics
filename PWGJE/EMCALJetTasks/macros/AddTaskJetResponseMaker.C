@@ -87,6 +87,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
     
   AliParticleContainer *trackCont2 = jetTask->AddParticleContainer(ntracks2);
   trackCont2->SelectPhysicalPrimaries(kTRUE);
+  trackCont2->SetParticlePtCut(0);
   AliClusterContainer *clusCont2 = jetTask->AddClusterContainer(nclusters2);
   AliJetContainer *jetCont2 = jetTask->AddJetContainer(njets2, cutType, jetradius2);
   jetCont2->SetRhoName(nrho2);
