@@ -90,14 +90,15 @@ AliEmcalTrackingQATask::~AliEmcalTrackingQATask()
 //________________________________________________________________________
 void AliEmcalTrackingQATask::GenerateHistoBins()
 {
-  fNPtHistBins = 79;
+  fNPtHistBins = 82;
   fPtHistBins = new Double_t[fNPtHistBins+1];
-  GenerateFixedBinArray(10, 0, 1, fPtHistBins);
-  GenerateFixedBinArray(10, 1, 3, fPtHistBins+10);
-  GenerateFixedBinArray(14, 3, 10, fPtHistBins+20);
-  GenerateFixedBinArray(10, 10, 20, fPtHistBins+34);
-  GenerateFixedBinArray(15, 20, 50, fPtHistBins+44);
-  GenerateFixedBinArray(20, 50, 150, fPtHistBins+59);
+  GenerateFixedBinArray(6, 0, 0.3, fPtHistBins);
+  GenerateFixedBinArray(7, 0.3, 1, fPtHistBins+6);
+  GenerateFixedBinArray(10, 1, 3, fPtHistBins+13);
+  GenerateFixedBinArray(14, 3, 10, fPtHistBins+23);
+  GenerateFixedBinArray(10, 10, 20, fPtHistBins+37);
+  GenerateFixedBinArray(15, 20, 50, fPtHistBins+47);
+  GenerateFixedBinArray(20, 50, 150, fPtHistBins+62);
 
   fNEtaHistBins = 100;
   fEtaHistBins = new Double_t[fNEtaHistBins+1];
@@ -301,6 +302,7 @@ void AliEmcalTrackingQATask::SetGeneratorLevelName(const char* name)
     }
     fGeneratorLevel->SetClassName("AliAODMCParticle");
     fGeneratorLevel->SelectPhysicalPrimaries(kTRUE);
+    fGeneratorLevel->SetParticlePtCut(0);
   }
   fGeneratorLevel->SetArrayName(name);
 }
