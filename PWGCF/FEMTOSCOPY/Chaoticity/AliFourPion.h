@@ -92,6 +92,11 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetNsigmaTOF(Float_t nsig) {fSigmaCutTOF = nsig;}
   void SetRMax(Int_t rbin) {fRMax = rbin;}
   void SetfcSq(Float_t fcSq) {ffcSq = fcSq;}
+  void SetMixedChargeCut(Bool_t mcCut) {fMixedChargeCut = mcCut;}
+  void SetMinPt(Float_t minPt) {fMinPt = minPt;}
+  void SetMaxPt(Float_t maxPt) {fMaxPt = maxPt;}
+  void SetKT3transition(Float_t KT3trans) {fKT3transition = KT3trans;}
+  void SetKT4transition(Float_t KT4trans) {fKT4transition = KT4trans;}
   //
 
 
@@ -240,6 +245,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fGeneratorOnly;
   Bool_t fTabulatePairs;
   Bool_t fLinearInterpolation;
+  Bool_t fMixedChargeCut;
   Int_t fRMax;
   Float_t ffcSq;
   Float_t ffcSqMRC;
@@ -258,6 +264,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   Int_t fEventsToMix;
   Int_t fZvertexBins;
   Int_t fMultLimits[kMultBinspp+1];
+  Float_t fMinPt;
+  Float_t fMaxPt;
   Float_t fQcut;
   Float_t fQLowerCut;
   Float_t fNormQcutLow;
