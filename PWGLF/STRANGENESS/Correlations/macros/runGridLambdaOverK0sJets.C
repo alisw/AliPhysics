@@ -148,7 +148,7 @@ AliAnalysisAlien* CreateAlienHandler(TString runMode,TString alirootVer,
   // Optionally resubmit threshold.
   plugin->SetMasterResubmitThreshold(90);
   // Optionally set time to live (default 30000 sec)
-  plugin->SetTTL(450000);
+  plugin->SetTTL(30000);
   // Optionally set input format (default xml-single)
   plugin->SetInputFormat("xml-single");
   // Optionally modify the name of the generated JDL (default analysis.jdl)
