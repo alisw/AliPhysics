@@ -383,7 +383,6 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 
 	      imost = 3;
 	    }
-
 	  }
 	  else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
 	    if ( IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) // && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCPi())) && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCK())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFPi())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFK()))
@@ -430,6 +429,21 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	      imost = 9;
 	    }
 	  }
+	  if (fMostProbable == 10) {
+	    if (IsPionNSigma(track->Pt(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+	      imost = 10;
+	  }
+	  else if (fMostProbable == 11) {
+	    if (IsKaonNSigma(track->Pt(), track->NSigmaTPCK(), track->NSigmaTOFK())){
+	      imost = 11;
+	    }
+	  }
+	  else if (fMostProbable == 12) { // proton nsigma-PID required contour adjusting (in LHC10h)
+	    if ( IsProtonNSigma(track->Pt(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+	      imost = 12;
+	  }
+
+
 	}
 
 
