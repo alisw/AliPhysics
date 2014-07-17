@@ -49,42 +49,42 @@ class AliCentralityGlauberFit : public TObject {
   void     SetChi2Min(double chi2min) {fChi2Min=chi2min;}
   
  private:
-  Int_t   fNk;            // k points
+  Int_t    fNk;           // k points
   Double_t fKlow;         // k low
   Double_t fKhigh;        // k high
-  Int_t   fNalpha;        // alpha points
+  Int_t    fNalpha;       // alpha points
   Double_t fAlphalow;     // alpha low
   Double_t fAlphahigh;    // alpha high
-  Int_t   fNsigma;        // sigma points
+  Int_t    fNsigma;       // sigma points
   Double_t fSigmalow;     // sigma low
   Double_t fSigmahigh;    // sigma high
-  Int_t   fNbog;          // bog points
+  Int_t    fNbog;         // bog points
   Double_t fBoglow;       // bog low
   Double_t fBoghigh;      // bog high
-  Int_t   fNgamma;        // gamma points
+  Int_t    fNgamma;       // gamma points
   Double_t fgammalow;     // gamma low
   Double_t fgammahigh;    // gamma high
-  Int_t   fNsigmap;       // sigmap points
+  Int_t    fNsigmap;      // sigmap points
   Double_t fsigmaplow;    // sigmap low
   Double_t fsigmaphigh;   // sigmap high
-  Int_t   fRebinFactor;   // rebin factor
+  Int_t    fRebinFactor;  // rebin factor
   Double_t fScalemin;     // mult min where to scale
   Double_t fMultmin;      // mult min
   Double_t fMultmax;      // mult max
   TNtuple *fGlauntuple;   // glauber ntuple
-  Float_t fNpart;         // number participants
-  Float_t fNcoll;         // number collisions
-  Float_t fB;             // impact parameter
-  Float_t fTaa;           // taa
-  TH1F  *fTempHist;       // Temporary pointer to data histo, to be used in minimization 
-  TH1F  *fGlauberHist;    // Glauber histogram
-  Bool_t fUseChi2;        // If true, use chi2
-  Int_t fNevents;         // Number of events to use in the glauber ntuple
-  Bool_t fApplySaturation;// 
-  Int_t fnGraySaturation; //
-  Int_t fnBlackSaturation;//
-  Bool_t  fIsZN;
-  Float_t fSDprobability[40];
+  Float_t  fNpart;        // number participants
+  Float_t  fNcoll;        // number collisions
+  Float_t  fB;            // impact parameter
+  Float_t  fTaa;          // taa
+  TH1F    *fTempHist;     // Temporary pointer to data histo, to be used in minimization 
+  TH1F    *fGlauberHist;     // Glauber histogram
+  Bool_t   fUseChi2;         // If true, use chi2
+  Int_t    fNevents;         // Number of events to use in the glauber ntuple
+  Bool_t   fApplySaturation; 
+  Int_t    fnGraySaturation; 
+  Int_t    fnBlackSaturation;
+  Bool_t   fIsZN;
+  Float_t  fSDprobability[40];
   Double_t fParamnSlow[4];
   Int_t    fNTrials;
   Double_t fChi2Min;
@@ -103,10 +103,8 @@ class AliCentralityGlauberFit : public TObject {
   void     MakeSlowNucleons(Int_t fNcoll, Double_t &nbn, Double_t &ngn,Double_t &nbp, Double_t &ngp);
   void     MakeSlowNucleons2(Int_t fNcoll, Double_t bog, Double_t gamma, 
   		Double_t &nbn, Double_t &ngn,Double_t &nbp, Double_t &ngp, Double_t &lcp);
-  void     MakeSlowNucleons2s(Int_t fNcoll, Double_t bog, Double_t gamma, Double_t sigmap,
+  void     MakeSlowNucleons2s(Float_t fNcoll, Double_t bog, Double_t gamma, Double_t sigmap,
   		Double_t &nbn, Double_t &ngn,Double_t &nbp, Double_t &ngp, Double_t &lcp);
-  //void     MakeSlowNucleonsAM(Int_t fNcoll, Double_t bog, Double_t gamma, 
-  //		Double_t &nbn, Double_t &ngn,Double_t &nbp, Double_t &ngp);
   Double_t ConvertToEnergy(Double_t T);
   Double_t Maxwell(Double_t m, Double_t p, Double_t T);
 
