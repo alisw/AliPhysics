@@ -22,7 +22,6 @@ class AliPhysicsSelectionTask : public AliAnalysisTaskSE {
     virtual void   UserExec(Option_t*);
     virtual void   FinishTaskOutput();
     virtual void   Terminate(Option_t*);
-    virtual void   NotifyRun();
 
     void SetOption(const char* opt) { fOption = opt; }
     

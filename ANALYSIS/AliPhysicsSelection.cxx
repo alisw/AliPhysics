@@ -124,6 +124,8 @@
 #include "AliOADBPhysicsSelection.h"
 #include "AliOADBFillingScheme.h"
 #include "AliOADBTriggerAnalysis.h"
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
 
 using std::cout;
 using std::endl;
@@ -878,6 +880,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 
 Bool_t AliPhysicsSelection::Initialize(const AliESDEvent* aEsd)
 {
+  DetectPassName();
   // initializes the object for the given ESD
   
   AliInfo(Form("Initializing for beam type: %s", aEsd->GetESDRun()->GetBeamType()));
@@ -1956,3 +1959,52 @@ void AliPhysicsSelection::AddBGTriggerClass(const char* className){
   fUsingCustomClasses = kTRUE;
 
 }       
+
+
+void AliPhysicsSelection::DetectPassName(){
+  if (fMC) return;
+  AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!handler) return;
+  TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+  TString filePath;
+  if (prodInfoData) {
+    // take filePath from UserInfo - available only from ~LHC12d period
+    TString str(prodInfoData->GetTitle());
+    TObjArray* tokens = str.Tokenize(";");
+    for (Int_t i=0;i<=tokens->GetLast();i++) {
+      TObjString* stObj = (TObjString*) tokens->At(i);
+      TString s = stObj->GetString();
+      if (s.Contains("OutputDir")) {
+        filePath = s;
+        break;
+      }
+    }
+    delete tokens;
+  } else {
+    // guess name from the input filename
+    // may be a problem for local analysis
+    filePath = handler->GetTree()->GetCurrentFile()->GetName();
+  }
+
+  TString passName="";
+
+  TObjArray* tokens = filePath.Tokenize("/");
+  for (Int_t i=0;i<=tokens->GetLast();i++) {
+    TObjString* stObj = (TObjString*) tokens->At(i);
+    TString s = stObj->GetString();
+    if (s.Contains("pass")) {
+      passName = s;
+      break;
+    }
+  }
+  delete tokens;
+
+  if (!passName.Contains("pass")){
+    AliError(" Failed to find reconstruction pass name:");
+    AliError(" --> If these are MC data: please set kTRUE first argument of AddTaskPhysicsSelection");
+    AliFatal(" --> If these are real data: please insert pass name inside the path of your local file, e.g. /your_path/pass2/AliESDs.root");
+  }
+
+  AliInfo(Form("pass name: %s\n",passName.Data()));
+  fPassName = passName;
+}
