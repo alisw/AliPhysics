@@ -50,6 +50,12 @@ AliFourPion *AddTaskFourPion(
   FourPionTask->SetPairSeparationCutPhi(MinSepPairPhi);
   FourPionTask->SetNsigmaTPC(SigmaCutTPC);
   FourPionTask->SetNsigmaTOF(SigmaCutTOF);
+  //
+  FourPionTask->SetMixedChargeCut(kFALSE);
+  FourPionTask->SetMinPt(0.16);
+  FourPionTask->SetMaxPt(1.0);
+  FourPionTask->SetKT3transition(0.3);
+  FourPionTask->SetKT4transition(0.3);
   mgr->AddTask(FourPionTask);
 
 
