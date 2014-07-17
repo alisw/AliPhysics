@@ -334,16 +334,18 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   }
   
   AliVVertex *pv = (AliVVertex*)fVev->GetPrimaryVertex();
-  //Bool_t pvStatus = kTRUE;
+  Bool_t pvStatus = kTRUE;
   if(fESD){
     AliESDVertex *esdv = (AliESDVertex*)fESD->GetPrimaryVertex();
-    //pvStatus = esdv->GetStatus();
+    pvStatus = esdv->GetStatus();
   }
 
   if(!pv) {
     printf("Error: no primary vertex found!\n");
     return;
   }
+  if(!pvStatus && this->fDebug)
+    printf("bad pv status\n");
   if(TMath::Abs(pv->GetZ())>15)
     return;
   if(this->fDebug)
