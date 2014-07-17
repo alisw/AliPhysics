@@ -9,6 +9,8 @@
 class AliAnalysisDataContainer;
 class AliFlowTrackCuts;
 class AliFlowTrackSimpleCuts;
+class AliFlowEventCuts;
+class AliFlowEventSimpleCuts;
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysis methods
@@ -112,6 +114,11 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
    if(debug) cout << "    --> Set trigger selection to ";
    if(debug&&bCentralTrigger) cout << " kMB, kCentral, kSemiCentral " << endl;
    if(debug&&(!bCentralTrigger)) cout << " kMB " << endl;
+   // set event cuts for flow package analysis
+   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("event cuts");
+   task->SetCentralityParameters(centrMin, centrMax, centralityName);
+   task->SetQA(kTRUE);
+
    //set RP cuts for flow package analysis
    cutsRP = new AliFlowTrackCuts("RFPcuts");
    if(!cutsRP) {
@@ -161,6 +168,9 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
    cutsPOI->SetPtRange(POIPtMin, POIPtMax); // pt range of DAUGHTERS !!!
    cutsPOI->SetMaxDCAToVertexXY(0.3); // FIXME not implemented in aod086 aod095 see PassesDCACut() in implementation
    cutsPOI->SetMaxDCAToVertexZ(0.3);
+   // to let the aliflow track cuts do the pid
+   task->SetUseTrackCutsPID(kTRUE);
+   cutsPOI->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTOFbayesian);
    if(poi_filter < 9999 ) {
        if(debug) cout << "  > set POI filterbit " << poi_filter << endl;     
        cutsPOI->SetAODfilterBit(poi_filter);
