@@ -376,7 +376,14 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1PtMCALa;
   TH1F* fh1EtaK0s;
   TH1F* fh1EtaLa;
-  TH1F* fh1EtaALa;  
+  TH1F* fh1EtaALa;
+  TH1F* fh1RC;
+  TH1F* fh1RCBiasK0;
+  TH1F* fh1RCBiasLa;
+  TH1F* fh1RCBiasALa;
+  TH1F* fh1MCC;
+  TH1F* fh1OC;
+  TH1F* fh1NJ;
   THnSparse* fhnInvMassEtaTrackPtK0s;
   THnSparse* fhnInvMassEtaTrackPtLa;
   THnSparse* fhnInvMassEtaTrackPtALa;
@@ -434,6 +441,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   THnSparse* fhnK0sRC;
   THnSparse* fhnLaRC;
   THnSparse* fhnALaRC;
+  THnSparse* fhnK0sRCBias;
+  THnSparse* fhnLaRCBias;
+  THnSparse* fhnALaRCBias;
   THnSparse* fhnK0sOC;
   THnSparse* fhnLaOC;
   THnSparse* fhnALaOC;
