@@ -40,7 +40,33 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fCutLargeQperc(9.),
     fCutSmallQperc(10.),
     fEtaGapMin(-0.5),
-    fEtaGapMax(0.5)
+    fEtaGapMax(0.5),
+    fTrkBit(272),
+    fEtaCut(0.8),
+    fMinPt(0),
+    fMaxPt(20.0),
+    fMinTPCNcls(70),
+    fResSP(0),
+    fQxGap1A(0),
+    fQyGap1A(0),
+    fmultGap1A(0),
+    fQxGap1B(0),
+    fQyGap1B(0),
+    fmultGap1B(0),
+    fResSP_lq(0),
+    fQxGap1A_lq(0),
+    fQyGap1A_lq(0),
+    fmultGap1A_lq(0),
+    fQxGap1B_lq(0),
+    fQyGap1B_lq(0),
+    fmultGap1B_lq(0),
+    fResSP_sq(0),
+    fQxGap1A_sq(0),
+    fQyGap1A_sq(0),
+    fmultGap1A_sq(0),
+    fQxGap1B_sq(0),
+    fQyGap1B_sq(0),
+    fmultGap1B_sq(0)
       {}
   AliAnalysisTaskV2AllChAOD(const char *name);
   virtual ~AliAnalysisTaskV2AllChAOD() {
@@ -71,6 +97,12 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   void SetQvecCalibMode(Bool_t mode)                  { fIsQvecCalibMode = mode; }
   void SetQvecUpperLimit(Double_t val)                { fQvecUpperLim = val; }
   
+  void SetTrackBits(UInt_t TrackBits) {fTrkBit=TrackBits;}
+  void SetEtaCut(Double_t val) {fEtaCut=val;}
+  void SetMinPt(Double_t val) {fMinPt=val;}
+  void SetMaxPt(Double_t val) {fMaxPt=val;}
+  void SetMinTPCNcls(Double_t val) {fMinTPCNcls=val;}
+  
   Bool_t GetDCA(const AliAODTrack* trk, Double_t * p);
 
   void     SetEtaGap(Float_t etamin,Float_t etamax)   { fEtaGapMin = etamin; fEtaGapMax = etamax; }
@@ -97,8 +129,20 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   Double_t fEtaGapMin;
   Double_t fEtaGapMax;
   
+  UInt_t    fTrkBit;
+  Double_t  fEtaCut;
+  Double_t  fMinPt;
+  Double_t  fMaxPt;
+  Double_t  fMinTPCNcls;
+  
   //output object
   TProfile*     fResSP;             //! resolution
+  TProfile*     fQxGap1A;
+  TProfile*     fQyGap1A;
+  TProfile*     fmultGap1A;
+  TProfile*     fQxGap1B;
+  TProfile*     fQyGap1B;
+  TProfile*     fmultGap1B;
     
   TProfile*     fv2SPGap1A[9];         //! v2{2} eta gap 1 for all events
   TH2F*     fh2v2SPGap1A[9];         //! v2{2} eta gap 1 for all events
@@ -112,6 +156,12 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
 
   //large q
   TProfile*     fResSP_lq;             //! resolution
+  TProfile*     fQxGap1A_lq;
+  TProfile*     fQyGap1A_lq;
+  TProfile*     fmultGap1A_lq;
+  TProfile*     fQxGap1B_lq;
+  TProfile*     fQyGap1B_lq;
+  TProfile*     fmultGap1B_lq;
   TProfile*     fv2SPGap1A_lq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B_lq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fSinGap1A_lq[9];      //! <sin> vs pT gap 1
@@ -121,6 +171,12 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   //small q
   TProfile*     fResSP_sq;             //! resolution
+  TProfile*     fQxGap1A_sq;
+  TProfile*     fQyGap1A_sq;
+  TProfile*     fmultGap1A_sq;
+  TProfile*     fQxGap1B_sq;
+  TProfile*     fQyGap1B_sq;
+  TProfile*     fmultGap1B_sq;
   TProfile*     fv2SPGap1A_sq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B_sq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fSinGap1A_sq[9];      //! <sin> vs pT gap 1
@@ -131,7 +187,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 1);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 2);
 };
 
 #endif
