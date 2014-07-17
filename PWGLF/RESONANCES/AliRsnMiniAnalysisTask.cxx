@@ -16,6 +16,7 @@
 #include <TList.h>
 #include <TTree.h>
 #include <TStopwatch.h>
+#include "TRandom.h"
 
 #include "AliLog.h"
 #include "AliEventplane.h"
@@ -49,6 +50,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
    fUseAOD049CentralityPatch(kFALSE),
+   fUseCentralityPatchPbPb2011(0),
    fContinuousMix(kTRUE),
    fNMix(0),
    fMaxDiffMult(10),
@@ -93,6 +95,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
    fUseAOD049CentralityPatch(kFALSE),
+  fUseCentralityPatchPbPb2011(0),
    fContinuousMix(kTRUE),
    fNMix(0),
    fMaxDiffMult(10),
@@ -142,6 +145,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fUseCentrality(copy.fUseCentrality),
    fCentralityType(copy.fCentralityType),
    fUseAOD049CentralityPatch(copy.fUseAOD049CentralityPatch),
+   fUseCentralityPatchPbPb2011(copy.fUseCentralityPatchPbPb2011),
    fContinuousMix(copy.fContinuousMix),
    fNMix(copy.fNMix),
    fMaxDiffMult(copy.fMaxDiffMult),
@@ -197,6 +201,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;
    fUseAOD049CentralityPatch = copy.fUseAOD049CentralityPatch;
+   fUseCentralityPatchPbPb2011 = copy.fUseCentralityPatchPbPb2011;
    fContinuousMix = copy.fContinuousMix;
    fNMix = copy.fNMix;
    fMaxDiffMult = copy.fMaxDiffMult;
@@ -822,17 +827,19 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
 //
 
    if (fUseCentrality) {
-
-      if ((!fUseMC) && (!isESD) && (fUseAOD049CentralityPatch)) {
-         return ApplyCentralityPatchAOD049();
-      } else {
-         AliCentrality *centrality = fInputEvent->GetCentrality();
+     if ((!fUseMC) && (fUseCentralityPatchPbPb2011)) {
+       return ApplyCentralityPatchPbPb2011();//
+    }
+     if ((!fUseMC) && (!isESD) && (fUseAOD049CentralityPatch)) {
+       return ApplyCentralityPatchAOD049();
+     } else {
+       AliCentrality *centrality = fInputEvent->GetCentrality();
          if (!centrality) {
-            AliError("Cannot compute centrality!");
-            return -1.0;
+	   AliError("Cannot compute centrality!");
+	   return -1.0;
          }
          return centrality->GetCentralityPercentile(fCentralityType.Data());
-      }
+     }
    } else {
       if (!fCentralityType.CompareTo("TRACKS"))
          return fInputEvent->GetNumberOfTracks();
@@ -1187,7 +1194,54 @@ Bool_t AliRsnMiniAnalysisTask::EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEv
    }
 }
 
+//---------------------------------------------------------------------
+Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchPbPb2011(){
+  //This part rejects randomly events such that the centrality gets flat for LHC11h Pb-Pb data
+  //for 0-5% and 10-20% centrality bin
+  
+  if (fCentralityType!="V0M") {
+    AliWarning("Wrong value (not centrality from V0).");
+    return -999.0;
+  }
+  
+  AliCentrality *centrality = fInputEvent->GetCentrality();
+  if (!centrality) {
+    AliWarning("Cannot get centrality from AOD event.");
+    return -999.0;
+  }
+  
+  
+  Double_t cent = (Float_t)(centrality->GetCentralityPercentile("V0M"));               
+  Double_t rnd_hc, testf, ff, N1, N2;
 
+  if(fUseCentralityPatchPbPb2011==5){
+    N1 = 1.9404e+06;
+    N2 = 1.56435e+06;
+    ff = 5.04167e+06 - 1.49885e+06*cent + 2.35998e+05*cent*cent -1.22873e+04*cent*cent*cent;
+  }
+  
+  if(fUseCentralityPatchPbPb2011==1020){
+    N1 = 1.56435e+06;
+    N2 = 4.20e+05;
+    ff = 1.68062e+08 - 5.19673e+07*cent + 6.4068e+06*cent*cent + 6.4068e+06*cent*cent*cent - 392687*cent*cent*cent*cent - 145.07*cent*cent*cent*cent*cent; 
+  }
+
+  testf = ( N2 + (N1-ff) ) / N1;
+  rnd_hc = gRandom->Rndm();
+
+  //AliDebugClass(1, Form("Flat Centrality %d", fUseCentralityPatchPbPb2011));
+
+  if (rnd_hc < 0 || rnd_hc > 1 ) 
+    {
+      AliWarning("Wrong Random number generated");
+      return -999.0;
+    }
+  
+  if (rnd_hc < testf)
+    return cent;
+  else
+    return -999.0;
+}
 //---------------------------------------------------------------------
 Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchAOD049()
 {

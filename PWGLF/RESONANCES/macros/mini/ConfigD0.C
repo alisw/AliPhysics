@@ -12,7 +12,8 @@ Bool_t ConfigD0
 (  
    AliRsnMiniAnalysisTask *task, 
    Bool_t                  isPP,
-   Bool_t                  isMC,  
+   Bool_t                  isMC,
+   Bool_t                  monitor = kTRUE,  
    Float_t         	   nsigmaTPCPi = 3.0,
    Float_t         	   nsigmaTPCKa = 3.0,
    Float_t         	   nsigmaTOFPi = 2.0,
@@ -31,6 +32,7 @@ Bool_t ConfigD0
    Bool_t                  ptdepPIDcut = kFALSE,
    Bool_t      		   checkFeedDown = kTRUE,
    Bool_t      		   checkQuark = kTRUE,
+   Bool_t      		   doCalculationInMC = kTRUE,
    UShort_t    		   originDselection = 0,
    Float_t                 mineta = -0.8,
    Float_t                 maxeta = 0.8,
@@ -76,7 +78,7 @@ Bool_t ConfigD0
    cutQuality->SetDCAZmax(trackDCAZcutMax);
    cutQuality->SetSPDminNClusters(minSPDclt);
    cutQuality->SetITSminNClusters(0);
-   cutQuality->SetITSmaxChi2(1E+20);
+   cutQuality->SetITSmaxChi2(36);
    cutQuality->SetTPCmaxChi2(4.0);
    cutQuality->SetRejectKinkDaughters();
    cutQuality->Print();
@@ -110,7 +112,7 @@ Bool_t ConfigD0
    cutQuality->SetDCAZmax(trackDCAZcutMax);
    cutQuality->SetSPDminNClusters(minSPDclt);
    cutQuality->SetITSminNClusters(0);
-   cutQuality->SetITSmaxChi2(1E+20);
+   cutQuality->SetITSmaxChi2(36);
    cutQuality->SetTPCmaxChi2(4.0);
    cutQuality->SetRejectKinkDaughters();
    cutQuality->Print();
@@ -148,17 +150,21 @@ Bool_t ConfigD0
    // [1] = mixing
    // [2] = like ++
    // [3] = like --
-   Bool_t   use     [8] = { 1	    ,  1       ,  1	 ,  1	    ,  1	,  1	    ,  1       ,  1	  };
-   Bool_t   useIM   [8] = { 1	    ,  1       ,  1	 ,  1	    ,  1	,  1	    ,  1       ,  1	  };
-   TString  name    [8] = {"Unlike1", "Unlike2", "Mixing1", "Mixing2", "RotateK1", "RotateK2", "LikePP" , "LikeMM" };
-   TString  comp    [8] = {"PAIR"   , "PAIR"   , "MIX"	 , "MIX"    , "ROTATE1" , "ROTATE1" , "PAIR"   , "PAIR"   };
-   TString  output  [8] = {"SPARSE" , "SPARSE" , "SPARSE" , "SPARSE" , "SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE" };
-   Char_t   charge1 [8] = {'-'	    , '+'      , '-'	 , '+'      , '-'	, '+'	    , '+'      , '-'	  };
-   Char_t   charge2 [8] = {'+'	    , '-'      , '+'	 , '-'      , '+'	, '-'	    , '+'      , '-'	  };
-   Int_t    cutID1  [8] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK	,  iCutK    ,  iCutK   ,  iCutK   };
-   Int_t    cutID2  [8] = { iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi	,  iCutPi   ,  iCutPi  ,  iCutPi  };
-   Int_t    ipdg    [8] = { 421     , -421     ,  421	 , -421     ,  421	, -421      ,  421     , -421	  };
-   Double_t mass    [8] = { 1.86486 ,  1.86486 ,  1.86486 ,  1.86486 ,  1.86486  ,  1.86486  ,  1.86486 ,  1.86486 };
+   
+   
+   if(!isMC || doCalculationInMC == kTRUE){
+   
+   Bool_t   use     [8] = { 1	    ,  1       ,  1	  ,  1	     ,  1	 ,  1	     ,  1       ,  1	  };
+   Bool_t   useIM   [8] = { 1	    ,  1       ,  1	  ,  1	     ,  1	 ,  1	     ,  1       ,  1	  };
+   TString  name    [8] = {"Unlike1", "Unlike2", "Mixing1", "Mixing2", "RotateK1", "RotateK2", "LikePP" , "LikeMM"};
+   TString  comp    [8] = {"PAIR"   , "PAIR"   , "MIX"	  , "MIX"    , "ROTATE1" , "ROTATE1" , "PAIR"   , "PAIR"  };
+   TString  output  [8] = {"SPARSE" , "SPARSE" , "SPARSE" , "SPARSE" , "SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE"};
+   Char_t   charge1 [8] = {'-'	    , '+'      , '-'	  , '+'      , '-'	 , '+'	     , '+'      , '-'	  };
+   Char_t   charge2 [8] = {'+'	    , '-'      , '+'	  , '-'      , '+'	 , '-'	     , '+'      , '-'	  };
+   Int_t    cutID1  [8] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK	 ,  iCutK    ,  iCutK   ,  iCutK  };
+   Int_t    cutID2  [8] = { iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi	 ,  iCutPi   ,  iCutPi  ,  iCutPi };
+   Int_t    ipdg    [8] = { 421     , -421     ,  421	  , -421     ,  421	 , -421      ,  421     , -421	  };
+   Double_t mass    [8] = { 1.86486 ,  1.86486 ,  1.86486 ,  1.86486 ,  1.86486  ,  1.86486  ,  1.86486 ,  1.86486};
    
    for (Int_t i = 0; i < 8; i++) {
       if (!use[i]) continue;
@@ -199,7 +205,9 @@ Bool_t ConfigD0
       else out->AddAxis(centID, 400, 0.0, 400.0);
    }
    
+   }
    
+   if(monitor == kTRUE){
    AddMonitorOutput_PionEta(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionY(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionMinPt(cutSetPi->GetMonitorOutput());
@@ -215,6 +223,8 @@ Bool_t ConfigD0
    AddMonitorOutput_KaonTPC_PIDCut(cutSetK->GetMonitorOutput());
    AddMonitorOutput_KaonTOF_PIDCut(cutSetK->GetMonitorOutput());
    AddMonitorOutput_KaonNTPC(cutSetK->GetMonitorOutput());
+   }
+   
    
    if (isMC) {
    
@@ -268,63 +278,6 @@ Bool_t ConfigD0
    out->SetDselection(originDselection);
    // binnings
    out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
-   out->AddAxis(ptID, 200, 0.0, 20.0);
-   //out->AddAxis(yID, 100, -1, 1);
-   //out->AddAxis(dcapID, 100, -0.001, 0.001);
-   //out->AddAxis(nsistID, 10, 0, 5);
-
-   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
-   else out->AddAxis(centID, 400, 0.0, 400.0);
-   
-   
-   // INVARIANT RESOLUTION
-   
-   TString mode = "SPARSE";
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput("D0_Res1", mode.Data(), "TRUE");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kKaon);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetCharge(0, '-');
-   out->SetCharge(1, '+');
-   out->SetMotherPDG(421);
-   out->SetMotherMass(1.86486);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   out->SetMaxNSisters(maxSisters);
-   out->SetCheckMomentumConservation(checkP);
-   out->SetCheckFeedDown(checkFeedDown);
-   out->SetRejectCandidateIfNotFromQuark(checkQuark);
-   out->SetDselection(originDselection);
-   // binnings
-   out->AddAxis(resID, 200, -0.02, 0.02);
-   out->AddAxis(ptID, 200, 0.0, 20.0);
-   //out->AddAxis(yID, 100, -1, 1);
-   //out->AddAxis(dcapID, 100, -0.001, 0.001);
-   //out->AddAxis(nsistID, 10, 0, 5);
-
-   if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
-   else out->AddAxis(centID, 400, 0.0, 400.0);
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput("D0_Res2", mode.Data(), "TRUE");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kKaon);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetCharge(0, '+');
-   out->SetCharge(1, '-');
-   out->SetMotherPDG(-421);
-   out->SetMotherMass(1.86486);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   out->SetMaxNSisters(maxSisters);
-   out->SetCheckMomentumConservation(checkP);
-   out->SetCheckFeedDown(checkFeedDown);
-   out->SetRejectCandidateIfNotFromQuark(checkQuark);
-   out->SetDselection(originDselection);
-   // binnings
-   out->AddAxis(resID, 200, -0.02, 0.02);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
