@@ -14,6 +14,14 @@ class AliTOFHeader;
 
 class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
  public:
+  
+  enum ETrackCutSetTOFqa_t { kRun1Cuts = 0,
+			   kStd2010,
+			   kStd2010crossedRows,
+			   kStd2011,
+			   kStd2011crossedRows,
+			   kNCutSetTOFqa };
+
   AliAnalysisTaskTOFqaID();
   AliAnalysisTaskTOFqaID(const char *name);
   AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& copy);
