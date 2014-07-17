@@ -33,7 +33,7 @@ class TString;
 
 class TObjArray;
 
-// pt f0r V0
+// pt for V0
 const int    kN1 = 8; 
 const float  kPtBinV0[kN1+1] = {2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,7.0};
 
@@ -107,13 +107,15 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
   // Main functions
   virtual void     UserCreateOutputObjects();
-  virtual Bool_t   AcceptTrack(AliAODTrack *t); 
+  virtual Bool_t   AcceptTrack(const AliAODTrack *t); 
   virtual Bool_t   AcceptTrackV0(const AliAODTrack *t);
   virtual Bool_t   AcceptV0(AliAODVertex *vtx, const AliAODv0 *v0);
-  virtual Bool_t   GoodTPCSharedMap(const AliAODTrack *t);
-  virtual Bool_t   GoodTPCSharedMap(AliAODTrack *t);
-  //virtual Float_t  GetFractionTPCSharedCls(AliAODTrack *track1,const AliAODTrack *track2);
-  virtual void     RecCascade(AliAODTrack *trk1,const AliAODTrack *trk2,const AliAODTrack *trkBch,TString histo);
+  virtual Double_t ThetaS(TString part);
+  virtual Double_t EtaS(TString part);
+  virtual Float_t  dEtaS();
+  virtual Float_t  dPhiSAtR12();
+  virtual void     SetSftPosR125(const AliAODTrack *track,const Float_t bfield,const Float_t priVtx[3], TString part);
+  virtual void     RecCascade(const AliAODTrack *trk1,const AliAODTrack *trk2,const AliAODTrack *trkBch,TString histo);
   virtual void     V0Loop(V0LoopStep_t step, Bool_t isTriggered, Int_t iArray, Int_t idTrig);
   virtual void     TriggerParticle();
     
@@ -159,6 +161,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Int_t   fIsV0LP;                       //  Flag: V0 has the highest pt in the event
   Float_t fPtV0LP;                       //  Pt of the leading V0
   Int_t   fIsSndCheck;                   //  Flag: trigger particle is the second leaidng particle
+
+  Float_t fTrigSftR125[3];               // Shifted position of the daughter track to the Primary verterx
+  Float_t fDaugSftR125[3];               // Shifted position of the trigger track to the Primary verterx
 
   TList*  fOutput;                       //! List of histograms for main analysis
   TList*  fOutputQA;                     //! List of histograms for Quality Assurance
@@ -327,6 +332,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
   TH2F*   fK0sDaughtersPt;               //! K0s: pt of daughters
   TH3F*   fSharedClsTrigDaug;            //! Splitting studies according to the TPC Shared Bit Map for K0s Lambda and AntiLambda
+  THnSparse* fK0sPosDaugdPhiSdEtaS[kNCent]; //! Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fK0sNegDaugdPhiSdEtaS[kNCent]; //! Negative daughter: delta(phi)* delta(eta)* 
   THnSparse* fK0sPosDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
   THnSparse* fK0sNegDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
   TH3F*   fK0sDCADaugToPrimVtx;          //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
@@ -355,6 +362,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaMassPtPhi;              //! Lambda: mass vs pt vs phi 
 
   TH2F*   fLambdaDaughtersPt;            //! Lambda: pt of daughters
+  THnSparse* fLambdaPosDaugdPhiSdEtaS[kNCent]; //! Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fLambdaNegDaugdPhiSdEtaS[kNCent]; //! Negative daughter: delta(phi)* delta(eta)* 
   THnSparse* fLambdaPosDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
   THnSparse* fLambdaNegDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
   TH3F*   fLambdaDCADaugToPrimVtx;       //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
@@ -384,6 +393,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaMassPtPhi;                //! Lambda: mass vs phi 
 
   TH2F*   fAntiLambdaDaughtersPt;              //! AntiLambda: pt of daughters
+  THnSparse* fAntiLambdaPosDaugdPhiSdEtaS[kNCent]; //! Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fAntiLambdaNegDaugdPhiSdEtaS[kNCent]; //! Negative daughter: delta(phi)* delta(eta)* 
   THnSparse* fAntiLambdaPosDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
   THnSparse* fAntiLambdaNegDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
   TH3F*   fAntiLambdaDCADaugToPrimVtx;         //! AntiLambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
