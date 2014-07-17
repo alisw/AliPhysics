@@ -68,9 +68,32 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fCutSmallQperc(10.),
   fEtaGapMin(-0.5),
   fEtaGapMax(0.5),
+  fTrkBit(272),
+  fEtaCut(0.8),
+  fMinPt(0),
+  fMaxPt(20.0),
+  fMinTPCNcls(70),
   fResSP(0),
+  fQxGap1A(0),
+  fQyGap1A(0),
+  fmultGap1A(0),
+  fQxGap1B(0),
+  fQyGap1B(0),
+  fmultGap1B(0),
   fResSP_lq(0),
-  fResSP_sq(0)
+  fQxGap1A_lq(0),
+  fQyGap1A_lq(0),
+  fmultGap1A_lq(0),
+  fQxGap1B_lq(0),
+  fQyGap1B_lq(0),
+  fmultGap1B_lq(0),
+  fResSP_sq(0),
+  fQxGap1A_sq(0),
+  fQyGap1A_sq(0),
+  fmultGap1A_sq(0),
+  fQxGap1B_sq(0),
+  fQyGap1B_sq(0),
+  fmultGap1B_sq(0)
 {
   
   for (Int_t i = 0; i< 9; i++){
@@ -137,50 +160,58 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   Double_t ptBins[] = {0., 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 3.0, 3.4, 3.8, 4.2, 4.6, 5.0, 5.5, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 20.0};
   const Int_t nptBins = 33;
   
-  //dimensions of THnSparse for tracks
-  const Int_t nvartrk=5;
-  //                                            pt      v2SPGap1A    v2SPGap1A        cent            Q vec
-  Int_t    binsHistRealTrk[nvartrk] = {      nptBins,     200,       200,       fnCentBins,      fnQvecBins};
-  Double_t xminHistRealTrk[nvartrk] = {         0.,        -2.,      -2.,          0.,                   0.};
-  Double_t xmaxHistRealTrk[nvartrk] = {        10.,         2.,       2.,        100.,        fQvecUpperLim};    
-  THnSparseF* NSparseHistTrk = new THnSparseF("NSparseHistTrk","NSparseHistTrk",nvartrk,binsHistRealTrk,xminHistRealTrk,xmaxHistRealTrk);
-  NSparseHistTrk->GetAxis(0)->SetTitle("#it{p}_{T,rec}");
-  NSparseHistTrk->GetAxis(0)->SetName("pT_rec");
-  NSparseHistTrk->SetBinEdges(0,ptBins);
-  NSparseHistTrk->GetAxis(1)->SetTitle("v2SPGap1A");
-  NSparseHistTrk->GetAxis(1)->SetName("v2SPGap1A");
-  NSparseHistTrk->GetAxis(2)->SetTitle("v2SPGap1B");
-  NSparseHistTrk->GetAxis(2)->SetName("v2SPGap1B");
-  NSparseHistTrk->GetAxis(3)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
-  NSparseHistTrk->GetAxis(3)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
-  NSparseHistTrk->GetAxis(4)->SetTitle("Q vec");
-  NSparseHistTrk->GetAxis(4)->SetName("Q_vec");
-  fOutput->Add(NSparseHistTrk);
-  
-  //dimensions of THnSparse for the normalization
-  const Int_t nvarev=2;
-  //                                             cent        Q vec
-  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins};
-  Double_t xminHistRealEv[nvarev] = {           0.,               0.};
-  Double_t xmaxHistRealEv[nvarev] = {       100.,  fQvecUpperLim};
-  THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
-  NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
-  NSparseHistEv->GetAxis(0)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
-  NSparseHistEv->GetAxis(1)->SetTitle("Q vec");
-  NSparseHistEv->GetAxis(1)->SetName("Q_vec");
-  fOutput->Add(NSparseHistEv);
-  
-    
   fResSP = new TProfile("fResSP", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
   fOutput->Add(fResSP);
+  
+    fQxGap1A = new TProfile("fQxGap1A", "Qx mean; centrality; <Qx>", 9, -0.5, 8.5);
+    fOutput->Add(fQxGap1A);
+    fQyGap1A = new TProfile("fQyGap1A", "Qy mean; centrality; <Qy>", 9, -0.5, 8.5);
+    fOutput->Add(fQyGap1A);
+    fmultGap1A = new TProfile("fmultGap1A", " Multiplicity B; centrality; M_{A}", 9, -0.5, 8.5);
+    fOutput->Add(fmultGap1A);
+  
+    fQxGap1B= new TProfile("fQxGap1B", "QxB mean; centrality; <Qx>", 9, -0.5, 8.5);
+    fOutput->Add(fQxGap1B);
+    fQyGap1B = new TProfile("fQyGap1B", "QyB mean; centrality; <Qy>", 9, -0.5, 8.5);
+    fOutput->Add(fQyGap1B);
+    fmultGap1B = new TProfile("fmultGap1B", " Multiplicity B; centrality; M_{B}", 9, -0.5, 8.5);
+    fOutput->Add(fmultGap1B);
   
   //large q resolution
   fResSP_lq = new TProfile("fResSP_lq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
   fOutput_lq->Add(fResSP_lq);
   
+    fQxGap1A_lq = new TProfile("fQxGap1A_lq", "Qx mean; centrality; <Qx>", 9, -0.5, 8.5);
+    fOutput_lq->Add(fQxGap1A_lq);
+    fQyGap1A_lq = new TProfile("fQyGap1A_lq", "Qy mean; centrality; <Qy>", 9, -0.5, 8.5);
+    fOutput_lq->Add(fQyGap1A_lq);
+    fmultGap1A_lq = new TProfile("fmultGap1A_lq", " Multiplicity B; centrality; M_{A}", 9, -0.5, 8.5);
+    fOutput_lq->Add(fmultGap1A_lq);
+  
+    fQxGap1B_lq= new TProfile("fQxGap1B_lq", "QxB mean; centrality; <Qx>", 9, -0.5, 8.5);
+    fOutput_lq->Add(fQxGap1B_lq);
+    fQyGap1B_lq = new TProfile("fQyGap1B_lq", "QyB mean; centrality; <Qy>", 9, -0.5, 8.5);
+    fOutput_lq->Add(fQyGap1B_lq);
+    fmultGap1B_lq = new TProfile("fmultGap1B_lq", " Multiplicity B; centrality; M_{B}", 9, -0.5, 8.5);
+    fOutput_lq->Add(fmultGap1B_lq);
+  
   //small q resolution
   fResSP_sq = new TProfile("fResSP_sq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
   fOutput_sq->Add(fResSP_sq);
+  
+    fQxGap1A_sq = new TProfile("fQxGap1A_sq", "Qx mean; centrality; <Qx>", 9, -0.5, 8.5);
+    fOutput_sq->Add(fQxGap1A_sq);
+    fQyGap1A_sq = new TProfile("fQyGap1A_sq", "Qy mean; centrality; <Qy>", 9, -0.5, 8.5);
+    fOutput_sq->Add(fQyGap1A_sq);
+    fmultGap1A_sq = new TProfile("fmultGap1A_sq", " Multiplicity B; centrality; M_{A}", 9, -0.5, 8.5); 
+    fOutput_sq->Add(fmultGap1A_sq);
+  
+    fQxGap1B_sq= new TProfile("fQxGap1B_sq", "QxB mean; centrality; <Qx>", 9, -0.5, 8.5);
+    fOutput_sq->Add(fQxGap1B_sq);
+    fQyGap1B_sq = new TProfile("fQyGap1B_sq", "QyB mean; centrality; <Qy>", 9, -0.5, 8.5);
+    fOutput_sq->Add(fQyGap1B_sq);
+    fmultGap1B_sq = new TProfile("fmultGap1B_sq", " Multiplicity B; centrality; M_{B}", 9, -0.5, 8.5);
+    fOutput_sq->Add(fmultGap1B_sq);
 
   for (Int_t iC = 0; iC < 9; iC++){
 
@@ -312,7 +343,9 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
     if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
-    if (!fTrackCuts->IsSelected(track,kFALSE)) continue; //track selection (rapidity selection NOT in the standard cuts)
+    if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
+//     if (!(track->TestFilterBit(fTrkBit))) continue;
+//     if ((TMath::Abs(track->Eta()) > fEtaCut) || (track->Pt() < fMinPt) || (track->GetTPCNcls() < fMinTPCNcls) || (track->Pt() >= fMaxPt)) continue;
     
     if (track->Eta() > fEtaGapMax){
       QxGap1A += TMath::Cos(2.*track->Phi());
@@ -360,9 +393,11 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   Double_t v2SPGap1B = -999.;
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
-    if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
+    if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge
     if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
-      
+//     if (!(track->TestFilterBit(fTrkBit))) continue;
+//     if ((TMath::Abs(track->Eta()) > fEtaCut) || (track->Pt() < fMinPt) || (track->GetTPCNcls() < fMinTPCNcls) || (track->Pt() >= fMaxPt)) continue;
+    
     //eval v2 scalar product
     if (track->Eta() < fEtaGapMin && multGap1A > 0){
       v2SPGap1A = (TMath::Cos(2.*track->Phi())*QxGap1A + TMath::Sin(2.*track->Phi())*QyGap1A)/(Double_t)multGap1A;
@@ -387,15 +422,6 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 	fv2SPGap1B_sq[centV0]->Fill(track->Pt(), v2SPGap1B);
     }
     
-    //pt     cent    Q vec
-      Double_t varTrk[5];
-      varTrk[0]=track->Pt();
-      varTrk[1]=v2SPGap1A;
-      varTrk[2]=v2SPGap1B;
-      varTrk[3]=Cent;
-      varTrk[4]=Qvec;
-      ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
-    
     //Printf("a track");
       
   } // end loop on tracks
@@ -403,18 +429,31 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   if (multGap1A > 0 && multGap1B > 0){
     Double_t res = (QxGap1A*QxGap1B + QyGap1A*QyGap1B)/(Double_t)multGap1A/(Double_t)multGap1B;
     fResSP->Fill((Double_t)centV0, res);
+      fQxGap1A->Fill((Double_t)centV0, QxGap1A);
+      fQyGap1A->Fill((Double_t)centV0, QyGap1A);
+      fmultGap1A->Fill((Double_t)centV0, multGap1A);
+      fQxGap1B->Fill((Double_t)centV0, QxGap1B);
+      fQyGap1B->Fill((Double_t)centV0, QyGap1B);
+      fmultGap1B->Fill((Double_t)centV0, multGap1B);
         
     if (Qvec > fCutLargeQperc)
       fResSP_lq->Fill((Double_t)centV0, res);
+        fQxGap1A_lq->Fill((Double_t)centV0, QxGap1A);
+        fQyGap1A_lq->Fill((Double_t)centV0, QyGap1A);
+        fmultGap1A_lq->Fill((Double_t)centV0, multGap1A);
+        fQxGap1B_lq->Fill((Double_t)centV0, QxGap1B);
+        fQyGap1B_lq->Fill((Double_t)centV0, QyGap1B);
+        fmultGap1B_lq->Fill((Double_t)centV0, multGap1B);
 
     if (Qvec < fCutSmallQperc)
       fResSP_sq->Fill((Double_t)centV0, res);
+        fQxGap1A_sq->Fill((Double_t)centV0, QxGap1A);
+        fQyGap1A_sq->Fill((Double_t)centV0, QyGap1A);
+        fmultGap1A_sq->Fill((Double_t)centV0, multGap1A);
+        fQxGap1B_sq->Fill((Double_t)centV0, QxGap1B);
+        fQyGap1B_sq->Fill((Double_t)centV0, QyGap1B);
+        fmultGap1B_sq->Fill((Double_t)centV0, multGap1B);
   }
-  
-  Double_t varEv[3];
-  varEv[0]=Cent;
-  varEv[1]=Qvec;
-  ((THnSparseF*)fOutput->FindObject("NSparseHistEv"))->Fill(varEv);//event loop
   
   PostData(1, fOutput  );
   PostData(2, fEventCuts);
