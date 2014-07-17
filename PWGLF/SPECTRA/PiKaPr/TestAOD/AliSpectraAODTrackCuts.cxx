@@ -146,7 +146,7 @@ Bool_t AliSpectraAODTrackCuts::CheckTrackCuts()
 {
   // Check additional track Cuts
   Bool_t PassTrackCuts=kTRUE;
-  if (!fTrack->HasPointOnITSLayer(0) && !fTrack->HasPointOnITSLayer(1)  && !fRequestSPDcls)PassTrackCuts=kFALSE; //FIXME 1 SPD for the moment
+  if (!fTrack->HasPointOnITSLayer(0) && !fTrack->HasPointOnITSLayer(1)  && fRequestSPDcls)PassTrackCuts=kFALSE; //FIXME 1 SPD for the moment
   if (fTrack->GetTPCNcls()<fMinTPCcls)PassTrackCuts=kFALSE;
   return PassTrackCuts;
 }
