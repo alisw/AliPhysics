@@ -1974,9 +1974,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   static Long_t oldMres=0;
   static Long_t oldMvir=0;
   static Float_t oldCPU=0;
-  // static Long_t aveDMres=0;
-  // static Long_t aveDMvir=0;
-  // static Float_t aveDCPU=0;
+  static Long_t aveDMres=0;
+  static Long_t aveDMvir=0;
+  static Float_t aveDCPU=0;
 
   AliCodeTimerAuto("",0);
 
@@ -2489,6 +2489,19 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 		 nbf,fMemCountESDHLT,fhlttree->GetTotBytes(),fhlttree->GetZipBytes()));        
   }
     
+    gSystem->GetProcInfo(&procInfo);
+    Long_t dMres=(procInfo.fMemResident-oldMres)/1024;
+    Long_t dMvir=(procInfo.fMemVirtual-oldMvir)/1024;
+    Float_t dCPU=procInfo.fCpuUser+procInfo.fCpuSys-oldCPU;
+    aveDMres+=(dMres-aveDMres)/(iEvent-fFirstEvent+1);
+    aveDMvir+=(dMvir-aveDMvir)/(iEvent-fFirstEvent+1);
+    aveDCPU+=(dCPU-aveDCPU)/(iEvent-fFirstEvent+1);
+    AliInfo(Form("======================= End Event %d: Res %ld(%3ld <%3ld>) Vir %ld(%3ld <%3ld>) CPU %5.2f <%5.2f> ===================",
+                iEvent, procInfo.fMemResident/1024, dMres, aveDMres, procInfo.fMemVirtual/1024, dMvir, aveDMvir, dCPU, aveDCPU));
+    oldMres=procInfo.fMemResident;
+    oldMvir=procInfo.fMemVirtual;
+    oldCPU=procInfo.fCpuUser+procInfo.fCpuSys;
+  
     
   return kTRUE;
 }
