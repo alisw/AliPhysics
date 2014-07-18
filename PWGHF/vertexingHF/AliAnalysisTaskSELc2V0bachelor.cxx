@@ -39,8 +39,9 @@
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TH1F.h>
-#include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
+#include <THnSparse.h>
 #include <TTree.h>
 #include "TROOT.h"
 #include <TDatabasePDG.h>
@@ -92,16 +93,28 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fCandidateVariables(),
   fVtx1(0),
   fBzkG(0),
-  fAdditionalChecks(kFALSE)
+  fAdditionalChecks(kFALSE),
+  fTrackRotation(kFALSE),
+  fOutputPIDBachTR(0),
+  fMinAngleForRot(5*TMath::Pi()/6),
+  fMaxAngleForRot(7*TMath::Pi()/6),
+  fMinMass(0),
+  fMaxMass(0),
+  fNRotations(9)
 {
   //
   // Default ctor
   //
+
+  Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  fMinMass=mLcPDG-0.250;
+  fMaxMass=mLcPDG+0.250;
+
 }
 //___________________________________________________________________________
 AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* name,
 							       AliRDHFCutsLctoV0* analCuts, Bool_t useOnTheFly,
-							       Bool_t writeVariableTree, Bool_t additionalChecks) :
+							       Bool_t writeVariableTree, Bool_t additionalChecks, Bool_t trackRotation) :
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
   fOutput(0),
@@ -118,12 +131,23 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fCandidateVariables(),
   fVtx1(0),
   fBzkG(0),
-  fAdditionalChecks(additionalChecks)
+  fAdditionalChecks(additionalChecks),
+  fTrackRotation(trackRotation),
+  fOutputPIDBachTR(0),
+  fMinAngleForRot(5*TMath::Pi()/6),
+  fMaxAngleForRot(7*TMath::Pi()/6),
+  fMinMass(0),
+  fMaxMass(0),
+  fNRotations(9)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
   //
   Info("AliAnalysisTaskSELc2V0bachelor","Calling Constructor");
+
+  Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  fMinMass=mLcPDG-0.250;
+  fMaxMass=mLcPDG+0.250;
 
   DefineOutput(1,TList::Class());  //conters
   DefineOutput(2,AliNormalizationCounter::Class());
@@ -131,6 +155,9 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   if (!writeVariableTree) {
     DefineOutput(4,TList::Class());  //All Entries output
     DefineOutput(5,TList::Class());  //3sigma PID output
+    if (trackRotation) {
+      DefineOutput(6,TList::Class());  //All Entries output
+    }
   } else {
     // Output slot #4 keeps a tree of the candidate variables after track selection
     DefineOutput(4,TTree::Class());  //My private output
@@ -173,6 +200,11 @@ AliAnalysisTaskSELc2V0bachelor::~AliAnalysisTaskSELc2V0bachelor() {
   if (fVariablesTree) {
     delete fVariablesTree;
     fVariablesTree = 0;
+  }
+
+  if (fOutputPIDBachTR) {
+    delete fOutputPIDBachTR;
+    fOutputPIDBachTR = 0;
   }
 
 }
@@ -305,6 +337,8 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
   if (!fWriteVariableTree) {
     PostData(4,fOutputAll);
     PostData(5,fOutputPIDBach);
+    if (fTrackRotation)
+      PostData(6,fOutputPIDBachTR);
   } else {
     PostData(4,fVariablesTree);
   }
@@ -343,6 +377,15 @@ void AliAnalysisTaskSELc2V0bachelor::Terminate(Option_t*)
       AliError("fOutputPIDBach not available");
       return;
     }
+
+    if (fTrackRotation) {
+      fOutputPIDBachTR = dynamic_cast<TList*> (GetOutputData(6));
+      if (!fOutputPIDBachTR) {
+	AliError("fOutputPIDBachTR not available");
+	return;
+      }
+    }
+
   }
 
   return;
@@ -372,10 +415,20 @@ void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() {
     fOutputPIDBach->SetOwner();
     fOutputPIDBach->SetName("listPIDBach");
 
+    if (fTrackRotation) {
+      fOutputPIDBachTR = new TList();
+      fOutputPIDBachTR->SetOwner();
+      fOutputPIDBachTR->SetName("listPIDBachTR");
+    }
+
     DefineAnalysisHistograms(); // define analysis histograms
   
     PostData(4,fOutputAll);
     PostData(5,fOutputPIDBach);
+
+    if (fTrackRotation)
+      PostData(6,fOutputPIDBachTR);
+
   }
   else {
     DefineTreeVariables();
@@ -523,10 +576,40 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
   Bool_t isInCascadeWindow = (((cutsAnal->IsSelectedSingleCut(part,AliRDHFCuts::kCandidate,0))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on Lc->p+K0S invMass
   cutsAnal->SetUsePID(areCutsUsingPID);
 
-  //if ( !( !onFlyV0 || (onFlyV0 && fUseOnTheFlyV0) ) ) return;
   if ( onFlyV0 && !fUseOnTheFlyV0 ) return;
 
   if (fAdditionalChecks) CheckCandidatesAtDifferentLevels(part,cutsAnal);
+
+  // track rotation
+  if (fTrackRotation) {
+    if (onFlyV0) {
+      TrackRotation(cutsAnal,part,"");
+    }
+    else {
+      TrackRotation(cutsAnal,part,"Offline");
+    }
+    if (fUseMCInfo) {
+      if (isLc==1) {
+	if (onFlyV0) {
+	  TrackRotation(cutsAnal,part,"Sgn");
+	}     
+	else {  
+	  TrackRotation(cutsAnal,part,"OfflineSgn");
+	}
+      }// sgn
+      else { // bkg
+	if (onFlyV0) {
+	  TrackRotation(cutsAnal,part,"Bkg");
+	}
+	else {
+	  TrackRotation(cutsAnal,part,"OfflineBkg");
+	}
+      }
+    } // if fUseMCInfo
+  } // if fTrackRotation
+ 
+
+
 
   if ( !(cutsAnal->IsInFiducialAcceptance(part->Pt(),part->Y(4122))) ) return;
 
@@ -574,82 +657,55 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
   Double_t nSigmaTOFka=-999.;
   cutsAnal->GetPidHF()->GetnSigmaTOF(bachelor,3,nSigmaTOFka);
 
-  //if (onFlyV0 && fUseOnTheFlyV0) {  
   if (onFlyV0) {  
-
-    if (isCandidateSelectedCuts)
-      FillAnalysisHistograms(part,isBachelorID,"");
-
-  }
-  //else if (!onFlyV0) {
-  else {
-
     if (isCandidateSelectedCuts) {
-
+      FillAnalysisHistograms(part,isBachelorID,"");
+    }
+  }
+  else {
+    if (isCandidateSelectedCuts) {
       fillthis="histoprotonBachSigmaVspTOF";
       ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTOFpr);
       fillthis="histoprotonBachSigmaVspTPC";
       ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTPCpr);
-
       FillAnalysisHistograms(part,isBachelorID,"Offline");
-
     }
-
   }
-
-
   if (fUseMCInfo) {
     if (isLc==1) {
-      //if (onFlyV0 && fUseOnTheFlyV0) {
       if (onFlyV0) {
-
-	if (isCandidateSelectedCuts)
+	if (isCandidateSelectedCuts) {
 	  FillAnalysisHistograms(part,isBachelorID,"Sgn");
-    
+	}
       }     
-      //else if (!onFlyV0) {  
       else {  
-
  	if (isCandidateSelectedCuts) {
-
 	  fillthis="histoprotonBachSigmaVspTOFsgn";
 	  ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTOFpr);
 	  fillthis="histoprotonBachSigmaVspTPCsgn";
 	  ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTPCpr);
-
 	  FillAnalysisHistograms(part,isBachelorID,"OfflineSgn");
-
 	}
-
       }
-
     }// sgn
     else { // bkg
-      //if (onFlyV0 && fUseOnTheFlyV0) {
       if (onFlyV0) {
-
-	if (isCandidateSelectedCuts)
-	  FillAnalysisHistograms(part,isBachelorID,"Bkg");
-
-      }
-      //else if (!onFlyV0) {
-      else {
-
 	if (isCandidateSelectedCuts) {
-
+	  FillAnalysisHistograms(part,isBachelorID,"Bkg");
+	}
+      }
+      else {
+	if (isCandidateSelectedCuts) {
 	  fillthis="histoprotonBachSigmaVspTOFbkg";
 	  ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTOFpr);
 	  fillthis="histoprotonBachSigmaVspTPCbkg";
 	  ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTPCpr);
-
 	  FillAnalysisHistograms(part,isBachelorID,"OfflineBkg");
 	}
-
       }
-
     }
   } // if fUseMCInfo
- 
+
   return;
 }
 
@@ -719,6 +775,11 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     fOutputPIDBach->Add(pidBachdcatoPVvspK0S);
     fOutputPIDBach->Add(pidBachcosV0PAwrtPVvspK0S);
  
+    if (fTrackRotation){
+      TH2F* pidBachTRspectrumLcMassByK0S    = (TH2F*)spectrumLcMassByK0S->Clone(); 
+      fOutputPIDBachTR->Add(pidBachTRspectrumLcMassByK0S);
+    }
+
   }
 
   // V0 invariant masses (offline)
@@ -778,6 +839,11 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
   fOutputPIDBach->Add(pidBachdcatoPVvspK0SOffline);
   fOutputPIDBach->Add(pidBachcosPAwrtPVvspK0SOffline);
 
+  if (fTrackRotation) {
+    TH2F* pidBachTRspectrumLcMassOfflineByK0S    = (TH2F*)spectrumLcMassOfflineByK0S->Clone(); 
+    fOutputPIDBachTR->Add(pidBachTRspectrumLcMassOfflineByK0S);
+  }
+
   if (fUseMCInfo) {
 
     if (fUseOnTheFlyV0) {
@@ -789,49 +855,18 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
       TH2F* spectrumK0SMassBkg = new TH2F(nameBkg.Data(), "K^{0}_{S} - bkg: invariant mass VS p_{T} - MC; m_{inv}(#pi^{+}#pi^{-}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries",
 					  1000,mK0SPDG-0.050,mK0SPDG+0.050,175,0.,35.);
 
-      TH2F* allspectrumK0SMassSgn = (TH2F*)spectrumK0SMassSgn->Clone(); 
-      TH2F* allspectrumK0SMassBkg = (TH2F*) spectrumK0SMassBkg->Clone();  
-      TH2F* pidBachspectrumK0SMassSgn = (TH2F*)spectrumK0SMassSgn->Clone(); 
-      TH2F* pidBachspectrumK0SMassBkg = (TH2F*) spectrumK0SMassBkg->Clone();  
-      fOutputAll->Add(allspectrumK0SMassSgn);
-      fOutputAll->Add(allspectrumK0SMassBkg);
-      fOutputPIDBach->Add(pidBachspectrumK0SMassSgn);
-      fOutputPIDBach->Add(pidBachspectrumK0SMassBkg);
-
-
       nameSgn="histLcMassByK0SSgn";
       nameBkg="histLcMassByK0SBkg";
       TH2F* spectrumLcMassByK0SSgn = new TH2F(nameSgn.Data(), "#Lambda_{c} - sgn: invariant mass (by K^{0}_{S}) vs p_{T}  - MC; m_{inv}(p-K^{0}_{S}) [GeV/c^{2}];  p_{T}",
 					      1000,mLcPDG-0.250,mLcPDG+0.250,175,0.,35.);
       TH2F* spectrumLcMassByK0SBkg = new TH2F(nameBkg.Data(), "#Lambda_{c} - bkg: invariant mass (by K^{0}_{S}) vs p_{T}  - MC; m_{inv}(p-K^{0}_{S}) [GeV/c^{2}]; p_{T}",
 					      1000,mLcPDG-0.250,mLcPDG+0.250,175,0.,35.);
-
-      TH2F* allspectrumLcMassByK0SSgn = (TH2F*)spectrumLcMassByK0SSgn->Clone(); 
-      TH2F* allspectrumLcMassByK0SBkg = (TH2F*) spectrumLcMassByK0SBkg->Clone();  
-      TH2F* pidBachspectrumLcMassByK0SSgn = (TH2F*)spectrumLcMassByK0SSgn->Clone(); 
-      TH2F* pidBachspectrumLcMassByK0SBkg = (TH2F*) spectrumLcMassByK0SBkg->Clone();  
-      fOutputAll->Add(allspectrumLcMassByK0SSgn);
-      fOutputAll->Add(allspectrumLcMassByK0SBkg);
-      fOutputPIDBach->Add(pidBachspectrumLcMassByK0SSgn);
-      fOutputPIDBach->Add(pidBachspectrumLcMassByK0SBkg);
-
       nameSgn="histpK0SvspSgn";
       nameBkg="histpK0SvspBkg";
       TH2F* momentumDistributionK0SvspSgn= new TH2F(nameSgn.Data(),"#Lambda_{c} - sgn: K^{0}_{S} vs p Total Momentum Distribution - MC; p_{p}; p_{K^{0}_{S}}",
 						    175,0.,35.,175,0.,35.);
       TH2F* momentumDistributionK0SvspBkg= new TH2F(nameBkg.Data(),"#Lambda_{c} - bkg: K^{0}_{S} vs p Total Momentum Distribution - MC; p_{p}; p_{K^{0}_{S}}",
 						    175,0.,35.,175,0.,35.);
-
-      TH2F* allmomentumDistributionK0SvspSgn= (TH2F*)momentumDistributionK0SvspSgn->Clone(); 
-      TH2F* allmomentumDistributionK0SvspBkg= (TH2F*)momentumDistributionK0SvspBkg->Clone(); 
-      TH2F* pidBachmomentumDistributionK0SvspSgn= (TH2F*)momentumDistributionK0SvspSgn->Clone(); 
-      TH2F* pidBachmomentumDistributionK0SvspBkg= (TH2F*)momentumDistributionK0SvspBkg->Clone(); 
-      fOutputAll->Add(allmomentumDistributionK0SvspSgn); 
-      fOutputAll->Add(allmomentumDistributionK0SvspBkg); 
-      fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspSgn); 
-      fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspBkg); 
-
-
       // armenteros-podolanski plots K0S
       nameSgn="histArmPodK0SSgn";
       nameBkg="histArmPodK0SBkg";
@@ -839,32 +874,61 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 					   200,-1.,1.,300,0.,0.3);
       TH2F* armenterosPodK0SBkg = new TH2F(nameBkg.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution (bkg); #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",
 					   200,-1.,1.,300,0.,0.3);
-
-      TH2F* allArmenterosPodK0SSgn = (TH2F*)armenterosPodK0SSgn->Clone();
-      TH2F* allArmenterosPodK0SBkg = (TH2F*)armenterosPodK0SBkg->Clone();
-      TH2F* pidBachArmenterosPodK0SSgn = (TH2F*)armenterosPodK0SSgn->Clone();
-      TH2F* pidBachArmenterosPodK0SBkg = (TH2F*)armenterosPodK0SBkg->Clone();
-
-      fOutputAll->Add(allArmenterosPodK0SSgn);
-      fOutputAll->Add(allArmenterosPodK0SBkg);
-      fOutputPIDBach->Add(pidBachArmenterosPodK0SSgn);
-      fOutputPIDBach->Add(pidBachArmenterosPodK0SBkg);
-
-
       nameSgn="histDCAtoPVvspK0SSgn";
       nameBkg="histDCAtoPVvspK0SBkg";
       TH2F *dcatoPVvspK0SSgn=new TH2F(nameSgn.Data(),"K^{0}_{S} - sgn: DCA to Primary Vertex vs  K^{0}_{S} invariant mass (sgn); p(K^{0}_{S}) [GeV/c]; DCA to Primary Vertex [n#sigmas]; Entries",175,0.,35.,50,0.,5.);
       TH2F *dcatoPVvspK0SBkg=new TH2F(nameBkg.Data(),"K^{0}_{S} - bkg: DCA to Primary Vertex vs  K^{0}_{S} invariant mass (bkg); p(K^{0}_{S}) [GeV/c]; DCA to Primary Vertex [n#sigmas]; Entries",175,0.,35.,50,0.,5.);
 
+      TH2F* allspectrumK0SMassSgn = (TH2F*)spectrumK0SMassSgn->Clone(); 
+      TH2F* allspectrumK0SMassBkg = (TH2F*) spectrumK0SMassBkg->Clone();  
+      TH2F* allspectrumLcMassByK0SSgn = (TH2F*)spectrumLcMassByK0SSgn->Clone(); 
+      TH2F* allspectrumLcMassByK0SBkg = (TH2F*) spectrumLcMassByK0SBkg->Clone();  
+      TH2F* allmomentumDistributionK0SvspSgn= (TH2F*)momentumDistributionK0SvspSgn->Clone(); 
+      TH2F* allmomentumDistributionK0SvspBkg= (TH2F*)momentumDistributionK0SvspBkg->Clone(); 
+      TH2F* allArmenterosPodK0SSgn = (TH2F*)armenterosPodK0SSgn->Clone();
+      TH2F* allArmenterosPodK0SBkg = (TH2F*)armenterosPodK0SBkg->Clone();
       TH2F* alldcatoPVvspK0SSgn= (TH2F*)dcatoPVvspK0SSgn->Clone();
       TH2F* alldcatoPVvspK0SBkg= (TH2F*)dcatoPVvspK0SBkg->Clone();
+
+      TH2F* pidBachspectrumK0SMassSgn = (TH2F*)spectrumK0SMassSgn->Clone(); 
+      TH2F* pidBachspectrumK0SMassBkg = (TH2F*) spectrumK0SMassBkg->Clone();  
+      TH2F* pidBachspectrumLcMassByK0SSgn = (TH2F*)spectrumLcMassByK0SSgn->Clone(); 
+      TH2F* pidBachspectrumLcMassByK0SBkg = (TH2F*) spectrumLcMassByK0SBkg->Clone();  
+      TH2F* pidBachmomentumDistributionK0SvspSgn= (TH2F*)momentumDistributionK0SvspSgn->Clone(); 
+      TH2F* pidBachmomentumDistributionK0SvspBkg= (TH2F*)momentumDistributionK0SvspBkg->Clone(); 
+      TH2F* pidBachArmenterosPodK0SSgn = (TH2F*)armenterosPodK0SSgn->Clone();
+      TH2F* pidBachArmenterosPodK0SBkg = (TH2F*)armenterosPodK0SBkg->Clone();
       TH2F* pidBachdcatoPVvspK0SSgn= (TH2F*)dcatoPVvspK0SSgn->Clone();
       TH2F* pidBachdcatoPVvspK0SBkg= (TH2F*)dcatoPVvspK0SBkg->Clone();
 
+      fOutputAll->Add(allspectrumK0SMassSgn);
+      fOutputAll->Add(allspectrumK0SMassBkg);
+      fOutputAll->Add(allspectrumLcMassByK0SSgn);
+      fOutputAll->Add(allspectrumLcMassByK0SBkg);
+      fOutputAll->Add(allmomentumDistributionK0SvspSgn); 
+      fOutputAll->Add(allmomentumDistributionK0SvspBkg); 
+      fOutputAll->Add(allArmenterosPodK0SSgn);
+      fOutputAll->Add(allArmenterosPodK0SBkg);
       fOutputAll->Add(alldcatoPVvspK0SSgn);
-      fOutputPIDBach->Add(pidBachdcatoPVvspK0SSgn);
       fOutputAll->Add(alldcatoPVvspK0SBkg);
+
+      fOutputPIDBach->Add(pidBachspectrumK0SMassSgn);
+      fOutputPIDBach->Add(pidBachspectrumK0SMassBkg);
+      fOutputPIDBach->Add(pidBachspectrumLcMassByK0SSgn);
+      fOutputPIDBach->Add(pidBachspectrumLcMassByK0SBkg);
+      fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspSgn); 
+      fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspBkg); 
+      fOutputPIDBach->Add(pidBachArmenterosPodK0SSgn);
+      fOutputPIDBach->Add(pidBachArmenterosPodK0SBkg);
+      fOutputPIDBach->Add(pidBachdcatoPVvspK0SSgn);
       fOutputPIDBach->Add(pidBachdcatoPVvspK0SBkg);
+
+      if (fTrackRotation) {
+	TH2F* pidBachTRspectrumLcMassByK0SSgn = (TH2F*)spectrumLcMassByK0SSgn->Clone(); 
+	TH2F* pidBachTRspectrumLcMassByK0SBkg = (TH2F*) spectrumLcMassByK0SBkg->Clone();  
+	fOutputPIDBachTR->Add(pidBachTRspectrumLcMassByK0SSgn);
+	fOutputPIDBachTR->Add(pidBachTRspectrumLcMassByK0SBkg);
+      }
 
     }
 
@@ -876,57 +940,18 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     TH2F* spectrumK0SMassOfflineBkg = new TH2F(nameBkg.Data(), "K^{0}_{S} - bkg: invariant mass VS p_{T} - MC; m_{inv}(#pi^{+}-#pi^{-}) [GeV/c^{2}]; p_{T}(K^{0}_{S}) [GeV/c]; Entries",
 					      1000,mK0SPDG-0.050,mK0SPDG+0.050,175,0.,35.);
 
-    TH2F* allspectrumK0SMassOfflineSgn = (TH2F*)spectrumK0SMassOfflineSgn->Clone(); 
-    TH2F* allspectrumK0SMassOfflineBkg = (TH2F*) spectrumK0SMassOfflineBkg->Clone();  
-    fOutputAll->Add(allspectrumK0SMassOfflineSgn);
-    fOutputAll->Add(allspectrumK0SMassOfflineBkg);
-
-
-    TH2F* pidBachspectrumK0SMassOfflineSgn = (TH2F*)spectrumK0SMassOfflineSgn->Clone(); 
-    TH2F* pidBachspectrumK0SMassOfflineBkg = (TH2F*) spectrumK0SMassOfflineBkg->Clone();
-    fOutputPIDBach->Add(pidBachspectrumK0SMassOfflineSgn);
-    fOutputPIDBach->Add(pidBachspectrumK0SMassOfflineBkg);
-
-
     nameSgn="histLcMassByK0SOfflineSgn";
     nameBkg="histLcMassByK0SOfflineBkg";
     TH2F* spectrumLcMassOfflineByK0SSgn = new TH2F(nameSgn.Data(), "#Lambda_{c} - sgn: invariant mass (by K^{0}_{S})  vs p_{T} - MC; M(#Lambda_{c}) [GeV/c^{2}]; p_{T}",
 						   1000,mLcPDG-0.250,mLcPDG+0.250,175,0.,35.);
     TH2F* spectrumLcMassOfflineByK0SBkg = new TH2F(nameBkg.Data(), "#Lambda_{c} - bkg: invariant mass (by K^{0}_{S})  vs p_{T} - MC; M(#Lambda_{c}) [GeV/c^{2}]; p_{T}",
 						   1000,mLcPDG-0.250,mLcPDG+0.250,175,0.,35.);
-
-
-    TH2F* allspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone(); 
-    TH2F* allspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();  
-    TH2F* pidBachspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone(); 
-    TH2F* pidBachspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();  
-    fOutputAll->Add(allspectrumLcMassOfflineByK0SSgn);
-    fOutputAll->Add(allspectrumLcMassOfflineByK0SBkg);
-    fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0SSgn);
-    fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0SBkg);
-  
- 
     nameSgn="histpK0SvspOfflineSgn";
     nameBkg="histpK0SvspOfflineBkg";
     TH2F* momentumDistributionK0SvspOfflineSgn= new TH2F(nameSgn.Data(),"#Lambda_{c} - sgn: K^{0}_{S} vs p Total Momentum Distribution - Offline  - MC; p_{p}; p_{K^{0}_{S}}",
 							 175,0.,35.,175,0.,35.);
     TH2F* momentumDistributionK0SvspOfflineBkg= new TH2F(nameBkg.Data(),"#Lambda_{c} - bkg: K^{0}_{S} vs p Total Momentum Distribution - Offline  - MC; p_{p}; p_{K^{0}_{S}}",
 							 175,0.,35.,175,0.,35.);
-
-
-    TH2F* allmomentumDistributionK0SvspOfflineSgn= (TH2F*)momentumDistributionK0SvspOfflineSgn->Clone(); 
-    TH2F* allmomentumDistributionK0SvspOfflineBkg= (TH2F*)momentumDistributionK0SvspOfflineBkg->Clone(); 
-    TH2F* pidBachmomentumDistributionK0SvspOfflineSgn= (TH2F*)momentumDistributionK0SvspOfflineSgn->Clone(); 
-    TH2F* pidBachmomentumDistributionK0SvspOfflineBkg= (TH2F*)momentumDistributionK0SvspOfflineBkg->Clone(); 
-    fOutputAll->Add(allmomentumDistributionK0SvspOfflineSgn); 
-    fOutputAll->Add(allmomentumDistributionK0SvspOfflineBkg); 
-    fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspOfflineSgn); 
-    fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspOfflineBkg); 
-
-
-
-
-
     // armenteros-podolanski plots K0S (offline)
     nameSgn="histArmPodK0SOfflineSgn";
     nameBkg="histArmPodK0SOfflineBkg";
@@ -934,40 +959,200 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 					    200,-1.,1.,300,0.,0.3);
     TH2F* armenterosPodK0SOffBkg = new TH2F(nameBkg.Data(),"K^{0}_{S}  Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]",
 					    200,-1.,1.,300,0.,0.3);
-  
-
-    TH2F* allArmenterosPodK0SOffSgn = (TH2F*)armenterosPodK0SOffSgn->Clone();
-    TH2F* allArmenterosPodK0SOffBkg = (TH2F*)armenterosPodK0SOffBkg->Clone();
-    TH2F* pidBachArmenterosPodK0SOffSgn = (TH2F*)armenterosPodK0SOffSgn->Clone();
-    TH2F* pidBachArmenterosPodK0SOffBkg = (TH2F*)armenterosPodK0SOffBkg->Clone();
-
-
-    fOutputAll->Add(allArmenterosPodK0SOffSgn);
-    fOutputAll->Add(allArmenterosPodK0SOffBkg);
-    fOutputPIDBach->Add(pidBachArmenterosPodK0SOffSgn);
-    fOutputPIDBach->Add(pidBachArmenterosPodK0SOffBkg);
-
-
     nameSgn="histDCAtoPVvspK0SOfflineSgn";
     nameBkg="histDCAtoPVvspK0SOfflineBkg";
     TH2F *dcatoPVvspK0SOfflineSgn=new TH2F(nameSgn.Data(),"K^{0}_{S} -offline - (sgn): DCA to Primary Vertex vs  K^{0}_{S} invariant mass; p(K^{0}_{S}) [GeV/c]; DCA to Primary Vertex [n#sigmas]; Entries",
 					   175,0.,35.,50,0.,5.);
     TH2F *dcatoPVvspK0SOfflineBkg=new TH2F(nameBkg.Data(),"K^{0}_{S} -offline - (bkg): DCA to Primary Vertex vs  K^{0}_{S} invariant mass; p(K^{0}_{S}) [GeV/c]; DCA to Primary Vertex [n#sigmas]; Entries",
 					   175,0.,35.,50,0.,5.);
-    
 
+
+    TH2F* allspectrumK0SMassOfflineSgn = (TH2F*)spectrumK0SMassOfflineSgn->Clone(); 
+    TH2F* allspectrumK0SMassOfflineBkg = (TH2F*) spectrumK0SMassOfflineBkg->Clone();  
+    TH2F* allspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone(); 
+    TH2F* allspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();  
+    TH2F* allmomentumDistributionK0SvspOfflineSgn= (TH2F*)momentumDistributionK0SvspOfflineSgn->Clone(); 
+    TH2F* allmomentumDistributionK0SvspOfflineBkg= (TH2F*)momentumDistributionK0SvspOfflineBkg->Clone(); 
+    TH2F* allArmenterosPodK0SOffSgn = (TH2F*)armenterosPodK0SOffSgn->Clone();
+    TH2F* allArmenterosPodK0SOffBkg = (TH2F*)armenterosPodK0SOffBkg->Clone();
     TH2F* alldcatoPVvspK0SOfflineSgn= (TH2F*)dcatoPVvspK0SOfflineSgn->Clone();
-    TH2F* pidBachdcatoPVvspK0SOfflineSgn= (TH2F*)dcatoPVvspK0SOfflineSgn->Clone();
     TH2F* alldcatoPVvspK0SOfflineBkg= (TH2F*)dcatoPVvspK0SOfflineBkg->Clone();
+
+    TH2F* pidBachspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone(); 
+    TH2F* pidBachspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();  
+    TH2F* pidBachspectrumK0SMassOfflineSgn = (TH2F*)spectrumK0SMassOfflineSgn->Clone(); 
+    TH2F* pidBachspectrumK0SMassOfflineBkg = (TH2F*) spectrumK0SMassOfflineBkg->Clone();
+    TH2F* pidBachmomentumDistributionK0SvspOfflineSgn= (TH2F*)momentumDistributionK0SvspOfflineSgn->Clone(); 
+    TH2F* pidBachmomentumDistributionK0SvspOfflineBkg= (TH2F*)momentumDistributionK0SvspOfflineBkg->Clone(); 
+    TH2F* pidBachArmenterosPodK0SOffSgn = (TH2F*)armenterosPodK0SOffSgn->Clone();
+    TH2F* pidBachArmenterosPodK0SOffBkg = (TH2F*)armenterosPodK0SOffBkg->Clone();
+    TH2F* pidBachdcatoPVvspK0SOfflineSgn= (TH2F*)dcatoPVvspK0SOfflineSgn->Clone();
     TH2F* pidBachdcatoPVvspK0SOfflineBkg= (TH2F*)dcatoPVvspK0SOfflineBkg->Clone();
 
-
-
+    fOutputAll->Add(allspectrumK0SMassOfflineSgn);
+    fOutputAll->Add(allspectrumK0SMassOfflineBkg);
+    fOutputAll->Add(allspectrumLcMassOfflineByK0SSgn);
+    fOutputAll->Add(allspectrumLcMassOfflineByK0SBkg);
+    fOutputAll->Add(allmomentumDistributionK0SvspOfflineSgn); 
+    fOutputAll->Add(allmomentumDistributionK0SvspOfflineBkg); 
+    fOutputAll->Add(allArmenterosPodK0SOffSgn);
+    fOutputAll->Add(allArmenterosPodK0SOffBkg);
     fOutputAll->Add(alldcatoPVvspK0SOfflineSgn);
-    fOutputPIDBach->Add(pidBachdcatoPVvspK0SOfflineSgn);
     fOutputAll->Add(alldcatoPVvspK0SOfflineBkg);
+
+    fOutputPIDBach->Add(pidBachspectrumK0SMassOfflineSgn);
+    fOutputPIDBach->Add(pidBachspectrumK0SMassOfflineBkg);
+    fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0SSgn);
+    fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0SBkg);
+    fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspOfflineSgn); 
+    fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspOfflineBkg);  
+    fOutputPIDBach->Add(pidBachArmenterosPodK0SOffSgn);
+    fOutputPIDBach->Add(pidBachArmenterosPodK0SOffBkg);    
+    fOutputPIDBach->Add(pidBachdcatoPVvspK0SOfflineSgn);
     fOutputPIDBach->Add(pidBachdcatoPVvspK0SOfflineBkg);
 
+    if (fTrackRotation) {
+      TH2F* pidBachTRspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone(); 
+      TH2F* pidBachTRspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();  
+      fOutputPIDBachTR->Add(pidBachTRspectrumLcMassOfflineByK0SSgn);
+      fOutputPIDBachTR->Add(pidBachTRspectrumLcMassOfflineByK0SBkg);
+    }
+
+  }
+
+
+  if (fTrackRotation) {
+
+    TH1F *hNormRotated=new TH1F("hNormRotated","",11,-0.5,10.5);
+    TH1F *hNormRotatedOffline=new TH1F("hNormRotatedOffline","",11,-0.5,10.5);
+    TH1F *hNormRotatedSgn=new TH1F("hNormRotatedSgn","",11,-0.5,10.5);
+    TH1F *hNormRotatedOfflineSgn=new TH1F("hNormRotatedOfflineSgn","",11,-0.5,10.5);
+    TH1F *hNormRotatedBkg=new TH1F("hNormRotatedBkg","",11,-0.5,10.5);
+    TH1F *hNormRotatedOfflineBkg=new TH1F("hNormRotatedOfflineBkg","",11,-0.5,10.5);
+    hNormRotated->Sumw2();
+    hNormRotatedOffline->Sumw2();
+    hNormRotatedSgn->Sumw2();
+    hNormRotatedOfflineSgn->Sumw2();
+    hNormRotatedBkg->Sumw2();
+    hNormRotatedOfflineBkg->Sumw2();
+    hNormRotated->SetMinimum(0);
+    hNormRotatedOffline->SetMinimum(0);
+    hNormRotatedSgn->SetMinimum(0);
+    hNormRotatedOfflineSgn->SetMinimum(0);
+    hNormRotatedBkg->SetMinimum(0);
+    hNormRotatedOfflineBkg->SetMinimum(0);
+
+    fOutputPIDBachTR->Add(hNormRotated);
+    fOutputPIDBachTR->Add(hNormRotatedOffline);
+    fOutputPIDBachTR->Add(hNormRotatedSgn);
+    fOutputPIDBachTR->Add(hNormRotatedOfflineSgn);
+    fOutputPIDBachTR->Add(hNormRotatedBkg);
+    fOutputPIDBachTR->Add(hNormRotatedOfflineBkg);
+
+    Int_t nMassBins=fMaxMass*1000.-fMinMass*1000.;
+    Double_t maxm=fMinMass+nMassBins*0.001;
+    TH3F *hMassVsPtVsY=new TH3F("hMassVsPtVsY","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+    TH3F *hMassVsPtVsYOffline=new TH3F("hMassVsPtVsYOffline","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+    TH3F *hMassVsPtVsYSgn=new TH3F("hMassVsPtVsYSgn","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+    TH3F *hMassVsPtVsYOfflineSgn=new TH3F("hMassVsPtVsYOfflineSgn","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+    TH3F *hMassVsPtVsYBkg=new TH3F("hMassVsPtVsYBkg","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+    TH3F *hMassVsPtVsYOfflineBkg=new TH3F("hMassVsPtVsYOfflineBkg","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+
+    hMassVsPtVsY->Sumw2();
+    hMassVsPtVsYOffline->Sumw2();
+    hMassVsPtVsYSgn->Sumw2();
+    hMassVsPtVsYOfflineSgn->Sumw2();
+    hMassVsPtVsYBkg->Sumw2();
+    hMassVsPtVsYOfflineBkg->Sumw2();
+    hMassVsPtVsY->SetMinimum(0);
+    hMassVsPtVsYOffline->SetMinimum(0);
+    hMassVsPtVsYSgn->SetMinimum(0);
+    hMassVsPtVsYOfflineSgn->SetMinimum(0);
+    hMassVsPtVsYBkg->SetMinimum(0);
+    hMassVsPtVsYOfflineBkg->SetMinimum(0);
+
+    fOutputPIDBachTR->Add(hMassVsPtVsY);
+    fOutputPIDBachTR->Add(hMassVsPtVsYOffline);
+    fOutputPIDBachTR->Add(hMassVsPtVsYSgn);
+    fOutputPIDBachTR->Add(hMassVsPtVsYOfflineSgn);
+    fOutputPIDBachTR->Add(hMassVsPtVsYBkg);
+    fOutputPIDBachTR->Add(hMassVsPtVsYOfflineBkg);
+
+    TH3F *hMassVsPtVsYRot=new TH3F("hMassVsPtVsYRot","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+    TH3F *hMassVsPtVsYRotOffline=new TH3F("hMassVsPtVsYRotOffline","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+    TH3F *hMassVsPtVsYRotSgn=new TH3F("hMassVsPtVsYRotSgn","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+    TH3F *hMassVsPtVsYRotOfflineSgn=new TH3F("hMassVsPtVsYRotOfflineSgn","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+    TH3F *hMassVsPtVsYRotBkg=new TH3F("hMassVsPtVsYRotBkg","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+    TH3F *hMassVsPtVsYRotOfflineBkg=new TH3F("hMassVsPtVsYRotOfflineBkg","",nMassBins,fMinMass,maxm,20,0.,10.,20,-1.,1.);
+
+    hMassVsPtVsYRot->Sumw2();
+    hMassVsPtVsYRotOffline->Sumw2();
+    hMassVsPtVsYRotSgn->Sumw2();
+    hMassVsPtVsYRotOfflineSgn->Sumw2();
+    hMassVsPtVsYRotBkg->Sumw2();
+    hMassVsPtVsYRotOfflineBkg->Sumw2();
+    hMassVsPtVsYRot->SetMinimum(0);
+    hMassVsPtVsYRotOffline->SetMinimum(0);
+    hMassVsPtVsYRotSgn->SetMinimum(0);
+    hMassVsPtVsYRotOfflineSgn->SetMinimum(0);
+    hMassVsPtVsYRotBkg->SetMinimum(0);
+    hMassVsPtVsYRotOfflineBkg->SetMinimum(0);
+
+    fOutputPIDBachTR->Add(hMassVsPtVsYRot);
+    fOutputPIDBachTR->Add(hMassVsPtVsYRotOffline);
+    fOutputPIDBachTR->Add(hMassVsPtVsYRotSgn);
+    fOutputPIDBachTR->Add(hMassVsPtVsYRotOfflineSgn);
+    fOutputPIDBachTR->Add(hMassVsPtVsYRotBkg);
+    fOutputPIDBachTR->Add(hMassVsPtVsYRotOfflineBkg);
+
+
+    TH1F *hDeltaMass=new TH1F("hDeltaMass","",100,-0.4,0.4);
+    TH1F *hDeltaMassOffline=new TH1F("hDeltaMassOffline","",100,-0.4,0.4);
+    TH1F *hDeltaMassSgn=new TH1F("hDeltaMassSgn","",100,-0.4,0.4);
+    TH1F *hDeltaMassOfflineSgn=new TH1F("hDeltaMassOfflineSgn","",100,-0.4,0.4);
+    TH1F *hDeltaMassBkg=new TH1F("hDeltaMassBkg","",100,-0.4,0.4);
+    TH1F *hDeltaMassOfflineBkg=new TH1F("hDeltaMassOfflineBkg","",100,-0.4,0.4);
+    hDeltaMass->Sumw2();
+    hDeltaMassOffline->Sumw2();
+    hDeltaMassSgn->Sumw2();
+    hDeltaMassOfflineSgn->Sumw2();
+    hDeltaMassBkg->Sumw2();
+    hDeltaMassOfflineBkg->Sumw2();
+
+    hDeltaMass->SetMinimum(0);
+    hDeltaMassOffline->SetMinimum(0);
+    hDeltaMassSgn->SetMinimum(0);
+    hDeltaMassOfflineSgn->SetMinimum(0);
+    hDeltaMassBkg->SetMinimum(0);
+    hDeltaMassOfflineBkg->SetMinimum(0);
+
+    fOutputPIDBachTR->Add(hDeltaMass);
+    fOutputPIDBachTR->Add(hDeltaMassOffline);
+    fOutputPIDBachTR->Add(hDeltaMassSgn);
+    fOutputPIDBachTR->Add(hDeltaMassOfflineSgn);
+    fOutputPIDBachTR->Add(hDeltaMassBkg);
+    fOutputPIDBachTR->Add(hDeltaMassOfflineBkg);
+
+    /*
+    Int_t binSparseDMassRot[5]={nMassBins,100,24,40,20};
+    Double_t edgeLowSparseDMassRot[5]={fMinMass,-0.4,0.,-4.,0};
+    Double_t edgeHighSparseDMassRot[5]={maxm,0.4,12.,4.,3.14};
+    THnSparse *hDeltaMassFullAnalysis=new THnSparseF("hDeltaMassFullAnalysis","hDeltaMassFullAnalysis;inv mass (GeV/c);#Delta inv mass (GeV/c) ; p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+    THnSparse *hDeltaMassFullAnalysisOffline=new THnSparseF("fDeltaMassFullAnalysisOffline","hDeltaMassFullAnalysisOffline;inv mass (GeV/c);#Delta inv mass (GeV/c) ; p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+
+    THnSparse *hDeltaMassFullAnalysisSgn=new THnSparseF("hDeltaMassFullAnalysisSgn","hDeltaMassFullAnalysisSgn;inv mass (GeV/c);#Delta inv mass (GeV/c) ; p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+    THnSparse *hDeltaMassFullAnalysisOfflineSgn=new THnSparseF("fDeltaMassFullAnalysisOfflineSgn","hDeltaMassFullAnalysisOfflineSgn;inv mass (GeV/c);#Delta inv mass (GeV/c) ; p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+
+    THnSparse *hDeltaMassFullAnalysisBkg=new THnSparseF("hDeltaMassFullAnalysisBkg","hDeltaMassFullAnalysisBkg;inv mass (GeV/c);#Delta inv mass (GeV/c) ; p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+    THnSparse *hDeltaMassFullAnalysisOfflineBkg=new THnSparseF("fDeltaMassFullAnalysisOfflineBkg","hDeltaMassFullAnalysisOfflineBkg;inv mass (GeV/c);#Delta inv mass (GeV/c) ; p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+
+    fOutputPIDBachTR->Add(hDeltaMassFullAnalysis);
+    fOutputPIDBachTR->Add(hDeltaMassFullAnalysisOffline);
+    fOutputPIDBachTR->Add(hDeltaMassFullAnalysisSgn);
+    fOutputPIDBachTR->Add(hDeltaMassFullAnalysisOfflineSgn);
+    fOutputPIDBachTR->Add(hDeltaMassFullAnalysisBkg);
+    fOutputPIDBachTR->Add(hDeltaMassFullAnalysisOfflineBkg);
+    */
   }
 
   return;
@@ -1738,7 +1923,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   cutsAnal->SetUsePID(areCutsUsingPID);
   */
 
-  fCandidateVariables[ 0] = fUseMCInfo+isLcByMC; // 0: real data; 1: bkg; 2: Lc->K0S+p; 3: Lc->LambdaBar+pbar; 5: Lc->Lambda+p
+  fCandidateVariables[ 0] = fUseMCInfo+isLcByMC; // 0: real data; 1: bkg; 2: Lc->K0S+p; 3: Lc->LambdaBar+pbar; 5: Lc->Lambda+p; 9: D+->K0S+pi; 17: Ds+->K0S+K; 33: K*+->K0S+pi; 65: K*+->K0S+K
   fCandidateVariables[ 1] = fUseMCInfo+isV0ByMC; // 0: real data; 1: bkg; 2: K0S->pi+pi; 3: LambdaBar->pbar+pi+; 5: Lambda->p+pi-
   fCandidateVariables[ 2] = isBachelorSelected;
   fCandidateVariables[ 3] = areV0daughtersSelected;
@@ -1872,7 +2057,20 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   fCandidateVariables[85]=0;
   fCandidateVariables[86]=0;
   fCandidateVariables[87]=0;
+  fCandidateVariables[88]=0;
   if (fUseMCInfo) {
+    if (v0pos->GetLabel()!=-1 &&
+	v0neg->GetLabel()!=-1) {
+      const Int_t ndg=2;
+      Int_t dgLabels[ndg]={TMath::Abs(v0pos->GetLabel()),
+			   TMath::Abs(v0neg->GetLabel())};
+      Int_t ndgCk=0;
+      Int_t *pdgDg=0;
+      Int_t absLabelMother=-1;
+      Int_t nDauCand=-1;
+      fCandidateVariables[88]=SearchForCommonMother(mcArray,
+						    dgLabels,ndg,ndgCk,pdgDg,absLabelMother,nDauCand);
+    }
     if (bachelor->GetLabel()!=-1 &&
 	v0pos->GetLabel()!=-1 &&
 	v0neg->GetLabel()!=-1) {
@@ -1883,23 +2081,20 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
       Int_t ndgCk=0;
       Int_t *pdgDg=0;
       Int_t absLabelMother=-1;
+      Int_t nDauCand=-1;
       fCandidateVariables[85]=SearchForCommonMother(mcArray,
-						    dgLabels,ndg,ndgCk,pdgDg,absLabelMother);
+						    dgLabels,ndg,ndgCk,pdgDg,absLabelMother,nDauCand);
       AliAODMCParticle *part1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0pos->GetLabel())));
       AliAODMCParticle *part2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0neg->GetLabel())));
-      if(!part1 || !part2) {
-	AliDebug(2,"Daughter particles not found\n");
-	return;
-      }
-      fCandidateVariables[86]=part1->GetPdgCode();
-      fCandidateVariables[87]=part2->GetPdgCode();
+      if(part1) fCandidateVariables[86]=part1->GetPdgCode();
+      if(part2) fCandidateVariables[87]=part2->GetPdgCode();
     }
   }
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
   AliPIDResponse *pidResponse=inputHandler->GetPIDResponse();
-  fCandidateVariables[88]=pidResponse->GetTOFResponse().GetStartTimeMask(bachelor->P());
+  fCandidateVariables[89]=pidResponse->GetTOFResponse().GetStartTimeMask(bachelor->P());
 
   //fCandidateVariables[65] = bachelor->Px();
   //fCandidateVariables[66] = bachelor->Py();
@@ -1938,7 +2133,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 89;
+  Int_t nVar = 90;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
   fCandidateVariableNames[ 0]="isLcByMC";
@@ -2029,7 +2224,8 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
   fCandidateVariableNames[85]="pdgCandidate"; // pdg MC candidate recovered via new method
   fCandidateVariableNames[86]="pdgV0pos"; // pdg MC V0 positive
   fCandidateVariableNames[87]="pdgV0neg"; // pdg MC V0 negative
-  fCandidateVariableNames[88]="startTimeMask"; // start time mask
+  fCandidateVariableNames[88]="pdgV0Candidate"; // pdg MC V0candidate recovered via new method
+  fCandidateVariableNames[89]="startTimeMask"; // start time mask
 
   //fCandidateVariableNames[65]="bachelorPx";
   //fCandidateVariableNames[66]="bachelorPy";
@@ -2283,32 +2479,32 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   Double_t dcaV0ptp = v0part->GetDCA();
   Double_t invmassK0S = v0part->MassK0Short();
 
-    fillthis="histK0SMass"+appendthis;
-    //    cout << fillthis << endl;
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0S,ptK0S);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0S,ptK0S);
+  fillthis="histK0SMass"+appendthis;
+  //    cout << fillthis << endl;
+  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0S,ptK0S);
+  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0S,ptK0S);
 
-    fillthis="histpK0Svsp"+appendthis;
-    //    cout << fillthis << endl;
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0S);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0S);
+  fillthis="histpK0Svsp"+appendthis;
+  //    cout << fillthis << endl;
+  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0S);
+  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0S);
 
-    fillthis="histDCAtoPVvspK0S"+appendthis;
-    //    cout << fillthis << endl;
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momK0S,dcaV0ptp);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momK0S,dcaV0ptp);
+  fillthis="histDCAtoPVvspK0S"+appendthis;
+  //    cout << fillthis << endl;
+  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momK0S,dcaV0ptp);
+  if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momK0S,dcaV0ptp);
 
-    fillthis="histArmPodK0S"+appendthis;
-    //    cout << fillthis << endl;
-    FillArmPodDistribution(v0part,fillthis,fOutputAll);
-    if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
+  fillthis="histArmPodK0S"+appendthis;
+  //    cout << fillthis << endl;
+  FillArmPodDistribution(v0part,fillthis,fOutputAll);
+  if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
 
-    fillthis="histLcMassByK0S"+appendthis;
-    //    cout << fillthis << endl;
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
-    if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
+  fillthis="histLcMassByK0S"+appendthis;
+  //    cout << fillthis << endl;
+  ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
+  if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
 
-    return;
+  return;
 }
 //---------------------------
 Double_t AliAnalysisTaskSELc2V0bachelor::PropagateToDCA(AliAODv0 *v, AliAODTrack *bachelor, Double_t b,
@@ -2511,15 +2707,15 @@ Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMClabelC(AliAODRecoCascadeHF *candi
     AliAODMCParticle* partDau=(AliAODMCParticle*)(mcArray->At(partLc->GetDaughter(0)+ii));
     stringaCheck.Append(Form("  %d",partDau->GetPdgCode()));
   }
-  printf("%s \n",stringaCheck.Data());
+  //printf("%s \n",stringaCheck.Data());
 
   return indexMotherBach;
 
 }
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArray,
 							    Int_t dgLabels[10],Int_t ndg,
-							    Int_t &ndgCk, Int_t *pdgDg, Int_t &absLabelMother) const
+							    Int_t &ndgCk, Int_t *pdgDg, Int_t &absLabelMother, Int_t &nDauCand) const
 {
   //
   // Check if this candidate is matched to a MC signal
@@ -2537,14 +2733,12 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
   for(Int_t i=0; i<ndg; i++) {
     lab = TMath::Abs(dgLabels[i]);
     if(lab<0) {
-      AliDebug(2,Form("daughter with negative label %d\n",lab));
-      delete [] labelMother;
+      AliDebug(2,Form("daughter with negative label %d",lab));
       return 0;
     }
     part = (AliAODMCParticle*)mcArray->At(lab);
     if(!part) { 
-      AliDebug(2,"no MC particle\n");
-      delete [] labelMother;
+      AliDebug(2,"no MC particle");
       return 0;
     }
 
@@ -2553,7 +2747,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
       labMother=mother->GetMother();
       mother = (AliAODMCParticle*)mcArray->At(labMother);
       if(!mother) {
-	AliDebug(2,"no MC mother particle\n");
+	AliDebug(2,"no MC mother particle");
 	break;
       }
       pdgMother = TMath::Abs(mother->GetPdgCode());
@@ -2566,44 +2760,119 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
 
   } // end loop on daughters
 
+
+  TString stringaCheck;
   for(Int_t i=0; i<ndg; i++) {
     AliAODMCParticle*part0 = (AliAODMCParticle*)mcArray->At(TMath::Abs(dgLabels[i]));
-    AliInfo(Form("part[%d]->GetLabel()=%d(%d) | ",i,dgLabels[i],part0->GetPdgCode()));
-    AliInfo(Form("labelMother[%d] = ",i));
+    stringaCheck.Append(Form("part[%d]->GetLabel()=%d(%d) | ",i,dgLabels[i],part0->GetPdgCode()));
+    stringaCheck.Append(Form("labelMother[%d] = ",i));
     for (Int_t jj=0;jj<labelMother[i]->GetSize(); jj++)
-      AliInfo(Form("%d, ",labelMother[i]->At(jj)));
-    AliInfo("\n");
+      stringaCheck.Append(Form("%d, ",labelMother[i]->At(jj)));
   }
-
+  printf("%s \n",stringaCheck.Data());
   Int_t pdgToBeReturned=0;
-  Bool_t found=kFALSE;
-  for (Int_t ii=0;ii<labelMother[0]->GetSize(); ii++) {
-    for (Int_t jj=0;jj<labelMother[1]->GetSize(); jj++) {
-      for (Int_t kk=0;kk<labelMother[2]->GetSize(); kk++) {
-	if (labelMother[0]->At(ii)==labelMother[1]->At(jj) &&
-	    labelMother[1]->At(jj)==labelMother[2]->At(kk) &&
+
+  TString stringaCheck2;
+  ndgCk=ndg;
+  pdgDg = new Int_t[ndgCk];
+  for (Int_t index=1; index<ndg; index++) {
+    Bool_t found=kFALSE;
+    for (Int_t jj=0;jj<labelMother[index]->GetSize(); jj++) {
+      for (Int_t ii=0;ii<labelMother[0]->GetSize(); ii++) {
+	if (labelMother[0]->At(ii)==labelMother[index]->At(jj) &&
 	    labelMother[0]->At(ii)!=0 && labelMother[0]->At(ii)!=1 && !found) {
 	  mother = (AliAODMCParticle*)mcArray->At(labelMother[0]->At(ii));
 	  pdgToBeReturned=mother->GetPdgCode();
 	  absLabelMother=labelMother[0]->At(ii);
 	  AliDebug(2,Form("FOUND label for the mother of this candidate: %d (PDG=%d)\n",labelMother[0]->At(ii),pdgToBeReturned));
-	  mother->Print();
+	  //mother->Print();
+	  nDauCand=mother->GetNDaughters();
 	  found = kTRUE;
-	  ndgCk=3;
-	  pdgDg = new Int_t[ndgCk];
-	  for (Int_t aa=0; aa<ndgCk; aa++) {
-	    AliAODMCParticle *partMC = (AliAODMCParticle*)mcArray->At(dgLabels[aa]);
-	    pdgDg[aa]=partMC->GetPdgCode();
-	  }
+	  AliAODMCParticle *partMC = (AliAODMCParticle*)mcArray->At(dgLabels[0]);
+	  pdgDg[0]=partMC->GetPdgCode();
+	  partMC = (AliAODMCParticle*)mcArray->At(dgLabels[index]);
+	  pdgDg[index]=partMC->GetPdgCode();
+	  if (index==1) stringaCheck2.Append(Form("found daughters -> %d(%d)",dgLabels[0],pdgDg[0]));
+	  stringaCheck2.Append(Form(" %d(%d)",dgLabels[index],pdgDg[index]));
 	  break;
 	}
       }
+      if (found) break;
     }
   }
+  stringaCheck2.Prepend(Form("Ecco quanto trovato: %d(%d) with %d daughters; ",absLabelMother,pdgToBeReturned,nDauCand));
+  printf("%s \n",stringaCheck2.Data());
 
   delete [] labelMother;
-  if(pdgDg) delete [] pdgDg;
 
   return pdgToBeReturned;
+
+}
+
+void AliAnalysisTaskSELc2V0bachelor::TrackRotation(AliRDHFCutsLctoV0 * cuts, AliAODRecoCascadeHF *part, TString appendthis)
+{
+
+  AliAODRecoCascadeHF *partCopy = new AliAODRecoCascadeHF(*part);
+
+  Double_t px[2]={partCopy->PxProng(0),partCopy->PxProng(1)};
+  Double_t py[2]={partCopy->PyProng(0),partCopy->PyProng(1)};
+  Double_t pz[2]={partCopy->PzProng(0),partCopy->PzProng(1)};
+
+  Double_t pt = partCopy->Pt();
+  Int_t pdgD=4122;
+  UInt_t pdgLc2pK0S[2]={2212,310};
+  Double_t minv2 = partCopy->InvMass2(2,pdgLc2pK0S);
+  Double_t mass=TMath::Sqrt(minv2);
+  Double_t rapid = partCopy->Y(pdgD);
+
+  TString fillthis="hMassVsPtVsY"+appendthis;
+  if ( ( ( (cuts->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) {
+    ((TH3F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(mass,pt,rapid);
+  }
+
+  Int_t nRotated=0;
+  Double_t massRot=0;// calculated later only if candidate is acceptable
+  //  Double_t angleProngXY=TMath::ACos((px[0]*px[1]+py[0]*py[1])/TMath::Sqrt((px[0]*px[0]+py[0]*py[0])*(px[1]*px[1]+py[1]*py[1])));
+  //  Double_t ptOrig=pt;
+  Double_t rotStep=(fMaxAngleForRot-fMinAngleForRot)/(fNRotations-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot
+
+  for(Int_t irot=0; irot<fNRotations; irot++){
+    Double_t phirot=fMinAngleForRot+rotStep*irot;
+    Double_t tmpx=px[0];
+    Double_t tmpy=py[0];
+    px[0]=tmpx*TMath::Cos(phirot)-tmpy*TMath::Sin(phirot);
+    py[0]=tmpx*TMath::Sin(phirot)+tmpy*TMath::Cos(phirot);
+    partCopy->SetPxPyPzProngs(2,px,py,pz);
+    pt = partCopy->Pt();
+    minv2 = partCopy->InvMass2(2,pdgLc2pK0S);
+    massRot=TMath::Sqrt(minv2);
+    rapid = partCopy->Y(pdgD);
+    //if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
+    if ( ( ( (cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) {
+
+      fillthis="histLcMassByK0S"+appendthis;
+      ((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(massRot,pt);
+
+      fillthis="hMassVsPtVsYRot"+appendthis;
+      ((TH3F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(mass,pt,rapid);
+      fillthis="hDeltaMass"+appendthis;
+      ((TH1F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(massRot-mass);
+      //if(fFullAnalysis){
+      //Double_t pointRot[5]={mass,massRot-mass,ptOrig,pt-ptOrig,angleProngXY};
+      //fillthis="hDeltaMassFullAnalysis"+appendthis;
+      //((THnSparse*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pointRot);
+      //}
+      nRotated++;
+      //}
+    }
+    px[0]=tmpx;
+    py[0]=tmpy;
+  }
+  fillthis="hNormRotated"+appendthis;
+  ((TH1F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(nRotated);
+
+  delete partCopy;
+
+  return;
 
 }
