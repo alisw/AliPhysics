@@ -157,11 +157,28 @@ void AliGenExtFile::Generate()
     //
     // Stack filling loop
     //
+    map<Int_t,Int_t> newIdMap;
+    map<Int_t,Int_t> newFirstMotherMap;
     fNprimaries = 0;
     for (i = 0; i < nTracks; i++) {
-	TParticle* jparticle = fReader->NextParticle();
-	Bool_t selected = KinematicSelection(jparticle,0); 
-	if (!selected) continue;
+       TParticle* jparticle = fReader->NextParticle();
+       Int_t parent = jparticle->GetFirstMother();
+       if (parent > -1) {
+          Int_t parentNewId = newIdMap[parent];
+          if (parentNewId == -1) { // if parent was skipped
+             parent = newFirstMotherMap[parent]; // re-adjust parent using stored information
+          } else {
+             parent = parentNewId; // otherwise re-map parent to new id
+          }
+       }
+       newFirstMotherMap[i] = parent; // store re-mapped parent data so child nodes can use it
+       Bool_t selected = KinematicSelection(jparticle,0);
+       if (!selected) {
+          newIdMap[i] = -1; // -1 marks this particle was skipped
+          continue;
+       }
+       newIdMap[i] = fNprimaries; // maps old id to new id
+
 	p[0] = jparticle->Px();
 	p[1] = jparticle->Py();
 	p[2] = jparticle->Pz();
@@ -187,7 +204,6 @@ void AliGenExtFile::Generate()
 	    time = fTime + jparticle->T();
 	}
 	Int_t doTracking = fTrackIt && selected && (jparticle->TestBit(kTransportBit));
-	Int_t parent     = jparticle->GetFirstMother();
 	
 	PushTrack(doTracking, parent, idpart,
 		  p[0], p[1], p[2], p[3], origin[0], origin[1], origin[2], time,
