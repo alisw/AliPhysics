@@ -40,7 +40,7 @@ public:
   Int_t GetXbinIndex() const { return fXbinIndex; };
   const Double_t* GetXstatisticalWeight() const { return fXstatisticalWeight; };
   const Double_t* GetXstatisticalWeightError() const { return fXstatisticalWeightError; };
-  const Double_t* GetXaluesForRegularisation() const { return fXvaluesForRegularisation; };
+  const Double_t* GetXvaluesForRegularisation() const { return fXvaluesForRegularisation; };
   Int_t GetRegularisation() const { return fRegularisation; };
   Double_t GetRegularisationFactor() const { return fRegularisationFactor; };
   Double_t GetScaleFactorError() const { return fScaleFactorError; };

@@ -35,9 +35,9 @@ class AliJBaseEventHeader : public TNamed {
   //getter
   int    GetEventID() const {return fEventID;} 
   float  GetCentrality() const {return fCentrality;}
-  float  GetXertex() const {return fVtxX;}
-  float  GetYertex() const {return fVtxY;}
-  float  GetZertex() const {return fVtxZ;}
+  float  GetXVertex() const {return fVtxX;}
+  float  GetYVertex() const {return fVtxY;}
+  float  GetZVertex() const {return fVtxZ;}
   float  GetZertexErr() const {return fVtxZErr;}
 
   float  GetXVertexMC() const {return fVtxMCX;} 
