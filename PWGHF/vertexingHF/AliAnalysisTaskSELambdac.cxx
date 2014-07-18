@@ -1418,8 +1418,8 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
   TString trigclass=aod->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNentries->Fill(14);
   Bool_t isEvSelProdCuts=fRDCutsProduction->IsEventSelected(aod);
-  //  Bool_t isEvSelAnCuts=fRDCutsAnalysis->IsEventSelected(aod);
-  if(!isEvSelProdCuts){
+  Bool_t isEvSelAnCuts=fRDCutsAnalysis->IsEventSelected(aod);
+  if(!isEvSelProdCuts || !isEvSelAnCuts){
     if(fRDCutsProduction->GetWhyRejection()==1) // rejected for pileup
       fNentries->Fill(13);
     return;
