@@ -151,12 +151,12 @@ AliAnalysisTaskAntiHe4::AliAnalysisTaskAntiHe4(const char *name)
   //
   fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
   fESDtrackCuts->SetMinNClustersTPC(70);
-  fESDtrackCuts->SetMaxChi2PerClusterTPC(5);
+  fESDtrackCuts->SetMaxChi2PerClusterTPC(6);
   fESDtrackCuts->SetMaxDCAToVertexXY(3);
   fESDtrackCuts->SetMaxDCAToVertexZ(2);
   fESDtrackCuts->SetRequireTPCRefit(kTRUE);
   //fESDtrackCuts->SetRequireITSRefit(kTRUE);
-  fESDtrackCuts->SetMinNClustersITS(2);
+  fESDtrackCuts->SetMinNClustersITS(1);
   fESDtrackCuts->SetEtaRange(-1.0,1.0);
   //
   // cuts for final plots
@@ -422,7 +422,10 @@ void AliAnalysisTaskAntiHe4::UserCreateOutputObjects()
   fTree->Branch("fTrackPt",fTrackPt,"fTrackPt[fItrk]/D");
   fTree->Branch("fDeDx",fDeDx,"fDeDx[fItrk]/D");  
   fTree->Branch("fSign",fSign,"fSign[fItrk]/D");  
-  fTree->Branch("fMass",fMass,"Mass[fItrk]/F");
+  fTree->Branch("fMass",fMass,"fMass[fItrk]/F");
+  fTree->Branch("fTime",fTime,"fTime[fItrk]/F");
+  fTree->Branch("fLength",fLength,"fLength[fItrk]/F");
+  fTree->Branch("fSigmaQP",fSigmaQP,"fSigmaQP[fItrk]/D");
   //
   fTree->Branch("fAssociated",fAssociated,"fAssociated[fItrk]/O");
 
@@ -578,7 +581,10 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     fDeDx[fItrk] = -1;
     fSign[fItrk] = -2;
     fMass[fItrk] = -1;
-    
+    fTime[fItrk] = -1;
+    fLength[fItrk] = -1;
+    fSigmaQP[fItrk] = -1;    
+
     fAssociated[fItrk] = kFALSE;
 
     AliESDtrack* track = dynamic_cast<AliESDtrack*>(fESD->GetTrack(iTracks));
@@ -608,6 +614,8 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     Float_t dcaXYsign = dca[0];
     Float_t dcaZ  = TMath::Sqrt(dca[1]*dca[1]);
     //
+    Double_t cov1[15];
+    track->GetExternalCovariance(cov1);//->GetSigmaQoverP();
     //
     Double_t tpcSignal = track->GetTPCsignal();
     //
@@ -657,98 +665,118 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
 								5.04114e-11,
 								2.13096,
 								2.38541);
-    if (eta < 1.0 && tpcSignal > 120 && tpcSignal > cut && tpcSignal < 1000 && track->GetTPCsignalN() > 60 && dcaZ < 15 && dcaXY < 15 && ptot > 1.0 && ptot < 20) {
-      //
-    cout << "AntiAlphaEvent" << " " 
-	   << AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()->GetName() << " " 
-	   << "event number in file: " << fESD->GetEventNumberInFile() 
-	   << " Index " << iTracks 
-	   << " ptot: " << ptot 
-	   << " sig: " << tpcSignal <<endl;
-      //
-      fillTree = kTRUE;
-      //
+    Bool_t IsDeuteron = kFALSE;
+    Bool_t IsTriton = kFALSE;
 
-      sscanf(fInputHandler->GetTree()->GetCurrentFile()->GetName(),"%s", fFileName);
-      fEventNumber[fItrk] = fESD->GetEventNumberInFile();
+    Double_t DeuteronSigma = TMath::Abs(tpcSignal - expSignalDeuteron)/expSignalDeuteron;
+    Double_t TritonSigma = TMath::Abs(tpcSignal - expSignalTriton)/expSignalTriton;
+    
 
-      fEta[fItrk] = eta;
-      fKinkIndex[fItrk] = track->GetKinkIndex(0);
-      fCentrality[fItrk] = centralityPercentile;
+    if(DeuteronSigma < 0.3 && runNumber < 166500) IsDeuteron = kTRUE;
+    if(TritonSigma < 0.3 && runNumber < 166500) IsTriton = kTRUE;
 
-      fTPCNsignal[fItrk] = track->GetTPCsignalN();
-      fTPCnCluster[fItrk] = track->GetTPCNcls();
-      fChi2PerClusterTPC[fItrk] = track->GetTPCchi2()/fTPCnCluster[fItrk];
-      if(status&AliESDtrack::kTPCrefit)
-        fTPCRefit[fItrk] = kTRUE;
-      else fTPCRefit[fItrk] = kFALSE;
-      fTPCsignal0[fItrk] = signal[0];
-      fTPCsignal1[fItrk] = signal[1];
-      fTPCsignal2[fItrk] = signal[2];
-      fTPCsignal3[fItrk] = signal[3];
-      fTPCSharedClusters[fItrk] = shared.CountBits();
-      fTPCNclsIter1[fItrk] = track->GetTPCNclsIter1();
-
-      fITSsignal[fItrk] = track->GetITSsignal();
-      fITSnCluster[fItrk] = track->GetNcls(0);
-      fChi2PerClusterITS[fItrk] = track->GetITSchi2()/fITSnCluster[fItrk];
-      if(status&AliESDtrack::kITSrefit)
-        fITSRefit[fItrk] = kTRUE;
-      else fITSRefit[fItrk] = kFALSE;
-
-
-      if(status&AliESDtrack::kITSrefit)
-        fITSRefit[fItrk] = kTRUE;
-      else fITSRefit[fItrk] = kFALSE;
-      hasTOFout = status&AliESDtrack::kTOFout;
-      hasTOFtime  = status&AliESDtrack::kTIME;
-      fTOFtime[fItrk] = hasTOFtime;
-      fTOFout[fItrk]  = hasTOFout;
-      fTOFsignalDz[fItrk] = track->GetTOFsignalDz();
-      fTOFsignalDx[fItrk] = track->GetTOFsignalDx();
-
-      fTRDin[fItrk] = status&AliESDtrack::kTRDin;
-
-      fDCAZ[fItrk] = dcaXY;
-      fDCAXY[fItrk] = dcaZ;
-
-      fTrkPtot[fItrk] = track->P();
-      fTPCPtot[fItrk] = ptot;
-      fTrackPt[fItrk] = track->Pt();
-      fDeDx[fItrk] = tpcSignal;
-      fSign[fItrk] = sign;
-      fMass[fItrk] = mass;
-
-      if (fMCtrue){ //associated
-
-	Int_t label  = track->GetLabel();
-	TParticle *tparticle = stack->Particle(TMath::Abs(label));
-
-	Bool_t isPrimary = stack->IsPhysicalPrimary(TMath::Abs(label));
-	Bool_t isSecondary = stack->IsSecondaryFromMaterial(TMath::Abs(label));
-
-	Long_t pdgCode = tparticle->GetPdgCode();
-	Double_t pT =(track->Pt())*2;
+    //cout << "isDeuteron: " << IsDeuteron << endl;
+    
+    //if(tpcSignal > cut || IsDeuteron == kTRUE || IsTriton == kTRUE){
+    if(tpcSignal > cut ){
+ 
+      //cout << "isDeuteron: " << IsDeuteron << endl;
+      if (eta < 1.0 && tpcSignal < 1000 && dcaZ < 15 && dcaXY < 15 && ptot < 20 && ptot > 1.0 && tpcSignal > 120){// && track->GetTPCsignalN() > 60) { // && ptot > 1.0 &6 tpcSignal > 120
+	//
+	cout << "AntiAlphaEvent" << " " 
+	     << AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()->GetName() << " " 
+	     << "event number in file: " << fESD->GetEventNumberInFile() 
+	     << " Index " << iTracks 
+	     << " ptot: " << ptot 
+	     << " sig: " << tpcSignal <<endl;
+	//
+	fillTree = kTRUE;
+	//
 	
-	if(pdgCode == 1000020040)
-          {
-            fHistHelium4PtAso->Fill(pT);
-	    if(isPrimary) fHistHelium4PtAsoPrim->Fill(pT);
-	    if(isSecondary)  fHistHelium4PtAsoSec->Fill(pT);
-	    isAssociated = kTRUE;
-          }
+	sscanf(fInputHandler->GetTree()->GetCurrentFile()->GetName(),"%s", fFileName);
+	fEventNumber[fItrk] = fESD->GetEventNumberInFile();
+	
+	fEta[fItrk] = eta;
+	fKinkIndex[fItrk] = track->GetKinkIndex(0);
+	fCentrality[fItrk] = centralityPercentile;
+	
+	fTPCNsignal[fItrk] = track->GetTPCsignalN();
+	fTPCnCluster[fItrk] = track->GetTPCNcls();
+	fChi2PerClusterTPC[fItrk] = track->GetTPCchi2()/fTPCnCluster[fItrk];
+	if(status&AliESDtrack::kTPCrefit)
+	  fTPCRefit[fItrk] = kTRUE;
+	else fTPCRefit[fItrk] = kFALSE;
+	fTPCsignal0[fItrk] = signal[0];
+	fTPCsignal1[fItrk] = signal[1];
+	fTPCsignal2[fItrk] = signal[2];
+	fTPCsignal3[fItrk] = signal[3];
+	fTPCSharedClusters[fItrk] = shared.CountBits();
+	fTPCNclsIter1[fItrk] = track->GetTPCNclsIter1();
+	
+	fITSsignal[fItrk] = track->GetITSsignal();
+	fITSnCluster[fItrk] = track->GetNcls(0);
+	fChi2PerClusterITS[fItrk] = track->GetITSchi2()/fITSnCluster[fItrk];
+	if(status&AliESDtrack::kITSrefit)
+	  fITSRefit[fItrk] = kTRUE;
+	else fITSRefit[fItrk] = kFALSE;
+	
+	
+	if(status&AliESDtrack::kITSrefit)
+	  fITSRefit[fItrk] = kTRUE;
+	else fITSRefit[fItrk] = kFALSE;
+	hasTOFout = status&AliESDtrack::kTOFout;
+	hasTOFtime  = status&AliESDtrack::kTIME;
+	fTOFtime[fItrk] = hasTOFtime;
+	fTOFout[fItrk]  = hasTOFout;
+	fTOFsignalDz[fItrk] = track->GetTOFsignalDz();
+	fTOFsignalDx[fItrk] = track->GetTOFsignalDx();
+	
+	fTRDin[fItrk] = status&AliESDtrack::kTRDin;
+	
+	fDCAZ[fItrk] = dcaXY;
+	fDCAXY[fItrk] = dcaZ;
+	
+	fTrkPtot[fItrk] = track->P();
+	fTPCPtot[fItrk] = ptot;
+	fTrackPt[fItrk] = track->Pt();
+	fDeDx[fItrk] = tpcSignal;
+	fSign[fItrk] = sign;
+	fMass[fItrk] = mass;
+	fTime[fItrk] = time;
+	fLength[fItrk] = length;
+	fSigmaQP[fItrk] = cov1[15];
 
-	if(pdgCode == -1000020040)
-	  {
-	    fHistAntiHelium4PtAso->Fill(pT);
-	    isAssociated = kTRUE;
-	  }
-
+	if (fMCtrue){ //associated
+	  
+	  Int_t label  = track->GetLabel();
+	  TParticle *tparticle = stack->Particle(TMath::Abs(label));
+	  
+	  Bool_t isPrimary = stack->IsPhysicalPrimary(TMath::Abs(label));
+	  Bool_t isSecondary = stack->IsSecondaryFromMaterial(TMath::Abs(label));
+	  
+	  Long_t pdgCode = tparticle->GetPdgCode();
+	  Double_t pT =(track->Pt())*2;
+	  
+	  if(pdgCode == 1000020040)
+	    {
+	      fHistHelium4PtAso->Fill(pT);
+	      if(isPrimary) fHistHelium4PtAsoPrim->Fill(pT);
+	      if(isSecondary)  fHistHelium4PtAsoSec->Fill(pT);
+	      isAssociated = kTRUE;
+	    }
+	  
+	  if(pdgCode == -1000020040)
+	    {
+	      fHistAntiHelium4PtAso->Fill(pT);
+	      isAssociated = kTRUE;
+	    }
+	  
+	}
+	
+	fAssociated[fItrk] = isAssociated;
+	
+	fItrk++;
       }
-      
-      fAssociated[fItrk] = isAssociated;
-
-      fItrk++;
     }
     //
     // do pid fill histogram for raw ratios
@@ -760,7 +788,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     if (ptot > 0.7 && TMath::Abs(tpcSignal - expSignalTriton)/expSignalTriton < 0.2) id = 2;
     if (ptot > 0.5 && (tpcSignal - expSignalHelium3)/expSignalHelium3 > -0.1 &&  (tpcSignal - expSignalHelium3)/expSignalHelium3 < 0.2) id = 3;
     //
-    Double_t vecAntiAlpha[4] = {dcaXYsign, sign, static_cast<Double_t>(id), ptotInc};
+    Double_t vecAntiAlpha[4] = {dcaXYsign, sign, id, ptotInc};
     if (id != -1 && tpcSignal > 120) fAntiAlpha->Fill(vecAntiAlpha);
     //
     // fill final histograms
@@ -1036,8 +1064,8 @@ void AliAnalysisTaskAntiHe4::MCGenerated(AliStack* stack)
 	      fHistHelium4PtGen->Fill(pTGen);
 	      if(isPrimary) fHistHelium4PtGenPrim->Fill(pTGen);
 	      if(isSecondary) fHistHelium4PtGenSec->Fill(pTGen);
-	      if(TMath::Abs(eta) < 1.0)fHistHelium4PtGenEta->Fill(pTGen);
-	      if(isPrimary && TMath::Abs(eta) < 1.0)fHistHelium4PtGenPrimEta->Fill(pTGen);
+	      if(TMath::Abs(eta) < 0.8)fHistHelium4PtGenEta->Fill(pTGen);
+	      if(isPrimary && TMath::Abs(eta) < 0.8)fHistHelium4PtGenPrimEta->Fill(pTGen);
 	    }
 
 	  //Anti-Alpha
@@ -1046,7 +1074,7 @@ void AliAnalysisTaskAntiHe4::MCGenerated(AliStack* stack)
 	      fHistAntiHelium4PtGen->Fill(pTGen);
 	      if(isPrimary) fHistAntiHelium4PtGenPrim->Fill(pTGen);
 	      if(isSecondary) fHistAntiHelium4PtGenSec->Fill(pTGen);
-	      if(TMath::Abs(eta) < 1.0)fHistAntiHelium4PtGenEta->Fill(pTGen);
+	      if(TMath::Abs(eta) < 0.8)fHistAntiHelium4PtGenEta->Fill(pTGen);
 	    }
 
   	      
