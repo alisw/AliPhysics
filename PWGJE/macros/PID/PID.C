@@ -109,12 +109,12 @@ Double_t GetElectronFraction(const Double_t pT, const Double_t *par)
   if (pT < lastPtForCallOfGetElectronFraction) {
     for (Int_t xBin = 0; xBin < mathFit->GetNumXbinsRegularisation(); xBin++) {
       
-      const Double_t xCoord = TMath::Exp(mathFit->GetXaluesForRegularisation()[xBin]);
+      const Double_t xCoord = TMath::Exp(mathFit->GetXvaluesForRegularisation()[xBin]);
       const Int_t parIndexWithFraction = 3 + xBin * mathFit->GetNumParametersPerXbin(); 
       
       if (xCoord >= lowFittingBoundElectronFraction && xCoord <= electronFractionThresholdForFitting
           && par[parIndexWithFraction] > epsilon) { // Skip zero values (usually due to failed fits)
-        gFractionElectronsData->SetPoint(xBin, TMath::Exp(mathFit->GetXaluesForRegularisation()[xBin]), par[parIndexWithFraction]);
+        gFractionElectronsData->SetPoint(xBin, TMath::Exp(mathFit->GetXvaluesForRegularisation()[xBin]), par[parIndexWithFraction]);
         // Since the errors during the fitting are not reliable, use the following approximation on a statistical basis
         // (which indeed turns out to be rather good!)
         
