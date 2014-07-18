@@ -50,7 +50,7 @@
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoCutMonitorCollections.h"
 #endif
- 
+ 
 //_  6 fm  pure kaons _(0.2-0.4)______________________________________________________________________
 AliFemtoManager* ConfigFemtoAnalysis() {
 
