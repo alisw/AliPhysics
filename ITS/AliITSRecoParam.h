@@ -172,9 +172,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void     SetSearchForExtraClusters(Bool_t opt=kTRUE){ fSearchForExtras=opt; }
   Double_t GetSearchForExtraClusters() const { return fSearchForExtras; }
 
-  Double_t GetXdef() const { return fXV; }
-  Double_t GetYdef() const { return fYV; }
-  Double_t GetZdef() const { return fZV; }
+  Double_t GetXVdef() const { return fXV; }
+  Double_t GetYVdef() const { return fYV; }
+  Double_t GetZVdef() const { return fZV; }
   Double_t GetSigmaXVdef() const { return fSigmaXV; }
   Double_t GetSigmaYVdef() const { return fSigmaYV; }
   Double_t GetSigmaZVdef() const { return fSigmaZV; }

@@ -217,9 +217,9 @@ fITSPid(0) {
   fPass=0;
   fConstraint[0]=1; fConstraint[1]=0;
 
-  Double_t xyzVtx[]={AliITSReconstructor::GetRecoParam()->GetXdef(),
-		     AliITSReconstructor::GetRecoParam()->GetYdef(),
-		     AliITSReconstructor::GetRecoParam()->GetZdef()}; 
+  Double_t xyzVtx[]={AliITSReconstructor::GetRecoParam()->GetXVdef(),
+		     AliITSReconstructor::GetRecoParam()->GetYVdef(),
+		     AliITSReconstructor::GetRecoParam()->GetZVdef()}; 
   Double_t ersVtx[]={AliITSReconstructor::GetRecoParam()->GetSigmaXVdef(),
 		     AliITSReconstructor::GetRecoParam()->GetSigmaYVdef(),
 		     AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 

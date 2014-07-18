@@ -58,9 +58,9 @@ AliITStrackerV2::AliITStrackerV2():
 
   fConstraint[0]=1; fConstraint[1]=0;
 
-  Double_t xyz[]={AliITSReconstructor::GetRecoParam()->GetXdef(),
-		  AliITSReconstructor::GetRecoParam()->GetYdef(),
-		  AliITSReconstructor::GetRecoParam()->GetZdef()}; 
+  Double_t xyz[]={AliITSReconstructor::GetRecoParam()->GetXVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetYVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetZVdef()}; 
   Double_t ers[]={AliITSReconstructor::GetRecoParam()->GetSigmaXVdef(),
 		  AliITSReconstructor::GetRecoParam()->GetSigmaYVdef(),
 		  AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
@@ -86,9 +86,9 @@ AliITStrackerV2::AliITStrackerV2(const AliITStrackerV2 &t):
 
   fConstraint[0]=t.fConstraint[0]; fConstraint[1]=t.fConstraint[1];
 
-  Double_t xyz[]={AliITSReconstructor::GetRecoParam()->GetXdef(),
-		  AliITSReconstructor::GetRecoParam()->GetYdef(),
-		  AliITSReconstructor::GetRecoParam()->GetZdef()}; 
+  Double_t xyz[]={AliITSReconstructor::GetRecoParam()->GetXVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetYVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetZVdef()}; 
   Double_t ers[]={AliITSReconstructor::GetRecoParam()->GetSigmaXVdef(),
 		  AliITSReconstructor::GetRecoParam()->GetSigmaYVdef(),
 		  AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
@@ -158,9 +158,9 @@ AliITStrackerV2::AliITStrackerV2(const Char_t *geom) :
 
   fConstraint[0]=1; fConstraint[1]=0;
 
-  Double_t xyz[]={AliITSReconstructor::GetRecoParam()->GetXdef(),
-		  AliITSReconstructor::GetRecoParam()->GetYdef(),
-		  AliITSReconstructor::GetRecoParam()->GetZdef()}; 
+  Double_t xyz[]={AliITSReconstructor::GetRecoParam()->GetXVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetYVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetZVdef()}; 
   Double_t ers[]={AliITSReconstructor::GetRecoParam()->GetSigmaXVdef(),
 		  AliITSReconstructor::GetRecoParam()->GetSigmaYVdef(),
 		  AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
