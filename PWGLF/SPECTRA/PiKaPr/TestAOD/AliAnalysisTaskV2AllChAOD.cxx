@@ -339,92 +339,86 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   Double_t QxGap1A = 0., QyGap1A = 0.;
   Double_t QxGap1B = 0., QyGap1B = 0.;
   Int_t multGap1A = 0, multGap1B = 0;
+  
+  for (Int_t loop = 0; loop < 2; loop++){
 
-  for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-    AliAODTrack* track = fAOD->GetTrack(iTracks);
-    if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
-    if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
-//     if (!(track->TestFilterBit(fTrkBit))) continue;
-//     if ((TMath::Abs(track->Eta()) > fEtaCut) || (track->Pt() < fMinPt) || (track->GetTPCNcls() < fMinTPCNcls) || (track->Pt() >= fMaxPt)) continue;
+    //main loop on tracks
+    for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
+      AliAODTrack* track = fAOD->GetTrack(iTracks);
+      if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
+      if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
     
-    if (track->Eta() > fEtaGapMax){
-      QxGap1A += TMath::Cos(2.*track->Phi());
-      QyGap1A += TMath::Sin(2.*track->Phi());
-      multGap1A++;
+  
+      if (loop == 0) {
+	
+	if (track->Eta() > fEtaGapMax){
+	  QxGap1A += TMath::Cos(2.*track->Phi());
+          QyGap1A += TMath::Sin(2.*track->Phi());
+          multGap1A++;
 
-      fSinGap1A[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-      fCosGap1A[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+          fSinGap1A[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+          fCosGap1A[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
                     
-      if (Qvec > fCutLargeQperc){
-	fSinGap1A_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-	fCosGap1A_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
-      }
+          if (Qvec > fCutLargeQperc){
+	    fSinGap1A_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	    fCosGap1A_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  }
       
-      if (Qvec < fCutSmallQperc){
-	fSinGap1A_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-	fCosGap1A_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
-      }
-      
-    }
-    if (track->Eta() < fEtaGapMin){
-      QxGap1B += TMath::Cos(2.*track->Phi());
-      QyGap1B += TMath::Sin(2.*track->Phi());
-      multGap1B++;
-                    
-      fCosGap1B[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
-      fSinGap1B[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-                    
-      if (Qvec > fCutLargeQperc){
-	fSinGap1B_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-	fCosGap1B_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
-      }
-      
-      if (Qvec < fCutSmallQperc){
-	fSinGap1B_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-	fCosGap1B_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
-      }
-    }
-  } // end loop on tracks
-  
-  //main loop on tracks
-  
-  
-  Double_t v2SPGap1A = -999.;
-  Double_t v2SPGap1B = -999.;
-  for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-    AliAODTrack* track = fAOD->GetTrack(iTracks);
-    if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge
-    if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
-//     if (!(track->TestFilterBit(fTrkBit))) continue;
-//     if ((TMath::Abs(track->Eta()) > fEtaCut) || (track->Pt() < fMinPt) || (track->GetTPCNcls() < fMinTPCNcls) || (track->Pt() >= fMaxPt)) continue;
+          if (Qvec < fCutSmallQperc){
+	    fSinGap1A_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	    fCosGap1A_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  }
+	}
     
-    //eval v2 scalar product
-    if (track->Eta() < fEtaGapMin && multGap1A > 0){
-      v2SPGap1A = (TMath::Cos(2.*track->Phi())*QxGap1A + TMath::Sin(2.*track->Phi())*QyGap1A)/(Double_t)multGap1A;
-      fv2SPGap1A[centV0]->Fill(track->Pt(), v2SPGap1A);
-      fh2v2SPGap1A[centV0]->Fill(track->Pt(), v2SPGap1A);
+      if (track->Eta() < fEtaGapMin){
+	QxGap1B += TMath::Cos(2.*track->Phi());
+        QyGap1B += TMath::Sin(2.*track->Phi());
+        multGap1B++;
+                    
+        fCosGap1B[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+        fSinGap1B[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+                    
+        if (Qvec > fCutLargeQperc){
+	  fSinGap1B_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	  fCosGap1B_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+        }
       
-      if (Qvec > fCutLargeQperc)
-	fv2SPGap1A_lq[centV0]->Fill(track->Pt(), v2SPGap1A);
+        if (Qvec < fCutSmallQperc){
+	  fSinGap1B_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	  fCosGap1B_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+        }
+      }
+  
+    } else {
       
-      if (Qvec < fCutSmallQperc)
-	fv2SPGap1A_sq[centV0]->Fill(track->Pt(), v2SPGap1A);
-    }
-    if (track->Eta() > fEtaGapMax && multGap1B > 0){
-      v2SPGap1B = (TMath::Cos(2.*track->Phi())*QxGap1B + TMath::Sin(2.*track->Phi())*QyGap1B)/(Double_t)multGap1B;
-      fv2SPGap1B[centV0]->Fill(track->Pt(), v2SPGap1B);
-      fh2v2SPGap1B[centV0]->Fill(track->Pt(), v2SPGap1B);
+        //eval v2 scalar product
+        if (track->Eta() < fEtaGapMin && multGap1A > 0){
+          Double_t v2SPGap1A = (TMath::Cos(2.*track->Phi())*QxGap1A + TMath::Sin(2.*track->Phi())*QyGap1A)/(Double_t)multGap1A;
+          fv2SPGap1A[centV0]->Fill(track->Pt(), v2SPGap1A);
+          fh2v2SPGap1A[centV0]->Fill(track->Pt(), v2SPGap1A);
       
-      if (Qvec > fCutLargeQperc)
-	fv2SPGap1B_lq[centV0]->Fill(track->Pt(), v2SPGap1B);
+          if (Qvec > fCutLargeQperc)
+	    fv2SPGap1A_lq[centV0]->Fill(track->Pt(), v2SPGap1A);
       
-      if (Qvec < fCutSmallQperc)
-	fv2SPGap1B_sq[centV0]->Fill(track->Pt(), v2SPGap1B);
-    }
-    
-    //Printf("a track");
+         if (Qvec < fCutSmallQperc)
+	    fv2SPGap1A_sq[centV0]->Fill(track->Pt(), v2SPGap1A);
+        }
       
-  } // end loop on tracks
+        if (track->Eta() > fEtaGapMax && multGap1B > 0){
+          Double_t v2SPGap1B = (TMath::Cos(2.*track->Phi())*QxGap1B + TMath::Sin(2.*track->Phi())*QyGap1B)/(Double_t)multGap1B;
+          fv2SPGap1B[centV0]->Fill(track->Pt(), v2SPGap1B);
+          fh2v2SPGap1B[centV0]->Fill(track->Pt(), v2SPGap1B);
+      
+          if (Qvec > fCutLargeQperc)
+	    fv2SPGap1B_lq[centV0]->Fill(track->Pt(), v2SPGap1B);
+      
+          if (Qvec < fCutSmallQperc)
+	    fv2SPGap1B_sq[centV0]->Fill(track->Pt(), v2SPGap1B);
+        }
+      }// end else 
+    } // end loop on tracks
+  } // end loop
+  
   
   if (multGap1A > 0 && multGap1B > 0){
     Double_t res = (QxGap1A*QxGap1B + QyGap1A*QyGap1B)/(Double_t)multGap1A/(Double_t)multGap1B;
