@@ -28,6 +28,13 @@ void AliGenReaderHepMC::Copy(TObject&) const
 
 void AliGenReaderHepMC::Init()
 {
+   // check if file exists, using FILE to avoid (the otherwise faster) POSIX dependencies
+   if (FILE *file = fopen(fFileName,"r"))  {
+      printf("File %s opened \n", fFileName);
+      fclose(file);
+   } else {
+      printf("Couldn't open input file: %s \n", fFileName);
+   }
    // Initialisation
    fEventsHandle = new HepMC::IO_GenEvent(fFileName, std::ios::in);
    fParticleArray = new TClonesArray("TParticle");
@@ -67,8 +74,10 @@ Int_t AliGenReaderHepMC::NextEvent()
             pdfHeader.pdf1,
             pdfHeader.pdf2
       );
+      printf("Parsed event with %d particles.\n", fGenEvent->particles_size());
       return fGenEvent->particles_size();
    }
+   printf("No more events in the file.\n");
    return 0;
 }
 
