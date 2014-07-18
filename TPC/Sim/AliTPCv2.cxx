@@ -1107,7 +1107,6 @@ void AliTPCv2::CreateGeometry()
   TGeoCombiTrans *transf[13];
   Char_t name[30];
   for(Int_t i=0;i<13;i++){
-    //sprintf(name,"transf%d",i);
     snprintf(name,30,"transf%d",i);
     transf[i]= new TGeoCombiTrans(name,0.,-2.,-9.+i*1.5,rhole);
     transf[i]->RegisterYourself();
@@ -1115,14 +1114,12 @@ void AliTPCv2::CreateGeometry()
   // union expression for holes
   TString operl("hhole:transf0");
   for (Int_t i=1;i<13;i++){
-    //sprintf(name,"+hhole:transf%d",i);
     snprintf(name,30,"+hhole:transf%d",i);
     operl.Append(name);   
   }
   //
  TString opers("hhole:transf1");
   for (Int_t i=2;i<12;i++){
-    //sprintf(name,"+hhole:transf%d",i);
     snprintf(name,30,"+hhole:transf%d",i); 
     opers.Append(name);   
   }
@@ -1885,8 +1882,118 @@ TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
  TGeoRotation *rotpos[2]; 
  //
  TGeoRotation *rotrod1[2]; 
+ //
+ // clamps holding rods
+ //
+  TGeoBBox *clampi1 = new TGeoBBox("clampi1",0.2,3.1,0.8);
+  TGeoVolume *clampi1v = new TGeoVolume("TPC_clampi1v",clampi1,m6);
+ //
+ pointstrap[0]=0.49;
+ pointstrap[1]=0.375;
+ //
+ pointstrap[2]=0.49;
+ pointstrap[3]=-0.375;
+ //
+ pointstrap[4]=-0.49;
+ pointstrap[5]=-0.375;
+ //
+ pointstrap[6]=-0.49;
+ pointstrap[7]=1.225;
+ //
+ pointstrap[8]=0.49;
+ pointstrap[9]=0.375;
+ //
+ pointstrap[10]=0.49;
+ pointstrap[11]=-0.375;
+ //
+ pointstrap[12]=-0.49;
+ pointstrap[13]=-0.375;
+ //
+ pointstrap[14]=-0.49;
+ pointstrap[15]=1.225;
+ //
+ TGeoArb8 *clitrap = new TGeoArb8("clitrap",0.25,pointstrap);
+ TGeoVolume *clitrapv = new TGeoVolume("TPC_clitrapv",clitrap,m6);  
+ //
+ TGeoRotation *clamprot = new TGeoRotation();
+ clamprot->RotateX(180.);
+ //
+ new TGeoBBox("clibox",1.125,3.1,.1);
+ new TGeoTube("clitub",0.,2.2,0.1);
+ //
+ // copmisite shape for the clamp holder
+ //
+ TGeoTranslation *clitr1 = new TGeoTranslation("clitr1",1.125,0.,0.);
+ clitr1->RegisterYourself();
+ TGeoCompositeShape *clihold = new TGeoCompositeShape("clihold","clibox-clitub:clitr1"); 
+ TGeoVolume *cliholdv = new TGeoVolume("TPC_cliholdv",clihold,m6);
+ //
+ // now assembly the whole inner clamp
+ //
+ TGeoVolume *iclamp = new TGeoVolumeAssembly("TPC_iclamp");
+ //
+ iclamp->AddNode(clampi1v,1); //main box
+ iclamp->AddNode(clitrapv,1,new TGeoTranslation(0.69,-2.725,0.35)); //trapezoids
+ iclamp->AddNode(clitrapv,2,new TGeoTranslation(0.69,-2.725,-0.35));
+ iclamp->AddNode(clitrapv,3,new TGeoCombiTrans(0.69,2.725,0.35,clamprot));
+ iclamp->AddNode(clitrapv,4,new TGeoCombiTrans(0.69,2.725,-0.35,clamprot));
+ iclamp->AddNode(cliholdv,1,new TGeoTranslation(1.325,0.,0.)); //holder
+ //
+ //  outer clamps
+ //
+  TGeoBBox *clampo1 = new TGeoBBox("clampo1",0.25,3.1,1.);
+  TGeoBBox *clampo2 = new TGeoBBox("clampo2",0.4,0.85,1.);
+  //
+  TGeoVolume *clampo1v = new TGeoVolume("TPC_clampo1v",clampo1,m6);
+  TGeoVolume *clampo2v = new TGeoVolume("TPC_clampo2v",clampo2,m6);
+  //
+  TGeoVolumeAssembly *oclamp = new TGeoVolumeAssembly("TPC_oclamp");
+  //
+  oclamp->AddNode(clampo1v,1);
+ //
+ oclamp->AddNode(clampo2v,1,new TGeoTranslation(0.65,-2.25,0));
+ oclamp->AddNode(clampo2v,2,new TGeoTranslation(0.65,2.25,0));
 
-  
+ //
+ pointstrap[0]=0.375; 
+ pointstrap[1]=0.75;
+ pointstrap[2]=0.375;
+ pointstrap[3]=-0.35;
+ pointstrap[5]=-0.375;
+ pointstrap[4]=-0.35;
+ pointstrap[6]=-0.375; 
+ pointstrap[7]=0.35;
+ //
+ pointstrap[8]=0.375; 
+ pointstrap[9]=0.75;
+ pointstrap[10]=0.375;
+ pointstrap[11]=-0.35;
+ pointstrap[12]=-0.375;
+ pointstrap[13]=-0.35;
+ pointstrap[14]=-0.375; 
+ pointstrap[15]=0.35;
+ //
+ TGeoArb8 *clotrap = new TGeoArb8("clotrap",0.25,pointstrap);
+ TGeoVolume *clotrapv = new TGeoVolume("TPC_clotrapv",clotrap,m6);
+ //
+ oclamp->AddNode(clotrapv,1,new TGeoTranslation(-0.625,-2.75,0.35)); 
+ oclamp->AddNode(clotrapv,2,new TGeoTranslation(-0.625,-2.75,-0.35));
+ oclamp->AddNode(clotrapv,3,new TGeoCombiTrans(-0.625,2.75,0.35,clamprot)); 
+ oclamp->AddNode(clotrapv,4,new TGeoCombiTrans(-0.625,2.75,-0.35,clamprot));  
+ //
+ TGeoBBox *clampo3 = new TGeoBBox("clampo3",1.6,0.45,.1);
+ TGeoVolume *clampo3v = new TGeoVolume("TPC_clampo3v",clampo3,m6); 
+ //
+ oclamp->AddNode(clampo3v,1,new TGeoTranslation(-1.85,2.625,0.));
+ oclamp->AddNode(clampo3v,2,new TGeoTranslation(-1.85,-2.625,0));
+ //
+ TGeoTubeSeg *clampo4 = new TGeoTubeSeg("clampo4",2.2,3.1,0.1,90.,270.);
+ TGeoVolume *clampo4v = new TGeoVolume("TPC_clampo4v",clampo4,m6);
+ //
+ oclamp->AddNode(clampo4v,1,new TGeoTranslation(-3.45,0.,0.));
+
+
+
  //v9 - drift gas
 
     TGeoRotation rot102("rot102");
@@ -1906,11 +2013,11 @@ TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
     v9->AddNode(tpcihpl,i+1,new TGeoCombiTrans(x, y, 0., rot12));
     //
     if(i==11){//resistor rod inner
-       rotrod.RotateZ(-90.+angle);
+       rotrod.RotateZ(-90.+i*20.);
        rotrod1[0]= new TGeoRotation();
        rotpos[0]= new TGeoRotation();
        //
-       rotrod1[0]->RotateZ(-90.+angle);
+       rotrod1[0]->RotateZ(90.+i*20.);
        *rotpos[0] = refl*rotrod; //rotation+reflection
 	v9->AddNode(tpcrrod,1,new TGeoCombiTrans(x,y, z, rotrod1[0])); //A
 	v9->AddNode(tpcrrod,2,new TGeoCombiTrans(x,y,-z, rotpos[0])); //C      
@@ -1919,6 +2026,33 @@ TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
       v9->AddNode(tpcmrod,i+1,new TGeoTranslation(x,y,z));//shaft
       v9->AddNode(tpcmrod,i+19,new TGeoCombiTrans(x,y,-z,ref));//muon
     }
+    //
+    // inner clamps positioning
+    //
+    r=79.05;
+    x=r * TMath::Cos(angle);
+    y=r * TMath::Sin(angle);
+    rot12= new TGeoRotation();
+    rot12->RotateZ(i*20.);
+    //
+      //A-side
+      v9->AddNode(iclamp,7*i+1,new TGeoCombiTrans(x,y,5.25,rot12));
+      v9->AddNode(iclamp,7*i+2,new TGeoCombiTrans(x,y,38.25,rot12));
+      v9->AddNode(iclamp,7*i+3,new TGeoCombiTrans(x,y,80.25,rot12));
+      v9->AddNode(iclamp,7*i+4,new TGeoCombiTrans(x,y,122.25,rot12));
+      v9->AddNode(iclamp,7*i+5,new TGeoCombiTrans(x,y,164.25,rot12));
+      v9->AddNode(iclamp,7*i+6,new TGeoCombiTrans(x,y,206.25,rot12));
+      v9->AddNode(iclamp,7*i+7,new TGeoCombiTrans(x,y,246.75,rot12));
+      //C-side
+      v9->AddNode(iclamp,7*i+127,new TGeoCombiTrans(x,y,-5.25,rot12));
+      v9->AddNode(iclamp,7*i+128,new TGeoCombiTrans(x,y,-38.25,rot12));
+      v9->AddNode(iclamp,7*i+129,new TGeoCombiTrans(x,y,-80.25,rot12));
+      v9->AddNode(iclamp,7*i+130,new TGeoCombiTrans(x,y,-122.25,rot12));
+      v9->AddNode(iclamp,7*i+131,new TGeoCombiTrans(x,y,-164.25,rot12));
+      v9->AddNode(iclamp,7*i+132,new TGeoCombiTrans(x,y,-206.25,rot12));
+      v9->AddNode(iclamp,7*i+133,new TGeoCombiTrans(x,y,-246.75,rot12));
+    //
+    //--------------------------
     // outer rods
     r=254.25;
     x=r * TMath::Cos(angle);
@@ -1927,6 +2061,7 @@ TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
     //
     // outer rod holder + outer left plug
     //
+
     TGeoRotation *rot33 = new TGeoRotation();
     rot33->RotateZ(-90+i*20.);
     //
@@ -1953,10 +2088,10 @@ TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
 
     //
     if(i==3){//resistor rod outer
-      rotrod.RotateZ(90.+angle);
+      rotrod.RotateZ(90.+i*20.);
       rotrod1[1]= new TGeoRotation();
       rotpos[1]= new TGeoRotation();
-      rotrod1[1]->RotateZ(90.+angle);
+      rotrod1[1]->RotateZ(90.+i*20.);
       *rotpos[1] = refl*rotrod;//rotation+reflection
       v9->AddNode(tpcrrod,3,new TGeoCombiTrans(x,y, z, rotrod1[1])); //A 
       v9->AddNode(tpcrrod,4,new TGeoCombiTrans(x,y, -z, rotpos[1])); //C
@@ -1966,10 +2101,34 @@ TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
       v9->AddNode(tpcmrod,i+55,new TGeoCombiTrans(x,y,-z,ref));//muon      
     }
     if(i==15){
-      v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z+0.7)); //hv->A-side only      
-
-
+      v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z+0.7)); //hv->A-side only     
     }
+    //
+    // outer clamps
+    //
+    r=256.9;
+    x=r * TMath::Cos(angle);
+    y=r * TMath::Sin(angle);
+    rot12= new TGeoRotation();
+    rot12->RotateZ(i*20.);
+    //
+      //A-side
+      v9->AddNode(oclamp,7*i+1,new TGeoCombiTrans(x,y,5.25,rot12));
+      v9->AddNode(oclamp,7*i+2,new TGeoCombiTrans(x,y,38.25,rot12));
+      v9->AddNode(oclamp,7*i+3,new TGeoCombiTrans(x,y,80.25,rot12));
+      v9->AddNode(oclamp,7*i+4,new TGeoCombiTrans(x,y,122.25,rot12));
+      v9->AddNode(oclamp,7*i+5,new TGeoCombiTrans(x,y,164.25,rot12));
+      v9->AddNode(oclamp,7*i+6,new TGeoCombiTrans(x,y,206.25,rot12));
+      v9->AddNode(oclamp,7*i+7,new TGeoCombiTrans(x,y,246.75,rot12));
+      //C-side
+      v9->AddNode(oclamp,7*i+127,new TGeoCombiTrans(x,y,-5.25,rot12));
+      v9->AddNode(oclamp,7*i+128,new TGeoCombiTrans(x,y,-38.25,rot12));
+      v9->AddNode(oclamp,7*i+129,new TGeoCombiTrans(x,y,-80.25,rot12));
+      v9->AddNode(oclamp,7*i+130,new TGeoCombiTrans(x,y,-122.25,rot12));
+      v9->AddNode(oclamp,7*i+131,new TGeoCombiTrans(x,y,-164.25,rot12));
+      v9->AddNode(oclamp,7*i+132,new TGeoCombiTrans(x,y,-206.25,rot12));
+      v9->AddNode(oclamp,7*i+133,new TGeoCombiTrans(x,y,-246.75,rot12));
+    
   } //end of rods positioning
 
   TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
