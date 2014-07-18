@@ -5,6 +5,7 @@ class AliSpectraBothTrackCuts;
 TString Charge[]={"Pos","Neg"};
 TString Sign[]={"Plus","Minus"};
 TString Particle[]={"Pion","Kaon","Proton"};
+TString symboles[]={"#pi^{+}","K^{+}","p","pi^{-}","K^{-}","#bar{p}"}; 
 AliSpectraBothHistoManager* managerdata=0x0;
 AliSpectraBothEventCuts* ecutsdata=0x0; 
 AliSpectraBothTrackCuts* tcutsdata=0x0;
@@ -628,6 +629,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						continue;	
 						
 					TCanvas *cDCA=new TCanvas(Form("cDCA%d%s%s%sbin%d",index,sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),ibin_data),Form("cDCA%d%s%s%sbin%d",index,sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),ibin_data),1700,1500);
+					cDCA->SetMargin(0.1,0.02,0.1,0.02);
 					TLegend* Leg1 = new TLegend(0.6,0.6,0.85,0.85,"","NDC");
 					Leg1->SetFillStyle(kFALSE);
 					Leg1->SetLineColor(kWhite);
@@ -738,7 +740,8 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					Int_t binFitRange[]={hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1])};			
 					fit->SetRangeX(binFitRange[0],binFitRange[1]);
 					hToFit->GetXaxis()->SetRange(binFitRange[0],binFitRange[1]);
-					hToFit->SetTitle(Form("DCA distr - %s %s %s %lf",sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),lowedge));
+				//	hToFit->SetTitle(Form("DCA distr - %s %s %s %lf",sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),lowedge));
+					hToFit->SetTitle("");
 					Int_t status = fit->Fit();               // perform the fit
 					cout << "fit status: " << status << endl;
 					debug<<"fit status: " << status << endl;
@@ -855,17 +858,21 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						PrimMCPred->Scale(v1/PrimMCPred->Integral(PrimMCPred->GetXaxis()->FindBin(FitRange[0]),PrimMCPred->GetXaxis()->FindBin(FitRange[1])));
 
 						hToFit->SetMinimum(0.0001);
+						hToFit->GetXaxis()->SetTitle("DCA_{xy} (cm)");
+						hToFit->GetYaxis()->SetTitle("N_{counts}/N_{counts}(-3cm;3cm)");
+						hToFit->GetYaxis()->SetTitleOffset(1.3);
 						hToFit->DrawClone("E1x0");
+						Leg1->AddEntry(hToFit,"data","p");
 						result->SetTitle("Fit result");
 						result->SetLineColor(kBlack);
-						Leg1->AddEntry(result,"result","lp");
-						result->DrawClone("lhistsame");
+						Leg1->AddEntry(result,"fit result","l");
+						result->DrawClone("histsame");
 					
 						PrimMCPred->SetLineColor(kGreen+2);
 						PrimMCPred->SetLineStyle(2);
 						 PrimMCPred->SetLineWidth(3.0);
-						Leg1->AddEntry(PrimMCPred,"Prmi.","l");
-						PrimMCPred->DrawClone("lhistsame");
+						Leg1->AddEntry(PrimMCPred,"primaries","l");
+						PrimMCPred->DrawClone("histsame");
 						if(fitsettings&0x1)
 						{
 
@@ -874,8 +881,8 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 							secStMCPred->SetLineWidth(3.0);
 
 							secStMCPred->SetLineStyle(3);
-							Leg1->AddEntry(secStMCPred,"Sec.WD","l");
-							secStMCPred->DrawClone("lhistsame");
+							Leg1->AddEntry(secStMCPred,"weak decays","l");
+							secStMCPred->DrawClone("histsame");
 
 						}
 						if(fitsettings&0x2)
@@ -886,8 +893,8 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 							secMCPred->SetLineWidth(3.0);
 
 							secMCPred->SetLineStyle(4);	
-							Leg1->AddEntry(secMCPred,"Sec.Mat","l");
-							secMCPred->DrawClone("lhistsame");
+							Leg1->AddEntry(secMCPred,"material","l");
+							secMCPred->DrawClone("histsame");
 	    
 						}   
 					}				
@@ -902,7 +909,11 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						hprimary[index+6*isample]->SetBinContent(ibin_data,1.0);
 						hprimary[index+6*isample]->SetBinError(ibin_data,0.0);
 					}
-					Leg1->Draw();
+					Leg1->DrawClone();
+					TLatex* texttitle=new TLatex();
+					texttitle->SetNDC();
+					texttitle->SetTextSize(0.04);
+					texttitle->DrawLatex(0.12,0.92,Form("%s %.2f<#it{p}_{T} < %.2f (GeV/#it{c})",symboles[index].Data(),lowedge,binwidth+lowedge));
 					listofdcafits->Add(cDCA);
 					
 					//cDCA->Write();
