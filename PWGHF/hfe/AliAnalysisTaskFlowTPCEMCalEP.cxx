@@ -34,6 +34,7 @@
 #include "AliESDHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
+#include "AliVEvent.h"
 
 #include "AliAnalysisTaskFlowTPCEMCalEP.h"
 #include "TGeoGlobalMagField.h"
@@ -80,35 +81,44 @@
 #include "AliEventplane.h"
 #include "AliCentrality.h"
 
+#include "AliSelectNonHFE.h"
+
+
 ClassImp(AliAnalysisTaskFlowTPCEMCalEP)
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name) 
   : AliAnalysisTaskSE(name)
   ,fESD(0)
+  ,fAOD(0)
+  ,fVevent(0)
+  ,fpidResponse(0)
   ,fMC(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
   ,fCuts(0)
+  ,fNonHFE(0)
   ,fIdentifiedAsOutInz(kFALSE)
   ,fPassTheEventCut(kFALSE)
   ,fRejectKinkMother(kFALSE)
   ,fIsMC(kFALSE)
+  ,fIsAOD(kFALSE)
   ,fVz(0.0)
   ,fCFM(0)	
   ,fPID(0)
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
-  ,fInvmassCut(0.01)	
+  ,fInvmassCut(0.05)
+  ,fChi2Cut(3.5)
+  ,fDCAcut(999)
+  ,fminCent(0)
+  ,fmaxCent(0)
+  ,fnonHFEalgorithm("KF")
   ,fNoEvents(0)
   ,fTrkpt(0)
   ,fTrkEovPBef(0)	 
   ,fTrkEovPAft(0)	
   ,fdEdxBef(0)	 
   ,fdEdxAft(0)	 
-  ,fInvmassLS(0)		
-  ,fInvmassULS(0)		
-  ,fOpeningAngleLS(0)	
-  ,fOpeningAngleULS(0)	
   ,fPhotoElecPt(0)
   ,fSemiInclElecPt(0)
   ,fMCphotoElecPt(0)
@@ -118,6 +128,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fCent(0)
   ,fevPlaneV0A(0)
   ,fevPlaneV0C(0)
+  ,fevPlaneV0(0)
   ,fevPlaneTPC(0)
   ,fTPCsubEPres(0)
   ,fEPres(0)
@@ -139,7 +150,12 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fTot_etae(0)
   ,fPhot_etae(0)
   ,fPhotBCG_etae(0)
-  ,fCocktail(0)
+  ,fInvMass(0)
+  ,fInvMassBack(0)
+  ,fDCA(0)
+  ,fDCABack(0)
+  ,fOpAngle(0)
+  ,fOpAngleBack(0)
 {
   //Named constructor
 
@@ -152,6 +168,9 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 
   fPID = new AliHFEpid("hfePid");
   fTrackCuts = new AliESDtrackCuts();
+  fNonHFE = new AliSelectNonHFE();
+
+  InitParameters();
   
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -167,30 +186,36 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElecHadCorrel")
   ,fESD(0)
+  ,fAOD(0)
+  ,fVevent(0)
+  ,fpidResponse(0)
   ,fMC(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
   ,fCuts(0)
+  ,fNonHFE(0)
   ,fIdentifiedAsOutInz(kFALSE)
   ,fPassTheEventCut(kFALSE)
   ,fRejectKinkMother(kFALSE)
   ,fIsMC(kFALSE)
+  ,fIsAOD(kFALSE)
   ,fVz(0.0)
   ,fCFM(0)	
   ,fPID(0)       
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
-  ,fInvmassCut(0.01)	
+  ,fInvmassCut(0.05)	
+  ,fChi2Cut(3.5)
+  ,fDCAcut(999)
+  ,fminCent(0)
+  ,fmaxCent(0)
+  ,fnonHFEalgorithm("KF")
   ,fNoEvents(0)
   ,fTrkpt(0)
   ,fTrkEovPBef(0)	 
   ,fTrkEovPAft(0)	 
   ,fdEdxBef(0)	 
   ,fdEdxAft(0)	 
-  ,fInvmassLS(0)		
-  ,fInvmassULS(0)		
-  ,fOpeningAngleLS(0)	
-  ,fOpeningAngleULS(0)	
   ,fPhotoElecPt(0)
   ,fSemiInclElecPt(0)
   ,fMCphotoElecPt(0)
@@ -200,6 +225,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fCent(0)
   ,fevPlaneV0A(0)
   ,fevPlaneV0C(0)
+  ,fevPlaneV0(0)
   ,fevPlaneTPC(0)
   ,fTPCsubEPres(0)
   ,fEPres(0)
@@ -221,30 +247,39 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fTot_etae(0)
   ,fPhot_etae(0)
   ,fPhotBCG_etae(0)
-  ,fCocktail(0)
+  ,fInvMass(0)
+  ,fInvMassBack(0)
+  ,fDCA(0)
+  ,fDCABack(0)
+  ,fOpAngle(0)
+  ,fOpAngleBack(0)
 {
-	//Default constructor
+  
+  //Default constructor
 
-	for(Int_t k = 0; k < 6; k++) {
-	  fDe[k]= NULL;
-	  fD0e[k]= NULL;
-	  fDpluse[k]= NULL;
-	  fDminuse[k]= NULL;
-	}
+  for(Int_t k = 0; k < 6; k++) {
+    fDe[k]= NULL;
+    fD0e[k]= NULL;
+    fDpluse[k]= NULL;
+    fDminuse[k]= NULL;
+  }
 
-	fPID = new AliHFEpid("hfePid");
+  fPID = new AliHFEpid("hfePid");
+  fTrackCuts = new AliESDtrackCuts();
+  fNonHFE = new AliSelectNonHFE();
 
-	fTrackCuts = new AliESDtrackCuts();
-	
-	// Constructor
-	// Define input and output slots here
-	// Input slot #0 works with a TChain
-	DefineInput(0, TChain::Class());
-	// Output slot #0 id reserved by the base class for AOD
-	// Output slot #1 writes into a TH1 container
-	// DefineOutput(1, TH1I::Class());
-	DefineOutput(1, TList::Class());
-	//DefineOutput(3, TTree::Class());
+  InitParameters();
+
+
+  // Constructor
+  // Define input and output slots here
+  // Input slot #0 works with a TChain
+  DefineInput(0, TChain::Class());
+  // Output slot #0 id reserved by the base class for AOD
+  // Output slot #1 writes into a TH1 container
+  // DefineOutput(1, TH1I::Class());
+  DefineOutput(1, TList::Class());
+  //DefineOutput(3, TTree::Class());
 }
 //_________________________________________
 
@@ -264,69 +299,78 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 {
   //Main loop
   //Called for each event
-  
+
   // create pointer to event
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!fESD) {
+  if (!fESD){
     printf("ERROR: fESD not available\n");
     return;
   }
-  
+
+  fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+  if(!fVevent){
+    printf("ERROR: fVEvent not available\n");
+    return;
+  }
+
   if(!fCuts){
     AliError("HFE cuts not available");
     return;
   }
-  
+
   if(!fPID->IsInitialized()){ 
     // Initialize PID with the given run number
     AliWarning("PID not initialised, get from Run no");
-    fPID->InitializePID(fESD->GetRunNumber());
+    if(fIsAOD)fPID->InitializePID(fAOD->GetRunNumber());
+    if(!fIsAOD) fPID->InitializePID(fESD->GetRunNumber());
   }
  
   if(fIsMC)fMC = MCEvent();
   AliStack* stack = NULL;
   if(fIsMC && fMC) stack = fMC->Stack();
  
-  Int_t fNOtrks =  fESD->GetNumberOfTracks();
+  Int_t fNOtrks =fESD->GetNumberOfTracks();
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
-  
+
   Double_t pVtxZ = -999;
   pVtxZ = pVtx->GetZ();
-  
+
   if(TMath::Abs(pVtxZ)>10) return;
   fNoEvents->Fill(0);
-  
+
   if(fNOtrks<2) return;
-  
-  AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
-  if(!pidResponse){
+
+  fpidResponse = fInputHandler->GetPIDResponse();
+  if(!fpidResponse){
     AliDebug(1, "Using default PID Response");
-    pidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
+    fpidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
   }
-  
-  fPID->SetPIDResponse(pidResponse);
-  
-  fCFM->SetRecEventInfo(fESD);
-  
+
+  fPID->SetPIDResponse(fpidResponse);
+
+  fCFM->SetRecEventInfo(fVevent);
+
   Float_t cent = -1.;
   AliCentrality *centrality = fESD->GetCentrality(); 
   cent = centrality->GetCentralityPercentile("V0M");
   fCent->Fill(cent);
+ 
+//  cout<<"TEST: "<<fInvmassCut<< "   "<< fOpeningAngleCut<<"   "<<fnonHFEalgorithm<<"   "<<fminCent<<"   "<<fmaxCent<<" here!!!!!!!!!!!" <<endl;
 
-  int kCent = 3;
-  if(cent>=20 && cent<=40) kCent = 0;
-  if(cent>=30 && cent<=50) kCent = 1;
-    
   //Event planes
-  
+
   Double_t evPlaneV0A = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0A",fESD,2));
   if(evPlaneV0A > TMath::Pi()) evPlaneV0A = evPlaneV0A - TMath::Pi();
-  fevPlaneV0A->Fill(evPlaneV0A,cent);
-  
+  fevPlaneV0A->Fill(evPlaneV0A);
+
   Double_t evPlaneV0C = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0C",fESD,2));
   if(evPlaneV0C > TMath::Pi()) evPlaneV0C = evPlaneV0C - TMath::Pi();
-  fevPlaneV0C->Fill(evPlaneV0C,cent);
-  
+  fevPlaneV0C->Fill(evPlaneV0C);
+
+  Double_t evPlaneV0 = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0",fESD,2));
+  if(evPlaneV0 > TMath::Pi()) evPlaneV0 = evPlaneV0 - TMath::Pi();
+  fevPlaneV0->Fill(evPlaneV0);
+
   AliEventplane* esdTPCep = fESD->GetEventplane();
   TVector2 *standardQ = 0x0;
   Double_t qx = -999., qy = -999.;
@@ -335,98 +379,151 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
  
   qx = standardQ->X();
   qy = standardQ->Y();
-  
+
   TVector2 qVectorfortrack;
   qVectorfortrack.Set(qx,qy);
   Float_t evPlaneTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
-  fevPlaneTPC->Fill(evPlaneTPC,cent);
-  
+  fevPlaneTPC->Fill(evPlaneTPC);
+
+  //Event plane resolutions
+
+  // --> 2 subevent method (only for TPC EP)
+
   TVector2 *qsub1a = esdTPCep->GetQsub1();
   TVector2 *qsub2a = esdTPCep->GetQsub2();
   Double_t evPlaneResTPC = -999.;
-  if(qsub1a && qsub2a)
-  {
-	  evPlaneResTPC = TMath::Cos(2.*TVector2::Phi_0_2pi(qsub1a->Phi()/2.- qsub2a->Phi()/2.));
+  if(qsub1a && qsub2a){
+    evPlaneResTPC = TMath::Cos(2.*TVector2::Phi_0_2pi(qsub1a->Phi()/2.- qsub2a->Phi()/2.));
   }
-    
-  fTPCsubEPres->Fill(evPlaneResTPC,cent);
-  
-  Double_t evPlaneRes[4]={GetCos2DeltaPhi(evPlaneV0A,evPlaneV0C),GetCos2DeltaPhi(evPlaneV0A,evPlaneTPC),GetCos2DeltaPhi(evPlaneV0C,evPlaneTPC),cent};
+
+  fTPCsubEPres->Fill(evPlaneResTPC);
+
+  // --> 3 event method (V0, V0A, and V0C EP)
+
+  Double_t Qx2pos = -999., Qy2pos = -999., Qx2neg = -999., Qy2neg = -999., Qweight = 1;
+
+  for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) {
+
+    AliVParticle* vparticle = fVevent->GetTrack(iTracks);
+    if (!vparticle){
+      printf("ERROR: Could not receive track %d\n", iTracks);
+      continue;
+    }
+
+    AliESDtrack *trackEP = dynamic_cast<AliESDtrack*>(vparticle);
+
+    if (!trackEP) {
+      printf("ERROR: Could not receive track %d\n", iTracks);
+     continue;
+    }
+
+    if(TMath::Abs(trackEP->Eta())>0.8 || trackEP->Pt() < 0.15 || trackEP->Pt() > 4) continue;
+
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackEP)) continue;
+
+    if (trackEP->Pt() < 2) Qweight = trackEP->Pt()/2;
+
+    if(trackEP->Eta()>0 && trackEP->Eta()<0.8){
+      Qx2pos += Qweight*TMath::Cos(2*trackEP->Phi());
+      Qy2pos += Qweight*TMath::Sin(2*trackEP->Phi());
+    }
+    if(trackEP->Eta()<0 && trackEP->Eta()>-0.8){
+      Qx2neg += Qweight*TMath::Cos(2*trackEP->Phi());
+      Qy2neg += Qweight*TMath::Sin(2*trackEP->Phi());
+    }
+  }//track loop only for EP 
+
+  Double_t evPlaneTPCneg = TMath::ATan2(Qy2neg, Qx2neg)/2;
+  Double_t evPlaneTPCpos = TMath::ATan2(Qy2pos, Qx2pos)/2;
+
+  Double_t evPlaneRes[7]={GetCos2DeltaPhi(evPlaneV0A,evPlaneV0C),GetCos2DeltaPhi(evPlaneV0A,evPlaneTPC),
+      GetCos2DeltaPhi(evPlaneV0C,evPlaneTPC),GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos),
+      GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg),GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg),cent};
   fEPres->Fill(evPlaneRes);
-  
-  if(fIsMC && fMC && stack && cent>20 && cent<40){
-   Int_t nParticles = stack->GetNtrack();
-   for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
+
+  // MC
+  if(fIsMC && fMC && stack){
+    Int_t nParticles = stack->GetNtrack();
+    for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
       TParticle* particle = stack->Particle(iParticle);
       int fPDG = particle->GetPdgCode(); 
       double pTMC = particle->Pt();
       double etaMC = particle->Eta();
       if(fabs(etaMC)>0.7)continue;
-      
+
       Bool_t MChijing = fMC->IsFromBGEvent(iParticle);
       int iHijing = 1;
       if(!MChijing)iHijing = 0;
-      
+
       if(fPDG==111)fPi0Weight->Fill(pTMC,iHijing);//pi0
       if(fPDG==221)fEtaWeight->Fill(pTMC,iHijing);//eta
       if(fPDG==421)fD0Weight->Fill(pTMC,iHijing);//D0
       if(fPDG==411)fDplusWeight->Fill(pTMC,iHijing);//D+
       if(fPDG==-411)fDminusWeight->Fill(pTMC,iHijing);//D-
 	
-
       Int_t idMother = particle->GetFirstMother();
       if (idMother>0){
-	TParticle *mother = stack->Particle(idMother);
-	int motherPDG = mother->GetPdgCode();
-	if(fPDG==22 && motherPDG!=111 && motherPDG!=221)fGammaWeight->Fill(pTMC,iHijing);//gamma
-      }   
-
-   }
+        TParticle *mother = stack->Particle(idMother);
+        int motherPDG = mother->GetPdgCode();
+        if(fPDG==22 && motherPDG!=111 && motherPDG!=221)fGammaWeight->Fill(pTMC,iHijing);//gamma
+      } 
+    }
   }
-    
+
+  Double_t ptRange[8] = {2, 2.5, 3, 4, 6, 8, 10, 13};
+  Double_t ptDmeson[7] = {2,3,4,6,8,12,16};
+  Double_t deltaPhiRange[7];
+  for(Int_t j=0;j<7;j++){
+    deltaPhiRange[j] = j*(TMath::Pi()/6);
+  }
 
   // Track loop 
-  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    AliESDtrack* track = fESD->GetTrack(iTracks);
-    if (!track) {
+  for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) {
+
+    AliVParticle* vparticle = fVevent->GetTrack(iTracks);
+    if (!vparticle){
       printf("ERROR: Could not receive track %d\n", iTracks);
       continue;
     }
-    
-    if(TMath::Abs(track->Eta())>0.7) continue;
-    
-    fTrackPtBefTrkCuts->Fill(track->Pt());		
-    
+
+    AliVTrack *vtrack = dynamic_cast<AliVTrack*>(vparticle);
+    AliESDtrack *track = dynamic_cast<AliESDtrack*>(vparticle);
+
+    if (TMath::Abs(track->Eta())>0.7) continue;
+ 
+    fTrackPtBefTrkCuts->Fill(track->Pt());
+
     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
-    
+
     if(fRejectKinkMother) { // Quick and dirty fix to reject both kink mothers and daughters
       if(track->GetKinkIndex(0) != 0) continue;
     } 
-    
+
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-    
+
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-    
+
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
-    
-    fTrackPtAftTrkCuts->Fill(track->Pt());		
-    
-    Double_t clsE = -999., p = -999., EovP=-999., pt = -999., dEdx=-999., fTPCnSigma=0, phi=-999., wclsE = -999., wEovP = -999., m02= -999., m20= -999.;
-   
+
+    fTrackPtAftTrkCuts->Fill(track->Pt());
+
+    Double_t clsE = -999., p = -999., EovP=-999., pt = -999., dEdx=-999., fTPCnSigma=0, phi=-999., 
+      wclsE = -999., wEovP = -999., m02= -999., m20= -999.;
+ 
     pt = track->Pt();
-    if(pt<2) continue;
+    if(pt<1.5) continue;
     fTrkpt->Fill(pt);
-        
+
     Int_t clsId = track->GetEMCALcluster();
     if (clsId>0){
       AliESDCaloCluster *cluster = fESD->GetCaloCluster(clsId);
       if(cluster && cluster->IsEMCAL()){
-	clsE = cluster->E();
-	m20 = cluster->GetM20();
-	m02 = cluster->GetM02();
+        clsE = cluster->E();
+        m20 = cluster->GetM20();
+        m02 = cluster->GetM02();
       }
     }
-    
+
     p = track->P();
     phi = track->Phi();
     dEdx = track->GetTPCsignal();
@@ -435,7 +532,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
     fdEdxBef->Fill(p,dEdx);
     fTPCnsigma->Fill(p,fTPCnSigma);
-
+    
     //Remove electron candidate from the event plane
     Float_t evPlaneCorrTPC = evPlaneTPC;
     if(dEdx>70 && dEdx<90){
@@ -448,13 +545,28 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
     Bool_t fFlagPhotonicElec = kFALSE;
     Bool_t fFlagPhotonicElecBCG = kFALSE;
-            
-    SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG);
-           
-    Double_t corr[12]={phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneCorrTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C), static_cast<Double_t>(fFlagPhotonicElec), static_cast<Double_t>(fFlagPhotonicElecBCG),m02,m20};
+
+    //Non-HFE reconstruction
+    fNonHFE->SetPIDresponse(fpidResponse);
+    fNonHFE->FindNonHFE(iTracks,vparticle,fVevent);
+    Int_t *fUlsPartner = fNonHFE->GetPartnersULS(); // Pointer to the ULS partners index
+    Int_t *fLsPartner = fNonHFE->GetPartnersLS(); // Pointer to the LS partners index
+
+    if (fNonHFE->IsULS()) fFlagPhotonicElec=kTRUE;
+    if (fNonHFE->IsLS()) fFlagPhotonicElecBCG=kTRUE;
+ 
+    fNonHFE->SetHistAngleBack(fOpAngleBack);
+    fNonHFE->SetHistAngle(fOpAngle);
+    fNonHFE->SetHistMassBack(fInvMassBack);
+    fNonHFE->SetHistMass(fInvMass);
+    if (fnonHFEalgorithm == "DCA")fNonHFE->SetHistDCABack(fDCABack);
+    if (fnonHFEalgorithm == "DCA")fNonHFE->SetHistDCA(fDCA);
+
+
+    Double_t corr[11]={phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneV0),GetCos2DeltaPhi(phi,evPlaneV0), static_cast<Double_t>(fFlagPhotonicElec), 
+    static_cast<Double_t>(fFlagPhotonicElecBCG),m02,m20};
     fCorr->Fill(corr);
-    
-    
+
     Int_t whichFirstMother = 0, whichSecondMother = 0, whichThirdMother = 0; 
     Int_t whichPart = -99;
     Int_t partPDG = -99, motherPDG = -99, secondMotherPDG = -99, thirdMotherPDG = -99;
@@ -462,7 +574,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     Double_t weight = 1.; 
     Double_t Dweight = 1.; 
     Bool_t MChijing; 
-    
+
     Bool_t pi0Decay= kFALSE;
     Bool_t etaDecay= kFALSE;
 
@@ -472,175 +584,145 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     if(fIsMC && fMC && stack){
       Int_t label = track->GetLabel();
       if(label>0){
-	TParticle *particle = stack->Particle(label);
-	if(particle){
-	    partPDG = particle->GetPdgCode();
-	    partPt = particle->Pt();
-	    
-	    if (TMath::Abs(partPDG)==11) whichPart = 0; //electron
-	    if (partPDG==22) whichPart = 3; //gamma
-	    if (partPDG==111) whichPart = 2; //pi0
-	    if (partPDG==221) whichPart = 1; //eta
+        TParticle *particle = stack->Particle(label);
+        if(particle){
+          partPDG = particle->GetPdgCode();
+          partPt = particle->Pt();
 
-	    MChijing = fMC->IsFromBGEvent(label);
-	  
-            int iHijing = 1;
-	    if(!MChijing) iHijing = 0; // 0 if enhanced sample
-	    	  
-	    Int_t idMother = particle->GetFirstMother();
-	    if (idMother>0){
-	      TParticle *mother = stack->Particle(idMother);
-	      motherPt = mother->Pt();
-	      motherPDG = mother->GetPdgCode();
-	      
-             //*************** for cocktail ********************************
-	     if (TMath::Abs(partPDG)==11 && (motherPDG==421 || TMath::Abs(motherPDG)==411)){
-                pteRec = track->Pt();
-                phieRec = track->Phi();
-                phie = particle->Phi();
-                pte = particle->Pt();
-                phiD = mother->Phi();
-                ptD = mother->Pt();
+          if (TMath::Abs(partPDG)==11) whichPart = 0; //electron
+          if (partPDG==22) whichPart = 3; //gamma
+          if (partPDG==111) whichPart = 2; //pi0
+          if (partPDG==221) whichPart = 1; //eta
 
-                Double_t cocktail[9]={phiD,phie,phieRec,ptD,pte,pteRec,evPlaneV0A, static_cast<Double_t>(iHijing), static_cast<Double_t>(kCent)};
-                fCocktail->Fill(cocktail);
-             }
-             //*************************************************************    
-	      if (motherPDG==22) whichFirstMother = 3; //gamma
-	      if (motherPDG==111) whichFirstMother = 2; //pi0
-	      if (motherPDG==221) whichFirstMother = 1; //eta
+          MChijing = fMC->IsFromBGEvent(label);
 
-	      Int_t idSecondMother = particle->GetSecondMother();
-	      if (idSecondMother>0){
-		TParticle *secondMother = stack->Particle(idSecondMother);
-		secondMotherPt = secondMother->Pt();
-		secondMotherPDG = secondMother->GetPdgCode();
+          int iHijing = 1;
+          if(!MChijing) iHijing = 0; // 0 if enhanced sample
 
-		if (secondMotherPDG==111) whichSecondMother = 2; //pi0
-		if (secondMotherPDG==221) whichSecondMother = 1; //eta
-		
-		Int_t idThirdMother = secondMother->GetFirstMother();
-		if (idThirdMother>0){
-		  TParticle *thirdMother = stack->Particle(idThirdMother);
-		  thirdMotherPt = thirdMother->Pt();
-		  thirdMotherPDG = thirdMother->GetPdgCode();
-		  
-		  if (thirdMotherPDG==221) whichThirdMother = 1; //eta
-		}
-	      }
+          Int_t idMother = particle->GetFirstMother();
+          if (idMother>0){
+            TParticle *mother = stack->Particle(idMother);
+            motherPt = mother->Pt();
+            motherPDG = mother->GetPdgCode();
 
+            if (motherPDG==22) whichFirstMother = 3; //gamma
+            if (motherPDG==111) whichFirstMother = 2; //pi0
+            if (motherPDG==221) whichFirstMother = 1; //eta
+
+            Int_t idSecondMother = particle->GetSecondMother();
+            if (idSecondMother>0){
+              TParticle *secondMother = stack->Particle(idSecondMother);
+              secondMotherPt = secondMother->Pt();
+              secondMotherPDG = secondMother->GetPdgCode();
   
-	      if (cent>30 && cent<50 && TMath::Abs(partPDG)==11){
+              if (secondMotherPDG==111) whichSecondMother = 2; //pi0
+              if (secondMotherPDG==221) whichSecondMother = 1; //eta
 
-		if (motherPDG==421 || TMath::Abs(motherPDG)==411){ // D
-		  Double_t phi_D = -99., Deltaphi_De=-99.;
-		  phi_D = mother->Phi();
-		  Deltaphi_De = phi_D - phi;
-		  
-		  fD0_e->Fill(pt,Deltaphi_De);
-		  
-		  Dweight  = GetDweight(0,motherPt);	
-		  if(iHijing==1) Dweight = 1.0;
- 
-		  if (motherPt>=2 && motherPt<3) fDe[0]->Fill(pt,Dweight);
-		  if (motherPt>=3 && motherPt<4) fDe[1]->Fill(pt,Dweight);
-		  if (motherPt>=4 && motherPt<6) fDe[2]->Fill(pt,Dweight);
-		  if (motherPt>=6 && motherPt<8) fDe[3]->Fill(pt,Dweight);
-		  if (motherPt>=8 && motherPt<12) fDe[4]->Fill(pt,Dweight);
-		  if (motherPt>=12 && motherPt<16) fDe[5]->Fill(pt,Dweight);
-		}
-		if (motherPDG==421){ // D0
-		    
-		  Dweight  = GetDweight(1,motherPt);	
-		  if(iHijing==1) Dweight = 1.0;
+              Int_t idThirdMother = secondMother->GetFirstMother();
+              if (idThirdMother>0){
+                TParticle *thirdMother = stack->Particle(idThirdMother);
+                thirdMotherPt = thirdMother->Pt();
+                thirdMotherPDG = thirdMother->GetPdgCode();
 
-		  if (motherPt>=2 && motherPt<3) fD0e[0]->Fill(pt,Dweight);
-		  if (motherPt>=3 && motherPt<4) fD0e[1]->Fill(pt,Dweight);
-		  if (motherPt>=4 && motherPt<6) fD0e[2]->Fill(pt,Dweight);
-		  if (motherPt>=6 && motherPt<8) fD0e[3]->Fill(pt,Dweight);
-		  if (motherPt>=8 && motherPt<12) fD0e[4]->Fill(pt,Dweight);
-		  if (motherPt>=12 && motherPt<16) fD0e[5]->Fill(pt,Dweight);
-		}
-		if (motherPDG==411){ // D+
-		  Dweight  = GetDweight(2,motherPt);	
-		  if(iHijing==1) Dweight = 1.0;
+                if (thirdMotherPDG==221) whichThirdMother = 1; //eta
+              }//third mother
+            }//second mother
+  
 
-		  if (motherPt>=2 && motherPt<3) fDpluse[0]->Fill(pt,Dweight);
-		  if (motherPt>=3 && motherPt<4) fDpluse[1]->Fill(pt,Dweight);
-		  if (motherPt>=4 && motherPt<6) fDpluse[2]->Fill(pt,Dweight);
-		  if (motherPt>=6 && motherPt<8) fDpluse[3]->Fill(pt,Dweight);
-		  if (motherPt>=8 && motherPt<12) fDpluse[4]->Fill(pt,Dweight);
-		  if (motherPt>=12 && motherPt<16) fDpluse[5]->Fill(pt,Dweight);
-  		}
-		if (motherPDG==-411){ //D-
-		  Dweight  = GetDweight(3,motherPt);	
-		  if(iHijing==1) Dweight = 1.0;
+            if (TMath::Abs(partPDG)==11){
 
-		  if (motherPt>=2 && motherPt<3) fDminuse[0]->Fill(pt,Dweight); 
-		  if (motherPt>=3 && motherPt<4) fDminuse[1]->Fill(pt,Dweight); 
-		  if (motherPt>=4 && motherPt<6) fDminuse[2]->Fill(pt,Dweight); 
-		  if (motherPt>=6 && motherPt<8) fDminuse[3]->Fill(pt,Dweight); 
-		  if (motherPt>=8 && motherPt<12) fDminuse[4]->Fill(pt,Dweight); 
-		  if (motherPt>=12 && motherPt<16) fDminuse[5]->Fill(pt,Dweight); 
-		}	
-	      }
-	   
-	      //pi0 decay 
-	      if (TMath::Abs(partPDG)==11 && motherPDG==111 && secondMotherPDG!=221){ //not eta -> pi0 -> e
-		weight = GetPi0weight(motherPt);
-		pi0Decay = kTRUE;		
-	      }
-	      if (TMath::Abs(partPDG)==11 && motherPDG==22 && secondMotherPDG==111 && thirdMotherPDG!=221){ //not eta -> pi0 -> gamma -> e
-	      	weight = GetPi0weight(secondMotherPt);
-	      	pi0Decay = kTRUE;
-	      }
-	      
-	      //eta decay
-	      if (TMath::Abs(partPDG)==11 && motherPDG==221){ //eta -> e
-		weight = GetEtaweight(motherPt);
-		etaDecay = kTRUE;
-	      }
-	      if (TMath::Abs(partPDG)==11 && motherPDG==111 && secondMotherPDG==221){ //eta -> pi0 -> e
-		weight = GetEtaweight(secondMotherPt);
-		etaDecay = kTRUE;
-	      }
-	      if (TMath::Abs(partPDG)==11 && motherPDG==22 && secondMotherPDG==221){ //eta -> gamma -> e
-		weight = GetEtaweight(secondMotherPt);
-		etaDecay = kTRUE;
-	      }
-	      if (TMath::Abs(partPDG)==11 && motherPDG==22 && secondMotherPDG==111 && thirdMotherPDG==221){ //eta -> pi0 -> gamma -> e
-		weight = GetEtaweight(thirdMotherPt);
-		etaDecay = kTRUE;
-	      }
-	      
-	      if (cent>30 && cent<50 && fTPCnSigma>-1 && fTPCnSigma<3 && EovP>1 && EovP<1.3 && (motherPDG==22 || motherPDG==111 || motherPDG==221)){
-		  if(iHijing==1) weight = 1.0;
-		  
-		  if (pi0Decay){
-		      fTot_pi0e->Fill(partPt,weight);
-		      if(fFlagPhotonicElec) fPhot_pi0e->Fill(partPt,weight);
-		      if(fFlagPhotonicElecBCG) fPhotBCG_pi0e->Fill(partPt,weight);
-	  	  }
-	  	  
-		  if (etaDecay){
-		      fTot_etae->Fill(partPt,weight);
-		      if(fFlagPhotonicElec) fPhot_etae->Fill(partPt,weight);
-		      if(fFlagPhotonicElecBCG) fPhotBCG_etae->Fill(partPt,weight);
-	  	  }
+              // D meson decay
+              if (motherPDG==421 || TMath::Abs(motherPDG)==411){ // D
+                Double_t phi_D = -99., Deltaphi_De=-99.;
+                phi_D = mother->Phi();
+                Deltaphi_De = phi_D - phi;
+  
+                fD0_e->Fill(pt,Deltaphi_De);
+  
+                Dweight= GetDweight(0,motherPt,cent);
+                if(iHijing==1) Dweight = 1.0;
+                for(Int_t i=0;i<6;i++){
+                  if (motherPt>=ptDmeson[i] && motherPt<ptDmeson[i+1]) fDe[i]->Fill(pt,Dweight);
+                }
+              }
+              if (motherPDG==421){ // D0
+                Dweight= GetDweight(1,motherPt,cent);
+                if(iHijing==1) Dweight = 1.0;
+                for(Int_t i=0;i<6;i++){
+                  if (motherPt>=ptDmeson[i] && motherPt<ptDmeson[i+1]) fD0e[i]->Fill(pt,Dweight);
+                }
+              }
+              if (motherPDG==411){ // D+
+                Dweight= GetDweight(2,motherPt,cent);
+                if(iHijing==1) Dweight = 1.0;
+                for(Int_t i=0;i<6;i++){
+                  if (motherPt>=ptDmeson[i] && motherPt<ptDmeson[i+1]) fDpluse[i]->Fill(pt,Dweight);
+                }
+              }
+              if (motherPDG==-411){ //D-
+                Dweight= GetDweight(3,motherPt,cent);
+                if(iHijing==1) Dweight = 1.0;
+                for(Int_t i=0;i<6;i++){
+                  if (motherPt>=ptDmeson[i] && motherPt<ptDmeson[i+1]) fDminuse[i]->Fill(pt,Dweight);
+                }
+              }
+  
+              //pi0 decay 
+              if (motherPDG==111 && secondMotherPDG!=221){ //not eta -> pi0 -> e
+                weight = GetPi0weight(motherPt,cent);
+                pi0Decay = kTRUE;
+              }
+              if (motherPDG==22 && secondMotherPDG==111 && thirdMotherPDG!=221){ //not eta -> pi0 -> gamma -> e
+                weight = GetPi0weight(secondMotherPt,cent);
+                pi0Decay = kTRUE;
+              }
+  
+              //eta decay
+              if (motherPDG==221){ //eta -> e
+                weight = GetEtaweight(motherPt,cent);
+                etaDecay = kTRUE;
+              }
+              if (motherPDG==111 && secondMotherPDG==221){ //eta -> pi0 -> e
+                weight = GetEtaweight(secondMotherPt,cent);
+                etaDecay = kTRUE;
+              }
+              if (motherPDG==22 && secondMotherPDG==221){ //eta -> gamma -> e
+                weight = GetEtaweight(secondMotherPt,cent);
+                etaDecay = kTRUE;
+              }
+              if (motherPDG==22 && secondMotherPDG==111 && thirdMotherPDG==221){ //eta -> pi0 -> gamma -> e
+                weight = GetEtaweight(thirdMotherPt,cent);
+                etaDecay = kTRUE;
+              }
+            }// end of electron
+  
+            if (fTPCnSigma>-1 && fTPCnSigma<3 && EovP>1 && EovP<1.3 && (motherPDG==22 || motherPDG==111 || motherPDG==221)){
+              if(iHijing==1) weight = 1.0;
+  
+              if (pi0Decay){
+                fTot_pi0e->Fill(partPt,weight);
+                if(fFlagPhotonicElec) fPhot_pi0e->Fill(partPt,weight);
+                if(fFlagPhotonicElecBCG) fPhotBCG_pi0e->Fill(partPt,weight);
+              }
+              if (etaDecay){
+                fTot_etae->Fill(partPt,weight);
+                if(fFlagPhotonicElec) fPhot_etae->Fill(partPt,weight);
+                if(fFlagPhotonicElecBCG) fPhotBCG_etae->Fill(partPt,weight);
+              }
+            }
+  
+            Double_t mc[15]={EovP,fTPCnSigma,partPt, static_cast<Double_t>(fFlagPhotonicElec),
+                static_cast<Double_t>(fFlagPhotonicElecBCG), static_cast<Double_t>(whichPart),cent,pt,
+                  static_cast<Double_t>(whichFirstMother), static_cast<Double_t>(whichSecondMother),
+            static_cast<Double_t>(whichThirdMother), static_cast<Double_t>(iHijing),motherPt,secondMotherPt,thirdMotherPt};
+  
+            //fMCphotoElecPt->Fill(mc);
+            if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// mother = gamma, pi0, eta
+          }//end mother          
+        }// end particle
+      }// end label
+    }//end MC
 
-	      }
-	      
-    
-	      Double_t mc[15]={EovP,fTPCnSigma,partPt, static_cast<Double_t>(fFlagPhotonicElec), static_cast<Double_t>(fFlagPhotonicElecBCG), static_cast<Double_t>(whichPart),cent,pt, static_cast<Double_t>(whichFirstMother), static_cast<Double_t>(whichSecondMother), static_cast<Double_t>(whichThirdMother), static_cast<Double_t>(iHijing),motherPt,secondMotherPt,thirdMotherPt};
- 
-// 	      fMCphotoElecPt->Fill(mc);
-	      if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// mother = gamma, pi0, eta
-	  }
-	}
-      }
-    }
-    
-       
     if(fTPCnSigma >= 1.5 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,EovP);
     Int_t pidpassed = 1;
     
@@ -650,33 +732,35 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     hfetrack.SetRecTrack(track);
     hfetrack.SetPbPb();
     if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
-    
-    Double_t corrV2[7]={phi,cent,pt,EovP,GetCos2DeltaPhi(phi,evPlaneTPC),GetCos2DeltaPhi(phi,evPlaneV0A),GetCos2DeltaPhi(phi,evPlaneV0C)};
+  
+    Double_t corrV2[7]={phi,cent,pt,EovP,GetCos2DeltaPhi(phi,evPlaneTPC),GetCos2DeltaPhi(phi,evPlaneV0A),
+    GetCos2DeltaPhi(phi,evPlaneV0C)};
     fChargPartV2->Fill(corrV2); 
 
     if(fTPCnSigma >= -0.5){
-      	Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,evPlaneCorrTPC),GetCos2DeltaPhi(phi,evPlaneV0A),GetCos2DeltaPhi(phi,evPlaneV0C)};
-	feTPCV2->Fill(correctedV2);
+      Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,evPlaneCorrTPC),GetCos2DeltaPhi(phi,evPlaneV0A),
+      GetCos2DeltaPhi(phi,evPlaneV0C)};
+      feTPCV2->Fill(correctedV2);
     }
-    
+
     if(pidpassed==0) continue;
-    
-    Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,evPlaneCorrTPC),GetCos2DeltaPhi(phi,evPlaneV0A),GetCos2DeltaPhi(phi,evPlaneV0C)};
-    
+
+    Double_t correctedV2[5]={cent,pt,GetCos2DeltaPhi(phi,evPlaneCorrTPC),GetCos2DeltaPhi(phi,evPlaneV0A),
+     GetCos2DeltaPhi(phi,evPlaneV0C)};
+
     feV2->Fill(correctedV2);
-    
     fTrkEovPAft->Fill(pt,EovP);
     fdEdxAft->Fill(p,dEdx);
-    
-  if(fFlagPhotonicElec){
-    fphoteV2->Fill(correctedV2);
-    fPhotoElecPt->Fill(pt);
-  }
-    
-  if(!fFlagPhotonicElec) fSemiInclElecPt->Fill(pt);
 
- }
- PostData(1, fOutputList);
+    if(fFlagPhotonicElec){
+      fphoteV2->Fill(correctedV2);
+      fPhotoElecPt->Fill(pt);
+    }
+
+    if(!fFlagPhotonicElec) fSemiInclElecPt->Fill(pt);
+
+  }//end of track loop 
+  PostData(1, fOutputList);
 }
 //_________________________________________
 void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
@@ -745,18 +829,6 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fdEdxAft = new TH2F("fdEdxAft","track dEdx vs p after HFE pid",100,0,50,150,0,150);
   fOutputList->Add(fdEdxAft);
   
-  fInvmassLS = new TH1F("fInvmassLS", "Inv mass of LS (e,e); mass(GeV/c^2); counts;", 500,0,0.5);
-  fOutputList->Add(fInvmassLS);
-  
-  fInvmassULS = new TH1F("fInvmassULS", "Inv mass of ULS (e,e); mass(GeV/c^2); counts;", 500,0,0.5);
-  fOutputList->Add(fInvmassULS);
-  
-  fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
-  fOutputList->Add(fOpeningAngleLS);
-  
-  fOpeningAngleULS = new TH1F("fOpeningAngleULS","Opening angle for ULS pairs",100,0,1);
-  fOutputList->Add(fOpeningAngleULS);
-  
   fPhotoElecPt = new TH1F("fPhotoElecPt", "photonic electron pt",100,0,50);
   fOutputList->Add(fPhotoElecPt);
   
@@ -766,29 +838,32 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fCent = new TH1F("fCent","Centrality",100,0,100) ;
   fOutputList->Add(fCent);
   
-  fevPlaneV0A = new TH2F("fevPlaneV0A","V0A EP",100,0,TMath::Pi(),90,0,90);
+  fevPlaneV0A = new TH1F("fevPlaneV0A","V0A EP",100,0,TMath::Pi());
   fOutputList->Add(fevPlaneV0A);
   
-  fevPlaneV0C = new TH2F("fevPlaneV0C","V0C EP",100,0,TMath::Pi(),90,0,90);
+  fevPlaneV0C = new TH1F("fevPlaneV0C","V0C EP",100,0,TMath::Pi());
   fOutputList->Add(fevPlaneV0C);
   
-  fevPlaneTPC = new TH2F("fevPlaneTPC","TPC EP",100,0,TMath::Pi(),90,0,90);
+  fevPlaneV0 = new TH1F("fevPlaneV0","V0 EP",100,0,TMath::Pi());
+  fOutputList->Add(fevPlaneV0);
+
+  fevPlaneTPC = new TH1F("fevPlaneTPC","TPC EP",100,0,TMath::Pi());
   fOutputList->Add(fevPlaneTPC);
     
-  fTPCsubEPres = new TH2F("fTPCsubEPres","TPC subevent plane resolution",100,-1,1,90,0,90);
+  fTPCsubEPres = new TH1F("fTPCsubEPres","TPC subevent plane resolution",100,-1,1);
   fOutputList->Add(fTPCsubEPres);
   
-  Int_t binsv1[4]={100,100,100,90}; // V0A-V0C, V0A-TPC, V0C-TPC, cent
-  Double_t xminv1[4]={-1,-1,-1,0};
-  Double_t xmaxv1[4]={1,1,1,90}; 
-  fEPres = new THnSparseD ("fEPres","EP resolution",4,binsv1,xminv1,xmaxv1);
+  Int_t binsv1[7]={100,100,100,100,100,100,90}; // V0A-V0C, V0A-TPC, V0C-TPC, V0-TPCpos, V0-TPCneg, TPCpos-TPCneg, cent
+  Double_t xminv1[7]={-1,-1,-1,-1,-1,-1,0};
+  Double_t xmaxv1[7]={1,1,1,1,1,1,90};
+  fEPres = new THnSparseD ("fEPres","EP resolution",7,binsv1,xminv1,xmaxv1);
   fOutputList->Add(fEPres);
 	
-  //phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec,fFlagPhotonicElecBCG,m20,m02
-  Int_t binsv2[12]={100,100,90,100,100,100,100,100,3,3,100,100}; 
-  Double_t xminv2[12]={0,-3.5,0,0,0,0,0,0,-1,-1,0,0};
-  Double_t xmaxv2[12]={2*TMath::Pi(),3.5,90,50,3,TMath::Pi(),TMath::Pi(),TMath::Pi(),2,2,1,1}; 
-  fCorr = new THnSparseD ("fCorr","Correlations",12,binsv2,xminv2,xmaxv2);
+  //phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneV0),GetCos2DeltaPhi(phi,evPlaneV0), fFlagPhotonicElec, fFlagPhotonicElecBCG,m02,m20
+  Int_t binsv2[11]={100,200,90,100,100,100,100,3,3,100,100}; 
+  Double_t xminv2[11]={0,-5,0,0,0,0,-1,-1,-1,0,0};
+  Double_t xmaxv2[11]={2*TMath::Pi(),5,90,50,3,TMath::Pi(),1,2,2,1,1}; 
+  fCorr = new THnSparseD ("fCorr","Correlations",11,binsv2,xminv2,xmaxv2);
   fOutputList->Add(fCorr);
     
   Int_t binsv3[5]={90,100,100,100,100}; // cent, pt, TPCcos2DeltaPhi, V0Acos2DeltaPhi, V0Ccos2DeltaPhi
@@ -883,14 +958,24 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   fPhotBCG_etae = new TH1F("fPhotBCG_etae","fPhotBCG_etae",nbin_v2,bin_v2);  
   fOutputList->Add(fPhotBCG_etae);
 
-  //phiD,phie,phieRec,ptD,pte,pteRec,evPlaneV0,iHijing,kCent
-  Int_t binsv8[9]={100,100,100,100,100,100,100,4,4};
-  Double_t xminv8[9]={0,0,0,0,0,0,0,-2,-2};
-  Double_t xmaxv8[9]={2*TMath::Pi(),2*TMath::Pi(),2*TMath::Pi(),50,50,50,TMath::Pi(),2,2};
-  fCocktail = new THnSparseD ("fCocktail","Correlations",9,binsv8,xminv8,xmaxv8);
-  fOutputList->Add(fCocktail);
+  fInvMass = new TH1F("fInvMass","",200,0,0.3);
+  fOutputList->Add(fInvMass);
 
-    
+  fInvMassBack = new TH1F("fInvMassBack","",200,0,0.3);
+  fOutputList->Add(fInvMassBack);
+
+  fDCA = new TH1F("fDCA","",200,0,1);
+  fOutputList->Add(fDCA);
+
+  fDCABack = new TH1F("fDCABack","",200,0,1);
+  fOutputList->Add(fDCABack);
+
+  fOpAngle = new TH1F("fOpAngle","",200,0,0.5);
+  fOutputList->Add(fOpAngle);
+
+  fOpAngleBack = new TH1F("fOpAngleBack","",200,0,0.5);
+  fOutputList->Add(fOpAngleBack);
+
   PostData(1,fOutputList);
 }
 
@@ -908,87 +993,6 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::ProcessCutStep(Int_t cutStep, AliVParticle
   const Int_t kMCOffset = AliHFEcuts::kNcutStepsMCTrack;
   if(!fCFM->CheckParticleCuts(cutStep + kMCOffset, track)) return kFALSE;
   return kTRUE;
-}
-//_________________________________________
-void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG)
-{
-  //Identify non-heavy flavour electrons using Invariant mass method
-  
-  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fTrackCuts->SetRequireTPCRefit(kTRUE);
-  fTrackCuts->SetRequireITSRefit(kTRUE);
-  fTrackCuts->SetEtaRange(-0.7,0.7);
-  fTrackCuts->SetRequireSigmaToVertex(kTRUE);
-  fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
-  fTrackCuts->SetMinNClustersTPC(100);
-  
-  const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
-  
-  Bool_t flagPhotonicElec = kFALSE;
-  Bool_t flagPhotonicElecBCG = kFALSE;
-  
-  for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
-    
-    if(jTracks==iTracks) continue;
-    
-    AliESDtrack* trackAsso = fESD->GetTrack(jTracks);
-    if (!trackAsso) {
-      printf("ERROR: Could not receive track %d\n", jTracks);
-      continue;
-    }
-    
-    Double_t dEdxAsso = -999., ptAsso=-999.;
-    Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
-    Double_t openingAngle = -999., mass=999., width = -999;
-    
-    dEdxAsso = trackAsso->GetTPCsignal();
-    ptAsso = trackAsso->Pt();
-    Int_t chargeAsso = trackAsso->Charge();
-    Int_t charge = track->Charge();
-    
-    if(ptAsso <0.5) continue;
-    if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
-    if(dEdxAsso <65 || dEdxAsso>100) continue;
-    
-    Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
-    if(charge>0) fPDGe1 = -11;
-    if(chargeAsso>0) fPDGe2 = -11;
-    
-    if(charge == chargeAsso) fFlagLS = kTRUE;
-    if(charge != chargeAsso) fFlagULS = kTRUE;
-    
-    AliKFParticle ge1(*track, fPDGe1);
-    AliKFParticle ge2(*trackAsso, fPDGe2);
-    AliKFParticle recg(ge1, ge2);
-    
-    if(recg.GetNDF()<1) continue;
-    Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-    if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
-    
-    AliKFVertex primV(*pVtx);
-    primV += recg;
-    recg.SetProductionVertex(primV);
-    
-    recg.SetMassConstraint(0,0.0001);
-    
-    openingAngle = ge1.GetAngle(ge2);
-    if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
-    if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
-    
-    if(openingAngle > fOpeningAngleCut) continue;
-    
-    recg.GetMass(mass,width);
-        
-    if(fFlagLS) fInvmassLS->Fill(mass);
-    if(fFlagULS) fInvmassULS->Fill(mass);
-          
-    if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE;
-    if(mass<fInvmassCut && fFlagLS && !flagPhotonicElecBCG) flagPhotonicElecBCG = kTRUE;
-    
-  }
-  fFlagPhotonicElec = flagPhotonicElec;
-  fFlagPhotonicElecBCG = flagPhotonicElecBCG;
-  
 }
 //_________________________________________
 Double_t AliAnalysisTaskFlowTPCEMCalEP::GetCos2DeltaPhi(Double_t phiA,Double_t phiB) const
@@ -1010,45 +1014,65 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDeltaPhi(Double_t phiA,Double_t phiB)
   return dPhi;
 }
 //_________________________________________
-Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT) const
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT, Float_t cent) const
 {
 	//Get Pi0 weight
-        double weight = 1.0;
+  double weight = 1.0;
 
-        if(mcPi0pT>0.0 && mcPi0pT<5.0)
-        {
-	  
-// 		weight = (2.877091*mcPi0pT)/(TMath::Power(0.706963+mcPi0pT/3.179309,17.336628)*exp(-mcPi0pT));
-		weight = (2.392024*mcPi0pT)/(TMath::Power(0.688810+mcPi0pT/3.005145,16.811845)*exp(-mcPi0pT));
-        }
-        else
-        {
-// 		weight = (0.0004*mcPi0pT)/TMath::Power(-0.176181+mcPi0pT/3.989747,5.629235);
-		weight = (0.000186*mcPi0pT)/TMath::Power(-0.606279+mcPi0pT/3.158642,4.365540);
-        }
+  if(mcPi0pT>0.0 && mcPi0pT<5.0){
+	  if (cent>20.0 && cent<40.0) weight = (2.877091*mcPi0pT)/(TMath::Power(0.706963+mcPi0pT/3.179309,17.336628)*exp(-mcPi0pT));
+		if (cent>30.0 && cent<50.0) weight = (2.392024*mcPi0pT)/(TMath::Power(0.688810+mcPi0pT/3.005145,16.811845)*exp(-mcPi0pT));
+  }
+  else{
+    if (cent>20.0 && cent<40.0)	weight = (0.0004*mcPi0pT)/TMath::Power(-0.176181+mcPi0pT/3.989747,5.629235);
+		if (cent>30.0 && cent<50.0) weight = (0.000186*mcPi0pT)/TMath::Power(-0.606279+mcPi0pT/3.158642,4.365540);
+  }
   return weight;
 }
 //_________________________________________
-Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT) const
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT, Float_t cent) const
 {
   //Get eta weight
   double weight = 1.0;
 
-//   weight = (0.818052*mcEtapT)/(TMath::Power(0.358651+mcEtapT/2.878631,9.494043));
-  weight = (0.622703*mcEtapT)/(TMath::Power(0.323045+mcEtapT/2.736407,9.180356));
-    
+  if (cent>20.0 && cent<40.0) weight = (0.818052*mcEtapT)/(TMath::Power(0.358651+mcEtapT/2.878631,9.494043));
+  if (cent>30.0 && cent<50.0) weight = (0.622703*mcEtapT)/(TMath::Power(0.323045+mcEtapT/2.736407,9.180356));
   return weight;
 }
 //_________________________________________
-Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDweight(Int_t whichD, Double_t mcDpT) const
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetDweight(Int_t whichD, Double_t mcDpT, Float_t cent) const
 {
-    //get D weights
-    double weight = 1.0;
+  //get D weights
+  double weight = 1.0;
     
+  if (cent>30.0 && cent<50.0){
     if (whichD == 0) weight = 0.271583*TMath::Landau(mcDpT,3.807103,1.536753,0); // D
     if (whichD == 1) weight = 0.300771*TMath::Landau(mcDpT,3.725771,1.496980,0); // D0
     if (whichD == 2) weight = 0.247280*TMath::Landau(mcDpT,3.746811,1.607551,0); // D+
     if (whichD == 3) weight = 0.249410*TMath::Landau(mcDpT,3.611508,1.632196,0); //D-
-    
+  }
   return weight;
+}
+//_________________________________________
+void AliAnalysisTaskFlowTPCEMCalEP::InitParameters()
+{
+  // Init parameters
+
+  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  fTrackCuts->SetRequireTPCRefit(kTRUE);
+  fTrackCuts->SetRequireITSRefit(kTRUE);
+  fTrackCuts->SetEtaRange(-0.7,0.7);
+  fTrackCuts->SetRequireSigmaToVertex(kTRUE);
+  fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
+  fTrackCuts->SetMinNClustersTPC(100);
+  fTrackCuts->SetPtRange(0.5,100);
+
+  fNonHFE->SetAODanalysis(kFALSE);
+  fNonHFE->SetInvariantMassCut(fInvmassCut);
+  fNonHFE->SetOpeningAngleCut(fOpeningAngleCut);
+  fNonHFE->SetChi2OverNDFCut(fChi2Cut);
+  fNonHFE->SetAlgorithm(fnonHFEalgorithm); //KF or DCA
+  if (fnonHFEalgorithm == "DCA") fNonHFE->SetDCACut(fDCAcut);
+  fNonHFE->SetTrackCuts(-3.5,3.5,fTrackCuts);
+
 }
