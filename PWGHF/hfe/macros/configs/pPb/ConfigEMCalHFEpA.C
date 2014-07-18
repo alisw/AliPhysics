@@ -61,7 +61,8 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	//Additional Cuts
 	hfecuts->SetPtRange(2, 1e6);								                    //Transversal momentum range in GeV/c
 	
-		
+	//testing this line for the DCA cut
+	//hfecuts->SetRequireDCAToVertex();
 	//DCA cut included in the analysis 12 March 2014
 	if(configIndex==18) hfecuts->SetMaxImpactParam(2,5); 
 	else if(configIndex==19) hfecuts->SetMaxImpactParam(0.5,1);
@@ -121,15 +122,13 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	if(configIndex==29) task->SetAdditionalCuts(0.3,80);
 	
-	else if(configIndex==84) task->SetAdditionalCuts(0.1,80);
 	else if(configIndex==85) task->SetAdditionalCuts(0.2,80);
 	else if(configIndex==86) task->SetAdditionalCuts(0.4,80);
-	else if(configIndex==87) task->SetAdditionalCuts(0.6,80);
-	
+	else if(configIndex==87) task->SetAdditionalCuts(0.6,80);	
 	else if(configIndex==30) task->SetAdditionalCuts(0.5,80);
 	else if(configIndex==31) task->SetAdditionalCuts(0.7,80);
 	else if(configIndex==32) task->SetAdditionalCuts(0.9,80);
-	
+	else if(configIndex==84) task->SetAdditionalCuts(0.1,80);
 	else if(configIndex==33) task->SetAdditionalCuts(0,60);
 	else if(configIndex==34) task->SetAdditionalCuts(0,70);
 	else if(configIndex==35) task->SetAdditionalCuts(0,90);
@@ -158,7 +157,15 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 
 	//E/p Cuts
 	if (configIndex==60) task->SetEoverPCut(0.85,1.2);
-	else if (configIndex==61) task->SetEoverPCut(0.75,1.25);
+	else if (configIndex==61) task->SetEoverPCut(0.75,1.25);	
+	else if (configIndex==88) task->SetEoverPCut(0.76,1.2);
+	else if (configIndex==89) task->SetEoverPCut(0.78,1.2);
+	else if (configIndex==90) task->SetEoverPCut(0.79,1.2);
+	else if (configIndex==90) task->SetEoverPCut(0.81,1.2);
+	else if (configIndex==90) task->SetEoverPCut(0.82,1.2);
+	else if (configIndex==91) task->SetEoverPCut(0.84,1.2);
+	else if (configIndex==92) task->SetEoverPCut(0.86,1.2);
+	else if (configIndex==93) task->SetEoverPCut(0.85,1.3);
 	else if (configIndex==62) task->SetEoverPCut(0.70,1.2);
 	else if (configIndex==63) task->SetEoverPCut(0.80,1.25);
 	else if (configIndex==64) task->SetEoverPCut(0.9,1.3);
@@ -218,6 +225,51 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	else if(configIndex==78)Double_t max=3.5;
 	else if(configIndex==79)Double_t max=4.0;
 	else Double_t max=3.0;
+	
+	
+		
+   //testing hadron contamination in E/p cut
+	if(configIndex==94){
+		params[0] = 0;
+		task->SetEoverPCut(0.76,1.2);
+	}
+	if(configIndex==95){
+		params[0] = 0;
+		task->SetEoverPCut(0.78,1.2);
+	}
+	if(configIndex==96){
+		params[0] = 0;
+		task->SetEoverPCut(0.80,1.2);
+	}
+	if(configIndex==97){
+		params[0] = 0;
+		task->SetEoverPCut(0.82,1.2);
+	}
+	if(configIndex==98){
+		params[0] = 0;
+		task->SetEoverPCut(0.83,1.2);
+	}
+	if(configIndex==99){
+		params[0] = 0;
+		task->SetEoverPCut(0.84,1.2);
+	}
+	if(configIndex==100){
+		params[0] = 0;
+		task->SetEoverPCut(0.85,1.2);
+	}
+	if(configIndex==101){
+		params[0] = 0;
+		task->SetEoverPCut(0.86,1.2);
+	}
+	if(configIndex==102){
+		params[0] = 0;
+		task->SetEoverPCut(0.88,1.2);
+	}
+	if(configIndex==103){
+		params[0] = 0;
+		task->SetEoverPCut(0.90,1.2);
+	}
+	
 	
 	pid->ConfigureTPCdefaultCut(cutmodel,params,max); 
 //_______________________________________________________
