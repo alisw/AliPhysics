@@ -247,11 +247,6 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
     }
   }
  
-    AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
-    TF1 *etacorrection = GetEtaCorrection();
-    if(etacorrection) tpcpid->SetEtaCorrection(etacorrection);
-  }
-
   task->SetPileUpCut(cutPileup);
   task->SetUseSP(scalarProduct);
   

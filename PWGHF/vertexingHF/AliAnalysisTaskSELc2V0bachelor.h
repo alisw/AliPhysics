@@ -38,7 +38,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   
   AliAnalysisTaskSELc2V0bachelor();
   AliAnalysisTaskSELc2V0bachelor(const Char_t* name, AliRDHFCutsLctoV0* cuts,
-				 Bool_t useOnTheFly=kFALSE, Bool_t writeVariableTree=kTRUE, Bool_t additionalChecks=kFALSE);
+				 Bool_t useOnTheFly=kFALSE, Bool_t writeVariableTree=kTRUE, Bool_t additionalChecks=kFALSE, Bool_t trackRotation=kFALSE);
   virtual ~AliAnalysisTaskSELc2V0bachelor();
 
   // Implementation of interface methods  
@@ -93,6 +93,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void DefineAnalysisHistograms();
   void DefineK0SHistos();
   void FillAnalysisHistograms(AliAODRecoCascadeHF *part, Bool_t isBachelorID, TString appendthis);
+  void TrackRotation(AliRDHFCutsLctoV0 *cutsAnal, AliAODRecoCascadeHF *part, TString appendthis);
 
   AliAnalysisTaskSELc2V0bachelor(const AliAnalysisTaskSELc2V0bachelor &source);
   AliAnalysisTaskSELc2V0bachelor& operator=(const AliAnalysisTaskSELc2V0bachelor& source); 
@@ -110,7 +111,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 
   Int_t SearchForCommonMother(TClonesArray *mcArray,
 			      Int_t dgLabels[10],Int_t ndg,
-			      Int_t &ndgCk, Int_t *pdgDg, Int_t &labelMother) const;
+			      Int_t &ndgCk, Int_t *pdgDg, Int_t &labelMother, Int_t &nDauCand) const;
 
   Bool_t fUseMCInfo;          // Use MC info
   TList *fOutput;             // User output slot 1 // general histos
@@ -132,7 +133,16 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Float_t fBzkG;                      // magnetic field value [kG]
   Bool_t fAdditionalChecks;           // flag to fill additional histograms
 
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,5); // class for Lc->p K0
+  Bool_t fTrackRotation;              // flag to check track rotation
+  TList *fOutputPIDBachTR;            // User output slot 6 // histos with PID on Bachelor and track rotation
+
+  Double_t fMinAngleForRot;//=5*TMath::Pi()/6;
+  Double_t fMaxAngleForRot;//=7*TMath::Pi()/6;
+  Double_t fMinMass;//=mLcPDG-0.250;
+  Double_t fMaxMass;//=mLcPDG+0.250;
+  Int_t fNRotations;//=9;
+
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,6); // class for Lc->p K0
 };
 
 #endif

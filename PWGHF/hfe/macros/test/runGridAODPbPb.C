@@ -94,15 +94,15 @@ void runGridAODPbPb()
 
    //===== ADD TASK::
    gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEFlowTPCTOFEPSP.C");
-   AddTaskHFEFlowTPCTOFEPSP();
+   AddTaskHFEFlowTPCTOFEPSP(131073,16,kFALSE,kFALSE,110,60,80,4,2,100,200,30.,50., 1,2,80,kTRUE,kTRUE,0,-2.0,5.0);
 
    //===== ADD TASK::
-   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEreducedEvent.C");
-   AddTaskHFEreducedEvent();
+   //gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEreducedEvent.C");
+   //AddTaskHFEreducedEvent();
 
    //===== ADD TASK::
-   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEnpePbPb.C");
-   AddTaskHFEnpePbPb();
+   //gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEnpePbPb.C");
+   //AddTaskHFEnpePbPb();
 
 
    // Enable debug printouts
