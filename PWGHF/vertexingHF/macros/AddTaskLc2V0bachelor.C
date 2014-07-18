@@ -3,7 +3,8 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
 						     Bool_t onTheFly=kFALSE,
 						     Bool_t writeVariableTree=kTRUE,
 						     Int_t nTour=0,
-						     Bool_t additionalChecks=kFALSE)
+						     Bool_t additionalChecks=kFALSE,
+						     Bool_t trackRotation=kFALSE)
 
 {
 
@@ -46,7 +47,7 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   //CREATE THE TASK
 
   printf("CREATE TASK\n");
-  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0anal,onTheFly,writeVariableTree);
+  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0anal,onTheFly,writeVariableTree,additionalChecks,trackRotation);
   task->SetAdditionalChecks(additionalChecks);
   task->SetMC(theMCon);
   task->SetK0SAnalysis(kTRUE);
@@ -72,6 +73,12 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
     mgr->ConnectOutput(task,4,coutputLc4);
     AliAnalysisDataContainer *coutputLc5 = mgr->CreateContainer(Form("Lc2pK0SPIDBach%1d",nTour),TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); // analysis histos
     mgr->ConnectOutput(task,5,coutputLc5);
+
+    if (trackRotation) {
+      AliAnalysisDataContainer *coutputLc6 = mgr->CreateContainer(Form("Lc2pK0SPIDBachTR%1d",nTour),TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); // analysis histos
+      mgr->ConnectOutput(task,6,coutputLc6);
+    }
+
   } else {
     AliAnalysisDataContainer *coutputLc4 = mgr->CreateContainer(Form("Lc2pK0Svariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
     mgr->ConnectOutput(task,4,coutputLc4);
