@@ -55,7 +55,7 @@ Bool_t AliEmcalJetFinder::FindJets()
     fFastjetWrapper->SetAlgorithm(fastjet::antikt_algorithm);  
   if(fJetAlgorithm == 1)
     fFastjetWrapper->SetAlgorithm(fastjet::kt_algorithm);  
-  if(fRecombScheme>0)
+  if(fRecombScheme>=0)
     fFastjetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
 
   fFastjetWrapper->SetMaxRap(fTrackMaxEta);
