@@ -116,9 +116,11 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
   fCentBin= -1;
   fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
   if(fDataSet==20100||fDataSet==2011){//If this is Pb+Pb or pPb
-    AliCentrality *centrality = realEvent->GetCentrality();
-    if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
-    else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+//     AliCentrality *centrality = realEvent->GetCentrality();
+//     if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
+//     else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+    AliCentrality *centrality =  realEvent->GetCentrality();
+    fCentBin = GetCentralityBin(fNCentBins, centrality);
     if(fCentBin ==-1){
       if(fDataSet==2013){
 	fCentBin = 19;//For pPb we don't want to throw these events out but there is no CB 19
@@ -626,6 +628,7 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by even
   }
 }
 void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and adding them to the output TList
+  Float_t maxCentbinRange = fNCentBins+0.5;
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if (!man) {
@@ -837,15 +840,15 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 
   //Cross checks that corrections are applied correctly
   if(fDataSet==20100 || fDataSet==2011){
-    CreateHisto2D("fbkgdVsCentralityBin","f_{bkgd} vs centrality bin","centrality bin","f_{bkgd}",21,-1.5,19.5,200,0.7,1.05);//
-    CreateHisto2D("feffPionVsCentralityBin","Pion efficiency vs centrality bin","centrality bin","pion efficiency",21,-1.5,19.5,200,0,1.2);//
-    CreateHisto2D("feffHadronVsCentralityBin","Hadron efficiency vs centrality bin","centrality bin","hadron efficiency",21,-1.5,19.5,200,0,1.2);//
-    CreateHisto2D("feffKaonVsCentralityBin","Kaon efficiency vs centrality bin","centrality bin","kaon efficiency",21,-1.5,19.5,200,0,1.2);//
-    CreateHisto2D("feffProtonVsCentralityBin","Proton efficiency vs centrality bin","centrality bin","proton efficiency",21,-1.5,19.5,200,0,1.2);//
-    CreateHisto2D("fnotIDVsCentralityBin","f_{notID} vs centrality bin","centrality bin","f_{notID}",21,-1.5,19.5,50,0.95,1.05);//
-    CreateHisto2D("fpTcutVsCentralityBin","f_{pTcut} vs centrality bin","centrality bin","f_{pTcut}",21,-1.5,19.5,50,0.95,1.05);
-    CreateHisto2D("fneutralVsCentralityBin","f_{neutral} vs centrality bin","centrality bin","f_{neutral}",21,-1.5,19.5,50,0.5,1.00);
-    CreateHisto2D("ConstantCorrectionsVsCentralityBin","constant corrections vs centrality bin","centrality bin","constant corrections",21,-1.5,19.5,50,0.5,1.00);
+    CreateHisto2D("fbkgdVsCentralityBin","f_{bkgd} vs centrality bin","centrality bin","f_{bkgd}",fNCentBins,-1.5,maxCentbinRange,200,0.7,1.05);//
+    CreateHisto2D("feffPionVsCentralityBin","Pion efficiency vs centrality bin","centrality bin","pion efficiency",fNCentBins,-1.5,maxCentbinRange,200,0,1.2);//
+    CreateHisto2D("feffHadronVsCentralityBin","Hadron efficiency vs centrality bin","centrality bin","hadron efficiency",fNCentBins,-1.5,maxCentbinRange,200,0,1.2);//
+    CreateHisto2D("feffKaonVsCentralityBin","Kaon efficiency vs centrality bin","centrality bin","kaon efficiency",fNCentBins,-1.5,maxCentbinRange,200,0,1.2);//
+    CreateHisto2D("feffProtonVsCentralityBin","Proton efficiency vs centrality bin","centrality bin","proton efficiency",fNCentBins,-1.5,maxCentbinRange,200,0,1.2);//
+    CreateHisto2D("fnotIDVsCentralityBin","f_{notID} vs centrality bin","centrality bin","f_{notID}",fNCentBins,-1.5,maxCentbinRange,50,0.95,1.05);//
+    CreateHisto2D("fpTcutVsCentralityBin","f_{pTcut} vs centrality bin","centrality bin","f_{pTcut}",fNCentBins,-1.5,maxCentbinRange,50,0.95,1.05);
+    CreateHisto2D("fneutralVsCentralityBin","f_{neutral} vs centrality bin","centrality bin","f_{neutral}",fNCentBins,-1.5,maxCentbinRange,50,0.5,1.00);
+    CreateHisto2D("ConstantCorrectionsVsCentralityBin","constant corrections vs centrality bin","centrality bin","constant corrections",fNCentBins,-1.5,maxCentbinRange,50,0.5,1.00);
   }
 
   delete sTPC;

@@ -108,9 +108,12 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   fCentBin= -1;
   fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
   if(fDataSet==20100 ||fDataSet==2011 ){//If this is Pb+Pb
-    AliCentrality *centrality = realEvent->GetCentrality();
-    if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
-    else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+//     AliCentrality *centrality2 = realEvent->GetCentrality();
+//     if(fNCentBins<21) fCentBin= centrality2->GetCentralityClass10(fCentralityMethod);
+//     else{ fCentBin= centrality2->GetCentralityClass5(fCentralityMethod);}
+//     cout<<"centrality "<<fCentBin<<endl;
+    AliCentrality *centrality =  realEvent->GetCentrality();
+    fCentBin = GetCentralityBin(fNCentBins, centrality);
     if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
   }
   AnalyseEvent(ev);
