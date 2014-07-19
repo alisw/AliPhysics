@@ -75,7 +75,8 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fMinTPCNcls(70),
   fResSP(0),
   fEta_vs_Phi_bef(0),
-  fEta_vs_Phi(0),
+  fEta_vs_PhiA(0),
+  fEta_vs_PhiB(0),
   fResSP_lq(0),
   fResSP_sq(0)
 {
@@ -162,11 +163,14 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   fResSP = new TProfile("fResSP", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
   fOutput->Add(fResSP);
   
-  fEta_vs_Phi_bef = new TH2F("fEta_vs_Phi_bef","eta vs phi distribution before eta gap;#eta;#phi",200.,-1.,1.,350.,0.,7.);
+  fEta_vs_Phi_bef = new TH2D("fEta_vs_Phi_bef","eta vs phi distribution before eta gap;#eta;#phi",200.,-1.,1.,350.,0.,7.);
   fOutput->Add(fEta_vs_Phi_bef);
   
-  fEta_vs_Phi = new TH2F("fEta_vs_Phi","eta vs phi distribution;#eta;#phi",200.,-1.,1.,350.,0.,7.);
-  fOutput->Add(fEta_vs_Phi);
+  fEta_vs_PhiA = new TH2D("fEta_vs_PhiA","eta vs phi distribution;#eta;#phi",200.,-1.,1.,350.,0.,7.);
+  fOutput->Add(fEta_vs_PhiA);
+  
+  fEta_vs_PhiB = new TH2D("fEta_vs_PhiB","eta vs phi distribution;#eta;#phi",200.,-1.,1.,350.,0.,7.);
+  fOutput->Add(fEta_vs_PhiB);
   
   //large q resolution
   fResSP_lq = new TProfile("fResSP_lq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
@@ -353,7 +357,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
           fSinGap1Aq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
           fCosGap1Aq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
 	  
-	  fEta_vs_Phi->Fill( track->Eta(), track->Phi() );
+	  fEta_vs_PhiA->Fill( track->Eta(), track->Phi() );
                     
           if (Qvec > fCutLargeQperc){
 	    fSinGap1Aq_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
@@ -374,7 +378,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
         fCosGap1Bq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
         fSinGap1Bq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	
-	fEta_vs_Phi->Fill( track->Eta(), track->Phi() );
+	fEta_vs_PhiB->Fill( track->Eta(), track->Phi() );
                     
         if (Qvec > fCutLargeQperc){
 	  fSinGap1Bq_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));

@@ -48,7 +48,8 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fMinTPCNcls(70),
     fResSP(0),
     fEta_vs_Phi_bef(0),
-    fEta_vs_Phi(0),
+    fEta_vs_PhiA(0),
+    fEta_vs_PhiB(0),
     fResSP_lq(0),
     fResSP_sq(0)
       {}
@@ -121,8 +122,9 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   //output object
   TProfile*     fResSP;             //! resolution
-  TH2F*         fEta_vs_Phi_bef;        //! eta vs phi distribution before sub events cut 
-  TH2F*         fEta_vs_Phi;            //! eta vs phi distribution after sub events cut 
+  TH2D*         fEta_vs_Phi_bef;        //! eta vs phi distribution before sub events cut 
+  TH2D*         fEta_vs_PhiA;            //! eta vs phi distribution after sub events cut 
+  TH2D*         fEta_vs_PhiB;            //! eta vs phi distribution after sub events cut 
   TProfile*     fv2SPGap1A[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B[9];         //! v2{2} eta gap 1 for all events
 
@@ -165,7 +167,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 3);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 4);
 };
 
 #endif
