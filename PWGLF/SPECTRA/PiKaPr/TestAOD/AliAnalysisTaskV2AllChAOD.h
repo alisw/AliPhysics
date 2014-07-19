@@ -47,26 +47,10 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fMaxPt(20.0),
     fMinTPCNcls(70),
     fResSP(0),
-    fQxGap1A(0),
-    fQyGap1A(0),
-    fmultGap1A(0),
-    fQxGap1B(0),
-    fQyGap1B(0),
-    fmultGap1B(0),
+    fEta_vs_Phi_bef(0),
+    fEta_vs_Phi(0),
     fResSP_lq(0),
-    fQxGap1A_lq(0),
-    fQyGap1A_lq(0),
-    fmultGap1A_lq(0),
-    fQxGap1B_lq(0),
-    fQyGap1B_lq(0),
-    fmultGap1B_lq(0),
-    fResSP_sq(0),
-    fQxGap1A_sq(0),
-    fQyGap1A_sq(0),
-    fmultGap1A_sq(0),
-    fQxGap1B_sq(0),
-    fQyGap1B_sq(0),
-    fmultGap1B_sq(0)
+    fResSP_sq(0)
       {}
   AliAnalysisTaskV2AllChAOD(const char *name);
   virtual ~AliAnalysisTaskV2AllChAOD() {
@@ -137,18 +121,16 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   //output object
   TProfile*     fResSP;             //! resolution
-  TProfile*     fQxGap1A;
-  TProfile*     fQyGap1A;
-  TProfile*     fmultGap1A;
-  TProfile*     fQxGap1B;
-  TProfile*     fQyGap1B;
-  TProfile*     fmultGap1B;
-    
+  TH2F*         fEta_vs_Phi_bef;        //! eta vs phi distribution before sub events cut 
+  TH2F*         fEta_vs_Phi;            //! eta vs phi distribution after sub events cut 
   TProfile*     fv2SPGap1A[9];         //! v2{2} eta gap 1 for all events
-  TH2F*     fh2v2SPGap1A[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B[9];         //! v2{2} eta gap 1 for all events
-  TH2F*     fh2v2SPGap1B[9];         //! v2{2} eta gap 1 for all events
 
+  TProfile*     fSinGap1Aq[9];      //! <sin> vs pT gap 1
+  TProfile*     fCosGap1Aq[9];      //! <cos> vs pT gap 1
+  TProfile*     fSinGap1Bq[9];      //! <sin> vs pT gap 1
+  TProfile*     fCosGap1Bq[9];      //! <cos> vs pT gap 1
+  
   TProfile*     fSinGap1A[9];      //! <sin> vs pT gap 1
   TProfile*     fCosGap1A[9];      //! <cos> vs pT gap 1
   TProfile*     fSinGap1B[9];      //! <sin> vs pT gap 1
@@ -156,14 +138,12 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
 
   //large q
   TProfile*     fResSP_lq;             //! resolution
-  TProfile*     fQxGap1A_lq;
-  TProfile*     fQyGap1A_lq;
-  TProfile*     fmultGap1A_lq;
-  TProfile*     fQxGap1B_lq;
-  TProfile*     fQyGap1B_lq;
-  TProfile*     fmultGap1B_lq;
   TProfile*     fv2SPGap1A_lq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B_lq[9];         //! v2{2} eta gap 1 for all events
+  TProfile*     fSinGap1Aq_lq[9];      //! <sin> vs pT gap 1
+  TProfile*     fCosGap1Aq_lq[9];      //! <cos> vs pT gap 1
+  TProfile*     fSinGap1Bq_lq[9];      //! <sin> vs pT gap 1
+  TProfile*     fCosGap1Bq_lq[9];      //! <cos> vs pT gap 1
   TProfile*     fSinGap1A_lq[9];      //! <sin> vs pT gap 1
   TProfile*     fCosGap1A_lq[9];      //! <cos> vs pT gap 1
   TProfile*     fSinGap1B_lq[9];      //! <sin> vs pT gap 1
@@ -171,14 +151,12 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   //small q
   TProfile*     fResSP_sq;             //! resolution
-  TProfile*     fQxGap1A_sq;
-  TProfile*     fQyGap1A_sq;
-  TProfile*     fmultGap1A_sq;
-  TProfile*     fQxGap1B_sq;
-  TProfile*     fQyGap1B_sq;
-  TProfile*     fmultGap1B_sq;
   TProfile*     fv2SPGap1A_sq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B_sq[9];         //! v2{2} eta gap 1 for all events
+  TProfile*     fSinGap1Aq_sq[9];      //! <sin> vs pT gap 1
+  TProfile*     fCosGap1Aq_sq[9];      //! <cos> vs pT gap 1
+  TProfile*     fSinGap1Bq_sq[9];      //! <sin> vs pT gap 1
+  TProfile*     fCosGap1Bq_sq[9];      //! <cos> vs pT gap 1
   TProfile*     fSinGap1A_sq[9];      //! <sin> vs pT gap 1
   TProfile*     fCosGap1A_sq[9];      //! <cos> vs pT gap 1
   TProfile*     fSinGap1B_sq[9];      //! <sin> vs pT gap 1
@@ -187,7 +165,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 2);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 3);
 };
 
 #endif
