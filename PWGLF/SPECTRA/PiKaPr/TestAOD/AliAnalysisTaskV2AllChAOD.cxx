@@ -74,33 +74,20 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fMaxPt(20.0),
   fMinTPCNcls(70),
   fResSP(0),
-  fQxGap1A(0),
-  fQyGap1A(0),
-  fmultGap1A(0),
-  fQxGap1B(0),
-  fQyGap1B(0),
-  fmultGap1B(0),
+  fEta_vs_Phi_bef(0),
+  fEta_vs_Phi(0),
   fResSP_lq(0),
-  fQxGap1A_lq(0),
-  fQyGap1A_lq(0),
-  fmultGap1A_lq(0),
-  fQxGap1B_lq(0),
-  fQyGap1B_lq(0),
-  fmultGap1B_lq(0),
-  fResSP_sq(0),
-  fQxGap1A_sq(0),
-  fQyGap1A_sq(0),
-  fmultGap1A_sq(0),
-  fQxGap1B_sq(0),
-  fQyGap1B_sq(0),
-  fmultGap1B_sq(0)
+  fResSP_sq(0)
 {
   
   for (Int_t i = 0; i< 9; i++){
     fv2SPGap1A[i] = 0;
-    fh2v2SPGap1A[i] = 0;
     fv2SPGap1B[i] = 0;
-    fh2v2SPGap1B[i] = 0;
+
+    fSinGap1Aq[i] = 0;
+    fCosGap1Aq[i] = 0;
+    fSinGap1Bq[i] = 0;
+    fCosGap1Bq[i] = 0;
 
     fSinGap1A[i] = 0;
     fCosGap1A[i] = 0;
@@ -110,6 +97,12 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
     //large q
     fv2SPGap1A_lq[i] = 0;
     fv2SPGap1B_lq[i] = 0;
+    
+    fSinGap1Aq_lq[i] = 0;
+    fCosGap1Aq_lq[i] = 0;
+    fSinGap1Bq_lq[i] = 0;
+    fCosGap1Bq_lq[i] = 0;
+    
     fSinGap1A_lq[i] = 0;
     fCosGap1A_lq[i] = 0;
     fSinGap1B_lq[i] = 0;
@@ -118,6 +111,12 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
     //small q
     fv2SPGap1A_sq[i] = 0;
     fv2SPGap1B_sq[i] = 0;
+    
+    fSinGap1Aq_sq[i] = 0;
+    fCosGap1Aq_sq[i] = 0;
+    fSinGap1Bq_sq[i] = 0;
+    fCosGap1Bq_sq[i] = 0;
+    
     fSinGap1A_sq[i] = 0;
     fCosGap1A_sq[i] = 0;
     fSinGap1B_sq[i] = 0;
@@ -163,70 +162,40 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   fResSP = new TProfile("fResSP", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
   fOutput->Add(fResSP);
   
-    fQxGap1A = new TProfile("fQxGap1A", "Qx mean; centrality; <Qx>", 9, -0.5, 8.5);
-    fOutput->Add(fQxGap1A);
-    fQyGap1A = new TProfile("fQyGap1A", "Qy mean; centrality; <Qy>", 9, -0.5, 8.5);
-    fOutput->Add(fQyGap1A);
-    fmultGap1A = new TProfile("fmultGap1A", " Multiplicity B; centrality; M_{A}", 9, -0.5, 8.5);
-    fOutput->Add(fmultGap1A);
+  fEta_vs_Phi_bef = new TH2F("fEta_vs_Phi_bef","eta vs phi distribution before eta gap;#eta;#phi",200.,-1.,1.,350.,0.,7.);
+  fOutput->Add(fEta_vs_Phi_bef);
   
-    fQxGap1B= new TProfile("fQxGap1B", "QxB mean; centrality; <Qx>", 9, -0.5, 8.5);
-    fOutput->Add(fQxGap1B);
-    fQyGap1B = new TProfile("fQyGap1B", "QyB mean; centrality; <Qy>", 9, -0.5, 8.5);
-    fOutput->Add(fQyGap1B);
-    fmultGap1B = new TProfile("fmultGap1B", " Multiplicity B; centrality; M_{B}", 9, -0.5, 8.5);
-    fOutput->Add(fmultGap1B);
+  fEta_vs_Phi = new TH2F("fEta_vs_Phi","eta vs phi distribution;#eta;#phi",200.,-1.,1.,350.,0.,7.);
+  fOutput->Add(fEta_vs_Phi);
   
   //large q resolution
   fResSP_lq = new TProfile("fResSP_lq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
   fOutput_lq->Add(fResSP_lq);
   
-    fQxGap1A_lq = new TProfile("fQxGap1A_lq", "Qx mean; centrality; <Qx>", 9, -0.5, 8.5);
-    fOutput_lq->Add(fQxGap1A_lq);
-    fQyGap1A_lq = new TProfile("fQyGap1A_lq", "Qy mean; centrality; <Qy>", 9, -0.5, 8.5);
-    fOutput_lq->Add(fQyGap1A_lq);
-    fmultGap1A_lq = new TProfile("fmultGap1A_lq", " Multiplicity B; centrality; M_{A}", 9, -0.5, 8.5);
-    fOutput_lq->Add(fmultGap1A_lq);
-  
-    fQxGap1B_lq= new TProfile("fQxGap1B_lq", "QxB mean; centrality; <Qx>", 9, -0.5, 8.5);
-    fOutput_lq->Add(fQxGap1B_lq);
-    fQyGap1B_lq = new TProfile("fQyGap1B_lq", "QyB mean; centrality; <Qy>", 9, -0.5, 8.5);
-    fOutput_lq->Add(fQyGap1B_lq);
-    fmultGap1B_lq = new TProfile("fmultGap1B_lq", " Multiplicity B; centrality; M_{B}", 9, -0.5, 8.5);
-    fOutput_lq->Add(fmultGap1B_lq);
-  
   //small q resolution
   fResSP_sq = new TProfile("fResSP_sq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
   fOutput_sq->Add(fResSP_sq);
   
-    fQxGap1A_sq = new TProfile("fQxGap1A_sq", "Qx mean; centrality; <Qx>", 9, -0.5, 8.5);
-    fOutput_sq->Add(fQxGap1A_sq);
-    fQyGap1A_sq = new TProfile("fQyGap1A_sq", "Qy mean; centrality; <Qy>", 9, -0.5, 8.5);
-    fOutput_sq->Add(fQyGap1A_sq);
-    fmultGap1A_sq = new TProfile("fmultGap1A_sq", " Multiplicity B; centrality; M_{A}", 9, -0.5, 8.5); 
-    fOutput_sq->Add(fmultGap1A_sq);
-  
-    fQxGap1B_sq= new TProfile("fQxGap1B_sq", "QxB mean; centrality; <Qx>", 9, -0.5, 8.5);
-    fOutput_sq->Add(fQxGap1B_sq);
-    fQyGap1B_sq = new TProfile("fQyGap1B_sq", "QyB mean; centrality; <Qy>", 9, -0.5, 8.5);
-    fOutput_sq->Add(fQyGap1B_sq);
-    fmultGap1B_sq = new TProfile("fmultGap1B_sq", " Multiplicity B; centrality; M_{B}", 9, -0.5, 8.5);
-    fOutput_sq->Add(fmultGap1B_sq);
-
   for (Int_t iC = 0; iC < 9; iC++){
 
     fv2SPGap1A[iC] = new TProfile(Form("fv2SPGap1A_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
     fOutput->Add(fv2SPGap1A[iC]);
 
-    fh2v2SPGap1A[iC] = new TH2F(Form("fh2v2SPGap1A_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins,200,-10,10);
-    fOutput->Add(fh2v2SPGap1A[iC]);
- 
     fv2SPGap1B[iC] = new TProfile(Form("fv2SPGap1B_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
     fOutput->Add(fv2SPGap1B[iC]);
 
-    fh2v2SPGap1B[iC] = new TH2F(Form("fh2v2SPGap1B_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins,200,-10,10);
-    fOutput->Add(fh2v2SPGap1B[iC]);
+    fSinGap1Aq[iC] = new TProfile(Form("fSinGap1Aq_%d", iC), ";p_{T} (GeV/c);#LT sin(2*#phi) #GT", nptBins, ptBins);
+    fOutput->Add(fSinGap1Aq[iC]);
       
+    fCosGap1Aq[iC] = new TProfile(Form("fCosGap1Aq_%d", iC), ";p_{T} (GeV/c);#LT cos(2*#phi) #GT", nptBins, ptBins);
+    fOutput->Add(fCosGap1Aq[iC]);
+    
+    fSinGap1Bq[iC] = new TProfile(Form("fSinGap1Bq_%d", iC), ";p_{T} (GeV/c);#LT sin(2*#phi) #GT", nptBins, ptBins);
+    fOutput->Add(fSinGap1Bq[iC]);
+    
+    fCosGap1Bq[iC] = new TProfile(Form("fCosGap1Bq_%d", iC), ";p_{T} (GeV/c);#LT cos(2*#phi) #GT", nptBins, ptBins);
+    fOutput->Add(fCosGap1Bq[iC]);
+
     fSinGap1A[iC] = new TProfile(Form("fSinGap1A_%d", iC), ";p_{T} (GeV/c);#LT sin(2*#phi) #GT", nptBins, ptBins);
     fOutput->Add(fSinGap1A[iC]);
       
@@ -246,6 +215,18 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
     fv2SPGap1B_lq[iC] = new TProfile(Form("fv2SPGap1B_lq_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
     fOutput_lq->Add(fv2SPGap1B_lq[iC]);
 
+    fSinGap1Aq_lq[iC] = new TProfile(Form("fSinGap1Aq_lq_%d", iC), ";p_{T} (GeV/c);#LT sin(2*#phi) #GT", nptBins, ptBins);
+    fOutput_lq->Add(fSinGap1Aq_lq[iC]);
+      
+    fCosGap1Aq_lq[iC] = new TProfile(Form("fCosGap1Aq_lq_%d", iC), ";p_{T} (GeV/c);#LT cos(2*#phi) #GT", nptBins, ptBins);
+    fOutput_lq->Add(fCosGap1Aq_lq[iC]);
+    
+    fSinGap1Bq_lq[iC] = new TProfile(Form("fSinGap1Bq_lq_%d", iC), ";p_{T} (GeV/c);#LT sin(2*#phi) #GT", nptBins, ptBins);
+    fOutput_lq->Add(fSinGap1Bq_lq[iC]);
+    
+    fCosGap1Bq_lq[iC] = new TProfile(Form("fCosGap1Bq_lq_%d", iC), ";p_{T} (GeV/c);#LT cos(2*#phi) #GT", nptBins, ptBins);
+    fOutput_lq->Add(fCosGap1Bq_lq[iC]);
+
     fSinGap1A_lq[iC] = new TProfile(Form("fSinGap1A_lq_%d", iC), ";p_{T} (GeV/c);#LT sin(2*#phi) #GT", nptBins, ptBins);
     fOutput_lq->Add(fSinGap1A_lq[iC]);
       
@@ -264,6 +245,18 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
 
     fv2SPGap1B_sq[iC] = new TProfile(Form("fv2SPGap1B_sq_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
     fOutput_sq->Add(fv2SPGap1B_sq[iC]);
+
+    fSinGap1Aq_sq[iC] = new TProfile(Form("fSinGap1Aq_sq_%d", iC), ";p_{T} (GeV/c);#LT sin(2*#phi) #GT", nptBins, ptBins);
+    fOutput_sq->Add(fSinGap1Aq_sq[iC]);
+      
+    fCosGap1Aq_sq[iC] = new TProfile(Form("fCosGap1Aq_sq_%d", iC), ";p_{T} (GeV/c);#LT cos(2*#phi) #GT", nptBins, ptBins);
+    fOutput_sq->Add(fCosGap1Aq_sq[iC]);
+    
+    fSinGap1Bq_sq[iC] = new TProfile(Form("fSinGap1Bq_sq_%d", iC), ";p_{T} (GeV/c);#LT sin(2*#phi) #GT", nptBins, ptBins);
+    fOutput_sq->Add(fSinGap1Bq_sq[iC]);
+    
+    fCosGap1Bq_sq[iC] = new TProfile(Form("fCosGap1Bq_sq_%d", iC), "p_{T} (GeV/c);#LT cos(2*#phi) #GT", nptBins, ptBins);
+    fOutput_sq->Add(fCosGap1Bq_sq[iC]);
 
     fSinGap1A_sq[iC] = new TProfile(Form("fSinGap1A_sq_%d", iC), ";p_{T} (GeV/c);#LT sin(2*#phi) #GT", nptBins, ptBins);
     fOutput_sq->Add(fSinGap1A_sq[iC]);
@@ -348,6 +341,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
       if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
       if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
     
+      fEta_vs_Phi_bef->Fill( track->Eta(), track->Phi() );
   
       if (loop == 0) {
 	
@@ -356,17 +350,19 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
           QyGap1A += TMath::Sin(2.*track->Phi());
           multGap1A++;
 
-          fSinGap1A[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-          fCosGap1A[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+          fSinGap1Aq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+          fCosGap1Aq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  
+	  fEta_vs_Phi->Fill( track->Eta(), track->Phi() );
                     
           if (Qvec > fCutLargeQperc){
-	    fSinGap1A_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-	    fCosGap1A_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	    fSinGap1Aq_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	    fCosGap1Aq_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
 	  }
       
           if (Qvec < fCutSmallQperc){
-	    fSinGap1A_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-	    fCosGap1A_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	    fSinGap1Aq_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	    fCosGap1Aq_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
 	  }
 	}
     
@@ -375,17 +371,19 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
         QyGap1B += TMath::Sin(2.*track->Phi());
         multGap1B++;
                     
-        fCosGap1B[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
-        fSinGap1B[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+        fCosGap1Bq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+        fSinGap1Bq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	
+	fEta_vs_Phi->Fill( track->Eta(), track->Phi() );
                     
         if (Qvec > fCutLargeQperc){
-	  fSinGap1B_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-	  fCosGap1B_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  fSinGap1Bq_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	  fCosGap1Bq_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
         }
       
         if (Qvec < fCutSmallQperc){
-	  fSinGap1B_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
-	  fCosGap1B_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  fSinGap1Bq_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	  fCosGap1Bq_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
         }
       }
   
@@ -395,25 +393,41 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
         if (track->Eta() < fEtaGapMin && multGap1A > 0){
           Double_t v2SPGap1A = (TMath::Cos(2.*track->Phi())*QxGap1A + TMath::Sin(2.*track->Phi())*QyGap1A)/(Double_t)multGap1A;
           fv2SPGap1A[centV0]->Fill(track->Pt(), v2SPGap1A);
-          fh2v2SPGap1A[centV0]->Fill(track->Pt(), v2SPGap1A);
+
+	  fSinGap1A[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+          fCosGap1A[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
       
-          if (Qvec > fCutLargeQperc)
+          if (Qvec > fCutLargeQperc){
 	    fv2SPGap1A_lq[centV0]->Fill(track->Pt(), v2SPGap1A);
+	    fSinGap1A_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	    fCosGap1A_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  }
       
-         if (Qvec < fCutSmallQperc)
+          if (Qvec < fCutSmallQperc){
 	    fv2SPGap1A_sq[centV0]->Fill(track->Pt(), v2SPGap1A);
+	    fSinGap1A_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	    fCosGap1A_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  }
         }
       
         if (track->Eta() > fEtaGapMax && multGap1B > 0){
           Double_t v2SPGap1B = (TMath::Cos(2.*track->Phi())*QxGap1B + TMath::Sin(2.*track->Phi())*QyGap1B)/(Double_t)multGap1B;
           fv2SPGap1B[centV0]->Fill(track->Pt(), v2SPGap1B);
-          fh2v2SPGap1B[centV0]->Fill(track->Pt(), v2SPGap1B);
+	  
+          fCosGap1B[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+          fSinGap1B[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
       
-          if (Qvec > fCutLargeQperc)
+          if (Qvec > fCutLargeQperc){
 	    fv2SPGap1B_lq[centV0]->Fill(track->Pt(), v2SPGap1B);
+	    fSinGap1B_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	    fCosGap1B_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  }
       
-          if (Qvec < fCutSmallQperc)
+          if (Qvec < fCutSmallQperc){
 	    fv2SPGap1B_sq[centV0]->Fill(track->Pt(), v2SPGap1B);
+	    fSinGap1B_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
+	    fCosGap1B_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  }
         }
       }// end else 
     } // end loop on tracks
@@ -423,30 +437,12 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   if (multGap1A > 0 && multGap1B > 0){
     Double_t res = (QxGap1A*QxGap1B + QyGap1A*QyGap1B)/(Double_t)multGap1A/(Double_t)multGap1B;
     fResSP->Fill((Double_t)centV0, res);
-      fQxGap1A->Fill((Double_t)centV0, QxGap1A);
-      fQyGap1A->Fill((Double_t)centV0, QyGap1A);
-      fmultGap1A->Fill((Double_t)centV0, multGap1A);
-      fQxGap1B->Fill((Double_t)centV0, QxGap1B);
-      fQyGap1B->Fill((Double_t)centV0, QyGap1B);
-      fmultGap1B->Fill((Double_t)centV0, multGap1B);
         
     if (Qvec > fCutLargeQperc)
       fResSP_lq->Fill((Double_t)centV0, res);
-        fQxGap1A_lq->Fill((Double_t)centV0, QxGap1A);
-        fQyGap1A_lq->Fill((Double_t)centV0, QyGap1A);
-        fmultGap1A_lq->Fill((Double_t)centV0, multGap1A);
-        fQxGap1B_lq->Fill((Double_t)centV0, QxGap1B);
-        fQyGap1B_lq->Fill((Double_t)centV0, QyGap1B);
-        fmultGap1B_lq->Fill((Double_t)centV0, multGap1B);
 
     if (Qvec < fCutSmallQperc)
       fResSP_sq->Fill((Double_t)centV0, res);
-        fQxGap1A_sq->Fill((Double_t)centV0, QxGap1A);
-        fQyGap1A_sq->Fill((Double_t)centV0, QyGap1A);
-        fmultGap1A_sq->Fill((Double_t)centV0, multGap1A);
-        fQxGap1B_sq->Fill((Double_t)centV0, QxGap1B);
-        fQyGap1B_sq->Fill((Double_t)centV0, QyGap1B);
-        fmultGap1B_sq->Fill((Double_t)centV0, multGap1B);
   }
   
   PostData(1, fOutput  );
