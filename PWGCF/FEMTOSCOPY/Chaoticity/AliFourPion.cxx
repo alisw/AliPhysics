@@ -3450,6 +3450,8 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
     }
   }
   wd = (kt-fKmeanT[fKtIndexL])/(fKmeanT[fKtIndexH]-fKmeanT[fKtIndexL]);
+  if(fMaxPt<=0.251) {fKtIndexL=0; fKtIndexH=0; wd=0;}
+  if(fMinPt>0.249 && fKtIndexL==0) {fKtIndexL=1; wd=0;}
   //
   if(qOut < fQmean[0]) {fQoIndexL=0; fQoIndexH=0; xd=0;}
   else if(qOut >= fQmean[kQbinsWeights-1]) {fQoIndexL=kQbinsWeights-1; fQoIndexH=kQbinsWeights-1; xd=1;}
