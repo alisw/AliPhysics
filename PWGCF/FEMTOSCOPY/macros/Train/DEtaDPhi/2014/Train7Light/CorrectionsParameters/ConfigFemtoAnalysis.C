@@ -1,5 +1,4 @@
-/*********************************************************************
- *																							 *
+/********************************************************************* *																							 *
  * Configfemtoanalysis.C - configuration macro for the femtoscopic	 *
  * analysis, meant as a QA process for two-particle effects				 *
  *																							 *
@@ -14,7 +13,7 @@
 #include "AliFemtoEventReaderAODChain.h"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
-#include "AliFemtoESDTrackCut.h"
+#include "AliFemtoMJTrackCut.h"
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoCutMonitorParticleYPt.h"
 #include "AliFemtoCutMonitorParticleVertPos.h"
@@ -27,6 +26,7 @@
 #include "AliFemtoPairCutRadialDistance.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoCorrFctnNonIdDR.h"
+#include "AliFemtoCorrFctnDEtaDPhiCorrections.h"
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
 #include "AliFemtoVertexMultAnalysis.h"
@@ -61,7 +61,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfChTypes = 13;
 	const int numOfkTbins = 5;
 
-	char *parameter[15];
+	char *parameter[20];
 	if(strlen(params)!=0)
 	  {
 	    parameter[0] = strtok(params, ","); // Splits spaces between words in params
@@ -94,6 +94,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	    cout<<"Parameter [13]: (ispileup)"<<parameter[13]<<" "<<endl;
 	    parameter[14] = strtok(NULL, ",");
 	    cout<<"Parameter [14]: (max pT kaons)"<<parameter[14]<<" "<<endl;
+	    parameter[15] = strtok(NULL, ",");
+	    cout<<"Parameter [15]: (SetMostProbable 1)"<<parameter[15]<<" "<<endl;
+	    parameter[16] = strtok(NULL, ",");
+	    cout<<"Parameter [16]: (SetMostProbable 2)"<<parameter[16]<<" "<<endl;
+	    parameter[17] = strtok(NULL, ",");
+	    cout<<"Parameter [17]: (SetMostProbable 3)"<<parameter[17]<<" "<<endl;
+	    parameter[18] = strtok(NULL, ",");
+	    cout<<"Parameter [18]: (FILE no)"<<parameter[18]<<" "<<endl;
 	  }
 	int filterbit = atoi(parameter[0]); //96 / 768 / 128 
 	int runktdep = atoi(parameter[1]); //0
@@ -109,7 +117,33 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	double nEtaMin = atof(parameter[11]); //-0.8
 	double nEtaMax = atof(parameter[12]);  //0.8
 	bool ifIsPileUp = atoi(parameter[13]); //true
-    double maxPtKaons = atof(parameter[14]);  //4.0
+	double maxPtKaons = atof(parameter[14]);  //4.0
+
+	int setMostProb1 = atoi(parameter[15]);
+	int setMostProb2 = atoi(parameter[16]);
+	int setMostProb3 = atoi(parameter[17]);
+
+	int fileNo = atoi(parameter[18]);
+	char* fileName[300];
+	if(fileNo==0)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB96_MCOnly_DoubleCounting.root");
+	else if(fileNo==1)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB96_MCDCA_DoubleCounting.root");
+	else if(fileNo==2)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB96_MCOnly_NoDoubleCounting.root");
+	else if(fileNo==3)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB96_MCDCA_NoDoubleCounting.root");
+	else if(fileNo==4)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB96_MCOnly_Exclusive.root");
+	else if(fileNo==5)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB96_MCDCA_Exclusive.root");
+	else if(fileNo==6)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB96_MCOnly_DoubleCountingNsigma2.root");
+	else if(fileNo==7)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB96_MCDCA_DoubleCountingNsigma2.root");
+
+	cout<<"Filename: "<<Form("%s",fileName)<<endl;
+
 	printf("*** Connect to AliEn ***\n");
 	TGrid::Connect("alien://");
 
@@ -120,7 +154,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed" };
 	
-	int runktdep = 1;
 	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
 	double ktrngAll[numOfkTbins+1] = {0.0, 1.0, 2.0, 3.0, 4.0, 100.0};
 	double ktrngPion[numOfkTbins+1] = {0.0, 0.8, 1.2, 1.4, 2.5, 100.0};
@@ -159,9 +192,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorEventMult	 *cutFailEvMetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorEventVertex *cutPassEvVetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorEventVertex *cutFailEvVetaphitpc[numOfMultBins*numOfChTypes];
-	AliFemtoESDTrackCut			 *dtc1etaphitpc[numOfMultBins*numOfChTypes];
-	AliFemtoESDTrackCut			 *dtc2etaphitpc[numOfMultBins*numOfChTypes];
-	AliFemtoESDTrackCut			 *dtc3etaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoMJTrackCut			 *dtc1etaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoMJTrackCut			 *dtc2etaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoMJTrackCut			 *dtc3etaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorParticleYPt *cutFail1YPtetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorParticlePID *cutPass1PIDetaphitpc[numOfMultBins*numOfChTypes];
@@ -182,8 +215,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoPairCutPt					*ktpcuts[numOfMultBins*numOfChTypes*numOfkTbins];
 	AliFemtoQinvCorrFctn					*cqinvkttpc[numOfMultBins*numOfChTypes*numOfkTbins];
 	AliFemtoQinvCorrFctn					*cqinvtpc[numOfMultBins*numOfChTypes];
-	AliFemtoCorrFctnDEtaDPhi			*cdedpetaphi[numOfMultBins*numOfChTypes];
-	AliFemtoCorrFctnDEtaDPhi			*cdedpetaphiPt[numOfMultBins*numOfChTypes*numOfkTbins];
+	AliFemtoCorrFctnDEtaDPhiCorrections			*cdedpetaphi[numOfMultBins*numOfChTypes];
+	AliFemtoCorrFctnDEtaDPhiCorrections			*cdedpetaphiPt[numOfMultBins*numOfChTypes*numOfkTbins];
 
 
 	
@@ -222,8 +255,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 					// ***** single particle track cuts *********
-					dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
-					dtc2etaphitpc[aniter] = new AliFemtoESDTrackCut();
+					dtc1etaphitpc[aniter] = new AliFemtoMJTrackCut();
+					dtc2etaphitpc[aniter] = new AliFemtoMJTrackCut();
 					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal);
@@ -248,9 +281,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                                             dtc2etaphitpc[aniter]->SetPt(0.5,4);
                                            
 					    dtc1etaphitpc[aniter]->SetMass(ProtonMass);		
-					    dtc1etaphitpc[aniter]->SetMostProbable(12);//cut on Nsigma in pT not p
+					    dtc1etaphitpc[aniter]->SetMostProbable(setMostProb1);//cut on Nsigma in pT not p
 					    dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
-					    dtc2etaphitpc[aniter]->SetMostProbable(12);//cut on Nsigma in pT not p
+					    dtc2etaphitpc[aniter]->SetMostProbable(setMostProb1);//cut on Nsigma in pT not p
                                           }
 
 					if (ichg == 3 ||ichg == 4 ||ichg == 5)//kaons 3-5
@@ -258,9 +291,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                                             dtc1etaphitpc[aniter]->SetPt(0.3,maxPtKaons);
                                             dtc2etaphitpc[aniter]->SetPt(0.3,maxPtKaons);
  					    dtc1etaphitpc[aniter]->SetMass(KaonMass);
-					    dtc1etaphitpc[aniter]->SetMostProbable(11);//cut on Nsigma in pT not p
+					    dtc1etaphitpc[aniter]->SetMostProbable(setMostProb2);//cut on Nsigma in pT not p
 					    dtc2etaphitpc[aniter]->SetMass(KaonMass);
-					    dtc2etaphitpc[aniter]->SetMostProbable(11);//cut on Nsigma in pT not p
+					    dtc2etaphitpc[aniter]->SetMostProbable(setMostProb2);//cut on Nsigma in pT not p
 
                                           }
                                         if (ichg == 6 ||ichg == 7 ||ichg == 8)//pions 6-8
@@ -269,14 +302,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    dtc2etaphitpc[aniter]->SetPt(0.2,4);
 
 					    dtc1etaphitpc[aniter]->SetMass(PionMass);		
-					    dtc1etaphitpc[aniter]->SetMostProbable(10);//cut on Nsigma in pT not p
+					    dtc1etaphitpc[aniter]->SetMostProbable(setMostProb3);//cut on Nsigma in pT not p
 					    dtc2etaphitpc[aniter]->SetMass(PionMass);		
-					    dtc2etaphitpc[aniter]->SetMostProbable(10);//cut on Nsigma in pT not p
+					    dtc2etaphitpc[aniter]->SetMostProbable(setMostProb3);//cut on Nsigma in pT not p
                                           }
                                         if (ichg == 9)//all
                                           {
 
-					    dtc3etaphitpc[aniter] = new AliFemtoESDTrackCut();
+					    dtc3etaphitpc[aniter] = new AliFemtoMJTrackCut();
 					    dtc3etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					    dtc3etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 					    dtc3etaphitpc[aniter]->SetElectronRejection(ifElectronRejection); 
@@ -334,12 +367,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					
 					if(1)//ichg>8)
 					  {
+					    //FULL
 					    if(ichg<2 || ichg==3||ichg==4 || ichg==6|| ichg==7||ichg==9||ichg==10||ichg==11){ 
+					    //if(ichg==0 || ichg==3 || ichg==6 || ichg==10){ 
 					      cutPass3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass%stpcM%i", chrgs[ichg], imult),PionMass);
 					      cutFail3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail%stpcM%i", chrgs[ichg], imult),PionMass);
 					    }
 					    if(ichg==9) dtc3etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
-					    if(ichg==0||ichg==3||ichg==6||ichg==10) dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
+					    if(ichg==0||ichg==3||ichg==6||ichg==10)  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 					    if(ichg==1||ichg==4||ichg==7||ichg==11) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 
 					    /*
@@ -429,7 +464,26 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					//**** Correlation functions *******
 
-					cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),35, 35);
+					cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),35, 35);
+					cdedpetaphi[aniter]->SetDoFullAnalysis(kFALSE);
+					if(ichg==0 || ichg==1 || ichg==2)
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,0*/);
+					//cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton,1,1,1,1);
+					else if(ichg==3 || ichg==4 || ichg==5)
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon/*,1,1,1,0*/);
+					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon,1,1,1,1);	
+					 
+					else if(ichg==6 || ichg==7 || ichg==8)
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion/*,1,1,1,0*/);
+					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion,1,1,1,1);	
+					
+					else
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll/*,1,1,1,0*/);
+					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll,1,1,1,1);
+					
+			     
+
+	     
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
 
 		
@@ -465,8 +519,27 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 							//cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 							//anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
 
-							cdedpetaphiPt[ktm] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%ipT%i", chrgs[ichg], imult,ikt),35, 35);
+							cdedpetaphiPt[ktm] = new AliFemtoCorrFctnDEtaDPhiCorrections(Form("cdedp%stpcM%ipT%i", chrgs[ichg], imult,ikt),35, 35);
 							cdedpetaphiPt[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+
+							if(ichg==0 || ichg==1 || ichg==2)
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,1*/);
+							else if(ichg==3 || ichg==4 || ichg==5)
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon);
+							else if(ichg==6 || ichg==7 || ichg==8)
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion);
+							else
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll);
+				
+
+							/*if(ichg==0 || ichg==1 || ichg==2)
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromFile("alien:///alice/cern.ch/user/l/lgraczyk/2014/DEtaDPhi/CorrectionTables/pTab.txt","alien:///alice/cern.ch/user/l/lgraczyk/2014/DEtaDPhi/CorrectionTables/protonCorrTab.txt");
+							else if(ichg==3 || ichg==4 || ichg==5)
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromFile("alien:///alice/cern.ch/user/l/lgraczyk/2014/DEtaDPhi/CorrectionTables/pTab.txt","alien:///alice/cern.ch/user/l/lgraczyk/2014/DEtaDPhi/CorrectionTables/kaonCorrTab.txt");	
+							else if(ichg==6 || ichg==7 || ichg==8)
+							  cdedpetaphiPt[ktm]->LoadCorrectionTabFromFile("alien:///alice/cern.ch/user/l/lgraczyk/2014/DEtaDPhi/CorrectionTables/pTab.txt","alien:///alice/cern.ch/user/l/lgraczyk/2014/DEtaDPhi/CorrectionTables/pionCorrTab.txt");
+							else
+							cdedpetaphiPt[ktm]->LoadCorrectionTabFromFile("alien:///alice/cern.ch/user/l/lgraczyk/2014/DEtaDPhi/CorrectionTables/pTab.txt","alien:///alice/cern.ch/user/l/lgraczyk/2014/DEtaDPhi/CorrectionTables/allCorrTab.txt"); 	*/		
 							anetaphitpc[aniter]->AddCorrFctn(cdedpetaphiPt[ktm]);
 
 						}
