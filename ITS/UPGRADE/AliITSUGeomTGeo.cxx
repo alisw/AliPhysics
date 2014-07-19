@@ -632,7 +632,7 @@ Bool_t AliITSUGeomTGeo::GetTrackingMatrix(Int_t index, TGeoHMatrix &m)
 //______________________________________________________________________
 TGeoHMatrix* AliITSUGeomTGeo::ExtractMatrixSens(Int_t index) const
 {
-  // Get the transformation matrix of the SENSOR (not ncessary the same as the chip) 
+  // Get the transformation matrix of the SENSOR (not necessary the same as the chip) 
   // for a given chip 'index' by quering the TGeoManager
   Int_t lay,stav,sstav,mod,chipInMod;
   GetChipId(index,lay,stav,sstav,mod,chipInMod);
@@ -996,15 +996,15 @@ void AliITSUGeomTGeo::CreateT2LMatrices()
   fMatT2L  = new TObjArray(fNChips);  
   fMatT2L->SetOwner(kTRUE);
   TGeoHMatrix matLtoT;
-  double loc[3]={0,0,0},glo[3];
-  const double *rotm;
+  double locA[3]={-100,0,0},locB[3]={100,0,0},gloA[3],gloB[3];
   for (int isn=0;isn<fNChips;isn++) {
     const TGeoHMatrix* matSens = GetMatrixSens(isn);
     if (!matSens) {AliFatal(Form("Failed to get matrix for sensor %d",isn)); return;}
-    matSens->LocalToMaster(loc,glo);
-    rotm = matSens->GetRotationMatrix();
-    Double_t al = -ATan2(rotm[1],rotm[0]);
-    double sn=Sin(al), cs=Cos(al), r=glo[0]*sn-glo[1]*cs, x=r*sn, y=-r*cs; // sensor plane PCA to origin
+    matSens->LocalToMaster(locA,gloA);
+    matSens->LocalToMaster(locB,gloB);
+    double dx = gloB[0]-gloA[0];
+    double dy = gloB[1]-gloA[1];
+    double t = (gloB[0]*dx+gloB[1]*dy)/(dx*dx+dy*dy),x=gloB[0]-dx*t,y=gloB[1]-dy*t;
     TGeoHMatrix* t2l = new TGeoHMatrix();
     t2l->RotateZ(ATan2(y,x)*RadToDeg()); // rotate in direction of normal to the sensor plane
     t2l->SetDx(x);
