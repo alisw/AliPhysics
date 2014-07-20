@@ -233,7 +233,7 @@ public:
                                       // to be switched off for pass 0 reconstruction
                                       // Use static function, other option will be to use 
                                       // additional specific storage ?
-  ClassDef(AliTPCRecoParam, 19)
+  ClassDef(AliTPCRecoParam, 21)
 };
 
 
