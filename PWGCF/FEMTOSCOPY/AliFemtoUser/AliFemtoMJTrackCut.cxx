@@ -446,7 +446,7 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
 	      imost = 13;
 	  }
 	  else if (fMostProbable == 14) { //cut on Nsigma in pT not p, EXCLUSIVE PID
-	    if (!IsPionNSigma(track->Pt(),track->NSigmaTPCPi() && IsKaonNSigma(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP())))
+	    if (!IsPionNSigma(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) && IsKaonNSigma(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()))
 	      imost = 14;
 	  }
 	  else if (fMostProbable == 15) { //cut on Nsigma in pT not p, EXCLUSIVE PID
