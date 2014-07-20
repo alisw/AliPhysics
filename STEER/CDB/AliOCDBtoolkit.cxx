@@ -562,6 +562,13 @@ void AliOCDBtoolkit::DumpOCDBFile(const char *finput , const char *foutput, Bool
   //  DumpOCDBFile("$ALICE_ROOT/OCDB/ITS/Align/Data/Run0_999999999_v0_s0.root", "ITS_Align_Data_Run0_999999999_v0_s0.dump")
   //
   if (finput==0) return ;
+  if (TString(finput).Contains("alien://") && gGrid==0){
+    TGrid *myGrid = TGrid::Connect("alien://");            //Oddly this will return also a pointer if connection fails
+    if(myGrid->GetPort()==0){                       //if connection fails port 0 is saved, using this to check for successful connection
+      cerr << "Cannot connect to grid!" << endl;
+      return;
+    }
+  }
   TFile *falignITS  = TFile::Open(finput);
   AliCDBEntry *entry  = (AliCDBEntry*)falignITS->Get("AliCDBEntry");
   if (!entry) return; 
