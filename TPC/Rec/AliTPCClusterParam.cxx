@@ -1415,6 +1415,9 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][3])));	
     }
   }
+  printf("\ndEdx  correction matrix used in GetQnormCorr\n");
+  fQNormCorr->Print();
+
 }
 
 
@@ -1500,7 +1503,7 @@ void AliTPCClusterParam::ResetQnormCorr(){
     } 
 }
 
-void AliTPCClusterParam::SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, Float_t val){
+void AliTPCClusterParam::SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, Float_t val, Int_t mode){
   //
   // ipad        - pad type
   // itype       - 0- qtot 1-qmax
@@ -1519,6 +1522,11 @@ void AliTPCClusterParam::SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, F
   // rows
   // itype*3+ipad  - itype=0 qtot itype=1 qmax ipad=0
   // 
+  if (mode==1) { 
+    // mode introduced in 20.07.2014 - git describe ~ vAN-20140703-48-g3449a97 - to keep back compatibility with o
+    (*fQNormCorr)(itype*3+ipad, corrType) *= val;  // set value
+    return;
+  }
   if (itype<2) (*fQNormCorr)(itype*3+ipad, corrType) *= val;  // multiplicative correction
   if (itype>=2) (*fQNormCorr)(itype*3+ipad, corrType)+= val;  // additive       correction  
 }
