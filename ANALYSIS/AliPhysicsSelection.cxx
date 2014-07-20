@@ -1998,6 +1998,22 @@ void AliPhysicsSelection::DetectPassName(){
     }
   }
   delete tokens;
+  //
+  // temporary patch for LEGO train runners
+  //
+  if (!passName.Contains("pass")){ // try with "_" as a fallback (as it is the case in the test data of the LEGO train)
+    TObjArray* tokens2 = filePath.Tokenize("_");
+    for (Int_t i=0;i<=tokens2->GetLast();i++) {
+      TObjString* stObj = (TObjString*) tokens2->At(i);
+      TString s = stObj->GetString();
+      if (s.Contains("pass")) {
+	passName = s;
+	break;
+      }
+    }
+    delete tokens2;
+  }
+
 
   if (!passName.Contains("pass")){
     AliError(" Failed to find reconstruction pass name:");
