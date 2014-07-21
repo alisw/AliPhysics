@@ -19,7 +19,7 @@
 // Tools class for Jet Flow Analysis, replaces 'extractJetFlow.C' macro
 //
 // The task uses input from two analysis tasks:
-// - $ALICE_ROOT/PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskRhoVnModulation.cxx
+// - $ALICE_ROOT/PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskJetV2.cxx
 //   used to retrieve jet spectra and delta pt distributions
 // - $ALICE_ROOT/PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
 //   used to construct the detector response function
