@@ -30,7 +30,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
         enum fitGoodnessTest    { kChi2ROOT, kChi2Poisson, kKolmogorov, kKolmogorovTOY, kLinearFit };
-        enum collisionType      { kPbPb, kPythia };                     // collision type
+        enum collisionType      { kPbPb, kPythia, kPbPb10h };           // collision type
         enum qcRecovery         { kFixedRho, kNegativeVn, kTryFit };    // how to deal with negative cn value for qcn value
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
