@@ -948,6 +948,7 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
             // Vertex R cut not done in AliAnalysisTaskEmcal
             if (TMath::Sqrt(TMath::Power(esd->GetPrimaryVertex()->GetX(),2)+TMath::Power(esd->GetPrimaryVertex()->GetY(),2))>fVertexMaxR)
             {
+                DeleteJetData(0);
                 return;
             }
         }
@@ -965,6 +966,7 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
             // Vertex R cut not done in AliAnalysisTaskEmcal
             if (TMath::Sqrt(TMath::Power(aod->GetPrimaryVertex()->GetX(),2)+TMath::Power(aod->GetPrimaryVertex()->GetY(),2))>fVertexMaxR)
             {
+                DeleteJetData(0);
                 return;
             }
         }
@@ -976,9 +978,10 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     else
     {
         AliError("Cannot get AOD/ESD event. Rejecting Event");
+        DeleteJetData(0);
         return;
     }
-
+    
     // Make sure Centrality isn't exactly 100% (to avoid bin filling errors in profile plots. Make it 99.99
     if (fEventCentrality>99.99)
     {
@@ -1000,6 +1003,8 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
             fhEMCalTrackEventMult->Fill(fEventCentrality,0.0);
         }
         AliWarning("No PicoTracks, Rejecting Event");
+        DeleteJetData(1);
+        PostData(1,fOutput);
         return;
     }
     
@@ -1045,14 +1050,12 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
             EstimateChargedRhokT();
         }
         
-        DeleteJetData(kFALSE);
-        
+        DeleteJetData(2);
         fnEventsCharged++;
-
-        PostData(1, fOutput);
+        PostData(1,fOutput);
         return;
     }
-    
+
     if (fTrackQA==kTRUE)
     {
         TrackHisto();
@@ -1064,8 +1067,9 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     
     // Prep the jets
     InitChargedJets();
-    InitFullJets();
     GenerateTPCRandomConesPt();
+
+    InitFullJets();
     GenerateEMCalRandomConesPt();
     
     if (fCalculateRhoJet>=0)
@@ -1110,11 +1114,9 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     }
 
     // Delete Dynamic Arrays
-    DeleteJetData(kTRUE);
-    delete fRecoUtil;
+    DeleteJetData(3);
     fnEvents++;
-    
-    PostData(1, fOutput);
+    PostData(1,fOutput);
 }
 
 //________________________________________________________________________
@@ -1323,7 +1325,7 @@ void AliAnalysisTaskFullpAJets::InitChargedJets()
     fTPCFullJet = new AlipAJetData("fTPCFullJet",kFALSE,fnAKTChargedJets);
     fTPCOnlyJet = new AlipAJetData("fTPCOnlyJet",kFALSE,fnAKTChargedJets);
     fTPCJetUnbiased = new AlipAJetData("fTPCJetUnbiased",kFALSE,fnAKTChargedJets);
-    
+
     fTPCJet->SetSignalCut(fTPCJetThreshold);
     fTPCJet->SetAreaCutFraction(fJetAreaCutFrac);
     fTPCJet->SetJetR(fJetR);
@@ -1351,6 +1353,7 @@ void AliAnalysisTaskFullpAJets::InitChargedJets()
         fTPCOnlyJet->SetIsJetInArray(IsInTPCFull(fJetR,myJet->Phi(),myJet->Eta()),i);
         fTPCJetUnbiased->SetIsJetInArray(IsInTPC(fJetR,myJet->Phi(),myJet->Eta(),kFALSE),i);
     }
+    
     fTPCJet->InitializeJetData(fmyAKTChargedJets,fnAKTChargedJets);
     fTPCFullJet->InitializeJetData(fmyAKTChargedJets,fnAKTChargedJets);
     fTPCOnlyJet->InitializeJetData(fmyAKTChargedJets,fnAKTChargedJets);
@@ -2986,20 +2989,72 @@ void AliAnalysisTaskFullpAJets::ChargedJetEnergyDensityProfile()
     delete jet_vec;
 }
 
-void AliAnalysisTaskFullpAJets::DeleteJetData(Bool_t EMCalOn)
+void AliAnalysisTaskFullpAJets::DeleteJetData(Int_t delOption)
 {
-    delete fmyTracks;
-    delete fTPCJet;
-    delete fTPCFullJet;
-    delete fTPCOnlyJet;
-    delete fTPCkTFullJet;
-    if (EMCalOn==kTRUE)
+    if (delOption ==0)
     {
+        delete fRecoUtil;
+        
+        fRecoUtil = NULL;
+    }
+    else if (delOption==1)
+    {
+        delete fRecoUtil;
+        delete fmyTracks;
         delete fmyClusters;
+        
+        fRecoUtil = NULL;
+        fmyTracks = NULL;
+        fmyClusters = NULL;
+    }
+    else if (delOption==2)
+    {
+        delete fRecoUtil;
+        delete fmyTracks;
+        delete fmyClusters;
+        delete fTPCJet;
+        delete fTPCFullJet;
+        delete fTPCOnlyJet;
+        delete fTPCJetUnbiased;
+        delete fTPCkTFullJet;
+        
+        fRecoUtil = NULL;
+        fmyTracks = NULL;
+        fmyClusters = NULL;
+        fTPCJet = NULL;
+        fTPCFullJet = NULL;
+        fTPCOnlyJet = NULL;
+        fTPCJetUnbiased = NULL;
+        fTPCkTFullJet = NULL;
+    }
+    if (delOption==3)
+    {
+        delete fRecoUtil;
+        delete fmyTracks;
+        delete fmyClusters;
+        delete fTPCJet;
+        delete fTPCFullJet;
+        delete fTPCOnlyJet;
+        delete fTPCJetUnbiased;
+        delete fTPCkTFullJet;
         delete fEMCalJet;
         delete fEMCalFullJet;
         delete fEMCalPartJet;
+        delete fEMCalPartJetUnbiased;
         delete fEMCalkTFullJet;
+        
+        fRecoUtil = NULL;
+        fmyTracks = NULL;
+        fmyClusters = NULL;
+        fTPCJet = NULL;
+        fTPCFullJet = NULL;
+        fTPCOnlyJet = NULL;
+        fTPCJetUnbiased = NULL;
+        fEMCalJet = NULL;
+        fEMCalFullJet = NULL;
+        fEMCalPartJet = NULL;
+        fEMCalPartJetUnbiased = NULL;
+        fEMCalkTFullJet = NULL;
     }
 }
 
@@ -3431,26 +3486,24 @@ AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData(const char *name, Bool_t i
 // Destructor
 AliAnalysisTaskFullpAJets::AlipAJetData::~AlipAJetData()
 {
-    if (fnTotal!=0)
-    {
-        SetName("");
-        SetIsJetsFull(kFALSE);
-        SetTotalEntries(0);
-        SetTotalJets(0);
-        SetTotalSignalJets(0);
-        SetLeading(0,0);
-        SetSubLeading(0,0);
-        SetSignalCut(0);
-        SetAreaCutFraction(0);
-        SetJetR(0);
-        SetNEF(0);
-        SetSignalTrackPtBias(kFALSE);
-        
-        delete [] fJetsIndex;
-        delete [] fJetsSCIndex;
-        delete [] fIsJetInArray;
-        delete [] fJetMaxChargedPt;
-    }
+    SetName("");
+    SetIsJetsFull(kFALSE);
+    SetTotalJets(0);
+    SetTotalSignalJets(0);
+    SetLeading(0,0);
+    SetSubLeading(0,0);
+    SetSignalCut(0);
+    SetAreaCutFraction(0);
+    SetJetR(0);
+    SetNEF(0);
+    SetSignalTrackPtBias(kFALSE);
+    
+    delete [] fJetsIndex;
+    delete [] fJetsSCIndex;
+    delete [] fIsJetInArray;
+    delete [] fJetMaxChargedPt;
+    
+    fnTotal = 0;
 }
 
 // User Defined Sub-Routines
