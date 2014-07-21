@@ -33,7 +33,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fPhosTrackRCut(5.0)
   ,fPhosBadDistanceCut(3.0)
   
-  ,fGeometryPhosEtaAccCut(0.12)
+  ,fGeometryPhosEtaAccCut(0.1)//gives wiggle room
   ,fGeometryPhosPhiAccMinCut(-100)//260.0)
   ,fGeometryPhosPhiAccMaxCut(-40)//320.0)
   ,fGeometryPhosDetectorRadius(460.0)

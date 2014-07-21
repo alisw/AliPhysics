@@ -733,7 +733,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
       if(track->GetTPCInnerParam()) countLaserTracks++;      
       AliESDfriendTrack* friendTrack=NULL;
       // suppress beam background and CE random reacks
-      if (track->GetInnerParam()->Pt()>kMinPt) continue;
+      if (track->GetInnerParam()->Pt()<kMinPt) continue;
       Bool_t skipTrack=gRandom->Rndm()>1/(1+TMath::Abs(fFriendDownscaling));
       if (skipTrack) continue;
       if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack = esdFriend->GetTrack(iTrack);} //this guy can be NULL      

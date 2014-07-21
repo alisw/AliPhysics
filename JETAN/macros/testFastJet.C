@@ -1,26 +1,38 @@
+//
+//  simple test macro for FASTJET in JETAN
+//
+//  This macro only does a technical test of FASTJETAN. This is
+//    NOT a good starting point for developing analysis code.
 
+//  More complete examples can be found at:Somewhat outdated; for a 
+//   more recent set of macros, look at:
+//    $ALICE_ROOT/PWGJE//EMCALJetTasks/macros/runEMCalJetAnalysis.C
+//    $ALICE_ROOT/PWGJE/macros/examples
+//  and documentation at: https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalJet
+//
 void testFastJet(const char* file="testdata.dat")
 
 {
-      gSystem->Load("libTree.so");
-      gSystem->Load("libEG.so");
-      gSystem->Load("libVMC.so");
-      gSystem->Load("libPhysics.so");
+      gSystem->Load("libTree");
+      gSystem->Load("libEG");
+      gSystem->Load("libVMC");
+      gSystem->Load("libPhysics");
 
-      gSystem->Load("libCGAL.dylib");
+      gSystem->Load("libCGAL");
 
-      gSystem->Load("libfastjet.so");
-      gSystem->Load("libSISConePlugin.so");
-      
+      gSystem->Load("libfastjet");
+      gSystem->Load("libsiscone");
+      gSystem->Load("libsiscone_spherical");
+      gSystem->Load("libfastjetplugins");
      
-      gSystem->Load("libANALYSIS.so");
-      gSystem->Load("libSTEERBase.so");
-      gSystem->Load("libAOD.so");
-      gSystem->Load("libESD.so");
-      gSystem->Load("libANALYSISalice.so");
+      gSystem->Load("libANALYSIS");
+      gSystem->Load("libSTEERBase");
+      gSystem->Load("libAOD");
+      gSystem->Load("libESD");
+      gSystem->Load("libANALYSISalice");
       
-      gSystem->Load("libJETAN.so");
-      gSystem->Load("libFASTJETAN.so");
+      gSystem->Load("libJETAN");
+      gSystem->Load("libFASTJETAN");
 
       AliFastJetFinder* jetFinder = new AliFastJetFinder();
       jetFinder->RunTest(file);

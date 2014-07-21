@@ -89,7 +89,10 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   //Bachelor and Pion Swapping Check
   void SetCheckSwapping ( Bool_t lCheckSwapping = kTRUE) { fkCheckSwapping = lCheckSwapping; }
 //---------------------------------------------------------------------------------------
-
+    //Bachelor and Pion Swapping Check
+    void SetSelectPeripheral ( Bool_t lSelectPeripheral = kTRUE) { fkSelectPeripheral = lSelectPeripheral; }
+    //---------------------------------------------------------------------------------------
+    
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
         // your data member object is created on the worker nodes and streaming is not needed.
@@ -116,7 +119,8 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
   Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
   //Meson Swapping Check Switch
-  Bool_t fkCheckSwapping; // if true, will perform association with mesons switched (in ADDITION to reg. association)  
+  Bool_t fkCheckSwapping; // if true, will perform association with mesons switched (in ADDITION to reg. association)
+        Bool_t fkSelectPeripheral; //if true, reject anything but 60-80% V0M (Pb-Pb X-check)
   
 	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related

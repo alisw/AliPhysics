@@ -2095,8 +2095,13 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
       if(!fMCPID) {
 	// pid object
 	AliHFEpidObject hfetrack;
-	if(!fAODAnalysis) hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-	else hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
+	if(!fAODAnalysis){
+	  hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+	  if(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()) hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
+	}else{
+	  hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
+	  if(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD())  hfetrack.SetMulitplicity(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
+	}
 	hfetrack.SetRecTrack(track);
 	hfetrack.SetCentrality((Int_t)binct);
 	AliDebug(2,Form("centrality %f and %d",binct,hfetrack.GetCentrality()));

@@ -1,10 +1,9 @@
-// $Id$
-
 AliEmcalMCTrackSelector* AddTaskMCTrackSelector(
-  const char *outname    = "MCParticles",
+  const char *outname    = "mcparticles",
   Bool_t      nk         = kFALSE,
   Bool_t      ch         = kFALSE,
-  Double_t    etamax     = 1
+  Double_t    etamax     = 1,
+  Bool_t      physPrim   = kTRUE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -27,13 +26,14 @@ AliEmcalMCTrackSelector* AddTaskMCTrackSelector(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  TString name("AliEmcalMCTrackSelector");
+  TString name("AliEmcalMCTrackSelector_");
   name += outname;
   AliEmcalMCTrackSelector *eTask = new AliEmcalMCTrackSelector(name);
-  eTask->SetTracksOutName(outname);
+  eTask->SetParticlesOutName(outname);
   eTask->SetRejectNK(nk);
   eTask->SetChargedMC(ch);
   eTask->SetEtaMax(etamax);
+  eTask->SetOnlyPhysPrim(physPrim);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

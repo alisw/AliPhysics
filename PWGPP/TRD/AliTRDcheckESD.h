@@ -24,6 +24,7 @@ class AliMCEvent;
 class AliESDpid;
 class AliCFContainer;
 class AliAnalysisCuts;
+class AliESDtrack;
 class TH1;
 class TH2;
 class TH1F;

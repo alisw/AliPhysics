@@ -434,7 +434,7 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
     AliAODHeader *aodHeader = static_cast<AliAODHeader*>(fAODHeader);
 
     // Trigger selection
-    if (fTriggerMask != 0) {
+    if (fTriggerMask != AliVEvent::kAny) {
       UInt_t offlineTrigger = aodHeader->GetOfflineTrigger();
       
       if ((offlineTrigger & fTriggerMask) == 0) {

@@ -29,6 +29,7 @@ AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask() :
   fDoPropagation(kFALSE),
   fDist(440),
   fTrackEfficiency(1),
+  fIsMC(kFALSE),
   fEsdEv(0),
   fTracks(0)
 {
@@ -46,6 +47,7 @@ AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask(const char *name) :
   fDoPropagation(kFALSE),
   fDist(440),
   fTrackEfficiency(1),
+  fIsMC(kFALSE),
   fEsdEv(0),
   fTracks(0)
 {
@@ -197,11 +199,17 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 	continue;
 
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
+	if (fTrackEfficiency < 1) {
+	  Double_t r = gRandom->Rndm();
+	  if (fTrackEfficiency < r)
+	    continue;
+	}
         AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
         newTrack->SetBit(BIT(22),0); 
         newTrack->SetBit(BIT(23),0);
+	if (!fIsMC) newTrack->SetLabel(0);
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
 	if (!etrack->GetConstrainedParam())
@@ -215,7 +223,6 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 	  if (fTrackEfficiency < r)
 	    continue;
 	}
-
 	AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 	
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
@@ -231,6 +238,7 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 	  newTrack->SetBit(BIT(22),1); //type 1
 	  newTrack->SetBit(BIT(23),0);
 	}
+	if (!fIsMC) newTrack->SetLabel(0);
 	++ntrnew;
       }
     }

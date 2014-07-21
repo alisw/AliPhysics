@@ -234,7 +234,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
+AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fNoTerminate(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
 {
   #ifdef DEBUGMODE
     AliInfo("Calling constructor.");
@@ -321,7 +321,7 @@ void AliAnalysisTaskChargedJetsPA::InitializeTrackcuts()
   //pp, different pT dependence of number clusters cut, No. I
 
   fTrackCutsPP_global_variedPtDep = static_cast<AliESDtrackCuts*>(commonTrackCuts->Clone("fTrackCutsPP_global_variedPtDep"));
-  TFormula *f1NClustersTPCLinearPtDep2 = new TFormula("f1NClustersTPCLinearPtDep2","70.+20./20.*x");
+  TFormula *f1NClustersTPCLinearPtDep2 = new TFormula("f1NClustersTPCLinearPtDep2","70.+15./20.*x");
   fTrackCutsPP_global_variedPtDep->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep2,20.);
   fTrackCutsPP_global_variedPtDep->SetMinNClustersTPC(70);
   fTrackCutsPP_global_variedPtDep->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
@@ -334,7 +334,7 @@ void AliAnalysisTaskChargedJetsPA::InitializeTrackcuts()
   //pp, different pT dependence of number clusters cut, No. II
 
   fTrackCutsPP_global_variedPtDep2 = static_cast<AliESDtrackCuts*>(commonTrackCuts->Clone("fTrackCutsPP_global_variedPtDep2"));
-  TFormula *f1NClustersTPCLinearPtDep3 = new TFormula("f1NClustersTPCLinearPtDep3","70.+40./20.*x");
+  TFormula *f1NClustersTPCLinearPtDep3 = new TFormula("f1NClustersTPCLinearPtDep3","70.+45./20.*x");
   fTrackCutsPP_global_variedPtDep2->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep3,20.);
   fTrackCutsPP_global_variedPtDep2->SetMinNClustersTPC(70);
   fTrackCutsPP_global_variedPtDep2->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
@@ -389,7 +389,6 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
     Double_t phi                 = track->Phi();
 
     // Number of clusters
-    Double_t nclsTPC             = track->GetTPCncls();
     Double_t nclsITS             = track->GetITSclusters(0);
 
     // Crossed rows
@@ -401,24 +400,31 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
     // Chi2 of tracks
     Double_t chi2ITS             = 999.; 
     if (nclsITS)
-      chi2ITS = track->GetITSchi2()/nclsITS; 
+      chi2ITS = track->GetITSchi2()/nclsITS;
     Double_t chi2TPC             = 999.;
-    if (nclsTPC)
-      chi2TPC = track->GetTPCchi2()/nclsTPC; 
     Double_t chi2TPCConstrained  = track->GetChi2TPCConstrainedVsGlobal(static_cast<const AliESDVertex*>(fPrimaryVertex));
 
     // Misc
     Double_t SharedTPCClusters = 999.;
     Double_t nClustersTPC = 0;
-    if(fHybridESDtrackCuts->GetMainCuts()->GetRequireTPCStandAlone()) {
+
+    if(fHybridESDtrackCuts->GetMainCuts()->GetRequireTPCStandAlone())
+    {
       nClustersTPC = track->GetTPCNclsIter1();
+      if(nClustersTPC)
+        chi2TPC = track->GetTPCchi2Iter1()/nClustersTPC;
     }
-    else {
+    else 
+    {
       nClustersTPC = track->GetTPCclusters(0);
+      if(nClustersTPC)
+        chi2TPC = track->GetTPCchi2()/nClustersTPC;
     }
 
-    if(track->GetTPCncls())
+    if(nClustersTPC)
       SharedTPCClusters = static_cast<Double_t>(track->GetTPCnclsS())/static_cast<Double_t>(nClustersTPC);
+
+
     Double_t tpcLength   = 0.;
     if (track->GetInnerParam() && track->GetESDEvent()) {
       tpcLength = track->GetLengthInActiveZone(1, 1.8, 220, track->GetESDEvent()->GetMagneticField());
@@ -491,7 +497,7 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
 
     trackType = fHybridESDtrackCuts->AcceptTrack(track);
     if (trackType)
-      FillCutHistogram("hCutsNumberClusters", nclsTPC, pT, eta, phi, trackType-1);
+      FillCutHistogram("hCutsNumberClusters", nClustersTPC, pT, eta, phi, trackType-1);
 
     fHybridESDtrackCuts->GetMainCuts()->SetMinNClustersTPC(minNclsTPC);
     fHybridESDtrackCuts->GetAdditionalCuts()->SetMinNClustersTPC(minNclsTPC_Additional);
@@ -2125,29 +2131,30 @@ void AliAnalysisTaskChargedJetsPA::BinLogAxis(const THn *h, Int_t axisNumber)
 //________________________________________________________________________
 void AliAnalysisTaskChargedJetsPA::Terminate(Option_t *)
 {
-/*
-  PostData(1, fOutputLists[0]);
+  if(fNoTerminate)
+    return;
+
   fOutputLists[0] = dynamic_cast<TList*> (GetOutputData(1)); // >1 refers to output slots
+  PostData(1, fOutputLists[0]);
 
   if(fAnalyzeJetProfile)
   {
-    PostData(2, fOutputLists[1]);
     fOutputLists[1] = dynamic_cast<TList*> (GetOutputData(2)); // >1 refers to output slots
+    PostData(2, fOutputLists[1]);
   }
   if(fAnalyzeTrackcuts)
   {
     if(fAnalyzeJetProfile)
     {
-      PostData(3, fOutputLists[2]);
       fOutputLists[2] = dynamic_cast<TList*> (GetOutputData(3)); // >1 refers to output slots
+      PostData(3, fOutputLists[2]);
     }
     else
     {
-      PostData(2, fOutputLists[1]);
       fOutputLists[1] = dynamic_cast<TList*> (GetOutputData(2)); // >1 refers to output slots
+      PostData(2, fOutputLists[1]);
     }
   }
-*/
 }
 
 //________________________________________________________________________
@@ -2155,14 +2162,17 @@ AliAnalysisTaskChargedJetsPA::~AliAnalysisTaskChargedJetsPA()
 {
   // Destructor. Clean-up the output list, but not the histograms that are put inside
   // (the list is owner and will clean-up these histograms). Protect in PROOF case.
-/*
+
+  if(fNoTerminate)
+    return;
+
   delete fHybridESDtrackCuts;
   delete fHybridESDtrackCuts_variedPtDep;
 
   for(Int_t i=0; i<static_cast<Int_t>(fOutputLists.size()); i++)
     if (fOutputLists[i] && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
       delete fOutputLists[i];
-*/
+
 }
 
 //________________________________________________________________________

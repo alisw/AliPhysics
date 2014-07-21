@@ -254,12 +254,12 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : A
   fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
   fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
   fESDtrackCutsV0->SetPtRange(0.2,1.5);
-  fESDtrackCutsV0->SetMinDCAToVertexXY(2); //war inzwischen 1 & 3
-  fESDtrackCutsV0->SetMinDCAToVertexZ(2); //war inzwischen 1 & 3
+  fESDtrackCutsV0->SetMinDCAToVertexXY(2); //war inzwischen 1 & 3
+  fESDtrackCutsV0->SetMinDCAToVertexZ(2); //war inzwischen 1 & 3
 
   fESDCutsV0 = new AliESDv0Cuts("AliESDCutsV0","AliESDCutsV0");
   fESDCutsV0->SetMaxDcaV0Daughters(1.0);
-  fESDCutsV0->SetMinDcaNegToVertex(2); //1.5
+  fESDCutsV0->SetMinDcaNegToVertex(2); //1.5
     fESDCutsV0->SetMinDcaPosToVertex(2); //1.5
 
   //ESD Track cuts

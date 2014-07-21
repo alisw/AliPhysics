@@ -48,6 +48,7 @@
 #include "AliPicoTrack.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
+#include "AliRhoParameter.h"
 
 ClassImp(AliAnalysisTaskFlavourJetCorrelations)
 
@@ -424,6 +425,16 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       }
    }
    }
+    
+    //Background Subtraction for jets
+    AliRhoParameter *rho = 0;
+    Double_t rhoval = 0;
+    TString sname("Rho");
+    if (!sname.IsNull()) {
+        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(sname));
+        if(rho) rhoval = rho->GetVal();
+    }
+
    
    // we start with jets
    Double_t ejet   = 0;
@@ -450,7 +461,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    if(fLeadingJetOnly){
       for (Int_t iJetsL = 0; iJetsL<njets; iJetsL++) {    
       	 AliEmcalJet* jetL = (AliEmcalJet*)GetJetFromArray(iJetsL);
-      	 ptjet   = jetL->Pt();
+      	 ptjet   = jetL->Pt() - jetL->Area()*rhoval; //background subtraction
       	 if(ptjet>leadingJet ) leadingJet = ptjet;
       	 
       }
@@ -475,12 +486,12 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       ejet   = jet->E();
       phiJet = jet->Phi();
       etaJet = jet->Eta();
-      fPtJet = jet->Pt();
+      fPtJet = jet->Pt() - jet->Area()*rhoval; //background subtraction
       Double_t origPtJet=fPtJet;
       
       pointJ[0] = phiJet;
       pointJ[1] = etaJet;
-      pointJ[2] = ptjet;
+      pointJ[2] = ptjet - jet->Area()*rhoval; //background subtraction
       pointJ[3] = ejet;
       pointJ[4] = jet->GetNumberOfConstituents();
       pointJ[5] = jet->Area();
@@ -550,6 +561,10 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
 
       	    Double_t pjet[3];
       	    jet->PxPyPz(pjet);
+             //background subtraction
+             pjet[0] = jet->Px() - jet->Area()*(rhoval*TMath::Cos(jet->AreaPhi()));
+             pjet[1] = jet->Py() - jet->Area()*(rhoval*TMath::Sin(jet->AreaPhi()));
+             pjet[2] = jet->Pz() - jet->Area()*(rhoval*TMath::SinH(jet->AreaEta()));
       	    RecalculateMomentum(pjet,fPmissing);      	          	    
       	    fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]);
       	    
@@ -578,6 +593,10 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       	       fIsDInJet=IsDInJet(jet, sbcand,kFALSE);
       	       Double_t pjet[3];
       	       jet->PxPyPz(pjet);
+                //background subtraction
+                pjet[0] = jet->Px() - jet->Area()*(rhoval*TMath::Cos(jet->AreaPhi()));
+                pjet[1] = jet->Py() - jet->Area()*(rhoval*TMath::Sin(jet->AreaPhi()));
+                pjet[2] = jet->Pz() - jet->Area()*(rhoval*TMath::SinH(jet->AreaEta()));
       	       RecalculateMomentum(pjet,fPmissing);      	          	    
       	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]);
       	       
@@ -592,6 +611,10 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       	       
       	       Double_t pjet[3];
       	       jet->PxPyPz(pjet);
+                //background subtraction
+                pjet[0] = jet->Px() - jet->Area()*(rhoval*TMath::Cos(jet->AreaPhi()));
+                pjet[1] = jet->Py() - jet->Area()*(rhoval*TMath::Sin(jet->AreaPhi()));
+                pjet[2] = jet->Pz() - jet->Area()*(rhoval*TMath::SinH(jet->AreaEta()));
       	       RecalculateMomentum(pjet,fPmissing);      	          	    
       	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]);
       	       
@@ -683,6 +706,23 @@ Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet
    Double_t p[3],pj[3];
    Bool_t okpp=part->PxPyPz(p);
    Bool_t okpj=jet->PxPyPz(pj);
+    
+    //Background Subtraction
+    AliRhoParameter *rho = 0;
+    Double_t rhoval = 0;
+    TString sname("Rho");
+    if (!sname.IsNull()) {
+        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(sname));
+        if(rho){
+            rhoval = rho->GetVal();
+            pj[0] = jet->Px() - jet->Area()*(rhoval*TMath::Cos(jet->AreaPhi()));
+            pj[1] = jet->Py() - jet->Area()*(rhoval*TMath::Sin(jet->AreaPhi()));
+            pj[2] = jet->Pz() - jet->Area()*(rhoval*TMath::SinH(jet->AreaEta()));
+        }
+    }
+
+    
+    
    if(!okpp || !okpj){
       printf("Problems getting momenta\n");
       return -999;

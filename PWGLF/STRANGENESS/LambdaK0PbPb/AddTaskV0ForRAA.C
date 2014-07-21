@@ -81,7 +81,7 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Bool_t wSDD=kFALSE
    task->SelectWithSDD(wSDD);
    //---------- cuts -------------//
    //general cuts
-   task->SetUseOnthefly(kTRUE);
+   // task->SetUseOnthefly(kTRUE);
    task->SetUsePID(usePID,3.0,100.0);
    task->SetPrimVertexZCut(10.0,kTRUE);
  

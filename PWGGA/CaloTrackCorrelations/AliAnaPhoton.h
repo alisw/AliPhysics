@@ -152,7 +152,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillEMCALBCHistograms;                  // Fill eta-phi BC dependent histograms
   
   //Histograms 
-  TH1F * fhClusterCuts[10];                         //! control histogram on the different photon selection cuts
+  TH1F * fhClusterCutsE [10];                       //! control histogram on the different photon selection cuts, E
+  TH1F * fhClusterCutsPt[10];                       //! control histogram on the different photon selection cuts, pT
   TH2F * fhNCellsE;                                 //! number of cells in cluster vs E
   TH2F * fhCellsE;                                  //! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;                     //! Fraction of energy carried by cell with maximum energy
@@ -447,7 +448,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,36)
+  ClassDef(AliAnaPhoton,37)
 
 } ;
  

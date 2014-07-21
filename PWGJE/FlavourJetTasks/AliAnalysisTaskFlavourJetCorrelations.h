@@ -26,6 +26,7 @@
 #include "AliAODEvent.h"
 #include "AliPicoTrack.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliRhoParameter.h"
 
 class TH3F;
 class TParticle ;

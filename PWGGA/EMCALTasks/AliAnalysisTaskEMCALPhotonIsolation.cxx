@@ -34,6 +34,8 @@
 
 #include "AliAnalysisTaskEMCALPhotonIsolation.h"
 
+using std::cout;
+using std::endl;
 
 ClassImp(AliAnalysisTaskEMCALPhotonIsolation)
 
@@ -693,7 +695,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellPhiBand(TLorentzVector c, Flo
         Int_t inModule = -1;
         Int_t iColLoc  = -1;
         if(iCol < AliEMCALGeoParams::fgkEMCALCols){ // if the SM number is odd the column is the one corresponding in the supermodule
-          iModule = 2*iSector + 1;
+          inModule = 2*iSector + 1;
           iColLoc  = iCol;
         }
         else if(iCol > AliEMCALGeoParams::fgkEMCALCols - 1){ // if the SM number is even the column isn't the one corresponding in the supermodule
@@ -705,12 +707,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellPhiBand(TLorentzVector c, Flo
         
         if(TMath::Abs(iCol-colCellLeadingClust)<nbConeSize && TMath::Abs(iCol+colCellLeadingClust)>nbConeSize){
           if(iRow<iRowMaxCone && iRow>iRowMinCone){
-            Int_t iabsId = emcalGeom->GetAbsCellIdFromCellIndexes(iModule,iRow,iCol);  // verifier les iRow et iCol
+            Int_t iabsId = emcalGeom->GetAbsCellIdFromCellIndexes(inModule,iRowLoc,iColLoc);  // verifier les iRow et iCol
             sumEnergyPhiBandCells+=cells->GetAmplitude(iabsId); //should be Et
           }
         }
         else if (TMath::Abs(iCol-colCellLeadingClust)>nbConeSize && TMath::Abs(iCol+colCellLeadingClust)<nbConeSize){
-          Int_t iabsId = emcalGeom->GetAbsCellIdFromCellIndexes(iModule,iRowLoc,iColLoc);  // verifier les iRow et iCol
+          Int_t iabsId = emcalGeom->GetAbsCellIdFromCellIndexes(inModule,iRowLoc,iColLoc);  // verifier les iRow et iCol
           sumEnergyConeCells+=cells->GetAmplitude(iabsId); //should be Et
         }
       }
@@ -786,7 +788,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellEtaBand(TLorentzVector c, Flo
         Int_t inModule = -1;
         Int_t iColLoc  = -1;
         if(iCol < AliEMCALGeoParams::fgkEMCALCols){ // if the SM number is odd the column is the one corresponding in the supermodule
-          iModule = 2*iSector + 1;
+          inModule = 2*iSector + 1;
           iColLoc  = iCol;
         }
         else if(iCol > AliEMCALGeoParams::fgkEMCALCols - 1){ // if the SM number is even the column isn't the one corresponding in the supermodule
@@ -798,12 +800,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellEtaBand(TLorentzVector c, Flo
         
         if(TMath::Abs(iCol-colCellLeadingClust)<nbConeSize && TMath::Abs(iCol+colCellLeadingClust)>nbConeSize){
           if(iCol<iColMaxCone && iCol>iColMinCone){
-            Int_t iabsId = emcalGeom->GetAbsCellIdFromCellIndexes(iModule,iRow,iCol);  // verifier les iRow et iCol
+            Int_t iabsId = emcalGeom->GetAbsCellIdFromCellIndexes(inModule,iRowLoc,iColLoc);  // verifier les iRow et iCol
             sumEnergyEtaBandCells+=cells->GetAmplitude(iabsId); //should be Et
           }
         }
         else if (TMath::Abs(iCol-colCellLeadingClust)>nbConeSize && TMath::Abs(iCol+colCellLeadingClust)<nbConeSize){
-          Int_t iabsId = emcalGeom->GetAbsCellIdFromCellIndexes(iModule,iRowLoc,iColLoc);  // verifier les iRow et iCol
+          Int_t iabsId = emcalGeom->GetAbsCellIdFromCellIndexes(inModule,iRowLoc,iColLoc);  // verifier les iRow et iCol
           sumEnergyConeCells+=cells->GetAmplitude(iabsId); //should be Et
         }
       }
@@ -1101,7 +1103,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
     nTracks++;
   }
   
-  Double_t eTCOI = 0., m02COI = 0., lambda0cluster = 0., phiCOI = 0., etaCOI = 0., ptmc = 0., mcptsum = 0.;
+  Double_t eTCOI = 0., m02COI = 0., lambda0cluster = 0., ptmc = 0., mcptsum = 0.;
   //Int_t Ntracks;
   //Definition of the Array for Davide's Output
   const Int_t ndims =   fNDimensions;
@@ -1109,8 +1111,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   
   eTCOI = vecCOI.Et();
   m02COI = coi->GetM02();
-  etaCOI = vecCOI.Eta();
-  phiCOI = vecCOI.Phi();
+
   
   // ******** Isolation and UE calculation with different methods *********
   

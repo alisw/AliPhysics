@@ -20,8 +20,8 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Bool_t      isMC,
    Bool_t      isPP,
    Bool_t      ispPb,
+   Bool_t      monitor = kTRUE,
    TString     centrality = "V0M",
-   Float_t     cutV = 10.0,
    Int_t       aodFilterBit = 5,  
    Float_t     nsigmaTPCPi = 3.0,
    Float_t     nsigmaTPCKa = 3.0,
@@ -40,9 +40,9 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Bool_t      maxDCAcutFixed = kFALSE,
    Bool_t      ptdepPIDcut = kFALSE,
    Bool_t      fixedYcut = kTRUE,
+   Bool_t      checkpileup = kFALSE,
    Bool_t      SPDpileup = kTRUE,
-   Bool_t      checkFeedDown = kTRUE,
-   Bool_t      checkQuark = kTRUE,
+   Bool_t      doCalculationInMC = kTRUE,
    UShort_t    originDselection = 0,
    Int_t       nmix = 5,
    Double_t    minYlab =  -0.5,
@@ -56,14 +56,18 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
-   Int_t       aodN = 0,
-   TString     outNameSuffix = "D0"
+   TString     outNameSuffix = "D0"  
 )
 {  
   //
   // -- INITIALIZATION ----------------------------------------------------------------------------
   // retrieve analysis manager
   //
+  Float_t     cutV = 10.0;
+  Bool_t      checkFeedDown = kTRUE;
+  Bool_t      checkQuark = kTRUE;
+  Int_t       aodN = 0;
+ 
   
   UInt_t trigger = 0;
   
@@ -129,12 +133,14 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    // - 3rd argument --> minimum required number of contributors
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 0, kFALSE);
-   if(SPDpileup == kTRUE)cutVertex->SetCheckPileUp(kTRUE);
-   AliRsnCutEventUtils *eventUtils = new AliRsnCutEventUtils("cutEventUtils", kFALSE, kFALSE); 
-   if(SPDpileup == kFALSE)eventUtils->SetUseMVPlpSelection(kTRUE); 
+   if(checkpileup == kTRUE){
+   	if(SPDpileup == kTRUE)cutVertex->SetCheckPileUp(kTRUE);
+   	AliRsnCutEventUtils *eventUtils = new AliRsnCutEventUtils("cutEventUtils", kFALSE, kFALSE); 
+   	if(SPDpileup == kFALSE)eventUtils->SetUseMVPlpSelection(kTRUE);
+   } 
 		 
-   ::Info("AddAnalysisTaskD0", Form("Checking Pile up? %s", (isPP || ispPb ? "yes" : "no") ));
-   ::Info("AddAnalysisTaskD0", Form("Which Method? %s", (SPDpileup ? "SPD" : "Multi Vertex") ));
+   ::Info("AddAnalysisTaskD0", Form("Checking Pile up? %s", (checkpileup ? "yes" : "no") ));
+   ::Info("AddAnalysisTaskD0", Form("Which Method? %s", (checkpileup? (SPDpileup ? "SPD" : "Multi Vertex") : "none" )));
    
    // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
@@ -158,6 +164,12 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
      outMult->AddAxis(multID, 400, 0.0, 400.0);
    else
      outMult->AddAxis(multID, 100, 0.0, 100.0);
+     
+   //tracklets
+   //Int_t trackletID = task->CreateValue(AliRsnMiniValue::kTracklets, kFALSE);
+   //AliRsnMiniOutput *outTracklets = task->CreateOutput("eventTracklets", "HIST", "EVENT");
+   //outTracklets->AddAxis(trackletID, 400, 0.0, 400.0);
+   
    
    //event plane (only for PbPb)
    Int_t planeID = task->CreateValue(AliRsnMiniValue::kPlaneAngle, kFALSE);
@@ -224,7 +236,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
        Printf("========================== MC analysis - PID cuts used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, trackDCAZcutMax, NTPCcluster, minSPDclt, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut, checkFeedDown, checkQuark, originDselection, mineta, maxeta, min_inv_mass, max_inv_mass, bins, "", cutsPairY, cutsPair)) return 0x0;
+   if (!ConfigD0(task, isPP, isMC, monitor, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, trackDCAZcutMax, NTPCcluster, minSPDclt, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut, checkFeedDown, checkQuark, doCalculationInMC, originDselection, mineta, maxeta, min_inv_mass, max_inv_mass, bins, "", cutsPairY, cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

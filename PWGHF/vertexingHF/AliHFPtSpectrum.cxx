@@ -1057,7 +1057,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
   Double_t theoryRatioExtremeA=1., theoryRatioExtremeB=1.;
   Double_t correctionConservativeA=1., correctionConservativeB=1.;
   Double_t theoryRatioConservativeA=1., theoryRatioConservativeB=1.;
-  Double_t correctionUnc=0.;
+  //  Double_t correctionUnc=0.;
   Double_t correctionExtremeAUnc=0., correctionExtremeBUnc=0.;
   Double_t correctionConservativeAUnc=0., correctionConservativeBUnc=0.;
 
@@ -1096,7 +1096,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
     theoryRatioExtremeA=1.; theoryRatioExtremeB=1.;
     correctionConservativeA=1.; correctionConservativeB=1.;
     theoryRatioConservativeA=1.; theoryRatioConservativeB=1.;
-    correctionUnc=0.;
+    //    correctionUnc=0.;
     correctionExtremeAUnc=0.; correctionExtremeBUnc=0.;
     correctionConservativeAUnc=0.; correctionConservativeBUnc=0.;
     correctionConservativeAUncStatEffc=0.; correctionConservativeBUncStatEffc=0.;
@@ -1150,7 +1150,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
 				       (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
 				       );
 
-    correctionUnc = correction*correction * theoryRatio * effRatio * relEffUnc;
+    //    correctionUnc = correction*correction * theoryRatio * effRatio * relEffUnc;
     correctionExtremeAUnc = correctionExtremeA*correctionExtremeA * theoryRatioExtremeA  * effRatio * relEffUnc;
     correctionExtremeBUnc = correctionExtremeB*correctionExtremeB * theoryRatioExtremeB  * effRatio * relEffUnc;
 

@@ -1,7 +1,5 @@
 AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 						const char* options = "11h",
-						UInt_t offlineTriggerMask = AliVEvent::kCentral,
-						AliPHOSCorrelations::TriggerSelection internalTriggerSelection = AliPHOSCorrelations::kNoSelection,
 						Double_t sigmaWidth = 3.,
 						Int_t downCentLimit = 0,
 						Int_t upCentLimit = 90 )
@@ -12,13 +10,13 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) 
 	{
-		::Error("AddTaskPi0CorrelationsL", "No analysis manager to connect to");
+		::Error("AddTaskPi0Correlations", "No analysis manager to connect to");
 		return NULL;
 	}
 
 	if (!mgr->GetInputEventHandler()) 
 	{
-		::Error("AddTaskPi0CorrelationsL", "This task requires an input event handler");
+		::Error("AddTaskPi0Correlations", "This task requires an input event handler");
 		return NULL;
 	}
 	
@@ -35,7 +33,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	TString sName = TString (name) + sigmaBorder + centralityBorder ;
 
 
-	AliPHOSCorrelations* task = new AliPHOSCorrelations(Form("%sTask", sName.Data()),internalTriggerSelection);
+	AliPHOSCorrelations* task = new AliPHOSCorrelations( Form("%sTask", sName.Data()) );
 
 	if( TString(options).Contains("10h") )	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC10h );
@@ -53,60 +51,31 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 
 	// Binning 
 	// TODO: Make other binning for 0-10% and 20-50%
-	//Any:
-	if( AliVEvent::kAny == offlineTriggerMask ) 
-	{
-		const int nbins = 8;
-		Double_t cbin[nbins+1] = {0., 10., 20., 30., 40., 50., 60., 70., 80.};
-		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {6, 40, 40, 40, 40, 80, 80, 80};
-		TArrayI tNMixed(nbins, nMixed);
-		task->SetCentralityBinning(tbin, tNMixed);
-	}
 	//Central:
-	if( AliVEvent::kCentral == offlineTriggerMask ) 
+	if( downCentLimit == 0 && upCentLimit == 10 ) 
 	{
-		const int nbins = 4;
-		Double_t cbin[nbins+1] = {0., 5., 8., 9., 10.};
+		const int nbins = 5;
+		Double_t cbin[nbins+1] = {0., 2., 4., 6., 8., 10.};
 		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {6, 6, 6, 6};
+		Int_t    nMixed[nbins] = {100, 100, 100, 100, 100};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
 	// SemiCentral:
-	if( AliVEvent::kSemiCentral == offlineTriggerMask ) 
+	if( downCentLimit == 20 && upCentLimit == 50 ) 
 	{
-		const int nbins = 8;
-		Double_t cbin[nbins+1] = {10., 11., 12., 13., 15., 20., 30., 40., 50.};
+		const int nbins = 6;
+		Double_t cbin[nbins+1] = {20., 25., 30., 35., 40., 45., 50.};
 		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {40, 40, 40, 40, 40, 40, 40, 40};
-		TArrayI tNMixed(nbins, nMixed);
-		task->SetCentralityBinning(tbin, tNMixed);
-	}
-	//INT7:
-	if( AliVEvent::kINT7 == offlineTriggerMask || AliVEvent::kPHI7 == offlineTriggerMask) 
-	{
-		const int nbins = 8;
-		Double_t cbin[nbins+1] = {0., 10., 20., 30., 40., 50., 60., 70., 80.};
-		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {6, 40, 40, 40, 40, 80, 80, 80};
-		TArrayI tNMixed(nbins, nMixed);
-		task->SetCentralityBinning(tbin, tNMixed);
-	}
-	// MB or PHOS Trigger:
-	if( AliVEvent::kMB == offlineTriggerMask || AliVEvent::kPHOSPb == offlineTriggerMask ) 
-	{
-		const int nbins = 8;
-		Double_t cbin[nbins+1] = {0., 10., 20., 30., 40., 50., 60., 70., 80.};
-		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {6, 40, 40, 40, 40, 80, 80, 80};
+		Int_t    nMixed[nbins] = {100, 100, 100, 100, 100, 100};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
 
-	task->SelectCollisionCandidates(offlineTriggerMask);
-	task->SetInternalTriggerSelection(internalTriggerSelection);
-	task->EnableTOFCut(true, 100.e-9);
+	task->SetAnalysisAlgoritmForReal("ME");
+	task->SetAnalysisAlgoritmForMix("ME");
+	task->EnableTOFCut(false, 100.e-9);
+	task->SelectCollisionCandidates(AliVEvent::kAny);
 	task->SetCentralityBorders(downCentLimit , upCentLimit) ;
 	task->SetSigmaWidth(sigmaWidth);
 

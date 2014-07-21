@@ -27,7 +27,9 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 	gSystem->Load("libSTEERBase.so");
 	gSystem->Load("libTENDER.so");
 	gSystem->Load("libTENDERSupplies.so");
-		
+	
+	Int_t isHeavyIon = 1;
+	
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
@@ -41,11 +43,12 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 	//========= Add PID Reponse to ANALYSIS manager ====
 	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
 		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-		AddTaskPIDResponse(isMC,1,0,4,0,"",1,1,4);
+		AddTaskPIDResponse(isMC);
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumber = "1000000000084001001500000000"; 
+	TString cutnumberPhoton = "000084001001500000000";
+	TString cutnumberEvent = "1000000";
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -61,16 +64,29 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 			return;
 		}
 
+		AliConvEventCuts *fEventCuts=NULL;
+		if(cutnumberEvent!=""){
+			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
+			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+			if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
+				fV0ReaderV1->SetEventCuts(fEventCuts);
+				fEventCuts->SetFillCutHistograms("",kTRUE);
+			}
+		}
+
+		
 		// Set AnalysisCut Number
-		AliConversionCuts *fCuts=NULL;
-		if(cutnumber!=""){
-			fCuts= new AliConversionCuts(cutnumber.Data(),cutnumber.Data());
+		AliConversionPhotonCuts *fCuts=NULL;
+		if(cutnumberPhoton!=""){
+			fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
 			fCuts->SetPreSelectionCutFlag(kTRUE);
-			if(fCuts->InitializeCutsFromCutString(cutnumber.Data())){
+			fCuts->SetIsHeavyIon(isHeavyIon);
+			if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
 			}
 		}
+
 		if(inputHandler->IsA()==AliAODInputHandler::Class()){
 		// AOD mode
 			fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
@@ -90,30 +106,31 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 	//================================================
 	AliAnalysisTaskGammaConvCalo *task=NULL;
 	task= new AliAnalysisTaskGammaConvCalo(Form("GammaConvCalo_%i",trainConfig));
-	task->SetIsHeavyIon(1);
+	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 5;
 
-	TString *cutarray = new TString[numberOfCuts];
-	TString *clustercutarray = new TString[numberOfCuts];
+	TString *eventCutArray = new TString[numberOfCuts];
+	TString *photonCutArray = new TString[numberOfCuts];
+	TString *clusterCutArray = new TString[numberOfCuts];
 	TString *mesonCutArray = new TString[numberOfCuts];
 
 	// meson cuts
 	// meson type (Dalitz or not), BG scheme, pool depth, rotation degrees, rapidity cut, radius cut, alpha, chi2, shared electrons, reject to close v0, MC smearing, dca, dca, dca
   
 	if (trainConfig == 1){ // EMCAL clusters
-		cutarray[ 0] = "6010001002092970028250400000"; clustercutarray[0] = "10000040022030000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		cutarray[ 1] = "6120001002092970028250400000"; clustercutarray[1] = "10000040022030000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		cutarray[ 2] = "5010001002092970028250400000"; clustercutarray[2] = "10000040022030000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		cutarray[ 3] = "5240001002092970028250400000"; clustercutarray[3] = "10000040022030000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
-		cutarray[ 4] = "5250001002092970028250400000"; clustercutarray[4] = "10000040022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000040022030000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000040022030000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
 	} else if (trainConfig == 2){ // PHOS clusters
-		cutarray[ 0] = "6010001002092970028250400000"; clustercutarray[0] = "20000030022000000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		cutarray[ 1] = "6120001002092970028250400000"; clustercutarray[1] = "20000030022000000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		cutarray[ 2] = "5010001002092970028250400000"; clustercutarray[2] = "20000030022000000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		cutarray[ 3] = "5240001002092970028250400000"; clustercutarray[3] = "20000030022000000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
-		cutarray[ 4] = "5250001002092970028250400000"; clustercutarray[4] = "20000030022000000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000030022000000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000030022000000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000030022000000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "20000030022000000"; mesonCutArray[ 3] = "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "20000030022000000"; mesonCutArray[ 4] = "01525065000000"; // 20-50%
 
 		
 	} else {
@@ -121,6 +138,7 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 		return;
 	}
 
+	TList *EventCutList = new TList();
 	TList *ConvCutList = new TList();
 	TList *ClusterCutList = new TList();
 	TList *MesonCutList = new TList();
@@ -153,45 +171,54 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 		HeaderList->Add(Header1);
 	}	
 
+	EventCutList->SetOwner(kTRUE);
+	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
 	ConvCutList->SetOwner(kTRUE);
-	AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];
+	AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
    	ClusterCutList->SetOwner(kTRUE);
 	AliCaloPhotonCuts **analysisClusterCuts = new AliCaloPhotonCuts*[numberOfCuts];
 	MesonCutList->SetOwner(kTRUE);
 	AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
-		analysisCuts[i] = new AliConversionCuts();
-      
+		
+		analysisEventCuts[i] = new AliConvEventCuts();
 		if ( trainConfig == 1){
 			if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
-				if ( i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M","Eta_Fit_Data_PbPb_2760GeV_0005V0M");
-				if ( i == 1 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M","Eta_Fit_Data_PbPb_2760GeV_0510V0M");
-				if ( i == 2 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
-				if ( i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2040TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2040TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M","Eta_Fit_Data_PbPb_2760GeV_2040V0M");
-				if ( i == 4 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
+				if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M","Eta_Fit_Data_PbPb_2760GeV_0005V0M");
+				if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M","Eta_Fit_Data_PbPb_2760GeV_0510V0M");
+				if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
+				if ( i == 3 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2040TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2040TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M","Eta_Fit_Data_PbPb_2760GeV_2040V0M");
+				if ( i == 4 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
 			}	
 		} 
-		analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
+		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		if (periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
-			if (headerSelectionInt == 1) analysisCuts[i]->SetAddedSignalPDGCode(111);
-			if (headerSelectionInt == 2) analysisCuts[i]->SetAddedSignalPDGCode(221);
+			if (headerSelectionInt == 1) analysisEventCuts[i]->SetAddedSignalPDGCode(111);
+			if (headerSelectionInt == 2) analysisEventCuts[i]->SetAddedSignalPDGCode(221);
 		}
-		ConvCutList->Add(analysisCuts[i]);
+		EventCutList->Add(analysisEventCuts[i]);
+		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
+		analysisCuts[i] = new AliConversionPhotonCuts();
+		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+		ConvCutList->Add(analysisCuts[i]);
+		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
+				
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
-		analysisClusterCuts[i]->InitializeCutsFromCutString(clustercutarray[i].Data());
+		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 
-		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
 		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
 		MesonCutList->Add(analysisMesonCuts[i]);
 		analysisMesonCuts[i]->SetFillCutHistograms("");
-		analysisCuts[i]->SetAcceptedHeader(HeaderList);
+		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+	
 	}
 
+	task->SetEventCutList(numberOfCuts,EventCutList);
 	task->SetConversionCutList(numberOfCuts,ConvCutList);
 	task->SetCaloCutList(numberOfCuts,ClusterCutList);
 	task->SetMesonCutList(numberOfCuts,MesonCutList);

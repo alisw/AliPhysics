@@ -1,5 +1,7 @@
 AliAnalysisTask *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrpPb = kFALSE,
                                             Bool_t producePIDqa = kTRUE, Bool_t useTPCCutMIGeo = kTRUE,
+                                            Bool_t writeAdditionalQA = kFALSE,
+                                            Bool_t cutOnProdRadiusForV0el = kTRUE,
                                             Bool_t correctdEdxEtaDependence = kFALSE, 
                                             Bool_t correctdEdxMultiplicityDependence = kFALSE,
                                             Bool_t useMCinfo = kTRUE){
@@ -57,6 +59,10 @@ AliAnalysisTask *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrp
   task->SetUseTPCCutMIGeo(useTPCCutMIGeo);
   printf("UseTPCCutMIGeo: %d\n", task->GetUseTPCCutMIGeo());
   
+  task->SetWriteAdditionalOutput(writeAdditionalQA);
+  
+  task->SetCutOnProdRadiusForV0el(cutOnProdRadiusForV0el);
+  
   task->SetCorrectdEdxEtaDependence(correctdEdxEtaDependence);
   
   task->SetCorrectdEdxMultiplicityDependence(correctdEdxMultiplicityDependence);
@@ -71,6 +77,10 @@ AliAnalysisTask *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrp
 
   printf("Use MC info: %d\n", task->GetUseMCinfo());
   
+  printf("WriteAdditionalOutput: %d\n", task->GetWriteAdditionalOutput());
+  
+  printf("CutOnProdRadiusForV0el: %d\n", task->GetCutOnProdRadiusForV0el());
+  
   
   mgr->AddTask(task);
 
@@ -80,19 +90,36 @@ AliAnalysisTask *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrp
   //            find input container
   
   
-  //            define output containers, please use 'username'_'somename'
+  //            define output containers
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("TPCresPID", TObjArray::Class(),
                          AliAnalysisManager::kOutputContainer,"TPCresidualPID.root");
-    
-  AliAnalysisDataContainer *coutput2 =
-    mgr->CreateContainer("TPCresPIDQA", TObjArray::Class(),
-                         AliAnalysisManager::kOutputContainer,"TPCresidualPIDQA.root");
   
   //           connect containers
   mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer() );
   mgr->ConnectOutput (task,  1, coutput1);
-  mgr->ConnectOutput (task,  2, coutput2);
+  
+  if (task->GetWriteAdditionalOutput()) {
+    AliAnalysisDataContainer *coutput2 =
+      mgr->CreateContainer("TPCresPIDQA", TObjArray::Class(),
+                          AliAnalysisManager::kOutputContainer,"TPCresidualPIDQA.root");
+    
+    AliAnalysisDataContainer *coutput3 =
+      mgr->CreateContainer("TPCresPIDTreeEl", TTree::Class(),
+                          AliAnalysisManager::kOutputContainer,"TPCresidualPIDTree_el.root");
+    
+    AliAnalysisDataContainer *coutput4 =
+      mgr->CreateContainer("TPCresPIDTreePi", TTree::Class(),
+                          AliAnalysisManager::kOutputContainer,"TPCresidualPIDTree_pi.root");
+    
+    AliAnalysisDataContainer *coutput5 =
+      mgr->CreateContainer("TPCresPIDTreePr", TTree::Class(),
+                          AliAnalysisManager::kOutputContainer,"TPCresidualPIDTree_pr.root");
+    mgr->ConnectOutput (task,  2, coutput2);
+    mgr->ConnectOutput (task,  3, coutput3);
+    mgr->ConnectOutput (task,  4, coutput4);
+    mgr->ConnectOutput (task,  5, coutput5);
+  }
   
   return task;
 }

@@ -1418,8 +1418,8 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
   TString trigclass=aod->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNentries->Fill(14);
   Bool_t isEvSelProdCuts=fRDCutsProduction->IsEventSelected(aod);
-  //  Bool_t isEvSelAnCuts=fRDCutsAnalysis->IsEventSelected(aod);
-  if(!isEvSelProdCuts){
+  Bool_t isEvSelAnCuts=fRDCutsAnalysis->IsEventSelected(aod);
+  if(!isEvSelProdCuts || !isEvSelAnCuts){
     if(fRDCutsProduction->GetWhyRejection()==1) // rejected for pileup
       fNentries->Fill(13);
     return;
@@ -1859,16 +1859,16 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
     Float_t xDecay=0.;
     Float_t yDecay=0.;
     Float_t zDecay=0.;
-    Bool_t IsInjected   = -1; 
+    //    Bool_t IsInjected   = -1; 
     Bool_t IsLc		= 0;
     Bool_t IsLcfromLb	= 0;
     Bool_t IsLcfromc   = 0;
     Bool_t IsLcFromq = 0;
 
     if(fReadMC){
-      AliAODMCHeader *mcHeader2 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      //      AliAODMCHeader *mcHeader2 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
       AliVertexingHFUtils *util = new AliVertexingHFUtils();
-      IsInjected = util->IsCandidateInjected(part,mcHeader2,arrayMC)?1:0;
+      //      IsInjected = util->IsCandidateInjected(part,mcHeader2,arrayMC)?1:0;
    
       labDp = MatchToMCLambdac(part,arrayMC);
       if(labDp>0){
@@ -2493,7 +2493,7 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 
   Int_t pdgDgLctopKpi[3]={2212,321,211};
   Int_t lab=-9999;
-  Bool_t IsLcfromLb=0;
+  //  Bool_t IsLcfromLb=0;
   Bool_t IsLcfromc=0;
   if(fReadMC){
     lab=part->MatchToMC(4122,arrMC,3,pdgDgLctopKpi); //return MC particle label if the array corresponds to a Lc, -1 if not (cf. AliAODRecoDecay.cxx)
@@ -2501,7 +2501,7 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
       AliAODMCParticle *partDp = (AliAODMCParticle*)arrMC->At(lab);
       AliVertexingHFUtils *util = new AliVertexingHFUtils();
       Int_t pdgMom=util->CheckOrigin(arrMC,partDp,kFALSE);
-      if(pdgMom == 5) IsLcfromLb =1;
+      //      if(pdgMom == 5) IsLcfromLb =1;
       if(pdgMom == 4) IsLcfromc =1; 
       delete util;
     }

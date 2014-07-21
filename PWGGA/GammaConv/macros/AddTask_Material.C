@@ -1,17 +1,12 @@
-void AddTask_Material(TString V0ReaderCutNumber = "0000000060084001001500000000",
-                      TString TaskCutnumber =     "0000000090092663743800000000",
-                      Bool_t IsMC = kFALSE, 
-                      Int_t IsHeavyIon = 0, 
-                      TString cutnumberAODBranch = "0000000060084001001500000",
-                      Bool_t doEtaShiftV0Reader = kFALSE 
+void AddTask_Material(	TString V0ReaderEventCutNumber 		= "0000000",
+						TString V0ReaderPhotonCutNumber 	= "060084001001500000000",
+						TString TaskEventCutnumber 			= "0000000",
+						TString TaskPhotonCutnumber 		= "090092663743800000000",
+						Bool_t IsMC = kFALSE, 
+						Int_t IsHeavyIon = 0, 
+						TString cutnumberAODBranch = "0000000060084001001500000",
+						Bool_t doEtaShiftV0Reader = kFALSE 
                      ){
-	
-	// Suitable Cutnumbers for the V0 Reader for
-	// PbPb: V0ReaderCutNumber =  "1000000060084001001500000000"; (V0Mult MC)
-	//  or   V0ReaderCutNumber =  "5000000060084001001500000000" (TPC mult MC)
-	// pPb: V0ReaderCutNumber =   "8000000060084001001500000000";
-	// pp: V0ReaderCutNumber =    "0000000060084001001500000000";
-
 
 	// ================= Load Librariers =================================
 	gSystem->Load("libCore.so");  
@@ -60,16 +55,27 @@ void AddTask_Material(TString V0ReaderCutNumber = "0000000060084001001500000000"
 			return;
 		}
 
-		// Set AnalysisCut Number
-		AliConversionCuts *fCuts=NULL;
-		if(V0ReaderCutNumber!=""){
-			fCuts= new AliConversionCuts(V0ReaderCutNumber.Data(),V0ReaderCutNumber.Data());
-			fCuts->SetPreSelectionCutFlag(kTRUE);
-			if(fCuts->InitializeCutsFromCutString(V0ReaderCutNumber.Data())){
+		AliConvEventCuts *fEventCuts=NULL;
+		if(V0ReaderEventCutNumber!=""){
+			fEventCuts= new AliConvEventCuts(V0ReaderEventCutNumber.Data(),V0ReaderEventCutNumber.Data());
+			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+			if(fEventCuts->InitializeCutsFromCutString(V0ReaderEventCutNumber.Data())){
+				fV0ReaderV1->SetEventCuts(fEventCuts);
+				fEventCuts->SetFillCutHistograms("",kTRUE);
 				if (IsHeavyIon==2){
-				fCuts->SelectCollisionCandidates(AliVEvent::kINT7);
-				fCuts->DoEtaShift(doEtaShiftV0Reader);
+					fEventCuts->SelectCollisionCandidates(AliVEvent::kINT7);
+					fEventCuts->DoEtaShift(doEtaShiftV0Reader);
 				}
+			}
+		}
+
+		// Set AnalysisCut Number
+		AliConversionPhotonCuts *fCuts=NULL;
+		if(V0ReaderPhotonCutNumber!=""){
+			fCuts= new AliConversionPhotonCuts(V0ReaderPhotonCutNumber.Data(),V0ReaderPhotonCutNumber.Data());
+			fCuts->SetPreSelectionCutFlag(kTRUE);
+			fCuts->SetIsHeavyIon(IsHeavyIon);
+			if(fCuts->InitializeCutsFromCutString(V0ReaderPhotonCutNumber.Data())){
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
 			}
@@ -92,29 +98,26 @@ void AddTask_Material(TString V0ReaderCutNumber = "0000000060084001001500000000"
 		Error("AddTask_V0ReaderV1", "Cannot execute AddTask, V0ReaderV1 already exists.");
 	}   
 
+	AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
+	analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
+	analysisEventCuts->SetFillCutHistograms("",kFALSE);
 
-	// suitable cuts for the material Task:
-	// PbPb:  TaskCutnumber = "5680001060092663044803000000"; TPC mult in MC - 60-80% central
-	//   or:  TaskCutnumber = "1680001060092663044803000000"; V0 mult in MC  - 60-80% central
-	//  pPb:  TaskCutnumber = "8000000090092663743800000000";
-	//   pp:  TaskCutnumber = "0000000090092663743800000000";
-
-	AliConversionCuts *analysisCuts = new AliConversionCuts();
-	analysisCuts->InitializeCutsFromCutString(TaskCutnumber.Data());
+	AliConversionPhotonCuts *analysisCuts = new AliConversionPhotonCuts();
+	analysisCuts->InitializeCutsFromCutString(TaskPhotonCutnumber.Data());
 	analysisCuts->SetFillCutHistograms("",kFALSE);
 	
-	AliAnalysisTaskMaterial *fMaterial= new AliAnalysisTaskMaterial(Form("%s_Material",(analysisCuts->GetCutNumber()).Data()));
+	AliAnalysisTaskMaterial *fMaterial= new AliAnalysisTaskMaterial(Form("%s_%s_Material",(analysisEventCuts->GetCutNumber()).Data(),(analysisCuts->GetCutNumber()).Data()));
+	fMaterial->SetEventCuts(analysisEventCuts,IsHeavyIon);
 	fMaterial->SetConversionCuts(analysisCuts,IsHeavyIon);
 	fMaterial->SetIsMC(IsMC);
 	mgr->AddTask(fMaterial);
 	
 	AliAnalysisDataContainer *coutput1 =
-	mgr->CreateContainer(Form("GammaConvMaterial_%s",TaskCutnumber.Data()), TList::Class(),
-							AliAnalysisManager::kOutputContainer,Form("GammaConv_Material_%s.root",TaskCutnumber.Data()));
+	mgr->CreateContainer(Form("GammaConvMaterial_%s_%s",TaskEventCutnumber.Data(),TaskPhotonCutnumber.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,Form("GammaConv_Material_%s_%s.root",TaskEventCutnumber.Data(),TaskPhotonCutnumber.Data()));
 
 	AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
 	mgr->ConnectInput(fMaterial,  0, cinput1 );
 	mgr->ConnectOutput (fMaterial,  1, coutput1);
 	//connect containers
-	return ;
+	return;
 }

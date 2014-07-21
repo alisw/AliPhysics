@@ -235,6 +235,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,EopTrue(0)
   ,MatchFake(0)
   ,MatchTrue(0)
+  ,MatchTrCheck(0)
+  ,MatchTrEop(0)
   //,fnSigEtaCorr(NULL)
 {
   //Named constructor
@@ -402,6 +404,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,EopTrue(0)
   ,MatchFake(0)
   ,MatchTrue(0)
+  ,MatchTrCheck(0)
+  ,MatchTrEop(0)
   //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
@@ -820,14 +824,30 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
         double emctof = 0.0;
         Bool_t MaxEmatch = kFALSE;
 
-    Int_t clsId = track->GetEMCALcluster();
-    if (clsId>0){
+    Int_t clsId_ESD = track->GetEMCALcluster();
+    Int_t clsId = -9999;
+    if(phi>1.0 && phi<3.5 && fabs(eta)<0.75)clsId = TrMatch(track);
+
+    //cout << "match ID" << clsId << " ; " << clsId_Tender << endl;
+
+    if (clsId>=0){
       AliESDCaloCluster *clust = fESD->GetCaloCluster(clsId);
+
       if(clust && clust->IsEMCAL()){
 
 	        double clustE = clust->E();
                 if(clustE==maxE)MaxEmatch = kTRUE;
                 eop = clustE/fabs(mom);
+
+
+                   MatchTrCheck->Fill(clsId_ESD,clsId);
+                   double eop_ESD = -10.0;
+                   if(clsId_ESD>=0)
+                     {
+                       AliESDCaloCluster *clust_ESD = fESD->GetCaloCluster(clsId_ESD);
+                       eop_ESD = clust_ESD->E()/fabs(mom);
+                     }
+                   if(fTPCnSigma>-1 && fTPCnSigma<3 && pt>3.0)MatchTrEop->Fill(eop_ESD,eop);
 
                 //double clustT = clust->GetTOF();
                 ncells = clust->GetNCells();
@@ -840,14 +860,14 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		nmatch = clust->GetNTracksMatched();
                 emctof = clust->GetTOF();
                 //cout << "emctof = " << emctof << endl;
-                cout << "eop org = "<< eop << endl;
+                //cout << "eop org = "<< eop << endl;
                 double eoporg =  eop;
                 if(fmcData)
                   {
                    double mceopcorr = MCEopMeanCorrection(pt,cent);
                    eop += mceopcorr;
                   }
-                cout << "eop corr = " << eop << endl;
+                //cout << "eop corr = " << eop << endl;
 
 		  double valdedx[16];
 		  valdedx[0] = pt; valdedx[1] = nITS; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
@@ -1639,6 +1659,12 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   MatchTrue->Sumw2();
   fOutputList->Add(MatchTrue);
 
+  MatchTrCheck = new TH2D("MatchTrCheck","Check Tr Match",2010,-10,2000,2010,-10,2000);
+  fOutputList->Add(MatchTrCheck);
+
+  MatchTrEop = new TH2D("MatchTrEop","Check Tr Match E/p",200,0,2,200,0,2);
+  fOutputList->Add(MatchTrEop);
+
   PostData(1,fOutputList);
 }
 
@@ -2288,4 +2314,65 @@ double AliAnalysisTaskHFECal::NsigmaCorrection(double tmpeta, float central)
 
 }
 
+//________ matching
+int AliAnalysisTaskHFECal::TrMatch(AliESDtrack *tr)
+{
+  
+  Float_t  clsPos[3];
+  Double_t trkPos[3];
+  int matchID = -1;
+  Double_t MaxR = 0.05;
+  Double_t MaxEta = 0.025;
+  Double_t MaxPhi = 0.05;
+
+  Double_t  magF = fESD->GetMagneticField();
+  Double_t magSign = 1.0;
+  if(magF<0)magSign = -1.0;
+  //printf("magF ; %g ; %g \n", magF,magSign);
+ 
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+	  printf("Loading field map...\n");
+	  //AliMagF* field = new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG);
+	  AliMagF* field = new AliMagF("Maps","Maps", magSign, magSign, AliMagF::k5kG); // for 10d
+	  TGeoGlobalMagField::Instance()->SetField(field);
+	            }
+
+  AliEMCALTrack *emctrack = new AliEMCALTrack(*tr);
+  Double_t fieldB[3]; 
+  emctrack->GetBxByBz(fieldB);
+  //printf("%g %g %g \n", fieldB[0], fieldB[1], fieldB[2]);
+
+  for(Int_t icl=0; icl<fESD->GetNumberOfCaloClusters(); icl++)
+   {
+
+   AliVCluster *cluster = (AliVCluster*) fESD->GetCaloCluster(icl);
+   if(!cluster->IsEMCAL()) continue;
+
+   cluster->GetPosition(clsPos);
+   if(!emctrack->PropagateToGlobal(clsPos[0],clsPos[1],clsPos[2],0.,0.) )  continue;
+   emctrack->GetXYZ(trkPos);
+
+   TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
+   TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+
+   Double_t delEmcphi = clsPosVec.Phi()-trkPosVec.Phi();  // track cluster matching
+   Double_t delEmceta = clsPosVec.Eta()-trkPosVec.Eta();  // track cluster matching
+
+   if(fabs(delEmcphi)>0.05)continue;
+   if(fabs(delEmceta)>0.025)continue;
+
+   double rmatch = sqrt(pow(delEmcphi,2)+pow(delEmceta,2));
+   
+   //if(rmatch<MaxR)
+   if(fabs(delEmcphi)<MaxPhi && fabs(delEmceta)<MaxEta )
+     {
+      matchID = icl;
+      //MaxR = rmatch;
+      MaxPhi = fabs(delEmcphi);
+      MaxEta = fabs(delEmceta);
+     }
+  }
+ 
+ return matchID;
+}
 

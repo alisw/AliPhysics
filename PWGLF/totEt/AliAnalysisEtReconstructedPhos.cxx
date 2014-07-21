@@ -107,16 +107,16 @@ Double_t AliAnalysisEtReconstructedPhos::GetCorrectionModification(const AliESDC
   Double_t factor = 1.0;
   if(nonLinCorr!=0){
     if(nonLinCorr==1){//high bound on nonlinearity
-      Double_t a1=0.045-0.010;
-      Double_t a2=0.045+0.010;
+      Double_t a1=0.045;//-0.010;
+      Double_t a2=0.045;//+0.010;
       Double_t b1=1.055-0.450 ;
       Double_t b2=1.055+0.450 ;
       Double_t y = (1+a2/(1+cluster.E()*cluster.E()/b2/b2))/(1+a1/(1+cluster.E()*cluster.E()/b1/b1)) ;
       factor *=y*GetCorrectionModification(cluster,0,0,cent);
     }
     else{//nonLinCorr==-1
-      Double_t a1=0.045-0.010;
-      Double_t a2=0.045+0.010;
+      Double_t a1=0.045;//-0.010;
+      Double_t a2=0.045;//+0.010;
       Double_t b1=1.055-0.450 ;
       Double_t b2=1.055+0.450 ;
       Double_t y = (1+a1/(1+cluster.E()*cluster.E()/b1/b1))/(1+a2/(1+cluster.E()*cluster.E()/b2/b2)) ;

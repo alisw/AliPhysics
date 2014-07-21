@@ -12,6 +12,7 @@ namespace fastjet {
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliFJWrapper.h"
+#include "AliAODMCParticle.h"
 
 class AliEmcalJetTask : public AliAnalysisTaskSE {
  public:
@@ -80,7 +81,14 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
       fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
     }
   }
-  void                   SetLegacyMode(Bool_t mode)       { if(IsLocked()) return; fLegacyMode = mode; }
+  void                   SetLegacyMode(Bool_t mode)           { if(IsLocked()) return; fLegacyMode = mode; }
+  void                   SetMCFlag(UInt_t m)                  { if(IsLocked()) return; fMCFlag     = m   ; }
+  void                   SelectHIJING(Bool_t s)               { if(IsLocked()) return; if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
+  void                   SetGeneratorIndex(Short_t i)         { if(IsLocked()) return; fGeneratorIndex = i; }
+  void                   SelectPhysicalPrimaries(Bool_t s)    { if(IsLocked()) return; 
+                                                                if (s) fMCFlag |=  AliAODMCParticle::kPhysicalPrim ; 
+                                                                else   fMCFlag &= ~AliAODMCParticle::kPhysicalPrim ; }
+
   void                   SetCodeDebug(Bool_t val)         { fCodeDebug = val; }
 
   void                   SetRhoName(const char *n)              { fRhoName      = n            ; }
@@ -97,6 +105,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Double_t               GetRadius()                      { return fRadius; }
   const char*            GetTracksName()                  { return fTracksName.Data(); }
   const char*            GetClusName()                    { return fCaloName.Data(); }
+  const char*            GetRhoName()                     { return fRhoName.Data(); }
   UInt_t                 GetMarkConstituents()            { return fMarkConst; }
   Double_t               GetMinJetArea()                  { return fMinJetArea; }
   Double_t               GetMinJetClusPt()                { return fMinJetClusPt; }
@@ -150,6 +159,8 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Int_t                  fMinMCLabel;             // minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                  fRecombScheme;           // recombination scheme used by fastjet
   Double_t               fTrackEfficiency;        // artificial tracking inefficiency (0...1)
+  UInt_t                 fMCFlag;                 // select MC particles with flags
+  Short_t                fGeneratorIndex;         // select MC particles with generator index (default = -1 = switch off selection)
   Bool_t                 fIsInit;                 //!=true if already initialized
   Bool_t                 fLocked;                 // true if lock is set
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
@@ -178,6 +189,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 13) // Jet producing task
+  ClassDef(AliEmcalJetTask, 14) // Jet producing task
 };
 #endif
