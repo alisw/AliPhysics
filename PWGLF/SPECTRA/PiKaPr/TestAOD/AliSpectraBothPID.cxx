@@ -68,8 +68,8 @@ void AliSpectraBothPID::FillQAHistos(AliSpectraBothHistoManager * hman, AliVTrac
   		nsigmaTPCTOFkPion   =100.0;
 
 	}
-
- 	if(track->Pt()>trackCuts->GetPtTOFMatching())
+	Float_t tmppt=TMath::Min(trackCuts->GetPtTOFMatchingPion(),TMath::Min(trackCuts->GetPtTOFMatchingKaon(),trackCuts->GetPtTOFMatchingProton()));
+ 	if(track->Pt()>tmppt&&trackCuts->CheckTOFMatchingParticleType(kSpProton)&&trackCuts->CheckTOFMatchingParticleType(kSpKaon)&&trackCuts->CheckTOFMatchingParticleType(kSpPion))
   	{
     
    		 hman->GetPIDHistogram(kHistPIDTOF)->Fill(track->P(),(track->GetTOFsignal()/100)*track->Charge()); // PID histo
@@ -199,7 +199,9 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
   
  
 
-	Double_t nsigmaTOFkProton=0.0,nsigmaTOFkKaon=0.0,nsigmaTOFkPion=0.0;
+	Double_t nsigmaTOFkProton=0.0;
+	Double_t nsigmaTOFkKaon=0.0;
+	Double_t nsigmaTOFkPion=0.0;
 
 
 
@@ -208,18 +210,57 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
   	Double_t nsigmaTPCTOFkPion   = TMath::Abs(nsigmaTPCkPion);
 	if(fPIDType==kNSigmaTOF)
 	{
-		nsigmaTPCTOFkProton = 100.0;
-  		nsigmaTPCTOFkKaon   = 100.0;
-  		nsigmaTPCTOFkPion   =100.0;
-		nsigmaTOFkProton = 100.0;
-  		nsigmaTOFkKaon   = 100.0;
-  		nsigmaTOFkPion   =100.0;
+		nsigmaTPCTOFkProton = 10000.0;
+  		nsigmaTPCTOFkKaon   = 10000.0;
+  		nsigmaTPCTOFkPion   =10000.0;
+		nsigmaTOFkProton = 10000.0;
+  		nsigmaTOFkKaon   = 10000.0;
+  		nsigmaTOFkPion   =10000.0;
 
 	}
 	
 
+	if(trackCuts->GetUseTypeDependedTOFCut())
+  	{
+		if(trackCuts->CheckTOFMatchingParticleType(kSpPion)&&trk->Pt()>trackCuts->GetPtTOFMatchingPion())
+		{	
+			nsigmaTOFkPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kPion)+fshiftTOF); 
+			nsigmaTPCTOFkPion   = TMath::Sqrt((nsigmaTPCkPion*nsigmaTPCkPion+nsigmaTOFkPion*nsigmaTOFkPion)/2.);
+		}
+		else if (trk->Pt()>trackCuts->GetPtTOFMatchingPion()) // tracks without proper flags
+		{
+			nsigmaTOFkPion   = 10000.0; 
+			nsigmaTPCTOFkPion   =10000.0;
 
-  	if(trk->Pt()>trackCuts->GetPtTOFMatching())
+		}	
+			
+		if(trackCuts->CheckTOFMatchingParticleType(kSpKaon)&&trk->Pt()>trackCuts->GetPtTOFMatchingKaon())
+		{	
+			nsigmaTOFkKaon   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kKaon)+fshiftTOF); 
+			nsigmaTPCTOFkKaon   = TMath::Sqrt((nsigmaTPCkKaon*nsigmaTPCkKaon+nsigmaTOFkKaon*nsigmaTOFkKaon)/2.);
+		}
+		else if (trk->Pt()>trackCuts->GetPtTOFMatchingKaon()) // tracks without proper flags
+		{
+			nsigmaTOFkKaon   = 10000.0; 
+			nsigmaTPCTOFkKaon   =10000.0;
+
+		}	
+
+		if(trackCuts->CheckTOFMatchingParticleType(kSpProton)&&trk->Pt()>trackCuts->GetPtTOFMatchingProton())
+		{	
+			nsigmaTOFkProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kProton)+fshiftTOF); 
+			nsigmaTPCTOFkProton   = TMath::Sqrt((nsigmaTPCkProton*nsigmaTPCkProton+nsigmaTOFkProton*nsigmaTOFkProton)/2.);
+		}
+		else if (trk->Pt()>trackCuts->GetPtTOFMatchingProton()) // tracks without proper flags
+		{
+			nsigmaTOFkProton   = 10000.0; 
+			nsigmaTPCTOFkProton   =10000.0;
+
+		}	
+
+
+	}
+	else if(trk->Pt()>trackCuts->GetPtTOFMatching())
   	{
     		nsigmaTOFkProton = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kProton)+fshiftTOF);
    	 	nsigmaTOFkKaon   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kKaon)+fshiftTOF); 
@@ -237,9 +278,9 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
 	}
 	
   	// select the nsigma to be used for the actual PID
-  	Double_t nsigmaPion=100; 
-	Double_t nsigmaKaon=100; 
-	Double_t nsigmaProton=100;
+  	Double_t nsigmaPion=10000.0; 
+	Double_t nsigmaKaon=10000.0; 
+	Double_t nsigmaProton=10000.0;
 
   	switch (fPIDType) 
 	{
