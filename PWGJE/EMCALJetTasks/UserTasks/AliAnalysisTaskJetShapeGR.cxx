@@ -594,7 +594,7 @@ Bool_t AliAnalysisTaskJetShapeGR::FillTrueJets() {
     while((jet1 = jetCont->GetNextAcceptJet())) {
       fh1PtTrue[fCentBin]->Fill(jet1->Pt());
       
-      Double_t dev = CalcDeltaGR(jet1,fContainerTrue,fNum,fDen);//num,den);
+      //Double_t dev = CalcDeltaGR(jet1,fContainerTrue,fNum,fDen);//num,den);
       for(Int_t i = 0; i<nr; i++) {
 	Double_t r = i*fDRStep + 0.5*fDRStep;
 	fh3DeltaGRNumRPtTrue[fCentBin]->Fill(fNum->At(i),r,jet1->Pt());

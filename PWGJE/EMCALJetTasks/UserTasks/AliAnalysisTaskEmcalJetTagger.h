@@ -79,10 +79,13 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   TH2F             *fh2PtJetDRConst;              //!pt jet vs delta R of constituents
   TH3F             *fh3PtJetAreaDRConst;          //!pt jet vs Area vs delta R of constituents
 
+  TH3F            **fh3PtJet1VsMassJet1MassJet2;  //!pt jet 1 vs mass jet1 vs mass jet2
+  TH3F            **fh3PtJet2VsMassJet1MassJet2;  //!pt jet 2 vs mass jet1 vs mass jet2
+
   AliAnalysisTaskEmcalJetTagger(const AliAnalysisTaskEmcalJetTagger&);            // not implemented
   AliAnalysisTaskEmcalJetTagger &operator=(const AliAnalysisTaskEmcalJetTagger&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTagger, 3)
+  ClassDef(AliAnalysisTaskEmcalJetTagger, 4)
 };
 #endif
 
