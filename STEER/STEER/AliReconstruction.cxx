@@ -4111,7 +4111,9 @@ Bool_t AliReconstruction::GetEventInfo()
     fEventInfo.SetEventType(fRawReader->GetType());
 
     ULong64_t mask = fRawReader->GetClassMask();
+    ULong64_t maskNext50 = fRawReader->GetClassMaskNext50();
     fEventInfo.SetTriggerMask(mask);
+    fEventInfo.SetTriggerMaskNext50(maskNext50);
     UInt_t clmask = fRawReader->GetDetectorPattern()[0];
     fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(clmask));
 
@@ -4139,6 +4141,7 @@ Bool_t AliReconstruction::GetEventInfo()
     if (fRunLoader && (!fRunLoader->LoadTrigger())) {
       aCTP = fRunLoader->GetTrigger();
       fEventInfo.SetTriggerMask(aCTP->GetClassMask());
+      fEventInfo.SetTriggerMaskNext50(aCTP->GetClassMaskNext50());
       // get inputs from actp - just get
       AliESDHeader* esdheader = fesd->GetHeader();
       esdheader->SetL0TriggerInputs(aCTP->GetL0TriggerInputs());
