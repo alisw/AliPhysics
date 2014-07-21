@@ -187,16 +187,16 @@ void TTreeSRedirector::Test()
   //5.) and now see results in file testredirector.root 
 }
 
-void TTreeSRedirector::UnitTest(){
+void TTreeSRedirector::UnitTest(Int_t testEntries){
   //
   //
   //
-  UnitTestSparse(0.5);
-  UnitTestSparse(0.1);
-  UnitTestSparse(0.01);
+  UnitTestSparse(0.5,testEntries);
+  UnitTestSparse(0.1,testEntries);
+  UnitTestSparse(0.01,testEntries);
 }
 
-void TTreeSRedirector::UnitTestSparse(Double_t scale){
+void TTreeSRedirector::UnitTestSparse(Double_t scale, Int_t testEntries){
   //
   // Unit test for the TTreeSRedirector
   // 1.) Test TTreeRedirector 
@@ -213,10 +213,10 @@ void TTreeSRedirector::UnitTestSparse(Double_t scale){
   if (scale<=0) scale=1;
   if (scale>1) scale=1;
   TTreeSRedirector *pcstream = new TTreeSRedirector("testpcstreamSparse.root","recreate");
-  for (Int_t ientry=0; ientry<20000; ientry++){
-    TVectorD vecRandom(50);
-    TVectorD vecZerro(50);   // zerro vector
-    for (Int_t j=0; j<50; j++) vecRandom[j]=ientry+gRandom->Rndm();
+  for (Int_t ientry=0; ientry<testEntries; ientry++){
+    TVectorD vecRandom(200);
+    TVectorD vecZerro(200);   // zerro vector
+    for (Int_t j=0; j<200; j++) vecRandom[j]=j+ientry+0.1*gRandom->Rndm();
     Bool_t isSelected= (gRandom->Rndm()<scale);
     TVectorD *pvecFull   = &vecRandom;
     TVectorD *pvecSparse = isSelected ? &vecRandom:0;
@@ -262,13 +262,32 @@ void TTreeSRedirector::UnitTestSparse(Double_t scale){
   printf("#UnitTest:\tTTreeSRedirector::TestSparse(%f)\tRatioSkip0\t%f\n",scale,ratio0);
   printf("#UnitTest:\tTTreeSRedirector::TestSparse(%f)\tRatioZerro\t%f\n",scale,ratio1);
   //    b.) Integrity 
-  Int_t outlyersSparseSkip=treeSparseSkip->Draw("1","(vec.fElements-ientry-0.5)>0.5","goff");
-  Int_t outlyersSparseSkip0=treeSparseSkip0->Draw("1","(vec.fElements-ientry-0.5)>0.5","goff");
-  printf("#UnitTest:\tTTreeSRedirector::TestSparse(%f)\tOutlyersSkip\t%d\n",scale,outlyersSparseSkip);
-  printf("#UnitTest:\tTTreeSRedirector::TestSparse(%f)\tOutlyersSkip0\t%d\n",scale,outlyersSparseSkip);
-
-  Bool_t isOK=(ratio<1.2)&&(outlyersSparseSkip0);
+  Int_t outlyersSparseSkip=treeSparseSkip->Draw("1","(vec.fElements-ientry-Iteration$-0.5)>0.5","goff");
+  Int_t outlyersSparseSkip0=treeSparseSkip0->Draw("1","(vec.fElements-ientry-Iteration$-0.5)>0.5","goff");
+  printf("#UnitTest:\tTTreeSRedirector::TestSparse(%f)\tOutlyersSkip\t%d\n",scale,outlyersSparseSkip!=0);
+  printf("#UnitTest:\tTTreeSRedirector::TestSparse(%f)\tOutlyersSkip0\t%d\n",scale,outlyersSparseSkip0!=0);
+  //    c.) Number of entries
+  //
+  Int_t entries=treeFull->GetEntries();
+  Int_t entries0=treeSparseSkip0->GetEntries();
+  Bool_t  isOKStat =(entries==entries0);
+  printf("#UnitTest:\tTTreeSRedirector::TestSparse(%f)\tEntries\t%d\n",scale,isOKStat);
+  //
+  //   d.)Reading test
+  TVectorD *pvecRead   = 0;
+  treeSparseSkip0->SetBranchAddress("vec.",&pvecRead);
+  Bool_t readOK=kTRUE;
+  for (Int_t ientry=0; ientry<testEntries; ientry++){
+    if (!pvecRead) continue;
+    if (pvecRead->GetNrows()==0) continue;
+    if (TMath::Abs((*pvecRead)[0]-ientry)>0.5) readOK=kFALSE;
+  }
+  printf("#UnitTest:\tTTreeSRedirector::TestSparse(%f)\tReadOK\t%d\n",scale,readOK);
+  //
+  //   e.)Global test
+  Bool_t isOK=(outlyersSparseSkip0==0)&&isOKStat&&readOK;
   printf("#UnitTest:\tTTreeSRedirector::TestSparse(%f)\tisOk\t%d\n",scale,isOK);  
+
 }
 
 TTreeSRedirector::TTreeSRedirector(const char *fname,const char * option) :
@@ -561,7 +580,7 @@ Int_t TTreeStream::CheckIn(TObject *pObject){
   if (element->fClass==0) {
     element->fClass=pClass;
   }else{
-    if (element->fClass!=pClass){
+    if (element->fClass!=pClass && pClass!=0){
       fStatus++;
       return 1; //mismatched data element
     }
@@ -576,7 +595,12 @@ void TTreeStream::BuildTree(){
   // Build the Tree
   //
   //if (fTree && fTree->GetEntries()>0) return;
-  if (!fTree)  fTree = new TTree(GetName(),GetName());
+  Int_t entriesFilled=0;
+  if (!fTree)  {
+    fTree = new TTree(GetName(),GetName());
+  }else{
+    entriesFilled=fTree->GetEntries();
+  }
   Int_t entries = fElements->GetEntriesFast();  
   if (!fBranches) fBranches = new TObjArray(entries);
   
@@ -594,10 +618,20 @@ void TTreeStream::BuildTree(){
     if (element->fClass){
       if (element->fClass->GetBaseClass("TClonesArray")){
 	TBranch * br = fTree->Branch(bname1,element->fClass->GetName(),&(element->fPointer));
+	if (entriesFilled!=0) {
+	  br->SetAddress(0);
+	  for (Int_t ientry=0; ientry<entriesFilled;ientry++) br->Fill();
+	  br->SetAddress(&(element->fPointer));
+	}
 	fBranches->AddAt(br,i);
       }else
 	{
 	  TBranch * br = fTree->Branch(bname1,element->fClass->GetName(),&(element->fPointer));
+	  if (entriesFilled!=0) {
+	    br->SetAddress(0);
+	    for (Int_t ientry=0; ientry<entriesFilled;ientry++) br->Fill();
+	    br->SetAddress(&(element->fPointer));
+	  }
 	  fBranches->AddAt(br,i);
 	}
     }
@@ -605,6 +639,12 @@ void TTreeStream::BuildTree(){
       char bname2[1000];
       snprintf(bname2,1000,"B%d/%c",i,element->GetType());
       TBranch * br = fTree->Branch(bname1,element->fPointer,bname2);
+      if (entriesFilled!=0) {
+	br->SetAddress(0);
+	for (Int_t ientry=0; ientry<entriesFilled;ientry++) br->Fill();
+	br->SetAddress(element->fPointer);
+      }
+
       fBranches->AddAt(br,i);
     }
   }
