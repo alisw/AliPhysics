@@ -124,6 +124,8 @@
 #include "AliOADBPhysicsSelection.h"
 #include "AliOADBFillingScheme.h"
 #include "AliOADBTriggerAnalysis.h"
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
 
 using std::cout;
 using std::endl;
@@ -131,6 +133,7 @@ ClassImp(AliPhysicsSelection)
 
 AliPhysicsSelection::AliPhysicsSelection() :
   AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
+  fPassName(""),
   fCurrentRun(-1),
   fMC(kFALSE),
   fCollTrigClasses(),
@@ -877,6 +880,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 
 Bool_t AliPhysicsSelection::Initialize(const AliESDEvent* aEsd)
 {
+  DetectPassName();
   // initializes the object for the given ESD
   
   AliInfo(Form("Initializing for beam type: %s", aEsd->GetESDRun()->GetBeamType()));
@@ -906,7 +910,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     AliInfo("Using Standard OADB");
     AliOADBContainer * psContainer = (AliOADBContainer*) foadb->Get("physSel");
     if (!psContainer) AliFatal("Cannot fetch OADB container for Physics selection");
-    fPSOADB = (AliOADBPhysicsSelection*) psContainer->GetObject(runNumber, fIsPP ? "oadbDefaultPP" : "oadbDefaultPbPb");
+    fPSOADB = (AliOADBPhysicsSelection*) psContainer->GetObject(runNumber, fIsPP ? "oadbDefaultPP" : "oadbDefaultPbPb",fPassName);
     if (!fPSOADB) AliFatal(Form("Cannot find physics selection object for run %d", runNumber));
   } else {
     AliInfo("Using Custom OADB");
@@ -914,13 +918,13 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
   if(!fFillOADB || !fUsingCustomClasses) { // if it's already set and custom class is required, we use the one provided by the user
     AliOADBContainer * fillContainer = (AliOADBContainer*) foadb->Get("fillScheme");
     if (!fillContainer) AliFatal("Cannot fetch OADB container for filling scheme");
-    fFillOADB = (AliOADBFillingScheme*) fillContainer->GetObject(runNumber, "Default");
+    fFillOADB = (AliOADBFillingScheme*) fillContainer->GetObject(runNumber, "Default",fPassName);
     if (!fFillOADB) AliFatal(Form("Cannot find  filling scheme object for run %d", runNumber));
   }
   if(!fTriggerOADB || !fUsingCustomClasses) { // if it's already set and custom class is required, we use the one provided by the user
     AliOADBContainer * triggerContainer = (AliOADBContainer*) foadb->Get("trigAnalysis");
     if (!triggerContainer) AliFatal("Cannot fetch OADB container for trigger analysis");
-    fTriggerOADB = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(runNumber, "Default");
+    fTriggerOADB = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(runNumber, "Default",fPassName);
     fTriggerOADB->Print();
     if (!fTriggerOADB) AliFatal(Form("Cannot find  trigger analysis object for run %d", runNumber));
   }
@@ -1955,3 +1959,68 @@ void AliPhysicsSelection::AddBGTriggerClass(const char* className){
   fUsingCustomClasses = kTRUE;
 
 }       
+
+
+void AliPhysicsSelection::DetectPassName(){
+  if (fMC) return;
+  AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!handler) return;
+  TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+  TString filePath;
+  if (prodInfoData) {
+    // take filePath from UserInfo - available only from ~LHC12d period
+    TString str(prodInfoData->GetTitle());
+    TObjArray* tokens = str.Tokenize(";");
+    for (Int_t i=0;i<=tokens->GetLast();i++) {
+      TObjString* stObj = (TObjString*) tokens->At(i);
+      TString s = stObj->GetString();
+      if (s.Contains("OutputDir")) {
+        filePath = s;
+        break;
+      }
+    }
+    delete tokens;
+  } else {
+    // guess name from the input filename
+    // may be a problem for local analysis
+    filePath = handler->GetTree()->GetCurrentFile()->GetName();
+  }
+
+  TString passName="";
+
+  TObjArray* tokens = filePath.Tokenize("/");
+  for (Int_t i=0;i<=tokens->GetLast();i++) {
+    TObjString* stObj = (TObjString*) tokens->At(i);
+    TString s = stObj->GetString();
+    if (s.Contains("pass")) {
+      passName = s;
+      break;
+    }
+  }
+  delete tokens;
+  //
+  // temporary patch for LEGO train runners
+  //
+  if (!passName.Contains("pass")){ // try with "_" as a fallback (as it is the case in the test data of the LEGO train)
+    TObjArray* tokens2 = filePath.Tokenize("_");
+    for (Int_t i=0;i<=tokens2->GetLast();i++) {
+      TObjString* stObj = (TObjString*) tokens2->At(i);
+      TString s = stObj->GetString();
+      if (s.Contains("pass")) {
+	passName = s;
+	break;
+      }
+    }
+    delete tokens2;
+  }
+
+
+  if (!passName.Contains("pass")){
+    AliError(" Failed to find reconstruction pass name:");
+    AliError(" --> If these are MC data: please set kTRUE first argument of AddTaskPhysicsSelection");
+    AliFatal(" --> If these are real data: please insert pass name inside the path of your local file, e.g. /your_path/pass2/AliESDs.root");
+  }
+
+  AliInfo(Form("pass name: %s\n",passName.Data()));
+  fPassName = passName;
+}

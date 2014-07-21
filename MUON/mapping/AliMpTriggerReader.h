@@ -40,16 +40,18 @@ class TList;
 class AliMpTriggerReader : public TObject
 {
  public:
-  AliMpTriggerReader(const AliMpDataStreams& dataStreams, AliMpSlatMotifMap* motifMap);
+  AliMpTriggerReader(AliMpSlatMotifMap* motifMap);
   virtual ~AliMpTriggerReader();
 
-  AliMpTrigger* ReadSlat(const char* slatType, AliMp::PlaneType planeType);
+  AliMpTrigger* ReadSlat(const AliMpDataStreams&  dataStreams,
+                         const char* slatType, AliMp::PlaneType planeType);
 
-  AliMpPCB* ReadPCB(const char* pcbType);
+  AliMpPCB* ReadPCB(const AliMpDataStreams&  dataStreams, const char* pcbType);
   
 private:
     
-  AliMpSlat* BuildSlat(const char* slatName, 
+  AliMpSlat* BuildSlat(const AliMpDataStreams&  dataStreams,
+                              const char* slatName,
                               AliMp::PlaneType planeType,
                               const TList& descriptionLines,
                               Double_t scale=1.0);
@@ -61,7 +63,8 @@ private:
   Int_t DecodeScaleLine(const TString& sline, 
                                Double_t& scale, TString& slatType);
   
-  void FlipLines(TList& lines, Bool_t flipX, Bool_t flipY, 
+  void FlipLines(const AliMpDataStreams&  dataStreams,
+                        TList& lines, Bool_t flipX, Bool_t flipY,
                         Int_t srcLine, Int_t destLine);
   
   TString GetBoardNameFromPCBLine(const TString& sline);
@@ -70,17 +73,19 @@ private:
   
   Int_t IsLayerLine(const TString& sline) const;
     
-  int LocalBoardNumber(const char* localBoardName);
+  int LocalBoardNumber(const AliMpDataStreams&  dataStreams,
+                       const char* localBoardName);
   
   // AliMpPCB* PCB(const char* pcbType); 
   
-  void ReadLines(const char* slatType,
+  void ReadLines(const AliMpDataStreams&  dataStreams,
+                        const char* slatType,
                         AliMp::PlaneType planeType,
                         TList& lines,
                         Double_t& scale, Bool_t& flipX, Bool_t& flipY,
                         Int_t& srcLine, Int_t& destLine);
   
-  void ReadLocalBoardMapping();
+  void ReadLocalBoardMapping(const AliMpDataStreams&  dataStreams);
   
 private:
   /// Not implemented
@@ -96,7 +101,6 @@ private:
   static const TString& GetKeywordFlipY();
   
   // data members
-  const AliMpDataStreams&  fkDataStreams; //!< data streams
   AliMpSlatMotifMap* fMotifMap; //!< storage for motifTypes and motifs...
   
   TMap fLocalBoardMap; //!< map of TObjString to TObjString

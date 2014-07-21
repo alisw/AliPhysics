@@ -53,6 +53,8 @@ private:
   TList                 *fListQAitsPureSA;  //! List with ITS pure SA QA histograms
   TList                 *fListQAtpc;        //! List with TPC QA histograms
   TList                 *fListQAtrd;        //! List with TRD QA histograms
+  TList                 *fListQAtrdNsig;    //! List with TRD QA histograms for Nsigma approach
+  TList                 *fListQAtrdNsigTPCTOF; //! List with TRD QA histograms for Nsigma approach after TPC and TOF selection
   TList                 *fListQAtof;        //! List with TOF QA histograms
   TList                 *fListQAt0;         //! List with T0 QA histograms
   TList                 *fListQAemcal;      //! List with EMCAL QA histograms

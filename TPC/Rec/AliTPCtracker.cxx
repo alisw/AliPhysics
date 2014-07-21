@@ -593,6 +593,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
+        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());
@@ -607,6 +608,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
+        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	iotrack.SetTPCPoints(pt->GetPoints());
 	//iotrack.SetTPCindex(i);
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
@@ -626,6 +628,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	  iotrack.~AliESDtrack();
 	  new(&iotrack) AliESDtrack;
 	  iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+	  iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	  //iotrack.SetTPCindex(i);
 	  iotrack.SetTPCPoints(pt->GetPoints());
 	  iotrack.SetKinkIndexes(pt->GetKinkIndexes());
@@ -646,6 +649,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());
@@ -664,6 +668,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	  iotrack.~AliESDtrack();
 	  new(&iotrack) AliESDtrack;
 	  iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+	  iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	  iotrack.SetTPCPoints(pt->GetPoints());
 	  iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	  iotrack.SetV0Indexes(pt->GetV0Indexes());
@@ -686,6 +691,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+        iotrack.SetTPCsignal(pt->GetdEdx(), pt->GetSDEDX(0), pt->GetNCDEDX(0)); 
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
 	iotrack.SetV0Indexes(pt->GetV0Indexes());

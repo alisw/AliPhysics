@@ -88,13 +88,13 @@ class AliMpDDLStore : public  TObject {
     // methods
     Int_t  GetManuListIndex(Int_t detElemId) const;
     Int_t  GetBusPatchIndex(Int_t detElemId, Int_t manuId) const;
-    Bool_t ReadDDLs();
-    Bool_t ReadTrigger();
+    Bool_t ReadDDLs(const AliMpDataStreams& dataStreams);
+    Bool_t ReadTrigger(const AliMpDataStreams& dataStreams);
     Bool_t SetTriggerDDLs();
     Bool_t SetManus();
-    Bool_t ReadBusPatchSpecial();
+    Bool_t ReadBusPatchSpecial(const AliMpDataStreams& dataStreams);
     Bool_t SetPatchModules();
-    Bool_t ReadBusPatchInfo();
+    Bool_t ReadBusPatchInfo(const AliMpDataStreams& dataStreams);
     Int_t  GetLocalBoardId(TString name) const;
 
     // static data members	
@@ -103,7 +103,6 @@ class AliMpDDLStore : public  TObject {
     static const Int_t    fgkNofTriggerDDLs; ///< Total number of trigger DDLs
 
     // data members	
-    const AliMpDataStreams&  fkDataStreams;  //!< Data streams
     TObjArray     fDDLs;           ///< Array of DDL objects
     AliMpExMap    fBusPatches;     ///< The map of bus patches per their IDs
     TArrayI       fManuList12[16]; ///< Arrays of 1st manu in bus

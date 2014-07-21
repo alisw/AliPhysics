@@ -872,6 +872,10 @@ void AliMCEvent::AssignGeneratorIndex() {
   // Assign the generator index to each particle
   //
   TList* list = GetCocktailList();
+  if (fNprimaries <= 0) {
+    AliWarning(Form("AliMCEvent::AssignGeneratorIndex: no primaries %10d\n", fNprimaries));
+    return;
+}
   if (!list) {
     return;
   } else {
@@ -890,6 +894,11 @@ void AliMCEvent::AssignGeneratorIndex() {
       // Loop over primary particles for generator i
       for (Int_t j = nsumpart-1; j >= nsumpart-npart; j--) {
 	AliVParticle* part = GetTrack(j);
+	if (!part) {
+	  AliWarning(Form("AliMCEvent::AssignGeneratorIndex: 0-pointer to particle j %8d npart %8d nsumpart %8d Nprimaries %8d\n", 
+			  j, npart, nsumpart, fNprimaries));
+	  break;
+	}
 	part->SetGeneratorIndex(i);
 	Int_t dmin = part->GetFirstDaughter();
 	Int_t dmax = part->GetLastDaughter();
@@ -964,12 +973,25 @@ void  AliMCEvent::SetParticleArray(TClonesArray* mcParticles)
     fNparticles = fMCParticles->GetEntries(); 
     fExternal = kTRUE; 
     fNprimaries = 0;
-    for (Int_t i = 0; i < mcParticles->GetEntries(); i++) 
-      if  (((AliVParticle*) mcParticles->At(i))->IsPrimary()) fNprimaries++;
+    struct Local {
+      static Int_t binaryfirst(TClonesArray* a, Int_t low, Int_t high)
+      {
+	Int_t mid  = low + (high - low)/2;
+	if (low > a->GetEntries()-1) return (a->GetEntries()-1);
+	if (!((AliVParticle*) a->At(mid))->IsPrimary()) {
+	  if (mid > 1 && !((AliVParticle*) a->At(mid-1))->IsPrimary()) {
+	    return binaryfirst(a, low, mid-1);
+	  } else {
+	    return mid;
+	  } 
+	} else {
+	  return binaryfirst(a, mid+1, high);
+	}
+      }
+    };
+    fNprimaries = Local::binaryfirst(mcParticles, 0, mcParticles->GetEntries()-1);
     AssignGeneratorIndex();
   }
-
-
 
 
 ClassImp(AliMCEvent)

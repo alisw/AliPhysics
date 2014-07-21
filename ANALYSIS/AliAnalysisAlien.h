@@ -48,61 +48,108 @@ public:
    virtual void        AddDataFile(const char *lfn);
    virtual void        AddExternalPackage(const char *name);
    virtual void        SetExecutable(const char *name="analysis.sh")     {fExecutable = name;}
+   const char         *GetExecutable() const                             {return fExecutable;}
    virtual void        SetExecutableCommand(const char *command="root -b -q") {fExecutableCommand = command;}
+   const char         *GetExecutableCommand() const                      {return fExecutableCommand;}
    virtual void        SetArguments(const char *name="")                 {fArguments = name;}
+   const char         *GetArguments() const                              {return fArguments;}
    virtual void        SetExecutableArgs(const char *name="")            {fExecutableArgs = name;}
+   const char         *GetExecutableArgs() const                         {return fExecutableArgs;}
    virtual void        SetAnalysisMacro(const char *name="myAnalysis.C") {fAnalysisMacro = name;}
+   const char         *GetAnalysisMacro() const                          {return fAnalysisMacro;}
    virtual void        SetAnalysisSource(const char *name="myAnalysisClass.cxx") {fAnalysisSource = name;}
+   const char         *GetAnalysisSource() const                         {return fAnalysisSource;}
    virtual void        SetValidationScript(const char *name="validation.sh") {fValidationScript = name;}
+   const char         *GetValidationScript() const                       {return fValidationScript;}
    virtual void        SetAdditionalLibs(const char *list)               {fAdditionalLibs = list;}
+   const char         *GetAdditionalLibs() const                         {return fAdditionalLibs;}
    virtual void        SetAdditionalRootLibs(const char *list)           {fAdditionalRootLibs = list;}
+   const char         *GetAdditionalRootLibs() const                     {return fAdditionalRootLibs;}
    virtual void        SetPrice(Int_t price=1)                           {fPrice = price;}
+   Int_t               GetPrice() const                                  {return fPrice;}
    virtual void        SetRunRange(Int_t min, Int_t max)                 {fRunRange[0] = min; fRunRange[1] = max;}
+   void                GetRunRange(Int_t &min, Int_t &max)               {min = fRunRange[0]; max = fRunRange[1];}
    virtual void        SetJobTag(const char *tag="")                     {fJobTag = tag;}
+   const char         *GetJobTag() const                                 {return fJobTag;}
    virtual void        SetNrunsPerMaster(Int_t nruns=1)                  {fNrunsPerMaster = nruns;}
+   Int_t               GetNrunsPerMaster() const                         {return fNrunsPerMaster;}
    virtual void        SetMaxMergeFiles(Int_t nfiles)                    {fMaxMergeFiles = nfiles;}
+   Int_t               GetMaxMergeFiles()  const                         {return fMaxMergeFiles;}
    virtual void        SetMaxMergeStages(Int_t nstages)                  {fMaxMergeStages = nstages;}
+   Int_t               GetMaxMergeStages() const                         {return fMaxMergeStages;}
    virtual void        SetSplitMode(const char *type="se")               {fSplitMode = type;}
+   const char         *GetSplitMode() const                              {return fSplitMode;}
    virtual void        SetSplitMaxInputFileNumber(Int_t nfiles=100)      {fSplitMaxInputFileNumber = nfiles;}
+   Int_t               GetSplitMaxInputFileNumber() const                {return fSplitMaxInputFileNumber;}
    virtual void        SetAPIVersion(const char *version)                {fAPIVersion = version;}
+   const char         *GetAPIVersion() const                             {return fAPIVersion;}
    virtual void        SetROOTVersion(const char *version)               {fROOTVersion = version;}
+   const char         *GetROOTVersion() const                            {return fROOTVersion;}
    virtual void        SetAliROOTVersion(const char *version)            {fAliROOTVersion=version;}
+   const char         *GetAliROOTVersion() const                         {return fAliROOTVersion;}
    virtual void        SetUser(const char *user)                         {fUser = user;}
+   const char         *GetUser() const                                   {return fUser;}
    virtual void        SetTTL(Int_t ttl=30000)                           {fTTL = ttl;}
+   Int_t               GetTTL() const                                    {return fTTL;}
    virtual void        SetGridWorkingDir(const char *name="workdir")     {fGridWorkingDir = name;}
+   const char         *GetGridWorkingDir() const                         {return fGridWorkingDir;}
    virtual void        SetGridDataDir(const char *name)                  {fGridDataDir = name;}
+   const char         *GetGridDataDir() const                            {return fGridDataDir;}
    void                SetGeneratorLibs(const char *libs)                {fGeneratorLibs = libs;}
+   const char         *GetGeneratorLibs() const                          {return fGeneratorLibs;}
    virtual void        SetDataPattern(const char *pattern="*AliESDs.root") {fDataPattern = pattern;}
+   const char         *GetDataPattern() const                            {return fDataPattern;}
    virtual void        SetFriendChainName(const char *name="", const char *libnames="");
+   const char         *GetFriendChainName() const                        {return fFriendChainName;}
    virtual void        SetDefaultOutputs(Bool_t flag);
    virtual void        SetGridOutputDir(const char *name="output")       {fGridOutputDir = name;}
+   const char         *GetGridOutputDir() const                          {return fGridOutputDir;}
    virtual void        SetOutputArchive(const char *list="log_archive.zip:std*@disk=1 root_archive.zip:*.root@disk=2");
+   const char         *GetOutputArchive() const                          {return fOutputArchive;}
    virtual void        SetOutputFiles(const char *list);
+   const char         *GetOutputFiles() const                            {return fOutputFiles;}
    virtual void        SetOutputToRunNo(Int_t mode=1)                    {fOutputToRunNo = mode;}
+   Int_t               GetOutputToRunNoMode() const                      {return fOutputToRunNo;}
    virtual void        SetInputFormat(const char *format="xml-single")   {fInputFormat = format;}
+   const char         *GetInputFormat() const                            {return fInputFormat;}   
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   {fMaxInitFailed = nfail;}
+   Int_t               GetMaxInitFailed() const                          {return fMaxInitFailed;}
    virtual void        SetTerminateFiles(const char *list)               {fTerminateFiles = list;}
+   const char         *GetTerminateFiles() const                         {return fTerminateFiles;}
    virtual void        SetMergeExcludes(const char *list)                {fMergeExcludes = list; fMergeExcludes.ReplaceAll(",", " "); }
+   const char         *GetMergeExcludes() const                          {return fMergeExcludes;}
    virtual void        SetMergeViaJDL(Bool_t on=kTRUE)                   {fMergeViaJDL = on ? 1 : 0;}
+   Bool_t              IsMergeViaJDL() const                             {return fMergeViaJDL;}
    virtual void        SetMergeDirName(const char *name)                 {fMergeDirName = name;}
+   const char         *GetMergeDirName() const                           {return fMergeDirName;}
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      {fMasterResubmitThreshold = percentage;}
+   Int_t               GetMasterResubmitThreshold() const                {return fMasterResubmitThreshold;}
    void                SetMCLoop(Bool_t flag=kTRUE)                      {fMCLoop = flag;}
    virtual void        SetNtestFiles(Int_t nfiles)                       {fNtestFiles = nfiles;}
+   Int_t               GetNtestFiles() const                             {return fNtestFiles;}
    virtual void        SetNumberOfReplicas(Int_t ncopies)                {fNreplicas = TMath::Min(ncopies,4);}
+   Int_t               GetNumberOfReplicas() const                       {return fNreplicas;}
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
-   virtual void        SetPreferedSE(const char *se);
+   const char         *GetJDLName() const                                {return fJDLName;}
    virtual void        SetProductionMode(Int_t mode=1)                   {fProductionMode = mode;}
+   Int_t               GetProductionMode() const                         {return fProductionMode;}
    virtual void        SetRegisterExcludes(const char *list)             {fRegisterExcludes = list; fRegisterExcludes.ReplaceAll(",", " "); }
+   const char         *GetRegisterExcludes() const                       {return fRegisterExcludes;}
    virtual void        SetRunPrefix(const char *prefix);
+   const char         *GetRunPrefix() const                              {return fRunPrefix;}
    virtual void        SetOutputSingleFolder(const char *folder)         {fOutputSingle = folder; fSplitMode="file"; fSplitMaxInputFileNumber=1;}
+   const char         *GetOutputSingleFolder() const                     {return fOutputSingle;}
    virtual void        SetFastReadOption(Bool_t on=kTRUE)                {fFastReadOption = on ? 1 : 0;}
+   Bool_t              IsFastReadOption() const                          {return fFastReadOption;}
    virtual void        SetOverwriteMode(Bool_t on=kTRUE)                 {fOverwriteMode = on ? 1 : 0;}
+   Bool_t              IsOverwriteMode() const                           {return fOverwriteMode;}
    virtual void        SetDropToShell(Bool_t drop=true)                  {fDropToShell = drop;}
+   Bool_t              IsDropToShell() const                             {return fDropToShell;}
    virtual void        SetTreeName(const char *name)                     {fTreeName = name;}
+   const char         *GetTreeName() const                               {return fTreeName;}
 
-   TGridJDL           *GetGridJDL() const {return fGridJDL;}
-   TGridJDL           *GetMergingJDL() const {return fMergingJDL;}
-   const char         *GetGridOutputDir() const                          {return fGridOutputDir;}
+   TGridJDL           *GetGridJDL() const                                {return fGridJDL;}
+   TGridJDL           *GetMergingJDL() const                             {return fMergingJDL;}
    Int_t               GetNMCevents() const                              {return fNMCevents;}
    Int_t               GetNMCjobs() const                                {return fNMCjobs;}
    void                SetNMCevents(Int_t nevents)                       {fNMCevents = nevents;}
@@ -149,7 +196,7 @@ public:
 // PROOF mode
    virtual void        SetProofCluster(const char *cluster)              {fProofCluster = cluster;}
    virtual void        SetProofDataSet(const char *dataset)              {fProofDataSet = dataset;}
-   virtual const char *GetProofDataSet() const                           {return fProofDataSet.Data();}
+   virtual const char *GetProofDataSet() const                           {return fProofDataSet;}
    virtual void        SetProofParameter(const char *pname, const char *value);
    const char         *GetProofParameter(const char *pname) const;
    virtual void        SetProofReset(Int_t mode)                         {fProofReset = mode;}
@@ -161,6 +208,7 @@ public:
    virtual TString     GetProofProcessOpt()                              {return fProofProcessOpt;}
    // .txt file containing the list of files to be chained in test mode
    virtual void        SetFileForTestMode(const char *filename)          {fFileForTestMode = filename;}
+   const char         *GetFileForTestMode() const                        {return fFileForTestMode;}
    virtual TChain     *GetChainForTestMode(const char *treeName) const;
    virtual const TString& GetGridJobIDs() const { return fGridJobIDs; }
    virtual const TString& GetGridStages() const { return fGridStages; }

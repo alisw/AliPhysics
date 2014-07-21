@@ -244,6 +244,9 @@ void AliTPCReconstructor::GetPidSettings(AliESDpid *esdPID)
   TString allopt(GetOption());
   TObjArray *optArray=allopt.Tokenize(";");
 
+  // defines whether the pid was set via a specific option in the rec.C
+  Bool_t pidSetInOptions = kFALSE;
+  
   for (Int_t iopt=0; iopt<optArray->GetEntriesFast(); ++iopt){
     if (!optArray->At(iopt)) continue;
     TString option(static_cast<TObjString*>(optArray->At(iopt))->GetString().Strip(TString::kBoth,' '));
@@ -259,12 +262,14 @@ void AliTPCReconstructor::GetPidSettings(AliESDpid *esdPID)
       if (option.Contains("LHC13b2_fix_PID")) {
         esdPID->GetTPCResponse().SetBetheBlochParameters(0.0320981, 19.9768, 2.52666e-16, 2.72123, 6.08092);
         esdPID->GetTPCResponse().SetMip(53.4968);
+        pidSetInOptions=kTRUE;
       }
       
     } else if (option.BeginsWith("OADB=")) {
       option.Remove(0,option.First('=')+1);
       AliInfo(Form("Setting splines From OADB using template: '%s'",option.Data()));
       SetSplinesFromOADB(option, esdPID);
+      pidSetInOptions=kTRUE;
     } else if (option.BeginsWith("OCDB=")){
       option.Remove(0,option.First('=')+1);
       // not yet implemented
@@ -274,6 +279,26 @@ void AliTPCReconstructor::GetPidSettings(AliESDpid *esdPID)
 
   delete optArray;
 
+  //
+  // Initialisation of BB parameters from the OCDB.
+  // They are stored in the AliTPCParam
+  //
+  if (!pidSetInOptions) {
+    AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
+    if (param) {
+      TVectorD *paramBB=param->GetBetheBlochParameters();
+      if (paramBB){
+        esdPID->GetTPCResponse().SetBetheBlochParameters((*paramBB)(0),(*paramBB)(1),(*paramBB)(2),(*paramBB)(3),(*paramBB)(4));
+        AliInfo(Form("Setting BB parameters from OCDB (AliTPCParam): %.2g, %.2g, %.2g, %.2g, %.2g",
+                     (*paramBB)(0),(*paramBB)(1),(*paramBB)(2),(*paramBB)(3),(*paramBB)(4)));
+      } else {
+        AliError("Couldn't get BB parameters from OCDB, the old default values will be used instead");
+      }
+    } else {
+      AliError("Couldn't get TPC parameters");
+    }
+  }
+  
 /*
   AliTPCcalibDB * calib = AliTPCcalibDB::Instance();
   

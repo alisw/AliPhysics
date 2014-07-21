@@ -613,14 +613,14 @@ macro(ALICE_BuildPAR)
   
   if(EXISTS ${CMAKE_SOURCE_DIR}/${MODULE}/PROOF-INF.${PACKAGE})
     set(PARSRCS)
-    foreach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})
+    foreach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR} ${OTHERS} )
       get_filename_component(srcdir ${file} PATH)
       add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/${file}-par                         
                          COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/${srcdir}
                          COMMAND cp -pR ${file} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/${file}
                          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
       list(APPEND PARSRCS ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/${file}-par)
-    endforeach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})
+    endforeach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR} ${OTHERS} )
     
     # message(STATUS "saveEINCLUDE=${saveEINCLUDE}")
     add_custom_target(${PACKAGE}.par

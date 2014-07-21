@@ -681,8 +681,8 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 							  }
 							  mean= mean/nent; //<x>
 							  sumw2=sumw2/nent; //<x^2>
-							  Double_t rmsmean= 0;
-							  rmsmean = TMath::Sqrt((sumw2-mean*mean)/nent);
+							  //Double_t rmsmean= 0;  // not used for the time being
+							  //rmsmean = TMath::Sqrt((sumw2-mean*mean)/nent);
 							  if (ich<fNChannels) {
 								  Float_t delay = mean*AliTOFGeometry::TdcBinWidth()*1.E-3; // delay in ns
 								  fCal->SetDelay(ich,delay);  // delay in ns

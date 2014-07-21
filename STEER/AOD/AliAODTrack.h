@@ -389,9 +389,10 @@ class AliAODTrack : public AliVTrack {
   void SetMuonClusterMap(UInt_t muonClusMap)                { fITSMuonClusterMap = (fITSMuonClusterMap&0xfc00ffff)|((muonClusMap&0x3ff)<<16); }
   void SetITSMuonClusterMap(UInt_t itsMuonClusMap)          { fITSMuonClusterMap = itsMuonClusMap; }
   void SetMUONtrigHitsMapTrg(UInt_t muonTrigHitsMap) { fMUONtrigHitsMapTrg = muonTrigHitsMap; }
-  UInt_t GetMUONTrigHitsMapTrg() { return fMUONtrigHitsMapTrg; }
+  UInt_t GetMUONTrigHitsMapTrg() const { return fMUONtrigHitsMapTrg; }
   void SetMUONtrigHitsMapTrk(UInt_t muonTrigHitsMap) { fMUONtrigHitsMapTrk = muonTrigHitsMap; }
-  UInt_t GetMUONTrigHitsMapTrk() { return fMUONtrigHitsMapTrk; }
+  UInt_t GetMUONTrigHitsMapTrk() const { return fMUONtrigHitsMapTrk; }
+  Int_t GetMuonTrigDevSign() const;
 
   Int_t GetMatchTrigger() const {return fITSMuonClusterMap>>30;}
 					//  0 Muon track does not match trigger

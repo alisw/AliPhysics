@@ -323,18 +323,18 @@ void AliEMCALv0::CreateShishKebabGeometry()
       for(Int_t iz=0; iz<g->GetNECLayers()-1; iz++){
         nr = iz + 1;
         Double_t dz = g->GetECScintThick() + g->GetTrd1BondPaperThick() + fSampleWidth*iz;
-	// PB + 2 paper sheets
+        // PB + 2 paper sheets
         par[2] = g->GetECPbRadThick()/2. + g->GetTrd1BondPaperThick(); // z
         par[0] = (parSCM0[0] + tanBetta*dz)/2.;
         TString pa(Form("PA%2.2i",nr));
-	TVirtualMC::GetMC()->Gsvolu(pa.Data(), "BOX", fIdTmedArr[kIdPAPER], par, 3);
+        TVirtualMC::GetMC()->Gsvolu(pa.Data(), "BOX", fIdTmedArr[kIdPAPER], par, 3);
         xpos   = par[0] - xCenterSCMX;
         zpos   = -parSCM0[3] + dz + par[2];
         TVirtualMC::GetMC()->Gspos(pa.Data(), 1, "SCMX", xpos, ypos, zpos, 0, "ONLY") ;
-	// Pb
+        // Pb
         TString pb(Form("PB%2.2i",nr));
         par[2] = g->GetECPbRadThick()/2.; // z
-	TVirtualMC::GetMC()->Gsvolu(pb.Data(), "BOX", fIdTmedArr[kIdPB], par, 3);
+        TVirtualMC::GetMC()->Gsvolu(pb.Data(), "BOX", fIdTmedArr[kIdPB], par, 3);
         TVirtualMC::GetMC()->Gspos(pb.Data(), 1, pa.Data(), 0.0, 0.0, 0.0, 0, "ONLY") ;
       } 
     }
@@ -347,8 +347,6 @@ void AliEMCALv0::CreateShishKebabGeometry()
   } else if(g->GetNPHIdiv()==1 && g->GetNETAdiv()==1) {
     // no division in SCM0
     Trd1Tower1X1(parSCM0);
-  } else if(g->GetNPHIdiv()==4 && g->GetNETAdiv()==4) {
-    Trd1Tower4X4();
   }
   
 }
@@ -667,13 +665,6 @@ void AliEMCALv0::PbInTrap(const Double_t parTRAP[11], TString n)
   AliDebug(2,Form(" PbInTrap Ver. 1.0 : was tested."));
 }
 
-// 8-dec-04 by PAI
-//______________________________________________________________________
-void AliEMCALv0::Trd1Tower4X4() const
-{
- // Not ready yet
-}
-
 //______________________________________________________________________
 void AliEMCALv0::Trd1Tower1X1(Double_t *parSCM0)
 {
@@ -725,255 +716,6 @@ void AliEMCALv0::PbInTrd1(const Double_t *parTrd1, TString n)
   } 
   AliDebug(ndeb,Form(" Number of Pb tiles in SCMX %i coef %9.7f ", nr, coef));
   AliDebug(ndeb,Form(" PbInTrd1 Ver. 0.1 : was tested."));
-}
-
-// 3-feb-05
-//______________________________________________________________________
-void AliEMCALv0::Scm0InTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parSCM0[5])
-{
-  // Passive material inside the detector
-  Double_t wallThickness = g->GetPhiModuleSize()/2. -  g->GetPhiTileSize(); //Need check
-  AliDebug(2,Form(" wall thickness %7.5f \n", wallThickness));
-  for(Int_t i=0; i<4; i++) { // on pictures sometimes I can not see 0 -> be carefull!!
-    parSCM0[i] = emodPar[i] - wallThickness;
-    AliDebug(2,Form(" %i parSCMO %7.3f emodPar %7.3f : dif %7.3f \n", 
-		    i, parSCM0[i],emodPar[i], parSCM0[i]-emodPar[i]));
-  }
-  parSCM0[4] = emodPar[4];
-  TVirtualMC::GetMC()->Gsvolu("SCM0", "TRD2", fIdTmedArr[kIdSC], parSCM0, 5); // kIdAIR -> kIdSC
-  TVirtualMC::GetMC()->Gspos("SCM0", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
-  // Division 
-  if(g->GetNPHIdiv()==2 && g->GetNETAdiv()==2) {
-    Division2X2InScm0(g, parSCM0);
-  } else {
-    Info("Scm0InTrd2"," no division SCM0 in this geometry |%s|\n", g->GetName());
-    assert(0);
-  }
-}
-
-//______________________________________________________________________
-void AliEMCALv0::Division2X2InScm0(const AliEMCALGeometry * g, const Double_t parSCM0[5])
-{
-  // Division 2X2
-  Double_t parTRAP[11], xpos=0.,ypos=0., dx1=0.0,dx2=0.,dy1=0.0,dy2=0.,dz=0.
-  ,dr1=0.0,dr2=0.;
-  fIdRotm=0;
-
-  Info("Division2X2InScm0","Divide SCM0 on y-axis %i\n", g->GetNETAdiv());
-  TString n("SCMX"), overLapFlagSCMY("ONLY"), overLapFlagSCMX("ONLY");
-  n = "SCM0"; // for testing - 14-mar-05
-  if(n=="SCM0"){
-    PbInTrapForTrd2(parSCM0, n);
-    // overLapFlagSCMY=overLapFlagSCMX="MANY"; // do not work
-    return;
-  }
-
-  dy1 = parSCM0[2] , dy2 = parSCM0[3], dz = parSCM0[4];
-
-  parTRAP[0] = parSCM0[4];    // dz
-  parTRAP[1] = TMath::ATan2((dy2-dy1)/2.,2.*dz)*TMath::RadToDeg();
-  parTRAP[2] = 90.;           // phi
-  // bottom
-  parTRAP[3] = parSCM0[2]/2.; // H1
-  parTRAP[4] = parSCM0[0];    // BL1
-  parTRAP[5] = parTRAP[4];    // TL1
-  parTRAP[6] = 0.0;           // ALP1
-  // top
-  parTRAP[7] = parSCM0[3]/2.; // H2
-  parTRAP[8] = parSCM0[1];    // BL2
-  parTRAP[9] = parTRAP[8];    // TL2
-  parTRAP[10]= 0.0;           // ALP2
-  AliDebug(2,Form(" ** SCMY ** \n"));
-	   for(Int_t i=0; i<11; i++) AliDebug(2,Form(" par[%2.2i] %9.4f\n", i, parTRAP[i]));
-
-  fIdRotm=0;
-  TVirtualMC::GetMC()->Gsvolu("SCMY", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11); // kIdAIR -> kIdSC
-  ypos = +(parTRAP[3]+parTRAP[7])/2.; //
-  AliDebug(2,Form(" Y shift SCMY inside SCM0 : %7.3f : opt %s\n", ypos, overLapFlagSCMY.Data())); 
-  TVirtualMC::GetMC()->Gspos("SCMY", 1, "SCM0", 0.0, ypos, 0.0, fIdRotm,  overLapFlagSCMY.Data()) ;
-  // Rotation SCMY around z-axis on 180 degree; x'=-x; y'=-y and z=z
-  AliMatrix(fIdRotm, 90.0,180., 90.0, 270.0, 0.0,0.0) ;
-  // We may have problem with numeration due to rotation - 4-feb-05
-  TVirtualMC::GetMC()->Gspos("SCMY", 2, "SCM0", 0.0, -ypos, 0.0, fIdRotm,  overLapFlagSCMY.Data()); 
-
-  Info("Division2X2InScm0","Divide SCMY on x-axis %i\n", g->GetNPHIdiv());
-  dx1 = parSCM0[0]; 
-  dx2 = parSCM0[1]; 
-  dr1=TMath::Sqrt(dx1*dx1+dy1*dy1);
-  dr2=TMath::Sqrt(dx2*dx2+dy2*dy2);
-
-  parTRAP[0] = parSCM0[4];    // dz
-  parTRAP[1] = TMath::ATan2((dr2-dr1)/2.,2.*dz)*TMath::RadToDeg(); // 
-  parTRAP[2] = 45.;           // phi
-  // bottom
-  parTRAP[3] = parSCM0[2]/2.; // H1
-  parTRAP[4] = parSCM0[0]/2.; // BL1
-  parTRAP[5] = parTRAP[4];    // TL1
-  parTRAP[6] = 0.0;           // ALP1
-  // top
-  parTRAP[7] = parSCM0[3]/2.; // H2
-  parTRAP[8] = parSCM0[1]/2;  // BL2
-  parTRAP[9] = parTRAP[8];    // TL2
-  parTRAP[10]= 0.0;           // ALP2
-  AliDebug(2,Form(" ** SCMX ** \n"));
-  for(Int_t i=0; i<11; i++) AliDebug(2,Form(" par[%2.2i] %9.4f\n", i, parTRAP[i]));
-
-  fIdRotm=0;
-  TVirtualMC::GetMC()->Gsvolu("SCMX", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11);
-  xpos = (parTRAP[4]+parTRAP[8])/2.;
-  AliDebug(2,Form(" X shift SCMX inside SCMX : %7.3f : opt %s\n", xpos, overLapFlagSCMX.Data())); 
-  TVirtualMC::GetMC()->Gspos("SCMX", 1, "SCMY", xpos, 0.0, 0.0, fIdRotm,  overLapFlagSCMX.Data()) ;
-  //  AliMatrix(fIdRotm, 90.0,270., 90.0, 0.0, 0.0,0.0); // x'=-y; y'=x; z'=z
-  AliMatrix(fIdRotm, 90.0,90., 90.0, -180.0, 0.0,0.0);     // x'=y;  y'=-x; z'=z
-  TVirtualMC::GetMC()->Gspos("SCMX", 2, "SCMY", -xpos, 0.0, 0.0, fIdRotm,  overLapFlagSCMX.Data()) ;
-  // PB:
-  if(n=="SCMX" && overLapFlagSCMY == "ONLY") {
-    PbInTrapForTrd2(parTRAP, n);
-  }
-} 
-
-// 4-feb-05 by PAI
-//______________________________________________________________________
-void AliEMCALv0::PbInTrapForTrd2(const Double_t *parTRAP, TString name)
-{
- // TRD2 cases
-  Double_t *dummy=0;
-  TString pbShape("BOX"), pbtiChonly("ONLY");
-  if(name=="SCM0") {
-    pbShape    = "TRD2";
-    //    pbtiChonly = "MANY";
-  }
-  TVirtualMC::GetMC()->Gsvolu("PBTI", pbShape.Data(), fIdTmedArr[kIdPB], dummy, 0);
-
-  Int_t nr=0;
-  Info("PbInTrapForTrd2"," Pb tiles inside %s: shape %s :pbtiChonly %s\n nrstart %i\n", 
-  name.Data(), pbShape.Data(), pbtiChonly.Data(), nr);
-  AliEMCALGeometry * g = GetGeometry(); 
-
-  Double_t par[5], parPB[5];//, parSC[5];
-  Double_t xpos = 0.0, ypos = 0.0;
-  Double_t zpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
-  if(name == "SCMX") { // common trapezoid - 11 parameters
-    Double_t coef = (parTRAP[8] -  parTRAP[4]) / (2.*parTRAP[0]);
-    Double_t xCenterSCMX =  (parTRAP[4] +  parTRAP[8])/2.; // the same for y
-    AliDebug(2,Form(" xCenterSCMX %8.5f : coef %8.7f \n", xCenterSCMX, coef));
-
-    par[2] = g->GetECPbRadThick()/2.; // z
-    for(Int_t iz=0; iz<g->GetNECLayers(); iz++){
-      par[0] = parTRAP[4] + coef*fSampleWidth*iz;
-      par[1] = par[0];
-      xpos   = ypos = par[0] - xCenterSCMX;
-    //if(parTRAP[1] < 0.) xpos = -xpos;
-      TVirtualMC::GetMC()->Gsposp("PBTI", ++nr, name.Data(), xpos, ypos, zpos, 0, "ONLY", par, 3) ;
-      AliDebug(2,Form(" %2.2i xpos %8.5f zpos %6.3f par[0,1] %6.3f |", iz+1, xpos, zpos, par[0]));
-      if(iz%2>0) AliDebug(2,Form("\n"));
-      zpos += fSampleWidth;
-    } 
-    AliDebug(2,Form(" Number of Pb tiles in SCMX %i coef %9.7f \n", nr, coef));
-    AliDebug(2,Form(" par[1] %9.5f  par[2] %9.5f ypos %9.5f \n", par[1], par[2], ypos)); 
-  } else if(name == "SCM0") { // 1-mar-05 ; TRD2 - 5 parameters
-    AliDebug(2,Form(" SCM0 par = "));
-    for(Int_t i=0; i<5; i++) AliDebug(2,Form(" %9.5f ", parTRAP[i]));
-    AliDebug(2,Form("\n zpos %f \n",zpos));
-
-    Double_t tanx = (parTRAP[1] -  parTRAP[0]) / (2.*parTRAP[4]); //  tanx =  tany now
-    Double_t tany = (parTRAP[3] -  parTRAP[2]) / (2.*parTRAP[4]), ztmp=0.;
-    parPB[4] = g->GetECPbRadThick()/2.;
-    //parSC[2] = g->GetECScintThick()/2.;
-    for(Int_t iz=0; iz<g->GetNECLayers(); iz++){
-      ztmp     = fSampleWidth*Double_t(iz);
-      parPB[0] = parTRAP[0] + tanx*ztmp;
-      parPB[1] = parPB[0]   + tanx*g->GetECPbRadThick();
-      parPB[2] = parTRAP[2] + tany*ztmp;
-      parPB[3] = parPB[2]   + tany*g->GetECPbRadThick();
-      TVirtualMC::GetMC()->Gsposp("PBTI", ++nr, name.Data(), xpos, ypos, zpos, 0, pbtiChonly.Data(), parPB, 5) ;
-      AliDebug(2,Form("\n PBTI %2i | zpos %6.3f | par = ", nr, zpos));
-      /*
-      for(Int_t i=0; i<5; i++) printf(" %9.5f ", parPB[i]);
-      // individual SC tile
-      parSC[0] = parPB[0];
-      parSC[1] = parPB[1];
-      TVirtualMC::GetMC()->Gsposp("SCTI", nr, name.Data(), xpos, ypos, zpos+g->GetECScintThick(), 
-      0, pbtiChonly.Data(), parSC, 3) ;
-      printf("\n SCTI     zpos %6.3f | par = ", zpos+g->GetECScintThick());
-      for(Int_t i=0; i<3; i++) printf(" %9.5f ", parPB[i]);
-      */
-      zpos  += fSampleWidth;
-    }
-    AliDebug(2,Form("\n"));
-  }
-  Info("PbInTrapForTrd2", "Ver. 0.03 : was tested.");
-}
-
-// 15-mar-05
-//______________________________________________________________________
-void AliEMCALv0::PbmoInTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parPBMO[5])
-{
-  // Pb inside Trd2
-  Info("PbmoInTrd2"," started : geometry %s ", g->GetName());
-  Double_t wallThickness = g->GetPhiModuleSize()/2. -  g->GetPhiTileSize();
-  AliDebug(2,Form(" wall thickness %7.5f \n", wallThickness));
-  for(Int_t i=0; i<4; i++) {
-    parPBMO[i] = emodPar[i] - wallThickness;
-    AliDebug(2,Form(" %i parPBMO %7.3f emodPar %7.3f : dif %7.3f \n", 
-		    i, parPBMO[i],emodPar[i], parPBMO[i]-emodPar[i]));
-  }
-  parPBMO[4] = emodPar[4];
-  TVirtualMC::GetMC()->Gsvolu("PBMO", "TRD2", fIdTmedArr[kIdPB], parPBMO, 5);
-  TVirtualMC::GetMC()->Gspos("PBMO", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
-  // Division 
-  if(g->GetNPHIdiv()==2 && g->GetNETAdiv()==2) {
-    Division2X2InPbmo(g, parPBMO);
-    AliDebug(2,Form(" PBMO, division 2X2 | geometry |%s|\n", g->GetName()));
-  } else {
-    AliDebug(2,Form(" no division PBMO in this geometry |%s|\n", g->GetName()));
-    assert(0);
-  }
-}
-
-//______________________________________________________________________
-void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t parPBMO[5]) 
-{
-  // Division 2X2
-  Info("Division2X2InPbmo"," started : geometry %s ", g->GetName());
-  //Double_t *dummy=0;
-  //  TVirtualMC::GetMC()->Gsvolu("SCTI", "BOX", fIdTmedArr[kIdSC], dummy, 0);
-
-  Double_t parSC[3];
-  Double_t xpos = 0.0, ypos = 0.0, zpos = 0.0, ztmp=0;;
-  Double_t tanx = (parPBMO[1] -  parPBMO[0]) / (2.*parPBMO[4]); //  tanx =  tany now
-  Double_t tany = (parPBMO[3] -  parPBMO[2]) / (2.*parPBMO[4]);
-  const Int_t buffersize = 10;
-  char name[buffersize], named[buffersize], named2[buffersize];
-
-  AliDebug(2,Form(" PBMO par = "));
-  for(Int_t i=0; i<5; i++) AliDebug(2,Form(" %9.5f ", parPBMO[i]));
-  AliDebug(2,Form("\n"));
-
-  parSC[2] = g->GetECScintThick()/2.;
-  zpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick() + g->GetECScintThick()/2.;
-  AliDebug(2,Form(" parSC[2] %9.5f \n", parSC[2]));
-  for(Int_t iz=0; iz<g->GetNECLayers(); iz++){
-    ztmp     = g->GetECPbRadThick() + fSampleWidth*Double_t(iz); // Z for previous PB
-    parSC[0] =  parPBMO[0] + tanx*ztmp;
-    parSC[1] =  parPBMO[2] + tany*ztmp;
-
-    snprintf(name,buffersize,"SC%2.2i", iz+1);
-    TVirtualMC::GetMC()->Gsvolu(name, "BOX", fIdTmedArr[kIdSC], parSC, 3);
-    TVirtualMC::GetMC()->Gspos(name, 1, "PBMO", xpos, ypos, zpos, 0, "ONLY") ;
-    AliDebug(2,Form("%s | zpos %6.3f | parSC[0,1]=(%7.5f,%7.5f) -> ", 
-		    name, zpos, parSC[0], parSC[1]));
-    
-    snprintf(named,buffersize,"SY%2.2i", iz+1);
-    printf(" %s -> ", named);
-    TVirtualMC::GetMC()->Gsdvn(named,name, 2, 2);
-
-    snprintf(named2,buffersize,"SX%2.2i", iz+1);
-    printf(" %s \n", named2);
-    TVirtualMC::GetMC()->Gsdvn(named2,named, 2, 1);
-
-    zpos    += fSampleWidth;
-  }
 }
 
 //______________________________________________________________________

@@ -34,17 +34,8 @@ AliMUONAlignmentTask:
  
 It is an AliAnalysisTask to align the MUON spectrometer. The Task reads 
 as input ESDs and feeds the MUONTracks to AliMUONAlignment. The alignment 
-itself is performed by AliMillepede. A OCDB entry is written with the 
-alignment parameters. A list of graph are written to monitor the alignment 
-parameters. 
-
-AliMUONReAlignTask:
-
-It is an AliAnalysisTask to realign the MUON spectrometer. The Task reads 
-as input ESDs moves the clusters of a MUONTrack acoording to the re aligned 
-geometry taken from a misalignment file in the OCDB and refit the track. 
-Then it produces a AliMUONClusterInfo object for each cluster. The output is 
-a TTree of AliMUONClusterInfo.
+itself is performed by AliMillepede. An OCDB entry is written with the 
+alignment parameters. See AddTaskMuonAlignment.C for more details on usage
 
 AliMUONChamberCalibrationTask:
 

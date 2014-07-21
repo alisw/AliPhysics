@@ -156,8 +156,8 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   // tracklet params
   memcpy(fdzdxCorrFactor, ref.fdzdxCorrFactor, 2*sizeof(Double_t));
   memcpy(fdzdxCorrRCbias, ref.fdzdxCorrRCbias, 2*sizeof(Double_t));
-  memcpy(fYcorrTailCancel, ref.fdzdxCorrRCbias, 6*sizeof(Double_t));
-  memcpy(fS2Ycorr, ref.fS2Ycorr, 2*sizeof(Double_t));
+  memcpy(fYcorrTailCancel, ref.fdzdxCorrRCbias, 12*sizeof(Double_t));
+  memcpy(fS2Ycorr, ref.fS2Ycorr, 4*sizeof(Double_t));
 }
 
 //______________________________________________________________
@@ -215,8 +215,8 @@ AliTRDrecoParam& AliTRDrecoParam::operator=(const AliTRDrecoParam &ref)
   // tracklet params
   memcpy(fdzdxCorrFactor, ref.fdzdxCorrFactor, 2*sizeof(Double_t));
   memcpy(fdzdxCorrRCbias, ref.fdzdxCorrRCbias, 2*sizeof(Double_t));
-  memcpy(fYcorrTailCancel, ref.fdzdxCorrRCbias, 6*sizeof(Double_t));
-  memcpy(fS2Ycorr, ref.fS2Ycorr, 2*sizeof(Double_t));
+  memcpy(fYcorrTailCancel, ref.fdzdxCorrRCbias, 12*sizeof(Double_t));
+  memcpy(fS2Ycorr, ref.fS2Ycorr, 4*sizeof(Double_t));
   return *this;
 }
 
@@ -351,13 +351,16 @@ void  AliTRDrecoParam::SetTrackletParams(Double_t *par)
     fdzdxCorrRCbias[1] = par[3];   // dz/dx < 0
     /// correct x_cross for the bias in dzdx
     fdzdxXcrossFactor  = par[4];
-    // y linear q/pt correction due to wrong tail cancellation. 
-    fYcorrTailCancel[0][0] = par[5]; fYcorrTailCancel[0][1] = par[6];  // opposite sign !RC
-    fYcorrTailCancel[1][0] = par[7]; fYcorrTailCancel[1][1] = par[8];  // same sign !RC
-    fYcorrTailCancel[2][0] = par[9]; fYcorrTailCancel[2][1] = par[10]; // RC
+    // y correction due to wrong tail cancellation. 
+    fYcorrTailCancel[0][0] = par[5];fYcorrTailCancel[0][1] = par[6];fYcorrTailCancel[0][2] = par[7]; 
+    fYcorrTailCancel[1][0] = par[8];fYcorrTailCancel[1][1] = par[9];fYcorrTailCancel[1][2] = par[10]; 
+    fYcorrTailCancel[2][0] = par[11];fYcorrTailCancel[2][1] = par[12];fYcorrTailCancel[2][3] = par[13];
+    fYcorrTailCancel[3][0] = par[14];fYcorrTailCancel[3][1] = par[15];fYcorrTailCancel[3][3] = par[16];
     // inflation factor of error parameterization in r-phi due to wrong estimation of residuals. 
-    fS2Ycorr[0] = par[11];  // opposite sign, 
-    fS2Ycorr[1] = par[12];  // same sign
+    fS2Ycorr[0] = par[17];
+    fS2Ycorr[1] = par[18];
+    fS2Ycorr[2] = par[19];
+    fS2Ycorr[3] = par[20];
     
   } else {
     // correct dzdx for the bias in z
@@ -368,12 +371,23 @@ void  AliTRDrecoParam::SetTrackletParams(Double_t *par)
     fdzdxCorrRCbias[1] = -0.012; // dz/dx < 0
     /// correct x_cross for the bias in dzdx
     fdzdxXcrossFactor  = 0.14;
-    // y linear q/pt correction due to wrong tail cancellation. 
-    fYcorrTailCancel[0][0] = 0.;   fYcorrTailCancel[0][1] = 0.027;  // opposite sign !RC
-    fYcorrTailCancel[1][0] = 0.04; fYcorrTailCancel[1][1] = 0.027;  // same sign !RC
-    fYcorrTailCancel[2][0] = 0.013;fYcorrTailCancel[2][1] = 0.018;  // RC
+    // y correction due to wrong tail cancellation. 
+        // bz<0 && !RC
+    fYcorrTailCancel[0][0] = 0.04; fYcorrTailCancel[0][1] = 2.151; fYcorrTailCancel[0][2] = 0.013;
+        // bz>0 && !RC
+    fYcorrTailCancel[1][0] = 0.034; fYcorrTailCancel[1][1] = 1.817; fYcorrTailCancel[1][2] = -0.01;
+        // bz<0 && RC
+    fYcorrTailCancel[2][0] = 0.04; fYcorrTailCancel[2][1] = 2.513; fYcorrTailCancel[2][2] = 0.015;
+        // bz>0 && RC
+    fYcorrTailCancel[3][0] = 0.034; fYcorrTailCancel[3][1] = 2.476; fYcorrTailCancel[3][2] = -0.01;
     // inflation factor of error parameterization in r-phi due to wrong estimation of residuals. 
-    fS2Ycorr[0] = 5.;  // opposite sign, 
-    fS2Ycorr[1] = 10;  // same sign
+        // chg<0 && !RC
+    fS2Ycorr[0] = 5.52; 
+        // chg>0 && !RC
+    fS2Ycorr[1] = 3.61; 
+        // chg<0 && RC
+    fS2Ycorr[2] = 4.84; 
+        // chg>0 && RC
+    fS2Ycorr[3] = 3.24; 
   }
 }
