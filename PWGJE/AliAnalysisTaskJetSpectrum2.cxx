@@ -141,12 +141,11 @@ AliAnalysisTaskSE(),
   fh2deltaPt1Pt2(0x0),
   fh2RelPtFGen(0x0),
   fh3RelPtFGenLeadTrkPt(0x0),
-  fHistList(0x0),
   fh1EvtSelection(0),
   fMaxVertexZ(100.),
   fMinNcontributors(0),
-  fRejectPileup(0)
-  
+  fRejectPileup(0),
+  fHistList(0x0)  
 {
 
   for(int ij = 0;ij <kJetTypes;++ij){    
@@ -257,11 +256,11 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2deltaPt1Pt2(0x0),
   fh2RelPtFGen(0x0),
   fh3RelPtFGenLeadTrkPt(0x0),
-  fHistList(0x0),
   fh1EvtSelection(0),
   fMaxVertexZ(100.),
   fMinNcontributors(0),
-  fRejectPileup(0)
+  fRejectPileup(0),
+  fHistList(0x0)
 {
 
   for(int ij = 0;ij <kJetTypes;++ij){    
