@@ -13,10 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-// Analysis task for identified PHOS cluster from pi0 and take korrelation betwen hadron-pi0 angel's.
-// Authors: 	Daniil Ponomarenko (Daniil.Ponomarenko@cern.ch)
-// 		Dmitry Blau
-// 07-Feb-2014
+// Analysis task for identified PHOS cluster from pi0 and extracting pi0-hadron correlation.
+// Authors: 	Daniil Ponomarenko <Daniil.Ponomarenko@cern.ch>
+// 		Dmitry Blau <Dmitry.Blau@cern.ch>
+// 09-Jul-2014
 
 #include <Riostream.h>
 #include "THashList.h"
@@ -57,6 +57,7 @@
 #include "AliAODCaloCluster.h"
 #include "AliCaloPhoton.h"
 #include "AliAODVertex.h"
+#include "AliInputEventHandler.h"
 
 using std::cout;
 using std::endl;
@@ -79,10 +80,12 @@ AliPHOSCorrelations::AliPHOSCorrelations()
 	fCentNMixed(),
 	fNEMRPBins(9),
 	fAssocBins(),	
+    fUseMEAlgoritmForReal(true),
+    fUseMEAlgoritmForMix(true),
 	fCheckHibridGlobal(kOnlyHibridTracks),
 	fPHOSEvent(false),
+	fMBEvent(false),
 	fPeriod(kUndefinedPeriod),
-	fInternalTriggerSelection(kNoSelection),
 	fMaxAbsVertexZ(10.),
 	fManualV0EPCalc(false),
 	fCentCutoffDown(0.),
@@ -97,6 +100,7 @@ AliPHOSCorrelations::AliPHOSCorrelations()
 	fEvent(0x0),
 	fEventESD(0x0),
 	fEventAOD(0x0),
+	fEventHandler(0),
 	fESDtrackCuts(0x0),
 	fRunNumber(-999),
 	fInternalRunNumber(0),
@@ -120,6 +124,85 @@ AliPHOSCorrelations::AliPHOSCorrelations()
 }
 
 //_______________________________________________________________________________
+AliPHOSCorrelations::AliPHOSCorrelations(const char *name)
+:AliAnalysisTaskSE(name),
+    fPHOSGeo(0x0),
+    fOutputContainer(0x0),
+    fMinClusterEnergy(0.3),
+    fMinBCDistance(0),
+    fMinNCells(3),
+    fMinM02(0.2),
+    fTOFCutEnabled(1),
+    fTOFCut(100.e-9),
+    fNVtxZBins(1),
+    fCentEdges(10),
+    fCentNMixed(),
+    fNEMRPBins(9),
+    fAssocBins(),
+    fUseMEAlgoritmForReal(true),
+    fUseMEAlgoritmForMix(true),
+    fCheckHibridGlobal(kOnlyHibridTracks),
+    fPHOSEvent(false),
+    fMBEvent(false),
+    fPeriod(kUndefinedPeriod),
+    fMaxAbsVertexZ(10.),
+    fManualV0EPCalc(false),
+    fCentCutoffDown(0.),
+    fCentCutoffUp(90),
+    fMassInvMean(0.135),
+    fMassInvSigma(0.05),
+    fSigmaWidth(0.),
+    fMassMeanP0(-20.9476),
+    fMassMeanP1(0.1300),
+    fMassSigmaP0(0.005),
+    fMassSigmaP1(-0.0001),
+    fEvent(0x0),
+    fEventESD(0x0),
+    fEventAOD(0x0),
+    fEventHandler(0),
+    fESDtrackCuts(0x0),
+    fRunNumber(-999),
+    fInternalRunNumber(0),
+    fMultV0(0x0),
+    fV0Cpol(0.),fV0Apol(0.),
+    fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"),
+    fVertexVector(),
+    fVtxBin(0),
+    fCentralityEstimator("V0M"),
+    fCentrality(0.),
+    fCentBin(0),
+    fHaveTPCRP(0),
+    fRP(0.),
+    fEMRPBin(0),
+    fCaloPhotonsPHOS(0x0),
+    fTracksTPC(0x0),
+    fCaloPhotonsPHOSLists(0x0),
+    fTracksTPCLists(0x0)
+{
+    // Constructor
+    // Output slots #0 write into a TH1 container
+    DefineOutput(1,THashList::Class());
+
+    const Int_t nPtAssoc=10 ;
+    Double_t ptAssocBins[nPtAssoc]={0.,0.5,1.0,1.5,2.0,3.,5.,7.,10.,16} ;
+    fAssocBins.Set(nPtAssoc,ptAssocBins) ;
+
+    const int nbins = 9;
+    Double_t edges[nbins+1] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80.};
+    TArrayD centEdges(nbins+1, edges);
+    Int_t nMixed[nbins] = {4,4,6,10,20,30,50,100,100};
+    //Int_t nMixed[nbins] = {100,100,100,100,100,100,100,100,100};
+    TArrayI centNMixed(nbins, nMixed);
+    SetCentralityBinning(centEdges, centNMixed);
+
+    fVertex[0]=0; fVertex[1]=0; fVertex[2]=0;
+
+    SetGeometry();
+
+    ZeroingVariables();
+}
+
+//_______________________________________________________________________________
 AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 :AliAnalysisTaskSE(name),
 	fPHOSGeo(0x0),
@@ -135,10 +218,12 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 	fCentNMixed(),
 	fNEMRPBins(9),
 	fAssocBins(),	
+    fUseMEAlgoritmForReal(true),
+    fUseMEAlgoritmForMix(true),
 	fCheckHibridGlobal(kOnlyHibridTracks),
 	fPHOSEvent(false),
+	fMBEvent(false),
 	fPeriod(period),
-	fInternalTriggerSelection(kNoSelection),
 	fMaxAbsVertexZ(10.),
 	fManualV0EPCalc(false),
 	fCentCutoffDown(0.),
@@ -153,6 +238,7 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 	fEvent(0x0),
 	fEventESD(0x0),
 	fEventAOD(0x0),
+	fEventHandler(0),
 	fESDtrackCuts(0x0),
 	fRunNumber(-999),
 	fInternalRunNumber(0),
@@ -244,15 +330,18 @@ void AliPHOSCorrelations::UserCreateOutputObjects()
 	fOutputContainer = new THashList();
 	fOutputContainer->SetOwner(kTRUE);
 	
-	//Event selection
-  	fOutputContainer->Add(new TH1F("hTriggerPassedEvents","Event selection passed Cuts", 20, 0., 20.) );
-
-  	fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", kTotalSelected+3, 0., double(kTotalSelected+3))) ;
-	
+    // Event selection
+    fOutputContainer->Add(new TH1F("hTriggerPassedEvents","Event selection passed Cuts", 20, 0., 20.) );
+    // Analysis event's progress
+    fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", 15, 0., 15)) ;
 	fOutputContainer->Add(new TH2F("hSelEvents","Event selection", kTotalSelected+1, 0., double(kTotalSelected+1), nRuns,0.,float(nRuns))) ;
-	fOutputContainer->Add(new TH2F("hCentrality","Event centrality", 100,0.,100.,nRuns,0.,float(nRuns))) ;
+    // Centrality, Reaction plane selection
+    fOutputContainer->Add(new TH2F("hCentrality","Event centrality", 100,0.,100.,nRuns,0.,float(nRuns))) ;
  	fOutputContainer->Add(new TH2F("phiRPflat","RP distribution with TPC flat", 100, 0., 2.*TMath::Pi(),20,0.,100.)) ;
+    // Mass selection
  	fOutputContainer->Add(new TH2F("massWindow","mean & sigma", 100,0.095,0.185,500,0.,0.05));
+    fOutputContainer->Add(new TH1F("massWindowPass","Mass selection", 10, 0., 10.)) ;
+    // Cluster multiplisity
  	fOutputContainer->Add(new TH2F("hCluEvsClu","ClusterMult vs E",200,0.,10.,100,0.,100.)) ;
   	
 
@@ -499,10 +588,10 @@ void AliPHOSCorrelations::SetHistPtAssoc(Int_t  ptMult, Double_t ptMin, Double_t
 
 void AliPHOSCorrelations::SetHistPHOSClusterMap()
 {
-	for(int i =  0; i<3; i++)
+	for(int i =  0; i<5; i++)
 	{
 		//  Cluster X/Z/E distribution.
-		fOutputContainer->Add(new TH3F(Form("QA_cluXZE_mod%i", i+1),Form("PHOS Clusters XZE distribution of module %i", i+1), 70, 0, 70, 60, 0, 60, 200, 0, 20 ) );
+		fOutputContainer->Add(new TH3F(Form("QA_cluXZE_mod%i", i),Form("PHOS Clusters XZE distribution of module %i", i), 70, 0, 70, 60, 0, 60, 200, 0, 20 ) );
 		TH3F *h = static_cast<TH3F*>(fOutputContainer->Last()) ;
 	    	h->GetXaxis()->SetTitle("X");
 		h->GetYaxis()->SetTitle("Z");
@@ -514,7 +603,8 @@ void AliPHOSCorrelations::UserExec(Option_t *)
 {
 	// Main loop, called for each event analyze ESD/AOD 
 	// Step 0: Event Objects
-	LogProgress(0);
+
+    LogProgress(0);
 	fEvent = InputEvent();
 	if( ! fEvent ) 
 	{
@@ -522,13 +612,12 @@ void AliPHOSCorrelations::UserExec(Option_t *)
 		PostData(1, fOutputContainer);
 		return ;
 	}
+    LogProgress(1);
         	
     ZeroingVariables();
 
 	fEventESD = dynamic_cast<AliESDEvent*>(fEvent);
 	fEventAOD = dynamic_cast<AliAODEvent*>(fEvent);
-
-	TestTrigger();
 
   	// Step 1(done once):  
 	if( fRunNumber != fEvent->GetRunNumber() )
@@ -538,15 +627,25 @@ void AliPHOSCorrelations::UserExec(Option_t *)
 		//SetGeometry();
 		SetESDTrackCuts();
 	}
-	LogProgress(1);
+
+	//Data
+	//get Event-Handler for the trigger information
+	fEventHandler= dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+	if (!fEventHandler) 
+	{
+		AliError("Could not get InputHandler");
+		PostData(1, fOutputContainer);
+		return; // Reject!
+	}
+    LogProgress(2);
 
 	if( RejectTriggerMaskSelection() ) 
 	{
 		PostData(1, fOutputContainer);
 		return; // Reject!
 	}
-  	LogProgress(2);
-
+    LogProgress(3);
+	
 	// Step 2: Vertex
   	// fVertex, fVertexVector, fVtxBin
 	SetVertex();
@@ -555,7 +654,7 @@ void AliPHOSCorrelations::UserExec(Option_t *)
     		PostData(1, fOutputContainer);
     		return; // Reject!
   	}
-  	LogProgress(3);
+    LogProgress(4);
 
   	// Step 3: Centrality
   	// fCentrality, fCentBin
@@ -565,54 +664,83 @@ void AliPHOSCorrelations::UserExec(Option_t *)
     		PostData(1, fOutputContainer);
     		return; // Reject!
   	}
+    LogProgress(5);
   	FillHistogram("hCentrality",fCentrality,fInternalRunNumber-0.5) ;
-	LogProgress(4);
 
 	// Step 4: Reaction Plane
   	// fHaveTPCRP, fRP, fRPV0A, fRPV0C, fRPBin
 	EvalReactionPlane();  
   	fEMRPBin = GetRPBin(); 
-  	LogProgress(5);
   	
 	// Step 5: Event Photons (PHOS Clusters) selectionMakeFlat
 	SelectPhotonClusters();
 	if( ! fCaloPhotonsPHOS->GetEntriesFast() )	
 		LogSelection(kHasPHOSClusters, fInternalRunNumber);
-	LogProgress(6);
 
 	// Step 6: Event Associated particles (TPC Tracks) selection
 	SelectAccosiatedTracks();
-	
 	if( ! fTracksTPC->GetEntriesFast() )	
-	  LogSelection(kHasTPCTracks, fInternalRunNumber);
+        LogSelection(kHasTPCTracks, fInternalRunNumber);
 	LogSelection(kTotalSelected, fInternalRunNumber);
-	LogProgress(7);
 
+    // Step 7: Make TPC's mask
+    FillTrackEtaPhi();
 
+    LogProgress(6);
 
-	// Step 7: Consider pi0 (photon/cluster) pairs.
-	//ConsiderPi0s();
-	ConsiderPi0sME();
-	
-	// Step 8; Mixing
-	ConsiderPi0sMix();
+    // Step 8: Start correlation analysis.
+    // Filling real histograms:
+    if (fUseMEAlgoritmForReal) // if true than use ME algoritm
+    {
+        LogProgress(7);
+        SelectTriggerPi0ME();   // Extract one most energetic pi0 candidate in this event.
 
-	//ConsiderTracksMix();
-	ConsiderTracksMixME();
-	LogProgress(8);
+        if (fPHOSEvent)
+        {
+            ConsiderPi0sME(); // Consider the most energetic Pi0 in this event with all tracks of this event.
+            LogProgress(8);
+        }
+    }
+    else //using common algoritm
+    {
+        LogProgress(10);
+        if (fPHOSEvent)
+        {
+            ConsiderPi0s(); // Extract all pi0 candidates and compare them with all track of this event.
+            LogProgress(11);
+        }
+    }
 
+    // Filling mixing histograms:
+    if(fUseMEAlgoritmForMix) // if true than use ME algoritm
+    {
+        // Filling mixing histograms
+        if (fMBEvent)
+        {
+            if (!fUseMEAlgoritmForReal)  SelectTriggerPi0ME();   // Extract one most energetic pi0 candidate in this event if it not done yet.
 
+            ConsiderPi0sMix();      // Make background for extracting pi0 mass.
+            ConsiderTracksMixME();  // Compare only one most energetic pi0 candidate with all tracks from previous MB events.
 
-	// Step 9: Make TPC's mask
-	FillTrackEtaPhi();
-	LogProgress(9);
+            UpdatePhotonLists();    // Updating pull of photons.
+            UpdateTrackLists();     // Updating pull of tracks.
+            LogProgress(9);
+        }
+    }
+    else //using common algoritm
+    {
+        if (fMBEvent)
+        {
+            ConsiderPi0sMix();      // Make background for extracting pi0 mass.
+            ConsiderTracksMix();    // Compare all pi0 candidates in current event whit all tracks from previous MB events.
 
-	// Step 10: Update lists
-	UpdatePhotonLists();
-    	UpdateTrackLists();
-  
-	LogProgress(10);
+            UpdatePhotonLists();
+            UpdateTrackLists();
+            LogProgress(12);
+        }
+    }
 
+    LogProgress(13);
 	// Post output data.
 	PostData(1, fOutputContainer);
 }
@@ -1143,41 +1271,71 @@ Int_t AliPHOSCorrelations::ConvertToInternalRunNumber(Int_t run){
 //_______________________________________________________________________________
 Bool_t AliPHOSCorrelations::RejectTriggerMaskSelection()
 {
+	// Analyse trigger event and reject it if it not intresting.
 	const Bool_t REJECT = true;
 	const Bool_t ACCEPT = false;
 
-	// No need to check trigger mask if no selection is done
-	if( kNoSelection == fInternalTriggerSelection )
-	return ACCEPT;
+	if( fDebug >= 2 )
+		AliInfo( Form("Event passed offline phos trigger test: %s ", fEvent->GetFiredTriggerClasses().Data() ) );
 
-	Bool_t reject = REJECT;
+	Int_t physSelMask = fEventHandler->IsEventSelected();
 
-	Bool_t isMB = (fEvent->GetTriggerMask() & (ULong64_t(1)<<1));
-	Bool_t isCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<4));
-	Bool_t isSemiCentral = (fEvent->GetTriggerMask() & (ULong64_t(1)<<7));
+	Bool_t isAny = physSelMask & AliVEvent::kAny;
+
+	Bool_t isPHI1 = physSelMask & AliVEvent::kPHI1;
+	Bool_t isPHI7 = physSelMask & AliVEvent::kPHI7;
+	Bool_t isPHI8 = physSelMask & AliVEvent::kPHI8;
+	Bool_t isCentral = physSelMask & AliVEvent::kCentral;
+	Bool_t isSemiCentral = physSelMask & AliVEvent::kSemiCentral;
+	Bool_t isPHOSPb = physSelMask & AliVEvent::kPHOSPb;
+
+	Bool_t isMB = physSelMask & AliVEvent::kMB;
+	Bool_t isINT7 = physSelMask & AliVEvent::kINT7;
+	Bool_t isAnyINT = physSelMask & AliVEvent::kAnyINT;
 
 
-	if( kCentralInclusive == fInternalTriggerSelection
-	&& isCentral ) reject = ACCEPT; // accept event.
-	else if( kCentralExclusive == fInternalTriggerSelection
-	&& isCentral && !isSemiCentral && !isMB ) reject = ACCEPT; // accept event.
+	// All input events
+	FillHistogram("hTriggerPassedEvents", 0);
+	//if ( !isAny ) cout<<"Strange event"<<endl; // We loose some events O_o
+	if ( isAny ) FillHistogram("hTriggerPassedEvents", 1.);		
 
-	else if( kSemiCentralInclusive == fInternalTriggerSelection
-	&& isSemiCentral ) reject = ACCEPT; // accept event
-	else if( kSemiCentralExclusive == fInternalTriggerSelection
-	&& isSemiCentral && !isCentral && !isMB ) reject = ACCEPT; // accept event.
+	// PHOS events.
+	if ( isPHI1 ) FillHistogram("hTriggerPassedEvents",  2.);	
+	if ( isPHI7 ) FillHistogram("hTriggerPassedEvents",  3.);	
+	if (isPHI8) FillHistogram("hTriggerPassedEvents",  4.); 
+	if ( isCentral ) FillHistogram("hTriggerPassedEvents", 5.);	
+	if (isSemiCentral) FillHistogram("hTriggerPassedEvents", 6.); 
+	if (isPHOSPb) FillHistogram("hTriggerPassedEvents", 7.);	
 
-	else if( kMBInclusive == fInternalTriggerSelection
-	&& isMB ) reject = ACCEPT; // accept event.
-	else if( kMBExclusive == fInternalTriggerSelection
-	&& isMB && !isCentral && !isSemiCentral ) reject = ACCEPT; // accept event.
+	// MB events.
+	if ( isMB ) FillHistogram("hTriggerPassedEvents", 8.);		
+	if ( isINT7 ) FillHistogram("hTriggerPassedEvents", 9.);
+	if ( isAnyINT ) FillHistogram("hTriggerPassedEvents", 10.);
 
-	if( REJECT == reject )
-	return REJECT;
-	else {
-	LogSelection(kInternalTriggerMaskSelection, fInternalRunNumber);
-	return ACCEPT;
+
+	Bool_t isTriggerEvent = isPHI1 || isPHI7 || isPHI8 || isCentral || isSemiCentral || isPHOSPb;
+	// PHOS trigger events.
+	if ( isTriggerEvent )
+	{
+		FillHistogram("hTriggerPassedEvents", 16.);
+		fPHOSEvent = true;
+		fMBEvent = false;
+		return ACCEPT;
 	}
+
+	// MB events without trigger PHOS events.
+    //if ( (isMB || isINT7 || isAnyINT) && !isTriggerEvent ) //Less enteries in PbPb.
+    if ( !isTriggerEvent )
+	{
+		FillHistogram("hTriggerPassedEvents", 17.);
+		fPHOSEvent = false;
+		fMBEvent = true;
+		return ACCEPT;
+	}
+
+	// other events
+	FillHistogram("hTriggerPassedEvents",  18.); 
+	return REJECT;
 }
 //_______________________________________________________________________________
 void AliPHOSCorrelations::SetVertex()
@@ -1372,7 +1530,6 @@ void AliPHOSCorrelations::SelectPhotonClusters()
 		//clu->GetMomentum(lorentzMomentum, fVertex);
 		clu->GetMomentum(lorentzMomentum, origo);
 	
-
 		if(inPHOS>=fCaloPhotonsPHOS->GetSize()){
 			fCaloPhotonsPHOS->Expand(inPHOS+50) ;
 		}
@@ -1429,115 +1586,201 @@ void AliPHOSCorrelations::SelectAccosiatedTracks()
 	}
 }
 //_______________________________________________________________________________
+void AliPHOSCorrelations::SelectTriggerPi0ME()
+{
+    const Int_t nPHOS=fCaloPhotonsPHOS->GetEntriesFast() ;
+    for(Int_t i1=0; i1 < nPHOS-1; i1++)
+    {
+        AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
+        for (Int_t i2=i1+1; i2<nPHOS; i2++)
+        {
+            AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
+            TLorentzVector p12  = *ph1  + *ph2;
+
+            Double_t phiTrigger=p12.Phi() ;
+            Double_t etaTrigger=p12.Eta() ;
+
+            Double_t m=p12.M() ;
+            Double_t pt=p12.Pt() ;
+            Double_t eff = 1./GetEfficiency(pt);
+            int mod1 = ph1->Module() ;
+            int mod2 = ph2->Module() ;
+
+            FillHistogram("clu_phieta",phiTrigger,etaTrigger);
+            FillHistogram("clusingle_phieta",ph1->Phi(), ph1->Eta());
+            FillHistogram("clusingle_phieta",ph2->Phi(), ph2->Eta());
+
+
+            FillHistogram("all_mpt",m, pt);
+            FillHistogram("all_mpt_left",m, pt);
+            FillHistogram("all_mpt_right",m, pt);
+
+            FillHistogram("all_mpt_eff",m, pt, eff);
+            FillHistogram("all_mpt_left_eff",m, pt, eff);
+            FillHistogram("all_mpt_right_eff",m, pt, eff);
+
+            if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+            {
+                FillHistogram("cpv_mpt",m, pt);
+                FillHistogram("cpv_mpt_left",m, pt);
+                FillHistogram("cpv_mpt_right",m, pt);
+
+                FillHistogram("cpv_mpt_eff",m, pt, eff);
+                FillHistogram("cpv_mpt_left_eff",m, pt, eff);
+                FillHistogram("cpv_mpt_right_eff",m, pt, eff);
+            }
+
+            if ( ph1->IsDispOK() && ph2->IsDispOK() )
+            {
+                FillHistogram("disp_mpt",m, pt);
+                FillHistogram("disp_mpt_left",m, pt);
+                FillHistogram("disp_mpt_right",m, pt);
+
+                FillHistogram("disp_mpt_eff",m, pt, eff);
+                FillHistogram("disp_mpt_left_eff",m, pt, eff);
+                FillHistogram("disp_mpt_right_eff",m, pt, eff);
+                if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+                {
+                    FillHistogram("both_mpt",m, pt);
+                    FillHistogram("both_mpt_left",m, pt);
+                    FillHistogram("both_mpt_right",m, pt);
+
+                    FillHistogram("both_mpt_eff",m, pt, eff);
+                    FillHistogram("both_mpt_left_eff",m, pt, eff);
+                    FillHistogram("both_mpt_right_eff",m, pt, eff);
+                    if(mod1 == mod2) // for each module
+                    {
+                        FillHistogram(Form("both%d_mpt",mod1),m, pt);
+                        FillHistogram(Form("both%d_mpt_eff",mod1),m, pt, eff);
+                    }
+                }
+            }
+
+            if(!TestMass(m,pt)) continue;
+
+            Int_t modCase = GetModCase(mod1, mod2);
+
+            //Now we choosing most energetic pi0.
+            TestPi0ME(kPidAll, p12, modCase);
+            if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+                TestPi0ME(kPidCPV, p12, modCase);
+            if ( ph1->IsDispOK() && ph2->IsDispOK() )
+            {
+                TestPi0ME(kPidDisp, p12, modCase);
+                if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+                    TestPi0ME(kPidBoth, p12, modCase);
+            }
+        }
+    }
+}
+
+//_______________________________________________________________________________
 void AliPHOSCorrelations::ConsiderPi0s()
 {
-	// Must consider only PHOS events in real distribution.
-	//if (fPHOSEvent)
+    // Consider all photons from PHOS
+	const Int_t nPHOS=fCaloPhotonsPHOS->GetEntriesFast() ;
+	for(Int_t i1=0; i1 < nPHOS-1; i1++)
 	{
-		const Int_t nPHOS=fCaloPhotonsPHOS->GetEntriesFast() ;
-		for(Int_t i1=0; i1 < nPHOS-1; i1++)
+		AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
+		for (Int_t i2=i1+1; i2<nPHOS; i2++)
 		{
-			AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-			for (Int_t i2=i1+1; i2<nPHOS; i2++)
+			AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
+			TLorentzVector p12  = *ph1  + *ph2;
+
+			Double_t phiTrigger=p12.Phi() ;
+			Double_t etaTrigger=p12.Eta() ;
+
+			Double_t m=p12.M() ;
+			Double_t pt=p12.Pt() ;
+			Double_t eff = 1./GetEfficiency(pt);
+			int mod1 = ph1->Module() ;
+			int mod2 = ph2->Module() ;				
+
+			FillHistogram("clu_phieta",phiTrigger,etaTrigger);
+			FillHistogram("clusingle_phieta",ph1->Phi(), ph1->Eta());
+			FillHistogram("clusingle_phieta",ph2->Phi(), ph2->Eta());
+
+
+			FillHistogram("all_mpt",m, pt);
+			FillHistogram("all_mpt_left",m, pt);
+			FillHistogram("all_mpt_right",m, pt);
+
+			FillHistogram("all_mpt_eff",m, pt, eff);
+			FillHistogram("all_mpt_left_eff",m, pt, eff);
+			FillHistogram("all_mpt_right_eff",m, pt, eff);
+
+		 	if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+		 	{
+		 		FillHistogram("cpv_mpt",m, pt);
+		 		FillHistogram("cpv_mpt_left",m, pt);
+				FillHistogram("cpv_mpt_right",m, pt);
+
+				FillHistogram("cpv_mpt_eff",m, pt, eff);
+		 		FillHistogram("cpv_mpt_left_eff",m, pt, eff);
+				FillHistogram("cpv_mpt_right_eff",m, pt, eff);
+			}
+
+			if ( ph1->IsDispOK() && ph2->IsDispOK() )
 			{
-				AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
-				TLorentzVector p12  = *ph1  + *ph2;
+				FillHistogram("disp_mpt",m, pt);
+				FillHistogram("disp_mpt_left",m, pt);
+				FillHistogram("disp_mpt_right",m, pt);
 
-				Double_t phiTrigger=p12.Phi() ;
-				Double_t etaTrigger=p12.Eta() ;
-
-				Double_t m=p12.M() ;
-				Double_t pt=p12.Pt() ;
-				Double_t eff = 1./GetEfficiency(pt);
-				int mod1 = ph1->Module() ;
-				int mod2 = ph2->Module() ;				
-
-				FillHistogram("clu_phieta",phiTrigger,etaTrigger);
-				FillHistogram("clusingle_phieta",ph1->Phi(), ph1->Eta());
-				FillHistogram("clusingle_phieta",ph2->Phi(), ph2->Eta());
-
-
-				FillHistogram("all_mpt",m, pt);
-				FillHistogram("all_mpt_left",m, pt);
-				FillHistogram("all_mpt_right",m, pt);
-
-				FillHistogram("all_mpt_eff",m, pt, eff);
-				FillHistogram("all_mpt_left_eff",m, pt, eff);
-				FillHistogram("all_mpt_right_eff",m, pt, eff);
-
-			 	if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-			 	{
-			 		FillHistogram("cpv_mpt",m, pt);
-			 		FillHistogram("cpv_mpt_left",m, pt);
-					FillHistogram("cpv_mpt_right",m, pt);
-
-					FillHistogram("cpv_mpt_eff",m, pt, eff);
-			 		FillHistogram("cpv_mpt_left_eff",m, pt, eff);
-					FillHistogram("cpv_mpt_right_eff",m, pt, eff);
-				}
-
-				if ( ph1->IsDispOK() && ph2->IsDispOK() )
-				{
-					FillHistogram("disp_mpt",m, pt);
-					FillHistogram("disp_mpt_left",m, pt);
-					FillHistogram("disp_mpt_right",m, pt);
-
-					FillHistogram("disp_mpt_eff",m, pt, eff);
-					FillHistogram("disp_mpt_left_eff",m, pt, eff);
-					FillHistogram("disp_mpt_right_eff",m, pt, eff);
-					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-					{
-						FillHistogram("both_mpt",m, pt);
-						FillHistogram("both_mpt_left",m, pt);
-						FillHistogram("both_mpt_right",m, pt);
-
-						FillHistogram("both_mpt_eff",m, pt, eff);
-						FillHistogram("both_mpt_left_eff",m, pt, eff);
-						FillHistogram("both_mpt_right_eff",m, pt, eff);
-						if(mod1 == mod2) // for each module
-						{
-							FillHistogram(Form("both%d_mpt",mod1),m, pt);
-							FillHistogram(Form("both%d_mpt_eff",mod1),m, pt, eff);
-						}
-					}
-				}	
-
-				if(!TestMass(m,pt)) continue;
-
-				FillHistogram("nTrigger_all", pt, eff);
+				FillHistogram("disp_mpt_eff",m, pt, eff);
+				FillHistogram("disp_mpt_left_eff",m, pt, eff);
+				FillHistogram("disp_mpt_right_eff",m, pt, eff);
 				if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-					FillHistogram("nTrigger_cpv", pt, eff);
-				if ( ph1->IsDispOK() && ph2->IsDispOK() )
 				{
-					FillHistogram("nTrigger_disp", pt, eff);
-					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-						FillHistogram("nTrigger_both", pt, eff);
-				}
+					FillHistogram("both_mpt",m, pt);
+					FillHistogram("both_mpt_left",m, pt);
+					FillHistogram("both_mpt_right",m, pt);
 
-			     	// Take track's angles and compare with cluster's angles.
-				for(Int_t i3=0; i3<fTracksTPC->GetEntriesFast(); i3++){
-					TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i3);
-
-					Double_t phiAssoc = track->Phi();
-					Double_t etaAssoc = track->Eta();
-					Double_t ptAssoc = track->Pt();
-
-					Double_t dPhi = phiTrigger - phiAssoc;
-					while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
-					while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
-
-					Double_t dEta = etaTrigger - etaAssoc; 		
-
-					Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
-					FillHistogram(Form("all_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
-					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-						FillHistogram(Form("cpv_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
-
-					if ( ph1->IsDispOK() && ph2->IsDispOK() ){
-						FillHistogram(Form("disp_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
-						if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-							FillHistogram(Form("both_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
+					FillHistogram("both_mpt_eff",m, pt, eff);
+					FillHistogram("both_mpt_left_eff",m, pt, eff);
+					FillHistogram("both_mpt_right_eff",m, pt, eff);
+					if(mod1 == mod2) // for each module
+					{
+						FillHistogram(Form("both%d_mpt",mod1),m, pt);
+						FillHistogram(Form("both%d_mpt_eff",mod1),m, pt, eff);
 					}
+				}
+			}	
+
+			if(!TestMass(m,pt)) continue;
+
+            FillHistogram("nTrigger_all", pt, eff);
+			if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+				FillHistogram("nTrigger_cpv", pt, eff);
+			if ( ph1->IsDispOK() && ph2->IsDispOK() )
+			{
+				FillHistogram("nTrigger_disp", pt, eff);
+				if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+					FillHistogram("nTrigger_both", pt, eff);
+			}
+
+		     	// Take track's angles and compare with cluster's angles.
+			for(Int_t i3=0; i3<fTracksTPC->GetEntriesFast(); i3++){
+				TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i3);
+
+				Double_t phiAssoc = track->Phi();
+				Double_t etaAssoc = track->Eta();
+				Double_t ptAssoc = track->Pt();
+
+				Double_t dPhi = phiTrigger - phiAssoc;
+				while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
+				while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
+
+				Double_t dEta = etaTrigger - etaAssoc; 		
+
+				Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
+				FillHistogram(Form("all_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
+				if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+					FillHistogram(Form("cpv_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
+
+				if ( ph1->IsDispOK() && ph2->IsDispOK() ){
+					FillHistogram(Form("disp_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
+					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+						FillHistogram(Form("both_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);			
 				}
 			}
 		}
@@ -1547,72 +1790,66 @@ void AliPHOSCorrelations::ConsiderPi0s()
 //_______________________________________________________________________________
 void AliPHOSCorrelations::ConsiderPi0sMix()
 {
-	// We must consider only PHOS events in real distribution.
-	//UInt_t currentOfflineTriggerMask = GetCollisionCandidates(); 
-	if (fPHOSEvent) 
+	TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
+	for(Int_t evi=0; evi<arrayList->GetEntries();evi++)
 	{
-
-		TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
-		for(Int_t evi=0; evi<arrayList->GetEntries();evi++)
+		TClonesArray * mixPHOS = static_cast<TClonesArray*>(arrayList->At(evi));
+		for (Int_t i1=0; i1 < fCaloPhotonsPHOS->GetEntriesFast(); i1++)
 		{
-			TClonesArray * mixPHOS = static_cast<TClonesArray*>(arrayList->At(evi));
-			for (Int_t i1=0; i1 < fCaloPhotonsPHOS->GetEntriesFast(); i1++)
+			AliCaloPhoton * ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
+			for(Int_t i2=0; i2 < mixPHOS->GetEntriesFast(); i2++)
 			{
-				AliCaloPhoton * ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-				for(Int_t i2=0; i2<mixPHOS->GetEntriesFast(); i2++)
+				AliCaloPhoton * ph2 = (AliCaloPhoton*)mixPHOS->At(i2) ;
+				TLorentzVector p12  = *ph1  + *ph2;
+				Double_t m=p12.M() ;
+				Double_t pt=p12.Pt() ;
+				Double_t eff = 1./GetEfficiency(pt);
+				
+				int mod1 = ph1->Module() ;
+				int mod2 = ph2->Module() ;
+
+				FillHistogram("mix_all_mpt", m, pt);
+				FillHistogram("mix_all_mpt_left",m, pt);
+				FillHistogram("mix_all_mpt_right",m, pt);
+
+				FillHistogram("mix_all_mpt_eff", m, pt, eff);
+				FillHistogram("mix_all_mpt_left_eff",m, pt, eff);
+				FillHistogram("mix_all_mpt_right_eff",m, pt, eff);
+
+				if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
 				{
-					AliCaloPhoton * ph2 = (AliCaloPhoton*)mixPHOS->At(i2) ;
-					TLorentzVector p12  = *ph1  + *ph2;
-					Double_t m=p12.M() ;
-					Double_t pt=p12.Pt() ;
-					Double_t eff = 1./GetEfficiency(pt);
-					
-					int mod1 = ph1->Module() ;
-					int mod2 = ph2->Module() ;
+					FillHistogram("mix_cpv_mpt",m, pt);
+					FillHistogram("mix_cpv_mpt_left",m, pt);
+					FillHistogram("mix_cpv_mpt_right",m, pt);
 
-					FillHistogram("mix_all_mpt", m, pt);
-					FillHistogram("mix_all_mpt_left",m, pt);
-					FillHistogram("mix_all_mpt_right",m, pt);
+					FillHistogram("mix_cpv_mpt_eff",m, pt, eff);
+					FillHistogram("mix_cpv_mpt_left_eff",m, pt, eff);
+					FillHistogram("mix_cpv_mpt_right_eff",m, pt, eff);
+				}
+				if ( ph1->IsDispOK() && ph2->IsDispOK() )
+				{
+					FillHistogram("mix_disp_mpt",m, pt);
+					FillHistogram("mix_disp_mpt_left",m, pt);
+					FillHistogram("mix_disp_mpt_right",m, pt);
 
-					FillHistogram("mix_all_mpt_eff", m, pt, eff);
-					FillHistogram("mix_all_mpt_left_eff",m, pt, eff);
-					FillHistogram("mix_all_mpt_right_eff",m, pt, eff);
+					FillHistogram("mix_disp_mpt_eff",m, pt, eff);
+					FillHistogram("mix_disp_mpt_left_eff",m, pt, eff);
+					FillHistogram("mix_disp_mpt_right_eff",m, pt, eff);
 
-					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
+					if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
 					{
-						FillHistogram("mix_cpv_mpt",m, pt);
-						FillHistogram("mix_cpv_mpt_left",m, pt);
-						FillHistogram("mix_cpv_mpt_right",m, pt);
+						FillHistogram("mix_both_mpt",m, pt);
+						FillHistogram("mix_both_mpt_left",m, pt);
+						FillHistogram("mix_both_mpt_right",m, pt);
 
-						FillHistogram("mix_cpv_mpt_eff",m, pt, eff);
-						FillHistogram("mix_cpv_mpt_left_eff",m, pt, eff);
-						FillHistogram("mix_cpv_mpt_right_eff",m, pt, eff);
-					}
-					if ( ph1->IsDispOK() && ph2->IsDispOK() )
-					{
-						FillHistogram("mix_disp_mpt",m, pt);
-						FillHistogram("mix_disp_mpt_left",m, pt);
-						FillHistogram("mix_disp_mpt_right",m, pt);
+						FillHistogram("mix_both_mpt_eff",m, pt, eff);
+						FillHistogram("mix_both_mpt_left_eff",m, pt, eff);
+						FillHistogram("mix_both_mpt_right_eff",m, pt, eff);
 
-						FillHistogram("mix_disp_mpt_eff",m, pt, eff);
-						FillHistogram("mix_disp_mpt_left_eff",m, pt, eff);
-						FillHistogram("mix_disp_mpt_right_eff",m, pt, eff);
-
-						if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
+						if (mod1 == mod2) // for each module
 						{
-							FillHistogram("mix_both_mpt",m, pt);
-							FillHistogram("mix_both_mpt_left",m, pt);
-							FillHistogram("mix_both_mpt_right",m, pt);
-
-							FillHistogram("mix_both_mpt_eff",m, pt, eff);
-							FillHistogram("mix_both_mpt_left_eff",m, pt, eff);
-							FillHistogram("mix_both_mpt_right_eff",m, pt, eff);
-
-							if (mod1 == mod2) // for each module
-							{
-								FillHistogram(Form("mix_both%d_mpt",mod1),m, pt);
-								FillHistogram(Form("mix_both%d_mpt_eff",mod1),m, pt, eff);
-							}
+							FillHistogram(Form("mix_both%d_mpt",mod1),m, pt);
+							FillHistogram(Form("mix_both%d_mpt_eff",mod1),m, pt, eff);
 						}
 					}
 				}
@@ -1639,7 +1876,7 @@ void AliPHOSCorrelations::ConsiderTracksMix()
 			Int_t mod2 = ph2->Module();
 
 
-			if(!TestMass(m,pt)) continue;
+            if(!TestMass(m,pt)) continue;
 
 			for(Int_t evi=0; evi<arrayList->GetEntries();evi++){
 				TClonesArray * mixTracks = static_cast<TClonesArray*>(arrayList->At(evi));
@@ -1648,7 +1885,7 @@ void AliPHOSCorrelations::ConsiderTracksMix()
 
 					Double_t phiAssoc = track->Phi();
 					Double_t etaAssoc = track->Eta();
-					Double_t ptAssoc =  track->Pt();
+                    Double_t ptAssoc =  track->Pt();
 
 					Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
 
@@ -1656,11 +1893,11 @@ void AliPHOSCorrelations::ConsiderTracksMix()
 					while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
 					while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
 
-					Double_t dEta = etaTrigger - etaAssoc; 			
+                    Double_t dEta = etaTrigger - etaAssoc;
 
 					FillHistogram(Form("mix_all_ptphieta_ptAssoc_%3.1f",ptAssocBin), pt, dPhi, dEta, eff);	
 					FillHistogram(Form("mix_all_ptphieta_ptAssoc_%3.1f_mod%i",ptAssocBin, GetModCase(mod1, mod2)), pt, dPhi, dEta, eff);	
-					FillHistogram(Form("mix_all_ptphieta_ptAssoc_%3.1f_tpc%i",ptAssocBin, CheckTriggerEta(etaTrigger)), pt, dPhi, dEta, eff);		
+                    FillHistogram(Form("mix_all_ptphieta_ptAssoc_%3.1f_tpc%i",ptAssocBin, CheckTriggerEta(etaTrigger)), pt, dPhi, dEta, eff);
 
 					if ( ph1->IsCPVOK() && ph2->IsCPVOK() )
 					{
@@ -1689,125 +1926,37 @@ void AliPHOSCorrelations::ConsiderTracksMix()
 //_______________________________________________________________________________
 void AliPHOSCorrelations::ConsiderPi0sME()
 {
-	//Seek Most Energetic (ME) Pi0 and work whit it.
-	// Must consider only PHOS events in real distribution.
-	if (fPHOSEvent) 
+	TString spid[4]={"all","cpv","disp","both"} ;
+    // Counting number of trigger particles.
+	for (int ipid = 0; ipid < 4; ipid++)
 	{
-		const Int_t nPHOS=fCaloPhotonsPHOS->GetEntriesFast() ;
-		for(Int_t i1=0; i1 < nPHOS-1; i1++)
-		{
-			AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-			for (Int_t i2=i1+1; i2<nPHOS; i2++)
-			{
-				AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
-				TLorentzVector p12  = *ph1  + *ph2;
+		if (fMEExists[ipid])
+            FillHistogram(Form("nTrigger_%s", spid[ipid].Data()), GetMEPt(ipid), 1./GetEfficiency(GetMEPt(ipid)));
+	}
 
-				Double_t phiTrigger=p12.Phi() ;
-				Double_t etaTrigger=p12.Eta() ;
+    // Take track's angles and compare with trigger's angles.
+    for(Int_t i3=0; i3<fTracksTPC->GetEntriesFast(); i3++){
+		TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i3);
 
-				Double_t m=p12.M() ;
-				Double_t pt=p12.Pt() ;
-				Double_t eff = 1./GetEfficiency(pt);
-				int mod1 = ph1->Module() ;
-				int mod2 = ph2->Module() ;				
+		Double_t phiAssoc = track->Phi();
+		Double_t etaAssoc = track->Eta();
+		Double_t ptAssoc = track->Pt();
 
-				FillHistogram("clu_phieta",phiTrigger,etaTrigger);
-				FillHistogram("clusingle_phieta",ph1->Phi(), ph1->Eta());
-				FillHistogram("clusingle_phieta",ph2->Phi(), ph2->Eta());
+		Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
+		Double_t dPhi(0.), dEta(0.);
 
-
-				FillHistogram("all_mpt",m, pt);
-				FillHistogram("all_mpt_left",m, pt);
-				FillHistogram("all_mpt_right",m, pt);
-
-				FillHistogram("all_mpt_eff",m, pt, eff);
-				FillHistogram("all_mpt_left_eff",m, pt, eff);
-				FillHistogram("all_mpt_right_eff",m, pt, eff);
-
-			 	if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-			 	{
-			 		FillHistogram("cpv_mpt",m, pt);
-			 		FillHistogram("cpv_mpt_left",m, pt);
-					FillHistogram("cpv_mpt_right",m, pt);
-
-					FillHistogram("cpv_mpt_eff",m, pt, eff);
-			 		FillHistogram("cpv_mpt_left_eff",m, pt, eff);
-					FillHistogram("cpv_mpt_right_eff",m, pt, eff);
-				}
-
-				if ( ph1->IsDispOK() && ph2->IsDispOK() )
-				{
-					FillHistogram("disp_mpt",m, pt);
-					FillHistogram("disp_mpt_left",m, pt);
-					FillHistogram("disp_mpt_right",m, pt);
-
-					FillHistogram("disp_mpt_eff",m, pt, eff);
-					FillHistogram("disp_mpt_left_eff",m, pt, eff);
-					FillHistogram("disp_mpt_right_eff",m, pt, eff);
-					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-					{
-						FillHistogram("both_mpt",m, pt);
-						FillHistogram("both_mpt_left",m, pt);
-						FillHistogram("both_mpt_right",m, pt);
-
-						FillHistogram("both_mpt_eff",m, pt, eff);
-						FillHistogram("both_mpt_left_eff",m, pt, eff);
-						FillHistogram("both_mpt_right_eff",m, pt, eff);
-						if(mod1 == mod2) // for each module
-						{
-							FillHistogram(Form("both%d_mpt",mod1),m, pt);
-							FillHistogram(Form("both%d_mpt_eff",mod1),m, pt, eff);
-						}
-					}
-				}	
-				
-				if(!TestMass(m,pt)) continue;
-
-				Int_t modCase = GetModCase(mod1, mod2);
-
-				TestPi0ME(kPidAll, p12, modCase);
-				if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-					TestPi0ME(kPidCPV, p12, modCase);
-				if ( ph1->IsDispOK() && ph2->IsDispOK() )
-				{
-					TestPi0ME(kPidDisp, p12, modCase);
-					if ( ph1->IsCPVOK() && ph2->IsCPVOK() ) 
-						TestPi0ME(kPidBoth, p12, modCase);
-				}
-			}
-		}
-
-		TString spid[4]={"all","cpv","disp","both"} ;
 		for (int ipid = 0; ipid < 4; ipid++)
 		{
-			if (fMEExists[ipid])
-				FillHistogram(Form("nTrigger_%s", spid[ipid].Data()), fMEPt[ipid], 1./GetEfficiency(fMEPt[ipid]));
-		}
-
-		// Take track's angles and compare with cluster's angles.
-		for(Int_t i3=0; i3<fTracksTPC->GetEntriesFast(); i3++){
-			TLorentzVector * track = (TLorentzVector*)fTracksTPC->At(i3);
-
-			Double_t phiAssoc = track->Phi();
-			Double_t etaAssoc = track->Eta();
-			Double_t ptAssoc = track->Pt();
-
-			Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
-			Double_t dPhi(0.), dEta(0.);
-
-			for (int ipid = 0; ipid < 4; ipid++)
+            if (GetMEExists(ipid))
 			{
-				if (fMEExists[ipid])
-				{
-					dPhi = fMEPhi[ipid] - phiAssoc;
-					while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
-					while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
-					dEta = fMEEta[ipid] - etaAssoc; 	 			
-					FillHistogram(Form("%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), ptAssocBin),  fMEPt[ipid], dPhi, dEta, 1./GetEfficiency(fMEPt[ipid]) );	
-				}	
-			}
-		} 
-	}
+                dPhi = GetMEPhi(ipid) - phiAssoc;
+				while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
+				while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
+                dEta = GetMEEta(ipid) - etaAssoc;
+                FillHistogram(Form("%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), ptAssocBin),  GetMEPt(ipid), dPhi, dEta, 1./GetEfficiency(GetMEPt(ipid)) );
+			}	
+		}
+	} 
 }
 //_______________________________________________________________________________
 void AliPHOSCorrelations::ConsiderTracksMixME()
@@ -1827,20 +1976,23 @@ void AliPHOSCorrelations::ConsiderTracksMixME()
 
 			Double_t ptAssocBin=GetAssocBin(ptAssoc) ;
 
+            Double_t ptTrigger (0.);
+
 			Double_t dPhi(0.), dEta(0.);
 
 			for (int ipid = 0; ipid < 4; ipid++)
 			{
-				if (fMEExists[ipid])
+                if (GetMEExists(ipid))
 				{
-					dPhi = fMEPhi[ipid] - phiAssoc;
+                    dPhi = GetMEPhi(ipid) - phiAssoc;
 					while (dPhi > 1.5*TMath::Pi()) dPhi-=2*TMath::Pi();
 					while (dPhi < -.5*TMath::Pi()) dPhi+=2*TMath::Pi();
-					dEta = fMEEta[ipid] - etaAssoc; 	 				
+                    dEta = GetMEEta(ipid) - etaAssoc;
+                    ptTrigger = GetMEPt(ipid);
 
-					FillHistogram(Form("mix_%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), ptAssocBin), fMEPt[ipid], dPhi, dEta, 1./GetEfficiency(fMEPt[ipid]));	
-					FillHistogram(Form("mix_%s_ptphieta_ptAssoc_%3.1f_mod%i", spid[ipid].Data(), ptAssocBin, fMEModCase[ipid]), fMEPt[ipid], dPhi, dEta, 1./GetEfficiency(fMEPt[ipid]));	
-					FillHistogram(Form("mix_%s_ptphieta_ptAssoc_%3.1f_tpc%i", spid[ipid].Data(), ptAssocBin, CheckTriggerEta(fMEEta[ipid])), fMEPt[ipid], dPhi, dEta, 1./GetEfficiency(fMEPt[ipid]));	
+                    FillHistogram(Form("mix_%s_ptphieta_ptAssoc_%3.1f", spid[ipid].Data(), ptAssocBin), ptTrigger, dPhi, dEta, 1./GetEfficiency(ptTrigger));
+                    FillHistogram(Form("mix_%s_ptphieta_ptAssoc_%3.1f_mod%i", spid[ipid].Data(), ptAssocBin, GetMEModCase(ipid)), ptTrigger, dPhi, dEta, 1./GetEfficiency(ptTrigger));
+                    FillHistogram(Form("mix_%s_ptphieta_ptAssoc_%3.1f_tpc%i", spid[ipid].Data(), ptAssocBin, CheckTriggerEta(GetMEEta(ipid))), ptTrigger, dPhi, dEta, 1./GetEfficiency(ptTrigger));
 				}	
 			}
 		}
@@ -1878,7 +2030,7 @@ TList* AliPHOSCorrelations::GetTracksTPCList(UInt_t vtxBin, UInt_t centBin, UInt
 //_______________________________________________________________________________
 Double_t AliPHOSCorrelations::GetAssocBin(Double_t pt) const
 {
-  //Calculates bin 
+  //Calculates bin of associated particle pt.
   for(Int_t i=1; i<fAssocBins.GetSize(); i++){
     if(pt>fAssocBins.At(i-1) && pt<fAssocBins.At(i))
       return fAssocBins.At(i) ;
@@ -1992,16 +2144,30 @@ Bool_t AliPHOSCorrelations::TestMass(Double_t m, Double_t pt)
 	if (!fSigmaWidth)	// Default big window 
 	{
 		FillHistogram("massWindow", fMassInvMean, fMassInvSigma);
-		return (fMassInvMean-fMassInvSigma<m && m<fMassInvMean+fMassInvSigma) ; 
+        if(fMassInvMean-fMassInvSigma<m && m<fMassInvMean+fMassInvSigma)
+        {
+            FillHistogram("massWindowPass", 1);
+            return true;
+        }
+        else
+        {
+            FillHistogram("massWindowPass", 2);
+            return false;
+        }
 	}
 	else			// Parametrization
 	{
 		FillHistogram("massWindow", MassMeanFunktion(pt), MassSigmaFunktion(pt)*fSigmaWidth);
-		/*cout 	<<"MinMass: " << MassMeanFunktion(pt)-MassSigmaFunktion(pt)*fSigmaWidth
-			<<" m: "<<m
-			<<" pt: "<<pt
-			<<" MaxMass "<< MassMeanFunktion(pt)+MassSigmaFunktion(pt)*fSigmaWidth<<endl;*/
-		return ( MassMeanFunktion(pt)-MassSigmaFunktion(pt)*fSigmaWidth<m && m<MassMeanFunktion(pt)+MassSigmaFunktion(pt)*fSigmaWidth ); 
+        if ( MassMeanFunktion(pt)-MassSigmaFunktion(pt)*fSigmaWidth<m && m<MassMeanFunktion(pt)+MassSigmaFunktion(pt)*fSigmaWidth )
+        {
+            FillHistogram("massWindowPass", 3);
+            return true;
+        }
+        else
+        {
+            FillHistogram("massWindowPass", 4);
+            return false;
+        }
 	}
 } 
 //_______________________________________________________________________________
@@ -2014,7 +2180,7 @@ Double_t AliPHOSCorrelations::MassMeanFunktion(Double_t &pt) const
 Double_t AliPHOSCorrelations::MassSigmaFunktion(Double_t &pt) const
 {
 	// Parametrization sigma of mass window
-	//TODO:: Kill falling at large pT.
+    //TODO:: Fix falling at large pT.
 	return ( fabs(fMassSigmaP0 + fMassSigmaP1*pt) );
 }
 //_____________________________________________________________________________
@@ -2133,7 +2299,7 @@ Double_t AliPHOSCorrelations::GetEfficiency(Double_t x) const {
 		if (fCentrality>60) pFitPoint = &par5[0];
 
 		Double_t pFit[9];
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < 9; ++i)
 	 	{
 	 		pFit[i] = *(pFitPoint+i);
 	 	}
@@ -2193,34 +2359,6 @@ Int_t AliPHOSCorrelations::GetModCase(Int_t &mod1, Int_t &mod2) const {
 	return 1;
 }
 //_____________________________________________________________________________
-void AliPHOSCorrelations::TestTrigger(){
-	FillHistogram("hTriggerPassedEvents",  0);	// All events
-	if (fEvent->GetFiredTriggerClasses().Contains("PHI7") )
-		FillHistogram("hTriggerPassedEvents",  1.);	// 13 events
-	else
-	if (fEvent->GetFiredTriggerClasses().Contains("PHS") )
-		FillHistogram("hTriggerPassedEvents",  2.);	// 11h events
-	else
-	if (fEvent->GetFiredTriggerClasses().Contains("CSEMI") )
-		FillHistogram("hTriggerPassedEvents",  3.);	// 11h events
-	else
-	if (fEvent->GetFiredTriggerClasses().Contains("CCENT") )
-		FillHistogram("hTriggerPassedEvents",  4.);	// 11h events
-	else
-		FillHistogram("hTriggerPassedEvents",  10.); // other events
-
-	if (fEvent->GetFiredTriggerClasses().Contains("PHI7") || fEvent->GetFiredTriggerClasses().Contains("PHS"))
-		fPHOSEvent = true;
-
-	if (fEvent->GetFiredTriggerClasses().Contains("CSEMI") || fEvent->GetFiredTriggerClasses().Contains("CCENT"))
-		fPHOSEvent = true;
-
-	if( fDebug >= 2 )
-		AliInfo( Form("Event passed offline phos trigger test: %s ", fEvent->GetFiredTriggerClasses().Data() ) );
-
-	//fPHOSEvent = true;
-}
-//_____________________________________________________________________________
 Int_t AliPHOSCorrelations::CheckTriggerEta(Double_t eta){
 	if (eta>=0.) 
 		return 1;
@@ -2233,23 +2371,33 @@ void AliPHOSCorrelations::TestPi0ME(Int_t ipid, TLorentzVector p12, Int_t modCas
 	Double_t etaTrigger=p12.Eta() ;
 	Double_t pt=p12.Pt() ;
 
-	if (pt >= fMEPt[ipid])
-	{
-		fMEPt[ipid] = pt;
-		fMEPhi[ipid] = phiTrigger;
-		fMEEta[ipid] = etaTrigger;
-		fMEModCase[ipid] = modCase;
-		fMEExists[ipid] = true;
-	}
+    if ( GetMEExists(ipid) )
+    {
+        if ( pt>=GetMEPt(ipid) )
+        {
+            SetMEPt(ipid,pt);
+            SetMEPhi(ipid, phiTrigger);
+            SetMEEta(ipid, etaTrigger);
+            SetMEModCase(ipid, modCase);
+        }
+    }
+    else
+    {
+        SetMEPt(ipid,pt);
+        SetMEPhi(ipid, phiTrigger);
+        SetMEEta(ipid, etaTrigger);
+        SetMEModCase(ipid, modCase);
+        SetMEExists(ipid);
+    }
 }
 //_____________________________________________________________________________
 void AliPHOSCorrelations::ZeroingVariables(){
+	// Set Phi, Eta, pT, modNumber andtrigger variable of moust energetic trigger particle to zero.
 	for (int i = 0; i < 4; ++i)
 	{
+		fMEExists[i] = false;
 		fMEPhi[i] = fMEEta[i] = fMEPt[i] = -99;
 		fMEModCase[i] = 1;
-		fMEExists[i] = false;
-
 	}
 }
 

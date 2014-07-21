@@ -402,9 +402,9 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
   // Fill MC histograms independently of AOD or ESD
   
   //Select only hadrons in pt range
-  if(mcAssocPt < fMinAssocPt || mcAssocPt > fMaxAssocPt) return kTRUE ; // exclude but continue
+  if( mcAssocPt < fMinAssocPt || mcAssocPt > fMaxAssocPt ) return kTRUE ; // exclude but continue
   
-  if(mcAssocPhi < 0) mcAssocPhi+=TMath::TwoPi();    
+  if( mcAssocPhi < 0 ) mcAssocPhi+=TMath::TwoPi();
   
   //remove trigger itself for correlation when use charged triggers 
   if(TMath::Abs(mcAssocPt -mcTrigPt ) < 1e-6 && 
@@ -412,11 +412,11 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
      TMath::Abs(mcAssocEta-mcTrigEta) < 1e-6)            return kTRUE ; // exclude but continue       
   
   // Absolute leading?
-  if( fMakeAbsoluteLeading && mcAssocPt > mcTrigPt )     return kFALSE; // jump event
+  if( fMakeAbsoluteLeading && mcAssocPt > mcTrigPt )     return kFALSE; // skip event
   
-  //jump out this event if near side associated partile pt larger than trigger
+  // Skip this event if near side associated particle pt larger than trigger
   if( fMakeNearSideLeading && mcAssocPt > mcTrigPt && 
-     TMath::Abs(mcAssocPhi-mcTrigPhi)<TMath::PiOver2() ) return kFALSE; // jump event
+     TMath::Abs(mcAssocPhi-mcTrigPhi)<TMath::PiOver2() ) return kFALSE; // skip event
   
   Float_t mcdeltaPhi= mcTrigPhi-mcAssocPhi; 
   if(mcdeltaPhi <= -TMath::PiOver2()) mcdeltaPhi+=TMath::TwoPi();
@@ -436,9 +436,11 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
   
   Double_t mcpout = mcAssocPt*TMath::Sin(mcdeltaPhi) ; 
   
-  if(GetDebug() > 0 )  
-    printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation() - Charged hadron: track Pt %f, track Phi %f, phi trigger %f. Cuts:  delta phi  %2.2f < %2.2f < %2.2f, pT min %2.2f \n",
-           mcAssocPt,mcAssocPhi, mcTrigPhi,fDeltaPhiMinCut, mcdeltaPhi, fDeltaPhiMaxCut, GetMinPt());              
+  if(GetDebug() > 0 )
+  {
+    AliInfo(Form("Charged hadron: track Pt %f, track Phi %f, phi trigger %f. Cuts:  delta phi  %2.2f < %2.2f < %2.2f, pT min %2.2f \n",
+                 mcAssocPt,mcAssocPhi, mcTrigPhi,fDeltaPhiMinCut, mcdeltaPhi, fDeltaPhiMaxCut, GetMinPt()));
+  }
   
   // Fill Histograms
   fhMCEtaCharged     ->Fill(mcAssocPt, mcAssocEta);
@@ -3648,185 +3650,170 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
   
 //_________________________________________________________________________________________________________
 void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle)
-{  
+{
   // Charged Hadron Correlation Analysis with MC information
   
-  if(GetDebug()>1)
-    printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation() - Make trigger particle - charged hadron correlation in AOD MC level\n");
+  if ( GetDebug() > 1 )
+    AliInfo("Make trigger particle - charged hadron correlation in AOD MC level");
   
   AliStack         * stack        = 0x0 ;
-  TParticle        * primary      = 0x0 ;   
-  TClonesArray     * mcparticles0 = 0x0 ;
+  TParticle        * primary      = 0x0 ;
   TClonesArray     * mcparticles  = 0x0 ;
-  AliAODMCParticle * aodprimary   = 0x0 ; 
+  AliAODMCParticle * aodprimary   = 0x0 ;
   
   Double_t eprim   = 0 ;
   Double_t ptprim  = 0 ;
   Double_t phiprim = 0 ;
   Double_t etaprim = 0 ;
-  Int_t    nTracks = 0 ;  
+  Int_t    nTracks = 0 ;
   Int_t iParticle  = 0 ;
-  Double_t charge  = 0.;
   
-  if(GetReader()->ReadStack())
-  {
-    nTracks = GetMCStack()->GetNtrack() ;
-  }
-  else 
-  {
-    nTracks = GetReader()->GetAODMCParticles()->GetEntriesFast() ;
-  }
-  //Int_t trackIndex[nTracks];
+  Bool_t lead = kFALSE;
   
   Int_t label= aodParticle->GetLabel();
-  if(label < 0)
+  if( label < 0 )
   {
-    if(GetDebug() > 0) printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation *** bad label ***:  label %d \n", label);
+    if( GetDebug() > 0 ) AliInfo(Form(" *** bad label ***:  label %d", label));
     return;
-  }  
+  }
   
-  if(GetReader()->ReadStack())
+  if( GetReader()->ReadStack() )
   {
     stack =  GetMCStack() ;
-    if(!stack) 
+    if(!stack)
     {
-      printf(" AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation- Stack not available, is the MC handler called? STOP\n");
-      abort();
+      AliFatal("Stack not available, is the MC handler called? STOP");
+      return;
     }
     
-    nTracks=stack->GetNprimary();
-    if(label >=  stack->GetNtrack()) 
+    //nTracks = stack->GetNtrack() ;
+    nTracks = stack->GetNprimary();
+    if( label >=  stack->GetNtrack() )
     {
-      if(GetDebug() > 2)  printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
+      if(GetDebug() > 2)
+        AliInfo(Form("*** large label ***:  label %d, n tracks %d", label, stack->GetNtrack()));
       return ;
     }
     
     primary = stack->Particle(label);
-    if(!primary)
+    if ( !primary )
     {
-      printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation *** no primary ***:  label %d \n", label);   
+      AliInfo(Form(" *** no primary ***:  label %d", label));
       return;
     }
     
-    if(primary)
+    eprim    = primary->Energy();
+    ptprim   = primary->Pt();
+    phiprim  = primary->Phi();
+    etaprim  = primary->Eta();
+    
+    if(ptprim < 0.01 || eprim < 0.01) return ;
+    
+    for (iParticle = 0 ; iParticle <  nTracks ; iParticle++)
     {
-      eprim    = primary->Energy();
-      ptprim   = primary->Pt();
-      phiprim  = primary->Phi();
-      etaprim  = primary->Eta();
+      TParticle * particle = stack->Particle(iParticle);
+      TLorentzVector momentum;
       
-      if(ptprim < 0.01 || eprim < 0.01) return ;
+      //keep only final state particles
+      if( particle->GetStatusCode() != 1 ) continue ;
       
-      for (iParticle = 0 ; iParticle <  nTracks ; iParticle++) 
-      {
-        TParticle * particle = stack->Particle(iParticle);
-        TLorentzVector momentum;
-        
-        //keep only final state particles
-        if(particle->GetStatusCode()!=1) continue ;
-        
-        Int_t pdg = particle->GetPdgCode();	
-        
-        charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-        
-        particle->Momentum(momentum);	
-        
-        //---------- Charged particles ----------------------
-        if(charge != 0)
-        {   
-          //Particles in CTS acceptance
-          Bool_t inCTS =  GetFiducialCut()->IsInFiducialCut(momentum,"CTS");
-          
-          if(TMath::Abs(pdg) == 11 && stack->Particle(particle->GetFirstMother())->GetPdgCode()==22) continue ;
-          
-          if(inCTS)
-          {            
-            if( label!=iParticle) // avoid trigger particle
-            {
-              if(!FillChargedMCCorrelationHistograms(particle->Pt(),particle->Phi(),particle->Eta(),ptprim,phiprim,etaprim)) return;
-            }
-          }// in CTS acceptance
-        }// charged
-      } //track loop
-    } //when the leading particles could trace back to MC
+      if ( particle->Pt() < GetReader()->GetCTSPtMin()) continue;
+      
+      //---------- Charged particles ----------------------
+      Int_t pdg    = particle->GetPdgCode();
+      Int_t charge = (Int_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+      if(charge == 0) continue;
+      
+      particle->Momentum(momentum);
+      
+      //Particles in CTS acceptance, make sure to use the same selection as in the reader
+      Bool_t inCTS =  GetReader()->GetFiducialCut()->IsInFiducialCut(momentum,"CTS");
+      //printf("Accepted? %d; pt %2.2f, eta %2.2f, phi %2.2f\n",inCTS,momentum.Pt(),momentum.Eta(),momentum.Phi()*TMath::RadToDeg());
+      if( !inCTS ) continue;
+      
+      // Remove conversions
+      if ( TMath::Abs(pdg) == 11 && stack->Particle(particle->GetFirstMother())->GetPdgCode() == 22 ) continue ;
+      
+      if ( label == iParticle ) continue; // avoid trigger particle
+      
+      lead = FillChargedMCCorrelationHistograms(particle->Pt(),particle->Phi(),particle->Eta(),ptprim,phiprim,etaprim);
+      if ( !lead ) return;
+      
+    } //track loop
+    
   } //ESD MC
   
-  else if(GetReader()->ReadAODMCParticles())
+  else if( GetReader()->ReadAODMCParticles() )
   {
     //Get the list of MC particles
-    mcparticles0 = GetReader()->GetAODMCParticles();
-    if(!mcparticles0) return;
+    mcparticles = GetReader()->GetAODMCParticles();
+    if( !mcparticles ) return;
     
-    if(label >=mcparticles0->GetEntriesFast())
+    nTracks = mcparticles->GetEntriesFast() ;
+
+    if( label >= nTracks )
     {
-      if(GetDebug() > 2)  
-        printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation *** large label ***:  label %d, n tracks %d \n", label,mcparticles0->GetEntriesFast());
+      if(GetDebug() > 2)
+        AliInfo(Form(" *** large label ***:  label %d, n tracks %d", label,nTracks));
       return;
     }
     
     //Get the particle
-    aodprimary = (AliAODMCParticle*) mcparticles0->At(label);
-    if(!aodprimary)  
+    aodprimary = (AliAODMCParticle*) mcparticles->At(label);
+    if( !aodprimary )
     {
-      printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation *** no AOD primary ***:  label %d \n", label);   
+      AliInfo(Form(" *** no AOD primary ***:  label %d", label));
       return;
     }
     
-    if(aodprimary)
+    ptprim  = aodprimary->Pt();
+    phiprim = aodprimary->Phi();
+    etaprim = aodprimary->Eta();
+    eprim   = aodprimary->E();
+    
+    if(ptprim < 0.01 || eprim < 0.01) return ;
+    
+    for (iParticle = 0; iParticle < nTracks; iParticle++)
     {
-      ptprim  = aodprimary->Pt();
-      phiprim = aodprimary->Phi();
-      etaprim = aodprimary->Eta();
-      eprim   = aodprimary->E();
+      AliAODMCParticle *part = (AliAODMCParticle*) mcparticles->At(iParticle);
       
-      Bool_t lead = kFALSE;
+      if (!part->IsPhysicalPrimary() ) continue; // same as part->GetStatus() !=1
       
-      if(ptprim < 0.01 || eprim < 0.01) return ;
+      if ( part->Charge() == 0 ) continue;
       
-      mcparticles= GetReader()->GetAODMCParticles();
-      for (iParticle = 0; iParticle < nTracks; iParticle++) 
+      if ( part->Pt() < GetReader()->GetCTSPtMin()) continue;
+      
+      TLorentzVector momentum(part->Px(),part->Py(),part->Pz(),part->E());
+      
+      //Particles in CTS acceptance, make sure to use the same selection as in the reader
+      Bool_t inCTS =  GetReader()->GetFiducialCut()->IsInFiducialCut(momentum,"CTS");
+      //printf("Accepted? %d; pt %2.2f, eta %2.2f, phi %2.2f\n",inCTS,momentum.Pt(),momentum.Eta(),momentum.Phi()*TMath::RadToDeg());
+      if( !inCTS ) continue;
+      
+      // Remove conversions
+      Int_t indexmother = part->GetMother();
+      if ( indexmother > -1 )
       {
-        AliAODMCParticle *part = (AliAODMCParticle*) mcparticles->At(iParticle);
-        
-        if (!part->IsPhysicalPrimary()) continue;        
-   
-        Int_t pdg = part->GetPdgCode();	
-        charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-        TLorentzVector momentum(part->Px(),part->Py(),part->Pz(),part->E());   
-        
-        if(charge != 0)
-        {
-          if(part->Pt()> GetReader()->GetCTSPtMin())
-          {
-            //Particles in CTS acceptance
-            Bool_t inCTS =  GetFiducialCut()->IsInFiducialCut(momentum,"CTS");
-            Int_t indexmother=part->GetMother();
-            
-            if(indexmother>-1)
-            {
-              Int_t mPdg = ((AliAODMCParticle*) mcparticles->At(indexmother)) ->GetPdgCode();
-              if(TMath::Abs(pdg) == 11 && mPdg == 22) continue;
-            }
-            
-            if(inCTS)
-            {            
-              if( label!=iParticle) // avoid trigger particle
-              {
-                if(!FillChargedMCCorrelationHistograms(part->Pt(),part->Phi(),part->Eta(),ptprim,phiprim,etaprim)) return;
-                else lead = kTRUE;
-              }
-            } // in acceptance
-          } // min pt cut
-        } //only charged particles
-      }  //MC particle loop 
-      if (lead) 
-      {
-        fhMCPtLeading->Fill(ptprim);
-        fhMCPhiLeading->Fill(ptprim,phiprim);
-        fhMCEtaLeading->Fill(ptprim,etaprim);
+        Int_t pdg = part->GetPdgCode();
+        Int_t mPdg = ((AliAODMCParticle*) mcparticles->At(indexmother)) ->GetPdgCode();
+        if (TMath::Abs(pdg) == 11 && mPdg == 22) continue;
       }
-    } //when the leading particles could trace back to MC
+      
+      if ( label == iParticle ) continue; // avoid trigger particle
+      
+      lead = FillChargedMCCorrelationHistograms(part->Pt(),part->Phi(),part->Eta(),ptprim,phiprim,etaprim);
+      if ( !lead ) return;
+      
+    }  //MC particle loop
   }// AOD MC
+  
+  // Leading MC particle histograms
+  if (lead)
+  {
+    fhMCPtLeading ->Fill(ptprim);
+    fhMCPhiLeading->Fill(ptprim,phiprim);
+    fhMCEtaLeading->Fill(ptprim,etaprim);
+  }
 }
 
 //_____________________________________________________________________

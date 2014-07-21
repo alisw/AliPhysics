@@ -1219,3 +1219,23 @@ void AliAnalysisTaskEmcal::AddObjectToEvent(TObject *obj)
     AliFatal(Form("%s: Container with name %s already present. Aborting", GetName(), obj->GetName()));
   }
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array) const
+{
+  Double_t binWidth = (max-min)/n;
+  array[0] = min;
+  for (Int_t i = 1; i <= n; i++) {
+    array[i] = array[i-1]+binWidth;
+  }
+}
+
+//________________________________________________________________________
+Double_t* AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const
+{
+  Double_t *array = new Double_t[n+1];
+
+  GenerateFixedBinArray(n, min, max, array);
+
+  return array;
+}

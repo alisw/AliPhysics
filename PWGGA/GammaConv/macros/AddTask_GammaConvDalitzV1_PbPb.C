@@ -29,6 +29,8 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
   gSystem->Load("libSTEERBase.so");
   gSystem->Load("libTENDER.so");
   gSystem->Load("libTENDERSupplies.so");
+  
+  Int_t isHeavyIon = 1;
 
 
   cout<<"Entro 0"<<endl;
@@ -50,51 +52,64 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-			   
-  TString ConvCutnumber = "1080000000084001001500000000";   //Online  V0 finder
-  TString ElecCuts      = "9000620000000200000";            //Electron Cuts
-                           //903162000550020210
-                           //900054000000020000
+			    
+  TString cutnumberPhoton = "000084001001500000000";
+  TString cutnumberEvent = "1000000";
+  TString ElecCuts      = "90006200000002000000";            //Electron Cuts
+                           
 
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
-     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+		
+		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
+		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
+		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
 
-     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
-     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
-     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
+		if (!mgr) {
+			Error("AddTask_V0ReaderV1", "No analysis manager found.");
+			return;
+		}
 
-     if (!mgr) {
-        Error("AddTask_V0ReaderV1", "No analysis manager found.");
-        return;
-     }
+		AliConvEventCuts *fEventCuts=NULL;
+		if(cutnumberEvent!=""){
+			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
+			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+			if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
+				fV0ReaderV1->SetEventCuts(fEventCuts);
+				fEventCuts->SetFillCutHistograms("",kTRUE);
+			}
+		}
 
-     // Set AnalysisCut Number
-     AliConversionCuts *fCuts=NULL;
-     if( ConvCutnumber !=""){
-        fCuts= new AliConversionCuts(ConvCutnumber.Data(),ConvCutnumber.Data());
-        fCuts->SetPreSelectionCutFlag(kTRUE);
-        if(fCuts->InitializeCutsFromCutString(ConvCutnumber.Data())){
-           fV0ReaderV1->SetConversionCuts(fCuts);
-           fCuts->SetFillCutHistograms("",kTRUE);
-        }
-     }
-     if(inputHandler->IsA()==AliAODInputHandler::Class()){
-     // AOD mode
-        fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
-     }
-     fV0ReaderV1->Init();
+		
+		// Set AnalysisCut Number
+		AliConversionPhotonCuts *fCuts=NULL;
+		if(cutnumberPhoton!=""){
+			fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
+			fCuts->SetPreSelectionCutFlag(kTRUE);
+			fCuts->SetIsHeavyIon(isHeavyIon);
+			if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
+				fV0ReaderV1->SetConversionCuts(fCuts);
+				fCuts->SetFillCutHistograms("",kTRUE);
+			}
+		}
+		
+		if(inputHandler->IsA()==AliAODInputHandler::Class()){
+		// AOD mode
+			fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+		}
+		fV0ReaderV1->Init();
 
-     AliLog::SetGlobalLogLevel(AliLog::kInfo);
+		AliLog::SetGlobalLogLevel(AliLog::kInfo);
 
-     //connect input V0Reader
-     mgr->AddTask(fV0ReaderV1);
-     mgr->ConnectInput(fV0ReaderV1,0,cinput);
+		//connect input V0Reader
+		mgr->AddTask(fV0ReaderV1);
+		mgr->ConnectInput(fV0ReaderV1,0,cinput);
 
-  }
+	}
 
   //================================================
   //========= Add Electron Selector ================
@@ -143,54 +158,55 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
   // Cut Numbers to use in Analysis
   Int_t numberOfCuts = 3;
 
-  TString *ConvCutarray    = new TString[numberOfCuts];
-  TString *ElecCutarray    = new TString[numberOfCuts];
-  TString *MesonCutarray   = new TString[numberOfCuts];
+  TString *eventCutArray     = new TString[numberOfCuts];
+  TString *photonCutArray    = new TString[numberOfCuts];
+  TString *ElecCutarray      = new TString[numberOfCuts];
+  TString *MesonCutarray     = new TString[numberOfCuts];
 
    if ( trainConfig == 1 ) {
 
-       ConvCutarray[0]  = "1240001042092971007200000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny
-       ConvCutarray[1]  = "1460001042092971007200000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny
-       ConvCutarray[2]  = "1680001042092971007200000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny
+       eventCutArray[0]="1240001"; photonCutArray[0]  = "042092971007200000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "90516200255102521700"; //PbPb 20-40% kAny
+       eventCutArray[1]="1460001"; photonCutArray[1]  = "042092971007200000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "90516200255102521700"; //PbPb 40-60% kAny
+       eventCutArray[2]="1680001"; photonCutArray[2]  = "042092971007200000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "90516200255102521700"; //PbPb 60-80% kAny
 
     } else if ( trainConfig == 2 ) {
 
-       ConvCutarray[0]  = "5240001042092971003220000000"; MesonCutarray[0] = "01522085009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny Alpha cut 0.6
-       ConvCutarray[1]  = "5460001042092971001200000000"; MesonCutarray[1] = "01522065009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny Alpha cut 0.8      
-       ConvCutarray[2]  = "5680001042092971001200000000"; MesonCutarray[2] = "01522075009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny Alpha cut 0.85
+       eventCutArray[0]="5240001"; photonCutArray[0]  = "042092971003220000000"; MesonCutarray[0] = "01522085009000"; ElecCutarray[0]  = "90516200255102521700"; //PbPb 20-40% kAny Alpha cut 0.6
+       eventCutArray[1]="5460001"; photonCutArray[1]  = "042092971001200000000"; MesonCutarray[1] = "01522065009000"; ElecCutarray[1]  = "90516200255102521700"; //PbPb 40-60% kAny Alpha cut 0.8      
+       eventCutArray[2]="5680001"; photonCutArray[2]  = "042092971001200000000"; MesonCutarray[2] = "01522075009000"; ElecCutarray[2]  = "90516200255102521700"; //PbPb 60-80% kAny Alpha cut 0.85
       
     } else if ( trainConfig == 3 ) {
 
-       ConvCutarray[0]  = "5240001042092971003220000000"; MesonCutarray[0] = "01522085009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Alpha cut 0.6
-       ConvCutarray[1]  = "5460001042092971001200000000"; MesonCutarray[1] = "01522065009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Alpha cut 0.8      
-       ConvCutarray[2]  = "5680001042092971001200000000"; MesonCutarray[2] = "01522075009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Alpha cut 0.85
+       eventCutArray[0]="5240001"; photonCutArray[0]  = "042092971003220000000"; MesonCutarray[0] = "01522085009000"; ElecCutarray[0]  = "90516200255102521710"; //PbPb 20-40% kAny Alpha cut 0.6
+       eventCutArray[1]="5460001"; photonCutArray[1]  = "042092971001200000000"; MesonCutarray[1] = "01522065009000"; ElecCutarray[1]  = "90516200255102521710"; //PbPb 40-60% kAny Alpha cut 0.8      
+       eventCutArray[2]="5680001"; photonCutArray[2]  = "042092971001200000000"; MesonCutarray[2] = "01522075009000"; ElecCutarray[2]  = "90516200255102521710"; //PbPb 60-80% kAny Alpha cut 0.85
 
     } else if ( trainConfig == 4 ) {
 
-       ConvCutarray[0]  = "5240002032092971003220000000"; MesonCutarray[0] = "01523015009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent ( 0.7, 1.2)
-       ConvCutarray[1]  = "5460002032092971001200000000"; MesonCutarray[1] = "01523015009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent ( 0.7, 1.2)
-       ConvCutarray[2]  = "5680002032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.80  only added signals alpha cut Pt dependent ( 0.80, 1.2)
+       eventCutArray[0]="5240002"; photonCutArray[0]  = "032092971003220000000"; MesonCutarray[0] = "01523015009000"; ElecCutarray[0]  = "90516200255102521710"; //PbPb 20-40% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent ( 0.7, 1.2)
+       eventCutArray[1]="5460002"; photonCutArray[1]  = "032092971001200000000"; MesonCutarray[1] = "01523015009000"; ElecCutarray[1]  = "90516200255102521710"; //PbPb 40-60% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent ( 0.7, 1.2)
+       eventCutArray[2]="5680002"; photonCutArray[2]  = "032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "90516200255102521710"; //PbPb 60-80% kAny Gamma |Eta| < 0.80  only added signals alpha cut Pt dependent ( 0.80, 1.2)
 
     } else if ( trainConfig == 5 ) {
 
-       ConvCutarray[0]  = "5240001032092971003220000000"; MesonCutarray[0] = "01523015009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.7, 1.2)
-       ConvCutarray[1]  = "5460001032092971001200000000"; MesonCutarray[1] = "01523015009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.7, 1.2)  
-       ConvCutarray[2]  = "5680001032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.8, 1.2)
+       eventCutArray[0]="5240001"; photonCutArray[0]  = "032092971003220000000"; MesonCutarray[0] = "01523015009000"; ElecCutarray[0]  = "90516200255102521710"; //PbPb 20-40% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.7, 1.2)
+       eventCutArray[1]="5460001"; photonCutArray[1]  = "032092971001200000000"; MesonCutarray[1] = "01523015009000"; ElecCutarray[1]  = "90516200255102521710"; //PbPb 40-60% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.7, 1.2)  
+       eventCutArray[2]="5680001"; photonCutArray[2]  = "032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "90516200255102521710"; //PbPb 60-80% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.8, 1.2)
     } else if ( trainConfig == 6 ) {
 
-       ConvCutarray[0]  = "5240002032092971003220000000"; MesonCutarray[0] = "01523095009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent( 0.65, 1.2)
-       ConvCutarray[1]  = "5460002032092971001200000000"; MesonCutarray[1] = "01523095009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent( 0.65, 1.2)
-       ConvCutarray[2]  = "5680002032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.80  only added signals alpha cut Pt dependent( 0.80, 1.2)
+       eventCutArray[0]="5240002"; photonCutArray[0]  = "032092971003220000000"; MesonCutarray[0] = "01523095009000"; ElecCutarray[0]  = "90516200255102521710"; //PbPb 20-40% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent( 0.65, 1.2)
+       eventCutArray[1]="5460002"; photonCutArray[1]  = "032092971001200000000"; MesonCutarray[1] = "01523095009000"; ElecCutarray[1]  = "90516200255102521710"; //PbPb 40-60% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent( 0.65, 1.2)
+       eventCutArray[2]="5680002"; photonCutArray[2]  = "032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "90516200255102521710"; //PbPb 60-80% kAny Gamma |Eta| < 0.80  only added signals alpha cut Pt dependent( 0.80, 1.2)
 
     } else if ( trainConfig == 7 ) {
 
-       ConvCutarray[0]  = "5240001032092971003220000000"; MesonCutarray[0] = "01523095009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.65, 1.2)
-       ConvCutarray[1]  = "5460001032092971001200000000"; MesonCutarray[1] = "01523095009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.65, 1.2)
-       ConvCutarray[2]  = "5680001032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.80, 1.2)
+       eventCutArray[0]="5240001"; photonCutArray[0]  = "032092971003220000000"; MesonCutarray[0] = "01523095009000"; ElecCutarray[0]  = "90516200255102521710"; //PbPb 20-40% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.65, 1.2)
+       eventCutArray[1]="5460001"; photonCutArray[1]  = "032092971001200000000"; MesonCutarray[1] = "01523095009000"; ElecCutarray[1]  = "90516200255102521710"; //PbPb 40-60% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.65, 1.2)
+       eventCutArray[2]="5680001"; photonCutArray[2]  = "032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "90516200255102521710"; //PbPb 60-80% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.80, 1.2)
     }
 
 
-
+  TList *EventCutList = new TList();
   TList *ConvCutList  = new TList();
   TList *MesonCutList = new TList();
   TList *ElecCutList  = new TList();
@@ -202,8 +218,11 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
  //TObjString *Header3 = new TObjString("eta_2");
  //HeaderList->Add(Header3);
 
+  EventCutList->SetOwner(kTRUE);
+  AliConvEventCuts **analysisEventCuts 	       = new AliConvEventCuts*[numberOfCuts];
+  
   ConvCutList->SetOwner(kTRUE);
-  AliConversionCuts **analysisCuts             = new AliConversionCuts*[numberOfCuts];
+  AliConversionPhotonCuts **analysisCuts       = new AliConversionPhotonCuts*[numberOfCuts];
 
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts   = new AliConversionMesonCuts*[numberOfCuts];
@@ -214,28 +233,41 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
 
 
   for(Int_t i = 0; i<numberOfCuts; i++){
-     analysisCuts[i] = new AliConversionCuts();
-     if( ! analysisCuts[i]->InitializeCutsFromCutString(ConvCutarray[i].Data()) ) {
+     
+     analysisEventCuts[i] = new AliConvEventCuts();
+     
+     if( trainConfig == 1){
+            if (i == 0 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+            if (i == 1 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
+            if (i == 2 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
+     } else if ( trainConfig == 2 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 ) {
+            if (i == 0 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+            if (i == 1 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
+            if (i == 2 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
+     } else if ( trainConfig == 4 || trainConfig == 6 ) {
+            if (i == 0 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+            if (i == 1 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
+            if (i == 2 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
+     }
+     
+    
+     if( ! analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data()) ) {
+           cout<<"ERROR: analysisEventCuts [" <<i<<"]"<<endl;
+           return 0;
+     }      
+     EventCutList->Add(analysisEventCuts[i]);
+     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+      
+       
+     analysisCuts[i] = new AliConversionPhotonCuts();
+     if( ! analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data()) ) {
            cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
            return 0;
-     } else {
-        ConvCutList->Add(analysisCuts[i]);
-        analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-        if( trainConfig == 1){
-            if (i == 0 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
-            if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
-            if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080V0M", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
-        } else if ( trainConfig == 2 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 ) {
-            if (i == 0 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
-            if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
-            if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
-        } else if ( trainConfig == 4 || trainConfig == 6 ) {
-            if (i == 0 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
-            if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
-            if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
-        }
-     }
-
+     }      
+     ConvCutList->Add(analysisCuts[i]);
+     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
+     
+     
      analysisMesonCuts[i] = new AliConversionMesonCuts();
      if( ! analysisMesonCuts[i]->InitializeCutsFromCutString(MesonCutarray[i].Data()) ) {
            cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
@@ -245,7 +277,7 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
        analysisMesonCuts[i]->SetFillCutHistograms("");
      }
 
-     TString cutName( Form("%s_%s_%s",ConvCutarray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
+     TString cutName( Form("%s_%s_%s_%s",eventCutArray[i].Data(),photonCutArray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
      analysisElecCuts[i] = new AliDalitzElectronCuts();
      if( !analysisElecCuts[i]->InitializeCutsFromCutString(ElecCutarray[i].Data())) {
            cout<< "ERROR:  analysisElecCuts [ " <<i<<" ] "<<endl;
@@ -254,11 +286,11 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
         ElecCutList->Add(analysisElecCuts[i]);
         analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName); 
      }
-     analysisCuts[i]->SetAcceptedHeader(HeaderList);
+     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
 
   }
 
-
+  task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetMesonCutList(MesonCutList);
   task->SetElectronCutList(ElecCutList);

@@ -19,7 +19,7 @@ class AliFlowTrackCuts;
 class AliFlowEventCuts;
 class AliFlowEvent;
 class TH1;
-class AliAnalysisTaskRhoVnModulation;
+class AliAnalysisTaskJetV2;
 
 class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
 {
@@ -30,7 +30,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
                                 AliAnalysisTaskJetFlow();
                                 AliAnalysisTaskJetFlow(
                                         const char* name,
-                                        AliAnalysisTaskRhoVnModulation* rhoTask, 
+                                        AliAnalysisTaskJetV2* rhoTask, 
                                         Bool_t VPart,           // use jets or tracks as pois
                                         Bool_t VZEROEP,         // do vzero ep method
                                         Bool_t GQC2,            // do gapped qc2 method
@@ -58,7 +58,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         void                    SetDoPtWeight(Bool_t p)                 {fDoPtWeight = p; }
 
         AliFlowTrackCuts*       GetRPCuts() const                       {return fCutsRP_VZERO;}
-        AliAnalysisTaskRhoVnModulation* GetMaster() const               {return fRhoVn;}
+        AliAnalysisTaskJetV2* GetMaster() const               {return fRhoVn;}
  
 
         // cuts
@@ -69,7 +69,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         void                    DoQC2FlowAnalysis();
         void                    DoQC4FlowAnalysis();
         Bool_t                  DoFlowPackageFlowAnalysis();
-        // q-cumulant helper calculations TODO move to AliAnlaysisTaskRhoVnModulation for consistency
+        // q-cumulant helper calculations TODO move to AliAnlaysisTaskJetV2 for consistency
         void                    QCnDifferentialFlowVectors(Double_t* repn, Double_t* impn, Double_t *mp, Double_t *reqn, Double_t *imqn, Double_t* mq, Int_t n);
 
     private:
@@ -111,7 +111,7 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         // containers, setup
         AliFlowEvent*           fFlowEvent_TPC;         //! container for flow analysis
         AliFlowEvent*           fFlowEvent_VZERO;       //! container for flow analysis
-        AliAnalysisTaskRhoVnModulation* fRhoVn;         // common cuts and settings master object, see class header
+        AliAnalysisTaskJetV2* fRhoVn;         // common cuts and settings master object, see class header
         // histograms
         TH1F*                   fHistAnalysisSummary;   //! analysis summary
         TH1F*                   fCentralitySelection;   //! centrality selection

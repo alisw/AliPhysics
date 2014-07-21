@@ -340,7 +340,9 @@ protected:
     TH2F *fHistGammasFoundOutOfAccAltCent;//!
     TH2F *fHistGammasGeneratedCent;//!
     TH2F *fHistGammasFoundRecoEnergyCent;//!
+    TH2F *fHistAllGammasFoundRecoEnergyCent;//!
     TH2F *fHistGammasFoundOutOfAccRecoEnergyCent;//!
+    TH2F *fHistAllGammasFoundOutOfAccRecoEnergyCent;//!
     TH1F *fHistChargedTracksCut;//!
     TH1F *fHistChargedTracksAccepted;//!
     TH1F *fHistGammasCut;//!

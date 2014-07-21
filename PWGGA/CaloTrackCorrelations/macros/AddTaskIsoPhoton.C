@@ -245,7 +245,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
       //Hybrids 2011
       AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
       reader->SetTrackCuts(esdTrackCuts);
-      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
+      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10001008);
       reader->SetTrackComplementaryCuts(esdTrackCuts2);
     }
 //    else
@@ -337,7 +337,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
   if(simu)
     cu->SwitchOnLoadOwnEMCALGeometryMatrices();
   
-  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+  /*  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
   
   cu->SwitchOffRecalibration();
   cu->SwitchOffRunDepCorrection();
@@ -351,16 +351,16 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
                           kFALSE, // bad map
                           kFALSE); // time calib
   if(timecut) recou->SetExoticCellDiffTimeCut(50.);
-
+  */
   if( nonlin)
   { 
     printf("ConfigureCaloUtils() - Apply non linearity to EMCAL\n");
     cu->SwitchOnCorrectClusterLinearity();
   }
-    
+  /*   
   printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
   printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
-  
+  */
   cu->SetNumberOfSuperModulesUsed(10);
 
   if(print) cu->Print("");

@@ -29,7 +29,7 @@ class AliSpectraAODTrackCuts : public TNamed
   enum { kTrkBit = 0, kTrkCuts, kTrkEta, kTrkDCA, kTrkP, kTrkPt,kTrkPtTOF,kTOFMatching,kTrTOFout,kTrTIME,kTrTOFpid,kAccepted,kNTrkCuts};
   
   
- AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0),fDCACut(0), fPCut(0), fPtCut(0),fYCut(0), fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0), fPIDResponse(0) {}
+ AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fRequestSPDcls(0), fEtaCutMin(0), fEtaCutMax(0),fDCACut(0), fPCut(0), fPtCut(0),fYCut(0), fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0), fPIDResponse(0) {}
   
   AliSpectraAODTrackCuts(const char *name);
   virtual  ~AliSpectraAODTrackCuts() {} // To be implemented
@@ -45,6 +45,7 @@ class AliSpectraAODTrackCuts : public TNamed
   void SetTrackType(UInt_t bit);
   void SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
   void SetMinTPCcls(UInt_t MinTPCcls) {fMinTPCcls=MinTPCcls;}
+  void SetRequestSPDcls(Bool_t RequestSPDcls) {fRequestSPDcls=RequestSPDcls;}
   
   UInt_t GetTrackType()  const    { return fTrackBits;}
   TH1I * GetHistoCuts()      { return fHistoCuts; }
@@ -79,6 +80,7 @@ class AliSpectraAODTrackCuts : public TNamed
   Bool_t           fIsSelected;      // True if cuts are selected
   UInt_t           fTrackBits;       // Type of track to be used
   UInt_t           fMinTPCcls;       // min number of clusters in the TPC
+  Bool_t           fRequestSPDcls;         // request a hit in the SPD
   Float_t          fEtaCutMin;          // Allowed absolute maximum value of Eta
   Float_t          fEtaCutMax;          // Allowed absolute maximum value of Eta
   Float_t          fDCACut;          // Maximum value of DCA
@@ -100,7 +102,7 @@ class AliSpectraAODTrackCuts : public TNamed
   AliSpectraAODTrackCuts(const AliSpectraAODTrackCuts&);
   AliSpectraAODTrackCuts& operator=(const AliSpectraAODTrackCuts&);
    
-  ClassDef(AliSpectraAODTrackCuts, 2);
+  ClassDef(AliSpectraAODTrackCuts, 3);
 };
 #endif
 

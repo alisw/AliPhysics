@@ -1,6 +1,7 @@
 #!/bin/bash
 #include benchmark.config
 
+# blame: Mikolaj Krzewicki, mkrzewic@cern.ch
 # this script runs the CPass0/CPass1 train
 # produced OCDB updates are local
 

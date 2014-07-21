@@ -4,7 +4,7 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false, bool data = false, Int_t dataset = 2013, Int_t test = 1, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE, int simflag = 0) {
+void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int_t test = 1, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE, int simflag = 0) {
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
@@ -25,9 +25,11 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 2013, Int_
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
     gSystem->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
     if(runCompiledVersion){
+      cout<<"Using compiled version"<<endl;
       gSystem->Load("libPWGLFtotEt.so");
     }
     else{
+      cout<<"Not using compiled version"<<endl;
       gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
       gROOT->ProcessLine(".L AliAnalysisHadEtCorrections.cxx+g");
       gROOT->ProcessLine(".L AliAnalysisEtCommon.cxx+g");
@@ -47,7 +49,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 2013, Int_
     TGrid::Connect("alien://") ;
   }
   bool PbPb = false;
-  if(dataset ==20100){
+  if(dataset ==20100 || dataset==2011){
     bool PbPb = true;
     if(data){
       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.860/AliESDs.root");//Data Pb+Pb
@@ -57,9 +59,12 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 2013, Int_
       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.900/AliESDs.root");//Data Pb+Pb
     }
     else{
-      chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
-      chain->Add("/data/LHC10h8/137161/111/AliESDs.root");//Hijing Pb+Pb
-      chain->Add("/data/LHC10h8/137161/222/AliESDs.root");//Hijing Pb+Pb
+      //chain->Add("/data/LHC12d3/168464/201/AliESDs.root");//HIJING with embedded signals - works, full acceptance
+      //chain->Add("/data/LHC10h2/137161/001/AliESDs.root");//DPMJET
+      chain->Add("/data/LHC11a9a/137366/001/AliESDs.root");//AMPT
+//       chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
+//       chain->Add("/data/LHC10h8/137161/111/AliESDs.root");//Hijing Pb+Pb
+//       chain->Add("/data/LHC10h8/137161/222/AliESDs.root");//Hijing Pb+Pb
       //chain->Add("/data/LHC11a4_bis/137161/999/AliESDs.root");//Hijing Pb+Pb
       //chain->Add("/data/LHC10h12/999/AliESDs.root");//Hijing Pb+Pb
     }
@@ -70,12 +75,13 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 2013, Int_
 	 chain->Add("/data/LHC13b/13000195483082.95/AliESDs.root");
        }
        else{
-	 chain->Add("/data/LHC12c1b/111/AliESDs.root");
+	 //cout<<"Yes I am analyzing the correct file"<<endl;
+	 //chain->Add("/data/LHC12c1b/111/AliESDs.root");
+	 chain->Add("/data/LHC13b3/9999/AliESDs.root");
        }
      }
      else{
        if(data){
-	 cout<<"Yes I am analyzing the correct file"<<endl;
 	 //chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
 	 //chain->Add("/data/LHC11a/11000146856042.90/AliESDs.root");//data pp 2.76 TeV w/SDD pass 2
 	 //chain->Add("/data/LHC11a/11000146860043.90/AliESDs.root");//data pp 2.76 TeV w/SDD pass 3
@@ -134,14 +140,52 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 2013, Int_
   }
   Int_t pass = 2;
    if(dataset==20100){//PbPb 2.76 TeV
-     if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.ForData.root","corrections.root",kTRUE);}
-     else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.ForSimulations.root","corrections.root",kTRUE);}
+     if(simflag==0){
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.ForSimulations.root","corrections.root",kTRUE);}
+       if(material==11){//AMPT only available for this run
+	 cout<<"Running AMPT"<<endl;
+	 gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.137366.ForData.root","corrections.root",kTRUE);
+       }
+     }
+     if(simflag==1){
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run138442.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run138442.ForSimulations.root","corrections.root",kTRUE);}
+     }
+     if(simflag==2){
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run138364.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run138364.ForSimulations.root","corrections.root",kTRUE);}
+     }
+     if(simflag==3){
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run138396.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run138396.ForSimulations.root","corrections.root",kTRUE);}
+     }
+     if(simflag==4){
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run137722.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run137722.ForSimulations.root","corrections.root",kTRUE);}
+     }
+     if(simflag==5){
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run137366.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run137366.ForSimulations.root","corrections.root",kTRUE);}
+     }
+     if(simflag==6){
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run137161.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.Run137161.ForSimulations.root","corrections.root",kTRUE);}
+     }
      gSystem->CopyFile("ConfigHadEtMonteCarloPbPb.C","ConfigHadEtMonteCarlo.C",kTRUE);
      gSystem->CopyFile("ConfigHadEtReconstructedPbPb.C","ConfigHadEtReconstructed.C",kTRUE);
+     if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.ForData.root","corrections.root",kTRUE);}
+     else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.ForSimulations.root","corrections.root",kTRUE);}
      pass = 2;
      //centTask->SetPass(1);
    }
    else{
+     if(dataset==2011){//PbPb 2.76 TeV 2011
+       gSystem->CopyFile("ConfigHadEtMonteCarloPbPb2011.C","ConfigHadEtMonteCarlo.C",kTRUE);
+       gSystem->CopyFile("ConfigHadEtReconstructedPbPb2011.C","ConfigHadEtReconstructed.C",kTRUE);
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.PbPb.168464.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.PbPb.168464.ForSimulations.root","corrections.root",kTRUE);}
+     }
      if(dataset==2009){//pp 900 GeV
        gSystem->CopyFile("ConfigHadEtMonteCarlopp900GeV.C","ConfigHadEtMonteCarlo.C",kTRUE);
        gSystem->CopyFile("ConfigHadEtReconstructedpp900GeV.C","ConfigHadEtReconstructed.C",kTRUE);

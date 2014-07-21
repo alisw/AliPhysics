@@ -27,7 +27,7 @@
 #endif
 
 void makeCentralityFitnozeri(const int nRun=195483, const char *system = "ZNA",
-	int ntrials=1, int Rebin=1, int Nevt=1.e7)
+	int ntrials=1, int Rebin=1, int Nevt=1.e6)
 {
  //load libraries
   gSystem->SetBuildDir(".");
@@ -80,9 +80,8 @@ void makeCentralityFitnozeri(const int nRun=195483, const char *system = "ZNA",
   // COSY-like
 //  mPM->SetNParam(51.5, 620., 10.);
 // change 2
-  mPM->SetNParam(29., 132., 4.46, 0.29);
-  //mPM->SetNParam(29., 133., 4.48, 0.42);
-  //else mPM->SetNParam(51.5, 580., 9.5);
+  mPM->SetNParam(50., 230., 4.4, 0.48);
+  //mPM->SetNParam(40., 230., 4.5, 0.45);
   //
   // ALICE ex-novo
   //mPM->SetNParam(78., 700., 7.);
@@ -91,18 +90,22 @@ void makeCentralityFitnozeri(const int nRun=195483, const char *system = "ZNA",
   if(strncmp(system,"ZNA",3) == 0) {
     printf(" Setting parameters for ZNA Glauber fit\n\n");
     mPM->SetIsZN();
-    mPM->SetRangeToFit(0.5, 90.5);   
+    mPM->SetRangeToFit(0.8, 90.5);   
     mPM->SetRangeToScale(0);  
-    if(nRun==195483) mPM->SetGlauberParam(1,0.0,0.0, 1,0.957,1., 1,0.29,0.30, 1,0.65,0.65, 1,0.575,0.585, 1, 0.26,0.3);
-    else             mPM->SetGlauberParam(1,0.0,0.0, 1,0.957,1., 1,0.25,0.30, 1,0.65,0.65, 1,0.56,0.585, 1, 0.26,0.3);
+    // original
+    if(nRun==195483) mPM->SetGlauberParam(1,0.0,0.0, 1,0.957,1., 1,0.26,0.30, 1,0.65,0.65, 1,0.585,0.585, 1, 0.25,0.3);
+    //to study systematics
+    //if(nRun==195483) mPM->SetGlauberParam(1,0.0,0.0, 1,0.956,1., 1,0.29,0.30, 1,1.80,0.65, 1,0.585,0.585, 1, 0.25,0.3);
+    else             mPM->SetGlauberParam(1,0.0,0.0, 1,0.957,1., 1,0.25,0.30, 1,0.65,0.65, 1,0.585,0.585, 1, 0.25,0.3);
   }
   else if (strncmp(system,"ZPA",3) == 0) {
     mPM->SetIsZP();
     mPM->SetRangeToFit(1., 30.);  
     mPM->SetRangeToScale(0);  
-    if(nRun==195483) mPM->SetGlauberParam(1,0.0016,0.0025, 1,0.62,0.8, 1,0.5,0.65, 1,0.65,0.65, 1,0.56,0.585, 1, 0.26,0.4);
-    else             mPM->SetGlauberParam(1,0.0000,0.0000, 1,0.60,0.8, 1,0.5,0.65, 1,0.65,0.65, 1,0.56,0.585, 1, 0.26,0.4);
-//    mPM->SetGlauberParam(1,0.,1., 1,0.8,0.9, 1,0.6,0.65, 1,0.65,0.65, 1,0.56,0.585, 1, 0.28,0.4);
+    // original
+    //if(nRun==195483) mPM->SetGlauberParam(1,0.0,0.0, 1,0.60,0.8, 1,0.6,0.65, 1,0.65,0.65, 1,0.585,0.585, 1, 0.25,0.4);
+    if(nRun==195483) mPM->SetGlauberParam(1,0.0,0.0, 1,0.40,0.8, 1,0.4,0.65, 1,1.80,0.65, 1,0.585,0.585, 1, 0.25,0.4);
+    else             mPM->SetGlauberParam(1,0.0,0.0, 1,0.60,0.8, 1,0.5,0.65, 1,0.65,0.65, 1,0.585,0.585, 1, 0.25,0.4);
   }
   mPM->MakeFits();  
 
@@ -187,6 +190,7 @@ void makeCentralityFitnozeri(const int nRun=195483, const char *system = "ZNA",
   if(strncmp(system,"ZNA",3) == 0) sprintf(psn,"ZNA_fit%d.gif",nRun);
   else  sprintf(psn,"ZPA_fit%d.gif",nRun);
   g->Print(psn);
-
+	
+	printf("\n Everything is OK: ntuple and fit results saved!!! \n\n");
 }
 

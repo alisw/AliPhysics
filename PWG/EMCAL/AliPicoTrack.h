@@ -1,10 +1,11 @@
 #ifndef AliPicoTrack_H
 #define AliPicoTrack_H
 
-// $Id$
+#include <TMath.h>
 
 #include "AliVTrack.h"
-#include <TMath.h>
+#include "AliAODMCParticle.h"
+
 class AliVCluster;
 
 class AliPicoTrack: public AliVTrack {
@@ -62,25 +63,56 @@ class AliPicoTrack: public AliVTrack {
   void            Clear(Option_t * /*option*/ ="")  { fClusId = -1; fOrig = 0; } 
   Int_t           Compare(const TObject* obj) const;
   Bool_t          PropagateToDCA(const AliVVertex *, Double_t, Double_t, Double_t *, Double_t *) { return 0; }
+  void            SetFlag(UInt_t flag) {fFlag = flag;}
+  UInt_t          GetFlag() const {return fFlag;}
+  void SetPrimary(Bool_t b = kTRUE){
+    if(b)fFlag |= AliAODMCParticle::kPrimary;
+    else fFlag &= ~AliAODMCParticle::kPrimary;
+  }
+  Bool_t IsPrimary() const {return ((fFlag&AliAODMCParticle::kPrimary)==AliAODMCParticle::kPrimary);} 
+  
+  void SetPhysicalPrimary(Bool_t b = kTRUE){
+    if(b)fFlag |= AliAODMCParticle::kPhysicalPrim;
+    else fFlag &= ~AliAODMCParticle::kPhysicalPrim; 
+  } 
+  Bool_t IsPhysicalPrimary() const {return ((fFlag&AliAODMCParticle::kPhysicalPrim)==AliAODMCParticle::kPhysicalPrim);} 
+  
+  void SetSecondaryFromWeakDecay(Bool_t b = kTRUE){
+    if(b)fFlag |= AliAODMCParticle::kSecondaryFromWeakDecay;
+    else fFlag &= ~AliAODMCParticle::kSecondaryFromWeakDecay; 
+  } 
+  Bool_t IsSecondaryFromWeakDecay() const {return ((fFlag&AliAODMCParticle::kSecondaryFromWeakDecay)==AliAODMCParticle::kSecondaryFromWeakDecay);} 
+  
+  void SetSecondaryFromMaterial(Bool_t b = kTRUE){
+    if(b)fFlag |= AliAODMCParticle::kSecondaryFromMaterial;
+    else fFlag &= ~AliAODMCParticle::kSecondaryFromMaterial; 
+  } 
+  Bool_t IsSecondaryFromMaterial() const {return ((fFlag&AliAODMCParticle::kSecondaryFromMaterial)==AliAODMCParticle::kSecondaryFromMaterial);} 
+
+  Bool_t  IsFromHIJING() const { return (fGeneratorIndex == 0); }
+  void    SetGeneratorIndex(Short_t i) {fGeneratorIndex = i;}
+  Short_t GetGeneratorIndex() const {return fGeneratorIndex;}
 
   static void     GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
   static Byte_t   GetTrackType(const AliVTrack *t);
 
  protected:
-  Double32_t      fPt;       //[0,0,12]   pt at vertex
-  Double32_t      fEta;      //[-1,1,12]  eta at vertex
-  Double32_t      fPhi;      //[0,6.3,12] phi at vertex
-  Double32_t      fM;        //           mass
-  Byte_t          fQ;        //           charge
-  Int_t           fLabel;    //           label  
-  Byte_t          fTrackType;//           0=global track; 1=w/o SPD, w/ ITS refit; 2=w/o SPD, w/o ITS refit
-  Double32_t      fEtaEmc;   //[-1,1,12]  eta at emcal surface
-  Double32_t      fPhiEmc;   //[0,6.3,12] phi at emcal surface
-  Double32_t      fPtEmc;    //[0,0,12]   pt at emcal surface
-  Bool_t          fEmcal;    //           is true if track propagated to emcal
-  Short_t         fClusId;   //!          cluster id of matched cluster; -1 if not set
-  AliVTrack      *fOrig;     //!          ptr to original track
+  Double32_t      fPt;             //[0,0,12]   pt at vertex
+  Double32_t      fEta;            //[-1,1,12]  eta at vertex
+  Double32_t      fPhi;            //[0,6.3,12] phi at vertex
+  Double32_t      fM;              //           mass
+  Byte_t          fQ;              //           charge
+  Int_t           fLabel;          //           label  
+  Byte_t          fTrackType;      //           0=global track; 1=w/o SPD, w/ ITS refit; 2=w/o SPD, w/o ITS refit
+  Double32_t      fEtaEmc;         //[-1,1,12]  eta at emcal surface
+  Double32_t      fPhiEmc;         //[0,6.3,12] phi at emcal surface
+  Double32_t      fPtEmc;          //[0,0,12]   pt at emcal surface
+  Bool_t          fEmcal;          //           is true if track propagated to emcal
+  UInt_t          fFlag;           //!          Flag for indication of primary etc (MC)
+  Short_t         fGeneratorIndex; //!          Index of generator in cocktail
+  Short_t         fClusId;         //!          cluster id of matched cluster; -1 if not set
+  AliVTrack      *fOrig;           //!          ptr to original track
 
-  ClassDef(AliPicoTrack, 7) // Pico track class
+  ClassDef(AliPicoTrack, 8) // Pico track class
 };
 #endif

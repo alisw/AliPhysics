@@ -53,11 +53,20 @@ class AliHFEpidQAmanager : public TObject{
     TList *MakeList(const Char_t *name);
     void SetHighResolutionHistos() { SetBit(kHighResolutionHistos, kTRUE); };
     Bool_t HasHighResolutionHistos() const { return TestBit(kHighResolutionHistos); }
+    void SetMidResolutionHistos() { SetBit(kMidResolutionHistos, kTRUE); };
+    Bool_t HasMidResolutionHistos() const { return TestBit(kMidResolutionHistos); }
+    void SetHighResolutionEtaHistos() { SetBit(kHighResolutionEtaHistos, kTRUE); };
+    Bool_t HasHighResolutionEtaHistos() const { return TestBit(kHighResolutionEtaHistos); }
+    void SetFillMultiplicity() { SetBit(kFillMultiplicity, kTRUE); };
+    Bool_t HasFillMultiplicity() const { return TestBit(kFillMultiplicity); }
 
   protected:
     enum{
       kIsOwner = BIT(14),
-      kHighResolutionHistos = BIT(15)
+      kHighResolutionHistos = BIT(15),
+      kMidResolutionHistos = BIT(16),
+      kHighResolutionEtaHistos = BIT(17),
+      kFillMultiplicity = BIT(18)
     };
     Bool_t IsOwner() const { return TestBit(kIsOwner); }
     void SetOwner() { SetBit(kIsOwner, kTRUE); }
@@ -68,6 +77,6 @@ class AliHFEpidQAmanager : public TObject{
     AliHFEdetPIDqa *fDetPIDqa[AliHFEpid::kNdetectorPID]; //! Detector PID QA objects
     AliHFEpidBase *fDetPID[AliHFEpid::kNdetectorPID];    //  Detector PID objects
 
-  ClassDef(AliHFEpidQAmanager, 0)
+  ClassDef(AliHFEpidQAmanager, 1)
 };
 #endif

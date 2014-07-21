@@ -24,6 +24,7 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   // setup task
   AliT0CalibOffsetChannelsTask  *task1 = new AliT0CalibOffsetChannelsTask("CalibObjectsTrain1");
   readCDB(task1, runNumber);
+  task1-> SetRefPMT(12,2);
   mgr->AddTask(task1);
   
   //  AliT0AnalysisTaskQA * task2 = new AliT0AnalysisTaskQA("QA task");

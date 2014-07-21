@@ -699,9 +699,10 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
    if(fFlagRandom==0){
      if(externalBackground)rho = externalBackground->GetBackground(0);}
-   if(fFlagRandom==1){
+   if(fFlagRandom==2){
       if(externalBackground)rho = externalBackground->GetBackground(2);}
-
+   if(fFlagRandom==3){
+      if(externalBackground)rho = externalBackground->GetBackground(3);}
    // fetch jets
    TClonesArray *aodJets[2];
    aodJets[0]=0;

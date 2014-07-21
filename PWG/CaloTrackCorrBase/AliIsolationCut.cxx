@@ -52,8 +52,9 @@ TObject(),
 fConeSize(0.),
 fPtThreshold(0.),
 fPtThresholdMax(10000.), 
-fSumPtThreshold(0.), 
-fPtFraction(0.), 
+fSumPtThreshold(0.),
+fSumPtThresholdMax(10000.),
+fPtFraction(0.),
 fICMethod(0),
 fPartInCone(0),
 fDebug(-1),
@@ -387,12 +388,13 @@ void AliIsolationCut::InitParameters()
   //Initialize the parameters of the analysis.
   
   fConeSize       = 0.4 ; 
-  fPtThreshold    = 1.  ;
+  fPtThreshold    = 0.5  ;
   fPtThresholdMax = 10000.  ;
-  fSumPtThreshold = 0.5 ; 
-  fPtFraction     = 0.1 ; 
-  fPartInCone     = kOnlyCharged;
-  fICMethod       = kSumPtFracIC; // 0 pt threshol method, 1 cone pt sum method
+  fSumPtThreshold    = 1.0 ;
+  fSumPtThresholdMax = 10000. ;
+  fPtFraction     = 0.1 ;
+  fPartInCone     = kNeutralAndCharged;
+  fICMethod       = kSumPtIC; // 0 pt threshol method, 1 cone pt sum method
   fFracIsThresh   = 1; 
 }
 
@@ -549,7 +551,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         
       } // Inside cone
       
-      if(fDebug>0)  printf("\n");
+      if( fDebug > 0 )  printf("\n");
       
     }// charged particle loop
     
@@ -678,23 +680,23 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
         if(fFracIsThresh)
         {
-          if( fPtFraction*ptC<fPtThreshold)
+          if( fPtFraction*ptC < fPtThreshold )
           {
-            if(pt>fPtThreshold)    nfrac++ ;
+            if( pt > fPtThreshold )    nfrac++ ;
           }
           else 
           {
-            if(pt>fPtFraction*ptC) nfrac++; 
+            if( pt > fPtFraction*ptC ) nfrac++;
           }
         }
         else
         {
-          if(pt>fPtFraction*ptC) nfrac++;   
+          if( pt > fPtFraction*ptC ) nfrac++;
         }
         
       }//in cone
       
-      if(fDebug>0)  printf("\n");
+      if(fDebug > 0 )  printf("\n");
       
     }// neutral particle loop
     
@@ -708,47 +710,49 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
     if(reftracks)	  pCandidate->AddObjArray(reftracks);
   }
   
-  coneptsum = coneptsumCluster+coneptsumTrack;
+  coneptsum = coneptsumCluster + coneptsumTrack;
   
   //Check isolation, depending on selected isolation criteria
   if( fICMethod == kPtThresIC)
   {
-    if(n==0) isolated = kTRUE ;
+    if( n == 0 ) isolated = kTRUE ;
   }
-  else if( fICMethod == kSumPtIC)
+  else if( fICMethod == kSumPtIC )
   {
-    if(coneptsum < fSumPtThreshold)
-      isolated  =  kTRUE ;
+    if( coneptsum > fSumPtThreshold && coneptsum < fSumPtThresholdMax )
+      isolated  =  kFALSE ;
+    else
+      isolated  =  kTRUE  ;
   }
-  else if( fICMethod == kPtFracIC)
+  else if( fICMethod == kPtFracIC )
   {
-    if(nfrac==0) isolated = kTRUE ;
+    if(nfrac == 0 ) isolated = kTRUE ;
   }
-  else if( fICMethod == kSumPtFracIC)
+  else if( fICMethod == kSumPtFracIC )
   {
     //when the fPtFraction*ptC < fSumPtThreshold then consider the later case
  // printf("photon analysis IsDataMC() ?%i\n",IsDataMC());
-    if(fFracIsThresh )
+    if( fFracIsThresh )
     {
-      if( fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
-      if( fPtFraction*ptC > fSumPtThreshold  && coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
+      if( fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold ) isolated  =  kTRUE ;
+      if( fPtFraction*ptC > fSumPtThreshold  && coneptsum < fPtFraction*ptC ) isolated  =  kTRUE ;
     }
     else 
     {
-      if(coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
+      if( coneptsum < fPtFraction*ptC ) isolated  =  kTRUE ;
     }
   }
-  else if( fICMethod == kSumDensityIC)
+  else if( fICMethod == kSumDensityIC )
   {    
     // Get good cell density (number of active cells over all cells in cone)
     // and correct energy in cone
     
     Float_t cellDensity = GetCellDensity(pCandidate,reader);
     
-    if(coneptsum < fSumPtThreshold*cellDensity)
+    if( coneptsum < fSumPtThreshold*cellDensity )
       isolated = kTRUE;
   }
-  else if( fICMethod == kSumBkgSubIC)
+  else if( fICMethod == kSumBkgSubIC )
   {
     Double_t coneptsumBkg = 0.;
     Float_t  etaBandPtSumTrackNorm   = 0;
@@ -783,9 +787,13 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
     coneptsum = coneptsumCluster+coneptsumTrack;
     
     coneptsum -= coneptsumBkg;
-    if(coneptsum < fSumPtThreshold)
-      isolated  =  kTRUE ;
-  } 
+    
+    if( coneptsum > fSumPtThreshold && coneptsum < fSumPtThresholdMax )
+      isolated  =  kFALSE ;
+    else
+      isolated  =  kTRUE  ;
+
+  }
   
 }
 

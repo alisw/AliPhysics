@@ -258,7 +258,9 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistGammasFoundOutOfAccAltCent(0)
 						  ,fHistGammasGeneratedCent(0)
 						  ,fHistGammasFoundRecoEnergyCent(0)
+						  ,fHistAllGammasFoundRecoEnergyCent(0)
 						  ,fHistGammasFoundOutOfAccRecoEnergyCent(0)
+						  ,fHistAllGammasFoundOutOfAccRecoEnergyCent(0)
 						  ,fHistChargedTracksCut(0)
 						  ,fHistChargedTracksAccepted(0)
 						  ,fHistGammasCut(0)
@@ -507,7 +509,9 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistGammasFoundAltCent; // enter comment here
     delete fHistGammasGeneratedCent; // enter comment here
     delete fHistGammasFoundRecoEnergyCent;
+    delete fHistAllGammasFoundRecoEnergyCent;
     delete fHistGammasFoundOutOfAccRecoEnergyCent;
+    delete fHistAllGammasFoundOutOfAccRecoEnergyCent;
     delete fHistChargedTracksCut;
     delete fHistChargedTracksAccepted;
     delete fHistGammasCut;
@@ -743,7 +747,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
             {
                 //Printf("Particle with eta: %f, pid: %d", part->Eta(), code);
                 // calculate E_T
-                if (
+         
+	      //fHistGammasFoundRecoEnergyCent->Fill(fReconstructedE,fCentClass);      
+	      //cout<<"Messed up filling would have filled with "<<fReconstructedE<<" cent "<<fCentClass<<endl;
+		  if (
                     TMath::Abs(code) == fgProtonCode ||
                     TMath::Abs(code) == fgNeutronCode ||
                     TMath::Abs(code) == fgLambdaCode ||
@@ -762,7 +769,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                 Double_t et = part->Energy() * TMath::Sin(part->Theta()) + particleMassPart;
 
 
-                if(code == fgGammaCode || code == fgPi0Code || code == fgEtaCode)
+                if(code == fgGammaCode || code == fgPi0Code || code == fgEtaCode || code==fgOmega0Code || code==fgEPlusCode || code==fgEMinusCode)
                 {
 
                     if(fSelector->CutGeometricalAcceptance(*part) )
@@ -1449,6 +1456,18 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  if(!written && (fDepositedCode==fgGammaCode || fDepositedCode==fgEMinusCode || fDepositedCode ==fgEPlusCode)){//if the particle hitting the calorimeter is gamma, electron and not from a kaon
 // 	    cout<<"Signal ";
 // 	    PrintFamilyTreeShort(iPart, stack);
+//efficiencies without cutting track matched gammas
+	    if(containsGamma){
+	      if(!fSelector->CutGeometricalAcceptance(*primPart)){
+		fHistAllGammasFoundOutOfAccRecoEnergyCent->Fill(fReconstructedE,fCentClass);
+	      }
+	      else{
+		fHistAllGammasFoundRecoEnergyCent->Fill(fReconstructedE,fCentClass);
+	      }
+	      //cout<<"contains gamma"<<endl;
+	    }
+	    //else{cout<<"does not contain gamma"<<endl;}
+
 
 	    fClusterMultGammas++;
 	    written = kTRUE;
@@ -1477,6 +1496,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  fHistGammasFoundOutOfAccRecoEnergyCent->Fill(fReconstructedE,fCentClass);
 		}
 		else{
+		  //cout<<"filling reference histogram"<<endl;
 		  if(gammaEnergy>0) fHistGammaEnergyCrossCheckAlt->Fill(gammaEnergy,(fReconstructedEt-gammaEnergy)/fReconstructedEt);
 		  fHistGammasFoundRecoEnergyCent->Fill(fReconstructedE,fCentClass);
 		  etGammaCrossCheckAlt += clEt;
@@ -1981,7 +2001,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     }
     Float_t scale = 1;//scale up histograms if EMCal 2011 so we have the right range
     if(fDataSet==2011   && !fHistogramNameSuffix.Contains("P")){
-      scale = 2.5;
+      scale = 3.0;
     }
 
 
@@ -2165,7 +2185,9 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistGammasFoundCent = new TH2F("fHistGammasFoundCent", "fHistGammasFoundCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundOutOfAccAltCent = new TH2F("fHistGammasFoundOutOfAccAltCent", "fHistGammasFoundOutOfAccCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundRecoEnergyCent = new TH2F("fHistGammasFoundRecoEnergyCent", "fHistGammasFoundRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
+    fHistAllGammasFoundRecoEnergyCent = new TH2F("fHistAllGammasFoundRecoEnergyCent", "fHistAllGammasFoundRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundOutOfAccRecoEnergyCent = new TH2F("fHistGammasFoundOutOfAccRecoEnergyCent", "fHistGammasFoundOutOfAccRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
+    fHistAllGammasFoundOutOfAccRecoEnergyCent = new TH2F("fHistAllGammasFoundOutOfAccRecoEnergyCent", "fHistAllGammasFoundOutOfAccRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundAltCent = new TH2F("fHistGammasFoundAltCent", "fHistGammasFoundAltCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasGeneratedCent = new TH2F("fHistGammasGeneratedCent", "fHistGammasGeneratedCent",200, 0, 10,20,-0.5,19.5);
     fHistChargedTracksCut = new TH1F("fHistChargedTracksCut", "fHistChargedTracksCut",100, 0, 5);
@@ -2248,15 +2270,15 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
       fHistNeutronsEtVsCent = new TH2F("fHistNeutronsEtVsCent","Neutrons and anti-neutrons - deposited ET vs Centrality bin",100*scale,0,4.0*scale,20,-0.5,19.5);
       fHistNeutronsNumVsCent = new TH2F("fHistNeutronsNumVsCent","Neutrons and anti-neutrons - number vs Centrality bin",20,-0.5,19.5,20,-0.5,19.5);
       fHistNotNeutronsNumVsCent = new TH2F("fHistNotNeutronsNumVsCent","Neutral particles not otherwise classified - number vs Centrality bin",20,-0.5,19.5,20,-0.5,19.5);
-      Int_t nbinsEt = 125*scale;
-      Float_t maxEtRange = 125*scale;
-      Float_t maxEtRangeShort = 50*scale;
+      Int_t nbinsEt = 150*scale;
+      Float_t maxEtRange = 150*scale;
+      Float_t maxEtRangeShort = 60*scale;
       Float_t minEtRange = 0;
       Int_t nbinsMult = 100*scale;
       Float_t maxMult = 3000*scale;
       Float_t minMult = 0;
-      Int_t nbinsCl = 250*scale;
-      Float_t maxCl = 500*scale;
+      Int_t nbinsCl = 300*scale;
+      Float_t maxCl = 600*scale;
       Float_t minCl = 0;
       fHistPiKPDepositedVsNch = new TH2F("fHistPiKPDepositedVsNch","#pi,K,p E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
       fHistPiKPNotTrackMatchedDepositedVsNch = new TH2F("fHistPiKPNotTrackMatchedDepositedVsNch","#pi,K,p E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
@@ -2489,7 +2511,9 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistGammasFoundAltCent);
     list->Add(fHistGammasGeneratedCent);
     list->Add(fHistGammasFoundRecoEnergyCent);
+    list->Add(fHistAllGammasFoundRecoEnergyCent);
     list->Add(fHistGammasFoundOutOfAccRecoEnergyCent);
+    list->Add(fHistAllGammasFoundOutOfAccRecoEnergyCent);
     list->Add(fHistChargedTracksCut);
     list->Add(fHistChargedTracksAccepted);
     list->Add(fHistGammasCut);

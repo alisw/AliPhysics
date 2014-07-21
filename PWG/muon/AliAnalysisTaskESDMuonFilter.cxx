@@ -326,6 +326,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
     UInt_t pattern = esdMuTrack->GetHitsPatternInTrigCh();
     AliESDMuonTrack::AddEffInfo(pattern, 0, esdMuTrack->LoCircuit(), (AliESDMuonTrack::EAliTriggerChPatternFlag)0);
+    esdMuTrack->AddMuonTrigDevSignInfo(pattern);
     aodTrack->SetMUONtrigHitsMapTrg(pattern);
     aodTrack->SetMUONtrigHitsMapTrk(esdMuTrack->GetHitsPatternInTrigChTrk());
     aodTrack->SetMuonClusterMap(esdMuTrack->GetMuonClusterMap());
@@ -447,6 +448,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     aodTrack->SetHitsPatternInTrigCh(esdMuGlobalTrack->GetHitsPatternInTrigCh());
     UInt_t pattern = esdMuGlobalTrack->GetHitsPatternInTrigCh();
     AliESDMuonTrack::AddEffInfo(pattern, 0, esdMuGlobalTrack->GetLoCircuit(), (AliESDMuonTrack::EAliTriggerChPatternFlag)0);
+//    esdMuGlobalTrack->AddTrigDevSignInfo(pattern);
     aodTrack->SetMUONtrigHitsMapTrg(pattern);
     aodTrack->SetMUONtrigHitsMapTrk(esdMuGlobalTrack->GetHitsPatternInTrigChTrk());
     aodTrack->SetMuonClusterMap(esdMuGlobalTrack->GetMuonClusterMap());

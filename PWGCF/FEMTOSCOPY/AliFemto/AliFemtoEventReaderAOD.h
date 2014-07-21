@@ -67,9 +67,8 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetCentralityFlattening(Bool_t flat);
 
  protected:
-  virtual void CopyAODtoFemtoEvent(AliFemtoEvent *tEvent);
-  virtual void CopyAODtoFemtoTrack( AliAODTrack *tAodTrack,
-				    AliFemtoTrack *tFemtoTrack
+  virtual AliFemtoEvent* CopyAODtoFemtoEvent();
+  virtual AliFemtoTrack* CopyAODtoFemtoTrack( AliAODTrack *tAodTrack
 				    //				    AliPWG2AODTrack *tPWG2AODTrack
 				    );
   virtual AliFemtoV0* CopyAODtoFemtoV0(AliAODv0 *tAODv0);

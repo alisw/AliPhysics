@@ -1,21 +1,7 @@
 AliFourPion *AddTaskFourPion(
-				 Bool_t LEGO=kTRUE, 
-				 Bool_t MCcase=kFALSE, 
-				 Bool_t PbPbcase=kTRUE, 
-				 Bool_t GenerateSignal=kFALSE, 
-				 Bool_t TabulatePairs=kFALSE,
-				 Bool_t LinearInterpolate=kTRUE,
+			         Bool_t TabulatePairs=kFALSE,
 				 Int_t CentBinLowLimit=0, 
 				 Int_t CentBinHighLimit=1,
-				 Int_t RMax=11,
-				 Float_t fcSq=0.7,
-				 UInt_t FilterBit=7,
-				 Float_t MaxChi2NDF=10,
-				 Int_t MinTPCncls=0,
-				 Float_t MinSepPairEta=0.02,
-				 Float_t MinSepPairPhi=0.045,
-				 Float_t SigmaCutTPC=2.0,
-				 Float_t SigmaCutTOF=2.0,
 				 TString StWeightName="alien:///alice/cern.ch/user/d/dgangadh/WeightFile_FourPion.root",
 				 TString StMomResName="alien:///alice/cern.ch/user/d/dgangadh/MomResFile_FourPion.root",
 				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_FourPion.root",
@@ -34,22 +20,28 @@ AliFourPion *AddTaskFourPion(
   // Create task
   AliFourPion *FourPionTask = new AliFourPion("FourPionTask");
   if(!FourPionTask) return NULL;
-  FourPionTask->SetLEGOCase(LEGO);
-  FourPionTask->SetMCdecision(MCcase);
-  FourPionTask->SetPbPbCase(PbPbcase);
-  FourPionTask->SetGenerateSignal(GenerateSignal);
+  FourPionTask->SetLEGOCase(kTRUE);
+  FourPionTask->SetMCdecision(kFALSE);
+  FourPionTask->SetPbPbCase(kTRUE);
+  FourPionTask->SetGenerateSignal(kFALSE);
   FourPionTask->SetTabulatePairs(TabulatePairs);
-  FourPionTask->SetInterpolationType(LinearInterpolate);
+  FourPionTask->SetInterpolationType(kFALSE);
   FourPionTask->SetCentBinRange(CentBinLowLimit, CentBinHighLimit);
-  FourPionTask->SetRMax(RMax);
-  FourPionTask->SetfcSq(fcSq);
-  FourPionTask->SetFilterBit(FilterBit);
-  FourPionTask->SetMaxChi2NDF(MaxChi2NDF);
-  FourPionTask->SetMinTPCncls(MinTPCncls);
-  FourPionTask->SetPairSeparationCutEta(MinSepPairEta);
-  FourPionTask->SetPairSeparationCutPhi(MinSepPairPhi);
-  FourPionTask->SetNsigmaTPC(SigmaCutTPC);
-  FourPionTask->SetNsigmaTOF(SigmaCutTOF);
+  FourPionTask->SetRMax(11);
+  FourPionTask->SetfcSq(0.7);
+  FourPionTask->SetFilterBit(7);
+  FourPionTask->SetMaxChi2NDF(10);
+  FourPionTask->SetMinTPCncls(0);
+  FourPionTask->SetPairSeparationCutEta(0.02);
+  FourPionTask->SetPairSeparationCutPhi(0.045);
+  FourPionTask->SetNsigmaTPC(2.0);
+  FourPionTask->SetNsigmaTOF(2.0);
+  //
+  FourPionTask->SetMixedChargeCut(kFALSE);
+  FourPionTask->SetMinPt(0.16);
+  FourPionTask->SetMaxPt(1.0);
+  FourPionTask->SetKT3transition(0.3);
+  FourPionTask->SetKT4transition(0.3);
   mgr->AddTask(FourPionTask);
 
 

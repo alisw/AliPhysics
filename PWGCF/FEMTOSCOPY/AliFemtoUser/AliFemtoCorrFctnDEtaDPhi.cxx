@@ -37,9 +37,10 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
   fDCosPtDenominator(0),
   fPhi(0),
   fEta(0),
+  fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
-  fIfCorrection(kNone),
+  fIfCorrectionHist(kNone),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
   fEtaCorrectionsNum(0),
@@ -59,6 +60,11 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
   char tTitDenD[101] = "DenDPhiDEta";
   strncat(tTitDenD,title, 100);
   fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+
+  char tTitNum[101] = "PtSumDist";
+  strncat(tTitNum,title, 100);
+  fPtSumDist = new TH1D(tTitNum,title,200,0,10);
+  fPtSumDist->Sumw2();
 
   // set up numerator
   char tTitNumDPhi[101] = "NumDPhi";
@@ -155,9 +161,10 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
   fDCosPtDenominator(0),
   fPhi(0),
   fEta(0),
+  fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
-  fIfCorrection(kNone),
+  fIfCorrectionHist(kNone),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
   fEtaCorrectionsNum(0),
@@ -219,6 +226,11 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
   else
     fEta = 0;
 
+ if (aCorrFctn.fPtSumDist)
+   fPtSumDist = new TH1D(*aCorrFctn.fPtSumDist);
+ else
+   fPtSumDist = 0;
+
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
  else 
@@ -250,6 +262,9 @@ AliFemtoCorrFctnDEtaDPhi::~AliFemtoCorrFctnDEtaDPhi(){
   // destructor
   delete fDPhiDEtaNumerator;
   delete fDPhiDEtaDenominator;
+  delete fPtSumDist;
+
+
   delete fDPhiNumerator;
   delete fDPhiDenominator;
   delete fDCosNumerator;
@@ -331,6 +346,11 @@ AliFemtoCorrFctnDEtaDPhi& AliFemtoCorrFctnDEtaDPhi::operator=(const AliFemtoCorr
   else
     fEta = 0;
 
+ if (aCorrFctn.fPtSumDist)
+   fPtSumDist = new TH1D(*aCorrFctn.fPtSumDist);
+ else
+   fPtSumDist = 0;
+
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
  else 
@@ -341,7 +361,7 @@ AliFemtoCorrFctnDEtaDPhi& AliFemtoCorrFctnDEtaDPhi::operator=(const AliFemtoCorr
  else 
    fYtYtDenominator = 0;
 
- fIfCorrection = kNone;
+ fIfCorrectionHist = kNone;
 
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
@@ -418,6 +438,7 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
    double pt1 = TMath::Hypot(px1, py1);
    double pt2 = TMath::Hypot(px2, py2);
 //   double ptmin = pt1>pt2 ? pt2 : pt1;
+  fPtSumDist->Fill(pt1+pt2);
 
 //   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
 //     sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
@@ -440,13 +461,13 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
   double yt2 = TMath::Log(sqrt(1+(pt2/PionMass)*(pt2/PionMass))+(pt2/PionMass));
   fYtYtNumerator->Fill(yt1,yt2);
 
-  if(fIfCorrection)
+  if(fIfCorrectionHist)
     {
-      if(fIfCorrection == kPt){
+      if(fIfCorrectionHist == kPt){
 	Double_t val[] = {pt1,pt2,dphi,deta};
 	fPtCorrectionsNum->Fill(val);
       }
-      if(fIfCorrection == kEta){
+      if(fIfCorrectionHist == kEta){
 	Double_t val[] = {eta1,eta2,dphi,deta};
 	fEtaCorrectionsNum->Fill(val);
       }
@@ -506,13 +527,13 @@ void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
     double yt2 = TMath::Log(sqrt(1+(pt2/PionMass)*(pt2/PionMass))+(pt2/PionMass));
     fYtYtDenominator->Fill(yt1,yt2);
 
-  if(fIfCorrection)
+  if(fIfCorrectionHist)
     {
-      if(fIfCorrection == kPt){
+      if(fIfCorrectionHist == kPt){
 	Double_t val[] = {pt1,pt2,dphi,deta};
 	fPtCorrectionsDen->Fill(val);
       }
-      if(fIfCorrection == kEta){
+      if(fIfCorrectionHist == kEta){
 	Double_t val[] = {eta1,eta2,dphi,deta};
 	fEtaCorrectionsDen->Fill(val);
       }
@@ -526,24 +547,25 @@ void AliFemtoCorrFctnDEtaDPhi::WriteHistos()
   // Write out result histograms
   fDPhiDEtaNumerator->Write();
   fDPhiDEtaDenominator->Write();
+  fPtSumDist->Write();
   /*fDPhiNumerator->Write();
   fDPhiDenominator->Write();
   fDCosNumerator->Write();
-  fDCosDenominator->Write();
+  fDCosDenominator->Write();*/
   if (fDoPtAnalysis) {
     fDPhiPtNumerator->Write();
     fDPhiPtDenominator->Write();
     fDCosPtNumerator->Write();
     fDCosPtDenominator->Write();
-    }*/
+  }
   fPhi->Write();
   fEta->Write();
   
-  if(fIfCorrection){
-    if(fIfCorrection==kPt){
+  if(fIfCorrectionHist){
+    if(fIfCorrectionHist==kPt){
     fPtCorrectionsNum->Write();
     fPtCorrectionsDen->Write();}
-    if(fIfCorrection==kEta){
+    if(fIfCorrectionHist==kEta){
     fEtaCorrectionsNum->Write();
     fEtaCorrectionsDen->Write();}
   }
@@ -556,6 +578,7 @@ TList* AliFemtoCorrFctnDEtaDPhi::GetOutputList()
 
   tOutputList->Add(fDPhiDEtaNumerator);
   tOutputList->Add(fDPhiDEtaDenominator);
+  tOutputList->Add(fPtSumDist);
   /*tOutputList->Add(fDPhiNumerator);
   tOutputList->Add(fDPhiDenominator);
   tOutputList->Add(fDCosNumerator);
@@ -571,12 +594,12 @@ TList* AliFemtoCorrFctnDEtaDPhi::GetOutputList()
   tOutputList->Add(fYtYtNumerator);
   tOutputList->Add(fYtYtDenominator);
 
-  if(fIfCorrection){
-    if(fIfCorrection==kPt){
+  if(fIfCorrectionHist){
+    if(fIfCorrectionHist==kPt){
       tOutputList->Add(fPtCorrectionsNum);
       tOutputList->Add(fPtCorrectionsDen);
     }
-    if(fIfCorrection==kEta){
+    if(fIfCorrectionHist==kEta){
       tOutputList->Add(fEtaCorrectionsNum);
       tOutputList->Add(fEtaCorrectionsDen);
     }
@@ -617,7 +640,7 @@ void AliFemtoCorrFctnDEtaDPhi::SetDoPtAnalysis(int do2d)
   
 }
 
-void AliFemtoCorrFctnDEtaDPhi::SetDoCorrections(CorrectionType doCorr)
+void AliFemtoCorrFctnDEtaDPhi::SetDo4DCorrectionHist(CorrectionType doCorr)
 {
-  fIfCorrection = doCorr;
+  fIfCorrectionHist = doCorr;
 }

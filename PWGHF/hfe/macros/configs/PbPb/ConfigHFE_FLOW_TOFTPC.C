@@ -1,6 +1,30 @@
+TF1* GetCentralityCorrection(TString listname="LHC11h"){
+  
+  TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/CentCorrMapsTPC.root";
+  
+  if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
+    Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());
+    return 0;
+  }
+  
+  TFile f(etaMap.Data());
+  if (!f.IsOpen()) return 0;
+  gROOT->cd();
+  TList *keys=f.GetListOfKeys();
+  
+  for (Int_t i=0; i<keys->GetEntries(); ++i){
+    TString kName=keys->At(i)->GetName();
+    TPRegexp reg(kName);
+    if (reg.MatchB(listname)){
+      printf("Using Eta Correction Function: %s\n",kName.Data());
+      return (TF1*)f.Get(kName.Data());
+    }
+  }
+  return 0;
+}
 TF1* GetEtaCorrection(TString listname="LHC11h"){
   
-  TString etaMap="$ALICE_ROOT/PWGDQ/dielectron/files/EtaCorrMaps.root";
+  TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
   
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
     Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());
@@ -89,8 +113,7 @@ Double_t Contamination_40_50(const Double_t *x, const Double_t *par)
 
   
 }
-
-AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,UInt_t trigger,Int_t aodfilter=-1,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kTRUE,Int_t tpcCls=110, Double_t tpcClsr=60.,Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100., Double_t dcaz=200.,  Double_t tofsig=30., Double_t *tpcdedx=NULL, Int_t vzero=1, Int_t debuglevel=0, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0)
+AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix,UInt_t trigger,Int_t aodfilter=-1,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kTRUE,Int_t tpcCls=110, Double_t tpcClsr=60.,Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100., Double_t dcaz=200.,  Double_t tofsig=30., Double_t *tpcdedx=NULL, Int_t vzero=1, Int_t debuglevel=0, Double_t etarange=80, Bool_t withetacorrection=kFALSE, Bool_t withmultcorrection=kFALSE, Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0)
 {
   //
   // HFE flow task 
@@ -122,6 +145,7 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   printf("Debug level %d\n",debuglevel);
   printf("Etarange %f\n",etarange*0.01);
   printf("TPC dE/dx Eta correction %d\n",withetacorrection);
+  printf("TPC dE/dx multiplicity correction %d\n",withmultcorrection);
   printf("Number of ITS back clusters %d\n",(Int_t)ITSclustersback);
   printf("Min TPC back %f\n",minTPCback);
   printf("Max TPC back %f\n",maxTPCback);
@@ -170,7 +194,9 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   AliAnalysisTaskFlowTPCTOFEPSP *task = new AliAnalysisTaskFlowTPCTOFEPSP(Form("HFE_%s", appendix.Data()));
   task->SelectCollisionCandidates(trigger); 
   task->SetDebugLevel(1);
-  task->GetPIDQAManager()->SetHighResolutionHistos();
+  task->GetPIDQAManager()->SetHighResolutionEtaHistos();
+  task->GetPIDQAManager()->SetMidResolutionHistos();
+  task->GetPIDQAManager()->SetFillMultiplicity();
   task->SetHFECuts(hfecuts);
   task->SetHFEBackgroundCuts(hfeBackgroundCuts);
   if(aodfilter > 0) {
@@ -206,14 +232,21 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
   if(useMC) pid->SetHasMCData(kTRUE);
   pid->AddDetector("TOF", 0);
   pid->AddDetector("TPC", 1);
-
-  if(withetacorrection) {
-    // Apply eta correction
+  
+  if(withetacorrection || withmultcorrection) {
     AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
-    TF1 *etacorrection = GetEtaCorrection();
-    if(etacorrection) tpcpid->SetEtaCorrection(etacorrection);
+    TF1 *etaCorr = GetEtaCorrection();
+    if(etaCorr && withetacorrection){
+      tpcpid->SetEtaCorrection(etaCorr);
+      printf("TPC dE/dx Eta correction %p\n",etaCorr);
+    }
+    TF1 *centCorr = GetCentralityCorrection();
+    if(centCorr && withmultcorrection){
+      tpcpid->SetCentralityCorrection(centCorr);
+      printf("TPC dE/dx multiplicity correction %p\n",centCorr);
+    }
   }
-
+ 
   task->SetPileUpCut(cutPileup);
   task->SetUseSP(scalarProduct);
   

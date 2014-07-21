@@ -82,6 +82,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fNBinsPt(200),
   fPtBinLowEdge(-0.25),
   fPtBinHighEdge(99.75),
+  fRemMatchClus(kFALSE),
+  fMinIsoClusE(0),
   fNCuts(5),
   fCuts(""),
   fESD(0),
@@ -179,6 +181,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fNBinsPt(200),
   fPtBinLowEdge(-0.25),
   fPtBinHighEdge(99.75),
+  fRemMatchClus(kFALSE),
+  fMinIsoClusE(0),
   fNCuts(5),
   fCuts(""),
   fESD(0),
@@ -330,7 +334,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fMCDirPhotonPtEtaPhiNoClus = new TH3F("hMCDirPhotonPhiEtaNoClus","p_{T}, #eta and  #phi of prompt photons with no reco clusters;p_{T};#eta;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,154,-0.77,0.77,130,1.38,3.20);
   fOutputList->Add(fMCDirPhotonPtEtaPhiNoClus);
 
-  Int_t nEt=fNBinsPt, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=100;
+  Int_t nEt=fNBinsPt*5, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=100;
   Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNoUE, nAllIsoNoUE, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt};
   fNDimensions = sizeof(bins)/sizeof(Int_t);
   const Int_t ndims =   fNDimensions;
@@ -798,10 +802,12 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
       continue;
     if(!c->IsEMCAL())
       continue;
+    if(c->E()<fMinIsoClusE)
+      continue;
     Short_t id;
     GetMaxCellEnergy( c, id);
     Double_t maxct = cells->GetCellTime(id);
-    if(TMath::Abs(maxtcl-maxct)>2.5e-9)
+    if(TMath::Abs(maxtcl-maxct)>2.5e-9 && (!fIsMc))
       continue;
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
@@ -815,6 +821,8 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     if(maxid==id)
       continue;
     Double_t matchedpt =  GetTrackMatchedPt(c->GetTrackMatchedIndex());
+    if(matchedpt>0 && fRemMatchClus)
+      continue;
     Double_t nEt = TMath::Max(Et-matchedpt, 0.0);
     if(nEt<0)
       printf("nEt=%1.1f\n",nEt);
@@ -1155,7 +1163,6 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
 
   TObjArray *clusters = fESDClusters;
   //"none", "exotic", "exo+cpv1", "exo+cpv1+time", "exo+cpv1+time+m02"),
-  TString cuts[] = {"none", "exotic", "exo+cpv1", "exo+cpv1+time", "exo+cpv1+time+m02"};
   if (!clusters){
     clusters = fAODClusters;
     if(fDebug)

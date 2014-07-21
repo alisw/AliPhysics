@@ -45,6 +45,11 @@ ClassImp(AliAnalysisEtReconstructed);
 
 AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
         AliAnalysisEt()
+	,fQATree(0)
+	,fMakeQATree(0)
+	,fClusterMultiplicity(0)
+	,fTrackMultiplicity(0)
+	,fEventID(0)
         ,fCorrections(0)
         ,fPidCut(0)
 	,nChargedHadronsMeasured(0)
@@ -121,6 +126,10 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 
 AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
 {//destructor
+  if(fMakeQATree){
+    //fQATree->Clear();
+    delete fQATree;
+  }
     delete fCorrections;
     delete fHistChargedPionEnergyDeposit; /** Energy deposited in calorimeter by charged pions */
     delete fHistProtonEnergyDeposit; /** Energy deposited in calorimeter by protons */
@@ -228,7 +237,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
   Float_t etPIDAntiProtonsNoEff = 0.0;
   Float_t etPiKPMatchedNoEff = 0.0;
   Float_t multiplicity = fEsdtrackCutsTPC->GetReferenceMultiplicity(event,kTRUE);
-
+  fTrackMultiplicity = multiplicity;
+  fEventID = event->GetPeriodNumber();//This is not the event id
 
     Float_t totalMatchedPt = 0.0;
     Float_t totalPt = 0.0;
@@ -280,6 +290,9 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
     TRefArray *caloClusters = fSelector->GetClusters();
     Int_t nCluster = caloClusters->GetEntries();
+    fClusterMultiplicity = nCluster;
+    //if we are making the QA tree and the cluster multiplicity (for PHOS) is less than expected, fill the QA tree so we know what event it was
+    if(fMakeQATree && fClusterMultiplicity < 5e-3*fTrackMultiplicity-1.5) fQATree->Fill();
 
     for (int iCluster = 0; iCluster < nCluster; iCluster++ )
     {
@@ -553,7 +566,12 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fGammaEnergyAdded = GetGammaContribution(fNeutralMultiplicity);
     fHistGammaEnergyAdded->Fill(fGammaEnergyAdded, fNeutralMultiplicity);
 
-    Double_t removedEnergy = GetChargedContribution(fNeutralMultiplicity) + GetNeutralContribution(fNeutralMultiplicity) + GetGammaContribution(fNeutralMultiplicity) + GetSecondaryContribution(fNeutralMultiplicity);
+    //Double_t removedEnergy = GetChargedContribution(cent) + GetNeutralContribution(cent) + GetGammaContribution(cent) + GetSecondaryContribution(cent);//fNeutralMultiplicity
+    Double_t removedEnergy = GetHadronContribution(cent) + GetNeutronContribution(cent) + GetKaonContribution(cent) + GetSecondaryContribution(cent);//fNeutralMultiplicity
+    //cout<<" centbin "<<cent<<" removed energy ch "<< GetHadronContribution(cent)<<" n " << GetNeutronContribution(cent) <<" kaon "<< GetKaonContribution(cent)<<" secondary "<< GetSecondaryContribution(cent);//fNeutralMultiplicity
+    //cout<<" test min et "<<fTmCorrections->GetMinEtCorrection(cent);
+    //cout<<" test neutral "<<fTmCorrections->NeutralContr(cent);
+    //cout<<" test neutron "<<fTmCorrections->NeutralContr(cent);
     fHistRemovedEnergy->Fill(removedEnergy);
     
     fTotNeutralEtAcc = fTotNeutralEt;
@@ -567,7 +585,9 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fHistTotAllRawEtEffCorr->Fill(fTotAllRawEtEffCorr,cent);
     //cout<<"fTotAllRawEtEffCorr "<<fTotAllRawEtEffCorr<<" fTotAllRawEt "<<fTotAllRawEt<<" fTotRawEtEffCorr "<<fTotRawEtEffCorr<<"("<<fTotNeutralEt<<")"<<" fTotRawEt "<<fTotRawEt<<endl;
     //cout<<"uncorr "<<uncorrEt<<" raw "<<nominalRawEt<<" tot raw "<<fTotNeutralEt;
-    fTotNeutralEt = fGeomCorrection * fEMinCorrection * (fTotNeutralEt - removedEnergy);
+    //cout<<" raw "<<fTotNeutralEt<<" removed "<<removedEnergy<<" etmin "<<GetMinEtCorrection(cent)<<" final ";
+    if(GetMinEtCorrection(cent)>0) fTotNeutralEt =  (fTotNeutralEt - removedEnergy)/GetMinEtCorrection(cent);
+    //cout<<fTotNeutralEt<<endl;
     //cout<<" tot corr "<<fTotNeutralEt<<endl;
     fTotEt = fTotChargedEt + fTotNeutralEt;
 // Fill the histograms...0
@@ -670,6 +690,9 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
 { // add some extra histograms to the ones from base class
     AliAnalysisEt::FillOutputList(list);
 
+    if(fMakeQATree){
+        list->Add(fQATree);
+    }
     list->Add(fHistChargedPionEnergyDeposit);
     list->Add(fHistProtonEnergyDeposit);
     list->Add(fHistAntiProtonEnergyDeposit);
@@ -739,6 +762,13 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
 void AliAnalysisEtReconstructed::CreateHistograms()
 { // add some extra histograms to the ones from base class
     AliAnalysisEt::CreateHistograms();
+    if(fMakeQATree){
+        fQATree = new TTree("fQATree", "fQATree");
+        fQATree->Branch("fClusterMultiplicity", &fClusterMultiplicity, "fClusterMultiplicity/I");
+        fQATree->Branch("fTrackMultiplicity", &fTrackMultiplicity, "fTrackMultiplicity/I");
+        fQATree->Branch("fEventID",&fEventID,"fEventID/I");
+        fQATree->Branch("fCentClass",&fCentClass,"fCentClass/I");
+    }
 
     Float_t scale = 1;//scale up histograms if EMCal 2011 so we have the right range
     if(fDataSet==2011   && !fHistogramNameSuffix.Contains("P")){

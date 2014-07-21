@@ -319,7 +319,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     void FullJetEnergyDensityProfile();
     void ChargedJetEnergyDensityProfile();
     
-    void DeleteJetData(Bool_t EMCalOn);
+    void DeleteJetData(Int_t delOption);
     
     // User Defined Functions
     Bool_t IsDiJetEvent();
@@ -465,6 +465,11 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         fDoTHnSparse = doTHnSparse;
     };
     
+    inline void DoJetRhoDensity(Bool_t doJetRhoDensity)
+    {
+        fDoJetRhoDensity = doJetRhoDensity;
+    }
+    
     private:
     TList *fOutput; //! Output list
     TList *flTrack; //! Track QA List
@@ -574,6 +579,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     Bool_t fDoVertexRCut;
     Bool_t fMCPartLevel;
     Bool_t fDoTHnSparse;
+    Bool_t fDoJetRhoDensity;
     
     // Protected Global Variables
     Double_t fEMCalPhiMin;

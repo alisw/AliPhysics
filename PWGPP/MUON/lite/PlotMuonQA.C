@@ -202,8 +202,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TCanvas *c1 = new TCanvas(CanvasName.Data(),CanvasName.Data());
   c1->cd();
   
-  Int_t centBinMaxLoop = kCentBinMax;
-  if ( !isHeavyIon ) centBinMaxLoop = 1;
+  Int_t nCentBin = ( isHeavyIon ) ? kCentBinMax : 1;
   TString selectionCent;
 	       
   Int_t *colorTab = new Int_t[triggersB->GetEntriesFast()];
@@ -219,7 +218,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   for ( Int_t i = 0; i < triggersB->GetEntriesFast(); i++ ) colorInd->AddAt(colorTab[i],i); 
   
   Int_t nTrig = triggersB->GetEntriesFast();
-  Int_t nCentBin = kCentBinMax;
 
   TObjArray trigNoPS(nTrig*nCentBin);
   TObjArray trigWithPS(nTrig*nCentBin);
@@ -245,7 +243,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   cout<<Form("Processing for %d triggers...",triggersB->GetEntriesFast()-1)<<endl;
     
   //loop on centrality
-  for ( Int_t iCentBin = 0; iCentBin < centBinMaxLoop; iCentBin++){
+  for ( Int_t iCentBin = 0; iCentBin < nCentBin; iCentBin++){
     selectionCent = kCentBinName[iCentBin];
 		
     //Loop on trigger (last is all triggers)
@@ -377,7 +375,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     TString currTrigName = ( (TObjString*) triggersShortName->At(i) )->GetString();
     TDirectoryFile *dirFile = new TDirectoryFile( currTrigName.Data(),currTrigName.Data(),"",(TDirectory*)rootFileOut->GetMotherDir() );
     dirTrigger->AddLast( dirFile );
-    for( Int_t j = 0; j < centBinMaxLoop; j++) {
+    for( Int_t j = 0; j < nCentBin; j++) {
       TString centName = kCentLegendNameShort[j];
       TDirectoryFile *dirFileCent = new TDirectoryFile( centName.Data(),centName.Data(),"",dirFile );
       dirCent->AddLast( dirFileCent );
@@ -510,7 +508,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TCanvas* cTrackMultB;
  	
   //loop over centrality bins
-  for ( Int_t iCentBin = 0; iCentBin < centBinMaxLoop; iCentBin++){
+  for ( Int_t iCentBin = 0; iCentBin < nCentBin; iCentBin++){
     if ( isHeavyIon ){
       legendHeader = "for ";
       legendHeader += kCentLegendName[iCentBin];
@@ -521,7 +519,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if( iTrig == (triggersB->GetEntriesFast()-1) ) continue;
 
-      ( (TDirectoryFile*) dirCent->At( iTrig*centBinMaxLoop+iCentBin ) )->cd();
+      ( (TDirectoryFile*) dirCent->At( iTrig*nCentBin+iCentBin ) )->cd();
 
       canvasName = "RatioTrackTypes_cent";
       canvasName += iCentBin;
@@ -764,7 +762,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     else{
       res = new TGridResult();	
       
-      command = Form("find %s/*%s -name %s | xargs", alienBaseDir.Data(), run.Data(), QAFileName);
+      command = Form("find %s/*%s/ -name %s | xargs", alienBaseDir.Data(), run.Data(), QAFileName);
       TString foundFiles = gSystem->GetFromPipe(command.Data());
       TObjArray* arr = foundFiles.Tokenize(" ");
       for ( Int_t iarr=0; iarr<arr->GetEntries(); iarr++ ) {
@@ -795,7 +793,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
 	continue;
       }
       
-      if ( ! selectRuns.Contains(Form("%i",run.Atoi())) ) continue;
+      if ( run.IsDigit() && ! selectRuns.Contains(Form("%i",run.Atoi())) ) continue;
       
       // open the outfile for this run
       TFile *runFile = TFile::Open(objs->GetString());
