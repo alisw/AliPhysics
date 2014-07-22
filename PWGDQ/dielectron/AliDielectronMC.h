@@ -72,6 +72,8 @@ public:
   Int_t GetPdgFromLabel(Int_t label) const;
 
   Bool_t IsPhysicalPrimary(Int_t label) const;  // checks if a particle is physical primary
+  Bool_t IsSecondaryFromWeakDecay(Int_t label) const;
+  Bool_t IsSecondaryFromMaterial(Int_t label) const;
 
   Bool_t HaveSameMother(const AliDielectronPair *pair) const;
   
