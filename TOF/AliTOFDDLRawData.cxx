@@ -1028,6 +1028,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_
     return;
   }
   
+  Int_t psArray[1000];
   UInt_t localBuffer[1000];
   Int_t localIndex = -1;
 
@@ -1152,7 +1153,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_
 
 	  localIndex++;	fWordsPerTRM++;
 	  localBuffer[localIndex]=baseWord;
-	  //psArray[localIndex]=dummyPS;
+	  psArray[localIndex]=dummyPS;
 
 	  baseWord=0;
 
@@ -1310,7 +1311,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_
 
 	  localIndex++; fWordsPerTRM++;
 	  localBuffer[localIndex]=baseWord;
-	  //psArray[localIndex]=dummyPS;
+	  psArray[localIndex]=dummyPS;
 
 	  baseWord=0;
 
@@ -1371,7 +1372,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_
 
 	  localIndex++; fWordsPerTRM++;
 	  localBuffer[localIndex]=baseWord;
-	  //psArray[localIndex]=dummyPS;
+	  psArray[localIndex]=dummyPS;
 
 	  baseWord=0;
 
@@ -1423,7 +1424,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_
 
 	localIndex++; fWordsPerTRM++;
 	localBuffer[localIndex]=baseWord;
-	//psArray[localIndex]=2;
+	psArray[localIndex]=2;
 
 	baseWord=0;
 
@@ -1472,7 +1473,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_
 
 	localIndex++; fWordsPerTRM++;
 	localBuffer[localIndex]=baseWord;
-	//psArray[localIndex]=1;
+	psArray[localIndex]=1;
 
 	baseWord=0;
 
@@ -1528,7 +1529,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_
 
 	  localIndex++; fWordsPerTRM++;
 	  localBuffer[localIndex]=baseWord;
-	  //psArray[localIndex]=dummyPS;
+	  psArray[localIndex]=dummyPS;
 
 	  baseWord=0;
 
@@ -1554,7 +1555,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_
 	fIndex++;
 	buf[fIndex] = localBuffer[jj];
 	localBuffer[jj] = 0;
-	//psArray[jj] = -1;
+	psArray[jj] = -1;
       }
 
     }
@@ -1589,7 +1590,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_
 	    fIndex++;
 	    buf[fIndex] = localBuffer[jj];
 	    localBuffer[jj] = 0;
-	    //psArray[jj] = -1;
+	    psArray[jj] = -1;
 	}
 
 	//} // else if (maxMeasuresPerChannelInTDC>1)
