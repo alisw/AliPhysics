@@ -714,7 +714,7 @@ void AliPIDResponse::SetRecoInfo()
     fBeamTypeNum=kPP;
     fMCperiodTPC="LHC10F6A";
     if (fCurrentAliRootRev >= 62714)
-      fMCperiodTPC="LHC13B2_FIXn1";
+      fMCperiodTPC="LHC14E2";
   }
   // for the moment use LHC12b parameters up to LHC12d
   if (fRun>=177312 /*&& fRun<=179356*/) {
@@ -723,7 +723,7 @@ void AliPIDResponse::SetRecoInfo()
     fBeamTypeNum=kPP;
     fMCperiodTPC="LHC10F6A";
     if (fCurrentAliRootRev >= 62714)
-      fMCperiodTPC="LHC13B2_FIXn1";
+      fMCperiodTPC="LHC14E2";
   }
 //   if (fRun>=179357 && fRun<=183173) { fLHCperiod="LHC12C"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
 //   if (fRun>=183174 && fRun<=186345) { fLHCperiod="LHC12D"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
