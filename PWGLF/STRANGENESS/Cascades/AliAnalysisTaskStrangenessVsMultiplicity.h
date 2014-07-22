@@ -134,7 +134,6 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
     Bool_t fEvSel_IsNotPileup;              //!
     Bool_t fEvSel_IsNotPileupMV;            //!
     Bool_t fEvSel_IsNotPileupInMultBins;    //!
-    Bool_t fEvSel_HasVtxContributor;        //!
     Bool_t fEvSel_Triggered;                //!
     
     //Other Selections: more dedicated filtering to be studied!
@@ -143,6 +142,8 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
     Float_t fEvSel_VtxZ; //! the actual value
     Int_t fEvSel_nSPDPrimVertices; //! pileup vertices
     Float_t fEvSel_distZ; //! distance between largest vertices
+    Int_t fEvSel_nContributors; //!
+    Int_t fEvSel_nContributorsPileup; //! 
     
 
 //===========================================================================================
