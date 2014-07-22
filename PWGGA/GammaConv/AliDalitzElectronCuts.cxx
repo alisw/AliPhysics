@@ -316,16 +316,16 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     hTrackNFindClsPtTPCafter = new TH2F(Form("hTrack_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",60,0,1.5,kPtBins,binsPtDummy);
     fHistograms->Add(hTrackNFindClsPtTPCafter); 
     
-    hTrackPosEtabeforeDedx = new TH1F("hTrack_Pos_Eta_before_Dedx","hTrack_Pos_Eta_before_Dedx",600,-1.5,1.5);
+    hTrackPosEtabeforeDedx = new TH1F(Form("hTrack_Pos_Eta_before_Dedx %s",cutName.Data()),"hTrack_Pos_Eta_before_Dedx",600,-1.5,1.5);
     fHistograms->Add(hTrackPosEtabeforeDedx);
     
-    hTrackNegEtabeforeDedx = new TH1F("hTrack_Neg_Eta_before_Dedx","hTrack_Neg_Eta_before_Dedx",600,-1.5,1.5);
+    hTrackNegEtabeforeDedx = new TH1F(Form("hTrack_Neg_Eta_before_Dedx %s",cutName.Data()),"hTrack_Neg_Eta_before_Dedx",600,-1.5,1.5);
     fHistograms->Add(hTrackNegEtabeforeDedx);
     
-    hTrackPosEtaafterDedx  = new TH1F("hTrack_Pos_Eta_after_Dedx","hTrack_Pos_Eta_after_Dedx",600,-1.5,1.5);
+    hTrackPosEtaafterDedx  = new TH1F(Form("hTrack_Pos_Eta_after_Dedx %s",cutName.Data()),"hTrack_Pos_Eta_after_Dedx",600,-1.5,1.5);
     fHistograms->Add(hTrackPosEtaafterDedx);
     
-    hTrackNegEtaafterDedx  = new TH1F("hTrack_Neg_Eta_afterDedx","hTrack_Neg_Eta_after_Dedx",600,-1.5,1.5);
+    hTrackNegEtaafterDedx  = new TH1F(Form("hTrack_Neg_Eta_afterDedx %s",cutName.Data()),"hTrack_Neg_Eta_after_Dedx",600,-1.5,1.5);
     fHistograms->Add(hTrackNegEtaafterDedx);
     
     

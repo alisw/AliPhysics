@@ -455,7 +455,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
       
 
 
-      TString cutName( Form("%s_%s_%s",photonCutArray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
+      //TString cutName( Form("%s_%s_%s",photonCutArray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
 
 
        analysisElecCuts[i] = new AliDalitzElectronCuts();
@@ -465,7 +465,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
             return 0;
        }
        ElecCutList->Add(analysisElecCuts[i]);
-       analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName); 
+       analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,ElecCutarray[i].Data()); 
        
 
    }
