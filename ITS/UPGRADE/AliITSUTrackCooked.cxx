@@ -42,6 +42,15 @@ AliKalmanTrack()
     SetNumberOfClusters(t.GetITSclusters(fIndex));
 }
 
+AliITSUTrackCooked &AliITSUTrackCooked::operator=(const AliITSUTrackCooked &o){
+    if (this != &o) {
+       AliKalmanTrack::operator=(o);
+       for (Int_t i=0; i<2*AliITSUTrackerCooked::kNLayers; i++)
+           fIndex[i]=o.fIndex[i];
+    }
+    return *this;
+}
+
 AliITSUTrackCooked::~AliITSUTrackCooked()
 {
   //--------------------------------------------------------------------
