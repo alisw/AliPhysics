@@ -773,10 +773,12 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
             lIndexSecondLargest = i;
         }
     }
-    const AliESDVertex* largestpv=lESDevent ->GetPileupVertexSPD(lIndexSecondLargest);
-    fEvSel_distZ = lPrimarySPDVtx->GetZ() - largestpv->GetZ();
     fEvSel_nContributors = lPrimaryBestESDVtx -> GetNContributors();
-    fEvSel_nContributorsPileup = largestpv -> GetNContributors();
+    if( fEvSel_nSPDPrimVertices > 0 && lIndexSecondLargest > -1){
+        const AliESDVertex* largestpv=lESDevent ->GetPileupVertexSPD(lIndexSecondLargest);
+        fEvSel_distZ = lPrimarySPDVtx->GetZ() - largestpv->GetZ();
+        fEvSel_nContributorsPileup = largestpv -> GetNContributors();
+    }
     
     //First implementation of pileup from multi-vertexer (simple use of analysis utils)
     if ( !fUtils->IsPileUpMV( lESDevent ) ) fEvSel_IsNotPileupMV = kTRUE;
