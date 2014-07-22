@@ -141,6 +141,8 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
     Int_t fEvSel_nTracklets;              //!
     Int_t fEvSel_nSPDClusters;            //!
     Float_t fEvSel_VtxZ; //! the actual value
+    Int_t fEvSel_nSPDPrimVertices; //! pileup vertices
+    Float_t fEvSel_distZ; //! distance between largest vertices
     
 
 //===========================================================================================
