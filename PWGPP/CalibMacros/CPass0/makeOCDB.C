@@ -100,7 +100,10 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     Printf("\n******* Calibrating T0 *******");
     // Make  calibration of channels offset
     procesT0 = new AliT0PreprocessorOffline;
-    procesT0->Process("CalibObjects.root",runNumber, runNumber, targetStorage);
+    if(isLHC10)
+      procesT0->CalibOffsetChannels("CalibObjects.root",runNumber, runNumber, targetStorage);
+    else 
+      procesT0->Process("CalibObjects.root",runNumber, runNumber, targetStorage);
   }
 
   //TRD part
