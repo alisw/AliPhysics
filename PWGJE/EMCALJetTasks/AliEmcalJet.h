@@ -19,7 +19,12 @@ class AliEmcalJet : public AliVParticle
  public:
      enum EFlavourTag{
        kDStar = 1<<0,
-       kD0 = 1<<1
+       kD0 = 1<<1,
+       kSig1 = 1<<2,
+       kSig2 = 1<<3,
+       kBckgrd1 = 1<<4,
+       kBckgrd2 = 1<<5,
+       kBckgrd3 = 1<<6
        //.....
     }; 
  

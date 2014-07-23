@@ -46,6 +46,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fMinPt(0),
     fMaxPt(20.0),
     fMinTPCNcls(70),
+    fFillTHn(kTRUE),
     fResSP(0),
     fEta_vs_Phi_bef(0),
     fEta_vs_PhiA(0),
@@ -91,6 +92,8 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   Bool_t GetDCA(const AliAODTrack* trk, Double_t * p);
 
   void     SetEtaGap(Float_t etamin,Float_t etamax)   { fEtaGapMin = etamin; fEtaGapMax = etamax; }
+  void     SetQvecCut(Float_t qmin,Float_t qmax)      { fCutSmallQperc = qmin; fCutLargeQperc = qmax; }
+  void     SetFillTHn (Bool_t val) { fFillTHn = val; }
   
  private:
   
@@ -119,6 +122,8 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   Double_t  fMinPt;
   Double_t  fMaxPt;
   Double_t  fMinTPCNcls;
+  
+  Bool_t fFillTHn;
   
   //output object
   TProfile*     fResSP;             //! resolution
@@ -167,7 +172,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 4);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 5);
 };
 
 #endif

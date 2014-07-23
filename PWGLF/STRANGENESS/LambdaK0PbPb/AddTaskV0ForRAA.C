@@ -66,9 +66,9 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Bool_t wSDD=kFALSE
    AliAnalysisTaskV0ForRAA *task = new AliAnalysisTaskV0ForRAA(taskname);
 
    Double_t minPt=0.0;
-   task->SetESDTrackCuts(70,4,kTRUE);
-   task->SetESDTrackCutsCharged(70,4,kTRUE);
-   task->SetESDTrackCutsLowPt(70,4,kTRUE);
+   //task->SetESDTrackCuts(70,4,kTRUE);
+   //task->SetESDTrackCutsCharged(70,4,kTRUE);
+   //task->SetESDTrackCutsLowPt(70,4,kTRUE);
   
 
    //Add cuts to task
@@ -87,7 +87,7 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Bool_t wSDD=kFALSE
  
    //rapidity
    task->SetRapidityCutMother(kTRUE,0.5);
-   task->SetDoEtaOfMCDaughtersCut(kFALSE,0.8);
+   //task->SetDoEtaOfMCDaughtersCut(kFALSE,0.8);
    
    //TPC cuts
    // task->SetCutMoreNclsThanRows(kTRUE);

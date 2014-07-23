@@ -141,6 +141,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB96_MCOnly_DoubleCountingNsigma2.root");
 	else if(fileNo==7)
 	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB96_MCDCA_DoubleCountingNsigma2.root");
+	else if(fileNo==8)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB768_MCOnly_NoDoubleCounting.root");
+	else if(fileNo==9)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB768_MCDCA_NoDoubleCounting.root");
+	else if(fileNo==10)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB768_MCOnly_DoubleCounting.root");
+	else if(fileNo==11)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/1Dmap_FB768_MCDCA_DoubleCounting.root");
 
 	cout<<"Filename: "<<Form("%s",fileName)<<endl;
 
