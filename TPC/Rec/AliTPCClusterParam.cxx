@@ -1524,7 +1524,7 @@ void AliTPCClusterParam::SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, F
   // 
   if (mode==1) { 
     // mode introduced in 20.07.2014 - git describe ~ vAN-20140703-48-g3449a97 - to keep back compatibility with o
-    (*fQNormCorr)(itype*3+ipad, corrType) *= val;  // set value
+    (*fQNormCorr)(itype*3+ipad, corrType) = val;  // set value
     return;
   }
   if (itype<2) (*fQNormCorr)(itype*3+ipad, corrType) *= val;  // multiplicative correction
