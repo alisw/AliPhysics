@@ -73,6 +73,8 @@ fCutSettings(0),
 fEventplaneDist(0),
 fMCEventplaneDist(0),
 fCorrelEventplaneMCDATA(0),
+fCorrelEventplaneDefaultCorrected(0),
+fEventplaneSubtractedPercentage(0),
 // cross check for event plane resolution
 fEPDistCent(0),
 fPhiCent(0),
@@ -540,6 +542,22 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCorrelEventplaneMCDATA->GetYaxis()->SetTitle("#phi (MC event plane)");
   fCorrelEventplaneMCDATA->Sumw2();
   
+  Int_t binsCorrelPhiPhiCent[3] = { 40, 40, 10};
+  Double_t minCorrelPhiPhiCent[3] = { -2.*TMath::Pi(), -2.*TMath::Pi(), 0};
+  Double_t maxCorrelPhiPhiCent[3] = { 2.*TMath::Pi(), 2.*TMath::Pi(), 100};
+  
+  fCorrelEventplaneDefaultCorrected = new THnSparseF("fCorrelEventplaneDefaultCorrected","fCorrelEventplaneDefaultCorrected",3,binsCorrelPhiPhiCent, minCorrelPhiPhiCent, maxCorrelPhiPhiCent);
+  fCorrelEventplaneDefaultCorrected->SetBinEdges(2, fBinsCentrality);
+  fCorrelEventplaneDefaultCorrected->GetAxis(0)->SetTitle("#phi (event plane)");
+  fCorrelEventplaneDefaultCorrected->GetAxis(1)->SetTitle("#phi (corrected event plane)");
+  fCorrelEventplaneDefaultCorrected->GetAxis(2)->SetTitle("centrality");
+  fCorrelEventplaneDefaultCorrected->Sumw2();
+  
+  fEventplaneSubtractedPercentage = new TH2F("fEventplaneSubtractedPercentage","fEventplaneSubtractedPercentage",100, 0,1, fCentralityNbins-1, fBinsCentrality);
+  fEventplaneSubtractedPercentage->GetXaxis()->SetTitle("percentage of tracks, which have been subtracted during analysis");
+  fEventplaneSubtractedPercentage->GetYaxis()->SetTitle("centrality");
+  fEventplaneSubtractedPercentage->Sumw2();
+  
   // cross check for event plane resolution
   fEPDistCent = new TH2F("fEPDistCent","fEPDistCent",20, -1.*TMath::Pi(), TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
   fEPDistCent->GetXaxis()->SetTitle("#phi (#Psi_{EP})");
@@ -611,6 +629,8 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fEventplaneDist);
   fOutputList->Add(fMCEventplaneDist);
   fOutputList->Add(fCorrelEventplaneMCDATA);
+  fOutputList->Add(fCorrelEventplaneDefaultCorrected);
+  fOutputList->Add(fEventplaneSubtractedPercentage);
   
   fOutputList->Add(fEPDistCent);
   fOutputList->Add(fPhiCent);
@@ -881,6 +901,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	if(!SetRelativeCuts(eventAOD)) return;
   }
   
+  Int_t iSubtractedTracks = 0;
+  
   for(Int_t itrack = 0; itrack < eventAOD->GetNumberOfTracks(); itrack++)
 //   for(Int_t itrack = 0; itrack < nTotalNumberAcceptedTracks; itrack++)
   {
@@ -915,21 +937,28 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	if(GetEventplaneSelector().CompareTo("Q") == 0) 
 	{
 	  // subtract track contribution from eventplane
-	  Double_t dX = -10;
-	  Double_t dY = -10;
+	  Double_t dX = -1000;
+	  Double_t dY = -1000;
 	  
 	  dX = epQvector->X();
 	  dY = epQvector->Y();
-	  
-	  dX -= ep->GetQContributionX(track);
-	  dY -= ep->GetQContributionY(track);
+	  if( (dX>-1000) && (dY>-1000) ) // only subtract, if not default!
+	  {
+		dX -= ep->GetQContributionX(track);
+		dY -= ep->GetQContributionY(track);
+		iSubtractedTracks++;
+	  }
 	  TVector2 epCorrected(dX, dY);
-	  dEventplaneAngleCorrected = MoveEventplane(epCorrected.Phi());
+	  dEventplaneAngleCorrected = MoveEventplane(epCorrected.Phi()/2.); // see AlEPSelectionTask.cxx:354
 	}
 	else
 	{
 	  dEventplaneAngleCorrected = dEventplaneAngle; 
 	}
+	
+	Double_t dFillEPCorrectionCheck[] = {dEventplaneAngle, dEventplaneAngleCorrected, dCentrality};
+	fCorrelEventplaneDefaultCorrected->Fill(dFillEPCorrectionCheck);
+	
 	
 	dTrackPhiPtEtaCent[0] = RotatePhi(track->Phi(), dEventplaneAngleCorrected); 
 	
@@ -1028,6 +1057,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  fPsinPhiCent->Fill(dCentrality, TMath::Sin(2.*track->Phi()));
 	}
   } // end track loop
+  
+  Int_t iContributorsQVector = ep->GetQContributionXArray()->GetSize();
+  if(iContributorsQVector) fEventplaneSubtractedPercentage->Fill((Double_t)iSubtractedTracks/(Double_t)iContributorsQVector, dCentrality);
   
   if(bEventHasATrack) { fEventStatistics->Fill("events with tracks",1); bEventHasATrack = kFALSE; }
   
