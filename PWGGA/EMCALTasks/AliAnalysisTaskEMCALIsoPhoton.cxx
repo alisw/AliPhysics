@@ -741,9 +741,9 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02)
       isCPV = kTRUE;
     if(c->GetM02()>0.1 && c->GetM02()<0.3 && isCPV)
-      fClusEtCPVSBGISO->Fill(Et,alliso);
+      fClusEtCPVSBGISO->Fill(Et,alliso - trcore);
     if(c->GetM02()>0.5 && c->GetM02()<2.0 && isCPV)
-      fClusEtCPVSBGISO->Fill(Et,alliso);
+      fClusEtCPVSBGISO->Fill(Et,alliso - trcore);
     const Int_t ndims =   fNDimensions;
     Double_t outputValues[ndims];
     if(mcptsum<2)
