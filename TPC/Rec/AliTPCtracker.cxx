@@ -484,9 +484,9 @@ AliTracker(),
   Int_t nROCs   = 72;
   Int_t nTimeBinsAll  = par->GetMaxTBin();
   Int_t nWireSegments = 11;
-  fCrossTalkSignalArray = new TObjArray(nROCs);  // for 36 sectors 
+  fCrossTalkSignalArray = new TObjArray(nROCs*2);  //  
   fCrossTalkSignalArray->SetOwner(kTRUE);
-  for (Int_t isector=0; isector<nROCs; isector++){
+  for (Int_t isector=0; isector<2*nROCs; isector++){
     TMatrixD * crossTalkSignal = new TMatrixD(nWireSegments,nTimeBinsAll);
     for (Int_t imatrix = 0; imatrix<11; imatrix++)
       for (Int_t jmatrix = 0; jmatrix<nTimeBinsAll; jmatrix++){
@@ -1354,14 +1354,15 @@ Int_t  AliTPCtracker::LoadClusters(const TClonesArray *arr)
 Int_t  AliTPCtracker::LoadClusters()
 {
   //
-  // load clusters to the memory
+  // load clusters to the memory  
+  Int_t nROCs   = 72;
   static AliTPCClustersRow *clrow= new AliTPCClustersRow("AliTPCclusterMI");
   //
   //  TTree * tree = fClustersArray.GetTree();
   AliInfo("LoadClusters()\n");
   // reset crosstalk matrix
   //
-  for (Int_t isector=0; isector<72; isector++){  //set all ellemts of crosstalk matrix to 0
+  for (Int_t isector=0; isector<nROCs*2; isector++){  //set all ellemts of crosstalk matrix to 0
     TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
     if (crossTalkMatrix)(*crossTalkMatrix)*=0;
   }
@@ -1385,32 +1386,49 @@ Int_t  AliTPCtracker::LoadClusters()
     Int_t wireSegmentID     = fkParam->GetWireSegment(sec,row);
     Float_t nPadsPerSegment = (Float_t)(fkParam->GetNPadsPerSegment(wireSegmentID));
     TMatrixD &crossTalkSignal =  *((TMatrixD*)fCrossTalkSignalArray->At(sec));
+    TMatrixD &crossTalkSignalBelow =  *((TMatrixD*)fCrossTalkSignalArray->At(sec+nROCs));
     Int_t nCols=crossTalkSignal.GetNcols();
     Double_t missingChargeFactor= AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrectionMissingCharge();
     for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
       AliTPCclusterMI *clXtalk= static_cast<AliTPCclusterMI*>(clrow->GetArray()->At(icl));
       Transform((AliTPCclusterMI*)(clXtalk));
-
-      Int_t timeBinXtalk = clXtalk->GetTimeBin();
-      Double_t qTotXtalk = 0.;   
+      Int_t timeBinXtalk = clXtalk->GetTimeBin();      
+      Double_t rmsPadMin2=0.5*0.5+(fkParam->GetDiffT()*fkParam->GetDiffT())*(TMath::Abs((clXtalk->GetZ()-fkParam->GetZLength())))/(fkParam->GetPadPitchWidth(sec)*fkParam->GetPadPitchWidth(sec)); // minimal PRF width - 0.5 is the PRF in the pad units - we should et it from fkparam getters 
+      Double_t rmsTimeMin2=1+(fkParam->GetDiffL()*fkParam->GetDiffL())*(TMath::Abs((clXtalk->GetZ()-fkParam->GetZLength())))/(fkParam->GetZWidth()*fkParam->GetZWidth()); // minimal PRF width - 1 is the TRF in the time bin units - we should et it from fkParam getters
       Double_t rmsTime2   = clXtalk->GetSigmaZ2()/(fkParam->GetZWidth()*fkParam->GetZWidth()); 
       Double_t rmsPad2    = clXtalk->GetSigmaY2()/(fkParam->GetPadPitchWidth(sec)*fkParam->GetPadPitchWidth(sec)); 
+      if (rmsPadMin2>rmsPad2){
+	rmsPad2=rmsPadMin2;
+      }
+      if (rmsTimeMin2>rmsTime2){
+	rmsTime2=rmsTimeMin2;
+      }
 
       Double_t norm= 2.*TMath::Exp(-1.0/(2.*rmsTime2))+2.*TMath::Exp(-4.0/(2.*rmsTime2))+1.;
+      Double_t qTotXtalk = 0.;   
+      Double_t qTotXtalkMissing = 0.;   
       for (Int_t itb=timeBinXtalk-2, idelta=-2; itb<=timeBinXtalk+2; itb++,idelta++) {        
         if (itb<0 || itb>=nCols) continue;
         Double_t missingCharge=0;
 	Double_t trf= TMath::Exp(-idelta*idelta/(2.*rmsTime2));
-        if (missingChargeFactor>0) for (Int_t dpad=-2; dpad<=2; dpad++){
-	  Double_t qPad =   clXtalk->GetMax()*TMath::Exp(-dpad*dpad/(2*rmsPad2));
-          if (qPad*trf<fkParam->GetZeroSup()){
-	    missingCharge+=qPad*missingChargeFactor;
+        if (missingChargeFactor>0) {
+	  for (Int_t dpad=-2; dpad<=2; dpad++){
+	    Double_t qPad =   clXtalk->GetMax()*TMath::Exp(-dpad*dpad/(2.*rmsPad2))*trf;
+	    qPad-=2.*crossTalkSignal[wireSegmentID][itb];  // missing part due crosttalk - feedback part - factor 2 used
+	    if (TMath::Nint(qPad)<=fkParam->GetZeroSup()){
+	      missingCharge+=qPad+2.*crossTalkSignal[wireSegmentID][itb];
+	    }else{
+	      missingCharge+=2.*crossTalkSignal[wireSegmentID][itb];
+	    }
 	  }
 	}
-        qTotXtalk = (clXtalk->GetQ()+missingCharge)*trf/norm;
-        crossTalkSignal[wireSegmentID][itb]+= qTotXtalk/nPadsPerSegment; 
-      }       
+        qTotXtalk = clXtalk->GetQ()*trf/norm+missingCharge*missingChargeFactor;
+        qTotXtalkMissing = missingCharge;
+	crossTalkSignal[wireSegmentID][itb]+= qTotXtalk/nPadsPerSegment; 
+	crossTalkSignalBelow[wireSegmentID][itb]+= qTotXtalkMissing/nPadsPerSegment; 
+      }
     }
+    
     //
     AliTPCtrackerRow * tpcrow=0;
     Int_t left=0;
@@ -1433,6 +1451,34 @@ Int_t  AliTPCtracker::LoadClusters()
 	tpcrow->SetCluster2(k, *(AliTPCclusterMI*)(clrow->GetArray()->At(k)));
     }
   }
+  if (AliTPCReconstructor::StreamLevel()==1) {
+    //
+    // dump the crosstalk matrices to tree for further investigation
+    //     a.) to estimate fluctuation of pedestal in indiviula wire segments
+    //     b.) to check correlation between regions
+    //     c.) to check relative conribution of signal below threshold to crosstalk
+    for (Int_t isector=0; isector<nROCs; isector++){  //set all ellemts of crosstalk matrix to 0
+      TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
+      TMatrixD * crossTalkMatrixBelow = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs);
+      TVectorD vecAll(crossTalkMatrix->GetNrows());
+      TVectorD vecBelow(crossTalkMatrix->GetNrows());
+      //
+      for (Int_t itime=0; itime<crossTalkMatrix->GetNcols(); itime++){
+	for (Int_t iwire=0; iwire<crossTalkMatrix->GetNrows(); iwire++){
+	  vecAll[iwire]=(*crossTalkMatrix)(iwire,itime);
+	  vecBelow[iwire]=(*crossTalkMatrixBelow)(iwire,itime);
+	}
+	(*fDebugStreamer)<<"crosstalkMatrix"<<
+	  "sector="<<isector<<
+	  "itime="<<itime<<
+	  "vecAll.="<<&vecAll<<                // crosstalk charge + charge below threshold
+	  "vecBelow.="<<&vecBelow<<            // crosstalk contribution from signal below threshold
+	  "\n";
+      }
+    }
+  }
+
+
   //
   clrow->Clear("C");
   LoadOuterSectors();
