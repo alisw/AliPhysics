@@ -117,7 +117,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   (LHC10h) ? jetTask->SetExpectedSemiGoodRuns(0x0) : jetTask->SetExpectedSemiGoodRuns(new TArrayI(sizeof(semiGoodRuns)/sizeof(semiGoodRuns[0]), semiGoodRuns));
 
   // and if 10h, pass this info to the task so acceptance isn't changed
-  if(LHC10h) task->SetCollisionType(AliAnalysisTaskJetV2::kPbPb10h);
+  if(LHC10h) jetTask->SetCollisionType(AliAnalysisTaskJetV2::kPbPb10h);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
