@@ -417,10 +417,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
   
-  Float_t pt    = -100. ;
-  Float_t eta   = -100. ;
-  Float_t phi   = -100. ;
-  Float_t rad   = -100. ;
+  Float_t ptLead = -100. ;
+  Float_t pt     = -100. ;
+  Float_t eta    = -100. ;
+  Float_t phi    = -100. ;
+  Float_t rad    = -100. ;
   
   Float_t coneptsumCluster = 0;
   Float_t coneptsumTrack   = 0;
@@ -483,7 +484,9 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         eta = trackmix->Eta();
         phi = trackmix->Phi() ;
       }
-      
+
+      if( ptLead < 0 ) ptLead = pt;
+
       if( phi < 0 ) phi+=TMath::TwoPi();
       
       rad = Radius(etaC, phiC, eta, phi);
@@ -521,9 +524,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         return ;
       }
       
-      //Check if there is any particle inside cone with pt larger than  fPtThreshold
+      // // Check if there is any particle inside cone with pt larger than  fPtThreshold
+      // Check if the leading particule inside the cone has a ptLead larger than fPtThreshold
       
-      if( fDebug > 0 ) 
+      if( fDebug > 0 )
         printf("\t track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad);
       
       if(rad < fConeSize)
@@ -546,15 +550,34 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         }
         
         coneptsumTrack+=pt;
-        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
-        if(pt > fPtFraction*ptC ) nfrac++;  
-        
+
+        if( ptLead < 0 ) ptLead = pt;
+
+//        // *Before*, count particles in cone
+//        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
+//        
+//        //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
+//        if(fFracIsThresh)
+//        {
+//          if( fPtFraction*ptC < fPtThreshold )
+//          {
+//            if( pt > fPtThreshold )    nfrac++ ;
+//          }
+//          else
+//          {
+//            if( pt > fPtFraction*ptC ) nfrac++;
+//          }
+//        }
+//        else
+//        {
+//          if( pt > fPtFraction*ptC ) nfrac++;
+//        }
+
       } // Inside cone
       
       if( fDebug > 0 )  printf("\n");
       
     }// charged particle loop
-    
     
   }//Tracks
   
@@ -676,50 +699,77 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         }
         
         coneptsumCluster+=pt;
-        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
-        //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
-        if(fFracIsThresh)
-        {
-          if( fPtFraction*ptC < fPtThreshold )
-          {
-            if( pt > fPtThreshold )    nfrac++ ;
-          }
-          else 
-          {
-            if( pt > fPtFraction*ptC ) nfrac++;
-          }
-        }
-        else
-        {
-          if( pt > fPtFraction*ptC ) nfrac++;
-        }
+        
+        if( ptLead < 0 ) ptLead = pt;
+        
+//        // *Before*, count particles in cone
+//        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
+//
+//        //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
+//        if(fFracIsThresh)
+//        {
+//          if( fPtFraction*ptC < fPtThreshold )
+//          {
+//            if( pt > fPtThreshold )    nfrac++ ;
+//          }
+//          else 
+//          {
+//            if( pt > fPtFraction*ptC ) nfrac++;
+//          }
+//        }
+//        else
+//        {
+//          if( pt > fPtFraction*ptC ) nfrac++;
+//        }
         
       }//in cone
       
       if(fDebug > 0 )  printf("\n");
-      
+    
     }// neutral particle loop
     
   }//neutrals
   
-  
   //Add reference arrays to AOD when filling AODs only
-  if(bFillAOD) 
+  if(bFillAOD)
   {
     if(refclusters)	pCandidate->AddObjArray(refclusters);
     if(reftracks)	  pCandidate->AddObjArray(reftracks);
   }
   
   coneptsum = coneptsumCluster + coneptsumTrack;
+
+  // *Now*, just check the leading particle in the cone if the threshold is passed
+  if(ptLead > fPtThreshold && ptLead < fPtThresholdMax)  n = 1;
   
-  //Check isolation, depending on selected isolation criteria
+  //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
+  if(fFracIsThresh)
+  {
+    if( fPtFraction*ptC < fPtThreshold )
+    {
+      if( ptLead > fPtThreshold )    nfrac = 1 ;
+    }
+    else
+    {
+      if( ptLead > fPtFraction*ptC ) nfrac = 1;
+    }
+  }
+  else
+  {
+    if( ptLead > fPtFraction*ptC ) nfrac = 1;
+  }
+  
+  //-------------------------------------------------------------------
+  //Check isolation, depending on selected isolation criteria requested
+  
   if( fICMethod == kPtThresIC)
   {
     if( n == 0 ) isolated = kTRUE ;
   }
   else if( fICMethod == kSumPtIC )
   {
-    if( coneptsum > fSumPtThreshold && coneptsum < fSumPtThresholdMax )
+    if( coneptsum > fSumPtThreshold &&
+        coneptsum < fSumPtThresholdMax )
       isolated  =  kFALSE ;
     else
       isolated  =  kTRUE  ;
@@ -731,7 +781,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   else if( fICMethod == kSumPtFracIC )
   {
     //when the fPtFraction*ptC < fSumPtThreshold then consider the later case
- // printf("photon analysis IsDataMC() ?%i\n",IsDataMC());
+    // printf("photon analysis IsDataMC() ?%i\n",IsDataMC());
     if( fFracIsThresh )
     {
       if( fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold ) isolated  =  kTRUE ;

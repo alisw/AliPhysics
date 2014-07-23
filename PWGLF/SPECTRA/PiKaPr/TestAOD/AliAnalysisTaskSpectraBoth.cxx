@@ -205,7 +205,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  }
 	}
 	if(!fdotheMCLoopAfterEventCuts)
-  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,mcZ))return;//event selection
+  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,mcZ))
+			return;//event selection
   	//main loop on tracks
 	Int_t ntracks=0;
   	//cout<<fAOD->GetNumberOfTracks()<<endl;
@@ -245,7 +246,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
   		else
 			continue;
     		if (!fTrackCuts->IsSelected(track,kTRUE)) 
-			continue;
+			continue;	
+			
     		ntracks++;
 		if(fmakePIDQAhisto)
     			fPID->FillQAHistos(fHistMan, track, fTrackCuts);

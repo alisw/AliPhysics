@@ -26,6 +26,7 @@ class iostream;
 #include "TClonesArray.h"
 #include "TString.h"
 #include "TProfile.h"
+#include "TVector2.h"
 
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"

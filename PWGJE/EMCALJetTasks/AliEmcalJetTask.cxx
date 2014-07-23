@@ -437,7 +437,7 @@ void AliEmcalJetTask::FindJets()
 
     //do generic subtraction if requested
     if(fDoGenericSubtraction) {
-#ifdef FASTJET_CONTRIB
+#ifdef FASTJET_VERSION
       std::vector<fastjet::contrib::GenericSubtractorInfo> jetMassInfo = fjw.GetGenSubtractorInfoJetMass();
       UInt_t n = (UInt_t)jetMassInfo.size();
       if(n>ij && n>0) {
@@ -608,7 +608,7 @@ void AliEmcalJetTask::FindJets()
 
   //run constituent subtractor if requested
   if(fDoConstituentSubtraction) {
-#ifdef FASTJET_CONTRIB
+#ifdef FASTJET_VERSION
     if(!fJetsSub) AliWarning(Form("No jet branch to write to for subtracted jets. fJetsSubName: %s",fJetsSubName.Data()));
     else {
       std::vector<fastjet::PseudoJet> jets_sub;

@@ -30,11 +30,11 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
         enum fitGoodnessTest    { kChi2ROOT, kChi2Poisson, kKolmogorov, kKolmogorovTOY, kLinearFit };
-        enum collisionType      { kPbPb, kPythia };                     // collision type
+        enum collisionType      { kPbPb, kPythia, kPbPb10h, kPbPb11h }; // collision type, kPbPb = 11h, kept for backward compatibilitiy
         enum qcRecovery         { kFixedRho, kNegativeVn, kTryFit };    // how to deal with negative cn value for qcn value
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
-        enum detectorType       { kTPC, kVZEROA, kVZEROC, kVZEROComb};  // detector that was used
+        enum detectorType       { kTPC, kVZEROA, kVZEROC, kVZEROComb};  // detector that was used for event plane
         enum analysisType       { kCharged, kFull };                    // analysis type
         // constructors, destructor
                                 AliAnalysisTaskJetV2();
@@ -77,6 +77,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         }
         /* inline*/ Double_t KolmogorovTest(TH1F& histo, TF1* func) const {
             // return the probability from a Kolmogorov test
+            return .5;
             TH1F test(histo);       // stack copy of test statistic
             for(Int_t i(0); i < test.GetXaxis()->GetNbins(); i++) test.SetBinContent(i+1, func->Eval(test.GetXaxis()->GetBinCenter(1+i)));
             if(fFitGoodnessTest == kKolmogorovTOY) return histo.TH1::KolmogorovTest((&test), "X");

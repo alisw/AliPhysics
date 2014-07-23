@@ -111,6 +111,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fMcPtInConeSBG(0),
   fMcPtInConeBGnoUE(0),
   fMcPtInConeSBGnoUE(0),
+  fMcPtInConeTrBGnoUE(0),
+  fMcPtInConeTrSBGnoUE(0),
   fAllIsoEtMcGamma(0),
   fAllIsoNoUeEtMcGamma(0),
   fMCDirPhotonPtEtaPhiNoClus(0),
@@ -210,6 +212,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fMcPtInConeSBG(0),
   fMcPtInConeBGnoUE(0),
   fMcPtInConeSBGnoUE(0),
+  fMcPtInConeTrBGnoUE(0),
+  fMcPtInConeTrSBGnoUE(0),
   fAllIsoEtMcGamma(0),
   fAllIsoNoUeEtMcGamma(0),
   fMCDirPhotonPtEtaPhiNoClus(0),
@@ -323,6 +327,12 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
 
   fMcPtInConeSBGnoUE  = new TH2F("hMcPtInConeSBGnoUE","#sum_{in-cone}p_{T}^{mc-primaries} vs. ISO^{TRK+EMC} (SBG range);ISO^{TRK+EMC} (GeV);#sum_{in-cone}p_{T}^{mc-primaries}",600,-10,50,1000,0,100);
   fOutputList->Add(fMcPtInConeSBGnoUE);
+
+  fMcPtInConeTrBGnoUE = new TH2F("hMcPtInConeTrBGnoUE","#sum_{in-cone}p_{T}^{mc-primaries} vs. ISO^{TRK} (BG template);ISO^{TRK} (GeV);#sum_{in-cone}p_{T}^{mc-primaries}",600,-10,50,1000,0,100);
+  fOutputList->Add(fMcPtInConeTrBGnoUE);
+
+  fMcPtInConeTrSBGnoUE  = new TH2F("hMcPtInConeTrSBGnoUE","#sum_{in-cone}p_{T}^{mc-primaries} vs. ISO^{TRK} (SBG range);ISO^{TRK} (GeV);#sum_{in-cone}p_{T}^{mc-primaries}",600,-10,50,1000,0,100);
+  fOutputList->Add(fMcPtInConeTrSBGnoUE);
 
   fAllIsoEtMcGamma  = new TH2F("hAllIsoEtMcGammaE","ISO^{TRK+EMC} vs. E_{T}^{clus} for clusters comming from a MC prompt #gamma; E_{T}^{clus} (GeV);ISO^{TRK+EMC} (GeV);",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,600,-10,50);
   fOutputList->Add(fAllIsoEtMcGamma);
@@ -697,15 +707,17 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     if(fDebug && Et>10)
       printf("\t alliso=%1.1f, Et=%1.1f=-=-=-=-=\n",alliso,Et);
     if(c->GetM02()>0.5 && c->GetM02()<2.0){
-      fMcPtInConeBG->Fill(alliso-Et-allisoue, mcptsum);
-      fMcPtInConeBGnoUE->Fill(alliso-Et, mcptsum);
+      fMcPtInConeBG->Fill(alliso-allisoue, mcptsum);
+      fMcPtInConeBGnoUE->Fill(alliso, mcptsum);
+      fMcPtInConeTrBGnoUE->Fill(triso, mcptsum);
     }
     if(c->GetM02()>0.1 && c->GetM02()<0.3 && dr>0.03){
-      fMcPtInConeSBG->Fill(alliso-Et-allisoue, mcptsum);
-      fMcPtInConeSBGnoUE->Fill(alliso-Et, mcptsum);
+      fMcPtInConeSBG->Fill(alliso-allisoue, mcptsum);
+      fMcPtInConeSBGnoUE->Fill(alliso, mcptsum);
+      fMcPtInConeTrSBGnoUE->Fill(triso, mcptsum);
       if(fMcIdFamily.Contains((Form("%d",c->GetLabel())))){
-	fAllIsoEtMcGamma->Fill(Et, alliso-/*Et*/cecore-allisoue);
-	fAllIsoNoUeEtMcGamma->Fill(Et, alliso-/*Et*/cecore);
+	fAllIsoEtMcGamma->Fill(Et, alliso-cecore-allisoue);
+	fAllIsoNoUeEtMcGamma->Fill(Et, alliso-cecore);
       }
     }
     const Int_t ndims =   fNDimensions;
@@ -1137,14 +1149,15 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
     Float_t mcvr = TMath::Sqrt(mcp->Vx()*mcp->Vx()+ mcp->Vy()* mcp->Vy() + mcp->Vz()*mcp->Vz());
    if(mcvr>1)
       continue;
-    else {
+   /*else {
       if(fDebug)
 	printf("      >>>> mcp Rho, Vx, Vy, Vz = %1.1f,%1.1f,%1.1f,%1.1f.......\n",mcp->Rho(),mcp->Vx(), mcp->Vy(),mcp->Vz());
-    }
+    }*/
     Float_t dphi = mcp->Phi() - phiclus;
     Float_t deta = mcp->Eta() - etaclus;
-    if(fDebug)
+    /*if(fDebug)
       printf("      >>>> mcphi = %1.1f, mceta = %1.1f\n>>>> dphi = %1.1f, deta = %1.1f\n", mcp->Phi(), mcp->Eta(),dphi,deta);
+    */
     if(deta>R || dphi>R)
       continue;
     Float_t dR = TMath::Sqrt(dphi*dphi +  deta*deta);
