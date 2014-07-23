@@ -375,7 +375,7 @@ COMMAND @echo '\# list here required RPM packages for compilation' >> ${DASPECFI
 COMMAND @echo "BuildRequires: date" >> ${DASPECFILE} 
 COMMAND @echo "" >> ${DASPECFILE}
 COMMAND @echo '\# list here required RPM packages for runtime' >> ${DASPECFILE}
-COMMAND @echo "Requires: date" >> ${DASPECFILE}
+COMMAND @echo "Requires: date, daqDA-lib" >> ${DASPECFILE}
 COMMAND @echo "" >> ${DASPECFILE}    
 COMMAND @echo '\# You can specify other dependencies in the description tag below.' >> ${DASPECFILE}
 COMMAND @echo "" >> ${DASPECFILE}
