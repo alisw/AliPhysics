@@ -100,6 +100,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
      Double_t c[] = {0., 10., 30., 50., 70., 90.};
      jetTask->SetCentralityClasses(new TArrayD(sizeof(c)/sizeof(c[0]), c));
   }
+  else jetTask->SetCentralityClasses(centralities);
   // if a randomized hasn't specified use a safe default 
   if(!randomizer) jetTask->SetRandomSeed(new TRandom3(0));
 

@@ -157,6 +157,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) :
 AliAnalysisTaskJetV2::~AliAnalysisTaskJetV2()
 {
     // destructor
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(fOutputList)             {delete fOutputList;            fOutputList = 0x0;}
     if(fOutputListGood)         {delete fOutputListGood;        fOutputListGood = 0x0;}
     if(fOutputListBad)          {delete fOutputListBad;         fOutputListBad = 0x0;}
@@ -171,6 +172,7 @@ AliAnalysisTaskJetV2::~AliAnalysisTaskJetV2()
 void AliAnalysisTaskJetV2::ExecOnce()
 {
     // Init the analysis
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
     if(fAttachToEvent) {
         if(!(InputEvent()->FindListObject(fLocalRho->GetName()))) {
@@ -187,6 +189,7 @@ void AliAnalysisTaskJetV2::ExecOnce()
 Bool_t AliAnalysisTaskJetV2::Notify()
 {
     // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(fRunNumber != InputEvent()->GetRunNumber()) {
         fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
         if(fDebug > 0) printf("__FUNC__ %s > NEW RUNNUMBER DETECTED \n ", __func__);
