@@ -414,17 +414,19 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
    if(fAODIn) cent = fAODIn->GetHeader()->GetCentrality();
 
    if(evBkg)sigma=evBkg->GetSigma(1); 
-
-   if(fSubtraction==kArea) rho = evBkg->GetBackground(1);
-   if(fSubtraction==k4Area){
-     if(fExclude2Leading==kTRUE){
-     rho = evBkg->GetBackground(0);
-     sigma=evBkg->GetSigma(0);}
-
-     if(fExclude2Leading==kFALSE){
+  
+   if(fSubtraction==kArea) {rho = evBkg->GetBackground(1);
+      if(fExclude2Leading==kFALSE){
        rho=evBkg->GetBackground(3);
-       sigma=evBkg->GetSigma(3);}
+       sigma=evBkg->GetSigma(3);}}
+
+   if(fSubtraction==k4Area){
+    
+     rho = evBkg->GetBackground(0);
+     sigma=evBkg->GetSigma(0);
    }
+ 
+   
 
    if(fSubtraction==kRhoRecalc){
      meanarea=evBkg->GetMeanarea(1);
