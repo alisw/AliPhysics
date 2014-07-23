@@ -172,6 +172,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		TH2F* fHistClusterTimevsEAfterQA;			// Cluster time vs E after cluster quality cuts
 		TH2F* fHistExoticCellBeforeQA;				// Exotic cell: 1-Ecross/E cell vs Ecluster before acceptance cuts
 		TH2F* fHistExoticCellAfterQA;				// Exotic cell: 1-Ecross/E cell vs Ecluster after cluster quality cuts
+		TH1F* fHistNMatchedTracks;					// number of matched tracks
 		TH1F* fHistDistanceTrackToClusterBeforeQA;	// distance cluster to track before acceptance cuts
 		TH1F* fHistDistanceTrackToClusterAfterQA;	// distance cluster to track after cluster quality cuts
 		TH1F* fHistEnergyOfClusterBeforeQA;			// enery per cluster before acceptance cuts

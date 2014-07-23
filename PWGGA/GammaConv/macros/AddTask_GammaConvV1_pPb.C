@@ -130,13 +130,13 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		eventCutArray[ 2] = "8000012"; photonCutArray[ 2] = "012092170008260400000"; mesonCutArray[ 2] = "01624035009000"; //New STANDARD CUT |eta| < 0.6, |y| < 0.5
 		eventCutArray[ 3] = "8000012"; photonCutArray[ 3] = "002092370023220000000"; mesonCutArray[ 3] = "01621035009000";                       
 	} else if (trainConfig == 3) {
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "002092770023220000000"; mesonCutArray[ 0] = "01621035009000";                       
-		eventCutArray[ 1] = "8000011"; photonCutArray[ 1] = "002092551023220000000"; mesonCutArray[ 1] = "01621035009000";                       
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "002092770023220000000"; mesonCutArray[ 0] = "01621035009000";
+		eventCutArray[ 1] = "8000011"; photonCutArray[ 1] = "002092551023220000000"; mesonCutArray[ 1] = "01621035009000";
 		eventCutArray[ 2] = "8000011"; photonCutArray[ 2] = "002092170003220000000"; mesonCutArray[ 2] = "01621035009000"; //just tighten Psi pair
 		eventCutArray[ 3] = "8000011"; photonCutArray[ 3] = "002092170003260000000"; mesonCutArray[ 3] = "01621035009000"; //tighten Psi pair and chi2 in 2D
 	} else if (trainConfig == 4) {
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "002092770023220000000"; mesonCutArray[ 0] = "01621035009000";                       
-		eventCutArray[ 1] = "8000012"; photonCutArray[ 1] = "002092551023220000000"; mesonCutArray[ 1] = "01621035009000";                          
+		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "002092770023220000000"; mesonCutArray[ 0] = "01621035009000";
+		eventCutArray[ 1] = "8000012"; photonCutArray[ 1] = "002092551023220000000"; mesonCutArray[ 1] = "01621035009000";
 		eventCutArray[ 2] = "8000012"; photonCutArray[ 2] = "002092170003220000000"; mesonCutArray[ 2] = "01621035009000"; //just tighten Psi pair
 		eventCutArray[ 3] = "8000012"; photonCutArray[ 3] = "002092170003260000000"; mesonCutArray[ 3] = "01621035009000"; //tighten Psi pair and chi2 in 2D
 	} else if (trainConfig == 5) {	  
