@@ -1,195 +1,268 @@
 #ifndef ALIITSUTRACKERSAAUX_H
 #define ALIITSUTRACKERSAAUX_H
 
-#ifdef __DEBUG__
-#include <iostream>
-using std::ostream;
-using std::endl;
-using std::cout;
-#endif
-
 #include <vector>
 using std::vector;
+#include <algorithm>
+using std::sort;
 #include "AliExternalTrackParam.h"
+#include "AliITSUTrackCooked.h"
 #include "AliITSUAux.h"
 
-struct itsCluster {
-itsCluster():isUsed(false),x(0.f),y(0.f),z(0.f),varx(0.f),covxy(0.f),vary(0.f),phi(0.f),phiM(0.f) 
-#ifdef __DEBUG__ 
-    ,pid()
-#endif
-  {}
-itsCluster(const float &X,const float &Y, const float &Z, const float &varX, const float &covXY, const float &varY,const float &Phi, const float &PhiM) :
-  isUsed(false),x(X),y(Y),z(Z),varx(varX),covxy(covXY),vary(varY),phi(Phi),phiM(PhiM) 
-#ifdef __DEBUG__ 
-    ,pid()
-#endif
-  {}
-#ifdef __DEBUG__
-itsCluster(const float &X,const float &Y, const float &Z, const float &varX, const float &covXY, const float &varY,const float &Phi, const float &PhiM,int &Pid) :
-  isUsed(false),x(X),y(Y),z(Z),varx(varX),covxy(covXY),vary(varY),phi(Phi),phiM(PhiM),pid(Pid) {}
-#endif
-  bool isUsed;
-  float x,y,z;            // Global coordinates
-  float varx,covxy,vary;  // Local covariance matrix
-  float phi,phiM;         // phi of the cluster and phi angle of the module containing the cluster
+#include <TMath.h>
 
-#ifdef __DEBUG__
-  int pid;
-  friend ostream& operator<<(ostream& out, const itsCluster& cl) {
-    out << "pos = (" << cl.x << ", " << cl.y << ", "<< cl.z <<")"<<" phi="<<cl.phi <<endl;
-    return out;
+#include <Riostream.h>
+using std::cout;
+using std::endl;
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+template <typename T> 
+struct Comparison { //Adapted from TMath ROOT code
+  Comparison(vector<T> *d) : fData(d) {}
+
+  bool operator()(int i1, int i2) {
+    return fData->at(i1).CmpVar() < fData->at(i2).CmpVar();
   }
-#endif
+  vector<T> *fData;
 };
 
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+struct Cell {
+  
+  Cell() : Level(1),
+           Param(),
+           Points(),
+           N(0),
+           Neighbours(),
+           Label(-1){ 
+      // Inlined standard constructor
+  } ;
+
+  Cell(int i1, int i2) : Level(1),
+                         Param(),
+                         Points(),
+                         N(2),
+                         Neighbours(),
+                         Label(-1){ 
+      // Inlined standard constructor
+      Points[0] = i1;
+      Points[1] = i2;
+  } ;
+
+  Cell(int i1, int i2, int i3) : Level(1),
+                                 Param(),
+                                 Points(),
+                                 N(3),
+                                 Neighbours(),
+                                 Label(-1) {  
+				  
+      // Inlined standard constructor
+      Points[0] = i1;
+      Points[1] = i2;
+      Points[2] = i3;
+  } ;
+  
+  int Level;
+  float Param[3];
+  int Points[3];
+  int N;
+  vector<int> Neighbours;
+  int Label;
+};
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+struct SpacePoint {
+  SpacePoint(const float *xyz, const float &alpha) : XYZ(),
+                                                     Cov(),
+                                                     Phi(),
+                                                     Alpha(alpha),
+                                                     Label(),
+                                                     Used(false) 
+  {
+      XYZ[0] = xyz[0];
+      XYZ[1] = xyz[1];
+      XYZ[2] = xyz[2];
+      Cov[0]=Cov[1]=Cov[2]=99999.f;
+  };
+
+  SpacePoint(const SpacePoint &sp) : XYZ(),
+                                     Cov(),
+                                     Phi(sp.Phi),
+                                     Alpha(sp.Alpha),
+                                     Label(),
+                                     Used(sp.Used) 
+  {
+    for(int i=0; i<3; ++i) {
+      XYZ[i]=sp.XYZ[i];
+      Label[i]=sp.Label[i];
+      Cov[i]=sp.Cov[i];
+    }
+  };
+
+  float CmpVar() const { return Phi; }
+
+  float XYZ[3];
+  float Cov[3];
+  float Phi;
+  float Alpha;
+  int Label[3];
+  bool Used;
+};
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+struct Layer {
+  Layer() : Index(),
+            N(0),
+            Points() {};
+
+  int operator()(const int &i) { return Index[i]; } // Just for compatibility with old code
+  SpacePoint& operator[](const int &i) { return Points[Index[i]]; } 
+  ~Layer() { Clear(); }
+
+  void AddPoint(const float xyz[3], const float cov[3], const float &phi, const float &alpha) {
+    Index.push_back(N++);
+    Points.push_back(SpacePoint(xyz,alpha));
+    Points.back().Cov[0] = cov[0];
+    Points.back().Cov[1] = cov[1];
+    Points.back().Cov[2] = cov[2];
+    Points.back().Phi = phi;
+  }
+
+  void Sort() {
+    Comparison<SpacePoint> cmp(&Points);
+    sort(Index.begin(),Index.end(),cmp); 
+  }
+
+  void Clear() { 
+    Index.clear();
+    Points.clear();
+    N=0;
+  }
+
+  vector<int> Index;
+  int N;
+  vector<SpacePoint> Points;
+};
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 struct Road {
-  Road() : fElements(), fNElements(0) {
+
+  Road() : Elements(), N(0), Label(-1) {
     ResetElements(); 
   }
-  Road(const Road& copy) : fElements(), fNElements(copy.fNElements) {
-    for ( int i=0; i<6; ++i ) {
-      fElements[i] = copy.fElements[i];
-    }
+
+  Road(int layer, int id) : Elements(), N(1), Label(-1) {
+    ResetElements();
+    Elements[layer] = id;
+  }
+
+  Road(const Road& copy) : Elements(), N(copy.N), Label(copy.Label) {
+    for ( int i=0; i<5; ++i ) Elements[i] = copy.Elements[i];
+  }
+
+  int &operator[] (const int &i) {
+    return Elements[i];
   }
 
   void ResetElements() {
-    for ( int i=0; i<6; ++i ) {
-      fElements[i] = -1;
-    }
+    for ( int i=0; i<5; ++i ) 
+      Elements[i] = -1;   
   }
 
   void AddElement(int i, int el) {
-    fNElements++;
-    fElements[i] = el;
+    ++N;
+    Elements[i] = el;
   }
   
-  int fElements[6];
-  int fNElements;
-
-  #ifdef __DEBUG__
-  friend ostream& operator<<(ostream& out, const Road& cl) {
-    out << "Elements ("<< cl.fNElements <<"): ";
-    for ( int i=0; i<6; ++i ) out << cl.fElements[i]; 
-    return out;
-  }
-  #endif
+  int Elements[5];
+  int N;
+  int Label;
 };
 
-struct nPlets {
-nPlets() : id0(-1),id1(-1),id2(-1),level(1),tanPhi(),tanLambda(),neighbours() 
-#ifdef __DEBUG__ 
-    ,pid0()
-    ,pid1()
-    ,pid2()
-#endif
-  {}
-nPlets(int arg0,int arg1) : id0(arg0),id1(arg1),id2(-1),level(1),tanPhi(),tanLambda(),neighbours()
-#ifdef __DEBUG__ 
-    ,pid0()
-    ,pid1()
-    ,pid2()
-#endif
-  {}
-  int id0,id1,id2;
-  int level;
-  float tanPhi,tanLambda;
-  vector<int> neighbours;
-#ifdef __DEBUG__
-nPlets(int arg0,int arg1,int pd0,int pd1) : id0(arg0),id1(arg1),id2(-1),level(1),tanPhi(),tanLambda(),neighbours(),pid0(pd0),pid1(pd1),pid2(-1)  {}
-  int pid0,pid1,pid2;
-  friend ostream& operator<<(ostream& out, const nPlets& cl) {
-    out << "id = (" << cl.id0 << ", " << cl.id1 << ", "<< cl.id2 <<")"<< endl;
-    out << "pid = (" << cl.pid0 << ", " << cl.pid1 << ", "<< cl.pid2 <<")"<< endl;
-    out << "tanPhi="<< cl.tanPhi <<" tanLambda="<<cl.tanLambda << " level=" << cl.level <<endl;
-    out << "neighbours= ";
-    for( unsigned int i = 0; i< cl.neighbours.size(); ++i ) out << cl.neighbours[i];
-    out << endl;
-    return out;
-  }
-#endif
-};
+// class AliITSUTrackCA : public AliITSUTrackCooked {
+// public:
+//   AliITSUTrackCA() : AliITSUTrackCooked() {}
+//   AliITSUTrackCA(const AliITSUTrackCA &t) : AliITSUTrackCooked((AliITSUTrackCooked)t) {}
+//   AliITSUTrackCA(const AliESDtrack &t) : AliITSUTrackCooked(t) {}
+//   AliITSUTrackCA &operator=(const AliITSUTrackCooked &t);
+//   virtual ~AliITSUTrackCA();
+//   void SetChi2(Double_t chi2) { fChi2=chi2; }
+//   ClassDef(AliITSUTrackCA,1)
+// };
 
-class trackC : public AliExternalTrackParam {
- public :
-
- trackC() : AliExternalTrackParam(), 
- fChi2( 0. ), 
- fPoints(), 
- fNPoints(0), 
- fInnermostLayer(-1), 
- fOutermostLayer(-1) 
- {
-   for ( unsigned int i = 0; i < 2*AliITSUAux::kMaxLayers; ++i ) fPoints[i]=-1;
- }
-
-trackC(const trackC &copy) : AliExternalTrackParam(), 
-fChi2(copy.fChi2), 
-fPoints(),
-fNPoints(copy.fNPoints), 
-fInnermostLayer(copy.fInnermostLayer), 
-fOutermostLayer(copy.fOutermostLayer)
-{
- for ( unsigned int i = 0; i < 2*AliITSUAux::kMaxLayers; ++i ) fPoints[i]=copy.fPoints[i];
-}
-
- trackC(int points[7]) : AliExternalTrackParam(), 
- fChi2( 0. ), 
- fPoints(),
- fNPoints( 0 ), 
- fInnermostLayer( -1 ), 
- fOutermostLayer( -1 )
- {
-   bool outer=false;
-   for ( unsigned int i = 0; i < 2*AliITSUAux::kMaxLayers; ++i ) fPoints[i]=-1;
-   for ( int i=6; i--;  ) {
-     if (points[i]!=-1) {
-       if (! outer ) { 
-         outer = true;
-         fOutermostLayer = points[i];
-       }
-       fInnermostLayer = points[i];
-       ++fNPoints;
-     }
-     fPoints[i<<0x1] = points[i];
-   }
- }
-
-  #ifdef __DEBUG__
- friend ostream& operator<<(ostream& out, const trackC& cl) {
-  out << "points = (";
-    for( unsigned int i = 0; i < 2*AliITSUAux::kMaxLayers; ++i ) 
-      out << cl.fPoints[i] << " ";
-    out << "), chi2: " << cl.fChi2 <<endl;
-  const double* par = cl.GetParameter();
-    const double* cov = cl.GetCovariance();
-    out << "X: " << cl.GetX() << " Alpha: " << cl.GetAlpha() << endl;
-    out << "Param: \n";
-    for (int i=0;i<5;i++) out << par[i] << " "; out << endl;
-    out << "Covar: \n";
-    int cnt = 0;
-    for (int i=0;i<5;i++) {for (int j=i+1;j--;) out << cov[cnt++] << " "; out << endl;}
-    return out;
-  }
-#endif
-  void ResetPoints() { for(unsigned int i = 0; i < 2*AliITSUAux::kMaxLayers; ++i) fPoints[i]=-1; }
-  //
-  Double_t fChi2;
-  Int_t fPoints[2*AliITSUAux::kMaxLayers];
-  Int_t fNPoints;
-  Int_t fInnermostLayer;
-  Int_t fOutermostLayer;
-
-};
-
-struct CompDesc { //Adapted from TMath ROOT code
-CompDesc(vector<trackC> *d) : fData(d) {}
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+template<> 
+struct Comparison <AliITSUTrackCooked> {
+  Comparison(vector<AliITSUTrackCooked> *d) : fData(d) {}
 
   bool operator()(int i1, int i2) {
-    return fData->at(i1).fChi2 > fData->at(i2).fChi2;
+    return (fData->at(i1).GetChi2() < fData->at(i2).GetChi2());
   }
-
-  vector<trackC> *fData;
+  vector<AliITSUTrackCooked> *fData;
 };
+
+// //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// class Candidate : public AliKalmanTrack {
+//   public :
+
+//   Candidate() : AliKalmanTrack(), 
+//                 fChi2( 0. ), 
+//                 fPoints(), 
+//                 fNPoints(0), 
+//                 fInnermostLayer(-1), 
+//                 fOutermostLayer(-1) 
+//   {
+//     for ( unsigned int i = 0; i < 2*AliITSUAux::kMaxLayers; ++i ) fPoints[i]=-1;
+//   };
+
+//   Candidate(const Candidate &copy) : AliExternalTrackParam(), 
+//                                      fChi2(copy.fChi2), 
+//                                      fPoints(),
+//                                      fNPoints(copy.fNPoints), 
+//                                      fInnermostLayer(copy.fInnermostLayer), 
+//                                      fOutermostLayer(copy.fOutermostLayer)
+//   {
+//     for ( unsigned int i = 0; i < 2*AliITSUAux::kMaxLayers; ++i ) fPoints[i]=copy.fPoints[i];
+//   };
+
+//   Candidate(int points[7]) : AliExternalTrackParam(), 
+//                              fChi2( 0. ), 
+//                              fPoints(),
+//                              fNPoints( 0 ), 
+//                              fInnermostLayer( -1 ), 
+//                              fOutermostLayer( -1 )
+//   { 
+//     bool outer=false;
+//     ResetPoints();
+//     for ( int i=6; i>=0; --i ) {
+//       if (points[i]!=-1) {
+//         if (! outer ) { 
+//           outer = true;
+//           fOutermostLayer = points[i];
+//         }
+//         fInnermostLayer = points[i];
+//         ++fNPoints;
+//       }
+//       fPoints[i<<0x1] = points[i];
+//     }
+//   }
+
+//   int GetClusterIndex(const int &i) const {
+//     return ((fInnermostLayer+i)<<28)+fPoints[(fInnermostLayer+i)<<0x1];
+//   }
+
+//   Double_t CmpVar() const { return fChi2; }
+
+//   void ResetPoints() { for(unsigned int i = 0; i < 2*AliITSUAux::kMaxLayers; ++i) fPoints[i]=-1; }
+//   //
+//   // Double_t fChi2;
+//   // Double_t fFakeRatio;
+//   Int_t fPoints[2*AliITSUAux::kMaxLayers];
+//   // Int_t fNPoints;
+//   Int_t fLabel;
+//   Int_t fInnermostLayer;
+//   Int_t fOutermostLayer;
+
+// };
 
 #endif

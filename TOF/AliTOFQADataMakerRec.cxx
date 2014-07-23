@@ -808,11 +808,12 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   if (fIsSOC) {
     Int_t geoId[5]={-1,-1,-1,-1,-1};// pgeoId=(sm, mod, strip, padZ, padX)
     Int_t detId[5]={-1,-1,-1,-1,-1};//detID=(ddl,trm,tdc, chain,channel)
-
+    Int_t trmIndex=-1;
     for (Int_t ch = 0; ch <  fCalibData->GetSize(); ch++) {
       AliTOFGeometry::GetVolumeIndices(ch,geoId);
       AliTOFRawStream::Geant2EquipmentId(geoId,detId); 
       if ((detId[1]<0)||(detId[0]<0)) continue;
+      trmIndex=(detId[1]-3)+detId[0]*10;
 
       if ( (!(fCalibData->GetNoiseStatus(ch)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad))
       	   && (fCalibData->GetHWStatus(ch) == AliTOFChannelOnlineStatusArray::kTOFHWOk) ){

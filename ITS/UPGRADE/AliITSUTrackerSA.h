@@ -1,16 +1,6 @@
 #ifndef ALIITSUTRACKERSA_H
 #define ALIITSUTRACKERSA_H
 
-#define __DEBUG__
-#ifdef __DEBUG__
-#include <TString.h>
-#include <TCanvas.h>
-#include <TLine.h>
-#include <TPoint.h>
-#include <TMarker.h>
-#include <TText.h>
-#endif
-
 //-------------------------------------------------------------------------
 //                   The stand-alone ITSU tracker
 //     It reads AliITSUClusterPix clusters and writes the tracks to the ESD
@@ -24,6 +14,7 @@
 #include "AliITSUMatLUT.h"
 #include "AliITSUAux.h"
 #include "AliExternalTrackParam.h"
+
 class AliITSUReconstructor;
 class AliITSURecoDet;
 class AliITSURecoLayer;
@@ -46,7 +37,12 @@ public:
   Int_t RefitInward(AliESDEvent *event);
   Int_t LoadClusters(TTree *ct);
   void UnloadClusters();
-  AliCluster *GetCluster(Int_t index) const;
+  
+  inline AliCluster *GetCluster(Int_t index) const {
+    const Int_t l=(index & 0xf0000000) >> 28;
+    const Int_t c=(index & 0x0fffffff);
+    return (AliCluster*)fClustersTC[l]->At(c) ;
+  }
 
   // Possibly, other public functions
   void     Init(AliITSUReconstructor* rec);
@@ -57,30 +53,34 @@ public:
   Bool_t   GoToExitFromLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kTRUE);
   Bool_t   TransportToLayerX(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo, Double_t xStop);
   Bool_t   TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo, Double_t rLim=-1);
+  
+  void SetChi2Cut(float cut) { fChi2Cut=cut; }
+  void SetRPhiCut(float cut) { fRPhiCut=cut; }
+  void SetPhiCut(float cut) { fPhiCut=cut; }
+  void SetZCut(float cut) { fZCut=cut; }
+
+
   //
 protected:
   AliITSUTrackerSA(const AliITSUTrackerSA&);
 
-  void MakeDoublets();
+  void CellsCreation(const int &cutLevel);
+  void CellularAutomaton(AliESDEvent *ev);
   //  void MakeTriplets();
   void CandidatesTreeTraversal( vector<Road> &vec, const int &iD, const int &doubl);
-  Bool_t InitTrackParams(trackC &track);
-  void CASelection(AliESDEvent *ev);
+  Bool_t InitTrackParams(AliITSUTrackCooked &track, int points[]);
   void GlobalFit();
   void ChiSquareSelection();
-  void MergeTracks( vector<trackC> &vec, bool flags[] );
+  void MergeTracks( vector<AliITSUTrackCooked> &vec, bool flags[] );
   // Other protected functions
   // (Sorting, labeling, calculations of "roads", etc)
   static Double_t Curvature(Double_t x1,Double_t y1,Double_t x2,Double_t y2,Double_t x3,Double_t y3);
 
-#ifdef __DEBUG__
-  void PrintInfo(TString opt);
-  void DrawEvent(TString opt);
-  void DrawRoads(vector<Road> &vec);
-#endif
+
 
 private:
   AliITSUTrackerSA &operator=(const AliITSUTrackerSA &tr);
+  void SetLabel(AliITSUTrackCooked &t, Float_t wrong);
 
   // Data members
 
@@ -93,22 +93,13 @@ private:
 
 
   // Internal tracker arrays, layers, modules, etc
-  vector<itsCluster> fClusters[7];
+  Layer fLayer[7];
   TClonesArray *fClustersTC[7];
-  vector<nPlets> fDoublets[6];
-  Int_t *fIndex[7];
-  Int_t fNClusters[7];
-  Int_t fNDoublets[6];
+  vector<Cell> fCells[5];
+  Float_t fChi2Cut;
   Float_t fPhiCut;
   Float_t fRPhiCut;
   Float_t fZCut;
-
-  #ifdef __DEBUG__
-  TCanvas *fCv;
-  TMarker *fMk;
-  TLine   *fLn;
-  TText   *fTx;
-  #endif
 
   //
   static const Double_t           fgkToler;        // tracking tolerance
