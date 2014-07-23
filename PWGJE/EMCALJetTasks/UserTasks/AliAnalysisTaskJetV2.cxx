@@ -707,6 +707,7 @@ Bool_t AliAnalysisTaskJetV2::Run()
 void AliAnalysisTaskJetV2::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const 
 {
     // get the vzero event plane
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(fUseV0EventPlaneFromHeader) {    // use the vzero from the header
         Double_t a(0), b(0), c(0), d(0), e(0), f(0), g(0), h(0);
         vzero[0][0] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 2, a, b);
@@ -770,6 +771,7 @@ void AliAnalysisTaskJetV2::CalculateEventPlaneTPC(Double_t* tpc)
 void AliAnalysisTaskJetV2::CalculateEventPlaneCombinedVZERO(Double_t* comb) const
 {
     // grab the combined vzero event plane
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     Double_t a(0), b(0), c(0), d(0);
     comb[0] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 10, 2, a, b);
     comb[1] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 10, 3, c, d);
@@ -1181,7 +1183,7 @@ Bool_t AliAnalysisTaskJetV2::CorrectRho(Double_t psi2, Double_t psi3)
     if(GetParticleContainer()->GetParticlePhiMin() > lowBound) lowBound = GetParticleContainer()->GetParticlePhiMin();
     if(GetParticleContainer()->GetParticlePhiMax() < upBound) upBound = GetParticleContainer()->GetParticlePhiMax();
 
-    fHistSwap->Reset();                 // clear the histogram
+    fHistSwap->Reset(); // clear the histogram
     TH1F _tempSwap;     // on stack for quick access
     TH1F _tempSwapN;    // on stack for quick access, bookkeeping histogram
     if(fRebinSwapHistoOnTheFly) {

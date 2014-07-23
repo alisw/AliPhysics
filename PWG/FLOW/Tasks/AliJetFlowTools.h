@@ -60,6 +60,7 @@ class AliJetFlowTools {
             kBar,                       // default style for bar histogram
             kRatio,                     // default style for ratio
             kV2,                        // default style for v2
+            kDeltaPhi,                  // default for delta phi
             kEmpty };                   // default style
         // setters, interface to the class
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
@@ -138,6 +139,7 @@ class AliJetFlowTools {
         void            SetWeightFunction(TF1* w)               {fResponseMaker->SetRMMergeWeightFunction(w);}
         void            SetRMS(Bool_t r)                        {fRMS                   = r;}
         void            SetSymmRMS(Bool_t r)                    {fSymmRMS               = r; fRMS               = r;}
+        void            SetRho0(Bool_t r)                       {fRho0                  = r;}
         void            Make();
         void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
@@ -389,6 +391,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         AliAnaChargedJetResponseMaker*  fResponseMaker; // utility object
         Bool_t                  fRMS;                   // systematic method
         Bool_t                  fSymmRMS;               // symmetric systematic method
+        Bool_t                  fRho0;                  // use the result obtained with the 'classic' fixed rho
         TF1*                    fPower;                 // smoothening fit
         Bool_t                  fSaveFull;              // save all generated histograms to file
         TString                 fActiveString;          // identifier of active output
