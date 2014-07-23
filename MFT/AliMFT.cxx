@@ -63,10 +63,17 @@ AliMFT::AliMFT():
   fChargeDispersion(25.e-4),
   fSingleStepForChargeDispersion(0),
   fNStepForChargeDispersion(4),
-  fDensitySupportOverSi(0.15)
+  fDensitySupportOverSi(0.15),
+  fFileNameForUnderyingEvent(0), 
+  fFileNameForPileUpEvents(0),
+  fNPileUpEvents(0), 
+  fUnderlyingEventID(-1)
 {
 
   // default constructor
+
+  for (Int_t iPileUp=0; iPileUp<AliMFTConstants::fNMaxPileUpEvents; iPileUp++) fPileUpEventsIDs[iPileUp] = -1;
+
 
 }
 
@@ -86,8 +93,14 @@ AliMFT::AliMFT(const Char_t *name, const Char_t *title):
   fChargeDispersion(25.e-4),
   fSingleStepForChargeDispersion(0),
   fNStepForChargeDispersion(4),
-  fDensitySupportOverSi(0.15)
+  fDensitySupportOverSi(0.15),
+  fFileNameForUnderyingEvent(0), 
+  fFileNameForPileUpEvents(0),
+  fNPileUpEvents(0), 
+  fUnderlyingEventID(-1)
 {
+
+  for (Int_t iPileUp=0; iPileUp<AliMFTConstants::fNMaxPileUpEvents; iPileUp++) fPileUpEventsIDs[iPileUp] = -1;
 
   fNameGeomFile = "AliMFTGeometry.root";
 
@@ -113,8 +126,14 @@ AliMFT::AliMFT(const Char_t *name, const Char_t *title, Char_t *nameGeomFile):
   fChargeDispersion(25.e-4),
   fSingleStepForChargeDispersion(0),
   fNStepForChargeDispersion(4),
-  fDensitySupportOverSi(0.15)
+  fDensitySupportOverSi(0.15),
+  fFileNameForUnderyingEvent(0), 
+  fFileNameForPileUpEvents(0),
+  fNPileUpEvents(0), 
+  fUnderlyingEventID(-1)
 {
+
+  for (Int_t iPileUp=0; iPileUp<AliMFTConstants::fNMaxPileUpEvents; iPileUp++) fPileUpEventsIDs[iPileUp] = -1;
 
   fNameGeomFile = nameGeomFile;
 

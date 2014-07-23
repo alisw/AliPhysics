@@ -31,6 +31,7 @@
 #include "TMath.h"
 #include "AliLog.h"
 #include "TObjArray.h"
+#include "TDecompLU.h"
 
 #include "AliMFTAnalysisTools.h"
 
@@ -152,16 +153,21 @@ Double_t AliMFTAnalysisTools::GetAODMuonWeightedOffset(AliAODTrack *muon, Double
   covCoordinates(1,0) = cov(2,0);
   covCoordinates(1,1) = cov(2,2);
   
-  TMatrixD covCoordinatesInverse = covCoordinates.Invert();
+  if (TDecompLU::InvertLU(covCoordinates,covCoordinates.GetTol(),0)) {
 
-  Double_t dX = xy[0] - xv;
-  Double_t dY = xy[1] - yv;
+    TMatrixD covCoordinatesInverse = covCoordinates;
+    Double_t dX = xy[0] - xv;
+    Double_t dY = xy[1] - yv;
+    
+    Double_t weightedOffset = TMath::Sqrt(0.5*(dX*dX*covCoordinatesInverse(0,0) +
+					       dY*dY*covCoordinatesInverse(1,1) +
+					       2.*dX*dY*covCoordinatesInverse(0,1)));
+    
+    return weightedOffset;
+
+  }
   
-  Double_t weightedOffset = TMath::Sqrt(0.5*(dX*dX*covCoordinatesInverse(0,0) + 
-					     dY*dY*covCoordinatesInverse(1,1) + 
-					     2.*dX*dY*covCoordinatesInverse(0,1)));
-
-  return weightedOffset;
+  return -999;
 
 }
 
