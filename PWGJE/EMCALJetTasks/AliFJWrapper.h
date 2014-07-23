@@ -36,7 +36,7 @@ class AliFJWrapper
   Double_t                                GetJetSubtractedPt (UInt_t idx) const;
   virtual std::vector<double>             GetSubtractedJetsPts(Double_t median_pt = -1, Bool_t sorted = kFALSE);
   Bool_t                                  GetLegacyMode()            { return fLegacyMode; }
-#ifdef FASTJET_CONTRIB
+#ifdef FASTJET_VERSION
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetMass() const {return fGenSubtractorInfoJetMass;}
   const std::vector<fastjet::PseudoJet>   GetConstituentSubtrJets() const { return fConstituentSubtrJets;  }
 #endif
@@ -98,8 +98,7 @@ class AliFJWrapper
   Bool_t                                 fUseArea4Vector;     //!
 #ifdef FASTJET_VERSION
   fastjet::JetMedianBackgroundEstimator   *fBkrdEstimator;        //!
-#endif
-#ifdef FASTJET_CONTRIB
+  //from contrib package
   fastjet::contrib::GenericSubtractor     *fGenSubtractor;        //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetMass;    //!
 #endif
@@ -159,8 +158,6 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fUseArea4Vector    (kFALSE)
 #ifdef FASTJET_VERSION
   , fBkrdEstimator     (0)
-#endif
-#ifdef FASTJET_CONTRIB
   , fGenSubtractor     (0)
   , fGenSubtractorInfoJetMass ( )
 #endif
@@ -186,8 +183,6 @@ AliFJWrapper::~AliFJWrapper()
   delete fClustSeq;
 #ifdef FASTJET_VERSION
   if (fBkrdEstimator)     delete fBkrdEstimator;
-#endif
-#ifdef FASTJET_CONTRIB
   if (fGenSubtractor)     delete fGenSubtractor;
 #endif
 }
@@ -238,8 +233,6 @@ void AliFJWrapper::Clear(const Option_t */*opt*/)
   delete fClustSeq;        fClustSeq        = 0;
 #ifdef FASTJET_VERSION
   if (fBkrdEstimator)     delete fBkrdEstimator     ;  fBkrdEstimator     = 0;
-#endif
-#ifdef FASTJET_CONTRIB
   if (fGenSubtractor)     delete fGenSubtractor     ;  fGenSubtractor     = 0;
 #endif
 }
@@ -535,7 +528,7 @@ void AliFJWrapper::SubtractBackground(Double_t median_pt)
 //_________________________________________________________________________________________________
 Int_t AliFJWrapper::DoGenericSubtractionJetMass() {
   //Do generic subtraction for jet mass
-#ifdef FASTJET_CONTRIB
+#ifdef FASTJET_VERSION
   if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
   else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
 
@@ -558,7 +551,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetMass() {
 //_________________________________________________________________________________________________
 Int_t AliFJWrapper::DoConstituentSubtraction() {
   //Do constituent subtraction
-#ifdef FASTJET_CONTRIB
+#ifdef FASTJET_VERSION
   fj::contrib::ConstituentSubtractor *subtractor;
   if(fUseExternalBkg)
     subtractor     = new fj::contrib::ConstituentSubtractor(fRho,fRhom,kFALSE,kTRUE);

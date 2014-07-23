@@ -3360,7 +3360,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  fK0sMassPtPhi->Fill(massK0s,pt,lPhi);
 
 	  
-	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && isNaturalPart )
+	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && !isNaturalPart )
 	    fAssocParticles->Add( new AliMiniParticle(centrality, zv, iV0, pt, lPhi, lEta, lMCAssocNegDaug, lMCAssocPosDaug, 3) );
 	  
 
@@ -3525,7 +3525,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  fLambdaMassPtPhi->Fill(massLambda,pt,lPhi);
 
 	  
-	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && isNaturalPart )
+	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && !isNaturalPart )
 	    fAssocParticles->Add( new AliMiniParticle(centrality, zv, iV0, pt, lPhi, lEta, lMCAssocNegDaug, lMCAssocPosDaug, 4) );
 	  
 	  
@@ -3692,7 +3692,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  fAntiLambdaMassPtPhi->Fill(massAntiLambda,pt,lPhi);
 	
 	  
-	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && isNaturalPart )
+	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && !isNaturalPart )
 	    fAssocParticles->Add( new AliMiniParticle(centrality, zv, iV0, pt, lPhi, lEta, lMCAssocNegDaug, lMCAssocPosDaug, 5) );
 	  
 

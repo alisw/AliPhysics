@@ -202,6 +202,13 @@ UInt_t AliAnalysisMuonUtility::GetMUONTrigHitsMapTrg ( const AliVParticle* track
 }
 
 //________________________________________________________________________
+Int_t AliAnalysisMuonUtility::GetMuonTrigDevSign ( const AliVParticle* track )
+{
+  /// Get trigger deviation sign
+  return ( IsAODTrack(track) ) ? const_cast<AliAODTrack*>(static_cast<const AliAODTrack*>(track))->GetMuonTrigDevSign() : static_cast<const AliESDMuonTrack*>(track)->GetMuonTrigDevSign();
+}
+
+//________________________________________________________________________
 Int_t AliAnalysisMuonUtility::GetLoCircuit ( const AliVParticle* track )
 {
   /// Get local board

@@ -319,7 +319,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     void FullJetEnergyDensityProfile();
     void ChargedJetEnergyDensityProfile();
     
-    void DeleteJetData(Bool_t EMCalOn);
+    void DeleteJetData(Int_t delOption);
     
     // User Defined Functions
     Bool_t IsDiJetEvent();

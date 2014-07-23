@@ -434,12 +434,11 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
 	      imost = 10;
 	  }
 	  else if (fMostProbable == 11) {//cut on Nsigma in pT not p
-	    if (IsKaonNSigma(track->Pt(), track->NSigmaTPCK(), track->NSigmaTOFK())){
+	    if (IsKaonNSigma(track->Pt(), track->NSigmaTPCK(), track->NSigmaTOFK()))
 	      imost = 11;
-	    }
 	  }
 	  else if (fMostProbable == 12) { //cut on Nsigma in pT not p
-	    if ( IsProtonNSigma(track->Pt(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+	    if ( IsProtonNSigma(track->Pt(), track->NSigmaTPCP(), track->NSigmaTOFP()))
 	      imost = 12;
 	  }
 	  else if (fMostProbable == 13) { //cut on Nsigma in pT not p, EXCLUSIVE PID
@@ -447,14 +446,11 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
 	      imost = 13;
 	  }
 	  else if (fMostProbable == 14) { //cut on Nsigma in pT not p, EXCLUSIVE PID
-	    bool isPionNsigma = (IsPionNSigma(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) && !IsKaonNSigma(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()));
-	    if ( !isPionNsigma && IsKaonNSigma(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()))
+	    if (!IsPionNSigma(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) && IsKaonNSigma(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()))
 	      imost = 14;
 	  }
 	  else if (fMostProbable == 15) { //cut on Nsigma in pT not p, EXCLUSIVE PID
-	    bool isPionNsigma = (IsPionNSigma(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) && !IsKaonNSigma(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()));
-	    bool isKaonNsigma = (!isPionNsigma && IsKaonNSigma(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()));
-	    if (!isPionNsigma && !isKaonNsigma && IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()))
+	    if (!IsPionNSigma(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) && !IsKaonNSigma(track->Pt(), !track->NSigmaTPCK(), track->NSigmaTOFK()) && IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()))
 	      imost = 15;
 	  }
 	  //*************** Without double counting, pions ************************
@@ -470,9 +466,9 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
 	      nSigmaPIDK= TMath::Hypot(track->NSigmaTOFK(), track->NSigmaTPCK());
 	      nSigmaPIDP= TMath::Hypot(track->NSigmaTOFP(), track->NSigmaTPCP());
 	    }
-	    bool isPionNsigma = 0;
 
 	    if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
+	      bool isPionNsigma = 0;
 	      isPionNsigma = (IsPionNSigma(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi()));
 	      if(isPionNsigma) imost=16;
 	    }
@@ -491,13 +487,12 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
 	      nSigmaPIDP= TMath::Hypot(track->NSigmaTOFP(), track->NSigmaTPCP());
 	    }
 
-	    bool isKaonNsigma = 0;
 	    if(nSigmaPIDK<nSigmaPIDPi && nSigmaPIDK<nSigmaPIDP){
+	      bool isKaonNsigma = 0;
 	      isKaonNsigma = (IsKaonNSigma(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK()));
 	      if(isKaonNsigma) imost=17;
 	    }
 	  }
-
 	  else if (fMostProbable == 18) { //cut on Nsigma in pT not p,  without double counting
 	    double nSigmaPIDPi = 0, nSigmaPIDK = 0, nSigmaPIDP = 0;
 	    if(track->Pt()<0.5){
@@ -510,12 +505,12 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
 	      nSigmaPIDK= TMath::Hypot(track->NSigmaTOFK(), track->NSigmaTPCK());
 	      nSigmaPIDP= TMath::Hypot(track->NSigmaTOFP(), track->NSigmaTPCP());
 	    }
-	    bool isProtonNsigma  = 0;
-	    
+
 	    if(nSigmaPIDP<nSigmaPIDPi && nSigmaPIDP<nSigmaPIDK){
+	      bool isProtonNsigma  = 0;
 	      isProtonNsigma = (IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()));
+	      if(isProtonNsigma) imost=18;
 	    }
-	    if(isProtonNsigma) imost=18;
 	  }
 	}
 

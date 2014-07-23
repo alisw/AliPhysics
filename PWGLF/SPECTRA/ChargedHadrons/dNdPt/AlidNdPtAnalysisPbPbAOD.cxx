@@ -73,6 +73,8 @@ fCutSettings(0),
 fEventplaneDist(0),
 fMCEventplaneDist(0),
 fCorrelEventplaneMCDATA(0),
+fCorrelEventplaneDefaultCorrected(0),
+fEventplaneSubtractedPercentage(0),
 // cross check for event plane resolution
 fEPDistCent(0),
 fPhiCent(0),
@@ -540,6 +542,22 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCorrelEventplaneMCDATA->GetYaxis()->SetTitle("#phi (MC event plane)");
   fCorrelEventplaneMCDATA->Sumw2();
   
+  Int_t binsCorrelPhiPhiCent[3] = { 40, 40, 10};
+  Double_t minCorrelPhiPhiCent[3] = { -2.*TMath::Pi(), -2.*TMath::Pi(), 0};
+  Double_t maxCorrelPhiPhiCent[3] = { 2.*TMath::Pi(), 2.*TMath::Pi(), 100};
+  
+  fCorrelEventplaneDefaultCorrected = new THnSparseF("fCorrelEventplaneDefaultCorrected","fCorrelEventplaneDefaultCorrected",3,binsCorrelPhiPhiCent, minCorrelPhiPhiCent, maxCorrelPhiPhiCent);
+  fCorrelEventplaneDefaultCorrected->SetBinEdges(2, fBinsCentrality);
+  fCorrelEventplaneDefaultCorrected->GetAxis(0)->SetTitle("#phi (event plane)");
+  fCorrelEventplaneDefaultCorrected->GetAxis(1)->SetTitle("#phi (corrected event plane)");
+  fCorrelEventplaneDefaultCorrected->GetAxis(2)->SetTitle("centrality");
+  fCorrelEventplaneDefaultCorrected->Sumw2();
+  
+  fEventplaneSubtractedPercentage = new TH2F("fEventplaneSubtractedPercentage","fEventplaneSubtractedPercentage",100, 0,1, fCentralityNbins-1, fBinsCentrality);
+  fEventplaneSubtractedPercentage->GetXaxis()->SetTitle("percentage of tracks, which have been subtracted during analysis");
+  fEventplaneSubtractedPercentage->GetYaxis()->SetTitle("centrality");
+  fEventplaneSubtractedPercentage->Sumw2();
+  
   // cross check for event plane resolution
   fEPDistCent = new TH2F("fEPDistCent","fEPDistCent",20, -1.*TMath::Pi(), TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
   fEPDistCent->GetXaxis()->SetTitle("#phi (#Psi_{EP})");
@@ -611,6 +629,8 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fEventplaneDist);
   fOutputList->Add(fMCEventplaneDist);
   fOutputList->Add(fCorrelEventplaneMCDATA);
+  fOutputList->Add(fCorrelEventplaneDefaultCorrected);
+  fOutputList->Add(fEventplaneSubtractedPercentage);
   
   fOutputList->Add(fEPDistCent);
   fOutputList->Add(fPhiCent);
@@ -642,6 +662,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   //AliGenPythiaEventHeader *genPythiaHeader = NULL;
   AliEventplane *ep = NULL;
   
+  TVector2 *epQvector = NULL;
+  
   Bool_t bIsEventSelectedMB = kFALSE;
   Bool_t bIsEventSelectedSemi = kFALSE;
   Bool_t bIsEventSelectedCentral = kFALSE;
@@ -667,6 +689,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Double_t dEventZv = -100;
   Int_t iAcceptedMultiplicity = 0;
   Double_t dEventplaneAngle = -10;
+  Double_t dEventplaneAngleCorrected = -10; // event plane angle, where tracks contributing to this angle have been subtracted
   Double_t dMCEventplaneAngle = -10;
   
   fIsMonteCarlo = kFALSE;
@@ -741,10 +764,41 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   fEventStatistics->Fill("after centrality selection",1);
   
+  // start with track analysis
+//   Int_t *iIndexAcceptedTracks = new Int_t[eventAOD->GetNumberOfTracks()]; // maximum number of track indices, this array can have
+//   Int_t nTotalNumberAcceptedTracks = 0;
+//   for(Int_t i = 0; i < eventAOD->GetNumberOfTracks(); i++) { iIndexAcceptedTracks[i] = 0; }
+//   for(Int_t itrack = 0; itrack < eventAOD->GetNumberOfTracks(); itrack++) 
+//   { 
+// 	track = eventAOD->GetTrack(itrack);
+// 	if(!track) continue;
+// 	
+// 	GetDCA(track, eventAOD, dDCA);
+// 	
+// 	Double_t dDCAxyDCAzPt[5] = { dDCA[0], dDCA[1], track->Pt(), track->Eta(), track->Phi() };
+// 	
+// 	fDCAPtAll->Fill(dDCAxyDCAzPt);
+// 	
+// 	if( !(IsTrackAccepted(track, dCentrality, eventAOD->GetMagneticField())) ) continue;
+// 	
+// 	iIndexAcceptedTracks[nTotalNumberAcceptedTracks] = itrack;
+// 	nTotalNumberAcceptedTracks++;
+//   }
+  
   // get event plane Angle from AODHeader, default is Q
   ep = const_cast<AliAODEvent*>(eventAOD)->GetEventplane();
   if(ep) {
 	dEventplaneAngle = MoveEventplane(ep->GetEventplane(GetEventplaneSelector().Data(),eventAOD));
+	if(GetEventplaneSelector().CompareTo("Q") == 0) 
+	{
+	  epQvector = ep->GetQVector(); 
+	}
+  }
+  
+  if( (GetEventplaneSelector().CompareTo("Q") == 0) && !epQvector )
+  {
+	AliWarning("ERROR: epQvector not available \n");
+	return;
   }
   
   //   cout << dEventplaneAngle << endl;
@@ -847,9 +901,13 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	if(!SetRelativeCuts(eventAOD)) return;
   }
   
+  Int_t iSubtractedTracks = 0;
+  
   for(Int_t itrack = 0; itrack < eventAOD->GetNumberOfTracks(); itrack++)
+//   for(Int_t itrack = 0; itrack < nTotalNumberAcceptedTracks; itrack++)
   {
 	track = eventAOD->GetTrack(itrack);
+// 	track = eventAOD->GetTrack(iIndexAcceptedTracks[itrack]);
 	if(!track) continue;
 	
 	mcPart = NULL;
@@ -876,7 +934,33 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	dTrackZvPtEtaCent[2] = track->Eta();
 	dTrackZvPtEtaCent[3] = dCentrality;
 	
-	dTrackPhiPtEtaCent[0] = RotatePhi(track->Phi(), dEventplaneAngle); 
+	if(GetEventplaneSelector().CompareTo("Q") == 0) 
+	{
+	  // subtract track contribution from eventplane
+	  Double_t dX = -1000;
+	  Double_t dY = -1000;
+	  
+	  dX = epQvector->X();
+	  dY = epQvector->Y();
+	  if( (dX>-1000) && (dY>-1000) ) // only subtract, if not default!
+	  {
+		dX -= ep->GetQContributionX(track);
+		dY -= ep->GetQContributionY(track);
+		iSubtractedTracks++;
+	  }
+	  TVector2 epCorrected(dX, dY);
+	  dEventplaneAngleCorrected = MoveEventplane(epCorrected.Phi()/2.); // see AlEPSelectionTask.cxx:354
+	}
+	else
+	{
+	  dEventplaneAngleCorrected = dEventplaneAngle; 
+	}
+	
+	Double_t dFillEPCorrectionCheck[] = {dEventplaneAngle, dEventplaneAngleCorrected, dCentrality};
+	fCorrelEventplaneDefaultCorrected->Fill(dFillEPCorrectionCheck);
+	
+	
+	dTrackPhiPtEtaCent[0] = RotatePhi(track->Phi(), dEventplaneAngleCorrected); 
 	
 	// 	if( dTrackPhiPtEtaCent[0] < -1.0*TMath::Pi()) dTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
 	// 	else if( dTrackPhiPtEtaCent[0] > TMath::Pi()) dTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
@@ -974,6 +1058,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	}
   } // end track loop
   
+  Int_t iContributorsQVector = ep->GetQContributionXArray()->GetSize();
+  if(iContributorsQVector) fEventplaneSubtractedPercentage->Fill((Double_t)iSubtractedTracks/(Double_t)iContributorsQVector, dCentrality);
+  
   if(bEventHasATrack) { fEventStatistics->Fill("events with tracks",1); bEventHasATrack = kFALSE; }
   
   if(bEventHasATrackInRange) 
@@ -997,7 +1084,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   PostData(1, fOutputList);
   
   // delete pointers:
-  
+//   delete [] iIndexAcceptedTracks;
 }
 
 Double_t AlidNdPtAnalysisPbPbAOD::MoveEventplane(Double_t dMCEP)
