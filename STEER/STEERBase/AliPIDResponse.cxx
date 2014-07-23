@@ -779,8 +779,8 @@ void AliPIDResponse::SetRecoInfo()
   if (fCurrentFile.Contains("LHC12f1") || fCurrentFile.Contains("LHC12i3")) fMCperiodTPC="LHC12F1";
   // exception for 12c4
   if (fCurrentFile.Contains("LHC12c4")) fMCperiodTPC="LHC12C4";
-	// exception for 12d and 13d pp periods
-	if (fBeamType=="PP" && fCurrentAliRootRev >= 61605) fMCperiodTPC="LHC13D1";
+  // exception for 13d1 11d anchored prod
+  if (fLHCperiod=="LHC11D" && fCurrentFile.Contains("LHC13d1")) fMCperiodTPC="LHC13D1";
 }
 
 //______________________________________________________________________________
