@@ -950,6 +950,40 @@ Bool_t AliDielectronMC::IsPhysicalPrimary(Int_t label) const {
   return kFALSE;
 }
 
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsSecondaryFromWeakDecay(Int_t label) const {
+  //
+  // Check if the particle with label "label" is a physical secondary from weak decay according to the
+  // definition in AliStack::IsSecondaryFromWeakDecay(Int_t label)
+  //
+  if(label<0) return kFALSE;
+  if(fAnaType==kAOD) {
+    if(!fMcArray) return kFALSE;
+    return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label)))->IsSecondaryFromWeakDecay();
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return kFALSE;
+    return fStack->IsSecondaryFromWeakDecay(label);
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsSecondaryFromMaterial(Int_t label) const {
+  //
+  // Check if the particle with label "label" is a physical secondary from weak decay according to the
+  // definition in AliStack::IsSecondaryFromMaterial(Int_t label)
+  //
+  if(label<0) return kFALSE;
+  if(fAnaType==kAOD) {
+    if(!fMcArray) return kFALSE;
+    return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label)))->IsSecondaryFromMaterial();
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return kFALSE;
+    return fStack->IsSecondaryFromMaterial(label);
+  }
+  return kFALSE;
+}
+
 
 //________________________________________________________________________________
 Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const {
@@ -997,6 +1031,15 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
       // particles which are created by the interaction of final state primaries with the detector
       // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
       return (label>=GetNPrimary() && !IsPhysicalPrimary(label));
+    break;
+    case AliDielectronSignalMC::kSecondaryFromWeakDecay :          
+      // secondary particle from weak decay
+      // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
+      return (IsSecondaryFromWeakDecay(label));
+    break;
+    case AliDielectronSignalMC::kSecondaryFromMaterial :
+      // secondary particle from material
+      return (IsSecondaryFromMaterial(label));
     break;
     default :
       return kFALSE;

@@ -90,11 +90,12 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   void					  SetIOon(Bool_t IO)					{ doIOon = IO; } // set on IO in constructor (temp)
 
   // getters
-  TString		  GetLocalRhoName() const		{return fLocalRhoName; }
+  TString		          GetLocalRhoName() const		{return fLocalRhoName; }
 
   // set names of some objects
   virtual void            SetLocalRhoName(const char *ln)       { fLocalRhoName = ln; }
   virtual void            SetTracksName(const char *tn)         { fTracksName = tn; }
+  virtual void			  SetTracksNameME(const char *MEtn)     { fTracksNameME = MEtn; }
   virtual void            SetJetsName(const char *jn)           { fJetsName = jn; }
 
   // bias and cuts - setters
@@ -182,6 +183,7 @@ protected:
 
   // object names
   TString		 fTracksName;
+  TString		 fTracksNameME;
   TString		 fJetsName;
 
   // event counter
@@ -196,7 +198,6 @@ protected:
   TObjArray		    *CloneAndReduceTrackList(TObjArray* tracks);
   AliEventPoolManager   *fPoolMgr;//!  // event pool Manager object
 
-
   // PID
   AliPIDResponse	*fPIDResponse;   // PID response object
   AliTPCPIDResponse	*fTPCResponse;   // TPC pid response object
@@ -205,6 +206,7 @@ protected:
   // needed for PID, track objects
   AliESDEvent       *fESD;//!         // ESD object
   AliAODEvent	    *fAOD;//!		  // AOD object
+  AliVEvent 		*fVevent;//!   	  // Vevent object
 
   TH1F				    *fHistEventQA;//!
 

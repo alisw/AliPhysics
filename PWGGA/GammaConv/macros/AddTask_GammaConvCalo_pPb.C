@@ -194,6 +194,7 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =

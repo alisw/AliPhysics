@@ -1,4 +1,5 @@
 AliFourPion *AddTaskFourPion(
+			         Bool_t MCcase=kFALSE,
 			         Bool_t TabulatePairs=kFALSE,
 				 Int_t CentBinLowLimit=0, 
 				 Int_t CentBinHighLimit=1,
@@ -21,7 +22,7 @@ AliFourPion *AddTaskFourPion(
   AliFourPion *FourPionTask = new AliFourPion("FourPionTask");
   if(!FourPionTask) return NULL;
   FourPionTask->SetLEGOCase(kTRUE);
-  FourPionTask->SetMCdecision(kFALSE);
+  FourPionTask->SetMCdecision(MCcase);
   FourPionTask->SetPbPbCase(kTRUE);
   FourPionTask->SetGenerateSignal(kFALSE);
   FourPionTask->SetTabulatePairs(TabulatePairs);
