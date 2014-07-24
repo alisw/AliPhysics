@@ -85,7 +85,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fRemMatchClus(kFALSE),
   fMinIsoClusE(0),
   fNCuts(5),
-  fCuts(""),
+  fTrCoreRem(kTRUE),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -189,7 +189,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fRemMatchClus(kFALSE),
   fMinIsoClusE(0),
   fNCuts(5),
-  fCuts(""),
+  fTrCoreRem(kTRUE),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -738,12 +738,12 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       }
     }
     Bool_t isCPV = kFALSE;
-    if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02)
+    if(TMath::Abs(c->GetTrackDx())>0.03 || TMath::Abs(c->GetTrackDz())>0.02)
       isCPV = kTRUE;
     if(c->GetM02()>0.1 && c->GetM02()<0.3 && isCPV)
       fClusEtCPVSBGISO->Fill(Et,alliso - trcore);
     if(c->GetM02()>0.5 && c->GetM02()<2.0 && isCPV)
-      fClusEtCPVSBGISO->Fill(Et,alliso - trcore);
+      fClusEtCPVBGISO->Fill(Et,alliso - trcore);
     const Int_t ndims =   fNDimensions;
     Double_t outputValues[ndims];
     if(mcptsum<2)
@@ -907,7 +907,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetTrIso(TVector3 vec, Float_t &iso, Float_t
       fHigherPtCone = pt;
     if(R<fIsoConeR){
       totiso += track->Pt();
-      if(R<0.04)
+      if(R<0.04 && this->fTrCoreRem)
 	totcore += pt;
     }
     else{
