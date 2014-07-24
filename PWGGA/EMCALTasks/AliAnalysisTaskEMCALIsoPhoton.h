@@ -72,6 +72,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
 					    Double_t highx)     { fNBinsPt = n; fPtBinLowEdge = lowx; fPtBinHighEdge = highx; }
   void                  SetRemoveMatchClus(Bool_t b)            { fRemMatchClus       = b;       }
   void                  SetMinIsoClusE(Double_t emin)           { fMinIsoClusE        = emin;    }
+  void                  SetTrCoreRemoval(Bool_t b)              { fTrCoreRem          = b;       }
 
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
@@ -115,8 +116,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Bool_t                 fRemMatchClus;          // flag to remove completely a cluster matched from the isolation
   Double_t               fMinIsoClusE;           // minimum energy for a cluster to be counted in the iso cone
   Int_t                  fNCuts;                 // number of cuts (QA purposes)
-  TString                fCuts;                  //string to hol cuts names
-
+  Bool_t                 fTrCoreRem;             // flag to set the removal of the core in track isolation (true removes it, default)
 
   
  private:
