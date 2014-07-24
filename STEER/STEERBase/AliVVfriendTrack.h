@@ -14,8 +14,6 @@ class AliVVfriendTrack {
 public:
 
   AliVVfriendTrack(){}
-  AliVVfriendTrack(const AliVVfriendTrack &){}
-  AliVVfriendTrack& operator=(const AliVVfriendTrack& ){}
   // constructor for reinitialisation of vtable
   AliVVfriendTrack( AliVVConstructorReinitialisationFlag ){}
 

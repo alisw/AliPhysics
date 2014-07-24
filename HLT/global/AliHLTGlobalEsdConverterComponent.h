@@ -21,6 +21,7 @@
 class AliESDEvent;
 class TTree;
 struct AliHLTTracksData;
+class AliTPCclusterMI;
 
 /**
  * @class AliHLTGlobalEsdConverterComponent
@@ -103,11 +104,18 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
 
 protected:
 
+  static const Int_t fkNPartition = 36*6;           // number of patches in TPC
+
   /// the ESD
   AliESDEvent* fESD; //! transient value
 
   /// solenoid b field
   Double_t fSolenoidBz; //! transient
+
+  Bool_t fMakeFriends; // flag to create friends
+  AliTPCclusterMI   *fPartitionClusters[fkNPartition];  //! arrays of cluster data for each TPC partition
+  Int_t              fNPartitionClusters[fkNPartition]; //! number of clusters for each TPC partition
+ 
   AliHLTComponentBenchmark fBenchmark; // benchmark
 
   ClassDef(AliHLTGlobalEsdConverterComponent, 0)

@@ -157,11 +157,12 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   }
 
   if (esdInputs.Length()>0) {
+    esdInputs+=" TPC-ClusterTransformation";
     HLTInfo("Configuring inputs to global HLT ESD: %s", esdInputs.Data());
   } else {
     HLTWarning("No inputs to global HLT ESD found");
   }
-
+  
   pHandler->CreateConfiguration("GLOBAL-flat-esd-converter", "GlobalFlatEsdConverter", esdInputs.Data(), "");
   pHandler->CreateConfiguration("GLOBAL-esd-converter", "GlobalEsdConverter", esdInputs.Data(), "");
   pHandler->CreateConfiguration("GLOBAL-flat-esd-test", "GlobalFlatEsdTest", "GLOBAL-esd-converter GLOBAL-flat-esd-converter", "");
