@@ -1042,10 +1042,12 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   } //if(mc->HasMC())
 
   if(Req(kTOFPIDBit))     values[AliDielectronVarManager::kTOFPIDBit]=(particle->GetStatus()&AliESDtrack::kTOFpid? 1: 0);
+  values[AliDielectronVarManager::kLegEff]=0.0;
+  values[AliDielectronVarManager::kOneOverLegEff]=0.0;
   if(Req(kLegEff) || Req(kOneOverLegEff)) {
-	        values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
-  				values[AliDielectronVarManager::kOneOverLegEff] = (values[AliDielectronVarManager::kLegEff]>0.0 ? 1./values[AliDielectronVarManager::kLegEff] : 0.0);
-	}
+    values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
+    values[AliDielectronVarManager::kOneOverLegEff] = (values[AliDielectronVarManager::kLegEff]>0.0 ? 1./values[AliDielectronVarManager::kLegEff] : 0.0);
+  }
 
 }
 
@@ -1614,6 +1616,9 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
   Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
+  values[AliDielectronVarManager::kPairEff]=0.0;
+  values[AliDielectronVarManager::kOneOverPairEff]=0.0;
+  values[AliDielectronVarManager::kOneOverPairEffSq]=0.0;
   if (leg1 && leg2 && fgLegEffMap) {
     Fill(leg1, valuesLeg1);
     Fill(leg2, valuesLeg2);
@@ -1622,8 +1627,10 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   else if(fgPairEffMap) {
     values[AliDielectronVarManager::kPairEff] = GetPairEff(values);
   }
-  values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 1.0);
-  values[AliDielectronVarManager::kOneOverPairEffSq] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff]/values[AliDielectronVarManager::kPairEff] : 1.0);
+  if(fgLegEffMap || fgPairEffMap) {
+    values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 1.0);
+    values[AliDielectronVarManager::kOneOverPairEffSq] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff]/values[AliDielectronVarManager::kPairEff] : 1.0);
+  }
 
   if(kRndmPair) values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
 }

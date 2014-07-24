@@ -40,6 +40,7 @@
 
 #include <TClonesArray.h>
 #include <TParticle.h>
+#include <TMCProcess.h>
 
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronMC.h"
@@ -986,6 +987,27 @@ Bool_t AliDielectronMC::IsSecondaryFromMaterial(Int_t label) const {
 
 
 //________________________________________________________________________________
+Bool_t AliDielectronMC::CheckGEANTProcess(Int_t label, TMCProcess process) const {
+  //
+  //  Check the GEANT process for the particle 
+  //  NOTE: for tracks the absolute label should be passed
+  //
+  if(label<0) return kFALSE;
+  if(fAnaType==kAOD) {
+    if(!fMcArray) return kFALSE;
+    UInt_t processID = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label))->GetMCProcessCode();
+    //    printf("process: id %d --> %s \n",processID,TMCProcessName[processID]);
+    return (process==processID);
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return kFALSE;
+    AliError(Form("return of GEANT process not implemented for ESD "));
+    return kFALSE;
+  }
+  return kFALSE;
+
+}
+
+//________________________________________________________________________________
 Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const {
   //
   //  Check the source for the particle 
@@ -1110,7 +1132,10 @@ Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, 
     AliError(Form("Could not find MC particle with label %d",label));
     return kFALSE;
   }
-  
+
+  // check geant process if set
+  if(signalMC->GetCheckGEANTProcess() && !CheckGEANTProcess(label,signalMC->GetGEANTProcess())) return kFALSE;
+
   // check the leg
   if(!ComparePDG(part->PdgCode(),signalMC->GetLegPDG(branch),signalMC->GetLegPDGexclude(branch),signalMC->GetCheckBothChargesLegs(branch))) return kFALSE;
   if(!CheckParticleSource(label, signalMC->GetLegSource(branch))) return kFALSE;
@@ -1284,8 +1309,15 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   if(signalMC->GetMothersRelation()==AliDielectronSignalMC::kDifferent) {
     motherRelation = motherRelation && !HaveSameMother(pair);
   }
- 
-  return ((directTerm || crossTerm) && motherRelation);
+
+  // check geant process if set
+  Bool_t processGEANT = kTRUE;
+  if(signalMC->GetCheckGEANTProcess()) {
+    if(!CheckGEANTProcess(labelD1,signalMC->GetGEANTProcess()) &&
+       !CheckGEANTProcess(labelD2,signalMC->GetGEANTProcess())   ) processGEANT= kFALSE;
+  }
+
+  return ((directTerm || crossTerm) && motherRelation && processGEANT);
 }
 
 
