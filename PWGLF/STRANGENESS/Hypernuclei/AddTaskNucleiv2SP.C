@@ -15,7 +15,8 @@ AliAnalysisTask *AddTaskNucleiv2SP(TString name="name",Int_t ptc =1,Bool_t dcacu
   task-> SetParticle (ptc);
   task-> SetMaxPull  (pull);
   task-> SetMaxVz    (maxVz);
-
+  mgr->AddTask(task);
+  
   //================================================
   //              data containers
   //================================================
@@ -26,13 +27,12 @@ AliAnalysisTask *AddTaskNucleiv2SP(TString name="name",Int_t ptc =1,Bool_t dcacu
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
  
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clisthist", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
- 
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("treeNuclei", TTree::Class(),AliAnalysisManager::kOutputContainer, outputFileName);
   //           connect containers
   mgr->ConnectInput  (task,  0, cinput );
   mgr->ConnectOutput (task,  1, coutput1);
- 
-  mgr->AddTask(task);
- 
+  mgr->ConnectOutput (task,  2, coutput2);
+
   return task;
 }
 
