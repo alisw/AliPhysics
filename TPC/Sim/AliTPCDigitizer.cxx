@@ -628,7 +628,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
   AliTPCRecoParam *recoParam = calib->GetRecoParam(0); 
   AliDebug(1, Form(" recoParam->GetCrosstalkCorrection()  =   %f", recoParam->GetCrosstalkCorrection())); 
-  AliDebug(1,Form(" recoParam->GetUseIonTailCorrection() =  %f ", recoParam->GetUseIonTailCorrection()));
+  AliDebug(1,Form(" recoParam->GetUseIonTailCorrection() =  %d ", recoParam->GetUseIonTailCorrection()));
   Int_t nROCs = 72;
   char s[100]; 
   char ss[100];
@@ -975,12 +975,22 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
 	// 
 	qIonTail=0;
 	if (q>0 && recoParam->GetUseIonTailCorrection()){
-	  for (Int_t i=0;i<nInputs; i++) if (active[i]){
+	  for (Int_t i=0;i<nInputs; i++) if (active[i]){ 
 	    Short_t *pdigC= digarr[i]->GetDigits();
-	    for (Int_t celem=elem-1; celem>lowerElem; celem--){
-	      //for Mesut - her we substact the ion tail	
-	      Double_t qCElem=pdigC[celem];
-	      if (graphTRF->GetY()[elem-celem]<0)qIonTail+=qCElem*graphTRF->GetY()[elem-celem];
+	    for (Int_t dpad=-1; dpad<=1; dpad++){          // calculate iontail due signals from neigborhood pads	      
+	      for (Int_t celem=elem-1; celem>lowerElem; celem--){
+		Int_t celemPad=celem+dpad*nTimeBins;
+		//here we substract ion tail	
+		Double_t COG=0;
+		if (celemPad-nTimeBins>nTimeBins && celemPad+nTimeBins<nElems){   // COG calculation in respect to current pad in pad units
+		  Double_t sumAmp=pdigC[celemPad-nTimeBins]+pdigC[celemPad]+pdigC[celemPad+nTimeBins];
+		  COG=(-1.0*pdigC[celemPad-nTimeBins]+pdigC[celemPad+nTimeBins])/sumAmp;
+		}
+		// here we should get index and point of TRF corresponding to given COG position
+		TGraph *graphTRFPRF=0;///??? - Mesut to implement 
+		Double_t qCElem=pdigC[celemPad];
+		if (graphTRF->GetY()[elem-celem]<0)qIonTail+=qCElem*graphTRFPRF->GetY()[elem-celem];
+	      }
 	    }
 	  }
 	}
