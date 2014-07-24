@@ -1966,9 +1966,9 @@ void AliPhysicsSelection::DetectPassName(){
   AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!handler) return;
   TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
-  TString filePath;
+  TString filePath = handler->GetTree()->GetCurrentFile()->GetName();
   if (prodInfoData) {
-    // take filePath from UserInfo - available only from ~LHC12d period
+    // try to take filePath from UserInfo - available only from ~LHC12d period
     TString str(prodInfoData->GetTitle());
     TObjArray* tokens = str.Tokenize(";");
     for (Int_t i=0;i<=tokens->GetLast();i++) {
@@ -1980,11 +1980,7 @@ void AliPhysicsSelection::DetectPassName(){
       }
     }
     delete tokens;
-  } else {
-    // guess name from the input filename
-    // may be a problem for local analysis
-    filePath = handler->GetTree()->GetCurrentFile()->GetName();
-  }
+  } 
 
   TString passName="";
 
@@ -2001,7 +1997,7 @@ void AliPhysicsSelection::DetectPassName(){
   //
   // temporary patch for LEGO train runners
   //
-  if (!passName.Contains("pass")){ // try with "_" as a fallback (as it is the case in the test data of the LEGO train)
+  if (passName.Contains("_pass")){ // try with "_" as a fallback (as it is the case in the test data of the LEGO train) and do further tokenize
     TObjArray* tokens2 = filePath.Tokenize("_");
     for (Int_t i=0;i<=tokens2->GetLast();i++) {
       TObjString* stObj = (TObjString*) tokens2->At(i);

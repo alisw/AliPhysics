@@ -33,6 +33,7 @@ class AliEventInfo : public TObject {
   void SetEventType(UInt_t evType) { fEventType = evType; }
   void SetTriggerClasses(const char *classes) { fTriggerClasses = classes; }
   void SetTriggerMask(ULong64_t mask) { fTriggerMask = mask; }
+  void SetTriggerMaskNext50(ULong64_t mask) { fTriggerMaskNext50 = mask; }
   void SetTriggerCluster(const char *cluster) { fTriggerCluster = cluster; }
   void SetHLTDecision(const char *decision) { fHLTDecision = decision; }
 
@@ -41,6 +42,7 @@ class AliEventInfo : public TObject {
   UInt_t      GetEventType() const { return fEventType; }
   const char *GetTriggerClasses() const { return fTriggerClasses.Data(); }
   ULong64_t   GetTriggerMask() const { return fTriggerMask; }
+  ULong64_t   GetTriggerMaskNext50() const { return fTriggerMaskNext50; }
   const char *GetTriggerCluster() const { return fTriggerCluster.Data(); }
   const char *GetHLTDecision() const { return fHLTDecision.Data(); }
 
@@ -54,10 +56,11 @@ class AliEventInfo : public TObject {
   UInt_t      fEventType;      // event type as defined by DAQ (start_of_*,calibration,physics etc) (per event)
   TString     fTriggerClasses; // list of fired trigger classes (per event)
   ULong64_t   fTriggerMask;    // trigger mask as received from DAQ or CTP raw-data payload (per event)
+  ULong64_t   fTriggerMaskNext50;    // trigger mask as received from DAQ or CTP raw-data payload (per event)
   TString     fTriggerCluster; // list of detectors that have been read out (per event)
   TString     fHLTDecision;    // string describing the HLT decision (per event)
 
-  ClassDef(AliEventInfo,3)     // Event info class
+  ClassDef(AliEventInfo,4)     // Event info class
 };
 
 #endif

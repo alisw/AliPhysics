@@ -1,7 +1,10 @@
-//-------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 //               Implementation of the ITS tracker class
 //    It reads AliITSUClusterPix clusters and and fills the ESD with tracks
-//-------------------------------------------------------------------------
+//    
+//    The algorithm implemented here takes inspiration from UniCA code of FIAS
+//    group. 
+//--------------------------------------------------------------------------------
 
 #include <TBranch.h>
 #include <TMath.h>
@@ -11,7 +14,6 @@ using TMath::Sqrt;
 #include <TTree.h>
 #include <algorithm>
 using std::sort;
-
 
 // Vc library
 //#include "Vc/Vc"
@@ -35,7 +37,7 @@ using std::flush;
 ClassImp(AliITSUTrackerSA)
 
 const Double_t AliITSUTrackerSA::fgkToler =  1e-6;// tolerance for layer on-surface check
-const Double_t AliITSUTrackerSA::fgkChi2Cut =  10.f;
+const Double_t AliITSUTrackerSA::fgkChi2Cut =  600.f;
 
 //________________________________________________________________________________
 AliITSUTrackerSA::AliITSUTrackerSA(AliITSUReconstructor* rec) :
@@ -45,54 +47,31 @@ fMatLUT(0),
 fUseMatLUT(kFALSE),
 fCurrMass(0.14),
 //
-fClusters(),
 fClustersTC(),
-fDoublets(),
-fIndex(),
-fNClusters(),
-fNDoublets(),
-fPhiCut(0.05),
-fRPhiCut(0.03),
-fZCut(0.01)
-#ifdef __DEBUG__
-,fCv(0x0)
-,fMk(0x0)
-,fLn(0x0)
-,fTx(0x0)
-#endif
+fChi2Cut( fgkChi2Cut ),
+fPhiCut( 1  ),
+fRPhiCut( 1 ),
+fZCut( 1 )
 {
   //--------------------------------------------------------------------
   // This default constructor needs to be provided
   //--------------------------------------------------------------------
-  for(Int_t i=0;i<7;++i) {
-    fClusters[i].reserve(5000);
-  }
   if (rec) Init(rec);
 }
 
 //________________________________________________________________________________
-AliITSUTrackerSA::AliITSUTrackerSA(const AliITSUTrackerSA &t):
-AliTracker(t),
-fReconstructor(t.fReconstructor),
-fITS(t.fITS),
-fMatLUT(t.fMatLUT),
-fUseMatLUT(t.fUseMatLUT),
-fCurrMass(t.fCurrMass),
-//
-fClusters(),
-fClustersTC(),
-fIndex(),
-fNClusters(),
-fNDoublets(),
-fPhiCut(),
-fRPhiCut(),
-fZCut()
-#ifdef __DEBUG__
-,fCv(0x0)
-,fMk(0x0)
-,fLn(0x0)
-,fTx(0x0)
-#endif
+AliITSUTrackerSA::AliITSUTrackerSA(const AliITSUTrackerSA &t): AliTracker(t),
+                                                               fReconstructor(t.fReconstructor),
+                                                               fITS(t.fITS),
+                                                               fMatLUT(t.fMatLUT),
+                                                               fUseMatLUT(t.fUseMatLUT),
+                                                               fCurrMass(t.fCurrMass),
+  //
+                                                               fClustersTC(),
+                                                               fChi2Cut(fgkChi2Cut),
+                                                               fPhiCut(),
+                                                               fRPhiCut(),
+                                                               fZCut()
 {
   //--------------------------------------------------------------------
   // The copy constructor is protected
@@ -146,30 +125,107 @@ Int_t AliITSUTrackerSA::Clusters2Tracks(AliESDEvent *event) {
   // - Low momentum with vertex constraint;
   // - Everything else.
 
-  MakeDoublets();       // To be checked
-  //MakeTriplets();       // Are triplets really necessary? MFT does not use them.
-  CASelection(event);
+  CellsCreation(0); 
+  CellularAutomaton(event);
+  // VertexFinding();
+  // CellsCreation(1);
+  // CellularAutomaton(event);
 
   return 0;
 }
 
 //________________________________________________________________________________
-Int_t AliITSUTrackerSA::PropagateBack(AliESDEvent * /*event*/) {
+Int_t AliITSUTrackerSA::PropagateBack(AliESDEvent * event) {
   //--------------------------------------------------------------------
   // Here, we implement the Kalman smoother ?
   // The clusters must be already loaded
   //--------------------------------------------------------------------
+  Int_t n=event->GetNumberOfTracks();
+  Int_t ntrk=0;
+  Int_t ngood=0;
+  for (Int_t i=0; i<n; i++) {
+    AliESDtrack *esdTrack=event->GetTrack(i);
+
+    if ((esdTrack->GetStatus()&AliESDtrack::kITSin)==0) continue;
+
+    AliITSUTrackCooked track(*esdTrack);
+
+    track.ResetCovariance(10.); 
+
+    int points[2*AliITSUAux::kMaxLayers];
+    for (UInt_t k=0; k<2*AliITSUAux::kMaxLayers; k++) 
+      points[k]=-1;
+    Int_t nc=track.GetNumberOfClusters();
+    for (Int_t k=0; k<nc; k++) {
+      const int layer = (track.GetClusterIndex(k)&0xf0000000)>>28;
+      const int idx = (track.GetClusterIndex(k)&0x0fffffff);
+      points[layer<<1]=idx;
+    }
+
+    if (RefitTrack(&track,points,40,1)>=0) {
+
+      CookLabel(&track, 0.); //For comparison only
+      Int_t label=track.GetLabel();
+      if (label>0) ngood++;
+
+      esdTrack->UpdateTrackParams(&track,AliESDtrack::kITSout);
+      ntrk++;
+    }
+  }
+
+  Info("PropagateBack","Back propagated tracks: %d",ntrk);
+  if (ntrk)
+    Info("PropagateBack","Good tracks/back propagated: %f",Float_t(ngood)/ntrk);
 
   return 0;
 }
 
 //________________________________________________________________________________
-Int_t AliITSUTrackerSA::RefitInward(AliESDEvent * /*event*/) {
+Int_t AliITSUTrackerSA::RefitInward(AliESDEvent * event) {
   //--------------------------------------------------------------------
   // Some final refit, after the outliers get removed by the smoother ?
   // The clusters must be loaded
   //--------------------------------------------------------------------
+  Int_t n=event->GetNumberOfTracks();
+  Int_t ntrk=0;
+  Int_t ngood=0;
+  for (Int_t i=0; i<n; i++) {
+    AliESDtrack *esdTrack=event->GetTrack(i);
 
+    if ((esdTrack->GetStatus()&AliESDtrack::kITSout)==0) continue;
+
+    AliITSUTrackCooked track(*esdTrack);
+
+    track.ResetCovariance(10.); 
+
+    int points[2*AliITSUAux::kMaxLayers];
+    for (UInt_t k=0; k<2*AliITSUAux::kMaxLayers; k++) 
+      points[k]=-1;
+    Int_t nc=track.GetNumberOfClusters();
+    for (Int_t k=0; k<nc; k++) {
+      const int layer = (track.GetClusterIndex(k)&0xf0000000)>>28;
+      const int idx = (track.GetClusterIndex(k)&0x0fffffff);
+      points[layer<<1]=idx;
+    }
+
+    if (RefitTrack(&track,points,1.8,1)>=0) { //2.1,1)>=0) {
+
+      //if (!track.PropagateTo(1.8, 2.27e-3, 35.28*1.848)) continue;
+      CookLabel(&track, 0.); //For comparison only
+      Int_t label=track.GetLabel();
+      if (label>0) ngood++;
+
+      //cout << esdTrack->GetStatus() << " ";
+      esdTrack->UpdateTrackParams(&track,AliESDtrack::kITSrefit);
+      //cout << esdTrack->GetStatus() << endl;
+      ntrk++;
+    } 
+  }
+
+  Info("RefitInward","Refitted tracks: %d",ntrk);
+  if (ntrk)
+    Info("RefitInward","Good tracks/refitted: %f",Float_t(ngood)/ntrk);
+    
   return 0;
 }
 
@@ -181,37 +237,32 @@ Int_t AliITSUTrackerSA::LoadClusters(TTree *cluTree) {
   //--------------------------------------------------------------------
   fITS->LoadClusters(cluTree);
   fITS->ProcessClusters();
-
   //
   for(int iL=0; iL<7; ++iL) {
     fClustersTC[iL]=*fITS->GetLayerActive(iL)->GetClustersAddress();
-    TClonesArray *clCont=fClustersTC[iL];
-    fNClusters[iL]=clCont->GetEntriesFast();
-    Float_t phi[fNClusters[iL]];
-    fIndex[iL] = new Int_t[fNClusters[iL]];
     AliITSURecoLayer* lr = fITS->GetLayerActive(iL) ; // assign the layer which the cluster belongs to
-    for(int iC=0;iC<fNClusters[iL];++iC) {
-      const AliITSUClusterPix *cl = (AliITSUClusterPix*)clCont->At(iC);
+    for(int iC=0;iC<fClustersTC[iL]->GetEntriesFast();++iC) {
+      const AliITSUClusterPix *cl = (AliITSUClusterPix*)fClustersTC[iL]->At(iC);
       float pos[3];
       cl->GetGlobalXYZ(pos);
-      phi[iC] = pos[0]==0.f ? TMath::PiOver2() : TMath::ATan2(pos[1]-GetY(),pos[0]-GetX());
+      float phi = TMath::PiOver2(); 
+      if(Abs(pos[0])>1e-9) {
+        phi=TMath::ATan2(pos[1]-GetY(),pos[0]-GetX());
+        if(phi<0.f) phi+=TMath::TwoPi();
+      } else if(pos[1]<0.f) phi *= 3.f ;
       AliITSURecoSens* sens = lr->GetSensorFromID(cl->GetVolumeId());
-      //double x = sens->GetXTF() + clus->GetX();
-      float angle= sens->GetPhiTF();
-      #ifdef __DEBUG__
-      int label=cl->GetLabel(0);
-      //cout << "Guarda te che label" << label << endl;
-      fClusters[iL].push_back(itsCluster(pos[0],pos[1],pos[2],cl->GetSigmaY2(),cl->GetSigmaZ2(),cl->GetSigmaYZ(),phi[iC],angle,label));
-      #else
-      fClusters[iL].push_back(itsCluster(pos[0],pos[1],pos[2],cl->GetSigmaY2(),cl->GetSigmaZ2(),cl->GetSigmaYZ(),phi[iC],angle));
-      #endif
+      const float alpha = sens->GetPhiTF();
+      const float cov[3]={cl->GetSigmaZ2(),cl->GetSigmaYZ(),cl->GetSigmaY2()};
+      
+      fLayer[iL].AddPoint(pos,cov,phi,alpha);
+      for ( int i=0 ; i<3; ++i ) {
+        fLayer[iL].Points.back().Label[i] = (cl->GetLabel(i)<0) ? -1 : cl->GetLabel(i);
+      }
     }
-    TMath::Sort(fNClusters[iL],phi,fIndex[iL],kFALSE);
+  
+    fLayer[iL].Sort(); 
+
   }
-  #ifdef __DEBUG__
-  //PrintInfo("clusters");
-  DrawEvent("clusters");
-  #endif
   return 0;
 }
 
@@ -220,313 +271,267 @@ void AliITSUTrackerSA::UnloadClusters() {
   //--------------------------------------------------------------------
   // This function unloads ITSU clusters from the RAM
   //--------------------------------------------------------------------
-  for(int i=0;i<7;++i) {
-    fClusters[i].clear();
-    fNClusters[i]=0;
-    delete fIndex[i];
-  }
-  for(int i=0;i<6;++i) fDoublets[i].clear();
+  for(int i=0;i<7;++i) 
+    fLayer[i].Clear();
+  for(int i=0;i<5;++i) 
+    fCells[i].clear();
+
 }
 
 //________________________________________________________________________________
-AliCluster *AliITSUTrackerSA::GetCluster(Int_t /*index*/) const {
-  //--------------------------------------------------------------------
-  //       Return pointer to a given cluster
-  //--------------------------------------------------------------------
-  return 0;  // replace with an actual pointer
-}
+void AliITSUTrackerSA::CellularAutomaton(AliESDEvent *event) {
 
-//________________________________________________________________________________
-void AliITSUTrackerSA::CASelection(AliESDEvent *event) {
   // Here it's implemented the Cellular Automaton routine
   // Firstly the level of each doublet is set according to the level of
   // the neighbour doublets.
   // Doublet are considered to be neighbour if they share one point and the
   // phi and theta direction difference of the two is below a cut value.
+  Int_t ntrk=0,ngood=0;
 
-  cout << "Begin of the CA selection" << endl;
-  for( int iL = 1; iL < 6; ++iL ) {
-
-    const itsCluster* clusters1 = &fClusters[iL-1][0];
-    const itsCluster* clusters2 = &fClusters[iL][0];
-    const itsCluster* clusters3 = &fClusters[iL+1][0];
-
-    const nPlets* doublets1 = &fDoublets[iL-1][0];
-    nPlets* doublets2 = &fDoublets[iL][0];
-
-    for ( int iD2 = 0; iD2 < fNDoublets[iL]; ++iD2 ) {
-      for ( int iD1 = 0; iD1 < fNDoublets[iL-1]; ++iD1 ) {
-        const int id1 = doublets1[iD1].id1;
-        const int id2 = doublets2[iD2].id0;
-        if ( id1 == id2 ) {
-          if ( doublets2[iD2].level <= ( doublets1[iD1].level + 1 ) ) {
-            const int id3 = doublets2[iD2].id1;
-            const float r3 = Sqrt( clusters3[id3].x * clusters3[id3].x + clusters3[id3].y * clusters3[id3].y );
-            const float r2 = Sqrt( clusters2[id2].x * clusters2[id2].x + clusters2[id2].y * clusters2[id2].y );
-            const float extrZ3 = doublets1[iD1].tanLambda * ( r3 - r2 ) + clusters2[id2].z ;
-            //cout << extrZ3 << " " << clusters3[id3].z << " " << Abs ( extrZ3 - clusters3[id3].z ) << endl;
-            if ( Abs ( extrZ3 - clusters3[id3].z ) < fZCut ) {
-              //cout << "OK Z doublets: "<< iL-1 << "," << iD1 << "\t" << iL << "," <<iD2 << endl;
-              const float det = (clusters1[id1].x - GetX())*(clusters2[id2].y - GetY()) - (clusters2[id2].x-GetX() )*(clusters1[id1].y - GetY()); // (GetX() - clusters2[id2].x)*(clusters1[id1].y - clusters2[id2].y) - (GetY() - clusters2[id2].y)*(clusters1[id1].x - clusters2[id2].x);
-              //cout << det << endl;
-              if ( Abs(det) <= 1e-12 ) {
-                // linear extrapolation to next layer
-                const float dsq = ( doublets1[iD1].tanPhi * (clusters3[id3].x + clusters2[id2].x) + clusters3[id3].y - clusters2[id2].y ) *
-                ( doublets1[iD1].tanPhi * (clusters3[id3].x + clusters2[id2].x) + clusters3[id3].y - clusters2[id2].y ) / (1 + doublets1[iD1].tanPhi * doublets1[iD1].tanPhi );
-                if ( dsq < fRPhiCut*fRPhiCut )  {
-                  doublets2[iD2].level = doublets1[iD1].level+1;
-                  doublets2[iD2].neighbours.push_back(iD1);
-                }
-              } else {
-                const float r1sq = clusters1[id1].x * clusters1[id1].x + clusters1[id1].y * clusters1[id1].y ;
-                const float rvsq = GetX() * GetX() + GetY() * GetY();
-                const float deta = (rvsq - r1sq) * (clusters2[id2].y - GetY()) - (rvsq - r2*r2) * (clusters1[id1].y - GetY());
-                const float detb = - (rvsq - r1sq) * (clusters2[id2].x - GetX()) + (rvsq - r2*r2) * (clusters1[id1].x - GetX()) ;
-                const float a = deta/det ;
-                const float b = detb/det ;
-                const float c = -rvsq - a * GetX() - b * GetY();
-                const float rc = Sqrt( a*a/4.f + b*b/4.f - c );
-                const float d = Sqrt( (a/2.f + clusters3[id3].x) * (a/2.f + clusters3[id3].x) + (b/2.f + clusters3[id3].y) * (b/2.f + clusters3[id3].y) );
-                //cout << d << " " << rc << " " << d - rc << endl;
-                if ( Abs( d - rc ) < fRPhiCut ) {
-                  doublets2[iD2].level = doublets1[iD1].level+1;
-                  doublets2[iD2].neighbours.push_back(iD1);
-                }
-              }
-            }
-          }
+  for( int iL = 1; iL < 5; ++iL ) {
+    for( size_t iC1 = 0; iC1 < fCells[iL-1].size(); ++iC1 ) {
+      for( size_t iC2 = 0; iC2 < fCells[iL].size(); ++iC2 ) {
+        if( fCells[iL-1][iC1].Points[1]==fCells[iL][iC2].Points[0] && 
+            fCells[iL-1][iC1].Points[2]==fCells[iL][iC2].Points[1] && 
+            fCells[iL-1][iC1].Level >= fCells[iL][iC2].Level - 1 ) {
+          // The implementation of the curvature based matching has to be studied. 
+          fCells[iL][iC2].Level = fCells[iL-1][iC1].Level+1;
+          fCells[iL][iC2].Neighbours.push_back(iC1);
         }
       }
     }
   }
-  //#ifdef __DEBUG__
-  //PrintInfo("doublets");
-  //DrawEvent("doublets+level");
-  //return;
-  //#endif
-  // Hic sunt leones: the following code could be optimised to be iterative. But now I don't have time.
-  vector<trackC> tracks;
-  for ( int level = 6; level >= 2 ; --level ) {
-    cout << "level " << level << endl;
-    vector<Road> roads;
-    roads.clear();
-    roads.reserve(100);
-    for ( int doubl = 5; doubl >= level-1; --doubl ) {
-      for ( int iD = 0; iD < fNDoublets[doubl]; ++iD ) {
-        if ( fDoublets[doubl][iD].level == level ) {
-          roads.push_back(Road());
-          roads.back().AddElement(doubl,iD);
-          cout << "\nseed " << iD << "("<<fDoublets[doubl][iD].id1<<","<<fDoublets[doubl][iD].id0;
-          cout <<") in array " << doubl << " with level " << level;
-          for ( unsigned int iN = 0; iN < fDoublets[doubl][iD].neighbours.size(); ++iN ) {
-            const int currD = doubl - 1 ;
-            const int neigh = fDoublets[doubl][iD].neighbours[iN];
-            //if ( level != fDoublets[currD][neigh].level + 1 ) continue;
-            if ( iN > 0 ) roads.push_back(static_cast<Road>(roads.back()));
-            CandidatesTreeTraversal(roads,neigh,currD);
-            cout << endl;// << roads.back() << endl;
-          }
-          fDoublets[doubl][iD].level = -1; // mark as used
+  
+  for (int level = 5; level > 0; --level ) {
+    vector<Road> roads; 
+    roads.reserve(100); // should reserve() be based on number of clusters on outermost layer?
+    for (int iCL=4; iCL >= level-1; --iCL ) {
+      for (size_t iCell = 0; iCell < fCells[iCL].size(); ++iCell) {
+        if ( fCells[iCL][iCell].Level != level ) continue;
+        roads.push_back( Road(iCL,iCell) );
+        for( size_t iN=0;iN<fCells[iCL][iCell].Neighbours.size(); ++iN ) {
+          const int currD = iCL - 1;
+          const int neigh = fCells[iCL][iCell].Neighbours[iN];
+          if( iN > 0 ) roads.push_back(roads.back());
+          CandidatesTreeTraversal(roads,neigh,currD);
         }
-        //for ( int j = 0; j < 2*AliITSUAux::kMaxLayers; ++j ) cout << roads.back().fPoints[j] << " "; 
-        //cout << endl;
+        fCells[iCL][iCell].Level = -1;
       }
     }
 
-    
-    Double_t rDest = 0.;//fITS->GetRMax();
-    DrawRoads(roads);
- 
-    vector<trackC> candidates;
-    for ( size_t iR = 0; iR < roads.size(); ++iR ) {
-      if ( roads[iR].fNElements!=level ) {
-        cout << "JUMP" << endl;
+    // for(size_t iR=0; iR<roads.size(); ++iR) {
+    //   cout << "ROAD " << iR << " | ";
+    //   for(int i=0;i<5;++i) {
+    //     if(roads[iR][i]<0) continue;
+    //     else {
+    //       if(roads[iR].Label==-1){
+    //         roads[iR].Label = fCells[i][roads[iR][i]].Label;
+    //         if(roads[iR].Label==-1) roads[iR].Label--;
+    //       }
+    //       if (fCells[i][roads[iR][i]].Label!=roads[iR].Label&&roads[iR].Label>-1) { 
+    //         roads[iR].Label = -1;
+    //         if(fCells[i][roads[iR][i]].Label==-1) roads[iR].Label--;
+    //       }
+
+    //       cout << fCells[i][roads[iR][i]].Label << " ";
+    //     }
+    //   }
+    //   cout << " | " << roads[iR].Label << " | " << roads[iR].N << endl;
+    // }
+    vector<AliITSUTrackCooked> candidates;
+    candidates.reserve(roads.size());
+
+    for (size_t iR=0; iR<roads.size(); ++iR) { 
+      if(roads[iR].N != level) {
         continue;
-      } 
-      candidates.push_back(trackC());
-      candidates.back().fNPoints = level+1;
-      for ( size_t j = 0; j < 6; ++j ) { 
-        if ( roads[iR].fElements[j] == -1 ) continue;
-        candidates.back().fPoints[j<<0x1] = fDoublets[j][roads[iR].fElements[j]].id0;
-        candidates.back().fPoints[(j+1)<<0x1] = fDoublets[j][roads[iR].fElements[j]].id1;
-        //cout << (j<<0x1) << " " << fDoublets[j][roads[iR].fElements[j]].id0 << "\t" << ((j+1)<<0x1) << " " << fDoublets[j][roads[iR].fElements[j]].id1 << endl;
       }
-      //cout << endl;
-      cout << "Candidate " << candidates.size() << ", number of points: " << level+1 << endl;
-      //cout << candidates.back() << endl;
-      InitTrackParams(candidates.back());
-      candidates.back().fChi2 = RefitTrack( (AliExternalTrackParam*)&candidates.back(), candidates.back().fPoints, rDest ,-1);
-      //cout << "Fit cnd: " << cand << " " << candidates[cand] << endl;
+
+      int points[2*AliITSUAux::kMaxLayers];
+      for(unsigned int i=0;i<2*AliITSUAux::kMaxLayers;++i) points[i] = -1;
+      for(int i=0;i<5;++i) {
+        if(roads[iR].Elements[i]<0) continue;
+        points[( i )<<1]=fLayer[ i ](fCells[i][roads[iR].Elements[i]].Points[0]);
+        points[(i+1)<<1]=fLayer[i+1](fCells[i][roads[iR].Elements[i]].Points[1]);
+        points[(i+2)<<1]=fLayer[i+2](fCells[i][roads[iR].Elements[i]].Points[2]);
+      }
+
+      candidates.push_back(AliITSUTrackCooked());
+      
+      InitTrackParams(candidates.back(),points);
+      const double chi2 = RefitTrack( (AliExternalTrackParam*)&candidates.back(), points, 0. ,-1);
+
+      if ( chi2 < 0. ) {
+        // cout << "FAIL: " << chi2 << endl;
+        // for(unsigned int i=0;i<2*AliITSUAux::kMaxLayers;++i) 
+        //   cout << points[i] << " ";
+        // cout << endl;
+        candidates.back().SetChi2( 1e27 );
+      } else candidates.back().SetChi2( chi2 );
+      candidates.back().SetLabel(roads[iR].Label);
     }
-  
-    int index[candidates.size()];
-    for ( size_t i = 0; i < candidates.size(); ++i ) index[i]=i;
-    CompDesc comp(&candidates);
-    sort(index,index+candidates.size(),comp);
-    
+
+    vector<int> index;
+    index.reserve(candidates.size());
+    for ( size_t i = 0; i < candidates.size(); ++i ) index.push_back(i);
+    Comparison<AliITSUTrackCooked> comp(&candidates);
+    sort(index.begin(),index.end(),comp);
+
     for ( size_t cand = 0; cand < candidates.size(); ++cand ) {
       const int ii = index[cand];
-      //#ifdef __DEBUG__
-      //cout << ii << " " << candidates[ii] << endl;
-      //#endif
-      if ( candidates[ii].fChi2 < 0. ) break;
-      bool goodTrack = true;
-      for ( unsigned int point = 0; point < 14; ++point ) { //-> here it's necessary to use a temporary array for the used clusters.
-        if ( candidates[ii].fPoints[point] != -1 ) {
-          if( !(fClusters[ point/2 ][ candidates[ii].fPoints[point] ].isUsed ) ) {
-            fClusters[ point/2 ][ candidates[ii].fPoints[point] ].isUsed = true;
-          } else {
-            goodTrack = false;
-          }
-        }
-      }
-      //cout << endl;
-      if ( goodTrack ) {
-        tracks.push_back(candidates[ii]);
-      }
-    }
-    //cout << "End of level " << level << endl;*/
-  }
 
-  bool joined[tracks.size()];
-  MergeTracks(tracks,joined); 
-  for ( unsigned int ii = 0; ii < tracks.size(); ++ii ) {
-    if ( ! joined[ii] ) {
+      if ( candidates[ii].GetChi2() < 0. ) continue;
+      
+      // cout << candidates[ii].GetChi2() << " " << candidates[ii].GetNumberOfClusters() << " | " << candidates[ii].GetLabel() << " | ";
+      // for(int i=0;i<candidates[ii].GetNumberOfClusters();++i) {
+      //   cout<< GetCluster(candidates[ii].GetClusterIndex(i))->GetLabel(0) << " ";
+      // }
+      // cout << endl;
+
+      if( candidates[ii].GetChi2()/candidates[ii].GetNumberOfClusters() > fgkChi2Cut ) {      
+        break;
+      }
+      bool goodTrack = true;
+      for ( int point = 0; point < candidates[ii].GetNumberOfClusters(); ++point ) { 
+        int layer = (candidates[ii].GetClusterIndex(point)&0xf0000000)>>28;
+        int ind = (candidates[ii].GetClusterIndex(point)&0x0fffffff);
+
+        if( (fLayer[ layer ].Points[ ind ].Used ) ) {
+          goodTrack = false;
+        }
+
+      }
+      if(!goodTrack) {
+        continue;
+      }
+      for ( int point = 0; point < candidates[ii].GetNumberOfClusters(); ++point ) {
+        int layer = (candidates[ii].GetClusterIndex(point)&0xf0000000)>>28;
+        int ind = (candidates[ii].GetClusterIndex(point)&0x0fffffff);
+        fLayer[ layer ].Points[ ind ].Used = true;
+      }
+
       AliESDtrack outTrack;
-      outTrack.SetOuterParam((AliExternalTrackParam*)&tracks[ii],AliESDtrack::kITSpureSA);  
+      CookLabel((AliKalmanTrack*)&candidates[ii],0.f);
+      ntrk++;
+      if(candidates[ii].GetChi2()>0) ngood++;
+
+      // cout << candidates[ii].GetChi2() << " " << candidates[ii].GetNumberOfClusters() << " | " << candidates[ii].GetLabel() << " | ";
+      // for(int i=0;i<candidates[ii].GetNumberOfClusters();++i) {
+      //   cout<< GetCluster(candidates[ii].GetClusterIndex(i))->GetLabel(0) << " ";
+      // }
+      // cout << endl;
+
+      outTrack.UpdateTrackParams((AliKalmanTrack*)&candidates[ii],AliESDtrack::kITSin);
+      outTrack.SetLabel(candidates[ii].GetLabel());
       event->AddTrack(&outTrack);
     }
   }
+  Info("Clusters2Tracks","Reconstructed tracks: %d",ntrk);
+  if (ntrk)
+    Info("Clusters2Tracks","Good tracks/reconstructed: %f",Float_t(ngood)/ntrk);
 }
 
+
 //________________________________________________________________________________
-void AliITSUTrackerSA::MakeDoublets() {
+void AliITSUTrackerSA::CellsCreation(const int &cutLevel) {
   // Make associations between two points on adjacent layers within an azimuthal window.
   // Under consideration:
   // - track parameter estimation using the primary vertex position
   // To do:
   // - last iteration
 
-  //cout << "Vertex of used by the tracker: " << GetX() << " " << GetY() << " " << GetZ() << endl;
+  float phiCut = 7.f;
+  if( cutLevel==0 ) phiCut = fPhiCut;
 
+  // Doublets creation
+  vector<Cell> doublets[6];
   for( int iL = 0 ; iL < 6 ; ++iL ) {
-    fNDoublets[iL] = 0;
-    const itsCluster* clusters1 = &fClusters[iL][0];
-    const itsCluster* clusters2 = &fClusters[iL+1][0];
-
-    // 0 - 2Pi junction treatment (part I)
-    for ( int iCC1 = 0 ; iCC1 < fNClusters[iL] ; ++iCC1 ) {
-      bool flag = true;
-      const int iC1 = fIndex[iL][iCC1];
-      for ( int iCC2 = fNClusters[iL+1]-1; iCC2 >= 0 ; --iCC2 ) {
-        const int iC2 = fIndex[iL+1][iCC2];
-        if( (TMath::TwoPi() - (clusters2[iC2].phi-clusters1[iC1].phi) ) < fPhiCut ) {
-          #ifdef __DEBUG__
-          fDoublets[iL].push_back(nPlets(iC1,iC2,clusters1[iC1].pid,clusters2[iC2].pid));
-          #else
-          fDoublets[iL].push_back(nPlets(iC1,iC2));
-          #endif
-          fDoublets[iL][fNDoublets[iL]].tanPhi = (clusters1[iC1].y-clusters2[iC2].y)/(clusters1[iC1].x-clusters2[iC2].x);
-          float r1  = Sqrt(clusters1[iC1].x * clusters1[iC1].x + clusters1[iC1].y * clusters1[iC1].y);
-          //cout << clusters2[iC2].x * clusters2[iC2].x + clusters2[iC2].y * clusters2[iC2].y << flush << endl;
-          float r2  = Sqrt(clusters2[iC2].x * clusters2[iC2].x + clusters2[iC2].y * clusters2[iC2].y);
-          fDoublets[iL][fNDoublets[iL]].tanLambda = (clusters1[iC1].z-clusters2[iC2].z)/(r1-r2);
-          ++fNDoublets[iL];
-          flag = false;
-        } else break;
-
-      }
-      if (flag) break;
-    }
-
-
-    // "Central" points
-    for ( int iCC1 = 0 ; iCC1 < fNClusters[iL] ; ++iCC1 ) {
-      const int iC1 = fIndex[iL][iCC1];
-      for ( int iCC2 = 0; iCC2 < fNClusters[iL+1] ; ++iCC2 ) {
-        const int iC2 = fIndex[iL+1][iCC2];
-        if( Abs( clusters1[iC1].phi - clusters2[iC2].phi ) < fPhiCut ) {
-          #ifdef __DEBUG__
-          fDoublets[iL].push_back(nPlets(iC1,iC2,clusters1[iC1].pid,clusters2[iC2].pid));
-          #else
-          fDoublets[iL].push_back(nPlets(iC1,iC2));
-          #endif
-          fDoublets[iL][fNDoublets[iL]].tanPhi = (clusters1[iC1].y-clusters2[iC2].y)/(clusters1[iC1].x-clusters2[iC2].x);
-          float r1  = Sqrt(clusters1[iC1].x * clusters1[iC1].x + clusters1[iC1].y * clusters1[iC1].y);
-          float r2  = Sqrt(clusters2[iC2].x * clusters2[iC2].x + clusters2[iC2].y * clusters2[iC2].y);
-          fDoublets[iL][fNDoublets[iL]].tanLambda = (clusters1[iC1].z-clusters2[iC2].z)/(r1-r2);
-          ++fNDoublets[iL];
-        } else if( clusters2[iC2].phi - clusters1[iC1].phi > fPhiCut ) break;
-
+    for ( int iC1 = 0 ; iC1 < fLayer[iL].N ; ++iC1 ) {
+      for ( int iC2 = 0; iC2 < fLayer[iL+1].N ; ++iC2 ) {
+        const float dPhi = Abs( fLayer[iL][iC1].Phi - fLayer[iL+1][iC2].Phi );
+        if( dPhi < phiCut || Abs( dPhi - TMath::TwoPi() ) < phiCut) {
+          doublets[iL].push_back(Cell(iC1,iC2));
+          if(Abs(fLayer[iL][iC1].XYZ[0]-fLayer[iL+1][iC2].XYZ[0])<1e-32) {
+            doublets[iL].back().Param[0] = 1e32;
+          } else {
+            doublets[iL].back().Param[0] = (fLayer[iL][iC1].XYZ[1]-fLayer[iL+1][iC2].XYZ[1])/(fLayer[iL][iC1].XYZ[0]-fLayer[iL+1][iC2].XYZ[0]);
+          }
+          const float r1  = Sqrt(fLayer[iL][iC1].XYZ[0] * fLayer[iL][iC1].XYZ[0] + fLayer[iL][iC1].XYZ[1] * fLayer[iL][iC1].XYZ[1]);
+          const float r2  = Sqrt(fLayer[iL+1][iC2].XYZ[0] * fLayer[iL+1][iC2].XYZ[0] + fLayer[iL+1][iC2].XYZ[1] * fLayer[iL+1][iC2].XYZ[1]);
+          doublets[iL].back().Param[1] = (fLayer[iL][iC1].XYZ[2]-fLayer[iL+1][iC2].XYZ[2])/(r1-r2);
+          doublets[iL].back().Label=-1;
+          for(int i=0;i<3;++i) {
+            for(int j=0;j<3;++j) {
+              if(fLayer[iL][iC1].Label[i]>-1&&fLayer[iL][iC1].Label[i]==fLayer[iL+1][iC2].Label[j])
+                doublets[iL].back().Label = fLayer[iL][iC1].Label[i];
+            }
+          } 
+        } else if( fLayer[iL+1][iC2].Phi - fLayer[iL][iC1].Phi > phiCut ) break;
       }
 
     }
-
-    // 0 - 2Pi junction treatment (part II)
-    for ( int iCC1 = fNClusters[iL]-1; iCC1 > -1 ; --iCC1 ) {
-      bool flag = true;
-      const int iC1 = fIndex[iL][iCC1];
-      for ( int iCC2 = 0; iCC2 < fNClusters[iL+1] ; ++iCC2 ) {
-        const int iC2 = fIndex[iL+1][iCC2];
-        if( (TMath::TwoPi() - (clusters1[iC1].phi-clusters2[iC2].phi) ) < fPhiCut ) {
-          #ifdef __DEBUG__
-          fDoublets[iL].push_back(nPlets(iC1,iC2,clusters1[iC1].pid,clusters2[iC2].pid));
-          #else
-          fDoublets[iL].push_back(nPlets(iC1,iC2));
-          #endif
-          fDoublets[iL][fNDoublets[iL]].tanPhi = (clusters1[iC1].y-clusters2[iC2].y)/(clusters1[iC1].x-clusters2[iC2].x);
-          float r1  = Sqrt(clusters1[iC1].x * clusters1[iC1].x + clusters1[iC1].y * clusters1[iC1].y);
-          float r2  = Sqrt(clusters2[iC2].x * clusters2[iC2].x + clusters2[iC2].y * clusters2[iC2].y);
-          fDoublets[iL][fNDoublets[iL]].tanLambda = (clusters1[iC1].z-clusters2[iC2].z)/(r1-r2);
-          ++fNDoublets[iL];
-          flag = false;
-        } else break;
-
-      }
-
-      if (flag) break;
-    }
-
   }
-  // #ifdef __DEBUG__
-  // PrintInfo("doublets");
-  // #endif
+
+  // Triplets creation
+  for( int iL = 5; iL > 0; --iL ) {
+    fCells[iL-1].clear();
+    for ( size_t iD2 = 0; iD2 < doublets[iL].size(); ++iD2 ) {
+      for ( size_t iD1 = 0; iD1 < doublets[iL-1].size(); ++iD1 ) {
+        const int id1 = doublets[iL-1][iD1].Points[1];
+        const int id2 = doublets[iL][iD2].Points[0];
+        if ( id1 == id2 ) {
+          const int id3 = doublets[iL][iD2].Points[1];
+          const float r3 = Sqrt( fLayer[iL+1][id3].XYZ[0] * fLayer[iL+1][id3].XYZ[0] + fLayer[iL+1][id3].XYZ[1] * fLayer[iL+1][id3].XYZ[1] );
+          const float r2 = Sqrt( fLayer[iL][id2].XYZ[0] * fLayer[iL][id2].XYZ[0] + fLayer[iL][id2].XYZ[1] * fLayer[iL][id2].XYZ[1] );
+          const float extrZ3 = doublets[iL-1][iD1].Param[1] * ( r3 - r2 ) + fLayer[iL][id2].XYZ[2] ;
+          const int iii = doublets[iL-1][iD1].Points[0];
+          if ( Abs ( extrZ3 - fLayer[iL+1][id3].XYZ[2] ) < fZCut ) {      
+            fCells[iL-1].push_back(Cell(doublets[iL-1][iD1].Points[0],id2,id3));
+            fCells[iL-1].back().Param[0] = Curvature(fLayer[iL+1][id3].XYZ[0],fLayer[iL+1][id3].XYZ[1],fLayer[iL][id2].XYZ[0],fLayer[iL][id2].XYZ[1],fLayer[iL-1][iii].XYZ[0],fLayer[iL-1][iii].XYZ[1]);
+            fCells[iL-1].back().Param[1] = doublets[iL][iD2].Param[1];
+            if(doublets[iL-1][iD1].Label==doublets[iL][iD2].Label&&doublets[iL][iD2].Label!=-1) 
+              fCells[iL-1].back().Label=doublets[iL][iD2].Label;
+            else
+              fCells[iL-1].back().Label=-1;
+          } 
+        } 
+      }
+    }
+  }
+
 }
+
 //______________________________________________________________________________
-Bool_t AliITSUTrackerSA::InitTrackParams(trackC &track)
+Bool_t AliITSUTrackerSA::InitTrackParams(AliITSUTrackCooked &track, int points[])
 {
   // Set the initial guess on track kinematics for propagation.
   // Assume at least 3 points available
   int lrOcc[AliITSUAux::kMaxLayers], nCl=0;
   //
   // we will need endpoints and middle layer
-  for (int i=fITS->GetNLayersActive();i--;) {
-    if (track.fPoints[i<<0x1]>-1) {
+  for (int i=fITS->GetNLayersActive()-1; i>=0; i--) {
+    if (points[i<<0x1]>-1) {
       lrOcc[nCl++] = i;
-      track.fInnermostLayer = i;
+      track.SetClusterIndex(i,points[i<<0x1]);
     }
   }
-  track.fNPoints = nCl;
-  track.fOutermostLayer = track.fInnermostLayer + nCl - 1; 
+
   if (nCl<3) {
     AliError(Form("Cannot estimate momentum of tracks with %d clusters",nCl));
-    //cout << track << endl;
     return kFALSE;
   }
   //
-  int lr0   = lrOcc[0];
-  int lr1   = lrOcc[nCl/2];
-  int lr2   = lrOcc[nCl-1];
+  const int lr0   = lrOcc[0];
+  const int lr1   = lrOcc[nCl/2];
+  const int lr2   = lrOcc[nCl-1];
   //
-  //cout << (lr0<<0x1) << " " <<  (lr1<<0x1)<< " " <<  (lr2<<0x1) << endl;
-  const itsCluster& cl0 = fClusters[lr0][ track.fPoints[lr0<<0x1] ];
-  const itsCluster& cl1 = fClusters[lr1][ track.fPoints[lr1<<0x1] ];
-  const itsCluster& cl2 = fClusters[lr2][ track.fPoints[lr2<<0x1] ];
-  double cv = Curvature(cl0.x,cl0.y, cl1.x,cl1.y, cl2.x,cl2.y);
-  double tgl = (cl2.z-cl0.z)/TMath::Sqrt((cl2.x-cl0.x)*(cl2.x-cl0.x)+(cl2.y-cl0.y)*(cl2.y-cl0.y));
-  //  double phi = TMath::ATan2((cl2.y-cl1.y),(cl2.x-cl1.x));
+  const SpacePoint& cl0 = fLayer[lr0].Points[ points[lr0<<1] ];
+  const SpacePoint& cl1 = fLayer[lr1].Points[ points[lr1<<1] ];
+  const SpacePoint& cl2 = fLayer[lr2].Points[ points[lr2<<1] ];
+  double cv = Curvature(cl0.XYZ[0],cl0.XYZ[1], cl1.XYZ[0],cl1.XYZ[1], cl2.XYZ[0],cl2.XYZ[1]);
+
+  double tgl = (cl2.XYZ[2]-cl0.XYZ[2])/TMath::Sqrt((cl2.XYZ[0]-cl0.XYZ[0])*(cl2.XYZ[0]-cl0.XYZ[0])+(cl2.XYZ[1]-cl0.XYZ[1])*(cl2.XYZ[1]-cl0.XYZ[1]));
   //
-  AliITSUClusterPix* clus = (AliITSUClusterPix*)fClustersTC[ lr0 ]->At( track.fPoints[lr0<<0x1] );
+  AliITSUClusterPix* clus = (AliITSUClusterPix*)fClustersTC[ lr0 ]->At( points[lr0<<1] );
   AliITSURecoLayer* lr = fITS->GetLayerActive(lr0);
   AliITSURecoSens* sens = lr->GetSensorFromID(clus->GetVolumeId());
   double x = sens->GetXTF() + clus->GetX();
@@ -535,106 +540,45 @@ Bool_t AliITSUTrackerSA::InitTrackParams(trackC &track)
   double par[5] = {clus->GetY(),clus->GetZ(),0,tgl,cv};
   double cov[15] = {
     5*5,
-    0, 5*5,
-    0, 0, 0.7*0.7,
-    0,0,0,0.7*0.7,
-    0,0,0,0,10
+    0,  5*5,
+    0,  0  , 0.7*0.7,
+    0,  0,   0,       0.7*0.7,
+    0,  0,   0,       0,      10
   };
   track.Set(x,alp,par,cov);
-  //cout << track ;
+
   return kTRUE;
 }
 
 //______________________________________________________________________________
 void AliITSUTrackerSA::CandidatesTreeTraversal(vector<Road> &candidates, const int &iD, const int &doubl) {
 
-  if ( doubl < 0     ) {
-    #ifdef __DEBUG__
-    //cout << "ERROR IN CandidatesTreeTraversal" << endl;
-    //cout << endl;
-    #endif
-    return;
-  }
+  if ( doubl < 0 ) return;
+
   candidates.back().AddElement(doubl,iD);
-  cout << "\n\tTraversing the tree through " << iD << " in array " << doubl << " at level " << fDoublets[doubl][iD].level;
-  //cout << doubl*2 << " ";
-  for ( unsigned int iN = 0; iN < fDoublets[doubl][iD].neighbours.size(); ++iN ) {
+  const int currentN = candidates.back().N;
+  for ( size_t iN = 0; iN < fCells[doubl][iD].Neighbours.size(); ++iN ) {
     const int currD = doubl - 1 ;
-    const int neigh = fDoublets[doubl][iD].neighbours[iN];
-    //const int level = fDoublets[doubl][iD].level;
-    //if ( level != fDoublets[currD][neigh].level + 1 ) continue;
+    const int neigh = fCells[doubl][iD].Neighbours[iN];
+    
     if ( iN > 0 ) {
-      cout << " -> branching here!";
       candidates.push_back(static_cast<Road>(candidates.back()));
+      candidates.back().N = currentN;
     }
+
     CandidatesTreeTraversal(candidates,neigh,currD);
   }
   
-  fDoublets[doubl][iD].level = -1;
+  fCells[doubl][iD].Level = -1;
 
 }
 
 //______________________________________________________________________________
-void AliITSUTrackerSA::MergeTracks(vector<trackC> &tracks, bool flag[]) {
-  cout << "Merging tracks" << endl;
-  for ( unsigned int iT = 0; iT < tracks.size(); ++iT ) { 
-    flag[iT]=false; 
-  }
-
-  for ( unsigned int iT1 = 0; iT1 < tracks.size(); ++iT1 ) {
-    if ( tracks[iT1].fNPoints > 4 || flag[iT1] ) continue;
-    const int inL1 = tracks[iT1].fInnermostLayer;
-    const int outL1 = tracks[iT1].fOutermostLayer;
-    for ( unsigned int iT2 = iT1+1; iT2 < tracks.size(); ++iT2 ) {
-      const int inL2 = tracks[iT2].fInnermostLayer;
-      const int outL2 = tracks[iT2].fOutermostLayer;
-      printf("%d: In/Out %d/%d\t%d: In/Out %d/%d",iT1,inL1,outL1,iT2,inL2,outL2);
-      if ( outL1 < inL2 ) {
-        cout << " <- check1" << flush;
-        if ( TransportToLayer((AliExternalTrackParam*)&tracks[iT2],inL2,outL1) ) {
-          cout << " <- transport";
-          if ( tracks[iT2].Rotate( fClusters[outL1][ tracks[iT1].fPoints[ outL1<<0x1 ] ].phiM ) ) {
-            const double chi2 = tracks[iT2].GetPredictedChi2((AliExternalTrackParam*)&tracks[iT1]);
-            printf(" Merging candidates (%i,%i), chi2 = %f ",iT1,iT2,chi2);
-            if ( chi2 < fgkChi2Cut ) {
-              flag[iT2] = true;
-              for ( int np = tracks[iT2].fInnermostLayer; np < tracks[iT2].fOutermostLayer; ++np ) {
-                tracks[iT1].fPoints[np<<0x1] = tracks[iT2].fPoints[np<<0x1];
-              }
-              InitTrackParams(tracks[iT1]);
-              RefitTrack((AliExternalTrackParam*)&tracks[iT1],tracks[iT1].fPoints,0,-1);
-            } 
-          } else { cout << " <- Failed rotation!!"; }
-        } else { cout << " <- Failed transport!!"; }
-      } else if ( inL1 > outL2 ) {
-        cout << " <- check2" << flush;
-        if ( TransportToLayer((AliExternalTrackParam*)&tracks[iT1],inL1,outL2) ) {
-          cout << " <- transport";
-          if ( tracks[iT1].Rotate( fClusters[outL2][ tracks[iT1].fPoints[ outL2<<0x1 ] ].phiM ) ) {
-            const double chi2 = tracks[iT2].GetPredictedChi2((AliExternalTrackParam*)&tracks[iT1]);
-            printf(" Merging candidates (%i,%i), chi2 = %f ",iT1,iT2,chi2);
-            if ( chi2 < fgkChi2Cut ) {
-              flag[iT2] = true;
-              for ( int np = tracks[iT2].fInnermostLayer; np < tracks[iT2].fOutermostLayer; ++np ) {
-                tracks[iT1].fPoints[np<<0x1] = tracks[iT2].fPoints[np<<0x1];
-              }
-              InitTrackParams(tracks[iT1]);
-              RefitTrack((AliExternalTrackParam*)&tracks[iT1],tracks[iT1].fPoints,0,-1);
-            }
-          } else { cout << " <- Failed rotation!!"; } 
-        } else { cout << " <- Failed transport!!"; }
-      }
-      cout << endl;
-    }
-  }
-}
-  
-  //______________________________________________________________________________
-Double_t AliITSUTrackerSA::RefitTrack(AliExternalTrackParam* trc,
-Int_t clInfo[2*AliITSUAux::kMaxLayers],
-Double_t rDest, Int_t stopCond)
+Double_t AliITSUTrackerSA::RefitTrack(AliExternalTrackParam* trc, 
+              Int_t clInfo[2*AliITSUAux::kMaxLayers],
+              Double_t rDest, Int_t stopCond)
 {
-  // refit track till radius rDest.
+  // refit track till radius rDest. 
   // if stopCond<0 : propagate till last cluster then stop
   // if stopCond==0: propagate till last cluster then try to go till limiting rDest, don't mind if fail
   // if stopCond>0 : rDest must be reached
@@ -651,21 +595,13 @@ Double_t rDest, Int_t stopCond)
   dir = rCurr<rDest ? 1 : -1;
   lrStart = fITS->FindFirstLayerID(rCurr,dir);
   lrStop  = fITS->FindLastLayerID(rDest,dir); // lr id before which we have to stop
-  //cout << "Start/End layers and direction " << lrStart << " " << lrStop << " " <<  dir << endl;
   //
   if (lrStop<0 || lrStart<0) AliFatal(Form("Failed to find start(%d) or last(%d) layers. "
-  "Track from %.3f to %.3f",lrStart,lrStop,rCurr,rDest));
+             "Track from %.3f to %.3f",lrStart,lrStop,rCurr,rDest));
   //
   int nCl = 0;
-  cout << "pid : ";
-  for (int i=2*fITS->GetNLayersActive();i--;) {
-    if (clInfo[i]<0) continue;
-    cout << fClusters[i/2][clInfo[i]].pid;
-    ++nCl;
-  }
-  cout << endl;
+  for (int i=2*fITS->GetNLayersActive();i--;) {if (clInfo[i]<0) continue; nCl++;}
   //
-  //cout << "#ptr: " << nCl << endl;
   AliExternalTrackParam tmpTr(*trc);
   double chi2 = 0;
   int iclLr[2],nclLr;
@@ -674,17 +610,10 @@ Double_t rDest, Int_t stopCond)
   int lrStop1 = lrStop+dir;
   for (int ilr=lrStart;ilr!=lrStop1;ilr+=dir) {
     AliITSURecoLayer* lr = fITS->GetLayer(ilr);
-    if ( dir*(rCurr-lr->GetR(dir))>0) {
-      cout << ilr << " passed!" << endl;
-      continue;
-    } // this layer is already passed
+    if ( dir*(rCurr-lr->GetR(dir))>0) continue; // this layer is already passed
     int ilrA2,ilrA = lr->GetActiveID();
     // passive layer or active w/o hits will be traversed on the way to next cluster
-    if (!lr->IsActive() || clInfo[ilrA2=(ilrA<<1)]<0) {
-      //cout << ilr << " is inactive or without cluster for current candidates" << endl;
-      continue;
-    }
-    //cout << "OK layer " << ilr << endl;
+    if (!lr->IsActive() || clInfo[ilrA2=(ilrA<<1)]<0) continue; 
     //
     // select the order in which possible 2 clusters (in case of the overlap) will be traversed and fitted
     nclLr=0;
@@ -701,377 +630,256 @@ Double_t rDest, Int_t stopCond)
     for (int icl=0;icl<nclLr;icl++) {
       AliITSUClusterPix* clus =  (AliITSUClusterPix*)lr->GetCluster(iclLr[icl]);
       AliITSURecoSens* sens = lr->GetSensorFromID(clus->GetVolumeId());
-      if (!tmpTr.Rotate(sens->GetPhiTF())) { cout << "failed rotation" << endl; return -1; }
+      if (!tmpTr.Rotate(sens->GetPhiTF())) return -1;
       //
       double xClus = sens->GetXTF()+clus->GetX();
       if (!transportedToLayer) {
-        if (ilr!=lrStart && !TransportToLayerX(&tmpTr,lrStart,ilr,xClus)) {
-          cout << "failed transport to the entrance" << endl; return -1; } // go to the entrance to the layer
-          lrStart = ilr;
-          transportedToLayer = kTRUE;
-        }
-        //
-        if (!PropagateSeed(&tmpTr,xClus,fCurrMass)) { cout << "failed propagation of the seed X:" << xClus << endl; tmpTr.Print(); return -1; }
-        //
-        Double_t p[2]={clus->GetY(), clus->GetZ()};
-        Double_t cov[3]={clus->GetSigmaY2(), clus->GetSigmaYZ(), clus->GetSigmaZ2()};
-        double chi2cl = tmpTr.GetPredictedChi2(p,cov);
-        chi2 += chi2cl;
-        //
-        if ( !tmpTr.Update(p,cov) ) {
-          cout << "failed update of the covariance" << endl;
-          return -1;
-        }
-
-        if (++nclFit==nCl && stopCond<0) {
-          *trc = tmpTr;
-          printf("Fit chi2: %f for %d clusters\n",chi2,nclFit);
-          return chi2; // it was requested to not propagate after last update
-        }
+  if (ilr!=lrStart && !TransportToLayerX(&tmpTr,lrStart,ilr,xClus)) return -1; // go to the entrance to the layer
+  lrStart = ilr;
+  transportedToLayer = kTRUE;
       }
       //
-    }
-    // All clusters were succesfully fitted. Even if the track does not reach rDest, this is enough to validate it.
-    // Still, try to go as close as possible to rDest.
-    //
-    //  printf("Fit chi2: %f for %d clusters\n",chi2,nclFit);
-    //
-    if (lrStart!=lrStop) {
-      if (!TransportToLayer(&tmpTr,lrStart,lrStop)) return (stopCond>0) ? -chi2 : chi2; // rDest was obligatory
-      if (!GoToExitFromLayer(&tmpTr,fITS->GetLayer(lrStop),dir)) return (stopCond>0) ? -chi2 : chi2; // rDest was obligatory
-    }
-    // go to the destination radius. Note that here we don't select direction to avoid precision problems
-    if (!tmpTr.GetXatLabR(rDest,rDest,GetBz(),0) || !PropagateSeed(&tmpTr,rDest,fCurrMass, 100, kFALSE)) {
-      return (stopCond>0) ? -chi2 : chi2; // rDest was obligatory
-    }
-    *trc = tmpTr;
-
-    return chi2;
-  }
-
-  //______________________________________________________________________________
-  Bool_t AliITSUTrackerSA::PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep, Bool_t matCorr)
-  {
-    // propagate seed to given x applying material correction if requested
-    const Double_t kEpsilon = 1e-5;
-    Double_t xpos     = seed->GetX();
-    Int_t dir         = (xpos<xToGo) ? 1:-1;
-    Double_t xyz0[3],xyz1[3];
-    //
-    Bool_t updTime = dir>0 && seed->IsStartedTimeIntegral();
-    if (matCorr || updTime) seed->GetXYZ(xyz1);   //starting global position
-    while ( (xToGo-xpos)*dir > kEpsilon){
-      Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
-      Double_t x    = xpos+step;
-      Double_t bz=GetBz();   // getting the local Bz
-      if (!seed->PropagateTo(x,bz)) {
-        //cout << " failed PropagateTo " << endl;
-        return kFALSE;
-      }
-      double ds = 0;
-      if (matCorr || updTime) {
-        xyz0[0]=xyz1[0]; // global pos at the beginning of step
-        xyz0[1]=xyz1[1];
-        xyz0[2]=xyz1[2];
-        seed->GetXYZ(xyz1);    //  // global pos at the end of step
-        //
-        if (matCorr) {
-          Double_t xrho,xx0;
-          ds = GetMaterialBudget(xyz0,xyz1,xx0,xrho);
-          if (dir>0) xrho = -xrho; // outward should be negative
-          if (!seed->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
-        }
-        else { // matCorr is not requested but time integral is
-          double d0 = xyz1[0]-xyz0[0];
-          double d1 = xyz1[1]-xyz0[1];
-          double d2 = xyz1[2]-xyz0[2];
-          ds = TMath::Sqrt(d0*d0+d1*d1+d2*d2);
-        }
-      }
-      if (updTime) seed->AddTimeStep(ds);
+      if (!PropagateSeed(&tmpTr,xClus,fCurrMass)) return -1;
       //
-      xpos = seed->GetX();
-    }
-    return kTRUE;
-  }
-
-  //_________________________________________________________________________
-  Bool_t AliITSUTrackerSA::TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo, Double_t rLim)
-  {
-    // transport track from layerFrom to the entrance of layerTo or to rLim (if>0), wathever is closer
-    //
-    if (lTo==lFrom) AliFatal(Form("was called with lFrom=%d lTo=%d",lFrom,lTo));
-    //
-    int dir = lTo > lFrom ? 1:-1;
-    //printf("From %d, to %d, direction %d ",lFrom,lTo,dir);
-    AliITSURecoLayer* lrFr = fITS->GetLayer(lFrom); // this can be 0 when extrapolation from TPC to ITS is requested
-    Bool_t checkFirst = kTRUE;
-    Bool_t limReached = kFALSE;
-    while(lFrom!=lTo) {
-      if (lrFr) {
-        if (!GoToExitFromLayer(seed,lrFr,dir,checkFirst)) {
-          cout << " Failed GoToExitFromLayer "; 
-          return kFALSE; // go till the end of current layer
-        }
-        checkFirst = kFALSE;
-      }
-      AliITSURecoLayer* lrTo =  fITS->GetLayer( (lFrom+=dir) );
-      if (!lrTo) AliFatal(Form("Layer %d does not exist",lFrom));
+      Double_t p[2]={clus->GetY(), clus->GetZ()};
+      Double_t cov[3]={clus->GetSigmaY2(), clus->GetSigmaYZ(), clus->GetSigmaZ2()};
+      double chi2cl = tmpTr.GetPredictedChi2(p,cov);
+      chi2 += chi2cl;
       //
-      // go the entrance of the layer, assuming no materials in between
-      double xToGo = lrTo->GetR(-dir);
-      if (rLim>0) {
-        if (dir>0) {
-          if (rLim<xToGo) {xToGo = rLim; limReached = kTRUE;}
-        }
-        else {
-          if (rLim>xToGo) {xToGo = rLim; limReached = kTRUE;}
-        }
+      if ( !tmpTr.Update(p,cov) ) return -1;
+      if (++nclFit==nCl && stopCond<0) {
+  *trc = tmpTr;
+  return chi2; // it was requested to not propagate after last update
       }
-      //    double xts = xToGo;
-      if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) {
-        //      printf("FailHere1: %f %f %d\n",xts,xToGo,dir);
-        //      seed->Print("etp");
-        cout << " Failed GetXatLabR " << endl;
-        return kFALSE;
-      }
-      if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) {
-        //printf("FailHere2: %f %f %d\n",xts,xToGo,dir);
-        //seed->Print("etp");
-        cout << " Failed PropagateSeed " << endl;
-        return kFALSE;
-      }
-      lrFr = lrTo;
-      if (limReached) break;
     }
-    return kTRUE;
     //
   }
+  // All clusters were succesfully fitted. Even if the track does not reach rDest, this is enough to validate it.
+  // Still, try to go as close as possible to rDest.
+  //
+  if (lrStart!=lrStop) {
+    if (!TransportToLayer(&tmpTr,lrStart,lrStop)) return (stopCond>0) ? -chi2 : chi2; // rDest was obligatory
+    if (!GoToExitFromLayer(&tmpTr,fITS->GetLayer(lrStop),dir)) return (stopCond>0) ? -chi2 : chi2; // rDest was obligatory
+  }
+  // go to the destination radius. Note that here we don't select direction to avoid precision problems
+  if (!tmpTr.GetXatLabR(rDest,rDest,GetBz(),0) || !PropagateSeed(&tmpTr,rDest,fCurrMass, 100, kFALSE)) {
+    return (stopCond>0) ? -chi2 : chi2; // rDest was obligatory
+  }
+  *trc = tmpTr;
 
-  //_________________________________________________________________________
-  Bool_t AliITSUTrackerSA::TransportToLayerX(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo, Double_t xStop)
-  {
-    // transport track from layerFrom to the entrance of layerTo but do not pass control parameter X
-    //
-    if (lTo==lFrom) AliFatal(Form("was called with lFrom=%d lTo=%d",lFrom,lTo));
-    //
-    int dir = lTo > lFrom ? 1:-1;
-    AliITSURecoLayer* lrFr = fITS->GetLayer(lFrom); // this can be 0 when extrapolation from TPC to ITS is requested
-    Bool_t checkFirst = kTRUE;
-    while(lFrom!=lTo) {
-      if (lrFr) {
-        if (!GoToExitFromLayer(seed,lrFr,dir,checkFirst)) return kFALSE; // go till the end of current layer
-        checkFirst = kFALSE;
-      }
-      AliITSURecoLayer* lrTo =  fITS->GetLayer( (lFrom+=dir) );
-      if (!lrTo) AliFatal(Form("Layer %d does not exist",lFrom));
+  return chi2;
+}
+
+//______________________________________________________________________________
+Bool_t AliITSUTrackerSA::PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep, Bool_t matCorr) 
+{
+  // propagate seed to given x applying material correction if requested
+  const Double_t kEpsilon = 1e-5;
+  Double_t xpos     = seed->GetX();
+  Int_t dir         = (xpos<xToGo) ? 1:-1;
+  Double_t xyz0[3],xyz1[3];
+  //
+  Bool_t updTime = dir>0 && seed->IsStartedTimeIntegral();
+  if (matCorr || updTime) seed->GetXYZ(xyz1);   //starting global position
+  while ( (xToGo-xpos)*dir > kEpsilon){
+    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
+    Double_t x    = xpos+step;
+    Double_t bz=GetBz();   // getting the local Bz
+    if (!seed->PropagateTo(x,bz))  return kFALSE;
+    double ds = 0;
+    if (matCorr || updTime) {
+      xyz0[0]=xyz1[0]; // global pos at the beginning of step
+      xyz0[1]=xyz1[1];
+      xyz0[2]=xyz1[2];
+      seed->GetXYZ(xyz1);    //  // global pos at the end of step
       //
-      // go the entrance of the layer, assuming no materials in between
-      double xToGo = lrTo->GetR(-dir); // R of the entrance to layer
-      //
-      //    double xts = xToGo;
-      if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) {
-        //      printf("FailHere1: %f %f %d\n",xts,xToGo,dir);
-        //      seed->Print("etp");
-        return kFALSE;
+      if (matCorr) {
+  Double_t xrho,xx0;
+  ds = GetMaterialBudget(xyz0,xyz1,xx0,xrho); 
+  if (dir>0) xrho = -xrho; // outward should be negative
+  if (!seed->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
       }
-      if ( (dir>0&&xToGo>xStop) || (dir<0&&xToGo<xStop) ) xToGo = xStop;
-      //
-      #ifdef _ITSU_DEBUG_
-      AliDebug(2,Form("go in dir=%d to R=%.4f(X:%.4f)",dir,lrTo->GetR(-dir), xToGo));
-      #endif
-      if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) {
-        //printf("FailHere2: %f %f %d\n",xts,xToGo,dir);
-        //seed->Print("etp");
-        return kFALSE;
+      else { // matCorr is not requested but time integral is
+  double d0 = xyz1[0]-xyz0[0];
+  double d1 = xyz1[1]-xyz0[1];
+  double d2 = xyz1[2]-xyz0[2];  
+  ds = TMath::Sqrt(d0*d0+d1*d1+d2*d2);
       }
-      lrFr = lrTo;
     }
-    return kTRUE;
+    if (updTime) seed->AddTimeStep(ds);
     //
+    xpos = seed->GetX();
   }
+  return kTRUE;
+}
 
-  //_________________________________________________________________________
-  Bool_t AliITSUTrackerSA::GoToExitFromLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check)
-  {
-    // go to the exit from lr in direction dir, applying material corrections in steps specific for this layer
-    // If check is requested, do this only provided the track has not exited the layer already
-    double xToGo = lr->GetR(dir);
-    if (check) { // do we need to track till the surface of the current layer ?
-      double curR2 = seed->GetX()*seed->GetX() + seed->GetY()*seed->GetY(); // current radius
-      if      (dir>0) { if (curR2-xToGo*xToGo>-fgkToler) return kTRUE; } // on the surface or outside of the layer
-      else if (dir<0) { if (xToGo*xToGo-curR2>-fgkToler) return kTRUE; } // on the surface or outside of the layer
+//_________________________________________________________________________
+Bool_t AliITSUTrackerSA::TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo, Double_t rLim)
+{
+  // transport track from layerFrom to the entrance of layerTo or to rLim (if>0), wathever is closer
+  //  
+  if (lTo==lFrom) AliFatal(Form("was called with lFrom=%d lTo=%d",lFrom,lTo));
+  //
+  int dir = lTo > lFrom ? 1:-1;
+  AliITSURecoLayer* lrFr = fITS->GetLayer(lFrom); // this can be 0 when extrapolation from TPC to ITS is requested
+  Bool_t checkFirst = kTRUE;
+  Bool_t limReached = kFALSE;
+  while(lFrom!=lTo) {
+    if (lrFr) {
+      if (!GoToExitFromLayer(seed,lrFr,dir,checkFirst)) return kFALSE; // go till the end of current layer
+      checkFirst = kFALSE;
     }
-    if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
-    // go via layer to its boundary, applying material correction.
-    if (!PropagateSeed(seed,xToGo,fCurrMass, lr->GetMaxStep())) return kFALSE;
+    AliITSURecoLayer* lrTo =  fITS->GetLayer( (lFrom+=dir) );
+    if (!lrTo) AliFatal(Form("Layer %d does not exist",lFrom));
     //
-    return kTRUE;
+    // go the entrance of the layer, assuming no materials in between
+    double xToGo = lrTo->GetR(-dir);
+    if (rLim>0) {
+      if (dir>0) {
+  if (rLim<xToGo) {xToGo = rLim; limReached = kTRUE;}
+      }
+      else {
+  if (rLim>xToGo) {xToGo = rLim; limReached = kTRUE;}
+      }
+    }
+    //    double xts = xToGo;
+    if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) {
+      //      printf("FailHere1: %f %f %d\n",xts,xToGo,dir);
+      //      seed->Print("etp");
+      return kFALSE;
+    }
+    if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) {
+      //printf("FailHere2: %f %f %d\n",xts,xToGo,dir);
+      //seed->Print("etp");
+      return kFALSE;
+    }
+    lrFr = lrTo;
+    if (limReached) break;
+  }
+  return kTRUE;
+  //
+}
+
+//_________________________________________________________________________
+Bool_t AliITSUTrackerSA::TransportToLayerX(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo, Double_t xStop)
+{
+  // transport track from layerFrom to the entrance of layerTo but do not pass control parameter X
+  //  
+  if (lTo==lFrom) AliFatal(Form("was called with lFrom=%d lTo=%d",lFrom,lTo));
+  //
+  int dir = lTo > lFrom ? 1:-1;
+  AliITSURecoLayer* lrFr = fITS->GetLayer(lFrom); // this can be 0 when extrapolation from TPC to ITS is requested
+  Bool_t checkFirst = kTRUE;
+  while(lFrom!=lTo) {
+    if (lrFr) {
+      if (!GoToExitFromLayer(seed,lrFr,dir,checkFirst)) return kFALSE; // go till the end of current layer
+      checkFirst = kFALSE;
+    }
+    AliITSURecoLayer* lrTo =  fITS->GetLayer( (lFrom+=dir) );
+    if (!lrTo) AliFatal(Form("Layer %d does not exist",lFrom));
     //
-  }
-
-  //_________________________________________________________________________
-  Bool_t AliITSUTrackerSA::GoToEntranceToLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check)
-  {
-    // go to the entrance of lr in direction dir, w/o applying material corrections.
-    // If check is requested, do this only provided the track did not reach the layer already
-    double xToGo = lr->GetR(-dir);
-    if (check) { // do we need to track till the surface of the current layer ?
-      double curR2 = seed->GetX()*seed->GetX() + seed->GetY()*seed->GetY(); // current radius
-      if      (dir>0) { if (curR2-xToGo*xToGo>-fgkToler) return kTRUE; } // already passed
-      else if (dir<0) { if (xToGo*xToGo-curR2>-fgkToler) return kTRUE; } // already passed
-    }
-    if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
-    // go via layer to its boundary, applying material correction.
-    if (!PropagateSeed(seed,xToGo,fCurrMass, 100, kFALSE)) return kFALSE;
-    return kTRUE;
+    // go the entrance of the layer, assuming no materials in between
+    double xToGo = lrTo->GetR(-dir); // R of the entrance to layer
     //
-  }
-
-  //____________________________________________________
-  Double_t AliITSUTrackerSA::GetMaterialBudget(const double* pnt0,const double* pnt1, double& x2x0, double& rhol) const
-  {
-    double par[7];
-    if (fUseMatLUT && fMatLUT) {
-      double d = fMatLUT->GetMatBudget(pnt0,pnt1,par);
-      x2x0 = par[AliITSUMatLUT::kParX2X0];
-      rhol = par[AliITSUMatLUT::kParRhoL];
-      return d;
+    //    double xts = xToGo;
+    if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) {
+      //      printf("FailHere1: %f %f %d\n",xts,xToGo,dir);
+      //      seed->Print("etp");
+      return kFALSE;
     }
-    else {
-      MeanMaterialBudget(pnt0,pnt1,par);
-      x2x0 = par[1];
-      rhol = par[0]*par[4];
-      return par[4];
+    if ( (dir>0&&xToGo>xStop) || (dir<0&&xToGo<xStop) ) xToGo = xStop;
+    //
+#ifdef _ITSU_DEBUG_
+    AliDebug(2,Form("go in dir=%d to R=%.4f(X:%.4f)",dir,lrTo->GetR(-dir), xToGo));
+#endif
+    if (!PropagateSeed(seed,xToGo,fCurrMass,100, kFALSE )) {
+      //printf("FailHere2: %f %f %d\n",xts,xToGo,dir);
+      //seed->Print("etp");
+      return kFALSE;
     }
+    lrFr = lrTo;
   }
+  return kTRUE;
+  //
+}
 
-  //____________________________________________________________________
-  Double_t AliITSUTrackerSA::Curvature(Double_t x1,Double_t y1,Double_t
-  x2,Double_t y2,Double_t x3,Double_t y3)
-  {
+//_________________________________________________________________________
+Bool_t AliITSUTrackerSA::GoToExitFromLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check)
+{
+  // go to the exit from lr in direction dir, applying material corrections in steps specific for this layer
+  // If check is requested, do this only provided the track has not exited the layer already
+  double xToGo = lr->GetR(dir);
+  if (check) { // do we need to track till the surface of the current layer ?
+    double curR2 = seed->GetX()*seed->GetX() + seed->GetY()*seed->GetY(); // current radius
+    if      (dir>0) { if (curR2-xToGo*xToGo>-fgkToler) return kTRUE; } // on the surface or outside of the layer
+    else if (dir<0) { if (xToGo*xToGo-curR2>-fgkToler) return kTRUE; } // on the surface or outside of the layer
+  }
+  if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
+  // go via layer to its boundary, applying material correction.
+  if (!PropagateSeed(seed,xToGo,fCurrMass, lr->GetMaxStep())) return kFALSE;
+  //
+  return kTRUE;
+  //
+}
 
-    //calculates the curvature of track
-    Double_t den = (x3-x1)*(y2-y1)-(x2-x1)*(y3-y1);
-    if(den==0) return 0;
-    Double_t a = ((y3-y1)*(x2*x2+y2*y2-x1*x1-y1*y1)-(y2-y1)*(x3*x3+y3*y3-x1*x1-y1*y1))/den;
-    Double_t b = -(x2*x2-x1*x1+y2*y2-y1*y1+a*(x2-x1))/(y2-y1);
-    Double_t c = -x1*x1-y1*y1-a*x1-b*y1;
-    Double_t xc=-a/2.;
+//_________________________________________________________________________
+Bool_t AliITSUTrackerSA::GoToEntranceToLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check)
+{
+  // go to the entrance of lr in direction dir, w/o applying material corrections.
+  // If check is requested, do this only provided the track did not reach the layer already
+  double xToGo = lr->GetR(-dir);
+  if (check) { // do we need to track till the surface of the current layer ?
+    double curR2 = seed->GetX()*seed->GetX() + seed->GetY()*seed->GetY(); // current radius
+    if      (dir>0) { if (curR2-xToGo*xToGo>-fgkToler) return kTRUE; } // already passed
+    else if (dir<0) { if (xToGo*xToGo-curR2>-fgkToler) return kTRUE; } // already passed
+  }
+  if (!seed->GetXatLabR(xToGo,xToGo,GetBz(),dir)) return kFALSE;
+  // go via layer to its boundary, applying material correction.
+  if (!PropagateSeed(seed,xToGo,fCurrMass, 100, kFALSE)) return kFALSE;
+  return kTRUE;
+  //
+}
 
-    if((a*a+b*b-4*c)<0) return 0;
-    Double_t rad = TMath::Sqrt(a*a+b*b-4*c)/2.;
-    if(rad==0) return 0;
+//____________________________________________________
+Double_t AliITSUTrackerSA::GetMaterialBudget(const double* pnt0,const double* pnt1, double& x2x0, double& rhol) const
+{
+  double par[7];
+  if (fUseMatLUT && fMatLUT) {
+    double d = fMatLUT->GetMatBudget(pnt0,pnt1,par);
+    x2x0 = par[AliITSUMatLUT::kParX2X0];
+    rhol = par[AliITSUMatLUT::kParRhoL];    
+    return d;
+  }
+  else {
+    MeanMaterialBudget(pnt0,pnt1,par);
+    x2x0 = par[1];
+    rhol = par[0]*par[4];    
+    return par[4];
+  }
+}
 
-    if((x1>0 && y1>0 && x1<xc)) rad*=-1;
-    if((x1<0 && y1>0 && x1<xc)) rad*=-1;
+//____________________________________________________________________
+Double_t AliITSUTrackerSA::Curvature(Double_t x1,Double_t y1,Double_t x2,Double_t y2,Double_t x3,Double_t y3) {
+
+  //calculates the curvature of track
+  Double_t den = (x3-x1)*(y2-y1)-(x2-x1)*(y3-y1);
+  if(den*den<1e-32) return 0.;
+  Double_t a = ((y3-y1)*(x2*x2+y2*y2-x1*x1-y1*y1)-(y2-y1)*(x3*x3+y3*y3-x1*x1-y1*y1))/den;
+  if((y2-y1)*(y2-y1)<1e-32) return 0.;
+  Double_t b = -(x2*x2-x1*x1+y2*y2-y1*y1+a*(x2-x1))/(y2-y1);
+  Double_t c = -x1*x1-y1*y1-a*x1-b*y1;
+  Double_t xc= -a/2.;
+
+  if((a*a+b*b-4*c)<0) return 0.;
+  Double_t rad = TMath::Sqrt(a*a+b*b-4*c)/2.;
+  if(rad*rad<1e-32) return 1e16;
+
+  if((x1>0 && y1>0 && x1<xc)) rad*=-1;
+  if((x1<0 && y1>0 && x1<xc)) rad*=-1;
     //  if((x1<0 && y1<0 && x1<xc)) rad*=-1;
     // if((x1>0 && y1<0 && x1<xc)) rad*=-1;
 
-    return 1/rad;
+  return 1/rad;
 
-  }
-
-  #ifdef __DEBUG__
-  //____________________________________________________
-  void AliITSUTrackerSA::PrintInfo(TString what) {
-    //
-    if( what.Contains("clusters") ) {
-      cout << "Dumping clusters info" << endl;
-      for ( int i = 0; i < 7; ++i ) {
-        cout << "**** Layer " << i << " ****" << endl;
-        for ( int c = 0; c < fNClusters[i]; ++c ) {
-          cout << "*** Cluster " << c << " ***" <<endl;
-          cout << fClusters[i][fIndex[i][c]] << endl;
-        }
-      }
-    }
-    //
-    if( what.Contains("doublets") ) {
-      cout << "Dumping doublets info" << endl;
-      for ( int i = 0; i < 6; ++i ) {
-        cout << "**** Doublets array " << i << " ****" << endl;
-        for ( int c = 0; c < fNDoublets[i]; ++c ) {
-          cout << "*** Doublet " << c << " ***" <<endl;
-          cout << fDoublets[i][c] << endl;
-        }
-      }
-    }
-  }
-
-  //____________________________________________________
-  void AliITSUTrackerSA::DrawEvent(TString what) {
-    //
-
-    const int size = 900;
-    if (fCv == 0x0 ) {
-      fCv = new TCanvas("cv_event","cv_event",size,size);
-      fCv->Range(0,0,size,size);
-    }
-    if (fTx == 0x0 ) {
-      fTx = new TText();
-      fTx->SetTextSize(0.015);
-      fTx->SetTextColor(kBlack);
-      fTx->DrawText(0,0,"Bending plane");
-    }
-
-    const float cX = size/2.f; //pt.GetX();
-    const float cY = size/2.f; //pt.GetY();
-    const float sc = 8.5f;
-    if( what.Contains("clusters") ) {
-      if(fMk==0x0) fMk=new TMarker();
-      fMk->SetMarkerStyle(20);
-      fMk->SetMarkerColor(kRed);
-      fMk->SetMarkerSize(0.3);
-      for(int iL=0; iL<7; ++iL) {
-        for(int iC=0; iC<fNClusters[iL];++iC) {
-          fMk->DrawMarker(cX+fClusters[iL][iC].x*sc,cY+fClusters[iL][iC].y*sc);
-          if( what.Contains("clusters+id") )  fTx->DrawText(cX+fClusters[iL][iC].x*sc,cY+fClusters[iL][iC].y*sc,Form("%i",fIndex[iL][iC])); 
-        }
-      }
-    }
-    //
-    if( what.Contains("doublets") ) {
-      if(fLn==0x0) fLn=new TLine();
-      for(int iL=0; iL<6; ++iL) {
-        for(int iD=0; iD<fNDoublets[iL]; ++iD) {
-          const int id0 = fDoublets[iL][iD].id0;//fIndex[iL][fDoublets[iL][iD].id0];
-          const int id1 = fDoublets[iL][iD].id1;//fIndex[iL+1][fDoublets[iL][iD].id1];
-          fLn->DrawLine(cX+fClusters[iL][id0].x*sc,cY+fClusters[iL][id0].y*sc,cX+fClusters[iL+1][id1].x*sc,cY+fClusters[iL+1][id1].y*sc);
-          if( what.Contains("doublets+level") ) fTx->DrawText(cX+(fClusters[iL][id0].x+fClusters[iL+1][id1].x)*sc/(2.f),cY+(fClusters[iL][id0].y+fClusters[iL+1][id1].y)*sc/(2.f),Form("%i",fDoublets[iL][iD].level));
-        }
-      }
-    }
-    //
-  }
-
-//____________________________________________________
-void AliITSUTrackerSA::DrawRoads(vector<Road> &vec) {
-  const int size = 900;
-  const float cX = size/2.f; 
-  const float cY = size/2.f; 
-  const float sc = 8.5f;
-  
-  if (fCv == 0x0 ) {
-    fCv = new TCanvas("cv_event","cv_event",size,size);
-    fCv->Range(0,0,size,size);
-  }
-  if(fLn==0x0) {
-    fLn=new TLine();
-    fLn->SetLineColor(kRed);
-  }
-  for ( size_t iV = 0; iV < vec.size(); ++iV ) {
-   cout << vec[iV] << endl;
-    for( int iE=0; iE<6; ++iE ) {
-      if (vec[iV].fElements[iE]!=-1) {
-        const int iD = vec[iV].fElements[iE];
-        const int id0 = fDoublets[iE][iD].id0;//fIndex[iL][fDoublets[iL][iD].id0];
-        const int id1 = fDoublets[iE][iD].id1;//fIndex[iE+1][fDoublets[iE][iE].id1];
-        fLn->DrawLine(cX+fClusters[iE][id0].x*sc,cY+fClusters[iE][id0].y*sc,cX+fClusters[iE+1][id1].x*sc,cY+fClusters[iE+1][id1].y*sc);
-      }
-    }
-  }  
 }
 
-
-#endif
