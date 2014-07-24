@@ -62,7 +62,7 @@ using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP() 
 : AliAnalysisTaskSE(), 
-  fisPrimCut(kFALSE),
+  fisPrimCut(kTRUE),
   fptc(1),     
   fmaxpull(3),
   fmaxVz(10),
@@ -114,7 +114,7 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name) 
 : AliAnalysisTaskSE(name), 
-  fisPrimCut(kFALSE),
+  fisPrimCut(kTRUE),
   fptc(1),    
   fmaxpull(3), 
   fmaxVz(10),
@@ -362,8 +362,8 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   
   
      Int_t binsHistReal[11] = { 105  , 120 , 100 ,  100,  100 ,   6   ,   100 ,  100 ,  100   ,  100  , 100};
-  Double_t xminHistReal[11] = {-0.5  ,  0  ,-0.6 ,  -10,  -10 ,  -2.5 ,  -1.1 , -1.1 , -1.1   , -1.1  , -3};
-  Double_t xmaxHistReal[11] = { 105.5,  6  , 0.6 ,   10,   10 ,   2.5 ,   1.1 ,  1.1 ,  1.1   ,  1.1  ,  3};
+  Double_t xminHistReal[11] = {-0.5  ,  0  ,-2.5 ,  -10,  -10 ,  -2.5 ,  -1.1 , -1.1 , -1.1   , -1.1  , -3};
+  Double_t xmaxHistReal[11] = { 105.5,  6  , 2.5 ,   10,   10 ,   2.5 ,   1.1 ,  1.1 ,  1.1   ,  1.1  ,  3};
   fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",11,binsHistReal,xminHistReal,xmaxHistReal);
   fListHist->Add(fHistRealTracks);
  
@@ -653,6 +653,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
 
     Float_t beta = 0;
     Float_t gamma = 0;
+    Float_t mass  = 0;
     Float_t deltaMass = 0;
      
     Double_t pt  = esdtrack->Pt();
@@ -661,15 +662,15 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       
       fhBBDeu->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
       
-      deltaMass = 0;
       
       if(tof > 0 && pt > 1.){
 	beta = esdtrack->GetIntegratedLength()/(tof * 2.99792457999999984e-02);
 	gamma = 1/TMath::Sqrt(1 - beta*beta);
-	deltaMass = poutTPC/TMath::Sqrt(gamma*gamma - 1) - massC;
-	fhMassTOF->Fill(deltaMass);
+	mass = poutTPC/TMath::Sqrt(gamma*gamma - 1);
+	fhMassTOF->Fill(mass);
       }
-	
+
+      deltaMass = mass*mass-massC*massC;	
       // Event Plane
       //Remove AutoCorrelation
       evPlAngTPC = GetEventPlaneForCandidate(esdtrack,q,pl);

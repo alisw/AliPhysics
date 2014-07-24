@@ -33,6 +33,7 @@ class AliSpectraBothTrackCuts : public TNamed
   enum {kAODobject=0,kESDobject,kotherobject};
   
  AliSpectraBothTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0),fDCACut(0) ,fPCut(0), fPtCut(0),fYCutMax(0),fYCutMin(0), fPtCutTOFMatching(0),fAODtrack(0), fHashitinSPD1(0),fusedadditionalcuts(kTRUE),
+ fPtCutTOFMatchingPion(-1.0),fPtCutTOFMatchingKaon(-1.0),fPtCutTOFMatchingProton(-1.0),fUseTypeDependedTOFCut(kFALSE),
 fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),
 fHistoDCAzQA(0),fHistoNclustersQA(0),fHistochi2perNDFQA(0),
 fTrack(0),fCuts(0) {}
@@ -51,6 +52,8 @@ fTrack(0),fCuts(0) {}
   Bool_t CheckPCut();
   Bool_t CheckPtCut();
   Bool_t CheckTOFMatching(Bool_t FillHistStat);
+  Bool_t CheckTOFMatchingParticleType(Int_t type);
+	
   void PrintCuts() const;
   
    UInt_t GetTrackType()  const    { return fTrackBits;}
@@ -64,17 +67,20 @@ fTrack(0),fCuts(0) {}
    TH3F * GetHistoDCAzQA() {return fHistoDCAzQA;}
    TH3F * GetHistoNclustersQA() {return fHistoNclustersQA ;}
    TH3F * GetHistochi2perNDFQA() {return fHistochi2perNDFQA; }
+   Bool_t GetUseTypeDependedTOFCut () {return fUseTypeDependedTOFCut;}
 		 
    void SetEta(Float_t etamin,Float_t etamax)   { fEtaCutMin = etamin;fEtaCutMax = etamax; }
    void SetDCA(Float_t dca)   { fDCACut = dca; }
    void SetP(Float_t p)       { fPCut = p; }
    void SetPt(Float_t pt)     { fPtCut = pt; }
    void SetY(Float_t ymax,Float_t ymin) { fYCutMax = ymax;fYCutMin=ymin;}
-   void SetPtTOFMatching(Float_t pt)     { fPtCutTOFMatching = pt; }
+   void SetPtTOFMatching(Float_t pt)     { fPtCutTOFMatching = pt; fUseTypeDependedTOFCut=kFALSE;}
    void SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
    void SetMinTPCcls(UInt_t MinTPCcls) {fMinTPCcls=MinTPCcls;}
    void SetHashitinSPD1 (Bool_t value) {fHashitinSPD1=value;}	
-   void SetUsedAdditionalCuts (Bool_t value) {fusedadditionalcuts=value;}	
+   void SetUsedAdditionalCuts (Bool_t value) {fusedadditionalcuts=value;}
+   void SetPtTOFMatchingPartDepended(Float_t pion,Float_t kaon,Float_t proton);
+   	
    Float_t GetEtaMin()       const    { return fEtaCutMin; }
    Float_t GetEtaMax()       const    { return fEtaCutMax; }
    Float_t GetYMax()         const    { return fYCutMax; }
@@ -84,6 +90,10 @@ fTrack(0),fCuts(0) {}
    Float_t GetP()         const    { return fPCut; }
    Float_t GetPt()        const    { return fPtCut; }
    Float_t GetPtTOFMatching()        const    { return fPtCutTOFMatching; } 
+   Float_t GetPtTOFMatchingPion()        const    { return fPtCutTOFMatchingPion; } 
+   Float_t GetPtTOFMatchingKaon()        const    { return fPtCutTOFMatchingKaon; } 
+   Float_t GetPtTOFMatchingProton()        const    { return fPtCutTOFMatchingProton; } 
+
    Long64_t Merge(TCollection* list);
    void SetAliESDtrackCuts(AliESDtrackCuts*  cuts ){fCuts=cuts;}
    void InitHisto();	 
@@ -102,7 +112,11 @@ fTrack(0),fCuts(0) {}
    Float_t          fPtCutTOFMatching;           // TOF Matching
    Int_t 	     fAODtrack; // 0 ESD track connected , 1 AOD track conected , else nothing
    Bool_t 	    fHashitinSPD1; // Check if SPD1 has a hit 	
-   Bool_t          fusedadditionalcuts;          //If set to true the TPCrefit, ITSrefit, SPDany and Ncluster cut is check 		
+   Bool_t          fusedadditionalcuts;          //If set to true the TPCrefit, ITSrefit, SPDany and Ncluster cut is check 	
+   Float_t          fPtCutTOFMatchingPion; // TOF Matching cut for pions
+   Float_t          fPtCutTOFMatchingKaon; // TOF Matching cut for kaons
+   Float_t          fPtCutTOFMatchingProton;  	// TOF Matching cut for protons	
+   Bool_t           fUseTypeDependedTOFCut;   // if yes use particle depened tof cut 	
    TH1I             *fHistoCuts;       // Cuts statistics
    TH1F             *fHistoNSelectedPos;       // Selected positive tracks
    TH1F             *fHistoNSelectedNeg;       // Selected negative tracks
@@ -122,8 +136,10 @@ fTrack(0),fCuts(0) {}
    
    AliSpectraBothTrackCuts(const AliSpectraBothTrackCuts&);
    AliSpectraBothTrackCuts& operator=(const AliSpectraBothTrackCuts&);
-   
-   ClassDef(AliSpectraBothTrackCuts, 6);
+   void ConfigurePtTOFCut(); 	
+  
+
+   ClassDef(AliSpectraBothTrackCuts, 7);
 };
 #endif
 

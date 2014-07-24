@@ -157,6 +157,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) :
 AliAnalysisTaskJetV2::~AliAnalysisTaskJetV2()
 {
     // destructor
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(fOutputList)             {delete fOutputList;            fOutputList = 0x0;}
     if(fOutputListGood)         {delete fOutputListGood;        fOutputListGood = 0x0;}
     if(fOutputListBad)          {delete fOutputListBad;         fOutputListBad = 0x0;}
@@ -171,6 +172,7 @@ AliAnalysisTaskJetV2::~AliAnalysisTaskJetV2()
 void AliAnalysisTaskJetV2::ExecOnce()
 {
     // Init the analysis
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
     if(fAttachToEvent) {
         if(!(InputEvent()->FindListObject(fLocalRho->GetName()))) {
@@ -187,9 +189,17 @@ void AliAnalysisTaskJetV2::ExecOnce()
 Bool_t AliAnalysisTaskJetV2::Notify()
 {
     // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(fRunNumber != InputEvent()->GetRunNumber()) {
         fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
         if(fDebug > 0) printf("__FUNC__ %s > NEW RUNNUMBER DETECTED \n ", __func__);
+        // check if this is 10h or 11h data. for 10h we don't want to change the acceptance
+        switch (fCollisionType) {
+            case kPbPb10h : {
+                return kTRUE;
+            } break;
+            default : break;
+        }
         // reset the cuts. should be a pointless operation except for the case where the run number changes
         // from semi-good back to good on one node, which is not a likely scenario (unless trains will
         // run as one masterjob)
@@ -342,10 +352,17 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
         Int_t r[] =  {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081, /* up till here original good TPC list */169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309, /* original semi-good tpc list */169415, 169411, 169035, 168988, 168984, 168826, 168777, 168512, 168511, 168467, 168464, 168342, 168310, 168115, 168108, 168107, 167987, 167915, 167903, /*new runs, good according to RCT */ 169238, 169160, 169156, 169148, 169145, 169144 /* run swith missing OROC 8 but seem ok in QA */};
         fExpectedRuns = new TArrayI(sizeof(r)/sizeof(r[0]), r);
     }
-    if(!fExpectedSemiGoodRuns) {
-        Int_t r[] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
-        fExpectedSemiGoodRuns = new TArrayI(sizeof(r)/sizeof(r[0]), r);
+    // set default semi-good runs only for 11h data
+    switch (fCollisionType) {
+        case kPbPb10h : break;
+        default : {
+            if(!fExpectedSemiGoodRuns) {
+                Int_t r[] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
+                fExpectedSemiGoodRuns = new TArrayI(sizeof(r)/sizeof(r[0]), r);
+            }
+        }
     }
+
     // global QA
     fHistCentrality =           BookTH1F("fHistCentrality", "centrality", 102, -2, 100);
     fHistVertexz =              BookTH1F("fHistVertexz", "vertex z (cm)", 100, -12, 12);
@@ -693,6 +710,7 @@ Bool_t AliAnalysisTaskJetV2::Run()
 void AliAnalysisTaskJetV2::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const 
 {
     // get the vzero event plane
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(fUseV0EventPlaneFromHeader) {    // use the vzero from the header
         Double_t a(0), b(0), c(0), d(0), e(0), f(0), g(0), h(0);
         vzero[0][0] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 2, a, b);
@@ -756,6 +774,7 @@ void AliAnalysisTaskJetV2::CalculateEventPlaneTPC(Double_t* tpc)
 void AliAnalysisTaskJetV2::CalculateEventPlaneCombinedVZERO(Double_t* comb) const
 {
     // grab the combined vzero event plane
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     Double_t a(0), b(0), c(0), d(0);
     comb[0] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 10, 2, a, b);
     comb[1] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 10, 3, c, d);
@@ -1167,7 +1186,7 @@ Bool_t AliAnalysisTaskJetV2::CorrectRho(Double_t psi2, Double_t psi3)
     if(GetParticleContainer()->GetParticlePhiMin() > lowBound) lowBound = GetParticleContainer()->GetParticlePhiMin();
     if(GetParticleContainer()->GetParticlePhiMax() < upBound) upBound = GetParticleContainer()->GetParticlePhiMax();
 
-    fHistSwap->Reset();                 // clear the histogram
+    fHistSwap->Reset(); // clear the histogram
     TH1F _tempSwap;     // on stack for quick access
     TH1F _tempSwapN;    // on stack for quick access, bookkeeping histogram
     if(fRebinSwapHistoOnTheFly) {
