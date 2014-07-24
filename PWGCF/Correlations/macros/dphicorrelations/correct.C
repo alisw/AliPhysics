@@ -15,7 +15,9 @@ enum ECharge_t {
   kNegative,
   kNCharges
 };
-
+Bool_t gIsTrkletsTrklets=kFALSE;
+Bool_t gIsMuTrklets=kFALSE;
+  
 void SetRanges(TAxis* axis)
 {
   if (strcmp(axis->GetTitle(), "leading p_{T} (GeV/c)") == 0)
@@ -7108,10 +7110,10 @@ void GetSumOfRatios(void* hVoid, void* hMixedVoid, TH1** hist, Int_t step, Int_t
   *hist  = h->GetUEHist(2)->GetSumOfRatios2(hMixed->GetUEHist(2), step, 0, ptBegin, ptEnd, centralityBeginBin, centralityEndBin, normalizePerTrigger);
   
   TString str;
-  str.Form("%.1f < p_{T,trig} < %.1f", ptBegin - 0.01, ptEnd + 0.01);
+  str.Form("%.1f < %s < %.1f", ptBegin - 0.001,(gIsTrkletsTrklets)?"Dphi_{trig}":"p_{T,trig}", ptEnd + 0.01);
   
   TString str2;
-  str2.Form("%.2f < p_{T,assoc} < %.2f", gpTMin - 0.01, gpTMax + 0.01);
+  str2.Form("%.1f < %s < %.1f", gpTMin - 0.001, (gIsTrkletsTrklets || gIsMuTrklets)?"Dphi_{ass}":"p_{T,ass}",gpTMax + 0.01);
     
   TString newTitle;
   newTitle.Form("%s - %s - %d-%d", str.Data(), str2.Data(), centralityBegin, centralityEnd);
@@ -7119,6 +7121,7 @@ void GetSumOfRatios(void* hVoid, void* hMixedVoid, TH1** hist, Int_t step, Int_t
     newTitle += "%";
   if ((*hist))
     (*hist)->SetTitle(newTitle);
+  //Printf("\n\n\n\n %s\n\n\n",newTitle.Data());
 }
  
 void PlotDeltaPhiDistributions(const char* fileName1, const char* fileName2, Float_t yMax = 0.1, Int_t twoD = 0, Int_t centrBegin = 1, Int_t centrEnd = 1)
@@ -7730,7 +7733,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
   Bool_t symmetrizePt = kFALSE;
   Int_t maxLeadingPt = 4;
   Int_t maxAssocPt = 6;
-  if (1)
+  if (0)
   {
     //PbPb, NS peak shapes
     Float_t leadingPtArr[] = { 1.0, 2.0, 3.0, 4.0, 8.0, 15.0, 20.0 };
@@ -7745,6 +7748,24 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     Float_t leadingPtArr[] =     { 3.0, 5.0, 8.0, 16.0 };
     Float_t assocPtArr[] = {0.15, 0.3, 50.0, 0.5, 50.0, 1.0, 50.0 };
   }
+  else if (gIsMuTrklets)
+    {
+    //mu-trklets
+    maxLeadingPt = 8;
+    maxAssocPt = 6;
+    Float_t leadingPtArr[] =     {., 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0, 10.0};
+    Float_t assocPtArr[] = {0.0,0.0,0.0, 1.0, 2.0,5.0,10. };
+    gIsMuTrklets=kTRUE;
+    }
+  else if (gIsTrkletsTrklets)
+    {
+    //trklets-trklets
+    maxLeadingPt = 4;
+    maxAssocPt = 6;
+    Float_t leadingPtArr[] =     {0.0, 1.0,2.0,5.0,10.0};
+    Float_t assocPtArr[] = {0.0,0.0,0.0, 1.0, 2.0,5.0,10.0};
+    gIsTrkletsTrklets=kTRUE;
+    }
   else if (0)
   {
     //pA, trigger from all pT
@@ -7771,6 +7792,22 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     Float_t leadingPtArr[] = { 0.5, 1.0, 1.5, 2.0, 2.5,  4.0, 8.0, 15.0, 20.0 };
     Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 1.5, 2.0, 2.5, 4.0, 8.0, 10.0, 12.0 };
   }
+  else if (1)
+  {
+    //pp, for Ilya
+    maxLeadingPt = 5;
+    maxAssocPt = 6;
+    Float_t leadingPtArr[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 8.0, 20. };
+    Float_t assocPtArr[] =  { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 8.0, 20. };
+  }
+  else if (1)
+  {
+    //pA, for Tim
+    maxLeadingPt = 3;
+    maxAssocPt = 4;
+    Float_t leadingPtArr[] = { 0.5, 1.0, 2.0, 4.0 };
+    Float_t assocPtArr[] =  { 0.15, 0.5, 1.0, 2.0, 4.0 };
+  }
   else if (0)
   {
     //pPb and PbPb with PID, with low pt points TPC only
@@ -7779,7 +7816,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     Float_t leadingPtArr[] = {   0.2, 0.3, 0.5 , 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3., 4.0};
     Float_t assocPtArr[] =   { 0.15, 0.2, 0.3, 0.5 , 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3., 4.0 };
   }
-  else if (1)
+  else if (0)
   {
     //PbPb for comaprison with You
     maxLeadingPt = 8;
@@ -7858,6 +7895,10 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     h->GetUEHist(2)->SymmetrizepTBins();
     hMixed->GetUEHist(2)->SymmetrizepTBins();
   }
+  if(0){
+    h->GetUEHist(2)->SetSkipScaleMixedEvent(1);
+    hMixed->GetUEHist(2)->SetSkipScaleMixedEvent(1);
+  }
   
   TList* list2 = 0;
   AliUEHistograms* h2 = 0;
@@ -7884,9 +7925,12 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
   if (refMultRaw)
   {
 //     new TCanvas; refMultRaw->Draw("COLZ");
-    Int_t nCentrBins = 4;
+    //Int_t nCentrBins = 4;
+    Int_t nCentrBins = 5;
+    Double_t centrBins[] = { 0., 20., 40., 60., 80., 100. };
     Double_t centrBins[] = { 0., 20., 40., 60., 100. };
-//     Double_t centrBins[] = { 0., 3., 10., 50., 100. };
+
+    //     Double_t centrBins[] = { 0., 3., 10., 50., 100. };
     TH1* refMult = new TH1F("refMult", ";centrality;<Nch>", nCentrBins, centrBins);
     for (Int_t i=0; i<nCentrBins; i++)
     {
@@ -7944,7 +7988,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
   
   for (Int_t i=0; i<maxLeadingPt; i++)
   {
-    for (Int_t j=2; j<maxAssocPt; j++)
+    for (Int_t j=1; j<maxAssocPt; j++)
     {
       if(0){
 	if(j!=(i+1))continue;
@@ -7953,6 +7997,8 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
 
       gpTMin = assocPtArr[j] + 0.01;
       gpTMax = assocPtArr[j+1] - 0.01;
+
+      if(gIsTrkletsTrklets || gIsMuTrklets)=gpTMin=0.01;
       
       if(gpTMin >= gpTMax)continue;
 	
@@ -7964,9 +8010,10 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
       SetupRanges(hMixed3);
 //       SetupRanges(hMixed3);
 
-      if(1) if (assocPtArr[j] >= leadingPtArr[i+leadingPtOffset])
+      if(0) if (assocPtArr[j] >= leadingPtArr[i+leadingPtOffset])
 	continue;
   
+      TH1* hist0 = 0;
       TH1* hist1 = 0;
       TH1* hist2 = 0;
       TH1* hist3 = 0;
@@ -7975,13 +8022,15 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
       TH1* hist6 = 0;
       TH1* hist7 = 0;
       TH1* hist8 = 0;
+      TH1* hist9 = 0;
+      TH1* hist10 = 0;
       
       Bool_t equivMixedBin = 1; //kFALSE; // TODO ?
       Bool_t scaleToPairs = kTRUE;
       
       Int_t histType = 1;
 
-      if (1)
+      if (0)
       {
 	// PbPb
 	Int_t step = 8;
@@ -7996,7 +8045,25 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
 	if (h2)
 	  GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
       }
-      else if (0)
+      else if (1)
+      {
+	// pp vs Mult for Ilya
+	Int_t step = 8;
+// 	Int_t step = 0;
+      
+	GetSumOfRatios(h, hMixed, &hist0,  step,  0,  1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist1,  step,  0, 10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist2,  step, 10, 20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist3,  step, 20, 30, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist4,  step, 30, 40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist5,  step, 40, 50, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist6,  step, 50, 60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist7,  step, 60, 70, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist8,  step, 70, 80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist9,  step, 80, 90, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist10,step, 90,100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	}      
+      else if (1)
       {
 	// pA, fine binning
 	Int_t step = 8;
@@ -8014,6 +8081,19 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
 	
 	if (h3)
 	  GetSumOfRatios(h3, hMixed3, &hist6,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+      }      
+      else if (1)
+      {
+	// trkletstrklets
+	Int_t step = 6;
+	//Int_t step = 0;
+	GetSumOfRatios(h, hMixed, &hist1,  step,  0, 20, (gIsTrkletsTrklets)?0.01:leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist2,  step, 20, 40, (gIsTrkletsTrklets)?0.01:leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist4,  step, 40, 60, (gIsTrkletsTrklets)?0.01:leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist5,  step, 60, 100, (gIsTrkletsTrklets)?0.01:leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	// GetSumOfRatios(h, hMixed, &hist2,  step,  20, 40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	// GetSumOfRatios(h, hMixed, &hist4,  step,  40, 60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
+	// GetSumOfRatios(h, hMixed, &hist5,  step,  60, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
       }      
       else if (0)
       {
@@ -8177,62 +8257,119 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
 
       file = TFile::Open(outputFile, "UPDATE");
       
+      if (hist0)
+	{
+	  hist0->SetName(Form("dphi_%d_%d_%d", i, j, 0));
+	  hist0->Write();
+	}
       if (hist1)
-      {
-	hist1->SetName(Form("dphi_%d_%d_%d", i, j, 0));
-	hist1->Write();
-      }
-      
+	{
+	  hist1->SetName(Form("dphi_%d_%d_%d", i, j, 1));
+	  hist1->Write();
+	}
       if (hist2)
-      {
-	hist2->SetName(Form("dphi_%d_%d_%d", i, j, 1));
-	hist2->Write();
-      }
-      
-      if (hist4)
-      {
-	hist4->SetName(Form("dphi_%d_%d_%d", i, j, 3));
-	hist4->Write();
-      }
-
-      if (hist5)
-      {
-	hist5->SetName(Form("dphi_%d_%d_%d", i, j, 4));
-	hist5->Write();
-      }
-      
-      if (hist7)
-      {
-	hist7->SetName(Form("dphi_%d_%d_%d", i, j, 6));
-	hist7->Write();
-      }
-
-      if (hist8)
-      {
-	hist8->SetName(Form("dphi_%d_%d_%d", i, j, 7));
-	hist8->Write();
-      }
-
-      if (hist6)
-      {
-	hist6->SetName(Form("dphi_%d_%d_%d", i, j, 5));
-	TString title(hist6->GetTitle());
-	title.ReplaceAll("0--1%", "pp");
-	hist6->SetTitle(title);
-	hist6->Write();
-      }
-      
+	{
+	  hist2->SetName(Form("dphi_%d_%d_%d", i, j, 2));
+	  hist2->Write();
+	}
       if (hist3)
-      {
-	hist3->SetName(Form("dphi_%d_%d_%d", i, j, 2));
-	TString title(hist3->GetTitle());
-	title.ReplaceAll("0--1%", "pp");
-	hist3->SetTitle(title);
-	hist3->Write();
-      }
+	{
+	  hist3->SetName(Form("dphi_%d_%d_%d", i, j, 3));
+	  hist3->Write();
+	}
+      if (hist4)
+	{
+	  hist4->SetName(Form("dphi_%d_%d_%d", i, j, 4));
+	  hist4->Write();
+	}
+      if (hist5)
+	{
+	  hist5->SetName(Form("dphi_%d_%d_%d", i, j, 5));
+	  hist5->Write();
+	}
+      if (hist6)
+	{
+	  hist6->SetName(Form("dphi_%d_%d_%d", i, j, 6));
+	  hist6->Write();
+	}
+      if (hist7)
+	{
+	  hist7->SetName(Form("dphi_%d_%d_%d", i, j, 7));
+	  hist7->Write();
+	}
+      if (hist8)
+	{
+	  hist8->SetName(Form("dphi_%d_%d_%d", i, j, 8));
+	  hist8->Write();
+	}
+      if (hist9)
+	{
+	  hist9->SetName(Form("dphi_%d_%d_%d", i, j, 9));
+	  hist9->Write();
+	}
+      if (hist10)
+	{
+	  hist10->SetName(Form("dphi_%d_%d_%d", i, j, 10));
+	  hist10->Write();
+	}
+      
+      // if (hist1)
+      // {
+      // 	hist1->SetName(Form("dphi_%d_%d_%d", i, j, 0));
+      // 	hist1->Write();
+      // }
+      
+      // if (hist2)
+      // {
+      // 	hist2->SetName(Form("dphi_%d_%d_%d", i, j, 1));
+      // 	hist2->Write();
+      // }
+      
+      // if (hist4)
+      // {
+      // 	hist4->SetName(Form("dphi_%d_%d_%d", i, j, 3));
+      // 	hist4->Write();
+      // }
+
+      // if (hist5)
+      // {
+      // 	hist5->SetName(Form("dphi_%d_%d_%d", i, j, 4));
+      // 	hist5->Write();
+      // }
+      
+      // if (hist7)
+      // {
+      // 	hist7->SetName(Form("dphi_%d_%d_%d", i, j, 6));
+      // 	hist7->Write();
+      // }
+
+      // if (hist8)
+      // {
+      // 	hist8->SetName(Form("dphi_%d_%d_%d", i, j, 7));
+      // 	hist8->Write();
+      // }
+
+      // if (hist6)
+      // {
+      // 	hist6->SetName(Form("dphi_%d_%d_%d", i, j, 5));
+      // 	TString title(hist6->GetTitle());
+      // 	title.ReplaceAll("0--1%", "pp");
+      // 	hist6->SetTitle(title);
+      // 	hist6->Write();
+      // }
+      
+      // if (hist3)
+      // {
+      // 	hist3->SetName(Form("dphi_%d_%d_%d", i, j, 2));
+      // 	TString title(hist3->GetTitle());
+      // 	title.ReplaceAll("0--1%", "pp");
+      // 	hist3->SetTitle(title);
+      // 	hist3->Write();
+      // }
       
       file->Close();
 
+      delete hist0;
       delete hist1;
       delete hist2;
       delete hist3;
@@ -8241,6 +8378,8 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
       delete hist6;
       delete hist7;
       delete hist8;      
+      delete hist9;      
+      delete hist10;      
       
 //       return;
     }
@@ -13189,11 +13328,12 @@ void FillParentTHnSparse(const char* fileName, Bool_t reduce = kFALSE, const cha
   else
     newFileName += "_zvtx.root";
 
-  file3 = TFile::Open(newFileName, "RECREATE");
+  TFile *file3 = TFile::Open(newFileName, "RECREATE");
   file3->mkdir("PWG4_PhiCorrelations");
   file3->cd("PWG4_PhiCorrelations");
   list->Write("histosPhiCorrelations", TObject::kSingleKey);
   file3->Close();
+  delete file3;
 }
 
 void CompareZVertex(const char* fileName)
