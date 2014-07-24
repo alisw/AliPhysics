@@ -57,6 +57,10 @@ void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameF
   for (Int_t idxEvent = 0; idxEvent < esdTree->GetEntries(); idxEvent++) {
   Printf("Processing event nr %d", idxEvent);
   
+	
+	esd->SaveAs("esdTemp.root");
+	TFile  fTmp = TFile("esdTemp.root");
+	Int_t sizeIn = fTmp.GetSize();
   
   AliSysInfo::AddStamp("getEntry",0,0,idxEvent);
     esdTree->GetEntry(idxEvent);
@@ -65,20 +69,17 @@ void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameF
 
     Byte_t *mem = new Byte_t[AliFlatESDEvent::EstimateSize(esd, useESDFriends)];
     
-AliSysInfo::AddStamp("DoEvent.Start",0,0,idxEvent);
 
 
-  Printf("getting event from memory");
     flatEsd = reinterpret_cast<AliFlatESDEvent*>(mem);
-  Printf("calling special constructor");    
 	new (flatEsd) AliFlatESDEvent;
 
-  Printf("filling event");    
+AliSysInfo::AddStamp("DoEvent.Start",0,0,idxEvent);
     // -- Fill AliFlatESDEvent
     flatEsd->Fill(esd, useESDFriends);  
     
     
-AliSysInfo::AddStamp("DoEvent.Stop",0,flatEsd->GetSize(),idxEvent);
+AliSysInfo::AddStamp("DoEvent.Stop",sizeIn,flatEsd->GetSize(),idxEvent);
 
 
 
