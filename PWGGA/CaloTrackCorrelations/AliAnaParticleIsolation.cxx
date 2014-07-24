@@ -1437,9 +1437,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Int_t   particle  = GetIsolationCut()->GetParticleTypeInCone() ;
   
   TString sThreshold = "";
-  if      ( method == AliIsolationCut::kSumPtIC )  sThreshold = Form(", #Sigma #it{p}_{T}^{th} = %2.2f"                       ,GetIsolationCut()->GetSumPtThreshold());
-  else if ( method == AliIsolationCut::kPtThresIC) sThreshold = Form(", #it{p}_{T}^{th} = %2.2f"                              ,GetIsolationCut()->GetPtThreshold());
-  else if ( method == AliIsolationCut::kPtFracIC)  sThreshold = Form(", #Sigma #it{p}_{T}^{in cone}/#it{p}_{T}^{trig} = %2.2f",GetIsolationCut()->GetPtFraction());
+  if      ( method == AliIsolationCut::kSumPtIC )  sThreshold = Form(", %2.2f < #Sigma #it{p}_{T}^{in cone} < %2.2f GeV/#it{c}", GetIsolationCut()->GetSumPtThreshold(), GetIsolationCut()->GetSumPtThresholdMax());
+  else if ( method == AliIsolationCut::kPtThresIC) sThreshold = Form(", %2.2f < #it{p}_{T}^{th} < %2.2f GeV/#it{c}"            , GetIsolationCut()->GetPtThreshold(),    GetIsolationCut()->GetPtThresholdMax());
+  else if ( method == AliIsolationCut::kPtFracIC)  sThreshold = Form(", #Sigma #it{p}_{T}^{in cone}/#it{p}_{T}^{trig} = %2.2f" , GetIsolationCut()->GetPtFraction());
 
   TString sParticle = ", x^{0,#pm}";
   if      ( particle == AliIsolationCut::kOnlyNeutral )  sParticle = ", x^{0}";
