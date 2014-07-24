@@ -145,8 +145,10 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fNClusPerPho;               //!delta-eta x delta-phi(reco-mc)
   TH2F        *fMcPtInConeBG;              //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in BG template
   TH2F        *fMcPtInConeSBG;             //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in SBG range
-  TH2F        *fMcPtInConeBGnoUE;          //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in BG template no UE sub
-  TH2F        *fMcPtInConeSBGnoUE;         //!sum of mc-pt of "primary" particles inside de cone, as a function of NET-ISO in SBG range no UE sub
+  TH2F        *fMcPtInConeBGnoUE;          //!sum of mc-pt of "primary" particles inside de cone, as a function of ISO in BG template no UE sub
+  TH2F        *fMcPtInConeSBGnoUE;         //!sum of mc-pt of "primary" particles inside de cone, as a function of ISO in SBG range no UE sub
+  TH2F        *fMcPtInConeTrBGnoUE;        //!sum of mc-pt of "primary" particles inside de cone, as a function of trk only ISO in BG template no UE sub
+  TH2F        *fMcPtInConeTrSBGnoUE;       //!sum of mc-pt of "primary" particles inside de cone, as a function of trk only ISO in SBG range no UE sub
   TH2F        *fAllIsoEtMcGamma;           //!all iso distribution vs. Et clus for clusters comming from a MC prompt photon
   TH2F        *fAllIsoNoUeEtMcGamma;       //!all iso distribution (without UE subtraction) vs. Et clus for clusters comming from a MC prompt photon
   TH3F        *fMCDirPhotonPtEtaPhiNoClus; //!pt x eta x phi for prompt photons that didn't produce clusters

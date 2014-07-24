@@ -82,14 +82,14 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
   doComments(0), doIOon(0),
   fLocalRhoVal(0),
-  fTracksName(""), fJetsName(""),
+  fTracksName(""), fTracksNameME("PicoTracks"), fJetsName(""),
   event(0),
   isPItpc(0), isKtpc(0), isPtpc(0), // pid TPC
   isPIits(0), isKits(0), isPits(0), // pid ITS
   isPItof(0), isKtof(0), isPtof(0), // pid TOF
   fPoolMgr(0x0),
   fPIDResponse(0x0), fTPCResponse(),
-  fESD(0), fAOD(0),
+  fESD(0), fAOD(0),   fVevent(0),  
   fHistEventQA(0),
   fHistTPCdEdX(0), fHistITSsignal(0), //fHistTOFsignal(0),
   fHistRhovsCent(0), fHistNjetvsCent(0), fHistCentrality(0),
@@ -184,14 +184,14 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
   doComments(0), doIOon(0),
   fLocalRhoVal(0),
-  fTracksName(""), fJetsName(""),
+  fTracksName(""), fTracksNameME("PicoTracks"), fJetsName(""),
   event(0),
   isPItpc(0), isKtpc(0), isPtpc(0), // pid TPC
   isPIits(0), isKits(0), isPits(0), // pid ITS
   isPItof(0), isKtof(0), isPtof(0), // pid TOF
   fPoolMgr(0x0),
   fPIDResponse(0x0), fTPCResponse(),
-  fESD(0), fAOD(0),
+  fESD(0), fAOD(0),  fVevent(0),  
   fHistEventQA(0),
   fHistTPCdEdX(0), fHistITSsignal(0), //fHistTOFsignal(0),
   fHistRhovsCent(0), fHistNjetvsCent(0), fHistCentrality(0),
@@ -314,10 +314,13 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   fOutput->Add(fHistJetHaddPhiIN);
   fOutput->Add(fHistJetHaddPhiOUT);
   fOutput->Add(fHistJetHaddPhiMID);
+    
+  fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 2000, 0.0, 100.0, 500, 0, 500); 
+  fOutput->Add(fHistTPCdEdX);
 
   // create histo's used for general QA
   if (makeQAhistos) {
-    fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 2000, 0.0, 100.0, 500, 0, 500); 
+    //fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 2000, 0.0, 100.0, 500, 0, 500); 
     fHistITSsignal = new TH2F("ITSsignal", "ITSsignal", 2000, 0.0, 100.0, 500, 0, 500);
     //  fHistTOFsignal = new TH2F("TOFsignal", "TOFsignal", 2000, 0.0, 100.0, 500, 0, 500);
     fHistCentrality = new TH1F("fHistCentrality","centrality",100,0,100);
@@ -332,7 +335,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     fHistMEphieta = new TH2F("fHistMEphieta", "Mixed Event #phi-#eta distribution", 64, -0.5*TMath::Pi(), 1.5*TMath::Pi(), 64,-1.8,1.8);  // was 64 bins
 
     // add to output list
-    fOutput->Add(fHistTPCdEdX);
+    //fOutput->Add(fHistTPCdEdX);
     fOutput->Add(fHistITSsignal);
     //fOutput->Add(fHistTOFsignal);
     fOutput->Add(fHistCentrality);
@@ -570,7 +573,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   UInt_t bitcode = 0;  // bit coded, see GetDimParamsPID() below
   UInt_t bitcodeCorr = 0; // bit coded, see GetDimparamsCorr() below
   bitcoded = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8; // | 1<<9;
-  if(fDoEventMixing) {
+  //if(fDoEventMixing) {
     fhnJH = NewTHnSparseF("fhnJH", bitcoded);
   
     if(dovarbinTHnSparse){
@@ -579,32 +582,36 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     }
 	
     fOutput->Add(fhnJH);
-  }
+  //}
 
   bitcodeCorr = 1<<0 | 1<<1 | 1<<2 | 1<<3; // | 1<<4 | 1<<5;
   fhnCorr = NewTHnSparseFCorr("fhnCorr", bitcodeCorr);
   if(dovarbinTHnSparse) fhnCorr->GetAxis(1)->Set(nbinsjetPT, xlowjetPT);
-  fOutput->Add(fhnCorr);
-  
-/*
+  fOutput->Add(fhnCorr);  
+
+  /*
+    Double_t centralityBins[nCentralityBins+1];
+    for(Int_t ic=0; ic<nCentralityBins+1; ic++){
+      if(ic==nCentralityBins) centralityBins[ic]=500;
+      else centralityBins[ic]=10.0*ic; 
+    }
+  */
+
+  // set up centrality bins for mixed events
   // for pp we need mult bins for event mixing. Create binning here, to also make a histogram from it
-  Int_t nCentralityBins  = 8;
-  Double_t centralityBins[9] = {0.0, 4., 9, 15, 25, 35, 55, 100.0,500.0};  
-  Double_t centralityBins[nCentralityBins+1];
-  for(Int_t ic=0; ic<nCentralityBins+1; ic++){
-    if(ic==nCentralityBins) centralityBins[ic]=500;
-    else centralityBins[ic]=10.0*ic; 
-  }
-*/
+  Int_t nCentralityBinspp = 8;
+  //Double_t centralityBinspp[nCentralityBinspp+1];
+  Double_t centralityBinspp[9] = {0.0, 4., 9, 15, 25, 35, 55, 100.0, 500.0};  
 
-  // setup for Pb-Pb collisions
-  Int_t nCentralityBins  = 100;
-  Double_t centralityBins[nCentralityBins+1];
-  for(Int_t ic=0; ic<nCentralityBins; ic++){
-    centralityBins[ic]=1.0*ic;
+  // Setup for Pb-Pb collisions
+  Int_t nCentralityBinsPbPb = 100;
+  Double_t centralityBinsPbPb[nCentralityBinsPbPb+1];
+  for(Int_t ic=0; ic<nCentralityBinsPbPb; ic++){
+      centralityBinsPbPb[ic]=1.0*ic;
   }
 
-  fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBins,centralityBins);
+//  if(GetBeamType() == 0) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinspp,centralityBinspp);
+//  if(GetBeamType() == 1) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinsPbPb,centralityBinsPbPb);
 //  fOutput->Add(fHistMult);
 
   // Event Mixing
@@ -613,7 +620,9 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   Int_t nZvtxBins  = 5+1+5;
   Double_t vertexBins[] = { -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
   Double_t* zvtxbin = vertexBins;
-  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
+//  if(GetBeamType() == 0) fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspp, centralityBinspp, nZvtxBins, zvtxbin);
+  //if(GetBeamType() == 1) 
+fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, centralityBinsPbPb, nZvtxBins, zvtxbin);
 
   // set up event mixing sparse
   if(fDoEventMixing){
@@ -709,7 +718,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::ExecOnce()
 Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 { // Main loop called for each event
   // TEST TEST TEST TEST for OBJECTS!
- 
+
   fHistEventQA->Fill(1); // All Events that get entered
 
   if(!fLocalRho){
@@ -757,11 +766,16 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   Int_t centbin = GetCentBin(fCent);
   if (makeQAhistos) fHistCentrality->Fill(fCent); // won't be filled in pp collision (Keep this in mind!)
 
+  // BEAM TYPE enumerator: kNA = -1, kpp = 0, kAA = 1, kpA = 2
   // for pp analyses we will just use the first centrality bin
-  //if (centbin == -1) centbin = 0;
+  if(GetBeamType() == 0) if (centbin == -1) centbin = 0;
+  if(GetBeamType() == 1) if (centbin == -1) return kTRUE;
 
-  // apply cut to event on Centrality > 90%
-  if(fCent>90) return kTRUE;
+  // if we are on PbPb data do cut on centrality > 90%, else by default DON'T
+  if (GetBeamType() == 1) {
+    // apply cut to event on Centrality > 90%
+    if(fCent>90) return kTRUE;
+  }
 
   fHistEventQA->Fill(4);  // events after centrality check
 
@@ -791,6 +805,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   // initialize TClonesArray pointers to jets and tracks
   TClonesArray *jets = 0;
   TClonesArray *tracks = 0; 
+  TClonesArray *tracksME = 0;
 
   // get Tracks object
   tracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracks));
@@ -798,6 +813,17 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     AliError(Form("Pointer to tracks %s == 0", fTracks->GetName()));
     return kTRUE;
   } // verify existence of tracks
+
+  // get ME Tracks object
+  tracksME = dynamic_cast<TClonesArray*>(list->FindObject(fTracksNameME));
+  if (!tracksME) {
+    AliError(Form("Pointer to tracks %s == 0", fTracksNameME.Data()));
+    return kTRUE;
+  } // verify existence of tracks
+
+//  cout<<"mixed event tracks name: "<<fTracksNameME.Data()<<endl;
+
+//  return kTRUE;
 
   // get Jets object
   jets = dynamic_cast<TClonesArray*>(list->FindObject(fJets));
@@ -822,30 +848,24 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   Int_t iTT=-1;
   Double_t ptmax=-10;
 
+  fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+  if (!fVevent) {
+    printf("ERROR: fVEvent not available\n");
+    return kTRUE;
+  }
+
+  //Int_t ntracks = fVevent->GetNumberOfTracks();
+
   // loop over tracks - to get hardest track (highest pt)
   for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++){
-	AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
-    if (!track) {
-      AliError(Form("Couldn't get VTrack track %d\n", iTracks));        
+    AliVParticle* Vtrack = static_cast<AliVParticle*>(tracks->At(iTracks)); 
+    if (!Vtrack) {
+      printf("ERROR: Could not receive track %d\n", iTracks);
       continue;
-    } // verify existence of tracks
-
-/* track quality cuts
-    if(!useAOD) {
-      AliESDtrack* esdtrack = fESD->GetTrack(iTracks);
-      if (!esdtrack) {
-        AliError(Form("Couldn't get ESD track %d\n", iTracks));
-        continue;
-      }
-
-      if(!fesdTrackCuts->AcceptTrack(esdtrack)) continue;
-      track = static_cast<AliVTrack*>(esdtrack);
     }
-
-    if(useAOD) {
-	  track = static_cast<AliVTrack*>(tracks->At(iTracks));
-    }
-*/ // track quality cuts
+    
+    AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
+    if(!track) continue;
     
     // track cuts
     if(TMath::Abs(track->Eta())>0.9) continue;
@@ -1002,35 +1022,13 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
       // loop over all track for an event containing a jet with a pT>fJetPtCut  (15)GeV
       for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-/* track quality cuts
-
-        AliVTrack* track; 
-
-        if(!useAOD) {
-          AliESDtrack* esdtrack = fESD->GetTrack(iTracks);
-          if (!esdtrack) {
-            AliError(Form("Couldn't get ESD track %d\n", iTracks));
-            continue;
-          }
-
-          if(!fesdTrackCuts->AcceptTrack(esdtrack)) continue;
-          track = static_cast<AliVTrack*>(esdtrack);
-        }
-
-        if(useAOD) {
-	      track = static_cast<AliVTrack*>(tracks->At(iTracks));
+        AliVParticle* Vtrackass = static_cast<AliVParticle*>(tracks->At(iTracks)); 
+        if (!Vtrackass) {
+          printf("ERROR: Could not receive track %d\n", iTracks);
+          continue;
         }
     
-        if (!track) {
-          AliError(Form("Couldn't get VTrack track %d\n", iTracks));        
-          continue;
-        } // verify existence of tracks
-
-*/ // track quality cuts 
-        AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
-//->GetTrack(iTracks);  
-         
-        //AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
+        AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrackass);
         if (!track) {
           AliError(Form("Couldn't get AliVtrack %d\n", iTracks));
           continue;
@@ -1129,60 +1127,25 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
 ///////////////////////////////////////
 
-         //AliAODTrack *trackAOD =  static_cast<AliAODTrack*>(track);
+          // get detector signals
+          dEdx = track->GetTPCsignal();
+          ITSsig = track->GetITSsignal();
+          TOFsig = track->GetTOFsignal();
 
-		 //if (trackAOD) {
-         if (useAOD) {
-  	        AliAODTrack *trackAOD = fAOD->GetTrack(iTracks);
- 
-            // get detector signals
-            dEdx = trackAOD->GetTPCsignal();
-            ITSsig = trackAOD->GetITSsignal();
-            TOFsig = trackAOD->GetTOFsignal();
+          // TPC nSigma's
+          nSigmaPion_TPC = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+          nSigmaKaon_TPC = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
+          nSigmaProton_TPC = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
 
-            // TPC nSigma's
-            nSigmaPion_TPC = fPIDResponse->NumberOfSigmasTPC(trackAOD,AliPID::kPion);
-            nSigmaKaon_TPC = fPIDResponse->NumberOfSigmasTPC(trackAOD,AliPID::kKaon);
-            nSigmaProton_TPC = fPIDResponse->NumberOfSigmasTPC(trackAOD,AliPID::kProton);
+          // TOF nSigma's
+          nSigmaPion_TOF = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+          nSigmaKaon_TOF = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+          nSigmaProton_TOF = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
 
-            // TOF nSigma's
-            nSigmaPion_TOF = fPIDResponse->NumberOfSigmasTOF(trackAOD,AliPID::kPion);
-            nSigmaKaon_TOF = fPIDResponse->NumberOfSigmasTOF(trackAOD,AliPID::kKaon);
-            nSigmaProton_TOF = fPIDResponse->NumberOfSigmasTOF(trackAOD,AliPID::kProton);
-
-            // ITS nSigma's
-            nSigmaPion_ITS = fPIDResponse->NumberOfSigmasITS(trackAOD,AliPID::kPion);
-            nSigmaKaon_ITS = fPIDResponse->NumberOfSigmasITS(trackAOD,AliPID::kKaon);
-            nSigmaProton_ITS = fPIDResponse->NumberOfSigmasITS(trackAOD,AliPID::kProton);
-	      } // end of AOD pid
-
-
-		  //if (!trackAOD) {
-          // get PID parameters, first check if AOD/ESD
-	      if (!useAOD) {
-            AliESDtrack *trackESD = fESD->GetTrack(iTracks);
-			//AliESDtrack *trackESD = static_cast<AliESDtrack*>(track);
-
-            // get detector signals
-            dEdx = trackESD->GetTPCsignal();
-            ITSsig = trackESD->GetITSsignal();
-            TOFsig = trackESD->GetTOFsignal();
-
-            // TPC nSigma's
-            nSigmaPion_TPC = fPIDResponse->NumberOfSigmasTPC(trackESD,AliPID::kPion);
-            nSigmaKaon_TPC = fPIDResponse->NumberOfSigmasTPC(trackESD,AliPID::kKaon);
-            nSigmaProton_TPC = fPIDResponse->NumberOfSigmasTPC(trackESD,AliPID::kProton);
-
-            // TOF nSigma's
-            nSigmaPion_TOF = fPIDResponse->NumberOfSigmasTOF(trackESD,AliPID::kPion);
-            nSigmaKaon_TOF = fPIDResponse->NumberOfSigmasTOF(trackESD,AliPID::kKaon);
-            nSigmaProton_TOF = fPIDResponse->NumberOfSigmasTOF(trackESD,AliPID::kProton);
-
-            // ITS nSigma's
-            nSigmaPion_ITS = fPIDResponse->NumberOfSigmasITS(trackESD,AliPID::kPion);
-            nSigmaKaon_ITS = fPIDResponse->NumberOfSigmasITS(trackESD,AliPID::kKaon);
-            nSigmaProton_ITS = fPIDResponse->NumberOfSigmasITS(trackESD,AliPID::kProton);
-	      } // end of ESD pid
+          // ITS nSigma's
+          nSigmaPion_ITS = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+          nSigmaKaon_ITS = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+          nSigmaProton_ITS = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
 
           // fill detector signal histograms
           if (makeQAhistos) fHistTPCdEdX->Fill(pt, dEdx);
@@ -1334,7 +1297,13 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
 // ***************************************************************************************************************
 // ******************************** Event MIXING *****************************************************************
-  TObjArray* tracksClone = CloneAndReduceTrackList(tracks); // TEST
+// ***************************************************************************************************************
+
+  // initialize object array of cloned picotracks
+  TObjArray* tracksClone = 0x0;
+  
+  // PbPb collisions - create cloned picotracks
+  if(GetBeamType() == 1) tracksClone = CloneAndReduceTrackList(tracks); // TEST
 
   //Prepare to do event mixing
   if(fDoEventMixing>0){
@@ -1357,33 +1326,111 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     //    of 1./nMix can be applied.
 
     // mix jets from triggered events with tracks from MB events
-    // get the trigger bit
-    // need to change trigger bits between different runs
-//T    UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-//T    if (trigger==0)  return kTRUE; // return
+    // get the trigger bit, need to change trigger bits between different runs
+    UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    // pp collisions
+    if(GetBeamType() == 0) {
+      //trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+      if (trigger==0)  return kTRUE;
+    }
 
-    //Double_t Ntrks=(Double_t)Ntracks*1.0;
-    //cout<<"Test.. Ntrks: "<<fPoolMgr->GetEventPool(Ntrks);
+    // initialize event pools
+    AliEventPool* pool = 0x0;
+    AliEventPool* poolpp = 0x0;
+    Double_t Ntrks = -999;
 
-    AliEventPool* pool = fPoolMgr->GetEventPool(fCent, zVtx); // for PbPb? fcent
-    //AliEventPool* pool = fPoolMgr->GetEventPool(Ntrks, zVtx); // for pp
+    // pp collisions - get event pool
+    if(GetBeamType() == 0) {
+      Ntrks=(Double_t)Ntracks*1.0;
+      //cout<<"Test.. Ntrks: "<<fPoolMgr->GetEventPool(Ntrks);
+      //AliEventPool* 
+      poolpp = fPoolMgr->GetEventPool(Ntrks, zVtx); // for pp
+    }
 
-    if (!pool){
-      AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCent, zVtx));
-      //AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", Ntrks, zVtx));
+    // PbPb collisions - get event pool 
+    if(GetBeamType() == 1) pool = fPoolMgr->GetEventPool(fCent, zVtx); // for PbPb? fcent
+
+    if (!pool && !poolpp){
+      if(GetBeamType() == 1) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCent, zVtx));
+      if(GetBeamType() == 0) AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", Ntrks, zVtx));
       return kTRUE;
     }
 
     fHistEventQA->Fill(15); // mixed events cases that have pool
 
+    // initialize background tracks array
+    TObjArray* bgTracks;
+
+    // next line might not apply for PbPb collisions
+    // use only jets from EMCal-triggered events (for lhc11a use AliVEvent::kEMC1)
+    //check for a trigger jet
+    // fmixingtrack/10 ??
+    if(GetBeamType() == 1) if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) {
+
+      // loop over jets (passing cuts?)
+      for (Int_t ijet = 0; ijet < Njets; ijet++) {
+        Double_t leadjet=0;
+        if (ijet==ijethi) leadjet=1;
+
+        // get jet object
+        AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
+	    if (!jet) continue;
+
+		// (should probably be higher..., but makes a cut on jet pT)
+     	if (jet->Pt()<0.1) continue;
+    	if (!AcceptMyJet(jet)) continue;
+
+        fHistEventQA->Fill(16); // event mixing jets
+		
+        // set cut to do event mixing only if we have a jet meeting our pt threshold (bias applied below)
+        if (jet->Pt()<fJetPtcut) continue;
+
+        // get number of current events in pool
+        Int_t nMix = pool->GetCurrentNEvents();  // how many particles in pool to mix
+
+          // Fill for biased jet triggers only
+        if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) {  // && jet->Pt() > fJetPtcut) {
+          // Fill mixed-event histos here  
+          for (Int_t jMix=0; jMix<nMix; jMix++) {
+			fHistEventQA->Fill(17); // event mixing nMix                 
+
+		    // get jMix'th event
+			bgTracks = pool->GetEvent(jMix);
+            const Int_t Nbgtrks = bgTracks->GetEntries();
+            for(Int_t ibg=0; ibg<Nbgtrks; ibg++) {
+              AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));
+              if(!part) continue;
+              if(TMath::Abs(part->Eta())>0.9) continue;
+              if(part->Pt()<0.15) continue;
+
+              Double_t DEta = part->Eta()-jet->Eta();                // difference in eta
+              Double_t DPhi = RelativePhi(jet->Phi(),part->Phi());   // difference in phi
+              Double_t dEP = RelativeEPJET(jet->Phi(),fEPV0);	     // difference between jet and EP
+		      Double_t mixcharge = part->Charge();
+              //Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);      // difference in R
+                           
+              // create / fill mixed event sparse
+              Double_t triggerEntries[10] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
+              fhnMixedEvents->Fill(triggerEntries,1./nMix);   // fill Sparse histo of mixed events                
+
+        	  fHistEventQA->Fill(18); // event mixing - nbgtracks
+              if(makeextraCORRhistos) fHistMEphieta->Fill(DPhi,DEta, 1./nMix);
+            } // end of background track loop
+          } // end of filling mixed-event histo's
+        } // end of check for biased jet triggers
+      } // end of jet loop
+    } // end of check for triggered jet
+
+//=============================================================================================================
+
     // use only jets from EMCal-triggered events (for lhc11a use AliVEvent::kEMC1)
 ///    if (trigger & AliVEvent::kEMC1) {
 //T    if (trigger & AliVEvent::kEMCEJE) {  // TEST
-      //check for a trigger jet
-      // fmixingtrack/10 ??
-      if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) {
+    // pp collisions
+    if(GetBeamType() == 0) if(!(trigger & AliVEvent::kEMC1)) {     
+      if(GetBeamType() == 0) if (poolpp->IsReady() || poolpp->NTracksInPool() > fMixingTracks / 100 || poolpp->GetCurrentNEvents() >= 5) {
+
         // loop over jets (passing cuts?)
-  
         for (Int_t ijet = 0; ijet < Njets; ijet++) {
           Double_t leadjet=0;
           if (ijet==ijethi) leadjet=1;
@@ -1398,51 +1445,70 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
           fHistEventQA->Fill(16); // event mixing jets
 
-          Int_t nMix = pool->GetCurrentNEvents();  // how many particles in pool to mix
+          // set cut to do event mixing only if we have a jet meeting our pt threshold (bias applied below)
+		  if (jet->Pt()<fJetPtcut) continue;
 
-          if (jet->Pt()<fJetPtcut) continue;
+          // get number of current events in pool 
+          Int_t nMix = poolpp->GetCurrentNEvents();  // how many particles in pool to mix
 
           // Fill for biased jet triggers only
           if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) {  // && jet->Pt() > fJetPtcut) {
             // Fill mixed-event histos here  
             for (Int_t jMix=0; jMix<nMix; jMix++) {
-				fHistEventQA->Fill(17); // event mixing nMix                 
+			  fHistEventQA->Fill(17); // event mixing nMix                 
 
-                TObjArray* bgTracks = pool->GetEvent(jMix);
-                const Int_t Nbgtrks = bgTracks->GetEntries();
-                for(Int_t ibg=0; ibg<Nbgtrks; ibg++) {
-                  AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));
-                  if(!part) continue;
-                  if(TMath::Abs(part->Eta())>0.9) continue;
-                  if(part->Pt()<0.15) continue;
+		      // get jMix'th event
+			  bgTracks = poolpp->GetEvent(jMix);
+              const Int_t Nbgtrks = bgTracks->GetEntries();
+              for(Int_t ibg=0; ibg<Nbgtrks; ibg++) {
+                AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));
+                if(!part) continue;
+                if(TMath::Abs(part->Eta())>0.9) continue;
+                if(part->Pt()<0.15) continue;
 
-                  Double_t DEta = part->Eta()-jet->Eta();                // difference in eta
-                  Double_t DPhi = RelativePhi(jet->Phi(),part->Phi());   // difference in phi
-                  Double_t dEP = RelativeEPJET(jet->Phi(),fEPV0);	     // difference between jet and EP
-		          Double_t mixcharge = part->Charge();
-                  //Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);      // difference in R
+                Double_t DEta = part->Eta()-jet->Eta();                // difference in eta
+                Double_t DPhi = RelativePhi(jet->Phi(),part->Phi());   // difference in phi
+                Double_t dEP = RelativeEPJET(jet->Phi(),fEPV0);	     // difference between jet and EP
+                Double_t mixcharge = part->Charge();
+                //Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);      // difference in R
                            
-                  Double_t triggerEntries[10] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
-                  fhnMixedEvents->Fill(triggerEntries,1./nMix);   // fill Sparse histo of mixed events
+                // create / fill mixed event sparse
+                Double_t triggerEntries[10] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
+                fhnMixedEvents->Fill(triggerEntries,1./nMix);   // fill Sparse histo of mixed events
                   
-				  fHistEventQA->Fill(18); // event mixing - nbgtracks
-                  if(makeextraCORRhistos) fHistMEphieta->Fill(DPhi,DEta, 1./nMix);
-                } // end of background track loop
-             } // end of filling mixed-event histo's
+	  		    fHistEventQA->Fill(18); // event mixing - nbgtracks
+                if(makeextraCORRhistos) fHistMEphieta->Fill(DPhi,DEta, 1./nMix);
+              } // end of background track loop
+            } // end of filling mixed-event histo's
           } // end of check for biased jet triggers
         } // end of jet loop
       } // end of check for triggered jet
-//    } //end EMC triggered loop
+    } //end EMC triggered loop
 
+    // pp collisions
     // use only tracks from MB events (for lhc11a use AliVEvent::kMB)
 ///    if (trigger & AliVEvent::kMB) {
 //T    if (trigger & AliVEvent::kAnyINT){ // test
-      // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
-//T      TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
+    if(GetBeamType() == 0) {
 
+      // (use only tracks from MB events (for lhc11a use AliVEvent::kMB)
+      if(trigger & AliVEvent::kMB) {
+
+        // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
+        tracksClone = CloneAndReduceTrackList(tracks) ;
+      
+        // update pool if jet in event or not
+        poolpp->UpdatePool(tracksClone);
+
+      } // check on track from MB events
+    }
+
+    // PbPb collisions
+    if(GetBeamType() == 1) {
       // update pool if jet in event or not
       pool->UpdatePool(tracksClone);
-///    } // check on track from MB events
+    }
+
   } // end of event mixing
 
   // print some stats on the event
@@ -1700,51 +1766,19 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParams(Int_t iEntry, TString &label,
 
 //_________________________________________________
 // From CF event mixing code PhiCorrelations
-TObjArray* AliAnalysisTaskEmcalJetHadEPpid::CloneAndReduceTrackList(TObjArray* tracks)
+TObjArray* AliAnalysisTaskEmcalJetHadEPpid::CloneAndReduceTrackList(TObjArray* tracksME)
 {
   // clones a track list by using AliPicoTrack which uses much less memory (used for event mixing)
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
-
-  //AliVParticle* particle = 
-  //Int_t nTrax = fESD->GetNumberOfTracks();
-  //cout << "nTrax " << nTrax <<endl;
-
-  // Need to test, not sure if this is working
-  // check whether aod or esd first
-  // what kind of event do we have: AOD or ESD?
-/*
-  Bool_t useAOD; 
-  if (dynamic_cast<AliAODEvent*>(InputEvent())) useAOD = kTRUE;
-  else useAOD = kFALSE;  
-
-  for (Int_t i = 0; i < nTrax; ++i) {
-    if(!useAOD) { // esd info already here
-      AliESDtrack* esdtrack = fESD->GetTrack(i);
-      if (!esdtrack) {
-        AliError(Form("Couldn't get ESD track %d\n", i));
-        continue;
-      }
-
-      if(!fesdTrackCuts->AcceptTrack(esdtrack)) continue;
-      const AliESDtrack *particle = static_cast<const AliESDtrack *>(esdtrack);
-      //AliESDtrack *particle = GetAcceptTrack(esdtrack);
-      if(!particle) continue;
-    }
-
-    if(useAOD) {
-      AliVParticle* particle = (AliVParticle*) tracks->At(i); 
-      if(!particle) continue;
-    }
-*/    
 
 // ===============================
 
 //      cout << "RM Hybrid track : " << i << "  " << particle->Pt() << endl;  
 
   //cout << "nEntries " << tracks->GetEntriesFast() <<endl;
-  for (Int_t i=0; i<tracks->GetEntriesFast(); i++) {         // AOD/general case
-    AliVParticle* particle = (AliVParticle*) tracks->At(i);  // AOD/general case
+  for (Int_t i=0; i<tracksME->GetEntriesFast(); i++) {         // AOD/general case
+    AliVParticle* particle = (AliVParticle*) tracksME->At(i);  // AOD/general case
     if(TMath::Abs(particle->Eta())>fTrkEta) continue;
     if(particle->Pt()<0.15)continue;
 

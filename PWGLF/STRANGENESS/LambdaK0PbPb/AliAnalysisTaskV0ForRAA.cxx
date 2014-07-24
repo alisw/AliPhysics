@@ -203,6 +203,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   fNcr(0),              
   fChi2cls(0),      
   fTPCrefit(0),      
+  fITSrefit(0),
   fNcrCh(0),      
   fChi2clsCh(0),         
   fTPCrefitCh(0),   
@@ -321,7 +322,8 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   //----- define defaults for V0 and track cuts ----//
   fNcr = 70;              
   fChi2cls = 4;      
-  fTPCrefit = kTRUE;      
+  fTPCrefit = kTRUE;  
+  fITSrefit = kFALSE;
   fNcrCh = 70;      
   fChi2clsCh =4;         
   fTPCrefitCh = kTRUE;   
@@ -676,7 +678,8 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
   fVtxStatus(0),
   fNcr(0),              
   fChi2cls(0),      
-  fTPCrefit(0),      
+  fTPCrefit(0),  
+  fITSrefit(0),
   fNcrCh(0),      
   fChi2clsCh(0),         
   fTPCrefitCh(0),   
@@ -795,7 +798,8 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
   //----- define defaults for V0 and track cuts ----//
   fNcr = 70;              
   fChi2cls = 4;      
-  fTPCrefit = kTRUE;      
+  fTPCrefit = kTRUE;   
+  fITSrefit = kFALSE;
   fNcrCh = 70;      
   fChi2clsCh =4;         
   fTPCrefitCh = kTRUE;   
@@ -1023,7 +1027,8 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   fESDTrackCuts->SetAcceptKinkDaughters(kFALSE);
   fESDTrackCuts->SetRequireTPCRefit(fTPCrefit);
   fESDTrackCuts->SetRequireSigmaToVertex(kFALSE);
-
+  fESDTrackCuts->SetRequireITSRefit(fITSrefit);//shall be kFALSE for on-the-fly
+   
   // esd track cuts for protons high pt
   TString cutsnameCh = cutsname;
   cutsnameCh +="_charged";
@@ -1033,6 +1038,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   fESDTrackCutsCharged->SetAcceptKinkDaughters(kFALSE);
   fESDTrackCutsCharged->SetRequireTPCRefit(fTPCrefitCh);
   fESDTrackCutsCharged->SetRequireSigmaToVertex(kFALSE);
+  fESDTrackCutsCharged->SetRequireITSRefit(fITSrefit);//shall be kFALSE for on-the-fly
 
   // esd track cuts for all low pt
   TString cutsnameLowPt  = cutsname;
@@ -1043,7 +1049,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
   fESDTrackCutsLowPt->SetAcceptKinkDaughters(kFALSE);
   fESDTrackCutsLowPt->SetRequireTPCRefit(fTPCrefitLpt);
   fESDTrackCutsLowPt->SetRequireSigmaToVertex(kFALSE);  
-
+  fESDTrackCutsLowPt->SetRequireITSRefit(fITSrefit);//shall be kFALSE for on-the-fly
 
 
   //create output objects
@@ -2390,7 +2396,7 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
     Double_t rapidity = p0->Y();
     Double_t massV0MC = p0->GetMass();
     Double_t ptV0MC =  p0->Pt();
-    Double_t pV0MC =  p0->P();
+    //Double_t pV0MC =  p0->P();
 
      
     //----------------- mother variables-----------------//
@@ -2661,8 +2667,8 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
       //Double_t etaMC =   p0->Eta(); 
 
       //      Double_t valTHnMC[4]  = {massV0MC,ptV0MC,0.0,phiMC}; 
-      Double_t valTHnMCDauEta[4] = {massV0MC,ptV0MC,etaMCPos,phiMCPos};
-      Double_t valTHnMCDauPhi[4] = {massV0MC,ptV0MC,etaMCNeg,phiMCNeg};
+      Double_t valTHnMCDauEta[4] = {massV0MC,ptPlus,etaMCPos,phiMCPos};//ptV0MC
+      Double_t valTHnMCDauPhi[4] = {massV0MC,ptMinus,etaMCNeg,phiMCNeg};
 
       //-- Fill Particle histos --//
       if (pdgCode==310){//K0s
@@ -2676,8 +2682,8 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 	fHistPiPiMassVSY->Fill(massV0MC,rapidity);
 	// fHistPiPiPtDaughters->Fill(ptMinus,ptPlus);
 	fHistPiPiPtVSY->Fill(rapidity,ptV0MC);
-	Double_t ctTK0s=0.0,ctK0s=0.0;
-	if(pV0MC>0.0) ctK0s=declength3d*0.497614/pV0MC;
+	Double_t ctTK0s=0.0;//,ctK0s=0.0;
+	//	if(pV0MC>0.0) ctK0s=declength3d*0.497614/pV0MC;
 	if(ptV0MC>0.0) ctTK0s=declength*0.497614/ptV0MC;
 	fHistPiPiDecayLengthResolution->Fill(declength3d,declength);
 	fHistPiPiDecayLengthVsPt->Fill(ptV0MC,declength);//ptV0MC,ctK0s);
@@ -2709,8 +2715,8 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 	fHistPiPPtVSY[isSecd]->Fill(rapidity,ptV0MC);
 	  
 	
-	Double_t ctTL=0.0, ctL=0.0;
-	if(pV0MC>0.0) ctL=declength3d*1.115683/pV0MC;
+	Double_t ctTL=0.0;//, ctL=0.0;
+	//	if(pV0MC>0.0) ctL=declength3d*1.115683/pV0MC;
 	if(ptV0MC>0.0) ctTL=declength*1.115683/ptV0MC;
 	fHistPiPDecayLengthResolution[0]->Fill(declength3d,declength);
 	fHistPiPDecayLengthVsPt[isSecd]->Fill(ptV0MC,declength);//(ptV0MC,ctL);
@@ -2741,13 +2747,13 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 	//  fHistPiAPPtDaughters[isSecd]->Fill(ptMinus,ptPlus);
 	fHistPiAPPtVSY[isSecd]->Fill(rapidity,ptV0MC);
 	
-	Double_t ctTAL=0.0, ctAL=0.0;
-	if(pV0MC>0.0) ctAL=declength3d*1.115683/pV0MC;
+	Double_t ctTAL=0.0;//, ctAL=0.0;
+	//	if(pV0MC>0.0) ctAL=declength3d*1.115683/pV0MC;
 	if(ptV0MC>0.0) ctTAL=declength*1.115683/ptV0MC;
 	fHistPiAPDecayLengthResolution[0]->Fill(declength3d,declength);
 	fHistPiAPDecayLengthVsPt[isSecd]->Fill(ptV0MC,declength);//(ptV0MC,ctAL);
-	fHistPiAPDecayLengthVsCtau[isSecd]->Fill(massV0MC,ctAL);
-	fHistPiAPDecayLengthVsMass[isSecd]->Fill(massV0MC,ctTAL);//declength);
+	fHistPiAPDecayLengthVsCtau[isSecd]->Fill(massV0MC,ctTAL);
+	fHistPiAPDecayLengthVsMass[isSecd]->Fill(massV0MC,declength);
 	//all V0s histo	   
 	fHistArmenteros[isSecd]->Fill(alfa,qt);
 	fHistV0RadiusZ[isSecd]->Fill(rMC2D,xyzMC[2]);
@@ -3039,8 +3045,8 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 
     v0MIs->GetXYZ(xr[0],xr[1],xr[2]);  
 
-    //      Double_t posDaughterPt = ppTrack.Pt();
-    //      Double_t negDaughterPt = pmTrack.Pt();
+    Double_t posDaughterPt = ppTrack.Pt();
+    Double_t negDaughterPt = pmTrack.Pt();
  
     /*
       Double_t v0sPt=v0MIs->Pt();
@@ -3361,7 +3367,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	trackNeg->GetImpactParameters(bN,dcaToVertexZNeg);
     */
 
-    Double_t dcaToVertexZPos = 0.0, dcaToVertexZNeg = 0.0;
+    // Double_t dcaToVertexZPos = 0.0, dcaToVertexZNeg = 0.0;
     AliExternalTrackParam *parPos = NULL;
     AliExternalTrackParam *parNeg = NULL;
     Double_t dcaYZP[2],dcaYZN[2],covar[3];
@@ -3374,10 +3380,10 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
       parNeg = new AliExternalTrackParam( *v0MIs->GetParamP());
     }
     Bool_t checkProp = parPos->PropagateToDCA(fESD->GetPrimaryVertex(),fESD->GetMagneticField(),40.0,dcaYZP,covar);
-    dcaToVertexZPos =  dcaYZP[1];
+    //dcaToVertexZPos =  dcaYZP[1];
     delete parPos;
     checkProp = parNeg->PropagateToDCA(fESD->GetPrimaryVertex(),fESD->GetMagneticField(),40.0,dcaYZN,covar);
-    dcaToVertexZNeg =  dcaYZN[1];
+    // dcaToVertexZNeg =  dcaYZN[1];
     delete parNeg;
 
 
@@ -3673,8 +3679,8 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	    fHistPiPiDecayLengthVsMass->Fill(massK0s,dim2V0Radius);//decayLength);
 	    // fHistPiPiPhiPosVsPtPosVsMass->Fill(massK0s,ctTK0,ptV0MC);//,ctK0);//posDaughterPhi);//xxx
 	    //Double_t valTHnK0s[4]= {massK0s,ptV0MC,ctTK0,phi};
-	    Double_t valTHnK0sDauEta[4]= {massK0s,ptV0MC,posDaughterEta,posDaughterPhi};
-	    Double_t valTHnK0sDauPhi[4]= {massK0s,ptV0MC,negDaughterEta,negDaughterPhi};
+	    Double_t valTHnK0sDauEta[4]= {massK0s,posDaughterPt,posDaughterEta,posDaughterPhi};//ptV0MC
+	    Double_t valTHnK0sDauPhi[4]= {massK0s,negDaughterPt,negDaughterEta,negDaughterPhi};
 	    if(massK0s >=0.35 && massK0s <= 0.65){
 	      // fTHnFK0s->Fill(valTHnK0s);	    
 	      fTHnFK0sDauEta->Fill(valTHnK0sDauEta);
@@ -3818,8 +3824,8 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	    //	    Double_t valTHnLDauPhi[5]= {massLambda,posDaughterPhi,negDaughterPhi,double(nclsITSPos),double(nclsITSNeg)};
 
 	    //	    Double_t valTHnL[4]= {massLambda,ptV0MC,ctTL,phi};
-	    Double_t valTHnLDauEta[4]= {massLambda,ptV0MC,posDaughterEta,posDaughterPhi};
-	    Double_t valTHnLDauPhi[4]= {massLambda,ptV0MC,negDaughterEta,negDaughterPhi};
+	    Double_t valTHnLDauEta[4]= {massLambda,posDaughterPt,posDaughterEta,posDaughterPhi};
+	    Double_t valTHnLDauPhi[4]= {massLambda,negDaughterPt,negDaughterEta,negDaughterPhi};//ptV0MC
 
 
 	    if(massLambda >=1.07 && massLambda <= 1.17){
@@ -3979,8 +3985,8 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	    Double_t valTHnALDauPhi[5]={massALambda,posDaughterPhi,negDaughterPhi,double(nclsITSPos),double(nclsITSNeg)};
 	    */
 	    //Double_t valTHnAL[4]= {massALambda,ptV0MC,ctTAL,phi};
-	    Double_t valTHnALDauEta[4]= {massALambda,ptV0MC,posDaughterEta,posDaughterPhi};
-	    Double_t valTHnALDauPhi[4]= {massALambda,ptV0MC,negDaughterEta,negDaughterPhi};
+	    Double_t valTHnALDauEta[4]= {massALambda,posDaughterPt,posDaughterEta,posDaughterPhi};
+	    Double_t valTHnALDauPhi[4]= {massALambda,negDaughterPt,negDaughterEta,negDaughterPhi};//ptV0MC
 
 	    if(massALambda >=1.07 && massALambda <= 1.17){
 	      fTHnFALDauEta->Fill(valTHnALDauEta);

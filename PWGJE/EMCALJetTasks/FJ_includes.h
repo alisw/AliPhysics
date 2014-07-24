@@ -21,11 +21,10 @@
 #include <fastjet/tools/JetMedianBackgroundEstimator.hh>
 #include <fastjet/tools/BackgroundEstimatorBase.hh>
 #include <fastjet/tools/Subtractor.hh>
-#ifdef FASTJET_CONTRIB
+//from contrib package
 #include <fastjet/contrib/GenericSubtractor.hh>
 #include <fastjet/contrib/ShapeWithComponents.hh>
 #include <fastjet/contrib/ConstituentSubtractor.hh>
-#endif
 #endif
 #endif
 

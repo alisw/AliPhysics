@@ -133,7 +133,9 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	TH1F* spectra[6];
 	TH1F* spectraLeonardo[6];
 	
-	TH1F* corrLeonardo[6]; 
+	TH1F* corrLeonardo[6];
+        TH1F* doubleconuntsdata[3]; 
+	 TH1F* doubleconuntsMC[3]; 
 	//GetSpectra(managerdata,rawspectradata,true);
 	//GetSpectra(managermc,rawspectramc,true,true);
 	
@@ -238,8 +240,9 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		primaryfit[i+6]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"primaryfitMC"));
 		primaryfit[i+6]->SetTitle(Form(tmpname.Data(),"primaryfitMC"));
 		
-
-
+	
+		
+			
 		contfit[i]->Reset();
 		contWDfit[i]->Reset();
 		contMatfit[i]->Reset();
@@ -302,7 +305,21 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		contWD[i]->Divide(contWD[i],rawspectramc[i],1,1,"B");
 		contMat[i]->Divide(contMat[i],rawspectramc[i],1,1,"B");
 		contSecMC[i]->Divide(contSecMC[i],rawspectramc[i],1,1,"B");
+		if(i>2)
+		{
+			doubleconuntsdata[i-3]=(TH1F*)rawspectradata[i]->Clone(Form("DoublecountsDATA%s",Particle[i-3].Data()));
+			doubleconuntsdata[i-3]->Reset();
+			doubleconuntsMC[i-3]=(TH1F*)rawspectramc[i]->Clone(Form("DoublecountsMC%s",Particle[i-3].Data()));
+			doubleconuntsMC[i-3]->Reset();
+
+			CalculateDoubleCounts(doubleconuntsdata[i-3],rawspectradata,i-3,kTRUE);
+			CalculateDoubleCounts(doubleconuntsMC[i-3],rawspectramc,i-3,kFALSE);
+
+			
 	
+		}
+	
+
 	
 		rawspectradata[i]->Scale(1./neventsdata,"width");
 		rawspectramc[i]->Scale(1./neventsmc,"width");
@@ -332,6 +349,11 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		lout->Add(confinal[i]);
 		lout->Add(contPIDpri[i]);
 		lout->Add(contSecMC[i]);
+		if(i>2)
+		{
+			lout->Add(doubleconuntsdata[i-3]);
+			lout->Add(doubleconuntsMC[i-3]);
+		}
 	}
 	outdate.ReplaceAll("/","_");
 	configfile.ReplaceAll(".","_");
@@ -1569,5 +1591,30 @@ void TOFPIDsignalmatchingApply(TH1* h, Float_t factor)
 		h->SetBinContent(ibin,(h->GetBinContent(ibin)*factor));
 
 	}
+
+}
+void CalculateDoubleCounts(TH1* doubleconunts,TH1** rawspectra,Int_t ipar, Bool_t dataflag)
+{
+	TH2F* tmphist=0x0;	
+	if (dataflag)
+	 	tmphist=(TH2F*)managerdata->GetGenMulvsRawMulHistogram("hHistDoubleCounts");	
+	else
+		tmphist=(TH2F*)managermc->GetGenMulvsRawMulHistogram("hHistDoubleCounts");
+
+	if(!tmphist)	
+		return;
+	TH1F* tmphist1=(TH1F*)rawspectra[ipar]->Clone("test");
+	tmphist1->Add(rawspectra[ipar+3]);
+	doubleconunts->Add(tmphist->ProjectionX(doubleconunts->GetName(),1,1));
+	if(ipar!=2)
+		doubleconunts->Add(tmphist->ProjectionX("pi+k",2,2));			
+	if(ipar!=1)
+		doubleconunts->Add(tmphist->ProjectionX("pi+p",3,3));
+	if(ipar!=0)
+		doubleconunts->Add(tmphist->ProjectionX("k+p",4,4));
+	doubleconunts->Divide(doubleconunts,tmphist1,1,1,"B");
+
+	delete tmphist1;
+	
 
 }			

@@ -3,7 +3,7 @@
 // based on AddTaskIsoPhoton by Gustavo Conesa & Marie Germain.
 
 //new macro
-TString kGammaJetCorrelationName          = "";//done
+TString kGammaJetCorrelationName          = "";
 
 AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  isoCone       = 0.4,
 								const Float_t  isoPth        = 0.5,
@@ -157,7 +157,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
 }
 
 //____________________________________
-AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calorimeter = "EMCAL",Bool_t useKinematics = kFALSE,Bool_t simulation = kFALSE,Bool_t   eventsel      = kFALSE,Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
+AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calorimeter = "EMCAL",Bool_t useKinematics = kFALSE,
+				     Bool_t simulation = kFALSE,Bool_t   eventsel      = kFALSE,Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
 				     TString  collision     = "pp",TString trigger="MB",TString firedTrigger="EG1",
 				     TString  clustersArray = "V1", TString  jetBranchName = "jets", TString  jetBkgBranchName = "jets",
 				     Bool_t  mix           = kFALSE,
@@ -165,6 +166,8 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
 				     Int_t debug = -1,Bool_t printSettings = kFALSE)
 {
   
+  Bool_t useTender=kTRUE;
+
   if(simulation)
   {
     if (!useKinematics && inputDataType=="AOD") useKinematics = kTRUE; //AOD primary should be available ...
@@ -180,8 +183,11 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
   else printf("AliCaloTrackReader::ConfigureReader() - Data not known InputData=%s\n",inputDataType.Data());
   
   reader->SetDebug(debug);//10 for lots of messages
-  //reader->SetDebug(10);//10 for lots of messages
-  //reader->SetDebug(2);//10 for lots of messages
+
+  if(useTender){
+    reader->SwitchOffTriggerPatchMatching();
+    reader->SwitchOffBadTriggerEventsRemoval();
+  }
 
   if(simulation)
   {
@@ -258,7 +264,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
 	printf("Set time cut \n");
 	reader->SwitchOnUseEMCALTimeCut();
 	//Absolute window
-	reader->SetEMCALTimeCut(-20.,20.); // default is -25ns-20ns
+	reader->SetEMCALTimeCut(-30.,30.); // default is -25ns-20ns
       }
     else
       {
@@ -311,6 +317,12 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
   //  reader->SwitchOffCTS();//here changed 0n->off
   reader->SwitchOnCTS();//here changed 0n->off
 
+  reader->SwitchOffRecalculateVertexBC();
+  reader->SwitchOffVertexBCEventSelection();
+  
+  reader->SwitchOffUseTrackTimeCut();
+  reader->SetTrackTimeCut(0,50);
+
   if(inputDataType=="ESD")
   {
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
@@ -328,8 +340,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
   // Calorimeter
   
   reader->SetEMCALClusterListName(clustersArray);
-  //  if(clustersArray == "" && !kTender)
-  if(clustersArray == "")
+  if(clustersArray == "" && !useTender)
   {
     printf("**************** Standard EMCAL clusters branch analysis **************** \n");
     reader->SwitchOnClusterRecalculation();
@@ -414,7 +425,6 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
   }
   
   if(printSettings) reader->Print("");
-  reader->Print("");
   
   return reader;
   
@@ -424,6 +434,8 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
 AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  collision     = "pp",Bool_t nonlin = kTRUE,Bool_t exotic = kTRUE ,Bool_t simulation = kFALSE,Bool_t timecut = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE)
 {
   
+  Bool_t useTender=kTRUE;
+
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   cu->SetDebug(debug);
   
@@ -450,39 +462,43 @@ AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  
   //else         
   cu->SwitchOffRecalculateClusterTrackMatching();
   
-  cu->SwitchOnBadChannelsRemoval() ;
-  //cu->SwitchOffBadChannelsRemoval() ;// <<<----changed here 
-  
-  //EMCAL settings
+  if(useTender)
+    cu->SwitchOffBadChannelsRemoval() ;
+  else
+    cu->SwitchOnBadChannelsRemoval() ;
 
+  //EMCAL settings
   if(!simulation)
     cu->SwitchOnLoadOwnEMCALGeometryMatrices();
-  
-  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
 
-  if(!simulation)
-  {
-    cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
-    //if(clustersArray == "" && !kTender) cu->SwitchOnRunDepCorrection(); 
-    if(clustersArray == "") cu->SwitchOnRunDepCorrection(); 
-  }
+  if(!useTender){  
+    AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+    
+    if(!simulation)
+      {
+	cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
+	//if(clustersArray == "" && !kTender) cu->SwitchOnRunDepCorrection(); 
+	if(clustersArray == "") cu->SwitchOnRunDepCorrection(); 
+      }
+    
+    cu->SwitchOnEMCALOADB();//FIX ME!!!
 
-  cu->SwitchOnEMCALOADB();//FIX ME!!!
-
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
-  ConfigureEMCALRecoUtils(recou,
-                          simulation,                             
-                          exotic,
-                          nonlin,
-			  kFALSE, // e calib
-                          kFALSE, // bad map
-                          kFALSE); // time calib
+    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+    ConfigureEMCALRecoUtils(recou,
+			    simulation,                             
+			    exotic,
+			    nonlin,
+			    kFALSE, // e calib
+			    kFALSE, // bad map
+			    kFALSE); // time calib
     //kCalibE, 
     //kBadMap,
     //kCalibT);   
-  recou->SetExoticCellDiffTimeCut(1e10);
-  if(timecut) recou->SetExoticCellDiffTimeCut(50.);
-  
+    recou->SetExoticCellDiffTimeCut(1e10);
+    if(timecut) recou->SetExoticCellDiffTimeCut(50.);
+  }//end tender
+
+
   if( nonlin ) 
   { 
 //    printf("ConfigureCaloUtils() - Apply non linearity to EMCAL\n");
@@ -503,7 +519,7 @@ AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  
   printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
   printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
   
-    
+  cu->SetNumberOfSuperModulesUsed(10);
   // PHOS 
   cu->SwitchOffLoadOwnPHOSGeometryMatrices();
     

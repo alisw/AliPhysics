@@ -73,6 +73,7 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fMinPt(0),
   fMaxPt(20.0),
   fMinTPCNcls(70),
+  fFillTHn(kTRUE),
   fResSP(0),
   fEta_vs_Phi_bef(0),
   fEta_vs_PhiA(0),
@@ -152,6 +153,25 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   
   if (!fTrackCuts) AliFatal("Track Cuts should be set in the steering macro");
   if (!fEventCuts) AliFatal("Event Cuts should be set in the steering macro");
+  
+  if( fFillTHn ){ 
+    //dimensions of THnSparse for Q vector checks
+    const Int_t nvarev=4;
+    //                                             cent             Q vec            Qa        Qb
+    Int_t    binsHistRealEv[nvarev] = {             10,        fnQvecBins,          100,      100};
+    Double_t xminHistRealEv[nvarev] = {             0.,               0.,            0.,       0.};
+    Double_t xmaxHistRealEv[nvarev] = {            10.,      fQvecUpperLim,         10.,      10.};
+    THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
+    NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
+    NSparseHistEv->GetAxis(0)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
+    NSparseHistEv->GetAxis(1)->SetTitle("Q vec");
+    NSparseHistEv->GetAxis(1)->SetName("Q_vec");
+    NSparseHistEv->GetAxis(2)->SetTitle("Q_vec (A)");
+    NSparseHistEv->GetAxis(2)->SetName("Qvec_A");
+    NSparseHistEv->GetAxis(3)->SetTitle("Q_vec (B)");
+    NSparseHistEv->GetAxis(3)->SetName("Qvec_B");
+    fOutput->Add(NSparseHistEv);
+  }
   
   // binning common to all the THn
   //change it according to your needs + move it to global variables -> setter/getter
@@ -359,12 +379,12 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 	  
 	  fEta_vs_PhiA->Fill( track->Eta(), track->Phi() );
                     
-          if (Qvec > fCutLargeQperc){
+          if (Qvec > fCutLargeQperc && Qvec < 100.){
 	    fSinGap1Aq_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	    fCosGap1Aq_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
 	  }
       
-          if (Qvec < fCutSmallQperc){
+          if (Qvec > 0. && Qvec < fCutSmallQperc){
 	    fSinGap1Aq_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	    fCosGap1Aq_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
 	  }
@@ -380,12 +400,12 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 	
 	fEta_vs_PhiB->Fill( track->Eta(), track->Phi() );
                     
-        if (Qvec > fCutLargeQperc){
+        if (Qvec > fCutLargeQperc && Qvec < 100.){
 	  fSinGap1Bq_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	  fCosGap1Bq_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
         }
       
-        if (Qvec < fCutSmallQperc){
+        if (Qvec > 0. && Qvec < fCutSmallQperc){
 	  fSinGap1Bq_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	  fCosGap1Bq_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
         }
@@ -401,13 +421,13 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 	  fSinGap1A[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
           fCosGap1A[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
       
-          if (Qvec > fCutLargeQperc){
+          if (Qvec > fCutLargeQperc && Qvec < 100.){
 	    fv2SPGap1A_lq[centV0]->Fill(track->Pt(), v2SPGap1A);
 	    fSinGap1A_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	    fCosGap1A_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
 	  }
       
-          if (Qvec < fCutSmallQperc){
+          if (Qvec > 0. && Qvec < fCutSmallQperc){
 	    fv2SPGap1A_sq[centV0]->Fill(track->Pt(), v2SPGap1A);
 	    fSinGap1A_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	    fCosGap1A_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
@@ -421,13 +441,13 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
           fCosGap1B[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
           fSinGap1B[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
       
-          if (Qvec > fCutLargeQperc){
+          if (Qvec > fCutLargeQperc && Qvec < 100.){
 	    fv2SPGap1B_lq[centV0]->Fill(track->Pt(), v2SPGap1B);
 	    fSinGap1B_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	    fCosGap1B_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
 	  }
       
-          if (Qvec < fCutSmallQperc){
+          if (Qvec > 0. && Qvec < fCutSmallQperc){
 	    fv2SPGap1B_sq[centV0]->Fill(track->Pt(), v2SPGap1B);
 	    fSinGap1B_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	    fCosGap1B_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
@@ -442,11 +462,25 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
     Double_t res = (QxGap1A*QxGap1B + QyGap1A*QyGap1B)/(Double_t)multGap1A/(Double_t)multGap1B;
     fResSP->Fill((Double_t)centV0, res);
         
-    if (Qvec > fCutLargeQperc)
+    if (Qvec > fCutLargeQperc && Qvec < 100.){
       fResSP_lq->Fill((Double_t)centV0, res);
-
-    if (Qvec < fCutSmallQperc)
+    }
+    
+    if (Qvec > 0. && Qvec < fCutSmallQperc){
       fResSP_sq->Fill((Double_t)centV0, res);
+    }
+    
+    if( fFillTHn ){ 
+      Double_t QA = TMath::Sqrt( (QxGap1A*QxGap1A + QyGap1A*QyGap1A)/multGap1A  );
+      Double_t QB = TMath::Sqrt( (QxGap1B*QxGap1B + QyGap1B*QyGap1B)/multGap1B  );
+  
+      Double_t varEv[4];
+      varEv[0]=centV0;
+      varEv[1]=Qvec;
+      varEv[2]=(Double_t)QA;
+      varEv[3]=(Double_t)QB;
+      ((THnSparseF*)fOutput->FindObject("NSparseHistEv"))->Fill(varEv);//event loop
+    }
   }
   
   PostData(1, fOutput  );
