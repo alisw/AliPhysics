@@ -72,6 +72,7 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   , fWriteTree(0)
   , fVerbosity(0)
   , fESD(NULL)
+  , fESDfriend(NULL)
   , fSolenoidBz(-5.00668)
   , fMakeFriends(1)
   , fBenchmark("EsdConverter")
@@ -90,10 +91,10 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
 AliHLTGlobalEsdConverterComponent::~AliHLTGlobalEsdConverterComponent()
 {
   // see header file for class documentation
-  if (fESD) delete fESD;
-  fESD=NULL;
+  delete fESD;
+  delete fESDfriend;
   for( int i=0; i<fkNPartition; i++ ){
-       delete[] fPartitionClusters[i];
+    delete[] fPartitionClusters[i];
   }
 }
 
@@ -183,7 +184,16 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTDataTypeESDObject|kAliHLTDataOriginOut;
+  return kAliHLTMultipleDataType;
+}
+
+int AliHLTGlobalEsdConverterComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList){ 
+// see header file for class documentation
+
+  tgtList.clear();
+  tgtList.push_back( kAliHLTDataTypeESDObject|kAliHLTDataOriginOut );
+  tgtList.push_back( kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginOut );
+  return tgtList.size();
 }
 
 void AliHLTGlobalEsdConverterComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
@@ -263,6 +273,11 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
 
   fSolenoidBz=GetBz();
 
+  delete fESD;
+  fESD = NULL;
+  delete fESDfriend;
+  fESDfriend=0;
+
   if (iResult>=0) {
     fESD = new AliESDEvent;
     if (fESD) {
@@ -296,6 +311,10 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
 
     SetupCTPData();
   }
+  
+  if( iResult>=0 && fMakeFriends ){
+    fESDfriend = new AliESDfriend();
+  }
 
   fBenchmark.SetTimer(0,"total");
 
@@ -305,9 +324,10 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
 int AliHLTGlobalEsdConverterComponent::DoDeinit()
 {
   // see header file for class documentation
-  if (fESD) delete fESD;
+  delete fESD;
   fESD=NULL;
-
+  delete fESDfriend;
+  fESDfriend = NULL;
   return 0;
 }
 
@@ -318,7 +338,7 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
   int iResult=0;
 
 
-AliSysInfo::AddStamp("DoEvent.Start", evtData.fStructSize);
+  AliSysInfo::AddStamp("DoEvent.Start", evtData.fStructSize);
 
   bool benchmark = true;
 
@@ -332,8 +352,8 @@ AliSysInfo::AddStamp("DoEvent.Start", evtData.fStructSize);
     delete[] fPartitionClusters[i];    
     fPartitionClusters[i]  = 0;
     fNPartitionClusters[i] = 0;    
-  }
-
+  }  
+  
   AliESDEvent* pESD = fESD;
   
   pESD->Reset(); 
@@ -368,7 +388,9 @@ AliSysInfo::AddStamp("DoEvent.Start", evtData.fStructSize);
     pTree->SetDirectory(0);
   }
 
-  if ((iResult=ProcessBlocks(pTree, pESD))>=0) {
+  if( fESDfriend ) fESDfriend->Reset();
+
+  if ((iResult=ProcessBlocks(pTree, pESD, fESDfriend))>=0) {
     // TODO: set the specification correctly
     if (pTree) {
       // the esd structure is written to the user info and is
@@ -380,6 +402,10 @@ AliSysInfo::AddStamp("DoEvent.Start", evtData.fStructSize);
       iResult=PushBack(pESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
     }
     fBenchmark.AddOutput(GetLastObjectSize());
+    if( iResult>=0 && fMakeFriends ){
+      iResult=PushBack(fESDfriend, kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginOut, 0);
+      fBenchmark.AddOutput(GetLastObjectSize());
+     }
   }
   if (pTree) {
     // clear user info list to prevent objects from being deleted
@@ -419,11 +445,14 @@ AliSysInfo::AddStamp("DoEvent.Start", evtData.fStructSize);
       fPartitionClusters[i]  = 0;
       fNPartitionClusters[i] = 0;    
   }
- 
+
+  if( fESDfriend ) fESDfriend->Reset();
+  if( fESD ) fESD->Reset();
+
   return iResult;
 }
 
-int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD)
+int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD, AliESDfriend *pESDfriend )
 {
   // see header file for class documentation
 
@@ -442,8 +471,6 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   if (GetNextInputObject()!=NULL) {
     HLTWarning("handling of multiple ESD input objects not implemented, skipping input");
   }
-
-  AliESDfriend *esdFriend = new AliESDfriend;
 
   // Barrel tracking
   // tracks are based on the TPC tracks, and only updated from the ITS information
@@ -477,7 +504,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     fNPartitionClusters[i] = 0;    
   }
 
-  if( fMakeFriends ){
+  if( pESDfriend ){
 
     int nInputClusters = 0;
     
@@ -659,7 +686,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	pESD->AddTrack(&iotrack);
 	if (fVerbosity>0) element->Print();
       
-	if( fMakeFriends ){ // create friend track
+	if( pESDfriend ){ // create friend track
 
 	  AliHLTGlobalBarrelTrack gb(*element);
 	  AliTPCseed tTPC;
@@ -718,7 +745,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
 	  AliESDfriendTrack friendTrack;
 	  friendTrack.AddCalibObject(&tTPC);
-	  esdFriend->AddTrack(&friendTrack);
+	  pESDfriend->AddTrack(&friendTrack);
 	}
       }
 
@@ -1042,18 +1069,15 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     }
   }
 
-  if( fMakeFriends ){ // create friend track
-    pESD->SetESDfriend( esdFriend );
+  if( fMakeFriends && pESDfriend ){ // create friend track
+    pESD->SetESDfriend( pESDfriend );
   }
-
-  delete esdFriend;
+  
+  cout<<"\n\n ESD Friend: "<<pESDfriend->GetNumberOfTracks()<<endl;
 
   if (iAddedDataBlocks>0 && pTree) {
     pTree->Fill();
-  }
-
-  
-  
+  }  
   
   if (iResult>=0) iResult=iAddedDataBlocks;
   return iResult;

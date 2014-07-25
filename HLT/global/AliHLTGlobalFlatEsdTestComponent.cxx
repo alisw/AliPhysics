@@ -41,6 +41,7 @@
 #include "AliHLTCTPData.h"
 #include "AliHLTErrorGuard.h"
 #include "AliESDEvent.h"
+#include "AliESDfriend.h"
 #include "AliESDtrack.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDMuonCluster.h"
@@ -148,6 +149,7 @@ void AliHLTGlobalFlatEsdTestComponent::GetInputDataTypes(AliHLTComponentDataType
   // see header file for class documentation
   list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
   list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginOut);
+  list.push_back(kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginOut);
 }
 
 AliHLTComponentDataType AliHLTGlobalFlatEsdTestComponent::GetOutputDataType()

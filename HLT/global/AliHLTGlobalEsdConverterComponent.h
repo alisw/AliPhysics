@@ -19,6 +19,7 @@
 
 // forward declarations
 class AliESDEvent;
+class AliESDfriend;
 class TTree;
 struct AliHLTTracksData;
 class AliTPCclusterMI;
@@ -55,6 +56,7 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
   const char* GetComponentID() {return "GlobalEsdConverter";};
   void GetInputDataTypes(AliHLTComponentDataTypeList& list);
   AliHLTComponentDataType GetOutputDataType();
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   AliHLTComponent* Spawn() {return new AliHLTGlobalEsdConverterComponent;}
 
@@ -73,7 +75,7 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
    * @param pESD     ESD to be filled
    * @return neg. error code if failed
    */
-  int ProcessBlocks(TTree* pTree, AliESDEvent* pESD);
+  int ProcessBlocks(TTree* pTree, AliESDEvent* pESD, AliESDfriend *pESDfriend);
 
  // void FillBenchmarkHistos(Double_t *statistics, TString *names);
  private:
@@ -108,6 +110,9 @@ protected:
 
   /// the ESD
   AliESDEvent* fESD; //! transient value
+
+  /// the ESD friend
+  AliESDfriend* fESDfriend; //! transient value
 
   /// solenoid b field
   Double_t fSolenoidBz; //! transient
