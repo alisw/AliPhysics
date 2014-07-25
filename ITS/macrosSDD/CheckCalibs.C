@@ -139,19 +139,20 @@ CheckCalibInterface::~CheckCalibInterface()
 
 void CheckCalibInterface::CopyFiles(){
   //
+  // 8 LDCs in Run2 with new (simpler) dirs - M.S. 25 jul 14
   TString command;
-  TString ldcName[6]={"aldaqpc083","aldaqpc084","aldaqpc041",
-		      "aldaqpc082","aldaqpc085","aldaqpc086"};
+  TString ldcName[8]={"aldaqpc009","aldaqpc010","aldaqpc011","aldaqpc012",
+		      "aldaqpc013","aldaqpc014","aldaqpc015","aldaqpc016"};
   gSystem->Exec("rm -rf calibFiles");
   gSystem->Exec("mkdir calibFiles");
-  for(Int_t iLDC=0; iLDC<6; iLDC++){
-    Int_t firstDDL=iLDC*4;
-    Int_t lastDDL=iLDC*4+3;
-    command.Form("scp %s:/dateSite/ldc-SDD-%02d-%02d-0/work/SDDbase_step2_LDC.tar calibFiles/.",ldcName[iLDC].Data(),firstDDL,lastDDL);
+  for(Int_t iLDC=0; iLDC<8; iLDC++){
+    Int_t firstDDL=iLDC*3;
+    Int_t lastDDL=iLDC*3+2;
+    command.Form("scp %s:/dateSite/ldc-SDD-%d/work/SDDbase_step2_LDC.tar calibFiles/.",ldcName[iLDC].Data(),iLDC);
     gSystem->Exec(command.Data());
-    command.Form("scp %s:/dateSite/ldc-SDD-%02d-%02d-0/work/SDDbase_LDC.tar calibFiles/.",ldcName[iLDC].Data(),firstDDL,lastDDL);
+    command.Form("scp %s:/dateSite/ldc-SDD-%d/work/SDDbase_LDC.tar calibFiles/.",ldcName[iLDC].Data(),iLDC);
     gSystem->Exec(command.Data());
-    command.Form("scp %s:/dateSite/ldc-SDD-%02d-%02d-0/work/SDDinj_LDC.tar calibFiles/.",ldcName[iLDC].Data(),firstDDL,lastDDL);
+    command.Form("scp %s:/dateSite/ldc-SDD-%d/work/SDDinj_LDC.tar calibFiles/.",ldcName[iLDC].Data(),iLDC);
     gSystem->Exec(command.Data());
     gSystem->Exec("cd calibFiles; tar xvf SDDbase_step2_LDC.tar; tar xvf SDDbase_LDC.tar; tar xvf SDDinj_LDC.tar; cd ..");
   }
