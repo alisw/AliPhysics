@@ -368,15 +368,17 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;	
   snprintf(onePar,buffersize,"fConeSize: (isolation cone size) %1.2f\n",fConeSize) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fPtThreshold =%1.2f (isolation pt threshold) \n",fPtThreshold) ;
+  snprintf(onePar,buffersize,"fPtThreshold >%1.2f;<1.2f (isolation pt threshold) \n",fPtThreshold,fPtThresholdMax) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fPtFraction=%1.2f (isolation pt threshold fraction ) \n",fPtFraction) ;
+  snprintf(onePar,buffersize,"fSumPtThreshold >%1.2f;<1.2f (isolation sum pt threshold) \n",fSumPtThreshold,fSumPtThresholdMax) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"fPtFraction=%1.2f (isolation pt threshold fraction) \n",fPtFraction) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fICMethod=%d (isolation cut case) \n",fICMethod) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fPartInCone=%d \n",fPartInCone) ;
   parList+=onePar ;
- snprintf(onePar,buffersize,"fFracIsThresh=%i \n",fFracIsThresh) ;
+  snprintf(onePar,buffersize,"fFracIsThresh=%i \n",fFracIsThresh) ;
   parList+=onePar ;
  
   return parList; 
@@ -857,7 +859,8 @@ void AliIsolationCut::Print(const Option_t * opt) const
   
   printf("IC method          =     %d\n",    fICMethod   ) ; 
   printf("Cone Size          =     %1.2f\n", fConeSize   ) ; 
-  printf("pT threshold       =     %2.1f\n", fPtThreshold) ;
+  printf("pT threshold       =     >%2.1f;<%2.1f\n", fPtThreshold   ,   fPtThresholdMax) ;
+  printf("Sum pT threshold   =     >%2.1f;<%2.1f\n", fSumPtThreshold,fSumPtThresholdMax) ;
   printf("pT fraction        =     %3.1f\n", fPtFraction ) ;
   printf("particle type in cone =  %d\n",    fPartInCone ) ;
   printf("using fraction for high pt leading instead of frac ? %i\n",fFracIsThresh);
