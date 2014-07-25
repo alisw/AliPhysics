@@ -73,9 +73,8 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fMinPt(0),
   fMaxPt(20.0),
   fMinTPCNcls(70),
-  fFillTHn(kTRUE),
+  fFillTHn(kFALSE),
   fResSP(0),
-  f2dResSP(0),
   fResSP_vs_Cent(0),
   f2partCumQA_vs_Cent(0),
   f2partCumQB_vs_Cent(0),
@@ -83,18 +82,19 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fEta_vs_PhiA(0),
   fEta_vs_PhiB(0),
   fResSP_lq(0),
-  f2dResSP_lq(0),
   fResSP_vs_Cent_lq(0),
   f2partCumQA_vs_Cent_lq(0),
   f2partCumQB_vs_Cent_lq(0),
   fResSP_sq(0),
-  f2dResSP_sq(0),
   fResSP_vs_Cent_sq(0),
   f2partCumQA_vs_Cent_sq(0),
   f2partCumQB_vs_Cent_sq(0)
 {
   
   for (Int_t i = 0; i< 9; i++){
+    
+    fResSP_vs_Qvec[i] = 0;
+    
     fv2SPGap1A[i] = 0;
     fv2SPGap1B[i] = 0;
 
@@ -197,60 +197,54 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   fResSP = new TProfile("fResSP", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
   fOutput->Add(fResSP);
   
-  f2dResSP = new TH2D("f2dResSP", "Resolution; centrality; Resolution", 9, -0.5, 8.5,100.,0.,1.);
-  fOutput->Add(f2dResSP);
-  
-  fResSP_vs_Cent = new TH2D("fResSP_vs_Cent", "Resolution; centrality; Resolution", 100., 0., 100.,100.,0.,1.);
+  fResSP_vs_Cent = new TProfile("fResSP_vs_Cent", "Resolution; centrality; Resolution", 20., 0., 100.);
   fOutput->Add(fResSP_vs_Cent);
   
-  f2partCumQA_vs_Cent = new TH2D("f2partCumQA_vs_Cent", "Resolution; centrality; Resolution", 100., 0., 100.,200.,-1.,1.);
+  f2partCumQA_vs_Cent = new TProfile("f2partCumQA_vs_Cent", "Resolution; centrality; Resolution", 100., 0., 100.);
   fOutput->Add(f2partCumQA_vs_Cent);
   
-  f2partCumQB_vs_Cent = new TH2D("f2partCumQB_vs_Cent", "Resolution; centrality; Resolution", 100., 0., 100.,200.,-1.,1.);
+  f2partCumQB_vs_Cent = new TProfile("f2partCumQB_vs_Cent", "Resolution; centrality; Resolution", 100., 0., 100.);
   fOutput->Add(f2partCumQB_vs_Cent);
 
-  fEta_vs_Phi_bef = new TH2D("fEta_vs_Phi_bef","eta vs phi distribution before eta gap;#eta;#phi",200.,-1.,1.,350.,0.,7.);
+  fEta_vs_Phi_bef = new TH2D("fEta_vs_Phi_bef","eta vs phi distribution before eta gap;#eta;#phi",200.,-1.,1.,175.,0.,7.);
   fOutput->Add(fEta_vs_Phi_bef);
   
-  fEta_vs_PhiA = new TH2D("fEta_vs_PhiA","eta vs phi distribution;#eta;#phi",200.,-1.,1.,350.,0.,7.);
+  fEta_vs_PhiA = new TH2D("fEta_vs_PhiA","eta vs phi distribution;#eta;#phi",200.,-1.,1.,175.,0.,7.);
   fOutput->Add(fEta_vs_PhiA);
   
-  fEta_vs_PhiB = new TH2D("fEta_vs_PhiB","eta vs phi distribution;#eta;#phi",200.,-1.,1.,350.,0.,7.);
+  fEta_vs_PhiB = new TH2D("fEta_vs_PhiB","eta vs phi distribution;#eta;#phi",200.,-1.,1.,175.,0.,7.);
   fOutput->Add(fEta_vs_PhiB);
   
   //large q resolution
   fResSP_lq = new TProfile("fResSP_lq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
   fOutput_lq->Add(fResSP_lq);
   
-  f2dResSP_lq = new TH2D("f2dResSP_lq", "Resolution; centrality; Resolution", 9, -0.5, 8.5,100.,0.,1.);
-  fOutput_lq->Add(f2dResSP_lq);
-  
-  fResSP_vs_Cent_lq = new TH2D("fResSP_vs_Cent_lq", "Resolution; centrality; Resolution", 100., 0., 100.,100.,0.,1.);
+  fResSP_vs_Cent_lq = new TProfile("fResSP_vs_Cent_lq", "Resolution; centrality; Resolution", 20., 0., 100.);
   fOutput_lq->Add(fResSP_vs_Cent_lq);
   
-  f2partCumQA_vs_Cent_lq = new TH2D("f2partCumQA_vs_Cent_lq", "Resolution; centrality; Resolution", 100., 0., 100.,200.,-1.,1.);
+  f2partCumQA_vs_Cent_lq = new TProfile("f2partCumQA_vs_Cent_lq", "Resolution; centrality; Resolution", 100., 0., 100.);
   fOutput_lq->Add(f2partCumQA_vs_Cent_lq);
   
-  f2partCumQB_vs_Cent_lq = new TH2D("f2partCumQB_vs_Cent_lq", "Resolution; centrality; Resolution", 100., 0., 100.,200.,-1.,1.);
+  f2partCumQB_vs_Cent_lq = new TProfile("f2partCumQB_vs_Cent_lq", "Resolution; centrality; Resolution", 100., 0., 100.);
   fOutput_lq->Add(f2partCumQB_vs_Cent_lq);
   
   //small q resolution
   fResSP_sq = new TProfile("fResSP_sq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
   fOutput_sq->Add(fResSP_sq);
 
-  f2dResSP_sq = new TH2D("f2dResSP_sq", "Resolution; centrality; Resolution", 9, -0.5, 8.5,100.,0.,1.);
-  fOutput_sq->Add(f2dResSP_sq);
-  
-  fResSP_vs_Cent_sq = new TH2D("fResSP_vs_Cent_sq", "Resolution; centrality; Resolution", 100., 0., 100.,100.,0.,1.);
+  fResSP_vs_Cent_sq = new TProfile("fResSP_vs_Cent_sq", "Resolution; centrality; Resolution", 20., 0., 100.);
   fOutput_sq->Add(fResSP_vs_Cent_sq);
   
-  f2partCumQA_vs_Cent_sq = new TH2D("f2partCumQA_vs_Cent_sq", "Resolution; centrality; Resolution", 100., 0., 100.,200.,-1.,1.);
+  f2partCumQA_vs_Cent_sq = new TProfile("f2partCumQA_vs_Cent_sq", "Resolution; centrality; Resolution", 100., 0., 100.);
   fOutput_sq->Add(f2partCumQA_vs_Cent_sq);
   
-  f2partCumQB_vs_Cent_sq = new TH2D("f2partCumQB_vs_Cent_sq", "Resolution; centrality; Resolution", 100., 0., 100.,200.,-1.,1.);
+  f2partCumQB_vs_Cent_sq = new TProfile("f2partCumQB_vs_Cent_sq", "Resolution; centrality; Resolution", 100., 0., 100.);
   fOutput_sq->Add(f2partCumQB_vs_Cent_sq);
   
   for (Int_t iC = 0; iC < 9; iC++){
+    
+    fResSP_vs_Qvec[iC] = new TProfile(Form("fResSP_vs_Qvec_%d", iC), "Resolution; Qvec (V0A); Resolution", 10., 0., 100.);
+    fOutput->Add(fResSP_vs_Qvec[iC]);
 
     fv2SPGap1A[iC] = new TProfile(Form("fv2SPGap1A_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
     fOutput->Add(fv2SPGap1A[iC]);
@@ -382,7 +376,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   
   Double_t Cent=fEventCuts->GetCent();
   
-  Short_t centV0 = -1;
+  Int_t centV0 = -1;
   if ((Cent > 0) && (Cent <= 5.0))
       centV0 = 0; 
     else if ((Cent > 5.0) && (Cent <= 10.0))
@@ -511,35 +505,31 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   if (multGap1A > 0 && multGap1B > 0){
     Double_t res = (QxGap1A*QxGap1B + QyGap1A*QyGap1B)/(Double_t)multGap1A/(Double_t)multGap1B;
     fResSP->Fill((Double_t)centV0, res);
-    f2dResSP->Fill((Double_t)centV0, res);
-    fResSP_vs_Cent->Fill((Double_t)Cent, res);
+    fResSP_vs_Cent->Fill(Cent, res);
+    fResSP_vs_Qvec[centV0]->Fill(Qvec,res);
     
     Double_t f2partCumQA = -999.;
     if(multGap1A>1)
       f2partCumQA = ( ( (QxGap1A*QxGap1A + QyGap1A*QyGap1A) - (Double_t)multGap1A ) / ((Double_t)multGap1A*((Double_t)multGap1A-1)) );
-    
-    f2partCumQA_vs_Cent->Fill((Double_t)Cent,f2partCumQA);
+    if(f2partCumQA>0)f2partCumQA_vs_Cent->Fill((Double_t)Cent,f2partCumQA);
     
     Double_t f2partCumQB = -999.;
     if(multGap1B>1) 
       f2partCumQB = ( ( (QxGap1B*QxGap1B + QyGap1B*QyGap1B) - (Double_t)multGap1B ) / ((Double_t)multGap1B*((Double_t)multGap1B-1)) );
-    
-    f2partCumQB_vs_Cent->Fill((Double_t)Cent,f2partCumQB);
+    if(f2partCumQB>0)f2partCumQB_vs_Cent->Fill((Double_t)Cent,f2partCumQB);
         
     if (Qvec > fCutLargeQperc && Qvec < 100.){
       fResSP_lq->Fill((Double_t)centV0, res);
-      f2dResSP_lq->Fill((Double_t)centV0, res);
-      fResSP_vs_Cent_lq->Fill((Double_t)Cent, res);
-      f2partCumQA_vs_Cent_lq->Fill((Double_t)Cent,f2partCumQA);
-      f2partCumQB_vs_Cent_lq->Fill((Double_t)Cent,f2partCumQB);
+      fResSP_vs_Cent_lq->Fill(Cent, res);
+      if(f2partCumQA>0)f2partCumQA_vs_Cent_lq->Fill((Double_t)Cent,f2partCumQA);
+      if(f2partCumQB>0)f2partCumQB_vs_Cent_lq->Fill((Double_t)Cent,f2partCumQB);
     }
     
     if (Qvec > 0. && Qvec < fCutSmallQperc){
       fResSP_sq->Fill((Double_t)centV0, res);
-      f2dResSP_sq->Fill((Double_t)centV0, res);
-      fResSP_vs_Cent_sq->Fill((Double_t)Cent, res);
-      f2partCumQA_vs_Cent_sq->Fill((Double_t)Cent,f2partCumQA);
-      f2partCumQB_vs_Cent_sq->Fill((Double_t)Cent,f2partCumQB);
+      fResSP_vs_Cent_sq->Fill(Cent, res);
+      if(f2partCumQA>0)f2partCumQA_vs_Cent_sq->Fill((Double_t)Cent,f2partCumQA);
+      if(f2partCumQB>0)f2partCumQB_vs_Cent_sq->Fill((Double_t)Cent,f2partCumQB);
     }
     
     if( fFillTHn ){ 
