@@ -535,8 +535,6 @@ Bool_t AliAnalysisTaskJetShapeGR::FillHistograms()
 	//now get second derivative vs R and do final calculation
 	TArrayF num = jet1->GetGRNumeratorSub();
 	TArrayF den = jet1->GetGRDenominatorSub();
-	Printf("Got numerator size: nr: %d",nr);
-	cout << "size: " << num.GetSize() << endl;
 	if(num.GetSize()>0) {
 	  for(Int_t i = 0; i<nr; i++) {
 	    Double_t r = i*wr + 0.5*wr;
@@ -577,10 +575,8 @@ Bool_t AliAnalysisTaskJetShapeGR::FillTrueJets() {
 
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(fContainerTrue);
-  if(!jetCont) {
-    Printf("cannot find container");
+  if(!jetCont)
     return kFALSE;
-  }
 
   AliDebug(11,Form("NJets True: %d",jetCont->GetNJets()));
 
@@ -625,7 +621,6 @@ Double_t AliAnalysisTaskJetShapeGR::CalcDeltaGR(AliEmcalJet *jet, Int_t ic, TArr
   AliVParticle *vp2 = 0x0;
   Double_t A = 0.; Double_t B = 0.;
   if(jet->GetNumberOfTracks()<2) return 0.;
-  //  Printf("jet pt: %f  nconst: %d",jet->Pt(),jet->GetNumberOfTracks());
   for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
     vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
     if(!vp1) continue;
@@ -634,7 +629,6 @@ Double_t AliAnalysisTaskJetShapeGR::CalcDeltaGR(AliEmcalJet *jet, Int_t ic, TArr
       if(!vp2) continue;
       Double_t dphi = GetDeltaPhi(vp1->Phi(),vp2->Phi());
       Double_t dr2 = (vp1->Eta()-vp2->Eta())*(vp1->Eta()-vp2->Eta()) + dphi*dphi;
-      //      Printf("dr2: %f  dEta: %f  dphi: %f",dr2,vp1->Eta()-vp2->Eta(),dphi);
       if(dr2>0.) {
 	for(Int_t k = 0; k<nr; k++) {
 	  Double_t r = k*fDRStep + 0.5*fDRStep;
@@ -670,11 +664,9 @@ Double_t AliAnalysisTaskJetShapeGR::CalcGR(AliEmcalJet *jet, Int_t ic) {
   Double_t wr = 0.04;
   const Int_t nr = TMath::CeilNint(jetCont->GetJetRadius()/wr);
   Double_t grArr[nr];
-  for(Int_t i = 0; i<nr; i++) {
+  for(Int_t i = 0; i<nr; i++)
     grArr[i] = 0.;
-    //Printf("bin up edge %d=%f",i,wr+i*wr);
-  }
-  //  Printf("jet pt: %f  nconst: %d",jet->Pt(),jet->GetNumberOfTracks());
+
   for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
     vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
     for(Int_t j=i; j<jet->GetNumberOfTracks(); j++) {
