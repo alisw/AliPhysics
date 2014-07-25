@@ -368,7 +368,7 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
   Int_t ntracks=event->GetNumberOfTracks(); 
   UInt_t specie = event->GetEventSpecie();  // skip laser events
   if (specie==AliRecoParam::kCalib) return;
-
+  Int_t ntracksFriend = esdFriend->GetNumberOfTracks();
 
 
   for (Int_t itrack0=0;itrack0<ntracks;itrack0++) {
@@ -389,7 +389,11 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
     //if (TMath::Abs(dcaTPC[1])<kMaxDelta[0]*2) continue;
     //    const AliExternalTrackParam * trackIn0 = track0->GetInnerParam();
     AliESDfriendTrack* friendTrack0=NULL;
-    if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack0 = esdFriend->GetTrack(itrack0);} //this guy can be NULL
+    if (esdFriend &&!esdFriend->TestSkipBit()){
+      if (itrack0<ntracksFriend){
+	friendTrack0 = esdFriend->GetTrack(itrack0);
+      } //this guy can be NULL
+    }
 
     for (Int_t itrack1=itrack0+1;itrack1<ntracks;itrack1++) {
       AliESDtrack *track1 = event->GetTrack(itrack1);
@@ -444,7 +448,12 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
       
 
       AliESDfriendTrack* friendTrack1=NULL;
-      if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack1 = esdFriend->GetTrack(itrack1);} //this guy can be NULL
+      if (esdFriend &&!esdFriend->TestSkipBit()){
+	if (itrack1<ntracksFriend){
+	  friendTrack1 = esdFriend->GetTrack(itrack1);
+	} //this guy can be NULL
+      }
+
       //
       AliESDfriendTrack *friendTrackStore0=friendTrack0;    // store friend track0 for later processing
       AliESDfriendTrack *friendTrackStore1=friendTrack1;    // store friend track1 for later processing
@@ -1833,8 +1842,13 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       AliESDfriendTrack* friendTrack1=NULL;
       if (esdFriend)       {
         if (!esdFriend->TestSkipBit()){
-          friendTrack0 = esdFriend->GetTrack(v0->GetIndex(0)); //this guy can be NULL
-          friendTrack1 = esdFriend->GetTrack(v0->GetIndex(1)); //this guy can be NULL
+	  Int_t ntracksFriend = esdFriend->GetNumberOfTracks();
+	  if (v0->GetIndex(0)<ntracksFriend){
+	    friendTrack0 = esdFriend->GetTrack(v0->GetIndex(0)); //this guy can be NULL
+	  }
+	  if (v0->GetIndex(1)<ntracksFriend){
+	    friendTrack1 = esdFriend->GetTrack(v0->GetIndex(1)); //this guy can be NULL
+	  }
         }
       }
       if (track0->GetSign()<0) {
@@ -1990,7 +2004,13 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
       AliESDtrack *track = esdEvent->GetTrack(iTrack);
       if(!track) continue;
       AliESDfriendTrack* friendTrack=NULL;
-      if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack = esdFriend->GetTrack(iTrack);} //this guy can be NULL
+      if (esdFriend && !esdFriend->TestSkipBit()) {
+	Int_t ntracksFriend = esdFriend->GetNumberOfTracks();
+	if (iTrack<ntracksFriend){
+	  friendTrack = esdFriend->GetTrack(iTrack);
+	} //this guy can be NULL	
+      }
+      
       if(track->Charge()==0) continue;
       if(!esdTrackCuts->AcceptTrack(track)) continue;
       if(!accCuts->AcceptTrack(track)) continue;

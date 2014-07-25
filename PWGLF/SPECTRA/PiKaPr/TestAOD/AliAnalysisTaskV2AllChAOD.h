@@ -48,11 +48,20 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fMinTPCNcls(70),
     fFillTHn(kTRUE),
     fResSP(0),
+    fResSP_vs_Cent(0),
+    f2partCumQA_vs_Cent(0),
+    f2partCumQB_vs_Cent(0),
     fEta_vs_Phi_bef(0),
     fEta_vs_PhiA(0),
     fEta_vs_PhiB(0),
     fResSP_lq(0),
-    fResSP_sq(0)
+    fResSP_vs_Cent_lq(0),
+    f2partCumQA_vs_Cent_lq(0),
+    f2partCumQB_vs_Cent_lq(0),
+    fResSP_sq(0),
+    fResSP_vs_Cent_sq(0),
+    f2partCumQA_vs_Cent_sq(0),
+    f2partCumQB_vs_Cent_sq(0)
       {}
   AliAnalysisTaskV2AllChAOD(const char *name);
   virtual ~AliAnalysisTaskV2AllChAOD() {
@@ -127,6 +136,10 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   //output object
   TProfile*     fResSP;             //! resolution
+  TProfile*     fResSP_vs_Cent;
+  TProfile*     fResSP_vs_Qvec[9];
+  TProfile*     f2partCumQA_vs_Cent;
+  TProfile*     f2partCumQB_vs_Cent;
   TH2D*         fEta_vs_Phi_bef;        //! eta vs phi distribution before sub events cut 
   TH2D*         fEta_vs_PhiA;            //! eta vs phi distribution after sub events cut 
   TH2D*         fEta_vs_PhiB;            //! eta vs phi distribution after sub events cut 
@@ -145,6 +158,9 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
 
   //large q
   TProfile*     fResSP_lq;             //! resolution
+  TProfile*     fResSP_vs_Cent_lq;
+  TProfile*     f2partCumQA_vs_Cent_lq;
+  TProfile*     f2partCumQB_vs_Cent_lq;
   TProfile*     fv2SPGap1A_lq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B_lq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fSinGap1Aq_lq[9];      //! <sin> vs pT gap 1
@@ -158,6 +174,9 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   //small q
   TProfile*     fResSP_sq;             //! resolution
+  TProfile*     fResSP_vs_Cent_sq;
+  TProfile*     f2partCumQA_vs_Cent_sq;
+  TProfile*     f2partCumQB_vs_Cent_sq;
   TProfile*     fv2SPGap1A_sq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B_sq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fSinGap1Aq_sq[9];      //! <sin> vs pT gap 1
@@ -172,7 +191,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 5);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 7);
 };
 
 #endif

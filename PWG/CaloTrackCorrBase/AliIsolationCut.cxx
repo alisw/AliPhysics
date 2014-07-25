@@ -485,8 +485,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         phi = trackmix->Phi() ;
       }
 
-      if( ptLead < 0 ) ptLead = pt;
-
       if( phi < 0 ) phi+=TMath::TwoPi();
       
       rad = Radius(etaC, phiC, eta, phi);
@@ -551,7 +549,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         
         coneptsumTrack+=pt;
 
-        if( ptLead < 0 ) ptLead = pt;
+        if( ptLead < pt ) ptLead = pt;
 
 //        // *Before*, count particles in cone
 //        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
@@ -700,7 +698,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         
         coneptsumCluster+=pt;
         
-        if( ptLead < 0 ) ptLead = pt;
+        if( ptLead < pt ) ptLead = pt;
         
 //        // *Before*, count particles in cone
 //        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;

@@ -14,6 +14,7 @@
 
 #ifndef ROOT_TObject
 #include <TObject.h>
+#include <TMCProcess.h>
 #endif
 class AliESDEvent;
 class AliHFEpid;
@@ -72,6 +73,7 @@ public:
   Int_t GetPdgFromLabel(Int_t label) const;
 
   Bool_t IsPhysicalPrimary(Int_t label) const;  // checks if a particle is physical primary
+  Bool_t CheckGEANTProcess(Int_t label, TMCProcess process) const;
   Bool_t IsSecondaryFromWeakDecay(Int_t label) const;
   Bool_t IsSecondaryFromMaterial(Int_t label) const;
 
