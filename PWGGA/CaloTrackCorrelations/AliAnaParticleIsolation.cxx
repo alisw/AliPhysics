@@ -3449,7 +3449,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     {
       if(GetDebug() > 0) printf(" AliAnaParticleIsolation::MakeAnalysisFillHistograms() - pt %1.1f, eta %1.1f, phi %1.1f\n",pt, eta, phi);
       
-      FillTrackMatchingShowerShapeControlHistograms(aod,GetCaloPID());
+      FillTrackMatchingShowerShapeControlHistograms(aod);
 
       //Fill pt/sum pT distribution of particles in cone or in UE band
       Float_t coneptsumCluster = 0;
