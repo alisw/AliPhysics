@@ -91,7 +91,13 @@ Bool_t summary(kTRUE);
 void processTRD(TNamed* task, const Char_t *filename);
 void processESD(TNamed* task, const Char_t *filename);
 void processGEN(TNamed* task, const Char_t *filename);
-void makeSummaryESD(const Char_t* filename="QAresults.root", Double_t* trendValues=0x0, Bool_t useCF=kFALSE, Bool_t useIsolatedBC=kFALSE, Bool_t cutTOFbc=kFALSE, const Char_t* dir="TRD_Performance", Bool_t isGrid=kFALSE);
+void makeSummaryESD(const Char_t* filename="QAresults.root", 
+		    Double_t* trendValues=0x0, 
+		    Bool_t useCF=kTRUE, 
+		    Bool_t useIsolatedBC=kFALSE, 
+		    Bool_t cutTOFbc=kFALSE, 
+		    const Char_t* dir="TRD_Performance", 
+		    Bool_t isGrid=kFALSE);
 void makeResults(const Char_t *opt = "ALL",
                  const Char_t *files="QAresults.root",
                  const Char_t *cid = "",
