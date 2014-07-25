@@ -165,8 +165,7 @@ fhEtaPhiFracPtSumIso(),           fhEtaPhiFracPtSumDecayIso(),
 // Cluster control histograms
 fhTrackMatchedDEta(),             fhTrackMatchedDPhi(),           fhTrackMatchedDEtaDPhi(),
 fhdEdx(),                         fhEOverP(),                     fhTrackMatchedMCParticle(),
-fhELambda0() ,                    fhPtLambda0() ,
-fhELambda1(),                     fhELambda0SSBkg(),
+fhELambda0() ,                    fhPtLambda0() ,                 fhELambda1(),
 fhELambda0TRD(),                  fhPtLambda0TRD(),               fhELambda1TRD(),
 fhELambda0MCPhoton(),             fhPtLambda0MCPhotonPrompt(),    fhPtLambda0MCPhotonFrag(),
 fhELambda0MCPi0(),                fhELambda0MCPi0Decay(),
@@ -1160,8 +1159,7 @@ void AliAnaParticleIsolation::FillPileUpHistograms(Int_t clusterID)
 }
 
 //_____________________________________________________________________________________________________________________
-void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  *pCandidate,
-                                                                            AliCaloPID * pid)
+void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  *pCandidate)
 {
   // Fill Track matching and Shower Shape control histograms  
   if(!fFillTMHisto &&  !fFillSSHisto) return;
@@ -1213,8 +1211,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCOtherDecay))    fhELambda0MCOtherDecay[isolated]->Fill(energy, cluster->GetM02());
         
         //        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion))    fhPtNoIsoConversion   ->Fill(energy, cluster->GetM02());
-        else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))     fhELambda0MCHadron    [isolated]->Fill(energy, cluster->GetM02());        
-        
+        else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))     fhELambda0MCHadron    [isolated]->Fill(energy, cluster->GetM02());
       }
       
       if(fCalorimeter == "EMCAL" && GetModuleNumber(cluster) > 5) // TO DO: CHANGE FOR 2012
@@ -1228,31 +1225,6 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       if     (nMaxima==1) { fhELambda0LocMax1[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMax1[isolated]->Fill(energy,cluster->GetM20()); }
       else if(nMaxima==2) { fhELambda0LocMax2[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMax2[isolated]->Fill(energy,cluster->GetM20()); }
       else                { fhELambda0LocMaxN[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMaxN[isolated]->Fill(energy,cluster->GetM20()); }
-      
-      if(isolated==0)
-      {
-        //Analyse non-isolated events
-        Int_t   n         = 0; 
-        Int_t   nfrac     = 0;
-        Bool_t  iso       = kFALSE ;
-        Float_t coneptsum = 0 ;
-        
-        TObjArray * plNe  = pCandidate->GetObjArray(GetAODObjArrayName()+"Clusters");
-        TObjArray * plCTS = pCandidate->GetObjArray(GetAODObjArrayName()+"Tracks");
-        
-        GetIsolationCut()->SetPtThresholdMax(1.);
-        GetIsolationCut()->MakeIsolationCut(plCTS,   plNe, 
-                                            GetReader(), pid,
-                                            kFALSE, pCandidate, "",
-                                            n,nfrac,coneptsum, iso);
-        
-        if (!iso) fhELambda0SSBkg->Fill(energy, cluster->GetM02());
-        
-        if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Energy Sum in Isolation Cone %2.2f\n", coneptsum);    
-      }
-      
-      GetIsolationCut()->SetPtThresholdMax(10000.);
-      
     } // SS histo fill        
     
     
@@ -2260,17 +2232,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       outputContainer->Add(fhConeSumPtPhiUESubTrackCellTrigEtaPhi) ;
       
     }
-        
-    if(fFillSSHisto)
-    {
-    	fhELambda0SSBkg  = new TH2F("hELambda0SSBkg",
-                                  Form("Non isolated clusters : E vs #lambda_{0}, %s",parTitle.Data()),
-                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhELambda0SSBkg->SetYTitle("#lambda_{0}^{2}");
-      fhELambda0SSBkg->SetXTitle("#it{E} (GeV)");
-      outputContainer->Add(fhELambda0SSBkg) ;
-    }
-    
+            
     for(Int_t iso = 0; iso < 2; iso++)
     {
       if(fFillTMHisto)
