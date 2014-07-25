@@ -278,11 +278,11 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    } else AliDebug(2, Form("Found %d vertices",arrayDStartoD0pi->GetEntriesFast()));   
    
    TClonesArray* mcArray = 0x0;
-   if (fUseMCInfo) {
+   if (fUseMCInfo) { //not used at the moment,uncomment return if you use
       mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
       if (!mcArray) {
       	 printf("AliAnalysisTaskSEDStarSpectra::UserExec: MC particles not found!\n");
-      	 return kFALSE;
+      	 //return kFALSE;
       }
    }
    
@@ -300,7 +300,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
     
    fCandidateArray = dynamic_cast<TClonesArray*>(GetInputData(1));
    if (!fCandidateArray) return kFALSE;
-   if (fCandidateType==1 && fSwitchOnSB) {
+   if ((fCandidateType==1 && fSwitchOnSB) || fUseMCInfo) {
       fSideBandArray = dynamic_cast<TClonesArray*>(GetInputData(2));
       if (!fSideBandArray) return kFALSE;
    }
@@ -555,7 +555,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       	    AliAODRecoDecayHF *charmdecay=(AliAODRecoDecayHF*) charm;
       	    fIsDInJet=IsDInJet(jet, charmdecay, kTRUE);
       	    if (fIsDInJet) FlagFlavour(jet);
-      	    if (jet->TestFlavourTag(AliEmcalJet::kDStar)) hstat->Fill(4);
+      	    if (jet->TestFlavourTag(AliEmcalJet::kDStar) || jet->TestFlavourTag(AliEmcalJet::kD0)) hstat->Fill(4);
       	    
       	    //Note: the z component of the jet momentum comes from the eta-phi direction of the jet particles, it is not calculated from the z component of the tracks since, as default, the scheme used for jet reco is the pt-scheme which sums the scalar component, not the vectors. Addind the D daughter momentum component by componet as done here is not 100% correct, but the difference is small, for fairly collimated particles.
 
@@ -604,11 +604,16 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
      	       
       	    }
       	    if(fUseMCInfo){
+      	       
       	       AliAODRecoDecayHF* charmbg = 0x0;
       	       charmbg=(AliAODRecoDecayHF*)fSideBandArray->At(ib);
       	       if(!charmbg) continue;
+      	       hstat->Fill(8);
       	       fIsDInJet=IsDInJet(jet, charmbg,kFALSE);
-      	       if (fIsDInJet) FlagFlavour(jet); //this are backgroud HF jets, but flagged as signal at the moment. Can use the bkg flavour flag in the future. This info is not stored now a part in the jet
+      	       if (fIsDInJet) {
+      	       	  FlagFlavour(jet); //this are backgroud HF jets, but flagged as signal at the moment. Can use the bkg flavour flag in the future. This info is not stored now a part in the jet
+      	       	  hstat->Fill(9);
+      	       }
       	       Double_t pjet[3];
       	       jet->PxPyPz(pjet);
       	       //background subtraction
@@ -766,7 +771,10 @@ void AliAnalysisTaskFlavourJetCorrelations::RecalculateMomentum(Double_t* pj, co
 Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    
    // Statistics 
-   TH1I* hstat=new TH1I("hstat","Statistics",8,-0.5,7.5);
+   Int_t nbins=8;
+   if(fUseMCInfo) nbins+=2;
+   
+   TH1I* hstat=new TH1I("hstat","Statistics",nbins,-0.5,nbins-0.5);
    hstat->GetXaxis()->SetBinLabel(1,"N ev anal");
    hstat->GetXaxis()->SetBinLabel(2,"N ev sel");
    hstat->GetXaxis()->SetBinLabel(3,"N cand sel & jet");
@@ -775,6 +783,12 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    hstat->GetXaxis()->SetBinLabel(6,"N jet rej");
    hstat->GetXaxis()->SetBinLabel(7,"N cand sel & !jet");
    hstat->GetXaxis()->SetBinLabel(8,"N jets & !D");
+   if(fUseMCInfo) {
+    hstat->GetXaxis()->SetBinLabel(3,"N Signal sel & jet");
+    hstat->GetXaxis()->SetBinLabel(5,"N Signal in jet");
+    hstat->GetXaxis()->SetBinLabel(9,"N Bkg sel & jet");
+    hstat->GetXaxis()->SetBinLabel(10,"N Bkg in jet");
+   }
    hstat->SetNdivisions(1);
    fOutput->Add(hstat);
    
@@ -908,7 +922,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       fOutput->Add(hNtrkjzNok);
       
       //calculate frag func with pt (simply ptD(or track)\cdot pt jet /ptjet^2)
-      TH1F* hzDT=new TH1F("hzDT", "Z of D in jet in transverse components;(p_{T}^{D} dot p_{T}^{jet})/p_{T}^{jet}^{2} ",nbinsz,zlims[0],zlims[1]);
+      TH1F* hzDT=new TH1F("hzDT", Form("Z of D %s in jet in transverse components;(p_{T}^{D} dot p_{T}^{jet})/p_{T}^{jet}^{2} ", fUseMCInfo ? "(S+B)" : ""),nbinsz,zlims[0],zlims[1]);
       fOutput->Add(hzDT);
       TH1F* hztracksinjetT=new TH1F("hztracksinjetT", "Z of jet tracks in transverse components;(p_{T}^{trks} dot p_{T}^{jet})/p_{T}^{jet}^{2}",nbinsz,zlims[0],zlims[1]);
       fOutput->Add(hztracksinjetT);
@@ -926,14 +940,14 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       
       if(fCandidateType==kDstartoKpipi) 
       {
-      	 
-      	 TH2F* hDiffSideBand = new TH2F("hDiffSideBand","M(kpipi)-M(kpi) Side Band Background",nbinsmass,fMinMass,fMaxMass,nbinsptD, ptDlims[0],ptDlims[1]);
-      	 hDiffSideBand->SetStats(kTRUE);
-      	 hDiffSideBand->GetXaxis()->SetTitle("M(kpipi)-M(Kpi) GeV");
-      	 hDiffSideBand->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
-      	 hDiffSideBand->Sumw2();
-      	 fOutput->Add(hDiffSideBand); 
-      	 
+      	 if(fSwitchOnSB){
+      	    TH2F* hDiffSideBand = new TH2F("hDiffSideBand","M(kpipi)-M(kpi) Side Band Background",nbinsmass,fMinMass,fMaxMass,nbinsptD, ptDlims[0],ptDlims[1]);
+      	    hDiffSideBand->SetStats(kTRUE);
+      	    hDiffSideBand->GetXaxis()->SetTitle("M(kpipi)-M(Kpi) GeV");
+      	    hDiffSideBand->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
+      	    hDiffSideBand->Sumw2();
+      	    fOutput->Add(hDiffSideBand); 
+      	 }
       	 
       	 TH1F* hPtPion = new TH1F("hPtPion","Primary pions candidates pt ",500,0,10);
       	 hPtPion->SetStats(kTRUE);
@@ -983,7 +997,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       fOutput->Add(hNJetPerEvNoD);
       fOutput->Add(hPtJetPerEvNoD);
       
-      TH1F* hDeltaRD=new TH1F("hDeltaRD","#Delta R distribution of D candidates selected;#Delta R",200, 0.,10.);
+      TH1F* hDeltaRD=new TH1F("hDeltaRD",Form("#Delta R distribution of D candidates %s selected;#Delta R", fUseMCInfo ? "(S+B)" : ""),200, 0.,10.);
       hDeltaRD->Sumw2();
       fOutput->Add(hDeltaRD);
       
@@ -1029,7 +1043,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       	    fSwitchOnSB=0;
       	    if(fUseMCInfo){
       	       AliInfo("Creating a 7 axes container (MB background candidates)");
-      	       const Int_t nAxis=9;   
+      	       const Int_t nAxis=7;   
       	       const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,2, 2, 2};
       	       const Double_t minSparse[nAxis]={zlims[0],ptjetlims[0],ptDlims[0],fMinMass, -0.5,-0.5,-0.5};
       	       const Double_t maxSparse[nAxis]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass, 1.5, 1.5 , 1.5};
@@ -1269,7 +1283,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t
       point[5]=static_cast<Double_t>(bJetInEMCalAcc ? 1 : 0);
    }
       if(fNAxesBigSparse==7){
-      point=new Double_t[6];
+      point=new Double_t[7];
       point[0]=z;
       point[1]=ptjet;
       point[2]=ptD;
@@ -1361,11 +1375,17 @@ void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *cand
    if(!isselected) return;
    
    Double_t ptD=candbg->Pt();
+   Double_t deltaR=DeltaR(candbg,jet);
    Double_t phiD=candbg->Phi();
    Double_t deltaphi = jet->Phi()-phiD;
    if(deltaphi<=-(TMath::Pi())/2.) deltaphi = deltaphi+2.*(TMath::Pi());
    if(deltaphi>(3.*(TMath::Pi()))/2.) deltaphi = deltaphi-2.*(TMath::Pi());
    Double_t z=Z(candbg,jet);
+
+   if(fIsDInJet)((TH1F*)fOutput->FindObject("hzDT"))->Fill(Z(candbg,jet,kTRUE));
+   
+   TH1F* hDeltaRD=(TH1F*)fOutput->FindObject("hDeltaRD");
+   hDeltaRD->Fill(deltaR);
 
    Bool_t bDInEMCalAcc=InEMCalAcceptance(candbg);
    Bool_t bJetInEMCalAcc=InEMCalAcceptance(jet);
