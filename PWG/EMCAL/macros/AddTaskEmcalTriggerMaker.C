@@ -31,30 +31,31 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
     return NULL;
   }
 
-  if (!triggersName) {
-    triggersName = new char[100];
+  TString strTrigersName(triggersName);
+  TString strCellsName(cellsName);
 
+  if(strTriggersName.IsNull()) {
     if (evhand->InheritsFrom("AliESDInputHandler")) {
-      strcpy(triggersName,"EMCALTrigger");
-      ::Info("AddTaskEmcalTriggerMaker", Form( "ESD analysis, triggersName = \"%s\"", triggersName ));
+      strTriggersName = "EMCALTrigger";
+      ::Info("AddTaskEmcalTriggerMaker", Form( "ESD analysis, triggersName = \"%s\"", strTriggersName.Data() ));
     }
     else {
-      strcpy(triggersName,"emcalTrigger");
-      ::Info("AddTaskEmcalTriggerMaker", Form( "AOD analysis, triggersName = \"%s\"", triggersName ));
+      strTriggersName = "emcalTrigger";
+      ::Info("AddTaskEmcalTriggerMaker", Form( "AOD analysis, triggersName = \"%s\"", strTriggersName.Data() ));
     }
   }
-  if (!cellsName) {
-    cellsName = new char[100];
 
+  if(strCellssName.IsNull()) {
     if (evhand->InheritsFrom("AliESDInputHandler")) {
-      strcpy(cellsName,"EMCALCells");
-      ::Info("AddTaskEmcalTriggerMaker", Form( "ESD analysis, cellsName = \"%s\"", cellsName ));
+      strCellsName = "EMCALCells";
+      ::Info("AddTaskEmcalTriggerMaker", Form( "ESD analysis, cellsName = \"%s\"", strCellsName.Data() ));
     }
     else {
-      strcpy(cellsName,"emcalCells");
-      ::Info("AddTaskEmcalTriggerMaker", Form( "AOD analysis, cellsName = \"%s\"", cellsName ));
+      strCellsName = "emcalCells";
+      ::Info("AddTaskEmcalTriggerMaker", Form( "AOD analysis, cellsName = \"%s\"", strCellsName.Data() ));
     }
   }
+
   char *v0Name;
   v0Name = new char[100];
   if (evhand->InheritsFrom("AliESDInputHandler")) {
@@ -63,7 +64,7 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   }
   else {
     strcpy(v0Name,"AliAODVZERO");
-    ::Info("AddTaskEmcalTriggerMaker", Form( "AOD analysis, v0Name = \"%s\"", cellsName ));
+    ::Info("AddTaskEmcalTriggerMaker", Form( "AOD analysis, v0Name = \"%s\"", v0Name ));
   }
  
    //-------------------------------------------------------
@@ -71,10 +72,10 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   //-------------------------------------------------------
 
   AliEmcalTriggerMaker *eTask = new AliEmcalTriggerMaker(taskName);
-  eTask->SetCaloTriggersName(triggersName);
+  eTask->SetCaloTriggersName(strTriggersName.Data());
   eTask->SetCaloTriggersOutName(triggersOutName);
   eTask->SetCaloTriggerSetupOutName(triggerSetupOutName);
-  eTask->SetCaloCellsName(cellsName);
+  eTask->SetCaloCellsName(strCellsName.Data());
   eTask->SetV0InName(v0Name);
   eTask->SetTriggerThresholdJetLow( jetLowA, jetLowB, jetLowC );
   eTask->SetTriggerThresholdJetHigh( jetHighA, jetHighB, jetHighC );
