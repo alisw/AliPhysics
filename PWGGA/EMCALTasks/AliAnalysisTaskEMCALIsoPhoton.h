@@ -72,6 +72,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
 					    Double_t highx)     { fNBinsPt = n; fPtBinLowEdge = lowx; fPtBinHighEdge = highx; }
   void                  SetRemoveMatchClus(Bool_t b)            { fRemMatchClus       = b;       }
   void                  SetMinIsoClusE(Double_t emin)           { fMinIsoClusE        = emin;    }
+  void                  SetTrCoreRemoval(Bool_t b)              { fTrCoreRem          = b;       }
 
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
@@ -115,8 +116,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Bool_t                 fRemMatchClus;          // flag to remove completely a cluster matched from the isolation
   Double_t               fMinIsoClusE;           // minimum energy for a cluster to be counted in the iso cone
   Int_t                  fNCuts;                 // number of cuts (QA purposes)
-  TString                fCuts;                  //string to hol cuts names
-
+  Bool_t                 fTrCoreRem;             // flag to set the removal of the core in track isolation (true removes it, default)
 
   
  private:
@@ -133,6 +133,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fRecoPV;                    //!histogram to record if an event has a prim. vert.
   TH1F        *fPVtxZ;                     //!primary vertex Z before cut
   TH1F        *fTrMultDist;                //!track multiplicity distribution
+  TH2F        *fClusEtCPVSBGISO;           //!iso-all vs. clusters Et after CPV and 0.1<M02<0.3
+  TH2F        *fClusEtCPVBGISO;            //!iso-all vs. clusters Et after CPV and 0.5<M02<2.0
   TH3F        *fMCDirPhotonPtEtaPhi;       //!direct produced photon pt, eta, phi
   TH3F        *fMCIsoDirPhotonPtEtaPhi;    //!direct produced photon pt, eta, phi, isolated @ mc level
   TH2F        *fMCDirPhotonPtEtIso;        //!direct produced photon pt and isolation pt @ mc level
@@ -149,6 +151,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fMcPtInConeSBGnoUE;         //!sum of mc-pt of "primary" particles inside de cone, as a function of ISO in SBG range no UE sub
   TH2F        *fMcPtInConeTrBGnoUE;        //!sum of mc-pt of "primary" particles inside de cone, as a function of trk only ISO in BG template no UE sub
   TH2F        *fMcPtInConeTrSBGnoUE;       //!sum of mc-pt of "primary" particles inside de cone, as a function of trk only ISO in SBG range no UE sub
+  TH2F        *fMcPtInConeMcPhoPt;         //!sum of mc-pt of "primary" particles inside de cone, as a function of prompt photon mc-pt
   TH2F        *fAllIsoEtMcGamma;           //!all iso distribution vs. Et clus for clusters comming from a MC prompt photon
   TH2F        *fAllIsoNoUeEtMcGamma;       //!all iso distribution (without UE subtraction) vs. Et clus for clusters comming from a MC prompt photon
   TH3F        *fMCDirPhotonPtEtaPhiNoClus; //!pt x eta x phi for prompt photons that didn't produce clusters

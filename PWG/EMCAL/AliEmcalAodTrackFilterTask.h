@@ -1,9 +1,9 @@
 #ifndef ALIEMCALAODTRACKFILTERTASK_H
 #define ALIEMCALAODTRACKFILTERTASK_H
 
-// $Id$
-
 class TClonesArray;
+
+#include <TF1.h>
 
 #include "AliAnalysisTaskSE.h"
 
@@ -24,7 +24,8 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
   void               SetTracksInName(const char *name)                    { fTracksInName      = name; }
   void               SetTracksOutName(const char *name)                   { fTracksOutName     = name; }
   void               SetUseNegativeLabels(Bool_t f)                       { fUseNegativeLabels = f   ; }
-  void               SetTrackEfficiency(Double_t eff = 0.95)              { fTrackEfficiency   = eff ; }
+  void               SetTrackEfficiency(Double_t eff = 0.95)              { fTrackEfficiency  = new TF1("eff", "[0]", 0, 500); fTrackEfficiency->FixParameter(0,eff); }
+  void               SetTrackEfficiency(TF1* eff)                         { fTrackEfficiency  = eff  ; }
 
  protected:
   void               UserCreateOutputObjects();
@@ -41,7 +42,7 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
   Bool_t             fAttemptProp;          // if true then attempt to propagate if not done yet
   Bool_t             fAttemptPropMatch;     // if true then attempt to propagate if not done yet but IsEMCAL is true
   Double_t           fDist;                 // distance to surface (440cm default)
-  Double_t           fTrackEfficiency;      // track efficiency
+  TF1               *fTrackEfficiency;      // track efficiency
   TClonesArray      *fTracksIn;             //!track array in
   TClonesArray      *fTracksOut;            //!track array out
 
@@ -49,6 +50,6 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
   AliEmcalAodTrackFilterTask(const AliEmcalAodTrackFilterTask&);            // not implemented
   AliEmcalAodTrackFilterTask &operator=(const AliEmcalAodTrackFilterTask&); // not implemented
 
-  ClassDef(AliEmcalAodTrackFilterTask, 3); // Task to filter Aod tracks
+  ClassDef(AliEmcalAodTrackFilterTask, 4); // Task to filter Aod tracks
 };
 #endif

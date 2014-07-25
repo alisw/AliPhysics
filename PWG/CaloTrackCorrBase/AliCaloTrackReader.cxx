@@ -1480,6 +1480,8 @@ void AliCaloTrackReader::FillInputCTS()
   {////////////// track loop
     AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; // retrieve track from esd
     
+    if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(track->GetLabel())) continue ;
+    
     //Select tracks under certain conditions, TPCrefit, ITSrefit ... check the set bits
     ULong_t status = track->GetStatus();
     
@@ -1665,7 +1667,6 @@ void AliCaloTrackReader::FillInputCTS()
     
     if (fMixedEvent)  track->SetID(itrack);
     
-    if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(track->GetLabel())) continue ;
     
     fCTSTracks->Add(track);
     
@@ -1687,10 +1688,21 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
 {
   //Fill the EMCAL data in the array, do it
   
+  // Accept clusters with the proper label, TO DO, use the new more General methods!!!
+  if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel( clus->GetLabel() )) return ;
+  
   Int_t vindex = 0 ;
   if (fMixedEvent)
     vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
   
+  TLorentzVector momentum ;
+  
+  clus->GetMomentum(momentum, fVertex[vindex]);
+  
+  if( (fDebug > 2 && momentum.E() > 0.1) || fDebug > 10 )
+    printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Input cluster E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+           momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
+
   if(fRecalculateClusters)
   {
     //Recalibrate the cluster energy
@@ -1737,7 +1749,18 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   }
   
   //Reject clusters with bad channels, close to borders and exotic;
-  if(!GetCaloUtils()->GetEMCALRecoUtils()->IsGoodCluster(clus,GetCaloUtils()->GetEMCALGeometry(),GetEMCALCells(),fInputEvent->GetBunchCrossNumber())) return;
+  Bool_t goodCluster = GetCaloUtils()->GetEMCALRecoUtils()->IsGoodCluster(clus,
+                                                                          GetCaloUtils()->GetEMCALGeometry(),
+                                                                          GetEMCALCells(),fInputEvent->GetBunchCrossNumber());
+  
+  if(!goodCluster)
+  {
+    if( (fDebug > 2 && momentum.E() > 0.1) || fDebug > 10 )
+      printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Bad cluster E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+             momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
+
+    return;
+  }
   
   //Mask all cells in collumns facing ALICE thick material if requested
   if(GetCaloUtils()->GetNMaskCellColumns())
@@ -1761,15 +1784,27 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   //clus->GetPosition(pos);
   //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
   
-  //Correct non linearity
+  //Correct non linearity or smear energy
   if(fCorrectELinearity && GetCaloUtils()->IsCorrectionOfClusterEnergyOn())
   {
     GetCaloUtils()->CorrectClusterEnergy(clus) ;
     
-    //In case of MC analysis, to match resolution/calibration in real data
-    Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
-    // printf("\t Energy %f, smeared %f\n", clus->E(),rdmEnergy);
-    clus->SetE(rdmEnergy);
+    if( (fDebug > 5 && momentum.E() > 0.1) || fDebug > 10 )
+      printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Correct Non Lin: Old E %3.2f, New E %3.2f\n",
+             momentum.E(),clus->E());
+
+    // In case of MC analysis, to match resolution/calibration in real data
+    // Not needed anymore, just leave for MC studies on systematics
+    if( GetCaloUtils()->GetEMCALRecoUtils()->IsClusterEnergySmeared() )
+    {
+      Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
+      
+      if( (fDebug > 5 && momentum.E() > 0.1) || fDebug > 10 )
+        printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Smear energy: Old E %3.2f, New E %3.2f\n",
+               clus->E(),rdmEnergy);
+    
+      clus->SetE(rdmEnergy);
+    }
   }
     
   Double_t tof = clus->GetTOF()*1e9;
@@ -1780,8 +1815,6 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   SetEMCalEventBC(bc);
   
   if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) return ;
-  
-  TLorentzVector momentum ;
   
   clus->GetMomentum(momentum, fVertex[vindex]);
   
@@ -1797,22 +1830,12 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   else
     fNNonPileUpClusters++;
   
-  if(fDebug > 2 && momentum.E() > 0.1)
-    printf("AliCaloTrackReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+  if((fDebug > 2 && momentum.E() > 0.1) || fDebug > 10)
+    printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
            momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
   
   if (fMixedEvent)
     clus->SetID(iclus) ;
-  
-  if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel( clus->GetLabel() )) return ;
-  
-//  if(fAcceptOnlyHIJINGLabels)
-//  {
-//    printf("Accept label %d?\n",clus->GetLabel());
-//
-//    if( !IsHIJINGLabel( clus->GetLabel() ) ) { printf("\t Reject label\n") ; return ; }
-//    else                                       printf("\t Accept label\n") ;
-//  }
   
   fEMCALClusters->Add(clus);
   
@@ -1968,6 +1991,8 @@ void AliCaloTrackReader::FillInputPHOS()
     {
       if (IsPHOSCluster(clus))
       {
+        if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(clus->GetLabel())) continue ;
+        
         //Check if the cluster contains any bad channel and if close to calorimeter borders
         Int_t vindex = 0 ;
         if (fMixedEvent)
@@ -2004,8 +2029,6 @@ void AliCaloTrackReader::FillInputPHOS()
         {
           clus->SetID(iclus) ;
         }
-        
-        if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(clus->GetLabel())) continue ;
         
         fPHOSClusters->Add(clus);
         

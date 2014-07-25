@@ -778,6 +778,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hntrklvsPercentile01";
     TH2F* hntrklvsPercentile01=new TH2F(hname.Data(),"N tracklets vs Percentile |#eta|<1;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
       
+    hname="hntrklvsPercentile01AllEv";
+    TH2F* hntrklvsPercentile01AllEv=new TH2F(hname.Data(),"N tracklets vs Percentile |#eta|<1 - All Events;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
+
     hname="hnTPCTracksvsPercentile";
     TH2F* hnTPCTracksvsPercentile=new TH2F(hname.Data(),"N TPC tracks vs Percentile;nTPCTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
 
@@ -809,6 +812,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputCheckCentrality->Add(hMultvsPercentile);
     fOutputCheckCentrality->Add(hntrklvsPercentile);
     fOutputCheckCentrality->Add(hntrklvsPercentile01);
+    fOutputCheckCentrality->Add(hntrklvsPercentile01AllEv);
     fOutputCheckCentrality->Add(hnTPCTracksvsPercentile);
     fOutputCheckCentrality->Add(hnTPCITSTracksvsPercentile);
     fOutputCheckCentrality->Add(hnTPCITS1SPDTracksvsPercentile);
@@ -826,7 +830,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       TH1F* hNtracklets=new TH1F(hname.Data(),"Number of tracklets;ntracklets;Entries",5000,-0.5,4999.5);
       hname="hNtracklets01";
       TH1F* hNtracklets01=new TH1F(hname.Data(),"Number of tracklets |#eta|<1;ntracklets;Entries",5000,-0.5,4999.5);
-        
+      hname="hNtracklets01AllEv";
+      TH1F* hNtracklets01AllEv=new TH1F(hname.Data(),"Number of tracklets |#eta|<1 - All events;ntracklets;Entries",5000,-0.5,4999.5);
       hname="hMult";
       TH1F* hMult=new TH1F(hname.Data(),"Multiplicity;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultFBit4";
@@ -838,6 +843,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
       fOutputTrack->Add(hNtracklets);
       fOutputTrack->Add(hNtracklets01);
+      fOutputTrack->Add(hNtracklets01AllEv);
       fOutputTrack->Add(hMult);
       fOutputTrack->Add(hMultFBit4);
       fOutputTrack->Add(hMultC05);
@@ -1765,6 +1771,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	((TH1F*)fOutputTrack->FindObject("hMultFBit4"))->Fill(ntracksFBit4);
 	((TH1F*)fOutputTrack->FindObject("hMultComb05"))->Fill(aod->GetHeader()->GetRefMultiplicityComb05());
 	((TH1F*)fOutputTrack->FindObject("hMultComb08"))->Fill(aod->GetHeader()->GetRefMultiplicityComb08());
+      }
+    }
+  }
+
+  if(evSelected || (!evSelbyCentrality && evSelByVertex && evselByPileup && evSelByPS) || (!evSelByVertex && evselByPileup && evSelByPS)){ //events selected or not selected because of centrality
+    if(fOnOff[2] && fCuts->GetUseCentrality()){
+      ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile01AllEv"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.),fCuts->GetCentrality(aod));
+    }else{
+      if(fOnOff[0]){
+  	((TH1F*)fOutputTrack->FindObject("hNtracklets01AllEv"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
       }
     }
   }

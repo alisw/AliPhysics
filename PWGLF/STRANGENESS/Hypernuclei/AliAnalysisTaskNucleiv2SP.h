@@ -94,10 +94,20 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   // For SP resolution
 
   TH2F *hQVzAQVzCvsCentrality;
-
-  // THnSparse
-  
-  THnSparse * fHistRealTracks; 
+ 
+  // TTree
+  TTree *ftree;                //! Some Information on the tracks
+  Double_t tCentrality      ;
+  Double_t tpT              ;
+  Double_t tMassTOF         ;
+  Double_t tuqV0A           ;
+  Double_t tuqV0C           ;
+  Double_t tCharge          ;
+  Double_t tCosdeltaphiTPC  ;
+  Double_t tCosdeltaphiV0M  ;
+  Double_t tCosdeltaphiV0A  ;
+  Double_t tCosdeltaphiV0C  ;
+  Double_t timpactXY        ;
 
   //---------------------------------------------------------------------------
   AliESDtrackCuts *fESDtrackCuts; 

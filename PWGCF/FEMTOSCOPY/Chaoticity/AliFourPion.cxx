@@ -1615,7 +1615,7 @@ void AliFourPion::UserExec(Option_t *)
       }
       
       
-      if(aodtrack->Pt() < fMinPt) continue;
+      if(aodtrack->Pt() < 0.16) continue;
       if(fabs(aodtrack->Eta()) > 0.8) continue;
      
       
@@ -1648,9 +1648,8 @@ void AliFourPion::UserExec(Option_t *)
       
     
       
-      if(fTempStruct[myTracks].fMom > fMaxPt) continue;// upper P bound
-      //if(fTempStruct[myTracks].fPt > 0.9999) continue;// upper P bound
-      //if(fTempStruct[myTracks].fP[2] > 0.9999) continue;// upper P bound
+      if(fTempStruct[myTracks].fMom > 0.9999) continue;// upper P bound
+            
      
      
       // PID section
@@ -1835,7 +1834,7 @@ void AliFourPion::UserExec(Option_t *)
       if(!mcParticle) continue;
       if(fabs(mcParticle->Eta())>0.8) continue;
       if(mcParticle->Charge()!=-3 && mcParticle->Charge()!=+3) continue;// x3 by convention
-      if(mcParticle->Pt() < fMinPt || mcParticle->Pt() > fMaxPt) continue;
+      if(mcParticle->Pt() < 0.16 || mcParticle->Pt() > 1.0) continue;
       if(!mcParticle->IsPrimary()) continue;
       if(!mcParticle->IsPhysicalPrimary()) continue;
       if(abs(mcParticle->GetPdgCode())!=211) continue;
@@ -2063,7 +2062,7 @@ void AliFourPion::UserExec(Option_t *)
 	  
 	  GetQosl(pVect1, pVect2, qout, qside, qlong);
 	  if( (en1+en2==0)) {
-	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[0].fTerms2->Fill(kT12, qinv12);
+	    if(!fGenerateSignal) Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[0].fTerms2->Fill(kT12, qinv12);
 	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[0].fTerms2QW->Fill(kT12, qinv12, qinv12);
 	    // osl frame
 	    if((kT12 > 0.2) && (kT12 < 0.3)){
@@ -2084,7 +2083,7 @@ void AliFourPion::UserExec(Option_t *)
 	    
 	  }
 	  if( (en1+en2==1)) {
-	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2->Fill(kT12, qinv12);
+	    if(!fGenerateSignal) Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2->Fill(kT12, qinv12);
 	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2QW->Fill(kT12, qinv12, qinv12);
 	    // osl frame
 	    if((kT12 > 0.2) && (kT12 < 0.3)){  
@@ -2107,20 +2106,24 @@ void AliFourPion::UserExec(Option_t *)
 	  if(fTabulatePairs && en1==0 && en2<=1 && bin1==bin2){
 	    Float_t kY = 0;
 	    Int_t kTbin=-1, kYbin=-1;
-	    
-	    for(Int_t kIt=0; kIt<fKbinsT; kIt++) {if(kT12 < (fKmiddleT[kIt] + fKstepT[kIt]/2.)) {kTbin = kIt; break;}} 
-	    for(Int_t kIt=0; kIt<fKbinsY; kIt++) {if(kY < (fKmiddleY[kIt] + fKstepY[kIt]/2.)) {kYbin = kIt; break;}}
-	    if((kTbin<0) || (kYbin<0)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
-	    if((kTbin>=fKbinsT) || (kYbin>=fKbinsY)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
-	    if(fGenerateSignal && en2==0) {
-	      Int_t chGroup2[2]={ch1,ch2};
-	      Float_t WInput = MCWeight(chGroup2, fRMax, ffcSqMRC, qinv12, kT12);
+	    Bool_t PairToReject=kFALSE;
+	    if((fEvt+en1)->fTracks[i].fPt < fMinPt || (fEvt+en1)->fTracks[i].fPt > fMaxPt) PairToReject=kTRUE;
+	    if((fEvt+en2)->fTracks[j].fPt < fMinPt || (fEvt+en2)->fTracks[j].fPt > fMaxPt) PairToReject=kTRUE;
+	    if(!PairToReject){
+	      for(Int_t kIt=0; kIt<fKbinsT; kIt++) {if(kT12 < (fKmiddleT[kIt] + fKstepT[kIt]/2.)) {kTbin = kIt; break;}} 
+	      for(Int_t kIt=0; kIt<fKbinsY; kIt++) {if(kY < (fKmiddleY[kIt] + fKstepY[kIt]/2.)) {kYbin = kIt; break;}}
+	      if((kTbin<0) || (kYbin<0)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
+	      if((kTbin>=fKbinsT) || (kYbin>=fKbinsY)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
+	      if(fGenerateSignal && en2==0) {
+		Int_t chGroup2[2]={ch1,ch2};
+		Float_t WInput = MCWeight(chGroup2, fRMax, ffcSqMRC, qinv12, kT12);
 	      KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong), WInput);
-	    }else KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
+	      }else KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
+	    }
 	  }
 	  
 	  //////////////////////////////////////////////////////////////////////////////
-	  
+	 
 	  if(qinv12 <= fQcut) {
 	    if(en1==0 && en2==0) {fLowQPairSwitch_E0E0[i]->AddAt('1',j);}
 	    if(en1==0 && en2==1) {fLowQPairSwitch_E0E1[i]->AddAt('1',j);}
@@ -2248,7 +2251,7 @@ void AliFourPion::UserExec(Option_t *)
 		  if(fNormQPairSwitch_E1E3[j]->At(l)=='0') continue;
 		  if(fNormQPairSwitch_E2E3[k]->At(l)=='0') continue;
 		}
-
+		
 		pVect4[1]=(fEvt+en4)->fTracks[l].fP[0];
 		pVect4[2]=(fEvt+en4)->fTracks[l].fP[1];
 		pVect4[3]=(fEvt+en4)->fTracks[l].fP[2];
@@ -2309,12 +2312,16 @@ void AliFourPion::UserExec(Option_t *)
 	    pVect1[2]=(fEvt)->fTracks[i].fP[1];
 	    pVect1[3]=(fEvt)->fTracks[i].fP[2];
 	    ch1 = Int_t(((fEvt)->fTracks[i].fCharge + 1)/2.);
+	    if((fEvt)->fTracks[i].fPt < fMinPt) continue; 
+	    if((fEvt)->fTracks[i].fPt > fMaxPt) continue;
 
 	    /////////////////////////////////////////////////////////////
 	    for (Int_t j=i+1; j<(fEvt+en2)->fNtracks; j++) {// 2nd particle
 	      if(en2==0) {if(fLowQPairSwitch_E0E0[i]->At(j)=='0') continue;}
 	      else {if(fLowQPairSwitch_E0E1[i]->At(j)=='0') continue;}
-
+	      if((fEvt+en2)->fTracks[j].fPt < fMinPt) continue; 
+	      if((fEvt+en2)->fTracks[j].fPt > fMaxPt) continue;
+	      
 	      pVect2[0]=(fEvt+en2)->fTracks[j].fEaccepted;
 	      pVect2[1]=(fEvt+en2)->fTracks[j].fP[0];
 	      pVect2[2]=(fEvt+en2)->fTracks[j].fP[1];
@@ -2363,6 +2370,16 @@ void AliFourPion::UserExec(Option_t *)
 		  pVect1MC[2]=(fEvt)->fMCtracks[abs((fEvt)->fTracks[i].fLabel)].fPy; pVect2MC[2]=(fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[j].fLabel)].fPy;
 		  pVect1MC[3]=(fEvt)->fMCtracks[abs((fEvt)->fTracks[i].fLabel)].fPz; pVect2MC[3]=(fEvt+en2)->fMCtracks[abs((fEvt+en2)->fTracks[j].fLabel)].fPz;
 		  qinv12MC = GetQinv(pVect1MC, pVect2MC);
+		  Int_t chGroup2[2]={ch1,ch2};
+
+		  if(fGenerateSignal && (ENsum==0 || ENsum==6)){
+		    if(ENsum==0) {
+		      Float_t WInput = MCWeight(chGroup2, fRMax, ffcSqMRC, qinv12MC, 0.);
+		      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[0].fTerms2->Fill(kT12, qinv12, WInput);
+		    }else{
+		      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2->Fill(kT12, qinv12);
+		    }		  
+		  }
 		  
 		  if(qinv12<0.1 && ch1==ch2 && ENsum==0) {
 		    ((TProfile*)fOutputList->FindObject("fQsmearMean"))->Fill(1.,qinv12-qinv12MC); 
@@ -2391,8 +2408,7 @@ void AliFourPion::UserExec(Option_t *)
 		  }
 		  
 		  if(ENsum==6){// all mixed events
-		    Int_t chGroup2[2]={ch1,ch2};
-
+		  
 		    Float_t rForQW=5.0;
 		    if(fFSIindex<=1) rForQW=10;
 		    else if(fFSIindex==2) rForQW=9;
@@ -2512,7 +2528,9 @@ void AliFourPion::UserExec(Option_t *)
 		  if(fLowQPairSwitch_E0E2[i]->At(k)=='0') continue;
 		  if(fLowQPairSwitch_E1E2[j]->At(k)=='0') continue;
 		}
-		
+		if((fEvt+en3)->fTracks[k].fPt < fMinPt) continue; 
+		if((fEvt+en3)->fTracks[k].fPt > fMaxPt) continue;
+
 		pVect3[0]=(fEvt+en3)->fTracks[k].fEaccepted;
 		pVect3[1]=(fEvt+en3)->fTracks[k].fP[0];
 		pVect3[2]=(fEvt+en3)->fTracks[k].fP[1];
@@ -2521,8 +2539,23 @@ void AliFourPion::UserExec(Option_t *)
 		qinv13 = GetQinv(pVect1, pVect3);
 		qinv23 = GetQinv(pVect2, pVect3);
 		q3 = sqrt(pow(qinv12,2) + pow(qinv13,2) + pow(qinv23,2));
-		
+		Int_t chGroup3[3]={ch1,ch2,ch3};
+		Float_t QinvMCGroup3[3]={0};
+		Float_t kTGroup3[3]={0};
 		FilledMCtriplet123 = kFALSE;
+		if(fMCcase && fGenerateSignal){
+		  if((fEvt+en3)->fTracks[k].fLabel == (fEvt+en2)->fTracks[j].fLabel) continue;
+		  if((fEvt+en3)->fTracks[k].fLabel == (fEvt)->fTracks[i].fLabel) continue;
+		  
+		  pVect3MC[0]=sqrt(pow((fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPtot,2)+pow(fTrueMassPi,2)); 
+		  pVect3MC[1]=(fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPx;
+		  pVect3MC[2]=(fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPy;
+		  pVect3MC[3]=(fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPz;
+		  qinv13MC = GetQinv(pVect1MC, pVect3MC);
+		  qinv23MC = GetQinv(pVect2MC, pVect3MC);
+		  QinvMCGroup3[0] = qinv12MC; QinvMCGroup3[1] = qinv13MC; QinvMCGroup3[2] = qinv23MC;
+		}
+		
 		
 		Bool_t fill2=kFALSE, fill3=kFALSE, fill4=kFALSE;
 		SetFillBins3(ch1, ch2, ch3, 1, bin1, bin2, bin3, fill2, fill3, fill4);
@@ -2548,11 +2581,12 @@ void AliFourPion::UserExec(Option_t *)
 		  if(ch2==ch3) MomResCorr23 = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin23);
 		  else MomResCorr23 = fMomResC2MC->GetBinContent(rBinForTPNMomRes, momBin23);
 		}
-		
 		if(ENsum==0) {
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fTerms3->Fill(q3); 
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fKfactor->Fill(q3, 1/(FSICorr12*FSICorr13*FSICorr23));
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fKfactorWeighted->Fill(q3, 1/(FSICorr12*FSICorr13*FSICorr23), MomResCorr12*MomResCorr13*MomResCorr23);
+		  Float_t Winput=1.0;
+		  if(fMCcase && fGenerateSignal) Winput = MCWeight3(1, fRMax, ffcSqMRC, chGroup3, QinvMCGroup3, kTGroup3);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fTerms3->Fill(q3, Winput); 
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fKfactor->Fill(q3, 1/(FSICorr12*FSICorr13*FSICorr23), Winput);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fKfactorWeighted->Fill(q3, 1/(FSICorr12*FSICorr13*FSICorr23), MomResCorr12*MomResCorr13*MomResCorr23 * Winput);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fMeanQinv->Fill(q3, qinv12);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fMeanQinv->Fill(q3, qinv13);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fMeanQinv->Fill(q3, qinv23);
@@ -2564,24 +2598,28 @@ void AliFourPion::UserExec(Option_t *)
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fMeanQinv->Fill(q3, qinv23);
 		}
 		if(ENsum==3){
+		  Float_t Winput=1.0;
 		  if(fill2) {
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fTerms3->Fill(q3);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fKfactor->Fill(q3, 1/(FSICorr12));
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fKfactorWeighted->Fill(q3, 1/(FSICorr12), MomResCorr12);
+		    if(fMCcase && fGenerateSignal) Winput = MCWeight3(2, fRMax, ffcSqMRC, chGroup3, QinvMCGroup3, kTGroup3);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fTerms3->Fill(q3, Winput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fKfactor->Fill(q3, 1/(FSICorr12), Winput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fKfactorWeighted->Fill(q3, 1/(FSICorr12), MomResCorr12 * Winput);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fMeanQinv->Fill(q3, qinv12);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fMeanQinv->Fill(q3, qinv13);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fMeanQinv->Fill(q3, qinv23);
 		  }if(fill3) {
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fTerms3->Fill(q3);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fKfactor->Fill(q3, 1/(FSICorr12));
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fKfactorWeighted->Fill(q3, 1/(FSICorr12), MomResCorr12);
+		    if(fMCcase && fGenerateSignal) Winput = MCWeight3(3, fRMax, ffcSqMRC, chGroup3, QinvMCGroup3, kTGroup3);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fTerms3->Fill(q3, Winput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fKfactor->Fill(q3, 1/(FSICorr12), Winput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fKfactorWeighted->Fill(q3, 1/(FSICorr12), MomResCorr12 * Winput);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fMeanQinv->Fill(q3, qinv12);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fMeanQinv->Fill(q3, qinv13);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fMeanQinv->Fill(q3, qinv23);
 		  }if(fill4) {
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fTerms3->Fill(q3);
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fKfactor->Fill(q3, 1/(FSICorr12));
-		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fKfactorWeighted->Fill(q3, 1/(FSICorr12), MomResCorr12);
+		    if(fMCcase && fGenerateSignal) Winput = MCWeight3(4, fRMax, ffcSqMRC, chGroup3, QinvMCGroup3, kTGroup3);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fTerms3->Fill(q3, Winput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fKfactor->Fill(q3, 1/(FSICorr12), Winput);
+		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fKfactorWeighted->Fill(q3, 1/(FSICorr12), MomResCorr12 * Winput);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fMeanQinv->Fill(q3, qinv12);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fMeanQinv->Fill(q3, qinv13);
 		    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fMeanQinv->Fill(q3, qinv23);
@@ -2740,13 +2778,7 @@ void AliFourPion::UserExec(Option_t *)
 		    //if(ch1==ch3 && qinv13>0.006) TripletWeightTTC *= SCpairWeight->Eval(qinv13);
 		    //if(ch2==ch3 && qinv23>0.006) TripletWeightTTC *= SCpairWeight->Eval(qinv23);
 		    
-		    Int_t chGroup3[3]={ch1,ch2,ch3};
-		    Float_t QinvMCGroup3[3]={qinv12MC,qinv13MC,qinv23MC};
-		    //Float_t kTGroup3[3]={float(sqrt(pow(pVect1MC[1]+pVect2MC[1],2) + pow(pVect1MC[2]+pVect2MC[2],2))/2.),
-		    //float(sqrt(pow(pVect1MC[1]+pVect3MC[1],2) + pow(pVect1MC[2]+pVect3MC[2],2))/2.),
-		    //float(sqrt(pow(pVect2MC[1]+pVect3MC[1],2) + pow(pVect2MC[2]+pVect3MC[2],2))/2.)};
-		    Float_t kTGroup3[3]={0};
-		    
+		    		    
 		    Pparent3[0]=pVect3MC[0]; Pparent3[1]=pVect3MC[1]; Pparent3[2]=pVect3MC[2]; Pparent3[3]=pVect3MC[3];
 		    pionParent3=kFALSE;
 		  
@@ -2843,7 +2875,9 @@ void AliFourPion::UserExec(Option_t *)
 		    if(fLowQPairSwitch_E1E3[j]->At(l)=='0') continue;
 		    if(fLowQPairSwitch_E2E3[k]->At(l)=='0') continue;
 		  }
-
+		  if((fEvt+en4)->fTracks[l].fPt < fMinPt) continue; 
+		  if((fEvt+en4)->fTracks[l].fPt > fMaxPt) continue;
+		  
 		  pVect4[0]=(fEvt+en4)->fTracks[l].fEaccepted;
 		  pVect4[1]=(fEvt+en4)->fTracks[l].fP[0];
 		  pVect4[2]=(fEvt+en4)->fTracks[l].fP[1];
@@ -2853,7 +2887,28 @@ void AliFourPion::UserExec(Option_t *)
 		  qinv24 = GetQinv(pVect2, pVect4);
 		  qinv34 = GetQinv(pVect3, pVect4);
 		  q4 = sqrt(pow(q3,2) + pow(qinv14,2) + pow(qinv24,2) + pow(qinv34,2));
+		  Int_t chGroup4[4]={ch1,ch2,ch3,ch4};
+		  Float_t QinvMCGroup4[6]={0};
+		  Float_t kTGroup4[6]={0};
 		  
+		  if(fMCcase && fGenerateSignal){// for momentum resolution and muon correction
+		    if((fEvt+en4)->fTracks[l].fLabel == (fEvt+en3)->fTracks[k].fLabel) continue;
+		    if((fEvt+en4)->fTracks[l].fLabel == (fEvt+en2)->fTracks[j].fLabel) continue;
+		    if((fEvt+en4)->fTracks[l].fLabel == (fEvt)->fTracks[i].fLabel) continue;
+		    
+		    pVect4MC[0]=sqrt(pow((fEvt+en4)->fMCtracks[abs((fEvt+en4)->fTracks[l].fLabel)].fPtot,2)+pow(fTrueMassPi,2)); 
+		    pVect4MC[1]=(fEvt+en4)->fMCtracks[abs((fEvt+en4)->fTracks[l].fLabel)].fPx;
+		    pVect4MC[2]=(fEvt+en4)->fMCtracks[abs((fEvt+en4)->fTracks[l].fLabel)].fPy;
+		    pVect4MC[3]=(fEvt+en4)->fMCtracks[abs((fEvt+en4)->fTracks[l].fLabel)].fPz;
+		    qinv14MC = GetQinv(pVect1MC, pVect4MC);
+		    qinv24MC = GetQinv(pVect2MC, pVect4MC);
+		    qinv34MC = GetQinv(pVect3MC, pVect4MC);
+		    
+		    QinvMCGroup4[0] = qinv12MC; QinvMCGroup4[1] = qinv13MC; QinvMCGroup4[2] = qinv14MC;
+		    QinvMCGroup4[3] = qinv23MC; QinvMCGroup4[4] = qinv24MC; QinvMCGroup4[5] = qinv34MC;
+		    //if(q4<0.1 && ENsum==0 && bin1==bin2 && bin1==bin3 && bin1==bin4) cout<<q4<<"  "<<fRMax<<"  "<<ffcSqMRC<<"  "<<chGroup4[0]<<"  "<<chGroup4[1]<<"  "<<chGroup4[2]<<"  "<<chGroup4[3]<<"  "<<QinvMCGroup4[0]<<"  "<<QinvMCGroup4[1]<<"  "<<QinvMCGroup4[2]<<"  "<<QinvMCGroup4[3]<<"  "<<QinvMCGroup4[4]<<"  "<<QinvMCGroup4[5]<<endl;
+		  
+		  }
 		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6){
 		    ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(1, qinv12); ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(2, qinv13); 
 		    ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(3, qinv14); ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(4, qinv23); 
@@ -2890,6 +2945,8 @@ void AliFourPion::UserExec(Option_t *)
 		  for(int ft=0; ft<13; ft++) {
 		    Float_t FSIfactor = 1.0;
 		    Float_t MomResWeight = 1.0;
+		    Float_t WInput = 1.0;
+		    if(fMCcase && fGenerateSignal) WInput = MCWeight4(ft+1, fRMax, ffcSqMRC, chGroup4, QinvMCGroup4, kTGroup4);
 		    if(ft==0) {
 		      FSIfactor = 1/(FSICorr12 * FSICorr13 * FSICorr14 * FSICorr23 * FSICorr24 * FSICorr34);
 		      MomResWeight = MomResCorr12 * MomResCorr13 * MomResCorr14 * MomResCorr23 * MomResCorr24 * MomResCorr34;
@@ -2904,9 +2961,9 @@ void AliFourPion::UserExec(Option_t *)
 		      MomResWeight = MomResCorr12 * MomResCorr34;
 		    }else {FSIfactor = 1.0; MomResWeight = 1.0;}
 		    if(FillTerms[ft]) {
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fTerms4->Fill(q4);
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fKfactor->Fill(q4, FSIfactor);
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fKfactorWeighted->Fill(q4, FSIfactor, MomResWeight);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fTerms4->Fill(q4, WInput);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fKfactor->Fill(q4, FSIfactor, WInput);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fKfactorWeighted->Fill(q4, FSIfactor, MomResWeight*WInput);
 		    }
 		  }
 		  
@@ -2987,7 +3044,7 @@ void AliFourPion::UserExec(Option_t *)
 		    }
 		    // Full Weight reconstruction
 		    for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
-		      for(Int_t GIndex=0; GIndex<50; GIndex++){
+		      for(Int_t GIndex=0; GIndex<50; GIndex++){// 20 is enough
 			Int_t FillBin = 5 + RcohIndex*50 + GIndex;
 			Float_t G = 0.02*GIndex;
 			if(RcohIndex==0){// Rcoh=0
@@ -3123,10 +3180,7 @@ void AliFourPion::UserExec(Option_t *)
 		      //if(ch3==ch4 && qinv34>0.006) QuadWeightTTC *= SCpairWeight->Eval(qinv34);
 		      
 
-		      Int_t chGroup4[4]={ch1,ch2,ch3,ch4};
-		      Float_t QinvMCGroup4[6]={qinv12MC, qinv13MC, qinv14MC, qinv23MC, qinv24MC, qinv34MC};
-		      Float_t kTGroup4[6]={0};
-		      
+		      		      
 		      Pparent4[0]=pVect4MC[0]; Pparent4[1]=pVect4MC[1]; Pparent4[2]=pVect4MC[2]; Pparent4[3]=pVect4MC[3];
 		      pionParent4=kFALSE;
 		      if(abs((fEvt+en4)->fMCtracks[abs((fEvt+en4)->fTracks[l].fLabel)].fPdgCode)==13){// muon check

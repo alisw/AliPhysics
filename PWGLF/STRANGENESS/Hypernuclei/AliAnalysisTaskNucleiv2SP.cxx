@@ -101,7 +101,18 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
   hCos2DeltaVzMTPCnvsCentrality(0),
   hCos2DeltaTPCpTPCnvsCentrality(0),
   hQVzAQVzCvsCentrality(0),
-  fHistRealTracks(0),
+  ftree(0),           
+  tCentrality(0),      
+  tpT(0),  
+  tMassTOF(0),
+  tuqV0A(0),
+  tuqV0C(0),
+  tCharge(0),
+  tCosdeltaphiTPC(0),
+  tCosdeltaphiV0M(0),
+  tCosdeltaphiV0A(0),
+  tCosdeltaphiV0C(0),
+  timpactXY(0),
   fESDtrackCuts(0),
   fESDtrackCutsEP(0),
   fPIDResponse(0)
@@ -153,7 +164,18 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name)
   hCos2DeltaVzMTPCnvsCentrality(0),
   hCos2DeltaTPCpTPCnvsCentrality(0),
   hQVzAQVzCvsCentrality(0),
-  fHistRealTracks(0),
+  ftree(0),           
+  tCentrality(0),      
+  tpT(0),  
+  tMassTOF(0),
+  tuqV0A(0),
+  tuqV0C(0),
+  tCharge(0),
+  tCosdeltaphiTPC(0),
+  tCosdeltaphiV0M(0),
+  tCosdeltaphiV0A(0),
+  tCosdeltaphiV0C(0),
+  timpactXY(0),
   fESDtrackCuts(0),
   fESDtrackCutsEP(0),
   fPIDResponse(0)
@@ -173,6 +195,7 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name)
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
   
 }
 
@@ -255,38 +278,38 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   }
 
   if(! fHistTrackMultiplicity ){
-    fHistTrackMultiplicity  = new TH2F( "fHistTrackMultiplicity", "Nb of Tracks MB Events |Vz| < 10", 25000,0, 25000,105,-0.5,104.5);
+    fHistTrackMultiplicity  = new TH2F( "fHistTrackMultiplicity", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,-0.5,104.5);
     fHistTrackMultiplicity->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicity->GetYaxis()->SetTitle("Percentile");
     fListHist->Add(fHistTrackMultiplicity);
   } 
 
   if(! fHistTrackMultiplicityCentral ){
-    fHistTrackMultiplicityCentral  = new TH2F( "fHistTrackMultiplicityCentral", "Nb of Tracks MB Events |Vz| < 10", 25000,0, 25000,105,-0.5,104.5);
+    fHistTrackMultiplicityCentral  = new TH2F( "fHistTrackMultiplicityCentral", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,-0.5,104.5);
     fHistTrackMultiplicityCentral->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicityCentral->GetYaxis()->SetTitle("Percentile");
     fListHist->Add(fHistTrackMultiplicityCentral);
   } 
   if(! fHistTrackMultiplicitySemiCentral ){
-    fHistTrackMultiplicitySemiCentral  = new TH2F( "fHistTrackMultiplicitySemiCentral", "Nb of Tracks MB Events |Vz| < 10", 25000,0, 25000,105,-0.5,104.5);
+    fHistTrackMultiplicitySemiCentral  = new TH2F( "fHistTrackMultiplicitySemiCentral", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,-0.5,104.5);
     fHistTrackMultiplicitySemiCentral->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicitySemiCentral->GetYaxis()->SetTitle("Percentile");
     fListHist->Add(fHistTrackMultiplicitySemiCentral);
   } 
   if(! fHistTrackMultiplicityMB ){
-    fHistTrackMultiplicityMB  = new TH2F( "fHistTrackMultiplicityMB", "Nb of Tracks MB Events |Vz| < 10", 25000,0, 25000,105,-0.5,104.5);
+    fHistTrackMultiplicityMB  = new TH2F( "fHistTrackMultiplicityMB", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,-0.5,104.5);
     fHistTrackMultiplicityMB->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicityMB->GetYaxis()->SetTitle("Percentile");
     fListHist->Add(fHistTrackMultiplicityMB);
   } 
  
   if(! fhBB ){
-    fhBB = new TH2F( "fhBB" , "BetheBlochTPC" , 240,-6,6,1000,0,1000);
+    fhBB = new TH2F( "fhBB" , "BetheBlochTPC" , 240,-6,6,250,0,1000);
     fListHist->Add(fhBB);
   }
   
   if(! fhBBDeu ){
-    fhBBDeu = new TH2F( "fhBBDeu" , "BetheBlochTPC - Deuteron" , 240,-6,6,1000,0,1000);
+    fhBBDeu = new TH2F( "fhBBDeu" , "BetheBlochTPC - Deuteron" , 240,-6,6,250,0,1000);
     fListHist->Add(fhBBDeu);
   }
  
@@ -296,7 +319,7 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   }
 
   if(! fhTOF ){
-    fhTOF = new TH2F( "fhTOF" , "Scatter Plot TOF" , 240,-6,6,1000,0,1.2);
+    fhTOF = new TH2F( "fhTOF" , "Scatter Plot TOF" , 240,-6,6,500,0,1.2);
     fListHist->Add(fhTOF);
   }
   if(! fhMassTOF){
@@ -359,16 +382,29 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
  
   hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-5,5,105,-0.5,105.5);
   fListHist->Add(hQVzAQVzCvsCentrality);
-  
-  
-     Int_t binsHistReal[11] = { 105  , 120 , 100 ,  100,  100 ,   6   ,   100 ,  100 ,  100   ,  100  , 100};
-  Double_t xminHistReal[11] = {-0.5  ,  0  ,-2.5 ,  -10,  -10 ,  -2.5 ,  -1.1 , -1.1 , -1.1   , -1.1  , -3};
-  Double_t xmaxHistReal[11] = { 105.5,  6  , 2.5 ,   10,   10 ,   2.5 ,   1.1 ,  1.1 ,  1.1   ,  1.1  ,  3};
-  fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",11,binsHistReal,xminHistReal,xmaxHistReal);
-  fListHist->Add(fHistRealTracks);
  
+
+  if(!ftree){
+   
+    ftree = new TTree("ftree","ftree");
+ 
+    ftree->Branch("tCentrality"      ,&tCentrality      ,"tCentrality/D"    );
+    ftree->Branch("tpT"              ,&tpT              ,"tpT/D"            );
+    ftree->Branch("tMassTOF"         ,&tMassTOF         ,"tMassTOF/D"       );
+    ftree->Branch("tuqV0A"           ,&tuqV0A           ,"tuqV0A/D"         );
+    ftree->Branch("tuqV0C"           ,&tuqV0C           ,"tuqV0C/D"         );
+    ftree->Branch("tCharge"          ,&tCharge          ,"tCharge/D"        );
+    ftree->Branch("tCosdeltaphiTPC"  ,&tCosdeltaphiTPC  ,"tCosdeltaphiTPC/D");
+    ftree->Branch("tCosdeltaphiV0M"  ,&tCosdeltaphiV0M  ,"tCosdeltaphiV0M/D");
+    ftree->Branch("tCosdeltaphiV0A"  ,&tCosdeltaphiV0A  ,"tCosdeltaphiV0A/D");
+    ftree->Branch("tCosdeltaphiV0C"  ,&tCosdeltaphiV0C  ,"tCosdeltaphiV0C/D");
+    ftree->Branch("timpactXY"        ,&timpactXY        ,"timpactXY/D"      );
+
+
+  }
+
   PostData(1,  fListHist);
-  
+  PostData(2,  ftree);
 }// end UserCreateOutputObjects
 
 
@@ -419,27 +455,8 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   ULong_t  status=0;
   Bool_t   isTPC=kFALSE;
   
-  Double_t massC = -999;
-  Double_t ptMax = -999;
-
-  if(fptc == 1){
-    massC = 1.8756;
-    ptMax = 7.;
-  }
-  if(fptc == 2){
-    massC = 2.80894;
-    ptMax = 7.;
-  }
-  if(fptc == 3){
-    massC = 2.80892;
-    ptMax = 10.;
-  }
-
-  // if(fptc != 1 ||fptc != 2 ||fptc != 3){
-  //   cout<<"This analyis works only for d(1), t(2) or 3He(3)"<<endl;
-  //   return;
-  // }
-
+  Double_t pmax = 10;
+  
   // Primary vertex cut
   
   const AliESDVertex *vtx = lESDevent->GetPrimaryVertexTracks();
@@ -621,11 +638,11 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
     if (TPCSignal<10)continue;
     if (TPCSignal>1000)continue;
     if (!isTPC)continue;
-      
+    
     if(!esdtrack->GetTPCInnerParam())continue;
     AliExternalTrackParam trackIn(*esdtrack->GetInnerParam()); 
     pinTPC= trackIn.GetP(); 
-
+    if(pinTPC<0.2)continue;
     fhBB->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
 
     if(isTOF){
@@ -651,18 +668,15 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
     Double_t tof  = esdtrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
     Double_t tPhi = esdtrack->Phi();
 
-    Float_t beta = 0;
-    Float_t gamma = 0;
-    Float_t mass  = 0;
-    Float_t deltaMass = 0;
-     
+    Float_t  beta = 0;
+    Float_t  gamma = 0;
+    Float_t  mass  = -999;
     Double_t pt  = esdtrack->Pt();
     
-    if(TMath::Abs(pt) < ptMax && TMath::Abs(pullTPC) < fmaxpull){
+    if(TMath::Abs(pinTPC) < pmax && TMath::Abs(pullTPC) < fmaxpull){
       
       fhBBDeu->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
-      
-      
+            
       if(tof > 0 && pt > 1.){
 	beta = esdtrack->GetIntegratedLength()/(tof * 2.99792457999999984e-02);
 	gamma = 1/TMath::Sqrt(1 - beta*beta);
@@ -670,7 +684,6 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
 	fhMassTOF->Fill(mass);
       }
 
-      deltaMass = mass*mass-massC*massC;	
       // Event Plane
       //Remove AutoCorrelation
       evPlAngTPC = GetEventPlaneForCandidate(esdtrack,q,pl);
@@ -684,18 +697,25 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       
       uqV0A = TMath::Cos(2*tPhi)*qxEPa+TMath::Sin(2*tPhi)*qyEPa;
       uqV0C = TMath::Cos(2*tPhi)*qxEPc+TMath::Sin(2*tPhi)*qyEPc;
+       
+      tCentrality      = percentile;
+      tpT              = pt;
+      tMassTOF         = mass;
+      tuqV0A           = uqV0A;
+      tuqV0C           = uqV0C;
+      tCharge          = esdtrack->GetSign();
+      tCosdeltaphiTPC  = deltaphiTPC;
+      tCosdeltaphiV0M  = deltaphiV0;
+      tCosdeltaphiV0A  = deltaphiV0A;
+      tCosdeltaphiV0C  = deltaphiV0C;
+      timpactXY        = impactXY;
       
-      if(fptc == 3)
-	pt = 2* pt;
-      
-      Double_t vecHistReal[11] = {percentile, pt, deltaMass , uqV0A , uqV0C , esdtrack->GetSign(),deltaphiTPC,deltaphiV0,deltaphiV0A,deltaphiV0C , impactXY};
-      fHistRealTracks->Fill(vecHistReal);
+      ftree->Fill();
     } 
   }  //track
   
-  
   PostData(1, fListHist);
-  
+  PostData(2, ftree);
 } //end userexec
 
 

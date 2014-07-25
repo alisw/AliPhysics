@@ -215,6 +215,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F		*fEventplaneDist; // event plane distribution in phi
     TH1F		*fMCEventplaneDist; // MC event plane distribution in phi
     TH2F		*fCorrelEventplaneMCDATA; // correlation between data and MC eventplane
+    THnSparseF	*fCorrelEventplaneDefaultCorrected; // correlation between default and corrected (== subtraction of current track) eventplane
+    TH2F		*fEventplaneSubtractedPercentage; // percentage of subtracted tracks
 
 	// cross check for event plane resolution
 	TH2F		*fEPDistCent; // event plane distribution vs centrality
@@ -286,7 +288,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,8); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,9); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

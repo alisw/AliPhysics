@@ -2,7 +2,7 @@
 #define ALIDIELECTRONSIGNALMC_H
 
 #include <TNamed.h>
-
+#include <TMCProcess.h>
 
 /*
    Ionut Cristian Arsene, iarsene@cern.ch
@@ -86,6 +86,7 @@ class AliDielectronSignalMC : public TNamed {
   void SetCheckBothChargesMothers(Bool_t flag1, Bool_t flag2)      {fCheckBothChargesMother1 = flag1;      fCheckBothChargesMother2 = flag2;}
   void SetCheckBothChargesGrandMothers(Bool_t flag1, Bool_t flag2) {fCheckBothChargesGrandMother1 = flag1; fCheckBothChargesGrandMother2 = flag2;}
   void SetMothersRelation(EBranchRelation relation)                {fMothersRelation = relation;}
+  void SetGEANTProcess(TMCProcess processID)                       {fGEANTProcess = processID; fCheckGEANTProcess=kTRUE;}
   void SetFillPureMCStep(Bool_t fill=kTRUE)                        {fFillPureMCStep = fill;}
 
   Int_t GetLegPDG(Int_t branch)                        const {return (branch==1 ? fLeg1 : fLeg2);}
@@ -101,6 +102,8 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t GetCheckBothChargesMothers(Int_t branch)      const {return (branch==1 ? fCheckBothChargesMother1 : fCheckBothChargesMother2);}
   Bool_t GetCheckBothChargesGrandMothers(Int_t branch) const {return (branch==1 ? fCheckBothChargesGrandMother1 : fCheckBothChargesGrandMother2);}
   EBranchRelation GetMothersRelation()                 const {return fMothersRelation;}
+  TMCProcess GetGEANTProcess()                         const {return fGEANTProcess;}
+  Bool_t GetCheckGEANTProcess()                        const {return fCheckGEANTProcess;}
   Bool_t GetFillPureMCStep()                           const {return fFillPureMCStep;}
 
   void SetJpsiRadiative(EJpsiRadiativ rad) { fJpsiRadiative=rad;    }
@@ -139,14 +142,15 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t fCheckBothChargesMother2;      //                mother 2
   Bool_t fCheckBothChargesGrandMother1; //              grand mother 1
   Bool_t fCheckBothChargesGrandMother2; //              grand mother 2
+  Bool_t fCheckGEANTProcess;            //              GEANT process
   
   EBranchRelation fMothersRelation;   // mother 1&2 relation (same, different or whatever)
-
+  TMCProcess fGEANTProcess;           // GEANT process ID (see roots TMCProcess)
   EJpsiRadiativ fJpsiRadiative;      // check for J/psi radiative decay
   
   Bool_t fFillPureMCStep;             // check and fill the pure MC step
   
-  ClassDef(AliDielectronSignalMC,2);
+  ClassDef(AliDielectronSignalMC,3);
 };
 
 #endif
