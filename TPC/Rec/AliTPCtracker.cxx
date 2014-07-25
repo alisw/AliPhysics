@@ -1494,6 +1494,79 @@ Int_t  AliTPCtracker::LoadClusters()
   return 0;
 }
 
+void    AliTPCtracker::FilterOutlierClusters(){
+  //
+  // filter outlier clusters  
+  //
+  /*
+    1.)..... booking part
+    nSectors=72;
+    nTimeBins=fParam->Get....
+    TH2F hisTime("","", sector,0,sector, nTimeBins,0,nTimeBins);
+    TH2F hisPadRow("","", sector,0,sector, nPadRows,0,nPadRows);
+    2.) .... filling part
+    .... cluster loop { hisTime.Fill(cluster->GetDetector(),cluster->GetTimeBin()); }
+    
+    3.) ...filtering part 
+    sector loop { calculate median,mean80 and rms80 of the nclusters per time bin; calculate median,mean80 and rms80 of the nclusters per par row; .... export values to the debug streamers - to decide which threshold to be used... }
+    
+    sector loop
+    { disable clusters in time bins > mean+ n rms80+ offsetTime disable clusters in padRow > mean+ n rms80+ offsetPadRow // how to dislable clusters? - new bit to introduce } 
+    //
+    4. Disabling clusters
+    
+  */
+  
+  //
+  // 1.) booking part 
+  //
+  Int_t    nSectors=72;  // should be fkparam->Get...
+  Int_t nTimeBins=1024; // should be fParam->Get....
+  Int_t nPadRows=159;  // should be
+  Double_t nSigmaCut=6; // should be in recoParam
+  Double_t offsetTime=100;  //should be in RecoParam
+  TH2F hisTime("hisSectorTime","hisSectorTime", nSectors,0,nSectors, nTimeBins,0,nTimeBins);
+  TH2F hisPadRow("hisSectorRow","hisSectorRow", nSectors,0,nSectors, nPadRows,0,nPadRows);
+  //
+  // 2.) Filling part -- loop over clusters
+  //
+  for (Int_t isector=0; isector<nSectors; isector++){  //set all ellemts of crosstalk matrix to 0
+    //  dummy fill     
+      for (Int_t i=0; i<100000; i++) {
+      hisTime.Fill(gRandom->Rndm()*nSectors, gRandom->Rndm()*nTimeBins);
+      if (gRandom->Rndm()<0.5)  hisTime.Fill(gRandom->Rndm()*nSectors, 500);
+      }
+    //for (Int_t row = 0;row<nrows;row++){
+    //hisTime.Fill(cluster->GetDetector(),cluster->GetTimeBin()); 
+    //hisPadRow.Fill(cluster->GetDetector(),cluster->GetTimeBin()); 
+    //}
+  }
+  //
+  // 3. Filtering part
+  //
+  TVectorD vecTime(nTimeBins);
+  for (Int_t isec=0; isec<nSectors; isec++){
+    for (Int_t itime=0; itime<nTimeBins; itime++){
+      vecTime[itime]=hisTime.GetBinContent(isec+1, itime+1);      
+    }
+    Double_t median= TMath::Median(nTimeBins,vecTime.GetMatrixArray());
+    Double_t rms= TMath::RMS(nTimeBins,vecTime.GetMatrixArray());
+    printf("%d\t%f\t%f\n",isec,median,rms);
+    //
+    // declare outliers
+    for (Int_t itime=0; itime<nTimeBins; itime++){
+      Double_t entries= hisTime.GetBinContent(isec+1, itime+1); 
+      if (entries>median+nSigmaCut*rms+offsetTime) {
+	printf("Out\t%d\t%d\n",isec,itime);
+	
+      }
+    }
+    //(*pcstream)<<"filterOutlierTime"<<
+  }
+  
+}
+
+
 
 void AliTPCtracker::UnloadClusters()
 {

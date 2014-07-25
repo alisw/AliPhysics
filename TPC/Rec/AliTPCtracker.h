@@ -52,6 +52,7 @@ public:
   virtual Int_t LoadClusters (TTree * const tree);
   virtual Int_t LoadClusters (const TObjArray * arr); // another input
   virtual Int_t LoadClusters (const TClonesArray * arr); // another input
+  void    FilterOutlierClusters();   // filter outlier clusters  
   virtual Int_t PostProcess(AliESDEvent *esd); 
   Int_t  LoadClusters();
   void   UnloadClusters();
