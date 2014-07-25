@@ -7,13 +7,13 @@ if [ $# -lt 1 ]
     fi
 if [ $# -lt 2 ]
     then
-	useFriends=0
+	useFriends=1
     else
 	useFriends=$2
     fi
 if [ $# -lt 3 ]
     then
-	useHLTtree=1
+	useHLTtree=0
     else
 	useHLTtree=$3
     fi

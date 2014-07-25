@@ -1,4 +1,4 @@
-void rec(char* input = "raw.root") {
+void rec(char* input = "raw.root", char* ocdb="local://$OCDB10") {
   AliReconstruction reco;
 
 	reco.SetInput(input);
@@ -10,42 +10,42 @@ void rec(char* input = "raw.root") {
 
   
 //reco.SetDefaultStorage("local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/data/2010/OCDB");
-  reco.SetDefaultStorage("local:///home/steffen/ALICE/ocdb10");
+  reco.SetDefaultStorage(ocdb);
 
   // -------------------------------------------------------
 
   // ITS (2 objects)
-  reco.SetSpecificStorage("ITS/Align/Data",          "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("ITS/Calib/SPDSparseDead", "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");  
+  reco.SetSpecificStorage("ITS/Align/Data",          "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("ITS/Calib/SPDSparseDead", "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");  
 
   // MUON (1 object)
-  reco.SetSpecificStorage("MUON/Align/Data",         "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
+  reco.SetSpecificStorage("MUON/Align/Data",         "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
 
   // TPC (24 objects)
-  reco.SetSpecificStorage("TPC/Align/Data",          "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/PadTime0",      "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/ClusterParam",  "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/Pedestals",     "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/Parameters",    "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/ExB",           "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/Mapping",       "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/PadNoise",      "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/PadGainFactor", "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/Temperature",   "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/RecoParam",     "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/TimeGain",      "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/AltroConfig",   "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/CE",            "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/Pulser",        "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/Distortion",    "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/Ref",           "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/Raw",           "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/QA",            "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/TimeDrift",     "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/Goofie",        "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/HighVoltage",   "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/LaserTracks",   "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual");
-  reco.SetSpecificStorage("TPC/Calib/Correction",    "local:///home/steffen/gsi/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual"); 
+  reco.SetSpecificStorage("TPC/Align/Data",          "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/PadTime0",      "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/ClusterParam",  "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/Pedestals",     "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/Parameters",    "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/ExB",           "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/Mapping",       "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/PadNoise",      "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/PadGainFactor", "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/Temperature",   "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/RecoParam",     "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/TimeGain",      "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/AltroConfig",   "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/CE",            "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/Pulser",        "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/Distortion",    "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/Ref",           "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/Raw",           "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/QA",            "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/TimeDrift",     "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/Goofie",        "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/HighVoltage",   "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/LaserTracks",   "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual");
+  reco.SetSpecificStorage("TPC/Calib/Correction",    "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual"); 
 
   /*
   // TPC
