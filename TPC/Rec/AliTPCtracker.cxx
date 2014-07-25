@@ -1545,25 +1545,49 @@ void    AliTPCtracker::FilterOutlierClusters(){
   // 3. Filtering part
   //
   TVectorD vecTime(nTimeBins);
+  TVectorD vecMedianSectorTime(nSectors);
+  TVectorD vecMedianSectorTimeOut6(nSectors);
+  TVectorD vecMedianSectorTimeOut9(nSectors);//
+  TVectorD vecMedianSectorPadRow(nSectors);
+  TVectorD vecMedianSectorPadRowOut6(nSectors);
+  TVectorD vecMedianSectorPadRowOut9(nSectors);
+
   for (Int_t isec=0; isec<nSectors; isec++){
+    vecMedianSectorTimeOut6[isec]=0;
+    vecMedianSectorTimeOut9[isec]=0;
     for (Int_t itime=0; itime<nTimeBins; itime++){
       vecTime[itime]=hisTime.GetBinContent(isec+1, itime+1);      
     }
     Double_t median= TMath::Median(nTimeBins,vecTime.GetMatrixArray());
-    Double_t rms= TMath::RMS(nTimeBins,vecTime.GetMatrixArray());
+    Double_t rms= TMath::RMS(nTimeBins,vecTime.GetMatrixArray()); 
+    vecMedianSectorTime[isec]=median;
     printf("%d\t%f\t%f\n",isec,median,rms);
     //
     // declare outliers
     for (Int_t itime=0; itime<nTimeBins; itime++){
       Double_t entries= hisTime.GetBinContent(isec+1, itime+1); 
       if (entries>median+nSigmaCut*rms+offsetTime) {
-	printf("Out\t%d\t%d\n",isec,itime);
-	
+	printf("Out\t%d\t%d\n",isec,itime);	
+      }
+      if (entries>median+6.*rms) {
+	vecMedianSectorTimeOut6[isec]+=1;
+      }
+      if (entries>median+9.*rms) {
+	vecMedianSectorTimeOut9[isec]+=1;
       }
     }
-    //(*pcstream)<<"filterOutlierTime"<<
+  }    
+
+  if (AliTPCReconstructor::StreamLevel()==1) {
+    (*fDebugStreamer)<<"filterClusterInfo"<<
+      "vecMedianSectorTime.="<<&vecMedianSectorTime<<
+      "vecMedianSectorTimeOut6.="<<&vecMedianSectorTimeOut6<<
+      "vecMedianSectorTimeOut9.="<<&vecMedianSectorTimeOut9<<
+      "vecMedianSectorPadRow.="<<&vecMedianSectorPadRow<<
+      "vecMedianSectorPadRowOut6.="<<&vecMedianSectorPadRowOut6<<
+      "vecMedianSectorPadRowOut9.="<<&vecMedianSectorPadRowOut9<<
+      "\n";
   }
-  
 }
 
 
