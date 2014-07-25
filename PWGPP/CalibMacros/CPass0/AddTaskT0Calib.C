@@ -1,4 +1,3 @@
-
 void    readCDB (TObject *task1);
 //_____________________________________________________________________________
 AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
@@ -24,8 +23,7 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   // setup task
   AliT0CalibOffsetChannelsTask  *task1 = new AliT0CalibOffsetChannelsTask("CalibObjectsTrain1");
   readCDB(task1, runNumber);
-  task1-> SetRefPMT(12,2);
-  mgr->AddTask(task1);
+   mgr->AddTask(task1);
   
   //  AliT0AnalysisTaskQA * task2 = new AliT0AnalysisTaskQA("QA task");
   //    mgr->AddTask(task2);
@@ -68,6 +66,17 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   if (!entry4) AliFatal("LHC clock-phase shift is not found in OCDB !");
   AliLHCClockPhase *phase = (AliLHCClockPhase*)entry4->GetObject();
   Float_t fGRPdelays = l1Delay - phase->GetMeanPhase();
+
+  AliCDBEntry* entry5 = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry5->GetObject());
+  if (!grpData) {printf("Failed to get GRP data for run",runNumber); return;}
+  TString LHCperiod = grpData->GetLHCPeriod();
+  Bool_t isLHC10b =  LHCperiod.Contains("LHC10b");
+  Bool_t isLHC10c =  LHCperiod.Contains("LHC10c");
+  printf("LHCperiod:%s\n isLHC10b:%d isLHC10c%d\n",
+  LHCperiod.Data(),(Int_t)isLHC10b, (Int_t)isLHC10c);
+
+  if(isLHC10b || isLHC10c) mytask-> SetRefPMT(12,2);
 
   AliCDBEntry *entryCalib0 = man->Get("T0/Calib/Latency");
   if(!entryCalib0) {

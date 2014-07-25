@@ -103,7 +103,7 @@ const Float_t AliTRDcheckESD::fgkxTOF = 365.;
 const Char_t* AliTRDcheckESD::fgkVarNames[AliTRDcheckESD::kNTrdCfVariables] = {
     "vtxZ", "multiplicity", "trigger", "BC", "TOFBC", "DCAxy", "DCAz", "charge", "OuterParam rad.", "phiVtx", "phi", 
     "etaVtx", "eta", "pt", "ptTRD", "P", "PTRD", "TRDchi2", "tracklets", "clusters", "TrdQuality", 
-    "TrdBudget", "Qtot0", "ClustersPerRows", "Clusters/tracklet", "TrdP", "TrdPloss", "layer", "slice", "PH0"
+    "TrdBudget", "TOFchi2", "Qtot0", "ClustersPerRows", "Clusters/tracklet", "TrdP", "TrdPloss", "layer", "slice", "PH0"
 }; 
 const Char_t* AliTRDcheckESD::fgkStepNames[AliTRDcheckESD::kNSteps] = {"TPC", "TRD", "TOF", "TOFin", "TOFout"};  
 
@@ -194,8 +194,9 @@ void AliTRDcheckESD::FillTrackInfo(Double_t* values, AliESDtrack* esdTrack) {
   values[kTrackTrdClusters]  = esdTrack->GetTRDncls();
   values[kTrackTrdChi2]      = esdTrack->GetTRDchi2()/(esdTrack->GetTRDntracklets()>0 ? esdTrack->GetTRDntracklets() : 1.0);
   values[kTrackTrdQuality]   = esdTrack->GetTRDQuality();
-  values[kTrackTRDBudget]    = esdTrack->GetTRDBudget();
+  values[kTrackTRDBudget]    = -1.0*esdTrack->GetTRDBudget();
   values[kTrackTOFBC]        = esdTrack->GetTOFBunchCrossing(fESD->GetMagneticField());
+  values[kTrackTOFchi2]      = esdTrack->GetTOFchi2();
   const AliExternalTrackParam *out=esdTrack->GetOuterParam();
   Double_t p[3];
   if(out->GetXYZ(p)) 
@@ -214,7 +215,7 @@ void AliTRDcheckESD::FillTrackletInfo(Double_t* values, AliESDtrack* esdTrack, I
   values[kTrackletClusters]       = esdTrack->GetTRDtrkltOccupancy(iPlane);
   values[kTrackletQtot]           = esdTrack->GetTRDslice(iPlane, 0);
   values[kTrackletP]              = esdTrack->GetTRDmomentum(iPlane);
-  values[kTrackPlossTRDlayer]     = esdTrack->P() - values[kTrackletP];
+  values[kTrackPlossTRDlayer]     = 1000.0*(esdTrack->P() - values[kTrackletP]);    // p loss in MeV    
   values[kTrackletLayer]          = iPlane;
   values[kTrackPhiTRD]            = localSagitaPhi[iPlane];
   values[kTrackPtTRD]         = (localMomGood[iPlane] ? TMath::Sqrt(localMom[iPlane][0]*localMom[iPlane][0]+
@@ -471,6 +472,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
       localSagitaPhi[il] = (localCoordGood[il] ? TMath::ATan2(localCoord[il][1], localCoord[il][0]) : -999.);
     if(!localMomGood[0]) continue;
     
+    // fill tracklet values such that the TRD local coordinates are filled
     FillTrackletInfo(values, esdTrack, 0, localSagitaPhi, localMom, localMomGood);
         
     for(Int_t itrig=0; itrig<nTrigFired; ++itrig) {
@@ -926,27 +928,39 @@ void AliTRDcheckESD::CheckActiveSM(TH1D* phiProj, Bool_t activeSM[18]) {
 TH1F* AliTRDcheckESD::EfficiencyFromPhiPt(AliCFContainer* cf, Int_t minNtrkl, Int_t maxNtrkl, 
 					  Int_t stepNom, Int_t stepDenom, Int_t var) {
   //
-  // Use the CF container to extract the efficiency vs pt (other variable beside pt also posible)
+  // Use the CF container to extract the efficiency vs pt (other variables beside pt also posible)
   //
   Int_t varTrackPhi = cf->GetVar(fgkVarNames[kTrackPhiTRD]);
-  Int_t otherVar = cf->GetVar(fgkVarNames[var]);
-  
-  TH1D* phiProj = (TH1D*)cf->Project(kTRD, varTrackPhi);
+  Int_t otherVar = cf->GetVar(fgkVarNames[var]);  
+  Int_t trdStepNumber = cf->GetStep(fgkStepNames[kTRD]);
+  Int_t tpcStepNumber = cf->GetStep(fgkStepNames[kTPCreference]);
+    
+  TH1D* phiProj = (TH1D*)cf->Project(trdStepNumber, varTrackPhi);
   Bool_t activeSM[18] = {kFALSE};
   CheckActiveSM(phiProj, activeSM); delete phiProj;
   Double_t smPhiLimits[19];
   for(Int_t ism=0; ism<=18; ++ism) smPhiLimits[ism] = -TMath::Pi() + (2.0*TMath::Pi()/18.0)*ism;
   
-  if((stepNom==kTRD || stepDenom==kTRD) &&
-     (minNtrkl>-1 && minNtrkl<7 && maxNtrkl>-1 && maxNtrkl<7))
+  TH2D* hNomPhiVar=0x0;
+  TH2D* hDenomPhiVar=0x0;
+  
+  if((stepNom!=tpcStepNumber) &&
+     (minNtrkl>-1 && minNtrkl<7 && maxNtrkl>-1 && maxNtrkl<7)) {
     cf->SetRangeUser(cf->GetVar(fgkVarNames[kTrackTrdTracklets]), Double_t(minNtrkl), Double_t(maxNtrkl));
-  
-  TH2D* hNomPhiVar = (TH2D*)cf->Project(stepNom, otherVar, varTrackPhi);
-  TH2D* hDenomPhiVar = (TH2D*)cf->Project(stepDenom, otherVar, varTrackPhi);
-  if((stepNom==kTRD || stepDenom==kTRD) &&
-     (minNtrkl>-1 && minNtrkl<7 && maxNtrkl>-1 && maxNtrkl<7))
+    hNomPhiVar = (TH2D*)cf->Project(stepNom, otherVar, varTrackPhi);
     cf->SetRangeUser(cf->GetVar(fgkVarNames[kTrackTrdTracklets]), 0.0,6.0);
-  
+  }
+  else
+    hNomPhiVar = (TH2D*)cf->Project(stepNom, otherVar, varTrackPhi);
+  if((stepDenom!=tpcStepNumber) &&
+     (minNtrkl>-1 && minNtrkl<7 && maxNtrkl>-1 && maxNtrkl<7)) {
+    cf->SetRangeUser(cf->GetVar(fgkVarNames[kTrackTrdTracklets]), Double_t(minNtrkl), Double_t(maxNtrkl));
+    hDenomPhiVar = (TH2D*)cf->Project(stepDenom, otherVar, varTrackPhi);
+    cf->SetRangeUser(cf->GetVar(fgkVarNames[kTrackTrdTracklets]), 0.0,6.0);
+  } 
+  else
+    hDenomPhiVar = (TH2D*)cf->Project(stepDenom, otherVar, varTrackPhi);
+    
   TH1F* hEff = new TH1F(Form("hEff%s_%d_%d_%f", fgkVarNames[var], stepNom, stepDenom, gRandom->Rndm()), "", 
 			hNomPhiVar->GetXaxis()->GetNbins(), hNomPhiVar->GetXaxis()->GetXbins()->GetArray());
   for(Int_t ib=1;ib<=hNomPhiVar->GetXaxis()->GetNbins();++ib)
@@ -1052,6 +1066,8 @@ void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* /*trendValues*/, const Char
   if(!matchPt) return;
   AliCFContainer* centCF=(AliCFContainer*)fHistos->FindObject("CentralityCF");
   if(!centCF) return;
+  AliCFContainer* clustersCF=(AliCFContainer*)fHistos->FindObject("ClustersCF");
+  if(!clustersCF) return;
   
   TLatex* lat=new TLatex();
   lat->SetTextSize(0.06);
@@ -1155,8 +1171,8 @@ void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* /*trendValues*/, const Char
   
   for(Int_t iCent=0; iCent<6; ++iCent) {
     if(iCent>0)
-      centCF->SetRangeUser(centCF->GetVar(fgkVarNames[kEventMult]), Double_t(iCent), Double_t(iCent), kTRUE);
-    hNcls[iCent] = (TH1D*)centCF->Project(0, centCF->GetVar(fgkVarNames[kTrackTrdClusters]));
+      clustersCF->SetRangeUser(clustersCF->GetVar(fgkVarNames[kEventMult]), Double_t(iCent), Double_t(iCent), kTRUE);
+    hNcls[iCent] = (TH1D*)clustersCF->Project(0, clustersCF->GetVar(fgkVarNames[kTrackTrdClusters]));
     if(!hNcls[iCent]) continue;
     
     hNcls[iCent]->SetLineColor(iCent<4 ? iCent+1 : iCent+2);
@@ -1169,12 +1185,12 @@ void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* /*trendValues*/, const Char
     
     if(hNcls[iCent]->Integral()>0.01) {
       hNcls[iCent]->Draw("same");
-      legCls->AddEntry(hNcls[iCent], (iCent==0 ? "all centralities" : Form("%.0f < SPD tracklets < %.0f", centCF->GetAxis(centCF->GetVar(fgkVarNames[kEventMult]),0)->GetBinLowEdge(iCent), 
-									   centCF->GetAxis(centCF->GetVar(fgkVarNames[kEventMult]),0)->GetBinUpEdge(iCent))), "l");
+      legCls->AddEntry(hNcls[iCent], (iCent==0 ? "all centralities" : Form("%.0f < SPD tracklets < %.0f", clustersCF->GetAxis(clustersCF->GetVar(fgkVarNames[kEventMult]),0)->GetBinLowEdge(iCent), 
+									   clustersCF->GetAxis(clustersCF->GetVar(fgkVarNames[kEventMult]),0)->GetBinUpEdge(iCent))), "l");
     }
   }
   legCls->Draw();
-  centCF->SetRangeUser(centCF->GetVar(fgkVarNames[kEventMult]), 0.0, 6.0, kTRUE);
+  clustersCF->SetRangeUser(clustersCF->GetVar(fgkVarNames[kEventMult]), 0.0, 6.0, kTRUE);
   
   // Qtot vs P
   pad = ((TVirtualPad*)l->At(5)); pad->cd();
@@ -1225,12 +1241,26 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   //
   //  Plot tracking summary
   //
+  //  trendValues will be filled with trending variables
+  //  trendValues[0] : TPC-TRD matching efficiency for positive tracks in the range 1.0<pt<3.0 GeV/c
+  //  trendValues[1] : statistical error of trendValues[0]
+  //  trendValues[2] : TPC-TRD matching efficiency for negative tracks in the range 1.0<pt<3.0 GeV/c
+  //  trendValues[3] : statistical error of trendValues[2]
+  //  trendValues[4] : TRD-TOF matching efficiency for positive tracks in the range 1.0<pt<3.0 GeV/c
+  //  trendValues[5] : statistical error of trendValues[4]
+  //  trendValues[6] : TRD-TOF matching efficiency for negative tracks in the range 1.0<pt<3.0 GeV/c
+  //  trendValues[7] : statistical error of trendValues[6]
+  //  trendValues[8] : Average number of TRD tracklets per track in the range 1.0<pt<3.0 GeV/c
+  //  trendValues[9] : statistical error of trendValues[8]
+  //  trendValues[10]: Average number of TRD clusters per track in the range 1.0<p<3.0 GeV/c
+  //  trendValues[11]: statistical error of trendValues[10]
+  // 
   if(!fHistos) return;
   AliCFContainer* matchPhiEta=(AliCFContainer*)fHistos->FindObject("MatchingPhiEta");
   if(!matchPhiEta) return;
   AliCFContainer* matchPt=(AliCFContainer*)fHistos->FindObject("MatchingPt");
   if(!matchPt) return;
-  AliCFContainer* clustersCF=(AliCFContainer*)fHistos->FindObject("CentralityCF");
+  AliCFContainer* clustersCF=(AliCFContainer*)fHistos->FindObject("ClustersCF");
   if(!clustersCF) return;
   AliCFContainer* bcCF=(AliCFContainer*)fHistos->FindObject("BunchCrossingsCF");
   if(!bcCF) return;
@@ -1371,6 +1401,7 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   TH1F* hTOFEffPtNegTrk6 = EfficiencyFromPhiPt(matchPt, 6, 6, 2, 1);
   matchPt->SetRangeUser(matchPt->GetVar(fgkVarNames[kTrackCharge]), -1.0, +1.0);  
   
+  
   TF1* funcConst = new TF1("constFunc", "[0]", 1.0, 3.0);
   if(trendValues) {
     if(hTRDEffPtPosAll && hTRDEffPtPosAll->Integral()>0.1) {
@@ -1443,7 +1474,6 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   hTRDEffPtNegTrk5->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk5, "neg. (5 tracklets)", "p");
   hTRDEffPtPosTrk6->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk6, "pos. (6 tracklets)", "p");
   hTRDEffPtNegTrk6->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk6, "neg. (6 tracklets)", "p");
-  
   leg->Draw();
   
   //---------------------------------------------------------
@@ -1574,6 +1604,20 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
   //
   // PID summary
   //
+  //  trendValues will be filled with trending variables
+  //  trendValues[12] : PH plateau height from slices times 0.002
+  //  trendValues[13] : statistical error of trendValues[12]
+  //  trendValues[14] : PH slope from slices times 0.002
+  //  trendValues[15] : statistical error of trendValues[14]
+  //  trendValues[16] : Landau MPV of tracklet Qtot distribution at p=1GeV/c times 0.002
+  //  trendValues[17] : Landau width of tracklet Qtot distribution at p=1GeV/c times 0.002
+  //  trendValues[18] : PH plateau height from slices
+  //  trendValues[19] : statistical error of trendValues[19]
+  //  trendValues[20] : PH slope from slices
+  //  trendValues[21] : statistical error of trendValues[20]
+  //  trendValues[22] : Landau MPV of tracklet Qtot distribution at p=1GeV/c
+  //  trendValues[23] : Landau width of tracklet Qtot distribution at p=1GeV/c
+  //
   if(!fHistos) return;
   AliCFContainer* qtotCF = (AliCFContainer*)fHistos->FindObject("QtotCF");
   if(!qtotCF) return;
@@ -1650,6 +1694,10 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
     trendValues[13] = kQx*funcPol1->GetParError(0);   // PH plateau
     trendValues[14] = kQx*funcPol1->GetParameter(1);  // PH slope
     trendValues[15] = kQx*funcPol1->GetParError(1);   // PH slope
+    trendValues[18] = funcPol1->GetParameter(0);  // PH plateau
+    trendValues[19] = funcPol1->GetParError(0);   // PH plateau
+    trendValues[20] = funcPol1->GetParameter(1);  // PH slope
+    trendValues[21] = funcPol1->GetParError(1);   // PH slope
   }
   hLandauFit->SetLineWidth(2);
   hLandauFit->SetLineStyle(2);
@@ -1685,6 +1733,8 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
   if(trendValues && hQtotProj && hQtotProj->GetEntries()>2) {
     trendValues[16] = kQx*hQtotProj->GetBinContent(hQtotProj->FindBin(1.0));   // Landau MPV at 1GeV/c
     trendValues[17] = kQx*hQtotProj->GetBinError(hQtotProj->FindBin(1.0));     // Landau width at 1 GeV/c
+    trendValues[22] = kQx*hQtotProj->GetBinContent(hQtotProj->FindBin(1.0));   // Landau MPV at 1GeV/c
+    trendValues[23] = kQx*hQtotProj->GetBinError(hQtotProj->FindBin(1.0));     // Landau width at 1 GeV/c
   }
   if(hQtotP) {
     hQtotP->SetStats(kFALSE);
@@ -1728,18 +1778,16 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
 //__________________________________________________________________________________________________
 void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
   //
-  //
+  // Plot additional QA 
   //
   if(!fHistos) return;
   AliCFContainer* matchPhiEta = (AliCFContainer*)fHistos->FindObject("MatchingPhiEta");
-  AliCFContainer* trdQuality = (AliCFContainer*)fHistos->FindObject("trdQuality");
   AliCFContainer* trdChi2 = (AliCFContainer*)fHistos->FindObject("trdChi2");
   AliCFContainer* trdBudget = (AliCFContainer*)fHistos->FindObject("trdBudget");
   AliCFContainer* ploss = (AliCFContainer*)fHistos->FindObject("Ploss");
   AliCFContainer* clusters = (AliCFContainer*)fHistos->FindObject("clustersPerTracklet");  
   AliCFContainer* clsRows = (AliCFContainer*)fHistos->FindObject("clustersVsRows");
-  AliCFContainer* tpcTofMatch = (AliCFContainer*)fHistos->FindObject("MatchingPhiEta_TPCTOF");
-  
+    
   TLatex *lat=new TLatex();
   lat->SetTextSize(0.06);
   lat->SetTextColor(2);
@@ -1779,54 +1827,6 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
     lat->DrawLatex(0.2, 0.95, "TPC-TRD matching efficiency");
   }
   
-  if(trdQuality) {
-  // Track TRD quality vs (eta,phi) and vs TRD n-clusters
-    TH3D* trdQuality3D = (TH3D*)trdQuality->Project(0, trdQuality->GetVar(fgkVarNames[kTrackEtaTRD]), 
-		                                       trdQuality->GetVar(fgkVarNames[kTrackPhiTRD]),
-						       trdQuality->GetVar(fgkVarNames[kTrackTrdQuality]));
-    trdQuality3D->GetZaxis()->SetRangeUser(0.1,100.0);
-    trdQuality3D->SetName("trdQuality3D");
-    TProfile2D* prof2DQuality = trdQuality3D->Project3DProfile("yx");
-    prof2DQuality->SetName("prof2DQuality");
-    trdQuality->SetRangeUser(trdQuality->GetVar(fgkVarNames[kTrackCharge]), -1.5,-0.5);
-    TH2D* trdQualityPneg = (TH2D*)trdQuality->Project(0, trdQuality->GetVar(fgkVarNames[kTrackP]), 
-						         trdQuality->GetVar(fgkVarNames[kTrackTrdQuality]));
-    trdQualityPneg->SetName("trdQualityPneg");
-    trdQuality->SetRangeUser(trdQuality->GetVar(fgkVarNames[kTrackCharge]), +0.5,1.5);
-    TH2D* trdQualityPpos = (TH2D*)trdQuality->Project(0, trdQuality->GetVar(fgkVarNames[kTrackP]), 
-	 			 		         trdQuality->GetVar(fgkVarNames[kTrackTrdQuality]));
-    trdQualityPpos->SetName("trdQualityPpos");
-    trdQualityPneg->GetYaxis()->SetRangeUser(0.1,100.0);
-    TProfile* trdQualityPnegprof = trdQualityPneg->ProfileX();
-    trdQualityPnegprof->SetName("trdQualityPnegprof");
-    trdQualityPpos->GetYaxis()->SetRangeUser(0.1,100.0);
-    TProfile* trdQualityPposprof = trdQualityPpos->ProfileX();
-    trdQualityPposprof->SetName("trdQualityPposprof");
-    pad = ((TVirtualPad*)l->At(3)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.06); pad->SetBottomMargin(0.15);
-    prof2DQuality->SetStats(kFALSE);
-    prof2DQuality->SetTitle("");
-    SetStyle(prof2DQuality->GetXaxis(), "#eta", 0.06, 1.0, kTRUE, 0.06);
-    SetStyle(prof2DQuality->GetYaxis(), "#varphi (rad.)", 0.06, 1.0, kTRUE, 0.06);
-    prof2DQuality->SetMaximum(1.6); prof2DQuality->SetMinimum(0.4);
-    prof2DQuality->Draw("colz");
-    lat->DrawLatex(0.2, 0.95, "TRD quality");
-    pad = ((TVirtualPad*)l->At(6)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.01);
-    pad->SetTopMargin(0.06); pad->SetBottomMargin(0.15);
-    trdQualityPnegprof->SetStats(kFALSE);
-    trdQualityPnegprof->SetTitle("");
-    SetStyle(trdQualityPnegprof->GetXaxis(), "P (GeV/c)", 0.06, 1.0, kTRUE, 0.06);
-    SetStyle(trdQualityPnegprof->GetYaxis(), "<TRD quality>", 0.06, 1.0, kTRUE, 0.06);
-    SetStyle(trdQualityPnegprof, 1, 2, 2, 20, 2, 1);
-    SetStyle(trdQualityPposprof, 1, 4, 2, 20, 4, 1);
-    trdQualityPnegprof->GetYaxis()->SetRangeUser(0.5, 1.39);
-    trdQualityPnegprof->Draw();
-    trdQualityPposprof->Draw("same");
-    lat->DrawLatex(0.2, 0.95, "TRD quality");
-  }
-  
   if(trdChi2) {
     // Track TRD chi2 vs (eta,phi)
     TH3D* trdChi23D = (TH3D*)trdChi2->Project(0, trdChi2->GetVar(fgkVarNames[kTrackEtaTRD]), 
@@ -1835,7 +1835,7 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
     trdChi23D->SetName("trdChi23D");
     TProfile2D* prof2DChi2 = trdChi23D->Project3DProfile("yx");
     prof2DChi2->SetName("prof2DChi2");
-    pad = ((TVirtualPad*)l->At(1)); pad->cd();
+    pad = ((TVirtualPad*)l->At(3)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.06); pad->SetBottomMargin(0.15);
     prof2DChi2->SetStats(kFALSE);
@@ -1845,6 +1845,7 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
     prof2DChi2->SetMaximum(2.9);
     prof2DChi2->Draw("colz");
     lat->DrawLatex(0.2, 0.95, "TRD #chi^{2}");
+    DrawTRDGrid();
   
     // Track TRD chi2 vs pt and charge
     trdChi2->SetRangeUser(trdChi2->GetVar(fgkVarNames[kTrackCharge]), -1.0, -1.0);
@@ -1859,7 +1860,7 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
     trdChi2VsPtPos->SetName("trdChi2VsPtPos");
     TProfile* trdChi2VsPtPosProf = trdChi2VsPtPos->ProfileX();
     trdChi2VsPtPosProf->SetName("trdChi2VsPtPosProf");
-    pad = ((TVirtualPad*)l->At(4)); pad->cd();
+    pad = ((TVirtualPad*)l->At(6)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.01);
     pad->SetTopMargin(0.06); pad->SetBottomMargin(0.15);
     trdChi2VsPtNegProf->SetStats(kFALSE);
@@ -1881,7 +1882,7 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
     trdBudget3D->SetName("trdBudget3D");
     TProfile2D* prof2DBudget = trdBudget3D->Project3DProfile("yx");
     prof2DBudget->SetName("prof2DBudget");
-    pad = ((TVirtualPad*)l->At(7)); pad->cd();
+    pad = ((TVirtualPad*)l->At(1)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.06); pad->SetBottomMargin(0.15);
     prof2DBudget->SetStats(kFALSE);
@@ -1890,6 +1891,7 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
     SetStyle(prof2DBudget->GetYaxis(), "#varphi (rad.)", 0.06, 1.0, kTRUE, 0.06);
     prof2DBudget->Draw("colz");
     lat->DrawLatex(0.2, 0.95, "TRD budget");
+    DrawTRDGrid();
   }
   
   if(ploss) {
@@ -1922,39 +1924,41 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
     ploss3Dl5->SetName("ploss3Dl5");
     TProfile2D* plossEtaPhiL5Prof = ploss3Dl5->Project3DProfile("yx");
     plossEtaPhiL5Prof->SetName("plossEtaPhiL5Prof");
-    pad = ((TVirtualPad*)l->At(2)); pad->cd();
+    pad = ((TVirtualPad*)l->At(4)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.06); pad->SetBottomMargin(0.15);
     plossEtaPhiL0Prof->SetStats(kFALSE);
     plossEtaPhiL0Prof->SetTitle("");
     SetStyle(plossEtaPhiL0Prof->GetXaxis(), "#eta", 0.06, 1.0, kTRUE, 0.06);
     SetStyle(plossEtaPhiL0Prof->GetYaxis(), "#varphi (rad.)", 0.06, 1.0, kTRUE, 0.06);
-    plossEtaPhiL0Prof->SetMaximum(0.08);
-    plossEtaPhiL0Prof->SetMinimum(-0.02);
+    plossEtaPhiL0Prof->SetMaximum(80.0);
+    plossEtaPhiL0Prof->SetMinimum(-20.0);
     plossEtaPhiL0Prof->Draw("colz");
     lat->DrawLatex(0.2, 0.95, "P_{loss} at layer 0");
-    pad = ((TVirtualPad*)l->At(5)); pad->cd();
+    DrawTRDGrid();
+    pad = ((TVirtualPad*)l->At(7)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.06); pad->SetBottomMargin(0.15);
     plossEtaPhiL5Prof->SetStats(kFALSE);
     plossEtaPhiL5Prof->SetTitle("");
     SetStyle(plossEtaPhiL5Prof->GetXaxis(), "#eta", 0.06, 1.0, kTRUE, 0.06);
     SetStyle(plossEtaPhiL5Prof->GetYaxis(), "#varphi (rad.)", 0.06, 1.0, kTRUE, 0.06);
-    plossEtaPhiL5Prof->SetMaximum(0.08);
-    plossEtaPhiL5Prof->SetMinimum(-0.02);
+    plossEtaPhiL5Prof->SetMaximum(80.0);
+    plossEtaPhiL5Prof->SetMinimum(-20.0);
     plossEtaPhiL5Prof->Draw("colz");
     lat->DrawLatex(0.2, 0.95, "P_{loss} at layer 5");
-    pad = ((TVirtualPad*)l->At(8)); pad->cd();
+    DrawTRDGrid();
+    pad = ((TVirtualPad*)l->At(2)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.01);
     pad->SetTopMargin(0.06); pad->SetBottomMargin(0.15);
     plossLayerNegProf->SetStats(kFALSE);
     plossLayerNegProf->SetTitle("");
-    SetStyle(plossLayerNegProf->GetYaxis(), "#Delta P (GeV/c)", 0.06, 1.0, kTRUE, 0.06);
+    SetStyle(plossLayerNegProf->GetYaxis(), "#Delta P (MeV/c)", 0.06, 1.0, kTRUE, 0.06);
     SetStyle(plossLayerNegProf->GetXaxis(), "TRD layer", 0.06, 1.0, kTRUE, 0.06);
     SetStyle(plossLayerNegProf, 1, 2, 2, 20, 2, 1);
     SetStyle(plossLayerPosProf, 1, 4, 2, 20, 4, 1);
-    plossLayerNegProf->GetYaxis()->SetRangeUser(TMath::Min(plossLayerNegProf->GetMinimum(),plossLayerPosProf->GetMinimum()-0.01),
-                                                TMath::Max(plossLayerNegProf->GetMaximum(),plossLayerPosProf->GetMaximum())+0.01);
+    plossLayerNegProf->GetYaxis()->SetRangeUser(TMath::Min(plossLayerNegProf->GetMinimum(),plossLayerPosProf->GetMinimum()-5.0),
+                                                TMath::Max(plossLayerNegProf->GetMaximum(),plossLayerPosProf->GetMaximum())+5.0);
     plossLayerNegProf->Draw();  
     plossLayerPosProf->Draw("same");
     lat->DrawLatex(0.2, 0.95, "P_{loss} vs layer");
@@ -2001,6 +2005,7 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
       SetStyle(clustersEtaPhiProf->GetYaxis(), "#varphi (rad.)", 0.06, 1.0, kTRUE, 0.06);
       clustersEtaPhiProf->Draw("colz");
       lat->DrawLatex(0.2, 0.95, Form("Clusters / tracklet, layer %d", il));
+      DrawTRDGrid();
     }
   }
   
@@ -2014,7 +2019,7 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
     for(Int_t il=0;il<6;++il) {
       TProfile2D* clsRowsEtaPhiProf = clsRowsEtaPhi[il]->Project3DProfile("yx");
       pad = ((TVirtualPad*)l->At(layerPads[il])); pad->cd();
-      pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+      pad->SetLeftMargin(0.15); pad->SetRightMargin(0.13);
       pad->SetTopMargin(0.06); pad->SetBottomMargin(0.15);
       clsRowsEtaPhiProf->SetStats(kFALSE);
       clsRowsEtaPhiProf->SetTitle("");
@@ -2022,62 +2027,13 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
       SetStyle(clsRowsEtaPhiProf->GetYaxis(), "#varphi (rad.)", 0.06, 1.0, kTRUE, 0.06);
       clsRowsEtaPhiProf->Draw("colz");
       lat->DrawLatex(0.2, 0.95, Form("Clusters / crossed rows, layer %d", il));
+      DrawTRDGrid();
     }
   }
   
-  TCanvas* c4=0x0;
-  if(tpcTofMatch) {
-    TH2D* tpcRef = (TH2D*)tpcTofMatch->Project(0, tpcTofMatch->GetVar(fgkVarNames[kTrackEtaTRD]),
-                                                  tpcTofMatch->GetVar(fgkVarNames[kTrackPhiTRD]));
-    TH2D* tpcPhiPt = (TH2D*)tpcTofMatch->Project(0, tpcTofMatch->GetVar(fgkVarNames[kTrackPt]),
-                                                    tpcTofMatch->GetVar(fgkVarNames[kTrackPhiTRD]));
-    TH2D* tofin  = (TH2D*)tpcTofMatch->Project(1, tpcTofMatch->GetVar(fgkVarNames[kTrackEtaTRD]),
-                                                  tpcTofMatch->GetVar(fgkVarNames[kTrackPhiTRD]));
-    TH2D* tofinPhiPt = (TH2D*)tpcTofMatch->Project(1, tpcTofMatch->GetVar(fgkVarNames[kTrackPt]),
-                                                      tpcTofMatch->GetVar(fgkVarNames[kTrackPhiTRD]));
-    TH2D* tofout = (TH2D*)tpcTofMatch->Project(2, tpcTofMatch->GetVar(fgkVarNames[kTrackEtaTRD]),
-                                                  tpcTofMatch->GetVar(fgkVarNames[kTrackPhiTRD]));
-    TH2D* tofoutPhiPt = (TH2D*)tpcTofMatch->Project(2, tpcTofMatch->GetVar(fgkVarNames[kTrackPt]),
-                                                       tpcTofMatch->GetVar(fgkVarNames[kTrackPhiTRD]));
-    tofin->Divide(tpcRef);
-    tofout->Divide(tpcRef);
-    tofinPhiPt->Divide(tpcPhiPt);
-    tofoutPhiPt->Divide(tpcPhiPt);
-    
-    c4=new TCanvas("ESDsummary4", "TPC - TOF matching", 1600., 1200.);
-    c4->SetLeftMargin(0.01); c4->SetRightMargin(0.01);
-    c4->SetTopMargin(0.01); c4->SetBottomMargin(0.01);
-    c4->Divide(2,2,0.,0.);
-    pad=c4->cd(1);
-    pad->SetLeftMargin(0.12); pad->SetRightMargin(0.12);
-    pad->SetTopMargin(0.07); pad->SetBottomMargin(0.12);
-    tofin->SetTitle(""); tofin->SetStats(kFALSE);
-    tofin->Draw("colz");
-    lat->DrawLatex(0.1, 0.94, "TPC - TOFin matching");
-    pad=c4->cd(2);
-    pad->SetLeftMargin(0.12); pad->SetRightMargin(0.12);
-    pad->SetTopMargin(0.07); pad->SetBottomMargin(0.12);
-    tofout->SetTitle(""); tofout->SetStats(kFALSE);
-    tofout->Draw("colz");
-    lat->DrawLatex(0.1, 0.94, "TPC - TOFout matching");
-    pad=c4->cd(3);
-    pad->SetLeftMargin(0.12); pad->SetRightMargin(0.12);
-    pad->SetTopMargin(0.07); pad->SetBottomMargin(0.12);
-    tofinPhiPt->SetTitle(""); tofinPhiPt->SetStats(kFALSE);
-    tofinPhiPt->Draw("colz");
-    lat->DrawLatex(0.1, 0.94, "TPC - TOFin matching");
-    pad=c4->cd(4);
-    pad->SetLeftMargin(0.12); pad->SetRightMargin(0.12);
-    pad->SetTopMargin(0.07); pad->SetBottomMargin(0.12);
-    tofoutPhiPt->SetTitle(""); tofoutPhiPt->SetStats(kFALSE);
-    tofoutPhiPt->Draw("colz");
-    lat->DrawLatex(0.1, 0.94, "TPC - TOFout matching");
-  }
-
-  if(matchPhiEta || trdQuality || trdChi2 || trdBudget || ploss) c1->SaveAs("esdSummary1.gif");
+  if(matchPhiEta || trdChi2 || trdBudget || ploss) c1->SaveAs("esdSummary1.gif");
   if(clusters) c2->SaveAs("esdSummary2.gif");
   if(clsRows) c3->SaveAs("esdSummary3.gif");
-  if(tpcTofMatch) c4->SaveAs("esdSummary4.gif");
 }
 
 
@@ -2092,7 +2048,7 @@ void AliTRDcheckESD::DrawTRDGrid() {
   line.SetLineWidth(1);
   line.SetLineStyle(2);
   for(Int_t i=-9; i<=9; ++i) {
-    line.DrawLine(-1.0, 2.0*TMath::Pi()/18.0*i, +1.0, 2.0*TMath::Pi()/18.0*i);
+    line.DrawLine(-0.92, 2.0*TMath::Pi()/18.0*i, +0.92, 2.0*TMath::Pi()/18.0*i);
   }
   line.DrawLine(-0.85, -3.15, -0.85, 3.15);
   line.DrawLine(-0.54, -3.15, -0.54, 3.15);
