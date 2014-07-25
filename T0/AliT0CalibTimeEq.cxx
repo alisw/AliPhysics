@@ -358,12 +358,15 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 		  okcfd++;
 		AliWarning(Form(" Not  enouph data in PMT in CFD peak %i - %i ", i, nent));
 		  meancfdtime = cfdvalue[i];
-		  ok = -11;
+		  //		  ok = -11;
 		  printf("!!!!low statstics:: pmt %i nent%i RMS %f mean %f cdbtime %f \n",
 			 i, nent, cfdtime->GetRMS(), cfdtime->GetMean(),  cfdvalue[i]);
-		  if (okcfd>3) return ok;
+		  if (okcfd>2) {
+		  ok = -11;
+		  return ok;
+		  }
 		}
-	      	      
+	      
 	      if( nent>100 )    { //!!!!!
 		if(cfdtime->GetRMS()>1.5 )
 		  GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);

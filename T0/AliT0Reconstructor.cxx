@@ -329,8 +329,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     badpmt[i] = GetRecoParam() -> GetBadChannels(i);
     timeDelayCFD[i] =  Int_t (fParam->GetTimeDelayCFD(i));
   }
+  Int_t badLEDminCFD = GetRecoParam() -> GetHigh(350);
   Int_t equalize = GetRecoParam() -> GetEq();
-  AliDebug(10,Form( "AliT0Reconstructor::Reconstruct::: RecoParam %i \n",equalize ) );
+  AliDebug(10,Form( "AliT0Reconstructor::Reconstruct::: RecoParam %i LEDminCFD threshold %i \n",equalize, badLEDminCFD) );
   fCalib->SetEq(equalize);
   Int_t low[500], high[500];
   Float_t timefull=-99999;;
@@ -478,7 +479,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	
 	Double32_t time[24], adc[24], adcmip[24], noncalibtime[24];
 	for (Int_t ipmt=0; ipmt<24; ipmt++) {
-	  if(timeCFD[ipmt] >  0 && (chargeQT0[ipmt] - chargeQT1[ipmt])> 0 ){
+	  if(timeCFD[ipmt] >  0 && (chargeQT0[ipmt] - chargeQT1[ipmt])> 0 &&
+	  (timeLED[ipmt]-timeCFD[ipmt])<badLEDminCFD){
 	   //for simulated data
 	     //for physics  data
 	   adc[ipmt] = chargeQT0[ipmt] - chargeQT1[ipmt];
