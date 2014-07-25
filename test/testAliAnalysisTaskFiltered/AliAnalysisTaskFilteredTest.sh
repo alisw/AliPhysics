@@ -31,11 +31,11 @@ source $UnitTestConfig
 #get path to input list
     inputListfiles=$TestData_pPb
 #get scale number for tracks
-    filterT=${2-100}
+    filterT=${2-20}
 #get scale number for V0s
-    filterV=${3-10}
-#get scale number of riends
-    filterFriend=${4--10}
+    filterV=${3-2}
+#get scale number of friends
+    filterFriend=${4--1}
 #get OCDB path (optional)
     OCDBpath=${5-"\"$OCDBPath_pPb\""}
 #get max number of files 
