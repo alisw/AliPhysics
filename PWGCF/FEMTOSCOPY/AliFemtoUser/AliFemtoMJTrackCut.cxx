@@ -441,15 +441,15 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
 	    if ( IsProtonNSigma(track->Pt(), track->NSigmaTPCP(), track->NSigmaTOFP()))
 	      imost = 12;
 	  }
-	  else if (fMostProbable == 13) { //cut on Nsigma in pT not p, EXCLUSIVE PID
+	  else if (fMostProbable == 13) { //cut on Nsigma in pT not p, EXCLUSIVE PID, pion
 	    if ((IsPionNSigma(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) && !IsKaonNSigma(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP())))
 	      imost = 13;
 	  }
-	  else if (fMostProbable == 14) { //cut on Nsigma in pT not p, EXCLUSIVE PID
+	  else if (fMostProbable == 14) { //cut on Nsigma in pT not p, EXCLUSIVE PID, kaon
 	    if (!IsPionNSigma(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) && IsKaonNSigma(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()))
 	      imost = 14;
 	  }
-	  else if (fMostProbable == 15) { //cut on Nsigma in pT not p, EXCLUSIVE PID
+	  else if (fMostProbable == 15) { //cut on Nsigma in pT not p, EXCLUSIVE PID, proton
 	    if (!IsPionNSigma(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) && !IsKaonNSigma(track->Pt(), !track->NSigmaTPCK(), track->NSigmaTOFK()) && IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()))
 	      imost = 15;
 	  }

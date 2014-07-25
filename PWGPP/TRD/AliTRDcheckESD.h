@@ -45,10 +45,12 @@ public:
   };
     
   enum ETrdCfVariables {
+    // Event wise variables
     kEventVtxZ=0,                // event vtx. Z        ---
     kEventMult,                  // event multiplicity  ---
     kEventTrigger,               // trigger class
     kEventBC,                    // event BC        --- 
+    // Track wise variables
     kTrackTOFBC,                 // track TOF BC    ---
     kTrackDCAxy,                 // dca xy          ---
     kTrackDCAz,                  // dca z           ---
@@ -67,12 +69,15 @@ public:
     kTrackTrdClusters,           // number of TRD clusters   ---
     kTrackTrdQuality,            // TRD quality for TOF
     kTrackTRDBudget,             // TRD material budget
+    kTrackTOFchi2,               // TOF chi2
+    // Tracklets wise variables
     kTrackletQtot,               // tracklet qtot in each layer
     kTrackletClustersVsRows,     // clusters / crossed rows
     kTrackletClusters,           // number of clusters per tracklet
     kTrackletP,                  // tracklet p in each layer
     kTrackPlossTRDlayer,         // p loss at each layer
     kTrackletLayer,              // layer of the current tracklet
+    // Tracklet slice variables
     kTrackletSlice,              // tracklet slice number
     kTrackletPHslice,            // charge per tracklet slice
     kNTrdCfVariables,
