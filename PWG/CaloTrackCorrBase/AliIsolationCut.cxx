@@ -368,11 +368,11 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;	
   snprintf(onePar,buffersize,"fConeSize: (isolation cone size) %1.2f\n",fConeSize) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fPtThreshold >%1.2f;<1.2f (isolation pt threshold) \n",fPtThreshold,fPtThresholdMax) ;
+  snprintf(onePar,buffersize,"fPtThreshold >%2.2f;<%2.2f (isolation pt threshold) \n",fPtThreshold,fPtThresholdMax) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fSumPtThreshold >%1.2f;<1.2f (isolation sum pt threshold) \n",fSumPtThreshold,fSumPtThresholdMax) ;
+  snprintf(onePar,buffersize,"fSumPtThreshold >%2.2f;<%2.2f (isolation sum pt threshold) \n",fSumPtThreshold,fSumPtThresholdMax) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fPtFraction=%1.2f (isolation pt threshold fraction) \n",fPtFraction) ;
+  snprintf(onePar,buffersize,"fPtFraction=%2.2f (isolation pt threshold fraction) \n",fPtFraction) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fICMethod=%d (isolation cut case) \n",fICMethod) ;
   parList+=onePar ;
