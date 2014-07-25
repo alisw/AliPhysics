@@ -386,14 +386,13 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
 
   double pt1 = TMath::Hypot(px1, py1);
   double pt2 = TMath::Hypot(px2, py2);
-  fPtSumDist->Fill(pt1+pt2);
 
   double vert1[3];
   pair->Track1()->Track()->GetPrimaryVertex(vert1);
   double vert2[3];
   pair->Track2()->Track()->GetPrimaryVertex(vert2);
 
-  double corrweight=0;
+  double corrweight=0; double corrweightpT1=1;  double corrweightpT2=1; 
   //if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2);
   if (fIfCorrection) 
     {
@@ -402,16 +401,23 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
   else if(fCorr1D)
     {
       corrweight = CalculateCorrectionWeight(pt1, pt2);
+      corrweightpT1 = CalculateCorrectionWeight(pt1);
+      corrweightpT2 = CalculateCorrectionWeight(pt2);
     }
+
+  fPtSumDist->Fill(pt1*corrweightpT1+pt2*corrweightpT2);
   /*   double ptmin = pt1>pt2 ? pt2 : pt1;
 
        double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
        sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
   */
   if (fIfCorrection || fCorr1D)
-    fDPhiDEtaNumerator->Fill(dphi, deta, corrweight);
-  else
+    {
+      fDPhiDEtaNumerator->Fill(dphi, deta, corrweight);
+    }
+  else{
     fDPhiDEtaNumerator->Fill(dphi, deta);
+  }
 
 
   if (fDoFullAnalysis) {
@@ -660,20 +666,26 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
   fpartType1 = partType1;
   fpartType2 = partType2;
 
-  char* type1 = new char[10];
-  char* type2 = new char[10];
+  char* type1 = new char[12];
+  char* type2 = new char[12];
 
 
   if(fpartType1==kPion) strcpy(type1,"Pion");
   else if(fpartType1==kKaon) strcpy(type1,"Kaon");
   else if (fpartType1==kProton)strcpy(type1,"Proton");
   else if (fpartType1==kAll) strcpy(type1,"All");
+  else if(fpartType1==kPionMinus) strcpy(type1,"PionMinus");
+  else if(fpartType1==kKaonMinus) strcpy(type1,"KaonMinus");
+  else if (fpartType1==kProtonMinus)strcpy(type1,"ProtonMinus");
   else strcpy(type1,"");
 
   if(fpartType2==kPion) strcpy(type2,"Pion");
   else if(fpartType2==kKaon) strcpy(type2,"Kaon");
   else if (fpartType2==kProton) strcpy(type2,"Proton");
   else if (fpartType2==kAll) strcpy(type2,"All");
+  else if(fpartType2==kPionMinus) strcpy(type1,"PionMinus");
+  else if(fpartType2==kKaonMinus) strcpy(type1,"KaonMinus");
+  else if (fpartType2==kProtonMinus)strcpy(type1,"ProtonMinus");
   else strcpy(type1,"");
 
 
@@ -835,20 +847,26 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile1D(const 
   fpartType2 = partType2;
 
 
-  char type1[10];
-  char type2[10];
+  char type1[12]; 
+  char type2[12];
 
 
   if(fpartType1==kPion) strcpy(type1,"Pion");
   else if(fpartType1==kKaon) strcpy(type1,"Kaon");
   else if (fpartType1==kProton)strcpy(type1,"Proton");
   else if (fpartType1==kAll) strcpy(type1,"All");
+  else if(fpartType1==kPionMinus) strcpy(type1,"PionMinus");
+  else if (fpartType1==kKaonMinus) strcpy(type1,"KaonMinus");
+  else if (fpartType1==kProtonMinus)strcpy(type1,"ProtonMinus");
   else strcpy(type1,"");
 
   if(fpartType2==kPion) strcpy(type2,"Pion");
   else if(fpartType2==kKaon) strcpy(type2,"Kaon");
   else if (fpartType2==kProton) strcpy(type2,"Proton");
   else if (fpartType2==kAll) strcpy(type2,"All");
+  else if(fpartType2==kPionMinus) strcpy(type1,"PionMinus");
+  else if(fpartType2==kKaonMinus) strcpy(type1,"KaonMinus");
+  else if (fpartType2==kProtonMinus)strcpy(type1,"ProtonMinus");
   else strcpy(type1,"");
 
   fhCont1 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type1)));//->Clone();
@@ -875,19 +893,19 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::SetCorrectionTab(ParticleType partType
   for(int i=0;i<190;i++)
     fpTab[i]=pttab[i];
 
-  if(partType==kPion)
+  if(partType==kPion || partType==kPionMinus)
     {
       fCorrFactorTab = new double[190];
       for(int i=0;i<190;i++)
 	fCorrFactorTab[i] = pioncorrtab[i];
     }
-  else if(partType==kKaon)
+  else if(partType==kKaon || partType==kKaonMinus)
     {
       fCorrFactorTab = new double[190];
       for(int i=0;i<190;i++)
 	fCorrFactorTab[i] = kaoncorrtab[i];
     }
-  else if(partType==kProton)
+  else if(partType==kProton||partType==kProtonMinus)
     {
       fCorrFactorTab = new double[190];
       for(int i=0;i<190;i++)
@@ -915,6 +933,18 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
      return 0;
 }
 
+
+double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1)
+{
+   double w1=0.;
+   if(pT1 > fhCont1->GetXaxis()->GetXmin() && pT1 < fhCont1->GetXaxis()->GetXmax())
+     {
+       w1 = fhCont1->GetBinContent(fhCont1->FindFixBin(pT1));
+       return w1;
+     } 
+   else
+     return 0;
+}
 
 double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1, double pT2, double eta1, double eta2, double phi1, double phi2, double zvert1, double zvert2)
 {
