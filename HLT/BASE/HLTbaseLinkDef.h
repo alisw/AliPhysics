@@ -118,7 +118,11 @@
 #pragma link C++ class AliHLTIndexGrid<int, AliHLTUInt32_t>+;
 #pragma link C++ class AliHLTTrackGeometry+;
 #pragma link C++ class AliHLTMisc+;
-#pragma link C++ class AliHLTCTPData+;
+#pragma link C++ class AliHLTCTPData-;
+
+#pragma read sourceClass="AliHLTCTPData" targetClass="AliHLTCTPData" source="AliHLTUInt64_t fMask"  version="[-2]" target="fMask" targetType="AliHLTTriggerMask_t" include="Rtypes.h" code="{newObj->fMask.reset(); for(Int_t i=0; i<64; ++i) newObj->fMask.set(i,TESTBIT(onfile.fMask,i));}"
+#pragma read sourceClass="AliHLTCTPData" targetClass="AliHLTCTPData" source="AliHLTUInt64_t fTriggers"  version="[-2]" target="fTriggers" targetType="AliHLTTriggerMask_t" include="Rtypes.h" code="{newObj->fTriggers.reset(); for(Int_t i=0; i<64; ++i) newObj->fTriggers.set(i,TESTBIT(onfile.fTriggers,i));}"
+
 #pragma link C++ class AliHLTScalars+;
 #pragma link C++ class AliHLTScalars::AliScalar+;
 
