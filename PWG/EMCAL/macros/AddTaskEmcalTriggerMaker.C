@@ -31,7 +31,7 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
     return NULL;
   }
 
-  TString strTrigersName(triggersName);
+  TString strTriggersName(triggersName);
   TString strCellsName(cellsName);
 
   if(strTriggersName.IsNull()) {
