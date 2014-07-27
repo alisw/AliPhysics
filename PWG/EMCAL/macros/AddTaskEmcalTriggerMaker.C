@@ -45,7 +45,7 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
     }
   }
 
-  if(strCellssName.IsNull()) {
+  if(strCellsName.IsNull()) {
     if (evhand->InheritsFrom("AliESDInputHandler")) {
       strCellsName = "EMCALCells";
       ::Info("AddTaskEmcalTriggerMaker", Form( "ESD analysis, cellsName = \"%s\"", strCellsName.Data() ));
