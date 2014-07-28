@@ -1214,16 +1214,17 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchPbPb2011(){
   Double_t cent = (Float_t)(centrality->GetCentralityPercentile("V0M"));               
   Double_t rnd_hc, testf, ff, N1, N2;
 
-  if(fUseCentralityPatchPbPb2011==5){
+  if(fUseCentralityPatchPbPb2011==510){
     N1 = 1.9404e+06;
-    N2 = 1.56435e+06;
+    N2 = 1.56435e+06; //N2 is the reference 
     ff = 5.04167e+06 - 1.49885e+06*cent + 2.35998e+05*cent*cent -1.22873e+04*cent*cent*cent;
   }
   
   if(fUseCentralityPatchPbPb2011==1020){
-    N1 = 1.56435e+06;
-    N2 = 4.20e+05;
-    ff = 1.68062e+08 - 5.19673e+07*cent + 6.4068e+06*cent*cent + 6.4068e+06*cent*cent*cent - 392687*cent*cent*cent*cent - 145.07*cent*cent*cent*cent*cent; 
+    N2 = 2.0e+05; //N2 is the reference 
+    N1 = 3.7e+05;
+ 
+    ff = -1.73979e+06 - 3.05316e+06*cent + 1.05517e+06*cent*cent - 133205*cent*cent*cent + 8187.45*cent*cent*cent*cent - 247.875*cent*cent*cent*cent*cent + 2.9676*cent*cent*cent*cent*cent*cent;
   }
 
   testf = ( N2 + (N1-ff) ) / N1;
