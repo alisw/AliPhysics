@@ -330,14 +330,13 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fK0sMassPtRap[kNCent];         //! K0s: mass vs pt vs rap vs centrality
   TH3F*   fK0sMassPtPhi;                 //! K0s: mass vs pt vs phi
 
-  TH2F*   fK0sDaughtersPt;               //! K0s: pt of daughters
-  TH3F*   fSharedClsTrigDaug;            //! Splitting studies according to the TPC Shared Bit Map for K0s Lambda and AntiLambda
-  THnSparse* fK0sPosDaugdPhiSdEtaS[kNCent]; //! Positive daughter: delta(phi)* delta(eta)*    
-  THnSparse* fK0sNegDaugdPhiSdEtaS[kNCent]; //! Negative daughter: delta(phi)* delta(eta)* 
-  THnSparse* fK0sPosDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
-  THnSparse* fK0sNegDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
-  TH3F*   fK0sDCADaugToPrimVtx;          //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
-  TH3F*   fK0sSpatialRes;                //! K0s: Spatial resolution  
+  TH2F*   fK0sDaughtersPt;                       //! K0s: pt of daughters
+  THnSparse* fK0sPosDaugdPhiSdEtaS[kNCent];      //! Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fK0sNegDaugdPhiSdEtaS[kNCent];      //! Negative daughter: delta(phi)* delta(eta)* 
+  THnSparse* fK0sPosDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fK0sNegDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  TH3F*   fK0sDCADaugToPrimVtx;                  //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
+  TH3F*   fK0sSpatialRes;                        //! K0s: Spatial resolution  
    
   TH3F*   fK0sdPhidEtaMC[kNCent*kN1];             //! K0s MC: Delta phi,Delta eta vs Z vertex position
   TH3F*   fK0sdPhidEtaPtL[kNVtxZ*kNCent*kN1];     //! K0s: Delta phi,Delta eta vs Z vertex position
@@ -361,13 +360,13 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaMassPtRap[kNCent];      //! Lambda: mass vs pt vs rap
   TH3F*   fLambdaMassPtPhi;              //! Lambda: mass vs pt vs phi 
 
-  TH2F*   fLambdaDaughtersPt;            //! Lambda: pt of daughters
-  THnSparse* fLambdaPosDaugdPhiSdEtaS[kNCent]; //! Positive daughter: delta(phi)* delta(eta)*    
-  THnSparse* fLambdaNegDaugdPhiSdEtaS[kNCent]; //! Negative daughter: delta(phi)* delta(eta)* 
-  THnSparse* fLambdaPosDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
-  THnSparse* fLambdaNegDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
-  TH3F*   fLambdaDCADaugToPrimVtx;       //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
-  TH3F*   fLambdaSpatialRes;             //! Lambda: Spatial resolution  
+  TH2F*   fLambdaDaughtersPt;                       //! Lambda: pt of daughters
+  THnSparse* fLambdaPosDaugdPhiSdEtaS[kNCent];      //! Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fLambdaNegDaugdPhiSdEtaS[kNCent];      //! Negative daughter: delta(phi)* delta(eta)* 
+  THnSparse* fLambdaPosDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fLambdaNegDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  TH3F*   fLambdaDCADaugToPrimVtx;                  //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
+  TH3F*   fLambdaSpatialRes;                        //! Lambda: Spatial resolution  
 
   TH3F*   fLambdadPhidEtaMC[kNCent*kN1];            //! Lambda MC: Delta phi,Delta eta vs Z vertex position
   TH3F*   fLambdadPhidEtaPtL[kNVtxZ*kNCent*kN1];    //! Lambda: Delta phi,Delta eta vs Z vertex position
@@ -392,13 +391,13 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaMassPtRap[kNCent];        //! AntiLambda: pt vs rap
   TH3F*   fAntiLambdaMassPtPhi;                //! Lambda: mass vs phi 
 
-  TH2F*   fAntiLambdaDaughtersPt;              //! AntiLambda: pt of daughters
-  THnSparse* fAntiLambdaPosDaugdPhiSdEtaS[kNCent]; //! Positive daughter: delta(phi)* delta(eta)*    
-  THnSparse* fAntiLambdaNegDaugdPhiSdEtaS[kNCent]; //! Negative daughter: delta(phi)* delta(eta)* 
-  THnSparse* fAntiLambdaPosDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
-  THnSparse* fAntiLambdaNegDaugSplCheckCovMat;  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
-  TH3F*   fAntiLambdaDCADaugToPrimVtx;         //! AntiLambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
-  TH3F*   fAntiLambdaSpatialRes;               //! AntiLambda: Spatial resolution  
+  TH2F*   fAntiLambdaDaughtersPt;                       //! AntiLambda: pt of daughters
+  THnSparse* fAntiLambdaPosDaugdPhiSdEtaS[kNCent];      //! Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fAntiLambdaNegDaugdPhiSdEtaS[kNCent];      //! Negative daughter: delta(phi)* delta(eta)* 
+  THnSparse* fAntiLambdaPosDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fAntiLambdaNegDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  TH3F*   fAntiLambdaDCADaugToPrimVtx;                  //! AntiLambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
+  TH3F*   fAntiLambdaSpatialRes;                        //! AntiLambda: Spatial resolution  
 
   TH3F*   fAntiLambdadPhidEtaMC[kNCent*kN1];            //! AntiLambda MC: Delta phi,Delta eta vs Z vertex position
   TH3F*   fAntiLambdadPhidEtaPtL[kNVtxZ*kNCent*kN1];    //! AntiLambda: Delta phi,Delta eta vs pt of the leading particle
