@@ -888,10 +888,10 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       continue;
     }
     TObjArray *arrTRF = (TObjArray*)timeResFunc.At(sector);  
-    TGraphErrors  *graphTRF = (TGraphErrors*)arrTRF->At(1);
+    //    TGraphErrors  *graphTRF = (TGraphErrors*)arrTRF->At(1);
     Int_t wireSegmentID    = param->GetWireSegment(sector,padRow);
     Float_t nPadsPerSegment = (Float_t)(param->GetNPadsPerSegment(wireSegmentID));
-    const Float_t ampfactor = (sector<36)?factorIROC:factorOROC;      // factor for the iontail which is ROC type dependent
+    //    const Float_t ampfactor = (sector<36)?factorIROC:factorOROC;      // factor for the iontail which is ROC type dependent
     AliTPCCalROC * gainROC  = gainTPC->GetCalROC(sector);  // pad gains per given sector
     AliTPCCalROC * noiseROC = noiseTPC->GetCalROC(sector);  // noise per given sector
     digrow->SetID(globalRowID);
@@ -977,19 +977,24 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
 	if (q>0 && recoParam->GetUseIonTailCorrection()){
 	  for (Int_t i=0;i<nInputs; i++) if (active[i]){ 
 	    Short_t *pdigC= digarr[i]->GetDigits();
-	    for (Int_t dpad=-1; dpad<=1; dpad++){          // calculate iontail due signals from neigborhood pads	      
+	    if (padNumber==0) continue;
+	    if (padNumber>=nPads-1) continue;
+	    for (Int_t dpad=-1; dpad<=1; dpad++){          // calculate iontail due signals from neigborhood pads
 	      for (Int_t celem=elem-1; celem>lowerElem; celem--){
 		Int_t celemPad=celem+dpad*nTimeBins;
+		Double_t qCElem=pdigC[celemPad];
+		if ( qCElem<=0) continue;
 		//here we substract ion tail	
 		Double_t COG=0;
 		if (celemPad-nTimeBins>nTimeBins && celemPad+nTimeBins<nElems){   // COG calculation in respect to current pad in pad units
 		  Double_t sumAmp=pdigC[celemPad-nTimeBins]+pdigC[celemPad]+pdigC[celemPad+nTimeBins];
 		  COG=(-1.0*pdigC[celemPad-nTimeBins]+pdigC[celemPad+nTimeBins])/sumAmp;
 		}
+		Int_t indexTRFPRF = (TMath::Nint(TMath::Abs(COG*10.))%20);
+		TGraphErrors  *graphTRFPRF = (TGraphErrors*)arrTRF->At(indexTRFPRF);
+		if (graphTRFPRF==NULL) continue;
 		// here we should get index and point of TRF corresponding to given COG position
-		TGraph *graphTRFPRF=0;///??? - Mesut to implement 
-		Double_t qCElem=pdigC[celemPad];
-		if (graphTRF->GetY()[elem-celem]<0)qIonTail+=qCElem*graphTRFPRF->GetY()[elem-celem];
+		if (graphTRFPRF->GetY()[elem-celem]<0)qIonTail+=qCElem*graphTRFPRF->GetY()[elem-celem];
 	      }
 	    }
 	  }
