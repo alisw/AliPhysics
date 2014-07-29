@@ -1134,7 +1134,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   if(fUseEventsWithPrimaryVertex)
   {
-    if( !CheckForPrimaryVertex() )              return kFALSE;
+    if( !CheckForPrimaryVertex() )              return kFALSE; // algorithm in ESD/AOD Readers
     if( TMath::Abs(fVertex[0][0] ) < 1.e-6 &&
         TMath::Abs(fVertex[0][1] ) < 1.e-6 &&
         TMath::Abs(fVertex[0][2] ) < 1.e-6    ) return kFALSE;
@@ -1996,68 +1996,6 @@ void AliCaloTrackReader::FillInputBackgroundJets()
       fBackgroundJets->Print("");
     }
   }
-  
-}
-
-
-//________________________________________________
-Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
-{
-  //Check if the vertex was well reconstructed, copy of conversion group
-  
-  if(fDataType==kESD)
-  {
-    AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (fInputEvent);
-    if(!esdevent) return kFALSE;
-    
-    if(esdevent->GetPrimaryVertex()->GetNContributors() > 0)
-    {
-      return kTRUE;
-    }
-    
-    if(esdevent->GetPrimaryVertex()->GetNContributors() < 1)
-    {
-      // SPD vertex
-      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
-      {
-        return kTRUE;
-        
-      }
-      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() < 1)
-      {
-        return kFALSE;
-      }
-    }
-  }
-  else if(fDataType==kAOD)
-  {
-    AliAODEvent * aodevent = dynamic_cast<AliAODEvent*>(fInputEvent);
-    if(!aodevent) return kFALSE;
-    
-    if (aodevent->GetPrimaryVertex() != NULL)
-    {
-      if(aodevent->GetPrimaryVertex()->GetNContributors() > 0)
-      {
-        return kTRUE;
-      }
-    }
-    
-    if(aodevent->GetPrimaryVertexSPD() != NULL)
-    {
-      if(aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
-      {
-        return kTRUE;
-      }
-      else
-      {
-        AliWarning(Form("Number of contributors from bad vertex type:: %s",aodevent->GetPrimaryVertex()->GetName()));
-        return kFALSE;
-      }
-    }
-  }
-  else return kTRUE;
-  
-  return kFALSE;
   
 }
 

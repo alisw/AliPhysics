@@ -24,6 +24,8 @@ public:
   
   virtual         ~AliCaloTrackESDReader() ; // virtual dtor
 
+  Bool_t           CheckForPrimaryVertex() const ;
+  
   void             Init();
   
   Bool_t           SelectTrack(AliVTrack* track, Double_t* pTrack);

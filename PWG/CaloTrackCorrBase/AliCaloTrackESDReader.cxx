@@ -62,6 +62,37 @@ AliCaloTrackESDReader::~AliCaloTrackESDReader()
   delete fESDtrackComplementaryCuts;
 }
 
+//_________________________________________________________
+Bool_t AliCaloTrackESDReader::CheckForPrimaryVertex() const
+{
+  //Check if the vertex was well reconstructed, copy of conversion group
+  
+  AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (fInputEvent);
+  if(!esdevent) return kFALSE;
+  
+  if(esdevent->GetPrimaryVertex()->GetNContributors() > 0)
+  {
+    return kTRUE;
+  }
+  
+  if(esdevent->GetPrimaryVertex()->GetNContributors() < 1)
+  {
+    // SPD vertex
+    if(esdevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+    {
+      return kTRUE;
+      
+    }
+    if(esdevent->GetPrimaryVertexSPD()->GetNContributors() < 1)
+    {
+      return kFALSE;
+    }
+  }
+
+  return kFALSE;
+
+}
+
 //________________________________
 void AliCaloTrackESDReader::Init()
 {
@@ -73,7 +104,7 @@ void AliCaloTrackESDReader::Init()
     fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks
 }
 
-//_____________________________________________________________________________
+//______________________________________________________________________________
 Bool_t AliCaloTrackESDReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
 {
   // Select ESD track using the cuts declared in fESDtrackCuts
