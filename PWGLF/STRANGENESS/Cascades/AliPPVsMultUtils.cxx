@@ -167,6 +167,12 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     fBoundaryHisto_V0AEq   = dynamic_cast<TH1F *>(lCalibFile_V0AEq  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
     fBoundaryHisto_V0CEq   = dynamic_cast<TH1F *>(lCalibFile_V0CEq  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
     
+    if ( !fBoundaryHisto_V0M   || !fBoundaryHisto_V0A   || !fBoundaryHisto_V0C ||
+        !fBoundaryHisto_V0MEq || !fBoundaryHisto_V0AEq || !fBoundaryHisto_V0CEq ){
+        AliFatal(Form("No calibration for run %i exists at the moment!",lLoadThisCalibration));
+        return kFALSE; //return denial
+    }
+    
     //Careful with manual cleanup if needed: to be implemented
     fBoundaryHisto_V0M->SetDirectory(0);
     fBoundaryHisto_V0A->SetDirectory(0);
@@ -175,11 +181,6 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     fBoundaryHisto_V0AEq->SetDirectory(0);
     fBoundaryHisto_V0CEq->SetDirectory(0);
     
-    if ( !fBoundaryHisto_V0M   || !fBoundaryHisto_V0A   || !fBoundaryHisto_V0C ||
-        !fBoundaryHisto_V0MEq || !fBoundaryHisto_V0AEq || !fBoundaryHisto_V0CEq ){
-        AliFatal(Form("No calibration for run %i exists at the moment!",lLoadThisCalibration));
-        return kFALSE; //return denial
-    }
     //AliInfo("Closing");
     
     if( lCalibFile_V0M ) lCalibFile_V0M->Close();
