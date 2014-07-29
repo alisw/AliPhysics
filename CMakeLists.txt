@@ -1,4 +1,4 @@
-# -*- mode: cmake -*-
+# -*- mode: cmake -*-/usr/share/applications/thunderbird.desktop 
 
 # Top level CMakeList.txt file for the AliRoot Build System
 #
@@ -187,7 +187,12 @@ set(LIBS ${ROOTCLIBS} ${ROOTPLIBS} ${SYSLIBS})
 
 # Configure ARVerion.h
 # ------------------------------
-#If the sources were taken from Git
+# If the sources were taken from Git
+# Sets 3 git variables
+#  - GIT_REFSPEC - complete name of the current reference
+#  - ALIROOT_BRANCH - name of the branch or tag extracted from the current reference
+#  - GIT_SHA1 - current hash in the long format
+#  - GIT_SHORT_SHA1 - current hash in the short format
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
  include(GetGitRevisionDescription)
  
@@ -216,7 +221,20 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
   endif()
 
   set(ALIROOT_BRANCH ${SHORT_BRANCH})
-  message(STATUS "Aliroot branch/tag: \"${ALIROOT_BRANCH}\" - Revision:  \"${GIT_SHA1}\" ")
+  
+  # generate the short version of the revision hash
+  execute_process(COMMAND git rev-parse --short ${GIT_SHA1} 
+                          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
+                          OUTPUT_STRIP_TRAILING_WHITESPACE 
+                          RESULT_VARIABLE res
+                          OUTPUT_VARIABLE GIT_SHORT_SHA1)
+
+  # if the rev-parse fails we set the short sha to the long initial one
+  if(NOT res EQUAL 0)
+    set(GIT_SHORT_SHA1 ${GIT_SHA1})
+  endif()
+  
+  message(STATUS "Aliroot branch/tag: \"${ALIROOT_BRANCH}\" - Revision:  \"${GIT_SHORT_SHA1}\" ")
 
  else()
   message("Git not installed. I can't tell you which revision you are using!")
