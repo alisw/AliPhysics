@@ -99,6 +99,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
     ::Error("AddTask", "This task requires an input event handler");
     return NULL;
   }
+
+  // Make sure the B field is enabled for track selection, some cuts need it
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
   
   kInputDataType = "AOD";
   if(!kData.Contains("delta"))
