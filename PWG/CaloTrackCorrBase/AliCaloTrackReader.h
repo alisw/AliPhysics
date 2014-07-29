@@ -30,8 +30,8 @@ class AliAODEvent;
 class AliMCEvent;
 class AliMixedEvent;
 class AliAODMCHeader;
-class AliESDtrackCuts;
 class AliCentrality;
+class AliESDtrackCuts;
 //class AliTriggerAnalysis;
 class AliEventplane;
 class AliVCluster;
@@ -417,43 +417,48 @@ public:
   // Track selection
   
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
-  void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit           ; }		
+  void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit           ; }
 
-  ULong_t          GetTrackFilterMask()              const { return fTrackFilterMask       ; }
-  void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit       ; }
-  
-  ULong_t          GetTrackFilterMaskComplementary() const { return fTrackFilterMaskComplementary       ; }
-  void             SetTrackFilterMaskComplementary(ULong_t bit) {   fTrackFilterMaskComplementary = bit ; }
-  
-  AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts         ; }
-  void             SetTrackCuts(AliESDtrackCuts * cuts)    ;
-
-  AliESDtrackCuts* GetTrackComplementaryCuts()       const { return fESDtrackComplementaryCuts ; }
-  void             SetTrackComplementaryCuts(AliESDtrackCuts * cuts)  ;
-
-  
-  void             SwitchOnConstrainTrackToVertex()        { fConstrainTrack     = kTRUE  ; } 
-  void             SwitchOffConstrainTrackToVertex()       { fConstrainTrack     = kFALSE ; }
-  
-  void             SwitchOnAODHybridTrackSelection()       { fSelectHybridTracks = kTRUE  ; } 
-  void             SwitchOffAODHybridTrackSelection()      { fSelectHybridTracks = kFALSE ; }      
-
-  void             SwitchOnAODPrimaryTrackSelection()      { fSelectPrimaryTracks = kTRUE  ; }
-  void             SwitchOffAODPrimaryTrackSelection()     { fSelectPrimaryTracks = kFALSE ; }
+  virtual Bool_t   SelectTrack(AliVTrack* , Double_t*)     { return kFALSE                ; } // See AOD/ESD reader
   
   void             SwitchOnTrackHitSPDSelection()          { fSelectSPDHitTracks = kTRUE  ; }
   void             SwitchOffTrackHitSPDSelection()         { fSelectSPDHitTracks = kFALSE ; }
-
-  void             SwitchOnAODTrackSharedClusterSelection() { fSelectFractionTPCSharedClusters = kTRUE  ; }
-  void             SwitchOffAODTrackSharedClusterSelection(){ fSelectFractionTPCSharedClusters = kFALSE ; }
-
-  void             SetTPCSharedClusterFraction(Float_t fr) { fCutTPCSharedClustersFraction = fr   ; }
-  Float_t          GetTPCSharedClusterFraction() const     { return fCutTPCSharedClustersFraction ; }
   
   Int_t            GetTrackMultiplicity()            const { return fTrackMult            ; }
   Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut      ; }
   void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta       ; }		
   
+  // virtual for AODReader
+  
+  virtual ULong_t  GetTrackFilterMask()               const { return 0 ; }
+  virtual void     SetTrackFilterMask(ULong_t)              { ; }
+  
+  virtual ULong_t  GetTrackFilterMaskComplementary()  const { return 0 ; }
+  virtual void     SetTrackFilterMaskComplementary(ULong_t) { ; }
+  
+  virtual void     SwitchOnAODHybridTrackSelection()        { ; }
+  virtual void     SwitchOffAODHybridTrackSelection()       { ; }
+  
+  virtual void     SwitchOnAODPrimaryTrackSelection()       { ; }
+  virtual void     SwitchOffAODPrimaryTrackSelection()      { ; }
+  
+  virtual void     SwitchOnAODTrackSharedClusterSelection() { ; }
+  virtual void     SwitchOffAODTrackSharedClusterSelection(){ ; }
+  
+  virtual void     SetTPCSharedClusterFraction(Float_t)     { ; }
+  virtual Float_t  GetTPCSharedClusterFraction() const      { return 0 ; }
+
+  // virtual for ESDReader
+  
+  virtual AliESDtrackCuts* GetTrackCuts()              const { return 0 ; }
+  virtual AliESDtrackCuts* GetTrackComplementaryCuts() const { return 0 ; }
+  
+  virtual void     SetTrackCuts(AliESDtrackCuts *)               { ; }
+  virtual void     SetTrackComplementaryCuts(AliESDtrackCuts *)  { ; }
+  
+  virtual void     SwitchOnConstrainTrackToVertex()  { ; }
+  virtual void     SwitchOffConstrainTrackToVertex() { ; }
+
   // Calorimeter specific and patches
   void             AnalyzeOnlyLED()                        { fAnaLED             = kTRUE  ; }
   void             AnalyzeOnlyPhysics()                    { fAnaLED             = kFALSE ; }
@@ -672,18 +677,10 @@ public:
   Bool_t           fSelectEmbeddedClusters;    // Use only simulated clusters that come from embedding.
   
   ULong_t          fTrackStatus        ;       // Track selection bit, select tracks refitted in TPC, ITS ...
-  ULong_t          fTrackFilterMask    ;       // Track selection bit, for AODs (any difference with track status?)
-  ULong_t          fTrackFilterMaskComplementary;       // Complementary Track selection bit, for AODs in case hybrid option selected
-  AliESDtrackCuts *fESDtrackCuts       ;       // Track cut
-  AliESDtrackCuts *fESDtrackComplementaryCuts; // Track cut, complementary cuts for hybrids
-  Bool_t           fConstrainTrack     ;       // Constrain Track to vertex
-  Bool_t           fSelectHybridTracks ;       // Select CTS tracks of type hybrid (only for AODs)
-  Bool_t           fSelectPrimaryTracks ;      // Select CTS tracks of type hybrid (only for AODs)
   Bool_t           fSelectSPDHitTracks ;       // Ensure that track hits SPD layers
-  Bool_t           fSelectFractionTPCSharedClusters; // Accept only TPC tracks with over a given fraction of shared clusters
-  Float_t          fCutTPCSharedClustersFraction;    // Fraction of TPC shared clusters to be accepted.
   Int_t            fTrackMult          ;       // Track multiplicity
   Float_t          fTrackMultEtaCut    ;       // Track multiplicity eta cut
+  
   Bool_t           fReadStack          ;       // Access kine information from stack
   Bool_t	         fReadAODMCParticles ;       // Access kine information from filtered AOD MC particles
 	
