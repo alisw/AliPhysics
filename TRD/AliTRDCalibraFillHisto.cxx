@@ -1691,8 +1691,10 @@ Float_t AliTRDCalibraFillHisto::StoreInfoCHPHtrack(const AliTRDcluster *cl,const
 
   // Fill the fPHPlace and value
   if (fPH2dOn) {
-    fPHPlace[time] = group[1];
-    fPHValue[time] = charge;
+    if (time>=0 && time<fTimeMax) {
+      fPHPlace[time] = group[1];
+      fPHValue[time] = charge;
+    }
   }
 
   return correction;
