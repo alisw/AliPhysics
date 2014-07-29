@@ -263,6 +263,29 @@ int AliHLTGlobalFlatEsdTestComponent::DoEvent( const AliHLTComponentEventData& /
   size_t maxOutputSize = size;
   size = 0;
 
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
+    //fBenchmark.AddInput(pBlock->fSize);
+    cout<<"Found ESD in esd test component !!!"<<endl;
+    const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(iter);
+    if( esd ){
+      //esd->GetStdContent();
+      cout<<"N ESD tracks: "<<esd->GetNumberOfTracks()<<endl;
+    } else {
+      cout<<"ESD pointer is NULL "<<endl;
+    }
+  }
+
+   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {     
+     //fBenchmark.AddInput(pBlock->fSize);
+    cout<<"Found ESD friend in esd test component !!!"<<endl;
+    const AliESDfriend *esdFriend = dynamic_cast<const AliESDfriend*>(iter);
+    if( esdFriend ){
+      cout<<"N friend tracks: "<<esdFriend->GetNumberOfTracks()<<endl;
+    } else {
+      cout<<"ESD friend pointer is NULL "<<endl;
+    }
+  }
+
   fBenchmark.Stop(0);
   HLTWarning( fBenchmark.GetStatistics() );
 
