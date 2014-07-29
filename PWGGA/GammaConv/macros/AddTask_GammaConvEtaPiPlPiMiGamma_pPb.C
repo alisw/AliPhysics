@@ -8,8 +8,6 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 										TString cutnumberAODBranch = "0000000060084001001500000"
 										) {
 
-	////////////////////CURRENTLY NOT WORKING ///////////////////////////////
-
 	// ================= Load Librariers =================================
 	gSystem->Load("libCore.so");  
 	gSystem->Load("libTree.so");

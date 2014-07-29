@@ -450,6 +450,61 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
 }
 
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift){
+
+	// Returns true for all pions within acceptance cuts for decay into 2 photons
+	// If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+	if( !fMCStack )return kFALSE;
+
+	if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223) ) return kFALSE;
+	
+	if( fMCMother->R()>fMaxR ) return kFALSE; // cuts on distance from collision point
+
+	Double_t rapidity = 10.;
+
+	if( fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0 ){
+		rapidity=8.-fRapidityShift;
+	}
+	else{
+		rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())))-fRapidityShift;
+	}
+
+	// Rapidity Cut
+	if( abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+	// Select only -> pi+ pi- pi0
+	if( fMCMother->GetNDaughters() != 3 )return kFALSE;
+
+	TParticle *posPion = 0x0;
+	TParticle *negPion = 0x0;
+	TParticle *neutPion = 0x0;
+
+	for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+
+		TParticle* temp = (TParticle*)fMCStack->Particle( index );
+		switch( temp->GetPdgCode() ) {
+		case 211:
+			posPion      =  temp;
+			labelPosPion = index;
+			break;
+		case -211:
+			negPion      =  temp;
+			labelNegPion = index;
+			break;
+		case 111:
+			neutPion         =  temp;
+			labelNeutPion    = index;
+			break;
+		}
+	}
+
+	if( posPion && negPion && neutPion ) return kTRUE;
+	return kFALSE;
+}
+
+
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
    // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
    // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts

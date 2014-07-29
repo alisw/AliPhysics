@@ -1863,12 +1863,14 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionP
 	// pi0 photon
 	//Bool_t bpi0 = 0;
 	Int_t imother = Photon->GetMother(0);
-	AliMCParticle *McMother = static_cast<AliMCParticle*>(fMCEvent->GetTrack(imother));
-	if(McMother->PdgCode() == 111){
-		fHistoTrueConvPi0GammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+	if (imother > -1){
+		AliMCParticle *McMother = static_cast<AliMCParticle*>(fMCEvent->GetTrack(imother));
+		if(McMother->PdgCode() == 111){
+			fHistoTrueConvPi0GammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+		}
 	}
-  
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 {
