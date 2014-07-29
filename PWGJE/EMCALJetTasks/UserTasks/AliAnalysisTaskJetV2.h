@@ -17,6 +17,7 @@
 #include <AliJetContainer.h>
 #include <AliParticleContainer.h>
 
+class TFile;
 class TF1;
 class THF1;
 class THF2;
@@ -48,11 +49,11 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         virtual Bool_t          Run();
         TH1F*                   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c = -1, Bool_t append = kTRUE);
         TH2F*                   BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c = -1, Bool_t append = kTRUE);
-        /* inline */    Double_t PhaseShift(Double_t x) const {  
+        /* inline */    static Double_t PhaseShift(Double_t x) {  
             while (x>=TMath::TwoPi())x-=TMath::TwoPi();
             while (x<0.)x+=TMath::TwoPi();
             return x; }
-        /* inline */    Double_t PhaseShift(Double_t x, Double_t n) const {
+        /* inline */    static Double_t PhaseShift(Double_t x, Double_t n) {
             x = PhaseShift(x);
             if(TMath::Nint(n)==2) while (x>TMath::Pi()) x-=TMath::Pi();
             if(TMath::Nint(n)==3) {
@@ -60,13 +61,13 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
                 if(x>TMath::TwoPi()/n) x = TMath::TwoPi()-(x+TMath::TwoPi()/n);
             }
             return x; }
-        /* inline */    Double_t ChiSquarePDF(Int_t ndf, Double_t x) const {
+        /* inline */    static Double_t ChiSquarePDF(Int_t ndf, Double_t x) {
             Double_t n(ndf/2.), denom(TMath::Power(2, n)*TMath::Gamma(n));
             if (denom!=0)  return ((1./denom)*TMath::Power(x, n-1)*TMath::Exp(-x/2.)); 
             return -999; }
         // note that the cdf of the chisquare distribution is the normalized lower incomplete gamma function
-        /* inline */    Double_t ChiSquareCDF(Int_t ndf, Double_t x) const { return TMath::Gamma(ndf/2., x/2.); }
-        /* inline */    Double_t ChiSquare(TH1& histo, TF1* func) const {
+        /* inline */    static Double_t ChiSquareCDF(Int_t ndf, Double_t x) { return TMath::Gamma(ndf/2., x/2.); }
+        /* inline */    static Double_t ChiSquare(TH1& histo, TF1* func) {
             // evaluate the chi2 using a poissonian error estimate on bins
             Double_t chi2(0.);
             for(Int_t i(0); i < histo.GetXaxis()->GetNbins(); i++) {
@@ -75,7 +76,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
             }
            return chi2;
         }
-        /* inline*/ Double_t KolmogorovTest(TH1F& histo, TF1* func) const {
+        /* inline */ Double_t KolmogorovTest(TH1F& histo, TF1* func) const {
             // return the probability from a Kolmogorov test
             return .5;
             TH1F test(histo);       // stack copy of test statistic
@@ -83,7 +84,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
             if(fFitGoodnessTest == kKolmogorovTOY) return histo.TH1::KolmogorovTest((&test), "X");
             return histo.TH1::KolmogorovTest((&test));
         }
- 
+
         // setters - analysis setup
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetRunToyMC(Bool_t t)                           {fRunToyMC = t; }
@@ -123,9 +124,23 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
         void                    SetRebinSwapHistoOnTheFly(Bool_t r)             {fRebinSwapHistoOnTheFly = r; }
         void                    SetSaveThisPercentageOfFits(Float_t p)          {fPercentageOfFits = p; }
-        void                    SetUseV0EventPlaneFromHeader(Bool_t h)          {fUseV0EventPlaneFromHeader = h;}
-//        void                    SetExplicitOutlierCutForYear(Int_t y)           {fExplicitOutlierCut = y;}
-        // getters - these are used as well by AliAnalyisTaskJetFlow, so be careful when changing them
+        // setters specific to the vzero calibration for 10h data        
+        void                    SetVZEROApol(Int_t ring, Float_t f)             {fVZEROApol[ring]=f;}
+        void                    SetVZEROCpol(Int_t ring, Float_t f)             {fVZEROCpol[ring]=f;}
+        void                    SetVZEROgainEqualizationPerRing(Bool_t s)       {fVZEROgainEqualizationPerRing = s;}
+        void                    SetUseVZERORing(Int_t i, Bool_t u) {
+            // exclude vzero rings: 0 through 7 can be excluded by calling this setter multiple times
+            // 0 corresponds to segment ID 0 through 7, etc
+            fUseVZERORing[i] = u;
+            fVZEROgainEqualizationPerRing = kTRUE;       // must be true for this option
+        }
+
+        void                    SetChi2VZEROA(TArrayD* a)                       { fChi2A = a;}
+        void                    SetChi2VZEROC(TArrayD* a)                       { fChi2C = a;}
+        void                    SetChi3VZEROA(TArrayD* a)                       { fChi3A = a;}
+        void                    SetChi3VZEROC(TArrayD* a)                       { fChi3C = a;}
+
+        // getters 
         TString                 GetJetsName() const                             {return GetJetContainer()->GetArrayName(); }
         TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
         TString                 GetLocalRhoName() const                         {return fLocalRhoName; }
@@ -152,16 +167,19 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
             return leadingJet;
         }
         void                    ExecMe()                                {ExecOnce();}
-        AliAnalysisTaskJetV2* ReturnMe()                                {return this;}
+        AliAnalysisTaskJetV2*   ReturnMe()                              {return this;}
         // local cuts
         void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)          {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}
         void                    SetSemiGoodJetMinMaxPhi(Double_t a, Double_t b)         {fSemiGoodJetMinPhi = a; fSemiGoodJetMaxPhi = b;}
         void                    SetSemiGoodTrackMinMaxPhi(Double_t a, Double_t b)       {fSemiGoodTrackMinPhi = a; fSemiGoodTrackMaxPhi = b;}
         // numerical evaluations
+        static Double_t         CalculateEventPlaneChi(Double_t res);
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
-        void                    CalculateEventPlaneTPC(Double_t* tpc);
         void                    CalculateEventPlaneCombinedVZERO(Double_t* comb) const;
+        void                    CalculateEventPlaneTPC(Double_t* tpc);
         void                    CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
+        void                    CalculateQvectorVZERO(Double_t Qa2[2], Double_t Qc2[2], Double_t Qa3[2], Double_t Qc3[2]) const;
+        void                    CalculateQvectorCombinedVZERO(Double_t Q2[2], Double_t Q3[2]) const;
         void                    CalculateRandomCone(
                 Float_t &pt, 
                 Float_t &eta, 
@@ -172,7 +190,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
                 ) const;
         Double_t                CalculateQC2(Int_t harm);
         Double_t                CalculateQC4(Int_t harm);
-        // helper calculations for the q-cumulant analysis, also used by AliAnalyisTaskJetFlow
+        // helper calculations for the q-cumulant analysis
         void                    QCnQnk(Int_t n, Int_t k, Double_t &reQ, Double_t &imQ);
         void                    QCnDiffentialFlowVectors(
             TClonesArray* pois, TArrayD* ptBins, Bool_t vpart, Double_t* repn, Double_t* impn, 
@@ -184,7 +202,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Bool_t                  QCnRecovery(Double_t psi2, Double_t psi3);
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
-        // event and track selection, also used by AliAnalyisTaskJetFlow
+        // event and track selection
         /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { return AcceptTrack(track, 0); }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* jet)             { return AcceptJet(jet, 0); }
         /* inline */    Bool_t PassesCuts(AliVCluster* clus) const      { return AcceptCluster(clus, 0); }
@@ -194,7 +212,6 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
             return (jet && jet->Pt() > 1. && jet->Eta() > minEta && jet->Eta() < maxEta && jet->Phi() > minPhi && jet->Phi() < maxPhi && jet->Area() > .557*GetJetRadius()*GetJetRadius()*TMath::Pi());
         }
         Bool_t                  PassesCuts(AliVEvent* event);
-        /*Bool_t                  PassesCuts(Int_t year);*/
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
         void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
@@ -214,6 +231,8 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH1F*                   CorrectForResolutionDiff(TH1F* v, detectorType detector, TArrayD* cen, Int_t c, Int_t h = 2);
         TH1F*                   CorrectForResolutionInt(TH1F* v, detectorType detector, TArrayD* cen, Int_t h = 2);
         TH1F*                   GetDifferentialQC(TProfile* refCumulants, TProfile* diffCumlants, TArrayD* ptBins, Int_t h);
+        void                    ReadVZEROCalibration2010h();
+        Int_t                   GetVZEROCentralityBin() const;
     private:
         // analysis flags and settings
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
@@ -293,8 +312,6 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Float_t                 fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
         Bool_t                  fRebinSwapHistoOnTheFly;       // rebin swap histo on the fly
         Float_t                 fPercentageOfFits;      // save this percentage of fits
-        Bool_t                  fUseV0EventPlaneFromHeader;    // use the vzero event plane from the header
-//        Int_t                   fExplicitOutlierCut;    // cut on correlation of tpc and global multiplicity
         // transient object pointers
         TList*                  fOutputList;            //! output list
         TList*                  fOutputListGood;        //! output list for local analysis
@@ -361,11 +378,27 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         // in plane, out of plane jet spectra
         TH2F*                   fHistJetPsi2Pt[10];             //! event plane dependence of jet pt
         TH2F*                   fHistJetPsi2PtRho0[10];         //! event plane dependence of jet pt vs rho_0
+        // vzero event plane calibration cache for 10h data
+        Float_t                 fMeanQ[9][2][2];                //! recentering
+        Float_t                 fWidthQ[9][2][2];               //! recentering
+        Float_t                 fMeanQv3[9][2][2];              //! recentering
+        Float_t                 fWidthQv3[9][2][2];             //! recentering
+        TH1*                    fVZEROgainEqualization;         //! equalization histo
+        Bool_t                  fVZEROgainEqualizationPerRing;  // per ring vzero gain calibration
+        Float_t                 fVZEROApol[4];                  //! calibration info per ring
+        Float_t                 fVZEROCpol[4];                  //! calibration info per ring
+        Bool_t                  fUseVZERORing[8];               // kTRUE means the ring is included
+        TArrayD*                fChi2A;                         // chi vs cent for vzero A ep_2
+        TArrayD*                fChi2C;                         // chi vs cent for vzero C ep_2
+        TArrayD*                fChi3A;                         // chi vs cent for vzero A ep_3
+        TArrayD*                fChi3C;                         // chi vs cent for vzero C ep_3
+        TFile*                  fOADB;                          //! fOADB
+
 
         AliAnalysisTaskJetV2(const AliAnalysisTaskJetV2&);                  // not implemented
         AliAnalysisTaskJetV2& operator=(const AliAnalysisTaskJetV2&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetV2, 2);
+        ClassDef(AliAnalysisTaskJetV2, 3);
 };
 
 #endif
