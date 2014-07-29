@@ -74,7 +74,8 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( EINCLUDE ANALYSIS JETAN CORRFW PWGJE PWG/Tools PWG/FLOW/Tasks PWG/TRD PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase STEER/CDB STEER/STEER)
 if(FASTJET_FOUND)
-  set ( EINCLUDE ${FASTJET_INCLUDE_DIR} PWGCF/Correlations PWGCF/Correlations/DPhi ${EINCLUDE})
+  set ( EDEFINE -isystem${FASTJET_INCLUDE_DIR})
+  set ( EINCLUDE PWGCF/Correlations PWGCF/Correlations/DPhi ${EINCLUDE})
   set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h  )
 endif(FASTJET_FOUND)
 
