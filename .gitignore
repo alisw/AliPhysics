@@ -43,6 +43,7 @@ G__*.h
 /include
 /tmp
 /build
+/DA
 
 # /test/
 /test/*/*.root
