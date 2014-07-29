@@ -48,8 +48,9 @@ class AliCaloTrackReader : public TObject {
 
 public: 
   
-  AliCaloTrackReader() ;          // ctor
-  virtual ~AliCaloTrackReader() ; // virtual dtor
+                  AliCaloTrackReader() ; // ctor
+  virtual        ~AliCaloTrackReader() ; // virtual dtor
+  void            DeletePointers();
   
   //--------------------------------
   // General methods

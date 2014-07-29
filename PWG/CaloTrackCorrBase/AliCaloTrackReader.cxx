@@ -138,11 +138,17 @@ fAcceptEventsWithBit(0),     fRejectEventsWithBit(0), fRejectEMCalTriggerEventsW
   //Initialize parameters
   InitParameters();
 }
-
 //_______________________________________
 AliCaloTrackReader::~AliCaloTrackReader()
 {
-  //Dtor
+  // Dtor
+  DeletePointers();
+}
+
+//_______________________________________
+void AliCaloTrackReader::DeletePointers()
+{
+  // Dtor
   
   delete fFiducialCut ;
 	
@@ -666,47 +672,24 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
   }
 }
 
-//____________________________________________________________________
+//_________________________________________________________
 TClonesArray* AliCaloTrackReader::GetAODMCParticles() const
 {
-  //Return list of particles in AOD. Do it for the corresponding input event.
+  //Return list of particles in AOD, implemented in AliCaloTrackAODReader.
   
-  TClonesArray * rv = NULL ;
-  if(fDataType == kAOD)
-  {
-    //Normal input AOD
-    AliAODEvent * evt = dynamic_cast<AliAODEvent*> (fInputEvent) ;
-    if(evt)
-      rv = (TClonesArray*)evt->FindListObject("mcparticles");
-    else
-      printf("AliCaloTrackReader::GetAODMCParticles() - Null AOD event \n");
-  }
-  else
-  {
-    printf("AliCaloTrackReader::GetAODMCParticles() - Input are not AODs\n");
-  }
+  printf("AliCaloTrackReader::GetAODMCParticles() - Input are not AODs\n");
   
-  return rv ;
+  return NULL ;
 }
 
 //________________________________________________________
 AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader() const
 {
-  //Return MC header in AOD. Do it for the corresponding input event.
+  //Return MC header in AOD, implemented in AliCaloTrackAODReader.
   
-  AliAODMCHeader *mch = NULL;
+  printf("AliCaloTrackReader::GetAODMCHeader() - Input are not AODs\n");
   
-  if(fDataType == kAOD)
-  {
-    AliAODEvent * aod = dynamic_cast<AliAODEvent*> (fInputEvent);
-    if(aod) mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
-  }
-  else
-  {
-    printf("AliCaloTrackReader::GetAODMCHeader() - Input are not AODs\n");
-  }
-  
-  return mch;
+  return NULL ;
 }
 
 //___________________________________________________________
@@ -1381,13 +1364,11 @@ void AliCaloTrackReader::FillVertexArray()
       if (fMixedEvent->GetVertexOfEvent(iev))
         fMixedEvent->GetVertexOfEvent(iev)->GetXYZ(fVertex[iev]);
       else
-      { // no vertex found !!!!
-        AliWarning("No vertex found");
-      }
+         AliWarning("No vertex found");
       
       if(fDebug > 1)
-        printf("AliCaloTrackReader::FillVertexArray() - Multi Event %d Vertex : %f,%f,%f\n",iev,fVertex[iev][0],fVertex[iev][1],fVertex[iev][2]);
-      
+        printf("AliCaloTrackReader::FillVertexArray() - Multi Event %d Vertex : %f,%f,%f\n",
+               iev,fVertex[iev][0],fVertex[iev][1],fVertex[iev][2]);
     }
   }
   
