@@ -40,8 +40,6 @@
 #include "AliVTrack.h"
 #include "AliVParticle.h"
 #include "AliMixedEvent.h"
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
 //#include "AliTriggerAnalysis.h"
 #include "AliESDVZERO.h"
 #include "AliVCaloCells.h"
@@ -88,10 +86,7 @@ fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0),
 fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
 fSelectEmbeddedClusters(kFALSE),
-fTrackStatus(0),             fTrackFilterMask(0),             fTrackFilterMaskComplementary(0),
-fESDtrackCuts(0),            fESDtrackComplementaryCuts(0),   fConstrainTrack(kFALSE),
-fSelectHybridTracks(0),      fSelectPrimaryTracks(0),
-fSelectSPDHitTracks(0),      fSelectFractionTPCSharedClusters(0), fCutTPCSharedClustersFraction(0),
+fTrackStatus(0),             fSelectSPDHitTracks(0),
 fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),
@@ -188,8 +183,6 @@ AliCaloTrackReader::~AliCaloTrackReader()
     delete [] fVertex ;
   }
   
-  delete fESDtrackCuts;
-  delete fESDtrackComplementaryCuts;
   //delete fTriggerAnalysis;
   
   if(fNonStandardJets)
@@ -767,20 +760,14 @@ Int_t AliCaloTrackReader::GetVertexBC(const AliVVertex * vtx)
 //_____________________________
 void AliCaloTrackReader::Init()
 {
-  //Init reader. Method to be called in AliAnaPartCorrMaker
-  
-  //printf(" AliCaloTrackReader::Init() %p \n",gGeoManager);
-  
+  //Init reader. Method to be called in AliAnaCaloTrackCorrMaker
+    
   if(fReadStack && fReadAODMCParticles)
   {
     printf("AliCaloTrackReader::Init() - Cannot access stack and mcparticles at the same time, change them \n");
     fReadStack          = kFALSE;
     fReadAODMCParticles = kFALSE;
   }
-
-  if(!fESDtrackCuts)
-    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks
-	
 }
 
 //_______________________________________
@@ -823,16 +810,6 @@ void AliCaloTrackReader::InitParameters()
   //fTrackStatus=AliESDtrack::kTPCrefit;
   //fTrackStatus|=AliESDtrack::kITSrefit;
   fTrackStatus     = 0;
-  fTrackFilterMask = 128; //For AODs, but what is the difference between fTrackStatus and fTrackFilterMask?
-  fTrackFilterMaskComplementary = 0; // in case of hybrid tracks, without using the standard method
-  
-  fSelectFractionTPCSharedClusters = kTRUE;
-  fCutTPCSharedClustersFraction = 0.4,
-  
-  fESDtrackCuts = 0;
-  fESDtrackComplementaryCuts = 0;
-  
-  fConstrainTrack = kFALSE ; // constrain tracks to vertex
   
   fV0ADC[0] = 0;   fV0ADC[1] = 0;
   fV0Mul[0] = 0;   fV0Mul[1] = 0;
@@ -1490,114 +1467,8 @@ void AliCaloTrackReader::FillInputCTS()
     
     nstatus++;
     
-    Float_t dcaTPC =-999;
-    
-    if     (fDataType==kESD)
-    {
-      AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (track);
-      
-      if(esdTrack)
-      {
-        if(fESDtrackCuts->AcceptTrack(esdTrack))
-        {
-          track->GetPxPyPz(pTrack) ;
-          
-          if(fConstrainTrack)
-          {
-            if(esdTrack->GetConstrainedParam())
-            {
-              const AliExternalTrackParam* constrainParam = esdTrack->GetConstrainedParam();
-              esdTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
-              esdTrack->GetConstrainedPxPyPz(pTrack);
-            }
-            else continue;
-            
-          } // use constrained tracks
-          
-          if(fSelectSPDHitTracks)
-          {//Not much sense to use with TPC only or Hybrid tracks
-            if(!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1)) continue ;
-          }
-        }
-        // Complementary track to global : Hybrids (make sure that the previous selection is for Global)
-        else  if(fESDtrackComplementaryCuts && fESDtrackComplementaryCuts->AcceptTrack(esdTrack))
-        {
-          // constrain the track
-          if(esdTrack->GetConstrainedParam())
-          {
-            esdTrack->Set(esdTrack->GetConstrainedParam()->GetX(),esdTrack->GetConstrainedParam()->GetAlpha(),esdTrack->GetConstrainedParam()->GetParameter(),esdTrack->GetConstrainedParam()->GetCovariance());
-            
-            track->GetPxPyPz(pTrack) ;
-            
-          }
-          else continue;
-        }
-        else continue;
-      }
-    } // ESD
-    else if(fDataType==kAOD)
-    {
-      AliAODTrack *aodtrack = dynamic_cast <AliAODTrack*>(track);
-      
-      if(aodtrack)
-      {
-        if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS():AOD track type: %d (primary %d), hybrid? %d \n",
-                               aodtrack->GetType(),AliAODTrack::kPrimary,
-                               aodtrack->IsHybridGlobalConstrainedGlobal());
-        
-        if (fSelectHybridTracks && fTrackFilterMaskComplementary == 0)
-        {
-          if (!aodtrack->IsHybridGlobalConstrainedGlobal())       continue ;
-        }
-        else
-        {
-          Bool_t accept = aodtrack->TestFilterBit(fTrackFilterMask);
-          
-          if(!fSelectHybridTracks && !accept) continue ;
-          
-          if(fSelectHybridTracks)
-          {
-            Bool_t acceptcomplement = aodtrack->TestFilterBit(fTrackFilterMaskComplementary);
-            if (!accept && !acceptcomplement) continue ;
-          }
-        }
-        
-        if(fSelectSPDHitTracks)
-        {//Not much sense to use with TPC only or Hybrid tracks
-          if(!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1)) continue ;
-        }
-        
-        if ( fSelectFractionTPCSharedClusters )
-        {
-          Double_t frac = Double_t(aodtrack->GetTPCnclsS()) / Double_t(aodtrack->GetTPCncls());
-          if (frac > fCutTPCSharedClustersFraction)
-          {
-             if (fDebug > 2 )printf("\t Reject track, shared cluster fraction %f > %f\n",frac, fCutTPCSharedClustersFraction);
-            continue ;
-          }
-        }
-        
-        if ( fSelectPrimaryTracks )
-        {
-          if ( aodtrack->GetType()!= AliAODTrack::kPrimary )
-          {
-             if (fDebug > 2 ) printf("\t Remove not primary track\n");
-            continue ;
-          }
-        }
-
-        if (fDebug > 2 ) printf("\t accepted track! \n");
-        
-        //In case of AODs, TPC tracks cannot be propagated back to primary vertex,
-        // info stored here
-        dcaTPC = aodtrack->DCA();
-        
-        track->GetPxPyPz(pTrack) ;
-        
-      } // aod track exists
-      else continue ;
-      
-    } // AOD
+    // Select the tracks depending on cuts of AOD or ESD
+    if(!SelectTrack(track, pTrack)) continue ;
     
     // TOF cuts
     Bool_t okTOF  = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
@@ -1635,7 +1506,11 @@ void AliCaloTrackReader::FillInputCTS()
     // DCA cuts
     
     if(fUseTrackDCACut)
-    {
+    {      
+      Float_t dcaTPC =-999;
+      //In case of AODs, TPC tracks cannot be propagated back to primary vertex,
+      if( fDataType == kAOD ) dcaTPC = ((AliAODTrack*) track)->DCA();
+
       //normal way to get the dca, cut on dca_xy
       if(dcaTPC==-999)
       {
@@ -2703,8 +2578,8 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n",     fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n",     fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
-  printf("AODs Track filter mask  =  %d or hybrid %d (if filter bit comp %d), select : SPD hit %d, primary %d\n",
-         (Int_t) fTrackFilterMask, fSelectHybridTracks, (Int_t) fTrackFilterMaskComplementary, fSelectSPDHitTracks,fSelectPrimaryTracks) ;
+  //printf("AODs Track filter mask  =  %d or hybrid %d (if filter bit comp %d), select : SPD hit %d, primary %d\n",
+  //       (Int_t) fTrackFilterMask, fSelectHybridTracks, (Int_t) fTrackFilterMaskComplementary, fSelectSPDHitTracks,fSelectPrimaryTracks) ;
   printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d, E linearity = %d\n",    fRecalculateClusters, fCorrectELinearity) ;
@@ -3020,28 +2895,6 @@ void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
     fVertex[i][1] = 0.0 ;
     fVertex[i][2] = 0.0 ;
   }
-}
-
-//____________________________________________________________
-void  AliCaloTrackReader::SetTrackCuts(AliESDtrackCuts * cuts)
-{
-  // Set Track cuts
-  
-  if(fESDtrackCuts) delete fESDtrackCuts ;
-  
-  fESDtrackCuts = cuts ;
-  
-}
-
-//_________________________________________________________________________
-void  AliCaloTrackReader::SetTrackComplementaryCuts(AliESDtrackCuts * cuts)
-{
-  // Set Track cuts for complementary tracks (hybrids)
-  
-  if(fESDtrackComplementaryCuts) delete fESDtrackComplementaryCuts ;
-  
-  fESDtrackComplementaryCuts = cuts ;
-  
 }
 
 
