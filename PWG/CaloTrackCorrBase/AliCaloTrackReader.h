@@ -461,9 +461,9 @@ public:
   virtual Double_t* GetVertex(Int_t evtIndex)        const { return fVertex[evtIndex]            ; }
   virtual void      GetVertex(Double_t vertex[3],    const Int_t evtIndex) const ;
   virtual void      FillVertexArray();
-  virtual Bool_t    CheckForPrimaryVertex();
-  virtual Float_t   GetZvertexCut()                  const { return fZvtxCut                     ; } //cut on vertex position  
-  virtual void      SetZvertexCut(Float_t zcut=10.)        { fZvtxCut=zcut                       ; } //cut on vertex position
+  virtual Bool_t    CheckForPrimaryVertex()          const { return kTRUE                        ; } // algorithm in ESD/AOD Readers
+  virtual Float_t   GetZvertexCut()                  const { return fZvtxCut                     ; } // cut on vertex position
+  virtual void      SetZvertexCut(Float_t zcut=10.)        { fZvtxCut=zcut                       ; } // cut on vertex position
 
   //--------------------------
   // Centrality / Event Plane

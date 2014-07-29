@@ -57,6 +57,40 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
   
 }
 
+//_________________________________________________________
+Bool_t AliCaloTrackAODReader::CheckForPrimaryVertex() const
+{
+  //Check if the vertex was well reconstructed, copy of conversion group
+  
+  AliAODEvent * aodevent = dynamic_cast<AliAODEvent*>(fInputEvent);
+  if(!aodevent) return kFALSE;
+  
+  if (aodevent->GetPrimaryVertex() != NULL)
+  {
+    if(aodevent->GetPrimaryVertex()->GetNContributors() > 0)
+    {
+      return kTRUE;
+    }
+  }
+  
+  if(aodevent->GetPrimaryVertexSPD() != NULL)
+  {
+    if(aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+    {
+      return kTRUE;
+    }
+    else
+    {
+      AliWarning(Form("Number of contributors from bad vertex type:: %s",
+                      aodevent->GetPrimaryVertex()->GetName()));
+      return kFALSE;
+    }
+  }
+  
+  return kFALSE;
+  
+}
+
 //_____________________________________________________________________________
 Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
 {

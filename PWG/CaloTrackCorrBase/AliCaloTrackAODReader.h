@@ -24,6 +24,8 @@ public:
   
   virtual    ~AliCaloTrackAODReader() {;} // virtual dtor
   
+  Bool_t      CheckForPrimaryVertex() const ;
+  
   AliVEvent * GetOriginalInputEvent() const { return fOrgInputEvent; }
   
   Bool_t      SelectTrack(AliVTrack* track, Double_t* pTrack);
