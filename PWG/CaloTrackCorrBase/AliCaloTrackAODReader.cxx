@@ -91,6 +91,33 @@ Bool_t AliCaloTrackAODReader::CheckForPrimaryVertex() const
   
 }
 
+//____________________________________________________________
+TClonesArray* AliCaloTrackAODReader::GetAODMCParticles() const
+{
+  //Return list of particles in AOD. Do it for the corresponding input event.
+  
+  TClonesArray * particles = NULL ;
+
+  AliAODEvent * aod = dynamic_cast<AliAODEvent*> (fInputEvent) ;
+  if(aod) particles = (TClonesArray*) aod->FindListObject("mcparticles");
+  
+  return particles ;
+}
+
+//___________________________________________________________
+AliAODMCHeader* AliCaloTrackAODReader::GetAODMCHeader() const
+{
+  //Return MC header in AOD. Do it for the corresponding input event.
+  
+  AliAODMCHeader *mch = NULL;
+  
+  AliAODEvent * aod = dynamic_cast<AliAODEvent*> (fInputEvent);
+  if(aod) mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
+  
+  return mch;
+}
+
+
 //_____________________________________________________________________________
 Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
 {

@@ -26,6 +26,9 @@ public:
   
   Bool_t      CheckForPrimaryVertex() const ;
   
+  TClonesArray   * GetAODMCParticles() const ;
+  AliAODMCHeader * GetAODMCHeader   () const ;
+  
   AliVEvent * GetOriginalInputEvent() const { return fOrgInputEvent; }
   
   Bool_t      SelectTrack(AliVTrack* track, Double_t* pTrack);

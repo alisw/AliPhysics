@@ -56,7 +56,8 @@ AliCaloTrackESDReader::~AliCaloTrackESDReader()
 {
   //Dtor
   
-  AliCaloTrackReader::~AliCaloTrackReader();
+  //AliCaloTrackReader::~AliCaloTrackReader();
+  AliCaloTrackReader::DeletePointers();
   
   delete fESDtrackCuts;
   delete fESDtrackComplementaryCuts;
