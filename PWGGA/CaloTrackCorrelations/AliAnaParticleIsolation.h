@@ -82,6 +82,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      GetPtThresholds(Int_t i)        const { return fPtThresholds[i]   ; }
   Float_t      GetSumPtThresholds(Int_t i)     const { return fSumPtThresholds[i]; }
   Float_t      GetPtFractions(Int_t i)         const { return fPtFractions[i]    ; }
+  Int_t        GetNumberOfSMCoveredByTRD()     const { return fTRDSMCovered      ; }
   
   void         SetCalorimeter(TString & det)         { fCalorimeter     = det    ; }
   void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
@@ -90,8 +91,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetPtThresholds(Int_t i, Float_t pt)  { fPtThresholds[i] = pt     ; }
   void         SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt     ; } 
   void 	       SetSumPtThresholds(Int_t i, Float_t pt){ fSumPtThresholds[i] = pt ; }
-  
-  
+  void         SetNumberOfSMCoveredByTRD(Int_t n)    { fTRDSMCovered    = n      ; }
+
   Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
   void         SwitchOnReIsolation()                 { fReMakeIC      = kTRUE    ; }
   void         SwitchOffReIsolation()                { fReMakeIC      = kFALSE   ; }
@@ -109,6 +110,21 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE    ; }
   void         SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE   ; }
 
+  void         SwitchOnUEBandSubtractionHistoFill()  { fFillUEBandSubtractHistograms   = kTRUE    ; }
+  void         SwitchOffUEBandSubtractionHistoFill() { fFillUEBandSubtractHistograms   = kFALSE   ; }
+
+  void         SwitchOnCellHistoFill()               { fFillCellHistograms = kTRUE ; }
+  void         SwitchOffCellHistoFill()              { fFillCellHistograms = kFALSE; }
+
+  void         SwitchOnHighMultiplicityHistoFill()   { fFillHighMultHistograms = kTRUE ; }
+  void         SwitchOffHighMultiplicityHistoFill()  { fFillHighMultHistograms = kFALSE; }
+
+  void         SwitchOnNLMHistoFill()                { fFillNLMHistograms = kTRUE ; }
+  void         SwitchOffNLMHistoFill()               { fFillNLMHistograms = kFALSE; }
+  
+  void         SwitchOnDecayTaggedHistoFill()        { fFillTaggedDecayHistograms = kTRUE ; }
+  void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
+  
   //Histogrammes setters and getters
   
   void         SetHistoPtSumRangeAndNBins(Float_t min, Float_t max, Int_t n)       {
@@ -137,6 +153,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillPileUpHistograms;                 // Fill pile-up related histograms
   Bool_t   fFillTMHisto;                          // Fill track matching plots
   Bool_t   fFillSSHisto;                          // Fill Shower shape plots
+  Bool_t   fFillUEBandSubtractHistograms;         // Fill histograms working on the UE subtraction
+  Bool_t   fFillCellHistograms;                   // Fill cell histograms
+  Bool_t   fFillHighMultHistograms;               // Fill high multiplicity histograms
+  Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
+  Bool_t   fFillNLMHistograms;                    // Fill NLM histograms
+  Int_t    fTRDSMCovered;                         // From which SM EMCal is covered by TRD
 
   // Analysis data members for multiple cones and pt thresholds 
   Int_t    fNCones ;                              //! Number of cone sizes to test
