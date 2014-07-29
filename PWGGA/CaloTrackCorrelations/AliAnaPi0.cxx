@@ -2379,8 +2379,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               AliVCluster *cluster = event->GetCaloCluster(iclus);
               
               Bool_t is = kFALSE;
-              if     (fCalorimeter == "EMCAL" && GetReader()->IsEMCALCluster(cluster)) is = kTRUE;
-              else if(fCalorimeter == "PHOS"  && GetReader()->IsPHOSCluster (cluster)) is = kTRUE;
+              if     (fCalorimeter == "EMCAL" && cluster->IsEMCAL()) is = kTRUE;
+              else if(fCalorimeter == "PHOS"  && cluster->IsPHOS() ) is = kTRUE;
               
               if(is){
                 if      (p1->GetCaloLabel(0) == cluster->GetID()) ncell1 = cluster->GetNCells();
