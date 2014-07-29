@@ -627,10 +627,11 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     
     AliESDEvent *lESDevent = 0x0;
     
-    //Zero all booleans, etc
+    //Zero all booleans, etc: safe initialization per event
     fEvSel_HasAtLeastSPDVertex    = kFALSE;
     fEvSel_VtxZCut                = kFALSE;
     fEvSel_IsNotPileup            = kFALSE;
+    fEvSel_IsNotPileupMV          = kFALSE;
     fEvSel_IsNotPileupInMultBins  = kFALSE;
     fEvSel_Triggered              = kFALSE;
     
@@ -638,6 +639,9 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     fEvSel_nSPDClusters = -1;
     fEvSel_nContributors = -1;
     fEvSel_nContributorsPileup = -1;
+    fEvSel_nSPDPrimVertices = -1;
+    fEvSel_distZ = -100;
+    fEvSel_VtxZ = -100;
     
     // Connect to the InputEvent
     // After these lines, we should have an ESD/AOD event + the number of V0s in it.
@@ -755,9 +759,6 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     
     if( !lESDevent->IsPileupFromSPD()           ) fEvSel_IsNotPileup           = kTRUE;
     if( !lESDevent->IsPileupFromSPDInMultBins() ) fEvSel_IsNotPileupInMultBins = kTRUE;
-    
-    fEvSel_nSPDPrimVertices = -1;
-    fEvSel_distZ = -1;
     
     //Acquire information to compute residual pileup
     fEvSel_nSPDPrimVertices = lESDevent->GetNumberOfPileupVerticesSPD();
