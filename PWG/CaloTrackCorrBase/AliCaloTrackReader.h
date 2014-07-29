@@ -180,17 +180,7 @@ public:
   virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE          ; 
                                                              fFiducialCut = new AliFiducialCut() ; }
   virtual void     SwitchOffFiducialCut()                  { fCheckFidCut = kFALSE         ; }
-  
-  // Cluster origin
-  
-  Bool_t           IsEMCALCluster(AliVCluster *clus) const;
-  Bool_t           IsPHOSCluster (AliVCluster *clus) const;
-  
-  // Patch for cluster origin for Old AODs implementation
-  
-  void             SwitchOnOldAODs()                       { fOldAOD = kTRUE               ; }
-  void             SwitchOffOldAODs()                      { fOldAOD = kFALSE              ; }
-  
+    
   // Cluster/track/cells switchs
   
   Bool_t           IsCTSSwitchedOn()                 const { return fFillCTS               ; }
@@ -720,7 +710,6 @@ public:
   Int_t            fLastMixedCaloEvent ;       //  Temporary container with the last event added to the mixing list for photons
   
   Bool_t           fWriteOutputDeltaAOD;       // Write the created delta AOD objects into file  
-	Bool_t           fOldAOD;                    // Old AODs, before revision 4.20
   
   Int_t            fV0ADC[2]    ;              // Integrated V0 signal
   Int_t            fV0Mul[2]    ;              // Integrated V0 Multiplicity
@@ -808,7 +797,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,67)
+  ClassDef(AliCaloTrackReader,68)
   
 } ;
 

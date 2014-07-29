@@ -103,7 +103,7 @@ fTaskName(""),               fCaloUtils(0x0),
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
 fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
-fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),
+fWriteOutputDeltaAOD(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
 //Trigger rejection
@@ -877,43 +877,6 @@ void AliCaloTrackReader::InitParameters()
   fFillInputBackgroundJetBranch = kFALSE; 
   if(!fBackgroundJets) fBackgroundJets = new AliAODJetEventBackground();
 
-}
-
-//___________________________________________________________________
-Bool_t AliCaloTrackReader::IsEMCALCluster(AliVCluster* cluster) const
-{
-  // Check if it is a cluster from EMCAL. For old AODs cluster type has
-  // different number and need to patch here
-  
-  if(fDataType==kAOD && fOldAOD)
-  {
-    if (cluster->GetType() == 2) return kTRUE;
-    else                         return kFALSE;
-  }
-  else
-  {
-    return cluster->IsEMCAL();
-  }
-  
-}
-
-//___________________________________________________________________
-Bool_t AliCaloTrackReader::IsPHOSCluster(AliVCluster * cluster) const
-{
-  //Check if it is a cluster from PHOS.For old AODs cluster type has
-  // different number and need to patch here
-  
-  if(fDataType==kAOD && fOldAOD)
-  {
-    Int_t type = cluster->GetType();
-    if (type == 0 || type == 1) return kTRUE;
-    else                        return kFALSE;
-  }
-  else
-  {
-    return cluster->IsPHOS();
-  }
-  
 }
 
 //________________________________________________________________________
@@ -1746,7 +1709,7 @@ void AliCaloTrackReader::FillInputEMCAL()
       AliVCluster * clus = 0;
       if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
       {
-        if (IsEMCALCluster(clus))
+        if (clus->IsEMCAL())
         {
           FillInputEMCALAlgorithm(clus, iclus);
         }//EMCAL cluster
@@ -1802,7 +1765,7 @@ void AliCaloTrackReader::FillInputEMCAL()
       
       if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
       {
-        if (IsEMCALCluster(clus))
+        if (clus->IsEMCAL())
         {
           
           Float_t  frac     =-1;
@@ -1864,7 +1827,7 @@ void AliCaloTrackReader::FillInputPHOS()
     AliVCluster * clus = 0;
     if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
     {
-      if (IsPHOSCluster(clus))
+      if (clus->IsPHOS())
       {
         if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(clus->GetLabel())) continue ;
         
@@ -2321,12 +2284,12 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
     if(clusterList) clus = (AliVCluster*) clusterList->At(iclus);
     else            clus = fInputEvent->GetCaloCluster(iclus);
     
-    if ( !clus )                continue ;
+    if ( !clus )            continue ;
     
-    if ( !IsEMCALCluster(clus)) continue ;
+    if ( !clus->IsEMCAL() ) continue ;
     
     //Skip clusters with too low energy to be triggering
-    if ( clus->E() < minE )    continue ;
+    if ( clus->E() < minE ) continue ;
     
     Float_t  frac       = -1;
     Int_t    absIdMax   = GetCaloUtils()->GetMaxEnergyCell(fInputEvent->GetEMCALCells(), clus,frac);
