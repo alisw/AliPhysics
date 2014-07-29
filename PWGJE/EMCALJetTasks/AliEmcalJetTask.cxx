@@ -439,7 +439,7 @@ void AliEmcalJetTask::FindJets()
     if(fDoGenericSubtraction) {
 #ifdef FASTJET_VERSION
       std::vector<fastjet::contrib::GenericSubtractorInfo> jetMassInfo = fjw.GetGenSubtractorInfoJetMass();
-      UInt_t n = (UInt_t)jetMassInfo.size();
+      Int_t n = (Int_t)jetMassInfo.size();
       if(n>ij && n>0) {
 	jet->SetFirstDerivative(jetMassInfo[ij].first_derivative());
 	jet->SetSecondDerivative(jetMassInfo[ij].second_derivative());

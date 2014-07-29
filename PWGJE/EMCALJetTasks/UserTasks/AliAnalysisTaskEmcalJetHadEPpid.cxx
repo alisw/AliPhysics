@@ -599,9 +599,9 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
 
   // set up centrality bins for mixed events
   // for pp we need mult bins for event mixing. Create binning here, to also make a histogram from it
-  Int_t nCentralityBinspp = 8;
+  //Int_t nCentralityBinspp = 8;
   //Double_t centralityBinspp[nCentralityBinspp+1];
-  Double_t centralityBinspp[9] = {0.0, 4., 9, 15, 25, 35, 55, 100.0, 500.0};  
+  //Double_t centralityBinspp[9] = {0.0, 4., 9, 15, 25, 35, 55, 100.0, 500.0};  
 
   // Setup for Pb-Pb collisions
   Int_t nCentralityBinsPbPb = 100;
