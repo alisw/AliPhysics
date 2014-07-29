@@ -13,9 +13,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Bool_t   tm            = kTRUE,
                                                       const Int_t    minCen        = -1,
                                                       const Int_t    maxCen        = -1,
-						      const Float_t  deltaphicut   = 0.03,
-						      const Float_t  deltaetacut   = 0.02,
- 						      const Int_t    disttobad     = 0,
+                                                      const Float_t  deltaphicut   = 0.03,
+                                                      const Float_t  deltaetacut   = 0.02,
+                                                      const Int_t    disttobad     = 0,
                                                       const Int_t    nlmMax        =  2,
                                                       const Bool_t   qaan          = kFALSE,
                                                       const Int_t    debug         = -1,
@@ -44,6 +44,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
     return NULL;
   }
 
+  // Make sure the B field is enabled for track selection, some cuts need it
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
+  
   Bool_t useKinematics = kFALSE;
   useKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
 
@@ -245,7 +248,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
       //Hybrids 2011
       AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
       reader->SetTrackCuts(esdTrackCuts);
-      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10001008);
+      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
       reader->SetTrackComplementaryCuts(esdTrackCuts2);
     }
 //    else
