@@ -11,4 +11,4 @@ if [ $# -lt 2 ]
     else
 				filename=$2
     fi
-aliroot -b -l -q $ALICE_ROOT/HLT/global/LoadLibs.C $ALICE_ROOT/HLT/global/ReadFlatESD.C++'("'${filename}'",'${verbose}')' | tee readFlat.out
+aliroot -b -l -q $ALICE_ROOT/HLT/global/LoadLibs.C $ALICE_ROOT/HLT/global/ReadFlatESD.C++'("'${filename}'",'${verbose}')' 2>&1| tee readFlat.out

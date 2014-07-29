@@ -14,30 +14,30 @@ if [ $# -lt 2 ]
     fi
 if [ $# -lt 3 ]
     then
-			ouputfileName="outFlatHLT.dat"
+        ocdb="local://$OCDB10"
     else
-				ouputfileName=$3
+				ocdb=$3
     fi
 if [ $# -lt 4 ]
     then
-        ocdb="local://$OCDB10local"
+        start=-1
     else
-				ocdb=$4
+				start=$4
     fi
 if [ $# -lt 5 ]
     then
-        start=-1
+        end=-1
     else
-				start=$5
+				end=$5
     fi
 if [ $# -lt 6 ]
     then
-        end=-1
+			ouputfileName="outFlatHLT.dat"
     else
-				end=$6
+				ouputfileName=$6
     fi
         
-aliroot ../createHistos.C -q
+#aliroot ../createHistos.C -q
 iFile=1
 
 for file in ${fileList}*/raw.root

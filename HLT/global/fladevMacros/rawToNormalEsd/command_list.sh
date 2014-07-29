@@ -6,6 +6,17 @@ if [ $# -lt 1 ]
     else
 				fileList=$1
     fi
+    if [ $# -lt 1 ]
+    then
+			ocdb="local://$OCDB10"
+			exit
+    else
+				ocdb=$2
+    fi
+    
+    
+    
+    
 iFile=1
 
 for file in ${fileList}*/raw.root
@@ -16,7 +27,7 @@ do
   mkdir ${iFile}
 
 	 echo "using normal ESD converter"
-	 aliroot -b -q ../rec.C'("'${file}'")' 2>&1|tee rec.log -a
+	 aliroot -b -q ../rec.C'("'${file}'", "'${ocdb}'")' 2>&1|tee rec.log -a
 	 mv *.root ${iFile}/
 
 
