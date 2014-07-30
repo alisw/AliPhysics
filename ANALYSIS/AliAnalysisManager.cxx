@@ -2950,7 +2950,7 @@ void AliAnalysisManager::Changed()
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::InitInpuData(AliVEvent* esdEvent)
+void AliAnalysisManager::InitInputData(AliVEvent* esdEvent, AliESDfriend* esdFriend)
 {
 
 // Method to propagte to all the connected tasks the HLT event.
@@ -2961,7 +2961,7 @@ void AliAnalysisManager::InitInpuData(AliVEvent* esdEvent)
     TString classInputHandler = fInputEventHandler->ClassName();
     if (classInputHandler.Contains("HLT")){
       TObjArray* arrTasks = GetTasks();
-      fInputEventHandler->InitTaskInputData(esdEvent, arrTasks);
+      fInputEventHandler->InitTaskInputData(esdEvent, esdFriend, arrTasks);
     }
     else {
       Fatal("PropagateHLTEvent", "Input Handler not of type HLT, we cannot use this method!");

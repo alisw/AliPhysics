@@ -91,6 +91,7 @@ void AliHLTAnaManagerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginAny);
   list.push_back(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD);
   list.push_back(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO);
+  list.push_back(kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginAny);
 }
 
 // #################################################################################
@@ -111,11 +112,11 @@ void AliHLTAnaManagerComponent::GetOCDBObjectDescription( TMap* const targetMap)
   // see header file for class documentation
 
   if (!targetMap) return;
-  targetMap->Add(new TObjString("HLT/ConfigGlobal/MultiplicityCorrelations"),
+  /*  targetMap->Add(new TObjString("HLT/ConfigGlobal/MultiplicityCorrelations"),
 		 new TObjString("configuration object"));
   targetMap->Add(new TObjString("HLT/ConfigGlobal/MultiplicityCorrelationsCentrality"),
 		 new TObjString("centrality configuration object"));
-
+  */
   return;
 }
 
@@ -150,7 +151,7 @@ Int_t AliHLTAnaManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/
   fAnalysisManager->AddTask(task);
   AliAnalysisDataContainer *cinput  = fAnalysisManager->GetCommonInputContainer();
   Printf("Defining output file");
-  AliAnalysisDataContainer *coutput1 = fAnalysisManager->CreateContainer("pt", TH1::Class(),
+  AliAnalysisDataContainer *coutput1 = fAnalysisManager->CreateContainer("pt", TList::Class(),
       AliAnalysisManager::kOutputContainer, "Pt.ESD.root");
 
   //           connect containers
@@ -207,6 +208,7 @@ Int_t AliHLTAnaManagerComponent::DoEvent(const AliHLTComponentEventData& evtData
   // -- Get ESD object
   // -------------------
   AliESDEvent *esdEvent = NULL;
+  AliESDfriend *esdFriend = NULL;
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
     esdEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
     if( !esdEvent ){ 
@@ -217,8 +219,17 @@ Int_t AliHLTAnaManagerComponent::DoEvent(const AliHLTComponentEventData& evtData
     esdEvent->GetStdContent();
   }
   printf("----> ESDEvent %p has %d tracks: \n", esdEvent, esdEvent->GetNumberOfTracks());
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
+    esdFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
+    if( !esdFriend ){ 
+      HLTWarning("Wrong ESDFriend object received");
+      iResult = -1;
+      continue;
+    }
+  }
+  printf("----> ESDFriend %p has %d tracks: \n", esdFriend, esdFriend->GetNumberOfTracks());
 
-  fAnalysisManager->InitInpuData(esdEvent);
+  fAnalysisManager->InitInputData(esdEvent, esdFriend);
   //  fInputHandler->BeginEvent(0);
   fAnalysisManager->ExecAnalysis();
   fInputHandler->FinishEvent();

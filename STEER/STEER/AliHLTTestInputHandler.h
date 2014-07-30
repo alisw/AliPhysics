@@ -14,6 +14,7 @@
 
 class TObjArray;
 class AliVEvent;
+class AliESDfriend;
 
 class AliHLTTestInputHandler : public AliVEventHandler {
 
@@ -37,16 +38,20 @@ class AliHLTTestInputHandler : public AliVEventHandler {
     virtual Bool_t TerminateIO() {return kTRUE;}
 
     // Especially needed for HLT
-    Bool_t InitTaskInputData(AliVEvent* /*esdEvent*/, TObjArray* /*arrTasks*/);
+    Bool_t InitTaskInputData(AliVEvent* /*esdEvent*/, AliESDfriend* /*friendEvent*/, TObjArray* /*arrTasks*/);
 
     AliVEvent* GetEvent() const {return fEvent;}
     void  SetEvent(AliVEvent *event) {fEvent = event;}
+
+    AliESDfriend* GetFriendEvent() const {return fFriendEvent;}
+    void  SetFriendEvent(AliESDfriend *friendEvent) {fFriendEvent = friendEvent;}
       
  private:
     AliHLTTestInputHandler(const AliVEventHandler& handler);             
     AliHLTTestInputHandler& operator=(const AliVEventHandler& handler);  
     
-    AliVEvent *fEvent;    //! Pointer to the event
+    AliVEvent    *fEvent;          //! Pointer to the event
+    AliESDfriend *fFriendEvent;    //! Pointer to the friend event
 
     ClassDef(AliHLTTestInputHandler, 1);
 };

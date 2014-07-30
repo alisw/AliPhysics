@@ -37,6 +37,7 @@ class AliVEventPool;
 class AliAnalysisGrid;
 class AliAnalysisStatistics;
 class AliVEvent;
+class AliESDfriend;
 
 class AliAnalysisManager : public TNamed {
 
@@ -229,7 +230,7 @@ enum EAliAnalysisFlags {
    void                 Lock();
    void                 UnLock();
    void                 Changed();
-   void                 InitInpuData(AliVEvent* esdEvent);
+   void                 InitInputData(AliVEvent* esdEvent, AliESDfriend* esdFriend);
 protected:
    void                 CreateReadCache();
    void                 ImportWrappers(TList *source);
