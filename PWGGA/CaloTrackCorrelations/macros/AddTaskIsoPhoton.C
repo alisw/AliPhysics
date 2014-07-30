@@ -502,15 +502,18 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   
   printf("\t *** Set: R = %2.2f, Threshold %2.2f, Method %d, Neutral/Charged option %d ***\n",cone,pth,thresType,partInCone);
   
-  ic->SetPtThreshold(pth);
+  //Main parameters
+  //****
   ic->SetConeSize(cone);
   
-  ic->SetPtFraction(0.1);
-  //  ic->SetSumPtThreshold(1.0) ;
-  ic->SetPtThreshold(pth);
+  ic->SetPtFraction    (0.1);
+  ic->SetPtThreshold   (pth);
   ic->SetSumPtThreshold(pth);
+  
   ic->SetParticleTypeInCone(partInCone);
+  
   ic->SetICMethod(thresType);
+  //****
   
   //Do or not do isolation with previously produced AODs.
   //No effect if use of SwitchOnSeveralIsolation()
