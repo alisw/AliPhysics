@@ -68,13 +68,17 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fIsEmcPart(0),
   fLegacyMode(kFALSE),
   fCodeDebug(kFALSE),
-  fDoGenericSubtraction(kFALSE),
+  fDoGenericSubtractionJetMass(kFALSE),
+  fDoGenericSubtractionGR(kFALSE),
   fDoConstituentSubtraction(kFALSE),
   fUseExternalBkg(kFALSE),
   fRhoName(""),
   fRhomName(""),
   fRho(0),
   fRhom(0),
+  fRMax(0.4),
+  fDRStep(0.04),
+  fPtMinGR(40.),
   fJets(0),
   fJetsSub(0),
   fEvent(0),
@@ -123,13 +127,17 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fIsEmcPart(0),
   fLegacyMode(kFALSE),
   fCodeDebug(kFALSE),
-  fDoGenericSubtraction(kFALSE),
+  fDoGenericSubtractionJetMass(kFALSE),
+  fDoGenericSubtractionGR(kFALSE),
   fDoConstituentSubtraction(kFALSE),
   fUseExternalBkg(kFALSE),
   fRhoName(""),
   fRhomName(""),
   fRho(0),
   fRhom(0),
+  fRMax(0.4),
+  fDRStep(0.04),
+  fPtMinGR(40.),
   fJets(0),
   fJetsSub(0),
   fEvent(0),
@@ -394,7 +402,7 @@ void AliEmcalJetTask::FindJets()
   fjw.Run();
 
   //run generic subtractor
-  if(fDoGenericSubtraction) {
+  if(fDoGenericSubtractionJetMass) {
     fjw.SetUseExternalBkg(fUseExternalBkg,fRho,fRhom);
     fjw.DoGenericSubtractionJetMass();
   }
@@ -436,18 +444,45 @@ void AliEmcalJetTask::FindJets()
     jet->SetLabel(ij);
 
     //do generic subtraction if requested
-    if(fDoGenericSubtraction) {
 #ifdef FASTJET_VERSION
+    if(fDoGenericSubtractionJetMass) {
       std::vector<fastjet::contrib::GenericSubtractorInfo> jetMassInfo = fjw.GetGenSubtractorInfoJetMass();
       Int_t n = (Int_t)jetMassInfo.size();
       if(n>ij && n>0) {
-	jet->SetFirstDerivative(jetMassInfo[ij].first_derivative());
-	jet->SetSecondDerivative(jetMassInfo[ij].second_derivative());
-	jet->SetFirstOrderSubtracted(jetMassInfo[ij].first_order_subtracted());
-	jet->SetSecondOrderSubtracted(jetMassInfo[ij].second_order_subtracted());
+        jet->SetFirstDerivative(jetMassInfo[ij].first_derivative());
+        jet->SetSecondDerivative(jetMassInfo[ij].second_derivative());
+        jet->SetFirstOrderSubtracted(jetMassInfo[ij].first_order_subtracted());
+        jet->SetSecondOrderSubtracted(jetMassInfo[ij].second_order_subtracted());
       }
-#endif
     }
+    //here do generic subtraction for angular structure function
+    Double_t ptcorr = jets_incl[ij].perp()-fjw.GetJetArea(ij)*fRho;
+    fRMax = fRadius+0.2;
+    if(fDoGenericSubtractionGR && ptcorr>fPtMinGR) {
+      fjw.SetUseExternalBkg(fUseExternalBkg,fRho,fRhom);
+      fjw.SetRMaxAndStep(fRMax,fDRStep);
+      fjw.DoGenericSubtractionGR(ij);
+      std::vector<double> num = fjw.GetGRNumerator();
+      std::vector<double> den = fjw.GetGRDenominator();
+      std::vector<double> nums = fjw.GetGRNumeratorSub();
+      std::vector<double> dens = fjw.GetGRDenominatorSub();
+      //pass this to AliEmcalJet
+      jet->SetGRNumSize(num.size());
+      jet->SetGRDenSize(den.size());
+      jet->SetGRNumSubSize(nums.size());
+      jet->SetGRDenSubSize(dens.size());
+      Int_t nsize = (Int_t)num.size();
+      for(Int_t g = 0; g<nsize; ++g) {
+        jet->AddGRNumAt(num[g],g);
+        jet->AddGRNumSubAt(nums[g],g);
+      }
+      Int_t dsize = (Int_t)den.size();
+      for(Int_t g = 0; g<dsize; ++g) {
+        jet->AddGRDenAt(den[g],g);
+        jet->AddGRDenSubAt(dens[g],g);
+      }
+    }
+#endif
 
     // loop over constituents
     std::vector<fastjet::PseudoJet> constituents(fjw.GetJetConstituents(ij));
