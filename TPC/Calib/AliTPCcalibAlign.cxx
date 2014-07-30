@@ -904,8 +904,8 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   //
   // linear parameters
   //
-  Double_t parLine1[10];
-  Double_t parLine2[10];
+  Double_t parLine1[10]={0};
+  Double_t parLine2[10]={0};
   TMatrixD par1(4,1),cov1(4,4),par2(4,1),cov2(4,4);
   Bool_t useInnerOuter = kFALSE;
   if (s1%36!=s2%36) useInnerOuter = fUseInnerOuter;  // for left - right alignment bot sectors refit can be used if specified
