@@ -272,9 +272,9 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack){
 				
 			}	
 		}
-		fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512;		
-// 		cout << "isPhoton: \t" << isPhoton << "\t isElectron: \t" << isElectron << "\t isConversion: \t" << isConversion <<  "\t isConversionFullyContained: \t" << isConversionFullyContained << "\t isMerged: \t" << isMerged << "\t isMergedPartConv: \t" << isMergedPartConv << "\t isPhotonWithElecMother: \t" << isPhotonWithElecMother<< "\t isDalitz: \t" << isDalitz << "\t isDalitzMerged: \t" << isDalitzMerged << "\t isShower: \t" << isShower << "\t"<< fCaloPhotonMCFlags<< endl;		
 	}		
+	fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512;		
+// 	cout << "isPhoton: \t" << isPhoton << "\t isElectron: \t" << isElectron << "\t isConversion: \t" << isConversion <<  "\t isConversionFullyContained: \t" << isConversionFullyContained << "\t isMerged: \t" << isMerged << "\t isMergedPartConv: \t" << isMergedPartConv << "\t isPhotonWithElecMother: \t" << isPhotonWithElecMother<< "\t isDalitz: \t" << isDalitz << "\t isDalitzMerged: \t" << isDalitzMerged << "\t isShower: \t" << isShower << "\t"<< fCaloPhotonMCFlags<< endl;		
 	
 }
 
@@ -446,8 +446,9 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event){
 				
 			}	
 		}
-		fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512;		
-// 		cout << "isPhoton: \t" << isPhoton << "\t isElectron: \t" << isElectron << "\t isConversion: \t" << isConversion <<  "\t isConversionFullyContained: \t" << isConversionFullyContained << "\t isMerged: \t" << isMerged << "\t isMergedPartConv: \t" << isMergedPartConv << "\t isPhotonWithElecMother: \t" << isPhotonWithElecMother<< "\t isDalitz: \t" << isDalitz << "\t isDalitzMerged: \t" << isDalitzMerged << "\t isShower: \t" << isShower << "\t"<< fCaloPhotonMCFlags<< endl;		
 	}		
+
+	fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512;		
+// 	cout << "isPhoton: \t" << isPhoton << "\t isElectron: \t" << isElectron << "\t isConversion: \t" << isConversion <<  "\t isConversionFullyContained: \t" << isConversionFullyContained << "\t isMerged: \t" << isMerged << "\t isMergedPartConv: \t" << isMergedPartConv << "\t isPhotonWithElecMother: \t" << isPhotonWithElecMother<< "\t isDalitz: \t" << isDalitz << "\t isDalitzMerged: \t" << isDalitzMerged << "\t isShower: \t" << isShower << "\t"<< fCaloPhotonMCFlags<< endl;		
 	
 }
