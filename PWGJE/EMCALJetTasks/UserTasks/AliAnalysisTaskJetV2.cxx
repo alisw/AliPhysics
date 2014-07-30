@@ -760,8 +760,9 @@ Bool_t AliAnalysisTaskJetV2::Run()
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskJetV2::CalculateEventPlaneChi(Double_t res)
 {
-    // return chi for given resolution FIXME needs citation and explanation (29072014)
-    Double_t chi(2.), delta(1.), con(0.626657);
+    // return chi for given resolution to combine event plane estimates from two subevents
+    // see Phys. Rev. C no. CS6346 (http://arxiv.org/abs/nucl-ex/9805001)
+    Double_t chi(2.), delta(1.), con((TMath::Sqrt(TMath::Pi()))/(2.*TMath::Sqrt(2)));
     for (Int_t i(0); i < 15; i++) {
         chi = ((con*chi*TMath::Exp(-chi*chi/4.)*(TMath::BesselI0(chi*chi/4.)+TMath::BesselI1(chi*chi/4.))) < res) ? chi + delta : chi - delta;
         delta = delta / 2.;
