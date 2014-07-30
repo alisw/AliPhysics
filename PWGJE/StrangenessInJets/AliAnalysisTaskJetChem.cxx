@@ -1328,7 +1328,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1RCBiasLa                   = new TH1F("fh1RCBiasLa"," # random cones with La trigger particle",1,0.,1.);
   fh1RCBiasALa                  = new TH1F("fh1RCBiasALa"," # random cones with ALa trigger particle",1,0.,1.);
   fh1MCC                        = new TH1F("fh1MCC","# median cluster cones used",1,0.,1.);
-  fh1OC                         = new TH1F("fh1OC","# outside cones used",1,0.,1.);
+  fh1OC                         = new TH1F("fh1OC","# outside cones used, number of jet events",1,0.,1.);
   fh1NJ                         = new TH1F("fh1NJ","# non-jet events used",1,0.,1.);
 
   Int_t binsInvMassEtaTrackPtK0s[3] = {200, 200, 120};//eta,invM,trackPt
@@ -2339,8 +2339,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListK0s->At(it));
     if(!v0) continue;
 
-
-
     // VO's main characteristics to check the reconstruction cuts
     
     //Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
@@ -2369,15 +2367,29 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     
     CalculateInvMass(v0, kK0, invMK0s, trackPt);  //function to calculate invMass with TLorentzVector class
     
-    //Double_t jetPt = fFFIMJetPtMin; // assign pro forma jet energy
-    //Double_t fRap = v0->RapK0Short();
+
+    //OUTSIDE CONES:########
+
     Double_t fEta = v0->PseudoRapV0();
     Bool_t bIsInCone = kFALSE;//init boolean, is not in any cone (OC)
 
     for(Int_t ij=0; ij<nRecJetsCuts; ++ij){ // loop over all jets in event 
       
       AliAODJet* jet = (AliAODJet*) (fJetsRecCuts->At(ij));
+      TList* jettracklist = new TList();
+      Double_t sumPt      = 0.;
+      Bool_t isBadJet     = kFALSE;
+ 
+      if(GetFFRadius()<=0){
+ 	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);// list of jet tracks from trackrefs
+      } else {
+ 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
+      }
       
+
+      //leading track pt bias on jets inside this small jet loop
+      if(isBadJet) continue;
+      //if jet is selected, then check whether V0 is part of the jet cone:
       if(IsParticleInCone(jet, v0, dRadiusExcludeCone) == kTRUE) {bIsInCone = kTRUE;}
       
     }
@@ -2387,6 +2399,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       fhnK0sOC->Fill(vK0sOC);      
     }
     
+    //end of outside cone K0s
+   
     Double_t fV0cosPointAngle = v0->CosPointingAngle(lPrimaryVtxPosition);
 
     lV0Position[0]= v0->DecayVertexV0X();  
@@ -2395,16 +2409,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     
     Double_t fV0DecayLength = v0->DecayLengthV0(lPrimaryVtxPosition);
     fV0Radius  = TMath::Sqrt(lV0Position[0]*lV0Position[0]+lV0Position[1]*lV0Position[1]);
-
-
-    //fetch V0s outside of jet cones (outside of 2R):
-
-
-
-
-
-
-
 
     
     fV0QAK0->FillTrackQA(v0->Eta(), TVector2::Phi_0_2pi(v0->Phi()), v0->Pt()); 
@@ -2490,7 +2494,20 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     for(Int_t ij=0; ij<nRecJetsCuts; ++ij){ // loop over all jets in event 
       
       AliAODJet* jet = (AliAODJet*) (fJetsRecCuts->At(ij));
+      TList* jettracklist = new TList();
+      Double_t sumPt      = 0.;
+      Bool_t isBadJet     = kFALSE;
+ 
+      if(GetFFRadius()<=0){
+ 	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);// list of jet tracks from trackrefs
+      } else {
+ 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
+      }
       
+
+      //leading track pt bias on jets inside this small jet loop
+      if(isBadJet) continue;
+
       if(IsParticleInCone(jet, v0, dRadiusExcludeCone) == kTRUE) {bIsInCone = kTRUE;
       }       
     }    
@@ -2601,7 +2618,20 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     for(Int_t ij=0; ij<nRecJetsCuts; ++ij){ // loop over all jets in event 
       
       AliAODJet* jet = (AliAODJet*) (fJetsRecCuts->At(ij));
+      TList* jettracklist = new TList();
+      Double_t sumPt      = 0.;
+      Bool_t isBadJet     = kFALSE;
+ 
+      if(GetFFRadius()<=0){
+ 	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);// list of jet tracks from trackrefs
+      } else {
+ 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
+      }
       
+
+      //leading track pt bias on jets inside this small jet loop
+      if(isBadJet) continue;
+
       if(IsParticleInCone(jet, v0, dRadiusExcludeCone) == kTRUE){
 	bIsInCone = kTRUE;	
       }
@@ -2678,7 +2708,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
   //_____no jets events______________________________________________________________________________________________________________________________________
 
-  if(nRecJetsCuts == 0){//no jet events
+  if(nRecJetsCuts == 0){//no jet events, before the remaining jet cuts are applied, the second part for the non-jet events comes inside the jet loop
         
     fh1NJ->Fill(1.);//for normalisation by number of NJ events
     
@@ -2739,10 +2769,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   //##########################jet loop########################################################################################################################
 
 
-  if(nRecJetsCuts > 0){//number of selected jet events
-    fh1OC->Fill(1.);
-  } 
-
   //fill jet histos in general
   for(Int_t ij=0; ij<nRecJetsCuts; ++ij){                               // ij is an index running over the list of the reconstructed jets after cuts, all jets in event
     
@@ -2760,16 +2786,80 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       Double_t sumPt      = 0.;
       Bool_t isBadJet     = kFALSE;
       Int_t njetTracks    = 0;
+      Int_t nSelJets = nRecJetsCuts;//initialisation for remaining jet cuts
  
       if(GetFFRadius()<=0){
  	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);// list of jet tracks from trackrefs
       } else {
  	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
       }
-      
+      //not applied at the moment:
       if(GetFFMinNTracks()>0 && jettracklist->GetSize() <= GetFFMinNTracks()) isBadJet = kTRUE; // reject jets with less tracks than fFFMinNTracks
-      if(isBadJet) continue; // rejects jets in which no track has a track pt higher than 5 GeV/c (see AddTask macro)
-     
+
+
+
+      //APPLICATION OF REMAINING JET CUTS (leading track pt bias etc..) + NJ events
+      if(isBadJet) {
+
+	nSelJets--;//remove one jet from nRecJetsCuts
+	if(nSelJets == 0){//case that event doesn't contain any selected jets in the end
+
+	  fh1NJ->Fill(1.);//for normalisation by number of NJ events
+     	  
+	  for(Int_t it=0; it<fListK0s->GetSize(); ++it){ // loop all K0s 
+	    
+	    AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListK0s->At(it));
+	    if(!v0) continue;
+	    
+	    Double_t invMK0s =0;
+	    Double_t trackPt=0;
+	    CalculateInvMass(v0, kK0, invMK0s, trackPt);
+	    Double_t fEta = v0->Eta();
+	    
+	    Double_t vNJK0[3] = {invMK0s,trackPt,fEta}; //fill all K0s in events wo selected jets
+	    fhnNJK0->Fill(vNJK0);
+	    
+	  }
+	  
+	  for(Int_t it=0; it<fListLa->GetSize(); ++it){ // loop all La 
+	    
+	    AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListLa->At(it));
+	    if(!v0) continue;
+	    
+	    Double_t invMLa =0;
+	    Double_t trackPt=0;	
+	    CalculateInvMass(v0, kLambda, invMLa, trackPt);
+	    Double_t fEta = v0->Eta();
+	    
+	    Double_t vNJLa[3] = {invMLa,trackPt,fEta}; //fill all K0s in events wo selected jets
+	    fhnNJLa->Fill(vNJLa);
+	    
+	  } 
+	  
+	  for(Int_t it=0; it<fListALa->GetSize(); ++it){ // loop all ALa 
+      
+	    AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListALa->At(it));
+	    if(!v0) continue;
+	    
+	    Double_t invMALa =0;
+	    Double_t trackPt=0;	
+	    CalculateInvMass(v0, kAntiLambda, invMALa, trackPt);
+	    
+	    Double_t fEta = v0->Eta();
+	    
+	    Double_t vNJALa[3] = {invMALa,trackPt,fEta}; //fill all K0s in events wo selected jets
+	    fhnNJALa->Fill(vNJALa);
+	    
+	    
+	  } 	  
+	 
+	}
+	continue;//rejection of current jet
+      } // rejects jets in which no track has a track pt higher than 5 GeV/c (see AddTask macro)
+      
+
+      if((ij==(nRecJetsCuts-1))&&(nSelJets > 0)){fh1OC->Fill(1.);}//in case there are still some selected jets remaining in the last loop cycle, count number of jet events in this histo
+
       //Float_t fJetAreaMin = 0.6*TMath::Pi()*GetFFRadius()*GetFFRadius(); // minimum jet area cut
 
       //std::cout<<"GetFFRadius(): "<<GetFFRadius()<<std::endl;
