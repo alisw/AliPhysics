@@ -40,9 +40,14 @@ class AliFJWrapper
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetMass() const {return fGenSubtractorInfoJetMass;}
   const std::vector<fastjet::PseudoJet>   GetConstituentSubtrJets() const { return fConstituentSubtrJets;  }
 #endif
+  virtual std::vector<double>             GetGRNumerator()     const { return fGRNumerator;                }
+  virtual std::vector<double>             GetGRDenominator()   const { return fGRDenominator;              }
+  virtual std::vector<double>             GetGRNumeratorSub()  const { return fGRNumeratorSub;             }
+  virtual std::vector<double>             GetGRDenominatorSub()const { return fGRDenominatorSub;           }
 
   virtual Int_t Run();
   virtual Int_t DoGenericSubtractionJetMass();
+  virtual Int_t DoGenericSubtractionGR(Int_t ijet);
   virtual Int_t DoConstituentSubtraction();
 
   void SetStrategy(const fastjet::Strategy &strat)                 { fStrategy = strat;  }
@@ -65,6 +70,7 @@ class AliFJWrapper
   void SetLegacyMode (Bool_t mode)      { fLegacyMode ^= mode; }
   void SetLegacyFJ();
   void SetUseExternalBkg(Bool_t b, Double_t rho, Double_t rhom) { fUseExternalBkg = b; fRho = rho; fRhom = rhom;}
+  void SetRMaxAndStep(Double_t rmax, Double_t dr) {fRMax = rmax; fDRStep = dr; }
 
  protected:
   TString                                fName;               //!
@@ -97,15 +103,24 @@ class AliFJWrapper
   Double_t                               fMedUsedForBgSub;    //!
   Bool_t                                 fUseArea4Vector;     //!
 #ifdef FASTJET_VERSION
-  fastjet::JetMedianBackgroundEstimator   *fBkrdEstimator;        //!
+  fastjet::JetMedianBackgroundEstimator   *fBkrdEstimator;    //!
   //from contrib package
-  fastjet::contrib::GenericSubtractor     *fGenSubtractor;        //!
+  fastjet::contrib::GenericSubtractor     *fGenSubtractor;    //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetMass;    //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRNum;      //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRDen;      //!
+  
 #endif
   Bool_t                                   fLegacyMode;           //!
   Bool_t                                   fUseExternalBkg;       //!
   Double_t                                 fRho;                  //  pT background density
   Double_t                                 fRhom;                 //  mT background density
+  Double_t                                 fRMax;             //!
+  Double_t                                 fDRStep;           //!
+  std::vector<double>                      fGRNumerator;      //!
+  std::vector<double>                      fGRDenominator;    //!
+  std::vector<double>                      fGRNumeratorSub;   //!
+  std::vector<double>                      fGRDenominatorSub; //!
 
   virtual void   SubtractBackground(const Double_t median_pt = -1);
 
@@ -165,6 +180,14 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fUseExternalBkg    (false)
   , fRho               (0)
   , fRhom              (0)
+  , fRMax(2.)
+  , fDRStep(0.04)
+  , fGenSubtractorInfoGRNum ( )
+  , fGenSubtractorInfoGRDen ( )
+  , fGRNumerator()
+  , fGRDenominator()
+  , fGRNumeratorSub()
+  , fGRDenominatorSub()
 {
   // Constructor.
 }
@@ -544,6 +567,45 @@ Int_t AliFJWrapper::DoGenericSubtractionJetMass() {
     fGenSubtractorInfoJetMass.push_back(info);
   }
   
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionGR(Int_t ijet) {
+  //Do generic subtraction for jet mass
+#ifdef FASTJET_VERSION
+  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
+  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+
+  if(ijet>fInclusiveJets.size()) return 0;
+
+  fGRNumerator.clear();
+  fGRDenominator.clear();
+  fGRNumeratorSub.clear();
+  fGRDenominatorSub.clear();
+
+  // Define jet shape
+  for(Double_t r = 0.; r<fRMax; r+=fDRStep) {
+    AliJetShapeGRNum shapeGRNum(r,fDRStep);
+    AliJetShapeGRDen shapeGRDen(r,fDRStep);
+
+    // clear the generic subtractor info vector
+    fGenSubtractorInfoGRNum.clear();
+    fGenSubtractorInfoGRDen.clear();
+    fj::contrib::GenericSubtractorInfo infoNum;
+    fj::contrib::GenericSubtractorInfo infoDen;
+    if(fInclusiveJets[ijet].perp()>0.) {
+      double sub_num = (*fGenSubtractor)(shapeGRNum, fInclusiveJets[ijet], infoNum);
+      double sub_den = (*fGenSubtractor)(shapeGRDen, fInclusiveJets[ijet], infoDen);
+    }
+    fGenSubtractorInfoGRNum.push_back(infoNum);
+    fGenSubtractorInfoGRDen.push_back(infoDen);
+    fGRNumerator.push_back(infoNum.unsubtracted());
+    fGRDenominator.push_back(infoDen.unsubtracted());
+    fGRNumeratorSub.push_back(infoNum.second_order_subtracted());
+    fGRDenominatorSub.push_back(infoDen.second_order_subtracted());
+  }
 #endif
   return 0;
 }
