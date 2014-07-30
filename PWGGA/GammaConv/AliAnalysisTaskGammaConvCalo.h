@@ -269,6 +269,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F								**fHistoTrueClusDalitzMergedPt;					//! array of histos with validated Dalitz decay, more than one decay product in cluster, pt
 		TH1F								**fHistoTrueClusPhotonFromElecMotherPt;			//! array of histos with validated photon from electron, pt
 		TH1F								**fHistoTrueClusShowerPt;						//! array of histos with validated shower, pt
+        TH1F                                **fHistoTrueClusSubLeadingPt;                   //! array of histos with pi0/eta/eta_prime in subleading contribution
+        TH1I                                **fHistoTrueClusNParticles;                     //! array of histos with number of different particles (pi0/eta/eta_prime) contributing to cluster
 		TH1F								**fHistoTrueClusEMNonLeadingPt;					//! array of histos with cluster with largest energy by hadron
 		TH1F								**fHistoTrueNLabelsInClus;						//! array of histos with number of labels in cluster 
 		TH1F								**fHistoTruePrimaryClusGammaPt;					//! array of histos with validated primary cluster, pt
