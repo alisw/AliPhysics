@@ -26,9 +26,9 @@ class AliTwoPlusOneContainer : public TNamed
 
   virtual ~AliTwoPlusOneContainer();
   
-  enum PlotKind {kSameNS = 0, kSameAS, kMixedNS, kMixedAS, kMixedCombNS, kMixedCombAS};
+  enum PlotKind {kSameNS = 0, kSameAS, kMixedNS, kMixedAS, kMixedCombNS, kMixedCombAS, k1plus1, kBackgroundSameNS, kBackgroundSameAS};
 
-  void FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight);
+  void FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame);
   
   AliUEHist* GetData() {return fTwoPlusOne;}
   Double_t getTriggerPt1Min() {return fTriggerPt1Min;}
