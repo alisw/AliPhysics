@@ -2179,7 +2179,7 @@ Int_t AliAnalysisTaskEmcalJetHadEPpid::AcceptFlavourJet(AliEmcalJet* fljet, Int_
     return 0;
   }
 
-  Int_t flavNUM = -99, flavNUM2 = -99, flavNUM3 = -99;
+  Int_t flavNUM = -99;//, flavNUM2 = -99, flavNUM3 = -99; FIXME commented out to avoid compiler warning
   flavNUM = NUM;
   //flavNUM2 = NUM2;
   //flavNUM3 = NUM3;
