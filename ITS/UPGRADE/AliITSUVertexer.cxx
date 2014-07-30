@@ -143,7 +143,7 @@ void AliITSUVertexer::FindVerticesForCurrentEvent() {
   }
 
   fVertices=new AliESDVertex[fNoClusters];
-  for(Int_t i0=fNoClusters-1;i0>=0; --i0) {
+  for(Int_t i0=0; i0<fNoClusters; ++i0) {
     AliITSUClusterLines *clu0 = (AliITSUClusterLines*)fLinesClusters.At(i0);
     Int_t size=clu0->GetSize();
     if(size<fClusterContribCut&&fNoClusters>1) {
