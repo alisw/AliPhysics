@@ -141,9 +141,14 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      GetHistoPtInConeMin()           const { return fHistoPtInConeMin  ; }
   Float_t      GetHistoPtInConeMax()           const { return fHistoPtInConeMax  ; }
   
- // For histograms in arrays, index in the array, corresponding to a particle
-  enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay = 1,       kmcPOtherDecay = 2,  kmcPOther = 3,
-                    kmcPPrompt = 4,       kmcPFragmentation = 5,  kmcPISR = 6           };
+ // For primary histograms in arrays, index in the array, corresponding to a photon origin
+  enum mcPrimTypes { kmcPrimPhoton = 0,   kmcPrimPi0Decay = 1,   kmcPrimOtherDecay = 2,
+                     kmcPrimOther  = 3,   kmcPrimPrompt   = 4,
+                     kmcPrimFrag   = 5,   kmcPrimISR      = 6                            } ;
+  
+  // For histograms in arrays, index in the array, corresponding to any particle origin
+  enum mcTypes     { kmcPhoton   = 0, kmcPrompt   = 1, kmcFragment   = 2,  kmcPi0    = 3,
+                     kmcPi0Decay = 4, kmcEtaDecay = 5, kmcOtherDecay = 6,  kmcHadron = 7 } ;
   
  private:
   

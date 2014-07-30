@@ -3690,7 +3690,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   
 }
 
-//___________________________________________
+//______________________________________________________
 void AliAnaParticleIsolation::FillAcceptanceHistograms()
 {
   //Fill acceptance histograms if MC data is available
@@ -3702,363 +3702,228 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   Double_t photonEta = -1 ;
   
   Int_t    pdg       =  0 ;
+  Int_t    status    =  0 ;
   Int_t    tag       =  0 ;
   Int_t    mcIndex   =  0 ;
   Bool_t   inacceptance = kFALSE;
+  Int_t    nprim     = 0;
   
-  if(GetReader()->ReadStack())
+  TParticle        * primStack = 0;
+  AliAODMCParticle * primAOD   = 0;
+  TLorentzVector lv;
+  
+  // Get the ESD MC particles container
+  AliStack * stack = 0;
+  if( GetReader()->ReadStack() )
   {
-    AliStack * stack = GetMCStack();
-    if(stack)
-    {
-      for(Int_t i=0 ; i<stack->GetNtrack(); i++)
-      {
-        if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
-        
-        TParticle * prim = stack->Particle(i) ;
-        pdg = prim->GetPdgCode();
-        //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
-        //       prim->GetName(), prim->GetPdgCode());
-        
-        if(pdg == 22)
-        {
-          // Get tag of this particle photon from fragmentation, decay, prompt ...
-          tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
-          
-          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-          {
-            //A conversion photon from a hadron, skip this kind of photon
-            // printf("AliAnaPhoton::FillAcceptanceHistograms() - not a photon, weird!\n ");
-            // GetMCAnalysisUtils()->PrintMCTag(tag);
-            
-            return;
-          }
-          
-          //Get photon kinematics
-          if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception
-          
-          //photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
-          photonE   = prim->Energy() ;
-          photonPt  = prim->Pt() ;
-          photonPhi = prim->Phi() ;
-          if(photonPhi < 0) photonPhi+=TMath::TwoPi();
-          photonEta = prim->Eta() ;
-          
-          //Check if photons hit the Calorimeter
-          TLorentzVector lv;
-          prim->Momentum(lv);
-          inacceptance = kFALSE;
-          if     (fCalorimeter == "PHOS")
-          {
-            if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet())
-            {
-              Int_t mod ;
-              Double_t x,z ;
-              if(GetPHOSGeometry()->ImpactOnEmc(prim,mod,z,x))
-              inacceptance = kTRUE;
-              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-            else
-            {
-              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-              inacceptance = kTRUE ;
-              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-          }
-          else if(fCalorimeter == "EMCAL" /*&& GetCaloUtils()->IsEMCALGeoMatrixSet()*/)
-          {
-//            if(GetEMCALGeometry())
-//            {
-//              Int_t absID=0;
-//              GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
-//              
-//              //if( absID >= 0){
-//              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-//                inacceptance = kTRUE;
-//              
-//              if(GetDebug() > 2) printf("In %s Real acceptance?  %d\n",fCalorimeter.Data(),inacceptance);
-//            }
-//            else
-            {
-              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-                inacceptance = kTRUE ;
-              
-              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-          }	  //In EMCAL
-          
-          if(inacceptance)
-          {
-            fhEtaPrimMC[kmcPPhoton]->Fill(photonPt , photonEta) ;
-            fhPhiPrimMC[kmcPPhoton]->Fill(photonPt , photonPhi) ;
-            fhEPrimMC  [kmcPPhoton]->Fill(photonE) ;
-          }
-          
-          //Origin of photon
-          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) )
-          {
-            mcIndex = kmcPPrompt;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) )
-          {
-            mcIndex = kmcPFragmentation ;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
-          {
-            mcIndex = kmcPISR;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
-          {
-            mcIndex = kmcPPi0Decay;
-          }
-          else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) ||
-                    GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)))
-          {
-            mcIndex = kmcPOtherDecay;
-          }
-          else
-          {
-            mcIndex = kmcPOther;
-          }//Other origin
-          
-          // ////////////////////ISO MC/////////////////////////
-          Double_t sumpt = 0; Double_t dR=0. ;
-          Int_t nprim = stack->GetNtrack();
-          for(Int_t ip = 0; ip < nprim ; ip++)
-          {
-            
-            TParticle *mcisop = static_cast<TParticle*>(stack->Particle(ip));
-          
-            if(!mcisop)
-              continue;
-            
-            if(ip==i)
-              continue;
-            if(mcisop->GetStatusCode()!=1)
-              continue;
-            
-            if(mcisop->GetMother(0) == i)
-              continue;
-            
-            if(mcisop->Pt()<0.2)
-              continue;
-            
-            // TVector3 vmcv(mcisop->Px(),mcisop->Py(), mcisop->Pz());
-            // if(vmcv.Perp()>1)
-            //   continue;
-            
-            dR = GetIsolationCut()->Radius(photonEta, photonPhi, mcisop->Eta(), mcisop->Phi());
-            
-            if(dR > GetIsolationCut()->GetConeSize())
-            continue;
-            
-            sumpt += mcisop->Pt();
-          }
-          
-          ///////END ISO MC/////////////////////////
-          
-          if(inacceptance)
-          {
-            fhEtaPrimMC[mcIndex]->Fill(photonPt , photonEta) ;
-            fhPhiPrimMC[mcIndex]->Fill(photonPt , photonPhi) ;
-            fhEPrimMC  [mcIndex]->Fill(photonE ) ;
-            
-            if(sumpt < GetIsolationCut()->GetPtThreshold())
-            {
-              fhPtPrimMCiso [mcIndex]   ->Fill(photonPt) ;
-              fhPtPrimMCiso [kmcPPhoton]->Fill(photonPt) ;
-            }
-          }// end acceptance
-          
-        }// Primary photon PDG22
-      }//loop on primaries
-    }//stack exists and data is MC
-  }//read stack
+    stack = GetMCStack();
+    if(!stack ) return;
+    nprim = stack->GetNtrack();
+  }
   
-  else if(GetReader()->ReadAODMCParticles())
+  // Get the AOD MC particles container
+  TClonesArray * mcparticles = 0;
+  if( GetReader()->ReadAODMCParticles() )
   {
-    TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-    if(mcparticles)
-    {
-      Int_t nprim = mcparticles->GetEntriesFast();
-      
-      for(Int_t i=0; i < nprim; i++)
-      {
-        if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
-        
-        AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
-        
-        pdg = prim->GetPdgCode();
-        
-        if(pdg == 22)
-        {
-          // Get tag of this particle photon from fragmentation, decay, prompt ...
-          tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
-          
-          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-          {
-            //A conversion photon from a hadron, skip this kind of photon
-            //            printf("AliAnaPhoton::FillAcceptanceHistograms() - not a photon, weird!\n ");
-            //            GetMCAnalysisUtils()->PrintMCTag(tag);
-            
-            return;
-          }
-          
-          //Get photon kinematics
-          if(prim->E() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception
-          
-          //photonY   = 0.5*TMath::Log((prim->E()-prim->Pz())/(prim->E()+prim->Pz())) ;
-          photonE   = prim->E() ;
-          photonPt  = prim->Pt() ;
-          photonPhi = prim->Phi() ;
-          if(photonPhi < 0) photonPhi+=TMath::TwoPi();
-          photonEta = prim->Eta() ;
-          
-          //Check if photons hit the Calorimeter
-          TLorentzVector lv;
-          lv.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
-          inacceptance = kFALSE;
-          if     (fCalorimeter == "PHOS")
-          {
-            if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet())
-            {
-              Int_t mod ;
-              Double_t x,z ;
-              Double_t vtx[]={prim->Xv(),prim->Yv(),prim->Zv()};
-              if(GetPHOSGeometry()->ImpactOnEmc(vtx, prim->Theta(),prim->Phi(),mod,z,x))
-              inacceptance = kTRUE;
-              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-            else
-            {
-              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-              inacceptance = kTRUE ;
-              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-          }
-          else if(fCalorimeter == "EMCAL" /*&& GetCaloUtils()->IsEMCALGeoMatrixSet()*/)
-          {
-//            if(GetEMCALGeometry())
-//            {
-//              Int_t absID=0;
-//              
-//              //GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
-//              
-//              //if( absID >= 0){
-//              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-//                inacceptance = kTRUE;
-//              
-//              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-//            }
-//            else
-            {
-              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-                inacceptance = kTRUE ;
-              
-              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-          }	  //In EMCAL
-          
-          //Fill histograms
-          if(inacceptance)
-          {
-            fhEtaPrimMC[kmcPPhoton]->Fill(photonPt, photonEta) ;
-            fhPhiPrimMC[kmcPPhoton]->Fill(photonPt, photonPhi) ;
-            fhEPrimMC  [kmcPPhoton]->Fill(photonE) ;
-          }
-          
-          //Origin of photon
-          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
-          {
-            mcIndex = kmcPPrompt;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
-          {
-            mcIndex = kmcPFragmentation ;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
-          {
-            mcIndex = kmcPISR;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
-          {
-            mcIndex = kmcPPi0Decay;
-          }
-          else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) ||
-                    GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)))
-          {
-            mcIndex = kmcPOtherDecay;
-          }
-          else
-          {
-            mcIndex = kmcPOther;
-          }//Other origin
-          
-          ////////////////////ISO MC/////////////////////////
-          Double_t sumpt = 0; Double_t dR=0. ;
-          for(Int_t ip = 0; ip < nprim ; ip++)
-          {
-            AliAODMCParticle * mcisop = (AliAODMCParticle *) mcparticles->At(ip);
-            
-            if(!mcisop)
-              continue;
-            
-            if(ip==i)
-              continue;
-            
-            if(mcisop->GetStatus()!=1)
-              continue;
-            
-            if(mcisop->GetMother() == i)
-              continue;
-            
-            if(mcisop->Pt()<0.2)
-              continue;
-            
-            // TVector3 vmcv(mcisop->Px(),mcisop->Py(), mcisop->Pz());
-            // if(vmcv.Perp()>1)
-            //   continue;
-
-            dR = GetIsolationCut()->Radius(photonEta, photonPhi, mcisop->Eta(), mcisop->Phi());
-            
-            if(dR> GetIsolationCut()->GetConeSize())
-              continue;
-            
-            sumpt += mcisop->Pt();
-          }
-          ///////////////////END ISO MC/////////////////////////
-          
-          if(inacceptance)
-          {
-            fhEtaPrimMC[mcIndex]->Fill(photonPt , photonEta) ;
-            fhPhiPrimMC[mcIndex]->Fill(photonPt , photonPhi) ;
-            fhEPrimMC  [mcIndex]->Fill(photonE) ;
-            
-            if(sumpt < GetIsolationCut()->GetPtThreshold())
-            {
-              fhPtPrimMCiso [mcIndex]   ->Fill(photonPt) ;
-              fhPtPrimMCiso [kmcPPhoton]->Fill(photonPt) ;           
-            }	         
-          }//acceptance
-          
-        }// Primary photon
-      }//loop on primaries
-      
-    }//kmc array exists and data is MC
-  } // read AOD MC
+    mcparticles = GetReader()->GetAODMCParticles();
+    if( !mcparticles ) return;
+    nprim = mcparticles->GetEntriesFast();
+  }
   
+  for(Int_t i=0 ; i < nprim; i++)
+  {
+    if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+    
+    if(GetReader()->ReadStack())
+    {
+      primStack = stack->Particle(i) ;
+      pdg    = primStack->GetPdgCode();
+      status = primStack->GetStatusCode();
+      
+      if(primStack->Energy() == TMath::Abs(primStack->Pz()))  continue ; //Protection against floating point exception
+      
+      //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+      //       prim->GetName(), prim->GetPdgCode());
+      
+      //photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+      
+      //Photon kinematics
+      primStack->Momentum(lv);
+      
+    }
+    else
+    {
+      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      pdg    = primAOD->GetPdgCode();
+      status = primAOD->GetStatus();
+      
+      if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
+      
+      //photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+      
+      //Photon kinematics
+      lv.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+    }
+    
+    // Select only photons in the final state
+    if(pdg    != 22 ) continue ;
+    
+    if(status != 1  ) continue ;
+    
+    // If too small or too large pt, skip, same cut as for data analysis
+    photonPt  = lv.Pt () ;
+    
+    if(photonPt < GetMinPt() || photonPt > GetMaxPt() ) continue ;
+    
+    photonE   = lv.E  () ;
+    photonEta = lv.Eta() ;
+    photonPhi = lv.Phi() ;
+    
+    if(photonPhi < 0) photonPhi+=TMath::TwoPi();
+    
+    // Check if photons hit the Calorimeter approximate acceptance
+    // Not too realistic acceptance, check later what to do.
+    inacceptance = kFALSE;
+    if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
+      inacceptance = kTRUE ;
+    
+    if( !inacceptance ) continue;
+    
+    // Get tag of this particle photon from fragmentation, decay, prompt ...
+    // Set the origin of the photon.
+    tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
+    
+    if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
+    {
+      // A conversion photon from a hadron, skip this kind of photon
+      // printf("AliAnaPhoton::FillAcceptanceHistograms() - not a photon, weird!\n ");
+      // GetMCAnalysisUtils()->PrintMCTag(tag);
+      
+      continue;
+    }
+    
+    //
+    if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) )
+    {
+      mcIndex = kmcPrimPrompt;
+    }
+    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) )
+    {
+      mcIndex = kmcPrimFrag ;
+    }
+    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
+    {
+      mcIndex = kmcPrimISR;
+    }
+    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
+    {
+      mcIndex = kmcPrimPi0Decay;
+    }
+    else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) ||
+              GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)))
+    {
+      mcIndex = kmcPrimOtherDecay;
+    }
+    else
+    {
+      mcIndex = kmcPrimOther;
+    }//Other origin
+    
+    // ////////////////////ISO MC/////////////////////////
+    Double_t sumPtInCone = 0; Double_t dR=0. ;
+    TParticle        * mcisopStack = 0;
+    AliAODMCParticle * mcisopAOD   = 0;
+    Int_t partInConeStatus = -1, partInConeMother = -1;
+    Double_t partInConePt = 0, partInConeEta = 0, partInConePhi = 0;
+    Int_t npart = 0;
+    for(Int_t ip = 0; ip < nprim ; ip++)
+    {
+      if(ip==i) continue;
+      
+      if( GetReader()->ReadStack() )
+      {
+        mcisopStack = static_cast<TParticle*>(stack->Particle(ip));
+        if( !mcisopStack ) continue;
+        partInConeStatus = mcisopStack->GetStatusCode();
+        partInConeMother = mcisopStack->GetMother(0);
+        partInConePt     = mcisopStack->Pt();
+        partInConeEta    = mcisopStack->Eta();
+        partInConePhi    = mcisopStack->Phi();
+      }
+      else
+      {
+        mcisopAOD   = (AliAODMCParticle *) mcparticles->At(ip);
+        if( !mcisopAOD )   continue;
+        partInConeStatus = mcisopAOD->GetStatus();
+        partInConeMother = mcisopAOD->GetMother();
+        partInConePt     = mcisopAOD->Pt();
+        partInConeEta    = mcisopAOD->Eta();
+        partInConePhi    = mcisopAOD->Phi();
+      }
+      
+      if( partInConeStatus != 1 ) continue;
+      
+      if( partInConeMother == i ) continue;
+      
+      if( partInConePt < GetReader()->GetCTSPtMin() ) continue;
+      // Careful!!!, cut for TPC tracks and calorimeter clusters in cone can be different
+      
+      // TVector3 vmcv(mcisop->Px(),mcisop->Py(), mcisop->Pz());
+      // if(vmcv.Perp()>1)
+      //   continue;
+      
+      dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
+      
+      if(dR > GetIsolationCut()->GetConeSize())
+        continue;
+      
+      sumPtInCone += partInConePt;
+      if(partInConePt > GetIsolationCut()->GetPtThreshold() &&
+         partInConePt < GetIsolationCut()->GetPtThresholdMax()) npart++;
+    }
+    
+    ///////END ISO MC/////////////////////////
+    
+    // Fill the histograms, only those in the defined calorimeter acceptance
+    
+    fhEtaPrimMC[kmcPrimPhoton]->Fill(photonPt , photonEta) ;
+    fhPhiPrimMC[kmcPrimPhoton]->Fill(photonPt , photonPhi) ;
+    fhEPrimMC  [kmcPrimPhoton]->Fill(photonE) ;
+    
+    fhEtaPrimMC[mcIndex]->Fill(photonPt , photonEta) ;
+    fhPhiPrimMC[mcIndex]->Fill(photonPt , photonPhi) ;
+    fhEPrimMC  [mcIndex]->Fill(photonE ) ;
+    
+    // Isolated?
+    Bool_t isolated = kFALSE;
+    if(GetIsolationCut()->GetICMethod() == AliIsolationCut::kSumPtIC   &&
+       (sumPtInCone < GetIsolationCut()->GetSumPtThreshold() ||
+        sumPtInCone > GetIsolationCut()->GetSumPtThresholdMax()))
+      isolated = kTRUE;
+    
+    if(GetIsolationCut()->GetICMethod() == AliIsolationCut::kPtThresIC &&
+       npart == 0)
+      isolated = kTRUE;
+    
+    if(isolated)
+    {
+      fhPtPrimMCiso [mcIndex]      ->Fill(photonPt) ;
+      fhPtPrimMCiso [kmcPrimPhoton]->Fill(photonPt) ;
+    }
+    
+  }//loop on primaries
 }
 
 
 //_____________________________________________________________________________________
-void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelation* ph) 
+void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelation* ph)
 {
   
   //Isolation Cut Analysis for both methods and different pt cuts and cones
-  Float_t ptC   = ph->Pt();	
+  Float_t ptC   = ph->Pt();
   Float_t etaC  = ph->Eta();
   Float_t phiC  = ph->Phi();
-  Int_t   tag   = ph->GetTag(); 
+  Int_t   tag   = ph->GetTag();
   Bool_t  decay = ph->IsTagged();
   
   if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeSeveralICAnalysis() - Isolate pT %2.2f\n",ptC);
