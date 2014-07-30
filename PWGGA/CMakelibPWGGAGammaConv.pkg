@@ -60,6 +60,7 @@ set ( SRCS
 	GammaConv/AliPrimaryPionSelector.cxx
 	GammaConv/AliPrimaryPionCuts.cxx
 	GammaConv/AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
+	GammaConv/AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
         GammaConv/AliAnalysisTaskGammaConvCalo.cxx
 )
 
