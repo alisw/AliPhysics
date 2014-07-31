@@ -2,6 +2,8 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
 							    TString  data      = "PbPb2010", 
 							    Float_t  minCen    = 0.,
 							    Float_t  maxCen    = 40.,
+							    Float_t  radiusTPC = 125.,
+							    Float_t  cutSharedTPCcls = 0.06,
 							    Bool_t   sepInjec  = kTRUE,
 							    Bool_t   isMC      = kFALSE,
 							    Bool_t   doQA      = kTRUE,
@@ -52,6 +54,9 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   // MC
   task->SetMC(isMC);
   task->SetPID(usePID);
+  // Setting variables for splitting cut
+  task->SetTPCRadius(radiusTPC);    
+  task->SetDiffSharedTPCcls(cutSharedTPCcls);
   // QA
   task->SetQA(doQA);
   // Add task

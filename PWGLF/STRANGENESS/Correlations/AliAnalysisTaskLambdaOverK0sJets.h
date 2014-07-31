@@ -101,6 +101,10 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   void SetMinCPA(Float_t minCPA=0.998) {fMinCPA=minCPA;} 
   void SetCtau(Float_t minCtau = 0., Float_t maxCtau = 3.) {fMinCtau=minCtau;fMaxCtau=maxCtau;} 
 
+  // Setting variables for splitting cut
+  void SetTPCRadius(Float_t tpcRadius=125.) {fTPCRadius=tpcRadius;}                    
+  void SetDiffSharedTPCcls(Float_t diffSharedTPCcls=0.06) {fDiffTrigDaugFracTPCSharedCls=diffSharedTPCcls;}
+
   // Getters
   Float_t GetMinCentr() { return fCentMin; }
   Float_t GetMaxCentr() { return fCentMax; }
@@ -113,7 +117,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   virtual Double_t ThetaS(TString part);
   virtual Double_t EtaS(TString part);
   virtual Float_t  dEtaS();
-  virtual Float_t  dPhiSAtR12();
+  virtual Float_t  dPhiSAtR125();
   virtual void     SetSftPosR125(const AliAODTrack *track,const Float_t bfield,const Float_t priVtx[3], TString part);
   virtual void     RecCascade(const AliAODTrack *trk1,const AliAODTrack *trk2,const AliAODTrack *trkBch,TString histo);
   virtual void     V0Loop(V0LoopStep_t step, Bool_t isTriggered, Int_t iArray, Int_t idTrig);
@@ -162,8 +166,12 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Float_t fPtV0LP;                       //  Pt of the leading V0
   Int_t   fIsSndCheck;                   //  Flag: trigger particle is the second leaidng particle
 
+  Float_t fTPCRadius;                    // Radial position of TPC to obtain the separation between the trigger particle and the daughter particle
   Float_t fTrigSftR125[3];               // Shifted position of the daughter track to the Primary verterx
   Float_t fDaugSftR125[3];               // Shifted position of the trigger track to the Primary verterx
+  //Float_t fTriggerFracTPCSharedCls;      // Trigger particle: fraction of shared clusters to allow
+  //Float_t fDaugFracTPCSharedCls;         // Daughter track: fraction of shared clusters to allow
+  Float_t fDiffTrigDaugFracTPCSharedCls; // Allowed dispertion in the fraction of TPC shared clusters between trigger particle and the daughter track
 
   TList*  fOutput;                       //! List of histograms for main analysis
   TList*  fOutputQA;                     //! List of histograms for Quality Assurance
