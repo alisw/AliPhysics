@@ -77,6 +77,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Analysis Setters and Getters
   
   TString      GetCalorimeter()                const { return fCalorimeter       ; }
+  TString      GetTriggerDetector()            const { return fIsoDetector       ; }
   Int_t        GetNCones()                     const { return fNCones            ; }
   Int_t        GetNPtThresFrac()               const { return fNPtThresFrac      ; }
   Float_t      GetConeSizes(Int_t i)           const { return fConeSizes[i]      ; }
@@ -88,6 +89,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t        GetMCIndex(Int_t mcTag);
   
   void         SetCalorimeter(TString & det)         { fCalorimeter     = det    ; }
+  void         SetTriggerDetector(TString & det)     { fIsoDetector     = det    ; }
   void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
   void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
   void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
@@ -157,6 +159,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
  private:
   
   TString  fCalorimeter ;                         // Calorimeter where neutral particles in cone for isolation are;
+  TString  fIsoDetector ;                         // Candidate particle for isolation detector ;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
   Bool_t   fFillPileUpHistograms;                 // Fill pile-up related histograms
