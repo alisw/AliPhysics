@@ -20,7 +20,7 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         enum detectorType       {kVZEROA, kVZEROC, kVZEROComb, kFixedEP};  // detector that was used
         // constructors, destructor
         AliAnalysisTaskJetFlowMC();
-        AliAnalysisTaskJetFlowMC(const char *name, Int_t seed = 0);
+        AliAnalysisTaskJetFlowMC(const char *name, Bool_t qa = kFALSE, Int_t seed = 0);
         virtual ~AliAnalysisTaskJetFlowMC();
         void    UserCreateOutputObjects();
         TH1F*   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c = -1, Bool_t append = kTRUE);
@@ -89,6 +89,7 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         void            Terminate(Option_t* option);
         void            PrintInfo() const;
     protected:
+        Bool_t          fQA;                    //! save QA plots
         TString         fTracksOutName;         // name of output track array
         TString         fTracksInName;          // name of input track array
         TClonesArray   *fTracksIn;              //! track array in
@@ -129,6 +130,6 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         AliAnalysisTaskJetFlowMC(const AliAnalysisTaskJetFlowMC&);            // not implemented
         AliAnalysisTaskJetFlowMC &operator=(const AliAnalysisTaskJetFlowMC&); // not implemented
 
-        ClassDef(AliAnalysisTaskJetFlowMC, 2); // Task to generate toy mc PicoTracks based on real events
+        ClassDef(AliAnalysisTaskJetFlowMC, 3); // Task to generate toy mc PicoTracks based on real events
 };
 #endif

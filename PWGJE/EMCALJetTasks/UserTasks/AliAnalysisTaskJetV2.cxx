@@ -1848,8 +1848,8 @@ void AliAnalysisTaskJetV2::FillJetHistograms(Double_t psi2)
 void AliAnalysisTaskJetV2::FillQAHistograms(AliVTrack* vtrack) const
 {
     // fill qa histograms for pico tracks
-     if(fDebug > 1) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-   if(!vtrack) return;
+    if(fDebug > 1) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    if(!vtrack) return;
     AliPicoTrack* track = static_cast<AliPicoTrack*>(vtrack);
     fHistRunnumbersPhi->Fill(fMappedRunNumber, track->Phi());
     fHistRunnumbersEta->Fill(fMappedRunNumber, track->Eta());
@@ -1876,10 +1876,10 @@ void AliAnalysisTaskJetV2::FillQAHistograms(AliVEvent* vevent)
     fHistVertexz->Fill(vevent->GetPrimaryVertex()->GetZ());
     fHistCentrality->Fill(fCent);
     Int_t runNumber(InputEvent()->GetRunNumber());
-    for(fMappedRunNumber = 0; fMappedRunNumber < fExpectedRuns->GetSize()+1; fMappedRunNumber++) {
+    for(fMappedRunNumber = 0; fMappedRunNumber < fExpectedRuns->GetSize(); fMappedRunNumber++) {
         if(fExpectedRuns->At(fMappedRunNumber) == runNumber) return;
     }
-    printf("\n > TASK %s CANNOT IDENTIFY RUN - CONFIGURATION COULD BE INCORRECT < \n", GetName());
+    if(fDebug > 0) printf("\n > TASK %s CANNOT IDENTIFY RUN - CONFIGURATION COULD BE INCORRECT < \n", GetName());
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::FillAnalysisSummaryHistogram() const
