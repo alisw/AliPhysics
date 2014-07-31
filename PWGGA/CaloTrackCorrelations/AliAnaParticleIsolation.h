@@ -147,9 +147,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      GetHistoPtInConeMax()           const { return fHistoPtInConeMax  ; }
   
  // For primary histograms in arrays, index in the array, corresponding to a photon origin
-  enum mcPrimTypes { kmcPrimPhoton = 0,   kmcPrimPi0Decay = 1,   kmcPrimOtherDecay = 2,
-                     kmcPrimOther  = 3,   kmcPrimPrompt   = 4,
-                     kmcPrimFrag   = 5,   kmcPrimISR      = 6                             } ;
+  enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimOtherDecay  = 2,
+                     kmcPrimPrompt = 3, kmcPrimFrag     = 4, kmcPrimISR         = 5       } ;
   
   // For histograms in arrays, index in the array, corresponding to any particle origin
   enum mcTypes     { kmcPhoton   = 0, kmcPrompt   = 1, kmcFragment   = 2,
@@ -319,10 +318,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   //MC
   //
-  TH2F *   fhEtaPrimMC  [7];                      //! Pt vs Eta of generated photon
-  TH2F *   fhPhiPrimMC  [7];                      //! Pt vs Phi of generated photon
-  TH1F *   fhEPrimMC    [7];                      //! Number of generated photon vs E
-  TH1F *   fhPtPrimMCiso[7];                      //! Number of generated isolated photon vs pT
+  TH2F *   fhEtaPrimMC  [6];                      //! Pt vs Eta of generated photon
+  TH2F *   fhPhiPrimMC  [6];                      //! Pt vs Phi of generated photon
+  TH1F *   fhEPrimMC    [6];                      //! Number of generated photon vs E
+  TH1F *   fhPtPrimMCiso[6];                      //! Number of generated isolated photon vs pT
   
   TH1F *   fhPtNoIsoMC[9];                        //! Number of not isolated mcTypes particle
   TH1F *   fhPtIsoMC  [9];                        //! Number of isolated mcTypes particle

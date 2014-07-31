@@ -228,7 +228,7 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
   }
   
   // Acceptance
-  for(Int_t i = 0; i < 7; i++)
+  for(Int_t i = 0; i < 6; i++)
   {
     fhPtPrimMCiso[i] = 0;
     fhEPrimMC    [i] = 0;
@@ -1397,10 +1397,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                            "Electron","Hadron"} ;
   
   // Primary MC histograms title and name
-  TString pptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}","hadron?",
+  TString pptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}",
                        "#gamma_{prompt}","#gamma_{fragmentation}","#gamma_{ISR}"} ;
   
-  TString ppname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay","Hadron",
+  TString ppname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay",
                        "PhotonPrompt","PhotonFrag","PhotonISR"} ;
 
   if(!fMakeSeveralIC)
@@ -2563,7 +2563,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhEtaIsoMC[imc]) ;
       }
       
-      for(Int_t i = 0; i < 7; i++)
+      for(Int_t i = 0; i < 6; i++)
       {
         fhEPrimMC[i]  = new TH1F(Form("hEPrim_MC%s",ppname[i].Data()),
                                  Form("primary photon  %s : #it{E}, %s",pptype[i].Data(),parTitle.Data()),
@@ -2934,6 +2934,7 @@ Int_t AliAnaParticleIsolation::GetMCIndex(Int_t mcTag)
   }
   else // anything else
   {
+    // careful can contain also other decays, to be checked.
     return kmcHadron;
   }
 }
@@ -3393,9 +3394,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     if(photonPhi < 0) photonPhi+=TMath::TwoPi();
     
-    // Check if photons hit the Calorimeter approximate acceptance
-    // Not too realistic acceptance, check later what to do.
-    // Rethink if trigger particle is in CTS and not Calorimeters
+    // Check if photons hit the Calorimeter acceptance
     if(IsRealCaloAcceptanceOn() && fIsoDetector!="CTS") // defined on base class
     {
       if(GetReader()->ReadStack()          &&
@@ -3444,7 +3443,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     else
     {
-      mcIndex = kmcPrimOther;
+      // Other decay but from non final state particle
+      mcIndex = kmcPrimOtherDecay;
     }//Other origin
     
     // ////////////////////ISO MC/////////////////////////
