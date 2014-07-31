@@ -72,8 +72,8 @@ void Config()
     
     // Activate step limit defined in low density materials
     // (the default value is 10 cm)
-    //geant4->ProcessGeantCommand("/mcDet/setIsMaxStepInLowDensityMaterials true");
-    //geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 1 cm");
+    geant4->ProcessGeantCommand("/mcDet/setIsMaxStepInLowDensityMaterials true");
+    geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 10 m");
 
     // Activate step limit defined in tracking media
     // (Note: this slows down simulation significantly)
