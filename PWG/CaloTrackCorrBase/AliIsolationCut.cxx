@@ -765,6 +765,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   if( fICMethod == kPtThresIC)
   {
     if( n == 0 ) isolated = kTRUE ;
+    
+    if(fDebug > 0 )
+      printf("pT Cand %2.2f, pT Lead %2.2f, %2.2f<pT Lead< %2.2f, isolated %d\n",
+             ptC,ptLead,fPtThreshold,fPtThresholdMax,isolated);
   }
   else if( fICMethod == kSumPtIC )
   {
@@ -773,6 +777,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
       isolated  =  kFALSE ;
     else
       isolated  =  kTRUE  ;
+    
+    if(fDebug > 0 )
+      printf("pT Cand %2.2f, SumPt %2.2f, %2.2f<Sum pT< %2.2f, isolated %d\n",
+             ptC,ptLead,fSumPtThreshold,fSumPtThresholdMax,isolated);
   }
   else if( fICMethod == kPtFracIC )
   {
