@@ -48,6 +48,7 @@
 #include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalDCS.h"
+#include "Cal/AliTRDCalDCSFEE.h"
 #include "Cal/AliTRDCalDCSv2.h"
 #include "Cal/AliTRDCalDCSFEEv2.h"
 #include "Cal/AliTRDCalPID.h"
@@ -941,21 +942,105 @@ Int_t AliTRDcalibDB::ExtractTimeBinsFromString(TString tbstr)
 }
 
 //_____________________________________________________________________________
+Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCSBoard(){
+  // This is an old way to extract the number of time bins,
+  // only to be used as a fallback to see whether there's
+  // a patched OCDB object!
+  
+  Int_t nTB=-1;
+  // Get the array with SOR and EOR
+  const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
+  if(!dcsArr)
+    return -1; // Error
+  // Check CalDCS version
+  Int_t calver = 0;
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS")) calver = 1;
+  else if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
+  // CalDCS version 1
+  if (calver == 1) {
+    // DCS object
+    AliTRDCalDCS *calSOR = dynamic_cast<AliTRDCalDCS *>(dcsArr->At(0));
+    // SOR mandantory
+    if(!calSOR)
+      return -1; // Error
+    else
+      nTB=calSOR->GetGlobalNumberOfTimeBins();
+    AliTRDCalDCS *calEOR = dynamic_cast<AliTRDCalDCS *>(dcsArr->At(1));
+    if(calEOR && calEOR->GetGlobalNumberOfTimeBins()!=nTB)
+      return -2; // Mixed
+  }
+  else if (calver == 2) {
+    // DCS object
+    AliTRDCalDCSv2 *calSOR = dynamic_cast<AliTRDCalDCSv2 *>(dcsArr->At(0));
+    // SOR mandantory
+    if(!calSOR)
+      return -1; // Error
+    else
+      nTB=calSOR->GetGlobalNumberOfTimeBins();
+    AliTRDCalDCSv2 *calEOR = dynamic_cast<AliTRDCalDCSv2 *>(dcsArr->At(1));
+    if(calEOR && calEOR->GetGlobalNumberOfTimeBins()!=nTB)
+      return -2; // Mixed
+  }
+  else{
+    // No version 1 nor version 2 object
+    return -1; // Error
+  }
+
+  // All well
+  return nTB;
+}
+//_____________________________________________________________________________
 Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
 {
   //
   // Returns number of time bins from the DCS
   //
 
-  // Get the corresponding parameter
-  TString cfgstr = "", cfgname = "";
-  GetGlobalConfiguration(cfgname);
-  if(cfgname.Length()==0)
-    return -1;
-  GetDCSConfigParOption(cfgname, kTimebin, 0, cfgstr);
-  if(cfgstr.Length()==0)
-    return -1;
-  return ExtractTimeBinsFromString(cfgstr);
+  // Initialize with values indicating no information
+  TString cfg="";
+  Int_t nTB = -1;
+  // Extract the global configuration name
+  GetGlobalConfigurationByChamber(cfg,kTimebin);
+  // Extract the number of time bins from
+  // the global configuration 
+  if(cfg.Length()>0){
+    nTB = ExtractTimeBinsFromString(cfg);
+  }
+  if(nTB>0){
+    // All well, we could extract the number
+    // of time bins from the configuration name
+    return nTB;
+  }
+  else{
+    // No number of time bins from config name.
+    // No board responded or similar.
+    // We patched some OCDB entries with 
+    // only the global number of time bins set.
+    // We should get these here
+    nTB=GetNumberOfTimeBinsDCSBoard();
+    if(nTB>0){
+      AliWarning("Using old method for number of time bins."
+		 " This is probably a patched OCDB entry");
+      return nTB;
+    }
+    else{
+      // Error
+      AliError("No number of time bins either"
+	       " from config name or patched OCDB entry");
+      return -1;
+    }
+  }
+
+  
+  // // Get the corresponding parameter
+  // TString cfgstr = "", cfgname = "";
+  // GetGlobalConfiguration(cfgname);
+  // if(cfgname.Length()==0)
+  //   return -1;
+  // GetDCSConfigParOption(cfgname, kTimebin, 0, cfgstr);
+  // if(cfgstr.Length()==0)
+  //   return -1;
+  // return ExtractTimeBinsFromString(cfgstr);
 
 }
 
@@ -1126,7 +1211,206 @@ void AliTRDcalibDB::GetGlobalConfiguration(TString &config)
   return;
 
 }
+//_____________________________________________________________________________
+void AliTRDcalibDB::GetGlobalConfigurationByChamber(TString &config,Int_t par, Int_t opt)
+{
+  //
+  // Get Configuration from the DCS
+  //
 
+  // par is the enumeration from kFltrSet = 1 ... kAddOpti 6
+  //   example:
+  //      cf_p_nozs_tb30_csmtrk_ptrg
+  //   par   1   2    3    4     5
+  //      kFltrSet  kTimebin   kTrigSet
+  //          kReadout  kTrkMode
+  // opt is 0 for the value itself and 1,2,3 for the first, second option
+  // opt has standard value of 0 in header file
+
+
+  // The point is that we extract the parameter/option for 
+  // each of the 540 chambers and compare only this 
+  // parameter/option for a global value, not the full
+  // configuration name with all parameters
+
+  // Get the array with SOR and EOR
+  const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
+  if(!dcsArr){
+    AliError("No DCS CDB Object available!");
+    config = "";
+    return;
+  }
+
+  // Check CalDCS version
+  Int_t calver = 0;
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS")) calver = 1;
+  else if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
+  //
+  // Get the configuration strings
+  //
+  // CalDCS version 1
+  if (calver == 1) {
+
+    // Loop over SOR/EOR
+    for(Int_t iSEOR=0;iSEOR<2;iSEOR++){
+
+      // DCS object
+      AliTRDCalDCS *cal = dynamic_cast<AliTRDCalDCS *>(dcsArr->At(iSEOR));
+      if(!cal){
+	// SOR mandantory
+	if(iSEOR==0){
+	  AliError("NO SOR object found in CDB file!");
+	  config = "";
+	  return;
+	}
+	else{
+	  AliWarning("NO EOR object found in CDB file!");
+	  continue;
+	}
+      } // Check DCS object is there
+      
+      // Loop over 540 chambers
+      {
+	Int_t iDet=0;
+	// Find the first chamber in SOR
+	if(iSEOR==0){
+	  // Loop until we find the first chamber
+	  for(;iDet<kNdet;iDet++){
+	    const AliTRDCalDCSFEE *DCSFEEObj = cal->GetCalDCSFEEObj(iDet);
+	    // Check it's an installed chamber that responded
+	    if(DCSFEEObj && !DCSFEEObj->GetStatusBit()) {
+
+	      // We ask for a valid configuration name starting with cf_
+	      if(DCSFEEObj->GetConfigName().BeginsWith("cf_")){
+		// Set the parameter of the first good ROC as global,
+		// we take only the requested part!
+		GetDCSConfigParOption(DCSFEEObj->GetConfigName(), par, opt, config);
+		// Increase counter to not look at this chamber again
+		// and break loop
+		iDet++;
+		break;
+	      } // End: valid config name
+	    } // End: first good chamber
+	  } // End: find the first chamber
+	} // End: is SOR
+
+	// Now compare the other chambers with the first one
+	for(;iDet<kNdet;iDet++){
+	  const AliTRDCalDCSFEE *DCSFEEObj = cal->GetCalDCSFEEObj(iDet);
+	  // Check it's an installed chamber that responded
+	  if(DCSFEEObj && !DCSFEEObj->GetStatusBit()) {
+	    
+	    // We ask for a valid configuration name starting with cf_
+	    if(DCSFEEObj->GetConfigName().BeginsWith("cf_")){
+
+	      // Get the parameter/option of this chamber
+	      TString tmpcfg;
+	      GetDCSConfigParOption(DCSFEEObj->GetConfigName(), par, opt, tmpcfg);
+	      // Compare with the global value
+	      if(config.CompareTo(tmpcfg)){
+		// Two cases mixed or changed during run
+		if(iSEOR==0){
+		  AliError("Mixed DCS configuration for different chambers!");
+		  config="mixed";
+		  return;
+		} else {
+		  AliError("Inconsistent configuration at start and end of run found!");
+		  config = "";
+		  return;
+		}
+	      }
+	    }// Valid config name 
+	  }// Good chamber
+	} // Second half loop 
+      } // Loop over 540 chambers
+    } // Loop over SOR / EOR 
+  } // End calver 1
+  //
+  // CalDCS version 2
+  //
+  else if (calver == 2) {
+
+    // Loop over SOR/EOR
+    for(Int_t iSEOR=0;iSEOR<2;iSEOR++){
+
+      // DCS object
+      AliTRDCalDCSv2 *cal = dynamic_cast<AliTRDCalDCSv2 *>(dcsArr->At(iSEOR));
+      if(!cal){
+	// SOR mandantory
+	if(iSEOR==0){
+	  AliError("NO SOR object found in CDB file!");
+	  config = "";
+	  return;
+	}
+	else{
+	  AliWarning("NO EOR object found in CDB file!");
+	  continue;
+	}
+      } // Check DCS object is there
+      
+      // Loop over 540 chambers
+      {
+	Int_t iDet=0;
+	// Find the first chamber in SOR
+	if(iSEOR==0){
+	  // Loop until we find the first chamber
+	  for(;iDet<kNdet;iDet++){
+	    const AliTRDCalDCSFEEv2 *DCSFEEObj = cal->GetCalDCSFEEObj(iDet);
+	    // Check it's an installed chamber that responded
+	    if(DCSFEEObj && !DCSFEEObj->GetStatusBit()) {
+	      // Check for a valid config name
+	      if(DCSFEEObj->GetConfigName().BeginsWith("cf_")){
+
+		// Set the parameter of the first good ROC as global,
+		// we take only the requested part!
+		GetDCSConfigParOption(DCSFEEObj->GetConfigName(), par, opt, config);
+		// Increase counter to not look at this chamber again
+		// and break loop
+		iDet++;
+		break;
+	      } // End: valid config name
+	    } // End: first good chamber
+	  } // End: find the first chamber
+	} // End: is SOR
+
+	// Now compare the other chambers with the first one
+	for(;iDet<kNdet;iDet++){
+	  const AliTRDCalDCSFEEv2 *DCSFEEObj = cal->GetCalDCSFEEObj(iDet);
+	  // Check it's an installed chamber that responded
+	  if(DCSFEEObj && !DCSFEEObj->GetStatusBit()) {
+
+	    // Check for a valid config name
+	    if(DCSFEEObj->GetConfigName().BeginsWith("cf_")){
+
+	      // Get the parameter/option of this chamber
+	      TString tmpcfg;
+	      GetDCSConfigParOption(DCSFEEObj->GetConfigName(), par, opt, tmpcfg);
+	      // Compare with the global value
+	      if(config.CompareTo(tmpcfg)){
+		// Two cases mixed or changed during run
+		if(iSEOR==0){
+		  AliError("Mixed DCS configuration for different chambers!");
+		  config="mixed";
+		  return;
+		} else {
+		  AliError("Inconsistent configuration at start and end of run found!");
+		  config = "";
+		  return;
+		}
+	      }
+	    } // End: valid config name
+	  } // End: Good chamber
+	} // End: Second half loop 
+      } // Loop over 540 chambers
+    } // Loop over SOR / EOR 
+  } // End calver 2
+  else {
+    AliError("NO DCS/DCSv2 OCDB entry found!");
+    config = "";
+    return;
+  }
+
+}
 //_____________________________________________________________________________
 void AliTRDcalibDB::GetGlobalConfigurationVersion(TString &version)
 {
@@ -1227,7 +1511,8 @@ void AliTRDcalibDB::GetDCSConfigParOption(TString cname, Int_t cfgType, Int_t op
     cfgo = "";
     return;
   } else if (nconfig < cfgType) {
-    AliError("Not enough parameters in DCS configuration name!");
+    AliError(Form("Not enough parameters in DCS configuration name!"
+		  " Name %s",cname.Data()));
     cfgo = "";
     return;
   }
@@ -1237,7 +1522,8 @@ void AliTRDcalibDB::GetDCSConfigParOption(TString cname, Int_t cfgType, Int_t op
   Int_t noptions = GetNumberOfParsDCS(cfgString, odelim);
   // protect
   if (noptions < option) {
-    AliError("Not enough options in DCS configuration name!");
+    AliError(Form("Not enough options in DCS configuration name!"
+		  " Name %s",cname.Data()));
     cfgo = "";
     carr->Delete(); delete carr;
     return;
