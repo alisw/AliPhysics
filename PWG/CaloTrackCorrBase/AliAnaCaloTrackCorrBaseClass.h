@@ -131,15 +131,22 @@ public:
   // Common analysis switchs 
   
   virtual Bool_t         IsDataMC()                        const { return fDataMC                ; }
-  virtual void           SwitchOnDataMC()                        { fDataMC = kTRUE ; if(!fMCUtils)fMCUtils = new AliMCAnalysisUtils();}
+  virtual void           SwitchOnDataMC()                        { fDataMC = kTRUE ;
+                                                                   if(!fMCUtils) fMCUtils = new AliMCAnalysisUtils() ; }
   virtual void           SwitchOffDataMC()                       { fDataMC = kFALSE              ; }
   
   virtual Bool_t         IsFiducialCutOn()                 const { return fCheckFidCut           ; }
-  virtual void           SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE;  if(!fFidCut)fFidCut = new AliFiducialCut();}
+  virtual void           SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE ;
+                                                                   if(!fFidCut)  fFidCut   = new AliFiducialCut()     ; }
   virtual void           SwitchOffFiducialCut()                  { fCheckFidCut = kFALSE         ; }
+
+  virtual Bool_t         IsRealCaloAcceptanceOn()          const { return fCheckRealCaloAcc      ; }
+  virtual void           SwitchOnRealCaloAcceptance()            { fCheckRealCaloAcc = kTRUE;  }
+  virtual void           SwitchOffRealCaloAcceptance()           { fCheckRealCaloAcc = kFALSE    ; }
   
   virtual Bool_t         IsCaloPIDOn()                     const { return fCheckCaloPID          ; }
-  virtual void           SwitchOnCaloPID()                       { fCheckCaloPID = kTRUE; if(!fCaloPID)fCaloPID = new AliCaloPID();}
+  virtual void           SwitchOnCaloPID()                       { fCheckCaloPID = kTRUE ;
+                                                                   if(!fCaloPID)  fCaloPID = new AliCaloPID()         ; }
   virtual void           SwitchOffCaloPID()                      { fCheckCaloPID = kFALSE        ; }
   
   virtual Bool_t         MakePlotsOn()                     const { return fMakePlots        ; }
@@ -290,7 +297,8 @@ private:
   
   Bool_t                     fDataMC ;             // Flag to access MC data when using ESD or AOD     
   Int_t                      fDebug ;              // Debug level
-  Bool_t                     fCheckFidCut ;        // Do analysis for clusters in defined region         
+  Bool_t                     fCheckFidCut ;        // Do analysis for clusters in defined region
+  Bool_t                     fCheckRealCaloAcc ;   // When analysis of MC particle kinematics, check their hit in Calorimeter in Real Geometry or use FidCut
   Bool_t                     fCheckCaloPID ;       // Do analysis for calorimeters
   Bool_t                     fRecalculateCaloPID ; // Recalculate PID or use PID weights in calorimeters
   Float_t                    fMinPt ;              // Maximum pt of (trigger) particles in the analysis
@@ -330,7 +338,7 @@ private:
   AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy ctor
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrBaseClass,22)
+  ClassDef(AliAnaCaloTrackCorrBaseClass,23)
 } ;
 
 
