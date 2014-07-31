@@ -31,6 +31,7 @@
 class TObjArray;
 class AliVTrack;
 class AliTRDPIDResponseObject;
+class AliTRDdEdxParams;
 
 class AliTRDPIDResponse : public TObject {
   public:
@@ -75,6 +76,7 @@ class AliTRDPIDResponse : public TObject {
     void      SetGainNormalisationFactor(Double_t gainFactor) { fGainNormalisationFactor = gainFactor; }
 
     Bool_t SetPIDResponseObject(const AliTRDPIDResponseObject * obj);
+    Bool_t SetdEdxParams(const AliTRDdEdxParams * par);
     
     Bool_t    Load(const Char_t *filename = NULL);
   
@@ -85,8 +87,8 @@ class AliTRDPIDResponse : public TObject {
     Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t *dEdx,ETRDPIDMethod PIDmethod=kLQ1D) const;
     
     const AliTRDPIDResponseObject *fkPIDResponseObject;   // PID References and Params
+    const AliTRDdEdxParams * fkTRDdEdxParams; //parametrisation for truncated mean
     Double_t  fGainNormalisationFactor;         // Gain normalisation factor
-      
   
   ClassDef(AliTRDPIDResponse, 3)    // Tool for TRD PID
 };
