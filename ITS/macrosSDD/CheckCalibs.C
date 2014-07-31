@@ -709,8 +709,8 @@ void CheckCalibInterface::ShowDDL(Int_t iddl){
 	    }
 	  }
 	}
+	fclose(injFil);	
       }
-      fclose(injFil);	
       if(gdrsp[sideId]->GetN()==0) gdrsp[sideId]->SetPoint(0,128.,0.);
     }
   }
