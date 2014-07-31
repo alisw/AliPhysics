@@ -141,25 +141,21 @@ void AliAnalysisTaskPt::Exec(Option_t *)
     if (!friendTrack) {
       Printf("ERROR: Could not receive track %d", iFriend);
       continue;
-    } 
-    TObject* calibObject;
-    AliTPCseed* seed = NULL;
-    for (Int_t idx = 0; (calibObject = friendTrack->GetCalibObject(idx)); ++idx) {
-      Printf(" |Cal %d = %p", idx, calibObject); 
-      if ((seed = dynamic_cast<AliTPCseed*>(calibObject))) {
-	Printf("Found TPC seed");
-	for (Int_t irow = 0; irow < 160; irow++){
-	  AliTPCclusterMI* cluMI = seed->GetClusterPointer(irow);
-	  if (cluMI){
-	    Printf("Found cluster at row %d", irow);
-	    Float_t q = cluMI->GetQ();
-	    Printf("Q = %f", q);
-	    fHistQ->Fill(q);
-	  }
-	  else {
-	    Printf("Row %d does not contain clusters", irow);
-	  }
-	}	 
+    }     
+    AliTPCseed* seed = friendTrack->GetTPCseed();
+    if( seed ){
+      Printf("Found TPC seed");
+      for (Int_t irow = 0; irow < 160; irow++){
+	AliTPCclusterMI* cluMI = seed->GetClusterPointer(irow);
+	if (cluMI){
+	  Printf("Found cluster at row %d", irow);
+	  Float_t q = cluMI->GetQ();
+	  Printf("Q = %f", q);
+	  fHistQ->Fill(q);
+	}
+	else {
+	  Printf("Row %d does not contain clusters", irow);
+	}      	 
       }
     }    
   }

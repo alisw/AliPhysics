@@ -16,6 +16,7 @@
 class AliKalmanTrack;
 class TObjArrray;
 class AliVVtrack;
+class AliTPCseed;
 
 
 //_____________________________________________________________________________
@@ -46,7 +47,7 @@ public:
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
   TObject * GetCalibObject(Int_t index);
-  AliVVtrack* GetTPCseed() const {return NULL;}
+  AliTPCseed* GetTPCseed() const {return NULL;}
   //
   // parameters backup
   void SetTPCOut(const AliExternalTrackParam &param);

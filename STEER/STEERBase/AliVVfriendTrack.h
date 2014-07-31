@@ -5,7 +5,7 @@
 #include "AliVVMisc.h"
 
 #include "Rtypes.h"
-class AliVVTPCseed;
+class AliTPCseed;
 class AliVVtrackPointArray;
 class AliVVtrack;
 
@@ -20,7 +20,7 @@ public:
   virtual ~AliVVfriendTrack(){}
 
   //used in calibration
-  virtual AliVVtrack* GetTPCseed() const {return NULL;}
+  virtual AliTPCseed* GetTPCseed() const {return NULL;}
   virtual const AliVVtrackPointArray *GetTrackPointArray() const {return NULL;}
   virtual const AliVVtrack * GetITSOut() const {return NULL;} 
   virtual const AliVVtrack * GetTPCOut() const {return  NULL;} 

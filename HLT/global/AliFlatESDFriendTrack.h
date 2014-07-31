@@ -26,7 +26,7 @@ class AliESDtrack;
 class AliESDfriendTrack;
 class AliExternalTrackParam;
 class AliTrackPointArray;
-class AliVVtrack;
+class AliTPCseed;
 
 class AliFlatESDFriendTrack :public AliVVfriendTrack 
 {
@@ -39,7 +39,7 @@ class AliFlatESDFriendTrack :public AliVVfriendTrack
   //implementation of AliVVfriendTrack methods 
 
   //AliVVTPCseed* GetTPCseed() const {return NULL;}
-  AliVVtrack* GetTPCseed() const {return NULL;}
+  AliTPCseed* GetTPCseed() const { return NULL; }
   //AliVVTRDseed* GetTRDseed() const {return NULL;}
   const AliVVtrackPointArray *GetTrackPointArray() const { return NULL; }
   //const AliExternalTrackParam * GetITSOut() const { return NULL; } 
