@@ -38,6 +38,8 @@
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliAnalysisFilter.h"
+#include "AliAODMCHeader.h"
+#include "AliForwardFlowWeights.h"
 
 ClassImp(AliForwardFlowTaskQC)
 #if 0
@@ -338,7 +340,7 @@ Bool_t AliForwardFlowTaskQC::Analyze()
   }
   else if ((fFlowFlags & kVZERO) && !vzero) {
     fHistEventSel->Fill(kNoForward);
-    return kFALSE; 
+//    return kFALSE; 
   }
   if (!aodcmult) fHistEventSel->Fill(kNoCentral);
 
@@ -394,15 +396,17 @@ void AliForwardFlowTaskQC::FillVtxBinList(const TList& list, TH2D& h, Int_t vtx,
   Int_t nVtxBins = fVtxAxis->GetNbins();
   
   while ((bin = static_cast<VertexBin*>(list.At(vtx+(nVtxBins*i))))) {
+    i++;
     // If no tracks do things normally
-    if (!(fFlowFlags & kTracks) && !bin->FillHists(h, fCent, kFillBoth|flags|kReset)) return;
+    if (!(fFlowFlags & kTracks) || (flags & kMC)) {
+      if (!bin->FillHists(h, fCent, kFillBoth|flags|kReset)) continue;
+    }
     // if tracks things are more complicated
     else if ((fFlowFlags & kTracks)) {
-      if (!FillTracks(bin, kFillRef|kReset|flags)) return;
-      if (!bin->FillHists(h, fCent, kFillDiff|kReset|flags)) return;
+      if (!FillTracks(bin, kFillRef|kReset|flags)) continue;
+      if (!bin->FillHists(h, fCent, kFillDiff|kReset|flags)) continue;
     }
     bin->CumulantsAccumulate(fCent);
-    i++;
   }
 
   return;
@@ -427,13 +431,15 @@ void AliForwardFlowTaskQC::FillVtxBinListEtaGap(const TList& list, TH2D& href,
   Int_t nVtxBins = fVtxAxis->GetNbins();
 
   while ((bin = static_cast<VertexBin*>(list.At(vtx+(nVtxBins*i))))) {
-    if (!(fFlowFlags & kTracks) && !bin->FillHists(href, fCent, kFillRef|flags|kReset)) return;
-    else if ((fFlowFlags & kTracks)) {
-      if (!FillTracks(bin, kFillRef|kReset|flags)) return;
-    }
-    if (!bin->FillHists(hdiff, fCent, kFillDiff|kReset)) return;
-    bin->CumulantsAccumulate(fCent);
     i++;
+    if (!(fFlowFlags & kTracks) || (flags & kMC)) {
+      if(!bin->FillHists(href, fCent, kFillRef|flags|kReset)) continue;
+    }
+    else if ((fFlowFlags & kTracks)) {
+      if (!FillTracks(bin, kFillRef|kReset|flags)) continue;
+    }
+    if (!bin->FillHists(hdiff, fCent, kFillDiff|kReset|flags)) continue;
+    bin->CumulantsAccumulate(fCent);
   }
 
   return;
@@ -460,9 +466,9 @@ void AliForwardFlowTaskQC::FillVtxBinList3Cor(const TList& list, TH2D& hcent,
   TH2D& h = CombineHists(hcent, hfwd);
 
   while ((bin = static_cast<VertexBin*>(list.At(vtx+(nVtxBins*i))))) {
-    if (!bin->FillHists(h, fCent, kFillBoth|flags|kReset)) return;
-    bin->CumulantsAccumulate3Cor(fCent);
     i++;
+    if (!bin->FillHists(h, fCent, kFillBoth|flags|kReset)) continue;
+    bin->CumulantsAccumulate3Cor(fCent);
   }
 
   return;
@@ -1197,7 +1203,6 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(TH2D& dNdetadphi, Double_t cen
     if ((mode & kFillRef))  fCumuRef->Reset();
     if ((mode & kFillDiff)) fCumuDiff->Reset();
   }
-
   // Then we loop over the input and calculate sum cos(k*n*phi)
   // and fill it in the reference and differential histograms
   Int_t nBadBins = 0;
@@ -1218,7 +1223,7 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(TH2D& dNdetadphi, Double_t cen
 	     TMath::Abs(eta) < fEtaGap) break;
 	// Backward and forward eta gap break for reference flow
 	if ((fFlags & kEtaGap) && (mode & kFillRef) && TMath::Abs(eta) > TMath::Abs(limit)) break;
-	if ((fFlags & kStdQC) && (fFlags & kMC)) {
+	if ((fFlags & kStdQC) && (fFlags & kMC) && !(fFlags & kTracks)) {
 	  if (!(fFlags & kSPD) && TMath::Abs(eta) < 1.75) break; 
 	  if ((fFlags & kSPD) && TMath::Abs(eta) > 2.00) break;
 	}
@@ -1234,9 +1239,8 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(TH2D& dNdetadphi, Double_t cen
       nInAvg++;
       if (weight == 0) continue;
       if (weight > max) max = weight;
-      
       // Fill into Cos() and Sin() hists
-      if ((mode & kFillRef)) {
+      if ((mode & kFillRef) && !((fFlags & kTracks) && (fFlags & kMC) && TMath::Abs(eta) > 0.75)) {
 	fCumuRef->Fill(eta, 0., weight);// mult goes in underflowbin - no visual, but not needed?
         fdNdedpRefAcc->Fill(eta, phi, weight);
       }
@@ -1250,7 +1254,7 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(TH2D& dNdetadphi, Double_t cen
 	Double_t cosnPhi = weight*TMath::Cos(n*phi);
 	Double_t sinnPhi = weight*TMath::Sin(n*phi);
         // fill ref
-	if ((mode & kFillRef)) {
+	if ((mode & kFillRef) && !((fFlags & kTracks) && (fFlags & kMC) && TMath::Abs(eta) > 0.75)) {
 	  fCumuRef->Fill(eta, cosBin, cosnPhi);
 	  fCumuRef->Fill(eta, sinBin, sinnPhi);
 	}
@@ -1324,7 +1328,7 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillTracks(TObjArray* trList, AliESDEven
 
       AliAODTrack* aodTr = (AliAODTrack*)tr;
       if (aodTr->GetID() > -1) continue;
-      if (!aodTr->TestFilterBit(bit) || !aodTr->Pt() > pTMax || aodTr->Pt() < pTMin || 
+      if (!aodTr->TestFilterBit(bit) || aodTr->Pt() > pTMax || aodTr->Pt() < pTMin || 
 	aodTr->Eta() > etaMax || aodTr->Eta() < etaMin || aodTr->GetTPCNcls() < minNCl) continue;
     }
 
@@ -1333,19 +1337,25 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillTracks(TObjArray* trList, AliESDEven
     Double_t eta = tr->Eta();
     if (((fFlags & kSPD) || (fFlags & kEtaGap)) && TMath::Abs(eta) < fEtaGap) continue;
     Double_t phi = tr->Phi();
+//    Double_t pT = tr->Pt();
+//    AliAODMCHeader* head = static_cast<AliAODMCHeader*>(aod->FindListObject(AliAODMCHeader::StdBranchName()));
+//    Double_t rp = head->GetReactionPlaneAngle();
+//    Double_t b = head->GetImpactParameter();
+    Double_t weight = 1.;//AliForwardFlowWeights::Instance().CalcWeight(eta, pT, phi, 0, rp, b); 
+
     if ((mode & kFillRef)) {
-      fCumuRef->Fill(eta, 0.);// mult goes in underflowbin - no visual, but not needed?
-      fdNdedpRefAcc->Fill(eta, phi);
+      fCumuRef->Fill(eta, 0., weight);// mult goes in underflowbin - no visual, but not needed?
+      fdNdedpRefAcc->Fill(eta, phi, weight);
     }
     if ((mode & kFillDiff)) {
-      fCumuDiff->Fill(eta, 0);
-      fdNdedpDiffAcc->Fill(eta, phi);
+      fCumuDiff->Fill(eta, 0., weight);
+      fdNdedpDiffAcc->Fill(eta, phi, weight);
     }
     for (Int_t n = 1; n <= 2*fMaxMoment; n++) {
       Double_t cosBin = fCumuDiff->GetYaxis()->GetBinCenter(GetBinNumberCos(n));
       Double_t sinBin = fCumuDiff->GetYaxis()->GetBinCenter(GetBinNumberSin(n));
-      Double_t cosnPhi = TMath::Cos(n*phi);
-      Double_t sinnPhi = TMath::Sin(n*phi);
+      Double_t cosnPhi = weight*TMath::Cos(n*phi);
+      Double_t sinnPhi = weight*TMath::Sin(n*phi);
       // fill ref
       if ((mode & kFillRef)) {
 	fCumuRef->Fill(eta, cosBin, cosnPhi);
@@ -1482,7 +1492,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
 
       // Differential flow calculations for each eta bin is done:
       // 2-particle differential flow
-      if ((fFlags & kStdQC) && !(fFlags & kTracks)) {
+      if ((fFlags & kStdQC) && (!(fFlags & kTracks) || ((fFlags & kTracks) && (fFlags & kMC) && !(fFlags & kSPD) && TMath::Abs(eta) < 0.75))) {
 	mq = mp;
 	qnRe = pnRe;
 	qnIm = pnIm;
