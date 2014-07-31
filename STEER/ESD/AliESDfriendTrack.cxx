@@ -60,6 +60,7 @@ fTRDIn(0)
 
 AliESDfriendTrack::AliESDfriendTrack(const AliESDfriendTrack &t): 
 TObject(t),
+AliVVfriendTrack(),
 f1P(t.f1P),
 fnMaxITScluster(t.fnMaxITScluster),
 fnMaxTPCcluster(t.fnMaxTPCcluster),

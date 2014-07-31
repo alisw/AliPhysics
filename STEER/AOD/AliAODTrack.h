@@ -203,6 +203,7 @@ class AliAODTrack : public AliVTrack {
   //
   template <typename T> void GetP(T *p) const {
     p[0]=fMomentum[0]; p[1]=fMomentum[1]; p[2]=fMomentum[2];}
+    using AliVVtrack::GetP;
 
 //  template <typename T> void GetPxPyPz(T *p) const {
 //    p[0] = Px(); p[1] = Py(); p[2] = Pz();}
@@ -222,6 +223,7 @@ class AliAODTrack : public AliVTrack {
 
   Bool_t GetXYZ(Double_t *p) const {
     return GetPosition(p); }
+  using AliVVtrack::GetXYZ;
   
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t *r) const;
   Bool_t GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz=0, Double_t* alpSect=0) const;  
