@@ -49,6 +49,7 @@ set ( SRCS
     Calib/AliTPCkalmanAlign.cxx 
     Calib/AliTPCcalibSummary.cxx 
     Calib/AliTPCcalibGainMult.cxx 
+    Calib/AliAnalysisTaskPt.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
