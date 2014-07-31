@@ -23,7 +23,7 @@ void AddTaskHybridTrackEfficiency(TString hybridTrackDef = "2011", char *prodTyp
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskHybridTrackEfficiency", "No analysis manager to connect to.");
+    Error("AddTaskPWG4HighPtSpectra", "No analysis manager to connect to.");
     return NULL;
   }  
   TString dataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -69,7 +69,7 @@ void AddTaskHybridTrackEfficiencyAOD(char *prodType = "LHC11h", TString beamType
     bIncludeNoITS = kTRUE;
   }
   else {
-    ::Error("AddTaskHybridTrackEfficiency","Period string not of predefined type. Add it to the list in this macro.");
+    ::Error("AddTaskPWG4HighPtSpectra","Period string not of predefined type. Add it to the list in this macro.");
     return NULL;
   }
 
@@ -144,7 +144,7 @@ void AddTaskHybridTrackEfficiencyQA_AOD_train(char *prodType = "LHC11h", TString
     filterMask2 = 256;
   }
   else {
-    ::Error("AddTaskHybridTrackEfficiency","Period string not of predefined type. Add it to the list in this macro.");
+    ::Error("AddTaskPWG4HighPtSpectra","Period string not of predefined type. Add it to the list in this macro.");
     return NULL;
   }
 
@@ -191,7 +191,7 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskHybridTrackEfficiency", "No analysis manager to connect to.");
+    Error("AddTaskPWG4HighPtSpectra", "No analysis manager to connect to.");
     return NULL;
   }  
   TString dataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -200,7 +200,7 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   //    manager. The availability of MC handler can also be checked here.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskHybridTrackEfficiency", "This task requires an input event handler");
+    ::Error("AddTaskPWG4HighPtSpectra", "This task requires an input event handler");
     return NULL;
   }  
 
