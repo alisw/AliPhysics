@@ -435,307 +435,190 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   
   Int_t    pdg       =  0 ;
   Int_t    tag       =  0 ;
+  Int_t    status    =  0 ;
   Int_t    mcIndex   =  0 ;
-  Bool_t   inacceptance = kFALSE;
+  Int_t    nprim     =  0 ;
+  Bool_t   inacceptance = kFALSE ;
   
-  if(GetReader()->ReadStack())
+  TParticle        * primStack = 0;
+  AliAODMCParticle * primAOD   = 0;
+  TLorentzVector lv;
+  
+  // Get the ESD MC particles container
+  AliStack * stack = 0;
+  if( GetReader()->ReadStack() )
   {
-    AliStack * stack = GetMCStack();
-    if(stack)
-    {
-      for(Int_t i=0 ; i<stack->GetNtrack(); i++)
-      {
-        if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
-        
-        TParticle * prim = stack->Particle(i) ;
-        pdg = prim->GetPdgCode();
-        //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
-        //                             prim->GetName(), prim->GetPdgCode());
-        
-        if(pdg == 22)
-        {
-          // Get tag of this particle photon from fragmentation, decay, prompt ...
-          tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
-          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-          {
-            //A conversion photon from a hadron, skip this kind of photon
-            // printf("AliAnaPhoton::FillAcceptanceHistograms() - not a photon, weird!\n ");
-            // GetMCAnalysisUtils()->PrintMCTag(tag);
-            
-            return;
-          }
-          
-          //Get photon kinematics
-          if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception
-          
-          photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
-          photonE   = prim->Energy() ;
-          photonPt  = prim->Pt() ;
-          photonPhi = prim->Phi() ;
-          if(photonPhi < 0) photonPhi+=TMath::TwoPi();
-          photonEta = prim->Eta() ;
-          
-          //Check if photons hit the Calorimeter
-          TLorentzVector lv;
-          prim->Momentum(lv);
-          inacceptance = kFALSE;
-          if     (fCalorimeter == "PHOS")
-          {
-            if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet())
-            {
-              Int_t mod ;
-              Double_t x,z ;
-              if(GetPHOSGeometry()->ImpactOnEmc(prim,mod,z,x))
-                inacceptance = kTRUE;
-              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-            else
-            {
-              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-                inacceptance = kTRUE ;
-              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-          }
-          else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet())
-          {
-            if(GetEMCALGeometry())
-            {
-              Int_t absID=0;
-              
-              GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
-              
-              if( absID >= 0)
-                inacceptance = kTRUE;
-              
-              //                  if(GetEMCALGeometry()->Impact(phot1) && GetEMCALGeometry()->Impact(phot2))
-              //                    inacceptance = kTRUE;
-              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-            else
-            {
-              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-                inacceptance = kTRUE ;
-              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-          }	  //In EMCAL
-          
-          //Fill histograms
-          fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY) ;
-          if(TMath::Abs(photonY) < 1.0)
-          {
-            fhEPrimMC  [kmcPPhoton]->Fill(photonE ) ;
-            fhPtPrimMC [kmcPPhoton]->Fill(photonPt) ;
-            fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi) ;
-            fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta) ;
-          }
-          if(inacceptance)
-          {
-            fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE ) ;
-            fhPtPrimMCAcc [kmcPPhoton]->Fill(photonPt) ;
-            fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonE , photonPhi) ;
-            fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonE , photonEta) ;
-            fhYPrimMCAcc  [kmcPPhoton]->Fill(photonE , photonY) ;
-          }//Accepted
-          
-          //Origin of photon
-          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhEPrimMC[kmcPPrompt])
-          {
-            mcIndex = kmcPPrompt;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) && fhEPrimMC[kmcPFragmentation])
-          {
-            mcIndex = kmcPFragmentation ;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR) && fhEPrimMC[kmcPISR])
-          {
-            mcIndex = kmcPISR;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)&& fhEPrimMC[kmcPPi0Decay])
-          {
-            mcIndex = kmcPPi0Decay;
-          }
-          else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) ||
-                    GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)) && fhEPrimMC[kmcPOtherDecay])
-          {
-            mcIndex = kmcPOtherDecay;
-          }
-          else if(fhEPrimMC[kmcPOther])
-          {
-            mcIndex = kmcPOther;
-          }//Other origin
-          
-          fhYPrimMC[mcIndex]->Fill(photonPt, photonY) ;
-          if(TMath::Abs(photonY) < 1.0)
-          {
-            fhEPrimMC  [mcIndex]->Fill(photonE ) ;
-            fhPtPrimMC [mcIndex]->Fill(photonPt) ;
-            fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi) ;
-            fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta) ;
-          }
-          
-          if(inacceptance)
-          {
-            fhEPrimMCAcc  [mcIndex]->Fill(photonE ) ;
-            fhPtPrimMCAcc [mcIndex]->Fill(photonPt) ;
-            fhPhiPrimMCAcc[mcIndex]->Fill(photonE , photonPhi) ;
-            fhEtaPrimMCAcc[mcIndex]->Fill(photonE , photonEta) ;
-            fhYPrimMCAcc  [mcIndex]->Fill(photonE , photonY) ;
-          }//Accepted
-          
-        }// Primary photon
-      }//loop on primaries
-    }//stack exists and data is MC
-  }//read stack
-  else if(GetReader()->ReadAODMCParticles())
+    stack = GetMCStack();
+    if(!stack ) return;
+    nprim = stack->GetNtrack();
+  }
+  
+  // Get the AOD MC particles container
+  TClonesArray * mcparticles = 0;
+  if( GetReader()->ReadAODMCParticles() )
   {
-    TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-    if(mcparticles)
+    mcparticles = GetReader()->GetAODMCParticles();
+    if( !mcparticles ) return;
+    nprim = mcparticles->GetEntriesFast();
+  }
+  
+  for(Int_t i=0 ; i < nprim; i++)
+  {
+    if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+    
+    if(GetReader()->ReadStack())
     {
-      Int_t nprim = mcparticles->GetEntriesFast();
+      primStack = stack->Particle(i) ;
+      pdg    = primStack->GetPdgCode();
+      status = primStack->GetStatusCode();
       
-      for(Int_t i=0; i < nprim; i++)
-      {
-        if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
-        
-        AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
-        
-        pdg = prim->GetPdgCode();
-        
-        if(pdg == 22)
-        {
-          // Get tag of this particle photon from fragmentation, decay, prompt ...
-          tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
-          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-          {
-            //A conversion photon from a hadron, skip this kind of photon
-            //            printf("AliAnaPhoton::FillAcceptanceHistograms() - not a photon, weird!\n ");
-            //            GetMCAnalysisUtils()->PrintMCTag(tag);
-            
-            return;
-          }
-          
-          //Get photon kinematics
-          if(prim->E() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception
-          
-          photonY   = 0.5*TMath::Log((prim->E()-prim->Pz())/(prim->E()+prim->Pz())) ;
-          photonE   = prim->E() ;
-          photonPt  = prim->Pt() ;
-          photonPhi = prim->Phi() ;
-          if(photonPhi < 0) photonPhi+=TMath::TwoPi();
-          photonEta = prim->Eta() ;
-          
-          //Check if photons hit the Calorimeter
-          TLorentzVector lv;
-          lv.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
-          inacceptance = kFALSE;
-          if     (fCalorimeter == "PHOS")
-          {
-            if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet())
-            {
-              Int_t mod ;
-              Double_t x,z ;
-              Double_t vtx[]={prim->Xv(),prim->Yv(),prim->Zv()};
-              if(GetPHOSGeometry()->ImpactOnEmc(vtx, prim->Theta(),prim->Phi(),mod,z,x))
-                inacceptance = kTRUE;
-              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-            else
-            {
-              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-                inacceptance = kTRUE ;
-              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-          }
-          else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet())
-          {
-            if(GetEMCALGeometry())
-            {
-              Int_t absID=0;
-              
-              GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
-              
-              if( absID >= 0)
-                inacceptance = kTRUE;
-              
-              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-            else
-            {
-              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-                inacceptance = kTRUE ;
-              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-            }
-          }	  //In EMCAL
-          
-          //Fill histograms
-          
-          fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY) ;
-          if(TMath::Abs(photonY) < 1.0)
-          {
-            fhEPrimMC  [kmcPPhoton]->Fill(photonE ) ;
-            fhPtPrimMC [kmcPPhoton]->Fill(photonPt) ;
-            fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi) ;
-            fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta) ;
-          }
-          
-          if(inacceptance)
-          {
-            fhEPrimMCAcc[kmcPPhoton]  ->Fill(photonE ) ;
-            fhPtPrimMCAcc[kmcPPhoton] ->Fill(photonPt) ;
-            fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonE , photonPhi) ;
-            fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonE , photonEta) ;
-            fhYPrimMCAcc[kmcPPhoton]  ->Fill(photonE , photonY) ;
-          }//Accepted
-          
-          //Origin of photon
-          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhEPrimMC[kmcPPrompt])
-          {
-            mcIndex = kmcPPrompt;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) && fhEPrimMC[kmcPFragmentation])
-          {
-            mcIndex = kmcPFragmentation ;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR) && fhEPrimMC[kmcPISR])
-          {
-            mcIndex = kmcPISR;
-          }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)&& fhEPrimMC[kmcPPi0Decay])
-          {
-            mcIndex = kmcPPi0Decay;
-          }
-          else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) ||
-                    GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)) && fhEPrimMC[kmcPOtherDecay])
-          {
-            mcIndex = kmcPOtherDecay;
-          }
-          else if(fhEPrimMC[kmcPOther])
-          {
-            mcIndex = kmcPOther;
-          }//Other origin
-          
-          fhYPrimMC[mcIndex]->Fill(photonPt, photonY) ;
-          if(TMath::Abs(photonY) < 1.0)
-          {
-            fhEPrimMC  [mcIndex]->Fill(photonE ) ;
-            fhPtPrimMC [mcIndex]->Fill(photonPt) ;
-            fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi) ;
-            fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta) ;
-          }
-          if(inacceptance)
-          {
-            fhEPrimMCAcc  [mcIndex]->Fill(photonE ) ;
-            fhPtPrimMCAcc [mcIndex]->Fill(photonPt) ;
-            fhPhiPrimMCAcc[mcIndex]->Fill(photonE , photonPhi) ;
-            fhEtaPrimMCAcc[mcIndex]->Fill(photonE , photonEta) ;
-            fhYPrimMCAcc  [mcIndex]->Fill(photonE , photonY) ;
-          }//Accepted
-          
-        }// Primary photon
-      }//loop on primaries
+      if(primStack->Energy() == TMath::Abs(primStack->Pz()))  continue ; //Protection against floating point exception
       
-    }//kmc array exists and data is MC
-  }	// read AOD MC
+      //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+      //       prim->GetName(), prim->GetPdgCode());
+      
+      //Photon kinematics
+      primStack->Momentum(lv);
+      
+      photonY = 0.5*TMath::Log((primStack->Energy()-primStack->Pz())/(primStack->Energy()+primStack->Pz())) ;
+    }
+    else
+    {
+      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      pdg    = primAOD->GetPdgCode();
+      status = primAOD->GetStatus();
+      
+      if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
+      
+      //Photon kinematics
+      lv.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+
+      photonY = 0.5*TMath::Log((primAOD->E()-primAOD->Pz())/(primAOD->E()+primAOD->Pz())) ;
+    }
+
+    // Select only photons in the final state
+    if(pdg != 22 ) continue ;
+    
+    // If too small or too large pt, skip, same cut as for data analysis
+    photonPt  = lv.Pt () ;
+    
+    if(photonPt < GetMinPt() || photonPt > GetMaxPt() ) continue ;
+    
+    photonE   = lv.E  () ;
+    photonEta = lv.Eta() ;
+    photonPhi = lv.Phi() ;
+    
+    if(photonPhi < 0) photonPhi+=TMath::TwoPi();
+    
+    // Check if photons hit desired acceptance
+    inacceptance = kFALSE;
+    
+    // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
+    if( GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter)) inacceptance = kTRUE ;
+    
+    // Check if photons hit the Calorimeter acceptance
+    if(IsRealCaloAcceptanceOn() && inacceptance) // defined on base class
+    {
+      if(GetReader()->ReadStack()          &&
+         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fCalorimeter, primStack)) inacceptance = kFALSE ;
+      if(GetReader()->ReadAODMCParticles() &&
+         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fCalorimeter, primAOD  )) inacceptance = kFALSE ;
+    }
+    
+    // Get tag of this particle photon from fragmentation, decay, prompt ...
+    // Set the origin of the photon.
+    tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
+    
+    if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
+    {
+      // A conversion photon from a hadron, skip this kind of photon
+      // printf("AliAnaPhoton::FillAcceptanceHistograms() - not a photon, weird!\n ");
+      // GetMCAnalysisUtils()->PrintMCTag(tag);
+      
+      continue;
+    }
+    
+    // Consider only final state particles, but this depends on generator,
+    // status 1 is the usual one, in case of not being ok, leave the possibility
+    // to not consider this.
+    if(status > 1) continue ; // Avoid "partonic" photons
+    
+    Bool_t takeIt  = kFALSE ;
+    if(status == 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) takeIt = kTRUE ;
+
+    if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) continue;
+    
+    //Origin of photon
+    if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
+    {
+      mcIndex = kmcPPrompt;
+    }
+    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
+    {
+      mcIndex = kmcPFragmentation ;
+    }
+    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
+    {
+      mcIndex = kmcPISR;
+    }
+    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
+    {
+      mcIndex = kmcPPi0Decay;
+    }
+    else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) ||
+              GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)))
+    {
+      mcIndex = kmcPOtherDecay;
+    }
+    else
+    {
+      // Other decay but from non final state particle
+      mcIndex = kmcPOtherDecay;
+    }//Other origin
+    
+    if(!takeIt &&  (mcIndex == kmcPPi0Decay || mcIndex == kmcPOtherDecay)) takeIt = kTRUE ;
+
+    if(!takeIt) continue ;
+      
+    //Fill histograms
+    fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY) ;
+    if(TMath::Abs(photonY) < 1.0)
+    {
+      fhEPrimMC  [kmcPPhoton]->Fill(photonE ) ;
+      fhPtPrimMC [kmcPPhoton]->Fill(photonPt) ;
+      fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi) ;
+      fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta) ;
+    }
+    if(inacceptance)
+    {
+      fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE ) ;
+      fhPtPrimMCAcc [kmcPPhoton]->Fill(photonPt) ;
+      fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonE , photonPhi) ;
+      fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonE , photonEta) ;
+      fhYPrimMCAcc  [kmcPPhoton]->Fill(photonE , photonY) ;
+    }//Accepted
+    
+    
+    fhYPrimMC[mcIndex]->Fill(photonPt, photonY) ;
+    if(TMath::Abs(photonY) < 1.0)
+    {
+      fhEPrimMC  [mcIndex]->Fill(photonE ) ;
+      fhPtPrimMC [mcIndex]->Fill(photonPt) ;
+      fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi) ;
+      fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta) ;
+    }
+    
+    if(inacceptance)
+    {
+      fhEPrimMCAcc  [mcIndex]->Fill(photonE ) ;
+      fhPtPrimMCAcc [mcIndex]->Fill(photonPt) ;
+      fhPhiPrimMCAcc[mcIndex]->Fill(photonE , photonPhi) ;
+      fhEtaPrimMCAcc[mcIndex]->Fill(photonE , photonEta) ;
+      fhYPrimMCAcc  [mcIndex]->Fill(photonE , photonY) ;
+    }//Accepted
+    
+  }//loop on primaries
+
 }
 
 //________________________________________________________________________________________________________________
@@ -3206,10 +3089,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
     }
     
-    TString pptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}","hadron?",
+    TString pptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}",
       "#gamma_{prompt}","#gamma_{fragmentation}","#gamma_{ISR}"} ;
     
-    TString ppname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay","Hadron",
+    TString ppname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay",
       "PhotonPrompt","PhotonFragmentation","PhotonISR"} ;
     
     for(Int_t i = 0; i < fNPrimaryHistograms; i++)
