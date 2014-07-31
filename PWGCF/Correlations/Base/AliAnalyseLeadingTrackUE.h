@@ -31,7 +31,6 @@ class TROOT;
 class TVector3;
 class AliVTrack;
 class AliHelperPID;
-class AliEventplane;
 class TFormula;
 
 class AliAnalyseLeadingTrackUE : public TObject {
@@ -60,7 +59,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   AliVParticle*  ParticleWithCuts(TObject* obj, Int_t ipart, Bool_t onlyprimaries = kTRUE, Int_t particleSpecies = -1);                     // Returns track or MC particle at position "ipart" if passes selection criteria
   void  	 QSortTracks(TObjArray &a, Int_t first, Int_t last);               // Sort by pT an array of AliVParticles 
   TObjArray*     SortRegions(const AliVParticle* leading, TObject* obj, TObject* arrayMC, Bool_t onlyprimaries = kTRUE); // Assign particles to towards, away or transverse regions
-  TObjArray*     GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries = kTRUE, Int_t particleSpecies = -1, Bool_t useEtaPtCuts = kFALSE, Bool_t speciesOnTracks = kTRUE, Double_t evtPlane = 1e10); 
+  TObjArray*     GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries = kTRUE, Int_t particleSpecies = -1, Bool_t useEtaPtCuts = kFALSE, Bool_t speciesOnTracks = kTRUE); 
   TObjArray*     GetFakeParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts);
   Bool_t         TriggerSelection(const TObject* obj);                                   // Select good triggers with AliPhysicsSelection class
   Bool_t         VertexSelection(const TObject* obj, Int_t ntracks, Double_t zed);       // Vertex selection: see implementation
@@ -78,7 +77,6 @@ class AliAnalyseLeadingTrackUE : public TObject {
   void		 SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
   void		 SetCrossedRowsCut(Int_t value) { fCrossedRowsCut = value; }
   void		 SetFoundFractionCut(Double_t value) { fFoundFractionCut = value; }
-  void           SetParticlePhiCutEventPlane(Double_t min, Double_t max) { fTrackPhiCutEvPlMin = min; fTrackPhiCutEvPlMax = max; }
 
 protected:
   Bool_t CheckTrack(AliVParticle * part);
@@ -91,9 +89,6 @@ private:
   Bool_t         fCheckMotherPDG;     // Check the PDG code of mother for secondaries 
   Double_t       fTrackEtaCut;       // pseudo-rapidity limit of transverse regions     
   Double_t       fTrackEtaCutMin;       // minimum of the pseudo-rapidity limit of transverse regions     
-  Double_t       fTrackPhiCutEvPlMin;   // Minimum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2)
-  Double_t       fTrackPhiCutEvPlMax;   // Maximum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2)
-
   Double_t       fTrackPtMin;        // pt limit for selecting particles
   UInt_t         fEventSelection;    // bit for physics selection
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)

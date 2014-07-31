@@ -31,7 +31,6 @@
 #include "AliMCEvent.h"
 #include "AliVParticle.h"
 #include "AliAODMCHeader.h"
-#include "AliEventplane.h"
 #include "TFormula.h"
 
 #include "AliAnalysisManager.h"
@@ -52,7 +51,7 @@ using namespace std;
 
 ClassImp(AliAnalyseLeadingTrackUE)
 
-//____________________________________________________________________
+//-------------------------------------------------------------------
 AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   TObject(),
   fDebug(0),
@@ -62,8 +61,6 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fCheckMotherPDG(kTRUE),
   fTrackEtaCut(0.8),
   fTrackEtaCutMin(-1.),
-  fTrackPhiCutEvPlMin(0),
-  fTrackPhiCutEvPlMax(0),
   fTrackPtMin(0),
   fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
   fDCAXYCut(0),
@@ -79,20 +76,23 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   // constructor
 }
 
-//____________________________________________________________________
+
+//-------------------------------------------------------------------
 AliAnalyseLeadingTrackUE & AliAnalyseLeadingTrackUE::operator = (const AliAnalyseLeadingTrackUE & /*source*/)
 {
   // assignment operator
   return *this;
 }
 
-//____________________________________________________________________
+
+//-------------------------------------------------------------------
 AliAnalyseLeadingTrackUE::~AliAnalyseLeadingTrackUE()
 {
 
   //clear memory
   
 }
+
 
 //____________________________________________________________________
 Bool_t AliAnalyseLeadingTrackUE::ApplyCuts(TObject* track)
@@ -105,9 +105,9 @@ Bool_t AliAnalyseLeadingTrackUE::ApplyCuts(TObject* track)
   return kTRUE;
 }
 
+
 //____________________________________________________________________
-void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit)
-{
+void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
   
   // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
   // (see $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C)
@@ -217,7 +217,7 @@ TObjArray*  AliAnalyseLeadingTrackUE::FindLeadingObjects(TObject *obj)
   return tracks;
   }
 
-//____________________________________________________________________
+
 void AliAnalyseLeadingTrackUE::RemoveInjectedSignals(TObjArray* tracks, TObject* mcObj, Int_t maxLabel)
 {
   // remove injected signals (primaries above <maxLabel>)
@@ -301,7 +301,7 @@ void AliAnalyseLeadingTrackUE::RemoveInjectedSignals(TObjArray* tracks, TObject*
   AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
 }
 
-//____________________________________________________________________
+//-------------------------------------------------------------------
 void AliAnalyseLeadingTrackUE::RemoveWeakDecays(TObjArray* tracks, TObject* mcObj)
 {
   // remove particles from weak decays
@@ -359,14 +359,13 @@ void AliAnalyseLeadingTrackUE::RemoveWeakDecays(TObjArray* tracks, TObject* mcOb
     AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
 }
 
-//____________________________________________________________________
-TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts, Bool_t speciesOnTracks, Double_t evtPlane)
+//-------------------------------------------------------------------
+TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts, Bool_t speciesOnTracks)
 {
   // Returns an array of particles that pass the cuts, if arrayMC is given each reconstructed particle is replaced by its corresponding MC particles, depending on the parameter onlyprimaries only for primaries 
   // particleSpecies: -1 all particles are returned
   //                  0 (pions) 1 (kaons) 2 (protons) 3 (others) particles
   // speciesOnTracks if kFALSE, particleSpecies is only applied on the matched MC particle (not on the track itself)
-  // Passing down the Double_t* evtPlane (range [-pi/2,pi/2]) will apply a phi cut with respect to the eventplane between fTrackPhiCutEvPlMin and fTrackPhiCutEvPlMax. For values outside [-pi/2,pi/2], this will be ignored.
   
   Int_t nTracks = NParticles(obj);
   TObjArray* tracks = new TObjArray;
@@ -383,23 +382,6 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
   for (Int_t ipart=0; ipart<nTracks; ++ipart) {
     AliVParticle* part = ParticleWithCuts( obj, ipart, onlyprimaries, (speciesOnTracks) ? particleSpecies : -1);
     if (!part) continue;
-    
-    if (TMath::Abs(evtPlane)<=TMath::Pi()/2) { //evtPlane range: (-pi/2,pi/2)
-      Double_t phiPart = part->Phi(); //range: [0,2*pi)
-      if(phiPart>TMath::Pi()) phiPart-=2*TMath::Pi();
-
-      Double_t dPhi = 0; //range: [0,pi/2], i.e. the difference over the shortest angle.
-      Double_t diff = TMath::Abs(phiPart-evtPlane);
-      if(diff<=TMath::Pi()/2) dPhi = diff;
-      else if(diff<=TMath::Pi()) dPhi = TMath::Pi()-diff;
-      else dPhi = diff-TMath::Pi();
-      
-      if(dPhi<fTrackPhiCutEvPlMin || dPhi>fTrackPhiCutEvPlMax) {
-        if (hasOwnership)
-          delete part;
-        continue;
-      }
-    }
     
     if (useEtaPtCuts)
       if (TMath::Abs(part->Eta()) > fTrackEtaCut || TMath::Abs(part->Eta()) < fTrackEtaCutMin || part->Pt() < fTrackPtMin)
@@ -426,7 +408,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
   return tracks;
 }
 
-//____________________________________________________________________
+//-------------------------------------------------------------------
 TObjArray* AliAnalyseLeadingTrackUE::GetFakeParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts)
 {
   // particleSpecies: -1 all particles are returned
@@ -493,7 +475,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetFakeParticles(TObject* obj, TObject* arr
   return pairs;
 }
 
-//____________________________________________________________________
+//-------------------------------------------------------------------
 TObjArray* AliAnalyseLeadingTrackUE::GetMinMaxRegion(TList *transv1, TList *transv2)
 {
   
@@ -528,7 +510,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetMinMaxRegion(TList *transv1, TList *tran
  return regionParticles;
 }
 
-//____________________________________________________________________
+//-------------------------------------------------------------------
 Int_t  AliAnalyseLeadingTrackUE::NParticles(TObject* obj)
 {
  
@@ -559,7 +541,7 @@ Int_t  AliAnalyseLeadingTrackUE::NParticles(TObject* obj)
   return nTracks;
 }
 
-//____________________________________________________________________
+//-------------------------------------------------------------------
 AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ipart, Bool_t onlyprimaries, Int_t particleSpecies)
 {
   // Returns track or MC particle at position "ipart" if passes selection criteria
@@ -850,7 +832,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
   return part;
 }
 
-//____________________________________________________________________
+
+//-------------------------------------------------------------------
 void  AliAnalyseLeadingTrackUE::QSortTracks(TObjArray &a, Int_t first, Int_t last)
 {
   // Sort array of TObjArray of tracks by Pt using a quicksort algorithm.
@@ -972,6 +955,7 @@ TObjArray*  AliAnalyseLeadingTrackUE::SortRegions(const AliVParticle* leading, T
   
 }
 
+
 //____________________________________________________________________
 Bool_t  AliAnalyseLeadingTrackUE::TriggerSelection(const TObject* obj)
 {
@@ -1065,6 +1049,7 @@ Bool_t  AliAnalyseLeadingTrackUE::VertexSelection(const TObject* obj, Int_t ntra
 }
 
 //____________________________________________________________________
+
 Bool_t AliAnalyseLeadingTrackUE::CheckTrack(AliVParticle * part)
 {
   // check if the track status flags are set
