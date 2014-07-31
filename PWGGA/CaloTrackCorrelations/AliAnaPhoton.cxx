@@ -1715,7 +1715,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhEClusterSM->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhEClusterSM) ;
 
-  fhPtClusterSM = new TH2F("hPtClusterSM","Raw clusters #it{p}_[T] and super-module number",
+  fhPtClusterSM = new TH2F("hPtClusterSM","Raw clusters #it{p}_{T} and super-module number",
                           nptbins,ptmin,ptmax,
                           GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
   fhPtClusterSM->SetYTitle("SuperModule ");
@@ -1729,7 +1729,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhEPhotonSM->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhEPhotonSM) ;
   
-  fhPtPhotonSM = new TH2F("hPtPhotonSM","Selected clusters #it{p}_[T] and super-module number",
+  fhPtPhotonSM = new TH2F("hPtPhotonSM","Selected clusters #it{p}_{T} and super-module number",
                            nptbins,ptmin,ptmax,
                            GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
   fhPtPhotonSM->SetYTitle("SuperModule ");
@@ -1747,7 +1747,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   outputContainer->Add(fhCellsE);
   
   fhTimePt  = new TH2F ("hTimePt","time of cluster vs pT of clusters", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-  fhTimePt->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+  fhTimePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   fhTimePt->SetYTitle("#it{time} (ns)");
   outputContainer->Add(fhTimePt);
   
@@ -1762,19 +1762,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhEPhoton->SetXTitle("#it{E}_{#gamma}(GeV)");
   outputContainer->Add(fhEPhoton) ;
   
-  fhPtPhoton  = new TH1F("hPtPhoton","Number of #gamma over calorimeter vs #it{p}_[T]",nptbins,ptmin,ptmax);
+  fhPtPhoton  = new TH1F("hPtPhoton","Number of #gamma over calorimeter vs #it{p}_{T}",nptbins,ptmin,ptmax);
   fhPtPhoton->SetYTitle("#it{counts}");
   fhPtPhoton->SetXTitle("p_{T #gamma}(GeV/#it{c})");
   outputContainer->Add(fhPtPhoton) ;
   
-  fhPtCentralityPhoton  = new TH2F("hPtCentralityPhoton","centrality vs #it{p}_[T]",nptbins,ptmin,ptmax, 100,0,100);
+  fhPtCentralityPhoton  = new TH2F("hPtCentralityPhoton","centrality vs #it{p}_{T}",nptbins,ptmin,ptmax, 100,0,100);
   fhPtCentralityPhoton->SetYTitle("Centrality");
-  fhPtCentralityPhoton->SetXTitle("#it{p}_[T](GeV/#it{c})");
+  fhPtCentralityPhoton->SetXTitle("#it{p}_{T}(GeV/#it{c})");
   outputContainer->Add(fhPtCentralityPhoton) ;
   
-  fhPtEventPlanePhoton  = new TH2F("hPtEventPlanePhoton","centrality vs #it{p}_[T]",nptbins,ptmin,ptmax, 100,0,TMath::Pi());
+  fhPtEventPlanePhoton  = new TH2F("hPtEventPlanePhoton","centrality vs #it{p}_{T}",nptbins,ptmin,ptmax, 100,0,TMath::Pi());
   fhPtEventPlanePhoton->SetYTitle("Event plane angle (rad)");
-  fhPtEventPlanePhoton->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+  fhPtEventPlanePhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtEventPlanePhoton) ;
   
   fhEtaPhi  = new TH2F
@@ -2236,13 +2236,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   }
   
   fhPhiPhoton  = new TH2F
-  ("hPhiPhoton","#phi_{#gamma} vs #it{p}_[T]",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+  ("hPhiPhoton","#phi_{#gamma} vs #it{p}_{T}",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
   fhPhiPhoton->SetYTitle("#phi (rad)");
   fhPhiPhoton->SetXTitle("p_{T #gamma} (GeV/#it{c})");
   outputContainer->Add(fhPhiPhoton) ;
   
   fhEtaPhoton  = new TH2F
-  ("hEtaPhoton","#eta_{#gamma} vs #it{p}_[T]",nptbins,ptmin,ptmax,netabins,etamin,etamax);
+  ("hEtaPhoton","#eta_{#gamma} vs #it{p}_{T}",nptbins,ptmin,ptmax,netabins,etamin,etamax);
   fhEtaPhoton->SetYTitle("#eta");
   fhEtaPhoton->SetXTitle("p_{T #gamma} (GeV/#it{c})");
   outputContainer->Add(fhEtaPhoton) ;
@@ -2786,18 +2786,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     for(Int_t i = 0 ; i < 7 ; i++)
     {
       fhPtPileUp[i]  = new TH1F(Form("hPtPileUp%s",pileUpName[i].Data()),
-                                Form("Cluster  #it{p}_[T] distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
-      fhPtPileUp[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+                                Form("Cluster  #it{p}_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtPileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtPileUp[i]);
       
       fhPtChargedPileUp[i]  = new TH1F(Form("hPtChargedPileUp%s",pileUpName[i].Data()),
-                                       Form("Charged clusters #it{p}_[T] distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
-      fhPtChargedPileUp[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+                                       Form("Charged clusters #it{p}_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtChargedPileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtChargedPileUp[i]);
       
       fhPtPhotonPileUp[i]  = new TH1F(Form("hPtPhotonPileUp%s",pileUpName[i].Data()),
-                                      Form("Selected photon #it{p}_[T] distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
-      fhPtPhotonPileUp[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+                                      Form("Selected photon #it{p}_{T} distribution, %s Pile-Up event",pileUpName[i].Data()), nptbins,ptmin,ptmax);
+      fhPtPhotonPileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtPhotonPileUp[i]);
       
       
@@ -2882,22 +2882,22 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhEtaPhiBCMinusPileUpSPD);
     
     fhTimePtNoCut  = new TH2F ("hTimePt_NoCut","time of cluster vs pT of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePtNoCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhTimePtNoCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhTimePtNoCut->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePtNoCut);
     
     fhTimePtSPD  = new TH2F ("hTimePt_SPD","time of cluster vs pT of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePtSPD->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhTimePtSPD->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhTimePtSPD->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePtSPD);
     
     fhTimePtPhotonNoCut  = new TH2F ("hTimePtPhoton_NoCut","time of photon cluster vs pT of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePtPhotonNoCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhTimePtPhotonNoCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhTimePtPhotonNoCut->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePtPhotonNoCut);
     
     fhTimePtPhotonSPD  = new TH2F ("hTimePtPhoton_SPD","time of  photon cluster vs pT of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimePtPhotonSPD->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhTimePtPhotonSPD->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhTimePtPhotonSPD->SetYTitle("#it{time} (ns)");
     outputContainer->Add(fhTimePtPhotonSPD);
         
@@ -2948,73 +2948,73 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex",
                                    nptbins,ptmin,ptmax,20,0,20);
     fhPtNPileUpSPDVtx->SetYTitle("# vertex ");
-    fhPtNPileUpSPDVtx->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtNPileUpSPDVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpSPDVtx);
 	  
     fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex",
                                    nptbins,ptmin,ptmax, 20,0,20 );
     fhPtNPileUpTrkVtx->SetYTitle("# vertex ");
-    fhPtNPileUpTrkVtx->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtNPileUpTrkVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpTrkVtx);
     
     fhPtNPileUpSPDVtxTimeCut  = new TH2F ("hPt_NPileUpVertSPD_TimeCut","pT of cluster vs N pile-up SPD vertex, |tof| < 25 ns",
                                           nptbins,ptmin,ptmax,20,0,20);
     fhPtNPileUpSPDVtxTimeCut->SetYTitle("# vertex ");
-    fhPtNPileUpSPDVtxTimeCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtNPileUpSPDVtxTimeCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpSPDVtxTimeCut);
 	  
     fhPtNPileUpTrkVtxTimeCut  = new TH2F ("hPt_NPileUpVertTracks_TimeCut","pT of cluster vs N pile-up Tracks vertex, |tof| < 25 ns",
                                           nptbins,ptmin,ptmax, 20,0,20 );
     fhPtNPileUpTrkVtxTimeCut->SetYTitle("# vertex ");
-    fhPtNPileUpTrkVtxTimeCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtNPileUpTrkVtxTimeCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpTrkVtxTimeCut);
     
 		fhPtNPileUpSPDVtxTimeCut2  = new TH2F ("hPt_NPileUpVertSPD_TimeCut2","pT of cluster vs N pile-up SPD vertex, -25 < tof < 75 ns",
                                            nptbins,ptmin,ptmax,20,0,20);
     fhPtNPileUpSPDVtxTimeCut2->SetYTitle("# vertex ");
-    fhPtNPileUpSPDVtxTimeCut2->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtNPileUpSPDVtxTimeCut2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpSPDVtxTimeCut2);
 	  
     fhPtNPileUpTrkVtxTimeCut2  = new TH2F ("hPt_NPileUpVertTracks_TimeCut2","pT of cluster vs N pile-up Tracks vertex, -25 < tof < 75 ns",
                                            nptbins,ptmin,ptmax, 20,0,20 );
     fhPtNPileUpTrkVtxTimeCut2->SetYTitle("# vertex ");
-    fhPtNPileUpTrkVtxTimeCut2->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtNPileUpTrkVtxTimeCut2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpTrkVtxTimeCut2);
     
     fhPtPhotonNPileUpSPDVtx  = new TH2F ("hPtPhoton_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex",
                                          nptbins,ptmin,ptmax,20,0,20);
     fhPtPhotonNPileUpSPDVtx->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpSPDVtx->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtPhotonNPileUpSPDVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpSPDVtx);
 	  
     fhPtPhotonNPileUpTrkVtx  = new TH2F ("hPtPhoton_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex",
                                          nptbins,ptmin,ptmax, 20,0,20 );
     fhPtPhotonNPileUpTrkVtx->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpTrkVtx->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtPhotonNPileUpTrkVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpTrkVtx);
 	  
     fhPtPhotonNPileUpSPDVtxTimeCut  = new TH2F ("hPtPhoton_NPileUpVertSPD_TimeCut","pT of cluster vs N pile-up SPD vertex, |tof| < 25 ns",
                                                 nptbins,ptmin,ptmax,20,0,20);
     fhPtPhotonNPileUpSPDVtxTimeCut->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpSPDVtxTimeCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtPhotonNPileUpSPDVtxTimeCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpSPDVtxTimeCut);
 	  
     fhPtPhotonNPileUpTrkVtxTimeCut  = new TH2F ("hPtPhoton_NPileUpVertTracks_TimeCut","pT of cluster vs N pile-up Tracks vertex, |tof| < 25 ns",
                                                 nptbins,ptmin,ptmax, 20,0,20 );
     fhPtPhotonNPileUpTrkVtxTimeCut->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpTrkVtxTimeCut->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtPhotonNPileUpTrkVtxTimeCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpTrkVtxTimeCut);
 	  
     fhPtPhotonNPileUpSPDVtxTimeCut2  = new TH2F ("hPtPhoton_NPileUpVertSPD_TimeCut2","pT of cluster vs N pile-up SPD vertex, -25 < tof < 75 ns",
                                                  nptbins,ptmin,ptmax,20,0,20);
     fhPtPhotonNPileUpSPDVtxTimeCut2->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpSPDVtxTimeCut2->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtPhotonNPileUpSPDVtxTimeCut2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpSPDVtxTimeCut2);
 	  
     fhPtPhotonNPileUpTrkVtxTimeCut2  = new TH2F ("hPtPhoton_NPileUpVertTracks_TimeCut2","pT of cluster vs N pile-up Tracks vertex,  -25 < tof < 75 ns",
                                                  nptbins,ptmin,ptmax, 20,0,20 );
     fhPtPhotonNPileUpTrkVtxTimeCut2->SetYTitle("# vertex ");
-    fhPtPhotonNPileUpTrkVtxTimeCut2->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+    fhPtPhotonNPileUpTrkVtxTimeCut2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonNPileUpTrkVtxTimeCut2);
     
   }
@@ -3038,9 +3038,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhMCE[i]) ;
       
       fhMCPt[i]  = new TH1F(Form("hPt_MC%s",pname[i].Data()),
-                            Form("cluster from %s : #it{p}_[T] ",ptype[i].Data()),
+                            Form("cluster from %s : #it{p}_{T} ",ptype[i].Data()),
                             nptbins,ptmin,ptmax);
-      fhMCPt[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+      fhMCPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhMCPt[i]) ;
       
       fhMCEta[i]  = new TH2F(Form("hEta_MC%s",pname[i].Data()),
@@ -3066,10 +3066,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhMCDeltaE[i]);
       
       fhMCDeltaPt[i]  = new TH2F (Form("hDeltaPt_MC%s",pname[i].Data()),
-                                  Form("MC - Reco #it{p}_[T] from %s",pname[i].Data()),
+                                  Form("MC - Reco #it{p}_{T} from %s",pname[i].Data()),
                                   nptbins,ptmin,ptmax, 200,-50,50);
       fhMCDeltaPt[i]->SetXTitle("p_{T,rec} (GeV/#it{c})");
-      fhMCDeltaPt[i]->SetYTitle("#Delta #it{p}_[T] (GeV/#it{c})");
+      fhMCDeltaPt[i]->SetYTitle("#Delta #it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhMCDeltaPt[i]);
       
       fhMC2E[i]  = new TH2F (Form("h2E_MC%s",pname[i].Data()),
@@ -3104,9 +3104,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhEPrimMC[i]) ;
       
       fhPtPrimMC[i]  = new TH1F(Form("hPtPrim_MC%s",ppname[i].Data()),
-                                Form("primary photon %s : #it{p}_[T] ",pptype[i].Data()),
+                                Form("primary photon %s : #it{p}_{T} ",pptype[i].Data()),
                                 nptbins,ptmin,ptmax);
-      fhPtPrimMC[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+      fhPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtPrimMC[i]) ;
       
       fhYPrimMC[i]  = new TH2F(Form("hYPrim_MC%s",ppname[i].Data()),
@@ -3138,9 +3138,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhEPrimMCAcc[i]) ;
       
       fhPtPrimMCAcc[i]  = new TH1F(Form("hPtPrimAcc_MC%s",ppname[i].Data()),
-                                   Form("primary photon %s in acceptance: #it{p}_[T] ",pptype[i].Data()),
+                                   Form("primary photon %s in acceptance: #it{p}_{T} ",pptype[i].Data()),
                                    nptbins,ptmin,ptmax);
-      fhPtPrimMCAcc[i]->SetXTitle("#it{p}_[T] (GeV/#it{c})");
+      fhPtPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtPrimMCAcc[i]) ;
       
       fhYPrimMCAcc[i]  = new TH2F(Form("hYPrimAcc_MC%s",ppname[i].Data()),
