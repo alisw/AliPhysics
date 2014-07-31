@@ -8,7 +8,7 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
 
 
 //start systematics
-TString names= ("nopid;SPDBoth+ITSNcls2+TPCTOF;SPDFisrt+ITSNcls2+TPCTOF;SPDBoth+ITSNcls3+TPCTOF;SPDFirst+ITSNcls3+TPCTOF;SPDFirst+ITSNcls3+TPCTOF+phiv;SPDboth+ITSNcls3+TPCTOF+phiv;SPDFirst+ITSNcls3+TPCTOF+phiv+convtag;SPDBoth+ITSNcls3+TPCTOF+phiv+convtag");
+TString names= ("TPCTOFPID+phiv");
 
 
 	Bool_t kRot = 0;
@@ -81,10 +81,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 	TrackCuts->SetRequireTPCRefit(kTRUE);
 	TrackCuts->SetRequireITSRefit(kTRUE);
 	//SPD require
-	if(cutDefinition == 1|cutDefinition == 3 |cutDefinition == 6| cutDefinition == 8) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
-	if(cutDefinition == 0|cutDefinition == 2| cutDefinition == 4|cutDefinition == 5 |cutDefinition==7 ) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-	//	if(cutDefinition == 4|cutDefinition == 5 |cutDefinition==7) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst); 
-	//if(cutDefinition == 6| cutDefinition == 8) TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst); 
+	TrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
 	die->GetTrackFilter().AddCuts(TrackCuts);
 		
 	AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("varCuts","varCuts");
@@ -94,84 +91,47 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 	varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
 	varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,0.);
 
-
+	//TPC track
 	varCuts->AddCut(AliDielectronVarManager::kNclsTPC,80.,500.);
 	varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,100.,500.); // or NFclsTPCr?
 	varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.,4.);
 	varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross,0.5,500.);
 
-	if( cutDefinition==1 | cutDefinition ==2 ){
-	  varCuts->AddCut(AliDielectronVarManager::kNclsITS,2.,7.);
-	}
-	else{varCuts->AddCut(AliDielectronVarManager::kNclsITS,3.,7.);}
+	//ITS track
+	varCuts->AddCut(AliDielectronVarManager::kNclsITS,3.,7.);
 	
 	die->GetTrackFilter().AddCuts(varCuts);
 	
-// PID	
-	if(cutDefinition > 0){
-	  AliDielectronPID *pid = new AliDielectronPID("pid","pid"); 	
-	  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-1.5,3.,0.2,100.,kFALSE);
-	  pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.,0.2,100.,kTRUE);
-	  // if(cutDefinition < 6)
-	  pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3.,3.,0.4, 5., kFALSE);	  
-	  //  if(cutDefinition==6 )
-	  //  pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3.,3.,0.4, 2., kFALSE);
-	  die->GetTrackFilter().AddCuts(pid);
-	}
+	// PID	
+	//	if(cutDefinition > 0){
+	AliDielectronPID *pid = new AliDielectronPID("pid","pid"); 	
+	pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-1.5,3.,0.2,100.,kFALSE);
+	pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.,0.2,100.,kTRUE);
+	pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3.,3.,0.4, 5., kFALSE);	  
+	die->GetTrackFilter().AddCuts(pid);
+	//	}
 	
 }
 //----------------------------------Pair Cut-------------------------------------------
 void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
 {
-  if(cutDefinition > 4){
-    AliDielectronVarCuts *PhiV = new AliDielectronVarCuts("PhiV","PhiV");//mass and Phiv together
-    PhiV->AddCut(AliDielectronVarManager::kM, 0. , 0.05);
-    PhiV->AddCut(AliDielectronVarManager::kPhivPair, 2.5 , 3.2);
-    die->GetPairPreFilter().AddCuts(PhiV);
-    if(cutDefinition >6){
-      AliDielectronTrackCuts *noconv=new AliDielectronTrackCuts("noConv","conversion tagging");
-      noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
-      die->GetTrackFilter().AddCuts(noconv);
-    }
-  }
-}
-/*
-//______________________________________________________________________________________
-AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition)
-{
-
-  AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts;
-
-
-  //global
   
-  fesdTrackCuts->SetPtRange( 0.2 , 100. );
-  //if(cutDefinition > 1 ) fesdTrackCuts->SetPtRange( 3. , 4. );
-  fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  fesdTrackCuts->SetDCAToVertex2D(kFALSE);
-  fesdTrackCuts->SetMaxDCAToVertexZ(3.);
-  fesdTrackCuts->SetMaxDCAToVertexXY(1.);
-  fesdTrackCuts->SetEtaRange( -0.8 , 0.8 );
+  //V0 cuts
+  AliDielectronTrackCuts *noconv=new AliDielectronTrackCuts("noConv","conversion tagging");
+  noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
+  die->GetTrackFilter().AddCuts(noconv);
+  
+    
+  //Pre filter
+  AliDielectronVarCuts *PhiV = new AliDielectronVarCuts("PhiV","PhiV");//mass and Phiv together
+  PhiV->AddCut(AliDielectronVarManager::kM, 0. , 0.1);
+  PhiV->AddCut(AliDielectronVarManager::kPhivPair, 2.5 , 3.2);
+  die->GetPairPreFilter().AddCuts(PhiV);
 
-  //ITS
-  fesdTrackCuts->SetRequireITSRefit(kTRUE);
-  fesdTrackCuts->SetMinNClustersITS(3);
-  if(cutDefinition == 6)fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth); 
-  else fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-
-
-  //TPC
-  fesdTrackCuts->SetRequireTPCRefit(kTRUE);
-  fesdTrackCuts->SetMinNClustersTPC(80);
-  fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-  fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
-  fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
-  return fesdTrackCuts;
-
+    
 
 }
-*/
+
 //______________________________________________________________________________________
 void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 {
@@ -208,15 +168,15 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   }
 
   if(kMix){
-  histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(3))); //ME ++
-  histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(4)));//ME -+
-  histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(6)));//ME +-
-  histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(7))); // ME --
+    histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(3))); //ME ++
+    histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(4)));//ME -+
+    histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(6)));//ME +-
+    histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(7))); // ME --
   }
-
+  
   if(kRot)histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(10)));//Rot
-
-
+  
+  
   //add histograms to event class
   histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0,1,AliDielectronVarManager::kNevents);
   histos->UserHistogram("Event","ZVertex","ZVertex;ZVertex/cm",480,-12.,12.,AliDielectronVarManager::kZvPrim);
@@ -224,9 +184,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Event","Nacc","Number of accepted tracks;Number events",100,0,200,AliDielectronVarManager::kNacc);
   histos->UserHistogram("Event","NVtxContrib","Number of Vertex Contributor;NVtx;Number events",100,0,100,AliDielectronVarManager::kNVtxContrib);
 
-
+  
   //add histograms to Track classes
-  histos->UserHistogram("Track","P","P;P [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kPIn);
+  //histos->UserHistogram("Track","P","P;P [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kPIn);
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kPt);
   histos->UserHistogram("Track","Eta","Eta; Eta ;#tracks",100,-1.,1.,AliDielectronVarManager::kEta);
   histos->UserHistogram("Track","Phi","Phi; Phi ;#tracks",640,0.,6.4,AliDielectronVarManager::kPhi);
@@ -281,55 +241,55 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //
 
   histos->UserHistogram("Pair","InvMass","Inv.Mass;Inv. Mass [GeV];#pairs",
-                        500,0,4,AliDielectronVarManager::kM);
+                        2000,0,20,AliDielectronVarManager::kM);
 
-  histos->UserHistogram("Pair","InvMass_low","Inv.Mass;Inv. Mass [GeV];#pairs",
-                        500,0,0.5,AliDielectronVarManager::kM);
+  histos->UserHistogram("Pair","InvMasslow","Inv.Mass;Inv. Mass [GeV];#pairs",
+                        4000,0,0.4,AliDielectronVarManager::kM);
 
 //  histos->UserHistogram("Pair","InvMass10","Inv.Mass;Inv. Mass [GeV];#pairs",
 //                        500,0.,5.,AliDielectronVarManager::kM);
 
-  histos->UserHistogram("Pair","kDeltaEta","kDeltaEta;kDeltaEta;#pairs",
-                        160,0.,1.6,AliDielectronVarManager::kDeltaEta);
+//  histos->UserHistogram("Pair","kDeltaEta","kDeltaEta;kDeltaEta;#pairs",
+//                        160,0.,1.6,AliDielectronVarManager::kDeltaEta);
 
-  histos->UserHistogram("Pair","kDeltaEta_low","kDeltaEta;kDeltaEta;#pairs",
-                        500,0.,0.5,AliDielectronVarManager::kDeltaEta);
+  //  histos->UserHistogram("Pair","kDeltaEta_low","kDeltaEta;kDeltaEta;#pairs",
+  //                      500,0.,0.5,AliDielectronVarManager::kDeltaEta);
 
-  histos->UserHistogram("Pair","kDeltaPhi","kDeltaPhi;kDeltaPhi;#pairs",
-                        320,0.,6.4,AliDielectronVarManager::kDeltaPhi);
+  //  histos->UserHistogram("Pair","kDeltaPhi","kDeltaPhi;kDeltaPhi;#pairs",
+  //                      320,0.,6.4,AliDielectronVarManager::kDeltaPhi);
 
-  histos->UserHistogram("Pair",
-                        "kDeltaEta_kDeltaPhi","kDeltaEta_kDeltaPhi;kDeltaEta;kDeltaPhi",
-                        160, 0. , 1.6, 320 , 0., 6.4 ,
-  			AliDielectronVarManager::kDeltaEta , AliDielectronVarManager::kDeltaPhi );
+  //  histos->UserHistogram("Pair",
+  //                      "kDeltaEta_kDeltaPhi","kDeltaEta_kDeltaPhi;kDeltaEta;kDeltaPhi",
+  //                      160, 0. , 1.6, 320 , 0., 6.4 ,
+  //			AliDielectronVarManager::kDeltaEta , AliDielectronVarManager::kDeltaPhi );
 
-  histos->UserHistogram("Pair",
-                        "Phi","Phi;counts;Phi",
-                        320, 0. , 6.4, AliDielectronVarManager::kPhi);
+  //  histos->UserHistogram("Pair",
+  //                      "Phi","Phi;counts;Phi",
+  //                      320, 0. , 6.4, AliDielectronVarManager::kPhi);
 
-  histos->UserHistogram("Pair",
-                        "Y","Y;counts;Y",
-                        120, -1.2 , 1.2, AliDielectronVarManager::kY);
+  //  histos->UserHistogram("Pair",
+  //                      "Y","Y;counts;Y",
+  //                      120, -1.2 , 1.2, AliDielectronVarManager::kY);
 
 
-  histos->UserHistogram("Pair","PhiV",";PhiV;#pairs",
-                        320,0.,6.4,AliDielectronVarManager::kPhivPair);
+  //  histos->UserHistogram("Pair","PhiV",";PhiV;#pairs",
+  ///                     320,0.,6.4,AliDielectronVarManager::kPhivPair);
 
-  histos->UserHistogram("Pair",
-                        "OpAngle","Opening angle;Opening angle;#pairs",
-                        320, 0. , 3.2, 
-                         AliDielectronVarManager::kOpeningAngle);
+  //  histos->UserHistogram("Pair",
+  //                      "OpAngle","Opening angle;Opening angle;#pairs",
+  //                      320, 0. , 3.2, 
+  //                      AliDielectronVarManager::kOpeningAngle);
 
 
 //   histos->UserHistogram("Pair","PhiV_Pt",";Pt;PhiV",
 //			 100,0.,10.,320,0.,6.4,AliDielectronVarManager::kPt,AliDielectronVarManager::kPhivPair);
 
-   histos->UserHistogram("Pair","InvMass_bin2","Inv.Mass;Inv. Mass [GeV];#pairs",
-	"0. , 0.025, 0.05 , 0.075 ,0.1 ,0.15 , 0.2 , 0.25 , 0.3 , 
- 	0.4 ,  0.5 , 0.6, 0.65 , 0.688 , 0.725, 0.75, 0.775, 0.8 , 0.85 ,
-	 0.95,  0.975 , 1.0 , 1.025 , 1.05, 1.125 , 1.25 , 1.5 , 1.75 , 2.0 , 
-	2.25, 2.5 , 2.75 , 2.85, 2.95,3.05, 3.1 , 3.15 , 
-	3.3 , 3.5, 3.75 , 4.0",AliDielectronVarManager::kM);
+//   histos->UserHistogram("Pair","InvMass_bin2","Inv.Mass;Inv. Mass [GeV];#pairs",
+//	"0. , 0.025, 0.05 , 0.075 ,0.1 ,0.15 , 0.2 , 0.25 , 0.3 , 
+  //	0.4 ,  0.5 , 0.6, 0.65 , 0.688 , 0.725, 0.75, 0.775, 0.8 , 0.85 ,
+  //	 0.95,  0.975 , 1.0 , 1.025 , 1.05, 1.125 , 1.25 , 1.5 , 1.75 , 2.0 , 
+  //	2.25, 2.5 , 2.75 , 2.85, 2.95,3.05, 3.1 , 3.15 , 
+  //	3.3 , 3.5, 3.75 , 4.0",AliDielectronVarManager::kM);
 
   histos->UserHistogram("Pair",
                         "Eta_Phi","Eta_Phi;Eta;Phi",
@@ -338,31 +298,35 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   histos->UserHistogram("Pair",
                         "InvMass_Pt","InvMass_Pt;InvMass;Pt",
-                        500, 0. , 4., 100 , 0., 5. ,
+                        1000, 0. , 10., 100 , 0., 20. ,
 			AliDielectronVarManager::kM , AliDielectronVarManager::kPt );
+
+  histos->UserHistogram("Pair",
+                        "InvMasslow_Pt","InvMass_Pt;InvMass;Pt",
+                        4000, 0. , 0.4, 100 , 0., 20. ,
+			AliDielectronVarManager::kM , AliDielectronVarManager::kPt );
+
   histos->UserHistogram("Pair",
                         "InvMass_deltaphi","InvMass_deltaphi;InvMass;deltaphi",
-                        500, 0. , 4., 320 , 0., 6.4 ,
+                        1000, 0. , 10., 320 , 0., 6.4 ,
 			AliDielectronVarManager::kM , AliDielectronVarManager::kDeltaPhi );
 
 
   histos->UserHistogram("Pair",
                         "InvMass_PhivPair","InvMass_PhivPair;InvMass;PhivPair",
-                        500, 0. , 4., 320 , 0., 3.2 ,
+                        1000, 0. , 10., 320 , 0., 3.2 ,
                          AliDielectronVarManager::kM , AliDielectronVarManager::kPhivPair );
 
 
   histos->UserHistogram("Pair",
                         "OpAngle_InvMass","OpAngle_InvMass;Opening angle;Invariant Mass",
-                        320, 0. , 3.2, 500 , 0. , 4. ,
+                        320, 0. , 3.2, 1000 , 0. , 10. ,
                          AliDielectronVarManager::kOpeningAngle,AliDielectronVarManager::kM);
 
   histos->UserHistogram("Pair",
                         "Phi_InvMass","Phi_InvMass;Phi;Invariant Mass",
-                        320, 0. , 6.4, 500 , 0. , 4. ,
+                        320, 0. , 6.4, 1000 , 0. , 10. ,
                          AliDielectronVarManager::kPhi,AliDielectronVarManager::kM);
-
-
 
   die->SetHistogramManager(histos);
 
