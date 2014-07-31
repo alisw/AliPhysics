@@ -4331,7 +4331,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   Double_t trigPos[6], posDaugPos[6], negDaugPos[6];
   Double_t trigXYZ[3], posDaugXYZ[3], negDaugXYZ[3];
   Double_t devPosDaugTrig[9], devNegDaugTrig[9], splitCont[9],  splitCont2[10];
-  Int_t    sameSignPosDaug = -1., sameSignNegDaug = -1.;
+  Int_t    sameSignPosDaug = -1, sameSignNegDaug = -1;
   Float_t  sameLabelPosDaug = 0., sameLabelNegDaug = 0.;
 
   // --------------------------------
@@ -4390,7 +4390,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       // -----------------------------------------------------------------
 
       sameLabelPosDaug = 0.; sameLabelNegDaug = 0.;
-      sameSignPosDaug = -1.; sameSignNegDaug = -1.;
+      sameSignPosDaug = -1; sameSignNegDaug = -1;
       RdPhiStarMaxPosDaug=-1.; RdPhiStarMaxNegDaug=-1.;
       //trigTPCMapOk=kTRUE; posDaugTPCMapOk=kTRUE; negDaugTPCMapOk=kTRUE;
       fracTrigTPCSharedMap=0; fracPosDaugTPCSharedMap=0; fracNegDaugTPCSharedMap=0;
@@ -4507,8 +4507,8 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       //         - Trigger track - Positive track (from Lambda with pt above 3 GeV/c)
       //         - Trigger track - Negative track (from AntiLambda with pt above 3 GeV/c)
       if( fracTrigTPCSharedMap>0.5 && 
-	  ( ( TMath::Abs(fracTrigTPCSharedMap - fracPosDaugTPCSharedMap) < fDiffTrigDaugFracTPCSharedCls ) ||
-	    ( TMath::Abs(fracTrigTPCSharedMap - fracNegDaugTPCSharedMap) < fDiffTrigDaugFracTPCSharedCls ) ) )
+	  ( ( sameSignPosDaug==1 && TMath::Abs(fracTrigTPCSharedMap - fracPosDaugTPCSharedMap) < fDiffTrigDaugFracTPCSharedCls ) ||
+	    ( sameSignNegDaug==1 && TMath::Abs(fracTrigTPCSharedMap - fracNegDaugTPCSharedMap) < fDiffTrigDaugFracTPCSharedCls ) ) )
 	continue;
 
 
