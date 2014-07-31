@@ -20,6 +20,7 @@ class AliPicoTrack: public AliVTrack {
   Double_t        Pz()                        const { return fPt*TMath::SinH(fEta); }
   Double_t        Pt()                        const { return fPt;                   }
   Double_t        P()                         const { return fPt*TMath::CosH(fEta); }
+  
   Bool_t          PxPyPz(Double_t p[3])       const { p[0]=Px();p[1]=Py();p[2]=Pz(); return 1;         }
   Bool_t          GetPxPyPz(Double_t p[3])    const { p[0]=Px();p[1]=Py();p[2]=Pz(); return 1;         }
   Double_t        Xv()                        const { return 0.;      }
@@ -49,6 +50,7 @@ class AliPicoTrack: public AliVTrack {
   Bool_t          IsEMCAL()                   const { return fEmcal;  }
   ULong_t         GetStatus()                 const { return 0;       }
   Bool_t          GetXYZ(Double_t *v)         const { v[0]=0; v[1]=0; v[2]=0; return 0; }
+  using AliVVtrack::GetXYZ;
   Double_t        GetBz()                     const { return 0;       }
   void            GetBxByBz(Double_t b[3])    const { b[0]=0;b[1]=0;b[2]=0; }
   Bool_t          GetCovarianceXYZPxPyPz(Double_t /*cv*/[21]) const { return 0; }

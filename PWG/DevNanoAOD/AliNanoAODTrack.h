@@ -143,7 +143,7 @@ public:
   //
   template <typename T> void GetP(T *p) const {
     p[0]=Pt(); p[1]=Phi(); p[2]=Theta();}
-
+	using AliVVtrack::GetP;
   //  template <typename T> void GetPxPyPz(T *p) const {
   //    p[0] = Px(); p[1] = Py(); p[2] = Pz();}
   Bool_t GetPxPyPz(Double_t *p) const;
@@ -165,6 +165,7 @@ public:
   Bool_t GetXYZ(Double_t *p) const {
     return GetPosition(p); }
   
+	using AliVVtrack::GetXYZ;
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t *r) const;
   
   Bool_t GetCovarianceXYZPxPyPz(Double_t /*cv*/[21]) const {AliFatal("Not implemented"); return 0;}
