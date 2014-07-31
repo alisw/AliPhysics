@@ -1508,16 +1508,33 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter6(Int_t s1,Int_t s2) {
   //                     - rotation x-y
   //                     - tilting x-z, y-z
   static Int_t counter6=0;
-  static TF1 f6("f6","x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
+  //static TF1 f6("f6","x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");  // change in the back compatibility in root - 
   TLinearFitter * fitter = GetFitter6(s1,s2);
   if (fitter) return fitter;
-  //  fitter=new TLinearFitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
-  fitter=new TLinearFitter(&f6,"");
+  fitter=new TLinearFitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
+  //fitter=new TLinearFitter(&f6,"");
   fitter->StoreData(kFALSE);
   fFitterArray6.AddAt(fitter,GetIndex(s1,s2));
   counter6++;
   //  if (GetDebugLevel()>0) cerr<<"Creating fitter6 "<<s1<<","<<s2<<"  :  "<<counter6<<endl;
   return fitter;
+  /*
+  //    as root changed interface at some moment I put here also the test - which should be unit test in future:
+  TLinearFitter fitter(6,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]");
+  for (Int_t i=0; i<10000; i++) { 
+    x[0]=i; 
+    x[1]=i*i; 
+    x[2]=i*i*i; 
+    x[3]=TMath::Power(i,1/2.); 
+    x[4]=TMath::Power(i,1/3.); 
+    x[5]=TMath::Power(i,1/4.); 
+    fitter.AddPoint(x,i*i*i);
+  }
+  fitter.Eval();
+  fitter.GetParameters(vec);
+  vec.Print();
+  => result of the fit should = for all vector elements except of element 2; - it was the case with root v5-34-09
+   */
 }
 
 
