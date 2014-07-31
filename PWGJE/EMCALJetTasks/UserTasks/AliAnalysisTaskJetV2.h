@@ -31,11 +31,11 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
         enum fitGoodnessTest    { kChi2ROOT, kChi2Poisson, kKolmogorov, kKolmogorovTOY, kLinearFit };
-        enum collisionType      { kPbPb, kPythia, kPbPb10h, kPbPb11h }; // collision type, kPbPb = 11h, kept for backward compatibilitiy
+        enum collisionType      { kPbPb, kPythia, kPbPb10h, kPbPb11h, kJetFlowMC }; // collision type, kPbPb = 11h, kept for backward compatibilitiy
         enum qcRecovery         { kFixedRho, kNegativeVn, kTryFit };    // how to deal with negative cn value for qcn value
         enum runModeType        { kLocal, kGrid };                      // run mode type
-        enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
-        enum detectorType       { kTPC, kVZEROA, kVZEROC, kVZEROComb};  // detector that was used for event plane
+        enum dataType           { kESD, kAOD, kESDMC, kAODMC};          // data type
+        enum detectorType       { kTPC, kVZEROA, kVZEROC, kVZEROComb, kFixedEP};  // detector that was used for event plane
         enum analysisType       { kCharged, kFull };                    // analysis type
         // constructors, destructor
                                 AliAnalysisTaskJetV2();
@@ -46,6 +46,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         virtual Bool_t          Notify();
         Bool_t                  InitializeAnalysis();
         virtual void            UserCreateOutputObjects();
+        virtual void            Exec(Option_t *);
         virtual Bool_t          Run();
         TH1F*                   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c = -1, Bool_t append = kTRUE);
         TH2F*                   BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c = -1, Bool_t append = kTRUE);

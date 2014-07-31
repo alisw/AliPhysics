@@ -17,12 +17,11 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
 {
     public:
         // enumerators
-        enum detectorType       {kVZEROA, kVZEROC, kVZEROComb};  // detector that was used
+        enum detectorType       {kVZEROA, kVZEROC, kVZEROComb, kFixedEP};  // detector that was used
         // constructors, destructor
         AliAnalysisTaskJetFlowMC();
         AliAnalysisTaskJetFlowMC(const char *name, Int_t seed = 0);
         virtual ~AliAnalysisTaskJetFlowMC();
-        // mirror image of PickTrackMaker
         void    UserCreateOutputObjects();
         TH1F*   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c = -1, Bool_t append = kTRUE);
         TH2F*   BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c = -1, Bool_t append = kTRUE);
@@ -92,8 +91,8 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
     protected:
         TString         fTracksOutName;         // name of output track array
         TString         fTracksInName;          // name of input track array
-        TClonesArray   *fTracksIn;              //!track array in
-        TClonesArray   *fTracksOut;             //!track array out
+        TClonesArray   *fTracksIn;              //! track array in
+        TClonesArray   *fTracksOut;             //! track array out
         Bool_t          fReuseTracks;           // use original event as template
         Int_t           fMult;                  // multiplicity of new event
         Int_t           fCenBin;                //! centrality bin
