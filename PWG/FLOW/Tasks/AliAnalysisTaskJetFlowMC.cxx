@@ -22,7 +22,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlowMC)
 
 //_____________________________________________________________________________
-AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC() : AliAnalysisTaskSE("AliAnalysisTaskJetFlowMC"), fTracksOutName("JetFlowMC"),  fTracksInName("PicoTrack"), fTracksIn(0),  fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kVZEROC), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
+AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC() : AliAnalysisTaskSE("AliAnalysisTaskJetFlowMC"), fTracksOutName("JetFlowMC"),  fTracksInName("PicoTrack"), fTracksIn(0),  fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kFixedEP), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
     // default constructor for root IO
     for(Int_t i(0); i < 10; i++) {
         fFuncDiffV2[i]                  = 0x0;
@@ -39,7 +39,7 @@ AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC() : AliAnalysisTaskSE("AliAna
     }
 }
 //_____________________________________________________________________________
-AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC(const char *name, Int_t seed) : AliAnalysisTaskSE(name), fTracksOutName("JetFlowMC"), fTracksInName("PicoTrack"), fTracksIn(0), fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kVZEROC), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
+AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC(const char *name, Int_t seed) : AliAnalysisTaskSE(name), fTracksOutName("JetFlowMC"), fTracksInName("PicoTrack"), fTracksIn(0), fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kFixedEP), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
     // constructor
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -81,7 +81,7 @@ void AliAnalysisTaskJetFlowMC::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
     if(!fCentralityClasses) { // classes must be defined at this point
-        Int_t c[] = {0, 90};
+        Int_t c[] = {-10, 110};
         fCentralityClasses = new TArrayI(sizeof(c)/sizeof(c[0]), c);
     }
     if(fHistIntV2 && !fHistIntV3) {      // define function
@@ -178,8 +178,8 @@ void AliAnalysisTaskJetFlowMC::UserExec(Option_t *)
     // user exec, called for each event.
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);    
     if(!AliAnalysisManager::GetAnalysisManager()) return;
-    // retrieve tracks from input.
-    if (!fTracksIn) { 
+    // retrieve tracks from input, only necessary when 'reuse' option is set, otherwise tracks will ge generated
+    if (fReuseTracks && !fTracksIn) { 
         fTracksIn = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksInName));
         if (!fTracksIn) {
           AliError(Form("Could not retrieve tracks %s!", fTracksInName.Data())); 
@@ -309,10 +309,16 @@ void AliAnalysisTaskJetFlowMC::CalculateEventPlane() {
             fPsi2 = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 2, e, f);
             fPsi3 = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 3, a, b);
             break;
-                       }
+        }
         case kVZEROComb : {
             fPsi2 = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 10, 2, e, f) ;
             fPsi3 = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 10, 3, a, b);
+            break;
+        }
+        case kFixedEP : {
+            // for fixed EP the EP is fixed to a constant value
+            fPsi2 = 0.;
+            fPsi3 = 1.; 
             break;
         }
         default : break;
