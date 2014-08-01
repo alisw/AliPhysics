@@ -1318,7 +1318,8 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillTracks(TObjArray* trList, AliESDEven
       if (!trFilter->IsSelected(esdTr)) continue;
     }
     else if (trList) { // If AOD input
-      Double_t pTMin = 0, pTMax = 0, etaMin = 0, etaMax = 0, minNCl = 0, bit = 0;
+      Double_t pTMin = 0, pTMax = 0, etaMin = 0, etaMax = 0, minNCl = 0;
+      UInt_t bit = 0;
       if ((fFlags & kTPC) == kTPC)    pTMin = 0.2, pTMax = 5., etaMin = -0.8, etaMax = 0.8, minNCl = 70, bit = 128;
       if ((fFlags & kHybrid) == kHybrid) pTMin = 0.2, pTMax = 5., etaMin = -0.8, etaMax = 0.8, minNCl = 70, bit = 272;
 
