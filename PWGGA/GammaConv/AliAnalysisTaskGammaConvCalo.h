@@ -167,6 +167,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoMotherEtaPtAlpha;			//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, alpha
 		TH2F 								**fHistoMotherPi0PtOpenAngle;		//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
 		TH2F 								**fHistoMotherEtaPtOpenAngle;		//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, openAngle
+		TH2F								**fHistoMotherInvMassECalib;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster
+		TH2F								**fHistoMotherInvMassECalibalpha;	//! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster, alpha cut 0.1
 		TTree 								**fTreeMesonsInvMassPtDcazMinDcazMaxFlag; //! array of trees with dca information for mesons
 		Float_t 							fInvMass;							// inv mass for meson tree
 		Float_t 							fPt;								// pt for meson tree 
@@ -195,6 +197,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		//histograms for pure MC quantities
 		TH1I 								**fHistoMCHeaders;					//! array of histos for header names
 		TH1F 								**fHistoMCAllGammaPt;				//! array of histos with all gamma, pT
+		TH1F 								**fHistoMCAllGammaEMCALAccPt;		//! array of histos with all gamma in EMCAL acceptance, pT
 		TH1F 								**fHistoMCDecayGammaPi0Pt;			//! array of histos with decay gamma from pi0, pT
 		TH1F 								**fHistoMCDecayGammaRhoPt;			//! array of histos with decay gamma from rho, pT
 		TH1F 								**fHistoMCDecayGammaEtaPt;			//! array of histos with decay gamma from eta, pT
@@ -224,6 +227,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoTrueMotherInvMassPt;					//! array of histos with validated mothers, invMass, pt
 		TH2F 								**fHistoTrueMotherCaloPhotonInvMassPt;			//! array of histos with validated mothers, photon leading, invMass, pt
 		TH2F 								**fHistoTrueMotherCaloConvertedPhotonInvMassPt;	//! array of histos with validated mothers, converted photon leading, invMass, pt
+		TH2F 								**fHistoTruePi0CaloConvertedPhotonInvMassPt;	//! array of histos with validated pi0, converted photon leading, invMass, pt
+		TH2F 								**fHistoTruePi0CaloConvertedPhotonMatchedInvMassPt;	//! array of histos with validated pi0 matched with conv photon, converted photon leading, invMass, pt
+		TH2F 								**fHistoTrueEtaCaloConvertedPhotonInvMassPt;	//! array of histos with validated eta, converted photon leading, invMass, pt
+		TH2F 								**fHistoTrueEtaCaloConvertedPhotonMatchedInvMassPt;	//! array of histos with validated eta matched with conv photon, converted photon leading, invMass, pt
 		TH2F 								**fHistoTrueMotherCaloElectronInvMassPt;		//! array of histos with validated mothers, electron leading, invMass, pt
 		TH2F 								**fHistoTrueMotherCaloMergedClusterInvMassPt;	//! array of histos with validated mothers, merged cluster invMass, pt
 		TH2F 								**fHistoTrueMotherCaloEMNonLeadingInvMassPt;	//! array of histos with validated mothers, EM non leading, invMass, pt
@@ -260,8 +267,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F 								**fHistoTrueSecondaryConvGammaFromXFromLambdaPt;//! array of histos with validated secondary conversion photon from Lambda, pt  
 		TH1F								**fHistoTrueClusGammaPt;						//! array of histos with validated cluster (electron or photon), pt
 		TH1F								**fHistoTrueClusUnConvGammaPt;					//! array of histos with validated unconverted photon, pt
+		TH1F								**fHistoTrueClusUnConvGammaMCPt;					//! array of histos with validated unconverted photon, pt
 		TH1F								**fHistoTrueClusElectronPt;						//! array of histos with validated electron, pt
 		TH1F								**fHistoTrueClusConvGammaPt;					//! array of histos with validated converted photon, pt
+		TH1F								**fHistoTrueClusConvGammaMCPt;					//! array of histos with validated converted photon, pt
 		TH1F								**fHistoTrueClusConvGammaFullyPt;				//! array of histos with validated converted photon, fully contained, pt
 		TH1F								**fHistoTrueClusMergedGammaPt;					//! array of histos with validated merged photons, electrons, dalitz, pt
 		TH1F								**fHistoTrueClusMergedPartConvGammaPt;			//! array of histos with validated merged partially converted photons, pt
