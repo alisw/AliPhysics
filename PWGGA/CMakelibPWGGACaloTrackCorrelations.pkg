@@ -42,7 +42,9 @@ set ( SRCS
     CaloTrackCorrelations/AliAnaPhotonConvInCalo.cxx 
     CaloTrackCorrelations/AliAnaInsideClusterInvariantMass.cxx
     CaloTrackCorrelations/AliAnaRandomTrigger.cxx
-    CaloTrackCorrelations/AliAnaGeneratorKine.cxx
+    CaloTrackCorrelations/AliAnaGeneratorKine.cxx    
+    CaloTrackCorrelations/AliAnaEMCALTriggerClusters.cxx 
+    CaloTrackCorrelations/AliAnaClusterPileUp.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
