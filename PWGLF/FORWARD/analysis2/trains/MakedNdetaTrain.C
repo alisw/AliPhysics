@@ -33,7 +33,7 @@ public:
     fOptions.Add("trig",     "TYPE", "Trigger type", "INEL");
     fOptions.Add("vzMin",    "CENTIMETER", "Min Ip Z", "-10");
     fOptions.Add("vzMax",    "CENTIMETER", "Max Ip Z", "+10");
-    fOptions.Add("scheme",   "SCHEME", "Normalization scheme", "");
+    fOptions.Add("scheme",   "SCHEME", "Normalization scheme", "EVENT,TRIGGER");
     fOptions.Add("trigEff",  "EFFICENCY", "Trigger effeciency", "1");
     fOptions.Add("trigEff0", "EFFICENCY", "0-bin trigger effeciency", "1");
     fOptions.Add("cent",     "ESTIMATOR", "Use centrality", "none");
@@ -79,7 +79,7 @@ protected:
     if (!mc) mc      = fHelper->IsMC(); 
     if (!fOptions.Has("cent")) cent="none";
 
-    Info("", "Centrality option is '%s'", cent.Data());
+    // Info("", "Centrality option is '%s'", cent.Data());
     fOptions.Show(std::cout);
 
     // --- Form arguments --------------------------------------------

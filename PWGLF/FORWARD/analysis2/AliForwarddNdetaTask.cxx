@@ -181,26 +181,20 @@ void
 AliForwarddNdetaTask::CentralityBin::End(TList*      sums, 
 					 TList*      results,
 					 UShort_t    scheme,
-					 const TH2F* shapeCorr, 
 					 Double_t    trigEff,
 					 Double_t    trigEff0,
-					 Bool_t      symmetrice,
-					 Int_t       rebin, 
 					 Bool_t      rootProj,
 					 Bool_t      corrEmpty, 
-					 Bool_t      cutEdges,
 					 Int_t       triggerMask,
 					 Int_t       marker,
 					 Int_t       color,
 					 TList*      mclist,
 					 TList*      truthlist )
 {
-  DGUARD(fDebug, 1,"In End of %s with corrEmpty=%d, cutEdges=%d, rootProj=%d", 
-	 GetName(), corrEmpty, cutEdges, rootProj);
-  AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, 
-					shapeCorr, trigEff, trigEff0,
-					symmetrice, rebin, 
-					rootProj, corrEmpty, cutEdges,
+  DGUARD(fDebug, 1,"In End of %s with corrEmpty=%d, rootProj=%d", 
+	 GetName(), corrEmpty, rootProj);
+  AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, trigEff, 
+					trigEff0, rootProj, corrEmpty,
 					triggerMask, marker, color, mclist, 
 					truthlist);
 
