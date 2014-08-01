@@ -84,7 +84,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      GetPtThresholds(Int_t i)        const { return fPtThresholds[i]   ; }
   Float_t      GetSumPtThresholds(Int_t i)     const { return fSumPtThresholds[i]; }
   Float_t      GetPtFractions(Int_t i)         const { return fPtFractions[i]    ; }
-  Int_t        GetNumberOfSMCoveredByTRD()     const { return fTRDSMCovered      ; }
   
   Int_t        GetMCIndex(Int_t mcTag);
   
@@ -96,7 +95,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetPtThresholds(Int_t i, Float_t pt)  { fPtThresholds[i] = pt     ; }
   void         SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt     ; } 
   void 	       SetSumPtThresholds(Int_t i, Float_t pt){ fSumPtThresholds[i] = pt ; }
-  void         SetNumberOfSMCoveredByTRD(Int_t n)    { fTRDSMCovered    = n      ; }
 
   Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
   void         SwitchOnReIsolation()                 { fReMakeIC      = kTRUE    ; }
@@ -169,7 +167,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillHighMultHistograms;               // Fill high multiplicity histograms
   Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
   Bool_t   fFillNLMHistograms;                    // Fill NLM histograms
-  Int_t    fTRDSMCovered;                         // From which SM EMCal is covered by TRD
 
   // Analysis data members for multiple cones and pt thresholds 
   Int_t    fNCones ;                              //! Number of cone sizes to test
