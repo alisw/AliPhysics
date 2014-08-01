@@ -628,7 +628,7 @@ void AliPIDResponse::ExecNewRun()
   SetTPCEtaMaps();
 
   SetTRDPidResponseMaster(); 
-  //has to precede InitializeTRDResponse(), otherwise the read-out fTRDdEdxParams is not pased in TRDResponse
+  //has to precede InitializeTRDResponse(), otherwise the read-out fTRDdEdxParams is not pased in TRDResponse!
   SetTRDdEdxParams();
   InitializeTRDResponse();
 
