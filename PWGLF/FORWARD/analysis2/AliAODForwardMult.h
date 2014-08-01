@@ -133,7 +133,16 @@ public:
     /** V0-AND trigger */
     kV0AND       = 0x2000, 
     /** Satellite event */
-    kSatellite   = 0x4000
+    kSatellite   = 0x4000,
+    /** SPD outlier event */
+    kSPDOutlier  = 0x8000,
+    /** SPD pile-up */
+    kPileupSPD   = 0x10000,
+    /** Track pile-up */
+    kPileupTrack = 0x20000,
+    /** Out of bunch pileup */
+    kPileupBC    = 0x40000
+    
   };
   /** 
    * Bin numbers in trigger histograms 
@@ -426,7 +435,7 @@ public:
    * @param cMax         Maximum centrality (in percent)
    * @param hist         Histogram to fill 
    * @param status       Histogram to fill 
-   * 
+   * @param removePileup If true, do not accept pile-up events (default)
    * 
    * @return @c true if the event meets the requirements 
    */
@@ -434,7 +443,8 @@ public:
 		    Double_t vzMin=-10, Double_t vzMax=10,
 		    UShort_t cMin=0,    UShort_t cMax=100, 
 		    TH1*     hist=0,
-		    TH1*     status=0) const;
+		    TH1*     status=0,
+		    Bool_t   removePileup=true) const;
   /** 
    * Get a string correspondig to the trigger mask
    * 
