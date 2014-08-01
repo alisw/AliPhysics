@@ -54,6 +54,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistCheckDecChan(0x0),
   fHistCheckDecChanAcc(0x0),
   fPtVsYGen(0x0),
+  fPtVsYGenLargeAcc(0x0),
   fPtVsYGenLimAcc(0x0),
   fPtVsYGenAcc(0x0),
   fPtVsYReco(0x0),
@@ -112,6 +113,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistCheckDecChan(0x0),
   fHistCheckDecChanAcc(0x0),
   fPtVsYGen(0x0),
+  fPtVsYGenLargeAcc(0x0),
   fPtVsYGenLimAcc(0x0),
   fPtVsYGenAcc(0x0),
   fPtVsYReco(0x0),
@@ -176,6 +178,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   delete fHistCheckDecChan;
   delete fHistCheckDecChanAcc;
   delete fPtVsYGen;
+  delete fPtVsYGenLargeAcc;
   delete fPtVsYGenLimAcc;
   delete fPtVsYGenAcc;
   delete fPtVsYReco;
@@ -265,6 +268,11 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     fPtVsYGen->Sumw2();
     fPtVsYGen->SetMinimum(0);
     fOutput->Add(fPtVsYGen);
+    
+    fPtVsYGenLargeAcc= new TH2F("hPtVsYGenLargeAcc","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYGenLargeAcc->Sumw2();
+    fPtVsYGenLargeAcc->SetMinimum(0);
+    fOutput->Add(fPtVsYGenLargeAcc);
     
     fPtVsYGenLimAcc= new TH2F("hPtVsYGenLimAcc","",nPtBins,0.,fMaxPt,20,-1.,1.);
     fPtVsYGenLimAcc->Sumw2();
@@ -600,6 +608,7 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC){
 	  if(TMath::Abs(ygen)<0.5) fPtVsYGenLimAcc->Fill(ptgen,ygen);
 	  if(isInAcc) fPtVsYGenAcc->Fill(ptgen,ygen);
 	}
+        if(TMath::Abs(ygen)<0.9) fPtVsYGenLargeAcc->Fill(ptgen,ygen);
       }
     }
   }
