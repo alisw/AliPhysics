@@ -138,11 +138,12 @@ inp=.
 link=0
 unit=m
 frame=0
-base=$ANA_SRC/qa
+base=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa
 
 while test $# -gt 0 ; do
     case $1 in 
 	-h|--help)        usage $0 ; exit 0 ;;
+	-b|--base)        base=$2; shift ;;
 	-m|--max-depth)   maxCol=$2 ; shift ;; 
 	-t|--title)       title="$2" ; shift ;; 
 	-d|--description) desc="$2" ; shift ;;
@@ -219,6 +220,9 @@ cat <<EOF >> ${out}
   </body>
 </html>
 EOF
+if test ! -d $base ; then 
+    exit 0
+fi
 cp $base/style.css .
 cp $base/script.js . 
 cp $base/fmd_favicon.png .

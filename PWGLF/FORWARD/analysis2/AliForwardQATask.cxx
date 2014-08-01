@@ -36,6 +36,7 @@ AliForwardQATask::AliForwardQATask()
     fESDFMD(),
     fHistos(),
     fEventInspector(),
+    fESDFixer(),
     fEnergyFitter(),
     fSharingFilter(),
     fDensityCalculator()
@@ -53,6 +54,7 @@ AliForwardQATask::AliForwardQATask(const char* name)
     fESDFMD(),
     fHistos(),
     fEventInspector("event"),
+    fESDFixer("fixer"),
     fEnergyFitter("energy"),
     fSharingFilter("sharing"), 
     fDensityCalculator("density")
@@ -128,8 +130,9 @@ AliForwardQATask::Book()
   fNeededCorrections = what;
   fExtraCorrections  = AliForwardCorrectionManager::kELossFits;
   
-  fEnergyFitter.CreateOutputObjects(fList);
-  fSharingFilter.CreateOutputObjects(fList);
+  fESDFixer         .CreateOutputObjects(fList);
+  fEnergyFitter     .CreateOutputObjects(fList);
+  fSharingFilter    .CreateOutputObjects(fList);
   fDensityCalculator.CreateOutputObjects(fList);
   
   return true;
@@ -151,21 +154,21 @@ AliForwardQATask::PreData(const TAxis& /*vertex*/, const TAxis& eta)
     // Fall-back values if we do not have the energy loss fits 
     AliFMDMultCuts& sfLCuts = GetSharingFilter().GetLCuts();
     if (sfLCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
-      Double_t cut = 0.3;
+      Double_t cut = 0.15;
       AliWarningF("Using fixed cut @ %f for the lower bound "
 		  "of the sharing filter", cut);
       sfLCuts.SetMultCuts(cut);
     }
     AliFMDMultCuts& sfHCuts = GetSharingFilter().GetHCuts();
     if (sfHCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
-      Double_t cut = 100;
+      Double_t cut = 0.45;
       AliWarningF("Using fixed cut @ %f for the upper bound "
 		  "of the sharing filter", cut);
       sfHCuts.SetMultCuts(cut);
     }
     AliFMDMultCuts& dcCuts  = GetDensityCalculator().GetCuts();
     if (dcCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
-      Double_t cut = 0.3;
+      Double_t cut = 0.45;
       AliWarningF("Using fixed cut @ %f for the lower bound "
 		  "of the density calculator", cut);
       dcCuts.SetMultCuts(cut);
@@ -247,6 +250,9 @@ AliForwardQATask::Event(AliESDEvent& esd)
 
   // Get FMD data 
   AliESDFMD* esdFMD = esd.GetFMDData();
+
+  // Fix up the the ESD 
+  GetESDFixer().Fix(*esdFMD, ip.Z());
   
   // Run the energy loss fitter 
   if (!fEnergyFitter.Accumulate(*esdFMD, cent, 
@@ -332,6 +338,7 @@ AliForwardQATask::Print(Option_t* option) const
   //
   AliBaseESDTask::Print(option);
   gROOT->IncreaseDirLevel();
+  GetESDFixer()         .Print(option);        
   GetEnergyFitter()     .Print(option);
   GetSharingFilter()    .Print(option);
   GetDensityCalculator().Print(option);

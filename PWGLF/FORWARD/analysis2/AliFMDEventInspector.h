@@ -86,14 +86,26 @@ public:
     kPileUp,
     kMCNSD,
     kSatellite,
+    kSpdOutlier,
     kOffline
   };
+  /**
+   * Ways to determine the primary vertex 
+   */
   enum EVtxType { 
     kNormal, 
     kpA2012, 
     kpA2013, 
     kPWGUD, 
     kDisplaced
+  };
+  /** 
+   * Which kinds of pile-up to use 
+   */
+  enum EPileupType { 
+    kSPD          = 0x1, 
+    kTracks       = 0x2,
+    kOutOfBunch   = 0x4
   };
   /** 
    * Centrality methods 
@@ -314,6 +326,15 @@ public:
    * @param m Method identifier 
    */
   void SetCentralityMethod(ECentMethod m);
+  /** 
+   * Pile-up flags.  A bit mask of EPileupType 
+   * - 0x1 Check for number of vertices from SPD 
+   * - 0x2 Check for number of vertices from tracks 
+   * - 0x4 Check out-of-bunch pile-up 
+   * 
+   * @param flags A bit mask of EPileupType 
+   */
+  void SetPileupFlags(UShort_t flags=0x5) { fPileupFlags = flags; }
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
@@ -658,6 +679,7 @@ protected:
   TH1I*    fHStatus;              //! Event processing status 
   TH1I*    fHVtxStatus;           //! Vertex processing status 
   TH1I*    fHTrgStatus;           //! Trigger processing status 
+  TH1I*    fHPileup;              //! Pile-up status 
   Int_t    fLowFluxCut;           //  Low flux cut
   Double_t fMaxVzErr;             //  Maximum error on v_z
   TList*   fList;                 //! Histogram container 
@@ -670,6 +692,7 @@ protected:
   EVtxType fVtxMethod;            // Vertex method to use 
   // Bool_t   fUseFirstPhysicsVertex;//Use the vtx code from p+p first physics
   Bool_t   fUseV0AND;             // Use the vtx code from p+p first physics
+  UShort_t fPileupFlags;          // Which pileups to use 
   UShort_t fMinPileupContrib;     // Min contributors to 2nd pile-up IP
   Double_t fMinPileupDistance;    // Min distance of 2nd pile-up IP
   // Bool_t   fUseDisplacedVertices; // Analyze displaced vertices?
@@ -688,7 +711,7 @@ protected:
   Int_t    fProdSVN;              // AliROOT revision used in production
   Bool_t   fProdMC;               // True if anchor production
 
-  ClassDef(AliFMDEventInspector,13); // Inspect the event 
+  ClassDef(AliFMDEventInspector,14); // Inspect the event 
 };
 
 #endif

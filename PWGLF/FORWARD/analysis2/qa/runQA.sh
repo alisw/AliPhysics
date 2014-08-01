@@ -1,6 +1,8 @@
 #!/bin/sh
 fwd=${ALICE_ROOT}/PWGLF/FORWARD/analysis2
-fwd=$ANA_SRC
+if test "X$ANA_SRC" != "X" ; then 
+    fwd=$ANA_SRC
+fi
 
 # 1: file
 # 2: data type 

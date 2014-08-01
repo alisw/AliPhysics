@@ -15,7 +15,7 @@
  * @param trig      Trigger to use 
  * @param vzMin     Smallest @f$ v_z@f$
  * @param vzMax     Biggest @f$ v_z@f$
- * @param useCent   Whether to use the centrality or not
+ * @param cent      Whether to use the centrality or not
  * @param scheme    Normalisation scheme
  * @param cutEdges  Whether to cut edges when rebinning 
  * @param trigEff   Trigger efficiency 
@@ -58,7 +58,6 @@ AddTaskMCTruthdNdeta(const char* config    = "dNdetaConfig.C",
   //    kEventLevel     Normalise to all events in selected range 
   //    kAltEventLevel  Normalise to all events in selected range 
   //    kBackground     Also correct for background triggers 
-  //    kShape          Correct shape 
   // 
   // kNone, kEventLevel, and kAltEventLevel are mutually exclusive.
   // If neither kEventLevel, nor kAltEventLevel is specified, then
@@ -66,8 +65,8 @@ AddTaskMCTruthdNdeta(const char* config    = "dNdetaConfig.C",
   // sense with kEventLevel and kAltEventLevel.  Furthermore, there
   // are some constants that encode the common cases
   //     
-  //    kFull    = kEventLevel |  kBackground | kShape 
-  //    kAltFull = kAltEventLevel |  kBackground | kShape 
+  //    kFull    = kEventLevel |  kBackground
+  //    kAltFull = kAltEventLevel |  kBackground
   // 
   // Default is kFull
   task->SetNormalizationScheme(AliBasedNdetaTask::kFull);
@@ -76,7 +75,8 @@ AddTaskMCTruthdNdeta(const char* config    = "dNdetaConfig.C",
   // Note, that a bin specified as a-b, covers the interval from a,
   // inclusive to b exclusive.  An upper bound of 100 is treated
   // especially, and the upper bound is inclusive in that case .
-  if (useCent) {
+  if (cent) {
+    TString cM(cent);
     if (task->SetCentralityMethod(cent)) {
       Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
       task->SetCentralityAxis(11, bins);

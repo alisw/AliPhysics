@@ -52,8 +52,8 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetEventInspector().SetLowFluxCut(1000); 
   // Set the maximum error on v_z [cm]
   task->GetEventInspector().SetMaxVzErr(0.2);
-  // Least number of constributors to 2nd pile-up vertex
-  task->GetEventInspector().SetMinPileupContributors(3);
+  // Least number of constributors to 2nd pile-up vertex -was 3
+  task->GetEventInspector().SetMinPileupContributors(5);
   // Least distance from primary to 2nd pile-up vertex (cm)
   task->GetEventInspector().SetMinPileupDistance(.8);
   // V0-AND triggered events flagged as NSD 
@@ -69,6 +69,13 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetEventInspector().SetVertexMethod(AliFMDEventInspector::kNormal);
   // Which centrality estimator to use 
   task->GetEventInspector().SetCentralityMethod("V0M");
+  // How to tag events as pile-up.  Bit pattern of 
+  //
+  //   - 0x1:      SPD multi-vertex 
+  //   - 0x2:      Track multi-vertex 
+  //   - 0x4:      Out-of-bunch
+  // 
+  task->GetEventInspector().SetPileupFlags(0x7);
 
   // --- ESD fixer ---------------------------------------------------
   // Sets the noise factor that was used during reconstruction.  If
