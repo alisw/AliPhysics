@@ -230,7 +230,18 @@ AliBaseAODTask::UserCreateOutputObjects()
   if (!Book()) AliFatalF("Failed to book output objects for %s", GetName());
 
   // Store centrality axis as a histogram - which can be merged
-  fSums->Add(fCentAxis.Clone("centAxis"));
+  TH1* cH = 0;
+  if (fCentAxis.GetXbins() && fCentAxis.GetXbins()->GetSize() > 0) 
+    cH = new TH1I(fCentAxis.GetName(), fCentAxis.GetTitle(), 
+		  fCentAxis.GetNbins(), fCentAxis.GetXbins()->GetArray());
+  else 
+    cH = new TH1I(fCentAxis.GetName(), fCentAxis.GetTitle(), 
+		  fCentAxis.GetNbins(), fCentAxis.GetXmin(), 
+		  fCentAxis.GetXmax());
+  cH->GetXaxis()->SetTitle(fCentAxis.GetTitle());
+  cH->GetXaxis()->SetName(fCentAxis.GetName());
+
+  fSums->Add(cH);
   fSums->Add(AliForwardUtil::MakeParameter("trigger", ULong_t(fTriggerMask)));
   fSums->Add(AliForwardUtil::MakeParameter("count", 1));
   fSums->Add(AliForwardUtil::MakeParameter("alirootRev", 
