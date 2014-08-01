@@ -40,7 +40,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetMass", kTRUE),
   fContainerBase(0),
   fMinFractionShared(0),
-  fJetMassAvg(0),
+  fJetMassType(kRaw),
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
   fh2PtJet1VsLeadPtTaggedMatch(0),
@@ -104,7 +104,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),  
   fContainerBase(0),
   fMinFractionShared(0),
-  fJetMassAvg(0),
+  fJetMassType(kRaw),
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
   fh2PtJet1VsLeadPtTaggedMatch(0),
@@ -124,7 +124,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
 {
   // Standard constructor.
 
- fh2PtJet1VsLeadPtAllSel        = new TH2F*[fNcentBins];
+  fh2PtJet1VsLeadPtAllSel        = new TH2F*[fNcentBins];
   fh2PtJet1VsLeadPtTagged        = new TH2F*[fNcentBins];
   fh2PtJet1VsLeadPtTaggedMatch   = new TH2F*[fNcentBins];
   fh2PtVsMassJet1All             = new TH2F*[fNcentBins];
@@ -355,32 +355,12 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 //________________________________________________________________________
 Double_t AliAnalysisTaskEmcalJetMass::GetJetMass(AliEmcalJet *jet) {
   //calc subtracted jet mass
-  TLorentzVector vpS = GetSubtractedVector(jet);
-  return vpS.M();
-}
-
-
-//________________________________________________________________________
-TLorentzVector AliAnalysisTaskEmcalJetMass::GetSubtractedVector(AliEmcalJet *jet) {
-  //get subtracted vector
-  TLorentzVector vpS;
-  AliJetContainer *jetCont = GetJetContainer(fContainerBase);
-  TLorentzVector vpBkg = GetBkgVector(jet,jetCont);
-  vpS.SetPxPyPzE(jet->Px()-vpBkg.Px(),jet->Py()-vpBkg.Py(),jet->Pz()-vpBkg.Pz(),jet->E()-vpBkg.E());
-  return vpS;
-}
-
-//________________________________________________________________________
-TLorentzVector AliAnalysisTaskEmcalJetMass::GetBkgVector(AliEmcalJet *jet, AliJetContainer *cont) {
-  //get background vector
-
-  Double_t rho  = cont->GetRhoVal();
-  Double_t rhom = cont->GetRhoMassVal();
-  TLorentzVector vpB;
-  Double_t aphi = jet->AreaPhi();
-  Double_t aeta = jet->AreaEta();
-  vpB.SetPxPyPzE(rho*TMath::Cos(aphi)*jet->Area(),rho*TMath::Sin(aphi)*jet->Area(),(rho+rhom)*TMath::SinH(aeta)*jet->Area(),(rho+rhom)*TMath::CosH(aeta)*jet->Area());
-  return vpB;
+  if(fJetMassType==kRaw)
+    return jet->M();
+  else if(fJetMassType==kDeriv)
+    return jet->GetSecondOrderSubtracted();
+  
+  return 0;
 }
 
 //________________________________________________________________________

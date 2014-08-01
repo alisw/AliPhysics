@@ -221,16 +221,17 @@ int AliFemtoManager::ProcessEvent(){
   // NOTE - this ReturnHbtEvent makes a *new* AliFemtoEvent - delete it when done!
   AliFemtoEvent* currentHbtEvent = fEventReader->ReturnHbtEvent();
   //  cout << "Event reader has returned control to manager" << endl;
-  
   // if no HbtEvent is returned, then we abort processing.
   // the question is now: do we try again next time (i.e. there may be an HbtEvent next time)
   // or are we at EOF or something?  If Reader says Status=0, then that means try again later.
   // so, we just return the Reader's Status.
   if (!currentHbtEvent){
+#ifdef STHBRDEBUG
     cout << "AliFemtoManager::ProcessEvent() - Reader::ReturnHbtEvent() has returned null pointer\n";
+#endif
     return fEventReader->Status();
   }
-  
+
   // loop over all the EventWriters
   AliFemtoEventWriterIterator tEventWriterIter;
   for (tEventWriterIter=fEventWriterCollection->begin();tEventWriterIter!=fEventWriterCollection->end();tEventWriterIter++){

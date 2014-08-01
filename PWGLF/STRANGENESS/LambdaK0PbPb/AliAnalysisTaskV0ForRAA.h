@@ -72,9 +72,9 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   void SelectWithNoSDD(Bool_t sdd)                            {fSelNoSDD =sdd; if(sdd) Printf("AliAnalysisTaskV0ForRAA:: only events with NO SDD selected!");}
 
   //-- track cuts --//
-  void SetESDTrackCuts(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE)       {fNcr=ncr;fChi2cls=chi2,fTPCrefit=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for V0s set ncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
-  void SetESDTrackCutsCharged(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE) {fNcrCh=ncr;fChi2clsCh=chi2,fTPCrefitCh=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for charged particles setncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
-  void SetESDTrackCutsLowPt(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE)  {fNcrLpt=ncr;fChi2clsLpt=chi2,fTPCrefitLpt=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for low pt particles set ncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
+  void SetESDTrackCuts(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE,Bool_t itsrefit=kFALSE)  {fNcr=ncr;fChi2cls=chi2;fTPCrefit=tpcrefit;fITSrefit = itsrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for V0s set ncr %i, chi2 %1.2f, TPC refit %i  ITS refit %i",ncr,chi2,tpcrefit,itsrefit);}
+  void SetESDTrackCutsCharged(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE) {fNcrCh=ncr;fChi2clsCh=chi2;fTPCrefitCh=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for charged particles setncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
+  void SetESDTrackCutsLowPt(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE)  {fNcrLpt=ncr;fChi2clsLpt=chi2;fTPCrefitLpt=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for low pt particles set ncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
 
   void SetUseOnthefly(Bool_t useonthefly)                     {fOntheFly = useonthefly; if(!fOntheFly) Printf("AliAnalysisTaskV0ForRAA::offline V0s");}
   void SetUsePID(Bool_t usepid,Double_t nsigma=100.0,Double_t pcut=100.0,Bool_t pidpion=kFALSE,Double_t nsigma2=100.0) {fUsePID = usepid;fNSigma = nsigma;fPPIDcut = pcut; fUsePIDPion = pidpion;fNSigma2 = nsigma2; if(fUsePID) Printf("AliAnalysisTaskV0ForRAA::proton PID! of %4.2f for p: %4.2f, also pion? %i nsig2=%4.2f",fNSigma,pcut,pidpion,fNSigma2);}
@@ -164,9 +164,9 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   TList           *fOutputContainer;    // output data container
    
   //----------------------------histograms --------------------------------------------//
-  THnF *fTHnFK0s; 
-  THnF *fTHnFL; 
-  THnF *fTHnFAL; 
+  // THnF *fTHnFK0s; 
+  //THnF *fTHnFL; 
+  //THnF *fTHnFAL; 
 
   THnF *fTHnFK0sDauEta; 
   THnF *fTHnFLDauEta; 
@@ -433,6 +433,7 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   Int_t     fNcr;                      // esd track cuts: number of crossed rows TPC for V0 daughters
   Double_t  fChi2cls;                  // esd track cuts: chi2 per cluster TPC for V0 daughters
   Bool_t    fTPCrefit;                 // esd track cuts: tpc refit  for V0 daughters
+  Bool_t    fITSrefit;                 // esd track cuts: its refit for V0 daughters shall be kFALSE for on-the-fly
   Int_t     fNcrCh;                    // esd track cuts: number of crossed rows TPC for charged
   Double_t  fChi2clsCh;                // esd track cuts: chi2 per cluster TPC for charged
   Bool_t    fTPCrefitCh;               // esd track cuts: tpc refit for charged
@@ -552,6 +553,6 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   AliAnalysisTaskV0ForRAA(const AliAnalysisTaskV0ForRAA&);
   AliAnalysisTaskV0ForRAA&operator=(const AliAnalysisTaskV0ForRAA&);
    
-  ClassDef(AliAnalysisTaskV0ForRAA, 0); 
+  ClassDef(AliAnalysisTaskV0ForRAA, 1); 
 };
 #endif

@@ -104,8 +104,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     public:
         AlipAJetHistos();
         AlipAJetHistos(const char *name);
-        AlipAJetHistos(const char *name, const char *centag, Bool_t doNEF=kFALSE);
-        
+        AlipAJetHistos(const char *name, TString centag, Bool_t doNEF=kFALSE);
+        AlipAJetHistos(const char *name, TString centag, Bool_t doNEF, Bool_t doNEFSignalOnly, Bool_t doTHnSparse);
+
         virtual ~AlipAJetHistos();
         
         // User Defined Sub-Routines
@@ -124,7 +125,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         
         // Setters
         void SetName(const char *name);
-        void SetCentralityTag(const char *name);
+        void SetCentralityTag(TString name);
         void SetCentralityRange(Int_t bins, Double_t low, Double_t up);
         void SetPtRange(Int_t bins, Double_t low, Double_t up);
         void SetRhoPtRange(Int_t bins, Double_t low, Double_t up);
@@ -136,7 +137,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         void SetSignalTrackPtBias(Bool_t chargedBias);
         void SetNEFJetDimensions(Int_t n);
         void SetNEFClusterDimensions(Int_t n);
-
+        void SetRhoValue(Double_t value);
+        void DoTHnSparse(Bool_t doTHnSparse);
+        
         // User Defined Functions
         TList* GetOutputHistos();  //!
         Double_t GetRho();
@@ -192,19 +195,25 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         TProfile *fpLJetRho; //!
         
         // Jet Profile
+        TH3F *fhJetPtEtaPhi; //!
         TH2F *fhJetPtArea; //!
-
         TH2F *fhJetConstituentPt; //!
         TH2F *fhJetTracksPt; //!
         TH2F *fhJetClustersPt; //!
         TH2F *fhJetConstituentCounts; //!
         TH2F *fhJetTracksCounts; //!
         TH2F *fhJetClustersCounts; //!
+        TH2F *fhJetPtZConstituent; //!
         TH2F *fhJetPtZTrack; //!
         TH2F *fhJetPtZCluster; //!
+        TH2F *fhJetPtZLeadingConstituent; //!
+        TH2F *fhJetPtZLeadingTrack; //!
+        TH2F *fhJetPtZLeadingCluster; //!
         
         // Histograms for Neutral Energy Fraction
         TList *fNEFOutput; //! NEF QA Plots
+        
+        TH2F *fhJetPtNEF; //!
         
         THnSparse *fhJetNEFInfo; //! Jet NEF Information Histogram
         THnSparse *fhJetNEFSignalInfo; //! Signal Jet NEF Information Histogram
@@ -216,7 +225,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
 
         // Variables
         const char *fName;  //!
-        const char *fCentralityTag;  //!
+        TString fCentralityTag; 
         
         Int_t fCentralityBins;
         Double_t fCentralityLow;
@@ -251,7 +260,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         Bool_t fDoNEFQAPlots;
         Bool_t fDoNEFSignalOnly;
         Bool_t fSignalTrackBias;
-
+        Bool_t fDoTHnSparse;
+        
         Int_t fNEFBins;
         Double_t fNEFLow;
         Double_t fNEFUp;
@@ -309,7 +319,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     void FullJetEnergyDensityProfile();
     void ChargedJetEnergyDensityProfile();
     
-    void DeleteJetData(Bool_t EMCalOn);
+    void DeleteJetData(Int_t delOption);
     
     // User Defined Functions
     Bool_t IsDiJetEvent();
@@ -335,9 +345,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     };
     
     // Used to set the Centrality Tag
-    inline void SetCentralityTag(const char *centag)
+    inline void SetCentralityTag(TString centag)
     {
-        fCentralityTag = centag;
+        fCentralityTag = centag.Data();
     };
     
     // Used to set apriori Scaling Factor
@@ -450,6 +460,16 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         fJetRAccept = r;
     };
     
+    inline void DoTHnSparse(Bool_t doTHnSparse)
+    {
+        fDoTHnSparse = doTHnSparse;
+    };
+    
+    inline void DoJetRhoDensity(Bool_t doJetRhoDensity)
+    {
+        fDoJetRhoDensity = doJetRhoDensity;
+    }
+    
     private:
     TList *fOutput; //! Output list
     TList *flTrack; //! Track QA List
@@ -558,6 +578,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     Int_t fCalculateRhoJet;
     Bool_t fDoVertexRCut;
     Bool_t fMCPartLevel;
+    Bool_t fDoTHnSparse;
+    Bool_t fDoJetRhoDensity;
     
     // Protected Global Variables
     Double_t fEMCalPhiMin;
@@ -594,7 +616,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     Double_t fClusterMinPt;
     Double_t fNEFSignalJetCut;
     
-    const char *fCentralityTag;  //!
+    TString fCentralityTag; 
     Int_t fCentralityBins;
     Double_t fCentralityLow;
     Double_t fCentralityUp;

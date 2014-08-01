@@ -34,7 +34,8 @@
 #include "AliTPCcalibResidualPID.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliESDpid.h"
+#include "AliPIDResponse.h"
+#include "AliInputEventHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliESDv0KineCuts.h"
 #include "AliESDv0.h"
@@ -54,6 +55,7 @@
 #include "TH1F.h"
 #include "TLegend.h"
 #include "TVirtualFitter.h"
+#include "TTree.h"
 
 using namespace std;
 
@@ -65,12 +67,15 @@ Double_t AliTPCcalibResidualPID::fgCutNcl = 0.7;
 
 //________________________________________________________________________
 AliTPCcalibResidualPID::AliTPCcalibResidualPID()
-  : AliAnalysisTaskSE(), fESD(0), fMC(0), fOutputContainer(0), fESDtrackCuts(0), fESDtrackCutsV0(0), fESDpid(0),
+  : AliAnalysisTaskSE(), fESD(0), fMC(0), fOutputContainer(0), fESDtrackCuts(0), fESDtrackCutsV0(0), fPIDResponse(0),
+    fNumEtaCorrReqErrorsIssued(0),
+    fNumMultCorrReqErrorsIssued(0),
     fUseTPCCutMIGeo(kFALSE),
     fUseMCinfo(kTRUE),
     fIsPbpOrpPb(kFALSE),
     fZvtxCutEvent(9999.0),
     fV0KineCuts(0x0),
+    fCutOnProdRadiusForV0el(kTRUE),
     fNumTagsStored(0),
     fV0tags(0x0),
     fV0motherIndex(0x0),
@@ -90,6 +95,7 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID()
     fCorrectdEdxEtaDependence(0),
     fCorrectdEdxMultiplicityDependence(0),
     fThnspTpc(0),
+    fWriteAdditionalOutput(kFALSE),
     fQAList(0x0),
     fhInvMassGamma(0x0),
     fhInvMassK0s(0x0),
@@ -102,7 +108,25 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID()
     fhArmenterosAntiLambda(0x0),
     fHistSharedClusQAV0Pi(0x0),
     fHistSharedClusQAV0Pr(0x0),
-    fHistSharedClusQAV0El(0x0)
+    fHistSharedClusQAV0El(0x0),
+    fTreeV0El(0x0),
+    fTreeV0Pi(0x0),
+    fTreeV0Pr(0x0),
+    fTree_dEdx_tr(0.),
+    fTree_dEdx_nb(0.),
+    fTree_dEdx_vs(0.),
+    fTree_dEdxExpected_tr(0.),
+    fTree_p_TPC_tr(0.),
+    fTree_p_TPC_nb(0.),
+    fTree_p_TPC_vs(0.),
+    fTree_BtimesChargeOverPt_tr(0.),
+    fTree_BtimesChargeOverPt_nb(0.),
+    fTree_BtimesChargeOverPt_vs(0.),
+    fTree_tanTheta_tr(0.),
+    fTree_tanTheta_nb(0.),
+    fTree_tanTheta_vs(0.),
+    fTree_distance_nb(0.),
+    fTree_distance_vs(0.)
 {
   // default Constructor
    /* fast compilation test
@@ -116,12 +140,15 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID()
 
 //________________________________________________________________________
 AliTPCcalibResidualPID::AliTPCcalibResidualPID(const char *name)
-  : AliAnalysisTaskSE(name), fESD(0), fMC(0), fOutputContainer(0), fESDtrackCuts(0), fESDtrackCutsV0(0), fESDpid(0),
+  : AliAnalysisTaskSE(name), fESD(0), fMC(0), fOutputContainer(0), fESDtrackCuts(0), fESDtrackCutsV0(0), fPIDResponse(0),
+    fNumEtaCorrReqErrorsIssued(0),
+    fNumMultCorrReqErrorsIssued(0),
     fUseTPCCutMIGeo(kFALSE),
     fUseMCinfo(kTRUE),
     fIsPbpOrpPb(kFALSE),
     fZvtxCutEvent(9999.0),
     fV0KineCuts(0x0),
+    fCutOnProdRadiusForV0el(kTRUE),
     fNumTagsStored(0),
     fV0tags(0x0),
     fV0motherIndex(0x0),
@@ -141,6 +168,7 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID(const char *name)
     fCorrectdEdxEtaDependence(0),
     fCorrectdEdxMultiplicityDependence(0),
     fThnspTpc(0),
+    fWriteAdditionalOutput(kFALSE),
     fQAList(0x0),
     fhInvMassGamma(0x0),
     fhInvMassK0s(0x0),
@@ -153,7 +181,25 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID(const char *name)
     fhArmenterosAntiLambda(0x0),
     fHistSharedClusQAV0Pi(0x0),
     fHistSharedClusQAV0Pr(0x0),
-    fHistSharedClusQAV0El(0x0)
+    fHistSharedClusQAV0El(0x0),
+    fTreeV0El(0x0),
+    fTreeV0Pi(0x0),
+    fTreeV0Pr(0x0),
+    fTree_dEdx_tr(0.),
+    fTree_dEdx_nb(0.),
+    fTree_dEdx_vs(0.),
+    fTree_dEdxExpected_tr(0.),
+    fTree_p_TPC_tr(0.),
+    fTree_p_TPC_nb(0.),
+    fTree_p_TPC_vs(0.),
+    fTree_BtimesChargeOverPt_tr(0.),
+    fTree_BtimesChargeOverPt_nb(0.),
+    fTree_BtimesChargeOverPt_vs(0.),
+    fTree_tanTheta_tr(0.),
+    fTree_tanTheta_nb(0.),
+    fTree_tanTheta_vs(0.),
+    fTree_distance_nb(0.),
+    fTree_distance_vs(0.)
 {
 
   //fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
@@ -163,6 +209,9 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID(const char *name)
   DefineInput(0, TChain::Class());
   DefineOutput(1, TObjArray::Class());
   DefineOutput(2, TObjArray::Class());
+  DefineOutput(3, TTree::Class());
+  DefineOutput(4, TTree::Class());
+  DefineOutput(5, TTree::Class());
 
 }
 
@@ -175,6 +224,17 @@ AliTPCcalibResidualPID::~AliTPCcalibResidualPID()
   
   delete fQAList;
   fQAList = 0;
+  
+  /*
+  delete fTreeV0El;
+  fTreeV0El = 0;
+  
+  delete fTreeV0Pi;
+  fTreeV0Pi = 0;
+  
+  delete fTreeV0Pr;
+  fTreeV0Pr = 0;
+  */
   
   delete fESDtrackCuts;
   fESDtrackCuts = 0;
@@ -200,58 +260,67 @@ AliTPCcalibResidualPID::~AliTPCcalibResidualPID()
 //________________________________________________________________________
 void AliTPCcalibResidualPID::UserCreateOutputObjects()
 {
-    
-    // THnSparse binning
-    const Int_t kNdim = 9;
-    //v0id,  dEdx,  TPCsigele,  TPCsigpion,  TOFbit,  eta, TPCclus, centr, p
-    Int_t bins[kNdim] =    {    4,    250,    200,    200,          8,    20,        50,   20,   100};
-    Double_t xmin[kNdim] = {  0.5,     30,   -10.,   -10.,       -1.5,   -1.,       60.,   0.,   0.1};
-    Double_t xmax[kNdim] = {  4.5,   500.,    10.,    10.,        6.5,    1.,      160.,  100,   4};
-    fThnspTpc= new THnSparseF("tpcsignals", "TPC signal;v0id;tpc signal;tpcsigele;tpcsigpion;tofbit;eta;tpcclus;centr;p (GeV/c)", kNdim, bins, xmin, xmax);
-    BinLogAxis(fThnspTpc, 8);
+  AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!inputHandler)
+    printf("Inputhandler not available \n");
+  else
+    fPIDResponse = inputHandler->GetPIDResponse();
+  
+  // THnSparse binning
+  const Int_t kNdim = 9;
+  //v0id,  dEdx,  TPCsigele,  TPCsigpion,  TOFbit,  eta, TPCclus, centr, p
+  Int_t bins[kNdim] =    {    4,    250,    200,    200,          8,    20,        50,   20,   100};
+  Double_t xmin[kNdim] = {  0.5,     30,   -10.,   -10.,       -1.5,   -1.,       60.,   0.,   0.1};
+  Double_t xmax[kNdim] = {  4.5,   500.,    10.,    10.,        6.5,    1.,      160.,  100,   4};
+  fThnspTpc= new THnSparseF("tpcsignals", "TPC signal;v0id;tpc signal;tpcsigele;tpcsigpion;tofbit;eta;tpcclus;centr;p (GeV/c)", kNdim, bins, xmin, xmax);
+  BinLogAxis(fThnspTpc, 8);
 
-    //
-    // 0.ptot, 1.tpcSig, 2.particle ID, 3. assumed particle, 4. nSigmaTPC (4x), 5. nSigmaTOF (4x), 6. centrality
-    // Concerning 2 (particle ID): 
-    // - in case of MC: Contains MC ID. Bin 1-4 (<=> Slot 0-3): el, pi, ka, pr
-    // - in case of data: Contains V0 particles + bin with all others: Bin 1-4 (<=> Slot 0-3): All non-V0s, V0-el, V0-pi, V0-pr
-    //
-        
-    Int_t    binsHistQA[7] = {135, 1980,    4,    5, 40, 10,   40};
-    Double_t xminHistQA[7] = {0.1,   20, -0.5, -0.5, -10, -5,   0.};
-    Double_t xmaxHistQA[7] = {50., 2000,  3.5,  4.5,  10,  5, 20000};
-    fHistPidQA = new THnSparseF("fHistPidQA","PID QA",7,binsHistQA,xminHistQA,xmaxHistQA);
-    BinLogAxis(fHistPidQA, 0);
+  //
+  // 0.ptot, 1.tpcSig, 2.particle ID, 3. assumed particle, 4. nSigmaTPC (4x), 5. nSigmaTOF (4x), 6. centrality
+  // Concerning 2 (particle ID): 
+  // - in case of MC: Contains MC ID. Bin 1-4 (<=> Slot 0-3): el, pi, ka, pr
+  // - in case of data: Contains V0 particles + bin with all others: Bin 1-4 (<=> Slot 0-3): All non-V0s, V0-el, V0-pi, V0-pr
+  //
+      
+  Int_t    binsHistQA[7] = {135, 1980,    4,    5, 40, 10,   40};
+  Double_t xminHistQA[7] = {0.1,   20, -0.5, -0.5, -10, -5,   0.};
+  Double_t xmaxHistQA[7] = {50., 2000,  3.5,  4.5,  10,  5, 20000};
+  fHistPidQA = new THnSparseF("fHistPidQA","PID QA",7,binsHistQA,xminHistQA,xmaxHistQA);
+  BinLogAxis(fHistPidQA, 0);
 
-    //
-    fHistPidQAshort  = new THnSparseF("fHistPidQAshort" ,"PID QA -- short pads",7,binsHistQA,xminHistQA,xmaxHistQA);
-    fHistPidQAmedium = new THnSparseF("fHistPidQAmedium","PID QA -- med pads",7,binsHistQA,xminHistQA,xmaxHistQA);
-    fHistPidQAlong   = new THnSparseF("fHistPidQAlong"  ,"PID QA -- long pads",7,binsHistQA,xminHistQA,xmaxHistQA);
-    fHistPidQAoroc   = new THnSparseF("fHistPidQAoroc"  ,"PID QA -- oroc",7,binsHistQA,xminHistQA,xmaxHistQA);
-    BinLogAxis(fHistPidQAshort, 0);
-    BinLogAxis(fHistPidQAmedium, 0);
-    BinLogAxis(fHistPidQAlong, 0);
-    BinLogAxis(fHistPidQAoroc, 0);
-    //
-    fOutputContainer = new TObjArray(2);
-    fOutputContainer->SetName(GetName());
-    fOutputContainer->SetOwner();
+  //
+  fHistPidQAshort  = new THnSparseF("fHistPidQAshort" ,"PID QA -- short pads",7,binsHistQA,xminHistQA,xmaxHistQA);
+  fHistPidQAmedium = new THnSparseF("fHistPidQAmedium","PID QA -- med pads",7,binsHistQA,xminHistQA,xmaxHistQA);
+  fHistPidQAlong   = new THnSparseF("fHistPidQAlong"  ,"PID QA -- long pads",7,binsHistQA,xminHistQA,xmaxHistQA);
+  fHistPidQAoroc   = new THnSparseF("fHistPidQAoroc"  ,"PID QA -- oroc",7,binsHistQA,xminHistQA,xmaxHistQA);
+  BinLogAxis(fHistPidQAshort, 0);
+  BinLogAxis(fHistPidQAmedium, 0);
+  BinLogAxis(fHistPidQAlong, 0);
+  BinLogAxis(fHistPidQAoroc, 0);
+  //
+  fOutputContainer = new TObjArray(2);
+  fOutputContainer->SetName(GetName());
+  fOutputContainer->SetOwner();
 
-    if(fProduceTPCSignalSparse)fOutputContainer->Add(fThnspTpc);
-    if(fProduceGlobal)fOutputContainer->Add(fHistPidQA);
-    if(fProduceAllPadTypes || fProduceShortPads)fOutputContainer->Add(fHistPidQAshort);
-    if(fProduceAllPadTypes || fProduceMediumPads)fOutputContainer->Add(fHistPidQAmedium);
-    if(fProduceAllPadTypes || fProduceLongPads)fOutputContainer->Add(fHistPidQAlong);
-    if(fProduceAllPadTypes || fProduceOroc)fOutputContainer->Add(fHistPidQAoroc);
-    
-    // V0 Kine cuts 
-    fV0KineCuts = new AliESDv0KineCuts;
-    fV0KineCuts->SetGammaCutChi2NDF(5.);
+  if(fProduceTPCSignalSparse)fOutputContainer->Add(fThnspTpc);
+  if(fProduceGlobal)fOutputContainer->Add(fHistPidQA);
+  if(fProduceAllPadTypes || fProduceShortPads)fOutputContainer->Add(fHistPidQAshort);
+  if(fProduceAllPadTypes || fProduceMediumPads)fOutputContainer->Add(fHistPidQAmedium);
+  if(fProduceAllPadTypes || fProduceLongPads)fOutputContainer->Add(fHistPidQAlong);
+  if(fProduceAllPadTypes || fProduceOroc)fOutputContainer->Add(fHistPidQAoroc);
+  
+  // V0 Kine cuts 
+  fV0KineCuts = new AliESDv0KineCuts;
+  fV0KineCuts->SetGammaCutChi2NDF(5.);
+  
+  if (fCutOnProdRadiusForV0el) {
     // Only accept V0el with prod. radius within 45 cm -> PID will by systematically biased for larger values!
     Float_t gammaProdVertexRadiusCuts[2] = { 3.0, 45. }; 
     fV0KineCuts->SetGammaCutVertexR(&gammaProdVertexRadiusCuts[0]);
-    
-    
+  }
+  
+  
+  if (fWriteAdditionalOutput) {
     fQAList = new TObjArray(4);
     fQAList->SetName(GetName());
     fQAList->SetOwner();
@@ -260,7 +329,7 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     fhInvMassK0s        = new TH1F("fhInvMassK0s", "Invariant Mass of K0s; m_{#pi#pi} (GeV/#it{c}^{2}); Entries;", 200, 0.45, 0.55);
     fhInvMassLambda     = new TH1F("fhInvMassLambda", "Invariant Mass of lambdas; m_{p#pi^{-}} (GeV/#it{c}^{2}); Entries", 200, 1.05, 1.15);
     fhInvMassAntiLambda = new TH1F("fhInvMassAntiLambda", "Invariant Mass of anti-lambdas; m_{#pi^{+}#bar{p}} (GeV/#it{c}^{2}); Entries",
-                                   200, 1.05, 1.15);
+                                  200, 1.05, 1.15);
     
     fQAList->Add(fhInvMassGamma);
     fQAList->Add(fhInvMassK0s);
@@ -269,17 +338,17 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     
     
     fhArmenterosAll = new TH2F("fhArmenterosAll",
-                               "Armenteros plot all V0s;#alpha = (#it{p}^{+}_{L}-#it{p}^{-}_{L})/(#it{p}^{+}_{L}+#it{p}^{-}_{L});#it{q}_{T} (GeV/#it{c})",
-                               200, -1., 1., 200, 0., 0.4);
+                              "Armenteros plot all V0s;#alpha = (#it{p}^{+}_{L}-#it{p}^{-}_{L})/(#it{p}^{+}_{L}+#it{p}^{-}_{L});#it{q}_{T} (GeV/#it{c})",
+                              200, -1., 1., 200, 0., 0.4);
     fhArmenterosGamma = new TH2F("fhArmenterosGamma",
-                                 "Armenteros plot Gamma;#alpha = (#it{p}^{+}_{L}-#it{p}^{-}_{L})/(#it{p}^{+}_{L}+#it{p}^{-}_{L});#it{q}_{T} (GeV/#it{c})",
-                                 200, -1., 1., 200, 0., 0.4);
+                                "Armenteros plot Gamma;#alpha = (#it{p}^{+}_{L}-#it{p}^{-}_{L})/(#it{p}^{+}_{L}+#it{p}^{-}_{L});#it{q}_{T} (GeV/#it{c})",
+                                200, -1., 1., 200, 0., 0.4);
     fhArmenterosK0s = new TH2F("fhArmenterosK0s",
-                               "Armenteros plot K0s;#alpha = (#it{p}^{+}_{L}-#it{p}^{-}_{L})/(#it{p}^{+}_{L}+#it{p}^{-}_{L});#it{q}_{T} (GeV/#it{c})",
-                               200, -1., 1., 200, 0., 0.4);
+                              "Armenteros plot K0s;#alpha = (#it{p}^{+}_{L}-#it{p}^{-}_{L})/(#it{p}^{+}_{L}+#it{p}^{-}_{L});#it{q}_{T} (GeV/#it{c})",
+                              200, -1., 1., 200, 0., 0.4);
     fhArmenterosLambda = new TH2F("fhArmenterosLambda",
-                                 "Armenteros plot lambda;#alpha = (#it{p}^{+}_{L}-#it{p}^{-}_{L})/(#it{p}^{+}_{L}+#it{p}^{-}_{L});#it{q}_{T} (GeV/#it{c})",
-                                 200, -1., 1., 200, 0., 0.4);
+                                "Armenteros plot lambda;#alpha = (#it{p}^{+}_{L}-#it{p}^{-}_{L})/(#it{p}^{+}_{L}+#it{p}^{-}_{L});#it{q}_{T} (GeV/#it{c})",
+                                200, -1., 1., 200, 0., 0.4);
     fhArmenterosAntiLambda = new TH2F("fhArmenterosAntiLambda",
                                       "Armenteros plot anti-lambda;#alpha = (#it{p}^{+}_{L}-#it{p}^{-}_{L})/(#it{p}^{+}_{L}+#it{p}^{-}_{L});#it{q}_{T} (GeV/#it{c})",
                                       200, -1., 1., 200, 0., 0.4);
@@ -298,28 +367,88 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     Double_t xmaxHistQASharedClusters[dimQASharedClusters] = { 20,  1.5, 160, 159};
     
     fHistSharedClusQAV0Pi = new THnSparseF("fHistSharedClusQAV0Pi" ,"PID QA shared clusters - V0 pi", dimQASharedClusters,
-                                           binsHistQASharedClusters, xminHistQASharedClusters, xmaxHistQASharedClusters);
+                                          binsHistQASharedClusters, xminHistQASharedClusters, xmaxHistQASharedClusters);
     BinLogAxis(fHistSharedClusQAV0Pi, 0);
     for (Int_t i = 0; i < dimQASharedClusters; i++)
       fHistSharedClusQAV0Pi->GetAxis(i)->SetTitle(axisTitles[i].Data());
     fQAList->Add(fHistSharedClusQAV0Pi);
     
     fHistSharedClusQAV0Pr = new THnSparseF("fHistSharedClusQAV0Pr" ,"PID QA shared clusters - V0 pr", dimQASharedClusters,
-                                           binsHistQASharedClusters, xminHistQASharedClusters, xmaxHistQASharedClusters);
+                                          binsHistQASharedClusters, xminHistQASharedClusters, xmaxHistQASharedClusters);
     BinLogAxis(fHistSharedClusQAV0Pr, 0);
     for (Int_t i = 0; i < dimQASharedClusters; i++)
       fHistSharedClusQAV0Pi->GetAxis(i)->SetTitle(axisTitles[i].Data());
     fQAList->Add(fHistSharedClusQAV0Pr);
- 
+
     fHistSharedClusQAV0El = new THnSparseF("fHistSharedClusQAV0El" ,"PID QA shared clusters - V0 el", dimQASharedClusters,
-                                           binsHistQASharedClusters, xminHistQASharedClusters, xmaxHistQASharedClusters);
+                                          binsHistQASharedClusters, xminHistQASharedClusters, xmaxHistQASharedClusters);
     BinLogAxis(fHistSharedClusQAV0El, 0);
     for (Int_t i = 0; i < dimQASharedClusters; i++)
       fHistSharedClusQAV0Pi->GetAxis(i)->SetTitle(axisTitles[i].Data());
     fQAList->Add(fHistSharedClusQAV0El);
-
-    PostData(1,fOutputContainer);
+    
+    OpenFile(3);
+    fTreeV0El = new TTree("treeV0El", "V0 el together with info from closest neighbour");
+    fTreeV0El->Branch("dEdx_tr", &fTree_dEdx_tr);
+    fTreeV0El->Branch("dEdx_nb", &fTree_dEdx_nb);
+    fTreeV0El->Branch("dEdx_vs", &fTree_dEdx_vs);
+    fTreeV0El->Branch("dEdxExpected_tr", &fTree_dEdxExpected_tr);
+    fTreeV0El->Branch("p_TPC_tr", &fTree_p_TPC_tr);
+    fTreeV0El->Branch("p_TPC_nb", &fTree_p_TPC_nb);
+    fTreeV0El->Branch("p_TPC_vs", &fTree_p_TPC_vs);
+    fTreeV0El->Branch("BtimesChargeOverPt_tr", &fTree_BtimesChargeOverPt_tr);
+    fTreeV0El->Branch("BtimesChargeOverPt_nb", &fTree_BtimesChargeOverPt_nb);
+    fTreeV0El->Branch("BtimesChargeOverPt_vs", &fTree_BtimesChargeOverPt_vs);
+    fTreeV0El->Branch("tanTheta_tr", &fTree_tanTheta_tr);
+    fTreeV0El->Branch("tanTheta_nb", &fTree_tanTheta_nb);
+    fTreeV0El->Branch("tanTheta_vs", &fTree_tanTheta_vs);
+    fTreeV0El->Branch("distance_nb", &fTree_distance_nb);
+    fTreeV0El->Branch("distance_vs", &fTree_distance_vs);
+    
+    OpenFile(4);
+    fTreeV0Pi = new TTree("treeV0Pi", "V0 pi together with info from closest neighbour");
+    fTreeV0Pi->Branch("dEdx_tr", &fTree_dEdx_tr);
+    fTreeV0Pi->Branch("dEdx_nb", &fTree_dEdx_nb);
+    fTreeV0Pi->Branch("dEdx_vs", &fTree_dEdx_vs);
+    fTreeV0Pi->Branch("dEdxExpected_tr", &fTree_dEdxExpected_tr);
+    fTreeV0Pi->Branch("p_TPC_tr", &fTree_p_TPC_tr);
+    fTreeV0Pi->Branch("p_TPC_nb", &fTree_p_TPC_nb);
+    fTreeV0Pi->Branch("p_TPC_vs", &fTree_p_TPC_vs);
+    fTreeV0Pi->Branch("BtimesChargeOverPt_tr", &fTree_BtimesChargeOverPt_tr);
+    fTreeV0Pi->Branch("BtimesChargeOverPt_nb", &fTree_BtimesChargeOverPt_nb);
+    fTreeV0Pi->Branch("BtimesChargeOverPt_vs", &fTree_BtimesChargeOverPt_vs);
+    fTreeV0Pi->Branch("tanTheta_tr", &fTree_tanTheta_tr);
+    fTreeV0Pi->Branch("tanTheta_nb", &fTree_tanTheta_nb);
+    fTreeV0Pi->Branch("tanTheta_vs", &fTree_tanTheta_vs);
+    fTreeV0Pi->Branch("distance_nb", &fTree_distance_nb);
+    fTreeV0Pi->Branch("distance_vs", &fTree_distance_vs);
+    
+    OpenFile(5);
+    fTreeV0Pr = new TTree("treeV0Pr", "V0 pr together with info from closest neighbour");
+    fTreeV0Pr->Branch("dEdx_tr", &fTree_dEdx_tr);
+    fTreeV0Pr->Branch("dEdx_nb", &fTree_dEdx_nb);
+    fTreeV0Pr->Branch("dEdx_vs", &fTree_dEdx_vs);
+    fTreeV0Pr->Branch("dEdxExpected_tr", &fTree_dEdxExpected_tr);
+    fTreeV0Pr->Branch("p_TPC_tr", &fTree_p_TPC_tr);
+    fTreeV0Pr->Branch("p_TPC_nb", &fTree_p_TPC_nb);
+    fTreeV0Pr->Branch("p_TPC_vs", &fTree_p_TPC_vs);
+    fTreeV0Pr->Branch("BtimesChargeOverPt_tr", &fTree_BtimesChargeOverPt_tr);
+    fTreeV0Pr->Branch("BtimesChargeOverPt_nb", &fTree_BtimesChargeOverPt_nb);
+    fTreeV0Pr->Branch("BtimesChargeOverPt_vs", &fTree_BtimesChargeOverPt_vs);
+    fTreeV0Pr->Branch("tanTheta_tr", &fTree_tanTheta_tr);
+    fTreeV0Pr->Branch("tanTheta_nb", &fTree_tanTheta_nb);
+    fTreeV0Pr->Branch("tanTheta_vs", &fTree_tanTheta_vs);
+    fTreeV0Pr->Branch("distance_nb", &fTree_distance_nb);
+    fTreeV0Pr->Branch("distance_vs", &fTree_distance_vs);
+  }
+  
+  PostData(1,fOutputContainer);
+  if (fWriteAdditionalOutput) {
     PostData(2,fQAList);
+    PostData(3,fTreeV0El);
+    PostData(4,fTreeV0Pi);
+    PostData(5,fTreeV0Pr);
+  }
 }
 
 
@@ -340,7 +469,12 @@ void AliTPCcalibResidualPID::UserExec(Option_t *)
     Process(fESD, fMC);
     //
     PostData(1,fOutputContainer);
-    PostData(2,fQAList);
+    if (fWriteAdditionalOutput) {
+      PostData(2,fQAList);
+      PostData(3,fTreeV0El);
+      PostData(4,fTreeV0Pi);
+      PostData(5,fTreeV0Pr);
+    }
 }
 
 
@@ -355,15 +489,10 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     return;
   }
 
-  if(!((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))) printf("ESD inputhandler not available \n");
-
-  if (!fESDpid) {
-    fESDpid = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
-  }
-
-  if (!fESDpid || !fV0KineCuts)
+  if (!fPIDResponse || !fV0KineCuts) {
+    Printf("ERROR: No PIDresponse and/or v0KineCuts!");
     return;
-
+  }
 
   Float_t centralityFper=99;
 
@@ -392,6 +521,13 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     v0QAadded[i] = kFALSE;
   
   Int_t nTotTracks = esdEvent->GetNumberOfTracks();
+  const Int_t nTotESDTracks = esdEvent->GetNumberOfESDTracks();
+  
+  const Double_t magField = esdEvent->GetMagneticField();
+  
+  Bool_t etaCorrAvail = fPIDResponse->UseTPCEtaCorrection();
+  Bool_t multCorrAvail = fPIDResponse->UseTPCMultiplicityCorrection();
+  
   for (Int_t iTracks = 0; iTracks < nTotTracks; iTracks++){//begin track loop 
     AliESDtrack *trackESD = esdEvent->GetTrack(iTracks);
     if(!trackESD) {
@@ -465,6 +601,7 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     if(paramIn) {
       precin=paramIn->GetP();
     } else {
+      printf("Inner param not found for track %d - skipping!\n", iTracks);
       continue;
     }
     Int_t precdefault=CompareFloat(precin,-1);
@@ -539,15 +676,15 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     //
     if ((trackESD->GetStatus() & AliESDtrack::kTOFpid)) iTOFpid = 1;
     if ((trackESD->GetStatus() & AliESDtrack::kTIME)) ikTIME = 1;
-    Float_t time0 = fESDpid->GetTOFResponse().GetTimeZero();
+    Float_t time0 = fPIDResponse->GetTOFResponse().GetTimeZero();
     //
     if((iTOFpid==1) &&(ikTIME==1)){
-      Double_t tofnsigmaele= fESDpid->NumberOfSigmasTOF(trackESD,AliPID::kElectron, time0);
-      Double_t tofnsigmapion=fESDpid->NumberOfSigmasTOF(trackESD,AliPID::kPion, time0);
+      Double_t tofnsigmaele= fPIDResponse->NumberOfSigmasTOF(trackESD,AliPID::kElectron, time0);
+      Double_t tofnsigmapion=fPIDResponse->NumberOfSigmasTOF(trackESD,AliPID::kPion, time0);
       if (TMath::Abs(tofnsigmapion)<3) tofbit = 1;
       if (TMath::Abs(tofnsigmaele)<3)  tofbit = 0;
-      tpcnsigmaele=fESDpid->NumberOfSigmasTPC(trackESD,AliPID::kElectron);
-      tpcnsigmapion=fESDpid->NumberOfSigmasTPC(trackESD,AliPID::kPion);
+      tpcnsigmaele=fPIDResponse->NumberOfSigmasTPC(trackESD,AliPID::kElectron);
+      tpcnsigmapion=fPIDResponse->NumberOfSigmasTPC(trackESD,AliPID::kPion);
     }
     //
     Int_t tpcnclusN=trackESD->GetTPCsignalN();
@@ -574,15 +711,15 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     //
     // 2nd THnSparse
     //
-    Double_t tpcQA[5] = {fESDpid->NumberOfSigmasTPC(trackESD, AliPID::kElectron),
-			 fESDpid->NumberOfSigmasTPC(trackESD, AliPID::kPion),
-			 fESDpid->NumberOfSigmasTPC(trackESD, AliPID::kKaon),
-			 fESDpid->NumberOfSigmasTPC(trackESD, AliPID::kProton),
+    Double_t tpcQA[5] = {fPIDResponse->NumberOfSigmasTPC(trackESD, AliPID::kElectron),
+			 fPIDResponse->NumberOfSigmasTPC(trackESD, AliPID::kPion),
+			 fPIDResponse->NumberOfSigmasTPC(trackESD, AliPID::kKaon),
+			 fPIDResponse->NumberOfSigmasTPC(trackESD, AliPID::kProton),
 			 0};
-    Double_t tofQA[5] = {fESDpid->NumberOfSigmasTOF(trackESD, AliPID::kElectron, time0),
-			 fESDpid->NumberOfSigmasTOF(trackESD, AliPID::kPion, time0),
-			 fESDpid->NumberOfSigmasTOF(trackESD, AliPID::kKaon, time0),
-			 fESDpid->NumberOfSigmasTOF(trackESD, AliPID::kProton, time0),
+    Double_t tofQA[5] = {fPIDResponse->NumberOfSigmasTOF(trackESD, AliPID::kElectron, time0),
+			 fPIDResponse->NumberOfSigmasTOF(trackESD, AliPID::kPion, time0),
+			 fPIDResponse->NumberOfSigmasTOF(trackESD, AliPID::kKaon, time0),
+			 fPIDResponse->NumberOfSigmasTOF(trackESD, AliPID::kProton, time0),
 			 0 };
        
     // id 5 is just again Kaons in restricted eta range
@@ -625,28 +762,49 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
 
     Double_t processedTPCsignal[5] = { tpcsignal, tpcsignal, tpcsignal, tpcsignal, tpcsignal };
   
+    if (fCorrectdEdxEtaDependence && fNumEtaCorrReqErrorsIssued < 23 && !etaCorrAvail) {
+      AliError("TPC eta correction requested, but was not activated in PID response (most likely not available)!");
+      fNumEtaCorrReqErrorsIssued++;
+      if (fNumEtaCorrReqErrorsIssued == 23)
+        AliError("Ignoring this error from now on!");
+    }
     
-    if (fCorrectdEdxEtaDependence && fCorrectdEdxMultiplicityDependence) {
-      processedTPCsignal[0] = fESDpid->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kElectron,
-                                                                                                AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[1] = fESDpid->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kPion,
-                                                                                                AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[2] = fESDpid->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kKaon,
-                                                                                                AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[3] = fESDpid->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kProton,
-                                                                                                AliTPCPIDResponse::kdEdxDefault);
+    if (fCorrectdEdxMultiplicityDependence && fNumMultCorrReqErrorsIssued < 23 && !multCorrAvail) {
+      AliError("TPC multiplicity correction requested, but was not activated in PID response (most likely not available)!");
+      fNumMultCorrReqErrorsIssued++;
+      if (fNumMultCorrReqErrorsIssued == 23)
+        AliError("Ignoring this error from now on!");
     }
-    else if (fCorrectdEdxEtaDependence) {
-      processedTPCsignal[0] = fESDpid->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[1] = fESDpid->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[2] = fESDpid->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[3] = fESDpid->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault);
+    
+    if (fCorrectdEdxEtaDependence && etaCorrAvail && fCorrectdEdxMultiplicityDependence && multCorrAvail) {
+      processedTPCsignal[0] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kElectron,
+                                                                                                     AliTPCPIDResponse::kdEdxDefault);
+      processedTPCsignal[1] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kPion,
+                                                                                                     AliTPCPIDResponse::kdEdxDefault);
+      processedTPCsignal[2] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kKaon,
+                                                                                                     AliTPCPIDResponse::kdEdxDefault);
+      processedTPCsignal[3] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kProton,
+                                                                                                     AliTPCPIDResponse::kdEdxDefault);
     }
-    else if (fCorrectdEdxMultiplicityDependence) {
-      processedTPCsignal[0] = fESDpid->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[1] = fESDpid->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[2] = fESDpid->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[3] = fESDpid->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault);
+    else if (fCorrectdEdxEtaDependence && etaCorrAvail) {
+      processedTPCsignal[0] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kElectron,
+                                                                                      AliTPCPIDResponse::kdEdxDefault);
+      processedTPCsignal[1] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kPion,
+                                                                                      AliTPCPIDResponse::kdEdxDefault);
+      processedTPCsignal[2] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kKaon,
+                                                                                      AliTPCPIDResponse::kdEdxDefault);
+      processedTPCsignal[3] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kProton,
+                                                                                      AliTPCPIDResponse::kdEdxDefault);
+    }
+    else if (fCorrectdEdxMultiplicityDependence && multCorrAvail) {
+      processedTPCsignal[0] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kElectron,
+                                                                                               AliTPCPIDResponse::kdEdxDefault);
+      processedTPCsignal[1] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kPion,
+                                                                                               AliTPCPIDResponse::kdEdxDefault);
+      processedTPCsignal[2] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kKaon,
+                                                                                               AliTPCPIDResponse::kdEdxDefault);
+      processedTPCsignal[3] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kProton,
+                                                                                               AliTPCPIDResponse::kdEdxDefault);
     }
     
     // id 5 is just again Kaons in restricted eta range
@@ -657,7 +815,8 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
       if (iPart == 4 && ((mcEvent && fUseMCinfo) || abs(trackESD->Eta()) > 0.2))
         continue;
       
-      Double_t vecHistQA[7] = {precin, processedTPCsignal[iPart], particleID, iPart, tpcQA[iPart], tofQA[iPart], nTotTracks};
+      Double_t vecHistQA[7] = {precin, processedTPCsignal[iPart], (Double_t)particleID, (Double_t)iPart, tpcQA[iPart], tofQA[iPart],
+                               (Double_t)nTotESDTracks};
       if (fProduceGlobal) fHistPidQA->Fill(vecHistQA);
       vecHistQA[1] = signal[0]; vecHistQA[4] = ncl[0];
       if ((fProduceAllPadTypes || fProduceShortPads)) fHistPidQAshort->Fill(vecHistQA);
@@ -672,30 +831,181 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
       if ((fProduceAllPadTypes || fProduceOroc)) fHistPidQAoroc->Fill(vecHistQA);      
     }
     
-    if (isV0) {
+    if (fWriteAdditionalOutput && isV0) {
+      
+      // Find the closest neighbour and fill the information into the trees.
+      fTree_p_TPC_tr = precin;
+      fTree_dEdx_tr = tpcsignal;
+      fTree_BtimesChargeOverPt_tr = TMath::Abs(magField) * trackESD->GetSigned1Pt();
+      fTree_tanTheta_tr = trackESD->GetInnerParam()->GetTgl();
+      
+      Int_t closestNeighbourIndex = -1;
+      const Double_t tpcInnerRadius = 85.;
+      const Int_t parIndexGlobalPhi = 8;
+      const Double_t z_tr = trackESD->GetInnerParam()->GetZ();
+      const Double_t phi_tr = trackESD->GetInnerParam()->GetParameterAtRadius(tpcInnerRadius, magField, parIndexGlobalPhi);
+      
+      const Double_t distanceCut = 12.; // Cut on distance between track to closest neighbour
+      
+      Double_t z_nb = 9999;
+      Double_t phi_nb = 9999;
+      Double_t delta_z = 9999;
+      Double_t delta_phi = 9999;
+      
+      fTree_distance_nb = -9999;
+      
+      for (Int_t jTracks = 0; jTracks < nTotTracks; jTracks++) {
+        if (iTracks == jTracks)
+          continue; // Exclude track we are looking at right now from neighbour list
+        
+        AliESDtrack *track_nb= esdEvent->GetTrack(jTracks);
+        if(!track_nb)
+          continue;
+        
+        const AliExternalTrackParam *paramIn_nb = track_nb->GetInnerParam();
+        if (!paramIn_nb)
+          continue;
+        
+        z_nb =  paramIn_nb->GetZ();
+        delta_z = TMath::Abs(z_nb - z_tr);
+        
+        if (delta_z >= distanceCut)
+          continue;
+        
+        phi_nb = paramIn_nb->GetParameterAtRadius(tpcInnerRadius, magField, parIndexGlobalPhi);
+        delta_phi = TMath::Abs(phi_nb - phi_tr);
+        
+        const Double_t delta_r_phi = tpcInnerRadius * delta_phi;
+        
+        if (delta_r_phi >= distanceCut)
+          continue;
+        
+        
+        const Double_t distance = TMath::Sqrt(delta_z * delta_z + delta_r_phi * delta_r_phi);
+        
+        if (distance >= distanceCut)
+          continue;
+        
+        if (closestNeighbourIndex < 0 || distance < fTree_distance_nb) {
+          fTree_distance_nb = distance;
+          closestNeighbourIndex = jTracks;
+        }
+      }
+      
+      if (closestNeighbourIndex >= 0 && closestNeighbourIndex < nTotTracks) {
+        AliESDtrack *track_nb= esdEvent->GetTrack(closestNeighbourIndex);
+        fTree_dEdx_nb = track_nb->GetTPCsignal();
+        fTree_p_TPC_nb = track_nb->GetInnerParam()->GetP();
+        fTree_BtimesChargeOverPt_nb = TMath::Abs(magField) * track_nb->GetSigned1Pt();
+        fTree_tanTheta_nb = track_nb->GetInnerParam()->GetTgl();
+      }
+      else {
+        // No neighbour in this range -> nevertheless store the track, but set neighbour values to invalid
+        fTree_dEdx_nb = -999.;
+        fTree_p_TPC_nb = -999.;
+        fTree_BtimesChargeOverPt_nb = -999.;
+        fTree_tanTheta_nb = -999.;
+        fTree_distance_nb = -999.;
+      }
+      
+      
+      // Find the other V0 daughter and store its values
+      const Int_t motherIndex = GetV0motherIndex(iTracks);
+      AliESDv0* v0Mother = (AliESDv0*)esdEvent->GetV0(motherIndex);
+      if (!v0Mother) {
+        printf("Error: Track tagged as V0 daughter, but V0 mother not found!\n");
+        continue;
+      }
+      
+      const Int_t iTrackP = v0Mother->GetPindex();  // positive track
+      const Int_t iTrackN = v0Mother->GetNindex();  // negative track_nb
+      
+      Int_t iTrackV0sister = -1;
+      if (iTrackP == iTracks)
+        iTrackV0sister = iTrackN;
+      else if (iTrackN == iTracks)
+        iTrackV0sister = iTrackP;
+      else {
+        printf("Error: V0 sister relations are wrong!\n");
+        continue;
+      }
+      
+      fTree_dEdx_vs = -999.;
+      fTree_p_TPC_vs = -999.;
+      fTree_BtimesChargeOverPt_vs = -999.;
+      fTree_tanTheta_vs = -999.;
+      fTree_distance_vs = -999.;
+        
+      AliESDtrack *track_vs = esdEvent->GetTrack(iTrackV0sister);
+      if (track_vs) {
+        const AliExternalTrackParam *paramIn_vs = track_vs->GetInnerParam();
+        if (paramIn_vs) {
+          fTree_dEdx_vs = track_vs->GetTPCsignal();
+          fTree_p_TPC_vs = paramIn_vs->GetP();
+          fTree_BtimesChargeOverPt_vs = TMath::Abs(magField) * track_vs->GetSigned1Pt();
+          fTree_tanTheta_vs = paramIn_vs->GetTgl();
+          
+          // Calculate distance
+          const Double_t z_vs =  paramIn_vs->GetZ();
+          const Double_t delta_z_vs = TMath::Abs(z_vs - z_tr);
+          
+          const Double_t phi_vs = paramIn_vs->GetParameterAtRadius(tpcInnerRadius, magField, parIndexGlobalPhi);
+          const Double_t delta_phi_vs = TMath::Abs(phi_vs - phi_tr);
+          
+          const Double_t delta_r_phi_vs = tpcInnerRadius * delta_phi_vs;
+          
+          fTree_distance_vs = TMath::Sqrt(delta_z_vs * delta_z_vs + delta_r_phi_vs * delta_r_phi_vs);
+        }
+      }
+      
+      if (isV0el) {
+        fTree_dEdxExpected_tr = fPIDResponse->GetTPCResponse().GetExpectedSignal(trackESD, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, 
+                                                                                 fPIDResponse->UseTPCEtaCorrection(),
+                                                                                 fPIDResponse->UseTPCMultiplicityCorrection());
+        if (fTree_dEdxExpected_tr > 0)
+          fTreeV0El->Fill();
+      }
+      else if (isV0pi) {
+        fTree_dEdxExpected_tr = fPIDResponse->GetTPCResponse().GetExpectedSignal(trackESD, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, 
+                                                                                 fPIDResponse->UseTPCEtaCorrection(),
+                                                                                 fPIDResponse->UseTPCMultiplicityCorrection());
+        if (fTree_dEdxExpected_tr > 0)
+          fTreeV0Pi->Fill();
+      }
+      else if (isV0pr) {
+        fTree_dEdxExpected_tr = fPIDResponse->GetTPCResponse().GetExpectedSignal(trackESD, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, 
+                                                                                 fPIDResponse->UseTPCEtaCorrection(),
+                                                                                 fPIDResponse->UseTPCMultiplicityCorrection());
+        if (fTree_dEdxExpected_tr > 0)
+          fTreeV0Pr->Fill();
+      }
+      
       // Fill QA hists for shared clusters dE/dx
-      Double_t vecHistQA[4] = { precin, -1, trackESD->GetTPCSharedMap().CountBits(), -1 };
+      Double_t vecHistQA[4] = { precin, -1., (Double_t)trackESD->GetTPCSharedMap().CountBits(), -1. };
       THnSparse* currHist = fHistSharedClusQAV0Pi;
       
       if (isV0pi) {
-        Double_t expectedDeDx = fESDpid->GetTPCResponse().GetExpectedSignal(trackESD, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault,
-                                                                            fCorrectdEdxEtaDependence, fCorrectdEdxMultiplicityDependence); 
+        Double_t expectedDeDx = fPIDResponse->GetTPCResponse().GetExpectedSignal(trackESD, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault,
+                                                                                 fPIDResponse->UseTPCEtaCorrection(),
+                                                                                 fPIDResponse->UseTPCMultiplicityCorrection()); 
         if (expectedDeDx > 0 ) {
           vecHistQA[1] = tpcsignal / expectedDeDx;
           currHist = fHistSharedClusQAV0Pi;
         }
       }
       else if (isV0pr) {
-        Double_t expectedDeDx = fESDpid->GetTPCResponse().GetExpectedSignal(trackESD, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
-                                                                            fCorrectdEdxEtaDependence, fCorrectdEdxMultiplicityDependence); 
+        Double_t expectedDeDx = fPIDResponse->GetTPCResponse().GetExpectedSignal(trackESD, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
+                                                                                 fPIDResponse->UseTPCEtaCorrection(),
+                                                                                 fPIDResponse->UseTPCMultiplicityCorrection()); 
         if (expectedDeDx > 0 ) {
           vecHistQA[1] = tpcsignal / expectedDeDx;
           currHist = fHistSharedClusQAV0Pr;
         }
       }
       else if (isV0el) {
-        Double_t expectedDeDx = fESDpid->GetTPCResponse().GetExpectedSignal(trackESD, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault,
-                                                                            fCorrectdEdxEtaDependence, fCorrectdEdxMultiplicityDependence); 
+        Double_t expectedDeDx = fPIDResponse->GetTPCResponse().GetExpectedSignal(trackESD, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault,
+                                                                                 fPIDResponse->UseTPCEtaCorrection(), 
+                                                                                 fPIDResponse->UseTPCMultiplicityCorrection()); 
         if (expectedDeDx > 0 ) {
           vecHistQA[1] = tpcsignal / expectedDeDx;
           currHist = fHistSharedClusQAV0El;
@@ -726,35 +1036,35 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
         
         if (!esdV0) {
           printf("Error: V0 tagged, but does not exist!\n");
-          continue;
         }
-      
-        Float_t armVar[2] = {0.0,0.0};
-        fV0KineCuts->Armenteros(esdV0, armVar);
-        
-        const Int_t motherPDG = GetV0motherPDG(iTracks);
-        
-        // Mother and daughter match the requirements, otherwise it wouldn't be tagged as a V0. Now just fill the QA histos.
-        fhArmenterosAll->Fill(armVar[0], armVar[1]);
-        //if (esdV0->TestBit(BIT(14))) {
-        if (TMath::Abs(motherPDG) == 22) {
-          fhInvMassGamma->Fill(esdV0->GetEffMass(AliPID::kElectron, AliPID::kElectron));
-          fhArmenterosGamma->Fill(armVar[0], armVar[1]);
-        }
-        else if (TMath::Abs(motherPDG) == 310) {
-        //else if (esdV0->TestBit(BIT(15))) {
-          fhInvMassK0s->Fill(esdV0->GetEffMass(AliPID::kPion, AliPID::kPion));
-          fhArmenterosK0s->Fill(armVar[0], armVar[1]);
-        }
-        else if (motherPDG == 3122) {
-        //else if (esdV0->TestBit(BIT(16))) {
-          fhInvMassLambda->Fill(esdV0->GetEffMass(AliPID::kProton, AliPID::kPion));
-          fhArmenterosLambda->Fill(armVar[0], armVar[1]);
-        }
-        else if (motherPDG == -3122) {
-        //else if (esdV0->TestBit(BIT(17))) {
-          fhInvMassAntiLambda->Fill(esdV0->GetEffMass(AliPID::kPion, AliPID::kProton));
-          fhArmenterosAntiLambda->Fill(armVar[0], armVar[1]);
+        else {
+          Float_t armVar[2] = {0.0,0.0};
+          fV0KineCuts->Armenteros(esdV0, armVar);
+          
+          const Int_t motherPDG = GetV0motherPDG(iTracks);
+          
+          // Mother and daughter match the requirements, otherwise it wouldn't be tagged as a V0. Now just fill the QA histos.
+          fhArmenterosAll->Fill(armVar[0], armVar[1]);
+          //if (esdV0->TestBit(BIT(14))) {
+          if (TMath::Abs(motherPDG) == 22) {
+            fhInvMassGamma->Fill(esdV0->GetEffMass(AliPID::kElectron, AliPID::kElectron));
+            fhArmenterosGamma->Fill(armVar[0], armVar[1]);
+          }
+          else if (TMath::Abs(motherPDG) == 310) {
+          //else if (esdV0->TestBit(BIT(15))) {
+            fhInvMassK0s->Fill(esdV0->GetEffMass(AliPID::kPion, AliPID::kPion));
+            fhArmenterosK0s->Fill(armVar[0], armVar[1]);
+          }
+          else if (motherPDG == 3122) {
+          //else if (esdV0->TestBit(BIT(16))) {
+            fhInvMassLambda->Fill(esdV0->GetEffMass(AliPID::kProton, AliPID::kPion));
+            fhArmenterosLambda->Fill(armVar[0], armVar[1]);
+          }
+          else if (motherPDG == -3122) {
+          //else if (esdV0->TestBit(BIT(17))) {
+            fhInvMassAntiLambda->Fill(esdV0->GetEffMass(AliPID::kPion, AliPID::kProton));
+            fhArmenterosAntiLambda->Fill(armVar[0], armVar[1]);
+          }
         }
       }
     }

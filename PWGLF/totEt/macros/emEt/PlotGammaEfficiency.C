@@ -1,6 +1,6 @@
 void SetStyles(TH1 *histo,int marker, int color,char *xtitle, char *ytitle, Bool_t scale = kFALSE);
 
-void PlotGammaEfficiency(Bool_t isPhos = kFALSE){
+void PlotGammaEfficiency(Bool_t isPhos = kFALSE, Int_t cutset = 0){
 
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -8,11 +8,33 @@ void PlotGammaEfficiency(Bool_t isPhos = kFALSE){
   TString det = "";
     if(isPhos){
       det = "PHOS";
-      filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOS.LHC11a10a_bis.Run139465.root";
     }
     else{
       det = "EMCal";
-      filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.Run139465.root";
+    }
+    if(cutset==0){
+      if(isPhos){
+	filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOS.LHC11a10a_bis.Run139465.root";
+      }
+      else{
+	filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.Run139465.root";
+      }
+    }
+    if(cutset==1){
+      if(isPhos){
+	filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOSOldHadMethod.LHC11a10a_bis.root";
+      }
+      else{
+	filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCalOldHadMethod.LHC11a10a_bis.root";
+      }
+    }
+    if(cutset==2){
+      if(isPhos){
+	filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.PHOS.LHC11a10a_bis.root";
+      }
+      else{
+	filename = "rootFiles/LHC11a10a_bis/Et.ESD.simPbPb.EMCal.LHC11a10a_bis.root";
+      }
     }
 
 

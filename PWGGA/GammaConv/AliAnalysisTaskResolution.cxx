@@ -38,6 +38,7 @@ ClassImp(AliAnalysisTaskResolution)
 AliAnalysisTaskResolution::AliAnalysisTaskResolution() : AliAnalysisTaskSE(),
 	fV0Reader(NULL),
 	fConversionGammas(NULL),
+	fEventCuts(NULL),
 	fConversionCuts(NULL),
 	fTreeEvent(NULL),
 	fTreeResolution(NULL),
@@ -65,6 +66,7 @@ AliAnalysisTaskResolution::AliAnalysisTaskResolution() : AliAnalysisTaskSE(),
 AliAnalysisTaskResolution::AliAnalysisTaskResolution(const char *name) : AliAnalysisTaskSE(name),
 	fV0Reader(NULL),
 	fConversionGammas(NULL),
+	fEventCuts(NULL),
 	fConversionCuts(NULL),
 	fTreeEvent(NULL),
 	fTreeResolution(NULL),
@@ -143,7 +145,7 @@ void AliAnalysisTaskResolution::UserExec(Option_t *){
 
 	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
 
-		Int_t eventQuality = ((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetEventQuality();
+	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
 	if(eventQuality != 0){// Event Not Accepted
 		return;
 	}
@@ -155,22 +157,22 @@ void AliAnalysisTaskResolution::UserExec(Option_t *){
  
 	if(MCEvent()){
 		// Process MC Particle
-		if(fConversionCuts->GetSignalRejection() != 0){
+		if(fEventCuts->GetSignalRejection() != 0){
 // 		if(fESDEvent->IsA()==AliESDEvent::Class()){
-			fConversionCuts->GetNotRejectedParticles(	fConversionCuts->GetSignalRejection(),
-														fConversionCuts->GetAcceptedHeader(),
-														fMCEvent);
+			fEventCuts->GetNotRejectedParticles(	fEventCuts->GetSignalRejection(),
+													fEventCuts->GetAcceptedHeader(),
+													fMCEvent);
 // 		}
 // 		else if(fInputEvent->IsA()==AliAODEvent::Class()){
-// 			fConversionCuts->GetNotRejectedParticles(	fConversionCuts->GetSignalRejection(),
-// 														fConversionCuts->GetAcceptedHeader(),
-// 														fInputEvent);
+// 			fEventCuts->GetNotRejectedParticles(	fEventCuts->GetSignalRejection(),
+// 													fEventCuts->GetAcceptedHeader(),
+// 													fInputEvent);
 // 		}
 		}
 	}
 
    
-	if(fIsHeavyIon > 0 && !fConversionCuts->IsCentralitySelected(fESDEvent)) return;
+	if(fIsHeavyIon > 0 && !fEventCuts->IsCentralitySelected(fESDEvent)) return;
 	fNESDtracksEta09 = CountTracks09(); // Estimate Event Multiplicity
 	fNESDtracksEta0914 = CountTracks0914(); // Estimate Event Multiplicity
 	fNESDtracksEta14 = fNESDtracksEta09 + fNESDtracksEta0914;
@@ -227,11 +229,9 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
 			TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCStack);
 			TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCStack);
 // 			cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
-			if(fMCStack && fConversionCuts->GetSignalRejection() != 0){
-				Int_t isPosFromMBHeader
-				= fConversionCuts->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCStack, fESDEvent);
-				Int_t isNegFromMBHeader
-				= fConversionCuts->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCStack, fESDEvent);
+			if(fMCStack && fEventCuts->GetSignalRejection() != 0){
+				Int_t isPosFromMBHeader = fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCStack, fESDEvent);
+				Int_t isNegFromMBHeader = fEventCuts->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCStack, fESDEvent);
 				if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
 			}
 			
@@ -299,9 +299,8 @@ Int_t AliAnalysisTaskResolution::CountTracks09(){
 			if(!curTrack) continue;
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
-					if(fMCStack && fConversionCuts->GetSignalRejection() != 0){
-						Int_t isFromMBHeader
-						= fConversionCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
+						Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -346,9 +345,8 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 			if(!curTrack) continue;
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
-					if(fMCStack && fConversionCuts->GetSignalRejection() != 0){
-						Int_t isFromMBHeader
-						= fConversionCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
+						Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -361,9 +359,8 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 			if(!curTrack) continue;
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
-					if(fMCStack && fConversionCuts->GetSignalRejection() != 0){
-						Int_t isFromMBHeader
-						= fConversionCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
+						Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	

@@ -81,7 +81,8 @@ public:
    TH2F*   BookPIDHistogram(const char * name);
    TH2F*   BookNSigHistogram(const char * name);
    TH2F*   BookGenMulvsRawMulHistogram(const char * name);
-   
+   TH2F*   BookDoubleCountsHistogram(const char * name);
+
    TH1F*   GetPtHistogram1D(const char * name,Double_t minDCA,Double_t maxDCA);
    TH1F*   GetDCAHistogram1D(const char * name,Double_t minPt,Double_t maxPt);
    TH2*     GetHistogram(UInt_t id)      {      return (TH2*) fOutputList->At(id);   }
@@ -118,7 +119,7 @@ private:
    AliSpectraBothHistoManager(const AliSpectraBothHistoManager&);
    AliSpectraBothHistoManager& operator=(const AliSpectraBothHistoManager&);
 
-   ClassDef(AliSpectraBothHistoManager, 1);
+   ClassDef(AliSpectraBothHistoManager, 2);
 
 };
 #endif

@@ -14,11 +14,11 @@
 
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
-#include "AliESDInputHandler.h"
+#include "AliESDtrackCuts.h"
+#include "AliAnalysisFilter.h"
 #include "AliInputEventHandler.h"
 
 #include "AliVVertex.h"
-#include "AliAnalysisFilter.h"
 #include "AliPID.h"
 #include "AliPIDCombined.h"
 #include "AliPIDResponse.h"
@@ -72,6 +72,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fTOFmode(1)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
+  , fPileUpRejectionType(AliAnalysisTaskPIDV0base::kPileUpRejectionOff)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
   , fSystematicScalingSplinesThreshold(50.)
   , fSystematicScalingSplinesBelowThreshold(1.0)
@@ -137,13 +138,14 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fhEventsProcessed(0x0)
   , fhEventsTriggerSel(0x0)
   , fhEventsTriggerSelVtxCut(0x0) 
-  , fhSkippedTracksForSignalGeneration(0x0)
+  , fhEventsProcessedNoPileUpRejection(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
   , fh2FFJetPtGen(0x0)
   , fh1Xsec(0x0)
   , fh1Trials(0x0)
   , fContainerEff(0x0)
+  , fQASharedCls(0x0)
   , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
   , fQAContainer(0x0)
@@ -206,6 +208,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fTOFmode(1)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
+  , fPileUpRejectionType(AliAnalysisTaskPIDV0base::kPileUpRejectionOff)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
   , fSystematicScalingSplinesThreshold(50.)
   , fSystematicScalingSplinesBelowThreshold(1.0)
@@ -271,13 +274,14 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fhEventsProcessed(0x0)
   , fhEventsTriggerSel(0x0)
   , fhEventsTriggerSelVtxCut(0x0) 
-  , fhSkippedTracksForSignalGeneration(0x0)
+  , fhEventsProcessedNoPileUpRejection(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
   , fh2FFJetPtGen(0x0)
   , fh1Xsec(0x0)
   , fh1Trials(0x0)
   , fContainerEff(0x0)
+  , fQASharedCls(0x0)
   , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
   , fQAContainer(0x0)
@@ -542,7 +546,7 @@ Bool_t AliAnalysisTaskPID::CalculateMaxEtaVariationMapFromPIDResponse()
     fhMaxEtaVariation->SetBinContent(binY, maxAbs);
   }
   
-  printf("AliAnalysisTaskPID: Calculated max eta variation.\n");
+  printf("AliAnalysisTaskPID: Calculated max eta variation from map \"%s\".\n", hEta->GetTitle());
   
   return kTRUE;
 }
@@ -557,23 +561,13 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   if(fDebug > 1)
     printf("File: %s, Line: %d: UserCreateOutputObjects\n", (char*)__FILE__, __LINE__);
   
+  // Setup basic things, like PIDResponse
+  AliAnalysisTaskPIDV0base::UserCreateOutputObjects();
+  
+  if (!fPIDResponse)
+    AliFatal("PIDResponse object was not created");
+  
   SetUpPIDcombined();
-
-  // Input handler
-  AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
-  
-  if (!inputHandler)
-    AliFatal("Input handler needed");
-  else {
-    // PID response object
-    fPIDResponse = inputHandler->GetPIDResponse();
-    if (!fPIDResponse)
-      AliFatal("PIDResponse object was not created");
-  }
-  
-  if(fDebug > 2)
-    printf("File: %s, Line: %d: UserCreateOutputObjects -> Retrieved PIDresponse object\n", (char*)__FILE__, __LINE__);
   
   OpenFile(1);
   
@@ -594,8 +588,17 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
            26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };
   
   const Int_t nCentBins = 12;
-  //-1 for pp; 90-100 has huge electro-magnetic impurities
-  Double_t binsCent[nCentBins+1] = {-1, 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 }; 
+  //-1 for pp (unless explicitely requested); 90-100 has huge electro-magnetic impurities
+  Double_t binsCent[nCentBins+1] =                {-1, 0,  5, 10, 20, 30, 40, 50, 60, 70, 80,  90, 100 };
+  
+  // This centrality estimator deals with integers! This implies that the ranges are always [lowlim, uplim - 1]
+  Double_t binsCentITSTPCTracklets[nCentBins+1] = { 0, 7, 13, 20, 29, 40, 50, 60, 72, 83, 95, 105, 115 };
+  
+  if (fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0 && fStoreCentralityPercentile) {
+    // Special binning for this centrality estimator; but keep number of bins!
+    for (Int_t i = 0; i < nCentBins+1; i++)
+      binsCent[i] = binsCentITSTPCTracklets[i];
+  }
 
   const Int_t nJetPtBins = 11;
   Double_t binsJetPt[nJetPtBins+1] = {0, 2, 5, 10, 15, 20, 30, 40, 60, 80, 120, 200};
@@ -746,17 +749,11 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     fhGenPr = new THnSparseD("hGenPr", "", nGenBins, genBins, genXmin, genXmax);
     SetUpGenHist(fhGenPr, binsPt, deltaPrimeBins, binsCent, binsJetPt);
     fOutputContainer->Add(fhGenPr);
-    
-    fhSkippedTracksForSignalGeneration = new TH2D("fhSkippedTracksForSignalGeneration",
-                                                  "Number of tracks skipped for the signal generation;p_{T}^{gen} (GeV/c);TPC signal N", 
-                                                  nPtBins, binsPt, 161, -0.5, 160.5);
-    fhSkippedTracksForSignalGeneration->Sumw2();
-    fOutputContainer->Add(fhSkippedTracksForSignalGeneration);
   }
   
   
   fhEventsProcessed = new TH1D("fhEventsProcessed",
-                               "Number of events passing trigger selection, vtx and zvtx cuts;Centrality percentile", 
+                               "Number of events passing trigger selection, vtx and zvtx cuts and pile-up rejection;Centrality percentile", 
                                nCentBins, binsCent);
   fhEventsProcessed->Sumw2();
   fOutputContainer->Add(fhEventsProcessed);
@@ -772,6 +769,13 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
                                 nCentBins, binsCent);
   fOutputContainer->Add(fhEventsTriggerSel);
   fhEventsTriggerSel->Sumw2();
+  
+  
+  fhEventsProcessedNoPileUpRejection = new TH1D("fhEventsProcessedNoPileUpRejection",
+                                                "Number of events passing trigger selection, vtx and zvtx cuts;Centrality percentile", 
+                                                nCentBins, binsCent);
+  fOutputContainer->Add(fhEventsProcessedNoPileUpRejection);
+  fhEventsProcessedNoPileUpRejection->Sumw2();
   
   
   // Generated yields within acceptance
@@ -923,6 +927,18 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
       SetUpPtResHist(fPtResolution[i], pTbinsRes, binsJetPt, binsCent);
       fQAContainer->Add(fPtResolution[i]);
     }
+    
+    
+    // Besides the pT resolution, also perform check on shared clusters
+    const Int_t nBinsQASharedCls = kQASharedClsNumAxes;
+    Int_t qaSharedClsBins[kQASharedClsNumAxes]    = { nJetPtBins, nPtBinsRes, 160, 160 };
+    Double_t qaSharedClsXmin[kQASharedClsNumAxes] = { binsJetPt[0], pTbinsRes[0], 0, -1 };
+    Double_t qaSharedClsXmax[kQASharedClsNumAxes] = { binsJetPt[nJetPtBins], pTbinsRes[nPtBinsRes], 160, 159 };
+    
+    fQASharedCls = new THnSparseD("fQASharedCls", "QA shared clusters", nBinsQASharedCls, qaSharedClsBins, qaSharedClsXmin, qaSharedClsXmax);
+    
+    SetUpSharedClsHist(fQASharedCls, pTbinsRes, binsJetPt);
+    fQAContainer->Add(fQASharedCls);
   }
   
   
@@ -948,8 +964,10 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Posting output data\n", (char*)__FILE__, __LINE__);
   
   PostData(1, fOutputContainer);
-  PostData(2, fContainerEff);
-  PostData(3, fQAContainer);
+  if (fDoEfficiency)
+    PostData(2, fContainerEff);
+  if (fDoDeDxCheck || fDoPtResolution) 
+    PostData(3, fQAContainer);
   
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Done\n", (char*)__FILE__, __LINE__);
@@ -965,19 +983,6 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   if(fDebug > 1)
     printf("File: %s, Line: %d: UserExec\n", (char*)__FILE__, __LINE__);
   
-  Int_t run = InputEvent()->GetRunNumber();
-  
-  if (run != fRun){
-    // If systematics on eta is investigated, need to calculate the maxEtaVariationMap
-    if ((TMath::Abs(fSystematicScalingEtaCorrectionLowMomenta - 1.0) > fgkEpsilon) ||
-        (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - 1.0) > fgkEpsilon)) {
-      if (!CalculateMaxEtaVariationMapFromPIDResponse())
-        AliFatal("Systematics on eta correction requested, but failed to calculate max eta varation map!");
-    }
-  }
-  
-  fRun = run;
-  
   // No processing of event, if input is fed in directly from another task
   if (fInputFromOtherTask)
     return;
@@ -991,14 +996,29 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     return;
   }
   
+  ConfigureTaskForCurrentEvent(fEvent);
+  
   fMC = dynamic_cast<AliMCEvent*>(MCEvent());
   
   if (!fPIDResponse || !fPIDcombined)
     return;
   
   Double_t centralityPercentile = -1;
-  if (fStoreCentralityPercentile)
-    centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
+  if (fStoreCentralityPercentile) {
+    if (fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0) {
+      // Special pp centrality estimator
+      AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esdEvent) {
+        AliError("Not esd event -> Cannot use tracklet multiplicity estimator!");
+        centralityPercentile = -1;
+      }
+      else {
+        centralityPercentile = AliESDtrackCuts::GetReferenceMultiplicity(esdEvent, AliESDtrackCuts::kTrackletsITSTPC, fEtaAbsCutUp);
+      }
+    }
+    else
+      centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
+  }
   
   IncrementEventCounter(centralityPercentile, kTriggerSel);
   
@@ -1018,6 +1038,14 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   
   // Now check again, but also require z position to be in desired range
   if (!GetVertexIsOk(fEvent, kTRUE))
+    return;
+  
+  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
+  //TODO ATTENTION: Is this the right place for the pile-up rejection? Important to have still the proper bin-0 correction,
+  // which is done solely with sel and selVtx, since the zvtx selection does ~not change the spectra. The question is whether the pile-up
+  // rejection changes the spectra. If not, then it is perfectly fine to put it here and keep the usual histo for the normalisation to number
+  // of events. But if it does change the spectra, this must somehow be corrected for.
+  if (GetIsPileUp(fEvent, fPileUpRejectionType))
     return;
   
   IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
@@ -1143,7 +1171,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     // Only process tracks inside the desired eta window    
     if (!IsInAcceptedEtaRange(TMath::Abs(track->Eta()))) continue;
    
-    if (fDoPID || fDoDeDxCheck) 
+    if (fDoPID || fDoDeDxCheck || fDoPtResolution) 
       ProcessTrack(track, pdg, centralityPercentile, -1); // No jet information in this case -> Set jet pT to -1
     
     if (fDoPtResolution) {
@@ -1223,6 +1251,31 @@ void AliAnalysisTaskPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
+}
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskPID::ConfigureTaskForCurrentEvent(AliVEvent* event)
+{
+  // Configure the task for the current event. In particular, this is needed if the run number changes
+  
+  if (!event) {
+    AliError("Could not set up task: no event!");
+    return;
+  }
+  
+  Int_t run = event->GetRunNumber();
+  
+  if (run != fRun){
+    // If systematics on eta is investigated, need to calculate the maxEtaVariationMap
+    if ((TMath::Abs(fSystematicScalingEtaCorrectionLowMomenta - 1.0) > fgkEpsilon) ||
+        (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - 1.0) > fgkEpsilon)) {
+      if (!CalculateMaxEtaVariationMapFromPIDResponse())
+        AliFatal("Systematics on eta correction requested, but failed to calculate max eta varation map!");
+    }
+  }
+  
+  fRun = run;
 }
 
 
@@ -1859,10 +1912,53 @@ AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* t
   // Get the (locally defined) particle type judged by TOF
   
   if (!fPIDResponse) {
-    Printf("ERROR: fEvent not available -> Cannot determine TOF type!");
+    Printf("ERROR: fPIDResponse not available -> Cannot determine TOF type!");
     return kNoTOFinfo;
   }
-   
+  
+  /*TODO still needs some further thinking how to implement it....
+  // TOF PID status (kTOFout, kTIME) automatically checked by return value of ComputeTPCProbability;
+  // also, probability array will be set there (no need to initialise here)
+  Double_t p[AliPID::kSPECIES];
+  const AliPIDResponse::EDetPidStatus tofStatus = fPIDResponse->ComputeTPCProbability(track, AliPID::kSPECIES, p);
+  if (tofStatus != AliPIDResponse::kDetPidOk)
+    return kNoTOFinfo;
+  
+  // Do not consider muons
+  p[AliPID::kMuon] = 0.;
+  
+  // Probabilities are not normalised yet
+  Double_t sum = 0.;
+  for (Int_t i = 0; i < AliPID::kSPECIES; i++)
+    sum += p[i];
+  
+  if (sum <= 0.)
+    return kNoTOFinfo;
+  
+  for (Int_t i = 0; i < AliPID::kSPECIES; i++)
+    p[i] /= sum;
+  
+  Double_t probThreshold = -999.;
+  
+  // If there is only one distribution, the threshold corresponds to...
+  if (tofMode == 0) {
+    probThreshold = ;
+  }
+  else if (tofMode == 1) { // default
+    probThreshold = 0.9973; // a 3-sigma inclusion cut
+  }
+  else if (tofMode == 2) {
+    inclusion = 3.;
+    exclusion = 3.5;
+  }
+  else {
+    Printf("ERROR: Bad TOF mode: %d!", tofMode);
+    return kNoTOFinfo;
+  }
+  
+  */
+  
+  ///* OLD: cut with n-sigmas (ATTENTION: Does not take into account properly the TOF tail!)
   // Check kTOFout, kTIME, mismatch
   const AliPIDResponse::EDetPidStatus tofStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
   if (tofStatus != AliPIDResponse::kDetPidOk)
@@ -1901,6 +1997,7 @@ AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* t
     return kTOFkaon;
   if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) < inclusion)
     return kTOFproton;
+  //*/
   
   // There are no TOF electrons selected because the purity is rather bad, even for small momenta
   // (also a small mismatch probability significantly affects electrons because their fraction
@@ -2154,6 +2251,10 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   
   printf("\n");
   
+  printf("Pile up rejection type: %d\n", (Int_t)fPileUpRejectionType);
+  
+  printf("\n");
+  
   printf("Use MC-ID for signal generation: %d\n", GetUseMCidForGeneration());
   printf("Use ITS: %d\n", GetUseITS());
   printf("Use TOF: %d\n", GetUseTOF());
@@ -2223,7 +2324,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   if(fDebug > 1)
     printf("File: %s, Line: %d: ProcessTrack\n", (char*)__FILE__, __LINE__);
   
-  if (!fDoPID && !fDoDeDxCheck)
+  if (!fDoPID && !fDoDeDxCheck && !fDoPtResolution)
     return kFALSE;
   
   if(fDebug > 2)
@@ -2273,8 +2374,9 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Double_t dEdxTPC = tuneOnDataTPC ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
   
   if (dEdxTPC <= 0) {
-    Printf("Skipping track with strange dEdx value: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), pTPC,
-           track->Eta(), track->GetTPCsignalN());
+    if (fDebug > 1)
+      Printf("Skipping track with strange dEdx value: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), pTPC,
+             track->Eta(), track->GetTPCsignalN());
     return kFALSE;
   }
   
@@ -2285,8 +2387,9 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   
   if ((pTPC >= 0.3 && (nSigmaPr > 10 && nSigmaEl > 10)) ||
       (pTPC <  0.3 && (nSigmaPr > 15 && nSigmaEl > 15))) {
-    Printf("Skipping track which seems to be a light nuclei: dEdx %f, pTPC %f, pT %f, eta %f, ncl %d, nSigmaPr %f, nSigmaEl %f\n",
-           track->GetTPCsignal(), pTPC, pT, track->Eta(), track->GetTPCsignalN(), nSigmaPr, nSigmaEl);
+    if (fDebug > 1)
+      Printf("Skipping track which seems to be a light nucleus: dEdx %f, pTPC %f, pT %f, eta %f, ncl %d, nSigmaPr %f, nSigmaEl %f\n",
+             track->GetTPCsignal(), pTPC, pT, track->Eta(), track->GetTPCsignalN(), nSigmaPr, nSigmaEl);
     return kFALSE;
   }
   
@@ -2732,6 +2835,28 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
       printf("File: %s, Line: %d: ProcessTrack -> Generate Responses for dEdx check done\n", (char*)__FILE__, __LINE__);
   }
   
+  if (fDoPtResolution) {
+    // Check shared clusters, which is done together with the pT resolution
+    Double_t qaEntry[kQASharedClsNumAxes];
+    qaEntry[kQASharedClsJetPt] = jetPt;
+    qaEntry[kQASharedClsPt] = pT;
+    qaEntry[kDeDxCheckP] = pTPC;
+    qaEntry[kQASharedClsNumSharedCls] = track->GetTPCSharedMapPtr()->CountBits();
+    
+    Int_t iRowInd = -1;
+    // iRowInd == -1 for "all rows w/o multiple counting"
+    qaEntry[kQASharedClsPadRow] = iRowInd;
+    fQASharedCls->Fill(qaEntry);
+
+    // Fill hist for every pad row with shared cluster
+    for (iRowInd = 0; iRowInd < 159; iRowInd++) {
+      if (track->GetTPCSharedMapPtr()->TestBitNumber(iRowInd)) {
+        qaEntry[kQASharedClsPadRow] = iRowInd;
+        fQASharedCls->Fill(qaEntry);
+      }
+    }
+  }
+  
   if (!fDoPID)
     return kTRUE;
   
@@ -2928,7 +3053,6 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     }
     
     if (errCode != kWarning) {
-      fhSkippedTracksForSignalGeneration->Fill(track->GetTPCmomentum(), track->GetTPCsignalN());
       return kFALSE;// Skip generated response in case of error
     }
   }
@@ -3522,6 +3646,24 @@ void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Doubl
   hist->GetAxis(kPtResCharge)->SetTitle("Charge (e_{0})");
   hist->GetAxis(kPtResCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
 }
+
+
+//________________________________________________________________________
+void AliAnalysisTaskPID::SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const
+{
+  // Sets bin limits for axes which are not standard binned and the axes titles.
+  
+  hist->SetBinEdges(kQASharedClsJetPt, binsJetPt);
+  hist->SetBinEdges(kQASharedClsPt, binsPt);
+  
+  // Set axes titles
+  hist->GetAxis(kQASharedClsJetPt)->SetTitle("#it{p}_{T}^{jet} (GeV/#it{c})");
+  hist->GetAxis(kQASharedClsPt)->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hist->GetAxis(kQASharedClsNumSharedCls)->SetTitle("#it{N}_{shared}^{cls}");
+  hist->GetAxis(kQASharedClsPadRow)->SetTitle("Pad row");
+  
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskPID::SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const

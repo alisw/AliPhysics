@@ -61,6 +61,7 @@ ClassImp(AliSpectraBothTrackCuts)
 
 AliSpectraBothTrackCuts::AliSpectraBothTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCutMax(0),fYCutMin(0),
   fPtCutTOFMatching(0),fAODtrack(kotherobject), fHashitinSPD1(0),fusedadditionalcuts(kTRUE),
+fPtCutTOFMatchingPion(-1.0),fPtCutTOFMatchingKaon(-1.0),fPtCutTOFMatchingProton(-1.0),fUseTypeDependedTOFCut(kFALSE),
 fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fHistoNclustersITS(0),
 fHistoDCAzQA(0),fHistoNclustersQA(0),fHistochi2perNDFQA(0),
 fTrack(0),fCuts(0)
@@ -148,6 +149,9 @@ void AliSpectraBothTrackCuts::InitHisto()
 
  TH1::AddDirectory(oldStatus);
 
+if(fUseTypeDependedTOFCut) 
+	fPtCutTOFMatching=TMath::Max(fPtCutTOFMatchingPion,TMath::Max(fPtCutTOFMatchingKaon,fPtCutTOFMatchingProton));
+ 
 
 
 }
@@ -391,35 +395,46 @@ Bool_t AliSpectraBothTrackCuts::CheckTOFMatching(Bool_t FillHistStat)
 {
   // check Pt cut
   //    if ((fTrack->Pt() < fPtCut) && (fTrack->Pt() > 0.3 )) return kTRUE;
-  
-  if (fTrack->Pt() < fPtCutTOFMatching) return kTRUE;
-  else{
-    if(FillHistStat)fHistoCuts->Fill(kTrkPtTOF);
-    if(fTrack->Charge()>0)fHistoNSelectedPos->Fill(fTrack->Pt());
-    else fHistoNSelectedNeg->Fill(fTrack->Pt());
-    UInt_t status; 
-    status=fTrack->GetStatus();
-    if((status&AliAODTrack::kTOFout)&&FillHistStat)fHistoCuts->Fill(kTrTOFout);
-    if((status&AliAODTrack::kTIME)&&FillHistStat)fHistoCuts->Fill(kTrTIME);
-    if((status&AliAODTrack::kTOFpid)&&FillHistStat)fHistoCuts->Fill(kTrTOFpid);
+	if (fTrack->Pt() < fPtCutTOFMatching) 
+		return kTRUE;
+	else
+ 	{
+		if(FillHistStat)
+			fHistoCuts->Fill(kTrkPtTOF);
+    		if(fTrack->Charge()>0)
+			fHistoNSelectedPos->Fill(fTrack->Pt());
+    		else 
+			fHistoNSelectedNeg->Fill(fTrack->Pt());
+    		UInt_t status=fTrack->GetStatus();
+    		if((status&AliAODTrack::kTOFout)&&FillHistStat)
+			fHistoCuts->Fill(kTrTOFout);
+    		if((status&AliAODTrack::kTIME)&&FillHistStat)
+			fHistoCuts->Fill(kTrTIME);
+    		if((status&AliAODTrack::kTOFpid)&&FillHistStat)
+			fHistoCuts->Fill(kTrTOFpid);
     
-    if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0){//kTOFout and kTIME
-      return kFALSE; 
-    } 
-    if(FillHistStat)fHistoCuts->Fill(kTOFMatching);
-    if(fTrack->Charge()>0)fHistoNMatchedPos->Fill(fTrack->Pt());
-    else fHistoNMatchedNeg->Fill(fTrack->Pt());
-    if(fTrack->Pt()>1.5){
-      //fHistoEtaPhiHighPt->Fill(fTrack->GetOuterParam()->Eta(),fTrack->GetOuterParam()->Phi());
-      //Printf("AliExternalTrackParam * extpar=(AliExternalTrackParam*)fTrack->GetOuterParam();");
-      //AliExternalTrackParam * extpar=(AliExternalTrackParam*)fTrack->GetOuterParam();
-      fHistoEtaPhiHighPt->Fill(fTrack->Eta(),fTrack->Phi());
-      //Printf("fHistoEtaPhiHighPt->Fill(extpar->Eta(),extpar->Phi());");
-      //fHistoEtaPhiHighPt->Fill(extpar->Eta(),extpar->Phi());
-      //delete extpar;
-    }
-    return kTRUE;
-  }
+   		 if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0)
+		{//kTOFout and kTIME
+      			return kFALSE; 
+    		} 
+    		if(FillHistStat)
+			fHistoCuts->Fill(kTOFMatching);
+    		if(fTrack->Charge()>0)
+			fHistoNMatchedPos->Fill(fTrack->Pt());
+   		 else 
+			fHistoNMatchedNeg->Fill(fTrack->Pt());
+    		if(fTrack->Pt()>1.5)
+		{
+      			//fHistoEtaPhiHighPt->Fill(fTrack->GetOuterParam()->Eta(),fTrack->GetOuterParam()->Phi());
+      			//Printf("AliExternalTrackParam * extpar=(AliExternalTrackParam*)fTrack->GetOuterParam();");
+      			//AliExternalTrackParam * extpar=(AliExternalTrackParam*)fTrack->GetOuterParam();
+      			fHistoEtaPhiHighPt->Fill(fTrack->Eta(),fTrack->Phi());
+     			 //Printf("fHistoEtaPhiHighPt->Fill(extpar->Eta(),extpar->Phi());");
+      			//fHistoEtaPhiHighPt->Fill(extpar->Eta(),extpar->Phi());
+      			//delete extpar;
+    		}
+    		return kTRUE;
+  	}
 }
 //_______________________________________________________
 void AliSpectraBothTrackCuts::PrintCuts() const
@@ -514,4 +529,49 @@ Long64_t AliSpectraBothTrackCuts::Merge(TCollection* list)
 
   return count+1;
 }
+//________________________________________________________________________________________________________________________
+  void AliSpectraBothTrackCuts::SetPtTOFMatchingPartDepended(Float_t pion,Float_t kaon,Float_t proton)
+{
+	// configure the task in case of the use particle depended TOF matching cut 
+	// the value fPtCutTOFMatching is set as max pt of all
+	fPtCutTOFMatchingPion=pion;
+	fPtCutTOFMatchingKaon=kaon;
+	fPtCutTOFMatchingProton=proton;
+	fUseTypeDependedTOFCut=kTRUE;
+	fPtCutTOFMatching=TMath::Max(fPtCutTOFMatchingPion,TMath::Max(fPtCutTOFMatchingKaon,fPtCutTOFMatchingProton));
+ 
+}
+//___________________________________________________________________________________________________________________________
+Bool_t AliSpectraBothTrackCuts::CheckTOFMatchingParticleType(Int_t type) 
+{
+	Float_t ptcut=fPtCutTOFMatching;
+	switch (type) 
+	{	
+	    case  kSpPion:
+	    ptcut=fPtCutTOFMatchingPion;
+	    break;
+	    case kSpKaon:
+	    ptcut=fPtCutTOFMatchingKaon;
+	    break;
+	    case  kSpProton:
+	    ptcut=fPtCutTOFMatchingProton;
+	    break;
+	    default: 
+	    ptcut=0.0;
+	    break;		
+		
 
+	}	
+	if (fTrack->Pt() < ptcut) 
+		return kTRUE;
+	else
+ 	{
+		UInt_t status=fTrack->GetStatus();
+   		 if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0)
+		{//kTOFout and kTIME
+      			return kFALSE; 
+    		} 
+    		return kTRUE;
+  	}
+
+}

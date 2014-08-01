@@ -488,7 +488,19 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   TH1F  *fh1nGenBckgJets;         //! number of jets from generated tracks per event
   TH2F  *fh2PtRecVsGenPrim;       //! association rec/gen MC: rec vs gen pt, primaries 
   TH2F  *fh2PtRecVsGenSec;        //! association rec/gen MC: rec vs gen pt, secondaries 
+  
+  TH2F  *fhDCA_XY;                //! DCA XY for all rec. particles
+  TH2F  *fhDCA_Z;                 //! DCA Z for all rec. particles
+  
+  TH2F  *fhJetPtRefMultEta5;      //! Jet pT vs. reference multiplicity (|eta|<0.5)
+  TH2F  *fhJetPtRefMultEta8;      //! Jet pT vs. reference multiplicity (|eta|<0.8)
 
+  TH2F  *fhDCA_XY_prim_MCID[AliPID::kSPECIES];   //! DCA XY for all rec. prim. particles sorted by MC-ID
+  TH2F  *fhDCA_Z_prim_MCID[AliPID::kSPECIES];    //! DCA Z for all rec. prim. particles sorted by MC-ID
+ 
+  TH2F  *fhDCA_XY_sec_MCID[AliPID::kSPECIES];    //! DCA XY for all rec. sec. particles sorted by MC-ID
+  TH2F  *fhDCA_Z_sec_MCID[AliPID::kSPECIES];     //! DCA Z for all rec. sec. particles sorted by MC-ID
+ 
   // tracking efficiency / secondaries
   
   AliFragFuncQATrackHistos* fQATrackHistosRecEffGen;      //! tracking efficiency: generated primaries 

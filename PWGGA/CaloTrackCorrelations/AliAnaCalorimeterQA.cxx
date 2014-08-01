@@ -119,6 +119,8 @@ fhNCells(0),                           fhNCellsCutAmpMin(0),
 fhAmplitude(0),                        fhAmpId(0),                             fhEtaPhiAmp(0),
 fhTime(0),                             fhTimeVz(0),
 fhTimeId(0),                           fhTimeAmp(0),
+fhAmpIdLowGain(0),                     fhTimeIdLowGain(0),                     fhTimeAmpLowGain(0),
+
 fhCellECross(0),
 fhCaloCorrNClusters(0),                fhCaloCorrEClusters(0),     
 fhCaloCorrNCells(0),                   fhCaloCorrECells(0),
@@ -137,8 +139,9 @@ fhEMod(0),                             fhAmpMod(0),                            f
 fhNClustersMod(0),                     fhNCellsMod(0),
 fhNCellsPerClusterMod(0),              fhNCellsPerClusterModNoCut(0), 
 
-fhGridCells(0),                        fhGridCellsE(0),                        fhGridCellsTime(0), 
-fhTimeAmpPerRCU(0),                    fhIMMod(0),              
+fhGridCells(0),                        fhGridCellsE(0),                        fhGridCellsTime(0),
+fhGridCellsLowGain(0),                 fhGridCellsELowGain(0),                 fhGridCellsTimeLowGain(0),
+fhTimeAmpPerRCU(0),                    fhIMMod(0),
 
 // Weight studies
 fhECellClusterRatio(0),                fhECellClusterLogRatio(0),                 
@@ -394,6 +397,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   Float_t  amp    = 0.;
   Double_t time   = 0.;
   Int_t    id     = -1;
+  Bool_t   highG  = kFALSE;
   Float_t  recalF = 1.;  
   Int_t    bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
   
@@ -424,6 +428,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       amp     = cells->GetAmplitude(iCell)*recalF;
       time    = cells->GetTime(iCell);
       id      = cells->GetCellNumber(iCell);
+      highG   = cells->GetCellHighGain(id);
       
       // Amplitude recalibration if set
       GetCaloUtils()->RecalibrateCellAmplitude(amp,  fCalorimeter, id);
@@ -448,7 +453,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       fhAmplitude->Fill(amp);
       fhAmpId    ->Fill(amp,id);
       fhAmpMod   ->Fill(amp,nModule);
-      
+      if(!highG) fhAmpIdLowGain->Fill(amp,id);
       //E cross for exotic cells
       if(amp > 0.05)
       {
@@ -481,6 +486,12 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         fhGridCells ->Fill(icols,irows);
         fhGridCellsE->Fill(icols,irows,amp);
         
+        if(!highG)
+        {
+          fhGridCellsLowGain ->Fill(icols,irows);
+          fhGridCellsELowGain->Fill(icols,irows,amp);
+        }
+        
         if(fFillAllCellTimeHisto)
         {
           //printf("%s: time %g\n",fCalorimeter.Data(), time);
@@ -493,8 +504,15 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           fhTimeId   ->Fill(time,id);
           fhTimeAmp  ->Fill(amp,time);
           fhGridCellsTime->Fill(icols,irows,time);
+          if(!highG) fhGridCellsTimeLowGain->Fill(icols,irows,time);
           fhTimeMod  ->Fill(time,nModule);
           fhTimeAmpPerRCU  [nModule*fNRCU+iRCU]->Fill(amp, time);
+          
+          if(!highG)
+          {
+            fhTimeIdLowGain ->Fill(time,id);
+            fhTimeAmpLowGain->Fill(amp,time);
+          }
           
         }
       }
@@ -2520,8 +2538,12 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhAmpId  = new TH2F ("hAmpId","#it{E}_{cell}", nfineptbins,ptfinemin,ptfinemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules); 
   fhAmpId->SetXTitle("#it{E}_{cell} (GeV)");
   outputContainer->Add(fhAmpId);
+
+  fhAmpIdLowGain  = new TH2F ("hAmpIdLG","Low gain: #it{E}_{cell}", nfineptbins,ptfinemin,ptfinemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
+  fhAmpIdLowGain->SetXTitle("#it{E}_{cell} (GeV)");
+  outputContainer->Add(fhAmpIdLowGain);
   
-  if(fFillAllCellTimeHisto) 
+  if(fFillAllCellTimeHisto)
   {
     fhCellTimeSpreadRespectToCellMax = new TH2F ("hCellTimeSpreadRespectToCellMax","t_{cell max}-t_{cell i} per cluster", nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
     fhCellTimeSpreadRespectToCellMax->SetXTitle("#it{E} (GeV)");
@@ -2563,6 +2585,17 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhTimeAmp->SetXTitle("#it{E}_{cell} (GeV)");
     outputContainer->Add(fhTimeAmp);
     
+    fhTimeIdLowGain  = new TH2F ("hTimeIdLG","Low gain: #it{t}_{cell} vs Absolute Id",
+                          ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
+    fhTimeIdLowGain->SetXTitle("#it{t}_{cell} (ns)");
+    fhTimeIdLowGain->SetYTitle("Cell Absolute Id");
+    outputContainer->Add(fhTimeIdLowGain);
+    
+    fhTimeAmpLowGain  = new TH2F ("hTimeAmpLG","Low gain: #it{t}_{cell} vs #it{E}_{cell}",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax);
+    fhTimeAmpLowGain->SetYTitle("#it{t}_{cell} (ns)");
+    fhTimeAmpLowGain->SetXTitle("#it{E}_{cell} (GeV)");
+    outputContainer->Add(fhTimeAmpLowGain);
+
   }
   
   fhCellECross  = new TH2F ("hCellECross","1 - Energy in cross around cell /  cell energy",
@@ -2755,13 +2788,32 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhGridCellsE->SetXTitle("column (eta direction)");
   outputContainer->Add(fhGridCellsE);
   
+  fhGridCellsLowGain  = new TH2F ("hGridCellsLG",Form("Low gain: Entries in grid of cells"),
+                           colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+  fhGridCellsLowGain->SetYTitle("row (phi direction)");
+  fhGridCellsLowGain->SetXTitle("column (eta direction)");
+  outputContainer->Add(fhGridCellsLowGain);
+  
+  fhGridCellsELowGain  = new TH2F ("hGridCellsELG","Low gain: Accumulated energy in grid of cells",
+                            colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+  fhGridCellsELowGain->SetYTitle("row (phi direction)");
+  fhGridCellsELowGain->SetXTitle("column (eta direction)");
+  outputContainer->Add(fhGridCellsELowGain);
+
+  
   if(fFillAllCellTimeHisto)
   { 
-    fhGridCellsTime  = new TH2F ("hGridCellsTime","Accumulated time in grid of cells", 
-                                 colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5); 
+    fhGridCellsTime  = new TH2F ("hGridCellsTime","Accumulated time in grid of cells",
+                                 colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
     fhGridCellsTime->SetYTitle("row (phi direction)");
     fhGridCellsTime->SetXTitle("column (eta direction)");
-    outputContainer->Add(fhGridCellsTime);  
+    outputContainer->Add(fhGridCellsTime);
+    
+    fhGridCellsTimeLowGain  = new TH2F ("hGridCellsTimeLG","Low gain: Accumulated time in grid of cells",
+                                        colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5);
+    fhGridCellsTimeLowGain->SetYTitle("row (phi direction)");
+    fhGridCellsTimeLowGain->SetXTitle("column (eta direction)");
+    outputContainer->Add(fhGridCellsTimeLowGain);
   }
   
   fhNCellsPerClusterMod      = new TH2F*[fNModules];

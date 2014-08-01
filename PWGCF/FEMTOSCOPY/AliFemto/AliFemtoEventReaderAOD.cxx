@@ -267,21 +267,23 @@ AliFemtoEvent* AliFemtoEventReaderAOD::ReturnHbtEvent()
   fTree->GetEvent(fCurEvent);//getting next event
   //  cout << "Read event " << fEvent << " from file " << fTree << endl;
 
-  hbtEvent = new AliFemtoEvent;
+  //hbtEvent = new AliFemtoEvent;
 
-  CopyAODtoFemtoEvent(hbtEvent);
+  hbtEvent = CopyAODtoFemtoEvent();
   fCurEvent++;
 
 
   return hbtEvent;
 }
 
-void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
+AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 {
 
   // A function that reads in the AOD event
   // and transfers the neccessary information into
   // the internal AliFemtoEvent
+
+  AliFemtoEvent *tEvent = new AliFemtoEvent();
 
   // setting global event characteristics
   tEvent->SetRunNumber(fEvent->GetRunNumber());
@@ -336,19 +338,23 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
       if(fMinVtxContr)
 	anaUtil->SetMinVtxContr(fMinVtxContr);
       if(fpA2013)
-	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) return; //Vertex rejection for pA analysis.
+	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) 
+	  {
+	    delete tEvent;
+	    return NULL; //Vertex rejection for pA analysis.
+	  }
       if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
       else anaUtil->SetUseMVPlpSelection(kFALSE);
       if(fMinPlpContribMV) anaUtil->SetMinPlpContribMV(fMinPlpContribMV);
       if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
       if(fisPileUp)
-	if(anaUtil->IsPileUpEvent(fEvent)) return; //Pile-up rejection.
-      delete anaUtil;   
+	if(anaUtil->IsPileUpEvent(fEvent)) { delete tEvent;return NULL;} //Pile-up rejection.
+      delete anaUtil;
     }
 
   // Primary Vertex position
   const AliAODVertex* aodvertex = (AliAODVertex*) fEvent->GetPrimaryVertex();
-  if(!aodvertex || aodvertex->GetNContributors() < 1) return; //Bad vertex, skip event.
+  if(!aodvertex || aodvertex->GetNContributors() < 1) { delete tEvent;return NULL;} //Bad vertex, skip event.
 
   aodvertex->GetPosition(fV1);
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
@@ -375,8 +381,8 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
         (cent->GetCentralityPercentile("V0M")*10 > fCentRange[1]))
     {
       // cout << "Centrality " << cent->GetCentralityPercentile("V0M") << " outside of preselection range " << fCentRange[0] << " - " << fCentRange[1] << endl;
-
-      return;
+      delete tEvent;
+      return NULL;
     }
   }
 
@@ -384,7 +390,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 //flatten centrality dist.
   if(percent < 9){
     if(fFlatCent){
-      if(RejectEventCentFlat(fEvent->GetMagneticField(),percent)) return;
+      if(RejectEventCentFlat(fEvent->GetMagneticField(),percent)) { delete tEvent; return NULL;}
     }
   }
 
@@ -406,7 +412,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   int tNormMult = 0;
   for (int i=0;i<nofTracks;i++)
   {
-    AliFemtoTrack* trackCopy = new AliFemtoTrack();
+    AliFemtoTrack* trackCopy;// = new AliFemtoTrack();
 
 //       if (fPWG2AODTracks) {
 // 	// Read tracks from the additional pwg2 specific AOD part
@@ -541,12 +547,12 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     if (aodtrack->IsPrimaryCandidate()) tracksPrim++;
 
     if (fFilterBit && !aodtrack->TestFilterBit(fFilterBit)) {
-      delete trackCopy;
+      //delete trackCopy;
       continue;
     }
 
     if (fFilterMask && !aodtrack->TestFilterBit(fFilterMask)) {
-      delete trackCopy;
+      //delete trackCopy;
       continue;
     }
 
@@ -571,7 +577,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
       delete trk_clone;
     }
 
-    CopyAODtoFemtoTrack(aodtrack, trackCopy);
+    trackCopy = CopyAODtoFemtoTrack(aodtrack);
 
     // copying PID information from the correspondent track
     //	const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
@@ -824,26 +830,28 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
       if(aodv0->CosPointingAngle(fV1)<0.998) continue;
       AliFemtoV0* trackCopyV0 = new AliFemtoV0();
       count_pass++;
-      CopyAODtoFemtoV0(aodv0, trackCopyV0);
+      trackCopyV0 = CopyAODtoFemtoV0(aodv0);
       tEvent->V0Collection()->push_back(trackCopyV0);
       //cout<<"Pushback v0 to v0collection"<<endl;
     }
   }
 
+  return tEvent;
 }
 
-void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
-                                                 AliFemtoTrack *tFemtoTrack
+AliFemtoTrack* AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack
                                                  //						 AliPWG2AODTrack *tPWG2AODTrack
   )
 {
   // Copy the track information from the AOD into the internal AliFemtoTrack
   // If it exists, use the additional information from the PWG2 AOD
+  AliFemtoTrack *tFemtoTrack = new AliFemtoTrack();
 
   // Primary Vertex position
 
   fEvent->GetPrimaryVertex()->GetPosition(fV1);
   //  fEvent->GetPrimaryVertex()->GetXYZ(fV1);
+  tFemtoTrack->SetPrimaryVertex(fV1);
 
   tFemtoTrack->SetCharge(tAodTrack->Charge());
 
@@ -988,11 +996,13 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
     tFemtoTrack->SetITSHitOnLayer(ii,tAodTrack->HasPointOnITSLayer(ii));
   }
 
-
+  return tFemtoTrack;
 }
 
-void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFemtoV0)
+AliFemtoV0* AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0 )
 {
+  AliFemtoV0 *tFemtoV0 = new AliFemtoV0();
+
   tFemtoV0->SetdecayLengthV0(tAODv0->DecayLength(fV1));
   tFemtoV0->SetdecayVertexV0X(tAODv0->DecayVertexV0X());
   tFemtoV0->SetdecayVertexV0Y(tAODv0->DecayVertexV0Y());
@@ -1020,6 +1030,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
 
   //void SetTrackTopologyMapPos(unsigned int word, const unsigned long& m);
   //void SetTrackTopologyMapNeg(unsigned int word, const unsigned long& m);
+
 
   tFemtoV0->SetmomV0X(tAODv0->MomV0X());
   tFemtoV0->SetmomV0Y(tAODv0->MomV0Y());
@@ -1059,6 +1070,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
   tFemtoV0->SetCosPointingAngle(tAODv0->CosPointingAngle(fV1));
   //tFemtoV0->SetYV0(tAODv0->Y());
 
+
   //void SetdedxNeg(float x);
   //void SeterrdedxNeg(float x);//Gael 04Fev2002
   //void SetlendedxNeg(float x);//Gael 04Fev2002
@@ -1071,6 +1083,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
 
   AliAODTrack *trackpos = (AliAODTrack*)tAODv0->GetDaughter(0);
   AliAODTrack *trackneg = (AliAODTrack*)tAODv0->GetDaughter(1);
+
 
   if(trackpos && trackneg)
   {
@@ -1125,6 +1138,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
 
     tmpVec.SetX(tpcExitNeg[0]); tmpVec.SetY(tpcExitNeg[1]); tmpVec.SetZ(tpcExitNeg[2]);
     tFemtoV0->SetNominalTpcExitPointNeg(tmpVec);
+
 
     AliFemtoThreeVector vecTpcPos[9];
     AliFemtoThreeVector vecTpcNeg[9];
@@ -1184,13 +1198,17 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
       tFemtoV0->SetTOFKaonTimeNeg(TOFSignalNeg-pidNeg[3]);
       tFemtoV0->SetTOFProtonTimeNeg(TOFSignalNeg-pidNeg[4]);
     }
+
   }
   else
   {
+
     tFemtoV0->SetStatusPos(999);
     tFemtoV0->SetStatusNeg(999);
   }
+
   tFemtoV0->SetOnFlyStatusV0(tAODv0->GetOnFlyStatus());
+  return tFemtoV0;
 }
 
 void AliFemtoEventReaderAOD::SetFilterBit(UInt_t ibit)

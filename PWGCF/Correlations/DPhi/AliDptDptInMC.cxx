@@ -234,6 +234,14 @@ _etadis ( 0),
 _phidis ( 0),
 _dcaz   ( 0),
 _dcaxy  ( 0),
+_etadis2 ( 0),
+_phidis2 ( 0),
+_dcaz2   ( 0),
+_dcaxy2  ( 0),
+_etadis3 ( 0),
+_phidis3 ( 0),
+_dcaz3   ( 0),
+_dcaxy3  ( 0),
 _n1_1_vsPt         ( 0),         
 _n1_1_vsEtaVsPhi   ( 0),
 _s1pt_1_vsEtaVsPhi ( 0), 
@@ -530,6 +538,14 @@ _phidis ( 0),
 
 _dcaz ( 0),
 _dcaxy ( 0),
+_etadis2 ( 0),
+_phidis2 ( 0),
+_dcaz2   ( 0),
+_dcaxy2  ( 0),
+_etadis3 ( 0),
+_phidis3 ( 0),
+_dcaz3   ( 0),
+_dcaxy3  ( 0),
 _n1_1_vsPt         ( 0),         
 _n1_1_vsEtaVsPhi   ( 0),
 _s1pt_1_vsEtaVsPhi ( 0), 
@@ -781,6 +797,7 @@ void AliDptDptInMC::UserCreateOutputObjects()
   //_dedx_1     = new float[arraySize];
   
   __n1_1_vsPt              = getDoubleArray(_nBins_pt_1,        0.);
+
   __n1_1_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_1,    0.);
   __s1pt_1_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_1,    0.);
   __n1_1_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_1,  0.);
@@ -1006,12 +1023,27 @@ void  AliDptDptInMC::createHistograms()
   name = "DCAz";    _dcaz     = createHisto1F(name,name, 340, -3.3, 3.3, "dcaZ","counts");
   name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 100, -0.1, 2.5, "dcaXY","counts");
 
+  name = "Eta2";     _etadis2   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
+  name = "Phi2";     _phidis2   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
+  name = "DCAz2";    _dcaz2     = createHisto1F(name,name, 340, -3.3, 3.3, "dcaZ","counts");
+  name = "DCAxy2";   _dcaxy2    = createHisto1F(name,name, 100, -0.1, 2.5, "dcaXY","counts");
+
+  name = "Eta3";     _etadis3   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
+  name = "Phi3";     _phidis3   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
+  name = "DCAz3";    _dcaz3     = createHisto1F(name,name, 340, -3.3, 3.3, "dcaZ","counts");
+  name = "DCAxy3";   _dcaxy3    = createHisto1F(name,name, 100, -0.1, 2.5, "dcaXY","counts");
+
+  //name = "Eta";     _etadis   = createHisto1F(name,name, 250, 0.0, 2.5, "#eta","counts"); //temporaryly
+  //name = "Phi";     _phidis   = createHisto1F(name,name, 250, 0.0, 2.5, "#phi","counts");
+  //name = "DCAz";    _dcaz     = createHisto1F(name,name, 250, 0.0, 2.5, "dcaZ","counts");
+
   //name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   //name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
   
   if (_singlesOnly)
     {
     name = n1Name+part_1_Name+vsPt;              _n1_1_vsPt              = createHisto1F(name,name, _nBins_pt_1,  _min_pt_1,  _max_pt_1,   _title_pt_1,  _title_AvgN_1);
+
     name = n1Name+part_1_Name+vsZ+vsEtaPhi+vsPt; _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F(name,name, _nBins_vertexZ,_min_vertexZ,_max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);
     //name = "dedxVsP_1";                          _dedxVsP_1              = createHisto2F(name,name,400,-2.,2.,120,0.,120.,"p (GeV/c)", "dedx", "counts");
     //name = "corrDedxVsP_1";                      _corrDedxVsP_1          = createHisto2F(name,name,400,-2.,2.,120,0.,120.,"p (GeV/c)", "dedx", "counts");
@@ -1259,7 +1291,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                   continue;
                 }
 	      
-	      //if(!aodTrack->IsPhysicalPrimary()) continue;
+	      if(!aodTrack->IsPhysicalPrimary()) continue;
 
 	      q      = aodTrack->Charge();
               charge = int(q);
@@ -1273,10 +1305,20 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      if( pt < 0.2 || pt > 2.0)      continue;
 	      if( eta < -0.8 || eta > 0.8)  continue;
 
-	      _etadis->Fill(eta);
-              _phidis->Fill(phi); 
-	      // Remove neutral tracks                                                                                         
-	       if(q == 0) continue;  
+	      if(q == 0) continue;  
+	      _dcaz->Fill(pt); //AllCh 
+
+	      if(TMath::Abs(aodTrack->GetPdgCode()) == 211)
+		{
+		  _etadis->Fill(pt); //pion
+		} 
+	      if(TMath::Abs(aodTrack->GetPdgCode()) == 321)
+		{
+		  _phidis->Fill(pt); //kaon
+		} 
+
+	      //_etadis->Fill(eta);
+              //_phidis->Fill(phi); 
 
 	      if(fExcludeResonancesInMC)
                 {
@@ -1345,6 +1387,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                     {
 
                       __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;                                            
+                      
                       __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;                                               
 
                     }
@@ -1492,6 +1535,8 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      
 	      bitOK  = t->TestFilterBit(_trackFilterBit);
 	      if (!bitOK) continue;
+	      Int_t gID = t->GetID();
+	      newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
 	      
 	      q      = t->Charge();
 	      charge = int(q);
@@ -1505,72 +1550,105 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      //Float_t dcaZ  = t->ZAtDCA(); 
 	      
 	      // get the electron nsigma                                                                                                
-	      Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kElectron));
-	      Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kPion));
-              Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kKaon));
-              Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kProton));
+	      Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
+	      Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
+              Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kKaon));
+              Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kProton));
 	      
 	      //Make the decision based on the n-sigma of electrons exclusively 
-              if(nSigma < fNSigmaCut
+	      if(nSigma < fNSigmaCut
                  && nSigmaPions   > fNSigmaCut
                  && nSigmaKaons   > fNSigmaCut
                  && nSigmaProtons > fNSigmaCut ) continue;
 	      
-	      Int_t gID = t->GetID();
-	      newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
-	      
+
+	      if(q == 0) continue;	      
 	      // Kinematics cuts                                                                                 
 	      if( pt < 0.2 || pt > 2.0)      continue;
 	      if( eta < _min_eta_1 || eta > _max_eta_1)  continue;
 	      
+	      
+	      /*
+		_dcaz->Fill(pt);
+		if (nSigmaPions < fNSigmaCut)
+		{
+		_etadis->Fill(pt);
+		}
+		if (nSigmaKaons < fNSigmaCut)
+		{
+		_phidis->Fill(pt);
+		} 
+	      */ //particle ratio calculation
+	      
 	      Double_t pos[3];
 	      newAodTrack->GetXYZ(pos);
 	      
-	      Double_t DCAX = pos[0] - vertexX;
-	      Double_t DCAY = pos[1] - vertexY;
+	      //Double_t DCAX = pos[0] - vertexX;
+	      //Double_t DCAY = pos[1] - vertexY;
 	      Double_t DCAZ = pos[2] - vertexZ;
 	      
-	      Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+	      //Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
 	      
-	      if (DCAZ     <  _dcaZMin ||
-		  DCAZ     >  _dcaZMax ||
-		  DCAXY    >  _dcaXYMax ) continue;
-	      	      
-	      //==== QA ===========================                                          
-	      _dcaz->Fill(DCAZ);                                                           
-	      _dcaxy->Fill(DCAXY);                                                         
-	      _etadis->Fill(eta);                                                          
-	      _phidis->Fill(phi); 
-	      //===================================   
+	      /*if (DCAZ     <  _dcaZMin ||
+		DCAZ     >  _dcaZMax ||
+		DCAXY    >  _dcaXYMax ) continue;
+	      */
 	      
-	      //W/Wo Secondaries
-	      //if (!AODmcTrack->IsPhysicalPrimary()) continue;
-	      
-	      //cout<<"***************Prabhat on Weak Decay Particles ************"<<endl;
-	      if(fExcludeResonancesInMC)
+	      Int_t label = TMath::Abs(t->GetLabel());                                                                                              
+	      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label); 
+	      //------------Test of tracks QAs------------	      
+	      if (AODmcTrack->IsPhysicalPrimary())
 		{
-		  Int_t label = TMath::Abs(t->GetLabel());
-		  AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
-		  
-		  Int_t gMotherIndex = AODmcTrack->GetMother();
-		  if(gMotherIndex != -1) {
-		    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
-		    if(motherTrack) {
-		      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
-		      
-		      if(pdgCodeOfMother == 311  ||
-			 pdgCodeOfMother == -311 ||
-			 pdgCodeOfMother == 310  ||
-			 pdgCodeOfMother == 3122 ||
-			 pdgCodeOfMother == -3122 ||
-			 pdgCodeOfMother == 111 ||
-			 pdgCodeOfMother == 22 ) continue;
-		    }
-		  }
+		  _dcaz->Fill(DCAZ);                                                           
+		  //_dcaxy->Fill(DCAXY);                                                         
+		  //_etadis->Fill(eta);                                                          
+		  _phidis->Fill(phi); 
+		}
+	      if (AODmcTrack->IsSecondaryFromWeakDecay())
+		{
+		  _dcaz2->Fill(DCAZ);                                                           
+		  //_dcaxy2->Fill(DCAXY);                                                         
+		  //_etadis2->Fill(eta);                                                          
+		  _phidis2->Fill(phi); 
 		}
 	      
+	      if (AODmcTrack->IsSecondaryFromMaterial())
+		{
+		  _dcaz3->Fill(DCAZ);                                                           
+		  //_dcaxy3->Fill(DCAXY);                                                         
+		  //_etadis3->Fill(eta);                                                          
+		  _phidis3->Fill(phi); 
+		}
+	      //---------------------------------
+	      
+	      /* //W/Wo Secondaries
+	      //if (!AODmcTrack->IsPhysicalPrimary()) continue;
+	      //cout<<"***************Prabhat on Weak Decay Particles ************"<<endl;
+	      if(fExcludeResonancesInMC)
+	      {
 	      Int_t label = TMath::Abs(t->GetLabel());
 	      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+	      
+	      Int_t gMotherIndex = AODmcTrack->GetMother();
+	      if(gMotherIndex != -1) {
+	      AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+	      if(motherTrack) {
+	      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+	      
+	      if(pdgCodeOfMother == 311  ||
+	      pdgCodeOfMother == -311 ||
+	      pdgCodeOfMother == 310  ||
+	      pdgCodeOfMother == 3122 ||
+	      pdgCodeOfMother == -3122 ||
+	      pdgCodeOfMother == 111 ||
+	      pdgCodeOfMother == 22 ) continue;
+	      }
+	      }
+	      } */
+	      
+	      
+	      //Int_t label = TMath::Abs(t->GetLabel());
+	      //AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
 	      if (AODmcTrack)
 		{
 		  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
@@ -1618,6 +1696,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 		    {
 
 		      __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;                                           
+
 		      __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;                                              
 
 		    }
@@ -1731,13 +1810,13 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
     } //AOD events             
 
 
-  _m0->Fill(_mult0);
-  _m1->Fill(_mult1);
-  _m2->Fill(_mult2);
-  _m3->Fill(_mult3);
-  _m4->Fill(_mult4);
-  _m5->Fill(_mult5);
-  _m6->Fill(_mult6);
+  //  _m0->Fill(_mult0);
+  //_m1->Fill(_mult1);
+  //_m2->Fill(_mult2);
+  //_m3->Fill(_mult3);
+  //_m4->Fill(_mult4);
+  //_m5->Fill(_mult5);
+  //_m6->Fill(_mult6);
   _vertexZ->Fill(vertexZ);
 
   if (_singlesOnly)

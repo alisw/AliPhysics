@@ -289,7 +289,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   static void DumpPointsForDurham(TH1D *h);
   static void DumpPointsForDurham(TH1F *h);
   virtual void DumpThePoints(AliFlowEventSimple *anEvent);
-  TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable);
+  TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production);
 
  private:
   AliFlowAnalysisWithMultiparticleCorrelations(const AliFlowAnalysisWithMultiparticleCorrelations& afawQc);
@@ -417,7 +417,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   TProfile *fDiffCorrelationsPro[2][4];  // multi-particle correlations [0=cos,1=sin][1p,2p,3p,4p]
   UInt_t fDiffBinNo;                     // differential bin number
 
-  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,1);
+  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,2);
 
 };
 

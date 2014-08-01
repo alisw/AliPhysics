@@ -1,6 +1,5 @@
-// $Id$
 //
-// Class to select tracks in MC events.
+// Class to select particles in MC events.
 //
 // Author: S. Aiola
 
@@ -8,14 +7,13 @@
 
 #include <TClonesArray.h>
 
-#include "AliNamedArrayI.h"
-#include "AliAnalysisManager.h"
-#include "AliVEventHandler.h"
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
-#include "AliVParticle.h"
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
+#include "AliStack.h"
+#include "AliNamedArrayI.h"
+
 #include "AliLog.h"
 
 ClassImp(AliEmcalMCTrackSelector)
@@ -23,16 +21,21 @@ ClassImp(AliEmcalMCTrackSelector)
 //________________________________________________________________________
 AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() : 
   AliAnalysisTaskSE("AliEmcalMCTrackSelector"),
-  fTracksOutName("PicoTracks"),
+  fParticlesOutName("MCParticlesSelected"),
+  fOnlyPhysPrim(kTRUE),
   fRejectNK(kFALSE),
   fChargedMC(kFALSE),
-  fTracksMapName(""),
+  fOnlyHIJING(kFALSE),
   fEtaMax(1),
+  fParticlesMapName(""),
   fInit(kFALSE),
-  fEsdMode(kFALSE),
-  fTracksIn(0),
-  fTracksOut(0),
-  fTracksMap(0)
+  fParticlesIn(0),
+  fParticlesOut(0),
+  fParticlesMap(0),
+  fEvent(0),
+  fMC(0),
+  fIsESD(kFALSE),
+  fDisabled(kFALSE)
 {
   // Constructor.
 }
@@ -40,16 +43,21 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
 //________________________________________________________________________
 AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) : 
   AliAnalysisTaskSE(name),
-  fTracksOutName("PicoTracks"),
+  fParticlesOutName("MCParticlesSelected"),
+  fOnlyPhysPrim(kTRUE),
   fRejectNK(kFALSE),
   fChargedMC(kFALSE),
-  fTracksMapName(""),
+  fOnlyHIJING(kFALSE),
   fEtaMax(1),
+  fParticlesMapName(""),
   fInit(kFALSE),
-  fEsdMode(kFALSE),
-  fTracksIn(0),
-  fTracksOut(0),
-  fTracksMap(0)
+  fParticlesIn(0),
+  fParticlesOut(0),
+  fParticlesMap(0),
+  fEvent(0),
+  fMC(0),
+  fIsESD(kFALSE),
+  fDisabled(kFALSE)
 {
   // Constructor.
 }
@@ -64,145 +72,176 @@ AliEmcalMCTrackSelector::~AliEmcalMCTrackSelector()
 void AliEmcalMCTrackSelector::UserCreateOutputObjects()
 {
   // Create my user objects.
-
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
-    AliFatal("No analysis manager!");
-    return;
-  }  
-  
-  AliVEventHandler *handler = mgr->GetInputEventHandler();
-  if (!handler) {
-    AliFatal("No input handler!");
-    return;
-  }  
-
-  if (handler->InheritsFrom("AliESDInputHandler") || handler->InheritsFrom("AliDummyHandler"))
-    fEsdMode = kTRUE;
-  else
-    fEsdMode = kFALSE;
-
-  if (fEsdMode)
-    fTracksOut = new TClonesArray("AliMCParticle");
-  else
-    fTracksOut = new TClonesArray("AliAODMCParticle");
-  fTracksOut->SetName(fTracksOutName);
-
-  fTracksMapName = fTracksOutName;
-  fTracksMapName += "_Map";
-  fTracksMap = new AliNamedArrayI(fTracksMapName, 99999);
 }
 
 //________________________________________________________________________
 void AliEmcalMCTrackSelector::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
-  if (!InputEvent()) {
-    AliError("Could not retrieve event! Returning");
-    return;
-  }
 
-  if (fEsdMode && !MCEvent()) {
-    AliError("Could not retrieve MC event! Returning");
-    return;
-  }
+  if (fDisabled) return;
 
   if (!fInit) {
-    // add tracks to event if not yet there
-    if (!(InputEvent()->FindListObject(fTracksOutName))) 
-      InputEvent()->AddObject(fTracksOut);
+    fEvent = InputEvent();
+    if (!fEvent) {
+      AliError("Could not retrieve event! Returning");
+      return;
+    }
 
-    if (!(InputEvent()->FindListObject(fTracksMapName)))
-      InputEvent()->AddObject(fTracksMap);
+    if (fEvent->InheritsFrom("AliESDEvent")) fIsESD = kTRUE;
+    else fIsESD = kFALSE;
 
-    if (!fEsdMode) {
-      fTracksIn = static_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (!fTracksIn) {
-	AliError("Could not retrieve AOD MC particles! Returning");
+    TObject *obj = fEvent->FindListObject(fParticlesOutName);
+    if (obj) { // the output array is already present in the array!
+      AliError(Form("The output array %s is already present in the event! Task will be disabled.", fParticlesOutName.Data()));
+      fDisabled = kTRUE;
+      return;
+    }
+    else {  // copy the array from the standard ESD/AOD collections, and filter if requested      
+
+      fParticlesOut = new TClonesArray("AliAODMCParticle");  // the output will always be of AliAODMCParticle, regardless of the input
+      fParticlesOut->SetName(fParticlesOutName);
+      fEvent->AddObject(fParticlesOut);
+
+      fParticlesMapName = fParticlesOutName;
+      fParticlesMapName += "_Map";
+
+      if (fEvent->FindListObject(fParticlesMapName)) {
+	AliError(Form("The output array map %s is already present in the event! Task will be disabled.", fParticlesMapName.Data()));
+	fDisabled = kTRUE;
 	return;
       }
-      TClass *cl = fTracksIn->GetClass();
-      if (!cl->GetBaseClass("AliAODMCParticle")) {
-	AliError(Form("%s: Collection %s does not contain AliAODMCParticle!", GetName(), AliAODMCParticle::StdBranchName())); 
-	fTracksIn = 0;
-	return;
+      else {
+	fParticlesMap = new AliNamedArrayI(fParticlesMapName, 99999);
+	fEvent->AddObject(fParticlesMap);
       }
+
+      if (!fIsESD) {
+	fParticlesIn = static_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
+	if (!fParticlesIn) {
+	  AliError("Could not retrieve AOD MC particles! Task will be disabled.");
+	  fDisabled = kTRUE;
+	  return;
+	}
+	TClass *cl = fParticlesIn->GetClass();
+	if (!cl->GetBaseClass("AliAODMCParticle")) {
+	  AliError(Form("%s: Collection %s does not contain AliAODMCParticle! Task will be disabled.", GetName(), AliAODMCParticle::StdBranchName())); 
+	  fDisabled = kTRUE;
+	  fParticlesIn = 0;
+	  return;
+	}
+      }
+    }
+
+    fMC = MCEvent();
+    if (!fMC) {
+      AliError("Could not retrieve MC event! Returning");
+      fDisabled = kTRUE;
+      return;
     }
 
     fInit = kTRUE;
   }
 
+  if (fIsESD) ConvertMCParticles();
+  else CopyMCParticles();
+}
+
+//________________________________________________________________________
+void AliEmcalMCTrackSelector::ConvertMCParticles() 
+{
+  // Convert MC particles in MC AOD particles.
+
   // clear container (normally a null operation as the event should clean it already)
-  fTracksOut->Delete();
-  fTracksMap->Clear();
+  fParticlesOut->Delete();
 
-  const Int_t Ntracks = GetNumberOfTracks();
+  // clear particles map
+  fParticlesMap->Clear();
 
-  // loop over tracks
-  for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
+  const Int_t Nparticles = fMC->GetNumberOfTracks();
+  const Int_t nprim = fMC->GetNumberOfPrimaries();
 
-    if (iTracks >= fTracksMap->GetSize())
-      fTracksMap->Set(iTracks*2);
+  if (fParticlesMap->GetSize() <= Nparticles) fParticlesMap->Set(Nparticles*2);
 
-    fTracksMap->AddAt(-1, iTracks);
+  // loop over particles
+  for (Int_t iPart = 0, nacc = 0; iPart < Nparticles; iPart++) {
 
-    AliVParticle* track = GetTrack(iTracks);
+    fParticlesMap->AddAt(-1, iPart);
 
-    if (!track)
-      continue;
+    AliMCParticle* part = static_cast<AliMCParticle*>(fMC->GetTrack(iPart));
 
-    if (TMath::Abs(track->Eta()) > fEtaMax) 
-      continue;
+    if (!part) continue;
+
+    if (fEtaMax > 0. && TMath::Abs(part->Eta()) > fEtaMax) continue;
     
-    Int_t pdgCode = track->PdgCode();
-    if (fRejectNK && (pdgCode == 130 || pdgCode == 2112)) continue;
+    if (fRejectNK && (part->PdgCode() == 130 || part->PdgCode() == 2112)) continue;
     
-    if (fChargedMC && track->Charge() == 0) continue;
+    if (fChargedMC && part->Charge() == 0) continue;
 
-    fTracksMap->AddAt(nacc, iTracks);
+    Int_t genIndex = part->GetGeneratorIndex();
+    if (fOnlyHIJING && genIndex != 0) continue;
 
-    AddTrack(track, nacc);
+    Bool_t isPhysPrim = fMC->IsPhysicalPrimary(iPart);
+    if (fOnlyPhysPrim && !isPhysPrim) continue;
 
-    ++nacc;
+    fParticlesMap->AddAt(nacc, iPart);
+
+    Int_t flag = 0;
+    if (iPart < nprim) flag |= AliAODMCParticle::kPrimary;
+    if (isPhysPrim) flag |= AliAODMCParticle::kPhysicalPrim;
+    if (fMC->IsSecondaryFromWeakDecay(iPart)) flag |= AliAODMCParticle::kSecondaryFromWeakDecay;
+    if (fMC->IsSecondaryFromMaterial(iPart)) flag |= AliAODMCParticle::kSecondaryFromMaterial;
+    
+    AliAODMCParticle *aodPart = new ((*fParticlesOut)[nacc]) AliAODMCParticle(part, iPart, flag);
+    aodPart->SetGeneratorIndex(genIndex);    
+    aodPart->SetStatus(part->Particle()->GetStatusCode());
+    aodPart->SetMCProcessCode(part->Particle()->GetUniqueID());
+
+    nacc++;
   }
 }
 
 //________________________________________________________________________
-Int_t AliEmcalMCTrackSelector::GetNumberOfTracks() const
+void AliEmcalMCTrackSelector::CopyMCParticles() 
 {
-  if (fEsdMode)
-    return MCEvent()->GetNumberOfTracks();
-  else
-    return fTracksIn->GetEntries();
-}
+  // Convert standard MC AOD particles in a new array, and filter if requested.
 
-//________________________________________________________________________
-AliVParticle* AliEmcalMCTrackSelector::GetTrack(Int_t i)
-{
-  if (fEsdMode) {
-    if (!MCEvent()->IsPhysicalPrimary(i))
-      return 0;
+  if (!fParticlesIn) return;
 
-    return MCEvent()->GetTrack(i);
-  }
-  else {
-    AliAODMCParticle *part = static_cast<AliAODMCParticle*>(fTracksIn->At(i));
-    if (!part->IsPhysicalPrimary()) 
-      return 0;
+  // clear container (normally a null operation as the event should clean it already)
+  fParticlesOut->Delete();
+
+  // clear particles map
+  fParticlesMap->Clear();
+
+  const Int_t Nparticles = fParticlesIn->GetEntriesFast();
+
+  if (fParticlesMap->GetSize() <= Nparticles) fParticlesMap->Set(Nparticles*2);
+
+  // loop over particles
+  for (Int_t iPart = 0, nacc = 0; iPart < Nparticles; iPart++) {
+
+    AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fParticlesIn->At(iPart));
+
+    fParticlesMap->AddAt(-1, iPart);
+
+    if (!part) continue;
+
+    if (fEtaMax > 0. && TMath::Abs(part->Eta()) > fEtaMax) continue;
     
-    return part;
-  }
-}
+    if (fRejectNK && (part->PdgCode() == 130 || part->PdgCode() == 2112)) continue;
+    
+    if (fChargedMC && part->Charge() == 0) continue;
 
-//________________________________________________________________________
-void AliEmcalMCTrackSelector::AddTrack(AliVParticle *track, Int_t nacc)
-{
-  if (fEsdMode) {
-    AliMCParticle *part = static_cast<AliMCParticle*>(track);
-    new ((*fTracksOut)[nacc]) AliMCParticle(part->Particle(), 0, part->Label());
-  }
-  else {
-    AliAODMCParticle *part = static_cast<AliAODMCParticle*>(track);
-    new ((*fTracksOut)[nacc]) AliAODMCParticle(*part);
+    if (fOnlyHIJING && (part->GetGeneratorIndex() != 0)) continue;
+
+    if (fOnlyPhysPrim && !part->IsPhysicalPrimary()) continue;
+
+    fParticlesMap->AddAt(nacc, iPart);
+
+    AliAODMCParticle *newPart = new ((*fParticlesOut)[nacc]) AliAODMCParticle(*part);
+    newPart->SetGeneratorIndex(part->GetGeneratorIndex());
+
+    nacc++;
   }
 }

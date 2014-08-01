@@ -96,6 +96,10 @@ AliFemtoTrack::AliFemtoTrack():
       fNominalTpcPoints[i].SetZ(0);
     }
   //  cout << "Created track " << this << endl;
+
+  fVertex[0] = -9999;
+  fVertex[1] = -9999;
+  fVertex[2] = -9999;
 }
 
 
@@ -244,6 +248,11 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
     //fGlobalEmissionPoint->SetT(t.fGlobalEmissionPoint->e());
     //  cout << "Created track " << this << endl;
   }
+
+
+  fVertex[0] = t.fVertex[0];
+  fVertex[1] = t.fVertex[1];
+  fVertex[2] = t.fVertex[2];
 }
 
 AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
@@ -350,6 +359,10 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
     //fGlobalEmissionPoint->SetT(t.fGlobalEmissionPoint->e());
     //  cout << "Created track " << this << endl;
   }
+
+  fVertex[0] = aTrack.fVertex[0];
+  fVertex[1] = aTrack.fVertex[1];
+  fVertex[2] = aTrack.fVertex[2];
 
   return *this;
 }
@@ -738,3 +751,18 @@ void                   AliFemtoTrack::SetGlobalEmissionPoint(Double_t aRx, Doubl
   }
 }
 //_______________________
+
+
+void AliFemtoTrack::SetPrimaryVertex(double* vertex)
+{
+  fVertex[0] = vertex[0];
+  fVertex[1] = vertex[1];
+  fVertex[2] = vertex[2];
+}
+
+void AliFemtoTrack::GetPrimaryVertex(double* vertex)
+{
+  vertex[0] = fVertex[0];
+  vertex[1] = fVertex[1];
+  vertex[2] = fVertex[2];
+}

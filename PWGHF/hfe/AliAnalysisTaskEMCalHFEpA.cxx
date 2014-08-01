@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: June 04, 2014.								      //
+	//		version: July 28, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -197,6 +197,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPC_p(0)
 ,fTPCnsigma_pt(0)
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_TPC(0)
+,fTPCnsigma_p_TPC_on_EMCal_acc(0)
+,fTPCnsigma_p_TPC_EoverP_cut(0)
 ,fTPCnsigma_pt_2D(0)
 ,fShowerShapeCut(0)
 ,fShowerShapeM02_EoverP(0)
@@ -301,7 +304,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fM02CutMax(10)
 ,fAngleCut(999)
 ,fChi2Cut(3.5)
-,fDCAcut(999)
+,fDCAcut(999)//dca between two tracks
+,fDCAcutr(999)//dca to vertex
+,fDCAcutz(999)//dca to vertex
 ,fMassCutFlag(kTRUE)
 ,fAngleCutFlag(kFALSE)
 ,fChi2CutFlag(kFALSE)
@@ -480,6 +485,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPC_p(0)
 ,fTPCnsigma_pt(0)
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_TPC(0)
+,fTPCnsigma_p_TPC_on_EMCal_acc(0)
+,fTPCnsigma_p_TPC_EoverP_cut(0)
 ,fTPCnsigma_pt_2D(0)
 ,fShowerShapeCut(0)
 ,fShowerShapeM02_EoverP(0)
@@ -584,7 +592,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fM02CutMax(10)
 ,fAngleCut(999)
 ,fChi2Cut(3.5)
-,fDCAcut(999)
+,fDCAcut(999)//dca between two tracks
+,fDCAcutr(999)//dca to vertex
+,fDCAcutz(999)//dca to vertex
 ,fMassCutFlag(kTRUE)
 ,fAngleCutFlag(kFALSE)
 ,fChi2CutFlag(kFALSE)
@@ -796,6 +806,13 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fPtTrigger_Inc = new TH1F("fPtTrigger_Inc","pT dist for Hadron Contamination; p_{t} (GeV/c); Count",300,0,30);
 	fTPCnsigma_pt_2D = new TH2F("fTPCnsigma_pt_2D",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+	
+	//new histos for TPC signal -> Can be used for any p range
+	fTPCnsigma_p_TPC = new TH2F("fTPCnsigma_p_TPC",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
+	fTPCnsigma_p_TPC_on_EMCal_acc = new TH2F("fTPCnsigma_p_TPC_on_EMCal_acc",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
+	fTPCnsigma_p_TPC_EoverP_cut = new TH2F("fTPCnsigma_p_TPC_EoverP_cut",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
+	
+	
 	fShowerShapeCut = new TH2F("fShowerShapeCut","Shower Shape;M02;M20",500,0,1.8,500,0,1.8);
 	fEtaPhi_num=new TH2F("fEtaPhi_num","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
 	fEtaPhi_den=new TH2F("fEtaPhi_den","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
@@ -883,6 +900,13 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fOutputList->Add(fPtTrigger_Inc);
 	fOutputList->Add(fTPCnsigma_pt_2D);
+	
+	fOutputList->Add(fTPCnsigma_p_TPC);
+	fOutputList->Add(fTPCnsigma_p_TPC_on_EMCal_acc);
+	fOutputList->Add(fTPCnsigma_p_TPC_EoverP_cut);
+	
+	
+	
 	fOutputList->Add(fShowerShapeCut);
 	
 	fOutputList->Add(fCharge_n);
@@ -964,7 +988,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	for(Int_t i = 0; i < 3; i++)
 	{
-		fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",1000,0,30,500,0,2);
+		fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
 		fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";pt (GeV/c);TPC dE/dx (a. u.)",1000,0.3,15,1000,-20,200);
 		fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
 		
@@ -1224,13 +1248,13 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	
 	fNcells_pt=new TH2F("fNcells_pt","fNcells_pt",1000, 0,20,100,0,30);
-	fEoverP_pt_pions= new TH2F("fEoverP_pt_pions","fEoverP_pt_pions",1000,0,30,500,0,2);
+	fEoverP_pt_pions= new TH2F("fEoverP_pt_pions","fEoverP_pt_pions",1000,0,30,2000,0,2);
 	
 	ftpc_p_EoverPcut= new TH2F("ftpc_p_EoverPcut","ftpc_p_EoverPcut",1000,0,30,200,20,200);
 	fnsigma_p_EoverPcut= new TH2F("fnsigma_p_EoverPcut","fnsigma_p_EoverPcut",1000,0,30,500,-15,15);
 	
-	fEoverP_pt_pions2= new TH2F("fEoverP_pt_pions2","fEoverP_pt_pions2",1000,0,30,500,0,2);
-	fEoverP_pt_hadrons= new TH2F("fEoverP_pt_hadrons","fEoverP_pt_hadrons",1000,0,30,500,0,2);
+	fEoverP_pt_pions2= new TH2F("fEoverP_pt_pions2","fEoverP_pt_pions2",1000,0,30,2000,0,2);
+	fEoverP_pt_hadrons= new TH2F("fEoverP_pt_hadrons","fEoverP_pt_hadrons",1000,0,30,2000,0,2);
 	
 	
 	fOutputList->Add(fTPCnsigma_eta);
@@ -2083,7 +2107,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 		
 	
-	if(fUseTrigger && fIsAOD){
+	if(fIsAOD){
 		
 			//AliAODHeader * aodh = fAOD->GetHeader();
 			//Int_t bc= aodh->GetBunchCrossNumber();
@@ -2124,7 +2148,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				if(clust->GetNCells()<5 && clust->E()>15.0){
 					fECluster_exotic->Fill(clust->E());
 				}
-				//Marcel cut
+				//Marcel cut (another approximation to remove exotics)
 				else if((clust->GetNCells())> ((clust->E())/3+1)){
 					fECluster_not_exotic1->Fill(clust->E());
 				}
@@ -2154,7 +2178,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			
 			//end of bad cells
 			//______________________________________________________________________
-*/
+			*/
 			
 		}
 	}
@@ -2333,20 +2357,41 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		} 
 		
 //RecPrim
-		if(!fIsAOD)
-		{
-			if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-		}
+		
+			//it was not working on aod... testing again
+			//July 29th, 2014: aparently working again
+		
+///if(!fIsAOD)
+//{
+
+		if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
+//}
 		
 //HFEcuts: ITS layers cuts
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
 		
 //HFE cuts: TPC PID cleanup
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
+		
+//DCA cut done by hand -- July 29th, 2014
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			if(DCAxy >= fDCAcutr || DCAz>=fDCAcutz) continue;
+		}
+		
+		
+		
+		
+		
 //______________________________________________________________________________________
 		
 		if(fIsAOD){	
-				//AOD test -- Fancesco suggestion
+				//AOD test -- Francesco suggestion
 				//aod test -- Francesco suggestion
 			AliAODTrack *aod_track=fAOD->GetTrack(iTracks);
 
@@ -2590,6 +2635,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			}
 		}
 		
+		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
+		
 		//new pt bins for trigger data
 		
 			for(Int_t i = 0; i < 10; i++)
@@ -2607,12 +2654,26 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				}
 			}
 		
+			
+			//new way to calculate TPCnsigma distribution: TPCnsigma in function of p, with/without E/p cut 
+			fTPCnsigma_p_TPC->Fill(fP, fTPCnSigma);
+			if(fEMCflag){
+			
+				fTPCnsigma_p_TPC_on_EMCal_acc->Fill(fP, fTPCnSigma);
+			
+				if((fClus->E() / fP) >= fEoverPCutMin && (fClus->E() / fP) <= fEoverPCutMax){
+					fTPCnsigma_p_TPC_EoverP_cut->Fill(fP, fTPCnSigma);
+				}
 		
-			///QA plots after track selection
-			///_____________________________________________________________
+			}//close EMCflag
 		
-			//_______________________________________________________
-			//Correlation Analysis - DiHadron
+		}//close eta cut
+			
+		///QA plots after track selection
+		///_____________________________________________________________
+		
+		//_______________________________________________________
+		//Correlation Analysis - DiHadron
 		if(!fUseEMCal)
 		{
 			if(fTPCnSigma < 3.5 && fCorrelationFlag)

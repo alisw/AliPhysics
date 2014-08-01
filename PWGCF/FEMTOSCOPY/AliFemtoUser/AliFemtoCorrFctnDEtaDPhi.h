@@ -33,7 +33,7 @@ public:
 
   virtual void Finish();
   void SetDoPtAnalysis(int do2d);
-  void SetDoCorrections(CorrectionType doCorr);
+  void SetDo4DCorrectionHist(CorrectionType doCorr);
 
   void WriteHistos();
   virtual TList* GetOutputList();
@@ -58,11 +58,12 @@ private:
 
   TH1D *fPhi;
   TH1D *fEta;
+  TH1D *fPtSumDist;
 
   TH2D *fYtYtNumerator;
   TH2D *fYtYtDenominator; 
 
-  CorrectionType fIfCorrection;
+  CorrectionType fIfCorrectionHist;
   THnSparseF *fPtCorrectionsNum;
   THnSparseF *fPtCorrectionsDen;
 

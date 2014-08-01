@@ -908,7 +908,7 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
   name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
 
-  //name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
+  name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   //name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
   
   if (_singlesOnly)
@@ -1028,6 +1028,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   //double b[2];
   //double bCov[3];
   const  AliAODVertex*	vertex;
+  int    nClus;
   bool   bitOK;
   
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
@@ -1166,7 +1167,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       //====================== 
       
       //*********************************************************
-      TExMap *trackMap = new TExMap();//Mapping matrix----                                            
+       TExMap *trackMap = new TExMap();//Mapping matrix----                                            
 
       //1st loop track for Global tracks                                                                                
       for(Int_t i = 0; i < _nTracks; i++)
@@ -1190,10 +1191,10 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	    AliError(Form("Could not receive track %d", iTrack));
 	    continue;
 	  }
-
+	  
 	  bitOK  = t->TestFilterBit(_trackFilterBit);
 	  if (!bitOK) continue; //128bit or 272bit
-
+	  
 	  Int_t gID = t->GetID();
 	  newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
 	  
@@ -1207,9 +1208,14 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  eta    = t->Eta();
 	  //dcaXY = t->DCA(); 
 	  //dcaZ  = t->ZAtDCA();  
-	  
+	  nClus  = t->GetTPCNcls();	  
+
+	  if ( nClus<_nClusterMin ) continue;
+
+	  _Ncluster1->Fill(nClus);
+
 	  //for Global tracks
-	  Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
+	   Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
 	  Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kKaon));
 	  Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kProton));
@@ -1221,12 +1227,13 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	     && nsigmakaon   > fNSigmaCut
 	     && nsigmaproton > fNSigmaCut ) continue;
 	  
+
 	  if(charge == 0) continue;
 	  // Kinematics cuts used                                                                                        
 	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
 	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;
 	  
-	  Double_t pos[3];
+	  /*	  Double_t pos[3];
 	  newAodTrack->GetXYZ(pos);
 
 	  Double_t DCAX = pos[0] - vertexX;
@@ -1238,14 +1245,14 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  if (DCAZ     <  _dcaZMin || 
 	      DCAZ     >  _dcaZMax ||
 	      DCAXY    >  _dcaXYMax ) continue; 
-
+	  */
 
 	    //------- Eff. test---------- //just for checking
-	  Double_t yy = (1 - 0.7)/1.8;
-	  Double_t zz = (pt - 0.2);
-	  Double_t effValue = 0.7 + yy*zz;
-	  Double_t R = gRandom->Rndm();
-          if(R > effValue) continue;
+	  //Double_t yy = (1 - 0.7)/1.8;
+	  //Double_t zz = (pt - 0.2);
+	  //Double_t effValue = 0.7 + yy*zz;
+	  //Double_t R = gRandom->Rndm();
+          //if(R > effValue) continue;
 	  //---------------------------	  
 	  
 	  //==== QA ===========================
@@ -1257,11 +1264,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  //*************************************************
 	  	  
 	  //Particle 1
-	  if (_requestedCharge_1 == charge &&
-	      eta >= _min_eta_1 &&
-	      eta < _max_eta_1) 
+	  if (_requestedCharge_1 == charge)
 	    {
-	      
 	      iPhi   = int( phi/_width_phi_1);
 	      
 	      if (iPhi<0 || iPhi>=_nBins_phi_1 ) 
@@ -1330,9 +1334,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 		}
 	    }
 	  
-	  if (!_sameFilter && _requestedCharge_2 == charge &&
-	      eta >= _min_eta_2 &&
-	      eta < _max_eta_2)  
+	  if (!_sameFilter && _requestedCharge_2 == charge)
+	       
 	    {
 	      
 	      iPhi   = int( phi/_width_phi_2);

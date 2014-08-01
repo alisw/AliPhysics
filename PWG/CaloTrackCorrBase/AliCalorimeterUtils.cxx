@@ -29,6 +29,7 @@
 #include <TStyle.h>
 #include <TPad.h>
 #include <TFile.h>
+#include <TParticle.h>
 
 // --- ANALYSIS system ---
 #include "AliCalorimeterUtils.h"
@@ -42,6 +43,7 @@
 #include "AliAODCaloCluster.h"
 #include "AliOADBContainer.h"
 #include "AliAnalysisManager.h"
+#include "AliAODMCParticle.h"
 
 // --- Detector ---
 #include "AliEMCALGeometry.h"
@@ -558,7 +560,6 @@ Bool_t AliCalorimeterUtils::IsClusterSharedByTwoSuperModules(const AliEMCALGeome
   return kFALSE;
   
 }
-
 
 //_____________________________________________________________________________________
 Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, 
@@ -1418,6 +1419,72 @@ void AliCalorimeterUtils::InitPHOSGeometry(Int_t runnumber)
 			printf("\n");
 		}	
 	}	
+}
+
+//_______________________________________________________________________________________________
+Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, TParticle* particle)
+{
+  // Check that a MC ESD is in the calorimeter acceptance
+  
+  if( (!IsPHOSGeoMatrixSet() && calo == "PHOS" ) ||
+     (!IsPHOSGeoMatrixSet() && calo == "EMCAL")   )
+  {
+    AliFatal(Form("Careful Geo Matrix for %s is not set, use AliFidutialCut instead \n",calo.Data()));
+    return kFALSE ;
+  }
+  
+  if(calo == "PHOS" )
+  {
+    Int_t mod = 0 ;
+    Double_t x = 0, z = 0 ;
+    
+    return GetPHOSGeometry()->ImpactOnEmc( particle, mod, z, x);
+  }
+  else if(calo == "EMCAL")
+  {
+    Int_t absID = 0 ;
+    
+    GetEMCALGeometry()->GetAbsCellIdFromEtaPhi( particle->Eta(), particle->Phi(), absID);
+    
+    if( absID >= 0) return kTRUE  ;
+    else            return kFALSE ;
+  }
+  
+  return kFALSE ;
+}
+
+//______________________________________________________________________________________________________
+Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, AliAODMCParticle* particle)
+{
+  // Check that a MC AOD is in the calorimeter acceptance
+  
+  if( (!IsPHOSGeoMatrixSet() && calo == "PHOS" ) ||
+      (!IsPHOSGeoMatrixSet() && calo == "EMCAL")   )
+  {
+    AliFatal(Form("Careful Geo Matrix for %s is not set, use AliFidutialCut instead \n",calo.Data()));
+    return kFALSE ;
+  }
+
+  if(calo == "PHOS" )
+  {
+    Int_t mod = 0 ;
+    Double_t x = 0, z = 0 ;
+    
+    Double_t vtx[]={ particle->Xv(), particle->Yv(), particle->Zv() } ;
+    
+    return GetPHOSGeometry()->ImpactOnEmc(vtx, particle->Theta(), particle->Phi(), mod, z, x) ;
+  }
+  else if(calo == "EMCAL")
+  {
+    Int_t absID = 0 ;
+    
+    GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(),absID);
+    
+    if( absID >= 0) return kTRUE  ;
+    else            return kFALSE ;
+  }
+  
+  return kFALSE ;
 }
 
 //_______________________________________________________________________

@@ -31,6 +31,8 @@
 #include <TObjArray.h>
 #include <TGraphErrors.h>
 #include <TString.h>
+#include <TSpline.h>
+#include <TRandom3.h>
 
 #include "AliVParticle.h"
 #include "AliMCParticle.h"
@@ -2431,7 +2433,6 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
 }
 
 //____________________________________________________________________//
-
 Bool_t AliBalancePsi::GetMomentsAnalytical(Int_t fVariable, TH1D* gHist, Bool_t kUseZYAM,
 					   Double_t &mean, Double_t &meanError,
 					   Double_t &sigma, Double_t &sigmaError,
@@ -2653,4 +2654,223 @@ Double_t* AliBalancePsi::GetBinning(const char* configuration, const char* tag, 
   delete lines;
   AliFatal(Form("Tag %s not found in %s", tag, configuration));
   return 0;
+}
+
+//____________________________________________________________________//
+Double_t AliBalancePsi::GetFWHM(Int_t gDeltaEtaPhi, TH1D* gHist,
+				Double_t &fwhm_spline, Double_t &fwhmError) {
+ 
+  // helper method to calculate the fwhm and errors of a TH1D 
+  if(gHist){
+    Int_t repeat = 10000;
+    
+    if (gDeltaEtaPhi == 1){ 
+      fwhm_spline  = 0.;
+      fwhmError    = 0.;
+      gHist->Smooth(4); 
+
+      Double_t xmin = gHist->GetXaxis()->GetXmin();
+      Double_t xmax = gHist->GetXaxis()->GetXmax();
+      
+      //+++++++FWHM TSpline+++++++++++++++++++++++++++//
+      TSpline3 *spline3 = new TSpline3(gHist,"b2e2",0,0); 
+      spline3->SetLineColor(kGreen+2); 
+      spline3->SetLineWidth(2);
+      //spline3->Draw("SAME");
+      
+      Int_t Nbin = gHist->GetNbinsX();
+      Int_t bin_max_hist_y = gHist->GetMaximumBin();
+      Double_t bins_center_x = gHist->GetBinCenter(bin_max_hist_y);
+      Double_t max_spline = spline3->Eval(bins_center_x);      
+      Double_t y_spline = -999;
+      Double_t y_spline_r = -999;
+      Double_t x_spline_l = -999;
+      Double_t x_spline_r = -999;
+      
+      for (Int_t i= 0; i < bin_max_hist_y*1000; i++){
+	y_spline = spline3->Eval(xmin + i*(bins_center_x - xmin)/ (bin_max_hist_y*1000));
+	if (y_spline > max_spline/2){
+	  x_spline_l = xmin + (i-1)*(bins_center_x - xmin)/(bin_max_hist_y*1000);
+	  break;
+	}
+      } 
+      for (Int_t j= 0; j < bin_max_hist_y*1000; j++){
+	y_spline_r = spline3->Eval(bins_center_x + j*(xmax - bins_center_x)/(bin_max_hist_y*1000));
+	if (y_spline_r < max_spline/2){
+	  x_spline_r = bins_center_x + j*(xmax - bins_center_x)/(bin_max_hist_y*1000);
+	  break;
+	}
+      }   
+      fwhm_spline = x_spline_r - x_spline_l;
+      //+++++++FWHM TSpline++++++++++++++++++++++++//
+    
+      //+++++++Error Calculation SPLINE++++++++++++//
+      Double_t dmeans,dsigmas;
+      TSpline3 *spline1;  
+      Int_t bin_max_hist_y1;
+      Double_t bins_center_x1;
+      Double_t max_spline1;
+      Double_t y_spline1 = - 999.; 
+      Double_t y_spline_r1 = - 999.; 
+      Double_t x_spline_l1 = -999.; 
+      Double_t x_spline_r1 = -999.;
+      Double_t fwhm_spline1 = 0.;
+      Double_t fwhm_T = 0.;  
+ 
+      TH1F *hEmpty2 = new TH1F("hEmpty2","hEmpty2",Nbin,xmin,xmax);
+      TRandom3 *rgauss = new TRandom3(0);      
+      TH1F *hists = new TH1F("hists","hists",1000,1.,3);
+      
+      for (Int_t f=0; f<repeat; f++){ //100
+	for (Int_t h=0; h<Nbin+1; h++){	  
+	  dmeans = gHist->GetBinContent(h);
+	  dsigmas = gHist->GetBinError(h);
+	  Double_t rgauss_point = rgauss->Gaus(dmeans,dsigmas);
+	  hEmpty2->SetBinContent(h,rgauss_point);
+	  
+	  //++++++++++++//  
+	  hEmpty2->Smooth(4);   
+	  //++++++++++++//
+	}           
+	spline1 = new TSpline3(hEmpty2,"b2e2",0,0); 
+	spline1->SetLineColor(kMagenta+1); 
+	spline1->SetLineWidth(1);
+	//spline1->Draw("SAME");  
+	
+	bin_max_hist_y1 = hEmpty2->GetMaximumBin();
+	bins_center_x1 = hEmpty2->GetBinCenter(bin_max_hist_y1);
+	max_spline1 = spline1->Eval(bins_center_x1);
+	
+	for (Int_t i= 0; i < bin_max_hist_y1*1000; i++){
+	  y_spline1 = spline3->Eval(xmin + i*(bins_center_x1 - xmin)/ (bin_max_hist_y1*1000));
+	  if (y_spline1 > max_spline1/2){
+	    x_spline_l1 = xmin + (i-1)*(bins_center_x1 - xmin)/(bin_max_hist_y1*1000);
+	    break;
+	  }
+	} 
+	for (Int_t j= 0; j < bin_max_hist_y1*1000; j++){
+	  y_spline_r1 = spline3->Eval(bins_center_x1 + j*(xmax - bins_center_x1)/(bin_max_hist_y1*1000));
+	  if (y_spline_r1 < max_spline1/2){
+	    x_spline_r1 = bins_center_x1 + j*(xmax - bins_center_x1)/(bin_max_hist_y1*1000);
+	    break;
+	  }
+	}     
+	
+	fwhm_spline1 = x_spline_r1 - x_spline_l1;
+	hists->Fill(fwhm_spline1);   
+	fwhm_T += (fwhm_spline - fwhm_spline1)*(fwhm_spline - fwhm_spline1); 
+      }
+     
+      fwhmError = TMath::Sqrt(TMath::Abs(fwhm_T/(repeat-1)));
+      //+++++++Error Calculation SPLINE+++++++++++//
+    }
+    else{  
+      fwhm_spline  = 0.;
+      fwhmError    = 0.;
+      gHist->Smooth(4);
+      
+      Double_t xmin = gHist->GetXaxis()->GetXmin();
+      Double_t xmax = gHist->GetXaxis()->GetXmax();
+      
+      //+++++++FWHM TSpline+++++++++++++++++++++++++++//
+      TSpline3 *spline3 = new TSpline3(gHist,"b2e2",0,0); 
+      spline3->SetLineColor(kGreen+2); 
+      spline3->SetLineWidth(2);
+      //spline3->Draw("SAME");  
+      
+      Int_t Nbin = gHist->GetNbinsX();
+      Int_t bin_max_hist_y = gHist->GetMaximumBin();
+      Double_t bins_center_x = gHist->GetBinCenter(bin_max_hist_y);
+      Double_t max_spline = spline3->Eval(bins_center_x);
+      
+      Int_t bin_min_hist_y = gHist->GetMinimumBin();
+      Double_t bins_center_xmin = gHist->GetBinCenter(bin_min_hist_y);
+      Double_t min_spline = spline3->Eval(bins_center_xmin);
+      
+      Double_t y_spline = -999.;
+      Double_t y_spline_r = -999.;
+      Double_t x_spline_l = -999.;
+      Double_t x_spline_r = -999.;
+      
+      for (Int_t i= 0; i < bin_max_hist_y*1000; i++){
+	y_spline = spline3->Eval(xmin + i*(bins_center_x - xmin)/ (bin_max_hist_y*1000));
+	if (y_spline > (max_spline+min_spline)/2){
+	  x_spline_l = xmin + (i-1)*(bins_center_x - xmin)/(bin_max_hist_y*1000);
+	  break;
+	}
+      } 
+      for (Int_t j= 0; j < bin_max_hist_y*1000; j++){
+	y_spline_r = spline3->Eval(bins_center_x + j*(xmax - bins_center_x)/(bin_max_hist_y*1000));
+	if (y_spline_r < (max_spline+min_spline)/2){
+	  x_spline_r = bins_center_x + j*(xmax - bins_center_x)/(bin_max_hist_y*1000);
+	  break;
+	}
+      }   
+      fwhm_spline = x_spline_r - x_spline_l;
+      //+++++++FWHM TSpline++++++++++++++++++++++++//
+      
+      //+++++++Error Calculation SPLINE++++++++++++//
+      Double_t dmeans,dsigmas;
+      TSpline3 *spline1;  
+      Int_t bin_max_hist_y1;
+      Double_t bins_center_x1;
+      Double_t max_spline1;
+      Double_t y_spline1 = -999.;
+      Double_t y_spline_r1 = -999.;
+      Double_t x_spline_l1 = -999.;
+      Double_t x_spline_r1 = -999.;
+      Double_t fwhm_spline1 = 0.;
+      Double_t fwhm_T = 0.;   
+
+      TH1F *hEmpty2 = new TH1F("hEmpty2","hEmpty2",Nbin,xmin,xmax);
+      TRandom3 *rgauss = new TRandom3(0);      
+      Int_t bin_min_hist_y1; 
+      Double_t bins_center_xmin1,min_spline1;
+      
+      for (Int_t f=0; f<repeat; f++){ //100
+	for (Int_t h=0; h<Nbin+1; h++){	  
+	  dmeans = gHist->GetBinContent(h);
+	  dsigmas = gHist->GetBinError(h);
+	  Double_t rgauss_point = rgauss->Gaus(dmeans,dsigmas);
+	  hEmpty2->SetBinContent(h,rgauss_point);
+	  
+	  //++++++++++++//  
+	  hEmpty2->Smooth(4);   
+	  //++++++++++++//
+	}           
+	spline1 = new TSpline3(hEmpty2,"b2e2",0,0); 
+	spline1->SetLineColor(kMagenta+1); 
+	spline1->SetLineWidth(1);
+	//spline1->Draw("SAME");  
+	
+	bin_max_hist_y1 = hEmpty2->GetMaximumBin();
+	bins_center_x1 = hEmpty2->GetBinCenter(bin_max_hist_y1);
+	max_spline1 = spline1->Eval(bins_center_x1);
+	
+	bin_min_hist_y1 = hEmpty2->GetMinimumBin();
+	bins_center_xmin1 = hEmpty2->GetBinCenter(bin_min_hist_y1);
+	min_spline1 = spline1->Eval(bins_center_xmin1);
+	
+	for (Int_t i= 0; i < bin_max_hist_y1*1000; i++){
+	  y_spline1 = spline3->Eval(xmin + i*(bins_center_x1 - xmin)/ (bin_max_hist_y1*1000));
+	  if (y_spline1 > (max_spline1+min_spline1)/2){
+	    x_spline_l1 = xmin + (i-1)*(bins_center_x1 - xmin)/(bin_max_hist_y1*1000);
+	    break;
+	  }
+	} 
+	for (Int_t j= 0; j < bin_max_hist_y1*1000; j++){
+	  y_spline_r1 = spline3->Eval(bins_center_x1 + j*(xmax - bins_center_x1)/(bin_max_hist_y1*1000));
+	  if (y_spline_r1 < (max_spline1+min_spline1)/2){
+	    x_spline_r1 = bins_center_x1 + j*(xmax - bins_center_x1)/(bin_max_hist_y1*1000);
+	    break;
+	  }
+	}     
+	
+	fwhm_spline1 = x_spline_r1 - x_spline_l1; 
+	fwhm_T += (fwhm_spline - fwhm_spline1)*(fwhm_spline - fwhm_spline1);    
+      }           
+      fwhmError = TMath::Sqrt(TMath::Abs(fwhm_T/(repeat-1)));
+    }
+  }
+  return fwhm_spline;
 }

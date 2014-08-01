@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# launch-relval.sh -- by Dario Berzano <dario.berzano@cern.ch>
+# alirelval -- by Dario Berzano <dario.berzano@cern.ch>
 #
 # Controls the release validation submission by managing the validation virtual
 # cluster.
@@ -25,6 +25,7 @@ errStatusUnavailable=10
 errPickSession=11
 errCopyKey=12
 errAttachScreen=13
+errRecycleSession=14
 
 # error codes not treated as errors (100 to 140)
 errStatusRunning=100
@@ -33,15 +34,15 @@ errStatusDoneOk=102
 errStatusDoneFail=103
 
 # thresholds
-maxVmLaunchAttempts=10
+maxVmLaunchAttempts=100
 maxSshConnectAttempts=400
-maxVmAddressWait=120
+maxVmAddressWait=200
 
 # working directory prefix
 sessionPrefix="$HOME/.alice-release-validation"
 
-# screen name for the validation
-screenName='AliceReleaseValidation'
+# screen name: <screenPrefix>-<sessionTag>
+screenPrefix='AliRelVal'
 
 # program name
 Prog=$(basename "$0")
@@ -96,7 +97,7 @@ function RunVM() {
   userData="$3"
   keyName="$4"
   keyFile="$5"
-  local raw iip iid ret attempt createdKeypair
+  local raw iip iid ret attempt createdKeypair error
 
   # keypair part: if file does not exist, create keypair
   if [ ! -e "$keyFile" ] ; then
@@ -121,9 +122,13 @@ function RunVM() {
         ( euca-delete-keypair "$keyName" ; rm -f "$keyFile" ) > /dev/null 2>&1
       fi
       return $errRunVm
+    elif [ $attempt != 1 ] ; then
+      pr " * Pausing between retries"
+      sleep 5
     fi
 
     pr -n " * Launching VM (attempt #$attempt/$maxVmLaunchAttempts)..."
+    error=0
 
     raw=$( euca-run-instances "$imageId" -t "$profile" -d "$userData" -k "$keyName" 2>&1 )
     ret=$?
@@ -150,7 +155,8 @@ function RunVM() {
       # error state?
       echo "$raw" | grep -i error -q
       if [ $? == 0 ] ; then
-        pr ; pr -n " * VM went to error state"
+        pr ; pr " * VM went to error state"
+        error=1
         break
       fi
 
@@ -173,7 +179,8 @@ function RunVM() {
     fi
 
     # we don't: terminate (timeout)
-    pr 'timeout' ; pr " * Terminating instance $iid"
+    [ "$error" != 1 ] && pr 'timeout'
+    pr " * Terminating instance $iid"
     euca-terminate-instances "$iid" > /dev/null 2>&1
 
   done
@@ -193,6 +200,7 @@ function RunVM() {
 function PrepareSession() {
   local aliRootTag sessionTag sessionDir
   aliRootTag="$1"
+  shift
   sessionTag="${aliRootTag}_$(ndate)"
   sessionDir="$sessionPrefix/$sessionTag"
 
@@ -229,6 +237,24 @@ function PrepareSession() {
     ) >> "$sessionDir/benchmark.config"
   done
 
+  # command-line options override the configuration
+  if [ $# != 0 ] ; then
+    pr "Note: the following command-line options will override the corresponding ones in the config files:"
+    ( echo ''
+      echo "### from the command line ###"
+      while [ $# -gt 0 ] ; do
+        extraName="${1%%=*}"
+        extraVal="${1#*=}"
+        if [ "$extraName" != "$1" ] ; then
+          pr " * $extraName = $extraVal"
+          echo "$1"
+        fi
+        shift
+      done
+      echo ''
+    ) >> "$sessionDir/benchmark.config"
+  fi
+
   # success: return the session tag and move to the session directory
   pr "*** Creating new working session: $sessionTag ***"
   pr "*** Use this name for future session operations ***"
@@ -239,6 +265,24 @@ function PrepareSession() {
 # Undo the previous action
 function PrepareSession_Undo() {
   rm -rf "$sessionPrefix/$1"
+}
+
+# Recycle the VM from an existing session
+function RecycleSession() {
+  local sessionTag="$1"
+  local fromSessionTag="$2"
+  local fromSessionDir="$sessionPrefix/$fromSessionTag"
+  local f
+
+  for f in 'instance-id.txt' 'instance-address.txt' 'key.pem' ; do
+    cp "$fromSessionDir/$f" "$f" > /dev/null 2>&1
+    if [ $? != 0 ] ; then
+      pr "Cannot copy $f from the source session dir $fromSessionDir"
+      return $errRecycleSession
+    fi
+  done
+
+  return 0
 }
 
 # Move into the session tag directory. Usage:
@@ -290,6 +334,7 @@ function InstantiateValidationVM() {
   elif [ -e "$cloudKeyFile" ] ; then
     # copy key to session dir
     pr -n "Copying private key $cloudKeyFile to session directory..."
+    rm -f 'key.pem'
     cp "$cloudKeyFile" 'key.pem' 2> /dev/null
     if [ $? != 0 ] ; then
       pr 'error'
@@ -357,8 +402,9 @@ function Shell() {
 
 # Checks status of the validation
 function Status() {
-  local raw ret screen exitcode
-  raw=$( VMSSH -t "screen -ls 2> /dev/null | grep -q .$screenName && echo -n 'screen_yes ' || echo -n 'screen_no ' ; cat alirelval/validation.done 2> /dev/null || echo 'not_done' ; true" 2> /dev/null )
+  local raw ret screen exitcode sessionTag
+  sessionTag="$1"
+  raw=$( VMSSH -t "screen -ls 2> /dev/null | grep -q .${screenPrefix}-${sessionTag} && echo -n 'screen_yes ' || echo -n 'screen_no ' ; cat $sessionTag/validation.done 2> /dev/null || echo 'not_done' ; true" 2> /dev/null )
   raw=$( echo "$raw" | tr -cd '[:alnum:]_ ' ) # garbage removal
   ret=$?
 
@@ -435,12 +481,12 @@ _EoF_
 
   # transfer files
   pr 'Transferring files to the VM'
-  rsync -av -e "$(VMSSH --rsync-cmd)" $PWD/ $cloudUserName@$instanceIp:alirelval/ || return $errLaunchValidation
+  rsync -av -e "$(VMSSH --rsync-cmd)" $PWD/ $cloudUserName@$instanceIp:$sessionTag/ || return $errLaunchValidation
 
   # open a screen that does something; note that the command is not executed if
   # the screen already exists, which is what we want
   # note: sleep necessary to avoid "dead" screens
-  VMSSH -t "screen -wipe > /dev/null 2>&1 ; if screen -ls | grep -q $screenName ; then ret=42 ; else screen -dmS AliceReleaseValidation alirelval/run-benchmark.sh ; ret=0 ; sleep 3 ; fi ; exit \$ret"
+  VMSSH -t "screen -wipe > /dev/null 2>&1 ; if screen -ls | grep -q ${screenPrefix}-${sessionTag} ; then ret=42 ; else screen -dmS ${screenPrefix}-${sessionTag} $sessionTag/run-benchmark.sh ; ret=0 ; sleep 3 ; fi ; exit \$ret"
   ret=$?
 
   # message
@@ -468,7 +514,7 @@ function Attach() {
   local sessionTag
   sessionTag="$1"
 
-  VMSSH -t "( screen -wipe ; screen -rx $screenName ) > /dev/null 2>&1"
+  VMSSH -t "( screen -wipe ; screen -rx ${screenPrefix}-${sessionTag} ) > /dev/null 2>&1"
 
   if [ $? != 0 ] ; then
     pr "Cannot attach screen: check if validation is running with:"
@@ -483,7 +529,8 @@ function Attach() {
 
 # Pick session interactively
 function PickSession() {
-  local sessionTag sess listSessions
+  local sessionTag sess listSessions mess
+  mess="$1"
   listSessions=()
   mkdir -p "$sessionPrefix"
 
@@ -496,6 +543,9 @@ function PickSession() {
     pr "No session available in session directory $sessionPrefix"
     return $errPickSession
   fi
+
+  # print user message if provided
+  [ "$mess" != '' ] && pr "$mess"
 
   pr 'Available sessions (most recent first):'
   for ((i=0; i<${#listSessions[@]}; i++)) ; do
@@ -535,15 +585,22 @@ function Help() {
   pr "$Prog -- by Dario Berzano <dario.berzano@cern.ch>"
   pr 'Controls the Release Validation workflow on the cloud for AliRoot.'
   pr
-  pr "Usage 1: $Prog [--prepare|--launch] --aliroot <aliroot_tag>"
+  pr "Usage 1: $Prog [--prepare|--launch|--recycle] [--from-session] --aliroot <aliroot_tag> [-- arbitraryOpt1=value [arbitraryOpt2=value2...]]"
   pr
   pr 'A new session is created to validate the specified AliRoot tag.'
   pr
   pr '  --prepare  : prepares the session directory containing the files needed'
-  pr '              for the validation'
+  pr '               for the validation'
+  pr '  --recycle  : prepares a new session by recycling the head node from an'
+  pr '               existing one. Source session is specified via the'
+  pr '               --from-session switch or it can be interactively selected'
   pr '  --launch   : launches the full validation process: prepares session,'
-  pr '              runs the virtual machine, launches the validation program'
+  pr '               runs the virtual machine, launches the validation program'
   pr '  --aliroot  : the AliRoot tag to validate, in the form "vAN-20140610"'
+  pr
+  pr 'Arbitrary options (in the form variable=value) can be specified after the'
+  pr 'double dash and will override the corresponding options in any of the'
+  pr 'configuration files.'
   pr ; pr
   pr "Usage 2: $Prog [--runvm|--validate|--shell|--status] --session <session_tag>"
   pr
@@ -580,7 +637,7 @@ function Help() {
 function Main() {
 
   # local variables
-  local Args aliRootTag EnterShell Actions sessionTag
+  local Args aliRootTag EnterShell Actions sessionTag fromSessionTag
   Actions=()
 
   # parse command line options
@@ -596,6 +653,10 @@ function Main() {
         sessionTag="$2"
         shift 2
       ;;
+      --from-session)
+        fromSessionTag="$2"
+        shift 2
+      ;;
 
       # actions
       --launch)
@@ -605,6 +666,10 @@ function Main() {
       ;;
       --prepare)
         Actions=( PrepareSession MoveToSessionDir )
+        shift
+      ;;
+      --recycle)
+        Actions=( PrepareSession MoveToSessionDir RecycleSession )
         shift
       ;;
       --runvm)
@@ -634,13 +699,18 @@ function Main() {
         exit 0
       ;;
 
+      # end of options
+      --)
+        shift
+        break
+      ;;
+
       *)
         pr "Invalid option: $1. Use --help for assistance."
         return $errInvalidOpt
       ;;
     esac
   done
-  shift # --
 
   # check for the presence of the required tools in the $PATH
   for T in euca-describe-instances euca-describe-regions euca-run-instances euca-create-keypair euca-delete-keypair rsync ; do
@@ -683,13 +753,22 @@ function Main() {
         pr 'Cannot use --session with --prepare. Use --help for assistance.'
         return $errInvalidOpt
       fi
-      sessionTag=$( RunAction "$A" "$aliRootTag" )
+      sessionTag=$( RunAction "$A" "$aliRootTag" "$@" )
+      ret=$?
+    elif [ "$A" == 'RecycleSession' ] ; then
+      # special action requiring additional parameters
+      if [ "$fromSessionTag" == '' ] ; then
+        fromSessionTag=$( PickSession 'Select a source session to recycle.' )
+        ret=$?
+        [ $ret != 0 ] && break
+      fi
+      RunAction "$A" "$sessionTag" "$fromSessionTag"
       ret=$?
     else
       if [ "$sessionTag" == '' ] ; then
         sessionTag=$( PickSession )
         ret=$?
-        [ $ret != 0 ] && return $ret
+        [ $ret != 0 ] && break
       fi
       RunAction "$A" "$sessionTag"
       ret=$?

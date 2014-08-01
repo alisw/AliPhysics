@@ -42,6 +42,8 @@ ClassImp(AliTPCPIDEtaTree)
 //________________________________________________________________________
 AliTPCPIDEtaTree::AliTPCPIDEtaTree()
   : AliTPCPIDBase()
+  , fNumEtaCorrReqErrorsIssued(0)
+  , fNumMultCorrReqErrorsIssued(0)
   , fStoreMultiplicity(kFALSE)
   , fStoreNumOfSubthresholdclusters(kFALSE)
   , fStoreNumClustersInActiveVolume(kFALSE)
@@ -74,6 +76,8 @@ AliTPCPIDEtaTree::AliTPCPIDEtaTree()
 //________________________________________________________________________
 AliTPCPIDEtaTree::AliTPCPIDEtaTree(const char *name)
   : AliTPCPIDBase(name)
+  , fNumEtaCorrReqErrorsIssued(0)
+  , fNumMultCorrReqErrorsIssued(0)
   , fStoreMultiplicity(kFALSE)
   , fStoreNumOfSubthresholdclusters(kFALSE)
   , fStoreNumClustersInActiveVolume(kFALSE)
@@ -244,10 +248,10 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
   if(primaryVertex->GetNContributors() <= 0) 
     return;
   
-  fMultiplicity = fESD->GetNumberOfTracks(); 
+  fMultiplicity = fESD->GetNumberOfESDTracks(); 
     
   if (fDoAdditionalQA) {
-    Int_t nTotTracks = fESD->GetNumberOfTracks();
+    Int_t nTotTracks = fESD->GetNumberOfESDTracks();
     fhMultiplicityQA->Fill(primaryVertex->GetNContributors(), nTotTracks);
   }
   
@@ -258,6 +262,10 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
   
   //AliTPCParamSR par;
   //par.Update();
+  
+  
+  Bool_t etaCorrAvail = fPIDResponse->UseTPCEtaCorrection();
+  Bool_t multCorrAvail = fPIDResponse->UseTPCMultiplicityCorrection();
   
   // Track loop to fill a Train spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
@@ -434,7 +442,7 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
       Double_t nSigmaTOF = hasTOF ? fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton) : 999;
       
       // p_vert, p_TPC, eta, nSigmaTOF, beta, multiplicity
-      Double_t entry[6] = { track->P(), fPtpc, track->Eta(), nSigmaTOF, beta, fMultiplicity };
+      Double_t entry[6] = { track->P(), fPtpc, track->Eta(), nSigmaTOF, beta, (Double_t)fMultiplicity };
       fhTOFqa->Fill(entry);
     }
     
@@ -442,12 +450,28 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
     // Turn eta correction off -> Important here is the pure spline value and the selection via cuts. The correction
     // can be re-done manually, if needed. But it cannot be undone!
     
+    if (fCorrectdEdxEtaDependence && fNumEtaCorrReqErrorsIssued < 23 && !etaCorrAvail) {
+      AliError("TPC eta correction requested, but was not activated in PID response (most likely not available)!");
+      fNumEtaCorrReqErrorsIssued++;
+      if (fNumEtaCorrReqErrorsIssued == 23)
+        AliError("Ignoring this error from now on!");
+    }
+    
+    if (fCorrectdEdxMultiplicityDependence && fNumMultCorrReqErrorsIssued < 23 && !multCorrAvail) {
+      AliError("TPC multiplicity correction requested, but was not activated in PID response (most likely not available)!");
+      fNumMultCorrReqErrorsIssued++;
+      if (fNumMultCorrReqErrorsIssued == 23)
+        AliError("Ignoring this error from now on!");
+    }
+    
     if (isPr)
       fDeDxExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, 
-                                                                       fCorrectdEdxEtaDependence, fCorrectdEdxMultiplicityDependence);
+                                                                       fCorrectdEdxEtaDependence && etaCorrAvail,
+                                                                       fCorrectdEdxMultiplicityDependence && multCorrAvail);
     else if (isPi)
       fDeDxExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, 
-                                                                       fCorrectdEdxEtaDependence, fCorrectdEdxMultiplicityDependence);
+                                                                       fCorrectdEdxEtaDependence && etaCorrAvail,
+                                                                       fCorrectdEdxMultiplicityDependence && multCorrAvail);
     else
       fDeDxExpected = -1.;
     fTanTheta = track->GetInnerParam()->GetTgl();

@@ -81,13 +81,17 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Bool_t MesonIsSelectedAODMC(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Double_t fRapidityShift=0.);
   Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
   Bool_t MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
+  Bool_t MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
   Bool_t MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
   void PrintCuts();
-
+  void PrintCutsWithValues();
+  
   void InitCutHistograms(TString name="",Bool_t additionalHists=kFALSE);
   void SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
   TList *GetCutHistograms(){return fHistograms;}
   void SmearParticle(AliAODConversionPhoton * photon);
+  void SmearVirtualPhoton(AliAODConversionPhoton* photon);
+  TLorentzVector SmearElectron(TLorentzVector particle);
   ///Cut functions
   Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
   Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
@@ -167,7 +171,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 private:
 
 
-  ClassDef(AliConversionMesonCuts,4)
+  ClassDef(AliConversionMesonCuts,5)
 };
 
 

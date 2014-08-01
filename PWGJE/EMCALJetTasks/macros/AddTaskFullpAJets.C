@@ -1,14 +1,16 @@
-AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", const char* Centrality_name="V0A", Double_t scaleFactor = 1.28, Double_t nefJetCut = 1.0, Bool_t doNEF=kFALSE, Bool_t signalTrackBias=kFALSE, Bool_t doTrackQA=kFALSE, Bool_t doClusterQA=kFALSE, Int_t calcRhoJet=0, Bool_t doNEFSignalOnly=kTRUE, Bool_t doVertexRCut=kTRUE, Bool_t isMCParticleLevel=kFALSE, Double_t jetRAccept = 0.4)
+AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", TString Centrality_name="V0A", Double_t scaleFactor = 1.28, Double_t nefJetCut = 1.0, Bool_t doNEF=kFALSE, Bool_t signalTrackBias=kFALSE, Bool_t doTrackQA=kFALSE, Bool_t doClusterQA=kFALSE, Int_t calcRhoJet=0, Bool_t doNEFSignalOnly=kTRUE, Bool_t doVertexRCut=kTRUE, Bool_t isMCParticleLevel=kFALSE, Double_t jetRAccept = 0.4, Bool_t doTHnSparse = kFALSE, Bool_t doJetRhoDensity = kFALSE)
 {
     char *usedTracks = track_name;
     char *usedClusters = clus_name;
     char *outClusName = corrclus_name;
     char *usedMCParticles = mcpart_name;
-    char *centEst = Centrality_name;
     char *projName = proj_name;
     const Double_t minTrackPt=0.15;
     const Double_t minClusterPt=0.30;
     const Double_t minMCPartPt=0.00;
+    
+    TString centEst = Centrality_name;
+
     Double_t scaleFac = scaleFactor; // Obtained from previous runs...
     Double_t NEFSignalJetCut = nefJetCut; // Require signal jet to not exceed a Neutral Energy Fraction of this setting...
     
@@ -94,7 +96,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
 
     task->SetRjet(drjet);
     task->SetJetRAcceptance(jetRAccept);
-    task->SetCentralityTag(centEst);
+    task->SetCentralityTag(centEst.Data());
     task->SetScaleFactor(scaleFac);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     task->SetNColl(7);
@@ -105,6 +107,8 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     task->DoTrackQA(doTrackQA);
     task->DoClusterQA(doClusterQA);
     task->CalculateRhoJet(calcRhoJet);
+    task->DoTHnSparse(doTHnSparse);
+    task->DoJetRhoDensity(doJetRhoDensity);
     
     mgr->AddTask(task);
 

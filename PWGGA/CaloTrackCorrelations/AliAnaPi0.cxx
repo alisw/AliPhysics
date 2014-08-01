@@ -108,7 +108,7 @@ fhMCPi0MassPtRec(),          fhMCPi0MassPtTrue(),          fhMCPi0PtTruePtRec(),
 fhMCEtaMassPtRec(),          fhMCEtaMassPtTrue(),          fhMCEtaPtTruePtRec(),
 fhMCPi0PtOrigin(0x0),        fhMCEtaPtOrigin(0x0),
 fhMCPi0ProdVertex(0),        fhMCEtaProdVertex(0),
-fhMCPi0ProdVertexInner(0),   fhMCEtaProdVertexInner(0),
+fhPrimPi0ProdVertex(0),      fhPrimEtaProdVertex(0),
 fhReMCFromConversion(0),     fhReMCFromNotConversion(0),   fhReMCFromMixConversion(0),
 fhCosThStarPrimPi0(0),       fhCosThStarPrimEta(0)//,
 {
@@ -688,16 +688,16 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     //Pi0
 
-    fhPrimPi0E     = new TH1F("hPrimPi0E","Primary #pi^{0} E, Y<1",nptbins,ptmin,ptmax) ;
-    fhPrimPi0AccE  = new TH1F("hPrimPi0AccE","Primary #pi^{0} E with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimPi0E     = new TH1F("hPrimPi0E","Primary #pi^{0} E, |#it{Y}|<1",nptbins,ptmin,ptmax) ;
+    fhPrimPi0AccE  = new TH1F("hPrimPi0AccE","Primary #pi^{0} #it{E} with both photons in acceptance",nptbins,ptmin,ptmax) ;
     fhPrimPi0E   ->SetXTitle("#it{E} (GeV)");
     fhPrimPi0AccE->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhPrimPi0E) ;
     outputContainer->Add(fhPrimPi0AccE) ;
     
     fhPrimPi0PtRejected = new TH1F("hPrimPi0PtRejected","Primary #pi^{0} pt",nptbins,ptmin,ptmax) ;
-    fhPrimPi0Pt     = new TH1F("hPrimPi0Pt","Primary #pi^{0} #it{p}_{T} , #it{Y}<1",nptbins,ptmin,ptmax) ;
-    fhPrimPi0AccPt  = new TH1F("hPrimPi0AccPt","Primary #pi^{0} pt with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimPi0Pt     = new TH1F("hPrimPi0Pt","Primary #pi^{0} #it{p}_{T} , |#it{Y}|<1",nptbins,ptmin,ptmax) ;
+    fhPrimPi0AccPt  = new TH1F("hPrimPi0AccPt","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
     fhPrimPi0Pt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimPi0AccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0PtRejected) ;
@@ -705,17 +705,17 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhPrimPi0AccPt) ;
     
     Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
-    fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary pi0",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0Y   ->SetYTitle("#it{Rapidity}");
     fhPrimPi0Y   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Y) ;
 
-    fhPrimPi0Yeta      = new TH2F("hPrimPi0PseudoRapidity","PseudoRapidity of primary pi0",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0Yeta      = new TH2F("hPrimPi0PseudoRapidity","PseudoRapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0Yeta   ->SetYTitle("#eta");
     fhPrimPi0Yeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Yeta) ;
 
-    fhPrimPi0YetaYcut      = new TH2F("hPrimPi0PseudoRapidityYcut","PseudoRapidity of primary pi0, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0YetaYcut      = new TH2F("hPrimPi0PseudoRapidityYcut","PseudoRapidity of primary #pi^{0}, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0YetaYcut   ->SetYTitle("#eta");
     fhPrimPi0YetaYcut   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0YetaYcut) ;
@@ -731,19 +731,21 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhPrimPi0AccYeta) ;
     
     Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/(phimax-phimin));
-    fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","Azimuthal of primary pi0, Y<1",nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
+    fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","#phi of primary #pi^{0}, |#it{Y}|<1",nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
     fhPrimPi0Phi->SetYTitle("#phi (deg)");
     fhPrimPi0Phi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Phi) ;
     
-    fhPrimPi0AccPhi = new TH2F("hPrimPi0AccPhi","Azimuthal of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,
+    fhPrimPi0AccPhi = new TH2F("hPrimPi0AccPhi","#phi of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,
                                nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
     fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
     fhPrimPi0AccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0AccPhi) ;
     
-    fhPrimPi0PtCentrality     = new TH2F("hPrimPi0PtCentrality","Primary #pi^{0} #it{p}_{T} vs reco centrality, Y<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
-    fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",nptbins,ptmin,ptmax, 100, 0, 100) ;
+    fhPrimPi0PtCentrality     = new TH2F("hPrimPi0PtCentrality","Primary #pi^{0} #it{p}_{T} vs reco centrality, |#it{Y}|<1",
+                                         nptbins,ptmin,ptmax, 100, 0, 100) ;
+    fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
+                                         nptbins,ptmin,ptmax, 100, 0, 100) ;
     fhPrimPi0PtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimPi0AccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimPi0PtCentrality   ->SetYTitle("Centrality");
@@ -751,8 +753,10 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhPrimPi0PtCentrality) ;
     outputContainer->Add(fhPrimPi0AccPtCentrality) ;
     
-    fhPrimPi0PtEventPlane     = new TH2F("hPrimPi0PtEventPlane","Primary #pi^{0} #it{p}_{T} vs reco event plane angle, Y<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-    fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+    fhPrimPi0PtEventPlane     = new TH2F("hPrimPi0PtEventPlane","Primary #pi^{0} #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
+                                         nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+    fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
+                                         nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
     fhPrimPi0PtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimPi0AccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimPi0PtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
@@ -763,14 +767,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     //Eta
 
     fhPrimEtaE     = new TH1F("hPrimEtaE","Primary eta E",nptbins,ptmin,ptmax) ;
-    fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary eta E with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary #eta #it{E} with both photons in acceptance",nptbins,ptmin,ptmax) ;
     fhPrimEtaE   ->SetXTitle("#it{E} (GeV)");
     fhPrimEtaAccE->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhPrimEtaE) ;
     outputContainer->Add(fhPrimEtaAccE) ;
     
-    fhPrimEtaPtRejected = new TH1F("hPrimEtaPtRejected","Primary eta pt",nptbins,ptmin,ptmax) ;
-    fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary eta pt",nptbins,ptmin,ptmax) ;
+    fhPrimEtaPtRejected = new TH1F("hPrimEtaPtRejected","Primary #eta #it{p}_{T}",nptbins,ptmin,ptmax) ;
+    fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary #eta #it{p}_{T}",nptbins,ptmin,ptmax) ;
     fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
     fhPrimEtaPt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimEtaAccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -788,7 +792,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimEtaYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaYeta) ;
 
-    fhPrimEtaYetaYcut      = new TH2F("hPrimEtaPseudoRapidityEtaYcut","PseudoRapidity of primary #eta, |Y|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimEtaYetaYcut      = new TH2F("hPrimEtaPseudoRapidityEtaYcut","PseudoRapidity of primary #eta, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimEtaYetaYcut->SetYTitle("#it{Pseudorapidity}");
     fhPrimEtaYetaYcut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaYetaYcut) ;
@@ -803,17 +807,17 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimEtaAccYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaAccYeta) ;
 
-    fhPrimEtaPhi    = new TH2F("hPrimEtaPhi","Azimuthal of primary eta",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimEtaPhi    = new TH2F("hPrimEtaPhi","Azimuthal of primary #eta",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
     fhPrimEtaPhi->SetYTitle("#phi (deg)");
     fhPrimEtaPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaPhi) ;
     
-    fhPrimEtaAccPhi = new TH2F("hPrimEtaAccPhi","Azimuthal of primary eta with accepted daughters",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimEtaAccPhi = new TH2F("hPrimEtaAccPhi","Azimuthal of primary #eta with accepted daughters",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
     fhPrimEtaAccPhi->SetYTitle("#phi (deg)");
     fhPrimEtaAccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaAccPhi) ;
     
-    fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary eta #it{p}_{T} vs reco centrality, Y<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
+    fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
     fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",nptbins,ptmin,ptmax, 100, 0, 100) ;
     fhPrimEtaPtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimEtaAccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -822,8 +826,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhPrimEtaPtCentrality) ;
     outputContainer->Add(fhPrimEtaAccPtCentrality) ;
     
-    fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, Y<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-    fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both photons in acceptance #it{p}_{T} vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+    fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+    fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
     fhPrimEtaPtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimEtaAccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimEtaPtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
@@ -932,25 +936,29 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
       outputContainer->Add(fhMCEtaPtOrigin) ;
 
-      fhMCPi0ProdVertex = new TH2F("hMCPi0ProdVertex","Selected reco pair from generated #pi^{0} #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,2000,0,500) ;
+      fhMCPi0ProdVertex = new TH2F("hMCPi0ProdVertex","Selected reco pair from generated #pi^{0} #it{p}_{T} vs production vertex",
+                                   200,0.,20.,5000,0,500) ;
       fhMCPi0ProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0ProdVertex->SetYTitle("#it{R} (cm)");
       outputContainer->Add(fhMCPi0ProdVertex) ;
 
-      fhMCPi0ProdVertexInner = new TH2F("hMCPi0ProdVertexInner","Selected reco pair from generated #pi^{0} #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,500,0,50) ;
-      fhMCPi0ProdVertexInner->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhMCPi0ProdVertexInner->SetYTitle("#it{R} (cm)");
-      outputContainer->Add(fhMCPi0ProdVertexInner) ;
-      
-      fhMCEtaProdVertex = new TH2F("hMCEtaProdVertex","Selected reco pair from generated #eta #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,2000,0,500) ;
+      fhMCEtaProdVertex = new TH2F("hMCEtaProdVertex","Selected reco pair from generated #eta #it{p}_{T} vs production vertex",
+                                   200,0.,20.,5000,0,500) ;
       fhMCEtaProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCEtaProdVertex->SetYTitle("#it{R} (cm)");
       outputContainer->Add(fhMCEtaProdVertex) ;
 
-      fhMCEtaProdVertexInner = new TH2F("hMCEtaProdVertexInner","Selected reco pair from generated #eta #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,500,0,50) ;
-      fhMCEtaProdVertexInner->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhMCEtaProdVertexInner->SetYTitle("#it{R} (cm)");
-      outputContainer->Add(fhMCEtaProdVertexInner) ;
+      fhPrimPi0ProdVertex = new TH2F("hPrimPi0ProdVertex","generated #pi^{0} #it{p}_{T} vs production vertex",
+                                   200,0.,20.,5000,0,500) ;
+      fhPrimPi0ProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0ProdVertex->SetYTitle("#it{R} (cm)");
+      outputContainer->Add(fhPrimPi0ProdVertex) ;
+      
+      fhPrimEtaProdVertex = new TH2F("hPrimEtaProdVertex","generated #eta #it{p}_{T} vs production vertex",
+                                   200,0.,20.,5000,0,500) ;
+      fhPrimEtaProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaProdVertex->SetYTitle("#it{R} (cm)");
+      outputContainer->Add(fhPrimEtaProdVertex) ;
       
       for(Int_t i = 0; i<13; i++)
       {
@@ -990,42 +998,42 @@ TList * AliAnaPi0::GetCreateOutputObjects()
               Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
               
               fhMCPi0MassPtRec[index] = new TH2F(Form("hMCPi0MassPtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                 Form("Reconstructed Mass vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs for #it{p}_{T} >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                 Form("Reconstructed #it{M} vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs for #it{p}_{T} >%2.2f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                  nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
               fhMCPi0MassPtRec[index]->SetXTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
               fhMCPi0MassPtRec[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
               outputContainer->Add(fhMCPi0MassPtRec[index]) ;    
               
               fhMCPi0MassPtTrue[index] = new TH2F(Form("hMCPi0MassPtTrue_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                  Form("Reconstructed Mass vs generated p_T of true #pi^{0} cluster pairs for #it{p}_{T} >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                  Form("Reconstructed #it{M} vs generated #it{p}_{T} of true #pi^{0} cluster pairs for #it{p}_{T} >%2.2f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                   nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
               fhMCPi0MassPtTrue[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
               fhMCPi0MassPtTrue[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
               outputContainer->Add(fhMCPi0MassPtTrue[index]) ;
               
               fhMCPi0PtTruePtRec[index] = new TH2F(Form("hMCPi0PtTruePtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                   Form("Generated vs reconstructed p_T of true #pi^{0} cluster pairs, 0.01 < rec. mass < 0.17 MeV/#it{c}^{2} for #it{p}_{T} >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                   Form("Generated vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs, 0.01 < rec. mass < 0.17 MeV/#it{c}^{2} for #it{p}_{T} >%2.2f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                    nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
               fhMCPi0PtTruePtRec[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
               fhMCPi0PtTruePtRec[index]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
               outputContainer->Add(fhMCPi0PtTruePtRec[index]) ;
               
               fhMCEtaMassPtRec[index] = new TH2F(Form("hMCEtaMassPtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                 Form("Reconstructed Mass vs reconstructed p_T of true #eta cluster pairs for #it{p}_{T} >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                 Form("Reconstructed #it{M} vs reconstructed #it{p}_{T} of true #eta cluster pairs for #it{p}_{T} >%2.2f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                  nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
               fhMCEtaMassPtRec[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
               fhMCEtaMassPtRec[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
               outputContainer->Add(fhMCEtaMassPtRec[index]) ;
               
               fhMCEtaMassPtTrue[index] = new TH2F(Form("hMCEtaMassPtTrue_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                  Form("Reconstructed Mass vs generated p_T of true #eta cluster pairs for #it{p}_{T} >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                  Form("Reconstructed #it{M} vs generated #it{p}_{T} of true #eta cluster pairs for #it{p}_{T} >%2.2f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                   nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
               fhMCEtaMassPtTrue[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
               fhMCEtaMassPtTrue[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
               outputContainer->Add(fhMCEtaMassPtTrue[index]) ;
               
               fhMCEtaPtTruePtRec[index] = new TH2F(Form("hMCEtaPtTruePtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                   Form("Generated vs reconstructed p_T of true #eta cluster pairs, 0.01 < rec. mass < 0.17 MeV/#it{c}^{2} for #it{p}_{T} >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                   Form("Generated vs reconstructed #it{p}_{T} of true #eta cluster pairs, 0.01 < rec. mass < 0.17 MeV/#it{c}^{2} for #it{p}_{T} >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                    nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
               fhMCEtaPtTruePtRec[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
               fhMCEtaPtTruePtRec[index]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
@@ -1241,7 +1249,7 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
 void AliAnaPi0::FillAcceptanceHistograms()
 {
   //Fill acceptance histograms if MC data is available
-  
+
   Float_t cen = GetEventCentrality();
   Float_t ep  = GetEventPlaneAngle();
   
@@ -1261,50 +1269,50 @@ void AliAnaPi0::FillAcceptanceHistograms()
         
         if( pdg == 111 || pdg == 221)
         {
-          Double_t pi0Pt = prim->Pt() ;
-          Double_t pi0E  = prim->Energy() ;
-          if(pi0E == TMath::Abs(prim->Pz()))
+          Double_t mesonPt = prim->Pt() ;
+          Double_t mesonE  = prim->Energy() ;
+          if(mesonE == TMath::Abs(prim->Pz()))
           {
-            if( pdg == 111 ) fhPrimPi0PtRejected->Fill(pi0Pt);
-            else             fhPrimEtaPtRejected->Fill(pi0Pt);
+            if( pdg == 111 ) fhPrimPi0PtRejected->Fill(mesonPt);
+            else             fhPrimEtaPtRejected->Fill(mesonPt);
             continue ; //Protection against floating point exception
           }
           
-          Double_t pi0Y    = 0.5*TMath::Log((pi0E-prim->Pz())/(pi0E+prim->Pz())) ;
-          Double_t pi0Yeta = prim->Eta() ;
+          Double_t mesonY    = 0.5*TMath::Log((mesonE-prim->Pz())/(mesonE+prim->Pz())) ;
+          Double_t mesonYeta = prim->Eta() ;
           Double_t phi     = TMath::RadToDeg()*prim->Phi() ;
           
           if(pdg == 111)
           {
-            if(TMath::Abs(pi0Y) < 1.0)
+            if(TMath::Abs(mesonY) < 1.0)
             {
-              fhPrimPi0E  ->Fill(pi0E ) ;
-              fhPrimPi0Pt ->Fill(pi0Pt) ;
-              fhPrimPi0Phi->Fill(pi0Pt, phi) ;
-              fhPrimPi0YetaYcut    ->Fill(pi0Pt,pi0Yeta) ;
-              fhPrimPi0PtCentrality->Fill(pi0Pt,cen) ;
-              fhPrimPi0PtEventPlane->Fill(pi0Pt,ep ) ;
+              fhPrimPi0E  ->Fill(mesonE ) ;
+              fhPrimPi0Pt ->Fill(mesonPt) ;
+              fhPrimPi0Phi->Fill(mesonPt, phi) ;
+              fhPrimPi0YetaYcut    ->Fill(mesonPt,mesonYeta) ;
+              fhPrimPi0PtCentrality->Fill(mesonPt,cen) ;
+              fhPrimPi0PtEventPlane->Fill(mesonPt,ep ) ;
             }
-            fhPrimPi0Y   ->Fill(pi0Pt, pi0Y) ;
-            fhPrimPi0Yeta->Fill(pi0Pt, pi0Yeta) ;
+            fhPrimPi0Y   ->Fill(mesonPt, mesonY) ;
+            fhPrimPi0Yeta->Fill(mesonPt, mesonYeta) ;
           }
           else if(pdg == 221)
           {
-            if(TMath::Abs(pi0Y) < 1.0)
+            if(TMath::Abs(mesonY) < 1.0)
             {
-              fhPrimEtaE  ->Fill(pi0E ) ;
-              fhPrimEtaPt ->Fill(pi0Pt) ;
-              fhPrimEtaPhi->Fill(pi0Pt, phi) ;
-              fhPrimEtaYetaYcut    ->Fill(pi0Pt,pi0Yeta) ;
-              fhPrimEtaPtCentrality->Fill(pi0Pt,cen) ;
-              fhPrimEtaPtEventPlane->Fill(pi0Pt,ep ) ;
+              fhPrimEtaE  ->Fill(mesonE ) ;
+              fhPrimEtaPt ->Fill(mesonPt) ;
+              fhPrimEtaPhi->Fill(mesonPt, phi) ;
+              fhPrimEtaYetaYcut    ->Fill(mesonPt,mesonYeta) ;
+              fhPrimEtaPtCentrality->Fill(mesonPt,cen) ;
+              fhPrimEtaPtEventPlane->Fill(mesonPt,ep ) ;
             }
-            fhPrimEtaY   ->Fill(pi0Pt, pi0Y) ;
-            fhPrimEtaYeta->Fill(pi0Pt, pi0Yeta) ;
+            fhPrimEtaY   ->Fill(mesonPt, mesonY) ;
+            fhPrimEtaYeta->Fill(mesonPt, mesonYeta) ;
           }
           
           //Origin of meson
-          if(fFillOriginHisto)
+          if(fFillOriginHisto && TMath::Abs(mesonY) < 0.7)
           {
             Int_t momindex  = prim->GetFirstMother();
             if(momindex >= 0)
@@ -1314,27 +1322,36 @@ void AliAnaPi0::FillAcceptanceHistograms()
               Int_t momstatus = mother->GetStatusCode();
               if(pdg == 111)
               {
-                if     (momstatus  == 21)fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
-                else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
-                else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
-                else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(pi0Pt,8.5);//eta
-                else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(pi0Pt,9.5);//eta prime
-                else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(pi0Pt,4.5);//rho
-                else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(pi0Pt,5.5);//omega
-                else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
-                else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
-                else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances
-                else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
+                if     (momstatus  == 21)fhPrimPi0PtOrigin->Fill(mesonPt,0.5);//parton
+                else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(mesonPt,1.5);//quark
+                else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(mesonPt,2.5);// resonances
+                else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(mesonPt,8.5);//eta
+                else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(mesonPt,9.5);//eta prime
+                else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(mesonPt,4.5);//rho
+                else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(mesonPt,5.5);//omega
+                else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(mesonPt,6.5);//k0S, k+-,k*
+                else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(mesonPt,6.5);//k0L
+                else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(mesonPt,3.5);//resonances
+                else                      fhPrimPi0PtOrigin->Fill(mesonPt,7.5);//other?
+                
+                //printf("Prim Pi0: index %d, pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
+                //                   momindex, mesonPt,mother->R(),mompdg,momstatus,mother->GetUniqueID());
+
+                fhPrimPi0ProdVertex->Fill(mesonPt,mother->R());
+
               }//pi0
               else
               {
-                if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
-                else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
-                else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
-                else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(pi0Pt,5.5);//eta prime
-                else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(pi0Pt,3.5);//resonances
-                else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
+                if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(mesonPt,0.5);//parton
+                else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(mesonPt,1.5);//quark
+                else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(mesonPt,2.5);//qq resonances
+                else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(mesonPt,5.5);//eta prime
+                else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(mesonPt,3.5);//resonances
+                else fhPrimEtaPtOrigin->Fill(mesonPt,4.5);//stable, conversions?
                 //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
+                
+                fhPrimEtaProdVertex->Fill(mesonPt,mother->R());
+
               }
             } // pi0 has mother
           }
@@ -1427,36 +1444,36 @@ void AliAnaPi0::FillAcceptanceHistograms()
                 
                 if(pdg==111)
                 {
-                  fhPrimPi0AccE   ->Fill(pi0E) ;
-                  fhPrimPi0AccPt  ->Fill(pi0Pt) ;
-                  fhPrimPi0AccPhi ->Fill(pi0Pt, phi) ;
-                  fhPrimPi0AccY   ->Fill(pi0Pt, pi0Y) ;
-                  fhPrimPi0AccYeta->Fill(pi0Pt,pi0Yeta) ;
-                  fhPrimPi0AccPtCentrality->Fill(pi0Pt,cen) ;
-                  fhPrimPi0AccPtEventPlane->Fill(pi0Pt,ep ) ;
+                  fhPrimPi0AccE   ->Fill(mesonE) ;
+                  fhPrimPi0AccPt  ->Fill(mesonPt) ;
+                  fhPrimPi0AccPhi ->Fill(mesonPt, phi) ;
+                  fhPrimPi0AccY   ->Fill(mesonPt, mesonY) ;
+                  fhPrimPi0AccYeta->Fill(mesonPt,mesonYeta) ;
+                  fhPrimPi0AccPtCentrality->Fill(mesonPt,cen) ;
+                  fhPrimPi0AccPtEventPlane->Fill(mesonPt,ep ) ;
                   
                   if(fFillAngleHisto)
                   {
-                    fhPrimPi0OpeningAngle    ->Fill(pi0Pt,angle);
-                    if(pi0Pt > 5)fhPrimPi0OpeningAngleAsym->Fill(asym,angle);
-                    fhPrimPi0CosOpeningAngle ->Fill(pi0Pt,TMath::Cos(angle));
+                    fhPrimPi0OpeningAngle    ->Fill(mesonPt,angle);
+                    if(mesonPt > 5)fhPrimPi0OpeningAngleAsym->Fill(asym,angle);
+                    fhPrimPi0CosOpeningAngle ->Fill(mesonPt,TMath::Cos(angle));
                   }
                 }
                 else if(pdg==221)
                 {
-                  fhPrimEtaAccE   ->Fill(pi0E ) ;
-                  fhPrimEtaAccPt  ->Fill(pi0Pt) ;
-                  fhPrimEtaAccPhi ->Fill(pi0Pt, phi) ;
-                  fhPrimEtaAccY   ->Fill(pi0Pt, pi0Y) ;
-                  fhPrimEtaAccYeta->Fill(pi0Pt, pi0Yeta) ;
-                  fhPrimEtaAccPtCentrality->Fill(pi0Pt,cen) ;
-                  fhPrimEtaAccPtEventPlane->Fill(pi0Pt,ep ) ;
+                  fhPrimEtaAccE   ->Fill(mesonE ) ;
+                  fhPrimEtaAccPt  ->Fill(mesonPt) ;
+                  fhPrimEtaAccPhi ->Fill(mesonPt, phi) ;
+                  fhPrimEtaAccY   ->Fill(mesonPt, mesonY) ;
+                  fhPrimEtaAccYeta->Fill(mesonPt, mesonYeta) ;
+                  fhPrimEtaAccPtCentrality->Fill(mesonPt,cen) ;
+                  fhPrimEtaAccPtEventPlane->Fill(mesonPt,ep ) ;
                   
                   if(fFillAngleHisto)
                   {
-                    fhPrimEtaOpeningAngle    ->Fill(pi0Pt,angle);
-                    if(pi0Pt > 5)fhPrimEtaOpeningAngleAsym->Fill(asym,angle);
-                    fhPrimEtaCosOpeningAngle ->Fill(pi0Pt,TMath::Cos(angle));
+                    fhPrimEtaOpeningAngle    ->Fill(mesonPt,angle);
+                    if(mesonPt > 5)fhPrimEtaOpeningAngleAsym->Fill(asym,angle);
+                    fhPrimEtaCosOpeningAngle ->Fill(mesonPt,TMath::Cos(angle));
                   }
                 }
               }//Accepted
@@ -1485,53 +1502,53 @@ void AliAnaPi0::FillAcceptanceHistograms()
         Int_t pdg = prim->GetPdgCode();
         if( pdg == 111 || pdg == 221)
         {
-          Double_t pi0Pt = prim->Pt() ;
-          Double_t pi0E  = prim->E() ;
-          //printf("pi0, pt %2.2f, eta %f, phi %f\n",pi0Pt, prim->Eta(), prim->Phi());
+          Double_t mesonPt = prim->Pt() ;
+          Double_t mesonE  = prim->E() ;
+          //printf("pi0, pt %2.2f, eta %f, phi %f\n",mesonPt, prim->Eta(), prim->Phi());
           
-          if(pi0E == TMath::Abs(prim->Pz()))
+          if(mesonE == TMath::Abs(prim->Pz()))
           {
-            if( pdg == 111 ) fhPrimPi0PtRejected->Fill(pi0Pt);
-            else             fhPrimEtaPtRejected->Fill(pi0Pt);
+            if( pdg == 111 ) fhPrimPi0PtRejected->Fill(mesonPt);
+            else             fhPrimEtaPtRejected->Fill(mesonPt);
             continue ; //Protection against floating point exception
           }
 
-          Double_t pi0Y    = 0.5*TMath::Log((prim->E()-prim->Pz())/(prim->E()+prim->Pz())) ;
-          Double_t pi0Yeta = prim->Eta() ;
+          Double_t mesonY    = 0.5*TMath::Log((prim->E()-prim->Pz())/(prim->E()+prim->Pz())) ;
+          Double_t mesonYeta = prim->Eta() ;
           Double_t phi     = TMath::RadToDeg()*prim->Phi() ;
 
           if(pdg == 111)
           {
-            if(TMath::Abs(pi0Y) < 1)
+            if(TMath::Abs(mesonY) < 1)
             {
-              fhPrimPi0E  ->Fill(pi0E ) ;
-              fhPrimPi0Pt ->Fill(pi0Pt) ;
-              fhPrimPi0Phi->Fill(pi0Pt, phi) ;
-              fhPrimPi0YetaYcut    ->Fill(pi0Pt,pi0Yeta) ;
-              fhPrimPi0PtCentrality->Fill(pi0Pt,cen) ;
-              fhPrimPi0PtEventPlane->Fill(pi0Pt,ep ) ;
+              fhPrimPi0E  ->Fill(mesonE ) ;
+              fhPrimPi0Pt ->Fill(mesonPt) ;
+              fhPrimPi0Phi->Fill(mesonPt, phi) ;
+              fhPrimPi0YetaYcut    ->Fill(mesonPt,mesonYeta) ;
+              fhPrimPi0PtCentrality->Fill(mesonPt,cen) ;
+              fhPrimPi0PtEventPlane->Fill(mesonPt,ep ) ;
             }
-            fhPrimPi0Y   ->Fill(pi0Pt, pi0Y   ) ;
-            fhPrimPi0Yeta->Fill(pi0Pt, pi0Yeta) ;
+            fhPrimPi0Y   ->Fill(mesonPt, mesonY   ) ;
+            fhPrimPi0Yeta->Fill(mesonPt, mesonYeta) ;
           }
           else if(pdg == 221)
           {
-            if(TMath::Abs(pi0Y) < 1)
+            if(TMath::Abs(mesonY) < 1)
             {
-              fhPrimEtaE  ->Fill(pi0E ) ;
-              fhPrimEtaPt ->Fill(pi0Pt) ;
-              fhPrimEtaPhi->Fill(pi0Pt, phi) ;
-              fhPrimEtaYetaYcut    ->Fill(pi0Pt,pi0Yeta) ;
-              fhPrimEtaPtCentrality->Fill(pi0Pt,cen) ;
-              fhPrimEtaPtEventPlane->Fill(pi0Pt,ep ) ;
+              fhPrimEtaE  ->Fill(mesonE ) ;
+              fhPrimEtaPt ->Fill(mesonPt) ;
+              fhPrimEtaPhi->Fill(mesonPt, phi) ;
+              fhPrimEtaYetaYcut    ->Fill(mesonPt,mesonYeta) ;
+              fhPrimEtaPtCentrality->Fill(mesonPt,cen) ;
+              fhPrimEtaPtEventPlane->Fill(mesonPt,ep ) ;
             }
-            fhPrimEtaY   ->Fill(pi0Pt, pi0Y   ) ;
-            fhPrimEtaYeta->Fill(pi0Pt, pi0Yeta) ;
+            fhPrimEtaY   ->Fill(mesonPt, mesonY   ) ;
+            fhPrimEtaYeta->Fill(mesonPt, mesonYeta) ;
           }
           
           //Origin of meson
           Int_t momindex  = prim->GetMother();
-          if(momindex >= 0)
+          if(momindex >= 0 && TMath::Abs(mesonY) < 0.7)
           {
             AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
             Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
@@ -1540,27 +1557,41 @@ void AliAnaPi0::FillAcceptanceHistograms()
             {
               if(pdg == 111)
               {
-                if     (momstatus  == 21) fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
-                else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
-                else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
-                else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(pi0Pt,8.5);//eta
-                else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(pi0Pt,9.5);//eta prime
-                else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(pi0Pt,4.5);//rho
-                else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(pi0Pt,5.5);//omega
-                else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
-                else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
-                else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
-                else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
+                if     (momstatus  == 21) fhPrimPi0PtOrigin->Fill(mesonPt,0.5);//parton
+                else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(mesonPt,1.5);//quark
+                else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(mesonPt,2.5);// resonances
+                else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(mesonPt,8.5);//eta
+                else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(mesonPt,9.5);//eta prime
+                else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(mesonPt,4.5);//rho
+                else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(mesonPt,5.5);//omega
+                else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(mesonPt,6.5);//k0S, k+-,k*
+                else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(mesonPt,6.5);//k0L
+                else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(mesonPt,3.5);//resonances   
+                else                      fhPrimPi0PtOrigin->Fill(mesonPt,7.5);//other?
+                
+                Float_t prodR =TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+               //printf("Prim Pi0: pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
+               //        mesonPt,prodR,mompdg,momstatus,mother->GetUniqueID());
+                
+                fhPrimPi0ProdVertex->Fill(mesonPt,prodR);
+                
               }//pi0
               else
               {
-                if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
-                else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
-                else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
-                else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(pi0Pt,5.5);//eta prime
-                else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(pi0Pt,3.5);//resonances
-                else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
-                //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );          
+                if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(mesonPt,0.5);//parton
+                else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(mesonPt,1.5);//quark
+                else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(mesonPt,2.5);//qq resonances
+                else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(mesonPt,5.5);//eta prime
+                else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(mesonPt,3.5);//resonances
+                else fhPrimEtaPtOrigin->Fill(mesonPt,4.5);//stable, conversions?
+                //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
+                
+                Float_t prodR =TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+                //printf("Prim Pi0: pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
+                //        mesonPt,prodR,mompdg,momstatus,mother->GetUniqueID());
+                
+                fhPrimEtaProdVertex->Fill(mesonPt,prodR);
+
               }
             }
           }//pi0 has mother
@@ -1651,37 +1682,37 @@ void AliAnaPi0::FillAcceptanceHistograms()
                 
                 if(pdg==111)
                 {
-                  //                printf("ACCEPTED pi0: pt %2.2f, phi %3.2f, eta %1.2f\n",pi0Pt,phi,pi0Y);
-                  fhPrimPi0AccE   ->Fill(pi0E ) ;
-                  fhPrimPi0AccPt  ->Fill(pi0Pt) ;
-                  fhPrimPi0AccPhi ->Fill(pi0Pt, phi) ;
-                  fhPrimPi0AccY   ->Fill(pi0Pt, pi0Y) ;
-                  fhPrimPi0AccYeta->Fill(pi0Pt, pi0Yeta) ;
-                  fhPrimPi0AccPtCentrality->Fill(pi0Pt,cen) ;
-                  fhPrimPi0AccPtEventPlane->Fill(pi0Pt,ep ) ;
+                  //                printf("ACCEPTED pi0: pt %2.2f, phi %3.2f, eta %1.2f\n",mesonPt,phi,mesonY);
+                  fhPrimPi0AccE   ->Fill(mesonE ) ;
+                  fhPrimPi0AccPt  ->Fill(mesonPt) ;
+                  fhPrimPi0AccPhi ->Fill(mesonPt, phi) ;
+                  fhPrimPi0AccY   ->Fill(mesonPt, mesonY) ;
+                  fhPrimPi0AccYeta->Fill(mesonPt, mesonYeta) ;
+                  fhPrimPi0AccPtCentrality->Fill(mesonPt,cen) ;
+                  fhPrimPi0AccPtEventPlane->Fill(mesonPt,ep ) ;
                   
                   if(fFillAngleHisto)
                   {
-                    fhPrimPi0OpeningAngle    ->Fill(pi0Pt,angle);
-                    if(pi0Pt > 5)fhPrimPi0OpeningAngleAsym->Fill(asym,angle);
-                    fhPrimPi0CosOpeningAngle ->Fill(pi0Pt,TMath::Cos(angle));
+                    fhPrimPi0OpeningAngle    ->Fill(mesonPt,angle);
+                    if(mesonPt > 5)fhPrimPi0OpeningAngleAsym->Fill(asym,angle);
+                    fhPrimPi0CosOpeningAngle ->Fill(mesonPt,TMath::Cos(angle));
                   }
                 }
                 else if(pdg==221)
                 {
-                  fhPrimEtaAccE   ->Fill(pi0E ) ;
-                  fhPrimEtaAccPt  ->Fill(pi0Pt) ;
-                  fhPrimEtaAccPhi ->Fill(pi0Pt, phi) ;
-                  fhPrimEtaAccY   ->Fill(pi0Pt, pi0Y) ;
-                  fhPrimEtaAccYeta->Fill(pi0Pt, pi0Yeta) ;
-                  fhPrimEtaAccPtCentrality->Fill(pi0Pt,cen) ;
-                  fhPrimEtaAccPtEventPlane->Fill(pi0Pt,ep ) ;
+                  fhPrimEtaAccE   ->Fill(mesonE ) ;
+                  fhPrimEtaAccPt  ->Fill(mesonPt) ;
+                  fhPrimEtaAccPhi ->Fill(mesonPt, phi) ;
+                  fhPrimEtaAccY   ->Fill(mesonPt, mesonY) ;
+                  fhPrimEtaAccYeta->Fill(mesonPt, mesonYeta) ;
+                  fhPrimEtaAccPtCentrality->Fill(mesonPt,cen) ;
+                  fhPrimEtaAccPtEventPlane->Fill(mesonPt,ep ) ;
                   
                   if(fFillAngleHisto)
                   {
-                    fhPrimEtaOpeningAngle    ->Fill(pi0Pt,angle);
-                    if(pi0Pt > 5)fhPrimEtaOpeningAngleAsym->Fill(asym,angle);
-                    fhPrimEtaCosOpeningAngle ->Fill(pi0Pt,TMath::Cos(angle));
+                    fhPrimEtaOpeningAngle    ->Fill(mesonPt,angle);
+                    if(mesonPt > 5)fhPrimEtaOpeningAngleAsym->Fill(asym,angle);
+                    fhPrimEtaCosOpeningAngle ->Fill(mesonPt,TMath::Cos(angle));
                   }
                 }
               }//Accepted
@@ -1832,6 +1863,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
           
           if(fFillOriginHisto)
           {
+            //Int_t uniqueId = -1;
             if(GetReader()->ReadStack())
             {
               TParticle* ancestor = GetMCStack()->Particle(ancLabel);
@@ -1841,6 +1873,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
               mompdg    = TMath::Abs(mother->GetPdgCode());
               momstatus = mother->GetStatusCode();
               prodR = mother->R();
+              //uniqueId = mother->GetUniqueID();
             }
             else
             {
@@ -1852,10 +1885,13 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
               mompdg    = TMath::Abs(mother->GetPdgCode());
               momstatus = mother->GetStatus();
               prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+              //uniqueId = mother->GetUniqueID();
             }
             
+//            printf("Reco Pi0: pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
+//                   pt,prodR,mompdg,momstatus,uniqueId);
+            
             fhMCPi0ProdVertex->Fill(pt,prodR);
-            if(prodR < 50)fhMCPi0ProdVertexInner->Fill(pt,prodR);
 
             if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt,0.5);//parton
             else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt,1.5);//quark
@@ -1924,7 +1960,6 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
           }
           
           fhMCEtaProdVertex->Fill(pt,prodR);
-          if(prodR < 50)fhMCEtaProdVertexInner->Fill(pt,prodR);
           
           if     (momstatus == 21 ) fhMCEtaPtOrigin->Fill(pt,0.5);//parton
           else if(mompdg    < 22  ) fhMCEtaPtOrigin->Fill(pt,1.5);//quark
@@ -2344,8 +2379,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               AliVCluster *cluster = event->GetCaloCluster(iclus);
               
               Bool_t is = kFALSE;
-              if     (fCalorimeter == "EMCAL" && GetReader()->IsEMCALCluster(cluster)) is = kTRUE;
-              else if(fCalorimeter == "PHOS"  && GetReader()->IsPHOSCluster (cluster)) is = kTRUE;
+              if     (fCalorimeter == "EMCAL" && cluster->IsEMCAL()) is = kTRUE;
+              else if(fCalorimeter == "PHOS"  && cluster->IsPHOS() ) is = kTRUE;
               
               if(is){
                 if      (p1->GetCaloLabel(0) == cluster->GetID()) ncell1 = cluster->GetNCells();

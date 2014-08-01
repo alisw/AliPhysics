@@ -5,6 +5,7 @@ class AliSpectraBothTrackCuts;
 TString Charge[]={"Pos","Neg"};
 TString Sign[]={"Plus","Minus"};
 TString Particle[]={"Pion","Kaon","Proton"};
+TString symboles[]={"#pi^{+}","K^{+}","p","pi^{-}","K^{-}","#bar{p}"}; 
 AliSpectraBothHistoManager* managerdata=0x0;
 AliSpectraBothEventCuts* ecutsdata=0x0; 
 AliSpectraBothTrackCuts* tcutsdata=0x0;
@@ -132,7 +133,9 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	TH1F* spectra[6];
 	TH1F* spectraLeonardo[6];
 	
-	TH1F* corrLeonardo[6]; 
+	TH1F* corrLeonardo[6];
+        TH1F* doubleconuntsdata[3]; 
+	 TH1F* doubleconuntsMC[3]; 
 	//GetSpectra(managerdata,rawspectradata,true);
 	//GetSpectra(managermc,rawspectramc,true,true);
 	
@@ -237,8 +240,9 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		primaryfit[i+6]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"primaryfitMC"));
 		primaryfit[i+6]->SetTitle(Form(tmpname.Data(),"primaryfitMC"));
 		
-
-
+	
+		
+			
 		contfit[i]->Reset();
 		contWDfit[i]->Reset();
 		contMatfit[i]->Reset();
@@ -301,7 +305,21 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		contWD[i]->Divide(contWD[i],rawspectramc[i],1,1,"B");
 		contMat[i]->Divide(contMat[i],rawspectramc[i],1,1,"B");
 		contSecMC[i]->Divide(contSecMC[i],rawspectramc[i],1,1,"B");
+		if(i>2)
+		{
+			doubleconuntsdata[i-3]=(TH1F*)rawspectradata[i]->Clone(Form("DoublecountsDATA%s",Particle[i-3].Data()));
+			doubleconuntsdata[i-3]->Reset();
+			doubleconuntsMC[i-3]=(TH1F*)rawspectramc[i]->Clone(Form("DoublecountsMC%s",Particle[i-3].Data()));
+			doubleconuntsMC[i-3]->Reset();
+
+			CalculateDoubleCounts(doubleconuntsdata[i-3],rawspectradata,i-3,kTRUE);
+			CalculateDoubleCounts(doubleconuntsMC[i-3],rawspectramc,i-3,kFALSE);
+
+			
 	
+		}
+	
+
 	
 		rawspectradata[i]->Scale(1./neventsdata,"width");
 		rawspectramc[i]->Scale(1./neventsmc,"width");
@@ -331,6 +349,11 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		lout->Add(confinal[i]);
 		lout->Add(contPIDpri[i]);
 		lout->Add(contSecMC[i]);
+		if(i>2)
+		{
+			lout->Add(doubleconuntsdata[i-3]);
+			lout->Add(doubleconuntsMC[i-3]);
+		}
 	}
 	outdate.ReplaceAll("/","_");
 	configfile.ReplaceAll(".","_");
@@ -628,6 +651,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						continue;	
 						
 					TCanvas *cDCA=new TCanvas(Form("cDCA%d%s%s%sbin%d",index,sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),ibin_data),Form("cDCA%d%s%s%sbin%d",index,sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),ibin_data),1700,1500);
+					cDCA->SetMargin(0.1,0.02,0.1,0.02);
 					TLegend* Leg1 = new TLegend(0.6,0.6,0.85,0.85,"","NDC");
 					Leg1->SetFillStyle(kFALSE);
 					Leg1->SetLineColor(kWhite);
@@ -738,7 +762,8 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					Int_t binFitRange[]={hmc1->GetXaxis()->FindBin(FitRange[0]),hmc1->GetXaxis()->FindBin(FitRange[1])};			
 					fit->SetRangeX(binFitRange[0],binFitRange[1]);
 					hToFit->GetXaxis()->SetRange(binFitRange[0],binFitRange[1]);
-					hToFit->SetTitle(Form("DCA distr - %s %s %s %lf",sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),lowedge));
+				//	hToFit->SetTitle(Form("DCA distr - %s %s %s %lf",sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),lowedge));
+					hToFit->SetTitle("");
 					Int_t status = fit->Fit();               // perform the fit
 					cout << "fit status: " << status << endl;
 					debug<<"fit status: " << status << endl;
@@ -855,17 +880,21 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						PrimMCPred->Scale(v1/PrimMCPred->Integral(PrimMCPred->GetXaxis()->FindBin(FitRange[0]),PrimMCPred->GetXaxis()->FindBin(FitRange[1])));
 
 						hToFit->SetMinimum(0.0001);
+						hToFit->GetXaxis()->SetTitle("DCA_{xy} (cm)");
+						hToFit->GetYaxis()->SetTitle("N_{counts}/N_{counts}(-3cm;3cm)");
+						hToFit->GetYaxis()->SetTitleOffset(1.3);
 						hToFit->DrawClone("E1x0");
+						Leg1->AddEntry(hToFit,"data","p");
 						result->SetTitle("Fit result");
 						result->SetLineColor(kBlack);
-						Leg1->AddEntry(result,"result","lp");
-						result->DrawClone("lhistsame");
+						Leg1->AddEntry(result,"fit result","l");
+						result->DrawClone("histsame");
 					
 						PrimMCPred->SetLineColor(kGreen+2);
 						PrimMCPred->SetLineStyle(2);
 						 PrimMCPred->SetLineWidth(3.0);
-						Leg1->AddEntry(PrimMCPred,"Prmi.","l");
-						PrimMCPred->DrawClone("lhistsame");
+						Leg1->AddEntry(PrimMCPred,"primaries","l");
+						PrimMCPred->DrawClone("histsame");
 						if(fitsettings&0x1)
 						{
 
@@ -874,8 +903,8 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 							secStMCPred->SetLineWidth(3.0);
 
 							secStMCPred->SetLineStyle(3);
-							Leg1->AddEntry(secStMCPred,"Sec.WD","l");
-							secStMCPred->DrawClone("lhistsame");
+							Leg1->AddEntry(secStMCPred,"weak decays","l");
+							secStMCPred->DrawClone("histsame");
 
 						}
 						if(fitsettings&0x2)
@@ -886,8 +915,8 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 							secMCPred->SetLineWidth(3.0);
 
 							secMCPred->SetLineStyle(4);	
-							Leg1->AddEntry(secMCPred,"Sec.Mat","l");
-							secMCPred->DrawClone("lhistsame");
+							Leg1->AddEntry(secMCPred,"material","l");
+							secMCPred->DrawClone("histsame");
 	    
 						}   
 					}				
@@ -902,7 +931,11 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						hprimary[index+6*isample]->SetBinContent(ibin_data,1.0);
 						hprimary[index+6*isample]->SetBinError(ibin_data,0.0);
 					}
-					Leg1->Draw();
+					Leg1->DrawClone();
+					TLatex* texttitle=new TLatex();
+					texttitle->SetNDC();
+					texttitle->SetTextSize(0.04);
+					texttitle->DrawLatex(0.12,0.92,Form("%s %.2f<#it{p}_{T} < %.2f (GeV/#it{c})",symboles[index].Data(),lowedge,binwidth+lowedge));
 					listofdcafits->Add(cDCA);
 					
 					//cDCA->Write();
@@ -1558,5 +1591,30 @@ void TOFPIDsignalmatchingApply(TH1* h, Float_t factor)
 		h->SetBinContent(ibin,(h->GetBinContent(ibin)*factor));
 
 	}
+
+}
+void CalculateDoubleCounts(TH1* doubleconunts,TH1** rawspectra,Int_t ipar, Bool_t dataflag)
+{
+	TH2F* tmphist=0x0;	
+	if (dataflag)
+	 	tmphist=(TH2F*)managerdata->GetGenMulvsRawMulHistogram("hHistDoubleCounts");	
+	else
+		tmphist=(TH2F*)managermc->GetGenMulvsRawMulHistogram("hHistDoubleCounts");
+
+	if(!tmphist)	
+		return;
+	TH1F* tmphist1=(TH1F*)rawspectra[ipar]->Clone("test");
+	tmphist1->Add(rawspectra[ipar+3]);
+	doubleconunts->Add(tmphist->ProjectionX(doubleconunts->GetName(),1,1));
+	if(ipar!=2)
+		doubleconunts->Add(tmphist->ProjectionX("pi+k",2,2));			
+	if(ipar!=1)
+		doubleconunts->Add(tmphist->ProjectionX("pi+p",3,3));
+	if(ipar!=0)
+		doubleconunts->Add(tmphist->ProjectionX("k+p",4,4));
+	doubleconunts->Divide(doubleconunts,tmphist1,1,1,"B");
+
+	delete tmphist1;
+	
 
 }			

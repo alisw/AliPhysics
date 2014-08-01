@@ -88,8 +88,9 @@ public:
   void UserSparse(   const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW=kNoWeights);
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
-                     Int_t nbinsX, Double_t xmin, Double_t xmax, UInt_t valTypeX, Bool_t logBinX=kFALSE)
-  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,valTypeX,logBinX); }
+                     Int_t nbinsX, Double_t xmin, Double_t xmax, UInt_t valTypeX, Bool_t logBinX=kFALSE,
+		     UInt_t valTypeW=kNoWeights)
+  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,valTypeX,logBinX,"",valTypeW); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      Int_t nbinsX, Double_t xmin, Double_t xmax, Int_t nbinsY, Double_t ymin, Double_t ymax,
@@ -105,15 +106,14 @@ public:
   { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,nbinsY,ymin,ymax,nbinsZ,zmin,zmax,valTypeX,valTypeY,valTypeZ,logBinX,logBinY,logBinZ,valTypeW); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
-                     const char* binning, UInt_t valTypeX)
-  { UserProfile(histClass,name,title,kNoProfile,binning,valTypeX); }
+                     const char* binning, UInt_t valTypeX, UInt_t valTypeW=kNoWeights)
+  { UserProfile(histClass,name,title,kNoProfile,binning,valTypeX,"",valTypeW); }
+  //  void UserHistogram(const char* histClass,const char *name, const char* title,
+  //                     const TVectorD * const binsX, UInt_t valTypeX)
+  //  { UserProfile(histClass,name,title,kNoProfile,binsX,valTypeX); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
-                     const TVectorD * const binsX, UInt_t valTypeX)
-  { UserProfile(histClass,name,title,kNoProfile,binsX,valTypeX); }
-
-  void UserHistogram(const char* histClass,const char *name, const char* title,
-		     const TVectorD * const binsX, UInt_t valTypeX, UInt_t valTypeW)
+		     const TVectorD * const binsX, UInt_t valTypeX, UInt_t valTypeW=kNoWeights)
   { UserProfile(histClass,name,title,kNoProfile,binsX,valTypeX,"",valTypeW); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,

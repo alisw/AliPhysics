@@ -91,7 +91,13 @@ Bool_t summary(kTRUE);
 void processTRD(TNamed* task, const Char_t *filename);
 void processESD(TNamed* task, const Char_t *filename);
 void processGEN(TNamed* task, const Char_t *filename);
-void makeSummaryESD(const Char_t* filename="QAresults.root", Double_t* trendValues=0x0, Bool_t useCF=kFALSE, Bool_t useIsolatedBC=kFALSE, Bool_t cutTOFbc=kFALSE, const Char_t* dir="TRD_Performance", Bool_t isGrid=kFALSE);
+void makeSummaryESD(const Char_t* filename="QAresults.root", 
+		    Double_t* trendValues=0x0, 
+		    Bool_t useCF=kTRUE, 
+		    Bool_t useIsolatedBC=kFALSE, 
+		    Bool_t cutTOFbc=kFALSE, 
+		    const Char_t* dir="TRD_Performance", 
+		    Bool_t isGrid=kFALSE);
 void makeResults(const Char_t *opt = "ALL",
                  const Char_t *files="QAresults.root",
                  const Char_t *cid = "",
@@ -203,13 +209,13 @@ void processESD(TNamed *otask, const Char_t *filename)
   esd->Terminate(NULL);
 
   if(summary) esd->MakeSummaryFromCF(0, "", kFALSE, kFALSE);
-  else{
-    for(Int_t ipic(0); ipic<esd->GetNRefFigures(); ipic++){
-      c->Clear();
-      if(!esd->GetRefFigure(ipic)) continue;
-      c->SaveAs(Form("%s_Fig%02d.gif", esd->GetName(), ipic));
-    }
-  }
+  // else{
+  //   for(Int_t ipic(0); ipic<esd->GetNRefFigures(); ipic++){
+  //     c->Clear();
+  //     if(!esd->GetRefFigure(ipic)) continue;
+  //     c->SaveAs(Form("%s_Fig%02d.gif", esd->GetName(), ipic));
+  //   }
+  // }
   delete esd;
 }
 
@@ -256,5 +262,5 @@ void makeSummaryESD(const Char_t* filename, Double_t* trendValues, Bool_t useCF,
   if(!esd->Load(filename,dir)) return;
   //esd->Terminate();
   if(useCF) esd->MakeSummaryFromCF(trendValues, "", useIsolatedBC, cutTOFbc);
-  else esd->MakeSummary(trendValues);
+  //  else esd->MakeSummary(trendValues);
 }

@@ -1,4 +1,3 @@
-// $Id$
 //
 // Task to filter Esd tracks and propagate to Emcal surface.
 //
@@ -28,7 +27,8 @@ AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask() :
   fIncludeNoITS(kTRUE),
   fDoPropagation(kFALSE),
   fDist(440),
-  fTrackEfficiency(1),
+  fTrackEfficiency(0),
+  fIsMC(kFALSE),
   fEsdEv(0),
   fTracks(0)
 {
@@ -45,7 +45,8 @@ AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask(const char *name) :
   fIncludeNoITS(kTRUE),
   fDoPropagation(kFALSE),
   fDist(440),
-  fTrackEfficiency(1),
+  fTrackEfficiency(0),
+  fIsMC(kFALSE),
   fEsdEv(0),
   fTracks(0)
 {
@@ -154,9 +155,9 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
           continue;
         }
 
-	if (fTrackEfficiency < 1) {
+	if (fTrackEfficiency) {
 	  Double_t r = gRandom->Rndm();
-	  if (fTrackEfficiency < r)
+	  if (fTrackEfficiency->Eval(ntrack->Pt()) < r)
 	    continue;
 	}
 
@@ -175,9 +176,9 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 	if ((fEsdTrackCuts!=0) && !fEsdTrackCuts->AcceptTrack(etrack))
           continue;
 	
-	if (fTrackEfficiency < 1) {
+	if (fTrackEfficiency) {
 	  Double_t r = gRandom->Rndm();
-	  if (fTrackEfficiency < r)
+	  if (fTrackEfficiency->Eval(etrack->Pt()) < r)
 	    continue;
 	}
 
@@ -197,11 +198,17 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 	continue;
 
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
+	if (fTrackEfficiency) {
+	  Double_t r = gRandom->Rndm();
+	  if (fTrackEfficiency->Eval(etrack->Pt()) < r)
+	    continue;
+	}
         AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
         newTrack->SetBit(BIT(22),0); 
         newTrack->SetBit(BIT(23),0);
+	if (!fIsMC) newTrack->SetLabel(0);
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
 	if (!etrack->GetConstrainedParam())
@@ -210,12 +217,11 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 	if (!fIncludeNoITS && ((status&AliESDtrack::kITSrefit)==0))
 	  continue;
 
-	if (fTrackEfficiency < 1) {
+	if (fTrackEfficiency) {
 	  Double_t r = gRandom->Rndm();
-	  if (fTrackEfficiency < r)
+	  if (fTrackEfficiency->Eval(etrack->Pt()) < r)
 	    continue;
 	}
-
 	AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 	
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
@@ -231,6 +237,7 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 	  newTrack->SetBit(BIT(22),1); //type 1
 	  newTrack->SetBit(BIT(23),0);
 	}
+	if (!fIsMC) newTrack->SetLabel(0);
 	++ntrnew;
       }
     }

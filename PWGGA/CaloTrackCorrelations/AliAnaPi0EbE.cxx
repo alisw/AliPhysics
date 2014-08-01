@@ -107,7 +107,6 @@ fhMassPairMCPi0(0),                 fhMassPairMCEta(0),
 fhAnglePairMCPi0(0),                fhAnglePairMCEta(0),
 fhMCPi0PtOrigin(0x0),               fhMCEtaPtOrigin(0x0),
 fhMCPi0ProdVertex(0),               fhMCEtaProdVertex(0),
-fhMCPi0ProdVertexInner(0),          fhMCEtaProdVertexInner(0),
 
 // Weight studies
 fhECellClusterRatio(0),             fhECellClusterLogRatio(0),
@@ -1603,25 +1602,15 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime");
     outputContainer->Add(fhMCEtaPtOrigin) ;
     
-    fhMCPi0ProdVertex = new TH2F("hMCPi0ProdVertex","Selected reco pair from generated #pi^{0} #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,2000,0,500) ;
+    fhMCPi0ProdVertex = new TH2F("hMCPi0ProdVertex","Selected reco pair from generated #pi^{0} #it{p}_{T} vs production vertex",200,ptmin,20+ptmin,5000,0,500) ;
     fhMCPi0ProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhMCPi0ProdVertex->SetYTitle("#it{R} (cm)");
     outputContainer->Add(fhMCPi0ProdVertex) ;
     
-    fhMCPi0ProdVertexInner = new TH2F("hMCPi0ProdVertexInner","Selected reco pair from generated #pi^{0} #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,500,0,50) ;
-    fhMCPi0ProdVertexInner->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhMCPi0ProdVertexInner->SetYTitle("#it{R} (cm)");
-    outputContainer->Add(fhMCPi0ProdVertexInner) ;
-    
-    fhMCEtaProdVertex = new TH2F("hMCEtaProdVertex","Selected reco pair from generated #eta #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,2000,0,500) ;
+    fhMCEtaProdVertex = new TH2F("hMCEtaProdVertex","Selected reco pair from generated #eta #it{p}_{T} vs production vertex",200,ptmin,20+ptmin,5000,0,500) ;
     fhMCEtaProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhMCEtaProdVertex->SetYTitle("#it{R} (cm)");
     outputContainer->Add(fhMCEtaProdVertex) ;
-    
-    fhMCEtaProdVertexInner = new TH2F("hMCEtaProdVertexInner","Selected reco pair from generated #eta #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,500,0,50) ;
-    fhMCEtaProdVertexInner->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhMCEtaProdVertexInner->SetYTitle("#it{R} (cm)");
-    outputContainer->Add(fhMCEtaProdVertexInner) ;
     
     if(GetReader()->GetDataType() != AliCaloTrackReader::kMC && fAnaType==kSSCalo)
     {
@@ -3556,7 +3545,6 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         if( mcIndex==kmcPi0 )
         {
           fhMCPi0ProdVertex->Fill(pt,prodR);
-          if(prodR < 50)fhMCPi0ProdVertexInner->Fill(pt,prodR);
           
           if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt,0.5);//parton
           else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt,1.5);//quark
@@ -3573,7 +3561,6 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         else if (mcIndex==kmcEta )
         {
           fhMCEtaProdVertex->Fill(pt,prodR);
-          if(prodR < 50)fhMCEtaProdVertexInner->Fill(pt,prodR);
           
           if     (momstatus  == 21) fhMCEtaPtOrigin->Fill(pt,0.5);//parton
           else if(mompdg     < 22 ) fhMCEtaPtOrigin->Fill(pt,1.5);//quark

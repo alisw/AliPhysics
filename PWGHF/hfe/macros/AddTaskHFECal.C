@@ -62,7 +62,7 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
 
   //Jet trigger
   // semi-central
-  hfetaskTrig2->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+  hfetaskTrig2->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
   
   TString containerName3 = mgr->GetCommonFileName();
   containerName3 += ":PWGHF_hfeCalSemiCentral";

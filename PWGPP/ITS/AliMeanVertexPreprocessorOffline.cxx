@@ -296,6 +296,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	useSPDvtx = kTRUE;
 	fStatus=kUseOfflineSPDvtx;
       }
+      AliDebug(2, Form("xHistoRMS = %f, yHistoRMS = %f, zHistoRMS = %f", xHistoRMS, yHistoRMS, zHistoRMS)); 
     }
     
     
@@ -355,6 +356,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	sigmaOnline[1] = vtxOnline->GetYRes();
 	sigmaOnline[2] = vtxOnline->GetZRes();
 	
+	AliDebug(2, Form("sigmaOnline[0] = %f, sigmaOnline[1] = %f, sigmaOnline[2] = %f", sigmaOnline[0], sigmaOnline[1], sigmaOnline[2]));
 	//vtxOnline->GetSigmaXYZ(sigmaOnline);
 	
 	if ((TMath::Abs(posOnline[0]-xMeanVtx) > 0.1) || (TMath::Abs(posOnline[1]-yMeanVtx) > 0.1) || (TMath::Abs(posOnline[2]-zMeanVtx) > 1.)){

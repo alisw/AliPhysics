@@ -17,6 +17,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliVVertex.h"
 #include "AliAnalysisFilter.h"
+#include "AliAnalysisUtils.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliESDv0KineCuts.h"
@@ -50,6 +51,7 @@ AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base()
   , fMC(0x0)
   , fPIDResponse(0x0)
   , fV0KineCuts(0x0)
+  , fAnaUtils(0x0)
   , fIsPbpOrpPb(kFALSE)
   , fUsePhiCut(kFALSE)
   , fTPCcutType(kNoCut)
@@ -84,6 +86,7 @@ AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base(const char *name)
   , fMC(0x0)
   , fPIDResponse(0x0)
   , fV0KineCuts(0x0)
+  , fAnaUtils(0x0)
   , fIsPbpOrpPb(kFALSE)
   , fUsePhiCut(kFALSE)
   , fTPCcutType(kNoCut)
@@ -140,6 +143,9 @@ AliAnalysisTaskPIDV0base::~AliAnalysisTaskPIDV0base()
   
   delete fV0motherIndex;
   fV0motherIndex = 0;
+  
+  delete fAnaUtils;
+  fAnaUtils = 0;
 }
 
 
@@ -171,6 +177,9 @@ void AliAnalysisTaskPIDV0base::UserCreateOutputObjects()
   // Only accept V0el with prod. radius within 45 cm -> PID will by systematically biased for larger values!
   Float_t gammaProdVertexRadiusCuts[2] = { 3.0, 45. }; 
   fV0KineCuts->SetGammaCutVertexR(&gammaProdVertexRadiusCuts[0]);
+  
+  // Default analysis utils
+  fAnaUtils = new AliAnalysisUtils();
 }
 
 
@@ -295,6 +304,35 @@ Bool_t AliAnalysisTaskPIDV0base::GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcu
     if (TMath::Abs(primaryVertex->GetZ()) > fZvtxCutEvent) //Default: 10 cm
       return kFALSE;
   }
+  
+  return kTRUE;
+}
+
+
+//______________________________________________________________________________
+Bool_t AliAnalysisTaskPIDV0base::GetIsPileUp(AliVEvent* event, AliAnalysisTaskPIDV0base::PileUpRejectionType pileUpRejectionType) const
+{
+  // Check whether event is a pile-up event according to current AnalysisUtils object.
+  // If rejection type is kPileUpRejectionOff, kFALSE is returned.
+  // In case of errors, the error is displayed and kTRUE is returned.
+  
+  if (pileUpRejectionType == kPileUpRejectionOff)
+    return kFALSE;
+  
+  if (!event) {
+    AliError("No event!");
+    return kTRUE;
+  }
+  
+  if (!fAnaUtils) {
+    AliError("AnalysisUtils object not available!");
+    return kTRUE;
+  }
+  
+  if (pileUpRejectionType == kPileUpRejectionSPD)
+    return fAnaUtils->IsPileUpSPD(event);
+  else if (pileUpRejectionType == kPileUpRejectionMV)
+    return fAnaUtils->IsPileUpMV(event);
   
   return kTRUE;
 }

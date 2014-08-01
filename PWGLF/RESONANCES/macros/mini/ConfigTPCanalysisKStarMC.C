@@ -99,7 +99,7 @@ Bool_t ConfigTPCanalysisKStarMC
     //out->AddAxis(resID, 200, -0.02, 0.02);
     
     // axis Y: transverse momentum
-    out->AddAxis(ptID, 300, 0.0, 30.0);
+    out->AddAxis(ptID, 200, 0.0, 20.0);
     
     // axis Z: centrality-multiplicity
     if (!isPP)
@@ -127,7 +127,7 @@ Bool_t ConfigTPCanalysisKStarMC
     outm->SetPairCuts(cutsPair);
     // binnings
     outm->AddAxis(imID, 90, 0.6, 1.5);
-    outm->AddAxis(ptID, 300, 0.0, 30.0);
+    outm->AddAxis(ptID, 200, 0.0, 20.0);
     if (!isPP){
     outm->AddAxis(centID, 100, 0.0, 100.0);
     }   else { 

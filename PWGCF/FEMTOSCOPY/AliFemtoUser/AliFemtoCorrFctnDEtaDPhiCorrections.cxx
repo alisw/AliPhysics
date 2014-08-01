@@ -13,6 +13,7 @@
 //#include "AliFemtoHisto.hh"
 #include <cstdio>
 #include <TMath.h>
+#include "THn.h"
 
 #ifdef __ROOT__ 
 ClassImp(AliFemtoCorrFctnDEtaDPhiCorrections)
@@ -33,16 +34,12 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* t
   fDPhiDenominator(0),
   fDCosNumerator(0),
   fDCosDenominator(0),
-  fDoPtAnalysis(0),
-  fDPhiPtNumerator(0),
-  fDPhiPtDenominator(0),
-  fDCosPtNumerator(0),
-  fDCosPtDenominator(0),
+  fDoFullAnalysis(kFALSE),
   fPhi(0),
   fEta(0),
+  fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
-  fIfCorrectionHist(kNone),
   fIfCorrection(0),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
@@ -52,7 +49,25 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* t
   fpTab(0),
   fPartType(kNoCorrection),
   fphiL(0),
-  fphiT(0)
+  fphiT(0),
+  ifileCorrTab(0),
+  fdoPtCorr(0),
+  fdoEtaCorr(0),
+  fdoPhiCorr(0),
+  fdoZVertCorr(0),
+  fpartType1(0),
+  fpartType2(0),
+  fhntReco1(0),
+  fhntReco2(0),
+  fh1Reco1(0),
+  fh1Reco2(0),
+  fh2Reco1(0),
+  fh2Reco2(0),
+  fh3Reco1(0),
+  fh3Reco2(0),
+  fhCont1(0),
+  fhCont2(0),
+  fCorr1D(kFALSE)
 {
 
   fphiL = (-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
@@ -67,83 +82,19 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* t
   strncat(tTitDenD,title, 100);
   fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
 
-  // set up numerator
-  char tTitNumDPhi[101] = "NumDPhi";
-  strncat(tTitNumDPhi,title, 100);
-  fDPhiNumerator = new TH1D(tTitNumDPhi,title,aPhiBins*2,fphiL, fphiT);
-  // set up denominator
-  char tTitDenDPhi[101] = "DenDPhi";
-  strncat(tTitDenDPhi,title, 100);
-  fDPhiDenominator = new TH1D(tTitDenDPhi,title,aPhiBins*2,fphiL, fphiT);
+    // set up numerator
+  char tTitNum[101] = "PtSumDist";
+  strncat(tTitNum,title, 100);
+  fPtSumDist = new TH1D(tTitNum,title,200,0,10);
 
-  // set up numerator
-  char tTitNumDCos[101] = "NumDCos";
-  strncat(tTitNumDCos,title, 100);
-  fDCosNumerator = new TH1D(tTitNumDCos,title,aPhiBins*2,-1.0,1.0);
-  // set up denominator
-  char tTitDenDCos[101] = "DenDCos";
-  strncat(tTitDenDCos,title, 100);
-  fDCosDenominator = new TH1D(tTitDenDCos,title,aPhiBins*2,-1.0,1.0);
-
-  char tTitPhi[101] = "Phi";
-  strncat(tTitPhi,title, 100);
-  fPhi = new TH1D(tTitPhi,title,90,-TMath::Pi(),TMath::Pi());
-
-  char tTitEta[101] = "Eta";
-  strncat(tTitEta,title, 100);
-  fEta = new TH1D(tTitEta,title,90,-1.2,1.2);
-  
-  // set up numerator
-  char tTitYtNum[101] = "NumYtYt";
-  strncat(tTitYtNum,title, 100);
-  fYtYtNumerator = new TH2D(tTitYtNum,title,aPhiBins,1,5,aEtaBins,1,5);
-  // set up denominator
-  char tTitYtYtDen[101] = "DenYtYt";
-  strncat(tTitYtYtDen,title, 100);
-  fYtYtDenominator = new TH2D(tTitYtYtDen,title,aPhiBins,1,5,aEtaBins,1,5);
-
-
-  char tTitPtCorrectionsNum[101] = "NumpT1pT2EtaPhi";
-  strncat(tTitPtCorrectionsNum,title, 100);
-  char tTitPtCorrectionsDen[101] = "DenpT1pT2EtaPhi";
-  strncat(tTitPtCorrectionsDen,title, 100);
-
-  Int_t nbins[4] = {20,20,aPhiBins,aEtaBins};
-  Double_t xmin[4] = {0,0,-0.5*TMath::Pi(),-2.0};
-  Double_t xmax[4] = {4,4,1.5*TMath::Pi(),2.0};
-
-
-  fPtCorrectionsNum = new THnSparseF(tTitPtCorrectionsNum,title,4,nbins,xmin,xmax);
-  fPtCorrectionsDen = new THnSparseF(tTitPtCorrectionsDen,title,4,nbins,xmin,xmax);
-
-  char tTitEtaCorrectionsNum[101] = "NumEta1Eta2EtaPhi";
-  strncat(tTitEtaCorrectionsNum,title, 100);
-  char tTitEtaCorrectionsDen[101] = "DenEta1Eta2EtaPhi";
-  strncat(tTitEtaCorrectionsDen,title, 100);
-
-  Double_t xmineta[4] = {-1,1,-0.5*TMath::Pi(),-2.0};
-  Double_t xmaxeta[4] = {-1,1,1.5*TMath::Pi(),2.0};
-
-  fEtaCorrectionsNum = new THnSparseF(tTitEtaCorrectionsNum,title,4,nbins,xmineta,xmaxeta);
-  fEtaCorrectionsDen = new THnSparseF(tTitEtaCorrectionsDen,title,4,nbins,xmineta,xmaxeta);
-
-  // THnSparse(const char* name, const char* title, Int_t dim,
-  //           const Int_t* nbins, const Double_t* xmin, const Double_t* xmax,
-  //           Int_t chunksize);
-
-  // to enable error bar calculation...
   fDPhiDEtaNumerator->Sumw2();
   fDPhiDEtaDenominator->Sumw2();
-  fDPhiNumerator->Sumw2();
-  fDPhiDenominator->Sumw2();
-  fDCosNumerator->Sumw2();
-  fDCosDenominator->Sumw2();
-  fPhi->Sumw2();
-  fEta->Sumw2();
-  fYtYtNumerator->Sumw2();
-  fYtYtDenominator->Sumw2();
-  fPtCorrectionsNum->Sumw2();
-  fPtCorrectionsDen->Sumw2();
+  fPtSumDist->Sumw2();
+
+
+
+  // to enable error bar calculation...
+
 
   
 
@@ -158,16 +109,12 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
   fDPhiDenominator(0),
   fDCosNumerator(0),
   fDCosDenominator(0),
-  fDoPtAnalysis(0),
-  fDPhiPtNumerator(0),
-  fDPhiPtDenominator(0),
-  fDCosPtNumerator(0),
-  fDCosPtDenominator(0),
+  fDoFullAnalysis(kFALSE),
   fPhi(0),
   fEta(0),
+  fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
-  fIfCorrectionHist(kNone),
   fIfCorrection(0),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
@@ -177,7 +124,25 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
   fpTab(0),
   fPartType(kNoCorrection),
   fphiL(0),
-  fphiT(0)
+  fphiT(0),
+  ifileCorrTab(0),
+  fdoPtCorr(0),
+  fdoEtaCorr(0),
+  fdoPhiCorr(0),
+  fdoZVertCorr(0),
+  fpartType1(0),
+  fpartType2(0),
+  fhntReco1(0),
+  fhntReco2(0),
+  fh1Reco1(0),
+  fh1Reco2(0),
+  fh2Reco1(0),
+  fh2Reco2(0),
+  fh3Reco1(0),
+  fh3Reco2(0),
+  fhCont1(0),
+  fhCont2(0),
+  fCorr1D(kFALSE)
 {
   // copy constructor
   if (aCorrFctn.fDPhiDEtaNumerator)
@@ -207,23 +172,6 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
   else
     fDCosDenominator = 0;
 
-  if (aCorrFctn.fDPhiPtNumerator)
-    fDPhiPtNumerator = new TH2D(*aCorrFctn.fDPhiPtNumerator);
-  else
-    fDPhiPtNumerator = 0;
-  if (aCorrFctn.fDPhiPtDenominator)
-    fDPhiPtDenominator = new TH2D(*aCorrFctn.fDPhiPtDenominator);
-  else
-    fDPhiPtDenominator = 0;
-
-  if (aCorrFctn.fDCosPtNumerator)
-    fDCosPtNumerator = new TH2D(*aCorrFctn.fDCosPtNumerator);
-  else
-    fDCosPtNumerator = 0;
-  if (aCorrFctn.fDCosPtDenominator)
-    fDCosPtDenominator = new TH2D(*aCorrFctn.fDCosPtDenominator);
-  else
-    fDCosPtDenominator = 0;
  if (aCorrFctn.fPhi)
     fPhi = new TH1D(*aCorrFctn.fPhi);
   else
@@ -232,6 +180,11 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
     fEta = new TH1D(*aCorrFctn.fEta);
   else
     fEta = 0;
+
+ if (aCorrFctn.fPtSumDist)
+   fPtSumDist = new TH1D(*aCorrFctn.fPtSumDist);
+ else
+   fPtSumDist = 0;
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
@@ -266,26 +219,38 @@ AliFemtoCorrFctnDEtaDPhiCorrections::~AliFemtoCorrFctnDEtaDPhiCorrections(){
   // destructor
   delete fDPhiDEtaNumerator;
   delete fDPhiDEtaDenominator;
-  delete fDPhiNumerator;
-  delete fDPhiDenominator;
-  delete fDCosNumerator;
-  delete fDCosDenominator;
-  if (fDoPtAnalysis) {
-    delete fDPhiPtNumerator;
-    delete fDPhiPtDenominator;
-    delete fDCosPtNumerator;
-    delete fDCosPtDenominator;
+  delete fPtSumDist;
+
+  if (fDoFullAnalysis) {
+    delete fDPhiNumerator;
+    delete fDPhiDenominator;
+    delete fDCosNumerator;
+    delete fDCosDenominator;
+
+    delete fYtYtNumerator;
+    delete fYtYtDenominator;
+    delete fPhi;
+    delete fEta;
+    delete fPtCorrectionsNum;
+    delete fPtCorrectionsDen;
+    delete fEtaCorrectionsNum;
+    delete fEtaCorrectionsDen;
   }
-  delete fPhi;
-  delete fEta;
 
-  delete fYtYtNumerator;
-  delete fYtYtDenominator;
+  //corrctions
+  if(fhntReco1){
+    delete fhntReco1;
+    delete fhntReco2;
+    delete fhCont1;
+    delete fhCont2;
+  }
+  if(fh1Reco1) delete fh1Reco1;
+  if(fh1Reco2) delete fh1Reco2;
+  if(fh2Reco1) delete fh2Reco1;
+  if(fh2Reco2) delete fh2Reco2;
+  if(fh3Reco1) delete fh3Reco1;
+  if(fh3Reco2) delete fh3Reco2;
 
-  delete fPtCorrectionsNum;
-  delete fPtCorrectionsDen;
-  delete fEtaCorrectionsNum;
-  delete fEtaCorrectionsDen;
 }
 //_________________________
 AliFemtoCorrFctnDEtaDPhiCorrections& AliFemtoCorrFctnDEtaDPhiCorrections::operator=(const AliFemtoCorrFctnDEtaDPhiCorrections& aCorrFctn)
@@ -321,23 +286,6 @@ AliFemtoCorrFctnDEtaDPhiCorrections& AliFemtoCorrFctnDEtaDPhiCorrections::operat
   else
     fDCosDenominator = 0;
 
-  if (aCorrFctn.fDPhiPtNumerator)
-    fDPhiPtNumerator = new TH2D(*aCorrFctn.fDPhiPtNumerator);
-  else
-    fDPhiPtNumerator = 0;
-  if (aCorrFctn.fDPhiPtDenominator)
-    fDPhiPtDenominator = new TH2D(*aCorrFctn.fDPhiPtDenominator);
-  else
-    fDPhiPtDenominator = 0;
-
-  if (aCorrFctn.fDCosPtNumerator)
-    fDCosPtNumerator = new TH2D(*aCorrFctn.fDCosPtNumerator);
-  else
-    fDCosPtNumerator = 0;
-  if (aCorrFctn.fDCosPtDenominator)
-    fDCosPtDenominator = new TH2D(*aCorrFctn.fDCosPtDenominator);
-  else
-    fDCosPtDenominator = 0;
   if (aCorrFctn.fPhi)
     fPhi = new TH1D(*aCorrFctn.fPhi);
   else
@@ -346,6 +294,11 @@ AliFemtoCorrFctnDEtaDPhiCorrections& AliFemtoCorrFctnDEtaDPhiCorrections::operat
     fEta = new TH1D(*aCorrFctn.fEta);
   else
     fEta = 0;
+
+ if (aCorrFctn.fPtSumDist)
+   fPtSumDist = new TH1D(*aCorrFctn.fPtSumDist);
+ else
+   fPtSumDist = 0;
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
@@ -356,9 +309,6 @@ AliFemtoCorrFctnDEtaDPhiCorrections& AliFemtoCorrFctnDEtaDPhiCorrections::operat
    fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
  else 
    fYtYtDenominator = 0;
-
- fIfCorrectionHist = kNone;
- fIfCorrection = 0;
  
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
@@ -411,9 +361,9 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
     if (!fPairCut->Pass(pair)) return;
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
-  double phi2 = pair->Track2()->Track()->P().Phi();
-  double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
-  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();*/
+    double phi2 = pair->Track2()->Track()->P().Phi();
+    double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
+    double eta2 = pair->Track2()->Track()->P().PseudoRapidity();*/
 
   double phi1 = pair->Track1()->FourMomentum().Phi();
   double phi2 = pair->Track2()->FourMomentum().Phi();
@@ -426,57 +376,65 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
 
   double deta = eta1 - eta2;
 
-   double px1 = pair->Track1()->Track()->P().x();
-   double py1 = pair->Track1()->Track()->P().y();
-   //double pz1 = pair->Track1()->Track()->P().z();
+  double px1 = pair->Track1()->Track()->P().x();
+  double py1 = pair->Track1()->Track()->P().y();
+  //double pz1 = pair->Track1()->Track()->P().z();
 
-   double px2 = pair->Track2()->Track()->P().x();
-   double py2 = pair->Track2()->Track()->P().y();
-   //double pz2 = pair->Track2()->Track()->P().z();
+  double px2 = pair->Track2()->Track()->P().x();
+  double py2 = pair->Track2()->Track()->P().y();
+  //double pz2 = pair->Track2()->Track()->P().z();
 
-   double pt1 = TMath::Hypot(px1, py1);
-   double pt2 = TMath::Hypot(px2, py2);
+  double pt1 = TMath::Hypot(px1, py1);
+  double pt2 = TMath::Hypot(px2, py2);
 
-   double corrweight;
-   if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2);
-/*   double ptmin = pt1>pt2 ? pt2 : pt1;
+  double vert1[3];
+  pair->Track1()->Track()->GetPrimaryVertex(vert1);
+  double vert2[3];
+  pair->Track2()->Track()->GetPrimaryVertex(vert2);
 
-   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
-     sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
-*/
-   if (fIfCorrection)
+  double corrweight=0; //double corrweightpT1=1;  double corrweightpT2=1; 
+  //if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2);
+  if (fIfCorrection) 
+    {
+      corrweight = CalculateCorrectionWeight(pt1, pt2, eta1, eta2, phi1, phi2, vert1[2], vert2[2]);
+    }
+  else if(fCorr1D)
+    {
+      corrweight = CalculateCorrectionWeight(pt1, pt2);
+      //corrweightpT1 = CalculateCorrectionWeight(pt1);
+      //corrweightpT2 = CalculateCorrectionWeight(pt2);
+    }
+
+  fPtSumDist->Fill(pt1+pt2,corrweight);
+  /*   double ptmin = pt1>pt2 ? pt2 : pt1;
+
+       double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
+       sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
+  */
+  if (fIfCorrection || fCorr1D)
+    {
       fDPhiDEtaNumerator->Fill(dphi, deta, corrweight);
-   else
-      fDPhiDEtaNumerator->Fill(dphi, deta);
-
-  fDPhiNumerator->Fill(dphi);
-//   fDCosNumerator->Fill(cosphi);
-
-  if (fDoPtAnalysis) {
-//     fDPhiPtNumerator->Fill(dphi, ptmin);
-//     fDCosPtNumerator->Fill(cosphi, ptmin);
+    }
+  else{
+    fDPhiDEtaNumerator->Fill(dphi, deta);
   }
 
-  fPhi->Fill(phi1);
-  fEta->Fill(eta1);
 
-  double PionMass = 0.13956995;
-  double yt1 = TMath::Log(sqrt(1+(pt1/PionMass)*(pt1/PionMass))+(pt1/PionMass));
-  double yt2 = TMath::Log(sqrt(1+(pt2/PionMass)*(pt2/PionMass))+(pt2/PionMass));
-  fYtYtNumerator->Fill(yt1,yt2);
+  if (fDoFullAnalysis) {
+    //fDPhiPtNumerator->Fill(dphi, ptmin);
+    //fDCosPtNumerator->Fill(cosphi, ptmin);
 
-  if(fIfCorrectionHist)
-    {
-      if(fIfCorrectionHist == kPt){
-	Double_t val[] = {pt1,pt2,dphi,deta};
-	fPtCorrectionsNum->Fill(val);
-      }
-      if(fIfCorrectionHist == kEta){
-	Double_t val[] = {eta1,eta2,dphi,deta};
-	fEtaCorrectionsNum->Fill(val);
-      }
+    fDPhiNumerator->Fill(dphi);
+    //fDCosNumerator->Fill(cosphi);
+    double PionMass = 0.13956995;
+    double yt1 = TMath::Log(sqrt(1+(pt1/PionMass)*(pt1/PionMass))+(pt1/PionMass));
+    double yt2 = TMath::Log(sqrt(1+(pt2/PionMass)*(pt2/PionMass))+(pt2/PionMass));
+    fYtYtNumerator->Fill(yt1,yt2);
 
-    }
+
+    fPhi->Fill(phi1);
+    fEta->Fill(eta1);
+  }
 
 }
 //____________________________
@@ -486,9 +444,9 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddMixedPair( AliFemtoPair* pair){
     if (!fPairCut->Pass(pair)) return;
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
-  double phi2 = pair->Track2()->Track()->P().Phi();
-  double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
-  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();*/
+    double phi2 = pair->Track2()->Track()->P().Phi();
+    double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
+    double eta2 = pair->Track2()->Track()->P().PseudoRapidity();*/
 
   double phi1 = pair->Track1()->FourMomentum().Phi();
   double phi2 = pair->Track2()->FourMomentum().Phi();
@@ -501,55 +459,54 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddMixedPair( AliFemtoPair* pair){
 
   double deta = eta1 - eta2;
 
-   double px1 = pair->Track1()->Track()->P().x();
-   double py1 = pair->Track1()->Track()->P().y();
-   //double pz1 = pair->Track1()->Track()->P().z();
+  double px1 = pair->Track1()->Track()->P().x();
+  double py1 = pair->Track1()->Track()->P().y();
+  //double pz1 = pair->Track1()->Track()->P().z();
 
-   double px2 = pair->Track2()->Track()->P().x();
-   double py2 = pair->Track2()->Track()->P().y();
-   //double pz2 = pair->Track2()->Track()->P().z();
+  double px2 = pair->Track2()->Track()->P().x();
+  double py2 = pair->Track2()->Track()->P().y();
+  //double pz2 = pair->Track2()->Track()->P().z();
 
-   double pt1 = TMath::Hypot(px1, py1);
-   double pt2 = TMath::Hypot(px2, py2);
-//   double ptmin = pt1>pt2 ? pt2 : pt1;
+  double pt1 = TMath::Hypot(px1, py1);
+  double pt2 = TMath::Hypot(px2, py2);
+  //   double ptmin = pt1>pt2 ? pt2 : pt1;
+  //   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
+  //     sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
 
-//   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
-//     sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
 
+  double vert1[3];
+  pair->Track1()->Track()->GetPrimaryVertex(vert1);
+  double vert2[3];
+  pair->Track2()->Track()->GetPrimaryVertex(vert2);
 
-   double corrweight=-999;
-   if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2);
+  double corrweight=-999;
+  //if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2);
+  if (fIfCorrection) 
+    {
+      corrweight = CalculateCorrectionWeight(pt1, pt2, eta1, eta2, phi1, phi2, vert1[2], vert2[2]);
+    }
+  else if(fCorr1D)
+    {
+      corrweight = CalculateCorrectionWeight(pt1, pt2);
+    }
   
-   if(fIfCorrection)
-      fDPhiDEtaDenominator->Fill(dphi, deta, corrweight);
-   else
-      fDPhiDEtaDenominator->Fill(dphi, deta);
+  
+  if(fIfCorrection || fCorr1D)
+    fDPhiDEtaDenominator->Fill(dphi, deta, corrweight);
+  else
+    fDPhiDEtaDenominator->Fill(dphi, deta);
 
-  fDPhiDenominator->Fill(dphi);
-//   fDCosDenominator->Fill(cosphi);
+  if (fDoFullAnalysis) {
+    //fDPhiPtDenominator->Fill(dphi, ptmin);
+    //fDCosPtDenominator->Fill(cosphi, ptmin);
+    fDPhiDenominator->Fill(dphi);
 
-  //if (fDoPtAnalysis) {
-    //   fDPhiPtDenominator->Fill(dphi, ptmin);
-    //   fDCosPtDenominator->Fill(cosphi, ptmin);
-  //}
-
-  double PionMass = 0.13956995;
+    double PionMass = 0.13956995;
     double yt1 = TMath::Log(sqrt(1+(pt1/PionMass)*(pt1/PionMass))+(pt1/PionMass));
     double yt2 = TMath::Log(sqrt(1+(pt2/PionMass)*(pt2/PionMass))+(pt2/PionMass));
     fYtYtDenominator->Fill(yt1,yt2);
 
-  if(fIfCorrectionHist)
-    {
-      if(fIfCorrectionHist == kPt){
-	Double_t val[] = {pt1,pt2,dphi,deta};
-	fPtCorrectionsDen->Fill(val);
-      }
-      if(fIfCorrectionHist == kEta){
-	Double_t val[] = {eta1,eta2,dphi,deta};
-	fEtaCorrectionsDen->Fill(val);
-      }
-    }
-
+  }
 }
 
 
@@ -558,27 +515,20 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::WriteHistos()
   // Write out result histograms
   fDPhiDEtaNumerator->Write();
   fDPhiDEtaDenominator->Write();
+  fPtSumDist->Write();
   /*fDPhiNumerator->Write();
   fDPhiDenominator->Write();
   fDCosNumerator->Write();
   fDCosDenominator->Write();
-  if (fDoPtAnalysis) {
+  if (fDoFullAnalysis) {
     fDPhiPtNumerator->Write();
     fDPhiPtDenominator->Write();
     fDCosPtNumerator->Write();
     fDCosPtDenominator->Write();
     }*/
-  fPhi->Write();
-  fEta->Write();
+  // fPhi->Write();
+  // fEta->Write();
   
-  if(fIfCorrectionHist){
-    if(fIfCorrectionHist==kPt){
-    fPtCorrectionsNum->Write();
-    fPtCorrectionsDen->Write();}
-    if(fIfCorrectionHist==kEta){
-    fEtaCorrectionsNum->Write();
-    fEtaCorrectionsDen->Write();}
-  }
 }
 
 TList* AliFemtoCorrFctnDEtaDPhiCorrections::GetOutputList()
@@ -588,123 +538,342 @@ TList* AliFemtoCorrFctnDEtaDPhiCorrections::GetOutputList()
 
   tOutputList->Add(fDPhiDEtaNumerator);
   tOutputList->Add(fDPhiDEtaDenominator);
-  /*tOutputList->Add(fDPhiNumerator);
-  tOutputList->Add(fDPhiDenominator);
-  tOutputList->Add(fDCosNumerator);
-  tOutputList->Add(fDCosDenominator);
-  if (fDoPtAnalysis) {
-    tOutputList->Add(fDPhiPtNumerator);
-    tOutputList->Add(fDPhiPtDenominator);
-    tOutputList->Add(fDCosPtNumerator);
-    tOutputList->Add(fDCosPtDenominator);
-    }*/
-  tOutputList->Add(fPhi);
-  tOutputList->Add(fEta);
-  tOutputList->Add(fYtYtNumerator);
-  tOutputList->Add(fYtYtDenominator);
+  tOutputList->Add(fPtSumDist);
+ 
+  if (fDoFullAnalysis) {
+    // tOutputList->Add(fDPhiPtNumerator);
+    // tOutputList->Add(fDPhiPtDenominator);
+    //tOutputList->Add(fDCosPtNumerator);
+    //tOutputList->Add(fDCosPtDenominator);
+    tOutputList->Add(fDPhiNumerator);
+    tOutputList->Add(fDPhiDenominator);
+    tOutputList->Add(fDCosNumerator);
+    tOutputList->Add(fDCosDenominator);
 
-  if(fIfCorrectionHist){
-    if(fIfCorrection==kPt){
-      tOutputList->Add(fPtCorrectionsNum);
-      tOutputList->Add(fPtCorrectionsDen);
-    }
-    if(fIfCorrectionHist==kEta){
-      tOutputList->Add(fEtaCorrectionsNum);
-      tOutputList->Add(fEtaCorrectionsDen);
-    }
+    tOutputList->Add(fYtYtNumerator);
+    tOutputList->Add(fYtYtDenominator);
+    tOutputList->Add(fPhi);
+    tOutputList->Add(fEta);
   }
+
+
+
+
   return tOutputList;
 
 }
 
-void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoPtAnalysis(int do2d)
+void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoFullAnalysis(Bool_t do2d)
 {
-  fDoPtAnalysis = do2d;
-  
-  int aPhiBins = fDPhiDEtaNumerator->GetNbinsX();
-  const char *title = fDPhiDEtaNumerator->GetTitle();
+  fDoFullAnalysis = do2d;
 
-  // set up numerator
-  char tTitNumDPhiPt[101] = "NumDPhiPt";
-  strncat(tTitNumDPhiPt,title, 100);
-  fDPhiPtNumerator = new TH2D(tTitNumDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),3./2.*TMath::Pi(), 30, 0.0, 3.0);
-  // set up denominator
-  char tTitDenDPhiPt[101] = "DenDPhiPt";
-  strncat(tTitDenDPhiPt,title, 100);
-  fDPhiPtDenominator = new TH2D(tTitDenDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),3./2.*TMath::Pi(), 30, 0.0, 3.0);
+  if(fDoFullAnalysis)
+    {
 
-  // set up numerator
-  char tTitNumDCosPt[101] = "NumDCosPt";
-  strncat(tTitNumDCosPt,title, 100);
-  fDCosPtNumerator = new TH2D(tTitNumDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
-  // set up denominator
-  char tTitDenDCosPt[101] = "DenDCosPt";
-  strncat(tTitDenDCosPt,title, 100);
-  fDCosPtDenominator = new TH2D(tTitDenDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
+      int aPhiBins = fDPhiDEtaNumerator->GetNbinsX();
+      int aEtaBins = fDPhiDEtaNumerator->GetNbinsY();
+      const char *title = fDPhiDEtaNumerator->GetTitle();
 
-  fDPhiPtNumerator->Sumw2();
-  fDPhiPtDenominator->Sumw2();
-  fDCosPtNumerator->Sumw2();
-  fDCosPtDenominator->Sumw2();
+      // set up numerator
+      char tTitNumDPhi[101] = "NumDPhi";
+      strncat(tTitNumDPhi,title, 100);
+      fDPhiNumerator = new TH1D(tTitNumDPhi,title,aPhiBins*2,fphiL, fphiT);
+      // set up denominator
+      char tTitDenDPhi[101] = "DenDPhi";
+      strncat(tTitDenDPhi,title, 100);
+      fDPhiDenominator = new TH1D(tTitDenDPhi,title,aPhiBins*2,fphiL, fphiT);
+
+      // set up numerator
+      char tTitNumDCos[101] = "NumDCos";
+      strncat(tTitNumDCos,title, 100);
+      fDCosNumerator = new TH1D(tTitNumDCos,title,aPhiBins*2,-1.0,1.0);
+      // set up denominator
+      char tTitDenDCos[101] = "DenDCos";
+      strncat(tTitDenDCos,title, 100);
+      fDCosDenominator = new TH1D(tTitDenDCos,title,aPhiBins*2,-1.0,1.0);
+
+      // set up numerator
+      char tTitYtNum[101] = "NumYtYt";
+      strncat(tTitYtNum,title, 100);
+      fYtYtNumerator = new TH2D(tTitYtNum,title,aPhiBins,1,5,aEtaBins,1,5);
+      // set up denominator
+      char tTitYtYtDen[101] = "DenYtYt";
+      strncat(tTitYtYtDen,title, 100);
+      fYtYtDenominator = new TH2D(tTitYtYtDen,title,aPhiBins,1,5,aEtaBins,1,5);
+
+
+      char tTitPhi[101] = "Phi";
+      strncat(tTitPhi,title, 100);
+      fPhi = new TH1D(tTitPhi,title,90,-TMath::Pi(),TMath::Pi());
+
+      char tTitEta[101] = "Eta";
+      strncat(tTitEta,title, 100);
+      fEta = new TH1D(tTitEta,title,90,-1.2,1.2);
+
+      char tTitPtCorrectionsNum[101] = "NumpT1pT2EtaPhi";
+      strncat(tTitPtCorrectionsNum,title, 100);
+      char tTitPtCorrectionsDen[101] = "DenpT1pT2EtaPhi";
+      strncat(tTitPtCorrectionsDen,title, 100);
+
+      Int_t nbins[4] = {20,20,aPhiBins,aEtaBins};
+      Double_t xmin[4] = {0,0,-0.5*TMath::Pi(),-2.0};
+      Double_t xmax[4] = {4,4,1.5*TMath::Pi(),2.0};
+
+      fPtCorrectionsNum = new THnSparseF(tTitPtCorrectionsNum,title,4,nbins,xmin,xmax);
+      fPtCorrectionsDen = new THnSparseF(tTitPtCorrectionsDen,title,4,nbins,xmin,xmax);
+
+      char tTitEtaCorrectionsNum[101] = "NumEta1Eta2EtaPhi";
+      strncat(tTitEtaCorrectionsNum,title, 100);
+      char tTitEtaCorrectionsDen[101] = "DenEta1Eta2EtaPhi";
+      strncat(tTitEtaCorrectionsDen,title, 100);
+
+      Double_t xmineta[4] = {-1,1,-0.5*TMath::Pi(),-2.0};
+      Double_t xmaxeta[4] = {-1,1,1.5*TMath::Pi(),2.0};
+
+      fEtaCorrectionsNum = new THnSparseF(tTitEtaCorrectionsNum,title,4,nbins,xmineta,xmaxeta);
+      fEtaCorrectionsDen = new THnSparseF(tTitEtaCorrectionsDen,title,4,nbins,xmineta,xmaxeta);
+      // THnSparse(const char* name, const char* title, Int_t dim,
+      //           const Int_t* nbins, const Double_t* xmin, const Double_t* xmax,
+      //           Int_t chunksize);
+
+      // to enable error bar calculation...
+      fDPhiNumerator->Sumw2();
+      fDPhiDenominator->Sumw2();
+      fDCosNumerator->Sumw2();
+      fDCosDenominator->Sumw2();
+      fYtYtNumerator->Sumw2();
+      fPhi->Sumw2();
+      fEta->Sumw2();
+      fYtYtDenominator->Sumw2();
+      fPtCorrectionsNum->Sumw2();
+      fPtCorrectionsDen->Sumw2();
+    }
+
 
 }
 
-void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoCorrections(bool doCorr)
-{
-  fIfCorrection = doCorr;
-}
 
-void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoCorrectionsHist(CorrectionType doCorr)
-{
-  fIfCorrectionHist = doCorr;
-}
 
-void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromFile(const char *pTtab, const char *corrTab)
+void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const char *file, ParticleType partType1, ParticleType partType2, bool doPtCorr, bool doEtaCorr, bool doPhiCorr, bool doZVertCorr)
 {
+  fIfCorrection = kTRUE;
  
-  double val=-10000;
+  ifileCorrTab = TFile::Open(file);
+  fdoPtCorr = doPtCorr;
+  fdoEtaCorr = doEtaCorr;
+  fdoPhiCorr = doPhiCorr;
+  fdoZVertCorr = doZVertCorr;
+  fpartType1 = partType1;
+  fpartType2 = partType2;
 
-  ifstream ifile1;
-  ifile1.open(pTtab);
-  if(ifile1)
+  char* type1 = new char[12];
+  char* type2 = new char[12];
+
+
+  if(fpartType1==kPion) strcpy(type1,"Pion");
+  else if(fpartType1==kKaon) strcpy(type1,"Kaon");
+  else if (fpartType1==kProton)strcpy(type1,"Proton");
+  else if (fpartType1==kAll) strcpy(type1,"All");
+  else if(fpartType1==kPionMinus) strcpy(type1,"PionMinus");
+  else if(fpartType1==kKaonMinus) strcpy(type1,"KaonMinus");
+  else if (fpartType1==kProtonMinus)strcpy(type1,"ProtonMinus");
+  else strcpy(type1,"");
+
+  if(fpartType2==kPion) strcpy(type2,"Pion");
+  else if(fpartType2==kKaon) strcpy(type2,"Kaon");
+  else if (fpartType2==kProton) strcpy(type2,"Proton");
+  else if (fpartType2==kAll) strcpy(type2,"All");
+  else if(fpartType2==kPionMinus) strcpy(type1,"PionMinus");
+  else if(fpartType2==kKaonMinus) strcpy(type1,"KaonMinus");
+  else if (fpartType2==kProtonMinus)strcpy(type1,"ProtonMinus");
+  else strcpy(type1,"");
+
+
+
+  fhntReco1 = (THnT<float>*)(ifileCorrTab->Get(Form("fCorrectionMapData%s",type1)))->Clone();
+  fhntReco2 = (THnT<float>*)(ifileCorrTab->Get(Form("fCorrectionMapData%s",type2)))->Clone();
+  fhCont1 = (TH1D*)(ifileCorrTab->Get(Form("SecondariesContamination%s",type1)))->Clone();
+  fhCont2 = (TH1D*)(ifileCorrTab->Get(Form("SecondariesContamination%s",type2)))->Clone();
+
+  delete type1;
+  delete type2;
+
+  double fhntReco1_nbins = fhntReco1->GetNbins();
+  double fhntReco2_nbins = fhntReco2->GetNbins();
+
+  int boolSum = fdoPtCorr+fdoEtaCorr+fdoPhiCorr+fdoZVertCorr;
+  /*if(boolSum == 0)
     {
-      int nrEntries1;
-      ifile1>>nrEntries1;
-      fpTab = new double[nrEntries1];
-      int i=0;
-      while(ifile1>>val)
+      return 1;
+      }*/
+  if(boolSum == 1)
+    {
+
+      if(fdoPtCorr == 1)
 	{
-	  fpTab[i] = val;
-	  i++;
+	  fh1Reco1 = (TH1F*)(fhntReco1->Projection(0))->Clone();
+	  fh1Reco2 = (TH1F*)(fhntReco2->Projection(0))->Clone();
+	  fh1Reco1->Scale(1./fhntReco1_nbins*fh1Reco1->GetNbinsX());
+	  fh1Reco2->Scale(1./fhntReco2_nbins*fh1Reco2->GetNbinsX());
+	    
+	}
+
+      else if(fdoEtaCorr == 1)
+	{
+	  fh1Reco1 = (TH1F*)(fhntReco1->Projection(1))->Clone();
+	  fh1Reco2 = (TH1F*)(fhntReco2->Projection(1))->Clone();
+	  fh1Reco1->Scale(1./fhntReco1_nbins*fh1Reco1->GetNbinsX());
+	  fh1Reco2->Scale(1./fhntReco2_nbins*fh1Reco2->GetNbinsX());
+	}
+
+      else if(fdoPhiCorr == 1)
+	{
+	  fh1Reco1 = (TH1F*)(fhntReco1->Projection(2))->Clone();
+	  fh1Reco2 = (TH1F*)(fhntReco2->Projection(2))->Clone();
+	  fh1Reco1->Scale(1./fhntReco1_nbins*fh1Reco1->GetNbinsX());
+	  fh1Reco2->Scale(1./fhntReco2_nbins*fh1Reco2->GetNbinsX());
+	}
+
+      else if(fdoZVertCorr == 1)
+	{
+	  fh1Reco1 = (TH1F*)(fhntReco1->Projection(3))->Clone();
+	  fh1Reco2 = (TH1F*)(fhntReco2->Projection(3))->Clone();
+	  fh1Reco1->Scale(1./fhntReco1_nbins*fh1Reco1->GetNbinsX());
+	  fh1Reco2->Scale(1./fhntReco2_nbins*fh1Reco2->GetNbinsX());
+	}
+
+    }
+
+  else if(boolSum == 2)
+    {
+      if(fdoPtCorr == 1 && fdoEtaCorr == 1)
+	{
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(1,0))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(1,0))->Clone();	  
+	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
+	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
+	}
+
+      else if(fdoPtCorr == 1 && fdoPhiCorr == 1)
+	{
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(2,0))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(2,0))->Clone();
+	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
+	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());	 
+	}
+
+      else if(fdoPtCorr == 1 && fdoZVertCorr == 1)
+	{
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(3,0))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(3,0))->Clone();
+	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
+	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
+	}
+      else if(fdoEtaCorr == 1 && fdoPhiCorr == 1)
+	{
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(2,1))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(2,1))->Clone();
+	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
+	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
+	}
+      else if(fdoEtaCorr == 1 && fdoZVertCorr == 1)
+	{
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(3,1))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(3,1))->Clone();
+	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
+	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
+	}
+      else if(fdoPhiCorr == 1 && fdoZVertCorr == 1)
+	{
+	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(3,2))->Clone();
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(3,2))->Clone();
+	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
+	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
 	}
     }
-  else
+
+
+  else if(boolSum == 3)
     {
-      cout<<"No pT values file open!"<<endl;
+      if(fdoPtCorr == 1 && fdoEtaCorr == 1 && fdoPhiCorr == 1)
+	{
+	  fh3Reco1 = (TH3F*)(fhntReco1->Projection(0,1,2))->Clone();
+	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(0,1,2))->Clone(); 
+	  fh3Reco1->Scale(1./fhntReco1_nbins*fh3Reco1->GetNbinsX()*fh3Reco1->GetNbinsY()*fh3Reco1->GetNbinsZ());
+	  fh3Reco2->Scale(1./fhntReco2_nbins*fh3Reco2->GetNbinsX()*fh3Reco2->GetNbinsY()*fh3Reco2->GetNbinsZ());
+
+	}
+
+      else if(fdoPtCorr == 1 && fdoEtaCorr == 1 && fdoZVertCorr == 1)
+	{
+	  fh3Reco1 = (TH3F*)(fhntReco1->Projection(0,1,3))->Clone();
+	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(0,1,3))->Clone(); 
+	  fh3Reco1->Scale(1./fhntReco1_nbins*fh3Reco1->GetNbinsX()*fh3Reco1->GetNbinsY()*fh3Reco1->GetNbinsZ());
+	  fh3Reco2->Scale(1./fhntReco2_nbins*fh3Reco2->GetNbinsX()*fh3Reco2->GetNbinsY()*fh3Reco2->GetNbinsZ());
+	}
+
+      else if(fdoPtCorr == 1 && fdoPhiCorr == 1 && fdoZVertCorr == 1)
+	{
+	  fh3Reco1 = (TH3F*)(fhntReco1->Projection(0,2,3))->Clone();
+	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(0,2,3))->Clone(); 
+	  fh3Reco1->Scale(1./fhntReco1_nbins*fh3Reco1->GetNbinsX()*fh3Reco1->GetNbinsY()*fh3Reco1->GetNbinsZ());
+	  fh3Reco2->Scale(1./fhntReco2_nbins*fh3Reco2->GetNbinsX()*fh3Reco2->GetNbinsY()*fh3Reco2->GetNbinsZ());
+	}
+
+      else if(fdoEtaCorr == 1 && fdoPhiCorr == 1 && fdoZVertCorr == 1)
+	{
+	  fh3Reco1 = (TH3F*)(fhntReco1->Projection(1,2,3))->Clone();
+	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(1,2,3))->Clone(); 
+	  fh3Reco1->Scale(1./fhntReco1_nbins*fh3Reco1->GetNbinsX()*fh3Reco1->GetNbinsY()*fh3Reco1->GetNbinsZ());
+	  fh3Reco2->Scale(1./fhntReco2_nbins*fh3Reco2->GetNbinsX()*fh3Reco2->GetNbinsY()*fh3Reco2->GetNbinsZ());
+	}
     }
-  ifile1.close();
+
+  /*else if(boolSum == 4)
+    {
+    }*/
+
+  ifileCorrTab->Close();
+
+}
+
+void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile1D(const char *file, ParticleType partType1, ParticleType partType2)
+{
+  fCorr1D = kTRUE;
+
+  ifileCorrTab = TFile::Open(file);
+
+  fpartType1 = partType1;
+  fpartType2 = partType2;
+
+
+  char type1[12]; 
+  char type2[12];
+
+
+  if(fpartType1==kPion) strcpy(type1,"Pion");
+  else if(fpartType1==kKaon) strcpy(type1,"Kaon");
+  else if (fpartType1==kProton)strcpy(type1,"Proton");
+  else if (fpartType1==kAll) strcpy(type1,"All");
+  else if(fpartType1==kPionMinus) strcpy(type1,"PionMinus");
+  else if (fpartType1==kKaonMinus) strcpy(type1,"KaonMinus");
+  else if (fpartType1==kProtonMinus)strcpy(type1,"ProtonMinus");
+  else strcpy(type1,"");
+
+  if(fpartType2==kPion) strcpy(type2,"Pion");
+  else if(fpartType2==kKaon) strcpy(type2,"Kaon");
+  else if (fpartType2==kProton) strcpy(type2,"Proton");
+  else if (fpartType2==kAll) strcpy(type2,"All");
+  else if(fpartType2==kPionMinus) strcpy(type1,"PionMinus");
+  else if(fpartType2==kKaonMinus) strcpy(type1,"KaonMinus");
+  else if (fpartType2==kProtonMinus)strcpy(type1,"ProtonMinus");
+  else strcpy(type1,"");
+
+  fhCont1 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type1)));//->Clone();
+  fhCont2 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type2)));//->Clone();
   
+  ifileCorrTab->Close();
 
-  ifstream ifile2;
-  ifile2.open(corrTab);
-  if(ifile2)
-    {
-      int nrEntries2;
-      ifile2>>nrEntries2;
-      fCorrFactorTab = new double[nrEntries2];
-      int i=0;
-      while(ifile2>>val)
-	{
-	  fCorrFactorTab[i] = val;
-	  cout<<"fCorrFactorTab: "<<fCorrFactorTab[i]<<endl;
-	  i++;
-	}
-    }
-  else
-    {
-      cout<<"No corrections file open!"<<endl;
-    }
-  ifile2.close();
 }
 
 void AliFemtoCorrFctnDEtaDPhiCorrections::SetCorrectionTab(ParticleType partType)
@@ -724,19 +893,19 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::SetCorrectionTab(ParticleType partType
   for(int i=0;i<190;i++)
     fpTab[i]=pttab[i];
 
-  if(partType==kPion)
+  if(partType==kPion || partType==kPionMinus)
     {
       fCorrFactorTab = new double[190];
       for(int i=0;i<190;i++)
 	fCorrFactorTab[i] = pioncorrtab[i];
     }
-  else if(partType==kKaon)
+  else if(partType==kKaon || partType==kKaonMinus)
     {
       fCorrFactorTab = new double[190];
       for(int i=0;i<190;i++)
 	fCorrFactorTab[i] = kaoncorrtab[i];
     }
-  else if(partType==kProton)
+  else if(partType==kProton||partType==kProtonMinus)
     {
       fCorrFactorTab = new double[190];
       for(int i=0;i<190;i++)
@@ -752,54 +921,332 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::SetCorrectionTab(ParticleType partType
 
 double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1, double pT2)
 {
+   double w1=0., w2=0.;
+   if(pT1 > fhCont1->GetXaxis()->GetXmin() && pT1 < fhCont1->GetXaxis()->GetXmax() && pT2 > fhCont2->GetXaxis()->GetXmin() && pT2 < fhCont2->GetXaxis()->GetXmax())
+     {
+       w1 = fhCont1->GetBinContent(fhCont1->FindFixBin(pT1));
+       w2 = fhCont2->GetBinContent(fhCont2->FindFixBin(pT2));
+       
+       return w1*w2;
+     } 
+   else
+     return 0;
+}
+
+
+double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1)
+{
+   double w1=0.;
+   if(pT1 > fhCont1->GetXaxis()->GetXmin() && pT1 < fhCont1->GetXaxis()->GetXmax())
+     {
+       w1 = fhCont1->GetBinContent(fhCont1->FindFixBin(pT1));
+       return w1;
+     } 
+   else
+     return 0;
+}
+
+double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1, double pT2, double eta1, double eta2, double phi1, double phi2, double zvert1, double zvert2)
+{
   
     double w1=0., w2=0.;
-    if(pT1>0 && pT1<5 && pT2>0 && pT2<5)
-    {
-      if(pT1<pT2)
-       {
-          for (int piter = 0 ; piter<200 ; piter++)
-          { 
-	 
-             if(pT1>= fpTab[piter] && pT1< fpTab[piter+1])
-	       {
-		 w1=fCorrFactorTab[piter];
-	       }
-             if(pT2>= fpTab[piter] && pT2< fpTab[piter+1])
-             {
-                w2=fCorrFactorTab[piter];
-                break;
-             }
-          }
-       }
-       else if(pT1>pT2)
-       {
-          for (int piter = 0 ; piter<200 ; piter++)
-          {
-             if(pT2>= fpTab[piter] && pT2< fpTab[piter+1])
-                w2=fCorrFactorTab[piter];
-             if(pT1>= fpTab[piter] && pT1< fpTab[piter+1])
-             {
-                w1=fCorrFactorTab[piter];
-                break;
-             }
-          }
-       }
-       else //pT1==pT2
-       {
-          for (int piter = 0 ; piter<200 ; piter++)
-          {
-             if(pT1>= fpTab[piter] && pT1< fpTab[piter+1])
-             {
-                w1=fCorrFactorTab[piter];
-                w2=fCorrFactorTab[piter];
-                break;
-             }
-          }
-       }
-       return w1*w2;
-    }
+    double eps1=0., eps2=0;
+    double cont1=0., cont2=0; //w=(1-cont)/eps
+    phi1 += TMath::Pi();
+    phi2 += TMath::Pi();
+
+    if(pT1 > fhCont1->GetXaxis()->GetXmin() && pT1 < fhCont1->GetXaxis()->GetXmax() && pT2 > fhCont2->GetXaxis()->GetXmin() && pT2 < fhCont2->GetXaxis()->GetXmax())
+      {
+	cont1 = fhCont1->GetBinContent(fhCont1->FindFixBin(pT1));
+	cont2 = fhCont1->GetBinContent(fhCont2->FindFixBin(pT2));
+      }
     else
-       return 0;
-   return 0;
+      return 0;
+
+    int boolSum = fdoPtCorr+fdoEtaCorr+fdoPhiCorr+fdoZVertCorr;
+    if(boolSum == 0)
+      {
+	return 1;
+      }
+    else if(boolSum == 1)
+      {
+
+	if(fdoPtCorr == 1)
+	  {
+	    if(pT1 > fh1Reco1->GetXaxis()->GetXmin() && pT1 < fh1Reco1->GetXaxis()->GetXmax() && pT2 > fh1Reco2->GetXaxis()->GetXmin() && pT2 < fh1Reco2->GetXaxis()->GetXmax())
+	      {
+		eps1 = fh1Reco1->GetBinContent(fh1Reco1->FindFixBin(pT1));
+		eps2 = fh1Reco2->GetBinContent(fh1Reco2->FindFixBin(pT2));
+		
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+		return w1*w2;
+	      }
+	    else
+	      return 0;	    
+	  }
+
+	else if(fdoEtaCorr == 1)
+	  {
+	    if(eta1 > fh1Reco1->GetXaxis()->GetXmin() && eta1 < fh1Reco1->GetXaxis()->GetXmax() && eta2 > fh1Reco2->GetXaxis()->GetXmin() && eta2 < fh1Reco2->GetXaxis()->GetXmax())
+	      {
+		eps1 = fh1Reco1->GetBinContent(fh1Reco1->FindFixBin(eta1));
+		eps2 = fh1Reco2->GetBinContent(fh1Reco2->FindFixBin(eta2));
+	  
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+	  }
+
+	else if(fdoPhiCorr == 1)
+	  {
+	    if(phi1 > fh1Reco1->GetXaxis()->GetXmin() && phi1 < fh1Reco1->GetXaxis()->GetXmax() && phi2 > fh1Reco2->GetXaxis()->GetXmin() && phi2 < fh1Reco2->GetXaxis()->GetXmax())
+	      {
+		eps1 = fh1Reco1->GetBinContent(fh1Reco1->FindFixBin(phi1));
+		eps2 = fh1Reco2->GetBinContent(fh1Reco2->FindFixBin(phi2));
+
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+	  
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+
+	  }
+
+	else if(fdoZVertCorr == 1)
+	  {
+	    if(zvert1 > fh1Reco1->GetXaxis()->GetXmin() && zvert1 < fh1Reco1->GetXaxis()->GetXmax() && zvert2 > fh1Reco2->GetXaxis()->GetXmin() && zvert2 < fh1Reco2->GetXaxis()->GetXmax())
+	      {
+		eps1 = fh1Reco1->GetBinContent(fh1Reco1->FindFixBin(zvert1));
+		eps2 = fh1Reco2->GetBinContent(fh1Reco2->FindFixBin(zvert2));
+	  
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+	  }
+
+      }
+
+    else if(boolSum == 2)
+      {
+	if(fdoPtCorr == 1 && fdoEtaCorr == 1)
+	  {
+	    if(pT1 > fh2Reco1->GetXaxis()->GetXmin() && pT1 < fh2Reco1->GetXaxis()->GetXmax() && pT2 > fh2Reco2->GetXaxis()->GetXmin() && pT2 < fh2Reco2->GetXaxis()->GetXmax() && eta1 > fh2Reco1->GetYaxis()->GetXmin() && eta1 < fh2Reco1->GetYaxis()->GetXmax() && eta2 > fh2Reco2->GetYaxis()->GetXmin() && eta2 < fh2Reco2->GetYaxis()->GetXmax())
+	      {
+		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(pT1),fh2Reco1->GetYaxis()->FindFixBin(eta1));
+		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(pT2),fh2Reco2->GetYaxis()->FindFixBin(eta2));
+
+		w1 = (1-cont1)/eps1; 
+		w2 = (1-cont2)/eps2;
+
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+
+	  }
+
+	if(fdoPtCorr == 1 && fdoPhiCorr == 1)
+	  {
+	 
+	    if(pT1 > fh2Reco1->GetXaxis()->GetXmin() && pT1 < fh2Reco1->GetXaxis()->GetXmax() && pT2 > fh2Reco2->GetXaxis()->GetXmin() && pT2 < fh2Reco2->GetXaxis()->GetXmax() && phi1 > fh2Reco1->GetYaxis()->GetXmin() && phi1 < fh2Reco1->GetYaxis()->GetXmax() && phi2 > fh2Reco2->GetYaxis()->GetXmin() && phi2 < fh2Reco2->GetYaxis()->GetXmax())
+	      {
+		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(pT1),fh2Reco1->GetYaxis()->FindFixBin(phi1));
+		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(pT2),fh2Reco2->GetYaxis()->FindFixBin(phi2));
+	  
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+
+	  }
+
+	else if(fdoPtCorr == 1 && fdoZVertCorr == 1)
+	  {
+
+	    if(pT1 > fh2Reco1->GetXaxis()->GetXmin() && pT1 < fh2Reco1->GetXaxis()->GetXmax() && pT2 > fh2Reco2->GetXaxis()->GetXmin() && pT2 < fh2Reco2->GetXaxis()->GetXmax() && zvert1 > fh2Reco1->GetYaxis()->GetXmin() && zvert1 < fh2Reco1->GetYaxis()->GetXmax() && zvert2 > fh2Reco2->GetYaxis()->GetXmin() && zvert2 < fh2Reco2->GetYaxis()->GetXmax())
+	      {
+		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(pT1),fh2Reco1->GetYaxis()->FindFixBin(zvert1));
+		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(pT2),fh2Reco2->GetYaxis()->FindFixBin(zvert2));
+
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+	  
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+	  }
+	else if(fdoEtaCorr == 1 && fdoPhiCorr == 1)
+	  {
+
+	    if(eta1 > fh2Reco1->GetXaxis()->GetXmin() && eta1 < fh2Reco1->GetXaxis()->GetXmax() && eta2 > fh2Reco2->GetXaxis()->GetXmin() && eta2 < fh2Reco2->GetXaxis()->GetXmax() && phi1 > fh2Reco1->GetYaxis()->GetXmin() && phi1 < fh2Reco1->GetYaxis()->GetXmax() && phi2 > fh2Reco2->GetYaxis()->GetXmin() && phi2 < fh2Reco2->GetYaxis()->GetXmax())
+	      {
+		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(eta1),fh2Reco1->GetYaxis()->FindFixBin(phi1));
+		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(eta2),fh2Reco2->GetYaxis()->FindFixBin(phi2));
+	  
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+
+
+	  }
+	else if(fdoEtaCorr == 1 && fdoZVertCorr == 1)
+	  {
+
+	    if(eta1 > fh2Reco1->GetXaxis()->GetXmin() && eta1 < fh2Reco1->GetXaxis()->GetXmax() && eta2 > fh2Reco2->GetXaxis()->GetXmin() && eta2 < fh2Reco2->GetXaxis()->GetXmax() && zvert1 > fh2Reco1->GetYaxis()->GetXmin() && zvert1 < fh2Reco1->GetYaxis()->GetXmax() && zvert2 > fh2Reco2->GetXaxis()->GetXmin() && zvert2 < fh2Reco2->GetXaxis()->GetXmax())
+	      {
+		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(eta1),fh2Reco1->GetYaxis()->FindFixBin(zvert1));
+		eps1 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(eta2),fh2Reco2->GetYaxis()->FindFixBin(zvert2));
+
+
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+	  
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+
+	  }
+	else if(fdoPhiCorr == 1 && fdoZVertCorr == 1)
+	  {
+
+	    if(phi1 > fh2Reco1->GetXaxis()->GetXmin() && phi1 < fh2Reco1->GetXaxis()->GetXmax() && phi2 > fh2Reco2->GetXaxis()->GetXmin() && phi2 < fh2Reco2->GetXaxis()->GetXmax() && zvert1 > fh2Reco1->GetYaxis()->GetXmin() && zvert1 < fh2Reco1->GetYaxis()->GetXmax() && zvert2 > fh2Reco2->GetYaxis()->GetXmin() && zvert2 < fh2Reco2->GetYaxis()->GetXmax())
+	      {
+		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(phi1),fh2Reco1->GetYaxis()->FindFixBin(zvert1));
+		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(phi2),fh2Reco2->GetYaxis()->FindFixBin(zvert2));
+
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+	  
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+
+	  }
+      }
+
+
+    else if(boolSum == 3)
+      {
+	if(fdoPtCorr == 1 && fdoEtaCorr == 1 && fdoPhiCorr == 1)
+	  {
+	    if(pT1 >fh3Reco1->GetXaxis()->GetXmin() && pT1 <fh3Reco1->GetXaxis()->GetXmax() && 
+               pT2 > fh3Reco2->GetXaxis()->GetXmin() && pT2 <fh3Reco2->GetXaxis()->GetXmax() && 
+               eta1 > fh3Reco1->GetYaxis()->GetXmin() && eta1 <fh3Reco1->GetYaxis()->GetXmax() &&  
+               eta2 > fh3Reco2->GetYaxis()->GetXmin() && eta2 <fh3Reco2->GetYaxis()->GetXmax() &&  
+               phi1 > fh3Reco1->GetZaxis()->GetXmin() && phi1 < fh3Reco1->GetZaxis()->GetXmax() && 
+               phi2 > fh3Reco2->GetZaxis()->GetXmin() && phi2 < fh3Reco2->GetZaxis()->GetXmax())
+	      {
+		eps1 = fh3Reco1->GetBinContent(fh3Reco1->GetXaxis()->FindFixBin(pT1),fh3Reco1->GetYaxis()->FindFixBin(eta1),fh3Reco1->GetZaxis()->FindFixBin(phi1));
+		eps2 = fh3Reco2->GetBinContent(fh3Reco2->GetXaxis()->FindFixBin(pT2),fh3Reco2->GetYaxis()->FindFixBin(eta2),fh3Reco2->GetZaxis()->FindFixBin(phi2));
+	  
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+
+
+	}
+
+	else if(fdoPtCorr == 1 && fdoEtaCorr == 1 && fdoZVertCorr == 1)
+	  {
+
+	    if(pT1 >fh3Reco1->GetXaxis()->GetXmin() && pT1 <fh3Reco1->GetXaxis()->GetXmax() && pT2 > fh3Reco2->GetXaxis()->GetXmin() && pT2 <fh3Reco2->GetXaxis()->GetXmax() && eta1 > fh3Reco1->GetYaxis()->GetXmin() && eta1 <fh3Reco1->GetYaxis()->GetXmax() &&  eta2 > fh3Reco2->GetYaxis()->GetXmin() && eta2 <fh3Reco2->GetYaxis()->GetXmax() &&  zvert1 > fh3Reco1->GetZaxis()->GetXmin() && zvert1 < fh3Reco1->GetZaxis()->GetXmax() &&  zvert2 > fh3Reco2->GetZaxis()->GetXmin() && zvert2 < fh3Reco2->GetZaxis()->GetXmax())
+	      {
+		eps1 = fh3Reco1->GetBinContent(fh3Reco1->GetXaxis()->FindFixBin(pT1),fh3Reco1->GetYaxis()->FindFixBin(eta1),fh3Reco1->GetZaxis()->FindFixBin(zvert1));
+		eps2 = fh3Reco2->GetBinContent(fh3Reco2->GetXaxis()->FindFixBin(pT2),fh3Reco2->GetYaxis()->FindFixBin(eta2),fh3Reco2->GetZaxis()->FindFixBin(zvert2));
+	  
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+	  }
+
+	else if(fdoPtCorr == 1 && fdoPhiCorr == 1 && fdoZVertCorr == 1)
+	  {
+
+	    if(pT1 >fh3Reco1->GetXaxis()->GetXmin() && pT1 <fh3Reco1->GetXaxis()->GetXmax() && pT2 > fh3Reco2->GetXaxis()->GetXmin() && pT2 <fh3Reco2->GetXaxis()->GetXmax() && phi1 > fh3Reco1->GetYaxis()->GetXmin() && phi1 <fh3Reco1->GetYaxis()->GetXmax() &&  phi2 > fh3Reco2->GetYaxis()->GetXmin() && phi2 <fh3Reco2->GetYaxis()->GetXmax() &&  zvert1 > fh3Reco1->GetZaxis()->GetXmin() && zvert1 < fh3Reco1->GetZaxis()->GetXmax() &&  zvert2 > fh3Reco2->GetZaxis()->GetXmin() && zvert2 < fh3Reco2->GetZaxis()->GetXmax())
+	      {
+		eps1 = fh3Reco1->GetBinContent(fh3Reco1->GetXaxis()->FindFixBin(pT1),fh3Reco1->GetYaxis()->FindFixBin(phi1),fh3Reco1->GetZaxis()->FindFixBin(zvert1));
+		eps2 = fh3Reco2->GetBinContent(fh3Reco2->GetXaxis()->FindFixBin(pT2),fh3Reco2->GetYaxis()->FindFixBin(phi2),fh3Reco2->GetZaxis()->FindFixBin(zvert2));
+	  
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+
+	  }
+
+	else if(fdoEtaCorr == 1 && fdoPhiCorr == 1 && fdoZVertCorr == 1)
+	  {
+
+	    if(eta1 >fh3Reco1->GetXaxis()->GetXmin() && eta1 <fh3Reco1->GetXaxis()->GetXmax() && eta2 > fh3Reco2->GetXaxis()->GetXmin() && eta2 <fh3Reco2->GetXaxis()->GetXmax() && phi1 > fh3Reco1->GetYaxis()->GetXmin() && phi1 <fh3Reco1->GetYaxis()->GetXmax() &&  phi2 > fh3Reco2->GetYaxis()->GetXmin() && phi2 <fh3Reco2->GetYaxis()->GetXmax() &&  zvert1 > fh3Reco1->GetZaxis()->GetXmin() && zvert1 < fh3Reco1->GetZaxis()->GetXmax() &&  zvert2 > fh3Reco2->GetZaxis()->GetXmin() && zvert2 < fh3Reco2->GetZaxis()->GetXmax())
+	      {
+		eps1 = fh3Reco1->GetBinContent(fh3Reco1->GetXaxis()->FindFixBin(eta1),fh3Reco1->GetYaxis()->FindFixBin(phi1),fh3Reco1->GetZaxis()->FindFixBin(zvert1));
+		eps2 = fh3Reco2->GetBinContent(fh3Reco2->GetXaxis()->FindFixBin(eta2),fh3Reco2->GetYaxis()->FindFixBin(phi2),fh3Reco2->GetZaxis()->FindFixBin(zvert2));
+	  
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+
+		return w1*w2;
+	      }
+	    else
+	      return 0;
+
+	  }
+      }
+
+    else if(boolSum == 4)
+      {
+							  
+	if(pT1 > fhntReco1->GetAxis(0)->GetXmin() && pT1 < fhntReco1->GetAxis(0)->GetXmax() && pT2 > fhntReco2->GetAxis(0)->GetXmin() && pT2 < fhntReco2->GetAxis(0)->GetXmax() && eta1 > fhntReco1->GetAxis(1)->GetXmin() && eta1 <fhntReco1->GetAxis(1)->GetXmax() && eta2 > fhntReco2->GetAxis(1)->GetXmin() && eta2 < fhntReco2->GetAxis(1)->GetXmax() && phi1 > fhntReco1->GetAxis(2)->GetXmin() && phi2 < fhntReco2->GetAxis(2)->GetXmax() && phi2 > fhntReco2->GetAxis(2)->GetXmin() && phi2 < fhntReco2->GetAxis(2)->GetXmax() && zvert1 > fhntReco1->GetAxis(3)->GetXmin() && zvert1 < fhntReco1->GetAxis(3)->GetXmax() && zvert2 > fhntReco2->GetAxis(3)->GetXmin() && zvert2 < fhntReco2->GetAxis(3)->GetXmax())
+	      {
+
+		int tab1[] = {fhntReco1->GetAxis(0)->FindFixBin(pT1),fhntReco1->GetAxis(1)->FindFixBin(eta1),fhntReco1->GetAxis(2)->FindFixBin(phi1),fhntReco1->GetAxis(3)->FindFixBin(zvert1)};
+		int tab2[] = {fhntReco2->GetAxis(0)->FindFixBin(pT2),fhntReco2->GetAxis(1)->FindFixBin(eta2),fhntReco2->GetAxis(2)->FindFixBin(phi2),fhntReco2->GetAxis(3)->FindFixBin(zvert2)};
+       
+		eps1 = fhntReco1->GetBinContent(tab1);
+		eps2 = fhntReco2->GetBinContent(tab2);
+
+		w1 = (1-cont1)/eps1;
+		w2 = (1-cont2)/eps2;
+		return w1*w2;
+		  
+	      }
+	    else
+	      return 0;
+
+      }
+    
+    return 0;
+      
 }

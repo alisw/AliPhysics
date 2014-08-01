@@ -56,7 +56,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kQbinsWeights = 40,
     kNDampValues = 16,
     kRmin = 5,// EW min radii 5 fm
-    kDENtypes = 44,
+    kDENtypes = 104,// was 44
   };
 
   static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
@@ -71,7 +71,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Int_t GetNumCentBins() const {return AliFourPion::fCentBins;}
   Int_t GetNumEDBins() const {return AliFourPion::fEDbins;}
   void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0);
-  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0);
+  void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2DSC=0x0, TH2D *temp2DMC=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH1D *tempss[12]=0x0, TH1D *tempos[12]=0x0);
   void SetMuonCorrections(Bool_t legoCase=kTRUE, TH2D *tempMuon=0x0);
   //
@@ -92,6 +92,11 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetNsigmaTOF(Float_t nsig) {fSigmaCutTOF = nsig;}
   void SetRMax(Int_t rbin) {fRMax = rbin;}
   void SetfcSq(Float_t fcSq) {ffcSq = fcSq;}
+  void SetMixedChargeCut(Bool_t mcCut) {fMixedChargeCut = mcCut;}
+  void SetMinPt(Float_t minPt) {fMinPt = minPt;}
+  void SetMaxPt(Float_t maxPt) {fMaxPt = maxPt;}
+  void SetKT3transition(Float_t KT3trans) {fKT3transition = KT3trans;}
+  void SetKT4transition(Float_t KT4trans) {fKT4transition = KT4trans;}
   //
 
 
@@ -99,6 +104,7 @@ class AliFourPion : public AliAnalysisTaskSE {
 
   void ParInit();
   Bool_t AcceptPair(AliFourPionTrackStruct, AliFourPionTrackStruct);
+  Bool_t AcceptPairPM(AliFourPionTrackStruct, AliFourPionTrackStruct);
   Float_t Gamov(Int_t, Int_t, Float_t);
   void Shuffle(Int_t*, Int_t, Int_t);
   Float_t GetQinv(Float_t[], Float_t[]);
@@ -141,6 +147,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH1D *fNorm3; //!
     TH1D *fTerms3; //!
     TProfile *fKfactor; //!
+    TProfile *fKfactorWeighted; //!
     TProfile *fMeanQinv; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
@@ -181,6 +188,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH1D *fNorm4; //!
     TH1D *fTerms4; //!
     TProfile *fKfactor; //!
+    TProfile *fKfactorWeighted; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
     //
@@ -237,8 +245,10 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fGeneratorOnly;
   Bool_t fTabulatePairs;
   Bool_t fLinearInterpolation;
+  Bool_t fMixedChargeCut;
   Int_t fRMax;
   Float_t ffcSq;
+  Float_t ffcSqMRC;
   UInt_t fFilterBit;
   Float_t fMaxChi2NDF;
   Int_t fMinTPCncls;
@@ -254,6 +264,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   Int_t fEventsToMix;
   Int_t fZvertexBins;
   Int_t fMultLimits[kMultBinspp+1];
+  Float_t fMinPt;
+  Float_t fMaxPt;
   Float_t fQcut;
   Float_t fQLowerCut;
   Float_t fNormQcutLow;
@@ -342,7 +354,8 @@ class AliFourPion : public AliAnalysisTaskSE {
 
 
  public:
-  TH2D *fMomResC2;
+  TH2D *fMomResC2SC;
+  TH2D *fMomResC2MC;
   TH2D *fWeightmuonCorrection;
   TH1D *fFSIss[12];
   TH1D *fFSIos[12];

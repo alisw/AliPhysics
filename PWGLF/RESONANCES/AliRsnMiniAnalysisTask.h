@@ -39,6 +39,7 @@ public:
    void                UseESDTriggerMask(UInt_t trgMask)     {fTriggerMask = trgMask;}
    void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
    void                SetUseCentralityPatch(Bool_t isAOD049) {fUseAOD049CentralityPatch = isAOD049;}
+   void                SetUseCentralityPatchPbPb2011(Int_t centralityPatchPbPb2011) {fUseCentralityPatchPbPb2011 = centralityPatchPbPb2011;}
    void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; fCentralityType.ToUpper();}
    void                UseContinuousMix()                 {fContinuousMix = kTRUE;}
    void                UseBinnedMix()                     {fContinuousMix = kFALSE;}
@@ -78,6 +79,7 @@ private:
    Double_t ComputeCentrality(Bool_t isESD);
    Double_t ComputeMultiplicity(Bool_t isESD,TString type);
    Double_t ApplyCentralityPatchAOD049();
+   Double_t ApplyCentralityPatchPbPb2011();
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
    void     FillTrueMotherAOD(AliRsnMiniEvent *event);
    void     StoreTrueMother(AliRsnMiniPair *pair, AliRsnMiniEvent *event);
@@ -89,6 +91,7 @@ private:
    Bool_t               fUseCentrality;   //  if true, use centrality for event, otherwise use multiplicity
    TString              fCentralityType;  //  definition used to choose what centrality or multiplicity to use
    Bool_t               fUseAOD049CentralityPatch; //flag to enable AOD049 centrality patch
+   Int_t                fUseCentralityPatchPbPb2011; //for PbPb 2011 centrality flattening
 
    Bool_t               fContinuousMix;   //  mixing --> technique chosen (continuous or binned)
    Int_t                fNMix;            //  mixing --> required number of mixes
@@ -123,7 +126,7 @@ private:
    Bool_t   		fKeepDfromBOnly;     // flag to keep only the charm particles that comes from beauty decays (specific for D meson analysis)
    Bool_t 		fRejectIfNoQuark;    // flag to remove events not generated with PYTHIA
 
-   ClassDef(AliRsnMiniAnalysisTask, 8);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 9);   // AliRsnMiniAnalysisTask
 };
 
 

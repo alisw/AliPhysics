@@ -1,6 +1,7 @@
 #!/bin/bash
 #include benchmark.config
 
+# blame: Mikolaj Krzewicki, mkrzewic@cern.ch
 # this script runs the CPass0/CPass1 train
 # produced OCDB updates are local
 
@@ -282,8 +283,6 @@ goCPass0()
   
   #validate CPass0
   cd ${outputDir}
-  touch ${doneFileTmp}
-  echo "dir ${outputDir}" >> ${doneFileTmp}
   if summarizeLogs >> ${doneFileTmp}; then
     [[ -f ${outputDirMC}/galice.root ]] && echo "sim ${outputDirMC}/galice.root" >> ${doneFileTmp}
     [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFileTmp}
@@ -576,8 +575,6 @@ goCPass1()
 
   #validate CPass1
   cd ${outputDir}
-  touch ${doneFileTmp}
-  echo "dir ${outputDir}" >> ${doneFileTmp}
   if summarizeLogs >> ${doneFileTmp}; then
     [[ -f AliESDs_Barrel.root ]] && echo "esd ${outputDir}/AliESDs_Barrel.root" >> ${doneFileTmp}
     [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFileTmp}
@@ -753,8 +750,6 @@ goMergeCPass0()
 
   #validate merging cpass0
   cd ${outputDir}
-  touch ${doneFileTmp}
-  echo "dir ${outputDir}" >> ${doneFileTmp}
   if summarizeLogs >> ${doneFileTmp}; then
     [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFileTmp}
     [[ -f dcsTime.root ]] && echo "dcsTree ${outputDir}/dcsTime.root" >> ${doneFileTmp}
@@ -952,8 +947,6 @@ goMergeCPass1()
   
   #validate merge cpass1
   cd ${outputDir}
-  touch ${doneFileTmp}
-  echo "dir ${outputDir}" >> ${doneFileTmp}
   if summarizeLogs >>  ${doneFileTmp}; then
     [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFileTmp}
     [[ -f ${qaMergedOutputFileName} ]] && echo "qafile ${outputDir}/${qaMergedOutputFileName}" >> ${doneFileTmp}
@@ -1044,6 +1037,15 @@ goSubmitMakeflow()
   else 
     echo "no makeflow!"
   fi
+  
+  #summarize the run based on the makeflow log
+  #and add it to the end of summary log
+  awk '/STARTED/   {startTime=$3} 
+       /COMPLETED/ {endTime=$3} 
+       END         {print "makeflow running time: "(endTime-startTime)/1000000/3600" hours"}' \
+      benchmark.makeflow.makeflowlog | tee -a summary.log
+  paranoidCp summary.log ${commonOutputPath}
+
   return 0
 }
 
@@ -1435,6 +1437,9 @@ summarizeLogs()
             "stderr"
   )
 
+  #put dir information in the output
+  echo "dir $PWD"
+
   #check logs
   local logstatus=0
   for log in ${logFiles[*]}; do
@@ -1591,7 +1596,6 @@ EOF
   fi
   pwd
   /bin/ls
-  touch ${doneFile}
   summarizeLogs >>  ${doneFile}
   
   #echo mv -f * ${outputDir}
@@ -2063,7 +2067,8 @@ goSubmitBatch()
   echo "submit make a summary"
   echo
 
-  submit "${JOBID6}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MakeSummary ${configFile}
+  [[ -z ${alirootEnvQA} ]] && alirootEnvQA=$(encSpaces "${alirootEnv}")
+  submit "${JOBID6}" 1 1 "${LASTJOB}" "${alirootEnvQA} ${self}" MakeSummary ${configFile} "commonOutputPath=${commonOutputPath}"
   LASTJOB=${JOBID6}
   #################################################################################
   
@@ -2195,11 +2200,17 @@ EOF
 
 stackTraceTree()
 (
-  # make stacktrace processing  in case of standard root crash log
-  # input is a (list of) text files with the stack trace (either gdb aoutput
-  # produced with e.g. gdb --batch --quiet -ex "bt" -ex "quit" aliroot core, or the root crash log), output is a TTree formatted table.
-# example usage:
-# benchmark.sh stackTraceTree /foo/*/rec.log
+  if [[ $# -lt 1 ]]; then
+    echo 'make stacktrace processing  in case of standard root crash log'
+    echo 'input is a (list of) text files with the stack trace (either gdb aoutput'
+    echo 'produced with e.g. gdb --batch --quiet -ex "bt" -ex "quit" aliroot core,'
+    echo 'or the root crash log), output is a TTree formatted table.'
+    echo 'example usage:'
+    echo 'benchmark.sh stackTraceTree /foo/*/rec.log'
+    echo 'benchmark.sh stackTraceTree $(cat file.list)'
+    echo 'benchmark.sh stackTraceTree `cat file.list`'
+    return 0
+  fi
   gawk '
        BEGIN { 
                print "frame/I:method/C:line/C:cpass/I:aliroot/I:file/C";
@@ -2316,7 +2327,7 @@ goMakeSummary()
   echo per run stats:
   /bin/ls -1 ${commonOutputPath}/meta/merge.cpass0.run*.done | while read x 
 do
-  dir=$(goPrintValues calibfile - ${x})
+  dir=$(goPrintValues dir - ${x})
   runNumber=$(guessRunNumber ${dir})
   [[ -z ${runNumber} ]] && continue
 
@@ -2391,10 +2402,12 @@ done
   cp "$logTmp" "$logDest" || rm -f "$logTmp" "$logDest"
   
   #copy output files
+  exec &> >(tee fileCopy.log)
   paranoidCp QAplots ${commonOutputPath}
   paranoidCp *.list ${commonOutputPath}
   paranoidCp *.root ${commonOutputPath}
   paranoidCp *.log ${commonOutputPath}
+  paranoidCp fileCopy.log ${commonOutputPath}
 
   return 0
 )
@@ -2628,7 +2641,7 @@ paranoidCopyFile()
   dst="${2}"
   [[ -d "${dst}" ]] && dst="${dst}/${src##*/}"
   [[ -z "${maxCopyTries}" ]] && maxCopyTries=5
-  echo "maxCopyTries=${maxCopyTries}"
+  #echo "maxCopyTries=${maxCopyTries}"
   echo "cp ${src} ${dst}"
   cp "${src}" "${dst}"
   i=0

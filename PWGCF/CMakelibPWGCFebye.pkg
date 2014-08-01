@@ -61,6 +61,7 @@ set ( SRCS
     EBYE/PIDFluctuation/task/AliEbyEParticleRatioFluctuationTask.cxx
     EBYE/PIDFluctuation/task/AliEbyEPidTaskFastGen.cxx	 
     EBYE/PIDFluctuation/task/AliEbyEPidTTask.cxx 
+    EBYE/PIDFluctuation/task/AliEbyEPidTTaskMC.cxx 
     EBYE/NetParticle/AliAnalysisNetParticleDCA.cxx
     EBYE/NetParticle/AliAnalysisNetParticleDistribution.cxx
     EBYE/NetParticle/AliAnalysisNetParticleEffCont.cxx
@@ -74,4 +75,4 @@ set ( DHDR PWGCFebyeLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE PWG/Tools ANALYSIS/EventMixing PWGCF/EBYE PWGCF/EBYE/BalanceFunctions PWGCF/EBYE/LRC PWGCF/EBYE/Fluctuations PWGCF/EBYE/NetParticle PWGCF/EBYE/PIDFluctuation/task STEER/STEERBase ANALYSIS CORRFW)
+set ( EINCLUDE PWG/Tools ANALYSIS/EventMixing PWGCF/EBYE PWGCF/EBYE/BalanceFunctions PWGCF/EBYE/LRC PWGCF/EBYE/Fluctuations PWGCF/EBYE/NetParticle PWGCF/EBYE/PIDFluctuation/task STEER/STEER STEER/STEERBase ANALYSIS CORRFW)

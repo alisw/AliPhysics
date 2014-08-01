@@ -24,6 +24,7 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   // setup task
   AliT0CalibOffsetChannelsTask  *task1 = new AliT0CalibOffsetChannelsTask("CalibObjectsTrain1");
   readCDB(task1, runNumber);
+  task1-> SetRefPMT(12,2);
   mgr->AddTask(task1);
   
   //  AliT0AnalysisTaskQA * task2 = new AliT0AnalysisTaskQA("QA task");
@@ -70,7 +71,7 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
 
   AliCDBEntry *entryCalib0 = man->Get("T0/Calib/Latency");
   if(!entryCalib0) {
-    AliError::(Form("Cannot find any AliCDBEntry for [Calib, Latency]!"));
+    ::Error("AddTaskT0Calib","Cannot find any AliCDBEntry for [Calib, Latency]!");
     return;
   }
   AliT0CalibLatency *calibda=(AliT0CalibLatency*)entryCalib0->GetObject();
@@ -79,7 +80,7 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
  
   AliCDBEntry *entryCalib1 = man->Get("T0/Calib/TimeDelay");
   if(!entryCalib1) {
-    AliError::(Form("Cannot find any AliCDBEntry for [Calib, TimeDelay]!"));
+    ::Error("AddTaskT0Calib","Cannot find any AliCDBEntry for [Calib, TimeDelay]!");
     return;
   }
   else
@@ -101,7 +102,7 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
 
   AliCDBEntry *entryCalib2 = man->Get("T0/Calib/TimeAdjust");
   if(!entryCalib2) {
-     AliError(Form("Cannot find any AliCDBEntry for [Calib, TimeAdjust]!"));
+    ::Error("AddTaskT0Calib","Cannot find any AliCDBEntry for [Calib, TimeAdjust]!");
   }
  else
     {

@@ -86,7 +86,7 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( DHDR  PWGmuonLinkDef.h)
 
-set ( EINCLUDE  RooUnfold/src  PWG/muon ANALYSIS STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  RooUnfold/src  PWG/muon ANALYSIS STEER/AOD STEER/ESD STEER/STEERBase MFT)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
         set ( PACKSOFLAGS  ${SOFLAGS} )
