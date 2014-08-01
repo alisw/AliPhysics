@@ -1209,11 +1209,15 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  //dcaXY = t->DCA(); 
 	  //dcaZ  = t->ZAtDCA();  
 	  nClus  = t->GetTPCNcls();	  
-
-	  if ( nClus<_nClusterMin ) continue;
-
+	  
+	   if ( nClus<_nClusterMin ) continue;
+	  
 	  _Ncluster1->Fill(nClus);
-
+	  
+	  if(t->GetTPCnclsS() > 0){
+	  continue;
+	   }
+	  
 	  //for Global tracks
 	   Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
@@ -1258,7 +1262,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  //==== QA ===========================
 	  //_dcaz->Fill(DCAZ);
 	  //_dcaxy->Fill(DCAXY);
-	  //_etadis->Fill(eta);
+	  _etadis->Fill(eta);
 	  //_phidis->Fill(phi);
 	  //===================================
 	  //*************************************************
