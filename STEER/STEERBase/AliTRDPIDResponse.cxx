@@ -184,22 +184,12 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
   }
 
   if(!fkTRDdEdxParams){
-    AliError("AliTRDPIDResponse::GetSignalDelta fkTRDdEdxParams null");
+    AliError("fkTRDdEdxParams null");
     return -99999;
   }
 
-  TVectorF meanvec = fkTRDdEdxParams->GetMeanParameter(type);
-  TVectorF resvec  = fkTRDdEdxParams->GetSigmaParameter(type);
-
-  Double_t meanpar[meanvec.GetNrows()];
-  Double_t respar[resvec.GetNrows()];
-
-  for(Int_t ii=0; ii<meanvec.GetNrows(); ii++){
-    meanpar[ii]=meanvec[ii];
-  }
-  for(Int_t ii=0; ii<resvec.GetNrows(); ii++){
-    respar[ii]=resvec[ii];
-  }
+  const Float_t *meanpar = (fkTRDdEdxParams->GetMeanParameter(type)).GetMatrixArray();
+  const Float_t *respar  = (fkTRDdEdxParams->GetSigmaParameter(type)).GetMatrixArray();
 
   //============================================================================================<<<<<<<<<<<<<
 
@@ -222,7 +212,7 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
 }
 
 
-Double_t AliTRDPIDResponse::ResolutiondEdxTR(const Double_t * xx,  const Double_t * par)
+Double_t AliTRDPIDResponse::ResolutiondEdxTR(const Double_t * xx,  const Float_t * par)
 {
   //
   //resolution 
@@ -234,21 +224,21 @@ Double_t AliTRDPIDResponse::ResolutiondEdxTR(const Double_t * xx,  const Double_
   return par[0]+par[1]*TMath::Power(ncls, par[2]);
 }
 
-Double_t AliTRDPIDResponse::MeandEdxTR(const Double_t * xx,  const Double_t * pin)
+Double_t AliTRDPIDResponse::MeandEdxTR(const Double_t * xx,  const Float_t * pin)
 {
   //
   //ALEPH+LOGISTIC parametrization for dEdx+TR, in unit of MIP
   //npar = 8 = 3+5
   //
 
-  Double_t ptr[4]={0};
+  Float_t ptr[4]={0};
   for(int ii=0; ii<3; ii++){
     ptr[ii+1]=pin[ii];
   }
   return MeanTR(xx,ptr) + MeandEdx(xx,&(pin[3]));
 }
 
-Double_t AliTRDPIDResponse::MeanTR(const Double_t * xx,  const Double_t * par)
+Double_t AliTRDPIDResponse::MeanTR(const Double_t * xx,  const Float_t * par)
 {
   //
   //LOGISTIC parametrization for TR, in unit of MIP
@@ -268,7 +258,7 @@ Double_t AliTRDPIDResponse::MeanTR(const Double_t * xx,  const Double_t * par)
   return par[0]+tryield;
 }
 
-Double_t AliTRDPIDResponse::MeandEdx(const Double_t * xx,  const Double_t * par)
+Double_t AliTRDPIDResponse::MeandEdx(const Double_t * xx,  const Float_t * par)
 {
   //
   //ALEPH parametrization for dEdx

@@ -1611,7 +1611,7 @@ void AliPIDResponse::SetTRDdEdxParams()
     AliFatal("Failed initializing settings from OADB"); 
   }
   else{
-    AliInfo(Form("AliPIDResponse::SetTRDdEdxParams loading %s from %s\n", cont.GetName(), filePathNamePackage.Data()));
+    AliInfo(Form("Loading %s from %s\n", cont.GetName(), filePathNamePackage.Data()));
 
     fTRDdEdxParams = (AliTRDdEdxParams*)(cont.GetObject(fRun, "default"));
     //fTRDdEdxParams->Print();

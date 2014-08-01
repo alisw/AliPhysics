@@ -32,14 +32,14 @@ class AliTRDdEdxParams: public TNamed
   AliTRDdEdxParams(const TString name="name", const TString title="title");
   void Print(Option_t* option = "") const;
 
-  const TVectorF GetMeanParameter(const Int_t itype) const { return GetParameter(fMeanPar, itype);}
-  const TVectorF GetSigmaParameter(const Int_t itype) const { return GetParameter(fSigmaPar, itype);}
+  const TVectorF& GetMeanParameter(const Int_t itype) const { return GetParameter(fMeanPar, itype);}
+  const TVectorF& GetSigmaParameter(const Int_t itype) const { return GetParameter(fSigmaPar, itype);}
 
   void SetMeanParameter(const Int_t itype, const Int_t npar, const Float_t vals[]){ SetParameter(fMeanPar, itype, npar, vals); }
   void SetSigmaParameter(const Int_t itype, const Int_t npar, const Float_t vals[]){ SetParameter(fSigmaPar, itype, npar, vals); } 
 
  private:
-  const TVectorF GetParameter(const TVectorF par[], const Int_t itype) const;
+  const TVectorF& GetParameter(const TVectorF par[], const Int_t itype) const;
   void SetParameter(TVectorF par[], const Int_t itype, const Int_t npar, const Float_t vals[]);
 
   TVectorF fMeanPar[MAXNPAR];

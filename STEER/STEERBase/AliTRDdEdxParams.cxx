@@ -39,7 +39,7 @@ void AliTRDdEdxParams::CheckType(const Int_t itype, const TString tag) const
   }
 }
 
-const TVectorF AliTRDdEdxParams::GetParameter(const TVectorF par[], const Int_t itype)const
+const TVectorF& AliTRDdEdxParams::GetParameter(const TVectorF par[], const Int_t itype)const
 {
   //
   //return parameter for particle itype from par[]
