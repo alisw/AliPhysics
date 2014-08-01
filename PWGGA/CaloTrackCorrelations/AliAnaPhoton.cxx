@@ -652,7 +652,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
   fhLam1E ->Fill(energy,lambda1);
   fhDispE ->Fill(energy,disp);
   
-  if(fCalorimeter == "EMCAL" && GetModuleNumber(cluster) > 5)
+  if(fCalorimeter == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+     GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
   {
     fhLam0ETRD->Fill(energy,lambda0);
     fhLam1ETRD->Fill(energy,lambda1);
@@ -713,7 +714,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
       fhLam1ETM ->Fill(energy,lambda1);
       fhDispETM ->Fill(energy,disp);
       
-      if(fCalorimeter == "EMCAL" && GetModuleNumber(cluster) > 5)
+      if(fCalorimeter == "EMCAL" &&  GetFirstSMCoveredByTRD()   >= 0 &&
+         GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
       {
         fhLam0ETMTRD->Fill(energy,lambda0);
         fhLam1ETMTRD->Fill(energy,lambda1);
@@ -994,7 +996,8 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     
     Int_t nSMod = GetModuleNumber(cluster);
     
-    if(fCalorimeter=="EMCAL" &&  nSMod > 5)
+    if(fCalorimeter=="EMCAL" &&   GetFirstSMCoveredByTRD() >= 0 &&
+       nSMod >= GetFirstSMCoveredByTRD()   )
     {
       fhTrackMatchedDEtaTRD[cut]->Fill(cluster->E(),dZ);
       fhTrackMatchedDPhiTRD[cut]->Fill(cluster->E(),dR);
@@ -1012,7 +1015,8 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
         fhdEdx[cut]  ->Fill(cluster->E(), dEdx);
         fhEOverP[cut]->Fill(cluster->E(), eOverp);
         
-        if(fCalorimeter=="EMCAL" && nSMod > 5)
+        if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+           nSMod >= GetFirstSMCoveredByTRD()  )
           fhEOverPTRD[cut]->Fill(cluster->E(), eOverp);
         
         
@@ -1305,7 +1309,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhDispETM);
     }
     
-    if(fCalorimeter == "EMCAL")
+    if(fCalorimeter == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0)
     {
       fhLam0ETRD  = new TH2F ("hLam0ETRD","#lambda_{0}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
       fhLam0ETRD->SetYTitle("#lambda_{0}^{2}");
@@ -1322,7 +1326,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhDispETRD->SetXTitle("#it{E} (GeV) ");
       outputContainer->Add(fhDispETRD);
       
-      if(!fRejectTrackMatch)
+      if(!fRejectTrackMatch &&  GetFirstSMCoveredByTRD() >=0 )
       {
         fhLam0ETMTRD  = new TH2F ("hLam0ETMTRD","#lambda_{0}^{2} vs E, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #phi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
         fhLam0ETMTRD->SetYTitle("#lambda_{0}^{2}");
@@ -1591,7 +1595,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhdEdx[i]);
       outputContainer->Add(fhEOverP[i]);
       
-      if(fCalorimeter=="EMCAL")
+      if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >=0 )
       {
         fhTrackMatchedDEtaTRD[i]  = new TH2F
         (Form("hTrackMatchedDEtaTRD%s",cutTM[i].Data()),

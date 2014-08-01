@@ -176,6 +176,10 @@ public:
   virtual void           SetPairTimeCut(Float_t t)               { fPairTimeCut  = t   ; } //ns
   virtual Float_t        GetPairTimeCut()                  const { return fPairTimeCut ; } //ns
   
+  // Number of TRD modules in front of EMCAL (year <=2012)
+  Int_t                  GetFirstSMCoveredByTRD()         const { return fTRDSMCovered ; }
+  void                   SetFirstSMCoveredByTRD(Int_t n)        { fTRDSMCovered    = n ; }
+
   //Getters / Setters for parameters of event buffers
     
   virtual Int_t          GetMultiBin()                     const { return fMultiBin  ; } // number of bins in Multiplicity 
@@ -304,6 +308,8 @@ private:
   Float_t                    fMinPt ;              // Maximum pt of (trigger) particles in the analysis
   Float_t                    fMaxPt ;              // Minimum pt of (trigger) particles in the analysis
   Float_t                    fPairTimeCut;         // Maximum difference between time of cluster pairs (ns)
+  Int_t                      fTRDSMCovered;        // From which SM EMCal is covered by TRD
+
   Int_t                      fMultiBin ;	         // Number of bins in event container for multiplicity
   Int_t                      fNZvertBin ;	         // Number of bins in event container for vertex position
   Int_t                      fNrpBin ;	           // Number of bins in event container for reaction plain
@@ -338,7 +344,7 @@ private:
   AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy ctor
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrBaseClass,23)
+  ClassDef(AliAnaCaloTrackCorrBaseClass,24)
 } ;
 
 

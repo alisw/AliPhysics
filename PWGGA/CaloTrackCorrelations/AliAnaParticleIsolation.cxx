@@ -68,7 +68,7 @@ fFillPileUpHistograms(0),
 fFillTMHisto(0),                  fFillSSHisto(1),
 fFillUEBandSubtractHistograms(1), fFillCellHistograms(0),
 fFillHighMultHistograms(0),       fFillTaggedDecayHistograms(0),
-fFillNLMHistograms(0),            fTRDSMCovered(-1),
+fFillNLMHistograms(0),
 // Several IC
 fNCones(0),                       fNPtThresFrac(0), 
 fConeSizes(),                     fPtThresholds(),                 
@@ -1158,7 +1158,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
           fhPtLambda0MC[mcIndex][isolated]->Fill(pt, cluster->GetM02());
       }
       
-      if(fCalorimeter == "EMCAL" && fTRDSMCovered >= 0 && GetModuleNumber(cluster) > fTRDSMCovered)
+      if(fCalorimeter == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+         GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
       {
         fhELambda0TRD [isolated]->Fill(energy, cluster->GetM02() );
         fhPtLambda0TRD[isolated]->Fill(pt    , cluster->GetM02() ); 
@@ -2397,7 +2398,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           }
        }
         
-        if(fIsoDetector=="EMCAL" && fTRDSMCovered >= 0)
+        if(fIsoDetector=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0)
         {
           fhPtLambda0TRD[iso]  = new TH2F
           (Form("hPtLambda0TRD%s",isoName[iso].Data()),

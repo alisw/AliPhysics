@@ -552,7 +552,8 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
     
   }
   
-  if(fCalorimeter=="EMCAL" && nSM < 6) // CAREFUL FOR 2012-13 runs change 6 to 4, -1 for 2015 ...
+  if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+     GetModuleNumber(cluster) < GetFirstSMCoveredByTRD() )
   {
     fhPtLambda0NoTRD    ->Fill(pt, l0  );
     fhPtFracMaxCellNoTRD->Fill(pt,maxCellFraction);
@@ -617,7 +618,9 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
         fhEOverP->Fill(pt,  eOverp);
         
         // Change nSM for year > 2011 (< 4 in 2012-13, none after)
-        if(fCalorimeter=="EMCAL" && nSM < 6) fhEOverPNoTRD->Fill(pt,  eOverp);
+        if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+           GetModuleNumber(cluster) < GetFirstSMCoveredByTRD() )
+          fhEOverPNoTRD->Fill(pt,  eOverp);
         
       }
       //else
@@ -663,8 +666,8 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
     
     fhMCPtLambda0LocMax     [mcIndex][indexMax]->Fill(pt,l0);
 
-    // Change nSM for year > 2011 (< 4 in 2012-13, none after)
-    if(fCalorimeter=="EMCAL" && nSM < 6)
+    if(fCalorimeter=="EMCAL" && GetFirstSMCoveredByTRD() >= 0 &&
+       GetModuleNumber(cluster) < GetFirstSMCoveredByTRD() )
       fhMCPtLambda0NoTRD[mcIndex]->Fill(pt, l0  );
     
     if(maxCellFraction < 0.5)
@@ -1152,7 +1155,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhPtFracMaxCell->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtFracMaxCell) ;
     
-    if(fCalorimeter=="EMCAL")
+    if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >=0 )
     {
       fhPtLambda0NoTRD  = new TH2F
       ("hPtLambda0NoTRD","Selected #pi^{0} (#eta) pairs: #it{p}_{T} vs #lambda_{0}, not behind TRD",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
@@ -1461,7 +1464,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhEOverP->SetYTitle("#it{E}/#it{p}");
     outputContainer->Add(fhEOverP);
     
-    if(fCalorimeter=="EMCAL")
+    if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >=0)
     {
       fhEOverPNoTRD  = new TH2F ("hEOverPNoTRD","matched track E/p vs cluster E, SM not behind TRD ", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
       fhEOverPNoTRD->SetXTitle("#it{E} (GeV)");
@@ -1831,7 +1834,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
           fhMCPtDispersion[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhMCPtDispersion[i]) ;
           
-          if(fCalorimeter=="EMCAL")
+          if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0)
           {
             fhMCPtLambda0NoTRD[i]  = new TH2F(Form("hELambda0NoTRD_MC%s",pname[i].Data()),
                                              Form("Selected pair, cluster from %s : #it{p}_{T} vs #lambda_{0}^{2}, NoTRD",ptype[i].Data()),
