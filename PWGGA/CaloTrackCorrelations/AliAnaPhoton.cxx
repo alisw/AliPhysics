@@ -546,10 +546,10 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     Bool_t takeIt  = kFALSE ;
     if(status == 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) takeIt = kTRUE ;
 
-    if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) continue;
+    if      (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) continue;
     
     //Origin of photon
-    if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
+    if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
     {
       mcIndex = kmcPPrompt;
     }
@@ -598,25 +598,26 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       fhYPrimMCAcc  [kmcPPhoton]->Fill(photonE , photonY) ;
     }//Accepted
     
-    
-    fhYPrimMC[mcIndex]->Fill(photonPt, photonY) ;
-    if(TMath::Abs(photonY) < 1.0)
+    if(mcIndex < fNPrimaryHistograms)
     {
-      fhEPrimMC  [mcIndex]->Fill(photonE ) ;
-      fhPtPrimMC [mcIndex]->Fill(photonPt) ;
-      fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi) ;
-      fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta) ;
+      fhYPrimMC[mcIndex]->Fill(photonPt, photonY) ;
+      if(TMath::Abs(photonY) < 1.0)
+      {
+        fhEPrimMC  [mcIndex]->Fill(photonE ) ;
+        fhPtPrimMC [mcIndex]->Fill(photonPt) ;
+        fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi) ;
+        fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta) ;
+      }
+      
+      if(inacceptance)
+      {
+        fhEPrimMCAcc  [mcIndex]->Fill(photonE ) ;
+        fhPtPrimMCAcc [mcIndex]->Fill(photonPt) ;
+        fhPhiPrimMCAcc[mcIndex]->Fill(photonE , photonPhi) ;
+        fhEtaPrimMCAcc[mcIndex]->Fill(photonE , photonEta) ;
+        fhYPrimMCAcc  [mcIndex]->Fill(photonE , photonY) ;
+      }//Accepted
     }
-    
-    if(inacceptance)
-    {
-      fhEPrimMCAcc  [mcIndex]->Fill(photonE ) ;
-      fhPtPrimMCAcc [mcIndex]->Fill(photonPt) ;
-      fhPhiPrimMCAcc[mcIndex]->Fill(photonE , photonPhi) ;
-      fhEtaPrimMCAcc[mcIndex]->Fill(photonE , photonEta) ;
-      fhYPrimMCAcc  [mcIndex]->Fill(photonE , photonY) ;
-    }//Accepted
-    
   }//loop on primaries
 
 }
@@ -2780,7 +2781,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   if(fFillPileUpHistograms)
   {
-    
     TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
     
     for(Int_t i = 0 ; i < 7 ; i++)
@@ -3979,7 +3979,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         {
           mcParticleTag = kmcFragmentation;
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)&& fhMCE[kmcISR])
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
         {
           mcParticleTag = kmcISR;
         }
@@ -3988,19 +3988,18 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         {
           mcParticleTag = kmcPi0Decay;
         }
-        else if((( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) &&
-                  !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)        ) ||
-                 GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ))
-        {
-          mcParticleTag = kmcOtherDecay;
-        }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
+        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
         {
           mcParticleTag = kmcPi0;
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta))
+        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) &&
+                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
         {
           mcParticleTag = kmcEta;
+        }
+        else
+        {
+          mcParticleTag = kmcOtherDecay;
         }
       }
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron))
@@ -4028,7 +4027,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         
       }
       
-      if(mcParticleTag >= 0 && fhMCE  [mcParticleTag])
+      if(mcParticleTag >= 0 && fhMCE[mcParticleTag])
       {
         fhMCE  [mcParticleTag]->Fill(ecluster);
         fhMCPt [mcParticleTag]->Fill(ptcluster);
