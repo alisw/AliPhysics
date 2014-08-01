@@ -696,6 +696,36 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       break;
     }
       
+    case kSDMv5:
+    {
+      //Based on fit to the MC/data using kNoCorrection on the data - utilizes symmetric decay method and kPi0MCv5(MC) - 28 Oct 2013
+      //fNonLinearityParams[0] =  1.0;
+      //fNonLinearityParams[1] =  6.64778e-02;
+      //fNonLinearityParams[2] =  1.570;
+      //fNonLinearityParams[3] =  9.67998e-02;
+      //fNonLinearityParams[4] =  2.19381e+02;
+      //fNonLinearityParams[5] =  6.31604e+01;
+      //fNonLinearityParams[6] =  1.01286;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5])))) * (0.964 + exp(-3.132-0.435*energy*2.0));
+      
+      break;
+    }
+      
+    case kPi0MCv5:
+    {
+      //Based on comparing MC truth information to the reconstructed energy of clusters. 
+      //fNonLinearityParams[0] =  1.0;
+      //fNonLinearityParams[1] =  6.64778e-02;
+      //fNonLinearityParams[2] =  1.570;
+      //fNonLinearityParams[3] =  9.67998e-02;
+      //fNonLinearityParams[4] =  2.19381e+02;
+      //fNonLinearityParams[5] =  6.31604e+01;
+      //fNonLinearityParams[6] =  1.01286;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+      
     case kNoCorrection:
       AliDebug(2,"No correction on the energy\n");
       break;
@@ -783,6 +813,27 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[5] =  31.5028;
     fNonLinearityParams[6] =  0.968;
   }
+
+  if (fNonLinearityFunction == kSDMv5) {
+    fNonLinearityParams[0] =  1.0;
+    fNonLinearityParams[1] =  6.64778e-02;
+    fNonLinearityParams[2] =  1.570;
+    fNonLinearityParams[3] =  9.67998e-02;
+    fNonLinearityParams[4] =  2.19381e+02;
+    fNonLinearityParams[5] =  6.31604e+01;
+    fNonLinearityParams[6] =  1.01286;
+  }
+
+  if (fNonLinearityFunction == kPi0MCv5) {
+    fNonLinearityParams[0] =  1.0;
+    fNonLinearityParams[1] =  6.64778e-02;
+    fNonLinearityParams[2] =  1.570;
+    fNonLinearityParams[3] =  9.67998e-02;
+    fNonLinearityParams[4] =  2.19381e+02;
+    fNonLinearityParams[5] =  6.31604e+01;
+    fNonLinearityParams[6] =  1.01286;
+  }
+
 }
 
 //_________________________________________________________
@@ -2488,8 +2539,13 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliVEvent *event)
     for (Int_t iTrk=0; iTrk<nTracks; ++iTrk) 
     {
       AliVTrack* track = dynamic_cast<AliVTrack*>(event->GetTrack(iTrk));
-      if (iTrk == matchTrackIndex) continue;
-      if (track->GetEMCALcluster() == iClus) {
+      
+      if( !track ) continue;
+      
+      if ( iTrk == matchTrackIndex ) continue;
+      
+      if ( track->GetEMCALcluster() == iClus )
+      {
         arrayTrackMatched[nMatched] = iTrk;
         ++nMatched;
       }

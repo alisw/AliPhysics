@@ -53,6 +53,7 @@ AliGenDPMjet::AliGenDPMjet()
      fSelectAll(0),
      fFlavor(0),
      fTrials(0),
+     fNprimaries(0),
      fSpectators(1),
      fSpecn(0),
      fSpecp(0),
@@ -92,6 +93,7 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
      fSelectAll(0),
      fFlavor(0),
      fTrials(0),
+     fNprimaries(0),
      fSpectators(1),
      fSpecn(0),
      fSpecp(0),
@@ -136,6 +138,7 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
      fSelectAll(0),
      fFlavor(0),
      fTrials(0),
+     fNprimaries(0),
      fSpectators(1),
      fSpecn(0),
      fSpecp(0),
@@ -218,6 +221,7 @@ void AliGenDPMjet::Generate()
   Int_t kf, ks, imo;
   kf = 0;
   fTrials = 0;
+  fNprimaries = 0;
   //  Set collision vertex position 
   if (fVertexSmear == kPerEvent) Vertex();
   
@@ -411,6 +415,7 @@ void AliGenDPMjet::Generate()
 			polar[0], polar[1], polar[2],
 			kPNoProcess, nt, 1., ks);
 	      KeepTrack(nt);
+	      fNprimaries++;
 	      newPos[i] = nt;
 	  } // if selected
       } // particle loop
@@ -497,7 +502,7 @@ Bool_t AliGenDPMjet::Stable(TParticle*  particle)
 void AliGenDPMjet::MakeHeader()
 {
 // Builds the event header, to be called after each event
-    fHeader.SetNProduced(fDPMjet->GetNumStablePc());
+    fHeader.SetNProduced(fNprimaries);
     fHeader.SetImpactParameter(fDPMjet->GetBImpac());
     fHeader.SetTotalEnergy(fDPMjet->GetTotEnergy());
     fHeader.SetParticipants(fDPMjet->GetProjParticipants(), 

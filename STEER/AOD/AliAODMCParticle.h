@@ -81,17 +81,17 @@ class AliAODMCParticle: public AliVParticle {
     virtual void    SetGeneratorIndex(Short_t i) {fGeneratorIndex = i;}
     virtual Short_t GetGeneratorIndex() const {return fGeneratorIndex;}
     enum { kPrimary = 1<<0, kPhysicalPrim = 1<<1, kSecondaryFromWeakDecay = 1<<2, kSecondaryFromMaterial = 1 <<3}; // use only the first 8bits!
-    void SetFlag(UInt_t flag){fFlag = flag;} // carefull flag encodes three different types of information 
-    UInt_t GetFlag() const {return fFlag;}
+    virtual void SetFlag(UInt_t flag){fFlag = flag;} // carefull flag encodes three different types of information 
+    virtual UInt_t GetFlag() const {return fFlag;}
 
 
     // for the status we use the upper 16 bits/2 bytes of the flag word
     void SetStatus(Int_t status){
       if(status<0)return; // a TParticle can have a negative status, catch this here and do nothing
-      fFlag &= 0xffff;   // reset the upper bins keep the lower bins
+      fFlag &= 0xffff;    // reset the upper bins keep the lower bins
       fFlag |= (((UInt_t)status)<<16); // bit shift by 16
     }
-    UInt_t GetStatus() const {
+    virtual UInt_t GetStatus() const {
       // bit shift by 16
       return fFlag>>16;
     }
@@ -101,7 +101,7 @@ class AliAODMCParticle: public AliVParticle {
       if(b)fFlag |= kPrimary;
       else fFlag &= ~kPrimary;
     }
-    Bool_t IsPrimary() const {return ((fFlag&kPrimary)==kPrimary);} 
+    virtual Bool_t IsPrimary() const {return ((fFlag&kPrimary)==kPrimary);} 
 
     void SetPhysicalPrimary(Bool_t b = kTRUE){
      if(b)fFlag |= kPhysicalPrim;

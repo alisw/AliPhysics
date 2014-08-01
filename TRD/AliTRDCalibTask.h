@@ -79,6 +79,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetMinNbOfContributors(Int_t minNbOfContributors)               {fMinNbContributors = minNbOfContributors;};  
   void SetRangePrimaryVertexZ(Double_t rangePrimaryVertexZ)            {fRangePrimaryVertexZ = TMath::Abs(rangePrimaryVertexZ);}; 
   void SetRejectPileUpWithSPD(Bool_t rejectPileUpWithSPD)              {fRejectPileUpWithSPD = rejectPileUpWithSPD;};
+  void SetRejectPileUpWithTOF(Bool_t rejectPileUpWithTOF)              {fRejectPileUpWithTOF = rejectPileUpWithTOF;};
+  void SetRejectPileUpWithTOFOrITS(Bool_t rejectPileUpWithTOFOrITS)    {fRejectPileUpWithTOFOrITS = rejectPileUpWithTOFOrITS;};
   void SetMinNbTracks(Int_t minNbTracks)                               {fMinNbTracks = minNbTracks;};
   void SetMaxNbTracks(Int_t maxNbTracks)                               {fMaxNbTracks = maxNbTracks;};
   void SetCutWithVdriftCalib(Bool_t cutWithVdriftCalib)                {fCutWithVdriftCalib = cutWithVdriftCalib;};
@@ -127,7 +129,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   AliTRDCalibChamberStatus *fTRDChamberStatus;   //! calibration chamber status
 
   TH1I        *fNEvents;                         //! counter  
-  TH1I        *fNEventsInput;                    //! counter  
+  TH1I        *fNEventsInput;                    //! counter
+  TH1I        *fNEventsTrigger;                  //! counter trigger   
   
   TH1F        *fNbTRDTrack;                      //! nb ESD tracks with TRD clusters
   TH1F        *fNbTRDTrackOffline;               //! nb ESD tracks with TRD clusters
@@ -146,6 +149,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   TH1F        *fNbTrackletsStandalone;           //! nb Tracklets standalone
   
   TH2F        *fAbsoluteGain;                    //! Absolute Gain without AliESDfriend
+  TH2F        *fTOFbc;                           //! Check TOF branch crossing
   TH2I        *fCH2dSum;                         //! CH2d charge all
   TProfile2D  *fPH2dSum;                         //! PH2d PH all
   TH2I        *fCH2dSM;                          //! CH2d per SM
@@ -183,6 +187,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Int_t       fMinNbContributors;                // Min number of contributors
   Double_t    fRangePrimaryVertexZ;              // Were the primary vertex is
   Bool_t      fRejectPileUpWithSPD;              // Reject pile-up events with SPD
+  Bool_t      fRejectPileUpWithTOF;              // Reject pile-up tracks with TOF
+  Bool_t      fRejectPileUpWithTOFOrITS;         // Reject pile-up tracks with TOF or ITS
   Int_t       fMinNbTracks;                      // Min Nb Tracks
   Int_t       fMaxNbTracks;                      // Max Nb Tracks
   Bool_t      fCutWithVdriftCalib;               // CutWithVdriftCalib for the gain and PH
@@ -223,7 +229,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   AliTRDCalibTask(const AliTRDCalibTask&); 
   AliTRDCalibTask& operator=(const AliTRDCalibTask&); 
 
-  ClassDef(AliTRDCalibTask, 5); 
+  ClassDef(AliTRDCalibTask, 7); 
 };
 
 #endif

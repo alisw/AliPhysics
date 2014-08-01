@@ -40,6 +40,7 @@
 #include "AliHLTLogging.h"
 #include "AliHLTSystem.h"
 #include "AliHLTDefinitions.h"
+#include "AliHLTCDHWrapper.h"
 #include <cstdlib>
 #include <cerrno>
 #include <cassert>
@@ -741,10 +742,14 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 			break;
 		}
 		
+	    AliHLTCDHWrapper cdh(blocks[n].fPtr);
+
+		AliHLTUInt32_t headerSize = cdh.GetHeaderSize();
+
 		AliHLTUInt32_t totalDDLSize = blocks[n].fSize / sizeof(AliHLTUInt32_t);
-		AliHLTUInt32_t ddlRawDataSize = totalDDLSize - fHitRec->GetkDDLHeaderSize();
+		AliHLTUInt32_t ddlRawDataSize = totalDDLSize - headerSize / sizeof(AliHLTUInt32_t);
 		AliHLTUInt32_t* buffer = reinterpret_cast<AliHLTUInt32_t*>(blocks[n].fPtr)
-			+ fHitRec->GetkDDLHeaderSize();
+    + headerSize/sizeof(AliHLTUInt32_t);
 		AliHLTUInt32_t nofHit = block.MaxNumberOfEntries();
 
 #ifdef DEBUG

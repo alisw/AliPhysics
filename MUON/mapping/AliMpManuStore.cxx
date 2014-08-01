@@ -100,7 +100,6 @@ AliMpManuStore* AliMpManuStore::ReadData(const AliMpDataStreams& dataStreams,
 //______________________________________________________________________________
 AliMpManuStore::AliMpManuStore(const AliMpDataStreams& dataStreams)
 : TObject(),
-  fkDataStreams(dataStreams),
   fManuToSerialNbs(),
   fSerialNbToManus(),
   fNofManusInDE(),
@@ -118,13 +117,12 @@ AliMpManuStore::AliMpManuStore(const AliMpDataStreams& dataStreams)
      return;
   }      
 
-  ReadManuSerial();
+  ReadManuSerial(dataStreams);
 }
 
 //______________________________________________________________________________
-AliMpManuStore::AliMpManuStore(TRootIOCtor* ioCtor)
+AliMpManuStore::AliMpManuStore(TRootIOCtor* /*ioCtor*/)
 : TObject(),
-  fkDataStreams(ioCtor),
   fManuToSerialNbs(),
   fSerialNbToManus(),
   fNofManusInDE(),
@@ -151,7 +149,8 @@ AliMpManuStore::~AliMpManuStore()
 //
 
 //______________________________________________________________________________
-Bool_t AliMpManuStore::ReadData(const AliMpDetElement* de, Int_t& nofManus)
+Bool_t AliMpManuStore::ReadData(const AliMpDataStreams& dataStreams,
+                                const AliMpDetElement* de, Int_t& nofManus)
 {
 /// Read manu serial numbers for the given detection element
 
@@ -171,7 +170,7 @@ Bool_t AliMpManuStore::ReadData(const AliMpDetElement* de, Int_t& nofManus)
   static Int_t manuMask = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
 
   istream& in 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(
           AliMpFiles::ManuToSerialPath(deName, stationType, station12Type));
 
@@ -208,7 +207,7 @@ Bool_t AliMpManuStore::ReadData(const AliMpDetElement* de, Int_t& nofManus)
 }
 
 //______________________________________________________________________________
-Bool_t  AliMpManuStore::ReadManuSerial()
+Bool_t  AliMpManuStore::ReadManuSerial(const AliMpDataStreams& dataStreams)
 {
 /// Read data files for all detection elements.
 /// Return true if reading was successful.
@@ -222,7 +221,7 @@ Bool_t  AliMpManuStore::ReadManuSerial()
     AliMpDetElement* detElement = it.CurrentDE();
 
     Int_t nofManus;
-    Bool_t result = ReadData(detElement, nofManus);  
+    Bool_t result = ReadData(dataStreams, detElement, nofManus);
     fNofManusInDE.Add(detElement->GetId(), nofManus);
     fNofManus += nofManus;
     

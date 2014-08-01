@@ -102,6 +102,19 @@ public:
 
   void SetDensitySupportOverSi(Double_t density) { if (density>1e-6) fDensitySupportOverSi=density; else fDensitySupportOverSi=1e-6; }
 
+  //--------- for underlying and pile-up events --------------------
+
+  void SetFileNameForUnderlyingEvent(TString fileName) { fFileNameForUnderyingEvent += fileName; }
+  void SetFileNameForPileUpEvents(TString fileName)    { fFileNameForPileUpEvents   += fileName; }
+
+  void SetUnderlyingEventID(Short_t eventID) { fUnderlyingEventID = eventID; }
+  void SetPileUpEventID(Short_t i, Short_t eventID) { if (i>=0 && i<AliMFTConstants::fNMaxPileUpEvents) fPileUpEventsIDs[i] = eventID; }
+
+  const Char_t* GetFileNameForUnderlyingEvent() { return fFileNameForUnderyingEvent; }
+  const Char_t* GetFileNameForPileUpEvents()    { return fFileNameForPileUpEvents; }
+  Short_t GetUnderlyingEventID() { return fUnderlyingEventID; }
+  Short_t GetPileUpEventID(Short_t i) { if (i>=0 && i<AliMFTConstants::fNMaxPileUpEvents) return fPileUpEventsIDs[i]; else return -1; }
+  
 protected:
 
   static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;        // max number of MFT planes
@@ -125,13 +138,16 @@ protected:
   Int_t fNStepForChargeDispersion;
 
   Double_t fDensitySupportOverSi;
+
+  TString fFileNameForUnderyingEvent, fFileNameForPileUpEvents;
+  Short_t fNPileUpEvents, fUnderlyingEventID, fPileUpEventsIDs[AliMFTConstants::fNMaxPileUpEvents];
   
 private:
 
   AliMFT (const AliMFT& mft);             // dummy copy constructor
   AliMFT &operator=(const AliMFT& mft);   // dummy assignment operator
   
-  ClassDef(AliMFT,1) 
+  ClassDef(AliMFT,2) 
     
 };
 

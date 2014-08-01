@@ -66,6 +66,8 @@ extern "C" void g95_runtime_start();
 
 using std::cout;
 using std::endl;
+using std::exception;
+using std::cerr;
 
 //_____________________________________________________________________________
 int main(int argc, char **argv)

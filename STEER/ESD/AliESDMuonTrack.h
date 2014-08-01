@@ -118,6 +118,7 @@ public:
   Int_t    LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
   Int_t    GetTriggerWithoutChamber(void) const { return fLocalTrigger >> 26 & 0xF; }
   Bool_t TriggerFiredWithoutChamber(Int_t ich) const { return GetTriggerWithoutChamber() >> (3 - ich) & 0x1; }
+  Int_t GetMuonTrigDevSign() const;
 
   // Get and Set methods for the hit strips pattern in the trigger chambers
   UShort_t GetTriggerX1Pattern() const { return fX1Pattern; }
@@ -237,6 +238,8 @@ public:
   static Int_t GetSlatOrInfo(UInt_t pattern);
   /// Getting crossed board
   static Int_t GetCrossedBoard(UInt_t pattern);
+
+  void AddMuonTrigDevSignInfo(UInt_t& pattern) const;
 
   AliESDEvent* GetESDEvent() const {return fESDEvent;}
   void         SetESDEvent(AliESDEvent* evt) {fESDEvent = evt;}  

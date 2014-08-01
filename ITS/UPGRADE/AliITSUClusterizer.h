@@ -1,22 +1,16 @@
 #ifndef ALIITSUCLUSTERIZER_H
 #define ALIITSUCLUSTERIZER_H
 
+#include <TBits.h>
 #include <TClonesArray.h>
-
-//#define _ClusterTopology_  // uncomment this to produce the tree with cluster topology
+#include "AliITSUClusterPix.h"
 
 class TTree;
 class TObjAray;
 class AliITSUSegmentationPix;
 class AliITSdigit;
 class AliCluster;
-class AliITSUClusterPix;
 class AliITSURecoParam;
-//
-#ifdef  _ClusterTopology_
-#include <TBits.h>
-class TFile;
-#endif //_ClusterTopology_
 
 
 class AliITSUClusterizer : public TObject 
@@ -133,14 +127,10 @@ class AliITSUClusterizer : public TObject
   AliITSUClusterizerClusterCand  *fCandFreelistBptr ; //!pointer in the pool
   //
 #ifdef _ClusterTopology_
-  TTree* fTreeTopology;   // output tree for the cluster topology in the special mode
-  TFile* fFileTopology;   // output file for the cluster topology in the special mode
   TBits  fTopology;       // container for the clusters topology pattern
   UShort_t fMinCol;       // min col number
   UShort_t fMinRow;       // min row number
-  void   InitTopologyTree();
-  void   SaveTopologyTree();
-  void   FillClusterTopology(AliITSUClusterizerClusterCand *cand);
+  void   FillClusterTopology(const AliITSUClusterizerClusterCand *cand, AliITSUClusterPix* cl) const;
 #endif //_ClusterTopology_
  private:
   AliITSUClusterizer(const AliITSUClusterizer&); //Not implemented

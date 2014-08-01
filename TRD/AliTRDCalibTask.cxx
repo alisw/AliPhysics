@@ -100,6 +100,7 @@ AliTRDCalibTask::AliTRDCalibTask(const char *name)
   fTRDChamberStatus(0),
   fNEvents(0),
   fNEventsInput(0),
+  fNEventsTrigger(0),
   fNbTRDTrack(0),
   fNbTRDTrackOffline(0),
   fNbTRDTrackStandalone(0),
@@ -115,6 +116,7 @@ AliTRDCalibTask::AliTRDCalibTask(const char *name)
   fNbTrackletsOffline(0),
   fNbTrackletsStandalone(0),
   fAbsoluteGain(0),
+  fTOFbc(0),
   fCH2dSum(0),
   fPH2dSum(0),
   fCH2dSM(0),
@@ -145,6 +147,8 @@ AliTRDCalibTask::AliTRDCalibTask(const char *name)
   fMinNbContributors(0),
   fRangePrimaryVertexZ(9999999.0),
   fRejectPileUpWithSPD(kFALSE),
+  fRejectPileUpWithTOF(kFALSE),
+  fRejectPileUpWithTOFOrITS(kFALSE),
   fMinNbTracks(9),
   fMaxNbTracks(999999999),
   fCutWithVdriftCalib(kFALSE),
@@ -209,6 +213,7 @@ AliTRDCalibTask::~AliTRDCalibTask()
   // Pointeur
   if(fNEvents) delete fNEvents;
   if(fNEventsInput) delete fNEventsInput;
+  if(fNEventsTrigger) delete fNEventsTrigger;
   if(fNbTRDTrack) delete fNbTRDTrack;
   if(fNbTRDTrackOffline) delete fNbTRDTrackOffline;
   if(fNbTRDTrackStandalone) delete fNbTRDTrackStandalone;
@@ -224,6 +229,7 @@ AliTRDCalibTask::~AliTRDCalibTask()
   if(fNbTrackletsOffline) delete fNbTrackletsOffline;
   if(fNbTrackletsStandalone) delete fNbTrackletsStandalone;
   if(fAbsoluteGain) delete fAbsoluteGain;
+  if(fTOFbc) delete fTOFbc;
   if(fCH2dSum) delete fCH2dSum;
   if(fPH2dSum) delete fPH2dSum;
   if(fCH2dSM) delete fCH2dSM;
@@ -344,6 +350,8 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   
   fNEvents = new TH1I(Form("NEvents_%s",(const char*)fName),"NEvents", 2, 0, 2);
   fListHist->Add(fNEvents);
+  fNEventsTrigger = new TH1I(Form("NEventsTrigger_%s",(const char*)fName),"NEventsTrigger", 2, 0, 2);
+  fListHist->Add(fNEventsTrigger);
   fNEventsInput = new TH1I(Form("NEventsInput_%s",(const char*)fName),"NEventsInput", 2, 0, 2);
   fListHist->Add(fNEventsInput);
   
@@ -364,6 +372,14 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   fAbsoluteGain->SetStats(0);
   fAbsoluteGain->Sumw2();
   fListHist->Add(fAbsoluteGain);
+
+  fTOFbc = new TH2F(Form("TOFbc_%s",(const char*)fName),"TOFbc", 200, -150., 50., nBinsPt, binLimPt);
+  fTOFbc->SetYTitle("Momentum");
+  fTOFbc->SetXTitle("TOF bc");
+  fTOFbc->SetZTitle("counts");
+  fTOFbc->SetStats(0);
+  fTOFbc->Sumw2();
+  fListHist->Add(fTOFbc);
   
   if(IsPHQon()){
     printf("\n        AliTRDCalibTask PHQ is on!!     \n\n");
@@ -633,7 +649,12 @@ void AliTRDCalibTask::UserExec(Option_t *)
     }   
 
   }
-    
+
+  TString classfired = fESD->GetFiredTriggerClasses();
+  Bool_t isWU =  classfired.Contains("WU");
+  if(isWU) fNEventsTrigger->Fill(1.5);
+  else fNEventsTrigger->Fill(0.5);
+  
   //printf("Class Fired %s\n",(const char*)fESD->GetFiredTriggerClasses());
   //printf("Trigger passed\n");
   
@@ -808,6 +829,22 @@ void AliTRDCalibTask::UserExec(Option_t *)
     if((fEsdTrackCuts) && (!fEsdTrackCuts->IsSelected((AliVParticle *)fkEsdTrack))) {
       //printf("Not a good track\n");
       continue;
+    }
+    
+    Int_t nbcrossing = fkEsdTrack->GetTOFBunchCrossing();
+    fTOFbc->Fill(nbcrossing,fkEsdTrack->Pt());
+    // TOF pile-up rejection is asked
+    if(fRejectPileUpWithTOF) {
+      if(TMath::Abs(nbcrossing)>0.5) continue;
+    }
+
+    // ITS or TOF
+    if(fRejectPileUpWithTOFOrITS) {
+      ULong_t statusits = fkEsdTrack->GetStatus();
+      UChar_t itsPixel = fkEsdTrack->GetITSClusterMap();
+      Bool_t itskany = kFALSE;
+      if(((statusits & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) && ((TESTBIT(itsPixel, 0) || TESTBIT(itsPixel, 1)))) itskany = kTRUE;
+      if(!(itskany || (TMath::Abs(nbcrossing)<0.5))) continue;
     }
 
     // First Absolute gain calibration

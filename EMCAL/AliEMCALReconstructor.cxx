@@ -103,7 +103,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if(!fCalibData)
     {
       AliCDBEntry *entry = (AliCDBEntry*) 
-	AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
+      AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
       if (entry) fCalibData =  (AliEMCALCalibData*) entry->GetObject();
     }
   
@@ -114,7 +114,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if(!fPedestalData)
     {
       AliCDBEntry *entry = (AliCDBEntry*) 
-	AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+      AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
       if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
     }
   
@@ -479,7 +479,10 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
           } // all primaries in digit      
         } // select primary label
         
-        emcCells.SetCell(idignew,dig->GetId(),energy, time,digLabel);   
+        Bool_t highGain = kFALSE;
+        if( dig->GetType() == AliEMCALDigit::kHG ) highGain = kTRUE;
+        
+        emcCells.SetCell(idignew,dig->GetId(),energy, time,digLabel,0.,highGain);
         idignew++;
       }
     }

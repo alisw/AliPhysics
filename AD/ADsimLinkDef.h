@@ -10,5 +10,6 @@
 #pragma link C++ class  AliADv1+;
 #pragma link C++ class  AliADhit+;
 #pragma link C++ class  AliADDigitizer+;
+#pragma link C++ class  AliADQADataMakerSim+;
 
 #endif

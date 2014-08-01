@@ -895,13 +895,16 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBGrid::PutInCvmfs(TString &filename, TFile *cdbFile) const {
+Bool_t AliCDBGrid::PutInCvmfs( TString& filename, TFile* cdbFile ) const
+{
   // Add the CDB object to cvmfs OCDB
 
-  TString cvmfsFilename(filename);
-  if (cvmfsFilename.EndsWith("/")) cvmfsFilename.Remove(cvmfsFilename.Length()-1,1);	
-  TString basename = ( cvmfsFilename(cvmfsFilename.Last('/')+1, cvmfsFilename.Length()) );  // Run0_99999999_v2_s0.root
-  TString cvmfsDirname = cvmfsFilename.Remove ( cvmfsFilename.Last('/')+1, cvmfsFilename.Length() );  // /alice/data/2011/OCDB/GRP/GRP/Data
+  TString cvmfsFilename( filename );
+  // cvmfsFilename.Remove(TString::kTrailing, '/');
+  TString basename = ( cvmfsFilename( cvmfsFilename.Last( '/' ) + 1, cvmfsFilename.Length() ) );
+  TString cvmfsDirname = cvmfsFilename.Remove( cvmfsFilename.Last( '/' ), cvmfsFilename.Length() );
+  TRegexp threeLevelsRE( "[^/]+/[^/]+/[^/]+$" );
+  TString threeLevels = cvmfsDirname( threeLevelsRE );
 
   TRegexp re_RawFolder("^/alice/data/20[0-9]+/OCDB");
   TRegexp re_MCFolder("^/alice/simulation/2008/v4-15-Release");
@@ -915,20 +918,33 @@ Bool_t AliCDBGrid::PutInCvmfs(TString &filename, TFile *cdbFile) const {
     AliError(Form("OCDB folder set for an invalid OCDB storage:\n   %s", cvmfsDirname.Data()));
     return kFALSE;
   }
-  // now cvmfsDirname is "/cvmfs/alice-ocdb.cern.ch/calibration/data/2011/OCDB/GRP/GRP/Data"
+  // now cvmfsDirname is the full dirname in cvmfs
   AliDebug(3, Form("Publishing \"%s\" in \"%s\"", basename.Data(), cvmfsDirname.Data()));
 
-  // Tar the file with the right prefix path
-  cdbFile->Cp( basename.Data() );
+  // Tar the file with the right prefix path. Include the directory structure in the tarball
+  // to cover the case of a containing directory being new in cvmfs, plus a container directory
+  // to avoid clashing with stuff present in the local directory
+  TString firstLevel(threeLevels(0, threeLevels.First('/')));
+  TString tempDir("tmpToCvmfsOcdbs");
+  gSystem->Exec( Form("rm -r %s > /dev/null 2>&1", tempDir.Data()) ); //to be sure not to publish other stuff in cvmfs
+  Int_t result = gSystem->Exec( Form("mkdir -p %s/%s", tempDir.Data(), threeLevels.Data()) );
+  if ( result != 0 ) {
+    AliError ( Form ( "Could not create the directory \"%s/%s\"", tempDir.Data(), threeLevels.Data() ) );
+    return kFALSE;
+  }
+  cdbFile->Cp(Form("%s/%s/%s", tempDir.Data(), threeLevels.Data(), basename.Data() ));
   TString tarFileName("cdbObjectToAdd.tar.gz");
-  // tarCommand should be e.g.: tar --transform 's,^,/cvmfs/alice-ocdb.cern.ch/calibration/data/2010/OCDB,S' -cvzf objecttoadd.tar.gz basename
-  Int_t result = gSystem->Exec ( Form( "tar --transform 's,^,%s,S' -cvzf %s %s", cvmfsDirname.Data(), tarFileName.Data(), basename.Data() ) );
+  TString cvmfsBaseFolder(cvmfsDirname(0, cvmfsDirname.Last('/')));
+  cvmfsBaseFolder = cvmfsBaseFolder(0, cvmfsBaseFolder.Last('/'));
+  cvmfsBaseFolder = cvmfsBaseFolder(0, cvmfsBaseFolder.Last('/'));
+  // tarCommand should be e.g.: tar --transform 's,^,/cvmfs/alice-ocdb.cern.ch/calibration/data/2010/OCDB/,S' -cvzf objecttoadd.tar.gz basename
+  result = gSystem->Exec ( Form( "tar --transform 's,^%s,%s,S' -cvzf %s %s", tempDir.Data(), cvmfsBaseFolder.Data(), tarFileName.Data(), tempDir.Data() ) );
   if ( result != 0 ) {
     AliError ( Form ( "Could not create the tarball for the object \"%s\"", filename.Data() ) );
     return kFALSE;
   }
 
-  // Copy the file to cvmfs
+  // Copy the file to cvmfs (requires to have the executable in the path and access to the server)
   result = gSystem->Exec( Form( "ocdb-cvmfs %s", tarFileName.Data() ) );
   if ( result != 0 ) {
     AliError ( Form ( "Could not execute \"ocdb-cvmfs %s\"", filename.Data() ) );
@@ -936,7 +952,7 @@ Bool_t AliCDBGrid::PutInCvmfs(TString &filename, TFile *cdbFile) const {
   }
 
   // Remove the local file and the tar-file
-  gSystem->Exec( Form( "rm %s", basename.Data() ) );
+  gSystem->Exec( Form( "rm -r %s", tempDir.Data() ) );
   gSystem->Exec( Form( "rm %s", tarFileName.Data() ) );
 
   return kTRUE;

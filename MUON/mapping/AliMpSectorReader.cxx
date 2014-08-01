@@ -144,15 +144,13 @@ const TString& AliMpSectorReader::GetPadRowSegmentKeyword()
 //
   
 //_____________________________________________________________________________
-AliMpSectorReader::AliMpSectorReader(const AliMpDataStreams& dataStreams,
-                                     AliMq::Station12Type station, 
+AliMpSectorReader::AliMpSectorReader(AliMq::Station12Type station,
                                      AliMp::PlaneType plane) 
   : TObject(),
-    fkDataStreams(dataStreams),
     fStationType(station),
     fPlaneType(plane),
     fSector(0),
-    fMotifReader(new AliMpMotifReader(dataStreams, AliMp::kStation12, station, plane))
+    fMotifReader(new AliMpMotifReader(AliMp::kStation12, station, plane))
  
 {
 /// Standard constructor
@@ -171,7 +169,8 @@ AliMpSectorReader::~AliMpSectorReader()
 //
 
 //_____________________________________________________________________________
-void  AliMpSectorReader::ReadSectorData(istream& in)
+void  AliMpSectorReader::ReadSectorData(const AliMpDataStreams& dataStreams,
+                                        istream& in)
 {
 /// Read sector input data;
 /// prepare zones and rows vectors to be filled in.
@@ -217,11 +216,12 @@ void  AliMpSectorReader::ReadSectorData(istream& in)
      return;
   }      
   
-  ReadZoneData(in);
+  ReadZoneData(dataStreams, in);
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadZoneData(istream& in)
+void AliMpSectorReader::ReadZoneData(const AliMpDataStreams& dataStreams,
+                                     istream& in)
 {
 /// Read zone input data;
 /// create zone and adds it to zones vector.
@@ -246,18 +246,19 @@ void AliMpSectorReader::ReadZoneData(istream& in)
      return;
   }  
     
-  ReadSubZoneData(in, zone);
+  ReadSubZoneData(dataStreams, in, zone);
 }
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadSubZoneData(istream& in, AliMpZone* zone)
+void AliMpSectorReader::ReadSubZoneData(const AliMpDataStreams& dataStreams,
+                                        istream& in, AliMpZone* zone)
 {
 /// Read subzone input data;
 /// create subzone and its to the specified zone.
 
   AliDebugStream(2) << GetSubZoneKeyword() << endl;
 
-  AliMpVMotif* motif = ReadMotifData(in, zone);
+  AliMpVMotif* motif = ReadMotifData(dataStreams, in, zone);
   AliMpSubZone* subZone = new AliMpSubZone(motif); 
   zone->AddSubZone(subZone); 
 
@@ -269,11 +270,13 @@ void AliMpSectorReader::ReadSubZoneData(istream& in, AliMpZone* zone)
      return;
   }  
     
-  ReadRowSegmentsData(in, zone, subZone);
+  ReadRowSegmentsData(dataStreams, in, zone, subZone);
 }   
 
 //_____________________________________________________________________________
-AliMpVMotif*  AliMpSectorReader::ReadMotifData(istream& in, AliMpZone* zone)
+AliMpVMotif*  AliMpSectorReader::ReadMotifData(
+                                     const AliMpDataStreams& dataStreams,
+                                     istream& in, AliMpZone* zone)
 {
 /// Read the motif input data.
 
@@ -293,7 +296,7 @@ AliMpVMotif*  AliMpSectorReader::ReadMotifData(istream& in, AliMpZone* zone)
   if (!motif) {    
     motifType = motifMap->FindMotifType(motifTypeID);
     if (!motifType) {
-      motifType = fMotifReader->BuildMotifType(motifTypeID);     
+      motifType = fMotifReader->BuildMotifType(dataStreams, motifTypeID);
       motifMap->AddMotifType(motifType);
     }
     
@@ -301,7 +304,7 @@ AliMpVMotif*  AliMpSectorReader::ReadMotifData(istream& in, AliMpZone* zone)
       motif = new AliMpMotif(motifID, motifType, 
                      zone->GetPadDimensionX(), zone->GetPadDimensionY());
     else 
-      motif = fMotifReader->BuildMotifSpecial(motifID, motifType);
+      motif = fMotifReader->BuildMotifSpecial(dataStreams, motifID, motifType);
       
     if (motif) 
       motifMap->AddMotif(motif);
@@ -312,7 +315,8 @@ AliMpVMotif*  AliMpSectorReader::ReadMotifData(istream& in, AliMpZone* zone)
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadRowSegmentsData(istream& in, 
+void AliMpSectorReader::ReadRowSegmentsData(const AliMpDataStreams& dataStreams,
+                                      istream& in,
                                       AliMpZone* zone, AliMpSubZone* subZone)
 {
 /// Read row segments input data of a specified zone and subzone;
@@ -361,10 +365,10 @@ void AliMpSectorReader::ReadRowSegmentsData(istream& in,
   if (in.eof()) return;
 
   if (nextKeyword == GetZoneKeyword()) {
-    ReadZoneData(in);
+    ReadZoneData(dataStreams, in);
   }
   else if (nextKeyword == GetSubZoneKeyword()) {
-    ReadSubZoneData(in, zone);
+    ReadSubZoneData(dataStreams, in, zone);
   }   
   else {
     AliErrorStream() << "Wrong file format." << endl;
@@ -372,7 +376,9 @@ void AliMpSectorReader::ReadRowSegmentsData(istream& in,
 }   
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadSectorSpecialData(istream& in, AliMp::XDirection direction)
+void AliMpSectorReader::ReadSectorSpecialData(
+                            const AliMpDataStreams& dataStreams,
+                            istream& in, AliMp::XDirection direction)
 {
 /// Read sector input data
 /// with a special (irregular) motifs.
@@ -397,12 +403,14 @@ void AliMpSectorReader::ReadSectorSpecialData(istream& in, AliMp::XDirection dir
     return;
   }  
 
-  ReadMotifsSpecialData(in);     
-  ReadRowSpecialData(in, direction); 
+  ReadMotifsSpecialData(dataStreams, in);
+  ReadRowSpecialData(dataStreams, in, direction);
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadMotifsSpecialData(istream& in)
+void AliMpSectorReader::ReadMotifsSpecialData(
+                            const AliMpDataStreams& dataStreams,
+                            istream& in)
 {
 /// Read the special (irregular) motifs input data.
 
@@ -412,7 +420,7 @@ void AliMpSectorReader::ReadMotifsSpecialData(istream& in)
   do {
     Int_t zone;
     in >> zone;
-    AliMpVMotif* motif =  ReadMotifData(in, fSector->GetZone(zone));
+    AliMpVMotif* motif =  ReadMotifData(dataStreams, in, fSector->GetZone(zone));
     AliMpSubZone* subZone = new AliMpSubZone(motif); 
     fSector->GetZone(zone)->AddSubZone(subZone); 
   
@@ -429,7 +437,9 @@ void AliMpSectorReader::ReadMotifsSpecialData(istream& in)
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadRowSpecialData(istream& in, AliMp::XDirection direction)
+void AliMpSectorReader::ReadRowSpecialData(
+                            const AliMpDataStreams& dataStreams,
+                            istream& in, AliMp::XDirection direction)
 {
 /// Read row input data
 /// with a special (irregular) motifs.
@@ -471,7 +481,7 @@ void AliMpSectorReader::ReadRowSpecialData(istream& in, AliMp::XDirection direct
      return;
   }  
     
-  ReadRowSegmentSpecialData(in, segment, direction); 
+  ReadRowSegmentSpecialData(dataStreams, in, segment, direction);
   
   // Update row segment and set it to all subzones associated with
   // contained motifs
@@ -490,9 +500,11 @@ void AliMpSectorReader::ReadRowSpecialData(istream& in, AliMp::XDirection direct
 }  
 
 //_____________________________________________________________________________
-void AliMpSectorReader::ReadRowSegmentSpecialData(istream& in, 
-                                            AliMpVRowSegmentSpecial* segment,
-					    AliMp::XDirection direction)
+void AliMpSectorReader::ReadRowSegmentSpecialData(
+                            const AliMpDataStreams& dataStreams,
+                            istream& in,
+                            AliMpVRowSegmentSpecial* segment,
+			    AliMp::XDirection direction)
 {
 /// Read row segment input data
 /// with a special (irregular) motifs.
@@ -579,10 +591,10 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(istream& in,
   if (in.eof()) return;
 
   if (nextKeyword == GetPadRowsKeyword()) {
-    ReadRowSegmentSpecialData(in, segment, direction);
+    ReadRowSegmentSpecialData(dataStreams, in, segment, direction);
   }
   else if (nextKeyword == GetRowSpecialKeyword()) {
-    ReadRowSpecialData(in, direction);
+    ReadRowSpecialData(dataStreams, in, direction);
   }   
   else {
     AliErrorStream() << "Wrong file format." << endl;
@@ -594,7 +606,7 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(istream& in,
 //
 
 //_____________________________________________________________________________
-AliMpSector* AliMpSectorReader::BuildSector()
+AliMpSector* AliMpSectorReader::BuildSector(const AliMpDataStreams& dataStreams)
 {
 /// Read the mapping data from stream and create the basic objects:         \n
 /// zones, subzones, rows, row segments, motifs.
@@ -602,10 +614,10 @@ AliMpSector* AliMpSectorReader::BuildSector()
   // Open input stream
   //
   istream& in 
-    = fkDataStreams.
+    = dataStreams.
         CreateDataStream(AliMpFiles::SectorFilePath(fStationType,fPlaneType));
 
-  ReadSectorData(in);
+  ReadSectorData(dataStreams, in);
   delete &in;
   
   fSector->SetRowSegmentOffsets();
@@ -616,12 +628,12 @@ AliMpSector* AliMpSectorReader::BuildSector()
   
   TString sectorSpecialFileName 
     = AliMpFiles::SectorSpecialFilePath(fStationType, fPlaneType);
-  if ( fkDataStreams.IsDataStream(sectorSpecialFileName) ) {
+  if ( dataStreams.IsDataStream(sectorSpecialFileName) ) {
     istream& in2 
-      = fkDataStreams.
+      = dataStreams.
           CreateDataStream(sectorSpecialFileName);
   
-    ReadSectorSpecialData(in2, AliMp::kLeft);
+    ReadSectorSpecialData(dataStreams, in2, AliMp::kLeft);
     
     delete &in2;
   }  
@@ -629,12 +641,12 @@ AliMpSector* AliMpSectorReader::BuildSector()
   // Open input file for special outer zone
   TString sectorSpecialFileName2 
     = AliMpFiles::SectorSpecialFilePath2(fStationType, fPlaneType);
-  if ( fkDataStreams.IsDataStream(sectorSpecialFileName2) ) {
+  if ( dataStreams.IsDataStream(sectorSpecialFileName2) ) {
     istream& in3
-      = fkDataStreams.
+      = dataStreams.
           CreateDataStream(sectorSpecialFileName2);
     
-    ReadSectorSpecialData(in3, AliMp::kRight);
+    ReadSectorSpecialData(dataStreams, in3, AliMp::kRight);
     
     delete &in3;
   }   

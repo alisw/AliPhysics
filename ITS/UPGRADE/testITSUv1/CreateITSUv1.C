@@ -31,6 +31,8 @@ void CreateITSUv1()
   const double kPitchZ = 20e-4;
   const int    kNRow   = 650; 
   const int    kNCol   = 1500;
+  const double kSiThickIB = 150e-4;
+  const double kSiThickOB = 150e-4;
   //  const double kSensThick = 120e-4;   // -> sensor Si thickness
   //
   const double kReadOutEdge = 0.2;   // width of the readout edge (passive bottom)
@@ -38,7 +40,7 @@ void CreateITSUv1()
   //
   const int kNLr = 7;
   const int kNLrInner = 3;
-  const int kBuildLevel = 3;
+  const int kBuildLevel = 0;
   enum {kRmn,kRmd,kRmx,kNModPerStave,kPhi0,kNStave,kNPar};
   // Radii are from last TDR (ALICE-TDR-017.pdf Tab. 1.1, rMid is mean value)
   const double tdr5dat[kNLr][kNPar] = { 
@@ -97,13 +99,13 @@ void CreateITSUv1()
     if (idLr>=kNLrInner) {
       nChipsPerStaveLr *= nChipsPerModule;
       ITS->DefineLayer(idLr, phi0, rLr, nChipsPerStaveLr*seg0->Dz(), nStaveLr, nModPerStaveLr, 
-		       seg0->Dy()+150e-4, seg0->Dy(), seg0->GetChipTypeID(),kBuildLevel);
+		       kSiThickOB, seg0->Dy(), seg0->GetChipTypeID(),kBuildLevel);
       //      printf("Add Lr%d: R=%6.2f DZ:%6.2f Staves:%3d NMod/Stave:%3d\n",
       //	     idLr,rLr,nChipsPerStaveLr*seg0->Dz(),nStaveLr,nModPerStaveLr);
     } else {
       turbo = -radii2Turbo(tdr5dat[idLr][kRmn],rLr,tdr5dat[idLr][kRmx],seg0->Dx());	
       ITS->DefineLayerTurbo(idLr, phi0, rLr, nChipsPerStaveLr*seg0->Dz(), nStaveLr, nChipsPerStaveLr, 
-			    seg0->Dx(), turbo, seg0->Dy()+250e-4, seg0->Dy(), seg0->GetChipTypeID());
+			    seg0->Dx(), turbo, kSiThickIB, seg0->Dy(), seg0->GetChipTypeID(),kBuildLevel);
       //      printf("Add Lr%d: R=%6.2f DZ:%6.2f Turbo:%+6.2f Staves:%3d NMod/Stave:%3d\n",
       //	     idLr,rLr,nChipsPerStaveLr*seg0->Dz(),turbo,nStaveLr,nModPerStaveLr);
     }

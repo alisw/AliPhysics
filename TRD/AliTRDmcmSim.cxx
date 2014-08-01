@@ -1115,9 +1115,9 @@ void AliTRDmcmSim::ZSMapping()
     // ----- first channel -----
     iAdc = 0;
 
-    ap = 0;               // previous
-    ac = adc[iAdc  ][it]; // current
-    an = adc[iAdc+1][it]; // next
+    ap = 0 >> fgkAddDigits;               // previous
+    ac = adc[iAdc  ][it] >> fgkAddDigits; // current
+    an = adc[iAdc+1][it] >> fgkAddDigits; // next
 
     mask  = ( ac >=  ap && ac >=  an ) ? 0 : 0x1; // peak center detection
     mask += ( ap + ac + an > eBIT )    ? 0 : 0x2; // cluster
@@ -1133,9 +1133,9 @@ void AliTRDmcmSim::ZSMapping()
     // ----- last channel -----
     iAdc = AliTRDfeeParam::GetNadcMcm() - 1;
 
-    ap = adc[iAdc-1][it]; // previous
-    ac = adc[iAdc  ][it]; // current
-    an = 0;               // next
+    ap = adc[iAdc-1][it] >> fgkAddDigits; // previous
+    ac = adc[iAdc  ][it] >> fgkAddDigits; // current
+    an = 0 >> fgkAddDigits;               // next
 
     mask  = ( ac >=  ap && ac >=  an ) ? 0 : 0x1; // peak center detection
     mask += ( ap + ac + an > eBIT )    ? 0 : 0x2; // cluster
@@ -1150,9 +1150,9 @@ void AliTRDmcmSim::ZSMapping()
 
     // ----- middle channels -----
     for( iAdc = 1 ; iAdc < AliTRDfeeParam::GetNadcMcm()-1; iAdc++ ) {
-      ap = adc[iAdc-1][it]; // previous
-      ac = adc[iAdc  ][it]; // current
-      an = adc[iAdc+1][it]; // next
+      ap = adc[iAdc-1][it] >> fgkAddDigits; // previous
+      ac = adc[iAdc  ][it] >> fgkAddDigits; // current
+      an = adc[iAdc+1][it] >> fgkAddDigits; // next
 
       mask  = ( ac >=  ap && ac >=  an ) ? 0 : 0x1; // peak center detection
       mask += ( ap + ac + an > eBIT )    ? 0 : 0x2; // cluster

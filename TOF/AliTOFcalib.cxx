@@ -1759,9 +1759,9 @@ TH1F* AliTOFcalib::Profile(Int_t ich)
   Float_t minToT = 0; //ns
   Float_t maxToT = 5.; //ns
   Float_t deltaToT = (maxToT-minToT)/knbinToT;
-  Double_t mTime[knbinToT+1],mToT[knbinToT+1],meanTime[knbinToT+1], meanTime2[knbinToT+1],vToT[knbinToT+1], vToT2[knbinToT+1],meanToT[knbinToT+1],meanToT2[knbinToT+1],vTime[knbinToT+1],vTime2[knbinToT+1],xlow[knbinToT+1],sigmaTime[knbinToT+1];
+  Double_t mTime[knbinToT+1],mToT[knbinToT+1],meanTime[knbinToT+1], meanTime2[knbinToT+1],vToT[knbinToT+1], vToT2[knbinToT+1],meanToT[knbinToT+1],meanToT2[knbinToT+1],vTime[knbinToT+1],vTime2[knbinToT+1],sigmaTime[knbinToT+1];
   Int_t n[knbinToT+1], nentrx[knbinToT+1];
-  Double_t sigmaToT[knbinToT+1];
+  //Double_t xlow[knbinToT+1],sigmaToT[knbinToT+1];  // not used for the time being
   for (Int_t i = 0; i < knbinToT+1 ; i++){
     mTime[i]=0;
     mToT[i]=0;
@@ -1774,9 +1774,9 @@ TH1F* AliTOFcalib::Profile(Int_t ich)
     meanToT2[i]=0;
     vTime[i]=0;
     vTime2[i]=0;
-    xlow[i]=0;
+    //xlow[i]=0;
     sigmaTime[i]=0;
-    sigmaToT[i]=0;
+    //sigmaToT[i]=0;
     n[i]=0;
     nentrx[i]=0;
   }
@@ -1832,12 +1832,12 @@ TH1F* AliTOFcalib::Profile(Int_t ich)
 	   *(meanToT2[usefulBins]-meanToT[usefulBins]
 	     *meanToT[usefulBins]/n[usefulBins]))< 0) {
 	AliError(" too small radical" );
-	sigmaToT[usefulBins]=0;
+	//sigmaToT[usefulBins]=0;
       }
       else{       
-	sigmaToT[usefulBins]=TMath::Sqrt(1./n[usefulBins]/n[usefulBins]
-			     *(meanToT2[usefulBins]-meanToT[usefulBins]
-			     *meanToT[usefulBins]/n[usefulBins]));
+	//sigmaToT[usefulBins]=TMath::Sqrt(1./n[usefulBins]/n[usefulBins]
+	//		     *(meanToT2[usefulBins]-meanToT[usefulBins]
+	//		     *meanToT[usefulBins]/n[usefulBins]));
       }
       usefulBins++;
     }

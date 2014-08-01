@@ -121,6 +121,8 @@ public:
   virtual Double_t  GetTOFsignalTunedOnData() const {return 0.;}
   virtual Double_t  GetHMPIDsignal()     const {return 0.;}
   virtual Double_t  GetTRDsignal()       const {return 0.;}
+  virtual UChar_t GetTRDNchamberdEdx() const {return 0;}
+  virtual UChar_t GetTRDNclusterdEdx() const {return 0;}
 
   virtual Double_t  GetHMPIDoccupancy()  const {return 0.;}
   

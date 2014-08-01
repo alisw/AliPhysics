@@ -289,7 +289,8 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
     if (TMath::Abs(esdTrack->Eta())>0.9 || phi <= 10 || phi >= 250) continue;
     fTracks->AddLast(esdTrack);
   }
-  AliInfo(Form("Collected %d tracks", fTracks->GetEntries()));
+  
+  AliDebug(1,Form("Collected %d tracks", fTracks->GetEntries()));
   return 0;
 }
 //

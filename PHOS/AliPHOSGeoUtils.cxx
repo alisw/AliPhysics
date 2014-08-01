@@ -82,6 +82,13 @@ AliPHOSGeoUtils::AliPHOSGeoUtils(const AliPHOSGeoUtils & rhs)
   fPadSizePhi(0.),fPadSizeZ(0.),fCPVBoxSizeY(0.),fMisalArray(0x0)
 {
   Fatal("cpy ctor", "not implemented") ; 
+  for(Int_t mod=0; mod<5; mod++){
+    fEMCMatrix[mod]=0 ;
+    for(Int_t istrip=0; istrip<224; istrip++)
+      fStripMatrix[mod][istrip]=0 ;
+    fCPVMatrix[mod]=0;
+    fPHOSMatrix[mod]=0 ;
+  }
 }
 
 //____________________________________________________________________________

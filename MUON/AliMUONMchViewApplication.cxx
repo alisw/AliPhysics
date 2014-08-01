@@ -497,6 +497,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.15");
+  rn->AddLine("");
+  rn->AddLine("Fixing display of data at pad level (pads were hollow)");
+  rn->AddLine("");
+
   rn->AddLine("1.14");
   rn->AddLine("");
   rn->AddLine("Fixing anti-aliasing problem on MacOSX");

@@ -658,6 +658,7 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, const AliITSDDLModuleMapSDD*
   UInt_t jitterWord=0;
   Bool_t retcode;
   retcode = AliBitPacking::PackWord(0x3FFFFFFF,carlosFooterWord,0,31);
+  if(!retcode)AliError("AliBitPacking error\n");
   retcode = AliBitPacking::PackWord(0x3F1F1F1F,fifoFooterWord,0,31);
   if(fSDDRawFormat!=0) retcode = AliBitPacking::PackWord(0x7F000000,jitterWord,0,31);
   else retcode = AliBitPacking::PackWord(0x80000000,jitterWord,0,31);

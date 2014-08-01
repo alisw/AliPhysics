@@ -132,15 +132,16 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
       fEvent->InitMagneticField();
       prevRunNumber = fEvent->GetRunNumber();
     } 
-    TClonesArray* mcParticles = (TClonesArray*) (fEvent->FindListObject("mcparticles"));
-    if (mcParticles) {
-       if (!fMCEvent) fMCEvent = new AliMCEvent();
-       fMCEvent->SetParticleArray(mcParticles);
+
+    AliAODMCHeader* mcHeader  = (AliAODMCHeader*) fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    TClonesArray* mcParticles = (TClonesArray*)   (fEvent->FindListObject("mcparticles"));
+    
+    if (mcParticles && mcHeader) {
+      if (!fMCEvent) fMCEvent = new AliMCEvent();
+      fMCEvent->SetExternalHeader(mcHeader);
+      fMCEvent->SetParticleArray(mcParticles);
     }
 
-    AliAODMCHeader* mcHeader = (AliAODMCHeader*) fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-      if(mcHeader) {
-      fMCEvent->SetExternalHeader(mcHeader);}
     // When merging, get current event number from GetReadEntry(), 
     // entry gives the events in the current file
     if (fTreeToMerge) fTreeToMerge->GetEntry(GetReadEntry() + fMergeOffset);

@@ -254,6 +254,37 @@ AliDigitizer* AliAD::CreateDigitizer(AliDigitizationInput* digInput) const
 }
 
 //_____________________________________________________________________________
+void AliAD::Hits2Digits(){
+  //
+  // Converts hits to digits
+  //
+  // Creates the AD digitizer 
+  AliADDigitizer* dig = new AliADDigitizer(this,AliADDigitizer::kHits2Digits);
+
+  // Creates the digits
+  dig->Digitize("");
+
+  // deletes the digitizer
+  delete dig;
+}
+
+//_____________________________________________________________________________
+void AliAD::Hits2SDigits(){
+  //
+  // Converts hits to summable digits
+  //
+  // Creates the AD digitizer 
+  AliADDigitizer* dig = new AliADDigitizer(this,AliADDigitizer::kHits2SDigits);
+
+  // Creates the sdigits
+  dig->Digitize("");
+
+  // deletes the digitizer
+  delete dig;
+}
+
+
+//_____________________________________________________________________________
 
 void AliAD::Digits2Raw()
 {

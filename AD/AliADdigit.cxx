@@ -14,48 +14,49 @@
  **************************************************************************/
 
 #include "AliADdigit.h"
+#include "AliADConst.h"
 
 ClassImp(AliADdigit)
 
 //__________________________________________________________________________
 AliADdigit::AliADdigit()
    :AliDigit(),
-    fModule(0),
-    fCell(0)
+    fPMNumber(0),
+    fTime(0.),
+    fWidth(0.),
+    fIntegrator(0)
 
 {
   // Standard default
   // constructor 
+  for(Int_t iClock = 0; iClock < kNClocks; ++iClock) fChargeADC[iClock] = 0;
 }
 
 //__________________________________________________________________________
-AliADdigit::AliADdigit(Int_t module, Float_t cellPad)
-	: AliDigit(),
-	fModule(module),
-	fCell(cellPad)
-{
-}
+AliADdigit::AliADdigit(Int_t   PMnumber, Float_t time, 
+                             Float_t width,
+			     Bool_t integrator,
+			     Short_t *chargeADC,
+			     Int_t *labels)
+:AliDigit(),
+fPMNumber(PMnumber),
+fTime(time),
+fWidth(width),
+fIntegrator(integrator)
+{  
+  // Constructor
+  // Used in the digitizer
+  if (chargeADC) {
+    for(Int_t iClock = 0; iClock < kNClocks; ++iClock)
+      fChargeADC[iClock] = chargeADC[iClock];
+  }
+  else {
+    for(Int_t iClock = 0; iClock < kNClocks; ++iClock)
+      fChargeADC[iClock] = 0;
+  }
 
-//__________________________________________________________________________
-AliADdigit::AliADdigit(Int_t* tracks, Int_t  module, Float_t cellPad)
-	:AliDigit(tracks),
-	fModule(module),
-	fCell(cellPad)
-{
-}
-//__________________________________________________________________________
-AliADdigit::AliADdigit(Int_t* module, Float_t cellPad)
-	: AliDigit(module),
-	  fModule(0),
-	  fCell(cellPad)
-{
-}
-//__________________________________________________________________________
-AliADdigit::~AliADdigit()
-{
-  //
-  //
-  //
+  if (labels)
+    for(Int_t iTrack = 0; iTrack < 3; ++iTrack) fTracks[iTrack] = labels[iTrack];
 }
 
 

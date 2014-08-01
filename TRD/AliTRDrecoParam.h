@@ -94,8 +94,8 @@ public:
   Double_t GetCorrDZDXbiasRC(Bool_t dzdx) const { return fdzdxCorrRCbias[dzdx];}
   Double_t GetCorrDZDX(Bool_t rc) const     { return fdzdxCorrFactor[rc];}
   Double_t GetCorrDZDXxcross() const        { return fdzdxXcrossFactor;}
-  void GetYcorrTailCancel(Int_t it, Double_t par[2]) const;
-  Double_t GetS2Ycorr(Bool_t sgn) const     { return fS2Ycorr[sgn];}
+  void     GetYcorrTailCancel(Int_t it, Double_t par[3]) const;
+  Double_t GetS2Ycorr(Bool_t rc, Bool_t chg) const     { return fS2Ycorr[2*rc+chg];}
 
   Bool_t   IsArgon() const                  { return TESTBIT(fFlags, kDriftGas); }
   Bool_t   IsCheckTimeConsistency() const   { return kCheckTimeConsistency;}
@@ -204,8 +204,8 @@ private:
   Double_t  fdzdxCorrFactor[2];      // correction of dzdx estimation due to z bias; [0] for !RC, [1] for RC
   Double_t  fdzdxCorrRCbias[2];      // correction of dzdx estimation bias for RC; [0] for dz/dx>0, [1] for dz/dx<0
   Double_t  fdzdxXcrossFactor;       // bias in dzdx of estimated xcross [RC]
-  Double_t  fYcorrTailCancel[3][2];  // y linear q/pt correction due to wrong tail cancellation. [0] opposite sign !RC, [1] same sign !RC, [2] RC
-  Double_t  fS2Ycorr[2];             // inflation factor of error parameterization in r-phi due to wrong estimation of residuals. [0] opposite sign, [1] same sign
+  Double_t  fYcorrTailCancel[4][3];  // y correction due to wrong tail cancellation. [0] bz<0 && !RC, [1] bz>0 && !RC, [2] bz<0 && RC [3] bz>0 && RC
+  Double_t  fS2Ycorr[4];             // inflation factor of error parameterization in r-phi due to wrong estimation of residuals.
   
   // Clusterization parameter
   Double_t  fMinMaxCutSigma;         // Threshold sigma noise pad middle
@@ -274,10 +274,10 @@ inline void AliTRDrecoParam::SetTCParams(Double_t *par)
 
 
 //___________________________________________________
-inline void AliTRDrecoParam::GetYcorrTailCancel(Int_t it, Double_t par[2]) const
+inline void AliTRDrecoParam::GetYcorrTailCancel(Int_t it, Double_t par[3]) const
 {
-  if(it<0||it>2) return;
-  par[0] = fYcorrTailCancel[it][0]; par[1] = fYcorrTailCancel[it][1]; 
+  if(it<0||it>3) return;
+  memcpy(par, fYcorrTailCancel[it], 3*sizeof(Double_t));
 }
 
 //___________________________________________________

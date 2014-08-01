@@ -35,7 +35,6 @@ class AliPhysicsSelectionTask : public AliAnalysisTaskSE {
     TString fOption;                 // option string  
     Bool_t  fUseSpecialOutput;       // do we use special output instead of merging?
     AliPhysicsSelection* fPhysicsSelection; // event selection class
-
  private:
     AliPhysicsSelectionTask(const AliPhysicsSelectionTask&);
     AliPhysicsSelectionTask& operator=(const AliPhysicsSelectionTask&);

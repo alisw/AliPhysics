@@ -115,5 +115,13 @@ void CheckOutput(){
   Double_t ratioPointsHighPt = highPt->GetBranch("friendTrack.fCalibContainer")->GetZipBytes()/Double_t(0.00001+highPt->GetZipBytes());
   printf("#UnitTest:\tAliAnalysisTaskFiltered\tRatioPointsV0\t%f\n",ratioPointsV0);
   printf("#UnitTest:\tAliAnalysisTaskFiltered\tRatioPointsHighPt\t%f\n",ratioPointsHighPt);
+  //
+  // a.) Check track correspondence
+  //
+  Int_t entries= highPt->Draw("(friendTrack.fTPCOut.fP[3]-esdTrack.fIp.fP[3])/sqrt(friendTrack.fTPCOut.fC[9]+esdTrack.fIp.fC[9])","friendTrack.fTPCOut.fP[3]!=0","");
+  // here we should check if the tracks
+  Double_t pulls=TMath::RMS(entries, highPt->GetV1());
+  printf("#UnitTest:\tAliAnalysisTaskFiltered\tFriendPull\t%2.4f\n",pulls);
+  printf("#UnitTest:\tAliAnalysisTaskFiltered\tFriendOK\t%d\n",pulls<10);
 
 }

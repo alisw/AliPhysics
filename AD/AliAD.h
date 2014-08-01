@@ -30,7 +30,9 @@ public:
   AliDigitizer*  CreateDigitizer(AliDigitizationInput* digInput) const;
   virtual AliTriggerDetector* CreateTriggerDetector() const { return new AliADTrigger();}
   
-  virtual      void     Digits2Raw();
+  virtual    void   	Hits2Digits();
+  virtual    void   	Hits2SDigits();
+  virtual    void     	Digits2Raw();
   virtual    Bool_t     Raw2SDigits(AliRawReader*);
   virtual    void 	SetADAToInstalled(Bool_t b){fSetADAToInstalled = b;}
   virtual    void  	SetADCToInstalled(Bool_t b){fSetADCToInstalled = b;}

@@ -74,6 +74,10 @@ class AliRawReader: public TObject {
       const UInt_t *pattern = GetTriggerPattern();
       return pattern ? (((ULong64_t)pattern[1] & 0x3ffff) << 32)|(pattern[0]) : 0;
     }
+    ULong64_t GetClassMaskNext50() const  { 
+      const UInt_t *pattern = GetTriggerPattern();
+      return pattern ? ((ULong64_t)(pattern[1]>>18) & 0x3fff)|((ULong64_t)(pattern[2]&0xffffffff)<<14)|((ULong64_t)(pattern[3]&0xf)<<46): 0; 
+    } 
     virtual const UInt_t* GetDetectorPattern() const = 0;
     virtual const UInt_t* GetAttributes() const = 0;
     virtual const UInt_t* GetSubEventAttributes() const = 0;

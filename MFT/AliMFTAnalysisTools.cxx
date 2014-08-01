@@ -31,6 +31,7 @@
 #include "TMath.h"
 #include "AliLog.h"
 #include "TObjArray.h"
+#include "TDecompLU.h"
 
 #include "AliMFTAnalysisTools.h"
 
@@ -127,18 +128,20 @@ Bool_t AliMFTAnalysisTools::ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Doub
 
 //====================================================================================================================================================
 
-Double_t AliMFTAnalysisTools::GetAODMuonOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv) {
+Bool_t AliMFTAnalysisTools::GetAODMuonOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv, Double_t &offset) {
 
   Double_t xy[2] = {0};
   ExtrapAODMuonToZ(muon, zv, xy);
   
-  return TMath::Sqrt((xv-xy[0])*(xv-xy[0]) + (yv-xy[1])*(yv-xy[1]));
+  offset = TMath::Sqrt((xv-xy[0])*(xv-xy[0]) + (yv-xy[1])*(yv-xy[1]));
+
+  return kTRUE;
 
 }
 
 //====================================================================================================================================================
 
-Double_t AliMFTAnalysisTools::GetAODMuonWeightedOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv) {
+Bool_t AliMFTAnalysisTools::GetAODMuonWeightedOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv, Double_t &offset) {
 
   Double_t xy[2] = {0};
   TLorentzVector kinem(0,0,0,0);
@@ -152,16 +155,21 @@ Double_t AliMFTAnalysisTools::GetAODMuonWeightedOffset(AliAODTrack *muon, Double
   covCoordinates(1,0) = cov(2,0);
   covCoordinates(1,1) = cov(2,2);
   
-  TMatrixD covCoordinatesInverse = covCoordinates.Invert();
+  if (TDecompLU::InvertLU(covCoordinates,covCoordinates.GetTol(),0)) {
 
-  Double_t dX = xy[0] - xv;
-  Double_t dY = xy[1] - yv;
+    TMatrixD covCoordinatesInverse = covCoordinates;
+    Double_t dX = xy[0] - xv;
+    Double_t dY = xy[1] - yv;
+    
+    offset = TMath::Sqrt(0.5*(dX*dX*covCoordinatesInverse(0,0) +
+			      dY*dY*covCoordinatesInverse(1,1) +
+			      2.*dX*dY*covCoordinatesInverse(0,1)));
+    
+    return kTRUE;
+
+  }
   
-  Double_t weightedOffset = TMath::Sqrt(0.5*(dX*dX*covCoordinatesInverse(0,0) + 
-					     dY*dY*covCoordinatesInverse(1,1) + 
-					     2.*dX*dY*covCoordinatesInverse(0,1)));
-
-  return weightedOffset;
+  return kFALSE;
 
 }
 
@@ -363,7 +371,12 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   
   Double_t sum=0.,squareSum=0.;
   for (Int_t iMu=0; iMu<nMuons; iMu++) {
-    Double_t wOffset = AliMFTAnalysisTools::GetAODMuonWeightedOffset(muon[iMu],fXPointOfClosestApproach, fYPointOfClosestApproach, fZPointOfClosestApproach);
+    Double_t wOffset = 0;
+    if (!GetAODMuonWeightedOffset(muon[iMu],fXPointOfClosestApproach, fYPointOfClosestApproach, fZPointOfClosestApproach, wOffset)) {
+      for(Int_t jMu=0;jMu<nMuons;jMu++) delete param[jMu];
+      delete points;
+      return kFALSE;
+    }
     Double_t f = TMath::Exp(-0.5 * wOffset);
     sum += f;
     squareSum += f*f;

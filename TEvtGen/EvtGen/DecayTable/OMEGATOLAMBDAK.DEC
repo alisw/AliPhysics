@@ -1,0 +1,10 @@
+###
+Decay Omega-
+1.000    Lambda0      K-                       PHSP; #[Reconstructed PDG2011]
+Enddecay
+
+Decay anti-Omega+
+1.000 anti-Lambda0     K+                      PHSP; #[Reconstructed PDG2011]
+Enddecay
+
+End

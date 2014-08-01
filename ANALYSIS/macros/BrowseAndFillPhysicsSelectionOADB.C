@@ -1818,27 +1818,33 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
  
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDC1 = new AliOADBTriggerAnalysis("ZDCCut1");
   oadbTrigAnalysisZDC1->SetZDCCorrParameters(-66.9, -2.1, 4*0.58, 4*0.5);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC1, 136851, 137848);  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC1->Clone("ZDCCut1_pass1"), 136851, 137848,"pass1");  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC1->Clone("ZDCCut1_pass2"), 136851, 137848,"pass2");  
 
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDC2 = new AliOADBTriggerAnalysis("ZDCCut2");
   oadbTrigAnalysisZDC2->SetZDCCorrParameters(-66.2, -2.1, 4*0.58, 4*0.5);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC2, 138125, 138275);  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC2->Clone("ZDCCut2_pass1"), 138125, 138275,"pass1");  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC2->Clone("ZDCCut2_pass2"), 138125, 138275,"pass2");  
 
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDC3 = new AliOADBTriggerAnalysis("ZDCCut3");
   oadbTrigAnalysisZDC3->SetZDCCorrParameters(-65.4, -2.1, 4*0.58, 4*0.5);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC3, 138359, 138469);  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC3->Clone("ZDCCut3_pass1"), 138359, 138469,"pass1");  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC3->Clone("ZDCCut3_pass2"), 138359, 138469,"pass2");  
 
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDC4 = new AliOADBTriggerAnalysis("ZDCCut4");
   oadbTrigAnalysisZDC4->SetZDCCorrParameters(-67.7, -2.1, 4*0.58, 4*0.5);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC4, 138533, 138742);  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC4->Clone("ZDCCut4_pass1"), 138533, 138742,"pass1");  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC4->Clone("ZDCCut4_pass2"), 138533, 138742,"pass2");  
 
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDC5 = new AliOADBTriggerAnalysis("ZDCCut5");
   oadbTrigAnalysisZDC5->SetZDCCorrParameters(-67.2, -2.1, 4*0.58, 4*0.5);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC5, 138795, 138872);  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC5->Clone("ZDCCut5_pass1"), 138795, 138872,"pass1");  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC5->Clone("ZDCCut5_pass2"), 138795, 138872,"pass2");  
 
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDC6 = new AliOADBTriggerAnalysis("ZDCCut6");
   oadbTrigAnalysisZDC6->SetZDCCorrParameters(-65.6, -2.1, 4*0.58, 4*0.5);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC6, 138924, 139517);  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC6->Clone("ZDCCut6_pass1"), 138924, 139517,"pass1");  
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC6->Clone("ZDCCut6_pass2"), 138924, 139517,"pass2");  
 
   AliOADBTriggerAnalysis * oadbTrigAnalysisZDC7 = new AliOADBTriggerAnalysis("ZDCCut7");
   oadbTrigAnalysisZDC7->SetZNCorrParameters(2.0,100,5.,100);
@@ -1848,6 +1854,10 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisZDC8->SetZNCorrParameters(5.0,100,2.0,100);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC8, 196346, 197411);
 
+  AliOADBTriggerAnalysis * oadbTrigAnalysisZDC9 = new AliOADBTriggerAnalysis("ZDCCut9");
+  oadbTrigAnalysisZDC9->SetZDCCorrParameters(-2.1, 0, 4*0.58, 4*0.5);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC9, 136851, 139517);  
+  
   oadbTrigAnalysisZDC1->Print();
   oadbTrigAnalysisZDC2->Print();
   oadbTrigAnalysisZDC3->Print();
@@ -1856,6 +1866,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisZDC6->Print();
   oadbTrigAnalysisZDC7->Print();
   oadbTrigAnalysisZDC8->Print();
+  oadbTrigAnalysisZDC9->Print();
 
   
   // ----------------- visualize coverage
