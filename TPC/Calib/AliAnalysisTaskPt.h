@@ -23,6 +23,9 @@ class AliAnalysisTaskPt : public AliAnalysisTask {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  
+  Bool_t GetUseFriends() {return fUseFriends;}
+  void   SetUseFriends(Bool_t flag) {fUseFriends = flag;}
 
  private:
   AliVVevent*       fESD;          // ESD object
@@ -32,6 +35,7 @@ class AliAnalysisTaskPt : public AliAnalysisTask {
   Int_t fEv;
   TH1F*             fHistQ;        // TPC clusters Q spectrum
   TList*            fListOut;      // output list
+  Bool_t            fUseFriends;   // flag to decide whether friends should be used
 
   AliAnalysisTaskPt(const AliAnalysisTaskPt&); // not implemented
   AliAnalysisTaskPt& operator=(const AliAnalysisTaskPt&); // not implemented

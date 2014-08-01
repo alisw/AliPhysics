@@ -25,6 +25,7 @@ public:
   virtual const AliVVtrack * GetITSOut() const {return NULL;} 
   virtual const AliVVtrack * GetTPCOut() const {return  NULL;} 
   virtual const AliVVtrack * GetTRDIn()  const {return NULL;} 
+  virtual TObject* GetCalibObject(Int_t /*index*/) const {return NULL;}
 
 private: 
   AliVVfriendTrack(const AliVVfriendTrack &);

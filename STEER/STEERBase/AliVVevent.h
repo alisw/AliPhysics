@@ -10,12 +10,14 @@
  */
 #include "Rtypes.h"
 #include "TString.h"
-class AliVVevent;
+
+class TList;
 class AliVVvertex;
 class AliVVtrack;
 class AliMultiplicity;
 class AliVVkink;
 class AliVVfriendEvent;
+class TTree;
 
 class AliVVevent {
  public:
@@ -36,7 +38,7 @@ class AliVVevent {
   virtual const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}
   virtual AliVVtrack* GetTrack(Int_t /*i*/) const {return NULL;}
   virtual AliVVkink* GetKink(Int_t /*i*/) const {return NULL;}
-  virtual AliVVtrack* GetV0(Int_t /*i*/) const {return 0;}
+  virtual AliVVtrack* GetV0(Int_t /*i*/) const {return NULL;}
   virtual Int_t GetNumberOfTracks() const {return 0;}
   virtual Int_t GetNumberOfV0s() const {return 0;}
   virtual Int_t GetNumberOfKinks() const {return 0;}
@@ -49,10 +51,13 @@ class AliVVevent {
   virtual Double_t GetMagneticField() const {return 0;}
   virtual UInt_t GetTimeStamp() const { return 0;}
   virtual UInt_t GetEventSpecie() const { return 0;}
-  virtual ULong64_t GetSize() {return 0;};
+  virtual ULong64_t GetSize() {return 0;}
   virtual AliVVfriendEvent* FindFriend() const { return NULL; }
+  virtual void ConnectTracks() {}
+  virtual void ReadFromTree(TTree* /*tree*/, Option_t* /*opt*/) = 0;
+  virtual TList* GetList() const {return 0;}
 
-  ClassDef(AliVVevent,1)  // base class for event data
+  ClassDef(AliVVevent,0)  // base class for event data
 
 };
 #endif

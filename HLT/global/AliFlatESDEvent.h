@@ -107,7 +107,7 @@ class AliFlatESDEvent: public AliVVevent {
   Double_t GetMagneticField() const {return 0;}
   UInt_t GetTimeStamp() const { return 0;}
   UInt_t GetEventSpecie() const { return 0;}
-
+  void ReadFromTree(TTree* /*tree*/, Option_t* /*opt*/) {};
   
   // --------------------------------------------------------------------------------
   // -- Size methods

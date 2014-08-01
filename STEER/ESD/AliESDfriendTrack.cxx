@@ -140,7 +140,7 @@ void AliESDfriendTrack::AddCalibObject(TObject * calibObject){
   fCalibContainer->AddLast(calibObject);
 }
 
-TObject * AliESDfriendTrack::GetCalibObject(Int_t index){
+TObject * AliESDfriendTrack::GetCalibObject(Int_t index) const {
   //
   //
   //

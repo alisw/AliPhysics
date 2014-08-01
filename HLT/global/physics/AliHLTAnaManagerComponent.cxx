@@ -148,6 +148,7 @@ Int_t AliHLTAnaManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/
   fAnalysisManager->SetExternalLoop(kTRUE); 
 
   AliAnalysisTaskPt *task = new AliAnalysisTaskPt("TaskPt");
+  task->SetUseFriends(kFALSE);
   fAnalysisManager->AddTask(task);
   AliAnalysisDataContainer *cinput  = fAnalysisManager->GetCommonInputContainer();
   Printf("Defining output file");

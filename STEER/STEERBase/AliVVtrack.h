@@ -11,8 +11,8 @@
 
 #include "AliPID.h"
 
-struct AliFlatTPCCluster;
-struct AliFlatExternalTrackParam;
+class AliFlatTPCCluster;
+class AliFlatExternalTrackParam;
 
 class AliVVtrack {
  public:

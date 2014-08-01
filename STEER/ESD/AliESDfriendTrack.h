@@ -46,7 +46,7 @@ public:
   AliKalmanTrack *GetTRDtrack() {return fTRDtrack;}
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
-  TObject * GetCalibObject(Int_t index);
+  TObject * GetCalibObject(Int_t index) const;
   AliTPCseed* GetTPCseed() const {return NULL;}
   //
   // parameters backup

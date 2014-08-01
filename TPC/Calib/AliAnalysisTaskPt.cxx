@@ -26,7 +26,7 @@ ClassImp(AliAnalysisTaskPt)
 
 //________________________________________________________________________
 AliAnalysisTaskPt::AliAnalysisTaskPt(const char *name) 
-: AliAnalysisTask(name, ""), fESD(0), fESDfriend(0), fHistPt(0), fCuts(0), fEv(0), fHistQ(0), fListOut(0)
+: AliAnalysisTask(name, ""), fESD(0), fESDfriend(0), fHistPt(0), fCuts(0), fEv(0), fHistQ(0), fListOut(0), fUseFriends(kFALSE)
 {
   // Constructor
 
@@ -62,13 +62,15 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
     } else {
       Printf("----> AliAnalysisTaskPt::ConnectInputData Getting the event from handler %p", esdH);
       //fESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
-      fESD = esdH->GetEvent();
-      fESDfriend = esdH->GetFriendEvent();
+      fESD = esdH->GetVVEvent();
+      if (fUseFriends){	
+	fESDfriend = esdH->GetVVFriendEvent();
+      }
     }
     if (!fESD) {
       Printf("ERROR, no ESD event");
     }
-    if (!fESDfriend) {
+    if (fUseFriends && !fESDfriend) {
       Printf("ERROR, no ESD friend");
     }
   }
@@ -130,34 +132,46 @@ void AliAnalysisTaskPt::Exec(Option_t *)
       Printf("ERROR: Could not receive track %d", iTracks);
       continue;
     }
-
+    Printf("track %d has pt = %f", iTracks, track->Pt());
     fHistPt->Fill(track->Pt());
   } //track loop 
 
 
-  // Friend Track loop
-  for (Int_t iFriend = 0; iFriend < fESDfriend->GetNumberOfTracks(); iFriend++) {
-    const AliVVfriendTrack* friendTrack = fESDfriend->GetTrack(iFriend);
-    if (!friendTrack) {
-      Printf("ERROR: Could not receive track %d", iFriend);
-      continue;
-    }     
-    AliTPCseed* seed = friendTrack->GetTPCseed();
-    if( seed ){
-      Printf("Found TPC seed");
-      for (Int_t irow = 0; irow < 160; irow++){
-	AliTPCclusterMI* cluMI = seed->GetClusterPointer(irow);
-	if (cluMI){
-	  Printf("Found cluster at row %d", irow);
-	  Float_t q = cluMI->GetQ();
-	  Printf("Q = %f", q);
-	  fHistQ->Fill(q);
-	}
+  if (fUseFriends){
+    // Friend Track loop
+    for (Int_t iFriend = 0; iFriend < fESDfriend->GetNumberOfTracks(); iFriend++) {
+      //Printf("Getting friend %d", iFriend);
+      const AliVVfriendTrack* friendTrack = fESDfriend->GetTrack(iFriend);
+      if (!friendTrack) {
+	Printf("ERROR: Could not receive track %d", iFriend);
+	continue;
+      }     
+      TObject* calibObject;
+      AliTPCseed* seed = NULL;
+      //AliTPCseed* seed = friendTrack->GetTPCseed();
+      //if (seed){
+      for (Int_t idx = 0; (calibObject = friendTrack->GetCalibObject(idx)); ++idx) {
+	Printf(" |Cal %d = %p", idx, calibObject); 
+	if ((seed = dynamic_cast<AliTPCseed*>(calibObject))) {    
+	  //Printf("Found TPC seed %p", seed);
+	  for (Int_t irow = 0; irow < 160; irow++){
+	    AliTPCclusterMI* cluMI = seed->GetClusterPointer(irow);
+	    if (cluMI){
+	      Printf("Found cluster at row %d", irow);
+	      Float_t q = cluMI->GetQ();
+	      Printf("Q = %f", q);
+	      fHistQ->Fill(q);
+	    }
+	    else {
+	      Printf("Row %d does not contain clusters", irow);
+	    }      	 
+	  }
+	}    
 	else {
-	  Printf("Row %d does not contain clusters", irow);
-	}      	 
+	  //Printf("Schade... seed is %p", seed);
+	}
       }
-    }    
+    }
   }
 
   // Post output data.
