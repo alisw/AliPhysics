@@ -35,6 +35,9 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   Int_t activeDetectors = grpData->GetDetectorMask();
   TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
   printf("Detectors in the data:\n%s\n",detStr.Data());
+  TString LHCperiod = grpData->GetLHCPeriod();
+  Bool_t isLHC10 =  LHCperiod.Contains("LHC10");
+  printf("LHCperiod:%s\n isLHC10:%d\n",LHCperiod.Data(),(Int_t)isLHC10);
 
   // Steering Tasks - set output storage
   // DefaultStorage set already before - in ConfigCalibTrain.C
@@ -102,6 +105,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   if (detStr.Contains("TRD") && detStr.Contains("TPC")){
     Printf("\n******* Calibrating TRD *******");
     procesTRD = new  AliTRDPreprocessorOffline;
+    if(isLHC10) procesTRD->SetSwitchOnChamberStatus(kFALSE);
     procesTRD->SetLinearFitForVdrift(kTRUE);
     procesTRD->SetMinStatsVdriftT0PH(600*10);
     procesTRD->SetMinStatsVdriftLinear(50);

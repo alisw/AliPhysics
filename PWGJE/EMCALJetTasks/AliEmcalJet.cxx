@@ -39,7 +39,16 @@ AliEmcalJet::AliEmcalJet() :
   fTagStatus(-1),
   fPtSub(0),
   fPtVectSub(0),
-  fTriggers(0)
+  fTriggers(0),
+  fJetShapeMassFirstDer(0),
+  fJetShapeMassSecondDer(0),
+  fJetShapeMassFirstSub(0),
+  fJetShapeMassSecondSub(0),
+  fLabel(-1),
+  fGRNumerator(0),
+  fGRDenominator(0),
+  fGRNumeratorSub(0),
+  fGRDenominatorSub(0)
 {
   // Constructor.
 
@@ -78,7 +87,16 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fTagStatus(-1),
   fPtSub(0),
   fPtVectSub(0),
-  fTriggers(0)
+  fTriggers(0),
+  fJetShapeMassFirstDer(0),
+  fJetShapeMassSecondDer(0),
+  fJetShapeMassFirstSub(0),
+  fJetShapeMassSecondSub(0),
+  fLabel(-1),
+  fGRNumerator(0),
+  fGRDenominator(0),
+  fGRNumeratorSub(0),
+  fGRDenominatorSub(0)
 {    
   // Constructor.
 
@@ -123,7 +141,16 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fTagStatus(-1),
   fPtSub(0),
   fPtVectSub(0),
-  fTriggers(0)
+  fTriggers(0),
+  fJetShapeMassFirstDer(0),
+  fJetShapeMassSecondDer(0),
+  fJetShapeMassFirstSub(0),
+  fJetShapeMassSecondSub(0),
+  fLabel(-1),
+  fGRNumerator(0),
+  fGRDenominator(0),
+  fGRNumeratorSub(0),
+  fGRDenominatorSub(0)
 {
   // Constructor.
 
@@ -165,7 +192,16 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fTagStatus(jet.fTagStatus),
   fPtSub(jet.fPtSub),
   fPtVectSub(jet.fPtVectSub),
-  fTriggers(jet.fTriggers)
+  fTriggers(jet.fTriggers),
+  fJetShapeMassFirstDer(jet.fJetShapeMassFirstDer),
+  fJetShapeMassSecondDer(jet.fJetShapeMassSecondDer),
+  fJetShapeMassFirstSub(jet.fJetShapeMassFirstSub),
+  fJetShapeMassSecondSub(jet.fJetShapeMassSecondSub),
+  fLabel(jet.fLabel),
+  fGRNumerator(jet.fGRNumerator),
+  fGRDenominator(jet.fGRDenominator),
+  fGRNumeratorSub(jet.fGRNumeratorSub),
+  fGRDenominatorSub(jet.fGRDenominatorSub)
 {
   // Copy constructor.
 
@@ -212,6 +248,15 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fPtSub              = jet.fPtSub;
     fPtVectSub          = jet.fPtVectSub;
     fTriggers           = jet.fTriggers;
+    fJetShapeMassFirstDer  = jet.fJetShapeMassFirstDer;
+    fJetShapeMassSecondDer = jet.fJetShapeMassSecondDer;
+    fJetShapeMassFirstSub  = jet.fJetShapeMassFirstSub;
+    fJetShapeMassSecondSub = jet.fJetShapeMassSecondSub;
+    fLabel              = jet.fLabel;
+    fGRNumerator        = jet.fGRNumerator;
+    fGRDenominator      = jet.fGRDenominator;
+    fGRNumeratorSub     = jet.fGRNumeratorSub;
+    fGRDenominatorSub   = jet.fGRDenominatorSub;
   }
 
   return *this;
@@ -355,4 +400,11 @@ void AliEmcalJet::ResetMatching()
   fClosestJetsDist[0] = 999; 
   fClosestJetsDist[1] = 999; 
   fMatched = 2;
+}
+
+//__________________________________________________________________________________________________
+void AliEmcalJet::PrintGR() {
+  for(Int_t i = 0; i<fGRNumerator.GetSize(); i++) {
+    Printf("num[%d] = %f",i,fGRNumerator.At(i));
+  }
 }

@@ -63,24 +63,26 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
 
    // EMCal framework
    // -- Physics selection task
-   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
-   AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, uTriggerMask, 5, 5, 10, kTRUE, -1, -1, -1, -1);
-   
-   if (!physSelTask) {
-      cout << "no physSelTask"; 
-      return; 
+   if(!bIsMC){
+      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
+      AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, uTriggerMask, 5, 5, 10, kTRUE, -1, -1, -1, -1);
+      
+      if (!physSelTask) {
+      	 cout << "no physSelTask"; 
+      	 return; 
+      }
    }
-   
    // -- 
    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
    AliEmcalSetupTask *taskSetupEMCal = AddTaskEmcalSetup();
+   //taskSetupEMCal->SetOcdbPath("raw://"); //needed for period LHC12h and i
    taskSetupEMCal->SetGeoPath("$ALICE_ROOT/OADB/EMCAL");
    taskSetupEMCal->SelectCollisionCandidates(uTriggerMask);
    
    // Jet preparation
    //gROOT->LoadMacro("/data/Work/jets/testEMCalJetFramework/code/v4/AddTaskJetPreparation.C");
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
-   AddTaskJetPreparation(sRunPeriod,"PicoTracks",bIsMC ? "MCParticlesSelected" : "",/*next 7 emcal default settings*/"","",2.,0.,0.03,0.015,0.15,uTriggerMask, kFALSE /*track cluster*/,kFALSE /*do histos*/,kTRUE /*make pico tracks*/,kFALSE /*make emcal trigger*/,kFALSE /*is emcal train*/);
+   AddTaskJetPreparation(sRunPeriod,"PicoTracks",bIsMC ? "MCParticlesSelected" : "",/*next 7 emcal default settings*/"","",2.,0.,0.03,0.015,0.15,uTriggerMask, kFALSE /*track cluster*/,kFALSE /*do histos*/,kTRUE /*make pico tracks*/,kTRUE /*make emcal trigger*/,kFALSE /*is emcal train*/);
    
    
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");

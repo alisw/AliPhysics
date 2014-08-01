@@ -108,6 +108,7 @@ fOutputList(0x0),
 fHistEvtSelection(0x0),
 fh2JetEntries(0x0),
 fh2Circularity(0x0),
+fh2JetAxisPhi(0x0),
 fhnJetTM(0x0)
 {
    // default Constructor
@@ -167,6 +168,7 @@ fOutputList(0x0),
 fHistEvtSelection(0x0),
 fh2JetEntries(0x0),
 fh2Circularity(0x0),
+fh2JetAxisPhi(0x0),
 fhnJetTM(0x0)
  {
    // Constructor
@@ -230,10 +232,10 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   fOutputList->Add(fh2JetAxisPhi);
   
 
-  Int_t nbinsJet[9]={3,9,7,9,36,10,2,10,20};
-  Double_t binlowJet[9]= {0,0, 0, 0,-0.5*TMath::Pi(),0,0,-0.5,0};
-  Double_t binupJet[9]= {100,0.9, 150,150,1.5*TMath::Pi(),1,200,9.5,200};
-  fhnJetTM = new THnSparseF("fhnJetTM", "fhnJetTM; cent;dr;pt_jet;pt_track;phi;circ;nc;pthard",9,nbinsJet,binlowJet,binupJet);
+  Int_t nbinsJet[10]={3,9,75,9,36,5,7,10,50,2};
+  Double_t binlowJet[10]= {0,0, 0, 0,-0.5*TMath::Pi(),0,0,-0.5,0,0};
+  Double_t binupJet[10]= {100,0.9, 150,150,1.5*TMath::Pi(),1,150,9.5,200,2};
+  fhnJetTM = new THnSparseF("fhnJetTM", "fhnJetTM; cent;dr;pt_jet;pt_track;phi;circ;ptrue;pthard;ptlead;isemebed",10,nbinsJet,binlowJet,binupJet);
  
  Double_t *xPt3=new Double_t[10];
   xPt3[0] = 0.;
@@ -244,17 +246,17 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   }
   fhnJetTM->SetBinEdges(3,xPt3);
 
-  Double_t *xPt2=new Double_t[10];
-  xPt2[0] = 0.;
-  xPt2[1]=20;
-  xPt2[2]=40;
-  xPt2[3]=60;
-  xPt2[4]=80;
-  xPt2[5]=100;
-  xPt2[6]=120;
-  xPt2[7]=150; 
+  // Double_t *xPt2=new Double_t[10];
+  // xPt2[0] = 0.;
+  // xPt2[1]=20;
+  // xPt2[2]=40;
+  // xPt2[3]=60;
+  // xPt2[4]=80;
+  // xPt2[5]=100;
+  // xPt2[6]=120;
+  // xPt2[7]=150; 
   
-  fhnJetTM->SetBinEdges(2,xPt2);
+  //fhnJetTM->SetBinEdges(2,xPt2);
  
 
   Double_t *xPt4=new Double_t[4];
@@ -266,11 +268,24 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   
   fhnJetTM->SetBinEdges(0,xPt4);
 
+  Double_t *xPt5=new Double_t[10];
+  xPt5[0] = 0.;
+  xPt5[1]=20;
+  xPt5[2]=40;
+  xPt5[3]=60;
+  xPt5[4]=80;
+  xPt5[5]=100;
+  xPt5[6]=120;
+  xPt5[7]=150; 
+  
+  fhnJetTM->SetBinEdges(6,xPt5);
+
 
    fOutputList->Add(fhnJetTM);
    delete [] xPt3;
-   delete [] xPt2;
+   // delete [] xPt2;
    delete [] xPt4;
+   delete [] xPt5;
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutputList->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fOutputList->At(i));
@@ -496,7 +511,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
     Double_t phitrue=0;
     Double_t etatrue=0;
     Double_t smearphi=0;
-
+    Double_t ptrue=0;
     AliAODJet* jetbig = (AliAODJet*)(fListJets[0]->At(i));
     etabig  = jetbig->Eta();
     phibig  = jetbig->Phi();
@@ -529,7 +544,9 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
     if(jetmatched->Eta()>fJetEtaMax || jetmatched->Eta()<fJetEtaMin)  jetAccepted = kFALSE;
       
     }
+    ptrue=ptbig;
     if(!jetAccepted) continue;
+    
     etabig=jetmatched->Eta();
     phibig=jetmatched->Phi();
     pxbig=jetmatched->Px();
@@ -626,7 +643,8 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
     
     for (Int_t ip = 0; ip < ParticleList.GetEntries(); ip++) {
       AliVParticle *track = (AliVParticle*)ParticleList.At(ip);
-   
+      Float_t isembed=0.5;
+      if(fDoMatching) if(ip<nT) isembed=1.5;
       TVector3 pp(track->Px(), track->Py(), track->Pz());
       Float_t phi = track->Phi();
       Float_t eta = track->Eta();
@@ -649,7 +667,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
       if(phistr<-0.5*TMath::Pi()) phistr += 2*TMath::Pi();
       if(phistr>1.5*TMath::Pi()) phistr -= 2*TMath::Pi();
 
-      double jetEntries[9] = {centValue,dRR,ptbig,pt,phistr,circ,static_cast<double>(nc),pthardbin,ptmax};
+      double jetEntries[10] = {centValue,dRR,ptbig,pt,phistr,circ,ptrue,pthardbin,ptmax,isembed};
       fhnJetTM->Fill(jetEntries);
 
     } // 2nd Track loop
@@ -705,12 +723,44 @@ Int_t  AliAnalysisTaskJetAntenna::GetListOfTracks(TList *list){
 Int_t  AliAnalysisTaskJetAntenna::GetListOfTracksExtra(TList *list){
 
   Int_t iCount = 0;
+  Int_t nEmbed=0;
   AliAODEvent *aod = 0;
 
   if(!fESD)aod = fAODIn;
   else aod = fAODOut;
   if(!aod)return 0;
  
+
+      TClonesArray *aodExtraTracks = dynamic_cast<TClonesArray*>(aod->FindListObject("aodExtraTracks"));
+      if(!aodExtraTracks)return iCount;
+      for(int it =0; it<aodExtraTracks->GetEntries(); it++) {
+	AliVParticle *track = dynamic_cast<AliVParticle*> ((*aodExtraTracks)[it]);
+	if (!track) continue;
+	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
+	if(!trackAOD)continue;
+	Bool_t bGood = false;
+	if(fFilterType == 0)bGood = true;
+	else if(fFilterType == 1)bGood = trackAOD->IsHybridTPCConstrainedGlobal();
+	else if(fFilterType == 2)bGood = trackAOD->IsHybridGlobalConstrainedGlobal();
+	if((fFilterMask>0)&&((!trackAOD->TestFilterBit(fFilterMask)||(!bGood))))continue;
+        if(fRequireITSRefit){if((trackAOD->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
+         if (fApplySharedClusterCut) {
+           Double_t frac = Double_t(trackAOD->GetTPCnclsS()) /Double_t(trackAOD->GetTPCncls());
+           if (frac > 0.4) continue;
+	 }
+
+	if(TMath::Abs(trackAOD->Eta())>0.9) continue;
+	if(trackAOD->Pt()<0.15) continue;
+	if(fDebug) printf("pt extra track %.2f \n", trackAOD->Pt());
+	list->Add(trackAOD);
+	iCount++;
+        }
+
+      nEmbed=iCount-1;
+
+
+
+
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
     AliAODTrack *tr = aod->GetTrack(it);
     Bool_t bGood = false;
@@ -729,39 +779,8 @@ Int_t  AliAnalysisTaskJetAntenna::GetListOfTracksExtra(TList *list){
     list->Add(tr);
     iCount++;
     } 
-
-
-
-
-
-     TClonesArray *aodExtraTracks = dynamic_cast<TClonesArray*>(aod->FindListObject("aodExtraTracks"));
-      if(!aodExtraTracks)return iCount;
-      for(int it =0; it<aodExtraTracks->GetEntries(); it++) {
-	AliVParticle *track = dynamic_cast<AliVParticle*> ((*aodExtraTracks)[it]);
-	if (!track) continue;
-	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
-	if(!trackAOD)continue;
-	Bool_t bGood = false;
-	if(fFilterType == 0)bGood = true;
-	else if(fFilterType == 1)bGood = trackAOD->IsHybridTPCConstrainedGlobal();
-	else if(fFilterType == 2)bGood = trackAOD->IsHybridGlobalConstrainedGlobal();
-	if((fFilterMask>0)&&((!trackAOD->TestFilterBit(fFilterMask)||(!bGood))))continue;
-        if(fRequireITSRefit){if((trackAOD->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
-         if (fApplySharedClusterCut) {
-           Double_t frac = Double_t(trackAOD->GetTPCnclsS()) /Double_t(trackAOD->GetTPCncls());
-           if (frac > 0.4) continue;
-	 }
-
-
-	if(TMath::Abs(trackAOD->Eta())>0.9) continue;
-	if(trackAOD->Pt()<0.15) continue;
-	if(fDebug) printf("pt extra track %.2f \n", trackAOD->Pt());
-	list->Add(trackAOD);
-	iCount++;
-      }
-    
-      list->Sort();
-     return iCount;
+      
+     return nEmbed;
 }
 
 Double_t AliAnalysisTaskJetAntenna::RelativePhi(Double_t mphi,Double_t vphi){

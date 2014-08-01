@@ -59,8 +59,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskSpectraBoth)
 
 //________________________________________________________________________
-AliAnalysisTaskSpectraBoth::AliAnalysisTaskSpectraBoth(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0),  fPID(0), fIsMC(0), fNRebin(0),fUseMinSigma(0),fCuts(0),fdotheMCLoopAfterEventCuts(0),
-fmakePIDQAhisto(1),fMotherWDPDGcode(-1)
+AliAnalysisTaskSpectraBoth::AliAnalysisTaskSpectraBoth(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0),  fPID(0), fIsMC(0), fNRebin(0),fUseMinSigma(0),fCuts(0),fdotheMCLoopAfterEventCuts(0),fmakePIDQAhisto(1),fMotherWDPDGcode(-1)
 
 {
   // Default constructor
@@ -206,7 +205,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  }
 	}
 	if(!fdotheMCLoopAfterEventCuts)
-  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,mcZ))return;//event selection
+  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,mcZ))
+			return;//event selection
   	//main loop on tracks
 	Int_t ntracks=0;
   	//cout<<fAOD->GetNumberOfTracks()<<endl;
@@ -246,7 +246,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
   		else
 			continue;
     		if (!fTrackCuts->IsSelected(track,kTRUE)) 
-			continue;
+			continue;	
+			
     		ntracks++;
 		if(fmakePIDQAhisto)
     			fPID->FillQAHistos(fHistMan, track, fTrackCuts);
@@ -267,6 +268,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
      		fHistMan->GetPtHistogram(kHistPtRec)->Fill(track->Pt(),dca);  // PT histo
     		// get identity and charge
     		Bool_t rec[3]={false,false,false};
+		Bool_t sel[3]={false,false,false};
     		Int_t idRec  = fPID->GetParticleSpecie(fHistMan,track, fTrackCuts,rec);
 		for(int irec=kSpPion;irec<kNSpecies;irec++)
     		{
@@ -293,6 +295,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 				fTrackCuts->GetHistoDCAzQA()->Fill(idRec,track->Pt(),dcaz);
 				fTrackCuts->GetHistoNclustersQA()->Fill(idRec,track->Pt(),ncls);
 				fTrackCuts->GetHistochi2perNDFQA()->Fill(idRec,track->Pt(),chi2perndf);
+				sel[idRec]=true;
 			}
 			//can't put a continue because we still have to fill allcharged primaries, done later
 		
@@ -397,7 +400,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		 		 if(!fTrackCuts->CheckYCut ((BothParticleSpecies_t)idRec)) continue;
 		  
 		  // Get true ID
-		  
+		  		 	
 		  
 		 		 if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),dca); 
 		  
@@ -445,6 +448,15 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  
 			}//end if(arrayMC)
 		}
+		if(sel[0]&&sel[1]&&sel[2])//pi+k+p
+			fHistMan->GetPtHistogram("hHistDoubleCounts")->Fill(track->Pt(),0);
+		else if(sel[0]&&sel[1]) //pi+k
+			fHistMan->GetPtHistogram("hHistDoubleCounts")->Fill(track->Pt(),1);
+		else if(sel[0]&&sel[2]) //pi+k
+			fHistMan->GetPtHistogram("hHistDoubleCounts")->Fill(track->Pt(),2);
+		else if(sel[1]&&sel[2]) //p+k
+			fHistMan->GetPtHistogram("hHistDoubleCounts")->Fill(track->Pt(),3);
+
 	
 	
   	} // end loop on tracks

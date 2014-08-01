@@ -1,4 +1,6 @@
-AliAnalysisTask *AddTaskFlowTPCEMCalEP()
+AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t openingAngle = 0.1,
+                                       Double_t invMass = 0.01,
+                                       TString nonHFEalgorithm = "KF")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -47,15 +49,15 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP()
 //   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/AliAnalysisTaskFlowTPCEMCalEP.cxx++g");
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
 
-  AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
-  AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
+  AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
+  AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
  
   mgr->AddTask(taskMB);
   mgr->AddTask(taskTR);
   
   // Central trigger
-  taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral);
-  
+  taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
+
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGHF_hfeCalCentralV2";
   
@@ -65,8 +67,8 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP()
   mgr->ConnectOutput(taskMB, 1, coutput1);
   
   //L1 gamma and jet trigger
-  taskTR->SelectCollisionCandidates(AliVEvent::kEMCEGA | AliVEvent::kEMCEJE);
-  
+  taskTR->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+
   TString containerName2 = mgr->GetCommonFileName();
   containerName2 += ":PWGHF_hfeCalL1GammaV2";
   
@@ -77,7 +79,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP()
   
   if(MCthere){
     
-    AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere);
+    AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
     mgr->AddTask(taskMC);
     
     taskMC->SelectCollisionCandidates(AliVEvent::kMB);
@@ -94,3 +96,4 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP()
   
   return NULL;
 }
+

@@ -15,7 +15,8 @@
 
 //_________________________________________________________________________
 // Class for the analysis of particle (direct gamma) -jet (jet found with finder) correlations
-//*-- Author: Gustavo Conesa (LNF-INFN) 
+//*-- Author: Gustavo Conesa (LNF-INFN)
+//*-- Modified: Adam Matyja (INP PAN Cracow) 
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -37,22 +38,29 @@
 //jets
 #include "AliAODJetEventBackground.h"
 #include "TRandom2.h"
+//MC access
+#include "AliStack.h"
+#include "AliMCAnalysisUtils.h"
+#include "AliAODMCParticle.h"
+// --- Detectors ---
+#include "AliEMCALGeometry.h"
 
 ClassImp(AliAnaParticleJetFinderCorrelation)
-  
 
 //________________________________________________________________________
 AliAnaParticleJetFinderCorrelation::AliAnaParticleJetFinderCorrelation() : 
 AliAnaCaloTrackCorrBaseClass(),  
   fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), fRatioMaxCut(0.),  fRatioMinCut(0.), 
-  fConeSize(0), fPtThresholdInCone(0),fUseJetRefTracks(0),
-  fMakeCorrelationInHistoMaker(0), fSelectIsolated(0),
+  fConeSize(0.), fPtThresholdInCone(0.),fUseJetRefTracks(kTRUE),
+  fMakeCorrelationInHistoMaker(kFALSE), fSelectIsolated(kTRUE),
   fJetConeSize(0.4),fJetMinPt(5),fJetAreaFraction(0.6),
-  fNonStandardJetFromReader(kTRUE), fJetBranchName("jets"),
-  fBackgroundJetFromReader(kTRUE),fBkgJetBranchName("jets"),
-  fGammaConeSize(0.3),fUseBackgroundSubtractionGamma(0),fSaveGJTree(0),
+//fNonStandardJetFromReader(kTRUE), 
+  fJetBranchName("jets"),
+  fBackgroundJetFromReader(kTRUE),
+  fBkgJetBranchName("jets"),
+  fGammaConeSize(0.3),fUseBackgroundSubtractionGamma(kFALSE),fSaveGJTree(kTRUE),
   fMostEnergetic(kFALSE),fMostOpposite(kTRUE), fUseHistogramJetBkg(kTRUE),
-  fUseHistogramTracks(kTRUE),fUseHistogramJetTracks(kTRUE),fGenerator(0),
+  fUseHistogramTracks(kTRUE),fUseHistogramJetTracks(kTRUE),fMCStudies(kFALSE),fGenerator(0),
   fhDeltaEta(0), /*fhDeltaPhi(0),*/fhDeltaPhiCorrect(0),fhDeltaPhi0PiCorrect(0), fhDeltaPt(0), fhPtRatio(0), fhPt(0),
   fhFFz(0),fhFFxi(0),fhFFpt(0),fhNTracksInCone(0),
   fhJetFFz(0),fhJetFFxi(0),fhJetFFpt(0),fhJetFFzCor(0),fhJetFFxiCor(0),
@@ -78,6 +86,10 @@ AliAnaCaloTrackCorrBaseClass(),
   fhSelectedJetPhiVsEta(0),fhSelectedJetChBkgEnergyVsPtJet(0),fhSelectedJetChAreaVsPtJet(0),fhSelectedJetNjet(0),fhSelectedNtracks(0),
   fhSelectedTrackPhiVsEta(0),fhCuts2(0),
   fhSelectedPhotonNLMVsPt(0),fhSelectedPhotonLambda0VsPt(0), fhRandomPhiEta(),
+  fhMCPhotonCuts(0),fhMCPhotonPt(0),fhMCPhotonEtaPhi(0),fhMCJetOrigin(0),
+  fhMCJetNPartVsPt(0),fhMCJetChNPartVsPt(0),fhMCJetNPart150VsPt(0),fhMCJetChNPart150VsPt(0),fhMCJetChNPart150ConeVsPt(0),
+  fhMCJetRatioChFull(0),fhMCJetRatioCh150Ch(0),
+  fhMCJetEtaPhi(0),fhMCJetChEtaPhi(0),fhMCJet150EtaPhi(0),fhMCJetCh150EtaPhi(0),fhMCJetCh150ConeEtaPhi(0),
 fTreeGJ     (0),
 fGamPt	    (0),
 fGamLambda0 (0),
@@ -105,11 +117,35 @@ fNtracks    (0),
 fZvertex    (0),
 fCentrality (0),
 fIso(0),
-fGamRho(0)
+fGamRho(0),
+fMCGamPt        (0),
+fMCGamEta	(0),
+fMCGamPhi	(0),
+fMCPartonType	(0),
+fMCJetPt	(0),
+fMCJetChPt	(0),
+fMCJet150Pt	(0),
+fMCJetCh150Pt	(0),
+fMCJetNPart	(0),
+fMCJetChNPart	(0),
+fMCJet150NPart	(0),
+fMCJetCh150NPart(0),
+fMCJetEta	(0),
+fMCJetPhi	(0),
+fMCJetChEta	(0),
+fMCJetChPhi	(0),
+fMCJet150Eta	(0),
+fMCJet150Phi	(0),
+fMCJetCh150Eta	(0),
+fMCJetCh150Phi  (0),
+fMCJetCh150ConePt(0),
+fMCJetCh150ConeNPart(0),
+fMCJetCh150ConeEta(0),
+fMCJetCh150ConePhi(0)
 
 {
   //Default Ctor
-  //  printf("constructor\n");
+  //printf("constructor\n");
   
   //Initialize parameters
   InitParameters();
@@ -132,7 +168,7 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
 {  
   // Create histograms to be saved in output file and 
   // store them in fOutputContainer
-  //  printf("GetCreateOutputObjects\n");    
+  //printf("GetCreateOutputObjects\n");    
 
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ParticleJetFinderHistos") ; 
@@ -690,6 +726,88 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhRandomPhiEta[i]);
   }
 
+  //MC generated photons and jets information  
+  if(fMCStudies) {
+    fhMCPhotonCuts      = new TH1F("MCPhotonCuts","MCPhotonCuts",10,0.,10.); 
+    fhMCPhotonCuts->SetYTitle("Counts");
+    fhMCPhotonCuts->SetXTitle("Cut number");
+    outputContainer->Add(fhMCPhotonCuts);
+    
+    fhMCPhotonPt      = new TH1F("MCPhotonPt","MCPhotonPt",100,0.,100.); 
+    fhMCPhotonPt->SetYTitle("Counts");
+    fhMCPhotonPt->SetXTitle("p_{T,#gamma}^{gen} (GeV/c)");
+    outputContainer->Add(fhMCPhotonPt);
+    
+    fhMCPhotonEtaPhi      = new TH2F("MCPhotonEtaPhi","MCPhotonEtaPhi",65,0,6.5,50,-1,1); 
+    fhMCPhotonEtaPhi->SetYTitle("#eta_{#gamma}");
+    fhMCPhotonEtaPhi->SetXTitle("#phi_{#gamma}");
+    outputContainer->Add(fhMCPhotonEtaPhi) ;
+    
+    fhMCJetOrigin      = new TH1F("MCJetOrigin","MCJetOrigin",35,-10.,25.); 
+    fhMCJetOrigin->SetYTitle("Counts");
+    fhMCJetOrigin->SetXTitle("PDG number");
+    outputContainer->Add(fhMCJetOrigin);
+    
+    fhMCJetNPartVsPt      = new TH2F("MCJetNPartVsPt","MCJetNPartVsPt",100,0.,100.,100,0.,100.); 
+    fhMCJetNPartVsPt->SetYTitle("N_{particles}");
+    fhMCJetNPartVsPt->SetXTitle("p_{T,full-jet}^{gen} (GeV/c)");
+    outputContainer->Add(fhMCJetNPartVsPt) ;
+    
+    fhMCJetChNPartVsPt      = new TH2F("MCJetChNPartVsPt","MCJetChNPartVsPt",100,0.,100.,100,0.,100.); 
+    fhMCJetChNPartVsPt->SetYTitle("N_{particles}");
+    fhMCJetChNPartVsPt->SetXTitle("p_{T,charged-jet}^{gen} (GeV/c)");
+    outputContainer->Add(fhMCJetChNPartVsPt) ;
+    
+    fhMCJetNPart150VsPt      = new TH2F("MCJetNPart150VsPt","MCJetNPart150VsPt",100,0.,100.,100,0.,100.); 
+    fhMCJetNPart150VsPt->SetYTitle("N_{particles (p_{T}>150 MeV/c)}");
+    fhMCJetNPart150VsPt->SetXTitle("p_{T,full-jet}^{gen} (GeV/c)");
+    outputContainer->Add(fhMCJetNPart150VsPt) ;
+    
+    fhMCJetChNPart150VsPt      = new TH2F("MCJetChNPart150VsPt","MCJetChNPart150VsPt",100,0.,100.,100,0.,100.); 
+    fhMCJetChNPart150VsPt->SetYTitle("N_{particles (p_{T}>150 MeV/c)}");
+    fhMCJetChNPart150VsPt->SetXTitle("p_{T,charged-jet}^{gen} (GeV/c)");
+    outputContainer->Add(fhMCJetChNPart150VsPt) ;
+    
+    fhMCJetChNPart150ConeVsPt      = new TH2F("MCJetChNPart150ConeVsPt","MCJetChNPart150ConeVsPt",100,0.,100.,50,0.,50.); 
+    fhMCJetChNPart150ConeVsPt->SetYTitle("N_{particles (p_{T}>150 MeV/c)}");
+    fhMCJetChNPart150ConeVsPt->SetXTitle("p_{T,charged-jet,R=0.4}^{gen} (GeV/c)");
+    outputContainer->Add(fhMCJetChNPart150ConeVsPt) ;
+
+    fhMCJetRatioChFull      = new TH1F("MCJetRatioChFull","MCJetRatioChFull",100,0.,1.); 
+    fhMCJetRatioChFull->SetYTitle("Counts");
+    fhMCJetRatioChFull->SetXTitle("p_{T,charged-jet}^{gen}/p_{T,full-jet}^{gen}");
+    outputContainer->Add(fhMCJetRatioChFull);
+    
+    fhMCJetRatioCh150Ch      = new TH1F("MCJetRatioCh150Ch","MCJetRatioCh150Ch",100,0.,1.); 
+    fhMCJetRatioCh150Ch->SetYTitle("Counts");
+    fhMCJetRatioCh150Ch->SetXTitle("p_{T,charged-jet,pT>150MeV/c}^{gen}/p_{T,charged-jet}^{gen}");
+    outputContainer->Add(fhMCJetRatioCh150Ch);
+    
+    fhMCJetEtaPhi      = new TH2F("MCJetEtaPhi","MCJetEtaPhi",65,0,6.5,50,-1,1); 
+    fhMCJetEtaPhi->SetYTitle("#eta_{jet}");
+    fhMCJetEtaPhi->SetXTitle("#phi_{jet}");
+    outputContainer->Add(fhMCJetEtaPhi) ;
+    
+    fhMCJetChEtaPhi      = new TH2F("MCJetChEtaPhi","MCJetChEtaPhi",65,0,6.5,50,-1,1); 
+    fhMCJetChEtaPhi->SetYTitle("#eta_{jet}");
+    fhMCJetChEtaPhi->SetXTitle("#phi_{jet}");
+    outputContainer->Add(fhMCJetChEtaPhi) ;
+    
+    fhMCJet150EtaPhi      = new TH2F("MCJet150EtaPhi","MCJet150EtaPhi",65,0,6.5,50,-1,1); 
+    fhMCJet150EtaPhi->SetYTitle("#eta_{jet}");
+    fhMCJet150EtaPhi->SetXTitle("#phi_{jet}");
+    outputContainer->Add(fhMCJet150EtaPhi) ;
+    
+    fhMCJetCh150EtaPhi      = new TH2F("MCJetCh150EtaPhi","MCJetCh150EtaPhi",65,0,6.5,50,-1,1); 
+    fhMCJetCh150EtaPhi->SetYTitle("#eta_{jet}");
+    fhMCJetCh150EtaPhi->SetXTitle("#phi_{jet}");
+    outputContainer->Add(fhMCJetCh150EtaPhi) ;
+
+    fhMCJetCh150ConeEtaPhi      = new TH2F("MCJetCh150ConeEtaPhi","MCJetCh150ConeEtaPhi",65,0,6.5,50,-1,1); 
+    fhMCJetCh150ConeEtaPhi->SetYTitle("#eta_{jet}");
+    fhMCJetCh150ConeEtaPhi->SetXTitle("#phi_{jet}");
+    outputContainer->Add(fhMCJetCh150ConeEtaPhi) ;
+  }
 
   //tree with data
   if(fSaveGJTree){
@@ -722,6 +840,32 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
     fTreeGJ->Branch("fIso" ,&fIso  ,"fIso/O");
     fTreeGJ->Branch("fGamRho" ,&fGamRho  ,"fGamRho/D");
 
+    fTreeGJ->Branch("fMCGamPt"         ,&fMCGamPt         ,"fMCGamPt/D"        );
+    fTreeGJ->Branch("fMCGamEta"        ,&fMCGamEta        ,"fMCGamEta/D"       );
+    fTreeGJ->Branch("fMCGamPhi"        ,&fMCGamPhi        ,"fMCGamPhi/D"       );
+    fTreeGJ->Branch("fMCPartonType"    ,&fMCPartonType    ,"fMCPartonType/I"   );
+    fTreeGJ->Branch("fMCJetPt"         ,&fMCJetPt         ,"fMCJetPt/D"        );
+    fTreeGJ->Branch("fMCJetChPt"       ,&fMCJetChPt       ,"fMCJetChPt/D"      );
+    fTreeGJ->Branch("fMCJet150Pt"      ,&fMCJet150Pt      ,"fMCJet150Pt/D"     );
+    fTreeGJ->Branch("fMCJetCh150Pt"    ,&fMCJetCh150Pt    ,"fMCJetCh150Pt/D"   );
+    fTreeGJ->Branch("fMCJetNPart"      ,&fMCJetNPart      ,"fMCJetNPart/I"     );
+    fTreeGJ->Branch("fMCJetChNPart"    ,&fMCJetChNPart    ,"fMCJetChNPart/I"   );
+    fTreeGJ->Branch("fMCJet150NPart"   ,&fMCJet150NPart   ,"fMCJet150NPart/I"  );
+    fTreeGJ->Branch("fMCJetCh150NPart" ,&fMCJetCh150NPart ,"fMCJetCh150NPart/I");
+    fTreeGJ->Branch("fMCJetEta"        ,&fMCJetEta        ,"fMCJetEta/D"       );
+    fTreeGJ->Branch("fMCJetPhi"        ,&fMCJetPhi        ,"fMCJetPhi/D"       );
+    fTreeGJ->Branch("fMCJetChEta"      ,&fMCJetChEta      ,"fMCJetChEta/D"     );
+    fTreeGJ->Branch("fMCJetChPhi"      ,&fMCJetChPhi      ,"fMCJetChPhi/D"     );
+    fTreeGJ->Branch("fMCJet150Eta"     ,&fMCJet150Eta     ,"fMCJet150Eta/D"    );
+    fTreeGJ->Branch("fMCJet150Phi"     ,&fMCJet150Phi     ,"fMCJet150Phi/D"    );
+    fTreeGJ->Branch("fMCJetCh150Eta"   ,&fMCJetCh150Eta   ,"fMCJetCh150Eta/D"  );
+    fTreeGJ->Branch("fMCJetCh150Phi"   ,&fMCJetCh150Phi   ,"fMCJetCh150Phi/D"  );  
+
+    fTreeGJ->Branch("fMCJetCh150ConePt"    ,&fMCJetCh150ConePt    ,"fMCJetCh150ConePt/D"  );    
+    fTreeGJ->Branch("fMCJetCh150ConeNPart" ,&fMCJetCh150ConeNPart ,"fMCJetCh150ConeNPart/I");
+    fTreeGJ->Branch("fMCJetCh150ConeEta"   ,&fMCJetCh150ConeEta   ,"fMCJetCh150ConeEta/D"  );   
+    fTreeGJ->Branch("fMCJetCh150ConePhi"   ,&fMCJetCh150ConePhi   ,"fMCJetCh150ConePhi/D"  );   
+    
     outputContainer->Add(fTreeGJ);
   }
 
@@ -732,7 +876,7 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
 //_______________________________________________________
 void AliAnaParticleJetFinderCorrelation::InitParameters()
 {
-  //  printf("InitParameters\n");
+  //printf("InitParameters\n");
   //Initialize the parameters of the analysis.
   SetInputAODName("PWG4Particle");
   AddToHistogramsName("AnaJetFinderCorr_");
@@ -745,9 +889,9 @@ void AliAnaParticleJetFinderCorrelation::InitParameters()
   fPtThresholdInCone = 0.5 ;
   fUseJetRefTracks   = kFALSE ;
   fMakeCorrelationInHistoMaker = kFALSE ;
-  fSelectIsolated = kFALSE;
+  fSelectIsolated = kTRUE;
   fJetConeSize = 0.4 ;
-  fJetMinPt = 5 ; //GeV/c
+  fJetMinPt = 5. ; //GeV/c
   fJetAreaFraction = 0.6 ;
   fJetBranchName = "jets";
   fBkgJetBranchName = "jets";
@@ -759,7 +903,7 @@ void AliAnaParticleJetFinderCorrelation::InitParameters()
   fUseHistogramJetBkg = kTRUE;
   fUseHistogramTracks = kTRUE;
   fUseHistogramJetTracks = kTRUE;
-
+  fMCStudies = kFALSE;
 }
 
 //__________________________________________________________________
@@ -767,7 +911,7 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
 {
   //Input for jets is TClonesArray *aodRecJets
   //Returns the index of the jet that is opposite to the particle
-  //  printf(" SelectJet ");
+  //printf(" SelectJet ");
   
   Double_t particlePt=particle->Pt();
   if(fUseBackgroundSubtractionGamma) {
@@ -804,16 +948,15 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
     }
     fhCuts2->Fill(2.,1.);
     jetPt=jet->Pt();
+    if(jetPt<fJetMinPt) continue;
+    fhCuts2->Fill(3.,1.);
     if(fBackgroundJetFromReader ){
       jetPt-= (fJetRho * jet->EffectiveAreaCharged() );
     }
     if(jetPt<0.) continue;
     //put jet eta requirement here |eta_jet|<0.9-jet_cone_size
-    fhCuts2->Fill(3.,1.);
-    if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
     fhCuts2->Fill(4.,1.);
-    //    if(jet->Pt()<5) continue;
-    if(jetPt<fJetMinPt) continue;
+    if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
     fhCuts2->Fill(5.,1.);
     if(jet->EffectiveAreaCharged()<fJetAreaFraction*TMath::Pi()*fJetConeSize*fJetConeSize) continue;
     fhCuts2->Fill(6.,1.);
@@ -894,19 +1037,19 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
   //
   Int_t nJets=-1;
   TClonesArray *aodRecJets = 0;
-  if(IsNonStandardJetFromReader()){//jet branch from reader
-    if(GetDebug() > 3) AliInfo(Form("GetNonStandardJets function (from reader) is called"));
-    aodRecJets = GetNonStandardJets();
-    if(GetDebug() > 3) AliInfo(Form("aodRecJets %p",aodRecJets));
-    if(aodRecJets==0x0)
+  //if(IsNonStandardJetFromReader()){//jet branch from reader
+  if(GetDebug() > 3) AliInfo(Form("GetNonStandardJets function (from reader) is called"));
+  aodRecJets = GetNonStandardJets();
+  if(GetDebug() > 3) AliInfo(Form("aodRecJets %p",aodRecJets));
+  if(aodRecJets==0x0)
     {
       if(GetDebug() > 3) event->Print();
       AliFatal("List of jets is null");
       return;
     }
-    nJets=aodRecJets->GetEntries();
-    if(GetDebug() > 3) printf("nJets %d\n",nJets);
-  }
+  nJets=aodRecJets->GetEntries();
+  if(GetDebug() > 3) printf("nJets %d\n",nJets);
+  //}
   //end of new part
   
   if(nJets==0) {
@@ -924,7 +1067,8 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     if(GetDebug() > 3) printf("aodBkgJets %p\n",aodBkgJets);
     if(aodBkgJets==0x0){
       if(GetDebug() > 3) event->Print();
-      abort();
+      AliFatal("No jet background found\n");
+      return; // Trick coverity        
     }
     if(GetDebug() > 3) aodBkgJets->Print("c");
   }
@@ -1031,9 +1175,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     for(Int_t ijet = 0; ijet < nJets ; ijet++){
       jet = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
       if(!jet) continue;
+      if(jet->Pt()<fJetMinPt) continue;
       if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
       if(jet->EffectiveAreaCharged()<fJetAreaFraction*TMath::Pi()*fJetConeSize*fJetConeSize) continue;
-      if(jet->Pt()<fJetMinPt) continue;
       ptCorrect = jet->Pt() - rhoEvent * jet->EffectiveAreaCharged();
       if(ptCorrect > mostEneJetPt){
         mostEneJetPt = ptCorrect;
@@ -1083,7 +1227,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     printf("I use MakeAnalysisFillHistograms\n");
     printf("ntracks before iso %d\n",GetCTSTracks()->GetEntriesFast() );
   }
-  
+
   //Get the event, check if there are AODs available, if not, skip this analysis
   AliAODEvent * event = NULL;
   
@@ -1106,22 +1250,24 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   }
   
   if(!GetInputAODBranch() || !event){
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
-    abort();
+
+    AliFatal(Form("No input particles in AOD with name branch < %s > \n",
+                  GetInputAODName().Data()));
+    return; // Trick coverity        
   }
   
   Int_t nJets=-1;
   TClonesArray *aodRecJets = 0;
-  if(IsNonStandardJetFromReader()){//branch read in reader from reader
-    if (GetDebug() > 3) printf("GetNonStandardJets function (from reader) is called\n");
-    aodRecJets = GetNonStandardJets();
-    if(aodRecJets==0x0){
-      if(GetDebug() > 3) event->Print();
-      AliFatal("Jets container not found");
-      return; // trick coverity
-    }
-    nJets=aodRecJets->GetEntries();
+  //if(IsNonStandardJetFromReader()){//branch read in reader from reader
+  if (GetDebug() > 3) printf("GetNonStandardJets function (from reader) is called\n");
+  aodRecJets = GetNonStandardJets();
+  if(aodRecJets==0x0){
+    if(GetDebug() > 3) event->Print();
+    AliFatal("Jets container not found\n");
+    return; // trick coverity
   }
+  nJets=aodRecJets->GetEntries();
+  //}
   if(nJets==0) {
     //    printf("Why number of jets = 0? Check what type of collision it is. If PbPb -problem.\n");
     GetReader()->FillInputNonStandardJets();
@@ -1141,7 +1287,8 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     if(GetDebug() > 3) printf("aodBkgJets %p\n",aodBkgJets);
     if(aodBkgJets==0x0){
       if(GetDebug() > 3) event->Print();
-      abort();
+      AliFatal("No jet background container found");
+      return; // trick coverity  
     }
     if(GetDebug() > 3) aodBkgJets->Print("c");
   }
@@ -1503,7 +1650,10 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     if (!jet) continue ;
     fhCuts->Fill(3);
     fhCuts2->Fill(7.,1.);
-    
+
+    //check MC genereted information
+    if(fMCStudies) FindMCgenInfo();
+
     //
     //Fill Correlation Histograms
     //
@@ -1745,12 +1895,12 @@ void AliAnaParticleJetFinderCorrelation::Print(const Option_t * opt) const
   printf("fMakeCorrelationInHistoMaker	   =     %d\n",    fMakeCorrelationInHistoMaker) ;	
   printf("Isolated Trigger?  %d\n", fSelectIsolated) ;
   printf("Reconstructed jet cone size = %3.2f\n", fJetConeSize) ;
-  printf("Reconstructed jet minimum pt = %3.2f\n", fJetMinPt) ;
+  printf("Reconstructed jet minimum pt before background subtraction = %3.2f\n", fJetMinPt) ;
   printf("Reconstructed jet minimum area fraction = %3.2f\n", fJetAreaFraction) ;
 
-  if(!fNonStandardJetFromReader){
-    printf("fJetBranchName =   %s\n", fJetBranchName.Data()) ;
-  }
+  //if(!fNonStandardJetFromReader){
+  printf("fJetBranchName =   %s\n", fJetBranchName.Data()) ;
+  //}
   if(!fBackgroundJetFromReader){
     printf("fBkgJetBranchName =   %s\n", fBkgJetBranchName.Data()) ;
   }
@@ -1764,6 +1914,7 @@ void AliAnaParticleJetFinderCorrelation::Print(const Option_t * opt) const
   printf("fUseHistogramJetBkg = %d\n",fUseHistogramJetBkg);
   printf("fUseHistogramTracks = %d\n",fUseHistogramTracks);
   printf("fUseHistogramJetTracks = %d\n",fUseHistogramJetTracks);
+  printf("fMCStudies = %d\n",fMCStudies);
 
 } 
 
@@ -1847,7 +1998,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad = TMath::Sqrt((gammaEta-refEta)*(gammaEta-refEta) + (gammaPhi-refPhi)*(gammaPhi-refPhi));
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
-    } while (rad<fJetConeSize+fGammaConeSize || rad2<fJetConeSize+fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
+    } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
     fhRandomPhiEta[2]->Fill(refPhi,refEta);
 
   }
@@ -1860,7 +2011,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //check if reference is not within jet cone or gamma cone +0.4
       //example: FF fConeSize=0.4, fJetConeSize=0.4, fIsoGammaConeSize=0.3
-    } while (rad<fJetConeSize+fGammaConeSize || rad2<fJetConeSize+fJetConeSize);
+    } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize);
     //photon:0.7=0.4+0.3; jets:0.8=0.4 +0.4 //rad<fConeSize+fJetConeSize rad2<fConeSize+0.3
     fhRandomPhiEta[0]->Fill(refPhi,refEta);
   }
@@ -1921,7 +2072,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad = TMath::Sqrt((gammaEta-refEta)*(gammaEta-refEta) + (gammaPhi-refPhi)*(gammaPhi-refPhi));
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
-    } while (rad<fJetConeSize+fGammaConeSize || rad2<fJetConeSize+fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
+    } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
     fhRandomPhiEta[1]->Fill(refPhi,refEta);
 
   }
@@ -1967,7 +2118,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
     rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
 
-    if (rad<fJetConeSize+fGammaConeSize || rad2<fJetConeSize+fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize) fhRandomPhiEta[3]->Fill(refPhi,refEta);
+    if (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize) fhRandomPhiEta[3]->Fill(refPhi,refEta);
   }
   else if(type==5){//tmp                                                                                                                                                   
     //printf("vertex: %f %f %f \n",vertex[0],vertex[1],vertex[2]);                                                                                                         
@@ -2011,7 +2162,7 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
       rad = TMath::Sqrt((gammaEta-refEta)*(gammaEta-refEta) + (gammaPhi-refPhi)*(gammaPhi-refPhi));
       rad2 = TMath::Sqrt((jetEta-refEta)*(jetEta-refEta) + (jetPhi-refPhi)*(jetPhi-refPhi));
       //printf("refEta,refPhi,rad,rad2: %f %f %f %f\n",refEta,refPhi,rad,rad2);
-    } while (rad<fJetConeSize+fGammaConeSize || rad2<fJetConeSize+fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
+    } while (rad<fJetConeSize+fGammaConeSize || rad2<2.*fJetConeSize || TMath::Abs(refEta)>0.9-fJetConeSize);
     fhRandomPhiEta[4]->Fill(refPhi,refEta);
   }
 
@@ -2102,3 +2253,343 @@ void AliAnaParticleJetFinderCorrelation::CalculateBkg(TVector3 gamma, TVector3 j
 }
 
 
+
+
+
+//__________________________________________________________________
+void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
+  //
+  // Find information about photon and (quark or gluon) on generated level 
+  //
+
+  //frequently used variables
+  Int_t pdg    = 0 ;
+  Int_t mother = -1 ; 
+  Int_t absID  = 0 ;
+
+  //Double_t photonY   = -100 ;
+  //Double_t photonE   = -1 ;
+  Double_t photonPt  = -1 ;
+  Double_t photonPhi =  100 ;
+  Double_t photonEta = -1 ;
+  Bool_t   inacceptance = kFALSE;
+  AliAODMCParticle * primTmp = NULL;
+
+  //jet counters
+  Int_t nParticlesInJet=0;
+  Int_t nChargedParticlesInJet=0;
+  Int_t nParticlesInJet150=0;
+  Int_t nChargedParticlesInJet150=0;
+  Int_t nChargedParticlesInJet150Cone=0;
+
+  Double_t eneParticlesInJet=0.;
+  Double_t eneChargedParticlesInJet=0.;
+  Double_t eneParticlesInJet150=0.;
+  Double_t eneChargedParticlesInJet150=0.;
+  Double_t eneChargedParticlesInJet150Cone=0.;
+
+  Double_t pxParticlesInJet=0.;
+  Double_t pxChargedParticlesInJet=0.;
+  Double_t pxParticlesInJet150=0.;
+  Double_t pxChargedParticlesInJet150=0.;
+  Double_t pxChargedParticlesInJet150Cone=0.;
+
+  Double_t pyParticlesInJet=0.;
+  Double_t pyChargedParticlesInJet=0.;
+  Double_t pyParticlesInJet150=0.;
+  Double_t pyChargedParticlesInJet150=0.;
+  Double_t pyChargedParticlesInJet150Cone=0.;
+
+  Double_t etaParticlesInJet=0.;
+  Double_t etaChargedParticlesInJet=0.;
+  Double_t etaParticlesInJet150=0.;
+  Double_t etaChargedParticlesInJet150=0.;
+  Double_t etaChargedParticlesInJet150Cone=0.;
+
+  Double_t phiParticlesInJet=0.;
+  Double_t phiChargedParticlesInJet=0.;
+  Double_t phiParticlesInJet150=0.;
+  Double_t phiChargedParticlesInJet150=0.;
+  Double_t phiChargedParticlesInJet150Cone=0.;
+
+  Double_t ptParticlesInJet=0.;
+  Double_t ptChargedParticlesInJet=0.;
+  Double_t ptParticlesInJet150=0.;
+  Double_t ptChargedParticlesInJet150=0.;
+  Double_t ptChargedParticlesInJet150Cone=0.;
+
+  Double_t coneJet=0.;
+  Double_t coneChargedJet=0.;
+  Double_t coneJet150=0.;
+  Double_t coneChargedJet150=0.;
+
+  std::vector<Int_t> jetParticleIndex;
+
+  if(GetReader()->ReadStack()) {//ESD
+     if(GetDebug()>3) printf("I use stack\n");
+  }//end Stack 
+  else if(GetReader()->ReadAODMCParticles()) {//AOD
+    TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
+    if(mcparticles){
+      //jet origin
+      //index =6 and 7 is hard scattering (jet-quark or photon)
+      primTmp = (AliAODMCParticle *) mcparticles->At(6);
+      pdg=primTmp->GetPdgCode();
+       if(GetDebug()>3) printf("id 6 pdg %d, pt %f ",pdg,primTmp->Pt() );
+      if(TMath::Abs(pdg)<=6 ||pdg==21) {
+	fhMCJetOrigin->Fill(pdg);
+	fMCPartonType=pdg;
+      }
+      primTmp = (AliAODMCParticle *) mcparticles->At(7);
+      pdg=primTmp->GetPdgCode();
+       if(GetDebug()>3) printf("id 7 pdg %d, pt %f\n",pdg,primTmp->Pt() );
+      if(TMath::Abs(pdg)<=6 ||pdg==21) {
+	fhMCJetOrigin->Fill(pdg);
+	fMCPartonType=pdg;
+      }
+      //end of jet origin
+
+      Int_t nprim = mcparticles->GetEntriesFast();
+      for(Int_t i=0; i < nprim; i++) {
+	if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+	AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
+	pdg = prim->GetPdgCode();
+	mother=prim->GetMother();
+	//photon=22, gluon=21, quarks=(1,...,6), antiquarks=(-1,...,-6)
+	if(pdg == 22){//photon
+	  fhMCPhotonCuts->Fill(0);
+	  if(prim->GetStatus()!=1) continue;
+	  fhMCPhotonCuts->Fill(1);
+	   if(GetDebug()>5) printf("id %d, prim %d, physPrim %d, status %d\n",i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->GetStatus());
+	  while(mother>7){
+	    primTmp = (AliAODMCParticle *) mcparticles->At(mother);
+	    mother=primTmp->GetMother();
+	  }
+	  if(mother<6)continue;
+	  fhMCPhotonCuts->Fill(2);
+	  primTmp = (AliAODMCParticle *) mcparticles->At(mother);
+	  if(primTmp->GetPdgCode()!=22)continue;
+	  fhMCPhotonCuts->Fill(3);
+
+	  //Get photon kinematics
+	  photonPt  = prim->Pt() ;
+	  photonPhi = prim->Phi() ;
+	  if(photonPhi < 0) photonPhi+=TMath::TwoPi();
+	  photonEta = prim->Eta() ;
+	  fhMCPhotonPt->Fill(photonPt);
+	  fhMCPhotonEtaPhi->Fill(photonPhi,photonEta);
+	  
+	  //Check if photons hit the Calorimeter
+	  TLorentzVector lv;
+	  lv.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
+	  inacceptance = kFALSE;
+	  if(GetCaloUtils()->IsEMCALGeoMatrixSet()){
+	    fhMCPhotonCuts->Fill(4);
+	    //check if in EMCAL
+	    if(GetEMCALGeometry()) {
+	      GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
+	      if(absID >= 0) inacceptance = kTRUE;
+	      if(GetDebug() > 3) printf("In EMCAL Real acceptance? %d\n",inacceptance);
+	    }
+	    else{
+	      if(GetFiducialCut()->IsInFiducialCut(lv,"EMCAL")) inacceptance = kTRUE ;
+	      if(GetDebug() > 3) printf("In EMCAL fiducial cut acceptance? %d\n",inacceptance);
+	    }
+	  }else{//no EMCAL nor EMCALGeoMatrixSet
+	    printf("not EMCALGeoMatrix set\n");
+	  }//end of check if EMCAL
+	  if(inacceptance)fhMCPhotonCuts->Fill(5);
+	  if(GetDebug() > 5)
+	    printf("Photon Energy %f, Pt %f\n",prim->E(),prim->Pt());
+	  fMCGamPt=photonPt;
+	  fMCGamEta=photonEta;
+	  fMCGamPhi=photonPhi;
+	}//end of check if photon
+	else{//not photon
+	  if(prim->GetStatus()!=1) continue;
+	  if(GetDebug() > 5)
+	    printf("id %d, prim %d, physPrim %d, status %d, pdg %d, E %f ",i,prim->IsPrimary(),prim->IsPhysicalPrimary(),prim->GetStatus(),prim->GetPdgCode(),prim->E());
+	  while(mother>7){
+	    primTmp = (AliAODMCParticle *) mcparticles->At(mother);
+	    mother=primTmp->GetMother();
+	    if(GetDebug() > 5) printf("next mother %d ",mother);
+	  }
+	  if(GetDebug() > 5) printf("\n");
+	  if(mother<6)continue;//soft part
+	  primTmp = (AliAODMCParticle *) mcparticles->At(mother);
+	  pdg=primTmp->GetPdgCode();
+	  if( !(TMath::Abs(pdg)<=6 || pdg==21) ) continue;//origin not hard q or g
+
+	  //jetParticleIndex.Add(&i);
+	  jetParticleIndex.push_back(i);
+
+	nParticlesInJet++;
+	eneParticlesInJet+=prim->E();
+	pxParticlesInJet+=prim->Px();
+	pyParticlesInJet+=prim->Py();
+	etaParticlesInJet+=(prim->E()*prim->Eta());
+	photonPhi = prim->Phi() ;
+	if(photonPhi < 0) photonPhi+=TMath::TwoPi();
+	phiParticlesInJet+=(prim->E()*photonPhi);
+	
+	if(prim->Charge()!=0) {
+	  nChargedParticlesInJet++;
+	  eneChargedParticlesInJet+=prim->E();
+	  pxChargedParticlesInJet+=prim->Px();
+	  pyChargedParticlesInJet+=prim->Py();
+	  etaChargedParticlesInJet+=(prim->E()*prim->Eta());
+	  phiChargedParticlesInJet+=(prim->E()*photonPhi);
+	}
+	if(prim->Pt()>0.150 && TMath::Abs(prim->Eta())<0.9 ) {//in TPC acceptance :)
+	  nParticlesInJet150++;
+	  eneParticlesInJet150+=prim->E();
+	  pxParticlesInJet150+=prim->Px();
+	  pyParticlesInJet150+=prim->Py();
+	  etaParticlesInJet150+=(prim->E()*prim->Eta());
+	  phiParticlesInJet150+=(prim->E()*photonPhi);
+	}
+	if(prim->Charge()!=0 && prim->Pt()>0.150 && TMath::Abs(prim->Eta())<0.9 ) {//in TPC acceptance :)
+	  nChargedParticlesInJet150++;
+	  eneChargedParticlesInJet150+=prim->E();
+	  pxChargedParticlesInJet150+=prim->Px();
+	  pyChargedParticlesInJet150+=prim->Py();
+	  etaChargedParticlesInJet150+=(prim->E()*prim->Eta());
+	  phiChargedParticlesInJet150+=(prim->E()*photonPhi);
+	}
+
+	}//end of check pdg
+      }//end of loop over primaries
+
+      if(eneParticlesInJet != 0.) {
+	etaParticlesInJet/=eneParticlesInJet ;
+	phiParticlesInJet/=eneParticlesInJet ;
+      }
+      if(eneChargedParticlesInJet != 0) {
+	etaChargedParticlesInJet/=eneChargedParticlesInJet;
+	phiChargedParticlesInJet/=eneChargedParticlesInJet;
+      }
+      if(eneParticlesInJet150 != 0) {
+	etaParticlesInJet150/=eneParticlesInJet150;
+	phiParticlesInJet150/=eneParticlesInJet150;
+      }
+      if(eneChargedParticlesInJet150 != 0) {
+	etaChargedParticlesInJet150/=eneChargedParticlesInJet150;
+	phiChargedParticlesInJet150/=eneChargedParticlesInJet150;
+      }
+
+      ptParticlesInJet=TMath::Sqrt(pxParticlesInJet*pxParticlesInJet+pyParticlesInJet*pyParticlesInJet);
+      ptChargedParticlesInJet=TMath::Sqrt(pxChargedParticlesInJet*pxChargedParticlesInJet+pyChargedParticlesInJet*pyChargedParticlesInJet);
+      ptParticlesInJet150=TMath::Sqrt(pxParticlesInJet150*pxParticlesInJet150+pyParticlesInJet150*pyParticlesInJet150);
+      ptChargedParticlesInJet150=TMath::Sqrt(pxChargedParticlesInJet150*pxChargedParticlesInJet150+pyChargedParticlesInJet150*pyChargedParticlesInJet150);
+
+      Double_t distance=0.;
+      Double_t eta=0.;
+      Double_t phi=0.;
+      Double_t mostPtCharged=0.;
+      Int_t mostmostPtChargedId=-1.;
+      std::vector<Int_t>::iterator it;
+      for( it=jetParticleIndex.begin(); it!=jetParticleIndex.end(); ++it ){
+	AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(*it);
+	eta = prim->Eta();
+	phi = prim->Phi();
+	if(phi < 0) phi+=TMath::TwoPi();
+	//full jet
+	distance=TMath::Sqrt((eta-etaParticlesInJet)*(eta-etaParticlesInJet)+(phi-phiParticlesInJet)*(phi-phiParticlesInJet));
+	if(distance>coneJet) coneJet=distance;
+	//charged jet
+	distance=TMath::Sqrt((eta-etaChargedParticlesInJet)*(eta-etaChargedParticlesInJet)+(phi-phiChargedParticlesInJet)*(phi-phiChargedParticlesInJet));
+	if(distance>coneChargedJet) coneChargedJet=distance;
+	//
+	distance=TMath::Sqrt((eta-etaParticlesInJet150)*(eta-etaParticlesInJet150)+(phi-phiParticlesInJet150)*(phi-phiParticlesInJet150));
+	if(distance>coneJet150 && TMath::Abs(eta)<0.9 ) coneJet150=distance;
+	//
+	distance=TMath::Sqrt((eta-etaChargedParticlesInJet150)*(eta-etaChargedParticlesInJet150)+(phi-phiChargedParticlesInJet150)*(phi-phiChargedParticlesInJet150));
+	if(distance>coneChargedJet150 && TMath::Abs(eta)<0.9) coneChargedJet150=distance;
+
+	if(prim->Charge()!=0 && prim->Pt()>0.150 && TMath::Abs(eta)<0.9) {
+	  if(prim->Pt()>mostPtCharged) {
+	    mostPtCharged=prim->Pt();
+	    mostmostPtChargedId=(*it);
+	  }
+	}
+
+	if(distance<=0.4){
+	  if(prim->Charge()!=0 && prim->Pt()>0.150 && TMath::Abs(eta)<0.9) {
+	    nChargedParticlesInJet150Cone++;
+	    eneChargedParticlesInJet150Cone+=prim->E();
+	    pxChargedParticlesInJet150Cone+=prim->Px();
+	    pyChargedParticlesInJet150Cone+=prim->Py();
+	    etaChargedParticlesInJet150Cone+=(prim->E()*eta);
+	    phiChargedParticlesInJet150Cone+=(prim->E()*phi);
+	  }
+
+	}
+
+      }//end of loop over jet particle indexes
+      if(eneChargedParticlesInJet150Cone != 0) {
+	etaChargedParticlesInJet150Cone/=eneChargedParticlesInJet150Cone;
+	phiChargedParticlesInJet150Cone/=eneChargedParticlesInJet150Cone;
+      }
+      ptChargedParticlesInJet150Cone=TMath::Sqrt(pxChargedParticlesInJet150Cone*pxChargedParticlesInJet150Cone+pyChargedParticlesInJet150Cone*pyChargedParticlesInJet150Cone);
+      if(nChargedParticlesInJet150>0 && nChargedParticlesInJet150Cone<1){//no particles in cone? take the most energetic one
+	nChargedParticlesInJet150Cone=1;
+	etaChargedParticlesInJet150Cone=((AliAODMCParticle *)mcparticles->At(mostmostPtChargedId))->Eta();
+	phiChargedParticlesInJet150Cone=((AliAODMCParticle *)mcparticles->At(mostmostPtChargedId))->Phi();
+	ptChargedParticlesInJet150Cone=((AliAODMCParticle *)mcparticles->At(mostmostPtChargedId))->Pt();
+      }
+
+
+    }//mc array exists and data is MC
+  }// read AOD MC
+
+  jetParticleIndex.clear();
+
+
+  //printouts
+  if(GetDebug() > 3) {
+    printf("cone full %f, charged %f, full150 %f, charged150 %f\n",coneJet,coneChargedJet,coneJet150,coneChargedJet150);
+    printf("Npart %d, NchPart %d, Npart(pt>150M) %d, NchPart(pt>150M) %d, NchPart(pt>150M)Cone %d\n",nParticlesInJet,nChargedParticlesInJet,nParticlesInJet150,nChargedParticlesInJet150,nChargedParticlesInJet150Cone);
+    printf("Etot %f, Ech %f, E(pt>150M) %f, Ech(pt>150M) %f\n",eneParticlesInJet,eneChargedParticlesInJet,eneParticlesInJet150,eneChargedParticlesInJet150);
+    printf("pt %f, ptch %f, pt(pt>150M) %f,ptch(pt>150M) %f,ptch(pt>150M)Cone %f\n",ptParticlesInJet,ptChargedParticlesInJet,ptParticlesInJet150,ptChargedParticlesInJet150,ptChargedParticlesInJet150Cone);
+    printf("eta/phi tot %f/%f, ch %f/%f, tot150 %f/%f,  ch150 %f/%f, ch150cone %f/%f\n",etaParticlesInJet,phiParticlesInJet,etaChargedParticlesInJet,phiChargedParticlesInJet,etaParticlesInJet150,phiParticlesInJet150,etaChargedParticlesInJet150,phiChargedParticlesInJet150,etaChargedParticlesInJet150Cone,phiChargedParticlesInJet150Cone);
+  }
+  //fill histograms
+  if(ptParticlesInJet) fhMCJetRatioChFull->Fill(ptChargedParticlesInJet/ptParticlesInJet);
+  if(ptChargedParticlesInJet) fhMCJetRatioCh150Ch->Fill(ptChargedParticlesInJet150/ptChargedParticlesInJet);
+
+  fhMCJetNPartVsPt     ->Fill(ptParticlesInJet,nParticlesInJet);
+  fhMCJetChNPartVsPt   ->Fill(ptChargedParticlesInJet,nChargedParticlesInJet);
+  fhMCJetNPart150VsPt  ->Fill(ptParticlesInJet150,nParticlesInJet150);
+  fhMCJetChNPart150VsPt->Fill(ptChargedParticlesInJet150,nChargedParticlesInJet150);
+  fhMCJetChNPart150ConeVsPt->Fill(ptChargedParticlesInJet150Cone,nChargedParticlesInJet150Cone);
+
+  fhMCJetEtaPhi->Fill(phiParticlesInJet,etaParticlesInJet);
+  fhMCJetChEtaPhi->Fill(phiChargedParticlesInJet,etaChargedParticlesInJet);
+  fhMCJet150EtaPhi->Fill(phiParticlesInJet150,etaParticlesInJet150);
+  fhMCJetCh150EtaPhi->Fill(phiChargedParticlesInJet150,etaChargedParticlesInJet150);
+  fhMCJetCh150ConeEtaPhi->Fill(phiChargedParticlesInJet150Cone,etaChargedParticlesInJet150Cone);
+
+  //fill tree
+  fMCJetPt      = ptParticlesInJet;
+  fMCJetChPt    = ptChargedParticlesInJet;      
+  fMCJet150Pt   = ptParticlesInJet150;     
+  fMCJetCh150Pt = ptChargedParticlesInJet150;   
+  fMCJetNPart      = nParticlesInJet;     
+  fMCJetChNPart    = nChargedParticlesInJet;   
+  fMCJet150NPart   = nParticlesInJet150;  
+  fMCJetCh150NPart = nChargedParticlesInJet150;
+  fMCJetEta      = etaParticlesInJet          ;
+  fMCJetPhi      = phiParticlesInJet	      ;
+  fMCJetChEta    = etaChargedParticlesInJet   ;
+  fMCJetChPhi    = phiChargedParticlesInJet   ;
+  fMCJet150Eta   = etaParticlesInJet150	      ;
+  fMCJet150Phi   = phiParticlesInJet150	      ;
+  fMCJetCh150Eta = etaChargedParticlesInJet150;
+  fMCJetCh150Phi = phiChargedParticlesInJet150;
+
+  fMCJetCh150ConePt    = ptChargedParticlesInJet150Cone;
+  fMCJetCh150ConeNPart = nChargedParticlesInJet150Cone;
+  fMCJetCh150ConeEta   = etaChargedParticlesInJet150Cone;
+  fMCJetCh150ConePhi   = phiChargedParticlesInJet150Cone;
+
+}//end of method FindMCgenInfo

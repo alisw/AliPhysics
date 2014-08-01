@@ -301,7 +301,7 @@ void AliAnalysisTaskTOFqaID::UserCreateOutputObjects()
   //pid response object
   fESDpid=(AliESDpid*)inputHandler->GetPIDResponse();
   if (!fESDpid) AliError("PIDResponse object was not created");
-  //  fESDpid->SetOADBPath("$ALICE_ROOT/OADB");
+  //fESDpid->SetOADBPath("$ALICE_ROOT/OADB");
 
   Info("CreateOutputObjects","CreateOutputObjects (TList) of task %s", GetName());
   OpenFile(1);
@@ -427,6 +427,12 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   
   Printf("Momentum cut for eta and phi distributions set: Pt>%3.2f", fMatchingMomCut);
 
+  //check existence of track filter
+  if (!fTrackFilter){
+    Printf("No track filter found, skipping the track loop");
+    return;
+  }
+  
   // loop over ESD tracks
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack* track = fESD->GetTrack(iTracks);
@@ -436,12 +442,7 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
     }
     
     //primary tracks selection: kTPCrefit and std cuts
-    if (fTrackFilter){
-      if(!fTrackFilter->IsSelected(track)) continue;
-    } else {
-      Printf("No track filter found, skipping the track loop");
-      return;
-    }
+    if (!fTrackFilter->IsSelected(track)) continue;
     
     //select specie if MC
     if ( fIsMC && 
@@ -464,7 +465,9 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
     
     Int_t charge = track->Charge();
     
+    //Fill histograms for primary particles
     FillPrimaryTrkHisto(charge,"");
+
     if (IsTPCTOFMatched(track)) {     
       fTof=track->GetTOFsignal()*1E-3;//in ps
       //increment track counters
@@ -842,19 +845,19 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(TList *list, Int_t charge, TString 
   list->AddLast(hMatchedL);
      
   TH2F* hMatchedDxVsPt = new TH2F(Form("hMatchedDxVsPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk dx vs.p_{T}", cLabel.Data()), 1000,0.,10.,200, -10., 10.) ; 
-  HistogramMakeUp(hMatchedDxVsPt,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "GeV/c (p_{T})","dx (cm)");
+  HistogramMakeUp(hMatchedDxVsPt,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "p_{T} (GeV/c)","dx (cm)");
   list->AddLast(hMatchedDxVsPt); 
 
   TH2F* hMatchedDzVsStrip = new TH2F(Form("hMatchedDzVsStrip%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk dz vs. strip (#eta)", cLabel.Data()), 92,0.,92.,200, -10., 10.) ; 
-  HistogramMakeUp(hMatchedDzVsStrip,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "strip","dz (cm)");
+  HistogramMakeUp(hMatchedDzVsStrip,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "strip index","dz (cm)");
   list->AddLast(hMatchedDzVsStrip) ; 
 
   TProfile *hMatchedDxVsCh = new TProfile(Form("hMatchedDxVsCh%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk dx vs. channel", cLabel.Data()), 157248., 0.,157248.);
-  HistogramMakeUp(hMatchedDxVsCh,((charge>0)? kRed+2 : kBlue+2), 1, "", "","", "channel","dx (cm)");
+  HistogramMakeUp(hMatchedDxVsCh,((charge>0)? kRed+2 : kBlue+2), 1, "", "","", "channel index","dx (cm)");
   list->AddLast(hMatchedDxVsCh);
    
   TProfile *hMatchedDzVsCh = new TProfile(Form("hMatchedDzVsCh%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk dz vs. channel", cLabel.Data()), 157248., 0.,157248.);
-  HistogramMakeUp(hMatchedDzVsCh,((charge>0)? kRed+2 : kBlue+2), 1, "", "","", "channel","dz (cm)");
+  HistogramMakeUp(hMatchedDzVsCh,((charge>0)? kRed+2 : kBlue+2), 1, "", "","", "channel index","dz (cm)");
   list->AddLast(hMatchedDzVsCh);    
 
   return;
@@ -871,7 +874,7 @@ void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, T
   if (charge<0) cLabel.Form("neg"); else if (charge>0) cLabel.Form("pos"); else cLabel.Form("all");
   
   TH1F* hMatchedP  = new TH1F(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p", cLabel.Data()), 1000,0.,10.) ;  
-  HistogramMakeUp(hMatchedP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "L (cm)","tracks");
+  HistogramMakeUp(hMatchedP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p (GeV/c)","tracks");
   list->AddLast(hMatchedP) ; 
 
   TH1F* hMatchedPt  = new TH1F(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T}", cLabel.Data()), 1000,0.,10.) ;  
@@ -891,7 +894,7 @@ void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, T
   list->AddLast(hMatchedPtVsOutPhi) ;
    
   TH1F* hPrimaryP  = new TH1F(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p", cLabel.Data()), 1000,0.,10.) ;  
-  HistogramMakeUp(hPrimaryP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "L (cm)","tracks");
+  HistogramMakeUp(hPrimaryP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p (GeV/c)","tracks");
   list->AddLast(hPrimaryP) ; 
 
   TH1F* hPrimaryPt  = new TH1F(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T}", cLabel.Data()), 1000,0.,10.) ;  
@@ -943,9 +946,10 @@ void  AliAnalysisTaskTOFqaID::AddPidHisto(TList *list, Int_t charge, TString suf
   HistogramMakeUp(hExpTimePiT0Sub1GeV,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","","n. tracks used for t_{0}^{TOF}","t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}");    
   list->AddLast(hExpTimePiT0Sub1GeV) ;
 
-  TH1F* hExpTimePiFillSub = new TH1F(Form("hExpTimePiFillSub%s_%s",suffix.Data(),cLabel.Data()), "%s trk t_{TOF}-t_{#pi,exp}-t_{0,fill}; t_{TOF}-t_{#pi,exp} -_{0,fill} [ps];entries", fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  TH1F* hExpTimePiFillSub = new TH1F(Form("hExpTimePiFillSub%s_%s",suffix.Data(),cLabel.Data()), Form("%s trk t_{TOF}-t_{#pi,exp}-t_{0,fill}",cLabel.Data()), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  HistogramMakeUp(hExpTimePiFillSub,((charge>0)? kRed+2 : kBlue+2), 1, "", "","","t_{TOF}-t_{#pi,exp} -t_{0,fill} [ps]","entries");    
   list->AddLast(hExpTimePiFillSub) ;
-
+  
   TH1F* hExpTimePi = new TH1F(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{#pi,exp}",cLabel.Data()), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   HistogramMakeUp(hExpTimePi,((charge>0)? kRed+2 : kBlue+2), 1, "", "","", "t_{TOF}-t_{#pi,exp} [ps]","tracks");
   list->AddLast(hExpTimePi);
@@ -1143,7 +1147,7 @@ void AliAnalysisTaskTOFqaID::AddTofTrgHisto(TString suffix)
   HistogramMakeUp(hFiredMaxipadVsTrgPad, kBlue+2, 1, "colz", "","", "N_{pad} in trg window","N_{maxipad}");
   fHlistTrigger->AddLast(hFiredMaxipadVsTrgPad);
   
-  TH2I* hTrgMap = new TH2I(Form("hTrgMap%s",suffix.Data()), Form("Map of fired maxipads"), 72, 0, 72, 22, 0, 22);  
+  TH2I* hTrgMap = new TH2I(Form("hTrgMap%s",suffix.Data()), Form("Map of fired maxipads"), 72, 0, 72, 23, 0, 23);  
   HistogramMakeUp(hTrgMap, kBlue+2, 1, "colz", "","", "LTM","maxipad");
   fHlistTrigger->AddLast(hTrgMap);
   
@@ -1186,18 +1190,18 @@ void AliAnalysisTaskTOFqaID::FillPrimaryTrkHisto(Int_t charge, TString suffix)
   if (suffix.Contains("Trd")) {
     ((TH1F*)fHlistTRD->FindObject(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
     ((TH1F*)fHlistTRD->FindObject(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
+    ((TH2F*)fHlistTRD->FindObject(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
     if (fPt>=fMatchingMomCut) {
       ((TH1F*)fHlistTRD->FindObject(Form("hPrimaryEta%s_%s",suffix.Data(),cLabel.Data())))->Fill(fEta);
       ((TH1F*)fHlistTRD->FindObject(Form("hPrimaryPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPhi);
-      ((TH2F*)fHlistTRD->FindObject(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
     }
   } else {
     ((TH1F*)fHlist->FindObject(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
     ((TH1F*)fHlist->FindObject(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
+    ((TH2F*)fHlist->FindObject(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt); 
     if (fPt>=fMatchingMomCut) {
       ((TH1F*)fHlist->FindObject(Form("hPrimaryEta%s_%s",suffix.Data(),cLabel.Data())))->Fill(fEta);
       ((TH1F*)fHlist->FindObject(Form("hPrimaryPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPhi);
-      ((TH2F*)fHlist->FindObject(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt); 
     }
   }
   return;
@@ -1217,18 +1221,18 @@ void AliAnalysisTaskTOFqaID::FillMatchedTrkHisto(Int_t charge, TString suffix)
   if (suffix.Contains("Trd")) { 
     ((TH1F*)fHlistTRD->FindObject(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
     ((TH1F*)fHlistTRD->FindObject(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
+    ((TH2F*)fHlistTRD->FindObject(Form("hMatchedPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
     if (fPt>=fMatchingMomCut) {
       ((TH1F*)fHlistTRD->FindObject(Form("hMatchedEta%s_%s",suffix.Data(),cLabel.Data())))->Fill(fEta);
       ((TH1F*)fHlistTRD->FindObject(Form("hMatchedPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPhi);
-      ((TH2F*)fHlistTRD->FindObject(Form("hMatchedPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
     }
   } else {
     ((TH1F*)fHlist->FindObject(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
     ((TH1F*)fHlist->FindObject(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
+    ((TH2F*)fHlist->FindObject(Form("hMatchedPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
     if (fPt>=fMatchingMomCut) {
       ((TH1F*)fHlist->FindObject(Form("hMatchedEta%s_%s",suffix.Data(),cLabel.Data())))->Fill(fEta);
       ((TH1F*)fHlist->FindObject(Form("hMatchedPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPhi);
-      ((TH2F*)fHlist->FindObject(Form("hMatchedPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,fPt);
     }
   }
   return;

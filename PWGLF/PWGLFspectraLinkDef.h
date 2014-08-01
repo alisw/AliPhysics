@@ -26,6 +26,7 @@
 
 #pragma link C++ class AliAnalysisTaskSpectraAOD+;
 #pragma link C++ class AliAnalysisTaskSpectraAllChAOD+;
+#pragma link C++ class AliAnalysisTaskV2AllChAOD+;
 #pragma link C++ class AliSpectraAODEventCuts+;
 #pragma link C++ class AliSpectraAODHistoManager+;
 #pragma link C++ class AliSpectraAODPID+;

@@ -26,6 +26,7 @@
 // --- ROOT system ---
 #include "TParticle.h"
 #include "TH2F.h"
+#include "TDatabasePDG.h"
 
 //---- AliRoot system ----
 #include "AliAnaChargedParticles.h"
@@ -57,14 +58,7 @@ ClassImp(AliAnaChargedParticles)
     fhPtSPDRefit(0),         fhPtNoSPDRefit(0),         fhPtNoSPDNoRefit(0),
     fhEtaPhiSPDRefitPt02(0), fhEtaPhiNoSPDRefitPt02(0), fhEtaPhiNoSPDNoRefitPt02(0),
     fhEtaPhiSPDRefitPt3(0),  fhEtaPhiNoSPDRefitPt3(0),  fhEtaPhiNoSPDNoRefitPt3(0),
-    //MC
-    fhPtPion(0),       fhPhiPion(0),         fhEtaPion(0),
-    fhPtProton(0),     fhPhiProton(0),       fhEtaProton(0),
-    fhPtElectron(0),   fhPhiElectron(0),     fhEtaElectron(0),
-    fhPtKaon(0),       fhPhiKaon(0),         fhEtaKaon(0),
-    fhPtUnknown(0),    fhPhiUnknown(0),      fhEtaUnknown(0),
-    fhMCPt(0),         fhMCPhi(0),           fhMCEta(0),
-    fhMCRecPt(0),
+
     //TOF
     fhTOFSignal(0),    fhTOFSignalPtCut(0),  fhTOFSignalBCOK(0),
     fhPtTOFSignal(0),  fhPtTOFSignalDCACut(0),
@@ -115,6 +109,17 @@ ClassImp(AliAnaChargedParticles)
     fhPtDCAVtxInBC0PileUpNoTOFHit [i] = 0 ;
   }
   
+  // MC
+  for(Int_t imcPart = 0; imcPart < 6; imcPart++)
+  {
+    fhPtMCPart     [imcPart] = 0;
+    fhPtMCPrimPart [imcPart] = 0;
+    fhPhiMCPart    [imcPart] = 0;
+    fhPhiMCPrimPart[imcPart] = 0;
+    fhEtaMCPart    [imcPart] = 0;
+    fhEtaMCPrimPart[imcPart] = 0;
+  }
+  
   //Initialize parameters
   InitParameters();
 
@@ -128,7 +133,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   
   
   TList * outputContainer = new TList() ; 
-  outputContainer->SetName("ExampleHistos") ; 
+  outputContainer->SetName("ChargedParticleHistos") ;
   
   Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins(); Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins(); Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();
   Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
@@ -138,47 +143,47 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhNtracks->SetXTitle("# of tracks");
   outputContainer->Add(fhNtracks);
     
-  fhPt  = new TH1F ("hPt","p_T distribution", nptbins,ptmin,ptmax); 
-  fhPt->SetXTitle("p_{T} (GeV/c)");
+  fhPt  = new TH1F ("hPt","#it{p}_{T} distribution", nptbins,ptmin,ptmax); 
+  fhPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPt);
   
-  fhPtNoCut  = new TH1F ("hPtNoCut","p_T distribution, raw tracks", nptbins,ptmin,ptmax);
-  fhPtNoCut->SetXTitle("p_{T} (GeV/c)");
+  fhPtNoCut  = new TH1F ("hPtNoCut","#it{p}_{T} distribution, raw tracks", nptbins,ptmin,ptmax);
+  fhPtNoCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNoCut);
   
-  fhPtCutDCA  = new TH1F ("hPtCutDCA","p_T distribution, cut DCA", nptbins,ptmin,ptmax);
-  fhPtCutDCA->SetXTitle("p_{T} (GeV/c)");
+  fhPtCutDCA  = new TH1F ("hPtCutDCA","#it{p}_{T} distribution, cut DCA", nptbins,ptmin,ptmax);
+  fhPtCutDCA->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtCutDCA);
   
   if(fFillVertexBC0Histograms)
   {
-    fhPtCutDCABCOK  = new TH1F ("hPtCutDCABCOK","p_T distribution, DCA cut, track BC=0 or -100", nptbins,ptmin,ptmax);
-    fhPtCutDCABCOK->SetXTitle("p_{T} (GeV/c)");
+    fhPtCutDCABCOK  = new TH1F ("hPtCutDCABCOK","#it{p}_{T} distribution, DCA cut, track BC=0 or -100", nptbins,ptmin,ptmax);
+    fhPtCutDCABCOK->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtCutDCABCOK);
   }
   
   fhPhiNeg  = new TH2F ("hPhiNegative","#phi of negative charges distribution",
                         nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
   fhPhiNeg->SetYTitle("#phi (rad)");
-  fhPhiNeg->SetXTitle("p_{T} (GeV/c)");
+  fhPhiNeg->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPhiNeg);
   
   fhEtaNeg  = new TH2F ("hEtaNegative","#eta of negative charges distribution",
                         nptbins,ptmin,ptmax, netabins,etamin,etamax); 
   fhEtaNeg->SetYTitle("#eta ");
-  fhEtaNeg->SetXTitle("p_{T} (GeV/c)");
+  fhEtaNeg->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhEtaNeg);
   
   fhPhiPos  = new TH2F ("hPhiPositive","#phi of positive charges distribution",
                         nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
   fhPhiPos->SetYTitle("#phi (rad)");
-  fhPhiPos->SetXTitle("p_{T} (GeV/c)");
+  fhPhiPos->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPhiPos);
   
   fhEtaPos  = new TH2F ("hEtaPositive","#eta of positive charges distribution",
                         nptbins,ptmin,ptmax, netabins,etamin,etamax); 
   fhEtaPos->SetYTitle("#eta ");
-  fhEtaPos->SetXTitle("p_{T} (GeV/c)");
+  fhEtaPos->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhEtaPos);
   
   fhEtaPhiPos  = new TH2F ("hEtaPhiPositive","pt/eta/phi of positive charge",netabins,etamin,etamax, nphibins,phimin,phimax);
@@ -186,70 +191,80 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEtaPhiPos->SetYTitle("#phi (rad)");  
   outputContainer->Add(fhEtaPhiPos);
   
-  fhEtaPhiNeg  = new TH2F ("hEtaPhiNegative","eta vs phi of negative charge",netabins,etamin,etamax, nphibins,phimin,phimax); 
+  fhEtaPhiNeg  = new TH2F ("hEtaPhiNegative","#eta vs #phi of negative charge",netabins,etamin,etamax, nphibins,phimin,phimax); 
   fhEtaPhiNeg->SetXTitle("#eta ");
   fhEtaPhiNeg->SetYTitle("#phi (rad)");  
   outputContainer->Add(fhEtaPhiNeg);
   
   if(fFillVertexBC0Histograms)
   {
-    fhPtVtxOutBC0  = new TH1F ("hPtVtxOutBC0","p_T distribution, vertex in BC=0", nptbins,ptmin,ptmax);
-    fhPtVtxOutBC0->SetXTitle("p_{T} (GeV/c)");
+    fhPtVtxOutBC0  = new TH1F ("hPtVtxOutBC0","#it{p}_{T} distribution, vertex in BC=0", nptbins,ptmin,ptmax);
+    fhPtVtxOutBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtVtxOutBC0);
     
-    fhEtaPhiVtxOutBC0  = new TH2F ("hEtaPhiVtxOutBC0","eta vs phi of all charges with vertex in BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiVtxOutBC0  = new TH2F ("hEtaPhiVtxOutBC0","#eta vs #phi of all charges with vertex in BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
     fhEtaPhiVtxOutBC0->SetXTitle("#eta ");
     fhEtaPhiVtxOutBC0->SetYTitle("#phi (rad)");
     outputContainer->Add(fhEtaPhiVtxOutBC0);
     
-    fhPtVtxInBC0  = new TH1F ("hPtVtxInBC0","p_T distribution, vertex in BC=0", nptbins,ptmin,ptmax);
-    fhPtVtxInBC0->SetXTitle("p_{T} (GeV/c)");
+    fhPtVtxInBC0  = new TH1F ("hPtVtxInBC0","#it{p}_{T} distribution, vertex in BC=0", nptbins,ptmin,ptmax);
+    fhPtVtxInBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtVtxInBC0);
     
-    fhEtaPhiVtxInBC0  = new TH2F ("hEtaPhiVtxInBC0","eta vs phi of all charges with vertex in BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
+    fhEtaPhiVtxInBC0  = new TH2F ("hEtaPhiVtxInBC0","#eta vs #phi of all charges with vertex in BC=0",netabins,etamin,etamax, nphibins,phimin,phimax);
     fhEtaPhiVtxInBC0->SetXTitle("#eta ");
     fhEtaPhiVtxInBC0->SetYTitle("#phi (rad)");
     outputContainer->Add(fhEtaPhiVtxInBC0);
   }
   
-  fhPtSPDRefit  = new TH1F ("hPtSPDRefit","p_T distribution of tracks with SPD and ITS refit", nptbins,ptmin,ptmax);
-  fhPtSPDRefit->SetXTitle("p_{T} (GeV/c)");
+  fhPtSPDRefit  = new TH1F ("hPtSPDRefit","#it{p}_{T} distribution of tracks with SPD and ITS refit", nptbins,ptmin,ptmax);
+  fhPtSPDRefit->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtSPDRefit);
 
-  fhEtaPhiSPDRefitPt02  = new TH2F ("hEtaPhiSPDRefitPt02","eta vs phi of tracks with SPD and ITS refit, p_{T} < 2 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiSPDRefitPt02  = new TH2F ("hEtaPhiSPDRefitPt02","#eta vs #phi of tracks with SPD and ITS refit, #it{p}_{T}< 2 GeV/#it{c}",
+                                    netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiSPDRefitPt02->SetXTitle("#eta ");
   fhEtaPhiSPDRefitPt02->SetYTitle("#phi (rad)");
   outputContainer->Add(fhEtaPhiSPDRefitPt02);
   
-  fhEtaPhiSPDRefitPt3  = new TH2F ("hEtaPhiSPDRefitPt3","eta vs phi of tracks with SPD and ITS refit, p_{T} > 3 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiSPDRefitPt3  = new TH2F ("hEtaPhiSPDRefitPt3","#eta vs #phi of tracks with SPD and ITS refit, #it{p}_{T}> 3 GeV/#it{c}",
+                                   netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiSPDRefitPt3->SetXTitle("#eta ");
   fhEtaPhiSPDRefitPt3->SetYTitle("#phi (rad)");
   outputContainer->Add(fhEtaPhiSPDRefitPt3);
 
-  fhPtNoSPDRefit  = new TH1F ("hPtNoSPDRefit","p_T distribution of constrained tracks no SPD and with ITSRefit", nptbins,ptmin,ptmax);
-  fhPtNoSPDRefit->SetXTitle("p_{T} (GeV/c)");
+  fhPtNoSPDRefit  = new TH1F ("hPtNoSPDRefit","#it{p}_{T} distribution of constrained tracks no SPD and with ITSRefit",
+                              nptbins,ptmin,ptmax);
+  fhPtNoSPDRefit->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNoSPDRefit);
   
-  fhEtaPhiNoSPDRefitPt02  = new TH2F ("hEtaPhiNoSPDRefitPt02","eta vs phi of constrained tracks no SPD and with ITSRefit, p_{T} < 2 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiNoSPDRefitPt02  = new TH2F ("hEtaPhiNoSPDRefitPt02","#eta vs #phi of constrained tracks no SPD and with ITSRefit, #it{p}_{T}< 2 GeV/#it{c}",
+                                      netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiNoSPDRefitPt02->SetXTitle("#eta ");
   fhEtaPhiNoSPDRefitPt02->SetYTitle("#phi (rad)");
   outputContainer->Add(fhEtaPhiNoSPDRefitPt02);
   
-  fhEtaPhiNoSPDRefitPt3  = new TH2F ("hEtaPhiNoSPDRefitPt3","eta vs phi of of constrained tracks no SPD and with ITSRefit, p_{T} > 3 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiNoSPDRefitPt3  = new TH2F ("hEtaPhiNoSPDRefitPt3","#eta vs #phi of of constrained tracks no SPD and with ITSRefit, #it{p}_{T}> 3 GeV/#it{c}",
+                                     netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiNoSPDRefitPt3->SetXTitle("#eta ");
   fhEtaPhiNoSPDRefitPt3->SetYTitle("#phi (rad)");
   outputContainer->Add(fhEtaPhiNoSPDRefitPt3);
   
-  fhPtNoSPDNoRefit  = new TH1F ("hPtNoSPDNoRefit","p_T distribution of constrained tracks with no SPD requierement and without ITSRefit", nptbins,ptmin,ptmax);
-  fhPtNoSPDNoRefit->SetXTitle("p_{T} (GeV/c)");
+  fhPtNoSPDNoRefit  = new TH1F ("hPtNoSPDNoRefit","#it{p}_{T} distribution of constrained tracks with no SPD requierement and without ITSRefit",
+                                nptbins,ptmin,ptmax);
+  fhPtNoSPDNoRefit->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNoSPDNoRefit);
   
-  fhEtaPhiNoSPDNoRefitPt02  = new TH2F ("hEtaPhiNoSPDNoRefitPt02","eta vs phi of constrained tracks with no SPD requierement and without ITSRefit, p_{T} < 2 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiNoSPDNoRefitPt02  = new TH2F ("hEtaPhiNoSPDNoRefitPt02",
+                                        "#eta vs #phi of constrained tracks with no SPD requierement and without ITSRefit, #it{p}_{T}< 2 GeV/#it{c}",
+                                        netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiNoSPDNoRefitPt02->SetXTitle("#eta ");
   fhEtaPhiNoSPDNoRefitPt02->SetYTitle("#phi (rad)");
   outputContainer->Add(fhEtaPhiNoSPDNoRefitPt02);
   
-  fhEtaPhiNoSPDNoRefitPt3  = new TH2F ("hEtaPhiNoSPDNoRefitPt3","eta vs phi of constrained tracks with no SPD requierement and without ITSRefit, p_{T} > 3 GeV/c",netabins,etamin,etamax, nphibins,phimin,phimax);
+  fhEtaPhiNoSPDNoRefitPt3  = new TH2F ("hEtaPhiNoSPDNoRefitPt3",
+                                       "#eta vs #phi of constrained tracks with no SPD requierement and without ITSRefit, #it{p}_{T}> 3 GeV/#it{c}",
+                                       netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhiNoSPDNoRefitPt3->SetXTitle("#eta ");
   fhEtaPhiNoSPDNoRefitPt3->SetYTitle("#phi (rad)");
   outputContainer->Add(fhEtaPhiNoSPDNoRefitPt3);
@@ -283,24 +298,24 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
 
   fhPtTOFSignal  = new TH2F ("hPtTOFSignal","TOF signal", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
   fhPtTOFSignal->SetYTitle("TOF signal (ns)");
-  fhPtTOFSignal->SetXTitle("p_{T} (GeV/c)");
+  fhPtTOFSignal->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtTOFSignal);
   
   fhPtTOFSignalDCACut  = new TH2F ("hPtTOFSignalDCACut","TOF signal after DCA cut", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
   fhPtTOFSignalDCACut->SetYTitle("TOF signal (ns)");
-  fhPtTOFSignalDCACut->SetXTitle("p_{T} (GeV/c)");
+  fhPtTOFSignalDCACut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtTOFSignalDCACut);
 
   if(fFillVertexBC0Histograms)
   {
     fhPtTOFSignalVtxOutBC0  = new TH2F ("hPtTOFSignalVtxOutBC0","TOF signal, vtx BC!=0", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
     fhPtTOFSignalVtxOutBC0->SetYTitle("TOF signal (ns)");
-    fhPtTOFSignalVtxOutBC0->SetXTitle("p_{T} (GeV/c)");
+    fhPtTOFSignalVtxOutBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtTOFSignalVtxOutBC0);
     
     fhPtTOFSignalVtxInBC0  = new TH2F ("hPtTOFSignalVtxInBC0","TOF signal, vtx BC=0", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
     fhPtTOFSignalVtxInBC0->SetYTitle("TOF signal (ns)");
-    fhPtTOFSignalVtxInBC0->SetXTitle("p_{T} (GeV/c)");
+    fhPtTOFSignalVtxInBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtTOFSignalVtxInBC0);
   }
   
@@ -311,31 +326,31 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     for(Int_t i = 0 ; i < 7 ; i++)
     {
       fhPtPileUp[i]  = new TH1F(Form("hPtPileUp%s",pileUpName[i].Data()),
-                                Form("Track p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()),
+                                Form("Track #it{p}_{T}distribution, %s Pile-Up event",pileUpName[i].Data()),
                                 nptbins,ptmin,ptmax);
-      fhPtPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtPileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtPileUp[i]);
             
       fhPtTOFSignalPileUp[i]  = new TH2F(Form("hPtTOFSignalPileUp%s",pileUpName[i].Data()),
-                                         Form("Track TOF vs p_{T} distribution, %s Pile-Up event",pileUpName[i].Data()),
+                                         Form("Track TOF vs #it{p}_{T}distribution, %s Pile-Up event",pileUpName[i].Data()),
                                          nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
-      fhPtTOFSignalPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtTOFSignalPileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtTOFSignalPileUp[i]->SetXTitle("TOF signal (ns)");
       outputContainer->Add(fhPtTOFSignalPileUp[i]);
       
       if(fFillVertexBC0Histograms)
       {
         fhPtTOFSignalVtxOutBC0PileUp[i]  = new TH2F(Form("hPtTOFSignalVtxOutBC0PileUp%s",pileUpName[i].Data()),
-                                           Form("Track TOF vs p_{T} distribution, %s Pile-Up event, vtx BC!=0",pileUpName[i].Data()),
+                                           Form("Track TOF vs #it{p}_{T}distribution, %s Pile-Up event, vtx BC!=0",pileUpName[i].Data()),
                                            nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
-        fhPtTOFSignalVtxOutBC0PileUp[i]->SetXTitle("p_{T} (GeV/c)");
+        fhPtTOFSignalVtxOutBC0PileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtTOFSignalVtxOutBC0PileUp[i]->SetXTitle("TOF signal (ns)");
         outputContainer->Add(fhPtTOFSignalVtxOutBC0PileUp[i]);
 
         fhPtTOFSignalVtxInBC0PileUp[i]  = new TH2F(Form("hPtTOFSignalVtxInBC0PileUp%s",pileUpName[i].Data()),
-                                                    Form("Track TOF vs p_{T} distribution, %s Pile-Up event, vtx BC=0",pileUpName[i].Data()),
+                                                    Form("Track TOF vs #it{p}_{T}distribution, %s Pile-Up event, vtx BC=0",pileUpName[i].Data()),
                                                     nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
-        fhPtTOFSignalVtxInBC0PileUp[i]->SetXTitle("p_{T} (GeV/c)");
+        fhPtTOFSignalVtxInBC0PileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtTOFSignalVtxInBC0PileUp[i]->SetXTitle("TOF signal (ns)");
         outputContainer->Add(fhPtTOFSignalVtxInBC0PileUp[i]);
       }
@@ -390,8 +405,8 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     
   }
   
-  fhPtTOFStatus0  = new TH1F ("hPtTOFStatus0","p_T distribution of tracks not hitting TOF", nptbins,ptmin,ptmax);
-  fhPtTOFStatus0->SetXTitle("p_{T} (GeV/c)");
+  fhPtTOFStatus0  = new TH1F ("hPtTOFStatus0","#it{p}_{T} distribution of tracks not hitting TOF", nptbins,ptmin,ptmax);
+  fhPtTOFStatus0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtTOFStatus0);
   
   
@@ -409,84 +424,84 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   {
     
     fhPtDCA[i]  = new TH2F(Form("hPtDCA%s",dcaName[i].Data()),
-                           Form("Track DCA%s vs p_{T} distribution",dcaName[i].Data()),
+                           Form("Track DCA%s vs #it{p}_{T}distribution",dcaName[i].Data()),
                            nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-    fhPtDCA[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtDCA[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPtDCA[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCA[i]);
     
     fhPtDCASPDRefit[i]  = new TH2F(Form("hPtDCA%sSPDRefit",dcaName[i].Data()),
-                                        Form("Track DCA%s vs p_{T} distribution of tracks with SPD and ITS refit",dcaName[i].Data()),
+                                        Form("Track DCA%s vs #it{p}_{T}distribution of tracks with SPD and ITS refit",dcaName[i].Data()),
                                         nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-    fhPtDCASPDRefit[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtDCASPDRefit[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPtDCASPDRefit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCASPDRefit[i]);
 
     fhPtDCANoSPDRefit[i]  = new TH2F(Form("hPtDCA%sNoSPDRefit",dcaName[i].Data()),
-                                 Form("Track DCA%s vs p_{T} distributionof constrained tracks no SPD and with ITSRefit",dcaName[i].Data()),
+                                 Form("Track DCA%s vs #it{p}_{T}distributionof constrained tracks no SPD and with ITSRefit",dcaName[i].Data()),
                                  nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-    fhPtDCANoSPDRefit[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtDCANoSPDRefit[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPtDCANoSPDRefit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCANoSPDRefit[i]);
 
     fhPtDCANoSPDNoRefit[i]  = new TH2F(Form("hPtDCA%sNoSPDNoRefit",dcaName[i].Data()),
-                           Form("Track DCA%s vs p_{T} distribution, constrained tracks with no SPD requierement and without ITSRefit",dcaName[i].Data()),
+                           Form("Track DCA%s vs #it{p}_{T}distribution, constrained tracks with no SPD requierement and without ITSRefit",dcaName[i].Data()),
                            nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-    fhPtDCANoSPDNoRefit[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtDCANoSPDNoRefit[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPtDCANoSPDNoRefit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCANoSPDNoRefit[i]);
     
     if(fFillTrackBCHistograms)
     {
       fhPtDCATOFBC0[i]  = new TH2F(Form("hPtDCA%sTOFBC0",dcaName[i].Data()),
-                                   Form("Track DCA%s vs p_{T} distribution, BC=0",dcaName[i].Data()),
+                                   Form("Track DCA%s vs #it{p}_{T}distribution, BC=0",dcaName[i].Data()),
                                    nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-      fhPtDCATOFBC0[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtDCATOFBC0[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtDCATOFBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCATOFBC0[i]);
       
       fhPtDCATOFBCOut[i]  = new TH2F(Form("hPtDCA%sTOFBCOut",dcaName[i].Data()),
-                                     Form("Track DCA%s vs p_{T} distribution, BC!=0",dcaName[i].Data()),
+                                     Form("Track DCA%s vs #it{p}_{T}distribution, BC!=0",dcaName[i].Data()),
                                      nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-      fhPtDCATOFBCOut[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtDCATOFBCOut[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtDCATOFBCOut[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCATOFBCOut[i]);
     }
     
     fhPtDCANoTOFHit[i]  = new TH2F(Form("hPtDCA%sNoTOFHit",dcaName[i].Data()),
-                           Form("Track (no TOF hit) DCA%s vs p_{T} distribution",dcaName[i].Data()),
+                           Form("Track (no TOF hit) DCA%s vs #it{p}_{T}distribution",dcaName[i].Data()),
                            nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-    fhPtDCANoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtDCANoTOFHit[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPtDCANoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
     outputContainer->Add(fhPtDCANoTOFHit[i]);
 
     if(fFillVertexBC0Histograms)
     {
       fhPtDCAVtxOutBC0[i]  = new TH2F(Form("hPtDCA%sVtxOutBC0",dcaName[i].Data()),
-                                      Form("Track DCA%s vs p_{T} distribution, vertex with BC!=0",dcaName[i].Data()),
+                                      Form("Track DCA%s vs #it{p}_{T}distribution, vertex with BC!=0",dcaName[i].Data()),
                                       nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-      fhPtDCAVtxOutBC0[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtDCAVtxOutBC0[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtDCAVtxOutBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAVtxOutBC0[i]);
       
       fhPtDCAVtxOutBC0NoTOFHit[i]  = new TH2F(Form("hPtDCA%sVtxOutBC0NoTOFHit",dcaName[i].Data()),
-                                              Form("Track (no TOF hit) DCA%s vs p_{T} distribution, vertex with BC!=0",dcaName[i].Data()),
+                                              Form("Track (no TOF hit) DCA%s vs #it{p}_{T}distribution, vertex with BC!=0",dcaName[i].Data()),
                                               nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-      fhPtDCAVtxOutBC0NoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtDCAVtxOutBC0NoTOFHit[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtDCAVtxOutBC0NoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAVtxOutBC0NoTOFHit[i]);
       
       fhPtDCAVtxInBC0[i]  = new TH2F(Form("hPtDCA%sVtxInBC0",dcaName[i].Data()),
-                                      Form("Track DCA%s vs p_{T} distribution, vertex with BC==0",dcaName[i].Data()),
+                                      Form("Track DCA%s vs #it{p}_{T}distribution, vertex with BC==0",dcaName[i].Data()),
                                       nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-      fhPtDCAVtxInBC0[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtDCAVtxInBC0[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtDCAVtxInBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAVtxInBC0[i]);
       
       fhPtDCAVtxInBC0NoTOFHit[i]  = new TH2F(Form("hPtDCA%sVtxInBC0NoTOFHit",dcaName[i].Data()),
-                                              Form("Track (no TOF hit) DCA%s vs p_{T} distribution, vertex with BC==0",dcaName[i].Data()),
+                                              Form("Track (no TOF hit) DCA%s vs #it{p}_{T}distribution, vertex with BC==0",dcaName[i].Data()),
                                               nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-      fhPtDCAVtxInBC0NoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtDCAVtxInBC0NoTOFHit[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtDCAVtxInBC0NoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAVtxInBC0NoTOFHit[i]);
     }
@@ -494,56 +509,56 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     if(fFillPileUpHistograms)
     {
       fhPtDCAPileUp[i]  = new TH2F(Form("hPtDCA%sPileUp",dcaName[i].Data()),
-                             Form("Track DCA%s vs p_{T} distribution, SPD Pile-Up",dcaName[i].Data()),
+                             Form("Track DCA%s vs #it{p}_{T}distribution, SPD Pile-Up",dcaName[i].Data()),
                              nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-      fhPtDCAPileUp[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtDCAPileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtDCAPileUp[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAPileUp[i]);
       
       if(fFillTrackBCHistograms)
       {
         fhPtDCAPileUpTOFBC0[i]  = new TH2F(Form("hPtDCA%sPileUpTOFBC0",dcaName[i].Data()),
-                                           Form("Track DCA%s vs p_{T} distribution",dcaName[i].Data()),
+                                           Form("Track DCA%s vs #it{p}_{T}distribution",dcaName[i].Data()),
                                            nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-        fhPtDCAPileUpTOFBC0[i]->SetXTitle("p_{T} (GeV/c)");
+        fhPtDCAPileUpTOFBC0[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtDCAPileUpTOFBC0[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
         outputContainer->Add(fhPtDCAPileUpTOFBC0[i]);
       }
       
       fhPtDCAPileUpNoTOFHit[i]  = new TH2F(Form("hPtDCA%sPileUpNoTOFHit",dcaName[i].Data()),
-                                     Form("Track (no TOF hit) DCA%s vs p_{T} distribution, SPD Pile-Up, vertex with BC!=0",dcaName[i].Data()),
+                                     Form("Track (no TOF hit) DCA%s vs #it{p}_{T}distribution, SPD Pile-Up, vertex with BC!=0",dcaName[i].Data()),
                                      nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-      fhPtDCAPileUpNoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
+      fhPtDCAPileUpNoTOFHit[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtDCAPileUpNoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
       outputContainer->Add(fhPtDCAPileUpNoTOFHit[i]);
       
       if(fFillVertexBC0Histograms)
       {
         fhPtDCAVtxOutBC0PileUp[i]  = new TH2F(Form("hPtDCA%sPileUpVtxOutBC0",dcaName[i].Data()),
-                                              Form("Track DCA%s vs p_{T} distribution, SPD Pile-Up, vertex with BC!=0",dcaName[i].Data()),
+                                              Form("Track DCA%s vs #it{p}_{T}distribution, SPD Pile-Up, vertex with BC!=0",dcaName[i].Data()),
                                               nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-        fhPtDCAVtxOutBC0PileUp[i]->SetXTitle("p_{T} (GeV/c)");
+        fhPtDCAVtxOutBC0PileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtDCAVtxOutBC0PileUp[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
         outputContainer->Add(fhPtDCAVtxOutBC0PileUp[i]);
         
         fhPtDCAVtxOutBC0PileUpNoTOFHit[i]  = new TH2F(Form("hPtDCA%sVtxOutBC0PileUpNoTOFHit",dcaName[i].Data()),
-                                                      Form("Track (no TOF hit) DCA%s vs p_{T} distribution, SPD Pile-Up, vertex with BC!=0",dcaName[i].Data()),
+                                                      Form("Track (no TOF hit) DCA%s vs #it{p}_{T}distribution, SPD Pile-Up, vertex with BC!=0",dcaName[i].Data()),
                                                       nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-        fhPtDCAVtxOutBC0PileUpNoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
+        fhPtDCAVtxOutBC0PileUpNoTOFHit[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtDCAVtxOutBC0PileUpNoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
         outputContainer->Add(fhPtDCAVtxOutBC0PileUpNoTOFHit[i]);
         
         fhPtDCAVtxInBC0PileUp[i]  = new TH2F(Form("hPtDCA%sPileUpVtxInBC0",dcaName[i].Data()),
-                                              Form("Track DCA%s vs p_{T} distribution, SPD Pile-Up,vertex with BC==0",dcaName[i].Data()),
+                                              Form("Track DCA%s vs #it{p}_{T}distribution, SPD Pile-Up,vertex with BC==0",dcaName[i].Data()),
                                               nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-        fhPtDCAVtxInBC0PileUp[i]->SetXTitle("p_{T} (GeV/c)");
+        fhPtDCAVtxInBC0PileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtDCAVtxInBC0PileUp[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
         outputContainer->Add(fhPtDCAVtxInBC0PileUp[i]);
         
         fhPtDCAVtxInBC0PileUpNoTOFHit[i]  = new TH2F(Form("hPtDCA%sVtxInBC0PileUpNoTOFHit",dcaName[i].Data()),
-                                                      Form("Track (no TOF hit) DCA%s vs p_{T} distribution, SPD Pile-Up, vertex with BC==0",dcaName[i].Data()),
+                                                      Form("Track (no TOF hit) DCA%s vs #it{p}_{T}distribution, SPD Pile-Up, vertex with BC==0",dcaName[i].Data()),
                                                       nptbins,ptmin,ptmax,ndcabins,mindca,maxdca);
-        fhPtDCAVtxInBC0PileUpNoTOFHit[i]->SetXTitle("p_{T} (GeV/c)");
+        fhPtDCAVtxInBC0PileUpNoTOFHit[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtDCAVtxInBC0PileUpNoTOFHit[i]->SetYTitle(Form("DCA_{%s}",dcaName[i].Data()));
         outputContainer->Add(fhPtDCAVtxInBC0PileUpNoTOFHit[i]);
         
@@ -553,93 +568,66 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
 
   if(IsDataMC())
   {
-    fhPtPion  = new TH1F ("hPtMCPion","p_T distribution from #pi", nptbins,ptmin,ptmax); 
-    fhPtPion->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtPion);
-    
-    fhPhiPion  = new TH2F ("hPhiMCPion","#phi distribution from #pi",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhPhiPion->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhiPion);
-    
-    fhEtaPion  = new TH2F ("hEtaMCPion","#eta distribution from #pi",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-    fhEtaPion->SetXTitle("#eta ");
-    outputContainer->Add(fhEtaPion);
-    
-    fhPtProton  = new TH1F ("hPtMCProton","p_T distribution from proton", nptbins,ptmin,ptmax); 
-    fhPtProton->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtProton);
-    
-    fhPhiProton  = new TH2F ("hPhiMCProton","#phi distribution from proton",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhPhiProton->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhiProton);
-    
-    fhEtaProton  = new TH2F ("hEtaMCProton","#eta distribution from proton",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-    fhEtaProton->SetXTitle("#eta ");
-    outputContainer->Add(fhEtaProton);
-    
-    fhPtKaon  = new TH1F ("hPtMCKaon","p_T distribution from kaon", nptbins,ptmin,ptmax); 
-    fhPtKaon->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtKaon);
-    
-    fhPhiKaon  = new TH2F ("hPhiMCKaon","#phi distribution from kaon",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhPhiKaon->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhiKaon);
-    
-    fhEtaKaon  = new TH2F ("hEtaMCKaon","#eta distribution from kaon",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-    fhEtaKaon->SetXTitle("#eta ");
-    outputContainer->Add(fhEtaKaon);
-    
-    fhPtElectron  = new TH1F ("hPtMCElectron","p_T distribution from electron", nptbins,ptmin,ptmax); 
-    fhPtElectron->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtElectron);
-    
-    fhPhiElectron  = new TH2F ("hPhiMCElectron","#phi distribution from electron",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhPhiElectron->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhiElectron);
-    
-    fhEtaElectron  = new TH2F ("hEtaMCElectron","#eta distribution from electron",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-    fhEtaElectron->SetXTitle("#eta ");
-    outputContainer->Add(fhEtaElectron);
-    
-    fhPtUnknown  = new TH1F ("hPtMCUnknown","p_T distribution from unknown", nptbins,ptmin,ptmax); 
-    fhPtUnknown->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtUnknown);
-    
-    fhPhiUnknown  = new TH2F ("hPhiMCUnknown","#phi distribution from unknown",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhPhiUnknown->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhiUnknown);
-    
-    fhEtaUnknown  = new TH2F ("hEtaMCUnknown","#eta distribution from unknown",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-    fhEtaUnknown->SetXTitle("#eta ");
-    outputContainer->Add(fhEtaUnknown);
+    //enum mvType{kmcPion = 0, kmcProton = 1, kmcKaon = 2, kmcMuon = 3, kmcElectron = 4, kmcUnknown = 4 };
 
-    fhMCPt  = new TH1F ("hMCPt","p_T distribution from MC", nptbins,ptmin,ptmax); 
-    fhMCPt->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhMCPt);
-
-    fhMCPhi  = new TH2F ("hMCPhi","#phi distribution from MC",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-    fhMCPhi->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhMCPhi);
-   
-    fhMCEta  = new TH2F ("hMCEta","#eta distribution from MC",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-    fhMCEta->SetXTitle("#eta (rad)");
-    outputContainer->Add(fhMCEta);
-
-    fhMCRecPt  = new TH1F ("hMCRecPt","p_T distribution from Rec MC", nptbins,ptmin,ptmax); 
-    fhMCRecPt->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhMCRecPt);
+    TString histoName[] = {"Pion","Proton","Kaon","Muon","Electron","Unknown"};
+    TString titleName[] = {"#pi^{#pm}","p^{#pm}","K^{#pm}","#mu^{#pm}","e^{#pm}","x^{#pm}"};
+    
+    for(Int_t imcPart = 0; imcPart < 6; imcPart++)
+    {
+      fhPtMCPart[imcPart]  = new TH1F (Form("hPtMC%s",histoName[imcPart].Data()),
+                                       Form("reconstructed #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                       nptbins,ptmin,ptmax);
+      fhPtMCPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtMCPart[imcPart]);
+      
+      fhPhiMCPart[imcPart]  = new TH2F (Form("hPhiMC%s",histoName[imcPart].Data()),
+                                        Form("reconstructed #phi vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                        nptbins,ptmin,ptmax, nphibins,phimin,phimax);
+      fhPhiMCPart[imcPart]->SetYTitle("#phi (rad)");
+      fhPhiMCPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPhiMCPart[imcPart]);
+      
+      fhEtaMCPart[imcPart]  = new TH2F (Form("hEtaMC%s",histoName[imcPart].Data()),
+                                        Form("reconstructed #eta vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                        nptbins,ptmin,ptmax, netabins,etamin,etamax);
+      fhEtaMCPart[imcPart]->SetYTitle("#eta ");
+      fhEtaMCPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhEtaMCPart[imcPart]);
+      
+      fhPtMCPrimPart[imcPart]  = new TH1F (Form("hPtMCPrimary%s",histoName[imcPart].Data()),
+                                           Form("generated #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                           nptbins,ptmin,ptmax);
+      fhPtMCPrimPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtMCPrimPart[imcPart]);
+      
+      fhPhiMCPrimPart[imcPart]  = new TH2F (Form("hPhiMCPrimary%s",histoName[imcPart].Data()),
+                                            Form("generated #phi vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                            nptbins,ptmin,ptmax, nphibins,phimin,phimax);
+      fhPhiMCPrimPart[imcPart]->SetYTitle("#phi (rad)");
+      fhPhiMCPrimPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPhiMCPrimPart[imcPart]);
+      
+      fhEtaMCPrimPart[imcPart]  = new TH2F (Form("hEtaMCPrimary%s",histoName[imcPart].Data()),
+                                            Form("generated #eta vs #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
+                                            nptbins,ptmin,ptmax, netabins,etamin,etamax);
+      fhEtaMCPrimPart[imcPart]->SetYTitle("#eta ");
+      fhEtaMCPrimPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhEtaMCPrimPart[imcPart]);
+    }
+    
   }
   
   fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","pT of cluster vs N pile-up SPD vertex",
                                  nptbins,ptmin,ptmax,20,0,20);
   fhPtNPileUpSPDVtx->SetYTitle("# vertex ");
-  fhPtNPileUpSPDVtx->SetXTitle("p_{T} (GeV/c)");
+  fhPtNPileUpSPDVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNPileUpSPDVtx);
   
   fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","pT of cluster vs N pile-up Tracks vertex",
                                  nptbins,ptmin,ptmax, 20,0,20 );
   fhPtNPileUpTrkVtx->SetYTitle("# vertex ");
-  fhPtNPileUpTrkVtx->SetXTitle("p_{T} (GeV/c)");
+  fhPtNPileUpTrkVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNPileUpTrkVtx);
   
   if(fFillVertexBC0Histograms)
@@ -647,13 +635,13 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhPtNPileUpSPDVtxBC0  = new TH2F ("hPt_NPileUpVertSPD_BC0","pT of cluster vs N pile-up SPD vertex",
                                    nptbins,ptmin,ptmax,20,0,20);
     fhPtNPileUpSPDVtxBC0->SetYTitle("# vertex ");
-    fhPtNPileUpSPDVtxBC0->SetXTitle("p_{T} (GeV/c)");
+    fhPtNPileUpSPDVtxBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpSPDVtxBC0);
   
     fhPtNPileUpTrkVtxBC0  = new TH2F ("hPt_NPileUpVertTracks_BC0","pT of cluster vs N pile-up Tracks vertex",
                                    nptbins,ptmin,ptmax, 20,0,20 );
     fhPtNPileUpTrkVtxBC0->SetYTitle("# vertex ");
-    fhPtNPileUpTrkVtxBC0->SetXTitle("p_{T} (GeV/c)");
+    fhPtNPileUpTrkVtxBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtNPileUpTrkVtxBC0);
   }
 
@@ -1156,7 +1144,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
 } 
 
 //__________________________________________________________________
-void  AliAnaChargedParticles::MakeAnalysisFillHistograms() 
+void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
 {
   //Do analysis and fill histograms
   
@@ -1165,7 +1153,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   
   fhNtracks->Fill(GetReader()->GetTrackMultiplicity()) ;
   
-  if(GetDebug() > 0) 
+  if(GetDebug() > 0)
     printf("AliAnaChargedParticles::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   
   Float_t pt  = 0;
@@ -1205,103 +1193,129 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       if(GetReader()->IsPileUpFromEMCalAndNotSPD())    {fhPtPileUp[5]->Fill(pt);}
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(pt);}
     }
-
+    
     
     if(IsDataMC())
     {
       //Play with the MC stack if available
       Int_t mompdg = -1;
       Int_t label  = track->GetLabel();
-
-      if(label >= 0)
-	{
-	  if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
-	    {
-	      TParticle * mom = GetMCStack()->Particle(label);
-	      mompdg =TMath::Abs(mom->GetPdgCode());
-	    }
-	  else if(GetReader()->ReadAODMCParticles())
-	    {
-	      AliAODMCParticle * aodmom = 0;
-	      //Get the list of MC particles
-	      aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
-	      mompdg =TMath::Abs(aodmom->GetPdgCode());
-	    }
-	}
-
-      if(mompdg==211 || mompdg==2212 || mompdg==321 || mompdg==11){
-	if(TMath::Abs(eta) < 0.8 && phi < 3.145) fhMCRecPt->Fill(pt);
-      } 
       
-      if(mompdg==211)
+      if(label >= 0)
       {
-        fhPtPion ->Fill(pt);
-        fhPhiPion->Fill(pt, phi);
-        fhEtaPion->Fill(pt, eta);
+        if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
+        {
+          TParticle * mom = GetMCStack()->Particle(label);
+          mompdg =TMath::Abs(mom->GetPdgCode());
+        }
+        else if(GetReader()->ReadAODMCParticles())
+        {
+          AliAODMCParticle * aodmom = 0;
+          //Get the list of MC particles
+          aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles())->At(label);
+          mompdg =TMath::Abs(aodmom->GetPdgCode());
+        }
       }
-      else if(mompdg==2212)
-      {
-        fhPtProton ->Fill(pt);
-        fhPhiProton->Fill(pt, phi);
-        fhEtaProton->Fill(pt, eta);
-      }
-      else if(mompdg==321)
-      {
-        fhPtKaon ->Fill(pt);
-        fhPhiKaon->Fill(pt, phi);
-        fhEtaKaon->Fill(pt, eta);
-      }
-      else if(mompdg==11)
-      {
-        fhPtElectron ->Fill(pt);
-        fhPhiElectron->Fill(pt, phi);
-        fhEtaElectron->Fill(pt, eta);
-      }
-      else
-      {
-        fhPtUnknown ->Fill(pt);
-        fhPhiUnknown->Fill(pt, phi);
-        fhEtaUnknown->Fill(pt, eta);
-      }     
+      
+      Int_t mcType = kmcUnknown;
+      if     (mompdg==211 ) mcType = kmcPion;
+      else if(mompdg==2212) mcType = kmcProton;
+      else if(mompdg==321 ) mcType = kmcKaon;
+      else if(mompdg==11  ) mcType = kmcElectron;
+      else if(mompdg==13  ) mcType = kmcMuon;
+      
+      fhPtMCPart [mcType]->Fill(pt);
+      fhEtaMCPart[mcType]->Fill(pt,eta);
+      fhPhiMCPart[mcType]->Fill(pt,phi);
+      
     }//Work with stack also
     
   }// aod branch loop
   
   if(IsDataMC())
+  {
+    Int_t primpdg = -1;
+    TLorentzVector mom;
+
+    if(GetReader()->ReadStack())
     {
-      Int_t primpdg = -1;
-      if(GetReader()->ReadStack()) {	
-	AliStack * stack = GetMCStack();
-	if(stack) {
-	  for(Int_t i=0 ; i<stack->GetNtrack(); i++){
-	    TParticle *prim = stack->Particle(i);
-	    primpdg = TMath::Abs(prim->GetPdgCode());
-	    if(primpdg == 211 || primpdg == 2212 || primpdg == 321 || primpdg == 11){
-	      if(prim->IsPrimary() && TMath::Abs(prim->Eta()) < 0.8 && prim->Phi() < 3.145){
-		fhMCPt->Fill(prim->Pt());
-		fhMCPhi->Fill(prim->Pt(),prim->Phi());
-		fhMCEta->Fill(prim->Pt(),prim->Eta());
-	      }
-	    }
-	  }
-	}
+      AliStack * stack = GetMCStack();
+      if(!stack)
+      {
+        AliFatal("stack not available");
+        return;
       }
-      else if(GetReader()->ReadAODMCParticles()){
-	TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-	if(mcparticles){
-	  Int_t nprim = mcparticles->GetEntriesFast();
-	  for(Int_t i=0; i < nprim; i++){
-	    AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i); 
-	    primpdg = TMath::Abs(prim->GetPdgCode());
-	    if(primpdg == 211 || primpdg == 2212 || primpdg == 321 || primpdg == 11){
-	      if(prim->IsPhysicalPrimary() && TMath::Abs(prim->Eta()) < 0.8 && prim->Phi() < 3.145){
-		fhMCPt->Fill(prim->Pt());
-		fhMCPhi->Fill(prim->Pt(),prim->Phi());
-		fhMCEta->Fill(prim->Pt(),prim->Eta());
-	      }
-	    }
-	  }
-	}
+      
+      for(Int_t i = 0 ; i<stack->GetNtrack(); i++)
+      {
+        TParticle *prim = stack->Particle(i);
+        
+        //if(prim->IsPrimary())
+        if( prim->GetStatusCode() != 1  ) continue;
+        
+        Int_t charge = (Int_t )TDatabasePDG::Instance()->GetParticle(prim->GetPdgCode())->Charge();
+        if( TMath::Abs(charge) == 0 ) continue;
+        
+        primpdg = TMath::Abs(prim->GetPdgCode());
+        
+        Int_t mcType = kmcUnknown;
+        if     (primpdg==211 ) mcType = kmcPion;
+        else if(primpdg==2212) mcType = kmcProton;
+        else if(primpdg==321 ) mcType = kmcKaon;
+        else if(primpdg==11  ) mcType = kmcElectron;
+        else if(primpdg==13  ) mcType = kmcMuon;
+        
+        //printf("pdg %d, charge %f, mctype %d\n",primpdg, charge, mcType);
+        
+        prim->Momentum(mom);
+        Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+        
+        Float_t ptPrim = prim->Pt();
+        if(in) fhPtMCPrimPart [mcType]->Fill(ptPrim);
+        fhEtaMCPrimPart[mcType]->Fill(ptPrim,prim->Eta());
+        fhPhiMCPrimPart[mcType]->Fill(ptPrim,prim->Phi());
+        
+      } // particle loop
+    } // ESD
+    else if(GetReader()->ReadAODMCParticles())
+    {
+      TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
+      if(!mcparticles)
+      {
+        AliFatal("MC AOD particle list not available");
+        return;
       }
-    }
-  }
+      
+      Int_t nprim = mcparticles->GetEntriesFast();
+      for(Int_t i=0; i < nprim; i++)
+      {
+        AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
+        
+        //if(prim->IsPrimary())
+        if( prim->GetStatus() != 1) continue;
+        
+        if(TMath::Abs(prim->Charge()) == 0 ) continue;
+        
+        primpdg = TMath::Abs(prim->GetPdgCode());
+        
+        Int_t mcType = kmcUnknown;
+        if     (primpdg==211 ) mcType = kmcPion;
+        else if(primpdg==2212) mcType = kmcProton;
+        else if(primpdg==321 ) mcType = kmcKaon;
+        else if(primpdg==11  ) mcType = kmcElectron;
+        else if(primpdg==13  ) mcType = kmcMuon;
+        
+        //printf("pdg %d, charge %f, mctype %d\n",primpdg, charge, mcType);
+        
+        mom.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
+        Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+        
+        Float_t ptPrim = prim->Pt();
+        if(in) fhPtMCPrimPart [mcType]->Fill(ptPrim);
+        fhEtaMCPrimPart[mcType]->Fill(ptPrim,prim->Eta());
+        fhPhiMCPrimPart[mcType]->Fill(ptPrim,prim->Phi());
+      } // particle loop
+      
+    } // AOD
+  } // MC
+}

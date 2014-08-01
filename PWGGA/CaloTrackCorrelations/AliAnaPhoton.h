@@ -116,7 +116,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > 14) fNOriginHistograms = 14; }
   void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
-    if(n > 7)  fNPrimaryHistograms = 7; }
+    if(n > 6)  fNPrimaryHistograms = 6; }
 
   // For histograms in arrays, index in the array, corresponding to a particle
   enum mcTypes    { kmcPhoton = 0,        kmcPi0Decay = 1,       kmcOtherDecay = 2,  
@@ -125,8 +125,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
                     kmcAntiProton = 9,    kmcPrompt = 10,        kmcFragmentation = 11, 
                     kmcISR = 12,          kmcString = 13                               };  
 
-  enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay = 1,       kmcPOtherDecay = 2,  kmcPOther = 3,
-                    kmcPPrompt = 4,       kmcPFragmentation = 5,  kmcPISR = 6           };
+  enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay = 1,       kmcPOtherDecay = 2,
+                    kmcPPrompt = 3,       kmcPFragmentation = 4,  kmcPISR = 5           };
   
   enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,         
                     kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5       };  
@@ -152,7 +152,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillEMCALBCHistograms;                  // Fill eta-phi BC dependent histograms
   
   //Histograms 
-  TH1F * fhClusterCuts[10];                         //! control histogram on the different photon selection cuts
+  TH1F * fhClusterCutsE [10];                       //! control histogram on the different photon selection cuts, E
+  TH1F * fhClusterCutsPt[10];                       //! control histogram on the different photon selection cuts, pT
   TH2F * fhNCellsE;                                 //! number of cells in cluster vs E
   TH2F * fhCellsE;                                  //! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;                     //! Fraction of energy carried by cell with maximum energy
@@ -447,7 +448,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,36)
+  ClassDef(AliAnaPhoton,37)
 
 } ;
  

@@ -33,7 +33,7 @@ class TString;
 
 class TObjArray;
 
-// pt f0r V0
+// pt for V0
 const int    kN1 = 8; 
 const float  kPtBinV0[kN1+1] = {2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,7.0};
 
@@ -47,17 +47,17 @@ const double kBinCent[kNCent+1] = {0.0,5.0,10.0,20.0,40.0};
 //  Inv. Mass width as function of the centrality
 //  Linear polimomial dependence: sigma(pt) = a0 * a1*pt
 
-const double kCteK0s2010[kNCent] = {0.00367, 0.00363, 0.00358, 0.00348};
-const double kLinearK0s2010[kNCent] = {6.148E-4, 5.937E-4, 5.741E-4, 5.693E-4};
+const double kCteK0s2010[kNCent] = {0.00348, 0.00351, 0.00346, 0.00318};
+const double kLinearK0s2010[kNCent] = {8.024E-4, 7.403E-4, 7.250E-4, 7.665E-4};
 
-const double kCteK0s2011[kNCent] = {0.00354, 0.00348, 0.00360, 0.00352};
-const double kLinearK0s2011[kNCent] = {6.526E-4, 6.497E-4, 5.853E-4, 5.808E-4};
+const double kCteK0s2011[kNCent] = {0.00338, 0.00328, 0.00333, 0.00326};
+const double kLinearK0s2011[kNCent] = {8.336E-4, 8.385E-4, 7.891E-4, 7.851E-4};
 
-const double kCteLambda2010[kNCent] = {0.00113, 0.00114, 0.00119, 0.00119};
-const double kLinearLambda2010[kNCent] = {3.062E-4, 2.900E-4, 2.629E-4, 2.440E-4};
+const double kCteLambda2010[kNCent] = {0.00145, 0.00122, 0.00140, 0.00135};
+const double kLinearLambda2010[kNCent] = {2.233E-4, 2.836-4, 2.105-4, 2.076E-4};
 
-const double kCteLambda2011[kNCent] = {9.81E-4, 9.212E-4, 9.876E-4, 0.00106};
-const double kLinearLambda2011[kNCent] = {3.878E-4, 3.965E-4, 3.611E-4 , 3.351E-4};
+const double kCteLambda2011[kNCent] = {0.00130, 0.00123, 0.00114, 0.00121};
+const double kLinearLambda2011[kNCent] = {3.002E-4, 3.067E-4, 3.207E-4, 2.813E-4};
 
 const double kCteAntiLambda2010[kNCent] = {0.00109, 0.00134, 0.00117, 0.00116};
 const double kLinearAntiLambda2010[kNCent] = {3.245E-4, 2.308E-4, 2.707E-4, 2.562E-4};
@@ -101,16 +101,25 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   void SetMinCPA(Float_t minCPA=0.998) {fMinCPA=minCPA;} 
   void SetCtau(Float_t minCtau = 0., Float_t maxCtau = 3.) {fMinCtau=minCtau;fMaxCtau=maxCtau;} 
 
+  // Setting variables for splitting cut
+  void SetTPCRadius(Float_t tpcRadius=125.) {fTPCRadius=tpcRadius;}                    
+  void SetDiffSharedTPCcls(Float_t diffSharedTPCcls=0.06) {fDiffTrigDaugFracTPCSharedCls=diffSharedTPCcls;}
+
   // Getters
   Float_t GetMinCentr() { return fCentMin; }
   Float_t GetMaxCentr() { return fCentMax; }
 
   // Main functions
   virtual void     UserCreateOutputObjects();
-  virtual Bool_t   AcceptTrack(AliAODTrack *t); 
+  virtual Bool_t   AcceptTrack(const AliAODTrack *t); 
   virtual Bool_t   AcceptTrackV0(const AliAODTrack *t);
   virtual Bool_t   AcceptV0(AliAODVertex *vtx, const AliAODv0 *v0);
-  virtual void     RecCascade(AliAODTrack *trk1,const AliAODTrack *trk2,const AliAODTrack *trkBch,TString histo);
+  virtual Double_t ThetaS(TString part);
+  virtual Double_t EtaS(TString part);
+  virtual Float_t  dEtaS();
+  virtual Float_t  dPhiSAtR125();
+  virtual void     SetSftPosR125(const AliAODTrack *track,const Float_t bfield,const Float_t priVtx[3], TString part);
+  virtual void     RecCascade(const AliAODTrack *trk1,const AliAODTrack *trk2,const AliAODTrack *trkBch,TString histo);
   virtual void     V0Loop(V0LoopStep_t step, Bool_t isTriggered, Int_t iArray, Int_t idTrig);
   virtual void     TriggerParticle();
     
@@ -157,6 +166,13 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Float_t fPtV0LP;                       //  Pt of the leading V0
   Int_t   fIsSndCheck;                   //  Flag: trigger particle is the second leaidng particle
 
+  Float_t fTPCRadius;                    // Radial position of TPC to obtain the separation between the trigger particle and the daughter particle
+  Float_t fTrigSftR125[3];               // Shifted position of the daughter track to the Primary verterx
+  Float_t fDaugSftR125[3];               // Shifted position of the trigger track to the Primary verterx
+  //Float_t fTriggerFracTPCSharedCls;      // Trigger particle: fraction of shared clusters to allow
+  //Float_t fDaugFracTPCSharedCls;         // Daughter track: fraction of shared clusters to allow
+  Float_t fDiffTrigDaugFracTPCSharedCls; // Allowed dispertion in the fraction of TPC shared clusters between trigger particle and the daughter track
+
   TList*  fOutput;                       //! List of histograms for main analysis
   TList*  fOutputQA;                     //! List of histograms for Quality Assurance
   TList*  fOutputME;                     //! List of histograms for Mixed Events
@@ -171,6 +187,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fCentrality;                   //! Event centrality per centil
   TH1F*   fCentrality2;                  //! Event centrality per centil with |VtxZ|<10cm
   TH2F*   fCentralityTrig;               //! Event centrality per trigger
+  TH2F*   fPrimayVtxGlobalvsSPD;         //! Zvtx tracking vs Zvtx SPD
   TH1F*   fPrimaryVertexX;               //! Primary vertex position in X
   TH1F*   fPrimaryVertexY;               //! Primary vertex position in Y
   TH1F*   fPrimaryVertexZ;               //! Primary vertex position in Z
@@ -209,15 +226,15 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fK0sMCPt;                      //! K0s MC: pt
   TH3F*   fK0sMCPtRap;                   //! K0s MC: pt vs rapidity
   TH3F*   fK0sMCPtRap2;                  //! K0s MC: pt vs rapidity (is Natural)
-  TH3F*   fK0sMCPtRapVtx;                //! K0s MC: pt vs Z vtx position  vs centrality
+  TH3F*   fK0sMCPtRapVtx[kNCent];        //! K0s MC: pt vs Z vtx position  vs centrality
   TH3F*   fK0sMCPtRapEmbeded;            //! K0s MC: pt vs rapidity  (embeded particles)
-  TH3F*   fK0sMCPtRapVtxEmbeded;         //! K0s MC: pt vs Z vtx position rapidity  vs centrality (embeded particles)
+  TH3F*   fK0sMCPtRapVtxEmbeded[kNCent]; //! K0s MC: pt vs Z vtx position rapidity  vs centrality (embeded particles)
   TH3F*   fK0sMCPtPhiEta[kNCent];        //! K0s MC: pt vs pseudo-rapidity
 
   TH1F*   fK0sAssocPt;                         //! K0s Assoc: pt
   TH3F*   fK0sAssocPtArm;                      //! K0s Assoc: pt vs rapidity vs centrality (arm. pod. cut)
   TH3F*   fK0sAssocPtRap;                      //! K0s Assoc: pt vs rapidity vs centrality
-  TH3F*   fK0sAssocPtRapEmbeded;                      //! K0s Assoc: pt vs rapidity vs centrality  (embeded particles)
+  TH3F*   fK0sAssocPtRapEmbeded;               //! K0s Assoc: pt vs rapidity vs centrality  (embeded particles)
   TH3F*   fK0sAssocPtPhiEta[kNCent];           //! K0s Assoc: pt vs pseudo-rapidity
 
   THnSparse*  fK0sAssocPtMassArm[kNCent];          //! K0s Assoc: mass vs pt vs centrality
@@ -239,14 +256,14 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
 
   //           Lambda            //
-  TH1F*   fLambdaMCPt;                   //! Lambda MC: pt
-  TH3F*   fLambdaMCPtRap;                //! Lambda MC: pt vs rapidity
-  TH3F*   fLambdaMCPtRap2;               //! Lambda MC: pt vs rapidity  (is Natural)
-  TH3F*   fLambdaMCPtRapVtx;             //! Lambda MC: pt vs Z vtx position rapidity vs centrality
-  TH3F*   fLambdaMCPtRapEmbeded;         //! Lambda MC: pt vs rapidity (embeded particles)
-  TH3F*   fLambdaMCPtRapVtxEmbeded;      //! Lambda MC: pt vs Z vtx position vs centrality  (embeded particles)
-  TH2F*   fLambdaMCFromXi;               //! Lambda MC: coming from Xi
-  TH3F*   fLambdaMCPtPhiEta[kNCent];     //! Lambda MC: pt vs pseudo-rapidity
+  TH1F*   fLambdaMCPt;                        //! Lambda MC: pt
+  TH3F*   fLambdaMCPtRap;                     //! Lambda MC: pt vs rapidity
+  TH3F*   fLambdaMCPtRap2;                    //! Lambda MC: pt vs rapidity  (is Natural)
+  TH3F*   fLambdaMCPtRapVtx[kNCent];          //! Lambda MC: pt vs Z vtx position rapidity vs centrality
+  TH3F*   fLambdaMCPtRapEmbeded;              //! Lambda MC: pt vs rapidity (embeded particles)
+  TH3F*   fLambdaMCPtRapVtxEmbeded[kNCent];   //! Lambda MC: pt vs Z vtx position vs centrality  (embeded particles)
+  TH2F*   fLambdaMCFromXi;                    //! Lambda MC: coming from Xi
+  TH3F*   fLambdaMCPtPhiEta[kNCent];          //! Lambda MC: pt vs pseudo-rapidity
 
   TH1F*   fLambdaAssocPt;                //! Lambda Assoc: pt
   TH3F*   fLambdaAssocPtRap;             //! Lambda Assoc: pt vs rapidity
@@ -276,11 +293,11 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fAntiLambdaMCPt;                  //! AntiLambda MC: pt
   TH3F*   fAntiLambdaMCPtRap;               //! AntiLambda MC: pt vs rapidity
   TH3F*   fAntiLambdaMCPtRap2;              //! AntiLambda MC: pt vs rapidity  (is Natural)
-  TH3F*   fAntiLambdaMCPtRapVtx;            //! AntiLambda MC: pt vs rapidity vs Z vtx position
-  TH3F*   fAntiLambdaMCPtRapEmbeded;        //! AntiLambda MC: pt vs rapidity (embeded particles)
-  TH3F*   fAntiLambdaMCPtRapVtxEmbeded;     //! AntiLambda MC: pt vs rapidity  vs Z vtx position 
-  TH2F*   fAntiLambdaMCFromXi;              //! AntiLambda MC: coming from Xi
-  TH3F*   fAntiLambdaMCPtPhiEta[kNCent];    //! AntiLambda MC: pt vs pseudo-rapidity
+  TH3F*   fAntiLambdaMCPtRapVtx[kNCent];          //! AntiLambda MC: pt vs rapidity vs Z vtx position
+  TH3F*   fAntiLambdaMCPtRapEmbeded;              //! AntiLambda MC: pt vs rapidity (embeded particles)
+  TH3F*   fAntiLambdaMCPtRapVtxEmbeded[kNCent];   //! AntiLambda MC: pt vs rapidity  vs Z vtx position 
+  TH2F*   fAntiLambdaMCFromXi;                    //! AntiLambda MC: coming from Xi
+  TH3F*   fAntiLambdaMCPtPhiEta[kNCent];          //! AntiLambda MC: pt vs pseudo-rapidity
 
   TH1F*   fAntiLambdaAssocPt;                 //! AntiLambda Assoc: pt
   TH3F*   fAntiLambdaAssocPtRap;              //! AntiLambda Assoc: pt vs rapidity vscentrality
@@ -321,9 +338,13 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fK0sMassPtRap[kNCent];         //! K0s: mass vs pt vs rap vs centrality
   TH3F*   fK0sMassPtPhi;                 //! K0s: mass vs pt vs phi
 
-  TH2F*   fK0sDaughtersPt;               //! K0s: pt of daughters
-  TH3F*   fK0sDCADaugToPrimVtx;          //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
-  TH3F*   fK0sSpatialRes;                //! K0s: Spatial resolution  
+  TH2F*   fK0sDaughtersPt;                       //! K0s: pt of daughters
+  THnSparse* fK0sPosDaugdPhiSdEtaS[kNCent];      //! Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fK0sNegDaugdPhiSdEtaS[kNCent];      //! Negative daughter: delta(phi)* delta(eta)* 
+  THnSparse* fK0sPosDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fK0sNegDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  TH3F*   fK0sDCADaugToPrimVtx;                  //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
+  TH3F*   fK0sSpatialRes;                        //! K0s: Spatial resolution  
    
   TH3F*   fK0sdPhidEtaMC[kNCent*kN1];             //! K0s MC: Delta phi,Delta eta vs Z vertex position
   TH3F*   fK0sdPhidEtaPtL[kNVtxZ*kNCent*kN1];     //! K0s: Delta phi,Delta eta vs Z vertex position
@@ -347,9 +368,13 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaMassPtRap[kNCent];      //! Lambda: mass vs pt vs rap
   TH3F*   fLambdaMassPtPhi;              //! Lambda: mass vs pt vs phi 
 
-  TH2F*   fLambdaDaughtersPt;            //! Lambda: pt of daughters
-  TH3F*   fLambdaDCADaugToPrimVtx;       //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
-  TH3F*   fLambdaSpatialRes;             //! Lambda: Spatial resolution  
+  TH2F*   fLambdaDaughtersPt;                       //! Lambda: pt of daughters
+  THnSparse* fLambdaPosDaugdPhiSdEtaS[kNCent];      //! Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fLambdaNegDaugdPhiSdEtaS[kNCent];      //! Negative daughter: delta(phi)* delta(eta)* 
+  THnSparse* fLambdaPosDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fLambdaNegDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  TH3F*   fLambdaDCADaugToPrimVtx;                  //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
+  TH3F*   fLambdaSpatialRes;                        //! Lambda: Spatial resolution  
 
   TH3F*   fLambdadPhidEtaMC[kNCent*kN1];            //! Lambda MC: Delta phi,Delta eta vs Z vertex position
   TH3F*   fLambdadPhidEtaPtL[kNVtxZ*kNCent*kN1];    //! Lambda: Delta phi,Delta eta vs Z vertex position
@@ -374,9 +399,13 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaMassPtRap[kNCent];        //! AntiLambda: pt vs rap
   TH3F*   fAntiLambdaMassPtPhi;                //! Lambda: mass vs phi 
 
-  TH2F*   fAntiLambdaDaughtersPt;              //! AntiLambda: pt of daughters
-  TH3F*   fAntiLambdaDCADaugToPrimVtx;         //! AntiLambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
-  TH3F*   fAntiLambdaSpatialRes;               //! AntiLambda: Spatial resolution  
+  TH2F*   fAntiLambdaDaughtersPt;                       //! AntiLambda: pt of daughters
+  THnSparse* fAntiLambdaPosDaugdPhiSdEtaS[kNCent];      //! Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fAntiLambdaNegDaugdPhiSdEtaS[kNCent];      //! Negative daughter: delta(phi)* delta(eta)* 
+  THnSparse* fAntiLambdaPosDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fAntiLambdaNegDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  TH3F*   fAntiLambdaDCADaugToPrimVtx;                  //! AntiLambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
+  TH3F*   fAntiLambdaSpatialRes;                        //! AntiLambda: Spatial resolution  
 
   TH3F*   fAntiLambdadPhidEtaMC[kNCent*kN1];            //! AntiLambda MC: Delta phi,Delta eta vs Z vertex position
   TH3F*   fAntiLambdadPhidEtaPtL[kNVtxZ*kNCent*kN1];    //! AntiLambda: Delta phi,Delta eta vs pt of the leading particle

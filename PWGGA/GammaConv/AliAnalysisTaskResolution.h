@@ -9,7 +9,8 @@
 #include "AliLog.h"
 #include <vector>
 #include "AliV0ReaderV1.h"
-#include "AliConversionCuts.h"
+#include "AliConvEventCuts.h"
+#include "AliConversionPhotonCuts.h"
 #include "TList.h"
 #include "AliStack.h"
 #include "TClonesArray.h"
@@ -30,8 +31,12 @@ class AliAnalysisTaskResolution : public AliAnalysisTaskSE{
 		virtual void   Terminate(Option_t *);
 
 		void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
-		void SetConversionCuts(AliConversionCuts* conversionCuts,Int_t IsHeavyIon ){
+		void SetConversionCuts(AliConversionPhotonCuts* conversionCuts,Int_t IsHeavyIon ){
 			fConversionCuts=conversionCuts;
+			fIsHeavyIon = IsHeavyIon;
+		}
+		void SetEventCuts(AliConvEventCuts* conversionCuts,Int_t IsHeavyIon ){
+			fEventCuts=conversionCuts;
 			fIsHeavyIon = IsHeavyIon;
 		}
 		void SetIsMC(Bool_t isMC){fIsMC=isMC;}
@@ -44,7 +49,8 @@ class AliAnalysisTaskResolution : public AliAnalysisTaskSE{
 
 		AliV0ReaderV1 *fV0Reader;
 		TClonesArray *fConversionGammas; //Reconstructed Photons;
-		AliConversionCuts *fConversionCuts; // Cuts used by the V0Reader
+		AliConvEventCuts *fEventCuts; // Cuts used by the V0Reader
+		AliConversionPhotonCuts *fConversionCuts; // Cuts used by the V0Reader
 		TTree *fTreeEvent;
 		TTree *fTreeResolution;
 		Float_t fPrimVtxZ;
@@ -67,7 +73,7 @@ class AliAnalysisTaskResolution : public AliAnalysisTaskSE{
 		AliAnalysisTaskResolution& operator=(const AliAnalysisTaskResolution&); // not implemented
 
 
-	ClassDef(AliAnalysisTaskResolution, 1);
+	ClassDef(AliAnalysisTaskResolution, 2);
 };
 
 #endif

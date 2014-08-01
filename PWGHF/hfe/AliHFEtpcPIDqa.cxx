@@ -32,6 +32,7 @@
 #include <THnSparse.h>
 #include <TString.h>
 
+#include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
@@ -181,11 +182,10 @@ void AliHFEtpcPIDqa::Initialize(){
   fHistos = new AliHFEcollection("tpcqahistos", "Collection of TPC QA histograms");
 
   // Make common binning
-  const Int_t kNdim = 6;
+  const Int_t kNdim = 7;
   const Int_t kPIDbins = AliPID::kSPECIES + 1;
   const Int_t kSteps = 2;
   const Int_t kCentralityBins = 11;
-  const Int_t kEtabins=18;
   const Double_t kMinPID = -1;
   const Double_t kMinP = 0.;
   const Double_t kMaxPID = (Double_t)AliPID::kSPECIES;
@@ -197,17 +197,20 @@ void AliHFEtpcPIDqa::Initialize(){
   Int_t kPbins = fQAmanager->HasHighResolutionHistos() ? 1000 : 100;
   Int_t kDedxbins = fQAmanager->HasHighResolutionHistos() ? 400 : 200;
   Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 240;
- 
+  kSigmaBins = fQAmanager->HasMidResolutionHistos() ? 400 : kSigmaBins;
+  Int_t kEtabins = fQAmanager->HasHighResolutionEtaHistos() ? 27 : 18;
+
   // 1st histogram: TPC dEdx: (species, p, dEdx, step)
-  Int_t nBinsdEdx[kNdim] = {kPIDbins, kPbins, kDedxbins, kSteps, kCentralityBins, kEtabins};
-  Double_t mindEdx[kNdim] =  {kMinPID, kMinP, 0., 0., 0., kMinEta};
-  Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 200, 2., 11., kMaxEta};
-  fHistos->CreateTHnSparse("tpcDedx", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality; Eta", kNdim, nBinsdEdx, mindEdx, maxdEdx);
+  Int_t nBinsdEdx[kNdim] = {kPIDbins, kPbins, kDedxbins, kSteps, kCentralityBins, kEtabins, 50};
+  Double_t mindEdx[kNdim] =  {kMinPID, kMinP, 20., 0., 0., kMinEta, 0};
+  Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 160, 2., 11., kMaxEta, 2000};
+  fHistos->CreateTHnSparse("tpcDedx", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality; Eta; pVx contrib", kNdim, nBinsdEdx, mindEdx, maxdEdx);
+  
   // 2nd histogram: TPC sigmas: (species, p nsigma, step)
-  Int_t nBinsSigma[kNdim] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins, kEtabins};
-  Double_t minSigma[kNdim] = {kMinPID, kMinP, -12., 0., 0., kMinEta};
-  Double_t maxSigma[kNdim] = {kMaxPID, kMaxP, 12., 2., 11., kMaxEta};
-  fHistos->CreateTHnSparse("tpcnSigma", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality; Eta", kNdim, nBinsSigma, minSigma, maxSigma);
+  Int_t nBinsSigma[kNdim] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins, kEtabins, 50};
+  Double_t minSigma[kNdim] = {kMinPID, kMinP, -12., 0., 0., kMinEta, 0};
+  Double_t maxSigma[kNdim] = {kMaxPID, kMaxP, 12., 2., 11., kMaxEta, 2000};
+  fHistos->CreateTHnSparse("tpcnSigma", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality; Eta; pVx contrib", kNdim, nBinsSigma, minSigma, maxSigma);
 
   // General TPC QA
 }
@@ -232,6 +235,7 @@ void AliHFEtpcPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   contentSignal[3] = step;
   contentSignal[4] = centrality;
   contentSignal[5] = GetEta(track->GetRecTrack(), anatype);
+  contentSignal[6] = fQAmanager->HasFillMultiplicity() ? track->GetMultiplicity() : 0;
   fHistos->Fill("tpcDedx", contentSignal);
 
   contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : -100.; 

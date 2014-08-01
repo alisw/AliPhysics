@@ -450,6 +450,61 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
 }
 
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift){
+
+	// Returns true for all pions within acceptance cuts for decay into 2 photons
+	// If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+	if( !fMCStack )return kFALSE;
+
+	if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223) ) return kFALSE;
+	
+	if( fMCMother->R()>fMaxR ) return kFALSE; // cuts on distance from collision point
+
+	Double_t rapidity = 10.;
+
+	if( fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0 ){
+		rapidity=8.-fRapidityShift;
+	}
+	else{
+		rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())))-fRapidityShift;
+	}
+
+	// Rapidity Cut
+	if( abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+	// Select only -> pi+ pi- pi0
+	if( fMCMother->GetNDaughters() != 3 )return kFALSE;
+
+	TParticle *posPion = 0x0;
+	TParticle *negPion = 0x0;
+	TParticle *neutPion = 0x0;
+
+	for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+
+		TParticle* temp = (TParticle*)fMCStack->Particle( index );
+		switch( temp->GetPdgCode() ) {
+		case 211:
+			posPion      =  temp;
+			labelPosPion = index;
+			break;
+		case -211:
+			negPion      =  temp;
+			labelNegPion = index;
+			break;
+		case 111:
+			neutPion         =  temp;
+			labelNeutPion    = index;
+			break;
+		}
+	}
+
+	if( posPion && negPion && neutPion ) return kTRUE;
+	return kFALSE;
+}
+
+
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
    // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
    // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
@@ -520,8 +575,6 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
    }
    return kFALSE;
 }
-
-
 
 ///________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift)
@@ -664,7 +717,7 @@ Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysi
       if(!SetCut(cutIds(ii),fCuts[ii]))return kFALSE;
    }
 
-   //PrintCuts();
+   PrintCutsWithValues();
    return kTRUE;
 }
 ///________________________________________________________________________
@@ -781,6 +834,37 @@ void AliConversionMesonCuts::PrintCuts() {
       printf("%-30s : %d \n", fgkCutNames[ic], fCuts[ic]);
    }
 }
+
+///________________________________________________________________________
+void AliConversionMesonCuts::PrintCutsWithValues() {
+   // Print out current Cut Selection with values
+	printf("\nMeson cutnumber \n");
+	for(Int_t ic = 0; ic < kNCuts; ic++) {
+		printf("%d",fCuts[ic]);
+	}
+	printf("\n\n");
+	
+	printf("Meson cuts \n");
+	printf("\t |y| < %3.2f \n", fRapidityCutMeson);
+	printf("\t theta_{open} < %3.2f\n", fOpeningAngle);
+	if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
+	printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
+	printf("\t dca_{R, prim Vtx} > %3.2f\n", fDCARMesonPrimVtxCut); 
+	printf("\t dca_{Z, prim Vtx} > %3.2f\n\n", fDCAZMesonPrimVtxCut); 
+	
+	 printf("Meson BG settings \n");
+	 if (!fDoBG){
+		if (!fUseRotationMethodInBG  & !fUseTrackMultiplicityForBG) printf("\t BG scheme: mixing V0 mult \n");
+		if (!fUseRotationMethodInBG  & fUseTrackMultiplicityForBG) printf("\t BG scheme: mixing track mult \n");
+		if (fUseRotationMethodInBG )printf("\t BG scheme: rotation \n");
+		if (fdoBGProbability) printf("\t -> use BG probability \n");
+		if (fBackgroundHandler) printf("\t -> use new BG handler \n");
+		printf("\t depth of pool: %d\n", fNumberOfBGEvents);
+		if (fUseRotationMethodInBG )printf("\t degree's for BG rotation: %d\n", fnDegreeRotationPMForBG);
+	 }
+	 
+}
+
 
 ///________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
@@ -1431,3 +1515,89 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
    photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
    photon->SetE(photon->P());
 }
+///________________________________________________________________________
+void AliConversionMesonCuts::SmearVirtualPhoton(AliAODConversionPhoton* photon)
+{
+
+   if (photon==NULL) return;
+   Double_t facPBrem = 1.;
+   Double_t facPSig = 0.;
+
+   Double_t phi=0.;
+   Double_t theta=0.;
+   Double_t P=0.;
+
+
+   P=photon->P();
+   phi=photon->Phi();
+   if( photon->P()!=0){
+      theta=acos( photon->Pz()/ photon->P());
+   }
+
+   if( fPSigSmearing != 0. || fPSigSmearingCte!=0. ){
+      facPSig = TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.);
+   }
+
+   if( fPBremSmearing != 1.){
+      if(fBrem!=NULL){
+         facPBrem = fBrem->GetRandom();
+      }
+   }
+
+   photon->SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
+   photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
+   photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
+   
+}
+///________________________________________________________________________
+TLorentzVector AliConversionMesonCuts::SmearElectron(TLorentzVector particle)
+{
+
+   //if (particle==0) return;
+   Double_t facPBrem = 1.;
+   Double_t facPSig = 0.;
+
+   Double_t phi=0.;
+   Double_t theta=0.;
+   Double_t P=0.;
+
+
+   P=particle.P();
+   
+   
+   phi=particle.Phi();
+   if (phi < 0.) phi += 2. * TMath::Pi();
+   
+   if( particle.P()!=0){
+      theta=acos( particle.Pz()/ particle.P());
+   }
+
+   
+   Double_t fPSigSmearingHalf    =  fPSigSmearing  / 2.0;  //The parameter was set for gammas with 2 particles and here we have just one electron
+   Double_t sqrtfPSigSmearingCteHalf =  fPSigSmearingCte / 2.0 ;  //The parameter was set for gammas with 2 particles and here we have just one electron
+
+   
+   
+   if( fPSigSmearingHalf != 0. || sqrtfPSigSmearingCteHalf!=0. ){
+      facPSig = TMath::Sqrt(sqrtfPSigSmearingCteHalf*sqrtfPSigSmearingCteHalf+fPSigSmearingHalf*fPSigSmearingHalf*P*P)*fRandom.Gaus(0.,1.);
+   }
+
+   if( fPBremSmearing != 1.){
+      if(fBrem!=NULL){
+         facPBrem = fBrem->GetRandom();
+      }
+   }
+   
+   TLorentzVector SmearedParticle;
+   
+   SmearedParticle.SetXYZM( facPBrem* (1+facPSig)* P*sin(theta)*cos(phi) , facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)  , 
+			  facPBrem* (1+facPSig)* P*cos(theta) , TDatabasePDG::Instance()->GetParticle(  ::kElectron   )->Mass()) ;
+   
+   //particle.SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
+   //particle.SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
+   //particle.SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
+   
+   return SmearedParticle;
+   
+}
+

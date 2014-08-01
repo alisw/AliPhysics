@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: June 04, 2014.								      //
+	//		version: July 28, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -106,6 +106,10 @@ public:
 	void SetNonHFEangleCut(Double_t AngleCut) { fAngleCut = AngleCut; fAngleCutFlag = kTRUE;};
 	void SetNonHFEchi2Cut(Double_t Chi2Cut) { fChi2Cut = Chi2Cut; fChi2CutFlag = kTRUE;};
 	void SetNonHFEdcaCut(Double_t DCAcut) { fDCAcut = DCAcut; fDCAcutFlag = kTRUE;};
+	
+	//DCA cut main particle
+	void SetdcaCut(Double_t DCAcutr, Double_t DCAcutz) { fDCAcutr = DCAcutr; fDCAcutz = DCAcutz;};
+	
 	void SetUseEMCal() { fUseEMCal=kTRUE;};
 	void SetUseTrigger() { fUseTrigger=kTRUE;};
 	void SetUseShowerShapeCut(Bool_t UseShowerShapeCut=kFALSE) { fUseShowerShapeCut=UseShowerShapeCut;};
@@ -245,6 +249,11 @@ private:
 	TH2F				**fTPC_p;
 	TH1F				**fTPCnsigma_pt;
 	TH2F				**fTPCnsigma_p;
+	
+	TH2F				*fTPCnsigma_p_TPC;
+	TH2F				*fTPCnsigma_p_TPC_on_EMCal_acc;
+	TH2F				*fTPCnsigma_p_TPC_EoverP_cut;
+	
 	TH2F				*fTPCnsigma_pt_2D;
 	TH2F				*fShowerShapeCut;
 	TH2F				*fShowerShapeM02_EoverP;
@@ -348,6 +357,9 @@ private:
 	Double_t			fAngleCut;
 	Double_t			fChi2Cut;
 	Double_t			fDCAcut;
+	Double_t			fDCAcutr;
+	Double_t			fDCAcutz;
+	
 	Bool_t				fMassCutFlag;
 	Bool_t				fAngleCutFlag;
 	Bool_t				fChi2CutFlag;

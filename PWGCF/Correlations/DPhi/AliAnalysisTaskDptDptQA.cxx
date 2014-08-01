@@ -42,6 +42,9 @@
 #include "AliCentrality.h"
 #include "AliAnalysisTaskDptDptQA.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskDptDptQA)
 
 AliAnalysisTaskDptDptQA::AliAnalysisTaskDptDptQA()

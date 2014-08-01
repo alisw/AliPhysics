@@ -1,16 +1,16 @@
-// $Id$ 
-
 AliEmcalJetTask* AddTaskEmcalJet(
-  const UInt_t type          = AliEmcalJetTask::kAKT | AliEmcalJetTask::kFullJet | AliEmcalJetTask::kR040Jet,
-  const char *nTracks        = "Tracks",
-  const char *nClusters      = "CaloClusters",
-  const Double_t minTrPt     = 0.15,
-  const Double_t minClPt     = 0.30,
-  const Double_t ghostArea   = 0.005,
-  const Double_t radius      = 0.4,
-  const Int_t recombScheme   = 1,
-  const char *tag            = "Jet"
-
+  const UInt_t type           = AliEmcalJetTask::kAKT | AliEmcalJetTask::kFullJet | AliEmcalJetTask::kR040Jet,
+  const char *nTracks         = "Tracks",
+  const char *nClusters       = "CaloClusters",
+  const Double_t minTrPt      = 0.15,
+  const Double_t minClPt      = 0.30,
+  const Double_t ghostArea    = 0.005,
+  const Double_t radius       = 0.4,
+  const Int_t recombScheme    = 1,
+  const char *tag             = "Jet",
+  const Double_t minJetPt     = 0.,
+  const Bool_t selectPhysPrim = kFALSE,
+  const Bool_t lockTask       = kTRUE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -34,15 +34,13 @@ AliEmcalJetTask* AddTaskEmcalJet(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  Double_t minJetPt = 0;
-
   char *algoString;
   if ((type & AliEmcalJetTask::kKT) != 0) {
     algoString = "KT";
-    minJetPt = 0.1;
+    //    minJetPt = 0.1;
   } else if ((type & AliEmcalJetTask::kAKT) != 0) {
     algoString = "AKT";
-    minJetPt = 1.0;
+    //    minJetPt = 1.0;
   }
 
   char *typeString;
@@ -128,6 +126,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
     jetTask->SetRadius(radius);
   jetTask->SetGhostArea(ghostArea);
   jetTask->SetRecombScheme(recombScheme);
+  jetTask->SelectPhysicalPrimaries(selectPhysPrim);
+  if (lockTask) jetTask->SetLocked();
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -153,7 +153,10 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const Double_t minClPt     = 0.30,
   const Double_t ghostArea   = 0.005,
   const Int_t recombScheme   = 1,
-  const char *tag            = "Jet"
+  const char *tag            = "Jet",
+  const Double_t minJetPt    = 0.,
+  const Bool_t selectPhysPrim = kFALSE,
+  const Bool_t lockTask       = kTRUE
 )
 {  
   UInt_t jetType = 0;
@@ -184,5 +187,5 @@ AliEmcalJetTask* AddTaskEmcalJet(
     return NULL;
   }
 
-  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag);
+  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag, minJetPt, selectPhysPrim, lockTask);
 }

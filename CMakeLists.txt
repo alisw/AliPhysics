@@ -1,4 +1,4 @@
-# -*- mode: cmake -*-
+# -*- mode: cmake -*-/usr/share/applications/thunderbird.desktop 
 
 # Top level CMakeList.txt file for the AliRoot Build System
 #
@@ -141,7 +141,7 @@ set(BINLIBDIRS "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 # Standard Modules
 # ------------------------------
-set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS AD ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT STAT TTherminator CORRFW DPMJET TDPMjet STARLIGHT PWGPP PWG PWGCF PWGGA PWGHF PWGDQ PWGJE PWGLF PWGUD TRIGGER PYTHIA8 TAmpt OADB MFT TEvtGen FIT)
+set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS AD ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR STORAGE ANALYSIS JETAN HLT STAT TTherminator CORRFW DPMJET TDPMjet STARLIGHT PWGPP PWG PWGCF PWGGA PWGHF PWGDQ PWGJE PWGLF PWGUD TRIGGER PYTHIA8 TAmpt OADB MFT TEvtGen FIT)
 
 if(THydjet)
   list(APPEND ALIROOTMODULES THydjet)
@@ -187,7 +187,12 @@ set(LIBS ${ROOTCLIBS} ${ROOTPLIBS} ${SYSLIBS})
 
 # Configure ARVerion.h
 # ------------------------------
-#If the sources were taken from Git
+# If the sources were taken from Git
+# Sets 3 git variables
+#  - GIT_REFSPEC - complete name of the current reference
+#  - ALIROOT_BRANCH - name of the branch or tag extracted from the current reference
+#  - GIT_SHA1 - current hash in the long format
+#  - GIT_SHORT_SHA1 - current hash in the short format
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
  include(GetGitRevisionDescription)
  
@@ -195,19 +200,41 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
  
  if(GIT_FOUND)
   get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-  message(STATUS "Aliroot branch - ${GIT_REFSPEC} Revision - ${GIT_SHA1} ")
+
+  # GIT_REFSPEC is empty for detached mode = tags in detached mode or checkout to specific hash
+ 
+
+  # returns the closest reference to the current hash
+  # name of the current tag or heads/branch in the case of branches
+  git_describe(ALIROOT_GIT_TAG "--all" "--abbrev=0")
 
   STRING(REGEX REPLACE "^(.+/)(.+)/(.*)$" "\\2" BRANCH_TYPE "${GIT_REFSPEC}" )
-  
+
+  # the revision is not set in the case of a branch, it means we are doing development
+  # and the revision will trigger a reconfiguration
   if(BRANCH_TYPE STREQUAL "heads")
    set(ALIROOT_REVISION "ThisIsaBranchNoRevisionProvided")
+   STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
   else()
+   set(SHORT_BRANCH ${ALIROOT_GIT_TAG})
    set(ALIROOT_REVISION ${GIT_SHA1})
   endif()
 
-  STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
-
   set(ALIROOT_BRANCH ${SHORT_BRANCH})
+  
+  # generate the short version of the revision hash
+  execute_process(COMMAND git rev-parse --short ${GIT_SHA1} 
+                          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
+                          OUTPUT_STRIP_TRAILING_WHITESPACE 
+                          RESULT_VARIABLE res
+                          OUTPUT_VARIABLE GIT_SHORT_SHA1)
+
+  # if the rev-parse fails we set the short sha to the long initial one
+  if(NOT res EQUAL 0)
+    set(GIT_SHORT_SHA1 ${GIT_SHA1})
+  endif()
+  
+  message(STATUS "Aliroot branch/tag: \"${ALIROOT_BRANCH}\" - Revision:  \"${GIT_SHORT_SHA1}\" ")
 
  else()
   message("Git not installed. I can't tell you which revision you are using!")
@@ -216,7 +243,7 @@ else()
  message("AliRoot sources not downloaded from a Version Control System. I can't tell which revision you are using!")
 endif(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
 
-configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/FromTemplate/ARVersion.h @ONLY)
 
 string (REPLACE "-" "." ALIROOT_BRANCH_SPEC "${ALIROOT_BRANCH}")
 
@@ -323,7 +350,7 @@ set(AEXT a)
 set(LIBPATH ${CMAKE_BINARY_DIR}/lib/tgt_${ALICE_TARGET})
 set(BINPATH ${CMAKE_BINARY_DIR}/bin/tgt_${ALICE_TARGET})
 set(EXPORTDIR ${ALICE_ROOT}/include)
-#set(BINLIBDIRS -L${ALICE_ROOT}/${LIBPATH})
+set(BINLIBDIRS -L${ALICE_ROOT}/${LIBPATH})
 set(RAWDIRO ${CMAKE_BINARY_DIR}/RAW)
 set(ALIMDCSPECFILE ${RAWDIRO}/alimdc.spec)
 set(RAWDatabaseALIB ${LIBPATH}/libRAWDatabase.${AEXT})

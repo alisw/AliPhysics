@@ -98,7 +98,8 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), 
   fkSaveV0Tree      ( kFALSE ),
   fkSaveCascadeTree ( kTRUE  ),
-  fkRunVertexers    ( kTRUE  ), 
+  fkRunVertexers    ( kTRUE  ),
+  fkSkipEventSelection( kFALSE ),
   //---> Variables for fTreeEvent
   fAmplitude_V0A   (0),   
   fAmplitude_V0C   (0),   
@@ -117,6 +118,13 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fTrueMultVZEROA(0),
   fTrueMultVZEROC(0),
   fRunNumber(0),
+    fEvSel_HasAtLeastSPDVertex(0),
+    fEvSel_VtxZCut(0),
+    fEvSel_IsNotPileup(0),
+    fEvSel_IsNotPileupMV(0),
+    fEvSel_IsNotPileupInMultBins(0),
+    fEvSel_HasVtxContributor(0),
+    fEvSel_Triggered(0),
   //---> Variables for fTreeV0
 	fTreeVariableChi2V0(0),
 	fTreeVariableDcaV0Daughters(0),
@@ -306,6 +314,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fkSaveV0Tree      ( kFALSE ),
   fkSaveCascadeTree ( kTRUE  ), 
   fkRunVertexers    ( kTRUE  ),
+  fkSkipEventSelection( kFALSE ),
   //---> Variables for fTreeEvent
   fAmplitude_V0A (0),   
   fAmplitude_V0C (0), 
@@ -324,6 +333,13 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fTrueMultVZEROA(0),
   fTrueMultVZEROC(0),
   fRunNumber(0),
+    fEvSel_HasAtLeastSPDVertex(0),
+    fEvSel_VtxZCut(0),
+    fEvSel_IsNotPileup(0),
+    fEvSel_IsNotPileupMV(0),
+    fEvSel_IsNotPileupInMultBins(0),
+    fEvSel_HasVtxContributor(0),
+    fEvSel_Triggered(0),
   //---> Variables for fTreeV0
 	fTreeVariableChi2V0(0),
 	fTreeVariableDcaV0Daughters(0),
@@ -595,6 +611,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
 
   //Run Number
   fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+    
+    //Booleans for Event Selection
+    fTreeEvent->Branch("fEvSel_HasAtLeastSPDVertex", &fEvSel_HasAtLeastSPDVertex, "fEvSel_HasAtLeastSPDVertex/O");
+    fTreeEvent->Branch("fEvSel_VtxZCut", &fEvSel_VtxZCut, "fEvSel_VtxZCut/O");
+    fTreeEvent->Branch("fEvSel_IsNotPileup", &fEvSel_IsNotPileup, "fEvSel_IsNotPileup/O");
+    fTreeEvent->Branch("fEvSel_IsNotPileupMV", &fEvSel_IsNotPileupMV, "fEvSel_IsNotPileupMV/O");
+    fTreeEvent->Branch("fEvSel_IsNotPileupInMultBins", &fEvSel_IsNotPileupInMultBins, "fEvSel_IsNotPileupInMultBins/O");
+    fTreeEvent->Branch("fEvSel_HasVtxContributor", &fEvSel_HasVtxContributor, "fEvSel_HasVtxContributor/O");
+    fTreeEvent->Branch("fEvSel_Triggered", &fEvSel_Triggered, "fEvSel_Triggered/O");
+    
 
   //Create Basic V0 Output Tree
   fTreeV0 = new TTree( "fTreeV0", "V0 Candidates");
@@ -1019,6 +1045,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
    AliMCEvent  *lMCevent  = 0x0; 
    AliStack    *lMCstack  = 0x0; 
   
+    //Zero all booleans, etc
+    fEvSel_HasAtLeastSPDVertex    = kFALSE;
+    fEvSel_VtxZCut                = kFALSE;
+    fEvSel_IsNotPileup            = kFALSE;
+    fEvSel_IsNotPileupInMultBins  = kFALSE;
+    fEvSel_HasVtxContributor      = kFALSE;
+    fEvSel_Triggered              = kFALSE;
   // Connect to the InputEvent   
   // After these lines, we should have an ESD/AOD event + the number of V0s in it.
 
@@ -1069,9 +1102,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
   UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isSelected = 0;
   isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+  fEvSel_Triggered = isSelected;
   
   //Standard Min-Bias Selection
-  if ( ! isSelected ) {
+  if ( (! isSelected) && (! fkSkipEventSelection ) ) {
     PostData(1, fListHist);
     PostData(2, fTreeEvent);
     PostData(3, fTreeV0);
@@ -1095,7 +1129,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
   lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
 
   //Only accept if Tracking or SPD vertex is fine 
-  if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus() ){
+  if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus() && !fkSkipEventSelection ){
     AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
     PostData(1, fListHist); 
     PostData(2, fTreeEvent);
@@ -1103,12 +1137,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     PostData(4, fTreeCascade);
     return;
   }
-
+    
+    if(! (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus()) ){
+        //Passed selection!
+        fEvSel_HasAtLeastSPDVertex = kTRUE;
+    }
+    
   //Has SPD or Tracking Vertex
   fHistEventCounter -> Fill(2.5); 
 
   //Always do Primary Vertex Selection 
-  if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0) {
+  if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0 && !fkSkipEventSelection ) {
     AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
     PostData(1, fListHist); 
     PostData(2, fTreeEvent);
@@ -1116,6 +1155,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     PostData(4, fTreeCascade);
     return;
   }
+    
+    if(TMath::Abs(lBestPrimaryVtxPos[2]) <= 10.0 ){
+        //Passed selection!
+        fEvSel_VtxZCut = kTRUE;
+    }
 
   //Fill Event selected counter
   fHistEventCounter -> Fill(3.5);
@@ -1124,7 +1168,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
   // Check if this isn't pileup
   //------------------------------------------------
 
-  if(lESDevent->IsPileupFromSPDInMultBins() ){
+  if(lESDevent->IsPileupFromSPDInMultBins() && !fkSkipEventSelection ){
     // minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  
     //-> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
     AliWarning("Pb / Event tagged as pile-up by SPD... return !"); 
@@ -1134,6 +1178,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     PostData(4, fTreeCascade);
     return; 
   }
+    
+    if( !lESDevent->IsPileupFromSPD()           ) fEvSel_IsNotPileup           = kTRUE;
+    if( !lESDevent->IsPileupFromSPDInMultBins() ) fEvSel_IsNotPileupInMultBins = kTRUE;
+    
+    //First implementation of pileup from multi-vertexer (simple use of analysis utils)
+    //if ( !fUtils->IsPileUpMV( lESDevent ) ) fEvSel_IsNotPileupMV = kTRUE;
+    fEvSel_IsNotPileupMV = kFALSE ; //dummy
+    
   //Fill Event isn't pileup counter
   fHistEventCounter -> Fill(4.5);
 

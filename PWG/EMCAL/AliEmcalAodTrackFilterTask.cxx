@@ -1,4 +1,3 @@
-// $Id: AliEmcalAodTrackFilterTask.cxx | Fri Dec 6 10:29:20 2013 +0100 | Constantin Loizides  $
 //
 // Class to filter Aod tracks
 //
@@ -28,7 +27,7 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() :
   fAttemptProp(kFALSE),
   fAttemptPropMatch(kFALSE),
   fDist(440),
-  fTrackEfficiency(1),
+  fTrackEfficiency(0),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -51,7 +50,7 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask(const char *name) :
   fAttemptProp(kFALSE),
   fAttemptPropMatch(kFALSE),
   fDist(440),
-  fTrackEfficiency(1),
+  fTrackEfficiency(0),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -146,9 +145,9 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
       }
     }
 
-    if (fTrackEfficiency < 1) {
+    if (fTrackEfficiency) {
       Double_t r = gRandom->Rndm();
-      if (fTrackEfficiency < r)
+      if (fTrackEfficiency->Eval(track->Pt()) < r)
         continue;
     }
 
@@ -178,6 +177,7 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
       if (label == 0) 
 	AliDebug(2,Form("Track %d with label==0", iTracks));
     }
+    newt->SetLabel(label);
     if (type==0) {
       newt->SetBit(BIT(22),0);
       newt->SetBit(BIT(23),0);

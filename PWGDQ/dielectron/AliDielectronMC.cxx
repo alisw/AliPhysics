@@ -40,6 +40,7 @@
 
 #include <TClonesArray.h>
 #include <TParticle.h>
+#include <TMCProcess.h>
 
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronMC.h"
@@ -950,6 +951,61 @@ Bool_t AliDielectronMC::IsPhysicalPrimary(Int_t label) const {
   return kFALSE;
 }
 
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsSecondaryFromWeakDecay(Int_t label) const {
+  //
+  // Check if the particle with label "label" is a physical secondary from weak decay according to the
+  // definition in AliStack::IsSecondaryFromWeakDecay(Int_t label)
+  //
+  if(label<0) return kFALSE;
+  if(fAnaType==kAOD) {
+    if(!fMcArray) return kFALSE;
+    return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label)))->IsSecondaryFromWeakDecay();
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return kFALSE;
+    return fStack->IsSecondaryFromWeakDecay(label);
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsSecondaryFromMaterial(Int_t label) const {
+  //
+  // Check if the particle with label "label" is a physical secondary from weak decay according to the
+  // definition in AliStack::IsSecondaryFromMaterial(Int_t label)
+  //
+  if(label<0) return kFALSE;
+  if(fAnaType==kAOD) {
+    if(!fMcArray) return kFALSE;
+    return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label)))->IsSecondaryFromMaterial();
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return kFALSE;
+    return fStack->IsSecondaryFromMaterial(label);
+  }
+  return kFALSE;
+}
+
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::CheckGEANTProcess(Int_t label, TMCProcess process) const {
+  //
+  //  Check the GEANT process for the particle 
+  //  NOTE: for tracks the absolute label should be passed
+  //
+  if(label<0) return kFALSE;
+  if(fAnaType==kAOD) {
+    if(!fMcArray) return kFALSE;
+    UInt_t processID = static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label))->GetMCProcessCode();
+    //    printf("process: id %d --> %s \n",processID,TMCProcessName[processID]);
+    return (process==processID);
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return kFALSE;
+    AliError(Form("return of GEANT process not implemented for ESD "));
+    return kFALSE;
+  }
+  return kFALSE;
+
+}
 
 //________________________________________________________________________________
 Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const {
@@ -997,6 +1053,15 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
       // particles which are created by the interaction of final state primaries with the detector
       // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
       return (label>=GetNPrimary() && !IsPhysicalPrimary(label));
+    break;
+    case AliDielectronSignalMC::kSecondaryFromWeakDecay :          
+      // secondary particle from weak decay
+      // or particles from strange weakly decaying particles (e.g. lambda, kaons, etc.)
+      return (IsSecondaryFromWeakDecay(label));
+    break;
+    case AliDielectronSignalMC::kSecondaryFromMaterial :
+      // secondary particle from material
+      return (IsSecondaryFromMaterial(label));
     break;
     default :
       return kFALSE;
@@ -1067,7 +1132,10 @@ Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, 
     AliError(Form("Could not find MC particle with label %d",label));
     return kFALSE;
   }
-  
+
+  // check geant process if set
+  if(signalMC->GetCheckGEANTProcess() && !CheckGEANTProcess(label,signalMC->GetGEANTProcess())) return kFALSE;
+
   // check the leg
   if(!ComparePDG(part->PdgCode(),signalMC->GetLegPDG(branch),signalMC->GetLegPDGexclude(branch),signalMC->GetCheckBothChargesLegs(branch))) return kFALSE;
   if(!CheckParticleSource(label, signalMC->GetLegSource(branch))) return kFALSE;
@@ -1227,7 +1295,7 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   if(signalMC->GetGrandMotherPDG(2)!=0 || signalMC->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
     if(!mcG1 && mcM1) {
       labelG1 = GetMothersLabel(labelM1);
-      if(labelG2>-1) mcG1 = GetMCTrackFromMCEvent(labelG1);
+      if(labelG1>-1) mcG1 = GetMCTrackFromMCEvent(labelG1);
     }
     crossTerm = crossTerm && (mcG1 || signalMC->GetGrandMotherPDGexclude(2))
                 && ComparePDG((mcG1 ? mcG1->PdgCode() : 0),signalMC->GetGrandMotherPDG(2),signalMC->GetGrandMotherPDGexclude(2),signalMC->GetCheckBothChargesGrandMothers(2))
@@ -1241,8 +1309,15 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   if(signalMC->GetMothersRelation()==AliDielectronSignalMC::kDifferent) {
     motherRelation = motherRelation && !HaveSameMother(pair);
   }
- 
-  return ((directTerm || crossTerm) && motherRelation);
+
+  // check geant process if set
+  Bool_t processGEANT = kTRUE;
+  if(signalMC->GetCheckGEANTProcess()) {
+    if(!CheckGEANTProcess(labelD1,signalMC->GetGEANTProcess()) &&
+       !CheckGEANTProcess(labelD2,signalMC->GetGEANTProcess())   ) processGEANT= kFALSE;
+  }
+
+  return ((directTerm || crossTerm) && motherRelation && processGEANT);
 }
 
 

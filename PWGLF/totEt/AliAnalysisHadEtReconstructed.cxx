@@ -115,10 +115,12 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
   }
   fCentBin= -1;
   fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
-  if(fDataSet==20100){//If this is Pb+Pb or pPb
-    AliCentrality *centrality = realEvent->GetCentrality();
-    if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
-    else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+  if(fDataSet==20100||fDataSet==2011){//If this is Pb+Pb or pPb
+//     AliCentrality *centrality = realEvent->GetCentrality();
+//     if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
+//     else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+    AliCentrality *centrality =  realEvent->GetCentrality();
+    fCentBin = GetCentralityBin(fNCentBins, centrality);
     if(fCentBin ==-1){
       if(fDataSet==2013){
 	fCentBin = 19;//For pPb we don't want to throw these events out but there is no CB 19
@@ -236,7 +238,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	    corrNotID = fCorrections->GetNotIDConstCorrectionITS();
 	    corrNoID = fCorrections->GetNotIDConstCorrectionITSNoID();
 	  }
-	  if(fDataSet==20100){
+	  if(fDataSet==20100||fDataSet==2011){
 	    FillHisto2D("fbkgdVsCentralityBin",fCentBin,corrBkgd,1.0);
 	    FillHisto2D("fnotIDVsCentralityBin",fCentBin,corrNotID,1.0);
 	    FillHisto2D("fpTcutVsCentralityBin",fCentBin,fCorrections->GetpTCutCorrectionTPC(),1.0);
@@ -257,7 +259,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	    et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
    	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionPion(track->Pt(),fCentBin);}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
-	    if(corrEff>0.0&&fDataSet==20100)FillHisto2D("feffPionVsCentralityBin",fCentBin,1.0/corrEff,1.0);
+	    if(corrEff>0.0&&(fDataSet==20100||fDataSet==2011))FillHisto2D("feffPionVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	    if(track->Charge()>0.0){
 	      FillHisto2D(Form("EtDataRaw%sPiPlus",cutName->Data()),track->Pt(),track->Eta(),et);
 	      FillHisto2D(Form("EtDataCorrected%sPiPlus",cutName->Data()),track->Pt(),track->Eta(),etpartialcorrected);
@@ -272,7 +274,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	    et = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
 	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionKaon(track->Pt(),fCentBin);}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
-	    if(corrEff>0.0&&fDataSet==20100)FillHisto2D("feffKaonVsCentralityBin",fCentBin,1.0/corrEff,1.0);
+	    if(corrEff>0.0&&(fDataSet==20100||fDataSet==2011))FillHisto2D("feffKaonVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	      
 	    if(track->Charge()>0.0){
 	      FillHisto2D(Form("EtDataRaw%sKPlus",cutName->Data()),track->Pt(),track->Eta(),et);
@@ -288,7 +290,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	    et = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
 	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionProton(track->Pt(),fCentBin);}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
-	    if(corrEff>0.0&&fDataSet==20100)FillHisto2D("feffProtonVsCentralityBin",fCentBin,1.0/corrEff,1.0);
+	    if(corrEff>0.0&&(fDataSet==20100||fDataSet==2011))FillHisto2D("feffProtonVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	      
 	    if(track->Charge()>0.0){
 	      FillHisto2D(Form("EtDataRaw%sProton",cutName->Data()),track->Pt(),track->Eta(),et);
@@ -308,7 +310,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	    et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	    Float_t etProton = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
 	    Float_t etKaon = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
-	    if(corrEff>0.0&&fDataSet==20100)FillHisto2D("feffHadronVsCentralityBin",fCentBin,1.0/corrEff,1.0);
+	    if(corrEff>0.0&&(fDataSet==20100||fDataSet==2011))FillHisto2D("feffHadronVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	    etpartialcorrected = et*corrBkgd*corrEffNoID*corrNotID;
 	    etpartialcorrectedPion = et*corrBkgd*corrEffNoID;
 	    etpartialcorrectedProton = etProton*corrBkgd*corrEffNoID;
@@ -332,12 +334,14 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
   Int_t nondiff = 0;//(Int_t) AliPWG0Helper::kND;
   Int_t doublediff = 0;//(Int_t) AliPWG0Helper::kDD;
   Int_t singlediff = 0;//(Int_t) AliPWG0Helper::kSD;
-  if(fDataSet!=20100){
+  if(fDataSet!=20100 && fDataSet!=2011){
     nondiff = (Int_t) AliPWG0Helper::kND;
     doublediff = (Int_t) AliPWG0Helper::kDD;
     singlediff = (Int_t) AliPWG0Helper::kSD;
   }
-  if(eventtype == nondiff && fGoodEvent){
+//  cout<<"event type "<<eventtype<<" nondiff event type "<<nondiff<<" data set "<<fDataSet<<" good event "<<fGoodEvent<<endl;
+  if((eventtype == nondiff|| fDataSet==20100 || fDataSet==2011)  && fGoodEvent){
+    //cout<<"Filling "<<endl;
     FillHisto1D("RecoHadEtFullAcceptanceTPCND",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
     FillHisto1D("RecoPiKPEtFullAcceptanceTPCND",GetCorrectedPiKPEtFullAcceptanceTPC(),1.0);
     FillHisto1D("RecoTotEtFullAcceptanceTPCND",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
@@ -624,6 +628,7 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by even
   }
 }
 void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and adding them to the output TList
+  Float_t maxCentbinRange = fNCentBins+0.5;
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if (!man) {
@@ -713,7 +718,7 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
   Float_t maxEt = 100.0;
   Float_t minEtPiKP = 0.0;
   Float_t maxEtPiKP = 100.0;
-  if(fDataSet==20100){
+  if(fDataSet==20100||fDataSet==2011){
     maxEt=4000.0;
     maxEtPiKP = 2500;
   }
@@ -812,7 +817,7 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEtPiKP,maxEtPiKP);//et
 
 	  }
-	  if((fDataSet==20100) && type ==0 &&pid==1){//If this is Pb+Pb and full acceptance with pid
+	  if((fDataSet==20100||fDataSet==2011) && type ==0 &&pid==1){//If this is Pb+Pb and full acceptance with pid
 	    Int_t width = 5;
 	    if(fNCentBins<21) width = 10;
 	    for(Int_t i=0;i<fNCentBins;i++){
@@ -834,16 +839,16 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
   CreateHisto1D("RecoHadEtFullAcceptanceITSAssumingKaon","Reconstructing E_{T}^{had} with full acceptance for p_{T}>0.10 GeV/c assuming kaons","Reconstructed E_{T}^{had}","dN_{eve}/dE_{T}^{had}",nbinsEt*2,minEt,maxEt);
 
   //Cross checks that corrections are applied correctly
-  if(fDataSet==20100){
-    CreateHisto2D("fbkgdVsCentralityBin","f_{bkgd} vs centrality bin","centrality bin","f_{bkgd}",21,-1.5,19.5,200,0.7,1.05);//
-    CreateHisto2D("feffPionVsCentralityBin","Pion efficiency vs centrality bin","centrality bin","pion efficiency",21,-1.5,19.5,200,0,1.2);//
-    CreateHisto2D("feffHadronVsCentralityBin","Hadron efficiency vs centrality bin","centrality bin","hadron efficiency",21,-1.5,19.5,200,0,1.2);//
-    CreateHisto2D("feffKaonVsCentralityBin","Kaon efficiency vs centrality bin","centrality bin","kaon efficiency",21,-1.5,19.5,200,0,1.2);//
-    CreateHisto2D("feffProtonVsCentralityBin","Proton efficiency vs centrality bin","centrality bin","proton efficiency",21,-1.5,19.5,200,0,1.2);//
-    CreateHisto2D("fnotIDVsCentralityBin","f_{notID} vs centrality bin","centrality bin","f_{notID}",21,-1.5,19.5,50,0.95,1.05);//
-    CreateHisto2D("fpTcutVsCentralityBin","f_{pTcut} vs centrality bin","centrality bin","f_{pTcut}",21,-1.5,19.5,50,0.95,1.05);
-    CreateHisto2D("fneutralVsCentralityBin","f_{neutral} vs centrality bin","centrality bin","f_{neutral}",21,-1.5,19.5,50,0.5,1.00);
-    CreateHisto2D("ConstantCorrectionsVsCentralityBin","constant corrections vs centrality bin","centrality bin","constant corrections",21,-1.5,19.5,50,0.5,1.00);
+  if(fDataSet==20100 || fDataSet==2011){
+    CreateHisto2D("fbkgdVsCentralityBin","f_{bkgd} vs centrality bin","centrality bin","f_{bkgd}",fNCentBins,-1.5,maxCentbinRange,200,0.7,1.05);//
+    CreateHisto2D("feffPionVsCentralityBin","Pion efficiency vs centrality bin","centrality bin","pion efficiency",fNCentBins,-1.5,maxCentbinRange,200,0,1.2);//
+    CreateHisto2D("feffHadronVsCentralityBin","Hadron efficiency vs centrality bin","centrality bin","hadron efficiency",fNCentBins,-1.5,maxCentbinRange,200,0,1.2);//
+    CreateHisto2D("feffKaonVsCentralityBin","Kaon efficiency vs centrality bin","centrality bin","kaon efficiency",fNCentBins,-1.5,maxCentbinRange,200,0,1.2);//
+    CreateHisto2D("feffProtonVsCentralityBin","Proton efficiency vs centrality bin","centrality bin","proton efficiency",fNCentBins,-1.5,maxCentbinRange,200,0,1.2);//
+    CreateHisto2D("fnotIDVsCentralityBin","f_{notID} vs centrality bin","centrality bin","f_{notID}",fNCentBins,-1.5,maxCentbinRange,50,0.95,1.05);//
+    CreateHisto2D("fpTcutVsCentralityBin","f_{pTcut} vs centrality bin","centrality bin","f_{pTcut}",fNCentBins,-1.5,maxCentbinRange,50,0.95,1.05);
+    CreateHisto2D("fneutralVsCentralityBin","f_{neutral} vs centrality bin","centrality bin","f_{neutral}",fNCentBins,-1.5,maxCentbinRange,50,0.5,1.00);
+    CreateHisto2D("ConstantCorrectionsVsCentralityBin","constant corrections vs centrality bin","centrality bin","constant corrections",fNCentBins,-1.5,maxCentbinRange,50,0.5,1.00);
   }
 
   delete sTPC;

@@ -5,6 +5,8 @@
  * Derived from the:                                                      *
  *  - Original AliAnalysisTaskCheckCascade (A. Maire, G. Hippolyte)       *
  *  - Adapted to PbPb analysis (M. Nicassio)                              *
+ *  - Adapted to work on all collisidng systems (pp, PbPb and pPb),       *
+ *    ESD/AOD and experimental/MC data (D. Colella)                       *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -24,6 +26,7 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
+
 #include <Riostream.h>
 #include "THnSparse.h"
 #include "TVector3.h"
@@ -31,6 +34,9 @@ class AliAODv0;
 
 #include "AliLog.h"
 #include "AliCentrality.h"
+#include "AliHeader.h"   //for MC
+#include "AliMCEvent.h"  //for MC
+#include "AliStack.h"    //for MC
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDtrackCuts.h"
@@ -43,9 +49,19 @@ class AliAODv0;
 #include "AliCFContainer.h"
 #include "AliMultiplicity.h"
 
+#include "AliGenEventHeader.h"         //for MC
+#include "AliGenCocktailEventHeader.h" //for MC
+#include "AliGenHijingEventHeader.h"   //for MC
+#include "AliAODMCParticle.h"          //for MC
+
 #include "AliESDcascade.h"
 #include "AliAODcascade.h"
+#include "AliESDtrack.h"
 #include "AliAODTrack.h"
+#include "AliESDpid.h"
+
+using std::cout;
+using std::endl;
 
 #include "AliAnalysisTaskQAMultistrange.h"
 
@@ -55,9 +71,9 @@ ClassImp(AliAnalysisTaskQAMultistrange)
 
 //________________________________________________________________________
 AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange() 
-  : AliAnalysisTaskSE(), 
+  : AliAnalysisTaskSE           (), 
+    fisMC                       (kFALSE),
     fAnalysisType               ("ESD"), 
-    fESDtrackCuts               (0),
     fCollidingSystem            ("PbPb"),
     fPIDResponse                (0),
     fkSDDSelectionOn            (kTRUE),
@@ -76,9 +92,8 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange()
     fMinPtCutOnDaughterTracks   (0),
     fEtaCutOnDaughterTracks     (0),
 
-    
-    fCFContCascadeCuts(0)
-    
+    fCFContCascadeCuts(0),
+    fCFContCascadeMCgen(0)
 
 {
   // Dummy Constructor
@@ -87,9 +102,9 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange()
 
 //________________________________________________________________________
 AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange(const char *name) 
-  : AliAnalysisTaskSE(name),
+  : AliAnalysisTaskSE           (name),
+    fisMC                       (kFALSE),
     fAnalysisType               ("ESD"), 
-    fESDtrackCuts               (0),
     fCollidingSystem            ("PbPb"),
     fPIDResponse                (0),
     fkSDDSelectionOn            (kTRUE),
@@ -108,14 +123,14 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange(const char *name)
     fMinPtCutOnDaughterTracks   (0),
     fEtaCutOnDaughterTracks     (0),
 
-
-    fCFContCascadeCuts(0)
-    
+    fCFContCascadeCuts(0),
+    fCFContCascadeMCgen(0) 
 
 {
   // Constructor
   // Output slot #0 writes into a TList container (Cascade)
   DefineOutput(1, AliCFContainer::Class());
+  DefineOutput(2, AliCFContainer::Class());
 
   AliLog::SetClassDebugLevel("AliAnalysisTaskQAMultistrange",1);
 }
@@ -128,40 +143,37 @@ AliAnalysisTaskQAMultistrange::~AliAnalysisTaskQAMultistrange() {
   // For all TH1, 2, 3 HnSparse and CFContainer are in the fListCascade TList.
   // They will be deleted when fListCascade is deleted by the TSelector dtor
   // Because of TList::SetOwner() ...
-  if (fCFContCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadeCuts;     fCFContCascadeCuts = 0x0;  }
-  if (fESDtrackCuts)         { delete fESDtrackCuts;        fESDtrackCuts = 0x0; }
+  if (fCFContCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())  { delete fCFContCascadeCuts;     fCFContCascadeCuts = 0x0;  }
+  if (fCFContCascadeMCgen && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadeMCgen;     fCFContCascadeMCgen = 0x0;  }
 }
 
 
 
-//________________________________________________________________________
+//_____________________________________________________________
 void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects() {
   // Create histograms
   // Called once
 
- //-----------------------------------------------
- // Particle Identification Setup (new PID object)
- //-----------------------------------------------
- AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
- AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
- fPIDResponse = inputHandler->GetPIDResponse();
+  //----------------------------------------------------------------------------
+  // Option for AliLog: to suppress the extensive info prompted by a run with MC
+  //----------------------------------------------------------------------------
+  if (fisMC) AliLog::SetGlobalLogLevel(AliLog::kError);
 
+  //-----------------------------------------------
+  // Particle Identification Setup (new PID object)
+  //-----------------------------------------------
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
 
- // Only used to get the number of primary reconstructed tracks
- if (fAnalysisType == "ESD" && (! fESDtrackCuts )){
-   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
-   //Printf("CheckCascade - ESDtrackCuts set up to 2010 std ITS-TPC cuts...");
- }
-
-
- //---------------------------------------------------
- // Define the container for the topological variables
- //---------------------------------------------------
+  //---------------------------------------------------
+  // Define the container for the topological variables
+  //---------------------------------------------------
   if(! fCFContCascadeCuts) {
       // Container meant to store all the relevant distributions corresponding to the cut variables.
       // NB: overflow/underflow of variables on which we want to cut later should be 0!!! 
       const Int_t  lNbSteps      =  4 ;
-      const Int_t  lNbVariables  =  21 ;
+      const Int_t  lNbVariables  =  20; 
       //Array for the number of bins in each dimension :
       Int_t lNbBinsPerVar[lNbVariables] = {0};
       lNbBinsPerVar[0]  = 25;     //DcaCascDaughters             :  [0.0,2.4,3.0]       -> Rec.Cut = 2.0;
@@ -184,7 +196,6 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects() {
       lNbBinsPerVar[17] = 112;    //Proper lenght of V0
       lNbBinsPerVar[18] = 201;    //V0CosineOfPointingAngleToXiV
       lNbBinsPerVar[19] = 11;     //Centrality
-      lNbBinsPerVar[20] = 100;    //ESD track multiplicity
       //define the container
       fCFContCascadeCuts = new AliCFContainer("fCFContCascadeCuts","Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar );
       //Setting the bin limits 
@@ -257,7 +268,7 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects() {
       fCFContCascadeCuts->SetBinLimits(17, lBinLim16);
       //18 - V0CosineOfPointingAngleToXiV
       fCFContCascadeCuts -> SetBinLimits(18, 0.8, 1.001);
-      //19
+      //19 - Centrality
       Double_t *lBinLim19  = new Double_t[ lNbBinsPerVar[19]+1 ];
          for(Int_t i=3; i< lNbBinsPerVar[19]+1;i++)   lBinLim19[i]  = (Double_t)(i-1)*10.;
          lBinLim19[0] = 0.0; 
@@ -265,8 +276,6 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects() {
          lBinLim19[2] = 10.0;
       fCFContCascadeCuts->SetBinLimits(19,  lBinLim19 );     
       delete [] lBinLim19;
-      //20
-      fCFContCascadeCuts->SetBinLimits(20, 0.0, 6000.0);
       // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
       fCFContCascadeCuts->SetStepTitle(0, "#Xi^{-} candidates");
       fCFContCascadeCuts->SetStepTitle(1, "#bar{#Xi}^{+} candidates");
@@ -291,12 +300,69 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects() {
       fCFContCascadeCuts->SetVarTitle(15, "Y(Omega)");
       fCFContCascadeCuts->SetVarTitle(16, "mL/p (cascade) (cm)");
       fCFContCascadeCuts->SetVarTitle(17, "mL/p (V0) (cm)");
-      fCFContCascadeCuts->SetVarTitle(18,  "cos(V0 PA) in cascade to XiV");
+      fCFContCascadeCuts->SetVarTitle(18, "cos(V0 PA) in cascade to XiV");
       fCFContCascadeCuts->SetVarTitle(19, "Centrality");
-      fCFContCascadeCuts->SetVarTitle(20, "ESD track multiplicity");
   }
 
-PostData(1, fCFContCascadeCuts);
+
+  //-----------------------------------------------
+  // Define the Container for the MC generated info
+  //-----------------------------------------------
+  if(! fCFContCascadeMCgen) {
+      // Container meant to store general distributions for MC generated particles.
+      // NB: overflow/underflow of variables on which we want to cut later should be 0!!! 
+      const Int_t  lNbStepsMC      =  4 ; 
+      const Int_t  lNbVariablesMC  =  7; 
+      //Array for the number of bins in each dimension :
+      Int_t lNbBinsPerVarMC[lNbVariablesMC] = {0};
+      lNbBinsPerVarMC[0] = 100;    //Total momentum        : [0.0,10.0]
+      lNbBinsPerVarMC[1] = 100;    //Transverse momentum   : [0.0,10.0]
+      lNbBinsPerVarMC[2] = 110;    //Y                     : [-1.1,1.1]  
+      lNbBinsPerVarMC[3] = 200;    //eta                   : [-10, 10]
+      lNbBinsPerVarMC[4] = 200;    //theta                 : [-10, 190] 
+      lNbBinsPerVarMC[5] = 360;    //Phi                   : [0., 360.]
+      lNbBinsPerVarMC[6] = 11;     //Centrality
+      //define the container
+      fCFContCascadeMCgen = new AliCFContainer("fCFContCascadeMCgen","Container for MC gen cascade ", lNbStepsMC, lNbVariablesMC, lNbBinsPerVarMC );
+      //Setting the bin limits 
+      //0 - Total Momentum
+      fCFContCascadeMCgen->SetBinLimits(0, 0.0, 10.0);
+      //1 - Transverse Momentum 
+      fCFContCascadeMCgen->SetBinLimits(1, 0.0, 10.0);
+      //2 - Y
+      fCFContCascadeMCgen->SetBinLimits(2, -1.1, 1.1);
+      //3 - Eta
+      fCFContCascadeMCgen->SetBinLimits(3, -10, 10);
+      //4 - Theta
+      fCFContCascadeMCgen->SetBinLimits(4, -10, 190);
+      //5 - Phi
+      fCFContCascadeMCgen->SetBinLimits(5, 0.0, 360.0);
+      //6 - Centrality
+      Double_t *lBinLim6MC  = new Double_t[ lNbBinsPerVarMC[6]+1 ];
+         for(Int_t i=3; i< lNbBinsPerVarMC[6]+1;i++)   lBinLim6MC[i]  = (Double_t)(i-1)*10.;
+         lBinLim6MC[0] = 0.0;
+         lBinLim6MC[1] = 5.0;
+         lBinLim6MC[2] = 10.0;
+      fCFContCascadeMCgen->SetBinLimits(6,  lBinLim6MC);
+      delete [] lBinLim6MC;
+      // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
+      fCFContCascadeMCgen->SetStepTitle(0, "#Xi^{-} candidates");
+      fCFContCascadeMCgen->SetStepTitle(1, "#bar{#Xi}^{+} candidates");
+      fCFContCascadeMCgen->SetStepTitle(2, "#Omega^{-} candidates");
+      fCFContCascadeMCgen->SetStepTitle(3, "#bar{#Omega}^{+} candidates");
+      // Setting the variable title, per axis
+      fCFContCascadeMCgen->SetVarTitle(0,  "MC gen p_tot (GeV/c)");
+      fCFContCascadeMCgen->SetVarTitle(1,  "MC gen p_T (GeV/c)");
+      fCFContCascadeMCgen->SetVarTitle(2,  "MC gen Rapidity");
+      fCFContCascadeMCgen->SetVarTitle(3,  "MC gen Pseudo-rapidity");
+      fCFContCascadeMCgen->SetVarTitle(4,  "MC gen Theta");
+      fCFContCascadeMCgen->SetVarTitle(5,  "MC gen Phi");
+      fCFContCascadeMCgen->SetVarTitle(6,  "MC gen Centrality");
+  }
+ 
+
+  PostData(1, fCFContCascadeCuts);
+  PostData(2, fCFContCascadeMCgen);
 
 }// end UserCreateOutputObjects
 
@@ -304,62 +370,82 @@ PostData(1, fCFContCascadeCuts);
 //________________________________________________________________________
 void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
 
+
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   // Main loop (called for each event)
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  //-----------------------
-  //Define ESD/AOD handlers 
-  AliESDEvent *lESDevent = 0x0;
-  AliAODEvent *lAODevent = 0x0;
+  //------------------------
+  // Define ESD/AOD handlers
+  //------------------------ 
+  AliESDEvent  *lESDevent = 0x0;
+  AliAODEvent  *lAODevent = 0x0;
+  AliMCEvent   *lMCevent  = 0x0; //for MC
+  AliStack     *lMCstack  = 0x0; //for MC
+  TClonesArray *arrayMC   = 0;   //for MC  
 
-  //---------------------
-  //Check the PIDresponse
+  //++++++++++++++++
+  // Starting checks
+  //++++++++++++++++
+
+  //----------------------
+  // Check the PIDresponse
+  //----------------------
   if(!fPIDResponse) {
        AliError("Cannot get pid response");
        return;
   }
 
-  //__________________________________________________
-  // After these lines we should have an ESD/AOD event
-
-  //---------------------------------------------------------
-  //Load the InputEvent and check, before any event selection	
-  //---------------------------------------------------------
-  Float_t  lPrimaryTrackMultiplicity = -1.;
-  AliCentrality* centrality = 0;
+  //---------------------
+  // Check the InputEvent 
+  //---------------------	
   if (fAnalysisType == "ESD") {
       lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
       if (!lESDevent) {
           AliWarning("ERROR: lESDevent not available \n");
           return;
       }
-      if (fCollidingSystem == "PbPb") lPrimaryTrackMultiplicity = fESDtrackCuts->CountAcceptedTracks(lESDevent);
-      if (fCollidingSystem == "PbPb" || fCollidingSystem == "pPb") centrality = lESDevent->GetCentrality();
-      
+      if (fisMC) {
+          lMCevent = MCEvent();
+          if (!lMCevent) {
+              Printf("ERROR: Could not retrieve MC event \n");
+              cout << "Name of the file with pb :" << CurrentFileName() << endl;
+              return;
+          }
+          lMCstack = lMCevent->Stack();
+          if (!lMCstack) {
+              Printf("ERROR: Could not retrieve MC stack \n");
+              cout << "Name of the file with pb :" << CurrentFileName() << endl;
+              return;
+          }
+      }
   } else if (fAnalysisType == "AOD") {
       lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
       if (!lAODevent) {
           AliWarning("ERROR: lAODevent not available \n");
           return;
       }
-      if (fCollidingSystem == "PbPb") {
-          lPrimaryTrackMultiplicity = 0;
-          Int_t    nTrackMultiplicity = (InputEvent())->GetNumberOfTracks();
-          for (Int_t itrack = 0; itrack < nTrackMultiplicity; itrack++) {
-               AliAODTrack* track = lAODevent->GetTrack(itrack);
-               if (track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) lPrimaryTrackMultiplicity++; 
-          }
+      if (fisMC) {
+          arrayMC = (TClonesArray*) lAODevent->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+          if (!arrayMC) AliFatal("Error: MC particles branch not found!\n");
       }
-      if (fCollidingSystem == "PbPb" || fCollidingSystem == "pPb") centrality = lAODevent->GetCentrality();
   } else {
     Printf("Analysis type (ESD or AOD) not specified \n");
     return;
   }
 
-  //-----------------------------------------
-  // Centrality selection for PbPb collisions
-  //-----------------------------------------
+
+  //+++++++++++++++++
+  // Event Selections
+  //+++++++++++++++++
+
+  //----------------------------------------------------------
+  // Centrality/Multiplicity selection for PbPb/pPb collisions
+  //----------------------------------------------------------
+  // -- Centrality
+  AliCentrality* centrality = 0;
+  if      (fAnalysisType == "ESD" && (fCollidingSystem == "PbPb" || fCollidingSystem == "pPb")) centrality = lESDevent->GetCentrality();
+  else if (fAnalysisType == "AOD" && (fCollidingSystem == "PbPb" || fCollidingSystem == "pPb")) centrality = lAODevent->GetCentrality();
   Float_t lcentrality = 0.;
   if (fCollidingSystem == "PbPb" || fCollidingSystem == "pPb") { 
        if (fkUseCleaning) lcentrality = centrality->GetCentralityPercentile(fCentrEstimator.Data());
@@ -370,89 +456,107 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
                return;
            }
        }
-       if (lcentrality<fCentrLowLim||lcentrality>=fCentrUpLim) { 
-           PostData(1, fCFContCascadeCuts);
-           return;
-       }
+       //if (lcentrality<fCentrLowLim||lcentrality>=fCentrUpLim) { 
+       //    PostData(1, fCFContCascadeCuts);
+       //    return;
+       //}
   } else if (fCollidingSystem == "pp") lcentrality = 0.;
 
-
-  //----------------------------------------
-  // SDD selection for pp@2.76TeV collisions
-  //----------------------------------------
-  if (fCollidingSystem == "pp") {
-      if (fAnalysisType == "ESD") {
-          if (fkSDDSelectionOn) {
-              TString trcl = lESDevent->GetFiredTriggerClasses();
-              if      (fwithSDD) { if(!(trcl.Contains("ALLNOTRD"))) { PostData(1, fCFContCascadeCuts); return; } }
-              else if (!fwithSDD){ if((trcl.Contains("ALLNOTRD")))  { PostData(1, fCFContCascadeCuts); return; } }
-          }
-      } else if (fAnalysisType == "AOD") {
-          if (fkSDDSelectionOn) {
-              TString trcl = lAODevent->GetFiredTriggerClasses();
-              if      (fwithSDD)  { if(!(trcl.Contains("ALLNOTRD"))) { PostData(1, fCFContCascadeCuts); return; } }
-              else if (!fwithSDD) { if((trcl.Contains("ALLNOTRD")))  { PostData(1, fCFContCascadeCuts); return; } }
-          }
-      }
+  //---------------------
+  // SDD status selection 
+  //---------------------
+  if (fkSDDSelectionOn && fAnalysisType == "ESD") {
+       TString trcl = lESDevent->GetFiredTriggerClasses();
+       if      (fwithSDD) { if(!(trcl.Contains("ALLNOTRD"))) { PostData(1, fCFContCascadeCuts); return; } }
+       else if (!fwithSDD){ if((trcl.Contains("ALLNOTRD")))  { PostData(1, fCFContCascadeCuts); return; } }
+  } else if (fkSDDSelectionOn && fAnalysisType == "AOD") {
+       TString trcl = lAODevent->GetFiredTriggerClasses();
+       if      (fwithSDD)  { if(!(trcl.Contains("ALLNOTRD"))) { PostData(1, fCFContCascadeCuts); return; } }
+       else if (!fwithSDD) { if((trcl.Contains("ALLNOTRD")))  { PostData(1, fCFContCascadeCuts); return; } }
   }
 
-  //--------------------------------------------
-  // Physics selection for pp@2.76TeV collisions
-  //--------------------------------------------
-  // - moved to the runGrid for the PbPb collisions
-  if (fCollidingSystem == "pp") {
-      if (fAnalysisType == "ESD") {
-          UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-          Bool_t isSelected = 0;
-          isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
-          if(! isSelected){ PostData(1, fCFContCascadeCuts); return; }
-      } else if (fAnalysisType == "AOD") {
-          UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-          Bool_t isSelected = 0;
-          isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
-          if(! isSelected){ PostData(1, fCFContCascadeCuts); return; }
-      }
-  }
+  //------------------
+  // Physics selection 
+  //------------------
+  UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  Bool_t isSelected = 0;
+  if      (fCollidingSystem == "pp" || fCollidingSystem == "PbPb") isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+  else if (fCollidingSystem == "pPb")                              isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+  if (!isSelected){ PostData(1, fCFContCascadeCuts); return; }
 
   //------------------------------
   // Well-established PV selection
   //------------------------------
   Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0}; 
   Double_t lMagneticField        = -10.;
-  if (fAnalysisType == "ESD") {
-       const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();   
-       const AliESDVertex *lPrimaryBestESDVtx = lESDevent->GetPrimaryVertex();	
-       if (fkQualityCutNoTPConlyPrimVtx) {
-           const AliESDVertex *lPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
-           if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus() ){
-               AliWarning(" No SPD prim. vertex nor prim. Tracking vertex ... return !");
-               PostData(1, fCFContCascadeCuts);
-               return;
-           }
-       }
-       lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-       lMagneticField = lESDevent->GetMagneticField( );
-  } else if (fAnalysisType == "AOD") {
-       const AliAODVertex *lPrimaryBestAODVtx = lAODevent->GetPrimaryVertex();
-       if (!lPrimaryBestAODVtx){
-           AliWarning("No prim. vertex in AOD... return!");
-           PostData(1, fCFContCascadeCuts);
-           return;
-       }
-       lPrimaryBestAODVtx->GetXYZ( lBestPrimaryVtxPos );
-       lMagneticField = lAODevent->GetMagneticField();  
-  }
-
-  //------------------------------------------
-  // Pilup selection for pp@2.76TeV collisions
-  //------------------------------------------
-  if (fCollidingSystem == "pp") { 
+  if (fCollidingSystem == "PbPb" || fCollidingSystem == "pp") {
       if (fAnalysisType == "ESD") {
-          if (fkQualityCutPileup) { if(lESDevent->IsPileupFromSPD()){ PostData(1, fCFContCascadeCuts); return; } }
+          const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();   
+          const AliESDVertex *lPrimaryBestESDVtx = lESDevent->GetPrimaryVertex();	
+          if (fkQualityCutNoTPConlyPrimVtx) {
+              const AliESDVertex *lPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
+              if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus() ){
+                  AliWarning(" No SPD prim. vertex nor prim. Tracking vertex ... return !");
+                  PostData(1, fCFContCascadeCuts);
+                  return;
+              }
+          }
+          lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
       } else if (fAnalysisType == "AOD") {
-          if (fkQualityCutPileup) { if(lAODevent->IsPileupFromSPD()){ PostData(1, fCFContCascadeCuts); return; } }
+          const AliAODVertex *lPrimaryBestAODVtx = lAODevent->GetPrimaryVertex();
+          if (!lPrimaryBestAODVtx){
+              AliWarning("No prim. vertex in AOD... return!");
+              PostData(1, fCFContCascadeCuts);
+              return;
+          }
+          lPrimaryBestAODVtx->GetXYZ( lBestPrimaryVtxPos );
+      }
+  } else if (fCollidingSystem == "pPb") {
+      if (fAnalysisType == "ESD") {
+          Bool_t fHasVertex = kFALSE;
+          const AliESDVertex *vertex = lESDevent->GetPrimaryVertexTracks();
+          if (vertex->GetNContributors() < 1) {
+              vertex = lESDevent->GetPrimaryVertexSPD();
+              if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
+              else fHasVertex = kTRUE;
+              TString vtxTyp = vertex->GetTitle();
+              Double_t cov[6]={0};
+              vertex->GetCovarianceMatrix(cov);
+              Double_t zRes = TMath::Sqrt(cov[5]);
+              if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
+          }
+          else fHasVertex = kTRUE;
+          if (fHasVertex == kFALSE) { //Is First event in chunk rejection: Still present!
+              AliWarning("Pb / | PV does not satisfy selection criteria!");
+              PostData(1, fCFContCascadeCuts);
+              return;
+          }
+          vertex->GetXYZ( lBestPrimaryVtxPos );
+      } else if (fAnalysisType == "AOD") {
+          Bool_t fHasVertex = kFALSE;
+          const AliAODVertex *vertex = lAODevent->GetPrimaryVertex();
+          if (vertex->GetNContributors() < 1) {
+              vertex = lAODevent->GetPrimaryVertexSPD();
+              if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
+              else fHasVertex = kTRUE;
+              TString vtxTyp = vertex->GetTitle();
+              Double_t cov[6]={0};
+              vertex->GetCovarianceMatrix(cov);
+              Double_t zRes = TMath::Sqrt(cov[5]);
+              if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
+          }   
+          else fHasVertex = kTRUE;
+          if (fHasVertex == kFALSE) { //Is First event in chunk rejection: Still present!
+              AliWarning("Pb / | PV does not satisfy selection criteria!");
+              PostData(1, fCFContCascadeCuts);
+              return;
+          }   
+          vertex->GetXYZ( lBestPrimaryVtxPos );
       }
   }
+  // -- Magnetic field
+  if      (fAnalysisType == "ESD") lMagneticField = lESDevent->GetMagneticField();
+  else if (fAnalysisType == "AOD") lMagneticField = lAODevent->GetMagneticField();
 
   //----------------------------
   // Vertex Z position selection
@@ -464,6 +568,98 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
       }
   }
 
+  //-----------------------
+  // Pilup selection for pp
+  //-----------------------
+  if (fCollidingSystem == "pp") {
+      if (fAnalysisType == "ESD") {
+          if (fkQualityCutPileup) { if(lESDevent->IsPileupFromSPD()){ PostData(1, fCFContCascadeCuts); return; } }
+      } else if (fAnalysisType == "AOD") {
+          if (fkQualityCutPileup) { if(lAODevent->IsPileupFromSPD()){ PostData(1, fCFContCascadeCuts); return; } }
+      }
+  }
+
+
+  ////////////////////////////               
+  // MC GENERATED CASCADE PART
+  ////////////////////////////
+
+  //%%%%%%%%%%%%%%%%%
+  // Gen cascade loop
+  if (fisMC) {
+
+      Int_t lNbMCPrimary = 0;
+      if      (fAnalysisType == "ESD") lNbMCPrimary = lMCstack->GetNprimary();    //lMCstack->GetNprimary(); or lMCstack->GetNtrack();
+      else if (fAnalysisType == "AOD") lNbMCPrimary = arrayMC->GetEntries();
+ 
+      for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < lNbMCPrimary; iCurrentLabelStack++) {
+
+           Double_t partP      = 0.;
+           Double_t partPt     = 0.;
+           Double_t partEta    = 0.;
+           Double_t partTheta  = 0.;
+           Double_t partPhi    = 0.;
+           Double_t partRap    = 0.;
+           Double_t partEnergy = 0.; //for Rapidity
+           Double_t partPz     = 0.; //for Rapidity
+           Int_t    PDGcode    = 0;
+
+           if ( fAnalysisType == "ESD" ) {
+               TParticle* lCurrentParticlePrimary = 0x0;
+               lCurrentParticlePrimary = lMCstack->Particle( iCurrentLabelStack );
+               if (!lCurrentParticlePrimary) {
+                   Printf("Cascade loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
+                   continue;
+               }
+               if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) continue;
+               TParticle* cascMC = 0x0;
+               cascMC = lCurrentParticlePrimary;
+               if (!cascMC) {
+                   Printf("MC TParticle pointer to Cascade = 0x0 ! Skip ...");
+                   continue;
+               }
+               partP      = cascMC->P();
+               partPt     = cascMC->Pt();
+               partEta    = cascMC->Eta();
+               partTheta  = cascMC->Theta()*180.0/TMath::Pi();
+               partPhi    = cascMC->Phi()*180.0/TMath::Pi();
+               partEnergy = cascMC->Energy(); 
+               partPz     = cascMC->Pz();
+               PDGcode    = lCurrentParticlePrimary->GetPdgCode();
+           } else if ( fAnalysisType == "AOD" ) {
+               AliAODMCParticle *lCurrentParticleaod = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack);
+               if (!lCurrentParticleaod) {
+                   Printf("Cascade loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
+                   continue;
+               }
+               if (!lCurrentParticleaod->IsPhysicalPrimary()) continue;
+               partP      = lCurrentParticleaod->P();
+               partPt     = lCurrentParticleaod->Pt();
+               partEta    = lCurrentParticleaod->Eta(); 
+               partTheta  = lCurrentParticleaod->Theta()*180.0/TMath::Pi();
+               partPhi    = lCurrentParticleaod->Phi()*180.0/TMath::Pi();
+               partEnergy = lCurrentParticleaod->E();
+               partPz     = lCurrentParticleaod->Pz();
+               PDGcode    = lCurrentParticleaod->GetPdgCode();
+           }
+           partRap = 0.5*TMath::Log((partEnergy + partPz) / (partEnergy - partPz + 1.e-13));
+
+           // Fill the AliCFContainer 
+           Double_t lContainerCutVarsMC[7] = {0.0};
+           lContainerCutVarsMC[0]  = partP;
+           lContainerCutVarsMC[1]  = partPt;
+           lContainerCutVarsMC[2]  = partRap;
+           lContainerCutVarsMC[3]  = partEta;
+           lContainerCutVarsMC[4]  = partTheta;
+           lContainerCutVarsMC[5]  = partPhi;
+           lContainerCutVarsMC[6]  = lcentrality;
+           if (PDGcode == 3312)  fCFContCascadeMCgen->Fill(lContainerCutVarsMC,0); // for Xi-
+           if (PDGcode == -3312) fCFContCascadeMCgen->Fill(lContainerCutVarsMC,1); // for Xi+
+           if (PDGcode == 3334)  fCFContCascadeMCgen->Fill(lContainerCutVarsMC,2); // for Omega-
+           if (PDGcode == -3334) fCFContCascadeMCgen->Fill(lContainerCutVarsMC,3); // for Omega+ 
+
+      }
+  }        
 
 
   //////////////////////////////
@@ -697,7 +893,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
            if (lBachIdx == lIdxNegXi) continue; 
            if (lBachIdx == lIdxPosXi) continue;
            // - Get the TPCnumber of cluster for the daughters
-           lPosTPCClusters   = pTrackXi->GetTPCNcls(); // FIXME: Is this ok? or something like in LambdaK0PbPb task AOD?
+           lPosTPCClusters   = pTrackXi->GetTPCNcls(); 
            lNegTPCClusters   = nTrackXi->GetTPCNcls();
            lBachTPCClusters  = bachTrackXi->GetTPCNcls();
 
@@ -830,7 +1026,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
     lContainerCutVars[17] = lctauV0;
     lContainerCutVars[18] = lV0toXiCosineOfPointingAngle;
     lContainerCutVars[19] = lcentrality;
-    lContainerCutVars[20] = lPrimaryTrackMultiplicity;
     if ( lChargeXi < 0 ) {
          lContainerCutVars[11] = lInvMassXiMinus;
          lContainerCutVars[12] = lInvMassOmegaMinus;
@@ -861,11 +1056,11 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
   
   // Post output data.
   PostData(1, fCFContCascadeCuts); 
+  PostData(2, fCFContCascadeMCgen);
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskQAMultistrange::Terminate(Option_t *) 
-{
+void AliAnalysisTaskQAMultistrange::Terminate(Option_t *) {
 
 }
 

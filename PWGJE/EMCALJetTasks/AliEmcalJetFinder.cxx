@@ -55,7 +55,7 @@ Bool_t AliEmcalJetFinder::FindJets()
     fFastjetWrapper->SetAlgorithm(fastjet::antikt_algorithm);  
   if(fJetAlgorithm == 1)
     fFastjetWrapper->SetAlgorithm(fastjet::kt_algorithm);  
-  if(fRecombScheme>0)
+  if(fRecombScheme>=0)
     fFastjetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
 
   fFastjetWrapper->SetMaxRap(fTrackMaxEta);
@@ -114,7 +114,7 @@ void AliEmcalJetFinder::FillPtHistogram(TH1* histogram)
 {
   if(!histogram)
     return;
-  for (Int_t i=0; i<fJetArray.size(); i++)
+  for (std::size_t i=0; i<fJetArray.size(); i++)
   {
     histogram->Fill(fJetArray[i]->Pt());
   }
@@ -125,7 +125,7 @@ void AliEmcalJetFinder::FillPhiHistogram(TH1* histogram)
 {
   if(!histogram)
     return;
-  for (Int_t i=0; i<fJetArray.size(); i++)
+  for (std::size_t i=0; i<fJetArray.size(); i++)
   {
     histogram->Fill(fJetArray[i]->Phi());
   }
@@ -136,7 +136,7 @@ void AliEmcalJetFinder::FillEtaHistogram(TH1* histogram)
 {
   if(!histogram)
     return;
-  for (Int_t i=0; i<fJetArray.size(); i++)
+  for (std::size_t i=0; i<fJetArray.size(); i++)
   {
     histogram->Fill(fJetArray[i]->Eta());
   }

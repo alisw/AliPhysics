@@ -19,6 +19,9 @@
 #include <TParameter.h>
 #include <AliCounterCollection.h>
 #include <AliRDHFCuts.h>
+
+#include "../ANALYSIS/macros/MakePIDqaReport.C"
+
 #endif
 
 /* $Id$ */ 
@@ -510,32 +513,7 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
      
       //TCanvas *test=new TCanvas("test","test");
       if(mode==0){
-	//mean and pull, code from Jens Wiechula
-	TF1 fg("fg","gaus",-2.,2.); // fit range +- 2 sigma
-	TLine l;
-	TObjArray arr;
-
-	//h->Draw("colz");
-	fg.SetParameters(1,0,1);
-	h->FitSlicesY(&fg,0,-1,0,"NQR",&arr);
-
-	TH1 *hM=(TH1*)arr.At(1);
-	hM->SetMarkerStyle(20);
-	hM->SetMarkerSize(.5);
-	hM->DrawClone("sames");
-
-	TH1 *hS=(TH1*)arr.At(2);
-	hS->SetMarkerStyle(20);
-	hS->SetMarkerSize(.5);
-	hS->SetMarkerColor(kRed);
-	hS->SetLineColor(kRed);
-	hS->DrawClone("same");
-
-	l.SetLineColor(kBlack);
-	l.DrawLine(.2,0,20,0);
-	l.SetLineColor(kRed);
-	l.DrawLine(.2,1,20,1);
-	
+      	 AddFit(h);	
       }else{ //mode 1
 
 	if(hname.Contains("TOFsigma")) {

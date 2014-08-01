@@ -29,6 +29,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
+#include "AliCentrality.h"
 
 using namespace std;
 
@@ -316,4 +317,19 @@ Float_t AliAnalysisHadEt::Et(Float_t p, Float_t theta, Int_t pid, Short_t charge
 Float_t AliAnalysisHadEt::TrueP(float pTrec) const {
   if(pTrec>1.0) return pTrec;
   return pTrec/(1-599.334*pTrec+7285.15*pTrec*pTrec)+pTrec;
+}
+
+Int_t AliAnalysisHadEt::GetCentralityBin(Int_t numberofbins,AliCentrality *centrality){
+  Int_t centralitybin = -1;
+  if(numberofbins<21) centralitybin= centrality->GetCentralityClass10(fCentralityMethod);
+  else{
+    if(numberofbins<41) centralitybin= centrality->GetCentralityClass5(fCentralityMethod);
+    else{
+      Float_t centpercent = centrality->GetCentralityPercentile(fCentralityMethod);
+      centralitybin= centrality->GetCentralityClass5(fCentralityMethod);
+      if(centralitybin>0) centralitybin =(Int_t) centpercent/2.5;
+    }
+  }
+  //cout<<" centrality bin "<<centralitybin<<endl;
+  return centralitybin;
 }

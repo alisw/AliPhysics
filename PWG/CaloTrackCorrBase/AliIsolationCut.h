@@ -57,30 +57,31 @@ class AliIsolationCut : public TObject {
   
   // Cone background studies medthods
   
-  Float_t  CalculateExcessAreaFraction(Float_t excess) const ;
+  Float_t    CalculateExcessAreaFraction(Float_t excess) const ;
 
-  void     CalculateUEBandClusterNormalization(AliCaloTrackReader * reader,     Float_t   etaC, Float_t phiC,
-                                               Float_t   phiUEptsumCluster,     Float_t   etaUEptsumCluster,
-                                               Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
-                                               Float_t & excessFracEta,         Float_t & excessFracPhi              ) const ;
+  void       CalculateUEBandClusterNormalization(AliCaloTrackReader * reader,     Float_t   etaC, Float_t phiC,
+                                                 Float_t   phiUEptsumCluster,     Float_t   etaUEptsumCluster,
+                                                 Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
+                                                 Float_t & excessFracEta,         Float_t & excessFracPhi              ) const ;
   
-  void     CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,     Float_t   etaC,  Float_t phiC,
-                                               Float_t   phiUEptsumTrack,       Float_t   etaUEptsumTrack,
-                                               Float_t & phiUEptsumTrackNorm,   Float_t & etaUEptsumTrackNorm,
-                                               Float_t & excessFracEta,         Float_t & excessFracPhi              )   const ;
+  void       CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,     Float_t   etaC,  Float_t phiC,
+                                                 Float_t   phiUEptsumTrack,       Float_t   etaUEptsumTrack,
+                                                 Float_t & phiUEptsumTrackNorm,   Float_t & etaUEptsumTrackNorm,
+                                                 Float_t & excessFracEta,         Float_t & excessFracPhi              )   const ;
 
-  void 	   GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandidate,
-                               AliCaloTrackReader * reader, 
-                               Float_t & coneBadCellsCoeff,
-                               Float_t & etaBandBadCellsCoeff  , Float_t & phiBandBadCellsCoeff) ;
+  void 	     GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandidate,
+                                 AliCaloTrackReader * reader,
+                                 Float_t & coneBadCellsCoeff,
+                                 Float_t & etaBandBadCellsCoeff  , Float_t & phiBandBadCellsCoeff) ;
 
   
   // Parameter setters and getters
   
   Float_t    GetConeSize()            const { return fConeSize       ; }
   Float_t    GetPtThreshold()         const { return fPtThreshold    ; }
-  Float_t    GetPtThresholdMax()      const { return fPtThresholdMax    ; }
+  Float_t    GetPtThresholdMax()      const { return fPtThresholdMax ; }
   Float_t    GetSumPtThreshold()      const { return fSumPtThreshold ; }
+  Float_t    GetSumPtThresholdMax()   const { return fSumPtThresholdMax ; }
   Float_t    GetPtFraction()          const { return fPtFraction     ; }
   Int_t      GetICMethod()            const { return fICMethod       ; }
   Int_t      GetParticleTypeInCone()  const { return fPartInCone     ; }
@@ -88,8 +89,9 @@ class AliIsolationCut : public TObject {
 	
   void       SetConeSize(Float_t r)         { fConeSize       = r    ; }
   void       SetPtThreshold(Float_t pt)     { fPtThreshold    = pt   ; }
-  void       SetPtThresholdMax(Float_t pt)  { fPtThresholdMax    = pt   ; }
+  void       SetPtThresholdMax(Float_t pt)  { fPtThresholdMax = pt   ; }
   void       SetSumPtThreshold(Float_t s)   { fSumPtThreshold = s    ; }
+  void       SetSumPtThresholdMax(Float_t s){ fSumPtThresholdMax = s ; }
   void       SetPtFraction(Float_t pt)      { fPtFraction     = pt   ; }
   void       SetICMethod(Int_t i )          { fICMethod       = i    ; }
   void       SetParticleTypeInCone(Int_t i) { fPartInCone     = i    ; }
@@ -97,26 +99,27 @@ class AliIsolationCut : public TObject {
   void       SetFracIsThresh(Bool_t f )     { fFracIsThresh   = f    ; }
  private:
   
-  Float_t    fConeSize ;       // Size of the isolation cone 
-  Float_t    fPtThreshold ;    // Mimium pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
-  Float_t    fPtThresholdMax ; // Maximum pt of the particles outside the cone (needed to fit shower distribution isolated/non-isolated particles)
-  Float_t    fSumPtThreshold ; // Minium of sum pt of the particles in the cone (UE sum in the forward region cone)
-  Float_t    fPtFraction ;     // Fraction of the momentum of particles in cone or sum in cone
-  Int_t      fICMethod ;       // Isolation cut method to be used
-                               // kPtIC: Pt threshold method
-                               // kSumPtIC: Cone pt sum method
-                               // kPtFracIC:   Pt threshold, fraction of candidate pt, method
-                               // kSumPtFracIC:   Cone pt sum , fraction of cone sum, method
-  Int_t      fPartInCone;      // Type of particles inside cone:
-                               // kNeutralAndCharged, kOnlyNeutral, kOnlyCharged
+  Float_t    fConeSize ;         // Size of the isolation cone
+  Float_t    fPtThreshold ;      // Mimium pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
+  Float_t    fPtThresholdMax ;   // Maximum pt of the particles outside the cone (needed to fit shower distribution isolated/non-isolated particles)
+  Float_t    fSumPtThreshold ;   // Minimum of sum pt of the particles in the cone (UE sum in the forward region cone)
+  Float_t    fSumPtThresholdMax ;// Maximum of sum pt of the particles in the cone (UE sum in the forward region cone)
+  Float_t    fPtFraction ;       // Fraction of the momentum of particles in cone or sum in cone
+  Int_t      fICMethod ;         // Isolation cut method to be used
+                                 // kPtIC: Pt threshold method
+                                 // kSumPtIC: Cone pt sum method
+                                 // kPtFracIC:   Pt threshold, fraction of candidate pt, method
+                                 // kSumPtFracIC:   Cone pt sum , fraction of cone sum, method
+  Int_t      fPartInCone;        // Type of particles inside cone:
+                                 // kNeutralAndCharged, kOnlyNeutral, kOnlyCharged
 
-  Int_t      fDebug;           // Debug level
-  Bool_t     fFracIsThresh;    // Use threshold instead of fraction when pt leading is small
+  Int_t      fDebug;             // Debug level
+  Bool_t     fFracIsThresh;      // Use threshold instead of fraction when pt leading is small
   
   AliIsolationCut(              const AliIsolationCut & g) ; // cpy ctor
   AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
   
-  ClassDef(AliIsolationCut,6)
+  ClassDef(AliIsolationCut,7)
 } ;
 
 

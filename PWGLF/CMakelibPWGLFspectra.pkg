@@ -55,6 +55,7 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
 	SPECTRA/PiKaPr/TestAOD/AliSpectraAODPID.cxx
 	SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskSpectraAOD.cxx
         SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskSpectraAllChAOD.cxx
+        SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskV2AllChAOD.cxx
         SPECTRA/Kinks/AliAnalysisKinkESDat.cxx
         SPECTRA/Kinks/AliAnalysisKinkESDMC.cxx
 	SPECTRA/PiKaPr/TestAOD/AliSpectraBothTrackCuts.cxx
@@ -78,4 +79,4 @@ set ( DHDR PWGLFspectraLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWGLF/SPECTRA/Nuclei/B2 PWGLF/SPECTRA/PiKaPr/TPCTOF PWGLF/SPECTRA/PiKaPr/TPCTOFpA PWGLF/SPECTRA/PiKaPr/TOF/pp7 PWGLF/SPECTRA/ChargedHadrons/dNdPt TPC TOF PWGUD/base STEER/STEER STEER/ESD STEER/AOD STEER/CDB STEER/STEERBase ANALYSIS)
+set ( EINCLUDE  PWGLF/SPECTRA/Nuclei/B2 PWGLF/SPECTRA/PiKaPr/TPCTOF PWGLF/SPECTRA/PiKaPr/TPCTOFpA PWGLF/SPECTRA/PiKaPr/TOF/pp7 PWGLF/SPECTRA/ChargedHadrons/dNdPt TPC TOF PWGUD/base STEER/STEER STEER/ESD STEER/AOD STEER/CDB STEER/STEERBase ANALYSIS PWG/Tools)

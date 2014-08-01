@@ -45,7 +45,7 @@ using std::endl;
 ClassImp(AliAnalysisTaskHJetEmbed)
 
 const Double_t pi = TMath::Pi();
-const Double_t areaCut[4] = {0.1, 0.23, 0.4, 0.63};
+//const Double_t areaCut[4] = {0.1, 0.23, 0.4, 0.63};
 
 //________________________________________________________________________
 AliAnalysisTaskHJetEmbed::AliAnalysisTaskHJetEmbed() : 

@@ -258,7 +258,9 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistGammasFoundOutOfAccAltCent(0)
 						  ,fHistGammasGeneratedCent(0)
 						  ,fHistGammasFoundRecoEnergyCent(0)
+						  ,fHistAllGammasFoundRecoEnergyCent(0)
 						  ,fHistGammasFoundOutOfAccRecoEnergyCent(0)
+						  ,fHistAllGammasFoundOutOfAccRecoEnergyCent(0)
 						  ,fHistChargedTracksCut(0)
 						  ,fHistChargedTracksAccepted(0)
 						  ,fHistGammasCut(0)
@@ -507,7 +509,9 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistGammasFoundAltCent; // enter comment here
     delete fHistGammasGeneratedCent; // enter comment here
     delete fHistGammasFoundRecoEnergyCent;
+    delete fHistAllGammasFoundRecoEnergyCent;
     delete fHistGammasFoundOutOfAccRecoEnergyCent;
+    delete fHistAllGammasFoundOutOfAccRecoEnergyCent;
     delete fHistChargedTracksCut;
     delete fHistChargedTracksAccepted;
     delete fHistGammasCut;
@@ -743,7 +747,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
             {
                 //Printf("Particle with eta: %f, pid: %d", part->Eta(), code);
                 // calculate E_T
-                if (
+         
+	      //fHistGammasFoundRecoEnergyCent->Fill(fReconstructedE,fCentClass);      
+	      //cout<<"Messed up filling would have filled with "<<fReconstructedE<<" cent "<<fCentClass<<endl;
+		  if (
                     TMath::Abs(code) == fgProtonCode ||
                     TMath::Abs(code) == fgNeutronCode ||
                     TMath::Abs(code) == fgLambdaCode ||
@@ -762,7 +769,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                 Double_t et = part->Energy() * TMath::Sin(part->Theta()) + particleMassPart;
 
 
-                if(code == fgGammaCode || code == fgPi0Code || code == fgEtaCode)
+                if(code == fgGammaCode || code == fgPi0Code || code == fgEtaCode || code==fgOmega0Code || code==fgEPlusCode || code==fgEMinusCode)
                 {
 
                     if(fSelector->CutGeometricalAcceptance(*part) )
@@ -1449,6 +1456,18 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  if(!written && (fDepositedCode==fgGammaCode || fDepositedCode==fgEMinusCode || fDepositedCode ==fgEPlusCode)){//if the particle hitting the calorimeter is gamma, electron and not from a kaon
 // 	    cout<<"Signal ";
 // 	    PrintFamilyTreeShort(iPart, stack);
+//efficiencies without cutting track matched gammas
+	    if(containsGamma){
+	      if(!fSelector->CutGeometricalAcceptance(*primPart)){
+		fHistAllGammasFoundOutOfAccRecoEnergyCent->Fill(fReconstructedE,fCentClass);
+	      }
+	      else{
+		fHistAllGammasFoundRecoEnergyCent->Fill(fReconstructedE,fCentClass);
+	      }
+	      //cout<<"contains gamma"<<endl;
+	    }
+	    //else{cout<<"does not contain gamma"<<endl;}
+
 
 	    fClusterMultGammas++;
 	    written = kTRUE;
@@ -1477,6 +1496,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  fHistGammasFoundOutOfAccRecoEnergyCent->Fill(fReconstructedE,fCentClass);
 		}
 		else{
+		  //cout<<"filling reference histogram"<<endl;
 		  if(gammaEnergy>0) fHistGammaEnergyCrossCheckAlt->Fill(gammaEnergy,(fReconstructedEt-gammaEnergy)/fReconstructedEt);
 		  fHistGammasFoundRecoEnergyCent->Fill(fReconstructedE,fCentClass);
 		  etGammaCrossCheckAlt += clEt;
@@ -1979,6 +1999,11 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
 	fEventSummaryTree->Branch("fTotPz", &fTotPz, "fTotPz/D");
 // 	fEventSummaryTree->Branch("f
     }
+    Float_t scale = 1;//scale up histograms if EMCal 2011 so we have the right range
+    if(fDataSet==2011   && !fHistogramNameSuffix.Contains("P")){
+      scale = 3.0;
+    }
+
 
     //fHistDecayVertexNonRemovedCharged = new TH3F("fHistDecayVertexNonRemovedCharged","fHistDecayVertexNonRemovedCharged", 500, -470, 30, 500, -300, 300, 40, -20, 20);
     //fHistDecayVertexRemovedCharged = new TH3F("fHistDecayVertexRemovedCharged","fHistDecayVertexRemovedCharged", 500, -470, 30, 500, -300, 300, 40, -20, 20);
@@ -1987,82 +2012,86 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
 
     fHistRemovedOrNot = new TH2F("fHistRemovedOrNot", "fHistRemovedOrNot", 4, -0.5, 3.5, 10, -0.5, 9.5);
 
-    fHistEtNonRemovedProtons = new TH2F("fHistEtNonRemovedProtons", "fHistEtNonRemovedProtons", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedAntiProtons = new TH2F("fHistEtNonRemovedAntiProtons", "fHistEtNonRemovedAntiProtons", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedPiPlus = new TH2F("fHistEtNonRemovedPiPlus", "fHistEtNonRemovedPiPlus", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedPiMinus = new TH2F("fHistEtNonRemovedPiMinus", "fHistEtNonRemovedPiMinus", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedKaonPlus = new TH2F("fHistEtNonRemovedKaonPlus", "fHistEtNonRemovedKaonPlus", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedKaonMinus = new TH2F("fHistEtNonRemovedKaonMinus", "fHistEtNonRemovedKaonMinus", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedK0s = new TH2F("fHistEtNonRemovedK0s", "fHistEtNonRemovedK0s", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedK0L = new TH2F("fHistEtNonRemovedK0L", "fHistEtNonRemovedK0L", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedLambdas = new TH2F("fHistEtNonRemovedLambdas", "fHistEtNonRemovedLambdas", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedElectrons = new TH2F("fHistEtNonRemovedElectrons", "fHistEtNonRemovedElectrons", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedPositrons = new TH2F("fHistEtNonRemovedPositrons", "fHistEtNonRemovedPositrons", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedMuPlus = new TH2F("fHistEtNonRemovedMuPlus", "fHistEtNonRemovedMuPlus", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedMuMinus = new TH2F("fHistEtNonRemovedMuMinus", "fHistEtNonRemovedMuMinus", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedNeutrons = new TH2F("fHistEtNonRemovedNeutrons", "fHistEtNonRemovedNeutrons", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedAntiNeutrons = new TH2F("fHistEtNonRemovedAntiNeutrons", "fHistEtNonRemovedAntiNeutrons", 1500, 0, 30, 10, -0.5, 9.5);
+    //I don't think any of these are actually used...  flag for later removal
+    Int_t nbins = 15;
+    fHistEtNonRemovedProtons = new TH2F("fHistEtNonRemovedProtons", "fHistEtNonRemovedProtons", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedAntiProtons = new TH2F("fHistEtNonRemovedAntiProtons", "fHistEtNonRemovedAntiProtons", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedPiPlus = new TH2F("fHistEtNonRemovedPiPlus", "fHistEtNonRemovedPiPlus", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedPiMinus = new TH2F("fHistEtNonRemovedPiMinus", "fHistEtNonRemovedPiMinus", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedKaonPlus = new TH2F("fHistEtNonRemovedKaonPlus", "fHistEtNonRemovedKaonPlus", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedKaonMinus = new TH2F("fHistEtNonRemovedKaonMinus", "fHistEtNonRemovedKaonMinus", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedK0s = new TH2F("fHistEtNonRemovedK0s", "fHistEtNonRemovedK0s", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedK0L = new TH2F("fHistEtNonRemovedK0L", "fHistEtNonRemovedK0L", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedLambdas = new TH2F("fHistEtNonRemovedLambdas", "fHistEtNonRemovedLambdas", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedElectrons = new TH2F("fHistEtNonRemovedElectrons", "fHistEtNonRemovedElectrons", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedPositrons = new TH2F("fHistEtNonRemovedPositrons", "fHistEtNonRemovedPositrons", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedMuPlus = new TH2F("fHistEtNonRemovedMuPlus", "fHistEtNonRemovedMuPlus", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedMuMinus = new TH2F("fHistEtNonRemovedMuMinus", "fHistEtNonRemovedMuMinus", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedNeutrons = new TH2F("fHistEtNonRemovedNeutrons", "fHistEtNonRemovedNeutrons", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedAntiNeutrons = new TH2F("fHistEtNonRemovedAntiNeutrons", "fHistEtNonRemovedAntiNeutrons", nbins, 0, 30, 10, -0.5, 9.5);
 
-    fHistEtNonRemovedGammas = new  TH2F("fHistEtNonRemovedGammas", "fHistEtNonRemovedGammas", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedGammasFromPi0 = new  TH2F("fHistEtNonRemovedGammasFromPi0", "fHistEtNonRemovedGammasFromPi0", 1500, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedGammas = new  TH2F("fHistEtNonRemovedGammas", "fHistEtNonRemovedGammas", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedGammasFromPi0 = new  TH2F("fHistEtNonRemovedGammasFromPi0", "fHistEtNonRemovedGammasFromPi0", nbins, 0, 30, 10, -0.5, 9.5);
 
-    fHistEtRemovedGammas = new  TH2F("fHistEtRemovedGammas", "fHistEtRemovedGammas", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtRemovedNeutrons = new  TH2F("fHistEtRemovedNeutrons", "fHistEtRemovedNeutrons", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtRemovedAntiNeutrons = new  TH2F("fHistEtRemovedAntiNeutrons", "fHistEtRemovedAntiNeutrons", 1500, 0, 30, 10, -0.5, 9.5);
+    fHistEtRemovedGammas = new  TH2F("fHistEtRemovedGammas", "fHistEtRemovedGammas", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtRemovedNeutrons = new  TH2F("fHistEtRemovedNeutrons", "fHistEtRemovedNeutrons", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtRemovedAntiNeutrons = new  TH2F("fHistEtRemovedAntiNeutrons", "fHistEtRemovedAntiNeutrons", nbins, 0, 30, 10, -0.5, 9.5);
 
-    fHistEtRemovedCharged = new  TH2F("fHistEtRemovedCharged", "fHistEtRemovedCharged", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtRemovedNeutrals = new  TH2F("fHistEtRemovedNeutrals", "fHistEtRemovedNeutrals", 1500, 0, 30, 10, -0.5, 9.5);
+    fHistEtRemovedCharged = new  TH2F("fHistEtRemovedCharged", "fHistEtRemovedCharged", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtRemovedNeutrals = new  TH2F("fHistEtRemovedNeutrals", "fHistEtRemovedNeutrals", nbins, 0, 30, 10, -0.5, 9.5);
 
-    fHistEtNonRemovedCharged = new  TH2F("fHistEtNonRemovedCharged", "fHistEtNonRemovedCharged", 1500, 0, 30, 10, -0.5, 9.5);
-    fHistEtNonRemovedNeutrals = new  TH2F("fHistEtNonRemovedNeutrals", "fHistEtNonRemovedNeutrals", 1500, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedCharged = new  TH2F("fHistEtNonRemovedCharged", "fHistEtNonRemovedCharged", nbins, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedNeutrals = new  TH2F("fHistEtNonRemovedNeutrals", "fHistEtNonRemovedNeutrals", nbins, 0, 30, 10, -0.5, 9.5);
 
-    fHistMultNonRemovedProtons = new TH2F("fHistMultNonRemovedProtons", "fHistMultNonRemovedProtons", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedAntiProtons = new TH2F("fHistMultNonRemovedAntiProtons", "fHistMultNonRemovedAntiProtons", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedPiPlus = new TH2F("fHistMultNonRemovedPiPlus", "fHistMultNonRemovedPiPlus", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedPiMinus = new TH2F("fHistMultNonRemovedPiMinus", "fHistMultNonRemovedPiMinus", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedKaonPlus = new TH2F("fHistMultNonRemovedKaonPlus", "fHistMultNonRemovedKaonPlus", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedKaonMinus = new TH2F("fHistMultNonRemovedKaonMinus", "fHistMultNonRemovedKaonMinus", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedK0s = new TH2F("fHistMultNonRemovedK0s", "fHistMultNonRemovedK0s", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedK0L = new TH2F("fHistMultNonRemovedK0L", "fHistMultNonRemovedK0L", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedLambdas = new TH2F("fHistMultNonRemovedLambdas", "fHistMultNonRemovedLambdas", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedElectrons = new TH2F("fHistMultNonRemovedElectrons", "fHistMultNonRemovedElectrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedPositrons = new TH2F("fHistMultNonRemovedPositrons", "fHistMultNonRemovedPositrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedMuPlus = new TH2F("fHistMultNonRemovedMuPlus", "fHistMultNonRemovedMuPlus", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedMuMinus = new TH2F("fHistMultNonRemovedMuMinus", "fHistMultNonRemovedMuMinus", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedNeutrons = new TH2F("fHistMultNonRemovedNeutrons", "fHistMultNonRemovedNeutrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultNonRemovedAntiNeutrons = new TH2F("fHistMultNonRemovedAntiNeutrons", "fHistMultNonRemovedAntiNeutrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
+    Int_t nmultbins = 10;
+    fHistMultNonRemovedProtons = new TH2F("fHistMultNonRemovedProtons", "fHistMultNonRemovedProtons", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedAntiProtons = new TH2F("fHistMultNonRemovedAntiProtons", "fHistMultNonRemovedAntiProtons", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedPiPlus = new TH2F("fHistMultNonRemovedPiPlus", "fHistMultNonRemovedPiPlus", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedPiMinus = new TH2F("fHistMultNonRemovedPiMinus", "fHistMultNonRemovedPiMinus", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedKaonPlus = new TH2F("fHistMultNonRemovedKaonPlus", "fHistMultNonRemovedKaonPlus", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedKaonMinus = new TH2F("fHistMultNonRemovedKaonMinus", "fHistMultNonRemovedKaonMinus", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedK0s = new TH2F("fHistMultNonRemovedK0s", "fHistMultNonRemovedK0s", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedK0L = new TH2F("fHistMultNonRemovedK0L", "fHistMultNonRemovedK0L", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedLambdas = new TH2F("fHistMultNonRemovedLambdas", "fHistMultNonRemovedLambdas", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedElectrons = new TH2F("fHistMultNonRemovedElectrons", "fHistMultNonRemovedElectrons", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedPositrons = new TH2F("fHistMultNonRemovedPositrons", "fHistMultNonRemovedPositrons", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedMuPlus = new TH2F("fHistMultNonRemovedMuPlus", "fHistMultNonRemovedMuPlus", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedMuMinus = new TH2F("fHistMultNonRemovedMuMinus", "fHistMultNonRemovedMuMinus", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedNeutrons = new TH2F("fHistMultNonRemovedNeutrons", "fHistMultNonRemovedNeutrons", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedAntiNeutrons = new TH2F("fHistMultNonRemovedAntiNeutrons", "fHistMultNonRemovedAntiNeutrons", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
 
-    fHistMultNonRemovedGammas = new  TH2F("fHistMultNonRemovedGammas", "fHistMultNonRemovedGammas", 100, -0.5, 99.5, 100, -0.5, 99.5);
+    fHistMultNonRemovedGammas = new  TH2F("fHistMultNonRemovedGammas", "fHistMultNonRemovedGammas", nmultbins, -0.5, 99.5, nmultbins, -0.5, 99.5);
 
-    fHistMultRemovedGammas = new  TH2F("fHistMultRemovedGammas", "fHistMultRemovedGammas", 100, -0.5, 99.5, 100, -0.5, 99.5);
-    fHistMultRemovedNeutrons = new  TH2F("fHistMultRemovedNeutrons", "fHistMultRemovedNeutrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
-    fHistMultRemovedAntiNeutrons = new  TH2F("fHistMultRemovedAntiNeutrons", "fHistMultRemovedAntiNeutrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultRemovedGammas = new  TH2F("fHistMultRemovedGammas", "fHistMultRemovedGammas", nmultbins, -0.5, 99.5, nmultbins, -0.5, 99.5);
+    fHistMultRemovedNeutrons = new  TH2F("fHistMultRemovedNeutrons", "fHistMultRemovedNeutrons", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultRemovedAntiNeutrons = new  TH2F("fHistMultRemovedAntiNeutrons", "fHistMultRemovedAntiNeutrons", nmultbins, -0.5, 99.5, 10, -0.5, 9.5);
     /*
-      fHistMultRemovedCharged = new  TH2F("fHistMultRemovedCharged", "fHistMultRemovedCharged", 1500, 0, 30, 10, -0.5, 9.5);
-      fHistMultRemovedNeutrals = new  TH2F("fHistMultRemovedNeutrals", "fHistMultRemovedNeutrals", 1500, 0, 30, 10, -0.5, 9.5);
+      fHistMultRemovedCharged = new  TH2F("fHistMultRemovedCharged", "fHistMultRemovedCharged", nbins, 0, 30, 10, -0.5, 9.5);
+      fHistMultRemovedNeutrals = new  TH2F("fHistMultRemovedNeutrals", "fHistMultRemovedNeutrals", nbins, 0, 30, 10, -0.5, 9.5);
 
-      fHistMultNonRemovedCharged = new  TH2F("fHistMultNonRemovedCharged", "fHistMultNonRemovedCharged", 1500, 0, 30, 10, -0.5, 9.5);
-      fHistMultNonRemovedNeutrals = new  TH2F("fHistMultNonRemovedNeutrals", "fHistMultNonRemovedNeutrals", 1500, 0, 30, 10, -0.5, 9.5);*/
+      fHistMultNonRemovedCharged = new  TH2F("fHistMultNonRemovedCharged", "fHistMultNonRemovedCharged", nbins, 0, 30, 10, -0.5, 9.5);
+      fHistMultNonRemovedNeutrals = new  TH2F("fHistMultNonRemovedNeutrals", "fHistMultNonRemovedNeutrals", nbins, 0, 30, 10, -0.5, 9.5);*/
 
 
-    fHistMultRemovedCharged = new  TH2F("fHistMultRemovedCharged", "fHistMultRemovedCharged", 100, -0.5, 99.5, 100, -0.5, 99.5);
-    fHistMultRemovedNeutrals = new  TH2F("fHistMultRemovedNeutrals", "fHistMultRemovedNeutrals", 100, -0.5, 99.5, 100, -0.5, 99.5);
+    fHistMultRemovedCharged = new  TH2F("fHistMultRemovedCharged", "fHistMultRemovedCharged", nmultbins, -0.5, 99.5, nmultbins, -0.5, 99.5);
+    fHistMultRemovedNeutrals = new  TH2F("fHistMultRemovedNeutrals", "fHistMultRemovedNeutrals", nmultbins, -0.5, 99.5, nmultbins, -0.5, 99.5);
 
-    fHistMultNonRemovedCharged = new  TH2F("fHistMultNonRemovedCharged", "fHistMultNonRemovedCharged", 100, -0.5, 99.5, 100, -0.5, 99.5);
-    fHistMultNonRemovedNeutrals = new  TH2F("fHistMultNonRemovedNeutrals", "fHistMultNonRemovedNeutrals", 100, -0.5, 99.5, 100, -0.5, 99.5);
+    fHistMultNonRemovedCharged = new  TH2F("fHistMultNonRemovedCharged", "fHistMultNonRemovedCharged", nmultbins, -0.5, 99.5, nmultbins, -0.5, 99.5);
+    fHistMultNonRemovedNeutrals = new  TH2F("fHistMultNonRemovedNeutrals", "fHistMultNonRemovedNeutrals", nmultbins, -0.5, 99.5, nmultbins, -0.5, 99.5);
 
-    fHistTrackMultvsNonRemovedCharged = new TH2F("fHistTrackMultvsNonRemovedCharged", "fHistTrackMultvsNonRemovedCharged", 1000, -0.5, 999.5, 100, -0.5, 99.5);
-    fHistTrackMultvsNonRemovedNeutral = new TH2F("fHistTrackMultvsNonRemovedNeutral", "fHistTrackMultvsNonRemovedNeutral", 1000, -0.5, 999.5, 100, -0.5, 99.5);
-    fHistTrackMultvsRemovedGamma = new TH2F("fHistTrackMultvsRemovedGamma", "fHistTrackMultvsRemovedGamma", 1000, -0.5, 999.5, 100, -0.5, 99.5);
+    fHistTrackMultvsNonRemovedCharged = new TH2F("fHistTrackMultvsNonRemovedCharged", "fHistTrackMultvsNonRemovedCharged", nmultbins*10, -0.5, 999.5, nmultbins, -0.5, 99.5);
+    fHistTrackMultvsNonRemovedNeutral = new TH2F("fHistTrackMultvsNonRemovedNeutral", "fHistTrackMultvsNonRemovedNeutral", nmultbins*10, -0.5, 999.5, nmultbins, -0.5, 99.5);
+    fHistTrackMultvsRemovedGamma = new TH2F("fHistTrackMultvsRemovedGamma", "fHistTrackMultvsRemovedGamma", nmultbins*10, -0.5, 999.5, 100, -0.5, 99.5);
 
-    fHistClusterMultvsNonRemovedCharged = new TH2F("fHistClusterMultvsNonRemovedCharged", "fHistClusterMultvsNonRemovedCharged", 1000, -0.5, 999.5, 100, -0.5, 99.5);
-    fHistClusterMultvsNonRemovedNeutral = new TH2F("fHistClusterMultvsNonRemovedNeutral", "fHistClusterMultvsNonRemovedNeutral", 1000, -0.5, 999.5, 100, -0.5, 99.5);
-    fHistClusterMultvsRemovedGamma = new TH2F("fHistClusterMultvsRemovedGamma", "fHistClusterMultvsRemovedGamma", 1000, -0.5, 999.5, 100, -0.5, 99.5);
+    fHistClusterMultvsNonRemovedCharged = new TH2F("fHistClusterMultvsNonRemovedCharged", "fHistClusterMultvsNonRemovedCharged", nmultbins*10, -0.5, 999.5, nmultbins, -0.5, 99.5);
+    fHistClusterMultvsNonRemovedNeutral = new TH2F("fHistClusterMultvsNonRemovedNeutral", "fHistClusterMultvsNonRemovedNeutral", nmultbins*10, -0.5, 999.5, nmultbins, -0.5, 99.5);
+    fHistClusterMultvsRemovedGamma = new TH2F("fHistClusterMultvsRemovedGamma", "fHistClusterMultvsRemovedGamma", nmultbins*10, -0.5, 999.5, nmultbins, -0.5, 99.5);
 
-    fHistDxDzNonRemovedCharged = new TH2F("fHistDxDzNonRemovedCharged", "fHistDxDzNonRemovedCharged", 800, -200, 200, 800, -200, 200);
-    fHistDxDzRemovedCharged = new TH2F("fHistDxDzRemovedCharged", "fHistDxDzRemovedCharged", 800, -200, 200, 800, -200, 200);
-    fHistDxDzNonRemovedNeutral = new TH2F("fHistDxDzNonRemovedNeutral", "fHistDxDzNonRemovedNeutral", 800, -200, 200, 800, -200, 200);
-    fHistDxDzRemovedNeutral = new TH2F("fHistDxDzRemovedNeutral", "fHistDxDzRemovedNeutral", 800, -200, 200, 800, -200, 200);
+    Int_t ndnbins = 8;
+    fHistDxDzNonRemovedCharged = new TH2F("fHistDxDzNonRemovedCharged", "fHistDxDzNonRemovedCharged", ndnbins, -200, 200, ndnbins, -200, 200);
+    fHistDxDzRemovedCharged = new TH2F("fHistDxDzRemovedCharged", "fHistDxDzRemovedCharged", ndnbins, -200, 200, ndnbins, -200, 200);
+    fHistDxDzNonRemovedNeutral = new TH2F("fHistDxDzNonRemovedNeutral", "fHistDxDzNonRemovedNeutral", ndnbins, -200, 200, ndnbins, -200, 200);
+    fHistDxDzRemovedNeutral = new TH2F("fHistDxDzRemovedNeutral", "fHistDxDzRemovedNeutral", ndnbins, -200, 200, ndnbins, -200, 200);
 
     if(fCalcForKaonCorrection){
       Int_t nEtCut = 11;
@@ -2095,13 +2124,13 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
       fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries = new TH1F("fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries","Primary Kaons which deposited energy in calorimeter with y>0.5",fgNumOfPtBins,fgPtAxis);
     }
 
-    fHistPiPlusMult = new TH1F("fHistPiPlusMult", "fHistPiPlusMult", 2000, -0.5, 1999.5);
-    fHistPiMinusMult = new TH1F("fHistPiMinusMult", "fHistPiMinusMult", 2000, -0.5, 1999.5);
-    fHistPiZeroMult = new TH1F("fHistPiZeroMult", "fHistPiZeroMult", 2000, -0.5, 1999.5);
+    fHistPiPlusMult = new TH1F("fHistPiPlusMult", "fHistPiPlusMult", nmultbins, -0.5, 1999.5);
+    fHistPiMinusMult = new TH1F("fHistPiMinusMult", "fHistPiMinusMult", nmultbins, -0.5, 1999.5);
+    fHistPiZeroMult = new TH1F("fHistPiZeroMult", "fHistPiZeroMult", nmultbins, -0.5, 1999.5);
 
-    fHistPiPlusMultAcc = new TH1F("fHistPiPlusMultAcc", "fHistPiPlusMultAcc", 2000, -0.5, 1999.5);
-    fHistPiMinusMultAcc = new TH1F("fHistPiMinusMultAcc", "fHistPiMinusMultAcc", 2000, -0.5, 1999.5);
-    fHistPiZeroMultAcc = new TH1F("fHistPiZeroMultAcc", "fHistPiZeroMultAcc", 2000, -0.5, 1999.5);
+    fHistPiPlusMultAcc = new TH1F("fHistPiPlusMultAcc", "fHistPiPlusMultAcc", nmultbins, -0.5, 1999.5);
+    fHistPiMinusMultAcc = new TH1F("fHistPiMinusMultAcc", "fHistPiMinusMultAcc", nmultbins, -0.5, 1999.5);
+    fHistPiZeroMultAcc = new TH1F("fHistPiZeroMultAcc", "fHistPiZeroMultAcc", nmultbins, -0.5, 1999.5);
 
     if(fCuts->GetHistMakeTree())
     {
@@ -2156,7 +2185,9 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistGammasFoundCent = new TH2F("fHistGammasFoundCent", "fHistGammasFoundCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundOutOfAccAltCent = new TH2F("fHistGammasFoundOutOfAccAltCent", "fHistGammasFoundOutOfAccCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundRecoEnergyCent = new TH2F("fHistGammasFoundRecoEnergyCent", "fHistGammasFoundRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
+    fHistAllGammasFoundRecoEnergyCent = new TH2F("fHistAllGammasFoundRecoEnergyCent", "fHistAllGammasFoundRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundOutOfAccRecoEnergyCent = new TH2F("fHistGammasFoundOutOfAccRecoEnergyCent", "fHistGammasFoundOutOfAccRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
+    fHistAllGammasFoundOutOfAccRecoEnergyCent = new TH2F("fHistAllGammasFoundOutOfAccRecoEnergyCent", "fHistAllGammasFoundOutOfAccRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundAltCent = new TH2F("fHistGammasFoundAltCent", "fHistGammasFoundAltCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasGeneratedCent = new TH2F("fHistGammasGeneratedCent", "fHistGammasGeneratedCent",200, 0, 10,20,-0.5,19.5);
     fHistChargedTracksCut = new TH1F("fHistChargedTracksCut", "fHistChargedTracksCut",100, 0, 5);
@@ -2165,8 +2196,8 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistGammasAccepted = new TH1F("fHistGammasTracksAccepted", "fHistGammasTracksAccepted",100, 0, 5);
 
     if(fCalcTrackMatchVsMult){
-      fHistChargedTracksCutMult = new TH2F("fHistChargedTracksCutMult", "fHistChargedTracksCutMult",100, 0, 5,10,0,100);
-      fHistChargedTracksAcceptedMult = new TH2F("fHistChargedTracksAcceptedMult", "fHistChargedTracksAcceptedMult",100, 0, 5,10,0,100);
+      fHistChargedTracksCutMult = new TH2F("fHistChargedTracksCutMult", "fHistChargedTracksCutMult",100, 0, 5,10*scale,0,100*scale);
+      fHistChargedTracksAcceptedMult = new TH2F("fHistChargedTracksAcceptedMult", "fHistChargedTracksAcceptedMult",100, 0, 5,10*scale,0,100*scale);
       fHistChargedTrackDepositsAcceptedVsPt = new TH2F("fHistChargedTrackDepositsAcceptedVsPt", "fHistChargedTrackDepositsAcceptedVsPt",100, 0, 5,20,-0.5,19.5);
       fHistChargedTrackDepositsAllVsPt = new TH2F("fHistChargedTrackDepositsAllVsPt", "fHistChargedTrackDepositsAllVsPt",100, 0, 5,20,-0.5,19.5);
       fHistChargedTrackDepositsAcceptedVsPtEffCorr = new TH2F("fHistChargedTrackDepositsAcceptedVsPtEffCorr", "fHistChargedTrackDepositsAcceptedVsPtEffCorr",100, 0, 5,20,-0.5,19.5);
@@ -2176,8 +2207,8 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
       fHistChargedTracksAcceptedLowPtCent500MeV = new TH2F("fHistChargedTracksAcceptedLowPtCent500MeV", "fHistChargedTracksAcceptedLowPtCent500MeV",100, 0, 5,20,-0.5,19.5);
       fHistChargedTracksAcceptedLowPtCentNoAntiProtons = new TH2F("fHistChargedTracksAcceptedLowPtCentNoAntiProtons", "fHistChargedTracksAcceptedLowPtCentNoAntiProtons",100, 0, 5,20,-0.5,19.5);
       fHistChargedTracksAcceptedLowPtCentAntiProtons = new TH2F("fHistChargedTracksAcceptedLowPtCentAntiProtons", "fHistChargedTracksAcceptedLowPtCentAntiProtons",100, 0, 5,20,-0.5,19.5);
-      fHistGammasCutMult = new TH2F("fHistGammasTracksCutMult", "fHistGammasTracksCutMult",100, 0, 5,10,0,100);
-      fHistGammasAcceptedMult = new TH2F("fHistGammasTracksAcceptedMult", "fHistGammasTracksAcceptedMult",100, 0, 5,10,0,100);
+      fHistGammasCutMult = new TH2F("fHistGammasTracksCutMult", "fHistGammasTracksCutMult",100, 0, 5,10*scale,0,100*scale);
+      fHistGammasAcceptedMult = new TH2F("fHistGammasTracksAcceptedMult", "fHistGammasTracksAcceptedMult",100, 0, 5,10*scale,0,100*scale);
     }
 
     fHistBadTrackMatches = new TH1F("fHistBadTrackMatches", "fHistBadTrackMatches",100, 0, 5);
@@ -2204,10 +2235,13 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistHadronDepositsAll = new TH1F("fHistHadronDepositsAll","All Hadrons which deposited energy in calorimeter",fgNumOfPtBins,fgPtAxis);
     fHistHadronDepositsReco = new TH1F("fHistHadronDepositsReco","Reconstructed Hadrons which deposited energy in calorimeter",fgNumOfPtBins,fgPtAxis);
     //,10,0,100
-      Int_t nMult = 20;
-      Float_t nMultCuts[21] = { 0, 5,10,15,20, 25,30,35,40,45, 
-			       50,55,60,65,70, 75,80,85,90,95,
-				100};
+      Int_t nMult = 50;
+      Float_t nMultCuts[51] = { 0  , 5 ,10 ,15 ,20 , 25, 30, 35, 40, 45, 
+				50 ,55 ,60 ,65 ,70 , 75, 80, 85, 90, 95,
+				100,105,110,115,120,125,130,135,140,145,
+				150,155,160,165,170,175,180,185,190,195,
+				200,205,210,215,220,225,230,235,240,245,
+				250};
       Int_t nCent = 20;
       Float_t nCentCuts[21] = { 0, 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
 
@@ -2221,30 +2255,30 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
       fHistHadronsAllCent = new TH2F("fHistHadronsAllCent","All Hadrons vs cluster mult",fgNumOfPtBins,fgPtAxis,nCent,nCentCuts);
 
       fHistMultChVsSignalVsMult = new TH3F("fHistMultChVsSignalVsMult","Charged particle Multiplicity vs Signal particle multiplicity vs Cluster Mult",nMult,nMultCuts,nMult,nMultCuts,nMult,nMultCuts);
-      fHistNeutralRemovedSecondaryEtVsCent = new TH2F("fHistNeutralRemovedSecondaryEtVsCent","Neutral Removed Secondaries E_{T} vs centrality",100,0.0,2.0,20,-0.5,19.5);
-      fHistChargedRemovedSecondaryEtVsCent = new TH2F("fHistChargedRemovedSecondaryEtVsCent","Charged Removed Secondaries E_{T} vs centrality",100,0.0,2.0,20,-0.5,19.5);
-      fHistNeutralNotRemovedSecondaryEtVsCent = new TH2F("fHistNeutralNotRemovedSecondaryEtVsCent","Neutral NotRemoved Secondaries E_{T} vs centrality",100,0.0,2.0,20,-0.5,19.5);
-      fHistChargedNotRemovedSecondaryEtVsCent = new TH2F("fHistChargedNotRemovedSecondaryEtVsCent","Charged NotRemoved Secondaries E_{T} vs centrality",100,0.0,2.0,20,-0.5,19.5);
-      fHistNeutralRemovedSecondaryNumVsNCluster = new TH2F("fHistNeutralRemovedSecondaryNumVsNCluster","Neutral Removed Secondaries Number vs N_{cluster}",20,-0.5,19.5,250,0,250);
-      fHistChargedRemovedSecondaryNumVsNCluster = new TH2F("fHistChargedRemovedSecondaryNumVsNCluster","Charged Removed Secondaries Number vs N_{cluster}",20,-0.5,19.5,250,0,250);
-      fHistNeutralNotRemovedSecondaryNumVsNCluster = new TH2F("fHistNeutralNotRemovedSecondaryNumVsNCluster","Neutral NotRemoved Secondaries Number vs N_{cluster}",20,-0.5,19.5,250,0,250);
-      fHistChargedNotRemovedSecondaryNumVsNCluster = new TH2F("fHistChargedNotRemovedSecondaryNumVsNCluster","Charged NotRemoved Secondaries Number vs N_{cluster}",20,-0.5,19.5,250,0,250);
+      fHistNeutralRemovedSecondaryEtVsCent = new TH2F("fHistNeutralRemovedSecondaryEtVsCent","Neutral Removed Secondaries E_{T} vs centrality",100*scale,0.0,2.0*scale,20,-0.5,19.5);
+      fHistChargedRemovedSecondaryEtVsCent = new TH2F("fHistChargedRemovedSecondaryEtVsCent","Charged Removed Secondaries E_{T} vs centrality",100*scale,0.0,2.0*scale,20,-0.5,19.5);
+      fHistNeutralNotRemovedSecondaryEtVsCent = new TH2F("fHistNeutralNotRemovedSecondaryEtVsCent","Neutral NotRemoved Secondaries E_{T} vs centrality",100*scale,0.0,2.0*scale,20,-0.5,19.5);
+      fHistChargedNotRemovedSecondaryEtVsCent = new TH2F("fHistChargedNotRemovedSecondaryEtVsCent","Charged NotRemoved Secondaries E_{T} vs centrality",100*scale,0.0,2.0*scale,20,-0.5,19.5);
+      fHistNeutralRemovedSecondaryNumVsNCluster = new TH2F("fHistNeutralRemovedSecondaryNumVsNCluster","Neutral Removed Secondaries Number vs N_{cluster}",20,-0.5,19.5,250*scale,0,250*scale);
+      fHistChargedRemovedSecondaryNumVsNCluster = new TH2F("fHistChargedRemovedSecondaryNumVsNCluster","Charged Removed Secondaries Number vs N_{cluster}",20,-0.5,19.5,250*scale,0,250*scale);
+      fHistNeutralNotRemovedSecondaryNumVsNCluster = new TH2F("fHistNeutralNotRemovedSecondaryNumVsNCluster","Neutral NotRemoved Secondaries Number vs N_{cluster}",20,-0.5,19.5,250*scale,0,250*scale);
+      fHistChargedNotRemovedSecondaryNumVsNCluster = new TH2F("fHistChargedNotRemovedSecondaryNumVsNCluster","Charged NotRemoved Secondaries Number vs N_{cluster}",20,-0.5,19.5,250*scale,0,250*scale);
       fHistNeutralRemovedSecondaryNumVsCent = new TH2F("fHistNeutralRemovedSecondaryNumVsCent","Neutral Removed Secondaries Number vs N_{cluster}",20,-0.5,19.5,20,-0.5,19.5);
       fHistChargedRemovedSecondaryNumVsCent = new TH2F("fHistChargedRemovedSecondaryNumVsCent","Charged Removed Secondaries Number vs N_{cluster}",20,-0.5,19.5,20,-0.5,19.5);
       fHistNeutralNotRemovedSecondaryNumVsCent = new TH2F("fHistNeutralNotRemovedSecondaryNumVsCent","Neutral NotRemoved Secondaries Number vs N_{cluster}",20,-0.5,19.5,20,-0.5,19.5);
       fHistChargedNotRemovedSecondaryNumVsCent = new TH2F("fHistChargedNotRemovedSecondaryNumVsCent","Charged NotRemoved Secondaries Number vs N_{cluster}",20,-0.5,19.5,20,-0.5,19.5);
-      fHistNeutronsEtVsCent = new TH2F("fHistNeutronsEtVsCent","Neutrons and anti-neutrons - deposited ET vs Centrality bin",100,0,4.0,20,-0.5,19.5);
+      fHistNeutronsEtVsCent = new TH2F("fHistNeutronsEtVsCent","Neutrons and anti-neutrons - deposited ET vs Centrality bin",100*scale,0,4.0*scale,20,-0.5,19.5);
       fHistNeutronsNumVsCent = new TH2F("fHistNeutronsNumVsCent","Neutrons and anti-neutrons - number vs Centrality bin",20,-0.5,19.5,20,-0.5,19.5);
       fHistNotNeutronsNumVsCent = new TH2F("fHistNotNeutronsNumVsCent","Neutral particles not otherwise classified - number vs Centrality bin",20,-0.5,19.5,20,-0.5,19.5);
-      Int_t nbinsEt = 125;
-      Float_t maxEtRange = 125;
-      Float_t maxEtRangeShort = 50;
+      Int_t nbinsEt = 150*scale;
+      Float_t maxEtRange = 150*scale;
+      Float_t maxEtRangeShort = 60*scale;
       Float_t minEtRange = 0;
-      Int_t nbinsMult = 100;
-      Float_t maxMult = 3000;
+      Int_t nbinsMult = 100*scale;
+      Float_t maxMult = 3000*scale;
       Float_t minMult = 0;
-      Int_t nbinsCl = 250;
-      Float_t maxCl = 500;
+      Int_t nbinsCl = 300*scale;
+      Float_t maxCl = 600*scale;
       Float_t minCl = 0;
       fHistPiKPDepositedVsNch = new TH2F("fHistPiKPDepositedVsNch","#pi,K,p E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
       fHistPiKPNotTrackMatchedDepositedVsNch = new TH2F("fHistPiKPNotTrackMatchedDepositedVsNch","#pi,K,p E_{T} deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRange,nbinsMult,minMult,maxMult);
@@ -2292,8 +2326,8 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     //end
 
     fHistCentVsNchVsNcl = new TH3F("fHistCentVsNchVsNcl","Cent bin vs Nch Vs NCl",20,-0.5,19.5,nbinsMult,minMult,maxMult,nbinsCl,minCl,maxCl);
-    float maxpos = 500;
-     int nbinspos = 50;
+    float maxpos = 500*scale;
+     int nbinspos = 50*scale;
     fHistSecondaryPositionInDetector = new TH3F("fHistSecondaryPositionInDetector","Position of secondaries",nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos);
     fHistSecondaryPositionInDetector->GetXaxis()->SetTitle("X");
     fHistSecondaryPositionInDetector->GetYaxis()->SetTitle("Y");
@@ -2344,9 +2378,9 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
    fHistFracNeutronsVsNMultiplicity = new TH2F("fHistFracNeutronsVsNMultiplicity","fHistFracNeutronsVsNMultiplicity",nbinsMult,minMult,maxMult,nBinsFrac,fracMin,fracMaxLow);
    fHistFracKaonsVsNMultiplicity = new TH2F("fHistFracKaonsVsNMultiplicity","fHistFracKaonsVsNMultiplicity",nbinsMult,minMult,maxMult,nBinsFrac,fracMin,fracMaxLow);
    fHistFracSecondariesVsNMultiplicity = new TH2F("fHistFracSecondariesVsNMultiplicity","fHistFracSecondariesVsNMultiplicity",nbinsMult,minMult,maxMult,nBinsFrac,fracMin,fracMax);
-   Int_t nBinsMatchedTracks = 100;
+   Int_t nBinsMatchedTracks = 100*scale;
    Float_t lowMatchedTracks = 0;
-   Float_t highMatchedTracks = 100;
+   Float_t highMatchedTracks = 100*scale;
    fHistFracSignalVsNMatchedTracks = new TH2F("fHistFracSignalVsNMatchedTracks","fHistFracSignalVsNMatchedTracks",nBinsMatchedTracks,lowMatchedTracks,highMatchedTracks,nBinsFrac,fracMin,fracMax);
    fHistFracHadronsVsNMatchedTracks = new TH2F("fHistFracHadronsVsNMatchedTracks","fHistFracHadronsVsNMatchedTracks",nBinsMatchedTracks,lowMatchedTracks,highMatchedTracks,nBinsFrac,fracMin,fracMax);
    fHistFracNeutronsVsNMatchedTracks = new TH2F("fHistFracNeutronsVsNMatchedTracks","fHistFracNeutronsVsNMatchedTracks",nBinsMatchedTracks,lowMatchedTracks,highMatchedTracks,nBinsFrac,fracMin,fracMaxLow);
@@ -2477,7 +2511,9 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistGammasFoundAltCent);
     list->Add(fHistGammasGeneratedCent);
     list->Add(fHistGammasFoundRecoEnergyCent);
+    list->Add(fHistAllGammasFoundRecoEnergyCent);
     list->Add(fHistGammasFoundOutOfAccRecoEnergyCent);
+    list->Add(fHistAllGammasFoundOutOfAccRecoEnergyCent);
     list->Add(fHistChargedTracksCut);
     list->Add(fHistChargedTracksAccepted);
     list->Add(fHistGammasCut);
@@ -2917,7 +2953,7 @@ void AliAnalysisEtMonteCarlo::SetGeneratorMinMaxParticles(AliMCEvent *eventMC){
       fNMCProducedMax+= eventHeader2->NProduced();
       
       if(name.Contains("Hijing",TString::kIgnoreCase)){
-	cout<<"Found HIJING event and set range "<<fNMCProducedMin<<"-"<<fNMCProducedMax<<endl;
+	//cout<<"Found HIJING event and set range "<<fNMCProducedMin<<"-"<<fNMCProducedMax<<endl;
 	return ;
       }
     }

@@ -9,6 +9,7 @@
 #include <TString.h>
 #include "AliLog.h"
 #include "FJ_includes.h"
+#include "AliJetShape.h"
 
 class AliFJWrapper
 {
@@ -23,20 +24,31 @@ class AliFJWrapper
   virtual void  Clear(const Option_t* /*opt*/ = "");
   virtual void  CopySettingsFrom (const AliFJWrapper& wrapper);
   virtual void  GetMedianAndSigma(Double_t& median, Double_t& sigma, Int_t remove = 0) const;
-  fastjet::ClusterSequenceArea*         GetClusterSequence() const { return fClustSeq;                   }
-  const std::vector<fastjet::PseudoJet> GetInputVectors()    const { return fInputVectors;               }
-  const std::vector<fastjet::PseudoJet> GetInclusiveJets()   const { return fInclusiveJets;              }
-  std::vector<fastjet::PseudoJet>       GetJetConstituents(UInt_t idx) const;
-  Double_t                              GetMedianUsedForBgSubtraction() const { return fMedUsedForBgSub; }
-  const char*                           GetName()            const { return fName;                       }
-  const char*                           GetTitle()           const { return fTitle;                      }
-  Double_t                              GetJetArea         (UInt_t idx) const;
-  fastjet::PseudoJet                    GetJetAreaVector   (UInt_t idx) const;
-  Double_t                              GetJetSubtractedPt (UInt_t idx) const;
-  virtual std::vector<double>           GetSubtractedJetsPts(Double_t median_pt = -1, Bool_t sorted = kFALSE);
-  Bool_t                                GetLegacyMode()            { return fLegacyMode; }
+  fastjet::ClusterSequenceArea*           GetClusterSequence() const { return fClustSeq;                   }
+  const std::vector<fastjet::PseudoJet>   GetInputVectors()    const { return fInputVectors;               }
+  const std::vector<fastjet::PseudoJet>   GetInclusiveJets()   const { return fInclusiveJets;              }
+  std::vector<fastjet::PseudoJet>         GetJetConstituents(UInt_t idx) const;
+  Double_t                                GetMedianUsedForBgSubtraction() const { return fMedUsedForBgSub; }
+  const char*                             GetName()            const { return fName;                       }
+  const char*                             GetTitle()           const { return fTitle;                      }
+  Double_t                                GetJetArea         (UInt_t idx) const;
+  fastjet::PseudoJet                      GetJetAreaVector   (UInt_t idx) const;
+  Double_t                                GetJetSubtractedPt (UInt_t idx) const;
+  virtual std::vector<double>             GetSubtractedJetsPts(Double_t median_pt = -1, Bool_t sorted = kFALSE);
+  Bool_t                                  GetLegacyMode()            { return fLegacyMode; }
+#ifdef FASTJET_VERSION
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetMass() const {return fGenSubtractorInfoJetMass;}
+  const std::vector<fastjet::PseudoJet>   GetConstituentSubtrJets() const { return fConstituentSubtrJets;  }
+#endif
+  virtual std::vector<double>             GetGRNumerator()     const { return fGRNumerator;                }
+  virtual std::vector<double>             GetGRDenominator()   const { return fGRDenominator;              }
+  virtual std::vector<double>             GetGRNumeratorSub()  const { return fGRNumeratorSub;             }
+  virtual std::vector<double>             GetGRDenominatorSub()const { return fGRDenominatorSub;           }
 
   virtual Int_t Run();
+  virtual Int_t DoGenericSubtractionJetMass();
+  virtual Int_t DoGenericSubtractionGR(Int_t ijet);
+  virtual Int_t DoConstituentSubtraction();
 
   void SetStrategy(const fastjet::Strategy &strat)                 { fStrategy = strat;  }
   void SetAlgorithm(const fastjet::JetAlgorithm &algor)            { fAlgor    = algor;  }
@@ -57,40 +69,58 @@ class AliFJWrapper
   void SetupStrategyfromOpt(const char *option);
   void SetLegacyMode (Bool_t mode)      { fLegacyMode ^= mode; }
   void SetLegacyFJ();
+  void SetUseExternalBkg(Bool_t b, Double_t rho, Double_t rhom) { fUseExternalBkg = b; fRho = rho; fRhom = rhom;}
+  void SetRMaxAndStep(Double_t rmax, Double_t dr) {fRMax = rmax; fDRStep = dr; }
 
  protected:
-  TString                                fName;             //!
-  TString                                fTitle;            //!
-  std::vector<fastjet::PseudoJet>        fInputVectors;     //!
-  std::vector<fastjet::PseudoJet>        fInclusiveJets;    //!
-  std::vector<double>                    fSubtractedJetsPt; //!
-  fastjet::AreaDefinition               *fAreaDef;          //!
-  fastjet::VoronoiAreaSpec              *fVorAreaSpec;      //!
-  fastjet::GhostedAreaSpec              *fGhostedAreaSpec;  //!
-  fastjet::JetDefinition                *fJetDef;           //!
-  fastjet::JetDefinition::Plugin        *fPlugin;           //!
-  fastjet::RangeDefinition              *fRange;            //!
-  fastjet::ClusterSequenceArea          *fClustSeq;         //!
-  fastjet::Strategy                      fStrategy;         //!
-  fastjet::JetAlgorithm                  fAlgor;            //!
-  fastjet::RecombinationScheme           fScheme;           //!
-  fastjet::AreaType                      fAreaType;         //!
-  Int_t                                  fNGhostRepeats;    //!
-  Double_t                               fGhostArea;	    //!
-  Double_t                               fMaxRap;	    //!
-  Double_t                               fR;                //!
+  TString                                fName;               //!
+  TString                                fTitle;              //!
+  std::vector<fastjet::PseudoJet>        fInputVectors;       //!
+  std::vector<fastjet::PseudoJet>        fInclusiveJets;      //!
+  std::vector<double>                    fSubtractedJetsPt;   //!
+  std::vector<fastjet::PseudoJet>        fConstituentSubtrJets; //!
+  fastjet::AreaDefinition               *fAreaDef;            //!
+  fastjet::VoronoiAreaSpec              *fVorAreaSpec;        //!
+  fastjet::GhostedAreaSpec              *fGhostedAreaSpec;    //!
+  fastjet::JetDefinition                *fJetDef;             //!
+  fastjet::JetDefinition::Plugin        *fPlugin;             //!
+  fastjet::RangeDefinition              *fRange;              //!
+  fastjet::ClusterSequenceArea          *fClustSeq;           //!
+  fastjet::Strategy                      fStrategy;           //!
+  fastjet::JetAlgorithm                  fAlgor;              //!
+  fastjet::RecombinationScheme           fScheme;             //!
+  fastjet::AreaType                      fAreaType;           //!
+  Int_t                                  fNGhostRepeats;      //!
+  Double_t                               fGhostArea;	      //!
+  Double_t                               fMaxRap;	      //!
+  Double_t                               fR;                  //!
   // no setters for the moment - used default values in the constructor
-  Double_t                               fGridScatter;      //!
-  Double_t                               fKtScatter;	    //!
-  Double_t                               fMeanGhostKt;      //!
-  Int_t                                  fPluginAlgor;      //!
+  Double_t                               fGridScatter;        //!
+  Double_t                               fKtScatter;	      //!
+  Double_t                               fMeanGhostKt;        //!
+  Int_t                                  fPluginAlgor;        //!
   // extra parameters
-  Double_t                               fMedUsedForBgSub;  //!
-  Bool_t                                 fUseArea4Vector;   //!
+  Double_t                               fMedUsedForBgSub;    //!
+  Bool_t                                 fUseArea4Vector;     //!
 #ifdef FASTJET_VERSION
-  fastjet::JetMedianBackgroundEstimator *fBkrdEstimator;    //!
+  fastjet::JetMedianBackgroundEstimator   *fBkrdEstimator;    //!
+  //from contrib package
+  fastjet::contrib::GenericSubtractor     *fGenSubtractor;    //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetMass;    //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRNum;      //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRDen;      //!
+  
 #endif
-  Bool_t                                 fLegacyMode;       //!
+  Bool_t                                   fLegacyMode;           //!
+  Bool_t                                   fUseExternalBkg;       //!
+  Double_t                                 fRho;                  //  pT background density
+  Double_t                                 fRhom;                 //  mT background density
+  Double_t                                 fRMax;             //!
+  Double_t                                 fDRStep;           //!
+  std::vector<double>                      fGRNumerator;      //!
+  std::vector<double>                      fGRDenominator;    //!
+  std::vector<double>                      fGRNumeratorSub;   //!
+  std::vector<double>                      fGRDenominatorSub; //!
 
   virtual void   SubtractBackground(const Double_t median_pt = -1);
 
@@ -119,6 +149,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fInputVectors      ( )
   , fInclusiveJets     ( )
   , fSubtractedJetsPt  ( )
+  , fConstituentSubtrJets ( )
   , fAreaDef           (0)
   , fVorAreaSpec       (0)
   , fGhostedAreaSpec   (0)
@@ -142,8 +173,21 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fUseArea4Vector    (kFALSE)
 #ifdef FASTJET_VERSION
   , fBkrdEstimator     (0)
+  , fGenSubtractor     (0)
+  , fGenSubtractorInfoJetMass ( )
+  , fGenSubtractorInfoGRNum ( )
+  , fGenSubtractorInfoGRDen ( )
 #endif
   , fLegacyMode        (false)
+  , fUseExternalBkg    (false)
+  , fRho               (0)
+  , fRhom              (0)
+  , fRMax(2.)
+  , fDRStep(0.04)
+  , fGRNumerator()
+  , fGRDenominator()
+  , fGRNumeratorSub()
+  , fGRDenominatorSub()
 {
   // Constructor.
 }
@@ -161,7 +205,8 @@ AliFJWrapper::~AliFJWrapper()
   delete fRange;
   delete fClustSeq;
 #ifdef FASTJET_VERSION
-  if (fBkrdEstimator) delete fBkrdEstimator;
+  if (fBkrdEstimator)     delete fBkrdEstimator;
+  if (fGenSubtractor)     delete fGenSubtractor;
 #endif
 }
 
@@ -172,20 +217,23 @@ void AliFJWrapper::CopySettingsFrom(const AliFJWrapper& wrapper)
   // You very often want to keep most of the settings 
   // but change only the algorithm or R - do it after call to this function
 
-  fStrategy       = wrapper.fStrategy;
-  fAlgor          = wrapper.fAlgor;
-  fScheme         = wrapper.fScheme;
-  fAreaType       = wrapper.fAreaType;
-  fNGhostRepeats  = wrapper.fNGhostRepeats;
-  fGhostArea      = wrapper.fGhostArea;
-  fMaxRap         = wrapper.fMaxRap;
-  fR              = wrapper.fR;
-  fGridScatter    = wrapper.fGridScatter;
-  fKtScatter      = wrapper.fKtScatter;
-  fMeanGhostKt    = wrapper.fMeanGhostKt;
-  fPluginAlgor    = wrapper.fPluginAlgor;
-  fUseArea4Vector = wrapper.fUseArea4Vector;
-  fLegacyMode     = wrapper.fLegacyMode;
+  fStrategy         = wrapper.fStrategy;
+  fAlgor            = wrapper.fAlgor;
+  fScheme           = wrapper.fScheme;
+  fAreaType         = wrapper.fAreaType;
+  fNGhostRepeats    = wrapper.fNGhostRepeats;
+  fGhostArea        = wrapper.fGhostArea;
+  fMaxRap           = wrapper.fMaxRap;
+  fR                = wrapper.fR;
+  fGridScatter      = wrapper.fGridScatter;
+  fKtScatter        = wrapper.fKtScatter;
+  fMeanGhostKt      = wrapper.fMeanGhostKt;
+  fPluginAlgor      = wrapper.fPluginAlgor;
+  fUseArea4Vector   = wrapper.fUseArea4Vector;
+  fLegacyMode       = wrapper.fLegacyMode;
+  fUseExternalBkg   = wrapper.fUseExternalBkg;
+  fRho              = wrapper.fRho;
+  fRhom             = wrapper.fRhom;
 }
 
 //_________________________________________________________________________________________________
@@ -207,7 +255,8 @@ void AliFJWrapper::Clear(const Option_t */*opt*/)
   delete fRange;           fRange           = 0;
   delete fClustSeq;        fClustSeq        = 0;
 #ifdef FASTJET_VERSION
-  if (fBkrdEstimator) delete fBkrdEstimator; fBkrdEstimator = 0;
+  if (fBkrdEstimator)     delete fBkrdEstimator     ;  fBkrdEstimator     = 0;
+  if (fGenSubtractor)     delete fGenSubtractor     ;  fGenSubtractor     = 0;
 #endif
 }
 
@@ -415,7 +464,7 @@ Int_t AliFJWrapper::Run()
 
   // FJ3 :: Define an JetMedianBackgroundEstimator just in case it will be used 
 #ifdef FASTJET_VERSION
-  //fBkrdEstimator = new fj::JetMedianBackgroundEstimator(*fRange, *fJetDef, *fAreaDef) ;
+  fBkrdEstimator     = new fj::JetMedianBackgroundEstimator(fj::SelectorAbsRapMax(fMaxRap));
 #endif
 
   if (fLegacyMode) { SetLegacyFJ(); } // for FJ 2.x even if fLegacyMode is set, SetLegacyFJ is dummy
@@ -497,6 +546,91 @@ void AliFJWrapper::SubtractBackground(Double_t median_pt)
       fSubtractedJetsPt.push_back(pt_sub); // here we put only the pt of the jet - note: this can be negative
     }
   }
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJetMass() {
+  //Do generic subtraction for jet mass
+#ifdef FASTJET_VERSION
+  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
+  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+
+  // Define jet shape
+  AliJetShapeMass shapeMass;
+
+  // clear the generic subtractor info vector
+  fGenSubtractorInfoJetMass.clear();
+  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
+    fj::contrib::GenericSubtractorInfo info;
+    if(fInclusiveJets[i].perp()>0.)
+      double subtracted_shape = (*fGenSubtractor)(shapeMass, fInclusiveJets[i], info);
+    fGenSubtractorInfoJetMass.push_back(info);
+  }
+  
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionGR(Int_t ijet) {
+  //Do generic subtraction for jet mass
+#ifdef FASTJET_VERSION
+  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
+  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+
+  if(ijet>fInclusiveJets.size()) return 0;
+
+  fGRNumerator.clear();
+  fGRDenominator.clear();
+  fGRNumeratorSub.clear();
+  fGRDenominatorSub.clear();
+
+  // Define jet shape
+  for(Double_t r = 0.; r<fRMax; r+=fDRStep) {
+    AliJetShapeGRNum shapeGRNum(r,fDRStep);
+    AliJetShapeGRDen shapeGRDen(r,fDRStep);
+
+    // clear the generic subtractor info vector
+    fGenSubtractorInfoGRNum.clear();
+    fGenSubtractorInfoGRDen.clear();
+    fj::contrib::GenericSubtractorInfo infoNum;
+    fj::contrib::GenericSubtractorInfo infoDen;
+    if(fInclusiveJets[ijet].perp()>0.) {
+      double sub_num = (*fGenSubtractor)(shapeGRNum, fInclusiveJets[ijet], infoNum);
+      double sub_den = (*fGenSubtractor)(shapeGRDen, fInclusiveJets[ijet], infoDen);
+    }
+    fGenSubtractorInfoGRNum.push_back(infoNum);
+    fGenSubtractorInfoGRDen.push_back(infoDen);
+    fGRNumerator.push_back(infoNum.unsubtracted());
+    fGRDenominator.push_back(infoDen.unsubtracted());
+    fGRNumeratorSub.push_back(infoNum.second_order_subtracted());
+    fGRDenominatorSub.push_back(infoDen.second_order_subtracted());
+  }
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoConstituentSubtraction() {
+  //Do constituent subtraction
+#ifdef FASTJET_VERSION
+  fj::contrib::ConstituentSubtractor *subtractor;
+  if(fUseExternalBkg)
+    subtractor     = new fj::contrib::ConstituentSubtractor(fRho,fRhom,kFALSE,kTRUE);
+  else                 subtractor     = new fj::contrib::ConstituentSubtractor(fBkrdEstimator);
+
+  //clear constituent subtracted jets
+  fConstituentSubtrJets.clear();
+  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
+    fj::PseudoJet subtracted_jet(0.,0.,0.,0.);
+    if(fInclusiveJets[i].perp()>0.)
+      subtracted_jet = (*subtractor)(fInclusiveJets[i]);
+    fConstituentSubtrJets.push_back(subtracted_jet);
+  }
+  if(subtractor) delete subtractor;
+
+#endif
+  return 0;
 }
 
 //_________________________________________________________________________________________________

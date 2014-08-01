@@ -13,9 +13,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Bool_t   tm            = kTRUE,
                                                       const Int_t    minCen        = -1,
                                                       const Int_t    maxCen        = -1,
-						      const Float_t  deltaphicut   = 0.03,
-						      const Float_t  deltaetacut   = 0.02,
- 						      const Int_t    disttobad     = 0,
+                                                      const Float_t  deltaphicut   = 0.03,
+                                                      const Float_t  deltaetacut   = 0.02,
+                                                      const Int_t    disttobad     = 0,
                                                       const Int_t    nlmMax        =  2,
                                                       const Bool_t   qaan          = kFALSE,
                                                       const Int_t    debug         = -1,
@@ -44,6 +44,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
     return NULL;
   }
 
+  // Make sure the B field is enabled for track selection, some cuts need it
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
+  
   Bool_t useKinematics = kFALSE;
   useKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
 
@@ -337,7 +340,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
   if(simu)
     cu->SwitchOnLoadOwnEMCALGeometryMatrices();
   
-  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+  /*  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
   
   cu->SwitchOffRecalibration();
   cu->SwitchOffRunDepCorrection();
@@ -351,16 +354,16 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
                           kFALSE, // bad map
                           kFALSE); // time calib
   if(timecut) recou->SetExoticCellDiffTimeCut(50.);
-
+  */
   if( nonlin)
   { 
     printf("ConfigureCaloUtils() - Apply non linearity to EMCAL\n");
     cu->SwitchOnCorrectClusterLinearity();
   }
-    
+  /*   
   printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
   printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
-  
+  */
   cu->SetNumberOfSuperModulesUsed(10);
 
   if(print) cu->Print("");
@@ -499,15 +502,18 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   
   printf("\t *** Set: R = %2.2f, Threshold %2.2f, Method %d, Neutral/Charged option %d ***\n",cone,pth,thresType,partInCone);
   
-  ic->SetPtThreshold(pth);
+  //Main parameters
+  //****
   ic->SetConeSize(cone);
   
-  ic->SetPtFraction(0.1);
-  //  ic->SetSumPtThreshold(1.0) ;
-  ic->SetPtThreshold(pth);
+  ic->SetPtFraction    (0.1);
+  ic->SetPtThreshold   (pth);
   ic->SetSumPtThreshold(pth);
+  
   ic->SetParticleTypeInCone(partInCone);
+  
   ic->SetICMethod(thresType);
+  //****
   
   //Do or not do isolation with previously produced AODs.
   //No effect if use of SwitchOnSeveralIsolation()

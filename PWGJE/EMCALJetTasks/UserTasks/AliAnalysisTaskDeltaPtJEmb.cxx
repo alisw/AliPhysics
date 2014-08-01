@@ -154,11 +154,11 @@ void AliAnalysisTaskDeltaPtJEmb::UserCreateOutputObjects()
   TString histname;
 
   const Int_t nbinsZ = 12;
-  Float_t binsZ[nbinsZ+1] = {0,1,2,3,4,5,6,7,8,9,10,20,1000};
+  Double_t binsZ[nbinsZ+1] = {0,1,2,3,4,5,6,7,8,9,10,20,1000};
 
-  Float_t *binsPt       = GenerateFixedBinArray(fNbins, fMinBinPt, fMaxBinPt);
-  Float_t *binsCorrPt   = GenerateFixedBinArray(fNbins*2, -fMaxBinPt, fMaxBinPt);
-  Float_t *binsArea     = GenerateFixedBinArray(50, 0, 2);
+  Double_t *binsPt       = GenerateFixedBinArray(fNbins, fMinBinPt, fMaxBinPt);
+  Double_t *binsCorrPt   = GenerateFixedBinArray(fNbins*2, -fMaxBinPt, fMaxBinPt);
+  Double_t *binsArea     = GenerateFixedBinArray(50, 0, 2);
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     histname = "fHistEmbJetsPtArea_";

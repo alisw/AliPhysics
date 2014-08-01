@@ -257,10 +257,6 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     AliAODMCHeader *mcHeader=0;
 
     Bool_t isPrimary=kTRUE;
-    Float_t truePt=0.;
-    Float_t xDecay=0.;
-    Float_t yDecay=0.;
-    Float_t zDecay=0.;
     Float_t pdgCode=-2;
     Float_t trueImpParXY=0.;
 
@@ -286,11 +282,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	Int_t checkOrigin = CheckOrigin(mcArray,partDSt);
        	if(checkOrigin==5) isPrimary=kFALSE;
 	AliAODMCParticle *dg0 = (AliAODMCParticle*)mcArray->At(partDSt->GetDaughter(0));
-	AliAODMCParticle *dg01 = (AliAODMCParticle*)mcArray->At(dg0->GetDaughter(0));
-	truePt=dg0->Pt();
-	xDecay=dg01->Xv();	  
-	yDecay=dg01->Yv();	  
-	zDecay=dg01->Zv();
+	//	AliAODMCParticle *dg01 = (AliAODMCParticle*)mcArray->At(dg0->GetDaughter(0));
 	pdgCode=TMath::Abs(partDSt->GetPdgCode());
 	if(!isPrimary){
 	  trueImpParXY=GetTrueImpactParameterD0(mcHeader,mcArray,dg0)*1000.;
@@ -301,6 +293,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
       }
     }
    
+    if(pdgCode==-1) printf("No particle assigned! check\n");
+
     Int_t ptbin=fCuts->PtBin(dstarD0pi->Pt());
     
     // quality selction on tracks and region of interest
@@ -972,16 +966,13 @@ void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part
   if(!isSel) return;
 
   Int_t ptbin=cuts->PtBin(part->Pt());
-  
-  Bool_t massInRange=kFALSE;
-  
+    
   // select the side bands intervall
   Double_t invmassD0    = part->InvMassD0();
   if(TMath::Abs(invmassD0-1.865)>4*fD0Window && TMath::Abs(invmassD0-1.865)<8*fD0Window){
     
     // for pt and eta
     Double_t invmassDelta = part->DeltaInvMass();
-    if (TMath::Abs(invmassDelta-0.14557)<fPeakWindow) massInRange=kTRUE;
     
     TString fillthis="";
     fillthis="histSideBandMass_";
@@ -1005,7 +996,7 @@ void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part,
 
   AliAODRecoDecayHF2Prong* theD0particle = (AliAODRecoDecayHF2Prong*)part->Get2Prong();
 
-  Int_t okD0WrongSign,okD0barWrongSign;
+  Int_t okD0WrongSign;
   Double_t wrongMassD0=0.;
   
   Int_t isSelected=cuts->IsSelected(part,AliRDHFCuts::kCandidate); //selected
@@ -1014,21 +1005,15 @@ void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part,
   }
 
   okD0WrongSign =  1;
-  okD0barWrongSign = 1;
   
   //if is D*+ than assume D0bar
   if(part->Charge()>0 && (isSelected ==1)) { 
     okD0WrongSign = 0;
   }
-  if(part->Charge()<0 && (isSelected ==2)){
-    okD0barWrongSign = 0;
-  }
   
   // assign the wrong mass in case the cuts return both D0 and D0bar
   if(part->Charge()>0 && (isSelected ==3)) { 
     okD0WrongSign = 0;
-  } else if(part->Charge()<0 && (isSelected ==3)){
-    okD0barWrongSign = 0;
   }
   
   //wrong D0 inv mass
@@ -1065,6 +1050,7 @@ void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part,
     
   }
 }
+
 //-------------------------------------------------------------------------------
 Int_t AliAnalysisTaskSEDStarSpectra::CheckOrigin(TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const {		
   //
@@ -1077,7 +1063,6 @@ Int_t AliAnalysisTaskSEDStarSpectra::CheckOrigin(TClonesArray* arrayMC, const Al
   Int_t istep = 0;
   Int_t abspdgGranma =0;
   Bool_t isFromB=kFALSE;
-  Bool_t isQuarkFound=kFALSE;
   while (mother >0 ){
     istep++;
     AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
@@ -1087,7 +1072,6 @@ Int_t AliAnalysisTaskSEDStarSpectra::CheckOrigin(TClonesArray* arrayMC, const Al
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
 	isFromB=kTRUE;
       }
-      if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
       mother = mcGranma->GetMother();
     }else{
       AliError("Failed casting the mother particle!");

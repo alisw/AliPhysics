@@ -26,6 +26,7 @@
 #include "AliAODEvent.h"
 #include "AliPicoTrack.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliRhoParameter.h"
 
 class TH3F;
 class TParticle ;
@@ -86,16 +87,39 @@ public:
    
    //Bool_t   FillMCDJetInfo(AliPicoTrack *jetTrk,AliEmcalJet* jet, TClonesArray *mcArray,Double_t ptjet);
    void FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet, AliAODEvent* aodEvent);
-   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t phiD, Double_t z, Double_t ptD, Double_t ptj, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent);
+   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent);
    
-   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t phiD, Double_t z, Double_t ptD, Double_t ptj, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
-   void FillHistogramsMCGenDJetCorr(Double_t dPhi, Double_t phiD, Double_t z,Double_t ptD,Double_t ptjet, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
+   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi,  Double_t z, Double_t ptD, Double_t ptj, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
+   void FillHistogramsMCGenDJetCorr(Double_t dPhi, Double_t z,Double_t ptD,Double_t ptjet, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void SideBandBackground(AliAODRecoCascadeHF *candDstar, AliEmcalJet *jet);
-   void MCBackground(AliAODRecoDecayHF *candbg);
+   void MCBackground(AliAODRecoDecayHF *candbg, AliEmcalJet *jet);
    void FillMassHistograms(Double_t mass,Double_t ptD);
    void FlagFlavour(AliEmcalJet* jet);
    Int_t IsDzeroSideBand(AliAODRecoCascadeHF *candDstar);
    Bool_t InEMCalAcceptance(AliVParticle *vpart);
+   
+   void LightTHnSparse(){
+      fSwitchOnSB=0;
+      fSwitchOnPhiAxis=0;
+      fSwitchOnOutOfConeAxis=0;
+   }
+   void HeavyTHnSparse(){
+      fSwitchOnSB=1;
+      fSwitchOnPhiAxis=1;
+      fSwitchOnOutOfConeAxis=1;
+   }
+   
+   void TurnOffTHnSparse() {fSwitchOnSparses=kFALSE;}
+   
+   /*
+   void SwitchOnSB(){fSwitchOnSB=1;};
+   void SwitchOffSB(){fSwitchOnSB=0;};
+   void SwitchOnPhiAxis(){fSwitchOnPhiAxis=1;}
+   void SwitchOffPhiAxis(){fSwitchOffPhiAxis=0;}
+   void SwitchOnOutOfConeAxis(){fSwitchOnOutOfConeAxis=1;}
+   void SwitchOffOutOfConeAxis(){fSwitchOnOutOfConeAxis=0;}
+   */
+   
 private:
    
    AliAnalysisTaskFlavourJetCorrelations(const AliAnalysisTaskFlavourJetCorrelations &source);
@@ -135,8 +159,14 @@ private:
    Bool_t   fIsDInJet;                // flag D meson in jet
    Int_t    fTypeDInJet;              // way of selecting D in jets (see IsDInJet in cxx)
    TClonesArray *fTrackArr;      //array of the tracks used in the jet finder 
+   Bool_t fSwitchOnSB;          // flag to switch off/on the SB analysis (default is off)
+   Bool_t fSwitchOnPhiAxis;     // flag to switch off/on the DeltaPhi axis in THnSparse (to be used in combination with switch OutOfCone)
+   Bool_t fSwitchOnOutOfConeAxis; //flag to switch off/on the out of cone axis in THnSparse (to be switch on if DeltaPhi is on)
+   Bool_t fSwitchOnSparses;     // turn on/off all THnSparse
+    
+   Int_t fNAxesBigSparse;      // number of axis
    
-   ClassDef(AliAnalysisTaskFlavourJetCorrelations,5); // class for charm-jet CorrelationsExch
+   ClassDef(AliAnalysisTaskFlavourJetCorrelations,6); // class for charm-jet CorrelationsExch
 };
 
 #endif

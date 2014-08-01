@@ -427,7 +427,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Int_t fNSpecialSubTriggerOptions;
 private:
 
-   ClassDef(AliConversionCuts,8)
+   ClassDef(AliConversionCuts,9)
 };
 
 

@@ -604,6 +604,30 @@ void AliRsnCutSetDaughterParticle::Init()
       SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
       break;
       
+    case    AliRsnCutSetDaughterParticle::kTPCTOFpidLstar :      
+      if (fPID==AliPID::kProton) {
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 1.1);
+      }
+      if (fPID==AliPID::kKaon) {
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 0.6);
+      }
+      
+      AddCut(fCutQuality);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTPCNSigma);
+      
+      /* set TPC+TOF PID*/
+      iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.0, 10);
+      
+      AddCut(iCutTPCTOFNSigma);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
+      SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
+      break;
+      
     default :
       break;
     }

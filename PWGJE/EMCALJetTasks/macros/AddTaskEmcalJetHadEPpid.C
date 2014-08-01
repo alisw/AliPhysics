@@ -1,7 +1,7 @@
 AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const char *outfilename    = "AnalysisOutput.root",
    const char *nJets          = "Jets",
-   const char *nTracks        = "PicoTracks",
+   const char *nTracksME      = "PicoTracks",
    const char *nClusters      = "CaloClustersCorr",
    const char *nRho	          = "rhoCh",
    const char *lrho           = "lrho",
@@ -28,8 +28,11 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Int_t MixingTracks   = 50000,
    TString cutType			  = "EMCAL",
    Bool_t   Comments		  = 0,
-   Bool_t   IO				  = 0,
-   Int_t esdcuts			  = 10001006
+   Bool_t   doFlavourJetAnalysis = 0,
+   Int_t flavTag              = 999,
+   Int_t esdcuts			  = 10001006,
+   TString colltype			  = "",
+   const char *tag			  = ""
 )
 {  
   
@@ -41,23 +44,39 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
     ::Error("AddTaskEmcalJetHadEPpid", "No analysis manager to connect to.");
     return NULL;
   }  
-  
+
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
-  {
-    ::Error("AddTaskEmcalJetHadEPpid", "This task requires an input event handler");
+  AliVEventHandler *evhand = mgr->GetInputEventHandler();
+  //if (!mgr->GetInputEventHandler())
+  if (!evhand) {
+    Error("AddTaskEmcalJetHadEPpid", "This task requires an input event handler");
     return NULL;
   }
+
+  // check on type of event 
+  TString dType("ESD");
+  if (!evhand->InheritsFrom("AliESDInputHandler")) 
+    dType = "AOD";
+  if (dType == "AOD") const char *nTracks = "AODFilterTracks";
+  if (dType == "ESD") const char *nTracks = "ESDFilterTracks"; 
+
+  // find out collisions system in order to know beamtype in UserCreateObjects later on
+  AliAnalysisTaskEmcal::BeamType beam = -99;
+  if (colltype == "p-p") beam = 0;
+  else if(colltype == "A-A") beam = 1;
+  else if(colltype == "p-A") beam = 2;
+  else beam = -1;
 
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("Correlations_%s", nJets));
+  TString name(Form("Correlations_%s%s", nJets, tag));
   AliAnalysisTaskEmcalJetHadEPpid *correlationtask = new AliAnalysisTaskEmcalJetHadEPpid(name);
   correlationtask->SetJetsName(nJets);
   correlationtask->SetTracksName(nTracks);
+  correlationtask->SetTracksNameME(nTracksME);
   correlationtask->SetRhoName(nRho);
   correlationtask->SetLocalRhoName(lrho);
   correlationtask->SetJetPhi(minPhi,maxPhi);
@@ -82,7 +101,9 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetMixingTracks(MixingTracks);
   correlationtask->SetcutType(cutType);
   correlationtask->SetdoComments(Comments);
-  correlationtask->SetIOon(IO);
+  correlationtask->SetFlavourJetAnalysis(doFlavourJetAnalysis);
+  correlationtask->SetJETFlavourTag(flavTag);
+  correlationtask->SetCollType(beam);
 
   // =================== set up containers ================================================
   // Cluster Container
@@ -102,10 +123,12 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetPercAreaCut(0.6, 1); 
 
   // ===================================================================
+  // for manually doing Track Cuts
   // ESD track quality cuts
   AliESDtrackCuts *esdTrackCuts = 0x0;
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
   esdTrackCuts = CreateTrackCutsPWGJE(esdcuts);
+  correlationtask->SetTrackCuts(esdTrackCuts);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

@@ -253,7 +253,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPhiLeading;                   //! phi distribution vs pT of leading particles
   TH2F *       fhEtaLeading;                   //! eta distribution vs pT of leading particles
   
-  TH1F *       fhPtLeadingMC[6];               //! pT distribution of leading particles, check the origin of the cluster : decay photon (pi0, eta, other), merged photon (pi0), hadron, rest of photons (prompt, FSR, ISR)
+  TH1F *       fhPtLeadingMC[7];               //! pT distribution of leading particles, check the origin of the cluster : "Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"
 
   TH2F *       fhPtLeadingCentrality;          //! pT distribution of leading particles vs centrality
   TH2F *       fhPtLeadingEventPlane;          //! pT distribution of leading particles vs centrality
@@ -431,11 +431,21 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhMCDeltaPhiChargedPt;          //! MC pure particles charged delta phi vs delta eta (associated-trigger) 
   TH2F *       fhMCPtXECharged;                //! MC pure particles charged trigger primary pt vs xE
   TH2F *       fhMCPtXEUeCharged;              //! MC pure particles charged trigger primary pt vs xE (underlying event)
+  TH2F *       fhMCPtXEUeLeftCharged;          //! MC pure particles charged trigger primary pt vs xE (underlying event,left cone)
+  TH2F *       fhMCPtXEUeRightCharged;         //! MC pure particles charged trigger primary pt vs xE (underlying event,right cone)
   TH2F *       fhMCPtHbpXECharged;             //! MC pure particles charged trigger primary pt vs ln(1/xE)
   TH2F *       fhMCPtHbpXEUeCharged;           //! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event)
+  TH2F *       fhMCPtHbpXEUeLeftCharged;       //! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event, left cone)
+  TH2F *       fhMCPtHbpXEUeRightCharged;      //! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event, right cone)
   TH1F *       fhMCUePart;                     //! MC pure UE particles distribution vs pt trig
   TH2F *       fhMCPtZTCharged;                //! MC pure particles charged trigger primary pt vs zT
+  TH2F *       fhMCPtZTUeCharged;              //! MC pure particles charged trigger primary pt vs zT (underlying event)
+  TH2F *       fhMCPtZTUeLeftCharged;          //! MC pure particles charged trigger primary pt vs zT (underlying event, left cone)
+  TH2F *       fhMCPtZTUeRightCharged;         //! MC pure particles charged trigger primary pt vs zT (underlying event, right cone)
   TH2F *       fhMCPtHbpZTCharged;             //! MC pure particles charged trigger primary pt vs ln(1/zT)
+  TH2F *       fhMCPtHbpZTUeCharged;           //! MC pure particles charged trigger primary pt vs ln(1/zT) (underlying event)
+  TH2F *       fhMCPtHbpZTUeLeftCharged;       //! MC pure particles charged trigger primary pt vs ln(1/zT) (underlying event, left cone)
+  TH2F *       fhMCPtHbpZTUeRightCharged;      //! MC pure particles charged trigger primary pt vs ln(1/zT) (underlying event, right cone)
   TH2F *       fhMCPtTrigPout ;                //! MC pure particles charged trigger primary pt vs pOut
   TH2F *       fhMCPtAssocDeltaPhi  ;          //! MC pure particles charged associated primary pt vs delta phi (associated-trigger) 
 
@@ -459,7 +469,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,30)
+  ClassDef(AliAnaParticleHadronCorrelation,31)
 } ;
  
 

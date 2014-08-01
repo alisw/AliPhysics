@@ -73,6 +73,8 @@ fCutSettings(0),
 fEventplaneDist(0),
 fMCEventplaneDist(0),
 fCorrelEventplaneMCDATA(0),
+fCorrelEventplaneDefaultCorrected(0),
+fEventplaneSubtractedPercentage(0),
 // cross check for event plane resolution
 fEPDistCent(0),
 fPhiCent(0),
@@ -540,6 +542,22 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCorrelEventplaneMCDATA->GetYaxis()->SetTitle("#phi (MC event plane)");
   fCorrelEventplaneMCDATA->Sumw2();
   
+  Int_t binsCorrelPhiPhiCent[3] = { 40, 40, 10};
+  Double_t minCorrelPhiPhiCent[3] = { -2.*TMath::Pi(), -2.*TMath::Pi(), 0};
+  Double_t maxCorrelPhiPhiCent[3] = { 2.*TMath::Pi(), 2.*TMath::Pi(), 100};
+  
+  fCorrelEventplaneDefaultCorrected = new THnSparseF("fCorrelEventplaneDefaultCorrected","fCorrelEventplaneDefaultCorrected",3,binsCorrelPhiPhiCent, minCorrelPhiPhiCent, maxCorrelPhiPhiCent);
+  fCorrelEventplaneDefaultCorrected->SetBinEdges(2, fBinsCentrality);
+  fCorrelEventplaneDefaultCorrected->GetAxis(0)->SetTitle("#phi (event plane)");
+  fCorrelEventplaneDefaultCorrected->GetAxis(1)->SetTitle("#phi (corrected event plane)");
+  fCorrelEventplaneDefaultCorrected->GetAxis(2)->SetTitle("centrality");
+  fCorrelEventplaneDefaultCorrected->Sumw2();
+  
+  fEventplaneSubtractedPercentage = new TH2F("fEventplaneSubtractedPercentage","fEventplaneSubtractedPercentage",100, 0,1, fCentralityNbins-1, fBinsCentrality);
+  fEventplaneSubtractedPercentage->GetXaxis()->SetTitle("percentage of tracks, which have been subtracted during analysis");
+  fEventplaneSubtractedPercentage->GetYaxis()->SetTitle("centrality");
+  fEventplaneSubtractedPercentage->Sumw2();
+  
   // cross check for event plane resolution
   fEPDistCent = new TH2F("fEPDistCent","fEPDistCent",20, -1.*TMath::Pi(), TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
   fEPDistCent->GetXaxis()->SetTitle("#phi (#Psi_{EP})");
@@ -551,22 +569,22 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fPhiCent->GetYaxis()->SetTitle("Centrality");
   fPhiCent->Sumw2();
   
-  fPcosEPCent = new TProfile("fPcosEPCent","fPcosEPCent", fCentralityNbins-1, fBinsCentrality);
+  fPcosEPCent = new TProfile("fPcosEPCent","fPcosEPCent", 100,0,100);
   fPcosEPCent->GetXaxis()->SetTitle("Centrality");
   fPcosEPCent->GetYaxis()->SetTitle("#LT cos 2 #Psi_{EP} #GT");
   fPcosEPCent->Sumw2();
   
-  fPsinEPCent = new TProfile("fPsinEPCent","fPsinEPCent", fCentralityNbins-1, fBinsCentrality);
+  fPsinEPCent = new TProfile("fPsinEPCent","fPsinEPCent", 100,0,100);
   fPsinEPCent->GetXaxis()->SetTitle("Centrality");
   fPsinEPCent->GetYaxis()->SetTitle("#LT sin 2 #Psi_{EP} #GT");
   fPsinEPCent->Sumw2();
   
-  fPcosPhiCent = new TProfile("fPcosPhiCent","fPcosPhiCent", fCentralityNbins-1, fBinsCentrality);
+  fPcosPhiCent = new TProfile("fPcosPhiCent","fPcosPhiCent", 100,0,100);
   fPcosPhiCent->GetXaxis()->SetTitle("Centrality");
   fPcosPhiCent->GetYaxis()->SetTitle("#LT cos 2 #phi #GT");
   fPcosPhiCent->Sumw2();
   
-  fPsinPhiCent = new TProfile("fPsinPhiCent","fPsinPhiCent", fCentralityNbins-1, fBinsCentrality);
+  fPsinPhiCent = new TProfile("fPsinPhiCent","fPsinPhiCent", 100,0,100);
   fPsinPhiCent->GetXaxis()->SetTitle("Centrality");
   fPsinPhiCent->GetYaxis()->SetTitle("#LT sin 2 #phi #GT");
   fPsinPhiCent->Sumw2();
@@ -611,6 +629,8 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fEventplaneDist);
   fOutputList->Add(fMCEventplaneDist);
   fOutputList->Add(fCorrelEventplaneMCDATA);
+  fOutputList->Add(fCorrelEventplaneDefaultCorrected);
+  fOutputList->Add(fEventplaneSubtractedPercentage);
   
   fOutputList->Add(fEPDistCent);
   fOutputList->Add(fPhiCent);
@@ -642,6 +662,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   //AliGenPythiaEventHeader *genPythiaHeader = NULL;
   AliEventplane *ep = NULL;
   
+  TVector2 *epQvector = NULL;
+  
   Bool_t bIsEventSelectedMB = kFALSE;
   Bool_t bIsEventSelectedSemi = kFALSE;
   Bool_t bIsEventSelectedCentral = kFALSE;
@@ -667,6 +689,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Double_t dEventZv = -100;
   Int_t iAcceptedMultiplicity = 0;
   Double_t dEventplaneAngle = -10;
+  Double_t dEventplaneAngleCorrected = -10; // event plane angle, where tracks contributing to this angle have been subtracted
   Double_t dMCEventplaneAngle = -10;
   
   fIsMonteCarlo = kFALSE;
@@ -741,10 +764,41 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   fEventStatistics->Fill("after centrality selection",1);
   
+  // start with track analysis
+//   Int_t *iIndexAcceptedTracks = new Int_t[eventAOD->GetNumberOfTracks()]; // maximum number of track indices, this array can have
+//   Int_t nTotalNumberAcceptedTracks = 0;
+//   for(Int_t i = 0; i < eventAOD->GetNumberOfTracks(); i++) { iIndexAcceptedTracks[i] = 0; }
+//   for(Int_t itrack = 0; itrack < eventAOD->GetNumberOfTracks(); itrack++) 
+//   { 
+// 	track = eventAOD->GetTrack(itrack);
+// 	if(!track) continue;
+// 	
+// 	GetDCA(track, eventAOD, dDCA);
+// 	
+// 	Double_t dDCAxyDCAzPt[5] = { dDCA[0], dDCA[1], track->Pt(), track->Eta(), track->Phi() };
+// 	
+// 	fDCAPtAll->Fill(dDCAxyDCAzPt);
+// 	
+// 	if( !(IsTrackAccepted(track, dCentrality, eventAOD->GetMagneticField())) ) continue;
+// 	
+// 	iIndexAcceptedTracks[nTotalNumberAcceptedTracks] = itrack;
+// 	nTotalNumberAcceptedTracks++;
+//   }
+  
   // get event plane Angle from AODHeader, default is Q
   ep = const_cast<AliAODEvent*>(eventAOD)->GetEventplane();
   if(ep) {
 	dEventplaneAngle = MoveEventplane(ep->GetEventplane(GetEventplaneSelector().Data(),eventAOD));
+	if(GetEventplaneSelector().CompareTo("Q") == 0) 
+	{
+	  epQvector = ep->GetQVector(); 
+	}
+  }
+  
+  if( (GetEventplaneSelector().CompareTo("Q") == 0) && !epQvector )
+  {
+	AliWarning("ERROR: epQvector not available \n");
+	return;
   }
   
   //   cout << dEventplaneAngle << endl;
@@ -847,9 +901,13 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	if(!SetRelativeCuts(eventAOD)) return;
   }
   
+  Int_t iSubtractedTracks = 0;
+  
   for(Int_t itrack = 0; itrack < eventAOD->GetNumberOfTracks(); itrack++)
+//   for(Int_t itrack = 0; itrack < nTotalNumberAcceptedTracks; itrack++)
   {
 	track = eventAOD->GetTrack(itrack);
+// 	track = eventAOD->GetTrack(iIndexAcceptedTracks[itrack]);
 	if(!track) continue;
 	
 	mcPart = NULL;
@@ -876,7 +934,33 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	dTrackZvPtEtaCent[2] = track->Eta();
 	dTrackZvPtEtaCent[3] = dCentrality;
 	
-	dTrackPhiPtEtaCent[0] = RotatePhi(track->Phi(), dEventplaneAngle); 
+	if(GetEventplaneSelector().CompareTo("Q") == 0) 
+	{
+	  // subtract track contribution from eventplane
+	  Double_t dX = -1000;
+	  Double_t dY = -1000;
+	  
+	  dX = epQvector->X();
+	  dY = epQvector->Y();
+	  if( (dX>-1000) && (dY>-1000) ) // only subtract, if not default!
+	  {
+		dX -= ep->GetQContributionX(track);
+		dY -= ep->GetQContributionY(track);
+		iSubtractedTracks++;
+	  }
+	  TVector2 epCorrected(dX, dY);
+	  dEventplaneAngleCorrected = MoveEventplane(epCorrected.Phi()/2.); // see AlEPSelectionTask.cxx:354
+	}
+	else
+	{
+	  dEventplaneAngleCorrected = dEventplaneAngle; 
+	}
+	
+	Double_t dFillEPCorrectionCheck[] = {dEventplaneAngle, dEventplaneAngleCorrected, dCentrality};
+	fCorrelEventplaneDefaultCorrected->Fill(dFillEPCorrectionCheck);
+	
+	
+	dTrackPhiPtEtaCent[0] = RotatePhi(track->Phi(), dEventplaneAngleCorrected); 
 	
 	// 	if( dTrackPhiPtEtaCent[0] < -1.0*TMath::Pi()) dTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
 	// 	else if( dTrackPhiPtEtaCent[0] > TMath::Pi()) dTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
@@ -974,6 +1058,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	}
   } // end track loop
   
+  Int_t iContributorsQVector = ep->GetQContributionXArray()->GetSize();
+  if(iContributorsQVector) fEventplaneSubtractedPercentage->Fill((Double_t)iSubtractedTracks/(Double_t)iContributorsQVector, dCentrality);
+  
   if(bEventHasATrack) { fEventStatistics->Fill("events with tracks",1); bEventHasATrack = kFALSE; }
   
   if(bEventHasATrackInRange) 
@@ -997,7 +1084,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   PostData(1, fOutputList);
   
   // delete pointers:
-  
+//   delete [] iIndexAcceptedTracks;
 }
 
 Double_t AlidNdPtAnalysisPbPbAOD::MoveEventplane(Double_t dMCEP)
@@ -1179,9 +1266,9 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   
   Double_t dLengthInTPC = 0;
   if ( DoCutLengthInTPCPtDependent() ) { dLengthInTPC = dummy.GetLengthInActiveZone(&par,3,236, bMagZ ,0,0); }
-  
+   
   Double_t dNClustersTPC = tr->GetTPCNcls();
-  Double_t dCrossedRowsTPC = tr->GetTPCClusterInfo(2,1);
+  Double_t dCrossedRowsTPC = tr->GetTPCNCrossedRows();//GetTPCClusterInfo(2,1);
   Double_t dFindableClustersTPC = tr->GetTPCNclsF();
   Double_t dChi2PerClusterTPC = (dNClustersTPC>0)?tr->Chi2perNDF()*(dNClustersTPC-5)/dNClustersTPC:-1.; // see AliDielectronVarManager.h
   Double_t dOneOverPt = tr->OneOverPt();
@@ -1246,212 +1333,211 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
 		// delete pointers
 		
 		return kTRUE;
-	  }
-	  
-	  Bool_t AlidNdPtAnalysisPbPbAOD::FillDebugHisto(Double_t *dCrossCheckVar, Double_t *dKineVar, Double_t dCentrality, Bool_t bIsAccepted)
-	  {
-		if(bIsAccepted)
-		{
-		  for(Int_t iCrossCheck = 0; iCrossCheck < cqMax; iCrossCheck++)
-		  {
-			Double_t dFillIt[5] = {dCrossCheckVar[iCrossCheck], dKineVar[0], dKineVar[1], dKineVar[2], dCentrality};
-			fCrossCheckAcc[iCrossCheck]->Fill(dFillIt);
-		  }
-		  
-		  fCrossCheckRowsLengthAcc->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqCrossedRows]);
-		  fCrossCheckClusterLengthAcc->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqNcluster]);
-		}
-		else
-		{
-		  for(Int_t iCrossCheck = 0; iCrossCheck < cqMax; iCrossCheck++)
-		  {
-			Double_t dFillIt[5] = {dCrossCheckVar[iCrossCheck], dKineVar[0], dKineVar[1], dKineVar[2], dCentrality};
-			fCrossCheckAll[iCrossCheck]->Fill(dFillIt);
-		  }
-		  
-		  fCrossCheckRowsLength->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqCrossedRows]);
-		  fCrossCheckClusterLength->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqNcluster]);
-		}
-		
-		return kTRUE;
-		
-	  }
-	  
-	  void AlidNdPtAnalysisPbPbAOD::StoreCutSettingsToHistogram()
-	  {
-		//
-		// this function stores all cut settings to a histograms
-		//
-		
-		fCutSettings->Fill("IsMonteCarlo",fIsMonteCarlo);
-		
-		fCutSettings->Fill("fCutMaxZVertex", fCutMaxZVertex);
-		
-		// kinematic cuts
-		fCutSettings->Fill("fCutPtMin", fCutPtMin);
-		fCutSettings->Fill("fCutPtMax", fCutPtMax);
-		fCutSettings->Fill("fCutEtaMin", fCutEtaMin);
-		fCutSettings->Fill("fCutEtaMax", fCutEtaMax);
-		
-		// track quality cut variables
-		fCutSettings->Fill("fFilterBit", fFilterBit);
-		if(fUseRelativeCuts) fCutSettings->Fill("fUseRelativeCuts", 1);
-		if(fCutRequireTPCRefit) fCutSettings->Fill("fCutRequireTPCRefit", 1);
-		if(fCutRequireITSRefit) fCutSettings->Fill("fCutRequireITSRefit", 1);
-		
-		fCutSettings->Fill("fCutMinNumberOfClusters", fCutMinNumberOfClusters);
-		fCutSettings->Fill("fCutPercMinNumberOfClusters", fCutPercMinNumberOfClusters);
-		fCutSettings->Fill("fCutMinNumberOfCrossedRows", fCutMinNumberOfCrossedRows);
-		fCutSettings->Fill("fCutPercMinNumberOfCrossedRows", fCutPercMinNumberOfCrossedRows);
-		
-		fCutSettings->Fill("fCutMinRatioCrossedRowsOverFindableClustersTPC", fCutMinRatioCrossedRowsOverFindableClustersTPC);
-		fCutSettings->Fill("fCutMaxFractionSharedTPCClusters", fCutMaxFractionSharedTPCClusters);
-		fCutSettings->Fill("fCutMaxDCAToVertexXY", fCutMaxDCAToVertexXY);
-		fCutSettings->Fill("fCutMaxChi2PerClusterITS", fCutMaxChi2PerClusterITS);
-		
-		if(fCutDCAToVertex2D) fCutSettings->Fill("fCutDCAToVertex2D", 1);
-		if(fCutRequireSigmaToVertex) fCutSettings->Fill("fCutRequireSigmaToVertex",1);
-		fCutSettings->Fill("fCutMaxDCAToVertexXYPtDepPar0", fCutMaxDCAToVertexXYPtDepPar0);
-		fCutSettings->Fill("fCutMaxDCAToVertexXYPtDepPar1", fCutMaxDCAToVertexXYPtDepPar1);
-		fCutSettings->Fill("fCutMaxDCAToVertexXYPtDepPar2", fCutMaxDCAToVertexXYPtDepPar2);
-		
-		if(fCutAcceptKinkDaughters) fCutSettings->Fill("fCutAcceptKinkDaughters", 1);
-		fCutSettings->Fill("fCutMaxChi2TPCConstrainedGlobal", fCutMaxChi2TPCConstrainedGlobal);
-		if(fCutLengthInTPCPtDependent) fCutSettings->Fill("fCutLengthInTPCPtDependent", 1);
-		fCutSettings->Fill("fPrefactorLengthInTPCPtDependent", fPrefactorLengthInTPCPtDependent);
-		fCutSettings->Fill(Form("EP selector %s", fEPselector.Data()), 1);
-	  }
-	  
-	  Bool_t AlidNdPtAnalysisPbPbAOD::GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2])
-	  {
-		// function adapted from AliDielectronVarManager.h
-		
-		if(track->TestBit(AliAODTrack::kIsDCA)){
-		  d0z0[0]=track->DCA();
-		  d0z0[1]=track->ZAtDCA();
-		  return kTRUE;
-		}
-		
-		Bool_t ok=kFALSE;
-		if(evt) {
-		  Double_t covd0z0[3];
-		  //AliAODTrack copy(*track);
-		  AliExternalTrackParam etp; etp.CopyFromVTrack(track);
-		  
-		  Float_t xstart = etp.GetX();
-		  if(xstart>3.) {
-			d0z0[0]=-999.;
-			d0z0[1]=-999.;
-			//printf("This method can be used only for propagation inside the beam pipe \n");
-			return kFALSE;
-		  }
-		  
-		  
-		  AliAODVertex *vtx =(AliAODVertex*)(evt->GetPrimaryVertex());
-		  Double_t fBzkG = evt->GetMagneticField(); // z componenent of field in kG
-		  ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
-		  //ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
-		}
-		if(!ok){
-		  d0z0[0]=-999.;
-		  d0z0[1]=-999.;
-		}
-		return ok;
-	  }
-	  
-	  
-	  Bool_t AlidNdPtAnalysisPbPbAOD::IsMCTrackAccepted(AliAODMCParticle *part)
-	  {
-		if(!part) return kFALSE;
-		
-		Double_t charge = part->Charge()/3.;
-		if (TMath::Abs(charge) < 0.001) return kFALSE;
-		
-		return kTRUE;
-	  }
-	  
-	  const char * AlidNdPtAnalysisPbPbAOD::GetParticleName(Int_t pdg) 
-	  {
-		TParticlePDG * p1 = TDatabasePDG::Instance()->GetParticle(pdg);
-		if(p1) return p1->GetName();
-		return Form("%d", pdg);
-	  }
-	  
-	  AliGenHijingEventHeader* AlidNdPtAnalysisPbPbAOD::GetHijingEventHeader(AliAODMCHeader *header)
-	  {
-		//
-		// inspired by PWGJE/AliPWG4HighPtSpectra.cxx
-		//
-		
-		if(!header) return 0x0;
-		AliGenHijingEventHeader* hijingGenHeader = NULL;
-		
-		TList* headerList = header->GetCocktailHeaders();
-		
-		for(Int_t i = 0; i < headerList->GetEntries(); i++)
-		{
-		  hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(headerList->At(i));
-		  if(hijingGenHeader) break;
-		}
-		
-		if(!hijingGenHeader) return 0x0;
-		
-		return hijingGenHeader;
-	  }
-	  
-	  AliGenPythiaEventHeader* AlidNdPtAnalysisPbPbAOD::GetPythiaEventHeader(AliAODMCHeader *header)
-	  {
-		//
-		// inspired by PWGJE/AliPWG4HighPtSpectra.cxx
-		//
-		
-		if(!header) return 0x0;
-		AliGenPythiaEventHeader* PythiaGenHeader = NULL;
-		
-		TList* headerList = header->GetCocktailHeaders();
-		
-		for(Int_t i = 0; i < headerList->GetEntries(); i++)
-		{
-		  PythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
-		  if(PythiaGenHeader) break;
-		}
-		
-		if(!PythiaGenHeader) return 0x0;
-		
-		return PythiaGenHeader;
-	  }
-	  
-	  //________________________________________________________________________
-	  Bool_t AlidNdPtAnalysisPbPbAOD::IsHijingParticle(const AliAODMCParticle *part, AliGenHijingEventHeader* hijingGenHeader){
-		
-		// Check whether a particle is from Hijing or some injected 
-		// returns kFALSE if particle is injected
-		
-		if(part->Label() > (hijingGenHeader->NProduced()-1)) return kFALSE;
-		return kTRUE;
-	  }
-	  
-	  //________________________________________________________________________
-	  Bool_t AlidNdPtAnalysisPbPbAOD::IsPythiaParticle(const AliAODMCParticle *part, AliGenPythiaEventHeader* pythiaGenHeader){
-		
-		// Check whether a particle is from Pythia or some injected 
-		
-		if(part->Label() > (pythiaGenHeader->NProduced()-1)) return kFALSE;
-		return kTRUE;
-	  }    
-	  
-	  Double_t* AlidNdPtAnalysisPbPbAOD::GetArrayClone(Int_t n, Double_t* source)
-	  {
-		if (!source || n==0) return 0;
-		Double_t* dest = new Double_t[n];
-		for (Int_t i=0; i<n ; i++) { dest[i] = source[i]; }
-		return dest;
-	  }
-	  
-	  void AlidNdPtAnalysisPbPbAOD::Terminate(Option_t *)
-	  {
-		
-	  }
-	  
-	  
-	  
+}
+
+Bool_t AlidNdPtAnalysisPbPbAOD::FillDebugHisto(Double_t *dCrossCheckVar, Double_t *dKineVar, Double_t dCentrality, Bool_t bIsAccepted)
+{
+  if(bIsAccepted)
+  {
+	for(Int_t iCrossCheck = 0; iCrossCheck < cqMax; iCrossCheck++)
+	{
+	  Double_t dFillIt[5] = {dCrossCheckVar[iCrossCheck], dKineVar[0], dKineVar[1], dKineVar[2], dCentrality};
+	  fCrossCheckAcc[iCrossCheck]->Fill(dFillIt);
+	}
+	
+	fCrossCheckRowsLengthAcc->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqCrossedRows]);
+	fCrossCheckClusterLengthAcc->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqNcluster]);
+  }
+  else
+  {
+	for(Int_t iCrossCheck = 0; iCrossCheck < cqMax; iCrossCheck++)
+	{
+	  Double_t dFillIt[5] = {dCrossCheckVar[iCrossCheck], dKineVar[0], dKineVar[1], dKineVar[2], dCentrality};
+	  fCrossCheckAll[iCrossCheck]->Fill(dFillIt);
+	}
+	
+	fCrossCheckRowsLength->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqCrossedRows]);
+	fCrossCheckClusterLength->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqNcluster]);
+  }
+  
+  return kTRUE;
+  
+}
+
+void AlidNdPtAnalysisPbPbAOD::StoreCutSettingsToHistogram()
+{
+  //
+  // this function stores all cut settings to a histograms
+  //
+  
+  fCutSettings->Fill("IsMonteCarlo",fIsMonteCarlo);
+  
+  fCutSettings->Fill("fCutMaxZVertex", fCutMaxZVertex);
+  
+  // kinematic cuts
+  fCutSettings->Fill("fCutPtMin", fCutPtMin);
+  fCutSettings->Fill("fCutPtMax", fCutPtMax);
+  fCutSettings->Fill("fCutEtaMin", fCutEtaMin);
+  fCutSettings->Fill("fCutEtaMax", fCutEtaMax);
+  
+  // track quality cut variables
+  fCutSettings->Fill("fFilterBit", fFilterBit);
+  if(fUseRelativeCuts) fCutSettings->Fill("fUseRelativeCuts", 1);
+  if(fCutRequireTPCRefit) fCutSettings->Fill("fCutRequireTPCRefit", 1);
+  if(fCutRequireITSRefit) fCutSettings->Fill("fCutRequireITSRefit", 1);
+  
+  fCutSettings->Fill("fCutMinNumberOfClusters", fCutMinNumberOfClusters);
+  fCutSettings->Fill("fCutPercMinNumberOfClusters", fCutPercMinNumberOfClusters);
+  fCutSettings->Fill("fCutMinNumberOfCrossedRows", fCutMinNumberOfCrossedRows);
+  fCutSettings->Fill("fCutPercMinNumberOfCrossedRows", fCutPercMinNumberOfCrossedRows);
+  
+  fCutSettings->Fill("fCutMinRatioCrossedRowsOverFindableClustersTPC", fCutMinRatioCrossedRowsOverFindableClustersTPC);
+  fCutSettings->Fill("fCutMaxFractionSharedTPCClusters", fCutMaxFractionSharedTPCClusters);
+  fCutSettings->Fill("fCutMaxDCAToVertexXY", fCutMaxDCAToVertexXY);
+  fCutSettings->Fill("fCutMaxChi2PerClusterITS", fCutMaxChi2PerClusterITS);
+  
+  if(fCutDCAToVertex2D) fCutSettings->Fill("fCutDCAToVertex2D", 1);
+  if(fCutRequireSigmaToVertex) fCutSettings->Fill("fCutRequireSigmaToVertex",1);
+  fCutSettings->Fill("fCutMaxDCAToVertexXYPtDepPar0", fCutMaxDCAToVertexXYPtDepPar0);
+  fCutSettings->Fill("fCutMaxDCAToVertexXYPtDepPar1", fCutMaxDCAToVertexXYPtDepPar1);
+  fCutSettings->Fill("fCutMaxDCAToVertexXYPtDepPar2", fCutMaxDCAToVertexXYPtDepPar2);
+  
+  if(fCutAcceptKinkDaughters) fCutSettings->Fill("fCutAcceptKinkDaughters", 1);
+  fCutSettings->Fill("fCutMaxChi2TPCConstrainedGlobal", fCutMaxChi2TPCConstrainedGlobal);
+  if(fCutLengthInTPCPtDependent) fCutSettings->Fill("fCutLengthInTPCPtDependent", 1);
+  fCutSettings->Fill("fPrefactorLengthInTPCPtDependent", fPrefactorLengthInTPCPtDependent);
+  fCutSettings->Fill(Form("EP selector %s", fEPselector.Data()), 1);
+}
+
+Bool_t AlidNdPtAnalysisPbPbAOD::GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2])
+{
+  // function adapted from AliDielectronVarManager.h
+  
+  if(track->TestBit(AliAODTrack::kIsDCA)){
+	d0z0[0]=track->DCA();
+	d0z0[1]=track->ZAtDCA();
+	return kTRUE;
+  }
+  
+  Bool_t ok=kFALSE;
+  if(evt) {
+	Double_t covd0z0[3];
+	//AliAODTrack copy(*track);
+	AliExternalTrackParam etp; etp.CopyFromVTrack(track);
+	
+	Float_t xstart = etp.GetX();
+	if(xstart>3.) {
+	  d0z0[0]=-999.;
+	  d0z0[1]=-999.;
+	  //printf("This method can be used only for propagation inside the beam pipe \n");
+	  return kFALSE;
+	}
+	
+	
+	AliAODVertex *vtx =(AliAODVertex*)(evt->GetPrimaryVertex());
+	Double_t fBzkG = evt->GetMagneticField(); // z componenent of field in kG
+	ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+	//ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+  }
+  if(!ok){
+	d0z0[0]=-999.;
+	d0z0[1]=-999.;
+  }
+  return ok;
+}
+
+
+Bool_t AlidNdPtAnalysisPbPbAOD::IsMCTrackAccepted(AliAODMCParticle *part)
+{
+  if(!part) return kFALSE;
+  
+  Double_t charge = part->Charge()/3.;
+  if (TMath::Abs(charge) < 0.001) return kFALSE;
+  
+  return kTRUE;
+}
+
+const char * AlidNdPtAnalysisPbPbAOD::GetParticleName(Int_t pdg) 
+{
+  TParticlePDG * p1 = TDatabasePDG::Instance()->GetParticle(pdg);
+  if(p1) return p1->GetName();
+  return Form("%d", pdg);
+}
+
+AliGenHijingEventHeader* AlidNdPtAnalysisPbPbAOD::GetHijingEventHeader(AliAODMCHeader *header)
+{
+  //
+  // inspired by PWGJE/AliPWG4HighPtSpectra.cxx
+  //
+  
+  if(!header) return 0x0;
+  AliGenHijingEventHeader* hijingGenHeader = NULL;
+  
+  TList* headerList = header->GetCocktailHeaders();
+  
+  for(Int_t i = 0; i < headerList->GetEntries(); i++)
+  {
+	hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(headerList->At(i));
+	if(hijingGenHeader) break;
+  }
+  
+  if(!hijingGenHeader) return 0x0;
+  
+  return hijingGenHeader;
+}
+
+AliGenPythiaEventHeader* AlidNdPtAnalysisPbPbAOD::GetPythiaEventHeader(AliAODMCHeader *header)
+{
+  //
+  // inspired by PWGJE/AliPWG4HighPtSpectra.cxx
+  //
+  
+  if(!header) return 0x0;
+  AliGenPythiaEventHeader* PythiaGenHeader = NULL;
+  
+  TList* headerList = header->GetCocktailHeaders();
+  
+  for(Int_t i = 0; i < headerList->GetEntries(); i++)
+  {
+	PythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
+	if(PythiaGenHeader) break;
+  }
+  
+  if(!PythiaGenHeader) return 0x0;
+  
+  return PythiaGenHeader;
+}
+
+//________________________________________________________________________
+Bool_t AlidNdPtAnalysisPbPbAOD::IsHijingParticle(const AliAODMCParticle *part, AliGenHijingEventHeader* hijingGenHeader){
+  
+  // Check whether a particle is from Hijing or some injected 
+  // returns kFALSE if particle is injected
+  
+  if(part->Label() > (hijingGenHeader->NProduced()-1)) return kFALSE;
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AlidNdPtAnalysisPbPbAOD::IsPythiaParticle(const AliAODMCParticle *part, AliGenPythiaEventHeader* pythiaGenHeader){
+  
+  // Check whether a particle is from Pythia or some injected 
+  
+  if(part->Label() > (pythiaGenHeader->NProduced()-1)) return kFALSE;
+  return kTRUE;
+}    
+
+Double_t* AlidNdPtAnalysisPbPbAOD::GetArrayClone(Int_t n, Double_t* source)
+{
+  if (!source || n==0) return 0;
+  Double_t* dest = new Double_t[n];
+  for (Int_t i=0; i<n ; i++) { dest[i] = source[i]; }
+  return dest;
+}
+
+void AlidNdPtAnalysisPbPbAOD::Terminate(Option_t *)
+{
+  
+}
+
+

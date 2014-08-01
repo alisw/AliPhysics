@@ -45,9 +45,11 @@ ClassImp(AliSpectraBothEventCuts)
 
 AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject), fTrackBits(0),fIsMC(0),fCentEstimator(""), fUseCentPatchAOD049(0), fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0),fMaxChi2perNDFforVertex(0),
-fMinRun(0),fMaxRun(0),
+fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
-,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0)
+,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),
+fHistoCentrality(0),fHistoMultiplicty(0)
+
 {
   // Constructori
  // Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -110,6 +112,11 @@ AliSpectraBothEventCuts::~AliSpectraBothEventCuts()
 		delete fHistoEP;
 	if(fHistoRunNumbers)
 		delete fHistoRunNumbers;
+	if(fHistoCentrality)
+		delete fHistoCentrality;
+  	if(fHistoMultiplicty)
+		delete fHistoMultiplicty;
+
 }
 //______________________________________________________
 void AliSpectraBothEventCuts::InitHisto()
@@ -148,6 +155,12 @@ void AliSpectraBothEventCuts::InitHisto()
 			fHistoRunNumbers=new TH1F("fHistoRunNumbers","Run numbers",1001,120000-.5,121000+0.5);
 
 	}
+	if(!fHistoCentrality)
+		fHistoCentrality = new TH2F("fHistoCentrality", "centrality",2,0,2,100,0.0,100);
+
+	if(!fHistoMultiplicty)
+		fHistoMultiplicty= new TH2F("fHistoMultiplicty", "multiplicty estimator",2,0,2,100,0.0,100);
+
 	TH1::AddDirectory(oldStatus);		
 }
 //______________________________________________________
@@ -295,8 +308,12 @@ Bool_t AliSpectraBothEventCuts::CheckCentralityCut()
   Double_t cent=0;
   if(!fUseCentPatchAOD049)cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());
   else cent=ApplyCentralityPatchAOD049();
-  
-  if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  return kTRUE;   
+  fHistoCentrality->Fill(0.5,cent);	
+  if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  
+  {
+	 fHistoCentrality->Fill(1.5,cent);	
+  	return kTRUE;
+  }	   
   fHistoCuts->Fill(kVtxCentral);
 
   return kFALSE;
@@ -306,19 +323,36 @@ Bool_t AliSpectraBothEventCuts::CheckCentralityCut()
 Bool_t AliSpectraBothEventCuts::CheckMultiplicityCut()
 {
   // Check multiplicity cut
-if(fMultiplicityCutMin<0.0 && fMultiplicityCutMax<0.0)
-	return kTRUE;
-  Int_t Ncharged=0;
-  for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++){
-    AliVTrack* track = dynamic_cast<AliVTrack*>(fAOD->GetTrack(iTracks));
+	if(fMultiplicityCutMin<0 && fMultiplicityCutMax<0)
+		return kTRUE;
+	Int_t Ncharged=-1;
+	if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
+	{	
+		  AliESDEvent* esdevent=dynamic_cast<AliESDEvent*>(fAOD);
+		 AliESDtrackCuts::MultEstTrackType estType = esdevent->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
+		Ncharged=AliESDtrackCuts::GetReferenceMultiplicity(esdevent,estType,fetarangeofmultiplicitycut);
+	}
+	else if(fAODEvent==AliSpectraBothTrackCuts::kAODobject)
+	{
+		AliAODEvent* aodevent=0x0;
+		aodevent=dynamic_cast<AliAODEvent*>(fAOD);
+		if(TMath::Abs(0.8-fetarangeofmultiplicitycut)<0.1)
+			Ncharged=aodevent->GetHeader()->GetRefMultiplicityComb08();
+		else if (TMath::Abs(0.5-fetarangeofmultiplicitycut)<0.1)
+			Ncharged=aodevent->GetHeader()->GetRefMultiplicityComb05();
+		else 
+			Ncharged=-1;
+	}
+	else
+		return kFALSE;	 
 
-    if (!fTrackCuts->IsSelected(track,kFALSE)) continue;
-	
-    Ncharged++;
-  }
-  //Printf("NCHARGED_cut : %d",Ncharged);
-  if(Ncharged>fMultiplicityCutMin && Ncharged<fMultiplicityCutMax)return kTRUE;
-  
+   fHistoMultiplicty->Fill(0.5,Ncharged);
+   if(Ncharged>=fMultiplicityCutMin && Ncharged<fMultiplicityCutMax&& Ncharged>0)
+   { 
+	fHistoMultiplicty->Fill(1.5,Ncharged);
+  	return kTRUE;
+   }
+  fHistoCuts->Fill(kVtxCentral);
   return kFALSE;
 }
 
@@ -511,6 +545,9 @@ Long64_t AliSpectraBothEventCuts::Merge(TCollection* list)
   TList collections_histoVtxalltriggerEventswithMCz;
   TList collections_histoVtxAftSelwithoutZvertexCutusingMCz;			
   TList collections_histoRunNumbers;
+  TList collections_histoCentrality;			
+  TList collections_histoMultiplicty;
+
   Int_t count = 0;
 
   while ((obj = iter->Next())) {
@@ -548,6 +585,14 @@ Long64_t AliSpectraBothEventCuts::Merge(TCollection* list)
     
     TH1F* histo_histoRunNumbers=entry->GetHistoRunNumbers();
     collections_histoRunNumbers.Add(histo_histoRunNumbers);
+ 
+   TH2F* histo_histoCentrality=entry->GetHistoCentrality();
+  collections_histoCentrality.Add(histo_histoCentrality);	 	
+
+TH2F* histo_histoMultiplicty=entry->GetHistoMultiplicty();
+  collections_histoMultiplicty.Add(histo_histoMultiplicty);
+
+
     count++;
   }
   
@@ -566,6 +611,9 @@ Long64_t AliSpectraBothEventCuts::Merge(TCollection* list)
   fHistoVtxalltriggerEventswithMCz->Merge(&collections_histoVtxalltriggerEventswithMCz);
   fHistoVtxAftSelwithoutZvertexCutusingMCz->Merge(&collections_histoVtxAftSelwithoutZvertexCutusingMCz);
   fHistoRunNumbers->Merge(&collections_histoRunNumbers);
+  fHistoCentrality->Merge(&collections_histoCentrality);
+  fHistoMultiplicty->Merge(&collections_histoMultiplicty);
+
 
   delete iter;
 

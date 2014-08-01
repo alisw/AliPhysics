@@ -220,7 +220,7 @@ void AliTPCPIDEtaQA::UserExec(Option_t *)
   // Fill V0 arrays with V0s
   FillV0PIDlist();
   
-  Int_t multiplicity = fESD->GetNumberOfTracks();
+  Int_t multiplicity = fESD->GetNumberOfESDTracks();
   
   // Track loop to fill a Train spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
@@ -463,7 +463,7 @@ void AliTPCPIDEtaQA::UserExec(Option_t *)
     }
     
     // MC PID, SelectSpecies, P(TPC_inner), multiplicity, deltaPrimeSpecies, eta
-    Double_t entry[6] = { binMC, 0, pTPC, multiplicity, deltaPrimeEl, eta };
+    Double_t entry[6] = { (Double_t)binMC, 0., pTPC, (Double_t)multiplicity, deltaPrimeEl, eta };
     
     if (fMC)  {
       fhPIDdataAll->Fill(entry);

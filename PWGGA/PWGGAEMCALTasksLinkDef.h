@@ -30,6 +30,7 @@
 #pragma link C++ class AliAnalysisTaskEMCALPi0V2ShSh+;
 #pragma link C++ class AliEMCalpi0ClusterEvaluationTask+;
 #pragma link C++ class AliAnalysisTaskEMCALIsolation+;
+#pragma link C++ class AliAnalysisTaskEMCALPhotonIsolation+;
 #pragma link C++ class AliAnalysisTaskEMCALMesonGGSDM+;
 #pragma link C++ class AliAnalysisTaskEMCALMesonGGSDMpPb+;
 #pragma link C++ class AliAnalysisTaskSDMGammaMC+;

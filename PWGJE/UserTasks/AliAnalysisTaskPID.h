@@ -62,6 +62,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   enum ptResolutionAxes { kPtResJetPt = 0, kPtResGenPt = 1, kPtResRecPt = 2, kPtResCharge = 3, kPtResCentrality = 4, kPtResNumAxes = 5 };
   
+  enum qaSharedClsAxes { kQASharedClsJetPt = 0, kQASharedClsPt = 1, kQASharedClsNumSharedCls = 2, kQASharedClsPadRow = 3,
+                         kQASharedClsNumAxes = 4 };
+  
   enum dEdxCheckAxes { kDeDxCheckPID = 0, kDeDxCheckP = 1, kDeDxCheckJetPt = 2, kDeDxCheckEtaAbs = 3 , kDeDxCheckDeDx = 4,
                        kDeDxCheckNumAxes = 5 };
   
@@ -75,7 +78,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum TOFpidInfo { kNoTOFinfo = -2, kNoTOFpid = -1, kTOFpion = 0, kTOFkaon = 1, kTOFproton = 2, kNumTOFspecies = 3,
                     kNumTOFpidInfoBins = 5 };
   
-  enum EventCounterType { kTriggerSel = 0, kTriggerSelAndVtxCut = 1, kTriggerSelAndVtxCutAndZvtxCut = 2 };
+  enum EventCounterType { kTriggerSel = 0, kTriggerSelAndVtxCut = 1, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection = 2,
+                          kTriggerSelAndVtxCutAndZvtxCut = 3 };
   
   static Int_t PDGtoMCID(Int_t pdg);
   
@@ -85,6 +89,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   static Double_t GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliMCParticle* daughter);
   
   static Bool_t IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent, Int_t partLabel);
+  
+  virtual void ConfigureTaskForCurrentEvent(AliVEvent* event);
   
   Int_t GetIndexOfChargeAxisData() const
     { return fStoreAdditionalJetInformation ? kDataCharge : kDataCharge - fgkNumJetAxes; };
@@ -188,6 +194,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Bool_t IsInAcceptedEtaRange(Double_t etaAbs) const { return (etaAbs >= fEtaAbsCutLow && etaAbs <= fEtaAbsCutUp); };
   
+  AliAnalysisTaskPIDV0base::PileUpRejectionType GetPileUpRejectionType() const { return fPileUpRejectionType; };
+  void SetPileUpRejectionType(AliAnalysisTaskPIDV0base::PileUpRejectionType newType) { fPileUpRejectionType = newType; };
+  
   Double_t GetSystematicScalingSplinesThreshold() const { return fSystematicScalingSplinesThreshold; };
   void SetSystematicScalingSplinesThreshold(Double_t threshold) { fSystematicScalingSplinesThreshold = threshold; };
   
@@ -260,6 +269,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const;
+  virtual void SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const;
   virtual void SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const;
   virtual void SetUpPIDcombined();
   
@@ -267,9 +277,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   static const Double_t fgkEpsilon; // Double_t threshold above zero
   static const Int_t fgkMaxNumGenEntries; // Maximum number of generated detector responses per track and delta(Prime) and associated species
 
- private:
   static const Double_t fgkOneOverSqrt2; // = 1. / TMath::Sqrt2();
   
+ private:
   Int_t fRun; // Current run number
   AliPIDCombined* fPIDcombined; //! PID combined object
   
@@ -304,6 +314,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Double_t fEtaAbsCutLow; // Lower cut value on |eta|
   Double_t fEtaAbsCutUp;  // Upper cut value on |eta|
+  
+  AliAnalysisTaskPIDV0base::PileUpRejectionType fPileUpRejectionType; // Which pile-up rejection is used (if any)
   
   // For systematic studies
   Bool_t   fDoAnySystematicStudiesOnTheExpectedSignal; // Internal flag indicating whether any systematic studies are going to be performed
@@ -380,11 +392,11 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   TAxis* fDeltaPrimeAxis; //! Axis holding the deltaPrime binning
   TH1D* fhMaxEtaVariation; //! Histo holding the maximum deviation of the eta correction factor from unity vs. 1/dEdx(splines)
   
-  TH1D* fhEventsProcessed; //! Histo holding the number of processed events (i.e. passing trigger selection, vtx and zvtx cuts
+  TH1D* fhEventsProcessed; //! Histo holding the number of processed events (i.e. passing trigger selection, vtx and zvtx cuts and (if enabled) pile-up rejection)
   TH1D* fhEventsTriggerSel; //! Histo holding the number of events passing trigger selection
   TH1D* fhEventsTriggerSelVtxCut; //! Histo holding the number of events passing trigger selection and vtx cut
+  TH1D* fhEventsProcessedNoPileUpRejection; //! Histo holding the number of processed events before pile-up rejection
   
-  TH2D* fhSkippedTracksForSignalGeneration; //! Number of tracks that have been skipped for the signal generation
   THnSparseD* fhMCgeneratedYieldsPrimaries; //! Histo holding the generated (no reco, no cuts) primary particle yields in considered eta range
   
   TH2D* fh2FFJetPtRec;            //! Number of reconstructed jets vs. jetPt and centrality
@@ -396,6 +408,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliCFContainer* fContainerEff; //! Container for efficiency determination
   
   THnSparseD* fPtResolution[AliPID::kSPECIES]; //! Pt Resolution for the individual species
+  THnSparseD* fQASharedCls; //! QA for shared clusters
   
   THnSparseD* fDeDxCheck; //! dEdx check
   
@@ -406,7 +419,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 19);
+  ClassDef(AliAnalysisTaskPID, 21);
 };
 
 
@@ -532,6 +545,14 @@ inline Bool_t AliAnalysisTaskPID::IncrementEventCounter(Double_t centralityPerce
     }
     
     fhEventsProcessed->Fill(centralityPercentile);
+  }
+  else if (type == kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection) {
+    if (!fhEventsProcessedNoPileUpRejection) {
+      AliError("Histogram for number of events (kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection) not initialised -> cannot be incremented!");
+      return kFALSE;
+    }
+    
+    fhEventsProcessedNoPileUpRejection->Fill(centralityPercentile);
   }
   
   
