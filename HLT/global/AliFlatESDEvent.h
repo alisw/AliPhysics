@@ -20,7 +20,6 @@ class AliESDEvent;
 class AliESDVertex;
 class AliESDV0;
 class TString;
-class AliVVv0;
 
 class AliFlatESDEvent: public AliVVevent {
 //class AliFlatESDEvent {
@@ -84,10 +83,10 @@ class AliFlatESDEvent: public AliVVevent {
 
   Int_t GetNumberOfTracks() const {return fNTracks;}
   
-  AliFlatESDV0* GetV0s() {
+  AliFlatESDV0* GetV0stmp() {
   	return reinterpret_cast<AliFlatESDV0*> (fContent + fV0Pointer);
   }
-
+  
   AliFlatESDTrack *GetTracks() {
 		return reinterpret_cast<AliFlatESDTrack*> (fContent + fTracksPointer);
   }
@@ -96,7 +95,7 @@ class AliFlatESDEvent: public AliVVevent {
   //const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}
   AliFlatESDTrack* GetTrack(Int_t /*i*/) const {return NULL;}
   AliVVkink* GetKink(Int_t /*i*/) const {return NULL;}
-  AliFlatESDV0* GetV0(Int_t /*i*/) const {return NULL;}
+  //AliFlatESDV0* GetV0(Int_t /*i*/) const {return NULL;}
   Int_t GetNumberOfKinks() const {return 0;}
   Int_t GetEventNumberInFile() const {return -1;}
   const AliMultiplicity* GetMultiplicity() const {return NULL;} //by default SPDmult

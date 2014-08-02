@@ -144,7 +144,6 @@
 #pragma link C++ class AliVVfriendTrack+;
 #pragma link C++ class AliVVkink+;
 #pragma link C++ class AliVVcluster+;
-#pragma link C++ class AliVVexternalTrackParam+;
 #pragma link C++ class AliVVtrackPointArray+;
 #pragma link C++ class AliVVtrackPoint+;
 #pragma link C++ class AliVVTPCseed+;

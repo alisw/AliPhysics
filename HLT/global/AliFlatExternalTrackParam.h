@@ -10,11 +10,10 @@
  */
 
 #include "Rtypes.h"
-#include "AliVVexternalTrackParam.h"
 #include "AliFlatESDMisc.h"
 
 
-class AliFlatExternalTrackParam: public AliVVexternalTrackParam
+class AliFlatExternalTrackParam
 {
  public:
   AliFlatExternalTrackParam() {}

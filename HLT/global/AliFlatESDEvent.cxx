@@ -93,7 +93,7 @@ void AliFlatESDEvent::Reinitialize()
 			track->Reinitialize();
 			track= track->GetNextTrack();
 		}
-  	AliFlatESDV0* v0 = GetV0s();
+  	AliFlatESDV0* v0 = GetV0stmp();
   	for (Int_t i=0; i<GetNumberOfV0s(); i++)
   	{
 			v0->Reinitialize();

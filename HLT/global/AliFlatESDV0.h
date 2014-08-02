@@ -10,10 +10,9 @@
  */
 
 #include "Rtypes.h"
-#include "AliVVv0.h"
 #include "AliFlatESDMisc.h"
 
-class AliFlatESDV0: public AliVVv0
+class AliFlatESDV0
 {
  public:
   AliFlatESDV0();
