@@ -578,19 +578,20 @@ Bool_t AliMFTTrackerMU::IsCorrectMatch(AliMFTCluster *cluster, Int_t labelMC) {
 
 void AliMFTTrackerMU::GetVertexFromMC() {
 
-  AliRunLoader *fRunLoader = AliRunLoader::Open("galice.root");
-  if (!fRunLoader) {
+  AliRunLoader *runLoader = AliRunLoader::Open("galice.root");
+  if (!runLoader) {
     AliError("no run loader found in file galice.root");
     return;
   }
 
-  fRunLoader->CdGAFile();
-  fRunLoader->LoadgAlice();
-  fRunLoader->LoadHeader();
-  fRunLoader->GetEvent(gAlice->GetEvNumber());
+  runLoader->CdGAFile();
+  runLoader->LoadgAlice();
+  runLoader->LoadHeader();
+  runLoader->GetEvent(gAlice->GetEvNumber());
   
   TArrayF vtx(3);
-  fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vtx);
+  runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vtx);
+  AliInfo(Form("Primary vertex from MC found in (%f, %f, %f)\n",vtx[0], vtx[1], vtx[2]));
 
   fXExtrapVertex = gRandom->Gaus(vtx[0], AliMFTConstants::fPrimaryVertexResX);
   fYExtrapVertex = gRandom->Gaus(vtx[1], AliMFTConstants::fPrimaryVertexResY);
