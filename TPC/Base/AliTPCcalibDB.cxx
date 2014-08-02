@@ -2160,6 +2160,10 @@ Bool_t AliTPCcalibDB::CreateGUITree(const char* filename){
   UpdateNonRec();  // load all infromation now
 
   AliTPCPreprocessorOnline prep;
+  if (GetActiveChannelMap()) prep.AddComponent(new AliTPCCalPad(*GetActiveChannelMap()));
+
+  // gain map
+  if (GetDedxGainFactor()) prep.AddComponent(new AliTPCCalPad(*GetDedxGainFactor()));
   //noise and pedestals
   if (GetPedestals()) prep.AddComponent(new AliTPCCalPad(*(GetPedestals())));
   if (GetPadNoise() ) prep.AddComponent(new AliTPCCalPad(*(GetPadNoise())));

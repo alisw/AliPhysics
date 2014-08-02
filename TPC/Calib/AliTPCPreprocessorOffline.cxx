@@ -1170,8 +1170,11 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   // Analyze gain as a function of multiplicity and produce calibration graphs
   // padRegion -- 0: short, 1: medium, 2: long, 3: absolute calibration of full track
   //
+  Int_t kMarkers[10]={25,24,20,21,22};
+  Int_t kColors[10]={1,2,4,3,6};
   if (!fGainMult) return kFALSE;
   if (!(fGainMult->GetHistTopology())) return kFALSE;
+  const Double_t kMinStat=100;
   //
   // "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength"
   TObjArray arrMax;
@@ -1194,28 +1197,28 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
     histQtot->SetName("fGainMult_GetHistPadEqual_00");
   }
   //  
-  histQmax->FitSlicesY(0,0,-1,0,"QNR",&arrMax);
-  TH1D * corrMax = (TH1D*)arrMax.At(1)->Clone();
-  histQtot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
-  TH1D * corrTot = (TH1D*)arrTot.At(1)->Clone();
-  AliInfo(Form("hisQtot.GetEntries()=%d",histQtot->GetEntries()));
-  AliInfo(Form("hisQmax.GetEntries()=%d",histQmax->GetEntries()));
-  if (histQmax->GetMean(2)<=0 || histQtot->GetMean(2)) {
+  
+  if (histQmax->GetEntries()<=kMinStat || histQtot->GetEntries()<=kMinStat) {
+    AliError(Form("hisQtot.GetEntries()=%f",histQtot->GetEntries()));
+    AliError(Form("hisQmax.GetEntries()=%f",histQmax->GetEntries()));
     return kFALSE;
   }
-  corrMax->Scale(1./histQmax->GetMean(2));
-  corrTot->Scale(1./histQtot->GetMean(2));
+
+  TGraphErrors * graphMax = TStatToolkit::MakeStat1D( histQmax,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
+  TGraphErrors * graphTot = TStatToolkit::MakeStat1D( histQtot,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
   //
   const char* names[4]={"SHORT","MEDIUM","LONG","ABSOLUTE"};
   //
-  TGraphErrors * graphMax = new TGraphErrors(corrMax);
-  TGraphErrors * graphTot = new TGraphErrors(corrTot);
   Double_t meanMax = TMath::Mean(graphMax->GetN(), graphMax->GetY());
   Double_t meanTot = TMath::Mean(graphTot->GetN(), graphTot->GetY());
+  if (meanMax<=0 || meanTot<=0){
+    AliError(Form("meanMax=%f",meanMax));
+    AliError(Form("meanTot=%f",meanTot));
+    return kFALSE;
+  }
   //
   for (Int_t ipoint=0; ipoint<graphMax->GetN(); ipoint++) {graphMax->GetY()[ipoint]/=meanMax;}
   for (Int_t ipoint=0; ipoint<graphTot->GetN(); ipoint++) {graphTot->GetY()[ipoint]/=meanTot;}
-
   //
   graphMax->SetNameTitle(Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
 			Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
