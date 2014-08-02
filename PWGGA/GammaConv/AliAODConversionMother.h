@@ -29,7 +29,10 @@ class AliAODConversionMother : public AliAODConversionParticle{
 
      //Constructor Decay Mother Particle
      AliAODConversionMother(AliAODConversionPhoton *y1,AliAODConversionPhoton *y2);
+	 // Constructor Mother particle from one photon and one meson
+	 AliAODConversionMother(AliAODConversionMother *meson, AliAODConversionPhoton *gamma);
 
+	 
      //Destructor
      virtual ~AliAODConversionMother();
 

@@ -205,7 +205,7 @@ AliFMDESDFixer::FindTargetNoiseFactor(const AliESDFMD& esd, Bool_t check) const
       return 0;
     }
 #endif
-    target = esd.GetNoiseFactor();
+    target = Int_t(esd.GetNoiseFactor());
   }
   // Get the target factor - even thought the method below returns a
   // floating point value, we know that the noise factor is always

@@ -4,7 +4,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// Analysis task for pi0->e+e-gamma (Dalitz decay)
 
 #include "AliAnalysisTaskSE.h"
 #include "AliV0ReaderV1.h"

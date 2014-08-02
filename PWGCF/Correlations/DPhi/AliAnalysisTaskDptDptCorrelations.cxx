@@ -908,7 +908,7 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
   name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
 
-  //name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
+  name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   //name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
   
   if (_singlesOnly)
@@ -1028,6 +1028,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   //double b[2];
   //double bCov[3];
   const  AliAODVertex*	vertex;
+  int    nClus;
   bool   bitOK;
   
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
@@ -1207,6 +1208,15 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  eta    = t->Eta();
 	  //dcaXY = t->DCA(); 
 	  //dcaZ  = t->ZAtDCA();  
+	  nClus  = t->GetTPCNcls();	  
+	  
+	   if ( nClus<_nClusterMin ) continue;
+	  
+	  _Ncluster1->Fill(nClus);
+	  
+	  if(t->GetTPCnclsS() > 0){
+	  continue;
+	   }
 	  
 	  //for Global tracks
 	   Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
@@ -1252,7 +1262,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  //==== QA ===========================
 	  //_dcaz->Fill(DCAZ);
 	  //_dcaxy->Fill(DCAXY);
-	  //_etadis->Fill(eta);
+	  _etadis->Fill(eta);
 	  //_phidis->Fill(phi);
 	  //===================================
 	  //*************************************************

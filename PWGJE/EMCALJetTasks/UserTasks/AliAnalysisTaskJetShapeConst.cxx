@@ -168,11 +168,15 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   const Double_t minM = -50.;
   const Double_t maxM = 100.;
 
+  const Int_t nBinsMT  = 50;
+  const Double_t minMT = 0.;
+  const Double_t maxMT = 50.;
+
   //Binning for THnSparse
-  const Int_t nBinsSparse0 = 4;
-  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt};
-  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt};
-  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt};
+  const Int_t nBinsSparse0 = 5;
+  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsMT};
+  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minMT};
+  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxMT};
 
   TString histName = "";
   TString histTitle = "";
@@ -213,7 +217,7 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
     fOutput->Add(fh2PtTrueDeltaMRel[i]);
 
     histName = Form("fhnMassResponse_%d",i);
-    histTitle = Form("fhnMassResponse_%d;#it{M}_{sub};#it{M}_{true};#it{p}_{T,sub};#it{p}_{T,true}",i);
+    histTitle = Form("fhnMassResponse_%d;#it{M}_{sub};#it{M}_{true};#it{p}_{T,sub};#it{p}_{T,true};#it{M}_{sub}^{tagged}",i);
     fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnMassResponse[i]);
   }
@@ -262,16 +266,23 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 {
   // Fill histograms.
 
-  AliEmcalJet* jet1 = NULL;
-  AliEmcalJet *jet2 = NULL;
-  AliEmcalJet *jetS = NULL;
+  AliEmcalJet* jet1  = NULL; //AA jet
+  AliEmcalJet *jet2  = NULL; //Embedded Pythia jet
+  AliEmcalJet *jet1T = NULL; //tagged AA jet
+  //  AliEmcalJet *jet2T = NULL; //tagged Pythia jet
+  AliEmcalJet *jetS = NULL;  //subtracted jet
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   AliJetContainer *jetContS = GetJetContainer(fContainerSub);
   AliDebug(11,Form("NJets  Incl: %d  Csub: %d",jetCont->GetNJets(),jetContS->GetNJets()));
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
-
+      jet2  = NULL;
+      jet1T = NULL;
+      //   jet2T = NULL;
+      jetS  = NULL;
+      if(jet1->GetTagStatus()>0) jet1T = jet1->GetTaggedJet();
+ 
       //Get constituent subtacted version of jet
       Int_t ifound = 0;
       Int_t ilab = -1;
@@ -312,6 +323,8 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 	}
       }
 
+      //      if(fMatch==1 && jet2->GetTagStatus()>0) jet2T = jet2->GetTaggedJet();
+
       //Fill histograms for matched jets
       fh2MSubMatch[fCentBin]->Fill(jetS->M(),fMatch);
       if(fMatch==1) {
@@ -321,7 +334,9 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 	  fh2MTruePtTrue[fCentBin]->Fill(jet2->M(),jet2->Pt());
 	  fh2PtTrueDeltaM[fCentBin]->Fill(jet2->Pt(),jetS->M()-jet2->M());
 	  if(jet2->M()>0.) fh2PtTrueDeltaMRel[fCentBin]->Fill(jet2->Pt(),(jetS->M()-jet2->M())/jet2->M());
-	  Double_t var[4] = {jetS->M(),jet2->M(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area(),jet2->Pt()};
+	  Double_t mJet1Tagged = -1.;
+	  if(jet1T) mJet1Tagged = jet1T->M();
+	  Double_t var[5] = {jetS->M(),jet2->M(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area(),jet2->Pt(),mJet1Tagged};
 	  fhnMassResponse[fCentBin]->Fill(var);
 	}
       }

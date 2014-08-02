@@ -6,8 +6,10 @@
 # Cloud configuration for the ALICE Release Validation.
 #
 
-# Override benchmark.config: make makeflow more verbose
-makeflowOptions="-T condor -d all"
+# Override benchmark.config:
+#  - make makeflow more verbose
+#  - run max 300 jobs at the same time (default is 100)
+makeflowOptions="-T condor -d all -J 300"
 
 # Override benchmark.config: use temporary dir instead of output dir in some cases
 reconstructInTemporaryDir=1

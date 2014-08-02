@@ -4596,7 +4596,7 @@ Bool_t AliAnalysisTaskPartonDisc::NumberOfReadEventsAOD(const char* currFile, In
 	  fnev->Close();
 	  return kFALSE;
 	}
-      fNEvents = ((TH1*)list->FindObject("NJetsH"))->GetEntries();
+      fNEvents = Int_t(((TH1*)list->FindObject("NJetsH"))->GetEntries());
       fnev->Close();
     }
   return kTRUE;
