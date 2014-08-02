@@ -5,7 +5,6 @@ set ( SRCS
     STEERBase/AliVVtrack.cxx
     STEERBase/AliVVfriendEvent.cxx
     STEERBase/AliVVfriendTrack.cxx
-    STEERBase/AliVVv0.cxx
     STEERBase/AliVVkink.cxx
     STEERBase/AliVVcluster.cxx
     STEERBase/AliVVexternalTrackParam.cxx
