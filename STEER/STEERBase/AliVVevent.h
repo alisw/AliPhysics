@@ -12,7 +12,7 @@
 #include "TString.h"
 
 class TList;
-class AliVVvertex;
+//class AliVVvertex;
 class AliVVtrack;
 class AliMultiplicity;
 class AliVVkink;
@@ -31,11 +31,12 @@ class AliVVevent {
 
   // --------------------------------------------------------------------------------
   // Access methods
-
+  /* 
   virtual const AliVVvertex* GetPrimaryVertex() const {return NULL;}
   virtual const AliVVvertex* GetPrimaryVertexSPD() const {return NULL;}
   virtual const AliVVvertex* GetPrimaryVertexTracks() const {return NULL;}
-  virtual const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}
+  virtual const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}  
+  */
   virtual AliVVtrack* GetTrack(Int_t /*i*/) const {return NULL;}
   virtual AliVVkink* GetKink(Int_t /*i*/) const {return NULL;}
   virtual AliVVtrack* GetV0(Int_t /*i*/) const {return NULL;}

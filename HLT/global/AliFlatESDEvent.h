@@ -92,8 +92,8 @@ class AliFlatESDEvent: public AliVVevent {
 		return reinterpret_cast<AliFlatESDTrack*> (fContent + fTracksPointer);
   }
 
-  const AliVVvertex* GetPrimaryVertex() const {return NULL;}
-  const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}
+  //const AliVVvertex* GetPrimaryVertex() const {return NULL;}
+  //const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}
   AliFlatESDTrack* GetTrack(Int_t /*i*/) const {return NULL;}
   AliVVkink* GetKink(Int_t /*i*/) const {return NULL;}
   AliFlatESDV0* GetV0(Int_t /*i*/) const {return NULL;}

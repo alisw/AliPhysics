@@ -10,11 +10,10 @@
  */
 
 #include "Rtypes.h"
-#include "AliVVvertex.h"
 #include "AliESDVertex.h"
 #include "AliFlatESDMisc.h"
 
-class AliFlatESDVertex: public AliVVvertex
+class AliFlatESDVertex
 //class AliFlatESDVertex
 {
  public:
