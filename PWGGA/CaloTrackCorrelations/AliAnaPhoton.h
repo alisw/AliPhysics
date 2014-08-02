@@ -54,9 +54,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom, Int_t nlm) ;
   
   void         FillAcceptanceHistograms();
-
-  void         FillEMCALTriggerClusterBCHistograms(Int_t idcalo,       Float_t ecluster,   Float_t tofcluster,
-                                                   Float_t etacluster, Float_t phicluster);
   
   void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag) ;
   
@@ -71,19 +68,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMHistoFill()                  { fFillTMHisto           = kTRUE  ; }
   void         SwitchOffTMHistoFill()                 { fFillTMHisto           = kFALSE ; }
 
-  void         FillClusterPileUpHistograms(AliVCluster * calo, Bool_t matched,
-                                           Float_t ptcluster,  Float_t etacluster,
-                                           Float_t phicluster, Float_t l0cluster);
+  void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells) ;
   
-  void         FillPileUpHistograms(Float_t energy, Float_t pt, Float_t time) ;
-  void         FillPileUpHistogramsPerEvent() ;
-
   void         SwitchOnFillPileUpHistograms()         { fFillPileUpHistograms  = kTRUE  ; }
-  void         SwitchOffFillPileUpHistograms()        { fFillPileUpHistograms  = kFALSE ; }    
-  
-  void         SwitchOnFillEMCALBCHistograms()        { fFillEMCALBCHistograms = kTRUE  ; }
-  void         SwitchOffFillEMCALBCHistograms()       { fFillEMCALBCHistograms = kFALSE ; }
-
+  void         SwitchOffFillPileUpHistograms()        { fFillPileUpHistograms  = kFALSE ; }
   
   // Analysis parameters setters getters
   
@@ -116,7 +104,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > 14) fNOriginHistograms = 14; }
   void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
-    if(n > 7)  fNPrimaryHistograms = 7; }
+    if(n > 6)  fNPrimaryHistograms = 6; }
 
   // For histograms in arrays, index in the array, corresponding to a particle
   enum mcTypes    { kmcPhoton = 0,        kmcPi0Decay = 1,       kmcOtherDecay = 2,  
@@ -125,8 +113,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
                     kmcAntiProton = 9,    kmcPrompt = 10,        kmcFragmentation = 11, 
                     kmcISR = 12,          kmcString = 13                               };  
 
-  enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay = 1,       kmcPOtherDecay = 2,  kmcPOther = 3,
-                    kmcPPrompt = 4,       kmcPFragmentation = 5,  kmcPISR = 6           };
+  enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay = 1,       kmcPOtherDecay = 2,
+                    kmcPPrompt = 3,       kmcPFragmentation = 4,  kmcPISR = 5           };
   
   enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,         
                     kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5       };  
@@ -146,10 +134,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNLMCutMax  ;                            // Remove clusters/cells with number of local maxima larger than this value
   Bool_t   fFillSSHistograms ;                      // Fill shower shape histograms
   Bool_t   fFillOnlySimpleSSHisto;                  // Fill selected cluster histograms, selected SS histograms
+  Bool_t   fFillPileUpHistograms;                   // Fill pile-up related histograms
   Int_t    fNOriginHistograms;                      // Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     // Fill only NPrimaryHistograms of the 7 defined types
-  Bool_t   fFillPileUpHistograms;                   // Fill pile-up related histograms
-  Bool_t   fFillEMCALBCHistograms;                  // Fill eta-phi BC dependent histograms
   
   //Histograms 
   TH1F * fhClusterCutsE [10];                       //! control histogram on the different photon selection cuts, E
@@ -158,79 +145,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhCellsE;                                  //! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;                     //! Fraction of energy carried by cell with maximum energy
   TH2F * fhTimePt;                                  //! time of photon cluster vs pt
-  
   TH2F * fhEtaPhi  ;                                //! Pseudorapidity vs Phi of clusters for E > 0.5
-  TH2F * fhEtaPhiEMCALBC0  ;                        //! Pseudorapidity vs Phi of clusters for E > 0.5
-  TH2F * fhEtaPhiEMCALBC1  ;                        //! Pseudorapidity vs Phi of clusters for E > 0.5
-  TH2F * fhEtaPhiEMCALBCN  ;                        //! Pseudorapidity vs Phi of clusters for E > 0.5
-
-  TH2F * fhEtaPhiTriggerEMCALBC[11] ;               //! Pseudorapidity vs Phi of clusters for E > 2
-  TH2F * fhTimeTriggerEMCALBC  [11] ;               //! Time distribution of clusters, when trigger is in a given BC
-  TH2F * fhTimeTriggerEMCALBCPileUpSPD[11];         //! Time distribution of clusters, when trigger is in a given BC, tagged as pile-up SPD
-
-  TH2F * fhEtaPhiTriggerEMCALBCUM[11] ;             //! Pseudorapidity vs Phi of clusters for E > 2, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUM  [11] ;             //! Time distribution of clusters, when trigger is in a given BC, not matched to trigger
-  
-  TH2F * fhEtaPhiTriggerEMCALBCCluster  [11] ;      //! Pseudorapidity vs Phi of trigger clusters
-  TH2F * fhTimeTriggerEMCALBCCluster ;              //! Time distribution of clusters, when trigger cluster is in a given BC
-  TH2F * fhEtaPhiTriggerEMCALBCUMCluster[11] ;      //! Pseudorapidity vs Phi of highest E cluster  in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMCluster ;            //! Time distribution of highest energy cluster in event, when trigger is in a given BC, not
-  
-  TH2F * fhEtaPhiTriggerEMCALBCClusterOverTh     ;  //! Pseudorapidity vs Phi of trigger clusters, over nominal threshold
-  TH2F * fhEtaPhiTriggerEMCALBCUMClusterOverTh   ;  //! Pseudorapidity vs Phi of highest E cluster  in event, not matched to trigger, over nominal threshold
-  TH2F * fhEtaPhiTriggerEMCALBCClusterBelowTh1   ;  //! Pseudorapidity vs Phi of trigger clusters, 1 GeV below nominal threshold
-  TH2F * fhEtaPhiTriggerEMCALBCUMClusterBelowTh1 ;  //! Pseudorapidity vs Phi of highest E cluster  in event, not matched to trigger, 2 GeV below nominal threshold
-  TH2F * fhEtaPhiTriggerEMCALBCClusterBelowTh2   ;  //! Pseudorapidity vs Phi of trigger clusters, 1 GeV below nominal threshold
-  TH2F * fhEtaPhiTriggerEMCALBCUMClusterBelowTh2 ;  //! Pseudorapidity vs Phi of highest E cluster  in event, not matched to trigger, 2 GeV below nominal threshold
-
-  TH2F * fhEtaPhiTriggerEMCALBCExotic            ;  //! Pseudorapidity vs Phi of trigger exotic clusters
-  TH2F * fhTimeTriggerEMCALBCExotic              ;  //! Time distribution of clusters, when trigger exotic cluster 
-  TH2F * fhEtaPhiTriggerEMCALBCUMExotic          ;  //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMExotic            ;  //! Time distribution of highest energy exotic cluster in event, not matched to trigger
-
-  TH2F * fhEtaPhiTriggerEMCALBCBad               ;  //! Pseudorapidity vs Phi of trigger exotic clusters
-  TH2F * fhTimeTriggerEMCALBCBad                 ;  //! Time distribution of clusters, when trigger exotic 
-  TH2F * fhEtaPhiTriggerEMCALBCUMBad             ;  //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMBad               ;  //! Time distribution of highest energy exotic cluster in event, not matched to trigger
-  
-  TH2F * fhEtaPhiTriggerEMCALBCBadExotic         ;  //! Pseudorapidity vs Phi of trigger exotic and bad clusters
-  TH2F * fhTimeTriggerEMCALBCBadExotic           ;  //! Time distribution of clusters, when trigger exotic and bad cluster 
-  TH2F * fhEtaPhiTriggerEMCALBCUMBadExotic       ;  //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMBadExotic         ;  //! Time distribution of highest energy exotic cluster in event, not matched to trigger
-  
-  TH2F * fhEtaPhiTriggerEMCALBCExoticCluster     ;  //! Pseudorapidity vs Phi of trigger exotic clusters
-  TH2F * fhTimeTriggerEMCALBCExoticCluster       ;  //! Time distribution of clusters, when trigger exotic cluster 
-  TH2F * fhEtaPhiTriggerEMCALBCUMExoticCluster   ;  //! Pseudorapidity vs Phi of highest E exotic cluster  in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMExoticCluster     ;  //! Time distribution of highest energy exotic cluster in event, not matched to trigger
-  
-  TH2F * fhEtaPhiTriggerEMCALBCBadCluster        ;  //! Pseudorapidity vs Phi of trigger bad clusters
-  TH2F * fhTimeTriggerEMCALBCBadCluster          ;  //! Time distribution of clusters, when trigger bad cluster is in a given BC
-  TH2F * fhEtaPhiTriggerEMCALBCUMBadCluster      ;  //! Pseudorapidity vs Phi of highest E bad cluster  in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMBadCluster        ;  //! Time distribution of highest energy bad cluster in event, when trigger is in a given BC, not
-
-  TH2F * fhEtaPhiTriggerEMCALBCBadExoticCluster  ;  //! Pseudorapidity vs Phi of trigger exotic and bad clusters
-  TH2F * fhTimeTriggerEMCALBCBadExoticCluster    ;  //! Time distribution of clusters, when trigger exotic and bad cluster 
-  TH2F * fhEtaPhiTriggerEMCALBCUMBadExoticCluster;  //! Pseudorapidity vs Phi of highest E exotic and bad cluster in event, not matched to trigger
-  TH2F * fhTimeTriggerEMCALBCUMBadExoticCluster  ;  //! Time distribution of highest energy exotic and bad cluster in event, not matched to trigger
-  
-  TH2F * fhTimeTriggerEMCALBCBadMaxCell          ;  //! Time distribution of trigger clusters, when trigger bad max cell
-  TH2F * fhTimeTriggerEMCALBCUMBadMaxCell        ;  //! Time distribution of highest energy bad max cell cluster in event, when trigger is not found
-  TH2F * fhTimeTriggerEMCALBCBadMaxCellExotic    ;  //! Time distribution of trigger clusters, when trigger exotic cluster with bad max cell
-  TH2F * fhTimeTriggerEMCALBCUMBadMaxCellExotic  ;  //! Time distribution of highest energy exotic with bad max cell cluster in event, when trigger is not found
-  
-  TH2F * fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster ;  //! Pseudorapidity vs Phi of highest E bad cluster  in event, not matched to trigger, rematched open time trigger
-  TH2F * fhTimeTriggerEMCALBCUMReMatchOpenTimeCluster   ;  //! Time distribution of highest energy bad max cell cluster in event, when trigger is not found, rematched open time trigger
-  TH2F * fhEtaPhiTriggerEMCALBCUMReMatchCheckNeighCluster; //! Pseudorapidity vs Phi of highest E bad cluster  in event, not matched to trigger, rematched with neigbour patchs
-  TH2F * fhTimeTriggerEMCALBCUMReMatchCheckNeighCluster ;  //! Time distribution of highest energy bad max cell cluster in event, when trigger is not found, rematched with neigbour patchs
-  TH2F * fhEtaPhiTriggerEMCALBCUMReMatchBothCluster;//! Pseudorapidity vs Phi of highest E bad cluster  in event, not matched to trigger, rematched open both
-  TH2F * fhTimeTriggerEMCALBCUMReMatchBothCluster ; //! Time distribution of highest energy bad max cell cluster in event, when trigger is not found, rematched open both
-  
-  TH2F * fhTimeTriggerEMCALBC0UMReMatchOpenTime   ; //! Time distribution of clusters, not matched to trigger, rematched open time trigger
-  TH2F * fhTimeTriggerEMCALBC0UMReMatchCheckNeigh ; //! Time distribution of clusters, not matched to trigger, rematched with neighbour patchs
-  TH2F * fhTimeTriggerEMCALBC0UMReMatchBoth       ; //! Time distribution of clusters, not matched to trigger, rematched open both
-  
-  TH2F * fhEtaPhiNoTrigger ;                        //! Pseudorapidity vs Phi of highest E exotic cluster  in event, no trigger at all
-  TH2F * fhTimeNoTrigger   ;                        //! Time distribution of highest energy exotic cluster in event, no trigger at all
   
   TH1F * fhEPhoton    ;                             //! Number of identified photon vs energy
   TH1F * fhPtPhoton   ;                             //! Number of identified photon vs transerse momentum
@@ -238,18 +153,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhoton  ;                             //! Pseudorapidity of identified  photon vs transerse momentum
   TH2F * fhEtaPhiPhoton  ;                          //! Pseudorapidity vs Phi of identified  photon for E > 0.5
   TH2F * fhEtaPhi05Photon  ;                        //! Pseudorapidity vs Phi of identified  photon for E < 0.5
-  TH2F * fhEtaPhiPhotonEMCALBC0  ;                  //! Pseudorapidity vs Phi of identified  photon for E > 0.5
-  TH2F * fhEtaPhiPhotonEMCALBC1  ;                  //! Pseudorapidity vs Phi of identified  photon for E > 0.5
-  TH2F * fhEtaPhiPhotonEMCALBCN  ;                  //! Pseudorapidity vs Phi of identified  photon for E > 0.5
-  TH2F * fhEtaPhiPhotonTriggerEMCALBC[11];          //! Pseudorapidity vs Phi of photons for E > 0.5
-  TH2F * fhTimePhotonTriggerEMCALBC  [11];          //! Time distribution of photons, when trigger is in a given BC
-  TH2F * fhTimePhotonTriggerEMCALBCPileUpSPD[11] ;  //! Time distribution of photons, when trigger is in a given BC, tagged as pile-up SPD
-  TH2F * fhEtaPhiPhotonTriggerEMCALBCUM[11];        //! Pseudorapidity vs Phi of photons for E > 2, not matched to trigger
-  TH2F * fhTimePhotonTriggerEMCALBCUM  [11];        //! Time distribution of photons, when trigger is in a given BC, not matched to trigger
-
-  TH2F * fhTimePhotonTriggerEMCALBC0UMReMatchOpenTime   ;  //! Time distribution of photons in event, when trigger is not found, rematched open time trigger
-  TH2F * fhTimePhotonTriggerEMCALBC0UMReMatchCheckNeigh ;  //! Time distribution of photons in event, when trigger is not found, rematched with neigbour patchs
-  TH2F * fhTimePhotonTriggerEMCALBC0UMReMatchBoth       ;  //! Time distribution of photons in event, when trigger is not found, rematched open both
 
   TH2F * fhPtCentralityPhoton    ;                  //! centrality  vs photon pT
   TH2F * fhPtEventPlanePhoton    ;                  //! event plane vs photon pT
@@ -329,7 +232,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhYPrimMCAcc[7];                           //! Rapidity of generated photon, in calorimeter acceptance
   
   // Shower Shape MC
-
   TH2F * fhMCELambda0[6] ;                          //! E vs Lambda0     from MC particle
   TH2F * fhMCELambda1[6] ;                          //! E vs Lambda1     from MC particle
   TH2F * fhMCEDispersion[6] ;                       //! E vs Dispersion  from MC particle
@@ -398,40 +300,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEOverPTRD[2];                            //! matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts, behind TRD
 
   // Pile-up
-  TH1F * fhPtPileUp[7];                             //! pT distribution of clusters before any selection
-  TH1F * fhPtChargedPileUp[7];                      //! pT distribution of track matched clusters
   TH1F * fhPtPhotonPileUp[7];                       //! pT distribution of selected photons
-  TH2F * fhLambda0PileUp[7];                        //! E vs M02 distribution of clusters, before any selection
-  TH2F * fhLambda0ChargedPileUp[7];                 //! E vs M02 distribution of clusters, track matched clusters
-  TH2F * fhClusterCellTimePileUp[7];                //! E vs Time inside cluster, before any selection, not max cell
-  TH2F * fhClusterTimeDiffPileUp[7];                //! E vs Time difference inside cluster, before any selection
-  TH2F * fhClusterTimeDiffChargedPileUp[7];         //! E vs Time difference inside cluster for track matched clusters
   TH2F * fhClusterTimeDiffPhotonPileUp[7];          //! E vs Time difference inside cluster for selected photons
-  TH2F * fhClusterEFracLongTimePileUp[7];           //! E vs fraction of cluster energy from cells with large time
-  TH2F * fhTimePtNoCut;                             //! time of cluster vs Pt, no cut
-  TH2F * fhTimePtSPD;                               //! time of cluster vs Pt, IsSPDPileUp
   TH2F * fhTimePtPhotonNoCut;                       //! time of photon cluster vs Pt, no cut
   TH2F * fhTimePtPhotonSPD;                         //! time of photon cluster vs Pt, IsSPDPileUp
   TH2F * fhTimeNPileUpVertSPD;                      //! time of cluster vs n pile-up vertices from SPD
   TH2F * fhTimeNPileUpVertTrack;                    //! time of cluster vs n pile-up vertices from Tracks
-  TH2F * fhTimeNPileUpVertContributors;             //! time of cluster vs n pile-up vertex from SPD contributors
-  TH2F * fhTimePileUpMainVertexZDistance;           //! time of cluster vs difference of z main vertex and pile-up vertex
-  TH2F * fhTimePileUpMainVertexZDiamond;            //! time of cluster vs difference of z diamond and pile-up vertex
-  TH2F * fhClusterMultSPDPileUp[4];                 //! E max cluster vs event cluster multiplicity, for tmax-tdiff cuts, pile up event
-  TH2F * fhClusterMultNoPileUp[4];                  //! E max cluster vs event cluster multiplicity, for tmax-tdiff cuts, not pile up event
-  TH2F * fhEtaPhiBC0;                               //! eta/phi of clusters in BC=0
-  TH2F * fhEtaPhiBCPlus;                            //! eta/phi of clusters in BC>0
-  TH2F * fhEtaPhiBCMinus;                           //! eta/phi of clusters in BC<0
-  TH2F * fhEtaPhiBC0PileUpSPD;                      //! eta/phi of clusters in BC=0, SPD pile-up
-  TH2F * fhEtaPhiBCPlusPileUpSPD;                   //! eta/phi of clusters in BC>0, SPD pile-up
-  TH2F * fhEtaPhiBCMinusPileUpSPD;                  //! eta/phi of clusters in BC<0, SPD pile-up
-
-  TH2F * fhPtNPileUpSPDVtx;	                        //! cluster pt vs number of spd pile-up vertices
-  TH2F * fhPtNPileUpTrkVtx;                         //! cluster pt vs number of track pile-up vertices
-  TH2F * fhPtNPileUpSPDVtxTimeCut;	                //! cluster pt vs number of spd pile-up vertices, time cut +-25 ns
-  TH2F * fhPtNPileUpTrkVtxTimeCut;                  //! cluster pt vs number of track pile-up vertices, time cut +- 25 ns
-  TH2F * fhPtNPileUpSPDVtxTimeCut2;	                //! cluster pt vs number of spd pile-up vertices, time cut +-75 ns
-  TH2F * fhPtNPileUpTrkVtxTimeCut2;                 //! cluster pt vs number of track pile-up vertices, time cut +- 75 ns
 
   TH2F * fhPtPhotonNPileUpSPDVtx;	                  //! photon pt vs number of spd pile-up vertices
   TH2F * fhPtPhotonNPileUpTrkVtx;                   //! photon pt vs number of track pile-up vertices

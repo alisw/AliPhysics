@@ -90,6 +90,8 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   void     CalculateBkg(TVector3 gamma, TVector3 jet,Double_t *vector,Int_t type);
 
+  void     FindMCgenInfo();//gives information on generated level
+
   void     SwitchOnSaveGJTree()     { fSaveGJTree = kTRUE ; }
   void     SwitchOffSaveGJTree()    { fSaveGJTree = kFALSE; }
   Bool_t   IsSaveGJTree()           { return fSaveGJTree  ; }
@@ -113,6 +115,10 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void     SwitchOnHistogramJetTracks()  { fUseHistogramJetTracks = kTRUE ; }
   void     SwitchOffHistogramJetTracks() { fUseHistogramJetTracks = kFALSE; }
   Bool_t   IsHistogramJetTracks()        { return fUseHistogramJetTracks  ; }
+
+  void     SwitchOnMCStudies()     { fMCStudies = kTRUE ; }
+  void     SwitchOffMCStudies()    { fMCStudies = kFALSE; }
+  Bool_t   IsMCStudies()           { return fMCStudies  ; }
 
 private:
 
@@ -145,6 +151,8 @@ private:
   Bool_t     fUseHistogramJetBkg;//! flag to save bkg jet histograms
   Bool_t     fUseHistogramTracks;//! flag to save CTS tracks features
   Bool_t     fUseHistogramJetTracks;//! flag to save jet tracks features
+
+  Bool_t     fMCStudies; //! flag to use MC methods
 
   TRandom2 * fGenerator;//! pointer to random generator object
 
@@ -266,6 +274,24 @@ private:
   TH2F * fhSelectedPhotonLambda0VsPt;      //! lambda0 vs pt for selected photons
   TH2F * fhRandomPhiEta[5];                //! eta and phi from random generator
 
+  //MC generated histograms
+  TH1F * fhMCPhotonCuts;  //! generated photon cuts
+  TH1F * fhMCPhotonPt;    //! generated direct photon pt
+  TH2F * fhMCPhotonEtaPhi;//! generated direct photon eta vs phi
+  TH1F * fhMCJetOrigin;   //! generated origin of jet
+  TH2F * fhMCJetNPartVsPt;     //! generated N parts vs pt full jet 
+  TH2F * fhMCJetChNPartVsPt;   //! generated N parts vs pt charged jet 
+  TH2F * fhMCJetNPart150VsPt;  //! generated N parts (pt>150 MeV/c) vs pt full jet 
+  TH2F * fhMCJetChNPart150VsPt;//! generated N parts (pt>150 MeV/c) vs pt charged jet 
+  TH2F * fhMCJetChNPart150ConeVsPt;//! generated N parts (pt>150 MeV/c) vs pt charged jet R=0.4 
+  TH1F * fhMCJetRatioChFull;   //! generated ratio pt charged/full jet
+  TH1F * fhMCJetRatioCh150Ch;  //! generated ratio pt charged(pt>150MeV/c)/charged jet
+  TH2F * fhMCJetEtaPhi;     //! generated jet eta vs phi for full jet
+  TH2F * fhMCJetChEtaPhi;   //! generated jet eta vs phi for charged jet
+  TH2F * fhMCJet150EtaPhi;  //! generated jet eta vs phi full jet (pt>150 MeV/c)
+  TH2F * fhMCJetCh150EtaPhi;//! generated jet eta vs phi charged jet (pt>150 MeV/c)
+  TH2F * fhMCJetCh150ConeEtaPhi;//! generated jet eta vs phi charged jet (pt>150 MeV/c) R=0.4 
+
   //tree with data gamma and jet
   TTree *  fTreeGJ;       //! gamma-jet tree
   Double_t fGamPt;        //! pt
@@ -295,6 +321,32 @@ private:
   Double_t fCentrality;   //! centrality
   Bool_t   fIso;          //! flag isolated or not
   Double_t fGamRho;       //! background energy for photons per cell in EMCal
+
+  Double_t fMCGamPt;        //! MC gen pt photon
+  Double_t fMCGamEta;       //! MC gen eta photon
+  Double_t fMCGamPhi;       //! MC gen phi photon
+  Int_t    fMCPartonType;   //! MC gen parton type origin of jet
+  Double_t fMCJetPt;        //! MC gen full jet pt
+  Double_t fMCJetChPt;      //! MC gen charged jet pt
+  Double_t fMCJet150Pt;     //! MC gen full jet (pt^particles>150MeV/c) pt
+  Double_t fMCJetCh150Pt;   //! MC gen charged jet (pt^particles>150MeV/c) pt
+  Int_t    fMCJetNPart;     //! MC gen number of full jet particles
+  Int_t    fMCJetChNPart;   //! MC gen number of charged jet particles
+  Int_t    fMCJet150NPart;  //! MC gen number of full jet particles (pt>150MeV/c)
+  Int_t    fMCJetCh150NPart;//! MC gen number of charged jet particles (pt>150MeV/c)
+  Double_t fMCJetEta;       //! MC gen full jet eta
+  Double_t fMCJetPhi;       //! MC gen full jet phi
+  Double_t fMCJetChEta;     //! MC gen charged jet eta
+  Double_t fMCJetChPhi;     //! MC gen charged jet phi
+  Double_t fMCJet150Eta;    //! MC gen full jet eta (pt>150MeV/c)
+  Double_t fMCJet150Phi;    //! MC gen full jet phi (pt>150MeV/c)
+  Double_t fMCJetCh150Eta;  //! MC gen charged jet eta (pt>150MeV/c)
+  Double_t fMCJetCh150Phi;  //! MC gen charged jet phi (pt>150MeV/c)
+
+  Double_t fMCJetCh150ConePt;//! MC gen charged jet (pt^particles>150MeV/c),R=0.4 pt
+  Int_t    fMCJetCh150ConeNPart;//! MC gen number of charged jet particles (pt>150MeV/c),R=0.4
+  Double_t fMCJetCh150ConeEta;  //! MC gen charged jet eta (pt>150MeV/c),R=0.4
+  Double_t fMCJetCh150ConePhi;  //! MC gen charged jet phi (pt>150MeV/c),R=0.4
 
   AliAnaParticleJetFinderCorrelation(              const AliAnaParticleJetFinderCorrelation & g) ; // cpy ctor
   AliAnaParticleJetFinderCorrelation & operator = (const AliAnaParticleJetFinderCorrelation & g) ; // cpy assignment

@@ -72,6 +72,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeConst.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeGR.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetV2.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMass.cxx
@@ -103,7 +104,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 if(FASTJET_FOUND)
   set ( EDEFINE -isystem${FASTJET_INCLUDE_DIR})
-  set ( EINCLUDE ${FASTJET_INCLUDE_DIR} PWGJE/EMCALJetTasks PWGJE/EMCALJetTasks/UserTasks PWG/EMCAL EMCAL OADB STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)
+  set ( EINCLUDE PWGJE/EMCALJetTasks PWGJE/EMCALJetTasks/UserTasks PWG/EMCAL EMCAL OADB STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)
   set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h )
 else()
   set ( EINCLUDE PWGJE/EMCALJetTasks PWGJE/EMCALJetTasks/UserTasks PWG/EMCAL EMCAL OADB STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)

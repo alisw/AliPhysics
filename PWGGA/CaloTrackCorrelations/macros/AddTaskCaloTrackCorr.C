@@ -99,6 +99,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
     ::Error("AddTask", "This task requires an input event handler");
     return NULL;
   }
+
+  // Make sure the B field is enabled for track selection, some cuts need it
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
   
   kInputDataType = "AOD";
   if(!kData.Contains("delta"))
@@ -683,7 +686,60 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   ana->FillNOriginHistograms(20);
   ana->FillNPrimaryHistograms(20);
   
+  ana->SwitchOnRealCaloAcceptance(); // primary particle acceptance histograms
   ConfigureMC(ana);
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
+  
+}
+
+//________________________________________________________________
+AliAnaEMCALTriggerClusters* ConfigureEMCALTriggerClusterAnalysis()
+{
+  // For filling all histograms meaninfully, in the reader, time cut must be off
+  // and bad triggered events not rejected, and of course analyze triggered events.
+  
+  AliAnaEMCALTriggerClusters *ana = new AliAnaEMCALTriggerClusters();
+  ana->SetDebug(kDebug); //10 for lots of messages
+  
+  // cluster selection cuts
+  
+  ana->SwitchOffFiducialCut();
+  ana->SetNCellCut(1);// At least 2 cells
+  ana->SetMinEnergy(0.3); // avoid mip peak at E = 260 MeV
+  ana->SetMaxEnergy(1000);
+  ana->SetM02(1, 2) ;
+  ana->SwitchOnTrackMatchRejection() ;
+  
+  ana->AddToHistogramsName("EMCTriggerClusters_");
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
+  
+}
+
+//___________________________________________________
+AliAnaClusterPileUp* ConfigureClusterPileUpAnalysis()
+{
+  // For filling all histograms meaninfully, in the reader, time cut must be off
+  // and bad triggered events in different BC not rejected
+  
+  AliAnaClusterPileUp *ana = new AliAnaClusterPileUp();
+  ana->SetDebug(kDebug); //10 for lots of messages
+  
+  // cluster selection cuts
+  
+  ana->SwitchOffFiducialCut();
+  ana->SetNCellCut(1);// At least 2 cells
+  ana->SetMinEnergy(0.3); // avoid mip peak at E = 260 MeV
+  ana->SetMaxEnergy(1000);
+  
+  ana->AddToHistogramsName("ClusterPileUp_");
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
   
   if(kPrint) ana->Print("");
   
@@ -1243,6 +1299,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
     ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   }
   
+  ana->SwitchOnRealCaloAcceptance(); // primary particle acceptance histograms
   ConfigureMC(ana);
   
   if(kPrint) ic ->Print("");

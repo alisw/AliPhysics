@@ -15,6 +15,7 @@
  */
 #include "AliBaseESDTask.h"
 #include "AliFMDEventInspector.h"
+#include "AliFMDESDFixer.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDEnergyFitter.h"
@@ -141,6 +142,12 @@ public:
    */
   AliFMDEventInspector& GetEventInspector() { return fEventInspector; }
   /**
+   * Get reference to the ESDFixer algorithm 
+   * 
+   * @return Reference to AliFMDESDFixer object 
+   */
+  AliFMDESDFixer& GetESDFixer() { return fESDFixer; }
+  /**
    * Get reference to the EnergyFitter algorithm 
    * 
    * @return Reference to AliFMDEnergyFitter object 
@@ -164,6 +171,12 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   const AliFMDEventInspector& GetEventInspector() const { return fEventInspector; }
+  /**
+   * Get reference to the ESDFixer algorithm 
+   * 
+   * @return Reference to AliFMDESDFixer object 
+   */
+  const AliFMDESDFixer& GetESDFixer() const { return fESDFixer; }
   /**
    * Get reference to the EnergyFitter algorithm 
    * 
@@ -217,11 +230,12 @@ protected:
   AliESDFMD               fESDFMD;       // Sharing corrected ESD object
   AliForwardUtil::Histos  fHistos;       // Cache histograms 
   AliFMDEventInspector    fEventInspector;    // Algorithm
+  AliFMDESDFixer          fESDFixer;          // Algorithm
   AliFMDEnergyFitter      fEnergyFitter;      // Algorithm
   AliFMDSharingFilter     fSharingFilter;     // Algorithm
   AliFMDDensityCalculator fDensityCalculator; // Algorithm
 
-  ClassDef(AliForwardQATask,3) // Forward QA class
+  ClassDef(AliForwardQATask,4) // Forward QA class
 };
 
 #endif

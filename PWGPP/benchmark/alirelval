@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# launch-relval.sh -- by Dario Berzano <dario.berzano@cern.ch>
+# alirelval -- by Dario Berzano <dario.berzano@cern.ch>
 #
 # Controls the release validation submission by managing the validation virtual
 # cluster.
@@ -34,9 +34,9 @@ errStatusDoneOk=102
 errStatusDoneFail=103
 
 # thresholds
-maxVmLaunchAttempts=10
+maxVmLaunchAttempts=100
 maxSshConnectAttempts=400
-maxVmAddressWait=120
+maxVmAddressWait=200
 
 # working directory prefix
 sessionPrefix="$HOME/.alice-release-validation"
@@ -122,6 +122,9 @@ function RunVM() {
         ( euca-delete-keypair "$keyName" ; rm -f "$keyFile" ) > /dev/null 2>&1
       fi
       return $errRunVm
+    elif [ $attempt != 1 ] ; then
+      pr " * Pausing between retries"
+      sleep 5
     fi
 
     pr -n " * Launching VM (attempt #$attempt/$maxVmLaunchAttempts)..."
@@ -331,6 +334,7 @@ function InstantiateValidationVM() {
   elif [ -e "$cloudKeyFile" ] ; then
     # copy key to session dir
     pr -n "Copying private key $cloudKeyFile to session directory..."
+    rm -f 'key.pem'
     cp "$cloudKeyFile" 'key.pem' 2> /dev/null
     if [ $? != 0 ] ; then
       pr 'error'

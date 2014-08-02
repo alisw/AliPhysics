@@ -41,6 +41,7 @@
 #include "AliMCEventHandler.h"
 #include "AliVParticle.h"
 #include "AliCFContainer.h"
+#include "AliEventplane.h"
 
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
@@ -130,6 +131,8 @@ fCentralityMethod("V0M"),
 // track cuts
 fTrackEtaCut(0.8),
 fTrackEtaCutMin(-1.),
+fTrackPhiCutEvPlMin(0.),
+fTrackPhiCutEvPlMax(0.),
 fOnlyOneEtaSide(0),
 fPtMin(0.5),
 fDCAXYCut(0),
@@ -247,6 +250,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fAnalyseUE->DefineESDCuts(fFilterBit);
   fAnalyseUE->SetEventSelection(fSelectBit);
   fAnalyseUE->SetHelperPID(fHelperPID);
+  if(fTrackPhiCutEvPlMax!=0.)
+    fAnalyseUE->SetParticlePhiCutEventPlane(fTrackPhiCutEvPlMin,fTrackPhiCutEvPlMax);
   if ((fParticleSpeciesTrigger != -1 || fParticleSpeciesAssociated != -1) && !fHelperPID)
     AliFatal("HelperPID object should be set in the steering macro");
 
@@ -1166,9 +1171,18 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
 
   TObjArray* tracks = 0;
-  
+ 
+  Double_t evtPlanePhi = -999.; //A value outside [-pi/2,pi/2] will be ignored
+  if(fTrackPhiCutEvPlMax!=0.) {
+    AliEventplane* evtPlane = inputEvent->GetEventplane();
+    Double_t qx = 0; Double_t qy = 0;
+    if(evtPlane) evtPlanePhi = evtPlane->CalculateVZEROEventPlane(inputEvent, 10, 2, qx, qy);
+    //Reject event if the plane is not available
+    else return; 
+  }
+ 
   if (fTriggersFromDetector == 0)
-    tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
+    tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
   else if (fTriggersFromDetector <= 4)
     tracks=GetParticlesFromDetector(inputEvent,fTriggersFromDetector);
   else
@@ -1221,7 +1235,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
   if(fAssociatedFromDetector==0){
-    if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0 )
+    if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0 || fTrackPhiCutEvPlMax != 0.)
       tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
   }
   else if (fAssociatedFromDetector <= 4){

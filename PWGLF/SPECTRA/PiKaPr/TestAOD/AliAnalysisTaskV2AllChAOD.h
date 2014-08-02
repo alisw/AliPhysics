@@ -61,7 +61,13 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fResSP_sq(0),
     fResSP_vs_Cent_sq(0),
     f2partCumQA_vs_Cent_sq(0),
-    f2partCumQB_vs_Cent_sq(0)
+    f2partCumQB_vs_Cent_sq(0),
+    fv2SPGap1A_mb(0),
+    fv2SPGap1B_mb(0),
+    fResSP_mb(0),
+    fv2SPGap1Amc(0),
+    fv2SPGap1Bmc(0),
+    fResSPmc(0)
       {}
   AliAnalysisTaskV2AllChAOD(const char *name);
   virtual ~AliAnalysisTaskV2AllChAOD() {
@@ -99,6 +105,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   void SetMinTPCNcls(Double_t val) {fMinTPCNcls=val;}
   
   Bool_t GetDCA(const AliAODTrack* trk, Double_t * p);
+  void MCclosure();
 
   void     SetEtaGap(Float_t etamin,Float_t etamax)   { fEtaGapMin = etamin; fEtaGapMax = etamax; }
   void     SetQvecCut(Float_t qmin,Float_t qmax)      { fCutSmallQperc = qmin; fCutLargeQperc = qmax; }
@@ -187,6 +194,14 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   TProfile*     fCosGap1A_sq[9];      //! <cos> vs pT gap 1
   TProfile*     fSinGap1B_sq[9];      //! <sin> vs pT gap 1
   TProfile*     fCosGap1B_sq[9];      //! <cos> vs pT gap 1
+  
+  TProfile*    fv2SPGap1A_mb;
+  TProfile* fv2SPGap1B_mb;
+  TProfile* fResSP_mb;
+  TProfile* fv2SPGap1Amc;
+  TProfile* fv2SPGap1Bmc;
+  TProfile* fResSPmc;
+  
   
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);

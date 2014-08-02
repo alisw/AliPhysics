@@ -88,7 +88,13 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fResSP_sq(0),
   fResSP_vs_Cent_sq(0),
   f2partCumQA_vs_Cent_sq(0),
-  f2partCumQB_vs_Cent_sq(0)
+  f2partCumQB_vs_Cent_sq(0),
+  fv2SPGap1A_mb(0),
+  fv2SPGap1B_mb(0),
+  fResSP_mb(0),
+  fv2SPGap1Amc(0),
+  fv2SPGap1Bmc(0),
+  fResSPmc(0)
 {
   
   for (Int_t i = 0; i< 9; i++){
@@ -214,6 +220,24 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   
   fEta_vs_PhiB = new TH2D("fEta_vs_PhiB","eta vs phi distribution;#eta;#phi",200.,-1.,1.,175.,0.,7.);
   fOutput->Add(fEta_vs_PhiB);
+  
+  fResSP_mb = new TProfile("fResSP_mb", "Resolution; ese; Resolution", 3, 0., 3.);
+  fOutput->Add(fResSP_mb);
+
+  fv2SPGap1A_mb = new TProfile("fv2SPGap1A_mb", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+  fOutput->Add(fv2SPGap1A_mb);
+
+  fv2SPGap1B_mb = new TProfile("fv2SPGap1B_mb", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+  fOutput->Add(fv2SPGap1B_mb);
+  
+  fResSPmc = new TProfile("fResSPmc", "Resolution; ese; Resolution", 3, 0., 3.);
+  fOutput->Add(fResSPmc);
+
+  fv2SPGap1Amc = new TProfile("fv2SPGap1Amc", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+  fOutput->Add(fv2SPGap1Amc);
+
+  fv2SPGap1Bmc = new TProfile("fv2SPGap1Bmc", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+  fOutput->Add(fv2SPGap1Bmc);
   
   //large q resolution
   fResSP_lq = new TProfile("fResSP_lq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
@@ -396,6 +420,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
     else if ((Cent > 70.0) && (Cent <= 80.0))
       centV0 = 8; 
     
+  if(fIsMC) MCclosure(); // fill mc histograms for montecarlo closure
 
   Double_t QxGap1A = 0., QyGap1A = 0.;
   Double_t QxGap1B = 0., QyGap1B = 0.;
@@ -461,6 +486,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
         if (track->Eta() < fEtaGapMin && multGap1A > 0){
           Double_t v2SPGap1A = (TMath::Cos(2.*track->Phi())*QxGap1A + TMath::Sin(2.*track->Phi())*QyGap1A)/(Double_t)multGap1A;
           fv2SPGap1A[centV0]->Fill(track->Pt(), v2SPGap1A);
+          fv2SPGap1A_mb->Fill(track->Pt(), v2SPGap1A); //mb v2
 
 	  fSinGap1A[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
           fCosGap1A[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
@@ -481,6 +507,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
         if (track->Eta() > fEtaGapMax && multGap1B > 0){
           Double_t v2SPGap1B = (TMath::Cos(2.*track->Phi())*QxGap1B + TMath::Sin(2.*track->Phi())*QyGap1B)/(Double_t)multGap1B;
           fv2SPGap1B[centV0]->Fill(track->Pt(), v2SPGap1B);
+          fv2SPGap1B_mb->Fill(track->Pt(), v2SPGap1B); //mb v2
 	  
           fCosGap1B[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
           fSinGap1B[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
@@ -505,6 +532,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   if (multGap1A > 0 && multGap1B > 0){
     Double_t res = (QxGap1A*QxGap1B + QyGap1A*QyGap1B)/(Double_t)multGap1A/(Double_t)multGap1B;
     fResSP->Fill((Double_t)centV0, res);
+    fResSP_mb->Fill(0., res);
     fResSP_vs_Cent->Fill(Cent, res);
     fResSP_vs_Qvec[centV0]->Fill(Qvec,res);
     
@@ -575,6 +603,83 @@ Bool_t  AliAnalysisTaskV2AllChAOD::GetDCA(const AliAODTrack* trk, Double_t * p){
 
 }
 
+//_________________________________________________________________
+void  AliAnalysisTaskV2AllChAOD::MCclosure(){
+  // First do MC to fill up the MC particle array
+  
+  TClonesArray *arrayMC = 0;
+  if (fIsMC)
+    {
+      arrayMC = (TClonesArray*) fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+      if (!arrayMC) {
+	AliFatal("Error: MC particles branch not found!\n");
+      }
+      
+      Double_t QxGap1Amc = 0., QyGap1Amc = 0.;
+      Double_t QxGap1Bmc = 0., QyGap1Bmc = 0.;
+      Int_t multGap1Amc = 0, multGap1Bmc = 0;
+
+      for (Int_t loop = 0; loop < 2; loop++){
+	
+	Int_t nMC = arrayMC->GetEntries();
+      
+	for (Int_t iMC = 0; iMC < nMC; iMC++)
+	  {
+	    AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
+	    if(!partMC->Charge()) continue;//Skip neutrals
+	    if(fCharge != 0 && partMC->Charge()*fCharge < 0.) continue;//if fCharge != 0 only select fCharge
+	  
+            if (!(partMC->IsPhysicalPrimary()))
+                continue;
+            
+            if (partMC->Charge() == 0)
+                continue;
+
+	    if(partMC->Eta()<fTrackCuts->GetEtaMin() || partMC->Eta()>fTrackCuts->GetEtaMax()) continue;
+	  
+	    //Printf("a particle");
+            
+            
+           if (loop == 0) {
+	     
+	     if (partMC->Eta() > fEtaGapMax){
+	       QxGap1Amc += TMath::Cos(2.*partMC->Phi());
+               QyGap1Amc += TMath::Sin(2.*partMC->Phi());
+               multGap1Amc++;
+	    }
+	    
+	    if (partMC->Eta() < fEtaGapMin){
+	      QxGap1Bmc += TMath::Cos(2.*partMC->Phi());
+	      QyGap1Bmc += TMath::Sin(2.*partMC->Phi());
+	      multGap1Bmc++;
+	    }
+  
+	  } else {
+	    
+	    //eval v2 scalar product
+	    if (partMC->Eta() < fEtaGapMin && multGap1Amc > 0){
+	      Double_t v2SPGap1Amc = (TMath::Cos(2.*partMC->Phi())*QxGap1Amc + TMath::Sin(2.*partMC->Phi())*QyGap1Amc)/(Double_t)multGap1Amc;
+              fv2SPGap1Amc->Fill(partMC->Pt(), v2SPGap1Amc);
+	    }
+	    
+	    if (partMC->Eta() > fEtaGapMax && multGap1Bmc > 0){
+	      Double_t v2SPGap1Bmc = (TMath::Cos(2.*partMC->Phi())*QxGap1Bmc + TMath::Sin(2.*partMC->Phi())*QyGap1Bmc)/(Double_t)multGap1Bmc;
+              fv2SPGap1Bmc->Fill(partMC->Pt(), v2SPGap1Bmc);
+	    }
+      
+	    
+	  }// end else 
+	} // end loop on partMCs
+      } // end loop
+      
+      if (multGap1Amc > 0 && multGap1Bmc > 0){
+	Double_t resmc = (QxGap1Amc*QxGap1Bmc + QyGap1Amc*QyGap1Bmc)/(Double_t)multGap1Amc/(Double_t)multGap1Bmc;
+	fResSPmc->Fill(0.,resmc);
+      }
+	
+      }// end if MC
+}
+  
 //_________________________________________________________________
 void   AliAnalysisTaskV2AllChAOD::Terminate(Option_t *)
 {

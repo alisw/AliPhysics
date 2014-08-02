@@ -59,12 +59,24 @@ AliAnalysisTaskSE(),
   fOutputCounters(0),
   fListProfiles(0),
   fHistNEvents(0),
-  fHistNtrEta16vsNtrEta1(0),
-  fHistNtrEta05vsNtrEta1(0),
-  fHistNtrEta03vsNtrEta1(0),
-  fHistNtrEtaV0AvsNtrEta1(0),
-  fHistNtrEtaV0MvsNtrEta1(0),
-  fHistNtrCorrEta1vsNtrRawEta1(0),
+  fHistNtrEta16vsNtrEta1EvSel(0),
+  fHistNtrEta05vsNtrEta1EvSel(0),
+  fHistNtrEta03vsNtrEta1EvSel(0),
+  fHistNtrEtaV0AvsNtrEta1EvSel(0),
+  fHistNtrEtaV0MvsNtrEta1EvSel(0),
+  fHistNtrCorrEta1vsNtrRawEta1EvSel(0),
+  fHistNtrEta16vsNtrEta1EvWithCand(0),
+  fHistNtrEta05vsNtrEta1EvWithCand(0),
+  fHistNtrEta03vsNtrEta1EvWithCand(0),
+  fHistNtrEtaV0AvsNtrEta1EvWithCand(0),
+  fHistNtrEtaV0MvsNtrEta1EvWithCand(0),
+  fHistNtrCorrEta1vsNtrRawEta1EvWithCand(0),
+  fHistNtrEta16vsNtrEta1EvWithD(0),
+  fHistNtrEta05vsNtrEta1EvWithD(0),
+  fHistNtrEta03vsNtrEta1EvWithD(0),
+  fHistNtrEtaV0AvsNtrEta1EvWithD(0),
+  fHistNtrEtaV0MvsNtrEta1EvWithD(0),
+  fHistNtrCorrEta1vsNtrRawEta1EvWithD(0),
   fHistNtrVsZvtx(0),
   fHistNtrCorrVsZvtx(0),
   fHistNtrVsNchMC(0),
@@ -75,9 +87,11 @@ AliAnalysisTaskSE(),
   fHistNtrCorrVsNchMCPhysicalPrimary(0),
   fHistGenPrimaryParticlesInelGt0(0),
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
+  fHistNtrUnCorrPSSel(0),
   fHistNtrUnCorrEvSel(0),
   fHistNtrUnCorrEvWithCand(0),
   fHistNtrUnCorrEvWithD(0),
+  fHistNtrCorrPSSel(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -124,12 +138,24 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fOutputCounters(0),
   fListProfiles(0),
   fHistNEvents(0),
-  fHistNtrEta16vsNtrEta1(0),
-  fHistNtrEta05vsNtrEta1(0),
-  fHistNtrEta03vsNtrEta1(0),
-  fHistNtrEtaV0AvsNtrEta1(0),
-  fHistNtrEtaV0MvsNtrEta1(0),
-  fHistNtrCorrEta1vsNtrRawEta1(0),
+  fHistNtrEta16vsNtrEta1EvSel(0),
+  fHistNtrEta05vsNtrEta1EvSel(0),
+  fHistNtrEta03vsNtrEta1EvSel(0),
+  fHistNtrEtaV0AvsNtrEta1EvSel(0),
+  fHistNtrEtaV0MvsNtrEta1EvSel(0),
+  fHistNtrCorrEta1vsNtrRawEta1EvSel(0),
+  fHistNtrEta16vsNtrEta1EvWithCand(0),
+  fHistNtrEta05vsNtrEta1EvWithCand(0),
+  fHistNtrEta03vsNtrEta1EvWithCand(0),
+  fHistNtrEtaV0AvsNtrEta1EvWithCand(0),
+  fHistNtrEtaV0MvsNtrEta1EvWithCand(0),
+  fHistNtrCorrEta1vsNtrRawEta1EvWithCand(0),
+  fHistNtrEta16vsNtrEta1EvWithD(0),
+  fHistNtrEta05vsNtrEta1EvWithD(0),
+  fHistNtrEta03vsNtrEta1EvWithD(0),
+  fHistNtrEtaV0AvsNtrEta1EvWithD(0),
+  fHistNtrEtaV0MvsNtrEta1EvWithD(0),
+  fHistNtrCorrEta1vsNtrRawEta1EvWithD(0),
   fHistNtrVsZvtx(0),
   fHistNtrCorrVsZvtx(0),
   fHistNtrVsNchMC(0),
@@ -140,9 +166,11 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistNtrCorrVsNchMCPhysicalPrimary(0),
   fHistGenPrimaryParticlesInelGt0(0),
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
+  fHistNtrUnCorrPSSel(0),
   fHistNtrUnCorrEvSel(0),
   fHistNtrUnCorrEvWithCand(0),
   fHistNtrUnCorrEvWithD(0),
+  fHistNtrCorrPSSel(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -303,29 +331,51 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   Int_t nMultBins = 200;
   Float_t firstMultBin = -0.5;
   Float_t lastMultBin = 199.5;
+  Int_t nMultBinsNtrk = nMultBins;
+  Float_t lastMultBinNtrk = lastMultBin;
+  Int_t nMultBinsV0 = 400;
+  Float_t lastMultBinV0 = 799.5;
   if(fisPPbData) {
-    nMultBins = 375;
-    lastMultBin = 374.5;
+    nMultBinsNtrk = 375;
+    lastMultBinNtrk = 374.5;
+    nMultBins = nMultBinsNtrk;
+    lastMultBin = lastMultBinNtrk;
   }
   if(fMultiplicityEstimator==kVZERO || fMultiplicityEstimator==kVZEROA) {
-    nMultBins = 400;
-    lastMultBin = 799.5;
+    nMultBins = nMultBinsV0;
+    lastMultBin = lastMultBinV0;
   }
 
+  fHistNtrUnCorrPSSel = new TH1F("hNtrUnCorrPSSel","Uncorrected tracklets multiplicity for PS selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
   fHistNtrUnCorrEvSel = new TH1F("hNtrUnCorrEvSel","Uncorrected tracklets multiplicity for selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
   fHistNtrUnCorrEvWithCand = new TH1F("hNtrUnCorrEvWithCand", "Uncorrected Tracklets multiplicity for events with D candidates; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
   fHistNtrUnCorrEvWithD = new TH1F("hNtrUnCorrEvWithD","Uncorrected Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin); // 
+  fHistNtrCorrPSSel = new TH1F("hNtrCorrPSSel","Corrected tracklets multiplicity for PS selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
   fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel","Corrected tracklets multiplicity for selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
   fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand", "Tracklets multiplicity for events with D candidates; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
   fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD", "Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin); // 
 
   if(fKeepCorrPlots){
-    fHistNtrEta16vsNtrEta1 = new TH2F("hNtrEta16vsNtrEta1","Uncorrected Eta1.6 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<1.6",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 1.6 vs eta 1.0 histogram 
-    fHistNtrEta05vsNtrEta1 = new TH2F("hNtrEta05vsNtrEta1","Uncorrected Eta0.5 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<0.5",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 0.5 vs eta 1.0 histogram 
-    fHistNtrEta03vsNtrEta1 = new TH2F("hNtrEta03vsNtrEta1","Uncorrected Eta0.3 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<0.3",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 0.3 vs eta 1.0 histogram 
-    fHistNtrEtaV0AvsNtrEta1 = new TH2F("hNtrEtaV0AvsNtrEta1","Uncorrected Eta-V0A vs Eta1.0; Ntracklets #eta<1.0; Multiplicity V0A",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta V0A vs eta 1.0 histogram 
-    fHistNtrEtaV0MvsNtrEta1 = new TH2F("hNtrEtaV0MvsNtrEta1","Uncorrected Eta-V0M vs Eta1.0; Ntracklets #eta<1.0; Multiplicity V0A+V0C",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta V0M vs eta 1.0 histogram 
-    fHistNtrCorrEta1vsNtrRawEta1 = new TH2F("hNtrCorrEta1vsNtrRawEta1","Corrected Eta1 vs Eta1.0; Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 1.6 vs eta 1.0 histogram 
+    fHistNtrEta16vsNtrEta1EvSel = new TH2F("hNtrEta16vsNtrEta1EvSel","Uncorrected Eta1.6 vs Eta1.0 (events selected); Ntracklets #eta<1.0; Ntracklets #eta<1.6",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 1.6 vs eta 1.0 histogram 
+    fHistNtrEta05vsNtrEta1EvSel = new TH2F("hNtrEta05vsNtrEta1EvSel","Uncorrected Eta0.5 vs Eta1.0 (events selected); Ntracklets #eta<1.0; Ntracklets #eta<0.5",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 0.5 vs eta 1.0 histogram 
+    fHistNtrEta03vsNtrEta1EvSel = new TH2F("hNtrEta03vsNtrEta1EvSel","Uncorrected Eta0.3 vs Eta1.0 (events selected); Ntracklets #eta<1.0; Ntracklets #eta<0.3",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 0.3 vs eta 1.0 histogram 
+    fHistNtrEtaV0AvsNtrEta1EvSel = new TH2F("hNtrEtaV0AvsNtrEta1EvSel","Uncorrected Eta-V0A vs Eta1.0 (events selected); Ntracklets #eta<1.0; Multiplicity V0A",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsV0,firstMultBin,lastMultBinV0); //eta V0A vs eta 1.0 histogram 
+    fHistNtrEtaV0MvsNtrEta1EvSel = new TH2F("hNtrEtaV0MvsNtrEta1EvSel","Uncorrected Eta-V0M vs Eta1.0 (events selected); Ntracklets #eta<1.0; Multiplicity V0A+V0C",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsV0,firstMultBin,lastMultBinV0); //eta V0M vs eta 1.0 histogram 
+    fHistNtrCorrEta1vsNtrRawEta1EvSel = new TH2F("hNtrCorrEta1vsNtrRawEta1EvSel","Corrected Eta1 vs Eta1.0 (events selected); Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 1.6 vs eta 1.0 histogram
+
+    fHistNtrEta16vsNtrEta1EvWithCand = new TH2F("hNtrEta16vsNtrEta1EvWithCand","Uncorrected Eta1.6 vs Eta1.0 (events selected with a D candidate); Ntracklets #eta<1.0; Ntracklets #eta<1.6",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 1.6 vs eta 1.0 histogram 
+    fHistNtrEta05vsNtrEta1EvWithCand = new TH2F("hNtrEta05vsNtrEta1EvWithCand","Uncorrected Eta0.5 vs Eta1.0 (events selected with a D candidate); Ntracklets #eta<1.0; Ntracklets #eta<0.5",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 0.5 vs eta 1.0 histogram 
+    fHistNtrEta03vsNtrEta1EvWithCand = new TH2F("hNtrEta03vsNtrEta1EvWithCand","Uncorrected Eta0.3 vs Eta1.0 (events selected with a D candidate); Ntracklets #eta<1.0; Ntracklets #eta<0.3",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 0.3 vs eta 1.0 histogram 
+    fHistNtrEtaV0AvsNtrEta1EvWithCand = new TH2F("hNtrEtaV0AvsNtrEta1EvWithCand","Uncorrected Eta-V0A vs Eta1.0 (events selected with a D candidate); Ntracklets #eta<1.0; Multiplicity V0A",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsV0,firstMultBin,lastMultBinV0); //eta V0A vs eta 1.0 histogram 
+    fHistNtrEtaV0MvsNtrEta1EvWithCand = new TH2F("hNtrEtaV0MvsNtrEta1EvWithCand","Uncorrected Eta-V0M vs Eta1.0 (events selected with a D candidate); Ntracklets #eta<1.0; Multiplicity V0A+V0C",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsV0,firstMultBin,lastMultBinV0); //eta V0M vs eta 1.0 histogram 
+    fHistNtrCorrEta1vsNtrRawEta1EvWithCand = new TH2F("hNtrCorrEta1vsNtrRawEta1EvWithCand","Corrected Eta1 vs Eta1.0 (events selected with a D candidate); Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 1.6 vs eta 1.0 histogram
+
+    fHistNtrEta16vsNtrEta1EvWithD = new TH2F("hNtrEta16vsNtrEta1EvWithD","Uncorrected Eta1.6 vs Eta1.0 (events selected with D in mass range); Ntracklets #eta<1.0; Ntracklets #eta<1.6",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 1.6 vs eta 1.0 histogram 
+    fHistNtrEta05vsNtrEta1EvWithD = new TH2F("hNtrEta05vsNtrEta1EvWithD","Uncorrected Eta0.5 vs Eta1.0 (events selected with D in mass range); Ntracklets #eta<1.0; Ntracklets #eta<0.5",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 0.5 vs eta 1.0 histogram 
+    fHistNtrEta03vsNtrEta1EvWithD = new TH2F("hNtrEta03vsNtrEta1EvWithD","Uncorrected Eta0.3 vs Eta1.0 (events selected with D in mass range); Ntracklets #eta<1.0; Ntracklets #eta<0.3",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 0.3 vs eta 1.0 histogram 
+    fHistNtrEtaV0AvsNtrEta1EvWithD = new TH2F("hNtrEtaV0AvsNtrEta1EvWithD","Uncorrected Eta-V0A vs Eta1.0 (events selected with D in mass range); Ntracklets #eta<1.0; Multiplicity V0A",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsV0,firstMultBin,lastMultBinV0); //eta V0A vs eta 1.0 histogram 
+    fHistNtrEtaV0MvsNtrEta1EvWithD = new TH2F("hNtrEtaV0MvsNtrEta1EvWithD","Uncorrected Eta-V0M vs Eta1.0 (events selected with D in mass range); Ntracklets #eta<1.0; Multiplicity V0A+V0C",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsV0,firstMultBin,lastMultBinV0); //eta V0M vs eta 1.0 histogram 
+    fHistNtrCorrEta1vsNtrRawEta1EvWithD = new TH2F("hNtrCorrEta1vsNtrRawEta1EvWithD","Corrected Eta1 vs Eta1.0 (events selected with D in mass range); Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 1.6 vs eta 1.0 histogram
   }
   fHistNtrVsZvtx = new TH2F("hNtrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,nMultBins,firstMultBin,lastMultBin); // 
   fHistNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,nMultBins,firstMultBin,lastMultBin); // 
@@ -343,26 +393,42 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
 
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary = new TH3F("fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary", "MC: Nch (Physical Primary) vs Nch (Primary) vs Nch (Generated); Nch (Generated); Nch (Primary); Nch (Physical Primary)",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin);
 
+  fHistNtrUnCorrPSSel->Sumw2();
   fHistNtrUnCorrEvSel->Sumw2();
   fHistNtrUnCorrEvWithCand->Sumw2();
   fHistNtrUnCorrEvWithD->Sumw2();
+  fHistNtrCorrPSSel->Sumw2();
   fHistNtrCorrEvSel->Sumw2();
   fHistNtrCorrEvWithCand->Sumw2();
   fHistNtrCorrEvWithD->Sumw2();
   fHistGenPrimaryParticlesInelGt0->Sumw2();
+  fOutput->Add(fHistNtrUnCorrPSSel);
   fOutput->Add(fHistNtrUnCorrEvSel);
   fOutput->Add(fHistNtrUnCorrEvWithCand);
   fOutput->Add(fHistNtrUnCorrEvWithD);
+  fOutput->Add(fHistNtrCorrPSSel);
   fOutput->Add(fHistNtrCorrEvSel);
   fOutput->Add(fHistNtrCorrEvWithCand);
   fOutput->Add(fHistNtrCorrEvWithD);
   if(fKeepCorrPlots){
-    fOutput->Add(fHistNtrEta16vsNtrEta1);
-    fOutput->Add(fHistNtrEta05vsNtrEta1);
-    fOutput->Add(fHistNtrEta03vsNtrEta1);
-    fOutput->Add(fHistNtrEtaV0AvsNtrEta1);
-    fOutput->Add(fHistNtrEtaV0MvsNtrEta1);
-    fOutput->Add(fHistNtrCorrEta1vsNtrRawEta1);
+    fOutput->Add(fHistNtrEta16vsNtrEta1EvSel);
+    fOutput->Add(fHistNtrEta05vsNtrEta1EvSel);
+    fOutput->Add(fHistNtrEta03vsNtrEta1EvSel);
+    fOutput->Add(fHistNtrEtaV0AvsNtrEta1EvSel);
+    fOutput->Add(fHistNtrEtaV0MvsNtrEta1EvSel);
+    fOutput->Add(fHistNtrCorrEta1vsNtrRawEta1EvSel);
+    fOutput->Add(fHistNtrEta16vsNtrEta1EvWithCand);
+    fOutput->Add(fHistNtrEta05vsNtrEta1EvWithCand);
+    fOutput->Add(fHistNtrEta03vsNtrEta1EvWithCand);
+    fOutput->Add(fHistNtrEtaV0AvsNtrEta1EvWithCand);
+    fOutput->Add(fHistNtrEtaV0MvsNtrEta1EvWithCand);
+    fOutput->Add(fHistNtrCorrEta1vsNtrRawEta1EvWithCand);
+    fOutput->Add(fHistNtrEta16vsNtrEta1EvWithD);
+    fOutput->Add(fHistNtrEta05vsNtrEta1EvWithD);
+    fOutput->Add(fHistNtrEta03vsNtrEta1EvWithD);
+    fOutput->Add(fHistNtrEtaV0AvsNtrEta1EvWithD);
+    fOutput->Add(fHistNtrEtaV0MvsNtrEta1EvWithD);
+    fOutput->Add(fHistNtrCorrEta1vsNtrRawEta1EvWithD);
   }
   fOutput->Add(fHistNtrVsZvtx);
   fOutput->Add(fHistNtrCorrVsZvtx);
@@ -555,19 +621,24 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
 
   if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(3);
-  if(fRDCutsAnalysis->GetWhyRejection()==7) fHistNEvents->Fill(4); 
+  if(fRDCutsAnalysis->GetWhyRejection()==7) fHistNEvents->Fill(4);
   if(fRDCutsAnalysis->GetWhyRejection()==6) fHistNEvents->Fill(5);
   if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(6);
-  
+
+  Bool_t isEvPSRejected = fRDCutsAnalysis->IsEventRejectedDuePhysicsSelection();
+  if(!isEvPSRejected){
+    fHistNtrUnCorrPSSel->Fill(countMult);
+    fHistNtrCorrPSSel->Fill(countCorr);
+  }
   
   if(!isEvSel)return;
   if(fKeepCorrPlots){
-    fHistNtrEta16vsNtrEta1->Fill(countTreta1,countTreta16);
-    fHistNtrEta05vsNtrEta1->Fill(countTreta1,countTreta05);
-    fHistNtrEta03vsNtrEta1->Fill(countTreta1,countTreta03);
-    fHistNtrEtaV0AvsNtrEta1->Fill(countTreta1,vzeroMultA);
-    fHistNtrEtaV0MvsNtrEta1->Fill(countTreta1,vzeroMult);
-    fHistNtrCorrEta1vsNtrRawEta1->Fill(countTreta1,countTreta1corr);
+    fHistNtrEta16vsNtrEta1EvSel->Fill(countTreta1,countTreta16);
+    fHistNtrEta05vsNtrEta1EvSel->Fill(countTreta1,countTreta05);
+    fHistNtrEta03vsNtrEta1EvSel->Fill(countTreta1,countTreta03);
+    fHistNtrEtaV0AvsNtrEta1EvSel->Fill(countTreta1,vzeroMultA);
+    fHistNtrEtaV0MvsNtrEta1EvSel->Fill(countTreta1,vzeroMult);
+    fHistNtrCorrEta1vsNtrRawEta1EvSel->Fill(countTreta1,countTreta1corr);
   }
   if(vtx1){
     fHistNtrVsZvtx->Fill(vtx1->GetZ(),countMult);
@@ -851,10 +922,26 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   if(nSelectedPID>0) {
     fHistNtrUnCorrEvWithCand->Fill(countMult,nchWeight);
     fHistNtrCorrEvWithCand->Fill(countCorr,nchWeight);
+    if(fKeepCorrPlots){
+      fHistNtrEta16vsNtrEta1EvWithCand->Fill(countTreta1,countTreta16);
+      fHistNtrEta05vsNtrEta1EvWithCand->Fill(countTreta1,countTreta05);
+      fHistNtrEta03vsNtrEta1EvWithCand->Fill(countTreta1,countTreta03);
+      fHistNtrEtaV0AvsNtrEta1EvWithCand->Fill(countTreta1,vzeroMultA);
+      fHistNtrEtaV0MvsNtrEta1EvWithCand->Fill(countTreta1,vzeroMult);
+      fHistNtrCorrEta1vsNtrRawEta1EvWithCand->Fill(countTreta1,countTreta1corr);
+    }
   }
   if(nSelectedInMassPeak>0) {
     fHistNtrUnCorrEvWithD->Fill(countMult,nchWeight);
     fHistNtrCorrEvWithD->Fill(countCorr,nchWeight);
+    if(fKeepCorrPlots){
+      fHistNtrEta16vsNtrEta1EvWithD->Fill(countTreta1,countTreta16);
+      fHistNtrEta05vsNtrEta1EvWithD->Fill(countTreta1,countTreta05);
+      fHistNtrEta03vsNtrEta1EvWithD->Fill(countTreta1,countTreta03);
+      fHistNtrEtaV0AvsNtrEta1EvWithD->Fill(countTreta1,vzeroMultA);
+      fHistNtrEtaV0MvsNtrEta1EvWithD->Fill(countTreta1,vzeroMult);
+      fHistNtrCorrEta1vsNtrRawEta1EvWithD->Fill(countTreta1,countTreta1corr);
+    }
   }
 
   PostData(1,fOutput); 

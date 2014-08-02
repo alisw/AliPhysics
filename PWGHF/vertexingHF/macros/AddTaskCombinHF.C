@@ -1,4 +1,18 @@
-AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson=0, TString containerStr="",Bool_t readMC=kTRUE, TString cutObjFile="",TString cutObjNam="")
+AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
+                                         Bool_t readMC = kTRUE,
+                                         TString containerStr = "",
+                                         TString cutObjFile = "",
+                                         TString cutObjNam = "",
+                                         Int_t filterMask = 1,
+                                         Double_t ptcut = 0.3,
+                                         Double_t etacut = 0.9,
+                                         Int_t pidStrategy = 0,
+                                         Int_t casePID = 2,
+                                         Double_t bayesThresKaon = 0.4,
+                                         Double_t bayesThresPion = 0.4,
+                                         Double_t minMass = 1.6,
+                                         Double_t maxMass = 2.15,
+                                         Double_t maxPt = 20.)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -46,16 +60,30 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson=0, TString containerStr="",
   }
   dTask->SetReadMC(readMC);
   dTask->SetDebugLevel(0);
+  
+  dTask->SetFilterMask(filterMask);
+  dTask->SetPtAccCut(ptcut);
+  dTask->SetEtaAccCut(etacut);
+  
+  // mass and pt range for histograms
+  dTask->SetMassWindow(minMass, maxMass);
+  dTask->SetMaxPt(maxPt);
+  
+  // PID settings
   dTask->SetPIDHF(pid);
-
+  dTask->SetPIDstrategy(pidStrategy);
+  dTask->SetPIDselCaseZero(casePID);
+  dTask->SetBayesThres(bayesThresKaon, bayesThresPion);
+ 
 
   mgr->AddTask(dTask);
+
   
   // Create containers for input/output 
 
   TString mesname="Dzero";
   if(meson==1) mesname="Dplus";
-  TString inname = Form("cinput%s",mesname.Data());
+  TString inname = Form("cinput%s%s",mesname.Data(),containerStr.Data());
   TString outname = Form("coutput%s%s",mesname.Data(),containerStr.Data());
   TString normname = Form("coutput%sNorm%s",mesname.Data(),containerStr.Data());
 

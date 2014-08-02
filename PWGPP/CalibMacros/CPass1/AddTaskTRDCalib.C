@@ -29,6 +29,9 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   Int_t activeDetectors = grpData->GetDetectorMask(); 
   TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
   TString type = grpData->GetBeamType();
+  TString LHCperiod = grpData->GetLHCPeriod();
+  Bool_t isLHC10 =  LHCperiod.Contains("LHC10");
+  printf("TRD add macro, LHCperiod:%s\n isLHC10:%d\n",LHCperiod.Data(),(Int_t)isLHC10);
   
   ////////////////////////////////////////////
   // Number of timebins
@@ -54,6 +57,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
     calibTask->SetMaxNbTracks(1600);
   }
   else calibTask->SetMaxNbTracks(999999999);
+  if(!isLHC10) calibTask->SetRejectPileUpWithTOFOrITS(kTRUE);
   calibTask->SetHisto2d(kTRUE);
   calibTask->SetVector2d(kFALSE);
   calibTask->SetVdriftLinear(kTRUE);

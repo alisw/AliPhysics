@@ -9,8 +9,6 @@
  */
 void dNdetaConfig(AliBasedNdetaTask* task)
 {
-  // - Whether to cut edges when re-binning 
-  task->SetCutEdges(false);
   // - Whether to correct for empty bins when projecting 
   // task->SetCorrEmpty(true);
   task->SetCorrEmpty(task->IsA()->InheritsFrom(AliCentraldNdetaTask::Class()));
@@ -40,7 +38,6 @@ void dNdetaConfig(AliBasedNdetaTask* task)
   //    kEventLevel     Normalise to all events in selected range 
   //    kAltEventLevel  Normalise to all events in selected range 
   //    kBackground     Also correct for background triggers 
-  //    kShape          Correct shape 
   // 
   //   kNone, kEventLevel, and kAltEventLevel are mutually exclusive.
   //   If neither kEventLevel, nor kAltEventLevel is specified, then
@@ -48,11 +45,70 @@ void dNdetaConfig(AliBasedNdetaTask* task)
   //   sense with kEventLevel and kAltEventLevel.  Furthermore, there
   //   are some constants that encode the common cases
   //     
-  //    kFull    = kEventLevel |  kBackground | kShape 
-  //    kAltFull = kAltEventLevel |  kBackground | kShape 
+  //    kFull    = kEventLevel |  kBackground  
+  //    kAltFull = kAltEventLevel |  kBackground  
   // 
   //   Default is kFull
   // task->SetNormalizationScheme(scheme);
+
+  // - Set which pile-up flags to mask out. Bit mask of 
+  // 
+  //    kPileupNormal	Use the flag from AOD (default)
+  //    kPileupSPD	Check the pile-up flag from SPD 
+  //    kPileupTrk	Check the pileup flag from tracks 
+  //    kPileupBC	Check the out-of-bunch pileup flag 
+  //    kPileupFull	Use the flag from AOD 
+  //    kPileupIgnore	Also accept pileup 
+  //    kPileupUtil     Use AliAnalysisUtils 
+  // 
+  // task->SetPileupMask(AliBasedNdetaTask::kPileupNormal);
+  // 
+  // If the pile-up mask is set to kPileupUtil above, one can do 
+  // AliAnalysisUtils& au = task->GetAnalysisUtils();
+  // - Use 'multi-vertex' pile-up selection.  If true use track
+  //   vertices rather than tracklet vertices
+  // au.SetUseMVPlpSelection(false);
+  // - Use 'out-of-bunch' pile-up selection
+  // au.SetUseOutOfBunchPileUp(false);
+  // - If using track pile-up vertex, check for pile-up from other BC
+  // au.SetCheckPlpFromDifferentBCMV(false);
+  // - Least number of contributors to track pile-up vertex
+  // au.SetMinPlpContribMV(5);
+  // - Largest chi^2/nu of track pile-up vertex
+  // au.SetMaxPlpChi2MV(5);
+  // - Least weighted distance between primary and track pile-up
+  //   vertex (cm)
+  // au.SetMinWDistMV(15.);
+  // - Wether to use an adaptive algorithm for the tracklet pile-up
+  //   flagging. If this is enabled, the parameters MinPlpContribSPD,
+  //   MinPlpZdistSPD, nSigmaPlpZdistSPD, nSigmaPlpDiamXYSPD,
+  //   nSigmaPlpDiamZSPD are not used.  Instead the parameters are set
+  //   according the the number of tracklets (nTrkL):
+  // 
+  //   - nTrkL < 20 MinPlpContribSPD=3, 
+  //   - nTrkL < 50 MinPlpContribSPD=4
+  //   - else       MinPlpContribSPD=5
+  // 
+  //   and MinPlpZdistSPD=0.8, nSigmaZdistSPD=3, nSigmaDiamXYSPD=2,
+  //   nSigmaDiamZSPD=5.
+  // au.SetUseSPDCutInMultBins(false);
+  // - Least number of contributors to tracklet pile-up vertex
+  // au.SetMinPlpContribSPD(5);
+  // - Least distance along Z between primary and tracklet pile-up
+  //   vertex (cm)
+  // au.SetMinPlpZdistSPD(0.8);
+  // - Least distance along Z between primary and tracklet pile-up
+  //   vertex in terms of the errors on the vertices
+  // au.SetnSigmaPlpZdistSPD(3);
+  // - Only consider tracklet vertices within this number of times the
+  //   sigma in the XY-plane of the interaction diamond.
+  // au.SetnSigmaPlpDiamXYSPD(2);
+  // - Only consider tracklet vertices within this number of times the
+  //   sigma along Z of the interaction diamond.
+  // au.SetnSigmaPlpDiamZ(5);
+
+  // - Set whether to check for SPD outliers 
+  // task->SetCheckSPDOutlier(false);
 
   // - Set the centrality estimator to use 
   // task->SetCentralityMethod(cent);

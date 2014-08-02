@@ -788,7 +788,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     if (ptot > 0.7 && TMath::Abs(tpcSignal - expSignalTriton)/expSignalTriton < 0.2) id = 2;
     if (ptot > 0.5 && (tpcSignal - expSignalHelium3)/expSignalHelium3 > -0.1 &&  (tpcSignal - expSignalHelium3)/expSignalHelium3 < 0.2) id = 3;
     //
-    Double_t vecAntiAlpha[4] = {dcaXYsign, sign, id, ptotInc};
+    Double_t vecAntiAlpha[4] = {dcaXYsign, sign, static_cast<Double_t>(id), ptotInc};
     if (id != -1 && tpcSignal > 120) fAntiAlpha->Fill(vecAntiAlpha);
     //
     // fill final histograms

@@ -123,19 +123,6 @@ protected:
     if (!ps) 
       Fatal("CreatePhysicsSelection", "Couldn't get PhysicsSelection (%p)",ps);
 
-    // --- Special for pPb pilot run Sep. 2012 -----------------------
-    UShort_t sys = fOptions.AsInt("sys", 0);
-    if (sys == 3) { 
-      Warning("CreatePhysicsSelection", 
-	      "Special setup for pPb pilot run September, 2012");
-      gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/ANALYSIS/macros",
-			       gROOT->GetMacroPath()));
-      gROOT->LoadMacro("PhysicsSelectionOADB_CINT5_pA.C");
-      gROOT->ProcessLine(Form("((AliPhysicsSelection*)%p)"
-			      "->SetCustomOADBObjects("
-			      "OADBSelection_CINT5_V0A(),0);", ps));
-      ps->SetSkipTriggerClassSelection(true);
-    }
     // --- Ignore trigger class when selecting events.  This means ---
     // --- that we get offline+(A,C,E) events too --------------------
     // ps->SetSkipTriggerClassSelection(true);
@@ -164,7 +151,15 @@ protected:
   void SaveSetup(Bool_t asShellScript)
   {
     TrainSetup::SaveSetup(asShellScript);
+    SaveSummarize();
+    SavedNdeta(asShellScript);
 
+    if (!fHelper || fHelper->Mode() != Helper::kGrid) return;
+
+    SaveDownloadAODs();
+  }
+  void SavedNdeta(Bool_t asShellScript)
+  {
     if (!fHelper) { 
       Warning("MakeAODTrain::SaveSetup", 
 	      "Cannot make dNdeta.C script without helper");
@@ -180,8 +175,6 @@ protected:
     Int_t               sys = fOptions.AsInt("sys", 0);
     if (name.Contains("aod")) name.ReplaceAll("aod", "dndeta");
     else                      name.Append("_dndeta");
-    opts.Remove("forward-config");
-    opts.Remove("central-config");
     opts.Remove("run");
     opts.Remove("sys");
     opts.Remove("snn");
@@ -189,22 +182,23 @@ protected:
     opts.Remove("bare-ps");
     opts.Remove("tpc-ep");
     opts.Remove("corr");
+    opts.Add("satellite", "Restrict analysis to satellite events", false);
     opts.Add("trig", "TRIGGER", "Trigger type", "INEL");
     opts.Add("vzMin", "CENTIMETER", "Lower bound on Ip Z", -10.);
     opts.Add("vzMax", "CENTIMETER", "Upper bound on Ip Z", +10.);
     opts.Add("scheme", "FLAGS", "Normalization scheme", 
 	     "TRIGGER EVENT BACKGROUND");
-    opts.Add("cut-edges", "Cut edges of acceptance", true);
     opts.Add("trigEff", "EFFICIENCY", "Trigger efficiency", 1.);
     opts.Add("trigEff0", "EFFICIENCY", "0-bin trigger efficiency", 1.);
     opts.Add("mc", "Also analyse MC truth", fHelper->IsMC());
+    opts.Add("truth-config", "FILE", "MC-Truth configuration", "");
     
     // Rewrite our URL 
     TString outString = fHelper->OutputLocation();
     if (outString.IsNull()) outString = fEscapedName;
     TUrl    outUrl(outString);
     
-    if (uopts.Find("pattern") && outString.EndsWith("AliAOD.root")) 
+    if (uopts.Find("pattern")) // && outString.EndsWith("AliAOD.root")) 
       uopts.Set("pattern", "*/AliAOD.root");
     if (uopts.Find("concat")) uopts.Set("concat", true);
 
@@ -212,14 +206,18 @@ protected:
     uopts.Store(s, "", "&", false, true);
     outUrl.SetOptions(s.str().c_str());
       
+    const char* defConfig="$ALICE_ROOT/PWGLF/FORWARD/analysis2/dNdetaConfig.C";
     opts.Set("url", outUrl.GetUrl());
     opts.Set("type", "AOD");
+    opts.Set("forward-config",defConfig);
+    opts.Set("central-config",defConfig);
+    opts.Set("truth-config",defConfig);
     if (!fDatimeString.IsNull()) opts.Set("date", fDatimeString);
 
     if (sys != 1) {
-      opts.Set("cent", true);
-      opts.Set("trig", "");
-      opts.Set("scheme", "");
+      opts.Set("cent", "default");
+      opts.Set("trig", "INEL");
+      opts.Set("scheme", "default");
       SaveSetupROOT("dNdeta", cls, name, opts, &uopts);
       if (asShellScript) 
 	SaveSetupShell("dndeta", cls, name, opts, &uopts);
@@ -244,11 +242,6 @@ protected:
       if (asShellScript) 
 	SaveSetupShell("dndeta_inelgt0", cls, name, opts, &uopts);
     }
-
-    SaveSummarize();
-    if (!fHelper || fHelper->Mode() != Helper::kGrid) return;
-
-    SaveDownloadAODs();
   }
   /** 
    * Write a ROOT script to draw summary 

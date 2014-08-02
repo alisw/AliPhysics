@@ -28,8 +28,10 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Int_t MixingTracks   = 50000,
    TString cutType			  = "EMCAL",
    Bool_t   Comments		  = 0,
-   Bool_t   IO				  = 0,
+   Bool_t   doFlavourJetAnalysis = 0,
+   Int_t flavTag              = 999,
    Int_t esdcuts			  = 10001006,
+   TString colltype			  = "",
    const char *tag			  = ""
 )
 {  
@@ -59,6 +61,13 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   if (dType == "AOD") const char *nTracks = "AODFilterTracks";
   if (dType == "ESD") const char *nTracks = "ESDFilterTracks"; 
 
+  // find out collisions system in order to know beamtype in UserCreateObjects later on
+  AliAnalysisTaskEmcal::BeamType beam = -99;
+  if (colltype == "p-p") beam = 0;
+  else if(colltype == "A-A") beam = 1;
+  else if(colltype == "p-A") beam = 2;
+  else beam = -1;
+
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
@@ -67,7 +76,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   AliAnalysisTaskEmcalJetHadEPpid *correlationtask = new AliAnalysisTaskEmcalJetHadEPpid(name);
   correlationtask->SetJetsName(nJets);
   correlationtask->SetTracksName(nTracks);
-  //correlationtask->SetTracksNameME(nTracksME);
+  correlationtask->SetTracksNameME(nTracksME);
   correlationtask->SetRhoName(nRho);
   correlationtask->SetLocalRhoName(lrho);
   correlationtask->SetJetPhi(minPhi,maxPhi);
@@ -92,7 +101,9 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetMixingTracks(MixingTracks);
   correlationtask->SetcutType(cutType);
   correlationtask->SetdoComments(Comments);
-  correlationtask->SetIOon(IO);
+  correlationtask->SetFlavourJetAnalysis(doFlavourJetAnalysis);
+  correlationtask->SetJETFlavourTag(flavTag);
+  correlationtask->SetCollType(beam);
 
   // =================== set up containers ================================================
   // Cluster Container
