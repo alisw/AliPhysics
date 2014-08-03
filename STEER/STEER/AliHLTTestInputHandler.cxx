@@ -20,7 +20,7 @@
 
 #include "AliHLTTestInputHandler.h"
 #include "AliVCuts.h"
-#include "AliVEvent.h"
+#include "AliVVevent.h"
 #include "TObjArray.h"
 #include "AliAnalysisTask.h"
 

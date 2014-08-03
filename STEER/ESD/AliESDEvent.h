@@ -23,6 +23,7 @@
 
 
 #include "AliVEvent.h"
+#include "AliVVevent.h"
 // some includes for delegated methods
 #include "AliESDCaloTrigger.h"
 #include "AliESDRun.h"
@@ -77,7 +78,7 @@ class TList;
 class TString;
 
 
-class AliESDEvent : public AliVEvent {
+class AliESDEvent : public AliVEvent, public AliVVevent {
 public:
 
 
