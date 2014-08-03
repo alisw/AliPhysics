@@ -94,20 +94,23 @@ class AliFlatESDEvent: public AliVVevent {
   //const AliVVvertex* GetPrimaryVertex() const {return NULL;}
   //const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}
   AliFlatESDTrack* GetTrack(Int_t /*i*/) const {return NULL;}
-  AliVVkink* GetKink(Int_t /*i*/) const {return NULL;}
+  AliESDkink* GetKink(Int_t /*i*/) const { return NULL; }
   //AliFlatESDV0* GetV0(Int_t /*i*/) const {return NULL;}
-  Int_t GetNumberOfKinks() const {return 0;}
-  Int_t GetEventNumberInFile() const {return -1;}
-  const AliMultiplicity* GetMultiplicity() const {return NULL;} //by default SPDmult
+  Int_t GetNumberOfKinks() const { return 0; }
+  Int_t GetEventNumberInFile() const { return -1; }
+  const AliMultiplicity* GetMultiplicity() const { return NULL; } //by default SPDmult
   Int_t GetRunNumber() const {return -1;}
   TString GetFiredTriggerClasses() const {TString string; return string;}
   TObject* FindListObject(const char* /*name*/) const {return NULL;}
-  ULong64_t GetTriggerMask() const {return 0;}
+  AliVVfriendEvent* FindFriend() const { return NULL; }
+   ULong64_t GetTriggerMask() const {return 0;}
   Double_t GetMagneticField() const {return 0;}
   UInt_t GetTimeStamp() const { return 0;}
   UInt_t GetEventSpecie() const { return 0;}
+  void ConnectTracks(){}
   void ReadFromTree(TTree* /*tree*/, Option_t* /*opt*/) {};
-  
+  TList* GetList() const;
+
   // --------------------------------------------------------------------------------
   // -- Size methods
   static ULong64_t EstimateSize(AliESDEvent*esd, Bool_t useESDFriends = kTRUE, Bool_t fillV0s=kTRUE);

@@ -17,6 +17,7 @@ class AliVVtrack;
 class AliMultiplicity;
 class AliVVkink;
 class AliVVfriendEvent;
+class AliESDkink;
 class TTree;
 
 class AliVVevent {
@@ -24,7 +25,7 @@ class AliVVevent {
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
   AliVVevent() {}
-  virtual ~AliVVevent() {} 
+  virtual ~AliVVevent() {}
 
   // --------------------------------------------------------------------------------
   virtual void Reset() = 0;
@@ -37,26 +38,25 @@ class AliVVevent {
   virtual const AliVVvertex* GetPrimaryVertexTracks() const {return NULL;}
   virtual const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}  
   */
-  virtual AliVVtrack* GetTrack(Int_t /*i*/) const {return NULL;}
-  virtual AliVVkink* GetKink(Int_t /*i*/) const {return NULL;}
-  virtual AliVVtrack* GetV0(Int_t /*i*/) const {return NULL;}
-  virtual Int_t GetNumberOfTracks() const {return 0;}
-  virtual Int_t GetNumberOfV0s() const {return 0;}
-  virtual Int_t GetNumberOfKinks() const {return 0;}
-  virtual Int_t GetEventNumberInFile() const {return -1;}
-  virtual const AliMultiplicity* GetMultiplicity() const {return NULL;} //by default SPDmult
-  virtual Int_t GetRunNumber() const {return -1;}
-  virtual TString GetFiredTriggerClasses() const {TString string; return string;}
-  virtual TObject* FindListObject(const char* /*name*/) const {return NULL;}
-  virtual ULong64_t GetTriggerMask() const {return 0;}
-  virtual Double_t GetMagneticField() const {return 0;}
-  virtual UInt_t GetTimeStamp() const { return 0;}
-  virtual UInt_t GetEventSpecie() const { return 0;}
-  virtual ULong64_t GetSize() {return 0;}
-  virtual AliVVfriendEvent* FindFriend() const { return NULL; }
-  virtual void ConnectTracks() {}
+  virtual AliVVtrack* GetTrack(Int_t /*i*/) const = 0;
+  virtual AliESDkink* GetKink(Int_t /*i*/) const = 0;
+  //virtual AliVVtrack* GetV0(Int_t /*i*/) const = 0;
+  virtual Int_t GetNumberOfTracks() const =0;
+  virtual Int_t GetNumberOfV0s() const = 0;
+  virtual Int_t GetNumberOfKinks() const = 0;
+  virtual Int_t GetEventNumberInFile() const = 0;
+  virtual const AliMultiplicity* GetMultiplicity() const = 0; //by default SPDmult
+  virtual Int_t GetRunNumber() const = 0;
+  virtual TString GetFiredTriggerClasses() const = 0;
+  virtual TObject* FindListObject(const char* /*name*/) const = 0;
+  virtual ULong64_t GetTriggerMask() const = 0;
+  virtual Double_t GetMagneticField() const = 0;
+  virtual UInt_t GetTimeStamp() const = 0;
+  virtual UInt_t GetEventSpecie() const = 0;  
+  virtual AliVVfriendEvent* FindFriend() const = 0;
+  virtual void ConnectTracks() = 0;
   virtual void ReadFromTree(TTree* /*tree*/, Option_t* /*opt*/) = 0;
-  virtual TList* GetList() const {return 0;}
+  virtual TList* GetList() const = 0;
 
   ClassDef(AliVVevent,0)  // base class for event data
 
