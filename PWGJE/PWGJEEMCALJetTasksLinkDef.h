@@ -55,6 +55,7 @@
 #pragma link C++ class AliAnalysisTaskJetShapeDeriv+;
 #pragma link C++ class AliAnalysisTaskJetShapeConst+;
 #pragma link C++ class AliAnalysisTaskJetShapeGR+;
+#pragma link C++ class AliAnalysisTaskJetMassResponseDet+;
 #pragma link C++ class AliAnalysisTaskJetMatching+;
 #pragma link C++ class AliAnalysisTaskJetV2+;
 #pragma link C++ class AliAnalysisTaskRhoMass+;
