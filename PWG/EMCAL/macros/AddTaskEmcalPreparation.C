@@ -39,6 +39,10 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   Float_t timeMin       = -50e-9;   // minimum time of physical signal in a cell/digit
   Float_t timeMax       =  50e-9;   // maximum time of physical signal in a cell/digit
   Float_t timeCut       = 1e6;
+  if(period.Contains("lhc11h")) {
+    timeMin = -50e-9;
+    timeMax = 100e-9;
+  }
   if(isMC) {
     calibEnergy = kFALSE;
     calibTime   = kFALSE;
