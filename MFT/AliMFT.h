@@ -104,8 +104,8 @@ public:
 
   //--------- for underlying and pile-up events --------------------
 
-  void SetFileNameForUnderlyingEvent(TString fileName) { fFileNameForUnderyingEvent += fileName; }
-  void SetFileNameForPileUpEvents(TString fileName)    { fFileNameForPileUpEvents   += fileName; }
+  void SetFileNameForUnderlyingEvent(TString fileName) { if (fileName.EndsWith("MFT.RecPoints.root")) fFileNameForUnderyingEvent += fileName; }
+  void SetFileNameForPileUpEvents(TString fileName)    { if (fileName.EndsWith("MFT.RecPoints.root")) fFileNameForPileUpEvents   += fileName; }
 
   void SetUnderlyingEventID(Short_t eventID) { fUnderlyingEventID = eventID; }
   void SetPileUpEventID(Short_t i, Short_t eventID) { if (i>=0 && i<AliMFTConstants::fNMaxPileUpEvents) fPileUpEventsIDs[i] = eventID; }
