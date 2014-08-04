@@ -612,44 +612,41 @@ void AliITSUSimulationPix::FrompListToDigits()
 //______________________________________________________________________
 Int_t AliITSUSimulationPix::AddRandomNoisePixels(Double_t tof)
 {
-    // create random noisy sdigits above threshold
+  // create random noisy sdigits above threshold
+  //
+  int modId = fChip->GetIndex();
+  int npix = fSeg->GetNPads();
+  int ncand = gRandom->Poisson( npix*fSimuParam->GetPixFakeRate() );
+  if (ncand<1) return 0;
+  //
+  double probNoisy,noiseSig,noiseMean,thresh;
+  //
+  UInt_t row,col;
+  Int_t iCycle;
+  static TArrayI ordSampleInd(100),ordSample(100); //RS!!! static is not thread-safe!!!
+  ncand = GenOrderedSample(npix,ncand,ordSample,ordSampleInd);
+  int* ordV = ordSample.GetArray();
+  int* ordI = ordSampleInd.GetArray();
+  //
+  if ( fResponseParam->GetParameter(kDigitalSim) < 1.0 ) {
+    thresh = fSimuParam->GetPixThreshold(modId);
+    fSimuParam->GetPixNoise(modId, noiseSig, noiseMean);
+    probNoisy = AliITSUSimuParam::CalcProbNoiseOverThreshold(noiseMean,noiseSig,thresh); // prob. to have noise above threshold
     //
-    int modId = fChip->GetIndex();
-    int npix = fSeg->GetNPads();
-    int ncand = gRandom->Poisson( npix*fSimuParam->GetPixFakeRate() );
-    if (ncand<1) return 0;
-    //
-    double probNoisy,noiseSig,noiseMean,thresh;
-    //
-    UInt_t row,col;
-    Int_t iCycle;
-    static TArrayI ordSampleInd(100),ordSample(100); //RS!!! static is not thread-safe!!!
-    ncand = GenOrderedSample(npix,ncand,ordSample,ordSampleInd);
-    int* ordV = ordSample.GetArray();
-    int* ordI = ordSampleInd.GetArray();
-    //
-    if ( fResponseParam->GetParameter(kDigitalSim) < 1.0 ) {
-        thresh = fSimuParam->GetPixThreshold(modId);
-        fSimuParam->GetPixNoise(modId, noiseSig, noiseMean);
-        probNoisy = AliITSUSimuParam::CalcProbNoiseOverThreshold(noiseMean,noiseSig,thresh); // prob. to have noise above threshold
-       //
-        for (int j=0;j<ncand;j++) {
-            fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
-            iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
-            UpdateMapNoise(col,row,AliITSUSimuParam::GenerateNoiseQFunction(probNoisy,noiseMean,noiseSig),  iCycle);
-        }
-        return ncand;
+    for (int j=0;j<ncand;j++) {
+      fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
+      iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
+      UpdateMapNoise(col,row,AliITSUSimuParam::GenerateNoiseQFunction(probNoisy,noiseMean,noiseSig),  iCycle);
     }
-    else
-    {
-        for (int j=0;j<ncand;j++) {
-         fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
-         iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
-         UpdateMapNoise(col,row,kNoisyPixRnd, iCycle);
-        }
-        
-        
+  }
+  else {
+    for (int j=0;j<ncand;j++) {
+      fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
+      iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
+      UpdateMapNoise(col,row,kNoisyPixRnd, iCycle);
     }
+  }
+  return ncand;
 }
 
 
