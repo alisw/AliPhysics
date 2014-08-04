@@ -201,6 +201,11 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
     fPtFractions    [i] = 0 ;
     fPtThresholds   [i] = 0 ;
     fSumPtThresholds[i] = 0 ;
+    
+    fhSumPtLeadingPt    [i] = 0 ;
+    fhPtLeadingPt       [i] = 0 ;
+    fhPerpSumPtLeadingPt[i] = 0 ;
+    fhPerpPtLeadingPt   [i] = 0 ;                 
   }
   
   for(Int_t imc = 0; imc < 9; imc++)
@@ -215,10 +220,10 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
   
   for(Int_t i = 0; i < 2 ; i++)
   {
-    fhTrackMatchedDEta[i] = 0 ;             fhTrackMatchedDPhi[i] = 0 ;           fhTrackMatchedDEtaDPhi  [i] = 0 ;
-    fhdEdx            [i] = 0 ;             fhEOverP          [i] = 0 ;           fhTrackMatchedMCParticle[i] = 0 ;
-    fhELambda0        [i] = 0 ;             fhELambda1        [i] = 0 ;
-    fhELambda0TRD     [i] = 0 ;             fhELambda1TRD     [i] = 0 ;
+    fhTrackMatchedDEta[i] = 0 ;             fhTrackMatchedDPhi[i] = 0 ;   fhTrackMatchedDEtaDPhi  [i] = 0 ;
+    fhdEdx            [i] = 0 ;             fhEOverP          [i] = 0 ;   fhTrackMatchedMCParticle[i] = 0 ;
+    fhELambda0        [i] = 0 ;             fhELambda1        [i] = 0 ;   fhPtLambda0       [i] = 0 ;
+    fhELambda0TRD     [i] = 0 ;             fhELambda1TRD     [i] = 0 ;   fhPtLambda0TRD    [i] = 0 ;
     
     // Number of local maxima in cluster
     fhNLocMax        [i] = 0 ;
@@ -3348,6 +3353,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     if(GetReader()->ReadStack())
     {
       primStack = stack->Particle(i) ;
+      if(!primStack)
+      {
+        printf("AliAnaParticleIsolation::FillAcceptanceHistograms() - ESD primaries pointer not available!!\n");
+        continue;
+      }
+      
       pdg    = primStack->GetPdgCode();
       status = primStack->GetStatusCode();
       
@@ -3365,6 +3376,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     else
     {
       primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      if(!primAOD)
+      {
+        printf("AliAnaParticleIsolation::FillAcceptanceHistograms() - AOD primaries pointer not available!!\n");
+        continue;
+      }
+      
       pdg    = primAOD->GetPdgCode();
       status = primAOD->GetStatus();
       
