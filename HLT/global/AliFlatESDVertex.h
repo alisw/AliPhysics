@@ -11,12 +11,10 @@
 
 #include "Rtypes.h"
 #include "AliESDVertex.h"
-#include "AliFlatESDMisc.h"
 
-class AliFlatESDVertex
-//class AliFlatESDVertex
+struct AliFlatESDVertex
 {
- public:
+
   Double32_t fPosition[3];    // vertex position
   Double32_t fCov[6];  // vertex covariance matrix
   Int_t    fNContributors;  // # of tracklets/tracks used for the estimate   
@@ -27,19 +25,13 @@ class AliFlatESDVertex
     Char_t fBCID;     // BC ID assigned to vertex
   */
 
-  virtual ~AliFlatESDVertex() {}
-
   AliFlatESDVertex() :fNContributors(0), fChi2(0){
     for( int i=0; i<3; i++) fPosition[i] = -9999;
     for( int i=0; i<6; i++) fCov[i] = -9999;
   }
 
   void Set(const AliESDVertex &v );
-  
-  void Reinitialize(){
-  	new (this) AliFlatESDVertex(AliFlatESDReinitialize);
-  }
-  
+
   Double32_t GetX() const { return fPosition[0]; }
   Double32_t GetY() const { return fPosition[1]; }
   Double32_t GetZ() const { return fPosition[2]; }
@@ -97,9 +89,22 @@ class AliFlatESDVertex
   Double_t GetWDist(const AliESDVertex* v) const;
   */
 
- private:
-  
-	AliFlatESDVertex(AliFlatESDSpecialConstructorFlag){}
+
+ 
 };
+
+inline void AliFlatESDVertex::Set(const AliESDVertex &v )
+{
+  fPosition[0] = v.GetX();
+  fPosition[1] = v.GetY();
+  fPosition[2] = v.GetZ();
+  Double_t c[6]; 
+  v.GetCovarianceMatrix( c ); 
+  for( int i=0; i<6; i++) fCov[i] = c[i];
+  fNContributors = v.GetNContributors();
+  fChi2 = v.GetChi2();
+}
+
+typedef struct AliFlatESDVertex AliFlatESDVertex;
 
 #endif

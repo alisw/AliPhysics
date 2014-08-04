@@ -1370,7 +1370,7 @@ AliTPCPIDResponse::EChamberStatus AliTPCPIDResponse::TrackStatus(const AliVTrack
  
   //if there is no inner param this could mean we're using the AOD track,
   //we still can extrapolate from the vertex - so use those params.
-  const AliVVtrack* ip = track->GetInnerParam();
+  const AliExternalTrackParam* ip = track->GetInnerParam();
   if (ip) track=dynamic_cast<const AliVTrack*>(ip);
 
   Bool_t trackAtInner = track->GetXYZAt(innerRadius, fMagField, trackPositionInner);

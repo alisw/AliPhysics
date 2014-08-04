@@ -16,6 +16,10 @@
 class AliFlatTPCCluster: public AliVVcluster
 {
   public:
+
+  AliFlatTPCCluster() : fX(0.), fY(0.), fZ(0.), fPadRow(0), fSigmaY2(0.), fSigmaZ2(0.), fCharge(0), fQMax(0) {}
+  ~AliFlatTPCCluster() {}
+
   void SetX(Float_t x)             {fX = x;}
   void SetY(Float_t y)             {fY = y;}
   void SetZ(Float_t z)             {fZ = z;}
@@ -26,7 +30,7 @@ class AliFlatTPCCluster: public AliVVcluster
   void SetQMax(UShort_t qmax)      {fQMax = qmax;}
   
   void Reinitialize(){
-  	new (this) AliFlatTPCCluster(AliFlatESDReinitialize);
+    new (this) AliFlatTPCCluster(AliFlatESDReinitialize);
   }
 
   Float_t  GetX()       const      {return fX;}
@@ -38,8 +42,6 @@ class AliFlatTPCCluster: public AliVVcluster
   UShort_t GetCharge()  const      {return fCharge;}
   UShort_t GetQMax()    const      {return fQMax;}
 
-  AliFlatTPCCluster() 
-  : fX(0.), fY(0.), fZ(0.), fPadRow(0), fSigmaY2(0.), fSigmaZ2(0.), fCharge(0), fQMax(0) {}
 
   static Bool_t SortClusters(const AliFlatTPCCluster &first, const AliFlatTPCCluster &second){
     // Method to sort two clusters according to pad row
@@ -49,8 +51,9 @@ class AliFlatTPCCluster: public AliVVcluster
   }
   
   private:
-  AliFlatTPCCluster(AliFlatESDSpecialConstructorFlag){}
-  virtual ~AliFlatTPCCluster() {}
+
+ AliFlatTPCCluster(AliFlatESDSpecialConstructorFlag f): AliVVcluster(f),fX(fX),fY(fY),fZ(fZ),fPadRow(fPadRow),fSigmaY2(fSigmaY2),fSigmaZ2(fSigmaZ2),fCharge(fCharge),fQMax(fQMax){}
+
   Float_t fX;       // X coordinate in local coordinates
   Float_t fY;       // Y coordinate in local coordinates
   Float_t fZ;       // Z coordinate in local coordinates
@@ -59,8 +62,6 @@ class AliFlatTPCCluster: public AliVVcluster
   Float_t fSigmaZ2; // error (former width) of the clusters
   UInt_t  fCharge;  // total charge of cluster
   UInt_t  fQMax;    // QMax of cluster
-  
-  
   
 };
 

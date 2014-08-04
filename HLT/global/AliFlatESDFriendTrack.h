@@ -37,6 +37,7 @@ class AliFlatESDFriendTrack :public AliVVfriendTrack
   AliFlatESDFriendTrack( AliVVConstructorReinitialisationFlag );
 
   //implementation of AliVVfriendTrack methods 
+  Int_t GetTPCseed( AliTPCseed &) const {return -1;}
 
   //AliVVTPCseed* GetTPCseed() const {return NULL;}
   AliTPCseed* GetTPCseed() const { return NULL; }
@@ -45,9 +46,9 @@ class AliFlatESDFriendTrack :public AliVVfriendTrack
   //const AliExternalTrackParam * GetITSOut() const { return NULL; } 
   //const AliExternalTrackParam * GetTPCOut() const { return  NULL; } 
   //const AliExternalTrackParam * GetTRDIn()  const { return NULL; } 
-  const AliVVtrack * GetITSOut() const { return NULL; } 
-  const AliVVtrack * GetTPCOut() const { return  NULL; } 
-  const AliVVtrack * GetTRDIn()  const { return NULL; } 
+  //const AliVVtrack * GetITSOut() const { return NULL; } 
+  //const AliVVtrack * GetTPCOut() const { return  NULL; } 
+  //const AliVVtrack * GetTRDIn()  const { return NULL; } 
 
   // own methods
 

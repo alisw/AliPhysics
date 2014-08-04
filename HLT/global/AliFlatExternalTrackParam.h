@@ -10,14 +10,9 @@
  */
 
 #include "Rtypes.h"
-#include "AliFlatESDMisc.h"
 
-
-class AliFlatExternalTrackParam
+struct AliFlatExternalTrackParam
 {
- public:
-  AliFlatExternalTrackParam() {}
-  virtual ~AliFlatExternalTrackParam() {}
   Float_t fAlpha;     // azimuthal angle of reference frame
   Float_t fX;         // x: radial distance
   Float_t fY;         // local Y-coordinate of a track (cm)
@@ -35,10 +30,6 @@ class AliFlatExternalTrackParam
   void SetTgl(Float_t tgl)                 {fTgl = tgl;}
   void SetSigned1Pt(Float_t signed1Pt)     {fSigned1Pt = signed1Pt;}
   void SetCovEntry(Int_t idx, Float_t cov) {(idx >= 0 && idx < 15) ? fC[idx] = cov : 0.;}
-  
-  void Reinitialize(){
-  	new (this) AliFlatExternalTrackParam(AliFlatESDReinitialize);
-  }
 
   Float_t  GetAlpha()             const {return fAlpha;}
   Float_t  GetX()                 const {return fX;}
@@ -49,11 +40,8 @@ class AliFlatExternalTrackParam
   Float_t  GetSigned1Pt()         const {return fSigned1Pt;}
   Float_t* GetCov()               const {return const_cast<Float_t*>(fC);}
   Float_t  GetCovEntry(Int_t idx) const {return (idx >= 0 && idx < 15) ? fC[idx] : 0.;}
-  
- private:
- 	AliFlatExternalTrackParam(AliFlatESDSpecialConstructorFlag){}
 };
 
-//typedef struct AliFlatExternalTrackParam AliFlatExternalTrackParam;
+typedef struct AliFlatExternalTrackParam AliFlatExternalTrackParam;
 
 #endif

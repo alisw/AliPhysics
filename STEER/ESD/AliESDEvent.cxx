@@ -82,8 +82,6 @@
 
 ClassImp(AliESDEvent)
 
-
-
 // here we define the names, some classes are no TNamed, therefore the classnames 
 // are the Names
   const char* AliESDEvent::fgkESDListName[kESDListN] = {"AliESDRun",

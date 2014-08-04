@@ -48,6 +48,7 @@ set ( CLASS_HDRS
     AliHLTV0FinderComponent.h
     AliFlatESDEvent.h
     AliFlatESDVertex.h
+    AliFlatESDTrigger.h
     AliFlatESDTrack.h
     AliFlatESDV0.h
     AliFlatESDFriend.h

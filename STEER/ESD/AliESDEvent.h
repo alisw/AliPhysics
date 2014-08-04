@@ -528,7 +528,10 @@ public:
   void SetDAQAttributes(UInt_t attributes) {fDAQAttributes = attributes;}
   UInt_t GetDAQDetectorPattern() const {return fDAQDetectorPattern;}
   UInt_t GetDAQAttributes() const {return fDAQAttributes;}
-  
+
+  // interface to AliVVevent
+  AliESDtrack *GetVVTrack(Int_t i) const { return GetTrack(i); }
+
 protected:
   AliESDEvent(const AliESDEvent&);
   static Bool_t ResetWithPlacementNew(TObject *pObject);

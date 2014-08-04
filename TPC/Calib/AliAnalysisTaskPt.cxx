@@ -127,13 +127,13 @@ void AliAnalysisTaskPt::Exec(Option_t *)
 
   // Track loop to fill a pT spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    AliVVtrack* track = fESD->GetTrack(iTracks);
+    AliVVtrack* track = fESD->GetVVTrack(iTracks);
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTracks);
       continue;
     }
-    Printf("track %d has pt = %f", iTracks, track->Pt());
-    fHistPt->Fill(track->Pt());
+    Printf("track %d has pt = %f", iTracks, track->GetPt());
+    fHistPt->Fill(track->GetPt());
   } //track loop 
 
 
@@ -145,31 +145,27 @@ void AliAnalysisTaskPt::Exec(Option_t *)
       if (!friendTrack) {
 	Printf("ERROR: Could not receive track %d", iFriend);
 	continue;
-      }     
-      TObject* calibObject;
-      AliTPCseed* seed = NULL;
-      //AliTPCseed* seed = friendTrack->GetTPCseed();
-      //if (seed){
-      for (Int_t idx = 0; (calibObject = friendTrack->GetCalibObject(idx)); ++idx) {
-	Printf(" |Cal %d = %p", idx, calibObject); 
-	if ((seed = dynamic_cast<AliTPCseed*>(calibObject))) {    
-	  //Printf("Found TPC seed %p", seed);
-	  for (Int_t irow = 0; irow < 160; irow++){
-	    AliTPCclusterMI* cluMI = seed->GetClusterPointer(irow);
-	    if (cluMI){
-	      Printf("Found cluster at row %d", irow);
-	      Float_t q = cluMI->GetQ();
-	      Printf("Q = %f", q);
-	      fHistQ->Fill(q);
-	    }
-	    else {
-	      Printf("Row %d does not contain clusters", irow);
-	    }      	 
+      }
+      
+      AliTPCseed seed;
+      Int_t err = friendTrack->GetTPCseed( seed );
+      if( err==0 ){
+	Printf("Found TPC seed" );
+	for (Int_t irow = 0; irow < 160; irow++){
+	  AliTPCclusterMI* cluMI = seed.GetClusterPointer(irow);
+	  if (cluMI){
+	    Printf("Found cluster at row %d", irow);
+	    Float_t q = cluMI->GetQ();
+	    Printf("Q = %f", q);
+	    fHistQ->Fill(q);
 	  }
-	}    
-	else {
-	  //Printf("Schade... seed is %p", seed);
+	  else {
+	    Printf("Row %d does not contain clusters", irow);
+	  }      	 
 	}
+      }	    
+      else {
+	//Printf("Schade... seed is %p", seed);
       }
     }
   }

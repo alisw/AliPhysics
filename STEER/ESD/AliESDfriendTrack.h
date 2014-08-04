@@ -15,7 +15,6 @@
 
 class AliKalmanTrack;
 class TObjArrray;
-class AliVVtrack;
 class AliTPCseed;
 
 
@@ -47,7 +46,7 @@ public:
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
   TObject * GetCalibObject(Int_t index) const;
-  AliTPCseed* GetTPCseed() const {return NULL;}
+
   //
   // parameters backup
   void SetTPCOut(const AliExternalTrackParam &param);
@@ -70,6 +69,10 @@ public:
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
   Bool_t TestSkipBit() {return TestBit(23);}
+
+  // VVfriendTrack interface
+
+  Int_t GetTPCseed( AliTPCseed &) const;
 
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))

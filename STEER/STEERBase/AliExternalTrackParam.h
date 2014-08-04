@@ -222,8 +222,7 @@ class AliExternalTrackParam: public AliVTrack {
   Bool_t ConstrainToVertex(const AliVVertex* vtx, Double_t b[3]);
   
   void GetDirection(Double_t d[3]) const;
-  Bool_t GetPxPyPz(Double_t *p) const;
-  using AliVVtrack::GetXYZ;
+  Bool_t GetPxPyPz(Double_t *p) const;  
   Bool_t GetXYZ(Double_t *p) const;
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const;
   Bool_t GetPxPyPzAt(Double_t x, Double_t b, Double_t p[3]) const;

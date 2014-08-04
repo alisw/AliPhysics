@@ -78,7 +78,7 @@ class AliAODRecoDecay : public AliVTrack {
   virtual UChar_t  GetITSClusterMap() const;
   virtual ULong_t  GetStatus() const;
   virtual Bool_t   GetXYZ(Double_t *p) const { return XvYvZv(p); }
-  using AliVVtrack::GetXYZ;
+  using AliVTrack::GetXYZ;
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const;
   virtual Bool_t   PropagateToDCA(const AliVVertex* vtx,Double_t b,Double_t maxd,Double_t dz[2],Double_t covar[3]);
 
