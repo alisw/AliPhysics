@@ -137,6 +137,9 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
     Bool_t fEvSel_HasVtxContributor;        //!
     Bool_t fEvSel_Triggered;                //!
 
+  Float_t fEvSel_VtxZ; //! pv z position (cm) 
+  Int_t fEvSel_MCType; //! type of event (to be used in PYTHIA, specifically)   
+
 //===========================================================================================
 //   Variables for V0 Tree
 //===========================================================================================
