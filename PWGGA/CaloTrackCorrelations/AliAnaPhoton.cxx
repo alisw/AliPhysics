@@ -371,6 +371,12 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if(GetReader()->ReadStack())
     {
       primStack = stack->Particle(i) ;
+      if(!primStack)
+      {
+        printf("AliAnaPhoton::FillAcceptanceHistograms() - ESD primaries pointer not available!!\n");
+        continue;
+      }
+      
       pdg    = primStack->GetPdgCode();
       status = primStack->GetStatusCode();
       
@@ -387,6 +393,12 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     else
     {
       primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      if(!primAOD)
+      {
+        printf("AliAnaPhoton::FillAcceptanceHistograms() - AOD primaries pointer not available!!\n");
+        continue;
+      }
+      
       pdg    = primAOD->GetPdgCode();
       status = primAOD->GetStatus();
       
