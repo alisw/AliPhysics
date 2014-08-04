@@ -69,6 +69,8 @@ AliAnalysisTaskJetShapeConst *AddTaskJetShapeConst(const char * njetsBase,
   task->SetUseAliAnaUtils(kFALSE);
   task->SetCreateTree(bCreateTree);
 
+  mgr->AddTask(task);
+
   //Connnect input
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
 
