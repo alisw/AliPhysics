@@ -194,14 +194,20 @@ function RunVM() {
 
 # Prepare the validation session directory. Syntax:
 #
-#   PrepareSession <aliroot_tag>
+#   PrepareSession <aliroot_tag> <new_session_name>
 #
 # Returns 0 on success, nonzero on failure. Session tag returned on stdout.
 function PrepareSession() {
   local aliRootTag sessionTag sessionDir
   aliRootTag="$1"
-  shift
-  sessionTag="${aliRootTag}_$(ndate)"
+
+  # session tag can be "auto" or any user-specified value
+  if [ "$2" != 'auto' ] ; then
+    sessionTag="$2"
+  else
+    sessionTag="${aliRootTag}_$(ndate)"
+  fi
+  shift 2
   sessionDir="$sessionPrefix/$sessionTag"
 
   # session directory already exists? abort
@@ -585,7 +591,7 @@ function Help() {
   pr "$Prog -- by Dario Berzano <dario.berzano@cern.ch>"
   pr 'Controls the Release Validation workflow on the cloud for AliRoot.'
   pr
-  pr "Usage 1: $Prog [--prepare|--launch|--recycle] [--from-session] --aliroot <aliroot_tag> [-- arbitraryOpt1=value [arbitraryOpt2=value2...]]"
+  pr "Usage 1: $Prog [--prepare|--launch|--recycle] [--from-session] --aliroot <aliroot_tag> [--session <custom_session_tag>] [-- arbitraryOpt1=value [arbitraryOpt2=value2...]]"
   pr
   pr 'A new session is created to validate the specified AliRoot tag.'
   pr
@@ -597,6 +603,8 @@ function Help() {
   pr '  --launch   : launches the full validation process: prepares session,'
   pr '               runs the virtual machine, launches the validation program'
   pr '  --aliroot  : the AliRoot tag to validate, in the form "vAN-20140610"'
+  pr '  --session  : custom session name to provide to the validation session:'
+  pr '               if omitted, defaults to <aliroot_tag>_<utc_datetime_now>'
   pr
   pr 'Arbitrary options (in the form variable=value) can be specified after the'
   pr 'double dash and will override the corresponding options in any of the'
@@ -749,11 +757,8 @@ function Main() {
         pr 'Specify an AliRoot version with --aliroot <tag>'
         return $errInvalidOpt
       fi
-      if [ "$sessionTag" != '' ] ; then
-        pr 'Cannot use --session with --prepare. Use --help for assistance.'
-        return $errInvalidOpt
-      fi
-      sessionTag=$( RunAction "$A" "$aliRootTag" "$@" )
+      [ "$sessionTag" == '' ] && sessionTag='auto'
+      sessionTag=$( RunAction "$A" "$aliRootTag" "$sessionTag" "$@" )
       ret=$?
     elif [ "$A" == 'RecycleSession' ] ; then
       # special action requiring additional parameters
