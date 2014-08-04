@@ -77,7 +77,7 @@ class AliAODv0;
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliCentrality.h"
-
+#include "AliPPVsMultUtils.h"
 #include "AliPWG0Helper.h"
 #include "AliCFContainer.h"
 #include "AliMultiplicity.h"
@@ -90,13 +90,14 @@ class AliAODv0;
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicityMC.h"
 
+
 using std::cout;
 using std::endl;
 
 ClassImp(AliAnalysisTaskStrangenessVsMultiplicityMC)
 
 AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultiplicityMC()
-  : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), 
+  : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0),
   fkSaveV0Tree      ( kFALSE ),
   fkSaveCascadeTree ( kTRUE  ),
   fkRunVertexers    ( kTRUE  ),
@@ -112,6 +113,8 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fCentrality_V0AEq(0), 
   fCentrality_V0CEq(0), 
   fCentrality_V0MEq(0), 
+  fCustomCentrality_V0M(0),
+  fCustomCentrality_V0MEq(0),
   fRefMultEta5(0),
   fRefMultEta8(0),
   fTrueMultEta5(0),
@@ -313,7 +316,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
 }
 
 AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultiplicityMC(const char *name) 
-  : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), 
+  : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0),  
   fkSaveV0Tree      ( kFALSE ),
   fkSaveCascadeTree ( kTRUE  ), 
   fkRunVertexers    ( kTRUE  ),
@@ -329,6 +332,8 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fCentrality_V0AEq(0), 
   fCentrality_V0CEq(0), 
   fCentrality_V0MEq(0), 
+  fCustomCentrality_V0M(0),
+  fCustomCentrality_V0MEq(0),
   fRefMultEta5(0),
   fRefMultEta8(0),
   fTrueMultEta5(0),
@@ -572,6 +577,10 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::~AliAnalysisTaskStrangenessVsMultipl
       delete fTreeCascade;
       fTreeCascade = 0x0;
    }
+    if (fPPVsMultUtils){
+        delete fPPVsMultUtils;
+        fPPVsMultUtils = 0x0;
+    }
 }
 
 //________________________________________________________________________
@@ -604,6 +613,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   fTreeEvent->Branch("fCentrality_V0AEq",&fCentrality_V0AEq,"fCentrality_V0AEq/F");
   fTreeEvent->Branch("fCentrality_V0CEq",&fCentrality_V0CEq,"fCentrality_V0CEq/F");
   fTreeEvent->Branch("fCentrality_V0MEq",&fCentrality_V0MEq,"fCentrality_V0MEq/F");
+
+  fTreeEvent->Branch("fCustomCentrality_V0M",&fCustomCentrality_V0M,"fCustomCentrality_V0M/F");
+  fTreeEvent->Branch("fCustomCentralityEq_V0M",&fCustomCentrality_V0MEq,"fCustomCentrality_V0MEq/F");
   
   //Official GetReferenceMultiplicity
   fTreeEvent->Branch("fRefMultEta5",&fRefMultEta5,"fRefMultEta5/I");
@@ -761,6 +773,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   // Multiplicity
   if(! fESDtrackCuts ){
     fESDtrackCuts = new AliESDtrackCuts();
+  }
+  if(! fPPVsMultUtils ){
+    fPPVsMultUtils = new AliPPVsMultUtils();
   }
 
 //------------------------------------------------
@@ -1187,7 +1202,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
   // Check if this isn't pileup
   //------------------------------------------------
 
-  if(lESDevent->IsPileupFromSPDInMultBins() && !fkSkipEventSelection ){
+  if(lESDevent->IsPileupFromSPD() && !fkSkipEventSelection ){
     // minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  
     //-> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
     AliWarning("Pb / Event tagged as pile-up by SPD... return !"); 
@@ -1306,8 +1321,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     fCentrality_V0MEq = centrality->GetCentralityPercentile( "V0MEq" ); 
   }
   
+  fCustomCentrality_V0M = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0M");
+  fCustomCentrality_V0MEq = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0MEq");
+  
   //Event-level fill 
-  fTreeEvent->Fill() ;
+  fTreeEvent->Fill();
+    
+    //STOP HERE if skipping event selections (no point in doing the rest...)
+    if( fkSkipEventSelection ){
+        PostData(1, fListHist);
+        PostData(2, fTreeEvent);
+        PostData(3, fTreeV0);
+        PostData(4, fTreeCascade);
+        return;
+    }
+   
   
 //------------------------------------------------
 

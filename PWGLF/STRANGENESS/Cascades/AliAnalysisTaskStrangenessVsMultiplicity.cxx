@@ -746,7 +746,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     // Check if this isn't pileup
     //------------------------------------------------
     
-    if(lESDevent->IsPileupFromSPDInMultBins() && !fkSkipEventSelection ){
+    if(lESDevent->IsPileupFromSPD() && !fkSkipEventSelection ){
         // minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.
         //-> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
         AliWarning("Pb / Event tagged as pile-up by SPD... return !");

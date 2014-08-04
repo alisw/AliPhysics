@@ -35,6 +35,7 @@ class THnSparse;
 class AliESDpid;
 class AliESDtrackCuts;
 class AliAnalysisUtils;
+class AliPPVsMultUtils;
 class AliESDEvent;
 class AliPhysicsSelection;
 class AliCFContainer;
@@ -96,6 +97,7 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
 
   AliPIDResponse *fPIDResponse;     // PID response object
   AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
+  AliPPVsMultUtils *fPPVsMultUtils; //
 
   //Objects Controlling Task Behaviour 
   Bool_t fkSaveV0Tree;              //if true, save TTree
@@ -120,6 +122,8 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Float_t fCentrality_V0AEq;       //! 
   Float_t fCentrality_V0CEq;       //! 
   Float_t fCentrality_V0MEq;       //! 
+  Float_t fCustomCentrality_V0M;   //! 
+  Float_t fCustomCentrality_V0MEq; //! 
   Int_t fRefMultEta5;              //!
   Int_t fRefMultEta8;              //! 
   Int_t fTrueMultEta5;             //!   
