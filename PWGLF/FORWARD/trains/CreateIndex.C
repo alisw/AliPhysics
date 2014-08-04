@@ -4,6 +4,7 @@ CreateIndex(const TString& dir, const TString& tree="esdTree")
   gROOT->SetMacroPath(Form("$ALICE_ROOT/PWGLF/FORWARD/trains:%s", 
 			   gROOT->GetMacroPath()));
   gROOT->LoadMacro("ChainBuilder.C+");
+  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
   
   Bool_t mc = false;
   if (tree.BeginsWith("mc")) { 
@@ -26,9 +27,11 @@ CreateIndex(const TString& dir, const TString& tree="esdTree")
   opts.Append("&check");
   opts.Append("&clean");
   opts.Append("&recursive");
+  // opts.Append("&verbose");
   if (mc) opts.Append("&mc");
 
   TString realDir(gSystem->ExpandPathName(dir.Data()));
+  if (realDir.EqualTo(".")) realDir = gSystem->WorkingDirectory();
 
   TUrl url;
   url.SetProtocol("local");

@@ -58,9 +58,11 @@ public:
   void SetMassWindow(Double_t massMean = 0.135, Double_t massSigma = 0.01) { fMassInvMean = massMean; fMassInvSigma = massSigma; }
   void SetSigmaWidth(Double_t sigmaWidth= 0) { fSigmaWidth = sigmaWidth; }
   void SetMassMeanParametrs(Double_t p0 = -20.9476, Double_t p1 = 0.1300) {fMassMeanP0 = p0; fMassMeanP1 = p1;}   // from mass fit
-  void SetMassSigmaParametrs(Double_t p0 = 0.005, Double_t p1 = -0.0001) {fMassSigmaP0 = p0; fMassSigmaP1 = p1;}    // from mass fit
+  void SetMassSigmaParametrs(Double_t p0 = 0.001, Double_t p1 = -0.0000001, Double_t p2 = -0.06, Double_t p3 = -0.01) {fMassSigmaP0 = p0; fMassSigmaP1 = p1; fMassSigmaP2 = p2; fMassSigmaP3 = p3;}    // from mass fit
   void SetPeriod(Period period) { fPeriod = period; }
   void SetCentralityBorders (double down = 0., double up = 90.) ;
+  void SetUseMoreCorrFunctions(Bool_t makeForPHOS = false, Bool_t makeForTPC = false) {fMakePHOSModulesCorrFunctions = makeForPHOS; fMakeTPCHalfBarrelCorrFunctions = makeForTPC; }
+  void SetUseEfficiency(Bool_t useEff = true) {fUseEfficiency = useEff;}
   void SetPtAssocBins(TArrayD * arr){fAssocBins.Set(arr->GetSize(), arr->GetArray()) ;} 
 
   void SetCentralityEstimator(const char * centr) {fCentralityEstimator = centr;}
@@ -128,6 +130,7 @@ protected:
     void ConsiderTracksMix();       // Consider all Pi0 in this event with tracks from MIXing pull.
 
     void ConsiderPi0sME();             // Consider the most energetic Pi0 in this event with all tracks of this event.
+    void ConsiderPi0sME_MBSelection(); // Consider the most energetic Pi0 in this event with all tracks of this event using MB events.
     void ConsiderTracksMixME();        // Consider the most energetic Pi0 in this event with all tracks from MIXing pull.
 
     void ConsiderPi0sMix();           // MIX for catch Mass
@@ -195,6 +198,9 @@ private:
   // Control variables
     Bool_t fUseMEAlgoritmForReal;        // Use common or ME algoritm for analysis real events.
     Bool_t fUseMEAlgoritmForMix;         // Use common or ME algoritm for analysis mixed events.
+    Bool_t fUseEfficiency;                // Use efficiensy during analysis.
+    Bool_t fMakePHOSModulesCorrFunctions; // Turn on filling module Phi/Eta/Pt distribution.
+    Bool_t fMakeTPCHalfBarrelCorrFunctions; // Turn on filling half barrel TPC distribution.
     Int_t fCheckHibridGlobal;      // For checking/dischecking/passingcheck: t->IsHybridGlobalConstrainedGlobal();
 
   // Event selection
@@ -218,6 +224,8 @@ private:
     Double_t fMassMeanP1;
     Double_t fMassSigmaP0;
     Double_t fMassSigmaP1;
+    Double_t fMassSigmaP2;
+    Double_t fMassSigmaP3;
 
     AliVEvent* fEvent;          //! Current event
     AliESDEvent* fEventESD;     //! Current event, if ESD.

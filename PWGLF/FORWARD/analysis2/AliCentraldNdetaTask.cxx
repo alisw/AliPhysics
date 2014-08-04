@@ -30,7 +30,6 @@ AliCentraldNdetaTask::AliCentraldNdetaTask(const char*)
   : AliBasedNdetaTask("Central") 
 { 
   DGUARD(fDebug,3,"Named CTOR of AliCentraldNdetaTask");
-  fSymmetrice = false; 
   fCorrEmpty  = false;
   // SetTitle("Central");
 }

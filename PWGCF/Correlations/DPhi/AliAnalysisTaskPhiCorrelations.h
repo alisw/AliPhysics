@@ -85,13 +85,13 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
 
     // for event QA
-    void   SetTracksInVertex(Int_t val ){ fnTracksVertex = val; }
-    void   SetZVertex(Double_t val )    { fZVertex = val; }
-    void   SetAcceptOnlyMuEvents(Bool_t val )    { fAcceptOnlyMuEvents = val; }
+    void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
+    void   SetZVertex( Double_t val )    { fZVertex = val; }
+    void   SetAcceptOnlyMuEvents( Bool_t val )    { fAcceptOnlyMuEvents = val; }
     
     // track cuts
-    void   SetTrackEtaCut(Double_t val )    { fTrackEtaCut = val; }
-    void   SetTrackEtaCutMin(Double_t val )    { fTrackEtaCutMin = val; }
+    void   SetTrackEtaCut( Double_t val )    { fTrackEtaCut = val; }
+    void   SetTrackEtaCutMin( Double_t val )    { fTrackEtaCutMin = val; }
     void   SetOnlyOneEtaSide(Int_t flag)     { fOnlyOneEtaSide = flag; }
     void   SetTrackPhiCutEvPlMin(Double_t val)  { fTrackPhiCutEvPlMin = val; }
     void   SetTrackPhiCutEvPlMax(Double_t val)  { fTrackPhiCutEvPlMax = val; }
@@ -175,18 +175,18 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t		fInjectedSignals;	  // check header to skip injected signals in MC
     Bool_t		fRandomizeReactionPlane;  // change the orientation of the RP by a random value by shifting all tracks
     
-    AliHelperPID*     fHelperPID;              // points to class for PID
+    AliHelperPID*     fHelperPID;      // points to class for PID
     AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
-    TMap*     fMap;                            // points to TMap class containing scaling factors for VZERO A signal
+    TMap*     fMap;                   // points to TMap class containing scaling factors for VZERO A signal
  
    // Pointers to external UE classes
-    AliAnalyseLeadingTrackUE* fAnalyseUE;      //! points to class containing common analysis algorithms
-    AliUEHistograms*  fHistos;                 //! points to class to handle histograms/containers  
-    AliUEHistograms*  fHistosMixed;            //! points to class to handle mixed histograms/containers  
+    AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms
+    AliUEHistograms*  fHistos;       //! points to class to handle histograms/containers  
+    AliUEHistograms*  fHistosMixed;       //! points to class to handle mixed histograms/containers  
     
-    THnF* fEfficiencyCorrectionTriggers;       // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
-    THnF* fEfficiencyCorrectionAssociated;     // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
-    TH1* fCentralityWeights;		       // for centrality flattening
+    THnF* fEfficiencyCorrectionTriggers;     // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+    THnF* fEfficiencyCorrectionAssociated;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+    TH1* fCentralityWeights;		     // for centrality flattening
     
     // Handlers and events
     AliAODEvent*             fAOD;             //! AOD Event 
@@ -198,24 +198,24 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     AliEventPoolManager*     fPoolMgr;         //! event pool manager
     
     // Histogram settings
-    TList*              fListOfHistos;         //  Output list of containers 
+    TList*              fListOfHistos;    //  Output list of containers 
     
     // Event QA cuts
-    Int_t          	fnTracksVertex;        // QA tracks pointing to principal vertex
-    Double_t       	fZVertex;              // Position of Vertex in Z direction
+    Int_t          	fnTracksVertex;          // QA tracks pointing to principal vertex
+    Double_t       	fZVertex;                 // Position of Vertex in Z direction
     Bool_t       	fAcceptOnlyMuEvents;   // Only Events with at least one muon are accepted
-    TString             fCentralityMethod;     // Method to determine centrality
+    TString             fCentralityMethod;      // Method to determine centrality
     
     // Track cuts
     Double_t      	fTrackEtaCut;          // Maximum Eta cut on particles
-    Double_t      	fTrackEtaCutMin;       // Minimum Eta cut on particles
+    Double_t      	fTrackEtaCutMin;          // Minimum Eta cut on particles
     Double_t            fTrackPhiCutEvPlMin;   // Minimum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2)
     Double_t            fTrackPhiCutEvPlMax;   // Maximum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2), if = 0, then no cut is performed
     Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
     Double_t            fPtMin;                // Min pT to start correlations
     TFormula*           fDCAXYCut;             // additional pt dependent cut on DCA XY (only for AOD)
-    Double_t            fSharedClusterCut;     // cut on shared clusters (only for AOD)
-    Int_t		fCrossedRowsCut;       // cut on crossed rows (only for AOD)
+    Double_t            fSharedClusterCut;  // cut on shared clusters (only for AOD)
+    Int_t		fCrossedRowsCut;   // cut on crossed rows (only for AOD)
     Double_t	 	fFoundFractionCut;     // cut on crossed rows/findable clusters (only for AOD)
     UInt_t           	fFilterBit;            // Select tracks from an specific track cut 
     UInt_t         	fTrackStatus;          // if non-0, the bits set in this variable are required for each track
@@ -223,7 +223,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
     Int_t               fParticleSpeciesTrigger; // Select which particle to use for the trigger [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
     Int_t               fParticleSpeciesAssociated; // Select which particle to use for the associated [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
-    Bool_t              fCheckMotherPDG;       // Check the PDG code of mother for secondaries 
+    Bool_t             fCheckMotherPDG;     // Check the PDG code of mother for secondaries 
 
     // Tracklets cuts
     Double_t      	fTrackletDphiCut;    //maximum Dphi cut on tracklets
@@ -252,7 +252,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 46); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 47); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

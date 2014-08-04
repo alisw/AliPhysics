@@ -132,12 +132,25 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   TH1F *fHistNEvents;     //!hist. for No. of events
 
-  TH2F* fHistNtrEta16vsNtrEta1; //!hist. for Ntracklets in eta<1.6 vs. eta<1.
-  TH2F* fHistNtrEta05vsNtrEta1; //!hist. for Ntracklets in eta<0.5 vs. eta<1.
-  TH2F* fHistNtrEta03vsNtrEta1; //!hist. for Ntracklets in eta<0.3 vs. eta<1.
-  TH2F* fHistNtrEtaV0AvsNtrEta1; //!hist. for Ntracklets in eta-V0A vs. eta<1.
-  TH2F* fHistNtrEtaV0MvsNtrEta1; //!hist. for Ntracklets in eta-V0M vs. eta<1.
-  TH2F* fHistNtrCorrEta1vsNtrRawEta1; //!hist. for Ntracklets in eta<1 with and w/o corrections 
+  TH2F* fHistNtrEta16vsNtrEta1EvSel; //!hist. for Ntracklets in eta<1.6 vs. eta<1.
+  TH2F* fHistNtrEta05vsNtrEta1EvSel; //!hist. for Ntracklets in eta<0.5 vs. eta<1.
+  TH2F* fHistNtrEta03vsNtrEta1EvSel; //!hist. for Ntracklets in eta<0.3 vs. eta<1.
+  TH2F* fHistNtrEtaV0AvsNtrEta1EvSel; //!hist. for Ntracklets in eta-V0A vs. eta<1.
+  TH2F* fHistNtrEtaV0MvsNtrEta1EvSel; //!hist. for Ntracklets in eta-V0M vs. eta<1.
+  TH2F* fHistNtrCorrEta1vsNtrRawEta1EvSel; //!hist. for Ntracklets in eta<1 with and w/o corrections
+  TH2F* fHistNtrEta16vsNtrEta1EvWithCand; //!hist. for Ntracklets in eta<1.6 vs. eta<1. for events with a candidate
+  TH2F* fHistNtrEta05vsNtrEta1EvWithCand; //!hist. for Ntracklets in eta<0.5 vs. eta<1. for events with a candidate
+  TH2F* fHistNtrEta03vsNtrEta1EvWithCand; //!hist. for Ntracklets in eta<0.3 vs. eta<1. for events with a candidate
+  TH2F* fHistNtrEtaV0AvsNtrEta1EvWithCand; //!hist. for Ntracklets in eta-V0A vs. eta<1. for events with a candidate
+  TH2F* fHistNtrEtaV0MvsNtrEta1EvWithCand; //!hist. for Ntracklets in eta-V0M vs. eta<1. for events with a candidate
+  TH2F* fHistNtrCorrEta1vsNtrRawEta1EvWithCand; //!hist. for Ntracklets in eta<1 with and w/o corrections for events with a candidate
+  TH2F* fHistNtrEta16vsNtrEta1EvWithD; //!hist. for Ntracklets in eta<1.6 vs. eta<1. for events with a candidate in D mass peak
+  TH2F* fHistNtrEta05vsNtrEta1EvWithD; //!hist. for Ntracklets in eta<0.5 vs. eta<1. for events with a candidate in D mass peak
+  TH2F* fHistNtrEta03vsNtrEta1EvWithD; //!hist. for Ntracklets in eta<0.3 vs. eta<1. for events with a candidate in D mass peak
+  TH2F* fHistNtrEtaV0AvsNtrEta1EvWithD; //!hist. for Ntracklets in eta-V0A vs. eta<1. for events with a candidate in D mass peak
+  TH2F* fHistNtrEtaV0MvsNtrEta1EvWithD; //!hist. for Ntracklets in eta-V0M vs. eta<1. for events with a candidate in D mass peak
+  TH2F* fHistNtrCorrEta1vsNtrRawEta1EvWithD; //!hist. for Ntracklets in eta<1 with and w/o corrections for events with a candidate in D mass peak
+
   TH2F* fHistNtrVsZvtx; //!  hist of ntracklets vs Zvertex
   TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex
 
@@ -150,9 +163,11 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH1F* fHistGenPrimaryParticlesInelGt0; //!hist. of geenrated multiplcity
   TH3F* fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary; //! hist of Nch (generated) vs Nch (Primary) vs Nch (Physical Primary) 
   
+  TH1F* fHistNtrUnCorrPSSel; //! hist. of ntracklets for physics selection only selected events
   TH1F* fHistNtrUnCorrEvSel; //! hist. of ntracklets for selected events
   TH1F* fHistNtrUnCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
   TH1F* fHistNtrUnCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
+  TH1F* fHistNtrCorrPSSel; //! hist. of ntracklets for physics selection only selected events
   TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
   TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
   TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
@@ -198,7 +213,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
   Int_t fMCPrimariesEstimator;  // Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2 
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,11); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,12); // D vs. mult task
 };
 
 #endif

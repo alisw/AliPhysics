@@ -77,24 +77,24 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Analysis Setters and Getters
   
   TString      GetCalorimeter()                const { return fCalorimeter       ; }
+  TString      GetTriggerDetector()            const { return fIsoDetector       ; }
   Int_t        GetNCones()                     const { return fNCones            ; }
   Int_t        GetNPtThresFrac()               const { return fNPtThresFrac      ; }
   Float_t      GetConeSizes(Int_t i)           const { return fConeSizes[i]      ; }
   Float_t      GetPtThresholds(Int_t i)        const { return fPtThresholds[i]   ; }
   Float_t      GetSumPtThresholds(Int_t i)     const { return fSumPtThresholds[i]; }
   Float_t      GetPtFractions(Int_t i)         const { return fPtFractions[i]    ; }
-  Int_t        GetNumberOfSMCoveredByTRD()     const { return fTRDSMCovered      ; }
   
   Int_t        GetMCIndex(Int_t mcTag);
   
   void         SetCalorimeter(TString & det)         { fCalorimeter     = det    ; }
+  void         SetTriggerDetector(TString & det)     { fIsoDetector     = det    ; }
   void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
   void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
   void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
   void         SetPtThresholds(Int_t i, Float_t pt)  { fPtThresholds[i] = pt     ; }
   void         SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt     ; } 
   void 	       SetSumPtThresholds(Int_t i, Float_t pt){ fSumPtThresholds[i] = pt ; }
-  void         SetNumberOfSMCoveredByTRD(Int_t n)    { fTRDSMCovered    = n      ; }
 
   Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
   void         SwitchOnReIsolation()                 { fReMakeIC      = kTRUE    ; }
@@ -145,9 +145,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      GetHistoPtInConeMax()           const { return fHistoPtInConeMax  ; }
   
  // For primary histograms in arrays, index in the array, corresponding to a photon origin
-  enum mcPrimTypes { kmcPrimPhoton = 0,   kmcPrimPi0Decay = 1,   kmcPrimOtherDecay = 2,
-                     kmcPrimOther  = 3,   kmcPrimPrompt   = 4,
-                     kmcPrimFrag   = 5,   kmcPrimISR      = 6                             } ;
+  enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimOtherDecay  = 2,
+                     kmcPrimPrompt = 3, kmcPrimFrag     = 4, kmcPrimISR         = 5       } ;
   
   // For histograms in arrays, index in the array, corresponding to any particle origin
   enum mcTypes     { kmcPhoton   = 0, kmcPrompt   = 1, kmcFragment   = 2,
@@ -157,6 +156,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
  private:
   
   TString  fCalorimeter ;                         // Calorimeter where neutral particles in cone for isolation are;
+  TString  fIsoDetector ;                         // Candidate particle for isolation detector ;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
   Bool_t   fFillPileUpHistograms;                 // Fill pile-up related histograms
@@ -167,7 +167,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillHighMultHistograms;               // Fill high multiplicity histograms
   Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
   Bool_t   fFillNLMHistograms;                    // Fill NLM histograms
-  Int_t    fTRDSMCovered;                         // From which SM EMCal is covered by TRD
 
   // Analysis data members for multiple cones and pt thresholds 
   Int_t    fNCones ;                              //! Number of cone sizes to test
@@ -316,10 +315,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   //MC
   //
-  TH2F *   fhEtaPrimMC  [7];                      //! Pt vs Eta of generated photon
-  TH2F *   fhPhiPrimMC  [7];                      //! Pt vs Phi of generated photon
-  TH1F *   fhEPrimMC    [7];                      //! Number of generated photon vs E
-  TH1F *   fhPtPrimMCiso[7];                      //! Number of generated isolated photon vs pT
+  TH2F *   fhEtaPrimMC  [6];                      //! Pt vs Eta of generated photon
+  TH2F *   fhPhiPrimMC  [6];                      //! Pt vs Phi of generated photon
+  TH1F *   fhEPrimMC    [6];                      //! Number of generated photon vs E
+  TH1F *   fhPtPrimMCiso[6];                      //! Number of generated isolated photon vs pT
   
   TH1F *   fhPtNoIsoMC[9];                        //! Number of not isolated mcTypes particle
   TH1F *   fhPtIsoMC  [9];                        //! Number of isolated mcTypes particle
