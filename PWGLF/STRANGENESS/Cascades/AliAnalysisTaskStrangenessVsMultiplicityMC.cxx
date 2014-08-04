@@ -78,6 +78,7 @@ class AliAODv0;
 #include "AliStack.h"
 #include "AliCentrality.h"
 
+#include "AliPWG0Helper.h"
 #include "AliCFContainer.h"
 #include "AliMultiplicity.h"
 #include "AliAODMCParticle.h"
@@ -125,6 +126,8 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
     fEvSel_IsNotPileupInMultBins(0),
     fEvSel_HasVtxContributor(0),
     fEvSel_Triggered(0),
+    fEvSel_VtxZ(0), 
+    fEvSel_MCType(0), 
   //---> Variables for fTreeV0
 	fTreeVariableChi2V0(0),
 	fTreeVariableDcaV0Daughters(0),
@@ -340,6 +343,8 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
     fEvSel_IsNotPileupInMultBins(0),
     fEvSel_HasVtxContributor(0),
     fEvSel_Triggered(0),
+    fEvSel_VtxZ(0), 
+    fEvSel_MCType(0), 
   //---> Variables for fTreeV0
 	fTreeVariableChi2V0(0),
 	fTreeVariableDcaV0Daughters(0),
@@ -620,6 +625,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
     fTreeEvent->Branch("fEvSel_IsNotPileupInMultBins", &fEvSel_IsNotPileupInMultBins, "fEvSel_IsNotPileupInMultBins/O");
     fTreeEvent->Branch("fEvSel_HasVtxContributor", &fEvSel_HasVtxContributor, "fEvSel_HasVtxContributor/O");
     fTreeEvent->Branch("fEvSel_Triggered", &fEvSel_Triggered, "fEvSel_Triggered/O");
+    fTreeEvent->Branch("fEvSel_VtxZ", &fEvSel_VtxZ, "fEvSel_VtxZ/F");
+    fTreeEvent->Branch("fEvSel_MCType", &fEvSel_MCType, "fEvSel_MCType/I");
     
 
   //Create Basic V0 Output Tree
@@ -1044,7 +1051,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
    AliESDEvent *lESDevent = 0x0;
    AliMCEvent  *lMCevent  = 0x0; 
    AliStack    *lMCstack  = 0x0; 
-  
+
     //Zero all booleans, etc
     fEvSel_HasAtLeastSPDVertex    = kFALSE;
     fEvSel_VtxZCut                = kFALSE;
@@ -1052,6 +1059,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     fEvSel_IsNotPileupInMultBins  = kFALSE;
     fEvSel_HasVtxContributor      = kFALSE;
     fEvSel_Triggered              = kFALSE;
+    fEvSel_VtxZ = -100; 
+    fEvSel_MCType = -100; 
   // Connect to the InputEvent   
   // After these lines, we should have an ESD/AOD event + the number of V0s in it.
 
@@ -1090,8 +1099,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
   lMagneticField = lESDevent->GetMagneticField( );
 
 //------------------------------------------------
-// Variable Definition
+// MC type (ND, SD, DD) 
 //------------------------------------------------
+
+    AliGenEventHeader * header = lMCevent->GenEventHeader();
+    Int_t processtype = AliPWG0Helper::GetPythiaEventProcessType(header);
+    // non diffractive
+    if (processtype !=92 && processtype !=93 && processtype != 94) fEvSel_MCType = 1;
+    // single diffractive
+    if ((processtype == 92 || processtype == 93)) fEvSel_MCType = 2;
+    // double diffractive
+    if (processtype == 94) fEvSel_MCType = 3;
 
 //------------------------------------------------
 // Physics Selection
@@ -1127,6 +1145,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 
   Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
   lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
+  fEvSel_VtxZ = lBestPrimaryVtxPos[2];
 
   //Only accept if Tracking or SPD vertex is fine 
   if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus() && !fkSkipEventSelection ){
