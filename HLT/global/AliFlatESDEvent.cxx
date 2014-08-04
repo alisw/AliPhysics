@@ -66,6 +66,8 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 
+ClassImp(AliFlatESDEvent);
+
 // _______________________________________________________________________________________________________
 AliFlatESDEvent::AliFlatESDEvent() :
   fContentSize(0),

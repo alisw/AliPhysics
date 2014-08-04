@@ -49,7 +49,8 @@ class AliFlatESDEvent :public AliVVevent {
   Int_t GetNumberOfV0s() const { return fNV0s; }
   Int_t GetNumberOfKinks() const { return 0; }  
 
-  AliVVtrack* GetTrack(Int_t /*i*/) const { return NULL; }
+  AliVVtrack* GetVVTrack(Int_t /*i*/) const { return NULL; }
+  //AliVVtrack* GetTrack(Int_t /*i*/) const { return NULL; }
   AliESDkink* GetKink(Int_t /*i*/) const { return NULL;}
 
   void ConnectTracks(){} // initialisation, needed by the ESD event, part of VVevent interface
@@ -146,7 +147,8 @@ class AliFlatESDEvent :public AliVVevent {
   // -- Variable Size Object
 
   Byte_t fContent[1];                  // Variale size object, which contains all data
-  
+
+  ClassDef(AliFlatESDEvent,0)
 };
 
 // Inline implementations 

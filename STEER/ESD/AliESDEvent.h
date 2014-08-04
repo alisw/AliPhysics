@@ -77,7 +77,6 @@ class AliESDCosmicTrack;
 class TList;
 class TString;
 
-
 class AliESDEvent : public AliVEvent, public AliVVevent {
 public:
 
@@ -600,7 +599,7 @@ protected:
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
 
-  ClassDef(AliESDEvent,22)  //ESDEvent class 
+  ClassDef(AliESDEvent,23)  //ESDEvent class 
 };
 #endif 
 

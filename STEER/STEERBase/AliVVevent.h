@@ -27,6 +27,7 @@ class AliVVevent {
   AliVVevent() {}
   virtual ~AliVVevent() {}
 
+  
   // --------------------------------------------------------------------------------
   virtual void Reset() = 0;
 
@@ -42,11 +43,11 @@ class AliVVevent {
   virtual ULong64_t GetTriggerMask()   const = 0;
   virtual TString GetFiredTriggerClasses() const = 0;
   virtual UInt_t GetEventSpecie() const = 0;  
-
+  
   virtual Int_t GetNumberOfTracks() const = 0;
   virtual Int_t GetNumberOfV0s() const = 0;
   virtual Int_t GetNumberOfKinks() const = 0;
-
+  
   /* 
   virtual const AliVVvertex* GetPrimaryVertex() const {return NULL;}
   virtual const AliVVvertex* GetPrimaryVertexSPD() const {return NULL;}
