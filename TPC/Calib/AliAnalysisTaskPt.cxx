@@ -26,7 +26,8 @@ ClassImp(AliAnalysisTaskPt)
 
 //________________________________________________________________________
 AliAnalysisTaskPt::AliAnalysisTaskPt(const char *name) 
-: AliAnalysisTask(name, ""), fESD(0), fESDfriend(0), fHistPt(0), fCuts(0), fEv(0), fHistQ(0), fListOut(0), fUseFriends(kFALSE)
+: AliAnalysisTask(name, ""), fESD(0), fESDfriend(0), fHistPt(0), fCuts(0), fEv(0), fHistQ(0), fListOut(0), fUseFriends(kFALSE), fHistNTPCCl(0), fHistNESDtracks(0),   fHistNESDfriendtracks(0)
+
 {
   // Constructor
 
@@ -99,8 +100,26 @@ void AliAnalysisTaskPt::CreateOutputObjects()
   fHistQ->GetYaxis()->SetTitle("dN/dQ");
   fHistQ->SetMarkerStyle(kFullCircle);
 
+  fHistNTPCCl = new TH1F("fHistNTPCCl", "Number of TPC clusters", 160, -0.5, 159.5);
+  fHistNTPCCl->GetXaxis()->SetTitle("n. TPC Cl.");
+  fHistNTPCCl->GetYaxis()->SetTitle("dN/d(n. TPC Cl)");
+  fHistNTPCCl->SetMarkerStyle(kFullCircle);
+
+  fHistNESDtracks = new TH1F("fHistNESDtracks", "Number of ESD friend tracks", 1000, -0.5, 999.5);
+  fHistNESDtracks->GetXaxis()->SetTitle("n. ESD friend tracks");
+  fHistNESDtracks->GetYaxis()->SetTitle("dN/d(n. ESD friend tracks)");
+  fHistNESDtracks->SetMarkerStyle(kFullCircle);
+
+  fHistNESDfriendtracks = new TH1F("fHistNESDfriendtracks", "Number of ESD tracks", 1000, -0.5, 999.5);
+  fHistNESDfriendtracks->GetXaxis()->SetTitle("n. ESD tracks");
+  fHistNESDfriendtracks->GetYaxis()->SetTitle("dN/d(n. ESD tracks)");
+  fHistNESDfriendtracks->SetMarkerStyle(kFullCircle);
+
   fListOut->Add(fHistPt);
   fListOut->Add(fHistQ);
+  fListOut->Add(fHistNTPCCl);
+  fListOut->Add(fHistNESDtracks);
+  fListOut->Add(fHistNESDfriendtracks);
 
   PostData(0, fListOut);
 
@@ -119,14 +138,23 @@ void AliAnalysisTaskPt::Exec(Option_t *)
   }
   if (!fESDfriend) {
     Printf("ERROR: fESDfriend not available");
-    return;
+      if (fUseFriends){
+	return;
+      }
   }
 
-  Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
-  Printf("... and there are %d friends in this event", fESDfriend->GetNumberOfTracks());
+  Int_t nESDtracks = fESD->GetNumberOfTracks();
+  Int_t nESDfriendtracks = 0;
+  if (fUseFriends) nESDfriendtracks = fESDfriend->GetNumberOfTracks();
+  Printf("There are %d tracks in this event", nESDtracks);
+  Printf("... and there are %d friends in this event", nESDfriendtracks);
+
+  fHistNESDtracks->Fill(nESDtracks);
+  fHistNESDfriendtracks->Fill(nESDfriendtracks);
 
   // Track loop to fill a pT spectrum
-  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
+  for (Int_t iTracks = 0; iTracks < nESDtracks; iTracks++) {
+    Printf("Checking track %d: Note that with Flat, the GetTrack is not yet implemented!!!", iTracks);
     AliVVtrack* track = fESD->GetVVTrack(iTracks);
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTracks);
@@ -134,12 +162,13 @@ void AliAnalysisTaskPt::Exec(Option_t *)
     }
     Printf("track %d has pt = %f", iTracks, track->GetPt());
     fHistPt->Fill(track->GetPt());
+    fHistNTPCCl->Fill(track->GetTPCNcls());
   } //track loop 
 
 
   if (fUseFriends){
     // Friend Track loop
-    for (Int_t iFriend = 0; iFriend < fESDfriend->GetNumberOfTracks(); iFriend++) {
+    for (Int_t iFriend = 0; iFriend < nESDfriendtracks; iFriend++) {
       //Printf("Getting friend %d", iFriend);
       const AliVVfriendTrack* friendTrack = fESDfriend->GetTrack(iFriend);
       if (!friendTrack) {

@@ -15,7 +15,8 @@ class TList;
 
 class AliAnalysisTaskPt : public AliAnalysisTask {
  public:
- AliAnalysisTaskPt() : AliAnalysisTask(), fESD(0), fESDfriend(0), fHistPt(0), fCuts(0), fEv(0), fHistQ(0), fListOut(0) {}
+ AliAnalysisTaskPt() : AliAnalysisTask(), fESD(0), fESDfriend(0), fHistPt(0), fCuts(0), fEv(0), fHistQ(0), fListOut(0), fHistNTPCCl(0), fHistNESDtracks(0), fHistNESDfriendtracks(0) 
+ {}
   AliAnalysisTaskPt(const char *name);
   virtual ~AliAnalysisTaskPt() {}
   
@@ -28,14 +29,17 @@ class AliAnalysisTaskPt : public AliAnalysisTask {
   void   SetUseFriends(Bool_t flag) {fUseFriends = flag;}
 
  private:
-  AliVVevent*       fESD;          // ESD object
-  AliVVfriendEvent* fESDfriend;    // ESD friend object
-  TH1F*             fHistPt;       // Pt spectrum
-  AliESDtrackCuts*  fCuts;         // cuts
+  AliVVevent*       fESD;                      // ESD object
+  AliVVfriendEvent* fESDfriend;                // ESD friend object
+  TH1F*             fHistPt;                   // Pt spectrum
+  AliESDtrackCuts*  fCuts;                     // cuts
   Int_t fEv;
-  TH1F*             fHistQ;        // TPC clusters Q spectrum
-  TList*            fListOut;      // output list
-  Bool_t            fUseFriends;   // flag to decide whether friends should be used
+  TH1F*             fHistQ;                    // TPC clusters Q spectrum
+  TList*            fListOut;                  // output list
+  Bool_t            fUseFriends;               // flag to decide whether friends should be use
+  TH1F*             fHistNTPCCl;               // histo with the number of TPC clusters
+  TH1F*             fHistNESDtracks;           // histo with number of ESD tracks
+  TH1F*             fHistNESDfriendtracks;     // histo with number of ESD tracks
 
   AliAnalysisTaskPt(const AliAnalysisTaskPt&); // not implemented
   AliAnalysisTaskPt& operator=(const AliAnalysisTaskPt&); // not implemented
