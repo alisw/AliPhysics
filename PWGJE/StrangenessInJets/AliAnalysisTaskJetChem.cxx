@@ -2768,6 +2768,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   //____ fill all jet related histos  ________________________________________________________________________________________________________________________
   //##########################jet loop########################################################################################################################
 
+  Int_t nSelJets = nRecJetsCuts;//init value
 
   //fill jet histos in general
   for(Int_t ij=0; ij<nRecJetsCuts; ++ij){                               // ij is an index running over the list of the reconstructed jets after cuts, all jets in event
@@ -2777,7 +2778,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     Double_t jetPt  = jet->Pt();
     Double_t jetEta = jet->Eta();
     Double_t jetPhi = jet->Phi();
-
+    
     //if(ij==0){ // loop over leading jets for ij = 0, for ij>= 0 look into all jets
 
     if(ij>=0){//all jets in event
@@ -2786,8 +2787,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       Double_t sumPt      = 0.;
       Bool_t isBadJet     = kFALSE;
       Int_t njetTracks    = 0;
-      Int_t nSelJets = nRecJetsCuts;//initialisation for remaining jet cuts
- 
+
       if(GetFFRadius()<=0){
  	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);// list of jet tracks from trackrefs
       } else {
@@ -2795,8 +2795,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       }
       //not applied at the moment:
       if(GetFFMinNTracks()>0 && jettracklist->GetSize() <= GetFFMinNTracks()) isBadJet = kTRUE; // reject jets with less tracks than fFFMinNTracks
-
-
 
       //APPLICATION OF REMAINING JET CUTS (leading track pt bias etc..) + NJ events
       if(isBadJet) {
