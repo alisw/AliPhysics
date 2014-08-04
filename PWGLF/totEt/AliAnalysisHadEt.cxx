@@ -327,7 +327,11 @@ Int_t AliAnalysisHadEt::GetCentralityBin(Int_t numberofbins,AliCentrality *centr
     else{
       Float_t centpercent = centrality->GetCentralityPercentile(fCentralityMethod);
       centralitybin= centrality->GetCentralityClass5(fCentralityMethod);
-      if(centralitybin>0) centralitybin =(Int_t) centpercent/2.5;
+      Float_t centralitybinfloat = (centpercent/2.5);
+      if(centralitybin>=0){
+	centralitybin =(Int_t) (centralitybinfloat);
+	//cout<<" centbin "<<centralitybin<<" centrality "<<centpercent<<" "<<centpercent/2.5 <<endl;
+      }
     }
   }
   //cout<<" centrality bin "<<centralitybin<<endl;

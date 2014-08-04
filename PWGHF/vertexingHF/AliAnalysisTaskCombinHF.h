@@ -108,6 +108,7 @@ private:
   TH1F *fHistCheckDecChan;    //!hist. of decay channel of D meson
   TH1F *fHistCheckDecChanAcc; //!hist. of decay channel of D meson in acc.
   TH2F *fPtVsYGen;        //! hist. of Y vs. Pt generated (all D)
+  TH2F *fPtVsYGenLargeAcc; //! hist. of Y vs. Pt generated (|y|<0.9)
   TH2F *fPtVsYGenLimAcc;  //! hist. of Y vs. Pt generated (|y|<0.5)
   TH2F *fPtVsYGenAcc;     //! hist. of Y vs. Pt generated (D in acc)
   TH2F *fPtVsYReco;       //! hist. of Y vs. Pt generated (Reco D)
@@ -158,7 +159,7 @@ private:
   Double_t fBayesThresKaon;  // threshold for kaon identification via Bayesian PID
   Double_t fBayesThresPion;  // threshold for pion identification via Bayesian PID
   
-  ClassDef(AliAnalysisTaskCombinHF,3); // D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,4); // D0D+ task from AOD tracks
 };
 
 #endif

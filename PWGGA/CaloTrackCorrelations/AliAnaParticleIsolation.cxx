@@ -61,13 +61,14 @@ ClassImp(AliAnaParticleIsolation)
 
 //______________________________________________________________________________
 AliAnaParticleIsolation::AliAnaParticleIsolation() : 
-AliAnaCaloTrackCorrBaseClass(),   fCalorimeter(""), 
+AliAnaCaloTrackCorrBaseClass(),
+fCalorimeter(""),                 fIsoDetector(""),
 fReMakeIC(0),                     fMakeSeveralIC(0),               
 fFillPileUpHistograms(0),
 fFillTMHisto(0),                  fFillSSHisto(1),
 fFillUEBandSubtractHistograms(1), fFillCellHistograms(0),
 fFillHighMultHistograms(0),       fFillTaggedDecayHistograms(0),
-fFillNLMHistograms(0),            fTRDSMCovered(-1),
+fFillNLMHistograms(0),
 // Several IC
 fNCones(0),                       fNPtThresFrac(0), 
 fConeSizes(),                     fPtThresholds(),                 
@@ -200,6 +201,11 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
     fPtFractions    [i] = 0 ;
     fPtThresholds   [i] = 0 ;
     fSumPtThresholds[i] = 0 ;
+    
+    fhSumPtLeadingPt    [i] = 0 ;
+    fhPtLeadingPt       [i] = 0 ;
+    fhPerpSumPtLeadingPt[i] = 0 ;
+    fhPerpPtLeadingPt   [i] = 0 ;                 
   }
   
   for(Int_t imc = 0; imc < 9; imc++)
@@ -214,10 +220,10 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
   
   for(Int_t i = 0; i < 2 ; i++)
   {
-    fhTrackMatchedDEta[i] = 0 ;             fhTrackMatchedDPhi[i] = 0 ;           fhTrackMatchedDEtaDPhi  [i] = 0 ;
-    fhdEdx            [i] = 0 ;             fhEOverP          [i] = 0 ;           fhTrackMatchedMCParticle[i] = 0 ;
-    fhELambda0        [i] = 0 ;             fhELambda1        [i] = 0 ;
-    fhELambda0TRD     [i] = 0 ;             fhELambda1TRD     [i] = 0 ;
+    fhTrackMatchedDEta[i] = 0 ;             fhTrackMatchedDPhi[i] = 0 ;   fhTrackMatchedDEtaDPhi  [i] = 0 ;
+    fhdEdx            [i] = 0 ;             fhEOverP          [i] = 0 ;   fhTrackMatchedMCParticle[i] = 0 ;
+    fhELambda0        [i] = 0 ;             fhELambda1        [i] = 0 ;   fhPtLambda0       [i] = 0 ;
+    fhELambda0TRD     [i] = 0 ;             fhELambda1TRD     [i] = 0 ;   fhPtLambda0TRD    [i] = 0 ;
     
     // Number of local maxima in cluster
     fhNLocMax        [i] = 0 ;
@@ -227,7 +233,7 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
   }
   
   // Acceptance
-  for(Int_t i = 0; i < 7; i++)
+  for(Int_t i = 0; i < 6; i++)
   {
     fhPtPrimMCiso[i] = 0;
     fhEPrimMC    [i] = 0;
@@ -1157,7 +1163,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
           fhPtLambda0MC[mcIndex][isolated]->Fill(pt, cluster->GetM02());
       }
       
-      if(fCalorimeter == "EMCAL" && fTRDSMCovered >= 0 && GetModuleNumber(cluster) > fTRDSMCovered)
+      if(fCalorimeter == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+         GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
       {
         fhELambda0TRD [isolated]->Fill(energy, cluster->GetM02() );
         fhPtLambda0TRD[isolated]->Fill(pt    , cluster->GetM02() ); 
@@ -1253,6 +1260,8 @@ TObjString *  AliAnaParticleIsolation::GetAnalysisCuts()
   snprintf(onePar, buffersize,"--- AliAnaParticleIsolation ---\n") ;
   parList+=onePar ;	
   snprintf(onePar, buffersize,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+  parList+=onePar ;
+  snprintf(onePar, buffersize,"Isolation Cand Detector: %s\n",fIsoDetector.Data()) ;
   parList+=onePar ;
   snprintf(onePar, buffersize,"fReMakeIC =%d (Flag for reisolation during histogram filling) \n",fReMakeIC) ;
   parList+=onePar ;
@@ -1394,10 +1403,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                            "Electron","Hadron"} ;
   
   // Primary MC histograms title and name
-  TString pptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}","hadron?",
+  TString pptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}",
                        "#gamma_{prompt}","#gamma_{fragmentation}","#gamma_{ISR}"} ;
   
-  TString ppname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay","Hadron",
+  TString ppname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay",
                        "PhotonPrompt","PhotonFrag","PhotonISR"} ;
 
   if(!fMakeSeveralIC)
@@ -2394,7 +2403,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           }
        }
         
-        if(fCalorimeter=="EMCAL" && fTRDSMCovered >= 0)
+        if(fIsoDetector=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0)
         {
           fhPtLambda0TRD[iso]  = new TH2F
           (Form("hPtLambda0TRD%s",isoName[iso].Data()),
@@ -2560,7 +2569,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhEtaIsoMC[imc]) ;
       }
       
-      for(Int_t i = 0; i < 7; i++)
+      for(Int_t i = 0; i < 6; i++)
       {
         fhEPrimMC[i]  = new TH1F(Form("hEPrim_MC%s",ppname[i].Data()),
                                  Form("primary photon  %s : #it{E}, %s",pptype[i].Data(),parTitle.Data()),
@@ -2931,6 +2940,7 @@ Int_t AliAnaParticleIsolation::GetMCIndex(Int_t mcTag)
   }
   else // anything else
   {
+    // careful can contain also other decays, to be checked.
     return kmcHadron;
   }
 }
@@ -2966,7 +2976,9 @@ void AliAnaParticleIsolation::InitParameters()
   SetAODObjArrayName("IsolationCone");  
   AddToHistogramsName("AnaIsolation_");
   
-  fCalorimeter = "PHOS" ;
+  fCalorimeter = "EMCAL" ;
+  fIsoDetector = "EMCAL" ;
+  
   fReMakeIC = kFALSE ;
   fMakeSeveralIC = kFALSE ;
   
@@ -3088,7 +3100,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
 
   //In case of simulated data, fill acceptance histograms
   if(IsDataMC()) FillAcceptanceHistograms();
-  
   
   //Loop on stored AOD
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
@@ -3295,10 +3306,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   
 }
 
-//______________________________________________________
+//______________________________________________________________________
 void AliAnaParticleIsolation::FillAcceptanceHistograms()
 {
-  //Fill acceptance histograms if MC data is available
+  // Fill acceptance histograms if MC data is available
+  // Only when particle is in the calorimeter. Rethink if CTS is used.
   
   //Double_t photonY   = -100 ;
   Double_t photonE   = -1 ;
@@ -3310,7 +3322,6 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   Int_t    status    =  0 ;
   Int_t    tag       =  0 ;
   Int_t    mcIndex   =  0 ;
-  Bool_t   inacceptance = kFALSE;
   Int_t    nprim     = 0;
   
   TParticle        * primStack = 0;
@@ -3342,6 +3353,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     if(GetReader()->ReadStack())
     {
       primStack = stack->Particle(i) ;
+      if(!primStack)
+      {
+        printf("AliAnaParticleIsolation::FillAcceptanceHistograms() - ESD primaries pointer not available!!\n");
+        continue;
+      }
+      
       pdg    = primStack->GetPdgCode();
       status = primStack->GetStatusCode();
       
@@ -3359,6 +3376,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     else
     {
       primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      if(!primAOD)
+      {
+        printf("AliAnaParticleIsolation::FillAcceptanceHistograms() - AOD primaries pointer not available!!\n");
+        continue;
+      }
+      
       pdg    = primAOD->GetPdgCode();
       status = primAOD->GetStatus();
       
@@ -3371,9 +3394,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     
     // Select only photons in the final state
-    if(pdg    != 22 ) continue ;
+    if(pdg != 22 ) continue ;
     
-    if(status != 1  ) continue ;
+    // Consider only final state particles, but this depends on generator,
+    // status 1 is the usual one, in case of not being ok, leave the possibility
+    // to not consider this.
+    if(status != 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) continue ;
     
     // If too small or too large pt, skip, same cut as for data analysis
     photonPt  = lv.Pt () ;
@@ -3386,14 +3412,18 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     if(photonPhi < 0) photonPhi+=TMath::TwoPi();
     
-    // Check if photons hit the Calorimeter approximate acceptance
-    // Not too realistic acceptance, check later what to do.
-    inacceptance = kFALSE;
-    if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter))
-      inacceptance = kTRUE ;
-    
-    if( !inacceptance ) continue;
-    
+    // Check if photons hit the Calorimeter acceptance
+    if(IsRealCaloAcceptanceOn() && fIsoDetector!="CTS") // defined on base class
+    {
+      if(GetReader()->ReadStack()          &&
+         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fIsoDetector, primStack)) continue ;
+      if(GetReader()->ReadAODMCParticles() &&
+         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fIsoDetector, primAOD  )) continue ;
+    }
+  
+    // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
+    if(!GetFiducialCut()->IsInFiducialCut(lv,fIsoDetector)) continue ;
+  
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
     tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
@@ -3431,7 +3461,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     else
     {
-      mcIndex = kmcPrimOther;
+      // Other decay but from non final state particle
+      mcIndex = kmcPrimOtherDecay;
     }//Other origin
     
     // ////////////////////ISO MC/////////////////////////
@@ -3466,7 +3497,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         partInConePhi    = mcisopAOD->Phi();
       }
       
-      if( partInConeStatus != 1 ) continue;
+      // Consider only final state particles, but this depends on generator,
+      // status 1 is the usual one, in case of not being ok, leave the possibility
+      // to not consider this.
+      if( partInConeStatus != 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) continue ;
       
       if( partInConeMother == i ) continue;
       
@@ -3476,6 +3510,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       // TVector3 vmcv(mcisop->Px(),mcisop->Py(), mcisop->Pz());
       // if(vmcv.Perp()>1)
       //   continue;
+      
+      //
+      // Add here Acceptance cut???, charged particles CTS fid cut, neutral Calo real acceptance.
+      //
       
       dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
       
@@ -3802,6 +3840,7 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
   printf("ReMake Isolation          = %d \n",  fReMakeIC) ;
   printf("Make Several Isolation    = %d \n",  fMakeSeveralIC) ;
   printf("Calorimeter for isolation = %s \n",  fCalorimeter.Data()) ;
+  printf("Detector for candidate isolation = %s \n", fIsoDetector.Data()) ;
   
   if(fMakeSeveralIC)
   {

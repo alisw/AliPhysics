@@ -120,13 +120,13 @@ void runEMCalJetAnalysis(
   // ################# Now: Add some basic tasks
 
   // Physics selection task
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
-  AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, pSel, 5, 5, 10, kTRUE, -1, -1, -1, -1);
-
-  if (!physSelTask) 
-  {
-    cout << "no physSelTask"; 
-    return; 
+  if(!isMC) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
+    AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, pSel, 5, 5, 10, kTRUE, -1, -1, -1, -1);
+    if (!physSelTask) {
+      cout << "no physSelTask but running on data" << endl; 
+      return; 
+    }
   }
 
   // Centrality task

@@ -1,4 +1,4 @@
-void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
+void pythia6FastjetExample(Int_t nEvent = 50, Float_t e_cms = 2760, Float_t pthardmin = 10, Float_t pthardmax = 50) {
 
   // example macro for on-the-fly generation of PYTHIA6 events
   // and analysis with new reader interface and FastJet
@@ -9,13 +9,15 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
   gSystem->Load("libCGAL");
   gSystem->Load("libfastjet");
   gSystem->Load("libsiscone");
-  gSystem->Load("libSISConePlugin");
+  gSystem->Load("libsiscone_spherical");
+  gSystem->Load("libfastjetplugins");
   gSystem->Load("libJETAN");
   gSystem->Load("libFASTJETAN");
 
-  gSystem->Load("libpythia6.so");
-  gSystem->Load("libEGPythia6.so");
-  gSystem->Load("libAliPythia6.so");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("liblhapdf");
+  gSystem->Load("libAliPythia6");
 
 
   AliPDG::AddParticlesToPdgDataBase(); // to add some PDF codes to TDatabasePDG
@@ -24,16 +26,16 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
   AliPythiaRndm::SetPythiaRandom(new TRandom3());
   AliPythiaRndm::GetPythiaRandom()->SetSeed(clock()+gSystem->GetPid());
 
-  AliPythia6 *pythia=AliPythia6::Instance();
+  AliGenPythia *pythia=new AliGenPythia(1);
+  pythia->SetProcess(kPyJets);
+  pythia->SetPtHard(pthardmin, pthardmax);
+  pythia->SetEnergyCMS(e_cms);
 
-  pythia->SetCKIN(3,10);   // minimum hard pt
-  pythia->SetCKIN(4,1000);  // maximum hard pt
+  pythia->Init();
 
-  pythia->SetMDCY(pythia->Pycomp(111),1,0);  // switch off pi0 decay
-
-  pythia->Initialize("CMS","p","p",e_cms);
-
-
+  //
+  // Jet finder settings go via the FastJetHeader
+  //
   AliFastJetHeaderV1 *header = new AliFastJetHeaderV1;
   header->SetBGMode(0);
   //  header->SetRadius(0.4);
@@ -45,28 +47,37 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
   AliFastJetFinder *FastJet = new AliFastJetFinder;
   FastJet->SetJetHeader(header);
 
+  // Infrastructure needed for AliGenPythia
+  AliStack *stack = new AliStack();
+  // There is a big mess with the connection between runloader, AliRun and the gAlice pointer. 
+  // This order of things seems to work...
+  AliRunLoader *dummyrl = new AliRunLoader("dummyEvtFolder");
+  dummyrl->MakeHeader();
+  dummyrl->SetEventNumber(0);
+  gAlice->SetRunLoader(dummyrl);
+  pythia->SetStack(stack);
+
+  // Set up dummy AOD event for JETAN output
   AliAODEvent *aod = new AliAODEvent();
   aod->CreateStdContent();
   FastJet->ConnectAOD(aod);
 
+  // Set up input structures for FastJet
   AliJetCalTrkEvent JetFinderEvent(0,1);
-  TClonesArray *plist = new TClonesArray("TParticle");
   TClonesArray aliplist("AliMCParticle",1000);
 
   for (Int_t iEvent = 0; iEvent < nEvent; iEvent++) {
 
     TProcessID::SetObjectCount(0); // Needed for TRefs in AliCalTrkTrack and AliAODJet
 
-    pythia->GenerateEvent();
-
-    pythia->GetParticles(plist);
+    pythia->Generate();
 
     aliplist.Clear();
     JetFinderEvent.Clear();
 
-    Int_t n_part = plist->GetEntries();
+    Int_t n_part = stack->GetNtrack();
     for (Int_t i_part = 0; i_part < n_part; i_part++) {
-      part=(TParticle*) plist->At(i_part);
+      part=(TParticle*) stack->Particle(i_part);
 
       if (part->GetStatusCode() >= 10)  // Not a final state particle
 	continue;
@@ -88,4 +99,9 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
       }
     }
   }
+}
+
+// kept for backward compatibility; this was the old function name
+void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
+  pythia6FastjetExample(nEvent, e_cms);
 }
