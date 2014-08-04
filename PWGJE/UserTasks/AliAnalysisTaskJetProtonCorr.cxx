@@ -895,7 +895,7 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	  AliTOFPIDResponse &tofResponse = fPIDResponse->GetTOFResponse();
 
 	  Float_t p = trk->P();
-	  if (const AliVVtrack *param = trk->GetInnerParam())
+	  if (const AliExternalTrackParam *param = trk->GetInnerParam())
 	    p = param->GetP();
 
 	  Double_t expTOF = fPIDResponse->GetTOFResponse().GetExpectedSignal(trk, AliPID::kProton);
