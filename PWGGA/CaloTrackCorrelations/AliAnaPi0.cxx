@@ -1290,6 +1290,11 @@ void AliAnaPi0::FillAcceptanceHistograms()
     if(GetReader()->ReadStack())
     {
       primStack = stack->Particle(i) ;
+      if(!primStack)
+      {
+        printf("AliAnaPi0::FillAcceptanceHistograms() - ESD primaries pointer not available!!\n");
+        continue;
+      }
       
       // If too small  skip
       if( primStack->Energy() < 0.4 ) continue;
@@ -1311,6 +1316,11 @@ void AliAnaPi0::FillAcceptanceHistograms()
     else
     {
       primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      if(!primAOD)
+      {
+        printf("AliAnaPi0::FillAcceptanceHistograms() - AOD primaries pointer not available!!\n");
+        continue;
+      }
       
       // If too small  skip
       if( primAOD->E() < 0.4 ) continue;
