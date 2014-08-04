@@ -62,11 +62,15 @@ fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(kFALSE),    fFillOnlySimpleSSHisto(1),
 fFillPileUpHistograms(0),
 fNOriginHistograms(8),        fNPrimaryHistograms(4),
-
 // Histograms
-fhNCellsE(0),                 fhCellsE(0),   // Control histograms
-fhMaxCellDiffClusterE(0),     fhTimePt(0),   // Control histograms
+
+// Control histograms
+fhNCellsE(0),                 fhCellsE(0),
+fhMaxCellDiffClusterE(0),     fhTimePt(0),                  fhEtaPhi(0),
+
 fhEPhoton(0),                 fhPtPhoton(0),
+fhPhiPhoton(0),               fhEtaPhoton(0),
+fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
 fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
 
 // Shower shape histograms
