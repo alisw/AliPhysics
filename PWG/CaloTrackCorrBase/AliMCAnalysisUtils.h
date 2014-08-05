@@ -43,7 +43,7 @@ class AliMCAnalysisUtils : public TObject {
                  kMCElectron,   kMCEFromCFromB, kMCEFromC,        kMCEFromB, kMCZDecay,   kMCWDecay,
                  kMCMuon,       kMCPion,        kMCPi0,           kMCKaon,   kMCEta,      kMCProton,   
                  kMCAntiProton, kMCNeutron,     kMCAntiNeutron,
-                 kMCOther,      kMCUnknown,     kMCBadLabel                                                                                         } ;
+                 kMCUnknown,    kMCBadLabel                                                         } ;
   
   //--------------------------------------
   // Methods to check origin of clusters
