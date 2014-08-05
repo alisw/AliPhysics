@@ -1183,8 +1183,8 @@ void AliAnalysisTaskJetChem::AliFragFuncHistosInvMass::FillFF(Float_t trackPt, F
   invM = 0;
   Double_t z = 0.;
   if(jetPt>0) z = trackPt / jetPt;
-  Double_t xi = 0;
-  if(z>0) xi = TMath::Log(1/z);
+  // Double_t xi = 0;
+  //if(z>0) xi = TMath::Log(1/z);
   
   //fh3Xi->Fill(jetPt,invM,xi);
   //fh3Z->Fill(jetPt,invM,z);
@@ -1323,13 +1323,13 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
   //histos for normalisation of MCC, RC, OC and NJ
 
-  fh1RC                         = new TH1F("fh1RC"," # random cones used",1,0.,1.);
-  fh1RCBiasK0                   = new TH1F("fh1RCBiasK0"," # random cones with K0s trigger particle",1,0.,1.);
-  fh1RCBiasLa                   = new TH1F("fh1RCBiasLa"," # random cones with La trigger particle",1,0.,1.);
-  fh1RCBiasALa                  = new TH1F("fh1RCBiasALa"," # random cones with ALa trigger particle",1,0.,1.);
-  fh1MCC                        = new TH1F("fh1MCC","# median cluster cones used",1,0.,1.);
-  fh1OC                         = new TH1F("fh1OC","# outside cones used, number of jet events",1,0.,1.);
-  fh1NJ                         = new TH1F("fh1NJ","# non-jet events used",1,0.,1.);
+  fh1RC                         = new TH1F("fh1RC"," # random cones used",1,0.5,1.5);
+  fh1RCBiasK0                   = new TH1F("fh1RCBiasK0"," # random cones with K0s trigger particle",1,0.5,1.5);
+  fh1RCBiasLa                   = new TH1F("fh1RCBiasLa"," # random cones with La trigger particle",1,0.5,1.5);
+  fh1RCBiasALa                  = new TH1F("fh1RCBiasALa"," # random cones with ALa trigger particle",1,0.5,1.5);
+  fh1MCC                        = new TH1F("fh1MCC","# median cluster cones used",1,0.5,1.5);
+  fh1OC                         = new TH1F("fh1OC","# outside cones used, number of jet events",1,0.5,1.5);
+  fh1NJ                         = new TH1F("fh1NJ","# non-jet events used",1,0.5,1.5);
 
   Int_t binsInvMassEtaTrackPtK0s[3] = {200, 200, 120};//eta,invM,trackPt
   Double_t xminInvMassEtaTrackPtK0s[3] = {-1.,0.3,0.};
@@ -2392,6 +2392,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       //if jet is selected, then check whether V0 is part of the jet cone:
       if(IsParticleInCone(jet, v0, dRadiusExcludeCone) == kTRUE) {bIsInCone = kTRUE;}
       
+      delete jettracklist;
     }
     
     if(bIsInCone==kFALSE){//K0s is not part of any selected jet in event
@@ -2509,7 +2510,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       if(isBadJet) continue;
 
       if(IsParticleInCone(jet, v0, dRadiusExcludeCone) == kTRUE) {bIsInCone = kTRUE;
-      }       
+      }     
+      delete jettracklist;  
     }    
     
     if(bIsInCone == kFALSE){//success!
@@ -2567,6 +2569,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
 
       fh1PtMCLa->Fill(MCPt);
+  
+
     }
     fh1V0Eta->Fill(fEta);
     //fh1V0totMom->Fill(fV0TotalMomentum);
@@ -2628,13 +2632,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
  	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
       }
       
-
       //leading track pt bias on jets inside this small jet loop
       if(isBadJet) continue;
 
       if(IsParticleInCone(jet, v0, dRadiusExcludeCone) == kTRUE){
 	bIsInCone = kTRUE;	
       }
+
+      delete jettracklist;
     }
  
     if(bIsInCone == kFALSE){//success!
