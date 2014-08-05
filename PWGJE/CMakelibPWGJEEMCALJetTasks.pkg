@@ -82,6 +82,9 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
  EMCALJetTasks/UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
+ EMCALJetTasks/UserTasks/AliCutValueRange.cxx 
+ EMCALJetTasks/UserTasks/AliEMCalHistoContainer.cxx 
+ EMCALJetTasks/UserTasks/AliAnalysisTaskPtEMCalTrigger.cxx 
 )
 
 # Add code that needs fastjet or FJWrapper here
