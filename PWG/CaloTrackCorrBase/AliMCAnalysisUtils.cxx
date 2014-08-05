@@ -1839,7 +1839,7 @@ void AliMCAnalysisUtils::PrintMCTag(Int_t tag) const
 {
   // print the assigned origins to this particle
   
-  printf("AliMCAnalysisUtils::PrintMCTag() - tag %d \n    photon %d, conv %d, prompt %d, frag %d, isr %d, \n    pi0 decay %d, eta decay %d, other decay %d  pi0 %d,  eta %d \n    electron %d, muon %d,pion %d, proton %d, neutron %d, \n    kaon %d, a-proton %d, a-neutron %d, other %d, unk %d, bad %d\n",
+  printf("AliMCAnalysisUtils::PrintMCTag() - tag %d \n    photon %d, conv %d, prompt %d, frag %d, isr %d, \n    pi0 decay %d, eta decay %d, other decay %d  pi0 %d,  eta %d \n    electron %d, muon %d,pion %d, proton %d, neutron %d, \n    kaon %d, a-proton %d, a-neutron %d, unk %d, bad %d\n",
          tag,
          CheckTagBit(tag,kMCPhoton),
          CheckTagBit(tag,kMCConversion),
@@ -1859,7 +1859,6 @@ void AliMCAnalysisUtils::PrintMCTag(Int_t tag) const
          CheckTagBit(tag,kMCKaon), 
          CheckTagBit(tag,kMCAntiProton), 
          CheckTagBit(tag,kMCAntiNeutron),
-         CheckTagBit(tag,kMCOther),
          CheckTagBit(tag,kMCUnknown),
          CheckTagBit(tag,kMCBadLabel)
          );
