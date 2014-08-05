@@ -50,7 +50,7 @@ class AliPicoTrack: public AliVTrack {
   Bool_t          IsEMCAL()                   const { return fEmcal;  }
   ULong_t         GetStatus()                 const { return 0;       }
   Bool_t          GetXYZ(Double_t *v)         const { v[0]=0; v[1]=0; v[2]=0; return 0; }
-  using AliVVtrack::GetXYZ;
+  using AliVTrack::GetXYZ;
   Double_t        GetBz()                     const { return 0;       }
   void            GetBxByBz(Double_t b[3])    const { b[0]=0;b[1]=0;b[2]=0; }
   Bool_t          GetCovarianceXYZPxPyPz(Double_t /*cv*/[21]) const { return 0; }
