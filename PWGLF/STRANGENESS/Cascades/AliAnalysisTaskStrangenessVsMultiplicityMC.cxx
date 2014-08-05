@@ -615,7 +615,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   fTreeEvent->Branch("fCentrality_V0MEq",&fCentrality_V0MEq,"fCentrality_V0MEq/F");
 
   fTreeEvent->Branch("fCustomCentrality_V0M",&fCustomCentrality_V0M,"fCustomCentrality_V0M/F");
-  fTreeEvent->Branch("fCustomCentralityEq_V0M",&fCustomCentrality_V0MEq,"fCustomCentrality_V0MEq/F");
+  fTreeEvent->Branch("fCustomCentrality_V0MEq",&fCustomCentrality_V0MEq,"fCustomCentrality_V0MEq/F");
   
   //Official GetReferenceMultiplicity
   fTreeEvent->Branch("fRefMultEta5",&fRefMultEta5,"fRefMultEta5/I");
