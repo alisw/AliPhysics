@@ -581,8 +581,9 @@ void AliITSUSimulationPix::FrompListToDigits()
         AliITSUSDigit* sd = (AliITSUSDigit*)fSensMap->At(i); // ordered in index
         if (fSensMap->IsDisabled(sd)) continue;
         //
+	sig=sd->GetSumSignal()
         if ( fResponseParam->GetParameter(kDigitalSim) < 1.0 &&
-            (sig=sd->GetSumSignal())<=fSimuParam->GetPixThreshold(modId)) continue;   //Threshold only applies in analogue simulation
+	     sig<=fSimuParam->GetPixThreshold(modId)) continue;   //Threshold only applies in analogue simulation
         //
         if (Abs(sig)>2147483647.0) { //RS?
             //PH 2147483647 is the max. integer
