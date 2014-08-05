@@ -713,7 +713,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserExec(Option_t *){
 // 		UpdateEventByEventData();
 				
 		fGoodGammas->Clear(); // delete this cuts good gammas
-		if(fNeutralPionCandidates->GetEntries()>0) fNeutralPionCandidates->Clear();
+// 		if (fNeutralPionCandidates->GetEntries()>0)cout << "##################################"<<  fNeutralPionCandidates->GetEntries() << endl;
+		if(fNeutralPionCandidates->GetEntries()>0){
+			fNeutralPionCandidates->Clear();
+		}	
 		fGoodVirtualParticles->Clear(); // delete this cuts good gammas
 	}
 
