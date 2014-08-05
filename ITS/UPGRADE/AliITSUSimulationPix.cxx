@@ -581,7 +581,7 @@ void AliITSUSimulationPix::FrompListToDigits()
         AliITSUSDigit* sd = (AliITSUSDigit*)fSensMap->At(i); // ordered in index
         if (fSensMap->IsDisabled(sd)) continue;
         //
-	sig=sd->GetSumSignal()
+	sig=sd->GetSumSignal();
         if ( fResponseParam->GetParameter(kDigitalSim) < 1.0 &&
 	     sig<=fSimuParam->GetPixThreshold(modId)) continue;   //Threshold only applies in analogue simulation
         //
@@ -860,21 +860,21 @@ void AliITSUSimulationPix::Hits2SDigitsFastDigital()
     //
     Int_t h,ix,iz;
     Int_t idtrack;
-    Float_t x,y,z; // keep coordinates float (required by AliSegmentation)
     Double_t tof,x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0;
-    Double_t st,el,de=0.0;
+    Double_t el,de=0.0;
     
     //
     for (h=0;h<nhits;h++) {
         //
         if (!fChip->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,tof,idtrack)) continue;
         //
-        st = Sqrt(x1*x1+y1*y1+z1*z1);
+	//double st = Sqrt(x1*x1+y1*y1+z1*z1);
         
         //___ place hit to the middle of the path segment - CHANGE LATER !
-        x   = (x0+x1)/2.0;
-        y   = (y0+y1)/2.0;
-        z   = (z0+z1)/2.0;
+	// keep coordinates float (required by AliSegmentation)
+        float x   = (x0+x1)/2.0;
+        //float y   = (y0+y1)/2.0;
+        float z   = (z0+z1)/2.0;
         //
         if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
         //
