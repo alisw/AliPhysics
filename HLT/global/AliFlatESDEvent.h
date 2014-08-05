@@ -129,7 +129,16 @@ void Reinitialize();
 // special constructor, to be called by placement new,
 // when accessing information after reinterpret_cast
 // so that vtable is generated, but values are not overwritten
-	AliFlatESDEvent(AliFlatESDSpecialConstructorFlag){}
+	AliFlatESDEvent(AliFlatESDSpecialConstructorFlag):
+  fPrimaryVertexMask(this->fPrimaryVertexMask),
+  fNTracks(this->fNTracks),
+  fTracksPointer(this->fTracksPointer),
+  fNV0s(this->fNV0s),
+  fV0Pointer(this->fV0Pointer),
+  fSize(this->fSize)
+{
+}
+
 
   void FillPrimaryVertex(const AliESDVertex *v, Byte_t flag);
   Int_t FillNextTrack( const AliESDtrack* esdTrack,  AliESDfriendTrack* friendTrack);

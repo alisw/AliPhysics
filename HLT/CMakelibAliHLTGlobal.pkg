@@ -30,6 +30,7 @@
 set ( CLASS_HDRS
     AliHLTGlobalFlatEsdTestComponent.h
     AliHLTGlobalFlatEsdConverterComponent.h
+    AliHLTGlobalEsdToFlatConverterComponent.h
     AliHLTGlobalEsdConverterComponent.h
     AliHLTGlobalTrackMergerComponent.h
     AliHLTGlobalTrackMerger.h

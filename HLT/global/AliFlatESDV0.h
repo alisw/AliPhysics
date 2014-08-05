@@ -24,7 +24,8 @@ class AliFlatESDV0: public AliVVv0
   Int_t fNegTrackID;
   Int_t fPosTrackID;
  private:
- 	AliFlatESDV0(AliFlatESDSpecialConstructorFlag){}
+AliFlatESDV0(AliFlatESDSpecialConstructorFlag)
+ : fNegTrackID(this->fNegTrackID), fPosTrackID(this->fPosTrackID){}
 };
 //typedef struct AliFlatESDV0 AliFlatESDV0;
 

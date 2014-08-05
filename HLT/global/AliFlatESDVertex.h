@@ -100,7 +100,8 @@ class AliFlatESDVertex: public AliVVvertex
 
  private:
   
-	AliFlatESDVertex(AliFlatESDSpecialConstructorFlag){}
+	AliFlatESDVertex(AliFlatESDSpecialConstructorFlag)
+ 	:fNContributors(this->fNContributors), fChi2(this->fChi2){}
 };
 
 #endif

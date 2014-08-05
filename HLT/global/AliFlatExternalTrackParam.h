@@ -17,7 +17,10 @@
 class AliFlatExternalTrackParam: public AliVVexternalTrackParam
 {
  public:
-  AliFlatExternalTrackParam() {}
+  AliFlatExternalTrackParam()	
+	: fAlpha(0.), fX(0.), fY(0.), fZ(0.), fSnp(0.), fTgl(0.), fSigned1Pt(0.) {
+    for( int i=0; i<15; i++) fC[i] = 0;
+	}
   virtual ~AliFlatExternalTrackParam() {}
   Float_t fAlpha;     // azimuthal angle of reference frame
   Float_t fX;         // x: radial distance
@@ -52,7 +55,8 @@ class AliFlatExternalTrackParam: public AliVVexternalTrackParam
   Float_t  GetCovEntry(Int_t idx) const {return (idx >= 0 && idx < 15) ? fC[idx] : 0.;}
   
  private:
- 	AliFlatExternalTrackParam(AliFlatESDSpecialConstructorFlag){}
+ 	AliFlatExternalTrackParam(AliFlatESDSpecialConstructorFlag)
+	: fAlpha(this->fAlpha), fX(this->fX), fY(this->fY), fZ(this->fZ), fSnp(this->fSnp), fTgl(this->fTgl), fSigned1Pt(this->fSigned1Pt) {}
 };
 
 //typedef struct AliFlatExternalTrackParam AliFlatExternalTrackParam;

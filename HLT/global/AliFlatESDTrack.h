@@ -127,7 +127,14 @@ class AliFlatESDTrack: public AliVVtrack {
  private:
   AliFlatESDTrack(const AliFlatESDTrack&);
   AliFlatESDTrack& operator=(const AliFlatESDTrack&);	
-  AliFlatESDTrack(AliFlatESDSpecialConstructorFlag){}
+  AliFlatESDTrack(AliFlatESDSpecialConstructorFlag):
+  // Default constructor
+  fTrackParamMask(this->fTrackParamMask),
+  fNTPCClusters(this->fNTPCClusters),
+  fNITSClusters(this->fNITSClusters),
+  fSize(this->fSize) {
+
+}
 
   Int_t FillExternalTrackParam(const AliExternalTrackParam* param, UShort_t flag);
 
