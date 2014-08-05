@@ -894,23 +894,25 @@ Float_t AliCalorimeterUtils::GetMCECellClusFracCorrection(Float_t eCell, Float_t
   return correction;
 }
 
-
 //_____________________________________________________________________________________________________
 Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEvent * inputEvent) const
 {
 	//Get the EMCAL/PHOS module number that corresponds to this particle
 	
 	Int_t absId = -1;
-	if(particle->GetDetector()=="EMCAL"){
+	if(particle->GetDetector()=="EMCAL")
+  {
 		fEMCALGeo->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
-		if(fDebug > 2) 
+    
+		if(fDebug > 2)
 		  printf("AliCalorimeterUtils::GetModuleNumber(PWG4AOD) - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
              particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
+    
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
 	else if(particle->GetDetector()=="PHOS")
   {
-    // In case we use the MC reader, the input are TParticles, 
+    // In case we use the MC reader, the input are TParticles,
     // in this case use the corresponing method in PHOS Geometry to get the particle.
     if(strcmp(inputEvent->ClassName(), "AliMCEvent") == 0 )
     {
@@ -918,23 +920,28 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
       Double_t z = 0., x=0.;
       TParticle* primary = 0x0;
       AliStack * stack = ((AliMCEvent*)inputEvent)->Stack();
-      if(stack) {
+      if(stack)
+      {
         primary = stack->Particle(particle->GetCaloLabel(0));
       }
-      else {
+      else
+      {
         Fatal("GetModuleNumber(PWG4AOD)", "Stack not available, stop!");
       }
       
-      if(primary){
+      if(primary)
+      {
         fPHOSGeo->ImpactOnEmc(primary,mod,z,x) ;
       }
-      else{
+      else
+      {
         Fatal("GetModuleNumber(PWG4AOD)", "Primary not available, stop!");
       }
       return mod;
     }
     // Input are ESDs or AODs, get the PHOS module number like this.
-    else{
+    else
+    {
       //FIXME
       //AliVCluster *cluster = inputEvent->GetCaloCluster(particle->GetCaloLabel(0));
       //return GetModuleNumber(cluster);
@@ -950,46 +957,35 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
 Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 {
 	//Get the EMCAL/PHOS module number that corresponds to this cluster
-	TLorentzVector lv;
-	Double_t v[]={0.,0.,0.}; //not necessary to pass the real vertex.
+  
   if(!cluster)
   {
     if(fDebug > 1) printf("AliCalorimeterUtils::GetModuleNumber() - NUL Cluster, please check!!!");
+    
     return -1;
   }
   
-	cluster->GetMomentum(lv,v);
-	Float_t phi = lv.Phi();
-	if(phi < 0) phi+=TMath::TwoPi();	
-	Int_t absId = -1;
-	if(cluster->IsEMCAL()){
-		fEMCALGeo->GetAbsCellIdFromEtaPhi(lv.Eta(),phi, absId);
-		if(fDebug > 2) 
-		  printf("AliCalorimeterUtils::GetModuleNumber() - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
-             lv.Eta(), phi*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
+  if ( cluster->GetNCells() <= 0 ) return -1;
+  
+	Int_t absId = cluster->GetCellAbsId(0);
+  
+  if ( absId < 0 ) return -1;
+  
+	if( cluster->IsEMCAL() )
+  {
+		if(fDebug > 2) printf("AliCalorimeterUtils::GetModuleNumber() - EMCAL absid %d, SuperModule %d\n",absId, fEMCALGeo->GetSuperModuleNumber(absId));
+    
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
-	else if(cluster->IsPHOS()) 
+	else if ( cluster->IsPHOS() )
   {
 		Int_t    relId[4];
-		if ( cluster->GetNCells() > 0) 
-    {
-			absId = cluster->GetCellAbsId(0);
-			if(fDebug > 2) 
-				printf("AliCalorimeterUtils::GetModuleNumber() - PHOS: cluster eta %f, phi %f, e %f, absId %d\n",
-               lv.Eta(), phi*TMath::RadToDeg(), lv.E(), absId);
-		}
-		else return -1;
-		
-		if ( absId >= 0) 
-    {
-			fPHOSGeo->AbsToRelNumbering(absId,relId);
-			if(fDebug > 2) 
-			  printf("AliCalorimeterUtils::GetModuleNumber() - PHOS: Module %d\n",relId[0]-1);
-			return relId[0]-1;
-		}
-		else return -1;
-	}//PHOS
+    fPHOSGeo->AbsToRelNumbering(absId,relId);
+    
+    if(fDebug > 2) printf("AliCalorimeterUtils::GetModuleNumber() - PHOS absid %d Module %d\n",absId, relId[0]-1);
+    
+    return relId[0]-1;
+  }//PHOS
 	
 	return -1;
 }
@@ -999,62 +995,64 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(Int_t absId, TString calo,
                                                       Int_t & icol, Int_t & irow, Int_t & iRCU) const
 {
 	//Get the EMCAL/PHOS module, columns, row and RCU number that corresponds to this absId
+  
 	Int_t imod = -1;
-	if ( absId >= 0) 
+  
+	if ( absId < 0) return -1 ;
+  
+  if ( calo == "EMCAL" )
   {
-		if(calo=="EMCAL")
+    Int_t iTower = -1, iIphi = -1, iIeta = -1;
+    fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta);
+    fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
+    
+    if(imod < 0 || irow < 0 || icol < 0 )
     {
-			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
-			fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
-			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
-      if(imod < 0 || irow < 0 || icol < 0 ) 
-      {
-        Fatal("GetModuleNumberCellIndexes()","Negative value for super module: %d, or cell icol: %d, or cell irow: %d, check EMCAL geometry name\n",imod,icol,irow);
-      }
-      
-			//RCU0
-      if(imod < 10 )
-      {
-        if      (0<=irow&&irow<8)                       iRCU=0; // first cable row
-        else if (8<=irow&&irow<16 &&  0<=icol&&icol<24) iRCU=0; // first half; 
-        //second cable row
-        //RCU1
-        else if (8<=irow&&irow<16 && 24<=icol&&icol<48) iRCU=1; // second half; 
-        //second cable row
-        else if (16<=irow&&irow<24)                     iRCU=1; // third cable row
-        
-        if (imod%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
-      }
-      else 
-      {
-        // Last 2 SM have one single SRU, just assign RCU 0
-        iRCU = 0 ;
-      }
-
-			if (iRCU<0) 
-      {
-				Fatal("GetModuleNumberCellIndexes()","Wrong EMCAL RCU number = %d\n", iRCU);
-			}			
-			
-			return imod ;
-      
-		}//EMCAL
-		else //PHOS
+      Fatal("GetModuleNumberCellIndexes()","Negative value for super module: %d, or cell icol: %d, or cell irow: %d, check EMCAL geometry name\n",imod,icol,irow);
+    }
+    
+    //RCU0
+    if(imod < 10 )
     {
-			Int_t    relId[4];
-			fPHOSGeo->AbsToRelNumbering(absId,relId);
-			irow = relId[2];
-			icol = relId[3];
-			imod = relId[0]-1;
-			iRCU= (Int_t)(relId[2]-1)/16 ;
-			//Int_t iBranch= (Int_t)(relid[3]-1)/28 ; //0 to 1
-			if (iRCU >= 4) 
-      {
-				Fatal("GetModuleNumberCellIndexes()","Wrong PHOS RCU number = %d\n", iRCU);
-			}			
-			return imod;
-		}//PHOS	
-	}
+      if      (0<=irow&&irow<8)                       iRCU=0; // first cable row
+      else if (8<=irow&&irow<16 &&  0<=icol&&icol<24) iRCU=0; // first half;
+      //second cable row
+      //RCU1
+      else if (8<=irow&&irow<16 && 24<=icol&&icol<48) iRCU=1; // second half;
+      //second cable row
+      else if (16<=irow&&irow<24)                     iRCU=1; // third cable row
+      
+      if (imod%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
+    }
+    else
+    {
+      // Last 2 SM have one single SRU, just assign RCU 0
+      iRCU = 0 ;
+    }
+    
+    if (iRCU<0)
+    {
+      Fatal("GetModuleNumberCellIndexes()","Wrong EMCAL RCU number = %d\n", iRCU);
+    }
+    
+    return imod ;
+    
+  }//EMCAL
+  else //PHOS
+  {
+    Int_t    relId[4];
+    fPHOSGeo->AbsToRelNumbering(absId,relId);
+    irow = relId[2];
+    icol = relId[3];
+    imod = relId[0]-1;
+    iRCU= (Int_t)(relId[2]-1)/16 ;
+    //Int_t iBranch= (Int_t)(relid[3]-1)/28 ; //0 to 1
+    if (iRCU >= 4)
+    {
+      Fatal("GetModuleNumberCellIndexes()","Wrong PHOS RCU number = %d\n", iRCU);
+    }
+    return imod;
+  }//PHOS
 	
 	return -1;
 }
