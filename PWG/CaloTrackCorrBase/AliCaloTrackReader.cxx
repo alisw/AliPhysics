@@ -806,7 +806,7 @@ void AliCaloTrackReader::InitParameters()
   
   //Centrality
   fCentralityClass  = "V0M";
-  fCentralityOpt    = 10;
+  fCentralityOpt    = 100;
   fCentralityBin[0] = fCentralityBin[1]=-1;
   
   fEventPlaneMethod = "V0";
