@@ -6,27 +6,33 @@
  * Primary Authors : Sergey Gorbunov, Jochen Thaeder, Chiara Zampolli     */
 
 /**
- * >> Flat structure representing a ESD vertex <<
+ * >> Flat structure representing a ESD v0 vertex <<
  */
 
 #include "Rtypes.h"
-#include "AliVVv0.h"
-#include "AliFlatESDMisc.h"
 
-class AliFlatESDV0: public AliVVv0
+class AliFlatESDV0
 {
  public:
-  AliFlatESDV0();
-  virtual ~AliFlatESDV0() {}
-  void Reinitialize(){
-  	new (this) AliFlatESDV0(AliFlatESDReinitialize);
-  }
+
+  AliFlatESDV0(): fNegTrackID(-1), fPosTrackID(-1) {}
+  ~AliFlatESDV0(){}
+
+  static size_t GetSize(){ return sizeof(AliFlatESDV0); }
+
+  void SetNegTrackID( Int_t id ){ fNegTrackID = id; }
+  void SetPosTrackID( Int_t id ){ fPosTrackID = id; }
+
+  Int_t GetNegTrackID() const { return fNegTrackID; }
+  Int_t GetPosTrackID() const { return fPosTrackID; }
+
+ private:
+
+  AliFlatESDV0(const AliFlatESDV0&);
+  AliFlatESDV0& operator=(const AliFlatESDV0&);
+
   Int_t fNegTrackID;
   Int_t fPosTrackID;
- private:
-AliFlatESDV0(AliFlatESDSpecialConstructorFlag)
- : fNegTrackID(this->fNegTrackID), fPosTrackID(this->fPosTrackID){}
 };
-//typedef struct AliFlatESDV0 AliFlatESDV0;
 
 #endif

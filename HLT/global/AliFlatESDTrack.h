@@ -20,20 +20,18 @@ Op - Track parameters estimated at the point of maximal radial coordinate reache
 
 #include "AliFlatTPCCluster.h"
 #include "AliFlatExternalTrackParam.h"
-#include "AliVVtrack.h"
-#include "AliFlatESDMisc.h"
 
 class AliESDtrack;
 class AliESDfriendTrack;
 class AliExternalTrackParam;
 
-class AliFlatESDTrack: public AliVVtrack {
+class AliFlatESDTrack {
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
-  AliFlatESDTrack();
+  AliFlatESDTrack();   
   AliFlatESDTrack(const AliESDtrack* track, AliESDfriendTrack* friendTrack); 
-  virtual ~AliFlatESDTrack();  
+  ~AliFlatESDTrack();  
 
   // --------------------------------------------------------------------------------
   // -- Fill / Set methods
@@ -46,7 +44,7 @@ class AliFlatESDTrack: public AliVVtrack {
 			       const AliExternalTrackParam* outerITSParam
 			     );
 
-  AliFlatTPCCluster *GetNextTPCClusterPointer(){ return GetTPCCluster(fNTPCClusters); }
+  AliFlatTPCCluster *GetNextTPCClusterPointer(){ return &GetTPCCluster(fNTPCClusters); }
 
   void StoreLastTPCCluster(){  
      ++fNTPCClusters;
@@ -92,49 +90,28 @@ class AliFlatESDTrack: public AliVVtrack {
   AliFlatTPCCluster *GetTPCClusters() {
     return reinterpret_cast< AliFlatTPCCluster*>(fContent + sizeof(AliFlatExternalTrackParam)*CountBits(fTrackParamMask));
   } 
-
-
   
-  AliFlatTPCCluster *GetTPCCluster(Int_t ind) {
-    return  reinterpret_cast< AliFlatTPCCluster*>( GetTPCClusters() ) + ind ;
-  }
+  AliFlatTPCCluster &GetTPCCluster(Int_t ind) {
+    return GetTPCClusters()[ind];
+  } 
 
   Int_t GetNumberOfITSClusters() {
     return fNITSClusters;
   } 
   
-  AliFlatTPCCluster *GetITSClusters() {
-    return reinterpret_cast< AliFlatTPCCluster*>(fContent + sizeof(AliFlatExternalTrackParam)*CountBits(fTrackParamMask));
-  } 
-
   
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
   
-  AliFlatESDTrack *GetNextTrack() 
-{	
-	
-	return reinterpret_cast<AliFlatESDTrack*> (fContent + fSize);
-}
+  AliFlatESDTrack *GetNextTrack() {return reinterpret_cast<AliFlatESDTrack*>(fContent+fSize);}
   
   // --------------------------------------------------------------------------------
   // -- Size methods
   static ULong64_t EstimateSize(Bool_t useESDFriends = kTRUE, Int_t nTPCClusters = 160 );
          ULong64_t GetSize()  {return fContent -  reinterpret_cast<Byte_t*>(this) + fSize;}
-         
-         
-  void Reinitialize();
-
+    
  private:
   AliFlatESDTrack(const AliFlatESDTrack&);
-  AliFlatESDTrack& operator=(const AliFlatESDTrack&);	
-  AliFlatESDTrack(AliFlatESDSpecialConstructorFlag):
-  // Default constructor
-  fTrackParamMask(this->fTrackParamMask),
-  fNTPCClusters(this->fNTPCClusters),
-  fNITSClusters(this->fNITSClusters),
-  fSize(this->fSize) {
-
-}
+  AliFlatESDTrack& operator=(const AliFlatESDTrack&);
 
   Int_t FillExternalTrackParam(const AliExternalTrackParam* param, UShort_t flag);
 
@@ -156,5 +133,4 @@ class AliFlatESDTrack: public AliVVtrack {
   Byte_t fContent[1];                  // Variale size object, which contains all data
 
 };
-
 #endif

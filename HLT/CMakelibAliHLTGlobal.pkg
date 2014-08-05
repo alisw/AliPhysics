@@ -49,6 +49,7 @@ set ( CLASS_HDRS
     AliHLTV0FinderComponent.h
     AliFlatESDEvent.h
     AliFlatESDVertex.h
+    AliFlatESDTrigger.h
     AliFlatESDTrack.h
     AliFlatESDV0.h
     AliFlatESDFriend.h
@@ -63,6 +64,7 @@ set ( CLASS_HDRS
     physics/AliHLTMultiplicityCorrelations.h
     physics/AliHLTMultiplicityCorrelationsComponent.h
     physics/AliHLTAnaManagerComponent.h
+    physics/AliHLTFlatAnaManagerComponent.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )

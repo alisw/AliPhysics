@@ -2950,7 +2950,7 @@ void AliAnalysisManager::Changed()
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::InitInputData(AliVEvent* esdEvent, AliESDfriend* esdFriend)
+void AliAnalysisManager::InitInputData(AliVVevent* esdEvent, AliVVfriendEvent* esdFriend)
 {
 
 // Method to propagte to all the connected tasks the HLT event.

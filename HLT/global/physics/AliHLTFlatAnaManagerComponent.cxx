@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTAnaManagerComponent.cxx $
+// $Id: AliHLTFlatAnaManagerComponent.cxx $
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -15,7 +15,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file    AliHLTAnaManagerComponent.cxx
+/** @file    AliHLTFlatAnaManagerComponent.cxx
     @author  David Rohr, Jens Wiechula, C. Zampolli
     @brief   Component for Testing Analysis Manager inside HLT component
 */
@@ -27,10 +27,11 @@
 #include "TH1F.h"
 #include "TList.h"
 #include "AliESDtrackCuts.h"
-#include "AliESDEvent.h"
+#include "AliFlatESDEvent.h"
+#include "AliESDfriend.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTDataTypes.h"
-#include "AliHLTAnaManagerComponent.h"
+#include "AliHLTFlatAnaManagerComponent.h"
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliAnalysisManager.h"
 #include "AliHLTTestInputHandler.h"
@@ -41,7 +42,7 @@
 using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTAnaManagerComponent)
+ClassImp(AliHLTFlatAnaManagerComponent)
 
 /*
  * ---------------------------------------------------------------------------------
@@ -50,7 +51,7 @@ ClassImp(AliHLTAnaManagerComponent)
  */
 
 // #################################################################################
-AliHLTAnaManagerComponent::AliHLTAnaManagerComponent() :
+AliHLTFlatAnaManagerComponent::AliHLTFlatAnaManagerComponent() :
   AliHLTProcessor(),
   fUID(0),
   fAnalysisManager(NULL),
@@ -68,7 +69,7 @@ AliHLTAnaManagerComponent::AliHLTAnaManagerComponent() :
 }
 
 // #################################################################################
-AliHLTAnaManagerComponent::~AliHLTAnaManagerComponent() {
+AliHLTFlatAnaManagerComponent::~AliHLTFlatAnaManagerComponent() {
   // see header file for class documentation
 }
 
@@ -80,35 +81,33 @@ AliHLTAnaManagerComponent::~AliHLTAnaManagerComponent() {
  */
 
 // #################################################################################
-const Char_t* AliHLTAnaManagerComponent::GetComponentID() { 
+const Char_t* AliHLTFlatAnaManagerComponent::GetComponentID() { 
   // see header file for class documentation
-  return "AnaManagerComponent";
+  return "FlatAnaManagerComponent";
 }
 
 // #################################################################################
-void AliHLTAnaManagerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
+void AliHLTFlatAnaManagerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
   // see header file for class documentation
-  list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginAny);
-  list.push_back(kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD);
-  list.push_back(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO);
-  list.push_back(kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginAny);
+  list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginAny);
+  //  list.push_back(kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginAny);
 }
 
 // #################################################################################
-AliHLTComponentDataType AliHLTAnaManagerComponent::GetOutputDataType() {
+AliHLTComponentDataType AliHLTFlatAnaManagerComponent::GetOutputDataType() {
   // see header file for class documentation
   return kAliHLTDataTypeTObject|kAliHLTDataOriginHLT;
 }
 
 // #################################################################################
-void AliHLTAnaManagerComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
+void AliHLTFlatAnaManagerComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
   constBase = 100000;
   inputMultiplier = 0.5;
 }
 
 // #################################################################################
-void AliHLTAnaManagerComponent::GetOCDBObjectDescription( TMap* const targetMap) {
+void AliHLTFlatAnaManagerComponent::GetOCDBObjectDescription( TMap* const targetMap) {
   // see header file for class documentation
 
   if (!targetMap) return;
@@ -121,9 +120,9 @@ void AliHLTAnaManagerComponent::GetOCDBObjectDescription( TMap* const targetMap)
 }
 
 // #################################################################################
-AliHLTComponent* AliHLTAnaManagerComponent::Spawn() {
+AliHLTComponent* AliHLTFlatAnaManagerComponent::Spawn() {
   // see header file for class documentation
-  return new AliHLTAnaManagerComponent;
+  return new AliHLTFlatAnaManagerComponent;
 }
 
 /*
@@ -135,20 +134,20 @@ AliHLTComponent* AliHLTAnaManagerComponent::Spawn() {
  */
 
 // #################################################################################
-Int_t AliHLTAnaManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
+Int_t AliHLTFlatAnaManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
   // see header file for class documentation
-  printf("AliHLTAnaManagerComponent::DoInit\n");
+  printf("AliHLTFlatAnaManagerComponent::DoInit\n");
 
   Int_t iResult=0;
 
-  Printf("----> AliHLTAnaManagerComponent::DoInit"); 
+  Printf("----> AliHLTFlatAnaManagerComponent::DoInit"); 
   fAnalysisManager = new AliAnalysisManager;
   fInputHandler    = new AliHLTTestInputHandler;
   fAnalysisManager->SetInputEventHandler(fInputHandler);
   fAnalysisManager->SetExternalLoop(kTRUE); 
 
   AliAnalysisTaskPt *task = new AliAnalysisTaskPt("TaskPt");
-  task->SetUseFriends(kTRUE);
+  task->SetUseFriends(kFALSE);
   fAnalysisManager->AddTask(task);
   AliAnalysisDataContainer *cinput  = fAnalysisManager->GetCommonInputContainer();
   Printf("Defining output file");
@@ -177,7 +176,7 @@ Int_t AliHLTAnaManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/
 
 
 // #################################################################################
-Int_t AliHLTAnaManagerComponent::DoDeinit() {
+Int_t AliHLTFlatAnaManagerComponent::DoDeinit() {
   // see header file for class documentation
 
   fUID = 0;
@@ -190,36 +189,55 @@ Int_t AliHLTAnaManagerComponent::DoDeinit() {
 }
 
 // #################################################################################
-Int_t AliHLTAnaManagerComponent::DoEvent(const AliHLTComponentEventData& evtData,
+Int_t AliHLTFlatAnaManagerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 					AliHLTComponentTriggerData& /*trigData*/) {
   // see header file for class documentation
 
-  printf("AliHLTAnaManagerComponent::DoEvent\n");
+  printf("AliHLTFlatAnaManagerComponent::DoEvent\n");
   Int_t iResult=0;
 
   // -- Only use data event
-  if (!IsDataEvent()) 
+  if (!IsDataEvent()) {
+    Printf("-------> no data event");
     return 0;
+  }
   
   if( fUID == 0 ){
     TTimeStamp t;
     fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
   }
   
+  Bool_t isESDfound = kFALSE;
   // -- Get ESD object
   // -------------------
-  AliESDEvent *esdEvent = NULL;
+  AliFlatESDEvent *esdEvent = NULL;
   AliESDfriend *esdFriend = NULL;
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
-    esdEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
+  Int_t dataBlockIndex = 0;
+  for ( const AliHLTComponentBlockData *iter = GetFirstInputBlock(kAliHLTDataTypeFlatESD); iter != NULL; iter = GetNextInputBlock() ) {
+    if(iter->fDataType != kAliHLTDataTypeFlatESD) {
+      Printf("Data type of block is not flatESD");
+      continue;
+    }
+    dataBlockIndex++;
+    Printf("----> dataBlockIndex = %d", dataBlockIndex);
+    //iter->Print();
+    esdEvent = (AliFlatESDEvent*)(iter->fPtr);
     if( !esdEvent ){ 
       HLTWarning("Wrong ESDEvent object received");
+      Printf("Current object is not ESD event");
       iResult = -1;
       continue;
     }
-    esdEvent->GetStdContent();
+    else isESDfound = kTRUE;
+    //    esdEvent->GetStdContent();
+  }
+  if (!isESDfound) {
+    Printf("-------> no ESD found!!");
+    return 0;
   }
   printf("----> ESDEvent %p has %d tracks: \n", esdEvent, esdEvent->GetNumberOfTracks());
+
+  /* // no friends for teh time being... 
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
     esdFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
     if( !esdFriend ){ 
@@ -229,7 +247,7 @@ Int_t AliHLTAnaManagerComponent::DoEvent(const AliHLTComponentEventData& evtData
     }
   }
   printf("----> ESDFriend %p has %d tracks: \n", esdFriend, esdFriend->GetNumberOfTracks());
-
+  */
   fAnalysisManager->InitInputData(esdEvent, esdFriend);
   //  fInputHandler->BeginEvent(0);
   fAnalysisManager->ExecAnalysis();
@@ -244,7 +262,7 @@ Int_t AliHLTAnaManagerComponent::DoEvent(const AliHLTComponentEventData& evtData
 }
 
 // #################################################################################
-Int_t AliHLTAnaManagerComponent::Reconfigure(const Char_t* cdbEntry, const Char_t* chainId) {
+Int_t AliHLTFlatAnaManagerComponent::Reconfigure(const Char_t* cdbEntry, const Char_t* chainId) {
   // see header file for class documentation
 
   Int_t iResult=0;
@@ -256,14 +274,17 @@ Int_t AliHLTAnaManagerComponent::Reconfigure(const Char_t* cdbEntry, const Char_
     cdbPath+=GetComponentID();
   }
 
-  AliInfoClass(Form("reconfigure '%s' from entry %s%s", chainId, cdbPath.Data(), cdbEntry?"":" (default)"));
+  TString strcdb = "";
+  if (!cdbEntry) strcdb = "default";
+  Printf("reconfigure '%s' from entry %s%s", chainId, cdbPath.Data(), strcdb.Data());
+  //AliInfoClass(Form("reconfigure '%s' from entry %s%s", chainId, cdbPath.Data(), cdbEntry?"":" (default)"));
   iResult=ConfigureFromCDBTObjString(cdbPath);
 
   return iResult;
 }
 
 // #################################################################################
-Int_t AliHLTAnaManagerComponent::ReadPreprocessorValues(const Char_t* /*modules*/) {
+Int_t AliHLTFlatAnaManagerComponent::ReadPreprocessorValues(const Char_t* /*modules*/) {
   // see header file for class documentation
   ALIHLTERRORGUARD(5, "ReadPreProcessorValues not implemented for this component");
   return 0;

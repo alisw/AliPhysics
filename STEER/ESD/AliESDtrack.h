@@ -30,6 +30,7 @@
 #include <TBits.h>
 #include "AliExternalTrackParam.h"
 #include "AliVTrack.h"
+#include "AliVVtrack.h"
 #include "AliESDTOFCluster.h"
 #include "AliPID.h"
 #include "AliESDfriendTrack.h"
@@ -44,7 +45,7 @@ class AliDetectorPID;
 class TTreeSRedirector;
 class AliESDEvent;
 
-class AliESDtrack : public AliExternalTrackParam {
+class AliESDtrack : public AliExternalTrackParam, public AliVVtrack {
 public:
   //
   enum {kNITSchi2Std=3};
@@ -97,7 +98,7 @@ public:
   Double_t M() const;
   Double_t E() const;
   Double_t Y() const;
-
+ 
   Bool_t GetConstrainedPxPyPz(Double_t *p) const {
     if (!fCp) return kFALSE;
     return fCp->GetPxPyPz(p);
@@ -450,6 +451,10 @@ public:
   static bool OnlineMode() {return fgkOnlineMode;}
   static Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 );
   Double_t GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 ) const;
+
+  // extra AliVVtrack interface
+  Double_t GetPt() const { return Pt(); }
+
 protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex

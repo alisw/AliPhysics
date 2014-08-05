@@ -79,10 +79,7 @@
 #include "AliTriggerCluster.h"
 #include "AliEventplane.h"
 
-
 ClassImp(AliESDEvent)
-
-
 
 // here we define the names, some classes are no TNamed, therefore the classnames 
 // are the Names
@@ -128,6 +125,7 @@ ClassImp(AliESDEvent)
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent():
   AliVEvent(),
+  AliVVevent(),
   fESDObjects(new TList()),
   fESDRun(0),
   fHeader(0),
@@ -181,6 +179,7 @@ AliESDEvent::AliESDEvent():
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AliVEvent(esd),
+  AliVVevent(),
   fESDObjects(new TList()),
   fESDRun(new AliESDRun(*esd.fESDRun)),
   fHeader(new AliESDHeader(*esd.fHeader)),
@@ -2431,3 +2430,4 @@ void AliESDEvent::ConnectTracks() {
   fTracksConnected = kTRUE;
   //
 }
+

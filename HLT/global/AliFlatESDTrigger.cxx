@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,6 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliVVvertex.h"
+/**
+ * >> Flat structure representing an ESD Trigger Classes <<
+ *
+ * To be used by AliFlatESD class 
+ *
+ * Primary Authors : Sergey Gorbunov, Jochen Thaeder, Chiara Zampolli
+ *
+ **************************************************************************/
 
+#include "AliFlatESDTrigger.h"
 
+// all the methods are inlined at the moment

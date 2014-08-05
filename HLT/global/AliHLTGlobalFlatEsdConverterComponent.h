@@ -61,11 +61,11 @@ class AliHLTGlobalFlatEsdConverterComponent : public AliHLTProcessor
 	       AliHLTComponentTriggerData& trigData,
 	       AliHLTUInt8_t* outputPtr, 
 	       AliHLTUInt32_t& size,
-	       AliHLTComponentBlockDataList& outputBlocks);
+	       AliHLTComponentBlockDataList& outputBlocks );
 
   using AliHLTProcessor::DoEvent;
 
-  
+
  private:
   /** copy constructor prohibited */
   AliHLTGlobalFlatEsdConverterComponent(const AliHLTGlobalFlatEsdConverterComponent&);
@@ -96,7 +96,7 @@ protected:
   /// solenoid b field
   Double_t fSolenoidBz; //! transient
   AliHLTComponentBenchmark fBenchmark; // benchmark
-  
+
   ClassDef(AliHLTGlobalFlatEsdConverterComponent, 0)
 };
 #endif

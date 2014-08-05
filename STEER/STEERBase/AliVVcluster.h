@@ -27,5 +27,4 @@ class AliVVcluster
   virtual UShort_t GetCharge()  const      {return 0;}
   virtual UShort_t GetQMax()    const      {return 0;}
 };
-
 #endif

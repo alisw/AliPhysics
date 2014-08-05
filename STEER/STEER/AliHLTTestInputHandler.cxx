@@ -20,7 +20,7 @@
 
 #include "AliHLTTestInputHandler.h"
 #include "AliVCuts.h"
-#include "AliVEvent.h"
+#include "AliVVevent.h"
 #include "TObjArray.h"
 #include "AliAnalysisTask.h"
 
@@ -34,7 +34,7 @@ AliHLTTestInputHandler::AliHLTTestInputHandler(const char* name, const char* tit
 }
 
 //______________________________________________________________________________
-Bool_t AliHLTTestInputHandler::Init(TTree* tree,  Option_t* opt)
+Bool_t AliHLTTestInputHandler::Init(TTree* /*tree*/,  Option_t* /*opt*/)
 {
 // Initialisation necessary for each new tree. In reco case this is once.
   Printf("----> AliHLTTestInputHandler::Init"); 
@@ -54,14 +54,14 @@ Bool_t AliHLTTestInputHandler::BeginEvent(Long64_t)
 }     
 
 //______________________________________________________________________________
-Bool_t AliHLTTestInputHandler::InitTaskInputData(AliVEvent* esdEvent, AliESDfriend* friendEvent, TObjArray* arrTasks) {
+Bool_t AliHLTTestInputHandler::InitTaskInputData(AliVVevent* esdEvent, AliVVfriendEvent* friendEvent, TObjArray* arrTasks) {
 
 // Method to propagte to all the connected tasks the HLT event.
 // The method gets the list of tasks from the manager
 
   Printf("----> AliHLTTestInputHandler::InitTaskInpuData: Setting the event...");
-  SetEvent(esdEvent);
-  SetFriendEvent(friendEvent);
+  SetVVEvent(esdEvent);
+  SetVVFriendEvent(friendEvent);
   // set transient pointer to event inside tracks
   fEvent->ConnectTracks();
   Printf("----> AliHLTTestInputHandler::InitTaskInpuData: ...Event set");

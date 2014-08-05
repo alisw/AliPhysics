@@ -49,6 +49,7 @@
                                                    // --- move functionality to AliTPCCorrectionFit
 
 #pragma link C++ class AliTPCcalibSummary;         // Tree creation of calibration parameters
+#pragma link C++ class  AliAnalysisTaskPt+;
 
 #endif
 

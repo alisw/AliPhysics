@@ -14,7 +14,7 @@
 #include <TTree.h>
 
 
-class AliVEvent;
+class AliVVevent;
 class AliVCuts;
 class AliRunTag;
 class AliEventTag;
@@ -58,6 +58,7 @@ class AliInputEventHandler : public AliVEventHandler {
     void SetActiveBranches  (const char* branches) {Changed(); fBranchesOn = branches;}
      // Getters
     virtual AliVEvent   *GetEvent()        const                      {return 0;}
+    virtual AliVVevent  *GetVVEvent()      const                      {return 0;}
     virtual const AliEventTag   *GetEventTag() const                  {return 0;}
     virtual AliRunTag   *GetRunTag()       const                      {return 0;}
     // Get the statistics object (currently TH2). Option can be BIN0.

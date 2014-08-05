@@ -23,6 +23,7 @@
 #include "TObjArray.h"
 #include "TClonesArray.h"
 #include "AliKalmanTrack.h"
+#include "AliVVTPCseed.h"
 
 ClassImp(AliESDfriendTrack)
 
@@ -140,7 +141,7 @@ void AliESDfriendTrack::AddCalibObject(TObject * calibObject){
   fCalibContainer->AddLast(calibObject);
 }
 
-TObject * AliESDfriendTrack::GetCalibObject(Int_t index){
+TObject * AliESDfriendTrack::GetCalibObject(Int_t index) const {
   //
   //
   //
@@ -149,6 +150,17 @@ TObject * AliESDfriendTrack::GetCalibObject(Int_t index){
   return fCalibContainer->At(index);
 }
 
+Int_t AliESDfriendTrack::GetTPCseed( AliTPCseed &seed) const {
+  TObject* calibObject = NULL;
+  AliVVTPCseed* seedP = NULL;
+  for (Int_t idx = 0; (calibObject = GetCalibObject(idx)); ++idx) {
+    if ((seedP = dynamic_cast<AliVVTPCseed*>(calibObject))) {
+      seedP->CopyToTPCseed( seed );
+      return 0;
+    }
+  }
+  return -1;
+}
 
 void AliESDfriendTrack::SetTPCOut(const AliExternalTrackParam &param) {
   // 

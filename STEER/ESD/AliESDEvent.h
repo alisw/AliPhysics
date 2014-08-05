@@ -23,6 +23,7 @@
 
 
 #include "AliVEvent.h"
+#include "AliVVevent.h"
 // some includes for delegated methods
 #include "AliESDCaloTrigger.h"
 #include "AliESDRun.h"
@@ -76,8 +77,7 @@ class AliESDCosmicTrack;
 class TList;
 class TString;
 
-
-class AliESDEvent : public AliVEvent {
+class AliESDEvent : public AliVEvent, public AliVVevent {
 public:
 
 
@@ -527,7 +527,10 @@ public:
   void SetDAQAttributes(UInt_t attributes) {fDAQAttributes = attributes;}
   UInt_t GetDAQDetectorPattern() const {return fDAQDetectorPattern;}
   UInt_t GetDAQAttributes() const {return fDAQAttributes;}
-  
+
+  // interface to AliVVevent
+  AliESDtrack *GetVVTrack(Int_t i) const { return GetTrack(i); }
+
 protected:
   AliESDEvent(const AliESDEvent&);
   static Bool_t ResetWithPlacementNew(TObject *pObject);
@@ -596,7 +599,7 @@ protected:
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
 
-  ClassDef(AliESDEvent,22)  //ESDEvent class 
+  ClassDef(AliESDEvent,23)  //ESDEvent class 
 };
 #endif 
 
