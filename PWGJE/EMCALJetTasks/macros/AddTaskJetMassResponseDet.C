@@ -33,7 +33,7 @@ AliAnalysisTaskJetMassResponseDet* AddTaskJetMassResponseDet(const char * njetsP
   task->SetVzRange(-10.,10.);
 
   task->SetJetContainerPart(0);
-  task->SetJetContainerDet(0);
+  task->SetJetContainerDet(1);
 
   AliJetContainer *jetContPart = task->AddJetContainer(njetsPart,strType,R);
   if(jetContPart) {
