@@ -39,7 +39,6 @@
 #include "AliAODPWG4Particle.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
-#include "AliMixedEvent.h"
 #include "AliAODCaloCluster.h"
 #include "AliOADBContainer.h"
 #include "AliAnalysisManager.h"
@@ -563,8 +562,7 @@ Bool_t AliCalorimeterUtils::IsClusterSharedByTwoSuperModules(const AliEMCALGeome
 
 //_____________________________________________________________________________________
 Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, 
-                                                    AliVCaloCells* cells, 
-                                                    AliVEvent * event, Int_t iev) const 
+                                                    AliVCaloCells* cells) const 
 {
   
 	// Given the list of AbsId of the cluster, get the maximum cell and 
@@ -577,55 +575,14 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster,
   Int_t absIdMax	= -1;
 	Float_t ampMax  = -1;
 	
-  AliMixedEvent * mixEvent = dynamic_cast<AliMixedEvent*> (event);
-  Int_t nMixedEvents = 0 ; 
-  Int_t * cellsCumul = NULL ;
-  Int_t numberOfCells = 0 ;  
-  if (mixEvent){
-    nMixedEvents = mixEvent->GetNumberOfEvents() ; 
-    if (cells->GetType()==AliVCaloCells::kEMCALCell) {
-      cellsCumul =  mixEvent->GetEMCALCellsCumul() ; 
-      numberOfCells = mixEvent->GetNumberOfEMCALCells() ;
-    } 
-    
-    else if (cells->GetType()==AliVCaloCells::kPHOSCell) {
-      cellsCumul =  mixEvent->GetPHOSCellsCumul() ; 
-      numberOfCells = mixEvent->GetNumberOfPHOSCells() ;
-    } 
-    
-    if(cellsCumul){
-      
-      Int_t startCell = cellsCumul[iev] ; 
-      Int_t endCell   = (iev+1 < nMixedEvents)?cellsCumul[iev+1]:numberOfCells;
-      //Find cells with maximum amplitude
-      for(Int_t i = 0; i < cluster->GetNCells() ; i++){
-        Int_t absId = cluster->GetCellAbsId(i) ;
-        for (Int_t j = startCell; j < endCell ;  j++) {
-          Short_t cellNumber;
-          Int_t mclabel; 
-          Double_t amp, time, efrac; 
-          cells->GetCell(j, cellNumber, amp, time,mclabel,efrac) ; 
-          if (absId == cellNumber) {
-            if(amp > ampMax){
-              ampMax   = amp;
-              absIdMax = absId;
-            }        
-          }
-        }
-      }//loop on cluster cells
-    }// cells cumul available
-    else {
-      printf("AliCalorimeterUtils::CheckCellFiducialRegion() - CellsCumul is NULL!!!\n");
-      abort();
-    }
-  } else {//Normal SE Events
-    for(Int_t i = 0; i < cluster->GetNCells() ; i++){
-      Int_t absId = cluster->GetCellAbsId(i) ;
-      Float_t amp	= cells->GetCellAmplitude(absId);
-      if(amp > ampMax){
-        ampMax   = amp;
-        absIdMax = absId;
-      }
+  for(Int_t i = 0; i < cluster->GetNCells() ; i++)
+  {
+    Int_t absId = cluster->GetCellAbsId(i) ;
+    Float_t amp	= cells->GetCellAmplitude(absId);
+    if(amp > ampMax)
+    {
+      ampMax   = amp;
+      absIdMax = absId;
     }
   }
 	
@@ -639,8 +596,8 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster,
 	Bool_t okrow = kFALSE;
 	Bool_t okcol = kFALSE;
   
-	if(cells->GetType()==AliVCaloCells::kEMCALCell){
-    
+	if(cells->GetType()==AliVCaloCells::kEMCALCell)
+  {
 		Int_t iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1, iSM = -1; 
 		fEMCALGeo->GetCellIndex(absIdMax,iSM,iTower,iIphi,iIeta); 
 		fEMCALGeo->GetCellPhiEtaIndexInSModule(iSM,iTower,iIphi, iIeta,iphi,ieta);
@@ -691,7 +648,8 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster,
 			else  printf(" NO: column ok? %d, row ok? %d \n",okcol,okrow);
 		}
 	}//EMCAL
-	else if(cells->GetType()==AliVCaloCells::kPHOSCell){
+	else if ( cells->GetType() == AliVCaloCells::kPHOSCell )
+  {
 		Int_t relId[4];
 		Int_t irow = -1, icol = -1;
 		fPHOSGeo->AbsToRelNumbering(absIdMax,relId);

@@ -169,7 +169,7 @@ class AliCalorimeterUtils : public TObject {
   Int_t         GetModuleNumberCellIndexes(Int_t absId, TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
 	
   //Modules fiducial region
-  Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent * event, Int_t iev=0) const ;
+  Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells) const ;
   void          SetNumberOfCellsFromPHOSBorder(Int_t n)    { fNCellsFromPHOSBorder = n                                ; }
   Int_t         GetNumberOfCellsFromPHOSBorder()     const { return fNCellsFromPHOSBorder                             ; }
   void          SetNumberOfCellsFromEMCALBorder(Int_t n)   { fEMCALRecoUtils->SetNumberOfCellsFromEMCALBorder(n)      ; }
