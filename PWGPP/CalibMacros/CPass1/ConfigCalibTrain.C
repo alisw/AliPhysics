@@ -18,7 +18,11 @@ void ConfigCalibTrain(Int_t run, const char *ocdb="raw://"){
   AliCDBManager::Instance()->SetDefaultStorage(ocdb);
   AliCDBManager::Instance()->SetRun(run); 
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {  
+    Printf("ConfigCalibTrain: using OCDB snapshot");
     AliCDBManager::Instance()->SetSnapshotMode("OCDB.root");
+  }
+  else {
+    Printf("ConfigCalibTrain: NOT using OCDB snapshot");
   }
   // magnetic field
   if ( !TGeoGlobalMagField::Instance()->GetField() ) {

@@ -1787,7 +1787,6 @@ void AliAnalysisTaskJetV2::FillEventPlaneHistograms(Double_t vzero[2][2], Double
     // leading jet vs event plane bias
     if(fLeadingJet) {
         Double_t rho(fLocalRho->GetLocalVal(fLeadingJet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
-        cout << " fInCentralitySelection " << fInCentralitySelection << " rho " << rho << endl;
         Double_t pt = fLeadingJet->Pt() - fLeadingJet->Area()*rho;
         fHistPsiTPCLeadingJet[fInCentralitySelection]->Fill(pt, tpc[0]);
         fHistPsiVZEROALeadingJet[fInCentralitySelection]->Fill(pt, vzero[0][0]);
