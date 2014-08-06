@@ -220,7 +220,6 @@ void AliAnalysisTaskChargedJetsPA::Init()
 
     const int nbPt=40;
     const double ptMax=5;
-    const double kMaxChi2 = 200;
     AddHistogram2D<TH2D>("hCutsITSTPC_NMatch", "Number matches", "", nbPt,0,ptMax,kMaxMatch+1,-0.5,kMaxMatch+0.5, "p_{T}","N matches");
     AddHistogram2D<TH2D>("hCutsITSTPC_BestMatch", "Best match chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
     AddHistogram2D<TH2D>("hCutsITSTPC_BestMatch_cuts", "Best match chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
@@ -399,6 +398,7 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
     return;
   }
 
+  SetCurrentOutputList(2);
 
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
   for (Int_t i=0;i < fESD->GetNumberOfTracks(); i++)
@@ -456,8 +456,6 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
     // Basic kinematic cuts
     if((pT<0.15) || (TMath::Abs(eta)>0.9))
       continue;
-
-    SetCurrentOutputList(2);
 
     Int_t trackType = 0;
 
@@ -766,6 +764,13 @@ void AliAnalysisTaskChargedJetsPA::CreateITSTPCMatchingHistograms()
   TH2D * hdPtRelBg_ITSTPC    = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_dPtRelBg_ITSTPC");
   TH2D * hdInvPtRelBg_ITSTPC = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_dInvPtRelBg_ITSTPC");
 
+  if(!(hNMatch && hBestMatch && hBestMatch_cuts && hAllMatch && hAllMatchGlo && hPtCorr_ITSTPC && hdPtRel_ITSTPC && hdInvPtRel_ITSTPC && hNMatchBg && hBestMatchBg && hBestMatchBg_cuts && hAllMatchBg && hAllMatchGloBg && hdPtRelBg_ITSTPC && hdInvPtRelBg_ITSTPC))
+  {
+    cout << " === ERROR: At least one of the ITSTPC histograms not found! ===\n";
+    cout << Form(" === Details: %p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p", hNMatch, hBestMatch, hBestMatch_cuts, hAllMatch, hAllMatchGlo, hPtCorr_ITSTPC, hdPtRel_ITSTPC, hdInvPtRel_ITSTPC, hNMatchBg, hBestMatchBg, hBestMatchBg_cuts, hAllMatchBg, hAllMatchGloBg, hdPtRelBg_ITSTPC, hdInvPtRelBg_ITSTPC) << endl;
+    fCurrentOutputList->Print();
+    return;    
+  }
   //
   for (int it=0;it<ntr;it++) {
     AliESDtrack* trSA = fESD->GetTrack(it);
@@ -853,7 +858,6 @@ void AliAnalysisTaskChargedJetsPA::Match(AliESDtrack* tr0, AliESDtrack* tr1, Int
     return;
   }
 
-  const double kMaxChi2 = 200;
   Float_t bField = fESD->GetMagneticField();
   //
   const AliExternalTrackParam* trtpc0 = tr1->GetInnerParam();

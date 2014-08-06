@@ -18,6 +18,7 @@ class AliESDtrack;
 #include "THn.h"
 
 const int kMaxMatch=5;
+const double kMaxChi2 = 200;
 
 // Class for the hybrid track cuts
 class AliESDHybridTrackcuts {
@@ -228,12 +229,12 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Int_t               fNumberOfCentralityBins;// Number of centrality bins used for histograms
   TString             fCentralityType;        // Used centrality estimate (V0A, V0C, V0M, ...)
 
-  AliESDtrack* fMatchTr[kMaxMatch];
-  Double_t fMatchChi[kMaxMatch];
+  AliESDtrack*        fMatchTr[kMaxMatch];    //! Helper variables track matching
+  Double_t            fMatchChi[kMaxMatch];   //! Helper variables track matching
 
 
   // ########## EVENT PROPERTIES
-  const AliVVertex*         fPrimaryVertex;   //! Vertex found per event
+  const AliVVertex*   fPrimaryVertex;         //! Vertex found per event
   AliEmcalJet*        fFirstLeadingJet;       //! leading jet in event
   AliEmcalJet*        fSecondLeadingJet;      //! next to leading jet in event
   AliEmcalJet*        fFirstLeadingKTJet;     //! leading kT jet in event
