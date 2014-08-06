@@ -257,39 +257,39 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
 
   for (Int_t i=0; i<ntrk; i++) {
     // RS: This is a bogus code since t and seed are the same object
-    AliESDtrack *t=event->GetTrack(i);
+    //    AliESDtrack *t=event->GetTrack(i);
     AliESDtrack *seed =(AliESDtrack*)fSeeds->At(i);
     if ( (seed->GetStatus()&AliESDtrack::kTOFin)!=0 ) {
-      t->SetStatus(AliESDtrack::kTOFin);
+      //t->SetStatus(AliESDtrack::kTOFin);
       //if(seed->GetTOFsignal()>0){
       if ( (seed->GetStatus()&AliESDtrack::kTOFout)!=0 ) {
-	t->SetStatus(AliESDtrack::kTOFout);
-	t->SetTOFsignal(seed->GetTOFsignal());
-	t->SetTOFcluster(seed->GetTOFcluster());
-	t->SetTOFsignalToT(seed->GetTOFsignalToT());
-	t->SetTOFsignalRaw(seed->GetTOFsignalRaw());
-	t->SetTOFsignalDz(seed->GetTOFsignalDz());
-	t->SetTOFsignalDx(seed->GetTOFsignalDx());
-	t->SetTOFDeltaBC(seed->GetTOFDeltaBC());
-	t->SetTOFL0L1(seed->GetTOFL0L1());
-	t->SetTOFCalChannel(seed->GetTOFCalChannel());
+	//t->SetStatus(AliESDtrack::kTOFout);
+	//t->SetTOFsignal(seed->GetTOFsignal());
+	//t->SetTOFcluster(seed->GetTOFcluster());
+	//t->SetTOFsignalToT(seed->GetTOFsignalToT());
+	//t->SetTOFsignalRaw(seed->GetTOFsignalRaw());
+	//t->SetTOFsignalDz(seed->GetTOFsignalDz());
+	//t->SetTOFsignalDx(seed->GetTOFsignalDx());
+	//t->SetTOFDeltaBC(seed->GetTOFDeltaBC());
+	//t->SetTOFL0L1(seed->GetTOFL0L1());
+	//t->SetTOFCalChannel(seed->GetTOFCalChannel());
 	Int_t tlab[3]; seed->GetTOFLabel(tlab);    
-	t->SetTOFLabel(tlab);
+	//t->SetTOFLabel(tlab);
 
-	Double_t alphaA = (Double_t)t->GetAlpha();
-	Double_t xA = (Double_t)t->GetX();
-	Double_t yA = (Double_t)t->GetY();
-	Double_t zA = (Double_t)t->GetZ();
-	Double_t p1A = (Double_t)t->GetSnp();
-	Double_t p2A = (Double_t)t->GetTgl();
-	Double_t p3A = (Double_t)t->GetSigned1Pt();
-	const Double_t *covA = (Double_t*)t->GetCovariance();
+	Double_t alphaA = (Double_t)seed->GetAlpha();
+	Double_t xA = (Double_t)seed->GetX();
+	Double_t yA = (Double_t)seed->GetY();
+	Double_t zA = (Double_t)seed->GetZ();
+	Double_t p1A = (Double_t)seed->GetSnp();
+	Double_t p2A = (Double_t)seed->GetTgl();
+	Double_t p3A = (Double_t)seed->GetSigned1Pt();
+	const Double_t *covA = (Double_t*)seed->GetCovariance();
 
 	// Make attention, please:
 	//      AliESDtrack::fTOFInfo array does not be stored in the AliESDs.root file
 	//      it is there only for a check during the reconstruction step.
 	Float_t info[10]; seed->GetTOFInfo(info);
-	t->SetTOFInfo(info);
+	//t->SetTOFInfo(info);
 	AliDebug(3,Form(" distance=%f; residual in the pad reference frame: dX=%f, dZ=%f", info[0],info[1],info[2]));
 
 	// Check done:
@@ -309,19 +309,19 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
 	*/
 
 	Double_t time[AliPID::kSPECIESC]; seed->GetIntegratedTimes(time,AliPID::kSPECIESC);
-	t->SetIntegratedTimes(time);
+	//t->SetIntegratedTimes(time);
 
-	Double_t length =  seed->GetIntegratedLength();
-	t->SetIntegratedLength(length);
+	//Double_t length =  seed->GetIntegratedLength();
+	//t->SetIntegratedLength(length);
 
-	Double_t alphaB = (Double_t)t->GetAlpha();
-	Double_t xB = (Double_t)t->GetX();
-	Double_t yB = (Double_t)t->GetY();
-	Double_t zB = (Double_t)t->GetZ();
-	Double_t p1B = (Double_t)t->GetSnp();
-	Double_t p2B = (Double_t)t->GetTgl();
-	Double_t p3B = (Double_t)t->GetSigned1Pt();
-	const Double_t *covB = (Double_t*)t->GetCovariance();
+	Double_t alphaB = (Double_t)seed->GetAlpha();
+	Double_t xB = (Double_t)seed->GetX();
+	Double_t yB = (Double_t)seed->GetY();
+	Double_t zB = (Double_t)seed->GetZ();
+	Double_t p1B = (Double_t)seed->GetSnp();
+	Double_t p2B = (Double_t)seed->GetTgl();
+	Double_t p3B = (Double_t)seed->GetSigned1Pt();
+	const Double_t *covB = (Double_t*)seed->GetCovariance();
 	AliDebug(3,"Track params -now(before)-:");
 	AliDebug(3,Form("    X: %f(%f), Y: %f(%f), Z: %f(%f) --- alpha: %f(%f)",
 			xB,xA,
@@ -355,14 +355,14 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
 			));
 	AliDebug(2,Form(" TOF params: %6d  %f %f %f %f %f %6d %3d  %f",
 			i,
-			t->GetTOFsignalRaw(),
-			t->GetTOFsignal(),
-			t->GetTOFsignalToT(),
-			t->GetTOFsignalDz(),
-			t->GetTOFsignalDx(),
-			t->GetTOFCalChannel(),
-			t->GetTOFcluster(),
-			t->GetIntegratedLength()));
+			seed->GetTOFsignalRaw(),
+			seed->GetTOFsignal(),
+			seed->GetTOFsignalToT(),
+			seed->GetTOFsignalDz(),
+			seed->GetTOFsignalDx(),
+			seed->GetTOFCalChannel(),
+			seed->GetTOFcluster(),
+			seed->GetIntegratedLength()));
 	AliDebug(2,Form(" %f %f %f %f %f %f %f %f %f",
 			time[0], time[1], time[2], time[3], time[4], time[5], time[6], time[7], time[8]));
       }
@@ -958,13 +958,13 @@ void AliTOFtracker::MatchTracks( Int_t mLastStep){
 
     //  Store quantities to be used in the TOF Calibration
     Float_t tToT=AliTOFGeometry::ToTBinWidth()*c->GetToT()*1E-3; // in ns
-    t->SetTOFsignalToT(tToT);
+//     t->SetTOFsignalToT(tToT);
     Float_t rawTime=AliTOFGeometry::TdcBinWidth()*c->GetTDCRAW()+kTimeOffset; // RAW time,in ps
-    t->SetTOFsignalRaw(rawTime);
-    t->SetTOFsignalDz(mindistZ);
-    t->SetTOFsignalDx(mindistY);
-    t->SetTOFDeltaBC(c->GetDeltaBC());
-    t->SetTOFL0L1(c->GetL0L1Latency());
+//     t->SetTOFsignalRaw(rawTime);
+//     t->SetTOFsignalDz(mindistZ);
+//     t->SetTOFsignalDx(mindistY);
+//     t->SetTOFDeltaBC(c->GetDeltaBC());
+//     t->SetTOFL0L1(c->GetL0L1Latency());
 
     Float_t info[10] = {mindist,mindistY,mindistZ,
 			0.,0.,0.,0.,0.,0.,0.};
@@ -979,7 +979,7 @@ void AliTOFtracker::MatchTracks( Int_t mLastStep){
     ind[3]=c->GetDetInd(3);
     ind[4]=c->GetDetInd(4);
     Int_t calindex = AliTOFGeometry::GetIndex(ind);
-    t->SetTOFCalChannel(calindex);
+//     t->SetTOFCalChannel(calindex);
 
     // keep track of the track labels in the matched cluster
     Int_t tlab[3];
@@ -993,7 +993,7 @@ void AliTOFtracker::MatchTracks( Int_t mLastStep){
     if(timeWalkCorr)tofcorr=CorrectTimeWalk(mindistZ,tof);
     AliDebug(3,Form(" tof time of the matched track, after TW corr: %f = ",tofcorr));    
     //Set TOF time signal and pointer to the matched cluster
-    t->SetTOFsignal(tofcorr);
+//     t->SetTOFsignal(tofcorr);
     t->SetTOFcluster(idclus); // pointing to the recPoints tree
 
     AliDebug(3,Form(" Setting TOF raw time: %f, z distance: %f  corrected time: %f ",rawTime,mindistZ,tofcorr));
