@@ -218,8 +218,8 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddCutHistogram("hCutsTPCITSMatching", "Trackcut histogram: TPC-ITS matching", "Track is matched", 2, -0.5, 1.5);
     AddCutHistogram("hCutsClustersPtDependence", "Trackcut histogram: pT dependence for number of clusters/crossed rows cut.", "Value at 20 GeV: 90, 100, 110, or 120", 4, -0.5, 3.5);
 
-    const int nbPt=40;
-    const double ptMax=5;
+    const int nbPt=100;
+    const double ptMax=50;
     AddHistogram2D<TH2D>("hCutsITSTPC_NMatch", "Number matches", "", nbPt,0,ptMax,kMaxMatch+1,-0.5,kMaxMatch+0.5, "p_{T}","N matches");
     AddHistogram2D<TH2D>("hCutsITSTPC_BestMatch", "Best match chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
     AddHistogram2D<TH2D>("hCutsITSTPC_BestMatch_cuts", "Best match chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
