@@ -205,7 +205,7 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
     //
     ++n;
   }
-  UChar_t nx=1,nz=1;
+  Int_t nx=1,nz=1;
   double dx = xmx-xmn, dz = zmx-zmn;
   if (n>1) {
     double fac=1./n;
@@ -218,14 +218,22 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   }
   x -= fLorAngCorrection;  // LorentzAngle correction
   cluster->SetX(x);
-  cluster->SetZ(z);
+  cluster->SetZ(z);  
   cluster->SetY(0);
   cluster->SetSigmaZ2(nz>1 ? dz*dz*k1to12 : pz*pz*k1to12);
   cluster->SetSigmaY2(nx>1 ? dx*dx*k1to12 : px*px*k1to12);
   cluster->SetSigmaYZ(0);
   cluster->SetFrameLoc();
-  cluster->SetNxNzN(nx,nz,n);
+  if (n>AliITSUClusterPix::kMaskNPix) n = AliITSUClusterPix::kMaskNPix;
+  cluster->SetNxNzN(nx>AliITSUClusterPix::kMaskNX ? AliITSUClusterPix::kMaskNX : nx,
+		    nz>AliITSUClusterPix::kMaskNZ ? AliITSUClusterPix::kMaskNZ : nz,
+		    n>AliITSUClusterPix::kMaskNPix ? AliITSUClusterPix::kMaskNPix : n);		    
   cluster->SetQ(charge); // note: this is MC info
+  //  if (cluster->GetNPix()!=n || cluster->GetNx()!=nx || cluster->GetNz()!=nz) {
+  //  printf("PROBLEM: %d %d %d -> %d %d %d\n",nx,nz,n,
+  //	   cluster->GetNx(),cluster->GetNz(),cluster->GetNPix());
+  //  cluster->Dump();
+  //  }
   //
   if (!fRawData) {
     CheckLabels();

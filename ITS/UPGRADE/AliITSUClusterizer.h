@@ -18,6 +18,7 @@ class AliITSUClusterizer : public TObject
   //
  public:
   enum {kDigitChunkSize=1024, kMaxLabels=20,kMaxLabInCluster=3};
+  enum {kMaskNZ=0xff,kMaskNX=0xff,kMaskNPix=0x1ff,kMaskClUse=0x7f};
   //
   AliITSUClusterizer(Int_t nrowInit=0);
   virtual ~AliITSUClusterizer();
