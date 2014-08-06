@@ -55,14 +55,14 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   TString myContTCName("");
   if(isMC)
   {
-    bgrdName = "BackgroundMC";
+    bgrdName = Form("BackgroundR0%2.0f_%s_MC%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContName = Form("AnalysisR0%2.0f_%s_MC%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContJPName = Form("JetProfileR0%2.0f_%s_MC%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContTCName = Form("TrackcutsR0%2.0f_%s_MC%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
   }
   else
   {
-    bgrdName = "Background";
+    bgrdName = Form("BackgroundR0%2.0f_%s%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContName = Form("AnalysisR0%2.0f_%s%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContJPName = Form("JetProfileR0%2.0f_%s%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
     myContTCName = Form("TrackcutsR0%2.0f_%s%s", jetRadius*100, triggerName.Data(), containerNameSuffix.Data());
@@ -96,7 +96,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
     task->SetExternalRhoTaskName(bgrdName.Data());
   }
   else
-    task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA_%s_%s", "", triggerName.Data()), usedTracks, "","", doJetProfileAnalysis, doTrackcutAnalysis);
+    task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA_%s", "", triggerName.Data()), usedTracks, "","", doJetProfileAnalysis, doTrackcutAnalysis);
 
 
   // #### Task preferences
