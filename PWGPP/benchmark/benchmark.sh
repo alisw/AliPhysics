@@ -44,7 +44,7 @@ main()
       ${runMode} "$@"
     ;;
   esac
-  return 0
+  return $?
 }
 
 generateMC()
@@ -1034,8 +1034,10 @@ goSubmitMakeflow()
     goGenerateMakeflow ${productionID} ${inputFileList} ${configFile} "${extraOpts[@]}" commonOutputPath=${commonOutputPath} > benchmark.makeflow
     cp benchmark.makeflow ${commonOutputPath}
     makeflow ${makeflowOptions} benchmark.makeflow
+    makeflow_exitcode=$?
   else 
     echo "no makeflow!"
+    return 1
   fi
   
   #summarize the run based on the makeflow log
@@ -1046,7 +1048,7 @@ goSubmitMakeflow()
       benchmark.makeflow.makeflowlog | tee -a summary.log
   paranoidCp summary.log ${commonOutputPath}
 
-  return 0
+  return $makeflow_exitcode
 }
 
 goGenerateMakeflow()
