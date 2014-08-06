@@ -1,15 +1,26 @@
 DETECTOR ALGORITHM for PMD
 ++++++++++++++++++++++++++
+This is a brief note on pmd da:
+ - how to get info at P@2
+ - how it works
+ - the codes
+ - Producing DA codes
+ - Deployment procedures.  
+
 Author: Satyajit Jena
 Date: 14 Nov 2009
 Updated: Wed Aug  4 11:03:37 CEST 2010
 ++++++++++++++++++++++++++
-Informations are added at:
+
+Information is added at:
 https://twiki.cern.ch/twiki/bin/view/ALICE/DA
 
 Detail of Central DA Framework can be found here:
 https://aliceinfo.cern.ch/DAQ/index.php?q=products/detector-algorithms
 
+++++++++++++++++++++++++++
+Important Note:
+++++++++++++++++++++++++++
 Please note that: The informatoins are also kept in the DA code
 header, it is the requirements for DA framework. Please nver change 
 the values. it should look like:
@@ -22,7 +33,8 @@ Reference run:/afs/cern.ch/user/s/sjena/public/run83496.raw
 Run Type: PHYSICS
 DA Type: MON
 Number of events needed: 1 million for PB+PB, 200 milion for p+p
-Input Files: PMD/Calib/Mapping/Run0_999999999_v0_s0.root, PMD_PED.root, PMD_GAIN_CONFIGFILE, pmd_gain_tempfile.dat
+Input Files: PMD/Calib/Mapping/Run0_999999999_v0_s0.root, PMD_PED.root, 
+             PMD_GAIN_CONFIGFILE, pmd_gain_tempfile.dat
 Output Files: PMDGAINS.root, to be exported to the DAQ FES
 Trigger types used: PHYSICS_EVENT
 
@@ -43,8 +55,6 @@ Output Files: pmd_ped.root, to be exported to the DAQ FXS, pedestal230*.ped
 Trigger types used: PHYSICS_EVENT
 
 */
-
-
 
 This infomration can be accessed in P@2 machince via rpm -qip command
 
@@ -77,9 +87,7 @@ Input files: PMD/Calib/Mapping
 Output files: pmd_ped.root, to be exported to the DAQ FXS, pedestal230*.ped
 Trigger types used: PHYSICS_EVENT
 
-
--------------------------------
-
+================================
 A Brief Infromation about PMD DA
 ================================
 
@@ -186,14 +194,15 @@ Input/Output files:
 The file for gain da validation can be found here
 /afs/cern.ch/user/s/sjena/public/run83496.raw
 
-Link to Codes:
+Detail logics and implimentation can be understood by looking at the
+code with a minimal knowledge of PMD data structures. 
+The Link to Codes:
 
 PEDESTALda http://alisoft.cern.ch/viewvc/trunk/PMD/PMDPEDESTALda.cxx?root=AliRoot&view=log
 GAINda http://alisoft.cern.ch/viewvc/trunk/PMD/PMDGAINda.cxx?root=AliRoot&view=log 
 
-
-
-How to build DA (cc from central da page)
+=======================
+How to build PMD DA
 =======================
 Building of the DAs is handled in Aliroot. You can find below some hints on 
 how to build DAs, but this is no official documentation (such documentation 
@@ -212,8 +221,8 @@ default dependencies installation path:
 
 Afte cmake is invoked, one can build DAs with one of the following targets:
 
-    make daqDA-PMD-all : build all DAs for detector 
-    make daqDA-PMD-rpm : build DA RPM packages 
+   make daqDA-PMD-all : build all DAs for detector 
+   make daqDA-PMD-rpm : build DA RPM packages 
   
    make daqDA-PMD-PEDESTAL : build a given DA
    make daqDA-PMD-PEDESTAL-rpm : build a given DA RPM
@@ -223,7 +232,7 @@ Afte cmake is invoked, one can build DAs with one of the following targets:
 
 RPMs are created in the build directory. Binaries are stored under ./lib/tgt_linuxx8664gcc
 
-
+======================
 DA testing information
 ======================
 It is possible to fully test the DAs outside of the production framework. 
@@ -257,6 +266,7 @@ in the example DAtestenv.sh
     mkdir -p $DAQDA_TEST_DIR
     cd $TESTDIR
 
+=================================
 Detector DA deployment procedure (cc from DA page)
 =================================
 The detector team should contact the DAQ team (alice-datesupport@cern.ch) 
@@ -280,3 +290,5 @@ of each action is indicated):
    9. changes in detector DA code (detector team) imply the repetition of 
       steps 2 to 7
 
+Please feel free to contact me (sjena@cern.ch, satya.ino@gmail.com) to know
+more or in case of any trouble. 
