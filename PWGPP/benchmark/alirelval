@@ -227,7 +227,7 @@ function PrepareSession() {
   echo "$aliRootTag" > "$sessionDir/aliroot-version.txt"
 
   # benchmark script, benchmark config, cloud config and file list
-  cp benchmark.sh cloud.config benchmark.config files.list "$sessionDir/"
+  cp -L benchmark.sh cloud.config benchmark.config files.list "$sessionDir/"
   if [ $? != 0 ] ; then
     pr "Cannot copy configuration files to $sessionDir"
     rm -rf "$sessionDir"
@@ -282,7 +282,7 @@ function RecycleSession() {
   local f
 
   for f in 'instance-id.txt' 'instance-address.txt' 'key.pem' ; do
-    cp "$fromSessionDir/$f" "$f" > /dev/null 2>&1
+    cp -L "$fromSessionDir/$f" "$f" > /dev/null 2>&1
     if [ $? != 0 ] ; then
       pr "Cannot copy $f from the source session dir $fromSessionDir"
       return $errRecycleSession
@@ -342,7 +342,7 @@ function InstantiateValidationVM() {
     # copy key to session dir
     pr -n "Copying private key $cloudKeyFile to session directory..."
     rm -f 'key.pem'
-    cp "$cloudKeyFile" 'key.pem' 2> /dev/null
+    cp -L "$cloudKeyFile" 'key.pem' 2> /dev/null
     if [ $? != 0 ] ; then
       pr 'error'
       return $errCopyKey
