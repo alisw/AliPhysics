@@ -226,10 +226,11 @@ function PrepareSession() {
   # aliroot version written to a file
   echo "$aliRootTag" > "$sessionDir/aliroot-version.txt"
 
-  # benchmark script, configuration and file list
-  cp benchmark.sh benchmark.config files.list "$sessionDir/"
+  # benchmark script, benchmark config, cloud config and file list
+  cp benchmark.sh cloud.config benchmark.config files.list "$sessionDir/"
   if [ $? != 0 ] ; then
-    pr "Cannot copy benchmark configuration and script to $sessionDir"
+    pr "Cannot copy configuration files to $sessionDir"
+    rm -rf "$sessionDir"
     return $errSessionDir
   fi
 
@@ -309,7 +310,7 @@ function MoveToSessionDir_Undo() {
 
 # Load the benchmark configuration
 function LoadConfig() {
-  source benchmark.config > /dev/null 2>&1
+  source cloud.config > /dev/null 2>&1
   if [ $? != 0 ] ; then
     pr "Cannot load benchmark configuration"
     return $errCfg
