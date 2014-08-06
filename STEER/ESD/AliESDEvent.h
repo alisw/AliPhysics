@@ -77,7 +77,7 @@ class AliESDCosmicTrack;
 class TList;
 class TString;
 
-class AliESDEvent : public AliVEvent, public AliVVevent {
+class AliESDEvent : public AliVEvent, virtual public AliVVevent {
 public:
 
 
