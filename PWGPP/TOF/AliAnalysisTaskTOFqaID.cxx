@@ -516,8 +516,8 @@ void AliAnalysisTaskTOFqaID::Terminate(Option_t *)
     return;   
   } 
   
-  // TH1D*hDummy = ((TH1D*)fHlist->FindObject("hTOFmatchedESDPt"));
-  // TH1D*hMatchingEff = (TH1D*) hDummy->Clone("hMatchingEff");
+  // TH1F*hDummy = ((TH1F*)fHlist->FindObject("hTOFmatchedESDPt"));
+  // TH1F*hMatchingEff = (TH1F*) hDummy->Clone("hMatchingEff");
   // hMatchingEff->SetTitle("Matching efficiency");
   // hMatchingEff->Divide((TH1F*) fHlist->FindObject("hESDprimaryTrackPt"));
   // TCanvas *c1 = new TCanvas("AliAnalysisTaskTOFqaID","Matching vs Pt",10,10,510,510);
@@ -779,10 +779,10 @@ Bool_t  AliAnalysisTaskTOFqaID::ComputeMatchingEfficiency(TList* list, TString v
     xAxisTitle = "#phi_vtx (deg)";
   }
   
-  TH1D*hDummy = ((TH1D*)list->FindObject(matchedName.Data()));
+  TH1F*hDummy = ((TH1F*)list->FindObject(matchedName.Data()));
   if (!hDummy) return 0;
 
-  TH1D*hMatchingEff = (TH1D*) hDummy->Clone("hMatchingEff");
+  TH1F*hMatchingEff = (TH1F*) hDummy->Clone("hMatchingEff");
   hMatchingEff->SetNameTitle(Form("hMatchingEff_%s", variable.Data()),Form("Matching efficiency vs %s", variable.Data()));
   hMatchingEff->Divide((TH1F*) list->FindObject(primaryName.Data()));
   hMatchingEff->GetXaxis()->SetTitle(xAxisTitle.Data());
@@ -1012,19 +1012,19 @@ void    AliAnalysisTaskTOFqaID::AddStartTimeHisto(TList *list, TString suffix)
     AliError("Invalid list passed as argument.");
     return;
   }
-  TH1D* hT0AC = new TH1D(Form("hT0AC%s",suffix.Data()), "Event timeZero from T0A&C; t_{0,AC} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0AC = new TH1F(Form("hT0AC%s",suffix.Data()), "Event timeZero from T0A&C; t_{0,AC} [ps]; events", 1000, -25000., 25000. ) ; 
   HistogramMakeUp(hT0AC, kRed+2, 20, "", "","","","");    
   list->AddLast(hT0AC);
 
-  TH1D* hT0A = new TH1D(Form("hT0A%s",suffix.Data()), "Event timeZero from T0A; t_{0,A} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0A = new TH1F(Form("hT0A%s",suffix.Data()), "Event timeZero from T0A; t_{0,A} [ps]; events", 1000, -25000., 25000. ) ; 
   HistogramMakeUp(hT0A, kBlue+2, 25, "", "","","","");    
   list->AddLast(hT0A);
     
-  TH1D* hT0C = new TH1D(Form("hT0C%s",suffix.Data()), "Event timeZero from T0C; t_{0,C} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0C = new TH1F(Form("hT0C%s",suffix.Data()), "Event timeZero from T0C; t_{0,C} [ps]; events", 1000, -25000., 25000. ) ; 
   HistogramMakeUp(hT0C, kGreen+2, 28, "", "","","","");    
   list->AddLast(hT0C);
     
-  TH1D* hT0DetRes = new TH1D(Form("hT0DetRes%s",suffix.Data()), "T0 detector (T0A-T0C)/2; (T0A-T0C)/2 [ps]; events", 200, -500.,500. ) ; 
+  TH1F* hT0DetRes = new TH1F(Form("hT0DetRes%s",suffix.Data()), "T0 detector (T0A-T0C)/2; (T0A-T0C)/2 [ps]; events", 200, -500.,500. ) ; 
   HistogramMakeUp(hT0DetRes, kMagenta+1, 1, "", "","","","");    
   list->AddLast(hT0DetRes) ; 
 
@@ -1411,8 +1411,8 @@ void AliAnalysisTaskTOFqaID::FillStartTimeHisto(TString suffix)
     fESDpid->SetTOFResponse(fESD, (AliESDpid::EStartTimeType_t) j);//(fill_t0, tof_t0, t0_t0, best_t0)
     timeZero[j]=fESDpid->GetTOFResponse().GetStartTime(10.); //timeZero for bin pT>10GeV/c
     timeZeroRes[j]=fESDpid->GetTOFResponse().GetStartTimeRes(10.); //timeZero for bin pT>10GeV/c
-    ((TH1D*)(fHlistTimeZero->FindObject(timeZeroHisto[j].Data())))->Fill(timeZero[j]);
-    ((TH1D*)(fHlistTimeZero->FindObject(timeZeroHistoRes[j].Data())))->Fill(timeZeroRes[j]);
+    ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHisto[j].Data())))->Fill(timeZero[j]);
+    ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHistoRes[j].Data())))->Fill(timeZeroRes[j]);
   }
   ((TH2F*)fHlistTimeZero->FindObject("hT0TOFvsNtrk"))->Fill(fNTOFtracks[0],timeZero[AliESDpid::kTOF_T0]);
    
