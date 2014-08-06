@@ -822,9 +822,9 @@ void AliFourPion::ParInit()
   fEC = new AliFourPionEventCollection **[fZvertexBins];
   for(UShort_t i=0; i<fZvertexBins; i++){
     
-    fEC[i] = new AliFourPionEventCollection *[fMbins];
+    fEC[i] = new AliFourPionEventCollection *[fCentBinsMixing];
 
-    for(UShort_t j=0; j<fMbins; j++){
+    for(UShort_t j=0; j<fCentBinsMixing; j++){
       
       fEC[i][j] = new AliFourPionEventCollection(fEventsToMix+1, fMultLimit, kMCarrayLimit, fMCcase);
     }
@@ -1533,7 +1533,7 @@ void AliFourPion::UserExec(Option_t *)
   
   Float_t centralityPercentile=0;
   Float_t cStep=5.0, cStepMixing=1.0, cStart=0;
-  Int_t CentBinsMixing=fCentBins*5, MbinMixing=0;
+  Int_t MbinMixing=0;
  
   if(fAODcase){// AOD case
     
@@ -1897,7 +1897,7 @@ void AliFourPion::UserExec(Option_t *)
 	break;
       }
     }
-    for(Int_t i=0; i<CentBinsMixing; i++){// event-mixing M bin
+    for(Int_t i=0; i<fCentBinsMixing; i++){// event-mixing M bin
       if( (centralityPercentile >= cStart+i*cStepMixing) && (centralityPercentile < cStart+(i+1)*cStepMixing) ){
 	MbinMixing=i;// 0 = most central
 	break;
