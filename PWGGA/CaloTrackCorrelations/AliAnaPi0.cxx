@@ -1692,26 +1692,21 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
                             ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
   
   Float_t prodR = -1;
-
+  Int_t mcIndex = -1;
+  
   if(ancLabel > -1)
   {
-    if(ancPDG==22){//gamma
-      fhMCOrgMass[0]->Fill(pt,mass);
-      fhMCOrgAsym[0]->Fill(pt,asym);
-      fhMCOrgDeltaEta[0]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[0]->Fill(pt,dphi);
+    if(ancPDG==22)
+    {//gamma
+      mcIndex = 0;
     }              
-    else if(TMath::Abs(ancPDG)==11){//e
-      fhMCOrgMass[1]->Fill(pt,mass);
-      fhMCOrgAsym[1]->Fill(pt,asym);
-      fhMCOrgDeltaEta[1]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[1]->Fill(pt,dphi);
+    else if(TMath::Abs(ancPDG)==11)
+    {//e
+      mcIndex = 1;
     }          
-    else if(ancPDG==111){//Pi0
-      fhMCOrgMass[2]->Fill(pt,mass);
-      fhMCOrgAsym[2]->Fill(pt,asym);
-      fhMCOrgDeltaEta[2]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[2]->Fill(pt,dphi);
+    else if(ancPDG==111)
+    {//Pi0
+      mcIndex = 2;
       if(fMultiCutAnaSim)
       {
         for(Int_t ipt=0; ipt<fNPtCuts; ipt++){          
@@ -1785,11 +1780,9 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
         }//pi0 mass region
       }
     }
-    else if(ancPDG==221){//Eta
-      fhMCOrgMass[3]->Fill(pt,mass);
-      fhMCOrgAsym[3]->Fill(pt,asym);
-      fhMCOrgDeltaEta[3]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[3]->Fill(pt,dphi);
+    else if(ancPDG==221)
+    {//Eta
+      mcIndex = 3;
       if(fMultiCutAnaSim){
         for(Int_t ipt=0; ipt<fNPtCuts; ipt++){          
           for(Int_t icell=0; icell<fNCellNCuts; icell++){
@@ -1848,62 +1841,43 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
       }// eta mass region
     }
     else if(ancPDG==-2212){//AProton
-      fhMCOrgMass[4]->Fill(pt,mass);
-      fhMCOrgAsym[4]->Fill(pt,asym);
-      fhMCOrgDeltaEta[4]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[4]->Fill(pt,dphi);
-    }   
+      mcIndex = 4;
+    }
     else if(ancPDG==-2112){//ANeutron
-      fhMCOrgMass[5]->Fill(pt,mass);
-      fhMCOrgAsym[5]->Fill(pt,asym);
-      fhMCOrgDeltaEta[5]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[5]->Fill(pt,dphi);
+      mcIndex = 5;
     }       
     else if(TMath::Abs(ancPDG)==13){//muons
-      fhMCOrgMass[6]->Fill(pt,mass);
-      fhMCOrgAsym[6]->Fill(pt,asym);
-      fhMCOrgDeltaEta[6]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[6]->Fill(pt,dphi);
-    }                   
-    else if (TMath::Abs(ancPDG) > 100 && ancLabel > 7) {
-      if(ancStatus==1){//Stable particles, converted? not decayed resonances
-        fhMCOrgMass[6]->Fill(pt,mass);
-        fhMCOrgAsym[6]->Fill(pt,asym);
-        fhMCOrgDeltaEta[6]->Fill(pt,deta);
-        fhMCOrgDeltaPhi[6]->Fill(pt,dphi);  
+      mcIndex = 6;
+    }
+    else if (TMath::Abs(ancPDG) > 100 && ancLabel > 7)
+    {
+      if(ancStatus==1)
+      {//Stable particles, converted? not decayed resonances
+        mcIndex = 6;
       }
-      else{//resonances and other decays, more hadron conversions?
-        fhMCOrgMass[7]->Fill(pt,mass);
-        fhMCOrgAsym[7]->Fill(pt,asym);
-        fhMCOrgDeltaEta[7]->Fill(pt,deta);
-        fhMCOrgDeltaPhi[7]->Fill(pt,dphi);
+      else
+      {//resonances and other decays, more hadron conversions?
+        mcIndex = 7;
       }
     }
-    else {//Partons, colliding protons, strings, intermediate corrections
-      if(ancStatus==11 || ancStatus==12){//String fragmentation
-        fhMCOrgMass[8]->Fill(pt,mass);
-        fhMCOrgAsym[8]->Fill(pt,asym);
-        fhMCOrgDeltaEta[8]->Fill(pt,deta);
-        fhMCOrgDeltaPhi[8]->Fill(pt,dphi);
+    else
+    {//Partons, colliding protons, strings, intermediate corrections
+      if(ancStatus==11 || ancStatus==12)
+      {//String fragmentation
+        mcIndex = 8;
       }
       else if (ancStatus==21){
-        if(ancLabel < 2) {//Colliding protons
-          fhMCOrgMass[11]->Fill(pt,mass);
-          fhMCOrgAsym[11]->Fill(pt,asym);
-          fhMCOrgDeltaEta[11]->Fill(pt,deta);
-          fhMCOrgDeltaPhi[11]->Fill(pt,dphi);
+        if(ancLabel < 2)
+        {//Colliding protons
+          mcIndex = 11;
         }//colliding protons  
-        else if(ancLabel < 6){//partonic initial states interactions
-          fhMCOrgMass[9]->Fill(pt,mass);
-          fhMCOrgAsym[9]->Fill(pt,asym);
-          fhMCOrgDeltaEta[9]->Fill(pt,deta);
-          fhMCOrgDeltaPhi[9]->Fill(pt,dphi);
+        else if(ancLabel < 6)
+        {//partonic initial states interactions
+          mcIndex = 9;
         }
-        else if(ancLabel < 8){//Final state partons radiations?
-          fhMCOrgMass[10]->Fill(pt,mass);
-          fhMCOrgAsym[10]->Fill(pt,asym);
-          fhMCOrgDeltaEta[10]->Fill(pt,deta);
-          fhMCOrgDeltaPhi[10]->Fill(pt,dphi);
+        else if(ancLabel < 8)
+        {//Final state partons radiations?
+          mcIndex = 10;
         }
         // else {
         //   printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Check ** Common ancestor label %d, pdg %d, name %s, status %d; \n",
@@ -1918,12 +1892,18 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
   }//ancLabel > -1 
   else { //ancLabel <= -1
     //printf("Not related at all label = %d\n",ancLabel);
-    fhMCOrgMass[12]->Fill(pt,mass);
-    fhMCOrgAsym[12]->Fill(pt,asym);
-    fhMCOrgDeltaEta[12]->Fill(pt,deta);
-    fhMCOrgDeltaPhi[12]->Fill(pt,dphi);
+    mcIndex = 12;
   }
-}  
+  
+  if(mcIndex >=0 && mcIndex < 13)
+  {
+    fhMCOrgMass[mcIndex]->Fill(pt,mass);
+    fhMCOrgAsym[mcIndex]->Fill(pt,asym);
+    fhMCOrgDeltaEta[mcIndex]->Fill(pt,deta);
+    fhMCOrgDeltaPhi[mcIndex]->Fill(pt,dphi);
+  }
+  
+}
 
 //__________________________________________
 void AliAnaPi0::MakeAnalysisFillHistograms() 
@@ -2061,8 +2041,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         ncell1 = cluster1->GetNCells();
         //printf("cluster1: E %2.2f (%2.2f), l0 %2.2f, tof %2.2f\n",cluster1->E(),p1->E(),l01,tof1);
       }
-      else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
-                  p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
+      //else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
+      //            p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
       
       Float_t tof2  = -1;
       Float_t l02   = -1;
@@ -2074,8 +2054,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         ncell2 = cluster2->GetNCells();
         //printf("cluster2: E %2.2f (%2.2f), l0 %2.2f, tof %2.2f\n",cluster2->E(),p2->E(),l02,tof2);
       }
-      else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
-                  p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
+      //else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
+      //            p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
       
       if(cluster1 && cluster2)
       {
