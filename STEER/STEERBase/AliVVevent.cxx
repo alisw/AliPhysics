@@ -33,4 +33,3 @@
 
 #include "AliVVevent.h"
 
-ClassImp( AliVVevent )

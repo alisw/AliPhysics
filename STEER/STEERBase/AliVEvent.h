@@ -13,6 +13,7 @@
 // Origin: Markus Oldenburg, CERN, Markus.Oldenburg@cern.ch 
 //-------------------------------------------------------------------------
 
+#include "AliVVevent.h"
 #include <TObject.h>
 #include <TTree.h>
 #include <TGeoMatrix.h>
@@ -32,7 +33,18 @@ class AliVVZERO;
 class AliVZDC;
 class AliVMFT;   // AU
 
-class AliVEvent : public TObject {
+class AliVEvent : public TObject, virtual public AliVVevent {
+ private:
+  // disable some methods from AliVEvent interface
+
+  UInt_t    GetTimeStamp()     const { return 0; }
+  UInt_t    GetEventSpecie() const { return 0; }
+  ULong64_t GetTriggerMaskNext50() const { return 0; }
+
+  Int_t GetNumberOfKinks() const { return 0; }
+
+  const AliVVtrack* GetVVTrack(Int_t /*i*/) const { return NULL; }
+  AliESDkink* GetKink(Int_t /*i*/) const { return NULL; }
 
 public:
   enum EOfflineTriggerTypes { 

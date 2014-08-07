@@ -30,17 +30,11 @@
  *
  **************************************************************************/
 
-#include "TObject.h"
-
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
-#include "AliESDfriendTrack.h"
-#include "AliExternalTrackParam.h"
-#include "AliTPCseed.h"
-#include "AliTPCclusterMI.h"
-
-#include "AliFlatESDEvent.h"
+#include "Rtypes.h"
 #include "AliFlatESDTrack.h"
+#include "AliFlatExternalTrackParam.h"
+#include "AliESDtrack.h"
+#include "AliExternalTrackParam.h"
 #include "Riostream.h"
 
 // _______________________________________________________________________________________________________
@@ -49,170 +43,48 @@ AliFlatESDTrack::AliFlatESDTrack() :
   fTrackParamMask(0),
   fNTPCClusters(0),
   fNITSClusters(0),
-
-  fSize(0),
-  fContent() {
-
+  fContentSize(0)
+{
 }
 
 // _______________________________________________________________________________________________________
-AliFlatESDTrack::AliFlatESDTrack(const AliESDtrack* track, AliESDfriendTrack* friendTrack) :
-  // Constructor
-  fTrackParamMask(0),
-  fNTPCClusters(0),
-  fNITSClusters(0),
-  fSize(0),
-  fContent() {
-  
-  Fill(track, friendTrack);
-}
-
-// _______________________________________________________________________________________________________
-AliFlatESDTrack::~AliFlatESDTrack() {
-  // Destructor
-  
-}
-
-// _______________________________________________________________________________________________________
-ULong64_t AliFlatESDTrack::EstimateSize(Bool_t useESDFriends, Int_t nTPCClusters ) {
-  // Estimate upper limit of the object size
-  // -> Added objects have to be added here as well
-
-  ULong64_t size = sizeof(AliFlatESDTrack) + (6*sizeof(AliFlatExternalTrackParam));
-
-  if (useESDFriends){
-    size += nTPCClusters*sizeof(AliFlatTPCCluster);
-  }
-  return size;
-}
 
 
 // _______________________________________________________________________________________________________
-Int_t AliFlatESDTrack::Fill(const AliESDtrack* track, AliESDfriendTrack* friendTrack){
-  // Fill external track parameters and friendTrack
-
+Int_t AliFlatESDTrack::Set(const AliESDtrack* track)
+{
+  // Fill external track parameters 
   fTrackParamMask = 0;
   fNTPCClusters = 0;
   fNITSClusters = 0;
-  fSize = 0;
+  fContentSize = 0;
   
   if( !track ) return 0;
 
-  const AliExternalTrackParam *itsOut = 0;
-  if (friendTrack) itsOut = friendTrack->GetITSOut();
-
-  Int_t iResult = FillExternalTrackParam( track,
-					  track->GetInnerParam(),
-					  track->GetTPCInnerParam(),
-					  track->GetOuterParam(),
-					  track->GetConstrainedParam(),
-					  itsOut );
-  fNITSClusters = track->GetNcls(0);
-
-  // -- Fill clusters from friend track
-  // -------------------------------------------------------
-  if (friendTrack) {
-    //    Printf("DEBUG: Now filling clusters information for the current track");    
-
-    // -- Get seed object
-    TObject* calibObject = NULL;
-    AliTPCseed* seed = NULL;
-    /*
-    for (Int_t idx = 0; (calibObject = friendTrack->GetCalibObject(idx)); ++idx) {      
-      cout<<"Calibration object:"<<endl;
-      std::cout<<calibObject->GetName()<<std::endl;
-      calibObject->Print();
-      cout<<"----------"<<endl;
-    }
-    friendTrack->Print();
-    cout<<"ITS track: "<<(void*)friendTrack->GetITStrack()<<endl;
-    cout<<"TRD track: "<<(void*)friendTrack->GetTRDtrack()<<endl;
-    cout<<"ITS OUT track: "<<(void*)friendTrack->GetITSOut()<<endl;
-    cout<<"ITS indices: ";
-    if( friendTrack->GetITSindices() ){ 
-      for( int i=0; i<friendTrack->GetMaxITScluster(); i++ ) cout<<friendTrack->GetITSindices()[i]<<" "; 
-    }
-    cout<<endl;
-    */
-    for (Int_t idx = 0; (calibObject = friendTrack->GetCalibObject(idx)); ++idx) {
-      if ((seed = dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
-
-    // -- Fill cluster
-    if (seed) {
-      for (Int_t idxRow = 0; idxRow < 160; idxRow++){
-	AliTPCclusterMI* currentCl = seed->GetClusterPointer(idxRow);
-	if (currentCl) {
-	  AliFlatTPCCluster &tmpCl = *GetNextTPCClusterPointer();
-	  tmpCl.SetX( currentCl->GetX() );
-	  tmpCl.SetY( currentCl->GetY() );
-	  tmpCl.SetZ( currentCl->GetZ() );	  
-	  tmpCl.SetPadRow( idxRow ); // TO BE CHECKED IF THIS NEEDED or currentCl->GetRow();
-	  tmpCl.SetSigmaY2( currentCl->GetSigmaY2() );
-	  tmpCl.SetSigmaZ2( currentCl->GetSigmaZ2() );
-	  tmpCl.SetCharge( currentCl->GetQ() );
-	  tmpCl.SetQMax( currentCl->GetMax() );
-	  StoreLastTPCCluster();
-	}
-	//	else
-	//	  Printf("DEBUG: No cluster for row %d", idxRow);
-      }
-    }
-
-    /*
-    AliTPCseed* seed = NULL;
-    for (Int_t idx = 0; (calibObject = friendTrack->GetCalibObject(idx)); ++idx) {
-      if ((seed = dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
-
-    // -- Fill cluster
-    if (seed) {
-      for (Int_t idxRow = 0; idxRow < 160; idxRow++){
-	AliTPCclusterMI* currentCl = seed->GetTPCClusterPointer(idxRow);
-	if (currentCl) {
-	  AliFlatTPCCluster &tmpCl = *GetNexTPCClusterPointer();
-	  tmpCl.fX = currentCl->GetX();
-	  tmpCl.fY = currentCl->GetY();
-	  tmpCl.fZ = currentCl->GetZ();	  
-	  tmpCl.fPadRow  = idxRow; // TO BE CHECKED IF THIS NEEDED or currentCl->GetRow();
-	  tmpCl.fSigmaY2 = currentCl->GetSigmaY2();
-	  tmpCl.fSigmaZ2 = currentCl->GetSigmaZ2();
-	  tmpCl.fCharge  = currentCl->GetQ();
-	  tmpCl.fQMax    = currentCl->GetMax();
-	  StoreLastTPCCluster();
-	}
-	//	else
-	//	  Printf("DEBUG: No cluster for row %d", idxRow);
-      }
-    }
-    */
-
-    //    else
-    //      Printf("DEBUG: No seed object");
-
-    //    Printf("DEBUG: Number of clusters for track = %d", fNTPCClusters);
-
-    // -- Sorting clusters according to user defined function (increasing pad row numbering)
-    std::sort(GetTPCClusters(), GetTPCClusters()+fNTPCClusters, AliFlatTPCCluster::SortClusters);
-  }
+  Int_t iResult = SetExternalTrackParam( track,
+					 track->GetInnerParam(),
+					 track->GetTPCInnerParam(),
+					 track->GetOuterParam(),
+					 track->GetConstrainedParam(), NULL );
+  fNITSClusters = track->GetTPCNcls();
 
   return iResult;
 }
 
 // _______________________________________________________________________________________________________
-Int_t AliFlatESDTrack::FillExternalTrackParam( 
-					      const AliExternalTrackParam* refittedParam,
-					      const AliExternalTrackParam* innerParam,
-					      const AliExternalTrackParam* innerTPC,
-					      const AliExternalTrackParam* outerParam,
-					      const AliExternalTrackParam* constrainedParam,
-					      const AliExternalTrackParam* outerITS
-					     ){
+Int_t AliFlatESDTrack::SetExternalTrackParam( 
+					     const AliExternalTrackParam* refittedParam,
+					     const AliExternalTrackParam* innerParam,
+					     const AliExternalTrackParam* innerTPC,
+					     const AliExternalTrackParam* outerParam,
+					     const AliExternalTrackParam* constrainedParam,
+					     const AliExternalTrackParam* outerITS
+					      ){
   // Fill external track parameters 
 
   fTrackParamMask = 0;
   fNTPCClusters = 0;
-  fSize = 0;
+  fContentSize = 0;
 
   Int_t iResult = 0;
 
@@ -244,9 +116,9 @@ Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param
   if (!param) 
     return -1;
 
-  Printf("  DEBUG: CONTENT %d >> %p + 0x%07llx = %p", flag, fContent, fSize, fContent + fSize);
+  Printf("  DEBUG: CONTENT %d >> %p + 0x%07llx = %p", flag, fContent, fContentSize, fContent + fContentSize);
 
-  AliFlatExternalTrackParam * current = reinterpret_cast<AliFlatExternalTrackParam*> (fContent + fSize);
+  AliFlatExternalTrackParam * current = reinterpret_cast<AliFlatExternalTrackParam*> (fContent + fContentSize);
   current->SetAlpha(param->GetAlpha());
   current->SetX(param->GetX());
   current->SetY(param->GetY());
@@ -260,22 +132,9 @@ Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param
     current->fC[idx] = cov[idx];
     
   fTrackParamMask |= flag;
-  fSize += sizeof(AliFlatExternalTrackParam);
+  fContentSize += sizeof(AliFlatExternalTrackParam);
 
   return 0;
 }
 
 // _______________________________________________________________________________________________________
-UInt_t AliFlatESDTrack::CountBits(Byte_t field, UInt_t mask) {
-  // Count bits in field
-  UInt_t count = 0; 
-  UInt_t reg = 0x0; 
-  
-  reg |= field;   
-  reg &= mask;
-  
-  for (count = 0; reg; count++)
-    reg &= reg - 1; 
-
-  return count;
-}

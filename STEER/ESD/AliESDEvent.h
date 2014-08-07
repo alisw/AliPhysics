@@ -77,7 +77,7 @@ class AliESDCosmicTrack;
 class TList;
 class TString;
 
-class AliESDEvent : public AliVEvent, public AliVVevent {
+class AliESDEvent : public AliVEvent, virtual public AliVVevent {
 public:
 
 
@@ -529,7 +529,7 @@ public:
   UInt_t GetDAQAttributes() const {return fDAQAttributes;}
 
   // interface to AliVVevent
-  AliESDtrack *GetVVTrack(Int_t i) const { return GetTrack(i); }
+  const AliVVtrack *GetVVTrack(Int_t i) const { return GetTrack(i); }
 
 protected:
   AliESDEvent(const AliESDEvent&);

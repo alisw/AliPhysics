@@ -3303,4 +3303,3 @@ Double_t  AliESDtrack::GetdEdxInfo(Int_t regionID, Int_t calibID, Int_t qID, Int
   return fTPCdEdxInfo->GetdEdxInfo(fIp, regionID, calibID, qID, valueID);
 }
 
-AliESDtrack tmpp;

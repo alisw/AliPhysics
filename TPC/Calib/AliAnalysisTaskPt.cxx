@@ -155,7 +155,7 @@ void AliAnalysisTaskPt::Exec(Option_t *)
   // Track loop to fill a pT spectrum
   for (Int_t iTracks = 0; iTracks < nESDtracks; iTracks++) {
     Printf("Checking track %d: Note that with Flat, the GetTrack is not yet implemented!!!", iTracks);
-    AliVVtrack* track = fESD->GetVVTrack(iTracks);
+    const AliVVtrack* track = fESD->GetVVTrack(iTracks);
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTracks);
       continue;

@@ -66,25 +66,28 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 
-ClassImp(AliFlatESDEvent);
-
 // _______________________________________________________________________________________________________
 AliFlatESDEvent::AliFlatESDEvent() :
+  AliVVevent(),
   fContentSize(0),
   fMagneticField(0),
   fPeriodNumber(0),
   fRunNumber(0),
   fOrbitNumber(0),
   fTimeStamp(0),
+  fEventSpecie(0),
   fBunchCrossNumber(0),
   fPrimaryVertexMask(0),
   fTriggerMask(0),
+  fTriggerMaskNext50(0),
   fNTriggerClasses(0),
   fNPrimaryVertices(0),
   fNTracks(0),
   fNV0s(0),
   fTriggerPointer(0),
-  fPrimaryVertexPointer(0),
+  fPrimaryVertexTracksPointer(0),
+  fPrimaryVertexSPDPointer(0),
+  fTrackTablePointer(0),
   fTracksPointer(0),
   fV0Pointer(0)
 {
@@ -92,59 +95,27 @@ AliFlatESDEvent::AliFlatESDEvent() :
   fContent[0]=0;
 }
 
-/*
-// _______________________________________________________________________________________________________
-AliFlatESDEvent::AliFlatESDEvent(AliESDEvent *esd) :
-  fSize(0),
-  fMagneticField(0),
-  fPeriodNumber(0),
-  fRunNumber(0),
-  fOrbitNumber(0),
-  fTimeStamp(0),
-  fBunchCrossNumber(0),
-  fPrimaryVertexMask(0),
-  fTriggerMask(0),
-  fNTriggerClasses(0),
-  fNPrimaryVertices(0),
-  fNTracks(0),
-  fNV0s(0),
-  fTriggerPointer(0),
-  fPrimaryVertexPointer(0),
-  fTracksPointer(0),
-  fV0Pointer(0)
+
+TString AliFlatESDEvent::GetFiredTriggerClasses() const 
 { 
-  fContent[0]=0;
-  Fill(esd);
+  // Fired trigger classes
+  TString trclasses; 
+  const AliFlatESDTrigger *tr = GetTriggerClasses();
+  ULong64_t mask = GetTriggerMask() | GetTriggerMaskNext50();
+  for(Int_t i = 0; i < GetNumberOfTriggerClasses(); i++) {
+    int index = tr->GetTriggerIndex();    
+    if( mask & (1ull<<index) ){
+      trclasses += " ";
+      trclasses += tr->GetTriggerClassName();
+      trclasses += " ";
+    }
+  }
+  tr = tr->GetNextTrigger();
+  return trclasses;
 }
 
-// _______________________________________________________________________________________________________
-AliFlatESDEvent::AliFlatESDEvent(AliESDEvent *esd, Bool_t useESDFriends) :
-  // Constructor
-  fPrimaryVertexMask(0),
-  fNTracks(0),
-  fTracksPointer(0),
-  fNV0s(0),
-  fV0Pointer(0),
-  fSize(0),
-  fMagneticField(0),
-  fPeriodNumber(0),
-  fRunNumber(0),
-  fOrbitNumber(0),
-  fBunchCrossNumber(0),
-  fTimeStamp(0),
-  fContent() 
-{ 
-  Fill(esd, useESDFriends);
-}
-*/
 
-// _______________________________________________________________________________________________________
-AliFlatESDEvent::~AliFlatESDEvent() 
-{
-  // Destructor
-}
-
-void AliFlatESDEvent::Init()
+void AliFlatESDEvent::Reset()
 {
   // Init
 
@@ -157,97 +128,69 @@ void AliFlatESDEvent::Init()
   fBunchCrossNumber = 0;
   fPrimaryVertexMask = 0;
   fTriggerMask = 0;
+  fTriggerMaskNext50 = 0;
   fNTriggerClasses = 0;
   fNPrimaryVertices = 0;
   fNTracks = 0;
   fNV0s = 0;
   fTriggerPointer = 0;
-  fPrimaryVertexPointer = 0;
+  fPrimaryVertexTracksPointer = 0;
+  fPrimaryVertexSPDPointer = 0;
+  fTrackTablePointer = 0;
   fTracksPointer = 0;
   fV0Pointer = 0;
 }
 
 // _______________________________________________________________________________________________________
-  ULong64_t AliFlatESDEvent::EstimateSize(AliESDEvent *esd, Bool_t useESDFriends, Bool_t fillV0s) 
+  ULong64_t AliFlatESDEvent::EstimateSize(AliESDEvent *esd, Bool_t fillV0s) 
 {
   // Estimate upper limit of the object size
   // -> Added objects have to be added here as well
   
   ULong64_t size = sizeof(AliFlatESDEvent);
   size += 2 * sizeof( AliFlatESDVertex );
-  size += esd->GetNumberOfTracks() * AliFlatESDTrack::EstimateSize(useESDFriends);
+  size += esd->GetNumberOfTracks() * ( AliFlatESDTrack::EstimateSize() + sizeof(Long64_t) );
   if( fillV0s ) size += esd->GetNumberOfV0s()*sizeof(AliFlatESDV0);
   return size;
 }
 
-void AliFlatESDEvent::FillPrimaryVertices( const AliESDVertex *vertexSPD,
-					    const AliESDVertex *vertexTracks )
+Int_t AliFlatESDEvent::SetPrimaryVertexTracks( const AliESDVertex *vtx, size_t allocatedVtxMemory )
 {
-  // fill primary vertices
-  
-  fPrimaryVertexMask = 0;
-  fContentSize = 0;
-
-  Byte_t flag = 0x1;
-  FillPrimaryVertex(vertexSPD, flag);
-
-  flag = 0x2;
-  FillPrimaryVertex(vertexTracks, flag);
-
-  fTracksPointer = fContentSize;
-  fV0Pointer = fContentSize;
-}
-
-void AliFlatESDEvent::FillPrimaryVertex(const AliESDVertex *v, Byte_t flag) 
-{
-  
-  // Fill primary vertex parameters
-
-  if (!v) return;
-
-  AliFlatESDVertex *vtx = reinterpret_cast<AliFlatESDVertex*> (fContent + fContentSize);
-  vtx->Set( *v );    
-  fPrimaryVertexMask |= flag;
-  fContentSize += sizeof(AliFlatESDVertex);
-}
-
-
-Int_t AliFlatESDEvent::FillNextTrack( const AliESDtrack* esdTrack, AliESDfriendTrack* friendTrack)
-{
-  // fill next track
-
-  AliFlatESDTrack *flatTrack = reinterpret_cast<AliFlatESDTrack*>(fContent+fContentSize);
-  //new (flatTrack) AliFlatESDTrack;
-  flatTrack->Fill(esdTrack, friendTrack);
-  fContentSize += flatTrack->GetSize();
-  ++fNTracks;
+  // fill primary vertex tracks
+  if( !vtx ) return 0;
+  if( allocatedVtxMemory < sizeof(AliFlatESDVertex) ) return -1;
+  fPrimaryVertexMask |= 0x1;
+  fPrimaryVertexTracksPointer = fContentSize;
+  AliFlatESDVertex *flatVtx = reinterpret_cast<AliFlatESDVertex*> (fContent + fContentSize);
+  flatVtx->Set( *vtx );
+  fContentSize += flatVtx->GetSize();
   return 0;
 }
 
-Int_t AliFlatESDEvent::AddTriggerClass(  const char *TriggerClassName, Int_t TriggerIndex, ULong64_t MaxSize )
+Int_t AliFlatESDEvent::SetPrimaryVertexSPD( const AliESDVertex *vtx, size_t allocatedVtxMemory  )
 {
-  // add trigger class 
-  AliFlatESDTrigger *flatTrigger = reinterpret_cast<AliFlatESDTrigger*>(fContent+fContentSize);
-  Int_t err = flatTrigger->SetTriggerClass( TriggerClassName, TriggerIndex, MaxSize );
-  if( err==0 ){
-    fContentSize+= flatTrigger->GetSize();
-    fNTriggerClasses++;
-  }
-  return err;
+  // fill primary vertex SPD
+  if( !vtx ) return 0;
+  if( allocatedVtxMemory < sizeof(AliFlatESDVertex) ) return -1;
+  fPrimaryVertexMask |= 0x2;
+  fPrimaryVertexSPDPointer = fContentSize;
+  AliFlatESDVertex *flatVtx = reinterpret_cast<AliFlatESDVertex*> (fContent + fContentSize);
+  flatVtx->Set( *vtx );
+  fContentSize += flatVtx->GetSize();
+  return 0;
 }
- 
+
 
 // _______________________________________________________________________________________________________
-Int_t AliFlatESDEvent::FillFromESD( const size_t allocatedMemorySize, const AliESDEvent *esd, const Bool_t useESDFriends, const Bool_t fillV0s)
+Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliESDEvent *esd, const Bool_t fillV0s)
 {
   // Fill flat ESD event from normal ALiESDEvent
-  // - Fill tracks + friends (if requested)
+  // - Fill tracks + v0s
   // -> Added objects have to be added here as well
  
-#ifdef xxx
   if( allocatedMemorySize < sizeof(AliFlatESDEvent) ) return -1;
 
-  Init();
+  Reset();
   
   if( !esd ) return 0;
   
@@ -256,15 +199,22 @@ Int_t AliFlatESDEvent::FillFromESD( const size_t allocatedMemorySize, const AliE
 
   // fill run info
   {
+    SetMagneticField( esd->GetMagneticField() );
+    SetPeriodNumber( esd->GetPeriodNumber() );
+    SetRunNumber( esd->GetRunNumber() );
+    SetOrbitNumber( esd->GetOrbitNumber() );
+    SetBunchCrossNumber( esd->GetBunchCrossNumber() );
+    SetTimeStamp( esd->GetTimeStamp() );
+    SetEventSpecie( esd->GetEventSpecie() );
     SetTriggerMask( esd->GetTriggerMask() );
+    SetTriggerMaskNext50( esd->GetTriggerMaskNext50() );
   }
-
-
+ 
   // Fill trigger information  
   {
     size_t triggerSize = 0;
     int nTriggers = 0;
-    AliFlatESDTrigger *trigger = FillTriggersStart();
+    AliFlatESDTrigger *trigger = SetTriggersStart();
     const AliESDRun*  esdRun = esd->GetESDRun();
     if( esdRun ){ 
       for( int index=0; index<AliESDRun::kNTriggerClasses; index++){
@@ -275,99 +225,69 @@ Int_t AliFlatESDEvent::FillFromESD( const size_t allocatedMemorySize, const AliE
 	  nTriggers++;
 	  freeSpace -= trigger->GetSize();
 	  triggerSize += trigger->GetSize();
-	  trigger = trigger->GetNextTrigger();
+	  trigger = trigger->GetNextTriggerNonConst();
         }
       }
     }
-    FillTriggersEnd( nTriggers, triggerSize );    
+    SetTriggersEnd( nTriggers, triggerSize );    
   }
 
   // fill primary vertices
 
-  
-  err = FillPrimaryVertices( freeSpace, esd->GetPrimaryVertexSPD(), esd->GetPrimaryVertexTracks() );
-  
+  err = SetPrimaryVertexTracks( esd->GetPrimaryVertexTracks(), freeSpace );
   if( err!=0 ) return err;
-  
   freeSpace = allocatedMemorySize - GetSize();
 
- 
- ULong64_t GetTriggerMask() const {return fHeader?fHeader->GetTriggerMask():0;}
-  TString   GetFiredTriggerClasses() const {return (fESDRun&&fHeader)?fESDRun->GetFiredTriggerClasses(fHeader->GetTriggerMask()):"";}
-  Bool_t    IsTriggerClassFired(const char *name) const {return (fESDRun&&fHeader)?fESDRun->IsTriggerClassFired(fHeader->GetTriggerMask(),name):kFALSE;}
+  err = SetPrimaryVertexSPD( esd->GetPrimaryVertexSPD(), freeSpace );
+  if( err!=0 ) return err;
+  freeSpace = allocatedMemorySize - GetSize();
 
-  const AliHLTCTPData* pCTPData=CTPData();
-  if (pCTPData) {
-    AliHLTUInt64_t mask=pCTPData->ActiveTriggers(trigData);
-    for (int index=0; index<gkNCTPTriggerClasses; index++) {
-      if ((mask&((AliHLTUInt64_t)0x1<<index)) == 0) continue;
-      pESD->SetTriggerClass(pCTPData->Name(index), index);
-    }
-    pESD->SetTriggerMask(mask);
+  // fill tracks 
+  {
+   size_t trackSize = 0;
+   int nTracks = 0;
+   Long64_t *table = NULL;
+   AliFlatESDTrack *flatTrack = NULL;
+   err = SetTracksStart( flatTrack, table, esd->GetNumberOfTracks(), freeSpace );
+   if( err!=0 ) return err;
+   freeSpace = allocatedMemorySize - GetSize();
+
+   for (Int_t idxTrack = 0; idxTrack < esd->GetNumberOfTracks(); ++idxTrack) {
+     AliESDtrack *esdTrack = esd->GetTrack(idxTrack);
+     table[idxTrack] = -1;
+     if (esdTrack) {
+       table[idxTrack] = trackSize;
+       if( freeSpace<flatTrack->EstimateSize() ) return -1;
+       new (flatTrack) AliFlatESDTrack;       
+       flatTrack->Set( esdTrack );
+       trackSize += flatTrack->GetSize();
+       freeSpace -= flatTrack->GetSize();
+       nTracks++;
+       flatTrack = flatTrack->GetNextTrack();
+     }
+   }
+   SetTracksEnd( nTracks, trackSize );
   }
 
-  
-  //allocatedMemorySize - GetSize();
+  // fill V0s
 
-  FillTriggersEnd(nTriggers, triggerSize );
- 
-  // -- Get ESD friends
-  // -------------------------------------------------------
-  Bool_t connectESDFriends = useESDFriends;
-  AliESDfriend* esdFriend  = NULL;
-
-   if (connectESDFriends) {
-    esdFriend = dynamic_cast<AliESDfriend*>(esd->FindListObject("AliESDfriend"));  
-    if (!esdFriend) {
-      connectESDFriends = kFALSE;
-      Printf("WARNING: friends not available, cluster information will not be included");
-    }
-    else 
-      Printf("INFO: friends are available, cluster information will be included");
-  }
-
-  // -- Track loop, fill AliFlatESDTrack sub structure
-  // -------------------------------------------------------
-  for (Int_t idxTrack = 0; idxTrack < esd->GetNumberOfTracks(); ++idxTrack) {
-    AliESDtrack       *esdTrack    = esd->GetTrack(idxTrack);
-    AliESDfriendTrack *friendTrack = NULL;
-
-    if (esdTrack) {
-      if (connectESDFriends){
-	friendTrack = esdFriend->GetTrack(idxTrack);
-      }
-      FillNextTrack( esdTrack, friendTrack);
-    }
-  }
-
-  // Fill V0s
-  
-  fV0Pointer = fContentSize;
-  fNV0s = 0;
   if( fillV0s ){
+    size_t v0size = 0;
+    int nV0s = 0; 
+    AliFlatESDV0 *flatV0 = SetV0sStart();
     for( int i=0; i < esd->GetNumberOfV0s(); i++){
       AliESDv0 *esdV0 = esd->GetV0( i );
-      AliFlatESDV0 *v0 = GetNextV0Pointer();
-      if( !v0 ) continue;
-      v0->fNegTrackID = esdV0->GetNindex();
-      v0->fPosTrackID = esdV0->GetNindex();
-      StoreLastV0();      
+      if( !esdV0 || freeSpace < flatV0->GetSize() ) return -1;
+      new (flatV0) AliFlatESDV0;
+      flatV0->SetNegTrackID( esdV0->GetNindex());
+      flatV0->SetPosTrackID( esdV0->GetPindex());
+      nV0s++;
+      v0size += flatV0->GetSize();
+      freeSpace -= flatV0->GetSize(); 
     }
+    SetV0sEnd( nV0s, v0size );
   }
-#endif
+  
   return 0;
 }
 
-UInt_t AliFlatESDEvent::CountBits(Byte_t field, UInt_t mask) const {
-  // Count bits in field
-  UInt_t count = 0; 
-  UInt_t reg = 0x0; 
-  
-  reg |= field;   
-  reg &= mask;
-  
-  for (count = 0; reg; count++)
-    reg &= reg - 1; 
-
-  return count;
-}
