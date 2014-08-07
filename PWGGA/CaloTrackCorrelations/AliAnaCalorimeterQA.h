@@ -378,15 +378,16 @@ public:
   
   //Pure MC
 
-  enum mcTypes {kmcPhoton = 0, kmcPi0 = 1, kmcEta = 2, kmcElectron = 3, kmcNeHadron = 4, kmcChHadron = 5 };
+  enum mcTypes {kmcPhoton   = 0, kmcPhotonConv = 1, kmcPi0      = 2, kmcEta = 3,
+                kmcElectron = 4, kmcNeHadron   = 5, kmcChHadron = 6             };
   
-  TH2F *   fhRecoMCE[6][2]  ;                 //! E   generated particle vs reconstructed E
-  TH2F *   fhRecoMCPhi[6][2] ;                //! phi generated particle vs reconstructed phi
-  TH2F *   fhRecoMCEta[6][2] ;                //! eta generated particle vs reconstructed Eta
-  TH2F *   fhRecoMCDeltaE[6][2]  ;            //! Gen-Reco E    generated particle vs reconstructed E
-  TH2F *   fhRecoMCRatioE[6][2]  ;            //! Reco/Gen E    generated particle vs reconstructed E
-  TH2F *   fhRecoMCDeltaPhi[6][2];            //! Gen-Reco phi  generated particle vs reconstructed E
-  TH2F *   fhRecoMCDeltaEta[6][2];            //! Gen-Reco eta  generated particle vs reconstructed E
+  TH2F *   fhRecoMCE[7][2]  ;                 //! E   generated particle vs reconstructed E
+  TH2F *   fhRecoMCPhi[7][2] ;                //! phi generated particle vs reconstructed phi
+  TH2F *   fhRecoMCEta[7][2] ;                //! eta generated particle vs reconstructed Eta
+  TH2F *   fhRecoMCDeltaE[7][2]  ;            //! Gen-Reco E    generated particle vs reconstructed E
+  TH2F *   fhRecoMCRatioE[7][2]  ;            //! Reco/Gen E    generated particle vs reconstructed E
+  TH2F *   fhRecoMCDeltaPhi[7][2];            //! Gen-Reco phi  generated particle vs reconstructed E
+  TH2F *   fhRecoMCDeltaEta[7][2];            //! Gen-Reco eta  generated particle vs reconstructed E
   
   TH1F *   fhGenMCE [4]     ;                 //! pt of primary particle
   TH1F *   fhGenMCPt[4]     ;                 //! pt of primary particle

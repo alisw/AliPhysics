@@ -215,7 +215,7 @@ fhTrackMatchedDEtaPos(0),              fhTrackMatchedDPhiPos(0),               f
   
   // MC
   
-  for(Int_t i = 0; i < 6; i++)
+  for(Int_t i = 0; i < 7; i++)
   {
     fhRecoMCE[i][0]         = 0; fhRecoMCE[i][1]        = 0;  
     fhRecoMCPhi[i][0]       = 0; fhRecoMCPhi[i][1]      = 0;  
@@ -737,8 +737,8 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, Int_t ab
   Int_t ietaMax=-1; Int_t iphiMax = 0; Int_t rcuMax = 0;
   Int_t smMax = GetModuleNumberCellIndexes(absIdMax,fCalorimeter, ietaMax, iphiMax, rcuMax);
   
-  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++) {
-    
+  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++)
+  {
     Int_t absId = clus->GetCellsAbsId()[ipos];
     
     Int_t ieta=-1; Int_t iphi = 0; Int_t rcu = 0;
@@ -775,17 +775,17 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, Int_t ab
     
     fhDeltaIA[matched]->Fill(clus->E(),dIA);
     
-    if(clus->E() > 0.5){
-      
+    if(clus->E() > 0.5)
+    {
       fhDeltaIAL0[matched]    ->Fill(clus->GetM02(),dIA);
       fhDeltaIAL1[matched]    ->Fill(clus->GetM20(),dIA);
       fhDeltaIANCells[matched]->Fill(clus->GetNCells(),dIA);
-      
     }
     
     // Origin of  clusters
     Int_t  nLabel = clus->GetNLabels();
     Int_t* labels = clus->GetLabels();
+    
     if(IsDataMC())
     {
       Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabel, GetReader());
@@ -816,7 +816,6 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, Int_t ab
     else                    fhBadClusterDeltaIEtaDeltaIPhiE6->Fill(dIeta,dIphi);
     
     fhBadClusterDeltaIA->Fill(clus->E(),dIA);
-    
   }
 }
 
@@ -978,7 +977,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
       printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - cluster: %d/%d, data %d \n",
              iclus+1,nCaloClusters,GetReader()->GetDataType());
     
-    AliVCluster* clus =  (AliVCluster*)caloClusters->At(iclus);
+    AliVCluster* clus =  (AliVCluster*) caloClusters->At(iclus);
     
     // Get the fraction of the cluster energy that carries the cell with highest energy and its absId
     Float_t maxCellFraction = 0.;
@@ -1106,7 +1105,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
     return kFALSE;
   }
   
-  if(GetDebug() > 1) 
+  if(GetDebug() > 1)
   {
     printf("AliAnaCalorimeterQA::ClusterMCHistograms() - Primaries: nlabels %d\n",nLabels);
   }  
@@ -1362,74 +1361,52 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
   //printf("vertex: vx %f, vy %f, vz %f, r %f \n", vxMC, vyMC, vz, r);
   
   //Overlapped pi0 (or eta, there will be very few)
-  if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0))
+  Int_t mcIndex = -1;
+  if     ( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0     ) )
   {
-    fhRecoMCE  [kmcPi0][matched]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcPi0][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcPi0][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [kmcPi0][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [kmcPi0][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[kmcPi0][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[kmcPi0][(matched)]->Fill(e,etaMC-eta);
+    mcIndex = kmcPi0;
   }//Overlapped pizero decay
-  else     if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta))
+  else if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta     ) )
   {
-    fhRecoMCE  [kmcEta][(matched)]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcEta][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcEta][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [kmcEta][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [kmcEta][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[kmcEta][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[kmcEta][(matched)]->Fill(e,etaMC-eta);
+    mcIndex = kmcEta;
   }//Overlapped eta decay
-  else if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton) && 
-          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion))
+  else if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton  ) )
   {
-    fhRecoMCE  [kmcPhoton][(matched)]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcPhoton][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcPhoton][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [kmcPhoton][(matched)]->Fill(e,e/eMC);
-    
-    fhRecoMCDeltaE  [kmcPhoton][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[kmcPhoton][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[kmcPhoton][(matched)]->Fill(e,etaMC-eta);      
+    if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion))
+       mcIndex = kmcPhotonConv ;
+    else
+       mcIndex = kmcPhoton ;
   }//photon
-  else if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron) && 
-          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion))
+  else if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron) )
   {
-    fhRecoMCE  [kmcElectron][(matched)]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcElectron][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcElectron][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [kmcElectron][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [kmcElectron][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[kmcElectron][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[kmcElectron][(matched)]->Fill(e,etaMC-eta);
-    fhEMVxyz   ->Fill(vxMC,vyMC);//,vz);
-    fhEMR      ->Fill(e,rVMC);
+    mcIndex = kmcElectron;
+    fhEMVxyz ->Fill(vxMC,vyMC);//,vz);
+    fhEMR    ->Fill(e,rVMC);
   }
   else if(charge == 0)
   {
-    fhRecoMCE  [kmcNeHadron][(matched)]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcNeHadron][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcNeHadron][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [kmcNeHadron][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [kmcNeHadron][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[kmcNeHadron][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[kmcNeHadron][(matched)]->Fill(e,etaMC-eta);      
+    mcIndex = kmcNeHadron;
     fhHaVxyz     ->Fill(vxMC,vyMC);//,vz);
     fhHaR        ->Fill(e,rVMC);
   }
   else if(charge!=0)
   {
-    fhRecoMCE  [kmcChHadron][(matched)]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcChHadron][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcChHadron][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [kmcChHadron][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [kmcChHadron][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[kmcChHadron][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[kmcChHadron][(matched)]->Fill(e,etaMC-eta);     
-    fhHaVxyz     ->Fill(vxMC,vyMC);//,vz);
-    fhHaR        ->Fill(e,rVMC);
+    mcIndex = kmcChHadron;
+    fhHaVxyz ->Fill(vxMC,vyMC);//,vz);
+    fhHaR    ->Fill(e,rVMC);
+  }
+
+  //printf("mc index %d\n",mcIndex);
+  
+  if( mcIndex >= 0  && mcIndex < 7 )
+  {
+    fhRecoMCE  [mcIndex][(matched)]     ->Fill(e,eMC);
+    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcIndex][(matched)]->Fill(eta,etaMC);
+    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcIndex][(matched)]->Fill(phi,phiMC);
+    if(eMC > 0) fhRecoMCRatioE  [mcIndex][(matched)]->Fill(e,e/eMC);
+    fhRecoMCDeltaE  [mcIndex][(matched)]->Fill(e,eMC-e);
+    fhRecoMCDeltaPhi[mcIndex][(matched)]->Fill(e,phiMC-phi);
+    fhRecoMCDeltaEta[mcIndex][(matched)]->Fill(e,etaMC-eta);
   }
   
   if( primary || aodprimary ) return kTRUE ;
@@ -2888,11 +2865,11 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   
   // Monte Carlo Histograms
   
-  TString particleName[] = { "Photon", "Pi0", "Eta", "Electron", "NeutralHadron", "ChargedHadron" };
+  TString particleName[] = { "Photon","PhotonConv","Pi0", "Eta", "Electron", "NeutralHadron", "ChargedHadron" };
   
   if(IsDataMC())
   {
-    for(Int_t iPart = 0; iPart < 6; iPart++)
+    for(Int_t iPart = 0; iPart < 7; iPart++)
     {
       for(Int_t iCh = 0; iCh < 2; iCh++)
       {
