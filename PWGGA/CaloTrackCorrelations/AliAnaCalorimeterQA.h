@@ -54,7 +54,7 @@ public:
 
   void         CellInClusterPositionHistograms(AliVCluster* cluster);
     
-  void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, const Bool_t goodCluster );
+  void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, Bool_t goodCluster );
   
   void         ClusterHistograms(AliVCluster* cluster, const TObjArray *caloClusters,  AliVCaloCells * cells, 
                                  Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax);
@@ -81,8 +81,6 @@ public:
   
   void         MCHistograms();  
   
-  void         MCHistograms(const TLorentzVector mom, Int_t pdg);
-    
   void         WeightHistograms(AliVCluster *clus, AliVCaloCells* cells);
 
   // Setters and Getters
@@ -390,9 +388,11 @@ public:
   TH2F *   fhRecoMCDeltaPhi[6][2];            //! Gen-Reco phi  generated particle vs reconstructed E
   TH2F *   fhRecoMCDeltaEta[6][2];            //! Gen-Reco eta  generated particle vs reconstructed E
   
-  TH1F *   fhGenMCE[4]     ;                  //! pt of primary particle
+  TH1F *   fhGenMCE [4]     ;                 //! pt of primary particle
+  TH1F *   fhGenMCPt[4]     ;                 //! pt of primary particle
   TH2F *   fhGenMCEtaPhi[4] ;                 //! eta vs phi of primary particle
-  TH1F *   fhGenMCAccE[4]     ;               //! pt of primary particle, in acceptance
+  TH1F *   fhGenMCAccE [4]     ;              //! pt of primary particle, in acceptance
+  TH1F *   fhGenMCAccPt[4]     ;              //! pt of primary particle, in acceptance
   TH2F *   fhGenMCAccEtaPhi[4] ;              //! eta vs phi of primary particle, in acceptance
   
   TH2F *   fhEMVxyz    ;                      //! Electromagnetic particle production vertex
@@ -439,7 +439,7 @@ public:
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   
-  ClassDef(AliAnaCalorimeterQA,28)
+  ClassDef(AliAnaCalorimeterQA,29)
 } ;
 
 
