@@ -15,6 +15,8 @@
 #include <TLatex.h>
 #endif
 
+// For each module, finds the dEdx distribution in 8 drift time intervals. Fits each distribution with LanGaus. For each module builds the histogram of
+// Most Probable Value vs drift time and fits it with pol1. Stores the fit parameters vs module number in histograms hmpvModpar0 and hmpvModpar1.
 
 Double_t LangausFun(Double_t *x, Double_t *par);
 
@@ -48,6 +50,9 @@ void MakeSDDADCCalib(TString foldname = ".",TString filename ="QAresults_barrel.
   TH1F *hsiglModpar0 = new TH1F("hsiglModpar0","hsiglModpar0",280,229.5,509.5);
   TH1F *hsiglModpar1 = new TH1F("hsiglModpar1","hsiglModpar1",280,229.5,509.5);
 
+  TString fout="SDDADCCalibResults.root";
+  TFile *out=new TFile(Form("%s/%s",foldname.Data(),fout.Data()),"recreate");
+
   TCanvas *chdEdxproj=new TCanvas("chdEdxproj","chdEdxproj",1000,800);
   chdEdxproj->Divide(4,2);
   TCanvas* cmod=new TCanvas("cmod","module",600,900);
@@ -59,9 +64,10 @@ void MakeSDDADCCalib(TString foldname = ".",TString filename ="QAresults_barrel.
     chdEdxproj->Clear("D");
     //    chdEdxproj->Divide(4,2);
     printf("Mod. # %i \n",imod);
-    hmpv->SetTitle(Form("MPV Mod. # %i \n",imod));
-    hsig->SetTitle(Form("Gauss sigma Mod. # %i \n",imod));
-    hsigl->SetTitle(Form("Landau sigma Mod. # %i \n",imod));
+    hmpv->SetTitle(Form("MPV Mod. # %i",imod));
+    hmpv->SetName(Form("MPVModule%i",imod));
+    hsig->SetTitle(Form("Gauss sigma Mod. # %i",imod));
+    hsigl->SetTitle(Form("Landau sigma Mod. # %i",imod));
     hmpv->GetXaxis()->SetTitle("Drift time (ns)");
     hsig->GetXaxis()->SetTitle("Drift time (ns)");
     hsigl->GetXaxis()->SetTitle("Drift time (ns)");
@@ -107,6 +113,7 @@ void MakeSDDADCCalib(TString foldname = ".",TString filename ="QAresults_barrel.
       pol1mpv->SetParameter(0,84);
       pol1mpv->SetParameter(1,0);
     }
+    hmpv->Write();
     hmpvModpar1->Fill(imod,pol1mpv->GetParameter(1));
     hmpvModpar1->SetBinError(hmpvModpar1->FindBin(imod),pol1mpv->GetParError(1));
     Printf("Par0_mpv:%f Err_Par0_mpv:%f    Par1_mpv:%f Err_Par1_mpv:%f",pol1mpv->GetParameter(0),pol1mpv->GetParError(0),pol1mpv->GetParameter(1),pol1mpv->GetParError(1));
@@ -185,8 +192,6 @@ void MakeSDDADCCalib(TString foldname = ".",TString filename ="QAresults_barrel.
   chsiglModpar1->cd();
   hsiglModpar1->Draw();
   
-  TString fout="SDDADCCalibResults.root";
-  TFile *out=new TFile(Form("%s/%s",foldname.Data(),fout.Data()),"recreate");
   hmpvModpar0->Write();
   hmpvModpar1->Write();
   hsigModpar0->Write();
