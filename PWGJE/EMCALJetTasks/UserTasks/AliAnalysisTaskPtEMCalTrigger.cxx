@@ -30,6 +30,7 @@
 #include <TDirectory.h>
 #include <TH1.h>
 #include <THashList.h>
+#include <TList.h>
 #include <TKey.h>
 #include <TMath.h>
 #include <TObjArray.h>
@@ -134,7 +135,7 @@ namespace EMCalTriggerPtAnalysis {
 		TAxis htrackaxes[6];
 		DefineAxis(htrackaxes[0], "pt", "p_{t} (GeV/c)", ptbinning);
 		DefineAxis(htrackaxes[1], "eta", "#eta", etabinning);
-		DefineAxis(htrackaxes[2], "phi", "#phi", 100, 0, 2 * TMath::Pi());
+		DefineAxis(htrackaxes[2], "phi", "#phi", 20, 0, 2 * TMath::Pi());
 		DefineAxis(htrackaxes[3], "zvertex", "z_{V} (cm)", zvertexBinning);
 		DefineAxis(htrackaxes[4], "pileup", "Pileup rejection", 2, -0.5, 1.5);
 		DefineAxis(htrackaxes[5], "trackcuts", "Track Cuts", (fListTrackCuts ? fListTrackCuts->GetEntries() : 0) + 1, -0.5, (fListTrackCuts ? fListTrackCuts->GetEntries() : 0) + 0.5);
@@ -313,7 +314,7 @@ namespace EMCalTriggerPtAnalysis {
 		double currentval = -40;
 		mybinning.push_back(currentval);
 		while(currentval <= 40.){
-			currentval += 0.1;
+			currentval += 1.;
 			mybinning.push_back(currentval);
 		}
 		binning.Set(mybinning.size());
@@ -333,7 +334,7 @@ namespace EMCalTriggerPtAnalysis {
 		double currentval = -0.8;
 		mybinning.push_back(currentval);
 		while(currentval <= 0.8){
-			currentval += 0.05;
+			currentval += 0.1;
 			mybinning.push_back(currentval);
 		}
 		binning.Set(mybinning.size());
