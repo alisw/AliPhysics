@@ -2027,27 +2027,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     module1 = GetModuleNumber(p1);
     
     //------------------------------------------
-    //Get index in VCaloCluster array
-    AliVCluster *cluster1 = 0; 
-    Bool_t bFound1        = kFALSE;
-    Int_t  caloLabel1     = p1->GetCaloLabel(0);
-    Bool_t iclus1         =-1;
-    if(clusters)
-    {
-      for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
-        AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-        if(cluster)
-        {
-          if     (cluster->GetID()==caloLabel1) 
-          {
-            bFound1  = kTRUE  ;
-            cluster1 = cluster;
-            iclus1   = iclus;
-          }
-        }      
-        if(bFound1) break;
-      }
-    }// calorimeter clusters loop
+    // Recover original cluster
+    Int_t iclus1 = -1 ;
+    AliVCluster * cluster1 = FindCluster(clusters,p1->GetCaloLabel(0),iclus1);
     
     //---------------------------------
     //Second loop on photons/clusters
@@ -2066,44 +2048,36 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         continue ;
       
       //------------------------------------------
-      //Get index in VCaloCluster array
-      AliVCluster *cluster2 = 0; 
-      Bool_t bFound2        = kFALSE;
-      Int_t caloLabel2      = p2->GetCaloLabel(0);
-      if(clusters){
-        for(Int_t iclus = iclus1+1; iclus < clusters->GetEntriesFast(); iclus++){
-          AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-          if(cluster){
-            if(cluster->GetID()==caloLabel2) {
-              bFound2  = kTRUE  ;
-              cluster2 = cluster;
-            }          
-          }      
-          if(bFound2) break;
-        }// calorimeter clusters loop
-      }
+      // Recover original cluster
+      AliVCluster * cluster2 = FindCluster(clusters,p2->GetCaloLabel(0),iclus1); // start new loop from iclus1 to gain some time
       
       Float_t tof1  = -1;
       Float_t l01   = -1;
-      if(cluster1 && bFound1){
-        tof1  = cluster1->GetTOF()*1e9;
-        l01   = cluster1->GetM02();
+      Int_t ncell1  = 0;
+      if(cluster1)
+      {
+        tof1   = cluster1->GetTOF()*1e9;
+        l01    = cluster1->GetM02();
+        ncell1 = cluster1->GetNCells();
+        //printf("cluster1: E %2.2f (%2.2f), l0 %2.2f, tof %2.2f\n",cluster1->E(),p1->E(),l01,tof1);
       }
-      //      else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
-      //                   p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
+      else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
+                  p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
       
       Float_t tof2  = -1;
       Float_t l02   = -1;
-      if(cluster2 && bFound2)
+      Int_t ncell2  = 0;
+      if(cluster2)
       {
-        tof2  = cluster2->GetTOF()*1e9;
-        l02   = cluster2->GetM02();
-
+        tof2   = cluster2->GetTOF()*1e9;
+        l02    = cluster2->GetM02();
+        ncell2 = cluster2->GetNCells();
+        //printf("cluster2: E %2.2f (%2.2f), l0 %2.2f, tof %2.2f\n",cluster2->E(),p2->E(),l02,tof2);
       }
-      //      else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
-      //                  p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
+      else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
+                  p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
       
-      if(clusters)
+      if(cluster1 && cluster2)
       {
         Double_t t12diff = tof1-tof2;
         if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
@@ -2134,13 +2108,15 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //--------------------------------
       //Check if opening angle is too large or too small compared to what is expected	
       Double_t angle   = photon1.Angle(photon2.Vect());
-      if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle+0.05)) {
+      if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle+0.05))
+      {
         if(GetDebug() > 2)
           printf("AliAnaPi0::MakeAnalysisFillHistograms() -Real pair angle %f not in E %f window\n",angle, (photon1+photon2).E());
         continue;
       }
       
-      if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut)) {
+      if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut))
+      {
         if(GetDebug() > 2)
           printf("AliAnaPi0::MakeAnalysisFillHistograms() - Real pair cut %f < angle %f < cut %f\n",fAngleCut, angle, fAngleMaxCut);
         continue;
@@ -2199,9 +2175,12 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }
         
         //Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
-        for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
-          if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))){ 
-            for(Int_t iasym=0; iasym < fNAsymCuts; iasym++){
+        for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
+        {
+          if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)))
+          {
+            for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
+            {
               if(a < fAsymCuts[iasym])
               {
                 Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
@@ -2211,11 +2190,14 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 
                 fhRe1     [index]->Fill(pt,m);
                 if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt,m,1./pt) ;
-                if(fFillBadDistHisto){
-                  if(p1->DistToBad()>0 && p2->DistToBad()>0){
+                if(fFillBadDistHisto)
+                {
+                  if(p1->DistToBad()>0 && p2->DistToBad()>0)
+                  {
                     fhRe2     [index]->Fill(pt,m) ;
                     if(fMakeInvPtPlots)fhReInvPt2[index]->Fill(pt,m,1./pt) ;
-                    if(p1->DistToBad()>1 && p2->DistToBad()>1){
+                    if(p1->DistToBad()>1 && p2->DistToBad()>1)
+                    {
                       fhRe3     [index]->Fill(pt,m) ;
                       if(fMakeInvPtPlots)fhReInvPt3[index]->Fill(pt,m,1./pt) ;
                     }// bad 3
@@ -2239,35 +2221,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           fhRePtAsym->Fill(pt,a);
           if(m > 0.10 && m < 0.17) fhRePtAsymPi0->Fill(pt,a);
           if(m > 0.45 && m < 0.65) fhRePtAsymEta->Fill(pt,a);
-        }
-        
-        //-------------------------------------------------------
-        //Get the number of cells needed for multi cut analysis.
-        //-------------------------------------------------------        
-        Int_t ncell1 = 0;
-        Int_t ncell2 = 0;
-        if(fMultiCutAna || (IsDataMC() && fMultiCutAnaSim))
-        {
-          AliVEvent * event = GetReader()->GetInputEvent();
-          if(event){
-            for(Int_t iclus = 0; iclus < event->GetNumberOfCaloClusters(); iclus++)
-            {
-              AliVCluster *cluster = event->GetCaloCluster(iclus);
-              
-              Bool_t is = kFALSE;
-              if     (fCalorimeter == "EMCAL" && cluster->IsEMCAL()) is = kTRUE;
-              else if(fCalorimeter == "PHOS"  && cluster->IsPHOS() ) is = kTRUE;
-              
-              if(is){
-                if      (p1->GetCaloLabel(0) == cluster->GetID()) ncell1 = cluster->GetNCells();
-                else if (p2->GetCaloLabel(0) == cluster->GetID()) ncell2 = cluster->GetNCells();
-              } // PHOS or EMCAL cluster as requested in analysis
-              
-              if(ncell2 > 0 &&  ncell1 > 0) break; // No need to continue the iteration
-              
-            }
-            //printf("e 1: %2.2f, e 2: %2.2f, ncells: n1 %d, n2 %d\n", p1->E(), p2->E(),ncell1,ncell2);
-          }
         }
         
         //---------
@@ -2502,7 +2455,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             } // Multi cut ana
             
             //Fill histograms with opening angle
-            if(fFillAngleHisto){
+            if(fFillAngleHisto)
+            {
               fhMixedOpeningAngle   ->Fill(pt,angle);
               fhMixedCosOpeningAngle->Fill(pt,TMath::Cos(angle));
             }
