@@ -425,13 +425,13 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if(photonPhi < 0) photonPhi+=TMath::TwoPi();
     
     // Check if photons hit desired acceptance
-    inacceptance = kFALSE;
+    inacceptance = kTRUE;
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-    if( GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter)) inacceptance = kTRUE ;
+    if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter)) inacceptance = kFALSE ;
     
     // Check if photons hit the Calorimeter acceptance
-    if(IsRealCaloAcceptanceOn() && inacceptance) // defined on base class
+    if(IsRealCaloAcceptanceOn()) // defined on base class
     {
       if(GetReader()->ReadStack()          &&
          !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fCalorimeter, primStack)) inacceptance = kFALSE ;
@@ -494,7 +494,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 
     if(!takeIt) continue ;
       
-    //Fill histograms
+    //Fill histograms for all photons
     fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY) ;
     if(TMath::Abs(photonY) < 1.0)
     {
@@ -503,6 +503,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi) ;
       fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta) ;
     }
+    
     if(inacceptance)
     {
       fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE ) ;
@@ -512,6 +513,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       fhYPrimMCAcc  [kmcPPhoton]->Fill(photonE , photonY) ;
     }//Accepted
     
+    //Fill histograms for photons origin
     if(mcIndex < fNPrimaryHistograms)
     {
       fhYPrimMC[mcIndex]->Fill(photonPt, photonY) ;
