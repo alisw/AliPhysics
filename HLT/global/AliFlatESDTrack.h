@@ -18,42 +18,36 @@ Op - Track parameters estimated at the point of maximal radial coordinate reache
 
 #include "Rtypes.h"
 
-#include "AliFlatTPCCluster.h"
+#include "AliVVtrack.h"
 #include "AliFlatExternalTrackParam.h"
 
 class AliESDtrack;
-class AliESDfriendTrack;
 class AliExternalTrackParam;
 
-class AliFlatESDTrack {
+class AliFlatESDTrack :public AliVVtrack {
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
-  AliFlatESDTrack();   
-  AliFlatESDTrack(const AliESDtrack* track, AliESDfriendTrack* friendTrack); 
-  ~AliFlatESDTrack();  
+
+  AliFlatESDTrack();
+  ~AliFlatESDTrack() {}  
 
   // --------------------------------------------------------------------------------
-  // -- Fill / Set methods
-  Int_t FillExternalTrackParam( 
-			       const AliExternalTrackParam* refittedParam,
-			       const AliExternalTrackParam* innerParam,
-			       const AliExternalTrackParam* innerTPC,
-			       const AliExternalTrackParam* outerParam,
-			       const AliExternalTrackParam* constrainedParam,
-			       const AliExternalTrackParam* outerITSParam
-			     );
+  // -- Set methods
+ 
+  Int_t Set( const AliESDtrack* track );
 
-  AliFlatTPCCluster *GetNextTPCClusterPointer(){ return &GetTPCCluster(fNTPCClusters); }
-
-  void StoreLastTPCCluster(){  
-     ++fNTPCClusters;
-     fSize += sizeof(AliFlatTPCCluster);
-  }
+  Int_t SetExternalTrackParam( 
+			      const AliExternalTrackParam* refittedParam,
+			      const AliExternalTrackParam* innerParam,
+			      const AliExternalTrackParam* innerTPC,
+			      const AliExternalTrackParam* outerParam,
+			      const AliExternalTrackParam* constrainedParam,
+			      const AliExternalTrackParam* outerITSParam
+			       );
 
   void SetNumberOfITSClusters( Int_t nCl ) { fNITSClusters = nCl; } 
 
-  Int_t Fill( const AliESDtrack* track, AliESDfriendTrack* friendTrack);
   
   // --------------------------------------------------------------------------------
   // -- Getter methods
@@ -87,27 +81,22 @@ class AliFlatESDTrack {
     return fNTPCClusters;
   } 
   
-  AliFlatTPCCluster *GetTPCClusters() {
-    return reinterpret_cast< AliFlatTPCCluster*>(fContent + sizeof(AliFlatExternalTrackParam)*CountBits(fTrackParamMask));
-  } 
-  
-  AliFlatTPCCluster &GetTPCCluster(Int_t ind) {
-    return GetTPCClusters()[ind];
-  } 
-
   Int_t GetNumberOfITSClusters() {
     return fNITSClusters;
   } 
-  
-  
+    
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
   
-  AliFlatESDTrack *GetNextTrack() {return reinterpret_cast<AliFlatESDTrack*>(fContent+fSize);}
+  AliFlatESDTrack *GetNextTrack() {return reinterpret_cast<AliFlatESDTrack*>(fContent+fContentSize);}
   
   // --------------------------------------------------------------------------------
   // -- Size methods
-  static ULong64_t EstimateSize(Bool_t useESDFriends = kTRUE, Int_t nTPCClusters = 160 );
-         ULong64_t GetSize()  {return fContent -  reinterpret_cast<Byte_t*>(this) + fSize;}
+
+  static size_t EstimateSize(){
+    return sizeof(AliFlatESDTrack) + 6*sizeof(AliFlatExternalTrackParam);
+  }
+
+  size_t GetSize() { return fContent -  reinterpret_cast<Byte_t*>(this) + fContentSize; }
     
  private:
   AliFlatESDTrack(const AliFlatESDTrack&);
@@ -115,7 +104,7 @@ class AliFlatESDTrack {
 
   Int_t FillExternalTrackParam(const AliExternalTrackParam* param, UShort_t flag);
 
-  UInt_t CountBits(Byte_t field, UInt_t mask = 0xFFFFFFFF);
+  static UInt_t CountBits(Byte_t field, UInt_t mask = 0xFFFFFFFF);
  
   // --------------------------------------------------------------------------------
   // -- Fixed size member objects
@@ -126,11 +115,19 @@ class AliFlatESDTrack {
   Int_t    fNITSClusters;                 // Number of ITS clusters in track
   // Bool_t   fMCLabels;
 
-  ULong64_t fSize;                      // Size of this object
+  ULong64_t fContentSize;                      // Size of this object
   
   // --------------------------------------------------------------------------------
   // -- Variable Size Object
   Byte_t fContent[1];                  // Variale size object, which contains all data
 
 };
+
+inline UInt_t AliFlatESDTrack::CountBits(Byte_t field, UInt_t mask) {
+  // Count bits in field
+  UInt_t count = 0, reg = field & mask;
+  for (; reg; count++) reg &= reg - 1; 
+  return count;
+}
+
 #endif

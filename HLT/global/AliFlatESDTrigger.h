@@ -33,13 +33,15 @@ class AliFlatESDTrigger{
   // -- Getter methods
 
   Int_t GetTriggerIndex() const { return fTriggerIndex; } 
-
+  
   const Char_t *GetTriggerClassName() const { return reinterpret_cast<const Char_t*>( fContent ); } 
   
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
   
-  AliFlatESDTrigger *GetNextTrigger() { return reinterpret_cast<AliFlatESDTrigger*>(fContent+fContentSize); }
-  
+  const AliFlatESDTrigger *GetNextTrigger() const { return reinterpret_cast<const AliFlatESDTrigger*>(fContent+fContentSize); }
+ 
+  AliFlatESDTrigger *GetNextTriggerNonConst() { return reinterpret_cast<AliFlatESDTrigger*>(fContent+fContentSize); }
+ 
   // --------------------------------------------------------------------------------
   // -- Size methods
 

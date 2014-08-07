@@ -529,7 +529,7 @@ public:
   UInt_t GetDAQAttributes() const {return fDAQAttributes;}
 
   // interface to AliVVevent
-  AliESDtrack *GetVVTrack(Int_t i) const { return GetTrack(i); }
+  const AliVVtrack *GetVVTrack(Int_t i) const { return GetTrack(i); }
 
 protected:
   AliESDEvent(const AliESDEvent&);

@@ -89,7 +89,7 @@ struct AliFlatESDVertex
   Double_t GetWDist(const AliESDVertex* v) const;
   */
 
-
+  static size_t GetSize() { return sizeof(AliFlatESDVertex); }
  
 };
 

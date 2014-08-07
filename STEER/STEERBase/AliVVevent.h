@@ -28,7 +28,7 @@ class AliVVevent{
 
  protected:
 
-  ~AliVVevent() {}
+  virtual ~AliVVevent() {}
 
  public:
   // --------------------------------------------------------------------------------
@@ -52,14 +52,15 @@ class AliVVevent{
 
   virtual void Reset() = 0;
   virtual void ConnectTracks() = 0;
-
+  
   // --------------------------------------------------------------------------------
   // -- Methods, specific for AliVVevent (are disabled in AliVEvent interface)
   // --------------------------------------------------------------------------------
-
+  
   virtual UInt_t    GetTimeStamp()   const = 0;
   virtual UInt_t    GetEventSpecie() const = 0;  
- 
+  virtual ULong64_t GetTriggerMaskNext50()   const = 0;
+
   virtual Int_t GetNumberOfKinks() const = 0;
   
   /* 
@@ -69,7 +70,7 @@ class AliVVevent{
   virtual const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}  
   */
   
-  virtual AliVVtrack* GetVVTrack(Int_t /*i*/) const = 0;
+  virtual const AliVVtrack* GetVVTrack(Int_t /*i*/) const = 0;
   virtual AliESDkink* GetKink(Int_t /*i*/) const = 0;
   //virtual AliVVtrack* GetV0(Int_t /*i*/) const = 0;
 
