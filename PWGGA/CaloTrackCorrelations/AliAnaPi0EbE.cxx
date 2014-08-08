@@ -2764,7 +2764,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
       {
         if(GetDebug()>1)
-          printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Selected gamma pair: pt %f, phi %f, eta%f \n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
+          printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Selected gamma pair: pt %f, phi %f, eta%f \n",
+                 mom.Pt(), mom.Phi()*TMath::RadToDeg(), mom.Eta());
         
         //Fill some histograms about shower shape
         if(fFillSelectClHisto && clusters && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
@@ -2773,7 +2774,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
           FillSelectedClusterHistograms(cluster2, mom2.Pt(), nMaxima2, photon2->GetTag());
         }
         
-        // Tag both photons as decay
+        // Tag both photons as decay, !!careful!! since in case of SideBand analysis, also they will be tagged.
         photon1->SetTagged(kTRUE);
         photon2->SetTagged(kTRUE);
         
@@ -2839,18 +2840,20 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
   Int_t evtIndex = 0;
   
   // Check calorimeter input
-  if(!GetInputAODBranch()){
+  if(!GetInputAODBranch())
+  {
     printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - No input calo photons in AOD branch with name < %s > , STOP\n",GetInputAODName().Data());
     abort();
   }
   
   // Get the array with conversion photons
   TClonesArray * inputAODGammaConv = (TClonesArray *) GetReader()->GetOutputEvent()->FindListObject(fInputAODGammaConvName);
-  if(!inputAODGammaConv) {
-    
+  if(!inputAODGammaConv)
+  {
     inputAODGammaConv = (TClonesArray *) GetReader()->GetInputEvent()->FindListObject(fInputAODGammaConvName);
     
-    if(!inputAODGammaConv) {
+    if(!inputAODGammaConv)
+    {
       printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - No input gamma conversions in AOD branch with name < %s >\n",fInputAODGammaConvName.Data());
       
       return;
@@ -2874,7 +2877,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
     printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Number of conversion photons %d\n",nCTS);
   
   // Do the loop, first calo, second CTS
-  for(Int_t iphoton = 0; iphoton < GetInputAODBranch()->GetEntriesFast(); iphoton++){
+  for(Int_t iphoton = 0; iphoton < GetInputAODBranch()->GetEntriesFast(); iphoton++)
+  {
     AliAODPWG4Particle * photon1 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(iphoton));
     mom1 = *(photon1->Momentum());
     
@@ -2882,16 +2886,20 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
     Int_t iclus = -1;
     AliVCluster *cluster = FindCluster(clusters,photon1->GetCaloLabel(0),iclus);
     
-    for(Int_t jphoton = 0; jphoton < nCTS; jphoton++){
+    for(Int_t jphoton = 0; jphoton < nCTS; jphoton++)
+    {
       AliAODPWG4Particle * photon2 =  (AliAODPWG4Particle*) (inputAODGammaConv->At(jphoton));
+      
       if(GetMixedEvent())
         evtIndex = GetMixedEvent()->EventIndexForCaloCluster(photon2->GetCaloLabel(0)) ;
       if(TMath::Abs(GetVertex(evtIndex)[2]) > GetZvertexCut()) continue ;  //vertex cut
       
       mom2 = *(photon2->Momentum());
       
-      Double_t mass  = (mom1+mom2).M();
-      Double_t epair = (mom1+mom2).E();
+      mom = mom1+mom2;
+      
+      Double_t mass  = mom.M();
+      Double_t epair = mom.E();
       
       Int_t nMaxima = photon1->GetFiducialArea();
       if     (nMaxima==1) fhMassPairLocMax[0]->Fill(epair,mass);
@@ -2911,12 +2919,13 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       }
       
       //Mass of selected pairs
-      fhMass->Fill(epair,(mom1+mom2).M());
+      fhMass->Fill(epair,mass);
       
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
       {
-        if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Selected gamma pair: pt %f, phi %f, eta%f\n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
+        if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Selected gamma pair: pt %f, phi %f, eta%f\n",
+                                  mom.Pt(), mom.Phi()*TMath::RadToDeg(), mom.Eta());
         
         //Fill some histograms about shower shape
         if(fFillSelectClHisto && cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
@@ -2924,23 +2933,21 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
           FillSelectedClusterHistograms(cluster, mom1.Pt(), nMaxima, photon1->GetTag());
         }
         
-        // Tag both photons as decay
+        // Tag both photons as decay, !!careful!! since in case of SideBand analysis, also they will be tagged.
         photon1->SetTagged(kTRUE);
         photon2->SetTagged(kTRUE);
         
         fhPtDecay->Fill(photon1->Pt());
         fhEDecay ->Fill(photon1->E() );
         
-        //Create AOD for analysis
-        
-        mom = mom1+mom2;
-        
         //Mass of selected pairs
-        fhSelectedMass->Fill(epair,mom.M());
+        fhSelectedMass->Fill(epair,mass);
         
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
         if(cluster) FillPileUpHistograms(mom.Pt(),cluster->GetTOF()*1e9,cluster);
+
+        //Create AOD for analysis
         
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         
@@ -2958,7 +2965,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         pi0.SetTag(tag);
         
         //Set the indeces of the original tracks or caloclusters
-        pi0.SetCaloLabel(photon1->GetCaloLabel(0), -1);
+        pi0.SetCaloLabel (photon1->GetCaloLabel(0) , -1);
         pi0.SetTrackLabel(photon2->GetTrackLabel(0), photon2->GetTrackLabel(1));
         //pi0.SetInputFileIndex(input);
         
@@ -3432,6 +3439,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
   {
     AliFatal(Form("No output pi0 in AOD branch with name < %s >,STOP \n",GetOutputAODName().Data()));
   }
+  
   //Loop on stored AOD pi0
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) Info("MakeAnalysisFillHistograms","aod branch entries %d\n", naod);
@@ -3444,7 +3452,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     AliAODPWG4Particle* pi0 =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = pi0->GetIdentifiedParticleType();
 	  
-    if(IsCaloPIDOn() && pdg != AliCaloPID::kPi0) continue;
+    if( ( pdg != AliCaloPID::kPi0 && pdg != AliCaloPID::kEta ) ) continue;
     
     //Fill pi0 histograms
     Float_t ener  = pi0->E();
