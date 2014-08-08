@@ -3182,8 +3182,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	      
 	      CalculateInvMass(v0, kK0, invMK0s, trackPt);  //function to calculate invMass with TLorentzVector class
 	      
-	    Double_t vK0sRC[3] = {invMK0s,trackPt,fEta};
-	    fhnK0sRCBias->Fill(vK0sRC);
+	      // Double_t vK0sRC[3] = {invMK0s,trackPt,fEta};
+	      //fhnK0sRCBias->Fill(vK0sRC);
 	    }
 	  }
 	
@@ -3202,8 +3202,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	      CalculateInvMass(v0, kLambda, invMLa, trackPt);  //function to calculate invMass with TLorentzVector class
 	      
-	      Double_t vLaRC[3] = {invMLa,trackPt,fEta};
-	      fhnLaRCBias->Fill(vLaRC);
+	      // Double_t vLaRC[3] = {invMLa,trackPt,fEta};
+	      // fhnLaRCBias->Fill(vLaRC);
 	    }
 	  }
 	
@@ -3223,8 +3223,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	      
 	      CalculateInvMass(v0, kAntiLambda, invMALa, trackPt);  //function to calculate invMass with TLorentzVector class
 	      
-	      Double_t vALaRC[3] = {invMALa,trackPt,fEta};
-	      fhnALaRCBias->Fill(vALaRC);
+	      // Double_t vALaRC[3] = {invMALa,trackPt,fEta};
+	      // fhnALaRCBias->Fill(vALaRC);
 	    }
 	    
 	  }
