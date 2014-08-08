@@ -2603,7 +2603,7 @@ void AliAnaPi0EbE::Init()
 void AliAnaPi0EbE::InitParameters()
 {
   //Initialize the parameters of the analysis.
-  AddToHistogramsName("AnaPi0Eb#it{E}_");
+  AddToHistogramsName("AnaPi0EbE_");
   
   fInputAODGammaConvName = "PhotonsCTS" ;
   fAnaType = kIMCalo ;
@@ -2699,9 +2699,10 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       mom2 = *(photon2->Momentum());
       
       //Get original cluster, to recover some information
-      Int_t iclus2;
+      Int_t iclus2 = -1;
       AliVCluster *cluster2 = FindCluster(clusters,photon2->GetCaloLabel(0),iclus2,iclus+1);
-      
+      // start new loop from iclus1+1 to gain some time
+
       if(!cluster2)
       {
         printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Second cluster not found\n");
@@ -2726,8 +2727,10 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       Int_t nMaxima1 = photon1->GetFiducialArea();
       Int_t nMaxima2 = photon2->GetFiducialArea();
       
-      Double_t mass  = (mom1+mom2).M();
-      Double_t epair = (mom1+mom2).E();
+      mom = mom1+mom2;
+      
+      Double_t mass  = mom.M();
+      Double_t epair = mom.E();
       
       if(nMaxima1==nMaxima2)
       {
@@ -2755,7 +2758,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - NLM of out of range: cluster1 %d, cluster2 %d \n",nMaxima1, nMaxima2);
       
       //Mass of all pairs
-      fhMass->Fill(epair,(mom1+mom2).M());
+      fhMass->Fill(epair,mass);
       
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
@@ -2780,19 +2783,24 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         fhPtDecay->Fill(photon2->Pt());
         fhEDecay ->Fill(photon2->E() );
         
-        //Create AOD for analysis
-        mom = mom1+mom2;
-        
         //Mass of selected pairs
-        fhSelectedMass->Fill(epair,mom.M());
+        fhSelectedMass->Fill(epair,mass);
         
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
         FillPileUpHistograms(mom.Pt(),((cluster1->GetTOF()+cluster2->GetTOF())*1e9)/2,cluster1);
         
+        //Create AOD for analysis
+        
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         
-        pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
+        if     ( (GetNeutralMesonSelection()->GetParticle()).Contains("Pi0") ) pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
+        else if( (GetNeutralMesonSelection()->GetParticle()).Contains("Eta") ) pi0.SetIdentifiedParticleType(AliCaloPID::kEta);
+        else
+        {
+          printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Particle type declared in AliNeutralMeson not correct, do not add \n");
+          return ;
+        }
         pi0.SetDetector(photon1->GetDetector());
         
         // MC
@@ -2936,7 +2944,13 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         
-        pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
+        if     ( (GetNeutralMesonSelection()->GetParticle()).Contains("Pi0") ) pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
+        else if( (GetNeutralMesonSelection()->GetParticle()).Contains("Eta") ) pi0.SetIdentifiedParticleType(AliCaloPID::kEta);
+        else
+        {
+          printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Particle type declared in AliNeutralMeson not correct, do not add \n");
+          return ;
+        }
         pi0.SetDetector(photon1->GetDetector());
         
         // MC
