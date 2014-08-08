@@ -753,7 +753,11 @@ AliAnaElectron* ConfigureElectronAnalysis()
   
   AliAnaElectron *ana = new AliAnaElectron();
   ana->SetDebug(kDebug); //10 for lots of messages
-    
+  
+  ana->FillAODWithElectrons();
+  //ana->FillAODWithHadrons();
+  //ana->FillAODWithAny();
+  
   if(kCalorimeter == "PHOS")
   {
     ana->SetNCellCut(2);// At least 2 cells
@@ -791,8 +795,6 @@ AliAnaElectron* ConfigureElectronAnalysis()
   ana->SwitchOffFillShowerShapeHistograms();  
   ana->SwitchOffFillWeightHistograms()  ;
   ana->SwitchOffFiducialCut();
-  
-  //ana->FillAODWithHadrons();
   
   if(!kData.Contains("delta")) 
   {
