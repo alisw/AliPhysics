@@ -46,6 +46,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   // Main
   
+  void           FillEMCALBCHistograms(Float_t energy, Float_t eta, Float_t phi, Float_t time);
+  
   void           FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * c) ;
   
   void           FillRejectedClusterHistograms(TLorentzVector mom, Int_t mctag, Int_t nMaxima);
