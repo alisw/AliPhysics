@@ -151,11 +151,14 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhPtNoCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtNoCut);
   
-  fhPtCutDCA  = new TH1F ("hPtCutDCA","#it{p}_{T} distribution, cut DCA", nptbins,ptmin,ptmax);
-  fhPtCutDCA->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  outputContainer->Add(fhPtCutDCA);
+  if(!GetReader()->IsDCACutOn())
+  {
+    fhPtCutDCA  = new TH1F ("hPtCutDCA","#it{p}_{T} distribution, cut DCA", nptbins,ptmin,ptmax);
+    fhPtCutDCA->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtCutDCA);
+  }
   
-  if(fFillVertexBC0Histograms)
+  if(fFillVertexBC0Histograms && !GetReader()->IsDCACutOn())
   {
     fhPtCutDCABCOK  = new TH1F ("hPtCutDCABCOK","#it{p}_{T} distribution, DCA cut, track BC=0 or -100", nptbins,ptmin,ptmax);
     fhPtCutDCABCOK->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -301,11 +304,14 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhPtTOFSignal->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtTOFSignal);
   
-  fhPtTOFSignalDCACut  = new TH2F ("hPtTOFSignalDCACut","TOF signal after DCA cut", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
-  fhPtTOFSignalDCACut->SetYTitle("TOF signal (ns)");
-  fhPtTOFSignalDCACut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  outputContainer->Add(fhPtTOFSignalDCACut);
-
+  if(!GetReader()->IsDCACutOn())
+  {
+    fhPtTOFSignalDCACut  = new TH2F ("hPtTOFSignalDCACut","TOF signal after DCA cut", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
+    fhPtTOFSignalDCACut->SetYTitle("TOF signal (ns)");
+    fhPtTOFSignalDCACut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtTOFSignalDCACut);
+  }
+  
   if(fFillVertexBC0Histograms)
   {
     fhPtTOFSignalVtxOutBC0  = new TH2F ("hPtTOFSignalVtxOutBC0","TOF signal, vtx BC!=0", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
@@ -796,7 +802,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       fhPtDCA[2]->Fill(pt, dcaCons);
     }
     
-    if(GetReader()->AcceptDCA(pt,trackDCA)) fhPtCutDCA->Fill(pt);
+    if(GetReader()->AcceptDCA(pt,trackDCA) && !GetReader()->IsDCACutOn() ) fhPtCutDCA->Fill(pt);
     
     if(fFillVertexBC0Histograms)
     {
@@ -821,7 +827,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         fhPtNPileUpSPDVtxBC0->Fill(pt,nVtxSPD);
         fhPtNPileUpTrkVtxBC0->Fill(pt,nVtxTrk);
         
-        if(GetReader()->AcceptDCA(pt,trackDCA)) fhPtCutDCABCOK->Fill(pt);
+        if(GetReader()->AcceptDCA(pt,trackDCA) && !GetReader()->IsDCACutOn() ) fhPtCutDCABCOK->Fill(pt);
         
         if(dcaCons == -999)
         {
@@ -951,7 +957,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     {
       fhTOFSignal  ->Fill(tof);
       fhPtTOFSignal->Fill(pt, tof);
-      if(GetReader()->AcceptDCA(pt,trackDCA)) fhPtTOFSignalDCACut->Fill(pt, tof);
+      if(GetReader()->AcceptDCA(pt,trackDCA) && !GetReader()->IsDCACutOn() ) fhPtTOFSignalDCACut->Fill(pt, tof);
         
       if(fFillVertexBC0Histograms)
       {
@@ -1103,7 +1109,6 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         }
         else
           fhPtDCANoSPDNoRefit[2]->Fill(pt, dcaCons);
-
       }
     }
     else
