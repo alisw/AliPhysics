@@ -1034,25 +1034,47 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   
   ana->SetAnalysisType(analysis);
   TString opt = "";
-  if(analysis==AliAnaPi0EbE::kIMCaloTracks) opt = "Conv";
-  if(analysis==AliAnaPi0EbE::kSSCalo)       opt = "SS";
+  if(analysis == AliAnaPi0EbE::kIMCaloTracks) opt = "Conv";
+  if(analysis == AliAnaPi0EbE::kSSCalo)       opt = "SS";
   
-  if(kCollisions=="pp") ana->SetMinPt(0.5);
-  else                  ana->SetMinPt(1.0);
-  
-  if(kCalorimeter=="EMCAL" && !kSimulation) ana->SetPairTimeCut(100);
-  
-  ana->SetMinDistanceToBadChannel(2, 4, 6);
-  ana->SwitchOnSplitClusterDistToBad();
+  if(analysis == AliAnaPi0EbE::kIMCalo && kCalorimeter=="EMCAL" && !kSimulation) ana->SetPairTimeCut(100);
+  if(analysis == AliAnaPi0EbE::kIMCaloTracks) ana->SetInputAODGammaConvName("PhotonsCTS");
 
+  // Common settings for all 3 type of analysis
+  
   ana->SwitchOnSelectedClusterHistoFill();
 
   ana->SetCalorimeter(kCalorimeter);
-  ana->SetTimeCut(-1e10,1e10); // Open time cut
   
-  // Input / output delta AOD settings
+  //Set Histograms name tag, bins and ranges
+  ana->AddToHistogramsName(Form("Ana%s%sEbE_TM%d_",particle.Data(),opt.Data(),kTM));
   
-  ana->SetInputAODName(Form("Photon%s",kName.Data()));
+  // Specific settings for different type of analysis
+  
+  ana->SwitchOffFillWeightHistograms();
+  if(!kSimulation) ana->SwitchOnFillPileUpHistograms();
+  
+  if(kTM)
+  {
+    //printf("--->>>REMOVE MATCHED Pi0\n");
+    ana->SwitchOnTrackMatchRejection() ;
+    ana->SwitchOffTMHistoFill() ;
+  }
+  else
+  {
+    //printf("---->>>ACCEPT MATCHED Pi0\n");
+    ana->SwitchOffTrackMatchRejection() ;
+    ana->SwitchOnTMHistoFill() ;
+  }
+  
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  //ana->SwitchOnFillEMCALBCHistograms();
+  
+  if(kPrint) ana->Print("");
+  
+  ConfigureMC(ana);
+
   if(!kInputDataType.Contains("delta"))
   {
     ana->SetOutputAODName(Form("%s%s%s",particle.Data(), opt.Data(), kName.Data()));
@@ -1062,15 +1084,12 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   else
     ana->SetInputAODName(Form("%s%s%s",particle.Data(),opt.Data(),kName.Data()));
   
-  
-  if(analysis == AliAnaPi0EbE::kIMCaloTracks) ana->SetInputAODGammaConvName("PhotonsCTS");
-  
-  //Set Histograms name tag, bins and ranges
-  
-  ana->AddToHistogramsName(Form("Ana%s%sEbE_TM%d_",particle.Data(),opt.Data(),kTM));
-  
   if(analysis!=AliAnaPi0EbE::kSSCalo)
   {
+    // Input / output delta AOD settings
+    
+    ana->SetInputAODName(Form("Photon%s",kName.Data()));
+    
     AliNeutralMesonSelection *nms = ana->GetNeutralMesonSelection();
     nms->SetParticle(particle);
     
@@ -1099,6 +1118,11 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
     ana->SetNLMMinEnergy(1, 6);
     ana->SetNLMMinEnergy(2, 6);
     
+    ana->SetMinDistanceToBadChannel(2, 4, 6); // only use the first one
+    ana->SwitchOnSplitClusterDistToBad();
+    
+    ana->SetTimeCut(-1e10,1e10); // Open time cut
+
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     ana->SetNLMCut(1, 2) ;
     
@@ -1153,30 +1177,6 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
       caloPID->SetPi0MassShiftHighECell(0.005);
     }
   }
-  
-  ana->SwitchOffFillWeightHistograms();
-  if(!kSimulation) ana->SwitchOnFillPileUpHistograms();
-  
-  if(kTM)
-  {
-    //printf("--->>>REMOVE MATCHED Pi0\n");
-    ana->SwitchOnTrackMatchRejection() ;
-    ana->SwitchOffTMHistoFill() ;
-  }
-  else
-  {
-    //printf("---->>>ACCEPT MATCHED Pi0\n");
-    ana->SwitchOffTrackMatchRejection() ;
-    ana->SwitchOnTMHistoFill() ;
-  }
-  
-  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
-  
-  //ana->SwitchOnFillEMCALBCHistograms();
-  
-  if(kPrint) ana->Print("");
-  
-  ConfigureMC(ana);
   
   return  ana;
   
