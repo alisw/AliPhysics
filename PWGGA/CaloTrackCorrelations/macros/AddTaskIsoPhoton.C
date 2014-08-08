@@ -328,7 +328,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
   cu->SetDebug(debug);
   
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
-  cu->SetNumberOfCellsFromEMCALBorder(0);//this was originally set to zero
+  cu->SetNumberOfCellsFromEMCALBorder(0);//this was originally set to one
   cu->SetNumberOfCellsFromPHOSBorder(2);
   
   cu->SwitchOffRecalculateClusterTrackMatching();
