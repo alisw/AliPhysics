@@ -15,7 +15,7 @@ enum chargesign {kPositive,kNegative};
 Float_t PerformFit(TH1F* fHistDCA, TObjArray *mc,TString partname,Float_t xyMax);
 
 void FitDCADistributions(TString period="LHC10d",
-			 TString MCname="LHC10f6aold",  
+			 TString MCname="LHC10f6a",  
 			 Int_t iSpecies=2, 
 			 Int_t cSign=1
 			 )
@@ -32,10 +32,10 @@ void FitDCADistributions(TString period="LHC10d",
   TH1F *hPrimAllDATAMC=new TH1F("hPrimAllDATAMC","hPrimAllDATAMC",nptbins,ptbins);
   
   
-  TString fnameMC=Form("/home/prino/alice/PID/pp7/%s/AnalysisResults.root",MCname.Data());
+  TString fnameMC=Form("%s/AnalysisResults.root",MCname.Data());
   TString lnameMC="clistITSsaMult-1to-1";
   TString lnameCutMC="DCACutMult-1to-1";
-  TString fnameDATA=Form("/home/prino/alice/PID/pp7/%s/AnalysisResults.root",period.Data());
+  TString fnameDATA=Form("%s/AnalysisResults.root",period.Data());
   TString lnameDATA="clistITSsaMult-1to-1";
   TString lnameCutDATA="DCACutMult-1to-1";
 
@@ -100,7 +100,7 @@ void FitDCADistributions(TString period="LHC10d",
     for(Int_t ipar=0; ipar<3; ipar++) fDCAxyCutMC->SetParameter(ipar,xyPMC[ipar]);
     fDCAxyCutMC->SetParameter(3,DCAcut);
     nSigmaDCAxyMC=DCAcut;
- }
+  }
 
   //DATA histograms
   TFile *fDATA=new TFile(fnameDATA,"READ");
@@ -136,16 +136,17 @@ void FitDCADistributions(TString period="LHC10d",
     fDCAxyCutDATA->SetParameter(3,DCAcut);
     nSigmaDCAxyDATA=DCAcut;
   }
-
+  
   if(TMath::Abs(nSigmaDCAxyDATA-nSigmaDCAxyMC)<0.01) DCAcut=nSigmaDCAxyDATA;
   else{
     printf("ERROR: DCAxy cuts do not match between data and MC\n");
     return;
   }
-  if(TMath::Abs(nSigmaDCAzDATA-nSigmaDCAzMC)<0.01){
-    printf("ERROR: DCAz cuts do not match between data and MC\n");
+  if(TMath::Abs(nSigmaDCAzDATA-nSigmaDCAzMC)>0.01){
+    printf("ERROR: DCAz cuts do not match between data (%f) and MC (%f) \n",nSigmaDCAzDATA,nSigmaDCAzMC);
     return;
   }
+
   TCanvas *cfitDATA=new TCanvas("cfitDATA","cfitDATA");
   cfitDATA->Divide(6,4);
   TCanvas *cfitMC=new TCanvas("cfitMC","cfitMC");
@@ -167,7 +168,7 @@ void FitDCADistributions(TString period="LHC10d",
       mcTemplates->Add(fHistDCAPrim[ibin]);
       mcTemplates->Add(fHistDCAsecSt[ibin]);
     }
-    if(fHistDCADATA[ibin]->Integral()==0) continue;
+    //    if(fHistDCADATA[ibin]->Integral()==0) continue;
 
     ////////////////// Fit on DATA
     cfitDATA->cd(ibin);
