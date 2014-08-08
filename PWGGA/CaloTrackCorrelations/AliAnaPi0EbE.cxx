@@ -257,6 +257,53 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
   
 }
 
+//______________________________________________________________________________________________
+void AliAnaPi0EbE::FillEMCALBCHistograms(Float_t energy, Float_t eta, Float_t phi, Float_t time)
+{
+  // EMCal trigger cluster BC studies
+  
+  Int_t id = GetReader()->GetTriggerClusterId();
+  if( id < 0 ) return;
+
+  Int_t bc = GetReader()->GetTriggerClusterBC();
+  if(TMath::Abs(bc) >= 6)
+    Info("FillEMCALBCHistograms","Trigger BC not expected = %d\n",bc);
+  
+  if(phi < 0) phi+=TMath::TwoPi();
+  
+  if(energy > 2)
+  {
+    Double_t timeUS = TMath::Abs(time);
+
+    if      (timeUS < 25) fhEtaPhiEMCALBC0->Fill(eta, phi);
+    else if (timeUS < 75) fhEtaPhiEMCALBC1->Fill(eta, phi);
+    else                  fhEtaPhiEMCALBCN->Fill(eta, phi);
+  }
+  
+  if(TMath::Abs(bc) >= 6) return ;
+  
+  if(GetReader()->IsBadCellTriggerEvent() || GetReader()->IsExoticEvent()) return ;
+  
+  if(GetReader()->IsTriggerMatched())
+  {
+    if(energy > 2) fhEtaPhiTriggerEMCALBC[bc+5]->Fill(eta, phi);
+    fhTimeTriggerEMCALBC[bc+5]->Fill(energy, time);
+    if(GetReader()->IsPileUpFromSPD()) fhTimeTriggerEMCALBCPileUpSPD[bc+5]->Fill(energy, time);
+  }
+  else
+  {
+    if(energy > 2) fhEtaPhiTriggerEMCALBCUM[bc+5]->Fill(eta, phi);
+    fhTimeTriggerEMCALBCUM[bc+5]->Fill(energy, time);
+    
+    if(bc==0)
+    {
+      if(GetReader()->IsTriggerMatchedOpenCuts(0)) fhTimeTriggerEMCALBC0UMReMatchOpenTime   ->Fill(energy, time);
+      if(GetReader()->IsTriggerMatchedOpenCuts(1)) fhTimeTriggerEMCALBC0UMReMatchCheckNeigh ->Fill(energy, time);
+      if(GetReader()->IsTriggerMatchedOpenCuts(2)) fhTimeTriggerEMCALBC0UMReMatchBoth       ->Fill(energy, time);
+    }
+  }
+}
+
 //___________________________________________________________________________________
 void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * calo)
 {
@@ -789,16 +836,22 @@ TObjString * AliAnaPi0EbE::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Calorimeter: %s;",fCalorimeter.Data()) ;
   parList+=onePar ;
+  snprintf(onePar,buffersize,"Local maxima in cluster: %d < nlm < %d;",fNLMCutMin,fNLMCutMax) ;
+  parList+=onePar ;
   
   if(fAnaType == kSSCalo)
   {
     snprintf(onePar,buffersize,"E cut: %2.2f<E<%2.2f;",GetMinEnergy(),GetMaxEnergy()) ;
+    parList+=onePar ;
+    snprintf(onePar,buffersize,"N cell cut: N > %d;",GetCaloPID()->GetClusterSplittingMinNCells()) ;
     parList+=onePar ;
     snprintf(onePar,buffersize,"Min Dist to Bad channel: fMinDist =%2.2f; fMinDist2=%2.2f, fMinDist3=%2.2f;",fMinDist, fMinDist2,fMinDist3) ;
     parList+=onePar ;
     snprintf(onePar,buffersize,"Min E cut for NLM cases: 1) %2.2f; 2) %2.2f; 3) %2.2f;",fNLMECutMin[0],fNLMECutMin[1],fNLMECutMin[2]) ;
     parList+=onePar ;
     snprintf(onePar,buffersize,"Reject Matched tracks?: %d;",fRejectTrackMatch) ;
+    parList+=onePar ;
+    snprintf(onePar,buffersize,"Reject split cluster close to border or bad?: %d;",fCheckSplitDistToBad) ;
     parList+=onePar ;
     snprintf(onePar,buffersize,"Time cut: %2.2f<t<%2.2f;",fTimeCutMin,fTimeCutMax) ;
     parList+=onePar ;
@@ -810,8 +863,6 @@ TObjString * AliAnaPi0EbE::GetAnalysisCuts()
     snprintf(onePar,buffersize,"Select %s;", (GetNeutralMesonSelection()->GetParticle()).Data()) ;
     parList+=onePar ;
     snprintf(onePar,buffersize,"Mass cut: %2.2f<M<%2.2f;",GetNeutralMesonSelection()->GetInvMassMinCut() ,GetNeutralMesonSelection()->GetInvMassMaxCut()) ;
-    parList+=onePar ;
-    snprintf(onePar,buffersize,"Local maxima in cluster: %d < nlm < %d;",fNLMCutMin,fNLMCutMax) ;
     parList+=onePar ;
   }
   else if(fAnaType == kIMCaloTracks)
@@ -3010,15 +3061,18 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   TObjArray * pl        = 0x0;
   AliVCaloCells * cells = 0x0;
   //Select the Calorimeter of the photon
-  if      (fCalorimeter == "PHOS" )
-  {
-    pl    = GetPHOSClusters();
-    cells = GetPHOSCells();
-  }
-  else if (fCalorimeter == "EMCAL")
+  if      (fCalorimeter == "EMCAL" )
   {
     pl    = GetEMCALClusters();
     cells = GetEMCALCells();
+  }
+  else if (fCalorimeter == "PHOS")
+  {
+    AliFatal("kSSCalo case not implememted for PHOS");
+    return; // for coverity
+    
+    //pl    = GetPHOSClusters();
+    //cells = GetPHOSCells();
   }
   
   if(!pl)
@@ -3159,6 +3213,24 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Float_t ptSplit = l12.Pt();
     Float_t  eSplit = e1+e2;
     
+    //mass of all clusters
+    fhMass       ->Fill(mom.E() ,mass);
+    fhMassPt     ->Fill(mom.Pt(),mass);
+    fhMassSplitPt->Fill(ptSplit ,mass);
+    
+    // Asymmetry of all clusters
+    Float_t asy =-10;
+    
+    if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
+    fhAsymmetry->Fill(mom.E(),asy);
+    
+    // Divide NLM in 3 cases, 1 local maxima, 2 local maxima, more than 2 local maxima
+    Int_t indexMax = -1;
+    if     (nMaxima==1) indexMax = 0 ;
+    else if(nMaxima==2) indexMax = 1 ;
+    else                indexMax = 2 ;
+    fhMassPtLocMax[indexMax]->Fill(mom.Pt(),mass);
+    
     Int_t   mcIndex   =-1;
     Int_t   noverlaps = 0;
     Float_t ptprim    = 0;
@@ -3190,22 +3262,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       const UInt_t nlabels = calo->GetNLabels();
       Int_t overpdg[nlabels];
       noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,tag,mesonLabel,GetReader(),overpdg);
-    }
-    
-    //mass of all clusters
-    fhMass       ->Fill(mom.E() ,mass);
-    fhMassPt     ->Fill(mom.Pt(),mass);
-    fhMassSplitPt->Fill(ptSplit ,mass);
-    
-    Int_t indexMax = -1;
-    if     (nMaxima==1) indexMax = 0 ;
-    else if(nMaxima==2) indexMax = 1 ;
-    else                indexMax = 2 ;
-    fhMassPtLocMax[indexMax]->Fill(mom.Pt(),mass);
-
-    if(IsDataMC())
-    {
-      fhMCMassPt[mcIndex]     ->Fill(mom.Pt(),mass);
+ 
+      fhMCMassPt     [mcIndex]->Fill(mom.Pt(),mass);
       fhMCMassSplitPt[mcIndex]->Fill(ptSplit ,mass);
       if(mcIndex==kmcPi0)
       {
@@ -3240,19 +3298,10 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
         fhMassPtNoOverlap     ->Fill(mom.Pt(),mass);
         fhMassSplitPtNoOverlap->Fill(ptSplit ,mass);
         
-        fhMCMassPtNoOverlap[mcIndex]     ->Fill(mom.Pt(),mass);
+        fhMCMassPtNoOverlap     [mcIndex]->Fill(mom.Pt(),mass);
         fhMCMassSplitPtNoOverlap[mcIndex]->Fill(ptSplit ,mass);
       }
-    }
-    
-    // Asymmetry of all clusters
-    Float_t asy =-10;
-    
-    if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
-    fhAsymmetry->Fill(mom.E(),asy);
-    
-    if(IsDataMC())
-    {
+
       fhMCPtAsymmetry[mcIndex]->Fill(mom.Pt(),asy);
     }
     
@@ -3365,12 +3414,29 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       }
     }
     
-    //-----------------------
-    //Create AOD for analysis
-    
+    // Remove clusters with NLM=x depeding on a minimim energy cut
     if(nMaxima == 1 && fNLMECutMin[0] > mom.E()) continue;
     if(nMaxima == 2 && fNLMECutMin[1] > mom.E()) continue;
     if(nMaxima >  2 && fNLMECutMin[2] > mom.E()) continue;
+
+    
+    //Fill some histograms about shower shape
+    if(fFillSelectClHisto && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
+    {
+      FillSelectedClusterHistograms(calo, mom.Pt(), nMaxima, tag, asy);
+    }
+    
+    // Fill histograms to undertand pile-up before other cuts applied
+    // Remember to relax time cuts in the reader
+    Double_t tofcluster   = calo->GetTOF()*1e9;
+    
+    FillPileUpHistograms(mom.Pt(),tofcluster,calo);
+    
+    if(fFillEMCALBCHistograms && fCalorimeter=="EMCAL")
+      FillEMCALBCHistograms(mom.E(), mom.Eta(), mom.Phi(), tofcluster);
+    
+    //-----------------------
+    //Create AOD for analysis
     
     AliAODPWG4Particle aodpi0 = AliAODPWG4Particle(mom);
     aodpi0.SetLabel(calo->GetLabel());
@@ -3390,59 +3456,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     aodpi0.SetFiducialArea(nMaxima);
     
     aodpi0.SetTag(tag);
-    
-    //Fill some histograms about shower shape
-    if(fFillSelectClHisto && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
-    {
-      FillSelectedClusterHistograms(calo, aodpi0.Pt(), nMaxima, tag, asy);
-    }
-    
-    // Fill histograms to undertand pile-up before other cuts applied
-    // Remember to relax time cuts in the reader
-    Double_t tofcluster   = calo->GetTOF()*1e9;
-    Double_t tofclusterUS = TMath::Abs(tofcluster);
-    
-    FillPileUpHistograms(aodpi0.Pt(),tofcluster,calo);
-    
-    Int_t id = GetReader()->GetTriggerClusterId();
-    if(fFillEMCALBCHistograms && fCalorimeter=="EMCAL" && id >=0 )
-    {
-      Float_t phicluster = aodpi0.Phi();
-      if(phicluster < 0) phicluster+=TMath::TwoPi();
-      
-      if(calo->E() > 2)
-      {
-        if      (tofclusterUS < 25) fhEtaPhiEMCALBC0->Fill(aodpi0.Eta(), phicluster);
-        else if (tofclusterUS < 75) fhEtaPhiEMCALBC1->Fill(aodpi0.Eta(), phicluster);
-        else                        fhEtaPhiEMCALBCN->Fill(aodpi0.Eta(), phicluster);
-      }
-      
-      Int_t bc = GetReader()->GetTriggerClusterBC();
-      if(TMath::Abs(bc) < 6  && !GetReader()->IsBadCellTriggerEvent() && !GetReader()->IsExoticEvent() )
-      {
-        if(GetReader()->IsTriggerMatched())
-        {
-          if(calo->E() > 2) fhEtaPhiTriggerEMCALBC[bc+5]->Fill(aodpi0.Eta(), phicluster);
-          fhTimeTriggerEMCALBC[bc+5]->Fill(calo->E(), tofcluster);
-          if(GetReader()->IsPileUpFromSPD()) fhTimeTriggerEMCALBCPileUpSPD[bc+5]->Fill(calo->E(), tofcluster);
-        }
-        else
-        {
-          if(calo->E() > 2) fhEtaPhiTriggerEMCALBCUM[bc+5]->Fill(aodpi0.Eta(), phicluster);
-          fhTimeTriggerEMCALBCUM[bc+5]->Fill(calo->E(), tofcluster);
-          
-          if(bc==0)
-          {
-            if(GetReader()->IsTriggerMatchedOpenCuts(0)) fhTimeTriggerEMCALBC0UMReMatchOpenTime   ->Fill(calo->E(), tofcluster);
-            if(GetReader()->IsTriggerMatchedOpenCuts(1)) fhTimeTriggerEMCALBC0UMReMatchCheckNeigh ->Fill(calo->E(), tofcluster);
-            if(GetReader()->IsTriggerMatchedOpenCuts(2)) fhTimeTriggerEMCALBC0UMReMatchBoth       ->Fill(calo->E(), tofcluster);
-          }
-         }
-      }
-      else if(TMath::Abs(bc) >= 6)
-        Info("MakeShowerShapeIdentification","Trigger BC not expected = %d\n",bc);
-    }
-    
+
     //Add AOD with pi0 object to aod branch
     AddAODParticle(aodpi0);
     
