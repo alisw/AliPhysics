@@ -787,24 +787,40 @@ TObjString * AliAnaPi0EbE::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fAnaType=%d (Pi0 selection type) \n",fAnaType) ;
   parList+=onePar ;
+  snprintf(onePar,buffersize,"Calorimeter: %s;",fCalorimeter.Data()) ;
+  parList+=onePar ;
   
   if(fAnaType == kSSCalo)
   {
-    snprintf(onePar,buffersize,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+    snprintf(onePar,buffersize,"Min Dist to Bad channel: fMinDist =%2.2f; fMinDist2=%2.2f, fMinDist3=%2.2f;",fMinDist, fMinDist2,fMinDist3) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+    snprintf(onePar,buffersize,"Min E cut for NLM cases: 1) %2.2f; 2) %2.2f; 3) %2.2f;",fNLMECutMin[0],fNLMECutMin[1],fNLMECutMin[2]) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+    snprintf(onePar,buffersize,"Reject Matched tracks?: %d;",fRejectTrackMatch) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+    snprintf(onePar,buffersize,"Time cut: %2.2f<t<%2.2f;",fTimeCutMin,fTimeCutMax) ;
+    parList+=onePar ;
+    //Get parameters set in PID class.
+    parList += GetCaloPID()->GetPIDParametersList() ;
+  }
+  else if(fAnaType == kIMCalo)
+  {
+    snprintf(onePar,buffersize,"Time Diff: %2.2f\n",GetPairTimeCut()) ;
+    parList+=onePar ;
+    snprintf(onePar,buffersize,"Local maxima in cluster: %d < nlm < %d\n",fNLMCutMin,fNLMCutMax) ;
+    parList+=onePar ;
+    
+  }
+  else if(fAnaType == kIMCaloTracks)
+  {
+    snprintf(onePar,buffersize,"Photon Conv Array: %s\n",fInputAODGammaConvName.Data()) ;
+    parList+=onePar ;
+    snprintf(onePar,buffersize,"Local maxima in cluster: %d < nlm < %d\n",fNLMCutMin,fNLMCutMax) ;
     parList+=onePar ;
   }
   
   //Get parameters set in base class.
-  parList += GetBaseParametersList() ;
-  
-  //Get parameters set in PID class.
-  if(fAnaType == kSSCalo) parList += GetCaloPID()->GetPIDParametersList() ;
+  //parList += GetBaseParametersList() ;
   
   return new TObjString(parList) ;
 }
@@ -2980,7 +2996,6 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
   
 }
 
-
 //_________________________________________________
 void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 {
@@ -3430,6 +3445,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   if(GetDebug() > 1) Info("MakeShowerShapeIdentification","End fill AODs \n");
   
 }
+
 //______________________________________________
 void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
 {
