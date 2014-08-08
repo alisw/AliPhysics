@@ -931,8 +931,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
 							ProcessTrueNeutralPionCandidatesPureConversionsAOD(pi0cand,gamma0,gamma1);
 					}
 				}
-				delete pi0cand;
-				pi0cand=0x0;
+// 				delete pi0cand;
+// 				pi0cand=0x0;
 			}
 		}
 	}
