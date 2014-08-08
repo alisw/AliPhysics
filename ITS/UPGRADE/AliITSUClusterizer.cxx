@@ -395,7 +395,7 @@ void AliITSUClusterizer::CheckLabels()
     if (label>=ntracks) continue;
     TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
     kine[i] = part->Energy() - part->GetCalcMass(); // kinetic energy 
-    if (kine[i] < 0.02) {    // reduce soft particles from the same cluster
+    if (kine[i] < 0.001) {    // reduce soft particles from the same cluster
       Int_t m=part->GetFirstMother();
       if (m<0) continue; // primary
       //
