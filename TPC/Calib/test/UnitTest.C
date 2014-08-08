@@ -14,6 +14,7 @@
 #include "AliSysInfo.h"
 #include "TTree.h"
 #include "AliLog.h"
+#include "THn.h"
 
 const Double_t kAlmost0=1.e-13;
 
@@ -84,19 +85,58 @@ void UnitTestAliTPCcalibAlignStreamer(const char *fname="/hera/alice/local/bench
   AliSysInfo::AddStamp("LoadLaser");
   TTree * tree =AliSysInfo::MakeTree("syswatch.log");
   tree->Scan("sname:deltaVM:VM:pI.fMemResident","","colsize=30");
+  fin->Close();
+  delete fin;
   //
   // 1.) Write part
   //
   TFile * fout=new TFile("testAliTPCcalibAlignStreamer.root","recreate");
-  align->Write();
+  align->Write("alignTPC"); 
+  AliSysInfo::AddStamp("WriteAlign");
   fout->ls();
+  fout->Close();
+  delete fout;
+  //
+  // 2.) read back
+  //
+  fin=new TFile("testAliTPCcalibAlignStreamer.root");
+  AliTPCcalibAlign * align2 = (AliTPCcalibAlign *)fin->Get("alignTPC");  
+  AliSysInfo::AddStamp("ReadAlign2");
+  if (align2==NULL){
+    ::Fatal("UnitTestAliTPCcalibAlignStreamer","Alignemnt not read");
+  }else{
+    ::Info("UnitTestAliTPCcalibAlignStreamer","Alignemnt read-OK");
+  }
+  if (align2->GetClusterDelta(0)==NULL){
+    ::Fatal("UnitTestAliTPCcalibAlignStreamer","histogram GetClusterDelta(0) not read");
+  }else{
+    ::Info("UnitTestAliTPCcalibAlignStreamer","histogram read GetClusterDelta(0) -OK");
+  }
+  if (align2->GetTrackletDelta(0)==NULL){
+    ::Fatal("UnitTestAliTPCcalibAlignStreamer","histogram GetTrackletDelta(0)not read");
+  }else{
+    ::Info("UnitTestAliTPCcalibAlignStreamer","histogram read GetTrackletDelta(0) -OK");
+  }
+
+  if (align2->GetClusterDelta(0)->GetEntries()!=align->GetClusterDelta(0)->GetEntries()){
+    ::Fatal("UnitTestAliTPCcalibAlignStreamer","histogram with different entries");
+  }else{
+    ::Info("UnitTestAliTPCcalibAlignStreamer","histogram cont. GettrackletDelta(0) -OK");
+  }
+  if (align2->GetTrackletDelta(0)->GetEntries()!=align->GetTrackletDelta(0)->GetEntries()){
+    ::Fatal("UnitTestAliTPCcalibAlignStreamer","histogram with different entries");
+  }
+  //
+  // 3.) delete 
+  //
+  delete align2;
+  AliSysInfo::AddStamp("deleteAlign2");
   delete laser;
   AliSysInfo::AddStamp("deleteLaser");
   delete align;
   AliSysInfo::AddStamp("deleteAlign");
-  delete fout;
   //
-  // 2.) Check memory
+  // 4.) Check memory
   //
   tree =AliSysInfo::MakeTree("syswatch.log");
   tree->Scan("sname:deltaVM:VM:pI.fMemResident","","colsize=25");
