@@ -23,6 +23,8 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles() ;              // default ctor
   virtual ~AliAnaChargedParticles() { ; } // virtual dtor
   
+  void    FillPrimaryHistograms();
+  
   TList * GetCreateOutputObjects();
     
   void    Init();

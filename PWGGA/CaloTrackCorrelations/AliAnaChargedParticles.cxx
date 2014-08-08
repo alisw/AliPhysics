@@ -125,6 +125,108 @@ ClassImp(AliAnaChargedParticles)
 
 }
 
+//__________________________________________________
+void AliAnaChargedParticles::FillPrimaryHistograms()
+{
+  // Fill primary generated particles histograms if MC data is available
+  
+  Int_t    pdg       =  0 ;
+  Int_t    nprim     =  0 ;
+  
+  TParticle        * primStack = 0;
+  AliAODMCParticle * primAOD   = 0;
+  TLorentzVector lv;
+  
+  // Get the ESD MC particles container
+  AliStack * stack = 0;
+  if( GetReader()->ReadStack() )
+  {
+    stack = GetMCStack();
+    if(!stack ) return;
+    nprim = stack->GetNtrack();
+  }
+  
+  // Get the AOD MC particles container
+  TClonesArray * mcparticles = 0;
+  if( GetReader()->ReadAODMCParticles() )
+  {
+    mcparticles = GetReader()->GetAODMCParticles();
+    if( !mcparticles ) return;
+    nprim = mcparticles->GetEntriesFast();
+  }
+  
+  for(Int_t i=0 ; i < nprim; i++)
+  {
+    if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+    
+    if(GetReader()->ReadStack())
+    {
+      primStack = stack->Particle(i) ;
+      if(!primStack)
+      {
+        printf("AliAnaChargedParticles::FillPrimaryMCHistograms() - ESD primaries pointer not available!!\n");
+        continue;
+      }
+      
+      if( primStack->GetStatusCode() != 1 ) continue;
+
+      Int_t charge = (Int_t )TDatabasePDG::Instance()->GetParticle(primStack->GetPdgCode())->Charge();
+      if( TMath::Abs(charge) == 0 ) continue;
+
+      pdg  = TMath::Abs(primStack->GetPdgCode());
+      
+      if(primStack->Energy() == TMath::Abs(primStack->Pz()))  continue ; //Protection against floating point exception
+      
+      //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+      //       prim->GetName(), prim->GetPdgCode());
+      
+      //Charged kinematics
+      primStack->Momentum(lv);
+    }
+    else
+    {
+      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      if(!primAOD)
+      {
+        printf("AliAnaChargedParticles::FillPrimaryHistograms() - AOD primaries pointer not available!!\n");
+        continue;
+      }
+
+      if( primAOD->GetStatus() != 1 ) continue;
+      
+      if(TMath::Abs(primAOD->Charge()) == 0 ) continue;
+      
+      pdg = TMath::Abs(primAOD->GetPdgCode());
+      
+      if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
+      
+      //Charged kinematics
+      lv.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+    }
+    
+    Int_t mcType = kmcUnknown;
+    if     (pdg==211 ) mcType = kmcPion;
+    else if(pdg==2212) mcType = kmcProton;
+    else if(pdg==321 ) mcType = kmcKaon;
+    else if(pdg==11  ) mcType = kmcElectron;
+    else if(pdg==13  ) mcType = kmcMuon;
+    
+    //printf("pdg %d, charge %f, mctype %d\n",pdg, charge, mcType);
+    
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(lv,"CTS") ;
+    
+    Float_t  ptPrim = lv.Pt();
+    Float_t etaPrim = lv.Eta();
+    Float_t phiPrim = lv.Phi();
+    if(phiPrim < 0) phiPrim+=TMath::TwoPi();
+    
+    if(in)
+      fhPtMCPrimPart[mcType]->Fill(ptPrim);
+    fhEtaMCPrimPart[mcType]->Fill(ptPrim,etaPrim);
+    fhPhiMCPrimPart[mcType]->Fill(ptPrim,phiPrim);
+  }
+}
+
 //_______________________________________________________
 TList *  AliAnaChargedParticles::GetCreateOutputObjects()
 {  
@@ -665,7 +767,6 @@ void AliAnaChargedParticles::InitParameters()
 
   AddToHistogramsName("AnaCharged_");
   
-  
 }
 
 //____________________________________________________________
@@ -1109,6 +1210,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         }
         else
           fhPtDCANoSPDNoRefit[2]->Fill(pt, dcaCons);
+
       }
     }
     else
@@ -1152,6 +1254,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
 void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
 {
   //Do analysis and fill histograms
+  
+  if(IsDataMC()) FillPrimaryHistograms();
   
   //Loop on stored AODParticles
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
@@ -1237,90 +1341,4 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     
   }// aod branch loop
   
-  if(IsDataMC())
-  {
-    Int_t primpdg = -1;
-    TLorentzVector mom;
-
-    if(GetReader()->ReadStack())
-    {
-      AliStack * stack = GetMCStack();
-      if(!stack)
-      {
-        AliFatal("stack not available");
-        return;
-      }
-      
-      for(Int_t i = 0 ; i<stack->GetNtrack(); i++)
-      {
-        TParticle *prim = stack->Particle(i);
-        
-        //if(prim->IsPrimary())
-        if( prim->GetStatusCode() != 1  ) continue;
-        
-        Int_t charge = (Int_t )TDatabasePDG::Instance()->GetParticle(prim->GetPdgCode())->Charge();
-        if( TMath::Abs(charge) == 0 ) continue;
-        
-        primpdg = TMath::Abs(prim->GetPdgCode());
-        
-        Int_t mcType = kmcUnknown;
-        if     (primpdg==211 ) mcType = kmcPion;
-        else if(primpdg==2212) mcType = kmcProton;
-        else if(primpdg==321 ) mcType = kmcKaon;
-        else if(primpdg==11  ) mcType = kmcElectron;
-        else if(primpdg==13  ) mcType = kmcMuon;
-        
-        //printf("pdg %d, charge %f, mctype %d\n",primpdg, charge, mcType);
-        
-        prim->Momentum(mom);
-        Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
-        
-        Float_t ptPrim = prim->Pt();
-        if(in) fhPtMCPrimPart [mcType]->Fill(ptPrim);
-        fhEtaMCPrimPart[mcType]->Fill(ptPrim,prim->Eta());
-        fhPhiMCPrimPart[mcType]->Fill(ptPrim,prim->Phi());
-        
-      } // particle loop
-    } // ESD
-    else if(GetReader()->ReadAODMCParticles())
-    {
-      TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-      if(!mcparticles)
-      {
-        AliFatal("MC AOD particle list not available");
-        return;
-      }
-      
-      Int_t nprim = mcparticles->GetEntriesFast();
-      for(Int_t i=0; i < nprim; i++)
-      {
-        AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
-        
-        //if(prim->IsPrimary())
-        if( prim->GetStatus() != 1) continue;
-        
-        if(TMath::Abs(prim->Charge()) == 0 ) continue;
-        
-        primpdg = TMath::Abs(prim->GetPdgCode());
-        
-        Int_t mcType = kmcUnknown;
-        if     (primpdg==211 ) mcType = kmcPion;
-        else if(primpdg==2212) mcType = kmcProton;
-        else if(primpdg==321 ) mcType = kmcKaon;
-        else if(primpdg==11  ) mcType = kmcElectron;
-        else if(primpdg==13  ) mcType = kmcMuon;
-        
-        //printf("pdg %d, charge %f, mctype %d\n",primpdg, charge, mcType);
-        
-        mom.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
-        Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
-        
-        Float_t ptPrim = prim->Pt();
-        if(in) fhPtMCPrimPart [mcType]->Fill(ptPrim);
-        fhEtaMCPrimPart[mcType]->Fill(ptPrim,prim->Eta());
-        fhPhiMCPrimPart[mcType]->Fill(ptPrim,prim->Phi());
-      } // particle loop
-      
-    } // AOD
-  } // MC
 }
