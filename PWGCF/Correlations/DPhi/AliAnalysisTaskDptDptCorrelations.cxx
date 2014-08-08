@@ -1215,10 +1215,11 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  
 	  _Ncluster1->Fill(nClus);
 	  
+	  /*
 	  //cuts on more than 0 shared cluster (suggested by Michael)
 	  if(t->GetTPCnclsS() > 0){
 	  continue;
-	   }
+	  }*/
 	  
 	  //for Global tracks
 	   Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
