@@ -86,8 +86,8 @@ fhSplitPtEta(0),                    fhSplitPtPhi(0),
 fhNLocMaxSplitPt(0),
 fhPtDecay(0),                       fhEDecay(0),
 // Shower shape histos
-fhPtDispersion(0),                  fhPtLambda0(0),                     fhPtLambda1(0),
-fhPtLambda0NoTRD(0),                fhPtLambda0FracMaxCellCut(0),
+fhPtDispersion(0),                  fhPtLambda0(0),                     fhPtLambda0NoSplitCut(0),
+fhPtLambda1(0),                     fhPtLambda0NoTRD(0),                fhPtLambda0FracMaxCellCut(0),
 fhPtFracMaxCell(0),                 fhPtFracMaxCellNoTRD(0),
 fhPtNCells(0),                      fhPtTime(0),                        fhEPairDiffTime(0),
 fhPtDispEta(0),                     fhPtDispPhi(0),
@@ -1096,13 +1096,18 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   if(fAnaType == kSSCalo)
   {
-    
     fhMassPt  = new TH2F
     ("hMassPt","all pairs #it{M}: #it{p}_{T} vs #it{M}",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
     fhMassPt->SetYTitle("#it{M} (GeV/#it{c}^{2})");
     fhMassPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhMassPt) ;
-    
+
+    fhPtLambda0NoSplitCut  = new TH2F
+    ("hPtLambda0NoSplitCut","all clusters: #it{p}_{T} vs #lambda_{0}^{2}",nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
+    fhPtLambda0NoSplitCut->SetYTitle("#lambda_{0}^{2}");
+    fhPtLambda0NoSplitCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtLambda0NoSplitCut) ;
+
     fhSelectedMassPt  = new TH2F
     ("hSelectedMassPt","Selected #pi^{0} (#eta) pairs #it{M}: #it{p}_{T} vs #it{M}",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
     fhSelectedMassPt->SetYTitle("#it{M} (GeV/#it{c}^{2})");
@@ -3207,16 +3212,18 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       continue ;
     }
 
+    Float_t l0 = calo->GetM02();
     Float_t e1 = l1.Energy();
     Float_t e2 = l2.Energy();
     TLorentzVector l12 = l1+l2;
     Float_t ptSplit = l12.Pt();
     Float_t  eSplit = e1+e2;
-    
+
     //mass of all clusters
     fhMass       ->Fill(mom.E() ,mass);
     fhMassPt     ->Fill(mom.Pt(),mass);
     fhMassSplitPt->Fill(ptSplit ,mass);
+    fhPtLambda0NoSplitCut->Fill(mom.Pt(),l0);
     
     // Asymmetry of all clusters
     Float_t asy =-10;
@@ -3335,7 +3342,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
     {
       fhSelectedMassPtLocMaxSM   [indexMax][nSM]->Fill(mom.Pt(),mass);
-      fhSelectedLambda0PtLocMaxSM[indexMax][nSM]->Fill(mom.Pt(),calo->GetM02());
+      fhSelectedLambda0PtLocMaxSM[indexMax][nSM]->Fill(mom.Pt(),l0  );
     }
     
     if(IsDataMC())
@@ -3419,7 +3426,6 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(nMaxima == 2 && fNLMECutMin[1] > mom.E()) continue;
     if(nMaxima >  2 && fNLMECutMin[2] > mom.E()) continue;
 
-    
     //Fill some histograms about shower shape
     if(fFillSelectClHisto && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
     {
