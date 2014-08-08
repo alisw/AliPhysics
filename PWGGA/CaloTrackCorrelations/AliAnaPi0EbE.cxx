@@ -785,13 +785,15 @@ TObjString * AliAnaPi0EbE::GetAnalysisCuts()
   
   snprintf(onePar,buffersize,"--- AliAnaPi0EbE ---\n") ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fAnaType=%d (Pi0 selection type) \n",fAnaType) ;
+  snprintf(onePar,buffersize,"fAnaType=%d (selection type) \n",fAnaType) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Calorimeter: %s;",fCalorimeter.Data()) ;
   parList+=onePar ;
   
   if(fAnaType == kSSCalo)
   {
+    snprintf(onePar,buffersize,"E cut: %2.2f<E<%2.2f;",GetMinEnergy(),GetMaxEnergy()) ;
+    parList+=onePar ;
     snprintf(onePar,buffersize,"Min Dist to Bad channel: fMinDist =%2.2f; fMinDist2=%2.2f, fMinDist3=%2.2f;",fMinDist, fMinDist2,fMinDist3) ;
     parList+=onePar ;
     snprintf(onePar,buffersize,"Min E cut for NLM cases: 1) %2.2f; 2) %2.2f; 3) %2.2f;",fNLMECutMin[0],fNLMECutMin[1],fNLMECutMin[2]) ;
@@ -803,19 +805,23 @@ TObjString * AliAnaPi0EbE::GetAnalysisCuts()
     //Get parameters set in PID class.
     parList += GetCaloPID()->GetPIDParametersList() ;
   }
-  else if(fAnaType == kIMCalo)
+  else if(fAnaType == kIMCalo || fAnaType == kIMCaloTracks)
   {
-    snprintf(onePar,buffersize,"Time Diff: %2.2f\n",GetPairTimeCut()) ;
+    snprintf(onePar,buffersize,"Select %s;", (GetNeutralMesonSelection()->GetParticle()).Data()) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"Local maxima in cluster: %d < nlm < %d\n",fNLMCutMin,fNLMCutMax) ;
+    snprintf(onePar,buffersize,"Mass cut: %2.2f<M<%2.2f;",GetNeutralMesonSelection()->GetInvMassMinCut() ,GetNeutralMesonSelection()->GetInvMassMaxCut()) ;
     parList+=onePar ;
-    
+    snprintf(onePar,buffersize,"Local maxima in cluster: %d < nlm < %d;",fNLMCutMin,fNLMCutMax) ;
+    parList+=onePar ;
   }
   else if(fAnaType == kIMCaloTracks)
   {
-    snprintf(onePar,buffersize,"Photon Conv Array: %s\n",fInputAODGammaConvName.Data()) ;
+    snprintf(onePar,buffersize,"Photon Conv Array: %s;",fInputAODGammaConvName.Data()) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"Local maxima in cluster: %d < nlm < %d\n",fNLMCutMin,fNLMCutMax) ;
+  }
+  else if(fAnaType == kIMCalo)
+  {
+    snprintf(onePar,buffersize,"Time Diff: %2.2f;",GetPairTimeCut()) ;
     parList+=onePar ;
   }
   
