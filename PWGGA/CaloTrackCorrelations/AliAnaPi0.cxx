@@ -2012,7 +2012,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     // Recover original cluster
     Int_t iclus1 = -1 ;
     AliVCluster * cluster1 = FindCluster(clusters,p1->GetCaloLabel(0),iclus1);
-    
+    if(!cluster1) printf("AliAnaPi0 - Cluster1 not found!\n");
+
     //---------------------------------
     //Second loop on photons/clusters
     //---------------------------------
@@ -2031,8 +2032,12 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       
       //------------------------------------------
       // Recover original cluster
-      AliVCluster * cluster2 = FindCluster(clusters,p2->GetCaloLabel(0),iclus1); // start new loop from iclus1 to gain some time
-      
+      Int_t iclus2 = -1;
+      AliVCluster * cluster2 = FindCluster(clusters,p2->GetCaloLabel(0),iclus2,iclus1+1);
+      // start new loop from iclus1+1 to gain some time
+      if(!cluster2) printf("AliAnaPi0 - Cluster2 not found!\n");
+
+      // Get the TOF,l0 and ncells from the clusters
       Float_t tof1  = -1;
       Float_t l01   = -1;
       Int_t ncell1  = 0;
