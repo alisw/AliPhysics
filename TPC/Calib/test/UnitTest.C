@@ -13,6 +13,7 @@
 #include "AliTPCcalibLaser.h"
 #include "AliSysInfo.h"
 #include "TTree.h"
+#include "AliLog.h"
 
 const Double_t kAlmost0=1.e-13;
 
@@ -73,7 +74,8 @@ void UnitTestF1Plane(){
 void UnitTestAliTPCcalibAlignStreamer(const char *fname="/hera/alice/local/benchmark/vAN-20140518/000128503/cpass1/CalibObjects.root"){
   //
   // 0.) ReadPart
-  //
+  // 
+  AliLog::SetClassDebugLevel("AliTPCcalibAlign",1);
   TFile *fin= TFile::Open(fname);
   AliSysInfo::AddStamp("LoadFile");
   AliTPCcalibAlign * align = (AliTPCcalibAlign * )fin->Get("TPCAlign/alignTPC");
@@ -81,23 +83,23 @@ void UnitTestAliTPCcalibAlignStreamer(const char *fname="/hera/alice/local/bench
   AliTPCcalibLaser * laser = (AliTPCcalibLaser * )fin->Get("TPCAlign/laserTPC");
   AliSysInfo::AddStamp("LoadLaser");
   TTree * tree =AliSysInfo::MakeTree("syswatch.log");
-  tree->Scan("sname:deltaVM:VM","","colsize=30");
+  tree->Scan("sname:deltaVM:VM:pI.fMemResident","","colsize=30");
   //
   // 1.) Write part
   //
   TFile * fout=new TFile("testAliTPCcalibAlignStreamer.root","recreate");
   align->Write();
   fout->ls();
-  delete align;
-  AliSysInfo::AddStamp("deleteAlign");
   delete laser;
   AliSysInfo::AddStamp("deleteLaser");
+  delete align;
+  AliSysInfo::AddStamp("deleteAlign");
   delete fout;
   //
   // 2.) Check memory
   //
   tree =AliSysInfo::MakeTree("syswatch.log");
-  tree->Scan("sname:deltaVM:VM","","colsize=30");
+  tree->Scan("sname:deltaVM:VM:pI.fMemResident","","colsize=25");
 
 }
 

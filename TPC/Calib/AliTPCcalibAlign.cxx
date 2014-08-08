@@ -139,6 +139,8 @@
 #include "Riostream.h"
 #include "TRandom.h"
 #include <sstream>
+
+#include "AliSysInfo.h"
 using namespace std;
 
 AliTPCcalibAlign* AliTPCcalibAlign::fgInstance = 0;
@@ -3816,3 +3818,88 @@ void AliTPCcalibAlign::MakeReportDyPhi(TFile */*output*/){
 }
 
 
+//______________________________________________________________________________
+void AliTPCcalibAlign::Streamer(TBuffer &R__b)
+{
+  // Stream an object of class AliTPCcalibAlign.
+
+  Bool_t isDebug=AliLog::GetDebugLevel("","AliTPCcalibAlign")>0;
+  if (isDebug) AliSysInfo::SetVerbose(kTRUE);
+  if (R__b.IsReading()) {
+    // Read the class using the automatic streamer. Might be wrong
+    R__b.ReadClassBuffer(AliTPCcalibAlign::Class(),this);
+    for (Int_t i=0; i<2; ++i){
+      if (gDirectory){
+	TString hisName=TString::Format("fClusterDelta[%d]",i);
+	if (gDirectory->Get(hisName.Data())){
+	  fClusterDelta[i] = dynamic_cast<THn*>(gDirectory->Get((hisName).Data()));
+	}
+      }
+    }
+  } else {
+    // R__b.WriteClassBuffer(AliTPCcalibAlign::Class(),this);
+    if (isDebug) AliSysInfo::AddStamp("Start");
+    R__b.WriteVersion(AliTPCcalibAlign::IsA());
+    if (isDebug) AliSysInfo::AddStamp("Version");
+    AliTPCcalibBase::Streamer(R__b); // Stream the base class
+    if (isDebug) AliSysInfo::AddStamp("BaseClass");
+    
+    //    for (Int_t i=0; i<2; ++i)
+    //  R__b << fClusterDelta[i];
+    for (Int_t i=0; i<2; ++i){
+      if (fClusterDelta[i]) fClusterDelta[i]->Write(TString::Format("fClusterDelta[%d]",i).Data());
+    }
+    
+    if (isDebug) AliSysInfo::AddStamp("THn");
+    
+    for (Int_t i=0; i<4; ++i)
+      R__b << fTrackletDelta[i];
+    if (isDebug) AliSysInfo::AddStamp("THnSparse");
+    
+    fDphiHistArray.Streamer(R__b);
+    fDthetaHistArray.Streamer(R__b);
+    fDyHistArray.Streamer(R__b);
+    fDzHistArray.Streamer(R__b);
+
+    fDyPhiHistArray.Streamer(R__b);
+    fDzThetaHistArray.Streamer(R__b);
+    
+    fDphiZHistArray.Streamer(R__b);
+    fDthetaZHistArray.Streamer(R__b);
+    fDyZHistArray.Streamer(R__b);
+    fDzZHistArray.Streamer(R__b);
+    
+    fFitterArray12.Streamer(R__b);
+    fFitterArray9.Streamer(R__b);
+    fFitterArray6.Streamer(R__b);
+    
+    fMatrixArray12.Streamer(R__b);
+    fMatrixArray9.Streamer(R__b);
+    fMatrixArray6.Streamer(R__b);
+    
+    fCombinedMatrixArray6.Streamer(R__b);
+    if (isDebug) AliSysInfo::AddStamp("ObjArrays1");
+    
+    R__b.WriteFastArray(fPoints,72*72);
+    if (isDebug) AliSysInfo::AddStamp("Points");
+    R__b << fNoField;
+    R__b << fXIO;
+    R__b << fXmiddle;
+    R__b << fXquadrant;
+    if (isDebug) AliSysInfo::AddStamp("Floats");
+    
+    fArraySectorIntParam.Streamer(R__b);
+    fArraySectorIntCovar.Streamer(R__b);
+    if (isDebug) AliSysInfo::AddStamp("ObjArrays2");
+    
+    R__b << fSectorParamA;
+    R__b << fSectorCovarA;
+    R__b << fSectorParamC;
+    R__b << fSectorCovarC;
+    if (isDebug) AliSysInfo::AddStamp("TMatrixD");
+    
+    R__b << fUseInnerOuter;
+    R__b << fgkMergeEntriesCut; // Should we write the static member?
+    if (isDebug) AliSysInfo::AddStamp("End");
+  }
+}
