@@ -8,11 +8,15 @@
 #include <string>
 #include <list>
 #include <set>
-#include "HepMC/IO_GenEvent.h"
 #include "TTree.h"
 #include "TClonesArray.h"
 #include "TParticle.h"
 
+namespace HepMC {
+  class IO_BaseClass;
+  class GenVertex;
+  class GenEvent;
+}
 
 class THepMCParser {
 

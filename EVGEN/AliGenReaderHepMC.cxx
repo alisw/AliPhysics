@@ -7,8 +7,16 @@
 #include "AliStack.h"
 #include "AliGenHepMCEventHeader.h"
 
+#include "HepMC/IO_BaseClass.h"
+#include "HepMC/GenEvent.h"
+#include "HepMC/IO_GenEvent.h"
 
 ClassImp(AliGenReaderHepMC)
+
+AliGenReaderHepMC::AliGenReaderHepMC():fEventsHandle(0), fGenEvent(0), fParticleArray(0), fParticleIterator(0), fGenEventHeader(0) {;}
+
+AliGenReaderHepMC::AliGenReaderHepMC(const AliGenReaderHepMC &reader)
+   :AliGenReader(reader), fEventsHandle(0), fGenEvent(0), fParticleArray(0), fParticleIterator(0), fGenEventHeader(0) {reader.Copy(*this);}
 
 
 AliGenReaderHepMC& AliGenReaderHepMC::operator=(const  AliGenReaderHepMC& rhs)
@@ -17,6 +25,8 @@ AliGenReaderHepMC& AliGenReaderHepMC::operator=(const  AliGenReaderHepMC& rhs)
    rhs.Copy(*this);
    return *this;
 }
+
+AliGenReaderHepMC::~AliGenReaderHepMC(){ delete fEventsHandle; delete fGenEvent; delete fParticleArray; delete fParticleIterator;} // not deleting fGenEventHeader as it is returned out
 
 void AliGenReaderHepMC::Copy(TObject&) const
 {

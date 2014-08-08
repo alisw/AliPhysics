@@ -16,6 +16,7 @@
 #include "TFile.h"
 #include "TParticle.h"
 #include "TDatabasePDG.h"
+#include "HepMC/IO_GenEvent.h"
 
 using namespace std;
 

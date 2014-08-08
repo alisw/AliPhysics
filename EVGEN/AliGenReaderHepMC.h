@@ -12,18 +12,20 @@
 #include "AliGenReader.h"
 #include "AliGenEventHeader.h"
 #include "THepMCParser.h"
-#include "HepMC/IO_BaseClass.h"
-#include "HepMC/GenEvent.h"
+
+namespace HepMC {
+  class IO_BaseClass;
+  class GenEvent;
+}
 
 class TParticle;
 
 class AliGenReaderHepMC : public AliGenReader
 {
 public:
-   inline AliGenReaderHepMC():fEventsHandle(0), fGenEvent(0), fParticleArray(0), fParticleIterator(0), fGenEventHeader(0) {;}
-   AliGenReaderHepMC(const AliGenReaderHepMC &reader)
-   :AliGenReader(reader), fEventsHandle(0), fGenEvent(0), fParticleArray(0), fParticleIterator(0), fGenEventHeader(0) {reader.Copy(*this);}
-   inline virtual ~AliGenReaderHepMC(){ delete fEventsHandle; delete fGenEvent; delete fParticleArray; delete fParticleIterator;} // not deleting fGenEventHeader as it is returned out
+  AliGenReaderHepMC();
+  AliGenReaderHepMC(const AliGenReaderHepMC &reader);
+  virtual ~AliGenReaderHepMC();
    AliGenEventHeader * GetGenEventHeader() const {return fGenEventHeader;};
    virtual void Init();
    virtual Int_t NextEvent();
