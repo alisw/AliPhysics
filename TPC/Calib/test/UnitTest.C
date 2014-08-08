@@ -1,12 +1,18 @@
 /*
   Unit test for fucntions used in the calibrations
-  .x $ALICE_ROOT/TPC/Calib/test/UnitTest.C+
+  .L $ALICE_ROOT/TPC/Calib/test/UnitTest.C+
 
+  
 */
 
 #include "TF1.h"
 #include "TMath.h"
 #include "TLinearFitter.h"
+#include "TFile.h"
+#include "AliTPCcalibAlign.h"
+#include "AliTPCcalibLaser.h"
+#include "AliSysInfo.h"
+#include "TTree.h"
 
 const Double_t kAlmost0=1.e-13;
 
@@ -60,8 +66,38 @@ void UnitTestF1Plane(){
   }else{
     ::Info("UnitTestF1Plane", Form("OK: Diff=%f\n",f1.EvalPar(xxx,par)-14 ));
   }
-  
 }
 
 
+
+void UnitTestAliTPCcalibAlignStreamer(const char *fname="/hera/alice/local/benchmark/vAN-20140518/000128503/cpass1/CalibObjects.root"){
+  //
+  // 0.) ReadPart
+  //
+  TFile *fin= TFile::Open(fname);
+  AliSysInfo::AddStamp("LoadFile");
+  AliTPCcalibAlign * align = (AliTPCcalibAlign * )fin->Get("TPCAlign/alignTPC");
+  AliSysInfo::AddStamp("LoadAlign");
+  AliTPCcalibLaser * laser = (AliTPCcalibLaser * )fin->Get("TPCAlign/laserTPC");
+  AliSysInfo::AddStamp("LoadLaser");
+  TTree * tree =AliSysInfo::MakeTree("syswatch.log");
+  tree->Scan("sname:deltaVM:VM","","colsize=30");
+  //
+  // 1.) Write part
+  //
+  TFile * fout=new TFile("testAliTPCcalibAlignStreamer.root","recreate");
+  align->Write();
+  fout->ls();
+  delete align;
+  AliSysInfo::AddStamp("deleteAlign");
+  delete laser;
+  AliSysInfo::AddStamp("deleteLaser");
+  delete fout;
+  //
+  // 2.) Check memory
+  //
+  tree =AliSysInfo::MakeTree("syswatch.log");
+  tree->Scan("sname:deltaVM:VM","","colsize=30");
+
+}
 
