@@ -58,7 +58,9 @@ fHistoZBins(100),             fHistoZMax(1000),            fHistoZMin(-1000),
 fHistoSSBins(0),              fHistoSSMax(0),              fHistoSSMin(0),
 fHistoDiffTimeBins(0),        fHistoDiffTimeMax(0),        fHistoDiffTimeMin(0),
 fHistoTrackResidualEtaBins(0),fHistoTrackResidualEtaMax(0),fHistoTrackResidualEtaMin(0),
-fHistoTrackResidualPhiBins(0),fHistoTrackResidualPhiMax(0),fHistoTrackResidualPhiMin(0)
+fHistoTrackResidualPhiBins(0),fHistoTrackResidualPhiMax(0),fHistoTrackResidualPhiMin(0),
+fHistoNPtSumBins(0),          fHistoPtSumMax(0.),          fHistoPtSumMin(0.),
+fHistoNPtInConeBins(0),       fHistoPtInConeMax(0.),       fHistoPtInConeMin(0.)
 {
   //Default Ctor
   
@@ -75,8 +77,8 @@ void AliHistogramRanges::InitParameters()
   fHistoPtBins           = 240 ;  fHistoPtMax           = 120   ; fHistoPtMin           = 0.  ;
   fHistoPhiBins          = 120 ;  fHistoPhiMax          = TMath::TwoPi(); fHistoPhiMin  = 0.  ;
   fHistoEtaBins          = 100 ;  fHistoEtaMax          = 1     ; fHistoEtaMin          = -1  ;
-  fHistoDeltaPhiBins     = 310 ;  fHistoDeltaPhiMax     = 4.8   ; fHistoDeltaPhiMin     = -1.7 ;
-  fHistoDeltaEtaBins     = 200 ;  fHistoDeltaEtaMax     = 2     ; fHistoDeltaEtaMin     = -2 ;
+  fHistoDeltaPhiBins     = 310 ;  fHistoDeltaPhiMax     = 4.8   ; fHistoDeltaPhiMin     = -1.7;
+  fHistoDeltaEtaBins     = 200 ;  fHistoDeltaEtaMax     = 2     ; fHistoDeltaEtaMin     = -2  ;
   fHistoMassBins         = 200 ;  fHistoMassMax         = 1.    ; fHistoMassMin         = 0.  ;
   fHistoAsymBins         = 10  ;  fHistoAsymMax         = 1.    ; fHistoAsymMin         = 0.  ;
   fHistoV0SBins          = 100 ;  fHistoV0SMax          = 10000 ; fHistoV0SMin          = 0   ;
@@ -97,6 +99,8 @@ void AliHistogramRanges::InitParameters()
   fHistoZBins            = 100 ;  fHistoZMax            = 600   ; fHistoZMin            = -500;//cm
   fHistoSSBins           = 500 ;  fHistoSSMax           = 5     ; fHistoSSMin           = 0   ;  
   fHistoDiffTimeBins     = 800 ;  fHistoDiffTimeMax     = 400   ; fHistoDiffTimeMin     = -400;// ns
+  fHistoNPtSumBins       = 100 ;  fHistoPtSumMax        = 50    ; fHistoPtSumMin        = 0.  ;
+  fHistoNPtInConeBins    = 100 ;  fHistoPtInConeMax     = 50    ; fHistoPtInConeMin     = 0.  ;
   
   fHistoTrackResidualEtaBins = 100 ; fHistoTrackResidualEtaMax = 0.15 ; fHistoTrackResidualEtaMin = -0.15;
   fHistoTrackResidualPhiBins = 100 ; fHistoTrackResidualPhiMax = 0.15 ; fHistoTrackResidualPhiMin = -0.15;
@@ -131,9 +135,11 @@ void AliHistogramRanges::Print(const Option_t * /*opt*/) const
   printf("Histograms: %d < N clusters   < %d, Nbin = %d\n"           , fHistoNClustersMin,   fHistoNClustersMax,   fHistoNClustersBins);
   printf("Histograms: %3.1f < Ratio< %3.1f, Nbin = %d\n"             , fHistoRatioMin,       fHistoRatioMax,       fHistoRatioBins);
   printf("Histograms: %3.1f < Vertex Distance < %3.1f,   Nbin = %d\n", fHistoVertexDistMin,  fHistoVertexDistMax,  fHistoVertexDistBins);
+  printf("Histograms: %3.1f < pT sum < %3.1f,  Nbin = %d\n"          , fHistoPtSumMin,       fHistoPtSumMax,       fHistoNPtSumBins   );
+  printf("Histograms: %3.1f < pT in cone < %3.1f, Nbin = %d\n"       , fHistoPtInConeMin,    fHistoPtInConeMax,    fHistoNPtInConeBins);
   printf("Histograms: %2.2f < Residual Eta(Z) < %2.2f,   Nbin = %d\n", fHistoTrackResidualEtaMin, fHistoTrackResidualEtaMax,fHistoTrackResidualEtaBins);
   printf("Histograms: %2.2f < Residual Phi(R,X) < %2.2f, Nbin = %d\n", fHistoTrackResidualPhiMin, fHistoTrackResidualPhiMax,fHistoTrackResidualPhiBins);
-
+  
   printf("    \n") ;
   
 } 
