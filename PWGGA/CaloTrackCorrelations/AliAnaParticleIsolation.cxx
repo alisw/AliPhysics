@@ -147,10 +147,7 @@ fhENoIsoPileUp(),                 fhPtNoIsoPileUp(),
 fhTimeENoCut(0),                  fhTimeESPD(0),                  fhTimeESPDMulti(0),
 fhTimeNPileUpVertSPD(0),          fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
-fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0),
-// Histograms settings
-fHistoNPtSumBins(0),              fHistoPtSumMax(0.),              fHistoPtSumMin(0.),
-fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInConeMin(0.)
+fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
 {
   //default ctor
   
@@ -1350,12 +1347,12 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Float_t pOverEmax   = GetHistogramRanges()->GetHistoPOverEMax();
   Float_t pOverEmin   = GetHistogramRanges()->GetHistoPOverEMin();
   
-  Int_t   nptsumbins    = fHistoNPtSumBins;
-  Float_t ptsummax      = fHistoPtSumMax;
-  Float_t ptsummin      = fHistoPtSumMin;
-  Int_t   nptinconebins = fHistoNPtInConeBins;
-  Float_t ptinconemax   = fHistoPtInConeMax;
-  Float_t ptinconemin   = fHistoPtInConeMin;
+  Int_t   nptsumbins    = GetHistogramRanges()->GetHistoNPtSumBins();
+  Float_t ptsummax      = GetHistogramRanges()->GetHistoPtSumMax();
+  Float_t ptsummin      = GetHistogramRanges()->GetHistoPtSumMin();
+  Int_t   nptinconebins = GetHistogramRanges()->GetHistoNPtInConeBins();
+  Float_t ptinconemax   = GetHistogramRanges()->GetHistoPtInConeMax();
+  Float_t ptinconemin   = GetHistogramRanges()->GetHistoPtInConeMin();
   
   //Float_t ptthre    = GetIsolationCut()->GetPtThreshold();
   //Float_t ptsumthre = GetIsolationCut()->GetSumPtThreshold();
@@ -3009,15 +3006,6 @@ void AliAnaParticleIsolation::InitParameters()
   fPtFractions    [0] = 0.05;    fPtFractions    [1] = 0.075; fPtFractions    [2] = 0.1; fPtFractions    [3] = 1.25; fPtFractions    [4] = 1.5;
   fSumPtThresholds[0] = 1.;      fSumPtThresholds[1] = 2.;    fSumPtThresholds[2] = 3.;  fSumPtThresholds[3] = 4.;   fSumPtThresholds[4] = 5.;
   
-  //------------- Histograms settings -------
-  fHistoNPtSumBins = 100 ;
-  fHistoPtSumMax   = 50 ;
-  fHistoPtSumMin   = 0.  ;
-  
-  fHistoNPtInConeBins = 100 ;
-  fHistoPtInConeMax   = 50 ;
-  fHistoPtInConeMin   = 0.  ;
-  
 }
 
 //__________________________________________________
@@ -3932,9 +3920,6 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
     
     
   }
-  
-  printf("Histograms: %3.1f < pT sum < %3.1f,  Nbin = %d\n",    fHistoPtSumMin,    fHistoPtSumMax,    fHistoNPtSumBins   );
-  printf("Histograms: %3.1f < pT in cone < %3.1f, Nbin = %d\n", fHistoPtInConeMin, fHistoPtInConeMax, fHistoNPtInConeBins);
   
   printf("    \n") ;
   

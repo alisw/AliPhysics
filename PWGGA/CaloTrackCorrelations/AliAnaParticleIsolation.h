@@ -128,22 +128,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnDecayTaggedHistoFill()        { fFillTaggedDecayHistograms = kTRUE ; }
   void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
   
-  //Histogrammes setters and getters
-  
-  void         SetHistoPtSumRangeAndNBins(Float_t min, Float_t max, Int_t n)       {
-    fHistoNPtSumBins = n ;    fHistoPtSumMax = max ;    fHistoPtSumMin = min ;     }
-  
-  Int_t        GetHistoNPtSumBins()            const { return fHistoNPtSumBins   ; }
-  Float_t      GetHistoPtSumMin()              const { return fHistoPtSumMin     ; }
-  Float_t      GetHistoPtSumMax()              const { return fHistoPtSumMax     ; }
-  
-  void         SetHistoPtInConeRangeAndNBins(Float_t min, Float_t max, Int_t n)    {
-    fHistoNPtInConeBins = n ; fHistoPtInConeMax = max ; fHistoPtInConeMin = min  ; }
-  
-  Int_t        GetHistoNPtInConeBins()         const { return fHistoNPtInConeBins; }
-  Float_t      GetHistoPtInConeMin()           const { return fHistoPtInConeMin  ; }
-  Float_t      GetHistoPtInConeMax()           const { return fHistoPtInConeMax  ; }
-  
  // For primary histograms in arrays, index in the array, corresponding to a photon origin
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimOtherDecay  = 2,
                      kmcPrimPrompt = 3, kmcPrimFrag     = 4, kmcPrimISR         = 5       } ;
@@ -405,18 +389,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhTimePileUpMainVertexZDistance;       //! time of cluster vs difference of z main vertex and pile-up vertex 
   TH2F *   fhTimePileUpMainVertexZDiamond;        //! time of cluster vs difference of z diamond and pile-up vertex 
   
-  //Histograms settings
-  Int_t    fHistoNPtSumBins;                      // Number of bins in PtSum histograms
-  Float_t  fHistoPtSumMax;                        // PtSum maximum in histogram
-  Float_t  fHistoPtSumMin;	                      // PtSum minimum in histogram
-  Int_t    fHistoNPtInConeBins;                   // Number of bins in PtInCone histogram
-  Float_t  fHistoPtInConeMax;                     // PtInCone maximum in histogram
-  Float_t  fHistoPtInConeMin;                     // PtInCone maximum in histogram 
-
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,26)
+  ClassDef(AliAnaParticleIsolation,27)
 } ;
 
 
