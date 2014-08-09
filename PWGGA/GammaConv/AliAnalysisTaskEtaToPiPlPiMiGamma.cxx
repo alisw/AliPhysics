@@ -1,9 +1,8 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Author: Pedro Gonz??lez, Pedro Ladr??n de Guevara, Ernesto L??pez Torres, *
- *         Eulogio Serradilla, Ana Marin, Friederike Bock                 *
- * Version 2                                                              *
+ * Author: Friederike Bock                                                *
+ * Version 1                                                              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -14,8 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// Analysis task for pi0->e+e-gamma (Dalitz decay)
-// Analysis task for chic->JPsi+gamma
+// Analysis task for eta->pi+ +pi- gamma (pion Dalitz decay)
 
 #include <vector>
 
@@ -657,9 +655,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserExec(Option_t *){
 
 	for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 		fiCut = iCut;
-		Int_t eventNotAccepted =
-			((AliConvEventCuts*)fGammaCutArray->At(iCut))
-			->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
+		Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon);
 		
 		if(eventNotAccepted){
 			// 			cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
@@ -1341,7 +1337,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessTrueMesonCandidates(AliAODConvers
 		Bool_t isTrueEta = kFALSE;
 		Int_t gammaMCLabel = TrueGammaCandidate->GetMCParticleLabel(MCStack);
 		Int_t gammaMotherLabel = -1;
-		Bool_t gammaEtaCand = kFALSE;
+// 		Bool_t gammaEtaCand = kFALSE;
 		
 		if(gammaMCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
 			// Daughters Gamma 0
@@ -1353,7 +1349,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessTrueMesonCandidates(AliAODConvers
 				if(negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){ // ... From Conversion ...
 					if(gammaMC->GetPdgCode() == 22){ // ... with Gamma Mother
 						gammaMotherLabel=gammaMC->GetFirstMother();
-						if( ((TParticle*)MCStack->Particle(gammaMotherLabel))->GetNDaughters() == 3 && ((TParticle*)MCStack->Particle(gammaMotherLabel))->GetPdgCode() == 221 ) gammaEtaCand = kTRUE;
+// 						if( ((TParticle*)MCStack->Particle(gammaMotherLabel))->GetNDaughters() == 3 && ((TParticle*)MCStack->Particle(gammaMotherLabel))->GetPdgCode() == 221 ) gammaEtaCand = kTRUE;
 					}
 				}
 			}

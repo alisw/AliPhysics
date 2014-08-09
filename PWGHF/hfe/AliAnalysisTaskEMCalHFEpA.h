@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: June 16, 2014.								      //
+	//		version: July 28, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -106,6 +106,10 @@ public:
 	void SetNonHFEangleCut(Double_t AngleCut) { fAngleCut = AngleCut; fAngleCutFlag = kTRUE;};
 	void SetNonHFEchi2Cut(Double_t Chi2Cut) { fChi2Cut = Chi2Cut; fChi2CutFlag = kTRUE;};
 	void SetNonHFEdcaCut(Double_t DCAcut) { fDCAcut = DCAcut; fDCAcutFlag = kTRUE;};
+	
+	//DCA cut main particle
+	void SetdcaCut(Double_t DCAcutr, Double_t DCAcutz) { fDCAcutr = DCAcutr; fDCAcutz = DCAcutz;};
+	
 	void SetUseEMCal() { fUseEMCal=kTRUE;};
 	void SetUseTrigger() { fUseTrigger=kTRUE;};
 	void SetUseShowerShapeCut(Bool_t UseShowerShapeCut=kFALSE) { fUseShowerShapeCut=UseShowerShapeCut;};
@@ -353,6 +357,9 @@ private:
 	Double_t			fAngleCut;
 	Double_t			fChi2Cut;
 	Double_t			fDCAcut;
+	Double_t			fDCAcutr;
+	Double_t			fDCAcutz;
+	
 	Bool_t				fMassCutFlag;
 	Bool_t				fAngleCutFlag;
 	Bool_t				fChi2CutFlag;

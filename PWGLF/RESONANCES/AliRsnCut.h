@@ -64,6 +64,11 @@ protected:
    Int_t        fMaxI;       //  upper edge of INT range (not used for value cuts)
    Double_t     fMinD;       //  lower edge of DOUBLE range or ref. value for DOUBLE CUT
    Double_t     fMaxD;       //  upper edge of DOUBLE range (not used for value cuts)
+   
+   Int_t        fMinIptdep;  //  lower edge of INT range or ref. value for INT CUT -- pt dependent
+   Int_t        fMaxIptdep;  //  upper edge of INT range (not used for value cuts) -- pt dependent
+   Double_t     fMinDptdep;  //  lower edge of DOUBLE range or ref. value for DOUBLE CUT -- pt dependent
+   Double_t     fMaxDptdep;  //  upper edge of DOUBLE range (not used for value cuts) -- pt dependent
 
    Int_t        fCutValueI;  //  cut value INT
    Double_t     fCutValueD;  //  cut value DOUBLE
@@ -76,7 +81,7 @@ protected:
 
    Bool_t       fCutResult;  //  tells if the cut is passed or not
 
-   ClassDef(AliRsnCut, 2)
+   ClassDef(AliRsnCut, 3)
 };
 
 #endif

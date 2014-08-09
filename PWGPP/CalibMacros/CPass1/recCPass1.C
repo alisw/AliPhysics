@@ -36,7 +36,7 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   }
 
   // All friends
-  rec.SetFractionFriends(1.0);
+  rec.SetFractionFriends(2.0);
 
  // AliReconstruction settings - hardwired MB trigger for calibration
 

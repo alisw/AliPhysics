@@ -356,8 +356,10 @@ void AliAnalysisTaskTOFqaID::UserCreateOutputObjects()
   //add trd plots
   if (fEnableAdvancedCheck) {
     AddTrdHisto();
-    AddTofTrgHisto("");
   }
+  //Add trigger plots
+  AddTofTrgHisto("");
+  
   PostData(1, fHlist);
   PostData(2, fHlistTimeZero);
   PostData(3, fHlistPID);
@@ -382,12 +384,12 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   */
   fESD=(AliESDEvent*)InputEvent();
   if (!fESD) {
-    Printf("ERROR: fESD not available");
+    AliError("fESD event not available");
     return;
   }
   
   if (!fESDpid) {
-    Printf("ERROR: fESDpid not available");
+    AliError("PID object fESDpid not available");
     return;
   }
   
@@ -401,7 +403,7 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   if (fIsMC) {
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if (!mcH) {
-      AliError("ERROR: Could not get MCeventHandler");
+      AliError("Cannot get MCeventHandler");
       return;
     } else {
       fMCevent = (AliMCEvent *) mcH->MCEvent();
@@ -425,11 +427,11 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   //set response tof_t0 for all other checks
   fESDpid->SetTOFResponse(fESD,AliESDpid::kTOF_T0);//(fill_t0, tof_t0, t0_t0, best_t0)
   
-  Printf("Momentum cut for eta and phi distributions set: Pt>%3.2f", fMatchingMomCut);
+  AliDebug(3, Form("Momentum cut for eta and phi distributions set: Pt>%3.2f", fMatchingMomCut));
 
   //check existence of track filter
   if (!fTrackFilter){
-    Printf("No track filter found, skipping the track loop");
+    AliInfo("No track filter found, skipping the track loop");
     return;
   }
   
@@ -437,7 +439,7 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack* track = fESD->GetTrack(iTracks);
     if (!track) {
-      Printf("ERROR: Could not receive track %d", iTracks);
+      AliInfo(Form("Cannot receive track %d", iTracks));
       continue;
     }
     
@@ -512,12 +514,12 @@ void AliAnalysisTaskTOFqaID::Terminate(Option_t *)
   //check on output validity
   fHlist = dynamic_cast<TList*> (GetOutputData(1));
   if (!fHlist) {
-    Printf("ERROR: lists not available");
+    AliError("Base histograms list not available");
     return;   
   } 
   
-  // TH1D*hDummy = ((TH1D*)fHlist->FindObject("hTOFmatchedESDPt"));
-  // TH1D*hMatchingEff = (TH1D*) hDummy->Clone("hMatchingEff");
+  // TH1F*hDummy = ((TH1F*)fHlist->FindObject("hTOFmatchedESDPt"));
+  // TH1F*hMatchingEff = (TH1F*) hDummy->Clone("hMatchingEff");
   // hMatchingEff->SetTitle("Matching efficiency");
   // hMatchingEff->Divide((TH1F*) fHlist->FindObject("hESDprimaryTrackPt"));
   // TCanvas *c1 = new TCanvas("AliAnalysisTaskTOFqaID","Matching vs Pt",10,10,510,510);
@@ -646,7 +648,7 @@ void AliAnalysisTaskTOFqaID::FillStartTimeMaskHisto(TString suffix)
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack* track = fESD->GetTrack(iTracks);
     if (!track) {
-      Printf("ERROR: Could not receive track %d", iTracks);
+      AliInfo(Form("Cannot receive track %d", iTracks));
       continue;
     }    
     //primary tracks selection: kTPCrefit and std cuts
@@ -654,7 +656,7 @@ void AliAnalysisTaskTOFqaID::FillStartTimeMaskHisto(TString suffix)
       if(!fTrackFilter->IsSelected(track)) continue;
     }
     else{
-      Printf("No track filter found, skipping the track loop");
+      AliInfo("No track filter found, skipping the track loop");
       break;
     }
     if (TMath::Abs(track->Eta())>0.8) continue; //cut for acceptance  
@@ -751,8 +753,8 @@ Bool_t AliAnalysisTaskTOFqaID::SelectMCspecies(AliMCEvent * ev, AliESDtrack * tr
   Int_t pdgCode = mcPart->PdgCode();
   if (!(TMath::Abs(pdgCode)==fSelectedPdg))
     return kFALSE;
-  else  //Printf("Found particle with selected pdg code = %i", pdgCode);
-  return  kTRUE;
+  else  
+    return  kTRUE;
 }
 
 //----------------------------------------------------------------------------------
@@ -779,10 +781,10 @@ Bool_t  AliAnalysisTaskTOFqaID::ComputeMatchingEfficiency(TList* list, TString v
     xAxisTitle = "#phi_vtx (deg)";
   }
   
-  TH1D*hDummy = ((TH1D*)list->FindObject(matchedName.Data()));
+  TH1F*hDummy = ((TH1F*)list->FindObject(matchedName.Data()));
   if (!hDummy) return 0;
 
-  TH1D*hMatchingEff = (TH1D*) hDummy->Clone("hMatchingEff");
+  TH1F*hMatchingEff = (TH1F*) hDummy->Clone("hMatchingEff");
   hMatchingEff->SetNameTitle(Form("hMatchingEff_%s", variable.Data()),Form("Matching efficiency vs %s", variable.Data()));
   hMatchingEff->Divide((TH1F*) list->FindObject(primaryName.Data()));
   hMatchingEff->GetXaxis()->SetTitle(xAxisTitle.Data());
@@ -1012,35 +1014,35 @@ void    AliAnalysisTaskTOFqaID::AddStartTimeHisto(TList *list, TString suffix)
     AliError("Invalid list passed as argument.");
     return;
   }
-  TH1D* hT0AC = new TH1D(Form("hT0AC%s",suffix.Data()), "Event timeZero from T0A&C; t_{0,AC} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0AC = new TH1F(Form("hT0AC%s",suffix.Data()), "Event timeZero from T0A&C; t_{0,AC} [ps]; events", 1000, -12500., 12500.) ; 
   HistogramMakeUp(hT0AC, kRed+2, 20, "", "","","","");    
   list->AddLast(hT0AC);
 
-  TH1D* hT0A = new TH1D(Form("hT0A%s",suffix.Data()), "Event timeZero from T0A; t_{0,A} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0A = new TH1F(Form("hT0A%s",suffix.Data()), "Event timeZero from T0A; t_{0,A} [ps]; events", 1000, -12500., 12500.) ; 
   HistogramMakeUp(hT0A, kBlue+2, 25, "", "","","","");    
   list->AddLast(hT0A);
     
-  TH1D* hT0C = new TH1D(Form("hT0C%s",suffix.Data()), "Event timeZero from T0C; t_{0,C} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0C = new TH1F(Form("hT0C%s",suffix.Data()), "Event timeZero from T0C; t_{0,C} [ps]; events", 1000, -12500., 12500.) ; 
   HistogramMakeUp(hT0C, kGreen+2, 28, "", "","","","");    
   list->AddLast(hT0C);
     
-  TH1D* hT0DetRes = new TH1D(Form("hT0DetRes%s",suffix.Data()), "T0 detector (T0A-T0C)/2; (T0A-T0C)/2 [ps]; events", 200, -500.,500. ) ; 
+  TH1F* hT0DetRes = new TH1F(Form("hT0DetRes%s",suffix.Data()), "T0 detector (T0A-T0C)/2; (T0A-T0C)/2 [ps]; events", 200, -500.,500. ) ; 
   HistogramMakeUp(hT0DetRes, kMagenta+1, 1, "", "","","","");    
   list->AddLast(hT0DetRes) ; 
 
-  TH1F* hT0fill = new TH1F(Form("hT0fill%s",suffix.Data()), "Event timeZero of fill; t_{0,fill} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0fill = new TH1F(Form("hT0fill%s",suffix.Data()), "Event timeZero of fill; t_{0,fill} [ps]; events", 1000, -12500., 12500. ) ; 
   HistogramMakeUp(hT0fill, kOrange+1, 25, "", "","","","");    
   list->AddLast(hT0fill) ; 
     
-  TH1F* hT0TOF = new TH1F(Form("hT0TOF%s",suffix.Data()), "Event timeZero estimated by TOF; t0 [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0TOF = new TH1F(Form("hT0TOF%s",suffix.Data()), "Event timeZero estimated by TOF; t0 [ps]; events", 1000, -12500., 12500. ) ; 
   HistogramMakeUp(hT0TOF, kTeal-5, 21, "", "","","","");    
   list->AddLast(hT0TOF) ; 
     
-  TH1F* hT0T0 = new TH1F(Form("hT0T0%s",suffix.Data()), "Best timeZero between AC, A, C; t_{0} [ps]; events", 1000, -25000.,25000. ) ; 
+  TH1F* hT0T0 = new TH1F(Form("hT0T0%s",suffix.Data()), "Best timeZero between AC, A, C; t_{0} [ps]; events", 1000, -12500., 12500. ) ; 
   HistogramMakeUp(hT0T0, kAzure+7, 26, "", "","","","");    
   list->AddLast(hT0T0) ; 
     
-  TH1F* hT0best = new TH1F(Form("hT0best%s",suffix.Data()), "Event timeZero estimated as T0best; t0 [ps]; events", 1000, -25000.,25000. ) ; 
+  TH1F* hT0best = new TH1F(Form("hT0best%s",suffix.Data()), "Event timeZero estimated as T0best; t0 [ps]; events", 1000, -12500., 12500.) ; 
   HistogramMakeUp(hT0best, kBlack, 20, "", "","","","");    
   list->AddLast(hT0best) ; 
 
@@ -1060,15 +1062,15 @@ void    AliAnalysisTaskTOFqaID::AddStartTimeHisto(TList *list, TString suffix)
   HistogramMakeUp(hT0bestRes, kBlack, 20, "", "","","","");    
   list->AddLast(hT0bestRes) ; 
 
-  TH2F* hT0TOFvsNtrk = new TH2F(Form("hT0TOFvsNtrk%s",suffix.Data()), "Event timeZero estimated by TOF vs. number of tracks in event;TOF-matching tracks; t0 [ps]", 100, 0., 100.,1000,-25000.,25000. ) ; 
+  TH2F* hT0TOFvsNtrk = new TH2F(Form("hT0TOFvsNtrk%s",suffix.Data()), "Event timeZero estimated by TOF vs. number of tracks in event;TOF-matching tracks; t0 [ps]", 100, 0., 100., 500,-2500.,2500. ) ; 
   HistogramMakeUp(hT0TOFvsNtrk, kTeal-5, 1, "colz", "","","","");    
   list->AddLast(hT0TOFvsNtrk) ;
   
-  TH2F* hEventT0MeanVsVtx = new TH2F(Form("hEventT0MeanVsVtx%s",suffix.Data()), "T0 detector: mean vs vertex ; (t0_{A}-t0_{C})/2 [ns]; (t0_{A}+t0_{C})/2 [ns]; events", 500, -25., 25., 500, -25., 25. ) ; 
+  TH2F* hEventT0MeanVsVtx = new TH2F(Form("hEventT0MeanVsVtx%s",suffix.Data()), "T0 detector: mean vs vertex ; (t0_{A}-t0_{C})/2 [ns]; (t0_{A}+t0_{C})/2 [ns]; events", 50, -25., 25., 50, -25., 25. ) ; 
   HistogramMakeUp(hEventT0MeanVsVtx, kBlue+2, 1, "colz", "","","","");    
   list->AddLast(hEventT0MeanVsVtx) ;
     
-  TH2F* hEventV0MeanVsVtx = new TH2F(Form("hEventV0MeanVsVtx%s",suffix.Data()), "V0 detector: mean vs vertex ; (V0_{A}-V0_{C})/2 [ns]; (V0_{A}+V0_{C})/2 [ns]; events", 500, -50., 50., 500, -50., 50. ) ; 
+  TH2F* hEventV0MeanVsVtx = new TH2F(Form("hEventV0MeanVsVtx%s",suffix.Data()), "V0 detector: mean vs vertex ; (V0_{A}-V0_{C})/2 [ns]; (V0_{A}+V0_{C})/2 [ns]; events", 50, -25., 25., 50, -25., 25.) ; 
   HistogramMakeUp(hEventV0MeanVsVtx, kBlack, 1, "colz", "","","","");    
   list->AddLast(hEventV0MeanVsVtx) ;
   
@@ -1390,7 +1392,7 @@ void AliAnalysisTaskTOFqaID::FillStartTimeHisto(TString suffix)
     //&& TMath::Abs(fT0[2]-fT0[1]) < 500)  //add this condition to check t0 used in tof response
     ((TH1F*)fHlistTimeZero->FindObject(Form("hT0DetRes%s",suffix.Data())))->Fill((fT0[2]-fT0[1])*0.5);
     ((TH1F*)fHlistTimeZero->FindObject(Form("hT0AC%s",suffix.Data())))->Fill(fT0[0]);  
-    ((TH2F*)fHlistTimeZero->FindObject(Form("hEventT0MeanVsVtx%s",suffix.Data())))->Fill((fT0[2]-fT0[1])*0.5,(fT0[2]+fT0[1])*0.5);
+    ((TH2F*)fHlistTimeZero->FindObject(Form("hEventT0MeanVsVtx%s",suffix.Data())))->Fill( ((fT0[2]-fT0[1])*0.5e-3), ((fT0[2]+fT0[1])*0.5e-3) );
   } 
   if(TMath::Abs(fT0[1]) < t0cut){
     ((TH1F*)fHlistTimeZero->FindObject(Form("hT0A%s",suffix.Data())))->Fill(fT0[1]);   
@@ -1411,8 +1413,8 @@ void AliAnalysisTaskTOFqaID::FillStartTimeHisto(TString suffix)
     fESDpid->SetTOFResponse(fESD, (AliESDpid::EStartTimeType_t) j);//(fill_t0, tof_t0, t0_t0, best_t0)
     timeZero[j]=fESDpid->GetTOFResponse().GetStartTime(10.); //timeZero for bin pT>10GeV/c
     timeZeroRes[j]=fESDpid->GetTOFResponse().GetStartTimeRes(10.); //timeZero for bin pT>10GeV/c
-    ((TH1D*)(fHlistTimeZero->FindObject(timeZeroHisto[j].Data())))->Fill(timeZero[j]);
-    ((TH1D*)(fHlistTimeZero->FindObject(timeZeroHistoRes[j].Data())))->Fill(timeZeroRes[j]);
+    ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHisto[j].Data())))->Fill(timeZero[j]);
+    ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHistoRes[j].Data())))->Fill(timeZeroRes[j]);
   }
   ((TH2F*)fHlistTimeZero->FindObject("hT0TOFvsNtrk"))->Fill(fNTOFtracks[0],timeZero[AliESDpid::kTOF_T0]);
    

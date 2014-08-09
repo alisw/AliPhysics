@@ -92,7 +92,7 @@ public:
    void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi,  Double_t z, Double_t ptD, Double_t ptj, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void FillHistogramsMCGenDJetCorr(Double_t dPhi, Double_t z,Double_t ptD,Double_t ptjet, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void SideBandBackground(AliAODRecoCascadeHF *candDstar, AliEmcalJet *jet);
-   void MCBackground(AliAODRecoDecayHF *candbg);
+   void MCBackground(AliAODRecoDecayHF *candbg, AliEmcalJet *jet);
    void FillMassHistograms(Double_t mass,Double_t ptD);
    void FlagFlavour(AliEmcalJet* jet);
    Int_t IsDzeroSideBand(AliAODRecoCascadeHF *candDstar);

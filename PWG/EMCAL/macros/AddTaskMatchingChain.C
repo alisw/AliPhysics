@@ -68,7 +68,7 @@ AliAnalysisTaskSE * AddTaskMatchingChain(
 
   //----------------------- Cluster-Track matching -----------------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
-  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,maxMatchR,modifyMatchObjs,kTRUE);
+  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,maxMatchR,modifyMatchObjs,doHistos);
   emcalClus->SelectCollisionCandidates(pSel);
 
   Printf("3-- inputTracks: %s emctracks: %s emcclusters: %s",inputTracks.Data(),emctracks.Data(),emcclusters.Data());

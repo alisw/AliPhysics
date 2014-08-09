@@ -42,10 +42,34 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	if( TString(options).Contains("11h") )	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC11h );
 		task->SetCentralityEstimator("V0M");
+		if( downCentLimit == 0 && upCentLimit == 10 ) 
+		{
+			task->SetMassMeanParametrs(-4.03237e-05, 0.138352);
+			task->SetMassSigmaParametrs(0.00722915, 1.24329e-08, 0.00553326, 0.00128347);
+		}
+
+		if( downCentLimit == 20 && upCentLimit == 50 ) 
+		{
+			task->SetMassMeanParametrs(1.00796e-05, 0.136096);
+			task->SetMassSigmaParametrs(0.00100059, 1.10485, 0.00570446, 0.00100001);
+		}
+
 	}
 	if( TString(options).Contains("13") )	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC13 );
 		task->SetCentralityEstimator("V0A");
+		if( downCentLimit == 0 && upCentLimit == 10 ) 
+		{
+			task->SetMassMeanParametrs(-1.15288e-05, 0.134496);
+			task->SetMassSigmaParametrs(0.00541561, 1.55431e-15, 0.00661674, 0.00899229);
+		}
+
+		if( downCentLimit == 20 && upCentLimit == 50 ) 
+		{
+			task->SetMassMeanParametrs(-8.28487e-06, 0.134528);
+			task->SetMassSigmaParametrs(0.0070921, 2.05058e-12, 0.00660061, 0.00750263);
+
+		}
 	}
 
 
@@ -78,6 +102,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	task->SelectCollisionCandidates(AliVEvent::kAny);
 	task->SetCentralityBorders(downCentLimit , upCentLimit) ;
 	task->SetSigmaWidth(sigmaWidth);
+	task->SetUseEfficiency(true);
 
 	mgr->AddTask(task);
 	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );

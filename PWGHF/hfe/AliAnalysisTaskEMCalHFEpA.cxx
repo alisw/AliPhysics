@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: June 18, 2014.								      //
+	//		version: July 28, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -304,7 +304,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fM02CutMax(10)
 ,fAngleCut(999)
 ,fChi2Cut(3.5)
-,fDCAcut(999)
+,fDCAcut(999)//dca between two tracks
+,fDCAcutr(999)//dca to vertex
+,fDCAcutz(999)//dca to vertex
 ,fMassCutFlag(kTRUE)
 ,fAngleCutFlag(kFALSE)
 ,fChi2CutFlag(kFALSE)
@@ -590,7 +592,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fM02CutMax(10)
 ,fAngleCut(999)
 ,fChi2Cut(3.5)
-,fDCAcut(999)
+,fDCAcut(999)//dca between two tracks
+,fDCAcutr(999)//dca to vertex
+,fDCAcutz(999)//dca to vertex
 ,fMassCutFlag(kTRUE)
 ,fAngleCutFlag(kFALSE)
 ,fChi2CutFlag(kFALSE)
@@ -984,7 +988,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	for(Int_t i = 0; i < 3; i++)
 	{
-		fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",1000,0,30,500,0,2);
+		fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
 		fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";pt (GeV/c);TPC dE/dx (a. u.)",1000,0.3,15,1000,-20,200);
 		fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
 		
@@ -1244,13 +1248,13 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	
 	fNcells_pt=new TH2F("fNcells_pt","fNcells_pt",1000, 0,20,100,0,30);
-	fEoverP_pt_pions= new TH2F("fEoverP_pt_pions","fEoverP_pt_pions",1000,0,30,500,0,2);
+	fEoverP_pt_pions= new TH2F("fEoverP_pt_pions","fEoverP_pt_pions",1000,0,30,2000,0,2);
 	
 	ftpc_p_EoverPcut= new TH2F("ftpc_p_EoverPcut","ftpc_p_EoverPcut",1000,0,30,200,20,200);
 	fnsigma_p_EoverPcut= new TH2F("fnsigma_p_EoverPcut","fnsigma_p_EoverPcut",1000,0,30,500,-15,15);
 	
-	fEoverP_pt_pions2= new TH2F("fEoverP_pt_pions2","fEoverP_pt_pions2",1000,0,30,500,0,2);
-	fEoverP_pt_hadrons= new TH2F("fEoverP_pt_hadrons","fEoverP_pt_hadrons",1000,0,30,500,0,2);
+	fEoverP_pt_pions2= new TH2F("fEoverP_pt_pions2","fEoverP_pt_pions2",1000,0,30,2000,0,2);
+	fEoverP_pt_hadrons= new TH2F("fEoverP_pt_hadrons","fEoverP_pt_hadrons",1000,0,30,2000,0,2);
 	
 	
 	fOutputList->Add(fTPCnsigma_eta);
@@ -2353,20 +2357,41 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		} 
 		
 //RecPrim
-		if(!fIsAOD)
-		{
-			if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-		}
+		
+			//it was not working on aod... testing again
+			//July 29th, 2014: aparently working again
+		
+///if(!fIsAOD)
+//{
+
+		if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
+//}
 		
 //HFEcuts: ITS layers cuts
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
 		
 //HFE cuts: TPC PID cleanup
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
+		
+//DCA cut done by hand -- July 29th, 2014
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			if(DCAxy >= fDCAcutr || DCAz>=fDCAcutz) continue;
+		}
+		
+		
+		
+		
+		
 //______________________________________________________________________________________
 		
 		if(fIsAOD){	
-				//AOD test -- Fancesco suggestion
+				//AOD test -- Francesco suggestion
 				//aod test -- Francesco suggestion
 			AliAODTrack *aod_track=fAOD->GetTrack(iTracks);
 

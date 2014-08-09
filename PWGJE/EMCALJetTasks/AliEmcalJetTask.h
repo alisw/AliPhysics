@@ -93,7 +93,8 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
 
   void                   SetRhoName(const char *n)              { fRhoName      = n            ; }
   void                   SetRhomName(const char *n)             { fRhomName     = n            ; }
-  void                   SetGenericSubtraction(Bool_t b)        { fDoGenericSubtraction     = b; }
+  void                   SetGenericSubtractionJetMass(Bool_t b) { fDoGenericSubtractionJetMass = b; }
+  void                   SetGenericSubtractionGR(Bool_t b, Double_t rmax = 2., Double_t dr = 0.04, Double_t ptmin = 0.) { fDoGenericSubtractionGR = b; fRMax=rmax; fDRStep=dr; fPtMinGR=ptmin;}
   void                   SetConstituentSubtraction(Bool_t b)    { fDoConstituentSubtraction = b; }
   void                   SetUseExternalBkg(Bool_t b, Double_t rho, Double_t rhom) { fUseExternalBkg = b; fRho = rho; fRhom = rhom;}
 
@@ -169,13 +170,18 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
   Bool_t                 fCodeDebug;              // use nontested code changes 
 
-  Bool_t                 fDoGenericSubtraction;   // calculate generic subtraction
-  Bool_t                 fDoConstituentSubtraction; // calculate constituent subtraction
+  Bool_t                 fDoGenericSubtractionJetMass; // calculate generic subtraction
+  Bool_t                 fDoGenericSubtractionGR;      // calculate generic subtraction for angular structure function GR
+  Bool_t                 fDoConstituentSubtraction;    // calculate constituent subtraction
   Bool_t                 fUseExternalBkg;         // use external background for generic subtractor
   TString                fRhoName;                // name of rho
   TString                fRhomName;               // name of rhom
   Double_t               fRho;                    // pT background density
   Double_t               fRhom;                   // mT background density
+  Double_t               fRMax;                   // R max for GR calculation
+  Double_t               fDRStep;                 // step width for GR calculation
+  Double_t               fPtMinGR;                // min pT for GR calculation
+ 
 
   TClonesArray          *fJets;                   //!jet collection
   TClonesArray          *fJetsSub;                //!subtracted jet collection
@@ -189,6 +195,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 14) // Jet producing task
+  ClassDef(AliEmcalJetTask, 15) // Jet producing task
 };
 #endif

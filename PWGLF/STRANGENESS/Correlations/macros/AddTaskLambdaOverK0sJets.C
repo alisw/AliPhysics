@@ -2,6 +2,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
 							    TString  data      = "PbPb2010", 
 							    Float_t  minCen    = 0.,
 							    Float_t  maxCen    = 40.,
+							    Float_t  fractionSharedTPCcls = 0.4,
 							    Bool_t   sepInjec  = kTRUE,
 							    Bool_t   isMC      = kFALSE,
 							    Bool_t   doQA      = kTRUE,
@@ -21,6 +22,8 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   Float_t  dca2PrmVtx  = 0.095;  // tighter cut
   Float_t  nclsDaug    = 70;     
   Float_t  minPtDaughter = 0.16;
+
+  Float_t  radiusTPC = 125.;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -52,6 +55,10 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   // MC
   task->SetMC(isMC);
   task->SetPID(usePID);
+  // Setting variables for splitting cut
+  task->SetTPCRadius(radiusTPC);    
+  task->SetFracSharedTPCcls(fractionSharedTPCcls);
+  //task->SetDiffSharedTPCcls(cutSharedTPCcls);
   // QA
   task->SetQA(doQA);
   // Add task

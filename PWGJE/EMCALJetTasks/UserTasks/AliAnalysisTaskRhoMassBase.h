@@ -52,8 +52,6 @@ class AliAnalysisTaskRhoMassBase : public AliAnalysisTaskEmcalJet {
   AliRhoParameter       *fCompareRhoMassScaled;          //!scaled rho object to compare
 
   TH2F                  *fHistJetMassvsCent;             //!jet mass vs. centrality
-  TH2F                  *fHistJetRhoMassvsCent;          //!jet mass/area vs. centrality
-  TH2F                  *fHistJetRhoMassvsEta[4];        //!rho mass vs. eta
   TH2F                  *fHistRhoMassvsCent;             //!rho mass vs. centrality
   TH2F                  *fHistRhoMassScaledvsCent;       //!rho mass scaled vs. centrality
   TH2F                  *fHistDeltaRhoMassvsCent;        //!delta rho mass vs. centrality
@@ -72,6 +70,6 @@ class AliAnalysisTaskRhoMassBase : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskRhoMassBase(const AliAnalysisTaskRhoMassBase&);             // not implemented
   AliAnalysisTaskRhoMassBase& operator=(const AliAnalysisTaskRhoMassBase&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRhoMassBase, 1); // Rho mass base task
+  ClassDef(AliAnalysisTaskRhoMassBase, 2); // Rho mass base task
 };
 #endif

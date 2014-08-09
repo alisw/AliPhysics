@@ -80,9 +80,11 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
-  doComments(0), doIOon(0),
+  doComments(0),
+  doFlavourJetAnalysis(0), fJetFlavTag(-99),
+  fBeam(kNA),
   fLocalRhoVal(0),
-  fTracksName(""), fTracksNameME("PicoTracks"), fJetsName(""),
+  fTracksName(""), fTracksNameME(""), fJetsName(""),
   event(0),
   isPItpc(0), isKtpc(0), isPtpc(0), // pid TPC
   isPIits(0), isKits(0), isPits(0), // pid ITS
@@ -165,9 +167,6 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
 
   SetMakeGeneralHistograms(kTRUE);
   
-  // define input and output slots here
-  if(doIOon > 0 ) DefineInput(0, TChain::Class());
-  if(doIOon > 0 ) DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -182,9 +181,11 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
-  doComments(0), doIOon(0),
+  doComments(0),
+  doFlavourJetAnalysis(0), fJetFlavTag(-99),
+  fBeam(kNA),
   fLocalRhoVal(0),
-  fTracksName(""), fTracksNameME("PicoTracks"), fJetsName(""),
+  fTracksName(""), fTracksNameME(""), fJetsName(""),
   event(0),
   isPItpc(0), isKtpc(0), isPtpc(0), // pid TPC
   isPIits(0), isKits(0), isPits(0), // pid ITS
@@ -267,9 +268,6 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
 
   SetMakeGeneralHistograms(kTRUE);
 
-  // define input and output slots here
-  if(doIOon > 0 ) DefineInput(0, TChain::Class());
-  if(doIOon > 0 ) DefineOutput(1, TList::Class());
 }
 
 //_______________________________________________________________________
@@ -610,8 +608,10 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
       centralityBinsPbPb[ic]=1.0*ic;
   }
 
-//  if(GetBeamType() == 0) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinspp,centralityBinspp);
-//  if(GetBeamType() == 1) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinsPbPb,centralityBinsPbPb);
+  if(fBeam == 0) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinspp,centralityBinspp);
+  if(fBeam == 1) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinsPbPb,centralityBinsPbPb);
+  //if(AliAnalysisTaskEmcal::GetBeamType() == 0) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinspp,centralityBinspp);
+  //if(AliAnalysisTaskEmcal::GetBeamType() == 1) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinsPbPb,centralityBinsPbPb);
 //  fOutput->Add(fHistMult);
 
   // Event Mixing
@@ -620,9 +620,10 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   Int_t nZvtxBins  = 5+1+5;
   Double_t vertexBins[] = { -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
   Double_t* zvtxbin = vertexBins;
+  if(fBeam == 0) fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspp, centralityBinspp, nZvtxBins, zvtxbin);
+  if(fBeam == 1) fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, centralityBinsPbPb, nZvtxBins, zvtxbin);
 //  if(GetBeamType() == 0) fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspp, centralityBinspp, nZvtxBins, zvtxbin);
-  //if(GetBeamType() == 1) 
-fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, centralityBinsPbPb, nZvtxBins, zvtxbin);
+//  if(GetBeamType() == 1) fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, centralityBinsPbPb, nZvtxBins, zvtxbin);
 
   // set up event mixing sparse
   if(fDoEventMixing){
@@ -855,6 +856,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   }
 
   //Int_t ntracks = fVevent->GetNumberOfTracks();
+  Int_t NtrackAcc = 0;
 
   // loop over tracks - to get hardest track (highest pt)
   for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++){
@@ -871,6 +873,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     if(TMath::Abs(track->Eta())>0.9) continue;
     if(track->Pt()<0.15) continue;
     //iCount++;
+    NtrackAcc++;
+
     if(track->Pt()>ptmax){
       ptmax=track->Pt();             // max pT track
       iTT=iTracks;                   // trigger tracks
@@ -914,7 +918,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     if(!AcceptMyJet(jet)) continue;
 
     NjetAcc++;                     // # of accepted jets
-  
+
+    // if FlavourJetAnalysis, get desired FlavTag and check against Jet
+    if(doFlavourJetAnalysis) { if(!AcceptFlavourJet(jet, fJetFlavTag)) continue;}
+
     // use this to get total # of jets passing cuts in events!!!!!!!!
     if (makeQAhistos) fHistJetPhi->Fill(jet->Phi()); // Jet Phi histogram (filled)
 
@@ -939,6 +946,9 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      if (jet->Pt()<0.1) continue;
      // do we accept jet? apply jet cuts
      if (!AcceptMyJet(jet)) continue;
+
+     // if FlavourJetAnalysis, get desired FlavTag and check against Jet
+     if(doFlavourJetAnalysis) { if(!AcceptFlavourJet(jet, fJetFlavTag)) continue;}
 
      fHistEventQA->Fill(10); // accepted jets
 
@@ -1517,8 +1527,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
   if (doComments) {
     cout<<"Event #: "<<event<<"     Jet Radius: "<<fJetRad<<"     Constituent Pt Cut: "<<fConstituentCut<<endl;
-    cout<<"# of jets: "<<Njets<<"      Highest jet pt: "<<highestjetpt<<"     leading hadron pt: "<<leadhadronPT<<endl;
-    cout<<"# tracks: "<<Ntracks<<"      Highest track pt: "<<ptmax<<endl;
+    cout<<"# of jets: "<<Njets<<"      NjetAcc: "<<NjetAcc<<"      Highest jet pt: "<<highestjetpt<<"     leading hadron pt: "<<leadhadronPT<<endl;
+    cout<<"# tracks: "<<Ntracks<<"      NtrackAcc: "<<NtrackAcc<<"      Highest track pt: "<<ptmax<<endl;
     cout<<" =============================================== "<<endl;
   }
 
@@ -2159,4 +2169,48 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsCorr(Int_t iEntry, TString &la
    }// end of switch
 } // end of Correction (ME) sparse
 
+//________________________________________________________________________
+//Int_t AliAnalysisTaskEmcalJetHadEPpid::AcceptFlavourJet(AliEmcalJet* fljet, Int_t NUM, Int_t NUM2, Int_t NUM3) {
+Int_t AliAnalysisTaskEmcalJetHadEPpid::AcceptFlavourJet(AliEmcalJet* fljet, Int_t NUM) {
+  // Get jet if accepted for given flavour tag
+  // If jet not accepted return 0
+  if(!fljet) {
+    AliError(Form("%s:Jet not found",GetName()));
+    return 0;
+  }
 
+  Int_t flavNUM = -99;//, flavNUM2 = -99, flavNUM3 = -99; FIXME commented out to avoid compiler warning
+  flavNUM = NUM;
+  //flavNUM2 = NUM2;
+  //flavNUM3 = NUM3;
+
+/*
+  // from the AliEmcalJet class, the tagging enumerator
+  enum EFlavourTag{
+       kDStar = 1<<0, kD0 = 1<<1, 
+	   kSig1 = 1<<2, kSig2 = 1<<3, 
+	   kBckgrd1 = 1<<4, kBckgrd2 = 1<<5, kBckgrd3 = 1<<6
+  }; 
+  // bit 0 = no tag, bit 1 = Dstar, bit 2 = D0 and so forth...
+*/   
+
+  // get flavour of jet (if any)
+  Int_t flav = -999;
+  flav = fljet->GetFlavour();
+
+  // cases (for now..)
+  // 3 = electron rich, 5 = hadron (bkgrd) rich
+  // if flav < 1, its not tagged, so return kFALSE (0)
+  if(flav < 1) return 0;
+
+  // if flav is not equal to what we want then return kFALSE (0)
+  //if(flav != flavNUM && flav != flavNUM2 && flav != flavNUM3) return 0;
+  if(flav != flavNUM) return 0;  
+
+  // we have the flavour we want, so return kTRUE (1)
+  //if(flav == flavNUM || flav == flavNUM2 || flav == flavNUM3) return 1;
+  if(flav == flavNUM) return 1;
+
+  // we by default have a flavour tagged jet
+  return 1;
+}

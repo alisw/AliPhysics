@@ -69,6 +69,11 @@ AliPPVsMultUtils &AliPPVsMultUtils::operator=(const AliPPVsMultUtils &c)
 
 //______________________________________________________________________
 Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliESDEvent *event, TString lMethod = "V0M")
+// Function to get multiplicity quantiles in ESDs. All methods would work 
+// with AliVEvent except GetPrimaryVertexSPD which exists in both ESD and AOD 
+// but not in the AliVEvent class; therefore two functions are included. 
+// N.B.: Any change to this method has to be propagated by hand to the function 
+// below! 
 {
     Int_t lRequestedRunNumber = event->GetRunNumber();
     if( lRequestedRunNumber != fRunNumber ) LoadCalibration( lRequestedRunNumber );
@@ -95,6 +100,71 @@ Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliESDEvent *event, TString 
     multV0A=esdV0->GetMTotV0A();
     multV0C=esdV0->GetMTotV0C();
     const AliESDVertex *lPrimarySPDVtx         = event->GetPrimaryVertexSPD();
+    
+    //Get Z vertex position of SPD vertex (why not Tracking if available?)
+    Float_t zvtx = lPrimarySPDVtx->GetZ();
+    
+    //Acquire Corrected multV0A
+    multV0ACorr = AliESDUtils::GetCorrV0A(multV0A,zvtx);
+    multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);
+    
+    // Equalized signals // From AliCentralitySelectionTask // Updated
+    for(Int_t iCh = 32; iCh < 64; ++iCh) {
+        Double_t mult = event->GetVZEROEqMultiplicity(iCh);
+        multV0AEq += mult;
+    }
+    for(Int_t iCh = 0; iCh < 32; ++iCh) {
+        Double_t mult = event->GetVZEROEqMultiplicity(iCh);
+        multV0CEq += mult;
+    }
+    
+    if ( lMethod == "V0M" ) lreturnval =
+        fBoundaryHisto_V0M -> GetBinContent( fBoundaryHisto_V0M->FindBin(multV0ACorr+multV0CCorr) );
+    if ( lMethod == "V0A" ) lreturnval =
+        fBoundaryHisto_V0A -> GetBinContent( fBoundaryHisto_V0A->FindBin(multV0ACorr) );
+    if ( lMethod == "V0C" ) lreturnval =
+        fBoundaryHisto_V0C -> GetBinContent( fBoundaryHisto_V0C->FindBin(multV0CCorr) );
+    //equalized
+    if ( lMethod == "V0MEq" ) lreturnval =
+        fBoundaryHisto_V0MEq -> GetBinContent( fBoundaryHisto_V0MEq->FindBin(multV0AEq+multV0CEq) );
+    if ( lMethod == "V0AEq" ) lreturnval =
+        fBoundaryHisto_V0AEq -> GetBinContent( fBoundaryHisto_V0AEq->FindBin(multV0AEq) );
+    if ( lMethod == "V0CEq" ) lreturnval =
+        fBoundaryHisto_V0CEq -> GetBinContent( fBoundaryHisto_V0CEq->FindBin(multV0CEq) );
+    
+    return lreturnval;
+}
+
+//______________________________________________________________________
+Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliAODEvent *event, TString lMethod = "V0M")
+// Carbon-copy version of ESD function (GetPrimaryVertexSPD won't work 
+// in the base class AliVEvent...FIXME) 
+{
+    Int_t lRequestedRunNumber = event->GetRunNumber();
+    if( lRequestedRunNumber != fRunNumber ) LoadCalibration( lRequestedRunNumber );
+    
+    Float_t lreturnval = -1;
+    
+    //Get VZERO Information for multiplicity later
+    AliVVZERO* esdV0 = event->GetVZEROData();
+    if (!esdV0) {
+        AliError("AliVVZERO not available");
+        return -1;
+    }
+    
+    // VZERO PART
+    Float_t  multV0A  = 0;            //  multiplicity from V0 reco side A
+    Float_t  multV0C  = 0;            //  multiplicity from V0 reco side C
+    Float_t  multV0AEq  = 0;          //  multiplicity from V0 reco side A
+    Float_t  multV0CEq  = 0;          //  multiplicity from V0 reco side C
+    Float_t  multV0ACorr  = 0;            //  multiplicity from V0 reco side A
+    Float_t  multV0CCorr  = 0;            //  multiplicity from V0 reco side C
+    
+    //Non-Equalized Signal: copy of multV0ACorr and multV0CCorr from AliCentralitySelectionTask
+    //Getters for uncorrected multiplicity
+    multV0A=esdV0->GetMTotV0A();
+    multV0C=esdV0->GetMTotV0C();
+    const AliAODVertex *lPrimarySPDVtx         = event->GetPrimaryVertexSPD();
     
     //Get Z vertex position of SPD vertex (why not Tracking if available?)
     Float_t zvtx = lPrimarySPDVtx->GetZ();
@@ -167,6 +237,12 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     fBoundaryHisto_V0AEq   = dynamic_cast<TH1F *>(lCalibFile_V0AEq  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
     fBoundaryHisto_V0CEq   = dynamic_cast<TH1F *>(lCalibFile_V0CEq  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
     
+    if ( !fBoundaryHisto_V0M   || !fBoundaryHisto_V0A   || !fBoundaryHisto_V0C ||
+        !fBoundaryHisto_V0MEq || !fBoundaryHisto_V0AEq || !fBoundaryHisto_V0CEq ){
+        AliFatal(Form("No calibration for run %i exists at the moment!",lLoadThisCalibration));
+        return kFALSE; //return denial
+    }
+    
     //Careful with manual cleanup if needed: to be implemented
     fBoundaryHisto_V0M->SetDirectory(0);
     fBoundaryHisto_V0A->SetDirectory(0);
@@ -175,11 +251,6 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     fBoundaryHisto_V0AEq->SetDirectory(0);
     fBoundaryHisto_V0CEq->SetDirectory(0);
     
-    if ( !fBoundaryHisto_V0M   || !fBoundaryHisto_V0A   || !fBoundaryHisto_V0C ||
-        !fBoundaryHisto_V0MEq || !fBoundaryHisto_V0AEq || !fBoundaryHisto_V0CEq ){
-        AliFatal(Form("No calibration for run %i exists at the moment!",lLoadThisCalibration));
-        return kFALSE; //return denial
-    }
     //AliInfo("Closing");
     
     if( lCalibFile_V0M ) lCalibFile_V0M->Close();

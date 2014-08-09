@@ -1,9 +1,7 @@
 /*
- * AddTask macro for class 
+ * AddTask macro for Jet V2 task 
  * Redmer Alexander Bertens, rbertens@cern.ch
  * Utrecht University, Utrecht, Netherlands
- *
- * Note: this macro is pretty much a copy of AddTaskEmcalJetSample.C
  *
  */
 
