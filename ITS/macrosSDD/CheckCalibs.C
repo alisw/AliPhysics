@@ -38,6 +38,7 @@ private:
   TGTextButton        *fShowPulser;
   TGTextButton        *fShowInject;
   TGTextButton        *fShowOneMod;
+  TGTextButton        *fShowDDL;
   TGTextButton        *fExit;
   TGGroupFrame        *fGframeALL;
   TGGroupFrame        *fGframeSING;
@@ -58,6 +59,7 @@ public:
   static void ShowPulser();
   static void ShowInjector();
   static void ShowSingleModule(Int_t iddl, Int_t ichan);
+  static void ShowDDL(Int_t iddl);
   static void ClearAll();
 
   ClassDef(CheckCalibInterface, 0)
@@ -114,6 +116,9 @@ CheckCalibInterface::CheckCalibInterface(const TGWindow *p, UInt_t w, UInt_t h)
   fShowOneMod = new TGTextButton(fGframeSING, "&Show Selected Module","CheckCalibInterface::ShowSingleModule(0,0)");
   fGframeSING->AddFrame(fShowOneMod, lhc);
 
+  fShowDDL = new TGTextButton(fGframeSING, "&Show vdrift for DDL","CheckCalibInterface::ShowDDL(0)");
+  fGframeSING->AddFrame(fShowDDL, lhc);
+
   fExit = new TGTextButton(fHor4, "&Exit", "gApplication->Terminate(0)");
   fHor4->AddFrame(fExit, lh1);
 
@@ -139,19 +144,20 @@ CheckCalibInterface::~CheckCalibInterface()
 
 void CheckCalibInterface::CopyFiles(){
   //
+  // 8 LDCs in Run2 with new (simpler) dirs - M.S. 25 jul 14
   TString command;
-  TString ldcName[6]={"aldaqpc083","aldaqpc084","aldaqpc041",
-		      "aldaqpc082","aldaqpc085","aldaqpc086"};
+  TString ldcName[8]={"aldaqpc009","aldaqpc010","aldaqpc011","aldaqpc012",
+		      "aldaqpc013","aldaqpc014","aldaqpc015","aldaqpc016"};
   gSystem->Exec("rm -rf calibFiles");
   gSystem->Exec("mkdir calibFiles");
-  for(Int_t iLDC=0; iLDC<6; iLDC++){
-    Int_t firstDDL=iLDC*4;
-    Int_t lastDDL=iLDC*4+3;
-    command.Form("scp %s:/dateSite/ldc-SDD-%02d-%02d-0/work/SDDbase_step2_LDC.tar calibFiles/.",ldcName[iLDC].Data(),firstDDL,lastDDL);
+  for(Int_t iLDC=0; iLDC<8; iLDC++){
+    Int_t firstDDL=iLDC*3;
+    Int_t lastDDL=iLDC*3+2;
+    command.Form("scp %s:/dateSite/ldc-SDD-%d/work/SDDbase_step2_LDC.tar calibFiles/.",ldcName[iLDC].Data(),iLDC);
     gSystem->Exec(command.Data());
-    command.Form("scp %s:/dateSite/ldc-SDD-%02d-%02d-0/work/SDDbase_LDC.tar calibFiles/.",ldcName[iLDC].Data(),firstDDL,lastDDL);
+    command.Form("scp %s:/dateSite/ldc-SDD-%d/work/SDDbase_LDC.tar calibFiles/.",ldcName[iLDC].Data(),iLDC);
     gSystem->Exec(command.Data());
-    command.Form("scp %s:/dateSite/ldc-SDD-%02d-%02d-0/work/SDDinj_LDC.tar calibFiles/.",ldcName[iLDC].Data(),firstDDL,lastDDL);
+    command.Form("scp %s:/dateSite/ldc-SDD-%d/work/SDDinj_LDC.tar calibFiles/.",ldcName[iLDC].Data(),iLDC);
     gSystem->Exec(command.Data());
     gSystem->Exec("cd calibFiles; tar xvf SDDbase_step2_LDC.tar; tar xvf SDDbase_LDC.tar; tar xvf SDDinj_LDC.tar; cd ..");
   }
@@ -538,7 +544,7 @@ void CheckCalibInterface::ShowInjector(){
 
   TString countmods;
   countmods.Form("Number of half-modules with drift speed from injectors = %d",iGoodInj);
-  gStyle->SetPalette(59);
+  gStyle->SetPalette(51);
   hinjstatus->SetStats(0);
   hinjstatus->SetMinimum(-0.01);
   hinjstatus->SetMaximum(7.);
@@ -663,6 +669,63 @@ void CheckCalibInterface::ShowInjector(){
   tright->Draw();
 
   return;
+}
+
+void CheckCalibInterface::ShowDDL(Int_t iddl){
+  //
+  ClearAll();
+  TF1* fPoly=new TF1("fPoly","pol3",0.,256.);
+  TString inpFileName;
+  TGraph* gdrsp[24];
+  Int_t retfscf;
+  Int_t evNumb,polDeg; 
+  UInt_t timeStamp,statusInj;
+  Float_t auxP;
+  for(Int_t imod=0;imod<12;imod++){
+    for(Int_t isid=0;isid<2;isid++){
+      inpFileName.Form("./calibFiles/SDDinj_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
+      FILE* injFil = fopen(inpFileName.Data(),"read");
+      Int_t sideId=imod*2+isid;
+      gdrsp[sideId]=new TGraph(0);
+      gdrsp[sideId]->SetTitle(Form("DDL %d  Mod %d  Sid %d\n",iddl,imod,isid));
+      Bool_t firstEvent=kTRUE;
+      if (injFil != 0){
+	retfscf=fscanf(injFil,"%d",&polDeg);
+	while (!feof(injFil)){
+	  retfscf=fscanf(injFil,"%d %u ",&evNumb,&timeStamp);
+	  if(evNumb==-99){
+	    statusInj=timeStamp;
+	  }else{
+	    if(feof(injFil)) break;
+	    for(Int_t ic=0;ic<4;ic++){ 
+	      retfscf=fscanf(injFil,"%f ",&auxP);
+	      fPoly->SetParameter(ic,auxP);
+	    }	  
+	  }
+	  if(firstEvent==kTRUE && polDeg>0){
+	    firstEvent=kFALSE;
+	    for(Int_t ian=0; ian<256; ian+=8){
+	      gdrsp[sideId]->SetPoint(gdrsp[sideId]->GetN(),(Float_t)ian,fPoly->Eval(ian));
+	    }
+	  }
+	}
+	fclose(injFil);	
+      }
+      if(gdrsp[sideId]->GetN()==0) gdrsp[sideId]->SetPoint(0,128.,0.);
+    }
+  }
+  delete fPoly;
+
+  TCanvas* c0=new TCanvas("c0","Drift Speed Vs. Anode",1300,900);
+  c0->Divide(6,4);
+  for(Int_t i=0; i<24;i++){
+    c0->cd(i+1);
+    gdrsp[i]->Draw("APL");
+    gdrsp[i]->GetXaxis()->SetTitle("Anode");
+    gdrsp[i]->GetYaxis()->SetTitle("Drift Speed (#mum/ns)");
+    gdrsp[i]->GetYaxis()->SetTitleOffset(1.35);
+  }
+
 }
 
 void CheckCalibInterface::ShowSingleModule(Int_t iddl, Int_t ichan){
@@ -913,6 +976,8 @@ void CheckCalibInterface::DoSetlabel()
   fNumChannel=fChannel->GetNumberEntry()->GetIntNumber();
   fShowOneMod->SetCommand(Form("CheckCalibInterface::ShowSingleModule(%d,%d)",
 			       fNumDDL,fNumChannel));
+  fShowDDL->SetCommand(Form("CheckCalibInterface::ShowDDL(%d)",
+			       fNumDDL));
 }
 
 void CheckCalibInterface::ClearAll(){
@@ -937,5 +1002,5 @@ void CheckCalibInterface::ClearAll(){
 
 void CheckCalibs()
 {
-   new CheckCalibInterface(gClient->GetRoot(), 400, 400); 
+   new CheckCalibInterface(gClient->GetRoot(), 600, 400); 
 }

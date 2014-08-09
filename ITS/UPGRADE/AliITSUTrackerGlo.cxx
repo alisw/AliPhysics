@@ -441,11 +441,16 @@ Int_t AliITSUTrackerGlo::LoadClusters(TTree * treeRP)
 void AliITSUTrackerGlo::UnloadClusters()
 {
   //
-  // To be implemented 
+  // Remove clusters from the memory 
   //
-  
-  Info("UnloadClusters","To be implemented");
+  AliITSURecoDet *det=fReconstructor->GetITSInterface();
+  Int_t nlayers=det->GetNLayersActive();
+  for (Int_t i=0; i<nlayers; i++) {
+      TClonesArray *clusters=*(det->GetLayerActive(i)->GetClustersAddress());
+      clusters->Delete();
+  }
 } 
+
 //_________________________________________________________________________
 AliCluster * AliITSUTrackerGlo::GetCluster(Int_t /*index*/) const
 {

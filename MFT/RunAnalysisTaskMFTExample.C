@@ -1,7 +1,9 @@
+//====================================================================================================================================================
+
 Bool_t RunAnalysisTaskMFTExample(const Char_t *runType="local",       // "grid" and "local" types have been tested
 				 const Char_t *runMode="full") {
   
-  enum {kGenerated, kReconstructed};
+  //  enum {kGenerated, kReconstructed};
 
   LoadLibs();
 
@@ -12,14 +14,14 @@ Bool_t RunAnalysisTaskMFTExample(const Char_t *runType="local",       // "grid" 
   AliAODInputHandler* inputHandler = new AliAODInputHandler();
   mgr->SetInputEventHandler(inputHandler);
   
-  if (!strcmp(runType,"grid")) mgr->SetGridHandler(CreateAlienHandler());
+  if (!strcmp(runType,"grid")) mgr->SetGridHandler(CreateAlienHandler(runMode));
   
   gROOT->LoadMacro("AliAnalysisTaskMFTExample.cxx++g");   
   AliAnalysisTaskMFTExample *task = new AliAnalysisTaskMFTExample("AliAnalysisTaskMFTExample");
 
   // in cm, taken from Fig. 7.4 of the ITS Upgrade TDR, in the hypothesis of ~80 tracks participating to the vtx
   task -> SetVtxResolutionITS(5.e-4, 5.e-4, 4.e-4);
-  task -> SetVertexMode(kGenerated);
+  task -> SetVertexMode(AliAnalysisTaskMFTExample::kGenerated);
 
   mgr->AddTask(task);
   
@@ -57,12 +59,12 @@ Bool_t RunAnalysisTaskMFTExample(const Char_t *runType="local",       // "grid" 
 
 //====================================================================================================================================================
 
-AliAnalysisGrid* CreateAlienHandler() {
+AliAnalysisGrid* CreateAlienHandler(const Char_t *runMode) {
 
   // Set up the analysis plugin in case of a grid analysis
 
-  TString rootVersion = "v5-34-02-1";
-  TString alirootVersion = "v5-04-33-AN";
+  TString rootVersion = "v5-34-08-6";
+  TString alirootVersion = "vAN-20140727";
 
   AliAnalysisAlien *analysisPlugin = new AliAnalysisAlien();
   if (!analysisPlugin) { Printf("Error : analysisPlugin is null !!!"); return kFALSE; }
@@ -80,10 +82,10 @@ AliAnalysisGrid* CreateAlienHandler() {
   analysisPlugin->SetAdditionalRootLibs("PWGmuon");
   
   // Location of Data and Working dir
-  analysisPlugin->SetGridDataDir("");
-  analysisPlugin->SetDataPattern("");
+  analysisPlugin->SetGridDataDir("/alice/cern.ch/user/a/auras/MFT/simulations_2014/PbPb/jpsi_prompt/pix20um20um_plane400um/");
+  analysisPlugin->SetDataPattern("*/AliAOD.Muons.root");
   analysisPlugin->SetRunPrefix("");
-  analysisPlugin->SetGridWorkingDir("");
+  analysisPlugin->SetGridWorkingDir("MFT/analysis_2014/PbPb/jpsi_prompt/pix20um20um_plane400um/");
   
   // Declare alien output directory. Relative to working directory.
   analysisPlugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output

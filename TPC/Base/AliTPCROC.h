@@ -29,7 +29,9 @@ class AliTPCROC : public TObject {
   UInt_t GetNSectors() const          { return fNSectorsAll;}
   UInt_t GetNRows(UInt_t sector) const { return (sector<fNSectors[1]) ? fNRows[0]:fNRows[1];}
   UInt_t GetNChannels(UInt_t sector) const { return (sector<fNSectors[1]) ? fNChannels[0]:fNChannels[1];}
-  UInt_t GetNPads(UInt_t sector,UInt_t row) const { return (sector<fNSectors[1]) ? fNPads[0][row]:fNPads[1][row];}
+  UInt_t GetNPads(UInt_t sector,UInt_t row) const { 
+    UInt_t irow=(row<GetNRows(sector))?row:(GetNRows(sector)-1);
+    return (sector<fNSectors[1]) ? fNPads[0][irow]:fNPads[1][irow];}
   const UInt_t * GetRowIndexes(UInt_t sector) const {return (sector<fNSectors[1]) ? fRowPosIndex[0]:fRowPosIndex[1];}  
   //
   //get sector parameters

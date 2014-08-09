@@ -43,6 +43,7 @@ G__*.h
 /include
 /tmp
 /build
+/DA
 
 # /test/
 /test/*/*.root
@@ -58,3 +59,6 @@ G__*.h
 /RPMS
 /alimdc-root
 rpm-tmp.*
+/Debug
+.cproject
+.project

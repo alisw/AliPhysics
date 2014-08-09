@@ -191,22 +191,6 @@ foreach(detector ${ONLINEDETECTORS} )
 	set(DAEXE "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe")
 	set(DADEP "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.d") 
 
-	# DAVERSION
-	# execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR}/${DASRC} OUTPUT_VARIABLE _daversion OUTPUT_STRIP_TRAILING_WHITESPACE)
-	# string(REGEX REPLACE ".*Last Changed Rev: ([^\n]+)\n.*" "\\1" DAVERSION ${_daversion}e)
-	execute_process(COMMAND git log -1 --format=%h ${DASRC} 
-	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	  OUTPUT_STRIP_TRAILING_WHITESPACE
-	  OUTPUT_VARIABLE DAVERSION)
-
-	#DAREVISION
-	# execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE _darevision OUTPUT_STRIP_TRAILING_WHITESPACE)
-        # string(REGEX REPLACE ".*Revision: ([^\n]+)\n.*" "\\1" DAREVISION ${_darevision})
-	execute_process(COMMAND git log -1 --format=%h ${DASRC}
-	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	  OUTPUT_STRIP_TRAILING_WHITESPACE
-	  OUTPUT_VARIABLE DAREVISION)
-
 	# DAROOTRELEASE 
 	  execute_process(COMMAND root-config --version OUTPUT_VARIABLE _darootrelease OUTPUT_STRIP_TRAILING_WHITESPACE)
 	  string(REGEX REPLACE "/" "." DAROOTRELEASE ${_darootrelease})
@@ -215,7 +199,7 @@ foreach(detector ${ONLINEDETECTORS} )
 	
 	  set(DAARCNAME "${DATARGETNAME}")
 	  #string(REPLACE "-" "" DAARCNAME "${DAARCNAME}")
-	  set(DAARC "${DAARCNAME}-${DAVERSION}")
+	  set(DAARC "${DAARCNAME}-${ALIROOT_BRANCH_SPEC}")
 	  set(DATAR "${DATARGETDIR}/${DAARC}.src.tar.gz")
 	  set(DASPECFILE "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.spec")
 	  set(DAMAKEFILE "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.make")
@@ -360,8 +344,8 @@ COMMAND @echo "***** Making RPM spec-file ${DASPECFILE} *****"
 COMMAND @echo '\# RPM specfile for $(DAMODULE)${SUBDAMODULE}$(DANAME) Detector Algorithm' >> ${DASPECFILE}
 COMMAND @echo "Summary: ${ONLINEDETECTORNAME} Detector Algorithm" >> ${DASPECFILE}
 COMMAND @echo "Name: ${DAARCNAME}" >> ${DASPECFILE}
-COMMAND @echo "Version: ${DAVERSION}" >> ${DASPECFILE}
-COMMAND @echo "Release: ${DAALIROOTRELEASE}.${DAREVISION}" >> ${DASPECFILE}
+COMMAND @echo "Version: ${ALIROOT_BRANCH_SPEC}" >> ${DASPECFILE}
+COMMAND @echo "Release: ${GIT_SHORT_SHA1}" >> ${DASPECFILE}
 COMMAND @echo "License: CERN Alice DAQ/Offine" >> ${DASPECFILE}
 COMMAND @echo "Source: %{name}-%{version}.src.tar.gz" >> ${DASPECFILE}
 COMMAND @echo "Group: Applications/Alice" >> ${DASPECFILE}

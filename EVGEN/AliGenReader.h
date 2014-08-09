@@ -10,6 +10,7 @@
 // Author: andreas.morsch@cern.ch
 
 #include "TObject.h"
+#include "AliGenEventHeader.h"
 
 class TParticle;
 class AliRunLoader;
@@ -23,6 +24,7 @@ class AliGenReader : public TObject
     virtual ~AliGenReader(){;}
     virtual void SetFileName(const Text_t *filname) {fFileName=filname;}
     virtual AliRunLoader * GetRunLoader() const {return 0x0;}
+    virtual AliGenEventHeader * GetGenEventHeader() const {return 0x0;}
     virtual void Init()                                                    = 0;
     virtual Int_t NextEvent()                                              = 0;
     virtual TParticle* NextParticle()                                      = 0;

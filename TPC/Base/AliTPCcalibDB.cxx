@@ -318,7 +318,8 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //
   // destructor
   //
-  delete fIonTailArray; 
+
+  //delete fIonTailArray; 
   delete fActiveChannelMap;
   delete fGrRunState;
 }
@@ -494,7 +495,7 @@ void AliTPCcalibDB::Update(){
   //Calibration ION tail data
   entry          = GetCDBEntry("TPC/Calib/IonTail");
   if (entry){
-    delete fIonTailArray; fIonTailArray=NULL;
+    //delete fIonTailArray; fIonTailArray=NULL;
     entry->SetOwner(kTRUE);
      fIonTailArray=(TObjArray*)(entry->GetObject());
      fIonTailArray->SetOwner(); //own the keys
@@ -2160,6 +2161,10 @@ Bool_t AliTPCcalibDB::CreateGUITree(const char* filename){
   UpdateNonRec();  // load all infromation now
 
   AliTPCPreprocessorOnline prep;
+  if (GetActiveChannelMap()) prep.AddComponent(new AliTPCCalPad(*GetActiveChannelMap()));
+
+  // gain map
+  if (GetDedxGainFactor()) prep.AddComponent(new AliTPCCalPad(*GetDedxGainFactor()));
   //noise and pedestals
   if (GetPedestals()) prep.AddComponent(new AliTPCCalPad(*(GetPedestals())));
   if (GetPadNoise() ) prep.AddComponent(new AliTPCCalPad(*(GetPadNoise())));
