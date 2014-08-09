@@ -214,6 +214,9 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
     fhEtaIsoMC   [imc]    = 0;
     fhPtLambda0MC[imc][0] = 0;
     fhPtLambda0MC[imc][1] = 0;
+    
+    fhPtDecayIsoMC  [imc]    = 0;
+    fhPtDecayNoIsoMC[imc]    = 0;
   }
   
   for(Int_t i = 0; i < 2 ; i++)
@@ -1027,7 +1030,6 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
 void AliAnaParticleIsolation::FillPileUpHistograms(Int_t clusterID)
 {
   // Fill some histograms to understand pile-up
-  if(!fFillPileUpHistograms) return;
   
   if(clusterID < 0 )
   {
@@ -1492,7 +1494,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtDecayIso->SetYTitle("#it{counts}");
       fhPtDecayIso->SetXTitle("#it{p}_{T}(GeV/#it{c})");
       outputContainer->Add(fhPtDecayIso) ;
-      
+    
       fhEtaPhiDecayIso  = new TH2F("hEtaPhiDecayIso",
                                    Form("Number of isolated Pi0 decay particles #eta vs #phi, %s",parTitle.Data()),
                                    netabins,etamin,etamax,nphibins,phimin,phimax);
@@ -1500,7 +1502,32 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhEtaPhiDecayIso->SetYTitle("#phi");
       outputContainer->Add(fhEtaPhiDecayIso) ;
     }
-  }
+    
+    
+    if(IsDataMC())
+    {
+      for(Int_t imc = 0; imc < 9; imc++)
+      {
+        
+        fhPtDecayNoIsoMC[imc]  = new TH1F(Form("hPtDecayNoIsoMC%s",mcPartName[imc].Data()),
+                                          Form("#it{p}_{T} of NOT isolated, decay tag,  %s, %s",mcPartType[imc].Data(),parTitle.Data()),
+                                          nptbins,ptmin,ptmax);
+        fhPtDecayNoIsoMC[imc]->SetYTitle("#it{counts}");
+        fhPtDecayNoIsoMC[imc]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+        outputContainer->Add(fhPtDecayNoIsoMC[imc]) ;
+        
+        if(!fMakeSeveralIC)
+        {
+          fhPtDecayIsoMC[imc]  = new TH1F(Form("hPtDecayMC%s",mcPartName[imc].Data()),
+                                          Form("#it{p}_{T} of isolated %s, decay tag, %s",mcPartType[imc].Data(),parTitle.Data()),
+                                          nptbins,ptmin,ptmax);
+          fhPtDecayIsoMC[imc]->SetYTitle("#it{counts}");
+          fhPtDecayIsoMC[imc]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+          outputContainer->Add(fhPtDecayIsoMC[imc]) ;
+        }
+      }// loop
+    }// MC
+  }// decay
   
   if(!fMakeSeveralIC)
   {
@@ -3223,42 +3250,14 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     if(isolated)
     {
-      if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d ISOLATED: fill histograms\n", iaod);
-      
-      // Fill histograms to undertand pile-up before other cuts applied
-      // Remember to relax time cuts in the reader
-      FillPileUpHistograms(aod->GetCaloLabel(0));
+      if(GetDebug() > 1)
+        printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d ISOLATED: fill histograms\n", iaod);
       
       fhEIso      ->Fill(energy);
       fhPtIso     ->Fill(pt);
       fhPhiIso    ->Fill(pt,phi);
       fhEtaIso    ->Fill(pt,eta);
       fhEtaPhiIso ->Fill(eta,phi);
-      
-      if(fFillNLMHistograms) fhPtNLocMaxIso    ->Fill(pt,aod->GetFiducialArea()) ;
-      
-      if(fFillHighMultHistograms)
-      {
-        fhPtCentralityIso ->Fill(pt,GetEventCentrality()) ;
-        fhPtEventPlaneIso ->Fill(pt,GetEventPlaneAngle() ) ;
-      }
-      
-      if(decay && fFillTaggedDecayHistograms)
-      {
-        fhPtDecayIso    ->Fill(pt);
-        fhEtaPhiDecayIso->Fill(eta,phi);
-      }
-      
-      if(fFillPileUpHistograms)
-      {
-        if(GetReader()->IsPileUpFromSPD())               { fhEIsoPileUp[0] ->Fill(energy) ; fhPtIsoPileUp[0]->Fill(pt) ; }
-        if(GetReader()->IsPileUpFromEMCal())             { fhEIsoPileUp[1] ->Fill(energy) ; fhPtIsoPileUp[1]->Fill(pt) ; }
-        if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhEIsoPileUp[2] ->Fill(energy) ; fhPtIsoPileUp[2]->Fill(pt) ; }
-        if(GetReader()->IsPileUpFromSPDAndEMCal())       { fhEIsoPileUp[3] ->Fill(energy) ; fhPtIsoPileUp[3]->Fill(pt) ; }
-        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    { fhEIsoPileUp[4] ->Fill(energy) ; fhPtIsoPileUp[4]->Fill(pt) ; }
-        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    { fhEIsoPileUp[5] ->Fill(energy) ; fhPtIsoPileUp[5]->Fill(pt) ; }
-        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) { fhEIsoPileUp[6] ->Fill(energy) ; fhPtIsoPileUp[6]->Fill(pt) ; }
-      }
       
       if(IsDataMC())
       {
@@ -3275,16 +3274,80 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         fhEtaIsoMC[mcIndex]->Fill(pt,eta);
       }//Histograms with MC
       
+      // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
+      if(decay && fFillTaggedDecayHistograms)
+      {
+        fhPtDecayIso    ->Fill(pt);
+        fhEtaPhiDecayIso->Fill(eta,phi);
+        
+        if(IsDataMC())
+        {
+          if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
+            fhPtDecayIsoMC[kmcPhoton]->Fill(pt);
+          
+          fhPtDecayIsoMC[mcIndex]->Fill(pt);
+        }
+      }
+
+      if(fFillNLMHistograms)
+        fhPtNLocMaxIso ->Fill(pt,aod->GetFiducialArea()) ; // remember to change method name
+      
+      if(fFillHighMultHistograms)
+      {
+        fhPtCentralityIso ->Fill(pt,GetEventCentrality()) ;
+        fhPtEventPlaneIso ->Fill(pt,GetEventPlaneAngle() ) ;
+      }
+
+      if(fFillPileUpHistograms)
+      {
+        if(GetReader()->IsPileUpFromSPD())               { fhEIsoPileUp[0] ->Fill(energy) ; fhPtIsoPileUp[0]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromEMCal())             { fhEIsoPileUp[1] ->Fill(energy) ; fhPtIsoPileUp[1]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhEIsoPileUp[2] ->Fill(energy) ; fhPtIsoPileUp[2]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromSPDAndEMCal())       { fhEIsoPileUp[3] ->Fill(energy) ; fhPtIsoPileUp[3]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    { fhEIsoPileUp[4] ->Fill(energy) ; fhPtIsoPileUp[4]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    { fhEIsoPileUp[5] ->Fill(energy) ; fhPtIsoPileUp[5]->Fill(pt) ; }
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) { fhEIsoPileUp[6] ->Fill(energy) ; fhPtIsoPileUp[6]->Fill(pt) ; }
+        
+        // Fill histograms to undertand pile-up before other cuts applied
+        // Remember to relax time cuts in the reader
+        FillPileUpHistograms(aod->GetCaloLabel(0));
+      }
+
     }//Isolated histograms
     else // NON isolated
     {
-      if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d NOT ISOLATED, fill histograms\n", iaod);
+      if(GetDebug() > 1)
+        printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d NOT ISOLATED, fill histograms\n", iaod);
       
       fhENoIso        ->Fill(energy);
       fhPtNoIso       ->Fill(pt);
       fhEtaPhiNoIso   ->Fill(eta,phi);
       
-      if(fFillNLMHistograms) fhPtNLocMaxNoIso->Fill(pt,aod->GetFiducialArea());
+      if(IsDataMC())
+      {
+        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
+          fhPtNoIsoMC[kmcPhoton]->Fill(pt);
+        
+        fhPtNoIsoMC[mcIndex]->Fill(pt);
+      }
+      
+      // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
+      if(decay && fFillTaggedDecayHistograms)
+      {
+        fhPtDecayNoIso    ->Fill(pt);
+        fhEtaPhiDecayNoIso->Fill(eta,phi);
+        
+        if(IsDataMC())
+        {
+          if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
+            fhPtDecayNoIsoMC[kmcPhoton]->Fill(pt);
+          
+          fhPtDecayNoIsoMC[mcIndex]->Fill(pt);
+        }
+      }// decay
+      
+      if(fFillNLMHistograms)
+        fhPtNLocMaxNoIso ->Fill(pt,aod->GetFiducialArea()); // remember to change method name
       
       if(fFillPileUpHistograms)
       {
@@ -3296,23 +3359,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         if(GetReader()->IsPileUpFromEMCalAndNotSPD())     { fhENoIsoPileUp[5] ->Fill(energy) ; fhPtNoIsoPileUp[5]->Fill(pt) ; }
         if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhENoIsoPileUp[6] ->Fill(energy) ; fhPtNoIsoPileUp[6]->Fill(pt) ; }
       }
-      
-      if(decay && fFillTaggedDecayHistograms)
-      {
-        fhPtDecayNoIso    ->Fill(pt);
-        fhEtaPhiDecayNoIso->Fill(eta,phi);
-      }
-      
-      if(IsDataMC())
-      {
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-          fhPtNoIsoMC[kmcPhoton]->Fill(pt);
-        
-        fhPtNoIsoMC[mcIndex]->Fill(pt);
-      }
-    }
+    } // non iso
   }// aod loop
-  
+
 }
 
 //______________________________________________________________________
@@ -3613,10 +3662,19 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
     fhPtNoIsoMC[mcIndex]->Fill(ptC);
   }
   
+  // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
   if(decay && fFillTaggedDecayHistograms)
   {
     fhPtDecayNoIso    ->Fill(ptC);
     fhEtaPhiDecayNoIso->Fill(etaC,phiC);
+    
+    if(IsDataMC())
+    {
+      if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
+        fhPtDecayNoIsoMC[kmcPhoton]->Fill(ptC);
+      
+      fhPtDecayNoIsoMC[mcIndex]->Fill(ptC);
+    }
   }
   
   //Get vertex for photon momentum calculation
