@@ -177,7 +177,9 @@ public:
   Bool_t HasRefChanged(const char *cdbPath);
   Int_t GetCurrentReferenceRun(const char* type) const;
   AliCDBEntry* GetRefEntry(const char* cdbPath);
- 
+
+  static TTree* ConnectGainTrees(TString baseDir);
+  
 private:
   AliTPCcalibDB *fCalibDB;            //pointer to calibDB object
   AliTPCCalPad  *fPadNoise;           //noise information

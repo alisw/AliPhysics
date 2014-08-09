@@ -55,6 +55,8 @@
 #include "AliTPCCalibVdrift.h"
 #include "AliMathBase.h"
 #include "AliRelAlignerKalman.h"
+#include "TTree.h"
+#include "TROOT.h"
 
 const Float_t kAlmost0=1.e-30;
 
@@ -3136,3 +3138,105 @@ TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray * const arrayP, TObjArra
 
   return array;
 }
+
+//_____________________________________________________________________________________
+TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
+{
+  //
+  // baseDir:   Base directory with the raw Kr calibration trees
+  //            and the trees from the calibQA
+  //            it assumes to following structure below:
+  //            KryptonCalib/<year>/calibKr/calibKr.<year>.<id>.root
+  //            calibQAdEdx/<year>/calibQA.<year>.<perid>.tree.root
+  //            map/treeMapping.root
+  //
+  
+  
+  // === add main tree, which will be a mapping file ================
+  TFile *fin = TFile::Open(Form("%s/map/treeMapping.root",baseDir.Data()));
+  gROOT->cd();
+  TTree *tMain = (TTree*)fin->Get("calPads");
+  
+  // === add the krypton calibration trees ==========================
+  TString inputTreesKrCalib       = gSystem->GetFromPipe(Form("ls %s/KryptonCalib/20*/calibKr/*.tree.root",baseDir.Data()));
+  TObjArray *arrInputTreesKrCalib = inputTreesKrCalib.Tokenize("\n");
+  
+  for (Int_t itree=0; itree<arrInputTreesKrCalib->GetEntriesFast(); ++itree) {
+    TFile *fin2 = TFile::Open(arrInputTreesKrCalib->At(itree)->GetName());
+    TTree *tin = (TTree*)fin2->Get("calPads");
+    gROOT->cd();
+    TString friendName=gSystem->BaseName(arrInputTreesKrCalib->At(itree)->GetName());
+    friendName.ReplaceAll("calibKr.","");
+    friendName.ReplaceAll(".tree.root","");
+    tMain->AddFriend(tin,friendName.Data());
+
+    // set aliases
+
+    // TODO: finish implementation of alias via lists
+//     const Int_t nbranchAlias = 2;
+//     const char* branchNames[nbranchAlias]={"spectrMean","fitMean"};
+//     const Int_t nbranchStat = 2;
+//     const char* statNames[nbranchStat] = {"Median","LTM"};
+// 
+//     for (Int_t iname=0; iname<nbranchAlias; ++iname) {
+//       TString branchName = TString::Format("%s.%s", friendName.Data(), bNames[i]);
+// 
+//       for (Int_t istat=0; istat<nbranchStat; ++istat) {
+//         
+//       }
+//     }
+  
+    tMain->SetAlias((friendName+".spectrMean_LTMRatio").Data(),
+                    TString::Format("(%s.spectrMean.fElements/%s.spectrMean_LTM)",
+                                    friendName.Data(),friendName.Data()).Data());
+    
+    tMain->SetAlias((friendName+".spectrMean_MedianRatio").Data(),
+                    TString::Format("(%s.spectrMean.fElements/%s.spectrMean_Median)",
+                                    friendName.Data(),friendName.Data()).Data());
+
+    tMain->SetAlias((friendName+".fitMean_LTMRatio").Data(),
+                    TString::Format("(%s.fitMean.fElements/%s.fitMean_LTM)",
+                                    friendName.Data(),friendName.Data()).Data());
+    
+    tMain->SetAlias((friendName+".fitMean_MedianRatio").Data(),
+                    TString::Format("(%s.fitMean.fElements/%s.fitMean_Median)",
+                                    friendName.Data(),friendName.Data()).Data());
+    
+  }
+  
+  // === add the calibQA trees ======================================
+  TString inputTreesQACalib       = gSystem->GetFromPipe(Form("ls %s/calibQAdEdx/20*/*.tree.root",baseDir.Data()));
+  TObjArray *arrInputTreesQACalib = inputTreesQACalib.Tokenize("\n");
+  
+  for (Int_t itree=0; itree<arrInputTreesQACalib->GetEntriesFast(); ++itree) {
+    TFile *fin2 = TFile::Open(arrInputTreesQACalib->At(itree)->GetName());
+    TTree *tin = (TTree*)fin2->Get("calPads");
+    gROOT->cd();
+    TString friendName=gSystem->BaseName(arrInputTreesQACalib->At(itree)->GetName());
+    friendName.ReplaceAll("calibQA.","");
+    friendName.ReplaceAll(".tree.root","");
+
+    tMain->AddFriend(tin,friendName.Data());
+
+    // set aliases
+    tMain->SetAlias((friendName+".MaxCharge_LTMRatio").Data(),
+                    TString::Format("(%s.MaxCharge.fElements/%s.MaxCharge_LTM)",
+                                    friendName.Data(),friendName.Data()).Data());
+    
+    tMain->SetAlias((friendName+".MaxCharge_MedianRatio").Data(),
+                    TString::Format("(%s.MaxCharge.fElements/%s.MaxCharge_Median)",
+                                    friendName.Data(),friendName.Data()).Data());
+    
+    tMain->SetAlias((friendName+".MeanCharge_LTMRatio").Data(),
+                    TString::Format("(%s.MeanCharge.fElements/%s.MeanCharge_LTM)",
+                                    friendName.Data(),friendName.Data()).Data());
+    
+    tMain->SetAlias((friendName+".MeanCharge_MedianRatio").Data(),
+                    TString::Format("(%s.MeanCharge.fElements/%s.MeanCharge_Median)",
+                                    friendName.Data(),friendName.Data()).Data());
+    
+  }
+
+  return tMain;
+}
+
