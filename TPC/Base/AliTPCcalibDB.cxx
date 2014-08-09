@@ -609,12 +609,14 @@ Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** gra
 //   Naming of the TRF objects is: "gr_<chamber_type>_<voltage>_<laser_track_angle>_<distance_to_COG>" --> "gr_iroc_1240_1_1" 
 //   
   
-  Int_t run = fTransform->GetCurrentRunNumber();
-  SetRun(run);
-  Float_t rocVoltage = GetChamberHighVoltage(run,sector, -1);      // Get the voltage from OCDB with a getter (old function)
+  //Int_t run = fTransform->GetCurrentRunNumber();
+  //SetRun(run);
+  //Float_t rocVoltage = GetChamberHighVoltage(run,sector, -1);      // Get the voltage from OCDB with a getter (old function)
 //   Float_t rocVoltage=GetChamberHighVoltageMedian(sector);                      // Get the voltage from OCDB, new function from Jens
  
   Int_t nominalVoltage = (sector<36) ? 1240 : 1470 ;     // nominal voltage of 2012 when the TRF functions were produced
+
+  Float_t rocVoltage = nominalVoltage;
 
   if ( rocVoltage < nominalVoltage/2. || rocVoltage > nominalVoltage*2. )
   {
@@ -664,7 +666,7 @@ Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** gra
       }     
   }
   tempVoltage = voltages[ampIndex];    // use closest voltage to current voltage
-  if (run<140000) tempVoltage = nominalVoltage;    // for 2010 data
+  //if (run<140000) tempVoltage = nominalVoltage;    // for 2010 data
   
   // assign TGraphErrors   
   Int_t igraph=0;
