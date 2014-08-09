@@ -709,8 +709,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserExec(Option_t *){
 		ProcessPionCandidates(); // Process this cuts gammas
 			
 		CalculateMesonCandidates();
-// 		CalculateBackground();
-// 		UpdateEventByEventData();
+		CalculateBackground();
+		UpdateEventByEventData();
 				
 		fGoodGammas->Clear(); // delete this cuts good gammas
 // 		if (fNeutralPionCandidates->GetEntries()>0)cout << "##################################"<<  fNeutralPionCandidates->GetEntries() << endl;
@@ -1310,7 +1310,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
 		vector<Bool_t> lGoodVirtualParticle(fGoodVirtualParticles->GetEntries(), kFALSE);
 		
 		for(Int_t mesonIndex=0; mesonIndex<fNeutralPionCandidates->GetEntries(); mesonIndex++){
-			AliAODConversionMother *neutralPion=static_cast<AliAODConversionMother*>(fNeutralPionCandidates->At(mesonIndex));
+			AliAODConversionMother *neutralPion=dynamic_cast<AliAODConversionMother*>(fNeutralPionCandidates->At(mesonIndex));
 			if (neutralPion==NULL) continue;
 			for(Int_t virtualParticleIndex=0;virtualParticleIndex<fGoodVirtualParticles->GetEntries();virtualParticleIndex++){
 
@@ -1434,7 +1434,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 	AliGammaConversionAODBGHandler::GammaConversionVertex *bgEventVertex = NULL;
 	if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity() ) {
 		for(Int_t nEventsInBG=0;nEventsInBG<fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
-			AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
+			AliGammaConversionMotherAODVector *previousEventMesons = fBGHandler[fiCut]->GetBGGoodMesons(zbin,mbin,nEventsInBG);
 			if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 				bgEventVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
 			}
@@ -1442,14 +1442,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 			for(Int_t iCurrent=0;iCurrent<fGoodVirtualParticles->GetEntries();iCurrent++){
 				AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGoodVirtualParticles->At(iCurrent));
 
-				for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
-					AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
+				for(UInt_t iPrevious=0;iPrevious<previousEventMesons->size();iPrevious++){
+					AliAODConversionMother previousGoodMeson = (AliAODConversionMother)(*(previousEventMesons->at(iPrevious)));
 
 					if(fMoveParticleAccordingToVertex == kTRUE && method == 1 ){
-						MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
+						MoveParticleAccordingToVertex(&previousGoodMeson,bgEventVertex);
 					}
 
-					AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
+					AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&previousGoodMeson,&currentEventGoodV0);
 								
 
 					if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
@@ -1464,8 +1464,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 		}
 	} else {
 		for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
-			AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
-			if(previousEventV0s){
+			AliGammaConversionMotherAODVector *previousEventMesons = fBGHandler[fiCut]->GetBGGoodMesons(zbin,mbin,nEventsInBG);
+			if(previousEventMesons){
 				if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 					bgEventVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
 				}
@@ -1473,15 +1473,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 
 					AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGoodVirtualParticles->At(iCurrent));
 
-					for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+					for(UInt_t iPrevious=0;iPrevious<previousEventMesons->size();iPrevious++){
 
-						AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
+						AliAODConversionMother previousGoodMeson = (AliAODConversionMother)(*(previousEventMesons->at(iPrevious)));
 
 						if(fMoveParticleAccordingToVertex == kTRUE && method ==1){
-							MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
+							MoveParticleAccordingToVertex(&previousGoodMeson,bgEventVertex);
 						}
 
-						AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
+						AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&previousGoodMeson,&currentEventGoodV0);
 								
 						if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
 							fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
@@ -1592,11 +1592,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UpdateEventByEventData(){
 
 	Int_t method = 1;
 	if( method == 1 ) {
-		if(fGoodGammas->GetEntries() >0 ){
+		if(fNeutralPionCandidates->GetEntries() >0 ){
 			if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
-				fBGHandler[fiCut]->AddEvent(fGoodGammas,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),0);
+				fBGHandler[fiCut]->AddMesonEvent(fNeutralPionCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),0);
 			} else{ // means we use #V0s for multiplicity
-				fBGHandler[fiCut]->AddEvent(fGoodGammas,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fGoodGammas->GetEntries(),0);
+				fBGHandler[fiCut]->AddMesonEvent(fNeutralPionCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fGoodGammas->GetEntries(),0);
 			}
 		}
 	} else if ( method == 2 ){
@@ -1611,15 +1611,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UpdateEventByEventData(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex){
+void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex){
    //see header file for documentation
 
    Double_t dx = vertex->fX - fInputEvent->GetPrimaryVertex()->GetX();
    Double_t dy = vertex->fY - fInputEvent->GetPrimaryVertex()->GetY();
    Double_t dz = vertex->fZ - fInputEvent->GetPrimaryVertex()->GetZ();
 
-   Double_t movedPlace[3] = {particle->GetConversionX() - dx,particle->GetConversionY() - dy,particle->GetConversionZ() - dz};
-   particle->SetConversionPoint(movedPlace);
+   Double_t movedPlace[3] = {particle->GetProductionX() - dx,particle->GetProductionY() - dy,particle->GetProductionZ() - dz};
+   particle->SetProductionPoint(movedPlace);
 }
 
 //_____________________________________________________________________________________
