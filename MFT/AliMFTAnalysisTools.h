@@ -36,8 +36,8 @@ public:
   static Bool_t ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Double_t xy[2], TLorentzVector &kinem);
   static Bool_t ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Double_t xy[2], TLorentzVector &kinem, TMatrixD &cov);
 
-  static Double_t GetAODMuonOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv);
-  static Double_t GetAODMuonWeightedOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv);
+  static Bool_t GetAODMuonOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv, Double_t &offset);
+  static Bool_t GetAODMuonWeightedOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv, Double_t &offset);
 
   static Bool_t CalculatePCA(AliAODDimuon *dimuon, Double_t *pca, Double_t &pcaQuality, TLorentzVector &kinem);
   static Bool_t CalculatePCA(TObjArray *muons, Double_t *pca, Double_t &pcaQuality, TLorentzVector &kinem);

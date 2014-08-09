@@ -181,10 +181,10 @@ class AliExternalTrackParam: public AliVTrack {
   static Double_t BetheBlochSolid(Double_t bg);
   static Double_t BetheBlochGas(Double_t bg);
 
-  Double_t GetPredictedChi2(Double_t p[2],Double_t cov[3]) const;
+  Double_t GetPredictedChi2(const Double_t p[2],const Double_t cov[3]) const;
 
   Double_t 
-    GetPredictedChi2(Double_t p[3],Double_t covyz[3],Double_t covxyz[3]) const;
+    GetPredictedChi2(const Double_t p[3],const Double_t covyz[3],const Double_t covxyz[3]) const;
 
   Double_t GetPredictedChi2(const AliExternalTrackParam *t) const;
 
@@ -192,7 +192,7 @@ class AliExternalTrackParam: public AliVTrack {
     PropagateTo(Double_t p[3],Double_t covyz[3],Double_t covxyz[3],Double_t b);
 
   Double_t *GetResiduals(Double_t *p,Double_t *cov,Bool_t updated=kTRUE) const;
-  Bool_t Update(Double_t p[2],Double_t cov[3]);
+  Bool_t Update(const Double_t p[2],const Double_t cov[3]);
   Bool_t Rotate(Double_t alpha);
   Bool_t RotateParamOnly(Double_t alpha);
   Bool_t Invert();

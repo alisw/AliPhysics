@@ -162,7 +162,7 @@ AliESDEvent::AliESDEvent():
   fCosmicTracks(0),
   fESDTOFClusters(0),
   fESDTOFHits(0),
-  fESDTOFMatchess(0),
+  fESDTOFMatches(0),
   fErrorLogs(0),
   fOldMuonStructure(kFALSE),
   fESDOld(0),
@@ -216,7 +216,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fCosmicTracks(new TClonesArray(*esd.fCosmicTracks)),
   fESDTOFClusters(esd.fESDTOFClusters ? new TClonesArray(*esd.fESDTOFClusters) : 0),
   fESDTOFHits(esd.fESDTOFHits ? new TClonesArray(*esd.fESDTOFHits) : 0),
-  fESDTOFMatchess(esd.fESDTOFMatchess ? new TClonesArray(*esd.fESDTOFMatchess) : 0),
+  fESDTOFMatches(esd.fESDTOFMatches ? new TClonesArray(*esd.fESDTOFMatches) : 0),
   fErrorLogs(new TClonesArray(*esd.fErrorLogs)),
   fOldMuonStructure(esd.fOldMuonStructure),
   fESDOld(esd.fESDOld ? new AliESD(*esd.fESDOld) : 0),
@@ -263,7 +263,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fCosmicTracks);
   AddObject(fESDTOFClusters);
   AddObject(fESDTOFHits);
-  AddObject(fESDTOFMatchess);
+  AddObject(fESDTOFMatches);
   AddObject(fErrorLogs);
   AddObject(fESDACORDE);
   AddObject(fESDAD);
@@ -559,7 +559,7 @@ void AliESDEvent::ResetStdContent()
   if(fCosmicTracks)fCosmicTracks->Delete();
   if(fESDTOFClusters)fESDTOFClusters->Clear();
   if(fESDTOFHits)fESDTOFHits->Clear();
-  if(fESDTOFMatchess)fESDTOFMatchess->Clear();
+  if(fESDTOFMatches)fESDTOFMatches->Clear();
   if(fErrorLogs) fErrorLogs->Delete();
 
   // don't reset fconnected fConnected and the list
@@ -1526,7 +1526,7 @@ void AliESDEvent::GetStdContent()
   fCosmicTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCosmicTracks]);
   fESDTOFClusters = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTOFclusters]);
   fESDTOFHits = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTOFhit]);
-  fESDTOFMatchess = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTOFmatch]);
+  fESDTOFMatches = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTOFmatch]);
 }
 
 //______________________________________________________________________________

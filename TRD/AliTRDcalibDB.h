@@ -97,6 +97,7 @@ class AliTRDcalibDB : public TObject {
   Int_t                               GetNumberOfTimeBinsDCS();
   void                                GetFilterType(TString &filterType);
   void                                GetGlobalConfiguration(TString &config);
+  void                                GetGlobalConfigurationByChamber(TString &config,Int_t par, Int_t opt=0);
   void                                GetGlobalConfigurationVersion(TString &version);
   Int_t                               GetNumberOfParsDCS(TString cname, Char_t delimiter='_');
   Int_t                               GetNumberOfOptsDCS(TString cname, Int_t cfgType);
@@ -142,6 +143,7 @@ class AliTRDcalibDB : public TObject {
  protected:
 
   AliTRDtrapConfig*                   LoadTrapConfig(const TString &name = "", const TString &version = "");
+  Int_t                               GetNumberOfTimeBinsDCSBoard(); // Old method as fallback for patched OCDB 
 
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
   enum { kIDVdriftPad = 0

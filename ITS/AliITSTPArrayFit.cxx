@@ -967,7 +967,7 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
   //
   const float *x=fkPoints->GetX(),*y=fkPoints->GetY(),*z=fkPoints->GetZ(),*cov=fkPoints->GetCov();
   //
-  if (fPntLast>arrU.GetSize()) {
+  if (fPntLast>=arrU.GetSize()) {
     arrU.Set(2*fPntLast);
     arrV.Set(2*fPntLast);
     arrW.Set(2*fPntLast);
