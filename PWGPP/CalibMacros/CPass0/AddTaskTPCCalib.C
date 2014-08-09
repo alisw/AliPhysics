@@ -332,11 +332,13 @@ void ConfigOCDB(Int_t run){
   //
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("TPC/Calib/RecoParam");
   if (!entry){
-    printf("TPC reco param not available");
+    ::Error("AddTaskTPCCalib","TPC reco param not available");
+    return;
   }
   TObjArray * array = (TObjArray*)entry->GetObject();
   if (!array){
-    printf("TPC reco param not available");
+    ::Error("AddTaskTPCCalib","TPC reco param not available");
+    return;
   }
   
   //get the beam type from OCDB to decide which type of reco param we need -
@@ -345,7 +347,7 @@ void ConfigOCDB(Int_t run){
   AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
   TString beamType = grpData->GetBeamType();
   if (beamType==AliGRPObject::GetInvalidString()) {
-    AliError("GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
+    ::Error("AddTaskTPCCalib","GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
     beamType = "UNKNOWN";
   }
   // 0 - Low Flux (pp), 1- High Flux (Pb-Pb)
@@ -353,7 +355,7 @@ void ConfigOCDB(Int_t run){
   if (beamType.Contains("p-p")) {fluxType=0;}
   if (beamType.Contains("A-A")) {fluxType=1;}
   AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(fluxType);
-  printf("beam type: %s, using fluxType=%i\n",beamType.Data(),fluxType);
+  ::Info("AddTaskTPCCalib","Beam type: %s, using fluxType=%i",beamType.Data(),fluxType);
   tpcRecoParam->Print();
 
   transform->SetCurrentRecoParam(tpcRecoParam);

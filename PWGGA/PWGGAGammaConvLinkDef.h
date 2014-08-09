@@ -44,6 +44,7 @@
 #pragma link C++ class AliPrimaryPionSelector+;
 #pragma link C++ class AliPrimaryPionCuts+;
 #pragma link C++ class AliAnalysisTaskEtaToPiPlPiMiGamma+;
+#pragma link C++ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero+;
 #pragma link C++ class AliAnalysisTaskGammaConvCalo+;
 
 #endif

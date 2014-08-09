@@ -17,12 +17,11 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
 {
     public:
         // enumerators
-        enum detectorType       {kVZEROA, kVZEROC, kVZEROComb};  // detector that was used
+        enum detectorType       {kVZEROA, kVZEROC, kVZEROComb, kFixedEP};  // detector that was used
         // constructors, destructor
         AliAnalysisTaskJetFlowMC();
-        AliAnalysisTaskJetFlowMC(const char *name, Int_t seed = 0);
+        AliAnalysisTaskJetFlowMC(const char *name, Bool_t qa = kFALSE, Int_t seed = 0);
         virtual ~AliAnalysisTaskJetFlowMC();
-        // mirror image of PickTrackMaker
         void    UserCreateOutputObjects();
         TH1F*   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c = -1, Bool_t append = kTRUE);
         TH2F*   BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c = -1, Bool_t append = kTRUE);
@@ -90,10 +89,11 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         void            Terminate(Option_t* option);
         void            PrintInfo() const;
     protected:
+        Bool_t          fQA;                    //! save QA plots
         TString         fTracksOutName;         // name of output track array
         TString         fTracksInName;          // name of input track array
-        TClonesArray   *fTracksIn;              //!track array in
-        TClonesArray   *fTracksOut;             //!track array out
+        TClonesArray   *fTracksIn;              //! track array in
+        TClonesArray   *fTracksOut;             //! track array out
         Bool_t          fReuseTracks;           // use original event as template
         Int_t           fMult;                  // multiplicity of new event
         Int_t           fCenBin;                //! centrality bin
@@ -130,6 +130,6 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         AliAnalysisTaskJetFlowMC(const AliAnalysisTaskJetFlowMC&);            // not implemented
         AliAnalysisTaskJetFlowMC &operator=(const AliAnalysisTaskJetFlowMC&); // not implemented
 
-        ClassDef(AliAnalysisTaskJetFlowMC, 2); // Task to generate toy mc PicoTracks based on real events
+        ClassDef(AliAnalysisTaskJetFlowMC, 3); // Task to generate toy mc PicoTracks based on real events
 };
 #endif

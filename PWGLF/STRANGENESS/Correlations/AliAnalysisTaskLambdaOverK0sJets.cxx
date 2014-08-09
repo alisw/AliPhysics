@@ -72,38 +72,40 @@ static Float_t ptMaxLP = 50.;               // Max cut for transverse momentum L
 static Float_t lMin = 0.0;                  // Limits in the histo for fidutial volume
 static Float_t lMax = 100.;                 // Limits in the fidutial volume
 
-static Int_t   nMaxEvMix = 250;
+//static Int_t   nMaxEvMix = 250;
 
 //
 //  
 //
 
 AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *name) :
-  AliAnalysisTaskSE(name),
+AliAnalysisTaskSE(name),
 
   fAOD(0),  fCollision("PbPb2010"), fIsMC(kFALSE), fUsePID(kFALSE), fCentMin(0.), fCentMax(90.), fDoQA(kFALSE), fDoMixEvt(kFALSE), fTrigPtMin(5.), fTrigPtMax(10.), fTrigPtMCMin(5.), fTrigPtMCMax(10000.), fTrigEtaMax(0.8), fCheckIDTrig(kFALSE), fSeparateInjPart(kTRUE), fEndOfHijingEvent(-1),  fPIDResponse(0),
 
   fMinPtDaughter(0.160), fMaxEtaDaughter(0.8), fMaxDCADaughter(1.0), fUseEtaCut(kFALSE), fYMax(0.7), fDCAToPrimVtx(0.1), fMinCPA(0.998), fNSigma(3.0), fDaugNClsTPC(70.), fMinCtau(0.), fMaxCtau(3.), fIdTrigger(-1), fIsV0LP(0), fPtV0LP(0.), fIsSndCheck(0),
 
+  fTPCRadius(125.), fDiffTrigDaugFracTPCSharedCls(0.06),
+
   fOutput(0), fOutputQA(0), fOutputME(0), fMEList(0x0), fTriggerParticles(0x0), fTriggerPartMC(0x0), fAssocParticles(0x0), fAssocPartMC(0x0), fEvents(0), fCentrality(0),  fCentrality2(0), fCentralityTrig(0), fPrimayVtxGlobalvsSPD(0), fPrimaryVertexX(0), fPrimaryVertexY(0), fPrimaryVertexZ(0),
 
- fTriggerEventPlane(0),  fTriggerMCPtCent(0), fTriggerMCResPt(0), fTriggerMCResEta(0), fTriggerMCResPhi(0), fTriggerPtCent(0),  fTriggerPtCentCh(0), fNTrigPerEvt(0), fTriggerWiSPDHit(0), fTriggerEtaPhi(0), fCheckTriggerFromV0Daug(0), fTriggerComingFromDaug(0), fTriggerIsV0(0), fCheckIDTrigPtK0s(0), fCheckIDTrigPhiK0s(0), fCheckIDTrigEtaK0s(0), fCheckIDTrigNclsK0s(0), fCheckIDTrigPtLambda(0), fCheckIDTrigPhiLambda(0), fCheckIDTrigEtaLambda(0),  fCheckIDTrigNclsLambda(0), fCheckIDTrigPtAntiLambda(0), fCheckIDTrigPhiAntiLambda(0), fCheckIDTrigEtaAntiLambda(0), fCheckIDTrigNclsAntiLambda(0), 
+  fTriggerEventPlane(0),  fTriggerMCPtCent(0), fTriggerMCResPt(0), fTriggerMCResEta(0), fTriggerMCResPhi(0), fTriggerPtCent(0),  fTriggerPtCentCh(0), fNTrigPerEvt(0), fTriggerWiSPDHit(0), fTriggerEtaPhi(0), fCheckTriggerFromV0Daug(0), fTriggerComingFromDaug(0), fTriggerIsV0(0), fCheckIDTrigPtK0s(0), fCheckIDTrigPhiK0s(0), fCheckIDTrigEtaK0s(0), fCheckIDTrigNclsK0s(0), fCheckIDTrigPtLambda(0), fCheckIDTrigPhiLambda(0), fCheckIDTrigEtaLambda(0),  fCheckIDTrigNclsLambda(0), fCheckIDTrigPtAntiLambda(0), fCheckIDTrigPhiAntiLambda(0), fCheckIDTrigEtaAntiLambda(0), fCheckIDTrigNclsAntiLambda(0), 
 
-fInjectedParticles(0),
+  fInjectedParticles(0),
 
-fK0sMCPt(0), fK0sMCPtRap(0), fK0sMCPtRap2(0),  fK0sMCPtRapEmbeded(0), fK0sAssocPt(0), fK0sAssocPtArm(0),  fK0sAssocPtRap(0), fK0sAssocPtRapEmbeded(0), fK0sMCResEta(0), fK0sMCResPhi(0), fLambdaMCPt(0), fLambdaMCPtRap(0), fLambdaMCPtRap2(0),  fLambdaMCPtRapEmbeded(0),  fLambdaMCFromXi(0), fLambdaAssocPt(0), fLambdaAssocPtRap(0), fLambdaAssocFromXi(0), fLambdaMCResEta(0), fLambdaMCResPhi(0), fAntiLambdaMCPt(0), fAntiLambdaMCPtRap(0), fAntiLambdaMCPtRap2(0), fAntiLambdaMCPtRapEmbeded(0), fAntiLambdaMCFromXi(0), fAntiLambdaAssocPt(0), fAntiLambdaAssocPtRap(0), fAntiLambdaAssocFromXi(0), fAntiLambdaMCResEta(0), fAntiLambdaMCResPhi(0),
+  fK0sMCPt(0), fK0sMCPtRap(0), fK0sMCPtRap2(0),  fK0sMCPtRapEmbeded(0), fK0sAssocPt(0), fK0sAssocPtArm(0),  fK0sAssocPtRap(0), fK0sAssocPtRapEmbeded(0), fK0sMCResEta(0), fK0sMCResPhi(0), fK0sMCResPt(0), fK0sPosMCResEta(0), fK0sPosMCResPhi(0), fK0sPosMCResPt(0), fK0sNegMCResEta(0), fK0sNegMCResPhi(0), fK0sNegMCResPt(0), fLambdaMCPt(0), fLambdaMCPtRap(0), fLambdaMCPtRap2(0),  fLambdaMCPtRapEmbeded(0),  fLambdaMCFromXi(0), fLambdaAssocPt(0), fLambdaAssocPtRap(0), fLambdaAssocFromXi(0), fLambdaMCResEta(0), fLambdaMCResPhi(0), fLambdaMCResPt(0), fLambdaPosMCResEta(0), fLambdaPosMCResPhi(0), fLambdaPosMCResPt(0), fLambdaNegMCResEta(0), fLambdaNegMCResPhi(0), fLambdaNegMCResPt(0), fAntiLambdaMCPt(0), fAntiLambdaMCPtRap(0), fAntiLambdaMCPtRap2(0), fAntiLambdaMCPtRapEmbeded(0), fAntiLambdaMCFromXi(0), fAntiLambdaAssocPt(0), fAntiLambdaAssocPtRap(0), fAntiLambdaAssocFromXi(0), fAntiLambdaMCResEta(0), fAntiLambdaMCResPhi(0), fAntiLambdaMCResPt(0), fAntiLambdaPosMCResEta(0), fAntiLambdaPosMCResPhi(0), fAntiLambdaPosMCResPt(0), fAntiLambdaNegMCResEta(0), fAntiLambdaNegMCResPhi(0), fAntiLambdaNegMCResPt(0), 
 
   fHistArmenterosPodolanski(0), fHistArmPodBckg(0),
   
-  fK0sMass(0), fK0sMassEmbeded(0), fK0sMassPtEta(0), fK0sMassPtPhi(0), fK0sDaughtersPt(0),  fSharedClsTrigDaug(0), fK0sPosDaugSplCheckCovMat(0x0), fK0sNegDaugSplCheckCovMat(0x0), fK0sDCADaugToPrimVtx(0), fK0sSpatialRes(0), fK0sBckgDecLength(0), fK0sBckgDCADaugToPrimVtx(0), fK0sBckgEtaPhi(0), fK0sBckgPhiRadio(0), fK0sBckgDCANegDaugToPrimVtx(0), fK0sBckgDCAPosDaugToPrimVtx(0), fV0MassCascade(0),
+  fK0sMass(0), fK0sMassEmbeded(0), fK0sMassPtEta(0), fK0sMassPtPhi(0), fK0sDaughtersPt(0), fK0sDCADaugToPrimVtx(0), fK0sSpatialRes(0), fK0sBckgDecLength(0), fK0sBckgDCADaugToPrimVtx(0), fK0sBckgEtaPhi(0), fK0sBckgPhiRadio(0), fK0sBckgDCANegDaugToPrimVtx(0), fK0sBckgDCAPosDaugToPrimVtx(0), fV0MassCascade(0),
   
-  fLambdaMass(0), fLambdaMassEmbeded(0), fLambdaMass2(0), fLambdaMass2Embeded(0), fLambdaMassPtEta(0), fLambdaMassPtPhi(0), fLambdaDaughtersPt(0), fLambdaPosDaugSplCheckCovMat(0x0), fLambdaNegDaugSplCheckCovMat(0x0), fLambdaDCADaugToPrimVtx(0), fLambdaSpatialRes(0), fLambdaBckgDecLength(0), fLambdaBckgDCADaugToPrimVtx(0), fLambdaBckgEtaPhi(0), fLambdaBckgPhiRadio(0), fLambdaBckgDCANegDaugToPrimVtx(0), fLambdaBckgDCAPosDaugToPrimVtx(0), 
+  fLambdaMass(0), fLambdaMassEmbeded(0), fLambdaMass2(0), fLambdaMass2Embeded(0), fLambdaMassPtEta(0), fLambdaMassPtPhi(0), fLambdaDaughtersPt(0), fLambdaDCADaugToPrimVtx(0), fLambdaSpatialRes(0), fLambdaBckgDecLength(0), fLambdaBckgDCADaugToPrimVtx(0), fLambdaBckgEtaPhi(0), fLambdaBckgPhiRadio(0), fLambdaBckgDCANegDaugToPrimVtx(0), fLambdaBckgDCAPosDaugToPrimVtx(0), 
 
-  fAntiLambdaMass(0), fAntiLambdaMassEmbeded(0), fAntiLambdaMass2(0), fAntiLambdaMass2Embeded(0), fAntiLambdaMassPtEta(0), fAntiLambdaMassPtPhi(0), fAntiLambdaDaughtersPt(0), fAntiLambdaPosDaugSplCheckCovMat(0x0), fAntiLambdaNegDaugSplCheckCovMat(0x0), fAntiLambdaDCADaugToPrimVtx(0), fAntiLambdaSpatialRes(0), fAntiLambdaBckgDecLength(0), fAntiLambdaBckgDCADaugToPrimVtx(0), fAntiLambdaBckgEtaPhi(0), fAntiLambdaBckgPhiRadio(0), fAntiLambdaBckgDCANegDaugToPrimVtx(0), fAntiLambdaBckgDCAPosDaugToPrimVtx(0), 
+  fAntiLambdaMass(0), fAntiLambdaMassEmbeded(0), fAntiLambdaMass2(0), fAntiLambdaMass2Embeded(0), fAntiLambdaMassPtEta(0), fAntiLambdaMassPtPhi(0), fAntiLambdaDaughtersPt(0), fAntiLambdaDCADaugToPrimVtx(0), fAntiLambdaSpatialRes(0), fAntiLambdaBckgDecLength(0), fAntiLambdaBckgDCADaugToPrimVtx(0), fAntiLambdaBckgEtaPhi(0), fAntiLambdaBckgPhiRadio(0), fAntiLambdaBckgDCANegDaugToPrimVtx(0), fAntiLambdaBckgDCAPosDaugToPrimVtx(0), 
 
   fK0sPtPosDaug(0), fK0sPtNegDaug(0), fK0sBckgPtPosDaug(0), fK0sBckgPtNegDaug(0), fK0sPhiEtaPosDaug(0), fK0sPhiEtaNegDaug(0), fK0sBckgPhiEtaPosDaug(0), fK0sBckgPhiEtaNegDaug(0), fK0sDCAPosDaug(0), fK0sDCANegDaug(0), fK0sBckgDCAPosDaug(0), fK0sBckgDCANegDaug(0), fK0sDecayPos(0), fK0sBckgDecayPos(0), fK0sDecayVertex(0), fK0sBckgDecayVertex(0), fK0sCPA(0), fK0sBckgCPA(0), fK0sDCAV0Daug(0), fK0sBckgDCAV0Daug(0), fK0sNClustersTPC(0), fK0sBckgNClustersTPC(0), fK0sNClustersITSPos(0), fK0sNClustersITSNeg(0), fK0sBckgNClustersITSPos(0), fK0sBckgNClustersITSNeg(0),   
 
-  fLambdaPtPosDaug(0), fLambdaPtNegDaug(0), fLambdaBckgPtPosDaug(0), fLambdaBckgPtNegDaug(0), fLambdaPhiEtaPosDaug(0),fLambdaPhiEtaNegDaug(0), fLambdaBckgPhiEtaPosDaug(0),fLambdaBckgPhiEtaNegDaug(0), fLambdaDCAPosDaug(0),fLambdaDCANegDaug(0), fLambdaBckgDCAPosDaug(0), fLambdaBckgDCANegDaug(0), fLambdaDecayPos(0), fLambdaBckgDecayPos(0), fLambdaDecayVertex(0), fLambdaBckgDecayVertex(0), fLambdaCPA(0), fLambdaBckgCPA(0), fLambdaDCAV0Daug(0), fLambdaBckgDCAV0Daug(0), fLambdaNClustersTPC(0), fLambdaBckgNClustersTPC(0), fLambdaNClustersITSPos(0), fLambdaNClustersITSNeg(0), fLambdaBckgNClustersITSPos(0),  fLambdaBckgNClustersITSNeg(0),
+  fLambdaPtPosDaug(0), fLambdaPtNegDaug(0), fLambdaBckgPtPosDaug(0), fLambdaBckgPtNegDaug(0), fLambdaPhiEtaPosDaug(0),fLambdaPhiEtaNegDaug(0), fLambdaBckgPhiEtaPosDaug(0), fLambdaBckgPhiEtaNegDaug(0), fLambdaDCAPosDaug(0),fLambdaDCANegDaug(0), fLambdaBckgDCAPosDaug(0), fLambdaBckgDCANegDaug(0), fLambdaDecayPos(0), fLambdaBckgDecayPos(0), fLambdaDecayVertex(0), fLambdaBckgDecayVertex(0), fLambdaCPA(0), fLambdaBckgCPA(0), fLambdaDCAV0Daug(0), fLambdaBckgDCAV0Daug(0), fLambdaNClustersTPC(0), fLambdaBckgNClustersTPC(0), fLambdaNClustersITSPos(0), fLambdaNClustersITSNeg(0), fLambdaBckgNClustersITSPos(0),  fLambdaBckgNClustersITSNeg(0),
 
   fAntiLambdaPtPosDaug(0), fAntiLambdaPtNegDaug(0), fAntiLambdaBckgPtPosDaug(0), fAntiLambdaBckgPtNegDaug(0), fAntiLambdaPhiEtaPosDaug(0),fAntiLambdaPhiEtaNegDaug(0), fAntiLambdaBckgPhiEtaPosDaug(0),fAntiLambdaBckgPhiEtaNegDaug(0), fAntiLambdaDCAPosDaug(0),fAntiLambdaDCANegDaug(0), fAntiLambdaBckgDCAPosDaug(0), fAntiLambdaBckgDCANegDaug(0), fAntiLambdaDecayPos(0), fAntiLambdaBckgDecayPos(0), fAntiLambdaDecayVertex(0), fAntiLambdaBckgDecayVertex(0), fAntiLambdaCPA(0), fAntiLambdaBckgCPA(0), fAntiLambdaDCAV0Daug(0), fAntiLambdaBckgDCAV0Daug(0), fAntiLambdaNClustersTPC(0), fAntiLambdaBckgNClustersTPC(0), fAntiLambdaNClustersITSPos(0), fAntiLambdaNClustersITSNeg(0), fAntiLambdaBckgNClustersITSPos(0),  fAntiLambdaBckgNClustersITSNeg(0)
   
@@ -141,8 +143,13 @@ fK0sMCPt(0), fK0sMCPtRap(0), fK0sMCPtRap2(0),  fK0sMCPtRapEmbeded(0), fK0sAssocP
     fK0sAssocMassPtDaugNClsTPCEmbeded[i] = 0;
     // -- Mass vs rapidity vs pt vs centrlaity
     fK0sMassPtRap[i] = 0;
+    // -- Splitting checks
+    fK0sPosDaugSplCheckCovMat[i] = 0x0;
+    fK0sNegDaugSplCheckCovMat[i] = 0x0;
     fK0sPosDaugdPhiSdEtaS[i] = 0x0;   
     fK0sNegDaugdPhiSdEtaS[i] = 0x0;
+    fK0sPosMCResdEtaSdPhiS[i] = 0x0;
+    fK0sNegMCResdEtaSdPhiS[i] = 0x0;
 
     // Lambda
     fLambdaMCPtRapVtx[i] = 0;
@@ -167,8 +174,13 @@ fK0sMCPt(0), fK0sMCPtRap(0), fK0sMCPtRap2(0),  fK0sMCPtRapEmbeded(0), fK0sAssocP
     fLambdaAssocMassPtDaugNClsTPCEmbeded[i] = 0;
     // -- Mass vs rapidity vs pt vs centrlaity
     fLambdaMassPtRap[i] = 0;
+    // -- Splitting checks
+    fLambdaPosDaugSplCheckCovMat[i] = 0x0;
+    fLambdaNegDaugSplCheckCovMat[i] =0x0;
     fLambdaPosDaugdPhiSdEtaS[i] = 0x0;
     fLambdaNegDaugdPhiSdEtaS[i] = 0x0;
+    fLambdaPosMCResdEtaSdPhiS[i] = 0x0;
+    fLambdaNegMCResdEtaSdPhiS[i] = 0x0;
 
     // AntiLambda
     fAntiLambdaMCPtRapVtx[i] = 0;
@@ -193,8 +205,14 @@ fK0sMCPt(0), fK0sMCPtRap(0), fK0sMCPtRap2(0),  fK0sMCPtRapEmbeded(0), fK0sAssocP
     fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[i] = 0;
     // -- Mass vs rapidity vs pt vs centrlaity
     fAntiLambdaMassPtRap[i] = 0;
-    fAntiLambdaPosDaugdPhiSdEtaS[i] = 0x0; //! Positive daughter: delta(phi)* delta(eta)*    
-    fAntiLambdaNegDaugdPhiSdEtaS[i] = 0x0; //! Negative daughter: delta(phi)* delta(eta)* 
+    // -- Splitting checks
+    fAntiLambdaPosDaugSplCheckCovMat[i] = 0x0;
+    fAntiLambdaNegDaugSplCheckCovMat[i] = 0x0;
+    fAntiLambdaPosDaugdPhiSdEtaS[i] = 0x0;
+    fAntiLambdaNegDaugdPhiSdEtaS[i] = 0x0;
+    fAntiLambdaPosMCResdEtaSdPhiS[i] = 0x0;
+    fAntiLambdaNegMCResdEtaSdPhiS[i] = 0x0;
+
   }
 
   // Correlations in MC
@@ -602,6 +620,27 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     fK0sMCResPhi     = new TH3F("fK0sMCResPhi","K^{0}_{S} Assoc: #varphi resolution; #varphi_{MC}-#varphi_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
     fOutput->Add(fK0sMCResPhi);
 
+    fK0sMCResPt     = new TH3F("fK0sMCResPt","K^{0}_{S} Assoc: pt resolution; #it{p}_{T,MC}-#it{p]_{T,Rec};#it{p}_{T} (GeV/#it{c}); centrality",60,-0.3,0.3,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fK0sMCResPt);
+
+    fK0sPosMCResEta     = new TH3F("fK0sPosMCResEta","K^{0}_{S} Pos. Daug.: #eta resolution; #eta_{MC}-#eta_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fK0sPosMCResEta);
+
+    fK0sPosMCResPhi     = new TH3F("fK0sPosMCResPhi","K^{0}_{S}  Pos. Daug.: #varphi resolution; #varphi_{MC}-#varphi_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fK0sPosMCResPhi);
+
+    fK0sPosMCResPt     = new TH3F("fK0sPosMCResPt","K^{0}_{S}  Pos. Daug.: pt resolution; #it{p}_{T,MC}-#it{p]_{T,Rec};#it{p}_{T} (GeV/#it{c}); centrality",60,-0.3,0.3,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fK0sPosMCResPt);  
+
+    fK0sNegMCResEta     = new TH3F("fK0sNegMCResEta","K^{0}_{S} Neg. Daug.: #eta resolution; #eta_{MC}-#eta_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fK0sNegMCResEta);
+
+    fK0sNegMCResPhi     = new TH3F("fK0sNegMCResPhi","K^{0}_{S}  Neg. Daug.: #varphi resolution; #varphi_{MC}-#varphi_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fK0sNegMCResPhi);
+
+    fK0sNegMCResPt     = new TH3F("fK0sNegMCResPt","K^{0}_{S}  Neg. Daug.: pt resolution; #it{p}_{T,MC}-#it{p]_{T,Rec};#it{p}_{T} (GeV/#it{c}); centrality",60,-0.3,0.3,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fK0sNegMCResPt);  
+
     // Lambda MC-true: 
     fLambdaMCPt = new TH1F("fLambdaMCPt","#Lambda MC;#it{p}_{T} (GeV/#it{c});Counts",nbins,pMin,pMax);
     fOutput->Add(fLambdaMCPt);
@@ -728,6 +767,27 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     fLambdaMCResPhi     = new TH3F("fLambdaMCResPhi","#Lambda Assoc: #varphi resolution; #varphi_{MC}-#varphi_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
     fOutput->Add(fLambdaMCResPhi);
 
+    fLambdaMCResPt     = new TH3F("fLambdaMCResPt","#Lambda Assoc: pt resolution; #it{p}_{T,MC}-#it{p]_{T,Rec};#it{p}_{T} (GeV/#it{c}); centrality",60,-0.3,0.3,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fLambdaMCResPt);
+
+    fLambdaPosMCResEta     = new TH3F("fLambdaPosMCResEta","#Lambda Pos. Daug.: #eta resolution; #eta_{MC}-#eta_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fLambdaPosMCResEta);
+
+    fLambdaPosMCResPhi     = new TH3F("fLambdaPosMCResPhi","#Lambda  Pos. Daug.: #varphi resolution; #varphi_{MC}-#varphi_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fLambdaPosMCResPhi);
+
+    fLambdaPosMCResPt     = new TH3F("fLambdaPosMCResPt","#Lambda  Pos. Daug.: pt resolution; #it{p}_{T,MC}-#it{p]_{T,Rec};#it{p}_{T} (GeV/#it{c}); centrality",60,-0.3,0.3,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fLambdaPosMCResPt);  
+
+    fLambdaNegMCResEta     = new TH3F("fLambdaNegMCResEta","#Lambda Neg. Daug.: #eta resolution; #eta_{MC}-#eta_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fLambdaNegMCResEta);
+
+    fLambdaNegMCResPhi     = new TH3F("fLambdaNegMCResPhi","#Lambda  Neg. Daug.: #varphi resolution; #varphi_{MC}-#varphi_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fLambdaNegMCResPhi);
+
+    fLambdaNegMCResPt     = new TH3F("fLambdaNegMCResPt","#Lambda  Neg. Daug.: pt resolution; #it{p}_{T,MC}-#it{p]_{T,Rec};#it{p}_{T} (GeV/#it{c}); centrality",60,-0.3,0.3,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fLambdaNegMCResPt);  
+
     // AntiLambda MC-true: 
     fAntiLambdaMCPt = new TH1F("fAntiLambdaMCPt","#bar{#Lambda} MC;#it{p}_{T} (GeV/#it{c});Counts",nbins,pMin,pMax);
     fOutput->Add(fAntiLambdaMCPt);
@@ -853,6 +913,27 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     fAntiLambdaMCResPhi     = new TH3F("fAntiLambdaMCResPhi","#bar{#Lambda} Assoc: #varphi resolution; #varphi_{MC}-#varphi_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
     fOutput->Add(fAntiLambdaMCResPhi);
 
+    fAntiLambdaMCResPt     = new TH3F("fAntiLambdaMCResPt","#bar{#Lambda} Assoc: pt resolution; #it{p}_{T,MC}-#it{p]_{T,Rec};#it{p}_{T} (GeV/#it{c}); centrality",60,-0.3,0.3,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fAntiLambdaMCResPt);
+
+    fAntiLambdaPosMCResEta     = new TH3F("fAntiLambdaPosMCResEta","#bar{#Lambda} Pos. Daug.: #eta resolution; #eta_{MC}-#eta_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fAntiLambdaPosMCResEta);
+
+    fAntiLambdaPosMCResPhi     = new TH3F("fAntiLambdaPosMCResPhi","#bar{#Lambda}  Pos. Daug.: #varphi resolution; #varphi_{MC}-#varphi_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fAntiLambdaPosMCResPhi);
+
+    fAntiLambdaPosMCResPt     = new TH3F("fAntiLambdaPosMCResPt","#bar{#Lambda}  Pos. Daug.: pt resolution; #it{p}_{T,MC}-#it{p]_{T,Rec};#it{p}_{T} (GeV/#it{c}); centrality",60,-0.3,0.3,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fAntiLambdaPosMCResPt);  
+
+    fAntiLambdaNegMCResEta     = new TH3F("fAntiLambdaNegMCResEta","#bar{#Lambda} Neg. Daug.: #eta resolution; #eta_{MC}-#eta_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fAntiLambdaNegMCResEta);
+
+    fAntiLambdaNegMCResPhi     = new TH3F("fAntiLambdaNegMCResPhi","#bar{#Lambda}  Neg. Daug.: #varphi resolution; #varphi_{MC}-#varphi_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fAntiLambdaNegMCResPhi);
+
+    fAntiLambdaNegMCResPt     = new TH3F("fAntiLambdaNegMCResPt","#bar{#Lambda}  Neg. Daug.: pt resolution; #it{p}_{T,MC}-#it{p]_{T,Rec};#it{p}_{T} (GeV/#it{c}); centrality",60,-0.3,0.3,nbins,pMin,pMax,100,0.,100.);
+    fOutput->Add(fAntiLambdaNegMCResPt);  
+
   } //End MC
 
   // ======================================================== //
@@ -910,27 +991,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   
   // ================== Correlations =================
 
-  // ----------------Splitting:
-  //    Shared TPC clusters status between trigger and daughter tracks
-  fSharedClsTrigDaug = new TH3F("fSharedClsTrigDaug","Splitting chech with TPC map;",100,0.,10.,100,0.,10.,6,0.,6.);
-  fOutput->Add(fSharedClsTrigDaug);
- 
-  //-----   
-  Int_t binsSplit2[9] = {100,nbins,100,2,20,20,101,101,2};   
-  Double_t xminSplit2[9] = {pMin,0.398,pMin,-0.5,-0.1,-0.1,-0.005,-0.005,-0.5}; 
-  Double_t xmaxSplit2[9] = {pMax,0.598,pMax,1.5,0.1,0.1,1.005,1.005,1.5};    
-
-  for(Int_t j=0; j<kNCent; j++){
-    // Positive daughter:
-    fK0sPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fK0sPosDaugdPhiSdEtaS_%d",j), "K^{0}_{S} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#phi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; same MC label;",9,binsSplit2,xminSplit2,xmaxSplit2);
-    fOutput->Add(fK0sPosDaugdPhiSdEtaS[j]);  
-    
-    // Negative daughter:
-    fK0sNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fK0sNegDaugdPhiSdEtaS_%d",j), "K^{0}_{S} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#phi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; same MC label;",9,binsSplit2,xminSplit2,xmaxSplit2);
-    fOutput->Add(fK0sNegDaugdPhiSdEtaS[j]);  
-  }
-
-  //-----
+  // ------------------------  Splitting:  
   Double_t binsDev[121];
   binsDev[0] = 0;
 
@@ -938,17 +999,50 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     for (Int_t j=1;j<=10;j++)
       binsDev[(k+7)*10+j] = j*TMath::Power(10,k);
      
-  Int_t binsSplit[7] = {100,100,3,120,9,301,4};   Double_t xminSplit[7] = {pMin,pMin,-1.5,0,-0.5,-0.001,-0.5}; Double_t xmaxSplit[7] = {pMax,pMax,1.5,10e+4,8.5,0.3,3.5};    
+  Int_t binsSplit[9] = {100,nbins,100,2,301,101,101,120,9};   Double_t xminSplit[9] = {pMin,0.398,pMin,-0.5,-0.001,-0.005,-0.005,0,-0.5}; Double_t xmaxSplit[9] = {pMax,0.598,pMax,1.5,0.3,1.005,1.005,10e+4,8.5};    
 
-  // positive daughter
-  fK0sPosDaugSplCheckCovMat  = new THnSparseD("fK0sPosDaugSplCheckCovMat", "K^{0}_{S} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables; R#Delta#varphi*_{max};Shared cluster condition;",7,binsSplit,xminSplit,xmaxSplit);
-  fK0sPosDaugSplCheckCovMat->SetBinEdges(3,binsDev);
-  fOutput->Add(fK0sPosDaugSplCheckCovMat);  
+  Int_t binsSplit2[12] = {100,nbins,100,2,10,20,101,101,100,120,90,2};   
+  Double_t xminSplit2[12] = {pMin,0.398,pMin,-0.5,0.,-0.1,-0.005,-0.005,-1.,0,0.,-0.5}; 
+  Double_t xmaxSplit2[12] = {pMax,0.598,pMax,1.5,0.1,0.1,1.005,1.005,1.,10e+4,3.3,1.5};    
 
-  // negative daughter
-  fK0sNegDaugSplCheckCovMat  = new THnSparseD("fK0sNegDaugSplCheckCovMat", "K^{0}_{S} Neg. daughter;  #it{p}_{T,V0} (GeV/#it{c}); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables; R#Delta#varphi*_{max};Shared cluster condition;",7,binsSplit,xminSplit,xmaxSplit);
-  fK0sNegDaugSplCheckCovMat->SetBinEdges(3,binsDev);
-  fOutput->Add(fK0sNegDaugSplCheckCovMat); 
+  Int_t binsSplit3[6] = {100,nbins,100,46,46,2};
+  Double_t xminSplit3[6] = {pMin,0.398,pMin,-0.16,-0.16,-0.5};
+  Double_t xmaxSplit3[6] = {pMax,0.598,pMax,0.16,0.16,1.5};
+
+  for(Int_t j=0; j<kNCent; j++){
+
+    // positive daughter
+    fK0sPosDaugSplCheckCovMat[j]   = new THnSparseD( Form("fK0sPosDaugSplCheckCovMat_%d",j), "K^{0}_{S} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle;  R#Delta#varphi*_{max}; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables;",9,binsSplit,xminSplit,xmaxSplit);
+    fK0sPosDaugSplCheckCovMat[j]->SetBinEdges(7,binsDev);
+    fOutput->Add(fK0sPosDaugSplCheckCovMat[j]);  
+
+    // negative daughter
+    fK0sNegDaugSplCheckCovMat[j]   = new THnSparseD( Form("fK0sNegDaugSplCheckCovMat_%d",j), "K^{0}_{S} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle;  R#Delta#varphi*_{max}; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables;",9,binsSplit,xminSplit,xmaxSplit);
+    fK0sNegDaugSplCheckCovMat[j]->SetBinEdges(7,binsDev);
+    fOutput->Add(fK0sNegDaugSplCheckCovMat[j]); 
+
+    // Positive daughter:
+    fK0sPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fK0sPosDaugdPhiSdEtaS_%d",j), "K^{0}_{S} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter; #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fK0sPosDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);    
+    fOutput->Add(fK0sPosDaugdPhiSdEtaS[j]);  
+    
+    // Negative daughter:
+    fK0sNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fK0sNegDaugdPhiSdEtaS_%d",j), "K^{0}_{S} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter;  #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fK0sNegDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);
+    fOutput->Add(fK0sNegDaugdPhiSdEtaS[j]);  
+
+    if(fIsMC){
+      // Positive daughter:
+      fK0sPosMCResdEtaSdPhiS[j]  = new THnSparseD(Form("fK0sPosMCResdEtaSdPhiS_%d",j), "K^{0}_{S} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); #Delta#varphi*; #Delta#eta*; Same Sign as Trigger Particle;",6,binsSplit3,xminSplit3,xmaxSplit3);
+      fOutput->Add(fK0sPosMCResdEtaSdPhiS[j]);  
+    
+      // Negative daughter:
+      fK0sNegMCResdEtaSdPhiS[j]  = new THnSparseD(Form("fK0sNegMCResdEtaSdPhiS_%d",j), "K^{0}_{S} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); #Delta#varphi*; #Delta#eta*;  Same Sign as Trigger Particle;",6,binsSplit3,xminSplit3,xmaxSplit3);
+      fOutput->Add(fK0sNegMCResdEtaSdPhiS[j]);  
+    }
+
+  }
+
 
   //    DCA to prim vertex
   fK0sDCADaugToPrimVtx  
@@ -981,9 +1075,9 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       for(Int_t ll=0;ll<kNVtxZ;ll++){
 	snprintf(hNameHist,100, "fK0sdPhidEtaPtL_%.2f_%.2f_Cent_%.0f_%.0f_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1],ll); 
 	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll] = new TH3F(hNameHist,"K^{0}_{S}: #Delta#varphi vs #Delta#eta vs Inv. Mass",
-					     nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
-					     nbinsdEta,-1.5,1.5,
-					     nbins,0.398,0.598);
+								   nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
+								   nbinsdEta,-1.5,1.5,
+								   nbins,0.398,0.598);
 	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetXaxis()->SetTitle("#Delta#varphi (rad)"); 
 	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetYaxis()->SetTitle("#Delta#eta"); 
 	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetZaxis()->SetTitle("Inv. Mass"); 
@@ -1104,31 +1198,44 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   // ================== Correlations =================
 
   // ----------------Splitting:
-
-  //-----   
-  Int_t binsSplit3[9] = {100,nbins,100,2,20,20,101,101,2};   
-  Double_t xminSplit3[9] = {pMin,1.065,pMin,-0.5,-0.1,-0.1,-0.005,-0.005,-0.5}; 
-  Double_t xmaxSplit3[9] = {pMax,1.165,pMax,1.5,0.1,0.1,1.005,1.005,1.5};    
+  xminSplit[1] = 1.065;   xmaxSplit[1] = 1.165;    
+  xminSplit2[1] = 1.065;  xmaxSplit2[1] = 1.165;
+  xminSplit3[1] = 1.065;  xmaxSplit3[1] = 1.165;
 
   for(Int_t j=0; j<kNCent; j++){
+
+    // positive daughter:
+    fLambdaPosDaugSplCheckCovMat[j]   = new THnSparseD( Form("fLambdaPosDaugSplCheckCovMat_%d",j), "#Lambda Pos. daughter;   #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle;  R#Delta#varphi*_{max}; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables;",9,binsSplit,xminSplit,xmaxSplit);   
+    fLambdaPosDaugSplCheckCovMat[j]->SetBinEdges(7,binsDev);
+    fOutput->Add(fLambdaPosDaugSplCheckCovMat[j]);  
+
+    // negative daughter:
+    fLambdaNegDaugSplCheckCovMat[j]   = new THnSparseD( Form("fLambdaNegDaugSplCheckCovMat_%d",j), "#Lambda Neg. daughter;   #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle;  R#Delta#varphi*_{max}; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables;",9,binsSplit,xminSplit,xmaxSplit);   
+    fLambdaNegDaugSplCheckCovMat[j]->SetBinEdges(7,binsDev);
+    fOutput->Add(fLambdaNegDaugSplCheckCovMat[j]); 
+
     // Positive daughter:
-    fLambdaPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fLambdaPosDaugdPhiSdEtaS_%d",j), "#Lambda Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#phi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; same MC label;",9,binsSplit3,xminSplit3,xmaxSplit3);
+    fLambdaPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fLambdaPosDaugdPhiSdEtaS_%d",j), "#Lambda Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  Correlation fraction of shared cls: Trigger - Daughter; #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fLambdaPosDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);
     fOutput->Add(fLambdaPosDaugdPhiSdEtaS[j]);  
     
     // Negative daughter:
-    fLambdaNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fLambdaNegDaugdPhiSdEtaS_%d",j), "#Lambda Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#phi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; same MC label;",9,binsSplit3,xminSplit3,xmaxSplit3);
+    fLambdaNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fLambdaNegDaugdPhiSdEtaS_%d",j), "#Lambda Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  Correlation fraction of shared cls: Trigger - Daughter; #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fLambdaNegDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);
     fOutput->Add(fLambdaNegDaugdPhiSdEtaS[j]);  
+
+    if(fIsMC){
+      // Positive daughter:
+      fLambdaPosMCResdEtaSdPhiS[j]  = new THnSparseD(Form("fLambdaPosMCResdEtaSdPhiS_%d",j), "#Lambda Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); #Delta#varphi*; #Delta#eta*; Same Sign as Trigger Particle;",6,binsSplit3,xminSplit3,xmaxSplit3);
+      fOutput->Add(fLambdaPosMCResdEtaSdPhiS[j]);  
+    
+      // Negative daughter:
+      fLambdaNegMCResdEtaSdPhiS[j]  = new THnSparseD(Form("fLambdaNegMCResdEtaSdPhiS_%d",j), "#Lambda Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); #Delta#varphi*; #Delta#eta*;  Same Sign as Trigger Particle;",6,binsSplit3,xminSplit3,xmaxSplit3);
+      fOutput->Add(fLambdaNegMCResdEtaSdPhiS[j]);  
+    }
+
   }
 
-  // positive daughter
-  fLambdaPosDaugSplCheckCovMat  = new THnSparseD("fLambdaPosDaugSplCheckCovMat", "#Lambda Pos. daughter;  #it{p}_{T,V0} (GeV/#it{c}); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables; R#Delta#varphi*_{max};Shared cluster condition;",7,binsSplit,xminSplit,xmaxSplit);   
-  fLambdaPosDaugSplCheckCovMat->SetBinEdges(3,binsDev);
-  fOutput->Add(fLambdaPosDaugSplCheckCovMat);  
-
-  // negative daughter
-  fLambdaNegDaugSplCheckCovMat  = new THnSparseD("fLambdaNegDaugSplCheckCovMat", "#Lambda Neg. daughter;  #it{p}_{T,V0} (GeV/#it{c}); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables; R#Delta#varphi*_{max};Shared cluster condition;",7,binsSplit,xminSplit,xmaxSplit);   
-  fLambdaNegDaugSplCheckCovMat->SetBinEdges(3,binsDev);
-  fOutput->Add(fLambdaNegDaugSplCheckCovMat); 
 
   //    DCA to prim vertex
   fLambdaDCADaugToPrimVtx  
@@ -1287,24 +1394,40 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
   // ----------------Splitting:
   for(Int_t j=0; j<kNCent; j++){
+
+    // positive daughter:
+    fAntiLambdaPosDaugSplCheckCovMat[j]  = new THnSparseD(Form("fAntiLambdaPosDaugSplCheckCovMat_%d",j), "#bar{#Lambda} Pos. daughter;  #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle;  R#Delta#varphi*_{max}; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables;",9,binsSplit,xminSplit,xmaxSplit); 
+    fAntiLambdaPosDaugSplCheckCovMat[j]->SetBinEdges(7,binsDev);
+    fOutput->Add(fAntiLambdaPosDaugSplCheckCovMat[j]);  
+
+    // negative daughter:
+    fAntiLambdaNegDaugSplCheckCovMat[j]  = new THnSparseD(Form("fAntiLambdaNegDaugSplCheckCovMat_%d",j), "#bar{#Lambda} Neg. daughter;  #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle;  R#Delta#varphi*_{max}; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables;",9,binsSplit,xminSplit,xmaxSplit);       
+    fAntiLambdaNegDaugSplCheckCovMat[j]->SetBinEdges(7,binsDev);
+    fOutput->Add(fAntiLambdaNegDaugSplCheckCovMat[j]); 
+
     // Positive daughter:
-    fAntiLambdaPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fAntiLambdaPosDaugdPhiSdEtaS_%d",j), "#bar{#Lambda} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#phi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; same MC label;",9,binsSplit3,xminSplit3,xmaxSplit3);
-    fOutput->Add(fAntiLambdaPosDaugdPhiSdEtaS[j]);  
+    fAntiLambdaPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fAntiLambdaPosDaugdPhiSdEtaS_%d",j), "#bar{#Lambda} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fAntiLambdaPosDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);  
+      fOutput->Add(fAntiLambdaPosDaugdPhiSdEtaS[j]);  
     
     // Negative daughter:
-    fAntiLambdaNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fAntiLambdaNegDaugdPhiSdEtaS_%d",j), "#bar{#Lambda} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#phi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; same MC label;",9,binsSplit3,xminSplit3,xmaxSplit3);
-    fOutput->Add(fAntiLambdaNegDaugdPhiSdEtaS[j]);  
+    fAntiLambdaNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fAntiLambdaNegDaugdPhiSdEtaS_%d",j), "#bar{#Lambda} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fAntiLambdaNegDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);    
+      fOutput->Add(fAntiLambdaNegDaugdPhiSdEtaS[j]);  
+
+   if(fIsMC){
+      // Positive daughter:
+      fAntiLambdaPosMCResdEtaSdPhiS[j]  = new THnSparseD(Form("fAntiLambdaPosMCResdEtaSdPhiS_%d",j), "#bar{#Lambda} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); #Delta#varphi*; #Delta#eta*; Same Sign as Trigger Particle;",6,binsSplit3,xminSplit3,xmaxSplit3);
+      fOutput->Add(fAntiLambdaPosMCResdEtaSdPhiS[j]);  
+    
+      // Negative daughter:
+      fAntiLambdaNegMCResdEtaSdPhiS[j]  = new THnSparseD(Form("fAntiLambdaNegMCResdEtaSdPhiS_%d",j), "#bar{#Lambda} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); #Delta#varphi*; #Delta#eta*;  Same Sign as Trigger Particle;",6,binsSplit3,xminSplit3,xmaxSplit3);
+      fOutput->Add(fAntiLambdaNegMCResdEtaSdPhiS[j]);  
+    }
+
   }
 
-  // positive daughter
-  fAntiLambdaPosDaugSplCheckCovMat  = new THnSparseD("fAntiLambdaPosDaugSplCheckCovMat", "#bar{#Lambda} Pos. daughter;  #it{p}_{T,V0} (GeV/#it{c}); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables; R#Delta#varphi*_{max};Shared cluster condition;",7,binsSplit,xminSplit,xmaxSplit); 
-  fAntiLambdaPosDaugSplCheckCovMat->SetBinEdges(3,binsDev);
-  fOutput->Add(fAntiLambdaPosDaugSplCheckCovMat);  
-
-  // negative daughter
-  fAntiLambdaNegDaugSplCheckCovMat  = new THnSparseD("fAntiLambdaNegDaugSplCheckCovMat", "#bar{#Lambda} Neg. daughter;  #it{p}_{T,V0} (GeV/#it{c}); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; (X-X')^{2}/( #sigma^{2} + #sigma'^{2} ); Variables; R#Delta#varphi*_{max};Shared cluster condition;",7,binsSplit,xminSplit,xmaxSplit);       
-  fAntiLambdaNegDaugSplCheckCovMat->SetBinEdges(3,binsDev);
-  fOutput->Add(fAntiLambdaNegDaugSplCheckCovMat); 
+  
 
   //    DCA to prim vertex
   fAntiLambdaDCADaugToPrimVtx  
@@ -2241,7 +2364,7 @@ static Float_t TwoTrackEfficiencyCut(Float_t phi1, Float_t eta1, Float_t pt1, Fl
 }
 
 //___________________________________________________________________________________________
-
+/*
 static Bool_t GoodTPCSharedMap(const AliAODTrack *track)
 {
   // Rejects tracks with shared clusters after filling a control histogram
@@ -2258,10 +2381,11 @@ static Bool_t GoodTPCSharedMap(const AliAODTrack *track)
   }
   return kTRUE;
 }
-
+*/
 //___________________________________________________________________________________________
    
-static Float_t GetFractionTPCSharedCls(const AliAODTrack *track){
+static Float_t GetFractionTPCSharedCls(const AliAODTrack *track)
+{
   // Rejects tracks with shared clusters after filling a control histogram
   // This overload is used for primaries
  
@@ -2304,10 +2428,21 @@ Double_t AliAnalysisTaskLambdaOverK0sJets::ThetaS(TString part)
   // Array of positions is 85,105,125,..cm,
   // we take the z position at R=1.25m
   // return TMath::Pi()/2. - TMath::ATan(fXshifted[2][2]/125.);
-  if( part.EqualTo("Trigger") ) 
+  /*
+    if( part.EqualTo("Trigger") ) 
     return TMath::Pi()/2. - TMath::ATan(fTrigSftR125[2]/125.);
-  else if( part.EqualTo("Daughter") )  
+    else if( part.EqualTo("Daughter") )  
     return TMath::Pi()/2. - TMath::ATan(fDaugSftR125[2]/125.);  
+  */
+  
+  Double_t thetaS = -100.;
+
+  if( part.EqualTo("Trigger") ) 
+    thetaS = TMath::Pi()/2. - TMath::ATan(fTrigSftR125[2]/fTPCRadius);
+  if( part.EqualTo("Daughter") )  
+    thetaS = TMath::Pi()/2. - TMath::ATan(fDaugSftR125[2]/fTPCRadius);  
+
+  return thetaS;
 
 }
 
@@ -2346,7 +2481,7 @@ Float_t AliAnalysisTaskLambdaOverK0sJets::dEtaS()
 
 //___________________________________________________________________________________________
 
-Float_t AliAnalysisTaskLambdaOverK0sJets::dPhiSAtR12()
+Float_t AliAnalysisTaskLambdaOverK0sJets::dPhiSAtR125()
 {
   // LINES OBTAINED FROM THE FEMTOSCOPY ANALYSIS:
   // private communication with Hans Beck
@@ -2357,7 +2492,8 @@ Float_t AliAnalysisTaskLambdaOverK0sJets::dPhiSAtR12()
   // 				     +TMath::Power(track1.fXshifted[2][1] - track2.fXshifted[2][1],2));
   const Float_t distSft= TMath::Sqrt( TMath::Power(fTrigSftR125[0] - fDaugSftR125[0],2) +
 				      TMath::Power(fTrigSftR125[1] - fDaugSftR125[1],2) );
-  return 2.0 * TMath::ATan(distSft/2./(125.));
+  //return 2.0 * TMath::ATan(distSft/2./(125.));
+  return 2.0 * TMath::ATan(distSft/2./(fTPCRadius));
 }
 
 
@@ -2390,7 +2526,8 @@ void AliAnalysisTaskLambdaOverK0sJets::SetSftPosR125(const AliAODTrack *track,co
   Double_t xyz[3]={-9999.,-9999.,-9999.};  
 
   // The radius we want to propagate to, squared
-  const Float_t RSquaredWanted(125.*125.);
+  //const Float_t RSquaredWanted(125.*125.);
+  const Float_t RSquaredWanted(fTPCRadius*fTPCRadius);
 
   // Propagation is done in local x of the track
   for (Float_t x = 58.; x < 247.; x+=1.){
@@ -2458,7 +2595,7 @@ void AliAnalysisTaskLambdaOverK0sJets::SetSftPosR125(const AliAODTrack *track,co
 
     } // End of if roughly reached radius
  
- } // End of coarse propagation loop
+  } // End of coarse propagation loop
 
 }
 
@@ -2786,8 +2923,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	if( pPart->IsPhysicalPrimary() ) lMCAssocPosDaug = 1;
 	
 	/*
-	if ( TMath::Abs(nPart->Eta()) > fMaxEtaDaughter ||
-	     TMath::Abs(pPart->Eta()) > fMaxEtaDaughter )
+	  if ( TMath::Abs(nPart->Eta()) > fMaxEtaDaughter ||
+	  TMath::Abs(pPart->Eta()) > fMaxEtaDaughter )
 	  goto noas;
 	*/
 	/*
@@ -2889,9 +3026,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		 (inMother==ipMother) && (lPDGCodeV0==3122)  ){
 	  
 	  if ( ( TMath::Abs(lPdgcodeMotherOfMother) == 3212) /*||
-	       ( TMath::Abs(lPdgcodeMotherOfMother) == 3224) ||
-	       ( TMath::Abs(lPdgcodeMotherOfMother) == 3214) ||
-	       ( TMath::Abs(lPdgcodeMotherOfMother) == 3114)*/
+							       ( TMath::Abs(lPdgcodeMotherOfMother) == 3224) ||
+							       ( TMath::Abs(lPdgcodeMotherOfMother) == 3214) ||
+							       ( TMath::Abs(lPdgcodeMotherOfMother) == 3114)*/
 	       ) lComeFromSigma = kTRUE;
 	  else lComeFromSigma = kFALSE; 
 	  
@@ -2911,9 +3048,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  
 	  
 	  if ( ( TMath::Abs(lPdgcodeMotherOfMother) == 3212) /*||
-	       ( TMath::Abs(lPdgcodeMotherOfMother) == 3224) ||
-	       ( TMath::Abs(lPdgcodeMotherOfMother) == 3214) ||
-	       ( TMath::Abs(lPdgcodeMotherOfMother) == 3114)*/
+							       ( TMath::Abs(lPdgcodeMotherOfMother) == 3224) ||
+							       ( TMath::Abs(lPdgcodeMotherOfMother) == 3214) ||
+							       ( TMath::Abs(lPdgcodeMotherOfMother) == 3114)*/
 	       ) lComeFromSigma = kTRUE;
 	  else lComeFromSigma = kFALSE;  
 	  
@@ -2945,10 +3082,19 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  rapAs = etaAs;
 	}
 
-	// phi resolution for V0-reconstruction
+	// phi resolution for V0-reconstruction and daughter tracks
 	Float_t resEta = p0->Eta() - v0->Eta();	
 	Float_t resPhi = p0->Phi() - v0->Phi();	
+	Float_t resPt  = p0->Pt() - v0->Pt();	
 	
+	Float_t resEtaPosDaug = pPart->Eta() - ptrack->Eta();	
+	Float_t resPhiPosDaug = pPart->Phi() - ptrack->Phi();	
+	Float_t resPtPosDaug  = pPart->Pt() - ptrack->Pt();
+
+	Float_t resEtaNegDaug = nPart->Eta() - ntrack->Eta();	
+	Float_t resPhiNegDaug = nPart->Phi() - ntrack->Phi();	
+	Float_t resPtNegDaug  = nPart->Pt() - ntrack->Pt();
+
 	if ( (l < 0.01)  &&  (ptAs<10.) ) { // Primary V0
 	  
 	  // K0s:
@@ -2980,7 +3126,16 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	      
 		fK0sMCResEta->Fill(resEta,pt,centrality);
 		fK0sMCResPhi->Fill(resPhi,pt,centrality);
-	      
+		fK0sMCResPt->Fill(resPt,pt,centrality);
+		
+		fK0sPosMCResEta->Fill(resEtaPosDaug,pt,centrality);
+		fK0sPosMCResPhi->Fill(resPhiPosDaug,pt,centrality);
+		fK0sPosMCResPt->Fill(resPtPosDaug,pt,centrality);
+
+		fK0sNegMCResEta->Fill(resEtaNegDaug,pt,centrality);
+		fK0sNegMCResPhi->Fill(resPhiNegDaug,pt,centrality);
+		fK0sNegMCResPt->Fill(resPtNegDaug,pt,centrality); 
+
 	      } // End selection in the dca to prim. vtx and the number of clusters
 
 	      // Distributions for the efficiency (Systematic checks)
@@ -3083,6 +3238,15 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 
 		fLambdaMCResEta->Fill(resEta,pt,centrality);
 		fLambdaMCResPhi->Fill(resPhi,pt,centrality);
+		fLambdaMCResPt->Fill(resPt,pt,centrality);
+		
+		fLambdaPosMCResEta->Fill(resEtaPosDaug,pt,centrality);
+		fLambdaPosMCResPhi->Fill(resPhiPosDaug,pt,centrality);
+		fLambdaPosMCResPt->Fill(resPtPosDaug,pt,centrality);
+
+		fLambdaNegMCResEta->Fill(resEtaNegDaug,pt,centrality);
+		fLambdaNegMCResPhi->Fill(resPhiNegDaug,pt,centrality);
+		fLambdaNegMCResPt->Fill(resPtNegDaug,pt,centrality);
 
 	      } // End selection in the dca to prim. vtx and the number of clusters
 	      
@@ -3182,6 +3346,15 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 
 		fAntiLambdaMCResEta->Fill(resEta,pt,centrality);
 		fAntiLambdaMCResPhi->Fill(resPhi,pt,centrality);
+		fAntiLambdaMCResPt->Fill(resPt,pt,centrality);
+		
+		fAntiLambdaPosMCResEta->Fill(resEtaPosDaug,pt,centrality);
+		fAntiLambdaPosMCResPhi->Fill(resPhiPosDaug,pt,centrality);
+		fAntiLambdaPosMCResPt->Fill(resPtPosDaug,pt,centrality);
+
+		fAntiLambdaNegMCResEta->Fill(resEtaNegDaug,pt,centrality);
+		fAntiLambdaNegMCResPhi->Fill(resPhiNegDaug,pt,centrality);
+		fAntiLambdaNegMCResPt->Fill(resPtNegDaug,pt,centrality);
 
 	      } // End selection in the dca to prim. vtx and the number of clusters
 
@@ -3250,7 +3423,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 
 	    }  // End embeded particle selection
 	  
-	    } // End AntiLambda
+	  } // End AntiLambda
 	  // Xi decay:
 	  if( lComeFromXi && isNaturalPart ){
 	    if(lPDGCodeV0==3122) { fLambdaAssocFromXi->Fill(ptAs,centrality); }
@@ -3360,7 +3533,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  fK0sMassPtPhi->Fill(massK0s,pt,lPhi);
 
 	  
-	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && !isNaturalPart )
+	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && isNaturalPart )
 	    fAssocParticles->Add( new AliMiniParticle(centrality, zv, iV0, pt, lPhi, lEta, lMCAssocNegDaug, lMCAssocPosDaug, 3) );
 	  
 
@@ -3525,7 +3698,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  fLambdaMassPtPhi->Fill(massLambda,pt,lPhi);
 
 	  
-	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && !isNaturalPart )
+	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && isNaturalPart )
 	    fAssocParticles->Add( new AliMiniParticle(centrality, zv, iV0, pt, lPhi, lEta, lMCAssocNegDaug, lMCAssocPosDaug, 4) );
 	  
 	  
@@ -3692,10 +3865,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  fAntiLambdaMassPtPhi->Fill(massAntiLambda,pt,lPhi);
 	
 	  
-	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && !isNaturalPart )
+	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && isNaturalPart )
 	    fAssocParticles->Add( new AliMiniParticle(centrality, zv, iV0, pt, lPhi, lEta, lMCAssocNegDaug, lMCAssocPosDaug, 5) );
 	  
-
 	}
  
 	if( fDoQA && lCheckMcAntiLambda && isNaturalPart && (pt<10.) ){ // Quality Assurance
@@ -3711,21 +3883,21 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	    if( (dcaPos>0.1) && (dcaNeg>0.1) ){
 	      
 	      if( (nClsTPCPos>fDaugNClsTPC) && (nClsTPCNeg>fDaugNClsTPC) ){
-		  fAntiLambdaPtPosDaug->Fill(pt,lPtPos);
-		  fAntiLambdaPtNegDaug->Fill(pt,lPtNeg);
+		fAntiLambdaPtPosDaug->Fill(pt,lPtPos);
+		fAntiLambdaPtNegDaug->Fill(pt,lPtNeg);
 		  
-		  fAntiLambdaPhiEtaPosDaug->Fill(phiPos,etaPos,pt);
-		  fAntiLambdaPhiEtaNegDaug->Fill(phiNeg,etaNeg,pt);
+		fAntiLambdaPhiEtaPosDaug->Fill(phiPos,etaPos,pt);
+		fAntiLambdaPhiEtaNegDaug->Fill(phiNeg,etaNeg,pt);
 		  
-		  fAntiLambdaDecayPos->Fill(dx,dy,pt);
-		  fAntiLambdaDecayVertex->Fill(lt,pt);
+		fAntiLambdaDecayPos->Fill(dx,dy,pt);
+		fAntiLambdaDecayVertex->Fill(lt,pt);
 		  
-		  fAntiLambdaCPA->Fill(cpa,pt); 
-		  fAntiLambdaDCAV0Daug->Fill(dca,pt); 
+		fAntiLambdaCPA->Fill(cpa,pt); 
+		fAntiLambdaDCAV0Daug->Fill(dca,pt); 
 		  
-		  fAntiLambdaNClustersITSPos->Fill(phiPos,posITSNcls,pt);
-		  fAntiLambdaNClustersITSNeg->Fill(phiNeg,negITSNcls,pt);
-		}
+		fAntiLambdaNClustersITSPos->Fill(phiPos,posITSNcls,pt);
+		fAntiLambdaNClustersITSNeg->Fill(phiNeg,negITSNcls,pt);
+	      }
 	      
 	      fAntiLambdaNClustersTPC->Fill(phiPos,nClsTPCPos,pt);
 	      fAntiLambdaNClustersTPC->Fill(phiNeg,nClsTPCNeg,-pt);
@@ -4117,15 +4289,15 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       if (!pDaughter0 || !pDaughter1) continue; 
    
       /*
-      if ( TMath::Abs(pDaughter0->Eta()) > fMaxEtaDaughter ||
-	   TMath::Abs(pDaughter1->Eta()) > fMaxEtaDaughter )
+	if ( TMath::Abs(pDaughter0->Eta()) > fMaxEtaDaughter ||
+	TMath::Abs(pDaughter1->Eta()) > fMaxEtaDaughter )
 	continue;	
       */
       // Daughter momentum cut: ! FIX it in case of AOD !
       /*
-      if ( ( pDaughter0->Pt() < fMinPtDaughter ) || 
-	   ( pDaughter1->Pt() < fMinPtDaughter )  ) 
-	   continue;
+	if ( ( pDaughter0->Pt() < fMinPtDaughter ) || 
+	( pDaughter1->Pt() < fMinPtDaughter )  ) 
+	continue;
       */
       
       if ((p0->Pt())<pMin || (p0->Pt())>100. ) continue;  
@@ -4217,13 +4389,13 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       } // End pt selection
       // Xi-
       /*
-      if(lPdgcodeCurrentPart == kXiMinus || lPdgcodeCurrentPart == 3322){
+	if(lPdgcodeCurrentPart == kXiMinus || lPdgcodeCurrentPart == 3322){
 
 	if( isNaturalPart )
-	  fAssocPartMC->Add( new AliMiniParticle(centrality, zv, iTrkMC, lPtCurrentPart, lPhiCurrentPart, lEtaCurrentPart, 0, 0, 6) );
+	fAssocPartMC->Add( new AliMiniParticle(centrality, zv, iTrkMC, lPtCurrentPart, lPhiCurrentPart, lEtaCurrentPart, 0, 0, 6) );
 
-      } //End Xi
-     */
+	} //End Xi
+      */
 
     } // End loop over MC
     
@@ -4272,7 +4444,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     } // End loop over trigger particles
 
   } // End MC condition
- 
+  
   // *************************************************
   // V0 loop - AOD
   fAssocParticles = new TObjArray(); 
@@ -4281,7 +4453,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     V0Loop(kReconstruction,kTRUE,-1,-1);
   else 
     V0Loop(kReconstruction,kFALSE,-1,-1); 
-
+ 
   //-------------------------------------------------------------
   // Correlations
   //-------------------------------------------------------------
@@ -4301,14 +4473,16 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   // variables for track splititing checks:
   Float_t  posdPhiS = -9999., posdEtaS = -9999., negdPhiS = -9999., negdEtaS = -9999.; 
   Float_t  fracTrigTPCSharedMap=-1., fracPosDaugTPCSharedMap =-1., fracNegDaugTPCSharedMap =-1.;
-  Bool_t   trigTPCMapOk=kTRUE, posDaugTPCMapOk=kTRUE, negDaugTPCMapOk=kTRUE;  
+  //Bool_t   trigTPCMapOk=kTRUE, posDaugTPCMapOk=kTRUE, negDaugTPCMapOk=kTRUE;  
   Float_t  RdPhiStarMaxPosDaug=-1., RdPhiStarMaxNegDaug=-1., den=1.;
   Double_t trigCov[21], posDaugCov[21], negDaugCov[21];
   Double_t trigPos[6], posDaugPos[6], negDaugPos[6];
   Double_t trigXYZ[3], posDaugXYZ[3], negDaugXYZ[3];
-  Double_t devPosDaugTrig[9], devNegDaugTrig[9], splitCont[7],  splitCont2[9];;
-  Int_t    sameSignPosDaug = -1., sameSignNegDaug = -1.;
+  Double_t devPosDaugTrig[9], devNegDaugTrig[9], splitCont[9],  splitCont2[12];
+  Int_t    sameSignPosDaug = -1, sameSignNegDaug = -1;
   Float_t  sameLabelPosDaug = 0., sameLabelNegDaug = 0.;
+  Int_t    tlab, nlab, plab;
+  Double_t resdEtsSdPhiS[6]; 
 
   // --------------------------------
   // h-V0 correlations
@@ -4366,9 +4540,14 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       // -----------------------------------------------------------------
 
       sameLabelPosDaug = 0.; sameLabelNegDaug = 0.;
-      sameSignPosDaug = -1.; sameSignNegDaug = -1.;
+      sameSignPosDaug = -1; sameSignNegDaug = -1;
       RdPhiStarMaxPosDaug=-1.; RdPhiStarMaxNegDaug=-1.;
-      trigTPCMapOk=kTRUE; posDaugTPCMapOk=kTRUE; negDaugTPCMapOk=kTRUE;
+      //trigTPCMapOk=kTRUE; posDaugTPCMapOk=kTRUE; negDaugTPCMapOk=kTRUE;
+      fracTrigTPCSharedMap=0; fracPosDaugTPCSharedMap=0; fracNegDaugTPCSharedMap=0;
+
+      // initializing variables
+      for(Int_t ll=0; ll<9; ll++)
+	{ devPosDaugTrig[ll]=1E9; devNegDaugTrig[ll]=1E9; }	
 
       // =========== Classical methods for track-splitting  ============= //
       if( TMath::Abs(dPhi)<0.1 && TMath::Abs(dEta)<0.1 ){   
@@ -4385,12 +4564,12 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
 	// Positive daughter: calculating delta(phi)* and delta(eta)*
 	SetSftPosR125(ptrack,bSign,priVtx,"Daughter");
-	posdPhiS = dPhiSAtR12();
+	posdPhiS = dPhiSAtR125();
 	posdEtaS = dEtaS();
 
 	// Negative daughter: calculating delta(phi)* and delta(eta)*
 	SetSftPosR125(ntrack,bSign,priVtx,"Daughter");
-	negdPhiS = dPhiSAtR12();
+	negdPhiS = dPhiSAtR125();
 	negdEtaS = dEtaS();
 	
 	// ---------------- Fraction of TPC Shared Cluster 
@@ -4398,18 +4577,119 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	fracPosDaugTPCSharedMap = GetFractionTPCSharedCls(ptrack);
 	fracNegDaugTPCSharedMap = GetFractionTPCSharedCls(ntrack);
 
+	// ------ Get position:
+	tTrig->GetXYZ(trigXYZ);
+	ptrack->GetXYZ(posDaugXYZ);
+	ntrack->GetXYZ(negDaugXYZ);
+
+	// ------ Covaraince matrix for the tracks:
+	tTrig->GetCovarianceXYZPxPyPz(trigCov);
+	ptrack->GetCovarianceXYZPxPyPz(posDaugCov);
+	ntrack->GetCovarianceXYZPxPyPz(negDaugCov);
+
+	// ------- position and momentum:
+	// trigger particle
+	trigPos[0] = trigXYZ[0];	trigPos[1] = trigXYZ[1];	trigPos[2] = trigXYZ[2];
+	trigPos[3] = tTrig->Px();	trigPos[4] = tTrig->Py();	trigPos[5] = tTrig->Pz();
+
+	// positive daughter
+	posDaugPos[0] = posDaugXYZ[0];	posDaugPos[1] = posDaugXYZ[1];	posDaugPos[2] = posDaugXYZ[2];
+	posDaugPos[3] = ptrack->Px();	posDaugPos[4] = ptrack->Py();	posDaugPos[5] = ptrack->Pz();
+
+	// negative daughter
+	negDaugPos[0] = negDaugXYZ[0];	negDaugPos[1] = negDaugXYZ[1];	negDaugPos[2] = negDaugXYZ[2];
+	negDaugPos[3] = ntrack->Px();	negDaugPos[4] = ntrack->Py();	negDaugPos[5] = ntrack->Pz();
+
+	// ------- deviation between the two tracks:
+	// positive daughter
+	for(Int_t ll=0;ll<6;ll++){
+	  den = trigCov[ll*(ll+1)/2+ll] +  posDaugCov[ll*(ll+1)/2+ll] ;
+	  devPosDaugTrig[ll] = 0.;
+	  
+	  if(den>0)  devPosDaugTrig[ll] = TMath::Power( trigPos[ll] - posDaugPos[ll] ,2) / den;
+	  
+	  if(ll<3) devPosDaugTrig[6] +=  devPosDaugTrig[ll];  // sum in X,Y,Z
+	  if(ll>2) devPosDaugTrig[7] +=  devPosDaugTrig[ll];  // sum in momemtum
+	  devPosDaugTrig[8] +=  devPosDaugTrig[ll];           // sum in all variables
+	}
+
+	// negative daughter
+	for(Int_t ll=0;ll<6;ll++){
+	  den = trigCov[ll*(ll+1)/2+ll]  +  negDaugCov[ll*(ll+1)/2+ll] ;
+	  devNegDaugTrig[ll] = 0;
+
+	  if(den>0)  devNegDaugTrig[ll] = TMath::Power( trigPos[ll] - negDaugPos[ll] ,2) / den;
+	  
+	  if(ll<3) devNegDaugTrig[6] +=  devNegDaugTrig[ll];  // sum in X,Y,Z
+	  if(ll>2) devNegDaugTrig[7] +=  devNegDaugTrig[ll];  // sum in momemtum
+	  devNegDaugTrig[8] +=  devNegDaugTrig[ll];           // sum in all variables
+	}
+
+
 	// ---------------- Monte Carlo check for track-splitting 
-	if( fIsMC ){
-	  /*cout << fEndOfHijingEvent << endl;*/
+	if(fIsMC){
+	     
+	  TList *lst = fAOD->GetList();
+	  stack = (TClonesArray*)lst->FindObject(AliAODMCParticle::StdBranchName());
+	  if (!stack) {
+	    Printf("ERROR: stack not available");
+	    return;
+	  }
+
 	  sameLabelPosDaug = 1.*SameLabel(tTrig,ptrack);
 	  sameLabelNegDaug = 1.*SameLabel(tTrig,ntrack);
 
-	  /*cout << sameLabelPosDaug << "    " << sameLabelNegDaug << endl;
-	    cout << tTrig->Phi() - ptrack->Phi()  << "    " <<  tTrig->Eta() - ptrack->Eta()  << endl;
-	    cout << tTrig->Phi() - ptrack->Phi()  << "    " <<  tTrig->Eta() - ptrack->Eta()  << endl;*/
+	  // Resolution of delta(phi)* and delta(eta)*
+	  tlab = TMath::Abs(tTrig->GetLabel());
+	  plab = TMath::Abs(ptrack->GetLabel());
+	  nlab = TMath::Abs(ntrack->GetLabel());
+
+	  AliAODMCParticle *tPart=(AliAODMCParticle*)stack->UncheckedAt(tlab);
+	  AliAODMCParticle *pPart=(AliAODMCParticle*)stack->UncheckedAt(plab);
+	  AliAODMCParticle *nPart=(AliAODMCParticle*)stack->UncheckedAt(nlab);
+
+	  resdEtsSdPhiS[0] = pt;
+
+	  //positive daughter
+	  resdEtsSdPhiS[2] = ptrack->Pt();
+	  resdEtsSdPhiS[3] = (tPart->Phi() - pPart->Phi()) - posdPhiS;
+	  resdEtsSdPhiS[4] = (tPart->Eta() - pPart->Eta()) - posdEtaS;
+	  resdEtsSdPhiS[5] = sameSignPosDaug;
+
+	  if( trackAssocME->WhichCandidate() == 3 ){
+	    resdEtsSdPhiS[1] = massK0s;
+	    fK0sPosMCResdEtaSdPhiS[curCentBin]->Fill(resdEtsSdPhiS);
+	  }
+	  if( trackAssocME->WhichCandidate() == 4 ){
+	    resdEtsSdPhiS[1] = massL;
+	    fLambdaPosMCResdEtaSdPhiS[curCentBin]->Fill(resdEtsSdPhiS);
+	  }
+	  if( trackAssocME->WhichCandidate() == 5 ){
+	    resdEtsSdPhiS[1] = massAL;
+	    fAntiLambdaPosMCResdEtaSdPhiS[curCentBin]->Fill(resdEtsSdPhiS);
+	  }
+
+	  // negative daughter
+	  resdEtsSdPhiS[2] = ntrack->Pt();
+	  resdEtsSdPhiS[3] = (tPart->Phi() - nPart->Phi()) - negdPhiS;
+	  resdEtsSdPhiS[4] = (tPart->Eta() - nPart->Eta()) - negdEtaS;
+	  resdEtsSdPhiS[5] = sameSignNegDaug;
+
+	  if( trackAssocME->WhichCandidate() == 3 ){
+	    resdEtsSdPhiS[1] = massK0s;
+	    fK0sNegMCResdEtaSdPhiS[curCentBin]->Fill(resdEtsSdPhiS);
+	  }
+	  if( trackAssocME->WhichCandidate() == 4 ){
+	    resdEtsSdPhiS[1] = massL;
+	    fLambdaNegMCResdEtaSdPhiS[curCentBin]->Fill(resdEtsSdPhiS);
+	  }
+	  if( trackAssocME->WhichCandidate() == 5 ){
+	    resdEtsSdPhiS[1] = massAL;
+	    fAntiLambdaNegMCResdEtaSdPhiS[curCentBin]->Fill(resdEtsSdPhiS);
+	    }
+	   
 	}
 
-	
 	// ================  Alternative methods for track-splitting  ==================
 	if(TMath::Abs(dPhi)<0.02 && TMath::Abs(dEta)<0.02){
 	  
@@ -4417,63 +4697,150 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	  RdPhiStarMaxPosDaug = TwoTrackEfficiencyCut( tTrig->Phi(), tTrig->Eta(), tTrig->Pt(), tTrig->Charge(), ptrack->Phi(), ptrack->Eta(), ptrack->Pt(), 1, bSign);
 	  RdPhiStarMaxNegDaug = TwoTrackEfficiencyCut( tTrig->Phi(), tTrig->Eta(), tTrig->Pt(), tTrig->Charge(), ntrack->Phi(), ntrack->Eta(), ntrack->Pt(), -1, bSign);
 
-	  // -------- TPC Shared Map:
-	  trigTPCMapOk    = GoodTPCSharedMap(tTrig);
-	  posDaugTPCMapOk = GoodTPCSharedMap(ptrack);
-	  negDaugTPCMapOk = GoodTPCSharedMap(ntrack);
+	  // -------- Comparison between trigger and daughter tracks:
+	  // -------- Filling deviation of matrix elements
+	  splitCont[0] = pt; splitCont[5] = fracTrigTPCSharedMap; 
 
-	  // ------ Get position:
-	  tTrig->GetXYZ(trigXYZ);
-	  ptrack->GetXYZ(posDaugXYZ);
-	  ntrack->GetXYZ(negDaugXYZ);
+	  // ---------------------------
+	  // -------- Positive daughter:
+	  splitCont[2] = ptrack->Pt();  splitCont[3] = sameSignPosDaug; 
+	  splitCont[4] = RdPhiStarMaxPosDaug;   splitCont[6] = fracPosDaugTPCSharedMap; 
+	    
+	  // ----K0s
+	  if( trackAssocME->WhichCandidate() == 3 ){
+	    splitCont[1] = massK0s; 
+	    for(Int_t ll=0; ll<=8; ll++){
+	      splitCont[7] = devPosDaugTrig[ll]; splitCont[8] = ll; 
+	      fK0sPosDaugSplCheckCovMat[curCentBin]->Fill(splitCont);
+	    } 
 
-	  // ------ Covaraince matrix for the tracks:
-	  tTrig->GetCovarianceXYZPxPyPz(trigCov);
-	  ptrack->GetCovarianceXYZPxPyPz(posDaugCov);
-	  ntrack->GetCovarianceXYZPxPyPz(negDaugCov);
+	  }
+	  // ----Lambda
+	  if( trackAssocME->WhichCandidate() == 4 ){
+	    splitCont[1] = massL; 
+	    for(Int_t ll=0; ll<=8; ll++){
+	      splitCont[7] = devPosDaugTrig[ll]; splitCont[8] = ll; 
+	      fLambdaPosDaugSplCheckCovMat[curCentBin]->Fill(splitCont);
+	    } 
 
-	  // ------- position and momentum:
-	  // trigger particle
-	  trigPos[0] = trigXYZ[0];	trigPos[1] = trigXYZ[1];	trigPos[2] = trigXYZ[2];
-	  trigPos[3] = tTrig->Px();	trigPos[4] = tTrig->Py();	trigPos[5] = tTrig->Pz();
+	  }
+	  // ----AntiLambda
+	  if( trackAssocME->WhichCandidate() == 5 ){
+	    splitCont[1] = massAL; 
+	    for(Int_t ll=0; ll<=8; ll++){
+	      splitCont[7] = devPosDaugTrig[ll]; splitCont[8] = ll; 
+	      fAntiLambdaPosDaugSplCheckCovMat[curCentBin]->Fill(splitCont);
+	    }
+	      
+	  }
+	  // End: Positive daughter
 
-	  // positive daughter
-	  posDaugPos[0] = posDaugXYZ[0];	posDaugPos[1] = posDaugXYZ[1];	posDaugPos[2] = posDaugXYZ[2];
-	  posDaugPos[3] = ptrack->Px();	posDaugPos[4] = ptrack->Py();	posDaugPos[5] = ptrack->Pz();
-
-	  // negative daughter
-	  negDaugPos[0] = negDaugXYZ[0];	negDaugPos[1] = negDaugXYZ[1];	negDaugPos[2] = negDaugXYZ[2];
-	  negDaugPos[3] = ntrack->Px();	negDaugPos[4] = ntrack->Py();	negDaugPos[5] = ntrack->Pz();
-
+	  // ---------------------------
+	  // -------- Negative daughter:
+	  splitCont[2] = ntrack->Pt(); splitCont[3] = sameSignNegDaug; 
+	  splitCont[4] = RdPhiStarMaxNegDaug;   splitCont[6] = fracNegDaugTPCSharedMap; 
 	
-	  // ------- deviation between the two tracks:
-	  // positive daughter
-	  for(Int_t ll=0;ll<6;ll++){
-	    den = trigCov[ll*(ll+1)/2+ll] +  posDaugCov[ll*(ll+1)/2+ll] ;
-	    devPosDaugTrig[ll] = 0.;
-	  
-	    if(den>0)  devPosDaugTrig[ll] = TMath::Power( trigPos[ll] - posDaugPos[ll] ,2) / den;
-	  
-	    if(ll<3) devPosDaugTrig[6] +=  devPosDaugTrig[ll];  // sum in X,Y,Z
-	    if(ll>2) devPosDaugTrig[7] +=  devPosDaugTrig[ll];  // sum in momemtum
-	    devPosDaugTrig[8] +=  devPosDaugTrig[ll];           // sum in all variables
+	  // ----K0s
+	  if( trackAssocME->WhichCandidate() == 3 ){
+	    splitCont[1] = massK0s;  
+	    for(Int_t ll=0; ll<=8; ll++){
+	      splitCont[7] = devNegDaugTrig[ll]; splitCont[8] = ll; 
+	      fK0sNegDaugSplCheckCovMat[curCentBin]->Fill(splitCont);
+	    }
+
+	  }
+	  // ----Lambda
+	  if( trackAssocME->WhichCandidate() == 4 ){
+	    splitCont[1] = massL; 
+	    for(Int_t ll=0; ll<=8; ll++){
+	      splitCont[7] = devNegDaugTrig[ll]; splitCont[8] = ll; 
+	      fLambdaNegDaugSplCheckCovMat[curCentBin]->Fill(splitCont);
+	    }
+	      
 	  }
 
-	  // negative daughter
-	  for(Int_t ll=0;ll<6;ll++){
-	    den = trigCov[ll*(ll+1)/2+ll]  +  negDaugCov[ll*(ll+1)/2+ll] ;
-	    devNegDaugTrig[ll] = 0;
+	  // ----AntiLambda
+	  if( trackAssocME->WhichCandidate() == 5 ){
+	    splitCont[1] = massAL; 
+	    for(Int_t ll=0; ll<=8; ll++){
+	      splitCont[7] = devNegDaugTrig[ll]; splitCont[8] = ll; 
+	      fAntiLambdaNegDaugSplCheckCovMat[curCentBin]->Fill(splitCont);
+	    }
 
-	    if(den>0)  devNegDaugTrig[ll] = TMath::Power( trigPos[ll] - negDaugPos[ll] ,2) / den;
-	  
-	    if(ll<3) devNegDaugTrig[6] +=  devNegDaugTrig[ll];  // sum in X,Y,Z
-	    if(ll>2) devNegDaugTrig[7] +=  devNegDaugTrig[ll];  // sum in momemtum
-	    devNegDaugTrig[8] +=  devNegDaugTrig[ll];           // sum in all variables
 	  }
-
+	  // End: Negative daughter
+   
 	} // end selection in |delta(eta)| < 0.02, |delta(phi)| < 0.02
+
+
+	// ================  FILLING THnSparse:  Classical track-splitting method: d(phi)* and d(eta)*
+	splitCont2[0] = pt;	splitCont2[6] = fracTrigTPCSharedMap; 
+
+	// --------------------------
+	// -------- Positive daughter:
+	splitCont2[2] = ptrack->Pt();  splitCont2[3] = sameSignPosDaug;  splitCont2[4] = posdPhiS;  splitCont2[5] = posdEtaS; 
+	splitCont2[7] = fracPosDaugTPCSharedMap;   splitCont2[8] = fracTrigTPCSharedMap - fracPosDaugTPCSharedMap;
+	splitCont2[9] = devPosDaugTrig[7];  splitCont2[10] = tAssoc->DcaPosToPrimVertex(); splitCont2[11] = sameLabelPosDaug; 
+ 
+	// ---- K0s
+	if( trackAssocME->WhichCandidate() == 3 ){
+	  splitCont2[1] = massK0s;  
+	  // Positive daughter 
+	  fK0sPosDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);	  
+       	}
+	// ---- Lambda
+ 	if( trackAssocME->WhichCandidate() == 4 ){
+	  splitCont2[1] = massL;  
+	  // Positive daughter 
+	  fLambdaPosDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);	  
+	}
+	// ---- AntiLambda
+	if( trackAssocME->WhichCandidate() == 5 ){
+	  splitCont2[1] = massAL;  
+	  // Positive daughter
+	  fAntiLambdaPosDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);	  
+	}
+	
+	// --------------------------
+	// ------- Negative daughter:
+	splitCont2[2] = ntrack->Pt();  splitCont2[3] = sameSignNegDaug;  splitCont2[4] = negdPhiS;  splitCont2[5] = negdEtaS; 
+	splitCont2[7] = fracNegDaugTPCSharedMap;  splitCont2[8] = fracTrigTPCSharedMap - fracNegDaugTPCSharedMap;
+	splitCont2[9] = devNegDaugTrig[7];  splitCont2[10] = tAssoc->DcaNegToPrimVertex();  splitCont2[11] = sameLabelNegDaug;  
+
+	// ---- K0s
+	if( trackAssocME->WhichCandidate() == 3 ){
+	  splitCont2[1] = massK0s;  
+      	  // Negative daughter
+ 	  fK0sNegDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);
+	}
+	// ---- Lambda
+ 	if( trackAssocME->WhichCandidate() == 4 ){
+	  splitCont2[1] = massL;  	  
+	  // Negative daughter
+	  fLambdaNegDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);
+	}
+	// ---- AntiLambda
+	if( trackAssocME->WhichCandidate() == 5 ){
+	  splitCont2[1] = massAL;  	  
+	  // Negative daughter 
+	  fAntiLambdaNegDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);
+	}
       
       } // end selection in |delta(eta)| < 0.1, |delta(phi)| < 0.1
+
+      // ----------------------------------------------------------------
+      // Reject the 'fake' correlation due to the TPC shared clusters
+      // between trigger particle and one of the daughter tracks 
+      //    The rejection will affect more the correlations:
+      //         - Trigger track - Positive track (from Lambda with pt above 3 GeV/c)
+      //         - Trigger track - Negative track (from AntiLambda with pt above 3 GeV/c)
+      /* if( fracTrigTPCSharedMap>0.5 && 
+	  ( ( sameSignPosDaug==1 && TMath::Abs(fracTrigTPCSharedMap - fracPosDaugTPCSharedMap) < fDiffTrigDaugFracTPCSharedCls ) ||
+	  ( sameSignNegDaug==1 && TMath::Abs(fracTrigTPCSharedMap - fracNegDaugTPCSharedMap) < fDiffTrigDaugFracTPCSharedCls ) ) )*/
+
+      if( (fracTrigTPCSharedMap > fFracTPCcls) || (fracPosDaugTPCSharedMap > fFracTPCcls) || (fracNegDaugTPCSharedMap > fFracTPCcls) )
+	continue;
+
       // ----------------------------------------------------------------------------
         
       // *******************
@@ -4492,57 +4859,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	// +++++++++++ Pt bin & centrality
 	fK0sdPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massK0s);
 
-	// -------- Classical track-splitting method: d(phi)* and d(eta)*
-	if(  TMath::Abs(dPhi)<0.1 && TMath::Abs(dEta)<0.1 ){   
-	  splitCont2[0] = pt;  splitCont2[1] = massK0s;  
-	  splitCont2[6] = fracTrigTPCSharedMap; 
-
-	  // Positive daughter
-	  splitCont2[2] = ptrack->Pt();  splitCont2[3] = sameSignPosDaug;  splitCont2[4] = posdPhiS;  splitCont2[5] = posdEtaS; 
-	  splitCont2[7] = fracPosDaugTPCSharedMap;  splitCont2[8] = sameLabelPosDaug;  
-	  fK0sPosDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);	  
-
-	  // Negative daughter
-	  splitCont2[2] = ntrack->Pt();  splitCont2[3] = sameSignNegDaug;  splitCont2[4] = negdPhiS;  splitCont2[5] = negdEtaS; 
-	  splitCont2[7] = fracNegDaugTPCSharedMap;  splitCont2[8] = sameLabelNegDaug;  
-	  fK0sNegDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);
-
-	}
-
 	// ==== Correlations K0s invariant mass peak ==== //
 	if (TMath::Abs(mK0s-massK0s) < 3*sK0s) {
 
-	  // -------------- splitting checks ---------------
-	  if(TMath::Abs(dPhi)<0.02 && TMath::Abs(dEta)<0.02){
-
-	    //// -------- TPC Map ------- ////
-	    if(!trigTPCMapOk && !posDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ptrack->P(),0.5);
-	    if(!trigTPCMapOk && !negDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ntrack->P(),1.5);
-
-	    //// -------- Covariance matrix ------- ////
-	    // positive daughter
-	    splitCont[0] = pt;  splitCont[1] = ptrack->Pt();  splitCont[2] = sameSignPosDaug; 
-	    splitCont[5] = RdPhiStarMaxPosDaug;   splitCont[6] = 1*trigTPCMapOk + 2*posDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devPosDaugTrig[ll]; splitCont[4] = ll; 
-	      fK0sPosDaugSplCheckCovMat->Fill(splitCont);
-	    }
-
-	    // negative daughter
-	    splitCont[0] = pt;  splitCont[1] = ntrack->Pt(); splitCont[2] = sameSignNegDaug; 
-	    splitCont[5] = RdPhiStarMaxNegDaug;   splitCont[6] = 1*trigTPCMapOk + 2*negDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devNegDaugTrig[ll]; splitCont[4] = ll; 
-	      fK0sNegDaugSplCheckCovMat->Fill(splitCont);
-	    }
-
-	  }
-
-	  // ----------------------------------------------
-
-	  if(radio<0.1){
+	  if(radio<0.02){
 	    fK0sSpatialRes->Fill(dPhi,res,lt);
 	  }
 	  if(radio < 0.4){
@@ -4551,43 +4871,12 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	    RecCascade(tTrig,ntrack,ptrack,"K0s");
 	    RecCascade(tTrig,ptrack,ntrack,"K0s");	
 	  }
-	
-		
+			
 	}
 	// ==== Correlations K0s background ==== //
 	if( TMath::Abs(mK0s-massK0s + 6.5*sK0s) < 1.5*sK0s ||
 	    TMath::Abs(mK0s-massK0s - 6.5*sK0s) < 1.5*sK0s  ) {
 	  
-	  // -------------- splitting checks ---------------
-	  if(TMath::Abs(dPhi)<0.02 && TMath::Abs(dEta)<0.02){
-
-	    //// -------- TPC Map ------- ////
-	    if(!trigTPCMapOk && !posDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ptrack->P(),0.5,-1);
-	    if(!trigTPCMapOk && !negDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ntrack->P(),1.5,-1);
-
-	    //// -------- Covariance matrix ------- ////
-	    // positive daughter
-	    splitCont[0] = pt;  splitCont[1] = ptrack->Pt();  splitCont[2] = sameSignPosDaug; 
-	    splitCont[5] = RdPhiStarMaxPosDaug;   splitCont[6] = 1*trigTPCMapOk + 2*posDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devPosDaugTrig[ll]; splitCont[4] = ll; 
-	      fK0sPosDaugSplCheckCovMat->Fill(splitCont,-1);
-	    }
-
-	    // negative daughter
-	    splitCont[0] = pt;  splitCont[1] = ntrack->Pt(); splitCont[2] = sameSignNegDaug; 
-	    splitCont[5] = RdPhiStarMaxNegDaug;   splitCont[6] = 1*trigTPCMapOk + 2*negDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devNegDaugTrig[ll]; splitCont[4] = ll; 
-	      fK0sNegDaugSplCheckCovMat->Fill(splitCont,-1);
-	    }
-
-	  }
-
-	  // ----------------------------------------------
-
 	  // Only fills the histograms when it is a triggered event
 	  if(j==0){
 	    fHistArmenterosPodolanski->Fill(lAlphaV0,lPtArmV0,1);
@@ -4630,57 +4919,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
         // +++++++++++ Pt bin & centrality
 	fLambdadPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massL);
 
-	// -------- Classical track-splitting method: d(phi)* and d(eta)*
-	if(  TMath::Abs(dPhi)<0.1 && TMath::Abs(dEta)<0.1 ){   
-	  splitCont2[0] = pt;  splitCont2[1] = massL;  
-	  splitCont2[6] = fracTrigTPCSharedMap; 
-
-	  // Positive daughter
-	  splitCont2[2] = ptrack->Pt();  splitCont2[3] = sameSignPosDaug;  splitCont2[4] = posdPhiS;  splitCont2[5] = posdEtaS; 
-	  splitCont2[7] = fracPosDaugTPCSharedMap;  splitCont2[8] = sameLabelPosDaug;  
-	  fLambdaPosDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);	  
-
-	  // Negative daughter
-	  splitCont2[2] = ntrack->Pt();  splitCont2[3] = sameSignNegDaug;  splitCont2[4] = negdPhiS;  splitCont2[5] = negdEtaS; 
-	  splitCont2[7] = fracNegDaugTPCSharedMap;  splitCont2[8] = sameLabelNegDaug;  
-	  fLambdaNegDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);
-
-	}
-
 	// ==== Correlations Lambda invariant mass peak ==== //
-	if (TMath::Abs(mL-massL) < 3*sL) {
-			  
-	  // -------------- splitting checks ---------------
-	  if(TMath::Abs(dPhi)<0.02 && TMath::Abs(dEta)<0.02){
+	if (TMath::Abs(mL-massL) < 3*sL) {			  
 
-	    //// -------- TPC Map ------- ////
-	    if(!trigTPCMapOk && !posDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ptrack->P(),2.5);
-	    if(!trigTPCMapOk && !negDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ntrack->P(),3.5);
-
-	    //// -------- Covariance matrix ------- ////
-	    // positive daughter
-	    splitCont[0] = pt;  splitCont[1] = ptrack->Pt();  splitCont[2] = sameSignPosDaug; 
-	    splitCont[5] = RdPhiStarMaxPosDaug;   splitCont[6] = 1*trigTPCMapOk + 2*posDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devPosDaugTrig[ll]; splitCont[4] = ll; 
-	      fLambdaPosDaugSplCheckCovMat->Fill(splitCont);
-	    }
-
-	    // negative daughter
-	    splitCont[0] = pt;  splitCont[1] = ntrack->Pt(); splitCont[2] = sameSignNegDaug; 
-	    splitCont[5] = RdPhiStarMaxNegDaug;   splitCont[6] = 1*trigTPCMapOk + 2*negDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devNegDaugTrig[ll]; splitCont[4] = ll; 
-	      fLambdaNegDaugSplCheckCovMat->Fill(splitCont);
-	    }
-
-	  }
-
-	  // ----------------------------------------------
-
-	  if(radio<0.1)
+	  if(radio<0.02)
 	    fLambdaSpatialRes->Fill(dPhi,res,lt);
 	  if(radio < 0.4){
 	    fHistArmPodBckg->Fill(lAlphaV0,lPtArmV0,2);
@@ -4693,36 +4935,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	// ==== Correlations Lambda background ==== //
 	if( TMath::Abs(mL-massL + 6.5*sL) < 1.5*sL ||
 	    TMath::Abs(mL-massL - 6.5*sL) < 1.5*sL ) {
-	    
-	  // -------------- splitting checks ---------------
-	  if(TMath::Abs(dPhi)<0.02 && TMath::Abs(dEta)<0.02){
-
-	    //// -------- TPC Map ------- ////
-	    if(!trigTPCMapOk && !posDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ptrack->P(),2.5,-1);
-	    if(!trigTPCMapOk && !negDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ntrack->P(),3.5,-1);
-
-	    //// -------- Covariance matrix ------- ////
-	    // positive daughter
-	    splitCont[0] = pt;  splitCont[1] = ptrack->Pt();  splitCont[2] = sameSignPosDaug; 
-	    splitCont[5] = RdPhiStarMaxPosDaug;   splitCont[6] = 1*trigTPCMapOk + 2*posDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devPosDaugTrig[ll]; splitCont[4] = ll; 
-	      fLambdaPosDaugSplCheckCovMat->Fill(splitCont,-1);
-	    }
-
-	    // negative daughter
-	    splitCont[0] = pt;  splitCont[1] = ntrack->Pt(); splitCont[2] = sameSignNegDaug; 
-	    splitCont[5] = RdPhiStarMaxNegDaug;   splitCont[6] = 1*trigTPCMapOk + 2*negDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devNegDaugTrig[ll]; splitCont[4] = ll; 
-	      fLambdaNegDaugSplCheckCovMat->Fill(splitCont,-1);
-	    }
-
-	  }
-
-	  // ----------------------------------------------
 
 	  // Only fills the histograms when it is a triggered event
 	  if(j==0){
@@ -4747,7 +4959,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
 	  }// End selection in the correlation peak
 		
-	} // End bacground selection
+	} // End background selection
 	
       }// End Lambda selection
        // *******************
@@ -4761,59 +4973,12 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	else if( fCollision.Contains("PbPb2011") ) 
 	  sL = kCteAntiLambda2011[curCentBin] + kLinearAntiLambda2011[curCentBin]*pt;
 	
-
 	// ==== Correlations Lambda invariant mass peak ==== //
         // +++++++++++ Pt bin & centrality
 	fAntiLambdadPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massAL);
 
-	if(  TMath::Abs(dPhi)<0.1 && TMath::Abs(dEta)<0.1 ){   
-	  splitCont2[0] = pt;  splitCont2[1] = massAL;  
-	  splitCont2[6] = fracTrigTPCSharedMap; 
-
-	  // Positive daughter
-	  splitCont2[2] = ptrack->Pt();  splitCont2[3] = sameSignPosDaug;  splitCont2[4] = posdPhiS;  splitCont2[5] = posdEtaS; 
-	  splitCont2[7] = fracPosDaugTPCSharedMap;  splitCont2[8] = sameLabelPosDaug;  
-	  fAntiLambdaPosDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);	  
-
-	  // Negative daughter
-	  splitCont2[2] = ntrack->Pt();  splitCont2[3] = sameSignNegDaug;  splitCont2[4] = negdPhiS;  splitCont2[5] = negdEtaS; 
-	  splitCont2[7] = fracNegDaugTPCSharedMap;  splitCont2[8] = sameLabelNegDaug;  
-	  fAntiLambdaNegDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);
-
-	}
-
 	// ==== Correlations AntiLambda invariant mass peak ==== //
 	if (TMath::Abs(mL-massAL) < 3*sL) {
-
-	  // -------------- splitting checks ---------------
-	  if(TMath::Abs(dPhi)<0.02 && TMath::Abs(dEta)<0.02){
-
-	    //// -------- TPC Map ------- ////
-	    if(!trigTPCMapOk && !posDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ptrack->P(),4.5);
-	    if(!trigTPCMapOk && !negDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ntrack->P(),5.5);
-
-	    //// -------- Covariance matrix ------- ////
-	    // positive daughter
-	    splitCont[0] = pt;  splitCont[1] = ptrack->Pt();  splitCont[2] = sameSignPosDaug; 
-	    splitCont[5] = RdPhiStarMaxPosDaug;   splitCont[6] = 1*trigTPCMapOk + 2*posDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devPosDaugTrig[ll]; splitCont[4] = ll; 
-	      fAntiLambdaPosDaugSplCheckCovMat->Fill(splitCont);
-	    }
-
-	    // negative daughter
-	    splitCont[0] = pt;  splitCont[1] = ntrack->Pt(); splitCont[2] = sameSignNegDaug; 
-	    splitCont[5] = RdPhiStarMaxNegDaug;   splitCont[6] = 1*trigTPCMapOk + 2*negDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devNegDaugTrig[ll]; splitCont[4] = ll; 
-	      fAntiLambdaNegDaugSplCheckCovMat->Fill(splitCont);
-	    }
-
-	  }
-
-	  // ----------------------------------------------
 
 	  if(radio<0.1)
 	    fAntiLambdaSpatialRes->Fill(dPhi,res,lt);	      
@@ -4828,34 +4993,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	// ==== Correlations AntiLambda background ==== //
 	if( (TMath::Abs(mL-massAL + 6.5*sL) < 1.5*sL) ||
 	    (TMath::Abs(mL-massAL - 6.5*sL) < 1.5*sL) ){
-	   
-	  // -------------- splitting checks ---------------
-	  if(TMath::Abs(dPhi)<0.02 && TMath::Abs(dEta)<0.02){
-
-	    //// -------- TPC Map ------- ////
-	    if(!trigTPCMapOk && !posDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ptrack->P(),4.5,-1);
-	    if(!trigTPCMapOk && !negDaugTPCMapOk)
-	      fSharedClsTrigDaug->Fill(pt,ntrack->P(),5.5,-1);
-
-	    //// -------- Covariance matrix ------- ////
-	    // positive daughter
-	    splitCont[0] = pt;  splitCont[1] = ptrack->Pt();  splitCont[2] = sameSignPosDaug; 
-	    splitCont[5] = RdPhiStarMaxPosDaug;   splitCont[6] = 1*trigTPCMapOk + 2*posDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devPosDaugTrig[ll]; splitCont[4] = ll; 
-	      fAntiLambdaPosDaugSplCheckCovMat->Fill(splitCont,-1);
-	    }
-
-	    // negative daughter
-	    splitCont[0] = pt;  splitCont[1] = ntrack->Pt(); splitCont[2] = sameSignNegDaug; 
-	    splitCont[5] = RdPhiStarMaxNegDaug;   splitCont[6] = 1*trigTPCMapOk + 2*negDaugTPCMapOk; 
-	    for(Int_t ll=0; ll<=8; ll++){
-	      splitCont[3] = devNegDaugTrig[ll]; splitCont[4] = ll; 
-	      fAntiLambdaNegDaugSplCheckCovMat->Fill(splitCont,-1);
-	    }
-
-	  }
 
 	  // ----------------------------------------------
 
@@ -4895,89 +5032,89 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   // Mixing
   //-------------------------------------------------------------
   /*
-  Double_t phiTrigME=0, etaTrigME=0, phiAssocME=0, etaAssocME=0;
-  Double_t deltaPhi=0, deltaEta=0;
+    Double_t phiTrigME=0, etaTrigME=0, phiAssocME=0, etaAssocME=0;
+    Double_t deltaPhi=0, deltaEta=0;
 
-  TList *evMixList = fMEList[curCentBin*kNVtxZ+curVtxBin];
-  Int_t nMixed = evMixList->GetSize(); 
+    TList *evMixList = fMEList[curCentBin*kNVtxZ+curVtxBin];
+    Int_t nMixed = evMixList->GetSize(); 
  
-  if( nMixed>0 && fAssocParticles->GetEntriesFast() >= 0 ){
+    if( nMixed>0 && fAssocParticles->GetEntriesFast() >= 0 ){
     
     for(Int_t ii=0; ii<nMixed; ii++){     
       
-      AliMiniParticle* trackTriggerME = (AliMiniParticle*) (evMixList->At(ii));
-      phiTrigME = trackTriggerME->Phi();
-      etaTrigME = trackTriggerME->Eta();
+    AliMiniParticle* trackTriggerME = (AliMiniParticle*) (evMixList->At(ii));
+    phiTrigME = trackTriggerME->Phi();
+    etaTrigME = trackTriggerME->Eta();
       
-      // --- V0 associated particles
-      for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
+    // --- V0 associated particles
+    for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
 	
-	AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
-	if( CentBin(trackTriggerME->Centrality()) != CentBin(trackAssocME->Centrality()) ) continue;
-	if( VtxBin(trackTriggerME->VtxZ()) != VtxBin(trackAssocME->VtxZ()) ) continue;
-	if( trackAssocME->WhichCandidate() ==  2 ) continue;
+    AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
+    if( CentBin(trackTriggerME->Centrality()) != CentBin(trackAssocME->Centrality()) ) continue;
+    if( VtxBin(trackTriggerME->VtxZ()) != VtxBin(trackAssocME->VtxZ()) ) continue;
+    if( trackAssocME->WhichCandidate() ==  2 ) continue;
 
-	AliAODv0 *tAssoc=fAOD->GetV0(trackAssocME->ID());
-	pt = tAssoc->Pt();
+    AliAODv0 *tAssoc=fAOD->GetV0(trackAssocME->ID());
+    pt = tAssoc->Pt();
 
-	Bool_t IsSelected = kFALSE;
-	// K0s
-	if( trackAssocME->WhichCandidate() == 3 ){
-	  massK0s = tAssoc->MassK0Short();
-	  mK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-	  if( fCollision.Contains("PbPb2010") )
-	    sK0s = kCteK0s2010[curCentBin] + kLinearK0s2010[curCentBin]*pt;
-	  else if( fCollision.Contains("PbPb2011") ) 
-	    sK0s = kCteK0s2011[curCentBin] + kLinearK0s2011[curCentBin]*pt;
+    Bool_t IsSelected = kFALSE;
+    // K0s
+    if( trackAssocME->WhichCandidate() == 3 ){
+    massK0s = tAssoc->MassK0Short();
+    mK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
+    if( fCollision.Contains("PbPb2010") )
+    sK0s = kCteK0s2010[curCentBin] + kLinearK0s2010[curCentBin]*pt;
+    else if( fCollision.Contains("PbPb2011") ) 
+    sK0s = kCteK0s2011[curCentBin] + kLinearK0s2011[curCentBin]*pt;
 	  
-	  if (TMath::Abs(mK0s-massK0s) < 3*sK0s) IsSelected = kTRUE;
-	}
-	// Lambda
-	if( trackAssocME->WhichCandidate() == 4 ){
-	  massL = tAssoc->MassLambda();
-	  mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();	  
-	  if( fCollision.Contains("PbPb2010") )
-	    sL = kCteLambda2010[curCentBin] + kLinearLambda2010[curCentBin]*pt;
-	  else if( fCollision.Contains("PbPb2011") ) 
-	    sL = kCteLambda2011[curCentBin] + kLinearLambda2011[curCentBin]*pt;
+    if (TMath::Abs(mK0s-massK0s) < 3*sK0s) IsSelected = kTRUE;
+    }
+    // Lambda
+    if( trackAssocME->WhichCandidate() == 4 ){
+    massL = tAssoc->MassLambda();
+    mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();	  
+    if( fCollision.Contains("PbPb2010") )
+    sL = kCteLambda2010[curCentBin] + kLinearLambda2010[curCentBin]*pt;
+    else if( fCollision.Contains("PbPb2011") ) 
+    sL = kCteLambda2011[curCentBin] + kLinearLambda2011[curCentBin]*pt;
 
-	  if (TMath::Abs(mL-massL) < 3*sL) IsSelected = kTRUE;
-	}
-	// AntiLambda
-	if( trackAssocME->WhichCandidate() == 5 ){
-	  massAL = tAssoc->MassAntiLambda();
-	  mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-	  if( fCollision.Contains("PbPb2010") )
-	    sL = kCteAntiLambda2010[curCentBin] + kLinearAntiLambda2010[curCentBin]*pt;
-	  else if( fCollision.Contains("PbPb2011") ) 
-	    sL = kCteAntiLambda2011[curCentBin] + kLinearAntiLambda2011[curCentBin]*pt;
+    if (TMath::Abs(mL-massL) < 3*sL) IsSelected = kTRUE;
+    }
+    // AntiLambda
+    if( trackAssocME->WhichCandidate() == 5 ){
+    massAL = tAssoc->MassAntiLambda();
+    mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
+    if( fCollision.Contains("PbPb2010") )
+    sL = kCteAntiLambda2010[curCentBin] + kLinearAntiLambda2010[curCentBin]*pt;
+    else if( fCollision.Contains("PbPb2011") ) 
+    sL = kCteAntiLambda2011[curCentBin] + kLinearAntiLambda2011[curCentBin]*pt;
 	  
-	  if (TMath::Abs(mL-massAL) < 3*sL) IsSelected = kTRUE;
-	}
+    if (TMath::Abs(mL-massAL) < 3*sL) IsSelected = kTRUE;
+    }
 
-	if(!IsSelected) continue;
+    if(!IsSelected) continue;
 
-	phiAssocME = trackAssocME->Phi();
-	etaAssocME = trackAssocME->Eta();
+    phiAssocME = trackAssocME->Phi();
+    etaAssocME = trackAssocME->Eta();
 	 
-	deltaPhi = dPHI(phiTrigME,phiAssocME);
-	deltaEta = etaTrigME - etaAssocME;
+    deltaPhi = dPHI(phiTrigME,phiAssocME);
+    deltaEta = etaTrigME - etaAssocME;
 
-	Int_t binPtv0 = PtBin( trackAssocME->Pt() );
-	if(binPtv0==-1) continue;
+    Int_t binPtv0 = PtBin( trackAssocME->Pt() );
+    if(binPtv0==-1) continue;
     
-	if( trackAssocME->WhichCandidate() == 3 ) {
-	  fK0sdPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);}
-	else if( trackAssocME->WhichCandidate() == 4 )
-	  fLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);
-	else if( trackAssocME->WhichCandidate() == 5 )
-	  fAntiLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);
+    if( trackAssocME->WhichCandidate() == 3 ) {
+    fK0sdPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);}
+    else if( trackAssocME->WhichCandidate() == 4 )
+    fLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);
+    else if( trackAssocME->WhichCandidate() == 5 )
+    fAntiLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);
 	             
-      } // End loop over V0's
+    } // End loop over V0's
        
     }
     
-  }
+    }
   */
   //--------------------------------------------------------
   //Add the current event to the list of events for mixing
@@ -4986,21 +5123,21 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   //Add current  event to buffer and Remove redundant events 
   if(fTriggerParticles->GetEntriesFast()>=0){
     
-    for(Int_t ii=0; ii<(fTriggerParticles->GetEntriesFast()); ii++){
-      AliMiniParticle* trkTrig = (AliMiniParticle*) fTriggerParticles->At(ii);
-      //cout << trkTrig->Pt() << "          " << ii << endl;
+  for(Int_t ii=0; ii<(fTriggerParticles->GetEntriesFast()); ii++){
+  AliMiniParticle* trkTrig = (AliMiniParticle*) fTriggerParticles->At(ii);
+  //cout << trkTrig->Pt() << "          " << ii << endl;
     
-      if(evMixList->GetSize() < nMaxEvMix)
-	evMixList->AddFirst(trkTrig);
-      / *
-      if(evMixList->GetSize() >= nMaxEvMix) {
-	AliMiniParticle *tmp = (AliMiniParticle*) (evMixList->Last()) ;
-	evMixList->RemoveLast();
-	delete tmp;
-      }
-      * /
+  if(evMixList->GetSize() < nMaxEvMix)
+  evMixList->AddFirst(trkTrig);
+  / *
+  if(evMixList->GetSize() >= nMaxEvMix) {
+  AliMiniParticle *tmp = (AliMiniParticle*) (evMixList->Last()) ;
+  evMixList->RemoveLast();
+  delete tmp;
+  }
+  * /
       
-    }// End loop over fTriggerParticles
+  }// End loop over fTriggerParticles
 
   }// End adding trigger particles to buffers
   */

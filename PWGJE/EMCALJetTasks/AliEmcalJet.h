@@ -158,6 +158,21 @@ class AliEmcalJet : public AliVParticle
   Double_t          GetSecondDerivative()                     const { return fJetShapeMassSecondDer                   ; }
   Double_t          GetFirstOrderSubtracted()                 const { return fJetShapeMassFirstSub                    ; }
   Double_t          GetSecondOrderSubtracted()                const { return fJetShapeMassSecondSub                   ; }
+  
+  TArrayF GetGRNumerator()                                       const { return fGRNumerator                             ; }
+  TArrayF GetGRDenominator()                                     const { return fGRDenominator                           ; }
+  TArrayF GetGRNumeratorSub()                                    const { return fGRNumeratorSub                          ; }
+  TArrayF GetGRDenominatorSub()                                  const { return fGRDenominatorSub                        ; }
+  void              AddGRNumAt(Float_t num, Int_t idx)                 { fGRNumerator.AddAt(num, idx);                     }
+  void              AddGRDenAt(Float_t den, Int_t idx)                 { fGRDenominator.AddAt(den, idx);                   }
+  void              SetGRNumSize(UInt_t s) {fGRNumerator.Set(s); }
+  void              SetGRDenSize(UInt_t s) {fGRDenominator.Set(s); }
+
+  void              AddGRNumSubAt(Float_t num, Int_t idx)                 { fGRNumeratorSub.AddAt(num, idx);                     }
+  void              AddGRDenSubAt(Float_t den, Int_t idx)                 { fGRDenominatorSub.AddAt(den, idx);                   }
+  void              SetGRNumSubSize(UInt_t s) {fGRNumeratorSub.Set(s); }
+  void              SetGRDenSubSize(UInt_t s) {fGRDenominatorSub.Set(s); }
+  void              PrintGR();
 
  protected:
   Double32_t        fPt;                  //[0,0,12]   pt 
@@ -195,6 +210,11 @@ class AliEmcalJet : public AliVParticle
   Double_t          fJetShapeMassSecondSub; //!        result from shape derivatives for jet mass: 2nd order subtracted
   Int_t             fLabel;               //           label to inclusive jet for constituent subtracted jet    
 
+  TArrayF           fGRNumerator;         //!           array with angular structure function numerator
+  TArrayF           fGRDenominator;       //!           array with angular structure function denominator
+  TArrayF           fGRNumeratorSub;      //!           array with angular structure function numerator
+  TArrayF           fGRDenominatorSub;    //!           array with angular structure function denominator
+
   private:
     struct sort_descend
         { // sort in decreasing order
@@ -202,6 +222,6 @@ class AliEmcalJet : public AliVParticle
         bool operator () (const std::pair<Double_t, Int_t>& p1, const std::pair<Double_t, Int_t>& p2)  { return p1.first > p2.first ; }
         };
 
-  ClassDef(AliEmcalJet,14) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,15) // Emcal jet class in cylindrical coordinates
 };
 #endif

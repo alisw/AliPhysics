@@ -46,6 +46,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   // Main
   
+  void           FillEMCALBCHistograms(Float_t energy, Float_t eta, Float_t phi, Float_t time);
+  
   void           FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * c) ;
   
   void           FillRejectedClusterHistograms(TLorentzVector mom, Int_t mctag, Int_t nMaxima);
@@ -188,7 +190,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhSelectedMass  ;         //! pair mass vs E, for selected pairs
   TH2F         * fhSelectedMassPt  ;       //! pair mass vs pT, for selected pairs
   TH2F         * fhSelectedMassSplitPt  ;  //! pair mass vs pT (split), for selected pairs
-  
+    
   TH2F         * fhMassPtLocMax[3] ;             //! pair mass vs pT, for all pairs, for each NLM case
   TH2F         * fhSelectedMassPtLocMax[3] ;     //! pair mass vs pT, for selected pairs, for each NLM case
   TH2F         * fhSelectedMassPtLocMaxSM[3][22];//! pair mass vs pT, for selected pairs, for each NLM case, for each SM
@@ -245,8 +247,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH1F         * fhEDecay   ;              //! Number of identified  pi0/eta decay photons vs E
   
   TH2F         * fhPtDispersion ;           //! pT vs disp of selected cluster
-  TH2F         * fhPtLambda0 ;              //! pT vs lambda0 of selected cluster 
-  TH2F         * fhPtLambda1 ;              //! pT vs lambda1 of selected cluster 
+  TH2F         * fhPtLambda0 ;              //! pT vs lambda0 of selected cluster
+  TH2F         * fhPtLambda0NoSplitCut ;    //! pT vs lambda0 of cluster before the split selection.
+  TH2F         * fhPtLambda1 ;              //! pT vs lambda1 of selected cluster
   TH2F         * fhPtLambda0NoTRD ;         //! pT vs lambda0 of selected cluster, not behind TRD 
   TH2F         * fhPtLambda0FracMaxCellCut ;//! pT vs lambda0 of selected cluster, fraction of cluster energy in max cell cut 
   TH2F         * fhPtFracMaxCell ;          //! pT vs frac max cell of selected cluster 
@@ -404,7 +407,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,38)
+  ClassDef(AliAnaPi0EbE,39)
 } ;
 
 

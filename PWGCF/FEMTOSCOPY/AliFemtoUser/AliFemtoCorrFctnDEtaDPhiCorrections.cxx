@@ -392,7 +392,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
   double vert2[3];
   pair->Track2()->Track()->GetPrimaryVertex(vert2);
 
-  double corrweight=0; double corrweightpT1=1;  double corrweightpT2=1; 
+  double corrweight=0; //double corrweightpT1=1;  double corrweightpT2=1; 
   //if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2);
   if (fIfCorrection) 
     {
@@ -401,11 +401,11 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
   else if(fCorr1D)
     {
       corrweight = CalculateCorrectionWeight(pt1, pt2);
-      corrweightpT1 = CalculateCorrectionWeight(pt1);
-      corrweightpT2 = CalculateCorrectionWeight(pt2);
+      //corrweightpT1 = CalculateCorrectionWeight(pt1);
+      //corrweightpT2 = CalculateCorrectionWeight(pt2);
     }
 
-  fPtSumDist->Fill(pt1*corrweightpT1+pt2*corrweightpT2);
+  fPtSumDist->Fill(pt1+pt2,corrweight);
   /*   double ptmin = pt1>pt2 ? pt2 : pt1;
 
        double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/

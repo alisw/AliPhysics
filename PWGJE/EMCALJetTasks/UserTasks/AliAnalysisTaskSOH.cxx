@@ -591,7 +591,7 @@ void AliAnalysisTaskSOH::ProcessCluster()
     
     if(TrackLabels->GetSize() == 1)
     {
-      AliESDtrack *esdtrack = fESD->GetTrack(TrackLabels->GetAt(0));
+      AliESDtrack *esdtrack = fESD->GetTrack(TrackLabels->operator[](0));
       AliESDtrack *newTrack = GetAcceptTrack(esdtrack);
       if(newTrack && TMath::Abs(newTrack->Eta())<0.7)
       {
@@ -604,8 +604,8 @@ void AliAnalysisTaskSOH::ProcessCluster()
 
     if(TrackLabels->GetSize() == 2)
     {
-      AliESDtrack *esdtrack1 = fESD->GetTrack(TrackLabels->GetAt(0));
-      AliESDtrack *esdtrack2 = fESD->GetTrack(TrackLabels->GetAt(1));
+      AliESDtrack *esdtrack1 = fESD->GetTrack(TrackLabels->operator[](0));
+      AliESDtrack *esdtrack2 = fESD->GetTrack(TrackLabels->operator[](1));
       AliESDtrack *newTrack1 = GetAcceptTrack(esdtrack1);
       AliESDtrack *newTrack2 = GetAcceptTrack(esdtrack2);
       if(newTrack1 && newTrack2 && TMath::Abs(newTrack1->Eta())<0.7  && TMath::Abs(newTrack2->Eta())<0.7)
@@ -638,8 +638,8 @@ void AliAnalysisTaskSOH::ProcessCluster()
     if(MCLabels->GetSize() == 1) 
     {
       fHEventStat->Fill(4.5);
-      AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->GetAt(0));
-      if(IsGoodMcParticle(vParticle1, MCLabels->GetAt(0)))
+      AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->operator[](0));
+      if(IsGoodMcParticle(vParticle1, MCLabels->operator[](0)))
       {
 	Double_t Entries[4] = {VClsPos.Phi(), VClsPos.Eta(), vParticle1->E(), cluster->E()/vParticle1->E()}; 
 	fHClsEoverMcE_All->Fill(Entries);
@@ -660,9 +660,9 @@ void AliAnalysisTaskSOH::ProcessCluster()
     if(MCLabels->GetSize() == 2) 
     {
       fHEventStat->Fill(5.5);
-      AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->GetAt(0));
-      AliVParticle* vParticle2 = fMC->GetTrack(MCLabels->GetAt(1));
-      if(IsGoodMcParticle(vParticle1, MCLabels->GetAt(0)) && IsGoodMcParticle(vParticle2, MCLabels->GetAt(1))) 
+      AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->operator[](0));
+      AliVParticle* vParticle2 = fMC->GetTrack(MCLabels->operator[](1));
+      if(IsGoodMcParticle(vParticle1, MCLabels->operator[](0)) && IsGoodMcParticle(vParticle2, MCLabels->operator[](1))) 
       {
 	fHEventStat->Fill(6.5);
 	if((vParticle1->PdgCode()==22) && (vParticle2->PdgCode()==22)) {;}
@@ -817,8 +817,8 @@ void AliAnalysisTaskSOH::ProcessMc()
 	     AliESDCaloCluster *cluster = fESD->GetCaloCluster(fClusterIndices->At(k));
 	     Double_t clsE = cluster->E();
 	     TArrayI *MCLabels = cluster->GetLabelsArray();
-	     AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->GetAt(0));
-	     AliVParticle* vParticle2 = fMC->GetTrack(MCLabels->GetAt(1));
+	     AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->operator[](0));
+	     AliVParticle* vParticle2 = fMC->GetTrack(MCLabels->operator[](1));
 	     
 	     if(vParticle1->PdgCode()==22 && vParticle2 == vParticle)
 	     {

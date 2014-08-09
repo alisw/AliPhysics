@@ -18,15 +18,39 @@ class AliESDEvent;
 
 class AliCaloTrackESDReader : public AliCaloTrackReader {
   
-  public: 
+public:
   
-  AliCaloTrackESDReader() ;            // ctor
+                   AliCaloTrackESDReader() ; // ctor
   
-  virtual ~AliCaloTrackESDReader() {;} // virtual dtor
+  virtual         ~AliCaloTrackESDReader() ; // virtual dtor
 
-  void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
-	    
-  ClassDef(AliCaloTrackESDReader,1)
+  Bool_t           CheckForPrimaryVertex() const ;
+  
+  void             Init();
+  
+  Bool_t           SelectTrack(AliVTrack* track, Double_t* pTrack);
+  
+  AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts     ; }
+  void             SetTrackCuts(AliESDtrackCuts * cuts) ;
+  
+  AliESDtrackCuts* GetTrackComplementaryCuts()       const { return fESDtrackComplementaryCuts ; }
+  void             SetTrackComplementaryCuts(AliESDtrackCuts * cuts)  ;
+
+  void             SwitchOnConstrainTrackToVertex()        { fConstrainTrack = kTRUE  ; }
+  void             SwitchOffConstrainTrackToVertex()       { fConstrainTrack = kFALSE ; }
+  
+  void             SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ;
+	 
+private:
+  
+  Bool_t           fConstrainTrack;            // Constrain Track to vertex
+  AliESDtrackCuts* fESDtrackCuts ;             // Track cut
+  AliESDtrackCuts* fESDtrackComplementaryCuts; // Track cut, complementary cuts for hybrids
+  
+  AliCaloTrackESDReader(              const AliCaloTrackESDReader & r) ; // cpy ctor
+  AliCaloTrackESDReader & operator = (const AliCaloTrackESDReader & r) ; // cpy assignment
+  
+  ClassDef(AliCaloTrackESDReader,2)
   
 } ;
 
