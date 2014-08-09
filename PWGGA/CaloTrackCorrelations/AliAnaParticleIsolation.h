@@ -309,6 +309,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiIsoMC [9];                        //! Phi of isolated mcTypes particle
   TH2F *   fhEtaIsoMC [9];                        //! eta of isolated mcTypes particle
   
+  TH1F *   fhPtDecayIsoMC[9] ;                    //! Number of isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
+  TH1F *   fhPtDecayNoIsoMC[9] ;                  //! Number of not isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
+
   TH2F *   fhPtLambda0MC[9][2];                    //! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously)
  
   // Multiple cut analysis
