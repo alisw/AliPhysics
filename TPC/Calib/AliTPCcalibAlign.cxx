@@ -3818,6 +3818,41 @@ void AliTPCcalibAlign::MakeReportDyPhi(TFile */*output*/){
 }
 
 
+// void AliTPCcalibAlign::Streamer(TBuffer &R__b)
+// {
+//   // Stream an object of class AliTPCcalibAlign.
+//   Bool_t isDebug=AliLog::GetDebugLevel("","AliTPCcalibAlign")>0;
+//   if (isDebug) AliSysInfo::SetVerbose(kTRUE);
+  
+//   if (R__b.IsReading()) {
+//     for (Int_t i=0; i<2; ++i){
+//       if (gDirectory){
+// 	TString hisName=TString::Format("AliTPCcalibAlign.fClusterDelta[%d]",i);
+// 	if (gDirectory->Get(hisName.Data())){
+// 	  fClusterDelta[i] = dynamic_cast<THn*>(gDirectory->Get((hisName).Data()));
+// 	}
+//       }
+//     }
+//     R__b.ReadClassBuffer(AliTPCcalibAlign::Class(),this);
+//   } else {    
+//     if (isDebug) AliSysInfo::AddStamp("AliTPCcalibAlign::Streame::Start");
+//     //
+//     for (Int_t i=0; i<2; ++i){
+//       if (fClusterDelta[i]) fClusterDelta[i]->Write(TString::Format("fClusterDelta_%d",i).Data());
+//     }
+//     if (isDebug) AliSysInfo::AddStamp("AliTPCcalibAlign::Streamer::fClusterDelta");
+//     //
+//     for (Int_t i=0; i<4; ++i){
+//       if (fTrackletDelta[i]) fTrackletDelta[i]->Write(TString::Format("fTrackletDelta_%d",i).Data());
+//     }
+//     if (isDebug) AliSysInfo::AddStamp("AliTPCcalibAlign::Streamer::fTrackletDelta");
+//     //
+//     R__b.WriteClassBuffer(AliTPCcalibAlign::Class(),this);    
+//   }
+// }
+
+
+
 //______________________________________________________________________________
 void AliTPCcalibAlign::Streamer(TBuffer &R__b)
 {
