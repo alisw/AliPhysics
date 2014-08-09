@@ -64,8 +64,8 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	//testing this line for the DCA cut
 	//hfecuts->SetRequireDCAToVertex();
 	//DCA cut included in the analysis 12 March 2014
-	if(configIndex==18) hfecuts->SetMaxImpactParam(2,5); 
-	else if(configIndex==19) hfecuts->SetMaxImpactParam(0.5,1);
+	if(configIndex==18) hfecuts->SetMaxImpactParam(2,3); //changed z to 3
+	else if(configIndex==19) hfecuts->SetMaxImpactParam(0.5,1);//r,z   default on AOD 2.4, 3.2
 	else if(configIndex==83) hfecuts->SetMaxImpactParam(0.1,0.2);
 	else hfecuts->SetMaxImpactParam(1,2); 							                //DCA to vertex
 	
@@ -96,6 +96,12 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 		//Bool_t isTrigger = kFALSE;
 	if(isTrigger) task->SetUseTrigger();
 	
+	if(configIndex==104)  task->SetdcaCut(2,3);//r,z
+	else if(configIndex==105)  task->SetdcaCut(1.5,2.5);//r,z
+	else if(configIndex==106)  task->SetdcaCut(0.5,1);//r,z
+	else if(configIndex==107)  task->SetdcaCut(0.5,1.5);//r,z
+	else if(configIndex==108)  task->SetdcaCut(0.1,0.2);//r,z
+	//else task->SetdcaCut(1,2);//r,z
 	
 		
 	if(configIndex==100){
@@ -145,8 +151,6 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	else if (configIndex==44) task->SetEtaCut(-0.5,0.5);
 	else if (configIndex==45) task->SetEtaCut(-0.4,0.4);
 	else if (configIndex==46) task->SetEtaCut(-0.3,0.3);
-		//else if (configIndex==47) task->SetEtaCut(-0.4,0.4);
-		//else if (configIndex==48) task->SetEtaCut(-0.3,0.3);
 	else task->SetEtaCut(-0.6,0.6);
 	
 	//track matching cuts
@@ -157,21 +161,27 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 
 	//E/p Cuts
 	if (configIndex==60) task->SetEoverPCut(0.85,1.2);
-	else if (configIndex==61) task->SetEoverPCut(0.75,1.25);	
-	else if (configIndex==88) task->SetEoverPCut(0.76,1.2);
-	else if (configIndex==89) task->SetEoverPCut(0.78,1.2);
-	else if (configIndex==90) task->SetEoverPCut(0.79,1.2);
-	else if (configIndex==90) task->SetEoverPCut(0.81,1.2);
-	else if (configIndex==90) task->SetEoverPCut(0.82,1.2);
-	else if (configIndex==91) task->SetEoverPCut(0.84,1.2);
-	else if (configIndex==92) task->SetEoverPCut(0.86,1.2);
-	else if (configIndex==93) task->SetEoverPCut(0.85,1.3);
-	else if (configIndex==62) task->SetEoverPCut(0.70,1.2);
-	else if (configIndex==63) task->SetEoverPCut(0.80,1.25);
-	else if (configIndex==64) task->SetEoverPCut(0.9,1.3);
-	else if (configIndex==65) task->SetEoverPCut(0.95,1.3);
-	else if (configIndex==66) task->SetEoverPCut(0.75,1.2);
-	else task->SetEoverPCut(0.8,1.2);
+	else if (configIndex==61) task->SetEoverPCut(0.70,1.2);
+	else if (configIndex==62) task->SetEoverPCut(0.75,1.2);
+	else if (configIndex==63) task->SetEoverPCut(0.76,1.2);
+	else if (configIndex==64) task->SetEoverPCut(0.77,1.2);
+	else if (configIndex==65) task->SetEoverPCut(0.78,1.2);
+	else if (configIndex==66) task->SetEoverPCut(0.79,1.2);
+	
+	else if (configIndex==67) task->SetEoverPCut(0.81,1.2);
+	else if (configIndex==68) task->SetEoverPCut(0.82,1.2);
+	else if (configIndex==69) task->SetEoverPCut(0.83,1.2);
+	
+	else if (configIndex==88) task->SetEoverPCut(0.84,1.2);
+	else if (configIndex==89) task->SetEoverPCut(0.86,1.2);
+	
+	else if (configIndex==90) task->SetEoverPCut(0.85,1.3);
+	else if (configIndex==91) task->SetEoverPCut(0.80,1.3);
+	else if (configIndex==92) task->SetEoverPCut(0.81,1.3);
+	else if (configIndex==93) task->SetEoverPCut(0.78,1.3);
+	
+	
+	else task->SetEoverPCut(0.80,1.2);
 
 	
 	

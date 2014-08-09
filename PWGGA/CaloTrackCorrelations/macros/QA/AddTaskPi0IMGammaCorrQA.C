@@ -37,6 +37,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
     return NULL;
   }
   
+  // Make sure the B field is enabled for track selection, some cuts need it
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
+  
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
   // Name for containers

@@ -24,8 +24,7 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   // setup task
   AliT0CalibOffsetChannelsTask  *task1 = new AliT0CalibOffsetChannelsTask("CalibObjectsTrain1");
   readCDB(task1, runNumber);
-  task1-> SetRefPMT(12,2);
-  mgr->AddTask(task1);
+   mgr->AddTask(task1);
   
   //  AliT0AnalysisTaskQA * task2 = new AliT0AnalysisTaskQA("QA task");
   //    mgr->AddTask(task2);
@@ -69,9 +68,25 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   AliLHCClockPhase *phase = (AliLHCClockPhase*)entry4->GetObject();
   Float_t fGRPdelays = l1Delay - phase->GetMeanPhase();
 
+  AliCDBEntry* entry5 = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry5->GetObject());
+  if (!grpData) {
+    ::Error("AddTaskT0Calib","Failed to get GRP data for run %d",runNumber);
+    return;
+  }
+
+  TString LHCperiod = grpData->GetLHCPeriod();
+  Bool_t isLHC10b =  LHCperiod.Contains("LHC10b");
+  Bool_t isLHC10c =  LHCperiod.Contains("LHC10c");
+
+  ::Info("AddTaskT0Calib","LHCperiod:%s  --->  isLHC10b:%d isLHC10c:%d",
+	 LHCperiod.Data(),(Int_t)isLHC10b, (Int_t)isLHC10c);
+
+  if(isLHC10b || isLHC10c) mytask-> SetRefPMT(12,2);
+
   AliCDBEntry *entryCalib0 = man->Get("T0/Calib/Latency");
   if(!entryCalib0) {
-    AliError::(Form("Cannot find any AliCDBEntry for [Calib, Latency]!"));
+    ::Error("AddTastT0Calib","Cannot find any AliCDBEntry for [Calib, Latency]!");
     return;
   }
   AliT0CalibLatency *calibda=(AliT0CalibLatency*)entryCalib0->GetObject();
@@ -80,7 +95,7 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
  
   AliCDBEntry *entryCalib1 = man->Get("T0/Calib/TimeDelay");
   if(!entryCalib1) {
-    AliError::(Form("Cannot find any AliCDBEntry for [Calib, TimeDelay]!"));
+    ::Error("AddTaskT0Calib","Cannot find any AliCDBEntry for [Calib, TimeDelay]!");
     return;
   }
   else
@@ -102,7 +117,7 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
 
   AliCDBEntry *entryCalib2 = man->Get("T0/Calib/TimeAdjust");
   if(!entryCalib2) {
-     AliError(Form("Cannot find any AliCDBEntry for [Calib, TimeAdjust]!"));
+    ::Error("AddTaskT0Calib","Cannot find any AliCDBEntry for [Calib, TimeAdjust]!");
   }
  else
     {

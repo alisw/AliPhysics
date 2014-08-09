@@ -339,6 +339,8 @@ struct EmpiricalMaker {
     if (!corrs->GetHists() ||
 	corrs->GetHists()->GetEntries() <= 0) return;
 
+    store->cd();
+
     TH1* sum = static_cast<TH1*>(corrs->GetHists()->At(0)->Clone("mean"));
     sum->SetTitle("mean");
     sum->Reset();

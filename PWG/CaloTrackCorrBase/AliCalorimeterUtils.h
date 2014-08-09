@@ -27,6 +27,9 @@ class AliAODCaloCluster;
 class AliVCaloCells;
 class AliPHOSGeoUtils;
 class AliEMCALGeometry;
+class AliAODMCParticle;
+class TParticle;
+
 #include "AliEMCALRecoUtils.h"
 
 class AliCalorimeterUtils : public TObject {
@@ -99,6 +102,9 @@ class AliCalorimeterUtils : public TObject {
                                                              fImportGeometryFromFile = import    ;
                                                              fImportGeometryFilePath = path      ; } // EMCAL
   
+  Bool_t        IsMCParticleInCalorimeterAcceptance(TString calo, TParticle* particle);
+  Bool_t        IsMCParticleInCalorimeterAcceptance(TString calo, AliAODMCParticle* particle);
+  
   void          SwitchOnLoadOwnEMCALGeometryMatrices()     { fLoadEMCALMatrices = kTRUE   ; }
   void          SwitchOffLoadOwnEMCALGeometryMatrices()    { fLoadEMCALMatrices = kFALSE  ; }
   void          SetEMCALGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fEMCALMatrix[i] = m ; }
@@ -163,7 +169,9 @@ class AliCalorimeterUtils : public TObject {
   Int_t         GetModuleNumberCellIndexes(Int_t absId, TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
 	
   //Modules fiducial region
-  Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent * event, Int_t iev=0) const ;
+  Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells) const ;
+  Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent* /**/, Int_t /**/)
+                { return CheckCellFiducialRegion(cluster, cells) ; } // Stupid thing to do but just to avoid compilation break in AliTrackComparisonESD while I find the authors
   void          SetNumberOfCellsFromPHOSBorder(Int_t n)    { fNCellsFromPHOSBorder = n                                ; }
   Int_t         GetNumberOfCellsFromPHOSBorder()     const { return fNCellsFromPHOSBorder                             ; }
   void          SetNumberOfCellsFromEMCALBorder(Int_t n)   { fEMCALRecoUtils->SetNumberOfCellsFromEMCALBorder(n)      ; }
@@ -343,7 +351,7 @@ class AliCalorimeterUtils : public TObject {
   Int_t              fNSuperModulesUsed;     // Number of supermodules to be used in analysis, can be different than the real geo,
                                              // to be used at initialization of histograms
 
-  Bool_t             fMCECellClusFracCorrOn;  // Correct or not the weight of cells in cluster
+  Bool_t             fMCECellClusFracCorrOn; // Correct or not the weight of cells in cluster
   Float_t            fMCECellClusFracCorrParam[4]; // Parameters for the function correcting the weight of the cells in the cluster
   
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor

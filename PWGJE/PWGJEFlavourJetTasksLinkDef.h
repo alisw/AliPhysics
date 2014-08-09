@@ -9,4 +9,16 @@
 #pragma link C++ class AliAnalysisTaskSEDmesonsFilterCJ+;
 #pragma link C++ class AliAnalysisTaskFlavourJetCorrelations+;
 
+#pragma link C++ class AliPicoJet+;
+#pragma link C++ class AliPicoJetHeader+;
+#pragma link C++ class AliPicoHeaderCJ+;
+#pragma link C++ class AliPicoV0Base+;
+#pragma link C++ class AliPicoV0MC+;
+#pragma link C++ class AliPicoV0RD+;
+#pragma link C++ class AliAnalysisTaskEmcalJetV0CF+;
+#pragma link C++ class AliAnalysisTaskEmcalJetV0Filter+;
+#pragma link C++ class AliAnalysisTaskSEPicoV0Filter+;
+#pragma link C++ class AliAnalysisTaskSEPicoV0Maker+;
+#pragma link C++ class AliAnalysisTaskSEPicoV0MakerMC+;
+
 #endif

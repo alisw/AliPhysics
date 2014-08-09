@@ -1,4 +1,4 @@
-void AddTask_dNdPtpPb(UInt_t uTriggerMask = AliVEvent::kINT7, Int_t iCutMode = 2014 )
+void AddTask_dNdPtpPb(UInt_t uTriggerMask = AliVEvent::kINT7, Int_t iCutMode = 2014, char *contName = "dNdPtpPb" )
 {
 /*
 CheckLoadLibrary("libPWG0base");
@@ -149,7 +149,7 @@ CheckLoadLibrary("libPWG0selectors");
 
 //  AliAnalysisDataContainer *coutput = mgr->CreateContainer("jgronef_dNdPtpPb_TPCITS", TList::Class(), AliAnalysisManager::kOutputContainer, "jgronef_dNdPtpPb_TPCITS.root");   //    <-- Old Way works on Batch
  
-   AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPtpPb", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName())); //    <-- New Way changed to work on Grid
+   AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s", contName), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName())); //    <-- New Way changed to work on Grid
   
   
   mgr->ConnectInput(task, 0, cinput);

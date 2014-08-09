@@ -25,6 +25,10 @@ AliRsnCut::AliRsnCut(const char *name, RSNTARGET target) :
    fMaxI(0),
    fMinD(0.),
    fMaxD(0.),
+   fMinIptdep(0),
+   fMaxIptdep(0),
+   fMinDptdep(0),
+   fMaxDptdep(0),
    fCutValueI(0),
    fCutValueD(0.0),
    fPtDepCut(kFALSE),
@@ -48,6 +52,10 @@ AliRsnCut::AliRsnCut
    fMaxI(imax),
    fMinD(dmin),
    fMaxD(dmax),
+   fMinIptdep(0),
+   fMaxIptdep(0),
+   fMinDptdep(0),
+   fMaxDptdep(0),
    fCutValueI(0),
    fCutValueD(0.0),
    fPtDepCut(kFALSE),
@@ -72,6 +80,10 @@ AliRsnCut::AliRsnCut
    fMaxI(imax),
    fMinD(dmin),
    fMaxD(dmax),
+   fMinIptdep(0),
+   fMaxIptdep(0),
+   fMinDptdep(0),
+   fMaxDptdep(0),
    fCutValueI(0),
    fCutValueD(0.0),
    fPtDepCut(kFALSE),
@@ -95,6 +107,10 @@ AliRsnCut::AliRsnCut(const AliRsnCut &copy) :
    fMaxI(copy.fMaxI),
    fMinD(copy.fMinD),
    fMaxD(copy.fMaxD),
+   fMinIptdep(copy.fMinIptdep),
+   fMaxIptdep(copy.fMaxIptdep),
+   fMinDptdep(copy.fMinDptdep),
+   fMaxDptdep(copy.fMaxDptdep),
    fCutValueI(copy.fCutValueI),
    fCutValueD(copy.fCutValueD),
    fPtDepCut(copy.fPtDepCut),
@@ -127,6 +143,10 @@ AliRsnCut &AliRsnCut::operator=(const AliRsnCut &copy)
    fMaxI      = copy.fMaxI;
    fMinD      = copy.fMinD;
    fMaxD      = copy.fMaxD;
+   fMinIptdep = copy.fMinIptdep;
+   fMaxIptdep = copy.fMaxIptdep;
+   fMinDptdep = copy.fMinDptdep;
+   fMaxDptdep = copy.fMaxDptdep;
    fCutValueI = copy.fCutValueI;
    fCutValueD = copy.fCutValueD;
    fPtDepCut = copy.fPtDepCut;
@@ -175,9 +195,9 @@ Bool_t AliRsnCut::OkValueI()
 	TString str(fPtDepCutMinFormula);
         str.ReplaceAll("pt", "x");
         TFormula ptdepcut(Form("%s_ptdepcut", GetName()), str.Data());
-        fMinI = static_cast<int> (ptdepcut.Eval(fRefPtValueD));	
-    	AliDebug(2,Form("pt = %f (> %f and < %f), cutting  at %d\n",fRefPtValueD, fMinPt, fMaxPt, fMinI)); 
-    	fCutResult = (fCutValueI == fMinI);
+        fMinIptdep = static_cast<int> (ptdepcut.Eval(fRefPtValueD));	
+    	AliDebug(2,Form("pt = %f (> %f and < %f), cutting  at %d\n",fRefPtValueD, fMinPt, fMaxPt, fMinIptdep)); 
+    	fCutResult = (fCutValueI == fMinIptdep);
   	}
   }
   else fCutResult = (fCutValueI == fMinI);
@@ -214,9 +234,9 @@ Bool_t AliRsnCut::OkValueD()
 	TString str(fPtDepCutMinFormula);
         str.ReplaceAll("pt", "x");
         TFormula ptdepcut(Form("%s_ptdepcut", GetName()), str.Data());
-        fMinD = ptdepcut.Eval(fRefPtValueD);	
-    	AliDebug(2,Form("pt = %f (> %f and < %f), cutting  at %f\n",fRefPtValueD, fMinPt, fMaxPt, fMinD)); 
-    	fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
+        fMinDptdep = ptdepcut.Eval(fRefPtValueD);	
+    	AliDebug(2,Form("pt = %f (> %f and < %f), cutting  at %f\n",fRefPtValueD, fMinPt, fMaxPt, fMinDptdep)); 
+    	fCutResult = (TMath::Abs(fCutValueD - fMinDptdep) < 1E-6);
   	}
   }
   else fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
@@ -251,15 +271,15 @@ Bool_t AliRsnCut::OkRangeI()
       TString str(fPtDepCutMinFormula);
       str.ReplaceAll("pt", "x");
       TFormula ptdepcut(Form("%s_ptdepcut", GetName()), str.Data());
-      fMinI = static_cast<int> (ptdepcut.Eval(fRefPtValueD));
+      fMinIptdep = static_cast<int> (ptdepcut.Eval(fRefPtValueD));
 	
       TString str2(fPtDepCutMaxFormula);
       str2.ReplaceAll("pt", "x");
       TFormula ptdepcut2(Form("%s_ptdepcut", GetName()), str2.Data());
-      fMaxI = static_cast<int> (ptdepcut2.Eval(fRefPtValueD));
+      fMaxIptdep = static_cast<int> (ptdepcut2.Eval(fRefPtValueD));
     		    
-      AliDebug(2,Form("pt = %f (> %f and < %f), cutting  according to the fiducial zone [%d, %d]\n",fRefPtValueD, fMinPt, fMaxPt, fMinI, fMaxI)); 
-      fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
+      AliDebug(2,Form("pt = %f (> %f and < %f), cutting  according to the fiducial zone [%d, %d]\n",fRefPtValueD, fMinPt, fMaxPt, fMinIptdep, fMaxIptdep)); 
+      fCutResult = ((fCutValueI >= fMinIptdep) && (fCutValueI <= fMaxIptdep));
     }
   }
   else fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
@@ -295,15 +315,15 @@ Bool_t AliRsnCut::OkRangeD()
       TString str(fPtDepCutMinFormula);
       str.ReplaceAll("pt", "x");
       TFormula ptdepcut(Form("%s_ptdepcut", GetName()), str.Data());
-      fMinD = ptdepcut.Eval(fRefPtValueD);
+      fMinDptdep = ptdepcut.Eval(fRefPtValueD);
       
       TString str2(fPtDepCutMaxFormula);
       str2.ReplaceAll("pt", "x");
       TFormula ptdepcut2(Form("%s_ptdepcut", GetName()), str2.Data());
-      fMaxD = ptdepcut2.Eval(fRefPtValueD);   
+      fMaxDptdep = ptdepcut2.Eval(fRefPtValueD);   
       
-      AliDebug(2,Form("pt = %f (> %f and < %f), cutting  according to the fiducial zone [%f, %f]\n",fRefPtValueD, fMinPt, fMaxPt, fMinD, fMaxD)); 
-      fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
+      AliDebug(2,Form("pt = %f (> %f and < %f), cutting  according to the fiducial zone [%f, %f]\n",fRefPtValueD, fMinPt, fMaxPt, fMinDptdep, fMaxDptdep)); 
+      fCutResult = ((fCutValueD >= fMinDptdep) && (fCutValueD <= fMaxDptdep));
     }
   }
   else fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));

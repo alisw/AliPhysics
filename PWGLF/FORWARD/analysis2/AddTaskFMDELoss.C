@@ -61,6 +61,7 @@ AddTaskFMDELoss(Bool_t        mc,
   task->GetEventInspector().SetLowFluxCut(1000); 
   // Set the maximum error on v_z [cm]
   task->GetEventInspector().SetMaxVzErr(0.2);
+  task->GetEventInspector().SetPileupFlags(0x7);
 
   // --- ESD Fixer ---------------------------------------------------
   // For MC input we explicitly disable the noise correction 
@@ -95,6 +96,9 @@ AddTaskFMDELoss(Bool_t        mc,
   // Set the minimum number of entries in the distribution before
   // trying to fit to the data - 10K seems the absolute minimum
   task->GetEnergyFitter().SetMinEntries(10000);
+  // Set reqularization cut 
+  task->GetEnergyFitter()->SetRegularizationCut(1e8);
+
   // Check if we're to store the residuals 
   TString resi(residuals);
   resi.ToUpper();

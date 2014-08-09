@@ -1,6 +1,6 @@
 class AliAnalysisDataContainer;
 
-AliAnalysisTask *AddTaskNucleiv2SP(TString name="name",Int_t ptc =1,Bool_t dcacut = kTRUE, Float_t pull =3,Float_t maxVz=10){
+AliAnalysisTask *AddTaskNucleiv2SP(TString name="name",Int_t ptc =1,Bool_t dcacut = kTRUE){
   
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -10,11 +10,10 @@ AliAnalysisTask *AddTaskNucleiv2SP(TString name="name",Int_t ptc =1,Bool_t dcacu
   }
   
   //========= Add task to the ANALYSIS manager =====
-  AliAnalysisTaskNucleiv2SP *task = new AliAnalysisTaskNucleiv2SP(name);
+  AliAnalysisTaskNucleiv2SP *task = new AliAnalysisTaskNucleiv2SP(name.Data());
   task-> SetIsPrimCut(dcacut); 
   task-> SetParticle (ptc);
-  task-> SetMaxPull  (pull);
-  task-> SetMaxVz    (maxVz);
+  
   mgr->AddTask(task);
   
   //================================================

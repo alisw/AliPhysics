@@ -256,7 +256,12 @@ protected:
    * 
    * @return true if we have one or more centrality bins 
    */
-  Bool_t HasCentrality() const { return fCentAxis.GetNbins() >= 1; }
+  Bool_t HasCentrality() const 
+  { 
+    return (fCentAxis.GetNbins() >= 1 && 
+	    fCentAxis.GetXbins() && 
+	    fCentAxis.GetXbins()->GetArray()); 
+  }
 
   UInt_t   fTriggerMask;   // Trigger mask 
   Double_t fMinIpZ;        // Least z--coordiante of interaction point

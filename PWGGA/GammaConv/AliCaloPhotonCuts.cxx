@@ -520,8 +520,8 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	cutIndex++;
 
 	Double_t minR = 999.0;
-// 	// get the minimum radius of tracks to cluster
-// 	if(fHistDistanceTrackToClusterBeforeQA || fHistDistanceTrackToClusterAfterQA){
+	// get the minimum radius of tracks to cluster
+	if(fHistDistanceTrackToClusterBeforeQA || fHistDistanceTrackToClusterAfterQA){
 // 		Float_t pos[3];
 // 		cluster->GetPosition(pos);  // Get cluster position
 // 		
@@ -541,11 +541,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 // 			Double_t dphi = -999.0;
 // 			Double_t deta = -999.0;
 // 			AliPicoTrack::GetEtaPhiDiff(trackcluster, cluster, dphi, deta);
+// 			cout << "here" << endl;
 // 			Double_t dr = sqrt(dphi*dphi + deta+deta);
 // 			if(dr < minR)
 // 				minR = dr;
 // 		}//loop over tracks
-// 	}
+	}
 	
 	// Fill Histos before Cuts
 	if(fHistClusterTimevsEBeforeQA) fHistClusterTimevsEBeforeQA->Fill(cluster->GetTOF(), cluster->E());
@@ -569,38 +570,44 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
 	// Minimum distance to track
 	if (fUseDistTrackToCluster){
-// 		Float_t pos[3];
-// 		cluster->GetPosition(pos);  // Get cluster position
-// 		TVector3 cp(pos);
-// 		int NtrMatched = 0;
-// 		NtrMatched = cluster->GetNTracksMatched();
-// 		
-// 		//loop over tracks for Jet QA
-// 		TList *l = event->GetList();
-// 		TClonesArray *tracks = dynamic_cast<TClonesArray*>(l->FindObject("Tracks"));
-// 
-// 		for(int itrack = 0; itrack < NtrMatched; itrack++){
-// 		AliVTrack *trackcluster = static_cast<AliVTrack*>(tracks->At(itrack));
-// 		if (! trackcluster) {
-// 			AliError(Form("Couldn't get ESD track %d\n", itrack));
-// 			continue;
-// 		}
-// 		Double_t dphi = -999.0;
-// 		Double_t deta = -999.0;
-// 		AliPicoTrack::GetEtaPhiDiff(trackcluster, cluster, dphi, deta);
-// 		Double_t dr = sqrt(dphi*dphi + deta+deta);
-// 		if(dr < fMinDistTrackToCluster){
-// 			return kFALSE;
-// 		}
-// 		
-// 		}//loop over tracks
+ 		Float_t pos[3];
+ 		cluster->GetPosition(pos);  // Get cluster position
+ 		TVector3 cp(pos);
+ 		int NtrMatched = 0;
+ 		NtrMatched = cluster->GetNTracksMatched();
+		fHistNMatchedTracks->Fill(NtrMatched);
+ 		if(NtrMatched > 0){
+			//loop over tracks for QA
+			TList *l = event->GetList();
+			TClonesArray *tracks = dynamic_cast<TClonesArray*>(l->FindObject("Tracks"));
+			
+			Double_t dphi = 999.0;
+			Double_t deta = 999.0;
+			Double_t dr2 = 999.0;
 
-	
-		if(cluster->GetEmcCpvDistance() < fMinDistTrackToCluster){
-			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //2
-			return kFALSE;
+			for(int itrack = 0; itrack < NtrMatched; itrack++){
+				AliVTrack *trackcluster = NULL;
+				trackcluster = static_cast<AliVTrack*>(tracks->At(itrack));
+				if (! trackcluster) {
+				AliError(Form("Couldn't get ESD track %d\n", itrack));
+				continue;
+				}
+				AliPicoTrack::GetEtaPhiDiff(trackcluster, cluster, dphi, deta);
+				dr2 = dphi*dphi + deta+deta;
+				//cout << dr << endl;
+				if(dr2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
+		//        if(dphi < fMinDistTrackToCluster || deta < fMinDistTrackToCluster){
+				if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //2
+				return kFALSE;
+				}
+				
+			}//loop over tracks
 		}
-	}	
+//		if(cluster->GetEmcCpvDistance() < fMinDistTrackToCluster){
+//			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //2
+//			return kFALSE;
+//		}
+	}
 	cutIndex++;//3, next cut
 
 	// exotic cell cut --IMPLEMENT LATER---

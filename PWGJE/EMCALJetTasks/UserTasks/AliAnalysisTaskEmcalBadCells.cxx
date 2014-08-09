@@ -70,7 +70,7 @@ Bool_t AliAnalysisTaskEmcalBadCells::FillHistograms()
   Short_t absId = -1;
   Int_t nCells  =  0;
 
-  Int_t absIdMin = 1e6;
+  Int_t absIdMin = 1000000;
   Int_t absIdMax = -1;
 
   if (fCaloCells) {

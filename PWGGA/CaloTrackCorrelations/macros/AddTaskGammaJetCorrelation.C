@@ -25,8 +25,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
 								const Int_t    maxCen        = -1,
 								const TString  jetBranchName = "clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00",
 								const TString  jetBkgBranchName = "jeteventbackground_clustersAOD_KT04_B0_Filter00768_Cut00150_Skip00",
-                                                                const Float_t  jetMinPt      = 0,
-                                                                const Float_t  minDeltaPhi   = 1.5,
+                const Float_t  jetMinPt      = 0,
+                const Float_t  minDeltaPhi   = 1.5,
 								const Float_t  maxDeltaPhi   = 4.5,
 								const Float_t  minPtRatio    = 0,
 								const Float_t  maxPtRatio    = 5,   
@@ -54,6 +54,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
     return NULL;
   }
   
+  // Make sure the B field is enabled for track selection, some cuts need it
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
+
 //  inputDataType = "AOD";
 //  if(!kData.Contains("delta"))
 //    inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -325,10 +328,17 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
 
   if(inputDataType=="ESD")
   {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
-    AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
+    //Hybrids 2011
+    AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
     reader->SetTrackCuts(esdTrackCuts);
-    reader->SwitchOnConstrainTrackToVertex();
+    AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
+    reader->SetTrackComplementaryCuts(esdTrackCuts2);
+    
+    //Hybrids 2010
+    //AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001006);
+    //reader->SetTrackCuts(esdTrackCuts);
+    //AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10041006);
+    //reader->SetTrackComplementaryCuts(esdTrackCuts2);
   }
   else if(inputDataType=="AOD")
   {
