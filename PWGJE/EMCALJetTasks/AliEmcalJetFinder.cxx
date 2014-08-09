@@ -114,7 +114,7 @@ void AliEmcalJetFinder::FillPtHistogram(TH1* histogram)
 {
   if(!histogram)
     return;
-  for (Int_t i=0; i<fJetArray.size(); i++)
+  for (std::size_t i=0; i<fJetArray.size(); i++)
   {
     histogram->Fill(fJetArray[i]->Pt());
   }
@@ -125,7 +125,7 @@ void AliEmcalJetFinder::FillPhiHistogram(TH1* histogram)
 {
   if(!histogram)
     return;
-  for (Int_t i=0; i<fJetArray.size(); i++)
+  for (std::size_t i=0; i<fJetArray.size(); i++)
   {
     histogram->Fill(fJetArray[i]->Phi());
   }
@@ -136,7 +136,7 @@ void AliEmcalJetFinder::FillEtaHistogram(TH1* histogram)
 {
   if(!histogram)
     return;
-  for (Int_t i=0; i<fJetArray.size(); i++)
+  for (std::size_t i=0; i<fJetArray.size(); i++)
   {
     histogram->Fill(fJetArray[i]->Eta());
   }

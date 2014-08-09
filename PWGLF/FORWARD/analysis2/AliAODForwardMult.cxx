@@ -334,7 +334,8 @@ Bool_t
 AliAODForwardMult::CheckEvent(Int_t    triggerMask,
 			      Double_t vzMin, Double_t vzMax,
 			      UShort_t cMin,  UShort_t cMax, 
-			      TH1*     hist,  TH1*     status) const
+			      TH1*     hist,  TH1*     status,
+			      Bool_t   removePileup) const
 {
   // 
   // Check if event meets the passses requirements.   
@@ -395,7 +396,7 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
   // Check for pileup
   if (IsTriggerBits(kPileUp)) {
     if (status) status->Fill(kIsPileup);
-    return false;
+    if (removePileup) return false;
   }
   if (hist) hist->AddBinContent(kWithTrigger);
   

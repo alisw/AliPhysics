@@ -40,21 +40,22 @@ class AliNeutralMesonSelection : public TObject {
   Bool_t   SelectPair(TLorentzVector particlei,  TLorentzVector particlej, TString calo)  ;
   
   void     SetParticle(TString particleName) ;  // Do some default settings for "Pi0" or "Eta"
+  TString  GetParticle()                          const { return    fParticle ; }
   
   // Asymmetry selection
     
-  Float_t  GetAsymmetryCut()                     const { return fAsymmetryCut            ; }
-  void     SetAsymmetryCut(Float_t asy)                { fAsymmetryCut = asy             ; }	
+  Float_t  GetAsymmetryCut()                      const { return fAsymmetryCut           ; }
+  void     SetAsymmetryCut(Float_t asy)                 { fAsymmetryCut = asy            ; }
   
-  void     SwitchOnAsymmetryCut()                      { fUseAsymmetryCut = kTRUE        ; }
-  void     SwitchOffAsymmetryCut()                     { fUseAsymmetryCut = kFALSE       ; }
+  void     SwitchOnAsymmetryCut()                       { fUseAsymmetryCut = kTRUE       ; }
+  void     SwitchOffAsymmetryCut()                      { fUseAsymmetryCut = kFALSE      ; }
   
   //Opening angle selection 
   
   Double_t GetAngleMaxParam(Int_t i)              const { return fAngleMaxParam.At(i)    ; }
   void     SetAngleMaxParam(Int_t i, Double_t par)      { fAngleMaxParam.AddAt(par,i)    ; }
   
-  void     SetShiftMinAngleCut(Float_t a, Float_t b)    { fShiftMinAngle[0] = a          ; 
+  void     SetShiftMinAngleCut(Float_t a, Float_t b)    { fShiftMinAngle[0] = a          ;
                                                           fShiftMinAngle[1] = b          ; }
   
   void     SwitchOnAngleSelection()                     { fUseAngleCut = kTRUE           ; }

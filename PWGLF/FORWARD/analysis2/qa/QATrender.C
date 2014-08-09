@@ -554,7 +554,7 @@ public:
    * @param prodLetter Period letter
    */
   QATrender(Bool_t keep, 
-	    Bool_t single, 
+	    Bool_t /*single*/, 
 	    Int_t  prodYear, 
 	    char   prodLetter) 
     : QABase("data", (prodYear < 2000 ? 2000 : 0) + prodYear,
@@ -781,6 +781,8 @@ public:
    */
   Bool_t ProcessELossFitter()
   {
+    if (!fEnergyFitter) return true;
+
     MakeCanvasTitle("Summary of energy loss fits");
 
     THStack* chi2  = static_cast<THStack*>(GetObject(fEnergyFitter, "chi2"));
@@ -1167,16 +1169,22 @@ public:
 	    fCurrentFile->GetName());
       return false;
     }
-
-    fSharingFilter     = GetSubList(forward, "fmdSharingFilter");
+    
     fEventInspector    = GetSubList(forward, "fmdEventInspector");
+    if (!fEventInspector) { 
+      const char* sfolder = "ForwardSums";
+      forward = static_cast<TList*>(fCurrentFile->Get(sfolder));
+    }
+
+    fEventInspector    = GetSubList(forward, "fmdEventInspector");
+    fSharingFilter     = GetSubList(forward, "fmdSharingFilter");
     fDensityCalculator = GetSubList(forward, "fmdDensityCalculator");
     fEnergyFitter      = GetSubList(forward, "fmdEnergyFitter");
-    
+
     if (!fSharingFilter)     return false; 
     if (!fEventInspector)    return false;
     if (!fDensityCalculator) return false;
-    if (!fEnergyFitter)     return false;
+    // if (!fEnergyFitter)      return false;
 
     return true;
   }

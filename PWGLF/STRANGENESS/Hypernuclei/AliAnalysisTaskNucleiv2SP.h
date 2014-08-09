@@ -22,7 +22,7 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
  public:
  
   AliAnalysisTaskNucleiv2SP();
-  AliAnalysisTaskNucleiv2SP(const char *name); //select ptc 1 = d; 2 = t ; 3 = 3He
+  AliAnalysisTaskNucleiv2SP(const char *name); 
   virtual ~AliAnalysisTaskNucleiv2SP() {}
   
   virtual void  UserCreateOutputObjects();
@@ -35,15 +35,11 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
 
   void SetIsPrimCut        (Bool_t  isPrimCut           = kFALSE) { fisPrimCut       = isPrimCut;         } 
   void SetParticle         (Float_t ptc                 = 1.    ) { fptc             = ptc;               }
-  void SetMaxPull          (Float_t pull                = 3.    ) { fmaxpull         = pull;               }
-  void SetMaxVz            (Float_t maxVz               = 10.   ) { fmaxVz           = maxVz;               }
 
  private:
 
   Bool_t         fisPrimCut;                     // Boolean : kTRUE = isprimarycut 
   Float_t        fptc;                           // Selected ptc 1 = d; 2 = t; 3 =3He 
-  Float_t        fmaxpull;                       // Selected ptc 1 = d; 2 = t; 3 =3He 
-  Float_t        fmaxVz;                       // Selected ptc 1 = d; 2 = t; 3 =3He 
 
   TList	*fListHist;	           //! List of  histograms
  
@@ -55,7 +51,6 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
 
   TH2F  *fhBB;                             //! ScatterPlot Total
   TH2F  *fhBBDeu;                          //! ScatterPlot Total
-  TH2F  *fhPtDeu;                          //! correctet vs non correcter d pt
   TH2F  *fhTOF;                            //! ScatterPlot Total TOF
   TH1F  *fhMassTOF;                        //! Mass Distribution TOF
   
@@ -98,6 +93,8 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   // TTree
   TTree *ftree;                //! Some Information on the tracks
   Double_t tCentrality      ;
+  Double_t tType            ;
+  Double_t tHasTOF          ;
   Double_t tpT              ;
   Double_t tMassTOF         ;
   Double_t tuqV0A           ;
@@ -108,7 +105,9 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   Double_t tCosdeltaphiV0A  ;
   Double_t tCosdeltaphiV0C  ;
   Double_t timpactXY        ;
-
+  Double_t timpactZ         ;
+  Double_t tpull            ;
+ 
   //---------------------------------------------------------------------------
   AliESDtrackCuts *fESDtrackCuts; 
   AliESDtrackCuts *fESDtrackCutsEP;

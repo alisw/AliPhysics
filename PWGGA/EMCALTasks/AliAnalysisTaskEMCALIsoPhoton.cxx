@@ -86,6 +86,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fMinIsoClusE(0),
   fNCuts(5),
   fTrCoreRem(kTRUE),
+  fClusTDiff(30e-9),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -190,6 +191,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fMinIsoClusE(0),
   fNCuts(5),
   fTrCoreRem(kTRUE),
+  fClusTDiff(30e-9),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -843,7 +845,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     Short_t id;
     GetMaxCellEnergy( c, id);
     Double_t maxct = cells->GetCellTime(id);
-    if(TMath::Abs(maxtcl-maxct)>2.5e-9 && (!fIsMc))
+    if(TMath::Abs(maxtcl-maxct)>fClusTDiff/*2.5e-9*/ && (!fIsMc))
       continue;
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);

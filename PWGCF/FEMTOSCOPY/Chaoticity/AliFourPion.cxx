@@ -822,9 +822,9 @@ void AliFourPion::ParInit()
   fEC = new AliFourPionEventCollection **[fZvertexBins];
   for(UShort_t i=0; i<fZvertexBins; i++){
     
-    fEC[i] = new AliFourPionEventCollection *[fMbins];
+    fEC[i] = new AliFourPionEventCollection *[fCentBinsMixing];
 
-    for(UShort_t j=0; j<fMbins; j++){
+    for(UShort_t j=0; j<fCentBinsMixing; j++){
       
       fEC[i][j] = new AliFourPionEventCollection(fEventsToMix+1, fMultLimit, kMCarrayLimit, fMCcase);
     }
@@ -1532,8 +1532,8 @@ void AliFourPion::UserExec(Option_t *)
 
   
   Float_t centralityPercentile=0;
-  Float_t cStep=5.0, cStart=0;
-  
+  Float_t cStep=5.0, cStepMixing=1.0, cStart=0;
+  Int_t MbinMixing=0;
  
   if(fAODcase){// AOD case
     
@@ -1891,14 +1891,20 @@ void AliFourPion::UserExec(Option_t *)
       // Mbin 0 has 1 pion
     }
   }else{
-    for(Int_t i=0; i<fCentBins; i++){
+    for(Int_t i=0; i<fCentBins; i++){// correlation analysis M bin
       if( (centralityPercentile >= cStart+i*cStep) && (centralityPercentile < cStart+(i+1)*cStep) ){
 	fMbin=i;// 0 = most central
 	break;
       }
     }
+    for(Int_t i=0; i<fCentBinsMixing; i++){// event-mixing M bin
+      if( (centralityPercentile >= cStart+i*cStepMixing) && (centralityPercentile < cStart+(i+1)*cStepMixing) ){
+	MbinMixing=i;// 0 = most central
+	break;
+      }
+    }
   }
-  
+
   if(fMbin==-1) {cout<<"Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
   
   ///////////////////
@@ -1926,8 +1932,8 @@ void AliFourPion::UserExec(Option_t *)
   ////////////////////////////////////
   // Add event to buffer if > 0 tracks
   if(myTracks > 0){
-    fEC[zbin][fMbin]->FIFOShift();
-    (fEvt) = fEC[zbin][fMbin]->fEvtStr;
+    fEC[zbin][MbinMixing]->FIFOShift();
+    (fEvt) = fEC[zbin][MbinMixing]->fEvtStr;
     (fEvt)->fNtracks = myTracks;
     (fEvt)->fFillStatus = 1;
     for(Int_t i=0; i<myTracks; i++) (fEvt)->fTracks[i] = fTempStruct[i];

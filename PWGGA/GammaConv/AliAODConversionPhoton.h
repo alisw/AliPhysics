@@ -12,7 +12,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 		enum caloPhotonMCFlags_t {
 			kIsPhoton 				= 0x001, kIsElectron 		= 0x002, kIsConversion 	= 0x004, kIsConversionFullyContained 	= 0x008,
 			kIsMerged 				= 0x010, kIsMergedPartConv 	= 0x020, kIsDalitz 		= 0x040, kIsDalitzMerged 				= 0x080,
-			kIsPhotonWithElecMother = 0x100, kIsShower 			= 0x200
+            kIsPhotonWithElecMother = 0x100, kIsShower 			= 0x200, kIsSubLeadingEM= 0x400
 		};
 		
 		//Constructors
@@ -29,9 +29,9 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 		virtual ~AliAODConversionPhoton();
 
 		// Overwrite GetLabelFunctions to Make it accessible via AliAODConversionParticle
-		virtual Int_t GetLabel(Int_t i) const { return AliConversionPhotonBase::GetTrackLabel(i); };
-		virtual Int_t GetLabel1() const { return AliConversionPhotonBase::GetTrackLabelPositive(); };
-		virtual Int_t GetLabel2() const { return AliConversionPhotonBase::GetTrackLabelNegative(); };
+        virtual Int_t GetLabel(Int_t i) const { return AliConversionPhotonBase::GetTrackLabel(i); }
+        virtual Int_t GetLabel1() const { return AliConversionPhotonBase::GetTrackLabelPositive(); }
+        virtual Int_t GetLabel2() const { return AliConversionPhotonBase::GetTrackLabelNegative(); }
 
 		virtual Double_t GetPhotonMass() const {return AliAODConversionParticle::M();}
 		virtual Double_t GetPhotonPt() const {return AliAODConversionParticle::Pt();}
@@ -54,6 +54,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 		Int_t GetCaloPhotonMCLabel(Int_t i){return fCaloPhotonMCLabels[i];}
 		void SetNCaloPhotonMCLabels(Int_t nLabels){fNCaloPhotonMCLabels = nLabels;}
 		Int_t GetNCaloPhotonMCLabels(){return fNCaloPhotonMCLabels;}
+        Int_t GetNCaloPhotonMotherMCLabels(){return fNCaloPhotonMotherMCLabels;}
 		void SetCaloPhotonMCFlags(AliStack *MCStack);
 		void SetCaloPhotonMCFlagsAOD(AliVEvent* event);
 		
@@ -70,14 +71,16 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 		Bool_t IsPhotonWithElecMother(){return fCaloPhotonMCFlags&kIsPhotonWithElecMother;}			// largest contribution to cluster is photon which stems from an electron (i.e. radiation)
 		Bool_t IsShower(){return fCaloPhotonMCFlags&kIsShower;}										// largest contribution to cluster seems to stem from a shower
 		Bool_t IsEMNonLeading(){return !(fCaloPhotonMCFlags&kIsPhoton) && !(fCaloPhotonMCFlags&kIsElectron);} // largest contribution is from hadron
-		
+        Bool_t IsSubLeadingEM(){return fCaloPhotonMCFlags&kIsSubLeadingEM;}                         // cluster contains at least one electron or photon from a pi0 or eta in subleading contribution
 		
 		Float_t fDCArPrimVtx;
 		Float_t fDCAzPrimVtx;
 		Bool_t fCaloPhoton;
 		Int_t fNCaloPhotonMCLabels;
-		Int_t fCaloPhotonMCFlags;
-		Int_t fCaloPhotonMCLabels[50];
+        Int_t fNCaloPhotonMotherMCLabels;
+        Int_t fCaloPhotonMCFlags;
+        Int_t fCaloPhotonMCLabels[20];
+        Int_t fCaloPhotonMotherMCLabels[20];
 		
 	
 	ClassDef(AliAODConversionPhoton,3)

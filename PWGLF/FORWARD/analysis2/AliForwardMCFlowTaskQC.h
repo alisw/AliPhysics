@@ -59,24 +59,10 @@ public:
    */
   void SetUseMCHeaderVertex(Bool_t use = kTRUE) { fUseMCVertex = use; }
   /**
-   * Set string to add flow to MC particles particles
-   *
-   * @param type String
+   * Add flow to MC particles
    */
-  void AddFlow(TString type = "") { fAddFlow = type; }
-  /**
-   * Set which function fAddFlow should use
-   *
-   * @param number Type of AddFlow 
-   */
-  void AddFlowType(Int_t number = 0) { fAddType = number; }
-  /**
-   * Set which order of flow to add
-   *
-   * @param order Flow order 
-   */
-  void AddFlowOrder(Int_t order = 2) { fAddOrder = order; }
- 
+  void SetUseFlowWeights(Bool_t use = kTRUE) { fUseFlowWeights = use; }
+   
 protected:
   /**
    * Copy constructor
@@ -169,15 +155,13 @@ protected:
   TH2D                  fHistdNdedpMC;    //  d^2N/detadphi MC particles histogram
   TH2D*                 fHistFMDMCCorr;   //  Diagnostics for mult. corr. between FMD and MC
   TH2D*                 fHistSPDMCCorr;   //  Diagnostics for mult. corr. between SPD and MC
-  AliForwardFlowWeights fWeights;         //  Flow after burner 
+  AliForwardFlowWeights* fWeights;         //  Flow after burner 
   TGraph*               fImpactParToCent; //  Parametrization of b to centrality
   Bool_t                fUseImpactPar;    //  Flag to use impact parameter for cent
   Bool_t                fUseMCVertex;     //  Get vertex from MC header
-  TString               fAddFlow;         //  Add flow string
-  Int_t                 fAddType;         //  Add flow type #
-  Int_t                 fAddOrder;        //  Add flow order
+  Bool_t                fUseFlowWeights;  //  Add flow
 
-  ClassDef(AliForwardMCFlowTaskQC, 5); // FMD MC analysis task 
+  ClassDef(AliForwardMCFlowTaskQC, 6); // FMD MC analysis task 
 };
  
 #endif

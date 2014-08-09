@@ -215,7 +215,28 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddCutHistogram("hCutsTPCRefit", "Trackcut histogram: TPC refit", "Has TPC refit", 2, -0.5, 1.5);
     AddCutHistogram("hCutsTPCLength", "Trackcut histogram: TPC length", "TPC length", 40, 0, 170);
     AddCutHistogram("hCutsTrackConstrained", "Trackcut histogram: Tracks constrained to vertex", "Track is constrained", 2, -0.5, 1.5);
+    AddCutHistogram("hCutsTPCITSMatching", "Trackcut histogram: TPC-ITS matching", "Track is matched", 2, -0.5, 1.5);
     AddCutHistogram("hCutsClustersPtDependence", "Trackcut histogram: pT dependence for number of clusters/crossed rows cut.", "Value at 20 GeV: 90, 100, 110, or 120", 4, -0.5, 3.5);
+
+    const int nbPt=100;
+    const double ptMax=50;
+    AddHistogram2D<TH2D>("hCutsITSTPC_NMatch", "Number matches", "", nbPt,0,ptMax,kMaxMatch+1,-0.5,kMaxMatch+0.5, "p_{T}","N matches");
+    AddHistogram2D<TH2D>("hCutsITSTPC_BestMatch", "Best match chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
+    AddHistogram2D<TH2D>("hCutsITSTPC_BestMatch_cuts", "Best match chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
+    AddHistogram2D<TH2D>("hCutsITSTPC_AllMatch", "All matches chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
+    AddHistogram2D<TH2D>("hCutsITSTPC_AllMatchGlo", "All matches chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
+    AddHistogram2D<TH2D>("hCutsITSTPC_PtCorr_ITSTPC", "PtCorr", "", nbPt,0,ptMax,nbPt,0,ptMax, "p_{T}","p_{T}");
+    AddHistogram2D<TH2D>("hCutsITSTPC_dPtRel_ITSTPC", "dPt/pt", "", nbPt,0,ptMax,2*nbPt+1,-0.4*ptMax,0.4*ptMax, "p_{T}","1/pt");
+    AddHistogram2D<TH2D>("hCutsITSTPC_dInvPtRel_ITSTPC", "pt*dPt^{-1}", "", nbPt,0,ptMax,2*nbPt+1,-0.4*ptMax,0.4*ptMax, "p_{T}","1/pt");
+
+    AddHistogram2D<TH2D>("hCutsITSTPC_NMatchBg", "Number matches", "", nbPt,0,ptMax,kMaxMatch+1,-0.5,kMaxMatch+0.5, "p_{T}","N matches");
+    AddHistogram2D<TH2D>("hCutsITSTPC_BestMatchBg", "Best match chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
+    AddHistogram2D<TH2D>("hCutsITSTPC_BestMatchBg_cuts", "Best match chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
+    AddHistogram2D<TH2D>("hCutsITSTPC_AllMatchBg", "All matches chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
+    AddHistogram2D<TH2D>("hCutsITSTPC_AllMatchGloBg", "All matches chi2", "", nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2, "p_{T}","chi2");
+    AddHistogram2D<TH2D>("hCutsITSTPC_PtCorrBg_ITSTPC", "PtCorr", "", nbPt,0,ptMax,nbPt,0,ptMax, "p_{T}","p_{T}");
+    AddHistogram2D<TH2D>("hCutsITSTPC_dPtRelBg_ITSTPC", "dPt/pt", "", nbPt,0,ptMax,2*nbPt+1,-0.4*ptMax,0.4*ptMax, "p_{T}","1/pt");
+    AddHistogram2D<TH2D>("hCutsITSTPC_dInvPtRelBg_ITSTPC", "pt*dPt^{-1}", "", nbPt,0,ptMax,2*nbPt+1,-0.4*ptMax,0.4*ptMax, "p_{T}","1/pt");
 
     SetCurrentOutputList(0);
   }
@@ -234,7 +255,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fNoTerminate(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
+AliAnalysisTaskChargedJetsPA::AliAnalysisTaskChargedJetsPA(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName, Bool_t analyzeJetProfile, Bool_t analyzeTrackcuts) : AliAnalysisTaskSE(name), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fMatchTr(), fMatchChi(), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fNoTerminate(1), fEventCounter(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
 {
   #ifdef DEBUGMODE
     AliInfo("Calling constructor.");
@@ -377,6 +398,7 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
     return;
   }
 
+  SetCurrentOutputList(2);
 
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
   for (Int_t i=0;i < fESD->GetNumberOfTracks(); i++)
@@ -434,8 +456,6 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
     // Basic kinematic cuts
     if((pT<0.15) || (TMath::Abs(eta)>0.9))
       continue;
-
-    SetCurrentOutputList(2);
 
     Int_t trackType = 0;
 
@@ -666,6 +686,33 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
 
     // ################################################################
     // ################################################################
+    Bool_t isMatched = kFALSE;
+    Float_t chi2tpc = fHybridESDtrackCuts->GetMainCuts()->GetMaxChi2TPCConstrainedGlobal();
+    Float_t chi2its = fHybridESDtrackCuts->GetMainCuts()->GetMaxChi2PerClusterITS();
+    Float_t chi2tpc_Additional = fHybridESDtrackCuts->GetAdditionalCuts()->GetMaxChi2TPCConstrainedGlobal();
+    Float_t chi2its_Additional = fHybridESDtrackCuts->GetAdditionalCuts()->GetMaxChi2PerClusterITS();
+    
+    fHybridESDtrackCuts->GetMainCuts()->SetMaxChi2TPCConstrainedGlobal(99999.);
+    fHybridESDtrackCuts->GetMainCuts()->SetMaxChi2PerClusterITS(999999.);
+    fHybridESDtrackCuts->GetAdditionalCuts()->SetMaxChi2TPCConstrainedGlobal(99999.);
+    fHybridESDtrackCuts->GetAdditionalCuts()->SetMaxChi2PerClusterITS(999999.);
+    
+    trackType = fHybridESDtrackCuts->AcceptTrack(track);
+    if (trackType)
+      FillCutHistogram("hCutsTPCITSMatching", isMatched, pT, eta, phi, trackType-1);
+
+    fHybridESDtrackCuts->GetMainCuts()->SetMaxChi2TPCConstrainedGlobal(chi2tpc);
+    fHybridESDtrackCuts->GetMainCuts()->SetMaxChi2PerClusterITS(chi2its);
+    fHybridESDtrackCuts->GetAdditionalCuts()->SetMaxChi2TPCConstrainedGlobal(chi2tpc_Additional);
+    fHybridESDtrackCuts->GetAdditionalCuts()->SetMaxChi2PerClusterITS(chi2its_Additional);
+
+    isMatched=kTRUE;
+    trackType = fHybridESDtrackCuts->AcceptTrack(track);
+    if (trackType)
+      FillCutHistogram("hCutsTPCITSMatching", isMatched, pT, eta, phi, trackType-1);
+
+    // ################################################################
+    // ################################################################
     if((fHybridESDtrackCuts->GetMainCuts()->GetClusterRequirementITS(AliESDtrackCuts::kSPD) == AliESDtrackCuts::kOff)
     || (fHybridESDtrackCuts->GetAdditionalCuts() && (fHybridESDtrackCuts->GetAdditionalCuts()->GetClusterRequirementITS(AliESDtrackCuts::kSPD) == AliESDtrackCuts::kOff))) 
     {
@@ -673,11 +720,200 @@ void AliAnalysisTaskChargedJetsPA::CreateCutHistograms()
       if (trackType)
         FillCutHistogram("hCutsTrackConstrained", isConstrainedWithITSRefit, pT, eta, phi, trackType-1);
     }
+
   }
 
+  CreateITSTPCMatchingHistograms();
   SetCurrentOutputList(0);
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskChargedJetsPA::CreateITSTPCMatchingHistograms()
+{
+  //
+  // check how many its-sa tracks get matched to TPC
+  //
+  Bool_t fExcludeMomFromChi2ITSTPC = kFALSE; // ITS->TPC : exclude momentum from matching chi2 calculation
+
+  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>( InputEvent() );
+  if (!fESD)
+  {
+    AliError("For cut analysis, ESDs must be processed!");
+    return;
+  }
+
+  int ntr = fESD->GetNumberOfTracks();
+  //
+  // initialize histograms
+  //
+  TH2D * hNMatch         = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_NMatch");
+  TH2D * hBestMatch      = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_BestMatch");
+  TH2D * hBestMatch_cuts = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_BestMatch_cuts");
+  TH2D * hAllMatch       = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_AllMatch");
+  TH2D * hAllMatchGlo    = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_AllMatchGlo");  
+  TH2D * hPtCorr_ITSTPC  = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_PtCorr_ITSTPC");
+  TH2D * hdPtRel_ITSTPC  = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_dPtRel_ITSTPC");
+  TH2D * hdInvPtRel_ITSTPC = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_dInvPtRel_ITSTPC");
+
+  //
+  TH2D * hNMatchBg          = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_NMatchBg");
+  TH2D * hBestMatchBg       = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_BestMatchBg");
+  TH2D * hBestMatchBg_cuts  = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_BestMatchBg_cuts");
+  TH2D * hAllMatchBg        = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_AllMatchBg");
+  TH2D * hAllMatchGloBg     = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_AllMatchGloBg");    
+  TH2D * hdPtRelBg_ITSTPC    = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_dPtRelBg_ITSTPC");
+  TH2D * hdInvPtRelBg_ITSTPC = (TH2D*) fCurrentOutputList->FindObject("hCutsITSTPC_dInvPtRelBg_ITSTPC");
+
+  if(!(hNMatch && hBestMatch && hBestMatch_cuts && hAllMatch && hAllMatchGlo && hPtCorr_ITSTPC && hdPtRel_ITSTPC && hdInvPtRel_ITSTPC && hNMatchBg && hBestMatchBg && hBestMatchBg_cuts && hAllMatchBg && hAllMatchGloBg && hdPtRelBg_ITSTPC && hdInvPtRelBg_ITSTPC))
+  {
+    cout << " === ERROR: At least one of the ITSTPC histograms not found! ===\n";
+    cout << Form(" === Details: %p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p", hNMatch, hBestMatch, hBestMatch_cuts, hAllMatch, hAllMatchGlo, hPtCorr_ITSTPC, hdPtRel_ITSTPC, hdInvPtRel_ITSTPC, hNMatchBg, hBestMatchBg, hBestMatchBg_cuts, hAllMatchBg, hAllMatchGloBg, hdPtRelBg_ITSTPC, hdInvPtRelBg_ITSTPC) << endl;
+    fCurrentOutputList->Print();
+    return;    
+  }
+  //
+  for (int it=0;it<ntr;it++) {
+    AliESDtrack* trSA = fESD->GetTrack(it);
+    if (!trSA->IsOn(AliESDtrack::kITSpureSA) || !trSA->IsOn(AliESDtrack::kITSrefit)) continue;
+    double pt = trSA->Pt();
+
+    // OB - fiducial eta and pt cuts
+    Double_t etaSA = trSA->Eta();
+
+    if(TMath::Abs(etaSA)>0.8) continue;
+
+    //
+    Int_t nmatch = 0;
+    for (int i=kMaxMatch;i--;) {fMatchChi[i]=0; fMatchTr[i]=0;}
+    for (int it1=0;it1<ntr;it1++){
+      if (it1==it) continue;
+
+      AliESDtrack* trESD = fESD->GetTrack(it1);
+      if (!trESD->IsOn(AliESDtrack::kTPCrefit)) continue;
+      Match(trSA,trESD, nmatch, fExcludeMomFromChi2ITSTPC);
+    }
+    //
+    
+    hNMatch->Fill(pt,nmatch);
+    if (nmatch>0){
+      hBestMatch->Fill(pt,fMatchChi[0]);
+      hPtCorr_ITSTPC->Fill(pt,fMatchTr[0]->Pt()); 
+      hdPtRel_ITSTPC->Fill(pt,(pt-fMatchTr[0]->Pt())/pt); 
+      hdInvPtRel_ITSTPC->Fill(pt,pt*( 1/pt - (1/fMatchTr[0]->Pt()) )); 
+    }
+    
+    if (nmatch>0 && fHybridESDtrackCuts){
+      
+      if(fHybridESDtrackCuts->AcceptTrack(fMatchTr[0])){
+	hBestMatch_cuts->Fill(pt,fMatchChi[0]);
+      }
+    }
+    
+    //
+    for (int imt=nmatch;imt--;) {
+      hAllMatch->Fill(pt,fMatchChi[imt]);
+      if (fMatchTr[imt]->IsOn(AliESDtrack::kITSrefit)) hAllMatchGlo->Fill(pt,fMatchChi[imt]);
+    }
+    //
+    nmatch = 0;
+    for (int i=kMaxMatch;i--;) {fMatchChi[i]=0; fMatchTr[i]=0;}
+    for (int it1=0;it1<ntr;it1++) {
+      if (it1==it) continue;
+      AliESDtrack* trESD = fESD->GetTrack(it1);
+      if (!trESD->IsOn(AliESDtrack::kTPCrefit)) continue;
+      Match(trSA,trESD, nmatch, fExcludeMomFromChi2ITSTPC, TMath::Pi());
+    }
+    //
+    hNMatchBg->Fill(pt,nmatch);
+    if (nmatch>0){
+      hBestMatchBg->Fill(pt,fMatchChi[0]);
+      hdPtRelBg_ITSTPC->Fill(pt,(pt-fMatchTr[0]->Pt())/pt); 
+      hdInvPtRelBg_ITSTPC->Fill(pt,pt*( 1/pt - (1/fMatchTr[0]->Pt()) )); 
+    }
+
+    if (nmatch>0 && fHybridESDtrackCuts){
+      if(fHybridESDtrackCuts->AcceptTrack(fMatchTr[0])){
+	hBestMatchBg_cuts->Fill(pt,fMatchChi[0]);
+      }
+    }
+
+    for (int imt=nmatch;imt--;) {
+      hAllMatchBg->Fill(pt,fMatchChi[imt]);
+      if (fMatchTr[imt]->IsOn(AliESDtrack::kITSrefit)) hAllMatchGloBg->Fill(pt,fMatchChi[imt]);
+    }
+    //
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskChargedJetsPA::Match(AliESDtrack* tr0, AliESDtrack* tr1, Int_t& nmatch, Bool_t excludeMom, Double_t rotate)
+{
+  //
+  // check if two tracks are matching, possible rotation for combinatoric backgr.
+  // 
+  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>( InputEvent() );
+  if (!fESD)
+  {
+    AliError("For cut analysis, ESDs must be processed!");
+    return;
+  }
+
+  Float_t bField = fESD->GetMagneticField();
+  //
+  const AliExternalTrackParam* trtpc0 = tr1->GetInnerParam();
+  if (!trtpc0) return;
+  AliExternalTrackParam trtpc(*trtpc0);
+  //
+  if (TMath::Abs(rotate)>1e-5) {
+    const double *par = trtpc.GetParameter();
+    const double *cov = trtpc.GetCovariance();
+    double alp = trtpc.GetAlpha() + rotate;
+    trtpc.Set(trtpc.GetX(),alp,par,cov);
+  }
+  //
+  if (!trtpc.Rotate(tr0->GetAlpha())) return;
+  if (!trtpc.PropagateTo(tr0->GetX(),bField)) return;
+  double chi2 = tr0->GetPredictedChi2(&trtpc);
+
+  //std::cout<<" in Match, nmatch "<<nmatch<<" par[4] before "<<trtpc.GetParameter()[4]<<" chi2 "<<chi2<<endl;
+
+  // OB chi2 excluding pt 
+  if(excludeMom){
+    ((double*)trtpc.GetParameter())[4] = tr0->GetParameter()[4]; // set ITS mom equal TPC mom
+    chi2 = tr0->GetPredictedChi2(&trtpc);
+
+    //std::cout<<" in Match, nmatch "<<nmatch<<" par[4] after "<<trtpc.GetParameter()[4]<<" tr0 mom "<<tr0->GetParameter()[4]
+    //	     <<" chi2 "<<chi2<<std::endl;
+  }
+
+
+  if (chi2>kMaxChi2) return;
+
+  // std::cout<<" found good match, tr1 "<<tr1<<" chi2 "<<chi2<<std::endl;
+  // std::cout<<" before: fMatchChi[0]  "<<fMatchChi[0]<<" [1] "<<fMatchChi[1]
+  // 	   <<" [2]  "<<fMatchChi[2]<<" [3] "<<fMatchChi[3]
+  // 	   <<" [4]  "<<fMatchChi[4]<<std::endl; 
+
+  // std::cout<<" before: fMatchTr[0]  "<<fMatchTr[0]<<" [1] "<<fMatchTr[1]
+  // 	   <<" [2]  "<<fMatchTr[2]<<" [3] "<<fMatchTr[3]
+  // 	   <<" [4]  "<<fMatchTr[4]<<std::endl; 
+
+  //
+  int ins;
+  for (ins=0;ins<nmatch;ins++) if (chi2<fMatchChi[ins]) break;
+  if (ins>=kMaxMatch) return;
+  
+  for (int imv=nmatch;imv>ins;imv--) {
+    if (imv>=kMaxMatch) continue;
+    fMatchTr[imv]  = fMatchTr[imv-1];
+    fMatchChi[imv] = fMatchChi[imv-1];
+  }
+  fMatchTr[ins] = tr1;
+  fMatchChi[ins] = chi2;
+  nmatch++;
+  if (nmatch>=kMaxMatch) nmatch = kMaxMatch;
+  //
+}
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskChargedJetsPA::GetExternalRho()

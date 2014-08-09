@@ -62,10 +62,8 @@ using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP() 
 : AliAnalysisTaskSE(), 
-  fisPrimCut(kTRUE),
+  fisPrimCut(kFALSE),
   fptc(1),     
-  fmaxpull(3),
-  fmaxVz(10),
   fListHist(0), 
   fHistEventMultiplicity(0), 
   fHistTrackMultiplicity(0),
@@ -74,7 +72,6 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
   fHistTrackMultiplicityMB(0),
   fhBB(0),
   fhBBDeu(0),
-  fhPtDeu(0),
   fhTOF(0),
   fhMassTOF(0),
   EPVzAvsCentrality(0), 
@@ -102,7 +99,9 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
   hCos2DeltaTPCpTPCnvsCentrality(0),
   hQVzAQVzCvsCentrality(0),
   ftree(0),           
-  tCentrality(0),      
+  tCentrality(0),     
+  tType(0),  
+  tHasTOF(0),    
   tpT(0),  
   tMassTOF(0),
   tuqV0A(0),
@@ -113,6 +112,8 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
   tCosdeltaphiV0A(0),
   tCosdeltaphiV0C(0),
   timpactXY(0),
+  timpactZ(0),
+  tpull(0),
   fESDtrackCuts(0),
   fESDtrackCutsEP(0),
   fPIDResponse(0)
@@ -120,15 +121,15 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
   // Dummy Constructor 
   fESDtrackCuts   = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
   fESDtrackCutsEP = new AliESDtrackCuts("AliESDtrackCutsEP","AliESDtrackCutsEP");
+  Initialize();
+  cout<<"Dummy constructor"<<endl;
 }
 
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name) 
 : AliAnalysisTaskSE(name), 
-  fisPrimCut(kTRUE),
-  fptc(1),    
-  fmaxpull(3), 
-  fmaxVz(10),
+  fisPrimCut(kFALSE),
+  fptc(1),     
   fListHist(0), 
   fHistEventMultiplicity(0), 
   fHistTrackMultiplicity(0),
@@ -137,7 +138,6 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name)
   fHistTrackMultiplicityMB(0),
   fhBB(0),
   fhBBDeu(0),
-  fhPtDeu(0),
   fhTOF(0),
   fhMassTOF(0),
   EPVzAvsCentrality(0), 
@@ -165,7 +165,9 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name)
   hCos2DeltaTPCpTPCnvsCentrality(0),
   hQVzAQVzCvsCentrality(0),
   ftree(0),           
-  tCentrality(0),      
+  tCentrality(0),     
+  tType(0),  
+  tHasTOF(0),    
   tpT(0),  
   tMassTOF(0),
   tuqV0A(0),
@@ -176,6 +178,8 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name)
   tCosdeltaphiV0A(0),
   tCosdeltaphiV0C(0),
   timpactXY(0),
+  timpactZ(0),
+  tpull(0),
   fESDtrackCuts(0),
   fESDtrackCutsEP(0),
   fPIDResponse(0)
@@ -191,6 +195,7 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name)
   fESDtrackCuts   = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
   fESDtrackCutsEP = new AliESDtrackCuts("AliESDtrackCutsEP","AliESDtrackCutsEP");
   //
+  cout<<"Real constructor"<<endl;
   Initialize();
 
   DefineInput(0, TChain::Class());
@@ -208,7 +213,7 @@ void AliAnalysisTaskNucleiv2SP::Initialize()
   fESDtrackCuts->SetMaxDCAToVertexXY(3);
   fESDtrackCuts->SetMaxDCAToVertexZ(2);
   fESDtrackCuts->SetEtaRange(-0.8,0.8);
-
+  
   fESDtrackCutsEP = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); 
 
 }
@@ -313,17 +318,12 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
     fListHist->Add(fhBBDeu);
   }
  
-  if(!fhPtDeu  ){
-    fhPtDeu = new TH2F( "fhPtDeu" , "pt corretto vs pt track - Deuteron" , 120,0,6,120,0,6);
-    fListHist->Add(fhPtDeu);
-  }
-
   if(! fhTOF ){
     fhTOF = new TH2F( "fhTOF" , "Scatter Plot TOF" , 240,-6,6,500,0,1.2);
     fListHist->Add(fhTOF);
   }
   if(! fhMassTOF){
-    fhMassTOF=new TH1F ("fhMassTOF","Particle Mass - TOF", 300,-5 ,5);
+    fhMassTOF=new TH1F ("fhMassTOF","Particle Mass - TOF", 100,0 ,10);
     fListHist->Add(fhMassTOF);
   }
   
@@ -389,6 +389,8 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
     ftree = new TTree("ftree","ftree");
  
     ftree->Branch("tCentrality"      ,&tCentrality      ,"tCentrality/D"    );
+    ftree->Branch("tType"            ,&tType            ,"tType/D"          );
+    ftree->Branch("tHasTOF"          ,&tHasTOF          ,"tHasTOF/D"        );
     ftree->Branch("tpT"              ,&tpT              ,"tpT/D"            );
     ftree->Branch("tMassTOF"         ,&tMassTOF         ,"tMassTOF/D"       );
     ftree->Branch("tuqV0A"           ,&tuqV0A           ,"tuqV0A/D"         );
@@ -399,6 +401,8 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
     ftree->Branch("tCosdeltaphiV0A"  ,&tCosdeltaphiV0A  ,"tCosdeltaphiV0A/D");
     ftree->Branch("tCosdeltaphiV0C"  ,&tCosdeltaphiV0C  ,"tCosdeltaphiV0C/D");
     ftree->Branch("timpactXY"        ,&timpactXY        ,"timpactXY/D"      );
+    ftree->Branch("timpactZ"         ,&timpactZ         ,"timpactZ/D"       );
+    ftree->Branch("tpull"            ,&tpull            ,"tpull/D"          );
 
 
   }
@@ -450,13 +454,12 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   //=================================================================
   
   Float_t  impactXY=-999., impactZ=-999.;
-  Double_t pinTPC=0.,poutTPC=0.,TPCSignal=0.;
+  Double_t TPCSignal=0.;
   
   ULong_t  status=0;
-  Bool_t   isTPC=kFALSE;
-  
-  Double_t pmax = 10;
-  
+ 
+  Double_t pmax  = 10;
+  Double_t ptmax = 10;
   // Primary vertex cut
   
   const AliESDVertex *vtx = lESDevent->GetPrimaryVertexTracks();
@@ -474,7 +477,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   
   fHistEventMultiplicity->Fill(2); // analyzed events with PV
   
-  if(TMath::Abs(vtx->GetZv())>fmaxVz) return;
+  if(TMath::Abs(vtx->GetZv())>10) return;
   fHistEventMultiplicity->Fill(3);
 
   Bool_t isSelectedCentral     = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
@@ -534,7 +537,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   Double_t Qx2n = 0, Qy2n = 0;
  
   for (Int_t iT = 0; iT < TrackNumber; iT++){
-
+    
     AliESDtrack* track = lESDevent->GetTrack(iT);
     
     if (!track)
@@ -610,8 +613,6 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   TVector2 *q = 0x0;
   q = pl->GetQVector();
 
-  Int_t isTOF=0;
-  //  Int_t isoutTPC=0;
   Float_t ptcExp  = -999;
   Double_t pullTPC = -999;
   Float_t deltaphiTPC = -3;
@@ -626,66 +627,67 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       
     AliESDtrack *esdtrack=lESDevent->GetTrack(j);
     if (!fESDtrackCuts->AcceptTrack(esdtrack)) continue;
-      
-    status  = (ULong_t)esdtrack->GetStatus();
     
-    isTPC    = (((status) & AliESDtrack::kTPCin)   != 0);
-    isTOF    = ((((status) & AliESDtrack::kTOFout) != 0) && (((status) & AliESDtrack::kTIME) != 0));
-    //isoutTPC = (((status) & AliESDtrack::kTPCout)  != 0);
-      
+    status  = (ULong_t)esdtrack->GetStatus();
+   
+    Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
+    Bool_t hasTOF     = kFALSE;
+    if (hasTOFout) hasTOF = kTRUE;
+    Float_t length = esdtrack->GetIntegratedLength(); 
+    if (length < 350.) hasTOF = kFALSE;
+    
     TPCSignal=esdtrack->GetTPCsignal(); 
       
-    if (TPCSignal<10)continue;
-    if (TPCSignal>1000)continue;
-    if (!isTPC)continue;
+    if(TPCSignal<10)continue;
+    if(TPCSignal>1000)continue;
+    if(!esdtrack->GetInnerParam()) continue;
     
-    if(!esdtrack->GetTPCInnerParam())continue;
-    AliExternalTrackParam trackIn(*esdtrack->GetInnerParam()); 
-    pinTPC= trackIn.GetP(); 
-    if(pinTPC<0.2)continue;
-    fhBB->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
-
-    if(isTOF){
-      if(!esdtrack->GetOuterParam())continue;    
-      AliExternalTrackParam trackOut(*esdtrack->GetOuterParam()); 
-      poutTPC = trackOut.GetP();  
-      fhTOF->Fill(poutTPC*esdtrack->GetSign(),(esdtrack->GetIntegratedLength()/esdtrack->GetTOFsignal())/2.99792458e-2);
-    }
-
+    Double_t ptot = esdtrack->GetInnerParam()->GetP(); // momentum for dEdx determination
+ 
+    if(ptot<0.2)continue;
+    fhBB->Fill(ptot*esdtrack->GetSign(),TPCSignal);
     esdtrack->GetImpactParameters(impactXY, impactZ);
-    
-    ptcExp  = -999;
+              
+    ptcExp = -999;
     if(fptc==1)
-      ptcExp  = AliExternalTrackParam::BetheBlochAleph(pinTPC/(0.938*2),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
+      ptcExp  = AliExternalTrackParam::BetheBlochAleph(ptot/(0.938*2),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
     if(fptc==2)
-      ptcExp  = AliExternalTrackParam::BetheBlochAleph(pinTPC/(0.938*3),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
+      ptcExp  = AliExternalTrackParam::BetheBlochAleph(ptot/(0.938*3),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
     if(fptc==3)
-      ptcExp  = 4*AliExternalTrackParam::BetheBlochAleph(2*pinTPC/(0.938*3),1.74962,27.4992,4.00313e-15,2.42485,8.31768);
+      ptcExp  = 4*AliExternalTrackParam::BetheBlochAleph(2*ptot/(0.938*3),1.74962,27.4992,4.00313e-15,2.42485,8.31768);
     
     pullTPC  = (TPCSignal - ptcExp)/(0.07*ptcExp);
-      
+
     Double_t p    = esdtrack->P();
     Double_t tof  = esdtrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
     Double_t tPhi = esdtrack->Phi();
 
     Float_t  beta = 0;
     Float_t  gamma = 0;
-    Float_t  mass  = -999;
+    Float_t  mass  = -99;
     Double_t pt  = esdtrack->Pt();
-    
-    if(TMath::Abs(pinTPC) < pmax && TMath::Abs(pullTPC) < fmaxpull){
+
+    if(TMath::Abs(ptot) < pmax && TMath::Abs(pullTPC) <= 3 && TMath::Abs(pt) < ptmax){
+
+      fhBBDeu->Fill(ptot*esdtrack->GetSign(),TPCSignal);
       
-      fhBBDeu->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
-            
-      if(tof > 0 && pt > 1.){
-	beta = esdtrack->GetIntegratedLength()/(tof * 2.99792457999999984e-02);
+      //
+      // Process TOF information
+      //
+      if (hasTOF) {
+	beta = length / (2.99792457999999984e-02 * tof);
 	gamma = 1/TMath::Sqrt(1 - beta*beta);
-	mass = poutTPC/TMath::Sqrt(gamma*gamma - 1);
+	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
+	
+	fhTOF->Fill(ptot*esdtrack->GetSign(),beta);
+	if(TMath::Abs(mass) > 2.7)continue;
+	if(TMath::Abs(mass) < 1. )continue;
 	fhMassTOF->Fill(mass);
       }
-
+   
       // Event Plane
-      //Remove AutoCorrelation
+      // Remove AutoCorrelation
+      
       evPlAngTPC = GetEventPlaneForCandidate(esdtrack,q,pl);
       
       deltaphiTPC=TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngTPC));
@@ -693,12 +695,14 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       deltaphiV0A=TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngV0A));
       deltaphiV0C=TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngV0C));
       
-      // SP
+      // Scalar Product
       
       uqV0A = TMath::Cos(2*tPhi)*qxEPa+TMath::Sin(2*tPhi)*qyEPa;
       uqV0C = TMath::Cos(2*tPhi)*qxEPc+TMath::Sin(2*tPhi)*qyEPc;
        
       tCentrality      = percentile;
+      tType            = eventtype;
+      tHasTOF          = hasTOF;
       tpT              = pt;
       tMassTOF         = mass;
       tuqV0A           = uqV0A;
@@ -709,7 +713,9 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       tCosdeltaphiV0A  = deltaphiV0A;
       tCosdeltaphiV0C  = deltaphiV0C;
       timpactXY        = impactXY;
-      
+      timpactZ         = impactZ;
+      tpull            = pullTPC;
+
       ftree->Fill();
     } 
   }  //track

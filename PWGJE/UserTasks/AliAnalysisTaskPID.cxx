@@ -594,7 +594,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   // This centrality estimator deals with integers! This implies that the ranges are always [lowlim, uplim - 1]
   Double_t binsCentITSTPCTracklets[nCentBins+1] = { 0, 7, 13, 20, 29, 40, 50, 60, 72, 83, 95, 105, 115 };
   
-  if (fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0) {
+  if (fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0 && fStoreCentralityPercentile) {
     // Special binning for this centrality estimator; but keep number of bins!
     for (Int_t i = 0; i < nCentBins+1; i++)
       binsCent[i] = binsCentITSTPCTracklets[i];
@@ -964,8 +964,10 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Posting output data\n", (char*)__FILE__, __LINE__);
   
   PostData(1, fOutputContainer);
-  PostData(2, fContainerEff);
-  PostData(3, fQAContainer);
+  if (fDoEfficiency)
+    PostData(2, fContainerEff);
+  if (fDoDeDxCheck || fDoPtResolution) 
+    PostData(3, fQAContainer);
   
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Done\n", (char*)__FILE__, __LINE__);

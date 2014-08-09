@@ -252,6 +252,7 @@ struct QABase
     fCanvas->SetBorderSize(0);
     fCanvas->SetLeftMargin(0.15);
     fCanvas->SetRightMargin(0.02);
+
     fCanvas->SetTopMargin(0.10);
     fCanvas->SetBottomMargin(0.10);
 
@@ -417,6 +418,14 @@ struct QABase
 	   << "<ul>\n"
 	   << "  <li><a href='" << fTeXName << ".pdf'>PDF</a></li>\n"
 	   << "  <li><a href='" << fTeXName << ".root'>ROOT</a></li>\n"
+	   << "</ul>" << std::endl;
+    if (fPeriod.IsNull()) return;
+    Bool_t isMC = (fDataType.EqualTo("sim", TString::kIgnoreCase) || 
+		   fPass.StartsWith("passMC", TString::kIgnoreCase));
+    *fHtml << "<ul>\n"
+	   << " <li><a href='https://alimonitor.cern.ch/" 
+	   <<  (isMC ? "job_details.jsp" : "production/raw.jsp") 
+	   << "?jt_field1=" << fPeriod << "'>Producion(s)</a></li>\n"
 	   << "</ul>" << std::endl;
   }
   /** 

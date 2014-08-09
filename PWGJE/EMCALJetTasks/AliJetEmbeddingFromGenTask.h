@@ -19,8 +19,9 @@ class AliJetEmbeddingFromGenTask : public AliJetModelBaseTask {
   void           UserCreateOutputObjects();
   void           FillPythiaHistograms();
 
-  void           SetGen(AliGenerator *gen)      { fGen = gen    ; }
-  void           SetMasslessParticles(Bool_t b) { fMassless = b ; }
+  void           SetGen(AliGenerator *gen)      { fGen = gen       ; }
+  void           SetMasslessParticles(Bool_t b) { fMassless = b    ; }
+  void           SetChargedOnly(Bool_t b)       { fChargedOnly = b ; }
 
  protected:
   Bool_t         ExecOnce();
@@ -28,8 +29,10 @@ class AliJetEmbeddingFromGenTask : public AliJetModelBaseTask {
 
   AliGenerator  *fGen;                    //generator
   Bool_t         fMassless;               //make particles massless
+  Bool_t         fChargedOnly;            //accept only charged particles
 
-  TH1F          *fHistPt;                 //!pT spectrum of embedded particles
+  TH1F          *fHistPt;                 //!pT spectrum of generated particles
+  TH2F          *fHistEtaPhi;             //!eta-phi of generated particles
   TH1F          *fHistTrials;             //!trials from generator
   TProfile      *fHistXsection;           //!x-section from generator
   TH1           *fHistPtHard;             //!pt hard distribution
@@ -38,6 +41,6 @@ class AliJetEmbeddingFromGenTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromGenTask(const AliJetEmbeddingFromGenTask&);            // not implemented
   AliJetEmbeddingFromGenTask &operator=(const AliJetEmbeddingFromGenTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromGenTask, 3) // Jet embedding task
+  ClassDef(AliJetEmbeddingFromGenTask, 4) // Jet embedding task
 };
 #endif

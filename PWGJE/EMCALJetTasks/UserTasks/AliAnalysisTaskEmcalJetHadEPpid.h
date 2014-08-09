@@ -86,8 +86,12 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   // give comments setter
   void					  SetdoComments(Bool_t comm)			{ doComments = comm; } // give comment switch
 
-  // define I/O
-  void					  SetIOon(Bool_t IO)					{ doIOon = IO; } // set on IO in constructor (temp)
+  // setter switch for flavour jet analysis
+  void 					  SetFlavourJetAnalysis(Bool_t flj)     { doFlavourJetAnalysis = flj; } // set on flavour jet analysis
+  virtual void			  SetJETFlavourTag(Int_t fltag)        { fJetFlavTag = fltag; } // set manual tag #
+
+  // setter for beamtype (needed for UserCreateObjects section)
+  virtual void			  SetCollType(BeamType bm) { fBeam = bm; } // set beamtype 
 
   // getters
   TString		          GetLocalRhoName() const		{return fLocalRhoName; }
@@ -134,6 +138,8 @@ protected:
   virtual Int_t          GetzVertexBin(Double_t zVtx) const; // zVertex bin
   void                   SetfHistPIDcounterLabels(TH1* fHistPID) const;  // PID counter
   void	   			     SetfHistQAcounterLabels(TH1* h) const; // QA counter
+  //virtual Int_t			 AcceptFlavourJet(AliEmcalJet *jet, Int_t NUM, Int_t NUM2, Int_t NUM3); // flavour jet acceptor
+  virtual Int_t			 AcceptFlavourJet(AliEmcalJet *jet, Int_t NUM); // flavour jet acceptor
 
   // parameters of detector to cut on for event
   Double_t               fPhimin;                  // phi min
@@ -175,8 +181,12 @@ protected:
   // do comment switch
   Bool_t		 doComments;
 
-  // do I/O on switch
-  Bool_t		 doIOon;
+  // do flavour jet analysis switch, and set flavour jet tag
+  Bool_t	     doFlavourJetAnalysis;
+  Int_t			 fJetFlavTag;
+
+  // beam type
+  BeamType fBeam;
 
   // local rho value
   Double_t		 fLocalRhoVal;

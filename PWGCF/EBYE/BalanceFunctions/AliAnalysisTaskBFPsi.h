@@ -87,6 +87,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fNClustersTPCCut = minNClustersTPC;
   }
 
+   void SetExtraTPCCutsSharedAOD(Int_t minTPCsharedCut){
+    fTPCsharedCut = minTPCsharedCut;
+  }
+
   //==============MC analysis==============//
   void SetKinematicsCutsMC(Double_t ptmin, Double_t ptmax,
                            Double_t etamin, Double_t etamax){
@@ -340,6 +344,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Double_t fTPCchi2Cut;//only used for AODs
   Int_t fNClustersTPCCut;//only used for AODs
+  Int_t fTPCsharedCut;//only used for AODs
 
   TF1 *fAcceptanceParameterization;//acceptance filter used for MC
 
@@ -361,7 +366,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 6); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 7); // example of analysis
 };
 
 
