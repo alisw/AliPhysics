@@ -324,13 +324,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtIsoMC  [9];                        //! Number of isolated mcTypes particle
   TH2F *   fhPhiIsoMC [9];                        //! Phi of isolated mcTypes particle
   TH2F *   fhEtaIsoMC [9];                        //! eta of isolated mcTypes particle
-  TH1F *   fhPtThresIsolatedMC[9][5][5];          //! Isolated mcTypes particle with pt threshold
-  TH1F *   fhPtFracIsolatedMC [9][5][5];          //! Isolated mcTypes particle with pt frac
-  TH2F *   fhPtSumIsolatedMC  [9][5];             //! Isolated mcTypes particle with threshold on cone pt sum
   
   TH2F *   fhPtLambda0MC[9][2];                    //! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously)
-  //
-  
+ 
+  // Multiple cut analysis
   TH2F *   fhSumPtLeadingPt[5] ;                  //! Sum Pt in the cone
   TH2F *   fhPtLeadingPt[5] ;                     //! Particle Pt in the cone
   TH2F *   fhPerpSumPtLeadingPt[5] ;              //! Sum Pt in the cone at the perpendicular phi region to trigger axis  (phi +90)
@@ -338,7 +335,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   TH1F *   fhPtThresIsolated[5][5] ;              //! Isolated particle with pt threshold 
   TH1F *   fhPtFracIsolated[5][5] ;               //! Isolated particle with pt threshold frac
-  TH1F *   fhPtSumIsolated[5][5] ;                //! Isolated particle with threshold on cone pt sum
+  TH1F *   fhSumPtIsolated[5][5] ;                //! Isolated particle with threshold on cone pt sum
   
   TH2F *   fhEtaPhiPtThresIso[5][5] ;             //! eta vs phi of isolated particles with pt threshold
   TH2F *   fhEtaPhiPtThresDecayIso[5][5] ;        //! eta vs phi of isolated particles with pt threshold
@@ -362,6 +359,13 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiFracPtSumIso[5][5];            //! Isolated particle with threshold on cone sum density
   TH2F *   fhEtaPhiFracPtSumDecayIso[5][5];       //! Isolated particle with threshold on cone sum density
  
+  // Multiple cut MC
+  TH1F *   fhPtThresIsolatedMC[9][5][5];          //! Isolated mcTypes particle with pt threshold
+  TH1F *   fhPtFracIsolatedMC [9][5][5];          //! Isolated mcTypes particle with pt frac
+  TH1F *   fhSumPtIsolatedMC  [9][5][5];          //! Isolated mcTypes particle with threshold on cone pt sum
+  TH2F *   fhSumPtLeadingPtMC [9][5];             //! mcTypes particle for sum Pt, different cone
+
+  
   // Track matching studies
   TH2F *   fhTrackMatchedDEta[2]     ;            //! Eta distance between track and cluster vs cluster E
   TH2F *   fhTrackMatchedDPhi[2]     ;            //! Phi distance between track and cluster vs cluster E
