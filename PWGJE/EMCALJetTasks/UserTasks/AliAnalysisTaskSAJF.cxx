@@ -1,4 +1,3 @@
-// $Id$
 //
 // Jet analysis task.
 //
@@ -25,33 +24,28 @@ ClassImp(AliAnalysisTaskSAJF)
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
   fHistoType(1),
-  fHistJetObservables(0)
-
+  fHistTracksJetPt(0),
+  fHistClustersJetPt(0),
+  fHistTracksPtDist(0),
+  fHistClustersPtDist(0),
+  fHistJetObservables(0),
+  fHistJetPtEtaPhi(0),
+  fHistJetPtArea(0),
+  fHistJetPtEP(0),
+  fHistJetPtNEF(0),
+  fHistJetPtZ(0),
+  fHistJetPtLeadingPartPt(0),
+  fHistJetCorrPtEtaPhi(0),
+  fHistJetCorrPtArea(0),
+  fHistJetCorrPtEP(0),
+  fHistJetCorrPtNEF(0),
+  fHistJetCorrPtZ(0),
+  fHistJetCorrPtLeadingPartPt(0),
+  fHistJetPtCorrPt(0),
+  fHistJetPtMCPt(0),
+  fHistJetMCPtCorrPt(0)
 {
   // Default constructor.
-
-  for (Int_t i = 0; i < 4; i++) {
-    fHistTracksJetPt[i] = 0;
-    fHistClustersJetPt[i] = 0;
-    fHistTracksPtDist[i] = 0;
-    fHistClustersPtDist[i] = 0;
-
-    fHistJetPtEtaPhi[i] = 0;
-    fHistJetPtArea[i] = 0;
-    fHistJetPtEP[i] = 0;
-    fHistJetPtNEF[i] = 0;
-    fHistJetPtZ[i] = 0;
-    fHistJetPtLeadingPartPt[i] = 0;
-    fHistJetCorrPtEtaPhi[i] = 0;
-    fHistJetCorrPtArea[i] = 0;
-    fHistJetCorrPtEP[i] = 0;
-    fHistJetCorrPtNEF[i] = 0;
-    fHistJetCorrPtZ[i] = 0;
-    fHistJetCorrPtLeadingPartPt[i] = 0;
-    fHistJetPtCorrPt[i] = 0;
-    fHistJetPtMCPt[i] = 0;
-    fHistJetMCPtCorrPt[i] = 0;
-  }
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -60,32 +54,28 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistoType(1),
-  fHistJetObservables(0)
+  fHistTracksJetPt(0),
+  fHistClustersJetPt(0),
+  fHistTracksPtDist(0),
+  fHistClustersPtDist(0),
+  fHistJetObservables(0),
+  fHistJetPtEtaPhi(0),
+  fHistJetPtArea(0),
+  fHistJetPtEP(0),
+  fHistJetPtNEF(0),
+  fHistJetPtZ(0),
+  fHistJetPtLeadingPartPt(0),
+  fHistJetCorrPtEtaPhi(0),
+  fHistJetCorrPtArea(0),
+  fHistJetCorrPtEP(0),
+  fHistJetCorrPtNEF(0),
+  fHistJetCorrPtZ(0),
+  fHistJetCorrPtLeadingPartPt(0),
+  fHistJetPtCorrPt(0),
+  fHistJetPtMCPt(0),
+  fHistJetMCPtCorrPt(0)
 {
   // Standard constructor.
-
-  for (Int_t i = 0; i < 4; i++) {
-    fHistTracksJetPt[i] = 0;
-    fHistClustersJetPt[i] = 0;
-    fHistTracksPtDist[i] = 0;
-    fHistClustersPtDist[i] = 0;
-
-    fHistJetPtEtaPhi[i] = 0;
-    fHistJetPtArea[i] = 0;
-    fHistJetPtEP[i] = 0;
-    fHistJetPtNEF[i] = 0;
-    fHistJetPtZ[i] = 0;
-    fHistJetPtLeadingPartPt[i] = 0;
-    fHistJetCorrPtEtaPhi[i] = 0;
-    fHistJetCorrPtArea[i] = 0;
-    fHistJetCorrPtEP[i] = 0;
-    fHistJetCorrPtNEF[i] = 0;
-    fHistJetCorrPtZ[i] = 0;
-    fHistJetCorrPtLeadingPartPt[i] = 0;
-    fHistJetPtCorrPt[i] = 0;
-    fHistJetPtMCPt[i] = 0;
-    fHistJetMCPtCorrPt[i] = 0;
-  }
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -186,7 +176,23 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::AllocateTHX()
 {
-  for (Int_t i = 0; i < 4; i++) {
+  fHistJetPtEtaPhi = new TH3*[fNcentBins];
+  fHistJetPtArea = new TH2*[fNcentBins];
+  fHistJetPtEP = new TH2*[fNcentBins];
+  fHistJetPtNEF = new TH2*[fNcentBins];
+  fHistJetPtZ = new TH2*[fNcentBins];
+  fHistJetPtLeadingPartPt = new TH2*[fNcentBins];
+  fHistJetCorrPtEtaPhi = new TH3*[fNcentBins];
+  fHistJetCorrPtArea = new TH2*[fNcentBins];
+  fHistJetCorrPtEP = new TH2*[fNcentBins];
+  fHistJetCorrPtNEF = new TH2*[fNcentBins];
+  fHistJetCorrPtZ = new TH2*[fNcentBins];
+  fHistJetCorrPtLeadingPartPt = new TH2*[fNcentBins];
+  fHistJetPtCorrPt = new TH2*[fNcentBins];
+  fHistJetPtMCPt = new TH2*[fNcentBins];
+  fHistJetMCPtCorrPt = new TH2*[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
     TString histname;
 
     histname = "fHistJetPtEtaPhi_";
@@ -324,15 +330,20 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  if (fHistoType == 0)
+  if (fHistoType == 0) 
     AllocateTHX();
   else
     AllocateTHnSparse();
 
-  for (Int_t i = 0; i < 4; i++) {
+  fHistTracksJetPt = new TH2*[fNcentBins];
+  fHistClustersJetPt = new TH2*[fNcentBins];
+  fHistTracksPtDist = new TH2*[fNcentBins];
+  fHistClustersPtDist = new TH2*[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
     TString histname;
 
-    if (fParticleCollArray.GetEntriesFast()>0) {
+    if (fParticleCollArray.GetEntriesFast() > 0) {
       histname = "fHistTracksJetPt_";
       histname += i;
       fHistTracksJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, fNbins, fMinBinPt, fMaxBinPt);
@@ -350,7 +361,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       fOutput->Add(fHistTracksPtDist[i]);
     }
 
-    if (fClusterCollArray.GetEntriesFast()>0) {
+    if (fClusterCollArray.GetEntriesFast() > 0) {
       histname = "fHistClustersJetPt_";
       histname += i;
       fHistClustersJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, fNbins, fMinBinPt, fMaxBinPt);
