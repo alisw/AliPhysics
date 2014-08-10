@@ -4535,6 +4535,8 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       Int_t lMCAssocNegDaug = trackAssocME->NegDaugMCLabel();
       Int_t lMCAssocPosDaug = trackAssocME->PosDaugMCLabel();
 
+      // ----------------------------------------------------------------------------
+
       // -----------------------------------------------------------------
       //   ****************** Track splitting check ******************
       // -----------------------------------------------------------------
@@ -4545,9 +4547,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       //trigTPCMapOk=kTRUE; posDaugTPCMapOk=kTRUE; negDaugTPCMapOk=kTRUE;
       fracTrigTPCSharedMap=0; fracPosDaugTPCSharedMap=0; fracNegDaugTPCSharedMap=0;
 
-      // initializing variables
-      for(Int_t ll=0; ll<9; ll++)
-	{ devPosDaugTrig[ll]=1E9; devNegDaugTrig[ll]=1E9; }	
+      // ---------------- Fraction of TPC Shared Cluster 
+      fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
+      fracPosDaugTPCSharedMap = GetFractionTPCSharedCls(ptrack);
+      fracNegDaugTPCSharedMap = GetFractionTPCSharedCls(ntrack);
 
       // =========== Classical methods for track-splitting  ============= //
       if( TMath::Abs(dPhi)<0.1 && TMath::Abs(dEta)<0.1 ){   
@@ -4571,11 +4574,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	SetSftPosR125(ntrack,bSign,priVtx,"Daughter");
 	negdPhiS = dPhiSAtR125();
 	negdEtaS = dEtaS();
-	
-	// ---------------- Fraction of TPC Shared Cluster 
-	fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
-	fracPosDaugTPCSharedMap = GetFractionTPCSharedCls(ptrack);
-	fracNegDaugTPCSharedMap = GetFractionTPCSharedCls(ntrack);
 
 	// ------ Get position:
 	tTrig->GetXYZ(trigXYZ);
@@ -4623,6 +4621,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	  if(ll<3) devNegDaugTrig[6] +=  devNegDaugTrig[ll];  // sum in X,Y,Z
 	  if(ll>2) devNegDaugTrig[7] +=  devNegDaugTrig[ll];  // sum in momemtum
 	  devNegDaugTrig[8] +=  devNegDaugTrig[ll];           // sum in all variables
+
 	}
 
 
@@ -4758,7 +4757,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	    }
 	      
 	  }
-
 	  // ----AntiLambda
 	  if( trackAssocME->WhichCandidate() == 5 ){
 	    splitCont[1] = massAL; 
