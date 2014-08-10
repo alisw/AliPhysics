@@ -879,6 +879,10 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
      
     // Compare trigger with final state particles
     if( status != 1) continue ;
+
+    // Select all particles in at least the TPC acceptance
+    Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(trigger,"CTS") ;
+    if(!inTPC) continue;
     
     Float_t pt     = particle->Pt();
     Float_t eta    = particle->Eta();
@@ -919,7 +923,6 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
       
       //Calorimeter acceptance
       Bool_t inCalo = GetFiducialCut()->IsInFiducialCut(trigger,fCalorimeter) ;
-      
       if(!inCalo) continue;
       
       if( ptMaxNeutEMCAL < pt ) ptMaxNeutEMCAL = pt;
@@ -938,15 +941,10 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
           sumNePtEMCPhot += pt;
         }
       }
-      
     }
     else
     {
       if( pt < fMinChargedPt)  continue ;
-
-      Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(trigger,"CTS") ;
-      
-      if(!inTPC) continue;
       
       if( ptMaxCharged < pt )   ptMaxCharged   = pt;
       
