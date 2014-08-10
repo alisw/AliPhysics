@@ -56,6 +56,7 @@ fhPtPhoton(0),       fhPtPi0(0)
   for(Int_t i = 0; i < 4; i++)
   {
     fhPtPhotonLeading[i]          = fhPtPi0Leading[i]          = 0;
+    fhPtPhotonLeadingSumPt[i]     = fhPtPi0LeadingSumPt[i]     = 0;
     fhPtPhotonLeadingIsolated[i]  = fhPtPi0LeadingIsolated[i]  = 0;
     for(Int_t j = 0; j < 2; j++)
     {
@@ -232,9 +233,14 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("GenKineHistos") ; 
   
-  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();  
-  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  
-  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin(); 
+  Int_t   nptbins    = GetHistogramRanges()->GetHistoPtBins();
+  Float_t ptmax      = GetHistogramRanges()->GetHistoPtMax();
+  Float_t ptmin      = GetHistogramRanges()->GetHistoPtMin();
+
+  Int_t   nptsumbins = GetHistogramRanges()->GetHistoNPtSumBins();
+  Float_t ptsummax   = GetHistogramRanges()->GetHistoPtSumMax();
+  Float_t ptsummin   = GetHistogramRanges()->GetHistoPtSumMin();
+
   
   fhPtHard  = new TH1F("hPtHard"," pt hard for selected triggers",nptbins,ptmin,ptmax); 
   fhPtHard->SetXTitle("p_{T}^{hard} (GeV/c)");
@@ -262,7 +268,6 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
   fhPtJetPtParton->SetXTitle("p_{T}^{hard} (GeV/c)");
   fhPtJetPtParton->SetYTitle("p_{T}^{jet}/p_{T}^{parton}");
   outputContainer->Add(fhPtJetPtParton);
-  
   
   fhPtPhoton  = new TH1F("hPtPhoton","Input Photon",nptbins,ptmin,ptmax); 
   fhPtPhoton->SetXTitle("p_{T} (GeV/c)");
@@ -304,6 +309,21 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
                                           nptbins,ptmin,ptmax);
     fhPtPi0LeadingIsolated[i]->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtPi0LeadingIsolated[i]);
+    
+    fhPtPhotonLeadingSumPt[i]  = new TH2F(Form("hPtPhotonLeadingSumPt%s",name[i].Data()),
+                                     Form("Photon : Leading of all particles%s",title[i].Data()),
+                                     nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+    fhPtPhotonLeadingSumPt[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtPhotonLeadingSumPt[i]->SetYTitle("#Sigma p_{T} (GeV/c)");
+    outputContainer->Add(fhPtPhotonLeadingSumPt[i]);
+    
+    fhPtPi0LeadingSumPt[i]  = new TH2F(Form("hPtPi0LeadingSumPt%s",name[i].Data()),
+                                  Form("Pi0 : Leading of all particles%s",title[i].Data()),
+                                  nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+    fhPtPi0LeadingSumPt[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtPi0LeadingSumPt[i]->SetYTitle("#Sigma p_{T} (GeV/c)");
+    outputContainer->Add(fhPtPi0LeadingSumPt[i]);
+
     
     // Leading or not loop
     for(Int_t j = 0; j < 2; j++)
@@ -812,13 +832,24 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
   // Minimum track or cluster energy
 
   //Isolation cuts
-  Float_t ptThresIC    = GetIsolationCut()->GetPtTreshold();
+  Float_t ptThresIC    = GetIsolationCut()->GetPtThreshold();
+  Float_t sumThresIC   = GetIsolationCut()->GetPtThreshold();
   Float_t rThresIC     = GetIsolationCut()->GetConeSize();
+  Float_t isoMethod    = GetIsolationCut()->GetICMethod();
+  
+  //Counters
   Int_t   nICTrack     = 0;
   Int_t   nICNeutral   = 0;
   Int_t   nICNeutEMCAL = 0;
   Int_t   nICNeutPhot  = 0;
   Int_t   nICNeutEMCALPhot = 0;
+  
+  // Sum of pT
+  Float_t sumNePt         = 0;
+  Float_t sumNePtPhot     = 0;
+  Float_t sumNePtEMC      = 0;
+  Float_t sumNePtEMCPhot  = 0;
+  Float_t sumChPt         = 0;
   
   //Loop on primaries, start from position 8, no partons
   for(Int_t ipr = 8; ipr < fStack->GetNprimary(); ipr ++ )
@@ -842,8 +873,6 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
     Float_t phi    = particle->Phi();
     if(phi < 0 ) phi += TMath::TwoPi();
     
-    if(TMath::Abs(eta) > 0.8) continue ; // TPC acceptance cut
-
     Double_t charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
     
     //Isolation
@@ -853,17 +882,27 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
     {
       if(pt < fMinNeutralPt)  continue ;
       
-      if( ptMaxNeutral < pt )                   ptMaxNeutral = pt;
-      if( pt > ptThresIC && radius < rThresIC ) nICNeutral++ ;
-
+      if( ptMaxNeutral < pt ) ptMaxNeutral = pt;
+      
+      if( radius < rThresIC )
+      {
+        if( pt > ptThresIC ) nICNeutral++ ;
+        sumNePt+= pt;
+      }
+      
       Bool_t phPDG = kFALSE;
       if(pdg==22 || pdg==111) phPDG = kTRUE;
     
       //if(pt > ptTrig) printf(" --- pdg %d, phPDG %d pT %2.2f, pTtrig %2.2f, eta %2.2f, phi %2.2f\n",pdg,phPDG,pt,ptTrig,particle->Eta(), particle->Phi()*TMath::RadToDeg());
       if(phPDG)
       {
-        if( ptMaxNeutPhot < pt)                   ptMaxNeutPhot = pt;
-        if( pt > ptThresIC && radius < rThresIC ) nICNeutPhot++ ;
+        if( ptMaxNeutPhot < pt) ptMaxNeutPhot = pt;
+        
+        if( radius < rThresIC )
+        {
+          if(pt > ptThresIC) nICNeutPhot++ ;
+          sumNePtPhot += pt;
+        }
       }
       
       //Calorimeter acceptance
@@ -871,13 +910,21 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
       
       if(!inCalo) continue;
       
-      if( ptMaxNeutEMCAL < pt )                 ptMaxNeutEMCAL = pt;
-      if( pt > ptThresIC && radius < rThresIC ) nICNeutEMCAL++ ;
+      if( ptMaxNeutEMCAL < pt ) ptMaxNeutEMCAL = pt;
+      if( radius < rThresIC )
+      {
+        if( pt > ptThresIC ) nICNeutEMCAL++ ;
+        sumNePtEMC += pt;
+      }
       
       if(phPDG)
       {
         if( ptMaxNeutEMCALPhot < pt )             ptMaxNeutEMCALPhot = pt;
-        if( pt > ptThresIC && radius < rThresIC ) nICNeutEMCALPhot++ ;
+        if(  radius < rThresIC )
+        {
+          if (pt > ptThresIC) nICNeutEMCALPhot++ ;
+          sumNePtEMCPhot += pt;
+        }
       }
       
     }
@@ -885,13 +932,18 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
     {
       if( pt < fMinChargedPt)  continue ;
 
+      Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(trigger,"CTS") ;
+      
+      if(!inTPC) continue;
+      
       if( ptMaxCharged < pt )   ptMaxCharged   = pt;
       
-      if( pt > ptThresIC && radius < rThresIC )  
+      if( radius < rThresIC )
       {
         //printf("UE track? pTtrig %2.2f, pt %2.2f, etaTrig %2.2f,  eta %2.2f, phiTrig %2.2f,  phi %2.2f, radius %2.2f\n",
         //       ptTrig, pt,etaTrig, eta, phiTrig*TMath::RadToDeg(), phi*TMath::RadToDeg(),radius);
-        nICTrack++ ;
+        if( pt > ptThresIC ) nICTrack++ ;
+        sumChPt += pt;
       }
     }
 
@@ -911,15 +963,28 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
   //printf("N in cone over threshold : tracks  %d, neutral %d, neutral emcal %d, photon %d, photon emcal %d\n", 
   //       nICTrack, nICNeutral ,nICNeutEMCAL,nICNeutPhot, nICNeutEMCALPhot);
   
+  //------------------
   // Isolation decision
-  if(nICTrack == 0)
+  if( isoMethod == AliIsolationCut::kPtThresIC )
   {
-    if(nICNeutral       == 0 ) isolated[0] = kTRUE ;
-    if(nICNeutEMCAL     == 0 ) isolated[1] = kTRUE ;
-    if(nICNeutPhot      == 0 ) isolated[2] = kTRUE ;
-    if(nICNeutEMCALPhot == 0 ) isolated[3] = kTRUE ;
+    if( nICTrack == 0 )
+    {
+      if(nICNeutral       == 0 ) isolated[0] = kTRUE ;
+      if(nICNeutEMCAL     == 0 ) isolated[1] = kTRUE ;
+      if(nICNeutPhot      == 0 ) isolated[2] = kTRUE ;
+      if(nICNeutEMCALPhot == 0 ) isolated[3] = kTRUE ;
+    }
+  }
+  else if( isoMethod == AliIsolationCut::kSumPtIC )
+  {
+    if(sumChPt + sumNePt        < sumThresIC ) isolated[0] = kTRUE ;
+    if(sumChPt + sumNePtEMC     < sumThresIC ) isolated[1] = kTRUE ;
+    if(sumChPt + sumNePtPhot    < sumThresIC ) isolated[2] = kTRUE ;
+    if(sumChPt + sumNePtEMCPhot < sumThresIC ) isolated[3] = kTRUE ;
   }
   
+  
+  //----------------------------------------------------
   // Fill histograms if conditions apply for all 4 cases
   for( Int_t i = 0; i < 4; i++ )
   {
@@ -928,6 +993,12 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
       if(leading[i])
       { 
         fhPtPi0Leading[i]->Fill(ptTrig);
+        
+        if     (i == 0) fhPtPi0LeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePt);
+        else if(i == 1) fhPtPi0LeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtEMC);
+        else if(i == 2) fhPtPi0LeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtPhot);
+        else if(i == 3) fhPtPi0LeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtEMCPhot);
+
         if(isolated[i]) fhPtPi0LeadingIsolated[i]->Fill(ptTrig);
       }
     }// pi0
@@ -936,6 +1007,12 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
       if(leading[i])
       { 
         fhPtPhotonLeading[i]->Fill(ptTrig);
+        
+        if     (i == 0) fhPtPhotonLeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePt);
+        else if(i == 1) fhPtPhotonLeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtEMC);
+        else if(i == 2) fhPtPhotonLeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtPhot);
+        else if(i == 3) fhPtPhotonLeadingSumPt[i]->Fill(ptTrig, sumChPt + sumNePtEMCPhot);
+        
         if(isolated[i]) fhPtPhotonLeadingIsolated[i]->Fill(ptTrig);
       }      
     } // photon

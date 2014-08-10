@@ -95,8 +95,11 @@ private:
   
   // Histograms arrays for 4 isolation options and 2 options on leading or not leading particle
   
-  TH1F      * fhPtPhotonLeading[4];         //! Leading photon
-  TH1F      * fhPtPi0Leading[4];            //! Leading pi0
+  TH1F      * fhPtPhotonLeading[4];         //! Leading photon pT
+  TH1F      * fhPtPi0Leading[4];            //! Leading pi0 pT
+
+  TH2F      * fhPtPhotonLeadingSumPt[4];    //! Leading photon pT vs sum in cone
+  TH2F      * fhPtPi0LeadingSumPt[4];       //! Leading pi0 pT vs sum in cone
   
   TH1F      * fhPtPhotonLeadingIsolated[4]; //! Leading photon, isolated
   TH1F      * fhPtPi0LeadingIsolated[4];    //! Leading pi0, isolated
