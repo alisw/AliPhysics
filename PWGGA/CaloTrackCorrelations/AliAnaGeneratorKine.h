@@ -51,12 +51,18 @@ public:
                                Int_t  pdgTrig,
                                Bool_t leading[4],     
                                Bool_t isolated[4]) ;
+    
+  void    MakeAnalysisFillHistograms() ;
   
-  void    MakeAnalysisFillAOD()  { ; }
+  void    SetTriggerDetector( TString name ) { fTriggerDetector = name ; }
+  void    SetCalorimeter    ( TString name ) { fCalorimeter     = name ; }
   
-  void    MakeAnalysisFillHistograms() ; 
+  
     
 private:
+  
+  TString     fTriggerDetector;             //! trigger detector, for fiducial region
+  TString     fCalorimeter;                 //! detector neutral particles, for fiducial region
   
   AliStack  * fStack;                       //! access stack
   
@@ -128,7 +134,7 @@ private:
   AliAnaGeneratorKine              (const AliAnaGeneratorKine & gk) ; // cpy ctor
   AliAnaGeneratorKine & operator = (const AliAnaGeneratorKine & gk) ; // cpy assignment
   
-  ClassDef(AliAnaGeneratorKine,2)
+  ClassDef(AliAnaGeneratorKine,3)
   
 } ;
 

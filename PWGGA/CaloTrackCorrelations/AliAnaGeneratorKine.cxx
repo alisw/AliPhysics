@@ -37,6 +37,8 @@ ClassImp(AliAnaGeneratorKine)
 //__________________________________________
 AliAnaGeneratorKine::AliAnaGeneratorKine() : 
 AliAnaCaloTrackCorrBaseClass(), 
+fTriggerDetector("EMCAL"),
+fCalorimeter("EMCAL"),
 fStack(0),
 fParton2(0),         fParton3(0), 
 fParton6(0),         fParton7(0),   
@@ -862,22 +864,22 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
         if( pt > ptThresIC && radius < rThresIC ) nICNeutPhot++ ;
       }
       
-      //EMCAL acceptance
-      Bool_t inEMCAL = GetFiducialCut()->IsInFiducialCut(trigger,"EMCAL") ;
+      //Calorimeter acceptance
+      Bool_t inCalo = GetFiducialCut()->IsInFiducialCut(trigger,fCalorimeter) ;
       
-      if(inEMCAL)
+      if(!inCalo) continue;
+      
+      if( ptMaxNeutEMCAL < pt )                 ptMaxNeutEMCAL = pt;
+      if( pt > ptThresIC && radius < rThresIC ) nICNeutEMCAL++ ;
+      
+      if(phPDG)
       {
-        if( ptMaxNeutEMCAL < pt )                 ptMaxNeutEMCAL = pt;
-        if( pt > ptThresIC && radius < rThresIC ) nICNeutEMCAL++ ;
-
-        if(phPDG)
-        {
-          if( ptMaxNeutEMCALPhot < pt )             ptMaxNeutEMCALPhot = pt;
-          if( pt > ptThresIC && radius < rThresIC ) nICNeutEMCALPhot++ ;
-        }
+        if( ptMaxNeutEMCALPhot < pt )             ptMaxNeutEMCALPhot = pt;
+        if( pt > ptThresIC && radius < rThresIC ) nICNeutEMCALPhot++ ;
       }
+      
     }
-    else  
+    else
     {
       if( pt < ptThresTrack)  continue ;
 
@@ -970,16 +972,12 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     // Acceptance and kinematical cuts
     if( ptTrig < GetMinPt() )    continue ;
     
-    //EMCAL acceptance, a bit less
-    if(TMath::Abs(particle->Eta()) > 0.6) continue ;
-    if(particle->Phi() > TMath::DegToRad()*176) continue ;
-    if(particle->Phi() < TMath::DegToRad()*74 ) continue ;
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(trigger,fTriggerDetector) ;
     
+    if(! in ) continue ;
+
     particle->Momentum(trigger);
 
-//    Bool_t in = GetFiducialCut()->IsInFiducialCu(trigger,"EMCAL") ;
-//    if(! in ) continue ;
-    
 //    printf("Particle %d : pdg %d status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f \n",
 //           ipr, pdgTrig, statusTrig, imother, ptTrig, particle->Eta(), particle->Phi()*TMath::RadToDeg());
     
