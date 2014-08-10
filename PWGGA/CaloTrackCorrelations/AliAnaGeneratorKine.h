@@ -57,12 +57,17 @@ public:
   void    SetTriggerDetector( TString name ) { fTriggerDetector = name ; }
   void    SetCalorimeter    ( TString name ) { fCalorimeter     = name ; }
   
+  void    SetMinChargedPt   ( Float_t pt )   { fMinChargedPt    = pt   ; }
+  void    SetMinNeutralPt   ( Float_t pt )   { fMinNeutralPt    = pt   ; }
   
     
 private:
   
   TString     fTriggerDetector;             //! trigger detector, for fiducial region
   TString     fCalorimeter;                 //! detector neutral particles, for fiducial region
+  
+  Float_t     fMinChargedPt;                //! Minimum energy for charged particles in correlation
+  Float_t     fMinNeutralPt;                //! Minimum energy for neutral particles in correlation
   
   AliStack  * fStack;                       //! access stack
   
