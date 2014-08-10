@@ -37,8 +37,8 @@ ClassImp(AliAnaGeneratorKine)
 //__________________________________________
 AliAnaGeneratorKine::AliAnaGeneratorKine() : 
 AliAnaCaloTrackCorrBaseClass(), 
-fTriggerDetector("EMCAL"),
-fCalorimeter("EMCAL"),
+fTriggerDetector(""),fCalorimeter(""),
+fMinChargedPt(0),    fMinNeutralPt(0),
 fStack(0),
 fParton2(0),         fParton3(0), 
 fParton6(0),         fParton7(0),   
@@ -646,8 +646,6 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
 
   // Calculate the real XE and the UE XE
 
-  Float_t ptThresTrack = 0.2;
-
   Float_t ptTrig  = trigger.Pt();
   Float_t etaTrig = trigger.Eta();
   Float_t phiTrig = trigger.Phi();
@@ -676,7 +674,7 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
     Float_t phi    = particle->Phi();
     if(phi < 0 ) phi += TMath::TwoPi();
     
-    if( pt < ptThresTrack)    continue ;
+    if( pt < fMinChargedPt)    continue ;
     
     if(TMath::Abs(eta) > 0.8) continue ; // TPC acceptance cut
 
@@ -772,6 +770,12 @@ void AliAnaGeneratorKine::InitParameters()
   //Initialize the parameters of the analysis.
   AddToHistogramsName("AnaGenKine_");
   
+  fCalorimeter     = "EMCAL";
+  fTriggerDetector = "EMCAL";
+  
+  fMinChargedPt    = 0.2;
+  fMinNeutralPt    = 0.3;
+  
 }
 
 //_____________________________________________________________________
@@ -806,12 +810,10 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
   if(phiTrig < 0 ) phiTrig += TMath::TwoPi();
 
   // Minimum track or cluster energy
-  Float_t ptThresTrack = 0.2;
-  Float_t ptThresCalo  = 0.3;
 
   //Isolation cuts
-  Float_t ptThresIC    = 0.5;
-  Float_t rThresIC     = 0.4;
+  Float_t ptThresIC    = GetIsolationCut()->GetPtTreshold();
+  Float_t rThresIC     = GetIsolationCut()->GetConeSize();
   Int_t   nICTrack     = 0;
   Int_t   nICNeutral   = 0;
   Int_t   nICNeutEMCAL = 0;
@@ -849,7 +851,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
     
     if(charge==0)
     {
-      if(pt < ptThresCalo)  continue ;
+      if(pt < fMinNeutralPt)  continue ;
       
       if( ptMaxNeutral < pt )                   ptMaxNeutral = pt;
       if( pt > ptThresIC && radius < rThresIC ) nICNeutral++ ;
@@ -881,7 +883,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
     }
     else
     {
-      if( pt < ptThresTrack)  continue ;
+      if( pt < fMinChargedPt)  continue ;
 
       if( ptMaxCharged < pt )   ptMaxCharged   = pt;
       
