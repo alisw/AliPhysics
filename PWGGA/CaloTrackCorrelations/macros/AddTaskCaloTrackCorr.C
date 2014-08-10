@@ -1533,6 +1533,42 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   
 }
 
+//________________________________________________________________
+AliAnaGeneratorKine* ConfigureGenKineAnalysis()
+{
+  // Analysis for parton, jets correlation with photon and pi0
+  
+  AliAnaGeneratorKine *ana = new AliAnaGeneratorKine();
+  ana->SetDebug(kDebug); //10 for lots of messages
+  
+  // Minimum particles energy
+  ana->SetMinPt(10); // Trigger photon, pi0 minimum pT
+  ana->SetMinChargedPt(0.2);
+  ana->SetMinNeutralPt(0.3);
+  
+  // Detectors acceptance
+  ana->SetCalorimeter("EMCAL");
+  ana->SetTriggerDetector("EMCAL");
+  
+  ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.65, 81, 179);
+  ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.9, 0, 360);
+  
+  AliIsolationCut * ic =  ana->GetIsolationCut();
+  ic->SetDebug(kDebug);
+  ic->SetPtThreshold(0.5);
+  ic->SetConeSize(0.5);
+  ic->SetSumPtThreshold(1.0) ;
+  ic->SetICMethod(AliIsolationCut::kPtThresIC); // kSumPtIC
+  
+  ana->AddToHistogramsName("AnaGenKine_");
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
+  
+}
+
 //________________________________________________________
 void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana)
 {
