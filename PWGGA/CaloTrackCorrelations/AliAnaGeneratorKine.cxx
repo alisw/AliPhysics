@@ -680,9 +680,10 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
   if(GetDebug() > 1) printf("AliAnaGeneratorKine::GetXE() - Start \n");
   
   Float_t ptTrig  = trigger.Pt();
-  Float_t etaTrig = trigger.Eta();
   Float_t phiTrig = trigger.Phi();
   if(phiTrig < 0 ) phiTrig += TMath::TwoPi();
+  
+  TLorentzVector chPartLV;
   
   //Loop on primaries, start from position 8, no partons
   for(Int_t ipr = 8; ipr < fStack->GetNprimary(); ipr ++ )
@@ -691,34 +692,34 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
     
     if(ipr==indexTrig) continue;
     
-    
     Int_t   pdg    = particle->GetPdgCode();
     Int_t   status = particle->GetStatusCode();
         
     // Compare trigger with final state particles
-    if( status != 1) continue ;
+    if( status != 1 ) continue ;
     
     Double_t charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
     
-    if(charge==0) continue; // construct xe only with charged        
+    if(charge == 0 ) continue; // construct xe only with charged
     
     Float_t pt     = particle->Pt();
-    Float_t eta    = particle->Eta();
     Float_t phi    = particle->Phi();
     if(phi < 0 ) phi += TMath::TwoPi();
     
     if( pt < fMinChargedPt)    continue ;
     
-    if(TMath::Abs(eta) > 0.8) continue ; // TPC acceptance cut
-
-    //Isolation
-    Double_t radius = GetIsolationCut()->Radius(etaTrig, phiTrig, eta , phi) ;
+    particle->Momentum(chPartLV);
+    Bool_t inTPC = GetFiducialCut()->IsInFiducialCut(chPartLV,"CTS") ;
+    
+    if(!inTPC) continue;
     
     Float_t xe = -pt/ptTrig*TMath::Cos(phi-phiTrig);
     
-    //Get the index of the mother
+    // ---------------------------------------------------
+    // Get the index of the mother, get from what parton
     Int_t ipartonAway =  particle->GetFirstMother();
     if(ipartonAway < 0) return;
+    
     TParticle * mother = fStack->Particle(ipartonAway);
     while (ipartonAway > 7) 
     {
@@ -727,16 +728,15 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
       mother = fStack->Particle(ipartonAway);
     }
     
+    //-----------------------------------------
+    // Get XE of particles belonging to the jet
+    // on the opposite side of the trigger
     if((ipartonAway==6 || ipartonAway==7) && iparton!=ipartonAway) 
     {
-      //printf("xE: iparton %d, ipartonAway %d\n",iparton,ipartonAway);
-      if(radius > 1 ) continue; // avoid particles too far from trigger
-      
       for( Int_t i = 0; i < 4; i++ )
       {
         if(pdgTrig==111)
         {
-          
           fhXEPi0[leading[i]][i]  ->Fill(ptTrig,xe);
           
           if(isolated[i])
@@ -747,7 +747,6 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
         }// pi0
         else if(pdgTrig==22)
         {
-          
           fhXEPhoton[leading[i]][i]  ->Fill(ptTrig,xe);
           
           if(isolated[i])
@@ -759,16 +758,14 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
       } // conditions loop
     } // Away side
 
+    //----------------------------------------------------------
+    // Get the XE from particles not attached to any of the jets
     if(ipartonAway!=6 && ipartonAway!=7)
     {
-      
-      //printf("xE UE: iparton %d, ipartonAway %d\n",iparton,ipartonAway);
-      
       for( Int_t i = 0; i < 4; i++ )
       {
         if(pdgTrig==111)
         {
-          
           fhXEUEPi0[leading[i]][i]  ->Fill(ptTrig,xe);
           
           if(isolated[i])
@@ -779,7 +776,6 @@ void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
         }// pi0
         else if(pdgTrig==22)
         {
-          
           fhXEUEPhoton[leading[i]][i]  ->Fill(ptTrig,xe);
           
           if(isolated[i])
