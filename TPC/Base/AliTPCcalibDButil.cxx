@@ -3159,6 +3159,18 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
   TFile *fin = TFile::Open(Form("%s/map/treeMapping.root",baseDir.Data()));
   gROOT->cd();
   TTree *tMain = (TTree*)fin->Get("calPads");
+  tMain->SetAlias("Pad0","MapPadLength.fElements==7.5");   // pad types
+  tMain->SetAlias("Pad1","MapPadLength.fElements==10.0");
+  tMain->SetAlias("Pad2","MapPadLength.fElements==15.0");
+  //
+  tMain->SetAlias("dRowNorm0","(row.fElements/32-1)");      // normalized distance to the center of the chamber in lx (-1,1)
+  tMain->SetAlias("dRowNorm1","(row.fElements/32-1)");      // 
+  tMain->SetAlias("dRowNorm2","((row.fElements-63)/16-1)"); //
+  tMain->SetAlias("dRowNorm","(row.fElements<63)*(row.fElements/32-1)+(row.fElements>63)*((row.fElements-63)/16-1)");
+  tMain->SetAlias("dPhiNorm","(ly.fElements/lx.fElements)/(pi/18)"); // normalized distance to the center of the chamber in phi (-1,1)
+  //
+  tMain->SetAlias("fsector","(sector%36)+(0.5+9*atan2(ly.fElements,lx.fElements)/pi)"); // float sector number
+  tMain->SetAlias("posEdge","((pi/18.)-abs(atan(ly.fElements/lx.fElements)))*lx.fElements"); //distance to the edge
   
   // === add the krypton calibration trees ==========================
   TString inputTreesKrCalib       = gSystem->GetFromPipe(Form("ls %s/KryptonCalib/20*/calibKr/*.tree.root",baseDir.Data()));
@@ -3171,6 +3183,7 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     TString friendName=gSystem->BaseName(arrInputTreesKrCalib->At(itree)->GetName());
     friendName.ReplaceAll("calibKr.","");
     friendName.ReplaceAll(".tree.root","");
+    friendName="Kr."+friendName;
     tMain->AddFriend(tin,friendName.Data());
 
     // set aliases
@@ -3196,6 +3209,9 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     tMain->SetAlias((friendName+".spectrMean_MedianRatio").Data(),
                     TString::Format("(%s.spectrMean.fElements/%s.spectrMean_Median)",
                                     friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".spectrMean_MeanRatio").Data(),
+                    TString::Format("(%s.spectrMean.fElements/%s.spectrMean_Mean)",
+                                    friendName.Data(),friendName.Data()).Data());
 
     tMain->SetAlias((friendName+".fitMean_LTMRatio").Data(),
                     TString::Format("(%s.fitMean.fElements/%s.fitMean_LTM)",
@@ -3203,6 +3219,9 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     
     tMain->SetAlias((friendName+".fitMean_MedianRatio").Data(),
                     TString::Format("(%s.fitMean.fElements/%s.fitMean_Median)",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".fitMean_MeanRatio").Data(),
+                    TString::Format("(%s.fitMean.fElements/%s.fitMean_Mean)",
                                     friendName.Data(),friendName.Data()).Data());
     
   }
@@ -3218,7 +3237,7 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     TString friendName=gSystem->BaseName(arrInputTreesQACalib->At(itree)->GetName());
     friendName.ReplaceAll("calibQA.","");
     friendName.ReplaceAll(".tree.root","");
-
+    friendName="QA."+friendName;
     tMain->AddFriend(tin,friendName.Data());
 
     // set aliases
@@ -3229,6 +3248,9 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     tMain->SetAlias((friendName+".MaxCharge_MedianRatio").Data(),
                     TString::Format("(%s.MaxCharge.fElements/%s.MaxCharge_Median)",
                                     friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".MaxCharge_MeanRatio").Data(),
+                    TString::Format("(%s.MaxCharge.fElements/%s.MaxCharge_Mean)",
+                                    friendName.Data(),friendName.Data()).Data());
     
     tMain->SetAlias((friendName+".MeanCharge_LTMRatio").Data(),
                     TString::Format("(%s.MeanCharge.fElements/%s.MeanCharge_LTM)",
@@ -3236,6 +3258,9 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
     
     tMain->SetAlias((friendName+".MeanCharge_MedianRatio").Data(),
                     TString::Format("(%s.MeanCharge.fElements/%s.MeanCharge_Median)",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".MeanCharge_MeanRatio").Data(),
+                    TString::Format("(%s.MeanCharge.fElements/%s.MeanCharge_Mean)",
                                     friendName.Data(),friendName.Data()).Data());
     
   }
