@@ -2113,19 +2113,17 @@ static Int_t CentBin(Double_t cent)
 Bool_t AliAnalysisTaskLambdaOverK0sJets::AcceptTrack(const AliAODTrack *t) 
 {
   // Track criteria for primaries particles 
-  
-  // TPC only tracks
+ 
   if (TMath::Abs(t->Eta())>0.8 )  return kFALSE; 
-  if (!(t->TestFilterMask(1<<7))) return kFALSE; 
+  // TPC only tracks
+  //if (!(t->TestFilterMask(1<<7))) return kFALSE; 
+  // Hybrid tracks
+  if( !(t->TestFilterBit(272)) )  return kFALSE;
 
   Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1); 
   if (nCrossedRowsTPC < 70) return kFALSE;  
   
-  // Hybrid tracks
-  //if( !(t->TestFilterBit(272)) )  return kFALSE;
-  //if(!t->IsHybridGlobalConstrainedGlobal()) return kFALSE;
-
-  // Point in the SPD
+   // Point in the SPD
   Int_t SPDHits = t->HasPointOnITSLayer(0) + t->HasPointOnITSLayer(1);
   if( SPDHits )
     fTriggerWiSPDHit->Fill(1.5);
@@ -4146,14 +4144,11 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     if(trig->WhichCandidate()==0){
       fTriggerComingFromDaug->Fill(trig->Pt());
       fCheckTriggerFromV0Daug->Fill(1);
-      fTriggerPtCentCh->Fill(trig->Pt(),centrality,zv);
       if(fIsV0LP)  fCheckTriggerFromV0Daug->Fill(2);
     }
     else if( trig->WhichCandidate()==1){
-      fTriggerEtaPhi->Fill(trig->Phi(),trig->Eta());
-      fTriggerPtCent->Fill(trig->Pt(),centrality,zv);
-      fTriggerPtCentCh->Fill(trig->Pt(),centrality,zv);
       fCheckTriggerFromV0Daug->Fill(0);
+      fTriggerPtCentCh->Fill(trig->Pt(),centrality,zv);
 
       phi2 = ( (trig->Phi() > TMath::Pi()) ? trig->Phi() - TMath::Pi() : trig->Phi() )  ;
       fTriggerEventPlane->Fill(phi2);
@@ -4493,6 +4488,13 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     const AliAODTrack *tTrig = (AliAODTrack*)fAOD->GetTrack(trig->ID());
     ptTrig = tTrig->Pt();  pxTrig = tTrig->Px();  pyTrig = tTrig->Py(); 
 
+    // ---------------- Fraction of TPC Shared Cluster: 
+    fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
+    if( (fracTrigTPCSharedMap > fFracTPCcls) ) continue;
+      
+    fTriggerEtaPhi->Fill(trig->Phi(),trig->Eta());
+    fTriggerPtCent->Fill(trig->Pt(),centrality,zv);
+
     for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
       AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
       AliAODv0 *tAssoc=fAOD->GetV0(trackAssocME->ID());
@@ -4548,7 +4550,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       fracTrigTPCSharedMap=0; fracPosDaugTPCSharedMap=0; fracNegDaugTPCSharedMap=0;
 
       // ---------------- Fraction of TPC Shared Cluster 
-      fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
       fracPosDaugTPCSharedMap = GetFractionTPCSharedCls(ptrack);
       fracNegDaugTPCSharedMap = GetFractionTPCSharedCls(ntrack);
 
@@ -4836,7 +4837,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	  ( ( sameSignPosDaug==1 && TMath::Abs(fracTrigTPCSharedMap - fracPosDaugTPCSharedMap) < fDiffTrigDaugFracTPCSharedCls ) ||
 	  ( sameSignNegDaug==1 && TMath::Abs(fracTrigTPCSharedMap - fracNegDaugTPCSharedMap) < fDiffTrigDaugFracTPCSharedCls ) ) )*/
 
-      if( (fracTrigTPCSharedMap > fFracTPCcls) || (fracPosDaugTPCSharedMap > fFracTPCcls) || (fracNegDaugTPCSharedMap > fFracTPCcls) )
+      if( (fracPosDaugTPCSharedMap > fFracTPCcls) || (fracNegDaugTPCSharedMap > fFracTPCcls) )
 	continue;
 
       // ----------------------------------------------------------------------------
