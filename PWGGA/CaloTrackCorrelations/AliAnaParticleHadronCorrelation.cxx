@@ -61,7 +61,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
   AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation(): 
     AliAnaCaloTrackCorrBaseClass(),
     fFillAODWithReferences(0),      fCheckLeadingWithNeutralClusters(0),
-    fMinTriggerPt(0.),              fMaxAssocPt(1000.),             fMinAssocPt(0.),
+    fMaxAssocPt(1000.),             fMinAssocPt(0.),
     fDeltaPhiMaxCut(0.),            fDeltaPhiMinCut(0.),   
     fSelectIsolated(0),             fMakeSeveralUE(0),              
     fUeDeltaPhiMaxCut(0.),          fUeDeltaPhiMinCut(0.), 
@@ -439,8 +439,8 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
   
   if(GetDebug() > 0 )
   {
-    AliInfo(Form("Charged hadron: track Pt %f, track Phi %f, phi trigger %f. Cuts:  delta phi  %2.2f < %2.2f < %2.2f, pT min %2.2f \n",
-                 mcAssocPt,mcAssocPhi, mcTrigPhi,fDeltaPhiMinCut, mcdeltaPhi, fDeltaPhiMaxCut, GetMinPt()));
+    AliInfo(Form("Charged hadron: track Pt %f, track Phi %f, phi trigger %f. Cuts:  delta phi  %2.2f < %2.2f < %2.2f \n",
+                 mcAssocPt,mcAssocPhi, mcTrigPhi,fDeltaPhiMinCut, mcdeltaPhi, fDeltaPhiMaxCut));
   }
   
   // Fill Histograms
@@ -1079,9 +1079,7 @@ TObjString* AliAnaParticleHadronCorrelation::GetAnalysisCuts()
   
   snprintf(onePar,buffersize,"--- AliAnaPaticleHadronCorrelation ---\n") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize," Pt Trigger > %3.2f ",    fMinTriggerPt) ; 
-  parList+=onePar ;
-  snprintf(onePar,buffersize," %3.2f < Pt associated < %3.2f ", fMinAssocPt,   fMaxAssocPt) ; 
+  snprintf(onePar,buffersize," %3.2f < Pt associated < %3.2f ", fMinAssocPt,   fMaxAssocPt) ;
   parList+=onePar ;
   snprintf(onePar,buffersize," %3.2f < Phi trigger particle-Hadron < %3.2f ",    fDeltaPhiMinCut,   fDeltaPhiMaxCut) ; 
   parList+=onePar ;
@@ -2789,7 +2787,7 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle()
   // Check if the what of the selected triggers is leading particle comparing
   // with all the triggers, all the tracks or all the clusters (if requested for the clusters).
   
-  Double_t ptTrig      = fMinTriggerPt ;
+  Double_t ptTrig      = GetMinPt();
   Double_t phiTrig     = 0 ;
   fLeadingTriggerIndex =-1 ;
   Int_t index          =-1 ;
@@ -2800,7 +2798,8 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle()
   for(Int_t iaod = 0; iaod < GetInputAODBranch()->GetEntriesFast() ; iaod++)
   {
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-    
+    particle->SetLeadingParticle(kFALSE); // set it later
+
     // Vertex cut in case of mixing
     Int_t check = CheckMixedEventVertex(particle->GetCaloLabel(0), particle->GetTrackLabel(0));
     if(check ==  0) continue;
@@ -2893,7 +2892,8 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle()
   } // check neutral clusters
   
   fLeadingTriggerIndex = index ;
-  
+  pLeading->SetLeadingParticle(kTRUE);
+
   if( GetDebug() > 1 ) printf("\t particle AOD with index %d is leading with pT %2.2f\n", fLeadingTriggerIndex, pLeading->Pt());
   
   return kTRUE;
@@ -2920,146 +2920,160 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     return ; // no trigger particles found.
   }
 
-  if(GetDebug() > 1)
+  //if(GetDebug() > 1)
   {
-    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Begin hadron correlation analysis, fill histograms \n");
+    //printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Begin hadron correlation analysis, fill histograms \n");
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - In particle branch aod entries %d\n", naod);
-    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - In CTS aod entries %d\n",   GetCTSTracks()->GetEntriesFast());
+    //printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - In CTS aod entries %d\n",   GetCTSTracks()->GetEntriesFast());
   }
   
-  //---------------------------------------------------
-  // Loop on stored AOD particles, find leading trigger
-
-  Bool_t leading = IsTriggerTheEventLeadingParticle();
-  
-  if(GetDebug() > 1)
-    printf("\t AOD Leading trigger? %d, with index %d\n",leading,fLeadingTriggerIndex);
-  
-  //-----------------------------------------
-  // Fill Leading trigger related histograms
-  //-----------------------------------------
-  if(( !leading             || fLeadingTriggerIndex < 0 ) &&
-     ( fMakeAbsoluteLeading || fMakeNearSideLeading ) )
+  //------------------------------------------------------
+  // Find leading trigger if analysis request only leading
+  Int_t iaod = 0 ;
+  if( fMakeAbsoluteLeading || fMakeNearSideLeading )
   {
-    if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Leading not found\n");
-    return ;
-  }
-  
-  AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(fLeadingTriggerIndex));
-  
-  particle->SetLeadingParticle(leading);
-
-  Float_t pt = particle->Pt();
-  fhPtTriggerInput->Fill(pt);
-  
-  // check if it was a calorimeter cluster and if the SS cut was requested, if so, apply it
-  Int_t clID1  = particle->GetCaloLabel(0) ;
-  Int_t clID2  = particle->GetCaloLabel(1) ; // for photon clusters should not be set.
-  //printf("Leading for for %s: id1 %d, id2 %d, min %f, max %f, det %s\n",
-  //       GetInputAODName().Data(),clID1,clID2,fM02MinCut,fM02MaxCut,(particle->GetDetector()).Data());
-  
-  
-  // if requested, do the rejection of clusters out of a shower shape window
-  // not needed if already done at the particle identification level, but for isolation
-  // studies, it is preferred not to remove so we do it here
-  if(clID1 > 0 && clID2 < 0 && fM02MaxCut > 0 && fM02MinCut > 0)
-  {
-    Int_t iclus = -1;
-    TObjArray* clusters = 0x0;
-    if     (particle->GetDetector() == "EMCAL") clusters = GetEMCALClusters();
-    else if(particle->GetDetector() == "PHOS" ) clusters = GetPHOSClusters();
+    Bool_t leading = IsTriggerTheEventLeadingParticle();
     
-    if(clusters)
+    if(GetDebug() > 1)
+      printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - AOD Leading trigger? %d, with index %d\n",leading,fLeadingTriggerIndex);
+    
+    if(!leading)
     {
-      AliVCluster *cluster = FindCluster(clusters,clID1,iclus);
-      Float_t m02 = cluster->GetM02();
-      if(m02 > fM02MaxCut || m02 < fM02MinCut) return ;
+      if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Leading was requested and not found\n");
+      return ;
     }
+    else
+    {
+      // Select only the leading in the trigger AOD loop
+      naod = 1 ;
+      iaod = fLeadingTriggerIndex;
+    }
+  }
 
-    fhPtTriggerSSCut->Fill(pt);
-  }
-  
-  // Check if the particle is isolated or if we want to take the isolation into account
-  if(OnlyIsolated())
-  {
-    if( !particle->IsIsolated() ) return;
-    fhPtTriggerIsoCut->Fill(pt);
-  }
-  
-  // Check if trigger is in fiducial region
-  if(IsFiducialCutOn())
-  {
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(*particle->Momentum(),particle->GetDetector()) ;
-    if(! in ) return ;
-  }
-  
-  fhPtTriggerFidCut->Fill(pt);
-  
-  // Make correlation with charged hadrons
-  
-  Bool_t okcharged = MakeChargedCorrelation(particle, GetCTSTracks());
-  if(IsDataMC())
-    MakeMCChargedCorrelation(particle);
-  
-  Bool_t okneutral = kTRUE;
-  TObjArray * pi0list = (TObjArray*) GetAODBranch(fPi0AODBranchName); //For the future, foresee more possible pi0 lists
-  if(fNeutralCorr && pi0list)
-  {
-    if(pi0list->GetEntriesFast() > 0)
-      okneutral = MakeNeutralCorrelation(particle, pi0list);
-  }
-  
-  // If the correlation or the finding of the leading did not succeed.
-  if(!okcharged || !okneutral) return ;
-  
-  // Fill leading particle histogram if correlation went well and
-  // no problem was found, like not absolute leading, or bad vertex in mixing.
-  
-  // pT of the leading, vs leading origin if MC
-  fhPtLeading->Fill(pt);
-  
-  if(IsDataMC())
-  {
-    Int_t mcIndex = GetMCTagHistogramIndex(particle->GetTag());
-    fhPtLeadingMC[mcIndex]->Fill(pt);
-  }
-  
-  // Acceptance of the leading
-  Float_t phi = particle->Phi();
-  if( phi<0 ) phi+=TMath::TwoPi();
-  fhPhiLeading->Fill(pt, phi);
-  
-  fhEtaLeading->Fill(pt, particle->Eta());
-  //printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Leading particle : pt %f, eta %f, phi %f\n",particle->Pt(),particle->Eta(),phi);
-  
-  //----------------------------------
-  // Leading particle pT vs event bins
-  
-  fhPtLeadingBin->Fill(pt,GetEventMixBin());
-  if(fCorrelVzBin) fhPtLeadingVzBin->Fill(pt,GetEventVzBin());
-  
-  Float_t cen = GetEventCentrality();
-  Float_t ep  = GetEventPlaneAngle();
+  // Loop on trigger AOD
+  TObjArray * pi0list = (TObjArray*) GetAODBranch(fPi0AODBranchName); // For the future, foresee more possible pi0 lists
 
-  fhPtLeadingCentrality        ->Fill(pt,cen);
-  fhPtLeadingEventPlane        ->Fill(pt,ep);
+  Float_t cen         = GetEventCentrality();
+  Float_t ep          = GetEventPlaneAngle();
   fhLeadingEventPlaneCentrality->Fill(cen,ep);
-  
-  //----------------------------------
-  // Leading particle pT vs pile-up
-  
-  if(fFillPileUpHistograms)
+
+  Int_t   mixEventBin = GetEventMixBin();
+  Int_t   vzbin       = GetEventVzBin();
+  printf("naod");
+  for( iaod = 0; iaod < naod; iaod++ )
   {
-    Int_t vtxBC = GetReader()->GetVertexBC();
-    if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA)     fhPtLeadingVtxBC0->Fill(pt);
+    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
-    if(GetReader()->IsPileUpFromSPD())               fhPtLeadingPileUp[0]->Fill(pt);
-    if(GetReader()->IsPileUpFromEMCal())             fhPtLeadingPileUp[1]->Fill(pt);
-    if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtLeadingPileUp[2]->Fill(pt);
-    if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtLeadingPileUp[3]->Fill(pt);
-    if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtLeadingPileUp[4]->Fill(pt);
-    if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtLeadingPileUp[5]->Fill(pt);
-    if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtLeadingPileUp[6]->Fill(pt);
+    Float_t pt = particle->Pt();
+    if(pt < GetMinPt() || pt > GetMaxPt() ) continue ;
+
+    fhPtTriggerInput->Fill(pt);
+    
+    // check if it was a calorimeter cluster and if the SS cut was requested, if so, apply it
+    Int_t clID1  = particle->GetCaloLabel(0) ;
+    Int_t clID2  = particle->GetCaloLabel(1) ; // for photon clusters should not be set.
+    //printf("Leading for for %s: id1 %d, id2 %d, min %f, max %f, det %s\n",
+    //       GetInputAODName().Data(),clID1,clID2,fM02MinCut,fM02MaxCut,(particle->GetDetector()).Data());
+    
+    // if requested, do the rejection of clusters out of a shower shape window
+    // not needed if already done at the particle identification level, but for isolation
+    // studies, it is preferred not to remove so we do it here
+    if(clID1 > 0 && clID2 < 0 && fM02MaxCut > 0 && fM02MinCut > 0)
+    {
+      Int_t iclus = -1;
+      TObjArray* clusters = 0x0;
+      if     (particle->GetDetector() == "EMCAL") clusters = GetEMCALClusters();
+      else if(particle->GetDetector() == "PHOS" ) clusters = GetPHOSClusters();
+      
+      if(clusters)
+      {
+        AliVCluster *cluster = FindCluster(clusters,clID1,iclus);
+        Float_t m02 = cluster->GetM02();
+        if(m02 > fM02MaxCut || m02 < fM02MinCut) continue ;
+      }
+      
+      fhPtTriggerSSCut->Fill(pt);
+    }
+    
+    // Check if the particle is isolated or if we want to take the isolation into account
+    if(OnlyIsolated())
+    {
+      if( !particle->IsIsolated() ) continue;
+      fhPtTriggerIsoCut->Fill(pt);
+    }
+    
+    // Check if trigger is in fiducial region
+    if(IsFiducialCutOn())
+    {
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(*particle->Momentum(),particle->GetDetector()) ;
+      if(! in ) continue ;
+    }
+    
+    fhPtTriggerFidCut->Fill(pt);
+    
+    // Make correlation with charged hadrons
+    
+    Bool_t okcharged = MakeChargedCorrelation(particle, GetCTSTracks());
+    if(IsDataMC())
+      MakeMCChargedCorrelation(particle);
+    
+    Bool_t okneutral = kTRUE;
+    if(fNeutralCorr && pi0list)
+    {
+      if(pi0list->GetEntriesFast() > 0)
+        okneutral = MakeNeutralCorrelation(particle, pi0list);
+    }
+    
+    // If the correlation or the finding of the leading did not succeed.
+    if(!okcharged || !okneutral) continue ;
+    
+    //-----------------------------------------
+    // Fill trigger related histograms if correlation went well and
+    // no problem was found, like not absolute leading, or bad vertex in mixing.
+    
+    // pT of the leading, vs leading origin if MC
+    fhPtLeading->Fill(pt);
+    
+    if(IsDataMC())
+    {
+      Int_t mcIndex = GetMCTagHistogramIndex(particle->GetTag());
+      fhPtLeadingMC[mcIndex]->Fill(pt);
+    }
+    
+    // Acceptance of the leading
+    Float_t phi = particle->Phi();
+    if( phi<0 ) phi+=TMath::TwoPi();
+    fhPhiLeading->Fill(pt, phi);
+    
+    fhEtaLeading->Fill(pt, particle->Eta());
+    //printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Leading particle : pt %f, eta %f, phi %f\n",particle->Pt(),particle->Eta(),phi);
+    
+    //----------------------------------
+    // Trigger particle pT vs event bins
+    
+    fhPtLeadingBin->Fill(pt,mixEventBin);
+    if(fCorrelVzBin)
+      fhPtLeadingVzBin->Fill(pt,vzbin);
+    
+    fhPtLeadingCentrality->Fill(pt,cen);
+    fhPtLeadingEventPlane->Fill(pt,ep);
+    
+    //----------------------------------
+    // Trigger particle pT vs pile-up
+    
+    if(fFillPileUpHistograms)
+    {
+      Int_t vtxBC = GetReader()->GetVertexBC();
+      if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA)     fhPtLeadingVtxBC0->Fill(pt);
+      
+      if(GetReader()->IsPileUpFromSPD())               fhPtLeadingPileUp[0]->Fill(pt);
+      if(GetReader()->IsPileUpFromEMCal())             fhPtLeadingPileUp[1]->Fill(pt);
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtLeadingPileUp[2]->Fill(pt);
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtLeadingPileUp[3]->Fill(pt);
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtLeadingPileUp[4]->Fill(pt);
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtLeadingPileUp[5]->Fill(pt);
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtLeadingPileUp[6]->Fill(pt);
+    }
   }
   
   //Reinit for next event
@@ -3869,10 +3883,9 @@ void AliAnaParticleHadronCorrelation::Print(const Option_t * opt) const
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print(" ");
-  printf("Pt trigger           >  %3.2f\n", fMinTriggerPt) ;
-  printf("Pt associated hadron <  %3.2f\n", fMaxAssocPt) ; 
-  printf("Pt associated hadron >  %3.2f\n", fMinAssocPt) ;
-  printf("Phi trigger particle-Hadron   <  %3.2f\n", fDeltaPhiMaxCut) ; 
+  printf("Pt trigger > %2.2f; < %2.2f\n", GetMinPt() , GetMaxPt()) ;
+  printf("Pt associa > %2.2f; < %2.2f\n", fMinAssocPt, fMaxAssocPt) ;
+  printf("Phi trigger particle-Hadron   <  %3.2f\n", fDeltaPhiMaxCut) ;
   printf("Phi trigger particle-Hadron   >  %3.2f\n", fDeltaPhiMinCut) ;
   printf("Phi trigger particle-UeHadron <  %3.2f\n", fUeDeltaPhiMaxCut) ; 
   printf("Phi trigger particle-UeHadron >  %3.2f\n", fUeDeltaPhiMinCut) ;

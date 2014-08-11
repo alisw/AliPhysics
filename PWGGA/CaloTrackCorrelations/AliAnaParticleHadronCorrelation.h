@@ -107,8 +107,11 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   // Parameter setter and getter
   
-  Float_t      GetMinimumTriggerPt()       const { return fMinTriggerPt          ; }
-  void         SetMinimumTriggerPt(Float_t min)  { fMinTriggerPt = min           ; }
+  Float_t      GetMinimumTriggerPt()       const { return GetMinPt()             ; }
+  Float_t      GetMaximumTriggerPt()       const { return GetMaxPt()             ; }
+  void         SetTriggerPtRange(Float_t min, Float_t max)
+               { SetMinPt(min), SetMaxPt(max)                                    ; }
+  
 
   Float_t      GetMaximumAssociatedPt()    const { return fMaxAssocPt            ; }
   Float_t      GetMinimumAssociatedPt()    const { return fMinAssocPt            ; }
