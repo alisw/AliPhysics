@@ -4,21 +4,14 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class that contains the algorithm for the analysis of particle - hadron correlations
-// Particle (for example direct gamma) must be found in a previous analysis 
-//-- Author: Gustavo Conesa (INFN-LNF)
-
-//  Modified by Yaxian Mao:
-// 1. add the UE subtraction for corrlation study
-// 2. change the correlation variable
-// 3. Only use leading particle(cluster/track) as trigger for correlation (2010/07/02)
-// 4. Make decay photon-hadron correlations where decay contribute pi0 mass (2010/09/09)
-// 5. fill the pout to extract kt at the end, also to study charge asymmetry(2010/10/06) 
-// 6. Add the possibility for event selection analysis based on vertex and multiplicity bins (10/10/2010)
-// 7. change the way of delta phi cut for UE study due to memory issue (reduce histograms)
-// 8. Add the possibility to request the absolute leading particle at the near side or not, set trigger bins, general clean-up (08/2011)
-
+// Class that contains the algorithm for the analysis of
+// particle - hadron correlations
+// Particle (for example direct gamma) must be found in a previous analysis
+//
+//-- Author: Gustavo Conesa (INFN-LNF) (LPSC-IN2P2-CNRS)
+//
 // --- Analysis system ---
+
 #include "AliAnaCaloTrackCorrBaseClass.h"
 class AliAODPWG4ParticleCorrelation ;
 
@@ -255,30 +248,35 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   //Histograms
 
-  //leading particles 
+  //trigger particles
   TH1F *       fhPtTriggerInput;               //! pT distribution of trigger particles before selection
   TH1F *       fhPtTriggerSSCut;               //! pT distribution of trigger particles after shower shape selection
   TH1F *       fhPtTriggerIsoCut;              //! pT distribution of trigger particles after isolation cut selection
   TH1F *       fhPtTriggerFidCut;              //! pT distribution of trigger particles after fiducial selection
-  TH1F *       fhPtLeading;                    //! pT distribution of leading particles
-  TH1F *       fhPtLeadingVtxBC0;              //! pT distribution of leading particles
-  TH1F *       fhPtLeadingPileUp[7];           //! pT distribution of leading particles
-  TH2F *       fhPtLeadingVzBin;               //! pT distribution of leading particles vs vz bin
-  TH2F *       fhPtLeadingBin;                 //! pT distribution of leading particles, vs mixing bin
-  TH2F *       fhPhiLeading;                   //! phi distribution vs pT of leading particles
-  TH2F *       fhEtaLeading;                   //! eta distribution vs pT of leading particles
+  TH1F *       fhPtTrigger;                    //! pT distribution of trigger particles
+  TH1F *       fhPtTriggerVtxBC0;              //! pT distribution of trigger particles
+  TH1F *       fhPtTriggerPileUp[7];           //! pT distribution of trigger particles
+  TH2F *       fhPtTriggerVzBin;               //! pT distribution of trigger particles vs vz bin
+  TH2F *       fhPtTriggerBin;                 //! pT distribution of trigger particles, vs mixing bin
+  TH2F *       fhPhiTrigger;                   //! phi distribution vs pT of trigger particles
+  TH2F *       fhEtaTrigger;                   //! eta distribution vs pT of trigger particles
   
-  TH1F *       fhPtLeadingMC[7];               //! pT distribution of leading particles, check the origin of the cluster : "Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"
+  TH1F *       fhPtTriggerMC[7];               //! pT distribution of trigger particles, check the origin of the cluster : "Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"
 
-  TH2F *       fhPtLeadingCentrality;          //! pT distribution of leading particles vs centrality
-  TH2F *       fhPtLeadingEventPlane;          //! pT distribution of leading particles vs centrality
-  TH2F *       fhLeadingEventPlaneCentrality;  //! event plane vs centrality for leading particles
+  TH2F *       fhPtTriggerCentrality;          //! pT distribution of trigger particles vs centrality
+  TH2F *       fhPtTriggerEventPlane;          //! pT distribution of trigger particles vs centrality
+  TH2F *       fhTriggerEventPlaneCentrality;  //! event plane vs centrality for trigger particles
   
-  TH1F *       fhPtLeadingMixed;               //! pT distribution of leading particles, used in mixing
-  TH2F *       fhPtLeadingMixedVzBin;          //! pT distribution of leading particles, used in mixing, vs vz bin
-  TH2F *       fhPtLeadingMixedBin;            //! pT distribution of leading particles vs mixing bin
-  TH2F *       fhPhiLeadingMixed;              //! phi distribution vs pT of leading particles, used in mixing
-  TH2F *       fhEtaLeadingMixed;              //! eta distribution vs pT of leading particles, used in mixing  
+  TH1F *       fhPtTriggerMixed;               //! pT distribution of trigger particles, used in mixing
+  TH2F *       fhPtTriggerMixedVzBin;          //! pT distribution of trigger particles, used in mixing, vs vz bin
+  TH2F *       fhPtTriggerMixedBin;            //! pT distribution of trigger particles vs mixing bin
+  TH2F *       fhPhiTriggerMixed;              //! phi distribution vs pT of trigger particles, used in mixing
+  TH2F *       fhEtaTriggerMixed;              //! eta distribution vs pT of trigger particles, used in mixing  
+
+  // Leading hadron in the opposite side of the trigger
+  TH2F * fhPtLeadingOppositeHadron;            //! pT trigger : pT distribution of leading hadron oposite to trigger
+  TH2F * fhPtDiffPhiLeadingOppositeHadron;     //! pT trigger : difference phi distribution of leading hadron oposite and trigger
+  TH2F * fhPtDiffEtaLeadingOppositeHadron;     //! pT trigger: difference eta distribution of leading hadron oposite and trigger
 
   //trigger-charged histograms
   TH2F *       fhDeltaPhiDeltaEtaCharged ;     //! differences of eta and phi between trigger and charged hadrons
@@ -434,10 +432,10 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F **      fhZTDecayChargedAssocPtBin ;     //![fNAssocPtBins*GetNZvertBin()] Tagged as decay Trigger pT vs xE for different associated pt bins  
   
   //if the data is MC, fill MC information
-  TH2F *       fh2phiLeadingParticle;          //! #phi resolution for triggers
-  TH1F *       fhMCPtLeading;                  //! MC pure pT distribution of leading particles
-  TH2F *       fhMCPhiLeading;                 //! MC pure Phi distribution of leading particles
-  TH2F *       fhMCEtaLeading;                 //! MC pure Eta distribution of leading particles
+  TH2F *       fh2phiTriggerParticle;          //! #phi resolution for triggers
+  TH1F *       fhMCPtTrigger;                  //! MC pure pT distribution of leading particles
+  TH2F *       fhMCPhiTrigger;                 //! MC pure Phi distribution of leading particles
+  TH2F *       fhMCEtaTrigger;                 //! MC pure Eta distribution of leading particles
   TH2F *       fhMCEtaCharged;                 //! MC pure particles charged primary pt vs eta (both associated) 
   TH2F *       fhMCPhiCharged;                 //! MC pure particles charged primary pt vs phi (both associated) 
   TH2F *       fhMCDeltaEtaCharged;            //! MC pure particles charged trigger primary pt vs delta eta (associated-trigger) 
