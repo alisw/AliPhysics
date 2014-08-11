@@ -76,6 +76,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetV2.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassBase.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
