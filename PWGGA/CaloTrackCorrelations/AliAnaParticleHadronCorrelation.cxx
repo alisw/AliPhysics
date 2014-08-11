@@ -2775,18 +2775,19 @@ void AliAnaParticleHadronCorrelation::InitParameters()
 //__________________________________________________________
 void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()  
 {  
-  //Particle-Hadron Correlation Analysis, fill AODs
+  // Particle-Hadron Correlation Analysis, fill AODs
   
   if(!GetInputAODBranch())
   {
-    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s >, STOP \n",GetInputAODName().Data());
-    abort();
+    AliFatal(Form("No input particles in AOD with name branch < %s >, STOP \n",GetInputAODName().Data()));
+    return ;
   }
 	
   if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation"))
   {
-    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
-    abort();
+    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",
+                  GetInputAODBranch()->GetClass()->GetName()));
+    return ;
   }
 	
   if(GetDebug() > 1)
