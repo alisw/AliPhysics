@@ -77,7 +77,15 @@ ClassImp(AliXRDPROOFtoolkit)
 TChain* AliXRDPROOFtoolkit::MakeChain(const char*fileIn, const char * treeName, const char *fName, Int_t maxFiles, Int_t startFile)
 {
   //
-  // Create the chain
+  // Create a chain of files using the file 'fileIn' as input list 
+  // where one line per root file is expected
+  //
+  // treeName : Name of the tree
+  // fName    : file name inside of a zip file, will add '#fName'
+  //            to the file name
+  // maxFiles : maximum number of files in the chain
+  //            -1 (default) add all possible files starting from 'startFile'
+  // startFile: position of the first file, starting with 0
   //
   TChain* chain = new TChain(treeName);
 
@@ -95,13 +103,15 @@ TChain* AliXRDPROOFtoolkit::MakeChain(const char*fileIn, const char * treeName, 
       currentFile+=fName;
     }
     if (!currentFile.Contains("root")) continue; // protection
-    counter++;
-    if (counter<startFile) continue;
-    if (counter>maxFiles+startFile) break;
+    ++counter;
+    if (counter<=startFile) continue; 
+    if ((maxFiles>0) && (counter>maxFiles+startFile)) break;
+
     TFile * f = TFile::Open(currentFile.Data());
     if (f){
       chain->Add(currentFile.Data());
     }
+
     delete f;
   }
 
@@ -717,7 +727,7 @@ void AliXRDPROOFtoolkit::CacheFileList(const char * fileIn, const char* cachePre
   // Read the input list of files and add them to the chain
   TString currentFile;
   TString cacheFile;
-  Int_t counter=0;
+  //Int_t counter=0;
   {while(fin.good()) {
       TTimeStamp s;
       TString fname;
