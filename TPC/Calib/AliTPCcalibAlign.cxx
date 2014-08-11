@@ -1615,11 +1615,7 @@ void AliTPCcalibAlign::MakeResidualHistos(){
   // 4 - local   kz
   // 
   axisName[0]="delta";   axisTitle[0]="#Delta (cm)"; 
-  if (TMath::Abs(AliTracker::GetBz())<0.01){
-    binsTrack[0]=60;       xminTrack[0]=-1.2;        xmaxTrack[0]=1.2; 
-  }else{
-    binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
-  }
+  binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
   //
   axisName[1]="sector";   axisTitle[1]="Sector Number"; 
   binsTrack[1]=180;       xminTrack[1]=0;        xmaxTrack[1]=18; 
@@ -3818,123 +3814,131 @@ void AliTPCcalibAlign::MakeReportDyPhi(TFile */*output*/){
 }
 
 
+void AliTPCcalibAlign::Streamer(TBuffer &R__b)
+{
+  // Stream an object of class AliTPCcalibAlign.
+  Bool_t isDebug=AliLog::GetDebugLevel("","AliTPCcalibAlign")>0;
+  if (isDebug) AliSysInfo::SetVerbose(kTRUE);
+  
+  if (R__b.IsReading()) {
+    R__b.ReadClassBuffer(AliTPCcalibAlign::Class(),this);    
+    if (gDirectory){
+      for (Int_t i=0; i<2; ++i){
+	TString hisName=TString::Format("AliTPCcalibAlign.%s.fClusterDelta_%d",GetName(),i);
+	if (gDirectory->Get(hisName.Data())){
+	  fClusterDelta[i] = dynamic_cast<THn*>(gDirectory->Get((hisName).Data()));
+	}
+      }
+    
+      for (Int_t i=0; i<4; ++i){
+	TString hisName=TString::Format("AliTPCcalibAlign.%s.fTrackletDelta_%d",GetName(),i);
+	if (gDirectory->Get(hisName.Data())){
+	  fTrackletDelta[i] = dynamic_cast<THnSparse*>(gDirectory->Get((hisName).Data()));
+	}
+      }
+    }
+  } else {    
+    if (isDebug) AliSysInfo::AddStamp("aliengStreamer::Start");
+    R__b.WriteClassBuffer(AliTPCcalibAlign::Class(),this);    
+    if (isDebug) AliSysInfo::AddStamp("alignStreamer::DefaultStreamer");
+    //
+    for (Int_t i=0; i<2; ++i){
+      if (fClusterDelta[i]) fClusterDelta[i]->Write(TString::Format("AliTPCcalibAlign.%s.fClusterDelta_%d",GetName(),i).Data());
+    }
+    if (isDebug) AliSysInfo::AddStamp("alignStreamer::fClusterDelta");
+    //
+    for (Int_t i=0; i<4; ++i){
+      if (fTrackletDelta[i]) fTrackletDelta[i]->Write(TString::Format("AliTPCcalibAlign.%s.fTrackletDelta_%d",GetName(),i).Data());
+    }
+    if (isDebug) AliSysInfo::AddStamp("alignStreamer::fTrackletDelta");
+    //
+  }
+}
+
+
+
+// //______________________________________________________________________________
 // void AliTPCcalibAlign::Streamer(TBuffer &R__b)
 // {
 //   // Stream an object of class AliTPCcalibAlign.
+
 //   Bool_t isDebug=AliLog::GetDebugLevel("","AliTPCcalibAlign")>0;
 //   if (isDebug) AliSysInfo::SetVerbose(kTRUE);
-  
 //   if (R__b.IsReading()) {
+//     // Read the class using the automatic streamer. Might be wrong
+//     R__b.ReadClassBuffer(AliTPCcalibAlign::Class(),this);
 //     for (Int_t i=0; i<2; ++i){
 //       if (gDirectory){
-// 	TString hisName=TString::Format("AliTPCcalibAlign.fClusterDelta[%d]",i);
+// 	TString hisName=TString::Format("fClusterDelta[%d]",i);
 // 	if (gDirectory->Get(hisName.Data())){
 // 	  fClusterDelta[i] = dynamic_cast<THn*>(gDirectory->Get((hisName).Data()));
 // 	}
 //       }
 //     }
-//     R__b.ReadClassBuffer(AliTPCcalibAlign::Class(),this);
-//   } else {    
-//     if (isDebug) AliSysInfo::AddStamp("AliTPCcalibAlign::Streame::Start");
-//     //
+//   } else {
+//     // R__b.WriteClassBuffer(AliTPCcalibAlign::Class(),this);
+//     if (isDebug) AliSysInfo::AddStamp("Start");
+//     R__b.WriteVersion(AliTPCcalibAlign::IsA());
+//     if (isDebug) AliSysInfo::AddStamp("Version");
+//     AliTPCcalibBase::Streamer(R__b); // Stream the base class
+//     if (isDebug) AliSysInfo::AddStamp("BaseClass");
+    
+//     //    for (Int_t i=0; i<2; ++i)
+//     //  R__b << fClusterDelta[i];
 //     for (Int_t i=0; i<2; ++i){
-//       if (fClusterDelta[i]) fClusterDelta[i]->Write(TString::Format("fClusterDelta_%d",i).Data());
+//       if (fClusterDelta[i]) fClusterDelta[i]->Write(TString::Format("fClusterDelta[%d]",i).Data());
 //     }
-//     if (isDebug) AliSysInfo::AddStamp("AliTPCcalibAlign::Streamer::fClusterDelta");
-//     //
-//     for (Int_t i=0; i<4; ++i){
-//       if (fTrackletDelta[i]) fTrackletDelta[i]->Write(TString::Format("fTrackletDelta_%d",i).Data());
-//     }
-//     if (isDebug) AliSysInfo::AddStamp("AliTPCcalibAlign::Streamer::fTrackletDelta");
-//     //
-//     R__b.WriteClassBuffer(AliTPCcalibAlign::Class(),this);    
+    
+//     if (isDebug) AliSysInfo::AddStamp("THn");
+    
+//     for (Int_t i=0; i<4; ++i)
+//       R__b << fTrackletDelta[i];
+//     if (isDebug) AliSysInfo::AddStamp("THnSparse");
+    
+//     fDphiHistArray.Streamer(R__b);
+//     fDthetaHistArray.Streamer(R__b);
+//     fDyHistArray.Streamer(R__b);
+//     fDzHistArray.Streamer(R__b);
+
+//     fDyPhiHistArray.Streamer(R__b);
+//     fDzThetaHistArray.Streamer(R__b);
+    
+//     fDphiZHistArray.Streamer(R__b);
+//     fDthetaZHistArray.Streamer(R__b);
+//     fDyZHistArray.Streamer(R__b);
+//     fDzZHistArray.Streamer(R__b);
+    
+//     fFitterArray12.Streamer(R__b);
+//     fFitterArray9.Streamer(R__b);
+//     fFitterArray6.Streamer(R__b);
+    
+//     fMatrixArray12.Streamer(R__b);
+//     fMatrixArray9.Streamer(R__b);
+//     fMatrixArray6.Streamer(R__b);
+    
+//     fCombinedMatrixArray6.Streamer(R__b);
+//     if (isDebug) AliSysInfo::AddStamp("ObjArrays1");
+    
+//     R__b.WriteFastArray(fPoints,72*72);
+//     if (isDebug) AliSysInfo::AddStamp("Points");
+//     R__b << fNoField;
+//     R__b << fXIO;
+//     R__b << fXmiddle;
+//     R__b << fXquadrant;
+//     if (isDebug) AliSysInfo::AddStamp("Floats");
+    
+//     fArraySectorIntParam.Streamer(R__b);
+//     fArraySectorIntCovar.Streamer(R__b);
+//     if (isDebug) AliSysInfo::AddStamp("ObjArrays2");
+    
+//     R__b << fSectorParamA;
+//     R__b << fSectorCovarA;
+//     R__b << fSectorParamC;
+//     R__b << fSectorCovarC;
+//     if (isDebug) AliSysInfo::AddStamp("TMatrixD");
+    
+//     R__b << fUseInnerOuter;
+//     R__b << fgkMergeEntriesCut; // Should we write the static member?
+//     if (isDebug) AliSysInfo::AddStamp("End");
 //   }
 // }
-
-
-
-//______________________________________________________________________________
-void AliTPCcalibAlign::Streamer(TBuffer &R__b)
-{
-  // Stream an object of class AliTPCcalibAlign.
-
-  Bool_t isDebug=AliLog::GetDebugLevel("","AliTPCcalibAlign")>0;
-  if (isDebug) AliSysInfo::SetVerbose(kTRUE);
-  if (R__b.IsReading()) {
-    // Read the class using the automatic streamer. Might be wrong
-    R__b.ReadClassBuffer(AliTPCcalibAlign::Class(),this);
-    for (Int_t i=0; i<2; ++i){
-      if (gDirectory){
-	TString hisName=TString::Format("fClusterDelta[%d]",i);
-	if (gDirectory->Get(hisName.Data())){
-	  fClusterDelta[i] = dynamic_cast<THn*>(gDirectory->Get((hisName).Data()));
-	}
-      }
-    }
-  } else {
-    // R__b.WriteClassBuffer(AliTPCcalibAlign::Class(),this);
-    if (isDebug) AliSysInfo::AddStamp("Start");
-    R__b.WriteVersion(AliTPCcalibAlign::IsA());
-    if (isDebug) AliSysInfo::AddStamp("Version");
-    AliTPCcalibBase::Streamer(R__b); // Stream the base class
-    if (isDebug) AliSysInfo::AddStamp("BaseClass");
-    
-    //    for (Int_t i=0; i<2; ++i)
-    //  R__b << fClusterDelta[i];
-    for (Int_t i=0; i<2; ++i){
-      if (fClusterDelta[i]) fClusterDelta[i]->Write(TString::Format("fClusterDelta[%d]",i).Data());
-    }
-    
-    if (isDebug) AliSysInfo::AddStamp("THn");
-    
-    for (Int_t i=0; i<4; ++i)
-      R__b << fTrackletDelta[i];
-    if (isDebug) AliSysInfo::AddStamp("THnSparse");
-    
-    fDphiHistArray.Streamer(R__b);
-    fDthetaHistArray.Streamer(R__b);
-    fDyHistArray.Streamer(R__b);
-    fDzHistArray.Streamer(R__b);
-
-    fDyPhiHistArray.Streamer(R__b);
-    fDzThetaHistArray.Streamer(R__b);
-    
-    fDphiZHistArray.Streamer(R__b);
-    fDthetaZHistArray.Streamer(R__b);
-    fDyZHistArray.Streamer(R__b);
-    fDzZHistArray.Streamer(R__b);
-    
-    fFitterArray12.Streamer(R__b);
-    fFitterArray9.Streamer(R__b);
-    fFitterArray6.Streamer(R__b);
-    
-    fMatrixArray12.Streamer(R__b);
-    fMatrixArray9.Streamer(R__b);
-    fMatrixArray6.Streamer(R__b);
-    
-    fCombinedMatrixArray6.Streamer(R__b);
-    if (isDebug) AliSysInfo::AddStamp("ObjArrays1");
-    
-    R__b.WriteFastArray(fPoints,72*72);
-    if (isDebug) AliSysInfo::AddStamp("Points");
-    R__b << fNoField;
-    R__b << fXIO;
-    R__b << fXmiddle;
-    R__b << fXquadrant;
-    if (isDebug) AliSysInfo::AddStamp("Floats");
-    
-    fArraySectorIntParam.Streamer(R__b);
-    fArraySectorIntCovar.Streamer(R__b);
-    if (isDebug) AliSysInfo::AddStamp("ObjArrays2");
-    
-    R__b << fSectorParamA;
-    R__b << fSectorCovarA;
-    R__b << fSectorParamC;
-    R__b << fSectorCovarC;
-    if (isDebug) AliSysInfo::AddStamp("TMatrixD");
-    
-    R__b << fUseInnerOuter;
-    R__b << fgkMergeEntriesCut; // Should we write the static member?
-    if (isDebug) AliSysInfo::AddStamp("End");
-  }
-}

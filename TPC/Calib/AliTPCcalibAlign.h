@@ -147,8 +147,8 @@ public:
 
   static void SetMergeEntriesCut(Double_t entriesCut){fgkMergeEntriesCut = entriesCut;}
 protected:
-  THn     *fClusterDelta[2];  //clusters residuals
-  THnSparse     *fTrackletDelta[4]; //track residuals
+  THn     *fClusterDelta[2];  // !clusters residuals
+  THnSparse     *fTrackletDelta[4]; //!track residuals
 
   TObjArray fDphiHistArray;    // array of residual histograms  phi      -kPhi
   TObjArray fDthetaHistArray;  // array of residual histograms  theta    -kTheta
@@ -206,7 +206,7 @@ protected:
 private:
   AliTPCcalibAlign&  operator=(const AliTPCcalibAlign&);// not implemented
 
-  ClassDef(AliTPCcalibAlign,6)
+  ClassDef(AliTPCcalibAlign,7)
 };
 
 
