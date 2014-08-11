@@ -130,20 +130,41 @@ AliTRDdEdxParams * getDefault()
   const Float_t meanpars[]={1.521e+00 , 7.294e-01 , 8.066e+00 , 2.146e-02 , 3.137e+01 , 7.160e-15 , 2.838e+00 , 1.100e+01};
   const Float_t respars[]={-4.122e-01 , 1.019e+00 , -1.319e-01};
 
-  for(Int_t ipar=0; ipar< MAXNPAR; ipar++){
-    if(ipar == AliPID::kProton){
-      const Float_t tmpproton[]={2.026e+00 , -1.462e-04 , 1.202e+00 , 1.162e-01 , 2.092e+00 , -3.018e-02 , 3.665e+00 , 3.487e-07}; 
-      defobj->SetMeanParameter(ipar, sizeof(tmpproton)/sizeof(Float_t), tmpproton);
-    }
-    else if(ipar == AliPID::kPion || ipar ==AliPID::kElectron){       
-      const Float_t tmppe[]={1.508e+00 , 7.356e-01 , 8.002e+00 , 1.932e-02 , 3.058e+01 , 5.114e-18 , 3.561e+00 , 1.408e+01};  
-      defobj->SetMeanParameter(ipar, sizeof(tmppe)/sizeof(Float_t), tmppe);
-    }
-    else{
-      defobj->SetMeanParameter(ipar, sizeof(meanpars)/sizeof(Float_t), meanpars);
-    }
+  for(Int_t ipar=0; ipar< 10; ipar++){
+    for(Int_t ich = 0; ich < 2; ich++){
+      for(Int_t icls = 0; icls < 2; icls++){
 
-    defobj->SetSigmaParameter(ipar,  sizeof(respars)/sizeof(Float_t), respars);
+        TVectorF tmp;
+        //!!! has to be consistent with
+        //Int_t GetIter(const Int_t itype, const Int_t nch, const Int_t ncls) const
+        //in AliTRDdEdxParams
+        const Int_t nch = ich==0? 6 : 1;
+        const Int_t ncls = icls==0? 180 : 1;
+        
+
+        if(ich==0 && icls==0){
+          if(ipar == AliPID::kProton){
+            const Float_t tmpproton[]={2.026e+00 , -1.462e-04 , 1.202e+00 , 1.162e-01 , 2.092e+00 , -3.018e-02 , 3.665e+00 , 3.487e-07}; 
+            defobj->SetMeanParameter(ipar, nch, ncls, sizeof(tmpproton)/sizeof(Float_t), tmpproton);
+          }
+          else if(ipar == AliPID::kPion || ipar ==AliPID::kElectron){       
+            const Float_t tmppe[]={1.508e+00 , 7.356e-01 , 8.002e+00 , 1.932e-02 , 3.058e+01 , 5.114e-18 , 3.561e+00 , 1.408e+01};  
+            defobj->SetMeanParameter(ipar, nch, ncls, sizeof(tmppe)/sizeof(Float_t), tmppe);
+          }
+          else{
+            defobj->SetMeanParameter(ipar, nch, ncls, sizeof(meanpars)/sizeof(Float_t), meanpars);
+          }
+        
+          defobj->SetSigmaParameter(ipar,  nch, ncls, sizeof(respars)/sizeof(Float_t), respars);
+        }
+        else{
+          //bad nch and ncls, 0-size array
+          defobj->SetMeanParameter( ipar, nch, ncls, 0, meanpars);
+          defobj->SetSigmaParameter(ipar,  nch, ncls, 0, respars);
+        }
+
+      }
+    }
   }
 
   defobj->Print();

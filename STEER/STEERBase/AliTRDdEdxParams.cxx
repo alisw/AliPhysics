@@ -28,40 +28,61 @@ AliTRDdEdxParams::AliTRDdEdxParams(const TString name, const TString title): TNa
   //
 }
 
-void AliTRDdEdxParams::CheckType(const Int_t itype, const TString tag) const 
+Int_t AliTRDdEdxParams::GetIter(const Int_t itype, const Int_t nch, const Int_t ncls) const
 {
   //
-  //check if itype is in range
+  //return array iterator
   //
 
-  if(itype<0 || itype>=MAXNPAR){
-    AliError(Form("AliTRDdEdxParams::CheckType %s itype out of range %d\n", tag.Data(), itype));
+  Int_t itNch = -999, itNcls = -999;
+
+  //hard coded cuts
+  if(nch==6){
+    itNch = 0;
   }
+  else{
+    itNch = 1;
+  }
+
+  if(ncls/nch>=18){
+    itNcls = 0;
+  }
+  else{
+    itNcls = 1;
+  }
+
+  const Int_t finaliter = itype*2*2 +  itNch*2 + itNcls;
+
+  if(finaliter<0 || finaliter>= MAXSIZE){
+    AliError(Form("out of range itype %d nch %d ncls %d\n", itype, nch, ncls));
+  }
+
+  return finaliter;
 }
 
-const TVectorF& AliTRDdEdxParams::GetParameter(const TVectorF par[], const Int_t itype)const
+const TVectorF& AliTRDdEdxParams::GetParameter(const TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls)const
 {
   //
   //return parameter for particle itype from par[]
   //
 
-  CheckType(itype, "GetParameter");
+  const Int_t iter = GetIter(itype, nch, ncls);
 
-  return par[itype];
+  return par[iter];
 }
 
-void AliTRDdEdxParams::SetParameter(TVectorF par[], const Int_t itype, const Int_t npar, const Float_t vals[])
+void AliTRDdEdxParams::SetParameter(TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[])
 {
   //
   //set parameter, vals of dimension npar, for particle itype
   //
 
-  CheckType(itype, "SetParameter");
+  const Int_t iter = GetIter(itype, nch, ncls);
 
   TVectorF p2(npar, vals);
 
-  par[itype].ResizeTo(p2);
-  par[itype] = p2;
+  par[iter].ResizeTo(p2);
+  par[iter] = p2;
 }
 
 void AliTRDdEdxParams::Print(Option_t* option) const
@@ -73,14 +94,14 @@ void AliTRDdEdxParams::Print(Option_t* option) const
   TObject::Print(option);
 
   printf("\n======================= Mean ========================\n");
-  for(Int_t ii=0; ii<MAXNPAR; ii++){
+  for(Int_t ii=0; ii<MAXSIZE; ii++){
     printf("%d: Nrows() %d\n",ii, fMeanPar[ii].GetNrows());
     if(fMeanPar[ii].GetNrows()) fMeanPar[ii].Print();
   }
 
   printf("\n======================= Sigma ========================\n");
 
-  for(Int_t ii=0; ii<MAXNPAR; ii++){
+  for(Int_t ii=0; ii<MAXSIZE; ii++){
     printf("%d: Nrows() %d\n",ii, fSigmaPar[ii].GetNrows());
     if(fSigmaPar[ii].GetNrows()) fSigmaPar[ii].Print();
   }

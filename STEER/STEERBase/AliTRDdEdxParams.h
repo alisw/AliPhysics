@@ -23,8 +23,8 @@
 #include "TVectorT.h"
 #include "TString.h"
 
-//maximum number of paticle types
-#define MAXNPAR 10
+//maximum number of array size
+#define MAXSIZE 100
 
 class AliTRDdEdxParams: public TNamed
 {
@@ -32,22 +32,22 @@ class AliTRDdEdxParams: public TNamed
   AliTRDdEdxParams(const TString name="name", const TString title="title");
   void Print(Option_t* option = "") const;
 
-  const TVectorF& GetMeanParameter(const Int_t itype) const { return GetParameter(fMeanPar, itype);}
-  const TVectorF& GetSigmaParameter(const Int_t itype) const { return GetParameter(fSigmaPar, itype);}
+  const TVectorF& GetMeanParameter( const Int_t itype, const Int_t nch, const Int_t ncls) const { return GetParameter(fMeanPar,  itype, nch, ncls);}
+  const TVectorF& GetSigmaParameter(const Int_t itype, const Int_t nch, const Int_t ncls) const { return GetParameter(fSigmaPar, itype, nch, ncls);}
 
-  void SetMeanParameter(const Int_t itype, const Int_t npar, const Float_t vals[]){ SetParameter(fMeanPar, itype, npar, vals); }
-  void SetSigmaParameter(const Int_t itype, const Int_t npar, const Float_t vals[]){ SetParameter(fSigmaPar, itype, npar, vals); } 
+  void SetMeanParameter( const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[]){ SetParameter(fMeanPar,  itype, nch, ncls, npar, vals); }
+  void SetSigmaParameter(const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[]){ SetParameter(fSigmaPar, itype, nch, ncls, npar, vals); } 
 
  private:
-  const TVectorF& GetParameter(const TVectorF par[], const Int_t itype) const;
-  void SetParameter(TVectorF par[], const Int_t itype, const Int_t npar, const Float_t vals[]);
+  const TVectorF& GetParameter(const TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls) const;
+  void SetParameter(TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[]);
 
-  TVectorF fMeanPar[MAXNPAR];
-  TVectorF fSigmaPar[MAXNPAR];
+  TVectorF fMeanPar[MAXSIZE];
+  TVectorF fSigmaPar[MAXSIZE];
 
-  void CheckType(const Int_t itype, const TString tag) const;
+  Int_t GetIter(const Int_t itype, const Int_t nch, const Int_t ncls) const;
 
-  ClassDef(AliTRDdEdxParams,1);
+  ClassDef(AliTRDdEdxParams,2);
 };
 
 #endif

@@ -156,23 +156,6 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
   //
 
   const Double_t badval = -9999;
-
-  //cut on number of chambers
-  const Double_t cutch = 6;
-
-  //cut on mean number of clusters per chamber
-  const Double_t cutclsperch = 18;
-
-  const Double_t nch = track->GetTRDNchamberdEdx();
-  if(nch < cutch){
-    return badval;
-  }
-
-  const Double_t ncls = track->GetTRDNclusterdEdx();
-  if( ncls/nch < cutclsperch){
-    return badval;
-  }
-
   Double_t pTRD = -999;
   for(Int_t ich=0; ich<6; ich++){
     pTRD = track->GetTRDmomentum(ich);
@@ -188,8 +171,21 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
     return -99999;
   }
 
-  const Float_t *meanpar = (fkTRDdEdxParams->GetMeanParameter(type)).GetMatrixArray();
-  const Float_t *respar  = (fkTRDdEdxParams->GetSigmaParameter(type)).GetMatrixArray();
+  const Double_t nch = track->GetTRDNchamberdEdx();
+  const Double_t ncls = track->GetTRDNclusterdEdx();
+
+  const TVectorF meanvec = fkTRDdEdxParams->GetMeanParameter(type, nch, ncls);
+  if(meanvec.GetNrows()==0){
+    return badval;
+  }
+
+  const TVectorF resvec  = fkTRDdEdxParams->GetSigmaParameter(type, nch, ncls);
+  if(resvec.GetNrows()==0){
+    return badval;
+  }
+
+  const Float_t *meanpar = meanvec.GetMatrixArray();
+  const Float_t *respar  = resvec.GetMatrixArray();
 
   //============================================================================================<<<<<<<<<<<<<
 
