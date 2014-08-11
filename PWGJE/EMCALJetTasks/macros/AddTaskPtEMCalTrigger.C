@@ -21,6 +21,7 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(){
         EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger("ptemcaltriggertask");
         pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
         mgr->AddTask(pttriggertask);
+        pttriggertask->SetPtRange(2., 100.);
 
         // Create charged hadrons pPb standard track cuts
         AliESDtrackCuts *standardTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
