@@ -103,7 +103,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
     
   Int_t        GetMCTagHistogramIndex(Int_t tag);
   
-  Bool_t       IsTriggerTheEventLeadingParticle(TObjArray *chPl);
+  Bool_t       IsTriggerTheEventLeadingParticle();
   
   // Parameter setter and getter
   
@@ -204,10 +204,13 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillTriggerAODWithReferences() { fFillAODWithReferences = kTRUE  ; }
   void         SwitchOffFillTriggerAODWithReferences(){ fFillAODWithReferences = kFALSE ; }
 
+  void         SwitchOnCheckNeutralClustersForLeading() { fCheckLeadingWithNeutralClusters = kTRUE  ; }
+  void         SwitchOffCheckNeutralClustersForLeading(){ fCheckLeadingWithNeutralClusters = kFALSE ; }
   
  private:
 
   Bool_t       fFillAODWithReferences;         // Add to the trigger particle AOD the reference to the tracks or neutrals in correlation.
+  Bool_t       fCheckLeadingWithNeutralClusters;// Compare the trigger candidate to Leading pT with the clusters pT, by default only charged
   Float_t      fMinTriggerPt ;                 // Minimum trigger hadron pt
   Float_t      fMaxAssocPt ;                   // Maximum associated hadron pt
   Float_t      fMinAssocPt ;                   // Minimum associated hadron pt
