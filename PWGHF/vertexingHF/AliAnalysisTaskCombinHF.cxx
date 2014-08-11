@@ -78,6 +78,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fMinMass(1.720),
   fMaxMass(2.150),
   fMaxPt(10.),
+  fPtBinWidth(0.5),
   fEtaAccCut(0.9),
   fPtAccCut(0.1),
   fNRotations(9),
@@ -137,6 +138,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fMinMass(1.720),
   fMaxMass(2.150),
   fMaxPt(10.),
+  fPtBinWidth(0.5),
   fEtaAccCut(0.9),
   fPtAccCut(0.1),
   fNRotations(9),
@@ -240,8 +242,9 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistTrackStatus->SetMinimum(0);
   fOutput->Add(fHistTrackStatus);
   
-  Int_t nPtBins = fMaxPt*10;
-  
+  Int_t nPtBins = (Int_t)(fMaxPt/fPtBinWidth+0.001);
+  Double_t maxPt=fPtBinWidth*nPtBins;
+
   if(fReadMC){
     
     fHistCheckOrigin=new TH1F("hCheckOrigin","",7,-1.5,5.5);
@@ -264,27 +267,27 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     fHistCheckDecChanAcc->SetMinimum(0);
     fOutput->Add(fHistCheckDecChanAcc);
     
-    fPtVsYGen= new TH2F("hPtVsYGen","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYGen= new TH2F("hPtVsYGen","",nPtBins,0.,maxPt,20,-1.,1.);
     fPtVsYGen->Sumw2();
     fPtVsYGen->SetMinimum(0);
     fOutput->Add(fPtVsYGen);
     
-    fPtVsYGenLargeAcc= new TH2F("hPtVsYGenLargeAcc","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYGenLargeAcc= new TH2F("hPtVsYGenLargeAcc","",nPtBins,0.,maxPt,20,-1.,1.);
     fPtVsYGenLargeAcc->Sumw2();
     fPtVsYGenLargeAcc->SetMinimum(0);
     fOutput->Add(fPtVsYGenLargeAcc);
     
-    fPtVsYGenLimAcc= new TH2F("hPtVsYGenLimAcc","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYGenLimAcc= new TH2F("hPtVsYGenLimAcc","",nPtBins,0.,maxPt,20,-1.,1.);
     fPtVsYGenLimAcc->Sumw2();
     fPtVsYGenLimAcc->SetMinimum(0);
     fOutput->Add(fPtVsYGenLimAcc);
     
-    fPtVsYGenAcc= new TH2F("hPtVsYGenAcc","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYGenAcc= new TH2F("hPtVsYGenAcc","",nPtBins,0.,maxPt,20,-1.,1.);
     fPtVsYGenAcc->Sumw2();
     fPtVsYGenAcc->SetMinimum(0);
     fOutput->Add(fPtVsYGenAcc);
     
-    fPtVsYReco= new TH2F("hPtVsYReco","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYReco= new TH2F("hPtVsYReco","",nPtBins,0.,maxPt,20,-1.,1.);
     fPtVsYReco->Sumw2();
     fPtVsYReco->SetMinimum(0);
     fOutput->Add(fPtVsYReco);
@@ -293,38 +296,38 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   
   Int_t nMassBins=fMaxMass*1000.-fMinMass*1000.;
   Double_t maxm=fMinMass+nMassBins*0.001;
-  fMassVsPtVsY=new TH3F("hMassVsPtVsY","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+  fMassVsPtVsY=new TH3F("hMassVsPtVsY","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsY->Sumw2();
   fMassVsPtVsY->SetMinimum(0);
   fOutput->Add(fMassVsPtVsY);
   
-  fMassVsPtVsYRot=new TH3F("hMassVsPtVsYRot","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+  fMassVsPtVsYRot=new TH3F("hMassVsPtVsYRot","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsYRot->Sumw2();
   fMassVsPtVsYRot->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYRot);
   
   if(fMeson==kDzero){
-    fMassVsPtVsYLSpp=new TH3F("hMassVsPtVsYLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+    fMassVsPtVsYLSpp=new TH3F("hMassVsPtVsYLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
     fMassVsPtVsYLSpp->Sumw2();
     fMassVsPtVsYLSpp->SetMinimum(0);
     fOutput->Add(fMassVsPtVsYLSpp);
-    fMassVsPtVsYLSmm=new TH3F("hMassVsPtVsYLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+    fMassVsPtVsYLSmm=new TH3F("hMassVsPtVsYLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
     fMassVsPtVsYLSmm->Sumw2();
     fMassVsPtVsYLSmm->SetMinimum(0);
     fOutput->Add(fMassVsPtVsYLSmm);
   }
   
-  fMassVsPtVsYSig=new TH3F("hMassVsPtVsYSig","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+  fMassVsPtVsYSig=new TH3F("hMassVsPtVsYSig","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsYSig->Sumw2();
   fMassVsPtVsYSig->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYSig);
   
-  fMassVsPtVsYRefl=new TH3F("hMassVsPtVsYRefl","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+  fMassVsPtVsYRefl=new TH3F("hMassVsPtVsYRefl","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsYRefl->Sumw2();
   fMassVsPtVsYRefl->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYRefl);
   
-  fMassVsPtVsYBkg=new TH3F("hMassVsPtVsYBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+  fMassVsPtVsYBkg=new TH3F("hMassVsPtVsYBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsYBkg->Sumw2();
   fMassVsPtVsYBkg->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYBkg);
