@@ -60,8 +60,8 @@ ClassImp(AliAnaParticleHadronCorrelation)
 //___________________________________________________________________
   AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation(): 
     AliAnaCaloTrackCorrBaseClass(),
-    fFillAODWithReferences(0),      fMinTriggerPt(0.),
-    fMaxAssocPt(1000.),             fMinAssocPt(0.),   
+    fFillAODWithReferences(0),      fCheckLeadingWithNeutralClusters(0),
+    fMinTriggerPt(0.),              fMaxAssocPt(1000.),             fMinAssocPt(0.),
     fDeltaPhiMaxCut(0.),            fDeltaPhiMinCut(0.),   
     fSelectIsolated(0),             fMakeSeveralUE(0),              
     fUeDeltaPhiMaxCut(0.),          fUeDeltaPhiMinCut(0.), 
@@ -2783,16 +2783,20 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   
 }
 
-//_______________________________________________________________________________________
-Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle(TObjArray *chPl)
+//_________________________________________________________________________
+Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle()
 {
-  // Check if the trigger is leading particle
+  // Check if the what of the selected triggers is leading particle comparing
+  // with all the triggers, all the tracks or all the clusters (if requested for the clusters).
   
   Double_t ptTrig      = fMinTriggerPt ;
   Double_t phiTrig     = 0 ;
-  fLeadingTriggerIndex = -1 ;
-  TString trigDetector = "EMCAL";
+  fLeadingTriggerIndex =-1 ;
+  Int_t index          =-1 ;
+  AliAODPWG4ParticleCorrelation* pLeading = 0;
+
   // Loop on stored AOD particles, find leading trigger on the selected list, with at least min pT.
+  
   for(Int_t iaod = 0; iaod < GetInputAODBranch()->GetEntriesFast() ; iaod++)
   {
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
@@ -2805,23 +2809,28 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle(TObjArr
     // find the leading particles with highest momentum
     if (particle->Pt() > ptTrig)
     {
-      ptTrig               = particle->Pt() ;
-      phiTrig              = particle->Phi();
-      fLeadingTriggerIndex = iaod ;
-      trigDetector         = particle->GetDetector();
+      ptTrig   = particle->Pt() ;
+      phiTrig  = particle->Phi();
+      index    = iaod     ;
+      pLeading = particle ;
     }
   }// finish search of leading trigger particle on the AOD branch.
   
-  if(fLeadingTriggerIndex < 0) return kFALSE;
+  if(index < 0) return kFALSE;
+  
+  //printf("AOD leading pT %2.2f, ID %d\n", pLeading->Pt(),pLeading->GetCaloLabel(0));
   
   if(phiTrig < 0 ) phiTrig += TMath::TwoPi();
   
   // Compare if it is the leading of all tracks
   
   TVector3 p3;
-  for(Int_t ipr = 0;ipr < chPl->GetEntriesFast() ; ipr ++ )
+  for(Int_t ipr = 0;ipr < GetCTSTracks()->GetEntriesFast() ; ipr ++ )
   {
-    AliVTrack * track = (AliVTrack *) (chPl->At(ipr)) ;
+    AliVTrack * track = (AliVTrack *) (GetCTSTracks()->At(ipr)) ;
+    
+    if(track->GetID() == pLeading->GetTrackLabel(0) || track->GetID() == pLeading->GetTrackLabel(1) ||
+       track->GetID() == pLeading->GetTrackLabel(2) || track->GetID() == pLeading->GetTrackLabel(3)   ) continue ;
     
     Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
     p3.SetXYZ(mom[0],mom[1],mom[2]);
@@ -2837,43 +2846,55 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle(TObjArr
     //jump out this event if there is any other particle with pt larger than trigger
     else
     {
-      if(pt > ptTrig)  return kFALSE;
+      if(pt > ptTrig)  return kFALSE ;
     }
    }// track loop
 
   // Compare if it is leading of all calorimeter clusters
   
-  // Select the calorimeter cluster list
-  TObjArray * nePl = 0x0;
-  if      (trigDetector == "PHOS" ) nePl = GetPHOSClusters();
-  else                              nePl = GetEMCALClusters();
-
-  if(!nePl) return kTRUE; // Do the selection just with the tracks if no calorimeter is available.
-  
-  TLorentzVector lv;
-  for(Int_t ipr = 0;ipr < nePl->GetEntriesFast() ; ipr ++ )
+  if(fCheckLeadingWithNeutralClusters)
   {
-    AliVCluster * cluster = (AliVCluster *) (nePl->At(ipr)) ;
-   
-    cluster->GetMomentum(lv,GetVertex(0));
-    
-    Float_t pt   = lv.Pt();
-    Float_t phi  = lv.Phi() ;
-    if(phi < 0) phi+=TMath::TwoPi();
-    
-    //jump out this event if near side associated particle pt larger than trigger
-    // not really needed for calorimeter, unless DCal is included
-    if (fMakeNearSideLeading)
-    {
-      if(pt > ptTrig && TMath::Abs(phi-phiTrig) < TMath::PiOver2())  return kFALSE;
-    }
-    //jump out this event if there is any other particle with pt larger than trigger
+    // Select the calorimeter cluster list
+    TObjArray * nePl = 0x0;
+    if      (pLeading->GetDetector() == "PHOS" )
+      nePl = GetPHOSClusters();
     else
+      nePl = GetEMCALClusters();
+    
+    if(!nePl) return kTRUE; // Do the selection just with the tracks if no calorimeter is available.
+    
+    TLorentzVector lv;
+    for(Int_t ipr = 0;ipr < nePl->GetEntriesFast() ; ipr ++ )
     {
-      if(pt > ptTrig)  return kFALSE;
-    }
-  }// track loop
-
+      AliVCluster * cluster = (AliVCluster *) (nePl->At(ipr)) ;
+      
+      if(cluster->GetID() == pLeading->GetCaloLabel(0) || cluster->GetID() == pLeading->GetCaloLabel(1) ) continue ;
+      
+      cluster->GetMomentum(lv,GetVertex(0));
+      
+      Float_t pt   = lv.Pt();
+      Float_t phi  = lv.Phi() ;
+      if(phi < 0) phi+=TMath::TwoPi();
+      
+      if(IsTrackMatched(cluster,GetReader()->GetInputEvent())) continue ; // avoid charged clusters, already covered by tracks, or cluster merging with track.
+      
+      //jump out this event if near side associated particle pt larger than trigger
+      // not really needed for calorimeter, unless DCal is included
+      if (fMakeNearSideLeading)
+      {
+        if(pt > ptTrig && TMath::Abs(phi-phiTrig) < TMath::PiOver2()) return kFALSE ;
+      }
+      //jump out this event if there is any other particle with pt larger than trigger
+      else
+      {
+        if(pt > ptTrig)  return kFALSE ;
+      }
+    }// cluster loop
+  } // check neutral clusters
+  
+  fLeadingTriggerIndex = index ;
+  
+  if( GetDebug() > 1 ) printf("\t particle AOD with index %d is leading with pT %2.2f\n", fLeadingTriggerIndex, pLeading->Pt());
   
   return kTRUE;
   
@@ -2903,13 +2924,13 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   {
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Begin hadron correlation analysis, fill histograms \n");
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - In particle branch aod entries %d\n", naod);
-    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In CTS aod entries %d\n",   GetCTSTracks()->GetEntriesFast());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - In CTS aod entries %d\n",   GetCTSTracks()->GetEntriesFast());
   }
   
   //---------------------------------------------------
   // Loop on stored AOD particles, find leading trigger
 
-  Bool_t leading = IsTriggerTheEventLeadingParticle(GetCTSTracks());
+  Bool_t leading = IsTriggerTheEventLeadingParticle();
   
   if(GetDebug() > 1)
     printf("\t AOD Leading trigger? %d, with index %d\n",leading,fLeadingTriggerIndex);
@@ -2917,8 +2938,12 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   //-----------------------------------------
   // Fill Leading trigger related histograms
   //-----------------------------------------
-  if(fLeadingTriggerIndex < 0 && ( fMakeAbsoluteLeading || fMakeNearSideLeading ) ) return ;
-  
+  if(( !leading             || fLeadingTriggerIndex < 0 ) &&
+     ( fMakeAbsoluteLeading || fMakeNearSideLeading ) )
+  {
+    if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Leading not found\n");
+    return ;
+  }
   
   AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(fLeadingTriggerIndex));
   
