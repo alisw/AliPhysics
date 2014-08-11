@@ -1541,18 +1541,19 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis()
   AliAnaGeneratorKine *ana = new AliAnaGeneratorKine();
   ana->SetDebug(kDebug); //10 for lots of messages
   
-  // Minimum particles energy
+  // Trigger detector, acceptance and pT cut
+  ana->SetTriggerDetector("EMCAL");
   ana->SetMinPt(10); // Trigger photon, pi0 minimum pT
+  ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.6, 85, 175);
+  
+  // Particles associated to trigger or isolation cone acceptance and pT cut
+  ana->SetCalorimeter("EMCAL");
   ana->SetMinChargedPt(0.2);
   ana->SetMinNeutralPt(0.3);
-  
-  // Detectors acceptance
-  ana->SetCalorimeter("EMCAL");
-  ana->SetTriggerDetector("EMCAL");
-  
   ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.65, 81, 179);
   ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.9, 0, 360);
   
+  // Isolation paramters
   AliIsolationCut * ic =  ana->GetIsolationCut();
   ic->SetDebug(kDebug);
   ic->SetPtThreshold(0.5);

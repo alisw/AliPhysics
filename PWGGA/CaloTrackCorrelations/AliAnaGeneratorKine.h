@@ -24,7 +24,7 @@ class AliAnaGeneratorKine : public AliAnaCaloTrackCorrBaseClass {
 public:
   
   AliAnaGeneratorKine() ; // default ctor
-  virtual ~AliAnaGeneratorKine() { ; } //virtual dtor              
+  virtual ~AliAnaGeneratorKine() { delete fFidCutTrigger ; } //virtual dtor
   
   Bool_t CorrelateWithPartonOrJet(TLorentzVector trigger,
                                   Int_t   indexTrig,
@@ -60,11 +60,19 @@ public:
   void    SetMinChargedPt   ( Float_t pt )   { fMinChargedPt    = pt   ; }
   void    SetMinNeutralPt   ( Float_t pt )   { fMinNeutralPt    = pt   ; }
   
-    
+  // Detector for trigger particles acceptance
+  AliFiducialCut * GetFiducialCutForTrigger()
+  { if(!fFidCutTrigger)  fFidCutTrigger  = new AliFiducialCut(); return  fFidCutTrigger  ; }
+  virtual void     SetFiducialCut(AliFiducialCut * fc)
+  { delete fFidCutTrigger;  fFidCutTrigger  = fc      ; }
+
+  
 private:
   
   TString     fTriggerDetector;             //! trigger detector, for fiducial region
   TString     fCalorimeter;                 //! detector neutral particles, for fiducial region
+  
+  AliFiducialCut* fFidCutTrigger;           //! fiducial cut for the trigger detector
   
   Float_t     fMinChargedPt;                //! Minimum energy for charged particles in correlation
   Float_t     fMinNeutralPt;                //! Minimum energy for neutral particles in correlation
