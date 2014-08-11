@@ -80,7 +80,8 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fMinLeadHadPt(0),               fMaxLeadHadPt(0),
 
     //Histograms
-    fhPtInput(0),                   fhPtFidCut(0),
+    fhPtTriggerInput(0),            fhPtTriggerSSCut(0),
+    fhPtTriggerIsoCut(0),           fhPtTriggerFidCut(0),
     fhPtLeading(0),                 fhPtLeadingVtxBC0(0),
     fhPtLeadingVzBin(0),            fhPtLeadingBin(0),                 
     fhPhiLeading(0),                fhEtaLeading(0),   
@@ -1139,13 +1140,27 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   TString sz  = "" ;
   TString tz  = "" ;
   
-  fhPtInput  = new TH1F("hPtInput","#it{p}_{T} distribution of input trigger particles", nptbins,ptmin,ptmax); 
-  fhPtInput->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
-  outputContainer->Add(fhPtInput);
+  fhPtTriggerInput  = new TH1F("hPtInput","Input trigger #it{p}_{T}", nptbins,ptmin,ptmax);
+  fhPtTriggerInput->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+  outputContainer->Add(fhPtTriggerInput);
 
-  fhPtFidCut  = new TH1F("hPtFidCut","#it{p}_{T} distribution of input trigger particles after fiducial cut", nptbins,ptmin,ptmax); 
-  fhPtFidCut->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
-  outputContainer->Add(fhPtFidCut);
+  if( fM02MaxCut > 0 && fM02MinCut > 0 )
+  {
+    fhPtTriggerSSCut  = new TH1F("hPtTriggerSSCut","Trigger #it{p}_{T} after #lambda^{2}_{0} cut", nptbins,ptmin,ptmax);
+    fhPtTriggerSSCut->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+    outputContainer->Add(fhPtTriggerSSCut);
+  }
+  
+  if( OnlyIsolated() )
+  {
+    fhPtTriggerIsoCut  = new TH1F("hPtTriggerIsoCut","Trigger #it{p}_{T} after isolation (and #lambda^{2}_{0}) cut", nptbins,ptmin,ptmax);
+    fhPtTriggerIsoCut->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+    outputContainer->Add(fhPtTriggerIsoCut);
+  }
+  
+  fhPtTriggerFidCut  = new TH1F("hPtTriggerFidCut","Trigger #it{p}_{T} after fiducial (isolation and #lambda^{2}_{0}) cut", nptbins,ptmin,ptmax);
+  fhPtTriggerFidCut->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+  outputContainer->Add(fhPtTriggerFidCut);
 
   fhPtLeading  = new TH1F("hPtLeading","#it{p}_{T} distribution of leading particles", nptbins,ptmin,ptmax); 
   fhPtLeading->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
@@ -2883,6 +2898,9 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   
   AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(fLeadingTriggerIndex));
   
+  Float_t pt = particle->Pt();
+  fhPtTriggerInput->Fill(pt);
+  
   // check if it was a calorimeter cluster and if the SS cut was requested, if so, apply it
   Int_t clID1  = particle->GetCaloLabel(0) ;
   Int_t clID2  = particle->GetCaloLabel(1) ; // for photon clusters should not be set.
@@ -2904,16 +2922,18 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     {
       AliVCluster *cluster = FindCluster(clusters,clID1,iclus);
       Float_t m02 = cluster->GetM02();
-      //printf("\t Check m02 = %2.2f\n",m02);
       if(m02 > fM02MaxCut || m02 < fM02MinCut) return ;
     }
+
+    fhPtTriggerSSCut->Fill(pt);
   }
   
   // Check if the particle is isolated or if we want to take the isolation into account
-  if(OnlyIsolated() && !particle->IsIsolated()) return;
-  
-  Float_t pt = particle->Pt();
-  fhPtInput->Fill(pt);
+  if(OnlyIsolated())
+  {
+    if( !particle->IsIsolated() ) return;
+    fhPtTriggerIsoCut->Fill(pt);
+  }
   
   // Check if trigger is in fiducial region
   if(IsFiducialCutOn())
@@ -2922,7 +2942,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(! in ) return ;
   }
   
-  fhPtFidCut->Fill(pt);
+  fhPtTriggerFidCut->Fill(pt);
   
   // Make correlation with charged hadrons
   Bool_t okcharged = kTRUE;
