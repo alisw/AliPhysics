@@ -89,7 +89,11 @@ class AliAODConversionMother : public AliAODConversionParticle{
 		Float_t CalculateDistanceBetweenPhotons(AliAODConversionPhoton* y1, AliAODConversionPhoton* y2 , Double_t prodPoint[3]);
 		void CalculateDistanceOfClossetApproachToPrimVtx(const AliVVertex* primVertex);
 		void DetermineMesonQuality(AliAODConversionPhoton* y1, AliAODConversionPhoton* y2);
-			
+		
+		void SetTrueMesonValue(Int_t trueMeson) {fTrueMeson = trueMeson;}
+		Int_t GetTrueMesonValue()const {return fTrueMeson;}
+		
+		
 	private:
 		Int_t fLabel[3]; 						// Labels of the decay photons
 		Int_t fMCLabel; 						// MC Label
@@ -110,8 +114,14 @@ class AliAODConversionMother : public AliAODConversionParticle{
 													// 5: 1 photon quality 2, 1 photon quality 3
 													// 6: both photons quality 3
 		
+		Int_t fTrueMeson;						// is true meson
+													// 0 : no
+													// 1 : pi0
+													// 2 : eta
+													// 3 : eta'
+													// 4 : omega
 		
-    ClassDef(AliAODConversionMother,4)
+    ClassDef(AliAODConversionMother,5)
 };
 
 #endif

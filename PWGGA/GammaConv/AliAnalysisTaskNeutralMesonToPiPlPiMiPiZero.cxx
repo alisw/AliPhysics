@@ -951,6 +951,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 		Bool_t gamma1DalitzCand = kFALSE;
 		Int_t gamma0MCLabel = TrueGammaCandidate0->GetMCParticleLabel(MCStack);
 		Int_t gamma0MotherLabel = -1;
+		Int_t motherRealLabel = -1;
 		if(gamma0MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
 			// Daughters Gamma 0
 			TParticle * negativeMC = (TParticle*)TrueGammaCandidate0->GetNegativeMCDaughter(MCStack);
@@ -960,6 +961,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 				if(negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){ // ... From Conversion ...
 					if(gammaMC0->GetPdgCode() == 22){ // ... with Gamma Mother
 						gamma0MotherLabel=gammaMC0->GetFirstMother();
+						motherRealLabel=gammaMC0->GetFirstMother();
 					}
 				}
 				if(gammaMC0->GetPdgCode() ==111){ // Dalitz candidate
@@ -1006,6 +1008,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 			
 			
 			if(isTruePi0 || isTruePi0Dalitz){// True Pion 
+				Pi0Candidate->SetTrueMesonValue(1);
+				Pi0Candidate->SetMCLabel(motherRealLabel);
 				fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt()); 
 			}
 		}	
@@ -1021,7 +1025,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 	Bool_t isTruePi0Dalitz = kFALSE;
 	Bool_t gamma0DalitzCand = kFALSE;
 	Bool_t gamma1DalitzCand = kFALSE;
-   
+	Int_t motherRealLabel = -1;
+		
 	if (AODMCTrackArray!=NULL && TrueGammaCandidate0 != NULL){
 		AliAODMCParticle *positiveMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueGammaCandidate0->GetMCLabelPositive()));
 		AliAODMCParticle *negativeMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueGammaCandidate0->GetMCLabelNegative()));
@@ -1041,7 +1046,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 			if(abs(negativeMC->GetPdgCode())==11 && abs(positiveMC->GetPdgCode())==11){  // Electrons ...
 				if(((positiveMC->GetMCProcessCode())) == 5 && ((negativeMC->GetMCProcessCode())) == 5){ // ... From Conversion ...     
 					if(gammaMC0->GetPdgCode() == 22){ // ... with Gamma Mother
-					gamma0MotherLabel=gammaMC0->GetMother();
+						gamma0MotherLabel=gammaMC0->GetMother();
+						motherRealLabel=gammaMC0->GetMother();
 					}
 				}
 				if(gammaMC0->GetPdgCode() ==111){ // Dalitz candidate
@@ -1093,6 +1099,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 		}
 					
 		if(isTruePi0 || isTruePi0Dalitz){// True Pion 
+			Pi0Candidate->SetTrueMesonValue(1);
+			Pi0Candidate->SetMCLabel(motherRealLabel);
 			fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 		}	
 	}
@@ -1500,77 +1508,64 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 //______________________________________________________________________
 void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(AliAODConversionMother *mesoncand, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualParticleCandidate){
 
-// 	// Process True Mesons
-// 
-// 	AliStack *MCStack = fMCEvent->Stack();
-// 	
-// 	Bool_t isTrueEta = kFALSE;
-// 	Bool_t isTrueOmega = kFALSE;
-// 	Int_t gammaMCLabel = TrueNeutralPionCandidate->GetMCParticleLabel(MCStack);
-// 	Int_t gammaMotherLabel = -1;
-// 	
-// 	if(gammaMCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
-// 		// Daughters Gamma 0
-// 		TParticle * negativeMC = (TParticle*)TrueNeutralPionCandidate->GetNegativeMCDaughter(MCStack);
-// 		TParticle * positiveMC = (TParticle*)TrueNeutralPionCandidate->GetPositiveMCDaughter(MCStack);
-// 		TParticle * gammaMC = (TParticle*)MCStack->Particle(gammaMCLabel);
-// 
-// 		if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){  // Electrons ...
-// 			if(negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){ // ... From Conversion ...
-// 				if(gammaMC->GetPdgCode() == 22){ // ... with Gamma Mother
-// 					gammaMotherLabel=gammaMC->GetFirstMother();
+	// Process True Mesons
+	AliStack *MCStack = fMCEvent->Stack();
+	
+	Bool_t isTrueEta = kFALSE;
+	Bool_t isTrueOmega = kFALSE;
+	Int_t trueMesonFlag = TrueNeutralPionCandidate->GetTrueMesonValue();
+	Int_t pi0MCLabel= TrueNeutralPionCandidate->GetMCLabel();
+
+	
+	if ( !(trueMesonFlag == 1 && pi0MCLabel != -1)) return;
+// 	cout << trueMesonFlag << "\t" << pi0MCLabel << endl;
+
+ 
+	Int_t virtualParticleMCLabel = TrueVirtualParticleCandidate->GetMCParticleLabel(MCStack);
+	Int_t virtualParticleMotherLabel = -1;
+
+	Bool_t isPiPiDecay = kFALSE;
+	
+	if (fDoMesonQA){
+		TParticle * negativeMC = (TParticle*)TrueVirtualParticleCandidate->GetNegativeMCDaughter(MCStack);
+		TParticle * positiveMC = (TParticle*)TrueVirtualParticleCandidate->GetPositiveMCDaughter(MCStack);
+		if(TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==211){  // Pions ...
+			fHistoTruePionPionInvMassPt[fiCut]->Fill(TrueVirtualParticleCandidate->GetMass(),TrueVirtualParticleCandidate->Pt());
+		}
+	}
+	
+	if(virtualParticleMCLabel != -1){ // if virtualParticleMCLabel==-1 particles don't have same mother 
+		TParticle * negativeMC = (TParticle*)TrueVirtualParticleCandidate->GetNegativeMCDaughter(MCStack);
+		TParticle * positiveMC = (TParticle*)TrueVirtualParticleCandidate->GetPositiveMCDaughter(MCStack);
+// 			TParticle * virtualParticleMotherMC = (TParticle*)MCStack->Particle(virtualParticleMCLabel);
+// 			cout << "pdg code same mother - " << virtualParticleMotherMC->GetPdgCode() << endl;
+		
+		if(TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==211){  // Pions ...
+			virtualParticleMotherLabel=virtualParticleMCLabel;
+			isPiPiDecay=kTRUE;
+// 			} else if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){  // Electrons ...
+// 				if( virtualParticleMotherMC->GetPdgCode() != 22 ){
+// 					virtualParticleMotherLabel=virtualParticleMCLabel;
+// 					isDalitz = kTRUE;
+// 				} else if(negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){ // ... From Conversion ...
+// 					virtualParticleMotherLabel=virtualParticleMotherMC->GetFirstMother();
+// 					isRealGamma = kTRUE; //no virtual gamma
 // 				}
-// 			}
-// 		}
-// 		
-// 		
-// 	}
-// 
-// 	Int_t virtualParticleMCLabel = TrueVirtualParticleCandidate->GetMCParticleLabel(MCStack);
-// 	Int_t virtualParticleMotherLabel = -1;
-// 
-// 	Bool_t isPiPiDecay = kFALSE;
-// 	
-// 	if (fDoMesonQA){
-// 		TParticle * negativeMC = (TParticle*)TrueVirtualParticleCandidate->GetNegativeMCDaughter(MCStack);
-// 		TParticle * positiveMC = (TParticle*)TrueVirtualParticleCandidate->GetPositiveMCDaughter(MCStack);
-// 		if(TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==211){  // Pions ...
-// 			fHistoTruePionPionInvMassPt[fiCut]->Fill(TrueVirtualParticleCandidate->GetMass(),TrueVirtualParticleCandidate->Pt());
-// 		}
-// 	}
-// 	
-// 	if(virtualParticleMCLabel != -1){ // if virtualParticleMCLabel==-1 particles don't have same mother 
-// 		TParticle * negativeMC = (TParticle*)TrueVirtualParticleCandidate->GetNegativeMCDaughter(MCStack);
-// 		TParticle * positiveMC = (TParticle*)TrueVirtualParticleCandidate->GetPositiveMCDaughter(MCStack);
-// // 			TParticle * virtualParticleMotherMC = (TParticle*)MCStack->Particle(virtualParticleMCLabel);
-// // 			cout << "pdg code same mother - " << virtualParticleMotherMC->GetPdgCode() << endl;
-// 		
-// 		if(TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==211){  // Pions ...
-// 			virtualParticleMotherLabel=virtualParticleMCLabel;
-// 			isPiPiDecay=kTRUE;
-// // 			} else if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){  // Electrons ...
-// // 				if( virtualParticleMotherMC->GetPdgCode() != 22 ){
-// // 					virtualParticleMotherLabel=virtualParticleMCLabel;
-// // 					isDalitz = kTRUE;
-// // 				} else if(negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){ // ... From Conversion ...
-// // 					virtualParticleMotherLabel=virtualParticleMotherMC->GetFirstMother();
-// // 					isRealGamma = kTRUE; //no virtual gamma
-// // 				}
-// 		}	
-// 	}
-// 
-// 	if(gammaMotherLabel >= 0 && ( gammaMotherLabel == virtualParticleMotherLabel) ){
-// 		if(((TParticle*)MCStack->Particle(virtualParticleMotherLabel))->GetPdgCode() == 221){
-// 			isTrueEta=kTRUE;
-// 		}
-// 		if(((TParticle*)MCStack->Particle(virtualParticleMotherLabel))->GetPdgCode() == 223){
-// 			isTrueOmega=kTRUE;
-// 		}
-// 	}
-// 
-// 	if( isTrueEta || isTrueOmega ){ // True Eta or Omega
-// 		if ( isPiPiDecay) { //real eta -> Pi+ Pi- Pi0
-// 			Float_t weighted= 1;
+		}	
+	}
+ 
+	if( pi0MCLabel == virtualParticleMotherLabel ){
+		if(((TParticle*)MCStack->Particle(virtualParticleMotherLabel))->GetPdgCode() == 221){
+			isTrueEta=kTRUE;
+		}
+		if(((TParticle*)MCStack->Particle(virtualParticleMotherLabel))->GetPdgCode() == 223){
+			isTrueOmega=kTRUE;
+		}
+	}
+
+	if( isTrueEta || isTrueOmega ){ // True Eta or Omega
+		if ( isPiPiDecay) { //real eta -> Pi+ Pi- Pi0
+			Float_t weighted= 1;
 // 			if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
 // 				if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCStack,fInputEvent)){
 // 					if (((TParticle*)MCStack->Particle(gammaMotherLabel))->Pt()>0.005){
@@ -1578,10 +1573,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
 // 					}
 // 				}
 // 			}
-// 			fHistoTruePionPionFromNeutralMesonInvMassPt[fiCut]->Fill(TrueVirtualParticleCandidate->GetMass(),TrueVirtualParticleCandidate->Pt());
-// 			fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(EtaCandidate->M(),EtaCandidate->Pt(),weighted);
-// 		}	
-// 	}
+			fHistoTruePionPionFromNeutralMesonInvMassPt[fiCut]->Fill(TrueVirtualParticleCandidate->GetMass(),TrueVirtualParticleCandidate->Pt());
+			fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+		}	
+	}
 
 }
 
