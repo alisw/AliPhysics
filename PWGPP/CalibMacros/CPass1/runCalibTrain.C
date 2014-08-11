@@ -18,6 +18,7 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   //
   AliSysInfo::SetVerbose(kTRUE);
   AliLog::SetGlobalLogLevel(AliLog::kError); 
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
   gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/ConfigCalibTrain.C");
 
@@ -98,6 +99,13 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv);
   if (!okTPC) itsAlign->SetUseITSstandaloneTracks(kTRUE);
   if (grpData->GetL3Current()[0] < 300) itsAlign->SetMinPt(0.001); 
+  //
+  // dummy task to clean geometry in Terminate >>>>
+  CleanGeom* clgmTask = new CleanGeom("cleanGeom");
+  mgr->AddTask(clgmTask);
+  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
+  if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);
+  // dummy task to clean geometry in Terminate <<<<
   //
   // Run the analysis
   AliSysInfo::AddStamp("BeforeInitAnalysis");
