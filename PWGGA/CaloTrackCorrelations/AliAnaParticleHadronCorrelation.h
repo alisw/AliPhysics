@@ -35,12 +35,12 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   TList      * GetCreateOutputObjects();
   
+  void         Init();
+  
   void         InitParameters();
 
   void         FillEventMixPool() ;
-  
-  void         MakeAnalysisFillAOD()  ;
-  
+    
   void         MakeAnalysisFillHistograms() ; 
   
   void         Print(const Option_t * opt) const;
@@ -102,6 +102,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
                                                          Float_t deltaPhi);  
     
   Int_t        GetMCTagHistogramIndex(Int_t tag);
+  
+  Bool_t       IsTriggerTheEventLeadingParticle(TObjArray *chPl);
   
   // Parameter setter and getter
   
