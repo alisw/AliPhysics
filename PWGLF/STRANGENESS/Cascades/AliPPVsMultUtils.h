@@ -19,9 +19,9 @@ public:
 
     //Utility functions
     //for the base virtual event class: all methods are common
-    Float_t GetMultiplicityPercentile(AliESDEvent *event, TString lMethod);
-    Float_t GetMultiplicityPercentile(AliAODEvent *event, TString lMethod);
-    Bool_t LoadCalibration(Int_t lLoadThisCalibration);
+    Float_t GetMultiplicityPercentile(const AliESDEvent *event, TString lMethod);
+    Float_t GetMultiplicityPercentile(const AliAODEvent *event, TString lMethod);
+    void LoadCalibration(Int_t lLoadThisCalibration);
     
 private:
     
