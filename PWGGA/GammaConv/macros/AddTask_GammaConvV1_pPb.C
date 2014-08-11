@@ -1019,6 +1019,11 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		eventCutArray[ 1] = "8000012"; photonCutArray[ 1] = "005092170008260400000"; mesonCutArray[ 1] = "01621035009000"; //new standard RCut=10cm
 		eventCutArray[ 2] = "8000012"; photonCutArray[ 2] = "008092170008260400000"; mesonCutArray[ 2] = "01621035009000"; //new standard RCut=12.5cm
 		eventCutArray[ 3] = "8000012"; photonCutArray[ 3] = "006092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //new standard RCut=20cm
+	} else if (trainConfig == 181) {
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; 
+		eventCutArray[ 1] = "8000011"; photonCutArray[ 1] = "002092970028260400000"; mesonCutArray[ 1] = "01525065000000"; 
+		eventCutArray[ 2] = "8000011"; photonCutArray[ 2] = "002092970028270400000"; mesonCutArray[ 2] = "01525065000000"; 
+		eventCutArray[ 3] = "8000011"; photonCutArray[ 3] = "002092970028250000000"; mesonCutArray[ 3] = "01525065000000";                       
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -1060,7 +1065,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisEventCuts[i] = new AliConvEventCuts();
-		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17|| trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 || trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 ){
+		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17|| trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 || trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 || trainConfig == 181  ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
