@@ -243,8 +243,10 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   //Histograms
 
   //leading particles 
-  TH1F *       fhPtInput;                      //! pT distribution of trigger particles before selection
-  TH1F *       fhPtFidCut;                     //! pT distribution of trigger particles before leading selection, after fiducial selection
+  TH1F *       fhPtTriggerInput;               //! pT distribution of trigger particles before selection
+  TH1F *       fhPtTriggerSSCut;               //! pT distribution of trigger particles after shower shape selection
+  TH1F *       fhPtTriggerIsoCut;              //! pT distribution of trigger particles after isolation cut selection
+  TH1F *       fhPtTriggerFidCut;              //! pT distribution of trigger particles after fiducial selection
   TH1F *       fhPtLeading;                    //! pT distribution of leading particles
   TH1F *       fhPtLeadingVtxBC0;              //! pT distribution of leading particles
   TH1F *       fhPtLeadingPileUp[7];           //! pT distribution of leading particles
