@@ -1320,8 +1320,8 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   AliAnaParticleHadronCorrelation *ana = new AliAnaParticleHadronCorrelation();
   ana->SetDebug(kDebug);
   
-  ana->SetMinimumTriggerPt(5);
-  ana->SetAssociatedPtRange(0.2,100); 
+  ana->SetTriggerPtRange(5,100);
+  ana->SetAssociatedPtRange(0.2,100);
   ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
   
   ana->SetNAssocPtBins(9);
