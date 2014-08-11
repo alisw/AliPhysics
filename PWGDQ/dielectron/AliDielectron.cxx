@@ -1243,7 +1243,8 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       PairArray(pairIndex)->Add(candidate);
       //get a new candidate
       candidate=new AliDielectronPair;
-	  candidate->SetKFUsage(fUseKF);
+      candidate->SetKFUsage(fUseKF);
+      if(!isESD && pairIndex>AliDielectron::kEv1MM) candidate->SetKFUsage(kFALSE);
     }
   }
   //delete the surplus candidate
