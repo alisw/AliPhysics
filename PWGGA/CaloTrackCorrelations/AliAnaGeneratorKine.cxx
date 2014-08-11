@@ -38,6 +38,7 @@ ClassImp(AliAnaGeneratorKine)
 AliAnaGeneratorKine::AliAnaGeneratorKine() : 
 AliAnaCaloTrackCorrBaseClass(), 
 fTriggerDetector(""),fCalorimeter(""),
+fFidCutTrigger(0),
 fMinChargedPt(0),    fMinNeutralPt(0),
 fStack(0),
 fParton2(0),         fParton3(0), 
@@ -1069,10 +1070,8 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     // Recover the kinematics:
     particle->Momentum(trigger);
     
-    Bool_t in = GetFiducialCut()->IsInFiducialCut(trigger,fTriggerDetector) ;
-    
+    Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(trigger,fTriggerDetector) ;
     if(! in ) continue ;
-
 
     if( GetDebug() > 2) printf("Select trigger particle %d: pdg %d status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f \n",
                                ipr, pdgTrig, statusTrig, imother, ptTrig, particle->Eta(), particle->Phi()*TMath::RadToDeg());
