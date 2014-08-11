@@ -49,9 +49,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t       GetDecayPhotonMomentum(const AliAODPWG4Particle* trigger, TLorentzVector & mom1,TLorentzVector & mom2);
   
-  Bool_t       MakeChargedCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, Bool_t bFillHisto) ;
+  Bool_t       MakeChargedCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl) ;
   
-  Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, Bool_t bFillHisto) ;
+  Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl) ;
   
   void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle) ;
   
@@ -200,9 +200,14 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnFillPileUpHistograms()    { fFillPileUpHistograms = kTRUE  ; }
   void         SwitchOffFillPileUpHistograms()   { fFillPileUpHistograms = kFALSE ; }
+
+  void         SwitchOnFillTriggerAODWithReferences() { fFillAODWithReferences = kTRUE  ; }
+  void         SwitchOffFillTriggerAODWithReferences(){ fFillAODWithReferences = kFALSE ; }
+
   
  private:
-  
+
+  Bool_t       fFillAODWithReferences;         // Add to the trigger particle AOD the reference to the tracks or neutrals in correlation.
   Float_t      fMinTriggerPt ;                 // Minimum trigger hadron pt
   Float_t      fMaxAssocPt ;                   // Maximum associated hadron pt
   Float_t      fMinAssocPt ;                   // Minimum associated hadron pt
@@ -473,7 +478,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,31)
+  ClassDef(AliAnaParticleHadronCorrelation,32)
 } ;
  
 
