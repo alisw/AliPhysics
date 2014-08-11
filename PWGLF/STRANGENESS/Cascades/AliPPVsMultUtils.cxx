@@ -68,7 +68,7 @@ AliPPVsMultUtils &AliPPVsMultUtils::operator=(const AliPPVsMultUtils &c)
 }
 
 //______________________________________________________________________
-Float_t AliPPVsMultUtils::GetMultiplicityPercentile(const AliESDEvent *event, TString lMethod = "V0M")
+Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliESDEvent *event, TString lMethod)
 // Function to get multiplicity quantiles in ESDs. All methods would work 
 // with AliVEvent except GetPrimaryVertexSPD which exists in both ESD and AOD 
 // but not in the AliVEvent class; therefore two functions are included. 
@@ -136,7 +136,7 @@ Float_t AliPPVsMultUtils::GetMultiplicityPercentile(const AliESDEvent *event, TS
 }
 
 //______________________________________________________________________
-Float_t AliPPVsMultUtils::GetMultiplicityPercentile(const AliAODEvent *event, TString lMethod = "V0M")
+Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliAODEvent *event, TString lMethod)
 // Carbon-copy version of ESD function (GetPrimaryVertexSPD won't work 
 // in the base class AliVEvent...FIXME) 
 {
@@ -201,7 +201,7 @@ Float_t AliPPVsMultUtils::GetMultiplicityPercentile(const AliAODEvent *event, TS
 }
 
 //______________________________________________________________________
-void AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
+Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
 //To be called if starting analysis on a new run
 {
     //If Histograms exist, de-allocate to prevent memory leakage
@@ -239,7 +239,8 @@ void AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     
     if ( !fBoundaryHisto_V0M   || !fBoundaryHisto_V0A   || !fBoundaryHisto_V0C ||
         !fBoundaryHisto_V0MEq || !fBoundaryHisto_V0AEq || !fBoundaryHisto_V0CEq ){
-        AliFatal(Form("No calibration for run %i exists at the moment!",lLoadThisCalibration)); 
+        AliFatal(Form("No calibration for run %i exists at the moment!",lLoadThisCalibration));
+        return kFALSE; //return denial
     }
     
     //Careful with manual cleanup if needed: to be implemented
@@ -261,4 +262,5 @@ void AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     
     fRunNumber = lLoadThisCalibration; //Loaded!
     AliInfo(Form("Finished loading calibration for run %i",lLoadThisCalibration));
+    return kTRUE;
 }
