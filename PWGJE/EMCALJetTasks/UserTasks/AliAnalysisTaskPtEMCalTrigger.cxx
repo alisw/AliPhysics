@@ -77,6 +77,7 @@ namespace EMCalTriggerPtAnalysis {
 
 		// Set default cuts
 		fEtaRange.SetLimits(-0.8, 0.8);
+		fPtRange.SetLimits(0.15, 100.);
 
 	}
 
@@ -236,8 +237,8 @@ namespace EMCalTriggerPtAnalysis {
 		// Loop over all tracks (No cuts applied)
 		for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
 			track = dynamic_cast<AliESDtrack *>(fInputEvent->GetTrack(itrk));
-			// first fill without pielup cut
-			if(fEtaRange.IsInRange(track->Eta())) continue;
+			if(!fEtaRange.IsInRange(track->Eta())) continue;
+			if(!fPtRange.IsInRange(track->Pt())) continue;
 			if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, 0);
 			if(!triggerstrings.size()) // Non-EMCal-triggered
 				FillTrackHist("NoEMCal", track, zv, isPileupEvent, 0);
@@ -259,6 +260,7 @@ namespace EMCalTriggerPtAnalysis {
 				TIter trackIter(acceptedTracks.get());
 				while((track = dynamic_cast<AliESDtrack *>(trackIter()))){
 					if(!fEtaRange.IsInRange(track->Eta())) continue;
+					if(!fPtRange.IsInRange(track->Pt())) continue;
 					if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, icut + 1);
 					if(!triggerstrings.size()) // Non-EMCal-triggered
 						FillTrackHist("NoEMCal", track, zv, isPileupEvent, icut + 1);

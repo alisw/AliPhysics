@@ -35,6 +35,7 @@ public:
 
 	void AddTrackCuts(AliESDtrackCuts *trackCuts) { fListTrackCuts->Add(trackCuts); }
 	void SetEtaRange(double etamin, double etamax) { fEtaRange.SetLimits(etamin, etamax); }
+	void SetPtRange(double ptmin, double ptmax) { fPtRange.SetLimits(ptmin, ptmax); }
 
 private:
 	AliAnalysisTaskPtEMCalTrigger(const AliAnalysisTaskPtEMCalTrigger &);
@@ -53,6 +54,7 @@ private:
 
 	// Cuts
 	AliCutValueRange<double>      fEtaRange;              // Eta Selection Range
+	AliCutValueRange<double>	  fPtRange;				  // Pt Selection Range
 
 	ClassDef(AliAnalysisTaskPtEMCalTrigger, 1);           // Analysis of EMCal triggered events
 };
