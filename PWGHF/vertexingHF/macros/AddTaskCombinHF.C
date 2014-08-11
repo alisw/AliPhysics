@@ -12,17 +12,18 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
                                          Double_t bayesThresPion = 0.4,
                                          Double_t minMass = 1.6,
                                          Double_t maxMass = 2.15,
-                                         Double_t maxPt = 20.)
+                                         Double_t maxPt = 20.,
+                                         Double_t ptBinWidth = 0.5)
 {
-
+  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskCombinHF", "No analysis manager to connect to.");
   }
-
+  
   //Analysis Task
-
-
+  
+  
   AliRDHFCuts* analysiscuts=0x0;
   AliAODPidHF* pid=0x0;
   if(!cutObjFile.IsNull()){
@@ -45,13 +46,13 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
     pid->SetTOFnSigmaRangeForPions(-3.,3.);
     pid->SetTOFnSigmaRangeForKaons(-2.,2.);
     pid->SetTOFnSigmaRangeForProtons(-3.,3.);
-
+    
   }
   if(!analysiscuts){
     Printf("Wrong file or cut object name set");
     return 0x0;
   }
-
+  
   AliAnalysisTaskCombinHF *dTask = new AliAnalysisTaskCombinHF(meson,analysiscuts);
   if(!cutObjFile.IsNull()){
     dTask->SetKaonTrackCuts(esdc);
@@ -68,43 +69,44 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   // mass and pt range for histograms
   dTask->SetMassWindow(minMass, maxMass);
   dTask->SetMaxPt(maxPt);
+  dTask->SetPtBinWidth(ptBinWidth);
   
   // PID settings
   dTask->SetPIDHF(pid);
   dTask->SetPIDstrategy(pidStrategy);
   dTask->SetPIDselCaseZero(casePID);
   dTask->SetBayesThres(bayesThresKaon, bayesThresPion);
- 
-
-  mgr->AddTask(dTask);
-
   
-  // Create containers for input/output 
-
+  
+  mgr->AddTask(dTask);
+  
+  
+  // Create containers for input/output
+  
   TString mesname="Dzero";
   if(meson==1) mesname="Dplus";
   TString inname = Form("cinput%s%s",mesname.Data(),containerStr.Data());
   TString outname = Form("coutput%s%s",mesname.Data(),containerStr.Data());
   TString normname = Form("coutput%sNorm%s",mesname.Data(),containerStr.Data());
-
+  
   AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),
-							  AliAnalysisManager::kInputContainer);
+                                                          AliAnalysisManager::kInputContainer);
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += Form(":PWG3_D2H_InvMass%sLowPt%s",mesname.Data(),containerStr.Data());
   
   
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(outname,TList::Class(),
-								AliAnalysisManager::kOutputContainer,
-								outputfile.Data());
+                                                           AliAnalysisManager::kOutputContainer,
+                                                           outputfile.Data());
   AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),
-								AliAnalysisManager::kOutputContainer,
-								outputfile.Data());
+                                                               AliAnalysisManager::kOutputContainer,
+                                                               outputfile.Data());
   
   mgr->ConnectInput(dTask,0,mgr->GetCommonInputContainer());
   
   mgr->ConnectOutput(dTask,1,coutput);
   
   mgr->ConnectOutput(dTask,2,coutputNorm);  
-
+  
   return dTask;
 }

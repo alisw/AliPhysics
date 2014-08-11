@@ -69,6 +69,7 @@ public:
   }
   void SetMassWindow(Double_t minMass, Double_t maxMass){fMinMass=minMass; fMaxMass=maxMass;}
   void SetMaxPt(Double_t maxPt){fMaxPt=maxPt;}
+  void SetPtBinWidth(Double_t binw){fPtBinWidth=binw;}
   void SetEtaAccCut(Double_t etacut){fEtaAccCut=etacut;}
   void SetPtAccCut(Double_t ptcut){fPtAccCut=ptcut;}
   
@@ -134,6 +135,7 @@ private:
   Double_t fMinMass; // minimum value of invariant mass
   Double_t fMaxMass; // maximum value of invariant mass
   Double_t fMaxPt;   // maximum pT value for inv. mass histograms
+  Double_t fPtBinWidth; // width of pt bin (GeV/c)
   Double_t fEtaAccCut; // eta limits for acceptance step
   Double_t fPtAccCut; // pt limits for acceptance step
   
@@ -159,7 +161,7 @@ private:
   Double_t fBayesThresKaon;  // threshold for kaon identification via Bayesian PID
   Double_t fBayesThresPion;  // threshold for pion identification via Bayesian PID
   
-  ClassDef(AliAnalysisTaskCombinHF,4); // D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,5); // D0D+ task from AOD tracks
 };
 
 #endif
