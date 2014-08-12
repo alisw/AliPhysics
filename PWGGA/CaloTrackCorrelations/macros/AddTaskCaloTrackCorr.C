@@ -1322,7 +1322,9 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   ana->SetTriggerPtRange(5,100);
   ana->SetAssociatedPtRange(0.2,100);
-  ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
+  //ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
+  ana->SetDeltaPhiCutRange  (TMath::DegToRad()*120.,TMath::DegToRad()*240.);
+  ana->SetUeDeltaPhiCutRange(TMath::DegToRad()*60. ,TMath::DegToRad()*120.);
   
   ana->SetNAssocPtBins(9);
   
@@ -1386,16 +1388,18 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   ana->SetNZvertBin(20);
   
+  ana->SwitchOffFillHighMultiplicityHistograms();
+
   if(kCollisions=="pp")
   {
     ana->SetNMaxEvMix(100);    
     ana->SwitchOnTrackMultBins();
-    ana->SetNCentrBin(9); // Fixed track mult values
+    ana->SetNTrackMultBin(10);  // same as SetNCentrBin(10);
     ana->SetNRPBin(1);
   }
   else 
   {
-    ana->SetNMaxEvMix(10);    
+    ana->SetNMaxEvMix(10);
     ana->SwitchOffTrackMultBins(); // centrality bins
     ana->SetNCentrBin(3); 
     ana->SetNRPBin(3);
@@ -1464,10 +1468,8 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOffFillBradHistograms();
   
   // Underlying event
-  ana->SwitchOffEventSelection();
   ana->SwitchOnSeveralUECalculation();
   ana->SetUeDeltaPhiCutRange(TMath::Pi()/3, 2*TMath::Pi()/3);
-  ana->SetMultiBin(1);
   
   //Set Histograms name tag, bins and ranges
   
