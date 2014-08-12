@@ -820,15 +820,15 @@ void AliAnaParticleHadronCorrelation::FillDecayPhotonCorrelationHistograms(Float
   }
 }
 
-//______________________________________________________________________________________________________________________________________________________
+//____________________________________________________________________________________________________________________________________
 void AliAnaParticleHadronCorrelation::FillNeutralAngularCorrelationHistograms(Float_t ptAssoc,  Float_t ptTrig,  
-                                                                              Float_t phiAssoc, Float_t phiTrig,  Float_t &     deltaPhi,
+                                                                              Float_t phiAssoc, Float_t phiTrig,  Float_t & deltaPhi,
                                                                               Float_t etaAssoc, Float_t etaTrig)
 {
   // Fill angular correlation related histograms
   
-  Float_t deltaEta    = etaTrig-etaAssoc;
-  deltaPhi    = phiTrig-phiAssoc;
+  Float_t deltaEta = etaTrig-etaAssoc;
+          deltaPhi = phiTrig-phiAssoc;
   
   if(deltaPhi <= -TMath::PiOver2()) deltaPhi+=TMath::TwoPi();
   if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
@@ -3652,12 +3652,12 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
   }  
   
   Float_t pt   = -100. ;
-//  Float_t zT   = -100. ;
+  Float_t zT   = -100. ;
   Float_t phi  = -100. ;
   Float_t eta  = -100. ;
   Float_t xE   = -100. ; 
   Float_t hbpXE= -100. ; 
-  //Float_t hbpZT= -100. ;
+  Float_t hbpZT= -100. ;
 
   Float_t ptTrig  = aodParticle->Pt();
   Float_t phiTrig = aodParticle->Phi();
@@ -3703,16 +3703,16 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
     
     FillNeutralAngularCorrelationHistograms(pt, ptTrig, phi, phiTrig, deltaPhi, eta, etaTrig);
     
-    //zT  = pt/ptTrig ;
+    zT  = pt/ptTrig ;
     xE  =-pt/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
     
     //if(xE <0.)xE =-xE;
     
     hbpXE = -100;
-    //hbpZT = -100;
+    hbpZT = -100;
     
     if(xE > 0 ) hbpXE = TMath::Log(1./xE);
-    //if(zT > 0 ) hbpZT = TMath::Log(1./zT);
+    if(zT > 0 ) hbpZT = TMath::Log(1./zT);
     
     if(fPi0Trigger && decayFound)
       FillDecayPhotonCorrelationHistograms(pt, phi, decayMom1,decayMom2,kFALSE) ;
@@ -3730,9 +3730,9 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
       fhXEUeNeutral        ->Fill(ptTrig,xE);
       fhPtHbpXEUeNeutral   ->Fill(ptTrig,hbpXE);
     }
-    
+
     //several UE calculation
-    if(fMakeSeveralUE) FillChargedUnderlyingEventSidesHistograms(ptTrig,pt,deltaPhi);
+    if(fMakeSeveralUE) FillNeutralUnderlyingEventSidesHistograms(ptTrig,pt,xE,hbpXE,zT,hbpZT,deltaPhi);
     
     if(fFillAODWithReferences)
     {
