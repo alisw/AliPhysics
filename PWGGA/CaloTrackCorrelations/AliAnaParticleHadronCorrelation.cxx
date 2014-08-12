@@ -768,8 +768,8 @@ void AliAnaParticleHadronCorrelation::FillDecayPhotonCorrelationHistograms(Float
   Float_t ptDecay2 = mom2.Pt();
   
   Float_t zTDecay1 = -100, zTDecay2 = -100;
-  if(ptDecay1) zTDecay1 = ptAssoc/ptDecay1 ;
-  if(ptDecay2) zTDecay2 = ptAssoc/ptDecay2 ;
+  if(ptDecay1 > 0) zTDecay1 = ptAssoc/ptDecay1 ;
+  if(ptDecay2 > 0) zTDecay2 = ptAssoc/ptDecay2 ;
   
   Float_t deltaPhiDecay1 = mom1.Phi()-phiAssoc;
   if(deltaPhiDecay1< -TMath::PiOver2()) deltaPhiDecay1+=TMath::TwoPi();
@@ -802,20 +802,20 @@ void AliAnaParticleHadronCorrelation::FillDecayPhotonCorrelationHistograms(Float
   }
   else // correlate with neutrals
   {
-    fhDeltaPhiDecayCharged->Fill(ptDecay1, deltaPhiDecay1);
-    fhDeltaPhiDecayCharged->Fill(ptDecay2, deltaPhiDecay2);
+    fhDeltaPhiDecayNeutral->Fill(ptDecay1, deltaPhiDecay1);
+    fhDeltaPhiDecayNeutral->Fill(ptDecay2, deltaPhiDecay2);
     
     if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::FillDecayPhotonHistograms(Neutral corr) - deltaPhoton1 = %f, deltaPhoton2 = %f \n", deltaPhiDecay1, deltaPhiDecay2);
     
     if( (deltaPhiDecay1 > fDeltaPhiMinCut) && ( deltaPhiDecay1 < fDeltaPhiMaxCut) )
     {
-      fhZTDecayCharged->Fill(ptDecay1,zTDecay1); 
-      fhXEDecayCharged->Fill(ptDecay1,xEDecay1); 
+      fhZTDecayNeutral->Fill(ptDecay1,zTDecay1);
+      fhXEDecayNeutral->Fill(ptDecay1,xEDecay1);
     }
     if( (deltaPhiDecay2 > fDeltaPhiMinCut) && ( deltaPhiDecay2 < fDeltaPhiMaxCut) )
     {
-      fhZTDecayCharged->Fill(ptDecay2,zTDecay2);
-      fhXEDecayCharged->Fill(ptDecay2,xEDecay2);
+      fhZTDecayNeutral->Fill(ptDecay2,zTDecay2);
+      fhXEDecayNeutral->Fill(ptDecay2,xEDecay2);
     }    
   }
 }
@@ -3091,7 +3091,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     
     // MC
     if(IsDataMC())
-      MakeMCChargedCorrelation(particle);
+      MakeMCChargedCorrelation(particle->GetLabel());
     
     // Do own mixed event with charged,
     // add event and remove previous or fill the mixed histograms
@@ -3760,8 +3760,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
   return kTRUE;
 }
   
-//_________________________________________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle)
+//__________________________________________________________________________
+void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
 {
   // Charged Hadron Correlation Analysis with MC information
   
@@ -3782,7 +3782,6 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
   
   Bool_t lead = kFALSE;
   
-  Int_t label= aodParticle->GetLabel();
   if( label < 0 )
   {
     if( GetDebug() > 0 ) AliInfo(Form(" *** bad label ***:  label %d", label));
