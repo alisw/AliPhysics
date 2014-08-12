@@ -21,7 +21,4 @@
 #pragma link C++ class AliChildProcTerminator+;
 #pragma link C++ class AliTestChildProc+;
 
-#pragma link C++ class AliEventServerWindow+;
-#pragma link C++ class AliEventServerReconstruction+;
-
 #endif

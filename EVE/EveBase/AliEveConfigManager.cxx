@@ -22,8 +22,10 @@
 #include "AliEveMacro.h"
 
 //Storage Manager:
+#ifdef ZMQ
 #include "AliStorageAdministratorPanelListEvents.h"
 #include "AliStorageAdministratorPanelMarkEvent.h"
+#endif
 
 class AliEveMacroExecutor;
 class TEveProjectionManager;
@@ -185,8 +187,10 @@ AliEveConfigManager::AliEveConfigManager() :
 
   //Storage Manager:
   fStoragePopup = new TGPopupMenu(gClient->GetRoot());
+#ifdef ZMQ
   fStoragePopup->AddEntry("&List events",kStorageListEvents);
   fStoragePopup->AddEntry("&Mark event",kStorageMarkEvent);
+#endif
 
   fStoragePopup->Connect("Activated(Int_t)","AliEveConfigManager",
 			 this, "AliEvePopupHandler(Int_t)");
@@ -1033,19 +1037,22 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 */
   case kStorageListEvents:
   {
+#ifdef ZMQ
       fListEventsWindow =
 		  AliStorageAdministratorPanelListEvents::GetInstance();
       
       fListEventsWindow->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
-      
+#endif      
       
 	  break;
 
   }
    case kStorageMarkEvent:
   {
+#ifdef ZMQ
 	  AliStorageAdministratorPanelMarkEvent *markEventWindow =
 		  AliStorageAdministratorPanelMarkEvent::GetInstance();
+#endif
 	  break;
 
   }

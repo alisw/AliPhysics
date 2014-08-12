@@ -6,8 +6,6 @@ set ( SRCS
     AliChildProcTerminator.cxx
     alitestproc/AliTestChildProc.cxx
     alieventserver/AliEventServerPreferencesWindow.cxx
-    alieventserver/AliEventServerReconstruction.cxx
-    alieventserver/AliEventServerWindow.cxx
 )
 
 string ( REPLACE ".cxx" ".h" CINTHDRS "${SRCS}" )

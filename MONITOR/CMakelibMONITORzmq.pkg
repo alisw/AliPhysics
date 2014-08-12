@@ -8,6 +8,9 @@ set ( SRCS
     alistoragemanager/AliStorageAdministratorPanelSetStorageParams.cxx
     alistoragemanager/AliStorageEventManager.cxx
     alistoragemanager/AliStorageDatabase.cxx
+    alieventserver/AliEventServerReconstruction.cxx
+    alieventserver/AliEventServerWindow.cxx
+
 )
 
 string ( REPLACE ".cxx" ".h" CINTHDRS "${SRCS}" )
