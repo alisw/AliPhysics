@@ -2000,13 +2000,13 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(const AliExternalTrackP
 
 //------------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
-							 Double_t emcalR, Double_t mass, Double_t step)
+							 Double_t emcalR, Double_t mass, Double_t step, Double_t minpt)
 { 
   // Extrapolate track to EMCAL surface
 
   track->SetTrackPhiEtaPtOnEMCal(-999, -999, -999);
 
-  if (track->Pt()<0.350) //todo: discuss with Marta, everywhere else we use pT=0
+  if (track->Pt()<minpt)
     return kFALSE;
 
   Double_t phi = track->Phi()*TMath::RadToDeg();
