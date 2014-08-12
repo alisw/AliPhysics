@@ -3110,18 +3110,29 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       okLeadHad = FindLeadingOppositeHadronInWindow(particle);
     if(!okLeadHad) continue;
     
+    //
     // Charged particles correlation
-    Bool_t okcharged = MakeChargedCorrelation(particle);
+    //
+    MakeChargedCorrelation(particle);
+    
+    // MC
     if(IsDataMC())
       MakeMCChargedCorrelation(particle);
     
+    // Do own mixed event with charged,
+    // add event and remove previous or fill the mixed histograms
+    if(DoOwnMix())
+      MakeChargedMixCorrelation(particle);
+
+    //
     // Neutral particles correlation
-    Bool_t okneutral = kTRUE;
+    //
     if(fNeutralCorr)
-        okneutral = MakeNeutralCorrelation(particle);
-    
-    // If the correlation did not succeed.
-    if(!okcharged || !okneutral) continue ;
+    {
+      Bool_t okneutral = MakeNeutralCorrelation(particle);
+      // If the correlation did not succeed.
+      if(!okneutral) continue ;
+    }
     
     //-----------------------------------------
     // Fill trigger pT related histograms if correlation went well and
@@ -3181,8 +3192,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - End fill histograms \n");
 }
 
-//_________________________________________________________________________________________________________
-Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle)
+//_______________________________________________________________________________________________________
+void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle)
 {  
   // Charged Hadron Correlation Analysis
   if(GetDebug() > 1) 
@@ -3265,7 +3276,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
         continue ; 
       //vertex cut
       if (TMath::Abs(GetVertex(evtIndex2)[2]) > GetZvertexCut()) 
-        return kFALSE;
+        continue;
     }    
     
     // Fill Histograms
@@ -3346,7 +3357,6 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
     
     if(fFillAODWithReferences)
     {
-      printf("Add references\n");
       nrefs++;
       if(nrefs==1)
       {
@@ -3365,14 +3375,6 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
   {
     aodParticle->AddObjArray(reftracks);
   }
-
-  //Own mixed event, add event and remove previous or fill the mixed histograms
-  if(DoOwnMix())
-  {
-    MakeChargedMixCorrelation(aodParticle);
-  }
-  
-  return kTRUE;
   
 }  
 
