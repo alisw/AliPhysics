@@ -59,8 +59,7 @@
 #include <TMap.h>
 
 #ifdef ZMQ
-#include <AliNetMessage.h>
-#include <AliSocket.h>
+#include "AliStorageEventManager.h"
 #endif
 
 //==============================================================================
@@ -120,24 +119,48 @@ Bool_t   AliEveEventManager::fgUniformField = kFALSE;
 AliEveEventManager* AliEveEventManager::fgMaster  = 0;
 AliEveEventManager* AliEveEventManager::fgCurrent = 0;
 
-zmq::context_t* AliEveEventManager::fgSubContext=0;
-AliSocket* AliEveEventManager::fgSubSock=0;
-
-bool AliEveEventManager::ConnectToServer(const char* host, int port)
+void AliEveEventManager::GetNextEvent()
 {
-
 #ifdef ZMQ
-	// make a zeromq socket
-	  fgSubContext = new zmq::context_t(1);
-    fgSubSock = new AliSocket(&*fgSubContext, ZMQ_SUB);
-    fgSubSock->Subscribe("");
-    fgSubSock->Connect(Form("%s:%d", host, port) );
-#else
-	fgSubContext=0;
-	fgSubSock =0;
+  AliStorageEventManager *eventManager =
+    AliStorageEventManager::GetEventManagerInstance();
+  eventManager->CreateSocket(EVENTS_SERVER_SUB);
+
+  fCurrentEvent[0]=0;
+  fCurrentEvent[1]=0;
+  fCurrentTree[0]=0;
+  fCurrentTree[1]=0;
+  AliESDEvent *tmpEvent = NULL;
+  TTree *tmpTree = NULL;
+  
+  while(1)
+  {
+    //if(tmpEvent){delete tmpEvent;tmpEvent=0;}
+    tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,-1,&tmpTree);
+
+    if(tmpEvent)
+    {
+      if(tmpEvent->GetRunNumber()>=0)
+      {
+        fMutex.Lock();
+        if(fEventInUse == 0){fWritingToEventIndex = 1;}
+        else if(fEventInUse == 1){fWritingToEventIndex = 0;}
+        cout<<"Writing to:"<<fWritingToEventIndex<<endl;
+        if(fCurrentEvent[fWritingToEventIndex])
+        {
+          cout<<"DELETING:"<<fCurrentEvent[fWritingToEventIndex]<<endl;
+          delete fCurrentEvent[fWritingToEventIndex];
+          fCurrentEvent[fWritingToEventIndex]=0;
+          delete fCurrentTree[fWritingToEventIndex];
+        }
+        fCurrentEvent[fWritingToEventIndex] = tmpEvent;
+        fCurrentTree[fWritingToEventIndex] = tmpTree;
+        fIsNewEventAvaliable = true;
+        fMutex.UnLock();
+      }
+    }	
+  }
 #endif
-	
-  return true;
 }
 
 void AliEveEventManager::InitInternals()
@@ -179,7 +202,6 @@ void AliEveEventManager::InitInternals()
 
 AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     TEveEventManager(name, ""),
-
     fEventId(-1),
     fRunLoader (0),
     fESDFile   (0), fESDTree (0), fHLTESDTree(0), fESD (0),
@@ -192,10 +214,14 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     fExecutor    (0), fTransients(0), fTransientLists(0),
     fPEventSelector(0),
     fSubManagers (0),
-    fAutoLoadTimerRunning(kFALSE)
+    fAutoLoadTimerRunning(kFALSE),
+    fgSubSock(EVENTS_SERVER_SUB),
+    fEventInUse(1),
+    fWritingToEventIndex(0),
+    fIsNewEventAvaliable(false)
 {
     // Constructor with event-id.
-
+		
     InitInternals();
 
     Open();
@@ -203,6 +229,14 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     {
         GotoEvent(ev);
     }
+    
+#ifdef ZMQ
+    cout<<"ZMQ FOUND. Starting subscriber thread."<<endl;
+    fGetEventThread = new TThread("fGetEventThread",Dispatch,(void*)this);
+    fGetEventThread->Run();
+#else
+    cout<<"NO ZMQ FOUND. Online events not avaliable."<<endl;
+#endif
 }
 
 AliEveEventManager::~AliEveEventManager()
@@ -288,7 +322,6 @@ void AliEveEventManager::SetRawFileName(const TString& raw)
 void AliEveEventManager::SetCdbUri(const TString& cdb)
 {
     // Set path to CDB, there is no default.
-
     if ( ! cdb.IsNull()) fgCdbUri = cdb;
 }
 
@@ -591,7 +624,9 @@ void AliEveEventManager::Open()
     }
 
     // Initialize OCDB ... only in master event-manager
+
 		InitOCDB(runNo);
+
 
     fIsOpen = kTRUE;
 }
@@ -624,7 +659,7 @@ void AliEveEventManager::InitOCDB(int runNo)
                 cdb->SetDefaultStorage("MC", "Full");
             else if (fgCdbUri == "local://") {
                 fgCdbUri = Form("local://%s/OCDB", gSystem->Getenv("ALICE_ROOT"));
-                cdb->SetDefaultStorage(fgCdbUri);
+		cdb->SetDefaultStorage(fgCdbUri);
             } else
                 cdb->SetDefaultStorage(fgCdbUri);
 
@@ -938,6 +973,16 @@ void AliEveEventManager::Timeout()
     Emit("Timeout()");
 }
 
+void AliEveEventManager::PrepareForNewEvent(AliESDEvent *event)
+{	
+	DestroyElements();
+		
+	InitOCDB(event->GetRunNumber());
+          	   	
+	printf("======================= setting event to %d\n", fEventId);
+	SetEvent(0,0,event,0);
+}
+
 void AliEveEventManager::NextEvent()
 {
     // Loads next event.
@@ -952,65 +997,52 @@ void AliEveEventManager::NextEvent()
 
     if (fExternalCtrl)
     {
-        // !!! This should really go somewhere else. It is done in GotoEvent(),
-        // so here we should do it in SetEvent().
-          DestroyElements();
-        
-        		#ifdef ZMQ
-        		AliNetMessage *mess;
-        		fgSubSock->Recv(mess);
-        
-        
-				    AliESDEvent* data = (AliESDEvent*)(mess->ReadObjectAny(AliESDEvent::Class()));
+#ifdef ZMQ
 
-          	if (data){
-          	    printf("Got DATA:\n");
+      cout<<fIsNewEventAvaliable<<"\t"<<"\t"<<fWritingToEventIndex<<endl;
 
-          	    printf("Event Number in File:%d Run:%d ObjectsInList:%d\n", data->GetEventNumberInFile(),  data->GetRunNumber(), data->GetList()->GetEntries());
-          	   	
-          	   	TTree* tree= new TTree("esdTree", "esdTree");
-          	    data->WriteToTree(tree);
-          	    tree-> Fill();
-          	    //tree->Write();
-          	   	
-          	   	printf("======================= Tree has %d entries\n", tree->GetEntries());
-          	   	
-          	   	AliESDEvent* event= new AliESDEvent();
-								event->ReadFromTree(tree);
-							
-					     	tree->GetEntry(0);
-          	   	
-          	   	InitOCDB(event->GetRunNumber());
-          	   	
-          	   	printf("======================= setting event to %d\n", fEventId);
-          	   	SetEvent(0,0,event,0);
-        	    
-		       	    delete event;
-        	    	delete tree;
-        	    	
-          	}
-          	else
-          	   printf("NO DATA!!!\n");
-        	          	     
-        	delete data; data=0;
-        	delete mess; mess=0;
-        	#endif
-        	
+      if(fIsNewEventAvaliable)
+      {
+        cout<<"new event"<<endl;
+        fMutex.Lock();
+        if(fWritingToEventIndex == 0) fEventInUse = 0;
+        else if(fWritingToEventIndex == 1) fEventInUse = 1;
+        cout<<"Using:"<<fEventInUse<<endl;
+
+        if(fCurrentEvent[fEventInUse])
+        {
+          if(fCurrentEvent[fEventInUse]->GetRunNumber() >= 0)
+          {
+            printf("======================= setting event to %d\n", fEventId);
+
+            DestroyElements();
+            InitOCDB(fCurrentEvent[fEventInUse]->GetRunNumber());
+            SetEvent(0,0,fCurrentEvent[fEventInUse],0);
+          }
+        }
+        fIsNewEventAvaliable = false;
+        fMutex.UnLock();
+      }
+      else{cout<<"No new event is avaliable."<<endl;}
+
+#endif	
     }
     else if ((fESDTree!=0) || (fHLTESDTree!=0))
     {
-        Int_t nextevent=0;
-        if (fPEventSelector->FindNext(nextevent))
-        {
-            GotoEvent(nextevent);
-        }
+      Int_t nextevent=0;
+      if (fPEventSelector->FindNext(nextevent))
+      {
+        GotoEvent(nextevent);
+      }
     }
     else if (fEventId < GetMaxEventId(kTRUE))
     {
-        GotoEvent(fEventId + 1);
+      GotoEvent(fEventId + 1);
     }
     
-     gSystem->ProcessEvents();
+    gSystem->ProcessEvents();
+
+    //if(fGetEventThread){delete fGetEventThread;fGetEventThread=0;}
 }
 
 void AliEveEventManager::PrevEvent()
@@ -1040,6 +1072,57 @@ void AliEveEventManager::PrevEvent()
     {
         GotoEvent(fEventId - 1);
     }
+}
+
+void AliEveEventManager::MarkCurrentEvent()
+{
+#ifdef ZMQ
+	struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+	struct eventStruct mark;
+	mark.runNumber = fESD->GetRunNumber();
+	mark.eventNumber = fESD->GetEventNumberInFile();
+	requestMessage->messageType = REQUEST_MARK_EVENT;
+	requestMessage->event = mark;
+
+	AliStorageEventManager *eventManager =
+		AliStorageEventManager::GetEventManagerInstance();
+	eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
+
+	/*
+	std::future<bool> unused = std::async([]()
+	{
+		eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+		bool response =  eventManager->GetBool(SERVER_COMMUNICATION_REQ);
+
+		if(response)
+		{
+		//fStatusLabel->SetText("Event marked");
+		cout<<"ADMIN PANEL -- Event marked succesfully"<<endl;
+		}
+		else
+		{
+		//fStatusLabel->SetText("Couldn't mark this event");
+		cout<<"ADMIN PANEL -- Could not matk event"<<endl;
+		}
+	});
+	*/
+	
+	eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+	bool response =  eventManager->GetBool(SERVER_COMMUNICATION_REQ);
+	
+	
+	if(response)
+	{
+		//fStatusLabel->SetText("Event marked");
+		cout<<"ADMIN PANEL -- Event marked succesfully"<<endl;
+	}
+	else
+	{
+		//fStatusLabel->SetText("Couldn't mark this event");
+		cout<<"ADMIN PANEL -- Could not matk event"<<endl;
+	}
+	if(requestMessage){delete requestMessage;}
+#endif
 }
 
 void AliEveEventManager::Close()
@@ -1293,11 +1376,6 @@ AliRecoParam* AliEveEventManager::AssertRecoParams()
         InitRecoParam();
 
     return fgRecoParam;
-}
-
-AliSocket* AliEveEventManager::AssertSubscriber()
-{
-	return fgSubSock;
 }
 
 Bool_t AliEveEventManager::InitRecoParam()
@@ -1597,23 +1675,23 @@ void AliEveEventManager::StopAutoLoadTimer()
 
 void AliEveEventManager::AutoLoadNextEvent()
 {
-    // Called from auto-load timer, so it has to be public.
-    // Do NOT call it directly.
+	// Called from auto-load timer, so it has to be public.
+	// Do NOT call it directly.
 
-	  static const TEveException kEH("AliEveEventManager::AutoLoadNextEvent ");
+	static const TEveException kEH("AliEveEventManager::AutoLoadNextEvent ");
 	  
-	  	Info(kEH, "called!");
+	Info(kEH, "called!");
 
-    if ( ! fAutoLoadTimerRunning || ! fAutoLoadTimer->HasTimedOut())
-    {
-        Warning(kEH, "Called unexpectedly - ignoring the call. Should ONLY be called from an internal timer.");
-        return;
-    }
+	if ( ! fAutoLoadTimerRunning || ! fAutoLoadTimer->HasTimedOut())
+	{
+		Warning(kEH, "Called unexpectedly - ignoring the call. Should ONLY be called from an internal timer.");
+		return;
+	}
 
-    StopAutoLoadTimer();
-    NextEvent();
-    if (fAutoLoad)
-        StartAutoLoadTimer();
+	StopAutoLoadTimer();
+	NextEvent();
+	if (fAutoLoad)
+		StartAutoLoadTimer();
 }
 
 //------------------------------------------------------------------------------
@@ -1622,47 +1700,43 @@ void AliEveEventManager::AutoLoadNextEvent()
 
 void AliEveEventManager::AfterNewEventLoaded()
 {
-    // Execute registered macros and commands.
-    // At the end emit NewEventLoaded signal.
-    //
-    // Virtual from TEveEventManager.
+  // Execute registered macros and commands.
+  // At the end emit NewEventLoaded signal.
+  //
+  // Virtual from TEveEventManager.
 
-    static const TEveException kEH("AliEveEventManager::AfterNewEventLoaded ");
+  static const TEveException kEH("AliEveEventManager::AfterNewEventLoaded ");
 
   Info(kEH, "------------------!!!------------");
                       
-    NewEventDataLoaded();
+  NewEventDataLoaded();
+  if (fExecutor) fExecutor->ExecMacros();
 
-    if (fExecutor)
-        fExecutor->ExecMacros();
+  TEveEventManager::AfterNewEventLoaded();
+  NewEventLoaded();
 
-    TEveEventManager::AfterNewEventLoaded();
-
-    NewEventLoaded();
-
-    if (this == fgMaster && fSubManagers != 0)
+  if (this == fgMaster && fSubManagers != 0)
+  {
+    TIter next(fSubManagers);
+    while ((fgCurrent = dynamic_cast<AliEveEventManager*>(next())) != 0)
     {
-        TIter next(fSubManagers);
-        while ((fgCurrent = dynamic_cast<AliEveEventManager*>(next())) != 0)
-        {
-            gEve->SetCurrentEvent(fgCurrent);
-            try
-            {
-                fgCurrent->GotoEvent(fEventId);
-            }
-            catch (TEveException& exc)
-            {
-                // !!! Should somehow tag / disable / remove it?
-                Error(kEH, "Getting event %d for sub-event-manager '%s' failed: '%s'.",
-                      fEventId, fgCurrent->GetName(), exc.Data());
-            }
-              Info(kEH, "------------------!!! while() gEve->SetCurrentEvent() ------------");
-        }
-        fgCurrent = fgMaster;
-        Info(kEH, "------------------!!! while() gEve->SetCurrentEvent(MASTER) ------------");
-        gEve->SetCurrentEvent(fgMaster);
+      gEve->SetCurrentEvent(fgCurrent);
+      try
+      {
+        fgCurrent->GotoEvent(fEventId);
+      }
+      catch (TEveException& exc)
+      {
+        // !!! Should somehow tag / disable / remove it?
+        Error(kEH, "Getting event %d for sub-event-manager '%s' failed: '%s'.",
+              fEventId, fgCurrent->GetName(), exc.Data());
+      }
+      Info(kEH, "------------------!!! while() gEve->SetCurrentEvent() ------------");
     }
-    
+    fgCurrent = fgMaster;
+    Info(kEH, "------------------!!! while() gEve->SetCurrentEvent(MASTER) ------------");
+    gEve->SetCurrentEvent(fgMaster);
+  }
 }
 
 void AliEveEventManager::NewEventDataLoaded()

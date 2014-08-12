@@ -32,7 +32,8 @@
 
 int main(int argc, char **argv)
 {
-
+    static const TEveException kEH("alieve::main");
+	
     if(argc>1)
     {
         if(strcmp(argv[1],"-dev")==0 ){
@@ -46,10 +47,11 @@ int main(int argc, char **argv)
             return 0;
         }
     }
-
-
-    static const TEveException kEH("alieve::main");
-
+    else
+    {
+	    Info(kEH.Data(),"No parameters");
+    }
+    
     if (gSystem->Getenv("ALICE_ROOT") == 0)
     {
         Error(kEH.Data(), "ALICE_ROOT is not defined, aborting.");

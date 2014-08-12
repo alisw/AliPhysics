@@ -44,7 +44,6 @@ public:
 
 protected:
    AliEveEventManager  *fM;             // Model object.
-
    TGTextButton        *fDumpEventInfo; // Button that dumps event-info into a file.
    TGTextView          *fEventInfo;     // Text box with event info.
 
@@ -74,6 +73,7 @@ public:
   void DoPrevEvent();
   void DoNextEvent();
   void DoLastEvent();
+  void DoMarkEvent();
 
   void DoSetEvent();
 
@@ -92,6 +92,7 @@ protected:
   TGTextButton         *fNextEvent;    // Go to next event
   TGTextButton         *fLastEvent;    // Go to last event
   TGTextButton         *fRefresh;      // Refresh event-file state
+  TGTextButton         *fMarkEvent;    // Mark current event
 
   TGNumberEntry        *fEventId;      // Display/edit current event id
   TGLabel              *fInfoLabel;    // Display last available event id

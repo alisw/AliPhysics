@@ -9,11 +9,14 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliNetMessage+;
-#pragma link C++ class AliSocket+;
-#pragma link C++ class AliThreadedSocket+;
-#pragma link C++ class AliRecoServerThread+;
-#pragma link C++ class AliEventServerWindow+;
-#pragma link C++ class AliRecoServer+;
+// storage manager:
+#pragma link C++ class AliStorageDatabase+;
+#pragma link C++ class AliStorageClientThread+;
+#pragma link C++ class AliStorageServerThread+;
+#pragma link C++ class AliStorageEventManager+;     
+#pragma link C++ class AliStorageAdministratorPanel+;
+#pragma link C++ class AliStorageAdministratorPanelMarkEvent+;
+#pragma link C++ class AliStorageAdministratorPanelListEvents+;
+#pragma link C++ class AliStorageAdministratorPanelSetStorageParams+;
 
 #endif

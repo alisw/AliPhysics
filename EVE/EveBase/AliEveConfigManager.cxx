@@ -21,6 +21,10 @@
 #include "AliEveMacroExecutorWindow.h"
 #include "AliEveMacro.h"
 
+//Storage Manager:
+#include "AliStorageAdministratorPanelListEvents.h"
+#include "AliStorageAdministratorPanelMarkEvent.h"
+
 class AliEveMacroExecutor;
 class TEveProjectionManager;
 class TEveGeoShape;
@@ -42,7 +46,7 @@ namespace
 {
  enum EAliEveMenu_e
  {
-   kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui
+	 kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui, kStorageListEvents, kStorageMarkEvent
  };
 }
  
@@ -179,6 +183,14 @@ AliEveConfigManager::AliEveConfigManager() :
   fAnalysisPopup->Connect("Activated(Int_t)", "AliEveConfigManager",
                         this, "AliEvePopupHandler(Int_t)");
 
+  //Storage Manager:
+  fStoragePopup = new TGPopupMenu(gClient->GetRoot());
+  fStoragePopup->AddEntry("&List events",kStorageListEvents);
+  fStoragePopup->AddEntry("&Mark event",kStorageMarkEvent);
+
+  fStoragePopup->Connect("Activated(Int_t)","AliEveConfigManager",
+			 this, "AliEvePopupHandler(Int_t)");
+  
   fLoadCheck = kFALSE;
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4)
@@ -186,6 +198,9 @@ AliEveConfigManager::AliEveConfigManager() :
   mBar->AddPopup("&AliEve", fAliEvePopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
   ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
   mBar->AddPopup("&Tools", fAnalysisPopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
+    ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
+   mBar->AddPopup("&Storage Manager",fStoragePopup,new TGLayoutHints(kLHintsTop | kLHintsLeft,0,4,0,0));
+  
   gEve->GetBrowser()->GetTopMenuFrame()->Layout();
 #else
   // Uber hack as TRootBrowser does not provede manu-bar getter.
@@ -201,6 +216,8 @@ AliEveConfigManager::AliEveConfigManager() :
   ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
   mBar->AddPopup("&Tools", fAnalysisPopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
   ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
+  mBar->AddPopup("&Storage Manager",fStoragePopup,new TGLayoutHints(kLHintsTop | kLHintsLeft,0,4,0,0));
+    ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
 #endif
 }
 
@@ -1014,6 +1031,24 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
     }
 */
+  case kStorageListEvents:
+  {
+      fListEventsWindow =
+		  AliStorageAdministratorPanelListEvents::GetInstance();
+      
+      fListEventsWindow->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
+      
+      
+	  break;
+
+  }
+   case kStorageMarkEvent:
+  {
+	  AliStorageAdministratorPanelMarkEvent *markEventWindow =
+		  AliStorageAdministratorPanelMarkEvent::GetInstance();
+	  break;
+
+  }
 
     default:
     {
@@ -1022,3 +1057,20 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
     }
   }
 }
+
+void AliEveConfigManager::SetEventInEventManager()
+{
+    AliEveEventManager *manager = AliEveEventManager::GetMaster();
+    AliESDEvent *event = fListEventsWindow->GetSelectedEvent();
+    
+    if(event)
+    {
+	    cout<<"SETTING EVENT IN ED"<<endl;
+	    //fListEventsWindow->onExit();
+        manager->SetAutoLoad(kFALSE);
+        manager->PrepareForNewEvent(event);
+    }
+    
+}
+
+

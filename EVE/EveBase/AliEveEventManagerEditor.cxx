@@ -147,6 +147,8 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     b->Connect("Clicked()", cls, this, "DoNextEvent()");
     fLastEvent = b = MkTxtButton(f, "Last", width);
     b->Connect("Clicked()", cls, this, "DoLastEvent()");
+    fMarkEvent = b = MkTxtButton(f, "Mark", width);
+    b->Connect("Clicked()", cls, this, "DoMarkEvent()");
 
     MkLabel(f, "||", 0, 8, 8);
 
@@ -222,6 +224,13 @@ void AliEveEventManagerWindow::DoLastEvent()
 {
   // Load previous event
   fM->GotoEvent(-1);
+}
+
+//______________________________________________________________________________
+void AliEveEventManagerWindow::DoMarkEvent()
+{
+  // Mark current event
+  fM->MarkCurrentEvent();
 }
 
 //______________________________________________________________________________

@@ -102,14 +102,16 @@ void AliEveTrackCounter::Reset()
     TEveTrackList* tlist;
     while ((tlist = dynamic_cast<TEveTrackList*>(next())))
       tlist->DecDenyDestroy();
-    fTrackLists.Clear("nodelete");
+    //fTrackLists.Clear("nodelete");
+        fTrackLists.Clear();
   }
   {
     TIter next(&fTrackletLists);
     TEveTrackList* tlist;
     while ((tlist = dynamic_cast<TEveTrackList*>(next())))
       tlist->DecDenyDestroy();
-    fTrackletLists.Clear("nodelete");
+    //fTrackletLists.Clear("nodelete");
+        fTrackletLists.Clear();
   }
 
   fEventId = AliEveEventManager::GetMaster()->GetEventId();
