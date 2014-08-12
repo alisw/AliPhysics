@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for alionlinemonitor                                              #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -39,17 +40,6 @@ if(PYTHIA6)
   list(APPEND ELIBS EVGEN HepMC HepMCParser)
 endif(PYTHIA6)
 
-if( ALICE_TARGET STREQUAL "macosx")
-		
-  string(REGEX REPLACE "(microcern|lhapdf|herwig)" "" ELIBS "${ELIBS}") 
-  
-  ALICE_Format(PACKLDFLAGS "-Wl,-u,_G__cpp_setupG__" "" "${LDFLAGS};${ELIBSCPP}")
-  string ( REPLACE "%" "-Wl,-u,_G__cpp_setupG__%" PACKLDFLAGS "${LDFLAGS} ${ELIBSCPP}" )
-		
-	set ( ELIBSDIR ${ELIBSDIR} ${FINK_ROOT}/lib)
-
-endif( ALICE_TARGET STREQUAL "macosx")
-
 set (ARPACKS FMDbase FMDsim FMDrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDsim HMPIDrec ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec MFTbase MFTsim MFTrec EMCALUtils EMCALbase EMCALsim EMCALrec T0base T0sim T0rec TOFbase TOFsim TOFrec TRDbase TRDsim TRDrec PMDbase PMDsim PMDrec MUONmapping MUONmapping MUONgeometry MUONbase MUONsim MUONrec MUONraw PHOSUtils PHOSbase PHOSsim PHOSrec HLTbase ITSbase ITSsim ITSrec STRUCT TPCbase TPCsim TPCrec TPCfast STEER CDB ESD STEERBase RAWDatabase RAWDatasim RAWDatarec MDC TRIGGERbase)
 
 set(GFILES)
@@ -90,10 +80,3 @@ if (DIMDIR)
   set ( ELIBS ${ELIBS}  dim)
   set ( ELIBSDIR ${ELIBSDIR}  ${DIMDIR}/${ODIR})
 endif (DIMDIR)
-
-if( ALICE_TARGET MATCHES "macosx")
-
-  ALICE_Format (TEMP "-Wl,-u,_G__cpp_setupG__" "" ${ELIBS})
-  set(PACKLDFLAGS "${LDFLAGS} ${TEMP}")
-
-endif( ALICE_TARGET MATCHES "macosx")

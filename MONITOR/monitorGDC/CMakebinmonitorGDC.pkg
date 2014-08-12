@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for monitorGDC                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -54,3 +55,7 @@ if (DATE_ROOT)
 
 endif(DATE_ROOT)
 
+if(ZEROMQ_FOUND)
+set ( ELIBS ${ELIBS} MONITORzmq )
+set ( CXXFLAGS  "-DZMQ ${CXXFLAGS}") 
+ENDIF(ZEROMQ_FOUND)

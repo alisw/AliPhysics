@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for deroot                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -36,3 +37,8 @@ set ( SRCS ${SRCS}  deroot/root2date.cxx)
 set ( ELIBSDIR )
 
 set ( ELIBS MONITOR TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS)
+
+if(ZEROMQ_FOUND)
+set ( ELIBS ${ELIBS} MONITORzmq )
+set ( CXXFLAGS  "-DZMQ ${CXXFLAGS}") 
+ENDIF(ZEROMQ_FOUND)

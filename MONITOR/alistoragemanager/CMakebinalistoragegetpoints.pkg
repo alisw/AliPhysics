@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 set ( SRCS  alistoragemanager/alistoragegetpoints.cxx)
 
 set ( EINCLUDE )
@@ -12,26 +13,5 @@ endif(PYTHIA6)
 set (ARPACKS FMDbase FMDsim FMDrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDsim HMPIDrec ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec MFTbase MFTsim MFTrec EMCALUtils EMCALbase EMCALsim EMCALrec T0base T0sim T0rec TOFbase TOFsim TOFrec TRDbase TRDsim TRDrec PMDbase PMDsim PMDrec MUONmapping MUONmapping MUONgeometry MUONbase MUONsim MUONrec MUONraw PHOSUtils PHOSbase PHOSsim PHOSrec HLTbase ITSbase ITSsim ITSrec STRUCT TPCbase TPCsim TPCrec TPCfast STEER CDB ESD STEERBase RAWDatabase RAWDatasim RAWDatarec MDC TRIGGERbase)
 
 set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve -lzmq -lMONITOR -lMONITORzmq ${SYSLIBS} )
-
-if( ALICE_TARGET STREQUAL "macosx")
-			
-	set ( ELIBS ${ELIBS} GL)
-	set ( ELIBSDIR ${ELIBSDIR} /usr/X11R6/lib/)
-	
-  set ( ELIBSCPP ${ELIBS})
-	list(REMOVE_ITEM ELIBSCPP microcern lhapdf herwig)
-
-  ALICE_Format(PACKLDFLAGS "-Wl,-u,_G__cpp_setupG__" "" ${LDFLAGS})
-
-	if( MACOSX_MINOR STREQUAL "5")
-						
-		set ( PACKLDFLAGS "${PACKLDFLAGS} -Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
-
-  endif( MACOSX_MINOR STREQUAL "5")
-	
-  set ( ELIBS ${ELIBS} GLU)
-	set ( ELIBSDIR ${ELIBSDIR} ${FINK_ROOT}/lib)
-	
-endif( ALICE_TARGET STREQUAL "macosx")
 
 set ( ELIBS ${ELIBS} MONITOR )

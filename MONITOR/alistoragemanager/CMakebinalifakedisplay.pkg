@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 set ( SRCS  alistoragemanager/alifakedisplay.cxx)
 
 set ( EINCLUDE )
@@ -13,25 +14,9 @@ set (ARPACKS FMDbase FMDsim FMDrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPI
 
 set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve -lzmq -lMONITOR ${SYSLIBS} )
 
-if( ALICE_TARGET STREQUAL "macosx")
-			
-	set ( ELIBS ${ELIBS} GL)
-	set ( ELIBSDIR ${ELIBSDIR} /usr/X11R6/lib/)
-	
-  set ( ELIBSCPP ${ELIBS})
-	list(REMOVE_ITEM ELIBSCPP microcern lhapdf herwig)
-
-  ALICE_Format(PACKLDFLAGS "-Wl,-u,_G__cpp_setupG__" "" ${LDFLAGS})
-
-	if( MACOSX_MINOR STREQUAL "5")
-						
-		set ( PACKLDFLAGS "${PACKLDFLAGS} -Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
-
-  endif( MACOSX_MINOR STREQUAL "5")
-	
-  set ( ELIBS ${ELIBS} GLU)
-	set ( ELIBSDIR ${ELIBSDIR} ${FINK_ROOT}/lib)
-	
-endif( ALICE_TARGET STREQUAL "macosx")
-
 set ( ELIBS ${ELIBS} MONITOR )
+
+if(ZEROMQ_FOUND)
+set ( ELIBS ${ELIBS} MONITORzmq )
+set ( CXXFLAGS  "-DZMQ ${CXXFLAGS}") 
+ENDIF(ZEROMQ_FOUND)
