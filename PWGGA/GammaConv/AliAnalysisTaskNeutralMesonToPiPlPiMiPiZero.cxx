@@ -257,9 +257,9 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::~AliAnalysisTaskNeutralMesonToPiPlP
 void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::InitBack(){
 
 	const Int_t nDim = 4;
-	Int_t nBins[nDim] = {450,250,7,4};
-	Double_t xMin[nDim] = {0.3,0, 0,0};
-	Double_t xMax[nDim] = {0.75,25,7,4};
+	Int_t nBins[nDim] = {500,250,7,4};
+	Double_t xMin[nDim] = {0.4,0, 0,0};
+	Double_t xMax[nDim] = {0.9,25,7,4};
 	
 	fTHnSparseMotherInvMassPtZM = new THnSparseF*[fnCuts];
 	fTHnSparseMotherBackInvMassPtZM = new THnSparseF*[fnCuts];
