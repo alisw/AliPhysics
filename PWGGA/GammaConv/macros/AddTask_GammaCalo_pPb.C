@@ -1,7 +1,7 @@
-void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set of cuts
+void AddTask_GammaCalo_pPb(  Int_t trainConfig = 1,  //change different set of cuts
                               Bool_t isMC   = kFALSE, //run MC
                               Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
-                              Int_t enableQAPhotonTask = 0, // enable additional QA task
+                              Int_t enableQAClusterTask = 0, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                               Int_t doWeightingPart = 0,  //enable Weighting
                               TString generatorName = "DPMJET",
@@ -65,7 +65,6 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
 			return;
 		}
-
 		AliConvEventCuts *fEventCuts=NULL;
 		if(cutnumberEvent!=""){
 			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
@@ -76,7 +75,6 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 				fEventCuts->SetFillCutHistograms("",kTRUE);
 			}
 		}
-
 		// Set AnalysisCut Number
 		AliConversionPhotonCuts *fCuts=NULL;
 		if(cutnumberPhoton!=""){
@@ -99,14 +97,13 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		//connect input V0Reader
 		mgr->AddTask(fV0ReaderV1);
 		mgr->ConnectInput(fV0ReaderV1,0,cinput);
-
 	}
 
 	//================================================
 	//========= Add task to the ANALYSIS manager =====
 	//================================================
-	AliAnalysisTaskGammaConvCalo *task=NULL;
-	task= new AliAnalysisTaskGammaConvCalo(Form("GammaConvCalo_%i",trainConfig));
+	AliAnalysisTaskGammaCalo *task=NULL;
+	task= new AliAnalysisTaskGammaCalo(Form("GammaCalo_%i",trainConfig));
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
@@ -115,7 +112,6 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	if (trainConfig==6   ){ numberOfCuts =5;}
 	
 	TString *eventCutArray = new TString[numberOfCuts];
-	TString *photonCutArray = new TString[numberOfCuts];
 	TString *clusterCutArray = new TString[numberOfCuts];
 	TString *mesonCutArray = new TString[numberOfCuts];
 
@@ -124,41 +120,40 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	// 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
 	
 	if (trainConfig == 1){ 
-		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
-		eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters
+		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
+		eventCutArray[ 1] = "8005201"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters
 	} else if (trainConfig == 2) {	
-		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000030022000000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // PHOS clusters
-		eventCutArray[ 1] = "8006201"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000030022000000"; mesonCutArray[1] = "01525065000000"; //standard cut, kPHI7	// PHOS clusters	
+		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "20000030022000000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // PHOS clusters
+		eventCutArray[ 1] = "8006201"; clusterCutArray[1] = "20000030022000000"; mesonCutArray[1] = "01525065000000"; //standard cut, kPHI7	// PHOS clusters	
 	} else if (trainConfig == 3){ 
-		eventCutArray[ 0] = "8008101"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kEMCEGA based on INT7 // EMCAL clusters
-		eventCutArray[ 1] = "8008301"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMCEG1 based on INT7 // EMCAL clusters
-		eventCutArray[ 2] = "8008501"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[2] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
-		eventCutArray[ 3] = "8009101"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000040022030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMCEJE based on INT7 // EMCAL clusters
-		eventCutArray[ 4] = "8009301"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000040022030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMCEJ1 based on INT7 // EMCAL clusters
-		eventCutArray[ 5] = "8009501"; photonCutArray[ 5] = "002092970028250400000"; clusterCutArray[5] = "10000040022030000"; mesonCutArray[5] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
+		eventCutArray[ 0] = "8008101"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kEMCEGA based on INT7 // EMCAL clusters
+		eventCutArray[ 1] = "8008301"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMCEG1 based on INT7 // EMCAL clusters
+		eventCutArray[ 2] = "8008501"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[2] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
+		eventCutArray[ 3] = "8009101"; clusterCutArray[3] = "10000040022030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMCEJE based on INT7 // EMCAL clusters
+		eventCutArray[ 4] = "8009301"; clusterCutArray[4] = "10000040022030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMCEJ1 based on INT7 // EMCAL clusters
+		eventCutArray[ 5] = "8009501"; clusterCutArray[5] = "10000040022030000"; mesonCutArray[5] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
 	} else if (trainConfig == 4){ 
-		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040052030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
-		eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
+		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "10000040052030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
+		eventCutArray[ 1] = "8005201"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
 	} else if (trainConfig == 5){ 
-		eventCutArray[ 0] = "8008101"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040052030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kEMCEGA based on INT7 // EMCAL clusters
-		eventCutArray[ 1] = "8008301"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMCEG1 based on INT7 // EMCAL clusters
-		eventCutArray[ 2] = "8008501"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000040052030000"; mesonCutArray[2] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
-		eventCutArray[ 3] = "8009101"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMCEJE based on INT7 // EMCAL clusters
-		eventCutArray[ 4] = "8009301"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000040052030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMCEJ1 based on INT7 // EMCAL clusters
-		eventCutArray[ 5] = "8009501"; photonCutArray[ 5] = "002092970028250400000"; clusterCutArray[5] = "10000040052030000"; mesonCutArray[5] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters		
+		eventCutArray[ 0] = "8008101"; clusterCutArray[0] = "10000040052030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kEMCEGA based on INT7 // EMCAL clusters
+		eventCutArray[ 1] = "8008301"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMCEG1 based on INT7 // EMCAL clusters
+		eventCutArray[ 2] = "8008501"; clusterCutArray[2] = "10000040052030000"; mesonCutArray[2] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
+		eventCutArray[ 3] = "8009101"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMCEJE based on INT7 // EMCAL clusters
+		eventCutArray[ 4] = "8009301"; clusterCutArray[4] = "10000040052030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMCEJ1 based on INT7 // EMCAL clusters
+		eventCutArray[ 5] = "8009501"; clusterCutArray[5] = "10000040052030000"; mesonCutArray[5] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters		
 	} else if (trainConfig == 6){ 
-		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000043052030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
-		eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000044052030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
-		eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000045052030000"; mesonCutArray[2] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
-		eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000046052030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
-		eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000047052030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
+		eventCutArray[ 0] = "8000001"; clusterCutArray[0] = "10000043052030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
+		eventCutArray[ 1] = "8000001"; clusterCutArray[1] = "10000044052030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
+		eventCutArray[ 2] = "8000001"; clusterCutArray[2] = "10000045052030000"; mesonCutArray[2] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
+		eventCutArray[ 3] = "8000001"; clusterCutArray[3] = "10000046052030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
+		eventCutArray[ 4] = "8000001"; clusterCutArray[4] = "10000047052030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
 	} else {
-		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
+		Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}
 
 	TList *EventCutList = new TList();
-	TList *ConvCutList = new TList();
 	TList *ClusterCutList = new TList();
 	TList *MesonCutList = new TList();
 
@@ -180,8 +175,6 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 
 	EventCutList->SetOwner(kTRUE);
 	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
-	ConvCutList->SetOwner(kTRUE);
-	AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
 	ClusterCutList->SetOwner(kTRUE);
 	AliCaloPhotonCuts **analysisClusterCuts = new AliCaloPhotonCuts*[numberOfCuts];
 	MesonCutList->SetOwner(kTRUE);
@@ -192,13 +185,7 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-		
-		analysisCuts[i] = new AliConversionPhotonCuts();
-		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
-		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
-		ConvCutList->Add(analysisCuts[i]);
-		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-	
+			
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
@@ -210,21 +197,17 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		analysisMesonCuts[i]->SetFillCutHistograms("");
 		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
 	}
-
 	task->SetEventCutList(numberOfCuts,EventCutList);
-	task->SetConversionCutList(numberOfCuts,ConvCutList);
 	task->SetCaloCutList(numberOfCuts,ClusterCutList);
 	task->SetMesonCutList(numberOfCuts,MesonCutList);
-	task->SetMoveParticleAccordingToVertex(kTRUE);
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
-	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
+	task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =
-		mgr->CreateContainer(Form("GammaConvCalo_%i",trainConfig), TList::Class(),
-							AliAnalysisManager::kOutputContainer,Form("GammaConvCalo_%i.root",trainConfig));
+		mgr->CreateContainer(Form("GammaCalo_%i",trainConfig), TList::Class(),
+							AliAnalysisManager::kOutputContainer,Form("GammaCalo_%i.root",trainConfig));
 
 	mgr->AddTask(task);
 	mgr->ConnectInput(task,0,cinput);
