@@ -17,3 +17,6 @@ makeflowOptions='-T condor -d all -J 300'
 # Always reconstruct in the current job's directory, and not in the system's
 # temporary directory
 reconstructInTemporaryDir=2
+
+# Never log to final destination: copy log file at the end instead
+logToFinalDestination=1
