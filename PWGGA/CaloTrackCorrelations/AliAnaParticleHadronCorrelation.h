@@ -61,7 +61,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
                                                          Float_t phiAssoc, Float_t phiTrig,     Float_t &     deltaPhi,
                                                          Float_t etaAssoc, Float_t etaTrig,  
                                                          Bool_t  decay,    Float_t hmpidSignal, Int_t outTOF,
-                                                         Int_t nTracks,    Int_t   mcTag);
+                                                         Int_t   cenbin,   Int_t   mcTag);
   
   void         FillChargedEventMixPool();
   
@@ -70,12 +70,12 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   
   void         FillChargedMomentumImbalanceHistograms   (Float_t ptTrig,   Float_t ptAssoc, 
-                                                         Float_t deltaPhi, Int_t   nTracks,  Int_t charge,
+                                                         Float_t deltaPhi, Int_t   cenbin, Int_t charge,
                                                          Int_t   assocBin, Bool_t  decay,
                                                          Int_t outTOF,     Int_t mcTag );
   
   void         FillChargedUnderlyingEventHistograms     (Float_t ptTrig,   Float_t ptAssoc, 
-                                                         Float_t deltaPhi, Int_t nTracks,    Int_t outTOF);
+                                                         Float_t deltaPhi, Int_t cenbin, Int_t outTOF);
   
   void         FillChargedUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
                                                          Float_t deltaPhi);
@@ -376,12 +376,12 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPtTrigCharged ;               //! trigger and correlated particl pt, to be used for mean value for kt	
   
   //if different multiplicity analysis asked
-  TH2F **      fhTrigDeltaPhiCharged ;         //![GetMultiBin()] differences of phi between trigger and charged hadrons
-  TH2F **      fhTrigDeltaEtaCharged ;         //![GetMultiBin()] differences of eta between trigger and charged hadrons
-  TH2F **      fhTrigXECorr  ;                 //![GetMultiBin()] Trigger particle -charged hadron momentum imbalance histogram
-  TH2F **      fhTrigXEUeCorr  ;               //![GetMultiBin()] Trigger particle -UE charged hadron momentum imbalance histogram
-  TH2F **      fhTrigZTCorr  ;                 //![GetMultiBin()] Trigger particle -charged hadron momentum imbalance histogram
-  TH2F **      fhTrigZTUeCorr  ;               //![GetMultiBin()] Trigger particle -UE charged hadron momentum imbalance histogram
+  TH2F **      fhDeltaPhiChargedMult ;         //![GetNCentrBin()] differences of phi between trigger and charged hadrons: multiplicity bin
+  TH2F **      fhDeltaEtaChargedMult ;         //![GetNCentrBin()] differences of eta between trigger and charged hadrons: multiplicity bin
+  TH2F **      fhXEMult  ;                     //![GetNCentrBin()] Trigger particle -charged hadron momentum imbalance histogram: multiplicity bin
+  TH2F **      fhXEUeMult  ;                   //![GetNCentrBin()] Trigger particle -UE charged hadron momentum imbalance histogram: multiplicity bin
+  TH2F **      fhZTMult  ;                     //![GetNCentrBin()] Trigger particle -charged hadron momentum imbalance histogram: multiplicity bin
+  TH2F **      fhZTUeMult  ;                   //![GetNCentrBin()] Trigger particle -UE charged hadron momentum imbalance histogram: multiplicity bin
   
   TH2F *       fhAssocPtBkg;                   //! Trigger pT vs associated pT for background
   TH2F **      fhDeltaPhiDeltaEtaAssocPtBin;   //![fNAssocPtBins*GetNZvertBin()] Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins
