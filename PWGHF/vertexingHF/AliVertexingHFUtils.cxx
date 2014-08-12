@@ -317,6 +317,13 @@ void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t
 
 }
 //____________________________________________________________________________
+Bool_t AliVertexingHFUtils::CheckT0TriggerFired(AliAODEvent* aodEv){
+  // check if T0VTX trigger was fired, based on a workaround suggested by Alla
+  const Double32_t *mean = aodEv->GetT0TOF();
+  if(mean[0]<9999.) return kTRUE;
+  else return kFALSE;
+}
+//____________________________________________________________________________
 Double_t AliVertexingHFUtils::GetTrueImpactParameterDzero(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD) {
   // true impact parameter calculation for Dzero
 
