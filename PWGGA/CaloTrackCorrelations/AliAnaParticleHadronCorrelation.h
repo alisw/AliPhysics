@@ -40,15 +40,17 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   // Main analysis methods
   
-  Bool_t       GetDecayPhotonMomentum(const AliAODPWG4Particle* trigger, TLorentzVector & mom1,TLorentzVector & mom2);
+  Bool_t       FindLeadingOppositeHadronInWindow(AliAODPWG4ParticleCorrelation * particle);
   
-  Bool_t       MakeChargedCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle) ;
+  Bool_t       GetDecayPhotonMomentum   (AliAODPWG4Particle* trigger, TLorentzVector & mom1, TLorentzVector & mom2);
   
-  Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle) ;
+  Bool_t       MakeChargedCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
   
-  void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle) ;
+  Bool_t       MakeNeutralCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
   
-  void         MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation *aodParticle) ;
+  void         MakeMCChargedCorrelation (AliAODPWG4ParticleCorrelation * particle) ;
+  
+  void         MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation * particle) ;
   
   // Filling histogram methods
   
