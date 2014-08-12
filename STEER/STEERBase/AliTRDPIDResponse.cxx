@@ -156,6 +156,11 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
   //
 
   const Double_t badval = -9999;
+
+  if(!track){
+    return badval;
+  }
+
   Double_t pTRD = -999;
   for(Int_t ich=0; ich<6; ich++){
     pTRD = track->GetTRDmomentum(ich);

@@ -44,7 +44,7 @@ Int_t AliTRDdEdxParams::GetIter(const Int_t itype, const Int_t nch, const Int_t 
     itNch = 1;
   }
 
-  if(ncls/nch>=18){
+  if(nch!=0 && ncls/nch>=18){
     itNcls = 0;
   }
   else{
