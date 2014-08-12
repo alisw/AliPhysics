@@ -8,8 +8,11 @@
 // particle - hadron correlations
 // Particle (for example direct gamma) must be found in a previous analysis
 //
-//-- Author: Gustavo Conesa (INFN-LNF) (LPSC-IN2P2-CNRS)
+//-- Author: Gustavo Conesa (LNF-INFN) (LPSC-IN2P3-CNRS)
+//           Yaxian Mao (LPSC-IN2P3-CNRS) and (CNWU) first usable implementation.
+//           Xiangrong Zhu (CNWU), implementtion of own mixing.
 //
+
 // --- Analysis system ---
 
 #include "AliAnaCaloTrackCorrBaseClass.h"
@@ -67,11 +70,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   
   void         FillChargedMomentumImbalanceHistograms   (Float_t ptTrig,   Float_t ptAssoc, 
-                                                         Float_t xE,       Float_t hbpXE, 
-                                                         Float_t zT,       Float_t hbpZT, 
-                                                         Float_t pout,     Float_t deltaPhi, Int_t   nTracks,  Int_t charge,
+                                                         Float_t deltaPhi, Int_t   nTracks,  Int_t charge,
                                                          Int_t   assocBin, Bool_t  decay,
-                                                         Int_t outTOF,    Int_t mcTag );
+                                                         Int_t outTOF,     Int_t mcTag );
   
   void         FillChargedUnderlyingEventHistograms     (Float_t ptTrig,   Float_t ptAssoc, 
                                                          Float_t deltaPhi, Int_t nTracks,    Int_t outTOF);
@@ -199,8 +200,11 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillPileUpHistograms()    { fFillPileUpHistograms = kTRUE  ; }
   void         SwitchOffFillPileUpHistograms()   { fFillPileUpHistograms = kFALSE ; }
 
-  void         SwitchOnFillTriggerAODWithReferences() { fFillAODWithReferences = kTRUE  ; }
-  void         SwitchOffFillTriggerAODWithReferences(){ fFillAODWithReferences = kFALSE ; }
+  void         SwitchOnFillHighMultiplicityHistograms() { fFillHighMultHistograms = kTRUE  ; }
+  void         SwitchOffFillHighMultiplicityHistograms(){ fFillHighMultHistograms = kFALSE ; }
+  
+  void         SwitchOnFillTriggerAODWithReferences()   { fFillAODWithReferences = kTRUE  ; }
+  void         SwitchOffFillTriggerAODWithReferences()  { fFillAODWithReferences = kFALSE ; }
 
   void         SwitchOnCheckNeutralClustersForLeading() { fCheckLeadingWithNeutralClusters = kTRUE  ; }
   void         SwitchOffCheckNeutralClustersForLeading(){ fCheckLeadingWithNeutralClusters = kFALSE ; }
@@ -241,7 +245,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fM02MinCut   ;                  // Study photon clusters with l0 larger than cut
   
   Bool_t       fFillPileUpHistograms;          // Fill pile-up related histograms
-
+  Bool_t       fFillHighMultHistograms;        // Histograms with centrality and event plane for triggers pT
+  
   Bool_t       fSelectLeadingHadronAngle;      // Select events with leading particle within a range
   Float_t      fMinLeadHadPhi;                 // Minimum angle between the trigger and leading hadron
   Float_t      fMaxLeadHadPhi;                 // Maximum ange between the trigger and leading hadron
@@ -430,8 +435,6 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhZTDecayNeutral ;              //! Trigger particle (decay from pi0)-neutral hadron momentum imbalance histogram  
 
   TH2F **      fhDeltaPhiDecayChargedAssocPtBin;//![fNAssocPtBins*GetNZvertBin()] Tagged as decay Trigger pT vs dPhi for different associated pt bins
-  TH2F **      fhXEDecayChargedAssocPtBin ;     //![fNAssocPtBins*GetNZvertBin()] Tagged as decay Trigger pT vs xE for different associated pt bins
-  TH2F **      fhZTDecayChargedAssocPtBin ;     //![fNAssocPtBins*GetNZvertBin()] Tagged as decay Trigger pT vs xE for different associated pt bins  
   
   //if the data is MC, fill MC information
   TH2F *       fh2phiTriggerParticle;          //! #phi resolution for triggers
