@@ -1647,9 +1647,11 @@ void AliReconstruction::Begin(TTree *)
   }
 
   const TMap* cdbCache = AliCDBManager::Instance()->GetEntryCache();
-  if(cdbCache->Contains("GRP/Geometry/Data"))
-	  AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
-  if(!toCDBSnapshot) AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
+  if(!toCDBSnapshot) {
+    if(cdbCache->Contains("GRP/Geometry/Data"))
+      AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
+    AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
+  }
   AliSysInfo::AddStamp("MisalignGeom");
 
   if (!InitGRP()) {
