@@ -42,9 +42,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t       GetDecayPhotonMomentum(const AliAODPWG4Particle* trigger, TLorentzVector & mom1,TLorentzVector & mom2);
   
-  Bool_t       MakeChargedCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl) ;
+  Bool_t       MakeChargedCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle) ;
   
-  Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl) ;
+  Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle) ;
   
   void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle) ;
   
