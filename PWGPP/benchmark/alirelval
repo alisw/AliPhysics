@@ -472,10 +472,11 @@ function Validate() {
   # create helper script to launch benchmark
   cat > run-benchmark.sh <<_EoF_
 #!/bin/bash
+export LANG=C
 cd \$(dirname "\$0")
 v=validation.done
 rm -f \$v
-env ALIROOT_VERSION=$(cat aliroot-version.txt) ./benchmark.sh run $sessionTag files.list benchmark.config
+env ALIROOT_VERSION=$(cat aliroot-version.txt) ./benchmark.sh run $sessionTag files.list benchmark.config 2>&1 | tee run-benchmark.log
 #sleep 1000
 ret=\$?
 echo \$ret > \$v
