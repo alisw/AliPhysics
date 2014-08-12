@@ -46,5 +46,6 @@
 #pragma link C++ class AliAnalysisTaskEtaToPiPlPiMiGamma+;
 #pragma link C++ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero+;
 #pragma link C++ class AliAnalysisTaskGammaConvCalo+;
+#pragma link C++ class AliAnalysisTaskGammaCalo+;
 
 #endif
