@@ -81,6 +81,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
 	fMesonCutArray(NULL),
 	fMesonCuts(NULL),
 	fHistoMotherInvMassPt(NULL),
+	fHistoMotherInvMass3ClusterPt(NULL),
 	fSparseMotherInvMassPtZM(NULL),
 	fHistoMotherBackInvMassPt(NULL),
 	fSparseMotherBackInvMassPtZM(NULL),
@@ -222,6 +223,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 	fMesonCutArray(NULL),
 	fMesonCuts(NULL),
 	fHistoMotherInvMassPt(NULL),
+	fHistoMotherInvMass3ClusterPt(NULL),
 	fSparseMotherInvMassPtZM(NULL),
 	fHistoMotherBackInvMassPt(NULL),
 	fSparseMotherBackInvMassPtZM(NULL),
@@ -443,6 +445,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   	
 	if(fDoMesonAnalysis){
 		fHistoMotherInvMassPt = new TH2F*[fnCuts];
+		fHistoMotherInvMass3ClusterPt = new TH2F*[fnCuts];
 		fHistoMotherBackInvMassPt = new TH2F*[fnCuts];
 		fHistoMotherInvMassEalpha = new TH2F*[fnCuts];
 		if (fDoMesonQA > 0){
@@ -522,6 +525,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 		if(fDoMesonAnalysis){
 			fHistoMotherInvMassPt[iCut] = new TH2F("ESD_Mother_InvMass_Pt","ESD_Mother_InvMass_Pt",800,0,0.8,250,0,25);
 			fESDList[iCut]->Add(fHistoMotherInvMassPt[iCut]);
+			fHistoMotherInvMass3ClusterPt[iCut] = new TH2F("ESD_Mother_InvMass3Cluster_Pt","ESD_Mother_InvMass3Cluster_Pt",800,0,0.8,250,0,25);
+			fESDList[iCut]->Add(fHistoMotherInvMass3ClusterPt[iCut]);
 			fHistoMotherBackInvMassPt[iCut] = new TH2F("ESD_Background_InvMass_Pt","ESD_Background_InvMass_Pt",800,0,0.8,250,0,25);
 			fESDList[iCut]->Add(fHistoMotherBackInvMassPt[iCut]);
 			fHistoMotherInvMassEalpha[iCut] = new TH2F("ESD_Mother_InvMass_vs_E_alpha","ESD_Mother_InvMass_vs_E_alpha",800,0,0.8,250,0,25);
@@ -1632,9 +1637,10 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
 			if (gamma0==NULL) continue;
 			
 			for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
+				if (firstGammaIndex == secondGammaIndex) continue;
 				AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
 				if (gamma1==NULL) continue;
-								
+				
 				AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
 				pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
 				
@@ -1688,6 +1694,20 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
 					}
 					
 				}
+				for (Int_t thirdGammaIndex=0;thirdGammaIndex<fClusterCandidates->GetEntries();thirdGammaIndex++){
+					if (firstGammaIndex == thirdGammaIndex || secondGammaIndex == thirdGammaIndex ) continue;
+					AliAODConversionPhoton *gamma2=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(thirdGammaIndex));
+					if (gamma2==NULL) continue;
+					
+					AliAODConversionMother *pi0cand2 = new AliAODConversionMother(pi0cand,gamma2);
+					if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand2,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+						fHistoMotherInvMass3ClusterPt[fiCut]->Fill(pi0cand2->M(),pi0cand2->Pt());
+					}
+					delete pi0cand2;
+					pi0cand2=0x0;
+					
+				}
+				
 				delete pi0cand;
 				pi0cand=0x0;
 			}
