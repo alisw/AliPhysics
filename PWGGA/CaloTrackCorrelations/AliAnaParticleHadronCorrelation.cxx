@@ -3106,10 +3106,10 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     
     //----------------------------------------------------------------
     // Fill trigger pT related histograms if not absolute leading
+    
     //
     // pT of the trigger, vs trigger origin if MC
     //
-    
     fhPtTrigger->Fill(pt);
     if(IsDataMC())
     {
@@ -3156,7 +3156,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtTriggerPileUp[5]->Fill(pt);
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtTriggerPileUp[6]->Fill(pt);
     }
-  }
+  } // AOD trigger loop
   
   //Reinit for next event
   fLeadingTriggerIndex = -1;
@@ -3696,38 +3696,58 @@ void AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleC
     phi = pi0->Phi() ;
     eta = pi0->Eta() ;
     
+    //
+    // Angular correlations
+    //
     FillNeutralAngularCorrelationHistograms(pt, ptTrig, phi, phiTrig, deltaPhi, eta, etaTrig);
     
+    //
+    // Momentum imbalance
+    //
     zT  = pt/ptTrig ;
-    xE  =-pt/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
     
-    //if(xE <0.)xE =-xE;
-    
-    hbpXE = -100;
     hbpZT = -100;
-    
-    if(xE > 0 ) hbpXE = TMath::Log(1./xE);
+    hbpXE = -100;
+
     if(zT > 0 ) hbpZT = TMath::Log(1./zT);
-    
-    if(fPi0Trigger && decayFound)
-      FillDecayPhotonCorrelationHistograms(pt, phi, decayMom1,decayMom2,kFALSE) ;
     
     //delta phi cut for correlation
     if( (deltaPhi > fDeltaPhiMinCut) && ( deltaPhi < fDeltaPhiMaxCut) )
     {
+      xE  =-pt/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
+      //if(xE <0.)xE =-xE;
+      if(xE > 0 ) hbpXE = TMath::Log(1./xE);
+      
       fhDeltaPhiNeutralPt->Fill(pt,deltaPhi);
       fhXENeutral        ->Fill(ptTrig,xE);
       fhPtHbpXENeutral   ->Fill(ptTrig,hbpXE);
+      fhZTNeutral        ->Fill(ptTrig,zT);
+      fhPtHbpZTNeutral   ->Fill(ptTrig,hbpZT);
     }
     else if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) )
     {
+      // Randomize angle for xE calculation
+      Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
+      
+      xE = -(pt/ptTrig)*TMath::Cos(randomphi);
+      if(xE > 0 ) hbpXE = TMath::Log(1./xE);
+
       fhDeltaPhiUeNeutralPt->Fill(pt,deltaPhi);
+      fhZTUeNeutral        ->Fill(ptTrig,zT);
+      fhPtHbpZTUeNeutral   ->Fill(ptTrig,hbpZT);
       fhXEUeNeutral        ->Fill(ptTrig,xE);
       fhPtHbpXEUeNeutral   ->Fill(ptTrig,hbpXE);
     }
 
-    //several UE calculation
+    // Several UE calculation, not sure it is useful
+    // with partical calorimter acceptance
     if(fMakeSeveralUE) FillNeutralUnderlyingEventSidesHistograms(ptTrig,pt,xE,hbpXE,zT,hbpZT,deltaPhi);
+    
+    //
+    // Decay photon correlations
+    //
+    if(fPi0Trigger && decayFound)
+      FillDecayPhotonCorrelationHistograms(pt, phi, decayMom1,decayMom2,kFALSE) ;
     
     if(fFillAODWithReferences)
     {
