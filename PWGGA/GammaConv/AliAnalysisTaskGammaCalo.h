@@ -106,6 +106,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		
 		//histograms for mesons reconstructed quantities
 		TH2F 								**fHistoMotherInvMassPt;			//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
+		TH2F 								**fHistoMotherInvMass3ClusterPt;	//! array of histogram with signal + BG for same event 3 cluster pairs, inv Mass, pt	
 		THnSparseF 							**fSparseMotherInvMassPtZM;			//! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
 		TH2F 								**fHistoMotherBackInvMassPt;		//! array of histogram with BG for mixed event photon pairs, inv Mass, pt
 		THnSparseF 							**fSparseMotherBackInvMassPtZM;		//! array of THnSparseF with BG for same event photon pairs, inv Mass, pt
