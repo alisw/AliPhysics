@@ -437,10 +437,13 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   //if the data is MC, fill MC information
   TH2F *       fh2phiTriggerParticle;          //! #phi resolution for triggers
-  TH1F *       fhMCPtTrigger;                  //! MC pure pT distribution of leading particles
-  TH2F *       fhMCPhiTrigger;                 //! MC pure Phi distribution of leading particles
-  TH2F *       fhMCEtaTrigger;                 //! MC pure Eta distribution of leading particles
-  TH2F *       fhMCEtaCharged;                 //! MC pure particles charged primary pt vs eta (both associated) 
+  TH1F *       fhMCPtTrigger;                  //! MC pure pT distribution of trigger particles
+  TH2F *       fhMCPhiTrigger;                 //! MC pure Phi distribution of trigger particles
+  TH2F *       fhMCEtaTrigger;                 //! MC pure Eta distribution of trigger particles
+  TH1F *       fhMCPtTriggerNotLeading;        //! MC pure pT distribution of trigger not leading particles
+  TH2F *       fhMCPhiTriggerNotLeading;       //! MC pure Phi distribution of trigger not leading particles
+  TH2F *       fhMCEtaTriggerNotLeading;       //! MC pure Eta distribution of trigger not leading particles
+  TH2F *       fhMCEtaCharged;                 //! MC pure particles charged primary pt vs eta (both associated)
   TH2F *       fhMCPhiCharged;                 //! MC pure particles charged primary pt vs phi (both associated) 
   TH2F *       fhMCDeltaEtaCharged;            //! MC pure particles charged trigger primary pt vs delta eta (associated-trigger) 
   TH2F *       fhMCDeltaPhiCharged;            //! MC pure particles charged trigger primary pt vs delta phi (associated-trigger) 

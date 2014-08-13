@@ -150,12 +150,13 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhZTUeLeftNeutral(0),           fhZTUeRightNeutral(0),
     fhPtHbpZTUeLeftNeutral(0),      fhPtHbpZTUeRightNeutral(0),
     fhPtPi0DecayRatio(0),
-    fhDeltaPhiDecayCharged(0),      fhXEDecayCharged(0), fhZTDecayCharged(0), 
-    fhDeltaPhiDecayNeutral(0),      fhXEDecayNeutral(0), fhZTDecayNeutral(0),
+    fhDeltaPhiDecayCharged(0),      fhXEDecayCharged(0),           fhZTDecayCharged(0),
+    fhDeltaPhiDecayNeutral(0),      fhXEDecayNeutral(0),           fhZTDecayNeutral(0),
     fhDeltaPhiDecayChargedAssocPtBin(0), 
-    fh2phiTriggerParticle(0x0),     fhMCPtTrigger(0),
-    fhMCPhiTrigger(0),              fhMCEtaTrigger(0),
-    fhMCEtaCharged(0),              fhMCPhiCharged(0), 
+    fh2phiTriggerParticle(0x0),
+    fhMCPtTrigger(0),               fhMCPhiTrigger(0),             fhMCEtaTrigger(0),
+    fhMCPtTriggerNotLeading(0),     fhMCPhiTriggerNotLeading(0),   fhMCEtaTriggerNotLeading(0),
+    fhMCEtaCharged(0),              fhMCPhiCharged(0),
     fhMCDeltaEtaCharged(0),         fhMCDeltaPhiCharged(0x0),
     fhMCDeltaPhiDeltaEtaCharged(0), fhMCDeltaPhiChargedPt(0),
     fhMCPtXECharged(0),             fhMCPtXEUeCharged(0),
@@ -400,13 +401,6 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
      TMath::Abs(mcAssocPhi-mcTrigPhi) < 1e-6 && 
      TMath::Abs(mcAssocEta-mcTrigEta) < 1e-6)            return kTRUE ; // exclude but continue       
   
-  // Absolute leading?
-  if( fMakeAbsoluteLeading && mcAssocPt > mcTrigPt )     return kFALSE; // skip event
-  
-  // Skip this event if near side associated particle pt larger than trigger
-  if( fMakeNearSideLeading && mcAssocPt > mcTrigPt && 
-     TMath::Abs(mcAssocPhi-mcTrigPhi)<TMath::PiOver2() ) return kFALSE; // skip event
-  
   Float_t mcdeltaPhi= mcTrigPhi-mcAssocPhi; 
   if(mcdeltaPhi <= -TMath::PiOver2()) mcdeltaPhi+=TMath::TwoPi();
   if(mcdeltaPhi > 3*TMath::PiOver2()) mcdeltaPhi-=TMath::TwoPi();            
@@ -503,6 +497,16 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
     fhMCPtZTUeRightCharged->Fill(mcTrigPt,mcUezT);
     if(mcUexE > 0) fhMCPtHbpZTUeRightCharged->Fill(mcTrigPt,TMath::Log(1/mcUezT));
   }
+  
+  // In case we requested the trigger to be a leading particle,
+  // check if this is true at the MC level.
+  // Not sure if it is correct to skip or not skip this.
+  // Absolute leading?
+  if( fMakeAbsoluteLeading && mcAssocPt > mcTrigPt )     return kFALSE; // skip event
+  
+  // Skip this event if near side associated particle pt larger than trigger
+  if( fMakeNearSideLeading && mcAssocPt > mcTrigPt &&
+     TMath::Abs(mcAssocPhi-mcTrigPhi)<TMath::PiOver2() ) return kFALSE; // skip event
   
   return kTRUE;
 } 
@@ -1105,12 +1109,12 @@ Bool_t AliAnaParticleHadronCorrelation::FindLeadingOppositeHadronInWindow(AliAOD
   }
   
   if( ptLeadHad < fMinLeadHadPt ||
-     ptLeadHad > fMaxLeadHadPt ) return kFALSE;
+      ptLeadHad > fMaxLeadHadPt ) return kFALSE;
   
   //printf("Accept leading hadron pT \n");
   
   if( TMath::Abs(phiLeadHad-phiTrig) < fMinLeadHadPhi ||
-     TMath::Abs(phiLeadHad-phiTrig) > fMaxLeadHadPhi ) return kFALSE;
+      TMath::Abs(phiLeadHad-phiTrig) > fMaxLeadHadPhi ) return kFALSE;
   
   //printf("Accept leading hadron phi \n");
   
@@ -2300,16 +2304,17 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fh2phiTriggerParticle->GetXaxis()->SetTitle("#it{p}_{T gen Trigger} (GeV/#it{c})");
     fh2phiTriggerParticle->GetYaxis()->SetTitle("(#phi_{rec}-#phi_{gen})/#phi_{gen}");
     
-    fhMCPtTrigger  = new TH1F ("hMCPtTrigger","MC : #it{p}_{T} distribution of trigger particles", nptbins,ptmin,ptmax);
+    fhMCPtTrigger  = new TH1F ("hMCPtTrigger","MC : trigger #it{p}_{T}", nptbins,ptmin,ptmax);
     fhMCPtTrigger->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     
-    fhMCPhiTrigger  = new TH2F ("hMCPhiTrigger","MC : #phi distribution of trigger Particles",nptbins,ptmin,ptmax, nphibins,phimin,phimax);
+    fhMCPhiTrigger  = new TH2F ("hMCPhiTrigger","MC : trigger #phi",nptbins,ptmin,ptmax, nphibins,phimin,phimax);
     fhMCPhiTrigger->SetYTitle("#phi (rad)");
-    
-    fhMCEtaTrigger  = new TH2F ("hMCEtaTrigger","MC : #eta distribution of trigger",nptbins,ptmin,ptmax, netabins,etamin,etamax);
-    fhMCEtaTrigger->SetYTitle("#eta ");
-    
-    
+    fhMCPhiTrigger->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+
+    fhMCEtaTrigger  = new TH2F ("hMCEtaTrigger","MC : trigger #eta",nptbins,ptmin,ptmax, netabins,etamin,etamax);
+    fhMCEtaTrigger->SetYTitle("#eta");
+    fhMCEtaTrigger->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+
     fhMCEtaCharged  = new TH2F
     ("hMCEtaCharged","MC #eta_{h^{#pm}}  vs #it{p}_{T #pm}",
      nptbins,ptmin,ptmax,netabins,etamin,etamax);
@@ -2492,6 +2497,29 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhMCPtHbpZTUeRightCharged) ;
     outputContainer->Add(fhMCPtTrigPout) ;
     outputContainer->Add(fhMCPtAssocDeltaPhi) ;
+    
+    if(fMakeAbsoluteLeading || fMakeNearSideLeading)
+    {
+      fhMCPtTriggerNotLeading  = new TH1F ("hMCPtTriggerNotLeading","MC : trigger #it{p}_{T}, when not leading of primaries",
+                                           nptbins,ptmin,ptmax);
+      fhMCPtTriggerNotLeading->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+      
+      fhMCPhiTriggerNotLeading  = new TH2F ("hMCPhiTriggerNotLeading","MC : trigger #phi, when not leading of primaries",
+                                            nptbins,ptmin,ptmax, nphibins,phimin,phimax);
+      fhMCPhiTriggerNotLeading->SetYTitle("#phi (rad)");
+      fhMCPhiTriggerNotLeading->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+
+      
+      fhMCEtaTriggerNotLeading  = new TH2F ("hMCEtaTriggerNotLeading","MC : triogger #eta, when not leading of primaries",
+                                            nptbins,ptmin,ptmax, netabins,etamin,etamax);
+      fhMCEtaTriggerNotLeading->SetYTitle("#eta ");
+      fhMCEtaTriggerNotLeading->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+
+      outputContainer->Add(fhMCPtTriggerNotLeading);
+      outputContainer->Add(fhMCPhiTriggerNotLeading);
+      outputContainer->Add(fhMCEtaTriggerNotLeading);
+    }
+
   } //for MC histogram
   
   if(DoOwnMix())
@@ -3785,6 +3813,12 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
   if ( GetDebug() > 1 )
     AliInfo("Make trigger particle - charged hadron correlation in AOD MC level");
   
+  if( label < 0 )
+  {
+    if( GetDebug() > 0 ) AliInfo(Form(" *** bad label ***:  label %d", label));
+    return;
+  }
+
   AliStack         * stack        = 0x0 ;
   TParticle        * primary      = 0x0 ;
   TClonesArray     * mcparticles  = 0x0 ;
@@ -3797,13 +3831,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
   Int_t    nTracks = 0 ;
   Int_t iParticle  = 0 ;
   
-  Bool_t lead = kFALSE;
-  
-  if( label < 0 )
-  {
-    if( GetDebug() > 0 ) AliInfo(Form(" *** bad label ***:  label %d", label));
-    return;
-  }
+  Bool_t leadTrig = kTRUE;
   
   if( GetReader()->ReadStack() )
   {
@@ -3845,8 +3873,9 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
       //keep only final state particles
       if( particle->GetStatusCode() != 1 ) continue ;
       
-      if ( particle->Pt() < GetReader()->GetCTSPtMin()) continue;
-      
+      if ( particle->Pt() < GetReader()->GetCTSPtMin())                   continue;
+      if ( particle->Pt() < fMinAssocPt || particle->Pt() > fMaxAssocPt ) continue;
+
       //---------- Charged particles ----------------------
       Int_t pdg    = particle->GetPdgCode();
       Int_t charge = (Int_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
@@ -3864,8 +3893,9 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
       
       if ( label == iParticle ) continue; // avoid trigger particle
       
-      lead = FillChargedMCCorrelationHistograms(particle->Pt(),particle->Phi(),particle->Eta(),ptprim,phiprim,etaprim);
-      if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading) ) return;
+      Bool_t lead = FillChargedMCCorrelationHistograms(particle->Pt(),particle->Phi(),particle->Eta(),ptprim,phiprim,etaprim);
+      if(!lead) leadTrig = kFALSE;
+      //if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading) ) return;
       
     } //track loop
     
@@ -3909,8 +3939,9 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
       
       if ( part->Charge() == 0 ) continue;
       
-      if ( part->Pt() < GetReader()->GetCTSPtMin()) continue;
-      
+      if ( part->Pt() < GetReader()->GetCTSPtMin())                   continue;
+      if ( part->Pt() < fMinAssocPt || part->Pt() > fMaxAssocPt ) continue;
+
       TLorentzVector momentum(part->Px(),part->Py(),part->Pz(),part->E());
       
       //Particles in CTS acceptance, make sure to use the same selection as in the reader
@@ -3929,19 +3960,30 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
       
       if ( label == iParticle ) continue; // avoid trigger particle
       
-      lead = FillChargedMCCorrelationHistograms(part->Pt(),part->Phi(),part->Eta(),ptprim,phiprim,etaprim);
-      if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading)) return;
+      Bool_t lead = FillChargedMCCorrelationHistograms(part->Pt(),part->Phi(),part->Eta(),ptprim,phiprim,etaprim);
+      if(!lead) leadTrig = kFALSE;
+      //if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading)) return;
       
     }  //MC particle loop
   }// AOD MC
   
   // Trigger MC particle histograms
-  if (!lead  && (fMakeAbsoluteLeading || fMakeNearSideLeading)) return;
+  //if (!lead  && (fMakeAbsoluteLeading || fMakeNearSideLeading)) return;
   
   fhMCPtTrigger ->Fill(ptprim);
   fhMCPhiTrigger->Fill(ptprim,phiprim);
   fhMCEtaTrigger->Fill(ptprim,etaprim);
   
+  if(!leadTrig && (fMakeAbsoluteLeading || fMakeNearSideLeading) )
+  {
+    if(GetDebug() > 1)
+      printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(): Not leading primary trigger: pT %2.2f, phi%2.2f, eta %2.2f\n",
+             ptprim,phiprim*TMath::RadToDeg(),etaprim);
+    
+    fhMCPtTriggerNotLeading ->Fill(ptprim);
+    fhMCPhiTriggerNotLeading->Fill(ptprim,phiprim);
+    fhMCEtaTriggerNotLeading->Fill(ptprim,etaprim);
+  }
 }
 
 //_____________________________________________________________________
