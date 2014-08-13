@@ -9,7 +9,7 @@ ClassImp(AliFemtoV0TrackCut)
 
 
 AliFemtoV0TrackCut::AliFemtoV0TrackCut() :
-fInvMassLambdaMin(0),fInvMassLambdaMax(99),fMinDcaDaughtersToVert(0),fMaxDcaV0Daughters(99),fMaxDcaV0(99), fMaxCosPointingAngle(0), fParticleType(99), fEta(0.8), fPtMin(0), fPtMax(100), fOnFlyStatus(kFALSE), fMaxEtaDaughters(100), fTPCNclsDaughters(0), fNdofDaughters(10), fStatusDaughters(0), fPtMinPosDaughter(0), fPtMaxPosDaughter(99), fPtMinNegDaughter(0), fPtMaxNegDaughter(99),fMinAvgSepDaughters(0)
+fInvMassLambdaMin(0),fInvMassLambdaMax(99),fMinDcaDaughterPosToVert(0),fMinDcaDaughterNegToVert(0),fMaxDcaV0Daughters(99),fMaxDcaV0(99), fMaxCosPointingAngle(0), fParticleType(99), fEta(0.8), fPtMin(0), fPtMax(100), fOnFlyStatus(kFALSE), fMaxEtaDaughters(100), fTPCNclsDaughters(0), fNdofDaughters(10), fStatusDaughters(0), fPtMinPosDaughter(0), fPtMaxPosDaughter(99), fPtMinNegDaughter(0), fPtMaxNegDaughter(99),fMinAvgSepDaughters(0)
 {
   // Default constructor
  }
@@ -74,7 +74,7 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
     return false;
 
    //DCA of daughters to primary vertex
-    if(TMath::Abs(aV0->DcaPosToPrimVertex())<fMinDcaDaughtersToVert || TMath::Abs(aV0->DcaNegToPrimVertex())<fMinDcaDaughtersToVert)
+    if(TMath::Abs(aV0->DcaPosToPrimVertex())<fMinDcaDaughterPosToVert || TMath::Abs(aV0->DcaNegToPrimVertex())<fMinDcaDaughterNegToVert)
     return false;
 
   //DCA V0 to prim vertex
@@ -129,8 +129,10 @@ AliFemtoString AliFemtoV0TrackCut::Report()
   tStemp+=tCtemp;
   snprintf(tCtemp , 100, "Maximum of Invariant Mass assuming Lambda:\t%lf\n",fInvMassLambdaMax);
   tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Minimum DCA of daughters to primary vertex:\t%lf\n",fMinDcaDaughtersToVert);
-  tStemp+=tCtemp;
+   snprintf(tCtemp , 100, "Minimum DCA of positive daughter to primary vertex:\t%lf\n",fMinDcaDaughterPosToVert);
+   tStemp+=tCtemp;
+   snprintf(tCtemp , 100, "Minimum DCA of negative daughter to primary vertex:\t%lf\n",fMinDcaDaughterNegToVert);
+   tStemp+=tCtemp;
   snprintf(tCtemp , 100, "Max DCA of daughters:\t%lf\n",fMaxDcaV0Daughters);
   tStemp+=tCtemp;
 
@@ -149,9 +151,10 @@ TList *AliFemtoV0TrackCut::ListSettings()
   return tListSetttings;
 }
 
-void AliFemtoV0TrackCut::SetMinDaughtersToPrimVertex(double min)
+void AliFemtoV0TrackCut::SetMinDaughtersToPrimVertex(double minPos, double minNeg)
 {
-  fMinDcaDaughtersToVert=min;
+  fMinDcaDaughterPosToVert=minPos;
+  fMinDcaDaughterNegToVert=minNeg;
 }
 
 void AliFemtoV0TrackCut::SetMaxDcaV0Daughters(double max)
