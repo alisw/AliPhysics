@@ -1001,7 +1001,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
      
   Int_t binsSplit[9] = {100,nbins,100,2,301,101,101,120,9};   Double_t xminSplit[9] = {pMin,0.398,pMin,-0.5,-0.001,-0.005,-0.005,0,-0.5}; Double_t xmaxSplit[9] = {pMax,0.598,pMax,1.5,0.3,1.005,1.005,10e+4,8.5};    
 
-  Int_t binsSplit2[12] = {100,nbins,100,2,10,20,101,101,100,120,90,2};   
+  Int_t binsSplit2[12] = {100,nbins,100,2,10,20,101,101,100,120,99,2};   
   Double_t xminSplit2[12] = {pMin,0.398,pMin,-0.5,0.,-0.1,-0.005,-0.005,-1.,0,0.,-0.5}; 
   Double_t xmaxSplit2[12] = {pMax,0.598,pMax,1.5,0.1,0.1,1.005,1.005,1.,10e+4,3.3,1.5};    
 
@@ -4490,11 +4490,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
     // ---------------- Fraction of TPC Shared Cluster: 
     fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
-    if( (fracTrigTPCSharedMap > fFracTPCcls) ) continue;
-      
-    fTriggerEtaPhi->Fill(trig->Phi(),trig->Eta());
-    fTriggerPtCent->Fill(trig->Pt(),centrality,zv);
-
+  
     for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
       AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
       AliAODv0 *tAssoc=fAOD->GetV0(trackAssocME->ID());
@@ -4837,7 +4833,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	  ( ( sameSignPosDaug==1 && TMath::Abs(fracTrigTPCSharedMap - fracPosDaugTPCSharedMap) < fDiffTrigDaugFracTPCSharedCls ) ||
 	  ( sameSignNegDaug==1 && TMath::Abs(fracTrigTPCSharedMap - fracNegDaugTPCSharedMap) < fDiffTrigDaugFracTPCSharedCls ) ) )*/
 
-      if( (fracPosDaugTPCSharedMap > fFracTPCcls) || (fracNegDaugTPCSharedMap > fFracTPCcls) )
+      if( (fracTrigTPCSharedMap > fFracTPCcls) || (fracPosDaugTPCSharedMap > fFracTPCcls) || (fracNegDaugTPCSharedMap > fFracTPCcls) )
 	continue;
 
       // ----------------------------------------------------------------------------
@@ -5024,6 +5020,12 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
     } // End loop over associated particles
    
+
+    // Filling information of the trigger particle
+    // after the rejection in the cut of shared TPC cls
+    fTriggerEtaPhi->Fill(trig->Phi(),trig->Eta());
+    fTriggerPtCent->Fill(trig->Pt(),centrality,zv);
+
   } // End loop over trigger particles
  
  
