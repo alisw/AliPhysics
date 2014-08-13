@@ -844,14 +844,19 @@ void AliAnaParticleHadronCorrelation::FillNeutralAngularCorrelationHistograms(Fl
 
 //_____________________________________________________________________________________________________________________________
 void AliAnaParticleHadronCorrelation::FillNeutralUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
-                                                                                Float_t xE,       Float_t hbpXE, 
-                                                                                Float_t zT,       Float_t hbpZT, 
+                                                                                Float_t zT,       Float_t hbpZT,
                                                                                 Float_t deltaPhi)
 {
   // Fill underlying event histograms to the left and right of trigger
   
+  Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
+
+  Float_t xE  =-ptAssoc/ptTrig*TMath::Cos(randomphi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
+  Float_t hbpXE = -100;
+  if(xE > 0 ) hbpXE = TMath::Log(1./xE);
+  
   if((deltaPhi<-fUeDeltaPhiMinCut) && (deltaPhi >-fUeDeltaPhiMaxCut))
-  {  
+  {
     fhDeltaPhiUeLeftNeutral->Fill(ptAssoc, deltaPhi);
     fhXEUeLeftNeutral      ->Fill(ptTrig , xE);
     fhPtHbpXEUeLeftNeutral ->Fill(ptTrig , hbpXE);
@@ -3741,7 +3746,7 @@ void AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleC
 
     // Several UE calculation, not sure it is useful
     // with partical calorimter acceptance
-    if(fMakeSeveralUE) FillNeutralUnderlyingEventSidesHistograms(ptTrig,pt,xE,hbpXE,zT,hbpZT,deltaPhi);
+    if(fMakeSeveralUE) FillNeutralUnderlyingEventSidesHistograms(ptTrig,pt,zT,hbpZT,deltaPhi);
     
     //
     // Decay photon correlations

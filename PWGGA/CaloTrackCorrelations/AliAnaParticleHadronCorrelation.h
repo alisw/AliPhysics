@@ -93,7 +93,6 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   
   void         FillNeutralUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
-                                                         Float_t xE,       Float_t hbpXE, 
                                                          Float_t zT,       Float_t hbpZT, 
                                                          Float_t deltaPhi);  
     
