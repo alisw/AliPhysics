@@ -34,6 +34,7 @@ class AliFemtoV0TrackCut : public AliFemtoParticleCut
   void SetMaxDcaV0Daughters(double);
   void SetMaxDcaV0(double);
   void SetMaxCosPointingAngle(double);
+  void SetMaxV0DecayLength(double);
   void SetParticleType(short);
   void SetEta(double);
   void SetPt(double,double);
@@ -61,6 +62,7 @@ class AliFemtoV0TrackCut : public AliFemtoParticleCut
   double            fMinDcaDaughterNegToVert; //DCA of negative daughter to primary vertex
   double            fMaxDcaV0Daughters;     //Max DCA of v0 daughters at Decay vertex
   double            fMaxDcaV0;
+  double            fMaxDecayLength;
   
   double            fMaxCosPointingAngle;
   short             fParticleType; //0-lambda

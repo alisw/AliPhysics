@@ -85,6 +85,11 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   if(aV0->CosPointingAngle()<fMaxCosPointingAngle)
     return false;
 
+  //decay length
+  if(aV0->DecayLengthV0()>fMaxDecayLength)
+    return false;
+
+
   if(fParticleType == kAll)
     return true;
     
@@ -160,6 +165,10 @@ void AliFemtoV0TrackCut::SetMinDaughtersToPrimVertex(double minPos, double minNe
 void AliFemtoV0TrackCut::SetMaxDcaV0Daughters(double max)
 {
   fMaxDcaV0Daughters=max;
+};
+void AliFemtoV0TrackCut::SetMaxV0DecayLength(double max)
+{
+  fMaxDecayLength=max;
 };
 
 void AliFemtoV0TrackCut::SetMaxDcaV0(double max)
