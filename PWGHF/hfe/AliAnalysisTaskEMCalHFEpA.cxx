@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: July 28, 2014.								      //
+	//		version: August 13, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -2552,13 +2552,13 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 								if(fUseEMCal) fShowerShape_ha->Fill(M02,M20);
 							}
 						}
-							//for systematic studies of hadron contamination
-						if(fTPCnSigma < -4){
+						//for systematic studies of hadron contamination
+						if(fTPCnSigma < -3){
 							fEoverP_pt_pions->Fill(fPt, EoverP);
 							
 						}
 						
-						if(fTPCnSigma < -5){
+						if(fTPCnSigma < -3.5){
 							fEoverP_pt_pions2->Fill(fPt, EoverP);
 							
 						}
