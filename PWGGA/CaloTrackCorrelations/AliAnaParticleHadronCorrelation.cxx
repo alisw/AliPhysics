@@ -1911,9 +1911,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         fhDeltaPhiAssocPtBinHMPIDAcc[bin]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
         fhDeltaPhiAssocPtBinHMPIDAcc[bin]->SetYTitle("#Delta #phi (rad)");
         
-        outputContainer->Add(fhDeltaPhiAssocPtBinHMPID[bin]) ;
+        outputContainer->Add(fhDeltaPhiAssocPtBinHMPID   [bin]) ;
         outputContainer->Add(fhDeltaPhiAssocPtBinHMPIDAcc[bin]) ;
-        
       }
     }
   }
@@ -2711,7 +2710,6 @@ Bool_t AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum(AliAODPWG4Particl
   
   Int_t indexPhoton1 = trigger->GetCaloLabel(0);
   Int_t indexPhoton2 = trigger->GetCaloLabel(1);
-  Float_t ptTrig     = trigger->Pt();
   
   if(indexPhoton1!=-1 || indexPhoton2!=-1) return kFALSE;
   
@@ -2724,17 +2722,10 @@ Bool_t AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum(AliAODPWG4Particl
   
   for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++)
   {
-    AliVCluster * photon =  (AliVCluster*) (clusters->At(iclus));	
-    if(photon->GetID()==indexPhoton1) 
-    {
-      photon->GetMomentum(mom1,GetVertex(0)) ;
-      if(ptTrig) fhPtPi0DecayRatio->Fill(ptTrig, mom1.Pt()/ptTrig);
-    }
-    if(photon->GetID()==indexPhoton2) 
-    {
-      photon->GetMomentum(mom1,GetVertex(0)) ;
-      if(ptTrig > 0) fhPtPi0DecayRatio->Fill(ptTrig, mom2.Pt()/ptTrig);
-    } 
+    AliVCluster * photon =  (AliVCluster*) (clusters->At(iclus));
+    
+    if(photon->GetID()==indexPhoton1) photon->GetMomentum(mom1,GetVertex(0)) ;
+    if(photon->GetID()==indexPhoton2) photon->GetMomentum(mom1,GetVertex(0)) ;
     
     if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum() - Photon1 = %f, Photon2 = %f \n", mom1.Pt(), mom2.Pt());
     
@@ -2768,9 +2759,7 @@ void AliAnaParticleHadronCorrelation::Init()
   
   if(!GetReader()->IsCTSSwitchedOn())
     AliFatal("STOP!: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!\n");
-
 }
-
 
 //____________________________________________________
 void AliAnaParticleHadronCorrelation::InitParameters()
@@ -3205,13 +3194,23 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     evtIndex13 = GetMixedEvent()->EventIndex(aodParticle->GetTrackLabel(0)) ;
   }
   
+  //
   // In case of pi0/eta trigger, we may want to check their decay correlation, 
   // get their decay children
+  //
   TLorentzVector decayMom1;
   TLorentzVector decayMom2;
   Bool_t decayFound = kFALSE;
-  if( fPi0Trigger ) decayFound = GetDecayPhotonMomentum(aodParticle,decayMom1, decayMom2);
-
+  if( fPi0Trigger )
+  {
+    decayFound = GetDecayPhotonMomentum(aodParticle,decayMom1, decayMom2);
+    if(decayFound)
+    {
+      fhPtPi0DecayRatio->Fill(ptTrig, decayMom1.Pt()/ptTrig);
+      fhPtPi0DecayRatio->Fill(ptTrig, decayMom2.Pt()/ptTrig);
+    }
+  }
+  
   //-----------------------------------------------------------------------
   // Track loop, select tracks with good pt, phi and fill AODs or histograms
   //-----------------------------------------------------------------------
