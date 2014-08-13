@@ -167,6 +167,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fTreeVariableCentV0AEq(0),
   fTreeVariableCentV0CEq(0),
   fTreeVariableCentV0MEq(0),
+  fTreeVariableCustomCentV0M(0),
   fTreeVariableAmpV0A(0),
   fTreeVariableAmpV0C(0),
   fTreeVariableAmpV0AEq(0),
@@ -220,6 +221,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
 	fTreeCascVarCentV0AEq(0),
 	fTreeCascVarCentV0CEq(0),
 	fTreeCascVarCentV0MEq(0),
+	fTreeCascVarCustomCentV0M(0),
 	fTreeCascVarAmpV0A(0),
 	fTreeCascVarAmpV0C(0),
 	fTreeCascVarAmpV0AEq(0),
@@ -386,6 +388,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fTreeVariableCentV0AEq(0),
   fTreeVariableCentV0CEq(0),
   fTreeVariableCentV0MEq(0),
+  fTreeVariableCustomCentV0M(0),
   fTreeVariableAmpV0A(0),
   fTreeVariableAmpV0C(0),
   fTreeVariableAmpV0AEq(0),
@@ -439,6 +442,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
 	fTreeCascVarCentV0AEq(0),
 	fTreeCascVarCentV0CEq(0),
 	fTreeCascVarCentV0MEq(0),
+  fTreeCascVarCustomCentV0M(0),
 	fTreeCascVarAmpV0A(0),
 	fTreeCascVarAmpV0C(0),
 	fTreeCascVarAmpV0AEq(0),
@@ -683,6 +687,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   fTreeV0->Branch("fTreeVariableCentV0AEq",&fTreeVariableCentV0AEq,"fTreeVariableCentV0AEq/F");
   fTreeV0->Branch("fTreeVariableCentV0CEq",&fTreeVariableCentV0CEq,"fTreeVariableCentV0CEq/F");
   fTreeV0->Branch("fTreeVariableCentV0MEq",&fTreeVariableCentV0MEq,"fTreeVariableCentV0MEq/F");
+  fTreeV0->Branch("fTreeVariableCustomCentV0M",&fTreeVariableCustomCentV0M,"fTreeVariableCustomCentV0M/F");
   fTreeV0->Branch("fTreeVariableAmpV0A",&fTreeVariableAmpV0A,"fTreeVariableAmpV0A/F");
   fTreeV0->Branch("fTreeVariableAmpV0C",&fTreeVariableAmpV0C,"fTreeVariableAmpV0C/F");
   fTreeV0->Branch("fTreeVariableAmpV0AEq",&fTreeVariableAmpV0AEq,"fTreeVariableAmpV0AEq/F");
@@ -740,6 +745,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   fTreeCascade->Branch("fTreeCascVarCentV0AEq",&fTreeCascVarCentV0AEq,"fTreeCascVarCentV0AEq/F");
   fTreeCascade->Branch("fTreeCascVarCentV0CEq",&fTreeCascVarCentV0CEq,"fTreeCascVarCentV0CEq/F");
   fTreeCascade->Branch("fTreeCascVarCentV0MEq",&fTreeCascVarCentV0MEq,"fTreeCascVarCentV0MEq/F");
+  fTreeCascade->Branch("fTreeCascVarCustomCentV0M",&fTreeCascVarCustomCentV0M,"fTreeCascVarCustomCentV0M/F");
   fTreeCascade->Branch("fTreeCascVarAmpV0A",&fTreeCascVarAmpV0A,"fTreeCascVarAmpV0A/F");
   fTreeCascade->Branch("fTreeCascVarAmpV0C",&fTreeCascVarAmpV0C,"fTreeCascVarAmpV0C/F");
   fTreeCascade->Branch("fTreeCascVarAmpV0AEq",&fTreeCascVarAmpV0AEq,"fTreeCascVarAmpV0AEq/F");
@@ -1324,6 +1330,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
   
   fCustomCentrality_V0M = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0M");
   fCustomCentrality_V0MEq = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0MEq");
+  
+  fTreeVariableCustomCentV0M = fCustomCentrality_V0M; 
+  fTreeCascVarCustomCentV0M  = fCustomCentrality_V0M; 
   
   //Event-level fill 
   fTreeEvent->Fill();
