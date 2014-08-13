@@ -22,7 +22,7 @@ AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(Bool_t kSimulation = kFALS
   
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
-  AliAnalysisTaskEMCALTriggerQA * qatrigger = new AliAnalysisTaskEMCALTriggerQA("QATrigger");  
+  AliAnalysisTaskEMCALTriggerQA * qatrigger = new AliAnalysisTaskEMCALTriggerQA("QAEMCALTrigger");  
   if(kSimulation) qatrigger->SwitchOnMCData();
   else            qatrigger->SwitchOffMCData();
   if(outputFile.Length()==0)outputFile = AliAnalysisManager::GetCommonFileName(); 
