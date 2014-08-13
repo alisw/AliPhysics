@@ -432,7 +432,7 @@ namespace EMCalTriggerPtAnalysis {
 		 * @param isPileup: flag event as pileup event
 		 * @param cut: id of the cut (0 = no cut)
 		 */
-		double data[6] = {track->Pt(), track->Eta(), track->Phi(), vz, 0, cut};
+         	double data[6] = {track->Pt(), track->Eta(), track->Phi(), vz, 0, static_cast<double>(cut)};
 		char histname[1024];
 		sprintf(histname, "hTrackHist%s", trigger);
 		try{
