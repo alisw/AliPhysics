@@ -1641,9 +1641,11 @@ void AliReconstruction::Begin(TTree *)
 	  snapshotFileOut="OCDB.root";
   }
 
-  if (!MisalignGeometry(fLoadAlignData)) {
-    Abort("MisalignGeometry", TSelector::kAbortProcess);
-    return;
+  if(!toCDBSnapshot) {
+    if (!MisalignGeometry(fLoadAlignData)) {
+      Abort("MisalignGeometry", TSelector::kAbortProcess);
+      return;
+    }
   }
 
   const TMap* cdbCache = AliCDBManager::Instance()->GetEntryCache();
