@@ -3102,15 +3102,10 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     // Neutral particles correlation
     //
     if(fNeutralCorr)
-    {
-      Bool_t okneutral = MakeNeutralCorrelation(particle);
-      // If the correlation did not succeed.
-      if(!okneutral) continue ;
-    }
+      MakeNeutralCorrelation(particle);
     
     //----------------------------------------------------------------
-    // Fill trigger pT related histograms if correlation went well and
-    // no problem was found, like not absolute leading
+    // Fill trigger pT related histograms if not absolute leading
     //
     // pT of the trigger, vs trigger origin if MC
     //
@@ -3629,16 +3624,16 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
 }
   
 
-//__________________________________________________________________________________________________________
-Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleCorrelation * aodParticle)
+//_______________________________________________________________________________________________________
+void AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleCorrelation * aodParticle)
 {  
   // Neutral Pion Correlation Analysis
   
   TObjArray * pi0list = (TObjArray*) GetAODBranch(fPi0AODBranchName); // For the future, foresee more possible pi0 lists
-  if(!pi0list) return kFALSE;
+  if(!pi0list) return ;
   
   Int_t npi0 = pi0list->GetEntriesFast();
-  if(npi0 == 0) return kFALSE;
+  if(npi0 == 0) return ;
   
   if(GetDebug() > 1)
     printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelation() - Particle - pi0 correlation, %d pi0's\n",npi0);
@@ -3756,8 +3751,6 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
   {
     aodParticle->AddObjArray(refpi0);
   }
-
-  return kTRUE;
 }
   
 //__________________________________________________________________________

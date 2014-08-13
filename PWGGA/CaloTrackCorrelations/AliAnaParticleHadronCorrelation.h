@@ -49,7 +49,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   void         MakeChargedCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
   
-  Bool_t       MakeNeutralCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
+  void         MakeNeutralCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
   
   void         MakeMCChargedCorrelation (Int_t triggerMCLable) ;
   
