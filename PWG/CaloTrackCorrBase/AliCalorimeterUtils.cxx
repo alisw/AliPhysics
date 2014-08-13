@@ -1382,8 +1382,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, TP
 {
   // Check that a MC ESD is in the calorimeter acceptance
   
-  if( (!IsPHOSGeoMatrixSet() && calo == "PHOS" ) ||
-     (!IsPHOSGeoMatrixSet() && calo == "EMCAL")   )
+  if(!particle || calo!="EMCAL" || calo!="PHOS") return kFALSE ;
+  
+  if( (!IsPHOSGeoMatrixSet () && calo == "PHOS" ) ||
+      (!IsEMCALGeoMatrixSet() && calo == "EMCAL")   )
   {
     AliFatal(Form("Careful Geo Matrix for %s is not set, use AliFidutialCut instead \n",calo.Data()));
     return kFALSE ;
@@ -1414,8 +1416,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, Al
 {
   // Check that a MC AOD is in the calorimeter acceptance
   
-  if( (!IsPHOSGeoMatrixSet() && calo == "PHOS" ) ||
-      (!IsPHOSGeoMatrixSet() && calo == "EMCAL")   )
+  if(!particle || calo!="EMCAL" || calo!="PHOS") return kFALSE ;
+  
+  if( (!IsPHOSGeoMatrixSet () && calo == "PHOS" ) ||
+      (!IsEMCALGeoMatrixSet() && calo == "EMCAL")   )
   {
     AliFatal(Form("Careful Geo Matrix for %s is not set, use AliFidutialCut instead \n",calo.Data()));
     return kFALSE ;
