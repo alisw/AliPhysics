@@ -3574,6 +3574,13 @@ void AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleC
     
     if(pt < fMinAssocPt || pt > fMaxAssocPt) continue ;
     
+    //remove trigger itself for correlation when use charged triggers
+    if(aodParticle->GetCaloLabel(0) >= 0 &&
+       (pi0->GetCaloLabel(0) == aodParticle->GetCaloLabel(0) || pi0->GetCaloLabel(1) == aodParticle->GetCaloLabel(0))) continue ;
+    
+    if( aodParticle->GetCaloLabel(1) >= 0 &&
+       (pi0->GetCaloLabel(0) == aodParticle->GetCaloLabel(1) || pi0->GetCaloLabel(1) == aodParticle->GetCaloLabel(1))) continue ;
+
     //
     // Angular correlations
     //
