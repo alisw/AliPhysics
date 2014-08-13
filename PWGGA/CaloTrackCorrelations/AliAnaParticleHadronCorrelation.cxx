@@ -1066,23 +1066,23 @@ TObjString* AliAnaParticleHadronCorrelation::GetAnalysisCuts()
   const Int_t buffersize = 560;
   char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize,"--- AliAnaPaticleHadronCorrelation ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaPaticleHadronCorrelation ---:") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize," %3.2f < Pt associated < %3.2f ", fMinAssocPt,   fMaxAssocPt) ;
+  snprintf(onePar,buffersize," %3.2f < Pt associated < %3.2f; ", fMinAssocPt,   fMaxAssocPt) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize," %3.2f < Phi trigger particle-Hadron < %3.2f ",    fDeltaPhiMinCut,   fDeltaPhiMaxCut) ; 
+  snprintf(onePar,buffersize," %3.2f < Phi trigger particle-Hadron < %3.2f; ",    fDeltaPhiMinCut,   fDeltaPhiMaxCut) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize," %3.2f < Phi trigger particle-UeHadron <  %3.2f ", fUeDeltaPhiMinCut, fUeDeltaPhiMaxCut) ; 
+  snprintf(onePar,buffersize," %3.2f < Phi trigger particle-UeHadron <  %3.2f; ", fUeDeltaPhiMinCut, fUeDeltaPhiMaxCut) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Isolated Trigger?  %d\n",    fSelectIsolated) ;
+  snprintf(onePar,buffersize,"Isolated Trigger?  %d;",    fSelectIsolated) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Several UE?  %d\n",          fMakeSeveralUE) ;
+  snprintf(onePar,buffersize,"Several UE?  %d;",          fMakeSeveralUE) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Name of AOD Pi0 Branch %s ", fPi0AODBranchName.Data());
+  snprintf(onePar,buffersize,"Name of AOD Pi0 Branch %s;", fPi0AODBranchName.Data());
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Do Decay-hadron correlation ?  pi0 %d, decay %d", fPi0Trigger, fDecayTrigger) ;
+  snprintf(onePar,buffersize,"Do Decay-hadron correlation ?  pi0 %d, decay %d;", fPi0Trigger, fDecayTrigger) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Select absolute leading for cluster triggers ? %d or Near Side Leading %d \n", 
+  snprintf(onePar,buffersize,"Select absolute leading for cluster triggers ? %d or Near Side Leading %d;",
            fMakeAbsoluteLeading, fMakeNearSideLeading) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Associated particle pt bins  %d: ", fNAssocPtBins) ;
@@ -2200,10 +2200,6 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
                                             nptbins,ptmin,ptmax, netabins,etamin,etamax);
       fhMCEtaTriggerNotLeading->SetYTitle("#eta ");
       fhMCEtaTriggerNotLeading->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
-      
-      outputContainer->Add(fhMCPtTriggerNotLeading);
-      outputContainer->Add(fhMCPhiTriggerNotLeading);
-      outputContainer->Add(fhMCEtaTriggerNotLeading);
     }
     
     fhMCEtaCharged  = new TH2F
@@ -2282,6 +2278,14 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhMCPtTrigger);
     outputContainer->Add(fhMCPhiTrigger);
     outputContainer->Add(fhMCEtaTrigger);
+    
+    if(fMakeAbsoluteLeading || fMakeNearSideLeading)
+    {
+      outputContainer->Add(fhMCPtTriggerNotLeading);
+      outputContainer->Add(fhMCPhiTriggerNotLeading);
+      outputContainer->Add(fhMCEtaTriggerNotLeading);
+    }
+    
     outputContainer->Add(fhMCDeltaPhiDeltaEtaCharged);
     outputContainer->Add(fhMCPhiCharged) ;
     outputContainer->Add(fhMCEtaCharged) ;
@@ -3844,7 +3848,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
   if(!leadTrig && (fMakeAbsoluteLeading || fMakeNearSideLeading) )
   {
     if(GetDebug() > 1)
-      printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(): Not leading primary trigger: pT %2.2f, phi%2.2f, eta %2.2f\n",
+      printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(): Not leading primary trigger: pT %2.2f, phi %2.2f, eta %2.2f\n",
              ptprim,phiprim*TMath::RadToDeg(),etaprim);
     
     fhMCPtTriggerNotLeading ->Fill(ptprim);
