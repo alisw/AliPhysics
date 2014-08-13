@@ -86,7 +86,7 @@ Int_t AliGenReaderHepMC::NextEvent()
             pdfHeader.pdf1,
             pdfHeader.pdf2
       );
-      printf("Parsed event with %d particles.\n", fGenEvent->particles_size());
+      printf("Parsed event %d with %d particles.\n", fGenEvent->event_number(), fGenEvent->particles_size());
       return fGenEvent->particles_size();
    }
    printf("No more events in the file.\n");
