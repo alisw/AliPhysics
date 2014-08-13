@@ -98,6 +98,7 @@ set (SRCS
     hfe/AliHFEreducedTrack.cxx
     hfe/AliHFEreducedMCParticle.cxx
     hfe/AliAnalysisTaskHFEQA.cxx
+    hfe/AliAnalysisTaskHFEemcQA.cxx
     hfe/AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
     )
 
