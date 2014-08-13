@@ -423,8 +423,8 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm =
   //Not used in bayesian
   
   //EMCAL
-  caloPID->SetEMCALLambda0CutMax(10.);
-  caloPID->SetEMCALLambda0CutMin(0.10);
+  caloPID->SetEMCALLambda0CutMax(1000.);
+  caloPID->SetEMCALLambda0CutMin(0.);
   
   // caloPID->SetEMCALDEtaCut(0.025);
   // caloPID->SetEMCALDPhiCut(0.030);
