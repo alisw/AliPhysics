@@ -53,6 +53,8 @@ void AliGenReaderHepMC::Init()
 
 Int_t AliGenReaderHepMC::NextEvent()
 {
+   // Clean memory
+   if (fGenEvent) delete fGenEvent;
    // Read the next event
    if ((fGenEvent = fEventsHandle->read_next_event())) {
       THepMCParser::ParseGenEvent2TCloneArray(fGenEvent,fParticleArray,false);
