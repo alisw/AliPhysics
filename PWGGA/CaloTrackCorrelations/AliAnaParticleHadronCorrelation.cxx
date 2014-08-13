@@ -391,19 +391,35 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
 {
   // Fill MC histograms independently of AOD or ESD
   
-  //Select only hadrons in pt range
-  if( mcAssocPt < fMinAssocPt || mcAssocPt > fMaxAssocPt ) return kTRUE ; // exclude but continue
+  Bool_t lead = kTRUE;
   
+  // In case we requested the trigger to be a leading particle,
+  // check if this is true at the MC level.
+  // Not sure if it is correct to skip or not skip this.
+  // Absolute leading?
+  if( fMakeAbsoluteLeading && mcAssocPt > mcTrigPt )     lead = kFALSE; // skip event
+  
+  // Skip this event if near side associated particle pt larger than trigger
+  if( fMakeNearSideLeading && mcAssocPt > mcTrigPt &&
+     TMath::Abs(mcAssocPhi-mcTrigPhi)<TMath::PiOver2() ) lead = kFALSE; // skip event
+
+  //
+  // Select only hadrons in pt range
+  if ( mcAssocPt < fMinAssocPt || mcAssocPt > fMaxAssocPt ) return lead ; // exclude but continue
+  if ( mcAssocPt < GetReader()->GetCTSPtMin())              return lead ;
+
   if( mcAssocPhi < 0 ) mcAssocPhi+=TMath::TwoPi();
   
-  //remove trigger itself for correlation when use charged triggers 
+  //
+  // Remove trigger itself for correlation when use charged triggers
   if(TMath::Abs(mcAssocPt -mcTrigPt ) < 1e-6 && 
      TMath::Abs(mcAssocPhi-mcTrigPhi) < 1e-6 && 
-     TMath::Abs(mcAssocEta-mcTrigEta) < 1e-6)            return kTRUE ; // exclude but continue       
+     TMath::Abs(mcAssocEta-mcTrigEta) < 1e-6)            return lead ; // exclude but continue
   
-  Float_t mcdeltaPhi= mcTrigPhi-mcAssocPhi; 
-  if(mcdeltaPhi <= -TMath::PiOver2()) mcdeltaPhi+=TMath::TwoPi();
-  if(mcdeltaPhi > 3*TMath::PiOver2()) mcdeltaPhi-=TMath::TwoPi();            
+  Float_t mcdeltaPhi= mcTrigPhi-mcAssocPhi;
+//  Why this?
+//  if(mcdeltaPhi <= -TMath::PiOver2()) mcdeltaPhi+=TMath::TwoPi();
+//  if(mcdeltaPhi > 3*TMath::PiOver2()) mcdeltaPhi-=TMath::TwoPi();            
   
   Float_t mcxE    =-mcAssocPt/mcTrigPt*TMath::Cos(mcdeltaPhi);// -(mcAssocPx*pxprim+mcAssocPy*pyprim)/(mcTrigPt*mcTrigPt);  
   Float_t mchbpXE =-100 ;
@@ -413,9 +429,9 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
   Float_t mchbpZT =-100 ;
   if(mczT > 0 ) mchbpZT = TMath::Log(1./mczT);
   
-  //Selection within angular range
-  if( mcdeltaPhi< -TMath::PiOver2())  mcdeltaPhi+=TMath::TwoPi();
-  if( mcdeltaPhi>3*TMath::PiOver2())  mcdeltaPhi-=TMath::TwoPi();              
+  //Selection within angular range, why again?
+//  if( mcdeltaPhi< -TMath::PiOver2())  mcdeltaPhi+=TMath::TwoPi();
+//  if( mcdeltaPhi>3*TMath::PiOver2())  mcdeltaPhi-=TMath::TwoPi();              
   
   Double_t mcpout = mcAssocPt*TMath::Sin(mcdeltaPhi) ; 
   
@@ -498,17 +514,7 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
     if(mcUexE > 0) fhMCPtHbpZTUeRightCharged->Fill(mcTrigPt,TMath::Log(1/mcUezT));
   }
   
-  // In case we requested the trigger to be a leading particle,
-  // check if this is true at the MC level.
-  // Not sure if it is correct to skip or not skip this.
-  // Absolute leading?
-  if( fMakeAbsoluteLeading && mcAssocPt > mcTrigPt )     return kFALSE; // skip event
-  
-  // Skip this event if near side associated particle pt larger than trigger
-  if( fMakeNearSideLeading && mcAssocPt > mcTrigPt &&
-     TMath::Abs(mcAssocPhi-mcTrigPhi)<TMath::PiOver2() ) return kFALSE; // skip event
-  
-  return kTRUE;
+  return lead;
 } 
 
 //___________________________________________________________________________________________________________________
@@ -3860,9 +3866,10 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
     
     eprim    = primary->Energy();
     ptprim   = primary->Pt();
-    phiprim  = primary->Phi();
     etaprim  = primary->Eta();
-    
+    phiprim  = primary->Phi();
+    if(phiprim < 0) phiprim+=TMath::TwoPi();
+      
     if(ptprim < 0.01 || eprim < 0.01) return ;
     
     for (iParticle = 0 ; iParticle <  nTracks ; iParticle++)
@@ -3872,9 +3879,6 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
       
       //keep only final state particles
       if( particle->GetStatusCode() != 1 ) continue ;
-      
-      if ( particle->Pt() < GetReader()->GetCTSPtMin())                   continue;
-      if ( particle->Pt() < fMinAssocPt || particle->Pt() > fMaxAssocPt ) continue;
 
       //---------- Charged particles ----------------------
       Int_t pdg    = particle->GetPdgCode();
@@ -3893,7 +3897,10 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
       
       if ( label == iParticle ) continue; // avoid trigger particle
       
-      Bool_t lead = FillChargedMCCorrelationHistograms(particle->Pt(),particle->Phi(),particle->Eta(),ptprim,phiprim,etaprim);
+      Float_t phi = particle->Phi();
+      if(phi < 0) phi+=TMath::TwoPi();
+      
+      Bool_t lead = FillChargedMCCorrelationHistograms(particle->Pt(),phi,particle->Eta(),ptprim,phiprim,etaprim);
       if(!lead) leadTrig = kFALSE;
       //if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading) ) return;
       
@@ -3924,11 +3931,12 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
       return;
     }
     
-    ptprim  = aodprimary->Pt();
-    phiprim = aodprimary->Phi();
-    etaprim = aodprimary->Eta();
     eprim   = aodprimary->E();
-    
+    ptprim  = aodprimary->Pt();
+    etaprim = aodprimary->Eta();
+    phiprim = aodprimary->Phi();
+    if(phiprim < 0) phiprim+=TMath::TwoPi();
+
     if(ptprim < 0.01 || eprim < 0.01) return ;
     
     for (iParticle = 0; iParticle < nTracks; iParticle++)
@@ -3939,9 +3947,6 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
       
       if ( part->Charge() == 0 ) continue;
       
-      if ( part->Pt() < GetReader()->GetCTSPtMin())                   continue;
-      if ( part->Pt() < fMinAssocPt || part->Pt() > fMaxAssocPt ) continue;
-
       TLorentzVector momentum(part->Px(),part->Py(),part->Pz(),part->E());
       
       //Particles in CTS acceptance, make sure to use the same selection as in the reader
@@ -3960,7 +3965,10 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label)
       
       if ( label == iParticle ) continue; // avoid trigger particle
       
-      Bool_t lead = FillChargedMCCorrelationHistograms(part->Pt(),part->Phi(),part->Eta(),ptprim,phiprim,etaprim);
+      Float_t phi = part->Phi();
+      if(phi < 0) phi+=TMath::TwoPi();
+      
+      Bool_t lead = FillChargedMCCorrelationHistograms(part->Pt(),phi,part->Eta(),ptprim,phiprim,etaprim);
       if(!lead) leadTrig = kFALSE;
       //if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading)) return;
       
