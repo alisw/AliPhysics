@@ -1641,11 +1641,26 @@ void AliReconstruction::Begin(TTree *)
 	  snapshotFileOut="OCDB.root";
   }
 
-  if(!toCDBSnapshot) {
+  TString detStr(fLoadAlignData);
+  if (!toCDBSnapshot) {
     if (!MisalignGeometry(fLoadAlignData)) {
       Abort("MisalignGeometry", TSelector::kAbortProcess);
       return;
     }
+  } else {
+    // when creating the snapshot, load the CDB alignment objects without applying them to the geometry
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+      if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+      if (!strcmp(fgkDetectorName[iDet],"HLT")) continue;
+      if (AliGeomManager::GetNalignable(fgkDetectorName[iDet]) != 0)
+      {
+        TString detAlignPath = fgkDetectorName[iDet];
+        detAlignPath += "/Align/Data";
+        AliCDBManager::Instance()->Get(detAlignPath);
+      }
+    } // end loop over detectors
+    if(AliGeomManager::GetNalignable("GRP") != 0)
+      AliCDBManager::Instance()->Get("GRP/Align/Data");
   }
 
   const TMap* cdbCache = AliCDBManager::Instance()->GetEntryCache();
