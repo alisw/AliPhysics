@@ -20,7 +20,7 @@ class TList;
 #include "AliFemtoCutMonitor.h"
 
 class AliFemtoCutMonitorV0 : public AliFemtoCutMonitor{
-  
+
 public:
   AliFemtoCutMonitorV0();
   AliFemtoCutMonitorV0(const char *aName);
@@ -44,12 +44,15 @@ public:
   virtual TList *GetOutputList();
 
 private:
-  TH1F *fLambdaMass;     // Mass assuming lambda hypothesis	
+  TH1F *fLambdaMass;     // Mass assuming lambda hypothesis
   TH1F *fAntiLambdaMass; // Mass assuming antilambda hypothesis
-  TH1F *fK0ShortMass;    // Mass assuming k-short hypothesis	
+  TH1F *fK0ShortMass;    // Mass assuming k-short hypothesis
   TH1F *fDcaDaughters;   // DCA of v0 daughters at Decay vertex
   TH1F *fDcaV0ToPrimVertex;// DCA of v0 to primary vertex
-  TH1F *fCosPointingAngle; 
+  TH1F *fDcaPosToPrimVertex;
+  TH1F *fDcaNegToPrimVertex;
+  TH1F *fCosPointingAngle;
+  TH1F *fDecayLength;
   TH1F *fEtaV0;
   TH1F *fPtV0;
   TH1F *fPtPosDaughter;

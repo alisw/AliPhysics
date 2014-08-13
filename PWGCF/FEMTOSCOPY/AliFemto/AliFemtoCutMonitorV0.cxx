@@ -14,9 +14,12 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fLambdaMass(0),
   fAntiLambdaMass(0),
   fK0ShortMass(0),
-  fDcaDaughters(0), 
+  fDcaDaughters(0),
   fDcaV0ToPrimVertex(0),
+  fDcaPosToPrimVertex(0),
+  fDcaNegToPrimVertex(0),
   fCosPointingAngle(0),
+  fDecayLength(0),
   fEtaV0(0),
   fPtV0(0),
   fPtPosDaughter(0),
@@ -36,7 +39,10 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fK0ShortMass= new TH1F("K0ShortMass", "Mass Assuming K0 short Hypothesis", 500, 0, 5);
   fDcaDaughters = new TH1F("DcaDaughters", "DCA Daughters", 500, 0, 2);
   fDcaV0ToPrimVertex = new TH1F("DcaV0ToPrimVertex", "DCA V0 to primary vertex", 500, 0, 3);
+  fDcaPosToPrimVertex = new TH1F("DcaNegToPrimVertex", "DCA V0 to primary vertex", 500, 0, 3);
+  fDcaNegToPrimVertex = new TH1F("DcaNegToPrimVertex", "DCA V0 to primary vertex", 500, 0, 3);
   fCosPointingAngle = new TH1F("CosPointingAngle","Cosinus Pointing Angle",500,0,1);
+  fDecayLength = new TH1F("DecayLength","V0 Decay Length",100,0,100);
   fEtaV0 = new TH1F("EtaV0", "|Eta| distribution of V0s", 500, 0.0, 8.);
   fPtV0 = new TH1F("PtV0", "Pt distribution of V0s", 500, 0.0, 8.);
   fPtPosDaughter = new TH1F("PtPosDaughter", "Pt distribution of positive daughters", 500, 0.0, 5.);
@@ -57,7 +63,10 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fK0ShortMass->Sumw2();
   fDcaDaughters->Sumw2();
   fDcaV0ToPrimVertex->Sumw2();
+  fDcaPosToPrimVertex->Sumw2();
+  fDcaNegToPrimVertex->Sumw2();
   fCosPointingAngle->Sumw2();
+  fDecayLength->Sumw2();
   fEtaV0->Sumw2();
   fPtPosDaughter->Sumw2();
   fPtNegDaughter->Sumw2();
@@ -76,9 +85,12 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   fLambdaMass(0),
   fAntiLambdaMass(0),
   fK0ShortMass(0),
-  fDcaDaughters(0), 
+  fDcaDaughters(0),
   fDcaV0ToPrimVertex(0),
+  fDcaPosToPrimVertex(0),
+  fDcaNegToPrimVertex(0),
   fCosPointingAngle(0),
+  fDecayLength(0),
   fEtaV0(0),
   fPtV0(0),
   fPtPosDaughter(0),
@@ -104,12 +116,18 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   fDcaDaughters = new TH1F(name, "DCA Daughters", 500, 0, 2);
   snprintf(name, 200, "DcaV0ToPrimVertex%s", aName);
   fDcaV0ToPrimVertex = new TH1F(name, "DCA V0 to primary vertex", 500, 0, 3);
+  snprintf(name, 200, "DcaPosToPrimVertex%s", aName);
+  fDcaPosToPrimVertex = new TH1F(name, "DCA pos. daughter V0 to primary vertex", 500, 0, 3);
+  snprintf(name, 200, "DcaPosToPrimVertex%s", aName);
+  fDcaNegToPrimVertex = new TH1F(name, "DCA neg. daughter V0 to primary vertex", 500, 0, 3);
   snprintf(name, 200, "CosPointingAngle%s", aName);
   fCosPointingAngle = new TH1F(name,"Cosinus Pointing Angle",500,0,1);
+  snprintf(name, 200, "DecayLength%s", aName);
+  fDecayLength = new TH1F(name,"Decay Length",100,0,100);
   snprintf(name, 200, "EtaV0%s", aName);
-  fEtaV0 = new TH1F(name, "|Eta| distribution of V0s", 500, 0.0, 1.); 
+  fEtaV0 = new TH1F(name, "|Eta| distribution of V0s", 500, 0.0, 1.);
   snprintf(name, 200, "PtV0%s", aName);
-  fPtV0 = new TH1F(name, "Pt distribution of V0s", 500, 0.0, 8.); 
+  fPtV0 = new TH1F(name, "Pt distribution of V0s", 500, 0.0, 8.);
   snprintf(name, 200, "fPtPosDaughter%s", aName);
   fPtPosDaughter = new TH1F(name, "Pt distribution of positive daughters", 500, 0.0, 5.);
   snprintf(name, 200, "fPtNegDaughter%s", aName);
@@ -136,7 +154,10 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   fK0ShortMass->Sumw2();
   fDcaDaughters->Sumw2();
   fDcaV0ToPrimVertex->Sumw2();
+  fDcaPosToPrimVertex->Sumw2();
+  fDcaNegToPrimVertex->Sumw2();
   fCosPointingAngle->Sumw2();
+  fDecayLength->Sumw2();
   fEtaV0->Sumw2();
   fPtPosDaughter->Sumw2();
   fPtNegDaughter->Sumw2();
@@ -155,9 +176,12 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
   fLambdaMass(0),
   fAntiLambdaMass(0),
   fK0ShortMass(0),
-  fDcaDaughters(0), 
+  fDcaDaughters(0),
   fDcaV0ToPrimVertex(0),
+  fDcaPosToPrimVertex(0),
+  fDcaNegToPrimVertex(0),
   fCosPointingAngle(0),
+  fDecayLength(0),
   fEtaV0(0),
   fPtV0(0),
   fPtPosDaughter(0),
@@ -182,8 +206,14 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
   fDcaDaughters = new TH1F(*aCut.fDcaDaughters);
   if (fDcaV0ToPrimVertex) delete fDcaV0ToPrimVertex;
   fDcaV0ToPrimVertex = new TH1F(*aCut.fDcaV0ToPrimVertex);
+  if (fDcaPosToPrimVertex) delete fDcaPosToPrimVertex;
+  fDcaPosToPrimVertex = new TH1F(*aCut.fDcaPosToPrimVertex);
+  if (fDcaNegToPrimVertex) delete fDcaNegToPrimVertex;
+  fDcaNegToPrimVertex = new TH1F(*aCut.fDcaNegToPrimVertex);
   if(fCosPointingAngle) delete fCosPointingAngle;
   fCosPointingAngle = new TH1F(*aCut.fCosPointingAngle);
+  if(fDecayLength) delete fDecayLength;
+  fDecayLength = new TH1F(*aCut.fDecayLength);
   if(fEtaV0) delete fEtaV0;
   fEtaV0 = new TH1F(*aCut.fEtaV0);
   if(fPtV0) delete fPtV0;
@@ -214,7 +244,10 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
   fK0ShortMass->Sumw2();
   fDcaDaughters->Sumw2();
   fDcaV0ToPrimVertex->Sumw2();
+  fDcaPosToPrimVertex->Sumw2();
+  fDcaNegToPrimVertex->Sumw2();
   fCosPointingAngle->Sumw2();
+  fDecayLength->Sumw2();
   fEtaV0->Sumw2();
   fPtPosDaughter->Sumw2();
   fPtNegDaughter->Sumw2();
@@ -234,9 +267,12 @@ AliFemtoCutMonitorV0::~AliFemtoCutMonitorV0()
   delete fLambdaMass;
   delete fAntiLambdaMass;
   delete fK0ShortMass;
-  delete fDcaDaughters; 
+  delete fDcaDaughters;
   delete fDcaV0ToPrimVertex;
+  delete fDcaPosToPrimVertex;
+  delete fDcaNegToPrimVertex;
   delete fCosPointingAngle;
+  delete fDecayLength;
   delete fEtaV0;
   delete fPtV0;
   delete fPtPosDaughter;
@@ -254,7 +290,7 @@ AliFemtoCutMonitorV0::~AliFemtoCutMonitorV0()
 AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0& aCut)
 {
   // assignment operator
-  if (this == &aCut) 
+  if (this == &aCut)
     return *this;
 
   if (fLambdaMass) delete fLambdaMass;
@@ -267,8 +303,14 @@ AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0
   fDcaDaughters = new TH1F(*aCut.fDcaDaughters);
   if (fDcaV0ToPrimVertex) delete fDcaV0ToPrimVertex;
   fDcaV0ToPrimVertex = new TH1F(*aCut.fDcaV0ToPrimVertex);
+  if (fDcaPosToPrimVertex) delete fDcaPosToPrimVertex;
+  fDcaPosToPrimVertex = new TH1F(*aCut.fDcaPosToPrimVertex);
+  if (fDcaNegToPrimVertex) delete fDcaNegToPrimVertex;
+  fDcaNegToPrimVertex = new TH1F(*aCut.fDcaNegToPrimVertex);
   if(fCosPointingAngle) delete fCosPointingAngle;
   fCosPointingAngle = new TH1F(*aCut.fCosPointingAngle);
+  if(fDecayLength) delete fDecayLength;
+  fDecayLength = new TH1F(*aCut.fDecayLength);
   if(fEtaV0) delete fEtaV0;
   fEtaV0 = new TH1F(*aCut.fEtaV0);
   if(fPtV0) delete fPtV0;
@@ -299,7 +341,10 @@ AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0
   fK0ShortMass->Sumw2();
   fDcaDaughters->Sumw2();
   fDcaV0ToPrimVertex->Sumw2();
+  fDcaPosToPrimVertex->Sumw2();
+  fDcaNegToPrimVertex->Sumw2();
   fCosPointingAngle->Sumw2();
+  fDecayLength->Sumw2();
   fEtaV0->Sumw2();
   fPtPosDaughter->Sumw2();
   fPtNegDaughter->Sumw2();
@@ -315,11 +360,11 @@ AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0
   return *this;
 }
 
-AliFemtoString AliFemtoCutMonitorV0::Report(){ 
+AliFemtoString AliFemtoCutMonitorV0::Report(){
   // Prepare report from the execution
-  string stemp = "*** AliFemtoCutMonitorV0 report"; 
+  string stemp = "*** AliFemtoCutMonitorV0 report";
   AliFemtoString returnThis = stemp;
-  return returnThis; 
+  return returnThis;
 }
 
 void AliFemtoCutMonitorV0::Fill(const AliFemtoV0* aV0)
@@ -328,9 +373,12 @@ void AliFemtoCutMonitorV0::Fill(const AliFemtoV0* aV0)
   fLambdaMass->Fill(aV0->MassLambda());
   fAntiLambdaMass->Fill(aV0->MassAntiLambda());
   fK0ShortMass->Fill(aV0->MassK0Short());
-  fDcaDaughters->Fill(aV0->DcaV0Daughters()); 
+  fDcaDaughters->Fill(aV0->DcaV0Daughters());
   fDcaV0ToPrimVertex->Fill(aV0->DcaV0ToPrimVertex());
+  fDcaPosToPrimVertex->Fill(aV0->DcaPosToPrimVertex());
+  fDcaNegToPrimVertex->Fill(aV0->DcaNegToPrimVertex());
   fCosPointingAngle->Fill(aV0->CosPointingAngle());
+  fDecayLength->Fill(aV0->DecayLengthV0());
   fEtaV0->Fill(aV0->EtaV0());
   fPtV0->Fill(aV0->PtV0());
   fPtPosDaughter->Fill(aV0->PtPos());
@@ -340,7 +388,7 @@ void AliFemtoCutMonitorV0::Fill(const AliFemtoV0* aV0)
 
   fTOFtimePosDaughter->Fill(aV0->PtPos(),aV0->TOFProtonTimePos()); //true only for lambdas
   fTOFtimeNegDaughter->Fill(aV0->PtNeg(),aV0->TOFPionTimeNeg());
-  
+
   fnsigmaPosL->Fill(aV0->PosNSigmaTPCP());
   fnsigmaNegL->Fill(aV0->NegNSigmaTPCPi());
   fnsigmaNegAL->Fill(aV0->NegNSigmaTPCP());
@@ -355,7 +403,10 @@ void AliFemtoCutMonitorV0::Write()
   fK0ShortMass->Write();
   fDcaDaughters->Write();
   fDcaV0ToPrimVertex->Write();
+  fDcaPosToPrimVertex->Write();
+  fDcaNegToPrimVertex->Write();
   fCosPointingAngle->Write();
+  fDecayLength->Write();
   fEtaV0->Write();
   fPtV0->Write();
   fPtPosDaughter->Write();
@@ -379,7 +430,10 @@ TList *AliFemtoCutMonitorV0::GetOutputList()
   tOutputList->Add(fK0ShortMass);
   tOutputList->Add(fDcaDaughters);
   tOutputList->Add(fDcaV0ToPrimVertex);
+  tOutputList->Add(fDcaPosToPrimVertex);
+  tOutputList->Add(fDcaNegToPrimVertex);
   tOutputList->Add(fCosPointingAngle);
+  tOutputList->Add(fDecayLength);
   tOutputList->Add(fEtaV0);
   tOutputList->Add(fPtV0);
   tOutputList->Add(fPtPosDaughter);
