@@ -3,6 +3,7 @@
 #include "AliAnalysisTaskPtEMCalTrigger.h"
 #include "AliESDtrackCuts.h"
 #include <TList.h>
+#include <TString.h>
 #endif
 
 AliAnalysisTask* AddTaskPtEMCalTrigger(){
@@ -40,8 +41,12 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(){
         hybridTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
         pttriggertask->AddTrackCuts(hybridTrackCuts);
 
+        TString containerName = mgr->GetCommonFileName();
+        containerName += ":PtEMCalTriggerTask";
+        printf("container name: %s\n", containerName.Data());
+
         AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-        AliAnalysisDataContainer *coutput = mgr->CreateContainer("results", TList::Class(),    AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+        AliAnalysisDataContainer *coutput = mgr->CreateContainer("results", TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
    
         //Connect input/output
         mgr->ConnectInput(pttriggertask, 0, cinput);
