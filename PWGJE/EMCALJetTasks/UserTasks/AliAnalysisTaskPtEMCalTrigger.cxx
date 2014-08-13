@@ -403,7 +403,7 @@ namespace EMCalTriggerPtAnalysis {
 		char histname[1024];
 		sprintf(histname, "hEventHist%s", trigger);
 		try{
-			fHistos->FillTH2(histname, 0, vz);
+			fHistos->FillTH2(histname, 0., vz);
 		} catch (HistoContainerContentException &e){
 			std::stringstream errormessage;
 			errormessage << "Filling of histogram failed: " << e.what();
@@ -411,7 +411,7 @@ namespace EMCalTriggerPtAnalysis {
 		}
 		if(!isPileup){
 			try{
-				fHistos->FillTH2(histname, 1, vz);
+				fHistos->FillTH2(histname, 1., vz);
 			} catch(HistoContainerContentException &e){
 				std::stringstream errormessage;
 				errormessage << "Filling of histogram failed: " << e.what();
