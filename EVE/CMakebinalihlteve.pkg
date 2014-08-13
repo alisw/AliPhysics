@@ -36,7 +36,7 @@ set ( ELIBS  EveBase EveHLT EveDet HLTbase HLTrec AliHLTUtil AliHLTEve AliHLTTPC
 set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve ${SYSLIBS} -lVc)
 
 if(ZEROMQ_FOUND)
-set ( ELIBS ${ELIBS} MONITORzmq )
+set ( ELIBS ${ELIBS} MONITOR MONITORzmq )
 set ( CXXFLAGS  "-DZMQ ${CXXFLAGS}") 
 ENDIF(ZEROMQ_FOUND)
 
