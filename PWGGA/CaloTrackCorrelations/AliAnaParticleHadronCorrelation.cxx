@@ -1167,7 +1167,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   if( OnlyIsolated() )
   {
-    fhPtTriggerIsoCut  = new TH1F("hPtTriggerIsoCut","Trigger #it{p}_{T} after isolation (and #lambda^{2}_{0}) cut", nptbins,ptmin,ptmax);
+    fhPtTriggerIsoCut  = new TH1F("hPtTriggerIsoCut","Trigger #it{p}_{T} after isolation (and #lambda^{2}_{0} cut)", nptbins,ptmin,ptmax);
     fhPtTriggerIsoCut->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     outputContainer->Add(fhPtTriggerIsoCut);
   }
@@ -1176,7 +1176,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   fhPtTriggerFidCut->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
   outputContainer->Add(fhPtTriggerFidCut);
   
-  fhPtTrigger  = new TH1F("hPtTrigger","#it{p}_{T} distribution of trigger particles", nptbins,ptmin,ptmax);
+  fhPtTrigger  = new TH1F("hPtTrigger","#it{p}_{T} distribution of trigger particles (after opposite hadron leading cut and rest)", nptbins,ptmin,ptmax);
   fhPtTrigger->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
   outputContainer->Add(fhPtTrigger);
   

@@ -484,9 +484,9 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
   ana->SetDeltaPhiCutRange  (TMath::DegToRad()*120.,TMath::DegToRad()*240.);
   ana->SetUeDeltaPhiCutRange(TMath::DegToRad()*60. ,TMath::DegToRad()*120.);
+  ana->SwitchOffFillEtaGapHistograms();
 
   ana->SetNAssocPtBins(4);
-  
   ana->SetAssocPtBinLimit(0, 0.5) ;
   ana->SetAssocPtBinLimit(1, 2) ;
   ana->SetAssocPtBinLimit(2, 5) ;
@@ -500,11 +500,16 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOnAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
   ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
   
+  //ana->SwitchOnLeadHadronSelection();
+  //ana->SetLeadHadronPhiCut(TMath::DegToRad()*100., TMath::DegToRad()*260.);
+  //ana->SetLeadHadronPtCut(0.5, 100);
+
+  
   // Mixing with own pool
   ana->SwitchOffOwnMix();
   
   ana->SetNZvertBin(20);
-  
+  ana->SwitchOffCorrelationVzBin() ;
   ana->SwitchOffFillHighMultiplicityHistograms();
   
   if(collision=="pp")

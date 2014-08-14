@@ -1320,14 +1320,21 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   AliAnaParticleHadronCorrelation *ana = new AliAnaParticleHadronCorrelation();
   ana->SetDebug(kDebug);
   
+  ana->SwitchOnAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
+  ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
+  
+  //ana->SwitchOnLeadHadronSelection();
+  //ana->SetLeadHadronPhiCut(TMath::DegToRad()*100., TMath::DegToRad()*260.);
+  //ana->SetLeadHadronPtCut(0.5, 100);
+  
   ana->SetTriggerPtRange(5,100);
   ana->SetAssociatedPtRange(0.2,100);
   //ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
   ana->SetDeltaPhiCutRange  (TMath::DegToRad()*120.,TMath::DegToRad()*240.);
   ana->SetUeDeltaPhiCutRange(TMath::DegToRad()*60. ,TMath::DegToRad()*120.);
-  
+  ana->SwitchOnFillEtaGapHistograms();
+
   ana->SetNAssocPtBins(9);
-  
   ana->SetAssocPtBinLimit(0, 0.2) ;
   ana->SetAssocPtBinLimit(1, 0.5) ;
   ana->SetAssocPtBinLimit(2, 1)   ;
@@ -1338,7 +1345,8 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SetAssocPtBinLimit(7, 10)  ;
   ana->SetAssocPtBinLimit(8, 30)  ;
   ana->SetAssocPtBinLimit(9, 200) ;
-  
+  //ana->SwitchOnFillPtImbalancePerPtABinHistograms();
+
   ana->SelectIsolated(bIsolated); // do correlation with isolated photons
   
   if(bIsolated)
@@ -1374,9 +1382,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     
   }  
   
-  ana->SwitchOnAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
-  ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
-  
   // Mixing with own pool
   if(kMix)
   {
@@ -1387,7 +1392,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     ana->SwitchOffOwnMix();
   
   ana->SetNZvertBin(20);
-  
+  ana->SwitchOffCorrelationVzBin() ;
   ana->SwitchOffFillHighMultiplicityHistograms();
 
   if(kCollisions=="pp")
