@@ -36,6 +36,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliSpectraBothEventCuts.h"
 #include "AliSpectraBothTrackCuts.h"
+#include "AliAnalysisUtils.h"	
 //#include "AliSpectraBothHistoManager.h"
 #include <iostream>
 
@@ -48,7 +49,7 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
 fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),
-fHistoCentrality(0),fHistoMultiplicty(0)
+fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0)
 
 {
   // Constructori
@@ -116,6 +117,8 @@ AliSpectraBothEventCuts::~AliSpectraBothEventCuts()
 		delete fHistoCentrality;
   	if(fHistoMultiplicty)
 		delete fHistoMultiplicty;
+	if(fAnalysisUtils)
+		delete fAnalysisUtils;
 
 }
 //______________________________________________________
@@ -172,15 +175,18 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
   fHistoCuts->Fill(kProcessedEvents);
   fHistoRunNumbers->Fill(aod->GetRunNumber());
   Bool_t IsPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerSettings);//FIXME we can add the trigger mask here
-  if(!IsPhysSel)return IsPhysSel;
-
+ if(fAnalysisUtils) // we check for pile-up
+		 IsPhysSel = (!fAnalysisUtils->IsPileUpEvent(fAOD));
+  if(!IsPhysSel)
+	return IsPhysSel;
+ 	
   if(isMC)	
    	fHistoVtxalltriggerEventswithMCz->Fill(mcZ);
    //loop on tracks, before event selection, filling QA histos
- AliESDEvent* esdevent=0x0;
+  AliESDEvent* esdevent=0x0;
   AliAODEvent* aodevent=0x0;
   Bool_t isSDD=kFALSE;
-     TString nameoftrack(fAOD->ClassName());  
+  TString nameoftrack(fAOD->ClassName());  
     if(!nameoftrack.CompareTo("AliESDEvent"))
     {
 		fAODEvent=AliSpectraBothTrackCuts::kESDobject;
@@ -220,12 +226,13 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 
    const AliVVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated	
 
-  if(vertex)fHistoVtxBefSel->Fill(vertex->GetZ());
+  if(vertex)
+	fHistoVtxBefSel->Fill(vertex->GetZ());
   fIsSelected =kFALSE;
-  if(CheckVtx() && CheckCentralityCut() && CheckMultiplicityCut() && CheckVtxChi2perNDF())
+  if(CheckVtx() && CheckCentralityCut() && CheckMultiplicityCut())
    { //selection on vertex and Centrality
 
-    fIsSelected=CheckQVectorCut(); // QVector is calculated only if the centrality and vertex are correct (performance)
+    fIsSelected=kTRUE;
   }
   if(fIsSelected&&vertex)
  {
@@ -243,6 +250,12 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 		fIsSelected=kFALSE;
     }	
   }
+
+  if(fIsSelected)
+	fIsSelected=CheckQVectorCut(); 
+
+
+
   Int_t Nch=0;
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliVTrack* track =dynamic_cast<AliVTrack*>(fAOD->GetTrack(iTracks));
@@ -259,7 +272,8 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
       Nch++;
     }
   }
-  if(fIsSelected)fHistoNChAftSel->Fill(Nch);
+  if(fIsSelected)
+	fHistoNChAftSel->Fill(Nch);
   return fIsSelected;
 }
 
@@ -295,7 +309,10 @@ Bool_t AliSpectraBothEventCuts::CheckVtx()
    // {
     //  return kTRUE;
    // }
-  fHistoCuts->Fill(kVtxRange);
+   if(!CheckVtxChi2perNDF())	  
+	return kFALSE;
+		
+ fHistoCuts->Fill(kGoodVtx);
   //return kFALSE;
    return kTRUE;
 }
@@ -425,7 +442,7 @@ void AliSpectraBothEventCuts::PrintCuts()
  	 cout << " > Number of accepted events: " << fHistoCuts->GetBinContent(kAcceptedEvents + 1) << endl;
  	 cout << " > Number of processed events: " << fHistoCuts->GetBinContent(kProcessedEvents + 1) << endl;
  	 cout << " > Number of PhysSel events: " << fHistoCuts->GetBinContent(kPhysSelEvents + 1) << endl;
- 	 cout << " > Vertex out of range: " << fHistoCuts->GetBinContent(kVtxRange + 1) << endl;
+ 	 cout << " > With good veretx: " << fHistoCuts->GetBinContent(kGoodVtx + 1) << endl;
  	 cout << " > Events cut by centrality: " << fHistoCuts->GetBinContent(kVtxCentral + 1) << endl;
  	 cout << " > Events without vertex: " << fHistoCuts->GetBinContent(kVtxNoEvent + 1) << endl;
 	  cout << " > QVector cut: " << fHistoCuts->GetBinContent(kQVector + 1) << endl;
