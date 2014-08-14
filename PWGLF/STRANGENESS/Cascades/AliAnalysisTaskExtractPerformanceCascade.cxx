@@ -807,7 +807,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 /*39*/		fTreeCascade->Branch("fTreeCascVarEvHasVeryLowPtAntiLambda",&fTreeCascVarEvHasVeryLowPtAntiLambda,"fTreeCascVarEvHasVeryLowPtAntiLambda/O");
 
       fTreeCascade->Branch("fTreeCascVarBadCascadeJai",&fTreeCascVarBadCascadeJai,"fTreeCascVarBadCascadeJai/O");
-      fTreeCascade->Branch("fTreeCascVarDeltaDCA",&fTreeCascVarDeltaDCA,"fTreeCascVarDeltaDCA/O");
+      fTreeCascade->Branch("fTreeCascVarDeltaDCA",&fTreeCascVarDeltaDCA,"fTreeCascVarDeltaDCA/F");
 
 //------------------------------------------------
 // Particle Identification Setup
