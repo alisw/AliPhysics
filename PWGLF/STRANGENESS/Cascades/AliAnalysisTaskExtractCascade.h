@@ -206,6 +206,9 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
     Float_t fTreeCascVarCascadeDecayY; //!
     Float_t fTreeCascVarCascadeDecayZ; //!
     
+    Bool_t fTreeCascVarBadCascadeJai; //! 
+    Float_t fTreeCascVarDeltaDCA; //!
+    
 //===========================================================================================
 //   Histograms
 //===========================================================================================
