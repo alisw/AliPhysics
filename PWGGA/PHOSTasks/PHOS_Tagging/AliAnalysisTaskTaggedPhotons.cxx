@@ -415,6 +415,10 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
          fOutputContainer->Add(new TH1F(Form("hMCDecWRecPartn_%s_cent%d",cPID[iPID],cen),"Decay photons with rec partner", nPt,0.,ptMax )) ;
          fOutputContainer->Add(new TH1F(Form("hMCDecWRecUniqPartn_%s_cent%d",cPID[iPID],cen),"Decay photons with rec partner", nPt,0.,ptMax )) ;
 
+         fOutputContainer->Add(new TH1F(Form("hMCDecMerged_%s_cent%d",cPID[iPID],cen),"Decay photons with rec partner", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecUnfolded_%s_cent%d",cPID[iPID],cen),"Decay photons with rec partner", nPt,0.,ptMax )) ;
+ 
+	 
 	 fOutputContainer->Add(new TH2F(Form("hMC_InvM_Re_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
          fOutputContainer->Add(new TH2F(Form("hMC_InvM_Re_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
        }    
@@ -1066,6 +1070,29 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 		}
 	      }
 	    }
+	    //If partner still not found, check if it is in same cluster
+	    if(!pp){
+	      Int_t iCaloCluster=p->GetBC();//index of AODCaloCluster
+              AliVCluster * clu = event->GetCaloCluster(iCaloCluster);
+	      Int_t nCluPrimaries = clu->GetNLabels() ;
+	      for(Int_t iAODLabel=0; iAODLabel<nCluPrimaries ; iAODLabel++){
+		Int_t ipartnPrim = clu->GetLabelAt(iAODLabel) ;
+	        while(ipartnPrim>-1){
+                  if(ipartnPrim==ipartner){
+		      break ;
+		  }
+	          ipartnPrim = ((AliAODMCParticle *)fStack->At(ipartnPrim))->GetMother();
+	        }
+	        if(ipartnPrim==ipartner){ //yes, this cluster contains both primary
+                  if(clu->GetNExMax()<2){ //was not unfolded
+	            FillPIDHistograms("hMCDecMerged",p) ;
+		  }
+		  else{
+	            FillPIDHistograms("hMCDecUnfolded",p) ;
+		  }
+                }
+	      }
+	    }	    
 
 	    if(pp){
 	      //Partner reconstructed, but did not pass cuts
