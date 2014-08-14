@@ -3395,8 +3395,8 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
         
         ptAssoc  = track->Pt();
         phiAssoc = track->Phi() ;
-        
         if(phiAssoc < 0) phiAssoc+=TMath::TwoPi();
+        
         if (fMakeNearSideLeading)
         {
           if(ptAssoc > ptTrig && TMath::Abs(phiAssoc-phiTrig) < TMath::PiOver2())  
@@ -3429,8 +3429,8 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
           
           ptAssoc  = cluster->Pt();
           phiAssoc = cluster->Phi() ;
-          
           if(phiAssoc < 0) phiAssoc+=TMath::TwoPi();
+          
           if (fMakeNearSideLeading)
           {
             if(ptAssoc > ptTrig && TMath::Abs(phiAssoc-phiTrig) < TMath::PiOver2())
@@ -3454,6 +3454,10 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       if(!leading) continue; // not leading, check the next event in pool
     }
     
+    //
+    // Fill histograms for selected triggers
+    //
+    
     fhEventMixBin->Fill(eventBin);
     
     //printf("\t Read Pool event %d, nTracks %d\n",ev,nTracks);
@@ -3464,6 +3468,9 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
     fhPtTriggerMixedBin->Fill(ptTrig,eventBin);
     if(fCorrelVzBin)fhPtTriggerMixedVzBin->Fill(ptTrig, GetEventVzBin());
 
+    //
+    // Correlation histograms
+    //
     for(Int_t j1 = 0;j1 <nTracks; j1++ )
     {
       AliAODPWG4Particle *track = (AliAODPWG4Particle*) bgTracks->At(j1) ;
@@ -3474,12 +3481,6 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       etaAssoc = track->Eta();
       phiAssoc = track->Phi() ;
       if(phiAssoc < 0) phiAssoc+=TMath::TwoPi();
-            
-      if(IsFiducialCutOn())
-      {
-        Bool_t in = GetFiducialCut()->IsInFiducialCut(*aodParticle->Momentum(),"CTS") ;
-        if(!in) continue ;
-      }
       
       deltaPhi = phiTrig-phiAssoc;
       if(deltaPhi < -TMath::PiOver2())  deltaPhi+=TMath::TwoPi();
@@ -3489,42 +3490,22 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       if(GetDebug()>0)
         printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation(): deltaPhi= %f, deltaEta=%f\n",deltaPhi, deltaEta);
       
-      // Set the pt associated bin for the defined bins
-      Int_t assocBin   = -1; 
-      for(Int_t i = 0 ; i < fNAssocPtBins ; i++)
-      {
-        if(ptAssoc > fAssocPtBinLimit[i] && ptAssoc < fAssocPtBinLimit[i+1]) assocBin= i; 
-      }      
-
-      // Assign to the histogram array a bin corresponding to a combination of pTa and vz bins
-      Int_t nz = 1;
-      Int_t vz = 0;
-      
-      if(fCorrelVzBin) 
-      {
-        nz = GetNZvertBin();
-        vz = GetEventVzBin();
-      }
-      
-      Int_t bin = assocBin*nz+vz;
-      
+      // Angular correlation
       fhMixDeltaPhiCharged        ->Fill(ptTrig,  deltaPhi);
       fhMixDeltaPhiDeltaEtaCharged->Fill(deltaPhi, deltaEta);
 
-      fhMixDeltaPhiCharged        ->Fill(ptTrig,  deltaPhi);
-      fhMixDeltaPhiDeltaEtaCharged->Fill(deltaPhi, deltaEta);
-
-      xE   =-ptAssoc/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
+      // Momentum imbalance
+      xE = -ptAssoc/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
       //if(xE <0.)xE =-xE;
       if(xE > 0 ) hbpXE = TMath::Log(1./xE); 
-      else        hbpXE =-100;
 
       if ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   )
       {
         fhMixXECharged->Fill(ptTrig,xE);
-        fhMixHbpXECharged->Fill(ptTrig,hbpXE);
+        if(xE > 0 ) fhMixHbpXECharged->Fill(ptTrig,hbpXE);
       }
       
+      // Underlying event
       if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) )
       {
         //Underlying event region
@@ -3535,6 +3516,27 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
         
         fhMixXEUeCharged->Fill(ptTrig,uexE);
       }
+      
+      // Set the pt associated bin for the defined bins
+      Int_t assocBin   = -1;
+      for(Int_t i = 0 ; i < fNAssocPtBins ; i++)
+      {
+        if(ptAssoc > fAssocPtBinLimit[i] && ptAssoc < fAssocPtBinLimit[i+1]) assocBin= i;
+      }
+      
+      //
+      // Assign to the histogram array a bin corresponding to a combination of pTa and vz bins
+      //
+      Int_t nz = 1;
+      Int_t vz = 0;
+      
+      if(fCorrelVzBin)
+      {
+        nz = GetNZvertBin();
+        vz = GetEventVzBin();
+      }
+      
+      Int_t bin = assocBin*nz+vz;
       
       if(bin < 0) continue ; // this pt bin was not considered
       
