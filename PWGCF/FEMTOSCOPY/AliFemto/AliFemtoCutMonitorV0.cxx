@@ -39,7 +39,7 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fK0ShortMass= new TH1F("K0ShortMass", "Mass Assuming K0 short Hypothesis", 500, 0, 5);
   fDcaDaughters = new TH1F("DcaDaughters", "DCA Daughters", 500, 0, 2);
   fDcaV0ToPrimVertex = new TH1F("DcaV0ToPrimVertex", "DCA V0 to primary vertex", 500, 0, 3);
-  fDcaPosToPrimVertex = new TH1F("DcaNegToPrimVertex", "DCA V0 to primary vertex", 500, 0, 3);
+  fDcaPosToPrimVertex = new TH1F("DcaPosToPrimVertex", "DCA V0 to primary vertex", 500, 0, 3);
   fDcaNegToPrimVertex = new TH1F("DcaNegToPrimVertex", "DCA V0 to primary vertex", 500, 0, 3);
   fCosPointingAngle = new TH1F("CosPointingAngle","Cosinus Pointing Angle",500,0,1);
   fDecayLength = new TH1F("DecayLength","V0 Decay Length",100,0,100);
