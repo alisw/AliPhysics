@@ -184,6 +184,14 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Bool_t fTreeCascVarkITSRefitBachelor; //! 
   Bool_t fTreeCascVarkITSRefitNegative; //! 
   Bool_t fTreeCascVarkITSRefitPositive; //! 
+  
+    //Part B: Shared Clusters
+    Int_t fTreeCascVarNegClusters; //!
+    Int_t fTreeCascVarPosClusters; //!
+    Int_t fTreeCascVarBachClusters; //!
+    Int_t fTreeCascVarNegSharedClusters; //!
+    Int_t fTreeCascVarPosSharedClusters; //!
+    Int_t fTreeCascVarBachSharedClusters; //!
 
   Bool_t fTreeCascVarEvHasXiMinus;    //!
   Bool_t fTreeCascVarEvHasXiPlus;     //!

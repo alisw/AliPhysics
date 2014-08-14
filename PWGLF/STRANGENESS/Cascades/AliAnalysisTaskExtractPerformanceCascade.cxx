@@ -163,6 +163,13 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarkITSRefitNegative(0),
    fTreeCascVarkITSRefitPositive(0),
 
+    fTreeCascVarNegClusters(0),
+    fTreeCascVarPosClusters(0),
+    fTreeCascVarBachClusters(0),
+    fTreeCascVarNegSharedClusters(0),
+    fTreeCascVarPosSharedClusters(0),
+    fTreeCascVarBachSharedClusters(0),
+
    fTreeCascVarEvHasXiMinus(0),
    fTreeCascVarEvHasXiPlus(0),
    fTreeCascVarEvHasOmegaMinus(0),
@@ -426,6 +433,13 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarkITSRefitBachelor(0),
    fTreeCascVarkITSRefitNegative(0),
    fTreeCascVarkITSRefitPositive(0),
+   
+    fTreeCascVarNegClusters(0),
+    fTreeCascVarPosClusters(0),
+    fTreeCascVarBachClusters(0),
+    fTreeCascVarNegSharedClusters(0),
+    fTreeCascVarPosSharedClusters(0),
+    fTreeCascVarBachSharedClusters(0),
 
    fTreeCascVarEvHasXiMinus(0),
    fTreeCascVarEvHasXiPlus(0),
@@ -718,6 +732,13 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 /*21*/		fTreeCascade->Branch("fTreeCascVarV0CosPointingAngleSpecial",&fTreeCascVarV0CosPointingAngleSpecial,"fTreeCascVarV0CosPointingAngleSpecial/F");
 /*22*/		fTreeCascade->Branch("fTreeCascVarV0Radius",&fTreeCascVarV0Radius,"fTreeCascVarV0Radius/F");
 /*23*/		fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
+
+/*23*/		fTreeCascade->Branch("fTreeCascVarNegClusters",&fTreeCascVarNegClusters,"fTreeCascVarNegClusters/I");
+/*23*/		fTreeCascade->Branch("fTreeCascVarPosClusters",&fTreeCascVarPosClusters,"fTreeCascVarPosClusters/I");
+/*23*/		fTreeCascade->Branch("fTreeCascVarBachClusters",&fTreeCascVarBachClusters,"fTreeCascVarBachClusters/I");
+/*23*/		fTreeCascade->Branch("fTreeCascVarNegSharedClusters",&fTreeCascVarNegSharedClusters,"fTreeCascVarNegSharedClusters/I");
+/*23*/		fTreeCascade->Branch("fTreeCascVarPosSharedClusters",&fTreeCascVarPosSharedClusters,"fTreeCascVarPosSharedClusters/I");
+/*23*/		fTreeCascade->Branch("fTreeCascVarBachSharedClusters",&fTreeCascVarBachSharedClusters,"fTreeCascVarBachSharedClusters/I");
 //-----------MULTIPLICITY-INFO--------------------
 /*24*/		fTreeCascade->Branch("fTreeCascVarMultiplicity",&fTreeCascVarMultiplicity,"fTreeCascVarMultiplicity/I");
 /*24*/		fTreeCascade->Branch("fTreeCascVarMultiplicityV0A",&fTreeCascVarMultiplicityV0A,"fTreeCascVarMultiplicityV0A/I");
@@ -750,6 +771,13 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 /*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitBachelor",&fTreeCascVarkITSRefitBachelor,"fTreeCascVarkITSRefitBachelor/O");
 /*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitNegative",&fTreeCascVarkITSRefitNegative,"fTreeCascVarkITSRefitNegative/O");
 /*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitPositive",&fTreeCascVarkITSRefitPositive,"fTreeCascVarkITSRefitPositive/O");
+
+      fTreeCascade->Branch("fTreeCascVarNegClusters",&fTreeCascVarNegClusters,"fTreeCascVarNegClusters/I");
+      fTreeCascade->Branch("fTreeCascVarPosClusters",&fTreeCascVarPosClusters,"fTreeCascVarPosClusters/I");
+      fTreeCascade->Branch("fTreeCascVarBachClusters",&fTreeCascVarBachClusters,"fTreeCascVarBachClusters/I");
+      fTreeCascade->Branch("fTreeCascVarNegSharedClusters",&fTreeCascVarNegSharedClusters,"fTreeCascVarNegSharedClusters/I");
+      fTreeCascade->Branch("fTreeCascVarPosSharedClusters",&fTreeCascVarPosSharedClusters,"fTreeCascVarPosSharedClusters/I");
+      fTreeCascade->Branch("fTreeCascVarBachSharedClusters",&fTreeCascVarBachSharedClusters,"fTreeCascVarBachSharedClusters/I");
 
 /*39*/		fTreeCascade->Branch("fTreeCascVarEvHasXiMinus",   &fTreeCascVarEvHasXiMinus,   "fTreeCascVarEvHasXiMinus/O");
 /*39*/		fTreeCascade->Branch("fTreeCascVarEvHasXiPlus",    &fTreeCascVarEvHasXiPlus,    "fTreeCascVarEvHasXiPlus/O");
@@ -2421,6 +2449,11 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
       fTreeCascVarNegEta = nTrackXi->Eta();
       fTreeCascVarBachEta = bachTrackXi->Eta();
       
+            //Save shared clusters information
+      fTreeCascVarNegSharedClusters = nTrackXi->GetTPCnclsS(0,159);
+      fTreeCascVarPosSharedClusters = pTrackXi->GetTPCnclsS(0,159);
+      fTreeCascVarBachSharedClusters = bachTrackXi->GetTPCnclsS(0,159);
+      
       Double_t lBMom[3], lNMom[3], lPMom[3];
       xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
       xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
@@ -2449,6 +2482,10 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 	  lPosTPCClusters   = pTrackXi->GetTPCNcls();
 	  lNegTPCClusters   = nTrackXi->GetTPCNcls();
 	  lBachTPCClusters  = bachTrackXi->GetTPCNcls(); 
+
+      fTreeCascVarNegClusters = lNegTPCClusters;
+      fTreeCascVarPosClusters = lPosTPCClusters;
+      fTreeCascVarBachClusters = lBachTPCClusters;
 
     fTreeCascVarkITSRefitBachelor = kTRUE; 
     fTreeCascVarkITSRefitNegative = kTRUE; 

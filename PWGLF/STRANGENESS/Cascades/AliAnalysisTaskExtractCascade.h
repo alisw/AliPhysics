@@ -181,6 +181,9 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
     ULong64_t fTreeCascVarEventNumber; //!
     
     //Part B: Shared Clusters
+    Int_t fTreeCascVarNegClusters; //!
+    Int_t fTreeCascVarPosClusters; //!
+    Int_t fTreeCascVarBachClusters; //!
     Int_t fTreeCascVarNegSharedClusters; //!
     Int_t fTreeCascVarPosSharedClusters; //!
     Int_t fTreeCascVarBachSharedClusters; //!
