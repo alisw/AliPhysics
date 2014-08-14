@@ -2824,7 +2824,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
       // if both tracks are the same ones as the cascades V0 daughter tracks, then the V0 belongs to the cascade being analysed; so avoid it
     if ((posV0TrackIdx == lIdxPosXi) || (negV0TrackIdx == lIdxNegXi)) {
     DCAV0DaughtersDiff = lDcaV0DaughtersXi - v0->GetDcaV0Daughters();
-    if( fTreeCascVarDeltaDCA > DCAV0DaughtersDiff ) fTreeCascVarDeltaDCA = DCAV0DaughtersDiff;
+    if( fTreeCascVarDeltaDCA < DCAV0DaughtersDiff ) fTreeCascVarDeltaDCA = DCAV0DaughtersDiff;
       if ( lDcaV0DaughtersXi > v0->GetDcaV0Daughters() )  {    // DCA comparison criterion
         fTreeCascVarBadCascadeJai = kTRUE;
       } //end DCA comparison 
