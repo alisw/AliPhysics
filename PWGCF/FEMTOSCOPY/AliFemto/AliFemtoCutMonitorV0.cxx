@@ -118,7 +118,7 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   fDcaV0ToPrimVertex = new TH1F(name, "DCA V0 to primary vertex", 500, 0, 3);
   snprintf(name, 200, "DcaPosToPrimVertex%s", aName);
   fDcaPosToPrimVertex = new TH1F(name, "DCA pos. daughter V0 to primary vertex", 500, 0, 3);
-  snprintf(name, 200, "DcaPosToPrimVertex%s", aName);
+  snprintf(name, 200, "DcaNegToPrimVertex%s", aName);
   fDcaNegToPrimVertex = new TH1F(name, "DCA neg. daughter V0 to primary vertex", 500, 0, 3);
   snprintf(name, 200, "CosPointingAngle%s", aName);
   fCosPointingAngle = new TH1F(name,"Cosinus Pointing Angle",500,0,1);
