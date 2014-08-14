@@ -166,6 +166,9 @@ fTreeCascVarRunNumber(0),
 fTreeCascVarEventNumber(0),
 
 //Part B: Shared Clusters
+fTreeCascVarNegClusters(0),
+fTreeCascVarPosClusters(0),
+fTreeCascVarBachClusters(0),
 fTreeCascVarNegSharedClusters(0),
 fTreeCascVarPosSharedClusters(0),
 fTreeCascVarBachSharedClusters(0),
@@ -312,6 +315,9 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
     fTreeCascVarEventNumber(0),
 
     //Part B: Shared Clusters
+    fTreeCascVarNegClusters(0),
+    fTreeCascVarPosClusters(0),
+    fTreeCascVarBachClusters(0),
     fTreeCascVarNegSharedClusters(0),
     fTreeCascVarPosSharedClusters(0),
     fTreeCascVarBachSharedClusters(0),
@@ -518,6 +524,9 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
       fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
       
       //Part B: Shared Clusters for all daughter tracks
+      fTreeCascade->Branch("fTreeCascVarNegClusters",&fTreeCascVarNegClusters,"fTreeCascVarNegClusters/I");
+      fTreeCascade->Branch("fTreeCascVarPosClusters",&fTreeCascVarPosClusters,"fTreeCascVarPosClusters/I");
+      fTreeCascade->Branch("fTreeCascVarBachClusters",&fTreeCascVarBachClusters,"fTreeCascVarBachClusters/I");
       fTreeCascade->Branch("fTreeCascVarNegSharedClusters",&fTreeCascVarNegSharedClusters,"fTreeCascVarNegSharedClusters/I");
       fTreeCascade->Branch("fTreeCascVarPosSharedClusters",&fTreeCascVarPosSharedClusters,"fTreeCascVarPosSharedClusters/I");
       fTreeCascade->Branch("fTreeCascVarBachSharedClusters",&fTreeCascVarBachSharedClusters,"fTreeCascVarBachSharedClusters/I");
@@ -1268,6 +1277,10 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  lPosTPCClusters   = pTrackXi->GetTPCNcls();
 	  lNegTPCClusters   = nTrackXi->GetTPCNcls();
 	  lBachTPCClusters  = bachTrackXi->GetTPCNcls(); 
+	  
+      fTreeCascVarNegClusters = lNegTPCClusters;
+      fTreeCascVarPosClusters = lPosTPCClusters;
+      fTreeCascVarBachClusters = lBachTPCClusters;
 
     // 1 - Poor quality related to TPCrefit
 	  ULong_t pStatus    = pTrackXi->GetStatus();
