@@ -192,6 +192,16 @@ public:
   void    SetHistoRatioRangeAndNBins       (Float_t min, Float_t max, Int_t n) {
     fHistoRatioBins      = n ; fHistoRatioMax      = max ; fHistoRatioMin      = min ; }
 
+  // Hump-Backed Plateau
+  
+  Int_t   GetHistoHBPBins()              const { return fHistoHBPBins      ; }
+  Float_t GetHistoHBPMin()               const { return fHistoHBPMin       ; }
+  Float_t GetHistoHBPMax()               const { return fHistoHBPMax       ; }
+  
+  void    SetHistoHBPRangeAndNBins       (Float_t min, Float_t max, Int_t n) {
+    fHistoHBPBins        = n ; fHistoHBPMax        = max ; fHistoHBPMin        = min ; }
+
+  
   // Vertex
   
   Int_t   GetHistoVertexDistBins()       const { return fHistoVertexDistBins ; }
@@ -358,6 +368,9 @@ private:
   Int_t    fHistoRatioBins;                   // ratio histogram number of bins
   Float_t  fHistoRatioMax;                    // ratio maximum value
   Float_t  fHistoRatioMin;                    // ratio minimum value
+  Int_t    fHistoHBPBins;                     // hump-backed plateau histogram number of bins
+  Float_t  fHistoHBPMax;                      // hump-backed plateau maximum value
+  Float_t  fHistoHBPMin;                      // hump-backed plateau minimum value
   Int_t    fHistoVertexDistBins;              // vertex distance histogram number of bins
   Float_t  fHistoVertexDistMax;               // vertex distance maximum value
   Float_t  fHistoVertexDistMin;               // vertex distance minimum value	
@@ -396,7 +409,7 @@ private:
   AliHistogramRanges(              const AliHistogramRanges & h) ; // cpy ctor
   AliHistogramRanges & operator = (const AliHistogramRanges & h) ; // cpy assignment
   
-  ClassDef(AliHistogramRanges,4)
+  ClassDef(AliHistogramRanges,5)
 } ;
 
 
