@@ -275,9 +275,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhEtaTriggerMixed;              //! eta distribution vs pT of trigger particles, used in mixing  
 
   // Leading hadron in the opposite side of the trigger
-  TH2F * fhPtLeadingOppositeHadron;            //! pT trigger : pT distribution of leading hadron oposite to trigger
-  TH2F * fhPtDiffPhiLeadingOppositeHadron;     //! pT trigger : difference phi distribution of leading hadron oposite and trigger
-  TH2F * fhPtDiffEtaLeadingOppositeHadron;     //! pT trigger: difference eta distribution of leading hadron oposite and trigger
+  TH2F *      fhPtLeadingOppositeHadron;       //! pT trigger : pT distribution of leading hadron oposite to trigger
+  TH2F *      fhPtDiffPhiLeadingOppositeHadron;//! pT trigger : difference phi distribution of leading hadron oposite and trigger
+  TH2F *      fhPtDiffEtaLeadingOppositeHadron;//! pT trigger: difference eta distribution of leading hadron oposite and trigger
 
   //trigger-charged histograms
   TH2F *       fhDeltaPhiDeltaEtaCharged ;     //! differences of eta and phi between trigger and charged hadrons
@@ -464,13 +464,14 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F **      fhMixDeltaPhiChargedAssocPtBinDEta0;    //![fNAssocPtBins*GetNZvertBin()] Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins, delta eta = 0
   TH2F **      fhMixDeltaPhiDeltaEtaChargedAssocPtBin; //![fNAssocPtBins*GetNZvertBin()] Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins
 
-  TH1I *       fhEventBin;                     //! Number of real  events in a particular bin (cen,vz,rp)
-  TH1I *       fhEventMixBin;                  //! Number of mixed events in a particular bin (cen,vz,rp)
+  TH1I *       fhEventBin;                     //! Number of triggers in a particular event bin (cen,vz,rp)
+  TH1I *       fhEventMixBin;                  //! Number of triggers mixed in a particular bin (cen,vz,rp)
+  TH1I *       fhEventMBBin;                   //! Number of MB events in a particular bin (cen,vz,rp)
   
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,32)
+  ClassDef(AliAnaParticleHadronCorrelation,33)
 } ;
  
 

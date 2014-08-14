@@ -173,7 +173,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhMixDeltaPhiChargedAssocPtBinDEta08(),
     fhMixDeltaPhiChargedAssocPtBinDEta0(),
     fhMixDeltaPhiDeltaEtaChargedAssocPtBin(),
-    fhEventBin(0),                  fhEventMixBin(0)
+    fhEventBin(0),                  fhEventMixBin(0),               fhEventMBBin(0)
 { 
   //Default Ctor 
     
@@ -856,6 +856,8 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
   
   //Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
   if(eventBin < 0) return;
+  
+  fhEventMBBin->Fill(eventBin);
   
   TObjArray * mixEventTracks = new TObjArray;
   
@@ -2481,18 +2483,24 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         GetReader()->SetListWithMixedEventsForCalo  (fListMixCaloEvents );
     }
     
-    fhEventBin=new TH1I("hEventBin","Number of real events per bin(cen,vz,rp)",
+    fhEventBin=new TH1I("hEventBin","Number of triggers per bin(cen,vz,rp)",
                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
     fhEventBin->SetXTitle("event bin");
     outputContainer->Add(fhEventBin) ;
     
-    fhEventMixBin=new TH1I("hEventMixBin","Number of events  per bin(cen,vz,rp)",
+    fhEventMixBin=new TH1I("hEventMixBin","Number of triggers mixed per event bin(cen,vz,rp)",
                            GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
                            GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
     fhEventMixBin->SetXTitle("event bin");
     outputContainer->Add(fhEventMixBin) ;
-    
+
+    fhEventMBBin=new TH1I("hEventMBBin","Number of min bias events per bin(cen,vz,rp)",
+                           GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
+                           GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
+    fhEventMBBin->SetXTitle("event bin");
+    outputContainer->Add(fhEventMBBin) ;
+
     fhNtracksMB=new TH2F("hNtracksMBEvent","Number of filtered tracks in MB event per event bin",ntrbins,trmin,trmax,
                          GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
                          GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
@@ -3282,7 +3290,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
   if(!inputHandler) return;
   
   if(!(inputHandler->IsEventSelected( ) & GetReader()->GetEventTriggerMask())) return;
-    
+  
   // Get the pool, check if it exits
   Int_t eventBin = GetEventMixBin();
   
@@ -3330,16 +3338,19 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
   Double_t xE = -999.;
   Double_t hbpXE = -999.;
       
-  //Start from first event in pool except if in this same event the pool was filled
+  // Start from first event in pool except if in this same event the pool was filled
   Int_t ev0 = 0;
   if(GetReader()->GetLastTracksMixedEvent() == GetEventNumber()) ev0 = 1;
 
   for(Int_t ev=ev0; ev < pool->GetSize(); ev++)
   {
+    //
+    // Recover the lists of tracks or clusters
+    //
     TObjArray* bgTracks = static_cast<TObjArray*>(pool->At(ev));
     TObjArray* bgCalo   = 0;
 
-    // Check if the particle is isolated in the mixed event, it not, do not fill the histograms
+    // Recover the clusters list if requested
     if( neutralMix && poolCalo )
     {
       if(pool->GetSize()!=poolCalo->GetSize()) 
@@ -3349,34 +3360,36 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       
       if(!bgCalo) 
         printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Event %d in calo pool not available?\n",ev);
-      
-      if(OnlyIsolated())
-      {
-        Int_t n=0; Int_t nfrac = 0; Bool_t isolated = kFALSE; Float_t coneptsum = 0;
-        GetIsolationCut()->MakeIsolationCut(bgTracks,bgCalo,
-                                            GetReader(), GetCaloPID(),
-                                            kFALSE, aodParticle, "", 
-                                            n,nfrac,coneptsum, isolated);
-        
-        //printf("AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation() - Isolated? %d - cone %f, ptthres %f",
-        //       isolated,GetIsolationCut()->GetConeSize(),GetIsolationCut()->GetPtThreshold());
-        //if(bgTracks)printf(" - n track %d", bgTracks->GetEntriesFast());
-        //printf("\n");
-        
-        if(!isolated) continue ;
-      }
     }
     
-    fhEventMixBin->Fill(eventBin);
+    //
+    // Isolate the trigger in the mixed event with mixed tracks and clusters
+    //
+    if( OnlyIsolated() )
+    {
+      Int_t n=0; Int_t nfrac = 0; Bool_t isolated = kFALSE; Float_t coneptsum = 0;
+      GetIsolationCut()->MakeIsolationCut(bgTracks,bgCalo,
+                                          GetReader(), GetCaloPID(),
+                                          kFALSE, aodParticle, "",
+                                          n,nfrac,coneptsum, isolated);
+      
+      //printf("AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation() - Isolated? %d - cone %f, ptthres %f",
+      //       isolated,GetIsolationCut()->GetConeSize(),GetIsolationCut()->GetPtThreshold());
+      //if(bgTracks)printf(" - n track %d", bgTracks->GetEntriesFast());
+      //printf("\n");
+      
+      if(!isolated) continue ;
+    }
     
+    //
+    // Check if the trigger is leading of mixed event
+    //
     Int_t nTracks=bgTracks->GetEntriesFast();
-    //printf("\t Read Pool event %d, nTracks %d\n",ev,nTracks);
 
-    //Check if it is leading if mixed event
     if(fMakeNearSideLeading || fMakeAbsoluteLeading)
     {
       Bool_t leading = kTRUE;
-      for(Int_t jlead = 0;jlead <nTracks; jlead++ )
+      for(Int_t jlead = 0;jlead < nTracks; jlead++ )
       {
         AliAODPWG4Particle *track = (AliAODPWG4Particle*) bgTracks->At(jlead) ;
         
@@ -3403,7 +3416,10 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
         }
       }
       
-      if(fFillNeutralEventMixPool && bgCalo)
+      if( !neutralMix && fCheckLeadingWithNeutralClusters )
+        printf("AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation() - Leading of clusters requested but no clusters in mixed event\n");
+      
+      if(neutralMix && fCheckLeadingWithNeutralClusters && bgCalo)
       {
         Int_t nClusters=bgCalo->GetEntriesFast();
         TLorentzVector mom ;
@@ -3436,8 +3452,11 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       }
       
       if(!leading) continue; // not leading, check the next event in pool
-    
     }
+    
+    fhEventMixBin->Fill(eventBin);
+    
+    //printf("\t Read Pool event %d, nTracks %d\n",ev,nTracks);
     
     fhPtTriggerMixed   ->Fill(ptTrig);
     fhPhiTriggerMixed  ->Fill(ptTrig, phiTrig);
