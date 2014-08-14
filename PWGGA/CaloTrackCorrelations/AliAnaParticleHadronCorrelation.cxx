@@ -818,16 +818,19 @@ void AliAnaParticleHadronCorrelation::FillNeutralUnderlyingEventSidesHistograms(
 //______________________________________________________
 void AliAnaParticleHadronCorrelation::FillEventMixPool()
 {
-  // Fill the pool with tracks if requested
+  // Fill the pool with tracks or clusters if requested
     
-  if(DoOwnMix())
-  {
-    FillChargedEventMixPool();
-    
-    if(OnlyIsolated() || fFillNeutralEventMixPool)
-      FillNeutralEventMixPool();
-  }
+  if ( !DoOwnMix() ) return;
   
+  FillChargedEventMixPool();
+  
+  // Do the cluster pool filling only if requested
+  // or in case of isolation cut using clusters in the cone.
+  Bool_t isoCase = OnlyIsolated() && (GetIsolationCut()->GetParticleTypeInCone() != AliIsolationCut::kOnlyCharged);
+  
+  if( !fFillNeutralEventMixPool && !isoCase) return;
+  
+  FillNeutralEventMixPool();
 }
 
 //_____________________________________________________________
