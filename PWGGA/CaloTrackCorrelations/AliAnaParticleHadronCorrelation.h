@@ -203,6 +203,12 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnCheckNeutralClustersForLeading() { fCheckLeadingWithNeutralClusters = kTRUE  ; }
   void         SwitchOffCheckNeutralClustersForLeading(){ fCheckLeadingWithNeutralClusters = kFALSE ; }
   
+  void         SwitchOnFillEtaGapHistograms()    { fFillEtaGapsHisto    = kTRUE  ; }
+  void         SwitchOffFillEtaGapHistograms()   { fFillEtaGapsHisto    = kFALSE ; }
+  
+  void         SwitchOnFillPtImbalancePerPtABinHistograms()  { fFillMomImbalancePtAssocBinsHisto = kTRUE  ; }
+  void         SwitchOffFillPtImbalancePerPtABinHistograms() { fFillMomImbalancePtAssocBinsHisto = kFALSE ; }
+  
  private:
 
   Bool_t       fFillAODWithReferences;         // Add to the trigger particle AOD the reference to the tracks or neutrals in correlation.
@@ -247,6 +253,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fMinLeadHadPt;                  // Minimum pT of leading hadron
   Float_t      fMaxLeadHadPt;                  // Maximum pT of leading hadron
 
+  Bool_t       fFillEtaGapsHisto;              // Fill azimuthal correlation histograms in 2 eta gaps, |eta|>0.8 and |eta|<0.01
+  Bool_t       fFillMomImbalancePtAssocBinsHisto; // momentum imbalance histograms in bins of pT associated
+  
   //Histograms
 
   //trigger particles
@@ -275,9 +284,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhEtaTriggerMixed;              //! eta distribution vs pT of trigger particles, used in mixing  
 
   // Leading hadron in the opposite side of the trigger
-  TH2F *      fhPtLeadingOppositeHadron;       //! pT trigger : pT distribution of leading hadron oposite to trigger
-  TH2F *      fhPtDiffPhiLeadingOppositeHadron;//! pT trigger : difference phi distribution of leading hadron oposite and trigger
-  TH2F *      fhPtDiffEtaLeadingOppositeHadron;//! pT trigger: difference eta distribution of leading hadron oposite and trigger
+  TH2F *       fhPtLeadingOppositeHadron;        //! pT trigger : pT distribution of leading hadron oposite to trigger
+  TH2F *       fhPtDiffPhiLeadingOppositeHadron; //! pT trigger : difference phi distribution of leading hadron oposite and trigger
+  TH2F *       fhPtDiffEtaLeadingOppositeHadron; //! pT trigger: difference eta distribution of leading hadron oposite and trigger
 
   //trigger-charged histograms
   TH2F *       fhDeltaPhiDeltaEtaCharged ;     //! differences of eta and phi between trigger and charged hadrons
@@ -374,15 +383,17 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *       fhAssocPtBkg;                   //! Trigger pT vs associated pT for background
   TH2F **      fhDeltaPhiDeltaEtaAssocPtBin;   //![fNAssocPtBins*GetNZvertBin()] Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins
-  TH2F **      fhDeltaPhiAssocPtBin;           //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins
-  TH2F **      fhDeltaPhiAssocPtBinDEta08;     //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins for Delta eta > 0.8
-  TH2F **      fhDeltaPhiAssocPtBinDEta0 ;     //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins for Delta eta = 0
-  TH2F **      fhDeltaPhiAssocPtBinHMPID;      //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins, track with HMPID  
-  TH2F **      fhDeltaPhiAssocPtBinHMPIDAcc;   //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins, track with HMPIDAcc
+  TH2F **      fhDeltaPhiAssocPtBin;           //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt and vz bins
+  TH2F **      fhDeltaPhiAssocPtBinDEta08;     //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt and vz bins for Delta eta > 0.8
+  TH2F **      fhDeltaPhiAssocPtBinDEta0 ;     //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt and vz bins for Delta eta = 0
+  TH2F **      fhDeltaPhiAssocPtBinHMPID;      //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt and vz bins, track with HMPID
+  TH2F **      fhDeltaPhiAssocPtBinHMPIDAcc;   //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt and vz bins, track with HMPIDAcc
   TH2F **      fhDeltaPhiBradAssocPtBin;       //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi Brad (?) for different associated pt bins
   TH2F *       fhDeltaPhiBrad;                 //! Trigger pT vs dPhi Brad (?) for different associated pt bins
-  TH2F **      fhXEAssocPtBin ;                //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs xE for different associated pt bins
-  TH2F **      fhZTAssocPtBin ;                //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs zT for different associated pt bins
+  TH2F **      fhXEAssocPtBin ;                //![fNAssocPtBins] Trigger pT vs xE for different associated pt bins
+  TH2F **      fhZTAssocPtBin ;                //![fNAssocPtBins] Trigger pT vs zT for different associated pt bins
+  TH2F **      fhXEVZ ;                        //![GetNZvertBin()] Trigger pT vs xE for different vz bins
+  TH2F **      fhZTVZ ;                        //![GetNZvertBin()] Trigger pT vs zT for different vz bins
 
   //trigger-neutral histograms
   TH2F *       fhDeltaPhiDeltaEtaNeutral ;     //! differences of eta and phi between trigger and neutral hadrons (pi0)
