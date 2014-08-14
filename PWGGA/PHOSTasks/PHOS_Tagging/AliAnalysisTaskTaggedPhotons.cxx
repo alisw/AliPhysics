@@ -365,6 +365,10 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     }
   }
   for(Int_t cen=0; cen<nCenBin; cen++){
+       fOutputContainer->Add(new TH1F(Form("hMC_unitEta_GammaPi0_cent%d",cen),"Spectum, |y|<0.15",nPt,0.,ptMax)) ;
+  }
+  
+  for(Int_t cen=0; cen<nCenBin; cen++){
   
     fOutputContainer->Add(new TH2F(Form("LabelsNPrim_cent%d",cen),"vertex",nPt,0.,ptMax,20,0.,20.)) ;
     fOutputContainer->Add(new TH1F(Form("LabelsGamma_cent%d",cen),"vertex",nPt,0.,ptMax)) ;
@@ -900,8 +904,14 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
     FillHistogram(Form("hMC_all_%s_cent%d",partName,fCentBin),pt,w) ;
     if(TMath::Abs(prim->Y())<0.13){
       FillHistogram(Form("hMC_phi_%s_cent%d",partName,fCentBin),phi,w) ;
-      if(phi>phiMin && phi<phiMax)
+      if(phi>phiMin && phi<phiMax){
         FillHistogram(Form("hMC_unitEta_%s_cent%d",partName,fCentBin),pt,w) ;
+	if(prim->GetMother()>-1){
+          AliAODMCParticle * primGM = (AliAODMCParticle*)fStack->At(prim->GetMother()) ;
+	  if(primGM->GetPdgCode()==111)
+            FillHistogram(Form("hMC_unitEta_GammaPi0_cent%d",fCentBin),pt,w) ;
+	}
+      }
     }
 
     FillHistogram(Form("hMC_rap_%s_cent%d",partName,fCentBin),prim->Y(),w) ;
@@ -1898,8 +1908,8 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
        (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) ;
   }
   if(pdg == 221){
-  //Eta - same same shape, but yield 0.48
-     Double_t norm=0.48 ;
+  //Eta - same same shape, but yield 0.48 and Br(eta->2gamma)
+     Double_t norm=0.48 * 0.3943;
      if(x<1) return norm ;
      else return norm*fWeightParamPi0[0]*TMath::Power(x,fWeightParamPi0[1])*
        (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
