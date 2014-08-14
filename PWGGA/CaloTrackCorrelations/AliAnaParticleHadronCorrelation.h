@@ -452,8 +452,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   // Mixing
   TH1I *       fhNEventsTrigger;               //! number of analyzed triggered events
-  TH1F *       fhNtracksMB;                    //! total number of tracks in MB events
-  TH1F *       fhNclustersMB;                  //! total number of clusters in MB events
+  TH2F *       fhNtracksMB;                    //! total number of tracks in MB events
+  TH2F *       fhNclustersMB;                  //! total number of clusters in MB events
   TH2F *       fhMixDeltaPhiCharged  ;         //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F *       fhMixDeltaPhiDeltaEtaCharged  ; //! Difference of charged particle phi and trigger particle  phi as function eta difference
   TH2F *       fhMixXECharged;                 //! xE for mixed event
