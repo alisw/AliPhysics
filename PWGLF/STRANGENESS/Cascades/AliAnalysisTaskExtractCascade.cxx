@@ -192,6 +192,9 @@ fTreeCascVarCascadeDecayX(0),
 fTreeCascVarCascadeDecayY(0),
 fTreeCascVarCascadeDecayZ(0),
 
+fTreeCascVarBadCascadeJai(0),
+fTreeCascVarDeltaDCA(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -340,6 +343,9 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
     fTreeCascVarCascadeDecayX(0),
     fTreeCascVarCascadeDecayY(0),
     fTreeCascVarCascadeDecayZ(0),
+    
+    fTreeCascVarBadCascadeJai(0), 
+    fTreeCascVarDeltaDCA(0),
 
 
 //------------------------------------------------
@@ -549,6 +555,9 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
       fTreeCascade->Branch("fTreeCascVarCascadeDecayX",&fTreeCascVarCascadeDecayX,"fTreeCascVarCascadeDecayX/F");
       fTreeCascade->Branch("fTreeCascVarCascadeDecayY",&fTreeCascVarCascadeDecayY,"fTreeCascVarCascadeDecayY/F");
       fTreeCascade->Branch("fTreeCascVarCascadeDecayZ",&fTreeCascVarCascadeDecayZ,"fTreeCascVarCascadeDecayZ/F");
+      
+      fTreeCascade->Branch("fTreeCascVarBadCascadeJai",&fTreeCascVarBadCascadeJai,"fTreeCascVarBadCascadeJai/O");
+      fTreeCascade->Branch("fTreeCascVarDeltaDCA",&fTreeCascVarDeltaDCA,"fTreeCascVarDeltaDCA/O");
       //------------------------------------------------
   }
     
@@ -1108,6 +1117,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
     //------------------------------------------------	
 	  //Double_t lTrkgPrimaryVtxRadius3D = -500.0;
 	  //Double_t lBestPrimaryVtxRadius3D = -500.0;
+	  fTreeCascVarBadCascadeJai = kFALSE ;
 
 	  // - 1st part of initialisation : variables needed to store AliESDCascade data members
 	  Double_t lEffMassXi      = 0. ;
@@ -1406,6 +1416,27 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  //lPhi      = xi->Phi()   *180.0/TMath::Pi();
 	  //lAlphaXi  = xi->AlphaXi();
 	  //lPtArmXi  = xi->PtArmXi();
+	  
+  //------------------------------------------------
+  // Jai Salzwedel's femto-cut: better V0 exists
+  //------------------------------------------------			  
+
+  fTreeCascVarDeltaDCA = -100;
+  Float_t DCAV0DaughtersDiff = -100; 
+  for (Int_t iv0=0; iv0<lESDevent->GetNumberOfV0s(); iv0++) {
+    AliESDv0 *v0 = lESDevent->GetV0(iv0);
+    UInt_t posV0TrackIdx = (UInt_t) v0->GetPindex();
+    UInt_t negV0TrackIdx = (UInt_t) v0->GetNindex();
+    if ((posV0TrackIdx == lIdxPosXi) && (negV0TrackIdx == lIdxNegXi)) continue;
+      // if both tracks are the same ones as the cascades V0 daughter tracks, then the V0 belongs to the cascade being analysed; so avoid it
+    if ((posV0TrackIdx == lIdxPosXi) || (negV0TrackIdx == lIdxNegXi)) {
+    DCAV0DaughtersDiff = lDcaV0DaughtersXi - v0->GetDcaV0Daughters();
+    if( fTreeCascVarDeltaDCA > DCAV0DaughtersDiff ) fTreeCascVarDeltaDCA = DCAV0DaughtersDiff;
+      if ( lDcaV0DaughtersXi > v0->GetDcaV0Daughters() )  {    // DCA comparison criterion
+        fTreeCascVarBadCascadeJai = kTRUE;
+      } //end DCA comparison 
+    } // end shares a daughter check 
+  } //end V0 loop 
 
   //------------------------------------------------
   // Set Variables for adding to tree
