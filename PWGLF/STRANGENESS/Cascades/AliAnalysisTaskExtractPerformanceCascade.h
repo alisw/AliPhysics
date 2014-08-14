@@ -213,6 +213,9 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Bool_t fTreeCascVarEvHasVeryLowPtOmegaPlus;  //!
   Bool_t fTreeCascVarEvHasVeryLowPtLambda;     //!
   Bool_t fTreeCascVarEvHasVeryLowPtAntiLambda; //!
+  
+  Bool_t fTreeCascVarBadCascadeJai; //! 
+  Float_t fTreeCascVarDeltaDCA; //!
 
 //===========================================================================================
 //   Histograms
