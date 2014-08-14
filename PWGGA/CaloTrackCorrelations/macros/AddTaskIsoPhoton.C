@@ -18,6 +18,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Int_t    disttobad     = 0,
                                                       const Int_t    nlmMax        =  2,
                                                       const Bool_t   qaan          = kFALSE,
+                                                      const Bool_t   primvtx       = kTRUE,
+                                                      const Bool_t   notrackcut    = kTRUE,
                                                       const Int_t    debug         = -1,
                                                       const Bool_t   print         = kFALSE
                                                       )
@@ -297,8 +299,14 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
   reader->SwitchOnEventTriggerAtSE();
   
   reader->SetZvertexCut(10.);               // Open cut
+  if(primvtx)
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
+  else
+  reader->SwitchOffPrimaryVertexSelection(); 
+  if(notrackcut)
   reader->SwitchOnRejectNoTrackEvents();
+  else
+  reader->SwitchOffRejectNoTrackEvents();
  
   reader->SwitchOffPileUpEventRejection();   // remove pileup
   reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
@@ -783,4 +791,5 @@ UInt_t SetTriggerMaskFromName(TString trigger)
     return (AliVEvent::kSemiCentral | AliVEvent::kCentral  | AliVEvent::kMB);
   }
 }
+
 
