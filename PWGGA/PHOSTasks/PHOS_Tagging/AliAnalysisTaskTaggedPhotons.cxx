@@ -267,6 +267,9 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
       fOutputContainer->Add(new TH1F(Form("hPhot_nTagged%d_Area1_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_nTagged%d_Area2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_nTagged%d_Area3_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
+
+      fOutputContainer->Add(new TH1F(Form("hPhot_AllTagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all tagged particles",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hPhot_TrueTagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all tagged particles",nPt,0.,ptMax)) ;      
     }    
     for(Int_t kind=1; kind<33; kind*=2){
       fOutputContainer->Add(new TH1F(Form("hPhot_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
@@ -1306,6 +1309,10 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       Int_t oldTag2=p2->GetTagInfo() ;
       tag2=tag2|oldTag2 ;
       p2->SetTagInfo(tag2) ;
+            
+      Bool_t trueTag=(IsSameParent(p1,p2)==111); //true tag
+      p1->SetUnfolded(p1->IsntUnfolded()|trueTag) ;
+      p2->SetUnfolded(p2->IsntUnfolded()|trueTag) ;
       
       if(tag1 & (1<<7)){ //2 sigma, Emin=0.3: default tagging
         if(p1->IsTagged()){//Multiple tagging
@@ -1346,7 +1353,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         FillPIDHistograms(Form("hPhot_Isolation%d",kind),p) ;
       }
     }
-      
+    
     Int_t iFidArea = p->GetFiducialArea(); 
     if(iFidArea>0){
       FillPIDHistograms("hPhot_Area1",p) ;
@@ -1364,6 +1371,11 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       for(Int_t ibit=0; ibit<18; ibit++){
         if((tag & (1<<ibit))==0){ 
           FillPIDHistograms(Form("hPhot_nTagged%d_Area1",ibit),p) ;
+	}else{
+           FillPIDHistograms(Form("hPhot_AllTagged%d",ibit),p) ;
+	   if(p->IsntUnfolded()) //true tag
+             FillPIDHistograms(Form("hPhot_TrueTagged%d",ibit),p) ;
+	  
 	}
       }
 
@@ -1859,9 +1871,10 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
        (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) ;
   }
   if(pdg == 221){
-  //Eta - same weight
-     if(x<1) return 1. ;
-     else return fWeightParamPi0[0]*TMath::Power(x,fWeightParamPi0[1])*
+  //Eta - same same shape, but yield 0.48
+     Double_t norm=0.48 ;
+     if(x<1) return norm ;
+     else return norm*fWeightParamPi0[0]*TMath::Power(x,fWeightParamPi0[1])*
        (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
        (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) ;
   }
