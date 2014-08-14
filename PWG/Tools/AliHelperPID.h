@@ -84,8 +84,8 @@ class AliHelperPID : public TNamed
   Double_t GetPtTOFPID(){return   fPtTOFPID;}
   void SetfPtTOFPID(Double_t pttof){fPtTOFPID=pttof;}
   //set PID Combined
-  //void SetPIDCombined(AliPIDCombined *obj){fPIDCombined=obj;}
-  void SetPIDCombined(AliPIDCombined *obj){Printf("void AliHelperPID::SetPIDCombined(AliPIDCombined *obj) not implemented");}  //FIXME Left for backward compatibility, not the PIDCombined onject is created in the constructor as done in /ANALYSIS/AliAnalysisTaskPIDCombined.cxx (Jul 15th 2014)
+  void SetPIDCombined(AliPIDCombined *obj){fPIDCombined=obj;}
+  //void SetPIDCombined(AliPIDCombined *obj){Printf("void AliHelperPID::SetPIDCombined(AliPIDCombined *obj) not implemented");}  //FIXME Left for backward compatibility, not the PIDCombined onject is created in the constructor as done in /ANALYSIS/AliAnalysisTaskPIDCombined.cxx (Jul 15th 2014)
   AliPIDCombined *GetPIDCombined(){return fPIDCombined;}
   //set cut on beyesian probability
   void SetBayesCut(Double_t cut){fBayesCut=cut;}
@@ -122,7 +122,7 @@ class AliHelperPID : public TNamed
   Double_t fNSigmaPID; // number of sigma for PID cut
   Double_t fBayesCut; // Cut on Bayesian probability
   AliPIDResponse   *fPIDResponse;     //! PID response object
-  AliPIDCombined   *fPIDCombined;     //! PIDCombined
+  AliPIDCombined   *fPIDCombined;     // PIDCombined
   TList     *fOutputList;  // List Histo's
   Double_t fnsigmas[kNSpecies][kNSigmaPIDType+1]; //nsigma values
   Bool_t fHasDoubleCounting[kNSpecies];//array with compatible identities
@@ -135,7 +135,7 @@ class AliHelperPID : public TNamed
   AliHelperPID(const AliHelperPID&);
   AliHelperPID& operator=(const AliHelperPID&);
   
-  ClassDef(AliHelperPID, 7);
+  ClassDef(AliHelperPID, 8);
   
 };
 #endif
