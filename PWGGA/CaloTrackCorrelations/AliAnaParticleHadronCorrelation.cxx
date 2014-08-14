@@ -1137,6 +1137,10 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   TString sz  = "" ;
   TString tz  = "" ;
   
+  // Fill histograms for neutral clusters in mixing?
+  Bool_t isoCase = OnlyIsolated() && (GetIsolationCut()->GetParticleTypeInCone() != AliIsolationCut::kOnlyCharged);
+  Bool_t neutralMix = fFillNeutralEventMixPool || isoCase ;
+  
   fhPtTriggerInput  = new TH1F("hPtTriggerInput","Input trigger #it{p}_{T}", nptbins,ptmin,ptmax);
   fhPtTriggerInput->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
   outputContainer->Add(fhPtTriggerInput);
@@ -2441,8 +2445,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhEtaTriggerMixed);
     
     // Fill the cluster pool only in isolation analysis or if requested
-    if( ( OnlyIsolated()        ||  fFillNeutralEventMixPool) &&
-       (!fUseMixStoredInReader || (fUseMixStoredInReader && !GetReader()->ListWithMixedEventsForCaloExists())))
+    if( neutralMix && (!fUseMixStoredInReader || (fUseMixStoredInReader && !GetReader()->ListWithMixedEventsForCaloExists())))
     {
       Int_t nvz = GetNZvertBin();
       Int_t nrp = GetNRPBin();
@@ -2497,7 +2500,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhNtracksMB->SetXTitle("#it{N}_{track}");
     outputContainer->Add(fhNtracksMB);
 
-    if(fFillNeutralEventMixPool || OnlyIsolated())
+    if( neutralMix )
     {
       fhNclustersMB=new TH2F("hNclustersMBEvent","Number of filtered clusters in MB events per event bin",nclbins,clmin,clmax,
                              GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
@@ -3282,29 +3285,32 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
     
   // Get the pool, check if it exits
   Int_t eventBin = GetEventMixBin();
-
-  fhEventBin->Fill(eventBin);
   
   //Check that the bin exists, if not (bad determination of RP, ntrality or vz bin) do nothing
   if(eventBin < 0) return;
+
+  fhEventBin->Fill(eventBin);
   
+  // get neutral clusters pool?
+  Bool_t isoCase = OnlyIsolated() && (GetIsolationCut()->GetParticleTypeInCone() != AliIsolationCut::kOnlyCharged);
+  Bool_t neutralMix = fFillNeutralEventMixPool || isoCase ;
+
   TList * pool     = 0;
   TList * poolCalo = 0;
   if(fUseMixStoredInReader) 
   {
     pool     = GetReader()->GetListWithMixedEventsForTracks(eventBin);
-    if(OnlyIsolated() || fFillNeutralEventMixPool) poolCalo = GetReader()->GetListWithMixedEventsForCalo  (eventBin);
+    if(neutralMix) poolCalo = GetReader()->GetListWithMixedEventsForCalo  (eventBin);
   }
   else
   {
     pool     = fListMixTrackEvents[eventBin];
-    if(OnlyIsolated()  || fFillNeutralEventMixPool) poolCalo = fListMixCaloEvents [eventBin];
+    if(neutralMix) poolCalo = fListMixCaloEvents [eventBin];
   }
   
   if(!pool) return ;
     
-  if((OnlyIsolated()  || fFillNeutralEventMixPool ) && !poolCalo &&
-     (GetIsolationCut()->GetParticleTypeInCone()!=AliIsolationCut::AliIsolationCut::kOnlyCharged)) 
+  if( neutralMix && !poolCalo )
     printf("AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation() - Careful, cluster pool not available\n");
   
   Double_t ptTrig  = aodParticle->Pt();
@@ -3334,7 +3340,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
     TObjArray* bgCalo   = 0;
 
     // Check if the particle is isolated in the mixed event, it not, do not fill the histograms
-    if((OnlyIsolated() || fFillNeutralEventMixPool) && poolCalo)
+    if( neutralMix && poolCalo )
     {
       if(pool->GetSize()!=poolCalo->GetSize()) 
         printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Different size of calo and track pools\n");
