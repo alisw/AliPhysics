@@ -1070,7 +1070,6 @@ void AliAnalysisTaskCombinHF::FinishTaskOutput()
   }
   delete tmpRD2;
   delete tmpRD3;
-
 }
 //_________________________________________________________________
 void AliAnalysisTaskCombinHF::Terminate(Option_t */*option*/)
