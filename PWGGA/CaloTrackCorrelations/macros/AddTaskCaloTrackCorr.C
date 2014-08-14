@@ -1639,19 +1639,34 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,  2.5 ,500);
-  histoRanges->SetHistodEdxRangeAndNBins  (0.,250.0,500);
+  histoRanges->SetHistoPOverERangeAndNBins(0,2.,200);
+  histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
   histoRanges->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-  histoRanges->SetHistoRatioRangeAndNBins(0.,2.,100);
   histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,500);
-  histoRanges->SetHistoNClusterCellRangeAndNBins(0,50,50);
   histoRanges->SetHistoZRangeAndNBins(-400,400,200);
   histoRanges->SetHistoRRangeAndNBins(400,450,25);
   histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,500);
   histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
-  histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
+  
+  // QA, correlation
+  if(kCollisions=="PbPb")
+  {
+    histoRanges->SetHistoNClusterCellRangeAndNBins(0,100,100);
+    histoRanges->SetHistoNClustersRangeAndNBins(0,500,50);
+    histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,2000,200);
+  }
+  else
+  {
+    histoRanges->SetHistoNClusterCellRangeAndNBins(0,50,50);
+    histoRanges->SetHistoNClustersRangeAndNBins(0,50,50);
+    histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,200,200);
+  }
+  
+  // xE, zT
+  histoRanges->SetHistoRatioRangeAndNBins(0.,2.,200);
+  histoRanges->SetHistoHBPRangeAndNBins  (0.,10.,200);
   
   // Isolation
   histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
