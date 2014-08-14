@@ -2958,8 +2958,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     else
     {
       // Select only the leading in the trigger AOD loop
-      naod = 1 ;
-      iaod = fLeadingTriggerIndex;
+      naod = fLeadingTriggerIndex+1 ;
+      iaod = fLeadingTriggerIndex   ;
     }
   }
 
