@@ -34,7 +34,7 @@ public:
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
-  virtual void        FinishTaskOutput();
+  virtual void FinishTaskOutput();
   
   void SetReadMC(Bool_t read){fReadMC=read;}
 
