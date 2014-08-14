@@ -917,17 +917,17 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
   
   //printf("FillNeutralEventMixPool for %s\n",GetInputAODName().Data());
   
-  TObjArray * pl = GetEMCALClusters();
-  //if (GetAODObjArrayName.Contains("PHOS") )pl    = GetPHOSClusters();
-  //else                                     pl    = GetEMCALClusters();
-  
-  Int_t nClusters   = pl->GetEntriesFast();
-  
   if(fUseMixStoredInReader && GetReader()->GetLastCaloMixedEvent() == GetEventNumber())
   {
     //printf("%s : Pool already filled for this event !!!\n",GetInputAODName().Data());
     return ; // pool filled previously for another trigger
   }
+  
+  TObjArray * pl = GetEMCALClusters();
+  //if (GetAODObjArrayName.Contains("PHOS") )pl    = GetPHOSClusters();
+  //else                                     pl    = GetEMCALClusters();
+  
+  Int_t nClusters   = pl->GetEntriesFast();
   
   AliAnalysisManager   * manager      = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler * inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
@@ -3243,7 +3243,6 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   }
   
 }  
-
 
 //_________________________________________________________________________________________________________
 void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation *aodParticle) 
