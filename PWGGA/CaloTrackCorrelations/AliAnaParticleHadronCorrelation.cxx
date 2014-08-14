@@ -844,8 +844,6 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
     return ; // pool filled previously for another trigger
   }
   
-  Int_t nTracks = GetCTSTracks()->GetEntriesFast();
-    
   AliAnalysisManager   * manager      = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler * inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
   
@@ -853,8 +851,6 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
     
   // Do mixing only with MB event (or the chosen mask), if not skip
   if( !(inputHandler->IsEventSelected( ) & GetReader()->GetMixEventTriggerMask()) ) return ;
-  
-  fhNtracksMB->Fill(nTracks);
   
   Int_t eventBin = GetEventMixBin();
   
@@ -892,6 +888,8 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
     mixEventTracks->Add(mixedTrack);
   }
   
+  fhNtracksMB->Fill(mixEventTracks->GetEntriesFast(),eventBin);
+  
   //Set the event number where the last event was added, to avoid double pool filling
   GetReader()->SetLastTracksMixedEvent(GetEventNumber());
   
@@ -927,8 +925,6 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
   //if (GetAODObjArrayName.Contains("PHOS") )pl    = GetPHOSClusters();
   //else                                     pl    = GetEMCALClusters();
   
-  Int_t nClusters   = pl->GetEntriesFast();
-  
   AliAnalysisManager   * manager      = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler * inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
   
@@ -936,8 +932,6 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
     
   // Do mixing only with MB event (or the chosen mask), if not skip
   if( !(inputHandler->IsEventSelected( ) & GetReader()->GetMixEventTriggerMask()) ) return ;
-  
-  fhNclustersMB->Fill(nClusters);
   
   Int_t eventBin = GetEventMixBin();
   
@@ -957,7 +951,7 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
   
   TLorentzVector mom;
 
-  for(Int_t ipr = 0;ipr <  nClusters ; ipr ++ )
+  for(Int_t ipr = 0;ipr <  pl->GetEntriesFast() ; ipr ++ )
   {
     AliVCluster * calo = (AliVCluster *) (pl->At(ipr)) ;
   
@@ -983,6 +977,8 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
     mixedCalo->SetDetector("EMCAL");
     mixEventCalo->Add(mixedCalo);
   }
+  
+  fhNclustersMB->Fill(mixEventCalo->GetEntriesFast(),eventBin);
   
   //Set the event number where the last event was added, to avoid double pool filling
   GetReader()->SetLastCaloMixedEvent(GetEventNumber());
@@ -1114,9 +1110,21 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   TList * outputContainer = new TList() ;
   outputContainer->SetName("CorrelationHistos") ;
   
-  Int_t   nptbins = GetHistogramRanges()->GetHistoPtBins(); Int_t  nphibins = GetHistogramRanges()->GetHistoPhiBins(); Int_t   netabins = GetHistogramRanges()->GetHistoEtaBins(); Int_t  ndeltaphibins = GetHistogramRanges()->GetHistoDeltaPhiBins(); Int_t   ndeltaetabins = GetHistogramRanges()->GetHistoDeltaEtaBins();
-  Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax  = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax   = GetHistogramRanges()->GetHistoEtaMax(); Float_t deltaphimax  = GetHistogramRanges()->GetHistoDeltaPhiMax();  Float_t deltaetamax   = GetHistogramRanges()->GetHistoDeltaEtaMax();
-  Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin  = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin   = GetHistogramRanges()->GetHistoEtaMin(); Float_t deltaphimin  = GetHistogramRanges()->GetHistoDeltaPhiMin();  Float_t deltaetamin   = GetHistogramRanges()->GetHistoDeltaEtaMin();
+  Int_t   nptbins = GetHistogramRanges()->GetHistoPtBins(); Int_t  nphibins = GetHistogramRanges()->GetHistoPhiBins(); Int_t   netabins = GetHistogramRanges()->GetHistoEtaBins();
+  Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax  = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax   = GetHistogramRanges()->GetHistoEtaMax();
+  Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin  = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin   = GetHistogramRanges()->GetHistoEtaMin();
+
+  Int_t  ndeltaphibins = GetHistogramRanges()->GetHistoDeltaPhiBins(); Int_t   ndeltaetabins = GetHistogramRanges()->GetHistoDeltaEtaBins();
+  Float_t deltaphimax  = GetHistogramRanges()->GetHistoDeltaPhiMax();  Float_t deltaetamax   = GetHistogramRanges()->GetHistoDeltaEtaMax();
+  Float_t deltaphimin  = GetHistogramRanges()->GetHistoDeltaPhiMin();  Float_t deltaetamin   = GetHistogramRanges()->GetHistoDeltaEtaMin();
+
+  Int_t ntrbins = GetHistogramRanges()->GetHistoTrackMultiplicityBins(); Int_t nclbins = GetHistogramRanges()->GetHistoNClustersBins();
+  Int_t trmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();  Int_t clmax   = GetHistogramRanges()->GetHistoNClustersMax();
+  Int_t trmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin();  Int_t clmin   = GetHistogramRanges()->GetHistoNClustersMin();
+
+  Int_t  nxeztbins = GetHistogramRanges()->GetHistoRatioBins();  Int_t  nhbpbins = GetHistogramRanges()->GetHistoHBPBins();
+  Float_t xeztmax  = GetHistogramRanges()->GetHistoRatioMax();   Float_t hbpmax  = GetHistogramRanges()->GetHistoHBPMax();
+  Float_t xeztmin  = GetHistogramRanges()->GetHistoRatioMin();   Float_t hbpmin  = GetHistogramRanges()->GetHistoHBPMin();
   
   Int_t nMixBins = GetNCentrBin()*GetNZvertBin()*GetNRPBin();
   
@@ -1287,61 +1295,61 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   fhXECharged  =
   new TH2F("hXECharged","#it{x}_{#it{E}} for charged tracks",
-           nptbins,ptmin,ptmax,200,0.,2.);
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
   fhXECharged->SetYTitle("#it{x}_{#it{E}}");
   fhXECharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhXECharged_Cone2  =
   new TH2F("hXECharged_Cone2","#it{x}_{#it{E}} for charged tracks in cone 2 (5#pi/6-7#pi/6)",
-           nptbins,ptmin,ptmax,200,0.,2.);
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
   fhXECharged_Cone2->SetYTitle("#it{x}_{#it{E}}");
   fhXECharged_Cone2->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhXEPosCharged  =
   new TH2F("hXEPositiveCharged","#it{x}_{#it{E}} for positive charged tracks",
-           nptbins,ptmin,ptmax,200,0.,2.);
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
   fhXEPosCharged->SetYTitle("#it{x}_{#it{E}}");
   fhXEPosCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhXENegCharged  =
   new TH2F("hXENegativeCharged","#it{x}_{#it{E}} for negative charged tracks",
-           nptbins,ptmin,ptmax,200,0.,2.);
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
   fhXENegCharged->SetYTitle("#it{x}_{#it{E}}");
   fhXENegCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhPtHbpXECharged  =
   new TH2F("hHbpXECharged","#xi = ln(1/#it{x}_{#it{E}}) with charged hadrons",
-           nptbins,ptmin,ptmax,200,0.,10.);
+           nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
   fhPtHbpXECharged->SetYTitle("ln(1/#it{x}_{#it{E}})");
   fhPtHbpXECharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhPtHbpXECharged_Cone2  =
   new TH2F("hHbpXECharged_Cone2","#xi = ln(1/#it{x}_{#it{E}}) with charged hadrons in cone 2 (5#pi/6-7#pi/6)",
-           nptbins,ptmin,ptmax,200,0.,10.);
+           nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
   fhPtHbpXECharged_Cone2->SetYTitle("ln(1/#it{x}_{#it{E}})");
   fhPtHbpXECharged_Cone2->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhZTCharged  =
   new TH2F("hZTCharged","#it{z}_{T} for charged tracks",
-           nptbins,ptmin,ptmax,200,0.,2.);
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
   fhZTCharged->SetYTitle("#it{z}_{T}");
   fhZTCharged->SetXTitle("#it{p}_{T trigger}");
   
   fhZTPosCharged  =
   new TH2F("hZTPositiveCharged","#it{z}_{T} for positive charged tracks",
-           nptbins,ptmin,ptmax,200,0.,2.);
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
   fhZTPosCharged->SetYTitle("#it{z}_{T}");
   fhZTPosCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhZTNegCharged  =
   new TH2F("hZTNegativeCharged","#it{z}_{T} for negative charged tracks",
-           nptbins,ptmin,ptmax,200,0.,2.);
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
   fhZTNegCharged->SetYTitle("#it{z}_{T}");
   fhZTNegCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhPtHbpZTCharged  =
   new TH2F("hHbpZTCharged","#xi = ln(1/#it{z}_{T}) with charged hadrons",
-           nptbins,ptmin,ptmax,200,0.,10.);
+           nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
   fhPtHbpZTCharged->SetYTitle("ln(1/#it{z}_{T})");
   fhPtHbpZTCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
@@ -1384,7 +1392,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       
       fhXEChargedMC[i]  = new TH2F(Form("hXECharged_MC%s",nameMC[i].Data()),
                                    Form("#it{x}_{#it{E}} for charged tracks, trigger origin is %s",nameMC[i].Data()),
-                                   nptbins,ptmin,ptmax,200,0.,2.);
+                                   nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhXEChargedMC[i]->SetYTitle("#it{x}_{#it{E}}");
       fhXEChargedMC[i]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       outputContainer->Add(fhXEChargedMC[i]) ;
@@ -1420,25 +1428,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   fhXEUeCharged  =
   new TH2F(Form("hXEUeCharged%s",right.Data()),"#it{x}_{#it{E}} for Underlying Event",
-           nptbins,ptmin,ptmax,200,0.,2.);
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
   fhXEUeCharged->SetYTitle("#it{x}_{#it{E}}");
   fhXEUeCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhPtHbpXEUeCharged  =
   new TH2F(Form("hHbpXEUeCharged%s",right.Data()),"#xi = ln(1/#it{x}_{#it{E}}) for Underlying Event",
-           nptbins,ptmin,ptmax,200,0.,10.);
+           nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
   fhPtHbpXEUeCharged->SetYTitle("ln(1/#it{x}_{#it{E}})");
   fhPtHbpXEUeCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhZTUeCharged  =
   new TH2F(Form("hZTUeCharged%s",right.Data()),"#it{z}_{T} for Underlying Event",
-           nptbins,ptmin,ptmax,200,0.,2.);
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
   fhZTUeCharged->SetYTitle("#it{z}_{T}");
   fhZTUeCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
   fhPtHbpZTUeCharged  =
   new TH2F(Form("hHbpZTUeCharged%s",right.Data()),"#xi = ln(1/#it{z}_{T}) for Underlying Event",
-           nptbins,ptmin,ptmax,200,0.,10.);
+           nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
   fhPtHbpZTUeCharged->SetYTitle("ln(1/#it{x}_{#it{E}})");
   fhPtHbpZTUeCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
@@ -1488,56 +1496,56 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhXEUeLeftCharged  =
     new TH2F("hXEUeChargedLeft","#it{x}_{#it{E}} with UE left side of trigger",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEUeLeftCharged->SetYTitle("#it{x}_{#it{E} Ueh^{#pm}}");
     fhXEUeLeftCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhXEUeLeftCharged) ;
     
     fhXEUeLeftUpCharged  =
     new TH2F("hXEUeChargedLeftUp","#it{x}_{#it{E}} with UE left Up side of trigger",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEUeLeftUpCharged->SetYTitle("#it{x}_{#it{E} Ueh^{#pm}}");
     fhXEUeLeftUpCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhXEUeLeftUpCharged) ;
     
     fhXEUeRightUpCharged  =
     new TH2F("hXEUeChargedRightUp","#it{x}_{#it{E} h^{#pm}} with UE right Up side of trigger",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEUeRightUpCharged->SetYTitle("#it{z}_{trigger Ueh^{#pm}}");
     fhXEUeRightUpCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhXEUeRightUpCharged) ;
     
     fhXEUeLeftDownCharged  =
     new TH2F("hXEUeChargedLeftDown","#it{x}_{#it{E}} with UE left Down side of trigger",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEUeLeftDownCharged->SetYTitle("#it{x}_{#it{E} Ueh^{#pm}}");
     fhXEUeLeftDownCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhXEUeLeftDownCharged) ;
     
     fhXEUeRightDownCharged  =
     new TH2F("hXEUeChargedRightDown","#it{x}_{#it{E} h^{#pm}} with UE right Down side of trigger",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEUeRightDownCharged->SetYTitle("#it{z}_{trigger Ueh^{#pm}}");
     fhXEUeRightDownCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhXEUeRightDownCharged) ;
     
     fhPtHbpXEUeLeftCharged  =
     new TH2F("hHbpXEUeChargedLeft","#xi = ln(1/#it{x}_{#it{E}}) with charged UE left side of trigger",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhPtHbpXEUeLeftCharged->SetYTitle("ln(1/#it{x}_{#it{E}})");
     fhPtHbpXEUeLeftCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhPtHbpXEUeLeftCharged) ;
     
     fhZTUeLeftCharged  =
     new TH2F("hZTUeChargedLeft","#it{z}_{trigger h^{#pm}} = #it{p}_{T Ueh^{#pm}} / #it{p}_{T trigger} with UE left side of trigger",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhZTUeLeftCharged->SetYTitle("#it{z}_{trigger Ueh^{#pm}}");
     fhZTUeLeftCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhZTUeLeftCharged) ;
     
     fhPtHbpZTUeLeftCharged  =
     new TH2F("hHbpZTUeChargedLeft","#xi = ln(1/#it{z}_{T}) with charged UE left side of trigger",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhPtHbpZTUeLeftCharged->SetYTitle("ln(1/#it{z}_{T})");
     fhPtHbpZTUeLeftCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhPtHbpZTUeLeftCharged) ;
@@ -1565,25 +1573,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhXEChargedOtherBC  =
     new TH2F("hXEChargedOtherBC","#it{x}_{#it{E}} for charged tracks, track BC!=0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEChargedOtherBC->SetYTitle("#it{x}_{#it{E}}");
     fhXEChargedOtherBC->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhXEUeChargedOtherBC  =
     new TH2F("hXEUeChargedOtherBC","#it{x}_{#it{E}} for Underlying Event, track BC!=0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEUeChargedOtherBC->SetYTitle("#it{x}_{#it{E}}");
     fhXEUeChargedOtherBC->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhZTChargedOtherBC  =
     new TH2F("hZTChargedOtherBC","#it{z}_{T} for charged tracks, track BC!=0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhZTChargedOtherBC->SetYTitle("#it{z}_{T}");
     fhZTChargedOtherBC->SetXTitle("#it{p}_{T trigger}");
     
     fhZTUeChargedOtherBC  =
     new TH2F("hZTUeChargedOtherBC","#it{z}_{T} for Underlying Event, track BC!=0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhZTUeChargedOtherBC->SetYTitle("#it{z}_{T}");
     fhZTUeChargedOtherBC->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
@@ -1615,25 +1623,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhXEChargedBC0  =
     new TH2F("hXEChargedBC0","#it{x}_{#it{E}} for charged tracks, track BC==0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEChargedBC0->SetYTitle("#it{x}_{#it{E}}");
     fhXEChargedBC0->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhXEUeChargedBC0  =
     new TH2F("hXEUeChargedBC0","#it{x}_{#it{E}} for Underlying Event, track BC==0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEUeChargedBC0->SetYTitle("#it{x}_{#it{E}}");
     fhXEUeChargedBC0->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhZTChargedBC0  =
     new TH2F("hZTChargedBC0","#it{z}_{T} for charged tracks, track BC==0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhZTChargedBC0->SetYTitle("#it{z}_{T}");
     fhZTChargedBC0->SetXTitle("#it{p}_{T trigger}");
     
     fhZTUeChargedBC0  =
     new TH2F("hZTUeChargedBC0","#it{z}_{T} for Underlying Event, track BC==0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhZTUeChargedBC0->SetYTitle("#it{z}_{T}");
     fhZTUeChargedBC0->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
@@ -1668,25 +1676,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhXEChargedVtxBC0  =
     new TH2F("hXEChargedVtxBC0","#it{x}_{#it{E}} for charged tracks, track BC==0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEChargedVtxBC0->SetYTitle("#it{x}_{#it{E}}");
     fhXEChargedVtxBC0->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhXEUeChargedVtxBC0  =
     new TH2F("hXEUeChargedVtxBC0","#it{x}_{#it{E}} for Underlying Event, track BC==0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEUeChargedVtxBC0->SetYTitle("#it{x}_{#it{E}}");
     fhXEUeChargedVtxBC0->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhZTChargedVtxBC0  =
     new TH2F("hZTChargedVtxBC0","#it{z}_{T} for charged tracks, track BC==0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhZTChargedVtxBC0->SetYTitle("#it{z}_{T}");
     fhZTChargedVtxBC0->SetXTitle("#it{p}_{T trigger}");
     
     fhZTUeChargedVtxBC0  =
     new TH2F("hZTUeChargedVtxBC0","#it{z}_{T} for Underlying Event, track BC==0",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhZTUeChargedVtxBC0->SetYTitle("#it{z}_{T}");
     fhZTUeChargedVtxBC0->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
@@ -1736,28 +1744,28 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       
       fhXEChargedPileUp[i]  = new TH2F(Form("hXEChargedPileUp%s",pileUpName[i].Data()),
                                        Form("#it{x}_{#it{E}} for charged tracks, %s Pile-Up event",pileUpName[i].Data()),
-                                       nptbins,ptmin,ptmax,200,0.,2.);
+                                       nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhXEChargedPileUp[i]->SetYTitle("#it{x}_{#it{E}}");
       fhXEChargedPileUp[i]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       outputContainer->Add(fhXEChargedPileUp[i]) ;
       
       fhXEUeChargedPileUp[i]  = new TH2F(Form("hXEUeChargedPileUp%s",pileUpName[i].Data()),
                                          Form("#it{x}_{#it{E}} for Underlying Event, %s Pile-Up event",pileUpName[i].Data()),
-                                         nptbins,ptmin,ptmax,200,0.,2.);
+                                         nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhXEUeChargedPileUp[i]->SetYTitle("#it{x}_{#it{E}}");
       fhXEUeChargedPileUp[i]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       outputContainer->Add(fhXEUeChargedPileUp[i]) ;
       
       fhZTChargedPileUp[i]  = new TH2F(Form("hZTChargedPileUp%s",pileUpName[i].Data()),
                                        Form("#it{z}_{T} for charged tracks, %s Pile-Up event",pileUpName[i].Data()),
-                                       nptbins,ptmin,ptmax,200,0.,2.);
+                                       nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhZTChargedPileUp[i]->SetYTitle("#it{z}_{T}");
       fhZTChargedPileUp[i]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       outputContainer->Add(fhZTChargedPileUp[i]) ;
       
       fhZTUeChargedPileUp[i]  = new TH2F(Form("hZTUeChargedPileUp%s",pileUpName[i].Data()),
                                          Form("#it{z}_{T} for Underlying Event, %s Pile-Up event",pileUpName[i].Data()),
-                                         nptbins,ptmin,ptmax,200,0.,2.);
+                                         nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhZTUeChargedPileUp[i]->SetYTitle("#it{z}_{T}");
       fhZTUeChargedPileUp[i]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       outputContainer->Add(fhZTUeChargedPileUp[i]) ;
@@ -1795,22 +1803,22 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       fhDeltaEtaChargedMult[im]->SetYTitle("#Delta #eta");
       
       fhXEMult[im]  = new TH2F
-      (Form("hXECharged_Mult%d",im),Form("#it{x}_{E} charged Mult bin %d",im), nptbins,ptmin,ptmax,200,0.,2.);
+      (Form("hXECharged_Mult%d",im),Form("#it{x}_{E} charged Mult bin %d",im), nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhXEMult[im]->SetYTitle("#it{x}_{E}");
       fhXEMult[im]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       
       fhXEUeMult[im]  = new TH2F
-      (Form("hXEUeCharged_Mult%d",im),Form("#it{x}_{E} UE charged Mult bin %d",im), nptbins,ptmin,ptmax,200,0.,2.);
+      (Form("hXEUeCharged_Mult%d",im),Form("#it{x}_{E} UE charged Mult bin %d",im), nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhXEUeMult[im]->SetYTitle("#it{x}_{E}");
       fhXEUeMult[im]->SetXTitle("#it{p}_{T trigger}(GeV/#it{c})");
       
       fhZTMult[im]  = new TH2F
-      (Form("hZTCharged_Mult%d",im),Form("#it{z}_{T} charged  Mult bin %d",im), nptbins,ptmin,ptmax,200,0.,2.);
+      (Form("hZTCharged_Mult%d",im),Form("#it{z}_{T} charged  Mult bin %d",im), nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhZTMult[im]->SetYTitle("#it{z}_{T}");
       fhZTMult[im]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       
       fhZTUeMult[im]  = new TH2F
-      (Form("hZTUeCharged_Mult%d",im),Form("#it{z}_{T} UE charged  Mult bin %d",im), nptbins,ptmin,ptmax,200,0.,2.);
+      (Form("hZTUeCharged_Mult%d",im),Form("#it{z}_{T} UE charged  Mult bin %d",im), nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhZTUeMult[im]->SetYTitle("#it{z}_{T}");
       fhZTUeMult[im]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       
@@ -1901,13 +1909,13 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       
       fhXEAssocPtBin[bin]       = new TH2F(Form("hXEAssocPtBin%1.f_%1.f%s", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
                                            Form("#it{x}_{#it{E}} vs #it{p}_{T trigger} for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
-                                           nptbins, ptmin, ptmax,200, 0.0, 2.0);
+                                           nptbins, ptmin, ptmax,nxeztbins,xeztmin,xeztmax);
       fhXEAssocPtBin[bin]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       fhXEAssocPtBin[bin]->SetYTitle("#it{x}_{#it{E}}");
       
       fhZTAssocPtBin[bin]       = new TH2F(Form("hZTAssocPtBin%1.f_%1.f%s", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
                                            Form("#it{z}_{T} vs #it{p}_{T trigger} for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
-                                           nptbins, ptmin, ptmax,200, 0.0, 2.0);
+                                           nptbins, ptmin, ptmax,nxeztbins,xeztmin,xeztmax);
       fhZTAssocPtBin[bin]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       fhZTAssocPtBin[bin]->SetYTitle("#it{z}_{T}");
       
@@ -1979,13 +1987,13 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhXEDecayCharged  =
     new TH2F("hXEDecayCharged","#it{x}_{#it{E}}  Decay",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEDecayCharged->SetYTitle("#it{x}_{#it{E}}");
     fhXEDecayCharged->SetXTitle("#it{p}_{T decay} (GeV/#it{c})");
     
     fhZTDecayCharged  =
     new TH2F("hZTDecayCharged","#it{z}_{trigger h^{#pm}} = #it{p}_{T h^{#pm}} / #it{p}_{T Decay}",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhZTDecayCharged->SetYTitle("#it{z}_{decay h^{#pm}}");
     fhZTDecayCharged->SetXTitle("#it{p}_{T decay} (GeV/#it{c})");
     
@@ -2035,25 +2043,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhXENeutral  =
     new TH2F("hXENeutral","#it{x}_{#it{E}} for #pi^{0} associated",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXENeutral->SetYTitle("#it{x}_{#it{E}}");
     fhXENeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhPtHbpXENeutral  =
     new TH2F("hHbpXENeutral","#xi = ln(1/#it{x}_{#it{E}})for #pi^{0} associated",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhPtHbpXENeutral->SetYTitle("ln(1/#it{x}_{#it{E}})");
     fhPtHbpXENeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhZTNeutral  =
     new TH2F("hZTNeutral","#it{z}_{trigger #pi} = #it{p}_{T #pi^{0}} / #it{p}_{T trigger} for #pi^{0} associated",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhZTNeutral->SetYTitle("#it{z}_{trigger #pi^{0}}");
     fhZTNeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhPtHbpZTNeutral  =
     new TH2F("hHbpZTNeutral","#xi = ln(1/#it{x}_{#it{E}}) for #pi^{0} associated",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhPtHbpZTNeutral->SetYTitle("ln(1/#it{z}_{T})");
     fhPtHbpZTNeutral->SetXTitle("#it{p}_{T trigger}");
     
@@ -2076,25 +2084,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhXEUeNeutral  =
     new TH2F(Form("hXEUeNeutral%s",right.Data()),"#it{x}_{#it{E}} for #pi^{0} associated",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhXEUeNeutral->SetYTitle("#it{x}_{#it{E}}");
     fhXEUeNeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhPtHbpXEUeNeutral  =
     new TH2F(Form("hHbpXEUeNeutral%s",right.Data()),"#xi = ln(1/#it{x}_{#it{E}}) for #pi^{0} associated",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhPtHbpXEUeNeutral->SetYTitle("ln(1/#it{x}_{#it{E}})");
     fhPtHbpXEUeNeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhZTUeNeutral  =
     new TH2F(Form("hZTUeNeutral%s",right.Data()),"#it{z}_{trigger #pi} = #it{p}_{T #pi^{0}} / #it{p}_{T trigger} for #pi^{0} associated",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhZTUeNeutral->SetYTitle("#it{z}_{trigger #pi^{0}}");
     fhZTUeNeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhPtHbpZTUeNeutral  =
     new TH2F(Form("hHbpZTUeNeutral%s",right.Data()),"#xi = ln(1/#it{x}_{#it{E}}) for #pi^{0} associated",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhPtHbpXEUeNeutral->SetYTitle("ln(1/#it{z}_{T})");
     fhPtHbpXEUeNeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
 
@@ -2115,28 +2123,28 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       
       fhXEUeLeftNeutral  =
       new TH2F("hXEUeNeutralLeft","#it{x}_{#it{E}} = #it{p}_{T Ueh^{0}} / #it{p}_{T trigger} with neutral UE left side of trigger",
-               nptbins,ptmin,ptmax,140,0.,2.);
+               nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhXEUeLeftNeutral->SetYTitle("#it{z}_{trigger Ueh^{0}}");
       fhXEUeLeftNeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       outputContainer->Add(fhXEUeLeftNeutral) ;
       
       fhPtHbpXEUeLeftNeutral  =
       new TH2F("hHbpXEUeNeutralLeft","#xi = ln(1/#it{x}_{#it{E}}) with neutral UE left side of trigger",
-               nptbins,ptmin,ptmax,200,0.,10.);
+               nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
       fhPtHbpXEUeLeftNeutral->SetYTitle("ln(1/#it{x}_{#it{E}})");
       fhPtHbpXEUeLeftNeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       outputContainer->Add(fhPtHbpXEUeLeftNeutral) ;
       
       fhZTUeLeftNeutral  =
       new TH2F("hZTUeNeutralLeft","#it{z}_{trigger h^{0}} = #it{p}_{T Ueh^{0}} / #it{p}_{T trigger} with neutral UE left side of trigger",
-               nptbins,ptmin,ptmax,140,0.,2.);
+               nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhZTUeLeftNeutral->SetYTitle("#it{z}_{trigger Ueh^{0}}");
       fhZTUeLeftNeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       outputContainer->Add(fhZTUeLeftNeutral) ;
       
       fhPtHbpZTUeLeftNeutral  =
       new TH2F("hHbpZTUeNeutralLeft","#xi = ln(1/#it{z}_{T}) with neutral UE left side of trigger",
-               nptbins,ptmin,ptmax,200,0.,10.);
+               nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
       fhPtHbpZTUeLeftNeutral->SetYTitle("ln(1/#it{z}_{T})");
       fhPtHbpZTUeLeftNeutral->SetXTitle("#it{p}_{T trigger}");
       outputContainer->Add(fhPtHbpZTUeLeftNeutral) ;
@@ -2152,13 +2160,13 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       
       fhXEDecayNeutral  =
       new TH2F("hXEDecayNeutral","#it{x}_{#it{E}} for decay trigger",
-               nptbins,ptmin,ptmax,200,0.,2.);
+               nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhXEDecayNeutral->SetYTitle("#it{x}_{#it{E}}");
       fhXEDecayNeutral->SetXTitle("#it{p}_{T decay}");
       
       fhZTDecayNeutral  =
       new TH2F("hZTDecayNeutral","#it{z}_{trigger h^{0}} = #it{p}_{T h^{0}} / #it{p}_{T Decay}",
-               nptbins,ptmin,ptmax,200,0.,2.);
+               nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhZTDecayNeutral->SetYTitle("#it{z}_{h^{0}}");
       fhZTDecayNeutral->SetXTitle("#it{p}_{T decay}");
       
@@ -2213,7 +2221,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhMCPhiCharged  = new TH2F
     ("hMCPhiCharged","#MC phi_{h^{#pm}}  vs #it{p}_{T #pm}",
-     200,ptmin,ptmax,nphibins,phimin,phimax);
+     nptbins,ptmin,ptmax,nphibins,phimin,phimax);
     fhMCPhiCharged->SetYTitle("MC #phi_{h^{#pm}} (rad)");
     fhMCPhiCharged->SetXTitle("#it{p}_{T #pm} (GeV/#it{c})");
     
@@ -2243,25 +2251,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhMCPtXECharged  =
     new TH2F("hMCPtXECharged","#it{x}_{#it{E}} with charged hadrons",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhMCPtXECharged->SetYTitle("#it{x}_{#it{E}}");
     fhMCPtXECharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhMCPtHbpXECharged  =
     new TH2F("hMCHbpXECharged","MC #xi = ln(1/#it{x}_{#it{E}}) with charged hadrons",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhMCPtHbpXECharged->SetYTitle("ln(1/#it{x}_{#it{E}})");
     fhMCPtHbpXECharged->SetXTitle("#it{p}_{T trigger}");
     
     fhMCPtZTCharged  =
     new TH2F("hMCPtZTCharged","#it{z}_{T} with charged hadrons",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhMCPtZTCharged->SetYTitle("#it{z}_{T}");
     fhMCPtZTCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhMCPtHbpZTCharged  =
     new TH2F("hMCHbpZTCharged","MC #xi = ln(1/#it{z}_{T}) with charged hadrons",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhMCPtHbpZTCharged->SetYTitle("ln(1/#it{z}_{T})");
     fhMCPtHbpZTCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
@@ -2313,25 +2321,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhMCPtXEUeCharged  =
     new TH2F(Form("hMCPtXEUeCharged%s",right.Data()),"#it{x}_{#it{E}} with charged hadrons, Underlying Event",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhMCPtXEUeCharged->SetYTitle("#it{x}_{#it{E}}");
     fhMCPtXEUeCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhMCPtHbpXEUeCharged =
     new TH2F(Form("hMCPtHbpXEUeCharged%s",right.Data()),"#xi = ln(1/#it{x}_{#it{E}}) with charged hadrons, Underlying Event",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhMCPtHbpXEUeCharged->SetYTitle("ln(1/#it{x}_{#it{E}})");
     fhMCPtHbpXEUeCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
 
     fhMCPtZTUeCharged =
     new TH2F(Form("hMCPtZTUeCharged%s",right.Data()),"#it{z}_{T} with charged hadrons, Underlying Event",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhMCPtZTUeCharged->SetYTitle("#it{z}_{T}");
     fhMCPtZTUeCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
     fhMCPtHbpZTUeCharged =
     new TH2F(Form("hMCPtHbpZTUeCharged%s",right.Data()),"#xi = ln(1/#it{z}_{T}) with charged hadrons, Underlying Event",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhMCPtHbpZTUeCharged->SetYTitle("ln(1/#it{z}_{T})");
     fhMCPtHbpZTUeCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
@@ -2345,26 +2353,26 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     {
       fhMCPtXEUeLeftCharged  =
       new TH2F("hMCPtXEUeChargedLeft","#it{x}_{#it{E}} with charged hadrons, with UE left side range of trigger particles",
-               nptbins,ptmin,ptmax,200,0.,2.);
+               nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhMCPtXEUeLeftCharged->SetYTitle("#it{x}_{#it{E}}");
       fhMCPtXEUeLeftCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       
       
       fhMCPtHbpXEUeLeftCharged =
       new TH2F("hMCPtHbpXEUeChargedLeft","#xi = ln(1/#it{x}_{#it{E}}) with charged hadrons, with UE left side range of trigger particles",
-               nptbins,ptmin,ptmax,200,0.,10.);
+               nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
       fhMCPtHbpXEUeLeftCharged->SetYTitle("ln(1/#it{x}_{#it{E}})");
       fhMCPtHbpXEUeLeftCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       
       fhMCPtZTUeLeftCharged  =
       new TH2F("hMCPtZTUeChargedLeft","#it{z}_{T} with charged hadrons, with UE left side range of trigger particles",
-               nptbins,ptmin,ptmax,200,0.,2.);
+               nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
       fhMCPtZTUeLeftCharged->SetYTitle("#it{z}_{T}");
       fhMCPtZTUeLeftCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       
       fhMCPtHbpZTUeLeftCharged =
       new TH2F("hMCPtHbpZTUeChargedLeft","#xi = ln(1/#it{z}_{T}) with charged hadrons, with UE left side range of trigger particles",
-               nptbins,ptmin,ptmax,200,0.,10.);
+               nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
       fhMCPtHbpZTUeLeftCharged->SetYTitle("ln(1/#it{z}_{T})");
       fhMCPtHbpZTUeLeftCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
       
@@ -2473,21 +2481,29 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhEventBin=new TH1I("hEventBin","Number of real events per bin(cen,vz,rp)",
                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
-    fhEventBin->SetXTitle("bin");
+    fhEventBin->SetXTitle("event bin");
     outputContainer->Add(fhEventBin) ;
     
     fhEventMixBin=new TH1I("hEventMixBin","Number of events  per bin(cen,vz,rp)",
                            GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
                            GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
-    fhEventMixBin->SetXTitle("bin");
+    fhEventMixBin->SetXTitle("event bin");
     outputContainer->Add(fhEventMixBin) ;
     
-    fhNtracksMB=new TH1F("hNtracksMBEvent","Number of tracks w/ event trigger kMB",2000,0,2000);
+    fhNtracksMB=new TH2F("hNtracksMBEvent","Number of filtered tracks in MB event per event bin",ntrbins,trmin,trmax,
+                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
+                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
+    fhNtracksMB->SetYTitle("event bin");
+    fhNtracksMB->SetXTitle("#it{N}_{track}");
     outputContainer->Add(fhNtracksMB);
-    
+
     if(fFillNeutralEventMixPool || OnlyIsolated())
     {
-      fhNclustersMB=new TH1F("hNclustersMBEvent","Number of clusters w/ event trigger kMB",2000,0,2000);
+      fhNclustersMB=new TH2F("hNclustersMBEvent","Number of filtered clusters in MB events per event bin",nclbins,clmin,clmax,
+                             GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
+                             GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
+      fhNclustersMB->SetYTitle("event bin");
+      fhNclustersMB->SetXTitle("#it{N}_{cluster}");
       outputContainer->Add(fhNclustersMB);
     }
     
@@ -2507,21 +2523,21 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhMixXECharged  =
     new TH2F("hMixXECharged","Mixed event : #it{x}_{#it{E}} for charged tracks",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhMixXECharged->SetYTitle("#it{x}_{#it{E}}");
     fhMixXECharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhMixXECharged);
     
     fhMixXEUeCharged  =
     new TH2F("hMixXEUeCharged","Mixed event : #it{x}_{#it{E}} for charged tracks in Ue region",
-             nptbins,ptmin,ptmax,200,0.,2.);
+             nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
     fhMixXEUeCharged->SetYTitle("#it{x}_{#it{E}}");
     fhMixXEUeCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhMixXEUeCharged);
     
     fhMixHbpXECharged  =
     new TH2F("hMixHbpXECharged","mixed event : #xi = ln(1/#it{x}_{#it{E}}) with charged hadrons",
-             nptbins,ptmin,ptmax,200,0.,10.);
+             nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
     fhMixHbpXECharged->SetYTitle("ln(1/#it{x}_{#it{E}})");
     fhMixHbpXECharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     outputContainer->Add(fhMixHbpXECharged);
