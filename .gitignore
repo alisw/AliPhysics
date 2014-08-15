@@ -2,6 +2,8 @@
 AliRootProject/
 *.DS_Store
 *.xworkspace
+xAliRoot/
+*.xcodeproj
 
 # Compiled Object files
 *.slo
