@@ -490,7 +490,9 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
   }
   if (fTrdTracks) {
     // no pointers in there, so cheaper Clear suffices
-    fTrdTracks->Clear("C");
+//    fTrdTracks->Clear("C");
+    // Not quite: AliAODTrdTrack has a clones array of tracklets inside
+    fTrdTracks->Delete();
     if (nTrdTracks > fTrdTracks->GetSize())
       fTrdTracks->Expand(nTrdTracks);
   }
