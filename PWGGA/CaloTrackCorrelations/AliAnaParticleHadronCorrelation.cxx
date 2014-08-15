@@ -1392,7 +1392,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   fhPtTrigPout  =
   new TH2F("hPtTrigPout","Pout with triggers",
-           nptbins,ptmin,ptmax,nptbins,-ptmax/2,ptmax/2);
+           nptbins,ptmin,ptmax,nptbins,-1.*ptmax/2.,ptmax/2.);
   fhPtTrigPout->SetYTitle("#it{p}_{out} (GeV/#it{c})");
   fhPtTrigPout->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
@@ -2357,7 +2357,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhMCPtTrigPout  =
     new TH2F("hMCPtTrigPout","AOD MC Pout with triggers",
-             nptbins,ptmin,ptmax,2*nptbins,-ptmax,ptmax);
+             nptbins,ptmin,ptmax,nptbins,-1.*ptmax/2.,ptmax/2.);
     fhMCPtTrigPout->SetYTitle("#it{p}_{out} (GeV/#it{c})");
     fhMCPtTrigPout->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
