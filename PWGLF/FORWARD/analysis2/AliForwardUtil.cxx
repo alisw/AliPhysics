@@ -97,7 +97,7 @@ ULong_t AliForwardUtil::AliROOTBranch()
     static_cast<TObjString*>(tokens->At(3)) : 0;
   TString sMajor,sMinor,sRelea;
   if (pMajor) sMajor = pMajor->String().Strip(TString::kLeading, '0'); 
-  if (pMinor) sMinor = pMinor->String().Strip(TString::kLeading, '0');;
+  if (pMinor) sMinor = pMinor->String().Strip(TString::kLeading, '0');
   if (pRelea) sRelea = pRelea->String().Strip(TString::kLeading, '0');
   //
   ret = (((sMajor.Atoi() & 0xFF) << 12) |
