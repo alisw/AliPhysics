@@ -18,9 +18,10 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   //
   AliSysInfo::SetVerbose(kTRUE);
   AliLog::SetGlobalLogLevel(AliLog::kError); 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
   gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C");
+  gSystem->SetIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS -g"); 
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
 
   // detector tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C");
@@ -63,6 +64,8 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   AliAnalysisManager *mgr  = new AliAnalysisManager("ESD to ESD", "Analysis Manager");
   // mgr->SetDebugLevel(3);
   mgr->SetNSysInfo(50);   
+  mgr->SetCacheSize(0);
+
   // Input
   AliESDInputHandler* inpHandler = new AliESDInputHandler();
   inpHandler->SetReadFriends(1);
