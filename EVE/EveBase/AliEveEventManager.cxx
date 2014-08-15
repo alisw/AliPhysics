@@ -10,6 +10,8 @@
 #include "AliEveEventManager.h"
 #include "AliEveEventSelector.h"
 #include "AliEveMacroExecutor.h"
+#include "AliEveConfigManager.h"
+#include "AliEveVSDCreator.h"
 
 #include <THashList.h>
 #include <TEveElement.h>
@@ -119,87 +121,6 @@ Bool_t   AliEveEventManager::fgUniformField = kFALSE;
 AliEveEventManager* AliEveEventManager::fgMaster  = 0;
 AliEveEventManager* AliEveEventManager::fgCurrent = 0;
 
-void AliEveEventManager::GetNextEvent()
-{
-#ifdef ZMQ
-  AliStorageEventManager *eventManager =
-    AliStorageEventManager::GetEventManagerInstance();
-  eventManager->CreateSocket(EVENTS_SERVER_SUB);
-
-  fCurrentEvent[0]=0;
-  fCurrentEvent[1]=0;
-  fCurrentTree[0]=0;
-  fCurrentTree[1]=0;
-  AliESDEvent *tmpEvent = NULL;
-  TTree *tmpTree = NULL;
-  
-  while(1)
-  {
-    //if(tmpEvent){delete tmpEvent;tmpEvent=0;}
-    tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,-1,&tmpTree);
-
-    if(tmpEvent)
-    {
-      if(tmpEvent->GetRunNumber()>=0)
-      {
-        fMutex.Lock();
-        if(fEventInUse == 0){fWritingToEventIndex = 1;}
-        else if(fEventInUse == 1){fWritingToEventIndex = 0;}
-        cout<<"Writing to:"<<fWritingToEventIndex<<endl;
-        if(fCurrentEvent[fWritingToEventIndex])
-        {
-          cout<<"DELETING:"<<fCurrentEvent[fWritingToEventIndex]<<endl;
-          delete fCurrentEvent[fWritingToEventIndex];
-          fCurrentEvent[fWritingToEventIndex]=0;
-          delete fCurrentTree[fWritingToEventIndex];
-        }
-        fCurrentEvent[fWritingToEventIndex] = tmpEvent;
-        fCurrentTree[fWritingToEventIndex] = tmpTree;
-        fIsNewEventAvaliable = true;
-        fMutex.UnLock();
-      }
-    }	
-  }
-#endif
-}
-
-void AliEveEventManager::InitInternals()
-{
-    // Initialize internal members.
-
-    static const TEveException kEH("AliEveEventManager::InitInternals ");
-
-    if (fgCurrent != 0)
-    {
-        throw(kEH + "Dependent event-managers should be created via static method AddDependentManager().");
-    }
-
-    if (fgMaster == 0)
-    {
-        fgMaster = this;
-    }
-
-    fgCurrent = this;
-
-    fAutoLoadTimer = new TTimer;
-    fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "AutoLoadNextEvent()");
-    fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "Timeout()");
-
-    fExecutor = new AliEveMacroExecutor;
-
-    fTransients = new TEveElementList("Transients", "Transient per-event elements.");
-    fTransients->IncDenyDestroy();
-    gEve->AddToListTree(fTransients, kFALSE);
-
-    fTransientLists = new TEveElementList("Transient Lists", "Containers of transient elements.");
-    fTransientLists->IncDenyDestroy();
-    gEve->AddToListTree(fTransientLists, kFALSE);
-
-    fPEventSelector = new AliEveEventSelector(this);
-
-    fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
-}
-
 AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     TEveEventManager(name, ""),
     fEventId(-1),
@@ -232,8 +153,11 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     
 #ifdef ZMQ
     cout<<"ZMQ FOUND. Starting subscriber thread."<<endl;
-    fGetEventThread = new TThread("fGetEventThread",Dispatch,(void*)this);
-    fGetEventThread->Run();
+    fEventListenerThread = new TThread("fEventListenerThread",DispatchEventListener,(void*)this);
+    fEventListenerThread->Run();
+    
+    fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
+    fStorageManagerWatcherThread->Run();
 #else
     cout<<"NO ZMQ FOUND. Online events not avaliable."<<endl;
 #endif
@@ -259,6 +183,118 @@ AliEveEventManager::~AliEveEventManager()
     fTransientLists->Destroy();
 
     //delete fExecutor;
+}
+
+void AliEveEventManager::GetNextEvent()
+{
+#ifdef ZMQ
+    AliStorageEventManager *eventManager =
+    AliStorageEventManager::GetEventManagerInstance();
+    eventManager->CreateSocket(EVENTS_SERVER_SUB);
+    
+    fCurrentEvent[0]=0;
+    fCurrentEvent[1]=0;
+    fCurrentTree[0]=0;
+    fCurrentTree[1]=0;
+    AliESDEvent *tmpEvent = NULL;
+    TTree *tmpTree = NULL;
+    
+    while(1)
+    {
+        //if(tmpEvent){delete tmpEvent;tmpEvent=0;}
+        tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,-1,&tmpTree);
+        
+        if(tmpEvent)
+        {
+            if(tmpEvent->GetRunNumber()>=0)
+            {
+                fMutex.Lock();
+                if(fEventInUse == 0){fWritingToEventIndex = 1;}
+                else if(fEventInUse == 1){fWritingToEventIndex = 0;}
+                cout<<"Writing to:"<<fWritingToEventIndex<<endl;
+                if(fCurrentEvent[fWritingToEventIndex])
+                {
+                    cout<<"DELETING:"<<fCurrentEvent[fWritingToEventIndex]<<endl;
+                    delete fCurrentEvent[fWritingToEventIndex];
+                    fCurrentEvent[fWritingToEventIndex]=0;
+                    delete fCurrentTree[fWritingToEventIndex];
+                }
+                fCurrentEvent[fWritingToEventIndex] = tmpEvent;
+                fCurrentTree[fWritingToEventIndex] = tmpTree;
+                fIsNewEventAvaliable = true;
+                fMutex.UnLock();
+            }
+        }
+    }
+#endif
+}
+
+void AliEveEventManager::CheckStorageStatus()
+{
+#ifdef ZMQ
+    AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
+    configManager->ConnectEventManagerSignals();
+    
+    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
+    eventManager->CreateSocket(CLIENT_COMMUNICATION_REQ);
+    
+    struct clientRequestStruct *request = new struct clientRequestStruct;
+    request->messageType = REQUEST_CONNECTION;
+    
+    while (1)
+    {
+        if(eventManager->Send(request,CLIENT_COMMUNICATION_REQ,5000))
+        {
+            StorageManagerOk();
+            cout<<"WARNING -- Storage Manager is OK."<<endl;
+            long response = eventManager->GetLong(CLIENT_COMMUNICATION_REQ);
+            cout<<"RESPONSE:"<<response<<endl;
+        }
+        else
+        {
+            StorageManagerDown();
+            cout<<"WARNING -- Storage Manager is DOWN!!"<<endl;
+        }
+        sleep(1);
+    }
+#endif
+}
+
+void AliEveEventManager::InitInternals()
+{
+    // Initialize internal members.
+    
+    static const TEveException kEH("AliEveEventManager::InitInternals ");
+    
+    if (fgCurrent != 0)
+    {
+        throw(kEH + "Dependent event-managers should be created via static method AddDependentManager().");
+    }
+    
+    if (fgMaster == 0)
+    {
+        fgMaster = this;
+    }
+    
+    fgCurrent = this;
+    
+    fAutoLoadTimer = new TTimer;
+    fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "AutoLoadNextEvent()");
+    fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "Timeout()");
+    
+    fExecutor = new AliEveMacroExecutor;
+    
+    fTransients = new TEveElementList("Transients", "Transient per-event elements.");
+    fTransients->IncDenyDestroy();
+    gEve->AddToListTree(fTransients, kFALSE);
+    
+    fTransientLists = new TEveElementList("Transient Lists", "Containers of transient elements.");
+    fTransientLists->IncDenyDestroy();
+    gEve->AddToListTree(fTransientLists, kFALSE);
+    
+    fPEventSelector = new AliEveEventSelector(this);
+    
+    fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
 }
 
 /******************************************************************************/
@@ -498,11 +534,15 @@ void AliEveEventManager::Open()
     }
 
     // Open RunLoader from galice.root
+//    fgGAliceFileName = "/Users/Jerus/galice.root"; // temp
+    
     TFile *gafile = TFile::Open(fgGAliceFileName);
+    cout<<"Opening galice"<<endl;
     if (gafile)
     {
         gafile->Close();
         delete gafile;
+        cout<<"SETTING RUN LOADER in Open()"<<endl;
         fRunLoader = AliRunLoader::Open(fgGAliceFileName, GetName());
         if (fRunLoader)
         {
@@ -1041,8 +1081,15 @@ void AliEveEventManager::NextEvent()
     }
     
     gSystem->ProcessEvents();
-
-    //if(fGetEventThread){delete fGetEventThread;fGetEventThread=0;}
+    
+    /*
+    cout<<"VSD"<<endl;
+    AliEveVSDCreator *vsdCreator = new AliEveVSDCreator();
+    cout<<"contructor called"<<endl;
+    vsdCreator->CreateVSD("myVSD.root");
+    cout<<"PO"<<endl;
+*/
+    //if(fEventListenerThread){delete fEventListenerThread;fEventListenerThread=0;}
 }
 
 void AliEveEventManager::PrevEvent()
@@ -1742,15 +1789,22 @@ void AliEveEventManager::AfterNewEventLoaded()
 void AliEveEventManager::NewEventDataLoaded()
 {
     // Emit NewEventDataLoaded signal.
-
     Emit("NewEventDataLoaded()");
 }
-
 void AliEveEventManager::NewEventLoaded()
 {
     // Emit NewEventLoaded signal.
-
     Emit("NewEventLoaded()");
+}
+void AliEveEventManager::StorageManagerOk()
+{
+    // Emit StorageManagerOk signal.
+    Emit("StorageManagerOk()");
+}
+void AliEveEventManager::StorageManagerDown()
+{
+    // Emit StorageManagerOk signal.
+    Emit("StorageManagerDown()");
 }
 
 

@@ -244,6 +244,13 @@ const char *gPictureSaveAsTypes[] = {"PNG Image", "*.png",
 
 }
 
+void AliEveConfigManager::ConnectEventManagerSignals()
+{
+    AliEveEventManager *manager = AliEveEventManager::GetCurrent();
+    manager->Connect("StorageManagerOk()","AliEveConfigManager",this,"StorageManagerChangedState(=1)");
+    manager->Connect("StorageManagerDown()","AliEveConfigManager",this,"StorageManagerChangedState(=0)");
+}
+
 void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 {
   // Handle user selections from AliEve popup.
@@ -1035,33 +1042,31 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
     }
 */
-  case kStorageListEvents:
-  {
+      case kStorageListEvents:
+      {
 #ifdef ZMQ
-      fListEventsWindow =
-		  AliStorageAdministratorPanelListEvents::GetInstance();
-      
-      fListEventsWindow->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
-#endif      
-      
-	  break;
-
-  }
-   case kStorageMarkEvent:
-  {
-#ifdef ZMQ
-	  AliStorageAdministratorPanelMarkEvent *markEventWindow =
-		  AliStorageAdministratorPanelMarkEvent::GetInstance();
+          fListEventsWindow =
+          AliStorageAdministratorPanelListEvents::GetInstance();
+          
+          fListEventsWindow->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
 #endif
-	  break;
-
-  }
-
-    default:
-    {
-      Warning(kEH, "Unknown menu entry.");
-      break;
-    }
+          break;
+          
+      }
+      case kStorageMarkEvent:
+      {
+#ifdef ZMQ
+          AliStorageAdministratorPanelMarkEvent *markEventWindow =
+          AliStorageAdministratorPanelMarkEvent::GetInstance();
+#endif
+          break;
+      }
+          
+      default:
+      {
+          Warning(kEH, "Unknown menu entry.");
+          break;
+      }
   }
 }
 
@@ -1077,7 +1082,20 @@ void AliEveConfigManager::SetEventInEventManager()
         manager->SetAutoLoad(kFALSE);
         manager->PrepareForNewEvent(event);
     }
-    
+}
+
+void AliEveConfigManager::StorageManagerChangedState(int state)
+{
+    if (state == 0)// storage manager is down
+    {
+        fStoragePopup->DisableEntry(kStorageListEvents);
+        fStoragePopup->DisableEntry(kStorageMarkEvent);
+    }
+    else if(state == 1)// storage manager is alive
+    {
+        fStoragePopup->EnableEntry(kStorageListEvents);
+        fStoragePopup->EnableEntry(kStorageMarkEvent);
+    }
 }
 
 
