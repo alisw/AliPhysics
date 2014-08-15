@@ -68,7 +68,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   
   // General frame setting and configuration
   maker->SetReader   (ConfigureReader   (mgr->GetInputEventHandler()->GetDataType(),useKinematics,simu,
-                                         calorimeter,nonlin, timecut,minCen, maxCen, debug,print));
+                                         calorimeter,nonlin, timecut, primvtx, notrackcut,minCen, maxCen, debug,print));
   maker->SetCaloUtils(ConfigureCaloUtils(nonlin,exotic,simu,timecut,debug,print));
   
   // Analysis tasks setting and configuration
@@ -141,8 +141,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
 //____________________________________
 AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKinematics = kFALSE, Bool_t simu = kFALSE,
                                      TString calorimeter = "EMCAL", Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
-                                     Float_t minCen = -1, Float_t maxCen = -1,
-                                     Int_t debug = -1, Bool_t print = kFALSE)
+                                     Bool_t primvtx = kFALSE, Bool_t notrackcut = kFALSE, Float_t minCen = -1, 
+                                     Float_t maxCen = -1, Int_t debug = -1, Bool_t print = kFALSE)
 {
   // Init reader settings: event selection, basic cluster track cuts, etc
   
