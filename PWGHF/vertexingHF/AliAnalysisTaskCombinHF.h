@@ -186,16 +186,18 @@ private:
   Bool_t fUsePoolsZ; // flag for using pools in z vertex
   Bool_t fUsePoolsM; // flag for using pools in multiplicity
   Int_t fNzVertPools; // number of pools in z vertex for event mixing
-  Double_t* fzVertPoolLims; //[fNzVertPools+1] limits of the pools in zVertex
+  Int_t fNzVertPoolsLimSize; // number of pools in z vertex for event mixing +1
+  Double_t* fzVertPoolLims; //[fNzVertPoolsLimSize] limits of the pools in zVertex
   Int_t fNMultPools; // number of pools in multiplicity for event mixing
-  Double_t* fMultPoolLims; //[fNMultPools+1] limits of the pools in multiplicity
+  Int_t fNMultPoolsLimSize; // number of pools in multiplicity for event mixing +1
+  Double_t* fMultPoolLims; //[fNMultPoolsLimSize] limits of the pools in multiplicity
 
   TTree* fEventBuffer;    // structure for event mixing
   Double_t fVtxZ;         // zVertex
   Double_t fMultiplicity; // multiplicity
   TObjArray* fKaonTracks; // array of kaon-compatible tracks (TLorentzVectors)
   TObjArray* fPionTracks; // array of pion-compatible tracks (TLorentzVectors)  
-  ClassDef(AliAnalysisTaskCombinHF,6); // D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,7); // D0D+ task from AOD tracks
 };
 
 #endif
