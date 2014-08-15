@@ -1,8 +1,8 @@
 // ### Settings that make sense when using the Alien plugin
 //==============================================================================
-Int_t       runOnData          = 0;       // Set to 1 if processing real data
+Int_t       runOnData          = 1;       // Set to 1 if processing real data
 Int_t       iCollision         = 0;       // 0=pp, 1=Pb-Pb
-Int_t       run_flag           = 1100;    // year (2011 = 1100)
+Int_t       run_flag           = 1000;    // year (2010 pp)
 //==============================================================================
 Bool_t      doCDBconnect        =1;
 Bool_t      usePhysicsSelection = kTRUE; // use physics selection
@@ -15,13 +15,12 @@ Bool_t      useKFILTER          = kFALSE;  // use Kinematics filter
 Bool_t      useTR               = kFALSE;  // use track references
 Bool_t      useCORRFW           = kFALSE; // do not change
 Bool_t      useAODTAGS          = kFALSE; // use AOD tags
-Bool_t      useSysInfo          = kFALSE; // use sys info
+Bool_t      useSysInfo          = kTRUE; // use sys info
 
 // ### Analysis modules to be included. Some may not be yet fully implemented.
 //==============================================================================
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
-Int_t       iESDfilterReVtx    = -1;     // Request revertexing in ESD filtering
 Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in a separate AOD (PWG3)
 Int_t       iJETAN             = 0;      // Jet analysis (PWG4)
 Int_t       iJETANdelta        = 0;      // Jet delta AODs
@@ -37,16 +36,7 @@ Bool_t doPIDqa        = 1; //new
 //==============================================================================
  TString configPWGHFd2h = (iCollision==0)?"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C"
                           :"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF_highmult.C";
-                          
-Double_t  cutsESDfilterReVtx[21] =
-{1.00e-01,1.00e-01,5.00e-01,3.00e+00,1.00e+00,
-3.00e+00,1.00e+02,1.00e+03,3.00e+00,3.00e+01,
-6.00e+00,4.00e+00,7.00e+00,1.00e+03,5.00e+00,
-5.00e-02,1.00e-03,2.00e+00,1.00e+01,1.00e+00,
--5.00e+01};
-
-
-                                             
+                                                 
 // Temporaries.
 void AODmerge();
 void AddAnalysisTasks();
@@ -95,7 +85,11 @@ void AODtrain(Int_t merge=0)
     
    // Make the analysis manager and connect event handlers
    AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", "Production train");
-   if (useSysInfo) mgr->SetNSysInfo(100);
+    mgr->SetCacheSize(0);
+   if (useSysInfo) {
+ //     mgr->SetNSysInfo(100);
+      AliSysInfo::SetVerbose(kTRUE);
+   }   
    // Load analysis specific libraries
    if (!LoadAnalysisLibraries()) {
       ::Error("AnalysisTrain", "Could not load analysis libraries");
@@ -160,12 +154,22 @@ void AddAnalysisTasks(const char *cdb_location){
       AliAnalysisTaskSE *tender = AddTaskTender(useV0tender);
 //      tender->SetDebugLevel(2);
    }
+   
+   // Clean Geometry: Ruben
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
+  CleanGeom* clgmTask = new CleanGeom("cleanGeom");
+  mgr->AddTask(clgmTask);
+  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
+  if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);  
+ 
+   
    //
   // PIDResponse(JENS)
   //
   if (doPIDResponse) {
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"); 
     AliAnalysisTaskPIDResponse *PIDResponse = AddTaskPIDResponse();
+     PIDResponse->SetUserDataRecoPass(1);
 //    PIDResponse->SelectCollisionCandidates(AliVEvent::kAny);
   }  
  
@@ -231,37 +235,23 @@ void AddAnalysisTasks(const char *cdb_location){
    if (iESDfilter) {
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C");
-      AliAnalysisTaskESDfilter *taskesdfilter = 0;
-       if (iMUONcopyAOD) {
-           printf("Registering delta AOD file\n");
-           mgr->RegisterExtraFile("AliAOD.Muons.root");
-           mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-           taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag);
-       } else {
-         taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag); // others
-       }   
-       if (iESDfilterReVtx>=0 && taskesdfilter) taskesdfilter->SetRefitVertexTracks(iESDfilterReVtx, cutsESDfilterReVtx);
-       taskesdfilter->Dump();
-       return; 
-     }      
-              
-//      if (iMUONcopyAOD) {
-//         printf("Registering delta AOD file\n");
-//         mgr->RegisterExtraFile("AliAOD.Muons.root");
-//          mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-//      }
-//      AliAnalysisTaskESDfilter *taskesdfilter = 
-//                 AddTaskESDFilter(useKFILTER, 
-//                                  iMUONcopyAOD,         // write Muon AOD
-//                                  kFALSE,               // write dimuon AOD 
-//                                  kFALSE,               // usePhysicsSelection 
-//                                  kFALSE,               // centrality OBSOLETE
-//                                  kTRUE,                // enable TPS only tracks
-//                                  kFALSE,               // disable cascades
-//                                  kFALSE,               // disable kinks
-//                                  run_flag);            // run flag (YY00)
-//        mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-//   }   
+      if (iMUONcopyAOD) {
+         printf("Registering delta AOD file\n");
+         mgr->RegisterExtraFile("AliAOD.Muons.root");
+          mgr->RegisterExtraFile("AliAOD.Dimuons.root");
+      }
+      AliAnalysisTaskESDfilter *taskesdfilter = 
+                 AddTaskESDFilter(useKFILTER, 
+                                  iMUONcopyAOD,         // write Muon AOD
+                                  kFALSE,               // write dimuon AOD 
+                                  kFALSE,               // usePhysicsSelection 
+                                  kFALSE,               // centrality OBSOLETE
+                                  kTRUE,                // enable TPS only tracks
+                                  kFALSE,               // disable cascades
+                                  kFALSE,               // disable kinks
+                                  run_flag);            // run flag (YY00)
+        mgr->RegisterExtraFile("AliAOD.Dimuons.root");
+   }   
 
 // ********** PWG3 wagons ******************************************************           
    // PWGHF vertexing

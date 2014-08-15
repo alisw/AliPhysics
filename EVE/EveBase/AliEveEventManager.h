@@ -142,6 +142,8 @@ public:
     virtual void  AfterNewEventLoaded();
     void          NewEventDataLoaded();  // *SIGNAL*
     void          NewEventLoaded();      // *SIGNAL*
+    void          StorageManagerOk();    // *SIGNAL*
+    void          StorageManagerDown();  // *SIGNAL*
 
     AliEveMacroExecutor* GetExecutor() const { return fExecutor; }
     void InitOCDB(int runNo=-1);
@@ -222,10 +224,12 @@ private:
     static AliEveEventManager* fgMaster;
     static AliEveEventManager* fgCurrent;
 
-
-    static void* Dispatch(void *arg){static_cast<AliEveEventManager*>(arg)->GetNextEvent();}
+    static void* DispatchEventListener(void *arg){static_cast<AliEveEventManager*>(arg)->GetNextEvent();}
+    static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveEventManager*>(arg)->CheckStorageStatus();}
     void GetNextEvent();
-    TThread *fGetEventThread;
+    void CheckStorageStatus();
+    TThread *fEventListenerThread;
+    TThread *fStorageManagerWatcherThread;
     TMutex fMutex;
     AliESDEvent *fCurrentEvent[2];
     TTree *fCurrentTree[2];

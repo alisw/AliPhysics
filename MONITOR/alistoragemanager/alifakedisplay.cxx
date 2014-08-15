@@ -20,7 +20,7 @@ using namespace std;
 // global variables:
 AliESDEvent *currentEvent[2];
 TTree *currentTree[2];
-TMutex mutex;
+TMutex myMutex;
 int eventInUse=1;
 int writingToEventIndex=0;
 bool isNewEventAvaliable=false;
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
             if(isNewEventAvaliable)
             {
               cout<<"new event"<<endl;
-              mutex.Lock();
+              myMutex.Lock();
               if(writingToEventIndex == 0) eventInUse = 0;
               else if(writingToEventIndex == 1) eventInUse = 1;
               cout<<"Using:"<<eventInUse<<endl;
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
                 }
               }
               isNewEventAvaliable = false;
-              mutex.UnLock();
+              myMutex.UnLock();
             }
             else{cout<<"No new event is avaliable."<<endl;}
 
@@ -152,7 +152,7 @@ void* GetNextEvent(void*)
     {
       if(tmpEvent->GetRunNumber()>=0)
       {
-        mutex.Lock();
+        myMutex.Lock();
         if(eventInUse == 0){writingToEventIndex = 1;}
         else if(eventInUse == 1){writingToEventIndex = 0;}
         cout<<"Writing to:"<<writingToEventIndex<<endl;
@@ -166,7 +166,7 @@ void* GetNextEvent(void*)
         currentEvent[writingToEventIndex] = tmpEvent;
         currentTree[writingToEventIndex] = tmpTree;
         isNewEventAvaliable = true;
-        mutex.UnLock();
+        myMutex.UnLock();
       }
     }	
   }

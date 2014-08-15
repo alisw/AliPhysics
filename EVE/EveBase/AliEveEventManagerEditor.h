@@ -83,6 +83,8 @@ public:
   void DoSetTrigSel();
 
   void Update();
+    
+    void StorageManagerChangedState(int state);
 
 protected:
   AliEveEventManager   *fM;            // Model object.
@@ -101,6 +103,7 @@ protected:
   TEveGValuator        *fAutoLoadTime; // Time for automatic loading of events
 
   TGComboBox           *fTrigSel;      // Trigger selection combo box
+  TGLabel              *fStorageStatus; // Display status of Storage Manager
 
   TGTextView           *fEventInfo;    // Text box with event info
 
