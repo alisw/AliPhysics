@@ -4543,7 +4543,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       sameSignPosDaug = -1; sameSignNegDaug = -1;
       RdPhiStarMaxPosDaug=-1.; RdPhiStarMaxNegDaug=-1.;
       //trigTPCMapOk=kTRUE; posDaugTPCMapOk=kTRUE; negDaugTPCMapOk=kTRUE;
-      fracTrigTPCSharedMap=0; fracPosDaugTPCSharedMap=0; fracNegDaugTPCSharedMap=0;
+      fracPosDaugTPCSharedMap=0; fracNegDaugTPCSharedMap=0;
 
       // ---------------- Fraction of TPC Shared Cluster 
       fracPosDaugTPCSharedMap = GetFractionTPCSharedCls(ptrack);
