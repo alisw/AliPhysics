@@ -20,7 +20,8 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(){
         }
         
         EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger("ptemcaltriggertask");
-        pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
+        //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
+        pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
         mgr->AddTask(pttriggertask);
         pttriggertask->SetPtRange(2., 100.);
 

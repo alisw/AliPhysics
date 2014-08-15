@@ -159,13 +159,21 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_pPb(
 	stringShift = "pPb";
 
 	if( trainConfig == 1 ) {
-		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000400"; NeutralPionCutarray[0] = "01035035000000"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
-	} else if( trainConfig == 1 ) {
-		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000403"; NeutralPionCutarray[0] = "01035035000000"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
-	} else if( trainConfig == 1 ) {
-		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000404"; NeutralPionCutarray[0] = "01035035000000"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
-	} else if( trainConfig == 1 ) {
-		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000405"; NeutralPionCutarray[0] = "01035035000000"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000400"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
+	} else if( trainConfig == 2 ) {
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002000700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
+	} else if( trainConfig == 3 ) {
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002003700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
+	} else if( trainConfig == 4 ) {
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
+	} else if( trainConfig == 5 ) {
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035031000000"; MesonCutarray[0] = "01035030000000"; 	
+	} else if( trainConfig == 6 ) {
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035032000000"; MesonCutarray[0] = "01035030000000"; 	
+	} else if( trainConfig == 7 ) {
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035033000000"; MesonCutarray[0] = "01035030000000"; 	
+	} else if( trainConfig == 8 ) {
+		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002003700"; NeutralPionCutarray[0] = "01035033000000"; MesonCutarray[0] = "01035030000000"; 			
 	}
 	
 	TList *EventCutList = new TList();

@@ -104,21 +104,27 @@ namespace EMCalTriggerPtAnalysis {
 		fHistos->ReleaseOwner();
 
 		std::map<std::string, std::string> triggerCombinations;
-		const char *triggernames[6] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh", "EMCGLow", "NoEMCal"};
+		const char *triggernames[6] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh", "EMCGLow", "NoEMCal"},
+				*bitnames[4] = {"CINT7", "EMC7", "kEMCEGA", "kEMCEJE"};
 		// Define axes for the trigger correlation histogram
 		const TAxis *triggeraxis[5]; memset(triggeraxis, 0, sizeof(const TAxis *) * 5);
+		const TAxis *bitaxes[4]; memset(bitaxes, 0, sizeof(TAxis *) * 4);
 		const char *binlabels[2] = {"OFF", "ON"};
-		TAxis mytrgaxis[5];
+		TAxis mytrgaxis[5], mybitaxis[4];
 		for(int itrg = 0; itrg < 5; ++itrg){
 			DefineAxis(mytrgaxis[itrg], triggernames[itrg], triggernames[itrg], 2, -0.5, 1.5, binlabels);
 			triggeraxis[itrg] = mytrgaxis+itrg;
+			if(itrg < 4){
+				DefineAxis(mybitaxis[itrg], bitnames[itrg], bitnames[itrg], 2, -0.5, 1.5, binlabels);
+				bitaxes[itrg] = mybitaxis+itrg;
+			}
 		}
 		// Define names and titles for different triggers in the histogram container
 		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[0], "min. bias events"));
 		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[1], "jet-triggered events (high threshold)"));
 		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[2], "jet-triggered events (low threshold)"));
-		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[3], "jet-triggered events (high threshold)"));
-		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[4], "jet-triggered events (low threshold)"));
+		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[3], "gamma-triggered events (high threshold)"));
+		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[4], "gamma-triggered events (low threshold)"));
 		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[5], "non-EMCal-triggered events (low threshold)"));
 		// Define axes for the pt histogram
 		// Dimensions:
@@ -151,6 +157,7 @@ namespace EMCalTriggerPtAnalysis {
 				fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 6, trackaxes);
 			}
 			fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
+			fHistos->CreateTHnSparse("hEventsTriggerbit", "Trigger bits for the different events", 4, bitaxes);
 		} catch (HistoContainerContentException &e){
 			std::stringstream errormessage;
 			errormessage << "Creation of histogram failed: " << e.what();
@@ -183,31 +190,51 @@ namespace EMCalTriggerPtAnalysis {
 		if(!(vtxTracks && vtxSPD)) return;
 		if(vtxTracks->GetNContributors() < 1 || vtxSPD->GetNContributors() < 1) return;
 
-		double triggers[5]; memset(triggers, 0, sizeof(double) *5);
-		if(fInputHandler->IsEventSelected() & AliVEvent::kINT7)
+		double triggers[5]; memset(triggers, 0, sizeof(double) * 5);
+		double triggerbits[4]; memset(triggerbits, 0, sizeof(double) * 4);
+		if(fInputHandler->IsEventSelected() & AliVEvent::kINT7){
 			triggers[0] = 1.;
+			triggerbits[0] = 1.;
+		}
+
+		// check triggerbits
+		if(fInputHandler->IsEventSelected() & AliVEvent::kEMC7){
+			triggerbits[1] = 1.;
+		}
+		if(fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA){
+			triggerbits[2] = 1.;
+		}
+		if(fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE){
+			triggerbits[3] = 1.;
+		}
+		try{
+			fHistos->FillTHnSparse("hEventsTriggerbit", triggerbits);
+		} catch(HistoContainerContentException &e) {
+			std::stringstream errormessage;
+			errormessage << "Filling of histogram failed: " << e.what();
+			AliError(errormessage.str().c_str());
+		}
 
 		std::vector<std::string> triggerstrings;
-		if(fInputHandler->IsEventSelected() & AliVEvent::kEMC7){
-			// EMCal-triggered event, distinguish types
-			TString trgstr(fInputEvent->GetFiredTriggerClasses());
-			if(trgstr.Contains("EJ1")){
-				triggerstrings.push_back("EMCJHigh");
-				triggers[1] = 1;
-			}
-			if(trgstr.Contains("EJ2")){
-				triggerstrings.push_back("EMCJLow");
-				triggers[2] = 1;
-			}
-			if(trgstr.Contains("EG1")){
-				triggerstrings.push_back("EMCGHigh");
-				triggers[3] = 1;
-			}
-			if(trgstr.Contains("EG2")){
-				triggerstrings.push_back("EMCGLow");
-				triggers[4] = 1;
-			}
+		// EMCal-triggered event, distinguish types
+		TString trgstr(fInputEvent->GetFiredTriggerClasses());
+		if(trgstr.Contains("EJ1")){
+			triggerstrings.push_back("EMCJHigh");
+			triggers[1] = 1;
 		}
+		if(trgstr.Contains("EJ2")){
+			triggerstrings.push_back("EMCJLow");
+			triggers[2] = 1;
+		}
+		if(trgstr.Contains("EG1")){
+			triggerstrings.push_back("EMCGHigh");
+			triggers[3] = 1;
+		}
+		if(trgstr.Contains("EG2")){
+			triggerstrings.push_back("EMCGLow");
+			triggers[4] = 1;
+		}
+
 		try{
 			fHistos->FillTHnSparse("hEventTriggers", triggers);
 		} catch (HistoContainerContentException &e){

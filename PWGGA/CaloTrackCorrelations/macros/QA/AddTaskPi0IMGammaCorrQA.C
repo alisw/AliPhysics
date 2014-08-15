@@ -62,17 +62,17 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   Int_t n = 0;//Analysis number, order is important
   
   // Photon analysis
-  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,          containerName,simulation     ,debugLevel), n++); // Photon cluster selection
+  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,collision,containerName,simulation     ,debugLevel), n++); // Photon cluster selection
   maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,collision,containerName,simulation,qaan,debugLevel) ,n++); // Previous photon invariant mass
 
   if(hadronan)
   {
     maker->GetReader()->SwitchOnCTS();
-    maker->AddAnalysis(ConfigureChargedAnalysis(containerName,simulation,debugLevel), n++); // charged tracks plots
+    maker->AddAnalysis(ConfigureChargedAnalysis(collision,containerName,simulation,debugLevel), n++); // charged tracks plots
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,collision,containerName,simulation,debugLevel), n++); // Gamma hadron correlation
   }
   
-  if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,simulation,debugLevel),n++);
+  if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,collision,simulation,debugLevel),n++);
   
   maker->SetAnaDebug(debugLevel)  ;
   maker->SwitchOnHistogramsMaker()  ;
@@ -294,7 +294,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
 }
 
 //_______________________________________________________________________________
-AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter, TString containerName,
+AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter, TString collision,
+                                      TString containerName,
                                       Bool_t simulation, Int_t debugLevel)
 {
   
@@ -357,7 +358,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter, TString containerName
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName("AnaPhoton_");
-  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter,collision); // see method below
   
   // Number of particle type MC histograms
   ana->FillNOriginHistograms(7);
@@ -423,7 +424,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName("AnaPi0_");
-  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter,collision); // see method below
 
   if(simulation) ana->SwitchOnDataMC();
 
@@ -434,7 +435,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
 }
 
 //___________________________________________________________________________________
-AliAnaChargedParticles* ConfigureChargedAnalysis(TString containerName,
+AliAnaChargedParticles* ConfigureChargedAnalysis(TString collision,TString containerName,
                                                  Bool_t simulation, Int_t debugLevel)
 {
   
@@ -459,7 +460,7 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(TString containerName,
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName("AnaHadrons_");
-  SetHistoRangeAndNBins(ana->GetHistogramRanges(),""); // see method below
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),"",collision); // see method below
   
   ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
   ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
@@ -484,9 +485,9 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
   ana->SetDeltaPhiCutRange  (TMath::DegToRad()*120.,TMath::DegToRad()*240.);
   ana->SetUeDeltaPhiCutRange(TMath::DegToRad()*60. ,TMath::DegToRad()*120.);
+  ana->SwitchOffFillEtaGapHistograms();
 
   ana->SetNAssocPtBins(4);
-  
   ana->SetAssocPtBinLimit(0, 0.5) ;
   ana->SetAssocPtBinLimit(1, 2) ;
   ana->SetAssocPtBinLimit(2, 5) ;
@@ -500,11 +501,16 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOnAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
   ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
   
+  //ana->SwitchOnLeadHadronSelection();
+  //ana->SetLeadHadronPhiCut(TMath::DegToRad()*100., TMath::DegToRad()*260.);
+  //ana->SetLeadHadronPtCut(0.5, 100);
+
+  
   // Mixing with own pool
   ana->SwitchOffOwnMix();
   
   ana->SetNZvertBin(20);
-  
+  ana->SwitchOffCorrelationVzBin() ;
   ana->SwitchOffFillHighMultiplicityHistograms();
   
   if(collision=="pp")
@@ -540,7 +546,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName(Form("Ana%sHadronCorr_",particle.Data()));
-  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter, collision); // see method below
   
   if(simulation) ana->SwitchOnDataMC();
   
@@ -551,8 +557,8 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
 }
 
 //________________________________________________________________________________
-AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  Bool_t simulation,
-                                         Int_t debugLevel)
+AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  TString collision,
+                                         Bool_t simulation,    Int_t debugLevel)
 {
   
   AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();
@@ -573,7 +579,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  Bool_t simulation
   ana->SwitchOnFillAllCellTimeHisto() ;
   
   ana->AddToHistogramsName("QA_"); //Begining of histograms name
-  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter, collision); // see method below
   
   if(simulation) ana->SwitchOnDataMC();
   
@@ -586,7 +592,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  Bool_t simulation
 
 //________________________________________________________
 void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,
-                            TString calorimeter)
+                            TString calorimeter, TString collision)
 {
   // Set common bins for all analysis and MC histograms filling
     
@@ -628,7 +634,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,
   histoRanges->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
   
   // check if time calibration is on
-  histoRanges->SetHistoTimeRangeAndNBins(-1000.,1000,2000);
+  histoRanges->SetHistoTimeRangeAndNBins(-1000.,1000,500);
   //histoRanges->SetHistoTimeRangeAndNBins(-400.,400,400);
   histoRanges->SetHistoDiffTimeRangeAndNBins(-200, 200, 800);
   
@@ -638,20 +644,38 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,  2.5 ,500);
-  histoRanges->SetHistodEdxRangeAndNBins  (0.,250.0,500);
+  histoRanges->SetHistoPOverERangeAndNBins(0,  2. ,200);
+  histoRanges->SetHistodEdxRangeAndNBins  (0.,200.0,200);
   
   // QA
   histoRanges->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-  histoRanges->SetHistoRatioRangeAndNBins(0.,2.,100);
   histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,500);
-  histoRanges->SetHistoNClusterCellRangeAndNBins(0,50,50);
-  histoRanges->SetHistoNClustersRangeAndNBins(0,100,100);
   histoRanges->SetHistoZRangeAndNBins(-400,400,200);
   histoRanges->SetHistoRRangeAndNBins(400,450,25);
   histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,500);
   histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
-  histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
+  
+  // QA, correlation
+  if(collision=="PbPb")
+  {
+    histoRanges->SetHistoNClusterCellRangeAndNBins(0,100,100);
+    histoRanges->SetHistoNClustersRangeAndNBins(0,500,50);
+    histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,2000,200);
+  }
+  else
+  {
+    histoRanges->SetHistoNClusterCellRangeAndNBins(0,50,50);
+    histoRanges->SetHistoNClustersRangeAndNBins(0,50,50);
+    histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,200,200);
+  }
+
+  // xE, zT
+  histoRanges->SetHistoRatioRangeAndNBins(0.,2.,200);
+  histoRanges->SetHistoHBPRangeAndNBins  (0.,10.,200);
+  
+  // Isolation
+  histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
+  histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
   
 }
 
