@@ -183,6 +183,7 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Float_t fTreeVariableCentV0AEq;  //!
   Float_t fTreeVariableCentV0CEq;  //!
   Float_t fTreeVariableCentV0MEq;  //!
+  Float_t fTreeVariableCustomCentV0M;    //!
   Float_t fTreeVariableAmpV0A;     //!
   Float_t fTreeVariableAmpV0C;     //!
   Float_t fTreeVariableAmpV0AEq;   //!
@@ -245,6 +246,7 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Float_t fTreeCascVarCentV0AEq;  //!
   Float_t fTreeCascVarCentV0CEq;  //!
   Float_t fTreeCascVarCentV0MEq;  //!
+  Float_t fTreeCascVarCustomCentV0M;    //!
   Float_t fTreeCascVarAmpV0A;     //!
   Float_t fTreeCascVarAmpV0C;     //!
   Float_t fTreeCascVarAmpV0AEq;   //!
