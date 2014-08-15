@@ -1,0 +1,5 @@
+To test tracker in the offline mode, run the TestITSSAP.C
+macro as
+aliroot 'TestITSSAP.C(<path>)'
+where the <path> is the directory cotaining the output of the standard
+reconstruction, including the ITS.RecPoints.root file
