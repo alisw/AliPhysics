@@ -71,6 +71,7 @@ fCrossCheckRowsLengthAcc(0),
 fCrossCheckClusterLengthAcc(0),
 fCutSettings(0),
 fEventplaneDist(0),
+fEventplaneRunDist(0),
 fMCEventplaneDist(0),
 fCorrelEventplaneMCDATA(0),
 fCorrelEventplaneDefaultCorrected(0),
@@ -126,6 +127,7 @@ fEtaCheckNbins(0),
 fZvNbins(0),
 fCentralityNbins(0),
 fPhiNbins(0),
+fRunNumberNbins(0),
 fBinsMult(0),
 fBinsPt(0),
 fBinsPtCorr(0),
@@ -134,7 +136,8 @@ fBinsEta(0),
 fBinsEtaCheck(0),
 fBinsZv(0),
 fBinsCentrality(0),
-fBinsPhi(0)
+fBinsPhi(0),
+fBinsRunNumber(0)
 {
   
   for(Int_t i = 0; i < cqMax; i++)
@@ -151,6 +154,8 @@ fBinsPhi(0)
   fEtaCheckNbins = 0;
   fZvNbins = 0;
   fCentralityNbins = 0;
+  fPhiNbins = 0;
+  fRunNumberNbins = 0;
   fBinsMult = 0;
   fBinsPt = 0;
   fBinsPtCorr = 0;
@@ -160,6 +165,7 @@ fBinsPhi(0)
   fBinsZv = 0;
   fBinsCentrality = 0;
   fBinsPhi = 0;
+  fBinsRunNumber = 0;
   
   DefineOutput(1, TList::Class());
 }
@@ -199,6 +205,10 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   Double_t binsPtCheckDefault[20] = {0.,0.15,0.5,1.0,2.0,3.0,4.0, 5.0, 10.0, 13.0, 15.0, 20.0, 25.0, 30.0, 40.0, 50.0, 70.0, 100.0, 150.0, 200.0};  
   Double_t binsEtaCheckDefault[7] = {-1.0,-0.8,-0.4,0.,0.4,0.8,1.0};
   
+  Double_t binsRunNumbers2011[186] = {
+	167693, 167706, 167711, 167712, 167713, 167806, 167807, 167808, 167813, 167814, 167818, 167841, 167842, 167844, 167846, 167902, 167903, 167909, 167915, 167920, 167921, 167985, 167986, 167987, 167988, 168066, 168068, 168069, 168076, 168103, 168104, 168105, 168107, 168108, 168115, 168171, 168172, 168173, 168175, 168177, 168181, 168203, 168204, 168205, 168206, 168207, 168208, 168212, 168213, 168310, 168311, 168318, 168322, 168325, 168341, 168342, 168356, 168361, 168362, 168458, 168460, 168461, 168464, 168467, 168511, 168512, 168514, 168644, 168777, 168826, 168984, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169143, 169144, 169145, 169148, 169156, 169160, 169167, 169236, 169238, 169377, 169382, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169584, 169586, 169587, 169588, 169590, 169591, 169628, 169683, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169914, 169918, 169919, 169920, 169922, 169923, 169924, 169926, 169956, 169961, 169965, 169969, 169975, 169981, 170027, 170036, 170038, 170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170162, 170163, 170193, 170195, 170203, 170204, 170205, 170207, 170208, 170228, 170230, 170264, 170267, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170374, 170387, 170388, 170389, 170390, 170546, 170552, 170556, 170572, 170593, 170593+1 
+  };
+  
   // if no binning is set, use the default
   if (!fBinsMult)	{ SetBinsMult(48,binsMultDefault); }
   if (!fBinsPt)		{ SetBinsPt(82,binsPtDefault); }
@@ -209,6 +219,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   if (!fBinsZv)		{ SetBinsZv(7,binsZvDefault); }  
   if (!fBinsCentrality)	{ SetBinsCentrality(12,binsCentralityDefault); }
   if (!fBinsPhi)	{ SetBinsPhi(37,binsPhiDefault); }
+  if (!fBinsRunNumber) {SetBinsRunNumber(186, binsRunNumbers2011); }
   
   Int_t binsZvPtEtaCent[4]={fZvNbins-1,fPtNbins-1,fEtaNbins-1,fCentralityNbins-1};
   Int_t binsPhiPtEtaCent[4]={fPhiNbins-1,fPtNbins-1,fEtaNbins-1,fCentralityNbins-1};
@@ -529,9 +540,14 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCutSettings->GetYaxis()->SetTitle("cut value");
   fCutSettings->SetBit(TH1::kCanRebin);
   
-  fEventplaneDist = new TH1F("fEventplaneDist","fEventplaneDist",20, -1.*TMath::Pi(), TMath::Pi());
+  fEventplaneDist = new TH1F("fEventplaneDist","fEventplaneDist",200, -1./2.*TMath::Pi(), 1./2.*TMath::Pi());
   fEventplaneDist->GetXaxis()->SetTitle("#phi (event plane)");
   fEventplaneDist->Sumw2();
+  
+  fEventplaneRunDist = new TH2F("fEventplaneRunDist","fEventplaneRunDist",200, -1./2.*TMath::Pi(), 1./2.*TMath::Pi(),fRunNumberNbins-1, fBinsRunNumber );
+  fEventplaneRunDist->GetXaxis()->SetTitle("#phi (event plane)");
+  fEventplaneRunDist->GetYaxis()->SetTitle("runnumber");
+  fEventplaneRunDist->Sumw2();
   
   fMCEventplaneDist = new TH1F("fMCEventplaneDist","fMCEventplaneDist",20, -1.*TMath::Pi(), TMath::Pi());
   fMCEventplaneDist->GetXaxis()->SetTitle("#phi (MC event plane)");
@@ -627,6 +643,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fCrossCheckClusterLengthAcc);
   fOutputList->Add(fCutSettings);
   fOutputList->Add(fEventplaneDist);
+  fOutputList->Add(fEventplaneRunDist);
   fOutputList->Add(fMCEventplaneDist);
   fOutputList->Add(fCorrelEventplaneMCDATA);
   fOutputList->Add(fCorrelEventplaneDefaultCorrected);
@@ -803,6 +820,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   //   cout << dEventplaneAngle << endl;
   fEventplaneDist->Fill(dEventplaneAngle);
+  fEventplaneRunDist->Fill(dEventplaneAngle, (Double_t)eventAOD->GetRunNumber());
   
   // fill crosscheck histos
   fEPDistCent->Fill(dEventplaneAngle, dCentrality);
