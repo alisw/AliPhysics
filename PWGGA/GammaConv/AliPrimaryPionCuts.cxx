@@ -108,7 +108,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 
 	// Using standard function for setting Cuts
 	Bool_t selectPrimaries=kFALSE;
-	fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+	if (fEsdTrackCuts==NULL)fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 }
 
 //________________________________________________________________________
