@@ -216,7 +216,6 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   Bool_t       fFillAODWithReferences;         // Add to the trigger particle AOD the reference to the tracks or neutrals in correlation.
   Bool_t       fCheckLeadingWithNeutralClusters;// Compare the trigger candidate to Leading pT with the clusters pT, by default only charged
-  Float_t      fMinTriggerPt ;                 // Minimum trigger hadron pt
   Float_t      fMaxAssocPt ;                   // Maximum associated hadron pt
   Float_t      fMinAssocPt ;                   // Minimum associated hadron pt
   Double_t     fDeltaPhiMaxCut ;               // Minimum Delta Phi Gamma-Hadron
