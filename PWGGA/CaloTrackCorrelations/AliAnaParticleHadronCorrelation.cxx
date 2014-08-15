@@ -374,7 +374,7 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
   }
   
   //fill different multiplicity/centrality histogram
-  if(fFillHighMultHistograms)
+  if(fFillHighMultHistograms && cen >= 0 && cen < GetNCentrBin())
   {
     fhDeltaPhiChargedMult[cen]->Fill(ptTrig,deltaPhi);
     fhDeltaEtaChargedMult[cen]->Fill(ptTrig,deltaEta);
@@ -493,7 +493,7 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
       if(mcUexE > 0) fhMCPtHbpXEUeLeftCharged[histoIndex]->Fill(mcTrigPt,TMath::Log(1/mcUexE));
       
       fhMCPtZTUeLeftCharged[histoIndex]->Fill(mcTrigPt,mcUezT);
-      if(mcUexE > 0) fhMCPtHbpZTUeLeftCharged[histoIndex]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
+      if(mcUezT > 0) fhMCPtHbpZTUeLeftCharged[histoIndex]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
     }
   }
   
@@ -510,22 +510,19 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
 {
   // Fill mostly momentum imbalance related histograms
   
-  Float_t zT = ptAssoc/ptTrig ;
-  Float_t hbpZT = -100;
-  if(zT > 0 ) hbpZT = TMath::Log(1./zT);
-  else        hbpZT =-100;
-  
-  Float_t xE =-ptAssoc/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
-  Float_t hbpXE = -100;
+  Float_t zT =   ptAssoc/ptTrig ;
+  Float_t xE   =-ptAssoc/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
+  Float_t pout = ptAssoc*TMath::Sin(deltaPhi) ;
 
   if(xE < 0.)
     printf("FillChargedMomentumImbalanceHistograms(): Careful!!, negative xE %2.2f for right UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
            xE,deltaPhi*TMath::RadToDeg(),TMath::Cos(deltaPhi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
 
+  Float_t hbpXE = -100;
+  Float_t hbpZT = -100;
+
   if(xE > 0 ) hbpXE = TMath::Log(1./xE);
-  else        hbpXE =-100;
-  
-  Float_t pout = ptAssoc*TMath::Sin(deltaPhi) ;
+  if(zT > 0 ) hbpZT = TMath::Log(1./zT);
   
   fhXECharged         ->Fill(ptTrig , xE);
   fhPtHbpXECharged    ->Fill(ptTrig , hbpXE);
@@ -537,6 +534,13 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   {
     fhXECharged_Cone2         ->Fill(ptTrig , xE);
     fhPtHbpXECharged_Cone2    ->Fill(ptTrig , hbpXE);
+  }
+  
+  // MC
+  if(IsDataMC())
+  {
+    Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
+    fhXEChargedMC[mcIndex]->Fill(ptTrig , xE);
   }
   
   // Pile up studies
@@ -571,12 +575,6 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
     if(GetReader()->IsPileUpFromEMCalAndNotSPD())     { fhXEChargedPileUp[5]->Fill(ptTrig,xE); fhZTChargedPileUp[5]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[5]->Fill(ptTrig,ptAssoc); }
     if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhXEChargedPileUp[6]->Fill(ptTrig,xE); fhZTChargedPileUp[6]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[6]->Fill(ptTrig,ptAssoc); }
   }
-  
-  if(IsDataMC())
-  {
-    Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
-    fhXEChargedMC[mcIndex]->Fill(ptTrig , xE);
-  }  
   
   if(fDecayTrigger && decay)
   {          
@@ -702,7 +700,8 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(
     if(uexE > 0) fhPtHbpXEUeLeftCharged->Fill(ptTrig,TMath::Log(1/uexE));
     
     fhZTUeLeftCharged->Fill(ptTrig,uezT);
-    if(uexE > 0) fhPtHbpZTUeLeftCharged->Fill(ptTrig,TMath::Log(1/uezT));
+    if(uezT > 0) fhPtHbpZTUeLeftCharged->Fill(ptTrig,TMath::Log(1/uezT));
+    
     fhDeltaPhiUeLeftCharged->Fill(ptAssoc, deltaPhi);
   }
   
