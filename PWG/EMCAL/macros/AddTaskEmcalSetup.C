@@ -1,11 +1,11 @@
 // $Id$
 
 AliEmcalSetupTask* AddTaskEmcalSetup(
-  const char *geop = 0,
-  const char *oadp = 0,
-  const char *ocdp = 0, 
-  const char *objs = 0
-)
+  const char *geop    = 0, /*path to geometry folder*/
+  const char *oadp    = 0, /*path to OADB folder*/
+  const char *ocdp    = 0, /*path to OCDB (if "uselocal", a copy placed in ALIROOT will be used*/
+  const char *objs    = 0, /*objects for which alignment should be applied*/
+  const Bool_t noOCDB = 0) /*if true then do not mess with OCDB */
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -28,6 +28,7 @@ AliEmcalSetupTask* AddTaskEmcalSetup(
   // Init the task and do settings
   //-------------------------------------------------------
   AliEmcalSetupTask *eTask = new AliEmcalSetupTask("EmcalSetupTask");
+  eTask->SetNoOCDB(noOCDB);
   if (geop) eTask->SetGeoPath(geop);
   if (oadp) eTask->SetOadbPath(oadp);
   if (ocdp) eTask->SetOcdbPath(ocdp);
