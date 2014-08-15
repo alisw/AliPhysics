@@ -208,7 +208,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   //
   // Destructor
   //
-  if(!fOutput->IsOwner()){
+  if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistTrackStatus;
     delete fHistCheckOrigin;
@@ -241,8 +241,8 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   delete fTrackCutsKaon;
   delete fPidHF;
   delete fAnalysisCuts;
-  fKaonTracks->Delete();
-  fPionTracks->Delete();
+  if(fKaonTracks) fKaonTracks->Delete();
+  if(fPionTracks) fPionTracks->Delete();
   delete fKaonTracks;
   delete fPionTracks;
   delete fEventBuffer;
