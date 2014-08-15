@@ -107,8 +107,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fUsePoolsZ(kFALSE),
   fUsePoolsM(kFALSE),
   fNzVertPools(1),
+  fNzVertPoolsLimSize(2),
   fzVertPoolLims(0x0),
   fNMultPools(1),
+  fNMultPoolsLimSize(2),
   fMultPoolLims(0x0),
   fEventBuffer(0x0),
   fVtxZ(0),
@@ -183,8 +185,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fUsePoolsZ(kFALSE),
   fUsePoolsM(kFALSE),
   fNzVertPools(1),
+  fNzVertPoolsLimSize(2),
   fzVertPoolLims(0x0),
   fNMultPools(1),
+  fNMultPoolsLimSize(2),
   fMultPoolLims(0x0),
   fEventBuffer(0x0),
   fVtxZ(0),
@@ -242,6 +246,8 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   delete fKaonTracks;
   delete fPionTracks;
   delete fEventBuffer;
+  delete [] fzVertPoolLims;
+  delete [] fMultPoolLims;
 }
 
 //________________________________________________________________________
@@ -250,8 +256,9 @@ void AliAnalysisTaskCombinHF::ConfigureZVertPools(Int_t nPools, Double_t*  zVert
   // sets the pools for event mizing in zvertex
   if(fzVertPoolLims) delete [] fzVertPoolLims;
   fNzVertPools=nPools;
-  fzVertPoolLims = new Double_t[fNzVertPools+1];
-  for(Int_t ib=0; ib<nPools+1; ib++) fzVertPoolLims[ib]=zVertLimits[ib];
+  fNzVertPoolsLimSize=nPools+1;
+  fzVertPoolLims = new Double_t[fNzVertPoolsLimSize];
+  for(Int_t ib=0; ib<fNzVertPoolsLimSize; ib++) fzVertPoolLims[ib]=zVertLimits[ib];
   fUsePoolsZ=kTRUE;
   return;  
 }
@@ -261,7 +268,8 @@ void AliAnalysisTaskCombinHF::ConfigureMultiplicityPools(Int_t nPools, Double_t*
   // sets the pools for event mizing in zvertex
   if(fMultPoolLims) delete [] fMultPoolLims;
   fNMultPools=nPools;
-  fMultPoolLims = new Double_t[fNMultPools+1];
+  fNMultPoolsLimSize=nPools+1;
+  fMultPoolLims = new Double_t[fNMultPoolsLimSize];
   for(Int_t ib=0; ib<nPools+1; ib++) fMultPoolLims[ib]=multLimits[ib];
   fUsePoolsM=kTRUE;
   return;  
@@ -947,8 +955,8 @@ Bool_t AliAnalysisTaskCombinHF::CheckAcceptance(TClonesArray* arrayMC,Int_t nPro
 //_________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::CanBeMixed(Double_t zv1, Double_t zv2, Double_t mult1, Double_t mult2){
   if(fUsePoolsZ && fzVertPoolLims){
-    Int_t theBin1=TMath::BinarySearch(fNzVertPools+1,fzVertPoolLims,zv1);
-    Int_t theBin2=TMath::BinarySearch(fNzVertPools+1,fzVertPoolLims,zv2);
+    Int_t theBin1=TMath::BinarySearch(fNzVertPoolsLimSize,fzVertPoolLims,zv1);
+    Int_t theBin2=TMath::BinarySearch(fNzVertPoolsLimSize,fzVertPoolLims,zv2);
     if(theBin1!=theBin2) return kFALSE;
     if(theBin1<0 || theBin2<0) return kFALSE;
     if(theBin1>=fNzVertPools || theBin2>=fNzVertPools) return kFALSE;    
@@ -957,8 +965,8 @@ Bool_t AliAnalysisTaskCombinHF::CanBeMixed(Double_t zv1, Double_t zv2, Double_t 
   }
 
   if(fUsePoolsM && fMultPoolLims){
-    Int_t theBin1=TMath::BinarySearch(fNMultPools+1,fMultPoolLims,mult1);
-    Int_t theBin2=TMath::BinarySearch(fNMultPools+1,fMultPoolLims,mult2);
+    Int_t theBin1=TMath::BinarySearch(fNMultPoolsLimSize,fMultPoolLims,mult1);
+    Int_t theBin2=TMath::BinarySearch(fNMultPoolsLimSize,fMultPoolLims,mult2);
     if(theBin1!=theBin2) return kFALSE;
     if(theBin1<0 || theBin2<0) return kFALSE;
     if(theBin1>=fNMultPools || theBin2>=fNMultPools) return kFALSE;
