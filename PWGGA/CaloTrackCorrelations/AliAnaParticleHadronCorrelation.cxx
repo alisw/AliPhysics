@@ -326,12 +326,12 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
   if(fFillBradHisto)
   {
     dphiBrad = atan2(sin(deltaPhiOrg), cos(deltaPhiOrg))/TMath::Pi();//-1 to 1
-    if(TMath::Abs(dphiBrad)>0.325 && TMath::Abs(dphiBrad)<0.475)  //Hardcoded values, BAD, FIXME
+    if( TMath::Abs(dphiBrad) > 0.325 && TMath::Abs(dphiBrad) < 0.475 )  //Hardcoded values, BAD, FIXME
     {
       fhAssocPtBkg->Fill(ptTrig, ptAssoc);
     }
     
-    if(dphiBrad<-1./3) dphiBrad += 2;
+    if( dphiBrad < -1./3 ) dphiBrad += 2;
     fhDeltaPhiBrad->Fill(ptTrig, dphiBrad);
   }
   
@@ -462,8 +462,10 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
     Double_t mcUexE = -(mcAssocPt/mcTrigPt)*TMath::Cos(randomphi);
     Double_t mcUezT =   mcAssocPt/mcTrigPt;
     
-    if(mcUexE < 0.) mcUexE = -mcUexE;
-    
+    if(mcUexE < 0.)
+      printf("FillChargedMCCorrelationHistograms(): Careful!!, negative xE %2.2f for right UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+             mcUexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
+
     fhMCPtXEUeCharged->Fill(mcTrigPt,mcUexE);
     if(mcUexE > 0) fhMCPtHbpXEUeCharged->Fill(mcTrigPt,TMath::Log(1/mcUexE));
     
@@ -482,7 +484,9 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
       Double_t mcUexE = -(mcAssocPt/mcTrigPt)*TMath::Cos(randomphi);
       Double_t mcUezT =   mcAssocPt/mcTrigPt;
       
-      if(mcUexE < 0.) mcUexE = -mcUexE;
+      if(mcUexE < 0.)
+        printf("FillChargedMCCorrelationHistograms(): Careful!!, negative xE %2.2f for left UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+               mcUexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
       
       fhMCPtXEUeLeftCharged->Fill(mcTrigPt,mcUexE);
       if(mcUexE > 0) fhMCPtHbpXEUeLeftCharged->Fill(mcTrigPt,TMath::Log(1/mcUexE));
@@ -512,7 +516,11 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   
   Float_t xE =-ptAssoc/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
   Float_t hbpXE = -100;
-  //if(xE <0.)xE =-xE;
+
+  if(xE < 0.)
+    printf("FillChargedMomentumImbalanceHistograms(): Careful!!, negative xE %2.2f for right UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+           xE,deltaPhi*TMath::RadToDeg(),TMath::Cos(deltaPhi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
+
   if(xE > 0 ) hbpXE = TMath::Log(1./xE);
   else        hbpXE =-100;
   
@@ -621,7 +629,9 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float
   Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
   Double_t uezT =   ptAssoc/ptTrig;
   
-  if(uexE < 0.) uexE = -uexE;
+  if(uexE < 0.)
+    printf("FillChargedUnderlyingEventHistograms(): Careful!!, negative xE %2.2f for right UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+           uexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
   
   fhXEUeCharged->Fill(ptTrig,uexE);
   if(uexE > 0) fhPtHbpXEUeCharged->Fill(ptTrig,TMath::Log(1/uexE));
@@ -683,7 +693,9 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(
     Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
     Double_t uezT =   ptAssoc/ptTrig;
     
-    if(uexE < 0.) uexE = -uexE;
+    if(uexE < 0.)
+      printf("FillChargedUnderlyingEventSidesHistograms(): Careful!!, negative xE %2.2f for left UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+              uexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
     
     fhXEUeLeftCharged->Fill(ptTrig,uexE);
     if(uexE > 0) fhPtHbpXEUeLeftCharged->Fill(ptTrig,TMath::Log(1/uexE));
@@ -699,7 +711,9 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(
     Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
     Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
     
-    if(uexE < 0.) uexE = -uexE;
+    if(uexE < 0.)
+      printf("FillChargedUnderlyingEventSidesHistograms(): Careful!!, negative xE %2.2f for left-down UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+             uexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
     
     fhXEUeLeftDownCharged->Fill(ptTrig,uexE);
   }
@@ -710,7 +724,9 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(
     Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
     Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
     
-    if(uexE < 0.) uexE = -uexE;
+    if(uexE < 0.)
+      printf("FillChargedUnderlyingEventSidesHistograms(): Careful!!, negative xE %2.2f for left-up UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+             uexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
     
     fhXEUeLeftUpCharged->Fill(ptTrig,uexE);
   }
@@ -721,7 +737,9 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(
     Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
     Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
     
-    if(uexE < 0.) uexE = -uexE;
+    if(uexE < 0.)
+      printf("FillChargedUnderlyingEventSidesHistograms(): Careful!!, negative xE %2.2f for right-up UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+             uexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
     
     fhXEUeRightUpCharged->Fill(ptTrig,uexE);
   }
@@ -732,7 +750,9 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(
     Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
     Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
     
-    if(uexE < 0.) uexE = -uexE;
+    if(uexE < 0.)
+      printf("FillChargedUnderlyingEventSidesHistograms(): Careful!!, negative xE %2.2f for right-down UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+             uexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
     
     fhXEUeRightDownCharged->Fill(ptTrig,uexE);
   }
@@ -1269,13 +1289,13 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   fhPhiCharged  = new TH2F
   ("hPhiCharged","#phi_{h^{#pm}}  vs #it{p}_{T #pm}",
-   nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+   nptbins,ptmin,ptmax,180,0,TMath::TwoPi());
   fhPhiCharged->SetYTitle("#phi_{h^{#pm}} (rad)");
   fhPhiCharged->SetXTitle("#it{p}_{T #pm} (GeV/#it{c})");
   
   fhEtaCharged  = new TH2F
   ("hEtaCharged","#eta_{h^{#pm}}  vs #it{p}_{T #pm}",
-   nptbins,ptmin,ptmax,netabins,etamin,etamax);
+   nptbins,ptmin,ptmax,100,-1.,1.);
   fhEtaCharged->SetYTitle("#eta_{h^{#pm}} (rad)");
   fhEtaCharged->SetXTitle("#it{p}_{T #pm} (GeV/#it{c})");
   
@@ -1372,7 +1392,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   fhPtTrigPout  =
   new TH2F("hPtTrigPout","Pout with triggers",
-           nptbins,ptmin,ptmax,2*nptbins,-ptmax,ptmax);
+           nptbins,ptmin,ptmax,nptbins,-ptmax/2,ptmax/2);
   fhPtTrigPout->SetYTitle("#it{p}_{out} (GeV/#it{c})");
   fhPtTrigPout->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
@@ -2075,19 +2095,19 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
 	  
     fhPhiNeutral  = new TH2F
     ("hPhiNeutral","#phi_{#pi^{0}}  vs #it{p}_{T #pi^{0}}",
-     nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+     nptbins,ptmin,ptmax,180,0,TMath::TwoPi());
     fhPhiNeutral->SetYTitle("#phi_{#pi^{0}} (rad)");
     fhPhiNeutral->SetXTitle("#it{p}_{T #pi^{0}} (GeV/#it{c})");
     
     fhEtaNeutral  = new TH2F
     ("hEtaNeutral","#eta_{#pi^{0}}  vs #it{p}_{T #pi^{0}}",
-     nptbins,ptmin,ptmax,netabins,etamin,etamax);
+     nptbins,ptmin,ptmax,200,-1.,1.);
     fhEtaNeutral->SetYTitle("#eta_{#pi^{0}} (rad)");
     fhEtaNeutral->SetXTitle("#it{p}_{T #pi^{0}} (GeV/#it{c})");
     
     fhDeltaPhiNeutral  = new TH2F
     ("hDeltaPhiNeutral","#phi_{trigger} - #phi_{#pi^{0}} vs #it{p}_{T trigger}",
-     nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+     nptbins,ptmin,ptmax,ndeltaphibins ,deltaphimin,deltaphimax);
     fhDeltaPhiNeutral->SetYTitle("#Delta #phi (rad)");
     fhDeltaPhiNeutral->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
@@ -2277,25 +2297,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhMCEtaCharged  = new TH2F
     ("hMCEtaCharged","MC #eta_{h^{#pm}}  vs #it{p}_{T #pm}",
-     nptbins,ptmin,ptmax,netabins,etamin,etamax);
+     nptbins,ptmin,ptmax,100,-1.,1.);
     fhMCEtaCharged->SetYTitle("#eta_{h^{#pm}} (rad)");
     fhMCEtaCharged->SetXTitle("#it{p}_{T #pm} (GeV/#it{c})");
     
     fhMCPhiCharged  = new TH2F
     ("hMCPhiCharged","#MC phi_{h^{#pm}}  vs #it{p}_{T #pm}",
-     nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+     nptbins,ptmin,ptmax,180,0,TMath::TwoPi());
     fhMCPhiCharged->SetYTitle("MC #phi_{h^{#pm}} (rad)");
     fhMCPhiCharged->SetXTitle("#it{p}_{T #pm} (GeV/#it{c})");
     
     fhMCDeltaPhiDeltaEtaCharged  = new TH2F
     ("hMCDeltaPhiDeltaEtaCharged","#MC phi_{trigger} - #phi_{h^{#pm}} vs #eta_{trigger} - #eta_{h^{#pm}}",
-     140,-2.,5.,200,-2,2);
+     ndeltaphibins ,deltaphimin,deltaphimax,ndeltaetabins ,deltaetamin,deltaetamax);
     fhMCDeltaPhiDeltaEtaCharged->SetXTitle("#Delta #phi (rad)");
     fhMCDeltaPhiDeltaEtaCharged->SetYTitle("#Delta #eta");
     
     fhMCDeltaEtaCharged  = new TH2F
     ("hMCDeltaEtaCharged","MC #eta_{trigger} - #eta_{h^{#pm}} vs #it{p}_{T trigger} and #it{p}_{T assoc}",
-     nptbins,ptmin,ptmax,200,-2,2);
+     nptbins,ptmin,ptmax,ndeltaetabins ,deltaetamin,deltaetamax);
     fhMCDeltaEtaCharged->SetYTitle("#Delta #eta");
     fhMCDeltaEtaCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
@@ -3085,7 +3105,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     // Acceptance of the trigger
     //
     Float_t phi = particle->Phi();
-    if( phi<0 ) phi+=TMath::TwoPi();
+    if( phi < 0 ) phi+=TMath::TwoPi();
     fhPhiTrigger->Fill(pt, phi);
     
     fhEtaTrigger->Fill(pt, particle->Eta());
@@ -3270,14 +3290,21 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     //
     // Azimuthal Angle histograms
     //
-    // Calculate deltaPhi shift
+    
     deltaPhi = phiTrig-phi;
+
+    //
+    // Calculate deltaPhi shift so that for the particles on the opposite side
+    // it is defined between 90 and 270 degrees
+    // Shift [-360,-90]  to [0, 270]
+    // and [270,360] to [-90,0]
     if(deltaPhi <= -TMath::PiOver2()) deltaPhi+=TMath::TwoPi();
     if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
 
     FillChargedAngularCorrelationHistograms(pt,  ptTrig,  bin, phi, phiTrig,  deltaPhi,
                                             eta, etaTrig, decay, track->GetHMPIDsignal(),
                                             outTOF, cenbin, mcTag);
+    
     //
     // Imbalance zT/xE/pOut histograms
     //
@@ -3396,9 +3423,8 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
   Double_t etaAssoc = -999.;
   Double_t deltaPhi = -999.;
   Double_t deltaEta = -999.;
-  Double_t xE = -999.;
-  Double_t hbpXE = -999.;
-      
+  Double_t xE       = -999.;
+  
   // Start from first event in pool except if in this same event the pool was filled
   Int_t ev0 = 0;
   if(GetReader()->GetLastTracksMixedEvent() == GetEventNumber()) ev0 = 1;
@@ -3552,28 +3578,36 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
         printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation(): deltaPhi= %f, deltaEta=%f\n",deltaPhi, deltaEta);
       
       // Angular correlation
-      fhMixDeltaPhiCharged        ->Fill(ptTrig,  deltaPhi);
+      fhMixDeltaPhiCharged        ->Fill(ptTrig,   deltaPhi);
       fhMixDeltaPhiDeltaEtaCharged->Fill(deltaPhi, deltaEta);
 
+      //
       // Momentum imbalance
-      xE = -ptAssoc/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
-      //if(xE <0.)xE =-xE;
-      if(xE > 0 ) hbpXE = TMath::Log(1./xE); 
-
+      //
       if ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   )
       {
+        xE = -ptAssoc/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
+        
+        if(xE < 0.)
+          printf("MakeChargedMixCorrelation(): Careful!!, negative xE %2.2f for right UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+                 xE,deltaPhi*TMath::RadToDeg(),TMath::Cos(deltaPhi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
+        
         fhMixXECharged->Fill(ptTrig,xE);
-        if(xE > 0 ) fhMixHbpXECharged->Fill(ptTrig,hbpXE);
+        if(xE > 0 ) fhMixHbpXECharged->Fill(ptTrig, TMath::Log(1./xE));
       }
       
-      // Underlying event
+      //
+      // Underlying event momentum imbalance
+      //
       if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) )
       {
         //Underlying event region
         Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
         Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
         
-        if(uexE < 0.) uexE = -uexE;
+        if(uexE < 0.)
+          printf("MakeChargedMixCorrelation(): Careful!!, negative xE %2.2f for left UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+                 uexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
         
         fhMixXEUeCharged->Fill(ptTrig,uexE);
       }
@@ -3607,9 +3641,9 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       if(fFillEtaGapsHisto)
       {
         if(TMath::Abs(deltaEta) > 0.8)
-          fhMixDeltaPhiChargedAssocPtBinDEta08  [bin]->Fill(ptTrig,   deltaPhi);
+          fhMixDeltaPhiChargedAssocPtBinDEta08  [bin]->Fill(ptTrig, deltaPhi);
         if(TMath::Abs(deltaEta) < 0.01)
-          fhMixDeltaPhiChargedAssocPtBinDEta0   [bin]->Fill(ptTrig,   deltaPhi);
+          fhMixDeltaPhiChargedAssocPtBinDEta0   [bin]->Fill(ptTrig, deltaPhi);
       }
 
     } // track loop
@@ -3725,7 +3759,11 @@ void AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleC
     if( (deltaPhi > fDeltaPhiMinCut) && ( deltaPhi < fDeltaPhiMaxCut) )
     {
       xE  =-pt/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
-      //if(xE <0.)xE =-xE;
+
+      if(xE < 0.)
+        printf("MakeNeutralCorrelation(): Careful!!, negative xE %2.2f for right UE cos(dPhi %2.2f) = %2.2f, check correlation dPhi limits %f to %f\n",
+               xE,deltaPhi*TMath::RadToDeg(),TMath::Cos(deltaPhi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg());
+      
       if(xE > 0 ) hbpXE = TMath::Log(1./xE);
       
       fhDeltaPhiNeutralPt->Fill(pt,deltaPhi);
