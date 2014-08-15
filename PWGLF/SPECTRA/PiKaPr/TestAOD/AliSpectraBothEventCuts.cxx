@@ -175,7 +175,9 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
   fHistoCuts->Fill(kProcessedEvents);
   fHistoRunNumbers->Fill(aod->GetRunNumber());
   Bool_t IsPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerSettings);//FIXME we can add the trigger mask here
- if(fAnalysisUtils) // we check for pile-up
+  if(!IsPhysSel)
+	return IsPhysSel;
+  if(fAnalysisUtils) // we check for pile-up
 		 IsPhysSel = (!fAnalysisUtils->IsPileUpEvent(fAOD));
   if(!IsPhysSel)
 	return IsPhysSel;
