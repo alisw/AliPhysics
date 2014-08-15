@@ -432,7 +432,6 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F **      fhDeltaPhiDecayChargedAssocPtBin;//![fNAssocPtBins*GetNZvertBin()] Tagged as decay Trigger pT vs dPhi for different associated pt bins
   
   //if the data is MC, fill MC information
-  TH2F *       fh2phiTriggerParticle;          //! #phi resolution for triggers
   TH1F *       fhMCPtTrigger;                  //! MC pure pT distribution of trigger particles
   TH2F *       fhMCPhiTrigger;                 //! MC pure Phi distribution of trigger particles
   TH2F *       fhMCEtaTrigger;                 //! MC pure Eta distribution of trigger particles

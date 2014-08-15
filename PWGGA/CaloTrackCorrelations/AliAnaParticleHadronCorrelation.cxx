@@ -150,7 +150,6 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhDeltaPhiDecayCharged(0),      fhXEDecayCharged(0),           fhZTDecayCharged(0),
     fhDeltaPhiDecayNeutral(0),      fhXEDecayNeutral(0),           fhZTDecayNeutral(0),
     fhDeltaPhiDecayChargedAssocPtBin(0), 
-    fh2phiTriggerParticle(0x0),
     fhMCPtTrigger(0),               fhMCPhiTrigger(0),             fhMCEtaTrigger(0),
     fhMCPtTriggerNotLeading(0),     fhMCPhiTriggerNotLeading(0),   fhMCEtaTriggerNotLeading(0),
     fhMCEtaCharged(0),              fhMCPhiCharged(0),
@@ -2262,10 +2261,6 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   //if data is MC, fill more histograms
   if(IsDataMC())
   {
-    fh2phiTriggerParticle = new TH2F("h2PhiTriggerParticle","#phi resolution for trigger particles",nptbins,ptmin,ptmax,100,-1,1);
-    fh2phiTriggerParticle->GetXaxis()->SetTitle("#it{p}_{T gen Trigger} (GeV/#it{c})");
-    fh2phiTriggerParticle->GetYaxis()->SetTitle("(#phi_{rec}-#phi_{gen})/#phi_{gen}");
-    
     fhMCPtTrigger  = new TH1F ("hMCPtTrigger","MC : trigger #it{p}_{T}", nptbins,ptmin,ptmax);
     fhMCPtTrigger->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     
@@ -2367,7 +2362,6 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhMCPtAssocDeltaPhi->SetYTitle("#Delta #phi (rad)");
     fhMCPtAssocDeltaPhi->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
     
-    outputContainer->Add(fh2phiTriggerParticle);
     outputContainer->Add(fhMCPtTrigger);
     outputContainer->Add(fhMCPhiTrigger);
     outputContainer->Add(fhMCEtaTrigger);
