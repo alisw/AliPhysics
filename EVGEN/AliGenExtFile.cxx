@@ -159,9 +159,11 @@ void AliGenExtFile::Generate()
     //
     class SelectorLogic { // need to do recursive back tracking, requires a "nested" function
     private:
+       Int_t idCount;
        map<Int_t,Int_t> firstMotherMap;
        map<Int_t,Int_t> secondMotherMap;
        map<Int_t,Bool_t> selectedIdMap;
+       map<Int_t,Int_t> newIdMap;
        void selectMothersToo(Int_t particleId) {
           Int_t mum1 = firstMotherMap[particleId];
           if (mum1 > -1 && !selectedIdMap[mum1]) {
@@ -175,19 +177,38 @@ void AliGenExtFile::Generate()
           }
        }
     public:
+       void init() {
+          idCount = 0;
+       }
        void setData(Int_t id, Int_t mum1, Int_t mum2, Bool_t selected) {
+          idCount++; // we know that this function is called in succession of ids, so counting is fine to determine max id
           firstMotherMap[id] = mum1;
           secondMotherMap[id] = mum2;
           selectedIdMap[id] = selected;
-          if (selected) {
-             selectMothersToo(id);
+       }
+       void reselectCuttedMothersAndRemapIDs() {
+          for (Int_t id = 0; id < idCount; ++id) {
+             if (selectedIdMap[id]) {
+                selectMothersToo(id);
+             }
+          }
+          Int_t newId = 0;
+          for (Int_t id = 0; id < idCount; id++) {
+             if (selectedIdMap[id]) {
+                newIdMap[id] = newId; ++newId;
+             }
           }
        }
        Bool_t isSelected(Int_t id) {
           return selectedIdMap[id];
        }
+       Int_t newId(Int_t id) {
+          if (id == -1) return -1;
+          return newIdMap[id];
+       }
     };
     SelectorLogic selector;
+    selector.init();
     for (Int_t i = 0; i < nTracks; i++) {
        TParticle* jparticle = fReader->NextParticle();
        selector.setData(i,
@@ -195,32 +216,21 @@ void AliGenExtFile::Generate()
              jparticle->GetSecondMother(),
              KinematicSelection(jparticle,0));
     }
+    selector.reselectCuttedMothersAndRemapIDs();
     fReader->RewindEvent();
 
     //
     // Stack filling loop
     //
-    map<Int_t,Int_t> newIdMap;
-    map<Int_t,Int_t> newFirstMotherMap;
     fNprimaries = 0;
     for (i = 0; i < nTracks; i++) {
        TParticle* jparticle = fReader->NextParticle();
-       Int_t parent = jparticle->GetFirstMother();
-       if (parent > -1) {
-          Int_t parentNewId = newIdMap[parent];
-          if (parentNewId == -1) { // if parent was skipped
-             parent = newFirstMotherMap[parent]; // re-adjust parent using stored information
-          } else {
-             parent = parentNewId; // otherwise re-map parent to new id
-          }
-       }
-       newFirstMotherMap[i] = parent; // store re-mapped parent data so child nodes can use it
        Bool_t selected = selector.isSelected(i);
        if (!selected) {
-          newIdMap[i] = -1; // -1 marks this particle was skipped
           continue;
        }
-       newIdMap[i] = fNprimaries; // maps old id to new id
+       Int_t parent = selector.newId(jparticle->GetFirstMother());
+//       printf("particle %d -> %d, with mother %d -> %d\n", i, selector.newId(i), jparticle->GetFirstMother(), parent);
 
 	p[0] = jparticle->Px();
 	p[1] = jparticle->Py();
