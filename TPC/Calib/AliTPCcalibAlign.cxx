@@ -439,11 +439,11 @@ AliTPCcalibAlign::~AliTPCcalibAlign() {
   fArraySectorIntParam.Delete(); // array of sector alignment parameters
   fArraySectorIntCovar.Delete(); // array of sector alignment covariances 
   for (Int_t i=0; i<2; i++){
-    if (fClusterDelta[i]) delete fClusterDelta[i];   // cluster residuals
+    delete fClusterDelta[i];   // cluster residuals
   }
 
   for (Int_t i=0; i<4; i++){
-    if (fTrackletDelta[i]) delete fTrackletDelta[i];   // tracklet residuals
+    delete fTrackletDelta[i];   // tracklet residuals
   }
   
 
