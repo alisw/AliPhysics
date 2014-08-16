@@ -21,6 +21,7 @@ class AliPIDResponse;
 class AliEventPoolManager;
 class AliEventPool;
 class AliEventplane;
+class TSpline;
 
 class AliAnalysisTaskJetProtonCorr :
   public AliAnalysisTaskSE
@@ -99,6 +100,9 @@ public:
   Float_t GetToyRadius() const { return fToyRadius; }
   void SetToySmearPhi(Float_t sigma) { fToySmearPhi = sigma; }
   Float_t GetToySmearPhi() const { return fToySmearPhi; }
+
+  void SetEventPlaneResSpline(TSpline *spline) { fSplineEventPlaneRes = spline; }
+  const TSpline *GetEventPlaneResSpline() const { return fSplineEventPlaneRes; }
 
   void PrintTask(Option_t *option, Int_t indent) const;
 
@@ -221,12 +225,16 @@ public:
       kHistNsigmaTPCTOFUsedSemiCentralMCp,
       kHistNsigmaTPCTOFUsedSemiCentralMCd,
 
+      kHistNevMix,
+
       kHistEvPlane,
+      kHistEvPlaneRes,
       kHistEvPlaneUsed,
       kHistEvPlaneCheck,
       kHistEvPlaneCheckUsed,
       kHistEvPlane3,
       kHistEvPlaneCorr,
+      kHistEvPlaneCross,
       kHistEvPlaneCorrNoTrgJets,
       kHistEvPlaneCorrNoTrgJetsTrgd,
       kHistJetPtCentral,
@@ -373,14 +381,18 @@ public:
     AliHistCorr(TString name, TList *outputList = 0x0);
     ~AliHistCorr();
 
-    void Trigger(Float_t phi, Float_t eta, Float_t weight = 1.) {
+    void Trigger(Float_t phi, Float_t eta, Float_t qpt, Float_t weight) {
       fHistStat->Fill(1., weight);
       if (fHistCorrTrgEtaPhi)
 	fHistCorrTrgEtaPhi->Fill(phi, eta, weight);
+      if (fHistCorrTrgEtaPhiQpt)
+	fHistCorrTrgEtaPhiQpt->Fill(phi, eta, qpt, weight);
     }
-    void Ass(Float_t phi, Float_t eta, Float_t weight = 1.) {
+    void Ass(Float_t phi, Float_t eta, Float_t qpt, Float_t weight) {
       if (fHistCorrAssEtaPhi)
 	fHistCorrAssEtaPhi->Fill(phi, eta, weight);
+      if (fHistCorrAssEtaPhiQpt)
+	fHistCorrAssEtaPhiQpt->Fill(phi, eta, qpt, weight);
     }
     void Fill(AliVParticle *trgPart, AliVParticle *assPart, Float_t weight = 1.);
     void Fill(TLorentzVector *trgPart, AliVParticle *assPart, Float_t weight = 1.);
@@ -397,6 +409,8 @@ public:
     TH2F *fHistCorrAvgEtaPhi;
     TH2F *fHistCorrTrgEtaPhi;
     TH2F *fHistCorrAssEtaPhi;
+    TH3F *fHistCorrTrgEtaPhiQpt;
+    TH3F *fHistCorrAssEtaPhiQpt;
 
     const Float_t fHistDphiLo;
     const Int_t   fHistDphiNbins;
@@ -430,6 +444,7 @@ protected:
   Float_t fZvtx; //!
   AliPIDResponse *fPIDResponse; //!
   Float_t fEventPlaneAngle; //!
+  Float_t fEventPlaneRes; //!
   Float_t fEventPlaneAngleCheck; //!
   Float_t fEventPlaneAngle3; //!
 
@@ -468,12 +483,14 @@ protected:
 		      Float_t phi2, Float_t pt2, Float_t charge2,
 		      Float_t radius, Float_t bSign) const;
 
-  Bool_t AcceptTrigger(const AliVTrack *trg);
-  Bool_t AcceptTrigger(const AliAODJet *trg);
+  Bool_t AcceptTrigger(AliVTrack *trg);
+  Bool_t AcceptTrigger(AliAODJet *trg);
   Bool_t AcceptAssoc(const AliVTrack *trk) const;
   Bool_t IsProton(const AliVTrack *trk) const;
   Bool_t AcceptAngleToEvPlane(Float_t phi, Float_t psi) const;
   Bool_t AcceptTwoTracks(const AliVParticle *trgPart, const AliVParticle *assPart) const;
+
+  Float_t GetPhiRel2(AliVParticle *part) const;
 
   TObjArray* CloneTracks(TObjArray *tracks) const;
 
@@ -553,6 +570,13 @@ protected:
   TF1 *fTrgJetPhiModSemi;
   TF1 *fTrgHadPhiModCent;
   TF1 *fTrgHadPhiModSemi;
+
+  Float_t fTrgJetV2Cent;
+  Float_t fTrgJetV2Semi;
+  Float_t fTrgHadV2Cent;
+  Float_t fTrgHadV2Semi;
+
+  TSpline *fSplineEventPlaneRes;
 
   // not implemented
   AliAnalysisTaskJetProtonCorr(const AliAnalysisTaskJetProtonCorr &rhs);
