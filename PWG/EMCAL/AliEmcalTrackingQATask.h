@@ -23,9 +23,8 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcal {
   Bool_t                 FillHistograms()                               ;
   void                   ExecOnce()                                     ;
   void                   GenerateHistoBins()                            ;
-  void                   AllocateDetectorLevelTHnSparse()                    ;
-  void                   AllocateGeneratorLevelTHnSparse()                              ;
-  void                   AllocateFindableParticlesTHnSparse()           ;
+  void                   AllocateDetectorLevelTHnSparse()               ;
+  void                   AllocateGeneratorLevelTHnSparse()              ;
   void                   AllocateMatchedParticlesTHnSparse()            ;
   void                   FillDetectorLevelTHnSparse(Double_t cent, Double_t trackEta, Double_t trackPhi, Double_t trackPt, 
                                                     Double_t sigma1OverPt, Int_t mcGen, Byte_t trackType);
