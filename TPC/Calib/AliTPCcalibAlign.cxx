@@ -3833,22 +3833,28 @@ void AliTPCcalibAlign::Streamer(TBuffer &R__b)
     AliTPCcalibBase::Streamer(R__b); // Stream the base class
 
     // Read the "big data members" from the same Root directory
+    // Attention: the gDirectory may NOT correspond to the file of the buffer
     if (gDirectory){
+      //      printf("READING from %s\n",gDirectory->GetPath());
       for (Int_t i=0; i<2; ++i){
 	TString hisName=TString::Format("AliTPCcalibAlign.%s.fClusterDelta_%d",GetName(),i);
 	if (gDirectory->Get(hisName.Data())){
 	  fClusterDelta[i] = dynamic_cast<THn*>(gDirectory->Get((hisName).Data()));
 	}
+	if (!fClusterDelta[i]) AliWarning(Form("fClusterDelta[%d] is not read",i));
       }
-    
+      //
       for (Int_t i=0; i<4; ++i){
 	TString hisName=TString::Format("AliTPCcalibAlign.%s.fTrackletDelta_%d",GetName(),i);
 	if (gDirectory->Get(hisName.Data())){
 	  fTrackletDelta[i] = dynamic_cast<THnSparse*>(gDirectory->Get((hisName).Data()));
 	}
+	if (!fTrackletDelta[i]) AliWarning(Form("fTrackletDelta[%d] is not read",i));
       }
     }
-
+    else {
+      AliError("gDirectory pointer is null");
+    }
     // If the "big data members"were not in the file, try to read them from the object
     // This is suppose to restore the backward compatibility
     for (Int_t i=0; i<2; ++i) {
