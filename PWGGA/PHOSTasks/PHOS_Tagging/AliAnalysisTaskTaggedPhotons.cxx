@@ -781,7 +781,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
       p->SetWeight(1.) ;
     }
     //PID criteria
-    p->SetDispBit(clu->Chi2()<2.5) ;
+    p->SetDispBit(clu->Chi2()<2.5*2.5) ;
     p->SetTOFBit(TestTOF(clu->GetTOF(),clu->E())) ;
     p->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;   
     
