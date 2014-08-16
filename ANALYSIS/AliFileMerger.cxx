@@ -352,6 +352,20 @@ Bool_t AliFileMerger::IsAccepted(TString name){
   return accept;
 }
 
+Bool_t AliFileMerger::IsRejected(TString name){
+  //
+  // check is the name is explicitly in the rejection list
+  //  if fRejectMask speciefied  - entry with name speciief in the list are rejected 
+  //
+  Bool_t reject=kFALSE;
+  if (fRejectMask){
+    //
+    for (Int_t ireject=0; ireject<fRejectMask->GetEntries(); ireject++){
+      if (name.Contains(fRejectMask->At(ireject)->GetName())) {reject=kTRUE; break;}   // entry was rejected
+    }
+  }
+  return reject;
+}
 
 
 
@@ -418,7 +432,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist, Bool_t 
       //
       // check if we don't reject this name
       TString nameK(key->GetName());
-      if (!IsAccepted(nameK) && nameFiltering) {
+      if ((!IsAccepted(nameK) && nameFiltering) || (!nameFiltering && IsRejected(nameK))) {
 	if (!counterF) printf("Object %s is in rejection list, skipping...\n",nameK.Data());
 	continue;
       }
@@ -433,12 +447,16 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist, Bool_t 
 	     << key->GetName() << " title: " << key->GetTitle() << endl;
 	continue;
       }
+      // printf("Merging object %s, anchor directory: %s\n",key->GetName(),key->GetMotherDir()->GetPath());
       allNames.Add(new TObjString(key->GetName()));
       AliSysInfo::AddStamp(nameK.Data(),1,++counterK,counterF++); 
       // read object from first source file
       //current_sourcedir->cd();
 
+      TDirectory* currDir = gDirectory;
+      key->GetMotherDir()->cd();
       TObject *obj = key->ReadObj();
+      currDir->cd();
       if (!obj) {
 	AliError(Form("Failed to get the object with key %s from %s",key->GetName(),current_sourcedir->GetFile()->GetName()));
 	continue;
