@@ -155,6 +155,49 @@ void AliGenExtFile::Generate()
     }
 
     //
+    // Stack selection loop
+    //
+    class SelectorLogic { // need to do recursive back tracking, requires a "nested" function
+    private:
+       map<Int_t,Int_t> firstMotherMap;
+       map<Int_t,Int_t> secondMotherMap;
+       map<Int_t,Bool_t> selectedIdMap;
+       void selectMothersToo(Int_t particleId) {
+          Int_t mum1 = firstMotherMap[particleId];
+          if (mum1 > -1 && !selectedIdMap[mum1]) {
+             selectedIdMap[mum1] = true;
+             selectMothersToo(mum1);
+          }
+          Int_t mum2 = secondMotherMap[particleId];
+          if (mum2 > -1 && !selectedIdMap[mum2]) {
+             selectedIdMap[mum2] = true;
+             selectMothersToo(mum2);
+          }
+       }
+    public:
+       void setData(Int_t id, Int_t mum1, Int_t mum2, Bool_t selected) {
+          firstMotherMap[id] = mum1;
+          secondMotherMap[id] = mum2;
+          selectedIdMap[id] = selected;
+          if (selected) {
+             selectMothersToo(id);
+          }
+       }
+       Bool_t isSelected(Int_t id) {
+          return selectedIdMap[id];
+       }
+    };
+    SelectorLogic selector;
+    for (Int_t i = 0; i < nTracks; i++) {
+       TParticle* jparticle = fReader->NextParticle();
+       selector.setData(i,
+             jparticle->GetFirstMother(),
+             jparticle->GetSecondMother(),
+             KinematicSelection(jparticle,0));
+    }
+    fReader->RewindEvent();
+
+    //
     // Stack filling loop
     //
     map<Int_t,Int_t> newIdMap;
@@ -172,7 +215,7 @@ void AliGenExtFile::Generate()
           }
        }
        newFirstMotherMap[i] = parent; // store re-mapped parent data so child nodes can use it
-       Bool_t selected = KinematicSelection(jparticle,0);
+       Bool_t selected = selector.isSelected(i);
        if (!selected) {
           newIdMap[i] = -1; // -1 marks this particle was skipped
           continue;
