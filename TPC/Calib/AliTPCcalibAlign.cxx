@@ -439,13 +439,13 @@ AliTPCcalibAlign::~AliTPCcalibAlign() {
   fArraySectorIntParam.Delete(); // array of sector alignment parameters
   fArraySectorIntCovar.Delete(); // array of sector alignment covariances 
   for (Int_t i=0; i<2; i++){
-    delete fClusterDelta[i];   // cluster residuals
+    if (fClusterDelta[i]) delete fClusterDelta[i];   // cluster residuals
   }
 
   for (Int_t i=0; i<4; i++){
-    delete fTrackletDelta[i];   // tracklet residuals
+    if (fTrackletDelta[i]) delete fTrackletDelta[i];   // tracklet residuals
   }
-
+  
 
 }
 
@@ -3838,17 +3838,15 @@ void AliTPCcalibAlign::Streamer(TBuffer &R__b)
       //      printf("READING from %s\n",gDirectory->GetPath());
       for (Int_t i=0; i<2; ++i){
 	TString hisName=TString::Format("AliTPCcalibAlign.%s.fClusterDelta_%d",GetName(),i);
-	if (gDirectory->Get(hisName.Data())){
-	  fClusterDelta[i] = dynamic_cast<THn*>(gDirectory->Get((hisName).Data()));
-	}
+	TObject* obX = gDirectory->Get(hisName.Data());
+	if (obX) fClusterDelta[i] = dynamic_cast<THn*>(obX);//gDirectory->Get((hisName).Data()));
 	if (!fClusterDelta[i]) AliWarning(Form("fClusterDelta[%d] is not read",i));
       }
       //
       for (Int_t i=0; i<4; ++i){
 	TString hisName=TString::Format("AliTPCcalibAlign.%s.fTrackletDelta_%d",GetName(),i);
-	if (gDirectory->Get(hisName.Data())){
-	  fTrackletDelta[i] = dynamic_cast<THnSparse*>(gDirectory->Get((hisName).Data()));
-	}
+	TObject* obX = gDirectory->Get(hisName.Data());
+	if (obX) fTrackletDelta[i] = dynamic_cast<THnSparse*>(obX);//gDirectory->Get((hisName).Data()));
 	if (!fTrackletDelta[i]) AliWarning(Form("fTrackletDelta[%d] is not read",i));
       }
     }
