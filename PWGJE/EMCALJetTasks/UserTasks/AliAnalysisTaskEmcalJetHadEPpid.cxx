@@ -76,7 +76,8 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fesdTrackCuts(0),
-  fDoEventMixing(0), fMixingTracks(50000),
+  fDoEventMixing(0), fMixingTracks(50000), fNMIXevents(5),
+  fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
@@ -91,12 +92,13 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   isPItof(0), isKtof(0), isPtof(0), // pid TOF
   fPoolMgr(0x0),
   fPIDResponse(0x0), fTPCResponse(),
-  fESD(0), fAOD(0),   fVevent(0),  
-  fHistEventQA(0),
+  fESD(0), fAOD(0), fVevent(0),  
+  fHistEventQA(0), fHistEventSelectionQA(0),
   fHistTPCdEdX(0), fHistITSsignal(0), //fHistTOFsignal(0),
   fHistRhovsCent(0), fHistNjetvsCent(0), fHistCentrality(0),
   fHistZvtx(0), fHistMult(0),
   fHistJetPhi(0), fHistTrackPhi(0),
+  fHistLocalRhoJetpt(0),
   fHistJetHaddPhiIN(0), fHistJetHaddPhiOUT(0), fHistJetHaddPhiMID(0),
   fHistJetHaddPhiBias(0), fHistJetHaddPhiINBias(0), fHistJetHaddPhiOUTBias(0), fHistJetHaddPhiMIDBias(0),
   fHistMEdPHI(0),
@@ -177,7 +179,8 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fesdTrackCuts(0),
-  fDoEventMixing(0), fMixingTracks(50000),
+  fDoEventMixing(0), fMixingTracks(50000), fNMIXevents(5),
+  fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
@@ -192,12 +195,13 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   isPItof(0), isKtof(0), isPtof(0), // pid TOF
   fPoolMgr(0x0),
   fPIDResponse(0x0), fTPCResponse(),
-  fESD(0), fAOD(0),  fVevent(0),  
-  fHistEventQA(0),
+  fESD(0), fAOD(0), fVevent(0),  
+  fHistEventQA(0), fHistEventSelectionQA(0),
   fHistTPCdEdX(0), fHistITSsignal(0), //fHistTOFsignal(0),
   fHistRhovsCent(0), fHistNjetvsCent(0), fHistCentrality(0),
   fHistZvtx(0), fHistMult(0),
   fHistJetPhi(0), fHistTrackPhi(0),
+  fHistLocalRhoJetpt(0),
   fHistJetHaddPhiIN(0), fHistJetHaddPhiOUT(0), fHistJetHaddPhiMID(0),
   fHistJetHaddPhiBias(0), fHistJetHaddPhiINBias(0), fHistJetHaddPhiOUTBias(0), fHistJetHaddPhiMIDBias(0),
   fHistMEdPHI(0),
@@ -301,20 +305,25 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   fHistJetHaddPhiIN = new TH1F("fHistJetHaddPhiIN","Jet-Hadron #Delta#varphi IN PLANE", 128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
   fHistJetHaddPhiOUT = new TH1F("fHistJetHaddPhiOUT","Jet-Hadron #Delta#varphi OUT PLANE",128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
   fHistJetHaddPhiMID = new TH1F("fHistJetHaddPhiMID","Jet-Hadron #Delta#varphi MIDDLE of PLANE",128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
-  
-  fHistEventQA = new TH1F("fHistEventQA", "Event Counter at checkpoints in code", 25, -0.5, 24.5);
+  fHistLocalRhoJetpt = new TH1F("fHistLocalRhoJetpt","Local Rho corrected Jet p_{T}", 50, -50, 200);
+
+  // Event QA histo  
+  fHistEventQA = new TH1F("fHistEventQA", "Event Counter at checkpoints in code", 20, 0.5, 20.5);
   SetfHistQAcounterLabels(fHistEventQA); 
   fOutput->Add(fHistEventQA);
- 
+
+  // Event Selection QA histo
+  fHistEventSelectionQA = new TH1F("fHistEventSelectionQA", "Trigger Selection Counter", 20, 0.5, 20.5);
+  SetfHistEvtSelQALabels(fHistEventSelectionQA);
+  fOutput->Add(fHistEventSelectionQA);
+
   // add to output lists
   fOutput->Add(fHistNjetvsCent);
   fOutput->Add(fHistJetHaddPHI);
   fOutput->Add(fHistJetHaddPhiIN);
   fOutput->Add(fHistJetHaddPhiOUT);
   fOutput->Add(fHistJetHaddPhiMID);
-    
-  fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 2000, 0.0, 100.0, 500, 0, 500); 
-  fOutput->Add(fHistTPCdEdX);
+  fOutput->Add(fHistLocalRhoJetpt);
 
   // create histo's used for general QA
   if (makeQAhistos) {
@@ -333,7 +342,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     fHistMEphieta = new TH2F("fHistMEphieta", "Mixed Event #phi-#eta distribution", 64, -0.5*TMath::Pi(), 1.5*TMath::Pi(), 64,-1.8,1.8);  // was 64 bins
 
     // add to output list
-    //fOutput->Add(fHistTPCdEdX);
+    fOutput->Add(fHistTPCdEdX);
     fOutput->Add(fHistITSsignal);
     //fOutput->Add(fHistTOFsignal);
     fOutput->Add(fHistCentrality);
@@ -658,7 +667,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     // *****************************************************************************************
 
     // PID counter
-    fHistPID = new TH1F("fHistPID","PID Counter",15, 0, 15.0);
+    fHistPID = new TH1F("fHistPID","PID Counter", 15, 0.5, 15.5);
     SetfHistPIDcounterLabels(fHistPID);
     fOutput->Add(fHistPID);
 
@@ -722,11 +731,37 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
   fHistEventQA->Fill(1); // All Events that get entered
 
-  if(!fLocalRho){
-    AliError(Form("Couldn't get fLocalRho object, try to get it from Event based on name\n"));
-    fLocalRho = GetLocalRhoFromEvent(fLocalRhoName);
-    if(!fLocalRho) return kTRUE;
-  }
+  UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if(trig == 0) fHistEventSelectionQA->Fill(1);
+  if(trig & AliVEvent::kAny) fHistEventSelectionQA->Fill(2);
+  if(trig & AliVEvent::kAnyINT) fHistEventSelectionQA->Fill(3);
+  if(trig & AliVEvent::kMB) fHistEventSelectionQA->Fill(4);
+  if(trig & AliVEvent::kINT7) fHistEventSelectionQA->Fill(5);
+  if(trig & AliVEvent::kEMC1) fHistEventSelectionQA->Fill(6);
+  if(trig & AliVEvent::kEMC7) fHistEventSelectionQA->Fill(7);
+  if(trig & AliVEvent::kEMC8) fHistEventSelectionQA->Fill(8);
+  if(trig & AliVEvent::kEMCEJE) fHistEventSelectionQA->Fill(9);
+  if(trig & AliVEvent::kEMCEGA) fHistEventSelectionQA->Fill(10);
+  if(trig & AliVEvent::kCentral) fHistEventSelectionQA->Fill(11);
+  if(trig & AliVEvent::kSemiCentral) fHistEventSelectionQA->Fill(12);
+  if(trig & AliVEvent::kINT8) fHistEventSelectionQA->Fill(13);
+
+  if(trig & (AliVEvent::kEMCEJE | AliVEvent::kMB)) fHistEventSelectionQA->Fill(14);
+  if(trig & (AliVEvent::kEMCEGA | AliVEvent::kMB)) fHistEventSelectionQA->Fill(15);
+  if(trig & (AliVEvent::kAnyINT | AliVEvent::kMB)) fHistEventSelectionQA->Fill(16);
+
+  if(trig & (AliVEvent::kEMCEJE & AliVEvent::kMB)) fHistEventSelectionQA->Fill(17);
+  if(trig & (AliVEvent::kEMCEGA & AliVEvent::kMB)) fHistEventSelectionQA->Fill(18);
+  if(trig & (AliVEvent::kAnyINT & AliVEvent::kMB)) fHistEventSelectionQA->Fill(19);
+
+  if(GetBeamType() == 1) {
+    if(!fLocalRho){
+      AliError(Form("Couldn't get fLocalRho object, try to get it from Event based on name\n"));
+      fLocalRho = GetLocalRhoFromEvent(fLocalRhoName);
+      if(!fLocalRho) return kTRUE;
+    }
+  } // check for LocalRho object if PbPb data
+
   if(!fTracks){
     AliError(Form("No fTracks object!!\n"));
     return kTRUE;
@@ -821,10 +856,6 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     AliError(Form("Pointer to tracks %s == 0", fTracksNameME.Data()));
     return kTRUE;
   } // verify existence of tracks
-
-//  cout<<"mixed event tracks name: "<<fTracksNameME.Data()<<endl;
-
-//  return kTRUE;
 
   // get Jets object
   jets = dynamic_cast<TClonesArray*>(list->FindObject(fJets));
@@ -942,6 +973,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(ijet));
      if (!jet) continue;
 
+     if (!(trig & fTriggerEventType)) continue;
+
 	 // (should probably be higher..., but makes a cut on jet pT)
      if (jet->Pt()<0.1) continue;
      // do we accept jet? apply jet cuts
@@ -962,14 +995,16 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      // initialize and calculate various parameters: pt, eta, phi, rho, etc...
      Double_t jetphi = jet->Phi();      // phi of jet
      NJETAcc++;   // # accepted jets
-     fLocalRhoVal = fLocalRho->GetLocalVal(jetphi, fJetRad); //GetJetRadius(0)); // get local rho value
      Double_t jeteta = jet->Eta();     // ETA of jet
      Double_t jetPt = -500; 
      Double_t jetPtGlobal = -500; 
-     //Double_t jetPtLocal = -500;            // initialize corr jet pt
+     Double_t jetPtLocal = -500;            // initialize corr jet pt
+     if(GetBeamType() == 1) {
+       fLocalRhoVal = fLocalRho->GetLocalVal(jetphi, fJetRad); //GetJetRadius(0)); // get local rho value
+       jetPtLocal = jet->Pt()-jet->Area()*fLocalRhoVal; // corrected pT of jet using Rho modulated for V2 and V3
+     }
      jetPt = jet->Pt();
      jetPtGlobal = jet->Pt()-jet->Area()*fRhoVal;  // corrected pT of jet from rho value
-     //jetPtLocal = jet->Pt()-jet->Area()*fLocalRhoVal; // corrected pT of jet using Rho modulated for V2 and V3
      Double_t dEP = -500;                    // initialize angle between jet and event plane
      dEP = RelativeEPJET(jetphi,fEPV0); // angle betweeen jet and event plane
 
@@ -1028,6 +1063,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         // set up and fill Jet-Hadron Correction THnSparse
         Double_t CorrEntries[4] = {fCent, jet->Pt(), dEP, zVtx};
         fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with Correction entries
+
+        if(GetBeamType() == 1) fHistLocalRhoJetpt->Fill(jetPtLocal);
       }
 
       // loop over all track for an event containing a jet with a pT>fJetPtCut  (15)GeV
@@ -1082,7 +1119,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
           // set up and fill Jet-Hadron THnSparse
           Double_t triggerEntries[9] = {fCent, jet->Pt(), track->Pt(), deta, dphijh, dEP, zVtx, trCharge, leadjet};
           fhnJH->Fill(triggerEntries);    // fill Sparse Histo with trigger entries
-          
+
           // fill histo's
           if(makeQAhistos) fHistSEphieta->Fill(dphijh, deta); // single event distribution
           if (makeoldJEThadhistos) fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
@@ -1171,85 +1208,85 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
           // check track has pT < 0.900 GeV  - use TPC pid
           if (pt<0.900 && dEdx>0) {
 	        nPIDtpc = 4;
-            nPID = 0.5;
+            nPID = 1;
 
             // PION check - TPC
             if (TMath::Abs(nSigmaPion_TPC)<2 && TMath::Abs(nSigmaKaon_TPC)>2 && TMath::Abs(nSigmaProton_TPC)>2 ){
               isPItpc = kTRUE;
               nPIDtpc = 1;
-              nPID=1.5;
+              nPID=2;
             }else isPItpc = kFALSE; 
 
             // KAON check - TPC
             if (TMath::Abs(nSigmaKaon_TPC)<2 && TMath::Abs(nSigmaPion_TPC)>3 && TMath::Abs(nSigmaProton_TPC)>2 ){
               isKtpc = kTRUE;
               nPIDtpc = 2;
-              nPID=2.5;
+              nPID=3;
             }else isKtpc = kFALSE;
 
             // PROTON check - TPC
             if (TMath::Abs(nSigmaProton_TPC)<2 && TMath::Abs(nSigmaPion_TPC)>3 && TMath::Abs(nSigmaKaon_TPC)>2 ){
               isPtpc = kTRUE;
               nPIDtpc = 3;
-              nPID=3.5;
+              nPID=4;
             }else isPtpc = kFALSE;
           }  // cut on track pT for TPC
 
           // check track has pT < 0.500 GeV - use ITS pid
           if (pt<0.500 && ITSsig>0) {
             nPIDits = 4;
-            nPID = 4.5;
+            nPID = 5;
 
             // PION check - ITS
             if (TMath::Abs(nSigmaPion_ITS)<2 && TMath::Abs(nSigmaKaon_ITS)>2 && TMath::Abs(nSigmaProton_ITS)>2 ){
               isPIits = kTRUE;
               nPIDits = 1; 
-	          nPID=5.5;
+	          nPID=6;
             }else isPIits = kFALSE;
 
             // KAON check - ITS
             if (TMath::Abs(nSigmaKaon_ITS)<2 && TMath::Abs(nSigmaPion_ITS)>3 && TMath::Abs(nSigmaProton_ITS)>2 ){
               isKits = kTRUE;
               nPIDits = 2;
-              nPID=6.5;
+              nPID=7;
             }else isKits = kFALSE;
 
             // PROTON check - ITS
             if (TMath::Abs(nSigmaProton_ITS)<2 && TMath::Abs(nSigmaPion_ITS)>3 && TMath::Abs(nSigmaKaon_ITS)>2 ){
               isPits = kTRUE;
               nPIDits = 3;
-	          nPID=7.5;
+	          nPID=8;
             }else isPits = kFALSE;
           }  // cut on track pT for ITS
 
           // check track has 0.900 GeV < pT < 2.500 GeV - use TOF pid
           if (pt>0.900 && pt<2.500 && TOFsig>0) {
 	        nPIDtof = 4;
-            nPID = 8.5;
+            nPID = 9;
 
             // PION check - TOF
             if (TMath::Abs(nSigmaPion_TOF)<2 && TMath::Abs(nSigmaKaon_TOF)>2 && TMath::Abs(nSigmaProton_TOF)>2 ){
               isPItof = kTRUE;
               nPIDtof = 1;
-              nPID=9.5;
+              nPID=10;
             }else isPItof = kFALSE;
 
             // KAON check - TOF
             if (TMath::Abs(nSigmaKaon_TOF)<2 && TMath::Abs(nSigmaPion_TOF)>3 && TMath::Abs(nSigmaProton_TOF)>2 ){
               isKtof = kTRUE;
               nPIDtof = 2;
-              nPID=10.5;
+              nPID=11;
             }else isKtof = kFALSE;
 
             // PROTON check - TOF
             if (TMath::Abs(nSigmaProton_TOF)<2 && TMath::Abs(nSigmaPion_TOF)>3 && TMath::Abs(nSigmaKaon_TOF)>2 ){
               isPtof = kTRUE;
               nPIDtof = 3;
-              nPID=11.5;
+              nPID=12;
             }else isPtof = kFALSE;
           }  // cut on track pT for TOF
 
-          if (nPID == -99) nPID = 13.5;
+          if (nPID == -99) nPID = 14;
  	      fHistPID->Fill(nPID);
 
           // PID sparse getting filled 
@@ -1313,7 +1350,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   TObjArray* tracksClone = 0x0;
   
   // PbPb collisions - create cloned picotracks
-  if(GetBeamType() == 1) tracksClone = CloneAndReduceTrackList(tracks); // TEST
+  //if(GetBeamType() == 1) tracksClone = CloneAndReduceTrackList(tracks); // TEST
 
   //Prepare to do event mixing
   if(fDoEventMixing>0){
@@ -1338,11 +1375,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     // mix jets from triggered events with tracks from MB events
     // get the trigger bit, need to change trigger bits between different runs
     UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    // pp collisions
-    if(GetBeamType() == 0) {
-      //trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-      if (trigger==0)  return kTRUE;
-    }
+    // if event was not selected (triggered) for any reseason (should never happen) then return
+    if (trigger==0)  return kTRUE;
 
     // initialize event pools
     AliEventPool* pool = 0x0;
@@ -1353,13 +1387,13 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     if(GetBeamType() == 0) {
       Ntrks=(Double_t)Ntracks*1.0;
       //cout<<"Test.. Ntrks: "<<fPoolMgr->GetEventPool(Ntrks);
-      //AliEventPool* 
       poolpp = fPoolMgr->GetEventPool(Ntrks, zVtx); // for pp
     }
 
     // PbPb collisions - get event pool 
     if(GetBeamType() == 1) pool = fPoolMgr->GetEventPool(fCent, zVtx); // for PbPb? fcent
 
+    // if we don't have a pool, return
     if (!pool && !poolpp){
       if(GetBeamType() == 1) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCent, zVtx));
       if(GetBeamType() == 0) AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", Ntrks, zVtx));
@@ -1375,7 +1409,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     // use only jets from EMCal-triggered events (for lhc11a use AliVEvent::kEMC1)
     //check for a trigger jet
     // fmixingtrack/10 ??
-    if(GetBeamType() == 1) if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) {
+  if(GetBeamType() == 0) if(trigger & fTriggerEventType) { //kEMCEJE)) {     
+    if(GetBeamType() == 1) if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks || pool->GetCurrentNEvents() >= fNMIXevents) {
 
       // loop over jets (passing cuts?)
       for (Int_t ijet = 0; ijet < Njets; ijet++) {
@@ -1421,24 +1456,24 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
                            
               // create / fill mixed event sparse
               Double_t triggerEntries[10] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
-              fhnMixedEvents->Fill(triggerEntries,1./nMix);   // fill Sparse histo of mixed events                
+              fhnMixedEvents->Fill(triggerEntries,1./nMix);   // fill Sparse histo of mixed events
 
-        	  fHistEventQA->Fill(18); // event mixing - nbgtracks
+              fHistEventQA->Fill(18); // event mixing - nbgtracks
               if(makeextraCORRhistos) fHistMEphieta->Fill(DPhi,DEta, 1./nMix);
             } // end of background track loop
           } // end of filling mixed-event histo's
         } // end of check for biased jet triggers
       } // end of jet loop
-    } // end of check for triggered jet
+    } // end of check for pool being ready
+  } // end EMC triggered loop
 
 //=============================================================================================================
 
     // use only jets from EMCal-triggered events (for lhc11a use AliVEvent::kEMC1)
 ///    if (trigger & AliVEvent::kEMC1) {
-//T    if (trigger & AliVEvent::kEMCEJE) {  // TEST
     // pp collisions
-    if(GetBeamType() == 0) if(!(trigger & AliVEvent::kEMC1)) {     
-      if(GetBeamType() == 0) if (poolpp->IsReady() || poolpp->NTracksInPool() > fMixingTracks / 100 || poolpp->GetCurrentNEvents() >= 5) {
+    if(GetBeamType() == 0) if(trigger & fTriggerEventType) { //kEMC1)) {     
+      if(GetBeamType() == 0) if (poolpp->IsReady() || poolpp->NTracksInPool() > fMixingTracks || poolpp->GetCurrentNEvents() >= fNMIXevents) {
 
         // loop over jets (passing cuts?)
         for (Int_t ijet = 0; ijet < Njets; ijet++) {
@@ -1481,18 +1516,18 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
                 Double_t dEP = RelativeEPJET(jet->Phi(),fEPV0);	     // difference between jet and EP
                 Double_t mixcharge = part->Charge();
                 //Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);      // difference in R
-                           
+
                 // create / fill mixed event sparse
                 Double_t triggerEntries[10] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
                 fhnMixedEvents->Fill(triggerEntries,1./nMix);   // fill Sparse histo of mixed events
-                  
-	  		    fHistEventQA->Fill(18); // event mixing - nbgtracks
+
+                fHistEventQA->Fill(18); // event mixing - nbgtracks
                 if(makeextraCORRhistos) fHistMEphieta->Fill(DPhi,DEta, 1./nMix);
               } // end of background track loop
             } // end of filling mixed-event histo's
           } // end of check for biased jet triggers
         } // end of jet loop
-      } // end of check for triggered jet
+      } // end of check for pool being ready
     } //end EMC triggered loop
 
     // pp collisions
@@ -1501,12 +1536,12 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 //T    if (trigger & AliVEvent::kAnyINT){ // test
     if(GetBeamType() == 0) {
 
-      // (use only tracks from MB events (for lhc11a use AliVEvent::kMB)
-      if(trigger & AliVEvent::kMB) {
+      // use only tracks from MB events (for lhc11a use AliVEvent::kMB)
+      if(trigger & fMixingEventType) { //kMB) {
 
         // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
-        tracksClone = CloneAndReduceTrackList(tracks) ;
-      
+        tracksClone = CloneAndReduceTrackList(tracks);
+
         // update pool if jet in event or not
         poolpp->UpdatePool(tracksClone);
 
@@ -1515,10 +1550,18 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
     // PbPb collisions
     if(GetBeamType() == 1) {
-      // update pool if jet in event or not
-      pool->UpdatePool(tracksClone);
-    }
+      
+      // use only tracks from MB events
+      if(trigger & fMixingEventType) { //kMB) {
 
+        // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
+        tracksClone = CloneAndReduceTrackList(tracks);
+
+        // update pool if jet in event or not
+        pool->UpdatePool(tracksClone);
+
+      } // MB events
+    } // PbPb collisions
   } // end of event mixing
 
   // print some stats on the event
@@ -2041,26 +2084,28 @@ Int_t AliAnalysisTaskEmcalJetHadEPpid::AcceptMyJet(AliEmcalJet *jet) {
 void AliAnalysisTaskEmcalJetHadEPpid::SetfHistPIDcounterLabels(TH1* h) const
 {
     // fill the analysis summary histrogram, saves all relevant analysis settigns
-    h->GetXaxis()->SetBinLabel(1, "TPC: Unidentified"); // 0.5
-    h->GetXaxis()->SetBinLabel(2, "TPC: Pion"); // 1.5
-    h->GetXaxis()->SetBinLabel(3, "TPC: Kaon"); // 2.5
-    h->GetXaxis()->SetBinLabel(4, "TPC: Proton"); // 3.5
-    h->GetXaxis()->SetBinLabel(5, "ITS: Unidentified"); // 4.5
-    h->GetXaxis()->SetBinLabel(6, "ITS: Pion"); // 5.5
-    h->GetXaxis()->SetBinLabel(7, "ITS: Kaon"); // 6.5
-    h->GetXaxis()->SetBinLabel(8, "ITS: Proton"); // 7.5
-    h->GetXaxis()->SetBinLabel(9, "TOF: Unidentified"); // 8.5
-    h->GetXaxis()->SetBinLabel(10, "TOF: Pion"); // 9.5 
-    h->GetXaxis()->SetBinLabel(11, "TOF: Kaon"); // 10.5
-    h->GetXaxis()->SetBinLabel(12, "TOF: Proton"); // 11.5
-    h->GetXaxis()->SetBinLabel(14, "Unidentified tracks"); //13.5
+    h->GetXaxis()->SetBinLabel(1, "TPC: Unidentified");
+    h->GetXaxis()->SetBinLabel(2, "TPC: Pion");
+    h->GetXaxis()->SetBinLabel(3, "TPC: Kaon");
+    h->GetXaxis()->SetBinLabel(4, "TPC: Proton");
+    h->GetXaxis()->SetBinLabel(5, "ITS: Unidentified");
+    h->GetXaxis()->SetBinLabel(6, "ITS: Pion");
+    h->GetXaxis()->SetBinLabel(7, "ITS: Kaon");
+    h->GetXaxis()->SetBinLabel(8, "ITS: Proton");
+    h->GetXaxis()->SetBinLabel(9, "TOF: Unidentified");
+    h->GetXaxis()->SetBinLabel(10, "TOF: Pion"); 
+    h->GetXaxis()->SetBinLabel(11, "TOF: Kaon");
+    h->GetXaxis()->SetBinLabel(12, "TOF: Proton");
+    h->GetXaxis()->SetBinLabel(14, "Unidentified tracks");
 
+    // set x-axis labels vertically
+    h->LabelsOption("v");
 }
 
 //void AliAnalysisTaskEmcalJetHadEPpid::FillAnalysisSummaryHistogram() const
 void AliAnalysisTaskEmcalJetHadEPpid::SetfHistQAcounterLabels(TH1* h) const
 {
-    // fill the analysis summary histrogram, saves all relevant analysis settigns
+    // label bins of the analysis event summary
     h->GetXaxis()->SetBinLabel(1, "All events started"); 
     h->GetXaxis()->SetBinLabel(2, "object check"); 
     h->GetXaxis()->SetBinLabel(3, "aod/esd check"); 
@@ -2072,14 +2117,46 @@ void AliAnalysisTaskEmcalJetHadEPpid::SetfHistQAcounterLabels(TH1* h) const
     h->GetXaxis()->SetBinLabel(9, "after track/jet loop to get highest pt"); 
     h->GetXaxis()->SetBinLabel(10, "accepted jets"); 
     h->GetXaxis()->SetBinLabel(11, "jets meeting pt threshold"); 
-    h->GetXaxis()->SetBinLabel(12, "accepted tracks in events from trigger jet"); 
-    h->GetXaxis()->SetBinLabel(13, "after AliVEvent and fPIDResponse"); 
+    h->GetXaxis()->SetBinLabel(12, "accepted tracks in events w/ trigger jet"); 
+    h->GetXaxis()->SetBinLabel(13, "after AliVEvent & fPIDResponse"); 
     h->GetXaxis()->SetBinLabel(14, "events before event mixing"); 
-    h->GetXaxis()->SetBinLabel(15, "mixed events having a pool"); 
+    h->GetXaxis()->SetBinLabel(15, "mixed events w/ pool"); 
     h->GetXaxis()->SetBinLabel(16, "event mixing: jets"); 
     h->GetXaxis()->SetBinLabel(17, "event mixing: nMix"); 
     h->GetXaxis()->SetBinLabel(18, "event mixing: nbackground tracks"); 
     h->GetXaxis()->SetBinLabel(19, "event mixing: THE END"); 
+
+    // set x-axis labels vertically
+    h->LabelsOption("v");
+}
+
+void AliAnalysisTaskEmcalJetHadEPpid::SetfHistEvtSelQALabels(TH1* h) const
+{  
+    // label bins of the analysis trigger selection summary
+    h->GetXaxis()->SetBinLabel(1, "no trigger");
+    h->GetXaxis()->SetBinLabel(2, "kAny");
+    h->GetXaxis()->SetBinLabel(3, "kAnyINT");
+    h->GetXaxis()->SetBinLabel(4, "kMB");
+    h->GetXaxis()->SetBinLabel(5, "kINT7");
+    h->GetXaxis()->SetBinLabel(6, "kEMC1");
+    h->GetXaxis()->SetBinLabel(7, "kEMC7");
+    h->GetXaxis()->SetBinLabel(8, "kEMC8");
+    h->GetXaxis()->SetBinLabel(9, "kEMCEJE");
+    h->GetXaxis()->SetBinLabel(10, "kEMCEGA");
+    h->GetXaxis()->SetBinLabel(11, "kCentral");
+    h->GetXaxis()->SetBinLabel(12, "kSemiCentral");
+    h->GetXaxis()->SetBinLabel(13, "kINT8");
+    h->GetXaxis()->SetBinLabel(14, "kEMCEJE or kMB");
+    h->GetXaxis()->SetBinLabel(15, "kEMCEGA or kMB");
+    h->GetXaxis()->SetBinLabel(16, "kAnyINT or kMB");
+    h->GetXaxis()->SetBinLabel(17, "kEMCEJE & kMB");
+    h->GetXaxis()->SetBinLabel(18, "kEMCEGA & kMB");
+    h->GetXaxis()->SetBinLabel(19, "kAnyINT & kMB");
+
+
+    // set x-axis labels vertically
+    h->LabelsOption("v");
+    //h->LabelsDeflate("X");
 }
 
 //______________________________________________________________________

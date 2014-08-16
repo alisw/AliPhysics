@@ -118,6 +118,11 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   // event mixing - setters
   virtual void            SetEventMixing(Int_t yesno)		   { fDoEventMixing=yesno; }
   virtual void	          SetMixingTracks(Int_t tracks)		   { fMixingTracks = tracks; }
+  virtual void            SetNMixedEvt(Int_t nme)              { fNMIXevents = nme; }
+
+  // event trigger/mixed selection - setters
+  virtual void            SetTriggerEventType(UInt_t te)       { fTriggerEventType = te; }
+  virtual void            SetMixedEventType(UInt_t me)         { fMixingEventType = me; }
 
   // jet container - setters
   void SetContainerAllJets(Int_t c)         { fContainerAllJets      = c;}
@@ -138,6 +143,7 @@ protected:
   virtual Int_t          GetzVertexBin(Double_t zVtx) const; // zVertex bin
   void                   SetfHistPIDcounterLabels(TH1* fHistPID) const;  // PID counter
   void	   			     SetfHistQAcounterLabels(TH1* h) const; // QA counter
+  void                   SetfHistEvtSelQALabels(TH1* h) const; // Event Selection Counter
   //virtual Int_t			 AcceptFlavourJet(AliEmcalJet *jet, Int_t NUM, Int_t NUM2, Int_t NUM3); // flavour jet acceptor
   virtual Int_t			 AcceptFlavourJet(AliEmcalJet *jet, Int_t NUM); // flavour jet acceptor
 
@@ -160,6 +166,11 @@ protected:
   // event mixing
   Int_t			 fDoEventMixing;
   Int_t			 fMixingTracks;
+  Int_t          fNMIXevents;
+
+  // event selection types
+  UInt_t         fTriggerEventType;
+  UInt_t         fMixingEventType;
 
   // switches for plots
   Bool_t		 doPlotGlobalRho;
@@ -219,6 +230,7 @@ protected:
   AliVEvent 		*fVevent;//!   	  // Vevent object
 
   TH1F				    *fHistEventQA;//!
+  TH1F                  *fHistEventSelectionQA;//!
 
   TH2F                  *fHistTPCdEdX;//!
   TH2F	                *fHistITSsignal;//!
@@ -256,6 +268,7 @@ protected:
   TH1                   *fHistMult;//!
   TH1		        	*fHistJetPhi;//!
   TH1		            *fHistTrackPhi;//!
+  TH1                   *fHistLocalRhoJetpt;//!
   TH1		            *fHistJetHaddPhiIN;//!
   TH1			        *fHistJetHaddPhiOUT;//!
   TH1			        *fHistJetHaddPhiMID;//!
