@@ -447,7 +447,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist, Bool_t 
 	     << key->GetName() << " title: " << key->GetTitle() << endl;
 	continue;
       }
-      // printf("Merging object %s, anchor directory: %s\n",key->GetName(),key->GetMotherDir()->GetPath());
+      printf("Merging object %s, anchor directory: %s\n",key->GetName(),key->GetMotherDir()->GetPath());
       allNames.Add(new TObjString(key->GetName()));
       AliSysInfo::AddStamp(nameK.Data(),1,++counterK,counterF++); 
       // read object from first source file
