@@ -111,8 +111,7 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   mgr->AddTask(clgmTask);
   AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
   if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);
-  // dummy task to clean geometry in Terminate <<<<
-   //
+
   // Run the analysis
   AliSysInfo::AddStamp("BeforeInitAnalysis");
   if (!mgr->InitAnalysis()) {
