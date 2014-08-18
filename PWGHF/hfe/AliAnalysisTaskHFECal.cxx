@@ -531,6 +531,23 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       }
     } 
 
+
+  Bool_t SelColl = kTRUE;
+  //cout <<"check trigger : " << GetCollisionCandidates() << endl;  
+  //cout <<"check kAny : " << AliVEvent::kAny<< endl;  
+  if(GetCollisionCandidates()==AliVEvent::kAny)
+    {
+     //cout <<"kAny selection"<< endl;  
+     SelColl = kFALSE; 
+     TString firedTrigger;
+     firedTrigger = fESD->GetFiredTriggerClasses();
+     if(firedTrigger.Contains("CVLN_B2-B-NOPF-ALLNOTRD") || firedTrigger.Contains("CVLN_R1-B-NOPF-ALLNOTRD") || firedTrigger.Contains("CSEMI_R1-B-NOPF-ALLNOTRD"))SelColl=kTRUE; 
+  
+  //cout << "SemiCentral ? " << SelColl << endl;  
+  }
+
+  if(!SelColl)return;
+
   fNoEvents->Fill(0);
 
   Int_t fNOtrks =  fESD->GetNumberOfTracks();
