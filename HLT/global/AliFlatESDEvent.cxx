@@ -67,7 +67,8 @@
 #include "AliESDVertex.h"
 
 // _______________________________________________________________________________________________________
-AliFlatESDEvent::AliFlatESDEvent() :
+AliFlatESDEvent::AliFlatESDEvent() 
+  :
   AliVVevent(),
   fContentSize(0),
   fMagneticField(0),
@@ -93,6 +94,74 @@ AliFlatESDEvent::AliFlatESDEvent() :
 {
   // Default constructor
   fContent[0]=0;
+}
+
+
+AliFlatESDEvent::AliFlatESDEvent( AliVVConstructorReinitialisationFlag f ) 
+  :
+  AliVVevent( f ),
+  fContentSize(fContentSize),
+  fMagneticField(fMagneticField),
+  fPeriodNumber(fPeriodNumber),
+  fRunNumber(fRunNumber),
+  fOrbitNumber(fOrbitNumber),
+  fTimeStamp(fTimeStamp),
+  fEventSpecie(fEventSpecie),
+  fBunchCrossNumber(fBunchCrossNumber),
+  fPrimaryVertexMask(fPrimaryVertexMask),
+  fTriggerMask(fTriggerMask),
+  fTriggerMaskNext50(fTriggerMaskNext50),
+  fNTriggerClasses(fNTriggerClasses),
+  fNPrimaryVertices(fNPrimaryVertices),
+  fNTracks(fNTracks),
+  fNV0s(fNV0s),
+  fTriggerPointer(fTriggerPointer),
+  fPrimaryVertexTracksPointer(fPrimaryVertexTracksPointer),
+  fPrimaryVertexSPDPointer(fPrimaryVertexSPDPointer),
+  fTrackTablePointer(fTrackTablePointer),
+  fTracksPointer(fTracksPointer),
+  fV0Pointer(fV0Pointer)
+{
+  // Constructor for reinitialisation of vtable
+
+  
+  // Reinitialise trigger information  
+  {
+    AliFlatESDTrigger * trigger =  reinterpret_cast< AliFlatESDTrigger*>( fContent + fTriggerPointer ); 
+    for( UInt_t i=0; i<fNTriggerClasses; i++ ){
+      trigger->Reinitialize();
+      trigger = trigger->GetNextTriggerNonConst();
+    }
+  }
+
+  // Reinitialise primary vertices
+
+  if( fPrimaryVertexMask & 0x1 ){
+    AliFlatESDVertex *vtxSPD = reinterpret_cast<AliFlatESDVertex*>(fContent + fPrimaryVertexSPDPointer);
+    vtxSPD->Reinitialize();
+  }
+  if( fPrimaryVertexMask & 0x2 ){
+    AliFlatESDVertex *vtxTracks = reinterpret_cast<AliFlatESDVertex*>(fContent + fPrimaryVertexTracksPointer);
+    vtxTracks->Reinitialize();
+  }
+
+  // Reinitialise tracks 
+  {
+    AliFlatESDTrack *track = reinterpret_cast<AliFlatESDTrack*>( fContent + fTracksPointer );
+    for( UInt_t i=0; i<fNTracks; i++ ){
+      track->Reinitialize();
+      track = track->GetNextTrackNonConst();
+    }
+  }
+
+  // Reinitialise V0s
+  {
+    AliFlatESDV0 *v0 = reinterpret_cast<AliFlatESDV0*>( fContent + fV0Pointer ); 
+    for( UInt_t i=0; i < fNV0s; i++){
+      v0->Reinitialize();
+      v0 = v0->GetNextV0NonConst();
+    }
+  }
 }
 
 
@@ -263,7 +332,7 @@ Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliES
        trackSize += flatTrack->GetSize();
        freeSpace -= flatTrack->GetSize();
        nTracks++;
-       flatTrack = flatTrack->GetNextTrack();
+       flatTrack = flatTrack->GetNextTrackNonConst();
      }
    }
    SetTracksEnd( nTracks, trackSize );
@@ -284,6 +353,7 @@ Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliES
       nV0s++;
       v0size += flatV0->GetSize();
       freeSpace -= flatV0->GetSize(); 
+      flatV0 = flatV0->GetNextV0NonConst();
     }
     SetV0sEnd( nV0s, v0size );
   }

@@ -10,7 +10,7 @@
  */
 
 #include "Rtypes.h"
-
+#include "AliVVMisc.h"
 class AliExternalTrackParam;
 
 class AliVVtrack {
@@ -19,6 +19,12 @@ class AliVVtrack {
   // -- Constructor / Destructors
   AliVVtrack() {} 
   virtual ~AliVVtrack() {}
+
+  // constructor and method for reinitialisation of virtual table
+  AliVVtrack( AliVVConstructorReinitialisationFlag ) {}
+  void Reinitialize() { new (this) AliVVtrack( AliVVReinitialize ); }
+
+ // --------------------------------------------------------------------------------
 
   // --------------------------------------------------------------------------------
   // -- Getter methods

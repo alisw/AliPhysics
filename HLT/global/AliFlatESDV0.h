@@ -10,14 +10,23 @@
  */
 
 #include "Rtypes.h"
+#include "AliVVMisc.h"
 
 class AliFlatESDV0
 {
  public:
 
+  // -- Constructor / Destructors
+ 
   AliFlatESDV0(): fNegTrackID(-1), fPosTrackID(-1) {}
   ~AliFlatESDV0(){}
-
+ 
+  // constructor and method for reinitialisation of virtual table
+  AliFlatESDV0( AliVVConstructorReinitialisationFlag ): fNegTrackID(fNegTrackID), fPosTrackID(fPosTrackID) {}
+  void Reinitialize() const {} // no virtual table - do nothing
+ 
+  //--
+ 
   static size_t GetSize(){ return sizeof(AliFlatESDV0); }
 
   void SetNegTrackID( Int_t id ){ fNegTrackID = id; }
@@ -25,6 +34,11 @@ class AliFlatESDV0
 
   Int_t GetNegTrackID() const { return fNegTrackID; }
   Int_t GetPosTrackID() const { return fPosTrackID; }
+
+  // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
+  
+  const AliFlatESDV0 *GetNextV0() const { return reinterpret_cast<const AliFlatESDV0*>( this+GetSize() ); }
+  AliFlatESDV0 *GetNextV0NonConst() { return reinterpret_cast<AliFlatESDV0*>( this+GetSize() ); }
 
  private:
 

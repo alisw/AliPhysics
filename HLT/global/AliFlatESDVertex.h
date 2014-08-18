@@ -10,10 +10,21 @@
  */
 
 #include "Rtypes.h"
+#include "AliVVMisc.h"
 #include "AliESDVertex.h"
 
 struct AliFlatESDVertex
 {
+  // -- Constructor / Destructors
+ 
+  AliFlatESDVertex();
+ ~AliFlatESDVertex() {}
+
+  // constructor and method for reinitialisation of virtual table
+  AliFlatESDVertex( AliVVConstructorReinitialisationFlag );
+  void Reinitialize() const {} // no virtual table - do nothing
+
+  //--
 
   Double32_t fPosition[3];    // vertex position
   Double32_t fCov[6];  // vertex covariance matrix
@@ -25,10 +36,6 @@ struct AliFlatESDVertex
     Char_t fBCID;     // BC ID assigned to vertex
   */
 
-  AliFlatESDVertex() :fNContributors(0), fChi2(0){
-    for( int i=0; i<3; i++) fPosition[i] = -9999;
-    for( int i=0; i<6; i++) fCov[i] = -9999;
-  }
 
   void Set(const AliESDVertex &v );
 
@@ -92,6 +99,23 @@ struct AliFlatESDVertex
   static size_t GetSize() { return sizeof(AliFlatESDVertex); }
  
 };
+
+inline AliFlatESDVertex::AliFlatESDVertex() :
+fNContributors(0), 
+fChi2(0)
+{
+  for( int i=0; i<3; i++) fPosition[i] = -9999;
+  for( int i=0; i<6; i++) fCov[i] = -9999;
+}
+
+inline AliFlatESDVertex::AliFlatESDVertex( AliVVConstructorReinitialisationFlag ): 
+fNContributors(fNContributors), 
+fChi2(fChi2)
+{
+  // do nothing
+  for( int i=0; i<3; i++) fPosition[i] = fPosition[i];
+  for( int i=0; i<6; i++) fCov[i] = fCov[i];
+}
 
 inline void AliFlatESDVertex::Set(const AliESDVertex &v )
 {

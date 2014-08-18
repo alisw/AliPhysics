@@ -40,11 +40,23 @@
 // _______________________________________________________________________________________________________
 AliFlatESDTrack::AliFlatESDTrack() :
   // Default constructor
+  AliVVtrack(),
   fTrackParamMask(0),
   fNTPCClusters(0),
   fNITSClusters(0),
   fContentSize(0)
 {
+}
+
+AliFlatESDTrack::AliFlatESDTrack( AliVVConstructorReinitialisationFlag f )
+  :
+  AliVVtrack( f ),
+  fTrackParamMask(fTrackParamMask ),
+  fNTPCClusters( fNTPCClusters ),
+  fNITSClusters( fNITSClusters ),
+  fContentSize( fContentSize )
+{
+  // Constructor for reinitialisation of vtable
 }
 
 // _______________________________________________________________________________________________________

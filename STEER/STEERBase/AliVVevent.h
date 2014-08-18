@@ -10,6 +10,8 @@
  */
 #include "Rtypes.h"
 #include "TString.h"
+#include "AliVVMisc.h"
+
 class TList;
 //class AliVVvertex;
 class AliVVtrack;
@@ -25,6 +27,9 @@ class AliVVevent{
   // --------------------------------------------------------------------------------
 
   AliVVevent() {}
+
+  // constructor and method for reinitialisation of virtual table
+  AliVVevent( AliVVConstructorReinitialisationFlag ){}  
 
  protected:
 

@@ -13,6 +13,7 @@
 */
 
 #include "Rtypes.h"
+#include "AliVVMisc.h"
 #include <string>
 
 class AliFlatESDTrigger{
@@ -23,6 +24,10 @@ class AliFlatESDTrigger{
   // -- Constructor / Destructors
   AliFlatESDTrigger();   
   ~AliFlatESDTrigger();
+
+  // constructor and method for reinitialisation of virtual table
+  AliFlatESDTrigger( AliVVConstructorReinitialisationFlag );
+  void Reinitialize() const {} // no virtual table - do nothing
 
   // --------------------------------------------------------------------------------
   // -- Fill / Set methods
@@ -82,6 +87,13 @@ inline AliFlatESDTrigger::~AliFlatESDTrigger()
   // Destructor  
 }
 
+inline AliFlatESDTrigger::AliFlatESDTrigger( AliVVConstructorReinitialisationFlag ) :
+  fContentSize(fContentSize),
+  fTriggerIndex(fTriggerIndex)
+{
+  // do nothing
+}
+ 
 inline Int_t AliFlatESDTrigger::SetTriggerClass(  const char *TriggerClassName, Int_t TriggerIndex, ULong64_t MaxSize )
 {
   // Set trigger class, returns non-zero when the memory needed exeeeds MaxSize

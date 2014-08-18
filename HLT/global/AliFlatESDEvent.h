@@ -10,6 +10,7 @@
  */
 
 #include "Rtypes.h"
+#include "AliVVMisc.h"
 #include "AliVVevent.h"
 #include "AliFlatESDTrack.h"
 #include "AliFlatESDVertex.h"
@@ -26,6 +27,10 @@ class AliFlatESDEvent :public AliVVevent {
   // -- Constructor / Destructors
   AliFlatESDEvent();
   ~AliFlatESDEvent() {}
+
+  // constructor and method for reinitialisation of virtual table
+  AliFlatESDEvent( AliVVConstructorReinitialisationFlag );
+  void Reinitialize() { new (this) AliFlatESDEvent( AliVVReinitialize ); }
 
   // --------------------------------------------------------------------------------
   // Interface to AliVVEvent
