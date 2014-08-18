@@ -196,6 +196,8 @@ void AliGenExtFile::Generate()
           for (Int_t id = 0; id < idCount; id++) {
              if (selectedIdMap[id]) {
                 newIdMap[id] = newId; ++newId;
+             } else {
+                newIdMap[id] = -1;
              }
           }
        }
