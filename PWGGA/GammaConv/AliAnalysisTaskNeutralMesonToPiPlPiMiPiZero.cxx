@@ -893,6 +893,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTruePhotonCandidates(Al
 	if( labelGamma < MCStack->GetNprimary() ){
 		if( fIsFromMBHeader ){
 			fHistoTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+			if (GammaIsNeutralMesonPiPlPiMiPiZeroDaughter(labelGamma)){
+				fHistoTrueConvGammaFromNeutralMesonPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+			}	
 		}
 	}
 }
@@ -1626,7 +1629,9 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::IsEtaPiPlPiMiPiZeroDaughter(
 	if( motherLabel < 0 || motherLabel >= fMCStack->GetNtrack() ) return kFALSE;
 	
 	TParticle* mother = fMCStack->Particle( motherLabel );
+// 	cout << "found eta? " << endl;
 	if( mother->GetPdgCode() != 221 ) return kFALSE;
+// 		else cout << "YES" << endl;
 	if( IsPiPlPiMiPiZeroDecay( mother ) ) return kTRUE;	
 	return kFALSE;       
 }
@@ -1640,7 +1645,9 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::IsOmegaPiPlPiMiPiZeroDaughte
 	if( motherLabel < 0 || motherLabel >= fMCStack->GetNtrack() ) return kFALSE;
 	
 	TParticle* mother = fMCStack->Particle( motherLabel );
+// 	cout << "found omega? " << endl;
 	if( mother->GetPdgCode() != 223 ) return kFALSE;
+// 		else cout << "YES" << endl;
 	if( IsPiPlPiMiPiZeroDecay( mother ) ) return kTRUE;	
 	return kFALSE;       
 }
@@ -1649,9 +1656,11 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::IsOmegaPiPlPiMiPiZeroDaughte
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::IsPiPlPiMiPiZeroDecay(TParticle *fMCMother) const
 {
-	
+// 	cout << fMCMother->GetNDaughters() << endl;
 	if( fMCMother->GetNDaughters() != 3 ) return kFALSE;
-	if( fMCMother->GetPdgCode() != 221 || fMCMother->GetPdgCode() != 223  ) return kFALSE;
+// 	cout << fMCMother->GetPdgCode() << endl;
+	if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223)  ) return kFALSE;
+// 	cout << "made it til here" << endl;
 	
 	TParticle *posPion = 0x0;
 	TParticle *negPion = 0x0;
@@ -1676,4 +1685,24 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::IsPiPlPiMiPiZeroDecay(TParti
 	if( posPion && negPion && neutPion) return kTRUE;
 	
 	return kFALSE;
+}
+
+//_____________________________________________________________________________________
+Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::GammaIsNeutralMesonPiPlPiMiPiZeroDaughter( Int_t label ) const {
+//
+// Returns true if the particle comes from eta -> pi+ pi- gamma
+//
+	Int_t motherLabel = fMCStack->Particle( label )->GetMother(0);
+	if( motherLabel < 0 || motherLabel >= fMCStack->GetNtrack() ) return kFALSE;
+	
+	TParticle* mother = fMCStack->Particle( motherLabel );
+// 	cout << "found omega? " << endl;
+	if( mother->GetPdgCode() != 111 ) return kFALSE;
+// 		else cout << "YES" << endl;
+	Int_t grandMotherLabel = mother->GetMother(0);
+	if( grandMotherLabel < 0 || grandMotherLabel >= fMCStack->GetNtrack() ) return kFALSE;
+	TParticle* grandmother = fMCStack->Particle( grandMotherLabel );
+	
+	if( IsPiPlPiMiPiZeroDecay( grandmother ) ) return kTRUE;	
+	return kFALSE;       
 }
