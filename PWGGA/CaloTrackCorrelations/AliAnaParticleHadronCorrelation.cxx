@@ -68,7 +68,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fListMixTrackEvents(),          fListMixCaloEvents(),
     fUseMixStoredInReader(0),       fFillNeutralEventMixPool(0),
     fM02MaxCut(0),                  fM02MinCut(0),  
-    fFillPileUpHistograms(0),
+    fFillPileUpHistograms(0),       fFillHighMultHistograms(0),
     fSelectLeadingHadronAngle(0),
     fMinLeadHadPhi(0),              fMaxLeadHadPhi(0),
     fMinLeadHadPt(0),               fMaxLeadHadPt(0),
@@ -670,7 +670,7 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float
   }
   
   //fill different multiplicity/centrality histogram
-  if(fFillHighMultHistograms)
+  if(fFillHighMultHistograms && cen >= 0 && cen < GetNCentrBin())
   {
     fhXEUeMult[cen]->Fill(ptTrig,uexE);
     fhZTUeMult[cen]->Fill(ptTrig,uezT);
