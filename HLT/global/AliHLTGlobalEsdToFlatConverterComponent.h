@@ -66,7 +66,7 @@ public:
   void GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier );
 
   /** interface function, see @ref AliHLTComponent for description */
-  void GetOCDBObjectDescription( TMap* const targetMap);
+ // void GetOCDBObjectDescription( TMap* const targetMap);
 
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();

@@ -242,7 +242,7 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
 
     flatEsd = reinterpret_cast<AliFlatESDEvent*>(mem);
     new (flatEsd) AliFlatESDEvent;
-  flatEsd->Fill(esd,useESDFriends);  
+//  flatEsd->Fill(esd,useESDFriends);  
 		 
 		 
 		 
