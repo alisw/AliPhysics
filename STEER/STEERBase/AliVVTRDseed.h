@@ -10,7 +10,7 @@ class AliVVTRDseed {
   public:
   AliVVTRDseed();
   virtual ~AliVVTRDseed();
-  ClassDef(AliVVTRDseed, 1);
+  //ClassDef(AliVVTRDseed, 0);
 };
 
 #endif

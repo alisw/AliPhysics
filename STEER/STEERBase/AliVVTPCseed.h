@@ -13,7 +13,7 @@ class AliVVTPCseed {
   AliVVTPCseed() {}
   virtual ~AliVVTPCseed() {}
   virtual void CopyToTPCseed( AliTPCseed &) const = 0;
-  ClassDef(AliVVTPCseed, 1);
+  //ClassDef(AliVVTPCseed, 0);
 };
 
 #endif

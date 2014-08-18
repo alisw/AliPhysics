@@ -46,7 +46,7 @@ class AliVVtrackPoint {
 
   virtual void     Print(Option_t*) const {}
 
-  ClassDef(AliVVtrackPoint, 1);
+  //ClassDef(AliVVtrackPoint, 0);
 };
 
 #endif

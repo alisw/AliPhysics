@@ -22,7 +22,7 @@ private:
   AliVVfriendEvent(const AliVVfriendEvent &);
   AliVVfriendEvent& operator=(const AliVVfriendEvent& esd);  
 
-  ClassDef(AliVVfriendEvent,1);
+//  ClassDef(AliVVfriendEvent,0);
 };
 
 #endif

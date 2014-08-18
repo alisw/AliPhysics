@@ -31,7 +31,7 @@ private:
   AliVVfriendTrack(const AliVVfriendTrack &);
   AliVVfriendTrack& operator=(const AliVVfriendTrack& esd);  
 
-  ClassDef(AliVVfriendTrack,1);
+  //ClassDef(AliVVfriendTrack,0);
 };
 
 #endif

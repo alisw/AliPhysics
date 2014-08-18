@@ -51,7 +51,7 @@ class AliVVtrack {
   // virtual Double_t GetTOFsignal() const ;
   // virtual UChar_t GetTRDclusters(Int_t* /*idx*/) const ;  
 
-  ClassDef(AliVVtrack, 1)   // base class for track data
+  //ClassDef(AliVVtrack, 0)   // base class for track data
 
 };
 #endif

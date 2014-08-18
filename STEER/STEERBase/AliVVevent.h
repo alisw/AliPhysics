@@ -81,7 +81,7 @@ class AliVVevent{
   //virtual const AliMultiplicity* GetMultiplicity() const = 0; //by default SPDmult  
   //virtual AliVVfriendEvent* FindFriend() const = 0;
 
-  ClassDef(AliVVevent, 1)
+  //ClassDef(AliVVevent, 1)
 
 };
 #endif
