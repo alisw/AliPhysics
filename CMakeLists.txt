@@ -27,8 +27,8 @@ endif(NOT ALICE_ROOT)
 
 set(ALICE_INSTALL $ENV{ALICE_INSTALL})
 # Set AliRoot Installation directory 
-# If CMAKE_INSTALL_PREFIX was not set than we set it to ALICE_INSTALL. 
-# If ALICE_INSTALL was not defined than it will default to source directory
+# If CMAKE_INSTALL_PREFIX was not set, then we set it to ALICE_INSTALL. 
+# If ALICE_INSTALL was not defined, then it will default to the source directory
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     if(ALICE_INSTALL)
 	message(STATUS "AliRoot files will be installed in ${ALICE_INSTALL}")
