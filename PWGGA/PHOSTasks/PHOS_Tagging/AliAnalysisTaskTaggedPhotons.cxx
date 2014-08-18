@@ -1231,6 +1231,9 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       
       Double_t invMass = (*p1 + *p2).M();   
 
+      Double_t nsigma1 = InPi0Band(invMass,p1->Pt()) ; //in band with n sigmas
+      Double_t nsigma2 = InPi0Band(invMass,p2->Pt()) ; //in band with n sigmas
+
       if((p1->E()>0.1) && (p2->E()>0.1)){
         FillPIDHistograms("hInvM_Re_Emin1",p1,p2,invMass,kTRUE) ;
         if((p1->E()>0.2) && (p2->E()>0.2)){
@@ -1239,8 +1242,6 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
             FillPIDHistograms("hInvM_Re_Emin3",p1,p2,invMass,kTRUE) ;
      
 	    //Fill izolated pi0s
-  	    Double_t nsigma1 = InPi0Band(invMass,p1->Pt()) ; //in band with n sigmas
-  	    Double_t nsigma2 = InPi0Band(invMass,p2->Pt()) ; //in band with n sigmas
 	    if(nsigma1<2 || nsigma2<2){ //2 sigma band
 	      TLorentzVector pi0=*p1+*p2 ;
               Int_t isolation=EvalIsolation(&pi0,0) ;
@@ -1316,14 +1317,16 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       for(Int_t eminType=0; eminType<3; eminType++){
         if(p2->E()>0.1*(eminType+1)){
 	  //Set corresponding bit
-	  Double_t nsigma = InPi0Band(invMass,p1->Pt()) ; //in band with n sigmas
 	  for(Int_t isigma=0; isigma<3; isigma++){
-  	    if(nsigma<1+isigma){
+  	    if(nsigma1<1+isigma){
    	      tag1|= (1 << (3*eminType+isigma)) ;
-	      if(TestPID(3, p2))
-   	        tag1|= (1 << (3*eminType+isigma+9)) ;
 	    }
 	  }
+	  //now fake tagging
+	  for(Int_t isigma=0; isigma<3; isigma++){
+	     if(nsigma1>3 && nsigma1<4+isigma)
+   	        tag1|= (1 << (3*eminType+isigma+9)) ;
+	  }	  
 	}
       }
       Int_t oldTag1=p1->GetTagInfo() ;
@@ -1333,14 +1336,16 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       for(Int_t eminType=0; eminType<3; eminType++){
         if(p1->E()>0.1*(eminType+1)){
 	  //Set corresponding bit
-	  Double_t nsigma = InPi0Band(invMass,p2->Pt()) ; //in band with n sigmas
 	  for(Int_t isigma=0; isigma<3; isigma++){
-  	    if(nsigma<1+isigma){
+  	    if(nsigma2<1+isigma){
    	      tag2|= (1 << (3*eminType+isigma)) ;
-	      if(TestPID(3, p2))
-   	        tag2|= (1 << (3*eminType+isigma+9)) ;
 	    }
 	  }
+  	  //now fake tagging
+	  for(Int_t isigma=0; isigma<3; isigma++){
+	     if(nsigma2>3 && nsigma2<4+isigma)
+   	        tag2|= (1 << (3*eminType+isigma+9)) ;
+	  }	  
 	}
       }
       Int_t oldTag2=p2->GetTagInfo() ;
