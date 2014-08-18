@@ -88,7 +88,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		Bool_t IsPiPlPiMiPiZeroDecay(TParticle *fMCMother) const;
 		Bool_t IsEtaPiPlPiMiPiZeroDaughter( Int_t label ) const;
 		Bool_t IsOmegaPiPlPiMiPiZeroDaughter( Int_t label ) const;
-		
+		Bool_t GammaIsNeutralMesonPiPlPiMiPiZeroDaughter( Int_t label ) const;
 
 		AliV0ReaderV1 					*fV0Reader;									//
 		AliPrimaryPionSelector			*fPionSelector;								//
