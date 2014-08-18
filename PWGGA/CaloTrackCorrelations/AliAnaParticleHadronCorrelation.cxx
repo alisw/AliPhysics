@@ -607,7 +607,7 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   }
   
   //fill different multiplicity/centrality histogram
-  if(fFillHighMultHistograms)
+  if(fFillHighMultHistograms && cen >= 0 && cen < GetNCentrBin())
   {
     fhXEMult[cen]->Fill(ptTrig,xE);
     fhZTMult[cen]->Fill(ptTrig,zT);
