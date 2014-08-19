@@ -76,7 +76,8 @@ public:
 public:
   
   AliEMCALQADataMakerRec(Int_t fitAlgo = 2) ;  // ctor
- 
+  // Default fitter is kPeakFinder=2, we need to be sure this is what we want.
+  
   AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qadm) ;   
   AliEMCALQADataMakerRec& operator = (const AliEMCALQADataMakerRec& qadm) ;
   virtual ~AliEMCALQADataMakerRec() {;} // dtor
