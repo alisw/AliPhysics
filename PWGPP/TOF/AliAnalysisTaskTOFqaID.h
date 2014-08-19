@@ -33,16 +33,17 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
     
   Int_t   GetStripIndex(const Int_t * in);
-  void    SetTrackFilter(AliAnalysisFilter *filter) {fTrackFilter = filter;};
-  void    EnableAdvancedCheck(Bool_t enable){fEnableAdvancedCheck=enable;};
-  void    SetExpTimeHistoRange(Float_t min, Float_t max){fExpTimeRangeMin=min; fExpTimeRangeMax=max;return;};
-  void    SetExpTimeHistoSmallRange(Float_t min, Float_t max){fExpTimeSmallRangeMin=min; fExpTimeSmallRangeMax=max;return;};
-  void    SetExpTimeBinWidth(Float_t width){fExpTimeBinWidth=width;return;};
-  Bool_t  SetSelectMCspecies(Bool_t enableMC, Int_t absPdgCode){fIsMC=enableMC; fSelectedPdg=absPdgCode; return kTRUE;};
+  void    SetTrackFilter(AliAnalysisFilter *filter) { fTrackFilter = filter; return; };
+  void    EnableAdvancedCheck(Bool_t enable) { fEnableAdvancedCheck = enable; return; };
+  void    EnableChargeSplit(Bool_t enable) { fEnableChargeSplit = enable; return; };
+  void    SetExpTimeHistoRange(Float_t min, Float_t max) { fExpTimeRangeMin = min; fExpTimeRangeMax = max; return;};
+  void    SetExpTimeHistoSmallRange(Float_t min, Float_t max) { fExpTimeSmallRangeMin = min; fExpTimeSmallRangeMax = max; return;};
+  void    SetExpTimeBinWidth(Float_t width) { fExpTimeBinWidth = width; return;};
+  Bool_t  SetSelectMCspecies(Bool_t enableMC, Int_t absPdgCode) {fIsMC = enableMC; fSelectedPdg = absPdgCode; return kTRUE;};
   TString GetSpeciesName(Int_t absPdgCode);
   void    HistogramMakeUp(TH1* hist, Color_t color, Int_t markerStyle,  TString drawOpt, TString newName, TString newTitle, TString xTitle, TString yTitle);
   Double_t GetPhiAtTPCouterRadius(AliESDtrack * track);
-
+  
  protected:
   void    AddTofBaseHisto(TList *list, Int_t charge, TString suffix);
   void    AddMatchingEffHisto(TList *list, Int_t charge, TString suffix);
@@ -83,6 +84,8 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Double_t            fTrkExpTimes[5]; //expected times from tracking for 5 mass hypothesis
   Double_t            fThExpTimes[5]; //theoretical expected times for 5 mass hypothesis
   Bool_t              fEnableAdvancedCheck; //flag to enable advanced checks
+  Bool_t              fEnableChargeSplit; //flag to enable split for sign of charge
+
   Float_t             fExpTimeBinWidth;//bin width for t-texp histos
   Float_t             fExpTimeRangeMin, fExpTimeRangeMax; //range of t-texp histogram
   Float_t             fExpTimeSmallRangeMin, fExpTimeSmallRangeMax; //reduced range of t-texp histogram
@@ -108,7 +111,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   TList *             fHlistTRD;  //list of general histos for positive tracks
   TList *             fHlistTrigger;  //list of general histos for TOF trg infos
 
-  ClassDef(AliAnalysisTaskTOFqaID, 1); // example of analysis
+  ClassDef(AliAnalysisTaskTOFqaID, 2); // example of analysis
 };
 
 #endif
