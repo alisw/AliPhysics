@@ -75,7 +75,7 @@ public:
   
 public:
   
-  AliEMCALQADataMakerRec(Int_t fitAlgo = 0) ;          // ctor
+  AliEMCALQADataMakerRec(Int_t fitAlgo = 2) ;  // ctor
  
   AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qadm) ;   
   AliEMCALQADataMakerRec& operator = (const AliEMCALQADataMakerRec& qadm) ;
@@ -83,6 +83,7 @@ public:
 
   Int_t GetFittingAlgorithm() const {return fFittingAlgorithm; }
   void  SetFittingAlgorithm(Int_t val);
+  
   AliCaloRawAnalyzer *GetRawAnalyzer() const { return fRawAnalyzer;}
   AliCaloRawAnalyzerKStandard *GetRawAnalyzerTRU() const { return fRawAnalyzerTRU;}
 
@@ -148,7 +149,7 @@ private:
   
   void ConvertProfile2H(TProfile * p, TH2 * histo) ; //change the profile plot to a 2D histogram
   
-  Int_t fFittingAlgorithm;             // select the fitting algorithm
+  Int_t fFittingAlgorithm;                         // select the fitting algorithm, not really used, remove?
 
   AliCaloRawAnalyzer *fRawAnalyzer;                // for signal fitting
   AliCaloRawAnalyzerKStandard *fRawAnalyzerTRU;    // for TRU signal fitting
