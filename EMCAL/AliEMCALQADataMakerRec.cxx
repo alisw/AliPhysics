@@ -111,11 +111,6 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(Int_t fitAlgo) :
 {
   // ctor
   SetFittingAlgorithm(fitAlgo);
-  
-  fRawAnalyzerTRU =  ( AliCaloRawAnalyzerKStandard*)AliCaloRawAnalyzerFactory::CreateAnalyzer(Algo::kFastFit);
-  
-  fRawAnalyzerTRU->SetFixTau(kTRUE); 
-  fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 
   fGeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1_DCAL_8SM", "EMCAL");
 //  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
@@ -158,9 +153,6 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qad
   SetTitle((const char*)qadm.GetTitle()); 
   SetFittingAlgorithm(qadm.GetFittingAlgorithm());
   
-  fRawAnalyzerTRU = (AliCaloRawAnalyzerKStandard*)AliCaloRawAnalyzerFactory::CreateAnalyzer(Algo::kFastFit);
-  fRawAnalyzerTRU->SetFixTau(kTRUE); 
-  fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 //  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
 //    fTextSM[sm] = qadm.fTextSM[sm] ;
 //  }  
@@ -984,8 +976,12 @@ void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)
   //Set fitting algorithm and initialize it if this same algorithm was not set before.
 
   fRawAnalyzer =  AliCaloRawAnalyzerFactory::CreateAnalyzer(fitAlgo);
-  fFittingAlgorithm = fitAlgo; 
-
+  fFittingAlgorithm = fitAlgo;
+  
+  // Init also here the TRU algo, even if it is fixed type.
+  fRawAnalyzerTRU = (AliCaloRawAnalyzerKStandard*)AliCaloRawAnalyzerFactory::CreateAnalyzer(Algo::kFakeAltro);
+  fRawAnalyzerTRU->SetFixTau(kTRUE);
+  fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 }
 
 //_____________________________________________________________________________________
