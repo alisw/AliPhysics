@@ -39,7 +39,7 @@ class AliESDTOFHit : public AliVTOFHit
      virtual Int_t   GetTOFchannel() const {return fTOFchannel;};
      virtual Double_t GetTime() const {return fTime;}
      virtual Int_t   GetTOFLabel(Int_t i) const {return (i >=0 && i < 3) ? fTOFLabel[i] : -1;}
-     virtual void    SetTOFLabel(Int_t label[3])  {for(Int_t i=3;i--;) fTOFLabel[i] = label[i];}
+     virtual void    SetTOFLabel(const Int_t label[3])  {for(Int_t i=3;i--;) fTOFLabel[i] = label[i];}
      Float_t GetR() const {return fR;};
      Float_t GetZ() const {return fZ;};
      Float_t GetPhi() const {return fPhi;};
