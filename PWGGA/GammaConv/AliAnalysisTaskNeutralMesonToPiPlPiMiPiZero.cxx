@@ -1201,18 +1201,19 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 			Int_t labelp=0;
 			Int_t motherlabelp = 0;
 			Int_t motherlabeln = 0;
+			TParticle *fNegativeMCParticle =NULL;
+			TParticle *fPositiveMCParticle =NULL;
 			if( fMCEvent ) {
 				labeln=TMath::Abs(negPionCandidate->GetLabel());
 				labelp=TMath::Abs(posPionCandidate->GetLabel());
-				TParticle *fNegativeMCParticle = fMCStack->Particle(labeln);
-				TParticle *fPositiveMCParticle = fMCStack->Particle(labelp);
+				fNegativeMCParticle = fMCStack->Particle(labeln);
+				fPositiveMCParticle = fMCStack->Particle(labelp);
 				motherlabeln = fNegativeMCParticle->GetMother(0);
 				motherlabelp = fPositiveMCParticle->GetMother(0);
 				if( fPositiveMCParticle && fNegativeMCParticle) {
 					virtualPhoton->SetMCLabelPositive(labelp);
 					virtualPhoton->SetMCLabelNegative(labeln);
-				}
-				
+				}				
 			}
 			
 			AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(virtualPhoton); //To Apply PsiPairCut
@@ -1225,10 +1226,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 			}	
 
 			if (fMCEvent){
-				if (motherlabeln == motherlabelp){
-					fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
-					if( IsEtaPiPlPiMiPiZeroDaughter(labeln)  || IsOmegaPiPlPiMiPiZeroDaughter(labeln) ) {
-						fHistoTruePionPionFromNeutralMesonInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+				if (fPositiveMCParticle && fNegativeMCParticle ) {
+					if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
+						fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+						if (motherlabeln == motherlabelp){
+							fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+							if( IsEtaPiPlPiMiPiZeroDaughter(labeln)  || IsOmegaPiPlPiMiPiZeroDaughter(labeln) ) {
+								fHistoTruePionPionFromNeutralMesonInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+							}
+						}
 					}
 				}	
 			}
@@ -1553,9 +1559,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
 // 	if (fDoMesonQA){
 		TParticle * negativeMC = (TParticle*)TrueVirtualParticleCandidate->GetNegativeMCDaughter(MCStack);
 		TParticle * positiveMC = (TParticle*)TrueVirtualParticleCandidate->GetPositiveMCDaughter(MCStack);
-		if(TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==211){  // Pions ...
-			fHistoTruePionPionInvMassPt[fiCut]->Fill(TrueVirtualParticleCandidate->GetMass(),TrueVirtualParticleCandidate->Pt());
-		}
 // 	}
 	
 	if(virtualParticleMCLabel != -1){ // if virtualParticleMCLabel==-1 particles don't have same mother 
