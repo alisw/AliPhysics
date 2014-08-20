@@ -266,17 +266,17 @@ int AliHLTGlobalFlatEsdTestComponent::DoEvent( const AliHLTComponentEventData& /
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
     //fBenchmark.AddInput(pBlock->fSize);
     cout<<"Found ESD in esd test component !!!"<<endl;
-    const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(iter);
+    AliESDEvent *esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(iter));//dynamic_cast<const AliESDEvent*>(iter);
     if( esd ){
-      //esd->GetStdContent();
+      esd->GetStdContent();
       cout<<"N ESD tracks: "<<esd->GetNumberOfTracks()<<endl;
     } else {
       cout<<"ESD pointer is NULL "<<endl;
     }
   }
 
-   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {     
-     //fBenchmark.AddInput(pBlock->fSize);
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {     
+    //fBenchmark.AddInput(pBlock->fSize);
     cout<<"Found ESD friend in esd test component !!!"<<endl;
     const AliESDfriend *esdFriend = dynamic_cast<const AliESDfriend*>(iter);
     if( esdFriend ){
@@ -286,6 +286,14 @@ int AliHLTGlobalFlatEsdTestComponent::DoEvent( const AliHLTComponentEventData& /
     }
   }
 
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+       pBlock!=NULL; pBlock=NULL/*GetNextInputBlock() there is only one block*/) {
+    fBenchmark.AddInput(pBlock->fSize);
+    AliFlatESDEvent *flatEvent = reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
+    cout<<"N flat tracks: "<<flatEvent->GetNumberOfTracks()<<endl;
+  }
+
+  
   fBenchmark.Stop(0);
   HLTWarning( fBenchmark.GetStatistics() );
 

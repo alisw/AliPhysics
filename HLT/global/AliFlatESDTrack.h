@@ -50,6 +50,7 @@ class AliFlatESDTrack :public AliVVtrack {
 			      const AliExternalTrackParam* outerITSParam
 			       );
 
+  void SetNumberOfTPCClusters( Int_t nCl ) { fNTPCClusters = nCl; } 
   void SetNumberOfITSClusters( Int_t nCl ) { fNITSClusters = nCl; } 
 
   

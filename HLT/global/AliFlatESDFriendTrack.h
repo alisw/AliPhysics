@@ -33,7 +33,7 @@ class AliFlatESDFriendTrack :public AliVVfriendTrack
  public:
   AliFlatESDFriendTrack();
   ~AliFlatESDFriendTrack() {}
-  // constructor for reinitialisation of vtable
+  // constructor for reinitialisation of virtual table
   AliFlatESDFriendTrack( AliVVConstructorReinitialisationFlag );
 
   //implementation of AliVVfriendTrack methods 

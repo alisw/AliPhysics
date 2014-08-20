@@ -399,10 +399,12 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
       pESD->WriteToTree(pTree);
       iResult=PushBack(pTree, kAliHLTDataTypeESDTree|kAliHLTDataOriginOut, 0);
     } else {
+      cout<<"Write ESD block: n tracks "<<pESD->GetNumberOfTracks()<<endl;
       iResult=PushBack(pESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
     }
     fBenchmark.AddOutput(GetLastObjectSize());
     if( iResult>=0 && fMakeFriends ){
+      cout<<"Write ESD friend block: n friend tracks "<<fESDfriend->GetNumberOfTracks()<<endl;
       iResult=PushBack(fESDfriend, kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginOut, 0);
       fBenchmark.AddOutput(GetLastObjectSize());
      }
@@ -613,6 +615,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
     if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>=0) {
+      cout<<"\n\n ESD converter: input "<<tracks.size()<<" TPC tracks"<<endl;
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
 	   element!=tracks.end(); element++) {
 	Float_t points[4] = {
@@ -1071,10 +1074,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   if( fMakeFriends && pESDfriend ){ // create friend track
     pESD->SetESDfriend( pESDfriend );
-  }
+    // cout<<"\n\n ESD Friend: "<<pESDfriend->GetNumberOfTracks()<<endl;
+ }
   
-  cout<<"\n\n ESD Friend: "<<pESDfriend->GetNumberOfTracks()<<endl;
-
+ 
   if (iAddedDataBlocks>0 && pTree) {
     pTree->Fill();
   }  
