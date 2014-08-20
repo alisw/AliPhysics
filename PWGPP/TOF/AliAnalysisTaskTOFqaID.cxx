@@ -64,7 +64,8 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID() :
   fPhi(1e10),
   fTPCOuterPhi(1e10),
   fL(1e10),
-  fMatchingMomCut(1e10),
+  fMatchingMomCut(0.0),
+  fMatchingEtaCut(1e10),
   fTof(1e10),
   fHlist(0x0),
   fHlistTimeZero(0x0),
@@ -115,6 +116,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char *name) :
   fTPCOuterPhi(1e10),
   fL(1e10),
   fMatchingMomCut(1.0),
+  fMatchingEtaCut(0.8),
   fTof(1e10),
   fHlist(0x0),
   fHlistTimeZero(0x0),
@@ -179,6 +181,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
   fTPCOuterPhi(copy.fTPCOuterPhi),
   fL(copy.fL),
   fMatchingMomCut(copy.fMatchingMomCut),
+  fMatchingEtaCut(copy.fMatchingEtaCut),
   fTof(copy.fTof),
   fHlist(copy.fHlist),
   fHlistTimeZero(copy.fHlistTimeZero),
@@ -245,6 +248,7 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     fTPCOuterPhi=copy.fTPCOuterPhi;
     fL=copy.fL;
     fMatchingMomCut=copy.fMatchingMomCut;
+    fMatchingEtaCut=copy.fMatchingEtaCut;
     fTof=copy.fTof;
     fHlist=copy.fHlist;
     fHlistTimeZero=copy.fHlistTimeZero;
@@ -468,7 +472,7 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
     
     //apply cut for eta acceptance
     fEta=track->Eta();
-    if (TMath::Abs(fEta)>0.8) continue; 
+    if (TMath::Abs(fEta)>fMatchingEtaCut) continue; 
     
     //get other track variables
     fP = track->P();
@@ -676,7 +680,7 @@ void AliAnalysisTaskTOFqaID::FillStartTimeMaskHisto(TString suffix)
       AliInfo("No track filter found, skipping the track loop");
       break;
     }
-    if (TMath::Abs(track->Eta())>0.8) continue; //cut for acceptance  
+    if (TMath::Abs(track->Eta())>fMatchingEtaCut) continue; //cut for acceptance  
     
     Int_t StartTimeBit = fESDpid->GetTOFResponse().GetStartTimeMask(track->P());
     ((TH2F*)fHlistTimeZero->FindObject(Form("hStartTimeMask%s",suffix.Data())))->Fill(track->P(),StartTimeBit);
@@ -845,7 +849,7 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(TList *list, Int_t charge, TString 
       if (charge>0) cLabel.Form("pos"); 
   
   
-  TH1I* hTOFmulti = new TH1I(Form("hTOFmulti%s_%s",suffix.Data(), cLabel.Data()), Form("%s matched trk per event (|#eta|#leq0.8, p_{T}#geq0.3 GeV/c)", cLabel.Data()), 100, 0, 100);  
+  TH1I* hTOFmulti = new TH1I(Form("hTOFmulti%s_%s",suffix.Data(), cLabel.Data()), Form("%s matched trk per event (|#eta|#leq%3.2f, p_{T}#geq0.3 GeV/c)", cLabel.Data(), fMatchingEtaCut), 100, 0, 100);  
   HistogramMakeUp(hTOFmulti, ((charge>0)? kRed : kBlue+2), 1, "E1", "","", "N","events");
   list->AddLast(hTOFmulti);
   

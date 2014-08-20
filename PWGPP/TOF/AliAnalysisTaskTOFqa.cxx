@@ -269,7 +269,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   
 //0
   TH1I* hTOFmatchedESDperEvt = new TH1I("hTOFmatchedPerEvt", "Matched TOF tracks per event (|#eta| #leq 0.8 and pT #geq 0.3 GeV/c);TOF-matched ESD tracks;Events", 100, 0, 100) ;  
-  hTOFmatchedESDperEvt->Sumw2() ;
+  //hTOFmatchedESDperEvt->Sumw2() ;
   hTOFmatchedESDperEvt->SetLineWidth(2);
   hTOFmatchedESDperEvt->SetLineColor(kBlue);
   hTOFmatchedESDperEvt->SetMarkerStyle(20);
@@ -278,7 +278,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlist->AddLast(hTOFmatchedESDperEvt) ;
   //1
   TH1F* hTOFmatchedESDtime = new TH1F("hTOFmatchedESDtime", "Matched  ESDs tracks: TOF Time spectrum; t [ns];Counts", 250, 0., 610. ) ; 
-  hTOFmatchedESDtime->Sumw2() ;
+  //  hTOFmatchedESDtime->Sumw2() ;
   hTOFmatchedESDtime->SetLineWidth(2);
   hTOFmatchedESDtime->SetLineColor(kBlue);
   hTOFmatchedESDtime->SetFillColor(kBlue);
@@ -286,7 +286,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlist->AddLast(hTOFmatchedESDtime) ;
   //2
   TH1F* hTOFmatchedESDrawTime = new TH1F("hTOFmatchedESDrawTime", "Matched ESDs tracks: TOF raw Time spectrum;t_{raw} [ns];Counts", 250, 0., 610.) ; 
-  hTOFmatchedESDrawTime->Sumw2() ;
+  // hTOFmatchedESDrawTime->Sumw2() ;
   hTOFmatchedESDrawTime->SetLineWidth(2);
   hTOFmatchedESDrawTime->SetLineColor(kAzure+2);
   hTOFmatchedESDrawTime->SetFillColor(kAzure+2);
@@ -294,7 +294,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlist->AddLast(hTOFmatchedESDrawTime) ;
   //3
   TH1F* hTOFmatchedESDToT = new TH1F("hTOFmatchedESDToT", "Matched ESDs tracks: TOF ToT spectrum; ToT [ns];Counts",100, 0., 48.8) ; 
-  hTOFmatchedESDToT->Sumw2() ;
+  // hTOFmatchedESDToT->Sumw2() ;
   hTOFmatchedESDToT->SetLineColor(kOrange+1);
   hTOFmatchedESDToT->SetMarkerColor(kOrange+1);
   hTOFmatchedESDToT->SetFillColor(kOrange+1);
@@ -302,7 +302,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlist->AddLast(hTOFmatchedESDToT) ;
   //4
   TH1F* hTOFmatchedESDtrkLength  = new TH1F("hTOFmatchedESDtrkLength", "Matched ESDs tracks length; Track length [cm];Counts", 1200, -400., 800) ; 
-  hTOFmatchedESDtrkLength->Sumw2();
+  // hTOFmatchedESDtrkLength->Sumw2();
   hTOFmatchedESDtrkLength->SetLineColor(kViolet-3);
   hTOFmatchedESDtrkLength->SetMarkerColor(kViolet-3);
   hTOFmatchedESDtrkLength->SetFillColor(kViolet-3);
@@ -310,7 +310,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlist->AddLast(hTOFmatchedESDtrkLength);
   //5
   TH1F* hTOFmatchedESDP  = new TH1F("hTOFmatchedESDP", "TPC-TOF matched tracks momentum distribution (GeV/c); p (GeV/c);tracks", 500,0.,5.) ;  
-  hTOFmatchedESDP->Sumw2() ;
+  // hTOFmatchedESDP->Sumw2() ;
   hTOFmatchedESDP->SetLineColor(kBlue);
   hTOFmatchedESDP->SetMarkerStyle(20);
   hTOFmatchedESDP->SetMarkerSize(0.7);
@@ -318,7 +318,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlist->AddLast(hTOFmatchedESDP) ; 
   //6
   TH1F* hTOFmatchedESDPt  = new TH1F("hTOFmatchedESDPt", "TPC-TOF matched tracks p_{T} distribution (GeV/c); p_{T}(GeV/c);tracks", 500,0.,5.) ;  
-  hTOFmatchedESDPt->Sumw2() ;
+  // hTOFmatchedESDPt->Sumw2() ;
   hTOFmatchedESDPt->SetLineColor(kBlue);
   hTOFmatchedESDPt->SetMarkerStyle(21);
   hTOFmatchedESDPt->SetMarkerSize(0.7);
@@ -327,18 +327,18 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
   //7
   TH1F* hTOFmatchedESDeta = new TH1F("hTOFmatchedESDeta", "Matched ESDtracks #eta (p_{T} #geq 1.0 GeV/c); #eta;Counts", 200, -1., 1.) ; 
-  hTOFmatchedESDeta->Sumw2();
+  // hTOFmatchedESDeta->Sumw2();
   hTOFmatchedESDeta->SetLineColor(kBlue);
   fHlist->AddLast(hTOFmatchedESDeta) ; 
   //8
    TH1F* hTOFmatchedESDphi = new TH1F("hTOFmatchedESDphi", "Matched ESDtracks #phi (p_{T} #geq 1.0 GeV/c); #phi (deg);Counts", 72, 0., 360.) ; 
-  hTOFmatchedESDphi->Sumw2();
+  // hTOFmatchedESDphi->Sumw2();
   hTOFmatchedESDphi->SetLineColor(kBlue);
   fHlist->AddLast(hTOFmatchedESDphi) ; 
 
   //9
   TH1F* hESDprimaryTrackP = new TH1F("hESDprimaryTrackP", "All ESDs tracks p distribution (GeV/c); p(GeV/c);tracks", 500, 0., 5.0) ;  
-  hESDprimaryTrackP->Sumw2();
+  // hESDprimaryTrackP->Sumw2();
   hESDprimaryTrackP->SetLineWidth(1);
   hESDprimaryTrackP->SetMarkerStyle(24);
   hESDprimaryTrackP->SetMarkerSize(0.7);
@@ -347,7 +347,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlist->AddLast(hESDprimaryTrackP);
   //10
   TH1F* hESDprimaryTrackPt = new TH1F("hESDprimaryTrackPt", "ESDs primary tracks p_{T} distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDprimaryTrackPt->Sumw2();
+  // hESDprimaryTrackPt->Sumw2();
   hESDprimaryTrackPt->SetLineWidth(1);
   hESDprimaryTrackPt->SetMarkerStyle(25);
   hESDprimaryTrackPt->SetMarkerSize(0.7);
@@ -356,26 +356,26 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlist->AddLast(hESDprimaryTrackPt);
   //11
   TH1F* hTOFprimaryESDeta = new TH1F("hTOFprimaryESDeta", "Primary ESDtracks #eta (p_{T} #geq 1.0 GeV/c); #eta;Counts",200, -1., 1.) ; 
-  hTOFprimaryESDeta->Sumw2();
+  // hTOFprimaryESDeta->Sumw2();
   hTOFprimaryESDeta->SetLineColor(kRed);
   fHlist->AddLast(hTOFprimaryESDeta) ; 
   //12
   TH1F* hTOFprimaryESDphi = new TH1F("hTOFprimaryESDphi", "Primary ESDtracks #phi (p_{T} #geq 1.0 GeV/c);#phi (deg);Counts", 72, 0., 360.) ; 
-  hTOFprimaryESDphi->Sumw2();
+  // hTOFprimaryESDphi->Sumw2();
   hTOFprimaryESDphi->SetLineColor(kRed);
   fHlist->AddLast(hTOFprimaryESDphi) ; 
   //13
   TH2F* hTOFmatchedDxVsPtPos = new TH2F("hTOFmatchedDxVsPtPos", "Dx vs p_{T} for positive tracks;p_{T} (GeV/c); Dx [cm]; hits", 500,0.,5.,200, -10., 10.) ; 
-  hTOFmatchedDxVsPtPos->Sumw2();
+  // hTOFmatchedDxVsPtPos->Sumw2();
   fHlist->AddLast(hTOFmatchedDxVsPtPos) ; 
  //14
   TH2F* hTOFmatchedDxVsPtNeg = new TH2F("hTOFmatchedDxVsPtNeg", "Dx vs p_{T} for negative tracks;p_{T} (GeV/c); Dx [cm]; hits", 500,0.,5.,200, -10., 10.) ; 
-  hTOFmatchedDxVsPtNeg->Sumw2();
+  // hTOFmatchedDxVsPtNeg->Sumw2();
   fHlist->AddLast(hTOFmatchedDxVsPtNeg) ; 
 
   //15
   TH2F* hTOFmatchedDzVsStrip = new TH2F("hTOFmatchedDzVsStrip", "Dz vs strip; strip (#eta); Dz [cm]; hits", 92,0.,92.,200, -10., 10.) ; 
-  hTOFmatchedDzVsStrip->Sumw2();
+  // hTOFmatchedDzVsStrip->Sumw2();
   fHlist->AddLast(hTOFmatchedDzVsStrip) ; 
 
   //16
@@ -389,7 +389,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
  //----------------------------------------------timeZero QA plots
   //TimeZero 0
   TH1D* hEventT0DetAND = new TH1D("hEventT0DetAND", "Event timeZero from T0AC detector ; t0 [ps]; events", 1000, -25000., 25000. ) ; 
-  hEventT0DetAND->Sumw2() ;
+  // hEventT0DetAND->Sumw2() ;
   hEventT0DetAND->SetLineWidth(2);
   hEventT0DetAND->SetLineColor(kRed);
   hEventT0DetAND->SetFillColor(kRed);
@@ -397,7 +397,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
   //TImeZero 1
   TH1D* hEventT0DetA = new TH1D("hEventT0DetA", "Event timeZero from T0A detector; t0 [ps]; events", 1000, -25000., 25000. ) ; 
-  hEventT0DetA->Sumw2() ;
+  // hEventT0DetA->Sumw2() ;
   hEventT0DetA->SetLineWidth(2);
   hEventT0DetA->SetLineColor(kBlue);
   hEventT0DetA->SetFillColor(kBlue);
@@ -405,7 +405,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
    //TImeZero 2
   TH1D* hEventT0DetC = new TH1D("hEventT0DetC", "Event timeZero from T0C detector; t0 [ps]; events", 1000, -25000., 25000.) ; 
-  hEventT0DetC->Sumw2() ;
+  // hEventT0DetC->Sumw2() ;
   hEventT0DetC->SetLineWidth(2);
   hEventT0DetC->SetLineColor(kGreen);
   hEventT0DetC->SetFillColor(kGreen);
@@ -413,7 +413,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
    //TimeZero 3
   TH1F* hT0DetRes = new TH1F("hT0DetRes", "T0 detector (T0A-T0C)/2; (T0A-T0C)/2 [ps]; events", 200, -500.,500. ) ; 
-  hT0DetRes->Sumw2() ;
+  // hT0DetRes->Sumw2() ;
   hT0DetRes->SetMarkerStyle(24);
   hT0DetRes->SetMarkerSize(0.7);
   hT0DetRes->SetMarkerColor(kMagenta+2);
@@ -423,7 +423,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
      //timeZero 4
   TH1F* hT0fill = new TH1F("hT0fill", "Event timeZero of fill; t0 [ps]; events", 1000, -25000., 25000. ) ; 
-  hT0fill->Sumw2() ;
+  // hT0fill->Sumw2() ;
   hT0fill->SetMarkerStyle(20);
   hT0fill->SetMarkerColor(kBlack);
   hT0fill->SetLineColor(kBlack);
@@ -431,7 +431,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
   //TimeZero 5
   TH1F* hT0TOF = new TH1F("hT0TOF", "Event timeZero estimated by TOF; t0 [ps]; events", 1000, -25000., 25000. ) ; 
-  hT0TOF->Sumw2() ;
+  // hT0TOF->Sumw2() ;
   hT0TOF->SetMarkerStyle(20);
   hT0TOF->SetMarkerColor(kBlue);
   hT0TOF->SetLineColor(kBlue);
@@ -441,7 +441,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
    //timeZero 6
   TH1F* hT0T0 = new TH1F("hT0T0", "Event timeZero measured by T0 detector (best between AC, A, C); t0 [ps]; events", 1000, -25000.,25000. ) ; 
-  hT0T0->Sumw2() ;
+  // hT0T0->Sumw2() ;
   hT0T0->SetMarkerStyle(20);
   hT0T0->SetMarkerColor(kGreen+1);
   hT0T0->SetLineColor(kGreen+1);
@@ -450,7 +450,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
    //timeZero 7
   TH1F* hT0best = new TH1F("hT0best", "Event timeZero estimated as T0best; t0 [ps]; events", 1000, -25000.,25000. ) ; 
-  hT0best->Sumw2() ;
+  // hT0best->Sumw2() ;
   hT0best->SetMarkerStyle(20);
   hT0best->SetMarkerColor(kRed);
   hT0best->SetLineColor(kRed);
@@ -459,7 +459,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
    //TimeZero 8
   TH1F* hT0fillRes = new TH1F("hT0fillRes", "Resolution of fillT0; #sigma_{fillT0} [ps];events", 250, 0.,250. ) ; 
-  hT0fillRes->Sumw2() ;
+  // hT0fillRes->Sumw2() ;
   hT0fillRes->SetMarkerStyle(21);
   hT0fillRes->SetMarkerColor(kBlack);
   hT0fillRes->SetLineColor(kBlack);
@@ -468,7 +468,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
  
   //TimeZero 9
   TH1F* hT0TOFRes = new TH1F("hT0TOFRes", "Resolution of timeZero from TOF; #sigma_{TOFT0} [ps];events", 250, 0.,250. ) ; 
-  hT0TOFRes->Sumw2() ;
+  // hT0TOFRes->Sumw2() ;
   hT0TOFRes->SetLineWidth(1);
   hT0TOFRes->SetMarkerStyle(21);
   hT0TOFRes->SetMarkerColor(kBlue);
@@ -478,7 +478,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
    //TimeZero 10
   TH1F* hT0T0Res = new TH1F("hT0T0Res", "Resolution of timeZero from T0;#sigma_{T0T0}  [ps];events", 250, -0., 250. ) ; 
-  hT0T0Res->Sumw2() ;
+  // hT0T0Res->Sumw2() ;
   hT0T0Res->SetMarkerStyle(21);
   hT0T0Res->SetMarkerColor(kGreen+1);
   hT0T0Res->SetLineColor(kGreen+1);
@@ -487,7 +487,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
    //TimeZero 11
   TH1F* hT0bestRes = new TH1F("hT0bestRes", "Resolution of bestT0; #sigma_{bestT0} [ps];events", 250, 0.,250. ) ; 
-  hT0bestRes->Sumw2() ;
+  // hT0bestRes->Sumw2() ;
   hT0bestRes->SetMarkerStyle(21);
   hT0bestRes->SetMarkerColor(kRed);
   hT0bestRes->SetLineColor(kRed);
@@ -496,24 +496,24 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
   //timeZero 12
   TH2F* hT0TOFvsNtrk = new TH2F("hT0TOFvsNtrk", "Event timeZero estimated by TOF vs. number of tracks in event;TOF-matching tracks; t0 [ps]", 100, 0., 100.,1000,-25000.,25000. ) ; 
-  hT0TOFvsNtrk->Sumw2() ;
+  // hT0TOFvsNtrk->Sumw2() ;
   fHlistTimeZero->AddLast(hT0TOFvsNtrk) ;
 
  //TimeZero 13
   TH2F* hEventT0MeanVsVtx = new TH2F("hEventT0MeanVsVtx", "T0 detector: mean vs vertex ; (t0_{A}-t0_{C})/2 [ns]; (t0_{A}+t0_{C})/2 [ns]; events", 500, -25., 25., 500, -25., 25. ) ; 
-  hEventT0MeanVsVtx->Sumw2() ;
+  // hEventT0MeanVsVtx->Sumw2() ;
   fHlistTimeZero->AddLast(hEventT0MeanVsVtx) ;
 
  //TimeZero 14
   TH2F* hEventV0MeanVsVtx = new TH2F("hEventV0MeanVsVtx", "V0 detector: mean vs vertex ; (V0_{A}-V0_{C})/2 [ns]; (V0_{A}+V0_{C})/2 [ns]; events", 500, -50., 50., 500, -50., 50. ) ; 
-  hEventV0MeanVsVtx->Sumw2() ;
+  // hEventV0MeanVsVtx->Sumw2() ;
   fHlistTimeZero->AddLast(hEventV0MeanVsVtx) ;
 
   const Double_t startTimeMomBins[13]={ 0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2, 1.5, 2., 3., 10.};
 
   //TimeZero 15
   TH2F* hStartTimeMaskMatched = new TH2F("hStartTimeMaskMatched","Start Time Mask vs p bin for matched tracks; p(GeV/c);", 12, startTimeMomBins, 8,0.,8.);
-  hStartTimeMaskMatched->Sumw2();
+  // hStartTimeMaskMatched->Sumw2();
   hStartTimeMaskMatched->GetYaxis()->SetBinLabel(1,"fill_t0");
   hStartTimeMaskMatched->GetYaxis()->SetBinLabel(2,"tof_t0");
   hStartTimeMaskMatched->GetYaxis()->SetBinLabel(3,"T0AC");
@@ -526,7 +526,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   
   //TimeZero 15
   TH2F* hStartTimeMask = new TH2F("hStartTimeMask","Start Time Mask vs p bin for primary tracks; p(GeV/c);", 12, startTimeMomBins, 8,0.,8.);
-  hStartTimeMask->Sumw2();
+  // hStartTimeMask->Sumw2();
   hStartTimeMask->GetYaxis()->SetBinLabel(1,"fill_t0");
   hStartTimeMask->GetYaxis()->SetBinLabel(2,"tof_t0");
   hStartTimeMask->GetYaxis()->SetBinLabel(3,"T0AC");
@@ -544,7 +544,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   
   //PID 1 
   TH1F* hTOFmatchedMass= new TH1F("hTOFmatchedMass","Matched ESD tracks mass distribution - (L>0); M (GeV/c^{2}); entries", 500, 0., 5. );
-  hTOFmatchedMass->Sumw2();
+  // hTOFmatchedMass->Sumw2();
   hTOFmatchedMass->SetLineWidth(2);
   hTOFmatchedMass->SetLineColor(kBlue);
   hTOFmatchedMass->SetLineColor(kBlue);
@@ -552,12 +552,12 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   
   //PID 2
   TH2F* hTOFmatchedExpTimePiVsEta = new TH2F("hTOFmatchedExpTimePiVsEta", "ESDs t_{TOF}-t_{#pi,exp} (from tracking); strip (#eta); t_{TOF}-t_{#pi,exp} [ps]", 92, 0, 92,  nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
-  hTOFmatchedExpTimePiVsEta->Sumw2() ;
+  // hTOFmatchedExpTimePiVsEta->Sumw2() ;
   fHlistPID->AddLast(hTOFmatchedExpTimePiVsEta) ;
   
   //PID 3
   TH1F* hTOFmatchedExpTimePi = new TH1F("hTOFmatchedExpTimePi", "ESDs t_{TOF}-t_{#pi,exp} (from tracking); t_{TOF}-t_{#pi,exp} [ps];Counts", nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimePi->Sumw2() ;
+  // hTOFmatchedExpTimePi->Sumw2() ;
   hTOFmatchedExpTimePi->SetLineWidth(1);
   hTOFmatchedExpTimePi->SetLineColor(kRed);
   hTOFmatchedExpTimePi->SetMarkerStyle(20);
@@ -567,7 +567,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
   //PID 3bis
   TH1F* hExpTimePiFillSub = new TH1F("hExpTimePiFillSub", "ESDs t_{TOF}-t_{#pi,exp}-t_{0,FILL} (from tracking); t_{TOF}-t_{#pi,exp} [ps];Counts", nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hExpTimePiFillSub->Sumw2() ;
+  // hExpTimePiFillSub->Sumw2() ;
   hExpTimePiFillSub->SetLineWidth(1);
   hExpTimePiFillSub->SetLineColor(kRed);
   hExpTimePiFillSub->SetMarkerStyle(20);
@@ -578,12 +578,12 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   
   //PID 4
   TH2F* hTOFmatchedExpTimePiVsP = new TH2F("hTOFmatchedExpTimePiVsP", "ESDs t_{TOF}-t_{#pi,exp} (from tracking) Vs P ; p (GeV/c);t_{TOF}-t_{#pi,exp} [ps];Counts",500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimePiVsP->Sumw2() ;
+  // hTOFmatchedExpTimePiVsP->Sumw2() ;
   fHlistPID->AddLast(hTOFmatchedExpTimePiVsP) ;
 
   //PID 5
   TH1F* hTOFtheoreticalExpTimePi = new TH1F("hTOFtheoreticalExpTimePi", "ESDs t_{TOF}-t_{#pi,exp} (theoretical); t_{TOF}-t_{#pi,exp} [ps];Counts", nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFtheoreticalExpTimePi->Sumw2() ;
+  // hTOFtheoreticalExpTimePi->Sumw2() ;
   hTOFtheoreticalExpTimePi->SetLineWidth(1);
   hTOFtheoreticalExpTimePi->SetLineColor(kRed);
   hTOFtheoreticalExpTimePi->SetMarkerStyle(24);
@@ -593,17 +593,17 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
   //PID 6
   TH2F* hTOFtheoreticalExpTimePiVsP = new TH2F("hTOFtheoreticalExpTimePiVsP", "ESDs t_{TOF}-t_{#pi,exp} (theoretical) Vs P ; p (GeV/c);t_{TOF}-t_{#pi,exp} [ps];Counts",500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFtheoreticalExpTimePiVsP->Sumw2() ;
+  // hTOFtheoreticalExpTimePiVsP->Sumw2() ;
   fHlistPID->AddLast(hTOFtheoreticalExpTimePiVsP) ;
 
   //PID 7
   TH2F* hTOFExpSigmaPi = new TH2F("hTOFExpSigmaPi", "ESDs TOF n#sigma_{PID,#pi} vs p_{T}; p_{T} (GeV/c); n#sigma_{PID,#pi};Tracks", 500,0.,5.,200, -10., 10. ) ; 
-  hTOFExpSigmaPi->Sumw2() ;
+  // hTOFExpSigmaPi->Sumw2() ;
   fHlistPID->AddLast(hTOFExpSigmaPi) ;
 
   //PID 8
   TH1F* hTOFmatchedExpTimeKa = new TH1F("hTOFmatchedExpTimeKa", "ESDs t_{TOF}-t_{K,exp} (from tracking); t_{TOF}-t_{K,exp} [ps];Counts", nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimeKa->Sumw2() ;
+  // hTOFmatchedExpTimeKa->Sumw2() ;
   hTOFmatchedExpTimeKa->SetLineWidth(1);
   hTOFmatchedExpTimeKa->SetLineColor(kBlue);
   hTOFmatchedExpTimeKa->SetMarkerStyle(21);
@@ -613,12 +613,12 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
   //PID 9
   TH2F* hTOFmatchedExpTimeKaVsP = new TH2F("hTOFmatchedExpTimeKaVsP", "ESDs t_{TOF}-t_{K,exp} (from tracking) Vs P ; p (GeV/c);t_{TOF}-t_{K,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimeKaVsP->Sumw2() ;
+  // hTOFmatchedExpTimeKaVsP->Sumw2() ;
   fHlistPID->AddLast(hTOFmatchedExpTimeKaVsP) ; 
   
   //PID 10
   TH1F* hTOFtheoreticalExpTimeKa = new TH1F("hTOFtheoreticalExpTimeKa", "ESDs t_{TOF}-t_{K,exp} (theoretical); t_{TOF}-t_{K,exp} [ps];Counts", nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFtheoreticalExpTimeKa->Sumw2() ;
+  // hTOFtheoreticalExpTimeKa->Sumw2() ;
   hTOFtheoreticalExpTimeKa->SetLineWidth(1);
   hTOFtheoreticalExpTimeKa->SetLineColor(kBlue);
   hTOFtheoreticalExpTimeKa->SetMarkerStyle(24);
@@ -628,17 +628,17 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   
   //PID 11
   TH2F* hTOFtheoreticalExpTimeKaVsP = new TH2F("hTOFtheoreticalExpTimeKaVsP", "ESDs t_{TOF}-t_{K,exp} (theoretical) Vs P ; p (GeV/c);t_{TOF}-t_{K,exp} [ps];Counts",500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFtheoreticalExpTimeKaVsP->Sumw2() ;
+  // hTOFtheoreticalExpTimeKaVsP->Sumw2() ;
   fHlistPID->AddLast(hTOFtheoreticalExpTimeKaVsP) ; 
   
   //PID 12
   TH2F* hTOFExpSigmaKa = new TH2F("hTOFExpSigmaKa", "ESDs TOF n#sigma_{PID,K} vs p_{T}; p_{T} (GeV/c);n#sigma_{PID,K};Tracks", 500, 0.,5.,200, -10., 10. ) ; 
-  hTOFExpSigmaKa->Sumw2() ;
+  // hTOFExpSigmaKa->Sumw2() ;
   fHlistPID->AddLast(hTOFExpSigmaKa) ;
   
   //PID 13
   TH1F* hTOFmatchedExpTimePro = new TH1F("hTOFmatchedExpTimePro", "ESDs t_{TOF}-t_{p,exp} (from tracking); t_{TOF}-t_{p,exp} [ps];Counts", nExpTimeBins, fExpTimeRangeMin,fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimePro->Sumw2() ;
+  // hTOFmatchedExpTimePro->Sumw2() ;
   hTOFmatchedExpTimePro->SetLineWidth(1);
   hTOFmatchedExpTimePro->SetLineColor(kGreen+1);
   hTOFmatchedExpTimePro->SetMarkerStyle(22);
@@ -648,12 +648,12 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
    //PID 14
   TH2F* hTOFmatchedExpTimeProVsP = new TH2F("hTOFmatchedExpTimeProVsP", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P ; p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimeProVsP->Sumw2() ;
+  // hTOFmatchedExpTimeProVsP->Sumw2() ;
   fHlistPID->AddLast(hTOFmatchedExpTimeProVsP) ;
   
   //PID 15
   TH1F* hTOFtheoreticalExpTimePro = new TH1F("hTOFtheoreticalExpTimePro", "ESDs t_{TOF}-t_{p,exp} (theoretical); t_{TOF}-t_{p,exp} [ps];Counts", nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFtheoreticalExpTimePro->Sumw2() ;
+  // hTOFtheoreticalExpTimePro->Sumw2() ;
   hTOFtheoreticalExpTimePro->SetLineWidth(1);
   hTOFtheoreticalExpTimePro->SetLineColor(kGreen+1);
   hTOFtheoreticalExpTimePro->SetMarkerStyle(26);
@@ -663,110 +663,110 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
   //PID 16
   TH2F* hTOFtheoreticalExpTimeProVsP = new TH2F("hTOFtheoreticalExpTimeProVsP", "ESDs t_{TOF}-t_{p,exp} (theoretical) Vs P ; p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFtheoreticalExpTimeProVsP->Sumw2() ;
+  // hTOFtheoreticalExpTimeProVsP->Sumw2() ;
   fHlistPID->AddLast(hTOFtheoreticalExpTimeProVsP) ;
 
   //PID 17
   TH2F* hTOFExpSigmaPro = new TH2F("hTOFExpSigmaPro", "ESDs TOF n#sigma_{PID,p} vs. p_{T}; p_{T} (GeV/c); n#sigma_{PID,p};Tracks", 500, 0.,5.,200, -10., 10. ) ; 
-  hTOFExpSigmaPro->Sumw2() ;
+  // hTOFExpSigmaPro->Sumw2() ;
   fHlistPID->AddLast(hTOFExpSigmaPro) ;
 
    //PID 18
   TH2F* hTOFmatchedExpTimePiVsPTRDPos = new TH2F("hTOFmatchedExpTimePiVsPTRDPos", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (#phi_{outerTPC}#leq 30 || 150 #leq#phi_{outerTPC}#leq 230 || #phi_{outerTPC}#geq 310 ) ; p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimePiVsPTRDPos->Sumw2() ;
+  // hTOFmatchedExpTimePiVsPTRDPos->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHlistPID->AddLast(hTOFmatchedExpTimePiVsPTRDPos) ;
 
    //PID 19
   TH2F* hTOFmatchedExpTimePiVsPNoTRDPos = new TH2F("hTOFmatchedExpTimePiVsPNoTRDPos", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (50 #leq#phi_{outerTPC}#leq 130 || 250 #leq#phi_{outerTPC}#leq 290); p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimePiVsPNoTRDPos->Sumw2() ;
+  // hTOFmatchedExpTimePiVsPNoTRDPos->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHlistPID->AddLast(hTOFmatchedExpTimePiVsPNoTRDPos) ;
 
    //PID 20
   TH2F* hTOFmatchedExpTimePiVsPTRDNeg = new TH2F("hTOFmatchedExpTimePiVsPTRDNeg", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (#phi_{outerTPC}#leq 30 || 150 #leq#phi_{outerTPC}#leq 230 || #phi_{outerTPC}#geq 310 ) ; p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimePiVsPTRDNeg->Sumw2() ;
+  // hTOFmatchedExpTimePiVsPTRDNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHlistPID->AddLast(hTOFmatchedExpTimePiVsPTRDNeg) ;
 
    //PID 21
   TH2F* hTOFmatchedExpTimePiVsPNoTRDNeg = new TH2F("hTOFmatchedExpTimePiVsPNoTRDNeg", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (50 #leq#phi_{outerTPC}#leq 130 || 250 #leq#phi_{outerTPC}#leq 290); p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimePiVsPNoTRDNeg->Sumw2() ;
+  // hTOFmatchedExpTimePiVsPNoTRDNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHlistPID->AddLast(hTOFmatchedExpTimePiVsPNoTRDNeg) ;
   
  //PID 22
   TH2F* hTOFmatchedExpTimeKaVsPTRDPos = new TH2F("hTOFmatchedExpTimeKaVsPTRDPos", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (#phi_{outerTPC}#leq 30 || 150 #leq#phi_{outerTPC}#leq 230 || #phi_{outerTPC}#geq 310 ) ; p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimeKaVsPTRDPos->Sumw2() ;
+  // hTOFmatchedExpTimeKaVsPTRDPos->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHlistPID->AddLast(hTOFmatchedExpTimeKaVsPTRDPos) ;
   
    //PID 23
   TH2F* hTOFmatchedExpTimeKaVsPNoTRDPos = new TH2F("hTOFmatchedExpTimeKaVsPNoTRDPos", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (50 #leq#phi_{outerTPC}#leq 130 || 250 #leq#phi_{outerTPC}#leq 290); p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimeKaVsPNoTRDPos->Sumw2() ;
+  // hTOFmatchedExpTimeKaVsPNoTRDPos->Sumw2() ;
     if (fEnableAdvancedCheck)
       fHlistPID->AddLast(hTOFmatchedExpTimeKaVsPNoTRDPos) ;
 
    //PID 24
   TH2F* hTOFmatchedExpTimeKaVsPTRDNeg = new TH2F("hTOFmatchedExpTimeKaVsPTRDNeg", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (#phi_{outerTPC}#leq 30 || 150 #leq#phi_{outerTPC}#leq 230 || #phi_{outerTPC}#geq 310 ) ; p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimeKaVsPTRDNeg->Sumw2() ;
+  // hTOFmatchedExpTimeKaVsPTRDNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHlistPID->AddLast(hTOFmatchedExpTimeKaVsPTRDNeg) ;
 
    //PID 25
   TH2F* hTOFmatchedExpTimeKaVsPNoTRDNeg = new TH2F("hTOFmatchedExpTimeKaVsPNoTRDNeg", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (50 #leq#phi_{outerTPC}#leq 130 || 250 #leq#phi_{outerTPC}#leq 290); p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimeKaVsPNoTRDNeg->Sumw2() ;
+  // hTOFmatchedExpTimeKaVsPNoTRDNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHlistPID->AddLast(hTOFmatchedExpTimeKaVsPNoTRDNeg) ;
     
  //PID 26
   TH2F* hTOFmatchedExpTimeProVsPTRDPos = new TH2F("hTOFmatchedExpTimeProVsPTRDPos", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (#phi_{outerTPC}#leq 30 || 150 #leq#phi_{outerTPC}#leq 230 || #phi_{outerTPC}#geq 310 ) ; p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimeProVsPTRDPos->Sumw2() ;
+  // hTOFmatchedExpTimeProVsPTRDPos->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHlistPID->AddLast(hTOFmatchedExpTimeProVsPTRDPos) ;
   
    //PID 27
   TH2F* hTOFmatchedExpTimeProVsPNoTRDPos = new TH2F("hTOFmatchedExpTimeProVsPNoTRDPos", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (50 #leq#phi_{outerTPC}#leq 130 || 250 #leq#phi_{outerTPC}#leq 290); p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimeProVsPNoTRDPos->Sumw2() ;
+  // hTOFmatchedExpTimeProVsPNoTRDPos->Sumw2() ;
     if (fEnableAdvancedCheck)
       fHlistPID->AddLast(hTOFmatchedExpTimeProVsPNoTRDPos) ;
     
     //PID 28
    TH2F* hTOFmatchedExpTimeProVsPTRDNeg = new TH2F("hTOFmatchedExpTimeProVsPTRDNeg", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (#phi_{outerTPC}#leq 30 || 150 #leq#phi_{outerTPC}#leq 230 || #phi_{outerTPC}#geq 310 ) ; p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-    hTOFmatchedExpTimeProVsPTRDNeg->Sumw2() ;
+    // hTOFmatchedExpTimeProVsPTRDNeg->Sumw2() ;
     if (fEnableAdvancedCheck)
       fHlistPID->AddLast(hTOFmatchedExpTimeProVsPTRDNeg) ;
 
    //PID 29
   TH2F* hTOFmatchedExpTimeProVsPNoTRDNeg = new TH2F("hTOFmatchedExpTimeProVsPNoTRDNeg", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (50 #leq#phi_{outerTPC}#leq 130 || 250 #leq#phi_{outerTPC}#leq 290); p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedExpTimeProVsPNoTRDNeg->Sumw2() ;
+  // hTOFmatchedExpTimeProVsPNoTRDNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHlistPID->AddLast(hTOFmatchedExpTimeProVsPNoTRDNeg) ;
 
 //PID 30
   TH2F* hTOFmatchedTimePion1GeV = new TH2F("hTOFmatchedTimePion1GeV", "ESDs t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} (from tracking) for 0.95 <= p_{T} <= 1.05 GeV/c; n tracks used for TOF_T0; t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} [ps];Counts", 1000, 0., 1000., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTOFmatchedTimePion1GeV->Sumw2() ;
+  // hTOFmatchedTimePion1GeV->Sumw2() ;
   fHlistPID->AddLast(hTOFmatchedTimePion1GeV) ;
   
   //PID 31
   TH2F* hTimeT0subtractedPionVsP = new TH2F("hTimeT0subtractedPionVsP", "ESDs t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} vs p; p (GeV/c); t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} [ps];Counts", 500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTimeT0subtractedPionVsP->Sumw2() ;
+  // hTimeT0subtractedPionVsP->Sumw2() ;
   fHlistPID->AddLast(hTimeT0subtractedPionVsP) ;
 
 //PID 32
   TH2F* hTimeT0subtractedKaonVsP = new TH2F("hTimeT0subtractedKaonVsP", "ESDs t_{TOF}-t_{0}^{TOF}-t_{K,exp} vs p; p (GeV/c); t_{TOF}-t_{0}^{TOF}-t_{K,exp} [ps];Counts", 500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTimeT0subtractedKaonVsP->Sumw2() ;
+  // hTimeT0subtractedKaonVsP->Sumw2() ;
   fHlistPID->AddLast(hTimeT0subtractedKaonVsP) ;
 
 //PID 33
   TH2F* hTimeT0subtractedProtonVsP = new TH2F("hTimeT0subtractedProtonVsP", "ESDs t_{TOF}-t_{0}^{TOF}-t_{p,exp} vs p; p(GeV/c) t_{TOF}-t_{0}^{TOF}-t_{p,exp} [ps];Counts", 500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
-  hTimeT0subtractedProtonVsP->Sumw2() ;
+  // hTimeT0subtractedProtonVsP->Sumw2() ;
   fHlistPID->AddLast(hTimeT0subtractedProtonVsP) ;
 
   //----------------------------------------------------------POSITIVE TRACKS
   //0
   TH1F* hTOFmatchedESDtrkLengthPos  = new TH1F("hTOFmatchedESDtrkLengthPos", "Matched positive ESDs tracks length; Track length [cm];Counts", 1600, -800., 800) ; 
-  hTOFmatchedESDtrkLengthPos->Sumw2();
+  // hTOFmatchedESDtrkLengthPos->Sumw2();
   hTOFmatchedESDtrkLengthPos->SetLineColor(kRed);
   hTOFmatchedESDtrkLengthPos->SetMarkerColor(kRed);
   hTOFmatchedESDtrkLengthPos->SetFillColor(kRed);
@@ -775,7 +775,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
     fHpos->AddLast(hTOFmatchedESDtrkLengthPos);
   //1
   TH1F* hTOFmatchedESDPPos  = new TH1F("hTOFmatchedESDPPos", "TPC-TOF matched positive tracks momentum distribution (GeV/c); p (GeV/c);tracks", 500,0.,5.) ;  
-  hTOFmatchedESDPPos->Sumw2() ;
+  // hTOFmatchedESDPPos->Sumw2() ;
   hTOFmatchedESDPPos->SetLineColor(kRed);
   hTOFmatchedESDPPos->SetMarkerStyle(20);
   hTOFmatchedESDPPos->SetMarkerSize(0.7);
@@ -784,7 +784,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
     fHpos->AddLast(hTOFmatchedESDPPos) ; 
   //2
   TH1F* hTOFmatchedESDPtPos  = new TH1F("hTOFmatchedESDPtPos", "TPC-TOF positive matched tracks p_{T} distribution (GeV/c); p_{T}(GeV/c);tracks", 500,0.,5.) ;  
-  hTOFmatchedESDPtPos->Sumw2() ;
+  // hTOFmatchedESDPtPos->Sumw2() ;
   hTOFmatchedESDPtPos->SetLineColor(kRed);
   hTOFmatchedESDPtPos->SetMarkerStyle(21);
   hTOFmatchedESDPtPos->SetMarkerSize(0.7);
@@ -794,20 +794,20 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 
   //3
   TH1F* hTOFmatchedESDetaPos = new TH1F("hTOFmatchedESDetaPos", "Matched positive ESD tracks #eta (p_{T} #geq 1.0 GeV/c); eta;Counts", 200, -1., 1.) ; 
-  hTOFmatchedESDetaPos->Sumw2();
+  // hTOFmatchedESDetaPos->Sumw2();
   hTOFmatchedESDetaPos->SetLineColor(kRed);
     if (fEnableAdvancedCheck)
 fHpos->AddLast(hTOFmatchedESDetaPos) ; 
   //4
    TH1F* hTOFmatchedESDphiPos = new TH1F("hTOFmatchedESDphiPos", "Matched Positive ESD tracks #phi (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);Counts", 72, 0., 360.) ; 
-  hTOFmatchedESDphiPos->Sumw2();
+  // hTOFmatchedESDphiPos->Sumw2();
   hTOFmatchedESDphiPos->SetLineColor(kRed);
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFmatchedESDphiPos) ; 
 
   //5
   TH1F* hESDmatchedTrackPtPosTRDout = new TH1F("hESDmatchedTrackPtPosTRDout", "ESDs Pos matched tracks p_{T} with kTRDout distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDmatchedTrackPtPosTRDout->Sumw2();
+  // hESDmatchedTrackPtPosTRDout->Sumw2();
   hESDmatchedTrackPtPosTRDout->SetLineWidth(1);
   hESDmatchedTrackPtPosTRDout->SetMarkerStyle(20);
   hESDmatchedTrackPtPosTRDout->SetMarkerSize(0.7);
@@ -818,7 +818,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //6
   TH1F* hESDmatchedTrackPtPosNoTRDout = new TH1F("hESDmatchedTrackPtPosNoTRDout", "ESDs Pos matched tracks p_{T} with !kTRDout distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDmatchedTrackPtPosNoTRDout->Sumw2();
+  // hESDmatchedTrackPtPosNoTRDout->Sumw2();
   hESDmatchedTrackPtPosNoTRDout->SetLineWidth(1);
   hESDmatchedTrackPtPosNoTRDout->SetMarkerStyle(25);
   hESDmatchedTrackPtPosNoTRDout->SetMarkerSize(0.7);
@@ -829,7 +829,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //7
   TH1F* hESDprimaryTrackPPos = new TH1F("hESDprimaryTrackPPos", "All Pos ESDs tracks p distribution (GeV/c); p(GeV/c);tracks", 500, 0., 5.0) ;  
-  hESDprimaryTrackPPos->Sumw2();
+  // hESDprimaryTrackPPos->Sumw2();
   hESDprimaryTrackPPos->SetLineWidth(1);
   hESDprimaryTrackPPos->SetMarkerStyle(24);
   hESDprimaryTrackPPos->SetMarkerSize(0.7);
@@ -839,7 +839,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDprimaryTrackPPos);
   //8
   TH1F* hESDprimaryTrackPtPos = new TH1F("hESDprimaryTrackPtPos", "ESDs Pos primary tracks p_{T} distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDprimaryTrackPtPos->Sumw2();
+  // hESDprimaryTrackPtPos->Sumw2();
   hESDprimaryTrackPtPos->SetLineWidth(1);
   hESDprimaryTrackPtPos->SetMarkerStyle(25);
   hESDprimaryTrackPtPos->SetMarkerSize(0.7);
@@ -849,20 +849,20 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDprimaryTrackPtPos);
   //9
   TH1F* hTOFprimaryESDetaPos = new TH1F("hTOFprimaryESDetaPos", "Primary ESD Pos tracks #eta (p_{T} #geq 1.0 GeV/c); #eta;Counts", 200, -1., 1.) ; 
-  hTOFprimaryESDetaPos->Sumw2();
+  // hTOFprimaryESDetaPos->Sumw2();
   hTOFprimaryESDetaPos->SetLineColor(kRed);
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFprimaryESDetaPos) ; 
   //10
   TH1F* hTOFprimaryESDphiPos = new TH1F("hTOFprimaryESDphiPos", "Primary ESD Pos tracks #phi_{out} (p_{T} #geq 1.0 GeV/c);#phi (deg);Counts", 72, 0., 360.) ; 
-  hTOFprimaryESDphiPos->Sumw2();
+  // hTOFprimaryESDphiPos->Sumw2();
   hTOFprimaryESDphiPos->SetLineColor(kRed);
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFprimaryESDphiPos) ; 
 
   //11
   TH1F* hESDprimaryTrackPtPosTRDout = new TH1F("hESDprimaryTrackPtPosTRDout", "ESDs Pos primary tracks p_{T} with kTRDout distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDprimaryTrackPtPosTRDout->Sumw2();
+  // hESDprimaryTrackPtPosTRDout->Sumw2();
   hESDprimaryTrackPtPosTRDout->SetLineWidth(1);
   hESDprimaryTrackPtPosTRDout->SetMarkerStyle(20);
   hESDprimaryTrackPtPosTRDout->SetMarkerSize(0.7);
@@ -873,7 +873,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //12
   TH1F* hESDprimaryTrackPtPosNoTRDout = new TH1F("hESDprimaryTrackPtPosNoTRDout", "ESDs Pos primary tracks p_{T} with !kTRDout distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDprimaryTrackPtPosNoTRDout->Sumw2();
+  // hESDprimaryTrackPtPosNoTRDout->Sumw2();
   hESDprimaryTrackPtPosNoTRDout->SetLineWidth(1);
   hESDprimaryTrackPtPosNoTRDout->SetMarkerStyle(25);
   hESDprimaryTrackPtPosNoTRDout->SetMarkerSize(0.7);
@@ -884,7 +884,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
     //13
   TH1F* hESDprimaryTrackEtaPosTRDout = new TH1F("hESDprimaryTrackEtaPosTRDout", "ESDs Pos primary tracks #eta with kTRDout  (p_{T} #geq 1.0 GeV/c); #eta;tracks", 200, -1.0, 1.0) ;  
-  hESDprimaryTrackEtaPosTRDout->Sumw2();
+  // hESDprimaryTrackEtaPosTRDout->Sumw2();
   hESDprimaryTrackEtaPosTRDout->SetLineWidth(1);
   hESDprimaryTrackEtaPosTRDout->SetMarkerStyle(20);
   hESDprimaryTrackEtaPosTRDout->SetMarkerSize(0.7);
@@ -895,7 +895,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //14
   TH1F* hESDprimaryTrackEtaPosNoTRDout = new TH1F("hESDprimaryTrackEtaPosNoTRDout", "ESDs Pos primary tracks #eta with !kTRDout  (p_{T} #geq 1.0 GeV/c);#eta;tracks", 200, -1.0, 1.0) ;  
-  hESDprimaryTrackEtaPosNoTRDout->Sumw2();
+  // hESDprimaryTrackEtaPosNoTRDout->Sumw2();
   hESDprimaryTrackEtaPosNoTRDout->SetLineWidth(1);
   hESDprimaryTrackEtaPosNoTRDout->SetMarkerStyle(25);
   hESDprimaryTrackEtaPosNoTRDout->SetMarkerSize(0.7);
@@ -906,7 +906,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //15
   TH1F* hESDprimaryTrackPhiPosTRDout = new TH1F("hESDprimaryTrackPhiPosTRDout", "ESDs Pos primary tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out}(deg);tracks", 72, 0., 360.) ;  
-  hESDprimaryTrackPhiPosTRDout->Sumw2();
+  // hESDprimaryTrackPhiPosTRDout->Sumw2();
   hESDprimaryTrackPhiPosTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiPosTRDout->SetMarkerStyle(20);
   hESDprimaryTrackPhiPosTRDout->SetMarkerSize(0.7);
@@ -917,7 +917,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //16
   TH1F* hESDprimaryTrackPhiPosNoTRDout = new TH1F("hESDprimaryTrackPhiPosNoTRDout", "ESDs Pos primary tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out}(deg);tracks", 72, 0., 360.) ;  
-  hESDprimaryTrackPhiPosNoTRDout->Sumw2();
+  // hESDprimaryTrackPhiPosNoTRDout->Sumw2();
   hESDprimaryTrackPhiPosNoTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiPosNoTRDout->SetMarkerStyle(25);
   hESDprimaryTrackPhiPosNoTRDout->SetMarkerSize(0.7);
@@ -928,25 +928,25 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //POS 17
   TH2F* hTOFmatchedExpTimeProVsPhiPos = new TH2F("hTOFmatchedExpTimeProVsPhiPos", "ESDs t_{TOF}-t_{p,exp} vs #phi at TOF (r=378.cm) (p_{T}<1GeV/c);#phi (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., 500, -5000., 5000. ) ; 
-  hTOFmatchedExpTimeProVsPhiPos->Sumw2() ;
+  // hTOFmatchedExpTimeProVsPhiPos->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFmatchedExpTimeProVsPhiPos) ;
 
   //POS 18
   TH2F* hTOFmatchedExpTimeProVsPhiVertexPos = new TH2F("hTOFmatchedExpTimeProVsPhiVertexPos", "ESDs t_{TOF}-t_{p,exp} vs #phi at vtx (p_{T}<1GeV/c);#phi (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
-  hTOFmatchedExpTimeProVsPhiVertexPos->Sumw2() ;
+  // hTOFmatchedExpTimeProVsPhiVertexPos->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFmatchedExpTimeProVsPhiVertexPos) ;
 
   //POS 19
   TH2F* hTOFmatchedExpTimeProVsPhiTPCPos = new TH2F("hTOFmatchedExpTimeProVsPhiTPCPos", "ESDs t_{TOF}-t_{p,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
-  hTOFmatchedExpTimeProVsPhiTPCPos->Sumw2() ;
+  // hTOFmatchedExpTimeProVsPhiTPCPos->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFmatchedExpTimeProVsPhiTPCPos) ;
 
    //20
   TH1F* hESDmatchedTrackEtaPosTRDout = new TH1F("hESDmatchedTrackEtaPosTRDout", "ESDs Pos matched tracks #eta with kTRDout  (p_{T} #geq 1.0 GeV/c); #eta;tracks", 200, -1.0, 1.0) ;  
-  hESDmatchedTrackEtaPosTRDout->Sumw2();
+  // hESDmatchedTrackEtaPosTRDout->Sumw2();
   hESDmatchedTrackEtaPosTRDout->SetLineWidth(1);
   hESDmatchedTrackEtaPosTRDout->SetMarkerStyle(20);
   hESDmatchedTrackEtaPosTRDout->SetMarkerSize(0.7);
@@ -957,7 +957,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //21
   TH1F* hESDmatchedTrackEtaPosNoTRDout = new TH1F("hESDmatchedTrackEtaPosNoTRDout", "ESDs Pos matched tracks #eta with !kTRDout  (p_{T} #geq 1.0 GeV/c);#eta;tracks", 200, -1.0, 1.0) ;  
-  hESDmatchedTrackEtaPosNoTRDout->Sumw2();
+  // hESDmatchedTrackEtaPosNoTRDout->Sumw2();
   hESDmatchedTrackEtaPosNoTRDout->SetLineWidth(1);
   hESDmatchedTrackEtaPosNoTRDout->SetMarkerStyle(25);
   hESDmatchedTrackEtaPosNoTRDout->SetMarkerSize(0.7);
@@ -968,7 +968,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //22
   TH1F* hESDmatchedTrackPhiPosTRDout = new TH1F("hESDmatchedTrackPhiPosTRDout", "ESDs Pos matched tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out}(deg);tracks", 72, 0., 360.) ;  
-  hESDmatchedTrackPhiPosTRDout->Sumw2();
+  // hESDmatchedTrackPhiPosTRDout->Sumw2();
   hESDmatchedTrackPhiPosTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiPosTRDout->SetMarkerStyle(20);
   hESDmatchedTrackPhiPosTRDout->SetMarkerSize(0.7);
@@ -979,7 +979,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //23
   TH1F* hESDmatchedTrackPhiPosNoTRDout = new TH1F("hESDmatchedTrackPhiPosNoTRDout", "ESDs Pos matched tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out}(deg);tracks", 72, 0., 360.) ;  
-  hESDmatchedTrackPhiPosNoTRDout->Sumw2();
+  // hESDmatchedTrackPhiPosNoTRDout->Sumw2();
   hESDmatchedTrackPhiPosNoTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiPosNoTRDout->SetMarkerStyle(25);
   hESDmatchedTrackPhiPosNoTRDout->SetMarkerSize(0.7);
@@ -990,37 +990,37 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //POS 24
   TH2F* hTOFmatchedExpTimePiVsPhiTPCPos = new TH2F("hTOFmatchedExpTimePiVsPhiTPCPos", "ESDs t_{TOF}-t_{#pi,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi_{out} (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
-  hTOFmatchedExpTimePiVsPhiTPCPos->Sumw2() ;
+  // hTOFmatchedExpTimePiVsPhiTPCPos->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFmatchedExpTimePiVsPhiTPCPos) ;
 
   //POS 25
   TH2F* hTOFmatchedExpTimeKaVsPhiTPCPos = new TH2F("hTOFmatchedExpTimeKaVsPhiTPCPos", "ESDs t_{TOF}-t_{K,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi_{out} (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
-  hTOFmatchedExpTimeKaVsPhiTPCPos->Sumw2() ;
+  // hTOFmatchedExpTimeKaVsPhiTPCPos->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHpos->AddLast(hTOFmatchedExpTimeKaVsPhiTPCPos) ;
 
   //POS 26
   TH2F* hTOFprimaryEtaVsPhiOutPos = new TH2F("hTOFprimaryEtaVsPhiOutPos", "Positive tracks, p_{T}>1GeV/c;#phi_{out} (degree); #eta; Counts",  72, 0., 360., 20, -1.,1.) ; 
-  hTOFprimaryEtaVsPhiOutPos->Sumw2() ;
+  // hTOFprimaryEtaVsPhiOutPos->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHpos->AddLast(hTOFprimaryEtaVsPhiOutPos) ;
   
   //POS 27
   TH2F* hTOFmatchedEtaVsPhiOutPos = new TH2F("hTOFmatchedEtaVsPhiOutPos", "Positive tracks, p_{T}>1GeV/c;#phi_{out} (degree); #eta; Counts",  72, 0., 360., 20, -1.,1.) ; 
-  hTOFmatchedEtaVsPhiOutPos->Sumw2() ;
+  // hTOFmatchedEtaVsPhiOutPos->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHpos->AddLast(hTOFmatchedEtaVsPhiOutPos) ;
 
   //POS 28
   TH2F* hTOFprimaryPtVsPhiOutPos = new TH2F("hTOFprimaryPtVsPhiOutPos", "Positive tracks;#phi_{out}(degree); p_{T}(GeV/c); Counts",  500, 0., 5., 20, -1.,1.) ; 
-  hTOFprimaryPtVsPhiOutPos->Sumw2() ;
+  // hTOFprimaryPtVsPhiOutPos->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHpos->AddLast(hTOFprimaryPtVsPhiOutPos) ;
   
   //POS 29
   TH2F* hTOFmatchedPtVsPhiOutPos = new TH2F("hTOFmatchedPtVsPhiOutPos", "Positive tracks;#phi_{out}(degree); p_{T}(GeV/c); Counts",  500, 0., 5., 20, -1.,1.) ; 
-  hTOFmatchedPtVsPhiOutPos->Sumw2() ;
+  // hTOFmatchedPtVsPhiOutPos->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHpos->AddLast(hTOFmatchedPtVsPhiOutPos) ;
 
@@ -1029,7 +1029,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 //----------------------------------------------------------NEGATIVE TRACKS
   //0
   TH1F* hTOFmatchedESDtrkLengthNeg  = new TH1F("hTOFmatchedESDtrkLengthNeg", "Matched positive ESDs tracks length; Track length [cm];Counts", 1600, -800., 800) ; 
-  hTOFmatchedESDtrkLengthNeg->Sumw2();
+  // hTOFmatchedESDtrkLengthNeg->Sumw2();
   hTOFmatchedESDtrkLengthNeg->SetLineColor(kBlue);
   hTOFmatchedESDtrkLengthNeg->SetMarkerColor(kBlue);
   hTOFmatchedESDtrkLengthNeg->SetFillColor(kBlue);
@@ -1038,7 +1038,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hTOFmatchedESDtrkLengthNeg);
   //1
   TH1F* hTOFmatchedESDPNeg  = new TH1F("hTOFmatchedESDPNeg", "TPC-TOF matched positive tracks momentum distribution (GeV/c); p (GeV/c);tracks", 500,0.,5.) ;  
-  hTOFmatchedESDPNeg->Sumw2() ;
+  // hTOFmatchedESDPNeg->Sumw2() ;
   hTOFmatchedESDPNeg->SetLineColor(kBlue);
   hTOFmatchedESDPNeg->SetMarkerStyle(20);
   hTOFmatchedESDPNeg->SetMarkerSize(0.7);
@@ -1047,7 +1047,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hTOFmatchedESDPNeg) ; 
   //2
   TH1F* hTOFmatchedESDPtNeg  = new TH1F("hTOFmatchedESDPtNeg", "TPC-TOF positive matched tracks p_{T} distribution (GeV/c); p_{T}(GeV/c);tracks", 500,0.,5.) ;  
-  hTOFmatchedESDPtNeg->Sumw2() ;
+  // hTOFmatchedESDPtNeg->Sumw2() ;
   hTOFmatchedESDPtNeg->SetLineColor(kBlue);
   hTOFmatchedESDPtNeg->SetMarkerStyle(21);
   hTOFmatchedESDPtNeg->SetMarkerSize(0.7);
@@ -1057,20 +1057,20 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //3
   TH1F* hTOFmatchedESDetaNeg = new TH1F("hTOFmatchedESDetaNeg", "Matched positive ESD tracks #eta (p_{T} #geq 1.0 GeV/c); eta;Counts", 200, -1., 1.) ; 
-  hTOFmatchedESDetaNeg->Sumw2();
+  // hTOFmatchedESDetaNeg->Sumw2();
   hTOFmatchedESDetaNeg->SetLineColor(kBlue);
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedESDetaNeg) ; 
   //4
    TH1F* hTOFmatchedESDphiNeg = new TH1F("hTOFmatchedESDphiNeg", "Matched Negative ESD tracks #phi (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);Counts", 72, 0., 360.) ; 
-  hTOFmatchedESDphiNeg->Sumw2();
+  // hTOFmatchedESDphiNeg->Sumw2();
   hTOFmatchedESDphiNeg->SetLineColor(kBlue);
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedESDphiNeg) ; 
 
   //5
   TH1F* hESDmatchedTrackPtNegTRDout = new TH1F("hESDmatchedTrackPtNegTRDout", "ESDs Neg matched tracks p_{T} with kTRDout distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDmatchedTrackPtNegTRDout->Sumw2();
+  // hESDmatchedTrackPtNegTRDout->Sumw2();
   hESDmatchedTrackPtNegTRDout->SetLineWidth(1);
   hESDmatchedTrackPtNegTRDout->SetMarkerStyle(20);
   hESDmatchedTrackPtNegTRDout->SetMarkerSize(0.7);
@@ -1081,7 +1081,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //6
   TH1F* hESDmatchedTrackPtNegNoTRDout = new TH1F("hESDmatchedTrackPtNegNoTRDout", "ESDs Neg matched tracks p_{T} with !kTRDout distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDmatchedTrackPtNegNoTRDout->Sumw2();
+  // hESDmatchedTrackPtNegNoTRDout->Sumw2();
   hESDmatchedTrackPtNegNoTRDout->SetLineWidth(1);
   hESDmatchedTrackPtNegNoTRDout->SetMarkerStyle(25);
   hESDmatchedTrackPtNegNoTRDout->SetMarkerSize(0.7);
@@ -1092,7 +1092,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //7
   TH1F* hESDprimaryTrackPNeg = new TH1F("hESDprimaryTrackPNeg", "All Neg ESDs tracks p distribution (GeV/c); p(GeV/c);tracks", 500, 0., 5.0) ;  
-  hESDprimaryTrackPNeg->Sumw2();
+  // hESDprimaryTrackPNeg->Sumw2();
   hESDprimaryTrackPNeg->SetLineWidth(1);
   hESDprimaryTrackPNeg->SetMarkerStyle(24);
   hESDprimaryTrackPNeg->SetMarkerSize(0.7);
@@ -1102,7 +1102,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDprimaryTrackPNeg);
   //8
   TH1F* hESDprimaryTrackPtNeg = new TH1F("hESDprimaryTrackPtNeg", "ESDs Neg primary tracks p_{T} distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDprimaryTrackPtNeg->Sumw2();
+  // hESDprimaryTrackPtNeg->Sumw2();
   hESDprimaryTrackPtNeg->SetLineWidth(1);
   hESDprimaryTrackPtNeg->SetMarkerStyle(25);
   hESDprimaryTrackPtNeg->SetMarkerSize(0.7);
@@ -1112,20 +1112,20 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDprimaryTrackPtNeg);
   //9
   TH1F* hTOFprimaryESDetaNeg = new TH1F("hTOFprimaryESDetaNeg", "Primary ESD Neg tracks #eta (p_{T} #geq 1.0 GeV/c); #eta;Counts", 200, -1., 1.) ; 
-  hTOFprimaryESDetaNeg->Sumw2();
+  // hTOFprimaryESDetaNeg->Sumw2();
   hTOFprimaryESDetaNeg->SetLineColor(kBlue);
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFprimaryESDetaNeg) ; 
   //10
   TH1F* hTOFprimaryESDphiNeg = new TH1F("hTOFprimaryESDphiNeg", "Primary ESD Neg tracks #phi (p_{T} #geq 1.0 GeV/c);#phi_{out} (deg);Counts", 72, 0., 360.) ; 
-  hTOFprimaryESDphiNeg->Sumw2();
+  // hTOFprimaryESDphiNeg->Sumw2();
   hTOFprimaryESDphiNeg->SetLineColor(kBlue);
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFprimaryESDphiNeg) ; 
 
  //11
   TH1F* hESDprimaryTrackPtNegTRDout = new TH1F("hESDprimaryTrackPtNegTRDout", "ESDs Neg primary tracks p_{T} with kTRDout distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDprimaryTrackPtNegTRDout->Sumw2();
+  // hESDprimaryTrackPtNegTRDout->Sumw2();
   hESDprimaryTrackPtNegTRDout->SetLineWidth(1);
   hESDprimaryTrackPtNegTRDout->SetMarkerStyle(20);
   hESDprimaryTrackPtNegTRDout->SetMarkerSize(0.7);
@@ -1136,7 +1136,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //12
   TH1F* hESDprimaryTrackPtNegNoTRDout = new TH1F("hESDprimaryTrackPtNegNoTRDout", "ESDs Neg primary tracks p_{T} with !kTRDout distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0.0, 5.0) ;  
-  hESDprimaryTrackPtNegNoTRDout->Sumw2();
+  // hESDprimaryTrackPtNegNoTRDout->Sumw2();
   hESDprimaryTrackPtNegNoTRDout->SetLineWidth(1);
   hESDprimaryTrackPtNegNoTRDout->SetMarkerStyle(25);
   hESDprimaryTrackPtNegNoTRDout->SetMarkerSize(0.7);
@@ -1147,7 +1147,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //13
   TH1F* hESDprimaryTrackEtaNegTRDout = new TH1F("hESDprimaryTrackEtaNegTRDout", "ESDs Neg primary tracks #eta with kTRDout  (p_{T} #geq 1.0 GeV/c); #eta;tracks", 200, -1.0, 1.0) ;  
-  hESDprimaryTrackEtaNegTRDout->Sumw2();
+  // hESDprimaryTrackEtaNegTRDout->Sumw2();
   hESDprimaryTrackEtaNegTRDout->SetLineWidth(1);
   hESDprimaryTrackEtaNegTRDout->SetMarkerStyle(20);
   hESDprimaryTrackEtaNegTRDout->SetMarkerSize(0.7);
@@ -1158,7 +1158,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //14
   TH1F* hESDprimaryTrackEtaNegNoTRDout = new TH1F("hESDprimaryTrackEtaNegNoTRDout", "ESDs Neg primary tracks #eta with !kTRDout  (p_{T} #geq 1.0 GeV/c);#eta;tracks", 200, -1.0, 1.0) ;  
-  hESDprimaryTrackEtaNegNoTRDout->Sumw2();
+  // hESDprimaryTrackEtaNegNoTRDout->Sumw2();
   hESDprimaryTrackEtaNegNoTRDout->SetLineWidth(1);
   hESDprimaryTrackEtaNegNoTRDout->SetMarkerStyle(25);
   hESDprimaryTrackEtaNegNoTRDout->SetMarkerSize(0.7);
@@ -1169,7 +1169,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //15
   TH1F* hESDprimaryTrackPhiNegTRDout = new TH1F("hESDprimaryTrackPhiNegTRDout", "ESDs Neg primary tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);tracks", 72, 0., 360.) ;  
-  hESDprimaryTrackPhiNegTRDout->Sumw2();
+  // hESDprimaryTrackPhiNegTRDout->Sumw2();
   hESDprimaryTrackPhiNegTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiNegTRDout->SetMarkerStyle(20);
   hESDprimaryTrackPhiNegTRDout->SetMarkerSize(0.7);
@@ -1180,7 +1180,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //16
   TH1F* hESDprimaryTrackPhiNegNoTRDout = new TH1F("hESDprimaryTrackPhiNegNoTRDout", "ESDs Neg primary tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);tracks", 72, 0., 360.) ;  
-  hESDprimaryTrackPhiNegNoTRDout->Sumw2();
+  // hESDprimaryTrackPhiNegNoTRDout->Sumw2();
   hESDprimaryTrackPhiNegNoTRDout->SetLineWidth(1);
   hESDprimaryTrackPhiNegNoTRDout->SetMarkerStyle(25);
   hESDprimaryTrackPhiNegNoTRDout->SetMarkerSize(0.7);
@@ -1191,26 +1191,26 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //NEG 17
   TH2F* hTOFmatchedExpTimeProVsPhiNeg = new TH2F("hTOFmatchedExpTimeProVsPhiNeg", "ESDs t_{TOF}-t_{p,exp} vs #phi at TOF (r=378.cm) (p_{T}<1GeV/c);#phi (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
-  hTOFmatchedExpTimeProVsPhiNeg->Sumw2() ;
+  // hTOFmatchedExpTimeProVsPhiNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedExpTimeProVsPhiNeg) ;
 
   //NEG 18
   TH2F* hTOFmatchedExpTimeProVsPhiVertexNeg = new TH2F("hTOFmatchedExpTimeProVsPhiVertexNeg", "ESDs t_{TOF}-t_{p,exp} vs #phi at vtx (p_{T}<1GeV/c);#phi (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
-  hTOFmatchedExpTimeProVsPhiVertexNeg->Sumw2() ;
+  // hTOFmatchedExpTimeProVsPhiVertexNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedExpTimeProVsPhiVertexNeg) ;
 
   //NEG 19
   TH2F* hTOFmatchedExpTimeProVsPhiTPCNeg = new TH2F("hTOFmatchedExpTimeProVsPhiTPCNeg", "ESDs t_{TOF}-t_{p,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi_{out} (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
-  hTOFmatchedExpTimeProVsPhiTPCNeg->Sumw2() ;
+  // hTOFmatchedExpTimeProVsPhiTPCNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedExpTimeProVsPhiTPCNeg) ;
 
 
   //20
   TH1F* hESDmatchedTrackEtaNegTRDout = new TH1F("hESDmatchedTrackEtaNegTRDout", "ESDs Neg matched tracks #eta with kTRDout  (p_{T} #geq 1.0 GeV/c); #eta;tracks", 200, -1.0, 1.0) ;  
-  hESDmatchedTrackEtaNegTRDout->Sumw2();
+  // hESDmatchedTrackEtaNegTRDout->Sumw2();
   hESDmatchedTrackEtaNegTRDout->SetLineWidth(1);
   hESDmatchedTrackEtaNegTRDout->SetMarkerStyle(20);
   hESDmatchedTrackEtaNegTRDout->SetMarkerSize(0.7);
@@ -1221,7 +1221,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //21
   TH1F* hESDmatchedTrackEtaNegNoTRDout = new TH1F("hESDmatchedTrackEtaNegNoTRDout", "ESDs Neg matched tracks #eta with !kTRDout  (p_{T} #geq 1.0 GeV/c);#eta;tracks", 200, -1.0, 1.0) ;  
-  hESDmatchedTrackEtaNegNoTRDout->Sumw2();
+  // hESDmatchedTrackEtaNegNoTRDout->Sumw2();
   hESDmatchedTrackEtaNegNoTRDout->SetLineWidth(1);
   hESDmatchedTrackEtaNegNoTRDout->SetMarkerStyle(25);
   hESDmatchedTrackEtaNegNoTRDout->SetMarkerSize(0.7);
@@ -1232,7 +1232,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //22
   TH1F* hESDmatchedTrackPhiNegTRDout = new TH1F("hESDmatchedTrackPhiNegTRDout", "ESDs Neg matched tracks #phi with kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);tracks", 72, 0., 360.) ;  
-  hESDmatchedTrackPhiNegTRDout->Sumw2();
+  // hESDmatchedTrackPhiNegTRDout->Sumw2();
   hESDmatchedTrackPhiNegTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiNegTRDout->SetMarkerStyle(20);
   hESDmatchedTrackPhiNegTRDout->SetMarkerSize(0.7);
@@ -1243,7 +1243,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
 
   //23
   TH1F* hESDmatchedTrackPhiNegNoTRDout = new TH1F("hESDmatchedTrackPhiNegNoTRDout", "ESDs Neg matched tracks #phi with !kTRDout  (p_{T} #geq 1.0 GeV/c); #phi_{out} (deg);tracks", 72, 0., 360.) ;  
-  hESDmatchedTrackPhiNegNoTRDout->Sumw2();
+  // hESDmatchedTrackPhiNegNoTRDout->Sumw2();
   hESDmatchedTrackPhiNegNoTRDout->SetLineWidth(1);
   hESDmatchedTrackPhiNegNoTRDout->SetMarkerStyle(25);
   hESDmatchedTrackPhiNegNoTRDout->SetMarkerSize(0.7);
@@ -1254,37 +1254,37 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
  
  //NEG 24
   TH2F* hTOFmatchedExpTimePiVsPhiTPCNeg = new TH2F("hTOFmatchedExpTimePiVsPhiTPCNeg", "ESDs t_{TOF}-t_{#pi,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi_{out} (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
-  hTOFmatchedExpTimePiVsPhiTPCNeg->Sumw2() ;
+  // hTOFmatchedExpTimePiVsPhiTPCNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedExpTimePiVsPhiTPCNeg) ;
 
   //NEG 25
   TH2F* hTOFmatchedExpTimeKaVsPhiTPCNeg = new TH2F("hTOFmatchedExpTimeKaVsPhiTPCNeg", "ESDs t_{TOF}-t_{K,exp} vs #phi at outer TPC (p_{T}<1GeV/c);#phi_{out} (deg); t_{TOF}-t_{p,exp} [ps];Counts",72, 0.,360., nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax) ; 
-  hTOFmatchedExpTimeKaVsPhiTPCNeg->Sumw2() ;
+  // hTOFmatchedExpTimeKaVsPhiTPCNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
   fHneg->AddLast(hTOFmatchedExpTimeKaVsPhiTPCNeg) ;
 
     //NEG 26
   TH2F* hTOFprimaryEtaVsPhiOutNeg = new TH2F("hTOFprimaryEtaVsPhiOutNeg", "Negative tracks, p_{T}>1GeV/c;#phi_{out} (degree); #eta; Counts",  72, 0., 360., 20, -1.,1.) ; 
-  hTOFprimaryEtaVsPhiOutNeg->Sumw2() ;
+  // hTOFprimaryEtaVsPhiOutNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHneg->AddLast(hTOFprimaryEtaVsPhiOutNeg) ;
   
   //NEG 27
   TH2F* hTOFmatchedEtaVsPhiOutNeg = new TH2F("hTOFmatchedEtaVsPhiOutNeg", "Negative tracks, p_{T}>1GeV/c;#phi_{out} (degree); #eta; Counts",  72, 0., 360., 20, -1.,1.) ; 
-  hTOFmatchedEtaVsPhiOutNeg->Sumw2() ;
+  // hTOFmatchedEtaVsPhiOutNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHneg->AddLast(hTOFmatchedEtaVsPhiOutNeg) ;
 
   //NEG 28
   TH2F* hTOFprimaryPtVsPhiOutNeg = new TH2F("hTOFprimaryPtVsPhiOutNeg", "Negative tracks;#phi_{out}(degree); p_{T}(GeV/c); Counts",  500, 0., 5., 20, -1.,1.) ; 
-  hTOFprimaryPtVsPhiOutNeg->Sumw2() ;
+  // hTOFprimaryPtVsPhiOutNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHneg->AddLast(hTOFprimaryPtVsPhiOutNeg) ;
   
   //NEG 29
   TH2F* hTOFmatchedPtVsPhiOutNeg = new TH2F("hTOFmatchedPtVsPhiOutNeg", "Negative tracks;#phi_{out}(degree); p_{T}(GeV/c); Counts",  500, 0., 5., 20, -1.,1.) ; 
-  hTOFmatchedPtVsPhiOutNeg->Sumw2() ;
+  // hTOFmatchedPtVsPhiOutNeg->Sumw2() ;
   if (fEnableAdvancedCheck)
     fHneg->AddLast(hTOFmatchedPtVsPhiOutNeg) ;
 
