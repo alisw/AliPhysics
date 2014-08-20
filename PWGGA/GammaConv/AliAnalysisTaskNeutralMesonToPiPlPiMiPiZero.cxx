@@ -1192,10 +1192,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 			virtualPhoton->SetProductionVertex(primaryVertexImproved);
 			virtualPhoton->SetTrackLabels( lGoodPosPionIndexPrev[j], lGoodNegPionIndexPrev[i]);
 			
+			Int_t labeln=0;
+			Int_t labelp=0;
 			
 			if( fMCEvent ) {
-				Int_t labeln=TMath::Abs(negPionCandidate->GetLabel());
-				Int_t labelp=TMath::Abs(posPionCandidate->GetLabel());
+				labeln=TMath::Abs(negPionCandidate->GetLabel());
+				labelp=TMath::Abs(posPionCandidate->GetLabel());
 				TParticle *fNegativeMCParticle = fMCStack->Particle(labeln);
 				TParticle *fPositiveMCParticle = fMCStack->Particle(labelp);
 				
@@ -1203,6 +1205,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 					virtualPhoton->SetMCLabelPositive(labelp);
 					virtualPhoton->SetMCLabelNegative(labeln);
 				}
+				
 			}
 			
 			AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(virtualPhoton); //To Apply PsiPairCut
@@ -1213,6 +1216,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 			} else {
 				fGoodVirtualParticles->Add(  vParticle );
 			}	
+
+			if (fMCEvent){
+				if( (IsEtaPiPlPiMiPiZeroDaughter(labeln) && IsEtaPiPlPiMiPiZeroDaughter(labelp) ) || (IsOmegaPiPlPiMiPiZeroDaughter(labeln) && IsOmegaPiPlPiMiPiZeroDaughter(labelp)) ) {
+					fHistoTruePionPionFromNeutralMesonInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+				}
+
+			}
+			
+			
 			delete virtualPhoton;
 			virtualPhoton=NULL;
 					
@@ -1576,7 +1588,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
 // 					}
 // 				}
 // 			}
-			fHistoTruePionPionFromNeutralMesonInvMassPt[fiCut]->Fill(TrueVirtualParticleCandidate->GetMass(),TrueVirtualParticleCandidate->Pt());
 			fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
 		}	
 	}
