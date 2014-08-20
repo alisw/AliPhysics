@@ -3646,8 +3646,6 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   Int_t   n    [10][10];//[fNCones][fNPtThresFrac];
   Int_t   nfrac[10][10];//[fNCones][fNPtThresFrac];
   Bool_t  isolated  = kFALSE;
-  Int_t   nCone     = 0;
-  Int_t   nFracCone = 0;
   
   // Fill hist with all particles before isolation criteria
   fhENoIso     ->Fill(ph->E());
@@ -3694,7 +3692,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
     
     //In case a more strict IC is needed in the produced AOD
     
-    nCone=0; nFracCone = 0; isolated = kFALSE; coneptsum = 0;
+    isolated = kFALSE; coneptsum = 0;
     
     GetIsolationCut()->SetSumPtThreshold(100);
     GetIsolationCut()->SetPtThreshold(100);
@@ -3798,7 +3796,6 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
                                           GetReader(), GetCaloPID(),
                                           kFALSE, ph, "",
                                           n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
-      
       
       // Normal pT threshold cut
       
