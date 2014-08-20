@@ -162,6 +162,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH1F 							**fHistoTrueNegPionPt;						// histos with reconstructed validated negative pion, pT
 		TH1F 							**fHistoTrueNegPionFromNeutralMesonPt;		// histos with reconstructed validated negative pion from eta or omega, pT
 		TH2F 							**fHistoTruePionPionInvMassPt;				// histos with reconstructed validated two pion, invariant mass, pT
+		TH2F 							**fHistoTruePionPionFromSameMotherInvMassPt;// histos with reconstructed validated two pion from same mother, invariant mass, pT
 		TH2F 							**fHistoTruePionPionFromNeutralMesonInvMassPt;// histos with reconstructed validated two pion from eta or omega, invariant mass, pT
 		// Event properties
 		TH1I 							**fHistoNEvents;							// histo for event counting
