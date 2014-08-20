@@ -2579,7 +2579,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
 //_____________________________________________
 Int_t AliAnaPi0EbE::GetMCIndex(const Int_t tag)
 {
-  // Assign mc index depending on MC bit set, for pairs or merged clusters
+  // Assign mc index depending on MC bit set
   
   if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  )
   {
@@ -2913,7 +2913,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         FillSelectedClusterHistograms(cluster2, mom2.Pt(), nMaxima2, photon2->GetTag());
       }
       
-      // Tag both photons as decay if not done before,
+      // Tag both photons as decay if not done before
+      // Careful, if pi0, eta and side bands analysis
+      // run in pararel, the label can be overwritten
       if( photon1->GetBtag() != fDecayTag ) // temporary
       {
         photon1->SetTagged(kTRUE);
@@ -3094,72 +3096,74 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       fhMassPt->Fill(ptpair,mass);
       if(IsDataMC()) fhMCMassPt[mcIndex]->Fill(ptpair,mass);
 
+      //
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
-      if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
+      //
+      if(!GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter)) continue ;
+      
+      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Selected gamma pair: pt %f, phi %f, eta%f\n",
+                                mom.Pt(), mom.Phi()*TMath::RadToDeg(), mom.Eta());
+      
+      // Tag both photons as decay
+      // Careful, if pi0, eta and side bands analysis
+      // run in pararel, the label can be overwritten
+      if( photon1->GetBtag() != fDecayTag ) // temporary
       {
-        if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Selected gamma pair: pt %f, phi %f, eta%f\n",
-                                  mom.Pt(), mom.Phi()*TMath::RadToDeg(), mom.Eta());
+        photon1->SetTagged(kTRUE);
+        photon1->SetBtag(fDecayTag); // temporary
         
-        // Tag both photons as decay
+        fhPtDecay->Fill(photon1->Pt());
         
-        if( photon1->GetBtag() != fDecayTag ) // temporary
+        if(IsDataMC())
         {
-          photon1->SetTagged(kTRUE);
-          photon1->SetBtag(fDecayTag); // temporary
-
-          fhPtDecay->Fill(photon1->Pt());
-
-          if(IsDataMC())
-          {
-            Int_t mcIndex1 = GetMCIndex(photon1->GetTag());
-            fhMCPtDecay[mcIndex1]->Fill(photon1->Pt());
-          }
-          
-          //Fill some histograms about shower shape
-          if(fFillSelectClHisto && cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
-            FillSelectedClusterHistograms(cluster, mom1.Pt(), nMaxima, photon1->GetTag());
-        }
-
-        if( photon2->GetBtag() != fDecayTag ) // temporary
-        {
-          photon2->SetTagged(kTRUE);
-          photon2->SetBtag(fDecayTag); // temporary
+          Int_t mcIndex1 = GetMCIndex(photon1->GetTag());
+          fhMCPtDecay[mcIndex1]->Fill(photon1->Pt());
         }
         
-        //Mass of selected pairs
-        fhSelectedMass  ->Fill( epair,mass);
-        fhSelectedMassPt->Fill(ptpair,mass);
-        if(IsDataMC()) fhMCSelectedMassPt[mcIndex]->Fill(ptpair,mass);
-        
-        // Fill histograms to undertand pile-up before other cuts applied
-        // Remember to relax time cuts in the reader
-        if(cluster) FillPileUpHistograms(mom.Pt(),cluster->GetTOF()*1e9,cluster);
-
-        //Create AOD for analysis
-        
-        AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
-        
-        if     ( (GetNeutralMesonSelection()->GetParticle()).Contains("Pi0") ) pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
-        else if( (GetNeutralMesonSelection()->GetParticle()).Contains("Eta") ) pi0.SetIdentifiedParticleType(AliCaloPID::kEta);
-        else
-        {
-          printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Particle type declared in AliNeutralMeson not correct, do not add \n");
-          return ;
-        }
-        pi0.SetDetector(photon1->GetDetector());
-        
-        // MC
-        pi0.SetLabel(label);
-        pi0.SetTag(tag);
-        
-        //Set the indeces of the original tracks or caloclusters
-        pi0.SetCaloLabel (photon1->GetCaloLabel(0) , -1);
-        pi0.SetTrackLabel(photon2->GetTrackLabel(0), photon2->GetTrackLabel(1));
-        //pi0.SetInputFileIndex(input);
-        
-        AddAODParticle(pi0);
-        
-      }//pi0
+        //Fill some histograms about shower shape
+        if(fFillSelectClHisto && cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
+          FillSelectedClusterHistograms(cluster, mom1.Pt(), nMaxima, photon1->GetTag());
+      }
+      
+      if( photon2->GetBtag() != fDecayTag ) // temporary
+      {
+        photon2->SetTagged(kTRUE);
+        photon2->SetBtag(fDecayTag); // temporary
+      }
+      
+      //Mass of selected pairs
+      fhSelectedMass  ->Fill( epair,mass);
+      fhSelectedMassPt->Fill(ptpair,mass);
+      if(IsDataMC()) fhMCSelectedMassPt[mcIndex]->Fill(ptpair,mass);
+      
+      // Fill histograms to undertand pile-up before other cuts applied
+      // Remember to relax time cuts in the reader
+      if(cluster) FillPileUpHistograms(mom.Pt(),cluster->GetTOF()*1e9,cluster);
+      
+      //Create AOD for analysis
+      
+      AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
+      
+      if     ( (GetNeutralMesonSelection()->GetParticle()).Contains("Pi0") ) pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
+      else if( (GetNeutralMesonSelection()->GetParticle()).Contains("Eta") ) pi0.SetIdentifiedParticleType(AliCaloPID::kEta);
+      else
+      {
+        printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Particle type declared in AliNeutralMeson not correct, do not add \n");
+        return ;
+      }
+      pi0.SetDetector(photon1->GetDetector());
+      
+      // MC
+      pi0.SetLabel(label);
+      pi0.SetTag(tag);
+      
+      //Set the indeces of the original tracks or caloclusters
+      pi0.SetCaloLabel (photon1->GetCaloLabel(0) , -1);
+      pi0.SetTrackLabel(photon2->GetTrackLabel(0), photon2->GetTrackLabel(1));
+      //pi0.SetInputFileIndex(input);
+      
+      AddAODParticle(pi0);
+      
     }//2n photon loop
     
   }//1st photon loop
