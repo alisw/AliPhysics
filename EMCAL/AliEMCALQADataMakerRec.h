@@ -20,7 +20,6 @@
  
 */
 
-
 // --- ROOT system ---
 class TH1F ; 
 class TH1I ;
@@ -31,15 +30,11 @@ class TText ;
 class TProfile ;
 class TObjArray ; 
 
-// --- Standard library ---
-
 // --- AliRoot header files ---
 #include "AliQADataMakerRec.h"
 class AliCaloRawAnalyzer;
 class AliCaloRawAnalyzerKStandard;
-//class AliEMCALGeoParams;
 class AliEMCALGeometry;
-
 #include "AliCaloConstants.h"
 
 class AliEMCALQADataMakerRec: public AliQADataMakerRec {
@@ -75,8 +70,8 @@ public:
   
 public:
   
-  AliEMCALQADataMakerRec(Int_t fitAlgo = 2) ;  // ctor
-  // Default fitter is kPeakFinder=2, we need to be sure this is what we want.
+  AliEMCALQADataMakerRec(Int_t fitAlgo = Algo::kStandard) ;  // ctor
+  // Default fitter is kStandard=0 (see AliCaloConstants)
   
   AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qadm) ;   
   AliEMCALQADataMakerRec& operator = (const AliEMCALQADataMakerRec& qadm) ;
@@ -92,27 +87,27 @@ public:
   int GetSuperModules() const {return fSuperModules;}; //The number of SuperModules
 
   // for pedestal calculation with raw data
-  void SetFirstPedestalSample(int i) {fFirstPedestalSample = i;}           // first sample
+  void SetFirstPedestalSample(int i)  {fFirstPedestalSample = i;}          // first sample
   int  GetFirstPedestalSample() const {return fFirstPedestalSample;}       // first sample
-  void SetLastPedestalSample(int i) {fLastPedestalSample = i;}             // last sample
-  int  GetLastPedestalSample() const {return fLastPedestalSample;}         // last sample
+  void SetLastPedestalSample(int i)   {fLastPedestalSample = i;}           // last sample
+  int  GetLastPedestalSample() const  {return fLastPedestalSample;}        // last sample
   
-  void SetFirstPedestalSampleTRU(int i) {fFirstPedestalSampleTRU = i;}     // first sample, TRU
+  void SetFirstPedestalSampleTRU(int i)  {fFirstPedestalSampleTRU = i;}    // first sample, TRU
   int  GetFirstPedestalSampleTRU() const {return fFirstPedestalSampleTRU;} // first sample, TRU
-  void SetLastPedestalSampleTRU(int i) {fLastPedestalSampleTRU = i;}       // last sample, TRU
-  int  GetLastPedestalSampleTRU() const {return fLastPedestalSampleTRU;}   // last sample, TRU
+  void SetLastPedestalSampleTRU(int i)   {fLastPedestalSampleTRU = i;}     // last sample, TRU
+  int  GetLastPedestalSampleTRU() const  {return fLastPedestalSampleTRU;}  // last sample, TRU
   
   // for selection of interesting signal (max-min) range 
   // Low Gain channels
-  void SetMinSignalLG(int i) {fMinSignalLG = i;}
+  void SetMinSignalLG(int i)  {fMinSignalLG = i;}
   int  GetMinSignalLG() const {return fMinSignalLG;}
-  void SetMaxSignalLG(int i) {fMaxSignalLG = i;}
+  void SetMaxSignalLG(int i)  {fMaxSignalLG = i;}
   int  GetMaxSignalLG() const {return fMaxSignalLG;}
   
   // High Gain channels
-  void SetMinSignalHG(int i) {fMinSignalHG = i;}
+  void SetMinSignalHG(int i)  {fMinSignalHG = i;}
   int  GetMinSignalHG() const {return fMinSignalHG;}
-  void SetMaxSignalHG(int i) {fMaxSignalHG = i;}
+  void SetMaxSignalHG(int i)  {fMaxSignalHG = i;}
   int  GetMaxSignalHG() const {return fMaxSignalHG;}
   
   // TRU channels
