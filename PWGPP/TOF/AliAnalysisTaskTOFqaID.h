@@ -34,6 +34,8 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
     
   Int_t   GetStripIndex(const Int_t * in);
   void    SetTrackFilter(AliAnalysisFilter *filter) { fTrackFilter = filter; return; };
+  void    SetMinPtCut(Float_t minpt) { fMatchingMomCut = minpt; return; }
+  void    SetMaxEtaCut(Float_t maxeta) { fMatchingEtaCut = maxeta; return; }
   void    EnableAdvancedCheck(Bool_t enable) { fEnableAdvancedCheck = enable; return; };
   void    EnableChargeSplit(Bool_t enable) { fEnableChargeSplit = enable; return; };
   void    SetExpTimeHistoRange(Float_t min, Float_t max) { fExpTimeRangeMin = min; fExpTimeRangeMax = max; return;};
@@ -102,7 +104,8 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Double_t            fPhi; //phi at vertex
   Double_t            fTPCOuterPhi; //phi at outer tpc radius
   Double_t            fL; //integrated track lenght
-  Double_t            fMatchingMomCut;//pT cut for eta, phi matching eff 
+  Double_t            fMatchingMomCut;//minimum pT cut for matching eff vs eta, phi 
+  Double_t            fMatchingEtaCut;//simmetric eta cut for matching eff vs pt, eta, phi
   Double_t            fTof;
   //output objects
   TList *             fHlist;  //list of general histos
