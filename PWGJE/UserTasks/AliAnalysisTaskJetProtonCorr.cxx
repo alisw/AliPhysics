@@ -99,7 +99,7 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fAssPartPtMin(2.),
   fAssPartPtMax(4.),
   fTrgAngleToEvPlane(TMath::Pi() / 4.),
-  fToyMeanNoPart(1.),
+  fToyMeanNoPart(.5),
   fToyRadius(.8),
   fToySmearPhi(.2),
   fTrgJetPhiModCent(new TF1("jetphimodcent", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
@@ -803,12 +803,12 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
              fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton));
 
       FillH3(kHistPhiAssHadVsEvPlane, fEventPlaneAngle, trk->Phi(), fCentrality);
-      Float_t phiRel = GetPhiRel2(trk);
-      Float_t phiRel3 = trk->Phi() - fEventPlaneAngle3;
-      if (phiRel3 < 0.)
-	phiRel3 += 2. * TMath::Pi();
 
       if (AcceptAssoc(trk)) {
+	Float_t phiRel = GetPhiRel2(trk);
+	Float_t phiRel3 = trk->Phi() - fEventPlaneAngle3;
+	if (phiRel3 < 0.)
+	  phiRel3 += 2. * TMath::Pi();
 	assArray[kAssHad].Add(trk);
 	FillH1(kHistEtaPhiAssHad, trk->Phi(), trk->Eta());
 	FillH2(kHistPhiAssHadEvPlane, phiRel, fCentrality);
@@ -821,6 +821,8 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	       trk->Pt(),
 	       fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton),
 	       fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton));
+
+	// central events
 	if (IsClass(kClCentral)) {
 	  FillH3(kHistNsigmaTPCTOFUsedCentral,
 		 trk->P(),
@@ -843,6 +845,8 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	    }
 	  }
 	}
+
+	// semi-central events
 	if (IsClass(kClSemiCentral)) {
 	  FillH3(kHistNsigmaTPCTOFUsedSemiCentral,
 		 trk->P(),
@@ -865,6 +869,8 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	    }
 	  }
 	}
+
+	// protons
 	if (IsProton(trk)) {
 	  assArray[kAssProt].Add(trk);
 	  FillH1(kHistEtaPhiAssProt, trk->Phi(), trk->Eta());
@@ -1008,7 +1014,8 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	  for (Int_t iTrack = 0; iTrack < nRefTracks; ++iTrack) {
 	    AliVTrack *track = (AliVTrack*) jet->GetRefTracks()->At(iTrack);
 	    
-	    if (fEventplane) {
+	    if (fEventplane && track &&
+		(track->GetID() > -1)) {
 	      TVector2 evplaneContrib(fEventplane->GetQContributionX(track),
 				      fEventplane->GetQContributionY(track));
 	      qVector -= evplaneContrib;
@@ -1308,7 +1315,9 @@ Float_t AliAnalysisTaskJetProtonCorr::GetPhiRel2(AliVParticle *part) const
 
   TVector2 qVector = *qVectorOrig;
 
-  if (track) {
+  // ??? protect against negative ID
+  // but should be handled properly by event plane
+  if (track && (track->GetID() > -1)) {
     TVector2 evplaneContrib(fEventplane->GetQContributionX(track),
 			    fEventplane->GetQContributionY(track));
     qVector -= evplaneContrib;
@@ -1318,10 +1327,10 @@ Float_t AliAnalysisTaskJetProtonCorr::GetPhiRel2(AliVParticle *part) const
     for (Int_t iTrack = 0; iTrack < nRefTracks; ++iTrack) {
       AliVTrack *contrib = (AliVTrack*) jet->GetRefTracks()->At(iTrack);
 	    
-      if (fEventplane) {
-	TVector2 evplaneContrib(fEventplane->GetQContributionX(contrib),
-				fEventplane->GetQContributionY(contrib));
-	qVector -= evplaneContrib;
+      if (contrib && (contrib->GetID() > -1)) {
+    	TVector2 evplaneContrib(fEventplane->GetQContributionX(contrib),
+    				fEventplane->GetQContributionY(contrib));
+    	qVector -= evplaneContrib;
       }
     }
   }
@@ -1583,7 +1592,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::Correlate(CorrType_t corr, Class_t cl, Ev_t
     }
     else if (dynamic_cast<TLorentzVector*> (assObj)) {
       TLorentzVector *assVec = (TLorentzVector*) assObj;
-      histCorr->Ass(assVec->Phi(), assVec->Eta(), 0., weight);
+      histCorr->Ass(TVector2::Phi_0_2pi(assVec->Phi()), assVec->Eta(), 0., weight);
     }
   }
 
@@ -1609,7 +1618,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::Correlate(CorrType_t corr, Class_t cl, Ev_t
     }
     else if (TLorentzVector *trgVec = dynamic_cast<TLorentzVector*> (trgObj)) {
       // count the trigger
-      histCorr->Trigger(trgVec->Phi(), trgVec->Eta(),
+      histCorr->Trigger(TVector2::Phi_0_2pi(trgVec->Phi()), trgVec->Eta(),
 			0.,
 			weight);
 
