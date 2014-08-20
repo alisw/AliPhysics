@@ -40,7 +40,7 @@ class  AliCaloRawAnalyzer : public TObject
 {
 public:
   AliCaloRawAnalyzer(const char *name="AliCaloRawAnalyzer", const char *nameshort="RawAna");
-  virtual ~AliCaloRawAnalyzer();
+  virtual ~AliCaloRawAnalyzer() { ; }
 
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &/*bunchvector*/, 
   				      const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/ )  = 0;
@@ -90,9 +90,13 @@ public:
   int  SelectBunch( const std::vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude );
   void SelectSubarray( const Double_t *date, const int length, const short maxindex, int *const  first, int *const last, const int cut) const;
   Float_t EvaluatePedestal(const UShort_t * const data, const int length ) const;
-  Float_t GetTau() const           { return fTau;};
-  void SetTau( const Float_t tau ) { fTau =tau ;}; 
   
+  // Used in AliCaloRawAnalyzerFitter
+  Float_t GetTau()         const { return fTau    ; }
+  void    SetTau   (Float_t tau) { fTau = tau     ; }
+  Bool_t  GetFixTau()      const { return fFixTau ; }
+  void    SetFixTau(Bool_t b)    { fFixTau = b    ; }
+
 protected:
   Double_t fReversed[ALTROMAXSAMPLES]; //Reversed sequence of samples (pedestalsubtracted)
   int fMinTimeIndex; //The timebin of the max signal value must be between fMinTimeIndex and fMaxTimeIndex
@@ -108,10 +112,12 @@ protected:
   char fNameShort[256]; // Abbrevation for the name
   Algo::fitAlgorithm fAlgo; // Which algorithm to use
   Double_t fL1Phase; // Phase of the ADC sampling clock relative to the LHC clock
-  Double_t fAmp; // The amplitude in entities of ADC counts
-  Double_t fTof; // The amplitude in entities of ADC counts
-  Float_t fTau;  // Rise time of the signal (peak position = t0 +tau), by defauly it is 235 ns
-  ClassDef(AliCaloRawAnalyzer, 2)  
+  Double_t fAmp;     // The amplitude in entities of ADC counts
+  Double_t fTof;     // The amplitude in entities of ADC counts
+  Float_t  fTau;     // Rise time of the signal (peak position = t0 +tau), by defauly it is 235 ns
+  Bool_t   fFixTau;  // Fixed fit parameter or not, used in AliCaloRawAnalyzerFitter
+  
+  ClassDef(AliCaloRawAnalyzer, 3)
 
 };
 

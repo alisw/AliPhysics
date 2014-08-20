@@ -49,23 +49,18 @@ AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) 
   fL1Phase(0),
   fAmp(0),
   fTof(0),
-  fTau( EMCAL::TAU )
+  fTau( EMCAL::TAU ),
+  fFixTau( true )
 {
-  //Comment 
-  snprintf(fName, 256,"%s", name);
+  // Ctor
+  
+  snprintf(fName,     256, "%s", name);
   snprintf(fNameShort,256, "%s", nameshort);
-  //  sprintf(fName ,"%s", name);
-  // sprintf(fNameShort, "%s", nameshort);
   
   for(int i=0; i < ALTROMAXSAMPLES; i++ )
     {
       fReversed[i] = 0;
     }
-}
-
-AliCaloRawAnalyzer::~AliCaloRawAnalyzer()
-{
-
 }
 
 
