@@ -21,10 +21,10 @@
 // The amplitude is extracted  as a
 // weighted sum of the samples using the 
 // best possible weights.
-// The wights is calculated only once and the
-// Actual extraction of amplitude and peak position
-// Is done with a simple vector multiplication, allowing for
-// Extreemely fast computations. 
+// The weights are calculated only once and the
+// actual extraction of amplitude and peak position
+// is done with a simple vector multiplication, allowing
+// extremely fast computations.
 
 #include "AliCaloRawAnalyzerPeakFinder.h"
 #include "AliCaloBunchInfo.h"
@@ -39,8 +39,6 @@
 
 using namespace std;
 
-
-
 ClassImp( AliCaloRawAnalyzerPeakFinder )
 
 
@@ -49,7 +47,7 @@ AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer
 							      fRunOnAlien(false),
 							      fIsInitialized(false)
 {
-  //Comment
+  // Ctor
   fAlgo= Algo::kPeakFinder;
   fPeakFinderVectors = new AliCaloPeakFinderVectors() ;
   ResetVectors();
@@ -73,12 +71,6 @@ AliCaloRawAnalyzerPeakFinder::ResetVectors()
 	    }
 	}
     }
-}
-
-
-AliCaloRawAnalyzerPeakFinder::~AliCaloRawAnalyzerPeakFinder()
-{
-  //comment
 }
 
 

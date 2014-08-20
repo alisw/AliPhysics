@@ -32,7 +32,9 @@ class  TGraph;
 class  AliCaloRawAnalyzerFitter : public AliCaloRawAnalyzer
 {
 public:
+  
   AliCaloRawAnalyzerFitter( const char *name, const char *nameshort );
+
   virtual ~AliCaloRawAnalyzerFitter();
 
   TF1 * GetFit() const { return fTf1; };

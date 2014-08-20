@@ -33,16 +33,10 @@ ClassImp(AliCaloRawAnalyzerCrude)
 
 AliCaloRawAnalyzerCrude::AliCaloRawAnalyzerCrude() : AliCaloRawAnalyzer("Crude", "Crude")
 {
-  //Comment
+  // Ctor
+  
   fAlgo=Algo::kCrude;
 }
-
-
-AliCaloRawAnalyzerCrude::~AliCaloRawAnalyzerCrude()
-{
-  //Comment
-}
-
 
 AliCaloFitResults
 AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2)

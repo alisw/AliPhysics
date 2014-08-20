@@ -45,7 +45,7 @@ AliCaloRawAnalyzerFastFit::AliCaloRawAnalyzerFastFit() : AliCaloRawAnalyzerFitte
 
 AliCaloFitResults 
 AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
-				    const UInt_t altrocfg1,  const UInt_t altrocfg2 )
+                                     UInt_t altrocfg1, UInt_t altrocfg2 )
 {
   // Execute algorithm
   

@@ -37,10 +37,12 @@ class  AliCaloRawAnalyzerCrude : public  AliCaloRawAnalyzer
 
  public:
    AliCaloRawAnalyzerCrude(); 
-  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
+
+  virtual ~AliCaloRawAnalyzerCrude() { ; }
+  
+  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector,
 				       const UInt_t altrocfg1,  const UInt_t altrocfg2 );
-  virtual ~AliCaloRawAnalyzerCrude();
- 
+  
  private:
   ClassDef(AliCaloRawAnalyzerCrude, 1)  
 };

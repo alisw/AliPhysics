@@ -28,14 +28,14 @@
 
 class  AliCaloRawAnalyzerFastFit : public AliCaloRawAnalyzerFitter
 {
-  friend class  AliCaloRawAnalyzerFactory; // comment
+  friend class  AliCaloRawAnalyzerFactory; // RuleChecker request
   
  public:
   
   virtual ~AliCaloRawAnalyzerFastFit() { ; }
   
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector,
-                                      const UInt_t altrocfg1,  const UInt_t altrocfg2 );
+                                      UInt_t altrocfg1, UInt_t altrocfg2 );
 
 private:
 
