@@ -57,7 +57,7 @@ Int_t AliGenReaderHepMC::NextEvent()
    if (fGenEvent) delete fGenEvent;
    // Read the next event
    if ((fGenEvent = fEventsHandle->read_next_event())) {
-      THepMCParser::ParseGenEvent2TCloneArray(fGenEvent,fParticleArray,false);
+      THepMCParser::ParseGenEvent2TCloneArray(fGenEvent,fParticleArray,"GEV","CM",false);
       fParticleIterator->Reset();
       THepMCParser::HeavyIonHeader_t heavyIonHeader;
       THepMCParser::PdfHeader_t pdfHeader;
