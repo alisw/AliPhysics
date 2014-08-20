@@ -26,23 +26,10 @@
 #include "AliCaloRawAnalyzerKStandard.h"
 #include "AliCaloRawAnalyzerFakeALTRO.h"
 
-#include "stdlib.h"
-
-#include <iostream>
-
-using std::cout;
-using std::endl;
-
 AliCaloRawAnalyzerFactory::AliCaloRawAnalyzerFactory()
 {
-  // Shutting up the rule checker
+  // default constructor
 }
-
-AliCaloRawAnalyzerFactory::~AliCaloRawAnalyzerFactory()
-{
-  // Shutting up the rule checker
-}
-
 
 AliCaloRawAnalyzer*
 AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
@@ -57,7 +44,6 @@ AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
       return new AliCaloRawAnalyzerNN();
       break;
     case kPeakFinder:
-      //    cout << __FILE__ << ":" << __LINE__ << ": Returning new peakFinder " << endl;
       return new AliCaloRawAnalyzerPeakFinder();
       break;
     case kCrude:
@@ -71,8 +57,6 @@ AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
       break;
     default:
       return  new AliCaloRawAnalyzerCrude();
-      //  cout << __FILE__ << __LINE__ << " ERROR, invalid analyzer" << endl;
-      //exit(-99);
       break;
    }
 }
