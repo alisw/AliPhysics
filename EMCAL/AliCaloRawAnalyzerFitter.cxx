@@ -28,9 +28,10 @@ using std::endl;
 
 AliCaloRawAnalyzerFitter::AliCaloRawAnalyzerFitter(const char *name, const char *nameshort ) :AliCaloRawAnalyzer( name, nameshort), 
 											      fkEulerSquared(7.389056098930650227),
-											      fTf1(0),
-											      fFixTau(true)
+											      fTf1(0)
 {
+  // ctor
+  
   for(int i=0; i < ALTROMAXSAMPLES; i++)
     {
       fXaxis[i] = i;
@@ -38,7 +39,7 @@ AliCaloRawAnalyzerFitter::AliCaloRawAnalyzerFitter(const char *name, const char 
 
   fTf1 = new TF1( "myformula", "[0]*((x - [1])/[2])^2*exp(-2*(x -[1])/[2])",  0, 30 ); 
  
-  if (fFixTau) 
+  if (fFixTau)  // Declared in AliCaloRawAnalyzer
     {
       fTf1->FixParameter(2, fTau);
     }
@@ -52,6 +53,8 @@ AliCaloRawAnalyzerFitter::AliCaloRawAnalyzerFitter(const char *name, const char 
 
 AliCaloRawAnalyzerFitter::~AliCaloRawAnalyzerFitter()
 {
+  // Dtor
+  
   delete fTf1;
 }
 
@@ -59,7 +62,8 @@ AliCaloRawAnalyzerFitter::~AliCaloRawAnalyzerFitter()
 void 
 AliCaloRawAnalyzerFitter::PrintFitResult(const TF1 *f) const
 {
-  //shutting up the rule checker
+  // print fit results
+  
   cout << endl;
   cout << __FILE__ << __LINE__ << "Using this samplerange we get" << endl;
   cout << __FILE__ << __LINE__ << "AMPLITUDE = " << f->GetParameter(0)/fkEulerSquared << ",.. !!!!" << endl;
@@ -69,8 +73,3 @@ AliCaloRawAnalyzerFitter::PrintFitResult(const TF1 *f) const
 }
 
 
-// Bool_t 
-// AliCaloRawAnalyzerFitter::GetFixTau() const 
-// { 
-//   return fFixTau; 
-// }; 
