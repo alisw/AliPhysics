@@ -33,7 +33,6 @@ class TObjArray ;
 // --- AliRoot header files ---
 #include "AliQADataMakerRec.h"
 class AliCaloRawAnalyzer;
-class AliCaloRawAnalyzerKStandard;
 class AliEMCALGeometry;
 #include "AliCaloConstants.h"
 
@@ -77,11 +76,11 @@ public:
   AliEMCALQADataMakerRec& operator = (const AliEMCALQADataMakerRec& qadm) ;
   virtual ~AliEMCALQADataMakerRec() {;} // dtor
 
-  Int_t GetFittingAlgorithm() const {return fFittingAlgorithm; }
+  Int_t GetFittingAlgorithm() const {return fFittingAlgorithm;}
   void  SetFittingAlgorithm(Int_t val);
   
-  AliCaloRawAnalyzer *GetRawAnalyzer() const { return fRawAnalyzer;}
-  AliCaloRawAnalyzerKStandard *GetRawAnalyzerTRU() const { return fRawAnalyzerTRU;}
+  AliCaloRawAnalyzer *GetRawAnalyzer()    const {return fRawAnalyzer   ;}
+  AliCaloRawAnalyzer *GetRawAnalyzerTRU() const {return fRawAnalyzerTRU;}
 
   void SetSuperModules(int i) {fSuperModules = i;}; //The number of SuperModules
   int GetSuperModules() const {return fSuperModules;}; //The number of SuperModules
@@ -145,17 +144,18 @@ private:
   
   void ConvertProfile2H(TProfile * p, TH2 * histo) ; //change the profile plot to a 2D histogram
   
-  Int_t fFittingAlgorithm;                         // select the fitting algorithm, not really used, remove?
+  Int_t fFittingAlgorithm;              // select the fitting algorithm, only used in copy ctor ...
 
-  AliCaloRawAnalyzer *fRawAnalyzer;                // for signal fitting
-  AliCaloRawAnalyzerKStandard *fRawAnalyzerTRU;    // for TRU signal fitting
-  AliEMCALGeometry *fGeom;                         // EMCAL geometry, needed for STU decoding
+  AliCaloRawAnalyzer *fRawAnalyzer;     // for signal fitting
+  AliCaloRawAnalyzer *fRawAnalyzerTRU;  // for TRU signal fitting
+  AliEMCALGeometry   *fGeom;            // EMCAL geometry, needed for STU decoding
 
   int fSuperModules;           // The number of SuperModules activated
   int fFirstPedestalSample;    // first sample for pedestal calculation, in bunch
   int fLastPedestalSample;     // last sample for pedestal calculation, in bunch
   int fFirstPedestalSampleTRU; // first sample for pedestal calculation, in bunch
   int fLastPedestalSampleTRU;  // last sample for pedestal calculation, in bunch
+  
   int fMinSignalLG;       // minimum signal, for Low Gain channels
   int fMaxSignalLG;       // maximum signal, for Low Gain channels
   int fMinSignalHG;       // minimum signal, for High Gain channels
@@ -171,11 +171,12 @@ private:
   TH2F     * fCalibRefHistoH2F ; // H2F reference histogram from LED run
   TProfile * fLEDMonRefHistoPro; // Profile reference histogram from LED monitor
   TH2F     * fHighEmcHistoH2F  ; // H2F reference histogram from LED run
+  
 //  TText **    fTextSM        ; //! Text info for each SM  
 //  TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
 //  TLine *     fLineRow       ; //! line to distinguish the different SM sector 0 and 1 
 
-  ClassDef(AliEMCALQADataMakerRec,5)  // description 
+  ClassDef(AliEMCALQADataMakerRec,6)  // description
 
 };
 

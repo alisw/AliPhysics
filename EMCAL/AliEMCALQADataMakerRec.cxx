@@ -64,15 +64,12 @@ Also calculate the ratio of amplitude from LED Monitor system (current/Reference
 
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
-#include "AliCaloRawAnalyzerFastFit.h"
-#include "AliCaloRawAnalyzerNN.h"
-#include "AliCaloRawAnalyzerKStandard.h"
-#include "AliCaloRawAnalyzerPeakFinder.h"
-#include "AliCaloRawAnalyzerCrude.h"
+#include "AliCaloRawAnalyzer.h"
+#include "AliCaloRawAnalyzerFactory.h"
+
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerSTURawStream.h"
 
-#include "AliCaloRawAnalyzerFactory.h"
 
 using namespace std;
 
@@ -975,11 +972,12 @@ void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)
 {
   //Set fitting algorithm and initialize it if this same algorithm was not set before.
 
-  fRawAnalyzer =  AliCaloRawAnalyzerFactory::CreateAnalyzer(fitAlgo);
-  fFittingAlgorithm = fitAlgo;
+  fFittingAlgorithm = fitAlgo; // Not sure we need this
+
+  fRawAnalyzer    =  AliCaloRawAnalyzerFactory::CreateAnalyzer(fitAlgo);
   
   // Init also here the TRU algo, even if it is fixed type.
-  fRawAnalyzerTRU = (AliCaloRawAnalyzerKStandard*)AliCaloRawAnalyzerFactory::CreateAnalyzer(Algo::kFakeAltro);
+  fRawAnalyzerTRU = AliCaloRawAnalyzerFactory::CreateAnalyzer(Algo::kFakeAltro);
   fRawAnalyzerTRU->SetFixTau(kTRUE);
   fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 }
