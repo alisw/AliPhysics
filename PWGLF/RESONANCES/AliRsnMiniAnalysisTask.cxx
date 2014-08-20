@@ -916,8 +916,6 @@ Double_t AliRsnMiniAnalysisTask::ComputeMultiplicity(Bool_t isESD,TString type)
       AliError(Form("String '%s' does not define a possible multiplicity/centrality computation", type.Data()));
       return -1.0;
    }
-
-   return 1E20;
 }
 
 //__________________________________________________________________________________________________
