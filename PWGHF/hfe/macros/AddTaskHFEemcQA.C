@@ -19,9 +19,6 @@ AliAnalysisTask *AddTaskHFEemcQA(){
     MCthere=kTRUE;
   }
 
-
-  gROOT->LoadMacro("AliAnalysisTaskHFEemcQA.cxx++g");
-  
   // +++ EMCal MB
   AliAnalysisTaskHFEemcQA *hfecalqa = new AliAnalysisTaskHFEemcQA("emcqa");
   mgr->AddTask(hfecalqa);
@@ -40,6 +37,16 @@ AliAnalysisTask *AddTaskHFEemcQA(){
 					      AliAnalysisManager::kOutputContainer, containerName.Data()));
   */
 
+  AliAnalysisTaskHFEemcQA *hfecalqa7 = new AliAnalysisTaskHFEemcQA("emcqa");
+  mgr->AddTask(hfecalqa7);
+  hfecalqa7->SelectCollisionCandidates(AliVEvent::kINT7);
+  TString containerName7 = mgr->GetCommonFileName();
+  containerName7 += ":PWGHF_hfeHFEemcQAINT7";
+  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFEemcQAINT7", TList::Class(),AliAnalysisManager::kOutputContainer, containerName7.Data());
+  mgr->ConnectInput(hfecalqa7, 0, cinput);
+  mgr->ConnectOutput(hfecalqa7, 1, coutput1); 
+
   // EMCal EGA
   AliAnalysisTaskHFEemcQA *hfecalqaTrig0 = new AliAnalysisTaskHFEemcQA("emcqa");
   mgr->AddTask(hfecalqaTrig0);
@@ -57,7 +64,7 @@ AliAnalysisTask *AddTaskHFEemcQA(){
   mgr->AddTask(hfecalqaTrig1);
   hfecalqaTrig1->SelectCollisionCandidates(AliVEvent::kEMCEJE);
   TString containerName2 = mgr->GetCommonFileName();
-  containerName1 += ":PWGHF_hfeHFEemcQATrigJE";
+  containerName2 += ":PWGHF_hfeHFEemcQATrigJE";
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFEemcQATrigJE", TList::Class(),AliAnalysisManager::kOutputContainer, containerName2.Data());
   mgr->ConnectInput(hfecalqaTrig1, 0, cinput);
