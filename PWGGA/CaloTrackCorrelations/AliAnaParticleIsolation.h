@@ -39,9 +39,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         CalculateTrackUEBand   (AliAODPWG4ParticleCorrelation * pCandidate,
                                        Float_t & etaBand, Float_t & phiBand) ;
   
-  void         CalculateCaloSignalInCone    (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster) ;
+  void         CalculateCaloSignalInCone    (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster, Float_t & coneptLeadCluster) ;
   void         CalculateCaloCellSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCell) ;
-  void         CalculateTrackSignalInCone   (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  ) ;
+  void         CalculateTrackSignalInCone   (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  , Float_t & coneptLeadTrack  ) ;
 
 
   void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate,
@@ -221,6 +221,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaBandCell ;                        //! Accumulated pT in Eta band to estimate UE in cone, only cells
   TH2F *   fhPhiBandCell ;                        //! Accumulated pT in Phi band to estimate UE in cone, only cells
 
+  TH2F *   fhConePtLead ;                         //! Cluster and tracks leading pt in the cone
+  TH2F *   fhConePtLeadCluster ;                  //! Clusters leading pt in the cone
+  TH2F *   fhConePtLeadTrack ;                    //! Tracks leading pt in the cone
+  
   TH2F *   fhConeSumPt ;                          //! Cluster and tracks Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtCellTrack ;                 //! Cells and tracks Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtCell ;                      //! Cells Sum Pt Sum Pt in the cone
