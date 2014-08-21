@@ -481,7 +481,9 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
   if (!histoVertexTimestamp) {
     AliError(Form("cannot get \"hHistoVertexTimestamp\" object from file %s", filename));
     fStatus = kInputError;
-    if (list){
+    if (list)
+      delete list;
+    else {
       if (histoVertexTimestamp) delete histoVertexTimestamp;
       if (histoDeltatTimestamp )delete histoDeltatTimestamp;
       if (histoDeltazEta) delete histoDeltazEta;
@@ -489,14 +491,15 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
       if (histoDeltazCosTheta) delete histoDeltazCosTheta;
       if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
       if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
-      delete list;
     }
     return kFALSE;
   }
   if (!histoDeltatTimestamp) {
     AliError(Form("cannot get \"hHistoDeltatTimestamp\" object from file %s", filename));
     fStatus = kInputError;
-    if (list){
+    if (list)
+      delete list;
+    else{
       if (histoVertexTimestamp) delete histoVertexTimestamp;
       if (histoDeltatTimestamp )delete histoDeltatTimestamp;
       if (histoDeltazEta) delete histoDeltazEta;
@@ -504,14 +507,15 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
       if (histoDeltazCosTheta) delete histoDeltazCosTheta;
       if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
       if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
-      delete list;
     }
     return kFALSE;
   }
   if (!histoDeltazEta) {
     AliError(Form("cannot get \"hHistoDeltazEta\" object from file %s", filename));
     fStatus = kInputError;
-    if (list){
+    if (list)
+      delete list;
+    else{
       if (histoVertexTimestamp) delete histoVertexTimestamp;
       if (histoDeltatTimestamp )delete histoDeltatTimestamp;
       if (histoDeltazEta) delete histoDeltazEta;
@@ -519,14 +523,15 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
       if (histoDeltazCosTheta) delete histoDeltazCosTheta;
       if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
       if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
-      delete list;
     }
     return kFALSE;
   }
   if (!histoDeltatEta) {
     AliError(Form("cannot get \"hHistoDeltatEta\" object from file %s", filename));
     fStatus = kInputError;
-    if (list){
+    if (list)
+      delete list;
+    else{
       if (histoVertexTimestamp) delete histoVertexTimestamp;
       if (histoDeltatTimestamp )delete histoDeltatTimestamp;
       if (histoDeltazEta) delete histoDeltazEta;
@@ -534,14 +539,15 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
       if (histoDeltazCosTheta) delete histoDeltazCosTheta;
       if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
       if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
-      delete list;
     }
     return kFALSE;
   }
   if (!histoDeltazCosTheta) {
     AliError(Form("cannot get \"hHistoDeltazCosTheta\" object from file %s", filename));
     fStatus = kInputError;
-    if (list){
+    if (list)
+      delete list;
+    else{
       if (histoVertexTimestamp) delete histoVertexTimestamp;
       if (histoDeltatTimestamp )delete histoDeltatTimestamp;
       if (histoDeltazEta) delete histoDeltazEta;
@@ -549,14 +555,15 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
       if (histoDeltazCosTheta) delete histoDeltazCosTheta;
       if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
       if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
-      delete list;
     }
     return kFALSE;
   }
   if (!histoAcceptedTracksEtaPt) {
     AliError(Form("cannot get \"hHistoAccptedTracksEtaPt\" object from file %s", filename));
     fStatus = kInputError;
-    if (list){
+    if (list)
+      delete list;
+    else{
       if (histoVertexTimestamp) delete histoVertexTimestamp;
       if (histoDeltatTimestamp )delete histoDeltatTimestamp;
       if (histoDeltazEta) delete histoDeltazEta;
@@ -564,14 +571,15 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
       if (histoDeltazCosTheta) delete histoDeltazCosTheta;
       if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
       if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
-      delete list;
     }
     return kFALSE;
   }
   if (!histoMatchedTracksEtaPt) {
     AliError(Form("cannot get \"hHistoMatchedTracksEtaPt\" object from file %s", filename));
     fStatus = kInputError;
-    if (list){
+    if (list)
+      delete list;
+    else{
       if (histoVertexTimestamp) delete histoVertexTimestamp;
       if (histoDeltatTimestamp )delete histoDeltatTimestamp;
       if (histoDeltazEta) delete histoDeltazEta;
@@ -579,7 +587,6 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
       if (histoDeltazCosTheta) delete histoDeltazCosTheta;
       if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
       if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
-      delete list;
     }
     return kFALSE;
   }
@@ -587,7 +594,9 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
   /* check matching performance */
   if (!CheckMatchingPerformance(histoDeltazEta, histoAcceptedTracksEtaPt, histoMatchedTracksEtaPt)) {
     AliError("error while checking matching efficiency");
-    if (list){
+    if (list)
+      delete list;
+    else{
       if (histoVertexTimestamp) delete histoVertexTimestamp;
       if (histoDeltatTimestamp )delete histoDeltatTimestamp;
       if (histoDeltazEta) delete histoDeltazEta;
@@ -595,14 +604,15 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
       if (histoDeltazCosTheta) delete histoDeltazCosTheta;
       if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
       if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
-      delete list;
     }
     return kFALSE;
   }
   /* calibrate and store */
   if (!CalibrateAndStore(histoVertexTimestamp, histoDeltatTimestamp, db)) {
     AliError("error while calibrating and storing");
-    if (list){
+    if (list)
+      delete list;
+    else{
       if (histoVertexTimestamp) delete histoVertexTimestamp;
       if (histoDeltatTimestamp )delete histoDeltatTimestamp;
       if (histoDeltazEta) delete histoDeltazEta;
@@ -610,12 +620,13 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
       if (histoDeltazCosTheta) delete histoDeltazCosTheta;
       if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
       if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
-      delete list;
     }
     return kFALSE;
   }
 
-  if (list){
+  if (list)
+    delete list;
+  else{
     if (histoVertexTimestamp) delete histoVertexTimestamp;
     if (histoDeltatTimestamp )delete histoDeltatTimestamp;
     if (histoDeltazEta) delete histoDeltazEta;
@@ -623,7 +634,6 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
     if (histoDeltazCosTheta) delete histoDeltazCosTheta;
     if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
     if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
-    delete list;
   }
 
   /* success */
