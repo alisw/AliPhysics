@@ -82,6 +82,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhPtTriggerVzBin(0),            fhPtTriggerBin(0),                 
     fhPhiTrigger(0),                fhEtaTrigger(0),   
     fhPtTriggerMC(),
+    fhPtDecayTrigger(),             fhPtDecayTriggerMC(),
     fhPtTriggerCentrality(0),       fhPtTriggerEventPlane(0), 
     fhTriggerEventPlaneCentrality(0),
     fhPtTriggerMixed(0),            fhPtTriggerMixedVzBin(0), fhPtTriggerMixedBin(0),              
@@ -188,8 +189,11 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhPtTriggerMC[i] = 0;
     fhXEChargedMC[i] = 0;
     fhDeltaPhiChargedMC[i] = 0;
+    for(Int_t ib = 0; ib < 4; ib++)  fhPtDecayTriggerMC[ib][i] = 0;
   }
-  
+
+  for(Int_t ib = 0; ib < 4; ib++)  fhPtDecayTrigger[ib] = 0;
+
   for(Int_t i = 0; i < 7; i++)
   {
     fhPtTriggerPileUp             [i] = 0 ;
@@ -1224,6 +1228,30 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
                                    nptbins,ptmin,ptmax);
       fhPtTriggerMC[i]->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
       outputContainer->Add(fhPtTriggerMC[i]);
+    }
+  }
+  
+  if(fDecayTrigger)
+  {
+    for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
+    {
+      fhPtDecayTrigger[ibit]  = new TH1F(Form("hPtDecayTrigger_bit%d",fDecayBits[ibit]),
+                                         Form("#it{p}_{T} distribution of trigger particles, decay Bit %d",fDecayBits[ibit]),
+                                         nptbins,ptmin,ptmax);
+      fhPtDecayTrigger[ibit]->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+      outputContainer->Add(fhPtDecayTrigger[ibit]);
+      
+      if(IsDataMC())
+      {
+        for(Int_t i=0; i < 7; i++)
+        {
+          fhPtDecayTriggerMC[ibit][i]  = new TH1F(Form("hPtDecayTrigger_bit%d_MC%s",fDecayBits[ibit], nameMC[i].Data()),
+                                            Form("#it{p}_{T} distribution of trigger particles, decay Bit %d, trigger origin is %s",fDecayBits[ibit], nameMC[i].Data()),
+                                            nptbins,ptmin,ptmax);
+          fhPtDecayTriggerMC[ibit][i]->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+          outputContainer->Add(fhPtDecayTriggerMC[ibit][i]);
+        }
+      }
     }
   }
   
@@ -3163,6 +3191,24 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     fhPtTrigger->Fill(pt);
     if(IsDataMC() && mcIndex >=0 && mcIndex < 7)
       fhPtTriggerMC[mcIndex]->Fill(pt);
+    
+    if(fDecayTrigger)
+    {
+      Int_t decayTag = particle->GetBtag(); // temporary
+      if(decayTag > 0)
+      {
+        for(Int_t ibit = 0; ibit<fNDecayBits; ibit++)
+        {
+          if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
+          {
+            fhPtDecayTrigger[ibit]->Fill(pt);
+            
+            if(IsDataMC() && mcIndex >=0 && mcIndex < 7)
+              fhPtDecayTriggerMC[ibit][mcIndex]->Fill(pt);
+          }
+        }
+      }
+    }
     
     //
     // Acceptance of the trigger
