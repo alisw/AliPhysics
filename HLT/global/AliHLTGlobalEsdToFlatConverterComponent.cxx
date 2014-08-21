@@ -78,13 +78,14 @@ AliHLTGlobalEsdToFlatConverterComponent::~AliHLTGlobalEsdToFlatConverterComponen
 // #################################################################################
 const Char_t* AliHLTGlobalEsdToFlatConverterComponent::GetComponentID() { 
   // see header file for class documentation
-  return "GlobalEsdToFlatConverster";
+  return "GlobalEsdToFlatConverter";
 }
 
 // #################################################################################
 void AliHLTGlobalEsdToFlatConverterComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
   // see header file for class documentation
-  list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginOut);
+	list.push_back(kAliHLTDataTypeESDTree|kAliHLTDataOriginOut );
+  list.push_back( kAliHLTDataTypeESDObject|kAliHLTDataOriginOut );
   list.push_back( kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginOut );
 }
 
@@ -208,7 +209,30 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     return 0;
   
   const AliESDEvent *esd;
-  
+   AliESDEvent *pEsd;
+  const TTree *tree;
+	
+	
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDTree | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
+    cout<<"Found ESD tree in esd test component !!!"<<endl;
+		
+    tree = dynamic_cast<const TTree*>(iter);
+		if(tree)
+			pEsd->ReadFromTree( const_cast< TTree*>(tree) );
+    if( pEsd ){
+      cout<<"N ESD tracks: "<<pEsd->GetNumberOfTracks()<<endl;
+			iResult=1;
+    } else {
+      cout<<"ESD pointer is NULL "<<endl;
+    }
+		
+		
+		
+  }
+	
+	
+	
+	
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
     cout<<"Found ESD in esd test component !!!"<<endl;
     esd = dynamic_cast<const AliESDEvent*>(iter);
@@ -231,7 +255,7 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     }
   }
   
-	
+	/*
 	
    if (iResult>=0) {            
  
@@ -260,7 +284,7 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
       
     size += outBlock.fSize;
   }
- 
+ */
  
  
  
