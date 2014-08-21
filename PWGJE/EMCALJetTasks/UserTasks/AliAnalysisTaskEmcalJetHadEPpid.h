@@ -118,6 +118,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   // event mixing - setters
   virtual void            SetEventMixing(Int_t yesno)		   { fDoEventMixing=yesno; }
   virtual void	          SetMixingTracks(Int_t tracks)		   { fMixingTracks = tracks; }
+  virtual void            SetNMixedTr(Int_t nmt)               { fNMIXtracks = nmt; }
   virtual void            SetNMixedEvt(Int_t nme)              { fNMIXevents = nme; }
 
   // event trigger/mixed selection - setters
@@ -166,6 +167,7 @@ protected:
   // event mixing
   Int_t			 fDoEventMixing;
   Int_t			 fMixingTracks;
+  Int_t          fNMIXtracks;
   Int_t          fNMIXevents;
 
   // event selection types
@@ -231,6 +233,11 @@ protected:
 
   TH1F				    *fHistEventQA;//!
   TH1F                  *fHistEventSelectionQA;//!
+
+  TH2F                  *fHistCentZvertGA;//!
+  TH2F                  *fHistCentZvertJE;//!
+  TH2F                  *fHistCentZvertMB;//!
+  TH2F                  *fHistCentZvertAny;//!
 
   TH2F                  *fHistTPCdEdX;//!
   TH2F	                *fHistITSsignal;//!
