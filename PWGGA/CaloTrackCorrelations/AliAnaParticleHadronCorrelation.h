@@ -282,6 +282,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F *       fhPtTriggerMC[7];               //! pT distribution of trigger particles, check the origin of the cluster : "Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"
 
+  TH1F *       fhPtDecayTrigger[4];            //! pT distribution of trigger particles, tagged as decay
+  TH1F *       fhPtDecayTriggerMC[4][7];       //! pT distribution of trigger particles, tagged as decay, check the origin of the cluster
+  
   TH2F *       fhPtTriggerCentrality;          //! pT distribution of trigger particles vs centrality
   TH2F *       fhPtTriggerEventPlane;          //! pT distribution of trigger particles vs centrality
   TH2F *       fhTriggerEventPlaneCentrality;  //! event plane vs centrality for trigger particles
