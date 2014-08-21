@@ -60,7 +60,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         FillChargedAngularCorrelationHistograms  (Float_t ptAssoc,  Float_t ptTrig,      Int_t   assocBin,
                                                          Float_t phiAssoc, Float_t phiTrig,     Float_t deltaPhi,
                                                          Float_t etaAssoc, Float_t etaTrig,  
-                                                         Bool_t  decay,    Float_t hmpidSignal, Int_t outTOF,
+                                                         Int_t   decayTag, Float_t hmpidSignal, Int_t outTOF,
                                                          Int_t   cenbin,   Int_t   mcTag);
   
   void         FillChargedEventMixPool();
@@ -70,9 +70,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   
   void         FillChargedMomentumImbalanceHistograms   (Float_t ptTrig,   Float_t ptAssoc, 
-                                                         Float_t deltaPhi, Int_t   cenbin, Int_t charge,
-                                                         Int_t   assocBin, Bool_t  decay,
-                                                         Int_t outTOF,     Int_t mcTag );
+                                                         Float_t deltaPhi, Int_t cenbin, Int_t charge,
+                                                         Int_t   assocBin, Int_t decayTag,
+                                                         Int_t   outTOF,   Int_t mcTag );
   
   void         FillChargedUnderlyingEventHistograms     (Float_t ptTrig,   Float_t ptAssoc, 
                                                          Float_t deltaPhi, Int_t cenbin, Int_t outTOF);
@@ -158,12 +158,14 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   // Do decay-hadron correlation if it is pi0 trigger
   Bool_t       IsPi0Trigger()              const { return fPi0Trigger            ; }
   void         SwitchOnPi0TriggerDecayCorr()     { fPi0Trigger          = kTRUE  ; }
-  void         SwitchOffPi0TriggerDecayCorr()    { fPi0Trigger          = kFALSE ; }  
-
+  void         SwitchOffPi0TriggerDecayCorr()    { fPi0Trigger          = kFALSE ; }
+  
   Bool_t       IsDecayTrigger()            const { return fDecayTrigger          ; }
   void         SwitchOnDecayTriggerDecayCorr()   { fDecayTrigger        = kTRUE  ; }
   void         SwitchOffDecayTriggerDecayCorr()  { fDecayTrigger        = kFALSE ; }  
-
+  void         SetNDecayBits(Int_t n)            { fNDecayBits = n               ; }
+  void         SetDecayBits(Int_t i, UInt_t bit) { if(i < 4) fDecayBits[i] = bit ; }
+  
   Bool_t       IsHMPIDCorrelation()        const { return fHMPIDCorrelation      ; }
   void         SwitchOnHMPIDCorrelation()        { fHMPIDCorrelation    = kTRUE  ; }
   void         SwitchOffHMPIDCorrelation()       { fHMPIDCorrelation    = kFALSE ; }  
@@ -228,6 +230,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fNeutralCorr ;                  // switch the analysis with neutral particles
   Bool_t       fPi0Trigger ;                   // switch the analysis with decay photon from pi0 trigger
   Bool_t       fDecayTrigger ;                 // switch the analysis with decay photon from photon trigger
+  Int_t        fNDecayBits ;                   // in case of study of decay triggers, select the decay bit
+  UInt_t       fDecayBits[4] ;                 // in case of study of decay triggers, select the decay bit
   Bool_t       fMakeAbsoluteLeading ;          // requesting absolute leading triggers
   Bool_t       fMakeNearSideLeading ;          // requesting near side leading (+-90º from trigger particle) triggers
   Int_t        fLeadingTriggerIndex ;          // Store here per event the trigger index, to avoid too many loops
@@ -424,17 +428,21 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhZTUeLeftNeutral  ;            //! Trigger particle -underlying neutral hadron momentum imbalance histogram
   TH2F *       fhPtHbpZTUeLeftNeutral  ;       //! Trigger particle -underlying neutral hadron momentum HBP histogram
   
-  //for decay photon trigger correlation
-  TH2F *       fhPtPi0DecayRatio ;             //! for pi0 pt and ratio of decay photon pt
-  TH2F *       fhDeltaPhiDecayCharged  ;       //! Difference of charged particle phi and decay trigger
-  TH2F *       fhXEDecayCharged ;              //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram    
-  TH2F *       fhZTDecayCharged ;              //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram   
+  // Pi0/Eta trigger correlation, recover input photons
+  TH2F *       fhPtPi0DecayRatio ;             //! for pi0 trigger pt and ratio of decay photon pt
+  TH2F *       fhDeltaPhiPi0DecayCharged  ;    //! Difference of charged particle phi and decay photon from pi0/eta trigger
+  TH2F *       fhXEPi0DecayCharged ;           //! Trigger particle (decay from pi0/eta trigger)-charged hadron momentum imbalance histogram
+  TH2F *       fhZTPi0DecayCharged ;           //! Trigger particle (decay from pi0/eta trigger)-charged hadron momentum imbalance histogram
 
-  TH2F *       fhDeltaPhiDecayNeutral  ;       //! Difference of neutral particle phi and decay trigger
-  TH2F *       fhXEDecayNeutral ;              //! Trigger particle (decay from pi0)-neutral hadron momentum imbalance histogram  
-  TH2F *       fhZTDecayNeutral ;              //! Trigger particle (decay from pi0)-neutral hadron momentum imbalance histogram  
+  TH2F *       fhDeltaPhiPi0DecayNeutral  ;    //! Difference of neutral particle phi and decay photon from pi0/eta trigger
+  TH2F *       fhXEPi0DecayNeutral ;           //! Trigger particle (decay from pi0/eta trigger)-neutral hadron momentum imbalance histogram
+  TH2F *       fhZTPi0DecayNeutral ;           //! Trigger particle (decay from pi0/eta trigger)-neutral hadron momentum imbalance histogram
 
-  TH2F **      fhDeltaPhiDecayChargedAssocPtBin;//![fNAssocPtBins*GetNZvertBin()] Tagged as decay Trigger pT vs dPhi for different associated pt bins
+  // Decay photon trigger correlation
+  TH2F *       fhDeltaPhiDecayCharged[4]  ;    //! Difference of charged particle phi and photon decay trigger
+  TH2F *       fhXEDecayCharged[4] ;           //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram
+  TH2F *       fhZTDecayCharged[4] ;           //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram
+  TH2F **      fhDeltaPhiDecayChargedAssocPtBin;//![fNAssocPtBins*GetNZvertBin()] Tagged as decay (fDecayBits[0]) Trigger pT vs dPhi for different associated pt bins
   
   // If the data is MC, correlation with generated particles
   // check the origin of the cluster : decay photon (pi0, eta, other), merged photon (pi0),
@@ -488,7 +496,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,34)
+  ClassDef(AliAnaParticleHadronCorrelation,35)
 } ;
  
 
