@@ -76,7 +76,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fesdTrackCuts(0),
-  fDoEventMixing(0), fMixingTracks(50000), fNMIXevents(5),
+  fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
@@ -94,6 +94,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fPIDResponse(0x0), fTPCResponse(),
   fESD(0), fAOD(0), fVevent(0),  
   fHistEventQA(0), fHistEventSelectionQA(0),
+  fHistCentZvertGA(0), fHistCentZvertJE(0), fHistCentZvertMB(0), fHistCentZvertAny(0),
   fHistTPCdEdX(0), fHistITSsignal(0), //fHistTOFsignal(0),
   fHistRhovsCent(0), fHistNjetvsCent(0), fHistCentrality(0),
   fHistZvtx(0), fHistMult(0),
@@ -179,7 +180,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
   fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fesdTrackCuts(0),
-  fDoEventMixing(0), fMixingTracks(50000), fNMIXevents(5),
+  fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
@@ -197,6 +198,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fPIDResponse(0x0), fTPCResponse(),
   fESD(0), fAOD(0), fVevent(0),  
   fHistEventQA(0), fHistEventSelectionQA(0),
+  fHistCentZvertGA(0), fHistCentZvertJE(0), fHistCentZvertMB(0), fHistCentZvertAny(0),
   fHistTPCdEdX(0), fHistITSsignal(0), //fHistTOFsignal(0),
   fHistRhovsCent(0), fHistNjetvsCent(0), fHistCentrality(0),
   fHistZvtx(0), fHistMult(0),
@@ -307,6 +309,16 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   fHistJetHaddPhiMID = new TH1F("fHistJetHaddPhiMID","Jet-Hadron #Delta#varphi MIDDLE of PLANE",128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
   fHistLocalRhoJetpt = new TH1F("fHistLocalRhoJetpt","Local Rho corrected Jet p_{T}", 50, -50, 200);
 
+  // Centrality and Zvertex distribution for various triggers - Event Mixing QA
+  fHistCentZvertGA = new TH2F("fHistCentZvertGA", "Centrality - Z-vertex distribution for GA trigger", 20, 0, 100, 10, -10, 10);
+  fOutput->Add(fHistCentZvertGA);
+  fHistCentZvertJE = new TH2F("fHistCentZvertJE", "Centrality - Z-vertex distribution for JE trigger", 20, 0, 100, 10, -10, 10);
+  fOutput->Add(fHistCentZvertJE);
+  fHistCentZvertMB = new TH2F("fHistCentZvertMB", "Centrality - Z-vertex distribution for MB trigger", 20, 0, 100, 10, -10, 10);
+  fOutput->Add(fHistCentZvertMB);
+  fHistCentZvertAny = new TH2F("fHistCentZvertAny", "Centrality - Z-vertex distribution for kAny trigger", 20, 0, 100, 10, -10, 10);
+  fOutput->Add(fHistCentZvertAny);
+
   // Event QA histo  
   fHistEventQA = new TH1F("fHistEventQA", "Event Counter at checkpoints in code", 20, 0.5, 20.5);
   SetfHistQAcounterLabels(fHistEventQA); 
@@ -327,7 +339,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
 
   // create histo's used for general QA
   if (makeQAhistos) {
-    //fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 2000, 0.0, 100.0, 500, 0, 500); 
+    fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 2000, 0.0, 100.0, 500, 0, 500); 
     fHistITSsignal = new TH2F("ITSsignal", "ITSsignal", 2000, 0.0, 100.0, 500, 0, 500);
     //  fHistTOFsignal = new TH2F("TOFsignal", "TOFsignal", 2000, 0.0, 100.0, 500, 0, 500);
     fHistCentrality = new TH1F("fHistCentrality","centrality",100,0,100);
@@ -611,10 +623,10 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   Double_t centralityBinspp[9] = {0.0, 4., 9, 15, 25, 35, 55, 100.0, 500.0};  
 
   // Setup for Pb-Pb collisions
-  Int_t nCentralityBinsPbPb = 100;
+  Int_t nCentralityBinsPbPb = 10; //100;
   Double_t centralityBinsPbPb[nCentralityBinsPbPb+1];
   for(Int_t ic=0; ic<nCentralityBinsPbPb; ic++){
-      centralityBinsPbPb[ic]=1.0*ic;
+      centralityBinsPbPb[ic]=10.0*ic; //1.0*ic;
   }
 
   if(fBeam == 0) fHistMult = new TH1F("fHistMult","multiplicity",nCentralityBinspp,centralityBinspp);
@@ -879,6 +891,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   // initialize track parameters
   Int_t iTT=-1;
   Double_t ptmax=-10;
+  Int_t NtrackAcc = 0;
 
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
   if (!fVevent) {
@@ -886,8 +899,11 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     return kTRUE;
   }
 
-  //Int_t ntracks = fVevent->GetNumberOfTracks();
-  Int_t NtrackAcc = 0;
+  // fill event mixing QA
+  if(trig & AliVEvent::kEMCEGA) fHistCentZvertGA->Fill(fCent, zVtx);
+  if(trig & AliVEvent::kEMCEJE) fHistCentZvertJE->Fill(fCent, zVtx);
+  if(trig & AliVEvent::kMB) fHistCentZvertMB->Fill(fCent, zVtx);
+  if(trig & AliVEvent::kAny) fHistCentZvertAny->Fill(fCent, zVtx);
 
   // loop over tracks - to get hardest track (highest pt)
   for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++){
@@ -1409,8 +1425,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     // use only jets from EMCal-triggered events (for lhc11a use AliVEvent::kEMC1)
     //check for a trigger jet
     // fmixingtrack/10 ??
-  if(GetBeamType() == 0) if(trigger & fTriggerEventType) { //kEMCEJE)) {     
-    if(GetBeamType() == 1) if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks || pool->GetCurrentNEvents() >= fNMIXevents) {
+  if(GetBeamType() == 1) if(trigger & fTriggerEventType) { //kEMCEJE)) {     
+    if (pool->IsReady() || pool->NTracksInPool() > fNMIXtracks || pool->GetCurrentNEvents() >= fNMIXevents) {
 
       // loop over jets (passing cuts?)
       for (Int_t ijet = 0; ijet < Njets; ijet++) {
@@ -1473,7 +1489,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 ///    if (trigger & AliVEvent::kEMC1) {
     // pp collisions
     if(GetBeamType() == 0) if(trigger & fTriggerEventType) { //kEMC1)) {     
-      if(GetBeamType() == 0) if (poolpp->IsReady() || poolpp->NTracksInPool() > fMixingTracks || poolpp->GetCurrentNEvents() >= fNMIXevents) {
+      if (poolpp->IsReady() || poolpp->NTracksInPool() > fNMIXtracks || poolpp->GetCurrentNEvents() >= fNMIXevents) {
 
         // loop over jets (passing cuts?)
         for (Int_t ijet = 0; ijet < Njets; ijet++) {

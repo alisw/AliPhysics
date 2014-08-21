@@ -26,6 +26,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Double_t JetRadius   = 0.4,
    const Double_t constitCut  = 0.15,
    const Int_t MixingTracks   = 50000,
+   const Int_t nmixingTR      = 5000,
    const Int_t nmixingEV      = 5,
    TString cutType			  = "EMCAL",
    Bool_t   Comments		  = 0,
@@ -102,6 +103,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetJetRad(JetRadius);
   correlationtask->SetConstituentCut(constitCut);
   correlationtask->SetMixingTracks(MixingTracks);
+  correlationtask->SetNMixedTr(nmixingTR);
   correlationtask->SetNMixedEvt(nmixingEV);
   correlationtask->SetcutType(cutType);
   correlationtask->SetdoComments(Comments);
