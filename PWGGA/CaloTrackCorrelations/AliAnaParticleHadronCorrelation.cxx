@@ -61,6 +61,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fUeDeltaPhiMaxCut(0.),          fUeDeltaPhiMinCut(0.), 
     fPi0AODBranchName(""),          fNeutralCorr(0),       
     fPi0Trigger(0),                 fDecayTrigger(0),
+    fNDecayBits(0),                 fDecayBits(),
     fMakeAbsoluteLeading(0),        fMakeNearSideLeading(0),      
     fLeadingTriggerIndex(-1),       fHMPIDCorrelation(0),  fFillBradHisto(0),
     fNAssocPtBins(0),               fAssocPtBinLimit(),
@@ -148,9 +149,10 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhDeltaPhiUeLeftNeutral(0),     fhXEUeLeftNeutral(0),
     fhPtHbpXEUeLeftNeutral(0),      fhZTUeLeftNeutral(0),
     fhPtHbpZTUeLeftNeutral(0),      fhPtPi0DecayRatio(0),
-    fhDeltaPhiDecayCharged(0),      fhXEDecayCharged(0),           fhZTDecayCharged(0),
-    fhDeltaPhiDecayNeutral(0),      fhXEDecayNeutral(0),           fhZTDecayNeutral(0),
-    fhDeltaPhiDecayChargedAssocPtBin(0), 
+    fhDeltaPhiPi0DecayCharged(0),   fhXEPi0DecayCharged(0),        fhZTPi0DecayCharged(0),
+    fhDeltaPhiPi0DecayNeutral(0),   fhXEPi0DecayNeutral(0),        fhZTPi0DecayNeutral(0),
+    fhDeltaPhiDecayCharged(),       fhXEDecayCharged(),            fhZTDecayCharged(),
+    fhDeltaPhiDecayChargedAssocPtBin(),
     fhMCPtTrigger(),                fhMCPhiTrigger(),              fhMCEtaTrigger(),
     fhMCPtTriggerNotLeading(),      fhMCPhiTriggerNotLeading(),    fhMCEtaTriggerNotLeading(),
     fhMCEtaCharged(),               fhMCPhiCharged(),
@@ -250,7 +252,7 @@ AliAnaParticleHadronCorrelation::~AliAnaParticleHadronCorrelation()
 void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Float_t ptAssoc,  Float_t ptTrig,      Int_t   bin,
                                                                               Float_t phiAssoc, Float_t phiTrig,     Float_t deltaPhi,
                                                                               Float_t etaAssoc, Float_t etaTrig,  
-                                                                              Bool_t  decay,    Float_t hmpidSignal, Int_t  outTOF,
+                                                                              Int_t   decayTag, Float_t hmpidSignal, Int_t  outTOF,
                                                                               Int_t   cen,      Int_t   mcTag)
 {
   // Fill angular correlation related histograms
@@ -320,7 +322,13 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
     fhDeltaPhiChargedMC[mcIndex]->Fill(ptTrig , deltaPhi);
   }  
   
-  if(fDecayTrigger && decay) fhDeltaPhiDecayCharged   ->Fill(ptTrig  , deltaPhi);      
+  if(fDecayTrigger && decayTag > 0)
+  {
+    for(Int_t ibit = 0; ibit<fNDecayBits; ibit++)
+    {
+      if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit])) fhDeltaPhiDecayCharged[ibit]->Fill(ptTrig,deltaPhi);
+    }
+  }
   
   Double_t  dphiBrad = -100;
   if(fFillBradHisto)
@@ -354,7 +362,8 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
     if (fFillBradHisto)
       fhDeltaPhiBradAssocPtBin        [bin]->Fill(ptTrig, dphiBrad);
     
-    if(fDecayTrigger && decay)
+    if(fDecayTrigger && decayTag > 0 && fNDecayBits > 0 &&
+       GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[0]))
       fhDeltaPhiDecayChargedAssocPtBin[bin]->Fill(ptTrig, deltaPhi);      
     
     if(fHMPIDCorrelation)
@@ -504,7 +513,7 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
 void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Float_t ptTrig,   Float_t ptAssoc, 
                                                                              Float_t deltaPhi,
                                                                              Int_t   cen,      Int_t   charge,
-                                                                             Int_t   bin,      Bool_t  decay,
+                                                                             Int_t   bin,      Int_t   decayTag,
                                                                              Int_t   outTOF,   Int_t   mcTag)
 
 {
@@ -576,11 +585,17 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
     if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhXEChargedPileUp[6]->Fill(ptTrig,xE); fhZTChargedPileUp[6]->Fill(ptTrig,zT); fhPtTrigChargedPileUp[6]->Fill(ptTrig,ptAssoc); }
   }
   
-  if(fDecayTrigger && decay)
-  {          
-    fhXEDecayCharged->Fill(ptTrig,xE); 
-    fhZTDecayCharged->Fill(ptTrig,zT);
-  } // photon decay pi0/eta trigger        
+  if(fDecayTrigger && decayTag > 0)
+  {
+    for(Int_t ibit = 0; ibit<fNDecayBits; ibit++)
+    {
+      if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
+      {
+        fhXEDecayCharged[ibit]->Fill(ptTrig,xE);
+        fhZTDecayCharged[ibit]->Fill(ptTrig,zT);
+      }
+    }
+  } // photon decay pi0/eta trigger
   
   if(bin >= 0 && fFillMomImbalancePtAssocBinsHisto)//away side
   {
@@ -786,38 +801,38 @@ void AliAnaParticleHadronCorrelation::FillDecayPhotonCorrelationHistograms(Float
   
   if(bChargedOrNeutral) // correlate with charges
   {
-    fhDeltaPhiDecayCharged->Fill(ptDecay1, deltaPhiDecay1);
-    fhDeltaPhiDecayCharged->Fill(ptDecay2, deltaPhiDecay2);
+    fhDeltaPhiPi0DecayCharged->Fill(ptDecay1, deltaPhiDecay1);
+    fhDeltaPhiPi0DecayCharged->Fill(ptDecay2, deltaPhiDecay2);
     
     if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::FillDecayPhotonHistograms( Charged corr) - deltaPhoton1 = %f, deltaPhoton2 = %f \n", deltaPhiDecay1, deltaPhiDecay2);
     
     if( (deltaPhiDecay1 > fDeltaPhiMinCut) && ( deltaPhiDecay1 < fDeltaPhiMaxCut) )
     {
-      fhZTDecayCharged->Fill(ptDecay1,zTDecay1); 
-      fhXEDecayCharged->Fill(ptDecay1,xEDecay1); 
+      fhZTPi0DecayCharged->Fill(ptDecay1,zTDecay1); 
+      fhXEPi0DecayCharged->Fill(ptDecay1,xEDecay1); 
     }
     if( (deltaPhiDecay2 > fDeltaPhiMinCut) && ( deltaPhiDecay2 < fDeltaPhiMaxCut) )
     {
-      fhZTDecayCharged->Fill(ptDecay2,zTDecay2);
-      fhXEDecayCharged->Fill(ptDecay2,xEDecay2);
+      fhZTPi0DecayCharged->Fill(ptDecay2,zTDecay2);
+      fhXEPi0DecayCharged->Fill(ptDecay2,xEDecay2);
     }
   }
   else // correlate with neutrals
   {
-    fhDeltaPhiDecayNeutral->Fill(ptDecay1, deltaPhiDecay1);
-    fhDeltaPhiDecayNeutral->Fill(ptDecay2, deltaPhiDecay2);
+    fhDeltaPhiPi0DecayNeutral->Fill(ptDecay1, deltaPhiDecay1);
+    fhDeltaPhiPi0DecayNeutral->Fill(ptDecay2, deltaPhiDecay2);
     
     if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::FillDecayPhotonHistograms(Neutral corr) - deltaPhoton1 = %f, deltaPhoton2 = %f \n", deltaPhiDecay1, deltaPhiDecay2);
     
     if( (deltaPhiDecay1 > fDeltaPhiMinCut) && ( deltaPhiDecay1 < fDeltaPhiMaxCut) )
     {
-      fhZTDecayNeutral->Fill(ptDecay1,zTDecay1);
-      fhXEDecayNeutral->Fill(ptDecay1,xEDecay1);
+      fhZTPi0DecayNeutral->Fill(ptDecay1,zTDecay1);
+      fhXEPi0DecayNeutral->Fill(ptDecay1,xEDecay1);
     }
     if( (deltaPhiDecay2 > fDeltaPhiMinCut) && ( deltaPhiDecay2 < fDeltaPhiMaxCut) )
     {
-      fhZTDecayNeutral->Fill(ptDecay2,zTDecay2);
-      fhXEDecayNeutral->Fill(ptDecay2,xEDecay2);
+      fhZTPi0DecayNeutral->Fill(ptDecay2,zTDecay2);
+      fhXEPi0DecayNeutral->Fill(ptDecay2,xEDecay2);
     }    
   }
 }
@@ -1902,12 +1917,11 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   if(fFillBradHisto)
     fhDeltaPhiBradAssocPtBin = new TH2F*[fNAssocPtBins*nz];
   
-  if(fPi0Trigger || fDecayTrigger)
-  {
-    fhDeltaPhiAssocPtBin       = new TH2F*[fNAssocPtBins*nz];
-    fhDeltaPhiAssocPtBinDEta08 = new TH2F*[fNAssocPtBins*nz];
-    fhDeltaPhiDecayChargedAssocPtBin = new TH2F*[fNAssocPtBins*nz];
-  }
+
+  fhDeltaPhiAssocPtBin       = new TH2F*[fNAssocPtBins*nz];
+  if(fFillEtaGapsHisto)fhDeltaPhiAssocPtBinDEta08       = new TH2F*[fNAssocPtBins*nz];
+  if(fDecayTrigger)    fhDeltaPhiDecayChargedAssocPtBin = new TH2F*[fNAssocPtBins*nz];
+  
   
   if(fHMPIDCorrelation)
   {
@@ -1962,10 +1976,10 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         outputContainer->Add(fhDeltaPhiAssocPtBinDEta0[bin]) ;
       }
       
-      if(fPi0Trigger || fDecayTrigger)
+      if(fDecayTrigger)
       {
-        fhDeltaPhiDecayChargedAssocPtBin[bin] = new TH2F(Form("hDeltaPhiPtDecayChargedAssocPt%2.1f_%2.1f%s", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
-                                                         Form("#Delta #phi vs #it{p}_{T trigger} tagged as decay for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
+        fhDeltaPhiDecayChargedAssocPtBin[bin] = new TH2F(Form("hDeltaPhiPtDecayChargedAssocPt%2.1f_%2.1f%s_bit%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data(),fDecayBits[0]),
+                                                         Form("#Delta #phi vs #it{p}_{T trigger} tagged as decay for associated #it{p}_{T} bin [%2.1f,%2.1f]%s, Bit %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data(),fDecayBits[0]),
                                                          nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
         fhDeltaPhiDecayChargedAssocPtBin[bin]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
         fhDeltaPhiDecayChargedAssocPtBin[bin]->SetYTitle("#Delta #phi (rad)");
@@ -2049,39 +2063,68 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     }
   }
 
-  if(fPi0Trigger || fDecayTrigger)
+ 
+  if(fPi0Trigger)
   {
-    if(fPi0Trigger)
-    {
-      fhPtPi0DecayRatio  = new TH2F
-      ("hPtPi0DecayRatio","#it{p}_{T} of #pi^{0} and the ratio of pt for two decay",
-       nptbins,ptmin,ptmax, 100,0.,2.);
-      fhPtPi0DecayRatio->SetXTitle("#it{p}_{T}^{#pi^{0}} (GeV/#it{c})");
-      fhPtPi0DecayRatio->SetYTitle("#it{p}_{T}^{Decay}/#it{p}_{T}^{#pi^{0}}");
-      outputContainer->Add(fhPtPi0DecayRatio) ;
-    }
+    fhPtPi0DecayRatio  = new TH2F
+    ("hPtPi0DecayRatio","#it{p}_{T} of #pi^{0} and the ratio of pt for two decay",
+     nptbins,ptmin,ptmax, 100,0.,2.);
+    fhPtPi0DecayRatio->SetXTitle("#it{p}_{T}^{#pi^{0}} (GeV/#it{c})");
+    fhPtPi0DecayRatio->SetYTitle("#it{p}_{T}^{Decay}/#it{p}_{T}^{#pi^{0}}");
+    outputContainer->Add(fhPtPi0DecayRatio) ;
     
-    fhDeltaPhiDecayCharged  = new TH2F
-    ("hDeltaPhiDecayCharged","#phi_{Decay} - #phi_{h^{#pm}} vs #it{p}_{T Decay}",
+    fhDeltaPhiPi0DecayCharged  = new TH2F
+    ("hDeltaPhiPi0DecayCharged","#phi_{Decay} - #phi_{h^{#pm}} vs #it{p}_{T Decay}",
      nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
-    fhDeltaPhiDecayCharged->SetYTitle("#Delta #phi (rad)");
-    fhDeltaPhiDecayCharged->SetXTitle("#it{p}_{T Decay} (GeV/#it{c})");
+    fhDeltaPhiPi0DecayCharged->SetYTitle("#Delta #phi (rad)");
+    fhDeltaPhiPi0DecayCharged->SetXTitle("#it{p}_{T Decay} (GeV/#it{c})");
     
-    fhXEDecayCharged  =
-    new TH2F("hXEDecayCharged","#it{x}_{#it{E}}  Decay",
+    fhXEPi0DecayCharged  =
+    new TH2F("hXEPi0DecayCharged","#it{x}_{#it{E}}  Decay",
              nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
-    fhXEDecayCharged->SetYTitle("#it{x}_{#it{E}}");
-    fhXEDecayCharged->SetXTitle("#it{p}_{T decay} (GeV/#it{c})");
+    fhXEPi0DecayCharged->SetYTitle("#it{x}_{#it{E}}");
+    fhXEPi0DecayCharged->SetXTitle("#it{p}_{T decay} (GeV/#it{c})");
     
-    fhZTDecayCharged  =
-    new TH2F("hZTDecayCharged","#it{z}_{trigger h^{#pm}} = #it{p}_{T h^{#pm}} / #it{p}_{T Decay}",
+    fhZTPi0DecayCharged  =
+    new TH2F("hZTPi0DecayCharged","#it{z}_{trigger h^{#pm}} = #it{p}_{T h^{#pm}} / #it{p}_{T Decay}",
              nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
-    fhZTDecayCharged->SetYTitle("#it{z}_{decay h^{#pm}}");
-    fhZTDecayCharged->SetXTitle("#it{p}_{T decay} (GeV/#it{c})");
+    fhZTPi0DecayCharged->SetYTitle("#it{z}_{decay h^{#pm}}");
+    fhZTPi0DecayCharged->SetXTitle("#it{p}_{T decay} (GeV/#it{c})");
     
-    outputContainer->Add(fhDeltaPhiDecayCharged) ;
-    outputContainer->Add(fhXEDecayCharged) ;
-    outputContainer->Add(fhZTDecayCharged) ;
+    outputContainer->Add(fhDeltaPhiPi0DecayCharged) ;
+    outputContainer->Add(fhXEPi0DecayCharged) ;
+    outputContainer->Add(fhZTPi0DecayCharged) ;
+  }
+  
+  if(fDecayTrigger)
+  {
+    for(Int_t ibit = 0; ibit< fNDecayBits; ibit++)
+    {
+      fhDeltaPhiDecayCharged[ibit]  = new TH2F
+      (Form("hDeltaPhiDecayCharged_bit%d",fDecayBits[ibit]),
+       Form("#phi_{Decay} - #phi_{h^{#pm}} vs #it{p}_{T Decay}, Bit %d",fDecayBits[ibit]),
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiDecayCharged[ibit]->SetYTitle("#Delta #phi (rad)");
+      fhDeltaPhiDecayCharged[ibit]->SetXTitle("#it{p}_{T Decay} (GeV/#it{c})");
+      
+      fhXEDecayCharged[ibit]  =
+      new TH2F(Form("hXEDecayCharged_bit%d",fDecayBits[ibit]),
+               Form("#it{x}_{#it{E}}  Decay, Bit %d",fDecayBits[ibit]),
+               nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
+      fhXEDecayCharged[ibit]->SetYTitle("#it{x}_{#it{E}}");
+      fhXEDecayCharged[ibit]->SetXTitle("#it{p}_{T decay} (GeV/#it{c})");
+      
+      fhZTDecayCharged[ibit]  =
+      new TH2F(Form("hZTDecayCharged_bit%d",fDecayBits[ibit]),
+               Form("#it{z}_{trigger h^{#pm}} = #it{p}_{T h^{#pm}} / #it{p}_{T Decay}, Bit %d",fDecayBits[ibit]),
+               nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
+      fhZTDecayCharged[ibit]->SetYTitle("#it{z}_{decay h^{#pm}}");
+      fhZTDecayCharged[ibit]->SetXTitle("#it{p}_{T decay} (GeV/#it{c})");
+      
+      outputContainer->Add(fhDeltaPhiDecayCharged[ibit]) ;
+      outputContainer->Add(fhXEDecayCharged[ibit]) ;
+      outputContainer->Add(fhZTDecayCharged[ibit]) ;
+    }
   }
   
   //Correlation with neutral hadrons
@@ -2232,30 +2275,29 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       outputContainer->Add(fhPtHbpZTUeLeftNeutral) ;
     }
     
-    if(fPi0Trigger || fDecayTrigger)
+    if(fPi0Trigger)
     {
-      fhDeltaPhiDecayNeutral  = new TH2F
-      ("hDeltaPhiDecayNeutral","#phi_{Decay} - #phi_{h^{0}} vs #it{p}_{T Decay}",
+      fhDeltaPhiPi0DecayNeutral  = new TH2F
+      ("hDeltaPhiPi0DecayNeutral","#phi_{Decay} - #phi_{h^{0}} vs #it{p}_{T Decay}",
        nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
-      fhDeltaPhiDecayNeutral->SetYTitle("#Delta #phi (rad)");
-      fhDeltaPhiDecayNeutral->SetXTitle("#it{p}_{T Decay} (GeV/#it{c})");
+      fhDeltaPhiPi0DecayNeutral->SetYTitle("#Delta #phi (rad)");
+      fhDeltaPhiPi0DecayNeutral->SetXTitle("#it{p}_{T Decay} (GeV/#it{c})");
       
-      fhXEDecayNeutral  =
-      new TH2F("hXEDecayNeutral","#it{x}_{#it{E}} for decay trigger",
+      fhXEPi0DecayNeutral  =
+      new TH2F("hXEPi0DecayNeutral","#it{x}_{#it{E}} for decay trigger",
                nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
-      fhXEDecayNeutral->SetYTitle("#it{x}_{#it{E}}");
-      fhXEDecayNeutral->SetXTitle("#it{p}_{T decay}");
+      fhXEPi0DecayNeutral->SetYTitle("#it{x}_{#it{E}}");
+      fhXEPi0DecayNeutral->SetXTitle("#it{p}_{T decay}");
       
-      fhZTDecayNeutral  =
-      new TH2F("hZTDecayNeutral","#it{z}_{trigger h^{0}} = #it{p}_{T h^{0}} / #it{p}_{T Decay}",
+      fhZTPi0DecayNeutral  =
+      new TH2F("hZTPi0DecayNeutral","#it{z}_{trigger h^{0}} = #it{p}_{T h^{0}} / #it{p}_{T Decay}",
                nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
-      fhZTDecayNeutral->SetYTitle("#it{z}_{h^{0}}");
-      fhZTDecayNeutral->SetXTitle("#it{p}_{T decay}");
+      fhZTPi0DecayNeutral->SetYTitle("#it{z}_{h^{0}}");
+      fhZTPi0DecayNeutral->SetXTitle("#it{p}_{T decay}");
       
-      outputContainer->Add(fhDeltaPhiDecayNeutral) ;
-      outputContainer->Add(fhXEDecayNeutral) ;
-      outputContainer->Add(fhZTDecayNeutral) ;
-      
+      outputContainer->Add(fhDeltaPhiPi0DecayNeutral) ;
+      outputContainer->Add(fhXEPi0DecayNeutral) ;
+      outputContainer->Add(fhZTPi0DecayNeutral) ;
     }
   }//Correlation with neutral hadrons
   
@@ -2825,6 +2867,11 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fMCGenTypeMin = 0;
   fMCGenTypeMax = 6;
   
+  fNDecayBits = 1;
+  fDecayBits[0] = AliNeutralMesonSelection::kPi0;
+  fDecayBits[1] = AliNeutralMesonSelection::kEta;
+  fDecayBits[2] = AliNeutralMesonSelection::kPi0Side;
+  fDecayBits[3] = AliNeutralMesonSelection::kEtaSide;
 }
 
 //_________________________________________________________________________
@@ -3174,9 +3221,23 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   Float_t phiTrig = aodParticle->Phi();
   Float_t etaTrig = aodParticle->Eta();
   Float_t ptTrig  = aodParticle->Pt();  
-  Bool_t   decay  = aodParticle->IsTagged();
   Int_t    mcTag  = aodParticle->GetTag();
   Double_t bz     = GetReader()->GetInputEvent()->GetMagneticField();
+
+  
+  Int_t   decayTag = 0;
+  if(fDecayTrigger)
+  {
+    //decay = aodParticle->IsTagged();
+    decayTag = aodParticle->GetBtag(); // temporary
+    if(decayTag < 0) decayTag = 0; // temporary
+//    printf("Correlation: pT %2.2f, BTag %d, Tagged %d\n",ptTrig, decayTag, aodParticle->IsTagged());
+//    printf("\t check bit Pi0 %d, Eta %d,  Pi0Side %d, EtaSide %d\n",
+//           GetNeutralMesonSelection()->CheckDecayBit(decayTag,AliNeutralMesonSelection::kPi0),
+//           GetNeutralMesonSelection()->CheckDecayBit(decayTag,AliNeutralMesonSelection::kEta),
+//           GetNeutralMesonSelection()->CheckDecayBit(decayTag,AliNeutralMesonSelection::kPi0Side),
+//           GetNeutralMesonSelection()->CheckDecayBit(decayTag,AliNeutralMesonSelection::kEtaSide));
+  }
 
   Float_t pt       = -100. ;
   Float_t phi      = -100. ;
@@ -3318,7 +3379,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
 
     FillChargedAngularCorrelationHistograms(pt,  ptTrig,  bin, phi, phiTrig,  deltaPhi,
-                                            eta, etaTrig, decay, track->GetHMPIDsignal(),
+                                            eta, etaTrig, decayTag, track->GetHMPIDsignal(),
                                             outTOF, cenbin, mcTag);
     
     //
@@ -3330,7 +3391,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     //
     if  ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   )
       FillChargedMomentumImbalanceHistograms(ptTrig, pt, deltaPhi, cenbin, track->Charge(),
-                                             assocBin, decay, outTOF, mcTag);
+                                             assocBin, decayTag, outTOF, mcTag);
     
     //
     // Underlying event, right side, default case
