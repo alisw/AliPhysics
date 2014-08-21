@@ -133,15 +133,11 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   enum mcTypes   { kmcPi0Decay = 0, kmcEtaDecay = 1, kmcOtherDecay = 2,
                    kmcPi0      = 3, kmcEta      = 4, kmcElectron   = 5,
                    kmcHadron   = 6                                     };
-
-  enum decayTypes { kNone = 0, kPi0 = 1, kEta = 2, kPi0Side = 3 , kEtaSide = 4} ;
   
  private:
   
   anaTypes       fAnaType;                 // Select analysis type
-  
-  Int_t          fDecayTag;                // Decay type flag, stored in AOD SetBtag() temporarily
-  
+    
   //Only for pi0 SS identification case, kSSCalo
   TString        fCalorimeter ;            // Calorimeter where the gamma is searched;
   Float_t        fMinDist ;                // Minimal distance to bad channel to accept cluster

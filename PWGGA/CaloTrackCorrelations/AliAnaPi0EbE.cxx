@@ -49,8 +49,7 @@ ClassImp(AliAnaPi0EbE)
 //____________________________
 AliAnaPi0EbE::AliAnaPi0EbE() :
 AliAnaCaloTrackCorrBaseClass(),
-fAnaType(kIMCalo),                  fDecayTag(0),
-fCalorimeter(""),
+fAnaType(kIMCalo),                  fCalorimeter(""),
 fMinDist(0.),fMinDist2(0.),         fMinDist3(0.),
 fNLMCutMin(-1),                     fNLMCutMax(10),
 fTimeCutMin(-10000),                fTimeCutMax(10000),
@@ -2553,25 +2552,6 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     delete nmsHistos;
   }
   
-  // Set the flag of the decay clusters
-  if(fAnaType!=kSSCalo)
-  {
-    fDecayTag = kNone;
-    TString particle = GetNeutralMesonSelection()->GetParticle();
-    if(particle.Contains("Pi0"))
-    {
-      fDecayTag = kPi0;
-      if(particle.Contains("Side")) fDecayTag = kPi0Side;
-    }
-    else if(particle.Contains("Eta"))
-    {
-      fDecayTag = kEta;
-      if(particle.Contains("Side")) fDecayTag = kEtaSide;
-    }
-    else
-      printf("AliAnaPi0EbE::GetCreateOutputObjects() - Uknown particle %s\n",particle.Data());
-  }
-  
   return outputContainer ;
   
 }
@@ -2913,14 +2893,19 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         FillSelectedClusterHistograms(cluster2, mom2.Pt(), nMaxima2, photon2->GetTag());
       }
       
+      //
       // Tag both photons as decay if not done before
-      // Careful, if pi0, eta and side bands analysis
-      // run in pararel, the label can be overwritten
-      if( photon1->GetBtag() != fDecayTag ) // temporary
+      // set the corresponding bit for pi0 or eta or "side" case
+      //
+      Int_t bit1 = photon1->GetBtag(); // temporary
+      if( bit1 < 0 ) bit1 = 0 ; // temporary
+      if( !GetNeutralMesonSelection()->CheckDecayBit(bit1) )
       {
-        photon1->SetTagged(kTRUE);
-        photon1->SetBtag(fDecayTag); // temporary
+        photon1->SetTagged(kTRUE); // temporary
+        GetNeutralMesonSelection()->SetDecayBit(bit1);
+        photon1->SetBtag(bit1); // temporary
         fhPtDecay->Fill(photon1->Pt());
+        
         //Fill some histograms about shower shape
         if(fFillSelectClHisto && cluster1 && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
           FillSelectedClusterHistograms(cluster1, mom1.Pt(), nMaxima1, photon1->GetTag());
@@ -2932,10 +2917,13 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         }
       }
       
-      if( photon2->GetBtag() != fDecayTag ) // temporary
+      Int_t bit2 = photon2->GetBtag(); // temporary
+      if( bit2 < 0 ) bit2 = 0 ; // temporary
+      if( !GetNeutralMesonSelection()->CheckDecayBit(bit2) )
       {
-        photon2->SetTagged(kTRUE);
-        photon2->SetBtag(fDecayTag); // temporary
+        photon2->SetTagged(kTRUE); // temporary
+        GetNeutralMesonSelection()->SetDecayBit(bit2);
+        photon2->SetBtag(bit2); // temporary
         fhPtDecay->Fill(photon2->Pt());
         
         //Fill some histograms about shower shape
@@ -2947,7 +2935,6 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
           Int_t mcIndex2 = GetMCIndex(photon2->GetTag());
           fhMCPtDecay[mcIndex2]->Fill(photon2->Pt());
         }
-        
       }
       
       //Mass of selected pairs
@@ -3097,38 +3084,44 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       if(IsDataMC()) fhMCMassPt[mcIndex]->Fill(ptpair,mass);
 
       //
-      //Select good pair (good phi, pt cuts, aperture and invariant mass)
+      // Select good pair (good phi, pt cuts, aperture and invariant mass)
       //
       if(!GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter)) continue ;
       
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Selected gamma pair: pt %f, phi %f, eta%f\n",
                                 mom.Pt(), mom.Phi()*TMath::RadToDeg(), mom.Eta());
       
-      // Tag both photons as decay
-      // Careful, if pi0, eta and side bands analysis
-      // run in pararel, the label can be overwritten
-      if( photon1->GetBtag() != fDecayTag ) // temporary
+      //
+      // Tag both photons as decay if not done before
+      // set the corresponding bit for pi0 or eta or "side" case
+      //
+      Int_t bit1 = photon1->GetBtag(); // temporary
+      if( bit1 < 0 ) bit1 = 0 ; // temporary
+      if( !GetNeutralMesonSelection()->CheckDecayBit(bit1) )
       {
-        photon1->SetTagged(kTRUE);
-        photon1->SetBtag(fDecayTag); // temporary
-        
+        photon1->SetTagged(kTRUE); // temporary
+        GetNeutralMesonSelection()->SetDecayBit(bit1);
+        photon1->SetBtag(bit1); // temporary
         fhPtDecay->Fill(photon1->Pt());
+        
+        //Fill some histograms about shower shape
+        if(fFillSelectClHisto && cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
+          FillSelectedClusterHistograms(cluster, mom1.Pt(), nMaxima, photon1->GetTag());
         
         if(IsDataMC())
         {
           Int_t mcIndex1 = GetMCIndex(photon1->GetTag());
           fhMCPtDecay[mcIndex1]->Fill(photon1->Pt());
         }
-        
-        //Fill some histograms about shower shape
-        if(fFillSelectClHisto && cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
-          FillSelectedClusterHistograms(cluster, mom1.Pt(), nMaxima, photon1->GetTag());
       }
       
-      if( photon2->GetBtag() != fDecayTag ) // temporary
+      Int_t bit2 = photon2->GetBtag(); // temporary
+      if( bit2 < 0 ) bit2 = 0 ; // temporary
+      if( !GetNeutralMesonSelection()->CheckDecayBit(bit2) )
       {
-        photon2->SetTagged(kTRUE);
-        photon2->SetBtag(fDecayTag); // temporary
+        photon2->SetTagged(kTRUE); // temporary
+        GetNeutralMesonSelection()->SetDecayBit(bit2);
+        photon2->SetBtag(bit2); // temporary
       }
       
       //Mass of selected pairs
