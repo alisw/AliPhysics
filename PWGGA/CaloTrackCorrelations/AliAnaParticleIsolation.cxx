@@ -94,6 +94,7 @@ fhEtaPhiInConeTrack(0),           fhEtaPhiTrack(0),
 fhEtaBandCluster(0),              fhPhiBandCluster(0),
 fhEtaBandTrack(0),                fhPhiBandTrack(0),
 fhEtaBandCell(0),                 fhPhiBandCell(0),
+fhConePtLead(0),                  fhConePtLeadCluster(0),                   fhConePtLeadTrack(0),
 fhConeSumPt(0),                   fhConeSumPtCellTrack(0),
 fhConeSumPtCell(0),               fhConeSumPtCluster(0),                    fhConeSumPtTrack(0),
 fhConeSumPtEtaBandUECluster(0),             fhConeSumPtPhiBandUECluster(0),
@@ -851,11 +852,13 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
 }
 
 
-//__________________________________________________________________________________________________
+//______________________________________________________________________________________________________________
 void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle,
-                                                        Float_t & coneptsumCluster)
+                                                        Float_t & coneptsumCluster, Float_t & coneptLeadCluster)
 {
   // Get the cluster pT or sum of pT in isolation cone
+  coneptLeadCluster = 0;
+  coneptsumCluster  = 0;
   
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyCharged ) return ;
   
@@ -893,9 +896,11 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     if(fFillHighMultHistograms) fhPtInConeCent->Fill(GetEventCentrality(),mom.Pt());
     
     coneptsumCluster+=mom.Pt();
+    if(mom.Pt() > coneptLeadCluster) coneptLeadCluster = mom.Pt();
   }
   
-  fhConeSumPtCluster   ->Fill(ptTrig,     coneptsumCluster);
+  fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster );
+  fhConePtLeadCluster->Fill(ptTrig, coneptLeadCluster);
 }
 
 //______________________________________________________________________________________________________
@@ -980,9 +985,9 @@ void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliAODPWG4ParticleCo
   
 }
 
-//___________________________________________________________________________________________________
+//___________________________________________________________________________________________________________
 void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle,
-                                                         Float_t & coneptsumTrack)
+                                                         Float_t & coneptsumTrack, Float_t & coneptLeadTrack)
 {
   // Get the track pT or sum of pT in isolation cone
   
@@ -1030,10 +1035,12 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     if(fFillHighMultHistograms) fhPtInConeCent->Fill(GetEventCentrality(),pTtrack);
     
     coneptsumTrack+=pTtrack;
+    if(pTtrack > coneptLeadTrack) coneptLeadTrack = pTtrack;
   }
-  
-  fhConeSumPtTrack->Fill(ptTrig, coneptsumTrack);
-  
+
+  fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack );
+  fhConePtLeadTrack->Fill(ptTrig, coneptLeadTrack);
+
 }
 
 //_________________________________________________________________
@@ -1619,6 +1626,14 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtNLocMaxNoIso->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtNLocMaxNoIso) ;
     }
+
+    fhConePtLead  = new TH2F("hConePtLead",
+                            Form("Track or Cluster  leading #it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
+                            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+    fhConePtLead->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
+    fhConePtLead->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+    outputContainer->Add(fhConePtLead) ;
+
     
     fhConeSumPt  = new TH2F("hConePtSum",
                             Form("Track and Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
@@ -1661,6 +1676,14 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhConeSumPtCluster->SetYTitle("#Sigma #it{p}_{T}");
       fhConeSumPtCluster->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtCluster) ;
+      
+      fhConePtLeadCluster  = new TH2F("hConeLeadPtCluster",
+                                    Form("Cluster leading in isolation cone for #it{R} =  %2.2f",r),
+                                    nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhConePtLeadCluster->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
+      fhConePtLeadCluster->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+      outputContainer->Add(fhConePtLeadCluster) ;
+
       
       if(fFillCellHistograms)
       {
@@ -2008,6 +2031,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhConeSumPtTrack->SetYTitle("#Sigma #it{p}_{T}");
       fhConeSumPtTrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtTrack) ;
+
+      fhConePtLeadTrack  = new TH2F("hConeLeadPtTrack",
+                                   Form("Track leading in isolation cone for #it{R} =  %2.2f",r),
+                                   nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhConePtLeadTrack->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
+      fhConePtLeadTrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+      outputContainer->Add(fhConePtLeadTrack) ;
       
       fhPtTrackInCone  = new TH2F("hPtTrackInCone",
                                   Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f",r),
@@ -3359,14 +3389,16 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     // Fill pt/sum pT distribution of particles in cone or in UE band
     //---------------------------------------------------------------
     
+    Float_t coneptLeadCluster= 0;
+    Float_t coneptLeadTrack  = 0;
     Float_t coneptsumCluster = 0;
     Float_t coneptsumTrack   = 0;
     Float_t coneptsumCell    = 0;
     Float_t etaBandptsumClusterNorm = 0;
     Float_t etaBandptsumTrackNorm   = 0;
     
-    CalculateTrackSignalInCone   (aod,coneptsumTrack  );
-    CalculateCaloSignalInCone    (aod,coneptsumCluster);
+    CalculateTrackSignalInCone   (aod,coneptsumTrack  , coneptLeadTrack  );
+    CalculateCaloSignalInCone    (aod,coneptsumCluster, coneptLeadCluster);
     if(fFillCellHistograms)
       CalculateCaloCellSignalInCone(aod,coneptsumCell   );
     
@@ -3383,6 +3415,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     fhConeSumPt              ->Fill(pt,     coneptsumTrack+coneptsumCluster);
     fhConeSumPtTrigEtaPhi    ->Fill(eta,phi,coneptsumTrack+coneptsumCluster);
+    
+    if(coneptLeadTrack > coneptLeadCluster) fhConePtLead->Fill(pt, coneptLeadTrack  );
+    else                                    fhConePtLead->Fill(pt, coneptLeadCluster);
     
     if(GetDebug() > 1)
       printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d Energy Sum in Isolation Cone %2.2f\n", iaod, coneptsumTrack+coneptsumCluster);
