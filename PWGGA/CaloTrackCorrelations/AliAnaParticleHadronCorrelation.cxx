@@ -3577,11 +3577,13 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
     //
     if( OnlyIsolated() )
     {
-      Int_t n=0; Int_t nfrac = 0; Bool_t isolated = kFALSE; Float_t coneptsum = 0;
+      Int_t   n=0, nfrac = 0;
+      Bool_t  isolated = kFALSE;
+      Float_t coneptsum = 0, coneptlead = 0;
       GetIsolationCut()->MakeIsolationCut(bgTracks,bgCalo,
                                           GetReader(), GetCaloPID(),
                                           kFALSE, aodParticle, "",
-                                          n,nfrac,coneptsum, isolated);
+                                          n,nfrac,coneptsum,coneptlead,isolated);
       
       //printf("AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation() - Isolated? %d - cone %f, ptthres %f",
       //       isolated,GetIsolationCut()->GetConeSize(),GetIsolationCut()->GetPtThreshold());

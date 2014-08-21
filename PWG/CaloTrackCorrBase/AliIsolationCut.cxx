@@ -410,7 +410,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
                                         TString aodArrayRefName,
                                         Int_t   & n, 
                                         Int_t   & nfrac, 
-                                        Float_t & coneptsum,  
+                                        Float_t & coneptsum, Float_t & ptLead,
                                         Bool_t  & isolated) const
 {
   //Search in cone around a candidate particle if it is isolated 
@@ -419,7 +419,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
   
-  Float_t ptLead = -100. ;
   Float_t pt     = -100. ;
   Float_t eta    = -100. ;
   Float_t phi    = -100. ;
