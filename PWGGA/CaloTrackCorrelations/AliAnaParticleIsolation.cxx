@@ -3197,7 +3197,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   
   Int_t n = 0, nfrac = 0;
   Bool_t  isolated  = kFALSE ;
-  Float_t coneptsum = 0 ;
+  Float_t coneptsum = 0, coneptlead = 0;
   TObjArray * pl    = 0x0; ;
   
   //Select the calorimeter for candidate isolation with neutral particles
@@ -3254,11 +3254,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     }
     
     //After cuts, study isolation
-    n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
+    n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0; coneptlead = 0;
     GetIsolationCut()->MakeIsolationCut(GetCTSTracks(),pl,
                                         GetReader(), GetCaloPID(),
                                         kTRUE, aodinput, GetAODObjArrayName(),
-                                        n,nfrac,coneptsum, isolated);
+                                        n,nfrac,coneptsum,coneptlead,isolated);
     
     if(!fMakeSeveralIC) aodinput->SetIsolated(isolated);
   } // particle isolationloop
@@ -3322,7 +3322,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       //In case a more strict IC is needed in the produced AOD
       Bool_t  isolated = kFALSE;
       Int_t   n = 0, nfrac = 0;
-      Float_t coneptsum = 0 ;
+      Float_t coneptsum = 0, coneptlead = 0;
       
       //Recover reference arrays with clusters and tracks
       TObjArray * refclusters = aod->GetObjArray(GetAODObjArrayName()+"Clusters");
@@ -3331,7 +3331,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       GetIsolationCut()->MakeIsolationCut(reftracks,   refclusters,
                                           GetReader(), GetCaloPID(),
                                           kFALSE, aod, "",
-                                          n,nfrac,coneptsum, isolated);
+                                          n,nfrac,coneptsum,coneptlead,isolated);
     }
     
     Bool_t  isolated   = aod->IsIsolated();
@@ -3810,7 +3810,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   Float_t ptsumcorg  = GetIsolationCut()->GetSumPtThreshold();
   Float_t rorg       = GetIsolationCut()->GetConeSize();
   
-  Float_t coneptsum = 0 ;
+  Float_t coneptsum = 0, coneptlead = 0;
   Int_t   n    [10][10];//[fNCones][fNPtThresFrac];
   Int_t   nfrac[10][10];//[fNCones][fNPtThresFrac];
   Bool_t  isolated  = kFALSE;
@@ -3866,7 +3866,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
     
     //In case a more strict IC is needed in the produced AOD
     
-    isolated = kFALSE; coneptsum = 0;
+    isolated = kFALSE; coneptsum = 0; coneptlead = 0;
     
     GetIsolationCut()->SetSumPtThreshold(100);
     GetIsolationCut()->SetPtThreshold(100);
@@ -3969,7 +3969,8 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
       GetIsolationCut()->MakeIsolationCut(reftracks, refclusters,
                                           GetReader(), GetCaloPID(),
                                           kFALSE, ph, "",
-                                          n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
+                                          n[icone][ipt],nfrac[icone][ipt],
+                                          coneptsum, coneptlead, isolated);
       
       // Normal pT threshold cut
       
