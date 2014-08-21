@@ -2003,6 +2003,7 @@ TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/
   //
   TH2D * histGainSec = fHistGainSector->Projection(0,1);
   TGraphErrors * gr = TStatToolkit::MakeStat1D(histGainSec, 0, 0.6,2,markers[padRegion],colors[padRegion]);
+  delete histGainSec;
   Double_t median = TMath::Median(gr->GetN(),gr->GetY());
   if (median>0){
     for (Int_t i=0; i<gr->GetN();i++) {

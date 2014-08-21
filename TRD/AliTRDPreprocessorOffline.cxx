@@ -539,6 +539,7 @@ Bool_t AliTRDPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
     fCH2d = (TH2I*)ch2d->Clone();
     //fNEvents = (TH1I *) array->FindObject("NEvents");
     //fAbsoluteGain = (TH2F *) array->FindObject("AbsoluteGain");
+    delete array;
   }else{
     TH2I *ch2d = (TH2I *) fcalib.Get("CH2d");
     if(!ch2d) return kFALSE;
@@ -566,6 +567,7 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftT0Global(const Char_t* fileName){
     if(!ph2d) return kFALSE;
     fPH2d = (TProfile2D*)ph2d->Clone();
     //fNEvents = (TH1I *) array->FindObject("NEvents");
+    delete array;
   }else{
     TProfile2D *ph2d = (TProfile2D *) fcalib.Get("PH2d");
     if(!ph2d) return kFALSE;
@@ -590,6 +592,7 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftLinearFitGlobal(const Char_t* fileNa
   if (array){
     fAliTRDCalibraVdriftLinearFit = (AliTRDCalibraVdriftLinearFit *) array->FindObject("AliTRDCalibraVdriftLinearFit");
     //fNEvents = (TH1I *) array->FindObject("NEvents");
+    delete array;
   }else{
     fAliTRDCalibraVdriftLinearFit = (AliTRDCalibraVdriftLinearFit *) fcalib.Get("AliTRDCalibraVdriftLinearFit");
     //fNEvents = (TH1I *) fcalib.Get("NEvents");
@@ -612,6 +615,7 @@ Bool_t AliTRDPreprocessorOffline::ReadExbAltFitGlobal(const Char_t* fileName){
   if (array){
     fAliTRDCalibraExbAltFit = (AliTRDCalibraExbAltFit *) array->FindObject("AliTRDCalibraExbAltFit");
     //fNEvents = (TH1I *) array->FindObject("NEvents");
+    delete array;
   }else{
     fAliTRDCalibraExbAltFit = (AliTRDCalibraExbAltFit *) fcalib.Get("AliTRDCalibraExbAltFit");
     //fNEvents = (TH1I *) fcalib.Get("NEvents");

@@ -3036,6 +3036,9 @@ TMatrixD* AliTPCcalibDButil::MakeStatRelKalman(TObjArray * const array, Float_t 
     stat(ipar,1)=TMath::Median(naccept, valArray[ipar]->GetMatrixArray());
     stat(ipar,2)=TMath::RMS(naccept, valArray[ipar]->GetMatrixArray());
   }
+  for (Int_t i=0; i<9; i++){
+    delete valArray[i];
+  }
   return pstat;
 }
 
