@@ -2901,11 +2901,19 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if( bit1 < 0 ) bit1 = 0 ; // temporary
       if( !GetNeutralMesonSelection()->CheckDecayBit(bit1) )
       {
+        if( GetDebug() > 1 )
+          printf("AliAnaPi0EbE::MakeInvMassInCalorimeter - pT1 %2.2f; bit requested %d; decay bit1: In %d, ",
+                 mom1.Pt(), GetNeutralMesonSelection()->GetDecayBit(), bit1);
+        
         photon1->SetTagged(kTRUE); // temporary
         GetNeutralMesonSelection()->SetDecayBit(bit1);
         photon1->SetBtag(bit1); // temporary
-        fhPtDecay->Fill(photon1->Pt());
         
+        if( GetDebug() > 1 )
+          printf("Out %d \n", bit1);
+        
+        fhPtDecay->Fill(photon1->Pt());
+
         //Fill some histograms about shower shape
         if(fFillSelectClHisto && cluster1 && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
           FillSelectedClusterHistograms(cluster1, mom1.Pt(), nMaxima1, photon1->GetTag());
@@ -2921,9 +2929,17 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if( bit2 < 0 ) bit2 = 0 ; // temporary
       if( !GetNeutralMesonSelection()->CheckDecayBit(bit2) )
       {
+        if( GetDebug() > 1 )
+          printf("AliAnaPi0EbE::MakeInvMassInCalorimeter - pT2 %2.2f; bit requested %d; decay bit2: In %d, ",
+                 mom2.Pt(), GetNeutralMesonSelection()->GetDecayBit(), bit2);
+        
         photon2->SetTagged(kTRUE); // temporary
         GetNeutralMesonSelection()->SetDecayBit(bit2);
         photon2->SetBtag(bit2); // temporary
+        
+        if( GetDebug() > 1 )
+          printf("Out %d \n", bit2);
+        
         fhPtDecay->Fill(photon2->Pt());
         
         //Fill some histograms about shower shape
