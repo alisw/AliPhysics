@@ -72,6 +72,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  * pCandidate,
                                                              Int_t mcIndex) ;
   
+  Bool_t       IsTriggerTheNearSideEventLeadingParticle(Int_t & idLeading);
+  
   void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph, Int_t mcIndex ) ;
   
   // Analysis Setters and Getters
@@ -113,6 +115,13 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE    ; }
   void         SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE   ; }
 
+  Bool_t       IsLeadingOnlyOn()               const { return fLeadingOnly       ; }
+  void         SwitchOnLeadingOnly()                 { fLeadingOnly    = kTRUE   ; }
+  void         SwitchOffLeadingOnly()                { fLeadingOnly    = kFALSE  ; }
+  
+  void         SwitchOnCheckNeutralClustersForLeading() { fCheckLeadingWithNeutralClusters = kTRUE  ; }
+  void         SwitchOffCheckNeutralClustersForLeading(){ fCheckLeadingWithNeutralClusters = kFALSE ; }
+  
   void         SwitchOnUEBandSubtractionHistoFill()  { fFillUEBandSubtractHistograms   = kTRUE    ; }
   void         SwitchOffUEBandSubtractionHistoFill() { fFillUEBandSubtractHistograms   = kFALSE   ; }
 
@@ -151,8 +160,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillHighMultHistograms;               // Fill high multiplicity histograms
   Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
   Bool_t   fFillNLMHistograms;                    // Fill NLM histograms
+  Bool_t   fLeadingOnly;                          // Do isolation with leading particle
+  Bool_t   fCheckLeadingWithNeutralClusters;      // Compare the trigger candidate to Leading pT with the clusters pT, by default only charged
 
-  // Analysis data members for multiple cones and pt thresholds 
+  // Analysis data members for multiple cones and pt thresholds
   Int_t    fNCones ;                              //! Number of cone sizes to test
   Int_t    fNPtThresFrac ;                        //! Number of ptThres and ptFrac to test
   
@@ -395,7 +406,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,27)
+  ClassDef(AliAnaParticleIsolation,28)
 } ;
 
 

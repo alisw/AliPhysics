@@ -504,25 +504,25 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
       // Only loop the particle at the same side of candidate
       if(TMath::Abs(phi-phiC) > TMath::PiOver2()) continue ;
       
-      // If at the same side has particle larger than candidate, 
-      // then candidate can not be the leading, skip such events
-      if(pt > ptC)
-      {
-        n         = -1;
-        nfrac     = -1;
-        coneptsumTrack = -1;
-        isolated  = kFALSE;
-        
-        pCandidate->SetLeadingParticle(kFALSE);
-        
-        if(bFillAOD && reftracks) 
-        {
-          reftracks->Clear(); 
-          delete reftracks;
-        }
-        
-        return ;
-      }
+//      // If at the same side has particle larger than candidate, 
+//      // then candidate can not be the leading, skip such events
+//      if(pt > ptC)
+//      {
+//        n         = -1;
+//        nfrac     = -1;
+//        coneptsumTrack = -1;
+//        isolated  = kFALSE;
+//        
+//        pCandidate->SetLeadingParticle(kFALSE);
+//        
+//        if(bFillAOD && reftracks) 
+//        {
+//          reftracks->Clear(); 
+//          delete reftracks;
+//        }
+//        
+//        return ;
+//      }
       
       // // Check if there is any particle inside cone with pt larger than  fPtThreshold
       // Check if the leading particule inside the cone has a ptLead larger than fPtThreshold
@@ -646,33 +646,33 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
       // Only loop the particle at the same side of candidate
       if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
       
-      // If at the same side has particle larger than candidate, 
-      // then candidate can not be the leading, skip such events
-      if(pt > ptC)
-      {
-        n         = -1;
-        nfrac     = -1;
-        coneptsumCluster = -1;
-        isolated  = kFALSE;
-        
-        pCandidate->SetLeadingParticle(kFALSE);
-        
-        if(bFillAOD)
-        {
-          if(reftracks)
-          {  
-            reftracks  ->Clear();
-            delete reftracks;
-          }
-          
-          if(refclusters)
-          {
-            refclusters->Clear(); 
-            delete refclusters;
-          }
-        }
-        return ;
-      }
+//      // If at the same side has particle larger than candidate,
+//      // then candidate can not be the leading, skip such events
+//      if(pt > ptC)
+//      {
+//        n         = -1;
+//        nfrac     = -1;
+//        coneptsumCluster = -1;
+//        isolated  = kFALSE;
+//        
+//        pCandidate->SetLeadingParticle(kFALSE);
+//        
+//        if(bFillAOD)
+//        {
+//          if(reftracks)
+//          {  
+//            reftracks  ->Clear();
+//            delete reftracks;
+//          }
+//          
+//          if(refclusters)
+//          {
+//            refclusters->Clear(); 
+//            delete refclusters;
+//          }
+//        }
+//        return ;
+//      }
       
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
       
