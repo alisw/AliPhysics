@@ -136,6 +136,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnDecayTaggedHistoFill()        { fFillTaggedDecayHistograms = kTRUE ; }
   void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
+  void         SetNDecayBits(Int_t n)                { fNDecayBits = n               ; }
+  void         SetDecayBits(Int_t i, UInt_t bit)     { if(i < 4) fDecayBits[i] = bit ; }
   
  // For primary histograms in arrays, index in the array, corresponding to a photon origin
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimOtherDecay  = 2,
@@ -159,6 +161,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillCellHistograms;                   // Fill cell histograms
   Bool_t   fFillHighMultHistograms;               // Fill high multiplicity histograms
   Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
+  Int_t    fNDecayBits ;                          // in case of study of decay triggers, select the decay bit
+  UInt_t   fDecayBits[4] ;                        // in case of study of decay triggers, select the decay bit
   Bool_t   fFillNLMHistograms;                    // Fill NLM histograms
   Bool_t   fLeadingOnly;                          // Do isolation with leading particle
   Bool_t   fCheckLeadingWithNeutralClusters;      // Compare the trigger candidate to Leading pT with the clusters pT, by default only charged
@@ -186,10 +190,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhENoIso ;                             //! Number of not isolated leading particles vs Energy
   TH1F *   fhPtNoIso ;                            //! Number of not isolated leading particles vs pT
   TH2F *   fhPtNLocMaxNoIso ;                     //! Number of not isolated particles vs NLM in cluster
-  TH1F *   fhPtDecayIso ;                         //! Number of isolated Pi0 decay particles (invariant mass tag)
-  TH1F *   fhPtDecayNoIso ;                       //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
-  TH2F *   fhEtaPhiDecayIso ;                     //! eta vs phi of isolated Pi0 decay particles
-  TH2F *   fhEtaPhiDecayNoIso ;                   //! eta vs phi of not isolated leading Pi0 decay particles
+  TH1F *   fhPtDecayIso[4] ;                      //! Number of isolated Pi0 decay particles (invariant mass tag)
+  TH1F *   fhPtDecayNoIso[4] ;                    //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
+  TH2F *   fhEtaPhiDecayIso[4] ;                  //! eta vs phi of isolated Pi0 decay particles
+  TH2F *   fhEtaPhiDecayNoIso[4] ;                //! eta vs phi of not isolated leading Pi0 decay particles
 
   TH2F *   fhPtInCone ;                           //! Cluster/track Pt in the cone
   TH2F *   fhPtClusterInCone ;                    //! Cluster Pt in the cone
@@ -320,10 +324,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiIsoMC [9];                        //! Phi of isolated mcTypes particle
   TH2F *   fhEtaIsoMC [9];                        //! eta of isolated mcTypes particle
   
-  TH1F *   fhPtDecayIsoMC[9] ;                    //! Number of isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
-  TH1F *   fhPtDecayNoIsoMC[9] ;                  //! Number of not isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
+  TH1F *   fhPtDecayIsoMC[4][9] ;                 //! Number of isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
+  TH1F *   fhPtDecayNoIsoMC[4][9] ;               //! Number of not isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
 
-  TH2F *   fhPtLambda0MC[9][2];                    //! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously)
+  TH2F *   fhPtLambda0MC[9][2];                   //! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously)
  
   // Multiple cut analysis
   TH2F *   fhSumPtLeadingPt[5] ;                  //! Sum Pt in the cone
@@ -336,26 +340,26 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhSumPtIsolated[5][5] ;                //! Isolated particle with threshold on cone pt sum
   
   TH2F *   fhEtaPhiPtThresIso[5][5] ;             //! eta vs phi of isolated particles with pt threshold
-  TH2F *   fhEtaPhiPtThresDecayIso[5][5] ;        //! eta vs phi of isolated particles with pt threshold
-  TH1F *   fhPtPtThresDecayIso[5][5] ;            //! Number of isolated Pi0 decay particles (invariant mass tag) with pt threshold   
+  TH2F *   fhEtaPhiPtThresDecayIso[5][5] ;        //! eta vs phi of isolated particles with pt threshold, only for decay bit fDecayBits[0]
+  TH1F *   fhPtPtThresDecayIso[5][5] ;            //! Number of isolated Pi0 decay particles (invariant mass tag) with pt threshold,, only for decay bit fDecayBits[0]
   
   TH2F *   fhEtaPhiPtFracIso[5][5] ;              //! eta vs phi of isolated particles with pt frac
-  TH2F *   fhEtaPhiPtFracDecayIso[5][5] ;         //! eta vs phi of isolated particles with pt frac
-  TH1F *   fhPtPtFracDecayIso[5][5] ;             //! Number of isolated Pi0 decay particles (invariant mass tag) with pt fra
+  TH2F *   fhEtaPhiPtFracDecayIso[5][5] ;         //! eta vs phi of isolated particles with pt frac,, only for decay bit fDecayBits[0]
+  TH1F *   fhPtPtFracDecayIso[5][5] ;             //! Number of isolated Pi0 decay particles (invariant mass tag) with pt fra, only for decay bit fDecayBits[0]
 
   TH2F *   fhEtaPhiPtSumIso[5][5] ;               //! eta vs phi of isolated particles with pt sum
-  TH2F *   fhEtaPhiPtSumDecayIso[5][5] ;          //! eta vs phi of isolated particles with pt sum
-  TH1F *   fhPtPtSumDecayIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
+  TH2F *   fhEtaPhiPtSumDecayIso[5][5] ;          //! eta vs phi of isolated particles with pt sum,, only for decay bit fDecayBits[0]
+  TH1F *   fhPtPtSumDecayIso[5][5] ;              //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum, only for decay bit fDecayBits[0]
   
   TH2F *   fhEtaPhiSumDensityIso[5][5];           //! Isolated particle with threshold on cone sum density
-  TH2F *   fhEtaPhiSumDensityDecayIso[5][5];      //! Isolated particle with threshold on cone sum density
+  TH2F *   fhEtaPhiSumDensityDecayIso[5][5];      //! Isolated particle with threshold on cone sum density, only for decay bit fDecayBits[0]
   TH1F *   fhPtSumDensityIso[5][5];               //! Isolated particle with threshold on cone sum density
-  TH1F *   fhPtSumDensityDecayIso[5][5];          //! Isolated decay particle with threshold on cone sum density
+  TH1F *   fhPtSumDensityDecayIso[5][5];          //! Isolated decay particle with threshold on cone sum density, only for decay bit fDecayBits[0]
   
   TH1F *   fhPtFracPtSumIso[5][5] ;               //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
-  TH1F *   fhPtFracPtSumDecayIso[5][5] ;          //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum
+  TH1F *   fhPtFracPtSumDecayIso[5][5] ;          //! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum, only for decay bit fDecayBits[0]
   TH2F *   fhEtaPhiFracPtSumIso[5][5];            //! Isolated particle with threshold on cone sum density
-  TH2F *   fhEtaPhiFracPtSumDecayIso[5][5];       //! Isolated particle with threshold on cone sum density
+  TH2F *   fhEtaPhiFracPtSumDecayIso[5][5];       //! Isolated particle with threshold on cone sum density, only for decay bit fDecayBits[0]
  
   // Multiple cut MC
   TH1F *   fhPtThresIsolatedMC[9][5][5];          //! Isolated mcTypes particle with pt threshold
