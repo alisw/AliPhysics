@@ -25,7 +25,6 @@
 //-Yaxian Mao (add the possibility for different IC method with different pt range, 01/10/2010)
 //////////////////////////////////////////////////////////////////////////////
 
-
 // --- ROOT system ---
 #include <TClonesArray.h>
 #include <TList.h>
@@ -35,8 +34,6 @@
 #include <TH2F.h>
 #include "TParticle.h"
 #include "TDatabasePDG.h"
-
-
 
 // --- Analysis system ---
 #include "AliAnaParticleIsolation.h"
@@ -90,7 +87,6 @@ fhPtTrackInConeBC0(0),            fhPtTrackInConeVtxBC0(0),
 fhPtTrackInConeBC0PileUpSPD(0),
 fhPtInConePileUp(),               fhPtInConeCent(0),
 fhPerpConeSumPt(0),               fhPtInPerpCone(0),
-
 fhEtaPhiInConeCluster(0),         fhEtaPhiCluster(0),
 fhEtaPhiInConeTrack(0),           fhEtaPhiTrack(0),
 fhEtaBandCluster(0),              fhPhiBandCluster(0),
@@ -3411,8 +3407,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   {
     AliAODPWG4ParticleCorrelation * aodinput =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
-    if(IsLeadingOnlyOn()) aodinput->SetLeadingParticle(kTRUE);
-  
     // Check isolation only of clusters in fiducial region
     if(IsFiducialCutOn())
     {
@@ -3524,8 +3518,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       if(decayTag < 0) decayTag = 0; // temporary
     }
     
-    if(GetDebug() > 0) printf(" AliAnaParticleIsolation::MakeAnalysisFillHistograms() - pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d\n",
-                              pt, eta, phi, isolated);
+    if(GetDebug() > 0)
+      printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d\n",
+              pt, eta, phi, isolated);
     
     //---------------------------------------------------------------
     // Fill pt/sum pT distribution of particles in cone or in UE band
