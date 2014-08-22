@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: August 20, 2014.								      //
+	//		version: August 13, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -189,7 +189,6 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTOF02(0)
 ,fTOF03(0)
 ,fpid(0)
-,fEoverP_pt_true_electrons(0)
 ,fEoverP_pt(0)
 ,fEoverP_tpc(0)
 ,fEoverP_tpc_p_trigger(0)
@@ -478,7 +477,6 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTOF02(0)
 ,fTOF03(0)
 ,fpid(0)
-,fEoverP_pt_true_electrons(0)
 ,fEoverP_pt(0)
 ,fEoverP_tpc(0)
 ,fEoverP_tpc_p_trigger(0)
@@ -986,7 +984,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fTPCNcls_EoverP= new TH2F *[3];	
 	fTPCNcls_pid=new TH2F *[4];
 	
-	fEoverP_pt_true_electrons = new TH2F("fEoverP_pt_true_electrons",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+	
 	
 	for(Int_t i = 0; i < 3; i++)
 	{
@@ -1011,8 +1009,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fTPCNcls_EoverP[i]= new TH2F(Form("fTPCNcls_EoverP%d",i),"TPCNcls_EoverP",1000,0,200,200,0,2);	
 			
 		
-		fOutputList->Add(fEoverP_pt_true_electrons);
-
+		
 		fOutputList->Add(fEoverP_pt[i]);
 		fOutputList->Add(fTPC_p[i]);
 		fOutputList->Add(fTPCnsigma_p[i]);
@@ -2555,7 +2552,6 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 								if(fUseEMCal) fShowerShape_ha->Fill(M02,M20);
 							}
 						}
-						
 						//for systematic studies of hadron contamination
 						if(fTPCnSigma < -3){
 							fEoverP_pt_pions->Fill(fPt, EoverP);
@@ -2997,18 +2993,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
 								fEoverP_pt[2]->Fill(fPt,(fClus->E() / fP));
 								fShowerShapeCut->Fill(M02,M20);
-								//in order to check if there are exotic cluster in this selected cluster (27 may 2014)
+									//in order to check if there are exotic cluster in this selected cluster (27 may 2014)
 								fNcells_energy_elec_selected->Fill(ncells,Energy);
-								
-								//true electrons E/p shape
-								if(fIsMC && fIsAOD && track->GetLabel()>=0){
-									fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
-									Int_t pdg = fMCparticle->GetPdgCode();
-									
-									if( TMath::Abs(pdg) == 11){
-										fEoverP_pt_true_electrons->Fill(fPt,(fClus->E() / fP));
-									}
-								}
 								
 							}
 							
