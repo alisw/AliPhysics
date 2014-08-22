@@ -70,7 +70,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         FillAcceptanceHistograms();
  
   void         FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  * pCandidate,
-                                                             Int_t mcIndex) ;
+                                                             Float_t coneptsum, Float_t coneleadpt, Int_t mcIndex) ;
   
   Bool_t       IsTriggerTheNearSideEventLeadingParticle(Int_t & idLeading);
   
@@ -139,12 +139,17 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetNDecayBits(Int_t n)                { fNDecayBits = n               ; }
   void         SetDecayBits(Int_t i, UInt_t bit)     { if(i < 4) fDecayBits[i] = bit ; }
   
- // For primary histograms in arrays, index in the array, corresponding to a photon origin
+  void         SwitchOnBackgroundBinHistoFill()      { fFillBackgroundBinHistograms = kTRUE ; }
+  void         SwitchOffBackgroundHistoFill()        { fFillBackgroundBinHistograms = kFALSE; }
+  void         SetNBackgroundBins(Int_t n)           { if(n < 19) fNBkgBin = n ; }
+  void         SetBackgroundLimits(Int_t i,Float_t l){ if(i <= fNBkgBin) fBkgBinLimit[i] = l; }
+
+  // For primary histograms in arrays, index in the array, corresponding to a photon origin
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimOtherDecay  = 2,
                      kmcPrimPrompt = 3, kmcPrimFrag     = 4, kmcPrimISR         = 5       } ;
   
   // For histograms in arrays, index in the array, corresponding to any particle origin
-  enum mcTypes     { kmcPhoton   = 0, kmcPrompt   = 1, kmcFragment   = 2,
+  enum mcTypes     { kmcPhoton   = 0, kmcPrompt   = 1, kmcFragment = 2,
                      kmcPi0      = 3, kmcPi0Decay = 4, kmcEtaDecay = 5, kmcOtherDecay = 6,
                      kmcElectron = 7, kmcHadron   = 8                                     } ;
   
@@ -166,6 +171,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillNLMHistograms;                    // Fill NLM histograms
   Bool_t   fLeadingOnly;                          // Do isolation with leading particle
   Bool_t   fCheckLeadingWithNeutralClusters;      // Compare the trigger candidate to Leading pT with the clusters pT, by default only charged
+
+  Bool_t   fFillBackgroundBinHistograms;          // Fill histograms for different bins in pt content of the cone
+  Int_t    fNBkgBin;                              // Number of bins on pt content in cone
+  Float_t  fBkgBinLimit[20];                      // Pt bin limits on pt content in the cone
 
   // Analysis data members for multiple cones and pt thresholds
   Int_t    fNCones ;                              //! Number of cone sizes to test
@@ -194,7 +203,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtDecayNoIso[4] ;                    //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
   TH2F *   fhEtaPhiDecayIso[4] ;                  //! eta vs phi of isolated Pi0 decay particles
   TH2F *   fhEtaPhiDecayNoIso[4] ;                //! eta vs phi of not isolated leading Pi0 decay particles
-
+  
   TH2F *   fhPtInCone ;                           //! Cluster/track Pt in the cone
   TH2F *   fhPtClusterInCone ;                    //! Cluster Pt in the cone
   TH2F *   fhPtCellInCone ;                       //! Cell amplitude in the cone
@@ -224,6 +233,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConePtLead ;                         //! Cluster and tracks leading pt in the cone
   TH2F *   fhConePtLeadCluster ;                  //! Clusters leading pt in the cone
   TH2F *   fhConePtLeadTrack ;                    //! Tracks leading pt in the cone
+  TH2F *   fhConePtLeadClustervsTrack;            //! Tracks vs Clusters leading pt
+  TH2F *   fhConePtLeadClusterTrackFrac;          //! Trigger pt vs cluster/track leading pt
   
   TH2F *   fhConeSumPt ;                          //! Cluster and tracks Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtCellTrack ;                 //! Cells and tracks Sum Pt Sum Pt in the cone
@@ -284,6 +295,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhFractionCellOutConePhiTrigEtaPhi;    //! Fraction of cone out of cells acceptance in phi, vs trigger eta-phi
   
   TH2F *   fhConeSumPtClustervsTrack ;            //! Cluster vs tracks Sum Pt Sum Pt in the cone
+  TH2F *   fhConeSumPtClusterTrackFrac ;          //! Cluster / tracks Sum Pt Sum Pt in the cone
   TH2F *   fhConeSumPtEtaUESubClustervsTrack ;    //! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in eta band
   TH2F *   fhConeSumPtPhiUESubClustervsTrack ;    //! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in phi band
   TH2F *   fhConeSumPtCellvsTrack;                //! Cell vs tracks Sum Pt Sum Pt in the cone
@@ -388,6 +400,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtLambda0TRD[2];                     //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
 
+  TH2F **  fhPtLeadConeBinLambda0 ;               //![fNBkgBin] Candidate shower shape distribution depending on bin of cone leading particle
+  TH2F **  fhSumPtConeBinLambda0  ;               //![fNBkgBin] Candidate shower shape distribution depending on bin of cone sum pt
+  TH2F **  fhPtLeadConeBinLambda0MC ;             //![fNBkgBin*9] Candidate shower shape distribution depending on bin of cone leading particle, per MC particle
+  TH2F **  fhSumPtConeBinLambda0MC  ;             //![fNBkgBin*9] Candidate shower shape distribution depending on bin of cone sum pt, per MC particle
+  
   // Local maxima
   TH2F *   fhNLocMax[2];                          //! number of maxima in selected clusters
   TH2F *   fhELambda0LocMax1[2] ;                 //! E vs lambda0 of selected cluster, 1 local maxima in cluster 
