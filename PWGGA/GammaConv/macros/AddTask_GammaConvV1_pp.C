@@ -345,7 +345,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 	if (periodname.CompareTo("LHC12i3") == 0){	
 		TObjString *Header2 = new TObjString("BOX");
 		HeaderList->Add(Header2);
-	} else if (periodname.CompareTo("LHC14e2b")){
+	} else if (periodname.CompareTo("LHC14e2b")==0){
 		TObjString *Header2 = new TObjString("pi0_1");
 		HeaderList->Add(Header2);
 		TObjString *Header3 = new TObjString("eta_2");
