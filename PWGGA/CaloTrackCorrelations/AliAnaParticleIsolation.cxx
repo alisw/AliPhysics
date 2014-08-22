@@ -3296,8 +3296,17 @@ Bool_t AliAnaParticleIsolation::IsTriggerTheNearSideEventLeadingParticle(Int_t &
     
     //skip this event if near side associated particle pt larger than trigger
     
-    if(pt > ptTrig && TMath::Abs(phi-phiTrig) < TMath::PiOver2())  return kFALSE;
-    
+    Float_t deltaPhi = phiTrig-phi;
+    //
+    // Calculate deltaPhi shift so that for the particles on the opposite side
+    // it is defined between 90 and 270 degrees
+    // Shift [-360,-90]  to [0, 270]
+    // and [270,360] to [-90,0]
+    if(deltaPhi <= -TMath::PiOver2()) deltaPhi+=TMath::TwoPi();
+    if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
+
+    if(pt > ptTrig && deltaPhi < TMath::PiOver2())  return kFALSE;
+  
   }// track loop
   
   // Compare if it is leading of all calorimeter clusters
@@ -3331,7 +3340,11 @@ Bool_t AliAnaParticleIsolation::IsTriggerTheNearSideEventLeadingParticle(Int_t &
       // skip this event if near side associated particle pt larger than trigger
       // not really needed for calorimeter, unless DCal is included
      
-      if(pt > ptTrig && TMath::Abs(phi-phiTrig) < TMath::PiOver2()) return kFALSE ;
+      Float_t deltaPhi = phiTrig-phi;
+      if(deltaPhi <= -TMath::PiOver2()) deltaPhi+=TMath::TwoPi();
+      if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
+
+      if(pt > ptTrig && deltaPhi < TMath::PiOver2()) return kFALSE ;
 
     }// cluster loop
   } // check neutral clusters
