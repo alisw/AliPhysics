@@ -1193,9 +1193,6 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
 
   AliDielectronPair *candidate=new AliDielectronPair;
   candidate->SetKFUsage(fUseKF);
-  // switch OFF the KF usage in case of AODs && ME (since there is no MoveToSameVertex functionality)
-  Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
-  if(!isESD && pairIndex>AliDielectron::kEv1MM) candidate->SetKFUsage(kFALSE);
 
   UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1;
   
@@ -1244,7 +1241,6 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       //get a new candidate
       candidate=new AliDielectronPair;
       candidate->SetKFUsage(fUseKF);
-      if(!isESD && pairIndex>AliDielectron::kEv1MM) candidate->SetKFUsage(kFALSE);
     }
   }
   //delete the surplus candidate
