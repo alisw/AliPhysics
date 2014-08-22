@@ -124,10 +124,13 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SetLeadHadronPtCut(Float_t min, Float_t max)
                { fMaxLeadHadPt  = max ;           fMinLeadHadPt  = min           ; }
   
-  Bool_t       IsLeadHadronCutOn()        const { return fSelectLeadingHadronAngle ; }
+  Bool_t       IsLeadHadronCutOn()        const { return fSelectLeadingHadronAngle   ; }
   void         SwitchOnLeadHadronSelection()    { fSelectLeadingHadronAngle = kTRUE  ; }
   void         SwitchOffLeadHadronSelection()   { fSelectLeadingHadronAngle = kFALSE ; }
   
+  void         SwitchOnFillLeadHadronHistograms() { fFillLeadHadOppositeHisto = kTRUE  ; }
+  void         SwitchOffFillLeadHadronHistograms(){ fFillLeadHadOppositeHisto = kFALSE ; }
+
   // UE
   
   Double_t     GetUeDeltaPhiMaxCut()       const { return fUeDeltaPhiMaxCut      ; }
@@ -254,6 +257,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillHighMultHistograms;        // Histograms with centrality and event plane for triggers pT
   
   Bool_t       fSelectLeadingHadronAngle;      // Select events with leading particle within a range
+  Bool_t       fFillLeadHadOppositeHisto;      // Fill histograms for leading hadrons in opposite side of trigger
+  
   Float_t      fMinLeadHadPhi;                 // Minimum angle between the trigger and leading hadron
   Float_t      fMaxLeadHadPhi;                 // Maximum ange between the trigger and leading hadron
   Float_t      fMinLeadHadPt;                  // Minimum pT of leading hadron
@@ -299,6 +304,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPtLeadingOppositeHadron;        //! pT trigger : pT distribution of leading hadron oposite to trigger
   TH2F *       fhPtDiffPhiLeadingOppositeHadron; //! pT trigger : difference phi distribution of leading hadron oposite and trigger
   TH2F *       fhPtDiffEtaLeadingOppositeHadron; //! pT trigger: difference eta distribution of leading hadron oposite and trigger
+  TH1F *       fhPtNoLeadingOppositeHadron;      //! pT trigger for events without opposite hadrons
+  TH2F *       fhEtaPhiNoLeadingOppositeHadron;  //! location of trigger when no hadron is found on the opposite side
 
   //trigger-charged histograms
   TH2F *       fhDeltaPhiDeltaEtaCharged ;     //! differences of eta and phi between trigger and charged hadrons
