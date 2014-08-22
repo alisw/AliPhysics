@@ -845,7 +845,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     Short_t id;
     GetMaxCellEnergy( c, id);
     Double_t maxct = cells->GetCellTime(id);
-    if(TMath::Abs(maxtcl-maxct)>fClusTDiff/*2.5e-9*/ && (!fIsMc))
+    if(TMath::Abs(maxct)>fClusTDiff/*2.5e-9*/ && (!fIsMc))
       continue;
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
