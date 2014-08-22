@@ -70,7 +70,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fUseMixStoredInReader(0),       fFillNeutralEventMixPool(0),
     fM02MaxCut(0),                  fM02MinCut(0),  
     fFillPileUpHistograms(0),       fFillHighMultHistograms(0),
-    fSelectLeadingHadronAngle(0),
+    fSelectLeadingHadronAngle(0),   fFillLeadHadOppositeHisto(0),
     fMinLeadHadPhi(0),              fMaxLeadHadPhi(0),
     fMinLeadHadPt(0),               fMaxLeadHadPt(0),
     fFillEtaGapsHisto(1),           fFillMomImbalancePtAssocBinsHisto(0),
@@ -88,6 +88,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhPtTriggerMixed(0),            fhPtTriggerMixedVzBin(0), fhPtTriggerMixedBin(0),              
     fhPhiTriggerMixed(0),           fhEtaTriggerMixed(0),
     fhPtLeadingOppositeHadron(0),   fhPtDiffPhiLeadingOppositeHadron(0), fhPtDiffEtaLeadingOppositeHadron(0),
+    fhPtNoLeadingOppositeHadron(0), fhEtaPhiNoLeadingOppositeHadron(0),
     fhDeltaPhiDeltaEtaCharged(0),
     fhPhiCharged(0),                fhEtaCharged(0), 
     fhDeltaPhiCharged(0),           fhDeltaEtaCharged(0), 
@@ -410,25 +411,28 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
   if( fMakeAbsoluteLeading && mcAssocPt > mcTrigPt )     lead = kFALSE; // skip event
   
   // Skip this event if near side associated particle pt larger than trigger
-  if( fMakeNearSideLeading && mcAssocPt > mcTrigPt &&
-     TMath::Abs(mcAssocPhi-mcTrigPhi)<TMath::PiOver2() ) lead = kFALSE; // skip event
+  if( mcAssocPhi < 0 ) mcAssocPhi+=TMath::TwoPi();
+  
+  Float_t mcdeltaPhi= mcTrigPhi-mcAssocPhi;
+  if(mcdeltaPhi <= -TMath::PiOver2()) mcdeltaPhi+=TMath::TwoPi();
+  if(mcdeltaPhi > 3*TMath::PiOver2()) mcdeltaPhi-=TMath::TwoPi();
+
+  if( fMakeNearSideLeading)
+  {
+    if( mcAssocPt > mcTrigPt && mcdeltaPhi < TMath::PiOver2() ) lead = kFALSE; // skip event
+  }
   
   //
   // Select only hadrons in pt range
   if ( mcAssocPt < fMinAssocPt || mcAssocPt > fMaxAssocPt ) return lead ; // exclude but continue
   if ( mcAssocPt < GetReader()->GetCTSPtMin())              return lead ;
 
-  if( mcAssocPhi < 0 ) mcAssocPhi+=TMath::TwoPi();
   
   //
   // Remove trigger itself for correlation when use charged triggers
   if(TMath::Abs(mcAssocPt -mcTrigPt ) < 1e-6 && 
-     TMath::Abs(mcAssocPhi-mcTrigPhi) < 1e-6 && 
+     mcdeltaPhi                       < 1e-6 &&
      TMath::Abs(mcAssocEta-mcTrigEta) < 1e-6)            return lead ; // exclude but continue
-  
-  Float_t mcdeltaPhi= mcTrigPhi-mcAssocPhi;
-  if(mcdeltaPhi <= -TMath::PiOver2()) mcdeltaPhi+=TMath::TwoPi();
-  if(mcdeltaPhi > 3*TMath::PiOver2()) mcdeltaPhi-=TMath::TwoPi();
   
   Float_t mcxE    =-mcAssocPt/mcTrigPt*TMath::Cos(mcdeltaPhi);// -(mcAssocPx*pxprim+mcAssocPy*pyprim)/(mcTrigPt*mcTrigPt);  
   Float_t mchbpXE =-100 ;
@@ -1055,14 +1059,18 @@ Bool_t AliAnaParticleHadronCorrelation::FindLeadingOppositeHadronInWindow(AliAOD
   // Select events where the leading charged particle in the opposite hemisphere
   // to the trigger particle is in a window centered at 180 from the trigger
   
-  Float_t phiTrig    = particle->Phi();
   Float_t etaTrig    = particle->Eta();
   Float_t ptTrig     = particle->Pt();
-  Float_t ptLeadHad  = -100 ;
+  Float_t phiTrig    = particle->Phi();
+  if(phiTrig < 0 ) phiTrig+= TMath::TwoPi();
+
+  Float_t ptLeadHad  = 0 ;
+  Float_t dphiLeadHad= -100 ;
   Float_t phiLeadHad = -100 ;
   Float_t etaLeadHad = -100 ;
+  Int_t   nTrack     = 0;
   TVector3 p3;
-  
+
   for(Int_t ipr = 0;ipr < GetCTSTracks()->GetEntriesFast() ; ipr ++ )
   {
     AliVTrack * track = (AliVTrack *) (GetCTSTracks()->At(ipr)) ;
@@ -1074,37 +1082,62 @@ Bool_t AliAnaParticleHadronCorrelation::FindLeadingOppositeHadronInWindow(AliAOD
     Float_t phi  = p3.Phi() ;
     if(phi < 0 ) phi+= TMath::TwoPi();
     
-    if(pt > ptLeadHad && TMath::Abs(phi-phiTrig) > TMath::PiOver2()) // in opposite hemisphere
+    Float_t deltaPhi = phiTrig-phi;
+    //
+    // Calculate deltaPhi shift so that for the particles on the opposite side
+    // it is defined between 90 and 270 degrees
+    // Shift [-360,-90]  to [0, 270]
+    // and [270,360] to [-90,0]
+    if(deltaPhi <= -TMath::PiOver2()) deltaPhi+=TMath::TwoPi();
+    if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
+
+    if(pt > ptLeadHad && deltaPhi > TMath::PiOver2()) // in opposite hemisphere
     {
       ptLeadHad  = pt ;
       phiLeadHad = phi;
+      dphiLeadHad= deltaPhi;
       etaLeadHad = p3.Eta();
+      nTrack++;
     }
   }// track loop
   
-  fhPtLeadingOppositeHadron       ->Fill(ptTrig, ptLeadHad);
-  fhPtDiffPhiLeadingOppositeHadron->Fill(ptTrig,phiLeadHad-phiTrig);
-  fhPtDiffEtaLeadingOppositeHadron->Fill(ptTrig,etaLeadHad-etaTrig);
+  if(fFillLeadHadOppositeHisto)
+  {
+    if(nTrack == 0)
+    {
+      fhPtNoLeadingOppositeHadron    ->Fill(ptTrig);
+      fhEtaPhiNoLeadingOppositeHadron->Fill(etaTrig,phiTrig);
+    }
+    else
+    {
+      fhPtLeadingOppositeHadron       ->Fill(ptTrig,  ptLeadHad);
+      fhPtDiffPhiLeadingOppositeHadron->Fill(ptTrig,dphiLeadHad);
+      fhPtDiffEtaLeadingOppositeHadron->Fill(ptTrig, etaLeadHad-etaTrig);
+    }
+  }
   
   if(GetDebug() > 1 )
   {
-    printf("AliAnaParticleHadronCorrelation::FindLeadingOppositeHadronInWindow() pT %2.2f, phi %2.2f, eta %2.2f\n",
-           ptLeadHad,phiLeadHad*TMath::RadToDeg(),etaLeadHad);
+    printf("AliAnaParticleHadronCorrelation::FindLeadingOppositeHadronInWindow() pT %2.2f, phi %2.2f, eta %2.2f, nTracks away %d, total tracks %d\n",
+           ptLeadHad,phiLeadHad*TMath::RadToDeg(),etaLeadHad,nTrack, GetTrackMultiplicity());
     
     printf("\t  pT trig %2.2f, Dphi (trigger-hadron) %2.2f, Deta (trigger-hadron) %2.2f\n",
-           ptTrig, (phiLeadHad-phiTrig)*TMath::RadToDeg(), etaLeadHad-etaTrig);
+           ptTrig, dphiLeadHad*TMath::RadToDeg(), etaLeadHad-etaTrig);
     printf("\t cuts pT: min %2.2f, max %2.2f; DPhi: min %2.2f, max %2.2f\n",fMinLeadHadPt,fMaxLeadHadPt,fMinLeadHadPhi*TMath::RadToDeg(),fMaxLeadHadPhi*TMath::RadToDeg());
   }
   
-  if( ptLeadHad < fMinLeadHadPt ||
-      ptLeadHad > fMaxLeadHadPt ) return kFALSE;
+  // reject the trigger if the leading hadron is not in the requested pt or phi window and
+  
+  if( nTrack == 0 ) return kFALSE; // No track found in opposite hemisphere
+  
+  if( ptLeadHad < fMinLeadHadPt || ptLeadHad > fMaxLeadHadPt ) return kFALSE;
   
   //printf("Accept leading hadron pT \n");
   
-  if( TMath::Abs(phiLeadHad-phiTrig) < fMinLeadHadPhi ||
-      TMath::Abs(phiLeadHad-phiTrig) > fMaxLeadHadPhi ) return kFALSE;
+  if( dphiLeadHad < fMinLeadHadPhi || dphiLeadHad > fMaxLeadHadPhi ) return kFALSE;
   
   //printf("Accept leading hadron phi \n");
+  
   
   return kTRUE ;
 }
@@ -1295,16 +1328,28 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   }
 
   // Leading hadron in oposite side
-  if(fSelectLeadingHadronAngle)
+  if(fFillLeadHadOppositeHisto)
   {
     fhPtLeadingOppositeHadron  = new TH2F("hPtTriggerPtLeadingOppositeHadron","Leading hadron opposite to trigger vs trigger #it{p}_{T}",
                                           nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
     fhPtLeadingOppositeHadron->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhPtLeadingOppositeHadron->SetYTitle("#it{p}_{T}^{lead hadron} (GeV/#it{c})");
     outputContainer->Add(fhPtLeadingOppositeHadron);
+
+    fhPtNoLeadingOppositeHadron  = new TH1F("hPtTriggerNoLeadingOppositeHadron","No Leading hadron opposite to trigger #it{p}_{T}",
+                                          nptbins,ptmin,ptmax);
+    fhPtNoLeadingOppositeHadron->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+    outputContainer->Add(fhPtNoLeadingOppositeHadron);
+
+    fhEtaPhiNoLeadingOppositeHadron  = new TH2F("hEtaPhiTriggerNoLeadingOppositeHadron","No Leading hadron opposite to trigger #eta:#phi",
+                                            netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiNoLeadingOppositeHadron->SetXTitle("#eta");
+    fhEtaPhiNoLeadingOppositeHadron->SetYTitle("#phi");
+    outputContainer->Add(fhEtaPhiNoLeadingOppositeHadron);
+
     
     fhPtDiffPhiLeadingOppositeHadron  = new TH2F("hPtTriggerDiffPhiTriggerLeadingOppositeHadron","#phi_{trigger}-#phi_{leading opposite hadron} vs #it{p}_{T}^{trig}",
-                                                 nptbins,ptmin,ptmax,ndeltaphibins ,deltaphimin,deltaphimax);
+                                                 nptbins,ptmin,ptmax,ndeltaphibins,deltaphimin,deltaphimax);
     fhPtDiffPhiLeadingOppositeHadron->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhPtDiffPhiLeadingOppositeHadron->SetYTitle("#phi_{trigger}-#phi_{leading opposite hadron} (rad)");
     outputContainer->Add(fhPtDiffPhiLeadingOppositeHadron);
@@ -2886,6 +2931,7 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fM02MaxCut   = -1 ;
   
   fSelectLeadingHadronAngle = kFALSE;
+  fFillLeadHadOppositeHisto      = kFALSE;
   fMinLeadHadPhi = 150*TMath::DegToRad();
   fMaxLeadHadPhi = 210*TMath::DegToRad();
 
@@ -2961,7 +3007,11 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle()
     //jump out this event if near side associated particle pt larger than trigger
     if (fMakeNearSideLeading)
     {
-      if(pt > ptTrig && TMath::Abs(phi-phiTrig) < TMath::PiOver2())  return kFALSE;
+      Float_t deltaPhi = phiTrig-phi;
+      if(deltaPhi <= -TMath::PiOver2()) deltaPhi+=TMath::TwoPi();
+      if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
+      
+      if(pt > ptTrig && deltaPhi < TMath::PiOver2())  return kFALSE;
     }
     //jump out this event if there is any other particle with pt larger than trigger
     else
@@ -3002,7 +3052,11 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle()
       // not really needed for calorimeter, unless DCal is included
       if (fMakeNearSideLeading)
       {
-        if(pt > ptTrig && TMath::Abs(phi-phiTrig) < TMath::PiOver2()) return kFALSE ;
+        Float_t deltaPhi = phiTrig-phi;
+        if(deltaPhi <= -TMath::PiOver2()) deltaPhi+=TMath::TwoPi();
+        if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
+        
+        if(pt > ptTrig && deltaPhi < TMath::PiOver2()) return kFALSE ;
       }
       //jump out this event if there is any other particle with pt larger than trigger
       else
@@ -3154,9 +3208,11 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     // Find the leading hadron in the opposite hemisphere to the triggeer
     // and accept the trigger if leading is in defined window.
     Bool_t okLeadHad = kTRUE;
-    if(fSelectLeadingHadronAngle)
+    if(fSelectLeadingHadronAngle || fFillLeadHadOppositeHisto)
+    {
       okLeadHad = FindLeadingOppositeHadronInWindow(particle);
-    if(!okLeadHad) continue;
+      if(!okLeadHad && fSelectLeadingHadronAngle) continue;
+    }
     
     //
     // Charged particles correlation
@@ -3307,8 +3363,12 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     evtIndex13 = GetMixedEvent()->EventIndex(aodParticle->GetTrackLabel(0)) ;
   }
   
+  // Track multiplicity or cent bin
+  Int_t cenbin = 0;
+  if(fFillHighMultHistograms) cenbin = GetEventCentralityBin();
+
   //
-  // In case of pi0/eta trigger, we may want to check their decay correlation, 
+  // In case of pi0/eta trigger, we may want to check their decay correlation,
   // get their decay children
   //
   TLorentzVector decayMom1;
@@ -3404,9 +3464,6 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     if     (okTOF && trackBC!=0) outTOF = 1;
     else if(okTOF && trackBC==0) outTOF = 0;
     
-    // Track multiplicity or cent bin
-    Int_t cenbin = GetEventCentralityBin(); // combine with vz assoc bin???
-
     //----------------
     // Fill Histograms
 
@@ -3611,7 +3668,11 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
         
         if (fMakeNearSideLeading)
         {
-          if(ptAssoc > ptTrig && TMath::Abs(phiAssoc-phiTrig) < TMath::PiOver2())  
+          deltaPhi = phiTrig-phiAssoc;
+          if(deltaPhi <= -TMath::PiOver2()) deltaPhi+=TMath::TwoPi();
+          if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
+          
+          if(ptAssoc > ptTrig && deltaPhi < TMath::PiOver2())
           {
             leading = kFALSE;
             break;
@@ -3645,7 +3706,11 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
           
           if (fMakeNearSideLeading)
           {
-            if(ptAssoc > ptTrig && TMath::Abs(phiAssoc-phiTrig) < TMath::PiOver2())
+            deltaPhi = phiTrig-phiAssoc;
+            if(deltaPhi <= -TMath::PiOver2()) deltaPhi+=TMath::TwoPi();
+            if(deltaPhi > 3*TMath::PiOver2()) deltaPhi-=TMath::TwoPi();
+            
+            if(ptAssoc > ptTrig && deltaPhi < TMath::PiOver2())
             {
               leading = kFALSE;
               break;
