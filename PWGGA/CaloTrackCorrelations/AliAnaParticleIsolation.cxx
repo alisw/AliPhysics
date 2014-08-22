@@ -3406,18 +3406,20 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   for(Int_t iaod = iaod0; iaod < naod; iaod++)
   {
     AliAODPWG4ParticleCorrelation * aodinput =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-    
+
     // Check isolation only of clusters in fiducial region
+    
     if(IsFiducialCutOn())
     {
       Bool_t in = GetFiducialCut()->IsInFiducialCut(*aodinput->Momentum(),aodinput->GetDetector()) ;
-      if(! in ) return ;
+      if(! in ) continue ;
     }
     
     //If too small or too large pt, skip
     Float_t pt = aodinput->Pt();
     if(pt < GetMinPt() || pt > GetMaxPt() ) continue ;
 
+    
     //check if it is low pt trigger particle
     if( ( pt < GetIsolationCut()->GetPtThreshold() ||  pt < GetIsolationCut()->GetSumPtThreshold() ) &&
        !fMakeSeveralIC)
@@ -3433,13 +3435,14 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
                                         n,nfrac,coneptsum,coneptlead,isolated);
     
     if(!fMakeSeveralIC) aodinput->SetIsolated(isolated);
-  } // particle isolationloop
-  
-  if(GetDebug() > 1)
-  {
-    if(isolated) printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() : Particle %d IS ISOLATED \n",idLeading);
-    printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() - End fill AODs \n");
-  }
+
+    if(GetDebug() > 1)
+    {
+      if(isolated) printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() : Particle %d IS ISOLATED \n",iaod);
+      printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() - End fill AODs \n");
+    }
+
+  } // particle isolation loop
   
 }
 
