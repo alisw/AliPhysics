@@ -1196,6 +1196,10 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       if( leadptBin >=0 ) fhPtLeadConeBinLambda0[leadptBin]->Fill(pt,cluster->GetM02());
       if( ptsumBin  >=0 ) fhSumPtConeBinLambda0 [ ptsumBin]->Fill(pt,cluster->GetM02());
       
+      if( GetDebug() > 1 && leadptBin == 0 )
+        printf("No track/clusters in isolation cone: cand pt %2.2f GeV/c, track multiplicity %d, N clusters %d\n",
+               pt, GetTrackMultiplicity(),GetEMCALClusters()->GetEntriesFast());
+      
       if(IsDataMC())
       {
         Int_t leadptBinMC = leadptBin+mcIndex*fNBkgBin;
