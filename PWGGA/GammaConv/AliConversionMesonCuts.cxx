@@ -482,9 +482,11 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
 	TParticle *negPion = 0x0;
 	TParticle *neutPion = 0x0;
 
+// 	cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
 	for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
-
+		
 		TParticle* temp = (TParticle*)fMCStack->Particle( index );
+// 		cout << temp->GetPdgCode() << endl;
 		switch( temp->GetPdgCode() ) {
 		case 211:
 			posPion      =  temp;

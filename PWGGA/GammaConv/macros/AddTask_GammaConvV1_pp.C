@@ -262,13 +262,13 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 		eventCutArray[ 3] = "0009611"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[3] = "01525065000000"; // trigger kEMCEJ2 + CINT8		
 	} else if (trainConfig == 31) {
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002092570028250400000"; mesonCutArray[0] = "01521065000000"; //new standard cut for pp 8 TeV
-		eventCutArray[ 0] = "0000011"; photonCutArray[ 1] = "002093570028250400000"; mesonCutArray[0] = "01521065000000"; //variation edEdx -4,5
-		eventCutArray[ 1] = "0000011"; photonCutArray[ 2] = "002096570028250400000"; mesonCutArray[1] = "01521065000000"; //variation edEdx -2.5,4
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093570028250400000"; mesonCutArray[1] = "01521065000000"; //variation edEdx -4,5
+		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "002096570028250400000"; mesonCutArray[2] = "01521065000000"; //variation edEdx -2.5,4
 		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "002092550028250400000"; mesonCutArray[3] = "01521065000000"; //variation pion p dEdx 0.3-5.
 	} else if (trainConfig == 32) { //added signals
 		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "002092570028250400000"; mesonCutArray[0] = "01521065000000"; //new standard cut for pp 8 TeV
-		eventCutArray[ 0] = "0000012"; photonCutArray[ 1] = "002093570028250400000"; mesonCutArray[0] = "01521065000000"; //variation edEdx -4,5
-		eventCutArray[ 1] = "0000012"; photonCutArray[ 2] = "002096570028250400000"; mesonCutArray[1] = "01521065000000"; //variation edEdx -2.5,4
+		eventCutArray[ 1] = "0000012"; photonCutArray[ 1] = "002093570028250400000"; mesonCutArray[1] = "01521065000000"; //variation edEdx -4,5
+		eventCutArray[ 2] = "0000012"; photonCutArray[ 2] = "002096570028250400000"; mesonCutArray[2] = "01521065000000"; //variation edEdx -2.5,4
 		eventCutArray[ 3] = "0000012"; photonCutArray[ 3] = "002092550028250400000"; mesonCutArray[3] = "01521065000000"; //variation pion p dEdx 0.3-5.
 	} else if (trainConfig == 33) {
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002492570028250400000"; mesonCutArray[0] = "01521065000000"; //variation pt 0.075 
