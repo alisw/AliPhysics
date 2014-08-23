@@ -68,7 +68,7 @@ fhEtaPhiEMCALBC0(0),                fhEtaPhiEMCALBC1(0),                fhEtaPhi
 fhTimeTriggerEMCALBC0UMReMatchOpenTime(0),
 fhTimeTriggerEMCALBC0UMReMatchCheckNeigh(0),
 fhTimeTriggerEMCALBC0UMReMatchBoth(0),
-fhPtCentrality(),                   fhPtEventPlane(0),
+fhPtCentrality(),                   fhPtEventPlane(0),                  fhMCPtCentrality(),
 fhPtReject(0),                      fhEReject(0),
 fhPtEtaReject(0),                   fhPtPhiReject(0),                   fhEtaPhiReject(0),
 fhMass(0),                          fhMassPt(0),                        fhMassSplitPt(0),
@@ -101,7 +101,6 @@ fhPtDispEtaPhiDiff(0),              fhPtSphericity(0),
 fhMCE(),                            fhMCPt(),
 fhMCPtPhi(),                        fhMCPtEta(),
 fhMCEReject(),                      fhMCPtReject(),
-fhMCPtCentrality(),
 fhMCPi0PtGenRecoFraction(0),        fhMCEtaPtGenRecoFraction(0),
 fhMCPi0DecayPt(0),                  fhMCPi0DecayPtFraction(0),
 fhMCEtaDecayPt(0),                  fhMCEtaDecayPtFraction(0),
@@ -133,7 +132,7 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
 {
   //default ctor
   
-  for(Int_t i = 0; i < 7; i++)
+  for(Int_t i = 0; i < fgkNmcTypes; i++)
   {
     fhMCE              [i] = 0;
     fhMCPt             [i] = 0;
@@ -211,7 +210,7 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
     fhPtAsymmetryLocMax     [i] = 0;
     fhMassPtLocMax          [i] = 0;
     fhSelectedMassPtLocMax  [i] = 0;
-    for(Int_t ipart = 0; ipart<7; ipart++)
+    for(Int_t ipart = 0; ipart < fgkNmcTypes; ipart++)
     {
       fhMCPtLambda0LocMax     [ipart][i] = 0;
       fhMCSelectedMassPtLocMax[ipart][i] = 0;
@@ -927,8 +926,8 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   TString nlm[]   = {"1 Local Maxima","2 Local Maxima", "NLM > 2"};
   
-  TString ptype [] = {"#gamma (#pi^{0})", "#gamma (#eta)", "#gamma (other)",  "#pi^{0}", "#eta", "e^{#pm}"  , "hadron/other combinations"};
-  TString pname [] = {"Pi0Decay"        , "EtaDecay"     , "OtherDecay"    ,  "Pi0"    , "Eta" ,  "Electron", "Hadron"};
+  TString ptype [] = {"#gamma (#pi^{0})", "#gamma (#eta)", "#gamma (other)",  "#pi^{0}", "#eta", "#gamma (direct)","e^{#pm}"  , "hadron/other combinations"};
+  TString pname [] = {"Pi0Decay"        , "EtaDecay"     , "OtherDecay"    ,  "Pi0"    , "Eta" , "Photon"         , "Electron", "Hadron"};
   
   Int_t   bin[]   = {0,2,4,6,10,15,20,100}; // energy bins
   
@@ -1165,7 +1164,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       
       if(IsDataMC())
       {
-        for(Int_t ipart = 0; ipart < 7; ipart++)
+        for(Int_t ipart = 0; ipart < fgkNmcTypes; ipart++)
         {
           fhMCSelectedMassPtLocMax[ipart][inlm]  = new TH2F
           (Form("hSelectedMassPtLocMax%d_MC%s",inlm+1,pname[ipart].Data()),
@@ -1215,7 +1214,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
     if(IsDataMC())
     {
-      for(Int_t ipart = 0; ipart < 7; ipart++)
+      for(Int_t ipart = 0; ipart < fgkNmcTypes; ipart++)
       {
         fhMCPtDecay[ipart]  = new TH1F(Form("hPtDecay_MC%s",pname[ipart].Data()),
                                        Form("Selected  #pi^{0} (#eta) decay photons, from MC %s",ptype[ipart].Data()),
@@ -1371,7 +1370,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         
         if(IsDataMC())
         {
-          for(Int_t ipart = 0; ipart < 7; ipart++)
+          for(Int_t ipart = 0; ipart < fgkNmcTypes; ipart++)
           {
             fhMCPtLambda0LocMax[ipart][i]  = new TH2F
             (Form("hPtLambda0LocMax%d_MC%s",i+1,pname[ipart].Data()),
@@ -1791,7 +1790,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       outputContainer->Add(fhMassPairMCEta) ;
     }
     
-    for(Int_t i = 0; i < 7; i++)
+    for(Int_t i = 0; i < fgkNmcTypes; i++)
     {
       fhMCE[i]  = new TH1F
       (Form("hE_MC%s",pname[i].Data()),
@@ -2278,7 +2277,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         
       }
       
-      for(Int_t i = 0; i< 7; i++)
+      for(Int_t i = 0; i < fgkNmcTypes; i++)
       {
         fhMCPtAsymmetry[i]  = new TH2F (Form("hEAsymmetry_MC%s",pname[i].Data()),
                                         Form("cluster from %s : #it{A} = ( #it{E}_{1} - #it{E}_{2} ) / ( #it{E}_{1} + #it{E}_{2} ) vs #it{E}",ptype[i].Data()),
@@ -2376,7 +2375,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       outputContainer->Add(fhPtAsymmetryLocMax[i]) ;
     }
     
-    for(Int_t ie = 0; ie< 7; ie++)
+    for(Int_t ie = 0; ie < 7; ie++)
     {
       
       fhAsymmetryLambda0[ie] = new TH2F (Form("hAsymmetryLambda0_EBin%d",ie),
@@ -2404,7 +2403,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
     if(IsDataMC())
     {
-      for(Int_t i = 0; i< 7; i++)
+      for(Int_t i = 0; i < fgkNmcTypes; i++)
       {
         for(Int_t ie = 0; ie < 7; ie++)
         {
@@ -2569,6 +2568,12 @@ Int_t AliAnaPi0EbE::GetMCIndex(const Int_t tag)
   {
     return kmcEta ;
   }//eta
+  else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) ||
+             GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) ||
+             GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
+  {
+    return kmcPhoton ;
+  }//direct photon
   else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
              GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
   {
@@ -2578,7 +2583,12 @@ Int_t AliAnaPi0EbE::GetMCIndex(const Int_t tag)
              GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
   {
     return kmcEtaDecay ;
-  }//decay photon from pi0
+  }//decay photon from eta
+  else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
+             GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) )
+  {
+    return kmcOtherDecay ;
+  }//decay photon from other than eta or pi0
   else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))
   {
     return kmcElectron ;

@@ -131,8 +131,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   //For histograms
   enum mcTypes   { kmcPi0Decay = 0, kmcEtaDecay = 1, kmcOtherDecay = 2,
-                   kmcPi0      = 3, kmcEta      = 4, kmcElectron   = 5,
-                   kmcHadron   = 6                                     };
+                   kmcPi0      = 3, kmcEta      = 4, kmcPhoton     = 5,
+                   kmcElectron = 6, kmcHadron   = 7                    };
+  
+  static const Int_t fgkNmcTypes = 8;
   
  private:
   
@@ -187,7 +189,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   TH2F         * fhPtCentrality ;          //! centrality  vs pi0/eta pT
   TH2F         * fhPtEventPlane ;          //! event plane vs pi0/eta pT
-  
+  TH2F         * fhMCPtCentrality[fgkNmcTypes]; //! centrality  vs pi0/eta pT  coming from X
+
   TH1F         * fhPtReject  ;             //! Number of rejected as  pi0/eta vs pT
   TH1F         * fhEReject   ;             //! Number of rejected as  pi0/eta vs E
   TH2F         * fhPtEtaReject  ;          //! pT vs eta of rejected as  pi0/eta
@@ -204,7 +207,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhMassPtLocMax[3] ;             //! pair mass vs pT, for all pairs, for each NLM case
   TH2F         * fhSelectedMassPtLocMax[3] ;     //! pair mass vs pT, for selected pairs, for each NLM case
   TH2F         * fhSelectedMassPtLocMaxSM[3][22];//! pair mass vs pT, for selected pairs, for each NLM case, for each SM
-  TH2F         * fhMCSelectedMassPtLocMax[7][3] ;//! pair mass vs pT, for selected pairs, vs originating particle
+  TH2F         * fhMCSelectedMassPtLocMax[fgkNmcTypes][3] ;//! pair mass vs pT, for selected pairs, vs originating particle
 
   TH2F         * fhSelectedLambda0PtLocMaxSM[3][22];//! pair mass vs pT, for selected pairs, for each NLM case, for each SM
 
@@ -283,51 +286,48 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   //MC histograms
   
-  TH1F         * fhMCPtDecay[7] ;             //! pT vs from MC particle
-  TH2F         * fhMCPtLambda0[7] ;           //! pT vs lambda0 of pi0 pairs but really from MC particle
-  TH2F         * fhMCPtLambda1[7] ;           //! pT vs lambda1 of pi0 pairs but really from MC particle
-  TH2F         * fhMCPtDispersion[7] ;        //! pT vs dispersion of pi0 pairs but really from MC particle
-  TH2F         * fhMCPtLambda0NoTRD[7] ;      //! pT vs lambda0 of pi0 pairs but really from MC particle, not behind TRD
-  TH2F         * fhMCPtLambda0FracMaxCellCut[7] ;//! pT vs lambda0 of pi0 pairs but really from MC particle, fraction of cluster energy in max cell cut
-  TH2F         * fhMCPtFracMaxCell[7] ;       //! pT vs fraction of max cell
+  TH1F         * fhMCPtDecay            [fgkNmcTypes]; //! pT vs from MC particle
+  TH2F         * fhMCPtLambda0          [fgkNmcTypes]; //! pT vs lambda0 of pi0 pairs but really from MC particle
+  TH2F         * fhMCPtLambda1          [fgkNmcTypes]; //! pT vs lambda1 of pi0 pairs but really from MC particle
+  TH2F         * fhMCPtDispersion       [fgkNmcTypes]; //! pT vs dispersion of pi0 pairs but really from MC particle
+  TH2F         * fhMCPtLambda0NoTRD     [fgkNmcTypes]; //! pT vs lambda0 of pi0 pairs but really from MC particle, not behind TRD
+  TH2F         * fhMCPtLambda0FracMaxCellCut[fgkNmcTypes]; //! pT vs lambda0 of pi0 pairs but really from MC particle, fraction of cluster energy in max cell cut
+  TH2F         * fhMCPtFracMaxCell      [fgkNmcTypes]; //! pT vs fraction of max cell
+  TH2F         * fhMCPtDispEta          [fgkNmcTypes]; //! shower dispersion in eta direction
+  TH2F         * fhMCPtDispPhi          [fgkNmcTypes]; //! shower dispersion in phi direction
+  TH2F         * fhMCLambda0DispEta  [7][fgkNmcTypes]; //! shower shape correlation l0 vs disp eta
+  TH2F         * fhMCLambda0DispPhi  [7][fgkNmcTypes]; //! shower shape correlation l0 vs disp phi
+  TH2F         * fhMCPtSumEtaPhi        [fgkNmcTypes]; //! shower dispersion in eta vs phi direction
+  TH2F         * fhMCPtDispEtaPhiDiff   [fgkNmcTypes]; //! shower dispersion in eta -phi direction
+  TH2F         * fhMCPtSphericity       [fgkNmcTypes]; //! shower sphericity, eta vs phi
+  TH2F         * fhMCDispEtaDispPhi  [7][fgkNmcTypes]; //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F         * fhMCPtAsymmetry        [fgkNmcTypes]; //! E asymmetry of 2 splitted clusters vs cluster pT
+  TH2F         * fhMCAsymmetryLambda0[7][fgkNmcTypes]; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
+  TH2F         * fhMCAsymmetryDispEta[7][fgkNmcTypes]; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
+  TH2F         * fhMCAsymmetryDispPhi[7][fgkNmcTypes]; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   
-  TH2F         * fhMCPtDispEta[7] ;           //! shower dispersion in eta direction
-  TH2F         * fhMCPtDispPhi[7] ;           //! shower dispersion in phi direction
-  TH2F         * fhMCLambda0DispEta[7][7] ;   //! shower shape correlation l0 vs disp eta
-  TH2F         * fhMCLambda0DispPhi[7][7] ;   //! shower shape correlation l0 vs disp phi
-  TH2F         * fhMCPtSumEtaPhi[7] ;         //! shower dispersion in eta vs phi direction
-  TH2F         * fhMCPtDispEtaPhiDiff[7] ;    //! shower dispersion in eta -phi direction
-  TH2F         * fhMCPtSphericity[7] ;        //! shower sphericity, eta vs phi
-  TH2F         * fhMCDispEtaDispPhi[7][7] ;   //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
-  TH2F         * fhMCPtAsymmetry[7] ;         //! E asymmetry of 2 splitted clusters vs cluster pT
-  TH2F         * fhMCAsymmetryLambda0[7][7] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
-  TH2F         * fhMCAsymmetryDispEta[7][7] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
-  TH2F         * fhMCAsymmetryDispPhi[7][7] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
-  
-  TH1F         * fhMCE[7];                    //! Number of identified as pi0 vs E coming from X
-  TH1F         * fhMCPt[7];                   //! Number of identified as pi0 vs Pt coming from X
-  TH2F         * fhMCPtPhi[7];                //! pt vs phi of identified as pi0, coming from X
-  TH2F         * fhMCPtEta[7];                //! pt vs eta of identified as pi0, coming from X
-  TH1F         * fhMCEReject[7];              //! Number of rejected as pi0 vs E coming from X
-  TH1F         * fhMCPtReject[7];             //! Number of rejected as pi0 vs Pt coming from X
+  TH1F         * fhMCE                  [fgkNmcTypes]; //! Number of identified as pi0 vs E coming from X
+  TH1F         * fhMCPt                 [fgkNmcTypes]; //! Number of identified as pi0 vs Pt coming from X
+  TH2F         * fhMCPtPhi              [fgkNmcTypes]; //! pt vs phi of identified as pi0, coming from X
+  TH2F         * fhMCPtEta              [fgkNmcTypes]; //! pt vs eta of identified as pi0, coming from X
+  TH1F         * fhMCEReject            [fgkNmcTypes]; //! Number of rejected as pi0 vs E coming from X
+  TH1F         * fhMCPtReject           [fgkNmcTypes]; //! Number of rejected as pi0 vs Pt coming from X
 
-  TH1F         * fhMCSplitE[7];               //! Number of identified as pi0 vs sum E  split coming from X
-  TH1F         * fhMCSplitPt[7];              //! Number of identified as pi0 vs sum Pt split coming from X
-  TH2F         * fhMCSplitPtPhi[7];           //! pt vs phi of identified as pi0, coming from X
-  TH2F         * fhMCSplitPtEta[7];           //! pt vs eta of identified as pi0, coming from X
-  TH2F         * fhMCNLocMaxSplitPt[7];       //! Number of identified as pi0 vs sum Pt split coming from X, for different NLM
+  TH1F         * fhMCSplitE             [fgkNmcTypes]; //! Number of identified as pi0 vs sum E  split coming from X
+  TH1F         * fhMCSplitPt            [fgkNmcTypes]; //! Number of identified as pi0 vs sum Pt split coming from X
+  TH2F         * fhMCSplitPtPhi         [fgkNmcTypes]; //! pt vs phi of identified as pi0, coming from X
+  TH2F         * fhMCSplitPtEta         [fgkNmcTypes]; //! pt vs eta of identified as pi0, coming from X
+  TH2F         * fhMCNLocMaxSplitPt     [fgkNmcTypes]; //! Number of identified as pi0 vs sum Pt split coming from X, for different NLM
   
-  TH2F         * fhMCMassPt[7];               //! pair pT vs Mass coming from X
-  TH2F         * fhMCMassSplitPt[7];          //! pair pT (split) vs Mass coming from X
-  TH2F         * fhMCSelectedMassPt[7];       //! selected pair pT vs Mass coming from X
-  TH2F         * fhMCSelectedMassSplitPt[7];  //! selected pair pT (split) vs Mass coming from X
+  TH2F         * fhMCMassPt             [fgkNmcTypes]; //! pair pT vs Mass coming from X
+  TH2F         * fhMCMassSplitPt        [fgkNmcTypes]; //! pair pT (split) vs Mass coming from X
+  TH2F         * fhMCSelectedMassPt     [fgkNmcTypes]; //! selected pair pT vs Mass coming from X
+  TH2F         * fhMCSelectedMassSplitPt[fgkNmcTypes]; //! selected pair pT (split) vs Mass coming from X
 
-  TH2F         * fhMCMassPtNoOverlap[7];               //! pair pT vs Mass coming from X, no random particles overlap
-  TH2F         * fhMCMassSplitPtNoOverlap[7];          //! pair pT (split) vs Mass coming from X, no random particles overlap
-  TH2F         * fhMCSelectedMassPtNoOverlap[7];       //! selected pair pT vs Mass coming from X, no random particles overlap
-  TH2F         * fhMCSelectedMassSplitPtNoOverlap[7];  //! selected pair pT (split) vs Mass coming from X, no random particles overlap
-  
-  TH2F         * fhMCPtCentrality[7] ;        //! centrality  vs pi0/eta pT  coming from X
+  TH2F         * fhMCMassPtNoOverlap             [fgkNmcTypes]; //! pair pT vs Mass coming from X, no random particles overlap
+  TH2F         * fhMCMassSplitPtNoOverlap        [fgkNmcTypes]; //! pair pT (split) vs Mass coming from X, no random particles overlap
+  TH2F         * fhMCSelectedMassPtNoOverlap     [fgkNmcTypes]; //! selected pair pT vs Mass coming from X, no random particles overlap
+  TH2F         * fhMCSelectedMassSplitPtNoOverlap[fgkNmcTypes]; //! selected pair pT (split) vs Mass coming from X, no random particles overlap
   
   TH2F         * fhMCPi0PtGenRecoFraction;    //! SS id, clusters id as pi0 (eta), coming from 2 photon, pi0 primary, pt vs E prim pi0 / E reco
   TH2F         * fhMCEtaPtGenRecoFraction;    //! SS id, clusters id as pi0 (eta), coming from 2 photon, eta primary, pt vs E prim eta / E reco  
@@ -377,9 +377,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   // Local maxima
   TH2F         * fhNLocMaxPt;                 //! number of maxima in selected clusters
   TH2F         * fhNLocMaxPtSM[22] ;          //! number of maxima in selected clusters, per super module
-  TH2F         * fhMCNLocMaxPt[7];            //! number of maxima in selected clusters, vs originating particle
+  TH2F         * fhMCNLocMaxPt[fgkNmcTypes];            //! number of maxima in selected clusters, vs originating particle
   TH2F         * fhPtLambda0LocMax[3] ;       //! pT vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster
-  TH2F         * fhMCPtLambda0LocMax[7][3] ;  //! pT vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster, vs originating particle
+  TH2F         * fhMCPtLambda0LocMax[fgkNmcTypes][3] ;  //! pT vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster, vs originating particle
   TH2F         * fhPtLambda1LocMax[3] ;       //! pT vs lambda1 of selected cluster, 1,2,>2 local maxima in cluster
   TH2F         * fhPtDispersionLocMax[3] ;    //! pT vs lambda1 of selected cluster, 1,2,>2 local maxima in cluster
   TH2F         * fhPtDispEtaLocMax[3] ;       //! pT vs eta dispersion of selected cluster, 1,2,>2 local maxima in cluster
@@ -392,7 +392,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhMassPairLocMax[8];         //! pair mass, origin is same pi0, combine clusters depending on number of maxima
   
   TH2F         * fhNLocMaxPtReject;           //! number of maxima in selected clusters
-  TH2F         * fhMCNLocMaxPtReject[7];      //! number of maxima in selected clusters
+  TH2F         * fhMCNLocMaxPtReject[fgkNmcTypes];      //! number of maxima in selected clusters
   
   // Pile-up
   TH1F         * fhPtPileUp[7];                   //! pT distribution of selected pi0/eta
