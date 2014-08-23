@@ -1382,30 +1382,25 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, TP
 {
   // Check that a MC ESD is in the calorimeter acceptance
   
-  if(!particle || calo!="EMCAL" || calo!="PHOS") return kFALSE ;
-  
+  if(!particle || (calo!="EMCAL" && calo!="PHOS")) return kFALSE ;
+    
   if( (!IsPHOSGeoMatrixSet () && calo == "PHOS" ) ||
       (!IsEMCALGeoMatrixSet() && calo == "EMCAL")   )
   {
     AliFatal(Form("Careful Geo Matrix for %s is not set, use AliFidutialCut instead \n",calo.Data()));
     return kFALSE ;
   }
-  
+
   if(calo == "PHOS" )
   {
     Int_t mod = 0 ;
     Double_t x = 0, z = 0 ;
-    
     return GetPHOSGeometry()->ImpactOnEmc( particle, mod, z, x);
   }
   else if(calo == "EMCAL")
   {
     Int_t absID = 0 ;
-    
-    GetEMCALGeometry()->GetAbsCellIdFromEtaPhi( particle->Eta(), particle->Phi(), absID);
-    
-    if( absID >= 0) return kTRUE  ;
-    else            return kFALSE ;
+    return GetEMCALGeometry()->GetAbsCellIdFromEtaPhi( particle->Eta(), particle->Phi(), absID);
   }
   
   return kFALSE ;
@@ -1416,7 +1411,7 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, Al
 {
   // Check that a MC AOD is in the calorimeter acceptance
   
-  if(!particle || calo!="EMCAL" || calo!="PHOS") return kFALSE ;
+  if(!particle || (calo!="EMCAL" && calo!="PHOS")) return kFALSE ;
   
   if( (!IsPHOSGeoMatrixSet () && calo == "PHOS" ) ||
       (!IsEMCALGeoMatrixSet() && calo == "EMCAL")   )
@@ -1429,19 +1424,13 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, Al
   {
     Int_t mod = 0 ;
     Double_t x = 0, z = 0 ;
-    
     Double_t vtx[]={ particle->Xv(), particle->Yv(), particle->Zv() } ;
-    
     return GetPHOSGeometry()->ImpactOnEmc(vtx, particle->Theta(), particle->Phi(), mod, z, x) ;
   }
   else if(calo == "EMCAL")
   {
     Int_t absID = 0 ;
-    
-    GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(),absID);
-    
-    if( absID >= 0) return kTRUE  ;
-    else            return kFALSE ;
+    return GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(),absID);
   }
   
   return kFALSE ;
