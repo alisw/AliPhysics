@@ -378,6 +378,9 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
        //Sort registered particles spectra according MC information
        for(Int_t iPID=0; iPID<4; iPID++){
          fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_Area1_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_Area2_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_Area3_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecE_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
@@ -954,10 +957,20 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	  break ;
 	parent = (AliAODMCParticle*)fStack->At(iparent) ;	
       }
-      Int_t parentPDG=parent->GetPdgCode() ;     
+      Int_t parentPDG=parent->GetPdgCode() ;    
+      Int_t iFidArea=p->GetFiducialArea(); 
       switch(parentPDG){
 	case 22: //electron/positron conversion
 	  FillPIDHistograms("hMCRecPhoton",p);  //Reconstructed with photon from conversion primary
+          if(iFidArea>0){
+	    FillPIDHistograms("hMCRecPhoton_Area1",p);
+            if(iFidArea>1){
+	      FillPIDHistograms("hMCRecPhoton_Area2",p);
+              if(iFidArea>1){
+	        FillPIDHistograms("hMCRecPhoton_Area3",p);
+	      }
+	    }
+	  }
 	  break ;
 	case  11:
 	case -11: //electron/positron conversion
@@ -1145,7 +1158,6 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
  
 		if(!impact){ //this photon cannot hit PHOS		  
 		  FillPIDHistograms("hMCDecWMisPartnAccept",p) ;  //Spectrum of tagged with missed partner
-		  Int_t iFidArea = p->GetFiducialArea(); 
 		  if(iFidArea>0){
 		    FillPIDHistograms("hMCDecWMisPartnAcceptFA1",p) ;  //Spectrum of tagged with missed partner
 		    if(iFidArea>1){
