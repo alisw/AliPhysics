@@ -1675,11 +1675,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
     fhConePtLead  = new TH2F("hConePtLead",
                             Form("Track or Cluster  leading #it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
-                            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+                            nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
     fhConePtLead->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
     fhConePtLead->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
     outputContainer->Add(fhConePtLead) ;
-
     
     fhConeSumPt  = new TH2F("hConePtSum",
                             Form("Track and Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
@@ -1780,7 +1779,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       fhConePtLeadCluster  = new TH2F("hConeLeadPtCluster",
                                     Form("Cluster leading in isolation cone for #it{R} =  %2.2f",r),
-                                    nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+                                    nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
       fhConePtLeadCluster->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
       fhConePtLeadCluster->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConePtLeadCluster) ;
@@ -2135,7 +2134,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
       fhConePtLeadTrack  = new TH2F("hConeLeadPtTrack",
                                    Form("Track leading in isolation cone for #it{R} =  %2.2f",r),
-                                   nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+                                   nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
       fhConePtLeadTrack->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
       fhConePtLeadTrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConePtLeadTrack) ;
@@ -2325,7 +2324,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
       fhConeSumPtClusterTrackFrac   = new TH2F("hConePtSumClusterTrackFraction",
                                              Form("#Sigma #it{p}_{T}^{cluster}/#Sigma #it{p}_{T}^{track} in isolation cone for #it{R} =  %2.2f",r),
-                                             nptbins,ptmin,ptmax,200,0,4);
+                                             nptbins,ptmin,ptmax,200,0,5);
       fhConeSumPtClusterTrackFrac->SetYTitle("#Sigma #it{p}^{cluster}_{T} /#Sigma #it{p}_{T}^{track}");
       fhConeSumPtClusterTrackFrac->SetXTitle("#it{p}^{trigger}_{T} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtClusterTrackFrac) ;
@@ -2340,7 +2339,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       fhConePtLeadClusterTrackFrac   = new TH2F("hConePtLeadClusterTrackFraction",
                                                Form(" #it{p}^{leading cluster}_{T}/#it{p}^{leading track}_{T} in isolation cone for #it{R} =  %2.2f",r),
-                                               nptbins,ptmin,ptmax,200,0,4);
+                                               nptbins,ptmin,ptmax,200,0,5);
       fhConePtLeadClusterTrackFrac->SetYTitle("#it{p}^{leading cluster}_{T}/ #it{p}^{leading track}_{T}");
       fhConePtLeadClusterTrackFrac->SetXTitle("#it{p}^{trigger}_{T} (GeV/#it{c})");
       outputContainer->Add(fhConePtLeadClusterTrackFrac) ;
