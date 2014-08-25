@@ -409,17 +409,15 @@ void AliEmcalJetTask::FindJets()
     fjw.DoGenericSubtractionJetMass();
   }
 
-     if(fDoGenericSubtractionExtraJetShapes){
-
+  if(fDoGenericSubtractionExtraJetShapes) {
     fjw.SetUseExternalBkg(fUseExternalBkg,fRho,fRhom);
     fjw.DoGenericSubtractionJetAngularity();
     fjw.DoGenericSubtractionJetpTD();
     fjw.DoGenericSubtractionJetCircularity();
     fjw.DoGenericSubtractionJetConstituent();
     fjw.DoGenericSubtractionJetLeSub();
-}
-
-
+  }
+  
   //run constituent subtractor
   if(fDoConstituentSubtraction) {
     fjw.SetUseExternalBkg(fUseExternalBkg,fRho,fRhom);
@@ -468,6 +466,7 @@ void AliEmcalJetTask::FindJets()
         jet->SetSecondOrderSubtracted(jetMassInfo[ij].second_order_subtracted());
       }
     }
+  
     //here do generic subtraction for angular structure function
     Double_t ptcorr = jets_incl[ij].perp()-fjw.GetJetArea(ij)*fRho;
     fRMax = fRadius+0.2;
@@ -497,65 +496,51 @@ void AliEmcalJetTask::FindJets()
     }
 
    if(fDoGenericSubtractionExtraJetShapes){
-     
       std::vector<fastjet::contrib::GenericSubtractorInfo> jetAngularityInfo = fjw.GetGenSubtractorInfoJetAngularity();
-     
-      
       Int_t na = (Int_t)jetAngularityInfo.size();
       if(na>ij && na>0) {
 	jet->SetFirstDerivativeAngularity(jetAngularityInfo[ij].first_derivative());
 	jet->SetSecondDerivativeAngularity(jetAngularityInfo[ij].second_derivative());
 	jet->SetFirstOrderSubtractedAngularity(jetAngularityInfo[ij].first_order_subtracted());
 	jet->SetSecondOrderSubtractedAngularity(jetAngularityInfo[ij].second_order_subtracted());
-
-    }
+      }
 
       std::vector<fastjet::contrib::GenericSubtractorInfo> jetpTDInfo = fjw.GetGenSubtractorInfoJetpTD();
-    
       Int_t np = (Int_t)jetpTDInfo.size();
-    
       if(np>ij && np>0) {
 	jet->SetFirstDerivativepTD(jetpTDInfo[ij].first_derivative());
 	jet->SetSecondDerivativepTD(jetpTDInfo[ij].second_derivative());
 	jet->SetFirstOrderSubtractedpTD(jetpTDInfo[ij].first_order_subtracted());
 	jet->SetSecondOrderSubtractedpTD(jetpTDInfo[ij].second_order_subtracted());
-        
       }
       
       std::vector<fastjet::contrib::GenericSubtractorInfo> jetCircularityInfo = fjw.GetGenSubtractorInfoJetCircularity();
-   
-       Int_t nc = (Int_t)jetCircularityInfo.size();
+      Int_t nc = (Int_t)jetCircularityInfo.size();
       if(nc>ij && nc>0) {
 	jet->SetFirstDerivativeCircularity(jetCircularityInfo[ij].first_derivative());
 	jet->SetSecondDerivativeCircularity(jetCircularityInfo[ij].second_derivative());
 	jet->SetFirstOrderSubtractedCircularity(jetCircularityInfo[ij].first_order_subtracted());
 	jet->SetSecondOrderSubtractedCircularity(jetCircularityInfo[ij].second_order_subtracted());
-
-       
-     }
-
-  
+      }
+      
       std::vector<fastjet::contrib::GenericSubtractorInfo> jetConstituentInfo = fjw.GetGenSubtractorInfoJetConstituent();
-          Int_t nco= (Int_t)jetConstituentInfo.size();
+      Int_t nco= (Int_t)jetConstituentInfo.size();
       if(nco>ij && nco>0) {
 	jet->SetFirstDerivativeConstituent(jetConstituentInfo[ij].first_derivative());
 	jet->SetSecondDerivativeConstituent(jetConstituentInfo[ij].second_derivative());
 	jet->SetFirstOrderSubtractedConstituent(jetConstituentInfo[ij].first_order_subtracted());
 	jet->SetSecondOrderSubtractedConstituent(jetConstituentInfo[ij].second_order_subtracted());
-        
       }
-   std::vector<fastjet::contrib::GenericSubtractorInfo> jetLeSubInfo = fjw.GetGenSubtractorInfoJetLeSub();
-          Int_t nlsub= (Int_t)jetLeSubInfo.size();
+
+      std::vector<fastjet::contrib::GenericSubtractorInfo> jetLeSubInfo = fjw.GetGenSubtractorInfoJetLeSub();
+      Int_t nlsub= (Int_t)jetLeSubInfo.size();
       if(nlsub>ij && nlsub>0) {
 	jet->SetFirstDerivativeLeSub(jetLeSubInfo[ij].first_derivative());
 	jet->SetSecondDerivativeLeSub(jetLeSubInfo[ij].second_derivative());
 	jet->SetFirstOrderSubtractedLeSub(jetLeSubInfo[ij].first_order_subtracted());
 	jet->SetSecondOrderSubtractedLeSub(jetLeSubInfo[ij].second_order_subtracted());
-        
       }
-
    }
-
 #endif
 
     // loop over constituents
