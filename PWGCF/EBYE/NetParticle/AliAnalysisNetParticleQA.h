@@ -14,28 +14,12 @@
  */
 
 #include "THnSparse.h"
-#include "TH1F.h"
-#include "TF1.h"
 
-#include "AliAnalysisNetParticleHelper.h"
+#include "AliAnalysisNetParticleBase.h"
 
-class AliESDtrack;
-class AliMCEvent;
-class AliStack;
-class AliPIDResponse;
-class AliESDInputHandler;
-class AliESDtrackCuts;
-class AliAODInputHandler;
-
-class AliAnalysisNetParticleQA : public TNamed {
+class AliAnalysisNetParticleQA : public AliAnalysisNetParticleBase {
 
  public:
-
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Constructor / Destructor
-   * ---------------------------------------------------------------------------------
-   */
 
   AliAnalysisNetParticleQA();
   virtual ~AliAnalysisNetParticleQA();
@@ -46,17 +30,8 @@ class AliAnalysisNetParticleQA : public TNamed {
    * ---------------------------------------------------------------------------------
    */
 
-  /** Initialize */
-  Int_t Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Int_t trackCutBit);
-
-  /** Setup Event */
-  Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
-
-  /** Reset Event */
-  void ResetEvent();
-
-  /** Process NetParticle QAs */ 
-  Int_t Process();
+  /** Process Event - implements purely virtual method */
+  virtual void Process();
 
   /*
    * ---------------------------------------------------------------------------------
@@ -77,15 +52,12 @@ class AliAnalysisNetParticleQA : public TNamed {
 
   /*
    * ---------------------------------------------------------------------------------
-   *                           Process - Private
+   *                                Methods - private
    * ---------------------------------------------------------------------------------
    */
 
-  /** Create the QA THnSparseF */
-  void CreateHistograms();
-
-  /** Process ESD/AOD tracks and fill histograms */
-  Int_t ProcessTracks();
+  /** Create the efficiency / contamination THnSparseD  - implements virtual method */
+  virtual void CreateHistograms();
 
   /*
    * ---------------------------------------------------------------------------------
@@ -93,24 +65,6 @@ class AliAnalysisNetParticleQA : public TNamed {
    * ---------------------------------------------------------------------------------
    */
 
-  AliAnalysisNetParticleHelper *fHelper;        //! Ptr to helper class
-  // =======================================================================
-  Int_t                 fPdgCode;               // PDG code of particle to be found 
-  // =======================================================================
-  AliESDEvent          *fESD;                   //! Ptr to ESD event
-  AliESDtrackCuts      *fESDTrackCuts;          //! ESD cuts  
-  AliPIDResponse       *fPIDResponse;           //! Ptr to PID response Object
-  // -----------------------------------------------------------------------
-  AliAODEvent          *fAOD;                   //! Ptr to AOD event
-  TClonesArray         *fArrayMC;               //! array of MC particles
-  Int_t                 fAODtrackCutBit;        //  Track filter bit for AOD tracks
-  // -----------------------------------------------------------------------
-  Bool_t                fIsMC;                  //  Is MC event
-  AliMCEvent           *fMCEvent;               //! Ptr to MC event
-  AliStack             *fStack;                 //! Ptr to stack
-  // =======================================================================
-  Float_t               fCentralityBin;         //  Centrality of current event  
-  Int_t                 fNTracks;               //  N Tracks in the current event
   // =======================================================================
   THnSparseF           *fHnQA;                  //! THnSparseF : tracks for QA
   // -----------------------------------------------------------------------
