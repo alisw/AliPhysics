@@ -56,6 +56,7 @@ class AliAnalysisNetParticleBase : public TNamed {
   AliAnalysisNetParticleBase(const AliAnalysisNetParticleBase&); // not implemented
   AliAnalysisNetParticleBase& operator=(const AliAnalysisNetParticleBase&); // not implemented
 
+ protected:
   /*
    * ---------------------------------------------------------------------------------
    *                                Methods - private
