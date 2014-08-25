@@ -171,18 +171,18 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
   Bool_t                 fCodeDebug;              // use nontested code changes 
 
-  Bool_t                 fDoGenericSubtractionJetMass; // calculate generic subtraction
-  Bool_t                 fDoGenericSubtractionGR;      // calculate generic subtraction for angular structure function GR
-  Bool_t                 fDoGenericSubtractionExtraJetShapes;    //calculate generic subtraction for other jet shapes like radialmoment,pTD etc
-  Bool_t                 fDoConstituentSubtraction;    // calculate constituent subtraction
-  Bool_t                 fUseExternalBkg;         // use external background for generic subtractor
-  TString                fRhoName;                // name of rho
-  TString                fRhomName;               // name of rhom
-  Double_t               fRho;                    // pT background density
-  Double_t               fRhom;                   // mT background density
-  Double_t               fRMax;                   // R max for GR calculation
-  Double_t               fDRStep;                 // step width for GR calculation
-  Double_t               fPtMinGR;                // min pT for GR calculation
+  Bool_t                 fDoGenericSubtractionJetMass;        // calculate generic subtraction
+  Bool_t                 fDoGenericSubtractionGR;             // calculate generic subtraction for angular structure function GR
+  Bool_t                 fDoGenericSubtractionExtraJetShapes; //calculate generic subtraction for other jet shapes like radialmoment,pTD etc
+  Bool_t                 fDoConstituentSubtraction;           // calculate constituent subtraction
+  Bool_t                 fUseExternalBkg;                     // use external background for generic subtractor
+  TString                fRhoName;                            // name of rho
+  TString                fRhomName;                           // name of rhom
+  Double_t               fRho;                                // pT background density
+  Double_t               fRhom;                               // mT background density
+  Double_t               fRMax;                               // R max for GR calculation
+  Double_t               fDRStep;                             // step width for GR calculation
+  Double_t               fPtMinGR;                            // min pT for GR calculation
  
 
   TClonesArray          *fJets;                   //!jet collection

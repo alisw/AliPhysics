@@ -71,7 +71,6 @@ AliEmcalJet::AliEmcalJet() :
   fJetShapeLeSubSecondSub(0)
 {
   // Constructor.
-
   fClosestJets[0] = 0;
   fClosestJets[1] = 0; 
   fClosestJetsDist[0] = 999; 
@@ -117,11 +116,11 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fGRDenominator(0),
   fGRNumeratorSub(0),
   fGRDenominatorSub(0),
-    fJetShapeAngularityFirstDer(0),
+  fJetShapeAngularityFirstDer(0),
   fJetShapeAngularitySecondDer(0),
   fJetShapeAngularityFirstSub(0),
   fJetShapeAngularitySecondSub(0),
-   fJetShapepTDFirstDer(0),
+  fJetShapepTDFirstDer(0),
   fJetShapepTDSecondDer(0),
   fJetShapepTDFirstSub(0),
   fJetShapepTDSecondSub(0),
@@ -263,33 +262,28 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fGRDenominator(jet.fGRDenominator),
   fGRNumeratorSub(jet.fGRNumeratorSub),
   fGRDenominatorSub(jet.fGRDenominatorSub),
-   fJetShapeAngularityFirstDer(jet.fJetShapeAngularityFirstDer),
+  fJetShapeAngularityFirstDer(jet.fJetShapeAngularityFirstDer),
   fJetShapeAngularitySecondDer(jet.fJetShapeAngularitySecondDer),
   fJetShapeAngularityFirstSub(jet.fJetShapeAngularityFirstSub),
   fJetShapeAngularitySecondSub(jet.fJetShapeAngularitySecondSub),
-
   fJetShapepTDFirstDer(jet.fJetShapepTDFirstDer),
   fJetShapepTDSecondDer(jet.fJetShapepTDSecondDer),
   fJetShapepTDFirstSub(jet.fJetShapepTDFirstSub),
   fJetShapepTDSecondSub(jet.fJetShapepTDSecondSub),
-
   fJetShapeCircularityFirstDer(jet.fJetShapeCircularityFirstDer),
   fJetShapeCircularitySecondDer(jet.fJetShapeCircularitySecondDer),
   fJetShapeCircularityFirstSub(jet.fJetShapeCircularityFirstSub),
   fJetShapeCircularitySecondSub(jet.fJetShapeCircularitySecondSub),
-
   fJetShapeConstituentFirstDer(jet.fJetShapeConstituentFirstDer),
   fJetShapeConstituentSecondDer(jet.fJetShapeConstituentSecondDer),
   fJetShapeConstituentFirstSub(jet.fJetShapeConstituentFirstSub),
   fJetShapeConstituentSecondSub(jet.fJetShapeConstituentSecondSub),
-
   fJetShapeLeSubFirstDer(jet.fJetShapeLeSubFirstDer),
   fJetShapeLeSubSecondDer(jet.fJetShapeLeSubSecondDer),
   fJetShapeLeSubFirstSub(jet.fJetShapeLeSubFirstSub),
   fJetShapeLeSubSecondSub(jet.fJetShapeLeSubSecondSub)
 {
   // Copy constructor.
-
   fClosestJets[0]     = jet.fClosestJets[0]; 
   fClosestJets[1]     = jet.fClosestJets[1]; 
   fClosestJetsDist[0] = jet.fClosestJetsDist[0];  
@@ -342,22 +336,18 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fGRDenominator      = jet.fGRDenominator;
     fGRNumeratorSub     = jet.fGRNumeratorSub;
     fGRDenominatorSub   = jet.fGRDenominatorSub;
-           fJetShapeAngularityFirstDer  = jet.fJetShapeAngularityFirstDer;
+    fJetShapeAngularityFirstDer  = jet.fJetShapeAngularityFirstDer;
     fJetShapeAngularitySecondDer = jet.fJetShapeAngularitySecondDer;
     fJetShapeAngularityFirstSub  = jet.fJetShapeAngularityFirstSub;
     fJetShapeAngularitySecondSub = jet.fJetShapeAngularitySecondSub;
-
     fJetShapepTDFirstDer  = jet.fJetShapepTDFirstDer;
     fJetShapepTDSecondDer = jet.fJetShapepTDSecondDer;
     fJetShapepTDFirstSub  = jet.fJetShapepTDFirstSub;
     fJetShapepTDSecondSub = jet.fJetShapepTDSecondSub;
-
     fJetShapeCircularityFirstDer  = jet.fJetShapeCircularityFirstDer;
     fJetShapeCircularitySecondDer = jet.fJetShapeCircularitySecondDer;
     fJetShapeCircularityFirstSub  = jet.fJetShapeCircularityFirstSub;
     fJetShapeCircularitySecondSub = jet.fJetShapeCircularitySecondSub;
-
- 
     fJetShapeConstituentFirstDer  = jet.fJetShapeConstituentFirstDer;
     fJetShapeConstituentSecondDer = jet.fJetShapeConstituentSecondDer;
     fJetShapeConstituentFirstSub  = jet.fJetShapeConstituentFirstSub;
