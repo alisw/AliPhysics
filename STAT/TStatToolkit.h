@@ -86,7 +86,7 @@ class TStatToolkit : public TObject
   // TestFunctions:
   //
  static  void TestGausFit(Int_t nhistos=5000);
-
+ static  void CheckTreeAliases(TTree * tree, Int_t ncheck);
  ClassDef(TStatToolkit,0) // Various mathematical tools for physics analysis - which are not included in ROOT TMath
  
 };

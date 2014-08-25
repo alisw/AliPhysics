@@ -381,7 +381,7 @@ Bool_t TStatToolkit::LTMHisto(TH1 *his1D, TVectorD &params , Float_t fraction){
     // substract fractions of bin0 and bin1 to keep sum0=fration*sumCont
     //
     Double_t diff = sum0-fraction*sumCont;
-    Double_t mean = sum1/sum0;
+    Double_t mean = (sum0>0) ? sum1/sum0:0;
     //
     Double_t x0=his1D->GetBinCenter(ibin0);
     Double_t x1=his1D->GetBinCenter(ibin1);
@@ -970,7 +970,7 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff",  stop-start, start);
    if (entries == -1) {
      delete formulaTokens;
-     return new TString("An ERROR has occured during fitting!");
+     return new TString(TString::Format("ERROR expr: %s\t%s\tEntries==0",drawStr.Data(),cutStr.Data()));
    }
    Double_t **values = new Double_t*[dim+1] ;
    for (Int_t i=0; i<dim+1; i++) values[i]=NULL; 
@@ -979,7 +979,7 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    if (entries == -1) {
      delete formulaTokens;
      delete []values;
-     return new TString("An ERROR has occured during fitting!");
+     return new TString(TString::Format("ERROR error part: %s\t%s\tEntries==0",ferr.Data(),cutStr.Data()));
    }
    Double_t *errors = new Double_t[entries];
    memcpy(errors,  tree->GetV1(), entries*sizeof(Double_t));
@@ -992,7 +992,7 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
       if (entries != centries) {
 	delete []errors;
 	delete []values;
-	return new TString("An ERROR has occured during fitting!");
+	return new TString(TString::Format("ERROR: %s\t%s\tEntries==%d\tEntries2=%d\n",drawStr.Data(),cutStr.Data(),entries,centries));
       }
       values[i] = new Double_t[entries];
       memcpy(values[i],  tree->GetV1(), entries*sizeof(Double_t)); 
@@ -1832,4 +1832,23 @@ TH1* TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const ch
      hOut->Draw("colz");
    }
    return hOut;
+}
+
+void TStatToolkit::CheckTreeAliases(TTree * tree, Int_t ncheck){
+  //
+  // Check consistency of tree aliases
+  //
+  Int_t nCheck=100;
+  TList * aliases = (TList*)tree->GetListOfAliases();
+  Int_t entries = aliases->GetEntries();
+  for (Int_t i=0; i<entries; i++){
+    TObject * object= aliases->At(i);
+    if (!object) continue;
+    Int_t ndraw=tree->Draw(aliases->At(i)->GetName(),"1","goff",nCheck);
+    if (ndraw==0){
+      ::Error("Alias:\tProblem",aliases->At(i)->GetName());
+    }else{
+      ::Info("Alias:\tOK",aliases->At(i)->GetName());
+    }
+  }
 }
