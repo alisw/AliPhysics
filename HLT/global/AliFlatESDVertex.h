@@ -38,6 +38,7 @@ struct AliFlatESDVertex
 
 
   void Set(const AliESDVertex &v );
+  void GetESDVertex( AliESDVertex &v ) const;
 
   Double32_t GetX() const { return fPosition[0]; }
   Double32_t GetY() const { return fPosition[1]; }
@@ -127,6 +128,18 @@ inline void AliFlatESDVertex::Set(const AliESDVertex &v )
   for( int i=0; i<6; i++) fCov[i] = c[i];
   fNContributors = v.GetNContributors();
   fChi2 = v.GetChi2();
+}
+
+inline void AliFlatESDVertex::GetESDVertex( AliESDVertex &v ) const
+{
+  v.Reset();
+  Double_t p[3] = { fPosition[0], fPosition[1], fPosition[2] }; 
+  v.SetXYZ( p );
+  Double_t c[6]; 
+  for( int i=0; i<6; i++) c[i] = fCov[i];
+  v.SetCovarianceMatrix( c );
+  v.SetNContributors( fNContributors );
+  v.SetChi2( fChi2 );
 }
 
 typedef struct AliFlatESDVertex AliFlatESDVertex;

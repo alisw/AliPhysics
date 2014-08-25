@@ -14,6 +14,7 @@
 #include "AliVVevent.h"
 #include "AliFlatESDTrack.h"
 #include "AliFlatESDVertex.h"
+#include "AliESDVertex.h"
 
 class AliFlatESDV0;
 class AliFlatESDTrigger;
@@ -57,6 +58,10 @@ class AliFlatESDEvent :public AliVVevent {
   const AliVVtrack* GetVVTrack(Int_t i) const { return GetFlatTrack(i); }
   AliESDkink* GetKink(Int_t /*i*/) const { return NULL;}
 
+  Int_t GetPrimaryVertexSPD( AliESDVertex &v ) const ;
+  Int_t GetPrimaryVertexTracks( AliESDVertex &v ) const ;
+
+
   // --------------------------------------------------------------------------------
   // Own methods 
 
@@ -89,8 +94,8 @@ class AliFlatESDEvent :public AliVVevent {
   // --------------------------------------------------------------------------------
   // -- Getter methods
 
-  const AliFlatESDVertex* GetPrimaryVertexSPD() const ;
-  const AliFlatESDVertex* GetPrimaryVertexTracks() const ;
+  const AliFlatESDVertex* GetFlatPrimaryVertexSPD() const ;
+  const AliFlatESDVertex* GetFlatPrimaryVertexTracks() const ;
 
   Int_t GetNumberOfTriggerClasses() const { return fNTriggerClasses; }
    
@@ -206,14 +211,30 @@ inline void AliFlatESDEvent::SetTriggersEnd( Int_t nTriggerClasses, size_t trigg
   fContentSize += triggersSize;
 }
 
-inline const AliFlatESDVertex* AliFlatESDEvent::GetPrimaryVertexSPD() const 
+inline const AliFlatESDVertex* AliFlatESDEvent::GetFlatPrimaryVertexSPD() const 
 {
   return (fPrimaryVertexMask & 0x1) ? reinterpret_cast<const AliFlatESDVertex*>(fContent + fPrimaryVertexSPDPointer) : NULL;
 } 
 
-inline const AliFlatESDVertex* AliFlatESDEvent::GetPrimaryVertexTracks() const 
+inline const AliFlatESDVertex* AliFlatESDEvent::GetFlatPrimaryVertexTracks() const 
 { 
   return (fPrimaryVertexMask & 0x2) ? (reinterpret_cast<const AliFlatESDVertex*>(fContent + fPrimaryVertexTracksPointer)  ) : NULL;
 } 
+
+inline Int_t AliFlatESDEvent::GetPrimaryVertexSPD( AliESDVertex &v ) const 
+{
+  const AliFlatESDVertex* flatVertex = GetFlatPrimaryVertexSPD();
+  if( !flatVertex ) return -1;
+  flatVertex->GetESDVertex( v );
+  return 0;
+}
+
+inline Int_t AliFlatESDEvent::GetPrimaryVertexTracks( AliESDVertex &v ) const 
+{
+  const AliFlatESDVertex* flatVertex = GetFlatPrimaryVertexTracks();
+  if( !flatVertex ) return -1;
+  flatVertex->GetESDVertex( v );
+  return 0;
+}
 
 #endif
