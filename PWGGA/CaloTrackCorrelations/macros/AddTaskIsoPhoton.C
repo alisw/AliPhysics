@@ -4,6 +4,7 @@
 TString kAnaIsoPhotonName = "";
 AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone          = 0.4,
                                                       const Float_t  pth           = 5.,
+                                                      const Bool_t   leading       = kTRUE,
                                                       const Bool_t   timecut       = kFALSE,
                                                       const TString  calorimeter   = "EMCAL",
                                                       const Bool_t   simu          = kFALSE,
@@ -83,7 +84,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,deltaphicut,deltaetacut,disttobad,nlmMax,simu,debug,print), n++); // Photon cluster selection
   
   // Isolation analysis
-  maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,kFALSE,simu,debug,print), n++); // Photon isolation
+  maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,leading,kFALSE,simu,debug,print), n++); // Photon isolation
 
   // QA histograms on clusters or tracks
   if(qaan)
@@ -470,7 +471,8 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
                                                     Int_t  thresType  = AliIsolationCut::kSumPtFracIC,
                                                     Float_t cone = 0.3,
                                                     Float_t pth  = 0.3,
-                                                    Bool_t tm = kFALSE,
+                                                    Bool_t tm = kFALSE, 
+                                                    Bool_t leading = kTRUE,
                                                     Bool_t multi = kFALSE, Bool_t simu = kFALSE,
                                                     Int_t debug = -1, Bool_t print = kFALSE)
 {
@@ -502,6 +504,8 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   // ana->SwitchOffSSHistoFill();
   // if(!kSimulation) ana->SwitchOnFillPileUpHistograms();
    ana->SwitchOnSSHistoFill();
+  if(leading) ana->SwitchOnLeadingOnly();
+  else ana->SwitchOffLeadingOnly();
   if(!simu) ana->SwitchOnFillPileUpHistograms();
 
   //Do settings for main isolation cut class
