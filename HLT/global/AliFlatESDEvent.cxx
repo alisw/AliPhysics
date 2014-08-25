@@ -90,7 +90,8 @@ AliFlatESDEvent::AliFlatESDEvent()
   fPrimaryVertexSPDPointer(0),
   fTrackTablePointer(0),
   fTracksPointer(0),
-  fV0Pointer(0)
+  fV0Pointer(0),
+  fFriendEvent(NULL)
 {
   // Default constructor
   fContent[0]=0;
@@ -120,7 +121,8 @@ AliFlatESDEvent::AliFlatESDEvent( AliVVConstructorReinitialisationFlag f )
   fPrimaryVertexSPDPointer(fPrimaryVertexSPDPointer),
   fTrackTablePointer(fTrackTablePointer),
   fTracksPointer(fTracksPointer),
-  fV0Pointer(fV0Pointer)
+  fV0Pointer(fV0Pointer),
+  fFriendEvent(NULL)
 {
   // Constructor for reinitialisation of vtable
 

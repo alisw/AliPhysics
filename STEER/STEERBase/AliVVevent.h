@@ -79,13 +79,14 @@ class AliVVevent{
   virtual AliESDkink* GetKink(Int_t /*i*/) const = 0;
   //virtual AliVVtrack* GetV0(Int_t /*i*/) const = 0;
 
+  virtual AliVVfriendEvent* FindFriend() const = 0;
+
  
   // some ESD interfaces, not yet implemented in flat esd (may be not needed, may be need some changes)
 
   //virtual Int_t GetEventNumberInFile() const = 0;
   //virtual const AliMultiplicity* GetMultiplicity() const = 0; //by default SPDmult  
-  //virtual AliVVfriendEvent* FindFriend() const = 0;
-
+ 
   //ClassDef(AliVVevent, 1)
 
 };

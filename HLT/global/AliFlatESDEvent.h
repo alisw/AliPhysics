@@ -14,6 +14,7 @@
 #include "AliVVevent.h"
 #include "AliFlatESDTrack.h"
 #include "AliFlatESDVertex.h"
+#include "AliFlatESDFriend.h"
 #include "AliESDVertex.h"
 
 class AliFlatESDV0;
@@ -61,6 +62,7 @@ class AliFlatESDEvent :public AliVVevent {
   Int_t GetPrimaryVertexSPD( AliESDVertex &v ) const ;
   Int_t GetPrimaryVertexTracks( AliESDVertex &v ) const ;
 
+  AliVVfriendEvent* FindFriend() const { return fFriendEvent; }
 
   // --------------------------------------------------------------------------------
   // Own methods 
@@ -68,6 +70,8 @@ class AliFlatESDEvent :public AliVVevent {
   // -- Set methods
 
   Int_t SetFromESD( size_t allocatedMemorySize, const AliESDEvent *esd, const Bool_t fillV0s=kTRUE );
+
+  void SetFriendEvent( AliFlatESDFriend *f ) { fFriendEvent=f; }
 
   void  SetMagneticField( Double_t mf ){ fMagneticField = mf; }
   void  SetPeriodNumber( Int_t n ) { fPeriodNumber = n; }
@@ -146,6 +150,9 @@ class AliFlatESDEvent :public AliVVevent {
   size_t fTrackTablePointer;     // position of the first track pointer in fContent
   size_t fTracksPointer;         // position of the first track in fContent
   size_t fV0Pointer;             // position of the first V0 in fContent  
+  
+  //
+  AliFlatESDFriend *fFriendEvent;
 
   // --------------------------------------------------------------------------------
 
