@@ -53,8 +53,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fInputFromOtherTask(kFALSE)
   , fDoPID(kTRUE)
   , fDoEfficiency(kTRUE)
-  , fDoPtResolution(kTRUE)
-  , fDoDeDxCheck(kTRUE)
+  , fDoPtResolution(kFALSE)
+  , fDoDeDxCheck(kFALSE)
+  , fDoBinZeroStudy(kFALSE)
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
   , fTakeIntoAccountMuons(kFALSE)
@@ -139,6 +140,10 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fhEventsTriggerSel(0x0)
   , fhEventsTriggerSelVtxCut(0x0) 
   , fhEventsProcessedNoPileUpRejection(0x0)
+  , fChargedGenPrimariesTriggerSel(0x0)
+  , fChargedGenPrimariesTriggerSelVtxCut(0x0)
+  , fChargedGenPrimariesTriggerSelVtxCutZ(0x0)
+  , fChargedGenPrimariesTriggerSelVtxCutZPileUpRej(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
   , fh2FFJetPtGen(0x0)
@@ -189,8 +194,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fInputFromOtherTask(kFALSE)
   , fDoPID(kTRUE)
   , fDoEfficiency(kTRUE)
-  , fDoPtResolution(kTRUE)
-  , fDoDeDxCheck(kTRUE)
+  , fDoPtResolution(kFALSE)
+  , fDoDeDxCheck(kFALSE)
+  , fDoBinZeroStudy(kFALSE)
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
   , fTakeIntoAccountMuons(kFALSE)
@@ -275,6 +281,10 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fhEventsTriggerSel(0x0)
   , fhEventsTriggerSelVtxCut(0x0) 
   , fhEventsProcessedNoPileUpRejection(0x0)
+  , fChargedGenPrimariesTriggerSel(0x0)
+  , fChargedGenPrimariesTriggerSelVtxCut(0x0)
+  , fChargedGenPrimariesTriggerSelVtxCutZ(0x0)
+  , fChargedGenPrimariesTriggerSelVtxCutZPileUpRej(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
   , fh2FFJetPtGen(0x0)
@@ -960,6 +970,37 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     fQAContainer->Add(fDeDxCheck);
   }
   
+  if (fDoBinZeroStudy) {
+    const Double_t etaLow = -0.9;
+    const Double_t etaUp = 0.9;
+    const Int_t nEtaBins = 18;
+    
+    const Int_t nBinsBinZeroStudy = kBinZeroStudyNumAxes;
+    Int_t binZeroStudyBins[nBinsBinZeroStudy]    = { nCentBins,                   nPtBins, nEtaBins };
+    Double_t binZeroStudyXmin[nBinsBinZeroStudy] = { binsCent[0],               binsPt[0], etaLow   };
+    Double_t binZeroStudyXmax[nBinsBinZeroStudy] = { binsCent[nCentBins], binsPt[nPtBins], etaUp    };
+    
+    fChargedGenPrimariesTriggerSel = new THnSparseD("fChargedGenPrimariesTriggerSel", "Trigger sel.", nBinsBinZeroStudy, binZeroStudyBins,
+                                                    binZeroStudyXmin, binZeroStudyXmax);
+    SetUpBinZeroStudyHist(fChargedGenPrimariesTriggerSel, binsCent, binsPt);
+    fOutputContainer->Add(fChargedGenPrimariesTriggerSel);
+    
+    fChargedGenPrimariesTriggerSelVtxCut = new THnSparseD("fChargedGenPrimariesTriggerSelVtxCut", "Vertex cut", nBinsBinZeroStudy,
+                                                          binZeroStudyBins, binZeroStudyXmin, binZeroStudyXmax);
+    SetUpBinZeroStudyHist(fChargedGenPrimariesTriggerSelVtxCut, binsCent, binsPt);
+    fOutputContainer->Add(fChargedGenPrimariesTriggerSelVtxCut);
+    
+    fChargedGenPrimariesTriggerSelVtxCutZ = new THnSparseD("fChargedGenPrimariesTriggerSelVtxCutZ", "Vertex #it{z} cut", nBinsBinZeroStudy,
+                                                          binZeroStudyBins, binZeroStudyXmin, binZeroStudyXmax);
+    SetUpBinZeroStudyHist(fChargedGenPrimariesTriggerSelVtxCutZ, binsCent, binsPt);
+    fOutputContainer->Add(fChargedGenPrimariesTriggerSelVtxCutZ);
+    
+    fChargedGenPrimariesTriggerSelVtxCutZPileUpRej = new THnSparseD("fChargedGenPrimariesTriggerSelVtxCutZPileUpRej", "Vertex #it{z} cut", 
+                                                                    nBinsBinZeroStudy, binZeroStudyBins, binZeroStudyXmin, binZeroStudyXmax);
+    SetUpBinZeroStudyHist(fChargedGenPrimariesTriggerSelVtxCutZPileUpRej, binsCent, binsPt);
+    fOutputContainer->Add(fChargedGenPrimariesTriggerSelVtxCutZPileUpRej);
+  }
+  
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Posting output data\n", (char*)__FILE__, __LINE__);
   
@@ -1020,16 +1061,57 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
       centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
   }
   
+  // Check if vertex is ok, but don't apply cut on z position
+  const Bool_t passedVertexSelection = GetVertexIsOk(fEvent, kFALSE);
+  // Now check again, but also require z position to be in desired range
+  const Bool_t passedVertexZSelection = GetVertexIsOk(fEvent, kTRUE);
+  // Check pile-up
+  const Bool_t isPileUp = GetIsPileUp(fEvent, fPileUpRejectionType);
+  
+  
+  
+  if (fDoBinZeroStudy && fMC) {
+    for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) { 
+      AliMCParticle *mcPart  = dynamic_cast<AliMCParticle*>(fMC->GetTrack(iPart));
+      
+      if (!mcPart)
+          continue;
+      
+      if (!fMC->IsPhysicalPrimary(iPart)) 
+          continue;
+      
+      const Double_t etaGen = mcPart->Eta();
+      const Double_t ptGen = mcPart->Pt();
+      
+      Double_t values[kBinZeroStudyNumAxes] = { 0. };
+      values[kBinZeroStudyCentrality] = centralityPercentile;
+      values[kBinZeroStudyGenPt] = ptGen;
+      values[kBinZeroStudyGenEta] = etaGen;
+      
+      fChargedGenPrimariesTriggerSel->Fill(values);
+      if (passedVertexSelection) {
+          fChargedGenPrimariesTriggerSelVtxCut->Fill(values);
+        if (passedVertexZSelection) {
+            fChargedGenPrimariesTriggerSelVtxCutZ->Fill(values);
+          if (!isPileUp) {
+            fChargedGenPrimariesTriggerSelVtxCutZPileUpRej->Fill(values);
+          }
+        }
+      }
+    }
+  }
+  
+  
+  
+  // Event counters for trigger selection, vertex cuts and pile-up rejection
   IncrementEventCounter(centralityPercentile, kTriggerSel);
   
-  // Check if vertex is ok, but don't apply cut on z position
-  if (!GetVertexIsOk(fEvent, kFALSE))
+  if (!passedVertexSelection)
     return;
   
   IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut);
   
-  // Now check again, but also require z position to be in desired range
-  if (!GetVertexIsOk(fEvent, kTRUE))
+  if (!passedVertexZSelection)
     return;
   
   IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
@@ -1037,7 +1119,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   // which is done solely with sel and selVtx, since the zvtx selection does ~not change the spectra. The question is whether the pile-up
   // rejection changes the spectra. If not, then it is perfectly fine to put it here and keep the usual histo for the normalisation to number
   // of events. But if it does change the spectra, this must somehow be corrected for.
-  if (GetIsPileUp(fEvent, fPileUpRejectionType))
+  if (isPileUp)
     return;
   
   IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
@@ -2267,6 +2349,7 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   printf("Do Efficiency: %d\n", fDoEfficiency);
   printf("Do PtResolution: %d\n", fDoPtResolution);
   printf("Do dEdxCheck: %d\n", fDoDeDxCheck);
+  printf("Do binZeroStudy: %d\n", fDoBinZeroStudy);
   
   printf("\n");
 
@@ -3678,4 +3761,18 @@ void AliAnalysisTaskPID::SetUpDeDxCheckHist(THnSparse* hist, const Double_t* bin
   hist->GetAxis(kDeDxCheckEtaAbs)->SetTitle("|#eta|");  
   hist->GetAxis(kDeDxCheckP)->SetTitle("p_{TPC} (GeV/c)"); 
   hist->GetAxis(kDeDxCheckDeDx)->SetTitle("TPC dE/dx (arb. unit)");
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskPID::SetUpBinZeroStudyHist(THnSparse* hist, const Double_t* binsCent, const Double_t* binsPt) const
+{
+  // Sets bin limits for axes which are not standard binned and the axes titles.
+  hist->SetBinEdges(kBinZeroStudyCentrality, binsCent);
+  hist->SetBinEdges(kBinZeroStudyGenPt, binsPt);
+  
+  // Set axes titles
+  hist->GetAxis(kBinZeroStudyCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
+  hist->GetAxis(kBinZeroStudyGenEta)->SetTitle("#it{#eta}^{gen}");  
+  hist->GetAxis(kBinZeroStudyGenPt)->SetTitle("#it{p}_{T}^{gen} (GeV/#it{c})"); 
 }
