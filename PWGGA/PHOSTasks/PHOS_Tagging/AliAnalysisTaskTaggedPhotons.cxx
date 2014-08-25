@@ -264,11 +264,13 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(new TH1F(Form("hPhot_Area3_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,0.,ptMax)) ;
 
     for(Int_t itag=0; itag<18; itag++){
-      fOutputContainer->Add(new TH1F(Form("hPhot_nTagged%d_Area1_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_nTagged%d_Area2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_nTagged%d_Area3_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hPhot_TaggedMult%d_Area1_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged photons",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hPhot_TaggedMult%d_Area2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged photons",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hPhot_TaggedMult%d_Area3_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of multiply tagged photons",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged%d_Area1_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged%d_Area2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hPhot_Tagged%d_Area3_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
 
-      fOutputContainer->Add(new TH1F(Form("hPhot_AllTagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all tagged particles",nPt,0.,ptMax)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_TrueTagged%d_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all tagged particles",nPt,0.,ptMax)) ;      
     }    
     for(Int_t kind=1; kind<33; kind*=2){
@@ -282,7 +284,6 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   }
 
   
-  fOutputContainer->Add(new TH1F(Form("hTaggedMult_cent%d",cen),"Spectrum of multiply tagged photons",nPt,0.,ptMax)) ;
 
   //Invariant mass distributions for fake corrections
   
@@ -1332,16 +1333,28 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	  for(Int_t isigma=0; isigma<3; isigma++){
   	    if(nsigma1<1+isigma){
    	      tag1|= (1 << (3*eminType+isigma)) ;
+	      if(p2->IsPIDOK(3))
+   	        tag1|= (1 << (3*eminType+isigma+9)) ;	  
 	    }
 	  }
-	  //now fake tagging
-	  for(Int_t isigma=0; isigma<3; isigma++){
-	     if(nsigma1>3 && nsigma1<4+isigma)
-   	        tag1|= (1 << (3*eminType+isigma+9)) ;
-	  }	  
 	}
       }
       Int_t oldTag1=p1->GetTagInfo() ;
+      for(Int_t ibit=0; ibit<18; ibit++){
+        if(((oldTag1 & (1<<ibit))==1) && //Already tagged 
+           ((tag1 & (1<<ibit))==1)){//Multiple tagging
+         Int_t iFidArea = p1->GetFiducialArea(); 
+         if(iFidArea>0){
+           FillPIDHistograms(Form("hPhot_TaggedMult%d_Area1",ibit),p1) ;
+           if(iFidArea>1){
+             FillPIDHistograms(Form("hPhot_TaggedMult%d_Area2",ibit),p1) ;
+             if(iFidArea>2){
+               FillPIDHistograms(Form("hPhot_TaggedMult%d_Area3",ibit),p1) ;
+             }
+	   }
+	 }
+	}
+      }
       tag1=tag1|oldTag1 ;
       p1->SetTagInfo(tag1) ;
       Int_t tag2=0 ;
@@ -1351,16 +1364,28 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	  for(Int_t isigma=0; isigma<3; isigma++){
   	    if(nsigma2<1+isigma){
    	      tag2|= (1 << (3*eminType+isigma)) ;
+  	      if(p1->IsPIDOK(3))
+   	        tag2|= (1 << (3*eminType+isigma+9)) ;	  
 	    }
 	  }
-  	  //now fake tagging
-	  for(Int_t isigma=0; isigma<3; isigma++){
-	     if(nsigma2>3 && nsigma2<4+isigma)
-   	        tag2|= (1 << (3*eminType+isigma+9)) ;
-	  }	  
 	}
       }
       Int_t oldTag2=p2->GetTagInfo() ;
+      for(Int_t ibit=0; ibit<18; ibit++){
+        if(((oldTag2 & (1<<ibit))==1) && //Already tagged 
+           ((tag2 & (1<<ibit))==1)){//Multiple tagging
+         Int_t iFidArea = p2->GetFiducialArea(); 
+         if(iFidArea>0){
+           FillPIDHistograms(Form("hPhot_TaggedMult%d_Area1",ibit),p2) ;
+           if(iFidArea>1){
+             FillPIDHistograms(Form("hPhot_TaggedMult%d_Area2",ibit),p2) ;
+             if(iFidArea>2){
+               FillPIDHistograms(Form("hPhot_TaggedMult%d_Area3",ibit),p2) ;
+             }
+	   }
+	 }
+	}
+      }
       tag2=tag2|oldTag2 ;
       p2->SetTagInfo(tag2) ;
             
@@ -1368,18 +1393,6 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       p1->SetUnfolded(p1->IsntUnfolded()|trueTag) ;
       p2->SetUnfolded(p2->IsntUnfolded()|trueTag) ;
       
-      if(tag1 & (1<<7)){ //2 sigma, Emin=0.3: default tagging
-        if(p1->IsTagged()){//Multiple tagging
-          FillHistogram(Form("hTaggedMult_cent%d",fCentBin),p1->Pt(),p1->GetWeight());
-        }  
-        p1->SetTagged(kTRUE) ;
-      }
-      if(tag2 & (1<<7)){ //2 sigma, Emin=0.3: default tagging
-        if(p2->IsTagged()){//Multiple tagging
-          FillHistogram(Form("hTaggedMult_cent%d",fCentBin),p2->Pt(),p2->GetWeight());
-        }  
-        p2->SetTagged(kTRUE) ;
-      }      
     }
   }
   
@@ -1423,11 +1436,9 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       //strict and loose PID cut on partner
       Int_t tag=p->GetTagInfo() ;
       for(Int_t ibit=0; ibit<18; ibit++){
-        if((tag & (1<<ibit))==0){ 
-          FillPIDHistograms(Form("hPhot_nTagged%d_Area1",ibit),p) ;
-	}else{
-           FillPIDHistograms(Form("hPhot_AllTagged%d",ibit),p) ;
-	   if(p->IsntUnfolded()) //true tag
+        if((tag & (1<<ibit))==1){ 
+          FillPIDHistograms(Form("hPhot_Tagged%d_Area1",ibit),p) ;
+	  if(p->IsntUnfolded()) //true tag
              FillPIDHistograms(Form("hPhot_TrueTagged%d",ibit),p) ;
 	  
 	}
@@ -1436,15 +1447,15 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       if(iFidArea>1){
         FillPIDHistograms("hPhot_Area2",p) ;
         for(Int_t ibit=0; ibit<18; ibit++){
-          if((tag & (1<<ibit))==0){ 
-            FillPIDHistograms(Form("hPhot_nTagged%d_Area2",ibit),p) ;
+          if((tag & (1<<ibit))==1){ 
+            FillPIDHistograms(Form("hPhot_Tagged%d_Area2",ibit),p) ;
 	  }
         }
 	if(iFidArea>2){
           FillPIDHistograms("hPhot_Area3",p) ;
           for(Int_t ibit=0; ibit<18; ibit++){
-            if((tag & (1<<ibit))==0){ 
-              FillPIDHistograms(Form("hPhot_nTagged%d_Area3",ibit),p) ;
+            if((tag & (1<<ibit))==1){ 
+              FillPIDHistograms(Form("hPhot_Tagged%d_Area3",ibit),p) ;
 	    }
 	  }
 	}
