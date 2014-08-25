@@ -170,6 +170,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fQATrackPhiMax(0)
    ,fCommonHistList(0)
    ,fh1EvtSelection(0)
+   ,fh1VtxSelection(0)
    ,fh1VertexNContributors(0)
    ,fh1VertexZ(0)
    ,fh1EvtMult(0)
@@ -400,6 +401,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fQATrackPhiMax(0)  
   ,fCommonHistList(0)
   ,fh1EvtSelection(0)
+  ,fh1VtxSelection(0)
   ,fh1VertexNContributors(0)
   ,fh1VertexZ(0)
   ,fh1EvtMult(0)
@@ -629,6 +631,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fQATrackPhiMax(copy.fQATrackPhiMax)
   ,fCommonHistList(copy.fCommonHistList)
   ,fh1EvtSelection(copy.fh1EvtSelection)
+  ,fh1VtxSelection(copy.fh1VtxSelection)
   ,fh1VertexNContributors(copy.fh1VertexNContributors)
   ,fh1VertexZ(copy.fh1VertexZ)
   ,fh1EvtMult(copy.fh1EvtMult)
@@ -915,6 +918,7 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fQATrackPhiMax                 = o.fQATrackPhiMax;  
     fCommonHistList                = o.fCommonHistList;
     fh1EvtSelection                = o.fh1EvtSelection;
+    fh1VtxSelection                = o.fh1VtxSelection;
     fh1VertexNContributors         = o.fh1VertexNContributors;
     fh1VertexZ                     = o.fh1VertexZ;
     fh1EvtMult                     = o.fh1EvtMult;
@@ -1658,6 +1662,18 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   fh1EvtSelection->GetXaxis()->SetBinLabel(5,"vertex z: rejected");
   fh1EvtSelection->GetXaxis()->SetBinLabel(6,"vertex type: rejected");
   
+  fh1VtxSelection            = new TH1F("fh1VtxSelection", "Vertex Selection", 10, -1, 9);
+  fh1VtxSelection->GetXaxis()->SetBinLabel(1,"Undef");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(2,"Primary");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(3,"Kink");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(4,"V0");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(5,"Cascade");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(6,"Multi");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(7,"SPD");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(8,"PileUpSPD");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(9,"PileUpTracks");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(10,"TPC");
+  
   fh1VertexNContributors     = new TH1F("fh1VertexNContributors", "Vertex N contributors", 2500,-.5, 2499.5);
   fh1VertexZ                 = new TH1F("fh1VertexZ", "Vertex z distribution", 30, -15., 15.);
   fh1EvtMult 	             = new TH1F("fh1EvtMult","Event multiplicity, track pT cut > 150 MeV/c, |#eta| < 0.9",120,0.,12000.);
@@ -2095,6 +2111,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   Bool_t recJetsEff = (fJetTypeRecEff != kJetsUndef) ? kTRUE : kFALSE;
 
   fCommonHistList->Add(fh1EvtSelection);
+  fCommonHistList->Add(fh1VtxSelection);
   fCommonHistList->Add(fh1EvtMult);
   fCommonHistList->Add(fh1EvtCent);
   fCommonHistList->Add(fh1VertexNContributors);
@@ -2640,6 +2657,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   
   if (fDebug > 1) Printf("%s:%d event ACCEPTED ...",(char*)__FILE__,__LINE__); 
   fh1EvtSelection->Fill(0.);
+  fh1VtxSelection->Fill(primVtx->GetType());
   fh1EvtCent->Fill(centPercent);
 	
 	// Set centrality percentile fix to -1 for pp to be used for the PID framework
