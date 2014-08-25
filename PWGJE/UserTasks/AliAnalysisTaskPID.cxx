@@ -1026,14 +1026,6 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   if (!GetVertexIsOk(fEvent, kFALSE))
     return;
   
-  fESD = dynamic_cast<AliESDEvent*>(fEvent);
-  const AliVVertex* primaryVertex = fESD ? fESD->GetPrimaryVertexTracks() : fEvent->GetPrimaryVertex(); 
-  if (!primaryVertex)
-    return;
-  
-  if(primaryVertex->GetNContributors() <= 0) 
-    return;
-  
   IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut);
   
   // Now check again, but also require z position to be in desired range
