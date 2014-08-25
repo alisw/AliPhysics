@@ -10,6 +10,7 @@
  */
 
 #include "Rtypes.h"
+#include "AliExternalTrackParam.h"
 
 struct AliFlatExternalTrackParam
 {
@@ -40,6 +41,11 @@ struct AliFlatExternalTrackParam
   Float_t  GetSigned1Pt()         const {return fSigned1Pt;}
   Float_t* GetCov()               const {return const_cast<Float_t*>(fC);}
   Float_t  GetCovEntry(Int_t idx) const {return (idx >= 0 && idx < 15) ? fC[idx] : 0.;}
+  Float_t  GetPt()                const {
+    Double_t pt1 = fabs( fSigned1Pt );
+    return (pt1>kAlmost0) ? 1./pt1 : kVeryBig;
+  } 
+  void GetExternalTrackParam( AliExternalTrackParam &p ) const;
 };
 
 typedef struct AliFlatExternalTrackParam AliFlatExternalTrackParam;

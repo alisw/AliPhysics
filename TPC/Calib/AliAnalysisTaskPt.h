@@ -15,7 +15,7 @@ class TList;
 
 class AliAnalysisTaskPt : public AliAnalysisTask {
  public:
- AliAnalysisTaskPt() : AliAnalysisTask(), fESD(0), fESDfriend(0), fHistPt(0), fCuts(0), fEv(0), fHistQ(0), fListOut(0), fHistNTPCCl(0), fHistNESDtracks(0), fHistNESDfriendtracks(0) 
+ AliAnalysisTaskPt() : AliAnalysisTask(), fESD(0), fESDfriend(0), fHistPt(0), fCuts(0), fEv(0), fHistQ(0), fListOut(0), fUseFriends(0), fHistNTPCCl(0), fHistNESDtracks(0), fHistNESDfriendtracks(0) 
  {}
   AliAnalysisTaskPt(const char *name);
   virtual ~AliAnalysisTaskPt() {}

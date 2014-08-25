@@ -63,7 +63,7 @@ AliFlatESDTrack::AliFlatESDTrack( AliVVConstructorReinitialisationFlag f )
 
 
 // _______________________________________________________________________________________________________
-Int_t AliFlatESDTrack::Set(const AliESDtrack* track)
+Int_t AliFlatESDTrack::SetFromESDTrack(const AliESDtrack* track)
 {
   // Fill external track parameters 
   fTrackParamMask = 0;
@@ -148,5 +148,6 @@ Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param
 
   return 0;
 }
+
 
 // _______________________________________________________________________________________________________

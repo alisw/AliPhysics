@@ -36,10 +36,28 @@ class AliFlatESDTrack :public AliVVtrack {
   AliFlatESDTrack( AliVVConstructorReinitialisationFlag );
   void Reinitialize() { new (this) AliFlatESDTrack( AliVVReinitialize ); }
 
- // --------------------------------------------------------------------------------
+  // --------------------   AliVVtrack interface    ---------------------------------
+
+  Int_t GetTrackParam         ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0  ); }
+  Int_t GetTrackParamRefitted ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x1  ); }
+  Int_t GetTrackParamIp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x2  ); }
+  Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x4  ); }
+  Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x8  ); }
+  Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x10 ); }
+  Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x20 ); }
+
+  UShort_t GetTPCNcls() const {return GetNumberOfTPCClusters(); }
+  Double_t GetPt() const {
+    const AliFlatExternalTrackParam *f = GetFlatTrackParam();
+    return (f) ?f->GetPt() : kVeryBig;
+  }
+  
+
+  // --------------------------------------------------------------------------------
+
   // -- Set methods
  
-  Int_t Set( const AliESDtrack* track );
+  Int_t SetFromESDTrack( const AliESDtrack* track );
 
   Int_t SetExternalTrackParam( 
 			      const AliExternalTrackParam* refittedParam,
@@ -56,39 +74,19 @@ class AliFlatESDTrack :public AliVVtrack {
   
   // --------------------------------------------------------------------------------
   // -- Getter methods
-  AliFlatExternalTrackParam* GetTrackParamRefitted(){
-    return (fTrackParamMask & 0x1) ? reinterpret_cast<AliFlatExternalTrackParam*>(fContent) : NULL;
-  } 
 
-  AliFlatExternalTrackParam* GetTrackParamIp() { 
-    return (fTrackParamMask & 0x2) ? reinterpret_cast<AliFlatExternalTrackParam*>(fContent) + CountBits(fTrackParamMask, 0x1) : NULL;
-  } 
-
-  AliFlatExternalTrackParam* GetTrackParamTPCInner() { 
-    return (fTrackParamMask & 0x4) ? reinterpret_cast<AliFlatExternalTrackParam*>(fContent) + CountBits(fTrackParamMask, 0x3) : NULL;
-  } 
-
-  AliFlatExternalTrackParam* GetTrackParamOp() {      
-    return (fTrackParamMask & 0x8) ? reinterpret_cast<AliFlatExternalTrackParam*>(fContent) + CountBits(fTrackParamMask, 0x7) : NULL;
-  } 
-
-  AliFlatExternalTrackParam* GetTrackParamCp() {
-    return (fTrackParamMask & 0x10) ? reinterpret_cast<AliFlatExternalTrackParam*>(fContent) + CountBits(fTrackParamMask, 0xF) : NULL;
-  } 
-
-  AliFlatExternalTrackParam* GetTrackParamITSOut() {
-    return (fTrackParamMask & 0x20) ? reinterpret_cast<AliFlatExternalTrackParam*>(fContent) + CountBits(fTrackParamMask, 0x1F) : NULL;
-  } 
+  const AliFlatExternalTrackParam* GetFlatTrackParam()         const { return GetFlatParam( 0x0  ); }
+  const AliFlatExternalTrackParam* GetFlatTrackParamRefitted() const { return GetFlatParam( 0x1  ); }
+  const AliFlatExternalTrackParam* GetFlatTrackParamIp()       const { return GetFlatParam( 0x2  ); } 
+  const AliFlatExternalTrackParam* GetFlatTrackParamTPCInner() const { return GetFlatParam( 0x4  ); } 
+  const AliFlatExternalTrackParam* GetFlatTrackParamOp()       const { return GetFlatParam( 0x8  ); }     
+  const AliFlatExternalTrackParam* GetFlatTrackParamCp()       const { return GetFlatParam( 0x10 ); }
+  const AliFlatExternalTrackParam* GetFlatTrackParamITSOut()   const { return GetFlatParam( 0x20 ); }
 
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
 
-  Int_t GetNumberOfTPCClusters() {
-    return fNTPCClusters;
-  } 
-  
-  Int_t GetNumberOfITSClusters() {
-    return fNITSClusters;
-  } 
+  Int_t GetNumberOfTPCClusters() const { return fNTPCClusters; } 
+  Int_t GetNumberOfITSClusters() const { return fNITSClusters; } 
     
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
   
@@ -105,8 +103,16 @@ class AliFlatESDTrack :public AliVVtrack {
   size_t GetSize() { return fContent -  reinterpret_cast<Byte_t*>(this) + fContentSize; }
     
  private:
+
   AliFlatESDTrack(const AliFlatESDTrack&);
   AliFlatESDTrack& operator=(const AliFlatESDTrack&);
+
+  const AliFlatExternalTrackParam* GetFlatParam( UShort_t flag ) const {
+    if( flag==0 ) return ( fTrackParamMask ) ? reinterpret_cast<const AliFlatExternalTrackParam*>(fContent) : NULL;
+    else return (fTrackParamMask & flag) ? reinterpret_cast<const AliFlatExternalTrackParam*>(fContent) + CountBits(fTrackParamMask, flag-1) : NULL;
+  }
+
+  Int_t GetExternalTrackParam( AliExternalTrackParam &p, UShort_t flag  ) const;
 
   Int_t FillExternalTrackParam(const AliExternalTrackParam* param, UShort_t flag);
 
@@ -135,5 +141,16 @@ inline UInt_t AliFlatESDTrack::CountBits(Byte_t field, UInt_t mask) {
   for (; reg; count++) reg &= reg - 1; 
   return count;
 }
+
+inline Int_t AliFlatESDTrack::GetExternalTrackParam( AliExternalTrackParam &p, UShort_t flag) const
+{
+  // Get external track parameters  
+  const AliFlatExternalTrackParam *f = GetFlatParam ( flag );
+  if( !f ) return -1;  
+  Float_t par[5] = { f->GetY(), f->GetZ(), f->GetSnp(), f->GetTgl(), f->GetSigned1Pt() };
+  p.Set( f->GetX(), f->GetAlpha(), par, f->GetCov() );
+  return 0;
+}
+
 
 #endif

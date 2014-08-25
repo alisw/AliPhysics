@@ -231,7 +231,7 @@ Int_t AliFlatESDEvent::SetPrimaryVertexTracks( const AliESDVertex *vtx, size_t a
   fPrimaryVertexMask |= 0x1;
   fPrimaryVertexTracksPointer = fContentSize;
   AliFlatESDVertex *flatVtx = reinterpret_cast<AliFlatESDVertex*> (fContent + fContentSize);
-  flatVtx->Set( *vtx );
+  flatVtx->SetFromESDVertex( *vtx );
   fContentSize += flatVtx->GetSize();
   return 0;
 }
@@ -244,7 +244,7 @@ Int_t AliFlatESDEvent::SetPrimaryVertexSPD( const AliESDVertex *vtx, size_t allo
   fPrimaryVertexMask |= 0x2;
   fPrimaryVertexSPDPointer = fContentSize;
   AliFlatESDVertex *flatVtx = reinterpret_cast<AliFlatESDVertex*> (fContent + fContentSize);
-  flatVtx->Set( *vtx );
+  flatVtx->SetFromESDVertex( *vtx );
   fContentSize += flatVtx->GetSize();
   return 0;
 }
@@ -328,7 +328,7 @@ Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliES
        table[idxTrack] = trackSize;
        if( freeSpace<flatTrack->EstimateSize() ) return -1;
        new (flatTrack) AliFlatESDTrack;       
-       flatTrack->Set( esdTrack );
+       flatTrack->SetFromESDTrack( esdTrack );
        trackSize += flatTrack->GetSize();
        freeSpace -= flatTrack->GetSize();
        nTracks++;
