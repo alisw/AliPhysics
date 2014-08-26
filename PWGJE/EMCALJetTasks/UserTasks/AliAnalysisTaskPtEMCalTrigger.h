@@ -47,6 +47,7 @@ private:
 	void DefineAxis(TAxis &axis, const char *name, const char *title, int nbins, double min, double max, const char **labels = NULL);
 	void FillEventHist(const char *trigger, double vz, bool isPileup);
 	void FillTrackHist(const char *trigger, const AliESDtrack *track, double vz, bool isPileup, int cut);
+	void FillClusterHist(const char *trigger, const AliVCluster *clust, bool isCalibrated, double vz, bool isPileup);
 
 	TList                         *fResults;              //! container for results
 	AliEMCalHistoContainer        *fHistos;               //! Histogram container for the task

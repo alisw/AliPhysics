@@ -27,6 +27,7 @@
 #include <string>
 #include <sstream>
 
+#include <TClonesArray.h>
 #include <TDirectory.h>
 #include <TH1.h>
 #include <THashList.h>
@@ -36,6 +37,7 @@
 #include <TObjArray.h>
 #include <TString.h>
 
+#include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
@@ -108,7 +110,7 @@ namespace EMCalTriggerPtAnalysis {
 		fHistos->ReleaseOwner();
 
 		std::map<std::string, std::string> triggerCombinations;
-		const char *triggernames[6] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh", "EMCGLow", "NoEMCal"},
+		const char *triggernames[12] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh", "EMCGLow", "NoEMCal", "EMCHighBoth", "EMCHighGammaOnly", "EMCHighJetOnly", "EMCLowBoth", "EMCLowGammaOnly", "EMCLowJetOnly"},
 				*bitnames[4] = {"CINT7", "EMC7", "kEMCEGA", "kEMCEJE"};
 		// Define axes for the trigger correlation histogram
 		const TAxis *triggeraxis[5]; memset(triggeraxis, 0, sizeof(const TAxis *) * 5);
@@ -129,7 +131,13 @@ namespace EMCalTriggerPtAnalysis {
 		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[2], "jet-triggered events (low threshold)"));
 		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[3], "gamma-triggered events (high threshold)"));
 		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[4], "gamma-triggered events (low threshold)"));
-		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[5], "non-EMCal-triggered events (low threshold)"));
+		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[5], "non-EMCal-triggered events"));
+		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[6], "jet and gamma triggered events (high threshold)"));
+		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[7], "exclusively gamma-triggered events (high threshold)"));
+		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[8], "exclusively jet-triggered events (high threshold)"));
+		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[9], "jet and gamma triggered events (low threshold)"));
+		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[10], "exclusively gamma-triggered events (low threshold)"));
+		triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[11], "exclusively-triggered events (low threshold)"));
 		// Define axes for the pt histogram
 		// Dimensions:
 		// 1. pt
@@ -152,6 +160,12 @@ namespace EMCalTriggerPtAnalysis {
 		DefineAxis(htrackaxes[5], "trackcuts", "Track Cuts", (fListTrackCuts ? fListTrackCuts->GetEntries() : 0) + 1, -0.5, (fListTrackCuts ? fListTrackCuts->GetEntries() : 0) + 0.5);
 		const TAxis *trackaxes[6];
 		for(int iaxis = 0; iaxis < 6; ++iaxis) trackaxes[iaxis] = htrackaxes + iaxis;
+		TAxis hclusteraxes[3];
+		DefineAxis(hclusteraxes[0], "energy", "E (GeV)", ptbinning);
+		DefineAxis(hclusteraxes[1], "zvertex", "z_{V} (cm)", zvertexBinning);
+		DefineAxis(hclusteraxes[2], "pileup", "Pileup rejection", 2, -0.5, 1.5);
+		const TAxis *clusteraxes[3];
+		for(int iaxis = 0; iaxis < 3; ++iaxis) clusteraxes[iaxis] = hclusteraxes + iaxis;
 		try{
 			for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
 				const std::string name = it->first, &title = it->second;
@@ -159,6 +173,9 @@ namespace EMCalTriggerPtAnalysis {
 				fHistos->CreateTH2(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), pileupaxis, zvertexBinning);
 				// Create track-based histogram
 				fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 6, trackaxes);
+				// Create cluster-based histogram (Uncalibrated and calibrated clusters)
+				fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 3, clusteraxes);
+				fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 3, clusteraxes);
 			}
 			fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
 			fHistos->CreateTHnSparse("hEventsTriggerbit", "Trigger bits for the different events", 4, bitaxes);
@@ -186,7 +203,6 @@ namespace EMCalTriggerPtAnalysis {
 		 *
 		 * @param option: Additional options
 		 */
-
 		// Common checks: Have SPD vertex and primary vertex from tracks, and both need to have at least one contributor
 		AliESDEvent *esd = static_cast<AliESDEvent *>(fInputEvent);
 		const AliESDVertex *vtxTracks = esd->GetPrimaryVertex(),
@@ -225,18 +241,30 @@ namespace EMCalTriggerPtAnalysis {
 		if(trgstr.Contains("EJ1")){
 			triggerstrings.push_back("EMCJHigh");
 			triggers[1] = 1;
+			if(trgstr.Contains("EG1"))
+				triggerstrings.push_back("EMCHighBoth");
+			else
+				triggerstrings.push_back("EMCHighJetOnly");
 		}
 		if(trgstr.Contains("EJ2")){
 			triggerstrings.push_back("EMCJLow");
 			triggers[2] = 1;
+			if(trgstr.Contains("EG2"))
+				triggerstrings.push_back("EMCLowBoth");
+			else
+				triggerstrings.push_back("EMCLowJetOnly");
 		}
 		if(trgstr.Contains("EG1")){
 			triggerstrings.push_back("EMCGHigh");
 			triggers[3] = 1;
+			if(!trgstr.Contains("EJ1"))
+				triggerstrings.push_back("EMCHighGammaOnly");
 		}
 		if(trgstr.Contains("EG2")){
 			triggerstrings.push_back("EMCGLow");
 			triggers[4] = 1;
+			if(!trgstr.Contains("EJ2"))
+				triggerstrings.push_back("EMCLowGammaOnly");
 		}
 
 		try{
@@ -303,6 +331,37 @@ namespace EMCalTriggerPtAnalysis {
 				}
 			}
 		}
+
+		// Next step we loop over the (uncalibrated) emcal clusters and fill histograms with the cluster energy
+		for(int icl = 0; icl < fInputEvent->GetNumberOfCaloClusters(); icl++){
+			const AliVCluster *clust = fInputEvent->GetCaloCluster(icl);
+			if(!clust->IsEMCAL()) continue;
+			if(triggers[0]) FillClusterHist("MinBias", clust, false, zv, isPileupEvent);
+			if(!triggerstrings.size())	// Non-EMCal-triggered
+				FillClusterHist("NoEMCal", clust, false, zv, isPileupEvent);
+			else{
+				for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it){
+					FillClusterHist(it->c_str(), clust, false, zv, isPileupEvent);
+				}
+			}
+		}
+
+		TClonesArray *calibratedClusters = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcCaloClusters"));
+		if(calibratedClusters){
+			for(int icl = 0; icl < calibratedClusters->GetEntries(); icl++){
+				const AliVCluster *clust = dynamic_cast<const AliVCluster *>((*calibratedClusters)[icl]);
+				if(!clust->IsEMCAL()) continue;
+				if(triggers[0]) FillClusterHist("MinBias", clust, true, zv, isPileupEvent);
+				if(!triggerstrings.size())	// Non-EMCal-triggered
+					FillClusterHist("NoEMCal", clust, true, zv, isPileupEvent);
+				else{
+					for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it){
+						FillClusterHist(it->c_str(), clust, true, zv, isPileupEvent);
+					}
+				}
+			}
+		}
+
 		PostData(1, fResults);
 	}
 
@@ -463,7 +522,7 @@ namespace EMCalTriggerPtAnalysis {
 		 * @param isPileup: flag event as pileup event
 		 * @param cut: id of the cut (0 = no cut)
 		 */
-         	double data[6] = {track->Pt(), track->Eta(), track->Phi(), vz, 0, static_cast<double>(cut)};
+        double data[6] = {track->Pt(), track->Eta(), track->Phi(), vz, 0, static_cast<double>(cut)};
 		char histname[1024];
 		sprintf(histname, "hTrackHist%s", trigger);
 		try{
@@ -485,5 +544,37 @@ namespace EMCalTriggerPtAnalysis {
 		}
 	}
 
-}
+	//______________________________________________________________________________
+	void AliAnalysisTaskPtEMCalTrigger::FillClusterHist(const char* trigger,
+			const AliVCluster* clust, bool isCalibrated, double vz, bool isPileup) {
+		/*
+		 * Fill cluster-based histogram with corresponding information
+		 *
+		 * @param trigger: name of the trigger
+		 * @param cluster: the EMCal cluster information
+		 * @param vz: z-position of the vertex
+		 * @param isPileup: flag event as pileup event
+		 */
+		double data[3] =  {clust->E(), vz, 0};
+		char histname[1024];
+		sprintf(histname, "hCluster%sHist%s", isCalibrated ? "Calib" : "Uncalib", trigger);
+		try{
+			fHistos->FillTHnSparse(histname, data);
+		} catch (HistoContainerContentException &e){
+			std::stringstream errormessage;
+			errormessage << "Filling of histogram failed: " << e.what();
+			AliError(errormessage.str().c_str());
+		}
+		if(!isPileup){
+			data[2] = 1.;
+			try{
+				fHistos->FillTHnSparse(histname, data);
+			} catch (HistoContainerContentException &e){
+				std::stringstream errormessage;
+				errormessage << "Filling of histogram failed: " << e.what();
+				AliError(errormessage.str().c_str());
+			}
+		}
+	}
 
+}
