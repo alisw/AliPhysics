@@ -64,7 +64,7 @@ cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetPrimaryVertexSPD()
 // compare tracks
 if(verbose){
 	static const int nExt = 4;
-	  AliFlatESDTrack *track = flatEsd->GetTracks();
+	  AliFlatESDTrack *track = const_cast<AliFlatESDTrack*> ( flatEsd->GetTracks() );
 	  //new (track)AliFlatESDTrack(1);
     for (Int_t idxTrack = 0; idxTrack < flatEsd->GetNumberOfTracks() && track; ++idxTrack) { 
 
@@ -102,14 +102,14 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
 		cout<<" nITSclusters: "<<track->GetNumberOfITSClusters()<< endl;
 
 // read clusters
-
+#if 0
 	Int_t nCl = track->GetNumberOfTPCClusters();
 	if(nCl && verbose > 1){
 	
-      for (Int_t idxRow = 0; idxRow <  nCl; idxRow++){
-      cout<<"rowNr "<< idxRow<<endl;
+    for (Int_t idxRow = 0; idxRow <  nCl; idxRow++){
+		cout<<"rowNr "<< idxRow<<endl;
       
-      AliFlatTPCCluster * cl = track->GetTPCCluster(idxRow);
+		AliFlatTPCCluster * cl = track->GetTPCCluster(idxRow);
 
 			 	cout<<" idx fX fY fZ  fSigmaY2 fSigmaZ2 fCharge fQMax fPadRow" <<endl;
 				if(cl) {
@@ -117,9 +117,12 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
 				
 				}
 				else cout <<"----------------------------------------------------"<<endl;
-    }
+		}
 	}
-      track = track->GetNextTrack();
+#endif
+	
+	
+      track = const_cast<AliFlatESDTrack*> (track->GetNextTrack());
 	  
 	  
 	  }

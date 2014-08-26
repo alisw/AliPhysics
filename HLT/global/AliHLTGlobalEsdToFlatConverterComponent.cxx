@@ -208,8 +208,10 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
   if (!IsDataEvent()) 
     return 0;
   
-  const AliESDEvent *esd;
+   AliESDEvent *esd;
    AliESDEvent *pEsd;
+
+#if 0
   const TTree *tree;
 	
 	
@@ -230,13 +232,14 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
 		
   }
 	
-	
+#endif
 	
 	
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
     cout<<"Found ESD in esd test component !!!"<<endl;
-    esd = dynamic_cast<const AliESDEvent*>(iter);
+    esd =dynamic_cast<AliESDEvent*>(const_cast<TObject*>(iter));
     if( esd ){
+      esd->GetStdContent();
       cout<<"N ESD tracks: "<<esd->GetNumberOfTracks()<<endl;
 			iResult=1;
     } else {
