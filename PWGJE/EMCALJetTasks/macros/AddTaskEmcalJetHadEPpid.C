@@ -26,12 +26,16 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Double_t JetRadius   = 0.4,
    const Double_t constitCut  = 0.15,
    const Int_t MixingTracks   = 50000,
+   const Int_t nmixingTR      = 5000,
+   const Int_t nmixingEV      = 5,
    TString cutType			  = "EMCAL",
    Bool_t   Comments		  = 0,
    Bool_t   doFlavourJetAnalysis = 0,
    Int_t flavTag              = 999,
    Int_t esdcuts			  = 10001006,
    TString colltype			  = "",
+   UInt_t trigevent           = AliVEvent::kAny,
+   UInt_t mixevent            = AliVEvent::kAny,
    const char *tag			  = ""
 )
 {  
@@ -78,14 +82,14 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetTracksName(nTracks);
   correlationtask->SetTracksNameME(nTracksME);
   correlationtask->SetRhoName(nRho);
-  correlationtask->SetLocalRhoName(lrho);
+  if(colltype == "A-A") correlationtask->SetLocalRhoName(lrho);
   correlationtask->SetJetPhi(minPhi,maxPhi);
   correlationtask->SetJetEta(minEta,maxEta);
   correlationtask->SetAreaCut(minArea);
   correlationtask->SetEventMixing(EvtMix);
   correlationtask->SetTrkBias(TrkBias);
   correlationtask->SetClusBias(ClusBias);
-  correlationtask->SetTrkEta(TrkEta); 
+  correlationtask->SetTrkEta(TrkEta);
   // Added on/after March20, 2014
   correlationtask->SetdoPID(PID);
   correlationtask->SetdoPIDtrackBIAS(PIDtrackBIAS);
@@ -99,11 +103,15 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetJetRad(JetRadius);
   correlationtask->SetConstituentCut(constitCut);
   correlationtask->SetMixingTracks(MixingTracks);
+  correlationtask->SetNMixedTr(nmixingTR);
+  correlationtask->SetNMixedEvt(nmixingEV);
   correlationtask->SetcutType(cutType);
   correlationtask->SetdoComments(Comments);
   correlationtask->SetFlavourJetAnalysis(doFlavourJetAnalysis);
   correlationtask->SetJETFlavourTag(flavTag);
   correlationtask->SetCollType(beam);
+  correlationtask->SetTriggerEventType(trigevent);
+  correlationtask->SetMixedEventType(mixevent);
 
   // =================== set up containers ================================================
   // Cluster Container

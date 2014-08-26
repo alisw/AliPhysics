@@ -5,6 +5,8 @@
 
 class AliVEvent;
 class AliVVertex;
+class AliESDEvent; 
+class AliAODEvent;
 
 class AliPPVsMultUtils : public TObject {
     
@@ -19,8 +21,8 @@ public:
 
     //Utility functions
     //for the base virtual event class: all methods are common
-    Float_t GetMultiplicityPercentile(AliESDEvent *event, TString lMethod);
-    Float_t GetMultiplicityPercentile(AliAODEvent *event, TString lMethod);
+    Float_t GetMultiplicityPercentile(AliESDEvent *event, TString lMethod = "V0M");
+    Float_t GetMultiplicityPercentile(AliAODEvent *event, TString lMethod = "V0M");
     Bool_t LoadCalibration(Int_t lLoadThisCalibration);
     
 private:

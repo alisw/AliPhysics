@@ -13,5 +13,6 @@
 #pragma link C++ class AliPWGFunc+;
 #pragma link C++ class AliPWGHistoTools+;
 #pragma link C++ class AliTHn+;
+#pragma link C++ class THistManager+;
 
 #endif

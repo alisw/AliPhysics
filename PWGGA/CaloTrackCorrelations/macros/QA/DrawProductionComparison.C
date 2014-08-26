@@ -316,9 +316,9 @@ void DrawProductionComparison(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_def
       h2XEUE [iprod]= (TH2F*) GetHisto("AnaPhotonHadronCorr_hXEUeCharged",iprod);
       
       Float_t minClusterE = 8;
-      TH1F * hLeading = (TH1F*) GetHisto("AnaPhotonHadronCorr_hPtLeading",iprod);
-      Int_t minClusterEBin = hLeading->FindBin(minClusterE);
-      Float_t nTrig = hLeading->Integral(minClusterE,100000);
+      TH1F * hTrigger = (TH1F*) GetHisto("AnaPhotonHadronCorr_hPtTrigger",iprod);
+      Int_t minClusterEBin = hTrigger->FindBin(minClusterE);
+      Float_t nTrig = hTrigger->Integral(minClusterE,100000);
       
       hXE  [iprod] = (TH1F*)h2XE  [iprod]->ProjectionY(Form("hXE%s"  ,prod[iprod].Data()),minClusterEBin,1000);
       hXEUE[iprod] = (TH1F*)h2XEUE[iprod]->ProjectionY(Form("hXEUE%s",prod[iprod].Data()),minClusterEBin,1000);

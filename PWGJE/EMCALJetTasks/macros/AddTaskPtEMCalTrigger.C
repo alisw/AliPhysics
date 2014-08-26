@@ -3,6 +3,7 @@
 #include "AliAnalysisTaskPtEMCalTrigger.h"
 #include "AliESDtrackCuts.h"
 #include <TList.h>
+#include <TString.h>
 #endif
 
 AliAnalysisTask* AddTaskPtEMCalTrigger(){
@@ -19,8 +20,10 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(){
         }
         
         EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger("ptemcaltriggertask");
-        pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
+        //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
+        pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
         mgr->AddTask(pttriggertask);
+        pttriggertask->SetPtRange(2., 100.);
 
         // Create charged hadrons pPb standard track cuts
         AliESDtrackCuts *standardTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
@@ -39,8 +42,12 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(){
         hybridTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
         pttriggertask->AddTrackCuts(hybridTrackCuts);
 
+        TString containerName = mgr->GetCommonFileName();
+        containerName += ":PtEMCalTriggerTask";
+        printf("container name: %s\n", containerName.Data());
+
         AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-        AliAnalysisDataContainer *coutput = mgr->CreateContainer("results", TList::Class(),    AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+        AliAnalysisDataContainer *coutput = mgr->CreateContainer("results", TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
    
         //Connect input/output
         mgr->ConnectInput(pttriggertask, 0, cinput);

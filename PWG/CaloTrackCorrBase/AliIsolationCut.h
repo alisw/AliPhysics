@@ -49,7 +49,7 @@ class AliIsolationCut : public TObject {
                               AliCaloPID * pid, 
                               Bool_t bFillAOD,
                               AliAODPWG4ParticleCorrelation  * pCandidate, TString aodObjArrayName,
-                              Int_t &n, Int_t & nfrac, Float_t &ptsum, Bool_t & isolated) const ;  
+                              Int_t &n, Int_t & nfrac, Float_t &ptSum, Float_t &ptLead, Bool_t & isolated) const ;
   
   void       Print(const Option_t * opt) const ;
   

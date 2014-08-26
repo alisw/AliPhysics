@@ -2039,7 +2039,6 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhoScale()
     fRhoChargedScale->FillBackgroundFluctuations(fEventCentrality,TPC_rho,fJetR);
     fRhoChargedScale->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),TPC_rho);
     fRhoChargedScale->FillMiscJetStats(fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets(),fOrgTracks,fOrgClusters,fVertex);
-
 }
 
 void AliAnalysisTaskFullpAJets::EstimateChargedRhokT()
@@ -2334,6 +2333,7 @@ void AliAnalysisTaskFullpAJets::EstimateChargedRhoCMSScale()
     fRhoChargedCMSScale->FillLeadingJetPtRho(fEMCalFullJet->GetLeadingPt(),kTRho);
     fRhoChargedCMSScale->DoNEFAnalysis(fNEFSignalJetCut,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets(),fmyClusters,fOrgClusters,fEvent,fEMCALGeometry,fRecoUtil,fCells);
     fRhoChargedCMSScale->FillMiscJetStats(fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets(),fOrgTracks,fOrgClusters,fVertex);
+    fRhoChargedCMSScale->FillJetEventCentrality(fEMCalFullJet->GetLeadingPt(),fEvent);
     
     delete [] RhoArray;
     delete [] pTArray;
@@ -3757,6 +3757,9 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fhJetPtZLeadingTrack(0),
     fhJetPtZLeadingCluster(0),
 
+    fhEventCentralityVsZNA(0),
+    fhEventCentralityVsZNAPt(0),
+
     fNEFOutput(0),
     fhJetPtNEF(0),
     fhJetNEFInfo(0),
@@ -3858,6 +3861,9 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fhJetPtZLeadingConstituent(0),
     fhJetPtZLeadingTrack(0),
     fhJetPtZLeadingCluster(0),
+
+    fhEventCentralityVsZNA(0),
+    fhEventCentralityVsZNAPt(0),
 
     fNEFOutput(0),
     fhJetPtNEF(0),
@@ -3973,6 +3979,9 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, TStr
     fhJetPtZLeadingTrack(0),
     fhJetPtZLeadingCluster(0),
 
+    fhEventCentralityVsZNA(0),
+    fhEventCentralityVsZNAPt(0),
+
     fNEFOutput(0),
     fhJetPtNEF(0),
     fhJetNEFInfo(0),
@@ -4087,6 +4096,9 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, TStr
     fhJetPtZLeadingTrack(0),
     fhJetPtZLeadingCluster(0),
 
+    fhEventCentralityVsZNA(0),
+    fhEventCentralityVsZNAPt(0),
+
     fNEFOutput(0),
     fhJetPtNEF(0),
     fhJetNEFInfo(0),
@@ -4181,7 +4193,9 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     TString DeltaPtString="";
     TString BckgFlucPtString="";
     TString CentralityString;
+    TString EventCentralityString;
     CentralityString = Form("Centrality (%s) ",fCentralityTag.Data());
+    EventCentralityString = Form("%s vs ZNA Centrality ",fCentralityTag.Data());
     
     // Rho Spectral Plots
     RhoString = Form("%d-%d Centrality, Rho Spectrum",0,20);
@@ -4468,6 +4482,20 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     fhJetPtZLeadingCluster->GetYaxis()->SetTitle("z_{Leading,cluster}");
     fhJetPtZLeadingCluster->GetZaxis()->SetTitle("1/N_{Events} dN_{jet}/dp_{T,jet}dz_{cluster}");
     fhJetPtZLeadingCluster->Sumw2();
+    
+    // Event Centralities vs Leading Jet Pt
+    fhEventCentralityVsZNA = new TH2F("fhEventCentralityVsZNA",EventCentralityString,fCentralityBins,fCentralityLow,fCentralityUp,fCentralityBins,fCentralityLow,fCentralityUp);
+    fhEventCentralityVsZNA->GetXaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fhEventCentralityVsZNA->GetYaxis()->SetTitle("Centrality (ZNA)");
+    fhEventCentralityVsZNA->GetZaxis()->SetTitle("Probability Density");
+    fhEventCentralityVsZNA->Sumw2();
+
+    EventCentralityString = Form("%s vs ZNA Centrality vs Leading Jet p_{T} ",fCentralityTag.Data());
+    fhEventCentralityVsZNAPt = new TH3F("fhEventCentralityVsZNAPt",EventCentralityString,fCentralityBins,fCentralityLow,fCentralityUp,fCentralityBins,fCentralityLow,fCentralityUp,fPtBins,fPtLow,fPtUp);
+    fhEventCentralityVsZNAPt->GetXaxis()->SetTitle(Form("%s",CentralityString.Data()));
+    fhEventCentralityVsZNAPt->GetYaxis()->SetTitle("Centrality (ZNA)");
+    fhEventCentralityVsZNAPt->GetZaxis()->SetTitle("Leading Jet p_{T} (GeV/c)");
+    fhEventCentralityVsZNAPt->Sumw2();
 
     // Neutral Energy Fraction Histograms & QA
     if (fDoNEFQAPlots==kTRUE)
@@ -4644,6 +4672,8 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     fOutput->Add(fhJetPtZLeadingConstituent);
     fOutput->Add(fhJetPtZLeadingTrack);
     fOutput->Add(fhJetPtZLeadingCluster);
+    fOutput->Add(fhEventCentralityVsZNA);
+    fOutput->Add(fhEventCentralityVsZNAPt);
 }
 
 void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetName(const char *name)
@@ -5159,6 +5189,15 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillMiscJetStats(TClonesArray *j
         }
     }
     delete cluster_vec;
+}
+
+void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillJetEventCentrality(Double_t leadingJetPt, AliVEvent *event)
+{
+    Double_t event_centrality = event->GetCentrality()->GetCentralityPercentile(fCentralityTag);
+    Double_t event_centrality_ZNA = event->GetCentrality()->GetCentralityPercentile("ZNA");
+    
+    fhEventCentralityVsZNA->Fill(event_centrality,event_centrality_ZNA);
+    fhEventCentralityVsZNAPt->Fill(event_centrality,event_centrality_ZNA,leadingJetPt);
 }
 
 TList* AliAnalysisTaskFullpAJets::AlipAJetHistos::GetOutputHistos()

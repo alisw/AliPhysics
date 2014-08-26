@@ -68,7 +68,9 @@ fTrack(0),fCuts(0) {}
    TH3F * GetHistoNclustersQA() {return fHistoNclustersQA ;}
    TH3F * GetHistochi2perNDFQA() {return fHistochi2perNDFQA; }
    Bool_t GetUseTypeDependedTOFCut () {return fUseTypeDependedTOFCut;}
-		 
+   AliESDtrackCuts* GetTrackCuts(){return fCuts;}
+	   		 
+
    void SetEta(Float_t etamin,Float_t etamax)   { fEtaCutMin = etamin;fEtaCutMax = etamax; }
    void SetDCA(Float_t dca)   { fDCACut = dca; }
    void SetP(Float_t p)       { fPCut = p; }
@@ -80,8 +82,7 @@ fTrack(0),fCuts(0) {}
    void SetHashitinSPD1 (Bool_t value) {fHashitinSPD1=value;}	
    void SetUsedAdditionalCuts (Bool_t value) {fusedadditionalcuts=value;}
    void SetPtTOFMatchingPartDepended(Float_t pion,Float_t kaon,Float_t proton);
-   	
-   Float_t GetEtaMin()       const    { return fEtaCutMin; }
+     Float_t GetEtaMin()       const    { return fEtaCutMin; }
    Float_t GetEtaMax()       const    { return fEtaCutMax; }
    Float_t GetYMax()         const    { return fYCutMax; }
    Float_t GetYMin()         const    { return fYCutMin; }
@@ -138,8 +139,6 @@ fTrack(0),fCuts(0) {}
    AliSpectraBothTrackCuts& operator=(const AliSpectraBothTrackCuts&);
    void ConfigurePtTOFCut(); 	
   
-
    ClassDef(AliSpectraBothTrackCuts, 7);
 };
 #endif
-

@@ -21,7 +21,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Float_t timeMin       = 100e-9,  //minimum time of physical signal in a cell/digit (s)
   Float_t timeMax       = 900e-9,  //maximum time of physical signal in a cell/digit (s)
   Float_t timeCut       = 900e-9,  //maximum time difference between the digits inside EMC cluster (s)
-  const char *pass      = 0        //string defining pass (use none if figured out from path)
+  const char *pass      = 0,       //string defining pass (use none if figured out from path)
+  Bool_t  remapMcAod    = kFALSE   //switch on the remaping for the MC labels in AOD productions
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -52,22 +53,33 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 
   if (evhand->InheritsFrom("AliESDInputHandler")) {
     AliTender* alitender = mgr->GetTopTasks()->FindObject("AliTender");
+    
     if (!alitender)
       alitender = new  AliTender("AliTender");
+    
     alitender->AddSupply(EMCALSupply);
     alitender->SetDefaultCDBStorage("raw://"); 
+    
     ana = alitender;
+    
     coutput1 = mgr->CreateContainer("emcal_tender_event", 
 				    AliESDEvent::Class(), 
 				    AliAnalysisManager::kExchangeContainer, 
 				    "default_tender");
   } else if (evhand->InheritsFrom("AliAODInputHandler")) {
     AliEmcalTenderTask* emcaltender = mgr->GetTopTasks()->FindObject("AliEmcalTenderTask"); 
+    
     if (!emcaltender)
-      emcaltender = new  AliEmcalTenderTask("AliEmcalTenderTask");
+        emcaltender = new  AliEmcalTenderTask("AliEmcalTenderTask");
+    
+    if (remapMcAod)
+        EMCALSupply->SwitchOnRemapMCLabelForAODs();
+    
     emcaltender->SetEMCALTenderSupply(EMCALSupply);
+    
     ana = emcaltender;
-    coutput1 = mgr->CreateContainer("emcal_tender_event", 
+    
+    coutput1 = mgr->CreateContainer("emcal_tender_event",
 				    AliAODEvent::Class(), 
 				    AliAnalysisManager::kExchangeContainer, 
 				    "default_tender");

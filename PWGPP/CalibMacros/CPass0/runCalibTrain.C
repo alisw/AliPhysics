@@ -20,6 +20,8 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   AliLog::SetGlobalLogLevel(AliLog::kError); 
   gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C");
+  gSystem->SetIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS"); 
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
 
   // detector tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C");
@@ -43,6 +45,10 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   AliSysInfo::AddStamp("BeforeConfiguringCalibTrain");
   ConfigCalibTrain(runNumber, ocdb);
   AliSysInfo::AddStamp("AfterConfiguringCalibTrain");  
+  
+  if (gROOT->LoadMacro("localOCDBaccessConfig.C")==0) {
+    localOCDBaccessConfig();
+  }  
 
   //
   // check the presence of the detectors
@@ -58,6 +64,8 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   AliAnalysisManager *mgr  = new AliAnalysisManager("ESD to ESD", "Analysis Manager");
   // mgr->SetDebugLevel(3);
   mgr->SetNSysInfo(50);   
+  mgr->SetCacheSize(0);
+
   // Input
   AliESDInputHandler* inpHandler = new AliESDInputHandler();
   inpHandler->SetReadFriends(1);
@@ -98,6 +106,12 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   if (!okTPC) itsAlign->SetUseITSstandaloneTracks(kTRUE); 
   if (grpData->GetL3Current()[0] < 300) itsAlign->SetMinPt(0.001);
   //
+  // dummy task to clean geometry in Terminate >>>>
+  CleanGeom* clgmTask = new CleanGeom("cleanGeom");
+  mgr->AddTask(clgmTask);
+  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
+  if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);
+
   // Run the analysis
   AliSysInfo::AddStamp("BeforeInitAnalysis");
   if (!mgr->InitAnalysis()) {

@@ -114,7 +114,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 	else
 		AliFatal("Not processing AODs or ESDS") ;
 	if(fdotheMCLoopAfterEventCuts)
-  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
+  		if(!fEventCuts->IsSelected(fAOD,fTrackCuts))
+			return;//event selection
   	TClonesArray *arrayMC = 0;
   	Int_t npar=0;
   	AliStack* stack=0x0;
