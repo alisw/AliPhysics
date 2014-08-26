@@ -75,7 +75,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		void ProcessPhotonCandidates();
 		void ProcessTruePhotonCandidates(AliAODConversionPhoton*);
 		void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
-		void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
+		void MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
     	void ProcessNeutralPionCandidatesPureConversions();	
 		void ProcessTrueNeutralPionCandidatesPureConversions(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
 		void ProcessTrueNeutralPionCandidatesPureConversionsAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
@@ -88,7 +88,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		Bool_t IsPiPlPiMiPiZeroDecay(TParticle *fMCMother) const;
 		Bool_t IsEtaPiPlPiMiPiZeroDaughter( Int_t label ) const;
 		Bool_t IsOmegaPiPlPiMiPiZeroDaughter( Int_t label ) const;
-		
+		Bool_t GammaIsNeutralMesonPiPlPiMiPiZeroDaughter( Int_t label ) const;
 
 		AliV0ReaderV1 					*fV0Reader;									//
 		AliPrimaryPionSelector			*fPionSelector;								//
@@ -155,6 +155,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		// reconstructed particles MC validated
 		TH2F 							**fHistoTrueMotherPiPlPiMiPiZeroInvMassPt;	// histos with reconstructed validated eta or omega, inv mass, pT
 		TH2F 							**fHistoTrueMotherGammaGammaInvMassPt;		// histos with reconstructed validated pi0, inv mass, pT
+		TH2F 							**fHistoTrueMotherGammaGammaFromEtaInvMassPt;	// histos with reconstructed validated pi0, inv mass, pT
+		TH2F 							**fHistoTrueMotherGammaGammaFromOmegaInvMassPt;	// histos with reconstructed validated pi0, inv mass, pT
 		TH1F 							**fHistoTrueConvGammaPt;					// histos with reconstructed validated gamma, pT
 		TH1F 							**fHistoTrueConvGammaFromNeutralMesonPt;	// histos with reconstructed validated gamma from eta or omega via pi0, pT
 		TH1F				 			**fHistoTruePosPionPt;						// histos with reconstructed validated positive pion, pT
@@ -162,7 +164,9 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH1F 							**fHistoTrueNegPionPt;						// histos with reconstructed validated negative pion, pT
 		TH1F 							**fHistoTrueNegPionFromNeutralMesonPt;		// histos with reconstructed validated negative pion from eta or omega, pT
 		TH2F 							**fHistoTruePionPionInvMassPt;				// histos with reconstructed validated two pion, invariant mass, pT
-		TH2F 							**fHistoTruePionPionFromNeutralMesonInvMassPt;// histos with reconstructed validated two pion from eta or omega, invariant mass, pT
+		TH2F 							**fHistoTruePionPionFromSameMotherInvMassPt;// histos with reconstructed validated two pion from same mother, invariant mass, pT
+		TH2F 							**fHistoTruePionPionFromEtaInvMassPt;		// histos with reconstructed validated two pion from eta , invariant mass, pT
+		TH2F 							**fHistoTruePionPionFromOmegaInvMassPt;		// histos with reconstructed validated two pion from omega, invariant mass, pT
 		// Event properties
 		TH1I 							**fHistoNEvents;							// histo for event counting
 		TH1I 							**fHistoNGoodESDTracks;						// histo number of reconstructed primary tracks

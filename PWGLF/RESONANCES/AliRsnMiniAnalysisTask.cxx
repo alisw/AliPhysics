@@ -916,8 +916,6 @@ Double_t AliRsnMiniAnalysisTask::ComputeMultiplicity(Bool_t isESD,TString type)
       AliError(Form("String '%s' does not define a possible multiplicity/centrality computation", type.Data()));
       return -1.0;
    }
-
-   return 1E20;
 }
 
 //__________________________________________________________________________________________________
@@ -1210,23 +1208,23 @@ Double_t AliRsnMiniAnalysisTask::ApplyCentralityPatchPbPb2011(){
     return -999.0;
   }
   
-  
   Double_t cent = (Float_t)(centrality->GetCentralityPercentile("V0M"));               
-  Double_t rnd_hc, testf, ff, N1, N2;
+  Double_t rnd_hc = -1., testf = 0.0, ff = 0, N1 = -1., N2 = -1.;
 
   if(fUseCentralityPatchPbPb2011==510){
     N1 = 1.9404e+06;
     N2 = 1.56435e+06; //N2 is the reference 
     ff = 5.04167e+06 - 1.49885e+06*cent + 2.35998e+05*cent*cent -1.22873e+04*cent*cent*cent;
+  } else {
+    if(fUseCentralityPatchPbPb2011==1020){
+      N2 = 2.0e+05; //N2 is the reference
+      N1 = 3.7e+05;
+      ff = -1.73979e+06 - 3.05316e+06*cent + 1.05517e+06*cent*cent - 133205*cent*cent*cent + 8187.45*cent*cent*cent*cent - 247.875*cent*cent*cent*cent*cent + 2.9676*cent*cent*cent*cent*cent*cent;
+    } else {
+      AliError(Form("Patch for the requested centrality (%i) is not available", fUseCentralityPatchPbPb2011));
+      return -999.0;
+    }
   }
-  
-  if(fUseCentralityPatchPbPb2011==1020){
-    N2 = 2.0e+05; //N2 is the reference 
-    N1 = 3.7e+05;
- 
-    ff = -1.73979e+06 - 3.05316e+06*cent + 1.05517e+06*cent*cent - 133205*cent*cent*cent + 8187.45*cent*cent*cent*cent - 247.875*cent*cent*cent*cent*cent + 2.9676*cent*cent*cent*cent*cent*cent;
-  }
-
   testf = ( N2 + (N1-ff) ) / N1;
   rnd_hc = gRandom->Rndm();
 

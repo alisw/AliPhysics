@@ -58,7 +58,7 @@ const char* AliConversionMesonCuts::fgkCutNames[AliConversionMesonCuts::kNCuts] 
    "RapidityMesonCut", //4
    "RCut", //5
    "AlphaMesonCut", //6
-   "Chi2MesonCut", //7
+   "SelectionWindow", //7
    "SharedElectronCuts", //8
    "RejectToCloseV0s", //9
    "UseMCPSmearing", //10
@@ -74,7 +74,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
    fHistograms(NULL),
    fMesonKind(0),
    fMaxR(200),
-   fChi2CutMeson(1000),
+   fSelectionLow(0.08),
+   fSelectionHigh(0.145),
    fAlphaMinCutMeson(0),
    fAlphaCutMeson(1),
    fRapidityCutMeson(1),
@@ -131,7 +132,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
    fHistograms(NULL),
    fMesonKind(ref.fMesonKind),
    fMaxR(ref.fMaxR),
-   fChi2CutMeson(ref.fChi2CutMeson),
+   fSelectionLow(ref.fSelectionLow),
+   fSelectionHigh(ref.fSelectionHigh),
    fAlphaMinCutMeson(ref.fAlphaMinCutMeson),
    fAlphaCutMeson(ref.fAlphaCutMeson),
    fRapidityCutMeson(ref.fRapidityCutMeson),
@@ -480,9 +482,11 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
 	TParticle *negPion = 0x0;
 	TParticle *neutPion = 0x0;
 
+// 	cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
 	for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
-
+		
 		TParticle* temp = (TParticle*)fMCStack->Particle( index );
+// 		cout << temp->GetPdgCode() << endl;
 		switch( temp->GetPdgCode() ) {
 		case 211:
 			posPion      =  temp;
@@ -732,9 +736,9 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
          UpdateCutString();
          return kTRUE;
       } else return kFALSE;
-   case kchi2MesonCut:
-      if( SetChi2MesonCut(value)) {
-         fCuts[kchi2MesonCut] = value;
+   case kSelectionCut:
+      if( SetSelectionWindowCut(value)) {
+         fCuts[kSelectionCut] = value;
          UpdateCutString();
          return kTRUE;
       } else return kFALSE;
@@ -851,6 +855,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
 	printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
 	printf("\t dca_{R, prim Vtx} > %3.2f\n", fDCARMesonPrimVtxCut); 
 	printf("\t dca_{Z, prim Vtx} > %3.2f\n\n", fDCAZMesonPrimVtxCut); 
+	printf("\t Meson selection window for further analysis %3.3f > M_{gamma,gamma} > %3.3f\n\n", fSelectionLow, fSelectionHigh); 
 	
 	 printf("Meson BG settings \n");
 	 if (!fDoBG){
@@ -917,29 +922,40 @@ Bool_t AliConversionMesonCuts::SetRCut(Int_t rCut){
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionMesonCuts::SetChi2MesonCut(Int_t chi2MesonCut){
+Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
    // Set Cut
-   switch(chi2MesonCut){
-   case 0:  // 100.
-      fChi2CutMeson = 100.;
+   switch(selectionCut){
+   case 0:  
+      fSelectionLow = 0.08;
+	  fSelectionHigh = 0.145;
       break;
-   case 1:  // 50.
-      fChi2CutMeson = 50.;
+   case 1:  
+      fSelectionLow = 0.1;
+	  fSelectionHigh = 0.145;
       break;
-   case 2:  // 30.
-      fChi2CutMeson = 30.;
-      break;
+   case 2:  
+	  fSelectionLow = 0.11;
+	  fSelectionHigh = 0.145;
+	  break;
    case 3:
-      fChi2CutMeson = 200.;
+	  fSelectionLow = 0.12;
+	  fSelectionHigh = 0.145;
       break;
    case 4:
-      fChi2CutMeson = 500.;
+	  fSelectionLow = 0.1;
+	  fSelectionHigh = 0.15;
       break;
    case 5:
-      fChi2CutMeson = 1000.;
+	  fSelectionLow = 0.11;
+	  fSelectionHigh = 0.15;
       break;
+   case 6:
+	  fSelectionLow = 0.12;
+	  fSelectionHigh = 0.15;
+      break;
+	  
    default:
-      cout<<"Warning: Chi2MesonCut not defined "<<chi2MesonCut<<endl;
+      cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;
       return kFALSE;
    }
    return kTRUE;

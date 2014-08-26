@@ -120,18 +120,18 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 	Float_t mcvertexratio=fHistoVtxAftSelmc->Integral(-1,-1,"width")/fmc->GetParameter(0);
 	*/
 	//Event cut histo 
-	TH1I* histodata=ecuts_data->GetHistoCuts();
-	TH1I* histomc=ecuts_mc->GetHistoCuts();
+	//TH1I* histodata=ecuts_data->GetHistoVtxAftSel();
+	//TH1I* histomc=ecuts_mc->GetHistoVtxAftSel();
 	
-	Int_t events_data=histodata->GetBinContent(3);
-	Int_t events_mc=histomc->GetBinContent(3);
+	Int_t events_data=ecuts_data->GetHistoVtxAftSel()->GetEntries();
+	Int_t events_mc=ecuts_mc->GetHistoVtxAftSel()->GetEntries();
 
 	if(events_data==0&&events_mc==0)
 		return 0;
 
 
-	Float_t datavertexratio=((Float_t)(events_data))/((Float_t)histodata->GetBinContent(4));
-         Float_t mcvertexratio=((Float_t)(events_mc))/((Float_t)histomc->GetBinContent(4));
+	Float_t datavertexratio=((Float_t)(events_data))/((Float_t)ecuts_data->GetHistoVtxAftSelwithoutZvertexCut()->GetEntries());
+         Float_t mcvertexratio=((Float_t)(events_mc))/((Float_t)ecuts_mc->GetHistoVtxAftSelwithoutZvertexCut()->GetEntries());
 	 TH1F* fHistoEtaAftSeldata=(TH1F*)ecuts_data->GetHistoEtaAftSel();
 	 TH1F* fHistoEtaAftSelmc=(TH1F*)ecuts_mc->GetHistoEtaAftSel();
 	flistcanvas->Add(plot_on_canvas("ETA",fHistoEtaAftSeldata,fHistoEtaAftSelmc));
@@ -162,7 +162,15 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 	TF1* badchunk=new TF1("badchunkfit","pol0",10,40);
 	binzero->Fit("badchunkfit","R");
 	Float_t badchunksfraction=badchunk->GetParameter(0);
-	cout<<"Bad chunks "<<badchunksfraction<<endl;	
+	cout<<"Bad chunks "<<badchunksfraction<<endl;
+	if(badchunksfraction<0.005)
+	{
+		badchunksfraction=0.0; //only applied if higer than 0.5%
+		cout<<"reset bad chunks correction"<<badchunksfraction<<endl;
+
+	}
+	
+	
 	binzero->Draw("E1");
 	flistcanvas->Add(cbc);
 	if(TMath::Abs(hmul->GetEntries()/events_mc-1.0)>0.001)

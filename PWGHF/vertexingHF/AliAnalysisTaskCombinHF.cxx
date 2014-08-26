@@ -69,6 +69,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fNormRotated(0x0),
   fDeltaMass(0x0),
   fDeltaMassFullAnalysis(0x0),
+  fMassVsPtVsYME(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
@@ -78,6 +79,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fMinMass(1.720),
   fMaxMass(2.150),
   fMaxPt(10.),
+  fPtBinWidth(0.5),
   fEtaAccCut(0.9),
   fPtAccCut(0.1),
   fNRotations(9),
@@ -97,7 +99,24 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fKeepNegID(kFALSE),
   fPIDselCaseZero(0),
   fBayesThresKaon(0.4),
-  fBayesThresPion(0.4)
+  fBayesThresPion(0.4),
+  fDoEventMixing(kTRUE),
+  fMaxNumberOfEventsForMixing(20),
+  fMaxzVertDistForMix(20.),
+  fMaxMultDiffForMix(9999.),
+  fUsePoolsZ(kFALSE),
+  fUsePoolsM(kFALSE),
+  fNzVertPools(1),
+  fNzVertPoolsLimSize(2),
+  fzVertPoolLims(0x0),
+  fNMultPools(1),
+  fNMultPoolsLimSize(2),
+  fMultPoolLims(0x0),
+  fEventBuffer(0x0),
+  fVtxZ(0),
+  fMultiplicity(0),
+  fKaonTracks(0x0),
+  fPionTracks(0x0)
 {
   // default constructor
 }
@@ -128,6 +147,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fNormRotated(0x0),
   fDeltaMass(0x0),
   fDeltaMassFullAnalysis(0x0),
+  fMassVsPtVsYME(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
@@ -137,6 +157,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fMinMass(1.720),
   fMaxMass(2.150),
   fMaxPt(10.),
+  fPtBinWidth(0.5),
   fEtaAccCut(0.9),
   fPtAccCut(0.1),
   fNRotations(9),
@@ -156,10 +177,27 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fKeepNegID(kFALSE),
   fPIDselCaseZero(0),
   fBayesThresKaon(0.4),
-  fBayesThresPion(0.4)
+  fBayesThresPion(0.4),
+  fDoEventMixing(kTRUE),
+  fMaxNumberOfEventsForMixing(20),
+  fMaxzVertDistForMix(20.),
+  fMaxMultDiffForMix(9999.),
+  fUsePoolsZ(kFALSE),
+  fUsePoolsM(kFALSE),
+  fNzVertPools(1),
+  fNzVertPoolsLimSize(2),
+  fzVertPoolLims(0x0),
+  fNMultPools(1),
+  fNMultPoolsLimSize(2),
+  fMultPoolLims(0x0),
+  fEventBuffer(0x0),
+  fVtxZ(0),
+  fMultiplicity(0),
+  fKaonTracks(0x0),
+  fPionTracks(0x0)
 {
   // standard constructor
-  
+
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,AliNormalizationCounter::Class());
 }
@@ -170,36 +208,72 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   //
   // Destructor
   //
+  if(fOutput && !fOutput->IsOwner()){
+    delete fHistNEvents;
+    delete fHistTrackStatus;
+    delete fHistCheckOrigin;
+    delete fHistCheckOriginSel;
+    delete fHistCheckDecChan;
+    delete fHistCheckDecChanAcc;
+    delete fPtVsYGen;
+    delete fPtVsYGenLargeAcc;
+    delete fPtVsYGenLimAcc;
+    delete fPtVsYGenAcc;
+    delete fPtVsYReco;
+    delete fMassVsPtVsY;
+    delete fMassVsPtVsYLSpp;
+    delete fMassVsPtVsYLSmm;
+    delete fMassVsPtVsYRot;
+    delete fMassVsPtVsYSig;
+    delete fMassVsPtVsYRefl;
+    delete fMassVsPtVsYBkg;
+    delete fNSelected;
+    delete fNormRotated;
+    delete fDeltaMass;
+    delete fDeltaMassFullAnalysis;
+    delete fMassVsPtVsYME;
+  }
+
   delete fOutput;
-  delete fHistNEvents;
-  delete fHistTrackStatus;
-  delete fHistCheckOrigin;
-  delete fHistCheckOriginSel;
-  delete fHistCheckDecChan;
-  delete fHistCheckDecChanAcc;
-  delete fPtVsYGen;
-  delete fPtVsYGenLargeAcc;
-  delete fPtVsYGenLimAcc;
-  delete fPtVsYGenAcc;
-  delete fPtVsYReco;
-  delete fMassVsPtVsY;
-  delete fMassVsPtVsYLSpp;
-  delete fMassVsPtVsYLSmm;
-  delete fMassVsPtVsYRot;
-  delete fMassVsPtVsYSig;
-  delete fMassVsPtVsYRefl;
-  delete fMassVsPtVsYBkg;
-  delete fNSelected;
-  delete fNormRotated;
-  delete fDeltaMass;
   delete fCounter;
   delete fTrackCutsAll;
   delete fTrackCutsPion;
   delete fTrackCutsKaon;
   delete fPidHF;
   delete fAnalysisCuts;
+  if(fKaonTracks) fKaonTracks->Delete();
+  if(fPionTracks) fPionTracks->Delete();
+  delete fKaonTracks;
+  delete fPionTracks;
+  delete fEventBuffer;
+  delete [] fzVertPoolLims;
+  delete [] fMultPoolLims;
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskCombinHF::ConfigureZVertPools(Int_t nPools, Double_t*  zVertLimits)
+{
+  // sets the pools for event mizing in zvertex
+  if(fzVertPoolLims) delete [] fzVertPoolLims;
+  fNzVertPools=nPools;
+  fNzVertPoolsLimSize=nPools+1;
+  fzVertPoolLims = new Double_t[fNzVertPoolsLimSize];
+  for(Int_t ib=0; ib<fNzVertPoolsLimSize; ib++) fzVertPoolLims[ib]=zVertLimits[ib];
+  fUsePoolsZ=kTRUE;
+  return;  
+}
+//________________________________________________________________________
+void AliAnalysisTaskCombinHF::ConfigureMultiplicityPools(Int_t nPools, Double_t*  multLimits)
+{
+  // sets the pools for event mizing in zvertex
+  if(fMultPoolLims) delete [] fMultPoolLims;
+  fNMultPools=nPools;
+  fNMultPoolsLimSize=nPools+1;
+  fMultPoolLims = new Double_t[fNMultPoolsLimSize];
+  for(Int_t ib=0; ib<nPools+1; ib++) fMultPoolLims[ib]=multLimits[ib];
+  fUsePoolsM=kTRUE;
+  return;  
+}
 //________________________________________________________________________
 void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
 {
@@ -240,8 +314,9 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistTrackStatus->SetMinimum(0);
   fOutput->Add(fHistTrackStatus);
   
-  Int_t nPtBins = fMaxPt*10;
-  
+  Int_t nPtBins = (Int_t)(fMaxPt/fPtBinWidth+0.001);
+  Double_t maxPt=fPtBinWidth*nPtBins;
+
   if(fReadMC){
     
     fHistCheckOrigin=new TH1F("hCheckOrigin","",7,-1.5,5.5);
@@ -264,27 +339,27 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     fHistCheckDecChanAcc->SetMinimum(0);
     fOutput->Add(fHistCheckDecChanAcc);
     
-    fPtVsYGen= new TH2F("hPtVsYGen","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYGen= new TH2F("hPtVsYGen","",nPtBins,0.,maxPt,20,-1.,1.);
     fPtVsYGen->Sumw2();
     fPtVsYGen->SetMinimum(0);
     fOutput->Add(fPtVsYGen);
     
-    fPtVsYGenLargeAcc= new TH2F("hPtVsYGenLargeAcc","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYGenLargeAcc= new TH2F("hPtVsYGenLargeAcc","",nPtBins,0.,maxPt,20,-1.,1.);
     fPtVsYGenLargeAcc->Sumw2();
     fPtVsYGenLargeAcc->SetMinimum(0);
     fOutput->Add(fPtVsYGenLargeAcc);
     
-    fPtVsYGenLimAcc= new TH2F("hPtVsYGenLimAcc","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYGenLimAcc= new TH2F("hPtVsYGenLimAcc","",nPtBins,0.,maxPt,20,-1.,1.);
     fPtVsYGenLimAcc->Sumw2();
     fPtVsYGenLimAcc->SetMinimum(0);
     fOutput->Add(fPtVsYGenLimAcc);
     
-    fPtVsYGenAcc= new TH2F("hPtVsYGenAcc","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYGenAcc= new TH2F("hPtVsYGenAcc","",nPtBins,0.,maxPt,20,-1.,1.);
     fPtVsYGenAcc->Sumw2();
     fPtVsYGenAcc->SetMinimum(0);
     fOutput->Add(fPtVsYGenAcc);
     
-    fPtVsYReco= new TH2F("hPtVsYReco","",nPtBins,0.,fMaxPt,20,-1.,1.);
+    fPtVsYReco= new TH2F("hPtVsYReco","",nPtBins,0.,maxPt,20,-1.,1.);
     fPtVsYReco->Sumw2();
     fPtVsYReco->SetMinimum(0);
     fOutput->Add(fPtVsYReco);
@@ -293,38 +368,38 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   
   Int_t nMassBins=fMaxMass*1000.-fMinMass*1000.;
   Double_t maxm=fMinMass+nMassBins*0.001;
-  fMassVsPtVsY=new TH3F("hMassVsPtVsY","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+  fMassVsPtVsY=new TH3F("hMassVsPtVsY","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsY->Sumw2();
   fMassVsPtVsY->SetMinimum(0);
   fOutput->Add(fMassVsPtVsY);
   
-  fMassVsPtVsYRot=new TH3F("hMassVsPtVsYRot","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+  fMassVsPtVsYRot=new TH3F("hMassVsPtVsYRot","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsYRot->Sumw2();
   fMassVsPtVsYRot->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYRot);
   
   if(fMeson==kDzero){
-    fMassVsPtVsYLSpp=new TH3F("hMassVsPtVsYLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+    fMassVsPtVsYLSpp=new TH3F("hMassVsPtVsYLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
     fMassVsPtVsYLSpp->Sumw2();
     fMassVsPtVsYLSpp->SetMinimum(0);
     fOutput->Add(fMassVsPtVsYLSpp);
-    fMassVsPtVsYLSmm=new TH3F("hMassVsPtVsYLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+    fMassVsPtVsYLSmm=new TH3F("hMassVsPtVsYLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
     fMassVsPtVsYLSmm->Sumw2();
     fMassVsPtVsYLSmm->SetMinimum(0);
     fOutput->Add(fMassVsPtVsYLSmm);
   }
   
-  fMassVsPtVsYSig=new TH3F("hMassVsPtVsYSig","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+  fMassVsPtVsYSig=new TH3F("hMassVsPtVsYSig","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsYSig->Sumw2();
   fMassVsPtVsYSig->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYSig);
   
-  fMassVsPtVsYRefl=new TH3F("hMassVsPtVsYRefl","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+  fMassVsPtVsYRefl=new TH3F("hMassVsPtVsYRefl","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsYRefl->Sumw2();
   fMassVsPtVsYRefl->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYRefl);
   
-  fMassVsPtVsYBkg=new TH3F("hMassVsPtVsYBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,fMaxPt,20,-1.,1.);
+  fMassVsPtVsYBkg=new TH3F("hMassVsPtVsYBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsYBkg->Sumw2();
   fMassVsPtVsYBkg->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYBkg);
@@ -350,10 +425,26 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fDeltaMassFullAnalysis=new THnSparseF("fDeltaMassFullAnalysis","fDeltaMassFullAnalysis;inv mass (GeV/c);#Delta inv mass (GeV/c) ; p_{T}^{D} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
   fOutput->Add(fDeltaMassFullAnalysis);
   
+  fMassVsPtVsYME=new TH3F("hMassVsPtVsYME","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
+  fMassVsPtVsYME->Sumw2();
+  fMassVsPtVsYME->SetMinimum(0);
+  fOutput->Add(fMassVsPtVsYME);
+ 
+
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
   fCounter->Init();
   
+  fKaonTracks = new TObjArray();
+  fPionTracks=new TObjArray();
+  fKaonTracks->SetOwner();
+  fPionTracks->SetOwner();
+  fEventBuffer = new TTree("EventBuffer", "Temporary buffer for event mixing");
+  fEventBuffer->Branch("zVertex", &fVtxZ);
+  fEventBuffer->Branch("multiplicity", &fMultiplicity);
+  fEventBuffer->Branch("karray", "TObjArray", &fKaonTracks);
+  fEventBuffer->Branch("parray", "TObjArray", &fPionTracks);
+
   PostData(1,fOutput);
   PostData(2,fCounter);
 }
@@ -420,7 +511,9 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   
   
   Int_t ntracks=aod->GetNTracks();
-  
+  fVtxZ = aod->GetPrimaryVertex()->GetZ();
+  fMultiplicity = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
+
   // select and flag tracks
   UChar_t* status = new UChar_t[ntracks];
   for(Int_t iTr=0; iTr<ntracks; iTr++){
@@ -469,10 +562,16 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   Double_t tmpp[3];
   Double_t px[3],py[3],pz[3];
   Int_t dgLabels[3];
-  
+  fKaonTracks->Delete();
+  fPionTracks->Delete();
+ 
   for(Int_t iTr1=0; iTr1<ntracks; iTr1++){
     AliAODTrack* trK=aod->GetTrack(iTr1);
     if((status[iTr1] & 1)==0) continue;
+    if(fDoEventMixing){
+      if(status[iTr1] & 2) fKaonTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
+      if(status[iTr1] & 4) fPionTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
+    }
     if((status[iTr1] & 2)==0) continue;
     Int_t chargeK=trK->Charge();
     trK->GetPxPyPz(tmpp);
@@ -539,7 +638,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   
   fCounter->StoreCandidates(aod,nFiltered,kTRUE);
   fCounter->StoreCandidates(aod,nSelected,kFALSE);
-  
+
+  if(fDoEventMixing) fEventBuffer->Fill();
   PostData(1,fOutput);
   PostData(2,fCounter);
   
@@ -712,6 +812,24 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   
 }
 //________________________________________________________________________
+void AliAnalysisTaskCombinHF::FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau){
+  // Fill histos for candidates in MixedEvents
+    
+  tmpRD->SetPxPyPzProngs(nProngs,px,py,pz);
+  Double_t pt = tmpRD->Pt();
+  Double_t minv2 = tmpRD->InvMass2(nProngs,pdgdau);
+  Double_t mass=TMath::Sqrt(minv2);
+  
+  if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
+    Double_t rapid = tmpRD->Y(pdgD);
+    if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
+      fMassVsPtVsYME->Fill(mass,pt,rapid);
+    }
+  }
+  return;
+}
+
+//________________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::IsTrackSelected(AliAODTrack* track){
   // track selection cuts
   
@@ -834,7 +952,133 @@ Bool_t AliAnalysisTaskCombinHF::CheckAcceptance(TClonesArray* arrayMC,Int_t nPro
   }
   return kTRUE;
 }
+//_________________________________________________________________
+Bool_t AliAnalysisTaskCombinHF::CanBeMixed(Double_t zv1, Double_t zv2, Double_t mult1, Double_t mult2){
+  if(fUsePoolsZ && fzVertPoolLims){
+    Int_t theBin1=TMath::BinarySearch(fNzVertPoolsLimSize,fzVertPoolLims,zv1);
+    Int_t theBin2=TMath::BinarySearch(fNzVertPoolsLimSize,fzVertPoolLims,zv2);
+    if(theBin1!=theBin2) return kFALSE;
+    if(theBin1<0 || theBin2<0) return kFALSE;
+    if(theBin1>=fNzVertPools || theBin2>=fNzVertPools) return kFALSE;    
+  }else{
+    if(TMath::Abs(zv2-zv1)>fMaxzVertDistForMix) return kFALSE;
+  }
 
+  if(fUsePoolsM && fMultPoolLims){
+    Int_t theBin1=TMath::BinarySearch(fNMultPoolsLimSize,fMultPoolLims,mult1);
+    Int_t theBin2=TMath::BinarySearch(fNMultPoolsLimSize,fMultPoolLims,mult2);
+    if(theBin1!=theBin2) return kFALSE;
+    if(theBin1<0 || theBin2<0) return kFALSE;
+    if(theBin1>=fNMultPools || theBin2>=fNMultPools) return kFALSE;
+  }else{
+    if(TMath::Abs(mult2-mult1)>fMaxMultDiffForMix) return kFALSE;
+  }
+  return kTRUE;
+}
+
+//_________________________________________________________________
+void AliAnalysisTaskCombinHF::FinishTaskOutput()
+{
+  // perform mixed event analysis
+  if(!fDoEventMixing) return;
+
+  Int_t nEvents=fEventBuffer->GetEntries();
+  printf("Start Event Mixing of %d events\n",nEvents);
+
+  TObjArray* karray=0x0;
+  TObjArray* parray=0x0;
+  Double_t zVertex,mult;
+  fEventBuffer->SetBranchAddress("karray", &karray);
+  fEventBuffer->SetBranchAddress("parray", &parray);
+  fEventBuffer->SetBranchAddress("zVertex", &zVertex);
+  fEventBuffer->SetBranchAddress("multiplicity", &mult);
+
+  // dummy values of track impact parameter, needed to build an AliAODRecoDecay object
+  Double_t d02[2]={0.,0.};
+  Double_t d03[3]={0.,0.,0.};
+  AliAODRecoDecay* tmpRD2 = new AliAODRecoDecay(0x0,2,0,d02);
+  AliAODRecoDecay* tmpRD3 = new AliAODRecoDecay(0x0,3,1,d03);
+  UInt_t pdg0[2]={321,211};
+  UInt_t pdgp[3]={321,211,211};
+  Double_t px[3],py[3],pz[3];
+
+  for(Int_t iEv1=0; iEv1<nEvents; iEv1++){
+    fEventBuffer->GetEvent(iEv1);
+    Double_t zVertex1=zVertex;
+    Double_t mult1=mult;
+    TObjArray* karray1=new TObjArray(*karray);
+    for(Int_t iEv2=0; iEv2<fMaxNumberOfEventsForMixing; iEv2++){
+      Int_t iToMix=iEv1+iEv2+1;
+      if(iEv1>=(nEvents-fMaxNumberOfEventsForMixing)) iToMix=iEv1-iEv2-1;
+      if(iToMix<0) continue;
+      if(iToMix==iEv1) continue;
+      fEventBuffer->GetEvent(iToMix);
+      Double_t zVertex2=zVertex;
+      Double_t mult2=mult;
+      if(CanBeMixed(zVertex1,zVertex2,mult1,mult2)){
+	TObjArray* parray2=new TObjArray(*parray);
+	Int_t nKaons=karray1->GetEntries();
+	Int_t nPions=parray2->GetEntries();
+	Bool_t doThird=kTRUE;
+	Int_t iToMix3=iEv1+2*fMaxNumberOfEventsForMixing+1;
+	if(iToMix3>=nEvents) iToMix3=iEv1-2*fMaxNumberOfEventsForMixing-1;
+	if(iToMix3<0 || iToMix3==iEv1 || iToMix3==iToMix) doThird=kFALSE;
+	TObjArray* parray3=0x0;
+	Double_t zVertex3=-999.;
+	Double_t mult3=999999;
+	if(fMeson!=kDzero && doThird){
+	  fEventBuffer->GetEvent(iToMix3);
+	  zVertex3=zVertex;
+	  mult3=mult;
+	  if(CanBeMixed(zVertex1,zVertex3,mult1,mult3)){
+	    parray3=new TObjArray(*parray);
+	  }else{
+	    doThird=kFALSE;
+	  }
+	}
+
+	for(Int_t iTr1=0; iTr1<nKaons; iTr1++){
+	  TLorentzVector* trK=(TLorentzVector*)karray1->At(iTr1);
+	  Double_t chargeK=trK->T();
+	  px[0] = trK->Px();
+	  py[0] = trK->Py();
+	  pz[0] = trK->Pz();
+	  for(Int_t iTr2=0; iTr2<nPions; iTr2++){
+	    TLorentzVector* trPi1=(TLorentzVector*)parray2->At(iTr2);
+	    Double_t chargePi1=trPi1->T();
+	    px[1] = trPi1->Px();
+	    py[1] = trPi1->Py();
+	    pz[1] = trPi1->Pz();
+	    if(chargePi1*chargeK<0){
+	      if(fMeson==kDzero){
+		FillMEHistos(421,2,tmpRD2,px,py,pz,pdg0);
+	      }else{
+		if(doThird && parray3){
+		  Int_t nPions3=parray3->GetEntries();
+		  for(Int_t iTr3=iTr2+1; iTr3<nPions3; iTr3++){
+		    TLorentzVector* trPi2=(TLorentzVector*)parray3->At(iTr3);
+		    Double_t chargePi2=trPi2->T();
+		    px[2] = trPi2->Px();
+		    py[2] = trPi2->Py();
+		    pz[2] = trPi2->Pz();
+		    if(chargePi2*chargeK<0){
+		      FillMEHistos(411,3,tmpRD3,px,py,pz,pdgp);
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+	delete parray3;
+	delete parray2;
+      }
+    }
+    delete karray1;
+  }
+  delete tmpRD2;
+  delete tmpRD3;
+}
 //_________________________________________________________________
 void AliAnalysisTaskCombinHF::Terminate(Option_t */*option*/)
 {

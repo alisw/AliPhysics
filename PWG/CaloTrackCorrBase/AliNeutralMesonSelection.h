@@ -40,7 +40,7 @@ class AliNeutralMesonSelection : public TObject {
   Bool_t   SelectPair(TLorentzVector particlei,  TLorentzVector particlej, TString calo)  ;
   
   void     SetParticle(TString particleName) ;  // Do some default settings for "Pi0" or "Eta"
-  TString  GetParticle()                          const { return    fParticle ; }
+  TString  GetParticle()                          const { return fParticle               ; }
   
   // Asymmetry selection
     
@@ -83,8 +83,37 @@ class AliNeutralMesonSelection : public TObject {
 
   Double_t GetMass()                              const { return fM                      ; }
   void     SetMass(Double_t m)                          { fM = m                         ; }
-      
-  //Histogrammes setters and getters
+  
+  
+  // Decay photon bit setting
+  
+  enum decayTypes { kPi0, kEta, kPi0Side, kEtaSide} ;
+
+  UInt_t    GetDecayBit()                         const { return fDecayBit               ; }
+  
+  void    SetDecayBit(Int_t &tag, UInt_t set) const {
+    // Set bit of type set (decayTypes) in tag
+    tag |= (1<<set) ;
+  }
+  
+  void    SetDecayBit(Int_t &tag) const {
+    // Set bit of type set (decayTypes) in tag
+    tag |= (1<<fDecayBit) ;
+  }
+  
+  Bool_t  CheckDecayBit(Int_t tag, UInt_t test) const {
+    // Check if in tag the bit test (decayTypes) is set.
+    if (tag & (1<<test) ) return  kTRUE ;
+    else return kFALSE ;
+  }
+
+  Bool_t  CheckDecayBit(Int_t tag) const {
+    // Check if in tag the bit test (decayTypes) is set.
+    if (tag & (1<<fDecayBit) ) return  kTRUE ;
+    else return kFALSE ;
+  }
+  
+  // Histograms setters and getters
   
   virtual void SetHistoERangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoNEBins = n ;
@@ -116,7 +145,6 @@ class AliNeutralMesonSelection : public TObject {
   Float_t GetHistoIMMin()      const { return fHistoIMMin      ; }
   Float_t GetHistoIMMax()      const { return fHistoIMMax      ; }
   
-  
  private:
   
   Float_t  fAsymmetryCut  ;               // Asymmetry cut
@@ -137,7 +165,9 @@ class AliNeutralMesonSelection : public TObject {
   Float_t  fShiftMinAngle[2] ;            // Correction shift for min angle from true kinematic limit, resolution effects
   
   Bool_t   fKeepNeutralMesonHistos ;      // Keep neutral meson selection histograms
+  
   TString  fParticle ;                    // neutral meson name (Pi0, Eta, +SideBand)
+  UInt_t   fDecayBit;                     // Decay type flag, set when fParticle is set
 
   //Histograms
   TH2F *   fhAnglePairNoCut ;             //! Aperture angle of decay photons, no cuts
@@ -170,7 +200,7 @@ class AliNeutralMesonSelection : public TObject {
   AliNeutralMesonSelection(              const AliNeutralMesonSelection & g) ; // cpy ctor
   AliNeutralMesonSelection & operator = (const AliNeutralMesonSelection & g) ; // cpy assignment
   
-  ClassDef(AliNeutralMesonSelection,7)
+  ClassDef(AliNeutralMesonSelection,8)
     
 } ;
 

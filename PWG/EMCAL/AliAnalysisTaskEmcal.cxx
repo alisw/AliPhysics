@@ -77,6 +77,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMCLabelShift(0),
   fNcentBins(4),
   fNeedEmcalGeom(kTRUE),
+  fIsEsd(kFALSE),
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
@@ -158,6 +159,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMCLabelShift(0),
   fNcentBins(4),
   fNeedEmcalGeom(kTRUE),
+  fIsEsd(kFALSE),
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
@@ -259,6 +261,26 @@ void AliAnalysisTaskEmcal::SetTrackPhiLimits(Double_t min, Double_t max, Int_t c
 void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 {
   // Create user output.
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (mgr) {
+    AliVEventHandler *evhand = mgr->GetInputEventHandler();
+    if (evhand) {
+      if (evhand->InheritsFrom("AliESDInputHandler")) {
+        fIsEsd = kTRUE;
+      }
+      else {
+        fIsEsd = kFALSE;        
+      }
+    }
+    else {
+      AliError("Event handler not found!");
+    }
+  }
+  else {
+    AliError("Analysis manager not found!");
+  }  
+
   if (!fCreateHisto)
     return;
 

@@ -96,6 +96,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetGenericSubtractionJetMass(Bool_t b) { fDoGenericSubtractionJetMass = b; }
   void                   SetGenericSubtractionGR(Bool_t b, Double_t rmax = 2., Double_t dr = 0.04, Double_t ptmin = 0.) { fDoGenericSubtractionGR = b; fRMax=rmax; fDRStep=dr; fPtMinGR=ptmin;}
   void                   SetConstituentSubtraction(Bool_t b)    { fDoConstituentSubtraction = b; }
+  void                   SetGenericSubtractionExtraJetShapes(Bool_t b)        {fDoGenericSubtractionExtraJetShapes =b;}
   void                   SetUseExternalBkg(Bool_t b, Double_t rho, Double_t rhom) { fUseExternalBkg = b; fRho = rho; fRhom = rhom;}
 
   UInt_t                 GetJetType()                     { return fJetType; }
@@ -170,17 +171,18 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
   Bool_t                 fCodeDebug;              // use nontested code changes 
 
-  Bool_t                 fDoGenericSubtractionJetMass; // calculate generic subtraction
-  Bool_t                 fDoGenericSubtractionGR;      // calculate generic subtraction for angular structure function GR
-  Bool_t                 fDoConstituentSubtraction;    // calculate constituent subtraction
-  Bool_t                 fUseExternalBkg;         // use external background for generic subtractor
-  TString                fRhoName;                // name of rho
-  TString                fRhomName;               // name of rhom
-  Double_t               fRho;                    // pT background density
-  Double_t               fRhom;                   // mT background density
-  Double_t               fRMax;                   // R max for GR calculation
-  Double_t               fDRStep;                 // step width for GR calculation
-  Double_t               fPtMinGR;                // min pT for GR calculation
+  Bool_t                 fDoGenericSubtractionJetMass;        // calculate generic subtraction
+  Bool_t                 fDoGenericSubtractionGR;             // calculate generic subtraction for angular structure function GR
+  Bool_t                 fDoGenericSubtractionExtraJetShapes; //calculate generic subtraction for other jet shapes like radialmoment,pTD etc
+  Bool_t                 fDoConstituentSubtraction;           // calculate constituent subtraction
+  Bool_t                 fUseExternalBkg;                     // use external background for generic subtractor
+  TString                fRhoName;                            // name of rho
+  TString                fRhomName;                           // name of rhom
+  Double_t               fRho;                                // pT background density
+  Double_t               fRhom;                               // mT background density
+  Double_t               fRMax;                               // R max for GR calculation
+  Double_t               fDRStep;                             // step width for GR calculation
+  Double_t               fPtMinGR;                            // min pT for GR calculation
  
 
   TClonesArray          *fJets;                   //!jet collection
