@@ -53,7 +53,9 @@ namespace EMCalTriggerPtAnalysis {
                 		AliAnalysisTaskSE(),
                 		fResults(NULL),
                 		fHistos(NULL),
-                		fListTrackCuts(NULL)
+                		fListTrackCuts(NULL),
+                		fEtaRange(),
+                		fPtRange()
 	{
 		/*
 		 * Dummy constructor, initialising the values with default (NULL) values
@@ -65,7 +67,9 @@ namespace EMCalTriggerPtAnalysis {
                 		AliAnalysisTaskSE(name),
                 		fResults(NULL),
                 		fHistos(NULL),
-                		fListTrackCuts(NULL)
+                		fListTrackCuts(NULL),
+                		fEtaRange(),
+                		fPtRange()
 	{
 		/*
 		 * Main constructor, setting default values for eta and zvertex cut

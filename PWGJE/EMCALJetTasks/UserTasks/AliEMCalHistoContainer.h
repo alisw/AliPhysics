@@ -33,14 +33,28 @@ public:
 	HistoContainerContentException(const char *histname, const char *hgroup, ExceptionType_t etype):
 		fHistname(),
 		fGroup(),
+		fErrorMessage(),
 		fExceptionType(etype)
 	{
 		if(histname) fHistname = histname;
 		if(hgroup) fGroup = hgroup;
+
+		CreateErrorMessage();
 	}
 	virtual ~HistoContainerContentException() throw() {}
 
 	virtual const char *what() const throw() {
+		return fErrorMessage.c_str();
+	}
+
+	const char * GetErrorHistogramName() const { return fHistname.c_str(); }
+	ExceptionType_t GetExceptionType() const { return fExceptionType; }
+
+private:
+	void CreateErrorMessage(){
+		/*
+		 * Create error message with the histogram name, the histogram group, and the error type
+		 */
 		std::stringstream msgbuilder;
 		switch(fExceptionType) {
 		case kHistNotFoundException:
@@ -60,15 +74,12 @@ public:
 			msgbuilder << "Group " << fGroup << " not found.";
 			break;
 		};
-		return msgbuilder.str().c_str();
+		fErrorMessage = msgbuilder.str();
 	}
 
-	const char * GetErrorHistogramName() const { return fHistname.c_str(); }
-	ExceptionType_t GetExceptionType() const { return fExceptionType; }
-
-private:
 	std::string           fHistname;            // Name of the histogram producing the exception
 	std::string           fGroup;               // Group of objects producing the exception
+	std::string			  fErrorMessage;		// container for the error message produced in the what function
 	ExceptionType_t       fExceptionType;       // type of the exception
 
 };
@@ -102,7 +113,7 @@ public:
 	void FillTHnSparse(const char *name, const double *x, double weight = 1.) throw(HistoContainerContentException);
 
 	THashList *GetListOfHistograms() { return fHistos; }
-	TObject *FindObject(const char *name) const;
+	virtual TObject *FindObject(const char *name) const;
 
 private:
 	AliEMCalHistoContainer(const AliEMCalHistoContainer &);
