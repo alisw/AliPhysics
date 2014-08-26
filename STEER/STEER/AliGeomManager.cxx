@@ -1583,7 +1583,7 @@ void AliGeomManager::InitNalignable()
 }
   
 //_____________________________________________________________________________
-Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
+Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* alignDetsList)
 {
   // Calls AddAlignObjsFromCDBSingleDet for the detectors appearing in
   // the list passed as argument (called by AliSimulation and
@@ -1604,8 +1604,8 @@ Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
   TString alObjsNotLoaded="";
   TString alObjsLoaded="";
 
-  TString AlignDetsString(AlignDetsList);
-  TObjArray *detsarr = AlignDetsString.Tokenize(' ');
+  TString alignDetsString(alignDetsList);
+  TObjArray *detsarr = alignDetsString.Tokenize(' ');
   TIter iter(detsarr);
   TObjString *str = 0;
   

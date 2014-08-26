@@ -65,6 +65,10 @@ public:
    Double_t pdf1() const {return fpdf1;} // PDF (id1, x1, Q) - x*f(x)
    Double_t pdf2() const {return fpdf2;} // PDF (id2, x2, Q) - x*f(x)
 
+   // convenience functions to check if the headers are containing information
+   Bool_t   HeavyIonInfoValid();
+   Bool_t   PDFValid();
+
 protected:
 
    Int_t    fNcoll_hard;                    // Number of hard scatterings

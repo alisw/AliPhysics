@@ -89,6 +89,9 @@ public:
 
    // ***** The constructors will parse all the events with this function for you *****
    // The work horse of the parser, takes one event and generates the corresponding TClonesArray of TParticles,
+   // Units links directly to HepMC library which governs which units are available
+   // The default momentum unit is GEV, other option is MEV
+   // The default length unit is CM, other option is MM
    // requireSecondMotherBeforeDaughters defaults to false
    //  - Success if length of return string is 0, the provided TClonesArray has been filled
    //  - Failure otherwise and the return string then contains the error message
@@ -104,7 +107,7 @@ public:
    //  - 2 = transitory particle
    //  - 4 = beam particle
    // The function is static to enable customized wrappers around it
-   static std::string ParseGenEvent2TCloneArray(HepMC::GenEvent *, TClonesArray *, bool requireSecondMotherBeforeDaughters = false);
+   static std::string ParseGenEvent2TCloneArray(HepMC::GenEvent *, TClonesArray *, std::string momUnit = "GEV", std::string lenUnit = "CM", bool requireSecondMotherBeforeDaughters = false);
 
 
    // Depending on the implementation of HepMC::IO_BaseClass there may be information on

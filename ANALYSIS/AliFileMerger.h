@@ -32,6 +32,7 @@ class AliFileMerger : public TNamed
   void StoreSeparateResults(TObjArray * array, const char* outputFileName);
   //
   Bool_t IsAccepted(TString name);
+  Bool_t IsRejected(TString name);
   void AddReject(const char *reject);
   void AddAccept(const char *accept);
   void SetNoTrees(Bool_t v=kTRUE)        {fNoTrees = v;}

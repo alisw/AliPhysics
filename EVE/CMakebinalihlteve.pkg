@@ -35,25 +35,11 @@ set ( ELIBS  EveBase EveHLT EveDet HLTbase HLTrec AliHLTUtil AliHLTEve AliHLTTPC
 
 set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve ${SYSLIBS} -lVc)
 
-if( ALICE_TARGET STREQUAL "macosx")
-			
-	set ( ELIBS ${ELIBS} GL)
-	set ( ELIBSDIR ${ELIBSDIR} /usr/X11R6/lib/)
-	
-  list(REMOVE_ITEM ELIBS microcern lhapdf herwig)
+if(ZEROMQ_FOUND)
+set ( ELIBS ${ELIBS} MONITOR MONITORzmq )
+set ( CXXFLAGS  "-DZMQ ${CXXFLAGS}") 
+ENDIF(ZEROMQ_FOUND)
 
-  ALICE_Format(PACKLDFLAGS "-Wl,-u,_G__cpp_setupG__" "" ${LDFLAGS})
-
-  if( MACOSX_MINOR STREQUAL "5")
-						
-		set ( PACKLDFLAGS "${PACKLDFLAGS} -Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
-
-endif( MACOSX_MINOR STREQUAL "5")
-	
-  set ( ELIBS ${ELIBS} GLU)
-	set ( ELIBSDIR ${ELIBSDIR} ${FINK_ROOT}/lib)
-
-endif( ALICE_TARGET STREQUAL "macosx")
 #
 # Local Variables:
 #  mode: CMake

@@ -123,3 +123,31 @@ AliGenHepMCEventHeader::AliGenHepMCEventHeader(
 {
    // The Constructor
 }
+
+Bool_t AliGenHepMCEventHeader::HeavyIonInfoValid() {
+   return fNcoll_hard != 0 ||
+         fNpart_proj != 0 ||
+         fNpart_targ != 0 ||
+         fNcoll != 0 ||
+         fspectator_neutrons != 0 ||
+         fspectator_protons != 0 ||
+         fN_Nwounded_collisions != 0 ||
+         fNwounded_N_collisions != 0 ||
+         fNwounded_Nwounded_collisions != 0 ||
+         fimpact_parameter != 0.0 ||
+         fevent_plane_angle != 0.0 ||
+         feccentricity != 0.0 ||
+         fsigma_inel_NN != 0.0;
+}
+
+Bool_t AliGenHepMCEventHeader::PDFValid() {
+   return fid1 != 0 ||
+         fid2 != 0 ||
+         fpdf_id1 != 0 ||
+         fpdf_id2 != 0 ||
+         fx1 != 0.0 ||
+         fx2 != 0.0 ||
+         fscalePDF != 0.0 ||
+         fpdf1 != 0.0 ||
+         fpdf2 != 0.0;
+}

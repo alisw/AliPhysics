@@ -9,7 +9,6 @@
 #include <time.h>
 
 #include "THepMCParser.h"
-#include "HepMC/IO_GenEvent.h"
 #include "TObject.h"
 #include "TTree.h"
 #include "TClonesArray.h"
@@ -17,6 +16,7 @@
 #include "TParticle.h"
 #include "TDatabasePDG.h"
 #include "HepMC/IO_GenEvent.h"
+
 
 using namespace std;
 
@@ -342,11 +342,12 @@ string THepMCParser::ListReactionChain(TClonesArray * particles, Int_t particleI
 }
 
 
-string THepMCParser::ParseGenEvent2TCloneArray(HepMC::GenEvent * genEvent, TClonesArray * array, bool requireSecondMotherBeforeDaughters)
+string THepMCParser::ParseGenEvent2TCloneArray(HepMC::GenEvent * genEvent, TClonesArray * array, string momUnit, string lenUnit, bool requireSecondMotherBeforeDaughters)
 {
    if (requireSecondMotherBeforeDaughters) {
       return "requireSecondMotherBeforeDaughters not implemented yet!";
    }
+   genEvent->use_units(momUnit, lenUnit);
    array->Clear();
    ostringstream errMsgStream;
    map<int,Int_t> partonMemory; // unordered_map in c++11 - but probably not much performance gain from that: log(n) vs log(1) where constant can be high

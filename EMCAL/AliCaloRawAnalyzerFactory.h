@@ -27,12 +27,17 @@ class AliCaloRawAnalyzer;
 
 class  AliCaloRawAnalyzerFactory
 {
+  
 public:
-  virtual ~AliCaloRawAnalyzerFactory();
+  
+  virtual ~AliCaloRawAnalyzerFactory() { ; }
+  
   static AliCaloRawAnalyzer* CreateAnalyzer( const int algo ); 
 
 private:
+  
   AliCaloRawAnalyzerFactory();
+
 };
 
 #endif
