@@ -114,6 +114,7 @@ public:
 
 	THashList *GetListOfHistograms() { return fHistos; }
 	virtual TObject *FindObject(const char *name) const;
+	virtual TObject *FindObject(const TObject *obj) const;
 
 private:
 	AliEMCalHistoContainer(const AliEMCalHistoContainer &);
