@@ -517,7 +517,22 @@ namespace EMCalTriggerPtAnalysis {
 		TString dirname(basename(name)), hname(histname(name));
 		THashList *parent(FindGroup(dirname.Data()));
 		if(!parent) return NULL;
-		return parent->FindObject(name);
+		return parent->FindObject(hname);
+	}
+
+	//______________________________________________________________________________
+	TObject* AliEMCalHistoContainer::FindObject(const TObject* obj) const {
+		/*
+		 * Find and object inside the container. The object name is expected to contain the
+		 * full path of the histogram object, including parent groups
+		 *
+		 * @param obj: the object to find
+		 * @return: pointer to the object (NULL if not found)
+		 */
+		TString dirname(basename(obj->GetName())), hname(histname(obj->GetName()));
+		THashList *parent(FindGroup(dirname.Data()));
+		if(!parent) return NULL;
+		return parent->FindObject(hname);
 	}
 
 	//______________________________________________________________________________
