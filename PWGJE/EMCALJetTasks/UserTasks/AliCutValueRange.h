@@ -15,7 +15,7 @@ public:
 	AliCutValueRange();
 	AliCutValueRange(t min, t max);
 	AliCutValueRange(t limit, bool isUpper);
-	~AliCutValueRange() {}
+	virtual ~AliCutValueRange() {}
 
 	void SetLimits(t min, t max){
 		fLimits[0] = min;
