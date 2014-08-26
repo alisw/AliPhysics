@@ -293,7 +293,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
       }
     }
    
-    if(pdgCode==-1) printf("No particle assigned! check\n");
+    if(pdgCode==-1) AliDebug(2,"No particle assigned! check\n");
 
     Int_t ptbin=fCuts->PtBin(dstarD0pi->Pt());
     
