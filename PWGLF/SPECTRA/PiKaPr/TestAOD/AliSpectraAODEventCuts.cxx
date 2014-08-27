@@ -645,6 +645,45 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
 }
 
 //______________________________________________________
+Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side){
+  
+  if(!fIsMC) return -999.;
+  
+  // 1. get MC array
+  TClonesArray *arrayMC = (TClonesArray*) fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  
+  if (!arrayMC) AliFatal("Error: MC particles branch not found!\n");
+  
+  Double_t Qx2mc = 0., Qy2mc = 0.;
+  Int_t mult2mc = 0;
+  
+  Int_t nMC = arrayMC->GetEntries();
+      
+  // 2. loop on generated
+  for (Int_t iMC = 0; iMC < nMC; iMC++){
+    AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
+  
+    // 3. set VZERO side - FIXME Add TPC!
+    Double_t EtaVZERO[2] = {-999.,-999.};
+    if(v0side==0/*V0A*/){ EtaVZERO[0] = 2.8; EtaVZERO[1] = 5.1; } 
+    if(v0side==1/*V0C*/){ EtaVZERO[0] = -3.7; EtaVZERO[1] = -1.7; } 
+    
+    if(partMC->Eta()<EtaVZERO[0] || partMC->Eta()>EtaVZERO[1]) continue;
+    
+    // 4. Calculate Qvec components
+    
+    Qx2mc += TMath::Cos(2.*partMC->Phi());
+    Qy2mc += TMath::Sin(2.*partMC->Phi());
+    mult2mc++;
+    
+  }
+  
+  // 5. return q vector
+  return TMath::Sqrt((Qx2mc*Qx2mc + Qy2mc*Qy2mc)/mult2mc);
+  
+}
+
+//______________________________________________________
 Bool_t AliSpectraAODEventCuts::CheckSplineArray(TObjArray * splarr){
   //check TSpline array consistency
   
