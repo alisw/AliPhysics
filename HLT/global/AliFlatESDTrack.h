@@ -17,7 +17,7 @@ Op - Track parameters estimated at the point of maximal radial coordinate reache
 */
 
 #include "Rtypes.h"
-#include "AliVVMisc.h"
+#include "AliVMisc.h"
 #include "AliVVtrack.h"
 #include "AliFlatExternalTrackParam.h"
 
@@ -33,8 +33,8 @@ class AliFlatESDTrack :public AliVVtrack {
   ~AliFlatESDTrack() {}  
 
   // constructor and method for reinitialisation of virtual table
-  AliFlatESDTrack( AliVVConstructorReinitialisationFlag );
-  void Reinitialize() { new (this) AliFlatESDTrack( AliVVReinitialize ); }
+  AliFlatESDTrack( AliVConstructorReinitialisationFlag );
+  void Reinitialize() { new (this) AliFlatESDTrack( AliVReinitialize ); }
 
   // --------------------   AliVVtrack interface    ---------------------------------
 

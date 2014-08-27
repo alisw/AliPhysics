@@ -1,14 +1,14 @@
-#ifndef ALIVVFRIENDEVENT_H
-#define ALIVVFRIENDEVENT_H
+#ifndef ALIVFRIENDEVENT_H
+#define ALIVFRIENDEVENT_H
 
 #include "Rtypes.h"
-class AliVVfriendTrack;
+class AliVfriendTrack;
 
 //_____________________________________________________________________________
-class AliVVfriendEvent {
+class AliVfriendEvent {
 public:
-  AliVVfriendEvent() {}
-  virtual ~AliVVfriendEvent() {}
+  AliVfriendEvent() {}
+  virtual ~AliVfriendEvent() {}
 
   virtual Int_t GetNclustersTPC(UInt_t /*sector*/) const = 0;
   virtual Int_t GetNclustersTPCused(UInt_t /*sector*/) const = 0;
@@ -16,13 +16,13 @@ public:
   //used in calibration
   virtual Bool_t TestSkipBit() const = 0;
   virtual Int_t GetNumberOfTracks() const = 0;
-  virtual const AliVVfriendTrack *GetTrack(Int_t /*i*/) const = 0;
+  virtual const AliVfriendTrack *GetTrack(Int_t /*i*/) const = 0;
 
 private: 
-  AliVVfriendEvent(const AliVVfriendEvent &);
-  AliVVfriendEvent& operator=(const AliVVfriendEvent& esd);  
+  AliVfriendEvent(const AliVfriendEvent &);
+  AliVfriendEvent& operator=(const AliVfriendEvent& esd);  
 
-//  ClassDef(AliVVfriendEvent,0);
+//  ClassDef(AliVfriendEvent,0);
 };
 
 #endif

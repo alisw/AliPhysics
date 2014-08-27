@@ -16,7 +16,7 @@ class TTree;
 class TObjArray;
 class AliVVevent;
 class AliVEvent;
-class AliVVfriendEvent;
+class AliVfriendEvent;
 
 class AliVEventHandler : public TNamed {
 
@@ -64,10 +64,10 @@ enum EEventHandlerFlags {
     virtual TList        *GetUserInfo() const {return 0x0;};
 
     // HLT
-    virtual Bool_t              InitTaskInputData(AliVVevent* /*event*/, AliVVfriendEvent* /*esdFriend*/, TObjArray* /*arrTasks*/) {return kTRUE;};
+    virtual Bool_t              InitTaskInputData(AliVVevent* /*event*/, AliVfriendEvent* /*esdFriend*/, TObjArray* /*arrTasks*/) {return kTRUE;};
     virtual AliVEvent*          GetEvent() const {return 0x0;};
     virtual AliVVevent*         GetVVEvent() const {return 0x0;};
-    virtual AliVVfriendEvent*   GetVVFriendEvent() const {return 0x0;};
+    virtual AliVfriendEvent*   GetVFriendEvent() const {return 0x0;};
 
  private :
   ClassDef(AliVEventHandler, 1);

@@ -13,7 +13,7 @@
 */
 
 #include "Rtypes.h"
-#include "AliVVMisc.h"
+#include "AliVMisc.h"
 #include <string>
 
 class AliFlatESDTrigger{
@@ -26,7 +26,7 @@ class AliFlatESDTrigger{
   ~AliFlatESDTrigger();
 
   // constructor and method for reinitialisation of virtual table
-  AliFlatESDTrigger( AliVVConstructorReinitialisationFlag );
+  AliFlatESDTrigger( AliVConstructorReinitialisationFlag );
   void Reinitialize() const {} // no virtual table - do nothing
 
   // --------------------------------------------------------------------------------
@@ -87,7 +87,7 @@ inline AliFlatESDTrigger::~AliFlatESDTrigger()
   // Destructor  
 }
 
-inline AliFlatESDTrigger::AliFlatESDTrigger( AliVVConstructorReinitialisationFlag ) :
+inline AliFlatESDTrigger::AliFlatESDTrigger( AliVConstructorReinitialisationFlag ) :
   fContentSize(fContentSize),
   fTriggerIndex(fTriggerIndex)
 {

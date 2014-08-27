@@ -10,7 +10,7 @@
  */
 
 #include "Rtypes.h"
-#include "AliVVMisc.h"
+#include "AliVMisc.h"
 #include "AliESDVertex.h"
 
 struct AliFlatESDVertex
@@ -21,7 +21,7 @@ struct AliFlatESDVertex
  ~AliFlatESDVertex() {}
 
   // constructor and method for reinitialisation of virtual table
-  AliFlatESDVertex( AliVVConstructorReinitialisationFlag );
+  AliFlatESDVertex( AliVConstructorReinitialisationFlag );
   void Reinitialize() const {} // no virtual table - do nothing
 
   //--
@@ -109,7 +109,7 @@ fChi2(0)
   for( int i=0; i<6; i++) fCov[i] = -9999;
 }
 
-inline AliFlatESDVertex::AliFlatESDVertex( AliVVConstructorReinitialisationFlag ): 
+inline AliFlatESDVertex::AliFlatESDVertex( AliVConstructorReinitialisationFlag ): 
 fNContributors(fNContributors), 
 fChi2(fChi2)
 {

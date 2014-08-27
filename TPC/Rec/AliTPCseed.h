@@ -20,7 +20,7 @@
 #include "AliTPCtrack.h"
 #include "AliComplexCluster.h"
 #include "AliPID.h"
-#include "AliVVTPCseed.h"
+#include "AliVTPCseed.h"
 
 class TFile;
 class AliTPCParam;
@@ -31,7 +31,7 @@ class AliESD;
 class AliTPCCalPad;
 class TClonesArray;
 
-class AliTPCseed : public AliTPCtrack, public AliVVTPCseed {
+class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
   public:  
      AliTPCseed();
      virtual ~AliTPCseed();

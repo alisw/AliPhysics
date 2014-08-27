@@ -48,7 +48,7 @@ AliFlatESDTrack::AliFlatESDTrack() :
 {
 }
 
-AliFlatESDTrack::AliFlatESDTrack( AliVVConstructorReinitialisationFlag f )
+AliFlatESDTrack::AliFlatESDTrack( AliVConstructorReinitialisationFlag f )
   :
   AliVVtrack( f ),
   fTrackParamMask(fTrackParamMask ),

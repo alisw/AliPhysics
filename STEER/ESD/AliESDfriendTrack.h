@@ -10,7 +10,7 @@
 #include <TObject.h>
 #include <TClonesArray.h>
 #include <AliExternalTrackParam.h>
-#include "AliVVfriendTrack.h"
+#include "AliVfriendTrack.h"
 #include "AliTrackPointArray.h"
 
 class AliKalmanTrack;
@@ -19,7 +19,7 @@ class AliTPCseed;
 
 
 //_____________________________________________________________________________
-class AliESDfriendTrack : public TObject, public AliVVfriendTrack {
+class AliESDfriendTrack : public TObject, public AliVfriendTrack {
 public:
   enum {
     kMaxITScluster=12,
@@ -70,7 +70,7 @@ public:
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
   Bool_t TestSkipBit() {return TestBit(23);}
 
-  // VVfriendTrack interface
+  // VfriendTrack interface
 
   Int_t GetTPCseed( AliTPCseed &) const;
 

@@ -10,10 +10,9 @@
  */
 
 #include "Rtypes.h"
-#include "AliVVcluster.h"
-#include "AliFlatESDMisc.h"
+#include "AliVMisc.h"
 
-class AliFlatTPCCluster: public AliVVcluster
+class AliFlatTPCCluster
 {
   public:
 
@@ -29,9 +28,7 @@ class AliFlatTPCCluster: public AliVVcluster
   void SetCharge(UShort_t charge)  {fCharge = charge;}
   void SetQMax(UShort_t qmax)      {fQMax = qmax;}
   
-  void Reinitialize(){
-    new (this) AliFlatTPCCluster(AliFlatESDReinitialize);
-  }
+  void Reinitialize(){} // do nothing
 
   Float_t  GetX()       const      {return fX;}
   Float_t  GetY()       const      {return fY;}
@@ -52,7 +49,7 @@ class AliFlatTPCCluster: public AliVVcluster
   
   private:
 
- AliFlatTPCCluster(AliFlatESDSpecialConstructorFlag f): AliVVcluster(f),fX(fX),fY(fY),fZ(fZ),fPadRow(fPadRow),fSigmaY2(fSigmaY2),fSigmaZ2(fSigmaZ2),fCharge(fCharge),fQMax(fQMax){}
+ AliFlatTPCCluster(AliVConstructorReinitialisationFlag ): fX(fX),fY(fY),fZ(fZ),fPadRow(fPadRow),fSigmaY2(fSigmaY2),fSigmaZ2(fSigmaZ2),fCharge(fCharge),fQMax(fQMax){}
 
   Float_t fX;       // X coordinate in local coordinates
   Float_t fY;       // Y coordinate in local coordinates

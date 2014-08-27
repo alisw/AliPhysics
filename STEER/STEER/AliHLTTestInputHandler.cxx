@@ -54,14 +54,14 @@ Bool_t AliHLTTestInputHandler::BeginEvent(Long64_t)
 }     
 
 //______________________________________________________________________________
-Bool_t AliHLTTestInputHandler::InitTaskInputData(AliVVevent* esdEvent, AliVVfriendEvent* friendEvent, TObjArray* arrTasks) {
+Bool_t AliHLTTestInputHandler::InitTaskInputData(AliVVevent* esdEvent, AliVfriendEvent* friendEvent, TObjArray* arrTasks) {
 
 // Method to propagte to all the connected tasks the HLT event.
 // The method gets the list of tasks from the manager
 
   Printf("----> AliHLTTestInputHandler::InitTaskInpuData: Setting the event...");
   SetVVEvent(esdEvent);
-  SetVVFriendEvent(friendEvent);
+  SetVFriendEvent(friendEvent);
   // set transient pointer to event inside tracks
   fEvent->ConnectTracks();
   Printf("----> AliHLTTestInputHandler::InitTaskInpuData: ...Event set");

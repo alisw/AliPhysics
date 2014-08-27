@@ -21,7 +21,7 @@
 #include "TMath.h"
 
 #include "AliVTrack.h"
-#include "AliVVMisc.h"
+#include "AliVMisc.h"
 const Double_t kVeryBig=1./kAlmost0;
 const Double_t kMostProbablePt=0.35;
 
@@ -44,8 +44,8 @@ class AliExternalTrackParam: public AliVTrack {
   AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
 			Double_t cv[21],Short_t sign);
   // constructor for reinitialisation of vtable
-  AliExternalTrackParam( AliVVConstructorReinitialisationFlag f) :AliVTrack(f), fX(), fAlpha(){}
-  void Reinitialize() { new (this) AliExternalTrackParam( AliVVReinitialize ); }
+  AliExternalTrackParam( AliVConstructorReinitialisationFlag f) :AliVTrack(f), fX(), fAlpha(){}
+  void Reinitialize() { new (this) AliExternalTrackParam( AliVReinitialize ); }
 
   virtual ~AliExternalTrackParam(){}
   void CopyFromVTrack(const AliVTrack *vTrack);

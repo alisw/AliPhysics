@@ -23,7 +23,7 @@
 #include "TObjArray.h"
 #include "TClonesArray.h"
 #include "AliKalmanTrack.h"
-#include "AliVVTPCseed.h"
+#include "AliVTPCseed.h"
 
 ClassImp(AliESDfriendTrack)
 
@@ -61,7 +61,7 @@ fTRDIn(0)
 
 AliESDfriendTrack::AliESDfriendTrack(const AliESDfriendTrack &t): 
 TObject(t),
-AliVVfriendTrack(),
+AliVfriendTrack(),
 f1P(t.f1P),
 fnMaxITScluster(t.fnMaxITScluster),
 fnMaxTPCcluster(t.fnMaxTPCcluster),
@@ -152,9 +152,9 @@ TObject * AliESDfriendTrack::GetCalibObject(Int_t index) const {
 
 Int_t AliESDfriendTrack::GetTPCseed( AliTPCseed &seed) const {
   TObject* calibObject = NULL;
-  AliVVTPCseed* seedP = NULL;
+  AliVTPCseed* seedP = NULL;
   for (Int_t idx = 0; (calibObject = GetCalibObject(idx)); ++idx) {
-    if ((seedP = dynamic_cast<AliVVTPCseed*>(calibObject))) {
+    if ((seedP = dynamic_cast<AliVTPCseed*>(calibObject))) {
       seedP->CopyToTPCseed( seed );
       return 0;
     }

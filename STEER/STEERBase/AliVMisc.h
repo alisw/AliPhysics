@@ -1,5 +1,5 @@
-#ifndef ALIFLATESDMISC_H
-#define ALIFLATESDMISC_H
+#ifndef ALIVMISC_H
+#define ALIVMISC_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               *
@@ -7,9 +7,9 @@
 
 
 
-enum AliFlatESDSpecialConstructorFlag{AliFlatESDReinitialize};
+enum AliVConstructorReinitialisationFlag{AliVReinitialize};
 
-typedef enum AliFlatESDSpecialConstructorFlag AliFlatESDSpecialConstructorFlag;
+typedef enum AliVConstructorReinitialisationFlag AliVConstructorReinitialisationFlag;
 
 
 #endif

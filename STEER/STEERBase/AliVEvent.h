@@ -40,7 +40,7 @@ class AliVEvent : public TObject, virtual public AliVVevent {
   UInt_t    GetTimeStamp()     const { return 0; }
   UInt_t    GetEventSpecie() const { return 0; }
   ULong64_t GetTriggerMaskNext50() const { return 0; }
-  AliVVfriendEvent* FindFriend() const { return 0; }
+  AliVfriendEvent* FindFriend() const { return 0; }
 
   Int_t GetNumberOfKinks() const { return 0; }
 

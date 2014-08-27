@@ -10,24 +10,24 @@
  */
 
 #include "Rtypes.h"
-#include "AliFlatESDMisc.h"
-#include "AliVVfriendEvent.h"
+#include "AliVMisc.h"
+#include "AliVfriendEvent.h"
 #include "AliFlatESDFriendTrack.h"
 
 class AliVVVZEROfriend;
 class AliVVTZEROfriend;
 
 //_____________________________________________________________________________
-class AliFlatESDFriend : public AliVVfriendEvent {
+class AliFlatESDFriend : public AliVfriendEvent {
 public:
   AliFlatESDFriend();
   ~AliFlatESDFriend() {}
 
-  // Implementation of virtual methods of AliVVfriend
+  // Implementation of virtual methods of AliVfriend
 
   Int_t GetNumberOfTracks() const { return fNTracks; }
   Int_t GetEntriesInTracks() const { return fNTrackEntries; }
-  const AliVVfriendTrack* GetTrack(Int_t i) const {return GetFlatTrack(i); }
+  const AliVfriendTrack* GetTrack(Int_t i) const {return GetFlatTrack(i); }
   
   AliVVVZEROfriend *GetVZEROfriend(){ return NULL; }
   AliVVTZEROfriend *GetTZEROfriend(){ return NULL; }
@@ -41,8 +41,8 @@ public:
   Int_t GetNclustersTPC(UInt_t sector) const { return (sector<72)?fNclustersTPC[sector]:0; }
   Int_t GetNclustersTPCused(UInt_t sector) const { return (sector<72)?fNclustersTPCused[sector]:0; }
   
-  //virtual void AddTrack(const AliVVfriendTrack *t) {}
-  //virtual void AddTrackAt(const AliVVfriendTrack* /*t*/, Int_t /*i*/) {}
+  //virtual void AddTrack(const AliVfriendTrack *t) {}
+  //virtual void AddTrackAt(const AliVfriendTrack* /*t*/, Int_t /*i*/) {}
   //virtual void SetVZEROfriend(AliESDVZEROfriend* /*obj*/) {}
   //virtual void SetTZEROfriend(AliESDTZEROfriend * obj) {}
   //void SetSkipBit(Bool_t skip){}
@@ -65,7 +65,7 @@ public:
 
   void Reinitialize()
   {
-    new (this) AliFlatESDFriend(AliFlatESDReinitialize);
+    new (this) AliFlatESDFriend(AliVReinitialize);
   }
 
 private: 
@@ -76,7 +76,7 @@ private:
   // special constructor, to be called by placement new,
   // when accessing information after reinterpret_cast
   // so that vtable is generated, but values are not overwritten
-  AliFlatESDFriend(AliFlatESDSpecialConstructorFlag);
+  AliFlatESDFriend(AliVConstructorReinitialisationFlag);
  
   AliFlatESDFriendTrack  *GetFlatTrackNonConst( Int_t i ){ 
     const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);

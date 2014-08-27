@@ -10,7 +10,7 @@
  */
 
 #include "Rtypes.h"
-#include "AliVVMisc.h"
+#include "AliVMisc.h"
 #include "AliVVevent.h"
 #include "AliFlatESDTrack.h"
 #include "AliFlatESDVertex.h"
@@ -31,8 +31,8 @@ class AliFlatESDEvent :public AliVVevent {
   ~AliFlatESDEvent() {}
 
   // constructor and method for reinitialisation of virtual table
-  AliFlatESDEvent( AliVVConstructorReinitialisationFlag );
-  void Reinitialize() { new (this) AliFlatESDEvent( AliVVReinitialize ); }
+  AliFlatESDEvent( AliVConstructorReinitialisationFlag );
+  void Reinitialize() { new (this) AliFlatESDEvent( AliVReinitialize ); }
 
   // --------------------------------------------------------------------------------
   // Interface to AliVVEvent
@@ -62,7 +62,7 @@ class AliFlatESDEvent :public AliVVevent {
   Int_t GetPrimaryVertexSPD( AliESDVertex &v ) const ;
   Int_t GetPrimaryVertexTracks( AliESDVertex &v ) const ;
 
-  AliVVfriendEvent* FindFriend() const { return fFriendEvent; }
+  AliVfriendEvent* FindFriend() const { return fFriendEvent; }
 
   // --------------------------------------------------------------------------------
   // Own methods 

@@ -37,13 +37,13 @@
 
 // _______________________________________________________________________________________________________
 AliFlatESDFriendTrack::AliFlatESDFriendTrack() :
-  AliVVfriendTrack()
+  AliVfriendTrack()
 {
   // Default constructor
 }
 
-AliFlatESDFriendTrack::AliFlatESDFriendTrack( AliVVConstructorReinitialisationFlag f ) :
-AliVVfriendTrack( f )
+AliFlatESDFriendTrack::AliFlatESDFriendTrack( AliVConstructorReinitialisationFlag f ) :
+AliVfriendTrack( f )
 {
   // constructor for reinitialisation of vtable
 }

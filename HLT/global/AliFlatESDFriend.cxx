@@ -69,7 +69,8 @@ void AliFlatESDFriend::Reset()
 }
  
 // _______________________________________________________________________________________________________
-AliFlatESDFriend::AliFlatESDFriend(AliFlatESDSpecialConstructorFlag f) :
+AliFlatESDFriend::AliFlatESDFriend(AliVConstructorReinitialisationFlag f) :
+  AliVfriendEvent(),
   fContentSize(),
   fBitFlags(),
   fNTracks(),
@@ -83,7 +84,7 @@ AliFlatESDFriend::AliFlatESDFriend(AliFlatESDSpecialConstructorFlag f) :
   // the vtable pointer for this AliFlatESDFriend object is already reset when this constructor is called
   // we should only initialise vtable pointers for all contained objects
 
-  if(f == AliFlatESDReinitialize){   
+  if(f == AliVReinitialize){   
     for( int i=0; i<fNTracks; i++ ){
       AliFlatESDFriendTrack  *tr = GetFlatTrackNonConst(i);
       if( tr ) tr->Reinitialize();

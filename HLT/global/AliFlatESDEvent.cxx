@@ -98,7 +98,7 @@ AliFlatESDEvent::AliFlatESDEvent()
 }
 
 
-AliFlatESDEvent::AliFlatESDEvent( AliVVConstructorReinitialisationFlag f ) 
+AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag f ) 
   :
   AliVVevent( f ),
   fContentSize(fContentSize),

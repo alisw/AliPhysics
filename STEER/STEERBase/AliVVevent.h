@@ -10,13 +10,13 @@
  */
 #include "Rtypes.h"
 #include "TString.h"
-#include "AliVVMisc.h"
+#include "AliVMisc.h"
 
 class TList;
 //class AliVVvertex;
 class AliVVtrack;
 class AliMultiplicity;
-class AliVVfriendEvent;
+class AliVfriendEvent;
 class AliESDkink;
 class TTree;
 
@@ -29,7 +29,7 @@ class AliVVevent{
   AliVVevent() {}
 
   // constructor and method for reinitialisation of virtual table
-  AliVVevent( AliVVConstructorReinitialisationFlag ){}  
+  AliVVevent( AliVConstructorReinitialisationFlag ){}  
 
  protected:
 
@@ -79,7 +79,7 @@ class AliVVevent{
   virtual AliESDkink* GetKink(Int_t /*i*/) const = 0;
   //virtual AliVVtrack* GetV0(Int_t /*i*/) const = 0;
 
-  virtual AliVVfriendEvent* FindFriend() const = 0;
+  virtual AliVfriendEvent* FindFriend() const = 0;
 
  
   // some ESD interfaces, not yet implemented in flat esd (may be not needed, may be need some changes)

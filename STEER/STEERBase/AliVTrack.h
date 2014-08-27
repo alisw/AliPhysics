@@ -13,7 +13,7 @@
 
 #include "AliVParticle.h"
 #include "AliPID.h"
-#include "AliVVMisc.h"
+#include "AliVMisc.h"
 
 class AliVEvent;
 class AliVVertex;
@@ -71,7 +71,7 @@ public:
   AliVTrack(const AliVTrack& vTrack); 
   AliVTrack& operator=(const AliVTrack& vTrack);
   // constructor for reinitialisation of vtable
-  AliVTrack( AliVVConstructorReinitialisationFlag f) :AliVParticle(f){}
+  AliVTrack( AliVConstructorReinitialisationFlag f) :AliVParticle(f){}
 
   virtual const AliVEvent* GetEvent() const {return 0;}
   virtual Int_t    GetID() const = 0;

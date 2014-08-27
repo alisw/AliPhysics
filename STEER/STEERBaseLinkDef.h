@@ -140,13 +140,6 @@
 
 #pragma link C++ class AliVVevent+;
 #pragma link C++ class AliVVtrack+;
-#pragma link C++ class AliVVfriendEvent+;
-#pragma link C++ class AliVVfriendTrack+;
-#pragma link C++ class AliVVkink+;
-#pragma link C++ class AliVVcluster+;
-#pragma link C++ class AliVVtrackPointArray+;
-#pragma link C++ class AliVVtrackPoint+;
-#pragma link C++ class AliVVTPCseed+;
 
 #endif
 

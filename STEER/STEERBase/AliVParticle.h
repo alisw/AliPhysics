@@ -12,7 +12,7 @@
 
 #include <Rtypes.h>
 #include <TObject.h>
-#include "AliVVMisc.h"
+#include "AliVMisc.h"
 
 #include <float.h>
 
@@ -31,7 +31,7 @@ public:
   AliVParticle& operator=(const AliVParticle& vPart);
 
   // constructor for reinitialisation of vtable
-  AliVParticle( AliVVConstructorReinitialisationFlag ) :TObject(*this){}
+  AliVParticle( AliVConstructorReinitialisationFlag ) :TObject(){}
 
   // kinematics
   virtual Double_t Px() const = 0;

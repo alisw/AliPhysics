@@ -14,8 +14,8 @@
 #include "AliVEventHandler.h"
 #include "AliTPCseed.h"
 #include "AliTPCclusterMI.h"
-#include "AliVVfriendEvent.h"
-#include "AliVVfriendTrack.h"
+#include "AliVfriendEvent.h"
+#include "AliVfriendTrack.h"
 
 #include "AliAnalysisTaskPt.h"
 
@@ -65,7 +65,7 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
       //fESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
       fESD = esdH->GetVVEvent();
       if (fUseFriends){	
-	fESDfriend = esdH->GetVVFriendEvent();
+	fESDfriend = esdH->GetVFriendEvent();
       }
     }
     if (!fESD) {
@@ -170,7 +170,7 @@ void AliAnalysisTaskPt::Exec(Option_t *)
     // Friend Track loop
     for (Int_t iFriend = 0; iFriend < nESDfriendtracks; iFriend++) {
       //Printf("Getting friend %d", iFriend);
-      const AliVVfriendTrack* friendTrack = fESDfriend->GetTrack(iFriend);
+      const AliVfriendTrack* friendTrack = fESDfriend->GetTrack(iFriend);
       if (!friendTrack) {
 	Printf("ERROR: Could not receive track %d", iFriend);
 	continue;

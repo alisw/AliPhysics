@@ -6,7 +6,7 @@
 
 class TH1F;
 class AliESDEvent;
-class AliVVfriendEvent;
+class AliVfriendEvent;
 class AliVVevent;
 class AliESDtrackCuts;
 class TList;
@@ -30,7 +30,7 @@ class AliAnalysisTaskPt : public AliAnalysisTask {
 
  private:
   AliVVevent*       fESD;                      // ESD object
-  AliVVfriendEvent* fESDfriend;                // ESD friend object
+  AliVfriendEvent* fESDfriend;                // ESD friend object
   TH1F*             fHistPt;                   // Pt spectrum
   AliESDtrackCuts*  fCuts;                     // cuts
   Int_t fEv;
