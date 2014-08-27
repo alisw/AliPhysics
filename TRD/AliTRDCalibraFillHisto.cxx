@@ -649,7 +649,13 @@ Bool_t AliTRDCalibraFillHisto::InitCalPad(Int_t detector)
 
   // DB Setting
   // Get cal
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/LocalGainFactor",AliCDBManager::Instance()->GetRun(),fVersionGainLocalUsed,fSubVersionGainLocalUsed);
+  AliCDBEntry *entry = 0x0;
+  if(fTakeSnapshot) { 
+    entry = AliCDBManager::Instance()->Get("TRD/Calib/LocalGainFactor");
+  }   
+  else { 
+    entry = AliCDBManager::Instance()->Get("TRD/Calib/LocalGainFactor",fFirstRunGain,fVersionGainUsed,fSubVersionGainUsed); 
+  }
   if(!entry) {
     AliError("No gain pad calibration entry found");
     return kFALSE;
