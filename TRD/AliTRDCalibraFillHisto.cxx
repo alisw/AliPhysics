@@ -153,6 +153,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fCutWithVdriftCalib(kFALSE)
   ,fMinNbTRDtracklets(0)
   ,fMinTRDMomentum(0.0)
+  ,fTakeSnapshot(kTRUE)
   ,fFirstRunGain(0)
   ,fVersionGainUsed(0)
   ,fSubVersionGainUsed(0)
@@ -245,6 +246,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fCutWithVdriftCalib(c.fCutWithVdriftCalib)
   ,fMinNbTRDtracklets(c.fMinNbTRDtracklets)
   ,fMinTRDMomentum(c.fMinTRDMomentum)
+  ,fTakeSnapshot(c.fTakeSnapshot)
   ,fFirstRunGain(c.fFirstRunGain)
   ,fVersionGainUsed(c.fVersionGainUsed)
   ,fSubVersionGainUsed(c.fSubVersionGainUsed)
@@ -569,7 +571,13 @@ Bool_t AliTRDCalibraFillHisto::InitCalDet()
 
   // DB Setting
   // Get cal
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberGainFactor",fFirstRunGain,fVersionGainUsed,fSubVersionGainUsed);
+  AliCDBEntry *entry = 0x0;
+  if(fTakeSnapshot) { 
+    entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberGainFactor");
+  }   
+  else { 
+    entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberGainFactor",fFirstRunGain,fVersionGainUsed,fSubVersionGainUsed); 
+  }
   if(!entry) {
     AliError("No gain det calibration entry found");
     return kFALSE;
