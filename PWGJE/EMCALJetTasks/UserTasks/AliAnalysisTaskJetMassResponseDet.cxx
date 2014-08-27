@@ -101,6 +101,10 @@ void AliAnalysisTaskJetMassResponseDet::UserCreateOutputObjects()
   const Double_t minMT = 0.;
   const Double_t maxMT = 50.;
 
+  const Int_t nBinsConst = 26;
+  const Double_t minConst = -5.5;
+  const Double_t maxConst = 20.5;
+
   //Binning for THnSparse
   const Int_t nBinsSparse0 = 5;
   const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsMT};
@@ -176,15 +180,15 @@ Bool_t AliAnalysisTaskJetMassResponseDet::FillHistograms()
 {
   // Fill histograms.
 
-  AliJetContainer *jetPart = GetJetContainer(fContainerPart);
-  AliJetContainer *jetDet = GetJetContainer(fContainerDet);
+  AliJetContainer *cPart = GetJetContainer(fContainerPart);
+  AliJetContainer *cDet = GetJetContainer(fContainerDet);
   AliEmcalJet* jPart = NULL;
   AliEmcalJet* jDet = NULL;
 
   //loop on particle level jets
-  if(jetPart) {
-    jetPart->ResetCurrentID();
-    while((jPart = jetPart->GetNextAcceptJet())) {
+  if(cPart) {
+    cPart->ResetCurrentID();
+    while((jPart = cPart->GetNextAcceptJet())) {
       fh2PtVsMassJetPartAll->Fill(jPart->Pt(),jPart->M());
       jDet = jPart->ClosestJet();
       if(jDet) fh2PtVsMassJetPartMatch->Fill(jPart->Pt(),jPart->M());
@@ -196,9 +200,9 @@ Bool_t AliAnalysisTaskJetMassResponseDet::FillHistograms()
   }
   
   //loop on detector level jets
-  if(jetDet) {
-    jetDet->ResetCurrentID();
-    while((jDet = jetDet->GetNextAcceptJet())) {
+  if(cDet) {
+    cDet->ResetCurrentID();
+    while((jDet = cDet->GetNextAcceptJet())) {
       Double_t mjet = GetJetMass(jDet);     
       fh2PtVsMassJetDetAll->Fill(jDet->Pt(),mjet);
        if(jDet->GetTagStatus()>=1 && jDet->GetTaggedJet())
@@ -212,6 +216,18 @@ Bool_t AliAnalysisTaskJetMassResponseDet::FillHistograms()
 	 if(jDetT) mdetT = jDetT->M();
 	 Double_t var[5] = {GetJetMass(jDet),jPart->M(),jDet->Pt(),jPart->Pt(),mdetT};
 	 fhnMassResponse->Fill(var);
+
+	 if(jPart->Pt()>40. && jPart->Pt()<50.) {
+	   if(jDet->Pt()>50.) Printf("feed-out high");
+	   else if(jDet->Pt()<40.) Printf("feed-out low");
+	   else Printf("correct");
+	   Printf("pT Part: %f Det: %f",jPart->Pt(),jDet->Pt());
+	   Printf("mass Part: %f Det: %f",jPart->M(),jDet->M());
+	   Int_t nConstPart = jPart->GetNumberOfConstituents();
+	   Int_t nConstDet = jDet->GetNumberOfConstituents();
+	   Int_t diff = nConstPart-nConstDet;
+	   Printf("nConst Part: %d  Det: %d  diff: %d",nConstPart,nConstDet,diff);
+	 }
        }
     }
   }
