@@ -14,7 +14,7 @@ const Float_t kPMRespTime = 6.0; // PM response time (corresponds to 1.9 ns rise
 const Float_t kPMTransparency = 0.25; // Transparency of the first dynode of the PM
 const Float_t kPMNbOfSecElec = 6.0;   // Number of secondary electrons emitted from first dynode (per ph.e.)
 const Float_t kPhotoCathodeEfficiency = 0.18; // Photocathode efficiency
-const Int_t   kNCIUBoards = 16; //Number of CIU boards
+const Int_t   kNCIUBoards = 2; //Number of CIU boards
 
 #endif
 

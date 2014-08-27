@@ -193,8 +193,8 @@ Int_t AliADCalibData::GetBoardNumber(Int_t channel)
 {
   // Get FEE board number
   // from offline channel index
-  if (channel >= 0 && channel < 16) return (channel);
-  //if (channel >=8 && channel < 16) return (channel / 2);
+  if (channel >= 0 && channel < 8) return (0);
+  if (channel >=8 && channel < 16) return (1);
 
   AliErrorClass(Form("Wrong channel index: %d",channel));
   return -1;
@@ -207,7 +207,7 @@ Float_t AliADCalibData::GetLightYields(Int_t channel)
   // for a given channel
   if (!fLightYields) InitLightYields();
 
-  if (channel >= 0 && channel < 64) {
+  if (channel >= 0 && channel < 16) {
     return fLightYields[channel];
   }
 

@@ -30,7 +30,7 @@ set ( SRCS
     AliADReconstructor.cxx 
     AliADTrigger.cxx 
     AliADRecoParam.cxx
-#    AliADRawStream.cxx 
+    AliADRawStream.cxx 
 #    AliADQADataMakerRec.cxx 
 #    AliADTriggerMask.cxx 
 #    AliADRecoParam.cxx 
