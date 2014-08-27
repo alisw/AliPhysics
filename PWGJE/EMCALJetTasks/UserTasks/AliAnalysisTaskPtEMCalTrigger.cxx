@@ -452,7 +452,7 @@ namespace EMCalTriggerPtAnalysis {
 		axis.SetTitle(title);
 		if(labels){
 			for(int ib = 1; ib <= axis.GetNbins(); ++ib)
-				axis.SetBinLabel(ib, labels[ib]);
+				axis.SetBinLabel(ib, labels[ib-1]);
 		}
 	}
 
@@ -476,7 +476,7 @@ namespace EMCalTriggerPtAnalysis {
 		axis.SetTitle(title);
 		if(labels){
 			for(int ib = 1; ib <= axis.GetNbins(); ++ib)
-				axis.SetBinLabel(ib, labels[ib]);
+				axis.SetBinLabel(ib, labels[ib-1]);
 		}
 	}
 
