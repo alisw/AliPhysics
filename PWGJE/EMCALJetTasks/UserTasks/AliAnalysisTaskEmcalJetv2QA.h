@@ -25,6 +25,10 @@ class AliAnalysisTaskEmcalJetv2QA : public AliAnalysisTaskEmcalJet {
 
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
+
+  void                        SetCentBins(Int_t n, Double_t* bins);
+  void                        SetJetPtBins(Int_t n, Double_t* bins);
+
   Double_t		      GetJetv2(){return fJetv2;};
   void			      SetJetv2(Double_t jetv2){fJetv2 = jetv2;};
   Bool_t		      GetDoPtWeight(){return doPtWeight;};
@@ -32,9 +36,11 @@ class AliAnalysisTaskEmcalJetv2QA : public AliAnalysisTaskEmcalJet {
 
  protected:
   Int_t			      nCentBins;
+  Int_t                       nCentBins1;
+  Double_t*		      centBins; //[nCentBins1]
   Int_t			      nJetPtBins;
-  Double_t		      *centBins;
-  Double_t		      *jetPtBins;
+  Int_t			      nJetPtBins1;
+  Double_t*		      jetPtBins; //[nJetPtBins1]
   void                        ExecOnce();
   Bool_t                      FillHistograms();
   Bool_t                      Run();
