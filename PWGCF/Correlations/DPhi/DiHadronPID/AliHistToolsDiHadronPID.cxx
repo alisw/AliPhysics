@@ -175,7 +175,7 @@ TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(
 TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(const TH1F* histIn, const TH1F* histAxis, Bool_t density) {
 
 	// Rebins histogram histIn to the x-axis of histAxis
-	TAxis* xaxis = histAxis->GetXaxis();
+	const TAxis* xaxis = histAxis->GetXaxis();
 	Int_t nbinsx = xaxis->GetNbins();
 	const Double_t* binsx = (xaxis->GetXbins())->GetArray();
 	return RebinVariableBinning(histIn, const_cast<Double_t*>(binsx), nbinsx, density);
@@ -263,9 +263,9 @@ TH2F* AliHistToolsDiHadronPID::Function2DToHist2D(const TF2* function, const TH2
 	//  - Histogram takes over the color of the function.
 
 	// Gathering info about the axes.
-	TAxis* Xaxis = grid->GetXaxis();
+	const TAxis* Xaxis = grid->GetXaxis();
 	Int_t NbinsX = Xaxis->GetNbins();
-	TAxis* Yaxis = grid->GetYaxis();
+	const TAxis* Yaxis = grid->GetYaxis();
 	Int_t NbinsY = Yaxis->GetNbins();
 
 	// Determining function range.
