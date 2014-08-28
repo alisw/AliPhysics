@@ -48,6 +48,8 @@
 
 #include "AliAnalysisTaskChargedJetsPA.h"
 using std::min;
+using std::cout;
+using std::endl;
 
 //TODO: FillHistogram can be done better with virtual TH1(?)
 ClassImp(AliAnalysisTaskChargedJetsPA)
