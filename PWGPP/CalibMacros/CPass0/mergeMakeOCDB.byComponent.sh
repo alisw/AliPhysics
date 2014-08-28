@@ -41,7 +41,7 @@ main()
   shift 3
 
   #default values
-  runParallel=1
+  runParallel=0
   defaultOCDB="raw://"
   fileAccessMethod="tfilecp"
   numberOfFilesInAbunch=50
