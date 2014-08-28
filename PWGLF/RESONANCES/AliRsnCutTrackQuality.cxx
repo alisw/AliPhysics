@@ -50,6 +50,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fTPCminNClusters(0),
    fTPCmaxChi2(1E20),
    fCutMaxChi2TPCConstrainedVsGlobal(1E20),
+   fTrackMaxChi2(1E20),
    fIsUseCrossedRowsCut(kFALSE),
    fTPCminNCrossedRows(0),
    fTPCminCrossedRowsOverFindableCls(0),
@@ -88,6 +89,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fTPCminNClusters(copy.fTPCminNClusters),
    fTPCmaxChi2(copy.fTPCmaxChi2),
    fCutMaxChi2TPCConstrainedVsGlobal(copy.fCutMaxChi2TPCConstrainedVsGlobal),
+   fTrackMaxChi2(copy.fTrackMaxChi2),
    fIsUseCrossedRowsCut(copy.fIsUseCrossedRowsCut),
    fTPCminNCrossedRows(copy.fTPCminNCrossedRows),
    fTPCminCrossedRowsOverFindableCls(copy.fTPCminCrossedRowsOverFindableCls),
@@ -135,6 +137,7 @@ AliRsnCutTrackQuality &AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
    fTPCminNClusters = copy.fTPCminNClusters;
    fTPCmaxChi2 = copy.fTPCmaxChi2;
    fCutMaxChi2TPCConstrainedVsGlobal = copy.fCutMaxChi2TPCConstrainedVsGlobal;
+   fTrackMaxChi2 = copy.fTrackMaxChi2;
    fIsUseCrossedRowsCut=copy.fIsUseCrossedRowsCut;
    fTPCminNCrossedRows = copy.fTPCminNCrossedRows;
    fTPCminCrossedRowsOverFindableCls = copy.fTPCminCrossedRowsOverFindableCls;
@@ -176,6 +179,7 @@ void AliRsnCutTrackQuality::DisableAll()
    fTPCmaxChi2 = 1E20;
    fAODTestFilterBit = -1;
    fCutMaxChi2TPCConstrainedVsGlobal = 1E20;
+   fTrackMaxChi2 = 1E20;
    fIsUseCrossedRowsCut = 0;
    fTPCminNCrossedRows = 0;
    fTPCminCrossedRowsOverFindableCls = 0;
@@ -358,12 +362,8 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
       return kFALSE;
    }
 
-   //check chi square
-   if (track->Chi2perNDF() > fTPCmaxChi2) {
-      AliDebug(AliLog::kDebug + 2, "Bad chi2. Rejected");
-      return kFALSE;
-   }
-   if (track->Chi2perNDF() > fITSmaxChi2) {
+   //check track chi square
+   if (track->Chi2perNDF() > fTrackMaxChi2) {
       AliDebug(AliLog::kDebug + 2, "Bad chi2. Rejected");
       return kFALSE;
    }
