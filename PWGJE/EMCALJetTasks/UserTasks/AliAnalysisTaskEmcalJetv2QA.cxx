@@ -25,6 +25,9 @@
 
 #include "AliAnalysisTaskEmcalJetv2QA.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEmcalJetv2QA)
 
 //________________________________________________________________________
