@@ -327,8 +327,8 @@ void AliTRDCalibraExbAltFit::FillPEArray()
     if ( fitterhisto != 0 ){
       
       // Fill a fitter
-      TAxis *xaxis = fitterhisto->GetXaxis();
-      TAxis *yaxis = fitterhisto->GetYaxis();
+      const TAxis *xaxis = fitterhisto->GetXaxis();
+      const TAxis *yaxis = fitterhisto->GetYaxis();
       TLinearFitter fitter = TLinearFitter(3,"pol2");
       //printf("test\n");
       Double_t integral = fitterhisto->Integral();
@@ -480,8 +480,8 @@ TGraphErrors* AliTRDCalibraExbAltFit::DrawMS(const TH2 *const h2, Int_t &nEntrie
   TF1 fg("fg", "gaus", -10., 30.);
   TGraphErrors *gp = new TGraphErrors();
 
-  TAxis *ax(h2->GetXaxis());
-  TAxis *ay(h2->GetYaxis());
+  const TAxis *ax(h2->GetXaxis());
+  const TAxis *ay(h2->GetYaxis());
   TH1D *h1(NULL);
   for(Int_t ipt(0), jpt(1), ig(0); ipt<ax->GetNbins(); ipt++, jpt++){
     h1 = h2->ProjectionY("py", jpt, jpt);
