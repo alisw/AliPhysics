@@ -1341,8 +1341,8 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       }
       Int_t oldTag1=p1->GetTagInfo() ;
       for(Int_t ibit=0; ibit<18; ibit++){
-        if(((oldTag1 & (1<<ibit))==1) && //Already tagged 
-           ((tag1 & (1<<ibit))==1)){//Multiple tagging
+        if(((oldTag1 & (1<<ibit))!=0) && //Already tagged 
+           ((tag1 & (1<<ibit))!=0)){//Multiple tagging
          Int_t iFidArea = p1->GetFiducialArea(); 
          if(iFidArea>0){
            FillPIDHistograms(Form("hPhot_TaggedMult%d_Area1",ibit),p1) ;
@@ -1372,8 +1372,8 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       }
       Int_t oldTag2=p2->GetTagInfo() ;
       for(Int_t ibit=0; ibit<18; ibit++){
-        if(((oldTag2 & (1<<ibit))==1) && //Already tagged 
-           ((tag2 & (1<<ibit))==1)){//Multiple tagging
+        if(((oldTag2 & (1<<ibit))!=0) && //Already tagged 
+           ((tag2 & (1<<ibit))!=0)){//Multiple tagging
          Int_t iFidArea = p2->GetFiducialArea(); 
          if(iFidArea>0){
            FillPIDHistograms(Form("hPhot_TaggedMult%d_Area1",ibit),p2) ;
@@ -1436,7 +1436,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       //strict and loose PID cut on partner
       Int_t tag=p->GetTagInfo() ;
       for(Int_t ibit=0; ibit<18; ibit++){
-        if((tag & (1<<ibit))==1){ 
+        if((tag & (1<<ibit))!=0){ 
           FillPIDHistograms(Form("hPhot_Tagged%d_Area1",ibit),p) ;
 	  if(p->IsntUnfolded()) //true tag
              FillPIDHistograms(Form("hPhot_TrueTagged%d",ibit),p) ;
@@ -1447,14 +1447,14 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       if(iFidArea>1){
         FillPIDHistograms("hPhot_Area2",p) ;
         for(Int_t ibit=0; ibit<18; ibit++){
-          if((tag & (1<<ibit))==1){ 
+          if((tag & (1<<ibit))!=0){ 
             FillPIDHistograms(Form("hPhot_Tagged%d_Area2",ibit),p) ;
 	  }
         }
 	if(iFidArea>2){
           FillPIDHistograms("hPhot_Area3",p) ;
           for(Int_t ibit=0; ibit<18; ibit++){
-            if((tag & (1<<ibit))==1){ 
+            if((tag & (1<<ibit))!=0){ 
               FillPIDHistograms(Form("hPhot_Tagged%d_Area3",ibit),p) ;
 	    }
 	  }
