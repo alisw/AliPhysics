@@ -110,19 +110,43 @@ void AliADBuffer::WriteChannel(Int_t channel, Short_t *adc, Bool_t integrator){
   // It writes AD charge information into a raw data file. 
   // Being called by Digits2Raw
   
-  UShort_t data = 0;
+  UInt_t data = 0;
   for(Int_t i = 0; i < kNClocks; ++i) {
     if (adc[i] > 1023) {
       AliWarning(Form("ADC (channel=%d) saturated: %d. Truncating to 1023",channel,adc[i]));
       adc[i] = 1023;
     }
   }
-   
-    for(Int_t i = 0; i < (kNClocks); ++i) {
-      data =   (adc[i] & 0x3ff);
-      data |= ((integrator & 0x1) << 10);      
+  
+  if(channel%2 == 0) {
+    for(Int_t i = 0; i < (kNClocks/2); ++i) {
+      data =   (adc[2*i] & 0x3ff);
+      data |= ((integrator & 0x1) << 10);
+
+      data |= ((adc[2*i+1] & 0x3ff) << 16);
+      data |= ((!integrator & 0x1) << 26);
+
       f->WriteBuffer((char*)&data,sizeof(data));
     }
+    fRemainingWord = (adc[kNClocks-1] & 0x3ff);
+    fRemainingWord |= ((integrator & 0x1) << 10);
+  }
+  else {
+    data = fRemainingWord;
+    data |= ((adc[0] & 0x3ff) << 16);
+    data |= ((integrator & 0x1) << 26);
+    f->WriteBuffer((char*)&data,sizeof(data));
+
+    for(Int_t i = 1; i <= (kNClocks/2); ++i) {
+      data =   (adc[2*i-1] & 0x3ff);
+      data |= ((!integrator & 0x1) << 10);
+
+      data |= ((adc[2*i] & 0x3ff) << 16);
+      data |= ((integrator & 0x1) << 26);
+
+      f->WriteBuffer((char*)&data,sizeof(data));
+    }
+  }
     
 }
 
@@ -160,8 +184,8 @@ void AliADBuffer::WriteBeamFlags() {
    data = 0;
    f->WriteBuffer((char*)&data,sizeof(data));//Empty short in the end
    /*/
-  for(Int_t i = 0; i < 12; i++) {
-  	UShort_t data = 0;
+  for(Int_t i = 0; i < 6; i++) {
+  	UInt_t data = 0;
   	f->WriteBuffer((char*)&data,sizeof(data));
 	}
 }
@@ -174,8 +198,8 @@ void AliADBuffer::WriteMBInfo() {
   // 10 events (4*10 shorts for the 4 channels 
   // of half a CIU card)
     
-  for(Int_t i = 0; i < 40; i++) {
-    UShort_t data = 0;
+  for(Int_t i = 0; i < 20; i++) {
+    UInt_t data = 0;
     f->WriteBuffer((char*)&data,sizeof(data));
   }
 }
@@ -189,10 +213,10 @@ void AliADBuffer::WriteMBFlags() {
   // of half a CIU card + one empty 16-bit
 
 
-  for(Int_t i = 0; i < 6; i++) {
-    UShort_t data = 0;
-    f->WriteBuffer((char*)&data,sizeof(data));
-  }
+  for(Int_t i = 0; i < 3; i++) {
+    UInt_t data = 0;
+    f->WriteBuffer((char*)&data,sizeof(data));  
+    }
 }
 
 //_____________________________________________________________________________

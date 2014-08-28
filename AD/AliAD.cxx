@@ -304,9 +304,9 @@ void AliAD::Digits2Raw()
    fAD->SetTreeAddress();  		
    digits->GetBranch("ADDigit")->SetAddress(&ADdigits); 
   
-   //const char *fileName    = AliDAQ::DdlFileName("AD",0);
-   //AliADBuffer* buffer  = new AliADBuffer(fileName);
-   AliADBuffer* buffer  = new AliADBuffer("AD.Buffer");
+   const char *fileName    = AliDAQ::DdlFileName("AD",0);
+   AliADBuffer* buffer  = new AliADBuffer(fileName);
+   //AliADBuffer* buffer  = new AliADBuffer("AD_0.ddl");
    
    // Get Trigger information first
    // Read trigger inputs from trigger-detector object
