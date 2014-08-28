@@ -128,6 +128,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SwitchOnAllNLMHistoFill()                   { fFillAllNLMHistograms   = kTRUE ; }
   void           SwitchOffAllNLMHistoFill()                  { fFillAllNLMHistograms   = kFALSE; }
 
+  void           SwitchOnSelectIsolatedDecay()               { fSelectIsolatedDecay    = kTRUE ; }
+  void           SwitchOffSelectIsolatedDecay()              { fSelectIsolatedDecay    = kFALSE; }
   
   //For histograms
   enum mcTypes   { kmcPi0Decay = 0, kmcEtaDecay = 1, kmcOtherDecay = 2,
@@ -151,7 +153,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Double_t       fTimeCutMin  ;            // Remove clusters/cells with time smaller than this value, in ns
   Double_t       fTimeCutMax  ;            // Remove clusters/cells with time larger than this value, in ns
   Bool_t         fRejectTrackMatch ;       // Remove clusters which have an associated TPC track
-
+  Bool_t         fSelectIsolatedDecay;     // Select pairs where at least one is declared isolated (run first AliAnaParticleIsolation)
+  
   Bool_t         fFillPileUpHistograms;    // Fill pile-up related histograms
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   Bool_t         fFillTMHisto;             // Fill track matching plots
@@ -417,7 +420,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,40)
+  ClassDef(AliAnaPi0EbE,41)
 } ;
 
 

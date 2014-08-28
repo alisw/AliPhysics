@@ -34,8 +34,10 @@ ClassImp(AliAnalysisTaskEmcalJetv2QA)
 AliAnalysisTaskEmcalJetv2QA::AliAnalysisTaskEmcalJetv2QA() :
 AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetv2QA", kTRUE),
   nCentBins(0),
-  nJetPtBins(0),
+  nCentBins1(1),
   centBins(0x0),
+  nJetPtBins(0),
+  nJetPtBins1(1),
   jetPtBins(0x0),
   fJetv2(0x0),
   doPtWeight(kFALSE),
@@ -94,14 +96,6 @@ AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetv2QA", kTRUE),
 {
   // Default constructor.
 
-  cout << endl;
-  cout << "*******************************************************" << endl;
-  cout << "*** AliAnalysisTaskEmcalJetv2QA constructor! ***" << endl;
-  cout << "*******************************************************" << endl;
-  cout << endl;
-
-
-
   SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -109,8 +103,10 @@ AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetv2QA", kTRUE),
 AliAnalysisTaskEmcalJetv2QA::AliAnalysisTaskEmcalJetv2QA(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   nCentBins(0),
-  nJetPtBins(0),
+  nCentBins1(1),
   centBins(0x0),
+  nJetPtBins(0),
+  nJetPtBins1(1),
   jetPtBins(0x0),
   fJetv2(0x0),
   doPtWeight(kFALSE),
@@ -169,6 +165,11 @@ AliAnalysisTaskEmcalJetv2QA::AliAnalysisTaskEmcalJetv2QA(const char *name) :
 {
   // Standard constructor.
 
+  // default binning
+  Double_t centBinsTemp[7] = {0,5,10,20,30,40,50};
+  SetCentBins(6,centBinsTemp);
+  Double_t jetPtBinsTemp[6] = {40.,50.,70.,90.,120.,200.};
+  SetJetPtBins(5,jetPtBinsTemp);
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -194,13 +195,6 @@ void AliAnalysisTaskEmcalJetv2QA::UserCreateOutputObjects()
     fTracksCont       = GetParticleContainer(0);
     fCaloClustersCont = GetClusterContainer(0);
   }
-
-  nCentBins = 6; // set number of centrality bins
-  nJetPtBins = 4; // set number of jetPtBins
-  centBins = new Double_t[nCentBins+1];
-  jetPtBins = new Double_t[nJetPtBins+1];
-  centBins[0] = 0.; centBins[1] = 5.; centBins[2] = 10.; centBins[3] = 20.; centBins[4] = 30.; centBins[5] = 40.; centBins[6] = 50.; // set edges of bins
-  jetPtBins[0] = 50.; jetPtBins[1] = 70.; jetPtBins[2] = 90.; jetPtBins[3] = 120.; jetPtBins[4] = 200.; // set edges of bins
 
   fTracksCont->SetClassName("AliVTrack");
   fCaloClustersCont->SetClassName("AliVCluster");
@@ -569,7 +563,7 @@ Bool_t AliAnalysisTaskEmcalJetv2QA::Run() // this part loops over each event
   AliEmcalJet *dijet = fJetsCont->GetNextAcceptJet(0); // check for dijet events
   while(dijet)
     {
-      if(dijet->Pt() > 50 && fabs(jetPhi-dijet->Phi()-TMath::Pi()) < 0.4) // loop over jets with pT>50 and exclude leading jet and check that angular separation is < 0.4
+      if(dijet->Pt() > jetPt*2./3. && fabs(jetPhi-dijet->Phi()-TMath::Pi()) < 0.4) // loop over jets with pT>50 and exclude leading jet and check that angular separation is < 0.4
 	isDijet = 1;
       dijet = fJetsCont->GetNextAcceptJet();
     }
@@ -736,4 +730,32 @@ void AliAnalysisTaskEmcalJetv2QA::Terminate(Option_t *)
   // Called once at the end of the analysis.
   if(centBins) delete [] centBins;
   if(jetPtBins) delete [] jetPtBins;
+}
+
+void AliAnalysisTaskEmcalJetv2QA::SetCentBins(Int_t n, Double_t* bins)
+{
+  if(centBins) delete [] centBins;
+  nCentBins = n;
+  nCentBins1 = n+1;
+  centBins = new Double_t[nCentBins+1];
+  for(Int_t i = 0; i < nCentBins+1; i++)
+    centBins[i]=bins[i];
+  cout << endl << "Setting " << nCentBins << " centrality bins: " << endl;
+  for(Int_t i = 0; i < nCentBins+1; i++)
+    cout << centBins[i] << "   ";
+  cout << endl << endl;
+}
+
+void AliAnalysisTaskEmcalJetv2QA::SetJetPtBins(Int_t n, Double_t* bins)
+{
+  if(jetPtBins) delete [] jetPtBins;
+  nJetPtBins = n;
+  nJetPtBins1 = n+1;
+  jetPtBins = new Double_t[nJetPtBins+1];
+  for(Int_t i = 0; i < nJetPtBins+1; i++)
+    jetPtBins[i]=bins[i];
+  cout << endl << "Setting " << nJetPtBins << " jet pt bins: " << endl;
+  for(Int_t i = 0; i < nJetPtBins+1; i++)
+    cout << jetPtBins[i] << "   ";
+  cout << endl << endl;
 }
