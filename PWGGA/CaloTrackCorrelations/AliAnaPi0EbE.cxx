@@ -53,7 +53,7 @@ fAnaType(kIMCalo),                  fCalorimeter(""),
 fMinDist(0.),fMinDist2(0.),         fMinDist3(0.),
 fNLMCutMin(-1),                     fNLMCutMax(10),
 fTimeCutMin(-10000),                fTimeCutMax(10000),
-fRejectTrackMatch(kTRUE),
+fRejectTrackMatch(kTRUE),           fSelectIsolatedDecay(kFALSE),
 fFillPileUpHistograms(0),
 fFillWeightHistograms(kFALSE),      fFillTMHisto(0),
 fFillSelectClHisto(0),              fFillOnlySimpleSSHisto(1),
@@ -2798,6 +2798,15 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     {
       AliAODPWG4Particle * photon2 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(jphoton));
       
+      // Do analysis only when one of the decays is isolated
+      // Run AliAnaParticleIsolation before
+      if(fSelectIsolatedDecay)
+      {
+        Bool_t isolated1 = ((AliAODPWG4ParticleCorrelation*) photon1)->IsIsolated();
+        Bool_t isolated2 = ((AliAODPWG4ParticleCorrelation*) photon2)->IsIsolated();
+        if(!isolated1 && !isolated2) continue;
+      }
+      
       // Vertex cut in case of mixed events
       Int_t evtIndex2 = 0 ;
       if(GetMixedEvent())
@@ -2891,17 +2900,10 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       // Select good pair (good phi, pt cuts, aperture and invariant mass)
       //
       if(!GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter)) continue;
-      
+            
       if(GetDebug()>1)
         printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Selected gamma pair: pt %f, phi %f, eta%f \n",
                mom.Pt(), mom.Phi()*TMath::RadToDeg(), mom.Eta());
-      
-      //Fill some histograms about shower shape
-      if(fFillSelectClHisto && clusters && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
-      {
-        FillSelectedClusterHistograms(cluster1, mom1.Pt(), nMaxima1, photon1->GetTag());
-        FillSelectedClusterHistograms(cluster2, mom2.Pt(), nMaxima2, photon2->GetTag());
-      }
       
       //
       // Tag both photons as decay if not done before
@@ -2973,7 +2975,6 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       FillPileUpHistograms(ptpair,((cluster1->GetTOF()+cluster2->GetTOF())*1e9)/2,cluster1);
       
       //Create AOD for analysis
-      
       AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
       
       if     ( (GetNeutralMesonSelection()->GetParticle()).Contains("Pi0") ) pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
@@ -2994,7 +2995,6 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       //pi0.SetInputFileIndex(input);
       
       AddAODParticle(pi0);
-      
       
     }//2n photon loop
     
@@ -3062,6 +3062,14 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
     AliAODPWG4Particle * photon1 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(iphoton));
     mom1 = *(photon1->Momentum());
     
+    // Do analysis only when one of the decays is isolated
+    // Run AliAnaParticleIsolation before
+    if(fSelectIsolatedDecay)
+    {
+      Bool_t isolated1 = ((AliAODPWG4ParticleCorrelation*) photon1)->IsIsolated();
+      if(!isolated1) continue;
+    }
+
     //Get original cluster, to recover some information
     Int_t iclus = -1;
     AliVCluster *cluster = FindCluster(clusters,photon1->GetCaloLabel(0),iclus);
