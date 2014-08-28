@@ -197,10 +197,12 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
   
   for(Int_t ibit =0; ibit< 4; ibit++)
   {
-    fhPtDecayIso      [ibit] = 0;
-    fhPtDecayNoIso    [ibit] = 0;
-    fhEtaPhiDecayIso  [ibit] = 0;
-    fhEtaPhiDecayNoIso[ibit] = 0;
+    fhPtDecayIso       [ibit] = 0;
+    fhPtLambda0Decay[0][ibit] = 0;
+    fhPtLambda0Decay[1][ibit] = 0;
+    fhPtDecayNoIso     [ibit] = 0;
+    fhEtaPhiDecayIso   [ibit] = 0;
+    fhEtaPhiDecayNoIso [ibit] = 0;
     for(Int_t imc = 0; imc < 9; imc++)
     {
       fhPtDecayIsoMC  [ibit][imc]    = 0;
@@ -1159,156 +1161,163 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   if     (fCalorimeter == "EMCAL") clusters = GetEMCALClusters();
   else if(fCalorimeter == "PHOS" ) clusters = GetPHOSClusters();
   
+  if(!clusters) return;
+  
+  AliVCluster *cluster = FindCluster(clusters,clusterID,iclus);
+
+  Float_t m02    = cluster->GetM02() ;
   Float_t energy = pCandidate->E();
   Float_t pt     = pCandidate->Pt();
-  
-  if(clusters)
+
+  // Get the max pt leading in cone or the sum of pt in cone
+  // assign a bin to the candidate, depending on both quantities
+  // see the shower shape in those bins.
+  if(fFillBackgroundBinHistograms)
   {
-    AliVCluster *cluster = FindCluster(clusters,clusterID,iclus);
+    // Get the background bin for this cone and trigger
+    Int_t ptsumBin  = -1;
+    Int_t leadptBin = -1;
     
-    // Get the max pt leading in cone or the sum of pt in cone
-    // assign a bin to the candidate, depending on both quantities
-    // see the shower shape in those bins.
-    if(fFillBackgroundBinHistograms)
+    if( GetDebug() > 1 )
+      printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms() - pT cand: %2.2f, In cone pT: Sum %2.2f, Lead %2.2f, n bins %d\n",
+             pt,coneptsum,coneleadpt,fNBkgBin);
+    
+    for(Int_t ibin = 0; ibin < fNBkgBin; ibin++)
     {
-      // Get the background bin for this cone and trigger
-      Int_t ptsumBin  = -1;
-      Int_t leadptBin = -1;
-
-      if( GetDebug() > 1 )
-        printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms() - pT cand: %2.2f, In cone pT: Sum %2.2f, Lead %2.2f, n bins %d\n",
-               pt,coneptsum,coneleadpt,fNBkgBin);
-
-      for(Int_t ibin = 0; ibin < fNBkgBin; ibin++)
+      if( coneptsum  >= fBkgBinLimit[ibin] && coneptsum  < fBkgBinLimit[ibin+1]) ptsumBin  = ibin;
+      if( coneleadpt >= fBkgBinLimit[ibin] && coneleadpt < fBkgBinLimit[ibin+1]) leadptBin = ibin;
+    }
+    
+    // Fill the histograms per bin of pt lead or pt sum
+    if( GetDebug() > 1 && ptsumBin  >=0 ) printf("\t Sum bin %d [%2.2f,%2.2f]\n" , ptsumBin ,fBkgBinLimit[ptsumBin] ,fBkgBinLimit[ptsumBin +1]);
+    if( GetDebug() > 1 && leadptBin >=0 ) printf("\t Lead bin %d [%2.2f,%2.2f]\n", leadptBin,fBkgBinLimit[leadptBin],fBkgBinLimit[leadptBin+1]);
+    
+    if( leadptBin >=0 ) fhPtLeadConeBinLambda0[leadptBin]->Fill(pt,m02);
+    if( ptsumBin  >=0 ) fhSumPtConeBinLambda0 [ ptsumBin]->Fill(pt,m02);
+    
+    if( GetDebug() > 1 && leadptBin == 0 )
+      printf("No track/clusters in isolation cone: cand pt %2.2f GeV/c, track multiplicity %d, N clusters %d\n",
+             pt, GetTrackMultiplicity(),GetEMCALClusters()->GetEntriesFast());
+    
+    if(IsDataMC())
+    {
+      Int_t leadptBinMC = leadptBin+mcIndex*fNBkgBin;
+      Int_t  ptsumBinMC =  ptsumBin+mcIndex*fNBkgBin;
+      if( leadptBin >=0 ) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt,m02);
+      if( ptsumBin  >=0 ) fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt,m02);
+      if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
       {
-        if( coneptsum  >= fBkgBinLimit[ibin] && coneptsum  < fBkgBinLimit[ibin+1]) ptsumBin  = ibin;
-        if( coneleadpt >= fBkgBinLimit[ibin] && coneleadpt < fBkgBinLimit[ibin+1]) leadptBin = ibin;
-      }
-      
-      // Fill the histograms per bin of pt lead or pt sum
-      if( GetDebug() > 1 && ptsumBin  >=0 ) printf("\t Sum bin %d [%2.2f,%2.2f]\n" , ptsumBin ,fBkgBinLimit[ptsumBin],fBkgBinLimit[ptsumBin+1]);
-      if( GetDebug() > 1 && leadptBin >=0 ) printf("\t Lead bin %d [%2.2f,%2.2f]\n", leadptBin,fBkgBinLimit[leadptBin],fBkgBinLimit[leadptBin+1]);
-      
-      if( leadptBin >=0 ) fhPtLeadConeBinLambda0[leadptBin]->Fill(pt,cluster->GetM02());
-      if( ptsumBin  >=0 ) fhSumPtConeBinLambda0 [ ptsumBin]->Fill(pt,cluster->GetM02());
-      
-      if( GetDebug() > 1 && leadptBin == 0 )
-        printf("No track/clusters in isolation cone: cand pt %2.2f GeV/c, track multiplicity %d, N clusters %d\n",
-               pt, GetTrackMultiplicity(),GetEMCALClusters()->GetEntriesFast());
-      
-      if(IsDataMC())
-      {
-        Int_t leadptBinMC = leadptBin+mcIndex*fNBkgBin;
-        Int_t  ptsumBinMC =  ptsumBin+mcIndex*fNBkgBin;
-        if( leadptBin >=0 ) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt,cluster->GetM02());
-        if( ptsumBin  >=0 ) fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt,cluster->GetM02());
-        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
-        {
-          leadptBinMC = leadptBin+kmcPhoton*fNBkgBin;
-          ptsumBinMC  =  ptsumBin+kmcPhoton*fNBkgBin;
-          if( leadptBin >=0 ) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt,cluster->GetM02());
-          if( ptsumBin  >=0 ) fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt,cluster->GetM02());
-        }
+        leadptBinMC = leadptBin+kmcPhoton*fNBkgBin;
+        ptsumBinMC  =  ptsumBin+kmcPhoton*fNBkgBin;
+        if( leadptBin >=0 ) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt,m02);
+        if( ptsumBin  >=0 ) fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt,m02);
       }
     }
-
-    
-    if(fFillSSHisto)
+  }
+  
+  if(fFillSSHisto)
+  {
+    fhELambda0 [isolated]->Fill(energy, m02);
+    fhPtLambda0[isolated]->Fill(pt,     m02);
+    fhELambda1 [isolated]->Fill(energy, m02);
+    if(fFillTaggedDecayHistograms)
     {
-      fhELambda0 [isolated]->Fill(energy, cluster->GetM02() );
-      fhPtLambda0[isolated]->Fill(pt,     cluster->GetM02() );
-      fhELambda1 [isolated]->Fill(energy, cluster->GetM20() );
+      Int_t decayTag = pCandidate->GetBtag(); // temporary
+      if(decayTag < 0) decayTag = 0;    // temporary
+      for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
+      {
+        if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
+          fhPtLambda0Decay[isolated][ibit]->Fill(pt,m02);
+      }
+    }
+    
+    if(IsDataMC())
+    {
+      if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
+        fhPtLambda0MC[kmcPhoton][isolated]->Fill(pt,m02);
+      
+      fhPtLambda0MC[mcIndex][isolated]->Fill(pt,m02);
+    }
+    
+    if(fCalorimeter == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+       GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
+    {
+      fhELambda0TRD [isolated]->Fill(energy, m02 );
+      fhPtLambda0TRD[isolated]->Fill(pt    , m02 );
+      fhELambda1TRD [isolated]->Fill(energy, m02 );
+    }
+    
+    if(fFillNLMHistograms)
+    {
+      fhNLocMax[isolated]->Fill(energy,nMaxima);
+      if     (nMaxima==1) { fhELambda0LocMax1[isolated]->Fill(energy,m02); fhELambda1LocMax1[isolated]->Fill(energy,m02); }
+      else if(nMaxima==2) { fhELambda0LocMax2[isolated]->Fill(energy,m02); fhELambda1LocMax2[isolated]->Fill(energy,m02); }
+      else                { fhELambda0LocMaxN[isolated]->Fill(energy,m02); fhELambda1LocMaxN[isolated]->Fill(energy,m02); }
+    }
+  } // SS histo fill
+  
+  if(fFillTMHisto)
+  {
+    Float_t dZ  = cluster->GetTrackDz();
+    Float_t dR  = cluster->GetTrackDx();
+    
+    if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
+    {
+      dR = 2000., dZ = 2000.;
+      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
+    }
+    
+    //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
+    if(fhTrackMatchedDEta[isolated] && TMath::Abs(dR) < 999)
+    {
+      fhTrackMatchedDEta[isolated]->Fill(energy,dZ);
+      fhTrackMatchedDPhi[isolated]->Fill(energy,dR);
+      if(energy > 0.5) fhTrackMatchedDEtaDPhi[isolated]->Fill(dZ,dR);
+    }
+    
+    // Check dEdx and E/p of matched clusters
+    
+    if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
+    {
+      
+      AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
+      
+      if(track)
+      {
+        Float_t dEdx = track->GetTPCsignal();
+        fhdEdx[isolated]->Fill(cluster->E(), dEdx);
+        
+        Float_t eOverp = cluster->E()/track->P();
+        fhEOverP[isolated]->Fill(cluster->E(),  eOverp);
+      }
+      //else
+      //  printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
+      
       
       if(IsDataMC())
       {
-        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
-          fhPtLambda0MC[kmcPhoton][isolated]->Fill(pt, cluster->GetM02());
-        
-        fhPtLambda0MC[mcIndex][isolated]->Fill(pt, cluster->GetM02());
-      }
-      
-      if(fCalorimeter == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
-         GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
-      {
-        fhELambda0TRD [isolated]->Fill(energy, cluster->GetM02() );
-        fhPtLambda0TRD[isolated]->Fill(pt    , cluster->GetM02() );
-        fhELambda1TRD [isolated]->Fill(energy, cluster->GetM20() );
-      }
-      
-      if(fFillNLMHistograms)
-      {
-        fhNLocMax[isolated]->Fill(energy,nMaxima);
-        if     (nMaxima==1) { fhELambda0LocMax1[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMax1[isolated]->Fill(energy,cluster->GetM20()); }
-        else if(nMaxima==2) { fhELambda0LocMax2[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMax2[isolated]->Fill(energy,cluster->GetM20()); }
-        else                { fhELambda0LocMaxN[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMaxN[isolated]->Fill(energy,cluster->GetM20()); }
-      }
-    } // SS histo fill
-    
-    if(fFillTMHisto)
-    {
-      Float_t dZ  = cluster->GetTrackDz();
-      Float_t dR  = cluster->GetTrackDx();
-      
-      if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
-      {
-        dR = 2000., dZ = 2000.;
-        GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
-      }
-      
-      //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
-      if(fhTrackMatchedDEta[isolated] && TMath::Abs(dR) < 999)
-      {
-        fhTrackMatchedDEta[isolated]->Fill(energy,dZ);
-        fhTrackMatchedDPhi[isolated]->Fill(energy,dR);
-        if(energy > 0.5) fhTrackMatchedDEtaDPhi[isolated]->Fill(dZ,dR);
-      }
-      
-      // Check dEdx and E/p of matched clusters
-      
-      if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
-      {
-        
-        AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
-        
-        if(track)
+        if ( !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion)  )
         {
-          Float_t dEdx = track->GetTPCsignal();
-          fhdEdx[isolated]->Fill(cluster->E(), dEdx);
+          if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
+                     GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 2.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 0.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 1.5 );
+          else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 3.5 );
           
-          Float_t eOverp = cluster->E()/track->P();
-          fhEOverP[isolated]->Fill(cluster->E(),  eOverp);
         }
-        //else
-        //  printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
-        
-        
-        if(IsDataMC())
+        else
         {
-          if ( !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion)  )
-          {
-            if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
-                       GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 2.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 0.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 1.5 );
-            else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 3.5 );
-            
-          }
-          else
-          {
-            if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
-                       GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 6.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 4.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 5.5 );
-            else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 7.5 );
-          }
-          
-        }  // MC
-        
-      } // match window
+          if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
+                     GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 6.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 4.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 5.5 );
+          else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 7.5 );
+        }
+      }  // MC
       
-    }// TM histos fill
+    } // match window
     
-  } // clusters array available
+  }// TM histos fill
   
 }
 
@@ -2627,6 +2636,20 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtLambda0[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtLambda0[iso]) ;
         
+        if(fFillTaggedDecayHistograms)
+        {
+          for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
+          {
+            fhPtLambda0Decay[iso][ibit]  = new TH2F
+            (Form("hPtLambda0Decay%s_bit%d",isoName[iso].Data(),fDecayBits[ibit]),
+             Form("%s cluster : #it{p}_{T} vs #lambda_{0}, decay bit %d, %s",isoTitle[iso].Data(), fDecayBits[ibit], parTitle.Data()),
+             nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+            fhPtLambda0Decay[iso][ibit]->SetYTitle("#lambda_{0}^{2}");
+            fhPtLambda0Decay[iso][ibit]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhPtLambda0Decay[iso][ibit]) ;
+          }
+        }
+        
         if(IsDataMC())
         {
           for(Int_t imc = 0; imc < 9; imc++)
@@ -3617,9 +3640,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         {
           if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
           {
-            fhPtDecayIso[ibit]    ->Fill(pt);
-            fhEtaPhiDecayIso[ibit]->Fill(eta,phi);
-            
+            fhPtDecayIso       [ibit]->Fill(pt);
+            fhEtaPhiDecayIso   [ibit]->Fill(eta,phi);
+
             if(IsDataMC())
             {
               if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
