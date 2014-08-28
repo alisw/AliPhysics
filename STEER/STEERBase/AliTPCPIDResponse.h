@@ -236,13 +236,6 @@ protected:
                             const TSpline3* responseFunction,
                             Bool_t correctEta,
                             Bool_t correctMultiplicity) const;
-  
-  Double_t GetMultiplicityCorrection(const AliVTrack *track, const Double_t dEdxExpected, const Int_t multiplicity) const;
-  
-  Double_t GetMultiplicitySigmaCorrection(const Double_t dEdxExpected, const Int_t multiplicity) const;
-  
-  Double_t GetSigmaPar1(const AliVTrack *track, AliPID::EParticleType species,
-                        Double_t dEdx, const TSpline3* responseFunction) const;
   //
   // function for numberical debugging 0 registed splines can be used in the TFormula and tree visualizations
   //

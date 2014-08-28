@@ -103,6 +103,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  void     SetLinearFitterDebugOn(Bool_t debug = kTRUE)              { fLinearFitterDebugOn = debug;         }
           void     SetExbAltFitOn(Bool_t fiton = kTRUE)                      { fExbAltFitOn      = fiton;}
 	  void     SetScaleWithTPCSignal(Bool_t scaleWithTPCSignal = kTRUE)  { fScaleWithTPCSignal = scaleWithTPCSignal;}
+	  void     SetTakeSnapshot(Bool_t takesnapshot)                 { fTakeSnapshot = takesnapshot;   }
 	  void     SetFirstRunGain(Int_t firstRunGain)                       { fFirstRunGain = firstRunGain;   }
 	  void     SetVersionGainUsed(Int_t versionGainUsed)                 { fVersionGainUsed = versionGainUsed;   }
 	  void     SetSubVersionGainUsed(Int_t subVersionGainUsed)           { fSubVersionGainUsed = subVersionGainUsed;   }
@@ -224,6 +225,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  Int_t    fMinNbTRDtracklets;      // Min number of TRD tracklets
 	  Float_t  fMinTRDMomentum;         // Min TRD momentum
   // Back correction
+	  Bool_t   fTakeSnapshot;           // Take from snapshot
 	  Int_t    fFirstRunGain;           // FirstRunGain 
 	  Int_t    fVersionGainUsed;        // VersionGainUsed 
 	  Int_t    fSubVersionGainUsed;     // SubVersionGainUsed
@@ -348,7 +350,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   AliTRDCalibraFillHisto();
   virtual ~AliTRDCalibraFillHisto(); 
     
-  ClassDef(AliTRDCalibraFillHisto,7)                         // TRD Calibration class
+  ClassDef(AliTRDCalibraFillHisto,8)                         // TRD Calibration class
 
 };
   
