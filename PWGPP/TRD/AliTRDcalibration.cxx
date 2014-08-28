@@ -1096,7 +1096,7 @@ Bool_t AliTRDcalibration::AddStatsPerDetector(const TH2I *ch)
 
   Int_t    nybins  = ch->GetNbinsY();// groups number
   Int_t    nxbins  = ch->GetNbinsX();// number of bins X
-  TAxis   *xaxis   = ch->GetXaxis();
+  const TAxis   *xaxis   = ch->GetXaxis();
   Double_t lowedge  = xaxis->GetBinLowEdge(1);
   Double_t upedge   = xaxis->GetBinUpEdge(nxbins);
 
@@ -1176,7 +1176,7 @@ Bool_t AliTRDcalibration::AddStatsPerDetector(const TProfile2D *ph,Int_t i)
 
   Int_t    nybins  = ph->GetNbinsY();// groups number
   Int_t    nxbins  = ph->GetNbinsX();// number of bins X
-  TAxis   *xaxis = ph->GetXaxis();
+  const TAxis   *xaxis = ph->GetXaxis();
   Double_t lowedge  = xaxis->GetBinLowEdge(1);
   Double_t upedge   = xaxis->GetBinUpEdge(nxbins);
 
