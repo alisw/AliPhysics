@@ -61,6 +61,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fValues("AliRsnMiniValue", 0),
    fHEventStat(0x0),
    fHAEventsVsMulti(0x0),
+   fHAEventsVsTracklets(0x0),
    fHAEventVz(0x0),
    fHAEventMultiCent(0x0),
    fHAEventPlane(0x0),
@@ -106,6 +107,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fValues("AliRsnMiniValue", 0),
    fHEventStat(0x0),
    fHAEventsVsMulti(0x0),
+   fHAEventsVsTracklets(0x0),
    fHAEventVz(0x0),
    fHAEventMultiCent(0x0),
    fHAEventPlane(0x0),
@@ -156,6 +158,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fValues(copy.fValues),
    fHEventStat(0x0),
    fHAEventsVsMulti(0x0),
+   fHAEventsVsTracklets(0x0),
    fHAEventVz(0x0),
    fHAEventMultiCent(0x0),
    fHAEventPlane(0x0),
@@ -211,6 +214,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fValues = copy.fValues;
    fHEventStat = copy.fHEventStat;
    fHAEventsVsMulti = copy.fHAEventsVsMulti;
+   fHAEventsVsTracklets = copy.fHAEventsVsTracklets;
    fHAEventVz = copy.fHAEventVz;
    fHAEventMultiCent = copy.fHAEventMultiCent;
    fHAEventPlane = copy.fHAEventPlane;
@@ -297,11 +301,16 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fOutput->SetOwner();
 
    // initialize event statistics counter
-   fHEventStat = new TH1F("hEventStat", "Event statistics", 4, 0.0, 4.0);
+   fHEventStat = new TH1F("hEventStat", "Event statistics", 8, 0.0, 8.0);
    fHEventStat->GetXaxis()->SetBinLabel(1, "CINT1B");
    fHEventStat->GetXaxis()->SetBinLabel(2, "V0AND");
    fHEventStat->GetXaxis()->SetBinLabel(3, "Candle");
    fHEventStat->GetXaxis()->SetBinLabel(4, "Accepted");
+   fHEventStat->GetXaxis()->SetBinLabel(5, "Not Accepted - Total");
+   fHEventStat->GetXaxis()->SetBinLabel(6, "Not Accepted - No Track Vertex");
+   fHEventStat->GetXaxis()->SetBinLabel(7, "Not Accepted - Not Enough Contributors");
+   fHEventStat->GetXaxis()->SetBinLabel(8, "Not Accepted - No Vertex inside |z| < 10 cm");
+   
    fOutput->Add(fHEventStat);
 
    if (fUseCentrality)
@@ -309,6 +318,9 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    else
       fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Multiplicity",1000, 0, 1000.0);
    fOutput->Add(fHAEventsVsMulti);
+   
+   fHAEventsVsTracklets = new TH1F("hAEventsVsTracklets", "Accepted events vs Tracklet Number",1000, 0, 1000.0);
+   fOutput->Add(fHAEventsVsTracklets);
 
    if(fHAEventVz) fOutput->Add(fHAEventVz);
    if(fHAEventMultiCent) fOutput->Add(fHAEventMultiCent);
@@ -737,12 +749,23 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
    if (isSelected) {
       fHEventStat->Fill(3.1);
       Double_t multi = ComputeCentrality((output == 'E'));
+      Double_t tracklets = ComputeTracklets();
       fHAEventsVsMulti->Fill(multi);
+      fHAEventsVsTracklets->Fill(tracklets);
       if(fHAEventVz) fHAEventVz->Fill(multi,fInputEvent->GetPrimaryVertex()->GetZ());
       if(fHAEventMultiCent) fHAEventMultiCent->Fill(multi,ComputeMultiplicity(output == 'E',fHAEventMultiCent->GetYaxis()->GetTitle()));
       if(fHAEventPlane) fHAEventPlane->Fill(multi,ComputeAngle());
       return output;
    } else {
+      fHEventStat->Fill(4.1);
+      const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
+         if(!vertex) fHEventStat->Fill(5.1);
+  	 else{
+    	 TString title=vertex->GetTitle();
+    	 if( (title.Contains("Z")) || (title.Contains("3D")) ) fHEventStat->Fill(5.1);
+	 if(vertex->GetNContributors()<1.) fHEventStat->Fill(6.1);
+	 if(TMath::Abs(vertex->GetZ())>10.) fHEventStat->Fill(7.1);
+	 }
       return 0;
    }
 }
@@ -761,6 +784,7 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
    fMiniEvent->Vz()    = fInputEvent->GetPrimaryVertex()->GetZ();
    fMiniEvent->Angle() = ComputeAngle();
    fMiniEvent->Mult()  = ComputeCentrality((evType == 'E'));
+   fMiniEvent->Tracklets() = ComputeTracklets();
    AliDebugClass(2, Form("Event %d: type = %c -- vz = %f -- mult = %f -- angle = %f", fEvNum, evType, fMiniEvent->Vz(), fMiniEvent->Mult(), fMiniEvent->Angle()));
 
    // loop on daughters and assign track-related values
@@ -916,6 +940,29 @@ Double_t AliRsnMiniAnalysisTask::ComputeMultiplicity(Bool_t isESD,TString type)
       AliError(Form("String '%s' does not define a possible multiplicity/centrality computation", type.Data()));
       return -1.0;
    }
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
+{
+//
+// Get number of tracklets
+//
+
+   Double_t count = 100;
+
+   if (fInputEvent->InheritsFrom(AliESDEvent::Class())){
+      AliESDEvent *esdEvent = (AliESDEvent *)fInputEvent;
+      const AliMultiplicity *spdmult = esdEvent->GetMultiplicity();
+      count = 1.0*spdmult->GetNumberOfTracklets();
+      }
+   else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
+      AliAODEvent *aodEvent = (AliAODEvent *)fInputEvent;
+      AliAODTracklets *spdmult = aodEvent->GetTracklets();
+      count = 1.0*spdmult->GetNumberOfTracklets();
+   }
+
+   return count;
 }
 
 //__________________________________________________________________________________________________
