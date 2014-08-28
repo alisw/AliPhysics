@@ -203,7 +203,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtDecayNoIso[4] ;                    //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
   TH2F *   fhEtaPhiDecayIso[4] ;                  //! eta vs phi of isolated Pi0 decay particles
   TH2F *   fhEtaPhiDecayNoIso[4] ;                //! eta vs phi of not isolated leading Pi0 decay particles
-  
+  TH2F *   fhPtLambda0Decay[2][4];                //! Shower shape of (non) isolated leading Pi0 decay particles (do not apply SS cut previously)
+
   TH2F *   fhPtInCone ;                           //! Cluster/track Pt in the cone
   TH2F *   fhPtClusterInCone ;                    //! Cluster Pt in the cone
   TH2F *   fhPtCellInCone ;                       //! Cell amplitude in the cone
@@ -431,7 +432,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,28)
+  ClassDef(AliAnaParticleIsolation,29)
 } ;
 
 
