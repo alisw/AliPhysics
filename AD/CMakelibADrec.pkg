@@ -31,9 +31,8 @@ set ( SRCS
     AliADTrigger.cxx 
     AliADRecoParam.cxx
     AliADRawStream.cxx 
-#    AliADQADataMakerRec.cxx 
+    AliADQADataMakerRec.cxx 
 #    AliADTriggerMask.cxx 
-#    AliADRecoParam.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

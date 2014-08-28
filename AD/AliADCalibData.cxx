@@ -48,7 +48,7 @@ AliADCalibData::AliADCalibData():
     }
     for(int t=0; t<32; t++) {
         fPedestal[t]    = 0.0;     
-        fSigma[t]       = 0.0;        
+        fSigma[t]       = 100.0;        
         fADCmean[t]     = 0.0;      
         fADCsigma[t]    = 0.0;
     }
