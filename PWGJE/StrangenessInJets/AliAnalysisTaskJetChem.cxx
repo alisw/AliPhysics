@@ -113,6 +113,19 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fCutRatio(0)
    ,fK0Type(0)  
    ,fFilterMaskK0(0)
+   ,jettracklist(0)
+   ,jetConeK0list(0)
+   ,jetConeLalist(0)
+   ,jetConeALalist(0)
+   ,jetPerpConeK0list(0)
+   ,jetPerpConeLalist(0)
+   ,jetPerpConeALalist(0)
+   ,jetMedianConeK0list(0)
+   ,jetMedianConeLalist(0)
+   ,jetMedianConeALalist(0)
+   ,fListK0sRC(0)
+   ,fListLaRC(0)
+   ,fListALaRC(0)
    ,fListK0s(0)
    ,fPIDResponse(0)
    ,fV0QAK0(0)
@@ -353,6 +366,19 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fCutRatio(0)  
   ,fK0Type(0)  
   ,fFilterMaskK0(0)
+  ,jettracklist(0)
+  ,jetConeK0list(0)
+  ,jetConeLalist(0)
+  ,jetConeALalist(0)
+  ,jetPerpConeK0list(0)
+  ,jetPerpConeLalist(0)
+  ,jetPerpConeALalist(0)
+  ,jetMedianConeK0list(0)
+  ,jetMedianConeLalist(0)
+  ,jetMedianConeALalist(0)
+  ,fListK0sRC(0)
+  ,fListLaRC(0)
+  ,fListALaRC(0)
   ,fListK0s(0)
   ,fPIDResponse(0)
   ,fV0QAK0(0)
@@ -596,6 +622,19 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fCutRatio(copy.fCutRatio)
   ,fK0Type(copy.fK0Type)              
   ,fFilterMaskK0(copy.fFilterMaskK0)
+  ,jettracklist(copy.jettracklist)
+  ,jetConeK0list(copy.jetConeK0list)
+  ,jetConeLalist(copy.jetConeLalist)
+  ,jetConeALalist(copy.jetConeALalist)
+  ,jetPerpConeK0list(copy.jetPerpConeK0list)
+  ,jetPerpConeLalist(copy.jetPerpConeLalist)
+  ,jetPerpConeALalist(copy.jetPerpConeALalist)
+  ,jetMedianConeK0list(copy.jetMedianConeK0list)
+  ,jetMedianConeLalist(copy.jetMedianConeLalist)
+  ,jetMedianConeALalist(copy.jetMedianConeALalist)
+  ,fListK0sRC(copy.fListK0sRC)
+  ,fListLaRC(copy.fListLaRC)
+  ,fListALaRC(copy.fListALaRC)
   ,fListK0s(copy.fListK0s)
   ,fPIDResponse(copy.fPIDResponse)
   ,fV0QAK0(copy.fV0QAK0)
@@ -841,6 +880,19 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fCutRatio                       = o.fCutRatio;
     fK0Type                         = o.fK0Type;
     fFilterMaskK0                   = o.fFilterMaskK0;
+    jettracklist                    = o.jettracklist;
+    jetConeK0list                   = o.jetConeK0list;
+    jetConeLalist                   = o.jetConeLalist;
+    jetConeALalist                  = o.jetConeALalist;
+    jetPerpConeK0list               = o.jetPerpConeK0list;
+    jetPerpConeLalist               = o.jetPerpConeLalist;
+    jetPerpConeALalist              = o.jetPerpConeALalist;
+    jetMedianConeK0list             = o.jetMedianConeK0list;
+    jetMedianConeLalist             = o.jetMedianConeLalist;
+    jetMedianConeALalist            = o.jetMedianConeALalist;
+    fListK0sRC                      = o.fListK0sRC;
+    fListLaRC                       = o.fListLaRC;
+    fListALaRC                      = o.fListALaRC;
     fListK0s                        = o.fListK0s;
     fPIDResponse                    = o.fPIDResponse;
     fV0QAK0                         = o.fV0QAK0;
@@ -1040,7 +1092,19 @@ AliAnalysisTaskJetChem::~AliAnalysisTaskJetChem()
 {
   // destructor  
 
-
+  if(jettracklist) delete jettracklist;
+  if(jetConeK0list) delete jetConeK0list;
+  if(jetConeLalist) delete jetConeLalist;
+  if(jetConeALalist) delete jetConeALalist;
+  if(jetPerpConeK0list) delete jetPerpConeK0list;
+  if(jetPerpConeLalist) delete jetPerpConeLalist;
+  if(jetPerpConeALalist) delete jetPerpConeALalist;
+  if(jetMedianConeK0list) delete jetMedianConeK0list;
+  if(jetMedianConeLalist) delete jetMedianConeLalist;
+  if(jetMedianConeALalist) delete jetMedianConeALalist;
+  if(fListK0sRC) delete fListK0sRC;
+  if(fListLaRC) delete fListLaRC;
+  if(fListALaRC) delete fListALaRC;
   if(fListK0s) delete fListK0s;
   if(fListLa) delete fListLa;
   if(fListALa) delete fListALa;
@@ -1051,6 +1115,9 @@ AliAnalysisTaskJetChem::~AliAnalysisTaskJetChem()
   if(fListMCgenK0s) delete fListMCgenK0s;
   if(fListMCgenLa) delete fListMCgenLa;
   if(fListMCgenALa) delete fListMCgenALa;
+  if(fListMCgenK0sCone) delete fListMCgenK0sCone;
+  if(fListMCgenLaCone) delete fListMCgenLaCone;
+  if(fListMCgenALaCone) delete fListMCgenALaCone;
   if(fRandom) delete fRandom;
 }
 
@@ -1213,7 +1280,32 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   if(fDebug > 1) Printf("AliAnalysisTaskJetChem::UserCreateOutputObjects()");
  
   // create list of tracks and jets 
-  
+  jettracklist = new TList();
+  jettracklist->SetOwner(kFALSE);
+  jetConeK0list = new TList();
+  jetConeK0list->SetOwner(kFALSE);
+  jetConeLalist = new TList();
+  jetConeLalist->SetOwner(kFALSE);
+  jetConeALalist = new TList();
+  jetConeALalist->SetOwner(kFALSE);
+  jetPerpConeK0list = new TList();
+  jetPerpConeK0list->SetOwner(kFALSE);
+  jetPerpConeLalist = new TList(); 
+  jetPerpConeLalist->SetOwner(kFALSE);
+  jetPerpConeALalist = new TList();
+  jetPerpConeALalist->SetOwner(kFALSE);
+  jetMedianConeK0list = new TList();
+  jetMedianConeK0list->SetOwner(kFALSE);
+  jetMedianConeLalist = new TList();
+  jetMedianConeLalist->SetOwner(kFALSE);
+  jetMedianConeALalist = new TList();
+  jetMedianConeALalist->SetOwner(kFALSE);
+  fListK0sRC = new TList();
+  fListK0sRC->SetOwner(kFALSE);
+  fListLaRC = new TList();
+  fListLaRC->SetOwner(kFALSE);
+  fListALaRC = new TList();
+  fListALaRC->SetOwner(kFALSE);
   fTracksRecCuts = new TList();
   fTracksRecCuts->SetOwner(kFALSE); //objects in TList wont be deleted when TList is deleted 
   fJetsRecCuts = new TList();
@@ -1240,7 +1332,12 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fListMCgenLa->SetOwner(kFALSE);
   fListMCgenALa = new TList();          //MC generated Antilambdas
   fListMCgenALa->SetOwner(kFALSE);
-
+  fListMCgenK0sCone = new TList();
+  fListMCgenK0sCone->SetOwner(kFALSE);
+  fListMCgenLaCone = new TList();
+  fListMCgenLaCone->SetOwner(kFALSE);
+  fListMCgenALaCone = new TList();
+  fListMCgenALaCone->SetOwner(kFALSE);
   
   // Create histograms / output container
  
@@ -2377,7 +2474,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     for(Int_t ij=0; ij<nRecJetsCuts; ++ij){ // loop over all jets in event 
       
       AliAODJet* jet = (AliAODJet*) (fJetsRecCuts->At(ij));
-      TList* jettracklist = new TList();
+      jettracklist->Clear();
       Double_t sumPt      = 0.;
       Bool_t isBadJet     = kFALSE;
  
@@ -2397,7 +2494,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       //if jet is selected, then check whether V0 is part of the jet cone:
       if(IsParticleInCone(jet, v0, dRadiusExcludeCone) == kTRUE) {bIsInCone = kTRUE;}
       
-      delete jettracklist;
+      jettracklist->Clear();
     }
     
     if((bIsInCone==kFALSE)&&(nRemainingJets > 0)){//K0s is not part of any selected jet in event, but its a jet event
@@ -2501,7 +2598,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     for(Int_t ij=0; ij<nRecJetsCuts; ++ij){ // loop over all jets in event 
       
       AliAODJet* jet = (AliAODJet*) (fJetsRecCuts->At(ij));
-      TList* jettracklist = new TList();
+      jettracklist->Clear();
       Double_t sumPt      = 0.;
       Bool_t isBadJet     = kFALSE;
  
@@ -2523,8 +2620,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
       if(IsParticleInCone(jet, v0, dRadiusExcludeCone) == kTRUE) {bIsInCone = kTRUE;}
      
-      delete jettracklist;  
-    }    
+      jettracklist->Clear();  
+    }  //end jet loop  
     
     if((bIsInCone == kFALSE)&&(nRemainingJets > 0)){//success! Lambda doesn't belong to any selected jet in event
       Double_t vLaOC[3] = {invMLa, trackPt,fEta};
@@ -2634,7 +2731,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     for(Int_t ij=0; ij<nRecJetsCuts; ++ij){ // loop over all jets in event 
       
       AliAODJet* jet = (AliAODJet*) (fJetsRecCuts->At(ij));
-      TList* jettracklist = new TList();
+      jettracklist->Clear();
       Double_t sumPt      = 0.;
       Bool_t isBadJet     = kFALSE;
  
@@ -2657,7 +2754,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	bIsInCone = kTRUE;	
       }
 
-      delete jettracklist;
+      jettracklist->Clear();
     }
  
     if((bIsInCone == kFALSE)&&(nRemainingJets > 0)){//success!
@@ -2809,7 +2906,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
     if(ij>=0){//all jets in event
 
-      TList* jettracklist = new TList();
+      jettracklist->Clear();
       Double_t sumPt      = 0.;
       Bool_t isBadJet     = kFALSE;
       Int_t njetTracks    = 0;
@@ -3041,7 +3138,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       //____fetch reconstructed K0s in cone around jet axis:_______________________________________________________________________________
       
-      TList* jetConeK0list = new TList();
+      jetConeK0list->Clear();
 
       Double_t sumPtK0     = 0.;
       
@@ -3110,11 +3207,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	AliAODJet* jetRC = 0;
 	jetRC = GetRandomCone(fJetsRecCuts, fCutjetEta, 2*GetFFRadius());//fetch one random cone for each event 
-
-	TList* fListK0sRC = new TList();//list for K0s in random cone (RC), one RC per event
-	TList* fListLaRC = new TList();
-	TList* fListALaRC = new TList();
 	
+	fListK0sRC->Clear();//list for K0s in random cone (RC), one RC per event
+	fListLaRC->Clear();
+	fListALaRC->Clear();
+
 	Double_t sumPtK0sRC = 0;
 	Double_t sumPtLaRC = 0;
 	Double_t sumPtALaRC = 0;
@@ -3253,9 +3350,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	}
 	
-	delete fListK0sRC;
-	delete fListLaRC;
-	delete fListALaRC;
+	fListK0sRC->Clear();
+	fListLaRC->Clear();
+	fListALaRC->Clear();
       }
 
 
@@ -3265,8 +3362,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       //____fetch reconstructed K0s in cone perpendicular to jet axis:_______________________________________________________________________________
       
-      TList* jetPerpConeK0list = new TList();
-      
+  
+      jetPerpConeK0list->Clear();
       Double_t sumPerpPtK0     = 0.;
       
       GetTracksInPerpCone(fListK0s, jetPerpConeK0list, jet, GetFFRadius(), sumPerpPtK0); //reconstructed K0s in cone around jet axis
@@ -3310,12 +3407,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       	if(medianCluster){
 	// ____ rec K0s in median cluster___________________________________________________________________________________________________________ 
 	
-	TList* jetMedianConeK0list = new TList();
-	TList* jetMedianConeLalist = new TList();
-	TList* jetMedianConeALalist = new TList();
-	
 
-	Double_t medianEta = medianCluster->Eta();
+	  jetMedianConeK0list->Clear();
+	  jetMedianConeLalist->Clear();
+	  jetMedianConeALalist->Clear();
+	  
+	  Double_t medianEta = medianCluster->Eta();
 	
 	if(TMath::Abs(medianEta)<=fCutjetEta){
 	  
@@ -3431,9 +3528,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  }
 	}//median cluster eta cut 
 	
-	delete jetMedianConeK0list;
-	delete jetMedianConeLalist;
-	delete jetMedianConeALalist;
+        jetMedianConeK0list->Clear();
+	jetMedianConeLalist->Clear();
+	jetMedianConeALalist->Clear();
 		    
 	}//if mediancluster is existing
       }//end (IsMCCEvt == kFALSE)
@@ -3441,8 +3538,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       //____fetch reconstructed Lambdas in cone perpendicular to jet axis:__________________________________________________________________________
       
-      TList* jetPerpConeLalist = new TList();
-      
+      jetPerpConeLalist->Clear();
       Double_t sumPerpPtLa     = 0.;
       
       GetTracksInPerpCone(fListLa, jetPerpConeLalist, jet, GetFFRadius(), sumPerpPtLa); //reconstructed Lambdas in cone around jet axis //pay attention, this histogram contains the V0 content of both (+/- 90 degrees) perp. cones!!
@@ -3476,9 +3572,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       
       //____fetch reconstructed Antilambdas in cone perpendicular to jet axis:___________________________________________________________________
-      
-      TList* jetPerpConeALalist = new TList();
-      
+ 
+      jetPerpConeALalist->Clear();
       Double_t sumPerpPtALa     = 0.;
       
       GetTracksInPerpCone(fListALa, jetPerpConeALalist, jet, GetFFRadius(), sumPerpPtALa); //reconstructed Antilambdas in cone around jet axis //pay attention, this histogram contains the V0 content of both (+/- 90 degrees) perp. cones!!
@@ -3706,7 +3801,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	Bool_t isBadJetMCgenK0s  = kFALSE; // dummy, do not use
 	
 	
-	fListMCgenK0sCone = new TList();      //MC generated K0s in (only geometrical) jet cone (these are MC gen K0s falling geometrically into jet cone (R = 0.4) around jet axis, that was found by anti-kt jet finder, particles can stem from fragmentation but also from underlying event!!)
+	fListMCgenK0sCone->Clear(); //MC generated K0s in (only geometrical) jet cone (these are MC gen K0s falling geometrically into jet cone (R = 0.4) around jet axis, that was found by anti-kt jet finder, particles can stem from fragmentation but also from underlying event!!)
 	
 	//first: sampling MC gen K0s       
 	
@@ -3862,15 +3957,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	//________________________________________________________________________________________________________________________________________________________
 	  
-	delete fListMCgenK0sCone;
+	fListMCgenK0sCone->Clear();
 	
 	
       }//end fAnalysisMC
       
-      delete jetConeK0list;      
-      delete jetPerpConeK0list;
-      delete jetPerpConeLalist;
-      delete jetPerpConeALalist;
+      jetConeK0list->Clear();      
+      jetPerpConeK0list->Clear();
+      jetPerpConeLalist->Clear();
+      jetPerpConeALalist->Clear();
  
 
       //---------------La--------------------------------------------------------------------------------------------------------------------------------------------
@@ -3911,7 +4006,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
       // ____fetch rec. Lambdas in cone around jet axis_______________________________________________________________________________________
       
-      TList* jetConeLalist = new TList();
+      jetConeLalist->Clear();
       Double_t sumPtLa     = 0.;
       Bool_t isBadJetLa    = kFALSE; // dummy, do not use
 
@@ -4014,8 +4109,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	Bool_t isBadJetMCgenLa  = kFALSE; // dummy, do not use 
 	
 	//sampling MC gen. Lambdas in cone around reconstructed jet axis      
-	fListMCgenLaCone = new TList(); 
-	
+
+	fListMCgenLaCone->Clear();
 	GetTracksInCone(fListMCgenLa, fListMCgenLaCone, jet, GetFFRadius(), sumPtMCgenLa, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetMCgenLa);//fetch MC generated Lambdas in cone of resolution parameter R around jet axis 
 	
 	if(fDebug>2)Printf("%s:%d nMCgenLa in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,fListMCgenLaCone->GetEntries(),GetFFRadius());
@@ -4164,11 +4259,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	} //end rec-La-in-cone loop
 	//________________________________________________________________________________________________________________________________________________________
 	
-	delete fListMCgenLaCone;
+       fListMCgenLaCone->Clear();
 	
       }//end fAnalysisMC
       
-      delete jetConeLalist;
+      jetConeLalist->Clear();
          
       
  
@@ -4211,7 +4306,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
       // ____fetch rec. Antilambdas in cone around jet axis_______________________________________________________________________________________
       
-      TList* jetConeALalist = new TList();
+      jetConeALalist->Clear();
       Double_t sumPtALa     = 0.;
       Bool_t isBadJetALa    = kFALSE; // dummy, do not use
 
@@ -4312,7 +4407,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	Bool_t isBadJetMCgenALa  = kFALSE; // dummy, do not use 
 	
 	//sampling MC gen Antilambdas in cone around reconstructed jet axis      
-	fListMCgenALaCone = new TList(); 
+	fListMCgenALaCone->Clear();
 	
 	GetTracksInCone(fListMCgenALa, fListMCgenALaCone, jet, GetFFRadius(), sumPtMCgenALa, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetMCgenALa);//MC generated K0s in cone around jet axis 
 	
@@ -4469,19 +4564,29 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	} //end rec-ALa-in-cone loop
 	//________________________________________________________________________________________________________________________________________________________
 	
-	delete fListMCgenALaCone;
 	
+	fListMCgenALaCone->Clear();	
       }//end fAnalysisMC
       
-      delete jetConeALalist;
-      delete jettracklist; //had been initialised at jet loop beginning
       
+      jetConeALalist->Clear();
+      jettracklist->Clear();
     }//end of if 'leading' or 'all jet' requirement
   }//end of jet loop
   
-  
-
-
+  jettracklist->Clear();
+  jetConeK0list->Clear();
+  jetConeLalist->Clear();
+  jetConeALalist->Clear();
+  jetPerpConeK0list->Clear();
+  jetPerpConeLalist->Clear();
+  jetPerpConeALalist->Clear();
+  jetMedianConeK0list->Clear();
+  jetMedianConeLalist->Clear();
+  jetMedianConeALalist->Clear();
+  fListK0sRC->Clear();
+  fListLaRC->Clear();
+  fListALaRC->Clear();
   fTracksRecCuts->Clear();
   fJetsRecCuts->Clear();
   fBckgJetsRec->Clear();
@@ -4495,11 +4600,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   fListMCgenK0s->Clear();
   fListMCgenLa->Clear();
   fListMCgenALa->Clear();
-
+  fListMCgenK0sCone->Clear();
+  fListMCgenLaCone->Clear();
+  fListMCgenALaCone->Clear();
   
   //Post output data.
   PostData(1, fCommonHistList); 
-
+  //end of event loop
    
 }
 
