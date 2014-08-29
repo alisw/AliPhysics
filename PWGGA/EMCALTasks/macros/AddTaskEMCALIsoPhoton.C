@@ -47,10 +47,12 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   }
   if(trackSelType == "hybrid"){
     cutsp = CreateTrackCutsPWGJE(10001008);
+    cutsp->SetPtRange(0.2);
     ana->SetHybridOn();
   }
   if(trackSelType == "hybridp"){
     cutsp = CreateTrackCutsPWGJE(10011008);
+    cutsp->SetPtRange(0.2);
     ana->SetHybridOn();
   }
   ana->SetPrimTrackCuts(cutsp);
