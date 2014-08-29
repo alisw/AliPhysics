@@ -319,6 +319,7 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
             fContAddDrawOpt->AddFrame(fComboAddDrawOpt, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
             fComboAddDrawOpt->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral(=14)");
             fComboAddDrawOpt->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+            fComboAddDrawOpt->GetTextEntry()->SetText("",kFALSE);
                   
          // automatic redraw check button
          fChkAuto = new TGCheckButton(fContDrawOpt, "Auto redraw");
@@ -572,7 +573,7 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
          fContCustom->AddFrame(fComboCustom, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
          fComboCustom->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral(=42)");
          fComboCustom->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
-      
+         fComboCustom->GetTextEntry()->SetText("",kFALSE);
    
       // additional cuts container
       fContAddCuts = new TGCompositeFrame(fContTopBottom, 200, 200, kHorizontalFrame | kFitWidth | kFitHeight);
@@ -589,6 +590,7 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
          fContAddCuts->AddFrame(fComboAddCuts, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
          fComboAddCuts->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsCuts(=31)");
          fComboAddCuts->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+         fComboAddCuts->GetTextEntry()->SetText("",kFALSE);
          
    // ==========================================================================
    // ************************* content of fContCenter *************************
@@ -797,6 +799,7 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
             fComboAddSaveOpt->EnableTextInput(kTRUE);
             fComboAddSaveOpt->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "SavePicture()");
             // fComboAddSaveOpt->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "SavePicture()");
+            fComboAddSaveOpt->GetTextEntry()->SetText("",kFALSE);
      
       // calPad export container
       fContExport = new TGGroupFrame(fTabRight1, "Export AliTPCCalPad", kVerticalFrame | kFitWidth | kFitHeight);
@@ -815,6 +818,7 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
          fComboExportName->EnableTextInput(kTRUE);
          fComboExportName->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "DoExport()");
          fComboExportName->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoExport()");
+         fComboExportName->GetTextEntry()->SetText("",kFALSE);
   
          // export button
          fBtnExport = new TGTextButton(fContExport, "&Export to CINT");
@@ -872,6 +876,7 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
             fContAddFit->AddFrame(fComboCustomFit, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
             fComboCustomFit->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "DoFit()");
             fComboCustomFit->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoFit()");
+            fComboCustomFit->GetTextEntry()->SetText("",kFALSE);
          
          // fit button
          fBtnFit = new TGTextButton(fContAddFit, "&Fit");

@@ -138,6 +138,7 @@
 #pragma link C++ class  AliVTOFMatch+;
 #pragma link C++ class AliVTOFcluster+;
 #pragma link C++ class AliVMultiplicity+;
+#pragma link C++ class AliGenHepMCEventHeader+;
 
 #endif
 

@@ -49,13 +49,13 @@ AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) 
   fL1Phase(0),
   fAmp(0),
   fTof(0),
-  fTau( EMCAL::TAU )
+  fTau( EMCAL::TAU ),
+  fFixTau( true )
 {
-  //Comment 
-  snprintf(fName, 256,"%s", name);
+  // Ctor
+  
+  snprintf(fName,     256, "%s", name);
   snprintf(fNameShort,256, "%s", nameshort);
-  //  sprintf(fName ,"%s", name);
-  // sprintf(fNameShort, "%s", nameshort);
   
   for(int i=0; i < ALTROMAXSAMPLES; i++ )
     {
@@ -63,16 +63,12 @@ AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) 
     }
 }
 
-AliCaloRawAnalyzer::~AliCaloRawAnalyzer()
-{
-
-}
-
 
 void 
 AliCaloRawAnalyzer::SetTimeConstraint(const int min, const int max ) 
 {
   //Require that the bin if the maximum ADC value is between min and max (timebin)
+  
   if(  ( min > max ) || min > ALTROMAXSAMPLES  || max > ALTROMAXSAMPLES  )
     {
       AliWarning( Form( "Attempt to set Invalid time bin range (Min , Max) = (%d, %d), Ingored",  min, max ) ); 
@@ -88,7 +84,8 @@ AliCaloRawAnalyzer::SetTimeConstraint(const int min, const int max )
 UShort_t 
 AliCaloRawAnalyzer::Max(const UShort_t *data, const int length ) const
 {
-  //------------
+  // Get maximum of array
+  
   UShort_t tmpmax  = data[0];
 
   for(int i=0; i < length; i++)
@@ -103,7 +100,8 @@ AliCaloRawAnalyzer::Max(const UShort_t *data, const int length ) const
 
 
 void 
-AliCaloRawAnalyzer::SelectSubarray( const Double_t *data, const int length, const short maxindex,int *const first,  int *const last, const int cut) const
+AliCaloRawAnalyzer::SelectSubarray( const Double_t *data, int length, short maxindex,
+                                    int * first, int * last, int cut) const
 {
   //Selection of subset of data from one bunch that will be used for fitting or
   //Peak finding.  Go to the left and right of index of the maximum time bin
@@ -146,16 +144,20 @@ AliCaloRawAnalyzer::SelectSubarray( const Double_t *data, const int length, cons
 
   *first = tmpfirst;
   *last =  tmplast;
+  
   return;
 }
 
 
 
 Float_t 
-AliCaloRawAnalyzer::ReverseAndSubtractPed( const AliCaloBunchInfo *bunch, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/, double *outarray ) const
+AliCaloRawAnalyzer::ReverseAndSubtractPed( const AliCaloBunchInfo *bunch,
+                                           UInt_t /*altrocfg1*/, UInt_t /*altrocfg2*/,
+                                           double *outarray ) const
 {
   //Time sample comes in reversed order, revers them back
   //Subtract the baseline based on content of altrocfg1 and altrocfg2.
+  
   Int_t length =  bunch->GetLength(); 
   const UShort_t *sig = bunch->GetData();
 
@@ -172,9 +174,10 @@ AliCaloRawAnalyzer::ReverseAndSubtractPed( const AliCaloBunchInfo *bunch, const 
 
 
 Float_t 
-AliCaloRawAnalyzer::EvaluatePedestal(const UShort_t * const data, const int /*length*/ ) const
+AliCaloRawAnalyzer::EvaluatePedestal(const UShort_t * data, int /*length*/ ) const
 {
-  //  double ped = 0;
+  //  Pedestal evaluation if not zero suppressed
+  
   double tmp = 0;
 
   if( fIsZerosupressed == false ) 
@@ -190,9 +193,10 @@ AliCaloRawAnalyzer::EvaluatePedestal(const UShort_t * const data, const int /*le
 
 
 short  
-AliCaloRawAnalyzer::Max( const AliCaloBunchInfo *const bunch , int *const maxindex ) const
+AliCaloRawAnalyzer::Max( const AliCaloBunchInfo * bunch , int * maxindex ) const
 {
-  //comment
+  // Get maximum in bunch array
+  
   short tmpmax = -1;
   int tmpindex = -1;
   const UShort_t *sig = bunch->GetData();
@@ -244,7 +248,8 @@ AliCaloRawAnalyzer::CheckBunchEdgesForMax( const AliCaloBunchInfo *const bunch )
 
 
 int 
-AliCaloRawAnalyzer::SelectBunch( const vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude )
+AliCaloRawAnalyzer::SelectBunch( const vector<AliCaloBunchInfo> &bunchvector,
+                                 short * maxampbin, short * maxamplitude )
 {
   //We select the bunch with the highest amplitude unless any time constraints is set
   short max = -1;
@@ -293,7 +298,7 @@ AliCaloRawAnalyzer::IsInTimeRange( const int maxindex, const int maxtindx, const
 void 
 AliCaloRawAnalyzer::PrintBunches( const vector<AliCaloBunchInfo> &bvctr ) 
 {
-  //comment
+  // Print bunch vector info
   cout << __FILE__ << __LINE__<< "*************** Printing Bunches *******************" << endl;
   cout << __FILE__ << __LINE__<< "*** There are " << bvctr.size() << ", bunches" << endl;
 
@@ -309,7 +314,7 @@ AliCaloRawAnalyzer::PrintBunches( const vector<AliCaloBunchInfo> &bvctr )
 void 
 AliCaloRawAnalyzer::PrintBunch( const AliCaloBunchInfo &bunch )
 {
-  //comment
+  // Print bunch infor
   cout << __FILE__ << ":" << __LINE__ << endl;
   cout << __FILE__ << __LINE__   << ", startimebin = " << bunch.GetStartBin() << ", length =" <<  bunch.GetLength() << endl;
   const UShort_t *sig =  bunch.GetData();  
@@ -323,10 +328,9 @@ AliCaloRawAnalyzer::PrintBunch( const AliCaloBunchInfo &bunch )
 
 
 Double_t
-AliCaloRawAnalyzer::CalculateChi2(const Double_t amp, const Double_t time,
-				  const Int_t first, const Int_t last,
-				  const Double_t adcErr, 
-				  const Double_t tau) const
+AliCaloRawAnalyzer::CalculateChi2( Double_t amp,    Double_t time,
+                                   Int_t    first,  Int_t    last,
+                                   Double_t adcErr, Double_t tau) const
 {
   //   Input:
   //   amp   - max amplitude;
@@ -370,8 +374,8 @@ AliCaloRawAnalyzer::CalculateChi2(const Double_t amp, const Double_t time,
 
 
 void
-AliCaloRawAnalyzer::CalculateMeanAndRMS(const Int_t first, const Int_t last,
-					Double_t & mean, Double_t & rms)
+AliCaloRawAnalyzer::CalculateMeanAndRMS(Int_t first, Int_t last,
+                                        Double_t & mean, Double_t & rms)
 {
   //   Input:
   //   first, last - sample array indices to be used
@@ -412,10 +416,14 @@ AliCaloRawAnalyzer::CalculateMeanAndRMS(const Int_t first, const Int_t last,
 
 
 int
-AliCaloRawAnalyzer::PreFitEvaluateSamples( const vector<AliCaloBunchInfo>  &bunchvector, const UInt_t altrocfg1,  
-					   const UInt_t altrocfg2, Int_t & index, Float_t & maxf, short & maxamp, 
-					   short & maxrev, Float_t & ped, int & first, int & last,const int acut )
-{ // method to do the selection of what should possibly be fitted
+AliCaloRawAnalyzer::PreFitEvaluateSamples( const vector<AliCaloBunchInfo>  &bunchvector,
+                                          UInt_t altrocfg1, UInt_t altrocfg2, Int_t & index,
+                                          Float_t & maxf, short & maxamp,
+                                          short & maxrev, Float_t & ped,
+                                          int & first, int & last, int acut )
+{
+  // method to do the selection of what should possibly be fitted
+  
   int nsamples  = 0;
   short maxampindex = 0;
   index = SelectBunch( bunchvector,  &maxampindex,  &maxamp ); // select the bunch with the highest amplitude unless any time constraints is set

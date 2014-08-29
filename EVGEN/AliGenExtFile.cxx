@@ -46,6 +46,8 @@
 
 using std::cout;
 using std::endl;
+using std::map;
+
 ClassImp(AliGenExtFile)
 
 AliGenExtFile::AliGenExtFile()
@@ -155,13 +157,85 @@ void AliGenExtFile::Generate()
     }
 
     //
+    // Stack selection loop
+    //
+    class SelectorLogic { // need to do recursive back tracking, requires a "nested" function
+    private:
+       Int_t idCount;
+       map<Int_t,Int_t> firstMotherMap;
+       map<Int_t,Int_t> secondMotherMap;
+       map<Int_t,Bool_t> selectedIdMap;
+       map<Int_t,Int_t> newIdMap;
+       void selectMothersToo(Int_t particleId) {
+          Int_t mum1 = firstMotherMap[particleId];
+          if (mum1 > -1 && !selectedIdMap[mum1]) {
+             selectedIdMap[mum1] = true;
+             selectMothersToo(mum1);
+          }
+          Int_t mum2 = secondMotherMap[particleId];
+          if (mum2 > -1 && !selectedIdMap[mum2]) {
+             selectedIdMap[mum2] = true;
+             selectMothersToo(mum2);
+          }
+       }
+    public:
+       void init() {
+          idCount = 0;
+       }
+       void setData(Int_t id, Int_t mum1, Int_t mum2, Bool_t selected) {
+          idCount++; // we know that this function is called in succession of ids, so counting is fine to determine max id
+          firstMotherMap[id] = mum1;
+          secondMotherMap[id] = mum2;
+          selectedIdMap[id] = selected;
+       }
+       void reselectCuttedMothersAndRemapIDs() {
+          for (Int_t id = 0; id < idCount; ++id) {
+             if (selectedIdMap[id]) {
+                selectMothersToo(id);
+             }
+          }
+          Int_t newId = 0;
+          for (Int_t id = 0; id < idCount; id++) {
+             if (selectedIdMap[id]) {
+                newIdMap[id] = newId; ++newId;
+             } else {
+                newIdMap[id] = -1;
+             }
+          }
+       }
+       Bool_t isSelected(Int_t id) {
+          return selectedIdMap[id];
+       }
+       Int_t newId(Int_t id) {
+          if (id == -1) return -1;
+          return newIdMap[id];
+       }
+    };
+    SelectorLogic selector;
+    selector.init();
+    for (Int_t i = 0; i < nTracks; i++) {
+       TParticle* jparticle = fReader->NextParticle();
+       selector.setData(i,
+             jparticle->GetFirstMother(),
+             jparticle->GetSecondMother(),
+             KinematicSelection(jparticle,0));
+    }
+    selector.reselectCuttedMothersAndRemapIDs();
+    fReader->RewindEvent();
+
+    //
     // Stack filling loop
     //
     fNprimaries = 0;
     for (i = 0; i < nTracks; i++) {
-	TParticle* jparticle = fReader->NextParticle();
-	Bool_t selected = KinematicSelection(jparticle,0); 
-	if (!selected) continue;
+       TParticle* jparticle = fReader->NextParticle();
+       Bool_t selected = selector.isSelected(i);
+       if (!selected) {
+          continue;
+       }
+       Int_t parent = selector.newId(jparticle->GetFirstMother());
+//       printf("particle %d -> %d, with mother %d -> %d\n", i, selector.newId(i), jparticle->GetFirstMother(), parent);
+
 	p[0] = jparticle->Px();
 	p[1] = jparticle->Py();
 	p[2] = jparticle->Pz();
@@ -187,7 +261,6 @@ void AliGenExtFile::Generate()
 	    time = fTime + jparticle->T();
 	}
 	Int_t doTracking = fTrackIt && selected && (jparticle->TestBit(kTransportBit));
-	Int_t parent     = jparticle->GetFirstMother();
 	
 	PushTrack(doTracking, parent, idpart,
 		  p[0], p[1], p[2], p[3], origin[0], origin[1], origin[2], time,
@@ -199,8 +272,8 @@ void AliGenExtFile::Generate()
     } // track loop
 
     // Generated event header
-    
-    AliGenEventHeader * header = new AliGenEventHeader();
+    AliGenEventHeader * header = fReader->GetGenEventHeader();
+    if (!header) header = new AliGenEventHeader();
     header->SetNProduced(fNprimaries);
     header->SetPrimaryVertex(fVertex);
     header->SetInteractionTime(fTime);

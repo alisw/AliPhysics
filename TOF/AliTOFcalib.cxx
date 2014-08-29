@@ -2383,46 +2383,70 @@ AliTOFcalib::CalibrateESD(AliESDEvent *event)
     return;
   }
 
-  /* loop over tracks */
-  AliESDtrack *track = NULL;
   Int_t index, l0l1, deltaBC;
-  Double_t time, tot, corr, texp[AliPID::kSPECIESC];
+  Double_t time, tot, corr;
   UInt_t timestamp = event->GetTimeStamp();
-  for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
 
-    /* get track */
-    track = event->GetTrack(itrk);
-    if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) continue;
+  // calibrating TOF hits
 
-    /* calibrate TOF signal */
-    if (fCalibrateTOFsignal) {
-      /* get info */
-      index = track->GetTOFCalChannel();
-      time = track->GetTOFsignalRaw();
-      tot = track->GetTOFsignalToT();
-      l0l1 = track->GetTOFL0L1();
-      deltaBC = track->GetTOFDeltaBC();
-      /* get correction */
-      corr = GetTimeCorrection(index, tot, deltaBC, l0l1, timestamp);
-      /* apply correction */
-      time -= corr;
-      /* set new TOF signal */
-      track->SetTOFsignal(time);
+  AliESDTOFHit* hit = NULL;
+  AliESDtrack* track = NULL;
+  TClonesArray* esdTOFhits = event->GetESDTOFHits();
+  if (esdTOFhits) { // new TOF data structure
+    for (Int_t ihit = 0; ihit < esdTOFhits->GetEntriesFast(); ihit++) {
+      
+      /* get track */
+      hit = (AliESDTOFHit*)esdTOFhits->At(ihit);
+      //if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) continue;
+      if (!hit) continue;
+      
+      /* calibrate TOF signal */
+      if (fCalibrateTOFsignal) {
+	/* get info */
+	index = hit->GetTOFchannel();
+	time = hit->GetTimeRaw();
+	tot = hit->GetTOT();
+	l0l1 = hit->GetL0L1Latency();
+	deltaBC = hit->GetDeltaBC();
+	/* get correction */
+	corr = GetTimeCorrection(index, tot, deltaBC, l0l1, timestamp);
+	/* apply correction */
+	time -= corr;
+	/* set new TOF signal */
+	hit->SetTime(time);
+      }
+      
     }
-
-    /* correct expected time */
-    if (fCorrectTExp) {
-      /* get integrated times */
-      track->GetIntegratedTimes(texp,AliPID::kSPECIESC);
-      /* loop over particle types and correct expected time */
-      for (Int_t ipart = 0; ipart < AliPID::kSPECIES; ipart++)
-	texp[ipart] += fResponseParams->EvalTExpCorr(ipart, track->P());
-      /* set integrated times */
-      track->SetIntegratedTimes(texp);
-    }
-
   }
+  else { // old TOF data structure
 
+    for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
+   
+      /* get track */
+      track = event->GetTrack(itrk);
+      if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) continue;
+      
+      /* calibrate TOF signal */
+      if (fCalibrateTOFsignal) {
+	/* get info */
+	index = track->GetTOFCalChannel();
+	time = track->GetTOFsignalRaw();
+	tot = track->GetTOFsignalToT();
+	l0l1 = track->GetTOFL0L1();
+	deltaBC = track->GetTOFDeltaBC();
+	/* get correction */
+	corr = GetTimeCorrection(index, tot, deltaBC, l0l1, timestamp);
+	/* apply correction */
+	time -= corr;
+	/* set new TOF signal */
+	track->SetTOFsignal(time);
+      }
+    }
+    
+    if (fCorrectTExp) 
+      CalibrateTExp(event);
+  }
+  
 }
 
 //----------------------------------------------------------------------------
@@ -2500,6 +2524,13 @@ AliTOFcalib::CalibrateTExp(AliESDEvent *event) const
    * calibrate TExp
    */
 
+  /* check if new TOF data structure, crash in case */
+  TClonesArray* esdTOFhits = event->GetESDTOFHits();
+  if (esdTOFhits) { 
+    AliFatal("This method is DEPRECATED, doing NOTHING");
+    return ;
+  }
+
   if (!fInitFlag) {
     AliError("class not yet initialized. Initialize it before.");
     return;
@@ -2534,6 +2565,13 @@ AliTOFcalib::TuneForMC(AliESDEvent *event, Double_t resolution)
   /*
    * tune for MC
    */
+
+  /* check if new TOF data structure, crash in case */
+  TClonesArray* esdTOFhits = event->GetESDTOFHits();
+  if (esdTOFhits) { 
+    AliFatal("This method is DEPRECATED, doing NOTHING");
+    return 0.;
+  }
 
   /* get vertex spread and define T0-spread */
   Double_t diamond2 = TMath::Abs(event->GetSigma2DiamondZ());

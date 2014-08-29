@@ -1,3 +1,10 @@
+
+AliRootProject/
+*.DS_Store
+*.xworkspace
+xAliRoot/
+*.xcodeproj
+
 # Compiled Object files
 *.slo
 *.lo
@@ -36,6 +43,8 @@ G__*.h
 # Backup files from common editors
 *.swp
 *~
+.[#]*
+[#]*[#]
 
 # /
 /bin
@@ -59,3 +68,6 @@ G__*.h
 /RPMS
 /alimdc-root
 rpm-tmp.*
+/Debug
+.cproject
+.project

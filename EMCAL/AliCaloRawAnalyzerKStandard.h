@@ -27,18 +27,26 @@ class  TGraph;
 
 class  AliCaloRawAnalyzerKStandard : public AliCaloRawAnalyzerFitter
 {
-  friend class AliCaloRawAnalyzerFactory; // Factory for creation of raw analyzer (= shutting up the rule checker )
+  friend class AliCaloRawAnalyzerFactory; // Factory for creation of raw analyzer (rule checker request)
   
  public:
+  
   virtual ~AliCaloRawAnalyzerKStandard();
-  virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
-  void FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, 
-	      Float_t & chi2, Bool_t & fitDone) const ;
+  
+  virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector,
+                                       UInt_t altrocfg1,
+                                       UInt_t altrocfg2 );
+  
+  void FitRaw( Int_t firstTimeBin, Int_t lastTimeBin,
+               Float_t & amp,  Float_t & time,
+               Float_t & chi2, Bool_t & fitDone) const ;
  
  private:
+  
   AliCaloRawAnalyzerKStandard();
-  AliCaloRawAnalyzerKStandard(const AliCaloRawAnalyzerKStandard & );
-  AliCaloRawAnalyzerKStandard  & operator = (const AliCaloRawAnalyzerKStandard  &);
+  AliCaloRawAnalyzerKStandard(               const AliCaloRawAnalyzerKStandard & );
+  AliCaloRawAnalyzerKStandard  & operator = (const AliCaloRawAnalyzerKStandard & );
+  
   ClassDef(AliCaloRawAnalyzerKStandard, 2)
 };
 

@@ -11,8 +11,6 @@
 #include <TInterpreter.h>
 #include <TROOT.h>
 
-
-
 #include <TEveManager.h>
 #include <TEveSelection.h>
 
@@ -32,9 +30,6 @@
 #include "AliEveUtil.h"
 #include "AliEveFileDialog.h"
 
-#include <iostream>
-using namespace std;
-
 AliEveMainWindow::AliEveMainWindow(const char* title, UInt_t width, UInt_t height)
     : TGMainFrame(gClient->GetRoot(), width, height),
       fMenuBar(0),
@@ -51,6 +46,9 @@ AliEveMainWindow::AliEveMainWindow(const char* title, UInt_t width, UInt_t heigh
       fEve(0),
       fFileDialog(0)
 {
+	static const TEveException kEH("AliEveMainWindow");
+	Info(kEH.Data(),"Constructor called");
+	
     AliEveUtil::Init();
     fPicturePool = AliEveUtil::GetPicturePool();
    
@@ -202,6 +200,7 @@ void AliEveMainWindow::onMenuGoItem(UInt_t id)
 
 void AliEveMainWindow::setupMenus()
 {
+
     fMenuBar = new TGMenuBar(this);
 
     // File Menu
@@ -323,7 +322,6 @@ void AliEveMainWindow::setupToolbars()
     AddFrame(new TGHorizontal3DLine(this), new TGLayoutHints(kLHintsExpandX));
     AddFrame(fToolBar, new TGLayoutHints(kLHintsNormal));
     AddFrame(new TGHorizontal3DLine(this), new TGLayoutHints(kLHintsExpandX));
-
 
 
     //fToolBar->Connect("Clicked(Int_t)", "RCMainWindow", this, "openFile()");

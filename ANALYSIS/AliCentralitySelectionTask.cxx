@@ -1229,6 +1229,10 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
 	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
       runType=0;
+    else if ((runNumber >= 188355 && runNumber <= 188366) ||  // LHC12h 
+	     (runNumber >= 195344 && runNumber <= 197692))    // LHC13h 
+      runType=1;
+    else runType=2;
   }
 
   esdCent = event->GetCentrality();

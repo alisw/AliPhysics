@@ -60,8 +60,8 @@ public:
   static const char          *GetMaskAsString(UInt_t mask);
   Int_t                       GetNtasks() const             {return fNtasks;}
   const char                 *GetTaskName(Int_t itask) const;
-  Double_t                    GetRealTime(Int_t itask) const {return fTaskTimeReal[itask];}
-  Double_t                    GetCPUTime(Int_t itask) const {return fTaskTimeCPU[itask];}
+  Double_t                    GetRealTime(Int_t itask) const {return (fTaskTimeReal) ? fTaskTimeReal[itask] : 0.;}
+  Double_t                    GetCPUTime(Int_t itask) const  {return (fTaskTimeCPU)  ? fTaskTimeCPU[itask] : 0.;}
   
   void                        SetOfflineMask(UInt_t mask)   {fOfflineMask = mask;}
   virtual Long64_t            Merge(TCollection* list);

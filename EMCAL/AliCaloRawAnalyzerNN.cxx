@@ -37,7 +37,8 @@ ClassImp( AliCaloRawAnalyzerNN )
 
 AliCaloRawAnalyzerNN::AliCaloRawAnalyzerNN() : AliCaloRawAnalyzer("Neural Network", "NN"), fNeuralNet(0)
 {
-  // Comment
+  // Ctor
+  
   fAlgo=Algo::kNeuralNet;
 
   fNeuralNet = new AliCaloNeuralFit();
@@ -52,13 +53,14 @@ AliCaloRawAnalyzerNN::AliCaloRawAnalyzerNN() : AliCaloRawAnalyzer("Neural Networ
 
 AliCaloRawAnalyzerNN::~AliCaloRawAnalyzerNN()
 {
+  // Dtor
   delete fNeuralNet;
 }
 
 
 AliCaloFitResults 
 AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
-				       const UInt_t altrocfg1,  const UInt_t altrocfg2 )
+                                UInt_t altrocfg1,  UInt_t altrocfg2 )
 {
   // The eveluation of  Peak position and amplitude using the Neural Network
   if( bunchvector.size()  <=  0 )

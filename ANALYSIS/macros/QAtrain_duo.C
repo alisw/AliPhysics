@@ -29,6 +29,9 @@
 void LoadLibraries();
 void AddAnalysisTasks(const char *, const char *); 
 void QAmerge(const char *,const char *, Int_t);
+void ProcessEnvironmentVars();
+void SetDoQA(Bool_t &var, Bool_t onoff, const char* name);
+Bool_t CheckEnvS(const char* var,TString& envString);
 
 Int_t iCollisionType = 0; // 0=pp, 1=PbPb
 // Trigger mask.
@@ -42,7 +45,7 @@ UInt_t kTriggerMask = kTriggerInt;
 
 Int_t runNumbers[5] = {158626};
 
-
+Bool_t doStatistics   = 1;
 Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
 Bool_t doCentrality   = 0;
@@ -73,7 +76,7 @@ Bool_t doPIDqa        = 1; //new
 Bool_t doFMD          = 1; // new
 Bool_t doPHOS         = 1; // new
 Bool_t doPHOSTrig     = 1; // new
-Bool_t doEMCAL        = 1;
+Bool_t doEMCAL        = 0;
 Bool_t doFBFqa        = 1; // new - not ported yet to revision
 
 Bool_t doTaskFilteredTree        = 0;      // high pt filter task
@@ -81,6 +84,7 @@ Bool_t doTaskFilteredTree        = 0;      // high pt filter task
                // Debug level
 Int_t       debug_level        = 1;        // Debugging
 Int_t       run_number = 0;
+
 
 void QAtrain_duo(const char *suffix="", Int_t run = 0, 
              const char *xmlfile   = "wn.xml",
@@ -92,6 +96,8 @@ void QAtrain_duo(const char *suffix="", Int_t run = 0,
   TString ss(suffix);
   ss.ToLower();
   Bool_t ibarrel = (ss.Contains("barrel"))?kTRUE:kFALSE;
+
+  ProcessEnvironmentVars();
 
   TString cdbString(cdb);
   if (cdbString.Contains("raw://"))
@@ -112,6 +118,7 @@ void QAtrain_duo(const char *suffix="", Int_t run = 0,
   // Create manager
   AliAnalysisManager *mgr  = new AliAnalysisManager("PilotAnalysis", "Production train");
   mgr->SetRunFromPath(run_number);
+  mgr->SetCacheSize(0);
   // Input handler
   AliESDInputHandlerRP *esdHandler = new AliESDInputHandlerRP();
   if (ibarrel) {
@@ -136,7 +143,7 @@ void QAtrain_duo(const char *suffix="", Int_t run = 0,
   if (mgr->InitAnalysis()) {                                                                                                              
     mgr->PrintStatus(); 
     mgr->SetSkipTerminate(kTRUE);
-    mgr->SetNSysInfo(100);
+ //   mgr->SetNSysInfo(100);
     mgr->StartAnalysis("local", chain);
   }
   timer.Print();
@@ -144,7 +151,7 @@ void QAtrain_duo(const char *suffix="", Int_t run = 0,
 
 void LoadLibraries()
 {
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP -I$ALICE_ROOT/PWGPP/TRD");
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP -I$ALICE_ROOT/PWGPP/TRD -I$ALICE_ROOT/ANALYSIS");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libESDfilter.so");
@@ -183,7 +190,15 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   mgr->SetCommonFileName(Form("QAresults%s.root",suffix));
   // Statistics task
-  mgr->AddStatisticsTask(kTriggerMask);
+  if (doStatistics) mgr->AddStatisticsTask(kTriggerMask);
+
+  // Clean Geometry: Ruben
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
+  CleanGeom* clgmTask = new CleanGeom("cleanGeom");
+  mgr->AddTask(clgmTask);
+  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
+  if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);  
+
   //
   // CDB connection
   //
@@ -207,6 +222,17 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
       cstatsout->SetFileName(Form("EventStat_temp%s.root", suffix));
   }
   
+   //
+  // PIDResponse(JENS)
+  //
+  if (doPIDResponse && (ibarrel || iall)) {
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"); 
+    AliAnalysisTaskPIDResponse *PIDResponse = AddTaskPIDResponse();
+    PIDResponse->SetUserDataRecoPass(1);
+    PIDResponse->SelectCollisionCandidates(kTriggerMask);
+  }  
+
+
   //
   // Centrality (A. Toia)
   //
@@ -403,9 +429,9 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
       // offline mask set in AddTask to kMB
       taskCaloQA->SelectCollisionCandidates(kTriggerMask);
       // Add a new calo task with EMC1 trigger only
-      taskCaloQA = AddTaskCalorimeterQA("trigEMC");
+      // taskCaloQA = AddTaskCalorimeterQA("trigEMC");        // for 2011 data, not 2010
+      // taskCaloQA->SelectCollisionCandidates(kTriggerEMC);  // for 2011 data, not 2010
       taskCaloQA->SetDebugLevel(0);
-      taskCaloQA->SelectCollisionCandidates(kTriggerEMC);
   }
 
   //
@@ -446,18 +472,9 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   //
   if (doTOF && (ibarrel || iall)) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TOF/AddTaskTOFQA.C");
-    AliAnalysisTaskTOFqa *tofQA = AddTaskTOFQA(kTRUE);
+    AliAnalysisTaskTOFqa *tofQA = AddTaskTOFQA(kFALSE);
     tofQA->SelectCollisionCandidates(kTriggerMask);
   } 
-   //
-  // PIDResponse(JENS)
-  //
-  if (doPIDResponse && (ibarrel || iall)) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"); 
-    AliAnalysisTaskPIDResponse *PIDResponse = AddTaskPIDResponse();
-    PIDResponse->SelectCollisionCandidates(kTriggerMask);
-  }  
-
   //
   // PIDqa(JENS)
   //
@@ -542,7 +559,6 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
       AddTaskFilteredTree("FilterEvents_Trees.root");
    }   
    
-
 }
 
 void QAmerge(const char *suffix, const char *dir, Int_t stage)
@@ -567,9 +583,9 @@ void QAmerge(const char *suffix, const char *dir, Int_t stage)
     }
     if (mergeExcludes.Contains(outputFile.Data())) continue;
     merged = AliAnalysisAlien::MergeOutput(outputFile, outputDir, 10, stage);
-    if (!merged && !outputFile.Contains("RecoQAresults")) {
+    if (!merged && !outputFile.Contains("RecoQAresults") && !outputFile.Contains("FilterEvents_trees")) {
        printf("ERROR: Cannot merge %s\n", outputFile.Data());
-       continue;
+       return;
     }
   }
   // read the analysis manager from file
@@ -600,4 +616,350 @@ void QAmerge(const char *suffix, const char *dir, Int_t stage)
   out.open("outputs_valid", ios::out);
   out.close();
   timer.Print();
+}
+
+void ProcessEnvironmentVars()
+{
+  int var=0;
+  TString envS;
+  //
+  if ( !(envS=gSystem->Getenv("CDBconnect")).IsNull() && CheckEnvS("CDBconnect",envS) ) {
+    doCDBconnect = atoi(envS.Data());
+    printf("Set doCDBconnect=%d according to environment variables\n",doCDBconnect);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("Statistics")).IsNull() && CheckEnvS("Statistics",envS) ) {
+    doStatistics = atoi(envS.Data());
+    printf("Set doStatistics=%d according to environment variables\n",doStatistics);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("EventStat")).IsNull() && CheckEnvS("EventStat",envS) ) {
+    doEventStat = atoi(envS.Data());
+    printf("Set doEventStat=%d according to environment variables\n",doEventStat);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("Centrality")).IsNull() && CheckEnvS("Centrality",envS) ) {
+    doCentrality = atoi(envS.Data());
+    printf("Set doCentrality=%d according to environment variables\n",doCentrality);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("QAsym")).IsNull() && CheckEnvS("QAsym",envS) ) {
+    doQAsym = atoi(envS.Data());
+    printf("Set doQAsym=%d according to environment variables\n",doQAsym);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("VZERO")).IsNull() && CheckEnvS("VZERO",envS) ) {
+    doVZERO = atoi(envS.Data());
+    printf("Set doVZERO=%d according to environment variables\n",doVZERO);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("VZEROPbPb")).IsNull() && CheckEnvS("VZEROPbPb",envS) ) {
+    doVZEROPbPb = atoi(envS.Data());
+    printf("Set doVZEROPbPb=%d according to environment variables\n",doVZEROPbPb);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("Vertex")).IsNull() && CheckEnvS("Vertex",envS) ) {
+    doVertex = atoi(envS.Data());
+    printf("Set doVertex=%d according to environment variables\n",doVertex);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("SPD")).IsNull() && CheckEnvS("SPD",envS) ) {
+    doSPD = atoi(envS.Data());
+    printf("Set doSPD=%d according to environment variables\n",doSPD);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("TPC")).IsNull() && CheckEnvS("TPC",envS) ) {
+    doTPC = atoi(envS.Data());
+    printf("Set doTPC=%d according to environment variables\n",doTPC);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("HLT")).IsNull() && CheckEnvS("HLT",envS) ) {
+    doHLT = atoi(envS.Data());
+    printf("Set doHLT=%d according to environment variables\n",doHLT);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("SDD")).IsNull() && CheckEnvS("SDD",envS) ) {
+    doSDD = atoi(envS.Data());
+    printf("Set doSDD=%d according to environment variables\n",doSDD);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("SSDdEdx")).IsNull() && CheckEnvS("SSDdEdx",envS) ) {
+    doSSDdEdx = atoi(envS.Data());
+    printf("Set doSSDdEdx=%d according to environment variables\n",doSSDdEdx);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("TRD")).IsNull() && CheckEnvS("TRD",envS) ) {
+    doTRD = atoi(envS.Data());
+    printf("Set doTRD=%d according to environment variables\n",doTRD);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("ITS")).IsNull() && CheckEnvS("ITS",envS) ) {
+    doITS = atoi(envS.Data());
+    printf("Set doITS=%d according to environment variables\n",doITS);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("ITSsaTracks")).IsNull() && CheckEnvS("ITSsaTracks",envS) ) {
+    doITSsaTracks = atoi(envS.Data());
+    printf("Set doITSsaTracks=%d according to environment variables\n",doITSsaTracks);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("ITSalign")).IsNull() && CheckEnvS("ITSalign",envS) ) {
+    doITSalign = atoi(envS.Data());
+    printf("Set doITSalign=%d according to environment variables\n",doITSalign);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("CALO")).IsNull() && CheckEnvS("CALO",envS) ) {
+    doCALO = atoi(envS.Data());
+    printf("Set doCALO=%d according to environment variables\n",doCALO);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("MUONTrig")).IsNull() && CheckEnvS("MUONTrig",envS) ) {
+    doMUONTrig = atoi(envS.Data());
+    printf("Set doMUONTrig=%d according to environment variables\n",doMUONTrig);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("ImpParRes")).IsNull() && CheckEnvS("ImpParRes",envS) ) {
+    doImpParRes = atoi(envS.Data());
+    printf("Set doImpParRes=%d according to environment variables\n",doImpParRes);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("MUON")).IsNull() && CheckEnvS("MUON",envS) ) {
+    doMUON = atoi(envS.Data());
+    printf("Set doMUON=%d according to environment variables\n",doMUON);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("TOF")).IsNull() && CheckEnvS("TOF",envS) ) {
+    doTOF = atoi(envS.Data());
+    printf("Set doTOF=%d according to environment variables\n",doTOF);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("HMPID")).IsNull() && CheckEnvS("HMPID",envS) ) {
+    doHMPID = atoi(envS.Data());
+    printf("Set doHMPID=%d according to environment variables\n",doHMPID);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("T0")).IsNull() && CheckEnvS("T0",envS) ) {
+    doT0 = atoi(envS.Data());
+    printf("Set doT0=%d according to environment variables\n",doT0);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("ZDC")).IsNull() && CheckEnvS("ZDC",envS) ) {
+    doZDC = atoi(envS.Data());
+    printf("Set doZDC=%d according to environment variables\n",doZDC);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("PIDResponse")).IsNull() && CheckEnvS("PIDResponse",envS) ) {
+    doPIDResponse = atoi(envS.Data());
+    printf("Set doPIDResponse=%d according to environment variables\n",doPIDResponse);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("PIDqa")).IsNull() && CheckEnvS("PIDqa",envS) ) {
+    doPIDqa = atoi(envS.Data());
+    printf("Set doPIDqa=%d according to environment variables\n",doPIDqa);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("FMD")).IsNull() && CheckEnvS("FMD",envS) ) {
+    doFMD = atoi(envS.Data());
+    printf("Set doFMD=%d according to environment variables\n",doFMD);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("PHOS")).IsNull() && CheckEnvS("PHOS",envS) ) {
+    doPHOS = atoi(envS.Data());
+    printf("Set doPHOS=%d according to environment variables\n",doPHOS);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("PHOSTrig")).IsNull() && CheckEnvS("PHOSTrig",envS) ) {
+    doPHOSTrig = atoi(envS.Data());
+    printf("Set doPHOSTrig=%d according to environment variables\n",doPHOSTrig);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("EMCAL")).IsNull() && CheckEnvS("EMCAL",envS) ) {
+    doEMCAL = atoi(envS.Data());
+    printf("Set doEMCAL=%d according to environment variables\n",doEMCAL);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("FBFqa")).IsNull() && CheckEnvS("FBFqa",envS) ) {
+    doFBFqa = atoi(envS.Data());
+    printf("Set doFBFqa=%d according to environment variables\n",doFBFqa);
+  }
+  //
+  if ( !(envS=gSystem->Getenv("TaskFilteredTree")).IsNull() && CheckEnvS("TaskFilteredTree",envS) ) {
+    doTaskFilteredTree = atoi(envS.Data());
+    printf("Set doTaskFilteredTree=%d according to environment variables\n",doTaskFilteredTree);
+  }
+  //-----------------------------------------------------------  
+  // combinations
+  if ( !(envS=gSystem->Getenv("QAGROUP")).IsNull() ) {
+    int qaGRP = atoi(envS.Data());
+    switch (qaGRP) {
+    case 0: 
+      SetDoQA(doStatistics,  1, "Statistics");
+      SetDoQA(doVZERO,       1, "VZERO");
+      SetDoQA(doVZEROPbPb,   1, "VZEROPbPb");
+      SetDoQA(doVertex,      1, "Vertex");
+      SetDoQA(doSPD,         1, "SPD");
+      SetDoQA(doTPC,         0, "TPC");
+      SetDoQA(doHLT,         0, "HLT");
+      SetDoQA(doSDD,         0, "SDD");
+      SetDoQA(doSSDdEdx,     0, "SSDdEdx");
+      SetDoQA(doTRD,         1, "TRD");
+      SetDoQA(doITS,         0, "ITS");
+      SetDoQA(doITSsaTracks, 0, "ITSsaTracks");
+      SetDoQA(doITSalign,    0, "ITSalign");
+      SetDoQA(doCALO ,       1, "CALO");
+      SetDoQA(doMUONTrig,    0, "MUONTrig");
+      SetDoQA(doImpParRes,   1, "ImpParRes");
+      SetDoQA(doMUON,        0, "MUON");
+      SetDoQA(doTOF,         0, "TOF");
+      SetDoQA(doHMPID,       1, "HMPID");
+      SetDoQA(doT0,          1, "T0");
+      SetDoQA(doZDC,         1, "ZDC");
+      //      SetDoQA(doPIDResponse, 1, "PIDResponse");
+      SetDoQA(doPIDqa,       1, "PIDqa");
+      SetDoQA(doFMD,         1, "FMD");
+      SetDoQA(doPHOS,        1, "PHOS");
+      SetDoQA(doPHOSTrig,    1, "PHOSTrig");
+      SetDoQA(doEMCAL,       0, "EMCAL");
+      SetDoQA(doFBFqa,       1, "FBFqa");
+      break;
+    case 1: 
+      SetDoQA(doStatistics,  0, "Statistics");
+      SetDoQA(doVZERO,       0, "VZERO");
+      SetDoQA(doVZEROPbPb,   0, "VZEROPbPb");
+      SetDoQA(doVertex,      0, "Vertex");
+      SetDoQA(doSPD,         0, "SPD");
+      SetDoQA(doTPC,         1, "TPC");
+      SetDoQA(doHLT,         1, "HLT");
+      SetDoQA(doSDD,         0, "SDD");
+      SetDoQA(doSSDdEdx,     0, "SSDdEdx");
+      SetDoQA(doTRD,         0, "TRD");
+      SetDoQA(doITS,         0, "ITS");
+      SetDoQA(doITSsaTracks, 0, "ITSsaTracks");
+      SetDoQA(doITSalign,    0, "ITSalign");
+      SetDoQA(doCALO ,       0, "CALO");
+      SetDoQA(doMUONTrig,    0, "MUONTrig");
+      SetDoQA(doImpParRes,   0, "ImpParRes");
+      SetDoQA(doMUON,        0, "MUON");
+      SetDoQA(doTOF,         0, "TOF");
+      SetDoQA(doHMPID,       0, "HMPID");
+      SetDoQA(doT0,          0, "T0");
+      SetDoQA(doZDC,         0, "ZDC");
+      //      SetDoQA(doPIDResponse, 0, "PIDResponse");
+      SetDoQA(doPIDqa,       0, "PIDqa");
+      SetDoQA(doFMD,         0, "FMD");
+      SetDoQA(doPHOS,        0, "PHOS");
+      SetDoQA(doPHOSTrig,    0, "PHOSTrig");
+      SetDoQA(doEMCAL,       0, "EMCAL");
+      SetDoQA(doFBFqa,       0, "FBFqa");
+      break;
+    case 2: 
+      SetDoQA(doStatistics,  0, "Statistics");
+      SetDoQA(doVZERO,       0, "VZERO");
+      SetDoQA(doVZEROPbPb,   0, "VZEROPbPb");
+      SetDoQA(doVertex,      0, "Vertex");
+      SetDoQA(doSPD,         0, "SPD");
+      SetDoQA(doTPC,         0, "TPC");
+      SetDoQA(doHLT,         0, "HLT");
+      SetDoQA(doSDD,         0, "SDD");
+      SetDoQA(doSSDdEdx,     0, "SSDdEdx");
+      SetDoQA(doTRD,         0, "TRD");
+      SetDoQA(doITS,         0, "ITS");
+      SetDoQA(doITSsaTracks, 1, "ITSsaTracks");
+      SetDoQA(doITSalign,    1, "ITSalign");
+      SetDoQA(doCALO ,       0, "CALO");
+      SetDoQA(doMUONTrig,    0, "MUONTrig");
+      SetDoQA(doImpParRes,   0, "ImpParRes");
+      SetDoQA(doMUON,        0, "MUON");
+      SetDoQA(doTOF,         0, "TOF");
+      SetDoQA(doHMPID,       0, "HMPID");
+      SetDoQA(doT0,          0, "T0");
+      SetDoQA(doZDC,         0, "ZDC");
+      //      SetDoQA(doPIDResponse, 0, "PIDResponse");
+      SetDoQA(doPIDqa,       0, "PIDqa");
+      SetDoQA(doFMD,         0, "FMD");
+      SetDoQA(doPHOS,        0, "PHOS");
+      SetDoQA(doPHOSTrig,    0, "PHOSTrig");
+      SetDoQA(doEMCAL,       0, "EMCAL");
+      SetDoQA(doFBFqa,       0, "FBFqa");
+      break;
+    case 3: 
+      SetDoQA(doStatistics,  0, "Statistics");
+      SetDoQA(doVZERO,       0, "VZERO");
+      SetDoQA(doVZEROPbPb,   0, "VZEROPbPb");
+      SetDoQA(doVertex,      0, "Vertex");
+      SetDoQA(doSPD,         0, "SPD");
+      SetDoQA(doTPC,         0, "TPC");
+      SetDoQA(doHLT,         0, "HLT");
+      SetDoQA(doSDD,         1, "SDD");
+      SetDoQA(doSSDdEdx,     1, "SSDdEdx");
+      SetDoQA(doTRD,         0, "TRD");
+      SetDoQA(doITS,         1, "ITS");
+      SetDoQA(doITSsaTracks, 0, "ITSsaTracks");
+      SetDoQA(doITSalign,    0, "ITSalign");
+      SetDoQA(doCALO ,       0, "CALO");
+      SetDoQA(doMUONTrig,    0, "MUONTrig");
+      SetDoQA(doImpParRes,   0, "ImpParRes");
+      SetDoQA(doMUON,        0, "MUON");
+      SetDoQA(doTOF,         1, "TOF");
+      SetDoQA(doHMPID,       0, "HMPID");
+      SetDoQA(doT0,          0, "T0");
+      SetDoQA(doZDC,         0, "ZDC");
+      //      SetDoQA(doPIDResponse, 0, "PIDResponse");
+      SetDoQA(doPIDqa,       0, "PIDqa");
+      SetDoQA(doFMD,         0, "FMD");
+      SetDoQA(doPHOS,        0, "PHOS");
+      SetDoQA(doPHOSTrig,    0, "PHOSTrig");
+      SetDoQA(doEMCAL,       0, "EMCAL");
+      SetDoQA(doFBFqa,       0, "FBFqa");
+      break;
+    case 4: 
+      SetDoQA(doStatistics,  0, "Statistics");
+      SetDoQA(doVZERO,       0, "VZERO");
+      SetDoQA(doVZEROPbPb,   0, "VZEROPbPb");
+      SetDoQA(doVertex,      0, "Vertex");
+      SetDoQA(doSPD,         0, "SPD");
+      SetDoQA(doTPC,         0, "TPC");
+      SetDoQA(doHLT,         0, "HLT");
+      SetDoQA(doSDD,         0, "SDD");
+      SetDoQA(doSSDdEdx,     0, "SSDdEdx");
+      SetDoQA(doTRD,         0, "TRD");
+      SetDoQA(doITS,         0, "ITS");
+      SetDoQA(doITSsaTracks, 0, "ITSsaTracks");
+      SetDoQA(doITSalign,    0, "ITSalign");
+      SetDoQA(doCALO ,       0, "CALO");
+      SetDoQA(doMUONTrig,    1, "MUONTrig");
+      SetDoQA(doImpParRes,   0, "ImpParRes");
+      SetDoQA(doMUON,        1, "MUON");
+      SetDoQA(doTOF,         0, "TOF");
+      SetDoQA(doHMPID,       0, "HMPID");
+      SetDoQA(doT0,          0, "T0");
+      SetDoQA(doZDC,         0, "ZDC");
+      //      SetDoQA(doPIDResponse, 0, "PIDResponse");
+      SetDoQA(doPIDqa,       0, "PIDqa");
+      SetDoQA(doFMD,         0, "FMD");
+      SetDoQA(doPHOS,        0, "PHOS");
+      SetDoQA(doPHOSTrig,    0, "PHOSTrig");
+      SetDoQA(doEMCAL,       1, "EMCAL");
+      SetDoQA(doFBFqa,       0, "FBFqa");
+      break;
+    };
+
+    printf("Set doTaskFilteredTree=%d according to environment variables\n",doTaskFilteredTree);
+  }
+
+
+}
+
+void SetDoQA(Bool_t& var, Bool_t onoff, const char* name)
+{
+  // set to ON only if previous value is not off
+  if (var) var = onoff;
+  if (name) printf("Set %-15s to %s\n",name,var ? "ON":"OFF");
+}
+
+Bool_t CheckEnvS(const char* var,TString& envString)
+{
+  if (envString=="0" || envString=="1") return kTRUE;
+  else printf("Ignoring wrong value %s for environment variable %s\n",envString.Data(),var);
+  return kFALSE;
 }

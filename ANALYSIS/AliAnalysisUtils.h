@@ -30,6 +30,7 @@ class AliAnalysisUtils : public TObject {
   Bool_t IsPileUpMV(AliVEvent *event); //MV pileup selection implemented here
   Bool_t IsPileUpSPD(AliVEvent *event); //this calls IsPileUpFromSPD
   Bool_t IsOutOfBunchPileUp(AliVEvent *event); //out-of-bunch pileup rejection using trigger information
+  Bool_t IsSPDClusterVsTrackletBG(AliVEvent *event); // background rejection with cluster-vs-tracklet cut
   
   Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
   
@@ -54,6 +55,9 @@ class AliAnalysisUtils : public TObject {
   void SetnSigmaPlpDiamZSPD(Float_t nSigmaPlpDiamZSPD) { fnSigmaPlpDiamZSPD = nSigmaPlpDiamZSPD;}
   void SetUseSPDCutInMultBins(Bool_t useSPDCutInMultBins) { fUseSPDCutInMultBins = useSPDCutInMultBins;}
   
+  // SPD cluster-vs-tracklet cut
+  void SetASPDCvsTCut(Float_t a) { fASPDCvsTCut = a; }
+  void SetBSPDCvsTCut(Float_t b) { fBSPDCvsTCut = b; }
   
  private:
   
@@ -79,7 +83,10 @@ class AliAnalysisUtils : public TObject {
   Float_t  fnSigmaPlpDiamZSPD;  //cut on nsigma diamond Z for SPD pileup
   Bool_t  fUseSPDCutInMultBins;  //use IsPileupFromSPDInMultBins instead of IsPileupFromSPD
   
-  ClassDef(AliAnalysisUtils,1) // base helper class
+  Float_t fASPDCvsTCut; // constant for the linear cut in SPD clusters vs tracklets
+  Float_t fBSPDCvsTCut; // slope for the linear cut in SPD  clusters vs tracklets
+
+  ClassDef(AliAnalysisUtils,2) // base helper class
 };
 #endif
  

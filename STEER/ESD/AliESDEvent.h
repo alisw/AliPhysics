@@ -308,7 +308,7 @@ public:
 
   TClonesArray *GetESDTOFClusters() const {return fESDTOFClusters;}
   TClonesArray *GetESDTOFHits() const {return fESDTOFHits;}
-  TClonesArray *GetESDTOFMatches() const {return fESDTOFMatchess;}
+  TClonesArray *GetESDTOFMatches() const {return fESDTOFMatches;}
 
   void SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster,Int_t *mapping=NULL);
   void SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster[],Int_t *mapping=NULL);
@@ -576,7 +576,7 @@ protected:
   TClonesArray *fCosmicTracks;     //! Tracks created by cosmics finder
   TClonesArray *fESDTOFClusters;    //! TOF clusters
   TClonesArray *fESDTOFHits;        //! TOF hits (used for clusters)
-  TClonesArray *fESDTOFMatchess;      //! TOF matching info (with the reference to tracks)
+  TClonesArray *fESDTOFMatches;    //! TOF matching info (with the reference to tracks)
   TClonesArray *fErrorLogs;        //! Raw-data reading error messages
  
   Bool_t fOldMuonStructure;        //! Flag if reading ESD with old MUON structure
@@ -600,7 +600,7 @@ protected:
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
 
-  ClassDef(AliESDEvent,22)  //ESDEvent class 
+  ClassDef(AliESDEvent,23)  //ESDEvent class 
 };
 #endif 
 

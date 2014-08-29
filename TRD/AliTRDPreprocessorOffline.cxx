@@ -502,7 +502,7 @@ Bool_t AliTRDPreprocessorOffline::ReadStatusGlobal(const Char_t* fileName){
   // 
   if(fSparse) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
     fSparse = (THnSparseI *) array->FindObject("NumberOfEntries");
     if(!fSparse) return kFALSE;
@@ -532,11 +532,15 @@ Bool_t AliTRDPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   // 
   if(fCH2d) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
     TH2I *ch2d = (TH2I *) array->FindObject("CH2d");
-    if(!ch2d) return kFALSE;
+    if(!ch2d) {
+      delete array;
+      return kFALSE;
+    }
     fCH2d = (TH2I*)ch2d->Clone();
+    delete array;
     //fNEvents = (TH1I *) array->FindObject("NEvents");
     //fAbsoluteGain = (TH2F *) array->FindObject("AbsoluteGain");
   }else{
@@ -560,12 +564,16 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftT0Global(const Char_t* fileName){
   // 
   if(fPH2d) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
     TProfile2D *ph2d = (TProfile2D *) array->FindObject("PH2d");
-    if(!ph2d) return kFALSE;
+    if(!ph2d) {
+      delete array;
+      return kFALSE;
+    }
     fPH2d = (TProfile2D*)ph2d->Clone();
     //fNEvents = (TH1I *) array->FindObject("NEvents");
+    delete array;
   }else{
     TProfile2D *ph2d = (TProfile2D *) fcalib.Get("PH2d");
     if(!ph2d) return kFALSE;
@@ -586,10 +594,12 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftLinearFitGlobal(const Char_t* fileNa
   // 
   if(fAliTRDCalibraVdriftLinearFit) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
-    fAliTRDCalibraVdriftLinearFit = (AliTRDCalibraVdriftLinearFit *) array->FindObject("AliTRDCalibraVdriftLinearFit");
+    AliTRDCalibraVdriftLinearFit * dummy = (AliTRDCalibraVdriftLinearFit *) array->FindObject("AliTRDCalibraVdriftLinearFit");
+    fAliTRDCalibraVdriftLinearFit = dummy ? (AliTRDCalibraVdriftLinearFit *) dummy->Clone() : 0x0;
     //fNEvents = (TH1I *) array->FindObject("NEvents");
+    delete array;
   }else{
     fAliTRDCalibraVdriftLinearFit = (AliTRDCalibraVdriftLinearFit *) fcalib.Get("AliTRDCalibraVdriftLinearFit");
     //fNEvents = (TH1I *) fcalib.Get("NEvents");
@@ -608,10 +618,12 @@ Bool_t AliTRDPreprocessorOffline::ReadExbAltFitGlobal(const Char_t* fileName){
   // 
   if(fAliTRDCalibraExbAltFit) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
-    fAliTRDCalibraExbAltFit = (AliTRDCalibraExbAltFit *) array->FindObject("AliTRDCalibraExbAltFit");
+     AliTRDCalibraExbAltFit * dummy = (AliTRDCalibraExbAltFit *) array->FindObject("AliTRDCalibraExbAltFit");
+     fAliTRDCalibraExbAltFit = dummy ? (AliTRDCalibraExbAltFit *)dummy->Clone() : 0x0;
     //fNEvents = (TH1I *) array->FindObject("NEvents");
+    delete array;
   }else{
     fAliTRDCalibraExbAltFit = (AliTRDCalibraExbAltFit *) fcalib.Get("AliTRDCalibraExbAltFit");
     //fNEvents = (TH1I *) fcalib.Get("NEvents");
@@ -631,11 +643,15 @@ Bool_t AliTRDPreprocessorOffline::ReadPRFGlobal(const Char_t* fileName){
   // 
   if(fPRF2d) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
     TProfile2D *prf2d = (TProfile2D *) array->FindObject("PRF2d");
-    if(!prf2d) return kFALSE;
+    if(!prf2d) {
+      delete array;
+      return kFALSE;
+    }
     fPRF2d = (TProfile2D*)prf2d->Clone();
+    delete array;
     //fNEvents = (TH1I *) array->FindObject("NEvents");
   }else{
     TProfile2D *prf2d = (TProfile2D *) fcalib.Get("PRF2d");

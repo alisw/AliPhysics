@@ -318,7 +318,8 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //
   // destructor
   //
-  delete fIonTailArray; 
+
+  //delete fIonTailArray; 
   delete fActiveChannelMap;
   delete fGrRunState;
 }
@@ -494,7 +495,7 @@ void AliTPCcalibDB::Update(){
   //Calibration ION tail data
   entry          = GetCDBEntry("TPC/Calib/IonTail");
   if (entry){
-    delete fIonTailArray; fIonTailArray=NULL;
+    //delete fIonTailArray; fIonTailArray=NULL;
     entry->SetOwner(kTRUE);
      fIonTailArray=(TObjArray*)(entry->GetObject());
      fIonTailArray->SetOwner(); //own the keys

@@ -31,22 +31,28 @@ class AliRawReader;
 class AliEMCALGeometry;
 class AliCaloCalibPedestal;
 class AliCaloRawAnalyzer;
-class AliCaloRawAnalyzerLMSOffline;
 class AliEMCALTriggerRawDigitMaker;
 class AliEMCALTriggerData;
 
 #include "AliCaloConstants.h"
 
-
 class AliEMCALRawUtils : public TObject {
- public:
+ 
+public:
+  
   AliEMCALRawUtils(Algo::fitAlgorithm fitAlgo = Algo::kStandard);
+  
   virtual ~AliEMCALRawUtils();
+  
   void Digits2Raw();
+  
   void Raw2Digits(AliRawReader *reader, TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap,
 				  TClonesArray *digitsTRG=0x0, AliEMCALTriggerData* trgData = 0x0);
+  
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time, Float_t chi2, Int_t ndf);
+  
   void TrimDigits(TClonesArray *digitsArr);
+  
   Int_t    GetNoiseThreshold()             const { return fNoiseThreshold; }
   Int_t    GetNPedSamples()                const { return fNPedSamples; }
   Bool_t   GetRemoveBadChannels() const {return fRemoveBadChannels;}
@@ -54,20 +60,24 @@ class AliEMCALRawUtils : public TObject {
   Float_t  GetTimeMax()           const {return fTimeMax ;}
   Float_t  GetTimeMin()           const {return fTimeMin ;}
   Bool_t   UseFALTRO()            const {return fUseFALTRO; }
-  void SetNoiseThreshold(Int_t val)                {fNoiseThreshold=val; }
-  void SetNPedSamples(Int_t val)                   {fNPedSamples=val; }
-  void SetRemoveBadChannels(Bool_t val)            {fRemoveBadChannels=val; }
-  void SetFittingAlgorithm(Int_t val) ;             
-  void SetTimeMin(Float_t t)                       {fTimeMin   = t          ;}
-  void SetTimeMax(Float_t t)                       {fTimeMax   = t          ;}
-  void SetFALTROUsage(Bool_t val)                  {fUseFALTRO=val; }
+  
+  void     SetNoiseThreshold(Int_t val)                {fNoiseThreshold=val; }
+  void     SetNPedSamples(Int_t val)                   {fNPedSamples=val; }
+  void     SetRemoveBadChannels(Bool_t val)            {fRemoveBadChannels=val; }
+  void     SetFittingAlgorithm(Int_t val) ;
+  void     SetTimeMin(Float_t t)                       {fTimeMin   = t          ;}
+  void     SetTimeMax(Float_t t)                       {fTimeMax   = t          ;}
+  void     SetFALTROUsage(Bool_t val)                  {fUseFALTRO=val; }
+  
   AliCaloRawAnalyzer *GetRawAnalyzer()  const { return fRawAnalyzer;}
+  
   virtual Option_t* GetOption() const { return fOption.Data(); }
   void SetOption(const Option_t* opt) { fOption = opt; }
   
 private:
-  AliEMCALRawUtils(const AliEMCALRawUtils& rawUtils);  //copy ctor
+  AliEMCALRawUtils            (const AliEMCALRawUtils& rawUtils);  //copy ctor
   AliEMCALRawUtils& operator =(const AliEMCALRawUtils& rawUtils);
+  
   Int_t fNoiseThreshold;                // threshold to consider signal or noise
   Int_t fNPedSamples;                   // number of samples to use in pedestal calculation
   AliEMCALGeometry* fGeom;              // geometry
