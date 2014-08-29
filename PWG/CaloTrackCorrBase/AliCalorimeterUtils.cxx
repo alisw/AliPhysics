@@ -1400,7 +1400,15 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, TP
   else if(calo == "EMCAL")
   {
     Int_t absID = 0 ;
-    return GetEMCALGeometry()->GetAbsCellIdFromEtaPhi( particle->Eta(), particle->Phi(), absID);
+    Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(),absID);
+    if(ok)
+    {
+      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
+      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
+      if(status > 0) ok = kFALSE;
+    }
+    return ok ;
   }
   
   return kFALSE ;
@@ -1420,17 +1428,68 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, Al
     return kFALSE ;
   }
 
+  Float_t phi = particle->Phi();
+  if(phi < 0) phi+=TMath::TwoPi();
+  
   if(calo == "PHOS" )
   {
     Int_t mod = 0 ;
     Double_t x = 0, z = 0 ;
     Double_t vtx[]={ particle->Xv(), particle->Yv(), particle->Zv() } ;
-    return GetPHOSGeometry()->ImpactOnEmc(vtx, particle->Theta(), particle->Phi(), mod, z, x) ;
+    return GetPHOSGeometry()->ImpactOnEmc(vtx, particle->Theta(), phi, mod, z, x) ;
   }
   else if(calo == "EMCAL")
   {
     Int_t absID = 0 ;
-    return GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(),absID);
+    Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),phi,absID);
+    if(ok)
+    {
+      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
+      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
+      if(status > 0) ok = kFALSE;
+    }
+    return ok ;
+  }
+  
+  return kFALSE ;
+}
+
+//_____________________________________________________________________________________________________________________
+Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(TString calo, TLorentzVector particle, Int_t & absID)
+{
+  // Check that a TLorentzVector is in the calorimeter acceptance, give the cell number where it hit
+  
+  if(calo!="EMCAL" && calo!="PHOS") return kFALSE ;
+  
+  if( (!IsPHOSGeoMatrixSet () && calo == "PHOS" ) ||
+      (!IsEMCALGeoMatrixSet() && calo == "EMCAL")   )
+  {
+    AliFatal(Form("Careful Geo Matrix for %s is not set, use AliFidutialCut instead \n",calo.Data()));
+    return kFALSE ;
+  }
+
+  Float_t phi = particle.Phi();
+  if(phi < 0) phi+=TMath::TwoPi();
+
+  if(calo == "PHOS" )
+  {
+    Int_t mod = 0 ;
+    Double_t x = 0, z = 0 ;
+    Double_t vtx[]={0,0,0} ;
+    return GetPHOSGeometry()->ImpactOnEmc(vtx, particle.Theta(), phi, mod, z, x) ;
+  }
+  else if(calo == "EMCAL")
+  {
+    Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle.Eta(),phi,absID);
+    if(ok)
+    {
+      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
+      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
+      if(status > 0) ok = kFALSE;
+    }
+    return ok ;
   }
   
   return kFALSE ;
