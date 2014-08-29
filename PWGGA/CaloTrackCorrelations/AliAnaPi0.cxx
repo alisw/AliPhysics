@@ -1290,6 +1290,11 @@ void AliAnaPi0::FillAcceptanceHistograms()
     if(GetReader()->ReadStack())
     {
       primStack = stack->Particle(i) ;
+      if(!primStack)
+      {
+        printf("AliAnaPi0::FillAcceptanceHistograms() - ESD primaries pointer not available!!\n");
+        continue;
+      }
       
       // If too small  skip
       if( primStack->Energy() < 0.4 ) continue;
@@ -1311,6 +1316,11 @@ void AliAnaPi0::FillAcceptanceHistograms()
     else
     {
       primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      if(!primAOD)
+      {
+        printf("AliAnaPi0::FillAcceptanceHistograms() - AOD primaries pointer not available!!\n");
+        continue;
+      }
       
       // If too small  skip
       if( primAOD->E() < 0.4 ) continue;
@@ -1499,7 +1509,6 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg,lvmeson,lv1,lv2);
 
-    
     if(fCalorimeter=="EMCAL" && inacceptance1 && inacceptance2 && fCheckAccInSector)
     {
       Int_t absID1=0;
@@ -1663,16 +1672,14 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
 {
   //Do some MC checks on the origin of the pair, is there any common ancestor and if there is one, who?
   //Adjusted for Pythia, need to see what to do for other generators.
-  //Array of histograms ordered as follows: 0-Photon, 1-electron, 2-pi0, 3-eta, 4-a-proton, 5-a-neutron, 6-stable particles, 
+  //Array of histograms ordered as follows: 0-Photon, 1-electron, 2-pi0, 3-eta, 4-a-proton, 5-a-neutron, 6-stable particles,
   // 7-other decays, 8-string, 9-final parton, 10-initial parton, intermediate, 11-colliding proton, 12-unrelated
-  
-  if(!fFillOriginHisto) return;
   
   Int_t ancPDG    = 0;
   Int_t ancStatus = 0;
   TLorentzVector ancMomentum;
   TVector3 prodVertex;
-  Int_t ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(index1, index2, 
+  Int_t ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(index1, index2,
                                                               GetReader(), ancPDG, ancStatus,ancMomentum, prodVertex);
   
   Int_t momindex  = -1;
@@ -1682,35 +1689,34 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
                             ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
   
   Float_t prodR = -1;
-
+  Int_t mcIndex = -1;
+  
   if(ancLabel > -1)
   {
-    if(ancPDG==22){//gamma
-      fhMCOrgMass[0]->Fill(pt,mass);
-      fhMCOrgAsym[0]->Fill(pt,asym);
-      fhMCOrgDeltaEta[0]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[0]->Fill(pt,dphi);
-    }              
-    else if(TMath::Abs(ancPDG)==11){//e
-      fhMCOrgMass[1]->Fill(pt,mass);
-      fhMCOrgAsym[1]->Fill(pt,asym);
-      fhMCOrgDeltaEta[1]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[1]->Fill(pt,dphi);
-    }          
-    else if(ancPDG==111){//Pi0
-      fhMCOrgMass[2]->Fill(pt,mass);
-      fhMCOrgAsym[2]->Fill(pt,asym);
-      fhMCOrgDeltaEta[2]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[2]->Fill(pt,dphi);
+    if(ancPDG==22)
+    {//gamma
+      mcIndex = 0;
+    }
+    else if(TMath::Abs(ancPDG)==11)
+    {//e
+      mcIndex = 1;
+    }
+    else if(ancPDG==111)
+    {//Pi0
+      mcIndex = 2;
       if(fMultiCutAnaSim)
       {
-        for(Int_t ipt=0; ipt<fNPtCuts; ipt++){          
-          for(Int_t icell=0; icell<fNCellNCuts; icell++){
-            for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
+        for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+        {
+          for(Int_t icell=0; icell<fNCellNCuts; icell++)
+          {
+            for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+            {
               Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
-              if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        && 
-                 asym   <  fAsymCuts[iasym]                                   && 
-                 ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell]){ 
+              if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        &&
+                 asym   <  fAsymCuts[iasym]                                   &&
+                 ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell])
+              {
                 fhMCPi0MassPtRec [index]->Fill(pt,mass);
                 fhMCPi0MassPtTrue[index]->Fill(ancMomentum.Pt(),mass);
                 if(mass < 0.17 && mass > 0.1) fhMCPi0PtTruePtRec[index]->Fill(ancMomentum.Pt(),pt);
@@ -1727,82 +1733,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
         {
           fhMCPi0PtTruePtRec[0]->Fill(ancMomentum.Pt(),pt);
           
-          if(fFillOriginHisto)
-          {
-            //Int_t uniqueId = -1;
-            if(GetReader()->ReadStack())
-            {
-              TParticle* ancestor = GetMCStack()->Particle(ancLabel);
-              momindex  = ancestor->GetFirstMother();
-              if(momindex < 0) return;
-              TParticle* mother = GetMCStack()->Particle(momindex);
-              mompdg    = TMath::Abs(mother->GetPdgCode());
-              momstatus = mother->GetStatusCode();
-              prodR = mother->R();
-              //uniqueId = mother->GetUniqueID();
-            }
-            else
-            {
-              TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-              AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
-              momindex  = ancestor->GetMother();
-              if(momindex < 0) return;
-              AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
-              mompdg    = TMath::Abs(mother->GetPdgCode());
-              momstatus = mother->GetStatus();
-              prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-              //uniqueId = mother->GetUniqueID();
-            }
-            
-//            printf("Reco Pi0: pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
-//                   pt,prodR,mompdg,momstatus,uniqueId);
-            
-            fhMCPi0ProdVertex->Fill(pt,prodR);
-
-            if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt,0.5);//parton
-            else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt,1.5);//quark
-            else if(mompdg     > 2100  && mompdg   < 2210) fhMCPi0PtOrigin->Fill(pt,2.5);// resonances
-            else if(mompdg    == 221) fhMCPi0PtOrigin->Fill(pt,8.5);//eta
-            else if(mompdg    == 331) fhMCPi0PtOrigin->Fill(pt,9.5);//eta prime
-            else if(mompdg    == 213) fhMCPi0PtOrigin->Fill(pt,4.5);//rho
-            else if(mompdg    == 223) fhMCPi0PtOrigin->Fill(pt,5.5);//omega
-            else if(mompdg    >= 310   && mompdg    <= 323) fhMCPi0PtOrigin->Fill(pt,6.5);//k0S, k+-,k*
-            else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt,6.5);//k0L
-            else if(momstatus == 11 || momstatus  == 12 ) fhMCPi0PtOrigin->Fill(pt,3.5);//resonances   
-            else                      fhMCPi0PtOrigin->Fill(pt,7.5);//other?
-            
-          }
-        }//pi0 mass region
-      }
-    }
-    else if(ancPDG==221){//Eta
-      fhMCOrgMass[3]->Fill(pt,mass);
-      fhMCOrgAsym[3]->Fill(pt,asym);
-      fhMCOrgDeltaEta[3]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[3]->Fill(pt,dphi);
-      if(fMultiCutAnaSim){
-        for(Int_t ipt=0; ipt<fNPtCuts; ipt++){          
-          for(Int_t icell=0; icell<fNCellNCuts; icell++){
-            for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
-              Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
-              if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        && 
-                 asym   <  fAsymCuts[iasym]                                   && 
-                 ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell]){ 
-                fhMCEtaMassPtRec [index]->Fill(pt,mass);
-                fhMCEtaMassPtTrue[index]->Fill(ancMomentum.Pt(),mass);
-                if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[index]->Fill(ancMomentum.Pt(),pt);
-              }//pass the different cuts
-            }// pid bit cut loop
-          }// icell loop
-        }// pt cut loop
-      } //Multi cut ana sim
-      else
-      {
-        fhMCEtaMassPtTrue[0]->Fill(ancMomentum.Pt(),mass);
-        if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[0]->Fill(ancMomentum.Pt(),pt); 
-        
-        if(fFillOriginHisto)
-        {
+          //Int_t uniqueId = -1;
           if(GetReader()->ReadStack())
           {
             TParticle* ancestor = GetMCStack()->Particle(ancLabel);
@@ -1812,6 +1743,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
             mompdg    = TMath::Abs(mother->GetPdgCode());
             momstatus = mother->GetStatusCode();
             prodR = mother->R();
+            //uniqueId = mother->GetUniqueID();
           }
           else
           {
@@ -1823,77 +1755,131 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
             mompdg    = TMath::Abs(mother->GetPdgCode());
             momstatus = mother->GetStatus();
             prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+            //uniqueId = mother->GetUniqueID();
           }
           
-          fhMCEtaProdVertex->Fill(pt,prodR);
+          //            printf("Reco Pi0: pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
+          //                   pt,prodR,mompdg,momstatus,uniqueId);
           
-          if     (momstatus == 21 ) fhMCEtaPtOrigin->Fill(pt,0.5);//parton
-          else if(mompdg    < 22  ) fhMCEtaPtOrigin->Fill(pt,1.5);//quark
-          else if(mompdg    > 2100  && mompdg   < 2210) fhMCEtaPtOrigin->Fill(pt,2.5);//qq resonances
-          else if(mompdg    == 331) fhMCEtaPtOrigin->Fill(pt,5.5);//eta prime
-          else if(momstatus == 11 || momstatus  == 12 ) fhMCEtaPtOrigin->Fill(pt,3.5);//resonances
-          else fhMCEtaPtOrigin->Fill(pt,4.5);//stable, conversions?
-          //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
+          fhMCPi0ProdVertex->Fill(pt,prodR);
+          
+          if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt,0.5);//parton
+          else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt,1.5);//quark
+          else if(mompdg     > 2100  && mompdg   < 2210) fhMCPi0PtOrigin->Fill(pt,2.5);// resonances
+          else if(mompdg    == 221) fhMCPi0PtOrigin->Fill(pt,8.5);//eta
+          else if(mompdg    == 331) fhMCPi0PtOrigin->Fill(pt,9.5);//eta prime
+          else if(mompdg    == 213) fhMCPi0PtOrigin->Fill(pt,4.5);//rho
+          else if(mompdg    == 223) fhMCPi0PtOrigin->Fill(pt,5.5);//omega
+          else if(mompdg    >= 310   && mompdg    <= 323) fhMCPi0PtOrigin->Fill(pt,6.5);//k0S, k+-,k*
+          else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt,6.5);//k0L
+          else if(momstatus == 11 || momstatus  == 12 ) fhMCPi0PtOrigin->Fill(pt,3.5);//resonances
+          else                      fhMCPi0PtOrigin->Fill(pt,7.5);//other?
+          
+          
+        }//pi0 mass region
+      }
+    }
+    else if(ancPDG==221)
+    {//Eta
+      mcIndex = 3;
+      if(fMultiCutAnaSim)
+      {
+        for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+        {
+          for(Int_t icell=0; icell<fNCellNCuts; icell++)
+          {
+            for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+            {
+              Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
+              if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        &&
+                 asym   <  fAsymCuts[iasym]                                   &&
+                 ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell])
+              {
+                fhMCEtaMassPtRec [index]->Fill(pt,mass);
+                fhMCEtaMassPtTrue[index]->Fill(ancMomentum.Pt(),mass);
+                if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[index]->Fill(ancMomentum.Pt(),pt);
+              }//pass the different cuts
+            }// pid bit cut loop
+          }// icell loop
+        }// pt cut loop
+      } //Multi cut ana sim
+      else
+      {
+        fhMCEtaMassPtTrue[0]->Fill(ancMomentum.Pt(),mass);
+        if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[0]->Fill(ancMomentum.Pt(),pt);
+        
+        if(GetReader()->ReadStack())
+        {
+          TParticle* ancestor = GetMCStack()->Particle(ancLabel);
+          momindex  = ancestor->GetFirstMother();
+          if(momindex < 0) return;
+          TParticle* mother = GetMCStack()->Particle(momindex);
+          mompdg    = TMath::Abs(mother->GetPdgCode());
+          momstatus = mother->GetStatusCode();
+          prodR = mother->R();
         }
+        else
+        {
+          TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
+          AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
+          momindex  = ancestor->GetMother();
+          if(momindex < 0) return;
+          AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+          mompdg    = TMath::Abs(mother->GetPdgCode());
+          momstatus = mother->GetStatus();
+          prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+        }
+        
+        fhMCEtaProdVertex->Fill(pt,prodR);
+        
+        if     (momstatus == 21 ) fhMCEtaPtOrigin->Fill(pt,0.5);//parton
+        else if(mompdg    < 22  ) fhMCEtaPtOrigin->Fill(pt,1.5);//quark
+        else if(mompdg    > 2100  && mompdg   < 2210) fhMCEtaPtOrigin->Fill(pt,2.5);//qq resonances
+        else if(mompdg    == 331) fhMCEtaPtOrigin->Fill(pt,5.5);//eta prime
+        else if(momstatus == 11 || momstatus  == 12 ) fhMCEtaPtOrigin->Fill(pt,3.5);//resonances
+        else fhMCEtaPtOrigin->Fill(pt,4.5);//stable, conversions?
+        //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
+        
       }// eta mass region
     }
     else if(ancPDG==-2212){//AProton
-      fhMCOrgMass[4]->Fill(pt,mass);
-      fhMCOrgAsym[4]->Fill(pt,asym);
-      fhMCOrgDeltaEta[4]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[4]->Fill(pt,dphi);
-    }   
+      mcIndex = 4;
+    }
     else if(ancPDG==-2112){//ANeutron
-      fhMCOrgMass[5]->Fill(pt,mass);
-      fhMCOrgAsym[5]->Fill(pt,asym);
-      fhMCOrgDeltaEta[5]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[5]->Fill(pt,dphi);
-    }       
+      mcIndex = 5;
+    }
     else if(TMath::Abs(ancPDG)==13){//muons
-      fhMCOrgMass[6]->Fill(pt,mass);
-      fhMCOrgAsym[6]->Fill(pt,asym);
-      fhMCOrgDeltaEta[6]->Fill(pt,deta);
-      fhMCOrgDeltaPhi[6]->Fill(pt,dphi);
-    }                   
-    else if (TMath::Abs(ancPDG) > 100 && ancLabel > 7) {
-      if(ancStatus==1){//Stable particles, converted? not decayed resonances
-        fhMCOrgMass[6]->Fill(pt,mass);
-        fhMCOrgAsym[6]->Fill(pt,asym);
-        fhMCOrgDeltaEta[6]->Fill(pt,deta);
-        fhMCOrgDeltaPhi[6]->Fill(pt,dphi);  
+      mcIndex = 6;
+    }
+    else if (TMath::Abs(ancPDG) > 100 && ancLabel > 7)
+    {
+      if(ancStatus==1)
+      {//Stable particles, converted? not decayed resonances
+        mcIndex = 6;
       }
-      else{//resonances and other decays, more hadron conversions?
-        fhMCOrgMass[7]->Fill(pt,mass);
-        fhMCOrgAsym[7]->Fill(pt,asym);
-        fhMCOrgDeltaEta[7]->Fill(pt,deta);
-        fhMCOrgDeltaPhi[7]->Fill(pt,dphi);
+      else
+      {//resonances and other decays, more hadron conversions?
+        mcIndex = 7;
       }
     }
-    else {//Partons, colliding protons, strings, intermediate corrections
-      if(ancStatus==11 || ancStatus==12){//String fragmentation
-        fhMCOrgMass[8]->Fill(pt,mass);
-        fhMCOrgAsym[8]->Fill(pt,asym);
-        fhMCOrgDeltaEta[8]->Fill(pt,deta);
-        fhMCOrgDeltaPhi[8]->Fill(pt,dphi);
+    else
+    {//Partons, colliding protons, strings, intermediate corrections
+      if(ancStatus==11 || ancStatus==12)
+      {//String fragmentation
+        mcIndex = 8;
       }
       else if (ancStatus==21){
-        if(ancLabel < 2) {//Colliding protons
-          fhMCOrgMass[11]->Fill(pt,mass);
-          fhMCOrgAsym[11]->Fill(pt,asym);
-          fhMCOrgDeltaEta[11]->Fill(pt,deta);
-          fhMCOrgDeltaPhi[11]->Fill(pt,dphi);
-        }//colliding protons  
-        else if(ancLabel < 6){//partonic initial states interactions
-          fhMCOrgMass[9]->Fill(pt,mass);
-          fhMCOrgAsym[9]->Fill(pt,asym);
-          fhMCOrgDeltaEta[9]->Fill(pt,deta);
-          fhMCOrgDeltaPhi[9]->Fill(pt,dphi);
+        if(ancLabel < 2)
+        {//Colliding protons
+          mcIndex = 11;
+        }//colliding protons
+        else if(ancLabel < 6)
+        {//partonic initial states interactions
+          mcIndex = 9;
         }
-        else if(ancLabel < 8){//Final state partons radiations?
-          fhMCOrgMass[10]->Fill(pt,mass);
-          fhMCOrgAsym[10]->Fill(pt,asym);
-          fhMCOrgDeltaEta[10]->Fill(pt,deta);
-          fhMCOrgDeltaPhi[10]->Fill(pt,dphi);
+        else if(ancLabel < 8)
+        {//Final state partons radiations?
+          mcIndex = 10;
         }
         // else {
         //   printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Check ** Common ancestor label %d, pdg %d, name %s, status %d; \n",
@@ -1905,20 +1891,26 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
       //         ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
       // }
     }////Partons, colliding protons, strings, intermediate corrections
-  }//ancLabel > -1 
+  }//ancLabel > -1
   else { //ancLabel <= -1
     //printf("Not related at all label = %d\n",ancLabel);
-    fhMCOrgMass[12]->Fill(pt,mass);
-    fhMCOrgAsym[12]->Fill(pt,asym);
-    fhMCOrgDeltaEta[12]->Fill(pt,deta);
-    fhMCOrgDeltaPhi[12]->Fill(pt,dphi);
+    mcIndex = 12;
   }
-}  
+  
+  if(mcIndex >=0 && mcIndex < 13)
+  {
+    fhMCOrgMass[mcIndex]->Fill(pt,mass);
+    fhMCOrgAsym[mcIndex]->Fill(pt,asym);
+    fhMCOrgDeltaEta[mcIndex]->Fill(pt,deta);
+    fhMCOrgDeltaPhi[mcIndex]->Fill(pt,dphi);
+  }
+  
+}
 
 //__________________________________________
-void AliAnaPi0::MakeAnalysisFillHistograms() 
+void AliAnaPi0::MakeAnalysisFillHistograms()
 {
-  //Process one event and extract photons from AOD branch 
+  //Process one event and extract photons from AOD branch
   // filled with AliAnaPhoton and fill histos with invariant mass
   
   //In case of simulated data, fill acceptance histograms
@@ -2017,28 +2009,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     module1 = GetModuleNumber(p1);
     
     //------------------------------------------
-    //Get index in VCaloCluster array
-    AliVCluster *cluster1 = 0; 
-    Bool_t bFound1        = kFALSE;
-    Int_t  caloLabel1     = p1->GetCaloLabel(0);
-    Bool_t iclus1         =-1;
-    if(clusters)
-    {
-      for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
-        AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-        if(cluster)
-        {
-          if     (cluster->GetID()==caloLabel1) 
-          {
-            bFound1  = kTRUE  ;
-            cluster1 = cluster;
-            iclus1   = iclus;
-          }
-        }      
-        if(bFound1) break;
-      }
-    }// calorimeter clusters loop
-    
+    // Recover original cluster
+    Int_t iclus1 = -1 ;
+    AliVCluster * cluster1 = FindCluster(clusters,p1->GetCaloLabel(0),iclus1);
+    if(!cluster1) printf("AliAnaPi0 - Cluster1 not found!\n");
+
     //---------------------------------
     //Second loop on photons/clusters
     //---------------------------------
@@ -2056,44 +2031,40 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         continue ;
       
       //------------------------------------------
-      //Get index in VCaloCluster array
-      AliVCluster *cluster2 = 0; 
-      Bool_t bFound2        = kFALSE;
-      Int_t caloLabel2      = p2->GetCaloLabel(0);
-      if(clusters){
-        for(Int_t iclus = iclus1+1; iclus < clusters->GetEntriesFast(); iclus++){
-          AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-          if(cluster){
-            if(cluster->GetID()==caloLabel2) {
-              bFound2  = kTRUE  ;
-              cluster2 = cluster;
-            }          
-          }      
-          if(bFound2) break;
-        }// calorimeter clusters loop
-      }
-      
+      // Recover original cluster
+      Int_t iclus2 = -1;
+      AliVCluster * cluster2 = FindCluster(clusters,p2->GetCaloLabel(0),iclus2,iclus1+1);
+      // start new loop from iclus1+1 to gain some time
+      if(!cluster2) printf("AliAnaPi0 - Cluster2 not found!\n");
+
+      // Get the TOF,l0 and ncells from the clusters
       Float_t tof1  = -1;
       Float_t l01   = -1;
-      if(cluster1 && bFound1){
-        tof1  = cluster1->GetTOF()*1e9;
-        l01   = cluster1->GetM02();
+      Int_t ncell1  = 0;
+      if(cluster1)
+      {
+        tof1   = cluster1->GetTOF()*1e9;
+        l01    = cluster1->GetM02();
+        ncell1 = cluster1->GetNCells();
+        //printf("cluster1: E %2.2f (%2.2f), l0 %2.2f, tof %2.2f\n",cluster1->E(),p1->E(),l01,tof1);
       }
-      //      else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
-      //                   p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
+      //else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
+      //            p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
       
       Float_t tof2  = -1;
       Float_t l02   = -1;
-      if(cluster2 && bFound2)
+      Int_t ncell2  = 0;
+      if(cluster2)
       {
-        tof2  = cluster2->GetTOF()*1e9;
-        l02   = cluster2->GetM02();
-
+        tof2   = cluster2->GetTOF()*1e9;
+        l02    = cluster2->GetM02();
+        ncell2 = cluster2->GetNCells();
+        //printf("cluster2: E %2.2f (%2.2f), l0 %2.2f, tof %2.2f\n",cluster2->E(),p2->E(),l02,tof2);
       }
-      //      else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
-      //                  p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
+      //else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
+      //            p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
       
-      if(clusters)
+      if(cluster1 && cluster2)
       {
         Double_t t12diff = tof1-tof2;
         if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
@@ -2124,13 +2095,15 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //--------------------------------
       //Check if opening angle is too large or too small compared to what is expected	
       Double_t angle   = photon1.Angle(photon2.Vect());
-      if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle+0.05)) {
+      if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle+0.05))
+      {
         if(GetDebug() > 2)
           printf("AliAnaPi0::MakeAnalysisFillHistograms() -Real pair angle %f not in E %f window\n",angle, (photon1+photon2).E());
         continue;
       }
       
-      if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut)) {
+      if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut))
+      {
         if(GetDebug() > 2)
           printf("AliAnaPi0::MakeAnalysisFillHistograms() - Real pair cut %f < angle %f < cut %f\n",fAngleCut, angle, fAngleMaxCut);
         continue;
@@ -2189,9 +2162,12 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }
         
         //Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
-        for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
-          if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))){ 
-            for(Int_t iasym=0; iasym < fNAsymCuts; iasym++){
+        for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
+        {
+          if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)))
+          {
+            for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
+            {
               if(a < fAsymCuts[iasym])
               {
                 Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
@@ -2201,11 +2177,14 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 
                 fhRe1     [index]->Fill(pt,m);
                 if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt,m,1./pt) ;
-                if(fFillBadDistHisto){
-                  if(p1->DistToBad()>0 && p2->DistToBad()>0){
+                if(fFillBadDistHisto)
+                {
+                  if(p1->DistToBad()>0 && p2->DistToBad()>0)
+                  {
                     fhRe2     [index]->Fill(pt,m) ;
                     if(fMakeInvPtPlots)fhReInvPt2[index]->Fill(pt,m,1./pt) ;
-                    if(p1->DistToBad()>1 && p2->DistToBad()>1){
+                    if(p1->DistToBad()>1 && p2->DistToBad()>1)
+                    {
                       fhRe3     [index]->Fill(pt,m) ;
                       if(fMakeInvPtPlots)fhReInvPt3[index]->Fill(pt,m,1./pt) ;
                     }// bad 3
@@ -2231,35 +2210,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           if(m > 0.45 && m < 0.65) fhRePtAsymEta->Fill(pt,a);
         }
         
-        //-------------------------------------------------------
-        //Get the number of cells needed for multi cut analysis.
-        //-------------------------------------------------------        
-        Int_t ncell1 = 0;
-        Int_t ncell2 = 0;
-        if(fMultiCutAna || (IsDataMC() && fMultiCutAnaSim))
-        {
-          AliVEvent * event = GetReader()->GetInputEvent();
-          if(event){
-            for(Int_t iclus = 0; iclus < event->GetNumberOfCaloClusters(); iclus++)
-            {
-              AliVCluster *cluster = event->GetCaloCluster(iclus);
-              
-              Bool_t is = kFALSE;
-              if     (fCalorimeter == "EMCAL" && cluster->IsEMCAL()) is = kTRUE;
-              else if(fCalorimeter == "PHOS"  && cluster->IsPHOS() ) is = kTRUE;
-              
-              if(is){
-                if      (p1->GetCaloLabel(0) == cluster->GetID()) ncell1 = cluster->GetNCells();
-                else if (p2->GetCaloLabel(0) == cluster->GetID()) ncell2 = cluster->GetNCells();
-              } // PHOS or EMCAL cluster as requested in analysis
-              
-              if(ncell2 > 0 &&  ncell1 > 0) break; // No need to continue the iteration
-              
-            }
-            //printf("e 1: %2.2f, e 2: %2.2f, ncells: n1 %d, n2 %d\n", p1->E(), p2->E(),ncell1,ncell2);
-          }
-        }
-        
         //---------
         // MC data
         //---------
@@ -2281,7 +2231,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             fhReMCFromMixConversion->Fill(pt,m);
           }
                   
-          FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),p1->Pt(), p2->Pt(),ncell1, ncell2, m, pt, a,deta, dphi); 
+          if(fFillOriginHisto)
+            FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),p1->Pt(), p2->Pt(),ncell1, ncell2, m, pt, a,deta, dphi);
         }
         
         //-----------------------
@@ -2290,8 +2241,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(fMultiCutAna)
         {
           //Histograms for different PID bits selection
-          for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
-            
+          for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
+          {
             if(p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)    && 
                p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))   fhRePIDBits[ipid]->Fill(pt,m) ;
             
@@ -2299,25 +2250,33 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           } // pid bit cut loop
           
           //Several pt,ncell and asymmetry cuts
-          for(Int_t ipt=0; ipt<fNPtCuts; ipt++){          
-            for(Int_t icell=0; icell<fNCellNCuts; icell++){
-              for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
+          for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+          {
+            for(Int_t icell=0; icell<fNCellNCuts; icell++)
+            {
+              for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+              {
                 Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
                 if(p1->E() >   fPtCuts[ipt]      && p2->E() > fPtCuts[ipt]        && 
-                   a        <   fAsymCuts[iasym]                                    && 
-                   ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell]){
+                   a        <   fAsymCuts[iasym]                                  &&
+                   ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell])
+                {
                   fhRePtNCellAsymCuts[index]->Fill(pt,m) ;
                   //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
-                  if(fFillSMCombinations && module1==module2){
+                  if(fFillSMCombinations && module1==module2)
+                  {
                     fhRePtNCellAsymCutsSM[module1][index]->Fill(pt,m) ;
                   }
                 }
               }// pid bit cut loop
             }// icell loop
           }// pt cut loop
-          if(GetHistogramRanges()->GetHistoTrackMultiplicityBins()){
-            for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++){
-              if(a < fAsymCuts[iasym])fhRePtMult[iasym]->Fill(pt,GetTrackMultiplicity(),m) ;
+          
+          if(GetHistogramRanges()->GetHistoTrackMultiplicityBins())
+          {
+            for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++)
+            {
+              if(a < fAsymCuts[iasym]) fhRePtMult[iasym]->Fill(pt,GetTrackMultiplicity(),m) ;
             }
           }
         }// multiple cuts analysis
@@ -2357,8 +2316,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //---------------------------------
       //First loop on photons/clusters
       //---------------------------------      
-      for(Int_t i1=0; i1<nPhot; i1++){
+      for(Int_t i1=0; i1<nPhot; i1++)
+      {
         AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
+        
         if(fSameSM && GetModuleNumber(p1)!=module1) continue;
         
         //Get kinematics of cluster and (super) module of this cluster
@@ -2368,7 +2329,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         //---------------------------------
         //First loop on photons/clusters
         //---------------------------------        
-        for(Int_t i2=0; i2<nPhot2; i2++){
+        for(Int_t i2=0; i2<nPhot2; i2++)
+        {
           AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
           
           //Get kinematics of second cluster and calculate those of the pair
@@ -2379,7 +2341,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           //Check if opening angle is too large or too small compared to what is expected
           Double_t angle   = photon1.Angle(photon2.Vect());
-          if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle+0.05)){ 
+          if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle+0.05))
+          {
             if(GetDebug() > 2)
               printf("AliAnaPi0::MakeAnalysisFillHistograms() -Mix pair angle %f not in E %f window\n",angle, (photon1+photon2).E());
             continue;
@@ -2405,21 +2368,24 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             if(module1==module2 && module1 >=0 && module1<fNModules)
               fhMiMod[module1]->Fill(pt,m) ;
             
-            if(fCalorimeter=="EMCAL"){
-              
+            if(fCalorimeter=="EMCAL")
+            {
               // Same sector
               Int_t j=0;
-              for(Int_t i = 0; i < fNModules/2; i++){
+              for(Int_t i = 0; i < fNModules/2; i++)
+              {
                 j=2*i;
                 if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhMiSameSectorEMCALMod[i]->Fill(pt,m) ;
               }
               
               // Same side
-              for(Int_t i = 0; i < fNModules-2; i++){
+              for(Int_t i = 0; i < fNModules-2; i++)
+              {
                 if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhMiSameSideEMCALMod[i]->Fill(pt,m); 
               }
             }//EMCAL
-            else {//PHOS
+            else
+            {//PHOS
               if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt,m) ; 
               if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt,m) ; 
               if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt,m) ;
@@ -2433,12 +2399,14 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           if(ok){
             
             //Check if one of the clusters comes from a conversion 
-            if(fCheckConversion){
+            if(fCheckConversion)
+            {
               if     (p1->IsTagged() && p2->IsTagged()) fhMiConv2->Fill(pt,m);
               else if(p1->IsTagged() || p2->IsTagged()) fhMiConv ->Fill(pt,m);
             }
             //Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
-            for(Int_t ipid=0; ipid<fNPIDBits; ipid++){ 
+            for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
+            {
               if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton)))
               {
                 for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
@@ -2450,7 +2418,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                     if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
 
                     fhMi1     [index]->Fill(pt,m) ;
+                    
                     if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt,m,1./pt) ;
+                    
                     if(fFillBadDistHisto)
                     {
                       if(p1->DistToBad()>0 && p2->DistToBad()>0)
@@ -2475,14 +2445,18 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             if(fMultiCutAna){
               //Several pt,ncell and asymmetry cuts
               
-              for(Int_t ipt=0; ipt<fNPtCuts; ipt++){          
-                for(Int_t icell=0; icell<fNCellNCuts; icell++){
-                  for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
+              for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+              {
+                for(Int_t icell=0; icell<fNCellNCuts; icell++)
+                {
+                  for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+                  {
                     Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
                     if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt() > fPtCuts[ipt]        && 
                        a        <   fAsymCuts[iasym]                                    //&& 
                        //p1->GetBtag() >=  fCellNCuts[icell] && p2->GetBtag() >= fCellNCuts[icell] // trick, correct it.
-                       ){
+                       )
+                    {
                       fhMiPtNCellAsymCuts[index]->Fill(pt,m) ;
                       //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
                     }
@@ -2492,7 +2466,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             } // Multi cut ana
             
             //Fill histograms with opening angle
-            if(fFillAngleHisto){
+            if(fFillAngleHisto)
+            {
               fhMixedOpeningAngle   ->Fill(pt,angle);
               fhMixedCosOpeningAngle->Fill(pt,TMath::Cos(angle));
             }
@@ -2503,21 +2478,24 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     }//loop on mixed events
     
     //--------------------------------------------------------
-    //Add the current event to the list of events for mixing
+    // Add the current event to the list of events for mixing
     //--------------------------------------------------------
+    
     TClonesArray *currentEvent = new TClonesArray(*GetInputAODBranch());
     //Add current event to buffer and Remove redundant events 
-    if(currentEvent->GetEntriesFast()>0){
+    if( currentEvent->GetEntriesFast() > 0 )
+    {
       evMixList->AddFirst(currentEvent) ;
       currentEvent=0 ; //Now list of particles belongs to buffer and it will be deleted with buffer
-      if(evMixList->GetSize() >= GetNMaxEvMix())
+      if( evMixList->GetSize() >= GetNMaxEvMix() )
       {
         TClonesArray * tmp = (TClonesArray*) (evMixList->Last()) ;
         evMixList->RemoveLast() ;
         delete tmp ;
       }
     } 
-    else{ //empty event
+    else
+    { //empty event
       delete currentEvent ;
       currentEvent=0 ; 
     }

@@ -52,9 +52,9 @@ class AliAnaEMCALTriggerClusters : public AliAnaCaloTrackCorrBaseClass {
   void         SetNCellCut(Int_t n)                { fNCellsCut = n               ; }
   Double_t     GetNCellCut()                 const { return fNCellsCut            ; }
   
-  void         SetM02(Int_t min, Int_t max)        { fMinM02 = min; fMaxM02 = max ; }
-  Int_t        GetM02Min()                   const { return fMinM02               ; }
-  Int_t        GetM02Max()                   const { return fMaxM02               ; }
+  void         SetM02(Float_t min, Float_t max)    { fMinM02 = min; fMaxM02 = max ; }
+  Float_t      GetM02Min()                   const { return fMinM02               ; }
+  Float_t      GetM02Max()                   const { return fMaxM02               ; }
   
   Bool_t       IsTrackMatchRejectionOn()     const { return fRejectTrackMatch     ; }
   void         SwitchOnTrackMatchRejection()       { fRejectTrackMatch = kTRUE    ; }

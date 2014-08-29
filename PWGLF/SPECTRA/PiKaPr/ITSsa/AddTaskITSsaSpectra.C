@@ -55,7 +55,7 @@ AliAnalysisTaskSEITSsaSpectra *AddTaskITSsaSpectra(Int_t optNtuple=0,Int_t readM
   outputFileName += ":PWG2SpectraITSsa";
   
   AliAnalysisDataContainer *coutput =0x0;
-  
+  AliAnalysisDataContainer *coutputCuts = 0x0;
   if(hi)
     {
       coutput = mgr->CreateContainer(Form("clistITSsaCent%ito%i",lowcut,upcut),
@@ -67,11 +67,18 @@ AliAnalysisTaskSEITSsaSpectra *AddTaskITSsaSpectra(Int_t optNtuple=0,Int_t readM
     {
       coutput = mgr->CreateContainer(Form("clistITSsaMult%ito%i",lowcut,upcut),
 				     TList::Class(),
-				      AliAnalysisManager::kOutputContainer,
-				      outputFileName );    
+				     AliAnalysisManager::kOutputContainer,
+				     outputFileName );    
     }
+
+  coutputCuts = mgr->CreateContainer(Form("DCACutMult%ito%i",lowcut,upcut),
+				     TList::Class(),
+				     AliAnalysisManager::kParamContainer,
+				     outputFileName );
+  
   
   mgr->ConnectInput(taskits, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskits, 1, coutput);
+  mgr->ConnectOutput(taskits, 2, coutputCuts);
   return taskits;
 }   

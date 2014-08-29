@@ -30,10 +30,11 @@ class AliFemtoV0TrackCut : public AliFemtoParticleCut
   virtual AliFemtoParticleType Type(){return hbtV0;}
   
   void SetInvariantMassLambda(double,double);
-  void SetMinDaughtersToPrimVertex(double);
+  void SetMinDaughtersToPrimVertex(double,double);
   void SetMaxDcaV0Daughters(double);
   void SetMaxDcaV0(double);
   void SetMaxCosPointingAngle(double);
+  void SetMaxV0DecayLength(double);
   void SetParticleType(short);
   void SetEta(double);
   void SetPt(double,double);
@@ -57,9 +58,11 @@ class AliFemtoV0TrackCut : public AliFemtoParticleCut
 
   double            fInvMassLambdaMin;   //invariant mass lambda min
   double            fInvMassLambdaMax;   //invariant mass lambda max
-  double            fMinDcaDaughtersToVert; //DCA of daughters to primary vertex
+  double            fMinDcaDaughterPosToVert; //DCA of positive daughter to primary vertex
+  double            fMinDcaDaughterNegToVert; //DCA of negative daughter to primary vertex
   double            fMaxDcaV0Daughters;     //Max DCA of v0 daughters at Decay vertex
   double            fMaxDcaV0;
+  double            fMaxDecayLength;
   
   double            fMaxCosPointingAngle;
   short             fParticleType; //0-lambda

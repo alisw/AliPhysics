@@ -45,6 +45,7 @@
 #pragma link C++ class AliEbyEPidTTask+;
 #pragma link C++ class AliEbyEPidTTaskMC+;
 
+#pragma link C++ class AliAnalysisNetParticleBase+;
 #pragma link C++ class AliAnalysisNetParticleDCA+;
 #pragma link C++ class AliAnalysisNetParticleDistribution+;
 #pragma link C++ class AliAnalysisNetParticleEffCont+;

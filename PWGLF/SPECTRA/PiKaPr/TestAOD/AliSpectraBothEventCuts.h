@@ -19,10 +19,21 @@ class AliSpectraBothTrackCuts;
 #include "TH1I.h"
 #include "TNamed.h"
 #include "AliSpectraBothTrackCuts.h"
+#include "AliAnalysisUtils.h"	
+
 class AliSpectraBothEventCuts : public TNamed
 {
  public:
-  enum {  kProcessedEvents = 0,kPhysSelEvents,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kQVector,kTPCasPV,kZeroCont,kNVtxCuts};
+  enum {  kProcessedEvents = 0, // all events 
+kPhysSelEvents, // phys selected and not pile-up
+kAcceptedEvents, // events passing all cuts  
+kGoodVtx,// events with good veretx and   
+kVtxCentral, 
+kVtxNoEvent, 
+kQVector,
+kTPCasPV,
+kZeroCont,
+kNVtxCuts};
 enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};	
 
   // Constructors
@@ -30,7 +41,7 @@ enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), 
 fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),
-fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),fHistoCentrality(0),fHistoMultiplicty(0)
+fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0)
 
 {}
   AliSpectraBothEventCuts(const char *name);
@@ -69,6 +80,8 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCu
   void SetMaxChi2perNDFforVertex(Float_t cut) { fMaxChi2perNDFforVertex=cut;}
   void SetRunNumberRange(Int_t min,Int_t max);	
   void SetEtaRangeforMultiplictyCut(Float_t eta) {fetarangeofmultiplicitycut=eta;}
+  void  SetAnalysisUtils(AliAnalysisUtils* inAnalysisUtils){fAnalysisUtils=inAnalysisUtils;}
+  
   UInt_t GetTrackType()  const    { return fTrackBits;}
   TH1I * GetHistoCuts()         {  return fHistoCuts; }
   TH1F * GetHistoVtxBefSel()         {  return fHistoVtxBefSel; }
@@ -100,7 +113,7 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCu
   Float_t  GetMultiplicityCutMin()  const {  return fMultiplicityCutMin; }
   Float_t  GetMultiplicityCutMax()  const {  return fMultiplicityCutMax; }
   Float_t GetMaxChi2perNDFforVertex() const {return fMaxChi2perNDFforVertex;}
-  
+   AliAnalysisUtils* GetAnalysisUtils() const {return fAnalysisUtils; }
 
 
   void InitHisto();	
@@ -141,7 +154,7 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCu
   Float_t	  fMaxChi2perNDFforVertex; // maximum value of Chi2perNDF of vertex
   Int_t           fMinRun;                //minmum run number 			 
   Int_t 	  fMaxRun;		  //maximum run number 	 
-  Float_t         fetarangeofmultiplicitycut; // eta range fot multipilicty cut 
+  Float_t         fetarangeofmultiplicitycut; // eta range fot multipilicty cut 	
   TH1I            *fHistoCuts;        // Cuts statistics
   TH1F            *fHistoVtxBefSel;        // Vtx distr before event selection 	
   TH1F            *fHistoVtxAftSel;        // Vtx distr after event selection
@@ -158,14 +171,13 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCu
   TH1F            *fHistoRunNumbers;   // histogram of numbers of events per run
   TH2F 		  *fHistoCentrality; // centrality histogram
   TH2F 		  *fHistoMultiplicty; // multiplicty histogram
-	 	  		
-
+  AliAnalysisUtils *fAnalysisUtils;// Analysis Utils which have pile-up cut
 
 
   AliSpectraBothEventCuts(const AliSpectraBothEventCuts&);
   AliSpectraBothEventCuts& operator=(const AliSpectraBothEventCuts&);
   
-  ClassDef(AliSpectraBothEventCuts, 9);
+  ClassDef(AliSpectraBothEventCuts, 10);
   
 };
 #endif

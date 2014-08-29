@@ -1,8 +1,6 @@
 #ifndef ALIANALYSISTASKSAJF_H
 #define ALIANALYSISTASKSAJF_H
 
-// $Id$
-
 class TH2;
 class THnSparse;
 
@@ -31,30 +29,30 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
   Int_t                       fHistoType;                      // histogram type (0=TH2, 1=THnSparse)
 
+  TH2                       **fHistTracksJetPt;             //!Track pt vs. jet pt
+  TH2                       **fHistClustersJetPt;           //!Cluster pt vs. jet pt
+  TH2                       **fHistTracksPtDist;            //!Track pt vs. distance form jet axis
+  TH2                       **fHistClustersPtDist;          //!Cluster pt vs. distance form jet axis
+
   // Inclusive jets histograms
-  THnSparse                  *fHistJetObservables;             //!Jet-wise observables
+  THnSparse                  *fHistJetObservables;          //!Jet observables
 
   // TH2/TH3 versions
-  TH3                        *fHistJetPtEtaPhi[4];             //!Jet Pt vs. Eta vs. Phi
-  TH2                        *fHistJetPtArea[4];               //!Jet Pt vs. Area
-  TH2                        *fHistJetPtEP[4];                 //!Jet Pt vs. event plane
-  TH2                        *fHistJetPtNEF[4];                //!Jet Pt vs. neutral energy fraction
-  TH2                        *fHistJetPtZ[4];                  //!Jet Pt vs. z
-  TH2                        *fHistJetPtLeadingPartPt[4];      //!Jet Pt vs. leading particle pt
-  TH3                        *fHistJetCorrPtEtaPhi[4];         //!Jet corrPt vs. Eta vs. Phi
-  TH2                        *fHistJetCorrPtArea[4];           //!Jet corrPt vs. Area
-  TH2                        *fHistJetCorrPtEP[4];             //!Jet corrPt vs. event plane
-  TH2                        *fHistJetCorrPtNEF[4];            //!Jet corrPt vs. neutral energy fraction
-  TH2                        *fHistJetCorrPtZ[4];              //!Jet corrPt vs. z
-  TH2                        *fHistJetCorrPtLeadingPartPt[4];  //!Jet corrPt vs. leading particle pt
-  TH2                        *fHistJetPtCorrPt[4];             //!Jet Pt vs. corrPt
-  TH2                        *fHistJetPtMCPt[4];               //!Jet Pt vs. MCPt
-  TH2                        *fHistJetMCPtCorrPt[4];           //!Jet MCPt vs. corrPt
-
-  TH2                        *fHistTracksJetPt[4];             //!Track pt vs. jet pt
-  TH2                        *fHistClustersJetPt[4];           //!Cluster pt vs. jet pt
-  TH2                        *fHistTracksPtDist[4];            //!Track pt vs. distance form jet axis
-  TH2                        *fHistClustersPtDist[4];          //!Cluster pt vs. distance form jet axis
+  TH3                       **fHistJetPtEtaPhi;             //!Jet Pt vs. Eta vs. Phi
+  TH2                       **fHistJetPtArea;               //!Jet Pt vs. Area
+  TH2                       **fHistJetPtEP;                 //!Jet Pt vs. event plane
+  TH2                       **fHistJetPtNEF;                //!Jet Pt vs. neutral energy fraction
+  TH2                       **fHistJetPtZ;                  //!Jet Pt vs. z
+  TH2                       **fHistJetPtLeadingPartPt;      //!Jet Pt vs. leading particle pt
+  TH3                       **fHistJetCorrPtEtaPhi;         //!Jet corrPt vs. Eta vs. Phi
+  TH2                       **fHistJetCorrPtArea;           //!Jet corrPt vs. Area
+  TH2                       **fHistJetCorrPtEP;             //!Jet corrPt vs. event plane
+  TH2                       **fHistJetCorrPtNEF;            //!Jet corrPt vs. neutral energy fraction
+  TH2                       **fHistJetCorrPtZ;              //!Jet corrPt vs. z
+  TH2                       **fHistJetCorrPtLeadingPartPt;  //!Jet corrPt vs. leading particle pt
+  TH2                       **fHistJetPtCorrPt;             //!Jet Pt vs. corrPt
+  TH2                       **fHistJetPtMCPt;               //!Jet Pt vs. MCPt
+  TH2                       **fHistJetMCPtCorrPt;           //!Jet MCPt vs. corrPt
 
  private:
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented

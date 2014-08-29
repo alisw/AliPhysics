@@ -26,7 +26,9 @@ class AliAnalysisTaskPhiEffMc : public AliAnalysisTaskSE
     fOutput(0x0),
     fHelperPID(0x0),
     fTrackCuts(0x0),
-    fEventCuts(0x0)
+    fEventCuts(0x0),
+    fPtCut(0.),
+    fDoPID(kTRUE)
       {}
   AliAnalysisTaskPhiEffMc(const char *name);
   virtual ~AliAnalysisTaskPhiEffMc() {}

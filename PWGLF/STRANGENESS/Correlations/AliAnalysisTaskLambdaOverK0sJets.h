@@ -102,7 +102,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   void SetCtau(Float_t minCtau = 0., Float_t maxCtau = 3.) {fMinCtau=minCtau;fMaxCtau=maxCtau;} 
 
   // Setting variables for splitting cut
-  void SetTPCRadius(Float_t tpcRadius=125.) {fTPCRadius=tpcRadius;}                    
+  void SetTPCRadius(Float_t tpcRadius=125.) {fTPCRadius=tpcRadius;}    
+  void SetFracSharedTPCcls(Float_t fracSharedTPCcls=0.4) {fFracTPCcls=fracSharedTPCcls;}                     
   void SetDiffSharedTPCcls(Float_t diffSharedTPCcls=0.06) {fDiffTrigDaugFracTPCSharedCls=diffSharedTPCcls;}
 
   // Getters
@@ -169,9 +170,11 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Float_t fTPCRadius;                    // Radial position of TPC to obtain the separation between the trigger particle and the daughter particle
   Float_t fTrigSftR125[3];               // Shifted position of the daughter track to the Primary verterx
   Float_t fDaugSftR125[3];               // Shifted position of the trigger track to the Primary verterx
-  //Float_t fTriggerFracTPCSharedCls;      // Trigger particle: fraction of shared clusters to allow
-  //Float_t fDaugFracTPCSharedCls;         // Daughter track: fraction of shared clusters to allow
+  //Float_t fTriggerFracTPCSharedCls;    // Trigger particle: fraction of shared clusters to allow
+  //Float_t fDaugFracTPCSharedCls;       // Daughter track: fraction of shared clusters to allow
+  Float_t fFracTPCcls;                   // Threshold for the fraction of TPC shared clusters for single track
   Float_t fDiffTrigDaugFracTPCSharedCls; // Allowed dispertion in the fraction of TPC shared clusters between trigger particle and the daughter track
+
 
   TList*  fOutput;                       //! List of histograms for main analysis
   TList*  fOutputQA;                     //! List of histograms for Quality Assurance
@@ -251,9 +254,15 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fK0sAssocMassPtDCAPVEmbeded[kNCent];        //! K0s Assoc: mass vs pt vs dca to prim. vtx  (embeded particles)
   THnSparse*  fK0sAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! K0s Assoc: mass vs pt vs num. o ftpc clusters (embeded particles)
 
-  TH3F*   fK0sMCResEta;                  //! K0s Assoc: eta resolution
-  TH3F*   fK0sMCResPhi;                  //! K0s Assoc: phi resolution
-
+  TH3F*   fK0sMCResEta;                 //! K0s Assoc: eta resolution
+  TH3F*   fK0sMCResPhi;                 //! K0s Assoc: phi resolution
+  TH3F*   fK0sMCResPt;                  //! K0s Assoc: pt resolution
+  TH3F*   fK0sPosMCResEta;              //! K0s Pos. Daughter: eta resolution
+  TH3F*   fK0sPosMCResPhi;              //! K0s Pos. Daughter: phi resolution
+  TH3F*   fK0sPosMCResPt;               //! K0s Pos. Daughter: pt resolution
+  TH3F*   fK0sNegMCResEta;              //! K0s Neg. Daughter: eta resolution
+  TH3F*   fK0sNegMCResPhi;              //! K0s Neg. Daughter: phi resolution
+  TH3F*   fK0sNegMCResPt;               //! K0s Neg. Daughter: pt resolution
 
   //           Lambda            //
   TH1F*   fLambdaMCPt;                        //! Lambda MC: pt
@@ -286,8 +295,15 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fLambdaAssocMassPtDCAPVEmbeded[kNCent];        //! Lambda Assoc: mass vs pt vs dca to prim vtx  (embeded particles)
   THnSparse*  fLambdaAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! Lambda Assoc: mass vs pt vs num. of tpc clusters  (embeded particles)
 
-  TH3F*   fLambdaMCResEta;               //! Lambda Assoc: eta resolution
-  TH3F*   fLambdaMCResPhi;               //! Lambda Assoc: phi resolution
+  TH3F*   fLambdaMCResEta;                 //! Lambda Assoc: eta resolution
+  TH3F*   fLambdaMCResPhi;                 //! Lambda Assoc: phi resolution
+  TH3F*   fLambdaMCResPt;                  //! Lambda Assoc: pt resolution
+  TH3F*   fLambdaPosMCResEta;              //! Lambda Pos. Daughter: eta resolution
+  TH3F*   fLambdaPosMCResPhi;              //! Lambda Pos. Daughter: phi resolution
+  TH3F*   fLambdaPosMCResPt;               //! Lambda Pos. Daughter: pt resolution
+  TH3F*   fLambdaNegMCResEta;              //! Lambda Neg. Daughter: eta resolution
+  TH3F*   fLambdaNegMCResPhi;              //! Lambda Neg. Daughter: phi resolution
+  TH3F*   fLambdaNegMCResPt;               //! Lambda Neg. Daughter: pt resolution
 
   //           AntiLambda            //
   TH1F*   fAntiLambdaMCPt;                  //! AntiLambda MC: pt
@@ -320,16 +336,22 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fAntiLambdaAssocMassPtDCAPVEmbeded[kNCent];        //! AntiLambda Assoc: mass vs pt vs dca to prim. vtx  (embeded particles)
   THnSparse*  fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! AntiLambda Assoc: mass vs pt vs num. of tpc clusters  (embeded particles)
 
-  TH3F*   fAntiLambdaMCResEta;             //! AntiLambda Assoc: eta resolution
-  TH3F*   fAntiLambdaMCResPhi;             //! AntiLambda Assoc: phi resolution
+  TH3F*   fAntiLambdaMCResEta;              //! AntiLambda Assoc: eta resolution
+  TH3F*   fAntiLambdaMCResPhi;              //! AntiLambda Assoc: phi resolution
+  TH3F*   fAntiLambdaMCResPt;               //! AntiLambda Assoc: pt resolution
+  TH3F*   fAntiLambdaPosMCResEta;           //! AntiLambda Pos. Daughter: eta resolution
+  TH3F*   fAntiLambdaPosMCResPhi;           //! AntiLambda Pos. Daughter: phi resolution
+  TH3F*   fAntiLambdaPosMCResPt;            //! AntiLambda Pos. Daughter: pt resolution
+  TH3F*   fAntiLambdaNegMCResEta;           //! AntiLambda Neg. Daughter: eta resolution
+  TH3F*   fAntiLambdaNegMCResPhi;           //! AntiLambda Neg. Daughter: phi resolution
+  TH3F*   fAntiLambdaNegMCResPt;            //! AntiLambda Neg. Daughter: pt resolution
+
 
 
   /// ====== Histograms for Correlations ====== ///
 
   TH3F*   fHistArmenterosPodolanski;     //! Armenteros-Podolanski plot inside 3 sigma of the signal
   TH3F*   fHistArmPodBckg;               //! Armenteros-Podolanski plot outside 3 sigma of the signal      
-
-
 
   //           K0s            //
   TH3F*   fK0sMass;                      //! Mass for K0s
@@ -339,10 +361,12 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fK0sMassPtPhi;                 //! K0s: mass vs pt vs phi
 
   TH2F*   fK0sDaughtersPt;                       //! K0s: pt of daughters
-  THnSparse* fK0sPosDaugdPhiSdEtaS[kNCent];      //! Positive daughter: delta(phi)* delta(eta)*    
-  THnSparse* fK0sNegDaugdPhiSdEtaS[kNCent];      //! Negative daughter: delta(phi)* delta(eta)* 
-  THnSparse* fK0sPosDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
-  THnSparse* fK0sNegDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fK0sPosDaugdPhiSdEtaS[kNCent];      //! K0s: Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fK0sNegDaugdPhiSdEtaS[kNCent];      //! K0s: Negative daughter: delta(phi)* delta(eta)* 
+  THnSparse* fK0sPosDaugSplCheckCovMat[kNCent];  //! K0s: Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fK0sNegDaugSplCheckCovMat[kNCent];  //! K0s: Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fK0sPosMCResdEtaSdPhiS[kNCent];     //! K0s: Positive daughter: resolution for  delta(phi)* delta(eta)*
+  THnSparse* fK0sNegMCResdEtaSdPhiS[kNCent];     //! K0s: Negative daughter: resolution for  delta(phi)* delta(eta)* 
   TH3F*   fK0sDCADaugToPrimVtx;                  //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fK0sSpatialRes;                        //! K0s: Spatial resolution  
    
@@ -369,10 +393,12 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaMassPtPhi;              //! Lambda: mass vs pt vs phi 
 
   TH2F*   fLambdaDaughtersPt;                       //! Lambda: pt of daughters
-  THnSparse* fLambdaPosDaugdPhiSdEtaS[kNCent];      //! Positive daughter: delta(phi)* delta(eta)*    
-  THnSparse* fLambdaNegDaugdPhiSdEtaS[kNCent];      //! Negative daughter: delta(phi)* delta(eta)* 
-  THnSparse* fLambdaPosDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
-  THnSparse* fLambdaNegDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fLambdaPosDaugdPhiSdEtaS[kNCent];      //! Lambda:Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fLambdaNegDaugdPhiSdEtaS[kNCent];      //! Lambda: Negative daughter: delta(phi)* delta(eta)* 
+  THnSparse* fLambdaPosDaugSplCheckCovMat[kNCent];  //! Lambda: Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fLambdaNegDaugSplCheckCovMat[kNCent];  //! Lambda: Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fLambdaPosMCResdEtaSdPhiS[kNCent];     //! Lambda: Positive daughter: resolution for  delta(phi)* delta(eta)*
+  THnSparse* fLambdaNegMCResdEtaSdPhiS[kNCent];     //! Lambda: Negative daughter: resolution for  delta(phi)* delta(eta)* 
   TH3F*   fLambdaDCADaugToPrimVtx;                  //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fLambdaSpatialRes;                        //! Lambda: Spatial resolution  
 
@@ -400,10 +426,12 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaMassPtPhi;                //! Lambda: mass vs phi 
 
   TH2F*   fAntiLambdaDaughtersPt;                       //! AntiLambda: pt of daughters
-  THnSparse* fAntiLambdaPosDaugdPhiSdEtaS[kNCent];      //! Positive daughter: delta(phi)* delta(eta)*    
-  THnSparse* fAntiLambdaNegDaugdPhiSdEtaS[kNCent];      //! Negative daughter: delta(phi)* delta(eta)* 
-  THnSparse* fAntiLambdaPosDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
-  THnSparse* fAntiLambdaNegDaugSplCheckCovMat[kNCent];  //! Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fAntiLambdaPosDaugdPhiSdEtaS[kNCent];      //! AntiLambda: Positive daughter: delta(phi)* delta(eta)*    
+  THnSparse* fAntiLambdaNegDaugdPhiSdEtaS[kNCent];      //! AntiLambda: Negative daughter: delta(phi)* delta(eta)* 
+  THnSparse* fAntiLambdaPosDaugSplCheckCovMat[kNCent];  //! AntiLambda: Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fAntiLambdaNegDaugSplCheckCovMat[kNCent];  //! AntiLambda: Check Covariance Matrix elemenets between trigger trcak and daughter track
+  THnSparse* fAntiLambdaPosMCResdEtaSdPhiS[kNCent];     //! AntiLambda: Positive daughter: resolution for  delta(phi)* delta(eta)*
+  THnSparse* fAntiLambdaNegMCResdEtaSdPhiS[kNCent];     //! AntiLambda: Negative daughter: resolution for  delta(phi)* delta(eta)* 
   TH3F*   fAntiLambdaDCADaugToPrimVtx;                  //! AntiLambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fAntiLambdaSpatialRes;                        //! AntiLambda: Spatial resolution  
 

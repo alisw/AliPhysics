@@ -753,7 +753,11 @@ AliAnaElectron* ConfigureElectronAnalysis()
   
   AliAnaElectron *ana = new AliAnaElectron();
   ana->SetDebug(kDebug); //10 for lots of messages
-    
+  
+  ana->FillAODWithElectrons();
+  //ana->FillAODWithHadrons();
+  //ana->FillAODWithAny();
+  
   if(kCalorimeter == "PHOS")
   {
     ana->SetNCellCut(2);// At least 2 cells
@@ -791,8 +795,6 @@ AliAnaElectron* ConfigureElectronAnalysis()
   ana->SwitchOffFillShowerShapeHistograms();  
   ana->SwitchOffFillWeightHistograms()  ;
   ana->SwitchOffFiducialCut();
-  
-  //ana->FillAODWithHadrons();
   
   if(!kData.Contains("delta")) 
   {
@@ -1034,25 +1036,47 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   
   ana->SetAnalysisType(analysis);
   TString opt = "";
-  if(analysis==AliAnaPi0EbE::kIMCaloTracks) opt = "Conv";
-  if(analysis==AliAnaPi0EbE::kSSCalo)       opt = "SS";
+  if(analysis == AliAnaPi0EbE::kIMCaloTracks) opt = "Conv";
+  if(analysis == AliAnaPi0EbE::kSSCalo)       opt = "SS";
   
-  if(kCollisions=="pp") ana->SetMinPt(0.5);
-  else                  ana->SetMinPt(1.0);
-  
-  if(kCalorimeter=="EMCAL" && !kSimulation) ana->SetPairTimeCut(100);
-  
-  ana->SetMinDistanceToBadChannel(2, 4, 6);
-  ana->SwitchOnSplitClusterDistToBad();
+  if(analysis == AliAnaPi0EbE::kIMCalo && kCalorimeter=="EMCAL" && !kSimulation) ana->SetPairTimeCut(100);
+  if(analysis == AliAnaPi0EbE::kIMCaloTracks) ana->SetInputAODGammaConvName("PhotonsCTS");
 
+  // Common settings for all 3 type of analysis
+  
   ana->SwitchOnSelectedClusterHistoFill();
 
   ana->SetCalorimeter(kCalorimeter);
-  ana->SetTimeCut(-1e10,1e10); // Open time cut
   
-  // Input / output delta AOD settings
+  //Set Histograms name tag, bins and ranges
+  ana->AddToHistogramsName(Form("Ana%s%sEbE_TM%d_",particle.Data(),opt.Data(),kTM));
   
-  ana->SetInputAODName(Form("Photon%s",kName.Data()));
+  // Specific settings for different type of analysis
+  
+  ana->SwitchOffFillWeightHistograms();
+  if(!kSimulation) ana->SwitchOnFillPileUpHistograms();
+  
+  if(kTM)
+  {
+    //printf("--->>>REMOVE MATCHED Pi0\n");
+    ana->SwitchOnTrackMatchRejection() ;
+    ana->SwitchOffTMHistoFill() ;
+  }
+  else
+  {
+    //printf("---->>>ACCEPT MATCHED Pi0\n");
+    ana->SwitchOffTrackMatchRejection() ;
+    ana->SwitchOnTMHistoFill() ;
+  }
+  
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  //ana->SwitchOnFillEMCALBCHistograms();
+  
+  if(kPrint) ana->Print("");
+  
+  ConfigureMC(ana);
+
   if(!kInputDataType.Contains("delta"))
   {
     ana->SetOutputAODName(Form("%s%s%s",particle.Data(), opt.Data(), kName.Data()));
@@ -1062,15 +1086,12 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   else
     ana->SetInputAODName(Form("%s%s%s",particle.Data(),opt.Data(),kName.Data()));
   
-  
-  if(analysis == AliAnaPi0EbE::kIMCaloTracks) ana->SetInputAODGammaConvName("PhotonsCTS");
-  
-  //Set Histograms name tag, bins and ranges
-  
-  ana->AddToHistogramsName(Form("Ana%s%sEbE_TM%d_",particle.Data(),opt.Data(),kTM));
-  
   if(analysis!=AliAnaPi0EbE::kSSCalo)
   {
+    // Input / output delta AOD settings
+    
+    ana->SetInputAODName(Form("Photon%s",kName.Data()));
+    
     AliNeutralMesonSelection *nms = ana->GetNeutralMesonSelection();
     nms->SetParticle(particle);
     
@@ -1099,6 +1120,11 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
     ana->SetNLMMinEnergy(1, 6);
     ana->SetNLMMinEnergy(2, 6);
     
+    ana->SetMinDistanceToBadChannel(2, 4, 6); // only use the first one
+    ana->SwitchOnSplitClusterDistToBad();
+    
+    ana->SetTimeCut(-1e10,1e10); // Open time cut
+
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     ana->SetNLMCut(1, 2) ;
     
@@ -1153,30 +1179,6 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
       caloPID->SetPi0MassShiftHighECell(0.005);
     }
   }
-  
-  ana->SwitchOffFillWeightHistograms();
-  if(!kSimulation) ana->SwitchOnFillPileUpHistograms();
-  
-  if(kTM)
-  {
-    //printf("--->>>REMOVE MATCHED Pi0\n");
-    ana->SwitchOnTrackMatchRejection() ;
-    ana->SwitchOffTMHistoFill() ;
-  }
-  else
-  {
-    //printf("---->>>ACCEPT MATCHED Pi0\n");
-    ana->SwitchOffTrackMatchRejection() ;
-    ana->SwitchOnTMHistoFill() ;
-  }
-  
-  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
-  
-  //ana->SwitchOnFillEMCALBCHistograms();
-  
-  if(kPrint) ana->Print("");
-  
-  ConfigureMC(ana);
   
   return  ana;
   
@@ -1290,9 +1292,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
 
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
   
-  ana->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
-  ana->SetHistoPtSumRangeAndNBins   (0, 100, 250);
-  
   if(particle=="Hadron"  || particle.Contains("CTS"))
   {
     ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
@@ -1321,12 +1320,21 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   AliAnaParticleHadronCorrelation *ana = new AliAnaParticleHadronCorrelation();
   ana->SetDebug(kDebug);
   
-  ana->SetMinimumTriggerPt(5);
-  ana->SetAssociatedPtRange(0.2,100); 
-  ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
+  ana->SwitchOnAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
+  ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
   
+  //ana->SwitchOnLeadHadronSelection();
+  //ana->SetLeadHadronPhiCut(TMath::DegToRad()*100., TMath::DegToRad()*260.);
+  //ana->SetLeadHadronPtCut(0.5, 100);
+  
+  ana->SetTriggerPtRange(5,100);
+  ana->SetAssociatedPtRange(0.2,100);
+  //ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
+  ana->SetDeltaPhiCutRange  (TMath::DegToRad()*120.,TMath::DegToRad()*240.);
+  ana->SetUeDeltaPhiCutRange(TMath::DegToRad()*60. ,TMath::DegToRad()*120.);
+  ana->SwitchOnFillEtaGapHistograms();
+
   ana->SetNAssocPtBins(9);
-  
   ana->SetAssocPtBinLimit(0, 0.2) ;
   ana->SetAssocPtBinLimit(1, 0.5) ;
   ana->SetAssocPtBinLimit(2, 1)   ;
@@ -1337,7 +1345,8 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SetAssocPtBinLimit(7, 10)  ;
   ana->SetAssocPtBinLimit(8, 30)  ;
   ana->SetAssocPtBinLimit(9, 200) ;
-  
+  //ana->SwitchOnFillPtImbalancePerPtABinHistograms();
+
   ana->SelectIsolated(bIsolated); // do correlation with isolated photons
   
   if(bIsolated)
@@ -1373,9 +1382,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     
   }  
   
-  ana->SwitchOnAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
-  ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
-  
   // Mixing with own pool
   if(kMix)
   {
@@ -1386,17 +1392,19 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     ana->SwitchOffOwnMix();
   
   ana->SetNZvertBin(20);
-  
+  ana->SwitchOffCorrelationVzBin() ;
+  ana->SwitchOffFillHighMultiplicityHistograms();
+
   if(kCollisions=="pp")
   {
     ana->SetNMaxEvMix(100);    
     ana->SwitchOnTrackMultBins();
-    ana->SetNCentrBin(9); // Fixed track mult values
+    ana->SetNTrackMultBin(10);  // same as SetNCentrBin(10);
     ana->SetNRPBin(1);
   }
   else 
   {
-    ana->SetNMaxEvMix(10);    
+    ana->SetNMaxEvMix(10);
     ana->SwitchOffTrackMultBins(); // centrality bins
     ana->SetNCentrBin(3); 
     ana->SetNRPBin(3);
@@ -1465,10 +1473,8 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOffFillBradHistograms();
   
   // Underlying event
-  ana->SwitchOffEventSelection();
   ana->SwitchOnSeveralUECalculation();
   ana->SetUeDeltaPhiCutRange(TMath::Pi()/3, 2*TMath::Pi()/3);
-  ana->SetMultiBin(1);
   
   //Set Histograms name tag, bins and ranges
   
@@ -1529,6 +1535,43 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   ConfigureMC(ana);
   
   if(kPrint) ana->Print("");	
+  
+  return ana;
+  
+}
+
+//________________________________________________________________
+AliAnaGeneratorKine* ConfigureGenKineAnalysis()
+{
+  // Analysis for parton, jets correlation with photon and pi0
+  
+  AliAnaGeneratorKine *ana = new AliAnaGeneratorKine();
+  ana->SetDebug(kDebug); //10 for lots of messages
+  
+  // Trigger detector, acceptance and pT cut
+  ana->SetTriggerDetector("EMCAL");
+  ana->SetMinPt(10); // Trigger photon, pi0 minimum pT
+  ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.6, 85, 175);
+  
+  // Particles associated to trigger or isolation cone acceptance and pT cut
+  ana->SetCalorimeter("EMCAL");
+  ana->SetMinChargedPt(0.2);
+  ana->SetMinNeutralPt(0.3);
+  ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.65, 81, 179);
+  ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.9, 0, 360);
+  
+  // Isolation paramters
+  AliIsolationCut * ic =  ana->GetIsolationCut();
+  ic->SetDebug(kDebug);
+  ic->SetPtThreshold(0.5);
+  ic->SetConeSize(0.5);
+  ic->SetSumPtThreshold(1.0) ;
+  ic->SetICMethod(AliIsolationCut::kPtThresIC); // kSumPtIC
+  
+  ana->AddToHistogramsName("AnaGenKine_");
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  if(kPrint) ana->Print("");
   
   return ana;
   
@@ -1596,19 +1639,38 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,  2.5 ,500);
-  histoRanges->SetHistodEdxRangeAndNBins  (0.,250.0,500);
+  histoRanges->SetHistoPOverERangeAndNBins(0,2.,200);
+  histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
   histoRanges->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-  histoRanges->SetHistoRatioRangeAndNBins(0.,2.,100);
   histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,500);
-  histoRanges->SetHistoNClusterCellRangeAndNBins(0,50,50);
   histoRanges->SetHistoZRangeAndNBins(-400,400,200);
   histoRanges->SetHistoRRangeAndNBins(400,450,25);
   histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,500);
   histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
-  histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
+  
+  // QA, correlation
+  if(kCollisions=="PbPb")
+  {
+    histoRanges->SetHistoNClusterCellRangeAndNBins(0,100,100);
+    histoRanges->SetHistoNClustersRangeAndNBins(0,500,50);
+    histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,2000,200);
+  }
+  else
+  {
+    histoRanges->SetHistoNClusterCellRangeAndNBins(0,50,50);
+    histoRanges->SetHistoNClustersRangeAndNBins(0,50,50);
+    histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,200,200);
+  }
+  
+  // xE, zT
+  histoRanges->SetHistoRatioRangeAndNBins(0.,2.,200);
+  histoRanges->SetHistoHBPRangeAndNBins  (0.,10.,200);
+  
+  // Isolation
+  histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
+  histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
   
 }
 

@@ -62,11 +62,15 @@ fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(kFALSE),    fFillOnlySimpleSSHisto(1),
 fFillPileUpHistograms(0),
 fNOriginHistograms(8),        fNPrimaryHistograms(4),
-
 // Histograms
-fhNCellsE(0),                 fhCellsE(0),   // Control histograms
-fhMaxCellDiffClusterE(0),     fhTimePt(0),   // Control histograms
+
+// Control histograms
+fhNCellsE(0),                 fhCellsE(0),
+fhMaxCellDiffClusterE(0),     fhTimePt(0),                  fhEtaPhi(0),
+
 fhEPhoton(0),                 fhPtPhoton(0),
+fhPhiPhoton(0),               fhEtaPhoton(0),
+fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
 fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
 
 // Shower shape histograms
@@ -367,6 +371,12 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if(GetReader()->ReadStack())
     {
       primStack = stack->Particle(i) ;
+      if(!primStack)
+      {
+        printf("AliAnaPhoton::FillAcceptanceHistograms() - ESD primaries pointer not available!!\n");
+        continue;
+      }
+      
       pdg    = primStack->GetPdgCode();
       status = primStack->GetStatusCode();
       
@@ -383,6 +393,12 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     else
     {
       primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      if(!primAOD)
+      {
+        printf("AliAnaPhoton::FillAcceptanceHistograms() - AOD primaries pointer not available!!\n");
+        continue;
+      }
+      
       pdg    = primAOD->GetPdgCode();
       status = primAOD->GetStatus();
       
@@ -409,13 +425,13 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if(photonPhi < 0) photonPhi+=TMath::TwoPi();
     
     // Check if photons hit desired acceptance
-    inacceptance = kFALSE;
+    inacceptance = kTRUE;
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-    if( GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter)) inacceptance = kTRUE ;
+    if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter)) inacceptance = kFALSE ;
     
     // Check if photons hit the Calorimeter acceptance
-    if(IsRealCaloAcceptanceOn() && inacceptance) // defined on base class
+    if(IsRealCaloAcceptanceOn()) // defined on base class
     {
       if(GetReader()->ReadStack()          &&
          !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fCalorimeter, primStack)) inacceptance = kFALSE ;
@@ -478,7 +494,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 
     if(!takeIt) continue ;
       
-    //Fill histograms
+    //Fill histograms for all photons
     fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY) ;
     if(TMath::Abs(photonY) < 1.0)
     {
@@ -487,6 +503,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi) ;
       fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta) ;
     }
+    
     if(inacceptance)
     {
       fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE ) ;
@@ -496,6 +513,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       fhYPrimMCAcc  [kmcPPhoton]->Fill(photonE , photonY) ;
     }//Accepted
     
+    //Fill histograms for photons origin
     if(mcIndex < fNPrimaryHistograms)
     {
       fhYPrimMC[mcIndex]->Fill(photonPt, photonY) ;

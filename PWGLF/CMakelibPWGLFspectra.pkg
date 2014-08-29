@@ -44,6 +44,7 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
 	SPECTRA/ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
+	SPECTRA/PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
 	SPECTRA/PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
 	SPECTRA/PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
 	SPECTRA/PiKaPr/TOF/pp7/TOFSpectrappAnalysis.cxx

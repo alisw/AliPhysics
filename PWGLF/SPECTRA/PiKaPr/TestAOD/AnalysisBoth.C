@@ -1029,6 +1029,9 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	 	 fGFKPosMatching = TOFmatchMC_geantflukaCorrection(3,kPositive);
 	 	 TF1 *fGFKNegMatching;
 	 	 fGFKNegMatching = TOFmatchMC_geantflukaCorrection(3,kNegative);
+		 if(tcutsdata->GetUseTypeDependedTOFCut())
+			tofpt=tcutsdata->GetPtTOFMatchingKaon();
+
 	 	 for(Int_t binK=0;binK<=Spectra[1]->GetNbinsX();binK++)
 	  	{
 			if(Spectra[1]->GetBinCenter(binK)<tofpt)
@@ -1098,8 +1101,10 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  fGFpNegMatching = TOFmatchMC_geantflukaCorrection(4,kNegative);
 	  
 	 
-		Int_t nbins = Spectra[2]->GetNbinsX();
-		
+	   Int_t nbins = Spectra[2]->GetNbinsX();
+	   if(tcutsdata->GetUseTypeDependedTOFCut())
+		tofpt=tcutsdata->GetPtTOFMatchingProton();
+
 		for(Int_t ibin = 0; ibin < nbins; ibin++)
 		{
 			if(Spectra[2]->GetBinCenter(ibin)<tofpt)

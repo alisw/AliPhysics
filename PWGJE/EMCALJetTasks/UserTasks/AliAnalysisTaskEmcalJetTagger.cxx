@@ -52,11 +52,10 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
   fh2PtJet1VsPtJet2(0),
+  fh2PtJet2VsRelPt(0),
   fh3PtJetDEtaDPhiConst(0),
   fh2PtJetDRConst(0),
-  fh3PtJetAreaDRConst(0),
-  fh3PtJet1VsMassJet1MassJet2(0),
-  fh3PtJet2VsMassJet1MassJet2(0)
+  fh3PtJetAreaDRConst(0)
 {
   // Default constructor.
 
@@ -66,8 +65,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fh2PtJet1VsLeadPtAllSel      = new TH2F*[fNcentBins];
   fh2PtJet1VsLeadPtTagged      = new TH2F*[fNcentBins];
   fh2PtJet1VsPtJet2            = new TH2F*[fNcentBins];
-  fh3PtJet1VsMassJet1MassJet2  = new TH3F*[fNcentBins];
-  fh3PtJet2VsMassJet1MassJet2  = new TH3F*[fNcentBins];
+  fh2PtJet2VsRelPt             = new TH2F*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
@@ -76,12 +74,10 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
     fh2PtJet1VsLeadPtAllSel[i]     = 0;
     fh2PtJet1VsLeadPtTagged[i]     = 0;
     fh2PtJet1VsPtJet2[i]           = 0;
-    fh3PtJet1VsMassJet1MassJet2[i] = 0;
-    fh3PtJet2VsMassJet1MassJet2[i] = 0;
+    fh2PtJet2VsRelPt[i]            = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
-  
 }
 
 //________________________________________________________________________
@@ -99,11 +95,10 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
   fh2PtJet1VsPtJet2(0),
+  fh2PtJet2VsRelPt(0),
   fh3PtJetDEtaDPhiConst(0),
   fh2PtJetDRConst(0),
-  fh3PtJetAreaDRConst(0),
-  fh3PtJet1VsMassJet1MassJet2(0),
-  fh3PtJet2VsMassJet1MassJet2(0)
+  fh3PtJetAreaDRConst(0)
 {
   // Standard constructor.
 
@@ -113,8 +108,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fh2PtJet1VsLeadPtAllSel     = new TH2F*[fNcentBins];
   fh2PtJet1VsLeadPtTagged     = new TH2F*[fNcentBins];
   fh2PtJet1VsPtJet2           = new TH2F*[fNcentBins];
-  fh3PtJet1VsMassJet1MassJet2 = new TH3F*[fNcentBins];
-  fh3PtJet2VsMassJet1MassJet2 = new TH3F*[fNcentBins];
+  fh2PtJet2VsRelPt            = new TH2F*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
@@ -123,8 +117,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
     fh2PtJet1VsLeadPtAllSel[i]     = 0;
     fh2PtJet1VsLeadPtTagged[i]     = 0;
     fh2PtJet1VsPtJet2[i]           = 0;
-    fh3PtJet1VsMassJet1MassJet2[i] = 0;
-    fh3PtJet2VsMassJet1MassJet2[i] = 0;
+    fh2PtJet2VsRelPt[i]            = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -151,7 +144,6 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   const Int_t nBinsDEta        = 100;
   const Int_t nBinsDR          = 50;
   const Int_t nBinsFraction    = 101;
-  const Int_t nBinsM           = 150;
 
   const Double_t minPt       = -50.;
   const Double_t maxPt       = 200.;
@@ -163,8 +155,6 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   const Double_t maxDR       =  0.5;
   const Double_t minFraction =  -0.005;
   const Double_t maxFraction =  1.005;
-  const Double_t minM        = -20.;
-  const Double_t maxM        = 130.;
 
   TString histName = "";
   TString histTitle = "";
@@ -200,15 +190,10 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
     fh2PtJet1VsPtJet2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt);
     fOutput->Add(fh2PtJet1VsPtJet2[i]);
 
-    histName = TString::Format("fh3PtJet1VsMassJet1MassJet2_%d",i);
-    histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1};#it{M}_{jet2}",histName.Data());
-    fh3PtJet1VsMassJet1MassJet2[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,nBinsM,minM,maxM);
-    fOutput->Add(fh3PtJet1VsMassJet1MassJet2[i]);
-
-    histName = TString::Format("fh3PtJet2VsMassJet1MassJet2_%d",i);
-    histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1};#it{M}_{jet2}",histName.Data());
-    fh3PtJet2VsMassJet1MassJet2[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,nBinsM,minM,maxM);
-    fOutput->Add(fh3PtJet2VsMassJet1MassJet2[i]);
+    histName = TString::Format("fh2PtJet2VsRelPt_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet2};(#it{p}_{T,jet2}-#it{p}_{T,jet1})/#it{p}_{T,jet1}",histName.Data());
+    fh2PtJet2VsRelPt[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,241,-2.41,2.41);
+    fOutput->Add(fh2PtJet2VsRelPt[i]);
   }
 
   fh3PtJetDEtaDPhiConst = new TH3F("fh3PtJetDEtaDPhiConst","fh3PtJetDEtaDPhiConst;pT;#Delta #eta;#Delta #varphi",nBinsPt,minPt,maxPt,nBinsDEta,-1.,1.,nBinsDPhi,-1.,1.);
@@ -293,6 +278,7 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
 
     fh2PtJet1VsLeadPtTagged[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
     fh2PtJet1VsPtJet2[fCentBin]->Fill(ptJet1,ptJet2);
+    if(ptJet2>0.) fh2PtJet2VsRelPt[fCentBin]->Fill(ptJet2,(ptJet1-ptJet2)/ptJet2);
 
     Double_t dPhi = GetDeltaPhi(jet1->Phi(),jet2->Phi());
     if(dPhi>TMath::Pi())
@@ -302,9 +288,6 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
     
     fh3PtJet1VsDeltaEtaDeltaPhi[fCentBin]->Fill(ptJet1,jet1->Eta()-jet2->Eta(),dPhi);
     fh2PtJet1VsDeltaR[fCentBin]->Fill(ptJet1,GetDeltaR(jet1,jet2));
-    //fill histo with pt jet 1 vs mass jet 1 vs mass jet 2
-    fh3PtJet1VsMassJet1MassJet2[fCentBin]->Fill(ptJet1,jet1->M(),jet2->M());
-    fh3PtJet2VsMassJet1MassJet2[fCentBin]->Fill(ptJet2,jet1->M(),jet2->M());
   }
   return kTRUE;
 }

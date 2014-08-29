@@ -1,5 +1,5 @@
 /***************************************************************************
-  rama.chandra.baral@cern.ch & sarita.sahoo@cern.ch - last modified on 12/06/2014
+  rama.chandra.baral@cern.ch & sarita.sahoo@cern.ch - last modified on 20/08/2014
 
 // *** Configuration script for L*, anti-L*, syst. analysis for pp and p-Pb runs ***
 // 
@@ -51,29 +51,30 @@ Bool_t ConfigLStar
 
 
   //vary track quality cuts for systematic checks
-  if(enableTrkSyst){
+  if(enableTrkSyst) {
     AliRsnCutTrackQuality * trkQualityCut =  new AliRsnCutTrackQuality("QualityCut");
     
-    trkQualityCut->DisableAll();//disable all cuts, filter bit, pT, eta, and DCAxy cuts will be reset later
+    //trkQualityCut->DisableAll();//disable all cuts, filter bit, pT, eta, and DCAxy cuts will be reset later
     trkQualityCut->SetAODTestFilterBit(aodFilterBit);//reset the filter bit cut 
     trkQualityCut->SetCheckOnlyFilterBit(kFALSE);//tells the cut object to check all other cuts individually,
     trkQualityCut->SetDCARPtFormula(DCAxyFormula);
     trkQualityCut->SetDCAZmax(dcazmax);
 
-    if(useCrossedRows) {       // RAMA
+    if(useCrossedRows) {
       trkQualityCut->SetMinNCrossedRowsTPC(minCrossedRows, kTRUE);
       trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(maxClsCrossedRows, kTRUE); }
     else trkQualityCut->SetTPCminNClusters(minNcls);
 
     trkQualityCut->SetTPCmaxChi2(maxX2cls);
     trkQualityCut->SetRejectKinkDaughters(kTRUE);
-    trkQualityCut->SetSPDminNClusters(AliESDtrackCuts::kAny);
-    trkQualityCut->SetITSmaxChi2(36);    // RAMA NOW 
-    //trkQualityCut->SetMaxChi2TPCConstrainedGlobal(36);  // RAMA In the Filterbit
+    //trkQualityCut->SetSPDminNClusters(AliESDtrackCuts::kAny);
+    trkQualityCut->SetSPDminNClusters(1);
+    trkQualityCut->SetITSminNClusters(0);
+    trkQualityCut->SetITSmaxChi2(36);
+    trkQualityCut->SetMaxChi2TPCConstrainedGlobal(36);
     trkQualityCut->AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);//already in defaults 2011
     trkQualityCut->AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);//already in defaults 2011
     trkQualityCut->AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);//already in defaults 2011
-    //trkQualityCut->SetTPCminNClusters(70);
     trkQualityCut->SetPtRange(0.15, 20.0);
     trkQualityCut->SetEtaRange(-0.8, 0.8);
     
@@ -157,7 +158,7 @@ Bool_t ConfigLStar
     out->SetCharge(0, charge1[i]);
     out->SetCharge(1, charge2[i]);
     out->SetMotherPDG(signedPdg);
-    out->SetMotherMass(1.5195);
+    out->SetMotherMass(1.51953);
     out->SetPairCuts(cutsPair);
 
     // axis X: invmass (or resolution)
@@ -196,7 +197,7 @@ Bool_t ConfigLStar
     outm->SetDaughter(0, AliRsnDaughter::kProton);
     outm->SetDaughter(1, AliRsnDaughter::kKaon);
     outm->SetMotherPDG(signedPdg);
-    outm->SetMotherMass(1.5195);
+    outm->SetMotherMass(1.51953);
     // pair cuts
     outm->SetPairCuts(cutsPair);
     // binnings

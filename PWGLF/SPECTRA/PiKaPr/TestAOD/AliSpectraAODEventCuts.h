@@ -156,6 +156,8 @@ class AliSpectraAODEventCuts : public TNamed
   Bool_t CheckSplineArray(TObjArray * splarr);
   TObjArray *GetSplineArrayV0A() { return fSplineArrayV0A; }
   TObjArray *GetSplineArrayV0C() { return fSplineArrayV0C; }
+  
+  Double_t CalculateQVectorMC(Int_t v0side);
 
  private:
   

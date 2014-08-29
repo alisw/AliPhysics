@@ -23,6 +23,8 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles() ;              // default ctor
   virtual ~AliAnaChargedParticles() { ; } // virtual dtor
   
+  void    FillPrimaryHistograms();
+  
   TList * GetCreateOutputObjects();
     
   void    Init();
@@ -38,8 +40,8 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   void    SwitchOnFillPileUpHistograms()     { fFillPileUpHistograms    = kTRUE  ; }
   void    SwitchOffFillPileUpHistograms()    { fFillPileUpHistograms    = kFALSE ; }
   
-  void    SwitchOnFillTrackBCHistograms()    { fFillVertexBC0Histograms = kTRUE  ; }
-  void    SwitchOffFillTrackBCHistograms()   { fFillVertexBC0Histograms = kFALSE ; }
+  void    SwitchOnFillTrackBCHistograms()    { fFillTrackBCHistograms   = kTRUE  ; }
+  void    SwitchOffFillTrackBCHistograms()   { fFillTrackBCHistograms   = kFALSE ; }
 
   void    SwitchOnFillVertexBC0Histograms()  { fFillVertexBC0Histograms = kTRUE  ; }
   void    SwitchOffFillVertexBC0Histograms() { fFillVertexBC0Histograms = kFALSE ; }

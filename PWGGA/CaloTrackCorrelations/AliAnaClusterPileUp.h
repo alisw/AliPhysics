@@ -60,7 +60,6 @@ private:
   
   TH1F * fhPtPileUp[7];                             //! pT distribution of clusters before any selection
   TH1F * fhPtNeutralPileUp[7];                      //! pT distribution of track matched clusters
-  TH2F * fhPtTimePileUp[7];                         //! pT distribution vs time
   TH2F * fhLambda0PileUp[7];                        //! E vs M02 distribution of clusters, before any selection
   TH2F * fhLambda0NeutralPileUp[7];                 //! E vs M02 distribution of clusters, track matched clusters
   TH2F * fhClusterCellTimePileUp[7];                //! E vs Time inside cluster, before any selection, not max cell

@@ -9,7 +9,8 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
 						   Int_t        pSel           = AliVEvent::kAny,
 						   TString      trigClass      = "",
 						   TString      kEmcalTriggers = "",
-						   TString      tag            = "MCMatch")
+						   TString      tag            = "MCMatch",
+						   Bool_t       bCreateTree    = kFALSE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -56,6 +57,9 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
   task->SetCentralityEstimator(CentEst);
   task->SelectCollisionCandidates(pSel);
   task->SetUseAliAnaUtils(kFALSE);
+  task->SetCreateTree(bCreateTree);
+
+  mgr->AddTask(task);
 
   //Connnect input
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
@@ -65,11 +69,10 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   mgr->ConnectOutput(task,1,coutput1);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("%sTree",contName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  mgr->ConnectOutput(task,2,coutput2);
+  if(bCreateTree) {
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("%sTree",contName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+    mgr->ConnectOutput(task,2,coutput2);
+  }
 
   return task;
-
-
-
 }

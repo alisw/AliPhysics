@@ -4,21 +4,17 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class that contains the algorithm for the analysis of particle - hadron correlations
-// Particle (for example direct gamma) must be found in a previous analysis 
-//-- Author: Gustavo Conesa (INFN-LNF)
-
-//  Modified by Yaxian Mao:
-// 1. add the UE subtraction for corrlation study
-// 2. change the correlation variable
-// 3. Only use leading particle(cluster/track) as trigger for correlation (2010/07/02)
-// 4. Make decay photon-hadron correlations where decay contribute pi0 mass (2010/09/09)
-// 5. fill the pout to extract kt at the end, also to study charge asymmetry(2010/10/06) 
-// 6. Add the possibility for event selection analysis based on vertex and multiplicity bins (10/10/2010)
-// 7. change the way of delta phi cut for UE study due to memory issue (reduce histograms)
-// 8. Add the possibility to request the absolute leading particle at the near side or not, set trigger bins, general clean-up (08/2011)
+// Class that contains the algorithm for the analysis of
+// particle - hadron correlations
+// Particle (for example direct gamma) must be found in a previous analysis
+//
+//-- Author: Gustavo Conesa (LNF-INFN) (LPSC-IN2P3-CNRS)
+//           Yaxian Mao (LPSC-IN2P3-CNRS) and (CNWU) first usable implementation.
+//           Xiangrong Zhu (CNWU), implementtion of own mixing.
+//
 
 // --- Analysis system ---
+
 #include "AliAnaCaloTrackCorrBaseClass.h"
 class AliAODPWG4ParticleCorrelation ;
 
@@ -35,51 +31,51 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   TList      * GetCreateOutputObjects();
   
+  void         Init();
+  
   void         InitParameters();
 
   void         FillEventMixPool() ;
-  
-  void         MakeAnalysisFillAOD()  ;
-  
+    
   void         MakeAnalysisFillHistograms() ; 
   
   void         Print(const Option_t * opt) const;
   
   // Main analysis methods
   
-  Bool_t       GetDecayPhotonMomentum(const AliAODPWG4Particle* trigger, TLorentzVector & mom1,TLorentzVector & mom2);
+  Bool_t       FindLeadingOppositeHadronInWindow(AliAODPWG4ParticleCorrelation * particle);
   
-  Bool_t       MakeChargedCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, Bool_t bFillHisto) ;
+  Bool_t       GetDecayPhotonMomentum   (AliAODPWG4Particle* trigger, TLorentzVector & mom1, TLorentzVector & mom2);
   
-  Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, Bool_t bFillHisto) ;
+  void         MakeChargedCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
   
-  void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle) ;
+  void         MakeNeutralCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
   
-  void         MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation *aodParticle) ;
+  void         MakeMCChargedCorrelation (Int_t triggerMCLable, Int_t histoIndex) ;
+  
+  void         MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation * particle) ;
   
   // Filling histogram methods
   
   void         FillChargedAngularCorrelationHistograms  (Float_t ptAssoc,  Float_t ptTrig,      Int_t   assocBin,
-                                                         Float_t phiAssoc, Float_t phiTrig,     Float_t &     deltaPhi,
+                                                         Float_t phiAssoc, Float_t phiTrig,     Float_t deltaPhi,
                                                          Float_t etaAssoc, Float_t etaTrig,  
-                                                         Bool_t  decay,    Float_t hmpidSignal, Int_t outTOF,
-                                                         Int_t nTracks,    Int_t   mcTag);
+                                                         Int_t   decayTag, Float_t hmpidSignal, Int_t outTOF,
+                                                         Int_t   cenbin,   Int_t   mcTag);
   
   void         FillChargedEventMixPool();
   
-  Bool_t       FillChargedMCCorrelationHistograms       (Float_t mcAssocPt,      Float_t mcAssocPhi, Float_t mcAssocEta,
-                                                         Float_t mcTrigPt, Float_t mcTrigPhi,  Float_t mcTrigEta  );
+  Bool_t       FillChargedMCCorrelationHistograms       (Float_t mcAssocPt, Float_t mcAssocPhi, Float_t mcAssocEta,
+                                                         Float_t mcTrigPt,  Float_t mcTrigPhi,  Float_t mcTrigEta, Int_t histoIndex);
 
   
   void         FillChargedMomentumImbalanceHistograms   (Float_t ptTrig,   Float_t ptAssoc, 
-                                                         Float_t xE,       Float_t hbpXE, 
-                                                         Float_t zT,       Float_t hbpZT, 
-                                                         Float_t pout,     Float_t deltaPhi, Int_t   nTracks,  Int_t charge,
-                                                         Int_t   assocBin, Bool_t  decay,
-                                                         Int_t outTOF,    Int_t mcTag );
+                                                         Float_t deltaPhi, Int_t cenbin, Int_t charge,
+                                                         Int_t   assocBin, Int_t decayTag,
+                                                         Int_t   outTOF,   Int_t mcTag );
   
   void         FillChargedUnderlyingEventHistograms     (Float_t ptTrig,   Float_t ptAssoc, 
-                                                         Float_t deltaPhi, Int_t nTracks,    Int_t outTOF);
+                                                         Float_t deltaPhi, Int_t cenbin, Int_t outTOF);
   
   void         FillChargedUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
                                                          Float_t deltaPhi);
@@ -88,25 +84,24 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
                                                          TLorentzVector mom1, TLorentzVector mom2, 
                                                          Bool_t bChargedOrNeutral); 
   
-  
-  void         FillNeutralAngularCorrelationHistograms  (Float_t ptAssoc,  Float_t ptTrig,
-                                                         Float_t phiAssoc, Float_t phiTrig,  Float_t &     deltaPhi,
-                                                         Float_t etaAssoc, Float_t etaTrig);
-  
   void         FillNeutralEventMixPool();
   
   
   void         FillNeutralUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
-                                                         Float_t xE,       Float_t hbpXE, 
                                                          Float_t zT,       Float_t hbpZT, 
                                                          Float_t deltaPhi);  
     
   Int_t        GetMCTagHistogramIndex(Int_t tag);
   
+  Bool_t       IsTriggerTheEventLeadingParticle();
+  
   // Parameter setter and getter
   
-  Float_t      GetMinimumTriggerPt()       const { return fMinTriggerPt          ; }
-  void         SetMinimumTriggerPt(Float_t min)  { fMinTriggerPt = min           ; }
+  Float_t      GetMinimumTriggerPt()       const { return GetMinPt()             ; }
+  Float_t      GetMaximumTriggerPt()       const { return GetMaxPt()             ; }
+  void         SetTriggerPtRange(Float_t min, Float_t max)
+               { SetMinPt(min), SetMaxPt(max)                                    ; }
+  
 
   Float_t      GetMaximumAssociatedPt()    const { return fMaxAssocPt            ; }
   Float_t      GetMinimumAssociatedPt()    const { return fMinAssocPt            ; }
@@ -129,10 +124,13 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SetLeadHadronPtCut(Float_t min, Float_t max)
                { fMaxLeadHadPt  = max ;           fMinLeadHadPt  = min           ; }
   
-  Bool_t       IsLeadHadronCutOn()        const { return fSelectLeadingHadronAngle ; }
+  Bool_t       IsLeadHadronCutOn()        const { return fSelectLeadingHadronAngle   ; }
   void         SwitchOnLeadHadronSelection()    { fSelectLeadingHadronAngle = kTRUE  ; }
   void         SwitchOffLeadHadronSelection()   { fSelectLeadingHadronAngle = kFALSE ; }
   
+  void         SwitchOnFillLeadHadronHistograms() { fFillLeadHadOppositeHisto = kTRUE  ; }
+  void         SwitchOffFillLeadHadronHistograms(){ fFillLeadHadOppositeHisto = kFALSE ; }
+
   // UE
   
   Double_t     GetUeDeltaPhiMaxCut()       const { return fUeDeltaPhiMaxCut      ; }
@@ -163,12 +161,14 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   // Do decay-hadron correlation if it is pi0 trigger
   Bool_t       IsPi0Trigger()              const { return fPi0Trigger            ; }
   void         SwitchOnPi0TriggerDecayCorr()     { fPi0Trigger          = kTRUE  ; }
-  void         SwitchOffPi0TriggerDecayCorr()    { fPi0Trigger          = kFALSE ; }  
-
+  void         SwitchOffPi0TriggerDecayCorr()    { fPi0Trigger          = kFALSE ; }
+  
   Bool_t       IsDecayTrigger()            const { return fDecayTrigger          ; }
   void         SwitchOnDecayTriggerDecayCorr()   { fDecayTrigger        = kTRUE  ; }
   void         SwitchOffDecayTriggerDecayCorr()  { fDecayTrigger        = kFALSE ; }  
-
+  void         SetNDecayBits(Int_t n)            { fNDecayBits = n               ; }
+  void         SetDecayBits(Int_t i, UInt_t bit) { if(i < 4) fDecayBits[i] = bit ; }
+  
   Bool_t       IsHMPIDCorrelation()        const { return fHMPIDCorrelation      ; }
   void         SwitchOnHMPIDCorrelation()        { fHMPIDCorrelation    = kTRUE  ; }
   void         SwitchOffHMPIDCorrelation()       { fHMPIDCorrelation    = kFALSE ; }  
@@ -198,10 +198,29 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnFillPileUpHistograms()    { fFillPileUpHistograms = kTRUE  ; }
   void         SwitchOffFillPileUpHistograms()   { fFillPileUpHistograms = kFALSE ; }
+
+  void         SwitchOnFillHighMultiplicityHistograms() { fFillHighMultHistograms = kTRUE  ; }
+  void         SwitchOffFillHighMultiplicityHistograms(){ fFillHighMultHistograms = kFALSE ; }
+  
+  void         SwitchOnFillTriggerAODWithReferences()   { fFillAODWithReferences = kTRUE  ; }
+  void         SwitchOffFillTriggerAODWithReferences()  { fFillAODWithReferences = kFALSE ; }
+
+  void         SwitchOnCheckNeutralClustersForLeading() { fCheckLeadingWithNeutralClusters = kTRUE  ; }
+  void         SwitchOffCheckNeutralClustersForLeading(){ fCheckLeadingWithNeutralClusters = kFALSE ; }
+  
+  void         SwitchOnFillEtaGapHistograms()    { fFillEtaGapsHisto    = kTRUE  ; }
+  void         SwitchOffFillEtaGapHistograms()   { fFillEtaGapsHisto    = kFALSE ; }
+  
+  void         SwitchOnFillPtImbalancePerPtABinHistograms()  { fFillMomImbalancePtAssocBinsHisto = kTRUE  ; }
+  void         SwitchOffFillPtImbalancePerPtABinHistograms() { fFillMomImbalancePtAssocBinsHisto = kFALSE ; }
+  
+  void         SetMCGenType(Int_t min = 0, Int_t max = 6) { if(min >= 0 && min < 7) fMCGenTypeMin = min ;
+                                                            if(max >= 0 && max < 7) fMCGenTypeMax = max ; }
   
  private:
-  
-  Float_t      fMinTriggerPt ;                 // Minimum trigger hadron pt
+
+  Bool_t       fFillAODWithReferences;         // Add to the trigger particle AOD the reference to the tracks or neutrals in correlation.
+  Bool_t       fCheckLeadingWithNeutralClusters;// Compare the trigger candidate to Leading pT with the clusters pT, by default only charged
   Float_t      fMaxAssocPt ;                   // Maximum associated hadron pt
   Float_t      fMinAssocPt ;                   // Minimum associated hadron pt
   Double_t     fDeltaPhiMaxCut ;               // Minimum Delta Phi Gamma-Hadron
@@ -214,6 +233,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fNeutralCorr ;                  // switch the analysis with neutral particles
   Bool_t       fPi0Trigger ;                   // switch the analysis with decay photon from pi0 trigger
   Bool_t       fDecayTrigger ;                 // switch the analysis with decay photon from photon trigger
+  Int_t        fNDecayBits ;                   // in case of study of decay triggers, select the decay bit
+  UInt_t       fDecayBits[4] ;                 // in case of study of decay triggers, select the decay bit
   Bool_t       fMakeAbsoluteLeading ;          // requesting absolute leading triggers
   Bool_t       fMakeNearSideLeading ;          // requesting near side leading (+-90º from trigger particle) triggers
   Int_t        fLeadingTriggerIndex ;          // Store here per event the trigger index, to avoid too many loops
@@ -233,37 +254,58 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fM02MinCut   ;                  // Study photon clusters with l0 larger than cut
   
   Bool_t       fFillPileUpHistograms;          // Fill pile-up related histograms
-
+  Bool_t       fFillHighMultHistograms;        // Histograms with centrality and event plane for triggers pT
+  
   Bool_t       fSelectLeadingHadronAngle;      // Select events with leading particle within a range
+  Bool_t       fFillLeadHadOppositeHisto;      // Fill histograms for leading hadrons in opposite side of trigger
+  
   Float_t      fMinLeadHadPhi;                 // Minimum angle between the trigger and leading hadron
   Float_t      fMaxLeadHadPhi;                 // Maximum ange between the trigger and leading hadron
   Float_t      fMinLeadHadPt;                  // Minimum pT of leading hadron
   Float_t      fMaxLeadHadPt;                  // Maximum pT of leading hadron
 
+  Bool_t       fFillEtaGapsHisto;              // Fill azimuthal correlation histograms in 2 eta gaps, |eta|>0.8 and |eta|<0.01
+  Bool_t       fFillMomImbalancePtAssocBinsHisto; // momentum imbalance histograms in bins of pT associated
+  
+  Int_t        fMCGenTypeMin;                  // Of the 7 possible types, select those between fMCGenTypeMin and fMCGenTypeMax
+  Int_t        fMCGenTypeMax;                  // Of the 7 possible types, select those between fMCGenTypeMin and fMCGenTypeMax
+  
   //Histograms
 
-  //leading particles 
-  TH1F *       fhPtInput;                      //! pT distribution of trigger particles before selection
-  TH1F *       fhPtFidCut;                     //! pT distribution of trigger particles before leading selection, after fiducial selection
-  TH1F *       fhPtLeading;                    //! pT distribution of leading particles
-  TH1F *       fhPtLeadingVtxBC0;              //! pT distribution of leading particles
-  TH1F *       fhPtLeadingPileUp[7];           //! pT distribution of leading particles
-  TH2F *       fhPtLeadingVzBin;               //! pT distribution of leading particles vs vz bin
-  TH2F *       fhPtLeadingBin;                 //! pT distribution of leading particles, vs mixing bin
-  TH2F *       fhPhiLeading;                   //! phi distribution vs pT of leading particles
-  TH2F *       fhEtaLeading;                   //! eta distribution vs pT of leading particles
+  //trigger particles
+  TH1F *       fhPtTriggerInput;               //! pT distribution of trigger particles before selection
+  TH1F *       fhPtTriggerSSCut;               //! pT distribution of trigger particles after shower shape selection
+  TH1F *       fhPtTriggerIsoCut;              //! pT distribution of trigger particles after isolation cut selection
+  TH1F *       fhPtTriggerFidCut;              //! pT distribution of trigger particles after fiducial selection
+  TH1F *       fhPtTrigger;                    //! pT distribution of trigger particles
+  TH1F *       fhPtTriggerVtxBC0;              //! pT distribution of trigger particles
+  TH1F *       fhPtTriggerPileUp[7];           //! pT distribution of trigger particles
+  TH2F *       fhPtTriggerVzBin;               //! pT distribution of trigger particles vs vz bin
+  TH2F *       fhPtTriggerBin;                 //! pT distribution of trigger particles, vs mixing bin
+  TH2F *       fhPhiTrigger;                   //! phi distribution vs pT of trigger particles
+  TH2F *       fhEtaTrigger;                   //! eta distribution vs pT of trigger particles
   
-  TH1F *       fhPtLeadingMC[7];               //! pT distribution of leading particles, check the origin of the cluster : "Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"
+  TH1F *       fhPtTriggerMC[7];               //! pT distribution of trigger particles, check the origin of the cluster : "Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"
 
-  TH2F *       fhPtLeadingCentrality;          //! pT distribution of leading particles vs centrality
-  TH2F *       fhPtLeadingEventPlane;          //! pT distribution of leading particles vs centrality
-  TH2F *       fhLeadingEventPlaneCentrality;  //! event plane vs centrality for leading particles
+  TH1F *       fhPtDecayTrigger[4];            //! pT distribution of trigger particles, tagged as decay
+  TH1F *       fhPtDecayTriggerMC[4][7];       //! pT distribution of trigger particles, tagged as decay, check the origin of the cluster
   
-  TH1F *       fhPtLeadingMixed;               //! pT distribution of leading particles, used in mixing
-  TH2F *       fhPtLeadingMixedVzBin;          //! pT distribution of leading particles, used in mixing, vs vz bin
-  TH2F *       fhPtLeadingMixedBin;            //! pT distribution of leading particles vs mixing bin
-  TH2F *       fhPhiLeadingMixed;              //! phi distribution vs pT of leading particles, used in mixing
-  TH2F *       fhEtaLeadingMixed;              //! eta distribution vs pT of leading particles, used in mixing  
+  TH2F *       fhPtTriggerCentrality;          //! pT distribution of trigger particles vs centrality
+  TH2F *       fhPtTriggerEventPlane;          //! pT distribution of trigger particles vs centrality
+  TH2F *       fhTriggerEventPlaneCentrality;  //! event plane vs centrality for trigger particles
+  
+  TH1F *       fhPtTriggerMixed;               //! pT distribution of trigger particles, used in mixing
+  TH2F *       fhPtTriggerMixedVzBin;          //! pT distribution of trigger particles, used in mixing, vs vz bin
+  TH2F *       fhPtTriggerMixedBin;            //! pT distribution of trigger particles vs mixing bin
+  TH2F *       fhPhiTriggerMixed;              //! phi distribution vs pT of trigger particles, used in mixing
+  TH2F *       fhEtaTriggerMixed;              //! eta distribution vs pT of trigger particles, used in mixing  
+
+  // Leading hadron in the opposite side of the trigger
+  TH2F *       fhPtLeadingOppositeHadron;        //! pT trigger : pT distribution of leading hadron oposite to trigger
+  TH2F *       fhPtDiffPhiLeadingOppositeHadron; //! pT trigger : difference phi distribution of leading hadron oposite and trigger
+  TH2F *       fhPtDiffEtaLeadingOppositeHadron; //! pT trigger: difference eta distribution of leading hadron oposite and trigger
+  TH1F *       fhPtNoLeadingOppositeHadron;      //! pT trigger for events without opposite hadrons
+  TH2F *       fhEtaPhiNoLeadingOppositeHadron;  //! location of trigger when no hadron is found on the opposite side
 
   //trigger-charged histograms
   TH2F *       fhDeltaPhiDeltaEtaCharged ;     //! differences of eta and phi between trigger and charged hadrons
@@ -333,47 +375,44 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   //if several UE calculation is on, most useful for jet-jet events contribution
   TH2F *       fhDeltaPhiUeLeftCharged  ;      //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
-  TH2F *       fhDeltaPhiUeRightCharged  ;     //! Difference of charged particle from underlying events phi and trigger particle  phi 
-  TH2F *       fhDeltaPhiUeLeftUpCharged;      //! Difference of charged particle from underlying events phi and trigger particle  phi 
+  TH2F *       fhDeltaPhiUeLeftUpCharged;      //! Difference of charged particle from underlying events phi and trigger particle  phi
   TH2F *       fhDeltaPhiUeRightUpCharged;     //! Difference of charged particle from underlying events phi and trigger particle  phi 
   TH2F *       fhDeltaPhiUeLeftDownCharged;    //! Difference of charged particle from underlying events phi and trigger particle  phi 
   TH2F *       fhDeltaPhiUeRightDownCharged;   //! Difference of charged particle from underlying events phi and trigger particle  phi 
   TH2F *       fhXEUeLeftCharged  ;            //! Trigger particle -underlying charged hadron momentum imbalance histogram 
-  TH2F *       fhXEUeRightCharged ;            //! Trigger particle -underlying charged hadron momentum imbalance histogram  
-  TH2F *       fhXEUeLeftUpCharged  ;          //! Trigger particle -underlying charged hadron momentum imbalance histogram 
+  TH2F *       fhXEUeLeftUpCharged  ;          //! Trigger particle -underlying charged hadron momentum imbalance histogram
   TH2F *       fhXEUeRightUpCharged ;          //! Trigger particle -underlying charged hadron momentum imbalance histogram  
   TH2F *       fhXEUeLeftDownCharged  ;        //! Trigger particle -underlying charged hadron momentum imbalance histogram 
   TH2F *       fhXEUeRightDownCharged ;        //! Trigger particle -underlying charged hadron momentum imbalance histogram  
   TH2F *       fhPtHbpXEUeLeftCharged  ;       //! Trigger particle -underlying charged hadron momentum HBP histogram 
-  TH2F *       fhPtHbpXEUeRightCharged  ;      //! Trigger particle -underlying charged hadron momentum HBP histogram  
-  TH2F *       fhZTUeLeftCharged  ;            //! Trigger particle -underlying charged hadron momentum imbalance histogram 
-  TH2F *       fhZTUeRightCharged ;            //! Trigger particle -underlying charged hadron momentum imbalance histogram  
-  TH2F *       fhPtHbpZTUeLeftCharged  ;       //! Trigger particle -underlying charged hadron momentum HBP histogram 
-  TH2F *       fhPtHbpZTUeRightCharged  ;      //! Trigger particle -underlying charged hadron momentum HBP histogram 
+  TH2F *       fhZTUeLeftCharged  ;            //! Trigger particle -underlying charged hadron momentum imbalance histogram
+  TH2F *       fhPtHbpZTUeLeftCharged  ;       //! Trigger particle -underlying charged hadron momentum HBP histogram
   
   //for pout and kt extraction
   TH2F *       fhPtTrigPout  ;                 //! Pout =associated pt*sin(delta phi) distribution vs trigger pt 
   TH2F *       fhPtTrigCharged ;               //! trigger and correlated particl pt, to be used for mean value for kt	
   
   //if different multiplicity analysis asked
-  TH2F **      fhTrigDeltaPhiCharged ;         //![GetMultiBin()] differences of phi between trigger and charged hadrons
-  TH2F **      fhTrigDeltaEtaCharged ;         //![GetMultiBin()] differences of eta between trigger and charged hadrons
-  TH2F **      fhTrigXECorr  ;                 //![GetMultiBin()] Trigger particle -charged hadron momentum imbalance histogram
-  TH2F **      fhTrigXEUeCorr  ;               //![GetMultiBin()] Trigger particle -UE charged hadron momentum imbalance histogram
-  TH2F **      fhTrigZTCorr  ;                 //![GetMultiBin()] Trigger particle -charged hadron momentum imbalance histogram
-  TH2F **      fhTrigZTUeCorr  ;               //![GetMultiBin()] Trigger particle -UE charged hadron momentum imbalance histogram
+  TH2F **      fhDeltaPhiChargedMult ;         //![GetNCentrBin()] differences of phi between trigger and charged hadrons: multiplicity bin
+  TH2F **      fhDeltaEtaChargedMult ;         //![GetNCentrBin()] differences of eta between trigger and charged hadrons: multiplicity bin
+  TH2F **      fhXEMult  ;                     //![GetNCentrBin()] Trigger particle -charged hadron momentum imbalance histogram: multiplicity bin
+  TH2F **      fhXEUeMult  ;                   //![GetNCentrBin()] Trigger particle -UE charged hadron momentum imbalance histogram: multiplicity bin
+  TH2F **      fhZTMult  ;                     //![GetNCentrBin()] Trigger particle -charged hadron momentum imbalance histogram: multiplicity bin
+  TH2F **      fhZTUeMult  ;                   //![GetNCentrBin()] Trigger particle -UE charged hadron momentum imbalance histogram: multiplicity bin
   
   TH2F *       fhAssocPtBkg;                   //! Trigger pT vs associated pT for background
   TH2F **      fhDeltaPhiDeltaEtaAssocPtBin;   //![fNAssocPtBins*GetNZvertBin()] Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins
-  TH2F **      fhDeltaPhiAssocPtBin;           //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins
-  TH2F **      fhDeltaPhiAssocPtBinDEta08;     //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins for Delta eta > 0.8
-  TH2F **      fhDeltaPhiAssocPtBinDEta0 ;     //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins for Delta eta = 0
-  TH2F **      fhDeltaPhiAssocPtBinHMPID;      //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins, track with HMPID  
-  TH2F **      fhDeltaPhiAssocPtBinHMPIDAcc;   //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt bins, track with HMPIDAcc
+  TH2F **      fhDeltaPhiAssocPtBin;           //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt and vz bins
+  TH2F **      fhDeltaPhiAssocPtBinDEta08;     //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt and vz bins for Delta eta > 0.8
+  TH2F **      fhDeltaPhiAssocPtBinDEta0 ;     //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt and vz bins for Delta eta = 0
+  TH2F **      fhDeltaPhiAssocPtBinHMPID;      //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt and vz bins, track with HMPID
+  TH2F **      fhDeltaPhiAssocPtBinHMPIDAcc;   //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi for different associated pt and vz bins, track with HMPIDAcc
   TH2F **      fhDeltaPhiBradAssocPtBin;       //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs dPhi Brad (?) for different associated pt bins
   TH2F *       fhDeltaPhiBrad;                 //! Trigger pT vs dPhi Brad (?) for different associated pt bins
-  TH2F **      fhXEAssocPtBin ;                //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs xE for different associated pt bins
-  TH2F **      fhZTAssocPtBin ;                //![fNAssocPtBins*GetNZvertBin()] Trigger pT vs zT for different associated pt bins
+  TH2F **      fhXEAssocPtBin ;                //![fNAssocPtBins] Trigger pT vs xE for different associated pt bins
+  TH2F **      fhZTAssocPtBin ;                //![fNAssocPtBins] Trigger pT vs zT for different associated pt bins
+  TH2F **      fhXEVZ ;                        //![GetNZvertBin()] Trigger pT vs xE for different vz bins
+  TH2F **      fhZTVZ ;                        //![GetNZvertBin()] Trigger pT vs zT for different vz bins
 
   //trigger-neutral histograms
   TH2F *       fhDeltaPhiDeltaEtaNeutral ;     //! differences of eta and phi between trigger and neutral hadrons (pi0)
@@ -392,67 +431,64 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPtHbpZTNeutral  ;             //! Trigger particle - neutral particle momentum HBP histogram
   TH2F *       fhPtHbpZTUeNeutral  ;           //! Trigger particle - underlying neutral hadron momentum HBP histogram  
   
-  //if several UE calculation is on, most useful for jet-jet events contribution
+  // If several UE calculation is on,
   TH2F *       fhDeltaPhiUeLeftNeutral  ;      //! Difference of charged particle from underlying events phi and trigger particle  phi as function of neutral particle pT
-  TH2F *       fhDeltaPhiUeRightNeutral  ;     //! Difference of charged particle from underlying events phi and trigger particle  phi 
-  TH2F *       fhXEUeLeftNeutral  ;            //! Trigger particle -underlying neutral hadron momentum imbalance histogram 
-  TH2F *       fhXEUeRightNeutral ;            //! Trigger particle -underlying neutral hadron momentum imbalance histogram 
-  TH2F *       fhPtHbpXEUeLeftNeutral  ;       //! Trigger particle -underlying neutral hadron momentum HBP histogram 
-  TH2F *       fhPtHbpXEUeRightNeutral  ;      //! Trigger particle -underlying neutral hadron momentum HBP histogram 
-  TH2F *       fhZTUeLeftNeutral  ;            //! Trigger particle -underlying neutral hadron momentum imbalance histogram 
-  TH2F *       fhZTUeRightNeutral ;            //! Trigger particle -underlying neutral hadron momentum imbalance histogram 
-  TH2F *       fhPtHbpZTUeLeftNeutral  ;       //! Trigger particle -underlying neutral hadron momentum HBP histogram 
-  TH2F *       fhPtHbpZTUeRightNeutral  ;      //! Trigger particle -underlying neutral hadron momentum HBP histogram 
+  TH2F *       fhXEUeLeftNeutral  ;            //! Trigger particle -underlying neutral hadron momentum imbalance histogram
+  TH2F *       fhPtHbpXEUeLeftNeutral  ;       //! Trigger particle -underlying neutral hadron momentum HBP histogram
+  TH2F *       fhZTUeLeftNeutral  ;            //! Trigger particle -underlying neutral hadron momentum imbalance histogram
+  TH2F *       fhPtHbpZTUeLeftNeutral  ;       //! Trigger particle -underlying neutral hadron momentum HBP histogram
   
-  //for decay photon trigger correlation
-  TH2F *       fhPtPi0DecayRatio ;             //! for pi0 pt and ratio of decay photon pt
-  TH2F *       fhDeltaPhiDecayCharged  ;       //! Difference of charged particle phi and decay trigger
-  TH2F *       fhXEDecayCharged ;              //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram    
-  TH2F *       fhZTDecayCharged ;              //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram   
+  // Pi0/Eta trigger correlation, recover input photons
+  TH2F *       fhPtPi0DecayRatio ;             //! for pi0 trigger pt and ratio of decay photon pt
+  TH2F *       fhDeltaPhiPi0DecayCharged  ;    //! Difference of charged particle phi and decay photon from pi0/eta trigger
+  TH2F *       fhXEPi0DecayCharged ;           //! Trigger particle (decay from pi0/eta trigger)-charged hadron momentum imbalance histogram
+  TH2F *       fhZTPi0DecayCharged ;           //! Trigger particle (decay from pi0/eta trigger)-charged hadron momentum imbalance histogram
 
-  TH2F *       fhDeltaPhiDecayNeutral  ;       //! Difference of neutral particle phi and decay trigger
-  TH2F *       fhXEDecayNeutral ;              //! Trigger particle (decay from pi0)-neutral hadron momentum imbalance histogram  
-  TH2F *       fhZTDecayNeutral ;              //! Trigger particle (decay from pi0)-neutral hadron momentum imbalance histogram  
+  TH2F *       fhDeltaPhiPi0DecayNeutral  ;    //! Difference of neutral particle phi and decay photon from pi0/eta trigger
+  TH2F *       fhXEPi0DecayNeutral ;           //! Trigger particle (decay from pi0/eta trigger)-neutral hadron momentum imbalance histogram
+  TH2F *       fhZTPi0DecayNeutral ;           //! Trigger particle (decay from pi0/eta trigger)-neutral hadron momentum imbalance histogram
 
-  TH2F **      fhDeltaPhiDecayChargedAssocPtBin;//![fNAssocPtBins*GetNZvertBin()] Tagged as decay Trigger pT vs dPhi for different associated pt bins
-  TH2F **      fhXEDecayChargedAssocPtBin ;     //![fNAssocPtBins*GetNZvertBin()] Tagged as decay Trigger pT vs xE for different associated pt bins
-  TH2F **      fhZTDecayChargedAssocPtBin ;     //![fNAssocPtBins*GetNZvertBin()] Tagged as decay Trigger pT vs xE for different associated pt bins  
+  // Decay photon trigger correlation
+  TH2F *       fhDeltaPhiDecayCharged[4]  ;    //! Difference of charged particle phi and photon decay trigger
+  TH2F *       fhXEDecayCharged[4] ;           //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram
+  TH2F *       fhZTDecayCharged[4] ;           //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram
+  TH2F **      fhDeltaPhiDecayChargedAssocPtBin;//![fNAssocPtBins*GetNZvertBin()] Tagged as decay (fDecayBits[0]) Trigger pT vs dPhi for different associated pt bins
   
-  //if the data is MC, fill MC information
-  TH2F *       fh2phiLeadingParticle;          //! #phi resolution for triggers
-  TH1F *       fhMCPtLeading;                  //! MC pure pT distribution of leading particles
-  TH2F *       fhMCPhiLeading;                 //! MC pure Phi distribution of leading particles
-  TH2F *       fhMCEtaLeading;                 //! MC pure Eta distribution of leading particles
-  TH2F *       fhMCEtaCharged;                 //! MC pure particles charged primary pt vs eta (both associated) 
-  TH2F *       fhMCPhiCharged;                 //! MC pure particles charged primary pt vs phi (both associated) 
-  TH2F *       fhMCDeltaEtaCharged;            //! MC pure particles charged trigger primary pt vs delta eta (associated-trigger) 
-  TH2F *       fhMCDeltaPhiCharged;            //! MC pure particles charged trigger primary pt vs delta phi (associated-trigger) 
-  TH2F *       fhMCDeltaPhiDeltaEtaCharged;    //! MC pure particles charged associated primary pt vs delta phi (associated-trigger), in away side 
-  TH2F *       fhMCDeltaPhiChargedPt;          //! MC pure particles charged delta phi vs delta eta (associated-trigger) 
-  TH2F *       fhMCPtXECharged;                //! MC pure particles charged trigger primary pt vs xE
-  TH2F *       fhMCPtXEUeCharged;              //! MC pure particles charged trigger primary pt vs xE (underlying event)
-  TH2F *       fhMCPtXEUeLeftCharged;          //! MC pure particles charged trigger primary pt vs xE (underlying event,left cone)
-  TH2F *       fhMCPtXEUeRightCharged;         //! MC pure particles charged trigger primary pt vs xE (underlying event,right cone)
-  TH2F *       fhMCPtHbpXECharged;             //! MC pure particles charged trigger primary pt vs ln(1/xE)
-  TH2F *       fhMCPtHbpXEUeCharged;           //! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event)
-  TH2F *       fhMCPtHbpXEUeLeftCharged;       //! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event, left cone)
-  TH2F *       fhMCPtHbpXEUeRightCharged;      //! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event, right cone)
-  TH1F *       fhMCUePart;                     //! MC pure UE particles distribution vs pt trig
-  TH2F *       fhMCPtZTCharged;                //! MC pure particles charged trigger primary pt vs zT
-  TH2F *       fhMCPtZTUeCharged;              //! MC pure particles charged trigger primary pt vs zT (underlying event)
-  TH2F *       fhMCPtZTUeLeftCharged;          //! MC pure particles charged trigger primary pt vs zT (underlying event, left cone)
-  TH2F *       fhMCPtZTUeRightCharged;         //! MC pure particles charged trigger primary pt vs zT (underlying event, right cone)
-  TH2F *       fhMCPtHbpZTCharged;             //! MC pure particles charged trigger primary pt vs ln(1/zT)
-  TH2F *       fhMCPtHbpZTUeCharged;           //! MC pure particles charged trigger primary pt vs ln(1/zT) (underlying event)
-  TH2F *       fhMCPtHbpZTUeLeftCharged;       //! MC pure particles charged trigger primary pt vs ln(1/zT) (underlying event, left cone)
-  TH2F *       fhMCPtHbpZTUeRightCharged;      //! MC pure particles charged trigger primary pt vs ln(1/zT) (underlying event, right cone)
-  TH2F *       fhMCPtTrigPout ;                //! MC pure particles charged trigger primary pt vs pOut
-  TH2F *       fhMCPtAssocDeltaPhi  ;          //! MC pure particles charged associated primary pt vs delta phi (associated-trigger) 
+  // If the data is MC, correlation with generated particles
+  // check the origin of the cluster : decay photon (pi0, eta, other), merged photon (pi0),
+  // hadron, rest of photons (prompt, FSR, ISR)
+  TH1F *       fhMCPtTrigger[7];               //! MC pure pT distribution of trigger particles
+  TH2F *       fhMCPhiTrigger[7];              //! MC pure Phi distribution of trigger particles
+  TH2F *       fhMCEtaTrigger[7];              //! MC pure Eta distribution of trigger particles
+  TH1F *       fhMCPtTriggerNotLeading[7];     //! MC pure pT distribution of trigger not leading particles
+  TH2F *       fhMCPhiTriggerNotLeading[7];    //! MC pure Phi distribution of trigger not leading particles
+  TH2F *       fhMCEtaTriggerNotLeading[7];    //! MC pure Eta distribution of trigger not leading particles
+  TH2F *       fhMCEtaCharged[7];              //! MC pure particles charged primary pt vs eta (both associated)
+  TH2F *       fhMCPhiCharged[7];              //! MC pure particles charged primary pt vs phi (both associated)
+  TH2F *       fhMCDeltaEtaCharged[7];         //! MC pure particles charged trigger primary pt vs delta eta (associated-trigger)
+  TH2F *       fhMCDeltaPhiCharged[7];         //! MC pure particles charged trigger primary pt vs delta phi (associated-trigger)
+  TH2F *       fhMCDeltaPhiDeltaEtaCharged[7]; //! MC pure particles charged associated primary pt vs delta phi (associated-trigger), in away side
+  TH2F *       fhMCDeltaPhiChargedPt[7];       //! MC pure particles charged delta phi vs delta eta (associated-trigger)
+  TH2F *       fhMCPtXECharged[7];             //! MC pure particles charged trigger primary pt vs xE
+  TH2F *       fhMCPtXEUeCharged[7];           //! MC pure particles charged trigger primary pt vs xE (underlying event)
+  TH2F *       fhMCPtXEUeLeftCharged[7];       //! MC pure particles charged trigger primary pt vs xE (underlying event,left cone)
+  TH2F *       fhMCPtHbpXECharged[7];          //! MC pure particles charged trigger primary pt vs ln(1/xE)
+  TH2F *       fhMCPtHbpXEUeCharged[7];        //! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event)
+  TH2F *       fhMCPtHbpXEUeLeftCharged[7];    //! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event, left cone)
+  TH1F *       fhMCUePart[7];                  //! MC pure UE particles distribution vs pt trig
+  TH2F *       fhMCPtZTCharged[7];             //! MC pure particles charged trigger primary pt vs zT
+  TH2F *       fhMCPtZTUeCharged[7];           //! MC pure particles charged trigger primary pt vs zT (underlying event)
+  TH2F *       fhMCPtZTUeLeftCharged[7];       //! MC pure particles charged trigger primary pt vs zT (underlying event, left cone)
+  TH2F *       fhMCPtHbpZTCharged[7];          //! MC pure particles charged trigger primary pt vs ln(1/zT)
+  TH2F *       fhMCPtHbpZTUeCharged[7];        //! MC pure particles charged trigger primary pt vs ln(1/zT) (underlying event)
+  TH2F *       fhMCPtHbpZTUeLeftCharged[7];    //! MC pure particles charged trigger primary pt vs ln(1/zT) (underlying event, left cone)
+  TH2F *       fhMCPtTrigPout[7];              //! MC pure particles charged trigger primary pt vs pOut
+  TH2F *       fhMCPtAssocDeltaPhi[7];         //! MC pure particles charged associated primary pt vs delta phi (associated-trigger)
 
   // Mixing
   TH1I *       fhNEventsTrigger;               //! number of analyzed triggered events
-  TH1F *       fhNtracksMB;                    //! total number of tracks in MB events
-  TH1F *       fhNclustersMB;                  //! total number of clusters in MB events
+  TH2F *       fhNtracksMB;                    //! total number of tracks in MB events
+  TH2F *       fhNclustersMB;                  //! total number of clusters in MB events
   TH2F *       fhMixDeltaPhiCharged  ;         //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F *       fhMixDeltaPhiDeltaEtaCharged  ; //! Difference of charged particle phi and trigger particle  phi as function eta difference
   TH2F *       fhMixXECharged;                 //! xE for mixed event
@@ -463,13 +499,14 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F **      fhMixDeltaPhiChargedAssocPtBinDEta0;    //![fNAssocPtBins*GetNZvertBin()] Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins, delta eta = 0
   TH2F **      fhMixDeltaPhiDeltaEtaChargedAssocPtBin; //![fNAssocPtBins*GetNZvertBin()] Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins
 
-  TH1I *       fhEventBin;                     //! Number of real  events in a particular bin (cen,vz,rp)
-  TH1I *       fhEventMixBin;                  //! Number of mixed events in a particular bin (cen,vz,rp)
+  TH1I *       fhEventBin;                     //! Number of triggers in a particular event bin (cen,vz,rp)
+  TH1I *       fhEventMixBin;                  //! Number of triggers mixed in a particular bin (cen,vz,rp)
+  TH1I *       fhEventMBBin;                   //! Number of MB events in a particular bin (cen,vz,rp)
   
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,31)
+  ClassDef(AliAnaParticleHadronCorrelation,35)
 } ;
  
 

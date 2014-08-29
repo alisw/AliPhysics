@@ -23,9 +23,12 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcal {
   Bool_t                 FillHistograms()                               ;
   void                   ExecOnce()                                     ;
   void                   GenerateHistoBins()                            ;
-  void                   AllocateFindableParticlesTHnSparse()           ;
+  void                   AllocateDetectorLevelTHnSparse()               ;
+  void                   AllocateGeneratorLevelTHnSparse()              ;
   void                   AllocateMatchedParticlesTHnSparse()            ;
-  void                   FillFindableParticlesTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt);
+  void                   FillDetectorLevelTHnSparse(Double_t cent, Double_t trackEta, Double_t trackPhi, Double_t trackPt, 
+                                                    Double_t sigma1OverPt, Int_t mcGen, Byte_t trackType);
+  void                   FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt, Int_t mcGen, Byte_t findable);
   void                   FillMatchedParticlesTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt,
 						       Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType);
 
@@ -44,17 +47,16 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcal {
   Int_t                 fNCentHistBins         ; //! number of cent bins
   Double_t*             fCentHistBins          ; //! cent bins
   Int_t                 fNPtResHistBins        ; //! number of pt res bins
-  Double_t*             fPtResHistBins         ; //! pt res bins
+  Double_t*             fPtResHistBins         ; //! 1/pt res bins
+  Double_t*             f1OverPtResHistBins    ; //! pt res bins
+  Int_t                 fN1OverPtResHistBins   ; //! number of 1/pt res bins
   Int_t                 fNIntegerHistBins      ; //! number of integer bins
   Double_t*             fIntegerHistBins       ; //! integer bins
 
 
   // Histograms
-  TH3***                fTracksAll             ; //! all tracks
-  TH3***                fTracksSelected        ; //! selected tracks (e.g. remove injected signal in HIJING productions)
-  TH3**                 fParticlesAllPhysPrim  ; //! all physical primary particles
-  TH3**                 fParticlesSelected     ; //! selected physical primary particles (e.g. remove injected signal in HIJING productions)
-  THnSparse*            fParticlesFindable     ; //! findable physical primary particles (use PDG and charge selection)
+  THnSparse*            fTracks                ; //! all tracks
+  THnSparse*            fParticlesPhysPrim     ; //! all physical primary particles
   THnSparse*            fParticlesMatched      ; //! primary particles matched to detector level tracks
   
  private:

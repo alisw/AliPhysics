@@ -111,8 +111,9 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
-	if (trainConfig==3){ numberOfCuts =6;}
-
+	if (trainConfig==3 || trainConfig==5  ){ numberOfCuts =6;}
+	if (trainConfig==6   ){ numberOfCuts =5;}
+	
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
 	TString *clusterCutArray = new TString[numberOfCuts];
@@ -135,6 +136,22 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		eventCutArray[ 3] = "8009101"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000040022030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMCEJE based on INT7 // EMCAL clusters
 		eventCutArray[ 4] = "8009301"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000040022030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMCEJ1 based on INT7 // EMCAL clusters
 		eventCutArray[ 5] = "8009501"; photonCutArray[ 5] = "002092970028250400000"; clusterCutArray[5] = "10000040022030000"; mesonCutArray[5] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
+	} else if (trainConfig == 4){ 
+		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040052030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
+		eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
+	} else if (trainConfig == 5){ 
+		eventCutArray[ 0] = "8008101"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040052030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kEMCEGA based on INT7 // EMCAL clusters
+		eventCutArray[ 1] = "8008301"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMCEG1 based on INT7 // EMCAL clusters
+		eventCutArray[ 2] = "8008501"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000040052030000"; mesonCutArray[2] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
+		eventCutArray[ 3] = "8009101"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMCEJE based on INT7 // EMCAL clusters
+		eventCutArray[ 4] = "8009301"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000040052030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMCEJ1 based on INT7 // EMCAL clusters
+		eventCutArray[ 5] = "8009501"; photonCutArray[ 5] = "002092970028250400000"; clusterCutArray[5] = "10000040052030000"; mesonCutArray[5] = "01525065000000"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters		
+	} else if (trainConfig == 6){ 
+		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000043052030000"; mesonCutArray[0] = "01525065000000"; //standart cut, kINT7 // EMCAL clusters
+		eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000044052030000"; mesonCutArray[1] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
+		eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000045052030000"; mesonCutArray[2] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
+		eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "002092970028250400000"; clusterCutArray[3] = "10000046052030000"; mesonCutArray[3] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
+		eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "002092970028250400000"; clusterCutArray[4] = "10000047052030000"; mesonCutArray[4] = "01525065000000"; //standard cut, kEMC7 // EMCAL clusters	
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

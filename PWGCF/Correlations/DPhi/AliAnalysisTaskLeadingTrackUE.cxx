@@ -597,7 +597,8 @@ void AliAnalysisTaskLeadingTrackUE::FillReducedEfficiency(Int_t eventId, AliUEHi
   
   for (Int_t i=0; i<count; i++)
   {
-    Float_t trackingEff = fkTrackingEfficiency->GetBinContent(fkTrackingEfficiency->GetXaxis()->FindBin(leading->Pt()));
+    const TAxis * xax = fkTrackingEfficiency->GetXaxis();
+    Float_t trackingEff = fkTrackingEfficiency->GetBinContent(xax->FindFixBin(leading->Pt()));
     if (twoStep)
       trackingEff = 0.5 * (trackingEff + 1);
       

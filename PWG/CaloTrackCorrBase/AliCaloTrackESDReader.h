@@ -47,6 +47,9 @@ private:
   AliESDtrackCuts* fESDtrackCuts ;             // Track cut
   AliESDtrackCuts* fESDtrackComplementaryCuts; // Track cut, complementary cuts for hybrids
   
+  AliCaloTrackESDReader(              const AliCaloTrackESDReader & r) ; // cpy ctor
+  AliCaloTrackESDReader & operator = (const AliCaloTrackESDReader & r) ; // cpy assignment
+  
   ClassDef(AliCaloTrackESDReader,2)
   
 } ;

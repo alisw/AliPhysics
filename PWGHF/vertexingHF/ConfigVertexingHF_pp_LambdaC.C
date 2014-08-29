@@ -7,14 +7,15 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //vHF->SetD0toKpiOff();
   //vHF->SetJPSItoEleOff();
   //vHF->Set3ProngOff();
-  vHF->SetLikeSignOff(); // like-sign pairs and triplets
+  vHF->SetLikeSignOn(); // like-sign pairs and triplets
+  vHF->SetLikeSign3prongOff();
   //vHF->Set4ProngOff();
   //vHF->SetDstarOff();
   vHF->SetFindVertexForDstar(kFALSE);
   //--- secondary vertex with KF?
   //vHF->SetSecVtxWithKF();
   //vHF->SetCascadesOff();
-  vHF->SetFindVertexForCascades(kTRUE);
+  vHF->SetFindVertexForCascades(kFALSE);
   vHF->SetV0TypeForCascadeVertex(AliRDHFCuts::kAllV0s);
   
   //--- set cuts for single-track selection
@@ -28,14 +29,14 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
 					 AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetPtRange(0.3,1.e10);
-  esdTrackCuts->SetEtaRange(-0.8,+0.8);
+  esdTrackCuts->SetEtaRange(-0.9,+0.9);
   AliAnalysisFilter *trkFilter = new AliAnalysisFilter("trackFilter");
   trkFilter->AddCuts(esdTrackCuts);
   vHF->SetTrackFilter(trkFilter);
   //     D* soft pion tracks
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCutsSoftPi->SetMinNClustersITS(2);
-  esdTrackCutsSoftPi->SetEtaRange(-0.8,+0.8);
+  esdTrackCutsSoftPi->SetEtaRange(-0.9,+0.9);
   AliAnalysisFilter *trkFilterSoftPi = new AliAnalysisFilter("trackFilterSoftPi");
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
   vHF->SetTrackFilterSoftPi(trkFilterSoftPi);

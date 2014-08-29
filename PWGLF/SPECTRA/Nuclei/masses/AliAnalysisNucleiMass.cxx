@@ -197,7 +197,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     Char_t title_fNsigmaTpc_kTOF[nSpec][200];
     for(Int_t i=0;i<nSpec;i++) {
       snprintf(name_fNsigmaTpc_kTOF[i],200,"NsigmaTpc_%s_kTOF",name[i]);
-      snprintf(title_fNsigmaTpc_kTOF[i],200,"NsigmaTpc_kTOF_%s in DCAxyCut;p/|z| (GeV/c);n_{#sigma_{TPC}}^{%s}",name[i],name[i]);
+      snprintf(title_fNsigmaTpc_kTOF[i],200,"NsigmaTpc_kTOF_%s in DCACut;p/|z| (GeV/c);n_{#sigma_{TPC}}^{%s}",name[i],name[i]);
       fNsigmaTpc_kTOF[iB][i] = new TH2F(name_fNsigmaTpc_kTOF[i],title_fNsigmaTpc_kTOF[i],hbins[0],0,5,hbins[1],-5,5);
     }
 
@@ -231,7 +231,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     else {hbins[0]=1; hbins[1]=1;}
     for(Int_t i=0;i<nSpec;i++) {
       snprintf(name_fNsigmaTof_DcaCut[i],200,"NsigmaTof_DcaCut_%s",name[i]);
-      snprintf(title_fNsigmaTof_DcaCut[i],200,"NsigmaTof_%s with DCAxyCut;p_{T}/|z| (GeV/c);n_{#sigma_{TOF}}^{%s}",name[i],name[i]);
+      snprintf(title_fNsigmaTof_DcaCut[i],200,"NsigmaTof_%s with DCACut;p_{T}/|z| (GeV/c);n_{#sigma_{TOF}}^{%s}",name[i],name[i]);
       fNsigmaTof_DcaCut[iB][i] = new TH2F(name_fNsigmaTof_DcaCut[i],title_fNsigmaTof_DcaCut[i],hbins[0],0,5,hbins[1],-5,5);
     }
 
@@ -243,8 +243,8 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
     else if(kSignalCheck==2) {hbins[0]=1; hbins[1]=1;}// {hbins[0]=1000; hbins[1]=100;} toram
-    fM2vsP_NoTpcCut[iB][1][0] = new TH2F("fM2vsP_NoTpcCut_DCAxyCut_pos","m^{2}/z^{2}_{TOF} vs p/|z| (positive charge) with DCAxy cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
-    fM2vsP_NoTpcCut[iB][1][1] = new TH2F("fM2vsP_NoTpcCut_DCAxyCut_neg","m^{2}/z^{2}_{TOF} vs p/|z| (negative charge) with DCAxy cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
+    fM2vsP_NoTpcCut[iB][1][0] = new TH2F("fM2vsP_NoTpcCut_DCACut_pos","m^{2}/z^{2}_{TOF} vs p/|z| (positive charge) with DCA cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
+    fM2vsP_NoTpcCut[iB][1][1] = new TH2F("fM2vsP_NoTpcCut_DCACut_neg","m^{2}/z^{2}_{TOF} vs p/|z| (negative charge) with DCA cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
 
     Char_t name_fM2vsP[2][18][300]; 
     Char_t title_fM2vsP[2][18][300]; 
@@ -253,8 +253,8 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       snprintf(name_fM2vsP[0][i],300,"fM2vsPc_%s",name[i]);
       snprintf(title_fM2vsP[0][i],300,"m^{2}/z^{2}_{TOF} vs p/|z| of %s with a NsigmaTpcCut (pReco->pTrue for nuclei);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",name[i]);
       
-      snprintf(name_fM2vsP[1][i],300,"fM2vsPc_%s_DCAxyCut",name[i]);
-      snprintf(title_fM2vsP[1][i],300,"m^{2}/z^{2}_{TOF} vs p/|z| of %s with a NsigmaTpcCut and with the DCAxy cut (pReco->pTrue for nuclei);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",name[i]);
+      snprintf(name_fM2vsP[1][i],300,"fM2vsPc_%s_DCACut",name[i]);
+      snprintf(title_fM2vsP[1][i],300,"m^{2}/z^{2}_{TOF} vs p/|z| of %s with a NsigmaTpcCut and with the DCA cut (pReco->pTrue for nuclei);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",name[i]);
 
       if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
       else {hbins[0]=1; hbins[1]=1;}
@@ -278,11 +278,25 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     fM2vsZ[iB][7] = new TH2F("fM2vsZ_3.5pT4.0","m^{2}/z^{2}_{TOF} vs z_{TPC} 3.5<pT<4.0;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
     fM2vsZ[iB][8] = new TH2F("fM2vsZ_4.0pT4.5","m^{2}/z^{2}_{TOF} vs z_{TPC} 4.0<pT<4.5;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
     fM2vsZ[iB][9] = new TH2F("fM2vsZ_4.5pT5.0","m^{2}/z^{2}_{TOF} vs z_{TPC} 2.0<pT<2.5;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+  
+    Char_t name_h2DCAap[18][200];
+    Char_t title_h2DCAap[18][200];
+    
+    for(Int_t iS=0;iS<nSpec;iS++) {
+      snprintf(name_h2DCAap[iS],200,"h2DCAap_%s",name[iS]);
+      snprintf(title_h2DCAap[iS],200,"h2DCA_%s in for p/z<1.5GeV;DCA_{xy} (cm);DCA_{z} (cm)",name[iS]);
+      if(iS==5 || iS==7 || iS==5+9 || iS==7+9) h2DCAap[iB][iS] = new TH2F(name_h2DCAap[iS],title_h2DCAap[iS],1750,-3.5,3.5,1750,-3.5,3.5);//
+      else h2DCAap[iB][iS] = new TH2F(name_h2DCAap[iS],title_h2DCAap[iS],1750,-3.5,3.5,1750,-3.5,3.5);//
+    }
         
     Char_t name_hDCAxy[18][nbin][200];
     Char_t title_hDCAxy[18][nbin][200];
     Char_t name_hDCAz[18][nbin][200];
     Char_t title_hDCAz[18][nbin][200];
+    
+    //Char_t name_h2DCA[18][nbin][200];
+    //Char_t title_h2DCA[18][nbin][200];
+    
     for(Int_t iS=0;iS<nSpec;iS++) {
       for(Int_t j=0;j<nbin;j++) {
 	snprintf(name_hDCAxy[iS][j],200,"hDCAxy_%s_%s",name[iS],name_nbin[j]);
@@ -294,8 +308,14 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 	snprintf(title_hDCAz[iS][j],200,"hDCAz_%s_%s;DCA_{z} (cm)",name[iS],name_nbin[j]);
 	if(iS==5 || iS==7 || iS==5+9 || iS==7+9) hDCAz[iB][iS][j] = new TH1D(name_hDCAz[iS][j],title_hDCAz[iS][j],875,-3.5,3.5);
 	else hDCAz[iB][iS][j] = new TH1D(name_hDCAz[iS][j],title_hDCAz[iS][j],1,-3.5,3.5);
+      
+	//snprintf(name_h2DCA[iS][j],200,"h2DCA_%s_%s",name[iS],name_nbin[j]);
+	//snprintf(title_h2DCA[iS][j],200,"h2DCA_%s_%s;DCA_{xy} (cm);DCA_{z} (cm)",name[iS],name_nbin[j]);
+	//if(iS==2 || iS==5 || iS==7 || iS==2+9 || iS==5+9 || iS==7+9) h2DCA[iB][iS][j] = new TH2F(name_h2DCA[iS][j],title_h2DCA[iS][j],1,-4,4,1,-4,4);//,160,-4,4,160,-4,4);
+	//else h2DCA[iB][iS][j] = new TH2F(name_h2DCA[iS][j],title_h2DCA[iS][j],1,-4,4,1,-4,4);
       }
     }
+    
   
     Char_t name_hM2CutDCAxy[18][nbin][200];
     Char_t title_hM2CutDCAxy[18][nbin][200];
@@ -318,10 +338,10 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       for(Int_t j=0;j<nbin;j++) {
 	
 	hM2CutDCAxy[iB][iS][j] = new TH1D(name_hM2CutDCAxy[iS][j],title_hM2CutDCAxy[iS][j],BinM2pT[iS],RangeM2min[iS],RangeM2max[iS]);
-	hM2CutGroundDCAxy[iB][iS][j] = new TH1D(name_hM2CutGroundDCAxy[iS][j],title_hM2CutGroundDCAxy[iS][j],BinM2pT[iS],RangeM2min[iS],RangeM2max[iS]);
+	hM2CutGroundDCAxy[iB][iS][j] = new TH1D(name_hM2CutGroundDCAxy[iS][j],title_hM2CutGroundDCAxy[iS][j],1,RangeM2min[iS],RangeM2max[iS]);//BinM2pT[iS]
       
 	hM2CutDCAxy[iB][iS+nPart][j] = new TH1D(name_hM2CutDCAxy[iS+nPart][j],title_hM2CutDCAxy[iS+nPart][j],BinM2pT[iS],RangeM2min[iS],RangeM2max[iS]);
-	hM2CutGroundDCAxy[iB][iS+nPart][j] = new TH1D(name_hM2CutGroundDCAxy[iS+nPart][j],title_hM2CutGroundDCAxy[iS+nPart][j],BinM2pT[iS],RangeM2min[iS],RangeM2max[iS]);
+	hM2CutGroundDCAxy[iB][iS+nPart][j] = new TH1D(name_hM2CutGroundDCAxy[iS+nPart][j],title_hM2CutGroundDCAxy[iS+nPart][j],1,RangeM2min[iS],RangeM2max[iS]);//BinM2pT[iS]
       }
     }
 
@@ -437,6 +457,20 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       //for(Int_t i=0;i<14;i++)fList[iB]->Add(fPmeanVsBGcorr[i]);
       for(Int_t i=0;i<14;i++)fList[iB]->Add(prPmeanVsBGcorr[iB][i]);
     }
+    for(Int_t i=0;i<nPart;i++) {
+      if(i<5 || i==6 || i==8) continue;//e,mu,pi,K,p,t,he4 excluded//i<5 || i==6 || i==8
+      fList[iB]->Add(h2DCAap[iB][i]);
+      fList[iB]->Add(h2DCAap[iB][i+nPart]);
+    }
+    /*
+      for(Int_t i=0;i<nPart;i++) {
+      if(i<5 || i==6 || i==8) continue;//e,mu,pi,K,p,t,he4 excluded//i<5 || i==6 || i==8
+      for(Int_t j=0;j<nbin;j++){
+      fList[iB]->Add(h2DCA[iB][i][j]);
+      fList[iB]->Add(h2DCA[iB][i+nPart][j]);
+      }
+      }
+    */
     //for(Int_t i=0;i<10;i++) fList[iB]->Add(fM2vsZ[iB][i]);
     for(Int_t i=0;i<nPart;i++){
       if(kSignalCheck!=1) 
@@ -445,11 +479,11 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 	fList[iB]->Add(hDCAxy[iB][i][j]);
 	fList[iB]->Add(hDCAz[iB][i][j]);
 	fList[iB]->Add(hM2CutDCAxy[iB][i][j]);
-	fList[iB]->Add(hM2CutGroundDCAxy[iB][i][j]);
+	//fList[iB]->Add(hM2CutGroundDCAxy[iB][i][j]);
 	fList[iB]->Add(hDCAxy[iB][i+nPart][j]);
 	fList[iB]->Add(hDCAz[iB][i+nPart][j]);
 	fList[iB]->Add(hM2CutDCAxy[iB][i+nPart][j]);
-	fList[iB]->Add(hM2CutGroundDCAxy[iB][i+nPart][j]);
+	//fList[iB]->Add(hM2CutGroundDCAxy[iB][i+nPart][j]);
       }
     }
     
@@ -544,11 +578,9 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
       Double_t DCAz = b[1];
       
       //Cut on the DCAz
-      Bool_t isDCAzCut=kFALSE;
-      if(DCAz<DCAzCut) isDCAzCut=kTRUE;
-
-      if(!isDCAzCut)
-	continue;
+      //Bool_t isDCAzCut=kFALSE;
+      //if(DCAz<DCAzCut) isDCAzCut=kTRUE;
+      //if(!isDCAzCut) continue;
       
       //For the Tpc purity cut
       Double_t dedx = track->GetTPCsignal();
@@ -607,11 +639,11 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	//fNsigmaTpc[iBconf][iS]->Fill(pTPC,nsigmaTPC[iS]);
 	if(charge>0) {//positive particle
 	  fNsigmaTpc[iBconf][iS]->Fill(pTPC,nsigmaTPC[iS]);
-	  if(kTOF && (TMath::Abs(DCAxy)<DCAxyCut)) fNsigmaTpc_kTOF[iBconf][iS]->Fill(p,nsigmaTPC[iS]);
+	  if(kTOF && (TMath::Abs(DCAxy)<DCAxyCut) && (TMath::Abs(DCAz)<DCAzCut)) fNsigmaTpc_kTOF[iBconf][iS]->Fill(p,nsigmaTPC[iS]);
 	}
 	else {//negative particle
 	  fNsigmaTpc[iBconf][iS+nPart]->Fill(pTPC,nsigmaTPC[iS]);
-	  if(kTOF && (TMath::Abs(DCAxy)<DCAxyCut)) fNsigmaTpc_kTOF[iBconf][iS+nPart]->Fill(p,nsigmaTPC[iS]);
+	  if(kTOF && (TMath::Abs(DCAxy)<DCAxyCut) && (TMath::Abs(DCAz)<DCAzCut)) fNsigmaTpc_kTOF[iBconf][iS+nPart]->Fill(p,nsigmaTPC[iS]);
 	}
 	/*
 	  if(TMath::Abs(nsigmaTPC[iS])<NsigmaTpcCut) {
@@ -649,11 +681,11 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	  fNsigmaTof[iBconf][iS]->Fill(pt,nsigmaTOF[iS]);
 	  if(charge>0) {
 	    hBetaExp[iBconf][iS]->Fill(p,exptimes[0]/exptimes[iS]);
-	    if(TMath::Abs(DCAxy)<DCAxyCut) fNsigmaTof_DcaCut[iBconf][iS]->Fill(pt,nsigmaTOF[iS]);
+	    if(TMath::Abs(DCAxy)<DCAxyCut && TMath::Abs(DCAz)<DCAzCut) fNsigmaTof_DcaCut[iBconf][iS]->Fill(pt,nsigmaTOF[iS]);
 	  }
 	  else {
 	    hBetaExp[iBconf][iS+nPart]->Fill(p,exptimes[0]/exptimes[iS]);
-	    if(TMath::Abs(DCAxy)<DCAxyCut) fNsigmaTof_DcaCut[iBconf][iS+nPart]->Fill(pt,nsigmaTOF[iS]);
+	    if(TMath::Abs(DCAxy)<DCAxyCut && TMath::Abs(DCAz)<DCAzCut) fNsigmaTof_DcaCut[iBconf][iS+nPart]->Fill(pt,nsigmaTOF[iS]);
 	  }
 
 	  //TOF identification:
@@ -684,7 +716,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	if(charge>0) {
 	  //without TPC
 	  fM2vsP_NoTpcCut[iBconf][0][0]->Fill(M2,p);
-	  if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsP_NoTpcCut[iBconf][1][0]->Fill(M2,p);
+	  if(TMath::Abs(DCAxy)<DCAxyCut && TMath::Abs(DCAz)<DCAzCut) fM2vsP_NoTpcCut[iBconf][1][0]->Fill(M2,p);
 	  //with TPC
 	  for(Int_t iS=0;iS<9;iS++) {
 	    M2=999.9;
@@ -692,14 +724,14 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	    //-----------------
 	    if(FlagPid & stdFlagPid[iS]) {
 	      fM2vsP[iBconf][0][iS]->Fill(M2,pC[iS]);
-	      if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsP[iBconf][1][iS]->Fill(M2,pC[iS]);
+	      if(TMath::Abs(DCAxy)<DCAxyCut && TMath::Abs(DCAz)<DCAzCut) fM2vsP[iBconf][1][iS]->Fill(M2,pC[iS]);
 	    }
 	  }
 	}
 	else {//charge<0
 	  //without TPC
 	  fM2vsP_NoTpcCut[iBconf][0][1]->Fill(M2,p);
-	  if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsP_NoTpcCut[iBconf][1][1]->Fill(M2,p);
+	  if(TMath::Abs(DCAxy)<DCAxyCut && TMath::Abs(DCAz)<DCAzCut) fM2vsP_NoTpcCut[iBconf][1][1]->Fill(M2,p);
 	   //with TPC
 	  for(Int_t iS=0;iS<9;iS++) {
 	    M2=999.9;
@@ -707,7 +739,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	    //-----------------
 	    if(FlagPid & stdFlagPid[iS]) {
 	      fM2vsP[iBconf][0][iS+nPart]->Fill(M2,pC[iS]);
-	      if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsP[iBconf][1][iS+nPart]->Fill(M2,pC[iS]);
+	      if(TMath::Abs(DCAxy)<DCAxyCut && TMath::Abs(DCAz)<DCAzCut) fM2vsP[iBconf][1][iS+nPart]->Fill(M2,pC[iS]);
 	    }
 	  }
 	}
@@ -724,13 +756,19 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	    M2=Mass2[iS];
 	    
 	    if(FlagPid & stdFlagPid[iS]) {
+	      if(pC[iS]<1.5) {
+		h2DCAap[iBconf][iS]->Fill(DCAxy,DCAz);
+		h2DCAap[iBconf][iS]->Fill(-DCAxy,-DCAz);
+	      }
 	      for(Int_t j=0;j<nbin;j++) {
 		if(pC[iS]>binP[j] && pC[iS]<binP[j+1]) {
 		  hDCAxy[iBconf][iS][j]->Fill(DCAxy);
 		  hDCAxy[iBconf][iS][j]->Fill(-DCAxy);
 		  hDCAz[iBconf][iS][j]->Fill(DCAz);
 		  hDCAz[iBconf][iS][j]->Fill(-DCAz);
-		  if(TMath::Abs(DCAxy)<DCAxyCut) {
+		  //h2DCA[iBconf][iS][j]->Fill(DCAxy,DCAz);
+		  //h2DCA[iBconf][iS][j]->Fill(-DCAxy,-DCAz);
+		  if(TMath::Abs(DCAxy)<DCAxyCut && TMath::Abs(DCAz)<DCAzCut) {
 		    hM2CutDCAxy[iBconf][iS][j]->Fill(M2);
 		  }
 		  if(TMath::Abs(DCAxy+0.5)<DCAxyCut) {
@@ -748,13 +786,19 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	    M2=Mass2[iS];
 	    	    
 	    if(FlagPid & stdFlagPid[iS]) {
+	      if(pC[iS]<1.5) {
+		h2DCAap[iBconf][iS+nPart]->Fill(DCAxy,DCAz);
+		h2DCAap[iBconf][iS+nPart]->Fill(-DCAxy,-DCAz);
+	      }
 	      for(Int_t j=0;j<nbin;j++) {
 		if(pC[iS]>binP[j] && pC[iS]<binP[j+1]) {
 		  hDCAxy[iBconf][iS+nPart][j]->Fill(DCAxy);
 		  hDCAxy[iBconf][iS+nPart][j]->Fill(-DCAxy);
 		  hDCAz[iBconf][iS+nPart][j]->Fill(DCAz);
 		  hDCAz[iBconf][iS+nPart][j]->Fill(-DCAz);
-		  if(TMath::Abs(DCAxy)<DCAxyCut) {
+		  //h2DCA[iBconf][iS+nPart][j]->Fill(DCAxy,DCAz);
+		  //h2DCA[iBconf][iS+nPart][j]->Fill(-DCAxy,-DCAz);
+		  if(TMath::Abs(DCAxy)<DCAxyCut && TMath::Abs(DCAz)<DCAzCut) {
 		    hM2CutDCAxy[iBconf][iS+nPart][j]->Fill(M2);
 		  }
 		  if(TMath::Abs(DCAxy+0.5)<DCAxyCut) {

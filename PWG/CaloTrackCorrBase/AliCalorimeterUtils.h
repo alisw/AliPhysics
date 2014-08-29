@@ -169,7 +169,9 @@ class AliCalorimeterUtils : public TObject {
   Int_t         GetModuleNumberCellIndexes(Int_t absId, TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
 	
   //Modules fiducial region
-  Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent * event, Int_t iev=0) const ;
+  Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells) const ;
+  Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent* /**/, Int_t /**/)
+                { return CheckCellFiducialRegion(cluster, cells) ; } // Stupid thing to do but just to avoid compilation break in AliTrackComparisonESD while I find the authors
   void          SetNumberOfCellsFromPHOSBorder(Int_t n)    { fNCellsFromPHOSBorder = n                                ; }
   Int_t         GetNumberOfCellsFromPHOSBorder()     const { return fNCellsFromPHOSBorder                             ; }
   void          SetNumberOfCellsFromEMCALBorder(Int_t n)   { fEMCALRecoUtils->SetNumberOfCellsFromEMCALBorder(n)      ; }

@@ -21,6 +21,7 @@
 #include "TTree.h"
 #include "TLegend.h"
 #include "TH1F.h"
+#include "TH1D.h"
 #include "TH2F.h"
 #include "THnSparse.h"
 #include "TProfile.h"
@@ -94,7 +95,12 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
   fResSP_mb(0),
   fv2SPGap1Amc(0),
   fv2SPGap1Bmc(0),
-  fResSPmc(0)
+  fResSPmc(0),
+  fIsRecoEff(0),
+  fRecoEffList(0),
+  fResSPRecoEff(0),
+  fResSPRecoEff_lq(0),
+  fResSPRecoEff_sq(0)
 {
   
   for (Int_t i = 0; i< 9; i++){
@@ -142,7 +148,21 @@ AliAnalysisTaskV2AllChAOD::AliAnalysisTaskV2AllChAOD(const char *name) : AliAnal
     fSinGap1B_sq[i] = 0;
     fCosGap1B_sq[i] = 0;
     
+    //reco eff check
+    fv2SPGap1ARecoEff[i] = 0;
+    fv2SPGap1BRecoEff[i] = 0;
+    
+    fv2SPGap1ARecoEff_lq[i] = 0;
+    fv2SPGap1BRecoEff_lq[i] = 0;
+    
+    fv2SPGap1ARecoEff_sq[i] = 0;
+    fv2SPGap1BRecoEff_sq[i] = 0;
+    
   }
+    
+  fRecoEffList=new TList();
+  fRecoEffList->SetOwner();
+  fRecoEffList->SetName("fRecoEffList");
     
   // Default constructor
   DefineInput(0, TChain::Class());
@@ -229,15 +249,6 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
 
   fv2SPGap1B_mb = new TProfile("fv2SPGap1B_mb", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
   fOutput->Add(fv2SPGap1B_mb);
-  
-  fResSPmc = new TProfile("fResSPmc", "Resolution; ese; Resolution", 3, 0., 3.);
-  fOutput->Add(fResSPmc);
-
-  fv2SPGap1Amc = new TProfile("fv2SPGap1Amc", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
-  fOutput->Add(fv2SPGap1Amc);
-
-  fv2SPGap1Bmc = new TProfile("fv2SPGap1Bmc", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
-  fOutput->Add(fv2SPGap1Bmc);
   
   //large q resolution
   fResSP_lq = new TProfile("fResSP_lq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
@@ -363,6 +374,51 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
     fOutput_sq->Add(fCosGap1B_sq[iC]);
   };
   
+  if(!fIsMC){
+    fResSPmc = new TProfile("fResSPmc", "Resolution; ese; Resolution", 3, 0., 3.);
+    fOutput->Add(fResSPmc);
+
+    fv2SPGap1Amc = new TProfile("fv2SPGap1Amc", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+    fOutput->Add(fv2SPGap1Amc);
+
+    fv2SPGap1Bmc = new TProfile("fv2SPGap1Bmc", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+    fOutput->Add(fv2SPGap1Bmc);
+  }
+  
+  if(fIsRecoEff){
+    
+    fResSPRecoEff = new TProfile("fResSPRecoEff", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
+    fOutput->Add(fResSPRecoEff);
+    
+    fResSPRecoEff_lq = new TProfile("fResSPRecoEff_lq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
+    fOutput_lq->Add(fResSPRecoEff_lq);
+    
+    fResSPRecoEff_sq = new TProfile("fResSPRecoEff_sq", "Resolution; centrality; Resolution", 9, -0.5, 8.5);
+    fOutput_sq->Add(fResSPRecoEff_sq);
+    
+    for (Int_t iC = 0; iC < 9; iC++){
+      
+      fv2SPGap1ARecoEff[iC] = new TProfile(Form("fv2SPGap1ARecoEff_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+      fOutput->Add(fv2SPGap1ARecoEff[iC]);
+
+      fv2SPGap1BRecoEff[iC] = new TProfile(Form("fv2SPGap1BRecoEff_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+      fOutput->Add(fv2SPGap1BRecoEff[iC]);
+      
+      fv2SPGap1ARecoEff_lq[iC] = new TProfile(Form("fv2SPGap1ARecoEff_lq_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+      fOutput_lq->Add(fv2SPGap1ARecoEff_lq[iC]);
+
+      fv2SPGap1BRecoEff_lq[iC] = new TProfile(Form("fv2SPGap1BRecoEff_lq_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+      fOutput_lq->Add(fv2SPGap1BRecoEff_lq[iC]);
+      
+      fv2SPGap1ARecoEff_sq[iC] = new TProfile(Form("fv2SPGap1ARecoEff_sq_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+      fOutput_sq->Add(fv2SPGap1ARecoEff_sq[iC]);
+
+      fv2SPGap1BRecoEff_sq[iC] = new TProfile(Form("fv2SPGap1BRecoEff_sq_%d", iC), "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
+      fOutput_sq->Add(fv2SPGap1BRecoEff_sq[iC]);
+      
+    }
+  }
+  
   PostData(1, fOutput  );
   PostData(2, fEventCuts);
   PostData(3, fTrackCuts);
@@ -425,6 +481,10 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
   Double_t QxGap1A = 0., QyGap1A = 0.;
   Double_t QxGap1B = 0., QyGap1B = 0.;
   Int_t multGap1A = 0, multGap1B = 0;
+
+  //reco eff Qvector
+  Double_t QxGap1ARecoEff = 0., QyGap1ARecoEff = 0.;
+  Double_t QxGap1BRecoEff = 0., QyGap1BRecoEff = 0.;
   
   for (Int_t loop = 0; loop < 2; loop++){
 
@@ -435,6 +495,9 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
       if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
     
       fEta_vs_Phi_bef->Fill( track->Eta(), track->Phi() );
+      
+      Double_t recoEff = 1.;
+      if (fIsRecoEff) recoEff = GetRecoEff(track->Pt(), centV0);
   
       if (loop == 0) {
 	
@@ -447,7 +510,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
           fCosGap1Aq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
 	  
 	  fEta_vs_PhiA->Fill( track->Eta(), track->Phi() );
-                    
+	  
           if (Qvec > fCutLargeQperc && Qvec < 100.){
 	    fSinGap1Aq_lq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	    fCosGap1Aq_lq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
@@ -457,6 +520,12 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 	    fSinGap1Aq_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	    fCosGap1Aq_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
 	  }
+          
+	  if(fIsRecoEff){
+	    QxGap1ARecoEff += ( TMath::Cos(2.*track->Phi()) )/recoEff;
+            QyGap1ARecoEff += ( TMath::Sin(2.*track->Phi()) )/recoEff;
+	  }
+	  
 	}
     
       if (track->Eta() < fEtaGapMin){
@@ -478,6 +547,12 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 	  fSinGap1Bq_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	  fCosGap1Bq_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
         }
+          
+	  if(fIsRecoEff){
+	    QxGap1BRecoEff += ( TMath::Cos(2.*track->Phi()) )/recoEff;
+            QyGap1BRecoEff += ( TMath::Sin(2.*track->Phi()) )/recoEff;
+	  }
+	  
       }
   
     } else {
@@ -486,7 +561,7 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
         if (track->Eta() < fEtaGapMin && multGap1A > 0){
           Double_t v2SPGap1A = (TMath::Cos(2.*track->Phi())*QxGap1A + TMath::Sin(2.*track->Phi())*QyGap1A)/(Double_t)multGap1A;
           fv2SPGap1A[centV0]->Fill(track->Pt(), v2SPGap1A);
-          fv2SPGap1A_mb->Fill(track->Pt(), v2SPGap1A); //mb v2
+          fv2SPGap1A_mb->Fill(track->Pt(), v2SPGap1A); //mb v2 for mc closure
 
 	  fSinGap1A[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
           fCosGap1A[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
@@ -501,6 +576,18 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 	    fv2SPGap1A_sq[centV0]->Fill(track->Pt(), v2SPGap1A);
 	    fSinGap1A_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	    fCosGap1A_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  }
+	  
+	  if(fIsRecoEff){
+	    Double_t uxGap1ARecoEff = ( TMath::Cos(2.*track->Phi()) )/recoEff;
+	    Double_t uyGap1ARecoEff = ( TMath::Sin(2.*track->Phi()) )/recoEff;
+	    Double_t v2SPGap1ARecoEff = ( uxGap1ARecoEff*QxGap1ARecoEff + uyGap1ARecoEff*QyGap1ARecoEff)/(Double_t)multGap1A;
+            fv2SPGap1ARecoEff[centV0]->Fill(track->Pt(), v2SPGap1ARecoEff);
+	    
+	    if (Qvec > fCutLargeQperc && Qvec < 100.)
+	      fv2SPGap1ARecoEff_lq[centV0]->Fill(track->Pt(), v2SPGap1ARecoEff);
+            if (Qvec > 0. && Qvec < fCutSmallQperc)
+	      fv2SPGap1ARecoEff_sq[centV0]->Fill(track->Pt(), v2SPGap1ARecoEff);
 	  }
         }
       
@@ -522,6 +609,18 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 	    fv2SPGap1B_sq[centV0]->Fill(track->Pt(), v2SPGap1B);
 	    fSinGap1B_sq[centV0]->Fill(track->Pt(), TMath::Sin(2.*track->Phi()));
 	    fCosGap1B_sq[centV0]->Fill(track->Pt(), TMath::Cos(2.*track->Phi()));
+	  }
+	  
+	  if(fIsRecoEff){
+	    Double_t uxGap1BRecoEff = ( TMath::Cos(2.*track->Phi()) )/recoEff;
+	    Double_t uyGap1BRecoEff = ( TMath::Sin(2.*track->Phi()) )/recoEff;
+	    Double_t v2SPGap1BRecoEff = ( uxGap1BRecoEff*QxGap1BRecoEff + uyGap1BRecoEff*QyGap1BRecoEff)/(Double_t)multGap1B;
+            fv2SPGap1BRecoEff[centV0]->Fill(track->Pt(), v2SPGap1BRecoEff);
+	    
+	    if (Qvec > fCutLargeQperc && Qvec < 100.)
+	      fv2SPGap1BRecoEff_lq[centV0]->Fill(track->Pt(), v2SPGap1BRecoEff);
+            if (Qvec > 0. && Qvec < fCutSmallQperc)
+	      fv2SPGap1BRecoEff_sq[centV0]->Fill(track->Pt(), v2SPGap1BRecoEff);
 	  }
         }
       }// end else 
@@ -558,6 +657,17 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
       fResSP_vs_Cent_sq->Fill(Cent, res);
       if(f2partCumQA>0)f2partCumQA_vs_Cent_sq->Fill((Double_t)Cent,f2partCumQA);
       if(f2partCumQB>0)f2partCumQB_vs_Cent_sq->Fill((Double_t)Cent,f2partCumQB);
+    }
+    
+    if(fIsRecoEff){
+      Double_t resRecoEff = (QxGap1ARecoEff*QxGap1BRecoEff + QyGap1ARecoEff*QyGap1BRecoEff)/(Double_t)multGap1A/(Double_t)multGap1B;
+      fResSPRecoEff->Fill((Double_t)centV0, resRecoEff);
+      
+      if (Qvec > fCutLargeQperc && Qvec < 100.)
+	fResSPRecoEff_lq->Fill((Double_t)centV0, resRecoEff);
+	
+      if (Qvec > 0. && Qvec < fCutSmallQperc)
+	fResSPRecoEff_sq->Fill((Double_t)centV0, resRecoEff);
     }
     
     if( fFillTHn ){ 
@@ -680,6 +790,33 @@ void  AliAnalysisTaskV2AllChAOD::MCclosure(){
       }// end if MC
 }
   
+//_________________________________________________________________
+Double_t AliAnalysisTaskV2AllChAOD::GetRecoEff(Double_t pt, Int_t iC){
+
+  if(iC>8) return 1.;
+
+  if(pt<0.2 || pt>100.) return 1.;
+
+// // //   //spectra ese binning
+// // //   //const Double_t ptBins[] = {0.20,0.30,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.8,3.2,3.6,4.0,5.0,6.0,7.0,8.0,9.0,10.,12.,15.,20.,25.,30.,35.,40.,50.,75.,100.};
+// // //   //const Int_t nptBins=34;
+  
+  const Double_t fEpsilon=0.000001;
+  
+  TH1F *h = (TH1F*)fRecoEffList->At(iC);
+  
+  Int_t bin = h->FindBin(pt);
+  
+  Double_t lowlim = h->GetBinLowEdge(bin);
+  Double_t uplim = h->GetBinLowEdge(bin) + h->GetBinWidth(bin);
+  
+  if( pt>lowlim && pt<uplim ) return h->GetBinContent(bin);
+  if( pt == lowlim ) return h->GetBinContent( h->FindBin(pt+fEpsilon) );
+  if( pt == uplim ) return h->GetBinContent( h->FindBin(pt-fEpsilon) );
+
+  else return 1.;
+  
+}
 //_________________________________________________________________
 void   AliAnalysisTaskV2AllChAOD::Terminate(Option_t *)
 {

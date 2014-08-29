@@ -78,6 +78,7 @@ private:
    Double_t ComputeAngle();
    Double_t ComputeCentrality(Bool_t isESD);
    Double_t ComputeMultiplicity(Bool_t isESD,TString type);
+   Double_t ComputeTracklets();
    Double_t ApplyCentralityPatchAOD049();
    Double_t ApplyCentralityPatchPbPb2011();
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
@@ -104,6 +105,7 @@ private:
    TClonesArray         fValues;          //  list of values to be computed
    TH1F                *fHEventStat;      //  histogram of event statistics
    TH1F                *fHAEventsVsMulti; //  histogram of event statistics
+   TH1F                *fHAEventsVsTracklets; //  histogram of event statistics
    TH2F                *fHAEventVz;       //  histogram of vertex-z vs. multiplicity/centrality
    TH2F                *fHAEventMultiCent;//  histogram of multiplicity vs. centrality
    TH2F                *fHAEventPlane;    //  histogram of event plane vs. multiplicity/centrality
@@ -126,7 +128,7 @@ private:
    Bool_t   		fKeepDfromBOnly;     // flag to keep only the charm particles that comes from beauty decays (specific for D meson analysis)
    Bool_t 		fRejectIfNoQuark;    // flag to remove events not generated with PYTHIA
 
-   ClassDef(AliRsnMiniAnalysisTask, 9);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 10);   // AliRsnMiniAnalysisTask
 };
 
 
