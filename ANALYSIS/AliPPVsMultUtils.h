@@ -21,13 +21,13 @@ public:
 
     //Utility functions
     //for the base virtual event class: all methods are common
-    Float_t GetMultiplicityPercentile(AliESDEvent *event, TString lMethod = "V0M");
-    Float_t GetMultiplicityPercentile(AliAODEvent *event, TString lMethod = "V0M");
+    Float_t GetMultiplicityPercentile(AliVEvent *event, TString lMethod = "V0M");
     Bool_t LoadCalibration(Int_t lLoadThisCalibration);
     
 private:
     
-    Int_t fRunNumber; // minimum vertex contributors
+    Int_t fRunNumber; // for control of run changes
+    Bool_t fCalibrationLoaded; // control flag
     
     TH1F *fBoundaryHisto_V0M;
     TH1F *fBoundaryHisto_V0A;
