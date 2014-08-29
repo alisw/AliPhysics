@@ -384,22 +384,24 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(CorrectionType correctionType, 
   // find eta borders, if eta is negative assume -0.8 ... 0.8
   Int_t etaBegin = 0;
   Int_t etaEnd = 0;
+  const TAxis * xax = generated->GetXaxis();
+  const TAxis * yax = generated->GetYaxis();
   if (eta < -99)
   {
-    etaBegin = generated->GetYaxis()->FindBin(-0.8);
-    etaEnd = generated->GetYaxis()->FindBin(0.8);
+    etaBegin = yax->FindFixBin(-0.8);
+    etaEnd = yax->FindFixBin(0.8);
   }
   else
   {
-    etaBegin = generated->GetYaxis()->FindBin(eta);
+    etaBegin = yax->FindFixBin(eta);
     etaEnd = etaBegin;
   }
 
   if (vertexBegin == -1)
-    vertexBegin = generated->GetXaxis()->FindBin(-9.99);
+    vertexBegin = xax->FindFixBin(-9.99);
 
   if (vertexEnd == -1)
-    vertexEnd = generated->GetXaxis()->FindBin(9.99);
+    vertexEnd = xax->FindFixBin(9.99);
 
   TH1D* ptProj = dynamic_cast<TH1D*> (generated->ProjectionZ(Form("%s_pt", generated->GetName()), vertexBegin, vertexEnd, etaBegin, etaEnd));
   //printf("GetMeasuredFraction: bin range %d %d %d %d\n", vertexBegin, vertexEnd, etaBegin, etaEnd);
@@ -444,7 +446,7 @@ TH1* AlidNdEtaCorrection::GetMeasuredEventFraction(CorrectionType correctionType
   const TH2* generated = GetCorrection(correctionType)->GetEventCorrection()->GetGeneratedHistogram();
 
   TH1* allEvents = generated->ProjectionX(Form("%s_all", generated->GetName()), 1, generated->GetNbinsY());
-  TH1* aboveEvents = generated->ProjectionX(Form("%s_above", generated->GetName()), generated->GetYaxis()->FindBin(multCut), generated->GetNbinsY());
+  TH1* aboveEvents = generated->ProjectionX(Form("%s_above", generated->GetName()), generated->GetYaxis()->FindFixBin(multCut), generated->GetNbinsY());
   
   aboveEvents->Divide(aboveEvents, allEvents, 1, 1, "B");
 

@@ -57,6 +57,8 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
         Int_t GetNCaloPhotonMotherMCLabels(){return fNCaloPhotonMotherMCLabels;}
 		void SetCaloPhotonMCFlags(AliStack *MCStack);
 		void SetCaloPhotonMCFlagsAOD(AliVEvent* event);
+		void SetCaloClusterRef(Long_t ref){fCaloClusterRef = ref;}
+		Long_t GetCaloClusterRef()const {return fCaloClusterRef;}
 		
 		//Calo cluster MC identifiers
 		Bool_t IsLargestComponentPhoton(){return fCaloPhotonMCFlags&kIsPhoton;} 					// largest contribution to cluster is photon
@@ -76,6 +78,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 		Float_t fDCArPrimVtx;
 		Float_t fDCAzPrimVtx;
 		Bool_t fCaloPhoton;
+		Long_t fCaloClusterRef;
 		Int_t fNCaloPhotonMCLabels;
         Int_t fNCaloPhotonMotherMCLabels;
         Int_t fCaloPhotonMCFlags;

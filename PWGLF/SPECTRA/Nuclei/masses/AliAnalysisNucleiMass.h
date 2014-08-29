@@ -114,7 +114,9 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   //DCA distributions
   TH1D *hDCAxy[nBconf][18][nbin];                 //! DCAxy distribution with NsigmaTpcCut for each particle species, in p bins
   TH1D *hDCAz[nBconf][18][nbin];                  //! DCAz distribution with NsigmaTpcCut for each particle species, in p bins
-  
+  //TH2F *h2DCA[nBconf][18][nbin];                //! DCAxy vs DCAz with NsigmaTpcCut for each particle species, in p bins
+  TH2F *h2DCAap[nBconf][18];                      //! DCAxy vs DCAz with NsigmaTpcCut for each particle species
+    
   //TOF mass distributions
   TH1D *hM2CutDCAxy[nBconf][18][nbin];            //! Tof m2 distribution in DCAxyCut and with NsigmaTpcCut
   TH1D *hM2CutGroundDCAxy[nBconf][18][nbin];      //! Tof m2 distribution in the background of DCAxyCut (secondary nuclei selection) and with NsigmaTpcCut

@@ -87,7 +87,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   }
 
   SetMakeGeneralHistograms(kTRUE);
-  DefineOutput(2, TTree::Class());
+  if(fCreateTree) DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -141,7 +141,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   }
 
   SetMakeGeneralHistograms(kTRUE);
-  DefineOutput(2, TTree::Class());
+  if(fCreateTree) DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -164,9 +164,9 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   const Double_t minPt = -50.;
   const Double_t maxPt = 150.;
 
-  const Int_t nBinsM  = 150;
-  const Double_t minM = -50.;
-  const Double_t maxM = 100.;
+  const Int_t nBinsM  = 100;
+  const Double_t minM = -20.;
+  const Double_t maxM = 80.;
 
   const Int_t nBinsMT  = 50;
   const Double_t minMT = 0.;

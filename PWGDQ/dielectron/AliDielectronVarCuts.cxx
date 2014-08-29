@@ -54,6 +54,7 @@ AliDielectronVarCuts::AliDielectronVarCuts() :
     fCutMin[i]=0;
     fCutMax[i]=0;
     fCutExclude[i]=kFALSE;
+    fBitCut[i]=kFALSE;
     fUpperCut[i]=0x0;
   }
 }
@@ -76,6 +77,7 @@ AliDielectronVarCuts::AliDielectronVarCuts(const char* name, const char* title) 
     fCutMin[i]=0;
     fCutMax[i]=0;
     fCutExclude[i]=kFALSE;
+    fBitCut[i]=kFALSE;
     fUpperCut[i]=0x0;
   }
 }
@@ -117,21 +119,32 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
     Int_t cut=fActiveCuts[iCut];
     SETBIT(fSelectedCutsMask,iCut);
-    if ( !fUpperCut[iCut] && ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
-    else if ( fUpperCut[iCut]) {
-      // use a THnBase inherited cut object
-      Double_t *vals = new Double_t[fUpperCut[iCut]->GetNdimensions()];//={-1};
-      // get array of values for the corresponding dimensions using axis names
-      for(Int_t idim=0; idim<fUpperCut[iCut]->GetNdimensions(); idim++) {
-	vals[idim] = values[AliDielectronVarManager::GetValueType(fUpperCut[iCut]->GetAxis(idim)->GetName())];
-	// printf(" \t %s %.3f ",fUpperCut[iCut]->GetAxis(idim)->GetName(),vals[idim]);
-      }
-      // find bin for values (w/o creating it in case it is not filled)
-      Long_t bin = fUpperCut[iCut]->GetBin(vals,kFALSE);
-      Double_t cutMax = (bin>0 ? fUpperCut[iCut]->GetBinContent(bin) : -999. );
-      if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>cutMax))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
-      delete [] vals;
+
+    // apply 'bit cut'
+    if(fBitCut[iCut]) {
+      if ( (TESTBIT((UInt_t)values[cut],(UInt_t)fCutMin[iCut]))^(!fCutExclude[iCut]) )  CLRBIT(fSelectedCutsMask,iCut);
     }
+    else {
+      // standard var cuts
+      if ( !fUpperCut[iCut] && ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) {
+	CLRBIT(fSelectedCutsMask,iCut);
+      }
+      else if ( fUpperCut[iCut]) {
+	/// use a THnBase inherited cut object //
+	Double_t *vals = new Double_t[fUpperCut[iCut]->GetNdimensions()];//={-1};
+	// get array of values for the corresponding dimensions using axis names
+	for(Int_t idim=0; idim<fUpperCut[iCut]->GetNdimensions(); idim++) {
+	  vals[idim] = values[AliDielectronVarManager::GetValueType(fUpperCut[iCut]->GetAxis(idim)->GetName())];
+	  // printf(" \t %s %.3f ",fUpperCut[iCut]->GetAxis(idim)->GetName(),vals[idim]);
+	}
+	// find bin for values (w/o creating it in case it is not filled)
+	Long_t bin = fUpperCut[iCut]->GetBin(vals,kFALSE);
+	Double_t cutMax = (bin>0 ? fUpperCut[iCut]->GetBinContent(bin) : -999. );
+	if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>cutMax))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
+	delete [] vals;
+      }
+    }
+    // cut type and decision
     if ( fCutType==kAll && !TESTBIT(fSelectedCutsMask,iCut) ) return kFALSE; // option to (minor) speed improvement
   }
 
@@ -155,6 +168,21 @@ void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Doub
   fCutMin[fNActiveCuts]=min;
   fCutMax[fNActiveCuts]=max;
   fCutExclude[fNActiveCuts]=excludeRange;
+  SETBIT(fActiveCutsMask,fNActiveCuts);
+  fActiveCuts[fNActiveCuts]=(UShort_t)type;
+  fUsedVars->SetBitNumber(type,kTRUE);
+  ++fNActiveCuts;
+}
+
+//________________________________________________________________________
+void AliDielectronVarCuts::AddBitCut(AliDielectronVarManager::ValueTypes type, UInt_t bit, Bool_t excludeRange)
+{
+  //
+  // Set cut range and activate it
+  //
+  fCutMin[fNActiveCuts]=bit;
+  fCutExclude[fNActiveCuts]=excludeRange;
+  fBitCut[fNActiveCuts]=kTRUE;
   SETBIT(fActiveCutsMask,fNActiveCuts);
   fActiveCuts[fNActiveCuts]=(UShort_t)type;
   fUsedVars->SetBitNumber(type,kTRUE);
@@ -198,13 +226,42 @@ void AliDielectronVarCuts::Print(const Option_t* /*option*/) const
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
     Int_t cut=(Int_t)fActiveCuts[iCut];
     Bool_t inverse=fCutExclude[iCut];
+    Bool_t bitcut=fBitCut[iCut];
+    Bool_t objcut=fUpperCut[iCut];
 
-    if (!inverse){
-      printf("Cut %02d: %f < %s < %f\n", iCut,
-             fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), fCutMax[iCut]);
-    } else {
-      printf("Cut %02d: !(%f < %s < %f)\n", iCut,
-             fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), fCutMax[iCut]);
+    if(!bitcut && !objcut) {
+      // standard cut
+      if (!inverse){
+	printf("Cut %02d: %f < %s < %f\n", iCut,
+	       fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), fCutMax[iCut]);
+      } else {
+	printf("Cut %02d: !(%f < %s < %f)\n", iCut,
+	       fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), fCutMax[iCut]);
+      }
     }
-  }
+    else if(bitcut) {
+      // bit cut
+      if (!inverse){
+	printf("Cut %02d: %s & (1ULL<<%d) \n", iCut,
+	       AliDielectronVarManager::GetValueName((Int_t)cut), (UInt_t)fCutMin[iCut]);
+      } else {
+	printf("Cut %02d: !(%s & (1ULL<<%d)) \n", iCut,
+	       AliDielectronVarManager::GetValueName((Int_t)cut), (UInt_t)fCutMin[iCut]);
+      }
+    }
+    else if(objcut) {
+      // upper cut limit provided by object depending on 'dep'
+      TString dep="";
+      for(Int_t idim=0; idim<fUpperCut[iCut]->GetNdimensions(); idim++)
+	dep+=Form("%s%s",(idim?",":""),fUpperCut[iCut]->GetAxis(idim)->GetName());
+
+      if (!inverse){
+	printf("Cut %02d: %f < %s < obj(%s)\n", iCut,
+	       fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), dep.Data());
+      } else {
+	printf("Cut %02d: !(%f < %s < obj(%s))\n", iCut,
+	       fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), dep.Data());
+      }
+    }
+  } //loop over cuts
 }

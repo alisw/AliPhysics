@@ -368,7 +368,7 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
   Int_t ntracks=event->GetNumberOfTracks(); 
   UInt_t specie = event->GetEventSpecie();  // skip laser events
   if (specie==AliRecoParam::kCalib) return;
-  Int_t ntracksFriend = esdFriend->GetNumberOfTracks();
+  Int_t ntracksFriend = esdFriend ? esdFriend->GetNumberOfTracks() : 0;
 
 
   for (Int_t itrack0=0;itrack0<ntracks;itrack0++) {

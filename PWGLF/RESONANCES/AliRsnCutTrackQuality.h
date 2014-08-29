@@ -50,6 +50,7 @@ public:
    void      SetTPCminNClusters(Int_t value)           {fTPCminNClusters = value;}
    void      SetTPCmaxChi2(Double_t value)             {fTPCmaxChi2 = value;}
    void      SetMaxChi2TPCConstrainedGlobal(Float_t max) {fCutMaxChi2TPCConstrainedVsGlobal = max; }
+   void      SetTrackMaxChi2(Double_t value)           {fTrackMaxChi2 = value;}
    void      SetMinNCrossedRowsTPC(Double_t min, Bool_t useTPCCrossedRows) {fTPCminNCrossedRows=min; fIsUseCrossedRowsCut=useTPCCrossedRows;}
    void      SetMinNCrossedRowsOverFindableClsTPC(Double_t min, Bool_t useTPCCrossedRows) {fTPCminCrossedRowsOverFindableCls=min; fIsUseCrossedRowsCut=useTPCCrossedRows;}
    void      SetMinLengthActiveVolumeTPC(Double_t min, Bool_t on = kFALSE) {fCutMinLengthActiveVolumeTPC=min; fIsUseLengthActiveVolumeTPCCut=on;}
@@ -100,6 +101,8 @@ protected:
    Double_t   fTPCmaxChi2;             // maximum chi2 / number of clusters in TPC
    Float_t    fCutMaxChi2TPCConstrainedVsGlobal;  // max chi2 TPC track constrained with vtx vs. global track
    
+   Double_t   fTrackMaxChi2;           // maximum track chi2/NDF
+   
    Bool_t     fIsUseCrossedRowsCut;     //enable cut on minimum number of TPC crossed rows
    Float_t    fTPCminNCrossedRows;     // minimum number of TPC crossed rows
    Float_t    fTPCminCrossedRowsOverFindableCls;     // minimum number of crossed rows/findable clusters
@@ -110,6 +113,6 @@ protected:
    Bool_t     fCheckOnlyFilterBit;     // check only the filter bit
    AliESDtrackCuts *fESDtrackCuts;     // pointer to AliESDtrackCuts object
 
-   ClassDef(AliRsnCutTrackQuality, 4)
+   ClassDef(AliRsnCutTrackQuality, 5)
 };
 #endif

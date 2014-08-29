@@ -43,12 +43,9 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   JetMassType                         fJetMassType;                // jet mass type to be used
 
-  TH2F            **fh2PtJet1VsLeadPtAllSel;         //!all jets after std selection vs leading track pt
-  TH2F            **fh2PtJet1VsLeadPtTagged;         //!tagged jets vs leading track pt
-  TH2F            **fh2PtJet1VsLeadPtTaggedMatch;    //!tagged jets vs leading track pt matched to MC
-  TH2F            **fh2PtVsMassJet1All;              //!pT vs mass of all jets
-  TH2F            **fh2PtVsMassJet1Tagged;           //!pT vs mass of tagged jets
-  TH2F            **fh2PtVsMassJet1TaggedMatch;      //!pT vs mass of tagged jets matched to MC
+  TH3F            **fh3PtJet1VsMassVsLeadPtAllSel;         //!all jets after std selection pt vs mass vs leading track pt
+  TH3F            **fh3PtJet1VsMassVsLeadPtTagged;         //!tagged jets pt vs mass vs leading track pt
+  TH3F            **fh3PtJet1VsMassVsLeadPtTaggedMatch;    //!tagged jets pt vs mass vs leading track pt matched to MC
   TProfile        **fpPtVsMassJet1All;               //!pT vs avg mass of all jets
   TProfile        **fpPtVsMassJet1Tagged;            //!pT vs avg mass of tagged jets
   TProfile        **fpPtVsMassJet1TaggedMatch;       //!pT vs avg mass of tagged jets matched to MC
@@ -64,7 +61,7 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetMass(const AliAnalysisTaskEmcalJetMass&);            // not implemented
   AliAnalysisTaskEmcalJetMass &operator=(const AliAnalysisTaskEmcalJetMass&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMass, 5)
+  ClassDef(AliAnalysisTaskEmcalJetMass, 6)
 };
 #endif
 

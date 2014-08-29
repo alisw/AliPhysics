@@ -43,21 +43,7 @@ ClassImp(AliAnalysisNetParticleQA)
 
 //________________________________________________________________________
 AliAnalysisNetParticleQA::AliAnalysisNetParticleQA() :
-  fHelper(NULL),
-  fPdgCode(2212),
-
-  fESD(NULL),
-  fESDTrackCuts(NULL),
-  fPIDResponse(NULL),
-  fAOD(NULL),
-  fArrayMC(NULL),
-  fAODtrackCutBit(1024),
-  fIsMC(kFALSE),
-  fMCEvent(NULL),
-  fStack(NULL),
-
-  fCentralityBin(-1.),
-  fNTracks(0),
+  AliAnalysisNetParticleBase("QA", "QA"),
 
   fHnQA(NULL) {
   // Constructor   
@@ -78,37 +64,6 @@ AliAnalysisNetParticleQA::~AliAnalysisNetParticleQA() {
  * ---------------------------------------------------------------------------------
  */
 
-//________________________________________________________________________
-Int_t AliAnalysisNetParticleQA::Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Int_t trackCutBit) {
-  // -- Initialize
-  
-  // -- ESD track cuts
-  // -------------------
-  fESDTrackCuts     = cuts;
-
-  // -- Get Helper
-  // ---------------
-  fHelper           = helper;
-
-  // -- Is MC
-  // ----------
-  fIsMC             = isMC;
-
-  // -- AOD track filter bit
-  // -------------------------
-  fAODtrackCutBit   = trackCutBit;
-
-  // -- Get particle species / pdgCode
-  // -------------------------
-  if (fIsMC)
-    fPdgCode        = AliPID::ParticleCode(fHelper->GetParticleSpecies());
-
-  // -- Create THnSparse Histograms
-  // --------------------------------
-  CreateHistograms();
- 
-  return 0;
-}
 
 //________________________________________________________________________
 void AliAnalysisNetParticleQA::CreateHistograms() {
@@ -118,28 +73,33 @@ void AliAnalysisNetParticleQA::CreateHistograms() {
   // -- Create THnSparseF - QA
   // ------------------------------------------------------------------
 
-  Int_t    binHnQA[15] = {AliAnalysisNetParticleHelper::fgkfHistNBinsCent, AliAnalysisNetParticleHelper::fgkfHistNBinsEta,  //  cent |       eta
-			  AliAnalysisNetParticleHelper::fgkfHistNBinsRap,  AliAnalysisNetParticleHelper::fgkfHistNBinsPhi,  //     y |       phi
-			  AliAnalysisNetParticleHelper::fgkfHistNBinsPt,   AliAnalysisNetParticleHelper::fgkfHistNBinsPt,   //    pt |    pInner
-			  AliAnalysisNetParticleHelper::fgkfHistNBinsSign, 500, 50, 50,                                     //  sign | TPCsignal |  nSigmaTPC |  nSigmaTOF
-			  50, 50, 50, 50,                                                                                   //  DCAr |      DCAz | nSigmaDCAr | nSigmaDCAz 
+  Int_t    binHnQA[16] = {AliAnalysisNetParticleHelper::fgkfHistNBinsCent, AliAnalysisNetParticleHelper::fgkfHistNBinsEta,  //       cent |       eta
+			  AliAnalysisNetParticleHelper::fgkfHistNBinsRap,  AliAnalysisNetParticleHelper::fgkfHistNBinsPhi,  //          y |       phi
+			  AliAnalysisNetParticleHelper::fgkfHistNBinsPt,   AliAnalysisNetParticleHelper::fgkfHistNBinsPt,   //         pt |    pInner
+			  AliAnalysisNetParticleHelper::fgkfHistNBinsSign, 500,                                             //       sign | TPCsignal |  
+			  50, 50, 50,                                                                                       //  nSigmaITS | nSigmaTPC |  nSigmaTOF
+			  50, 50, 50, 50,                                                                                   //  DCAr      |      DCAz | nSigmaDCAr | nSigmaDCAz 
 			  3};                                                                                               //  MCisProbe  
   
-  Double_t minHnQA[15] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[0], AliAnalysisNetParticleHelper::fgkfHistRangeEta[0], 
+  Double_t minHnQA[16] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[0], AliAnalysisNetParticleHelper::fgkfHistRangeEta[0], 
 			  AliAnalysisNetParticleHelper::fgkfHistRangeRap[0],  AliAnalysisNetParticleHelper::fgkfHistRangePhi[0], 
 			  AliAnalysisNetParticleHelper::fgkfHistRangePt[0],   AliAnalysisNetParticleHelper::fgkfHistRangePt[0],   
-			  AliAnalysisNetParticleHelper::fgkfHistRangeSign[0], 30, -5.0, -5.0,
-			  -10., -10., -10., -10., -0.5};
+			  AliAnalysisNetParticleHelper::fgkfHistRangeSign[0], 30, 
+			  -10., -10., -10.,
+			  -10., -10., -10., -10., 
+			  -0.5};
   
-  Double_t maxHnQA[15] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[1], AliAnalysisNetParticleHelper::fgkfHistRangeEta[1], 
+  Double_t maxHnQA[16] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[1], AliAnalysisNetParticleHelper::fgkfHistRangeEta[1], 
 			  AliAnalysisNetParticleHelper::fgkfHistRangeRap[1],  AliAnalysisNetParticleHelper::fgkfHistRangePhi[1], 
 			  AliAnalysisNetParticleHelper::fgkfHistRangePt[1],   AliAnalysisNetParticleHelper::fgkfHistRangePt[1],
-			  AliAnalysisNetParticleHelper::fgkfHistRangeSign[1], 500, 5.0, 5.0,
-			  10.,  10., 10., 10., 2.5};
+			  AliAnalysisNetParticleHelper::fgkfHistRangeSign[1], 500,
+			  10., 10., 10.,
+			  10.,  10., 10., 10., 
+			  2.5};
   
 
-  fHnQA = new THnSparseF("fHnQA", "cent:eta:y:phi:pt:pInner:sign:TPCsignal:nSigmaTPC:nSigmaTOF:DCAr:DCAz:nSigmaDCAr:nSigmaDCAz:MCisProbe",
-				 15, binHnQA, minHnQA, maxHnQA);
+  fHnQA = new THnSparseF("hnQA", "cent:eta:y:phi:pt:pInner:sign:TPCsignal:nSigmaITS:nSigmaTPC:nSigmaTOF:DCAr:DCAz:nSigmaDCAr:nSigmaDCAz:MCisProbe",
+				 16, binHnQA, minHnQA, maxHnQA);
   
   fHnQA->Sumw2();
   
@@ -147,19 +107,20 @@ void AliAnalysisNetParticleQA::CreateHistograms() {
   fHnQA->GetAxis(1)->SetTitle("#eta");                         //  eta  [-0.9, 0.9]
   fHnQA->GetAxis(2)->SetTitle("#it{y}");                       //  rapidity [-0.5, 0.5]
   fHnQA->GetAxis(3)->SetTitle("#varphi");                      //  phi  [ 0. , 2Pi]
-  fHnQA->GetAxis(4)->SetTitle("#it{p}_{T} (GeV/#it{c})");      //  pt   [ 0.1, 3.0]
+  fHnQA->GetAxis(4)->SetTitle("#it{p}_{T} (GeV/#it{c})");      //  pt   [ 0.46, 2.22]
   fHnQA->GetAxis(5)->SetTitle("#it{p}_{Inner} (GeV/#it{c})");  //  pInner [ 0.1, 3.0]
   fHnQA->GetAxis(6)->SetTitle("sign");                         //  -1 | 0 | +1 
   
   fHnQA->GetAxis(7)->SetTitle("TPC signal");                   //  TPCsignal [30, 500]
-  fHnQA->GetAxis(8)->SetTitle("n #sigma TPC");                 //  nSigma TPC [-5, 5]
-  fHnQA->GetAxis(9)->SetTitle("n #sigma TOF");                 //  nSigma TOF [-5, 5]
+  fHnQA->GetAxis(8)->SetTitle("n #sigma ITS");                 //  nSigma ITS [-10, 10]
+  fHnQA->GetAxis(9)->SetTitle("n #sigma TPC");                 //  nSigma TPC [-10, 10]
+  fHnQA->GetAxis(10)->SetTitle("n #sigma TOF");                //  nSigma TOF [-10, 10]
   
-  fHnQA->GetAxis(10)->SetTitle("DCAr");                        //  DCAr [-10, 10]
-  fHnQA->GetAxis(11)->SetTitle("DCAz");                        //  DCAz [-10, 10]
-  fHnQA->GetAxis(12)->SetTitle("n #sigma #sqrt(Cdd)/DCAr");    //  nSigma DCAr [-10, 10]
-  fHnQA->GetAxis(13)->SetTitle("n #sigma #sqrt(Czz)/DCAz");    //  nSigma DCAz [-10, 10]
-  fHnQA->GetAxis(14)->SetTitle("MCisProbe");                   //  0 | 1 (isProbeParticle) | 2 (isProbeParticle wrong sign) 
+  fHnQA->GetAxis(11)->SetTitle("DCAr");                        //  DCAr [-10, 10]
+  fHnQA->GetAxis(12)->SetTitle("DCAz");                        //  DCAz [-10, 10]
+  fHnQA->GetAxis(13)->SetTitle("n #sigma #sqrt(Cdd)/DCAr");    //  nSigma DCAr [-10, 10]
+  fHnQA->GetAxis(14)->SetTitle("n #sigma #sqrt(Czz)/DCAz");    //  nSigma DCAz [-10, 10]
+  fHnQA->GetAxis(15)->SetTitle("MCisProbe");                   //  0 | 1 (isProbeParticle) | 2 (isProbeParticle wrong sign) 
   
   fHelper->BinLogAxis(fHnQA, 4);
   fHelper->BinLogAxis(fHnQA, 5);
@@ -168,71 +129,7 @@ void AliAnalysisNetParticleQA::CreateHistograms() {
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisNetParticleQA::SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler,  AliMCEvent *mcEvent) {
-  // -- Setup Event
-  
-  ResetEvent();
-
-  // -- Get ESD objects
-  if(esdHandler){
-    fPIDResponse = esdHandler->GetPIDResponse(); // NEEDED ?
-    fESD         = esdHandler->GetEvent();
-    fNTracks     = fESD->GetNumberOfTracks();
-  }
-
-  // -- Get AOD objects
-  else if(aodHandler){
-    fPIDResponse = aodHandler->GetPIDResponse();
-    fAOD         = aodHandler->GetEvent();
-    fNTracks     = fAOD->GetNumberOfTracks();
-    
-    if (fIsMC) {
-      fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (!fArrayMC)
-	AliFatal("No array of MC particles found !!!"); // MW  no AliFatal use return values
-    }
-  }
-
-  // -- Get MC objects
-  if (fIsMC && mcEvent) {
-    fMCEvent     = mcEvent;
-    if (fMCEvent)
-      fStack     = fMCEvent->Stack();
-  }
-
-  // -- Get CentralityBin
-  fCentralityBin = fHelper->GetCentralityBin();
-
-  return 0;
-}
-
-//________________________________________________________________________
-void AliAnalysisNetParticleQA::ResetEvent() {
-  // -- Reset event
-  
-  // -- Reset ESD Event
-  fESD       = NULL;
-
-  // -- Reset AOD Event
-  fAOD       = NULL;
-
-  // -- Reset MC Event
-  if (fIsMC)
-    fMCEvent = NULL;
-}
-
-//________________________________________________________________________
-Int_t AliAnalysisNetParticleQA::Process() {
-  // -- Process NetParticle QA
-
-  // -- Fill ESD/AOC tracks
-  ProcessTracks();
-  
-  return 0;
-}
-
-//________________________________________________________________________
-Int_t AliAnalysisNetParticleQA::ProcessTracks() {
+void AliAnalysisNetParticleQA::Process() {
   // -- Process ESD/AOD tracks and fill QA histogram
 
   // -- Get ranges for AOD particles
@@ -287,7 +184,7 @@ Int_t AliAnalysisNetParticleQA::ProcessTracks() {
       continue;
 
     // -- Check if accepted by PID from TPC or TPC+TOF
-    Double_t pid[2];
+    Double_t pid[3];
     if (!fHelper->IsTrackAcceptedPID(track, pid))
       continue;
 
@@ -322,7 +219,7 @@ Int_t AliAnalysisNetParticleQA::ProcessTracks() {
     if (!fHelper->GetUsePID())  
       yP = track->Eta();
     
-    Double_t aTrack[15] = {
+    Double_t aTrack[16] = {
       Double_t(fCentralityBin),               //  0 centrality 
       track->Eta(),                           //  1 eta
       yP,                                     //  2 rapidity
@@ -331,18 +228,19 @@ Int_t AliAnalysisNetParticleQA::ProcessTracks() {
       track->GetTPCmomentum(),                //  5 pInner
       track->Charge(),                        //  6 sign
       track->GetTPCsignal(),                  //  7 TPC dE/dx
-      pid[0],                                 //  8 n Sigma TPC
-      pid[1],                                 //  9 n Sigma TOF
-      dca[0],                                 // 10 dca r
-      dca[1],                                 // 11 dca z
-      dcaRoverCdd,                            // 12 sqrt(cov[dd])
-      dcaZoverCzz,                            // 13 sqrt(cov[zz])
-      isProbeParticle                         // 14 isProbe
+      pid[0],                                 //  8 n Sigma ITS
+      pid[1],                                 //  9 n Sigma TPC
+      pid[2],                                 // 10 n Sigma TOF
+      dca[0],                                 // 11 dca r
+      dca[1],                                 // 12 dca z
+      dcaRoverCdd,                            // 13 sqrt(cov[dd])
+      dcaZoverCzz,                            // 14 sqrt(cov[zz])
+      isProbeParticle                         // 15 isProbe
     };
 
    fHnQA->Fill(aTrack);
 
   } // for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
 
-  return 0;
+  return;
 }

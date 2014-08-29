@@ -17,11 +17,11 @@
 class TString;
 class TTree;
 class TH1F;
+class TF1;
 class TH2F;
 class TRandom3;
 class AliESDEvent;
 class TNtuple;
-class AliESDtrackCuts;
 class AliITSPIDResponse;
 
 #include "AliAnalysisTaskSE.h"
@@ -32,6 +32,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskSEITSsaSpectra();
 
   virtual void   UserCreateOutputObjects();
+  virtual void Init();
+  virtual void LocalInit() {Init();}
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
@@ -66,14 +68,16 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
       fLowCentrality=low; fUpCentrality=up;
     }
   }
- void SetSPDMethodCut(){fSPD=kTRUE;}
  void SetHImode(){fHImode=kTRUE;}
+ void SetUseTrackMultiplicityEstimator(){fMultEstimator=0;}
+ void SetUseTrackletsMultiplicityEstimator(){fMultEstimator=1;}
+ void SetUseClustersSPD1MultiplicityEstimator(){fMultEstimator=2;}
+ 
   
   void SetEtaMax(Double_t maxeta){
     fEtaRange=maxeta;
   }
   
-  void SetYear(Int_t year);
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillNtuple(Bool_t fill=kTRUE) {fFillNtuple=fill;}
   void SetLowEnergypp(Bool_t opt=kTRUE) {fLowEnergypp=opt;}
@@ -85,7 +89,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   }
   Double_t CookdEdx(Double_t *s) const; 
   Double_t Eta2y(Double_t pt, Double_t m, Double_t eta) const;
-  Bool_t DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt, Bool_t optMC) const;
+  Bool_t DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt) const;
 
  private:
   AliAnalysisTaskSEITSsaSpectra(const AliAnalysisTaskSEITSsaSpectra &source); 
@@ -94,9 +98,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   enum {kNbins=22};
   
   AliESDEvent *fESD; //ESD object
-  AliESDtrackCuts *fesdTrackCutsMult;//cuts for multiplicity 
   
   TList *fOutput; //! tlist with output
+  TList *fListCuts; // list of functions storing DCA cut 
   TH1F *fHistNEvents; //! histo with number of events
   TH1F *fHistMult; //! histo with multiplicity of the events
   TH1F *fHistCen; //! histo with multiplicity of the events
@@ -218,6 +222,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TH1F *fHistNegNSigmaPrim[3];   //! NSigma histos for 6 species
   TH1F *fHistNegNSigmaPrimMC[3]; //! NSigma histos for 6 species
 
+  TF1* fDCAxyCutFunc;  // function with DCAz cut vs. pt
+  TF1* fDCAzCutFunc;   // function with DCAxy cut vs. pt
+
   Double_t fPtBinLimits[kNbins+1]; // limits of Pt Bins
   AliITSPIDResponse* fITSPIDResponse; //! class with BB parameterizations
   Int_t    fMinSPDPts;       // minimum number of SPD Points
@@ -233,7 +240,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   Int_t fUpMult;      // Multiplicity bin
   Float_t fLowCentrality;//low Centrality cut
   Float_t fUpCentrality;//up  Centrality cut
-  Bool_t fSPD;//use spd2 as mulestimator 
+  Int_t fMultEstimator; // multiplicty estimator 
   Bool_t fHImode;//use spd2 as mulestimator 
   Int_t fYear;        // Year (2009, 2010)
   Bool_t   fMC;        //flag to switch on the MC analysis for the efficiency estimation

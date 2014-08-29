@@ -37,6 +37,7 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
   mgr->AddTask(hfetaskTrig);
   mgr->AddTask(hfetaskTrig2);
   
+  
   // central trigger
   hfetaskCent->SelectCollisionCandidates(AliVEvent::kCentral);
   
@@ -47,7 +48,7 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFE_Results_EMCalCentral", TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
   mgr->ConnectInput(hfetaskCent, 0, cinput);
   mgr->ConnectOutput(hfetaskCent, 1, coutput1);
-  
+
   //L1 gamma trigger
   hfetaskTrig->SelectCollisionCandidates(AliVEvent::kEMCEGA);
   
@@ -59,10 +60,10 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
   mgr->ConnectInput(hfetaskTrig, 0, cinput);
   mgr->ConnectOutput(hfetaskTrig, 1, coutput1);
   
-
-  //Jet trigger
+  
   // semi-central
-  hfetaskTrig2->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  //hfetaskTrig2->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  hfetaskTrig2->SelectCollisionCandidates(AliVEvent::kAny);
   
   TString containerName3 = mgr->GetCommonFileName();
   containerName3 += ":PWGHF_hfeCalSemiCentral";
@@ -71,8 +72,8 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFE_Results_SemiCentral", TList::Class(),AliAnalysisManager::kOutputContainer, containerName3.Data());
   mgr->ConnectInput(hfetaskTrig2, 0, cinput);
   mgr->ConnectOutput(hfetaskTrig2, 1, coutput1);
-  
 
+ 
   //if(MCthere)
     //{
     //MB trigger
@@ -88,7 +89,6 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
      mgr->ConnectInput(hfetaskMB, 0, cinput);
      mgr->ConnectOutput(hfetaskMB, 1, coutput1);
      //}
-  
 
   return NULL;
 }

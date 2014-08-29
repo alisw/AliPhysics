@@ -73,14 +73,19 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeConst.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeGR.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetV2.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassBase.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
  EMCALJetTasks/UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
+ EMCALJetTasks/UserTasks/AliCutValueRange.cxx 
+ EMCALJetTasks/UserTasks/AliEMCalHistoContainer.cxx 
+ EMCALJetTasks/UserTasks/AliAnalysisTaskPtEMCalTrigger.cxx 
 )
 
 # Add code that needs fastjet or FJWrapper here

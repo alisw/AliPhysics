@@ -806,7 +806,7 @@ void AliCaloTrackReader::InitParameters()
   
   //Centrality
   fCentralityClass  = "V0M";
-  fCentralityOpt    = 10;
+  fCentralityOpt    = 100;
   fCentralityBin[0] = fCentralityBin[1]=-1;
   
   fEventPlaneMethod = "V0";
@@ -1818,7 +1818,7 @@ void AliCaloTrackReader::FillInputPHOS()
           vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
         if( GetCaloUtils()->ClusterContainsBadChannel("PHOS",clus->GetCellsAbsId(), clus->GetNCells()))
           continue;
-        if(!GetCaloUtils()->CheckCellFiducialRegion(clus, fInputEvent->GetPHOSCells(), fInputEvent, vindex))
+        if(!GetCaloUtils()->CheckCellFiducialRegion(clus, fInputEvent->GetPHOSCells()))
           continue;
         
         if(fRecalculateClusters)

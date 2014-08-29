@@ -294,11 +294,29 @@ Bool_t AliAnalysisTaskPIDV0base::GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcu
     
   
   // pp and PbPb
-  const AliVVertex* primaryVertex = (aod ? dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertex()) :
-                                           dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexTracks()));
+  const AliVVertex* primaryVertex = 0x0;
+  if (aod) {
+    primaryVertex = dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertex());
+    if (!primaryVertex || primaryVertex->GetNContributors() <= 0) 
+      return kFALSE;
     
-  if (!primaryVertex || primaryVertex->GetNContributors() <= 0)
-    return kFALSE;
+    // Reject TPC vertices
+    TString primVtxTitle(primaryVertex->GetTitle());
+    if (primVtxTitle.Contains("TPCVertex",TString::kIgnoreCase))
+      return kFALSE;
+  }
+  else {
+    primaryVertex = dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexTracks());
+    if (!primaryVertex)
+      return kFALSE;
+    
+    if (primaryVertex->GetNContributors() <= 0) {
+      // Try SPD vertex
+      primaryVertex = dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexSPD());
+      if (!primaryVertex || primaryVertex->GetNContributors() <= 0) 
+        return kFALSE;
+    }
+  }
   
   if (doVtxZcut) {
     if (TMath::Abs(primaryVertex->GetZ()) > fZvtxCutEvent) //Default: 10 cm

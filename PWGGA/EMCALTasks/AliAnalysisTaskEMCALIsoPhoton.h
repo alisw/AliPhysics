@@ -21,6 +21,7 @@ class AliVCluster;
 class AliMCEvent;
 class AliStack;
 class TParticle;
+class AliAODMCParticle;
 class TGeoHMatrix;
 
 #include "AliAnalysisTaskSE.h"
@@ -79,6 +80,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
   TObjArray             *fSelPrimTracks;         //!pointer to ESD primary tracks
   TClonesArray          *fTracks;                //!track input array
+  TClonesArray          *fAODMCParticles;        //!MC particles array for AOD analysis
   AliESDCaloCells       *fESDCells;              //!pointer to EMCal cells, esd
   AliAODCaloCells       *fAODCells;              //!pointer to EMCal cells, aod  
   AliESDtrackCuts       *fPrTrCuts;              //pointer to hold the prim track cuts

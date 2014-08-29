@@ -68,6 +68,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum dEdxCheckAxes { kDeDxCheckPID = 0, kDeDxCheckP = 1, kDeDxCheckJetPt = 2, kDeDxCheckEtaAbs = 3 , kDeDxCheckDeDx = 4,
                        kDeDxCheckNumAxes = 5 };
   
+  enum binZeroStudyAxes { kBinZeroStudyCentrality = 0, kBinZeroStudyGenPt = 1, kBinZeroStudyGenEta = 2, kBinZeroStudyNumAxes = 3 };
+  
   enum efficiencyAxes { kEffMCID = 0, kEffTrackPt = 1, kEffTrackEta = 2, kEffTrackCharge = 3, kEffCentrality = 4, kEffJetPt = 5,
                         kEffZ = 6, kEffXi = 7, kEffNumAxes = 8 };
   
@@ -154,6 +156,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Bool_t GetDoDeDxCheck() const { return fDoDeDxCheck; };
   void SetDoDeDxCheck(Bool_t flag) { fDoDeDxCheck = flag; };
+  
+  Bool_t GetDoBinZeroStudy() const { return fDoBinZeroStudy; };
+  void SetDoBinZeroStudy(Bool_t flag) { fDoBinZeroStudy = flag; };
   
   Bool_t GetStoreCentralityPercentile() const { return fStoreCentralityPercentile; };
   void SetStoreCentralityPercentile(Bool_t flag) { fStoreCentralityPercentile = flag; };
@@ -271,6 +276,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const;
   virtual void SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const;
   virtual void SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const;
+  virtual void SetUpBinZeroStudyHist(THnSparse* hist, const Double_t* binsCent, const Double_t* binsPt) const;
   virtual void SetUpPIDcombined();
   
   static const Int_t fgkNumJetAxes; // Number of additional axes for jets
@@ -285,10 +291,11 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Bool_t fInputFromOtherTask; // If set to kTRUE, no events are processed and the input must be fed in from another task. If set to kFALSE, normal event processing
   
-  Bool_t fDoPID; // Only do PID processing (and post the output), if flag is set to kTRUE
-  Bool_t fDoEfficiency; // Only do efficiency processing (and post the output), if flag is set to kTRUE
-  Bool_t fDoPtResolution; // Only do pT resolution processing (and post the output), if flag is set to kTRUE
-  Bool_t fDoDeDxCheck; // Only check dEdx, if flag set to kTRUE
+  Bool_t fDoPID; // Do PID processing (and post the output), if flag is set to kTRUE
+  Bool_t fDoEfficiency; // Do efficiency processing (and post the output), if flag is set to kTRUE
+  Bool_t fDoPtResolution; // Do pT resolution processing (and post the output), if flag is set to kTRUE
+  Bool_t fDoDeDxCheck; // Check dEdx, if flag set to kTRUE
+  Bool_t fDoBinZeroStudy; // Do bin zero study, if flag is set to kTRUE
   
   Bool_t fStoreCentralityPercentile; // If set to kTRUE, store centrality percentile for each event. In case of kFALSE (appropriate for pp), centrality percentile will be set to -1 for every event
   Bool_t fStoreAdditionalJetInformation; // If set to kTRUE, additional jet information like jetPt, z, xi will be stored in the THnSparses
@@ -396,6 +403,11 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   TH1D* fhEventsTriggerSel; //! Histo holding the number of events passing trigger selection
   TH1D* fhEventsTriggerSelVtxCut; //! Histo holding the number of events passing trigger selection and vtx cut
   TH1D* fhEventsProcessedNoPileUpRejection; //! Histo holding the number of processed events before pile-up rejection
+  
+  THnSparseD* fChargedGenPrimariesTriggerSel; //! Histo holding the generated charged primary yields for triggered events
+  THnSparseD* fChargedGenPrimariesTriggerSelVtxCut; //! Histo holding the generated charged primary yields for triggered events passing vertex cuts
+  THnSparseD* fChargedGenPrimariesTriggerSelVtxCutZ; //! Histo holding the generated charged primary yields for triggered events passing vertex cuts (including cut on z)
+  THnSparseD* fChargedGenPrimariesTriggerSelVtxCutZPileUpRej; //! Histo holding the generated charged primary yields for triggered events passing vertex cuts (including cut on z) and pile-up rejection
   
   THnSparseD* fhMCgeneratedYieldsPrimaries; //! Histo holding the generated (no reco, no cuts) primary particle yields in considered eta range
   

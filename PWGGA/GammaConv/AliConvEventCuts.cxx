@@ -1574,7 +1574,9 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 // 				cout << i << "\t" << GeneratorName.Data() << endl;
 				for(Int_t j = 0; j<HeaderList->GetEntries();j++){
 					TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
+// 					cout << GeneratorInList.Data() << endl;
 					if(GeneratorName.CompareTo(GeneratorInList) == 0){
+// 						cout << "accepted" << endl;
 						if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
 							if(fMCStack){
 								if (fMCStack->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {

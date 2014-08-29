@@ -469,6 +469,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   TList	*fCommonHistList;         // List of common histos
   
   TH1F  *fh1EvtSelection;         //! event cuts 
+  TH1F  *fh1VtxSelection;         //! type of accepted vertices
   TH1F	*fh1VertexNContributors;  //! NContributors to prim vertex
   TH1F	*fh1VertexZ;              //! prim vertex z distribution
   TH1F	*fh1EvtMult;              //! number of reconstructed tracks after cuts 
@@ -604,7 +605,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncHistos* fIDFFHistosRecCuts[AliPID::kSPECIES];    //! Identified FF reconstructed tracks after cuts 
   AliFragFuncHistos* fIDFFHistosGen[AliPID::kSPECIES];    //! Identified FF generated tracks after cuts 
 
-  ClassDef(AliAnalysisTaskIDFragmentationFunction, 18);
+  ClassDef(AliAnalysisTaskIDFragmentationFunction, 19);
 };
 
 

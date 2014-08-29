@@ -33,7 +33,6 @@ AliAnalysisTaskRhoMassBase::AliAnalysisTaskRhoMassBase() :
   fCompareRhoMass(0),
   fCompareRhoMassScaled(0),
   fHistJetMassvsCent(0),
-  fHistJetRhoMassvsCent(0),
   fHistRhoMassvsCent(0),
   fHistRhoMassScaledvsCent(0),
   fHistDeltaRhoMassvsCent(0),
@@ -47,9 +46,6 @@ AliAnalysisTaskRhoMassBase::AliAnalysisTaskRhoMassBase() :
   fHistGammaVsNtrack(0)
 {
   // Constructor.
-
-  for (Int_t i = 0; i < 4; i++)
-    fHistJetRhoMassvsEta[i] = 0;
 }
 
 //________________________________________________________________________
@@ -67,7 +63,6 @@ AliAnalysisTaskRhoMassBase::AliAnalysisTaskRhoMassBase(const char *name, Bool_t 
   fCompareRhoMass(0),
   fCompareRhoMassScaled(0),
   fHistJetMassvsCent(0),
-  fHistJetRhoMassvsCent(0),
   fHistRhoMassvsCent(0),
   fHistRhoMassScaledvsCent(0),
   fHistDeltaRhoMassvsCent(0),
@@ -82,9 +77,6 @@ AliAnalysisTaskRhoMassBase::AliAnalysisTaskRhoMassBase(const char *name, Bool_t 
 {
   // Constructor.
 
-  for (Int_t i = 0; i < 4; i++)
-    fHistJetRhoMassvsEta[i] = 0;
-
   SetMakeGeneralHistograms(histo);
 }
 
@@ -98,13 +90,21 @@ void AliAnalysisTaskRhoMassBase::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  fHistRhoMassvsCent = new TH2F("fHistRhoMassvsCent", "fHistRhoMassvsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt/2.);
+  const Int_t nBinsRhom = 200;
+  const Double_t minRhom = 0.;
+  const Double_t maxRhom = 20.;
+
+  const Int_t nBinsM  = 100;
+  const Double_t minM = -20.;
+  const Double_t maxM = 80.;
+
+  fHistRhoMassvsCent = new TH2F("fHistRhoMassvsCent", "fHistRhoMassvsCent", 101, -1,  100, nBinsRhom,minRhom,maxRhom);
   fHistRhoMassvsCent->GetXaxis()->SetTitle("Centrality (%)");
   fHistRhoMassvsCent->GetYaxis()->SetTitle("#rho_{m} (GeV/c * rad^{-1})");
   fOutput->Add(fHistRhoMassvsCent);
 
   if (fParticleCollArray.GetEntriesFast()>0) {
-    fHistRhoMassvsNtrack = new TH2F("fHistRhoMassvsNtrack", "fHistRhoMassvsNtrack", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt/2);
+    fHistRhoMassvsNtrack = new TH2F("fHistRhoMassvsNtrack", "fHistRhoMassvsNtrack", 150, 0, 6000, nBinsRhom,minRhom,maxRhom);
     fHistRhoMassvsNtrack->GetXaxis()->SetTitle("No. of tracks");
     fHistRhoMassvsNtrack->GetYaxis()->SetTitle("#rho_{m} (GeV/c * rad^{-1})");
     fOutput->Add(fHistRhoMassvsNtrack);
@@ -117,32 +117,17 @@ void AliAnalysisTaskRhoMassBase::UserCreateOutputObjects()
   }
 
   if (fClusterCollArray.GetEntriesFast()>0) {
-    fHistRhoMassvsNcluster = new TH2F("fHistRhoMassvsNcluster", "fHistRhoMassvsNcluster", 50, 0, 1500, fNbins, fMinBinPt, fMaxBinPt/2);
+    fHistRhoMassvsNcluster = new TH2F("fHistRhoMassvsNcluster", "fHistRhoMassvsNcluster", 50, 0, 1500, nBinsRhom,minRhom,maxRhom);
     fHistRhoMassvsNcluster->GetXaxis()->SetTitle("No. of tracks");
     fHistRhoMassvsNcluster->GetYaxis()->SetTitle("#rho_{m} (GeV/c * rad^{-1})");
     fOutput->Add(fHistRhoMassvsNcluster);
   }
 
   if (fJetCollArray.GetEntriesFast()>0) {
-    fHistJetMassvsCent = new TH2F("fHistJetMassvsCent", "fHistJetMassvsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt);
+    fHistJetMassvsCent = new TH2F("fHistJetMassvsCent", "fHistJetMassvsCent", 101, -1,  100, nBinsM,minM,maxM);
     fHistJetMassvsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistJetMassvsCent->GetYaxis()->SetTitle("#it{M}_{jet} (GeV/c)");
     fOutput->Add(fHistJetMassvsCent);
-
-    fHistJetRhoMassvsCent = new TH2F("fHistJetRhoMassvsCent", "fHistJetRhoMassvsCent", 101, -1, 100, fNbins, fMinBinPt, fMaxBinPt*2);
-    fHistJetRhoMassvsCent->GetXaxis()->SetTitle("Centrality (%)");
-    fHistJetRhoMassvsCent->GetYaxis()->SetTitle("Jet #rho_{m} (GeV/c)");
-    fOutput->Add(fHistJetRhoMassvsCent);
-
- 
-    TString name;
-    for (Int_t i = 0; i < 4; i++) {
-      name = Form("fHistJetRhoMassvsEta_%d",i);
-      fHistJetRhoMassvsEta[i] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt*2, 16, -0.8, 0.8);
-      fHistJetRhoMassvsEta[i]->GetXaxis()->SetTitle("#rho_{m} (GeV/c)");
-      fHistJetRhoMassvsEta[i]->GetYaxis()->SetTitle("#eta");
-      fOutput->Add(fHistJetRhoMassvsEta[i]);
-    }
   }
   
   if (!fCompareRhoMassName.IsNull()) {
@@ -239,9 +224,6 @@ Bool_t AliAnalysisTaskRhoMassBase::FillHistograms()
 	continue;
       
       fHistJetMassvsCent->Fill(fCent, jet->M());
-      fHistJetRhoMassvsCent->Fill(fCent, jet->M() / jet->Area());
-      fHistJetRhoMassvsEta[fCentBin]->Fill(jet->M() / jet->Area(), jet->Eta());
-
       NjetAcc++;
     }
   }

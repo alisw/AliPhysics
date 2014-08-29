@@ -55,8 +55,10 @@
 #pragma link C++ class AliAnalysisTaskJetShapeDeriv+;
 #pragma link C++ class AliAnalysisTaskJetShapeConst+;
 #pragma link C++ class AliAnalysisTaskJetShapeGR+;
+#pragma link C++ class AliAnalysisTaskJetMassResponseDet+;
 #pragma link C++ class AliAnalysisTaskJetMatching+;
 #pragma link C++ class AliAnalysisTaskJetV2+;
+#pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
 #pragma link C++ class AliAnalysisTaskRhoMass+;
 #pragma link C++ class AliAnalysisTaskRhoMassBase+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
@@ -65,6 +67,12 @@
 #pragma link C++ class AliEmcalPicoTrackFromJetMaker+;
 #pragma link C++ class AliNtupCumInfo+;
 #pragma link C++ class AliNtupZdcInfo+;
+#pragma link C++ namespace EMCalTriggerPtAnalysis+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalHistoContainer+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<float>+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<double>+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<int>+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliEmcalJetTask+;

@@ -578,9 +578,9 @@ void CorrelationQA()
   Float_t assocBins[] = {0.5,2.,5.,10.,20.};
   Int_t nAssocBins = 4;
   
-  TH1F * hLeading = (TH1F*) GetHisto("AnaPhotonHadronCorr_hPtLeading");
-  Int_t minClusterEBin = hLeading->FindBin(minClusterE);
-  Float_t nTrig = hLeading->Integral(minClusterE,100000);
+  TH1F * hTrigger = (TH1F*) GetHisto("AnaPhotonHadronCorr_hPtTrigger");
+  Int_t minClusterEBin = hTrigger->FindBin(minClusterE);
+  Float_t nTrig = hTrigger->Integral(minClusterE,100000);
   
   //Azimuthal correlation
   cCorrelation->cd(1);
