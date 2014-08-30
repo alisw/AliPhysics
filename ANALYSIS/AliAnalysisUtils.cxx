@@ -9,6 +9,7 @@
 #include <TMatrixDSym.h>
 #include <TMath.h>
 #include "AliVMultiplicity.h"
+#include "AliPPVsMultUtils.h"
 
 #include "AliAnalysisUtils.h"
 
@@ -33,7 +34,8 @@ AliAnalysisUtils::AliAnalysisUtils():TObject(),
   fnSigmaPlpDiamZSPD(5.),
   fUseSPDCutInMultBins(kFALSE),
   fASPDCvsTCut(65.),
-  fBSPDCvsTCut(4.)
+  fBSPDCvsTCut(4.),
+  fPPVsMultUtils(0x0)
 {
   // Default contructor
 }
@@ -265,3 +267,13 @@ Double_t AliAnalysisUtils::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
 
 }
 
+//______________________________________________________________________
+Float_t AliAnalysisUtils::GetMultiplicityPercentile(AliVEvent *event, TString lMethod ){
+  if(!fPPVsMultUtils)
+    fPPVsMultUtils=new AliPPVsMultUtils();
+  if( (event->InheritsFrom("AliAODEvent")) || (event->InheritsFrom("AliESDEvent")) ) return fPPVsMultUtils->GetMultiplicityPercentile(event,lMethod);
+  else {
+    AliFatal("Event is neither of AOD nor ESD type"); 
+    return -999.;
+  }
+}
