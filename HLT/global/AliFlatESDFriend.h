@@ -14,44 +14,55 @@
 #include "AliVfriendEvent.h"
 #include "AliFlatESDFriendTrack.h"
 
-class AliVVVZEROfriend;
-class AliVVTZEROfriend;
+
+class AliESDfriend;
+//class AliESDVZEROfriend;
+//class AliESDTZEROfriend;
+
 
 //_____________________________________________________________________________
 class AliFlatESDFriend : public AliVfriendEvent {
 public:
   AliFlatESDFriend();
   ~AliFlatESDFriend() {}
+ 
+   // constructor and method for reinitialisation of virtual table
+   AliFlatESDFriend( AliVConstructorReinitialisationFlag );
+   void Reinitialize(){ new (this) AliFlatESDFriend(AliVReinitialize); }
 
   // Implementation of virtual methods of AliVfriend
 
   Int_t GetNumberOfTracks() const { return fNTracks; }
-  Int_t GetEntriesInTracks() const { return fNTrackEntries; }
   const AliVfriendTrack* GetTrack(Int_t i) const {return GetFlatTrack(i); }
-  
-  AliVVVZEROfriend *GetVZEROfriend(){ return NULL; }
-  AliVVTZEROfriend *GetTZEROfriend(){ return NULL; }
+  Int_t GetEntriesInTracks() const { return fNTrackEntries; }
+ 
+  //AliESDVZEROfriend *GetVZEROfriend(){ return NULL; }
+  //AliESDTZEROfriend *GetTZEROfriend(){ return NULL; }
 
   void Ls() const;
-
   void Reset();
-  
+
+  // bit manipulation for filtering
+  void SetSkipBit(Bool_t skip){ fBitFlags = skip; }
   Bool_t TestSkipBit() const { return (fBitFlags!=0); }
 
+  //TPC cluster occupancy
   Int_t GetNclustersTPC(UInt_t sector) const { return (sector<72)?fNclustersTPC[sector]:0; }
   Int_t GetNclustersTPCused(UInt_t sector) const { return (sector<72)?fNclustersTPCused[sector]:0; }
   
-  //virtual void AddTrack(const AliVfriendTrack *t) {}
-  //virtual void AddTrackAt(const AliVfriendTrack* /*t*/, Int_t /*i*/) {}
-  //virtual void SetVZEROfriend(AliESDVZEROfriend* /*obj*/) {}
-  //virtual void SetTZEROfriend(AliESDTZEROfriend * obj) {}
-  //void SetSkipBit(Bool_t skip){}
+  // -- Own methods  -- 
 
-  // Own methods   
-  
-  void SetSkipBit(Bool_t skip){ fBitFlags = skip; }
+  // Set methods
+
+  Int_t SetFromESDfriend( size_t allocatedMemorySize, const AliESDfriend *esdFriend );
+    
   void SetNclustersTPC(UInt_t sector, Int_t occupancy ) { if (sector<72) fNclustersTPC[sector]=occupancy; }
   void SetNclustersTPCused(UInt_t sector, Int_t occupancy ) {if (sector<72) fNclustersTPCused[sector]=occupancy; }
+
+  Int_t SetTracksStart( AliFlatESDFriendTrack* &t, Long64_t* &table, Int_t nTracks, size_t freeMem );
+  void  SetTracksEnd( Int_t nTracks, Int_t nTrackEntries, size_t tracksSize );
+
+  // other methods
 
   const AliFlatESDFriendTrack  *GetFlatTrack( Int_t i ) const { 
     const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
@@ -63,21 +74,12 @@ public:
 
   ULong64_t  GetSize()  const { return fContent - reinterpret_cast<const Byte_t*>(this) + fContentSize; }
 
-  void Reinitialize()
-  {
-    new (this) AliFlatESDFriend(AliVReinitialize);
-  }
 
 private: 
 
   AliFlatESDFriend(const AliFlatESDFriend&);
   AliFlatESDFriend& operator=(const AliFlatESDFriend& );  
 
-  // special constructor, to be called by placement new,
-  // when accessing information after reinterpret_cast
-  // so that vtable is generated, but values are not overwritten
-  AliFlatESDFriend(AliVConstructorReinitialisationFlag);
- 
   AliFlatESDFriendTrack  *GetFlatTrackNonConst( Int_t i ){ 
     const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
     if( i<0 || i>fNTracks || table[i]<0 ) return NULL;
@@ -93,12 +95,36 @@ private:
  
   // Pointers to specific data in fContent
   
-  size_t fTrackTablePointer;         // position of the first track in fContent
+  size_t fTrackTablePointer;     // position of the first track in fContent
   size_t fTracksPointer;         // position of the first track in fContent
 
   // -- Variable Size Object
 
   Byte_t fContent[1];                  // Variale size object, which contains all data
 };
+
+
+inline Int_t AliFlatESDFriend::SetTracksStart( AliFlatESDFriendTrack* &t, Long64_t* &table, Int_t nTracks, size_t freeMem)
+{
+  fNTracks = 0;
+  fNTrackEntries = 0;
+  if( nTracks*sizeof(Long64_t)  > freeMem ) return -1;
+  fTrackTablePointer = fContentSize;
+  fContentSize += nTracks*sizeof(Long64_t);
+  fTracksPointer = fContentSize;
+  table = reinterpret_cast< Long64_t* >( fContent + fTrackTablePointer );
+  t = reinterpret_cast< AliFlatESDFriendTrack* >( fContent + fTracksPointer );
+  return 0;
+}
+
+inline void AliFlatESDFriend::SetTracksEnd( Int_t nTracks, Int_t nTrackEntries, size_t tracksSize )
+{
+  if( nTracks<0 ) return;
+  Long64_t *table = reinterpret_cast< Long64_t*> (fContent + fTrackTablePointer);
+  for( int i=0; i<nTracks; i++ ) table[i]+=fTracksPointer;
+  fNTracks = nTracks;
+  fNTrackEntries = nTrackEntries;
+  fContentSize += tracksSize;
+}
 
 #endif

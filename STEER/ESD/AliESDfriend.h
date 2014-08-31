@@ -42,7 +42,7 @@ public:
   void SetTZEROfriend(AliESDTZEROfriend * obj);
   AliESDTZEROfriend *GetTZEROfriend(){ return fESDTZEROfriend; }
 
-  void Ls(){
+  void Ls() const {
 	  return fTracks.ls();
   }
 

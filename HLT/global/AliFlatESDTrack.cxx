@@ -37,27 +37,8 @@
 #include "AliExternalTrackParam.h"
 #include "Riostream.h"
 
-// _______________________________________________________________________________________________________
-AliFlatESDTrack::AliFlatESDTrack() :
-  // Default constructor
-  AliVVtrack(),
-  fTrackParamMask(0),
-  fNTPCClusters(0),
-  fNITSClusters(0),
-  fContentSize(0)
-{
-}
 
-AliFlatESDTrack::AliFlatESDTrack( AliVConstructorReinitialisationFlag f )
-  :
-  AliVVtrack( f ),
-  fTrackParamMask(fTrackParamMask ),
-  fNTPCClusters( fNTPCClusters ),
-  fNITSClusters( fNITSClusters ),
-  fContentSize( fContentSize )
-{
-  // Constructor for reinitialisation of vtable
-}
+
 
 // _______________________________________________________________________________________________________
 
@@ -125,24 +106,12 @@ Int_t AliFlatESDTrack::SetExternalTrackParam(
 Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param, UShort_t flag) {
   // Fill external track parameters
 
-  if (!param) 
-    return -1;
+  if (!param) return -1;
 
   Printf("  DEBUG: CONTENT %d >> %p + 0x%07llx = %p", flag, fContent, fContentSize, fContent + fContentSize);
 
   AliFlatExternalTrackParam * current = reinterpret_cast<AliFlatExternalTrackParam*> (fContent + fContentSize);
-  current->SetAlpha(param->GetAlpha());
-  current->SetX(param->GetX());
-  current->SetY(param->GetY());
-  current->SetZ(param->GetZ());
-  current->SetSnp(param->GetSnp());
-  current->SetTgl(param->GetTgl());
-  current->SetSigned1Pt(param->GetSigned1Pt());
-  
-  const Double_t *cov = param->GetCovariance();
-  for (Int_t idx = 0; idx <15; ++idx)
-    current->fC[idx] = cov[idx];
-    
+  current->SetExternalTrackParam( param );    
   fTrackParamMask |= flag;
   fContentSize += sizeof(AliFlatExternalTrackParam);
 

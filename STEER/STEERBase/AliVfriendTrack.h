@@ -15,25 +15,29 @@ public:
   AliVfriendTrack(){}
   // constructor for reinitialisation of vtable
   AliVfriendTrack( AliVConstructorReinitialisationFlag ){}
-
   virtual ~AliVfriendTrack(){}
 
   //used in calibration
   
   virtual Int_t GetTPCseed( AliTPCseed &) const = 0;
+  
+  /*
+  Int_t GetTrackParamTPCOut( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0  ); }
+  Int_t GetTrackParamITSOut( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0  ); }
+  Int_t GetTrackParamTRDIn( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0  ); }
+  */
+
   //virtual const AliVtrackPointArray *GetTrackPointArray() const {return NULL;}
-  //virtual const AliVtrack * GetITSOut() const {return NULL;} 
-  //virtual const AliVtrack * GetTPCOut() const {return  NULL;} 
-  //virtual const AliVtrack * GetTRDIn()  const {return NULL;} 
-  // virtual TObject* GetCalibObject(Int_t /*index*/) const = 0;
+
+  // bit manipulation for filtering
+  virtual void SetSkipBit(Bool_t skip) = 0;
+  virtual Bool_t TestSkipBit() const = 0;
 
 private: 
   AliVfriendTrack(const AliVfriendTrack &);
   AliVfriendTrack& operator=(const AliVfriendTrack& esd);  
 
-  //ClassDef(AliVfriendTrack,0);
 };
 
 #endif
-
 

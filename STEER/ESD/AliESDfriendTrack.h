@@ -68,7 +68,7 @@ public:
   
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
-  Bool_t TestSkipBit() {return TestBit(23);}
+  Bool_t TestSkipBit() const {return TestBit(23);}
 
   // VfriendTrack interface
 

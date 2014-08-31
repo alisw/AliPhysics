@@ -100,7 +100,7 @@ class AliFlatESDTrack :public AliVVtrack {
     return sizeof(AliFlatESDTrack) + 6*sizeof(AliFlatExternalTrackParam);
   }
 
-  size_t GetSize() { return fContent -  reinterpret_cast<Byte_t*>(this) + fContentSize; }
+  size_t GetSize() const { return fContent -  reinterpret_cast<const Byte_t*>(this) + fContentSize; }
     
  private:
 
@@ -135,6 +135,28 @@ class AliFlatESDTrack :public AliVVtrack {
 
 };
 
+// _______________________________________________________________________________________________________
+inline AliFlatESDTrack::AliFlatESDTrack() :
+  AliVVtrack(),
+  fTrackParamMask(0),
+  fNTPCClusters(0),
+  fNITSClusters(0),
+  fContentSize(0)
+{
+  // Default constructor
+}
+
+inline AliFlatESDTrack::AliFlatESDTrack( AliVConstructorReinitialisationFlag f )
+  :
+  AliVVtrack( f ),
+  fTrackParamMask(fTrackParamMask ),
+  fNTPCClusters( fNTPCClusters ),
+  fNITSClusters( fNITSClusters ),
+  fContentSize( fContentSize )
+{
+  // Constructor for reinitialisation of vtable
+}
+
 inline UInt_t AliFlatESDTrack::CountBits(Byte_t field, UInt_t mask) {
   // Count bits in field
   UInt_t count = 0, reg = field & mask;
@@ -146,9 +168,8 @@ inline Int_t AliFlatESDTrack::GetExternalTrackParam( AliExternalTrackParam &p, U
 {
   // Get external track parameters  
   const AliFlatExternalTrackParam *f = GetFlatParam ( flag );
-  if( !f ) return -1;  
-  Float_t par[5] = { f->GetY(), f->GetZ(), f->GetSnp(), f->GetTgl(), f->GetSigned1Pt() };
-  p.Set( f->GetX(), f->GetAlpha(), par, f->GetCov() );
+  if( !f ) return -1;
+  f->GetExternalTrackParam( p );
   return 0;
 }
 

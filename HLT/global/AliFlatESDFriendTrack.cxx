@@ -33,17 +33,67 @@
 
 #include "AliFlatESDFriendTrack.h"
 #include "AliExternalTrackParam.h"
+#include "AliESDfriendTrack.h"
+#include "AliTPCseed.h"
 #include "Riostream.h"
 
 // _______________________________________________________________________________________________________
-AliFlatESDFriendTrack::AliFlatESDFriendTrack() :
-  AliVfriendTrack()
+ AliFlatESDFriendTrack::AliFlatESDFriendTrack()
+:
+ AliVfriendTrack(),
+ fContentSize(0),
+ fTPCOutPointer(-1),
+ fITSOutPointer(-1),
+ fTRDInPointer(-1),
+ fTPCseedPointer(-1),
+ fBitFlags(0)
 {
   // Default constructor
+  fContent[0]=0;
 }
 
-AliFlatESDFriendTrack::AliFlatESDFriendTrack( AliVConstructorReinitialisationFlag f ) :
-AliVfriendTrack( f )
+ AliFlatESDFriendTrack::AliFlatESDFriendTrack( AliVConstructorReinitialisationFlag f ) 
+:
+ AliVfriendTrack( f ),
+ fContentSize(fContentSize),
+ fTPCOutPointer(fTPCOutPointer),
+ fITSOutPointer(fITSOutPointer),
+ fTRDInPointer(fTRDInPointer),
+ fTPCseedPointer(fTPCseedPointer),
+ fBitFlags(fBitFlags)
 {
   // constructor for reinitialisation of vtable
+}
+
+void AliFlatESDFriendTrack::Reset()
+{
+  // reset
+  fContentSize = 0;
+  fTPCOutPointer = -1;
+  fITSOutPointer = -1;
+  fTRDInPointer = -1;
+  fTPCseedPointer = -1;
+  fBitFlags = 0; 
+}
+
+Int_t AliFlatESDFriendTrack::SetFromESDfriendTrack( const AliESDfriendTrack* track, size_t allocatedMemory )
+{
+  if( allocatedMemory < EstimateSize() ) return -1;
+  Reset();
+  if( !track ) return 0;
+  SetSkipBit(track->TestSkipBit() );
+  SetTrackParamTPCOut( track->GetTPCOut() );
+  SetTrackParamITSOut( track->GetITSOut() );
+  SetTrackParamTRDIn( track->GetTRDIn() );
+  const AliTPCseed* seedP = NULL;
+  {
+    TObject* calibObject = NULL;
+    for (Int_t idx = 0; (calibObject = track->GetCalibObject(idx)); ++idx) {
+      if ((seedP = dynamic_cast<const AliTPCseed*>(calibObject))) {
+	break;
+      }
+    }
+  }
+  SetTPCseed( seedP );
+  return 0;
 }

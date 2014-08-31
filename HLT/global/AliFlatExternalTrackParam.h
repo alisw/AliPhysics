@@ -44,10 +44,32 @@ struct AliFlatExternalTrackParam
   Float_t  GetPt()                const {
     Double_t pt1 = fabs( fSigned1Pt );
     return (pt1>kAlmost0) ? 1./pt1 : kVeryBig;
-  } 
+  }
   void GetExternalTrackParam( AliExternalTrackParam &p ) const;
+  void SetExternalTrackParam( const AliExternalTrackParam *p );
 };
 
 typedef struct AliFlatExternalTrackParam AliFlatExternalTrackParam;
+
+inline void AliFlatExternalTrackParam::GetExternalTrackParam( AliExternalTrackParam &p ) const
+{
+ // Get external track parameters  
+  Float_t par[5] = { fY, fZ, fSnp, fTgl, fSigned1Pt };
+  p.Set( fX, fAlpha, par, fC );
+}
+
+inline void AliFlatExternalTrackParam::SetExternalTrackParam( const AliExternalTrackParam *p ) 
+{
+  // Set external track parameters
+  if( !p ) return;
+  fAlpha = p->GetAlpha();
+  fX = p->GetX();
+  fY = p->GetY();
+  fZ = p->GetZ();
+  fSnp = p->GetSnp();
+  fTgl = p->GetTgl();
+  fSigned1Pt = p->GetSigned1Pt();  
+  for (Int_t idx = 0; idx <15; ++idx) fC[idx] = p->GetCovariance()[idx];
+}
 
 #endif

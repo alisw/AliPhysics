@@ -36,6 +36,7 @@
 #include "AliFlatESDFriend.h"
 #include "AliFlatESDFriendTrack.h"
 #include "Riostream.h"
+#include "AliESDfriend.h"
 
 // _______________________________________________________________________________________________________
 AliFlatESDFriend::AliFlatESDFriend() :
@@ -101,3 +102,61 @@ void AliFlatESDFriend::Ls() const
   cout<<"  N tracks: "<<fNTracks<<endl;
   cout<<"  N track entries: "<<fNTrackEntries<<endl;
 }
+
+
+// _______________________________________________________________________________________________________
+Int_t AliFlatESDFriend::SetFromESDfriend( const size_t allocatedMemorySize, const AliESDfriend *esdFriend )
+{
+  // Fill flat ESD friend from ALiESDfriend
+ 
+  if( allocatedMemorySize < sizeof(AliFlatESDFriend ) ) return -1;
+
+  Reset();
+  
+  if( !esdFriend ) return 0;
+  
+  Int_t err = 0;
+  size_t freeSpace = allocatedMemorySize - GetSize();
+
+  // fill event info
+  {
+    SetSkipBit( esdFriend->TestSkipBit() );
+    for( int iSector=0; iSector<72; iSector++ ){
+      SetNclustersTPC( iSector, esdFriend->GetNclustersTPC(iSector) );
+      SetNclustersTPCused( iSector, esdFriend->GetNclustersTPCused(iSector) );
+    }
+  }
+ 
+  // fill track friends
+  {
+   size_t trackSize = 0;
+   int nTracks = 0;
+   int nTrackEntries = 0;
+   Long64_t *table = NULL;
+   AliFlatESDFriendTrack *flatTrack = NULL;
+   err = SetTracksStart( flatTrack, table, esdFriend->GetNumberOfTracks(), freeSpace );
+   if( err!=0 ) return err;
+   freeSpace = allocatedMemorySize - GetSize();
+   
+   for (Int_t idxTrack = 0; idxTrack < esdFriend->GetNumberOfTracks(); ++idxTrack) {
+     const AliESDfriendTrack *esdTrack = esdFriend->GetTrack(idxTrack);
+     table[idxTrack] = -1;
+     if (esdTrack) {
+       table[idxTrack] = trackSize;
+       if( freeSpace<flatTrack->EstimateSize() ) return -1;
+       new (flatTrack) AliFlatESDFriendTrack;       
+       //flatTrack->SetFromESDTrack( esdTrack );
+       trackSize += flatTrack->GetSize();
+       freeSpace -= flatTrack->GetSize();
+       nTrackEntries++;
+       flatTrack = flatTrack->GetNextTrackNonConst();
+     }
+     nTracks++;
+    }
+   
+   SetTracksEnd( nTracks, nTrackEntries, trackSize );
+  }
+
+  return 0;
+}
+

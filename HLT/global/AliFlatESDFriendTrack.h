@@ -9,18 +9,14 @@
  * See implementation file for documentation
  */
 
-/*
-Cp - Track parameters constrained to the primary vertex
-Ip - Track parameters estimated at the inner wall of TPC
-TPCInner - Track parameters estimated at the inner wall of TPC using the TPC stand-alone 
-Op - Track parameters estimated at the point of maximal radial coordinate reached during the tracking
-*/
 
 #include "Rtypes.h"
 
 #include "AliFlatTPCCluster.h"
 #include "AliVfriendTrack.h"
 #include "AliVMisc.h"
+#include "AliFlatExternalTrackParam.h"
+#include "AliFlatTPCseed.h"
 
 class AliESDtrack;
 class AliESDfriendTrack;
@@ -31,35 +27,108 @@ class AliTPCseed;
 class AliFlatESDFriendTrack :public AliVfriendTrack 
 {
  public:
+
+  // --------------------------------------------------------------------------------
+  // -- Constructor / Destructors
   AliFlatESDFriendTrack();
   ~AliFlatESDFriendTrack() {}
-  // constructor for reinitialisation of virtual table
+ 
+  // constructor and method for reinitialisation of virtual table  
   AliFlatESDFriendTrack( AliVConstructorReinitialisationFlag );
-
-  //implementation of AliVfriendTrack methods 
-  Int_t GetTPCseed( AliTPCseed &) const {return -1;}
-
-  //AliVVTPCseed* GetTPCseed() const {return NULL;}
-  AliTPCseed* GetTPCseed() const { return NULL; }
-  //AliVVTRDseed* GetTRDseed() const {return NULL;}
-  const AliVVtrackPointArray *GetTrackPointArray() const { return NULL; }
-  //const AliExternalTrackParam * GetITSOut() const { return NULL; } 
-  //const AliExternalTrackParam * GetTPCOut() const { return  NULL; } 
-  //const AliExternalTrackParam * GetTRDIn()  const { return NULL; } 
-  //const AliVVtrack * GetITSOut() const { return NULL; } 
-  //const AliVVtrack * GetTPCOut() const { return  NULL; } 
-  //const AliVVtrack * GetTRDIn()  const { return NULL; } 
-
-  // own methods
-
   void Reinitialize() { new (this) AliFlatESDFriendTrack( AliVReinitialize ); }
+
+  // --------------------   AliVfriendTrack interface    ---------------------------------
+
+  Int_t GetTPCseed( AliTPCseed &) const {return -1;}
+ 
+  Int_t GetTrackParamTPCOut( AliExternalTrackParam &p ) const { return GetTrackParam( fTPCOutPointer, p ); }
+  Int_t GetTrackParamITSOut( AliExternalTrackParam &p ) const { return GetTrackParam( fITSOutPointer, p ); }
+  Int_t GetTrackParamTRDIn( AliExternalTrackParam &p )  const { return GetTrackParam( fTRDInPointer,  p ); }
+
+  //virtual const AliVtrackPointArray *GetTrackPointArray() const {return NULL;}
+
   
+  // bit manipulation for filtering
+
+  void SetSkipBit(Bool_t skip){ fBitFlags = skip; }
+  Bool_t TestSkipBit() const { return (fBitFlags!=0); }
+  
+  // ------------------- Own methods  ---------------------------------------------------------
+
+  // -- Set methods
+ 
+  void Reset();
+
+  Int_t SetFromESDfriendTrack( const AliESDfriendTrack* track, size_t allocatedMemory );
+
+  void SetTrackParamTPCOut( const AliExternalTrackParam *p ){ SetTrackParam( fTPCOutPointer, p ); }
+  void SetTrackParamITSOut( const AliExternalTrackParam *p ){ SetTrackParam( fITSOutPointer, p ); }
+  void SetTrackParamTRDIn ( const AliExternalTrackParam *p ){ SetTrackParam( fTRDInPointer,  p );  }
+  void SetTPCseed         ( const AliTPCseed *p );
+
+  // -- 
+  
+  const AliFlatESDFriendTrack *GetNextTrack() const { return reinterpret_cast<const AliFlatESDFriendTrack*>(fContent+fContentSize); }
+  AliFlatESDFriendTrack *GetNextTrackNonConst() { return reinterpret_cast<AliFlatESDFriendTrack*>(fContent+fContentSize); }
+ 
+  // --------------------------------------------------------------------------------
+  // -- Size methods
+
+  static size_t EstimateSize(){
+    return sizeof(AliFlatESDFriendTrack) + 3*sizeof(AliFlatExternalTrackParam) + AliFlatTPCseed::EstimateSize();
+  }
+
+  size_t GetSize() const { return fContent -  reinterpret_cast<const Byte_t*>(this) + fContentSize; }
+
  private: 
 
   AliFlatESDFriendTrack(const AliFlatESDFriendTrack &);
   AliFlatESDFriendTrack& operator=(const AliFlatESDFriendTrack& ); 
 
+  Int_t GetTrackParam( Long64_t ptr, AliExternalTrackParam &param ) const;
+  void  SetTrackParam( Long64_t &ptr, const AliExternalTrackParam *p );
+
+  // --------------------------------------------------------------------------------
+
+  ULong64_t fContentSize;                      // Size of this object
+  Long64_t  fTPCOutPointer;        // pointer to TPCOut track param in fContent
+  Long64_t  fITSOutPointer;        // pointer to ITSOut track param in fContent
+  Long64_t  fTRDInPointer;        // pointer to TRDIn track param in fContent
+  Long64_t  fTPCseedPointer;       // pointer to TPCseed in fContent
+  Bool_t    fBitFlags; // bit flags
+
+  // --------------------------------------------------------------------------------
+  
+  Byte_t fContent[1];                  // Variale size object, which contains all data
+
 };
 
+inline Int_t AliFlatESDFriendTrack::GetTrackParam( Long64_t ptr, AliExternalTrackParam &param ) const
+{
+  if( ptr<0 ) return -1;
+  const AliFlatExternalTrackParam *fp = reinterpret_cast< const AliFlatExternalTrackParam* >( fContent + ptr );
+  fp->GetExternalTrackParam( param );
+}
+
+inline void AliFlatESDFriendTrack::SetTrackParam( Long64_t &ptr, const AliExternalTrackParam *p )
+{
+  if(!p ) return;
+  if( ptr<0 ){
+    ptr = fContentSize;
+    fContentSize += sizeof(AliFlatExternalTrackParam);
+  }
+  AliFlatExternalTrackParam *fp = reinterpret_cast< AliFlatExternalTrackParam* >( fContent + ptr );
+  fp->SetExternalTrackParam( p );
+}
+
+inline void AliFlatESDFriendTrack::SetTPCseed( const AliTPCseed *p )
+{
+  fTPCseedPointer = -1;
+  if(!p ) return;
+  fTPCseedPointer = fContentSize;
+  AliFlatTPCseed *fp = reinterpret_cast< AliFlatTPCseed* >( fContent + fTPCseedPointer );
+  fp->SetFromTPCseed( p );
+  fContentSize += fp->GetSize();  
+}
 
 #endif
