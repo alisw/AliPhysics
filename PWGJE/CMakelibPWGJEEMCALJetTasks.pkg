@@ -42,6 +42,7 @@ set ( SRCS
  EMCALJetTasks/AliJetEmbeddingFromGenTask.cxx
  EMCALJetTasks/AliJetEmbeddingFromPYTHIATask.cxx
  EMCALJetTasks/AliJetEmbeddingTask.cxx
+ EMCALJetTasks/AliJetFastSimulation.cxx
  EMCALJetTasks/AliJetModelBaseTask.cxx
  EMCALJetTasks/AliJetModelMergeBranches.cxx
  EMCALJetTasks/AliJetRandomizerTask.cxx
