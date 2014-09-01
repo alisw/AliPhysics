@@ -136,6 +136,12 @@ fhConeSumPtSubvsConeSumPtTotPhiCell(0),     fhConeSumPtSubNormvsConeSumPtTotPhiC
 fhConeSumPtSubvsConeSumPtTotEtaCell(0),     fhConeSumPtSubNormvsConeSumPtTotEtaCell(0),
 fhConeSumPtVSUETracksEtaBand(0),            fhConeSumPtVSUETracksPhiBand(0),
 fhConeSumPtVSUEClusterEtaBand(0),           fhConeSumPtVSUEClusterPhiBand(0),
+fhPtPrimMCPi0DecayPairOutOfCone(0),         fhPtPrimMCPi0DecayPairOutOfAcceptance(0),
+fhPtPrimMCPi0DecayPairAcceptInConeLowPt(0), fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0DecayPairNoOverlap(0),
+fhPtPrimMCPi0DecayIsoPairOutOfCone(0),      fhPtPrimMCPi0DecayIsoPairOutOfAcceptance(0),
+fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt(0),fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0Overlap(0),                    fhPtPrimMCPi0IsoOverlap(0),
 fhPtLeadConeBinLambda0(0),                  fhSumPtConeBinLambda0(0),
 fhPtLeadConeBinLambda0MC(0),                fhSumPtConeBinLambda0MC(0),
 // Number of local maxima in cluster
@@ -2896,6 +2902,21 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                                                              nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairOutOfAcceptance) ;
+        
+        fhPtPrimMCPi0Overlap  = new TH1F("hPtPrimMCPi0Overlap",
+                                         Form("primary %s, verlap: #it{p}_{T}, %s",
+                                              pptype[kmcPrimPi0].Data(),parTitle.Data()),
+                                         nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0Overlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0Overlap) ;
+        
+        fhPtPrimMCPi0IsoOverlap  = new TH1F("hPtPrimMCPi0IsoOverlap",
+                                         Form("primary %s, verlap: #it{p}_{T}, %s",
+                                              pptype[kmcPrimPi0].Data(),parTitle.Data()),
+                                         nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0IsoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0IsoOverlap) ;
+
       }
       
     }//Histos with MC
@@ -3831,6 +3852,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   AliAODMCParticle * primAOD   = 0;
   TLorentzVector lv;
   
+  // Calorimeter cluster merging angle
+  // angle smaller than 3 cells  6 cm (0.014) in EMCal, 2.2 cm in PHOS (0.014*(2.2/6))
+  Float_t overlapAngle = 0;
+  if      (fCalorimeter=="EMCAL") overlapAngle = 3*0.014  ;
+  else if (fCalorimeter=="PHOS" ) overlapAngle = 3*0.00382;
+  
   // Get the ESD MC particles container
   AliStack * stack = 0;
   if( GetReader()->ReadStack() )
@@ -3940,26 +3967,40 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       continue;
     }
     
-    Int_t pi0d1Label = -1, pi0d2Label = -1;
-    if(pdg==111)
-    {
-      if(GetReader()->ReadStack())
-      {
-        pi0d1Label = primStack->GetDaughter(0);
-        pi0d2Label = primStack->GetDaughter(1);
-      }
-      else
-      {
-        pi0d1Label = primAOD->GetDaughter(0);
-        pi0d2Label = primAOD->GetDaughter(1);
-      }
-      //printf("pi0 daug: a) %d, b) %d\n",pi0d1Label,pi0d2Label);
-    }
-    
-    //
+    // Check the origin of the photon or if it is a pi0, assing a tag
+    Int_t pi0d1Label = -1, pi0d2Label = -1, pi0d3Label = -1;
+    Bool_t overlapPi0 = kTRUE;
     if(pdg==111)
     {
       mcIndex = kmcPrimPi0;
+      //printf("check pi0\n");
+      // Get the labels of the decay particles, remove them from isolation cone
+      // Get also the opening angle and check if decays likely overlap
+      Bool_t okpi0 = kFALSE;
+      Int_t ndaugh = GetMCAnalysisUtils()->GetNDaughters(i,GetReader(), okpi0);
+      //printf("OK pi0 %d, ndaugh %d\n",okpi0,ndaugh);
+      Int_t d1Pdg = 0, d1Status = 0; Bool_t ok1 = kFALSE;
+      Int_t d2Pdg = 0, d2Status = 0; Bool_t ok2 = kFALSE;
+      Int_t d3Pdg = 0, d3Status = 0; Bool_t ok3 = kFALSE;
+      TLorentzVector daugh1mom, daugh2mom, daugh3mom;
+     
+      if ( ndaugh > 0 ) daugh1mom = GetMCAnalysisUtils()->GetDaughter(0,i,GetReader(),d1Pdg, d1Status,ok1, pi0d1Label);
+      if ( ndaugh > 1 ) daugh2mom = GetMCAnalysisUtils()->GetDaughter(1,i,GetReader(),d2Pdg, d2Status,ok2, pi0d2Label);
+      if ( ndaugh > 2 ) daugh3mom = GetMCAnalysisUtils()->GetDaughter(2,i,GetReader(),d3Pdg, d3Status,ok3, pi0d3Label);
+      
+      //printf("pi0 daug %d: a) %d, b) %d, c) %d\n", ndaugh,pi0d1Label,pi0d2Label,pi0d3Label);
+      //if ( ndaugh !=2 ) printf("PDG: %d, %d, %d\n",d1Pdg,d2Pdg,d3Pdg);
+      
+      // Select decays in 2 photons
+      if( ndaugh!=2 || (d2Pdg != d1Pdg && d1Pdg!=22)) okpi0 = kFALSE;
+      
+      // Check overlap of decays
+      if( okpi0 && fMakePrimaryPi0DecayStudy)
+      {
+        Float_t d12Angle = daugh1mom.Angle(daugh2mom.Vect());
+        if(d12Angle > overlapAngle) overlapPi0 = kFALSE;
+        //printf("  -- d12 angle %2.3f, angle limit %2.3f, overlap %d\n",d12Angle,overlapAngle,overlapPi0);
+      }
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) )
     {
@@ -4000,7 +4041,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     {
       if(ip==i) continue;
       
-      if(pdg==111 && (ip == pi0d1Label || ip == pi0d2Label))
+      if(pdg==111 && (ip == pi0d1Label || ip == pi0d2Label || (ip == pi0d3Label)))
       {
         //printf("Do not count pi0 decays in cone when isolating pi0 \n");
         continue;
@@ -4151,10 +4192,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
             dRdaugh2 = GetIsolationCut()->Radius(photonEta, photonPhi, daugh2mom.Eta(),phiDaugh2);
 
             // Opening angle, check if pairs will likely overlap
-            // angle smaller than 3 cells  6 cm (0.014) in EMCal, 2.2 cm in PHOS (0.014*(2.2/6)) 
             d12Angle = daugh1mom.Angle(daugh2mom.Vect());
-            if(( fCalorimeter=="EMCAL" && d12Angle > 3*0.014 ) || ( fCalorimeter=="PHOS" && d12Angle > 3*0.00382 ))
-              overlap = kFALSE;
+            if(d12Angle > overlapAngle) overlap = kFALSE;
 
           }
         }
@@ -4182,6 +4221,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         if(!overlap) fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
       }
     } // pi0 decay
+    
+    if(mcIndex == kmcPrimPi0 && fMakePrimaryPi0DecayStudy && overlapPi0)
+      fhPtPrimMCPi0Overlap->Fill(photonPt);
     
     // Isolated?
     Bool_t isolated = kFALSE;
@@ -4216,7 +4258,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(!overlap) fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
         }
       }// pi0 decay
-    }
+      
+      if(mcIndex == kmcPrimPi0 && fMakePrimaryPi0DecayStudy && overlapPi0)
+        fhPtPrimMCPi0IsoOverlap->Fill(photonPt);
+      
+    } // isolated
   }//loop on primaries
   
   if(GetDebug() > 0) printf("AliAnaParticleIsolation::FillAcceptanceHistograms() - End \n");
