@@ -101,9 +101,9 @@ void AliAnalysisTaskJetMassResponseDet::UserCreateOutputObjects()
   const Double_t minM = 0.;
   const Double_t maxM = 50.;
 
-  const Int_t nBinsConstEff  = 24;
+  const Int_t nBinsConstEff  = 40;
   const Double_t minConstEff = 0.;
-  const Double_t maxConstEff = 1.2;
+  const Double_t maxConstEff = 2.;
 
   // const Int_t nBinsConst = 26;
   // const Double_t minConst = -5.5;
@@ -160,7 +160,7 @@ void AliAnalysisTaskJetMassResponseDet::UserCreateOutputObjects()
   fOutput->Add(fh2EtaPhiMatchedPart);
 
   histName = "fhnMassResponse";
-  histTitle = Form("%s;#it{M}_{det};#it{M}_{part};#it{p}_{T,det};#it{p}_{T,part};#it{M}_{det}^{tagged}",histName.Data());
+  histTitle = Form("%s;#it{M}_{det};#it{M}_{part};#it{p}_{T,det};#it{p}_{T,part};#it{N}_{const}^{det}/#it{N}_{const}^{part}",histName.Data());
   fhnMassResponse = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
   fOutput->Add(fhnMassResponse);
 
@@ -224,27 +224,15 @@ Bool_t AliAnalysisTaskJetMassResponseDet::FillHistograms()
        //fill detector response
        jPart = jDet->ClosestJet();
        if(jPart) {
-
 	 fh2EtaPhiMatchedDet->Fill(jDet->Eta(),jDet->Phi());
 	 fh2EtaPhiMatchedPart->Fill(jPart->Eta(),jPart->Phi());
 
 	 Int_t nConstPart = jPart->GetNumberOfConstituents();
 	 Int_t nConstDet = jDet->GetNumberOfConstituents();
-	 Int_t diff = nConstPart-nConstDet;
 	 Double_t eff = -1.;
 	 if(nConstPart>0) eff = (Double_t)nConstDet/((Double_t)nConstPart);
 	 Double_t var[5] = {GetJetMass(jDet),jPart->M(),jDet->Pt(),jPart->Pt(),eff};
 	 fhnMassResponse->Fill(var);
-
-	 if(jPart->Pt()>40. && jPart->Pt()<50.) {
-	   if(jDet->Pt()>50.) Printf("feed-out high");
-	   else if(jDet->Pt()<40.) Printf("feed-out low");
-	   else Printf("correct");
-	   Printf("pT Part: %f Det: %f",jPart->Pt(),jDet->Pt());
-	   Printf("mass Part: %f Det: %f",jPart->M(),jDet->M());
-
-	   Printf("nConst Part: %d  Det: %d  diff: %d",nConstPart,nConstDet,diff);
-	 }
        }
     }
   }
