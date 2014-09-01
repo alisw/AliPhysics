@@ -278,8 +278,12 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
 {
   // Execute on each event.
 
-  const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
-  const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+  Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+  Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+  if(InputEvent()->GetRunNumber()>=177295 && InputEvent()->GetRunNumber()<=197470) { //small SM masked in 2012 and 2013
+    EmcalMinPhi = 1.405;
+    EmcalMaxPhi = 3.135;
+  }
   const Double_t EmcalWidth = (EmcalMaxPhi-EmcalMinPhi)/2.0;
 
   Double_t ptTPC   = 0;
