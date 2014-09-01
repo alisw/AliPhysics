@@ -141,6 +141,7 @@ fhPtPrimMCPi0DecayPairAcceptInConeLowPt(0), fhPtPrimMCPi0DecayPairAcceptInConeLo
 fhPtPrimMCPi0DecayPairNoOverlap(0),
 fhPtPrimMCPi0DecayIsoPairOutOfCone(0),      fhPtPrimMCPi0DecayIsoPairOutOfAcceptance(0),
 fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt(0),fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0DecayIsoPairNoOverlap(0),
 fhPtPrimMCPi0Overlap(0),                    fhPtPrimMCPi0IsoOverlap(0),
 fhPtLeadConeBinLambda0(0),                  fhSumPtConeBinLambda0(0),
 fhPtLeadConeBinLambda0MC(0),                fhSumPtConeBinLambda0MC(0),
@@ -2842,76 +2843,82 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if(fMakePrimaryPi0DecayStudy)
       {
-        fhPtPrimMCPi0DecayPairAcceptInConeLowPt  = new TH1F("hPtPrimMCPi0DecayPairAcceptInConeLowPt",
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPt  = new TH1F("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPt",
                                                             Form("primary photon  %s : #it{p}_{T}, pair in cone, %s",pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
                                                             nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairAcceptInConeLowPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairAcceptInConeLowPt) ;
         
-        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt  = new TH1F("hPtPrimMCPi0DecayIsoPairAcceptInConeLowPt",
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPt",
                                                                Form("isolated primary photon %s, pair in cone : #it{p}_{T}, %s",
                                                                     pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
                                                                nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt) ;
         
-        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap  = new TH1F("hPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap",
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap  = new TH1F("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPtNoOverlap",
                                                                      Form("primary photon  %s, no overlap, pair in cone : #it{p}_{T}, %s",
                                                                           pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
                                                                      nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap) ;
         
-        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap  = new TH1F("hPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap",
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPtNoOverlap",
                                                                         Form("isolated primary photon  %s, pair in cone,no overlap : #it{p}_{T}, %s",
                                                                              pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
                                                                         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap) ;
         
-        fhPtPrimMCPi0DecayPairNoOverlap  = new TH1F("hPtPrimMCPi0DecayPairNoOverlap",
+        fhPtPrimMCPi0DecayPairNoOverlap  = new TH1F("hPtPrim_MCPhotonPi0DecayPairNoOverlap",
                                                                      Form("primary photon  %s, no overlap: #it{p}_{T}, %s",
                                                                           pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
                                                                      nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairNoOverlap) ;
 
+        fhPtPrimMCPi0DecayIsoPairNoOverlap  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairNoOverlap",
+                                                    Form("isolated primary photon  %s, no overlap: #it{p}_{T}, %s",
+                                                         pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                    nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayIsoPairNoOverlap) ;
         
-        fhPtPrimMCPi0DecayPairOutOfCone  = new TH1F("hPtPrimMCPi0DecayPairOutOfCone",
+        fhPtPrimMCPi0DecayPairOutOfCone  = new TH1F("hPtPrim_MCPhotonPi0DecayPairOutOfCone",
                                                     Form("primary photon %s : #it{p}_{T}, pair out of cone, %s",pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
                                                     nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairOutOfCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairOutOfCone) ;
         
-        fhPtPrimMCPi0DecayIsoPairOutOfCone  = new TH1F("hPtPrimMCPi0DecayIsoPairOutOfCone",
+        fhPtPrimMCPi0DecayIsoPairOutOfCone  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairOutOfCone",
                                                        Form("isolated primary photon %s, pair out of cone : #it{p}_{T}, %s",
                                                             pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
                                                        nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairOutOfCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairOutOfCone) ;
         
-        fhPtPrimMCPi0DecayPairOutOfAcceptance  = new TH1F("hPtPrimMCPi0DecayPairOutOfAcceptance",
+        fhPtPrimMCPi0DecayPairOutOfAcceptance  = new TH1F("hPtPrim_MCPhotonPi0DecayPairOutOfAcceptance",
                                                           Form("primary photon %s : #it{p}_{T}, pair out of acceptance, %s",pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
                                                           nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairOutOfAcceptance) ;
         
-        fhPtPrimMCPi0DecayIsoPairOutOfAcceptance  = new TH1F("hPtPrimMCPi0DecayIsoPairOutOfAcceptance",
+        fhPtPrimMCPi0DecayIsoPairOutOfAcceptance  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairOutOfAcceptance",
                                                              Form("isolated primary photon %s, pair out of acceptance : #it{p}_{T}, %s",
                                                                   pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
                                                              nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairOutOfAcceptance) ;
         
-        fhPtPrimMCPi0Overlap  = new TH1F("hPtPrimMCPi0Overlap",
-                                         Form("primary %s, verlap: #it{p}_{T}, %s",
+        fhPtPrimMCPi0Overlap  = new TH1F("hPtPrim_MCPi0Overlap",
+                                         Form("primary %s, overlap: #it{p}_{T}, %s",
                                               pptype[kmcPrimPi0].Data(),parTitle.Data()),
                                          nptbins,ptmin,ptmax);
         fhPtPrimMCPi0Overlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0Overlap) ;
         
-        fhPtPrimMCPi0IsoOverlap  = new TH1F("hPtPrimMCPi0IsoOverlap",
-                                         Form("primary %s, verlap: #it{p}_{T}, %s",
+        fhPtPrimMCPi0IsoOverlap  = new TH1F("hPtPrim_MCisoPi0Overlap",
+                                         Form("primary %s, overlap: #it{p}_{T}, %s",
                                               pptype[kmcPrimPi0].Data(),parTitle.Data()),
                                          nptbins,ptmin,ptmax);
         fhPtPrimMCPi0IsoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -4242,6 +4249,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       fhPtPrimMCiso [kmcPrimPhoton]->Fill(photonPt) ;
       if(mcIndex == kmcPrimPi0Decay && fMakePrimaryPi0DecayStudy)
       {
+        // Not Overlapped decay
+        if(!overlap) fhPtPrimMCPi0DecayIsoPairNoOverlap->Fill(photonPt);
+        
         // Second decay out of cone
         if(dRdaugh2 > GetIsolationCut()->GetConeSize())
           fhPtPrimMCPi0DecayIsoPairOutOfCone->Fill(photonPt);
