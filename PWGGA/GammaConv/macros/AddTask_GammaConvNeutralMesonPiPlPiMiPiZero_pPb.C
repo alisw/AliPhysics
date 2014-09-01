@@ -159,20 +159,32 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_pPb(
 	stringShift = "pPb";
 
 	if( trainConfig == 1 ) {
+		// everything open
 		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "000000400"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
 	} else if( trainConfig == 2 ) {
+		// closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma
 		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002000700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
 	} else if( trainConfig == 3 ) {
+		// closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 5 sigma
 		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002003700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
 	} else if( trainConfig == 4 ) {
+		// closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma
 		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
 	} else if( trainConfig == 5 ) {
+		// closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma
+		// closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
 		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035031000000"; MesonCutarray[0] = "01035030000000"; 	
 	} else if( trainConfig == 6 ) {
+		// closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma
+		// closing neural pion cuts, 0.11 < M_gamma,gamma < 0.145
 		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035032000000"; MesonCutarray[0] = "01035030000000"; 	
 	} else if( trainConfig == 7 ) {
+		// closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma
+		// closing neural pion cuts, 0.12 < M_gamma,gamma < 0.145
 		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035033000000"; MesonCutarray[0] = "01035030000000"; 	
 	} else if( trainConfig == 8 ) {
+		// closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 5 sigma
+		// closing neural pion cuts, 0.12 < M_gamma,gamma < 0.145
 		eventCutArray[ 0] = "8000011"; ConvCutarray[0] = "002091170008260400000"; PionCutarray[0] = "002003700"; NeutralPionCutarray[0] = "01035033000000"; MesonCutarray[0] = "01035030000000"; 			
 	}
 	

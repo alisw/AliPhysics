@@ -43,6 +43,7 @@
 #include "AliAODMCHeader.h"
 #include "AliPicoTrack.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliPHOSGeoUtils.h"
 
 class iostream;
 
@@ -115,6 +116,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fHistClusterEtavsPhiAfterQA(NULL),
 	fHistDistanceToBadChannelBeforeAcc(NULL),
 	fHistDistanceToBadChannelAfterAcc(NULL),
+    fHistClusterRBeforeQA(NULL),
+    fHistClusterRAfterQA(NULL),
 	fHistClusterTimevsEBeforeQA(NULL),
 	fHistClusterTimevsEAfterQA(NULL),
 	fHistExoticCellBeforeQA(NULL),
@@ -182,6 +185,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fHistClusterEtavsPhiAfterQA(NULL),
 	fHistDistanceToBadChannelBeforeAcc(NULL),
 	fHistDistanceToBadChannelAfterAcc(NULL),
+    fHistClusterRBeforeQA(NULL),
+    fHistClusterRAfterQA(NULL),
 	fHistClusterTimevsEBeforeQA(NULL),
 	fHistClusterTimevsEAfterQA(NULL),
 	fHistExoticCellBeforeQA(NULL),
@@ -285,6 +290,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	fHistograms->Add(fHistDistanceToBadChannelAfterAcc);
 	
 	// Cluster quality related histograms
+    fHistClusterRBeforeQA = new TH1F(Form("R_Cluster_beforeClusterQA %s",GetCutNumber().Data()),"R of cluster",200,400,500);
+    fHistograms->Add(fHistClusterRBeforeQA);
+    fHistClusterRAfterQA = new TH1F(Form("R_Cluster_afterClusterQA %s",GetCutNumber().Data()),"R of cluster_matched",200,400,500);
+    fHistograms->Add(fHistClusterRAfterQA);
 	fHistClusterTimevsEBeforeQA=new TH2F(Form("ClusterTimeVsE_beforeClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_beforeClusterQA",400,-10e-6,10e-6,100,0.,40);
 	fHistograms->Add(fHistClusterTimevsEBeforeQA);
 	fHistClusterTimevsEAfterQA=new TH2F(Form("ClusterTimeVsE_afterClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_afterClusterQA",400,-10e-6,10e-6,100,0.,40);
@@ -677,15 +686,24 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 		}
 	}
 
-// 	cout << "Got the event" << endl; 
+//cout << "Got the event" << endl;
 	
-	Double_t vertex[3] = {0};
+    Double_t vertex[3] = {0,0,0};
 	event->GetPrimaryVertex()->GetXYZ(vertex);
-	// TLorentzvector with cluster
+
+    if(!cluster->IsEMCAL() && !cluster->IsPHOS()){AliError("Cluster is neither EMCAL nor PHOS, returning"); return kFALSE;}
+    // TLorentzvector with cluster
 	TLorentzVector clusterVector;
 	cluster->GetMomentum(clusterVector,vertex);
 	Double_t etaCluster = clusterVector.Eta();
 	Double_t phiCluster = clusterVector.Phi();
+
+    Float_t clusterPosition[3] = {0,0,0};
+    cluster->GetPosition(clusterPosition);
+    Double_t clusterR = TMath::Sqrt( clusterPosition[0]*clusterPosition[0] + clusterPosition[1]*clusterPosition[1] );
+    if(fHistClusterRBeforeQA) fHistClusterRBeforeQA->Fill(clusterR);
+
+//cout << "+++++++++ Cluster: x, y, z, R" << clusterPosition[0] << ", " << clusterPosition[1] << ", " << clusterPosition[2] << ", " << clusterR << "+++++++++" << endl;
 
 	Bool_t matched = kFALSE;
 	for (Int_t i = 0; i < 2; i++){
@@ -708,31 +726,65 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 				}
 			}
 		}
-// 		cout << "found track " << endl;
+//cout << "found track " << endl;
 // 		AliVTrack *outTrack = 0x00;
 // 		if (esdev)
 // 			outTrack = new AliESDtrack(*((AliESDtrack*)inTrack));
 // 		else
 // 			outTrack = new AliAODTrack(*((AliAODTrack*)inTrack));
 
-		
+        Bool_t propagated = kFALSE;
+        TVector3 VecPHOS(0,0,0);
+        //Double_t EMCALpos[3]={0,0,0};
 
-		Bool_t propagated = AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(inTrack,440, 0.000510999,20,0.05);
-		if (propagated){
-// 			cout << "Track "<< i  << "\t"<< inTrack->GetTrackPhiOnEMCal() << "\t" << inTrack->GetTrackEtaOnEMCal() << endl;
-// 			cout << "Cluster " << phiCluster << "\t" << etaCluster << endl;
-			Double_t dPhi = abs(phiCluster-inTrack->GetTrackPhiOnEMCal());
-			Double_t dEta = abs(etaCluster-inTrack->GetTrackEtaOnEMCal());
-			
-			Double_t dR2 = dPhi*dPhi + dEta+dEta;
-// 			cout << "distance to cluster \t" << sqrt(dR2) << endl;
-			if (fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(sqrt(dR2));	
-			if(dR2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
-				matched = kTRUE;
-				if (fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(sqrt(dR2));	
-			}
-		} 
-	}	
+        if(cluster->IsEMCAL()){
+            //AliExternalTrackParam t;
+            //t.CopyFromVTrack(inTrack);
+            //Double_t b[3]={0,0,0};
+            //t.GetBxByBz(b);
+            //propagated = t.PropagateToBxByBz(clusterR,b);
+            //t.GetXYZ(EMCALpos);
+            propagated = AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(inTrack, clusterR, 0.000510999, 20, 0.05);
+        }
+        if(cluster->IsPHOS()){
+            AliExternalTrackParam t;// = inTrack->GetOuterParam();
+            t.CopyFromVTrack(inTrack);
+            Double_t b[3]={0,0,0};
+            Double_t PHOSpos[3]={0,0,0};
+            t.GetBxByBz(b);
+            propagated = t.PropagateToBxByBz(clusterR,b);
+            t.GetXYZ(PHOSpos);
+            VecPHOS.SetXYZ(PHOSpos[0],PHOSpos[1],PHOSpos[2]);
+        }
+
+        if (propagated){
+//cout << "Track "<< i  << "\t"<< inTrack->GetTrackPhiOnEMCal() << "\t" << inTrack->GetTrackEtaOnEMCal() << endl;
+//cout << "Cluster " << phiCluster << "\t" << etaCluster << endl;
+            Double_t dPhi = 0;
+            Double_t dEta = 0;
+            if(cluster->IsEMCAL()){
+                //TVector3 VecEMCAL(EMCALpos[0],EMCALpos[1],EMCALpos[2]);
+                //dPhi=TMath::Abs(phiCluster-VecEMCAL.Phi());
+                //dEta=TMath::Abs(etaCluster-VecEMCAL.Eta());
+                dPhi = TMath::Abs(phiCluster-inTrack->GetTrackPhiOnEMCal());
+                dEta = TMath::Abs(etaCluster-inTrack->GetTrackEtaOnEMCal());
+            }
+            if(cluster->IsPHOS()){
+                dPhi = TMath::Abs(phiCluster-VecPHOS.Phi());
+                dEta = TMath::Abs(etaCluster-VecPHOS.Eta());
+            }
+
+            Double_t dR2 = dPhi*dPhi + dEta*dEta;
+//cout << "distance to cluster \t" << TMath::Sqrt(dR2) << endl;
+            if (fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2));
+            if(dR2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
+                matched = kTRUE;
+                if (fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2));
+                if (fHistClusterRAfterQA) fHistClusterRAfterQA->Fill(clusterR);
+            }
+        }
+    }
+
 	return matched;
 }
 
