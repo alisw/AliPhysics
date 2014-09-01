@@ -240,16 +240,17 @@ void AliTRDcheckESD::FillTrackletSliceInfo(Double_t* values, AliESDtrack* esdTra
 Bool_t AliTRDcheckESD::IsTrackSelected(AliESDtrack* track, Double_t* /*values*/, Int_t step) {
   //
   // Select tracks at each step
-  //
+  //  
   Bool_t referenceFilter = fReferenceTrackFilter->IsSelected(track);
   if(step==kTPCreference) {    // reference track filter
     return referenceFilter;
   }
   if(step==kTRD) {    // TRD reference track filter
-    return (referenceFilter && track->GetTRDntracklets()>0);
+    return (referenceFilter && Int_t(track->GetTRDntracklets()>0));
   }
-  if(step==kTOF) {    // TOFpid request
-    return (referenceFilter && track->GetTRDntracklets()>0 && (track->GetStatus() & AliESDtrack::kTOFpid)); 
+  if(step==kTOF) {    // TRD+(TOFout || TOFpid) request
+    return (referenceFilter && Int_t(track->GetTRDntracklets())>0 && 
+           ((track->GetStatus() & AliESDtrack::kTOFout) || (track->GetStatus() & AliESDtrack::kTOFpid))); 
   }
   if(step==kTOFin) {    // TOFin request
     return (referenceFilter && (track->GetStatus() & AliESDtrack::kTOFin)); 
@@ -617,8 +618,14 @@ void AliTRDcheckESD::FillTrdSliceContainers(Double_t* values, Bool_t* stepSelect
     TString objType = fHistos->At(i)->IsA()->GetName();
     if(!objType.Contains("AliCFContainer")) continue;
     AliCFContainer* cf = (AliCFContainer*)fHistos->At(i);
-    if(cf->GetVar(fgkVarNames[kTrackletSlice])<0 && cf->GetVar(fgkVarNames[kTrackletPHslice])<0) continue;
-    if((cf->GetVar(fgkVarNames[kEventTrigger])<0 && itrig==0) || (cf->GetVar(fgkVarNames[kEventTrigger])>=0))
+    TString varNames="";
+    for(Int_t ivar=0;ivar<cf->GetNVar();++ivar) {
+      varNames += cf->GetVarTitle(ivar); varNames += ";";
+    }
+    //if(cf->GetVar(fgkVarNames[kTrackletSlice])<0 && cf->GetVar(fgkVarNames[kTrackletPHslice])<0) continue;
+    if(!varNames.Contains(fgkVarNames[kTrackletSlice]) && !varNames.Contains(fgkVarNames[kTrackletPHslice])) continue;
+    //if((cf->GetVar(fgkVarNames[kEventTrigger])<0 && itrig==0) || (cf->GetVar(fgkVarNames[kEventTrigger])>=0))
+    if((!varNames.Contains(fgkVarNames[kEventTrigger]) && itrig==0) || varNames.Contains(fgkVarNames[kEventTrigger]))
       FillCFContainer(cf, values, stepSelections);
   }
 }
@@ -633,9 +640,16 @@ void AliTRDcheckESD::FillTrdTrackletContainers(Double_t* values, Bool_t* stepSel
     TString objType = fHistos->At(i)->IsA()->GetName();
     if(!objType.Contains("AliCFContainer")) continue;
     AliCFContainer* cf = (AliCFContainer*)fHistos->At(i);
-    if(cf->GetVar(fgkVarNames[kTrackletSlice])>=0 || cf->GetVar(fgkVarNames[kTrackletPHslice])>=0) continue;
-    if(cf->GetVar(fgkVarNames[kTrackletLayer])<0 && cf->GetVar(fgkVarNames[kTrackletQtot])<0) continue;
-    if((cf->GetVar(fgkVarNames[kEventTrigger])<0 && itrig==0) || (cf->GetVar(fgkVarNames[kEventTrigger])>=0))
+    TString varNames="";
+    for(Int_t ivar=0;ivar<cf->GetNVar();++ivar) {
+      varNames += cf->GetVarTitle(ivar); varNames += ";";
+    }
+    //if(cf->GetVar(fgkVarNames[kTrackletSlice])>=0 || cf->GetVar(fgkVarNames[kTrackletPHslice])>=0) continue;
+    if(varNames.Contains(fgkVarNames[kTrackletSlice]) || varNames.Contains(fgkVarNames[kTrackletPHslice])) continue;
+    //if(cf->GetVar(fgkVarNames[kTrackletLayer])<0 && cf->GetVar(fgkVarNames[kTrackletQtot])<0) continue;
+    if(!varNames.Contains(fgkVarNames[kTrackletLayer]) && !varNames.Contains(fgkVarNames[kTrackletQtot])) continue;
+    //if((cf->GetVar(fgkVarNames[kEventTrigger])<0 && itrig==0) || (cf->GetVar(fgkVarNames[kEventTrigger])>=0))
+    if((!varNames.Contains(fgkVarNames[kEventTrigger]) && itrig==0) || varNames.Contains(fgkVarNames[kEventTrigger]))
       FillCFContainer(cf, values, stepSelections);
   }
 }
@@ -650,12 +664,22 @@ void AliTRDcheckESD::FillGlobalTrackContainers(Double_t* values, Bool_t* stepSel
     TString objType = fHistos->At(i)->IsA()->GetName();
     if(!objType.Contains("AliCFContainer")) continue;
     AliCFContainer* cf = (AliCFContainer*)fHistos->At(i);
-    if(cf->GetVar(fgkVarNames[kTrackletLayer])>=0 || 
+    TString varNames="";
+    for(Int_t ivar=0;ivar<cf->GetNVar();++ivar) {
+      varNames += cf->GetVarTitle(ivar); varNames += ";";
+    }
+    /*if(cf->GetVar(fgkVarNames[kTrackletLayer])>=0 || 
        cf->GetVar(fgkVarNames[kTrackletSlice])>=0 || 
        cf->GetVar(fgkVarNames[kTrackletQtot])>=0 || 
-       cf->GetVar(fgkVarNames[kTrackletPHslice])>=0) continue;
-    if((cf->GetVar(fgkVarNames[kEventTrigger])<0 && itrig==0) || 
-       (cf->GetVar(fgkVarNames[kEventTrigger])>=0))
+       cf->GetVar(fgkVarNames[kTrackletPHslice])>=0) continue;*/
+    if(varNames.Contains(fgkVarNames[kTrackletLayer]) || 
+       varNames.Contains(fgkVarNames[kTrackletSlice]) || 
+       varNames.Contains(fgkVarNames[kTrackletQtot]) || 
+       varNames.Contains(fgkVarNames[kTrackletPHslice])) continue;
+    /*if((cf->GetVar(fgkVarNames[kEventTrigger])<0 && itrig==0) || 
+       (cf->GetVar(fgkVarNames[kEventTrigger])>=0))*/
+    if((!varNames.Contains(fgkVarNames[kEventTrigger]) && itrig==0) || 
+       varNames.Contains(fgkVarNames[kEventTrigger]))
       FillCFContainer(cf, values, stepSelections);
   }
 }
@@ -1192,7 +1216,7 @@ void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* /*trendValues*/, const Char
   legCls->Draw();
   clustersCF->SetRangeUser(clustersCF->GetVar(fgkVarNames[kEventMult]), 0.0, 6.0, kTRUE);
   
-  // Qtot vs P
+  // Qtot distributions
   pad = ((TVirtualPad*)l->At(5)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
   pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
@@ -1204,7 +1228,7 @@ void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* /*trendValues*/, const Char
   rangeQtot->SetStats(kFALSE);
   rangeQtot->Draw();
   
-  TH1D* hQtot[6]={0x0};
+  TH1D* hQtot[6+1]={0x0};
   TLegend* leg2=new TLegend(0.6, 0.7, 0.9, 0.97);
   leg2->SetFillColor(0);
   leg2->SetBorderSize(0);
@@ -1555,7 +1579,7 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
     hNclsVsP->SetStats(kFALSE);
     hNclsVsP->Draw("samecolz");
   }
-  
+    
   if(trendValues && hNclsVsP && hNclsVsP->GetEntries()>10) {
     TProfile* hNclsVsPprof = hNclsVsP->ProfileX("hNclsVsPprof");
     hNclsVsPprof->Fit(funcConst, "QME0", "goff", 1.0, 3.0);
@@ -1733,8 +1757,8 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
   if(trendValues && hQtotProj && hQtotProj->GetEntries()>2) {
     trendValues[16] = kQx*hQtotProj->GetBinContent(hQtotProj->FindBin(1.0));   // Landau MPV at 1GeV/c
     trendValues[17] = kQx*hQtotProj->GetBinError(hQtotProj->FindBin(1.0));     // Landau width at 1 GeV/c
-    trendValues[22] = kQx*hQtotProj->GetBinContent(hQtotProj->FindBin(1.0));   // Landau MPV at 1GeV/c
-    trendValues[23] = kQx*hQtotProj->GetBinError(hQtotProj->FindBin(1.0));     // Landau width at 1 GeV/c
+    trendValues[22] = hQtotProj->GetBinContent(hQtotProj->FindBin(1.0));   // Landau MPV at 1GeV/c
+    trendValues[23] = hQtotProj->GetBinError(hQtotProj->FindBin(1.0));     // Landau width at 1 GeV/c
   }
   if(hQtotP) {
     hQtotP->SetStats(kFALSE);
@@ -2003,6 +2027,7 @@ void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
       clustersEtaPhiProf->SetTitle("");
       SetStyle(clustersEtaPhiProf->GetXaxis(), "#eta", 0.06, 1.0, kTRUE, 0.06);
       SetStyle(clustersEtaPhiProf->GetYaxis(), "#varphi (rad.)", 0.06, 1.0, kTRUE, 0.06);
+      clustersEtaPhiProf->SetMaximum(30.);
       clustersEtaPhiProf->Draw("colz");
       lat->DrawLatex(0.2, 0.95, Form("Clusters / tracklet, layer %d", il));
       DrawTRDGrid();
