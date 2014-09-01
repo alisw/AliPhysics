@@ -509,6 +509,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     {
       centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data())) / 100 - 1.0;
     }
+    else if (fCentralityMethod == "PPVsMultUtils")
+      {
+	if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
+	else centrality = -1;
+    }
     else
     {
       AliCentrality *centralityObj = 0;
@@ -1093,7 +1098,12 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       if (error != TInterpreter::kNoError)
 	centrality = -1;
     }
-    else
+   else if (fCentralityMethod == "PPVsMultUtils")
+     {
+       if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
+       else centrality = -1;
+    }
+   else
     {
       if (fAOD)
 	centralityObj = fAOD->GetHeader()->GetCentralityP();
