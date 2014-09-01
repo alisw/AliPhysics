@@ -357,6 +357,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCPi0DecayIsoPairOutOfAcceptance; //! Pi0 decay photons, with decay pair out of detector acceptance, isolated
   TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt;//! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, isolated
   TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and do not overlap, isolated
+  TH1F *   fhPtPrimMCPi0DecayIsoPairNoOverlap;    //! Pi0 decay photons isolated, not overlapped decay
 
   TH1F *   fhPtPrimMCPi0Overlap;                  //! Pi0 with overlapped decay photons
   TH1F *   fhPtPrimMCPi0IsoOverlap;               //! Pi0 isolated with overlapped decay photons
