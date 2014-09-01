@@ -382,8 +382,12 @@ void AliAnalysisTaskScale::ExecOnce()
 
   const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
   const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
-  const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
-  const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+  Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+  Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+  if(InputEvent()->GetRunNumber()>=177295 && InputEvent()->GetRunNumber()<=197470) { //small SM masked in 2012 and 2013
+    EmcalMinPhi = 1.405;
+    EmcalMaxPhi = 3.135;
+  }
 
   fEmcalArea  = (EmcalMaxPhi - EmcalMinPhi) * (EmcalMinEta - EmcalMaxEta);
 
