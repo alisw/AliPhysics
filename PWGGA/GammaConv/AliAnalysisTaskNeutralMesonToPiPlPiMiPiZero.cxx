@@ -16,7 +16,6 @@
 //
 
 #include <vector>
-
 #include "TParticle.h"
 #include "TPDGCode.h"
 #include "TMCProcess.h"
@@ -1726,8 +1725,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::IsPiPlPiMiPiZeroDecay(TParti
 			neutPion = temp;
 			break;
 		}
-	}
-  
+	}  
 	if( posPion && negPion && neutPion) return kTRUE;
 	
 	return kFALSE;
