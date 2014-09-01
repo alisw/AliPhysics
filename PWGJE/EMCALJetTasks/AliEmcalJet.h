@@ -102,6 +102,10 @@ class AliEmcalJet : public AliVParticle
   void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); fTrackIDs.Set(0); fClosestJets[0] = 0; fClosestJets[1] = 0; 
                                                          fClosestJetsDist[0] = 0; fClosestJetsDist[1] = 0; fMatched = 0; fPtSub = 0; }
   Double_t          DeltaR(const AliVParticle* part) const;
+  Double_t          GetZ ( const Double_t trkPx, const Double_t trkPy, const Double_t trkPz ) const; // Get Z of constituent trk
+  Double_t          GetZ ( const AliVParticle* trk )       const; // Get Z of constituent trk
+  Double_t          GetXi ( const AliVParticle* trk )      const { return TMath::Log ( 1/GetZ (trk) ); } // Get Xi of constituent trk
+  Double_t          GetXi ( const Double_t trkPx, const Double_t trkPy, const Double_t trkPz ) const { return TMath::Log ( 1/GetZ (trkPx, trkPy, trkPz ) ); } // Get Xi of constituent trk
 
   void              SetLabel(Int_t l)                  { fLabel = l;                       }
   void              SetArea(Double_t a)                { fArea    = a;                     }

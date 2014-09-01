@@ -455,6 +455,26 @@ std::vector<int> AliEmcalJet::SortConstituentsPt( TClonesArray *tracks ) const
     return index_sorted_list;
 }
 
+//________________________________________________________________________
+Double_t AliEmcalJet::GetZ ( const Double_t trkPx, const Double_t trkPy, const Double_t trkPz ) const
+    {
+    // Get the z of a constituent inside of a jet
+    Double_t pJetSq = this->Px() * this->Px() + this->Py() * this->Py() + this->Pz() * this->Pz();
+
+    if(pJetSq>1e-6)
+        { return ( trkPx * this->Px() + trkPy * this->Py() + trkPz * this->Pz() ) / pJetSq ; }
+    else
+        { AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f",GetName(), pJetSq)); return -1; }
+
+    }
+
+//________________________________________________________________________
+Double_t AliEmcalJet::GetZ ( const AliVParticle* trk )          const
+    {
+    // Get Z of constituent trk
+    return GetZ ( trk->Px(), trk->Py(), trk->Pz() );
+    }
+
 //__________________________________________________________________________________________________
 AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray *tracks) const
 {
