@@ -47,6 +47,8 @@ AliAnalysisTaskJetMassResponseDet::AliAnalysisTaskJetMassResponseDet() :
   fh2PtVsMassJetPartTaggedMatch(0),
   fh2PtVsMassJetDetAll(0),
   fh2PtVsMassJetDetTagged(0),
+  fh2EtaPhiMatchedDet(0),
+  fh2EtaPhiMatchedPart(0),
   fhnMassResponse(0)
 {
   // Default constructor.
@@ -66,6 +68,8 @@ AliAnalysisTaskJetMassResponseDet::AliAnalysisTaskJetMassResponseDet(const char 
   fh2PtVsMassJetPartTaggedMatch(0),
   fh2PtVsMassJetDetAll(0),
   fh2PtVsMassJetDetTagged(0),
+  fh2EtaPhiMatchedDet(0),
+  fh2EtaPhiMatchedPart(0),
   fhnMassResponse(0)
 {
   // Standard constructor.
@@ -97,19 +101,19 @@ void AliAnalysisTaskJetMassResponseDet::UserCreateOutputObjects()
   const Double_t minM = 0.;
   const Double_t maxM = 50.;
 
-  const Int_t nBinsMT  = 50;
-  const Double_t minMT = 0.;
-  const Double_t maxMT = 50.;
+  const Int_t nBinsConstEff  = 24;
+  const Double_t minConstEff = 0.;
+  const Double_t maxConstEff = 1.2;
 
-  const Int_t nBinsConst = 26;
-  const Double_t minConst = -5.5;
-  const Double_t maxConst = 20.5;
+  // const Int_t nBinsConst = 26;
+  // const Double_t minConst = -5.5;
+  // const Double_t maxConst = 20.5;
 
   //Binning for THnSparse
   const Int_t nBinsSparse0 = 5;
-  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsMT};
-  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minMT};
-  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxMT};
+  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsConstEff};
+  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minConstEff};
+  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxConstEff};
 
   //Create histograms
   TString histName = "";
@@ -145,6 +149,16 @@ void AliAnalysisTaskJetMassResponseDet::UserCreateOutputObjects()
   fh2PtVsMassJetDetTagged = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
   fOutput->Add(fh2PtVsMassJetDetTagged);
 
+  histName = "fh2EtaPhiMatchedDet";
+  histTitle = TString::Format("%s;#eta;#varphi",histName.Data());
+  fh2EtaPhiMatchedDet = new TH2F(histName.Data(),histTitle.Data(),100,-1.,1.,72,0.,TMath::TwoPi());
+  fOutput->Add(fh2EtaPhiMatchedDet);
+
+  histName = "fh2EtaPhiMatchedPart";
+  histTitle = TString::Format("%s;#eta;#varphi",histName.Data());
+  fh2EtaPhiMatchedPart = new TH2F(histName.Data(),histTitle.Data(),100,-1.,1.,72,0.,TMath::TwoPi());
+  fOutput->Add(fh2EtaPhiMatchedPart);
+
   histName = "fhnMassResponse";
   histTitle = Form("%s;#it{M}_{det};#it{M}_{part};#it{p}_{T,det};#it{p}_{T,part};#it{M}_{det}^{tagged}",histName.Data());
   fhnMassResponse = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
@@ -171,7 +185,6 @@ void AliAnalysisTaskJetMassResponseDet::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskJetMassResponseDet::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
-
   return kTRUE;
 }
 
@@ -211,10 +224,16 @@ Bool_t AliAnalysisTaskJetMassResponseDet::FillHistograms()
        //fill detector response
        jPart = jDet->ClosestJet();
        if(jPart) {
-	 AliEmcalJet *jDetT = jDet->GetTaggedJet();
-	 Double_t mdetT = 0.;
-	 if(jDetT) mdetT = jDetT->M();
-	 Double_t var[5] = {GetJetMass(jDet),jPart->M(),jDet->Pt(),jPart->Pt(),mdetT};
+
+	 fh2EtaPhiMatchedDet->Fill(jDet->Eta(),jDet->Phi());
+	 fh2EtaPhiMatchedPart->Fill(jPart->Eta(),jPart->Phi());
+
+	 Int_t nConstPart = jPart->GetNumberOfConstituents();
+	 Int_t nConstDet = jDet->GetNumberOfConstituents();
+	 Int_t diff = nConstPart-nConstDet;
+	 Double_t eff = -1.;
+	 if(nConstPart>0) eff = (Double_t)nConstDet/((Double_t)nConstPart);
+	 Double_t var[5] = {GetJetMass(jDet),jPart->M(),jDet->Pt(),jPart->Pt(),eff};
 	 fhnMassResponse->Fill(var);
 
 	 if(jPart->Pt()>40. && jPart->Pt()<50.) {
@@ -223,9 +242,7 @@ Bool_t AliAnalysisTaskJetMassResponseDet::FillHistograms()
 	   else Printf("correct");
 	   Printf("pT Part: %f Det: %f",jPart->Pt(),jDet->Pt());
 	   Printf("mass Part: %f Det: %f",jPart->M(),jDet->M());
-	   Int_t nConstPart = jPart->GetNumberOfConstituents();
-	   Int_t nConstDet = jDet->GetNumberOfConstituents();
-	   Int_t diff = nConstPart-nConstDet;
+
 	   Printf("nConst Part: %d  Det: %d  diff: %d",nConstPart,nConstDet,diff);
 	 }
        }
