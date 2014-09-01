@@ -74,8 +74,8 @@ const Double_t AliITSUv1Layer::fgkOBModuleZLength     =  21.06 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBHalfStaveYTrans   =   1.76 *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBHalfStaveXOverlap =   4.3  *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBGraphiteFoilThick =  30.0  *fgkmicron;
-const Double_t AliITSUv1Layer::fgkOBCoolTubeInnerD    =   2.67 *fgkmm;
-const Double_t AliITSUv1Layer::fgkOBCoolTubeThick     =  64.0  *fgkmicron;
+const Double_t AliITSUv1Layer::fgkOBCoolTubeInnerD    =   2.052*fgkmm;
+const Double_t AliITSUv1Layer::fgkOBCoolTubeThick     =  32.0  *fgkmicron;
 const Double_t AliITSUv1Layer::fgkOBCoolTubeXDist     =  11.1  *fgkmm;
 
 const Double_t AliITSUv1Layer::fgkOBSpaceFrameWidth   =  42.0  *fgkmm;
@@ -1320,8 +1320,8 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB22(const Double_t xsta,
   TGeoMedium *medCarbonFleece = mgr->GetMedium("ITS_CarbonFleece$"); 
 
   // Local parameters
-  Double_t kConeOutRadius =0.107/2;//0.107/2;
-  Double_t kConeInRadius = 0.1015/2;//0.10105/2
+  Double_t kConeOutRadius =(0.1024+0.0025)/2;//0.107/2;
+  Double_t kConeInRadius = 0.1024/2;//0.10105/2
   Double_t kStaveLength = zsta;
   Double_t kStaveWidth = xsta*2;
   Double_t kWidth = (kStaveWidth)/4;
