@@ -50,13 +50,13 @@ void ReadFlatESD(const char* filename="outFlatESD.dat", Int_t verbose=0) {
     
     while( curr < endBuff ){
       cout<<endl<<"Reading event "<<iEvent<<":"<<endl;
-    Printf("curr: %p \t endBuff: %p \t diff %p ", curr, endBuff, endBuff-curr);
+ //   Printf("curr: %p \t endBuff: %p \t diff %p ", curr, endBuff, endBuff-curr);
       AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent *>(curr);
 			flatEsd->Reinitialize();
 
       
-cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetPrimaryVertexSPD()
-	  <<" vtx tracks: "<<(Bool_t) flatEsd->GetPrimaryVertexTracks()	
+cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetFlatPrimaryVertexSPD()
+	  <<" vtx tracks: "<<(Bool_t) flatEsd->GetFlatPrimaryVertexTracks()	
 	  <<" ntracks: "<<flatEsd->GetNumberOfTracks()
 	  <<" nV0's: "<<flatEsd->GetNumberOfV0s()
 	  <<endl;
@@ -70,12 +70,12 @@ if(verbose){
 
 	cout<<"track nr "<<idxTrack<<endl;
 
-		AliFlatExternalTrackParam* ext[nExt] ={
+		const AliFlatExternalTrackParam* ext[nExt] ={
 			
-				track->GetTrackParamRefitted(),
-				track->GetTrackParamIp(),
-				track->GetTrackParamTPCInner(),
-				track->GetTrackParamOp(),
+				track->GetFlatTrackParamRefitted(),
+				track->GetFlatTrackParamIp(),
+				track->GetFlatTrackParamTPCInner(),
+				track->GetFlatTrackParamOp(),
 		
 		};
 	
@@ -128,7 +128,7 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
 	  }
 }
 
-    Printf("curr: %p \t + %d = %p , diff:%p", curr, flatEsd->GetSize() ,curr+ flatEsd->GetSize(), endBuff-(curr+ flatEsd->GetSize())   );
+  //  Printf("curr: %p \t + %d = %p , diff:%p", curr, flatEsd->GetSize() ,curr+ flatEsd->GetSize(), endBuff-(curr+ flatEsd->GetSize())   );
       curr=curr+ flatEsd->GetSize();
       iEvent++;
     }

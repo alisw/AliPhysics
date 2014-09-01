@@ -221,6 +221,7 @@ void AliFlatESDEvent::Reset()
   ULong64_t size = sizeof(AliFlatESDEvent);
   size += 2 * sizeof( AliFlatESDVertex );
   size += esd->GetNumberOfTracks() * ( AliFlatESDTrack::EstimateSize() + sizeof(Long64_t) );
+  size += AliESDRun::kNTriggerClasses * sizeof(AliFlatESDTrigger) ;
   if( fillV0s ) size += esd->GetNumberOfV0s()*sizeof(AliFlatESDV0);
   return size;
 }

@@ -29,7 +29,7 @@ void CompareFlatESDs(const char* filename1="outFlatESD1.dat",const char* filenam
   
   
   TString outputFilename = "$PWD/compare.root";
-  
+  /*
 	cout<< "creating histograms"<<endl;
 	TH2F* hNTracks = new TH2F("nTracks","number of tracks", 100,0,100, 100,0,100);
 	TH2F* hNV0s = new TH2F("nV0s","number of V0s", 10,0,10, 10,0,10);
@@ -43,7 +43,7 @@ void CompareFlatESDs(const char* filename1="outFlatESD1.dat",const char* filenam
 	hStat->GetXaxis()->SetBinLabel(5,"vtxTracks");
 	hStat->GetXaxis()->SetBinLabel(6,"vtxSPD");
 	hStat->GetXaxis()->SetBinLabel(7,"tracks->extParams");
-
+*/
   
   
 
@@ -98,79 +98,84 @@ void CompareFlatESDs(const char* filename1="outFlatESD1.dat",const char* filenam
 	Int_t diff[6]={0};
       AliFlatESDEvent *flatEsd1 = reinterpret_cast<AliFlatESDEvent *>(curr1);
       AliFlatESDEvent *flatEsd2 = reinterpret_cast<AliFlatESDEvent *>(curr2);
-	  /*
-	  if(flatEsd1->GetNumberOfTracks()==0  ||  flatEsd2->GetNumberOfTracks() ==0){
-		if(flatEsd1->GetNumberOfTracks()==0){
-		  curr1=curr1+ flatEsd1->GetSize();
-		}
-		if(flatEsd2->GetNumberOfTracks()==0){
-		  curr2=curr2+ flatEsd2->GetSize();
-		}
-		continue;
-	  }
-	  */
 	  
-      cout<<endl<<"Reading event "<<iEvent<<":"<<endl;
-	  /*
+	  flatEsd1->Reinitialize();
+	  flatEsd2->Reinitialize();
+	  
+      cout<<endl<<"Reading event "<<iEvent<<":";
+	  
+	cout<<endl<<"ntracks:\t"<<flatEsd1->GetNumberOfTracks()<< " | " <<flatEsd2->GetNumberOfTracks();
 	if(  flatEsd1->GetNumberOfTracks() != flatEsd2->GetNumberOfTracks() ) {
-		cout<<"\t\tDIFFERENCE!: ";
+		cout<<"\t\tDIFFERENCE!!!";
 		diff[0] =1;
 	}
-	cout<<"\t\tntracks: "<<flatEsd1->GetNumberOfTracks()<< " | " <<flatEsd2->GetNumberOfTracks();
-	hNTracks->Fill(flatEsd1->GetNumberOfTracks(),flatEsd2->GetNumberOfTracks());
+	//hNTracks->Fill(flatEsd1->GetNumberOfTracks(),flatEsd2->GetNumberOfTracks());
 	  
+	  cout<<endl<<"nV0's:\t"<<flatEsd1->GetNumberOfV0s()<< " | " <<flatEsd2->GetNumberOfV0s();
 	  if(  flatEsd1->GetNumberOfV0s() != flatEsd2->GetNumberOfV0s() ){
-		cout<<"\t\tDIFFERENCE!: ";
+		cout<<"\t\tDIFFERENCE!!!";
 		diff[1] =1;
 	}
-	  cout<<"\t\tnV0's: "<<flatEsd1->GetNumberOfV0s()<< " | " <<flatEsd2->GetNumberOfV0s()<<endl;
-	  hNV0s->Fill(flatEsd1->GetNumberOfV0s(),flatEsd2->GetNumberOfV0s());
+	  //hNV0s->Fill(flatEsd1->GetNumberOfV0s(),flatEsd2->GetNumberOfV0s());
 	 
-	  if( (Bool_t) flatEsd1->GetPrimaryVertexTracks() != (Bool_t) flatEsd2->GetPrimaryVertexTracks()  ){
-		cout<<"\t\tDIFFERENCE!: ";
+	  
+	  
+	  /*
+	  
+	  if( (Bool_t) flatEsd1->GetFlatPrimaryVertexTracks() != (Bool_t) flatEsd2->GetFlatPrimaryVertexTracks()  ){
+		cout<<"\t\tDIFFERENCE!: "<<endl;
 		diff[2] =1;
 	}
 
 
-	  cout<<"\t\tvtx tracks: "<<(Bool_t) flatEsd1->GetPrimaryVertexTracks()<< " | " <<	(Bool_t) flatEsd2->GetPrimaryVertexTracks();	  
-	  hVtxTr->Fill( (Bool_t) flatEsd1->GetPrimaryVertexTracks(), (Bool_t) flatEsd2->GetPrimaryVertexTracks());
+	  cout<<"vtx tracks:\t"<<(Bool_t) flatEsd1->GetFlatPrimaryVertexTracks()<< " | " <<	(Bool_t) flatEsd2->GetFlatPrimaryVertexTracks()<<endl;	  
+	  //hVtxTr->Fill( (Bool_t) flatEsd1->GetFlatPrimaryVertexTracks(), (Bool_t) flatEsd2->GetFlatPrimaryVertexTracks());
 
 	 
 	  
-	  if( (Bool_t) flatEsd1->GetPrimaryVertexSPD() != (Bool_t) flatEsd2->GetPrimaryVertexSPD()  ){
-		cout<<"\t\tDIFFERENCE!: ";
+	  if( (Bool_t) flatEsd1->GetFlatPrimaryVertexSPD() != (Bool_t) flatEsd2->GetFlatPrimaryVertexSPD()  ){
+		cout<<"\t\tDIFFERENCE!: "<<endl;
 		diff[3] =1;
 	}
-      cout<<"\t\tvtx SPD: "<<(Bool_t) flatEsd1->GetPrimaryVertexSPD() << " | " << (Bool_t) flatEsd2->GetPrimaryVertexSPD()<<endl;
-	  hVtxSPD->Fill( (Bool_t) flatEsd1->GetPrimaryVertexSPD(), (Bool_t) flatEsd2->GetPrimaryVertexSPD());
+      cout<<"vtx SPD:\t"<<(Bool_t) flatEsd1->GetFlatPrimaryVertexSPD() << " | " << (Bool_t) flatEsd2->GetFlatPrimaryVertexSPD()<<endl;
+	  //hVtxSPD->Fill( (Bool_t) flatEsd1->GetFlatPrimaryVertexSPD(), (Bool_t) flatEsd2->GetFlatPrimaryVertexSPD());
 
-  if(true|| (Bool_t)flatEsd1->GetPrimaryVertexSPD() && (Bool_t)flatEsd2->GetPrimaryVertexSPD()  ){
- 		cout<<endl<<"\t\tvtx tracksX: "<< flatEsd1->GetPrimaryVertexSPD()<<" | " <<	flatEsd2->GetPrimaryVertexSPD();	  
+	  
+	  
+  if((Bool_t)flatEsd1->GetFlatPrimaryVertexTracks() && (Bool_t)flatEsd2->GetFlatPrimaryVertexTracks()  ){
+ 		cout<<endl<<"vtx tracks -> X,Y,Z:\t"
+			<< flatEsd1->GetFlatPrimaryVertexTracks()->GetX()
+			<<","<< flatEsd1->GetFlatPrimaryVertexTracks()->GetY()
+			<<","<< flatEsd1->GetFlatPrimaryVertexTracks()->GetZ()
+			<<" | " <<flatEsd2->GetFlatPrimaryVertexTracks()->GetX()
+			<<","<< flatEsd2->GetFlatPrimaryVertexTracks()->GetY()
+			<<","<< flatEsd2->GetFlatPrimaryVertexTracks()->GetZ()<<endl;	  
 		}
 	  */
 	  
 	  // compare tracks
-	  #if 1
-	  AliFlatESDTrack *track1 = flatEsd1->GetTracks();
-	  AliFlatESDTrack *track2 = flatEsd2->GetTracks();
+if(verbose){
+	  AliFlatESDTrack *track1 = const_cast<AliFlatESDTrack*> (flatEsd1->GetTracks());
+	  AliFlatESDTrack *track2 = const_cast<AliFlatESDTrack*> (flatEsd2->GetTracks());
     for (Int_t idxTrack = 0; idxTrack < flatEsd1->GetNumberOfTracks() && track1 && track2; ++idxTrack) { 
 
-		AliFlatExternalTrackParam* ext[2][nExt] ={
+		//track2->Reinitialize();
+		const AliFlatExternalTrackParam* ext[2][nExt] ={
 			{
-				track1->GetTrackParamRefitted(),
-				track1->GetTrackParamIp(),
-				track1->GetTrackParamTPCInner(),
-				track1->GetTrackParamOp(),
-		//		track1->GetTrackParamCp(),
-		//		track1->GetTrackParamITSOut()
+				track1->GetFlatTrackParamRefitted(),
+				track1->GetFlatTrackParamIp(),
+				track1->GetFlatTrackParamTPCInner(),
+				track1->GetFlatTrackParamOp(),
+		//		track1->GetFlatTrackParamCp(),
+		//		track1->GetFlatTrackParamITSOut()
 			},
 			{
-				track2->GetTrackParamRefitted(),
-				track2->GetTrackParamIp(),
-				track2->GetTrackParamTPCInner(),
-				track2->GetTrackParamOp(),
-			//	track2->GetTrackParamCp(),
-			//	track2->GetTrackParamITSOut()
+				track2->GetFlatTrackParamRefitted(),
+				track2->GetFlatTrackParamIp(),
+				track2->GetFlatTrackParamTPCInner(),
+				track2->GetFlatTrackParamOp(),
+			//	track2->GetFlatTrackParamCp(),
+			//	track2->GetFlatTrackParamITSOut()
 			}
 		};
 	
@@ -179,7 +184,6 @@ void CompareFlatESDs(const char* filename1="outFlatESD1.dat",const char* filenam
 
 
 	for(int iExt=0; iExt<nExt; ++iExt){
-cout<<endl<<iExt<<endl;		
 if(!ext[0][iExt] && !ext[1][iExt]) continue;	
 		if(!ext[0][iExt] && ext[1][iExt]){
 		//	cout<<"DIFFERENCE!: ";
@@ -192,26 +196,26 @@ if(!ext[0][iExt] && !ext[1][iExt]) continue;
 
 
 		if( (!ext[0][iExt] || !ext[1][iExt])|| ext[0][iExt]->GetAlpha() != ext[1][iExt]->GetAlpha() ) {
-	//		cout<<"DIFFERENCE!: ";
+			cout<<"\t\tDIFFERENCE!: "<<endl;
 	 		//cout<<" alpha"<<iExt<<" :"  << (ext[0][iExt] ? ext[0][iExt]->GetAlpha() : -99.)  << "\t\t" << (ext[1][iExt] ?  ext[1][iExt]->GetAlpha(): -99.)<<endl;
 			diff[4]=1;
-		}	cout<<" alpha"<<iExt<<" :"  << (ext[0][iExt] ? ext[0][iExt]->GetAlpha() : -99.)  << "\t\t" << (ext[1][iExt] ?  ext[1][iExt]->GetAlpha(): -99.)<<endl;
+		}	cout<<" alpha"<<iExt<<" :\t"  << (ext[0][iExt] ? ext[0][iExt]->GetAlpha() : -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetAlpha(): -99.)<<endl;
 			
 
 		if( (!ext[0][iExt] || !ext[1][iExt])||ext[0][iExt]->GetX() != ext[1][iExt]->GetX() ) {
-			//cout<<"DIFFERENCE!: ";
+			cout<<"\t\tDIFFERENCE!: "<<endl;
 	 		//cout<<" GetX"<<iExt<<" :"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetX(): -99.)<<endl;
 			diff[4]=1;
 		}	
-cout<<" GetX"<<iExt<<" :"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetX(): -99.)<<endl;
+cout<<" GetX"<<iExt<<" :\t"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetX(): -99.)<<endl;
 
 
 		if( (!ext[0][iExt] || !ext[1][iExt])||ext[0][iExt]->GetSigned1Pt() !=  ext[0][iExt]->GetSigned1Pt() ) {
-			//cout<<"DIFFERENCE!: ";
+			cout<<"\t\tDIFFERENCE!: "<<endl;
 	 		//cout<<" 1/pt"<<iExt<<" :"  <<  (ext[0][iExt] ? ext[0][iExt]->GetSigned1Pt(): -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetSigned1Pt(): -99.)<<endl;
 			diff[4]=1;
 		}	
-	cout<<" 1/pt"<<iExt<<" :"  <<  (ext[0][iExt] ? ext[0][iExt]->GetSigned1Pt(): -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetSigned1Pt(): -99.)<<endl;
+	cout<<" 1/pt"<<iExt<<" :\t"  <<  (ext[0][iExt] ? ext[0][iExt]->GetSigned1Pt(): -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetSigned1Pt(): -99.)<<endl;
 			
 
 }
@@ -229,6 +233,8 @@ cout<<" GetX"<<iExt<<" :"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << " 
 		diff[4]=1;
 	}
 */
+	  
+#if 0
 
 // compare clusters
 	if( verbose &&  track1->GetNumberOfTPCClusters() == track2->GetNumberOfTPCClusters()){
@@ -263,23 +269,26 @@ cout<<" GetX"<<iExt<<" :"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << " 
 
 		}
 	  }
-     
-      track1 = track1->GetNextTrack();
-      track2 = track2->GetNextTrack();
+	  
+#endif
+      track1 = const_cast<AliFlatESDTrack*> (track1->GetNextTrack());
+      track2 = const_cast<AliFlatESDTrack*> (track2->GetNextTrack());
 	  
 	  
 	  }
-#endif
-	   hStat->Fill(0);	  
+}
+	  
+	  /*
+	//   hStat->Fill(0);	  
 	  Bool_t diffs=kFALSE;
 	  for(int iDiff=0; iDiff<5;++iDiff){
 		if(diff[iDiff]){
-			hStat->Fill(iDiff+2);
+	//		hStat->Fill(iDiff+2);
 			diffs = kTRUE;
 		}
 	}
 	if(!diffs) hStat->Fill(1);	  
-
+*/
 
       curr1=curr1+ flatEsd1->GetSize();
       curr2=curr2+ flatEsd2->GetSize();
@@ -293,7 +302,7 @@ cout<<" GetX"<<iExt<<" :"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << " 
     cout << "File could not be read" << endl;
   }
 
-
+/*
 
   
 	TList histosList;
@@ -303,6 +312,6 @@ cout<<" GetX"<<iExt<<" :"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << " 
 	histosList.Add(hVtxTr);
 	histosList.Add(hVtxSPD);
   histosList.SaveAs(outputFilename);
-  
+  */
   return;
 }

@@ -19,6 +19,7 @@
 #include <TSystem.h>
 #include "./AliFlatESDEvent.h"
 #include "./AliFlatESDTrack.h"
+#include "./AliFlatESDTrigger.h"
 #include "./AliFlatTPCCluster.h"
 #include "./AliFlatExternalTrackParam.h"
 #include "Riostream.h"
@@ -27,12 +28,25 @@
 
 void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameFriends="AliESDfriends.root",const char* filenameOut="out.dat", Bool_t useESDFriends = kTRUE, Bool_t useHLTtree = kFALSE,Int_t verbose = 0) {
 
+	if(useESDFriends) Printf("using friends");
+	if(useHLTtree) Printf("using HLT tree");
+	
+	
   // -- Convert AliESDEvent to AliFlatESDEvent
+/*
+  if ( access( filename, F_OK ) == -1 ){
+	Printf("input file not readable!");
+	return;
+  }
+*/
 
+  TFile *file    = new TFile(Form("%s", filename));
+	
+	
   ofstream outFile(Form("%s",filenameOut), std::ifstream::binary | std::ifstream::out);
   //ofstream outFile("outFlatESD.dat");
 
-  TFile *file    = new TFile(Form("%s", filename));
+  
   TTree *esdTree = useHLTtree? dynamic_cast<TTree*>(file->Get("HLTesdTree")) : dynamic_cast<TTree*>(file->Get("esdTree"));
   
   // -- Connect ESD
@@ -44,19 +58,19 @@ void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameF
   if (useESDFriends && !esdTree->FindBranch("ESDfriend.")) {
     esdTree->AddFriend("esdFriendTree", Form("%s", filenameFriends));
     esdTree->SetBranchStatus("ESDfriend.", 1);
-    esdFriend = dynamic_cast<AliESDfriend*>((const_cast<AliESDEvent*>(esd))->FindListObject("AliESDfriend"));
+    esdFriend = (AliESDfriend*)esd->FindListObject("AliESDfriend");
     if (esdFriend)
       esdTree->SetBranchAddress("ESDfriend.", &esdFriend);
   } // if (!esdTree->FindBranch("ESDfriend.")) {
-  
+  ;
   AliFlatESDEvent *flatEsd = NULL;
 
   // -- Event Loop
   for (Int_t idxEvent = 0; idxEvent < esdTree->GetEntries(); idxEvent++) {
     Printf("Processing event nr %d", idxEvent);
-    esd->SaveAs("esdTemp.root");
-    TFile  fTmp = TFile("esdTemp.root");
-    Int_t sizeIn = fTmp.GetSize();
+  //  esd->SaveAs("esdTemp.root");
+   // TFile  fTmp = TFile("esdTemp.root");
+    Int_t sizeIn = 1;//fTmp.GetSize();
 
     AliSysInfo::AddStamp("getEntry",0,0,idxEvent);
 
@@ -64,36 +78,51 @@ void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameF
     // -- Book memory for AliFlatESDEvent
     // -- TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    Byte_t *mem = new Byte_t[AliFlatESDEvent::EstimateSize(esd, useESDFriends)];
+	Int_t size = AliFlatESDEvent::EstimateSize(esd, kTRUE);
+    Byte_t *mem = new Byte_t[size];
 
     flatEsd = reinterpret_cast<AliFlatESDEvent*>(mem);
     new (flatEsd) AliFlatESDEvent;
-
+	
+	
+	
     AliSysInfo::AddStamp("DoEvent.Start",0,0,idxEvent);
     // -- Fill AliFlatESDEvent
 
-    flatEsd->Fill(esd, useESDFriends);  
-        
+  Int_t err=  flatEsd->SetFromESD( size,  esd, kTRUE ); 
+  
+  if(err) Printf("!!! Error while filling flatESD event  %d!!!", err);
+  Printf("trigger classes: %d size: %d , = %d",flatEsd->GetNumberOfTriggerClasses(), sizeof(AliFlatESDTrigger) , flatEsd->GetNumberOfTriggerClasses() *sizeof(AliFlatESDTrigger) );      
     AliSysInfo::AddStamp("DoEvent.Stop",sizeIn,flatEsd->GetSize(),idxEvent);
 
-    if (verbose) {
-      Printf("TEST: Event %d || Tracks %d | FRIEND Tracks %d || estimated size %llu || sizeof(AliFlatESDEvent) %llu", 
-	     idxEvent, esd->GetNumberOfTracks(), esdFriend->GetNumberOfTracks(), 
-	     AliFlatESDEvent::EstimateSize(esd, useESDFriends), flatEsd->GetSize());
-
-      AliFlatESDTrack *track = flatEsd->GetTracks();
+		if(useESDFriends){
+      Printf("ESD : Event %d || V0s %d || Tracks %d | FRIEND Tracks %d || estimated size %llu", 
+	     idxEvent, esd->GetNumberOfV0s(),esd->GetNumberOfTracks(), esdFriend->GetNumberOfTracks(), 
+	     AliFlatESDEvent::EstimateSize(esd, useESDFriends));
+      Printf("FLAT: Event %d || V0s %d || Tracks %d | FRIEND Tracks %d || estimated size %llu", 
+	     idxEvent, flatEsd->GetNumberOfV0s(),flatEsd->GetNumberOfTracks(), esdFriend->GetNumberOfTracks(), flatEsd->GetSize());
+		}
+		else{
+      Printf("ESD : Event %d || V0s %d || Tracks %d || estimated size %llu ", 
+	     idxEvent,esd->GetNumberOfV0s(), esd->GetNumberOfTracks(), 
+	     AliFlatESDEvent::EstimateSize(esd, useESDFriends) );
+      Printf("FLAT: Event %d || V0s %d || Tracks %d || estimated size %llu ", 
+	     idxEvent, flatEsd->GetNumberOfV0s(),flatEsd->GetNumberOfTracks(),  flatEsd->GetSize());
+		}
+      AliFlatESDTrack *track = const_cast<AliFlatESDTrack*> (flatEsd->GetTracks());
       for (Int_t idxTrack = 0; idxTrack < flatEsd->GetNumberOfTracks(); ++idxTrack) {      
 	AliESDtrack *esdTrack = esd->GetTrack(idxTrack);      
-	AliESDfriendTrack *friendTrack = esdFriend->GetTrack(idxTrack) ;
+	AliESDfriendTrack *friendTrack = useESDFriends ?  esdFriend->GetTrack(idxTrack) :NULL;
        	if (track && !esdTrack) {
 	  Printf("ERROR THIS SHOULD NOT HAPPEN AT ALL !!! TRACK %d HAS NO ESD TRACK!!!", idxTrack);
 	  return;
 	}
+    if (verbose) {
 	if (track) {
-	  AliFlatExternalTrackParam* exp1 = track->GetTrackParamCp();
-	  AliFlatExternalTrackParam* exp2 = track->GetTrackParamIp();
-	  AliFlatExternalTrackParam* exp3 = track->GetTrackParamTPCInner();
-	  AliFlatExternalTrackParam* exp4 = track->GetTrackParamOp();
+	  const AliFlatExternalTrackParam* exp1 = track->GetFlatTrackParamCp();
+	   const AliFlatExternalTrackParam* exp2 = track->GetFlatTrackParamIp();
+	   const AliFlatExternalTrackParam* exp3 = track->GetFlatTrackParamTPCInner();
+	   const AliFlatExternalTrackParam* exp4 = track->GetFlatTrackParamOp();
 
 	  Float_t alphaFLAT[4] = {0., 0., 0., 0.};
 	  if (exp1) alphaFLAT[0] = exp1->GetAlpha();
@@ -115,6 +144,8 @@ void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameF
 
 	  Int_t nCl = track->GetNumberOfTPCClusters();
 	  Printf("TEST: FlatTrack %d has %d FlatClusters", idxTrack, nCl);
+	  
+#if 0
 	  if(nCl && useESDFriends && verbose > 1){
 	    TObject* calibObject = NULL;
 	    AliTPCseed* seed = NULL;
@@ -146,9 +177,10 @@ void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameF
 	      }
 	    }
 	  }
-	
+#endif
+
 	}
-	track = track->GetNextTrack();
+	track = const_cast<AliFlatESDTrack*> (track->GetNextTrack() );
       }
     }
 
