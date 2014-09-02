@@ -135,8 +135,8 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
 //________________________________________________________________________
 Bool_t AliJetEmbeddingFromPYTHIATask::GetNextEntry()
 {
-  if (fPtHardBinCount >= fMinEntriesPerPtHardBin) {
-    if (fHistPtHardBins)
+  if (fPtHardBinCount >= fMinEntriesPerPtHardBin || fCurrentPtHardBin < 0) {
+    if (fHistPtHardBins && fPtHardBinCount > 0)
       fHistPtHardBins->SetBinContent(fCurrentPtHardBin+1, fHistPtHardBins->GetBinContent(fCurrentPtHardBin+1)+fPtHardBinCount);
 
     fPtHardBinCount = 0;
