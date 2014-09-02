@@ -17,7 +17,6 @@
 #include "AliExternalTrackParam.h"
 #include "AliVVertex.h"
 #include "AliAnalysisFilter.h"
-#include "AliAnalysisUtils.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliESDv0KineCuts.h"
@@ -180,6 +179,9 @@ void AliAnalysisTaskPIDV0base::UserCreateOutputObjects()
   
   // Default analysis utils
   fAnaUtils = new AliAnalysisUtils();
+  
+  // Not used yet, but to be save, forward vertex z cut to analysis utils object
+  fAnaUtils->SetMaxVtxZ(fZvtxCutEvent);
 }
 
 
