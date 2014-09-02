@@ -30,9 +30,10 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask() :
   fAnchorRun(-1),
   fFileTable(0),
   fUseAsVetoTable(kTRUE),
-  fMinEntriesFromFile(0),
+  fMinEntriesPerPtHardBin(1),
   fCurrentPtHardBin(-1),
   fPtHardBinParam(0),
+  fPtHardBinCount(0),
   fHistPtHardBins(0)
 {
   // Default constructor.
@@ -51,9 +52,10 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name, B
   fAnchorRun(-1),
   fFileTable(0),
   fUseAsVetoTable(kTRUE),
-  fMinEntriesFromFile(0),
+  fMinEntriesPerPtHardBin(1),
   fCurrentPtHardBin(-1),
   fPtHardBinParam(0),
+  fPtHardBinCount(0),
   fHistPtHardBins(0)
 {
   // Standard constructor.
@@ -133,15 +135,16 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
 //________________________________________________________________________
 Bool_t AliJetEmbeddingFromPYTHIATask::GetNextEntry()
 {
-  if (fEmbeddingCount >= fMinEntriesFromFile) {
+  if (fPtHardBinCount >= fMinEntriesPerPtHardBin) {
+    if (fHistPtHardBins)
+      fHistPtHardBins->SetBinContent(fCurrentPtHardBin+1, fHistPtHardBins->GetBinContent(fCurrentPtHardBin+1)+fPtHardBinCount);
+
+    fPtHardBinCount = 0;
+
     Int_t newPtHard = GetRandomPtHardBin();
     
-    new (fPtHardBinParam) TParameter<int>("PYTHIAPtHardBin", newPtHard);
-    
-    if (fHistPtHardBins)
-      fHistPtHardBins->SetBinContent(newPtHard+1, fHistPtHardBins->GetBinContent(newPtHard+1)+1);
-    
     if (newPtHard != fCurrentPtHardBin) {
+      new (fPtHardBinParam) TParameter<int>("PYTHIAPtHardBin", newPtHard);
       fCurrentPtHardBin = newPtHard;
       if (!OpenNextFile()) return kFALSE;
     }
