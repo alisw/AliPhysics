@@ -136,9 +136,6 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
 Bool_t AliJetEmbeddingFromPYTHIATask::GetNextEntry()
 {
   if (fPtHardBinCount >= fMinEntriesPerPtHardBin || fCurrentPtHardBin < 0) {
-    if (fHistPtHardBins && fPtHardBinCount > 0)
-      fHistPtHardBins->SetBinContent(fCurrentPtHardBin+1, fHistPtHardBins->GetBinContent(fCurrentPtHardBin+1)+fPtHardBinCount);
-
     fPtHardBinCount = 0;
 
     Int_t newPtHard = GetRandomPtHardBin();
@@ -149,6 +146,9 @@ Bool_t AliJetEmbeddingFromPYTHIATask::GetNextEntry()
       if (!OpenNextFile()) return kFALSE;
     }
   }
+
+  fPtHardBinCount++;
+  fHistPtHardBins->SetBinContent(fCurrentPtHardBin+1, fHistPtHardBins->GetBinContent(fCurrentPtHardBin+1)+1);
 
   return AliJetEmbeddingFromAODTask::GetNextEntry();
 }
