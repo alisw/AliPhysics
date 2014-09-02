@@ -13,6 +13,7 @@
 #include <TVector2.h>
 
 #include "AliVHeader.h"
+#include "AliVAODHeader.h"
 #include "AliAODVertex.h"
 #include <TString.h>
 #include <TBits.h>
@@ -23,7 +24,7 @@ class TGeoHMatrix;
 class TString;
 
 
-class AliAODHeader : public AliVHeader {
+class AliAODHeader : public AliVAODHeader {
 
  public :
   AliAODHeader();

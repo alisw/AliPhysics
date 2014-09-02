@@ -48,4 +48,4 @@ set ( DHDR AODLinkDef.h)
 
 set ( EXPORT ${HDRS} )
 
-set ( EINCLUDE  STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  STEER/ESD STEER/STEERBase PWG/DevNanoAOD)
