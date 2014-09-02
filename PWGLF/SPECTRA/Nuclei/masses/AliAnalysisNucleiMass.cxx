@@ -607,14 +607,15 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
       //-------------------------------------start TRACK CUTS (II)-------------------------------------
       //Cut on the DCAxy
       Bool_t isDCAxyCut=kFALSE;
-      if(DCAxy<DCAxyCut) isDCAxyCut=kTRUE;
+      if(TMath::Abs(DCAxy)<DCAxyCut) isDCAxyCut=kTRUE;
       
       //Cut on the DCAz
       Bool_t isDCAzCut=kFALSE;
-      if(DCAz<DCAzCut) isDCAzCut=kTRUE;
+      if(TMath::Abs(DCAz)<DCAzCut) isDCAzCut=kTRUE;
+      
       if (!isDCAxyCut || !isDCAzCut)
 	continue;
-      
+          
       //-------------------------------------end TRACK CUTS (II)----------------------------------
       
       hEta[iBconf]->Fill(eta);
@@ -839,11 +840,11 @@ void AliAnalysisNucleiMass::FillDCAdist(Double_t DCAxy, Double_t DCAz, Double_t 
 	}
 	for(Int_t j=0;j<nbin;j++) {
 	  if(pC[iS]>binP[j] && pC[iS]<binP[j+1]) {
-	    if(DCAz<DCAzCut) {
+	    if(TMath::Abs(DCAz)<DCAzCut) {
 	      hDCAxy[iBconf][iS][j]->Fill(DCAxy);
 	      hDCAxy[iBconf][iS][j]->Fill(-DCAxy);
 	    }
-	    if(DCAxy<DCAxyCut) {
+	    if(TMath::Abs(DCAxy)<DCAxyCut) {
 	      hDCAz[iBconf][iS][j]->Fill(DCAz);
 	      hDCAz[iBconf][iS][j]->Fill(-DCAz);
 	    }
@@ -864,11 +865,11 @@ void AliAnalysisNucleiMass::FillDCAdist(Double_t DCAxy, Double_t DCAz, Double_t 
 	}
 	for(Int_t j=0;j<nbin;j++) {
 	  if(pC[iS]>binP[j] && pC[iS]<binP[j+1]) {
-	    if(DCAz<DCAzCut) {
+	    if(TMath::Abs(DCAz)<DCAzCut) {
 	      hDCAxy[iBconf][iS+nPart][j]->Fill(DCAxy);
 	      hDCAxy[iBconf][iS+nPart][j]->Fill(-DCAxy);
 	    }
-	    if(DCAxy<DCAxyCut) {
+	    if(TMath::Abs(DCAxy)<DCAxyCut) {
 	      hDCAz[iBconf][iS+nPart][j]->Fill(DCAz);
 	      hDCAz[iBconf][iS+nPart][j]->Fill(-DCAz);
 	    }
