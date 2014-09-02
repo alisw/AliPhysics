@@ -190,19 +190,42 @@ Double_t AliAnalysisTaskRhoMass::GetMd(AliEmcalJet *jet) {
   Double_t py = 0.;
   Double_t pz = 0.;
   Double_t E = 0.;
-  AliVParticle *vp;
-  for(Int_t icc=0; icc<jet->GetNumberOfTracks(); icc++) {
-    vp = static_cast<AliVParticle*>(jet->TrackAt(icc, fTracks));
-    if(!vp) continue;
-    if(fJetRhoMassType==kMd) sum += TMath::Sqrt(vp->M()*vp->M() + vp->Pt()*vp->Pt()) - vp->Pt(); //sqrt(E^2-P^2+pt^2)=sqrt(E^2-pz^2)
-    else if(fJetRhoMassType==kMdP) sum += TMath::Sqrt(vp->M()*vp->M() + vp->P()*vp->P()) - vp->P();
-    else if(fJetRhoMassType==kMd4) {
-      px+=vp->Px();
-      py+=vp->Py();
-      pz+=vp->Pz();
-      E+=vp->E();
+
+  if (fTracks) {
+    AliVParticle *vp;
+    for(Int_t icc=0; icc<jet->GetNumberOfTracks(); icc++) {
+      vp = static_cast<AliVParticle*>(jet->TrackAt(icc, fTracks));
+      if(!vp) continue;
+      if(fJetRhoMassType==kMd) sum += TMath::Sqrt(vp->M()*vp->M() + vp->Pt()*vp->Pt()) - vp->Pt(); //sqrt(E^2-P^2+pt^2)=sqrt(E^2-pz^2)
+      else if(fJetRhoMassType==kMdP) sum += TMath::Sqrt(vp->M()*vp->M() + vp->P()*vp->P()) - vp->P();
+      else if(fJetRhoMassType==kMd4) {
+	px+=vp->Px();
+	py+=vp->Py();
+	pz+=vp->Pz();
+	E+=vp->E();
+      }
     }
   }
+
+  if (fCaloClusters) {
+    AliVCluster *vp;
+    for(Int_t icc=0; icc<jet->GetNumberOfClusters(); icc++) {
+      vp = static_cast<AliVCluster*>(jet->ClusterAt(icc, fCaloClusters));
+      if(!vp) continue;
+      TLorentzVector nPart;
+      vp->GetMomentum(nPart, fVertex);
+      
+      if(fJetRhoMassType==kMd) sum += TMath::Sqrt(nPart.M()*nPart.M() + nPart.Pt()*nPart.Pt()) - nPart.Pt();
+      else if(fJetRhoMassType==kMdP) sum += TMath::Sqrt(nPart.M()*nPart.M() + nPart.P()*nPart.P()) - nPart.P();
+      else if(fJetRhoMassType==kMd4) {
+	px+=nPart.Px();
+	py+=nPart.Py();
+	pz+=nPart.Pz();
+	E+=nPart.E();
+      }
+    }
+  }
+
   if(fJetRhoMassType==kMd4) {
     Double_t pt = TMath::Sqrt(px*px + py*py);
     Double_t m2 = E*E - pt*pt - pz*pz;
