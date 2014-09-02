@@ -32,10 +32,13 @@ AliAnalysisTaskScale* AddTaskScale(
 
   TString name(Form("%s_%s_%s_%d_%d", taskname, nTracks, nClusters, TMath::FloorNint(trackptcut*1000), TMath::FloorNint(clusptcut*1000)));
   AliAnalysisTaskScale *scaletask = new AliAnalysisTaskScale(name);
-  scaletask->SetTracksName(nTracks);
-  scaletask->SetClusName(nClusters);
-  scaletask->SetTrackPtCut(trackptcut);
-  scaletask->SetClusPtCut(clusptcut);
+  AliParticleContainer *pcont = scaletask->AddParticleContainer(nTracks);
+  if(pcont) {
+    pcont->SetParticlePtCut(trackptcut);
+    pcont->SetParticleEtaLimits(-0.7,0.7); // only accept tracks in the EMCal eta range
+  }
+  AliClusterContainer  *ccont = scaletask->AddClusterContainer(nClusters);
+  if(ccont) ccont->SetClusterPtCut(clusptcut);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
