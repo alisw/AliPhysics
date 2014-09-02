@@ -4,6 +4,8 @@
 //
 // Author: S.Aiola, C.Loizides
 
+#include <TRandom3.h>
+
 #include "AliJetEmbeddingTask.h"
 
 ClassImp(AliJetEmbeddingTask)
@@ -11,7 +13,8 @@ ClassImp(AliJetEmbeddingTask)
 //________________________________________________________________________
 AliJetEmbeddingTask::AliJetEmbeddingTask() : 
   AliJetModelBaseTask("AliJetEmbeddingTask"),
-  fMassless(kFALSE)
+  fMassless(kFALSE),
+  fNeutralFraction(0)
 {
   // Default constructor.
   SetSuffix("Embedded");
@@ -20,7 +23,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
 //________________________________________________________________________
 AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) : 
   AliJetModelBaseTask(name),
-  fMassless(kFALSE)
+  fMassless(kFALSE),
+  fNeutralFraction(0)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -51,7 +55,12 @@ void AliJetEmbeddingTask::Run()
     for (Int_t i = 0; i < fNTracks; ++i) {
       Double_t mass = 0.1396;
       if(fMassless) mass = 0.;
-      AddTrack(-1,-999,-1,0,0,0,0,kFALSE,0,1,mass);
+      Short_t charge = 1;
+      if(fNeutralFraction>0.) {
+	Double_t rnd = gRandom->Rndm();
+	if(rnd<fNeutralFraction) charge = 0;
+      }
+      AddTrack(-1,-999,-1,0,0,0,0,kFALSE,0,charge,mass);
     }
   }
 }
