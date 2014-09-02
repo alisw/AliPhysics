@@ -89,14 +89,15 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
                                                                 if (s) fMCFlag |=  AliAODMCParticle::kPhysicalPrim ; 
                                                                 else   fMCFlag &= ~AliAODMCParticle::kPhysicalPrim ; }
 
-  void                   SetCodeDebug(Bool_t val)         { fCodeDebug = val; }
+  void                   SetCodeDebug(Bool_t val)               { fCodeDebug    = val          ; }
+  void                   SetForceIsMcPart(Bool_t b)             { fIsMcPart     = b            ; }
 
   void                   SetRhoName(const char *n)              { fRhoName      = n            ; }
   void                   SetRhomName(const char *n)             { fRhomName     = n            ; }
   void                   SetGenericSubtractionJetMass(Bool_t b) { fDoGenericSubtractionJetMass = b; }
   void                   SetGenericSubtractionGR(Bool_t b, Double_t rmax = 2., Double_t dr = 0.04, Double_t ptmin = 0.) { fDoGenericSubtractionGR = b; fRMax=rmax; fDRStep=dr; fPtMinGR=ptmin;}
   void                   SetConstituentSubtraction(Bool_t b)    { fDoConstituentSubtraction = b; }
-  void                   SetGenericSubtractionExtraJetShapes(Bool_t b)        {fDoGenericSubtractionExtraJetShapes =b;}
+  void                   SetGenericSubtractionExtraJetShapes(Bool_t b)            { fDoGenericSubtractionExtraJetShapes =b;}
   void                   SetUseExternalBkg(Bool_t b, Double_t rho, Double_t rhom) { fUseExternalBkg = b; fRho = rho; fRhom = rhom;}
 
   UInt_t                 GetJetType()                     { return fJetType; }
