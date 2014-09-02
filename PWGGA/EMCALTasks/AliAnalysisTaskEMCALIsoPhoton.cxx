@@ -56,6 +56,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fOADBContainer(0),
+  fVecPv(0.,0.,0.),
   fPeriod("LHC11c"),
   fTrigBit("kEMC7"),
   fIsTrain(0),
@@ -162,6 +163,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fOADBContainer(0),
+  fVecPv(0.),
   fPeriod("LHC11c"),
   fTrigBit("kEMC7"),
   fIsTrain(0),
@@ -532,6 +534,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   else
     fRecoPV->Fill(1);
   fPVtxZ->Fill(pv->GetZ());
+  fVecPv.SetXYZ(pv->GetX(),pv->GetY(),pv->GetZ());
   if(TMath::Abs(pv->GetZ())>10)
     return;
   if(fDebug)
@@ -649,6 +652,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   fNClusForDirPho = 0;
   fNCells50 = 0;
   fClusIdFromTracks = "";
+  fVecPv.Clear();
 
   PostData(1, fOutputList);
   PostData(2, fQAList);
@@ -703,6 +707,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
+    clsVec += fVecPv;
     Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
     if(fDebug)
       printf("\tcluster eta=%1.1f,phi=%1.1f,E=%1.1f\n",clsVec.Eta(),clsVec.Phi(),c->E());
@@ -854,6 +859,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 cv(clsPos);
+    cv += fVecPv;
     Double_t Et = c->E()*TMath::Sin(cv.Theta());
     Float_t dphi = TMath::Abs(cv.Phi()-phicl);
     Float_t deta = TMath::Abs(cv.Eta()-etacl);
@@ -1118,6 +1124,7 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
   Float_t clsPos[3] = {0,0,0};
   c->GetPosition(clsPos);
   TVector3 clsVec(clsPos);
+  clsVec += fVecPv;
   Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
   //ESD
   if(fStack){
@@ -1425,6 +1432,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
+    clsVec += fVecPv;
     Double_t cphi = clsVec.Phi();
     Double_t ceta = clsVec.Eta();
     Short_t id;
