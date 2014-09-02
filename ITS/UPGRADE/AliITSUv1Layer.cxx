@@ -2516,7 +2516,7 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 				    -beamPhiPrime*TMath::RadToDeg(), -90);
 
   TGeoCombiTrans *beamTransf[8];
-  xpos = 0.5*triangleHeight*TMath::Tan(halfTheta);
+  xpos = 0.49*triangleHeight*TMath::Tan(halfTheta);//was 0.5, fix small overlap
   ypos = staveBeamRadius/2;
   zpos = seglen/8;
   beamTransf[0] = new TGeoCombiTrans( xpos, ypos,-3*zpos, beamRot1);
