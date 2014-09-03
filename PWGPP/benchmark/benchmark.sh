@@ -716,7 +716,7 @@ goMergeCPass0()
     /bin/ls -1 ${outputDir}/*/AliESDfriends_v1.root 2>/dev/null > ${calibrationFilesToMerge}
   fi
   
-  echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB ${ocdbStorage}"
+  echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy"
   if [[ -n ${pretend} ]]; then
     sleep ${pretendDelay}
     touch CalibObjects.root
@@ -728,7 +728,7 @@ goMergeCPass0()
     echo "some calibration" >> ./OCDB/TPC/Calib/TimeGain/someCalibObject_0-999999_cpass0.root
     echo "some calibration" >> ./OCDB/TPC/Calib/TimeDrift/otherCalibObject_0-999999_cpass0.root
   else
-    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" ${ocdbStorage} >> "mergeMakeOCDB.log"
+    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy >> "mergeMakeOCDB.log"
 
     #produce the calib trees for expert QA (dcsTime.root)
     goMakeLocalOCDBaccessConfig ./OCDB
@@ -904,8 +904,8 @@ goMergeCPass1()
     echo "/bin/ls -1 ${outputDir}/*/QAresults*.root | while read x; do echo ${x%/*}; done | sort | uniq > ${qaFilesToMerge}"
     /bin/ls -1 ${outputDir}/*/QAresults*.root | while read x; do echo ${x%/*}; done | sort | uniq > ${qaFilesToMerge}
   fi
-  
-  echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB ${ocdbStorage}"
+
+  echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy"
   if [[ -n ${pretend} ]]; then
     sleep ${pretendDelay}
     touch ocdb.log
@@ -919,7 +919,7 @@ goMergeCPass1()
     touch ${qaMergedOutputFileName}
     mkdir -p OCDB
   else
-    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" ${ocdbStorage}
+    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy
 
     #merge QA (and filtered trees)
     [[ -n ${AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
