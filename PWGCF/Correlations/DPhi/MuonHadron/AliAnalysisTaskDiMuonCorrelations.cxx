@@ -511,7 +511,7 @@ Int_t AliAnalysisTaskDiMuonCorrelations::GetCentBin() {
 
 Double_t AliAnalysisTaskDiMuonCorrelations::GetITSMultiplicity() {
 
-  Double_t multiplicity = fAOD->GetHeader()->GetNumberOfITSClusters(1);
+  Double_t multiplicity = ((AliVAODHeader*)fAOD->GetHeader())->GetNumberOfITSClusters(1);
 
   return multiplicity;
 

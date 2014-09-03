@@ -501,7 +501,7 @@ Bool_t AliAnalysisTaskPPJetSpectra::EventSelection(Double_t evtContainer[6]) {
   Float_t centrality = -1;
   if(fEventClass > 0)
   {
-    if(handler->InheritsFrom("AliAODHandler")) centrality = fAODIn->GetHeader()->GetCentrality();
+    if(handler->InheritsFrom("AliAODHandler")) centrality = ((AliVAODHeader*)fAODIn->GetHeader())->GetCentrality();
     else if(fESD) centrality = fESD->GetCentrality()->GetCentralityPercentile("V0M");
     else centrality = AliAnalysisHelperJetTasks::EventClass();
   }

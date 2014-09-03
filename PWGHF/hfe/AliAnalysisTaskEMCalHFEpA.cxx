@@ -1835,7 +1835,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		if(fIsAOD) 
 		{
-			fCentrality = fAOD->GetHeader()->GetCentralityP();
+			fCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
 		}
 		else
 		{
@@ -2159,7 +2159,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 	if(fIsAOD){
 		
-			//AliAODHeader * aodh = fAOD->GetHeader();
+			//AliAODHeader * aodh = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+          //  if(!aodh) AliFatal("Not a standard AOD");
 			//Int_t bc= aodh->GetBunchCrossNumber();
 
 		

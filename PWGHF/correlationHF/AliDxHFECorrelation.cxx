@@ -597,7 +597,7 @@ void AliDxHFECorrelation::EventMixingChecks(const AliVEvent* pEvent){
     MultipOrCent = multiplicity; // convert from Int_t to Double_t
   }
   if(fSystem){ // PbPb		
-    centralityObj = AOD->GetHeader()->GetCentralityP();
+    centralityObj = ((AliVAODHeader*)AOD->GetHeader())->GetCentralityP();
     MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
     AliInfo(Form("Centrality is %f", MultipOrCent));
   }

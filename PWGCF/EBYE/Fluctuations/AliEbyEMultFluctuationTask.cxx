@@ -317,7 +317,8 @@ if(!isSelected) return;
 
 
 	
-		AliAODHeader *fHeader = fAOD->GetHeader();
+		AliAODHeader *fHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+		if(!fHeader) AliFatal("Not a standard AOD");
 		Int_t spdmult0 = fHeader->GetNumberOfITSClusters(0);
 		Int_t spdmult1 = fHeader->GetNumberOfITSClusters(1);
 		Int_t run = fHeader->GetRunNumber();

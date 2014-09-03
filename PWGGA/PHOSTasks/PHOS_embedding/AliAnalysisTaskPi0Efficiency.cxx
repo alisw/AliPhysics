@@ -418,7 +418,8 @@ void AliAnalysisTaskPi0Efficiency::UserExec(Option_t *)
   }
   
   FillHistogram("hSelEvents",1.5) ;
-  AliAODHeader *header = event->GetHeader() ;
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(event->GetHeader()) ;
+  if(!header) AliFatal("Not a standard AOD");
   
   // Checks if we have a primary vertex
   // Get primary vertices form ESD

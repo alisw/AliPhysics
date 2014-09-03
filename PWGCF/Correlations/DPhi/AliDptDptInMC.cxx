@@ -1219,8 +1219,8 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
     {
 
       //Centrality                                                                                                                          
-      //AliAODHeader* centralityObject = fAODEvent->GetHeader()->GetCentralityP();                                                          
-      AliCentrality* centralityObject =  fAODEvent->GetHeader()->GetCentralityP();
+      //AliAODHeader* centralityObject = ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();                                                          
+      AliCentrality* centralityObject =  ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
       if (centralityObject)
         {
           v0Centr  = centralityObject->GetCentralityPercentile("V0M");

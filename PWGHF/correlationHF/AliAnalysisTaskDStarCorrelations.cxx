@@ -1454,7 +1454,7 @@ void AliAnalysisTaskDStarCorrelations::EventMixingChecks(AliAODEvent* AOD){
 	}
 	if(fSystem == AA){ // PbPb
 		
-		centralityObj = AOD->GetHeader()->GetCentralityP();
+               centralityObj = ((AliVAODHeader*)AOD->GetHeader())->GetCentralityP();
 		MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
 		AliInfo(Form("Centrality is %f", MultipOrCent));
 	}

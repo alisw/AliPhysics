@@ -314,8 +314,11 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   if(!aod) return;
 
   //input data
-  fDataFilnam = aod->GetHeader()->GetESDFileName();
-  fEvtNum = aod->GetHeader()->GetEventNumberESDFile();
+  AliAODHeader * header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+if(!header) AliFatal("Not a standard AOD");
+
+  fDataFilnam = header->GetESDFileName();
+  fEvtNum = header->GetEventNumberESDFile();
   fRunNum = aod->GetRunNumber();
   
 
@@ -334,8 +337,8 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   if(!isTriggered ) return;
 
   //trigger inputs
-  fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  fL1inputs = aod->GetHeader()->GetL1TriggerInputs();
+  fL0inputs = ((AliVAODHeader*)aod->GetHeader())->GetL0TriggerInputs();
+  fL1inputs = ((AliVAODHeader*)aod->GetHeader())->GetL1TriggerInputs();
 
   //Event identification
   fPerNum = aod ->GetPeriodNumber();

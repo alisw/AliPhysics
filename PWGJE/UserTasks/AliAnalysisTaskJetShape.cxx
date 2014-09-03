@@ -1929,7 +1929,7 @@ if(!aodH){
 
    if(fESD) {cent = fESD->GetCentrality();
      if(cent) centrality = cent->GetCentralityPercentile("V0M");}
-   else     centrality=aodE->GetHeader()->GetCentrality();
+   else     centrality=((AliVAODHeader*)aodE->GetHeader())->GetCentrality();
 
 
    if(!fkIsPbPb) {

@@ -876,7 +876,7 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliESDEvent*) {
 //=======================================================================
 Bool_t AliAnalysisTaskFlowStrange::MinimumRequirementsAA(AliAODEvent *tAOD) {
   fRunNumber = tAOD->GetRunNumber();
-  AliCentrality *cent = tAOD->GetHeader()->GetCentralityP();
+  AliCentrality *cent = ((AliVAODHeader*)tAOD->GetHeader())->GetCentralityP();
   fV0M = cent->GetCentralityPercentile("V0M");
   fTRK = cent->GetCentralityPercentile("TRK");
   TString mycent = fCentMethod;
@@ -989,9 +989,9 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptPAEvent(AliAODEvent*) {
   // PA reading discontinued: TO BE UPDATED
   /*
   //if(aod->GetHeader()->GetEventNumberESDFile() == 0) return; //rejecting first chunk NOT NEEDED ANYMORE
-  Int_t bc2 = tAOD->GetHeader()->GetIRInt2ClosestInteractionMap();
+  Int_t bc2 = ((AliVAODHeader*)tAOD->GetHeader())->GetIRInt2ClosestInteractionMap();
   if(bc2!=0) return kFALSE;
-  Int_t bc1 = tAOD->GetHeader()->GetIRInt1ClosestInteractionMap();
+  Int_t bc1 = ((AliVAODHeader*)tAOD->GetHeader())->GetIRInt1ClosestInteractionMap();
   if(bc1!=0) return kFALSE;
   Short_t isPileup = tAOD->IsPileupFromSPD(5);
   if(isPileup!=0) return kFALSE;

@@ -576,7 +576,7 @@ Int_t AliAnalysisTaskMuonHadronCorrelations::GetCentBin() {
 
 Double_t AliAnalysisTaskMuonHadronCorrelations::GetITSMultiplicity() {
 
-  Double_t multiplicity = fAOD->GetHeader()->GetNumberOfITSClusters(1);
+  Double_t multiplicity = ((AliVAODHeader*)fAOD->GetHeader())->GetNumberOfITSClusters(1);
 
   return multiplicity;
 

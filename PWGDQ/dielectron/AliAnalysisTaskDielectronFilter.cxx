@@ -326,11 +326,15 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
        nanoEv->GetVertex(0)->SetNContributors((static_cast<AliAODEvent*>(InputEvent()))->GetPrimaryVertex()->GetNContributors());
        nanoEv->GetVertex(1)->SetNContributors((static_cast<AliAODEvent*>(InputEvent()))->GetPrimaryVertexSPD()->GetNContributors());
        // set event plane 
-       nanoEv->GetHeader()->SetEventplane((static_cast<AliAODEvent*>(InputEvent()))->GetHeader()->GetEventplaneP());
-       nanoEv->GetHeader()->ResetEventplanePointer(); 
+       AliAODHeader * header = dynamic_cast<AliAODHeader*>(nanoEv->GetHeader());
+       if(!header) AliFatal("Not a standard AOD");
+
+
+       header->SetEventplane(((AliVAODHeader*)static_cast<AliAODEvent*>(InputEvent())->GetHeader())->GetEventplaneP());
+       header->ResetEventplanePointer(); 
        // set multiplicity
-       nanoEv->GetHeader()->SetRefMultiplicity((Int_t)values[AliDielectronVarManager::kNTrk]);
-       nanoEv->GetHeader()->SetRefMultiplicityPos((Int_t)values[AliDielectronVarManager::kNacc]);
+       header->SetRefMultiplicity((Int_t)values[AliDielectronVarManager::kNTrk]);
+       header->SetRefMultiplicityPos((Int_t)values[AliDielectronVarManager::kNacc]);
        //nanoEv->GetHeader()->SetRefMultiplicityNeg(values[AliDielectronVarManager::kMatchEffITSTPC]);
 
          for(int kj=0; kj<(fDielectron->GetTrackArray(0))->GetEntries(); kj++){
@@ -384,10 +388,12 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
  
   if(fCreateNanoAOD && isAOD && (!hasCand) &&  fStoreHeader)  
    {
-   // set event plane 
-   extDielectron->GetAOD()->GetHeader()->SetEventplane((static_cast<AliAODEvent*>(InputEvent()))->GetHeader()->GetEventplaneP());
-   extDielectron->GetAOD()->GetHeader()->ResetEventplanePointer();
-   extDielectron->GetTree()->Fill(); // fill header for all events without tracks
+     // set event plane 
+     AliAODHeader * header = dynamic_cast<AliAODHeader*>(extDielectron->GetAOD()->GetHeader());
+     if(!header) AliFatal("Not a standard AOD");     
+     header->SetEventplane(((AliAODHeader*)(static_cast<AliAODEvent*>(InputEvent()))->GetHeader())->GetEventplaneP());
+     header->ResetEventplanePointer();
+     extDielectron->GetTree()->Fill(); // fill header for all events without tracks
    }
  
   PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));

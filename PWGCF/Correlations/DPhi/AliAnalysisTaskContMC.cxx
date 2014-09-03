@@ -113,7 +113,7 @@ void AliAnalysisTaskContMC::UserExec(Option_t *)
     }
   Double_t centrality = 0;
 
-  AliCentrality *centralityObj = fAOD->GetHeader()->GetCentralityP();
+  AliCentrality *centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
   if (centralityObj)
     {
       centrality = centralityObj->GetCentralityPercentileUnchecked("V0M");

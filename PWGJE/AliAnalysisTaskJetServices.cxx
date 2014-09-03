@@ -535,7 +535,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   Float_t cent = 0;
   if(fCollisionType==kPbPb){
-    if(aod)cent = aod->GetHeader()->GetCentrality();
+    if(aod)cent = ((AliVAODHeader*)aod->GetHeader())->GetCentrality();
     if(fDebug)Printf("%s:%d %3.3f",(char*)__FILE__,__LINE__,cent);
     if(cent<0)cent = 101;
   }
@@ -624,8 +624,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     Float_t zvtx = vtxAOD->GetZ();
     Int_t  iCl = GetEventClass(aod);
     AliAnalysisHelperJetTasks::EventClass(kTRUE,iCl);
-    Bool_t cand = aod->GetHeader()->GetOfflineTrigger()&fPhysicsSelectionFlag;
-    if(fDebug)Printf("%s:%d AOD selection %d %d",(char*)__FILE__,__LINE__,cand,aod->GetHeader()->GetOfflineTrigger());
+    Bool_t cand = ((AliVAODHeader*)aod->GetHeader())->GetOfflineTrigger()&fPhysicsSelectionFlag;
+    if(fDebug)Printf("%s:%d AOD selection %d %d",(char*)__FILE__,__LINE__,cand,((AliVAODHeader*)aod->GetHeader())->GetOfflineTrigger());
     fh2TriggerCount->Fill(0.,kAllTriggered); 
     fh2TriggerCount->Fill(iCl,kAllTriggered); 
     if(cand){
@@ -671,7 +671,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       TList recTracks;
       GetListOfTracks(&recTracks);
       CalculateReactionPlaneAngleVZERO(aod);
-      fRPAngle = aod->GetHeader()->GetEventplane();
+      fRPAngle = ((AliVAODHeader*)aod->GetHeader())->GetEventplane();
       fh1RP->Fill(fRPAngle);
       fh2RPCentrality->Fill(fCentrality,fRPAngle);
       fh2RPACentrality->Fill(fCentrality,fPsiVZEROA);
@@ -1069,7 +1069,7 @@ Int_t AliAnalysisTaskJetServices::GetEventClass(AliESDEvent *esd){
 Int_t AliAnalysisTaskJetServices::GetEventClass(AliAODEvent *aod){
 
   if(fCollisionType==kPbPb){
-    Float_t cent = aod->GetHeader()->GetCentrality();
+    Float_t cent = ((AliVAODHeader*)aod->GetHeader())->GetCentrality();
     if(cent>80||cent<0)return 5;
     if(cent>50)return 4;
     if(cent>30)return 3;

@@ -1927,7 +1927,7 @@ if(tracksMCtruth) delete tracksMCtruth;
 //now deal with reco tracks
 
 
-   Float_t bSign1=aod->GetHeader()->GetMagneticField() ;//used for reconstructed track dca cut
+ Float_t bSign1=((AliVAODHeader*)aod->GetHeader())->GetMagneticField() ;//used for reconstructed track dca cut
 
 //detrmine the ref mult in case of Reco(not required if we get centrality info from AliCentrality)
  if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE)) cent_v0=refmultReco;
@@ -2039,10 +2039,10 @@ isduplicate2=kTRUE;
   AliAODTrack *PIDtrack=track;//for PID purpose, mainly important for TPC only tracks
 
   if(fFilterBit==128){
-Int_t gid1 = track->GetID();
-//if(gid1>=0) PIDtrack = track;
- PIDtrack = aod->GetTrack(trackMap->GetValue(-1-gid1));
-if(!PIDtrack) continue;//for safety; so that each of the TPC only tracks have corresponding global track along with it
+    Int_t gid1 = track->GetID();
+    //if(gid1>=0) PIDtrack = track;
+    PIDtrack = dynamic_cast<AliAODTrack*>(aod->GetTrack(trackMap->GetValue(-1-gid1)));
+    if(!PIDtrack) continue;//for safety; so that each of the TPC only tracks have corresponding global track along with it
   }
 
   trackscount++;
@@ -2393,7 +2393,7 @@ if (!fPID) return;//this should be available with each event even if we don't do
 
 
  bSign = (aod->GetMagneticField() > 0) ? 1 : -1;//for two track efficiency cut in correlation function calculation
- Float_t bSign1=aod->GetHeader()->GetMagneticField() ;//for dca cut in ClassifyTrack(), i.e in track loop
+ Float_t bSign1=((AliVAODHeader*)aod->GetHeader())->GetMagneticField() ;//for dca cut in ClassifyTrack(), i.e in track loop
 
 
 // check event cuts and fill event histograms and return the centrality or reference multiplicity value
@@ -2453,10 +2453,10 @@ TExMap *trackMap = new TExMap();
 AliAODTrack *PIDtrack=track;//for PID purpose, mainly important for TPC only tracks
 
   if(fFilterBit==128){
-Int_t gid1 = track->GetID();
-//if(gid1>=0) PIDtrack = track;
- PIDtrack = aod->GetTrack(trackMap->GetValue(-1-gid1));
-if(!PIDtrack) continue;//for safety; so that each of the TPC only tracks have corresponding global track along with it
+    Int_t gid1 = track->GetID();
+    //if(gid1>=0) PIDtrack = track;
+    PIDtrack = dynamic_cast<AliAODTrack*>(aod->GetTrack(trackMap->GetValue(-1-gid1)));
+    if(!PIDtrack) continue;//for safety; so that each of the TPC only tracks have corresponding global track along with it
   }
 
 //check for eta , phi holes
@@ -4782,7 +4782,7 @@ if (v0Centr < 80){ // analysis only for 0-80% centrality classes
 
     for(Int_t iT = 0; iT < nAODTracks; iT++) {
       
-      AliAODTrack* aodTrack = event->GetTrack(iT);
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(event->GetTrack(iT));
       
       if (!aodTrack){
 	continue;

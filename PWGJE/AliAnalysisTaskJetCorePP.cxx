@@ -1102,7 +1102,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          cent = fESD->GetCentrality();
          if(cent) centValue = cent->GetCentralityPercentile("V0M");
       }else{
-         centValue = aod->GetHeader()->GetCentrality();
+         centValue = ((AliVAODHeader*)aod->GetHeader())->GetCentrality();
       }   
       if(fDebug) printf("centrality: %f\n", centValue);
       //Input events
@@ -1120,7 +1120,10 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
  
    //-----------------select disjunct event subsamples ----------------
    if(!fIsKine){ //reconstructed data
-      Int_t eventnum  = aod->GetHeader()->GetEventNumberESDFile();
+      AliAODHeader * header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+      if(!header) AliFatal("Not a standard AOD");
+
+      Int_t eventnum  = header->GetEventNumberESDFile();
       Int_t lastdigit = eventnum % 10;
       if(!(fEventNumberRangeLow<=lastdigit && lastdigit<=fEventNumberRangeHigh)){
          fHistEvtSelection->Fill(5);

@@ -366,7 +366,8 @@ void AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
   //AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!aodEvent) return;
-  AliAODHeader *fAODheader = aodEvent->GetHeader();
+  AliAODHeader *fAODheader = dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
+  if(!fAODheader) AliFatal("Not a standard AOD");
   Double_t mult = fAODheader->GetRefMultiplicity();
 // AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
 //  Double_t mult = alicent->GetCentralityPercentile("V0A"); //in pPb

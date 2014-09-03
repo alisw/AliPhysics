@@ -396,7 +396,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
   if(fIsPbPb){
     if(fESD) {cent = fESD->GetCentrality();
       if(cent) centValue = cent->GetCentralityPercentile("V0M");}
-    else     centValue=aod->GetHeader()->GetCentrality();
+    else     centValue=((AliVAODHeader*)aod->GetHeader())->GetCentrality();
 
     if(fDebug) printf("centrality: %f\n", centValue);
     if (centValue < fCentMin || centValue > fCentMax){

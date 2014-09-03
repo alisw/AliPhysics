@@ -1178,7 +1178,8 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
   TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)aodEvent)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   if(mcArray) {fUseAOD049=kFALSE;}
 
-  AliAODHeader *header=aodEvent->GetHeader();
+  AliAODHeader *header=dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
   AliCentrality *centrality=header->GetCentralityP();
   Float_t cent=-999.;
   Bool_t isSelRun=kFALSE;

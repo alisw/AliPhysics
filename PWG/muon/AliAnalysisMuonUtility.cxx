@@ -51,6 +51,7 @@
 
 // CORRFW includes
 #include "AliCFGridSparse.h"
+#include "assert.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisMuonUtility) // Class implementation in ROOT context
@@ -443,7 +444,9 @@ TString AliAnalysisMuonUtility::GetPassName ( const AliInputEventHandler* eventH
     // try first to find the info in the AOD header
     // (which is a priori safer because it works even on local copies of AODs)
     // and if it does not work, directly check the path to the AOD
-    filePath = static_cast<const AliAODEvent*> (event)->GetHeader()->GetESDFileName();
+    AliAODHeader * header = dynamic_cast<AliAODHeader*>(static_cast<const AliAODEvent*> (event)->GetHeader());
+    assert(header && "Not a standard AOD");
+    filePath = header->GetESDFileName();
     TString passName = GetPassName(filePath.Data());
     if ( passName.IsNull() ) AliWarningClass("Check again with the AOD path");
     else return passName;

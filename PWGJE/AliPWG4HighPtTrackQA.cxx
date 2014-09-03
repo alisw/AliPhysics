@@ -842,8 +842,8 @@ Bool_t AliPWG4HighPtTrackQA::SelectEvent()
 	}
       }
       else if(fDataType==kAOD) {
-	if(dynamic_cast<AliAODEvent*>(fEvent)->GetHeader()->GetCentrality())
-	  cent = dynamic_cast<AliAODEvent*>(fEvent)->GetHeader()->GetCentrality();
+	if(((AliVAODHeader*)dynamic_cast<AliAODEvent*>(fEvent)->GetHeader())->GetCentrality())
+	  cent = ((AliVAODHeader*)dynamic_cast<AliAODEvent*>(fEvent)->GetHeader())->GetCentrality();
        }
       if(cent>90.) {
 	fNEventReject->Fill("cent>90",1);
@@ -901,7 +901,7 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(const AliAODEvent *aod)
   //
 
   if(!aod) return 5;
-  Float_t cent = aod->GetHeader()->GetCentrality();
+  Float_t cent = ((AliVAODHeader*)aod->GetHeader())->GetCentrality();
   if(fDebug>3) printf("centrality: %f\n",cent);
 
   return GetCentralityClass(cent);

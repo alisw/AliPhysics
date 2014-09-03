@@ -518,7 +518,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     {
       AliCentrality *centralityObj = 0;
       if (fAOD)
-	centralityObj = fAOD->GetHeader()->GetCentralityP();
+	centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
       else if (fESD)
 	centralityObj = fESD->GetCentrality();
       
@@ -1106,7 +1106,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
    else
     {
       if (fAOD)
-	centralityObj = fAOD->GetHeader()->GetCentralityP();
+	centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
       else if (fESD)
 	centralityObj = fESD->GetCentrality();
       
@@ -1263,7 +1263,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     referenceMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity(fESD);
   else if (fAOD)
     referenceMultiplicity = tracks->GetEntriesFast(); // TODO to be replaced by the estimator once available in the AOD
-//    referenceMultiplicity = fAOD->GetHeader()->GetRefMultiplicityComb05();
+//    referenceMultiplicity = ((AliVAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb05();
 
   ((TH2F*) fListOfHistos->FindObject("referenceMultiplicity"))->Fill(centrality, referenceMultiplicity);
   

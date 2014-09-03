@@ -491,7 +491,10 @@ void AliDhcTask::UserExec(Option_t *)
           Info("Exec()", "Event REJECTED (AOD vertex not OK). z = %.1f", fZVertex);
         return;
       }
-      const AliCentrality *aodCent = fAOD->GetHeader()->GetCentralityP();
+      AliAODHeader * header = dynamic_cast<AliAODHeader*>(fAOD);
+      if(!header) AliFatal("Not a standard AOD");
+
+      const AliCentrality *aodCent = header->GetCentralityP();
       if (aodCent) {
         fCentrality = aodCent->GetCentralityPercentile(fCentMethod);
       }
