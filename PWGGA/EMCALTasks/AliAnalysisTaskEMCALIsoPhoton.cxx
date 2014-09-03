@@ -163,7 +163,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fOADBContainer(0),
-  fVecPv(0.),
+  fVecPv(0.,0.,0.),
   fPeriod("LHC11c"),
   fTrigBit("kEMC7"),
   fIsTrain(0),
