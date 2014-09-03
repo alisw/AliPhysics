@@ -91,6 +91,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
 
   void                   SetCodeDebug(Bool_t val)               { fCodeDebug    = val          ; }
   void                   SetForceIsMcPart(Bool_t b)             { fIsMcPart     = b            ; }
+  void                   SetPionMassForClusters(Bool_t b)       { fPionMassClusters = b        ; }
 
   void                   SetRhoName(const char *n)              { fRhoName      = n            ; }
   void                   SetRhomName(const char *n)             { fRhomName     = n            ; }
@@ -171,6 +172,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
   Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
   Bool_t                 fCodeDebug;              // use nontested code changes 
+  Bool_t                 fPionMassClusters;       //!assume pion mass for clusters
 
   Bool_t                 fDoGenericSubtractionJetMass;        // calculate generic subtraction
   Bool_t                 fDoGenericSubtractionGR;             // calculate generic subtraction for angular structure function GR
@@ -198,6 +200,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 15) // Jet producing task
+  ClassDef(AliEmcalJetTask, 16) // Jet producing task
 };
 #endif

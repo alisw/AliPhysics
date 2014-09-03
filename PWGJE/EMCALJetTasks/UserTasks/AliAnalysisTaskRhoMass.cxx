@@ -23,6 +23,7 @@ AliAnalysisTaskRhoMass::AliAnalysisTaskRhoMass() :
   AliAnalysisTaskRhoMassBase("AliAnalysisTaskRhoMass"),
   fNExclLeadJets(0),
   fJetRhoMassType(kMd),
+  fPionMassClusters(kFALSE),
   fHistMdAreavsCent(0)
 {
   // Constructor.
@@ -33,6 +34,7 @@ AliAnalysisTaskRhoMass::AliAnalysisTaskRhoMass(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoMassBase(name, histo),
   fNExclLeadJets(0),
   fJetRhoMassType(kMd),
+  fPionMassClusters(kFALSE),
   fHistMdAreavsCent(0)
 {
   // Constructor.
@@ -214,8 +216,9 @@ Double_t AliAnalysisTaskRhoMass::GetMd(AliEmcalJet *jet) {
       if(!vp) continue;
       TLorentzVector nPart;
       vp->GetMomentum(nPart, fVertex);
-      
-      if(fJetRhoMassType==kMd) sum += TMath::Sqrt(nPart.M()*nPart.M() + nPart.Pt()*nPart.Pt()) - nPart.Pt();
+      Double_t m = 0.;
+      if(fPionMassClusters) m = 0.13957;
+      if(fJetRhoMassType==kMd) sum += TMath::Sqrt(m*m + nPart.Pt()*nPart.Pt()) - nPart.Pt();
       else if(fJetRhoMassType==kMdP) sum += TMath::Sqrt(nPart.M()*nPart.M() + nPart.P()*nPart.P()) - nPart.P();
       else if(fJetRhoMassType==kMd4) {
 	px+=nPart.Px();
