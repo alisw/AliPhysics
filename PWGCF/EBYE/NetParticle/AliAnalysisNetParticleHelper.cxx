@@ -377,7 +377,7 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
   if(esdHandler)
     centrality = fESD->GetCentrality();
   else if(aodHandler)
-    centrality = fAOD->GetHeader()->GetCentralityP();
+    centrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
 
   if (!centrality) {
     AliError("Centrality not available");

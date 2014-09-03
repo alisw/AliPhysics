@@ -191,7 +191,8 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
     
     // Update the header
 
-    AliAODHeader* header = fAOD->GetHeader();
+    AliAODHeader* header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+    if(!header) AliFatal("Not a standard AOD");
     header->SetRunNumber(fESD->GetRunNumber());
     if (old) {
 	header->SetBunchCrossNumber(0);

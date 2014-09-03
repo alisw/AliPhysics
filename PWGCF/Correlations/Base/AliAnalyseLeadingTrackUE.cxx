@@ -725,7 +725,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	  Double_t pos[2];
 	  Double_t covar[3];
 	  AliAODTrack* clone = (AliAODTrack*) part->Clone();
-	  Bool_t success = clone->PropagateToDCA(vertex, aodEvent->GetHeader()->GetMagneticField(), 3, pos, covar);
+	  Bool_t success = clone->PropagateToDCA(vertex, ((AliVAODHeader*)aodEvent->GetHeader())->GetMagneticField(), 3, pos, covar);
 	  delete clone;
 	  if (!success)
 	    return 0;

@@ -670,7 +670,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     // for HBT like cuts need magnetic field sign
     bSign = (gAOD->GetMagneticField() > 0) ? 1 : -1;
 
-    AliAODHeader *aodHeader = gAOD->GetHeader();
+    AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(gAOD->GetHeader());
+    if(!aodHeader) AliFatal("Not a standard AOD");
 
     // store offline trigger bits
     fHistTriggerStats->Fill(aodHeader->GetOfflineTrigger());

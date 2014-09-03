@@ -2140,7 +2140,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     Int_t cl = 0;
     if(handler->InheritsFrom("AliAODInputHandler")){ 
       // since it is not supported by the helper task define own classes
-      centPercent = fAOD->GetHeader()->GetCentrality();
+      centPercent = ((AliVAODHeader*)fAOD->GetHeader())->GetCentrality();
       cl = 1;
       if(centPercent>10) cl = 2;
       if(centPercent>30) cl = 3;

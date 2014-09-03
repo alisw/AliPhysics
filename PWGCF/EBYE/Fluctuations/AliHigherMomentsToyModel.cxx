@@ -356,7 +356,8 @@ void AliHigherMomentsToyModel::doAODEvent(){
   }  
   
   
-  AliAODHeader *aodHeader = fAOD->GetHeader();
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   
   fCentrality = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
   /* Int_t cent = -1;
@@ -573,7 +574,8 @@ void AliHigherMomentsToyModel::doMCAODEvent(){
     return;
   }
   
-  AliAODHeader *aodHeader = fAOD->GetHeader();
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   
   fCentrality = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
   

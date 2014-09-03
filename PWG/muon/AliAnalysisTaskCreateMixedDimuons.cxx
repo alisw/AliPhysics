@@ -197,9 +197,12 @@ void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
 	  }
 	}
 	
-	fOutputUserAOD->GetHeader()->SetRefMultiplicity(nFWMUonsAdded); 
-	fOutputUserAOD->GetHeader()->SetRefMultiplicityPos(nPosTracksAdded);
-	fOutputUserAOD->GetHeader()->SetRefMultiplicityNeg(nNegTracksAdded);
+
+        AliAODHeader * header = dynamic_cast<AliAODHeader*>(fOutputUserAOD->GetHeader());
+        if(!header) AliFatal("Not a standard AOD");
+	header->SetRefMultiplicity(nFWMUonsAdded); 
+	header->SetRefMultiplicityPos(nPosTracksAdded);
+	header->SetRefMultiplicityNeg(nNegTracksAdded);
 	
 	fOutputUserHandler -> FinishEvent();
 	

@@ -423,7 +423,8 @@ void AliEbyEHigherMomentsEffContTask::doAODEvent(){
   }  
   
   
-  AliAODHeader *aodHeader = fAOD->GetHeader();
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   
   Int_t cent = -1;
   cent =  aodHeader->GetCentralityP()->GetCentralityClass10(fCentralityEstimator.Data());
@@ -630,7 +631,8 @@ void AliEbyEHigherMomentsEffContTask::doMCAODEvent(){
     return;
   }
   
-  AliAODHeader *aodHeader = fAOD->GetHeader();
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!aodHeader) AliFatal("Not a standard AOD");
   
   Int_t cent = -1;
   cent =  aodHeader->GetCentralityP()->GetCentralityClass10(fCentralityEstimator.Data());

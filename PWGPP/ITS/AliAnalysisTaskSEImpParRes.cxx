@@ -1163,7 +1163,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   if(fIsAOD){
     Int_t nclsITS = 0;
     runNumber=((AliAODEvent*)event)->GetRunNumber();
-    nclsITS = ((AliAODEvent*)event)->GetHeader()->GetNumberOfITSClusters(1);
+    nclsITS = ((AliVAODHeader*)((AliAODEvent*)event)->GetHeader())->GetNumberOfITSClusters(1);
     if(nclsITS<fMinMult || nclsITS>fMaxMult) return;
     firedTriggerClasses=((AliAODEvent*)event)->GetFiredTriggerClasses();
     if(!firedTriggerClasses.Contains(fTriggerClass.Data())) return;

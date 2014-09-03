@@ -192,7 +192,8 @@ void AliAnalysisTaskFlowEventforRP::UserExec(Option_t *)
 
     
     // Update the header
-    AliAODHeader* header = AODEvent()->GetHeader();
+    AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
+    if(!header) AliFatal("Not a standard AOD");
     header->SetRunNumber(esd->GetRunNumber());
     header->SetQTheta(dRP,1);
         

@@ -1054,7 +1054,7 @@ void  AliAnalysisTask3PCorrelations::UserExec(Option_t */*option*/)
   _eventAccounting->Fill(1);// count all calls to this function with a valid pointer
   
   //Centrality
-  AliCentrality* centralityObject =  fAODEvent->GetHeader()->GetCentralityP();
+  AliCentrality* centralityObject =  ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
   if (centralityObject)
     {
     // cout << "AliAnalysisTask3PCorrelations::UserExec(Option_t *option) - 6" << endl;

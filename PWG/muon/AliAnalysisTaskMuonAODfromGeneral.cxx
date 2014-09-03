@@ -112,7 +112,8 @@ void AliAnalysisTaskMuonAODfromGeneral::Exec(Option_t *) {
   Double_t covVtx[6];
   
     // Access to the header
-    AliAODHeader *header = fNewAOD->GetHeader();
+    AliAODHeader *header = dynamic_cast<AliAODHeader*>(fNewAOD->GetHeader());
+    if(!header) AliFatal("Not a standard AOD");
 
   // fill the header
   header->SetRunNumber       (fOrgAOD->GetRunNumber()       );

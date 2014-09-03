@@ -1053,7 +1053,7 @@ void  AliAnalysisTaskDptDptQA::UserExec(Option_t */*option*/)
     //cout << "AliAnalysisTaskDptDptQA::UserExec(Option_t *option) - 5" << endl;
     
     //Centrality
-    AliCentrality* centralityObject =  fAODEvent->GetHeader()->GetCentralityP();
+    AliCentrality* centralityObject =  ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
     if (centralityObject)
       {
       //cout << "AliAnalysisTaskDptDptQA::UserExec(Option_t *option) - 6" << endl;

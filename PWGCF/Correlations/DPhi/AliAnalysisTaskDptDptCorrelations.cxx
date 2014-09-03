@@ -1087,7 +1087,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   if(fAODEvent)
     {
       //Centrality
-      AliCentrality* centralityObject =  fAODEvent->GetHeader()->GetCentralityP();
+      AliCentrality* centralityObject =  ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
       if (centralityObject)
 	{
 	  //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 6" << endl;

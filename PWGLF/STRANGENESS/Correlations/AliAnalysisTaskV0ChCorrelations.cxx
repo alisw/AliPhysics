@@ -300,7 +300,7 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
   // Centrality definition
   Double_t lCent = 0.0;
   AliCentrality *centralityObj = 0;
-  centralityObj = aod->GetHeader()->GetCentralityP();
+  centralityObj = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP();
   lCent = centralityObj->GetCentralityPercentile("V0M");
   if ((lCent < 0.)||(lCent > 90.)) return;
   fHistCentVtx->Fill(lCent,lPVz);

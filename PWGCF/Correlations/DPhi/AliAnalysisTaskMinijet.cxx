@@ -552,7 +552,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
     {
         AliCentrality *centralityObj = 0;
         if (fAODEvent)
-            centralityObj = fAODEvent->GetHeader()->GetCentralityP();
+            centralityObj = ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
         else if (fESDEvent)
             centralityObj = fESDEvent->GetCentrality();
         if (centralityObj)

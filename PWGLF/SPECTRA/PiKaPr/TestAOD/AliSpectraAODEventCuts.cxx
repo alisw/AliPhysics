@@ -186,8 +186,9 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
 	}
 	Int_t Nch=0;
 	for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-		AliAODTrack* track = fAOD->GetTrack(iTracks);
-		if (!fTrackCuts->IsSelected(track,kFALSE)) continue;
+		AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+		if(!track) AliFatal("Not a standard AOD");
+ 		if (!fTrackCuts->IsSelected(track,kFALSE)) continue;
 		((TH1F*)fOutput->FindObject("fHistoEtaBefSel"))->Fill(track->Eta());
 		if(fIsSelected){
 			((TH1F*)fOutput->FindObject("fHistoEtaAftSel"))->Fill(track->Eta());
@@ -237,7 +238,8 @@ Bool_t AliSpectraAODEventCuts::CheckMultiplicityCut()
 	// FIXME: why this is not tracket in the track stats histos?
 	Int_t Ncharged=0;
 	for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++){
-		AliAODTrack* track = fAOD->GetTrack(iTracks);
+		AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+		if(!track) AliFatal("Not a standard AOD");
 		if (!fTrackCuts->IsSelected(track,kFALSE)) continue;
 		Ncharged++;
 	}
@@ -401,7 +403,8 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorTPC(Double_t etaMin,Double_t et
 	Double_t Qx2 = 0, Qy2 = 0;
 	Int_t mult = 0;
 	for(Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++) {
-		AliAODTrack* aodTrack = fAOD->GetTrack(iT);
+	        AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iT));
+               if(!aodTrack) AliFatal("Not a standard AOD");
 		if (!aodTrack->TestFilterBit(128)) continue;  //FIXME track type hard coded -> TPC only constrained to the vertex
 		if (aodTrack->Eta() <etaMin || aodTrack->Eta() > etaMax)continue;
 		mult++;
@@ -458,7 +461,7 @@ Short_t AliSpectraAODEventCuts::GetCentrCode(AliVEvent* ev)
 
 	AliCentrality* centrality = 0;
 	AliAODEvent* aod = (AliAODEvent*)ev;
-	centrality = aod->GetHeader()->GetCentralityP();
+	centrality = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP();
 
 	Float_t centV0 = centrality->GetCentralityPercentile("V0M");
 	Float_t centTrk = centrality->GetCentralityPercentile("TRK");

@@ -434,7 +434,8 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
      // for HBT like cuts need magnetic field sign
      bSign = (aodEventMain->GetMagneticField() > 0) ? 1 : -1;
       
-     AliAODHeader *aodHeaderMain = aodEventMain->GetHeader();  
+     AliAODHeader *aodHeaderMain = dynamic_cast<AliAODHeader*>(aodEventMain->GetHeader());
+     if(!aodHeaderMain) AliFatal("Not a standard AOD");  
 
       // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
       fHistEventStats->Fill(1); //all events

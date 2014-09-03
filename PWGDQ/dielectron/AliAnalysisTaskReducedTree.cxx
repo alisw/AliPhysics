@@ -420,12 +420,16 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
     }
   }
   if(isAOD) {
-    fReducedEvent->fIRIntClosestIntMap[0] = aodEvent->GetHeader()->GetIRInt1ClosestInteractionMap();
-    fReducedEvent->fIRIntClosestIntMap[1] = aodEvent->GetHeader()->GetIRInt2ClosestInteractionMap();
-    fReducedEvent->fEventNumberInFile = aodEvent->GetHeader()->GetEventNumberESDFile();
-    fReducedEvent->fL0TriggerInputs = aodEvent->GetHeader()->GetL0TriggerInputs();
-    fReducedEvent->fL1TriggerInputs = aodEvent->GetHeader()->GetL1TriggerInputs();
-    fReducedEvent->fL2TriggerInputs = aodEvent->GetHeader()->GetL2TriggerInputs();
+    AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
+    if(!header) AliFatal("Not a standard AOD");
+
+
+    fReducedEvent->fIRIntClosestIntMap[0] = header->GetIRInt1ClosestInteractionMap();
+    fReducedEvent->fIRIntClosestIntMap[1] = header->GetIRInt2ClosestInteractionMap();
+    fReducedEvent->fEventNumberInFile = header->GetEventNumberESDFile();
+    fReducedEvent->fL0TriggerInputs = header->GetL0TriggerInputs();
+    fReducedEvent->fL1TriggerInputs = header->GetL1TriggerInputs();
+    fReducedEvent->fL2TriggerInputs = header->GetL2TriggerInputs();
     fReducedEvent->fTimeStamp     = 0;
     fReducedEvent->fNpileupSPD    = aodEvent->GetNumberOfPileupVerticesSPD();
     fReducedEvent->fNpileupTracks = aodEvent->GetNumberOfPileupVerticesTracks();

@@ -426,7 +426,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       Double_t tSPDVtxZ = aodevent->GetPrimaryVertexSPD()->GetZ();
       if( TMath::Abs(tVtxZ-tSPDVtxZ) > 0.5 ) pass = kFALSE;
     }
-    AliCentrality* centr = aodevent->GetHeader()->GetCentralityP();
+    AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
     if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
       Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
       Double_t trkCentr = centr->GetCentralityPercentile("TRK"); 
@@ -503,7 +503,7 @@ Float_t AliFlowEventCuts::GetCentrality(AliVEvent* event, AliMCEvent* /*mcEvent*
   if (esdEvent)
     centr = esdEvent->GetCentrality();
   if (aodEvent) 
-    centr = aodEvent->GetHeader()->GetCentralityP();
+    centr = ((AliVAODHeader*)aodEvent->GetHeader())->GetCentralityP();
   
   if (!centr) return -1.;
 

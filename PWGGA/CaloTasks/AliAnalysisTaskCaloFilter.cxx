@@ -623,12 +623,13 @@ void AliAnalysisTaskCaloFilter::FillAODHeader()
 {
   // AOD header copy
   
-  AliAODHeader* header = AODEvent()->GetHeader();
+  AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
   
   // Copy from AODs
   if(fAODEvent)
   {
-    *header = *(fAODEvent->GetHeader());
+    *header = *((AliAODHeader*)fAODEvent->GetHeader());
     return;
   }
   

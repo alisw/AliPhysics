@@ -1174,7 +1174,8 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
 
   if(fIsHIevent)
     {
-      AliAODHeader *aodHeader = fAOD->GetHeader();
+      AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+      if(!aodHeader) AliFatal("Not a standard AOD");
       fEventCent = aodHeader->GetCentrality();
     }
 
@@ -1190,7 +1191,10 @@ void AliAnalysisTaskPartonDisc::UserExec(Option_t *)
     fJetAcceptance = 0.5 - fIncExcR; // if the increase is 0.1 -> only jets within |eta|<0.4 
 
   // First test of reference multiplicity
-  Int_t refMultiplicity = fAOD->GetHeader()->GetRefMultiplicity();
+  AliAODHeader * header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
+
+  Int_t refMultiplicity = header->GetRefMultiplicity();
   fRefMult->Fill(refMultiplicity);
 
   // Multiplicity from V0 (V0A+V0C)

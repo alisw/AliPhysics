@@ -261,7 +261,7 @@ Bool_t AliHFCorrelator::Initialize(){
 	if(fUseCentrality){ // PbPb
 		if(!fDMesonCutObject){
            
-		centralityObj = fAODEvent->GetHeader()->GetCentralityP();
+                centralityObj = ((AliVAODHeader*)fAODEvent->GetHeader())->GetCentralityP();
 		fMultCentr = centralityObj->GetCentralityPercentileUnchecked("V0M");
         }
         else fMultCentr = fDMesonCutObject->GetCentrality(fAODEvent);

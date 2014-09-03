@@ -2130,7 +2130,8 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
       else tMult=fESD->GetVZEROData()->GetMTotV0A()+fESD->GetVZEROData()->GetMTotV0C();
     }
     else{
-      AliAODHeader *tHeader=fAOD->GetHeader();
+      AliAODHeader *tHeader=dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+      if(!tHeader) AliFatal("Not a standard AOD");
       tMult=tHeader->GetCentrality();
     }
 
