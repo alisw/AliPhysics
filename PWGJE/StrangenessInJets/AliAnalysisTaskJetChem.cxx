@@ -1247,9 +1247,9 @@ void AliAnalysisTaskJetChem::AliFragFuncHistosInvMass::FillFF(Float_t trackPt, F
  
   if(incrementJetPt) fh1JetPt->Fill(jetPt);    
   //fh3TrackPt->Fill(jetPt,invM,trackPt);//Fill(x,y,z)
-  invM = 0;
-  Double_t z = 0.;
-  if(jetPt>0) z = trackPt / jetPt;
+  //  invM = 0;
+  //  Double_t z = 0.;
+  // if(jetPt>0) z = trackPt / jetPt;
   // Double_t xi = 0;
   //if(z>0) xi = TMath::Log(1/z);
   
