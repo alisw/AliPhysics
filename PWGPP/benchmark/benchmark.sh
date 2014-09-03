@@ -155,7 +155,11 @@ goCPass0()
 
   #runCPassX/C expects the raw chunk to be linked in the run dir
   #despite it being accessed by the full path
-  ln -s ${infile} ${runpath}/${chunkName}
+  if [[ $copyInputData == 0 ]]; then
+    ln -s ${infile} ${runpath}/${chunkName}
+  else
+    copyFileToLocal ${infile} ${runpath}/${chunkName}
+  fi
 
   #####MC
   if [[ -n ${generateMC} ]]; then
@@ -256,7 +260,7 @@ goCPass0()
   fi
 
   #run CPass0
-  echo "${runpath}/runCPass0.sh ${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
+  echo "${runpath}/runCPass0.sh /${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
   if [[ -n ${pretend} ]]; then
     sleep ${pretendDelay}
     touch AliESDs.root
@@ -265,8 +269,8 @@ goCPass0()
     touch rec.log
     touch calib.log
   else
-    echo ./runCPass0.sh "${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
-    ./runCPass0.sh "${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
+    #caveat: in the local case, first arg must start with a slash
+    ./runCPass0.sh "/${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
   fi
   
   #move stuff to final destination
@@ -399,7 +403,11 @@ goCPass1()
   fi
 
   #this is needed for runCPass1.sh
-  ln -s ${infile} ${runpath}/${chunkName}
+  if [[ $copyInputData == 0 ]]; then
+    ln -s ${infile} ${runpath}/${chunkName}
+  else
+    copyFileToLocal ${infile} ${runpath}/${chunkName}
+  fi
 
   logOutputDir=${runpath}
   [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
@@ -503,7 +511,7 @@ goCPass1()
 
   #run CPass1
   chmod u+x runCPass1.sh
-  echo "${runpath}/runCPass1.sh ${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
+  echo "${runpath}/runCPass1.sh /${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
   if [[ -n ${pretend} ]]; then
     sleep ${pretendDelay}
     touch AliESDs_Barrel.root
@@ -521,7 +529,8 @@ goCPass1()
     touch qa.log
     touch filtering.log FilterEvents_Trees.root
   else
-    ./runCPass1.sh "${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
+    #caveat: in the local case, first arg must start with a slash
+    ./runCPass1.sh "/${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
     
     [[ ! -f AliESDs_Barrel.root && -f Barrel/AliESDs.root ]] && mv Barrel/AliESDs.root AliESDs_Barrel.root
     [[ ! -f AliESDfriends_Barrel.root && -f Barrel/AliESDfriends.root ]] && mv Barrel/AliESDfriends.root AliESDfriends_Barrel.root
@@ -2556,6 +2565,7 @@ parseConfig()
   logToFinalDestination=1
   ALIROOT_FORCE_COREDUMP=1
   pretendDelay=0
+  copyInputData=0
 
   #first, source the config file
   if [ -f ${configFile} ]; then
@@ -2611,6 +2621,31 @@ aliroot()
   fi
   return 0
 }
+
+copyFileToLocal()
+(
+  #copies a file from either a remote or local location to a local destination
+  src="$1"
+  dst="$2"
+
+  proto="${src%%://*}"
+  if [[ "$proto" == "$src" ]]; then
+    cp "$src" "$dst"
+  else
+    case "$proto" in
+      root)
+        xrdcp -f "$src" "$dst"
+      ;;
+      http)
+        curl -L "$src" -O "$dst"
+      ;;
+      *)
+        echo "protocol not supported: $proto"
+        return 1
+      ;;
+    esac
+  fi
+)
 
 paranoidCp()
 (
