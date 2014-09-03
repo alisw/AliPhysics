@@ -195,7 +195,7 @@ goCPass0()
   fi
   ######
   
-  if [[ ! -f ${inputList} && -z ${pretend} ]]; then
+  if [[ "${inputList}" == "${inputList%%://*}" && ! -f "${inputList}" && -z ${pretend} ]]; then
     touch ${doneFileTmp}
     echo "input file ${inputList} not found, exiting..." >> ${doneFileTmp}
     cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
@@ -351,7 +351,7 @@ goCPass1()
   #Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
   export PRODUCTION_METADATA="OutputDir=cpass1"
 
-  if [[ ! -f ${inputList} && -z ${pretend} ]]; then
+  if [[ "${inputList}" == "${inputList%%://*}" && ! -f "${inputList}" && -z ${pretend} ]]; then
     touch ${doneFileTmp}
     echo "input file ${inputList} not found, exiting..." >> ${doneFileTmp}
     cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
