@@ -172,7 +172,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
   Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
   Bool_t                 fCodeDebug;              // use nontested code changes 
-  Bool_t                 fPionMassClusters;       //!assume pion mass for clusters
+  Bool_t                 fPionMassClusters;       // assume pion mass for clusters
 
   Bool_t                 fDoGenericSubtractionJetMass;        // calculate generic subtraction
   Bool_t                 fDoGenericSubtractionGR;             // calculate generic subtraction for angular structure function GR
