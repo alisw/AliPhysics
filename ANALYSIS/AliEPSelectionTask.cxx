@@ -365,7 +365,9 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	if (headerH) fRP = headerH->GetReactionPlaneAngle();
       }
   
-      esdEP = aod->GetHeader()->GetEventplaneP();
+      AliAODHeader * header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
+      if(!header) AliFatal("Not a standard AOD");
+      esdEP = header->GetEventplaneP();
       if(!esdEP) return; // protection against missing EP branch (nanoAODs)
       esdEP->Reset(); 
      

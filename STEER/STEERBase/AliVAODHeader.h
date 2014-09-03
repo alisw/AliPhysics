@@ -71,10 +71,13 @@ class AliVAODHeader : public AliVHeader {
   // FIXME: use dynamic cast in AliAODEVent?                       
   virtual AliCentrality* GetCentralityP()                   const  = 0;
   virtual AliEventplane* GetEventplaneP()                   const  = 0;
+  virtual Double_t       GetCentrality () const = 0;
   virtual const Float_t* GetVZEROEqFactors()                const  = 0;
   virtual Float_t        GetVZEROEqFactors(Int_t /* i */)   const  = 0;
   virtual void           SetVZEROEqFactors(const Float_t* /*factors*/)  = 0;
-  virtual UInt_t GetOfflineTrigger()  = 0;
+  virtual UInt_t         GetOfflineTrigger()  = 0;
+  virtual Int_t          GetRefMultiplicity()    const  =0;
+  virtual Double_t       GetEventplane()         const =0;
 
 
 };

@@ -63,6 +63,7 @@ public:
   // FIXME: use dynamic cast in AliAODEVent?
   virtual AliCentrality* GetCentralityP()  const {AliError("Not Implemented"); return 0;};
   virtual AliEventplane* GetEventplaneP()  const {AliError("Not Implemented"); return 0;};
+  virtual Double_t       GetEventplane()     const {AliError("Not Implemented"); return 0;};
   virtual const Float_t* GetVZEROEqFactors() const {AliError("Not Implemented"); return 0;};
   virtual Float_t        GetVZEROEqFactors(Int_t /* i */) const {AliError("Not Implemented"); return 0;};
   virtual void           SetVZEROEqFactors(const Float_t* /*factors*/) {AliError("Not Implemented"); } 
@@ -74,9 +75,14 @@ public:
  
   virtual void Clear(Option_t * opt) ;
 
+  virtual Int_t  GetIRInt2ClosestInteractionMap()                  const {AliError("Not Implemented"); return 0;};
+  virtual Int_t  GetIRInt1ClosestInteractionMap(Int_t /*gap = 3*/) const {AliError("Not Implemented"); return 0;};
+
+
+  virtual Int_t     GetRefMultiplicity()    const { AliError("Not Impletented"); return 0; }
 
   Double_t  GetMagneticField()      const { return GetVar(1); }
-  Double_t  GetCentrality (const char *estimator = "V0M") { return GetVar(0);}
+  Double_t  GetCentrality (/*estimator = "V0M"*/) const { return GetVar(0);}
   
   ClassDef(AliNanoAODHeader, 1)
 
