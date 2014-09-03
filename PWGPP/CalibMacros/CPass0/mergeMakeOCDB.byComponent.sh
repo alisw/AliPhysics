@@ -1,6 +1,6 @@
 #!/bin/bash
 # example local use (files will be downloaded from alien)
-#./mergeMakeOCDB.byComponent.sh /alice/data/2012/LHC12g/000188362/cpass0/ 188362 local://./OCDB local:///cvmfs/alice.gsi.de/alice/data/2011/OCDB/ 0 30
+#./mergeMakeOCDB.byComponent.sh /alice/data/2012/LHC12g/000188362/cpass0/ 188362 local://./OCDB defaultOCDB=local:///cvmfs/alice.gsi.de/alice/data/2011/OCDB/ fileAccessMethod=tfilecp numberOfFilesInAbunch=30
 #
 # on ALIEN just do:
 # $1 = directory where to perform the find 
@@ -9,6 +9,7 @@
 
 main()
 {
+  save_args=("$@")
   if [[ $# -eq 0 ]]; then
     echo arguments:
     echo  "  1 - directory on which to look for the files to be merged or local file list"
@@ -66,7 +67,7 @@ main()
 
   #################################################################
   echo "" | tee -a merge.log
-  echo $0" $*" | tee -a merge.log
+  echo "$0 ${save_args[*]}" | tee -a merge.log
   echo "" | tee -a merge.log
   echo "***********************" | tee -a merge.log
   echo mergeMakeOCDB.byComponent.sh started | tee -a merge.log
@@ -402,5 +403,11 @@ copyScripts()
     cp -f $ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeOCDB.C $PWD && \
     echo "taking the default scripts from $ALICE_ROOT"
 }
+
+#these functions encode strings to and from a space-less form
+#use when spaces are not well handled (e.g. in arguments to
+#commands in makeflow files, etc.
+encSpaces()(echo "${1// /@@@@}")
+decSpaces()(echo "${1//@@@@/ }")
 
 main "$@"
