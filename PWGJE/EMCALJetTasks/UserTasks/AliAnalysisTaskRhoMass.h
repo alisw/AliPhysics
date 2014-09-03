@@ -33,7 +33,7 @@ class AliAnalysisTaskRhoMass : public AliAnalysisTaskRhoMassBase {
 
   UInt_t           fNExclLeadJets;                 // number of leading jets to be excluded from the median calculation
   JetRhoMassType   fJetRhoMassType;                // method for rho_m calculation
-  Bool_t           fPionMassClusters;              //!assume pion mass for clusters
+  Bool_t           fPionMassClusters;              // assume pion mass for clusters
 
   TH2F            *fHistMdAreavsCent;              //! Md/Area vs cent for all kt clusters
 
