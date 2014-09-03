@@ -23,7 +23,6 @@
 
 
 #include "AliVEvent.h"
-#include "AliVVevent.h"
 // some includes for delegated methods
 #include "AliESDCaloTrigger.h"
 #include "AliESDRun.h"
@@ -33,10 +32,7 @@
 #include "AliESDACORDE.h"
 #include "AliESDAD.h"
 
-// AliESDtrack has to be included so that the compiler 
-// knows its inheritance tree (= that it is a AliVParticle).
 #include "AliESDtrack.h"
-// same for AliESDVertex (which is a AliVVertex)
 #include "AliESDVertex.h"
 // same for CaloCells and CaloClusters (which is a AliVCaloCells, AliVCluster)
 #include "AliESDCaloCluster.h"
@@ -77,7 +73,7 @@ class AliESDCosmicTrack;
 class TList;
 class TString;
 
-class AliESDEvent : public AliVEvent, virtual public AliVVevent {
+class AliESDEvent : public AliVEvent {
 public:
 
 
@@ -527,9 +523,6 @@ public:
   void SetDAQAttributes(UInt_t attributes) {fDAQAttributes = attributes;}
   UInt_t GetDAQDetectorPattern() const {return fDAQDetectorPattern;}
   UInt_t GetDAQAttributes() const {return fDAQAttributes;}
-
-  // interface to AliVVevent
-  const AliVVtrack *GetVVTrack(Int_t i) const { return GetTrack(i); }
 
 protected:
   AliESDEvent(const AliESDEvent&);

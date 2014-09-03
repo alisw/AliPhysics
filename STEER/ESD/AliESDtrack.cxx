@@ -283,7 +283,6 @@ bool AliESDtrack::fgkOnlineMode=false;
 //_______________________________________________________________________
 AliESDtrack::AliESDtrack(const AliESDtrack& track):
   AliExternalTrackParam(track),
-  AliVVtrack(),
   fCp(0),
   fIp(0),
   fTPCInner(0),

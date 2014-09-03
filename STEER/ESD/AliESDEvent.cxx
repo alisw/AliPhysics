@@ -124,7 +124,6 @@ ClassImp(AliESDEvent)
 
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent():
-  AliVVevent(),
   AliVEvent(),
   fESDObjects(new TList()),
   fESDRun(0),
@@ -178,7 +177,6 @@ AliESDEvent::AliESDEvent():
 }
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent(const AliESDEvent& esd):
-  AliVVevent(),
   AliVEvent(esd),
   fESDObjects(new TList()),
   fESDRun(new AliESDRun(*esd.fESDRun)),
