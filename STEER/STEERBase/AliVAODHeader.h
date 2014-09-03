@@ -47,6 +47,36 @@ class AliVAODHeader : public AliVHeader {
   virtual Double_t GetSigma2DiamondY()             const    = 0;
   virtual Double_t GetSigma2DiamondZ()             const    = 0;
 
+  virtual Bool_t   InitMagneticField()      const       = 0;
+  virtual void     SetRunNumber(Int_t nRun)             = 0;
+  virtual void     SetOrbitNumber(UInt_t nOr)           = 0;
+  virtual void     SetPeriodNumber(UInt_t nPer)         = 0;
+  virtual void     SetBunchCrossNumber(UShort_t nBx)    = 0;
+  virtual void     SetEventType(UInt_t evttype)         = 0;
+  virtual UInt_t   GetEventType()           const       = 0;
+  virtual void     SetTriggerMask(ULong64_t trigMsk)    = 0;
+  virtual void     SetTriggerCluster(UChar_t trigClus)  = 0;
+  virtual void     SetFiredTriggerClasses(TString trig) = 0;
+  virtual TString  GetFiredTriggerClasses() const       = 0;
+  virtual Double_t GetZDCN1Energy()         const       = 0;
+  virtual Double_t GetZDCP1Energy()         const       = 0;
+  virtual Double_t GetZDCN2Energy()         const       = 0;
+  virtual Double_t GetZDCP2Energy()         const       = 0;
+
+  virtual Double_t GetZDCEMEnergy(Int_t /* i */)            const  = 0;
+  virtual Int_t    GetNumberOfESDTracks()                   const  = 0;
+  virtual UInt_t   GetNumberOfITSClusters(Int_t /* ilay */) const  = 0;
+  virtual Float_t  GetT0spread(Int_t /* i */)               const  = 0;
+  // FIXME: THIS IS UGLY!!!!                                       
+  // FIXME: use dynamic cast in AliAODEVent?                       
+  virtual AliCentrality* GetCentralityP()                   const  = 0;
+  virtual AliEventplane* GetEventplaneP()                   const  = 0;
+  virtual const Float_t* GetVZEROEqFactors()                const  = 0;
+  virtual Float_t        GetVZEROEqFactors(Int_t /* i */)   const  = 0;
+  virtual void           SetVZEROEqFactors(const Float_t* /*factors*/)  = 0;
+  virtual UInt_t GetOfflineTrigger()  = 0;
+
+
 };
 
 #endif

@@ -5,6 +5,7 @@ set ( SRCS  AliAODEvent.cxx AliAODHeader.cxx AliAODTrack.cxx AliAODPid.cxx AliAO
 set ( SRCS  
     AOD/AliAODEvent.cxx 
     AOD/AliAODHeader.cxx 
+    AOD/AliNanoAODHeader.cxx
     AOD/AliAODTrack.cxx 
     AOD/AliAODPid.cxx 
     AOD/AliAODVertex.cxx 
@@ -40,6 +41,8 @@ set ( SRCS
     AOD/AliAODHMPIDrings.cxx	
     AOD/AliAODTrdTrack.cxx
     AOD/AliAODTrdTracklet.cxx
+    AOD/AliNanoAODStorage.cxx
+    AOD/AliNanoAODTrackMapping.cxx
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -48,4 +51,4 @@ set ( DHDR AODLinkDef.h)
 
 set ( EXPORT ${HDRS} )
 
-set ( EINCLUDE  STEER/ESD STEER/STEERBase PWG/DevNanoAOD)
+set ( EINCLUDE  STEER/ESD STEER/STEERBase)

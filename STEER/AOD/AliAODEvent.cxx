@@ -99,7 +99,8 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   fAODFolder(0),
   fConnected(kFALSE),
   fTracksConnected(kFALSE),
-  fHeader(new AliAODHeader(*aod.fHeader)),
+  //  fHeader(new AliAODHeader(*aod.fHeader)),
+  fHeader(0),
   fTracks(new TClonesArray(*aod.fTracks)),
   fVertices(new TClonesArray(*aod.fVertices)),
   fV0s(new TClonesArray(*aod.fV0s)),
@@ -122,6 +123,7 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   fTrdTracks(new TClonesArray(*aod.fTrdTracks))
 {
   // Copy constructor
+  AddHeader(fHeader);
   AddObject(fHeader);
   AddObject(fTracks);
   AddObject(fVertices);
@@ -399,7 +401,7 @@ void AliAODEvent::GetStdContent()
 {
   // set pointers for standard content
 
-  fHeader        = (AliAODHeader*)fAODObjects->FindObject("header");
+  fHeader        = (AliVAODHeader*)fAODObjects->FindObject("header");
   fTracks        = (TClonesArray*)fAODObjects->FindObject("tracks");
   fVertices      = (TClonesArray*)fAODObjects->FindObject("vertices");
   fV0s           = (TClonesArray*)fAODObjects->FindObject("v0s");
@@ -990,6 +992,7 @@ void AliAODEvent::Reset()
   }
 }
 
+// FIXME: Why is this in event and not in header?
 Float_t AliAODEvent::GetVZEROEqMultiplicity(Int_t i) const
 {
   // Get VZERO Multiplicity for channel i
