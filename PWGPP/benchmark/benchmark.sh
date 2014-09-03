@@ -1034,9 +1034,9 @@ goSubmitMakeflow()
   #if which greadlink; then self=$(greadlink -f "${0}"); fi
   
   #for reference copy the setup to the output dir
-  cp ${self} ${commonOutputPath}
-  cp ${configFile} ${commonOutputPath}
-  cp ${inputFileList} ${commonOutputPath}
+  paranoidCp ${self} ${commonOutputPath}
+  paranoidCp ${configFile} ${commonOutputPath}
+  paranoidCp ${inputFileList} ${commonOutputPath}
 
   #submit - use makeflow if available, fall back to old stuff when makeflow not there
   if which makeflow; then
