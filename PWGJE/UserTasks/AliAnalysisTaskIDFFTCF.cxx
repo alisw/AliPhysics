@@ -1856,8 +1856,11 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
       
       if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;
       
-      if(isBadJet) continue; 
-      
+      if(isBadJet){
+	delete jettracklist;
+	continue; 
+      }
+
       for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	
 	AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
@@ -1916,8 +1919,11 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
       	
 	if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;
 	
-	if(isBadJet) continue; 
-	
+	if(isBadJet){
+	  delete jettracklist;
+	  continue; 
+	}
+
 	Bool_t incrementJetPt = kTRUE; // there could be 0 tracks in jet: first fill jet pt histo once 
 	fFFHistosRecCutsIncPi->FillFF(-1, -1, jetPt, incrementJetPt);
 	fFFHistosRecCutsIncPro->FillFF(-1,-1, jetPt, incrementJetPt); 
@@ -1983,7 +1989,10 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
       
       if(GetFFMinNTracks()>0 && jettracklist->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;;
       
-      if(isBadJet) continue; 
+      if(isBadJet){
+	delete jettracklist;
+	continue; 
+      }
 
       Bool_t incrementJetPt = kTRUE; // first fill jet pt histo once 
       fFFHistosGenInc->FillFF(-1,   -1, jetPt, incrementJetPt);
@@ -2138,8 +2147,13 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
 	if(GetFFMinNTracks()>0 && jettracklistGenSec->GetSize()<=GetFFMinNTracks())  isBadJetGenSec  = kTRUE;
 	if(GetFFMinNTracks()>0 && jettracklistRec->GetSize()<=GetFFMinNTracks())       isBadJetRec     = kTRUE;
 	
-	if(isBadJetRec) continue;
-	
+	if(isBadJetRec){
+	  delete jettracklistGenPrim;
+	  delete jettracklistGenSec;
+	  delete jettracklistRec;
+	  continue;
+	}
+
 	if(fQAMode&2) fQAJetHistosRecEffLeading->FillJetQA( jetEta, jetPhi, sumPtGenLeadingJetRecEff ); 
 	
 	if(fFFMode){
@@ -2287,7 +2301,7 @@ Int_t AliAnalysisTaskIDFFTCF::GetListOfTracks(TList *list, Int_t type)
       
       if(type == kTrackAODCuts || type==kTrackAODQualityCuts){
 
-	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))   continue;
+	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask))) continue;
  
         //new cut on TPC
         if(fTPCCutMode==kPIDN && !AliIDFFUtils::TPCCutPIDN(tr)){
