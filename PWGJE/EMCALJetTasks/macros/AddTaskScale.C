@@ -38,7 +38,7 @@ AliAnalysisTaskScale* AddTaskScale(
     pcont->SetParticleEtaLimits(-0.7,0.7); // only accept tracks in the EMCal eta range
   }
   AliClusterContainer  *ccont = scaletask->AddClusterContainer(nClusters);
-  if(ccont) ccont->SetClusterPtCut(clusptcut);
+  if(ccont) ccont->SetClusPtCut(clusptcut);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
