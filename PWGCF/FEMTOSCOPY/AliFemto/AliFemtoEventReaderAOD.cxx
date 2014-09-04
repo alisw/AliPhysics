@@ -1156,9 +1156,20 @@ AliFemtoV0* AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0 )
     tFemtoV0->SetdedxPos(trackpos->GetTPCsignal());
     tFemtoV0->SetdedxNeg(trackneg->GetTPCsignal());
 
-    if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 )
+
+    Float_t probMisPos = 1.0;
+    Float_t probMisNeg = 1.0;
+
+    if (tFemtoV0->StatusPos() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
+      probMisPos = fAODpidUtil->GetTOFMismatchProbability(trackpos);
+    }
+    if (tFemtoV0->StatusNeg() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
+      probMisNeg = fAODpidUtil->GetTOFMismatchProbability(trackneg);
+    }
+
+    if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || probMisPos > 0.01)
     {
-      if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 )
+      if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 || probMisNeg > 0.01)
 	    {
 	      tFemtoV0->SetPosNSigmaTOFK(-1000);
 	      tFemtoV0->SetNegNSigmaTOFK(-1000);
@@ -1177,15 +1188,20 @@ AliFemtoV0* AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0 )
     }
     else
     {
-      tFemtoV0->SetPosNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kKaon));
-      tFemtoV0->SetNegNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kKaon));
-      tFemtoV0->SetPosNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kProton));
-      tFemtoV0->SetNegNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kProton));
-      tFemtoV0->SetPosNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kPion));
-      tFemtoV0->SetNegNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kPion));
-
+      if(trackpos->IsOn(AliESDtrack::kTOFpid)) {
+        tFemtoV0->SetPosNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kKaon));
+        tFemtoV0->SetPosNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kProton));
+        tFemtoV0->SetPosNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kPion));
+      }
+      if(trackneg->IsOn(AliESDtrack::kTOFpid)) {
+        tFemtoV0->SetNegNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kKaon));
+        tFemtoV0->SetNegNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kProton));
+        tFemtoV0->SetNegNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kPion));
+      }
       double TOFSignalPos = trackpos->GetTOFsignal();
       double TOFSignalNeg = trackneg->GetTOFsignal();
+      TOFSignalPos -= fAODpidUtil->GetTOFResponse().GetStartTime(trackpos->P());
+      TOFSignalNeg -= fAODpidUtil->GetTOFResponse().GetStartTime(trackneg->P());
       double pidPos[5];
       double pidNeg[5];
       trackpos->GetIntegratedTimes(pidPos);

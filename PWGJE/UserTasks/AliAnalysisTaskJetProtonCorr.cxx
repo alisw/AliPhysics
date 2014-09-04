@@ -7,6 +7,7 @@
 #include "TF1.h"
 #include "TFormula.h"
 #include "TRandom.h"
+#include "TSpline.h"
 
 // analysis framework
 #include "AliAnalysisManager.h"
@@ -64,6 +65,7 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fZvtx(0.),
   fPIDResponse(0x0),
   fEventPlaneAngle(5.),
+  fEventPlaneRes(0.),
   fEventPlaneAngleCheck(5.),
   fEventPlaneAngle3(5.),
   fPrimTrackArrayAss(0x0),
@@ -97,13 +99,18 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fAssPartPtMin(2.),
   fAssPartPtMax(4.),
   fTrgAngleToEvPlane(TMath::Pi() / 4.),
-  fToyMeanNoPart(1.),
+  fToyMeanNoPart(.5),
   fToyRadius(.8),
   fToySmearPhi(.2),
   fTrgJetPhiModCent(new TF1("jetphimodcent", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
   fTrgJetPhiModSemi(new TF1("jetphimodsemi", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
   fTrgHadPhiModCent(new TF1("hadphimodcent", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
-  fTrgHadPhiModSemi(new TF1("hadphimodsemi", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi()))
+  fTrgHadPhiModSemi(new TF1("hadphimodsemi", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
+  fTrgJetV2Cent(0.10),
+  fTrgJetV2Semi(0.10),
+  fTrgHadV2Cent(0.04),
+  fTrgHadV2Semi(0.10),
+  fSplineEventPlaneRes(0x0)
 {
   // default ctor
 
@@ -164,10 +171,10 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fCutsPrimTrg = new AliESDtrackCuts(*fCutsPrimAss);
 
   // azimuthal modulation for triggers
-  fTrgJetPhiModCent->SetParameter(0, .10);
-  fTrgJetPhiModSemi->SetParameter(0, .10);
-  fTrgHadPhiModCent->SetParameter(0, .04);
-  fTrgHadPhiModSemi->SetParameter(0, .10);
+  fTrgJetPhiModCent->SetParameter(0, fTrgJetV2Cent);
+  fTrgJetPhiModSemi->SetParameter(0, fTrgJetV2Semi);
+  fTrgHadPhiModCent->SetParameter(0, fTrgHadV2Cent);
+  fTrgHadPhiModSemi->SetParameter(0, fTrgHadV2Semi);
 
   // event mixing pool
   Double_t centralityBins[] = {
@@ -188,7 +195,7 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
     psiBins[iBin] = iBin * TMath::Pi()/nPsiBins;
 
   const Int_t poolSize = 10; // unused by current event pool implementation
-  const Int_t trackDepth = 10000; // number of tracks to maintain in mixing buffer
+  const Int_t trackDepth = 50000; // number of tracks to maintain in mixing buffer
   const Float_t trackDepthFraction = 0.1;
   const Int_t targetEvents = 1;
   for (Int_t iAss = 0; iAss <= kAssProt; ++iAss) {
@@ -545,8 +552,15 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
                100, -25., 25.,
                200, -100., 100.);
 
+  AddHistogram(ID(kHistNevMix), "no. of events for mixing;N_{ev};counts",
+	       20, -.5, 19.5,
+	       2, -.5, 1.5);
+
   AddHistogram(ID(kHistEvPlane), "default event plane;#Psi;counts",
                100, -0. * TMath::Pi(), 1. * TMath::Pi());
+  AddHistogram(ID(kHistEvPlaneRes), "resolution of default event plane;R^{2};centrality (%)",
+               100, -1., 1.,
+	       50, 0., 100.);
   AddHistogram(ID(kHistEvPlaneUsed), "default event plane;#Psi;counts",
                100, -0. * TMath::Pi(), 1. * TMath::Pi(),
 	       kClLast, -.5, kClLast-.5);
@@ -560,7 +574,10 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
   AddHistogram(ID(kHistEvPlaneCorr), "default - backup event plane;#Psi_{def};#Psi_{bak};event class",
                100, -0. * TMath::Pi(), 1. * TMath::Pi(),
                100, -0. * TMath::Pi(), 1. * TMath::Pi(),
-	       kClLast, -.5, kClLast-.5);
+  	       kClLast, -.5, kClLast-.5);
+  AddHistogram(ID(kHistEvPlaneCross), "default - backup event plane;R_{a} R_{b};centrality",
+               100, -1., 1.,
+	       50, 0., 100.);
   AddHistogram(ID(kHistEvPlaneCorrNoTrgJets), "event plane w/ and w/o trigger jets;#Psi_{full};#Psi_{notrgjets};event class",
                100, -0. * TMath::Pi(), 1. * TMath::Pi(),
                100, -0. * TMath::Pi(), 1. * TMath::Pi(),
@@ -732,8 +749,10 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
       FillH1(kHistStat, kStatSemiCentral);
 
     FillH1(kHistEvPlane, fEventPlaneAngle);
+    FillH2(kHistEvPlaneRes, fEventPlaneRes, fCentrality);
     FillH1(kHistEvPlaneCheck, fEventPlaneAngleCheck);
     FillH1(kHistEvPlane3, fEventPlaneAngle3);
+    FillH2(kHistEvPlaneCross, TMath::Cos(2. * (fEventPlaneAngle - fEventPlaneAngleCheck)), GetCentrality());
     for (Int_t iClass = 0; iClass < kClLast; ++iClass) {
       if (IsClass((Class_t) iClass)) {
         FillH2(kHistCentralityUsed, fCentrality, iClass);
@@ -784,22 +803,12 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
              fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton));
 
       FillH3(kHistPhiAssHadVsEvPlane, fEventPlaneAngle, trk->Phi(), fCentrality);
-      Float_t phiRel = trk->Phi() - fEventPlaneAngle;
-      if (gRandom->Rndm() > .5)
-	phiRel -= TMath::Pi();
-      if (phiRel < 0.)
-	phiRel += 2. * TMath::Pi();
-      if (phiRel < 0.)
-	AliError(Form("phiRel = %f less than zero, from phi = %f, psi = %f",
-		      phiRel, trk->Phi(), fEventPlaneAngle));
-      else if (phiRel > 2*TMath::Pi())
-	AliError(Form("phiRel = %f greater than 2pi, from phi = %f, psi = %f",
-		      phiRel, trk->Phi(), fEventPlaneAngle));
-      Float_t phiRel3 = trk->Phi() - fEventPlaneAngle3;
-      if (phiRel3 < 0.)
-	phiRel3 += 2. * TMath::Pi();
 
       if (AcceptAssoc(trk)) {
+	Float_t phiRel = GetPhiRel2(trk);
+	Float_t phiRel3 = trk->Phi() - fEventPlaneAngle3;
+	if (phiRel3 < 0.)
+	  phiRel3 += 2. * TMath::Pi();
 	assArray[kAssHad].Add(trk);
 	FillH1(kHistEtaPhiAssHad, trk->Phi(), trk->Eta());
 	FillH2(kHistPhiAssHadEvPlane, phiRel, fCentrality);
@@ -812,6 +821,8 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	       trk->Pt(),
 	       fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton),
 	       fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton));
+
+	// central events
 	if (IsClass(kClCentral)) {
 	  FillH3(kHistNsigmaTPCTOFUsedCentral,
 		 trk->P(),
@@ -834,6 +845,8 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	    }
 	  }
 	}
+
+	// semi-central events
 	if (IsClass(kClSemiCentral)) {
 	  FillH3(kHistNsigmaTPCTOFUsedSemiCentral,
 		 trk->P(),
@@ -856,6 +869,8 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	    }
 	  }
 	}
+
+	// protons
 	if (IsProton(trk)) {
 	  assArray[kAssProt].Add(trk);
 	  FillH1(kHistEtaPhiAssProt, trk->Phi(), trk->Eta());
@@ -999,7 +1014,8 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	  for (Int_t iTrack = 0; iTrack < nRefTracks; ++iTrack) {
 	    AliVTrack *track = (AliVTrack*) jet->GetRefTracks()->At(iTrack);
 	    
-	    if (fEventplane) {
+	    if (fEventplane && track &&
+		(track->GetID() > -1)) {
 	      TVector2 evplaneContrib(fEventplane->GetQContributionX(track),
 				      fEventplane->GetQContributionY(track));
 	      qVector -= evplaneContrib;
@@ -1037,6 +1053,8 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 
 	    // mixed event
 	    AliEventPool *pool = GetPool((Ass_t) iAss);
+	    if (pool)
+	      FillH2(kHistNevMix, pool->GetCurrentNEvents(), iAss);
 	    if (pool && pool->IsReady()) {
 	      AliDebug(1, Form("----- using pool: %i %i %i -----", iClass, iTrg, iAss));
 	      const Int_t nEvents = pool->GetCurrentNEvents();
@@ -1173,6 +1191,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
     }
     else {
       fEventPlaneAngle = fEventplane->GetEventplane("Q");
+      fEventPlaneRes   = TMath::Cos(2 * fEventplane->GetQsubRes());
       fEventPlaneAngleCheck = fEventplane->GetEventplane("V0", InputEvent());
       // use V0 event plane angle from flow task:
       // fEventPlaneAngleCheck = AliAnalysisTaskVnV0::GetPsi2V0A();
@@ -1277,7 +1296,58 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
   return eventGood;
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(const AliVTrack *trg)
+Float_t AliAnalysisTaskJetProtonCorr::GetPhiRel2(AliVParticle *part) const
+{
+  // calculate the angle to the event plane
+  // after removing the particle's own contribution to the Q vector
+
+  AliVTrack *track = dynamic_cast<AliVTrack*> (part);
+  AliAODJet *jet   = dynamic_cast<AliAODJet*> (part);
+
+  Float_t phiRel = -1.;
+
+  if (!fEventplane)
+    return phiRel;
+
+  const TVector2 *qVectorOrig = fEventplane->GetQVector();
+  if (!qVectorOrig)
+    return phiRel;
+
+  TVector2 qVector = *qVectorOrig;
+
+  // ??? protect against negative ID
+  // but should be handled properly by event plane
+  if (track && (track->GetID() > -1)) {
+    TVector2 evplaneContrib(fEventplane->GetQContributionX(track),
+			    fEventplane->GetQContributionY(track));
+    qVector -= evplaneContrib;
+  }
+  else if (jet) {
+    const Int_t nRefTracks = jet->GetRefTracks()->GetEntriesFast();
+    for (Int_t iTrack = 0; iTrack < nRefTracks; ++iTrack) {
+      AliVTrack *contrib = (AliVTrack*) jet->GetRefTracks()->At(iTrack);
+	    
+      if (contrib && (contrib->GetID() > -1)) {
+    	TVector2 evplaneContrib(fEventplane->GetQContributionX(contrib),
+    				fEventplane->GetQContributionY(contrib));
+    	qVector -= evplaneContrib;
+      }
+    }
+  }
+
+  // assign phiRel and map to [0, 2 pi)
+  phiRel = part->Phi() - (qVector.Phi() / 2.);
+  // if (gRandom->Rndm() > .5)
+  // 	phiRel -= TMath::Pi();
+  while (phiRel < 0.)
+    phiRel += TMath::TwoPi();
+  while (phiRel > TMath::TwoPi())
+    phiRel -= TMath::TwoPi();
+
+  return phiRel;
+}
+
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliVTrack *trg)
 {
   if (TMath::Abs(trg->Eta()) > fHadEtaMax)
     return kFALSE;
@@ -1294,14 +1364,14 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(const AliVTrack *trg)
 
   if (acceptPt) {
     Float_t phiRel = trg->Phi() - fEventPlaneAngle;
-    if (gRandom->Rndm() > .5)
-      phiRel -= TMath::Pi();
+    // if (gRandom->Rndm() > .5)
+    //   phiRel -= TMath::Pi();
     if (phiRel < 0.)
       phiRel += 2. * TMath::Pi();
     Float_t phiRel3 = trg->Phi() - fEventPlaneAngle3;
     if (phiRel3 < 0.)
       phiRel3 += 2. * TMath::Pi();
-    FillH2(kHistPhiTrgHadEvPlane, phiRel, fCentrality);
+    FillH2(kHistPhiTrgHadEvPlane, GetPhiRel2(trg), fCentrality);
     FillH2(kHistPhiTrgHadEvPlane3, phiRel3, fCentrality);
   }
 
@@ -1329,7 +1399,7 @@ AliVTrack* AliAnalysisTaskJetProtonCorr::GetLeadingTrack(const AliAODJet *jet) c
   return (AliAODTrack*) jet->GetRefTracks()->At(iLeadingTrack);
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(const AliAODJet *trg)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliAODJet *trg)
 {
   // restrict eta
   if (TMath::Abs(trg->Eta()) > fTrgJetEtaMax)
@@ -1362,14 +1432,14 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(const AliAODJet *trg)
     // store the azimuthal distribution relative to the event plane
     // for the jets in the pt range of interest
     Float_t phiRel = trg->Phi() - fEventPlaneAngle;
-    if (gRandom->Rndm() > .5)
-      phiRel -= TMath::Pi();
+    // if (gRandom->Rndm() > .5)
+    //   phiRel -= TMath::Pi();
     if (phiRel < 0.)
       phiRel += 2. * TMath::Pi();
     Float_t phiRel3 = trg->Phi() - fEventPlaneAngle3;
     if (phiRel3 < 0.)
       phiRel3 += 2. * TMath::Pi();
-    FillH2(kHistPhiTrgJetEvPlane, phiRel, fCentrality);
+    FillH2(kHistPhiTrgJetEvPlane, GetPhiRel2(trg), fCentrality);
     FillH2(kHistPhiTrgJetEvPlane3, phiRel3, fCentrality);
   }
 
@@ -1516,11 +1586,13 @@ Bool_t AliAnalysisTaskJetProtonCorr::Correlate(CorrType_t corr, Class_t cl, Ev_t
   while (TObject *assObj = assIter()) {
     if (dynamic_cast<AliVParticle*> (assObj)) {
       AliVParticle *assPart = (AliVParticle*) assObj;
-      histCorr->Ass(assPart->Phi(), assPart->Eta(), weight);
+      histCorr->Ass(assPart->Phi(), assPart->Eta(),
+		    assPart->Pt() > 0. ? (assPart->Charge() / 3.) / assPart->Pt() : 1.e-4,
+		    weight);
     }
     else if (dynamic_cast<TLorentzVector*> (assObj)) {
       TLorentzVector *assVec = (TLorentzVector*) assObj;
-      histCorr->Ass(assVec->Phi(), assVec->Eta(), weight);
+      histCorr->Ass(TVector2::Phi_0_2pi(assVec->Phi()), assVec->Eta(), 0., weight);
     }
   }
 
@@ -1528,7 +1600,9 @@ Bool_t AliAnalysisTaskJetProtonCorr::Correlate(CorrType_t corr, Class_t cl, Ev_t
   while (TObject *trgObj = trgIter()) {
     if (AliVParticle *trgPart = dynamic_cast<AliVParticle*> (trgObj)) {
       // count the trigger
-      histCorr->Trigger(trgPart->Phi(), trgPart->Eta(), weight);
+      histCorr->Trigger(trgPart->Phi(), trgPart->Eta(),
+			trgPart->Pt() > 0. ? (trgPart->Charge() / 3.) / trgPart->Pt() : 1.e-4,
+			weight);
 
       // loop over associates
       assIter.Reset();
@@ -1544,7 +1618,9 @@ Bool_t AliAnalysisTaskJetProtonCorr::Correlate(CorrType_t corr, Class_t cl, Ev_t
     }
     else if (TLorentzVector *trgVec = dynamic_cast<TLorentzVector*> (trgObj)) {
       // count the trigger
-      histCorr->Trigger(trgVec->Phi(), trgVec->Eta(), weight);
+      histCorr->Trigger(TVector2::Phi_0_2pi(trgVec->Phi()), trgVec->Eta(),
+			0.,
+			weight);
 
       // loop over associates
       assIter.Reset();
@@ -1584,10 +1660,24 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
 						    TCollection *assProtHadArray,
 						    Float_t pFraction)
 {
-  // generate random direction
-
   const Int_t nPart = gRandom->Poisson(fToyMeanNoPart);
 
+  // overcompensate modulation for event plane resolution
+  if (fSplineEventPlaneRes) {
+    fTrgJetPhiModCent->SetParameter(0, fTrgJetV2Cent / fSplineEventPlaneRes->Eval(GetCentrality()));
+    fTrgJetPhiModSemi->SetParameter(0, fTrgJetV2Semi / fSplineEventPlaneRes->Eval(GetCentrality()));
+    fTrgHadPhiModCent->SetParameter(0, fTrgHadV2Cent / fSplineEventPlaneRes->Eval(GetCentrality()));
+    fTrgHadPhiModSemi->SetParameter(0, fTrgHadV2Semi / fSplineEventPlaneRes->Eval(GetCentrality()));
+  }
+  else {
+    printf("no event plane resolution spline available\n");
+    fTrgJetPhiModCent->SetParameter(0, fTrgJetV2Cent);
+    fTrgJetPhiModSemi->SetParameter(0, fTrgJetV2Semi);
+    fTrgHadPhiModCent->SetParameter(0, fTrgHadV2Cent);
+    fTrgHadPhiModSemi->SetParameter(0, fTrgHadV2Semi);
+  }
+
+  // generate random direction
   Float_t trgJetEta = gRandom->Uniform(-fTrgJetEtaMax, fTrgJetEtaMax);
   Float_t trgJetPhi = 0.;
   do {
@@ -1750,6 +1840,8 @@ AliAnalysisTaskJetProtonCorr::AliHistCorr::AliHistCorr(TString name, TList *outp
   fHistCorrAvgEtaPhi(0x0),
   fHistCorrTrgEtaPhi(0x0),
   fHistCorrAssEtaPhi(0x0),
+  fHistCorrTrgEtaPhiQpt(0x0),
+  fHistCorrAssEtaPhiQpt(0x0),
   fHistDphiLo(-TMath::Pi() / 2.),
   fHistDphiNbins(120),
   fHistDetaNbins(120)
@@ -1759,37 +1851,50 @@ AliAnalysisTaskJetProtonCorr::AliHistCorr::AliHistCorr(TString name, TList *outp
   fHistStat = new TH1F(Form("%s_stat", name.Data()), "statistics",
 		       1, .5, 1.5);
 
-  fHistCorrPhi = new TH1F(Form("%s_phi", name.Data()), ";#Delta#phi",
+  fHistCorrPhi = new TH1F(Form("%s_phi", name.Data()), ";#Delta#varphi",
 			  fHistDphiNbins, fHistDphiLo, 2.*TMath::Pi() + fHistDphiLo);
   fHistCorrPhi->Sumw2();
-  // fHistCorrPhi2 = new TH2F(Form("%s_phi2", name.Data()), ";#phi_{trg};#phi_{ass}",
-  // 			  120, 0.*TMath::Pi(), 2.*TMath::Pi(),
-  // 			  120, 0.*TMath::Pi(), 2.*TMath::Pi());
-  // fHistCorrPhi2->Sumw2();
-  fHistCorrEtaPhi = new TH2F(Form("%s_etaphi", name.Data()), ";#Delta#phi;#Delta#eta",
+  fHistCorrPhi2 = new TH2F(Form("%s_phi2", name.Data()), ";#varphi_{trg};#varphi_{ass}",
+  			  120, 0.*TMath::Pi(), 2.*TMath::Pi(),
+  			  120, 0.*TMath::Pi(), 2.*TMath::Pi());
+  fHistCorrPhi2->Sumw2();
+  fHistCorrEtaPhi = new TH2F(Form("%s_etaphi", name.Data()), ";#Delta#varphi;#Delta#eta",
 			     fHistDphiNbins, fHistDphiLo, 2*TMath::Pi() + fHistDphiLo,
 			     fHistDetaNbins, -2., 2.);
   fHistCorrEtaPhi->Sumw2();
-  // fHistCorrAvgEtaPhi = new TH2F(Form("%s_avgetaphi", name.Data()), ";#Delta#phi;avg #eta",
-  // 				fHistDphiNbins, fHistDphiLo, 2*TMath::Pi() + fHistDphiLo,
-  // 				fHistDetaNbins, -2., 2.);
-  // fHistCorrAvgEtaPhi->Sumw2();
-  // fHistCorrTrgEtaPhi = new TH2F(Form("%s_trg_etaphi", name.Data()), ";#varphi;#eta",
-  // 				120, 0., 2*TMath::Pi(),
-  // 				120, -1., 1.);
-  // fHistCorrTrgEtaPhi->Sumw2();
-  // fHistCorrAssEtaPhi = new TH2F(Form("%s_ass_etaphi", name.Data()), ";#varphi;#eta",
-  // 				120, 0., 2*TMath::Pi(),
-  // 				120, -1., 1.);
-  // fHistCorrAssEtaPhi->Sumw2();
+  fHistCorrAvgEtaPhi = new TH2F(Form("%s_avgetaphi", name.Data()), ";#Delta#varphi;avg #eta",
+  				fHistDphiNbins, fHistDphiLo, 2*TMath::Pi() + fHistDphiLo,
+  				fHistDetaNbins, -2., 2.);
+  fHistCorrAvgEtaPhi->Sumw2();
+  fHistCorrTrgEtaPhi = new TH2F(Form("%s_trg_etaphi", name.Data()), ";#varphi;#eta",
+  				120, 0., 2*TMath::Pi(),
+  				120, -1., 1.);
+  fHistCorrTrgEtaPhi->Sumw2();
+  fHistCorrAssEtaPhi = new TH2F(Form("%s_ass_etaphi", name.Data()), ";#varphi;#eta",
+  				120, 0., 2*TMath::Pi(),
+  				120, -1., 1.);
+  fHistCorrAssEtaPhi->Sumw2();
+
+  // fHistCorrTrgEtaPhiQpt = new TH3F(Form("%s_trg_etaphi", name.Data()), ";#varphi;#eta;Q/p_{T}",
+  // 				   120, 0., 2*TMath::Pi(),
+  // 				   120, -1., 1.,
+  // 				   120, -1., 1.);
+  // fHistCorrTrgEtaPhiQpt->Sumw2();
+  // fHistCorrAssEtaPhiQpt = new TH3F(Form("%s_ass_etaphi", name.Data()), ";#varphi;#etaQ/p_{T}",
+  // 				   120, 0., 2*TMath::Pi(),
+  // 				   120, -1., 1.,
+  // 				   120, -1., 1.);
+  // fHistCorrAssEtaPhiQpt->Sumw2();
 
   fOutputList->Add(fHistStat);
   fOutputList->Add(fHistCorrPhi);
-  // fOutputList->Add(fHistCorrPhi2);
+  fOutputList->Add(fHistCorrPhi2);
   fOutputList->Add(fHistCorrEtaPhi);
-  // fOutputList->Add(fHistCorrAvgEtaPhi);
-  // fOutputList->Add(fHistCorrTrgEtaPhi);
-  // fOutputList->Add(fHistCorrAssEtaPhi);
+  fOutputList->Add(fHistCorrAvgEtaPhi);
+  fOutputList->Add(fHistCorrTrgEtaPhi);
+  fOutputList->Add(fHistCorrAssEtaPhi);
+  // fOutputList->Add(fHistCorrTrgEtaPhiQpt);
+  // fOutputList->Add(fHistCorrAssEtaPhiQpt);
 }
 
 AliAnalysisTaskJetProtonCorr::AliHistCorr::~AliHistCorr()

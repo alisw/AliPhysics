@@ -146,6 +146,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fMCLabelShift;               // if MC label > fMCLabelShift, MC label -= fMCLabelShift
   Int_t                       fNcentBins;                  // how many centrality bins
   Bool_t                      fNeedEmcalGeom;              // whether or not the task need the emcal geometry
+  Bool_t                      fIsEsd;                      //!whether it's an ESD analysis
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters

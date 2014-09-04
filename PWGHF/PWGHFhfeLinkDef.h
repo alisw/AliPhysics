@@ -96,6 +96,7 @@
 #pragma link C++ class  AliHFEreducedTrack+;
 #pragma link C++ class  AliHFEreducedMCParticle+;
 #pragma link C++ class  AliAnalysisTaskHFEQA+;
+#pragma link C++ class  AliAnalysisTaskHFEemcQA+;
 #pragma link C++ class  AliAnalysisTaskFlowITSTPCTOFQCSP+;
 
 #endif

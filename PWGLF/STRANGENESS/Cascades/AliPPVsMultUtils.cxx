@@ -68,7 +68,7 @@ AliPPVsMultUtils &AliPPVsMultUtils::operator=(const AliPPVsMultUtils &c)
 }
 
 //______________________________________________________________________
-Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliESDEvent *event, TString lMethod = "V0M")
+Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliESDEvent *event, TString lMethod)
 // Function to get multiplicity quantiles in ESDs. All methods would work 
 // with AliVEvent except GetPrimaryVertexSPD which exists in both ESD and AOD 
 // but not in the AliVEvent class; therefore two functions are included. 
@@ -136,7 +136,7 @@ Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliESDEvent *event, TString 
 }
 
 //______________________________________________________________________
-Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliAODEvent *event, TString lMethod = "V0M")
+Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliAODEvent *event, TString lMethod)
 // Carbon-copy version of ESD function (GetPrimaryVertexSPD won't work 
 // in the base class AliVEvent...FIXME) 
 {

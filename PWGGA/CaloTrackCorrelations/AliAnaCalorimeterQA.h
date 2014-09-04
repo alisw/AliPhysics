@@ -378,8 +378,9 @@ public:
   
   //Pure MC
 
-  enum mcTypes {kmcPhoton   = 0, kmcPhotonConv = 1, kmcPi0      = 2, kmcEta = 3,
-                kmcElectron = 4, kmcNeHadron   = 5, kmcChHadron = 6             };
+  enum mcTypes {kmcPhoton   = 0, kmcPi0        = 1, kmcEta = 2,
+                kmcElectron = 3, kmcPhotonConv = 4,
+                kmcNeHadron = 5, kmcChHadron   = 6             };
   
   TH2F *   fhRecoMCE[7][2]  ;                 //! E   generated particle vs reconstructed E
   TH2F *   fhRecoMCPhi[7][2] ;                //! phi generated particle vs reconstructed phi

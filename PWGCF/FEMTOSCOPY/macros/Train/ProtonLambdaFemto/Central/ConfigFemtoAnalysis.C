@@ -65,9 +65,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double psid = TMath::Pi()/6.;
 
   // Switches for QA analyses
-  int runmults[10] = {1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+  int runmults[10] = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0};
   int multbins[11] = {0.00001, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
-  int runch[10] = {1, 1, 1, 1, 1, 1, 1, 0, 0, 0};
+  int runch[10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
   const char *chrgs[10] = { "V0LL", "V0ALAL", "V0LAL", "V0PL", "V0APL", "V0PAL", "V0APAL","PP","PAP","APAP" };
 
   int runktdep = 0;
@@ -198,7 +198,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           dtc1etaphitpc[aniter]->SetParticleType(0);
           dtc1etaphitpc[aniter]->SetMaxDcaV0Daughters(0.4); //1.5 Jai, 0.6 //0.4
           dtc1etaphitpc[aniter]->SetMaxDcaV0(0.5); //5.0
-          dtc1etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.1); //0.01
+          dtc1etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.1,0.3); //0.01
+          dtc1etaphitpc[aniter]->SetMaxV0DecayLength(60);
           dtc1etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai //0.998
           dtc1etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0019,LambdaMass+0.0019);
 
@@ -218,7 +219,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           dtc2etaphitpc[aniter]->SetParticleType(1);
           dtc2etaphitpc[aniter]->SetMaxDcaV0Daughters(0.4); //1.5 Jai, 0.6
           dtc2etaphitpc[aniter]->SetMaxDcaV0(0.5);
-          dtc2etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.1);
+          dtc2etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.1,0.3);
+          dtc2etaphitpc[aniter]->SetMaxV0DecayLength(60);
           dtc2etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai
           dtc2etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0019,LambdaMass+0.0019);
 

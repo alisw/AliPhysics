@@ -273,12 +273,65 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	}
 	if(configIndex==102){
 		params[0] = 0;
-		task->SetEoverPCut(0.88,1.2);
+		task->SetEoverPCut(0.85,1.3);
 	}
 	if(configIndex==103){
 		params[0] = 0;
-		task->SetEoverPCut(0.90,1.2);
+		task->SetEoverPCut(0.86,1.3);
 	}
+	
+	//testing hadron contamination with other TPCsignal : -0.5
+	
+	if(configIndex==109){
+		params[0] = -0.5;
+		task->SetEoverPCut(0.76,1.2);
+	}
+	if(configIndex==110){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.78,1.2);
+	}
+	if(configIndex==111){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.80,1.2);
+	}
+	if(configIndex==112){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.82,1.2);
+	}
+	if(configIndex==113){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.83,1.2);
+	}
+	if(configIndex==114){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.84,1.2);
+	}
+	if(configIndex==115){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.85,1.2);
+	}
+	if(configIndex==116){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.86,1.2);
+	}
+	if(configIndex==117){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.85,1.3);
+	}
+	if(configIndex==118){
+		params[0] =  -0.5;
+		task->SetEoverPCut(0.86,1.3);
+	}
+	
+	//shower shape cut for E/p default
+	if(configIndex==119){
+		task->SetUseShowerShapeCut(kTRUE);
+			//task->SetM02Cut(0.0,0.3);
+		task->SetM20Cut(0.0,0.5);
+	}
+	
+	
+	
 	
 	
 	pid->ConfigureTPCdefaultCut(cutmodel,params,max); 

@@ -1051,6 +1051,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 					if (nameBin.CompareTo("")== 0){
 						TString nameHeader = ((TObjString*)((TList*)((AliConvEventCuts*)fEventCutArray->At(iCut))
 															->GetAcceptedHeader())->At(i))->GetString();
+// 						cout << nameHeader << endl;
 						hMCHeaders[iCut]->GetXaxis()->SetBinLabel(i+1,nameHeader.Data());
 					}
 				}

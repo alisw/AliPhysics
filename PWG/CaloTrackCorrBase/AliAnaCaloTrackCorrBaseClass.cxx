@@ -51,12 +51,10 @@ fCheckFidCut(0),              fCheckRealCaloAcc(0),
 fCheckCaloPID(0),             fRecalculateCaloPID(0), 
 fMinPt(0),                    fMaxPt(0),
 fPairTimeCut(200),            fTRDSMCovered(-1),
-fMultiBin(0),                 fNZvertBin(0),
-fNrpBin(0),                   fNCentrBin(0),
-fNmaxMixEv(0),                fDoOwnMix(0),                   
-fUseTrackMultBins(0),
-fMaxMulti(0),                 fMinMulti(0),
-fUseSelectEvent(kFALSE),      fMakePlots(kFALSE),
+fNZvertBin(0),                fNrpBin(0),
+fNCentrBin(0),                fNmaxMixEv(0),
+fDoOwnMix(0),                 fUseTrackMultBins(0),
+fMakePlots(kFALSE),
 fInputAODBranch(0x0),         fInputAODName(""),
 fOutputAODBranch(0x0),        fNewAOD(kFALSE),
 fOutputAODName(""),           fOutputAODClassName(""),
@@ -408,6 +406,25 @@ AliGenEventHeader *  AliAnaCaloTrackCorrBaseClass::GetMCGenEventHeader() const
 }
 
 
+//_________________________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetTrackMultiplicityBin() const
+{
+  // Track multiplicity bins
+  
+  //curCentrBin = (GetTrackMultiplicity()-1)/5;
+  //if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
+  Int_t trackMult = GetReader()->GetTrackMultiplicity();
+  
+  for(Int_t ibin = 0; ibin < GetNTrackMultBin()-1; ibin++)
+  {
+    if(trackMult >= fTrackMultBins[ibin] && trackMult < fTrackMultBins[ibin+1]) return ibin;
+  }
+  
+  printf("AliAnaCaloTrackCorrBaseClass::GetTrackMultiplicityBin() - Bin not found for track multiplicity %d\n",trackMult);
+  
+  return -1;
+}
+
 //________________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
 {
@@ -417,27 +434,8 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
   Int_t curCentrBin = 0;
   
   if(fUseTrackMultBins) // pp collisions
-  { // Track multiplicity bins
-    //curCentrBin = (GetTrackMultiplicity()-1)/5; 
-    //if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
-    Int_t trackMult = GetReader()->GetTrackMultiplicity();
-    if(trackMult<=5)
-      curCentrBin=8;
-    else if(trackMult<=10)
-      curCentrBin=7;
-    else if(trackMult<=15)
-      curCentrBin=6;
-    else if(trackMult<=20)
-      curCentrBin=5;
-    else if(trackMult<=30)
-      curCentrBin=4;
-    else if(trackMult<=40)
-      curCentrBin=3;
-    else if(trackMult<=55)
-      curCentrBin=2;
-    else if(trackMult<=70)
-      curCentrBin=1 ;
-    else curCentrBin=0 ;        
+  {
+    return GetTrackMultiplicityBin();
   }
   else // Set centrality based on centrality task, PbPb collisions
   {
@@ -455,14 +453,14 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
     }
     else
     {
-      curCentrBin = (Int_t)((GetEventCentrality()-minCent) * GetNCentrBin() / (maxCent-minCent)); 
+      curCentrBin = (Int_t)((GetEventCentrality()-minCent) * GetNCentrBin() / (maxCent-minCent));
       if(curCentrBin==GetNCentrBin()) curCentrBin = GetNCentrBin()-1;
-    }  
+    }
     
     if(GetDebug() > 0 )
       printf("AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() - %d, centrality %d, n bins %d, max bin from centrality %d\n",
-             curCentrBin, GetEventCentrality(), GetNCentrBin(), GetReader()->GetCentralityOpt());        
-  }  
+             curCentrBin, GetEventCentrality(), GetNCentrBin(), GetReader()->GetCentralityOpt());
+  }
   
   return curCentrBin;
   
@@ -562,12 +560,13 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   fRecalculateCaloPID  = kFALSE ;
   fMinPt               = 0.2  ; //Min pt in particle analysis
   fMaxPt               = 300. ; //Max pt in particle analysis
-  fMultiBin            = 1;
   fNZvertBin           = 1;
   fNrpBin              = 1;
-  fMaxMulti            = 1000;
-  fMinMulti            = 0;
-  fUseSelectEvent      = kFALSE ;
+  
+  fTrackMultBins[0] =  0;  fTrackMultBins[1] =  5;  fTrackMultBins[2] = 10;
+  fTrackMultBins[3] = 15;  fTrackMultBins[4] = 20;  fTrackMultBins[5] = 30;
+  fTrackMultBins[6] = 40;  fTrackMultBins[7] = 55;  fTrackMultBins[8] = 70;
+  for(Int_t ibin=9; ibin < 20; ibin++) fTrackMultBins[ibin] = 10000;
   
   //fReader    = new AliCaloTrackReader(); //Initialized in maker
   //fCaloUtils = new AliCalorimeterUtils();//Initialized in maker

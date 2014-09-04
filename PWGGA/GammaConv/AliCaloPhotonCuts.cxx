@@ -30,6 +30,7 @@
 #include "TF1.h"
 #include "AliStack.h"
 #include "AliAODConversionMother.h"
+#include "AliAODConversionPhoton.h"
 #include "TObjString.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -41,6 +42,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliPicoTrack.h"
+#include "AliEMCALRecoUtils.h"
 
 class iostream;
 
@@ -325,187 +327,48 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	TH1::AddDirectory(kTRUE);
 }
 
-/*
+
 ///________________________________________________________________________
-Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma){
+Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack){
    // MonteCarlo Photon Selection
 
-   if(!fMCStack)return kFALSE;
+	if(!fMCStack)return kFALSE;
 
-   if (particle->GetPdgCode() == 22){
+	if (particle->GetPdgCode() == 22){
 
-
-     if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) )
-         return kFALSE;
-      if(fEtaCutMin>-0.1){
-         if( particle->Eta() < (fEtaCutMin) && particle->Eta() > (-fEtaCutMin) )
-            return kFALSE;
-      }
-
-      if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
-         return kFALSE; // no photon as mothers!
-      }
-
-      if(particle->GetMother(0) >= fMCStack->GetNprimary()){
-         return kFALSE; // the gamma has a mother, and it is not a primary particle
-      }
-
-      if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
-
-      // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
-      TParticle* ePos = NULL;
-      TParticle* eNeg = NULL;
-
-      if(particle->GetNDaughters() >= 2){
-         for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
-            TParticle *tmpDaughter = fMCStack->Particle(daughterIndex);
-            if(tmpDaughter->GetUniqueID() == 5){
-               if(tmpDaughter->GetPdgCode() == 11){
-                  eNeg = tmpDaughter;
-               } else if(tmpDaughter->GetPdgCode() == -11){
-                  ePos = tmpDaughter;
-               }
-            }
-         }
-      }
-
-      if(ePos == NULL || eNeg == NULL){ // means we do not have two daughters from pair production
-         return kFALSE;
-      }
-
-      if(ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut){
-         return kFALSE; // no reconstruction below the Pt cut
-      }
-
-      if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ||
-          eNeg->Eta() > (fEtaCut) || eNeg->Eta() < (-fEtaCut) )
-         return kFALSE;
-
-      if(fEtaCutMin > -0.1){
-         if( (ePos->Eta() < (fEtaCutMin) && ePos->Eta() > (-fEtaCutMin)) ||
-             (eNeg->Eta() < (fEtaCutMin) && eNeg->Eta() > (-fEtaCutMin)) )
-            return kFALSE;
-      }
-
-      if(ePos->R()>fMaxR){
-         return kFALSE; // cuts on distance from collision point
-      }
-
-      if(abs(ePos->Vz()) > fMaxZ){
-         return kFALSE;  // outside material
-      }
-      if(abs(eNeg->Vz()) > fMaxZ){
-         return kFALSE;  // outside material
-      }
-
-      if( ePos->R() <= ((abs(ePos->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
-         return kFALSE;  // line cut to exclude regions where we do not reconstruct
-      } else if ( fEtaCutMin != -0.1 &&   ePos->R() >= ((abs(ePos->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
-         return kFALSE;
-      }
-
-      if( eNeg->R() <= ((abs(eNeg->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
-         return kFALSE; // line cut to exclude regions where we do not reconstruct
-      } else if ( fEtaCutMin != -0.1 &&   eNeg->R() >= ((abs(eNeg->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
-         return kFALSE;
-      }
-
-      return kTRUE;
-      //if(AcceptanceCut(particle,ePos,eNeg))return kTRUE;
-   }
-   return kFALSE;
+		if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
+		if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
+		
+		if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+			return kFALSE; // no photon as mothers!
+		}
+		if(particle->GetMother(0) >= fMCStack->GetNprimary()){
+			return kFALSE; // the gamma has a mother, and it is not a primary particle
+		}
+		return kTRUE;
+	}
+	return kFALSE;
 }
 ///________________________________________________________________________
-Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma){
-   // MonteCarlo Photon Selection
+Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray){
+	// MonteCarlo Photon Selection
 
-   if(!aodmcArray)return kFALSE;
-
-   if (particle->GetPdgCode() == 22){
-      if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) )
-         return kFALSE;
-      if(fEtaCutMin>-0.1){
-         if( particle->Eta() < (fEtaCutMin) && particle->Eta() > (-fEtaCutMin) )
-            return kFALSE;
-      }
-
-      if(particle->GetMother() > -1){
-         if((static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
-            return kFALSE; // no photon as mothers!
-         }
-         if(!(static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother()))->IsPrimary())){
-            return kFALSE; // the gamma has a mother, and it is not a primary particle
-         }
-      }
-
-      if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
-
-      // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
-      AliAODMCParticle* ePos = NULL;
-      AliAODMCParticle* eNeg = NULL;
-
-      if(particle->GetNDaughters() >= 2){
-         for(Int_t daughterIndex=particle->GetDaughter(0);daughterIndex<=particle->GetDaughter(1);daughterIndex++){
-            AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(aodmcArray->At(daughterIndex));
-            if(!tmpDaughter) continue;
-            if(((tmpDaughter->GetMCProcessCode())) == 5){    // STILL A BUG IN ALIROOT >>8 HAS TPO BE REMOVED AFTER FIX
-               if(tmpDaughter->GetPdgCode() == 11){
-                  eNeg = tmpDaughter;
-               } else if(tmpDaughter->GetPdgCode() == -11){
-                  ePos = tmpDaughter;
-               }
-            }
-         }
-      }
-
-      if(ePos == NULL || eNeg == NULL){ // means we do not have two daughters from pair production
-         return kFALSE;
-      }
-
-      if(ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut){
-         return kFALSE; // no reconstruction below the Pt cut
-      }
-
-      if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ||
-          eNeg->Eta() > (fEtaCut) || eNeg->Eta() < (-fEtaCut) )
-         return kFALSE;
-
-      if(fEtaCutMin > -0.1){
-         if( (ePos->Eta() < (fEtaCutMin) && ePos->Eta() > (-fEtaCutMin)) ||
-             (eNeg->Eta() < (fEtaCutMin) && eNeg->Eta() > (-fEtaCutMin)) )
-            return kFALSE;
-      }
-
-      Double_t rPos = sqrt( (ePos->Xv()*ePos->Xv()) + (ePos->Yv()*ePos->Yv()) );
-      Double_t rNeg = sqrt( (eNeg->Xv()*eNeg->Xv()) + (eNeg->Yv()*eNeg->Yv()) );
-
-      if(rPos>fMaxR){
-         return kFALSE; // cuts on distance from collision point
-      }
-      if(abs(ePos->Zv()) > fMaxZ){
-         return kFALSE;  // outside material
-      }
-      if(abs(eNeg->Zv()) > fMaxZ){
-         return kFALSE;  // outside material
-      }
-
-      if( rPos <= ((abs(ePos->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
-         return kFALSE;  // line cut to exclude regions where we do not reconstruct
-      } else if ( fEtaCutMin != -0.1 &&   rPos >= ((abs(ePos->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
-         return kFALSE;
-      }
-
-      if( rNeg <= ((abs(eNeg->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
-         return kFALSE; // line cut to exclude regions where we do not reconstruct
-      } else if ( fEtaCutMin != -0.1 &&   rNeg >= ((abs(eNeg->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
-         return kFALSE;
-      }
-
-      return kTRUE;
-      //if(AcceptanceCut(particle,ePos,eNeg))return kTRUE;
-   }
-   return kFALSE;
-}*/
+	if(!aodmcArray)return kFALSE;
+	if (particle->GetPdgCode() == 22){
+		if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
+		if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
+		if(particle->GetMother() > -1){
+			if((static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
+				return kFALSE; // no photon as mothers!
+			}
+			if(!(static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother()))->IsPrimary())){
+				return kFALSE; // the gamma has a mother, and it is not a primary particle
+			}
+		}
+		return kTRUE; // return in case of accepted gamma
+	}
+	return kFALSE;
+}
 
 
 
@@ -519,9 +382,9 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);
 	cutIndex++;
 
-	Double_t minR = 999.0;
+// 	Double_t minR = 999.0;
 	// get the minimum radius of tracks to cluster
-	if(fHistDistanceTrackToClusterBeforeQA || fHistDistanceTrackToClusterAfterQA){
+// 	if(fHistDistanceTrackToClusterBeforeQA || fHistDistanceTrackToClusterAfterQA){
 // 		Float_t pos[3];
 // 		cluster->GetPosition(pos);  // Get cluster position
 // 		
@@ -546,12 +409,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 // 			if(dr < minR)
 // 				minR = dr;
 // 		}//loop over tracks
-	}
+// 	}
 	
 	// Fill Histos before Cuts
 	if(fHistClusterTimevsEBeforeQA) fHistClusterTimevsEBeforeQA->Fill(cluster->GetTOF(), cluster->E());
 // 	if(fHistExoticCellBeforeQA) fHistExoticCellBeforeQA->Fill(cluster->E(), );
-	if(fHistDistanceTrackToClusterBeforeQA) fHistDistanceTrackToClusterBeforeQA->Fill(minR);
+// 	if(fHistDistanceTrackToClusterBeforeQA) fHistDistanceTrackToClusterBeforeQA->Fill(minR);
 	if(fHistEnergyOfClusterBeforeQA) fHistEnergyOfClusterBeforeQA->Fill(cluster->E());
 	if(fHistNCellsBeforeQA) fHistNCellsBeforeQA->Fill(cluster->GetNCells());
 	if(fHistM02BeforeQA) fHistM02BeforeQA->Fill(cluster->GetM02());
@@ -569,45 +432,45 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	cutIndex++; //2, next cut
 
 	// Minimum distance to track
-	if (fUseDistTrackToCluster){
- 		Float_t pos[3];
- 		cluster->GetPosition(pos);  // Get cluster position
- 		TVector3 cp(pos);
- 		int NtrMatched = 0;
- 		NtrMatched = cluster->GetNTracksMatched();
-		fHistNMatchedTracks->Fill(NtrMatched);
- 		if(NtrMatched > 0){
-			//loop over tracks for QA
-			TList *l = event->GetList();
-			TClonesArray *tracks = dynamic_cast<TClonesArray*>(l->FindObject("Tracks"));
-			
-			Double_t dphi = 999.0;
-			Double_t deta = 999.0;
-			Double_t dr2 = 999.0;
-
-			for(int itrack = 0; itrack < NtrMatched; itrack++){
-				AliVTrack *trackcluster = NULL;
-				trackcluster = static_cast<AliVTrack*>(tracks->At(itrack));
-				if (! trackcluster) {
-				AliError(Form("Couldn't get ESD track %d\n", itrack));
-				continue;
-				}
-				AliPicoTrack::GetEtaPhiDiff(trackcluster, cluster, dphi, deta);
-				dr2 = dphi*dphi + deta+deta;
-				//cout << dr << endl;
-				if(dr2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
-		//        if(dphi < fMinDistTrackToCluster || deta < fMinDistTrackToCluster){
-				if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //2
-				return kFALSE;
-				}
-				
-			}//loop over tracks
-		}
-//		if(cluster->GetEmcCpvDistance() < fMinDistTrackToCluster){
-//			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //2
-//			return kFALSE;
-//		}
-	}
+// 	if (fUseDistTrackToCluster){
+//  		Float_t pos[3];
+//  		cluster->GetPosition(pos);  // Get cluster position
+//  		TVector3 cp(pos);
+//  		int NtrMatched = 0;
+//  		NtrMatched = cluster->GetNTracksMatched();
+// 		fHistNMatchedTracks->Fill(NtrMatched);
+//  		if(NtrMatched > 0){
+// 			//loop over tracks for QA
+// 			TList *l = event->GetList();
+// 			TClonesArray *tracks = dynamic_cast<TClonesArray*>(l->FindObject("Tracks"));
+// 			
+// 			Double_t dphi = 999.0;
+// 			Double_t deta = 999.0;
+// 			Double_t dr2 = 999.0;
+// 
+// 			for(int itrack = 0; itrack < NtrMatched; itrack++){
+// 				AliVTrack *trackcluster = NULL;
+// 				trackcluster = static_cast<AliVTrack*>(tracks->At(itrack));
+// 				if (! trackcluster) {
+// 				AliError(Form("Couldn't get ESD track %d\n", itrack));
+// 				continue;
+// 				}
+// 				AliPicoTrack::GetEtaPhiDiff(trackcluster, cluster, dphi, deta);
+// 				dr2 = dphi*dphi + deta+deta;
+// 				//cout << dr << endl;
+// 				if(dr2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
+// 		//        if(dphi < fMinDistTrackToCluster || deta < fMinDistTrackToCluster){
+// 				if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //2
+// 				return kFALSE;
+// 				}
+// 				
+// 			}//loop over tracks
+// 		}
+// //		if(cluster->GetEmcCpvDistance() < fMinDistTrackToCluster){
+// //			if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex); //2
+// //			return kFALSE;
+// //		}
+// 	}
 	cutIndex++;//3, next cut
 
 	// exotic cell cut --IMPLEMENT LATER---
@@ -686,8 +549,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	if(fHistClusterEtavsPhiAfterQA) fHistClusterEtavsPhiAfterQA->Fill(phiCluster,etaCluster);
 	if(fHistClusterTimevsEAfterQA) fHistClusterTimevsEAfterQA->Fill(cluster->GetTOF(), cluster->E());
 // 	if(fHistExoticCellAfterQA) fHistExoticCellAfterQA->Fill(cluster->E(), );
-	if(fHistDistanceTrackToClusterAfterQA) fHistDistanceTrackToClusterAfterQA->Fill(minR);
-	if(fHistDistanceTrackToClusterAfterQA) fHistDistanceTrackToClusterAfterQA->Fill(cluster->GetEmcCpvDistance());
+// 	if(fHistDistanceTrackToClusterAfterQA) fHistDistanceTrackToClusterAfterQA->Fill(minR);
 	if(fHistEnergyOfClusterAfterQA) fHistEnergyOfClusterAfterQA->Fill(cluster->E());
 	if(fHistNCellsAfterQA) fHistNCellsAfterQA->Fill(cluster->GetNCells());
 	if(fHistM02AfterQA) fHistM02AfterQA->Fill(cluster->GetM02());
@@ -800,6 +662,82 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event)
 	
 	return kTRUE;
 }
+
+Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event ){
+
+	if (!fUseDistTrackToCluster) return kFALSE;
+	
+	AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(event);
+	AliAODEvent *aodev = 0;
+	if (!esdev) {
+		aodev = dynamic_cast<AliAODEvent*>(event);
+		if (!aodev) {
+			AliError("Task needs AOD or ESD event, returning");
+			return kFALSE;
+		}
+	}
+
+// 	cout << "Got the event" << endl; 
+	
+	Double_t vertex[3] = {0};
+	event->GetPrimaryVertex()->GetXYZ(vertex);
+	// TLorentzvector with cluster
+	TLorentzVector clusterVector;
+	cluster->GetMomentum(clusterVector,vertex);
+	Double_t etaCluster = clusterVector.Eta();
+	Double_t phiCluster = clusterVector.Phi();
+
+	Bool_t matched = kFALSE;
+	for (Int_t i = 0; i < 2; i++){
+		Int_t tracklabel = convPhoton->GetLabel(i);
+		AliVTrack *inTrack = 0x0;	
+		if(esdev) {
+			if(tracklabel > event->GetNumberOfTracks() ) continue;
+			inTrack = esdev->GetTrack(tracklabel);
+		} else {
+			if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
+				inTrack = dynamic_cast<AliVTrack*>(event->GetTrack(tracklabel));	
+			} else {
+				for(Int_t ii=0; ii<event->GetNumberOfTracks(); ii++) {
+					inTrack = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
+					if(inTrack){
+						if(inTrack->GetID() == tracklabel) {
+							continue;
+						}
+					}
+				}
+			}
+		}
+// 		cout << "found track " << endl;
+// 		AliVTrack *outTrack = 0x00;
+// 		if (esdev)
+// 			outTrack = new AliESDtrack(*((AliESDtrack*)inTrack));
+// 		else
+// 			outTrack = new AliAODTrack(*((AliAODTrack*)inTrack));
+
+		
+
+		Bool_t propagated = AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(inTrack,440, 0.000510999,20,0.05);
+		if (propagated){
+// 			cout << "Track "<< i  << "\t"<< inTrack->GetTrackPhiOnEMCal() << "\t" << inTrack->GetTrackEtaOnEMCal() << endl;
+// 			cout << "Cluster " << phiCluster << "\t" << etaCluster << endl;
+			Double_t dPhi = abs(phiCluster-inTrack->GetTrackPhiOnEMCal());
+			Double_t dEta = abs(etaCluster-inTrack->GetTrackEtaOnEMCal());
+			
+			Double_t dR2 = dPhi*dPhi + dEta+dEta;
+// 			cout << "distance to cluster \t" << sqrt(dR2) << endl;
+			if (fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(sqrt(dR2));	
+			if(dR2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
+				matched = kTRUE;
+				if (fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(sqrt(dR2));	
+			}
+		} 
+	}	
+	return matched;
+}
+
+//____________________________________________________________________________________________
+
 
 ///________________________________________________________________________
 Bool_t AliCaloPhotonCuts::UpdateCutString() {
@@ -1195,8 +1133,41 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
 		break;
 	case 1: 
 		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
-		fMinDistTrackToCluster=5; 
+		fMinDistTrackToCluster=0.04; 
 		break;
+	case 2: 
+		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
+		fMinDistTrackToCluster=0.05; 
+		break;
+	case 3: 
+		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
+		fMinDistTrackToCluster=0.1; 
+		break;
+	case 4: 
+		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
+		fMinDistTrackToCluster=0.13; 
+		break;
+	case 5: 
+		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
+		fMinDistTrackToCluster=0.15; 
+		break;
+	case 6: 
+		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
+		fMinDistTrackToCluster=0.2; 
+		break;
+	case 7: 
+		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
+		fMinDistTrackToCluster=0.3; 
+		break;
+	case 8: 
+		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
+		fMinDistTrackToCluster=0.4; 
+		break;
+	case 9: 
+		if (!fUseDistTrackToCluster) fUseDistTrackToCluster=1;
+		fMinDistTrackToCluster=0.5; 
+		break;
+
 	default:
 		AliError(Form("Track Matching Cut not defined %d",trackMatching));
 		return kFALSE;

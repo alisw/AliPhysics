@@ -30,4 +30,18 @@ void loadlibPWGJE()
 
   gSystem->Load("libPWGJE");
   gSystem->Load("libPWGJEStrangenessInJets");
+
+  // EMCAL jet framework
+  gSystem->Load("libTENDER.so");
+  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libPWGTools.so");
+  gSystem->Load("libCDB.so");
+  gSystem->Load("libProof.so");
+  gSystem->Load("libfastjetplugins.so");
+  gSystem->Load("libfastjettools.so");
+  gSystem->Load("libfastjetcontribfragile.so");
+  gSystem->Load("libRAWDatabase.so");
+  gSystem->Load("libSTEER.so");
+  gSystem->Load("libPWGEMCAL.so");
+  gSystem->Load("libPWGJEEMCALJetTasks.so");
 }

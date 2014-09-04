@@ -48,8 +48,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate);
 		void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
 		void ProcessTruePhotonCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
-		void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
-		void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
+		void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched);
+		void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched);
 		
 		// switches for additional analysis streams or outputs
 		void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
@@ -80,10 +80,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 			fnCuts = nCuts;
 			fMesonCutArray = CutArray;
 		}
-
-		// emcal functions
-		Double_t GetMaxCellEnergy(const AliVCluster *c) const { Short_t id=-1; return GetMaxCellEnergy(c,id); }
-		Double_t GetMaxCellEnergy(const AliVCluster *c, Short_t &id) const;
 
 		// BG HandlerSettings
 		void CalculateBackground();
@@ -157,6 +153,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 											// 6: primary gamma
 		//histograms for mesons reconstructed quantities
 		TH2F 								**fHistoMotherInvMassPt;			//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
+		TH2F 								**fHistoMotherMatchedInvMassPt;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
 		THnSparseF 							**fSparseMotherInvMassPtZM;			//! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
 		TH2F 								**fHistoMotherBackInvMassPt;		//! array of histogram with BG for mixed event photon pairs, inv Mass, pt
 		THnSparseF 							**fSparseMotherBackInvMassPtZM;		//! array of THnSparseF with BG for same event photon pairs, inv Mass, pt
@@ -315,19 +312,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		Int_t 								fDoClusterQA;						// flag for cluster QA
 		Bool_t 								fIsFromMBHeader;					// flag for MC headers
 		Bool_t 								fIsMC;								// flag for MC information
-
-
-		// cluster cut variables
-		Double_t 							fMinE;
-		Int_t 								fNminCells;
-		Double_t 							fEMCm02cut;
-		//double 							fMinErat = 0;
-		//double 							fMinEcc = 0;
-
-		
-		//  TString							 fClusName;							// cluster branch name (def="")
-		//  const TObjArray					*fRecPoints;						// pointer to rec points (AliAnalysisTaskEMCALClusterizeFast)
-		//  const TClonesArray				*fDigits;							// pointer to digits     (AliAnalysisTaskEMCALClusterizeFast)
 
 	private:
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
