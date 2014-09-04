@@ -256,6 +256,8 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
       
       Int_t nCandidates = fCandidateTracks->GetEntriesFast();
       for (Int_t iCandidate=0; iCandidate<nCandidates; iCandidate++) {
+
+	if (!(fCandidateTracks->UncheckedAt(iCandidate))) continue;
 	fCurrentTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iCandidate);
 
 	// if the old track is compatible with the new cluster, the track is updated and inserted as new track in the array 
@@ -298,6 +300,7 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
 
     for (Int_t iFinalCandidate=0; iFinalCandidate<nFinalTracks; iFinalCandidate++) {
       
+      if (!(fCandidateTracks->UncheckedAt(iFinalCandidate))) continue;
       AliMuonForwardTrack *finalTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iFinalCandidate);
       Int_t nMFTClusters  = finalTrack->GetNMFTClusters();
 
