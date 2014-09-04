@@ -57,7 +57,8 @@ namespace EMCalTriggerPtAnalysis {
                 		fHistos(NULL),
                 		fListTrackCuts(NULL),
                 		fEtaRange(),
-                		fPtRange()
+                		fPtRange(),
+                		fSwapEta(kFALSE)
 	{
 		/*
 		 * Dummy constructor, initialising the values with default (NULL) values
@@ -174,6 +175,7 @@ namespace EMCalTriggerPtAnalysis {
 				fHistos->CreateTH2(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), pileupaxis, zvertexBinning);
 				// Create track-based histogram
 				fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 6, trackaxes);
+				fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 6, trackaxes);
 				// Create cluster-based histogram (Uncalibrated and calibrated clusters)
 				fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 3, clusteraxes);
 				fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 3, clusteraxes);
@@ -525,10 +527,14 @@ namespace EMCalTriggerPtAnalysis {
 		 */
 		double etasign = fSwapEta ? -1. : 1.;
         double data[6] = {track->Pt(), etasign * track->Eta(), track->Phi(), vz, 0, static_cast<double>(cut)};
-		char histname[1024];
+		char histname[1024], histnameAcc[1024];
 		sprintf(histname, "hTrackHist%s", trigger);
+		sprintf(histnameAcc, "hTrackInAcceptanceHist%s", trigger);
 		try{
 			fHistos->FillTHnSparse(histname, data);
+			if(track->IsEMCAL()){
+				fHistos->FillTHnSparse(histnameAcc, data);
+			}
 		} catch (HistoContainerContentException &e){
 			std::stringstream errormessage;
 			errormessage << "Filling of histogram failed: " << e.what();
@@ -538,6 +544,9 @@ namespace EMCalTriggerPtAnalysis {
 			data[4] = 1;
 			try{
 				fHistos->FillTHnSparse(histname, data);
+				if(track->IsEMCAL()){
+					fHistos->FillTHnSparse(histnameAcc, data);
+				}
 			} catch (HistoContainerContentException &e){
 				std::stringstream errormessage;
 				errormessage << "Filling of histogram failed: " << e.what();
