@@ -190,6 +190,7 @@ Bool_t AliJetFastSimulation::Run()
       fUseDiceEfficiency = 0;
   }
 
+  fTracksOut->Delete();
   SimulateTracks();
   return kTRUE;
 }
