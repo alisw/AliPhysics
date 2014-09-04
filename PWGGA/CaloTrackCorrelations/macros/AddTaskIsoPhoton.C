@@ -247,13 +247,13 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
     //reader->SwitchOnConstrainTrackToVertex();
     
 //    if(kYears>2010)
-    {
+//    {
       //Hybrids 2011
       AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
       reader->SetTrackCuts(esdTrackCuts);
-      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
-      reader->SetTrackComplementaryCuts(esdTrackCuts2);
-    }
+//      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
+//      reader->SetTrackComplementaryCuts(esdTrackCuts2);
+//    }
 //    else
 //    {
 //      //Hybrids 2010

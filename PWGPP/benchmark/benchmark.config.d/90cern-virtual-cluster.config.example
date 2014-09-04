@@ -21,3 +21,11 @@ reconstructInTemporaryDir=2
 
 # Never log to final destination: copy log file at the end instead
 logToFinalDestination=1
+
+# Copy input files into each job's workspace instead of symlinking: needed if
+# we are accessing files on a non-mounted filesystem (e.g. root://...)
+copyInputData=1
+
+# Tell xrdcp where to find the proxy and valid CAs
+export X509_CERT_DIR='/cvmfs/grid.cern.ch/etc/grid-security/certificates'
+export X509_USER_PROXY='/etc/eos-proxy'

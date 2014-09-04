@@ -47,6 +47,7 @@
 
 #pragma link C++ class AliAnalysisNetParticleBase+;
 #pragma link C++ class AliAnalysisNetParticleDCA+;
+#pragma link C++ class AliAnalysisNetParticleQA+;
 #pragma link C++ class AliAnalysisNetParticleDistribution+;
 #pragma link C++ class AliAnalysisNetParticleEffCont+;
 #pragma link C++ class AliAnalysisNetParticleHelper+;

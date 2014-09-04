@@ -30,7 +30,7 @@ AliAnalysisTaskJetMassResponseDet* AddTaskJetMassResponseDet(const char * njetsP
   AliAnalysisTaskJetMassResponseDet *task = new AliAnalysisTaskJetMassResponseDet(wagonName.Data());
 
   task->SetNCentBins(1);
-  task->SetVzRange(-10.,10.);
+  //  task->SetVzRange(-10.,10.);
 
   task->SetJetContainerPart(0);
   task->SetJetContainerDet(1);

@@ -226,7 +226,7 @@ Bool_t AliAnalysisTaskEmcalJetTagger::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
 
-  MatchJetsGeo(fContainerBase,fContainerTag,0,0.3,2);
+  MatchJetsGeo(fContainerBase,fContainerTag,0,0.3,3);
 
   //  if(fJetTaggingMethod==kFraction)
 
@@ -315,7 +315,11 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
   //
   // Match the full jets to the corresponding charged jets
   // Translation of AliAnalysisHelperJetTasks::GetClosestJets to AliEmcalJet objects
-  // type: 0 = use acceptance cuts of container  1 = allow 0.1 one more for c2 in eta 2 = allow 0.1 more in eta and phi for c2
+  // type: 
+  //         0 = use acceptance cuts of container  
+  //         1 = allow 0.1 one more for c2 in eta 
+  //         2 = allow 0.1 more in eta and phi for c2
+  //         3 = allow 0.1 in eta and phi for both containers
 
   if(c1<0) c1 = fContainerBase;
   if(c2<0) c2 = fContainerTag;
@@ -346,7 +350,20 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
   iFlag.Reset(0);
 
 
+  AliJetContainer *cont1 = GetJetContainer(c1);
   AliJetContainer *cont2 = GetJetContainer(c2);
+  if(type==1)
+    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
+  else if(type==2) {
+    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
+    cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
+  } 
+  else if(type==3) {
+    cont1->SetJetEtaLimits(cont1->GetJetEtaMin()-0.1,cont1->GetJetEtaMax()+0.1);
+    cont1->SetJetPhiLimits(cont1->GetJetPhiMin()-0.1,cont1->GetJetPhiMax()+0.1);
+    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
+    cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
+  }
 
   // find the closest distance to the full jet
   for(int i = 0;i<nJets1;i++){
@@ -357,25 +374,10 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
     Float_t dist = maxDist;
     
     for(int j = 0;j <nJets2; j++){
-      AliEmcalJet *jet2 = 0x0;
-      if(type==0)
-	jet2 = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(j, c2));
-      else {
-	jet2 = static_cast<AliEmcalJet*>(GetJetFromArray(j, c2));
-	if(!jet2) continue;
-	if(type>0) {
-	  if(jet2->Eta()<(cont2->GetJetEtaMin()-0.1) || jet2->Eta()>(cont2->GetJetEtaMax()+0.1))
-	    continue;
-	  if(type==2) {
-	    if(jet2->Phi()<(cont2->GetJetPhiMin()-0.1) || jet2->Phi()>(cont2->GetJetPhiMax()+0.1))
-	      continue;
-	  }
-	}
-      }
-      if(!jet2)
-	continue;
+      AliEmcalJet *jet2 = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(j, c2));
+      if(!jet2) continue;
 
-      Double_t dR = GetDeltaR(jet1,jet2);
+      Double_t dR = jet1->DeltaR(jet2);//GetDeltaR(jet1,jet2);
       if(dR<dist && dR<maxDist){
 	faMatchIndex2[i]=j;
 	dist = dR;
@@ -391,31 +393,16 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
 
   // other way around
   for(int j = 0;j<nJets2;j++){
-    AliEmcalJet *jet2 = 0x0;
-    if(type==0)
-      jet2 = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(j, c2));
-    else {
-      jet2 = static_cast<AliEmcalJet*>(GetJetFromArray(j, c2));
-      if(!jet2) continue;;
-      if(type>0) {
-	if(jet2->Eta()<(cont2->GetJetEtaMin()-0.1) || jet2->Eta()>(cont2->GetJetEtaMax()+0.1))
-	  continue;
-	if(type==2) {
-	  if(jet2->Phi()<(cont2->GetJetPhiMin()-0.1) || jet2->Phi()>(cont2->GetJetPhiMax()+0.1))
-	    continue;
-	}
-      }
-    }
+    AliEmcalJet *jet2 = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(j, c2));
     if(!jet2)
       continue;
 
     Float_t dist = maxDist;
     for(int i = 0;i<nJets1;i++){
       AliEmcalJet *jet1 = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(i, c1));
-      if(!jet1)
-	continue;
+      if(!jet1)	continue;
 
-      Double_t dR = GetDeltaR(jet1,jet2); 
+      Double_t dR = jet1->DeltaR(jet2);//GetDeltaR(jet1,jet2); 
       if(dR<dist && dR<maxDist){
 	faMatchIndex1[j]=i;
         dist = dR;
@@ -438,7 +425,7 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
       // we have a uniqe correlation
       if(iFlag[i*nJets2+j]==3){
 	
-	Double_t dR = GetDeltaR(jet1,jet2); 
+	Double_t dR = jet1->DeltaR(jet2);//GetDeltaR(jet1,jet2); 
 	if(iDebug>1) Printf("closest jets %d  %d  dR =  %f",j,i,dR);
 	
 	if(fJetTaggingType==kTag) {

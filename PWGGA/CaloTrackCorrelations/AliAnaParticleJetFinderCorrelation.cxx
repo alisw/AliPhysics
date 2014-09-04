@@ -2486,7 +2486,7 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo(){
       Double_t eta=0.;
       Double_t phi=0.;
       Double_t mostPtCharged=0.;
-      Int_t mostmostPtChargedId=-1.;
+      Int_t mostmostPtChargedId=-1;
       std::vector<Int_t>::iterator it;
       for( it=jetParticleIndex.begin(); it!=jetParticleIndex.end(); ++it ){
 	AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(*it);

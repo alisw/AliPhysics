@@ -155,7 +155,11 @@ goCPass0()
 
   #runCPassX/C expects the raw chunk to be linked in the run dir
   #despite it being accessed by the full path
-  ln -s ${infile} ${runpath}/${chunkName}
+  if [[ $copyInputData == 0 ]]; then
+    ln -s ${infile} ${runpath}/${chunkName}
+  else
+    copyFileToLocal ${infile} ${runpath}/${chunkName}
+  fi
 
   #####MC
   if [[ -n ${generateMC} ]]; then
@@ -191,7 +195,7 @@ goCPass0()
   fi
   ######
   
-  if [[ ! -f ${inputList} && -z ${pretend} ]]; then
+  if [[ "${inputList}" == "${inputList%%://*}" && ! -f "${inputList}" && -z ${pretend} ]]; then
     touch ${doneFileTmp}
     echo "input file ${inputList} not found, exiting..." >> ${doneFileTmp}
     cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
@@ -256,7 +260,7 @@ goCPass0()
   fi
 
   #run CPass0
-  echo "${runpath}/runCPass0.sh ${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
+  echo "${runpath}/runCPass0.sh /${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
   if [[ -n ${pretend} ]]; then
     sleep ${pretendDelay}
     touch AliESDs.root
@@ -265,8 +269,8 @@ goCPass0()
     touch rec.log
     touch calib.log
   else
-    echo ./runCPass0.sh "${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
-    ./runCPass0.sh "${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
+    #caveat: in the local case, first arg must start with a slash
+    ./runCPass0.sh "/${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
   fi
   
   #move stuff to final destination
@@ -347,7 +351,7 @@ goCPass1()
   #Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
   export PRODUCTION_METADATA="OutputDir=cpass1"
 
-  if [[ ! -f ${inputList} && -z ${pretend} ]]; then
+  if [[ "${inputList}" == "${inputList%%://*}" && ! -f "${inputList}" && -z ${pretend} ]]; then
     touch ${doneFileTmp}
     echo "input file ${inputList} not found, exiting..." >> ${doneFileTmp}
     cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
@@ -399,7 +403,11 @@ goCPass1()
   fi
 
   #this is needed for runCPass1.sh
-  ln -s ${infile} ${runpath}/${chunkName}
+  if [[ $copyInputData == 0 ]]; then
+    ln -s ${infile} ${runpath}/${chunkName}
+  else
+    copyFileToLocal ${infile} ${runpath}/${chunkName}
+  fi
 
   logOutputDir=${runpath}
   [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
@@ -503,7 +511,7 @@ goCPass1()
 
   #run CPass1
   chmod u+x runCPass1.sh
-  echo "${runpath}/runCPass1.sh ${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
+  echo "${runpath}/runCPass1.sh /${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
   if [[ -n ${pretend} ]]; then
     sleep ${pretendDelay}
     touch AliESDs_Barrel.root
@@ -521,7 +529,8 @@ goCPass1()
     touch qa.log
     touch filtering.log FilterEvents_Trees.root
   else
-    ./runCPass1.sh "${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
+    #caveat: in the local case, first arg must start with a slash
+    ./runCPass1.sh "/${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
     
     [[ ! -f AliESDs_Barrel.root && -f Barrel/AliESDs.root ]] && mv Barrel/AliESDs.root AliESDs_Barrel.root
     [[ ! -f AliESDfriends_Barrel.root && -f Barrel/AliESDfriends.root ]] && mv Barrel/AliESDfriends.root AliESDfriends_Barrel.root
@@ -707,7 +716,7 @@ goMergeCPass0()
     /bin/ls -1 ${outputDir}/*/AliESDfriends_v1.root 2>/dev/null > ${calibrationFilesToMerge}
   fi
   
-  echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB ${ocdbStorage}"
+  echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy"
   if [[ -n ${pretend} ]]; then
     sleep ${pretendDelay}
     touch CalibObjects.root
@@ -719,7 +728,7 @@ goMergeCPass0()
     echo "some calibration" >> ./OCDB/TPC/Calib/TimeGain/someCalibObject_0-999999_cpass0.root
     echo "some calibration" >> ./OCDB/TPC/Calib/TimeDrift/otherCalibObject_0-999999_cpass0.root
   else
-    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" ${ocdbStorage} >> "mergeMakeOCDB.log"
+    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy >> "mergeMakeOCDB.log"
 
     #produce the calib trees for expert QA (dcsTime.root)
     goMakeLocalOCDBaccessConfig ./OCDB
@@ -895,8 +904,8 @@ goMergeCPass1()
     echo "/bin/ls -1 ${outputDir}/*/QAresults*.root | while read x; do echo ${x%/*}; done | sort | uniq > ${qaFilesToMerge}"
     /bin/ls -1 ${outputDir}/*/QAresults*.root | while read x; do echo ${x%/*}; done | sort | uniq > ${qaFilesToMerge}
   fi
-  
-  echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB ${ocdbStorage}"
+
+  echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy"
   if [[ -n ${pretend} ]]; then
     sleep ${pretendDelay}
     touch ocdb.log
@@ -910,7 +919,7 @@ goMergeCPass1()
     touch ${qaMergedOutputFileName}
     mkdir -p OCDB
   else
-    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" ${ocdbStorage}
+    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy
 
     #merge QA (and filtered trees)
     [[ -n ${AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
@@ -1025,9 +1034,9 @@ goSubmitMakeflow()
   #if which greadlink; then self=$(greadlink -f "${0}"); fi
   
   #for reference copy the setup to the output dir
-  cp ${self} ${commonOutputPath}
-  cp ${configFile} ${commonOutputPath}
-  cp ${inputFileList} ${commonOutputPath}
+  paranoidCp ${self} ${commonOutputPath}
+  paranoidCp ${configFile} ${commonOutputPath}
+  paranoidCp ${inputFileList} ${commonOutputPath}
 
   #submit - use makeflow if available, fall back to old stuff when makeflow not there
   if which makeflow; then
@@ -2238,6 +2247,7 @@ goMakeSummary()
   # will appear in the submission dir.
   #some defaults:
   log="summary.log"
+  jsonLog="summary.json"
   productionID="qa"
 
   configFile=${1}
@@ -2250,8 +2260,8 @@ goMakeSummary()
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
-  logTmp=${batchWorkingDirectory}/${log}
-  logDest=${commonOutputPath}/${log}
+  logTmp="${batchWorkingDirectory}/${log}"
+  jsonLogTmp="${batchWorkingDirectory}/${jsonLog}"
   
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
 
@@ -2260,8 +2270,7 @@ goMakeSummary()
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
 
   #copy some useful stuff
-  #and go to the commonOutputPath
-  cp ${configFile} ${commonOutputPath}
+  [ -f "${commonOutputPath}/${configFile}" ] || paranoidCp "${configFile}" "${commonOutputPath}"
 
   exec &> >(tee ${logTmp})
 
@@ -2273,6 +2282,9 @@ goMakeSummary()
   #summarize the stacktraces
   stackTraceTree ${commonOutputPath}/*/*/000*/cpass0/*/stacktrace* > stacktrace_cpass0.tree
   stackTraceTree ${commonOutputPath}/*/*/000*/cpass1/*/stacktrace* > stacktrace_cpass1.tree
+
+  # json header: open array of objects
+  echo '[' > "${jsonLogTmp}"
 
   echo total numbers for the production:
   echo
@@ -2366,7 +2378,37 @@ do
   statusQA=$(awk '/mergeMakeOCDB.log/ {print $2}' ${x/cpass0/cpass1} 2>/dev/null)
 
   printf "%s\t ocdb.log cpass0: %s\t ocdb.log cpass1: %s\tqa.log:%s\t| cpass0: rec:%s/%s stderr:%s/%s calib:%s/%s cpass1: rec:%s/%s stderr:%s/%s calib:%s/%s QAbarrel:%s/%s QAouter:%s/%s\n" ${runNumber} ${statusOCDBcpass0} ${statusOCDBcpass1} ${statusQA} ${statusCPass0[0]} ${statusCPass0[1]} ${statusCPass0[2]} ${statusCPass0[3]} ${statusCPass0[4]} ${statusCPass0[5]} ${statusCPass1[0]} ${statusCPass1[1]} ${statusCPass1[2]} ${statusCPass1[3]} ${statusCPass1[4]} ${statusCPass1[5]} ${statusCPass1[6]} ${statusCPass1[7]} ${statusCPass1[8]} ${statusCPass1[9]}
+
+  # produce json summary
+  statusOCDBcpass0json=false
+  statusOCDBcpass1json=false
+  statusQAjson=false
+  [[ "$statusOCDBcpass0" == 'OK' ]] && statusOCDBcpass0json=true
+  [[ "$statusOCDBcpass1" == 'OK' ]] && statusOCDBcpass1json=true
+  [[ "$statusQA" == 'OK' ]] && statusQAjson=true
+  cat >> "$jsonLogTmp" <<EOF
+  {
+    run: ${runNumber},
+    status: { ocdb_pass0: ${statusOCDBcpass0json}, ocdb_pass1: ${statusOCDBcpass1json}, qa: ${statusQAjson} },
+    cpass0: {
+      reco: { n_ok: ${statusCPass0[0]}, n_bad: ${statusCPass0[1]} },
+      stderr: { n_ok: ${statusCPass0[2]}, n_bad: ${statusCPass0[3]} },
+      calib: { n_ok: ${statusCPass0[4]}, n_bad: ${statusCPass0[5]} }
+    },
+    cpass1: {
+      reco: { n_ok: ${statusCPass1[0]}, n_bad: ${statusCPass1[1]} },
+      stderr: { n_ok: ${statusCPass1[2]}, n_bad: ${statusCPass1[3]} },
+      calib: { n_ok: ${statusCPass1[4]}, n_bad: ${statusCPass1[5]} },
+      qabarrel: { n_ok: ${statusCPass1[6]}, n_bad: ${statusCPass1[7]} },
+      qarouter: { n_ok: ${statusCPass1[8]}, n_bad: ${statusCPass1[9]} }
+    }
+  },
+EOF
+
 done
+
+  # json footer: close array of objects
+  echo ']' >> "${jsonLogTmp}"
 
   #make lists with output files - QA, trending, filtering and calibration
   ### wait for the merging of all runs to be over ###
@@ -2398,8 +2440,9 @@ done
   #if set, email the summary
   [[ -n ${MAILTO} ]] && cat ${logTmp} | mail -s "benchmark ${productionID} done" ${MAILTO}
 
-  # Copy log to destination (delete all on failure to signal error)
-  cp "$logTmp" "$logDest" || rm -f "$logTmp" "$logDest"
+  #copy logs to destination
+  paranoidCp "$logTmp" "${commonOutputPath}"
+  paranoidCp "$jsonLogTmp" "${commonOutputPath}"
   
   #copy output files
   exec &> >(tee fileCopy.log)
@@ -2556,6 +2599,7 @@ parseConfig()
   logToFinalDestination=1
   ALIROOT_FORCE_COREDUMP=1
   pretendDelay=0
+  copyInputData=0
 
   #first, source the config file
   if [ -f ${configFile} ]; then
@@ -2612,6 +2656,60 @@ aliroot()
   return 0
 }
 
+copyFileToLocal()
+(
+  #copies a single file to a local destination: the file may either come from
+  #a local filesystem or from a remote location (whose protocol must be
+  #supported)
+  #copy is "robust" and it is repeated some times in case of failure before
+  #giving up (1 is returned in that case)
+  src="$1"
+  dst="$2"
+  ok=0
+  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
+
+  proto="${src%%://*}"
+
+  echo "copy file to local dest started: $src -> $dst"
+
+  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
+
+    echo "...attempt $i of $maxCopyTries"
+    rm -f "$dst"
+
+    if [[ "$proto" == "$src" ]]; then
+      cp "$src" "$dst"
+    else
+      case "$proto" in
+        root)
+          xrdcp -f "$src" "$dst"
+        ;;
+        http)
+          curl -L "$src" -O "$dst"
+        ;;
+        *)
+          echo "protocol not supported: $proto"
+          return 2
+        ;;
+      esac
+    fi
+
+    if [ $? == 0 ] ; then
+      ok=1
+      break
+    fi
+
+  done
+
+  if [[ "$ok" == 1 ]] ; then
+    echo "copy file to local dest OK after $i attempt(s): $src -> $dst"
+    return 0
+  fi
+
+  echo "copy file to local dest FAILED after $maxCopyTries attempt(s): $src -> $dst"
+  return 1
+)
+
 paranoidCp()
 (
   #recursively copy files and directories
@@ -2637,22 +2735,36 @@ paranoidCopyFile()
 (
   #copy a single file to a target in an existing dir
   #repeat a few times if copy fails
+  #returns 1 on failure, 0 on success
   src="${1}"
   dst="${2}"
+  ok=0
   [[ -d "${dst}" ]] && dst="${dst}/${src##*/}"
-  [[ -z "${maxCopyTries}" ]] && maxCopyTries=5
-  #echo "maxCopyTries=${maxCopyTries}"
-  echo "cp ${src} ${dst}"
-  cp "${src}" "${dst}"
-  i=0
-  until cmp -s "${src}" "${dst}"; do
-    echo "try: ${i}"
-    [[ -f "${dst}" ]] && rm "${dst}"
-    cp "${src}" "${dst}"
-    [[ ${i} -gt ${maxCopyTries} ]] && ret=1 && return 1
-    (( i++ ))
+  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
+
+  echo "paranoid copy started: $src -> $dst"
+
+  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
+
+    echo "...attempt $i of $maxCopyTries"
+    rm -f "$dst"
+    cp "$src" "$dst"
+
+    cmp -s "$src" "$dst"
+    if [ $? == 0 ] ; then
+      ok=1
+      break
+    fi
+
   done
-  return 0
+
+  if [[ "$ok" == 1 ]] ; then
+    echo "paranoid copy OK after $i attempt(s): $src -> $dst"
+    return 0
+  fi
+
+  echo "paranoid copy FAILED after $maxCopyTries attempt(s): $src -> $dst"
+  return 1
 )
 
 guessRunData()

@@ -13,6 +13,8 @@
 #include "AliLog.h"
 #include "AliRhoParameter.h"
 #include "AliEmcalJet.h"
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 
 #include "AliAnalysisTaskRhoMassBase.h"
 
@@ -204,10 +206,10 @@ Bool_t AliAnalysisTaskRhoMassBase::FillHistograms()
   Int_t Ntracks   = 0;
   Int_t Nclusters = 0;
 
-  if (fTracks)
-    Ntracks = fTracks->GetEntries();
-  if (fCaloClusters)
-    Nclusters = fCaloClusters->GetEntries();
+  if (GetParticleContainer(0))
+    Ntracks = GetParticleContainer(0)->GetNAcceptedParticles();
+  if (GetClusterContainer(0))
+    Nclusters = GetClusterContainer(0)->GetNAcceptedClusters();
 
   if (fJets) {
     Int_t    Njets         = fJets->GetEntries();

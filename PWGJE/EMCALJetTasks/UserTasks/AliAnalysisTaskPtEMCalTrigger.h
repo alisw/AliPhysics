@@ -36,6 +36,7 @@ public:
 	void AddTrackCuts(AliESDtrackCuts *trackCuts) { fListTrackCuts->Add(trackCuts); }
 	void SetEtaRange(double etamin, double etamax) { fEtaRange.SetLimits(etamin, etamax); }
 	void SetPtRange(double ptmin, double ptmax) { fPtRange.SetLimits(ptmin, ptmax); }
+	void SetSwapEta() { fSwapEta = kTRUE; }
 
 private:
 	AliAnalysisTaskPtEMCalTrigger(const AliAnalysisTaskPtEMCalTrigger &);
@@ -56,6 +57,7 @@ private:
 	// Cuts
 	AliCutValueRange<double>      fEtaRange;              // Eta Selection Range
 	AliCutValueRange<double>	  fPtRange;				  // Pt Selection Range
+	Bool_t						  fSwapEta;				  // Allow swapping of the eta sign in asymmetric collision systems
 
 	ClassDef(AliAnalysisTaskPtEMCalTrigger, 1);           // Analysis of EMCal triggered events
 };

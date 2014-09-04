@@ -508,7 +508,7 @@ void AliJetContainer::SetJetEtaPhiEMCAL()
     SetJetEtaLimits(fGeom->GetArm1EtaMin() + fJetRadius, fGeom->GetArm1EtaMax() - fJetRadius);
 
     if(fRunNumber>=177295 && fRunNumber<=197470) //small SM masked in 2012 and 2013
-      SetJetPhiLimits(1.4+fJetRadius,TMath::Pi()-fJetRadius);
+      SetJetPhiLimits(1.405+fJetRadius,3.135-fJetRadius);
     else
       SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
 

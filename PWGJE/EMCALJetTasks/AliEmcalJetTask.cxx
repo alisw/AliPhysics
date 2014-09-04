@@ -68,6 +68,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fIsEmcPart(0),
   fLegacyMode(kFALSE),
   fCodeDebug(kFALSE),
+  fPionMassClusters(kFALSE),
   fDoGenericSubtractionJetMass(kFALSE),
   fDoGenericSubtractionGR(kFALSE),
   fDoGenericSubtractionExtraJetShapes(kFALSE),
@@ -128,6 +129,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fIsEmcPart(0),
   fLegacyMode(kFALSE),
   fCodeDebug(kFALSE),
+  fPionMassClusters(kFALSE),
   fDoGenericSubtractionJetMass(kFALSE),
   fDoGenericSubtractionGR(kFALSE),
   fDoGenericSubtractionExtraJetShapes(kFALSE),
@@ -391,7 +393,10 @@ void AliEmcalJetTask::FindJets()
 	continue;
       // offset of 100 to skip ghost particles uid = -1
       AliDebug(2,Form("Cluster %d accepted (label = %d)", iClus, c->GetLabel()));
-      fjw.AddInputVector(cPx, cPy, cPz, TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz), -iClus - 100);
+      Double_t e = TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz);
+      if(fPionMassClusters) e = TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz + 0.13957*0.13957); //MV: dirty, need better solution
+      fjw.AddInputVector(cPx, cPy, cPz, e, -iClus - 100);
+      //      fjw.AddInputVector(cPx, cPy, cPz, TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz), -iClus - 100);
     }
   }
 

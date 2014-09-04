@@ -70,6 +70,7 @@ void pythia6FastjetExample(Int_t nEvent = 50, Float_t e_cms = 2760, Float_t ptha
 
     TProcessID::SetObjectCount(0); // Needed for TRefs in AliCalTrkTrack and AliAODJet
 
+    stack->Reset();
     pythia->Generate();
 
     aliplist.Clear();

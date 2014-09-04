@@ -128,7 +128,7 @@ private:
    Double_t Z(AliVParticle* part,AliEmcalJet* jet, Bool_t transverse=kFALSE) const;
    Double_t Z(Double_t* p, Double_t *pj) const;
    Double_t ZT(Double_t* p, Double_t *pj) const;
-   Float_t DeltaR(AliVParticle *p1, AliVParticle *p2) const;
+   Float_t DeltaR(AliEmcalJet *p1, AliVParticle *p2) const;
    Bool_t AreDaughtersInJet(AliEmcalJet *thejet, AliAODRecoDecayHF* charm, Int_t*& daughOutOfJet, AliAODTrack**& dtrks, Bool_t fillH);
    Bool_t IsDInJet(AliEmcalJet *thejet, AliAODRecoDecayHF* charm, Bool_t fillH=kFALSE);
    void RecalculateMomentum(Double_t* pj, const Double_t* pmissing) const;

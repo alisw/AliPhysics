@@ -42,7 +42,9 @@ set ( SRCS
  EMCALJetTasks/AliJetEmbeddingFromGenTask.cxx
  EMCALJetTasks/AliJetEmbeddingFromPYTHIATask.cxx
  EMCALJetTasks/AliJetEmbeddingTask.cxx
+ EMCALJetTasks/AliJetFastSimulation.cxx
  EMCALJetTasks/AliJetModelBaseTask.cxx
+ EMCALJetTasks/AliJetModelCopyTracks.cxx
  EMCALJetTasks/AliJetModelMergeBranches.cxx
  EMCALJetTasks/AliJetRandomizerTask.cxx
  EMCALJetTasks/AliJetResponseMaker.cxx
@@ -79,6 +81,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassBase.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassScale.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx

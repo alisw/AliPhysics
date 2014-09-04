@@ -861,6 +861,8 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexTPC(Bool_t const
   Float_t diamondcovxy[3]; evt->GetDiamondCovXY(diamondcovxy);
   Double_t pos[3]={evt->GetDiamondX(),evt->GetDiamondY(),0}; 
   Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+  if (cov[0]<1e-10) cov[0] = 1e-2; // dummy error of 1mm
+  if (cov[2]<1e-10) cov[2] = 1e-2; // dummy error of 1mm
   AliESDVertex *initVertex = new AliESDVertex(pos,cov,1.,1);
   vertexer.SetVtxStart(initVertex);
   delete initVertex;
@@ -888,6 +890,8 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC(Bool_t co
   Float_t diamondcovxy[3]; evt->GetDiamondCovXY(diamondcovxy);
   Double_t pos[3]={evt->GetDiamondX(),evt->GetDiamondY(),0}; 
   Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+  if (cov[0]<1e-10) cov[0] = 1e-2; // dummy error of 1mm
+  if (cov[2]<1e-10) cov[2] = 1e-2; // dummy error of 1mm
   AliESDVertex *initVertex = new AliESDVertex(pos,cov,1.,1);
   vertexer.SetVtxStart(initVertex);
   delete initVertex;
