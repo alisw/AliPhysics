@@ -15,6 +15,7 @@
 
 class AliVEvent;
 class AliVVertex;
+class AliPPVsMultUtils;
 
 class AliAnalysisUtils : public TObject {
 
@@ -59,6 +60,9 @@ class AliAnalysisUtils : public TObject {
   void SetASPDCvsTCut(Float_t a) { fASPDCvsTCut = a; }
   void SetBSPDCvsTCut(Float_t b) { fBSPDCvsTCut = b; }
   
+  //multiplicity selection in pp
+  Float_t GetMultiplicityPercentile(AliVEvent *event, TString lMethod = "V0M");
+    
  private:
   
   Bool_t fisAOD; // flag for AOD:1 or ESD:0
@@ -85,8 +89,10 @@ class AliAnalysisUtils : public TObject {
   
   Float_t fASPDCvsTCut; // constant for the linear cut in SPD clusters vs tracklets
   Float_t fBSPDCvsTCut; // slope for the linear cut in SPD  clusters vs tracklets
-
-  ClassDef(AliAnalysisUtils,2) // base helper class
+  
+  AliPPVsMultUtils *fPPVsMultUtils; //! multiplicity selection in pp
+    
+  ClassDef(AliAnalysisUtils,3) // base helper class
 };
 #endif
  

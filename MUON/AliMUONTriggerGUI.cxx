@@ -1918,7 +1918,7 @@ void AliMUONTriggerGUI::PrintTriggerStore() const
       iStripY = loStripY;
     }
     
-    printf("Circ %3d Xs %2d Ys %2d Dev %2d Lpt %1d Hpt %1d \n",loCircuit,loStripX,loStripY,loDev,loLpt,loHpt);
+    printf("Circ %3d Xs %2d (%2d) Ys %2d (%2d) Dev %2d Lpt %1d Hpt %1d \n",loCircuit,loStripX,iStripX,loStripY,iStripY,loDev,loLpt,loHpt);
 
     AliMUONGlobalTrigger *globalTrigger = fTriggerStore->Global();
     globalTrigger->Print();
@@ -1988,6 +1988,7 @@ void AliMUONTriggerGUI::WriteTriggerRawData()
     }
   }
   Int_t result = gSystem->ClosePipe(pipe);
+  printf("ClosePipe: %d \n",result);
 
   // raw data (date) to root
   // AliSimulation::ConvertDateToRoot

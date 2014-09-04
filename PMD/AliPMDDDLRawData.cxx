@@ -101,7 +101,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
 
   AliRawDataHeaderSim header;
-  UInt_t sizeRawData = 0;
+ // UInt_t sizeRawData = 0;  //coverity (8443) fix satya (1/9/2014) 
   
   const Int_t kbusSize = 51;
   const Int_t kSize = 1536;
@@ -345,7 +345,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
       // write the total number of words per ddl and bring the
       // pointer to the current file position and close it
       UInt_t cFPosition = outfile->Tellp();
-      sizeRawData = cFPosition - bHPosition - sizeof(header);
+      //sizeRawData = cFPosition - bHPosition - sizeof(header); // coverity (8443) fix satya (1/9/2014) 
 
       header.fSize = cFPosition - bHPosition;
       header.SetAttribute(0);  // valid data
