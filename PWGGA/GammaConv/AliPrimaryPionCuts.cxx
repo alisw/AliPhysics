@@ -47,15 +47,15 @@ ClassImp(AliPrimaryPionCuts)
 
 
 const char* AliPrimaryPionCuts::fgkCutNames[AliPrimaryPionCuts::kNCuts] = {
-	"kEtaCut",
-	"kClsITSCut",
-	"kClsTPCCut",
-	"kDCAcut",	
-	"kPtCut",
-	"kPiDedxSigmaITSCut",
-	"kPiDedxSigmaTPCCut",
-	"kPiTOFSigmaCut",
-	"kMassCut"
+	"kEtaCut",				// 0
+	"kClsITSCut",			// 1
+	"kClsTPCCut",			// 2
+	"kDCAcut",				// 3
+	"kPtCut",				// 4
+	"kPiDedxSigmaITSCut",	// 5
+	"kPiDedxSigmaTPCCut",	// 6
+	"kPiTOFSigmaCut",		// 7 
+	"kMassCut"				// 8
 };
 
 //________________________________________________________________________
@@ -108,7 +108,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 
 	// Using standard function for setting Cuts
 	Bool_t selectPrimaries=kFALSE;
-	fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+	if (fEsdTrackCuts==NULL)fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 }
 
 //________________________________________________________________________
@@ -676,25 +676,25 @@ Bool_t AliPrimaryPionCuts::SetTPCdEdxCutPionLine(Int_t ededxSigmaCut){
 			fPIDnSigmaBelowPionLineTPC=-4;
 			fPIDnSigmaAbovePionLineTPC=5;
 			break;	
-		case 5: // -3,5
-			fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowPionLineTPC=-3;
-			fPIDnSigmaAbovePionLineTPC=5;
-			break;
-		case 6: // -4,4
+		case 5: // -4,4
 			fDodEdxSigmaTPCCut = kTRUE;
 			fPIDnSigmaBelowPionLineTPC=-4;
 			fPIDnSigmaAbovePionLineTPC=4;
 			break;
-		case 7: // -2.5,4
+		case 6: // -3,4
 			fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowPionLineTPC=-2.5;
+			fPIDnSigmaBelowPionLineTPC=-3;
 			fPIDnSigmaAbovePionLineTPC=4;
 			break;
-		case 8: // -2,3.5
+		case 7: // -3,3
+			fDodEdxSigmaTPCCut = kTRUE;
+			fPIDnSigmaBelowPionLineTPC=-3;
+			fPIDnSigmaAbovePionLineTPC=3;
+			break;
+		case 8: // -2,3.
 			fDodEdxSigmaTPCCut = kTRUE;
 			fPIDnSigmaBelowPionLineTPC=-2;
-			fPIDnSigmaAbovePionLineTPC=3.5;
+			fPIDnSigmaAbovePionLineTPC=3.;
 			break;
 		default:
 			cout<<"Warning: TPCdEdxCutPionLine not defined"<<ededxSigmaCut<<endl;

@@ -25,7 +25,6 @@ class AliEMCALRecoUtils;
 class AliAnalysisTaskEMCALTriggerQA : public AliAnalysisTaskSE 
 {
 public:
-  AliAnalysisTaskEMCALTriggerQA();                   // default constructor
   
   AliAnalysisTaskEMCALTriggerQA(const char *name);   // named constructor
   
@@ -105,7 +104,10 @@ public:
   void   SetSTUFEERatioHistogramsRange   (Int_t nbins,  Float_t max) { fNBinsSTUFEERatio = nbins; fMaxSTUFEERatio = max ; }
   void   SetSTUTRURatioHistogramsRange   (Int_t nbins,  Float_t max) { fNBinsSTUTRURatio = nbins; fMaxSTUFEERatio = max ; }
   void   SetClusterEHistogramsRange      (Int_t nbins,  Float_t max) { fNBinsClusterE    = nbins; fMaxClusterE    = max ; }
-    
+  void   SetClusterEtaHistogramsRange    (Int_t nbins,  Float_t max) { fNBinsClusterEta  = nbins; fMaxClusterEta  = max ; }
+  void   SetClusterPhiHistogramsRange    (Int_t nbins,  Float_t max, Float_t min)
+  { fNBinsClusterPhi  = nbins; fMaxClusterPhi  = max ;  fMinClusterPhi = min ; }
+  
 private:
   TList            *fOutputList;      //! Output list
   
@@ -252,7 +254,13 @@ private:
   Float_t           fMaxSTUTRURatio   ;     // Maximum value for STU/TRU ratios histograms
   Int_t             fNBinsClusterE    ;     // Number of bins for E cluster histograms
   Float_t           fMaxClusterE      ;     // Maximum value for E cluster histograms
-
+  Int_t             fNBinsClusterPhi  ;     // Number of bins for Phi cluster histograms
+  Float_t           fMaxClusterPhi    ;     // Maximum value for Phi cluster histograms
+  Float_t           fMinClusterPhi    ;     // Maximum value for Phi cluster histograms
+  Int_t             fNBinsClusterEta  ;     // Number of bins for Eta cluster histograms
+  Float_t           fMaxClusterEta    ;     // Maximum value for Eta cluster histograms
+  
+  
   //Constants needed by the class: EMCAL 
   //static const int  fgkFALTRORows = AliEMCALGeoParams::fgkEMCALRows*(AliEMCALGeoParams::fgkEMCALModules-7)/2;   // total number
   static const int  fgkFALTRORows = 60; //AliEMCALGeoParams::fgkEMCALSTURows-4; // total number, temporary, not considers DCal
@@ -282,7 +290,7 @@ private:
   
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 13);
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 14);
 };
 
 #endif 

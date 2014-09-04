@@ -1,6 +1,8 @@
 // $Id$
 //
 // Standalone jet finder
+//   CINT-compatible wrapper for AliFJWrapper, can be used in macros and from the ROOT command line.
+//   Compiled code can use AliFJWrapper directly
 //
 // Authors: R.Haake
 
@@ -39,6 +41,10 @@ AliEmcalJetFinder::~AliEmcalJetFinder()
 Bool_t AliEmcalJetFinder::FindJets()
 {
   // Tidy up and check input
+  for (UInt_t i=0; i<fJetArray.size(); i++) {
+    delete fJetArray[i];
+    fJetArray[i] = 0;
+  }
   fJetArray.clear();
   fJetCount = 0;
   if(!fInputVectorIndex)
@@ -89,7 +95,7 @@ Bool_t AliEmcalJetFinder::FindJets()
 
   fJetArray.resize(fJetCount);
 
-  fastjets.clear();
+  //fastjets.clear(); // will be done by the destructor at the end of the function
   fFastjetWrapper->Clear();
   fInputVectorIndex = 0;
   return kTRUE;

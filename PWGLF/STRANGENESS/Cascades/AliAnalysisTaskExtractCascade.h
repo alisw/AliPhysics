@@ -181,6 +181,9 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
     ULong64_t fTreeCascVarEventNumber; //!
     
     //Part B: Shared Clusters
+    Int_t fTreeCascVarNegClusters; //!
+    Int_t fTreeCascVarPosClusters; //!
+    Int_t fTreeCascVarBachClusters; //!
     Int_t fTreeCascVarNegSharedClusters; //!
     Int_t fTreeCascVarPosSharedClusters; //!
     Int_t fTreeCascVarBachSharedClusters; //!
@@ -202,6 +205,9 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
     Float_t fTreeCascVarCascadeDecayX; //!
     Float_t fTreeCascVarCascadeDecayY; //!
     Float_t fTreeCascVarCascadeDecayZ; //!
+    
+    Bool_t fTreeCascVarBadCascadeJai; //! 
+    Float_t fTreeCascVarDeltaDCA; //!
     
 //===========================================================================================
 //   Histograms
