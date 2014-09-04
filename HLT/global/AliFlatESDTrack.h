@@ -18,25 +18,24 @@ Op - Track parameters estimated at the point of maximal radial coordinate reache
 
 #include "Rtypes.h"
 #include "AliVMisc.h"
-#include "AliVVtrack.h"
+#include "AliVParticle.h"
 #include "AliFlatExternalTrackParam.h"
 
 class AliESDtrack;
 class AliExternalTrackParam;
+class AliFlatESDTrack;
 
-class AliFlatESDTrack :public AliVVtrack {
+class AliFlatESDTrack :public AliVTrack {
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
 
   AliFlatESDTrack();
-  ~AliFlatESDTrack() {}  
+  virtual ~AliFlatESDTrack() {}  
 
   // constructor and method for reinitialisation of virtual table
   AliFlatESDTrack( AliVConstructorReinitialisationFlag );
   void Reinitialize() { new (this) AliFlatESDTrack( AliVReinitialize ); }
-
-  // --------------------   AliVVtrack interface    ---------------------------------
 
   Int_t GetTrackParam         ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0  ); }
   Int_t GetTrackParamRefitted ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x1  ); }
@@ -102,6 +101,35 @@ class AliFlatESDTrack :public AliVVtrack {
 
   size_t GetSize() const { return fContent -  reinterpret_cast<const Byte_t*>(this) + fContentSize; }
     
+  // ---------------------------------------------------------------------------------
+  // AliVParticle interface
+  virtual Double_t Px() const {return 0.;}
+  virtual Double_t Py() const {return 0.;}
+  virtual Double_t Pz() const {return 0.;}
+  virtual Double_t Pt() const {return 0.;}
+  virtual Double_t P() const {return 0.;}
+  virtual Bool_t PxPyPz(Double_t*) const {return kFALSE;}
+  virtual Double_t Xv() const {return 0.;}
+  virtual Double_t Yv() const {return 0.;}
+  virtual Double_t Zv() const {return 0.;}
+  virtual Bool_t XvYvZv(Double_t*) const {return 0.;}
+  virtual Double_t OneOverPt() const {return 0.;}
+  virtual Double_t Phi() const {return 0.;}
+  virtual Double_t Theta() const {return 0.;}
+  virtual Double_t E() const {return 0.;}
+  virtual Double_t M() const {return 0.;}
+  virtual Double_t Eta() const {return 0.;}
+  virtual Double_t Y() const {return 0.;}
+  virtual Short_t Charge() const {return 0.;}
+  virtual Int_t GetLabel() const {return 0.;}
+  virtual Int_t PdgCode() const {return 0.;}
+  virtual const Double_t* PID() const {return NULL;} 
+  virtual Int_t    GetID() const {return 0.;}
+  virtual UChar_t  GetITSClusterMap() const {return 0.;}
+  virtual ULong_t  GetStatus() const {return 0.;}
+  virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const {if (cv[0]); return kFALSE;}
+  virtual Bool_t   PropagateToDCA(const AliVVertex* /*vtx*/, Double_t /*b*/, Double_t /*maxd*/, Double_t dz[2], Double_t covar[3]) {if (dz[0]==covar[3]); return kFALSE;}
+
  private:
 
   AliFlatESDTrack(const AliFlatESDTrack&);
@@ -137,7 +165,6 @@ class AliFlatESDTrack :public AliVVtrack {
 
 // _______________________________________________________________________________________________________
 inline AliFlatESDTrack::AliFlatESDTrack() :
-  AliVVtrack(),
   fTrackParamMask(0),
   fNTPCClusters(0),
   fNITSClusters(0),
@@ -148,7 +175,6 @@ inline AliFlatESDTrack::AliFlatESDTrack() :
 
 inline AliFlatESDTrack::AliFlatESDTrack( AliVConstructorReinitialisationFlag f )
   :
-  AliVVtrack( f ),
   fTrackParamMask(fTrackParamMask ),
   fNTPCClusters( fNTPCClusters ),
   fNITSClusters( fNITSClusters ),

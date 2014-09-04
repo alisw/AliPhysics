@@ -11,7 +11,7 @@
 
 #include "Rtypes.h"
 #include "AliVMisc.h"
-#include "AliVVevent.h"
+#include "AliVEvent.h"
 #include "AliFlatESDTrack.h"
 #include "AliFlatESDVertex.h"
 #include "AliFlatESDFriend.h"
@@ -23,7 +23,7 @@ class AliFlatESDTrigger;
 class AliESDEvent;
 class AliESDVertex;
 
-class AliFlatESDEvent :public AliVVevent {
+class AliFlatESDEvent :public AliVEvent {
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
@@ -35,7 +35,6 @@ class AliFlatESDEvent :public AliVVevent {
   void Reinitialize() { new (this) AliFlatESDEvent( AliVReinitialize ); }
 
   // --------------------------------------------------------------------------------
-  // Interface to AliVVEvent
 
   Double_t  GetMagneticField() const { return fMagneticField; }
   UInt_t    GetPeriodNumber()  const { return fPeriodNumber; }
@@ -56,7 +55,6 @@ class AliFlatESDEvent :public AliVVevent {
   UInt_t GetEventSpecie()   const { return fEventSpecie; }
   Int_t  GetNumberOfKinks() const { return 0; }  
 
-  const AliVVtrack* GetVVTrack(Int_t i) const { return GetFlatTrack(i); }
   AliESDkink* GetKink(Int_t /*i*/) const { return NULL;}
 
   Int_t GetPrimaryVertexSPD( AliESDVertex &v ) const ;
@@ -115,6 +113,39 @@ class AliFlatESDEvent :public AliVVevent {
   ULong64_t  GetSize()  const { return fContent + fContentSize - reinterpret_cast<const Byte_t*>(this); }
 
   static ULong64_t EstimateSize(AliESDEvent*esd, Bool_t fillV0s=kTRUE );
+
+  // --------------------------------------------------------------------------------
+  // AliVEvent interface
+  virtual void Print(Option_t *option="") const {if (option); return;}
+  virtual void AddObject(TObject* /*obj*/) {}
+  virtual TObject* FindListObject(const char* /*name*/) const {return NULL;}
+  virtual TList* GetList() const {return NULL;}
+  virtual void CreateStdContent() {}
+  virtual void GetStdContent() {}
+  virtual void ReadFromTree(TTree* /*tree*/, Option_t* /*opt*/) {}
+  virtual void WriteToTree(TTree* /*tree*/) const {}
+  virtual void SetStdNames() {}
+  virtual AliVHeader* GetHeader() const {return NULL;}
+  virtual void SetPeriodNumber(UInt_t) {}
+  virtual void SetEventType(UInt_t) {}
+  virtual void SetTriggerCluster(UChar_t) {}
+  virtual UInt_t GetEventType() const {return 0;}
+  virtual UChar_t GetTriggerCluster() const {return 0;}
+  virtual Double_t GetZDCN1Energy() const {return 0.;}
+  virtual Double_t GetZDCP1Energy() const {return 0.;}
+  virtual Double_t GetZDCN2Energy() const {return 0.;}
+  virtual Double_t GetZDCP2Energy() const {return 0.;}
+  virtual Double_t GetZDCEMEnergy(Int_t) const {return 0.;}
+  virtual AliVParticle* GetTrack(Int_t) const {return NULL;}
+  virtual Int_t GetNumberOfCascades() const {return 0;}
+  virtual AliCentrality* GetCentrality() {return NULL;}
+  virtual AliEventplane* GetEventplane() {return NULL;}
+  virtual Int_t EventIndex(Int_t) const {return 0;}
+  virtual Int_t EventIndexForCaloCluster(Int_t) const {return 0;}
+  virtual Int_t EventIndexForPHOSCell(Int_t) const {return 0;}
+  virtual Int_t EventIndexForEMCALCell(Int_t) const {return 0;}
+  virtual AliVVZERO* GetVZEROData() const {return NULL;}
+  virtual AliVZDC   *GetZDCData() const {return NULL;}
 
  private:
 

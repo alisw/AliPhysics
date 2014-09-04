@@ -69,7 +69,6 @@
 // _______________________________________________________________________________________________________
 AliFlatESDEvent::AliFlatESDEvent() 
   :
-  AliVVevent(),
   fContentSize(0),
   fMagneticField(0),
   fPeriodNumber(0),
@@ -100,7 +99,6 @@ AliFlatESDEvent::AliFlatESDEvent()
 
 AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag f ) 
   :
-  AliVVevent( f ),
   fContentSize(fContentSize),
   fMagneticField(fMagneticField),
   fPeriodNumber(fPeriodNumber),
