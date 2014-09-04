@@ -118,6 +118,8 @@ Bool_t AliJetModelCopyTracks::Run()
 void AliJetModelCopyTracks::CopyTracks()
 {
   //Apply toy detector simulation to tracks
+  fTracksOut->Delete();
+  
   Int_t nt = 0;
   const Int_t nTracks = fTracks->GetEntriesFast();
    for (Int_t i = 0; i < nTracks; ++i) {
@@ -128,6 +130,7 @@ void AliJetModelCopyTracks::CopyTracks()
     Double_t mass = picotrack->M();
     if(fParticleMass==kMassless) mass = 0.;
     if(fParticleMass==kPionMass) mass = 0.13957;
+
     AliPicoTrack *track = new ((*fTracksOut)[nt]) AliPicoTrack(picotrack->Pt(),
 							       picotrack->Eta(),
 							       picotrack->Phi(),
