@@ -2706,22 +2706,36 @@ paranoidCopyFile()
 (
   #copy a single file to a target in an existing dir
   #repeat a few times if copy fails
+  #returns 1 on failure, 0 on success
   src="${1}"
   dst="${2}"
+  ok=0
   [[ -d "${dst}" ]] && dst="${dst}/${src##*/}"
-  [[ -z "${maxCopyTries}" ]] && maxCopyTries=5
-  #echo "maxCopyTries=${maxCopyTries}"
-  echo "cp ${src} ${dst}"
-  cp "${src}" "${dst}"
-  i=0
-  until cmp -s "${src}" "${dst}"; do
-    echo "try: ${i}"
-    [[ -f "${dst}" ]] && rm "${dst}"
-    cp "${src}" "${dst}"
-    [[ ${i} -gt ${maxCopyTries} ]] && ret=1 && return 1
-    (( i++ ))
+  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
+
+  echo "paranoid copy started: $src -> $dst"
+
+  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
+
+    echo "...attempt $i of $maxCopyTries"
+    rm -f "$dst"
+    cp "$src" "$dst"
+
+    cmp -s "$src" "$dst"
+    if [ $? == 0 ] ; then
+      ok=1
+      break
+    fi
+
   done
-  return 0
+
+  if [[ "$ok" == 1 ]] ; then
+    echo "paranoid copy OK after $i attempt(s): $src -> $dst"
+    return 0
+  fi
+
+  echo "paranoid copy FAILED after $maxCopyTries attempt(s): $src -> $dst"
+  return 1
 )
 
 guessRunData()
