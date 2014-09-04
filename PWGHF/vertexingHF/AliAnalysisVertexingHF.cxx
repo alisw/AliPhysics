@@ -1499,7 +1499,8 @@ void AliAnalysisVertexingHF::AddDaughterRefs(AliAODVertex *v,
     id = (Int_t)track->GetID();
     //printf("---> %d\n",id);
     if(id<0) continue; // this track is a AliAODRecoDecay
-    aodTrack = (AliAODTrack*)event->GetTrack(fAODMap[id]);
+    aodTrack = dynamic_cast<AliAODTrack*>(event->GetTrack(fAODMap[id]));
+    if(!aodTrack) AliFatal("Not a standard AOD");
     v->AddDaughter(aodTrack);
   }
 
@@ -1540,7 +1541,8 @@ void AliAnalysisVertexingHF::FixReferences(AliAODEvent *aod)
   memset(fAODMap,0,sizeof(Int_t)*fAODMapSize);
 
   for(Int_t i=0; i<aod->GetNumberOfTracks(); i++) {
-    track = aod->GetTrack(i);
+    track = dynamic_cast<AliAODTrack*>(aod->GetTrack(i));
+    if(!track) AliFatal("Not a standard AOD");
 
     // skip pure ITS SA tracks
     if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
@@ -1573,7 +1575,8 @@ void AliAnalysisVertexingHF::FixReferences(AliAODEvent *aod)
     if(cascade) continue;
     for(id=0; id<nDgs; id++) {
       if (ids[id]>-1 && ids[id] < fAODMapSize) {
-	track = aod->GetTrack(fAODMap[ids[id]]);
+	track = dynamic_cast<AliAODTrack*>(aod->GetTrack(fAODMap[ids[id]]));
+	if(!track) AliFatal("Not a standard AOD");
 	vertex->AddDaughter(track);
       }
     }
@@ -1615,7 +1618,8 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   if(fInputAOD){
     Int_t idSoftPi=(Int_t)trackPi->GetID();
     if (idSoftPi > -1 && idSoftPi < fAODMapSize) {
-      AliAODTrack* trackPiAOD=(AliAODTrack*)event->GetTrack(fAODMap[idSoftPi]);
+      AliAODTrack* trackPiAOD=dynamic_cast<AliAODTrack*>(event->GetTrack(fAODMap[idSoftPi]));
+      if(!trackPiAOD) AliFatal("Not a standard AOD");
       tmpCascade->GetSecondaryVtx()->AddDaughter(trackPiAOD);
     }
   }else{
@@ -1684,7 +1688,8 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   if(fInputAOD){
     Int_t idBachelor=(Int_t)trackBachelor->GetID();
     if (idBachelor > -1 && idBachelor < fAODMapSize) {
-      AliAODTrack* trackBachelorAOD=(AliAODTrack*)event->GetTrack(fAODMap[idBachelor]);
+      AliAODTrack* trackBachelorAOD=dynamic_cast<AliAODTrack*>(event->GetTrack(fAODMap[idBachelor]));
+      if(!trackBachelorAOD) AliFatal("Not a standard AOD");
       tmpCascade->GetSecondaryVtx()->AddDaughter(trackBachelorAOD);
     }
   }else{

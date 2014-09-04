@@ -511,7 +511,8 @@ void AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
 
   // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
   for (int i=0;i<aodEvent->GetNumberOfTracks();i++) {
-    const AliAODTrack *aodtrack=aodEvent->GetTrack(i);
+    const AliAODTrack *aodtrack=dynamic_cast<const AliAODTrack*>(aodEvent->GetTrack(i));
+    if(!aodtrack) AliFatal("Not a standard AOD");
     if (!aodtrack->TestFilterBit(128)) {
       if(aodtrack->GetID() < 0) continue;
       labels[aodtrack->GetID()] = i;
@@ -528,7 +529,8 @@ void AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
     //get track 
     
     //AliESDtrack* track = AliESDtrackCuts::GetTPCOnlyTrack(const_cast<AliESDEvent*>(esdEvent),iTracks);
-    AliAODTrack *track = aodEvent->GetTrack(iTracks); 
+    AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTracks));
+    if(!track) AliFatal("Not a standard AOD"); 
     if (!track)continue;
     fHistQA[10]->Fill(2);
 
@@ -616,8 +618,10 @@ void AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
     AliAODTrack* aodtrackpid;
 
     //for FB 128 - tpc only tracks
-    if(filterBit==(1 << (7)))
-      aodtrackpid = aodEvent->GetTrack(labels[-1-aodEvent->GetTrack(iTracks)->GetID()]);
+    if(filterBit==(1 << (7))) {
+      aodtrackpid = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(labels[-1-aodEvent->GetTrack(iTracks)->GetID()]));
+      if(!aodtrackpid) AliFatal("Not a standard AOD");
+    }
     else
       aodtrackpid = track;
 

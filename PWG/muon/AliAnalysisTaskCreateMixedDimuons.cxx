@@ -131,9 +131,13 @@ void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
       
       nTracksEv[0] = fInputAOD[iEv]->GetNumberOfTracks();
       nTracksEv[1] = fInputAOD[jEv]->GetNumberOfTracks();
-      
-      for (Int_t i=0; i<nTracksEv[0]; i++) if(fInputAOD[iEv]->GetTrack(i)->IsMuonTrack()) nFWMuonsEv[0]++;
-      for (Int_t i=0; i<nTracksEv[1]; i++) if(fInputAOD[jEv]->GetTrack(i)->IsMuonTrack()) nFWMuonsEv[1]++;
+      // Check if both events contain std aod tracks
+      if (!dynamic_cast<AliAODTrack*>(fInputAOD[iEv]->GetTrack(0)) || dynamic_cast<AliAODTrack*>(fInputAOD[jEv]->GetTrack(0))){
+        AliFatal("Not a standard AOD");
+      }
+
+      for (Int_t i=0; i<nTracksEv[0]; i++) if(((AliAODTrack*)fInputAOD[iEv]->GetTrack(i))->IsMuonTrack()) nFWMuonsEv[0]++;
+      for (Int_t i=0; i<nTracksEv[1]; i++) if(((AliAODTrack*)fInputAOD[jEv]->GetTrack(i))->IsMuonTrack()) nFWMuonsEv[1]++;
       
       // Muon track mixing to fill a mass spectrum
       
@@ -157,12 +161,12 @@ void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
 	// adding tracks and vertex to the output event...
 	
 	for (Int_t i=0; i<nTracksEv[0]; i++) {
-	  if(fInputAOD[iEv]->GetTrack(i)->IsMuonTrack()) {
+	  if(((AliAODTrack*)fInputAOD[iEv]->GetTrack(i))->IsMuonTrack()) {
 	    if (fDebug) printf("fInputAOD[%d]->GetTrack(%d) = %p    pt = %f     uniqueID = %d\n",
 			       iEv,i,fInputAOD[iEv]->GetTrack(i),fInputAOD[iEv]->GetTrack(i)->Pt(),
 			       fInputAOD[iEv]->GetTrack(i)->GetUniqueID());
 	    if (muonCounter[0]==rndMuonTrack[0]) {
-	      fOutputUserAOD->AddTrack(fInputAOD[iEv]->GetTrack(i));
+	      fOutputUserAOD->AddTrack((AliAODTrack*)fInputAOD[iEv]->GetTrack(i));
 	      nFWMUonsAdded++;
 	      if (fInputAOD[iEv]->GetTrack(i)->Charge()>0) nPosTracksAdded++;
 	      else nNegTracksAdded++;
@@ -172,12 +176,12 @@ void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
 	}
 	
 	for (Int_t i=0; i<nTracksEv[1]; i++) {
-	  if(fInputAOD[jEv]->GetTrack(i)->IsMuonTrack()) {
+	  if(((AliAODTrack*)fInputAOD[jEv]->GetTrack(i))->IsMuonTrack()) {
 	    if (fDebug) printf("fInputAOD[%d]->GetTrack(%d) = %p    pt = %f     uniqueID = %d\n",
 			       jEv,i,fInputAOD[jEv]->GetTrack(i),fInputAOD[jEv]->GetTrack(i)->Pt(),
 			       fInputAOD[jEv]->GetTrack(i)->GetUniqueID());
 	    if (muonCounter[1]==rndMuonTrack[1]) {
-	      fOutputUserAOD->AddTrack(fInputAOD[jEv]->GetTrack(i));
+	      fOutputUserAOD->AddTrack((AliAODTrack*)fInputAOD[jEv]->GetTrack(i));
 	      nFWMUonsAdded++;
 	      if (fInputAOD[jEv]->GetTrack(i)->Charge()>0) nPosTracksAdded++;
 	      else nNegTracksAdded++;
@@ -192,7 +196,8 @@ void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
 	
 	if (fDebug) {
 	  for (Int_t i=0; i<nFWMUonsAdded; i++) {
-	    AliAODTrack *tr = (AliAODTrack*) fOutputUserAOD->GetTrack(i);
+	    AliAODTrack *tr = dynamic_cast<AliAODTrack*>( fOutputUserAOD->GetTrack(i));
+	    if(!tr) AliFatal("Not a standard AOD");
 	    printf("fOutputUserAOD->GetTrack(%d) = %p    pt = %f\n",i,tr,tr->Pt());
 	  }
 	}

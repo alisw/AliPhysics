@@ -1179,7 +1179,8 @@ Int_t AliAnalysisTaskDiHadron::TrackCutsAOD(const AliAODEvent *rAOD, Float_t *rP
   Int_t sNcls, sNclsF, sITScls;
   Short_t sCharge;
   for(int iTrack=0;iTrack<rTrack;iTrack++){
-    AliAODTrack *aodTrack=rAOD->GetTrack(iTrack);
+    AliAODTrack *aodTrack=dynamic_cast<AliAODTrack*>(rAOD->GetTrack(iTrack));
+    if(!aodTrack) AliFatal("Not a standard AOD");
     sPt=aodTrack->Pt();
     sEta=aodTrack->Eta();
     sPhi=aodTrack->Phi();

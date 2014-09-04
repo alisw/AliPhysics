@@ -355,7 +355,9 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
          nanoEv->GetCaloCluster(posCaloCls)->AddTrackMatched((AliAODTrack*)nanoEv->GetTrack(posit)); 
          }
          // set references for vtx
-         nanoEv->GetTrack(posit)->SetProdVertex(nanoEv->GetVertex(posVtx));
+         AliAODTrack * trk = dynamic_cast<AliAODTrack*>(nanoEv->GetTrack(posit));
+         if(!trk) AliFatal("Not a standard AOD");
+         trk->SetProdVertex(nanoEv->GetVertex(posVtx));
          }
 
          for(int kj=0; kj<(fDielectron->GetTrackArray(1))->GetEntries(); kj++){
@@ -375,7 +377,9 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
          for(int u=0; u<clCls->GetNTracksMatched(); u++) clCls->RemoveTrackMatched(clCls->GetTrackMatched(u));
          nanoEv->GetCaloCluster(negCaloCls)->AddTrackMatched((AliAODTrack*)nanoEv->GetTrack(negat));
          }
-         nanoEv->GetTrack(negat)->SetProdVertex(nanoEv->GetVertex(negVtx)); 
+         AliAODTrack * trk = dynamic_cast<AliAODTrack*>(nanoEv->GetTrack(negat));
+         if(!trk) AliFatal("Not a standard AOD");
+         trk->SetProdVertex(nanoEv->GetVertex(negVtx)); 
          }  
         delete tmp; delete tmpSpd; 
         nanoEv->GetTracks()->Expand(nTracks); 

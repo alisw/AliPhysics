@@ -423,7 +423,8 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
   
     for (Int_t i = 0; i < nTracks; i++)
     {
-        AliAODTrack* tr = aod->GetTrack(i); 
+        AliAODTrack* tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(i));
+        if(!tr) AliFatal("Not a standard AOD"); 
         selectedMCTracks->Add(tr);
     }
    // cout << "before compressing = " << selectedMCTracks->GetEntriesFast() << endl;
@@ -437,7 +438,7 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
     //cout << "before getting label -3" << endl;
     for (Int_t i = 0; i < nRecTracks; i++)
     {
-      //AliAODTrack* tras = aod->GetTrack(i);
+      //AliAODTrack* tras = dynamic_cast<AliAODTrack*>(aod->GetTrack(i));
       AliAODTrack* tras = (AliAODTrack*)selectedMCTracks->At(i);
       //cout << "before getting label -2" << endl;
       //cout << " and i = " << i << endl;
@@ -478,7 +479,8 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
     selectedChargedTriggers->SetOwner(kTRUE);
     for (Int_t i = 0; i < nTracks; i++)
     {
-        AliAODTrack* tr = aod->GetTrack(i);
+        AliAODTrack* tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(i));
+        if(!tr) AliFatal("Not a standard AOD");
         if ((tr->Pt())<PtAssocMin) continue;
         if (!(IsMyGoodPrimaryTrack(tr))) continue;
         selectedTracks->Add(tr);

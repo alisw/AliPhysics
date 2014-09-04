@@ -1253,7 +1253,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD()
   AliExternalTrackParam exParam;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
 
-    AliAODTrack *aodtrack = aod->GetTrack(iTrack);
+    AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTrack));
+    if(!aodtrack) AliFatal("Not a standard AOD");
     if( !aodtrack->TestFilterMask(fFilterMask) ) {
       fh1NTracksReject->Fill("noHybridTrack",1);
       continue;

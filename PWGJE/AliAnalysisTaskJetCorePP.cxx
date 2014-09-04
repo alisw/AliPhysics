@@ -1790,7 +1790,8 @@ Int_t  AliAnalysisTaskJetCorePP::GetListOfTracks(TList *list){
  
 
    for(Int_t it = 0; it < aodevt->GetNumberOfTracks(); it++){
-      AliAODTrack *tr = aodevt->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aodevt->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       
       if((fFilterMask > 0) && !(tr->TestFilterBit(fFilterMask))) continue;
       //if((fFilterMask > 0) && !(tr->IsHybridGlobalConstrainedGlobal())) continue;

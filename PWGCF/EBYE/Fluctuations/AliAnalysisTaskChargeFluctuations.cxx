@@ -143,7 +143,8 @@ void AliAnalysisTaskChargeFluctuations::UserExec(Option_t *) {
 
     Printf("There are %d tracks in this event", gAOD->GetNumberOfTracks());
     for (Int_t iTracks = 0; iTracks < gAOD->GetNumberOfTracks(); iTracks++) {
-      AliAODTrack* track = gAOD->GetTrack(iTracks);
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(gAOD->GetTrack(iTracks));
+      if(!track) AliFatal("Not a standard AOD");
       if (!track) {
 	Printf("ERROR: Could not receive track %d", iTracks);
 	continue;

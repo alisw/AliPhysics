@@ -461,7 +461,8 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksCentralBarrel
   AliAODTrack *track = 0;
 
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
-    track = aodEvent->GetTrack(iTrack);
+    track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (track->TestFilterBit(fFilterBitCentralBarrel) && track->Eta()>fMinEtaCentralBarrel && track->Eta()<fMaxEtaCentralBarrel) {
       tracks->Add(new AliAODTrack(*track));
     }
@@ -485,7 +486,8 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(AliAO
   AliAODTrack *track = 0;
   
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
-    track = aodEvent->GetTrack(iTrack);
+    track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (track->IsMuonTrack()) fHistSingleMuonsTrigMatch[centBin]->Fill(track->GetMatchTrigger());
     if (track->IsMuonTrack() && track->GetMatchTrigger()>=fTriggerMatchLevelMuon) {
       fHistSingleMuonsChi2[centBin]->Fill(track->Chi2perNDF());

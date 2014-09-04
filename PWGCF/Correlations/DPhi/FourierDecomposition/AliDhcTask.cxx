@@ -753,7 +753,8 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
 
     // Loop 1.
     for (Int_t i = 0; i < nTrax; ++i) {
-      AliAODTrack* aodtrack = fAOD->GetTrack(i);
+      AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
+      if(!aodtrack) AliFatal("Not a standard AOD");
       if (!aodtrack) {
         AliError(Form("Couldn't get AOD track %d\n", i));
         continue;
@@ -778,7 +779,8 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
   
     // Loop 2.  
     for (Int_t i = 0; i < nTrax; ++i) {
-      AliAODTrack* aodtrack = fAOD->GetTrack(i);
+      AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
+      if(!aodtrack) AliFatal("Not a standard AOD");
       if (!aodtrack) {
         AliError(Form("Couldn't get AOD track %d\n", i));
         continue;
@@ -845,7 +847,8 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
     // count good muons
     Int_t nGoodMuons = 0;
     for (Int_t iMu = 0; iMu<fAOD->GetNumberOfTracks(); iMu++) {
-      AliAODTrack* muonTrack = fAOD->GetTrack(iMu);
+      AliAODTrack* muonTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iMu));
+      if(!muonTrack) AliFatal("Not a standard AOD");
       if (muonTrack) {
         if (!IsGoodMUONtrack(*muonTrack))
           continue;
@@ -858,7 +861,8 @@ void AliDhcTask::GetAODTracks(MiniEvent* miniEvt)
     miniEvt->reserve(miniEvt->size()+nGoodMuons);
     // fill them into the mini event
     for (Int_t iMu = 0; iMu<fAOD->GetNumberOfTracks(); iMu++) {
-      AliAODTrack* muonTrack = fAOD->GetTrack(iMu);
+      AliAODTrack* muonTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iMu));
+      if(!muonTrack) AliFatal("Not a standard AOD");
       if (muonTrack) {
         if (!IsGoodMUONtrack(*muonTrack)) 
           continue;

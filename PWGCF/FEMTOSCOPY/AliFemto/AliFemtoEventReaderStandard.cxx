@@ -573,7 +573,8 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 
       if ((fInputType == kAOD) || (fInputType == kAODKine)) {
 	// Read in the normal AliAODTracks 
-	const AliAODTrack *aodtrack=fAODEvent->GetTrack(i); // getting the AODtrack directly
+	const AliAODTrack *aodtrack=dynamic_cast<const AliAODTrack*>(fAODEvent->GetTrack(i));
+        assert(aodtrack&&"Not a standard AOD"); // getting the AODtrack directly
 	
 	// 	if (!aodtrack->TestFilterBit(fFilterBit))
 	// 	  continue;

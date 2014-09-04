@@ -859,7 +859,8 @@ Int_t  AliAnalysisTaskAj::GetListOfTracks(TList *list){
      if(!aod) return iCount;
     
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
-      AliAODTrack *tr = aod->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
@@ -887,7 +888,8 @@ Int_t  AliAnalysisTaskAj::GetListOfTracks(TList *list){
     //    Double_t dif=0;
     Int_t iCount=0;
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
-      AliAODTrack *tr = aod->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
@@ -922,7 +924,8 @@ Int_t  AliAnalysisTaskAj::GetListOfTracks(TList *list){
  
   
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
-      AliAODTrack *tr = aod->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;

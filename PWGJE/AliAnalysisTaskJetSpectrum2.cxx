@@ -1590,7 +1590,8 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
       return iCount;
     }
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
-      AliAODTrack *tr = aod->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
       if(TMath::Abs(tr->Eta())>fTrackRecEtaWindow)continue;
       if(tr->Pt()<fMinTrackPt)continue;
