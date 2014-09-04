@@ -133,7 +133,7 @@ public:
   
   virtual Bool_t GetOuterHmpPxPyPz(Double_t */*p*/) const {return kFALSE;}
   
-  virtual void      GetIntegratedTimes(Double_t */*times*/, Int_t nspec=AliPID::kSPECIESC) const;
+  virtual void      GetIntegratedTimes(Double_t */*times*/, Int_t nspec=AliPID::kSPECIES) const;
   virtual Double_t  GetTRDmomentum(Int_t /*plane*/, Double_t */*sp*/=0x0) const {return 0.;}
   virtual void      GetHMPIDpid(Double_t */*p*/) const {;}
   virtual Double_t  GetIntegratedLength() const { return 0.;}
