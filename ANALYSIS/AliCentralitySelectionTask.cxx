@@ -1469,7 +1469,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     Short_t nTrTPCcandle = 0;
     for (Int_t iTracks = 0; iTracks < aod->GetNumberOfTracks(); iTracks++) {
 
-      AliAODTrack* track = aod->GetTrack(iTracks);
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTracks));
+      if(!track) AliFatal("Not a standard AOD");
 
       if (!track) continue;
       if (!track->TestFilterBit(1<<5) && 

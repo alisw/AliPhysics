@@ -393,7 +393,8 @@ void AliAODHandler::StoreMCParticles(){
   Int_t tofLabel[3];
   if(tracks){
     for(int it = 0; it < fAODEvent->GetNumberOfTracks();++it){
-      AliAODTrack *track = fAODEvent->GetTrack(it);
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(it));
+      if(!track) AliFatal("Not a standard AOD");
       
       Int_t sign = 1;
       Int_t label = track->GetLabel();
