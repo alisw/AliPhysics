@@ -3200,25 +3200,34 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
 //     }
   
     tMain->SetAlias((friendName+".spectrMean_LTMRatio").Data(),
-                    TString::Format("(%s.spectrMean.fElements/%s.spectrMean_LTM)",
+                    TString::Format("(%s.spectrMean.fElements/(%s.spectrMean_LTM+0))",
                                     friendName.Data(),friendName.Data()).Data());
     
     tMain->SetAlias((friendName+".spectrMean_MedianRatio").Data(),
-                    TString::Format("(%s.spectrMean.fElements/%s.spectrMean_Median)",
+                    TString::Format("(%s.spectrMean.fElements/(%s.spectrMean_Median+0))",
                                     friendName.Data(),friendName.Data()).Data());
     tMain->SetAlias((friendName+".spectrMean_MeanRatio").Data(),
-                    TString::Format("(%s.spectrMean.fElements/%s.spectrMean_Mean)",
+                    TString::Format("(%s.spectrMean.fElements/(%s.spectrMean_Mean+0))",
                                     friendName.Data(),friendName.Data()).Data());
 
     tMain->SetAlias((friendName+".fitMean_LTMRatio").Data(),
-                    TString::Format("(%s.fitMean.fElements/%s.fitMean_LTM)",
+                    TString::Format("(%s.fitMean.fElements/(%s.fitMean_LTM+0))",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".fitRMS_LTMRatio").Data(),
+                    TString::Format("(%s.fitRMS.fElements/(%s.fitRMS_LTM+0))",
                                     friendName.Data(),friendName.Data()).Data());
     
     tMain->SetAlias((friendName+".fitMean_MedianRatio").Data(),
-                    TString::Format("(%s.fitMean.fElements/%s.fitMean_Median)",
+                    TString::Format("(%s.fitMean.fElements/(%s.fitMean_Median+0))",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".fitRMS_MedianRatio").Data(),
+                    TString::Format("(%s.fitRMS.fElements/(%s.fitRMS_Median+0))",
                                     friendName.Data(),friendName.Data()).Data());
     tMain->SetAlias((friendName+".fitMean_MeanRatio").Data(),
-                    TString::Format("(%s.fitMean.fElements/%s.fitMean_Mean)",
+                    TString::Format("(%s.fitMean.fElements/(%s.fitMean_Mean+0))",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".fitRMS_MeanRatio").Data(),
+                    TString::Format("(%s.fitRMS.fElements/(%s.fitRMS_Mean+0))",
                                     friendName.Data(),friendName.Data()).Data());
     
   }
