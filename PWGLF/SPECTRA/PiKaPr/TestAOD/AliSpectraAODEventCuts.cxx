@@ -379,19 +379,14 @@ Double_t AliSpectraAODEventCuts::CalculateQVector(){
   //V0 info    
   Double_t Qxa2 = 0, Qya2 = 0;
   Double_t Qxc2 = 0, Qyc2 = 0;
-  Double_t sumMc = 0, sumMa = 0;
   
   AliAODVZERO* aodV0 = fAOD->GetVZEROData();
   
   for (Int_t iv0 = 0; iv0 < 64; iv0++) {
     
     Float_t multv0 = aodV0->GetMultiplicity(iv0);
+  
     ((TH2F*)fOutput->FindObject("fV0M"))->Fill(iv0,multv0);
-    
-    if (iv0 < 32)   
-      sumMc += aodV0->GetMultiplicity(iv0);   
-    else
-      sumMa += aodV0->GetMultiplicity(iv0);
     
   }
 
@@ -401,12 +396,12 @@ Double_t AliSpectraAODEventCuts::CalculateQVector(){
   ((TH2F*)fOutput->FindObject("fPsiACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fPsiV0A);
   ((TH2F*)fOutput->FindObject("fPsiCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fPsiV0C);
   
-  fqV0A = TMath::Sqrt((Qxa2*Qxa2 + Qya2*Qya2)/sumMa);
-  fqV0C = TMath::Sqrt((Qxc2*Qxc2 + Qyc2*Qyc2)/sumMc);
-  fqV0Ax = Qxa2*TMath::Sqrt(1./sumMa);
-  fqV0Cx = Qxc2*TMath::Sqrt(1./sumMc);
-  fqV0Ay = Qya2*TMath::Sqrt(1./sumMa);
-  fqV0Cy = Qyc2*TMath::Sqrt(1./sumMc);
+  fqV0A = TMath::Sqrt((Qxa2*Qxa2 + Qya2*Qya2));
+  fqV0C = TMath::Sqrt((Qxc2*Qxc2 + Qyc2*Qyc2));
+  fqV0Ax = Qxa2;
+  fqV0Cx = Qxc2;
+  fqV0Ay = Qya2;
+  fqV0Cy = Qyc2;
   
   ((TH2F*)fOutput->FindObject("fQVecACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0A);
   ((TH2F*)fOutput->FindObject("fQVecCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0C);
