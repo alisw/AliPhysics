@@ -530,9 +530,17 @@ namespace EMCalTriggerPtAnalysis {
 		char histname[1024], histnameAcc[1024];
 		sprintf(histname, "hTrackHist%s", trigger);
 		sprintf(histnameAcc, "hTrackInAcceptanceHist%s", trigger);
+		Bool_t isEMCAL = kFALSE;
+		if(track->IsEMCAL()){
+			// Check if the cluster is matched to only one track
+			AliVCluster *emcclust = fInputEvent->GetCaloCluster(track->GetEMCALcluster());
+			if(emcclust->GetNTracksMatched() <= 1){
+				isEMCAL = kTRUE;
+			}
+		}
 		try{
 			fHistos->FillTHnSparse(histname, data);
-			if(track->IsEMCAL()){
+			if(isEMCAL){
 				fHistos->FillTHnSparse(histnameAcc, data);
 			}
 		} catch (HistoContainerContentException &e){
@@ -544,7 +552,7 @@ namespace EMCalTriggerPtAnalysis {
 			data[4] = 1;
 			try{
 				fHistos->FillTHnSparse(histname, data);
-				if(track->IsEMCAL()){
+				if(isEMCAL){
 					fHistos->FillTHnSparse(histnameAcc, data);
 				}
 			} catch (HistoContainerContentException &e){
