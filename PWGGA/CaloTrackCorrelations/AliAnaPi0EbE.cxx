@@ -2605,13 +2605,13 @@ void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1,
                                        AliAODPWG4Particle * photon2,
                                        Int_t & label, Int_t & tag)
 {
-  // Check the labels of pare in case mother was same pi0 or eta
+  // Check the labels of pair in case mother was same pi0 or eta
   // Set the new AOD accordingly
   
   Int_t  label1 = photon1->GetLabel();
   Int_t  label2 = photon2->GetLabel();
   
-  if(label1 < 0 || label2 < 0 ) return ;
+  if(label1 < 0 || label2 < 0 || label1 == label2) return ;
   
   //Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader());
   //Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader());
@@ -2625,7 +2625,8 @@ void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1,
        GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCEtaDecay)    )
      )
   {
-    
+    Int_t pdg1    = -1, pdg2    = -1;
+    Int_t ndaugh1 = -1, ndaugh2 = -1;
     //Check if pi0/eta mother is the same
     if(GetReader()->ReadStack())
     {
@@ -2633,13 +2634,17 @@ void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1,
       {
         TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
         label1 = mother1->GetFirstMother();
-        //mother1 = GetMCStack()->Particle(label1);//pi0
+        mother1 = GetMCStack()->Particle(label1);//pi0
+        pdg1=mother1->GetPdgCode();
+        ndaugh1 = mother1->GetNDaughters();
       }
       if(label2>=0)
       {
         TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
         label2 = mother2->GetFirstMother();
-        //mother2 = GetMCStack()->Particle(label2);//pi0
+        mother2 = GetMCStack()->Particle(label2);//pi0
+        pdg2=mother2->GetPdgCode();
+        ndaugh2 = mother2->GetNDaughters();
       }
     } // STACK
     else if(GetReader()->ReadAODMCParticles())
@@ -2648,18 +2653,22 @@ void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1,
       {
         AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label1);//photon in kine tree
         label1 = mother1->GetMother();
-        //mother1 = GetMCStack()->Particle(label1);//pi0
+        mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label1);//pi0
+        pdg1=mother1->GetPdgCode();
+        ndaugh1 = mother1->GetNDaughters();
       }
       if(label2>=0)
       {
         AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label2);//photon in kine tree
         label2 = mother2->GetMother();
-        //mother2 = GetMCStack()->Particle(label2);//pi0
+        mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label2);//pi0
+        pdg2=mother2->GetPdgCode();
+        ndaugh2 = mother2->GetNDaughters();
       }
     }// AOD
     
     //printf("mother1 %d, mother2 %d\n",label1,label2);
-    if( label1 == label2 && label1>=0 )
+    if( label1 == label2 && label1>=0  && ndaugh1==ndaugh2 && ndaugh1==2)
     {
       label = label1;
       
@@ -2670,13 +2679,19 @@ void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1,
       Double_t mass  = (mom1+mom2).M();
       Double_t epair = (mom1+mom2).E();
       
-      if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay))
+      if(pdg1==111)
       {
         fhMassPairMCPi0 ->Fill(epair,mass);
         fhAnglePairMCPi0->Fill(epair,angle);
         GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCPi0);
+//        printf(" Lab1 %d (%d), lab2 %d (%d), pdg1 %d, pdg2 %d, Is In calo %d, %d, Is lost %d, %d\n",
+//               label1,photon1->GetLabel(),label2,photon2->GetLabel(), pdg1, pdg2,
+//               GetMCAnalysisUtils()->CheckTagBit(photon1->GetTag(),AliMCAnalysisUtils::kMCDecayPairInCalo),
+//               GetMCAnalysisUtils()->CheckTagBit(photon2->GetTag(),AliMCAnalysisUtils::kMCDecayPairInCalo),
+//               GetMCAnalysisUtils()->CheckTagBit(photon1->GetTag(),AliMCAnalysisUtils::kMCDecayPairLost),
+//               GetMCAnalysisUtils()->CheckTagBit(photon2->GetTag(),AliMCAnalysisUtils::kMCDecayPairLost));
       }
-      else
+      else  if(pdg1==221)
       {
         fhMassPairMCEta ->Fill(epair,mass);
         fhAnglePairMCEta->Fill(epair,angle);
