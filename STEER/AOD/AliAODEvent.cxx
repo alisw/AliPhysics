@@ -621,7 +621,8 @@ Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
 
   AliAODTrack *track = 0;
   for (Int_t iTrack = 0; iTrack < GetNumberOfTracks(); iTrack++) {
-    track = GetTrack(iTrack);
+    track = dynamic_cast<AliAODTrack*>(GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (track->IsMuonTrack()) {
       muonTracks->Add(track);
     }
@@ -636,8 +637,14 @@ Int_t AliAODEvent::GetNumberOfMuonTracks() const
 {
   // get number of muon tracks
   Int_t nMuonTracks=0;
+   
+  if(!dynamic_cast<AliAODTrack*>(GetTrack(0))) {
+    AliError("Not a standard AOD");
+    return 0;
+  }
+
   for (Int_t iTrack = 0; iTrack < GetNumberOfTracks(); iTrack++) {
-    if ((GetTrack(iTrack))->IsMuonTrack()) {
+    if (((AliAODTrack*)GetTrack(iTrack))->IsMuonTrack()) {
        nMuonTracks++;
     }
   }
@@ -654,7 +661,8 @@ Int_t AliAODEvent::GetMuonGlobalTracks(TRefArray *muonGlobalTracks) const       
 
   AliAODTrack *track = 0;
   for (Int_t iTrack = 0; iTrack < GetNumberOfTracks(); iTrack++) {
-    track = GetTrack(iTrack);
+    track = dynamic_cast<AliAODTrack*>(GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (track->IsMuonGlobalTrack()) {
       muonGlobalTracks->Add(track);
     }
@@ -669,8 +677,12 @@ Int_t AliAODEvent::GetNumberOfMuonGlobalTracks() const                          
 {
   // get number of muon global tracks
   Int_t nMuonGlobalTracks=0;
+  if(!dynamic_cast<AliAODTrack*>(GetTrack(0))) {
+    AliError("Not a standard AOD");
+    return 0;
+  }
   for (Int_t iTrack = 0; iTrack < GetNumberOfTracks(); iTrack++) {
-    if ((GetTrack(iTrack))->IsMuonGlobalTrack()) {
+    if (((AliAODTrack*)GetTrack(iTrack))->IsMuonGlobalTrack()) {
        nMuonGlobalTracks++;
     }
   }
@@ -1077,11 +1089,13 @@ AliAODTrdTrack& AliAODEvent::AddTrdTrack(const AliVTrdTrack *track) {
 void AliAODEvent::ConnectTracks() {
 // Connect tracks to this event
   if (fTracksConnected || !fTracks || !fTracks->GetEntriesFast()) return;
-  if(!GetTrack(0)->InheritsFrom("AliAODTrack")) { // FIXME: consider using a dynamic_cast instead of InheritsFrom
+  AliAODTrack *track = 0;
+  track = dynamic_cast<AliAODTrack*>(GetTrack(0));
+  if(!track) {
     AliWarning("Not an AliAODTrack, this is not a standard AOD"); 
     return;
   }
-  AliAODTrack *track;
+
   TIter next(fTracks);
   while ((track=(AliAODTrack*)next())) track->SetAODEvent(this);
   fTracksConnected = kTRUE;
