@@ -2381,9 +2381,19 @@ void AliESDtrack::SetTOFpid(const Double_t *p) {
 
 //_______________________________________________________________________
 void AliESDtrack::SetTOFLabel(const Int_t *p) {  
-  // Sets  (in TOF)
-  if(!fTOFLabel) fTOFLabel = new Int_t[3]; 
-  for (Int_t i=0; i<3; i++) fTOFLabel[i]=p[i];
+
+  if(fNtofClusters>0){
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
+    AliESDTOFHit* hit = tofcl->GetTOFHit(0);
+
+    if(hit) hit->SetTOFLabel(p);
+  }
+  else{
+    // Sets  (in TOF)
+    if(!fTOFLabel) fTOFLabel = new Int_t[3]; 
+    for (Int_t i=0; i<3; i++) fTOFLabel[i]=p[i];
+  }
 }
 
 //_______________________________________________________________________
@@ -3083,6 +3093,137 @@ void AliESDtrack::AddTOFcluster(Int_t icl)
  
 }
 
+//____________________________________________
+void AliESDtrack::SetTOFsignal(Double_t tof)
+{
+  if(fNtofClusters>0 && GetESDEvent()){
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
+    AliESDTOFHit* hit = tofcl->GetTOFHit(0);
+    if(hit) hit->SetTime(tof);
+  }
+  else{
+    if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+    fTOFsignal=tof;
+  }
+}
+//____________________________________________
+void AliESDtrack::SetTOFCalChannel(Int_t index){
+  if(fNtofClusters>0 && GetESDEvent()){
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
+    AliESDTOFHit* hit = tofcl->GetTOFHit(0);
+    if(hit) hit->SetTOFchannel(index);
+  }
+  else{
+    if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+    fTOFCalChannel=index;
+  }
+}
+//____________________________________________
+void AliESDtrack::SetTOFsignalToT(Double_t ToT){
+  if(fNtofClusters>0 && GetESDEvent()){
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
+    AliESDTOFHit* hit = tofcl->GetTOFHit(0);
+    if(hit) hit->SetTOT(ToT);
+  }
+  else{
+    if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+    fTOFsignalToT=ToT;
+  }
+}
+//____________________________________________
+void AliESDtrack::SetTOFsignalRaw(Double_t tof){
+  if(fNtofClusters>0 && GetESDEvent()){
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
+    AliESDTOFHit* hit = tofcl->GetTOFHit(0);
+    if(hit) hit->SetTimeRaw(tof);
+  }
+  else{
+    if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+    fTOFsignalRaw=tof;
+  }
+}
+//____________________________________________
+void AliESDtrack::SetTOFsignalDz(Double_t dz){
+  Int_t index = -1;
+  AliESDTOFCluster *tofcl;
+
+  if(fNtofClusters>0 && GetESDEvent()){
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
+
+    for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
+      if(tofcl->GetTrackIndex(i) == GetID()) index = i;
+    }
+
+  }
+  if(index > -1){
+    AliESDTOFMatch* match = tofcl->GetTOFMatch(index);
+    if(match){
+      match->SetDz(dz);
+    }
+  }
+  else{
+    if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+    fTOFsignalDz=dz;
+  }
+
+
+}
+//____________________________________________
+void AliESDtrack::SetTOFsignalDx(Double_t dx){
+  Int_t index = -1;
+  AliESDTOFCluster *tofcl;
+
+  if(fNtofClusters>0 && GetESDEvent()){
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
+
+    for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
+      if(tofcl->GetTrackIndex(i) == GetID()) index = i;
+    }
+
+  }
+  if(index > -1){
+    AliESDTOFMatch* match = tofcl->GetTOFMatch(index);
+    if(match){
+      match->SetDx(dx);
+    }
+  }
+  else{
+    if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+    fTOFsignalDx=dx;
+  }
+}
+//____________________________________________
+void AliESDtrack::SetTOFDeltaBC(Short_t deltaBC){
+  if(fNtofClusters>0 && GetESDEvent()){
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
+    AliESDTOFHit* hit = tofcl->GetTOFHit(0);
+    if(hit) hit->SetDeltaBC(deltaBC);
+  }
+  else{
+    if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+    fTOFdeltaBC=deltaBC;
+  }
+}
+//____________________________________________
+void AliESDtrack::SetTOFL0L1(Short_t l0l1){
+  if(fNtofClusters>0 && GetESDEvent()){
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
+    AliESDTOFHit* hit = tofcl->GetTOFHit(0);
+    if(hit) hit->SetL0L1Latency(l0l1);
+  }
+  else{
+    if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+    fTOFl0l1=l0l1;
+  }
+}
 //____________________________________________
 Double_t AliESDtrack::GetTOFsignal() const 
 {

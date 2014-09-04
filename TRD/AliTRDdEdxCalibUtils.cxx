@@ -208,6 +208,7 @@ Bool_t AliTRDdEdxCalibUtils::ReadHistArray(const TString filename, const TString
     fcalib.ls();
     if(array){
       array->ls();
+      delete array;
     }
     return kFALSE;
   }

@@ -57,7 +57,7 @@ AliCaloRawAnalyzerKStandard::~AliCaloRawAnalyzerKStandard()
 
 
 AliCaloFitResults
-AliCaloRawAnalyzerKStandard::Evaluate( const vector<AliCaloBunchInfo>  &bunchlist, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
+AliCaloRawAnalyzerKStandard::Evaluate( const vector<AliCaloBunchInfo>  &bunchlist, UInt_t altrocfg1, UInt_t altrocfg2 )
 {
   //Evaluation Amplitude and TOF
   Float_t pedEstimate  = 0;
@@ -119,7 +119,8 @@ AliCaloRawAnalyzerKStandard::Evaluate( const vector<AliCaloBunchInfo>  &bunchlis
 
 	
 void
- AliCaloRawAnalyzerKStandard::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Float_t & chi2, Bool_t & fitDone) const 
+ AliCaloRawAnalyzerKStandard::FitRaw( Int_t firstTimeBin, Int_t lastTimeBin,
+                                      Float_t & amp, Float_t & time, Float_t & chi2, Bool_t & fitDone) const
 { 
   // Fits the raw signal time distribution
   int nsamples = lastTimeBin - firstTimeBin + 1;

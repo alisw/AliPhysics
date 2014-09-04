@@ -19,7 +19,7 @@
 
 
 // Extraction of Amplitude and peak
-// position using specila algorithm
+// position using special algorithm
 // from Alexei Pavlinov
 // ----------------
 // ----------------
@@ -39,58 +39,51 @@ ClassImp( AliCaloRawAnalyzerFastFit )
 
 AliCaloRawAnalyzerFastFit::AliCaloRawAnalyzerFastFit() : AliCaloRawAnalyzerFitter("Fast Fit (Alexei)", "FF")
 {
-  // Comment
+  // Constructor
   fAlgo= Algo::kFastFit;
 }
 
-
-AliCaloRawAnalyzerFastFit::~AliCaloRawAnalyzerFastFit()
-{
-
-}
-
-
 AliCaloFitResults 
 AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
-				    const UInt_t altrocfg1,  const UInt_t altrocfg2 )
+                                     UInt_t altrocfg1, UInt_t altrocfg2 )
 {
-  // Comment
-
+  // Execute algorithm
+  
   short maxampindex; //index of maximum amplitude
   short maxamp; //Maximum amplitude
   int index = SelectBunch( bunchvector,  &maxampindex,  &maxamp );
- 
+  
   if( index >= 0)
+  {
+    Float_t ped = ReverseAndSubtractPed( &(bunchvector.at(index))  ,  altrocfg1, altrocfg2, fReversed  );
+    Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
+    short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
+    
+    if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
     {
-      Float_t ped = ReverseAndSubtractPed( &(bunchvector.at(index))  ,  altrocfg1, altrocfg2, fReversed  );
-      Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
-      short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
-
-      if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
-	{
-	  return  AliCaloFitResults( maxamp, ped, Algo::kCrude, maxf, timebinOffset);
- 	}
-      else if ( maxf >= fAmpCut ) // no if statement needed really; keep for readability
-	{
-	  int first = 0;
-	  int last = 0;
-	  int maxrev =  maxampindex -  bunchvector.at(index).GetStartBin();
-
-	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last, fFitArrayCut);
-
-	  int nsamples =  last - first + 1;
-
-	  if( ( nsamples  )  >= fNsampleCut )  
+      return  AliCaloFitResults( maxamp, ped, Algo::kCrude, maxf, timebinOffset*TIMEBINWITH); //Time scale 19/08/2014 (Antônio)
+    }
+    else if ( maxf >= fAmpCut ) // no if statement needed really; keep for readability
+    {
+      int first = 0;
+      int last = 0;
+      int maxrev =  maxampindex -  bunchvector.at(index).GetStartBin();
+      
+      SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last, fFitArrayCut);
+      
+      int nsamples =  last - first + 1;
+      
+      if( ( nsamples  )  >= fNsampleCut )
 	    {
 	      Double_t ordered[1008];
-
+        
 	      for(int i=0; i < nsamples ; i++ )
-		{
-		  ordered[i] = fReversed[first + i];
-		}
-
+        {
+          ordered[i] = fReversed[first + i];
+        }
+        
 	      Double_t eSignal = 1; // nominal 1 ADC error
-	      Double_t dAmp = maxf; 
+	      Double_t dAmp = maxf;
 	      Double_t eAmp = 0;
 	      Double_t dTime0 = 0;
 	      Double_t eTime = 0;
@@ -98,22 +91,21 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 	      Double_t dTau = 2.35; // time-bin units
 	      
 	      AliCaloFastAltroFitv0::FastFit(fXaxis, ordered , nsamples,
-					     eSignal, dTau, dAmp, eAmp, dTime0, eTime, chi2);
-	   
+                                       eSignal, dTau, dAmp, eAmp, dTime0, eTime, chi2);
 	      Double_t dTimeMax = dTime0 + timebinOffset - (maxrev - first) // abs. t0
-		+ dTau; // +tau, makes sum tmax
-	      return AliCaloFitResults(maxamp, ped, Ret::kFitPar,  dAmp, dTimeMax, timebinOffset, chi2,  Ret::kDummy,
-				       Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
+        + dTau; // +tau, makes sum tmax
+        
+	      return AliCaloFitResults(maxamp,ped,Ret::kFitPar,dAmp,dTimeMax*TIMEBINWITH,timebinOffset,chi2,Ret::kDummy,Ret::kDummy,AliCaloFitSubarray(index,maxrev,first,last)); //Time scale 19/08/2014 (Antônio)
 	    } // samplecut
-	  else 
+      else
 	    {
+        
 	      Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2
-	      return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset,
-					timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	      return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset*TIMEBINWITH, timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); //Time scale 19/08/2014 (Antônio)
 	    }
-	} // ampcut
-    } // bunch index    
-
+    } // ampcut
+  } // bunch index
+  
   return AliCaloFitResults( Ret::kInvalid , Ret::kInvalid );
 }

@@ -2390,7 +2390,9 @@ AliTOFcalib::CalibrateESD(AliESDEvent *event)
   // calibrating TOF hits
 
   AliESDTOFHit* hit = NULL;
+  AliESDtrack* track = NULL;
   TClonesArray* esdTOFhits = event->GetESDTOFHits();
+  if (esdTOFhits) { // new TOF data structure
     for (Int_t ihit = 0; ihit < esdTOFhits->GetEntriesFast(); ihit++) {
       
       /* get track */
@@ -2415,10 +2417,36 @@ AliTOFcalib::CalibrateESD(AliESDEvent *event)
       }
       
     }
-    if (fCorrectTExp) {
-      AliWarning("\n\nfCorrectTExp is a DEPRECATED flag, it will do NOTHING\n\n");
-    }
+  }
+  else { // old TOF data structure
 
+    for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
+   
+      /* get track */
+      track = event->GetTrack(itrk);
+      if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) continue;
+      
+      /* calibrate TOF signal */
+      if (fCalibrateTOFsignal) {
+	/* get info */
+	index = track->GetTOFCalChannel();
+	time = track->GetTOFsignalRaw();
+	tot = track->GetTOFsignalToT();
+	l0l1 = track->GetTOFL0L1();
+	deltaBC = track->GetTOFDeltaBC();
+	/* get correction */
+	corr = GetTimeCorrection(index, tot, deltaBC, l0l1, timestamp);
+	/* apply correction */
+	time -= corr;
+	/* set new TOF signal */
+	track->SetTOFsignal(time);
+      }
+    }
+  }
+
+  if (fCorrectTExp) {
+    AliWarning("\n\nfCorrectTExp is a DEPRECATED flag, it will do NOTHING\n\n");
+  }
 
 }
 

@@ -481,48 +481,159 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
   if (!histoVertexTimestamp) {
     AliError(Form("cannot get \"hHistoVertexTimestamp\" object from file %s", filename));
     fStatus = kInputError;
+    if (list)
+      delete list;
+    else {
+      if (histoVertexTimestamp) delete histoVertexTimestamp;
+      if (histoDeltatTimestamp )delete histoDeltatTimestamp;
+      if (histoDeltazEta) delete histoDeltazEta;
+      if (histoDeltatEta) delete histoDeltatEta;
+      if (histoDeltazCosTheta) delete histoDeltazCosTheta;
+      if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
+      if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
+    }
     return kFALSE;
   }
   if (!histoDeltatTimestamp) {
     AliError(Form("cannot get \"hHistoDeltatTimestamp\" object from file %s", filename));
     fStatus = kInputError;
+    if (list)
+      delete list;
+    else{
+      if (histoVertexTimestamp) delete histoVertexTimestamp;
+      if (histoDeltatTimestamp )delete histoDeltatTimestamp;
+      if (histoDeltazEta) delete histoDeltazEta;
+      if (histoDeltatEta) delete histoDeltatEta;
+      if (histoDeltazCosTheta) delete histoDeltazCosTheta;
+      if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
+      if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
+    }
     return kFALSE;
   }
   if (!histoDeltazEta) {
     AliError(Form("cannot get \"hHistoDeltazEta\" object from file %s", filename));
     fStatus = kInputError;
+    if (list)
+      delete list;
+    else{
+      if (histoVertexTimestamp) delete histoVertexTimestamp;
+      if (histoDeltatTimestamp )delete histoDeltatTimestamp;
+      if (histoDeltazEta) delete histoDeltazEta;
+      if (histoDeltatEta) delete histoDeltatEta;
+      if (histoDeltazCosTheta) delete histoDeltazCosTheta;
+      if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
+      if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
+    }
     return kFALSE;
   }
   if (!histoDeltatEta) {
     AliError(Form("cannot get \"hHistoDeltatEta\" object from file %s", filename));
     fStatus = kInputError;
+    if (list)
+      delete list;
+    else{
+      if (histoVertexTimestamp) delete histoVertexTimestamp;
+      if (histoDeltatTimestamp )delete histoDeltatTimestamp;
+      if (histoDeltazEta) delete histoDeltazEta;
+      if (histoDeltatEta) delete histoDeltatEta;
+      if (histoDeltazCosTheta) delete histoDeltazCosTheta;
+      if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
+      if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
+    }
     return kFALSE;
   }
   if (!histoDeltazCosTheta) {
     AliError(Form("cannot get \"hHistoDeltazCosTheta\" object from file %s", filename));
     fStatus = kInputError;
+    if (list)
+      delete list;
+    else{
+      if (histoVertexTimestamp) delete histoVertexTimestamp;
+      if (histoDeltatTimestamp )delete histoDeltatTimestamp;
+      if (histoDeltazEta) delete histoDeltazEta;
+      if (histoDeltatEta) delete histoDeltatEta;
+      if (histoDeltazCosTheta) delete histoDeltazCosTheta;
+      if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
+      if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
+    }
     return kFALSE;
   }
   if (!histoAcceptedTracksEtaPt) {
     AliError(Form("cannot get \"hHistoAccptedTracksEtaPt\" object from file %s", filename));
     fStatus = kInputError;
+    if (list)
+      delete list;
+    else{
+      if (histoVertexTimestamp) delete histoVertexTimestamp;
+      if (histoDeltatTimestamp )delete histoDeltatTimestamp;
+      if (histoDeltazEta) delete histoDeltazEta;
+      if (histoDeltatEta) delete histoDeltatEta;
+      if (histoDeltazCosTheta) delete histoDeltazCosTheta;
+      if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
+      if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
+    }
     return kFALSE;
   }
   if (!histoMatchedTracksEtaPt) {
     AliError(Form("cannot get \"hHistoMatchedTracksEtaPt\" object from file %s", filename));
     fStatus = kInputError;
+    if (list)
+      delete list;
+    else{
+      if (histoVertexTimestamp) delete histoVertexTimestamp;
+      if (histoDeltatTimestamp )delete histoDeltatTimestamp;
+      if (histoDeltazEta) delete histoDeltazEta;
+      if (histoDeltatEta) delete histoDeltatEta;
+      if (histoDeltazCosTheta) delete histoDeltazCosTheta;
+      if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
+      if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
+    }
     return kFALSE;
   }
 
   /* check matching performance */
   if (!CheckMatchingPerformance(histoDeltazEta, histoAcceptedTracksEtaPt, histoMatchedTracksEtaPt)) {
     AliError("error while checking matching efficiency");
+    if (list)
+      delete list;
+    else{
+      if (histoVertexTimestamp) delete histoVertexTimestamp;
+      if (histoDeltatTimestamp )delete histoDeltatTimestamp;
+      if (histoDeltazEta) delete histoDeltazEta;
+      if (histoDeltatEta) delete histoDeltatEta;
+      if (histoDeltazCosTheta) delete histoDeltazCosTheta;
+      if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
+      if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
+    }
     return kFALSE;
   }
   /* calibrate and store */
   if (!CalibrateAndStore(histoVertexTimestamp, histoDeltatTimestamp, db)) {
     AliError("error while calibrating and storing");
+    if (list)
+      delete list;
+    else{
+      if (histoVertexTimestamp) delete histoVertexTimestamp;
+      if (histoDeltatTimestamp )delete histoDeltatTimestamp;
+      if (histoDeltazEta) delete histoDeltazEta;
+      if (histoDeltatEta) delete histoDeltatEta;
+      if (histoDeltazCosTheta) delete histoDeltazCosTheta;
+      if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
+      if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
+    }
     return kFALSE;
+  }
+
+  if (list)
+    delete list;
+  else{
+    if (histoVertexTimestamp) delete histoVertexTimestamp;
+    if (histoDeltatTimestamp )delete histoDeltatTimestamp;
+    if (histoDeltazEta) delete histoDeltazEta;
+    if (histoDeltatEta) delete histoDeltatEta;
+    if (histoDeltazCosTheta) delete histoDeltazCosTheta;
+    if (histoAcceptedTracksEtaPt) delete histoAcceptedTracksEtaPt;
+    if (histoMatchedTracksEtaPt) delete histoMatchedTracksEtaPt;
   }
 
   /* success */

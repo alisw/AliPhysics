@@ -53,9 +53,11 @@ void AliGenReaderHepMC::Init()
 
 Int_t AliGenReaderHepMC::NextEvent()
 {
+   // Clean memory
+   if (fGenEvent) delete fGenEvent;
    // Read the next event
    if ((fGenEvent = fEventsHandle->read_next_event())) {
-      THepMCParser::ParseGenEvent2TCloneArray(fGenEvent,fParticleArray,false);
+      THepMCParser::ParseGenEvent2TCloneArray(fGenEvent,fParticleArray,"GEV","CM",false);
       fParticleIterator->Reset();
       THepMCParser::HeavyIonHeader_t heavyIonHeader;
       THepMCParser::PdfHeader_t pdfHeader;
@@ -84,7 +86,7 @@ Int_t AliGenReaderHepMC::NextEvent()
             pdfHeader.pdf1,
             pdfHeader.pdf2
       );
-      printf("Parsed event with %d particles.\n", fGenEvent->particles_size());
+      printf("Parsed event %d with %d particles.\n", fGenEvent->event_number(), fGenEvent->particles_size());
       return fGenEvent->particles_size();
    }
    printf("No more events in the file.\n");
