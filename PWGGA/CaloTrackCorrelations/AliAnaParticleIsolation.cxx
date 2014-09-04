@@ -68,6 +68,7 @@ fFillHighMultHistograms(0),       fFillTaggedDecayHistograms(0),
 fNDecayBits(0),                   fDecayBits(),
 fFillNLMHistograms(0),
 fLeadingOnly(0),                  fCheckLeadingWithNeutralClusters(0),
+fSelectPrimariesInCone(0),        fMakePrimaryPi0DecayStudy(0),
 fFillBackgroundBinHistograms(0),  fNBkgBin(0),
 // Several IC
 fNCones(0),                       fNPtThresFrac(0),
@@ -135,6 +136,13 @@ fhConeSumPtSubvsConeSumPtTotPhiCell(0),     fhConeSumPtSubNormvsConeSumPtTotPhiC
 fhConeSumPtSubvsConeSumPtTotEtaCell(0),     fhConeSumPtSubNormvsConeSumPtTotEtaCell(0),
 fhConeSumPtVSUETracksEtaBand(0),            fhConeSumPtVSUETracksPhiBand(0),
 fhConeSumPtVSUEClusterEtaBand(0),           fhConeSumPtVSUEClusterPhiBand(0),
+fhPtPrimMCPi0DecayPairOutOfCone(0),         fhPtPrimMCPi0DecayPairOutOfAcceptance(0),
+fhPtPrimMCPi0DecayPairAcceptInConeLowPt(0), fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0DecayPairNoOverlap(0),
+fhPtPrimMCPi0DecayIsoPairOutOfCone(0),      fhPtPrimMCPi0DecayIsoPairOutOfAcceptance(0),
+fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt(0),fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0DecayIsoPairNoOverlap(0),
+fhPtPrimMCPi0Overlap(0),                    fhPtPrimMCPi0IsoOverlap(0),
 fhPtLeadConeBinLambda0(0),                  fhSumPtConeBinLambda0(0),
 fhPtLeadConeBinLambda0MC(0),                fhSumPtConeBinLambda0MC(0),
 // Number of local maxima in cluster
@@ -159,7 +167,7 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
   {
     fConeSizes[i]      = 0 ;
     
-    for(Int_t imc = 0; imc < 9; imc++)
+    for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
       fhSumPtLeadingPtMC[imc][i] = 0 ;
     
     for(Int_t j = 0; j < 5 ; j++)
@@ -185,7 +193,7 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
       fhEtaPhiFracPtSumIso          [i][j] = 0 ;
       fhEtaPhiFracPtSumDecayIso     [i][j] = 0 ;
       
-      for(Int_t imc = 0; imc < 9; imc++)
+      for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
       {
         fhPtThresIsolatedMC[imc][i][j] = 0 ;
         fhPtFracIsolatedMC [imc][i][j] = 0 ;
@@ -203,7 +211,7 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
     fhPtDecayNoIso     [ibit] = 0;
     fhEtaPhiDecayIso   [ibit] = 0;
     fhEtaPhiDecayNoIso [ibit] = 0;
-    for(Int_t imc = 0; imc < 9; imc++)
+    for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
     {
       fhPtDecayIsoMC  [ibit][imc]    = 0;
       fhPtDecayNoIsoMC[ibit][imc]    = 0;
@@ -222,7 +230,7 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
     fhPerpPtLeadingPt   [i] = 0 ;
   }
   
-  for(Int_t imc = 0; imc < 9; imc++)
+  for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
   {
     fhPtNoIsoMC  [imc]    = 0;
     fhPtIsoMC    [imc]    = 0;
@@ -247,10 +255,11 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
   }
   
   // Acceptance
-  for(Int_t i = 0; i < 6; i++)
+  for(Int_t i = 0; i < fgkNmcPrimTypes; i++)
   {
     fhPtPrimMCiso[i] = 0;
     fhEPrimMC    [i] = 0;
+    fhPtPrimMC   [i] = 0;
     fhEtaPrimMC  [i] = 0;
     fhPhiPrimMC  [i] = 0;
   }
@@ -1476,10 +1485,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
   // Primary MC histograms title and name
   TString pptype[] = { "#gamma", "#gamma_{#pi decay}","#gamma_{other decay}",
-    "#gamma_{prompt}","#gamma_{fragmentation}","#gamma_{ISR}"} ;
+    "#gamma_{prompt}","#gamma_{fragmentation}","#gamma_{ISR}","#pi^{0}"} ;
   
   TString ppname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay",
-    "PhotonPrompt","PhotonFrag","PhotonISR"} ;
+    "PhotonPrompt","PhotonFrag","PhotonISR","Pi0"} ;
   
   // Not Isolated histograms, reference histograms
   
@@ -1508,7 +1517,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   {
     // For histograms in arrays, index in the array, corresponding to any particle origin
     
-    for(Int_t imc = 0; imc < 9; imc++)
+    for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
     {
       
       fhPtNoIsoMC[imc]  = new TH1F(Form("hPtNoIsoMC%s",mcPartName[imc].Data()),
@@ -1583,7 +1592,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if(IsDataMC())
       {
-        for(Int_t imc = 0; imc < 9; imc++)
+        for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
         {
           
           fhPtDecayNoIsoMC[ibit][imc]  =
@@ -1718,8 +1727,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if(IsDataMC())
       {
-        fhPtLeadConeBinLambda0MC = new TH2F*[fNBkgBin*9];
-        fhSumPtConeBinLambda0MC  = new TH2F*[fNBkgBin*9];
+        fhPtLeadConeBinLambda0MC = new TH2F*[fNBkgBin*fgkNmcTypes];
+        fhSumPtConeBinLambda0MC  = new TH2F*[fNBkgBin*fgkNmcTypes];
       }
       
       for(Int_t ibin = 0; ibin < fNBkgBin; ibin++)
@@ -1742,7 +1751,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         if(IsDataMC())
         {
-          for(Int_t imc = 0; imc < 9; imc++)
+          for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
           {
             Int_t binmc = ibin+imc*fNBkgBin;
             fhPtLeadConeBinLambda0MC[binmc]  = new TH2F
@@ -2652,7 +2661,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         if(IsDataMC())
         {
-          for(Int_t imc = 0; imc < 9; imc++)
+          for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
           {
             fhPtLambda0MC[imc][iso]  = new TH2F(Form("hPtLambda0%s_MC%s",isoName[iso].Data(),mcPartName[imc].Data()),
                                                 Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
@@ -2797,14 +2806,20 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     {
       // For histograms in arrays, index in the array, corresponding to any particle origin
       
-      for(Int_t i = 0; i < 6; i++)
+      for(Int_t i = 0; i < fgkNmcPrimTypes; i++)
       {
         fhEPrimMC[i]  = new TH1F(Form("hEPrim_MC%s",ppname[i].Data()),
                                  Form("primary photon  %s : #it{E}, %s",pptype[i].Data(),parTitle.Data()),
                                  nptbins,ptmin,ptmax);
         fhEPrimMC[i]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEPrimMC[i]) ;
-        
+
+        fhPtPrimMC[i]  = new TH1F(Form("hPtPrim_MC%s",ppname[i].Data()),
+                                 Form("primary photon  %s : #it{p}_{T}, %s",pptype[i].Data(),parTitle.Data()),
+                                 nptbins,ptmin,ptmax);
+        fhPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMC[i]) ;
+
         fhPtPrimMCiso[i]  = new TH1F(Form("hPtPrim_MCiso%s",ppname[i].Data()),
                                      Form("primary isolated photon %s : #it{p}_{T}, %s",pptype[i].Data(),parTitle.Data()),
                                      nptbins,ptmin,ptmax);
@@ -2824,6 +2839,91 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPhiPrimMC[i]->SetYTitle("#phi");
         fhPhiPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPhiPrimMC[i]) ;
+      }
+      
+      if(fMakePrimaryPi0DecayStudy)
+      {
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPt  = new TH1F("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPt",
+                                                            Form("primary photon  %s : #it{p}_{T}, pair in cone, %s",pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                            nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayPairAcceptInConeLowPt) ;
+        
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPt",
+                                                               Form("isolated primary photon %s, pair in cone : #it{p}_{T}, %s",
+                                                                    pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                               nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt) ;
+        
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap  = new TH1F("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPtNoOverlap",
+                                                                     Form("primary photon  %s, no overlap, pair in cone : #it{p}_{T}, %s",
+                                                                          pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                                     nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap) ;
+        
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPtNoOverlap",
+                                                                        Form("isolated primary photon  %s, pair in cone,no overlap : #it{p}_{T}, %s",
+                                                                             pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                                        nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap) ;
+        
+        fhPtPrimMCPi0DecayPairNoOverlap  = new TH1F("hPtPrim_MCPhotonPi0DecayPairNoOverlap",
+                                                                     Form("primary photon  %s, no overlap: #it{p}_{T}, %s",
+                                                                          pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                                     nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayPairNoOverlap) ;
+
+        fhPtPrimMCPi0DecayIsoPairNoOverlap  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairNoOverlap",
+                                                    Form("isolated primary photon  %s, no overlap: #it{p}_{T}, %s",
+                                                         pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                    nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayIsoPairNoOverlap) ;
+        
+        fhPtPrimMCPi0DecayPairOutOfCone  = new TH1F("hPtPrim_MCPhotonPi0DecayPairOutOfCone",
+                                                    Form("primary photon %s : #it{p}_{T}, pair out of cone, %s",pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                    nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairOutOfCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayPairOutOfCone) ;
+        
+        fhPtPrimMCPi0DecayIsoPairOutOfCone  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairOutOfCone",
+                                                       Form("isolated primary photon %s, pair out of cone : #it{p}_{T}, %s",
+                                                            pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                       nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairOutOfCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayIsoPairOutOfCone) ;
+        
+        fhPtPrimMCPi0DecayPairOutOfAcceptance  = new TH1F("hPtPrim_MCPhotonPi0DecayPairOutOfAcceptance",
+                                                          Form("primary photon %s : #it{p}_{T}, pair out of acceptance, %s",pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                          nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayPairOutOfAcceptance) ;
+        
+        fhPtPrimMCPi0DecayIsoPairOutOfAcceptance  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairOutOfAcceptance",
+                                                             Form("isolated primary photon %s, pair out of acceptance : #it{p}_{T}, %s",
+                                                                  pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                             nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayIsoPairOutOfAcceptance) ;
+        
+        fhPtPrimMCPi0Overlap  = new TH1F("hPtPrim_MCPi0Overlap",
+                                         Form("primary %s, overlap: #it{p}_{T}, %s",
+                                              pptype[kmcPrimPi0].Data(),parTitle.Data()),
+                                         nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0Overlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0Overlap) ;
+        
+        fhPtPrimMCPi0IsoOverlap  = new TH1F("hPtPrim_MCisoPi0Overlap",
+                                         Form("primary %s, overlap: #it{p}_{T}, %s",
+                                              pptype[kmcPrimPi0].Data(),parTitle.Data()),
+                                         nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0IsoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0IsoOverlap) ;
+
       }
       
     }//Histos with MC
@@ -2871,7 +2971,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if(IsDataMC())
       {
-        for(Int_t imc = 0; imc < 9; imc++)
+        for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
         {
           snprintf(name , buffersize,"hSumPtLeadingPt_MC%s_Cone_%d",mcPartName[imc].Data(),icone);
           snprintf(title, buffersize,"Candidate %s #it{p}_{T} vs cone #Sigma #it{p}_{T} for #it{R}=%2.2f",mcPartType[imc].Data(),fConeSizes[icone]);
@@ -3030,7 +3130,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         if(IsDataMC())
         {
-          for(Int_t imc = 0; imc < 9; imc++)
+          for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
           {
             snprintf(name , buffersize,"hPtThreshMC%s_Cone_%d_Pt%d",mcPartName[imc].Data(),icone,ipt);
             snprintf(title, buffersize,"Isolated %s #it{p}_{T} for #it{R}=%2.2f and #it{p}_{T}^{th}=%2.2f",
@@ -3735,7 +3835,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
 
 }
 
-//______________________________________________________________________
+//______________________________________________________
 void AliAnaParticleIsolation::FillAcceptanceHistograms()
 {
   // Fill acceptance histograms if MC data is available
@@ -3758,6 +3858,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
   TLorentzVector lv;
+  
+  // Calorimeter cluster merging angle
+  // angle smaller than 3 cells  6 cm (0.014) in EMCal, 2.2 cm in PHOS (0.014*(2.2/6))
+  Float_t overlapAngle = 0;
+  if      (fCalorimeter=="EMCAL") overlapAngle = 3*0.014  ;
+  else if (fCalorimeter=="PHOS" ) overlapAngle = 3*0.00382;
   
   // Get the ESD MC particles container
   AliStack * stack = 0;
@@ -3825,12 +3931,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     
     // Select only photons in the final state
-    if(pdg != 22 ) continue ;
+    if(pdg != 22  && pdg!=111) continue ;
     
     // Consider only final state particles, but this depends on generator,
     // status 1 is the usual one, in case of not being ok, leave the possibility
     // to not consider this.
-    if(status != 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) continue ;
+    if(pdg == 22 && status != 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) continue ;
     
     // If too small or too large pt, skip, same cut as for data analysis
     photonPt  = lv.Pt () ;
@@ -3859,7 +3965,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     // Set the origin of the photon.
     tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
     
-    if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
+    if(pdg == 22 && !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {
       // A conversion photon from a hadron, skip this kind of photon
       // printf("AliAnaPhoton::FillAcceptanceHistograms() - not a photon, weird!\n ");
@@ -3868,8 +3974,42 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       continue;
     }
     
-    //
-    if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) )
+    // Check the origin of the photon or if it is a pi0, assing a tag
+    Int_t pi0d1Label = -1, pi0d2Label = -1, pi0d3Label = -1;
+    Bool_t overlapPi0 = kTRUE;
+    if(pdg==111)
+    {
+      mcIndex = kmcPrimPi0;
+      //printf("check pi0\n");
+      // Get the labels of the decay particles, remove them from isolation cone
+      // Get also the opening angle and check if decays likely overlap
+      Bool_t okpi0 = kFALSE;
+      Int_t ndaugh = GetMCAnalysisUtils()->GetNDaughters(i,GetReader(), okpi0);
+      //printf("OK pi0 %d, ndaugh %d\n",okpi0,ndaugh);
+      Int_t d1Pdg = 0, d1Status = 0; Bool_t ok1 = kFALSE;
+      Int_t d2Pdg = 0, d2Status = 0; Bool_t ok2 = kFALSE;
+      Int_t d3Pdg = 0, d3Status = 0; Bool_t ok3 = kFALSE;
+      TLorentzVector daugh1mom, daugh2mom, daugh3mom;
+     
+      if ( ndaugh > 0 ) daugh1mom = GetMCAnalysisUtils()->GetDaughter(0,i,GetReader(),d1Pdg, d1Status,ok1, pi0d1Label);
+      if ( ndaugh > 1 ) daugh2mom = GetMCAnalysisUtils()->GetDaughter(1,i,GetReader(),d2Pdg, d2Status,ok2, pi0d2Label);
+      if ( ndaugh > 2 ) daugh3mom = GetMCAnalysisUtils()->GetDaughter(2,i,GetReader(),d3Pdg, d3Status,ok3, pi0d3Label);
+      
+      //printf("pi0 daug %d: a) %d, b) %d, c) %d\n", ndaugh,pi0d1Label,pi0d2Label,pi0d3Label);
+      //if ( ndaugh !=2 ) printf("PDG: %d, %d, %d\n",d1Pdg,d2Pdg,d3Pdg);
+      
+      // Select decays in 2 photons
+      if( ndaugh!=2 || (d2Pdg != d1Pdg && d1Pdg!=22)) okpi0 = kFALSE;
+      
+      // Check overlap of decays
+      if( okpi0 && fMakePrimaryPi0DecayStudy)
+      {
+        Float_t d12Angle = daugh1mom.Angle(daugh2mom.Vect());
+        if(d12Angle > overlapAngle) overlapPi0 = kFALSE;
+        //printf("  -- d12 angle %2.3f, angle limit %2.3f, overlap %d\n",d12Angle,overlapAngle,overlapPi0);
+      }
+    }
+    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) )
     {
       mcIndex = kmcPrimPrompt;
     }
@@ -3900,50 +4040,86 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     Double_t sumPtInCone = 0; Double_t dR=0. ;
     TParticle        * mcisopStack = 0;
     AliAODMCParticle * mcisopAOD   = 0;
+    TLorentzVector     mcisoLV;
     Int_t partInConeStatus = -1, partInConeMother = -1;
-    Double_t partInConePt = 0, partInConeEta = 0, partInConePhi = 0;
-    Int_t npart = 0;
+    Double_t partInConePt = 0, partInConeE = 0, partInConeEta = 0, partInConePhi = 0;
+    Int_t partInConeCharge = 0, npart = 0;
     for(Int_t ip = 0; ip < nprim ; ip++)
     {
       if(ip==i) continue;
+      
+      if(pdg==111 && (ip == pi0d1Label || ip == pi0d2Label || (ip == pi0d3Label)))
+      {
+        //printf("Do not count pi0 decays in cone when isolating pi0 \n");
+        continue;
+      }
       
       if( GetReader()->ReadStack() )
       {
         mcisopStack = static_cast<TParticle*>(stack->Particle(ip));
         if( !mcisopStack ) continue;
         partInConeStatus = mcisopStack->GetStatusCode();
+        
+        // Consider only final state particles, but this depends on generator,
+        // status 1 is the usual one, in case of not being ok, leave the possibility
+        // to not consider this.
+        if( partInConeStatus != 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) continue ;
+        
         partInConeMother = mcisopStack->GetMother(0);
         partInConePt     = mcisopStack->Pt();
+        partInConeE      = mcisopStack->Energy();
         partInConeEta    = mcisopStack->Eta();
         partInConePhi    = mcisopStack->Phi();
+        partInConeCharge = TMath::Abs((Int_t) TDatabasePDG::Instance()->GetParticle(mcisopStack->GetPdgCode())->Charge());
+        mcisopStack->Momentum(mcisoLV);
       }
       else
       {
         mcisopAOD   = (AliAODMCParticle *) mcparticles->At(ip);
         if( !mcisopAOD )   continue;
+        
         partInConeStatus = mcisopAOD->GetStatus();
+        // Consider only final state particles, but this depends on generator,
+        // status 1 is the usual one, in case of not being ok, leave the possibility
+        // to not consider this.
+        if( partInConeStatus != 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) continue ;
+        
         partInConeMother = mcisopAOD->GetMother();
         partInConePt     = mcisopAOD->Pt();
+        partInConeE      = mcisopAOD->E();
         partInConeEta    = mcisopAOD->Eta();
         partInConePhi    = mcisopAOD->Phi();
+        partInConeCharge = TMath::Abs(mcisopAOD->Charge());
+        mcisoLV.SetPxPyPzE(mcisopAOD->Px(),mcisopAOD->Py(),mcisopAOD->Pz(),mcisopAOD->E());
       }
-      
-      // Consider only final state particles, but this depends on generator,
-      // status 1 is the usual one, in case of not being ok, leave the possibility
-      // to not consider this.
-      if( partInConeStatus != 1 && GetMCAnalysisUtils()->GetMCGenerator()!="" ) continue ;
       
       if( partInConeMother == i ) continue;
       
-      if( partInConePt < GetReader()->GetCTSPtMin() ) continue;
-      // Careful!!!, cut for TPC tracks and calorimeter clusters in cone can be different
-      
-      // TVector3 vmcv(mcisop->Px(),mcisop->Py(), mcisop->Pz());
-      // if(vmcv.Perp()>1)
-      //   continue;
-      
       //
-      // Add here Acceptance cut???, charged particles CTS fid cut, neutral Calo real acceptance.
+      // Apply acceptance and energy/pt cut for particles in cone
+      if(fSelectPrimariesInCone)
+      {
+        if( partInConeCharge > 0) // charged pT cut and acceptance
+        {
+          if( partInConePt < GetReader()->GetCTSPtMin () ) continue;
+          
+          if(!GetReader()->GetFiducialCut()->IsInFiducialCut(mcisoLV,"CTS")) continue ;
+        }
+        else // neutrals E cut and acceptance
+        {
+          if( partInConeE  < GetReader()->GetEMCALEMin() ) continue;
+          
+          if(!GetReader()->GetFiducialCut()->IsInFiducialCut(mcisoLV,fCalorimeter)) continue ;
+          
+          if(IsRealCaloAcceptanceOn()) // defined on base class
+          {
+            if(GetReader()->ReadStack()          &&
+               !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fCalorimeter, mcisopStack)) continue ;
+            if(GetReader()->ReadAODMCParticles() &&
+               !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fCalorimeter, mcisopAOD  )) continue ;
+          }
+        }
+      }
       //
       
       dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
@@ -3963,10 +4139,98 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     fhEtaPrimMC[kmcPrimPhoton]->Fill(photonPt , photonEta) ;
     fhPhiPrimMC[kmcPrimPhoton]->Fill(photonPt , photonPhi) ;
     fhEPrimMC  [kmcPrimPhoton]->Fill(photonE) ;
+    fhPtPrimMC [kmcPrimPhoton]->Fill(photonPt) ;
     
     fhEtaPrimMC[mcIndex]->Fill(photonPt , photonEta) ;
     fhPhiPrimMC[mcIndex]->Fill(photonPt , photonPhi) ;
     fhEPrimMC  [mcIndex]->Fill(photonE ) ;
+    fhPtPrimMC [mcIndex]->Fill(photonPt) ;
+    
+    // In case the photon is a decay from pi0,
+    // study how the decay kinematics affects the isolation
+    TLorentzVector pi0mom, daugh1mom, daugh2mom;
+    Int_t  ndaugh   = -1;
+    Bool_t okpi0    =  0, ok1     =  0, ok2     =  0;
+    Int_t  pi0label = -1, d1Label = -1, d2Label = -1;
+    Bool_t d2Acc   = kTRUE, overlap = kTRUE;
+    Int_t  d2AbsId = -1;
+    Float_t dRdaugh2 = 0, d12Angle = 0;
+    if(mcIndex == kmcPrimPi0Decay && fMakePrimaryPi0DecayStudy)
+    {
+      pi0mom = GetMCAnalysisUtils()->GetMotherWithPDG(i,111,GetReader(),okpi0, pi0label);
+      if(okpi0)
+      {
+        ndaugh = GetMCAnalysisUtils()->GetNDaughters(pi0label,GetReader(), okpi0);
+        if(ndaugh==2)
+        {
+          Int_t d1Pdg = 0, d1Status = 0;
+          daugh1mom = GetMCAnalysisUtils()->GetDaughter(0,pi0label,GetReader(),d1Pdg, d1Status,ok1, d1Label);
+          Int_t d2Pdg = 0, d2Status = 0;
+          daugh2mom = GetMCAnalysisUtils()->GetDaughter(1,pi0label,GetReader(),d2Pdg, d2Status,ok2, d2Label);
+          if(d2Pdg != d1Pdg && d1Pdg!=22) okpi0 = kFALSE;
+
+          // Check the momentum and location of second daughter
+          if(okpi0)
+          {
+            // assign current trigger to first daughter
+            if(d1Label!=i)
+            {
+              Int_t tmpLabel = d2Label;
+              d2Label = d1Label;
+              d1Label = tmpLabel;
+              TLorentzVector tmpLV = daugh2mom;
+              daugh2mom = daugh1mom;
+              daugh1mom = tmpLV;
+            }
+            
+            // Check if photons hit the Calorimeter acceptance
+            if(IsRealCaloAcceptanceOn() && fIsoDetector!="CTS") // defined on base class
+                 d2Acc = GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fIsoDetector,daugh2mom,d2AbsId) ;
+
+            //printf("D2  (eta %2.2f,phi %2.2f)in real calo %d, with absId %d\n",
+            //       daugh2mom.Eta(), daugh2mom.Phi()*TMath::RadToDeg(),d2Acc,d2AbsId);
+            
+            // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
+            if(d2Acc) d2Acc = GetReader()->GetFiducialCut()->IsInFiducialCut(daugh2mom,fIsoDetector);
+            //printf("D2 fidcut %d\n",d2Acc);
+            
+            Float_t phiDaugh2 = daugh2mom.Phi();
+            if(phiDaugh2 < 0) phiDaugh2+=TMath::TwoPi();
+            dRdaugh2 = GetIsolationCut()->Radius(photonEta, photonPhi, daugh2mom.Eta(),phiDaugh2);
+
+            // Opening angle, check if pairs will likely overlap
+            d12Angle = daugh1mom.Angle(daugh2mom.Vect());
+            if(d12Angle > overlapAngle) overlap = kFALSE;
+
+          }
+        }
+      }
+      
+      //printf("Check mother of label %d: mom label %d, okmom %d ndaugh %d, daugh label1 %d, label2 %d, ok1 %d, ok2 %d, R %2.3f, opening angle %2.3f, overlap %d\n",
+      //       i, pi0label,okpi0,ndaugh,d1Label,d2Label,ok1,ok2, dRdaugh2, d12Angle, overlap);
+      
+      // Second decay out of cone
+      if(dRdaugh2 > GetIsolationCut()->GetConeSize())
+        fhPtPrimMCPi0DecayPairOutOfCone->Fill(photonPt);
+      
+      // Second decay out of acceptance
+      if(!ok2 || !d2Acc)
+        fhPtPrimMCPi0DecayPairOutOfAcceptance->Fill(photonPt);
+    
+      // Not Overlapped decay
+      if(!overlap) fhPtPrimMCPi0DecayPairNoOverlap->Fill(photonPt);
+      
+      // Second decay pt smaller than threshold
+      if(d2Acc && dRdaugh2 < GetIsolationCut()->GetConeSize() &&
+         daugh2mom.E() < GetIsolationCut()->GetPtThreshold())
+      {
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPt->Fill(photonPt);
+        if(!overlap) fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
+      }
+    } // pi0 decay
+    
+    if(mcIndex == kmcPrimPi0 && fMakePrimaryPi0DecayStudy && overlapPi0)
+      fhPtPrimMCPi0Overlap->Fill(photonPt);
     
     // Isolated?
     Bool_t isolated = kFALSE;
@@ -3983,8 +4247,32 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     {
       fhPtPrimMCiso [mcIndex]      ->Fill(photonPt) ;
       fhPtPrimMCiso [kmcPrimPhoton]->Fill(photonPt) ;
-    }
-    
+      if(mcIndex == kmcPrimPi0Decay && fMakePrimaryPi0DecayStudy)
+      {
+        // Not Overlapped decay
+        if(!overlap) fhPtPrimMCPi0DecayIsoPairNoOverlap->Fill(photonPt);
+        
+        // Second decay out of cone
+        if(dRdaugh2 > GetIsolationCut()->GetConeSize())
+          fhPtPrimMCPi0DecayIsoPairOutOfCone->Fill(photonPt);
+        
+        // Second decay out of acceptance
+        if(!ok2 || !d2Acc)
+          fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->Fill(photonPt);
+        
+        // Second decay pt smaller than threshold
+        if(d2Acc && dRdaugh2 < GetIsolationCut()->GetConeSize() &&
+           daugh2mom.E() < GetIsolationCut()->GetPtThreshold())
+        {
+          fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->Fill(photonPt);
+          if(!overlap) fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
+        }
+      }// pi0 decay
+      
+      if(mcIndex == kmcPrimPi0 && fMakePrimaryPi0DecayStudy && overlapPi0)
+        fhPtPrimMCPi0IsoOverlap->Fill(photonPt);
+      
+    } // isolated
   }//loop on primaries
   
   if(GetDebug() > 0) printf("AliAnaParticleIsolation::FillAcceptanceHistograms() - End \n");

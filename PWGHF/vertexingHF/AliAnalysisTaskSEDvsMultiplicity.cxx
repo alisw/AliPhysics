@@ -577,25 +577,37 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
 
-  Int_t countTreta1=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
-  Int_t countTreta03=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-0.3,0.3);
-  Int_t countTreta05=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-0.5,0.5);
-  Int_t countTreta16=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.6,1.6);
+  // Int_t countTreta1=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
+  // Int_t countTreta03=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-0.3,0.3);
+  // Int_t countTreta05=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-0.5,0.5);
+  // Int_t countTreta16=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.6,1.6);
+  Int_t countTreta1=0, countTreta03=0, countTreta05=0, countTreta16=0;
+  AliAODTracklets* tracklets=aod->GetTracklets();
+  Int_t nTr=tracklets->GetNumberOfTracklets();
+  for(Int_t iTr=0; iTr<nTr; iTr++){
+    Double_t theta=tracklets->GetTheta(iTr);
+    Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+    if(eta>-0.3 && eta<0.3) countTreta03++;
+    if(eta>-0.5 && eta<0.5) countTreta05++;
+    if(eta>-1.0 && eta<1.0) countTreta1++;
+    if(eta>-1.6 && eta<1.6) countTreta16++;
+  }
+  
 
   Int_t vzeroMult=0;
   Int_t vzeroMultA=0;
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
   if(vzeroAOD) {
-    vzeroMult = vzeroAOD->GetMTotV0A() +  vzeroAOD->GetMTotV0C();
     vzeroMultA = vzeroAOD->GetMTotV0A();
+    vzeroMult = vzeroMultA + vzeroAOD->GetMTotV0C();
   }
 
   Int_t countMult = countTreta1;
   if(fMultiplicityEstimator==kNtrk03) { countMult = countTreta03; }
-  if(fMultiplicityEstimator==kNtrk05) { countMult = countTreta05; }
-  if(fMultiplicityEstimator==kNtrk10to16) { countMult = countTreta16 - countTreta1; }
-  if(fMultiplicityEstimator==kVZERO) { countMult = vzeroMult; }
-  if(fMultiplicityEstimator==kVZEROA) { countMult = vzeroMultA; }
+  else if(fMultiplicityEstimator==kNtrk05) { countMult = countTreta05; }
+  else if(fMultiplicityEstimator==kNtrk10to16) { countMult = countTreta16 - countTreta1; }
+  else if(fMultiplicityEstimator==kVZERO) { countMult = vzeroMult; }
+  else if(fMultiplicityEstimator==kVZEROA) { countMult = vzeroMultA; }
 
 
   fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult);
@@ -666,9 +678,56 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
      }
   
 
-    Int_t nChargedMC=AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.0,1.0);
-    Int_t nChargedMCPrimary=AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.0,1.0);
-    Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.0,1.0);
+    // Int_t nChargedMC=AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.0,1.0);
+    // Int_t nChargedMCPrimary=AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.0,1.0);
+    // Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.0,1.0);
+    //
+    Int_t nChargedMCEta10=0, nChargedMCEta03=0, nChargedMCEta05=0, nChargedMCEta16=0, nChargedMCEtam37tm17=0, nChargedMCEta28t51=0;
+    Int_t nChargedMCPrimaryEta10=0, nChargedMCPrimaryEta03=0, nChargedMCPrimaryEta05=0, nChargedMCPrimaryEta16=0, nChargedMCPrimaryEtam37tm17=0, nChargedMCPrimaryEta28t51=0;
+    Int_t nChargedMCPhysicalPrimaryEta10=0, nChargedMCPhysicalPrimaryEta03=0, nChargedMCPhysicalPrimaryEta05=0, nChargedMCPhysicalPrimaryEta16=0, nChargedMCPhysicalPrimaryEtam37tm17=0, nChargedMCPhysicalPrimaryEta28t51=0;
+    for(Int_t i=0; i<arrayMC->GetEntriesFast(); i++){
+      AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(i);
+      Int_t charge = part->Charge();
+      Double_t eta = part->Eta();
+      Bool_t isPrim = part->IsPrimary();
+      Bool_t isPhysPrim = part->IsPhysicalPrimary();
+      if(charge!=0) {
+	if(eta>-0.3 && eta< 0.3) { 
+	  nChargedMCEta03++;
+	  if(isPrim) nChargedMCPrimaryEta03++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEta03++;
+	}
+	if(eta>-0.5 && eta< 0.5) { 
+	  nChargedMCEta05++;
+	  if(isPrim) nChargedMCPrimaryEta05++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEta05++;
+	}
+	if(eta>-1.0 && eta< 1.0) { 
+	  nChargedMCEta10++;
+	  if(isPrim) nChargedMCPrimaryEta10++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEta10++;
+	}
+	if(eta>-1.6 && eta< 1.6) { 
+	  nChargedMCEta16++;
+	  if(isPrim) nChargedMCPrimaryEta16++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEta16++;
+	}
+	if(eta>-3.7 && eta<-1.7) { 
+	  nChargedMCEtam37tm17++;
+	  if(isPrim) nChargedMCPrimaryEtam37tm17++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEtam37tm17++;
+	}
+	if(eta> 2.8 && eta< 5.1) { 
+	  nChargedMCEta28t51++;
+	  if(isPrim) nChargedMCPrimaryEta28t51++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEta28t51++;
+	}
+      }
+    }
+    Int_t nChargedMC=nChargedMCEta10;
+    Int_t nChargedMCPrimary=nChargedMCPrimaryEta10;
+    Int_t nChargedMCPhysicalPrimary=nChargedMCPhysicalPrimaryEta10;
+
 
     // Compute the Nch weights (reference is Ntracklets within |eta|<1.0)
     if(fUseNchWeight){
@@ -685,24 +744,24 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     }
 
     // Now recompute the variables in case another MC estimator is considered
-    Int_t nChargedMCEta10 = nChargedMC;
-    Int_t nChargedMCEta16 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.6,1.6);
-    Int_t nChargedMCEta05 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-0.5,0.5);
-    Int_t nChargedMCEta03 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-0.3,0.3);
-    Int_t nChargedMCEtam37tm17 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-3.7,-1.7);
-    Int_t nChargedMCEta28t51 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,2.8,5.1);
-    Int_t nChargedMCPrimaryEta10 = nChargedMCPrimary;
-    Int_t nChargedMCPrimaryEta16 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.6,1.6);
-    Int_t nChargedMCPrimaryEta05 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-0.5,0.5);
-    Int_t nChargedMCPrimaryEta03 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-0.3,0.3);
-    Int_t nChargedMCPrimaryEtam37tm17 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-3.7,-1.7);
-    Int_t nChargedMCPrimaryEta28t51 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,2.8,5.1);
-    Int_t nChargedMCPhysicalPrimaryEta10 = nChargedMCPhysicalPrimary;
-    Int_t nChargedMCPhysicalPrimaryEta16 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.6,1.6);
-    Int_t nChargedMCPhysicalPrimaryEta05 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-0.5,0.5);
-    Int_t nChargedMCPhysicalPrimaryEta03 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-0.3,0.3);
-    Int_t nChargedMCPhysicalPrimaryEtam37tm17 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-3.7,-1.7);
-    Int_t nChargedMCPhysicalPrimaryEta28t51 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,2.8,5.1);
+    // Int_t nChargedMCEta10 = nChargedMC;
+    // Int_t nChargedMCEta16 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.6,1.6);
+    // Int_t nChargedMCEta05 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-0.5,0.5);
+    // Int_t nChargedMCEta03 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-0.3,0.3);
+    // Int_t nChargedMCEtam37tm17 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-3.7,-1.7);
+    // Int_t nChargedMCEta28t51 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,2.8,5.1);
+    // Int_t nChargedMCPrimaryEta10 = nChargedMCPrimary;
+    // Int_t nChargedMCPrimaryEta16 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.6,1.6);
+    // Int_t nChargedMCPrimaryEta05 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-0.5,0.5);
+    // Int_t nChargedMCPrimaryEta03 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-0.3,0.3);
+    // Int_t nChargedMCPrimaryEtam37tm17 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-3.7,-1.7);
+    // Int_t nChargedMCPrimaryEta28t51 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,2.8,5.1);
+    // Int_t nChargedMCPhysicalPrimaryEta10 = nChargedMCPhysicalPrimary;
+    // Int_t nChargedMCPhysicalPrimaryEta16 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.6,1.6);
+    // Int_t nChargedMCPhysicalPrimaryEta05 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-0.5,0.5);
+    // Int_t nChargedMCPhysicalPrimaryEta03 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-0.3,0.3);
+    // Int_t nChargedMCPhysicalPrimaryEtam37tm17 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-3.7,-1.7);
+    // Int_t nChargedMCPhysicalPrimaryEta28t51 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,2.8,5.1);
     if(fMCPrimariesEstimator==kEta10to16){
       nChargedMC = nChargedMCEta16 - nChargedMCEta10;
       nChargedMCPrimary = nChargedMCPrimaryEta16 - nChargedMCPrimaryEta10;

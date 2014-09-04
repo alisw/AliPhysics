@@ -25,7 +25,8 @@ AliParticleContainer::AliParticleContainer():
   fMCTrackBitMap(0),
   fMinMCLabel(0),
   fMCFlag(0),
-  fGeneratorIndex(-1)
+  fGeneratorIndex(-1),
+  fCharge(-1)
 {
   // Default constructor.
 
@@ -44,7 +45,8 @@ AliParticleContainer::AliParticleContainer(const char *name):
   fMCTrackBitMap(0),
   fMinMCLabel(0),
   fMCFlag(0),
-  fGeneratorIndex(-1)
+  fGeneratorIndex(-1),
+  fCharge(-1)
 {
   // Standard constructor.
 
@@ -99,7 +101,7 @@ AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) const {
   if(!vp) return 0;
 
   if(AcceptParticle(vp))
-    return vp;
+      return vp;
   else {
     AliDebug(2,"Particle not accepted.");
     return 0;
@@ -200,6 +202,9 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp) const
     return kFALSE;
 
   if (fGeneratorIndex >= 0 && fGeneratorIndex != vp->GetGeneratorIndex())
+    return kFALSE;
+
+  if (fCharge>=0 && fCharge != vp->Charge() )
     return kFALSE;
   
   return kTRUE;

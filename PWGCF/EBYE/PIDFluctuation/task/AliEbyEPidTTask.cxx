@@ -150,11 +150,11 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   fEventCounter->Fill(2);
 
   Int_t gCent   = -1;
-  Float_t gRefMul = -1;
+ // Float_t gRefMul = -1;
   
   AliAODHeader *aodHeader = event->GetHeader();
   gCent = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-  gRefMul = aodHeader->GetRefMultiplicity();
+ // gRefMul = aodHeader->GetRefMultiplicity();
   if (gCent < 0 || gCent > 100) return;
   fEventCounter->Fill(3);  
 

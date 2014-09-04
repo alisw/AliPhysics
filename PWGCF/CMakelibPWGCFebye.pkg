@@ -68,6 +68,7 @@ set ( SRCS
     EBYE/NetParticle/AliAnalysisNetParticleEffCont.cxx
     EBYE/NetParticle/AliAnalysisNetParticleHelper.cxx
     EBYE/NetParticle/AliAnalysisTaskNetParticle.cxx
+    EBYE/NetParticle/AliAnalysisNetParticleQA.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

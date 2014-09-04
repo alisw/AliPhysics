@@ -119,9 +119,14 @@ void AliEmcalTrackingQATask::GenerateHistoBins()
   fPtResHistBins = new Double_t[fNPtResHistBins+1];
   GenerateFixedBinArray(fNPtResHistBins, -2, 2, fPtResHistBins);
 
-  fN1OverPtResHistBins = 100;
+  fN1OverPtResHistBins = 385;
   f1OverPtResHistBins = new Double_t[fN1OverPtResHistBins+1];
-  GenerateFixedBinArray(fN1OverPtResHistBins, 0, 1, f1OverPtResHistBins);
+  GenerateFixedBinArray(100, 0, 0.02, f1OverPtResHistBins);
+  GenerateFixedBinArray(60, 0.02, 0.05, f1OverPtResHistBins+100);
+  GenerateFixedBinArray(50, 0.05, 0.1, f1OverPtResHistBins+160);
+  GenerateFixedBinArray(50, 0.1, 0.2, f1OverPtResHistBins+210);
+  GenerateFixedBinArray(75, 0.2, 0.5, f1OverPtResHistBins+260);
+  GenerateFixedBinArray(50, 0.5, 1.5, f1OverPtResHistBins+335);
 
   fNIntegerHistBins = 10;
   fIntegerHistBins = new Double_t[fNIntegerHistBins+1];

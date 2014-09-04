@@ -28,6 +28,7 @@ class AliESDEvent;
 class AliPhysicsSelection;
 class AliCFContainer;
 class AliPIDResponse;
+class AliAnalysisUtils;
 
 #include "TString.h"
 
@@ -53,6 +54,7 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   
   void SetAnalysisType               (const char* analysisType          = "ESD"  ) { fAnalysisType                = analysisType;               }
+  void SetCollidingSystem            (const char* collidingSystem       = "pp") { fCollidingSystem             = collidingSystem;            }
   void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = kFALSE ) { fkRerunV0CascVertexers       = rerunV0CascVertexers;       }
   void SetSDDSelection               (Bool_t sddOnSelection             = kTRUE  ) { fkSDDSelectionOn             = sddOnSelection;             }
   void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE  ) { fkQualityCutZprimVtxPos      = qualityCutZprimVtxPos;      }
@@ -74,9 +76,13 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
         // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
 
 
-        TString         fAnalysisType;                  // "ESD" or "AOD" analysis type	
-        AliESDtrackCuts *fESDtrackCuts;                 // ESD track cuts used for primary track definition
-        AliPIDResponse  *fPIDResponse;                  //! PID response object
+        TString          fAnalysisType;                  // "ESD" or "AOD" analysis type	
+       // TString          fCollidingSystem;               // "pPb" or "pp" colliding system
+        AliESDtrackCuts  *fESDtrackCuts;                 // ESD track cuts used for primary track definition
+       // AliPIDResponse   *fPIDResponse;                  //! PID response object
+        AliAnalysisUtils *fUtils;                        // analysis utils (for pA vertex selection)
+        TString          fCollidingSystem;               // "pPb" or "pp" colliding system
+        AliPIDResponse   *fPIDResponse;                  //! PID response object
 
         Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
         Bool_t          fkSDDSelectionOn;               // Boolena : kTRUE = select events with SDD on

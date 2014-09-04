@@ -231,7 +231,6 @@ Bool_t AliSpectraAODEventCuts::CheckMultiplicityCut()
 //______________________________________________________
 Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
 { 
-  Double_t qxEPVZERO = -999., qyEPVZERO = -999.;
   Double_t qVZERO = -999.;
   Double_t psi=-999.;
   
@@ -239,8 +238,8 @@ Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
     qVZERO=CalculateQVectorLHC10h();
     psi=fPsiV0A;
   }else{
-    psi=fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,10,2,qxEPVZERO,qyEPVZERO);//FIXME we can a flag for 2010 and 2011
-    qVZERO= TMath::Sqrt(qxEPVZERO*qxEPVZERO + qyEPVZERO*qyEPVZERO);
+    qVZERO=CalculateQVector();
+    psi=fPsiV0A;
   }
   
   //cut on q vector
@@ -372,6 +371,43 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
   ((TH2F*)fOutput->FindObject("fQVecCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0C);
   
   return fqV0A; //FIXME we have to combine VZERO-A and C
+}
+
+//______________________________________________________
+Double_t AliSpectraAODEventCuts::CalculateQVector(){
+  
+  //V0 info    
+  Double_t Qxa2 = 0, Qya2 = 0;
+  Double_t Qxc2 = 0, Qyc2 = 0;
+  
+  AliAODVZERO* aodV0 = fAOD->GetVZEROData();
+  
+  for (Int_t iv0 = 0; iv0 < 64; iv0++) {
+    
+    Float_t multv0 = aodV0->GetMultiplicity(iv0);
+  
+    ((TH2F*)fOutput->FindObject("fV0M"))->Fill(iv0,multv0);
+    
+  }
+
+  fPsiV0A = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,8,2,Qxa2,Qya2); // V0A
+  fPsiV0C = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,9,2,Qxc2,Qyc2); // V0C
+  
+  ((TH2F*)fOutput->FindObject("fPsiACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fPsiV0A);
+  ((TH2F*)fOutput->FindObject("fPsiCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fPsiV0C);
+  
+  fqV0A = TMath::Sqrt((Qxa2*Qxa2 + Qya2*Qya2));
+  fqV0C = TMath::Sqrt((Qxc2*Qxc2 + Qyc2*Qyc2));
+  fqV0Ax = Qxa2;
+  fqV0Cx = Qxc2;
+  fqV0Ay = Qya2;
+  fqV0Cy = Qyc2;
+  
+  ((TH2F*)fOutput->FindObject("fQVecACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0A);
+  ((TH2F*)fOutput->FindObject("fQVecCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0C);
+  
+  return fqV0A; //FIXME we have to combine VZERO-A and C
+  
 }
 
 //______________________________________________________

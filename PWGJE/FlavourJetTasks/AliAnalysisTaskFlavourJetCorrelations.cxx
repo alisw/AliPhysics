@@ -427,6 +427,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    }
     
     //Background Subtraction for jets
+    //If there's no background subtraction rhoval=0 and momentum is simply not took into account
     AliRhoParameter *rho = 0;
     Double_t rhoval = 0;
     TString sname("Rho");
@@ -461,7 +462,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    if(fLeadingJetOnly){
       for (Int_t iJetsL = 0; iJetsL<njets; iJetsL++) {    
       	 AliEmcalJet* jetL = (AliEmcalJet*)GetJetFromArray(iJetsL);
-      	 ptjet   = jetL->Pt() - jetL->Area()*rhoval; //background subtraction
+      	 ptjet   = jetL->Pt() - jetL->Area()*rhoval; //It takes into account the background subtraction
       	 if(ptjet>leadingJet ) leadingJet = ptjet;
       	 
       }
@@ -486,12 +487,12 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       ejet   = jet->E();
       phiJet = jet->Phi();
       etaJet = jet->Eta();
-      fPtJet = jet->Pt() - jet->Area()*rhoval; //background subtraction
+      fPtJet = jet->Pt() - jet->Area()*rhoval; //It takes into account the background subtraction
       Double_t origPtJet=fPtJet;
       
       pointJ[0] = phiJet;
       pointJ[1] = etaJet;
-      pointJ[2] = ptjet - jet->Area()*rhoval; //background subtraction
+      pointJ[2] = ptjet - jet->Area()*rhoval; //It takes into account the background subtraction
       pointJ[3] = ejet;
       pointJ[4] = jet->GetNumberOfConstituents();
       pointJ[5] = jet->Area();
@@ -561,16 +562,18 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
 
       	    Double_t pjet[3];
       	    jet->PxPyPz(pjet);
-             //background subtraction
+             //It corrects the jet momentum if it was asked for jet background subtraction
              pjet[0] = jet->Px() - jet->Area()*(rhoval*TMath::Cos(jet->AreaPhi()));
              pjet[1] = jet->Py() - jet->Area()*(rhoval*TMath::Sin(jet->AreaPhi()));
              pjet[2] = jet->Pz() - jet->Area()*(rhoval*TMath::SinH(jet->AreaEta()));
+             
+            //It corrects the jet momentum due to D daughters out of the jet
       	    RecalculateMomentum(pjet,fPmissing);      	          	    
-      	    fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]);
+      	    fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]); //recalculated jet pt
       	    
       	    
       	    //debugging histograms
-      	    Double_t pmissing=TMath::Sqrt(fPmissing[0]*fPmissing[0]+fPmissing[1]*fPmissing[1]+fPmissing[2]*fPmissing[2]);
+      	    Double_t pmissing=TMath::Sqrt(fPmissing[0]*fPmissing[0]+fPmissing[1]*fPmissing[1]+fPmissing[2]*fPmissing[2]); //recalculated jet total momentum
       	    for(Int_t k=0;k<3;k++) ((TH1F*)fOutput->FindObject(Form("hMissP%d",k)))->Fill(fPmissing[k]);
       	    
       	    ((TH1F*)fOutput->FindObject("hmissingp"))->Fill(pmissing);
@@ -593,12 +596,14 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       	       fIsDInJet=IsDInJet(jet, sbcand,kFALSE);
       	       Double_t pjet[3];
       	       jet->PxPyPz(pjet);
-                //background subtraction
+                //It corrects the jet momentum if it was asked for jet background subtraction
                 pjet[0] = jet->Px() - jet->Area()*(rhoval*TMath::Cos(jet->AreaPhi()));
                 pjet[1] = jet->Py() - jet->Area()*(rhoval*TMath::Sin(jet->AreaPhi()));
                 pjet[2] = jet->Pz() - jet->Area()*(rhoval*TMath::SinH(jet->AreaEta()));
+                
+               //It corrects the jet momentum due to D daughters out of the jet
       	       RecalculateMomentum(pjet,fPmissing);      	          	    
-      	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]);
+      	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]); //recalculated jet pt
       	       
      	       SideBandBackground(sbcand,jet);
      	       
@@ -616,12 +621,14 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       	       }
       	       Double_t pjet[3];
       	       jet->PxPyPz(pjet);
-      	       //background subtraction
+      	       //It corrects the jet momentum if it was asked for jet background subtraction
       	       pjet[0] = jet->Px() - jet->Area()*(rhoval*TMath::Cos(jet->AreaPhi()));
       	       pjet[1] = jet->Py() - jet->Area()*(rhoval*TMath::Sin(jet->AreaPhi()));
       	       pjet[2] = jet->Pz() - jet->Area()*(rhoval*TMath::SinH(jet->AreaEta()));
+                
+               //It corrects the jet momentum due to D daughters out of the jet
       	       RecalculateMomentum(pjet,fPmissing);      	          	    
-      	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]);
+      	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]); //recalculated jet pt
       	       
       	       MCBackground(charmbg,jet);
       	    }
@@ -713,6 +720,7 @@ Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet
    Bool_t okpj=jet->PxPyPz(pj);
     
     //Background Subtraction
+    //It corrects the each component of the jet momentum for Z calculation
     AliRhoParameter *rho = 0;
     Double_t rhoval = 0;
     TString sname("Rho");
@@ -1087,7 +1095,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
 void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet,  AliAODEvent* aodEvent){
    
    Double_t ptD=candidate->Pt();
-   Double_t deltaR=DeltaR(candidate,jet);
+   Double_t deltaR=DeltaR(jet,candidate);
    Double_t phiD=candidate->Phi();
    Double_t deltaphi = jet->Phi()-phiD;
    if(deltaphi<=-(TMath::Pi())/2.) deltaphi = deltaphi+2.*(TMath::Pi());
@@ -1390,7 +1398,7 @@ void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *cand
    if(!isselected) return;
    
    Double_t ptD=candbg->Pt();
-   Double_t deltaR=DeltaR(candbg,jet);
+   Double_t deltaR=DeltaR(jet,candbg);
    Double_t phiD=candbg->Phi();
    Double_t deltaphi = jet->Phi()-phiD;
    if(deltaphi<=-(TMath::Pi())/2.) deltaphi = deltaphi+2.*(TMath::Pi());
@@ -1478,11 +1486,38 @@ void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *cand
 
 //_______________________________________________________________________________
 
-Float_t AliAnalysisTaskFlavourJetCorrelations::DeltaR(AliVParticle *p1, AliVParticle *p2) const {
+Float_t AliAnalysisTaskFlavourJetCorrelations::DeltaR(AliEmcalJet *p1, AliVParticle *p2) const {
    //Calculate DeltaR between p1 and p2: DeltaR=sqrt(Delataphi^2+DeltaEta^2)
-   
+   //It recalculates the eta-phi values if it was asked for background subtraction of the jets
    if(!p1 || !p2) return -1;
-   Double_t phi1=p1->Phi(),eta1=p1->Eta();
+    
+    Double_t phi1=p1->Phi(),eta1=p1->Eta();
+    
+    //It subtracts the backgroud of jets if it was asked for it.
+    TString sname("Rho");
+    if (!sname.IsNull()) {
+        AliRhoParameter *rho = 0;
+        rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(sname));
+        if(rho){
+            Double_t pj[3];
+            Bool_t okpj=p1->PxPyPz(pj);
+            if(!okpj){
+                printf("Problems getting momenta\n");
+                return -999;
+            }
+            Double_t rhoval = rho->GetVal();
+            pj[0] = p1->Px() - p1->Area()*(rhoval*TMath::Cos(p1->AreaPhi()));
+            pj[1] = p1->Py() - p1->Area()*(rhoval*TMath::Sin(p1->AreaPhi()));
+            pj[2] = p1->Pz() - p1->Area()*(rhoval*TMath::SinH(p1->AreaEta()));
+            //Image of the function Arccos(px/pt) where pt = sqrt(px*px+py*py) is:
+            //[0,pi]    if py > 0 and
+            //[pi,2pi]  if py < 0
+            phi1 = TMath::ACos(pj[0]/TMath::Sqrt(pj[0]*pj[0]+pj[1]*pj[1]));
+            if(pj[1]<0) phi1 = 2*TMath::Pi() - phi1;
+            eta1 = TMath::ASinH(pj[2]/TMath::Sqrt(pj[0]*pj[0]+pj[1]*pj[1]));
+        }
+    }
+   
    Double_t phi2 = p2->Phi(),eta2 = p2->Eta() ;
    
    Double_t dPhi=phi1-phi2;

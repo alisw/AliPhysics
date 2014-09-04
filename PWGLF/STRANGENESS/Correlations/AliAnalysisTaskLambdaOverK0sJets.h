@@ -71,7 +71,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
  public:
   
-  enum V0LoopStep_t { kTriggerCheck=1, kReconstruction=2 };
+  enum V0LoopStep_t  { kTriggerCheck=1, kReconstruction=2 };
 
   AliAnalysisTaskLambdaOverK0sJets(const char *name = "AliAnalysisTaskLambdaOverK0sJets");
   virtual ~AliAnalysisTaskLambdaOverK0sJets();
@@ -83,6 +83,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   void SetCentrality(Float_t min=0., Float_t max=90.) {fCentMin=min;fCentMax=max;} 
   void SetQA(Bool_t doQA=kFALSE){fDoQA=doQA;}
   void SetDoMix(Bool_t doMixEvt=kTRUE) {fDoMixEvt=doMixEvt;} 
+  void SetTriggerFilterBit(Int_t triggerFB=128){fTriggerFB=triggerFB;}
   void SetTriggerPt(Float_t ptMinTrig=8., Float_t ptMaxTrig=50.) {fTrigPtMin=ptMinTrig;fTrigPtMax=ptMaxTrig;} 
   void SetTriggerEta(Float_t etaMaxTrig=0.8){fTrigEtaMax=etaMaxTrig;} 
   void SetCheckIDTrig(Bool_t checkIDTrig=kFALSE){fCheckIDTrig=checkIDTrig;}
@@ -140,6 +141,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Float_t  fCentMax;                     //  Maximum centrality
   Bool_t   fDoQA;                        //  Do Auality Assurance?
   Bool_t   fDoMixEvt;                    //  Do Mixed Events
+  Int_t    fTriggerFB;                   //  Trigger track filter bit
   Float_t  fTrigPtMin;                   //  Minimum pt for trigger particle
   Float_t  fTrigPtMax;                   //  Maximum pt for trigger particle
   Float_t  fTrigPtMCMin;                 //  Minimum pt for trigger particle in MC
@@ -187,6 +189,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TObjArray* fAssocPartMC;               // MC Associated particle array
   
   TH1F*   fEvents;                       //! Counter for the number of events in each step
+  TH2F*   fEvtPerCent;                   //! Counter for the number of events in each step per centrality bin
   TH1F*   fCentrality;                   //! Event centrality per centil
   TH1F*   fCentrality2;                  //! Event centrality per centil with |VtxZ|<10cm
   TH2F*   fCentralityTrig;               //! Event centrality per trigger
@@ -206,6 +209,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH2F*   fNTrigPerEvt;                  //! Trigger particle: Number of particle triggers per event
   TH1F*   fTriggerWiSPDHit;              //! Trigger particle: Has Hits in the SPD?
   TH2F*   fTriggerEtaPhi;                //! Trigger particle: eta vs phi
+  TH2F*   fTriggerDCA;                   //! Trigger particle: dca to primary vertex
   TH1F*   fCheckTriggerFromV0Daug;       //! Trigger particle: it is a daughter from a V0-candidate
   TH1F*   fTriggerComingFromDaug;        //! Trigger particle: pt when LP is a daughter from a V0-candidate
   TH1F*   fTriggerIsV0;                  //! Trigger particle: the V0 is the highest-pt particle

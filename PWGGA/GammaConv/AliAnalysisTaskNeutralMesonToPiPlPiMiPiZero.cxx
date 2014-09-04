@@ -16,7 +16,6 @@
 //
 
 #include <vector>
-
 #include "TParticle.h"
 #include "TPDGCode.h"
 #include "TMCProcess.h"
@@ -73,18 +72,23 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fReaderGammas(NULL),
 	fSelectorNegPionIndex(0),
 	fSelectorPosPionIndex(0),
-	fGoodGammas(NULL),
+	fGoodConvGammas(NULL),
+	fClusterCandidates(NULL),
 	fNeutralPionCandidates(NULL),
 	fGoodVirtualParticles(NULL),
 	fEventCutArray(NULL),
 	fGammaCutArray(NULL),
+	fClusterCutArray(NULL),
 	fPionCutArray(NULL),
 	fNeutralPionMesonCutArray(NULL),
 	fMesonCutArray(NULL),
 	fEventCuts(NULL),
 	fConversionCuts(NULL),
+	fClusterCuts(NULL),
 	fHistoConvGammaPt(NULL),
 	fHistoConvGammaEta(NULL),
+	fHistoClusterGammaPt(NULL),
+	fHistoClusterGammaEta(NULL),
 	fHistoNegPionPt(NULL),
 	fHistoPosPionPt(NULL),
 	fHistoNegPionPhi(NULL),
@@ -120,6 +124,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoTrueMotherGammaGammaFromOmegaInvMassPt(NULL),
 	fHistoTrueConvGammaPt(NULL),
 	fHistoTrueConvGammaFromNeutralMesonPt(NULL),
+	fHistoTrueClusterGammaPt(NULL),
+	fHistoTrueClusterGammaFromNeutralMesonPt(NULL),
 	fHistoTruePosPionPt(NULL),
 	fHistoTruePosPionFromNeutralMesonPt(NULL),
 	fHistoTrueNegPionPt(NULL),
@@ -140,7 +146,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fDoMesonAnalysis(kTRUE),
 	fDoMesonQA(kFALSE),
 	fIsFromMBHeader(kTRUE),
-	fIsMC(kFALSE)
+	fIsMC(kFALSE),
+	fNeutralPionMode(0)
 {
 
 }
@@ -164,18 +171,23 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fReaderGammas(NULL),
 	fSelectorNegPionIndex(0),
 	fSelectorPosPionIndex(0),
-	fGoodGammas(NULL),
+	fGoodConvGammas(NULL),
+	fClusterCandidates(NULL),
 	fNeutralPionCandidates(NULL),	
 	fGoodVirtualParticles(NULL),
 	fEventCutArray(NULL),
 	fGammaCutArray(NULL),
+	fClusterCutArray(NULL),
 	fPionCutArray(NULL),
 	fNeutralPionMesonCutArray(NULL),
 	fMesonCutArray(NULL),
 	fEventCuts(NULL),
 	fConversionCuts(NULL),
+	fClusterCuts(NULL),
 	fHistoConvGammaPt(NULL),
 	fHistoConvGammaEta(NULL),
+	fHistoClusterGammaPt(NULL),
+	fHistoClusterGammaEta(NULL),
 	fHistoNegPionPt(NULL),
 	fHistoPosPionPt(NULL),
 	fHistoNegPionPhi(NULL),
@@ -211,6 +223,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoTrueMotherGammaGammaFromOmegaInvMassPt(NULL),
 	fHistoTrueConvGammaPt(NULL),
 	fHistoTrueConvGammaFromNeutralMesonPt(NULL),
+	fHistoTrueClusterGammaPt(NULL),
+	fHistoTrueClusterGammaFromNeutralMesonPt(NULL),
 	fHistoTruePosPionPt(NULL),
 	fHistoTruePosPionFromNeutralMesonPt(NULL),
 	fHistoTrueNegPionPt(NULL),
@@ -231,7 +245,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fDoMesonAnalysis(kTRUE),
 	fDoMesonQA(kFALSE),
 	fIsFromMBHeader(kTRUE),
-	fIsMC(kFALSE)
+	fIsMC(kFALSE),
+	fNeutralPionMode(0)
 {
    DefineOutput(1, TList::Class());
 }
@@ -243,10 +258,15 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::~AliAnalysisTaskNeutralMesonToPiPlP
 	// virtual destructor
 	//
 	cout<<"Destructor"<<endl;
-	if(fGoodGammas){
-		delete fGoodGammas;
-		fGoodGammas = 0x0;
+	if(fGoodConvGammas){
+		delete fGoodConvGammas;
+		fGoodConvGammas = 0x0;
 	}
+	if(fClusterCandidates){
+		delete fClusterCandidates;
+		fClusterCandidates = 0x0;
+	}
+
 	if(fNeutralPionCandidates){
 		delete fNeutralPionCandidates;
 		fNeutralPionCandidates = 0x0;
@@ -273,15 +293,23 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::InitBack(){
 	fTHnSparseMotherBackInvMassPtZM = new THnSparseF*[fnCuts];
 
 	fBGHandler = new AliGammaConversionAODBGHandler*[fnCuts];
+
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 		
 		TString cutstringEvent		= ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
 		TString cutstringPion		= ((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->GetCutNumber();
-		TString cutstringGamma		= ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutNumber();
+		TString cutstringConvGamma = "";
+		if (fNeutralPionMode < 2)  cutstringConvGamma = ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutNumber();
+		TString cutstringCaloGamma = "";
+		if (fNeutralPionMode > 0)  cutstringCaloGamma = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber();
 		TString cutstringNeutralPion= ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(iCut))->GetCutNumber();
 		TString cutstringMeson		= ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
 		
-		TString fullCutString = Form("%s_%s_%s_%s_%s",cutstringEvent.Data(),cutstringGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
+		TString fullCutString = "";
+		if (fNeutralPionMode == 0) fullCutString = Form("%i_%s_%s_%s_%s_%s",fNeutralPionMode,cutstringEvent.Data(),cutstringConvGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
+		else if (fNeutralPionMode == 1) fullCutString = Form("%i_%s_%s_%s_%s_%s_%s",fNeutralPionMode,cutstringEvent.Data(),cutstringConvGamma.Data(),cutstringCaloGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
+		else if (fNeutralPionMode == 2) fullCutString = Form("%i_%s_%s_%s_%s_%s",fNeutralPionMode,cutstringEvent.Data(),cutstringCaloGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
+		
 		TString nameBackList = Form("%s Back histograms",fullCutString.Data());
 		TString nameMotherList = Form("%s Mother histograms",fullCutString.Data());
 		
@@ -346,7 +374,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fOutputContainer->SetOwner(kTRUE);
 	}
 
-	fGoodGammas = new TList();
+	fGoodConvGammas = new TList();
+	fClusterCandidates = new TList();
 	fNeutralPionCandidates = new TList();
 	fGoodVirtualParticles = new TList();
 	
@@ -357,8 +386,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 	fHistoNEvents			= new TH1I*[fnCuts];
 	fHistoNGoodESDTracks	= new TH1I*[fnCuts];
 	fProfileEtaShift		= new TProfile*[fnCuts];
-	fHistoConvGammaPt		= new TH1F*[fnCuts];
-	fHistoConvGammaEta		= new TH1F*[fnCuts];
+	if (fNeutralPionMode < 2){
+		fHistoConvGammaPt		= new TH1F*[fnCuts];
+		fHistoConvGammaEta		= new TH1F*[fnCuts];
+	}
+	if (fNeutralPionMode > 0){
+		fHistoClusterGammaPt		= new TH1F*[fnCuts];
+		fHistoClusterGammaEta		= new TH1F*[fnCuts];
+	}
 	fHistoNegPionPt			= new TH1F*[fnCuts];
 	fHistoPosPionPt			= new TH1F*[fnCuts];
 	fHistoNegPionPhi		= new TH1F*[fnCuts];
@@ -382,11 +417,17 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 		TString cutstringEvent		= ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
 		TString cutstringPion		= ((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->GetCutNumber();
-		TString cutstringGamma		= ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutNumber();
+		TString cutstringConvGamma = "";
+		if (fNeutralPionMode < 2)  cutstringConvGamma = ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutNumber();
+		TString cutstringCaloGamma = "";
+		if (fNeutralPionMode > 0)  cutstringCaloGamma = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber();
 		TString cutstringNeutralPion= ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(iCut))->GetCutNumber();
 		TString cutstringMeson		= ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
 		
-		TString fullCutString = Form("%s_%s_%s_%s_%s",cutstringEvent.Data(),cutstringGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
+		TString fullCutString = "";
+		if (fNeutralPionMode == 0) fullCutString = Form("%i_%s_%s_%s_%s_%s",fNeutralPionMode,cutstringEvent.Data(),cutstringConvGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
+		else if (fNeutralPionMode == 1) fullCutString = Form("%i_%s_%s_%s_%s_%s_%s",fNeutralPionMode,cutstringEvent.Data(),cutstringConvGamma.Data(),cutstringCaloGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
+		else if (fNeutralPionMode == 2) fullCutString = Form("%i_%s_%s_%s_%s_%s",fNeutralPionMode,cutstringEvent.Data(),cutstringCaloGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
 		TString nameCutFolder = Form("Cut Number %s", fullCutString.Data());
 		TString nameESDList = Form("%s ESD histograms", fullCutString.Data());
 		
@@ -418,10 +459,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 
 		fProfileEtaShift[iCut] = new TProfile("Eta Shift","Eta Shift",1, -0.5,0.5);
 		fESDList[iCut]->Add(fProfileEtaShift[iCut]);
-		fHistoConvGammaPt[iCut] = new TH1F("ESD_ConvGamma_Pt","ESD_ConvGamma_Pt",250,0,25);
-		fESDList[iCut]->Add(fHistoConvGammaPt[iCut]);
-		fHistoConvGammaEta[iCut] = new TH1F("ESD_ConvGamma_Eta","ESD_ConvGamma_Eta",600,-1.5,1.5);
-		fESDList[iCut]->Add(fHistoConvGammaEta[iCut]);
+		if (fNeutralPionMode < 2){
+			fHistoConvGammaPt[iCut] = new TH1F("ESD_ConvGamma_Pt","ESD_ConvGamma_Pt",250,0,25);
+			fESDList[iCut]->Add(fHistoConvGammaPt[iCut]);
+			fHistoConvGammaEta[iCut] = new TH1F("ESD_ConvGamma_Eta","ESD_ConvGamma_Eta",600,-1.5,1.5);
+			fESDList[iCut]->Add(fHistoConvGammaEta[iCut]);
+		}
+		if (fNeutralPionMode > 0){
+			fHistoClusterGammaPt[iCut] = new TH1F("ESD_ClusterGamma_Pt","ESD_ClusterGamma_Pt",250,0,25);
+			fESDList[iCut]->Add(fHistoClusterGammaPt[iCut]);
+			fHistoClusterGammaEta[iCut] = new TH1F("ESD_ClusterGamma_Eta","ESD_ClusterGamma_Eta",600,-1.5,1.5);
+			fESDList[iCut]->Add(fHistoClusterGammaEta[iCut]);
+		}
 		fHistoNegPionPt[iCut] = new TH1F("ESD_PrimaryNegPions_Pt","ESD_PrimaryNegPions_Pt",1000,0,25);
 		fESDList[iCut]->Add(fHistoNegPionPt[iCut]);
 		fHistoPosPionPt[iCut] = new TH1F("ESD_PrimaryPosPions_Pt","ESD_PrimaryPosPions_Pt",1000,0,25);
@@ -484,8 +533,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fMCList = new TList*[fnCuts];
 		// True Histogramms
 		fTrueList = new TList*[fnCuts];
-		fHistoTrueConvGammaPt = new TH1F*[fnCuts];
-		fHistoTrueConvGammaFromNeutralMesonPt = new TH1F*[fnCuts];
+		if (fNeutralPionMode < 2){
+			fHistoTrueConvGammaPt = new TH1F*[fnCuts];
+			fHistoTrueConvGammaFromNeutralMesonPt = new TH1F*[fnCuts];
+		}	
+		if (fNeutralPionMode > 0){
+			fHistoTrueClusterGammaPt = new TH1F*[fnCuts];
+			fHistoTrueClusterGammaFromNeutralMesonPt = new TH1F*[fnCuts];
+		}	
 		fHistoTruePosPionPt  = new TH1F*[fnCuts];
 		fHistoTrueNegPionPt  = new TH1F*[fnCuts];		
 		fHistoTruePosPionFromNeutralMesonPt  = new TH1F*[fnCuts];
@@ -493,7 +548,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		
 
 		fHistoMCAllGammaPt  = new TH1F*[fnCuts];
-		fHistoMCConvGammaPt = new TH1F*[fnCuts];
+		if (fNeutralPionMode < 2){
+			fHistoMCConvGammaPt = new TH1F*[fnCuts];
+		}	
 		fHistoMCAllPosPionsPt = new TH1F*[fnCuts];
 		fHistoMCAllNegPionsPt = new TH1F*[fnCuts];
 		fHistoMCGammaFromNeutralMesonPt  = new TH1F*[fnCuts];
@@ -523,11 +580,17 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 			TString cutstringEvent		= ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
 			TString cutstringPion		= ((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->GetCutNumber();
-			TString cutstringGamma		= ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutNumber();
+			TString cutstringConvGamma = "";
+			if (fNeutralPionMode < 2)  cutstringConvGamma = ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutNumber();
+			TString cutstringCaloGamma = "";
+			if (fNeutralPionMode > 0)  cutstringCaloGamma = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber();
 			TString cutstringNeutralPion= ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(iCut))->GetCutNumber();
 			TString cutstringMeson		= ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
 			
-			TString fullCutString = Form("%s_%s_%s_%s_%s",cutstringEvent.Data(),cutstringGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
+			TString fullCutString = "";
+			if (fNeutralPionMode == 0) fullCutString = Form("%i_%s_%s_%s_%s_%s",fNeutralPionMode,cutstringEvent.Data(),cutstringConvGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
+			else if (fNeutralPionMode == 1) fullCutString = Form("%i_%s_%s_%s_%s_%s_%s",fNeutralPionMode,cutstringEvent.Data(),cutstringConvGamma.Data(),cutstringCaloGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
+			else if (fNeutralPionMode == 2) fullCutString = Form("%i_%s_%s_%s_%s_%s",fNeutralPionMode,cutstringEvent.Data(),cutstringCaloGamma.Data(),cutstringNeutralPion.Data(), cutstringPion.Data(),cutstringMeson.Data());
 			TString nameMCList = Form("%s MC histograms", fullCutString.Data());
 			TString nameTrueRecList = Form("%s True histograms", fullCutString.Data());
 
@@ -538,8 +601,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 
 			fHistoMCAllGammaPt[iCut] = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt",250,0,25);
 			fMCList[iCut]->Add(fHistoMCAllGammaPt[iCut]);			
-			fHistoMCConvGammaPt[iCut] = new TH1F("MC_ConvGamma_Pt","MC_ConvGamma_Pt",250,0,25);
-			fMCList[iCut]->Add(fHistoMCConvGammaPt[iCut]);						
+			if (fNeutralPionMode < 2){
+				fHistoMCConvGammaPt[iCut] = new TH1F("MC_ConvGamma_Pt","MC_ConvGamma_Pt",250,0,25);
+				fMCList[iCut]->Add(fHistoMCConvGammaPt[iCut]);						
+			}
+			
 			fHistoMCAllPosPionsPt[iCut] = new TH1F("MC_AllPosPions_Pt","MC_AllPosPions_Pt",1000,0,25);
 			fMCList[iCut]->Add(fHistoMCAllPosPionsPt[iCut]);
 			fHistoMCAllNegPionsPt[iCut] = new TH1F("MC_AllNegPions_Pt","MC_AllNegPions_Pt",1000,0,25);
@@ -572,11 +638,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 			fTrueList[iCut]->SetOwner(kTRUE);
 			fCutFolder[iCut]->Add(fTrueList[iCut]);
 
-			fHistoTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
-			fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
-			fHistoTrueConvGammaFromNeutralMesonPt[iCut] = new TH1F("ESD_TrueConvGammaFromNeutralMeson_Pt","ESD_TrueConvGammaFromNeutralMeson_Pt",250,0,25);
-			fTrueList[iCut]->Add(fHistoTrueConvGammaFromNeutralMesonPt[iCut]);
-		
+			if (fNeutralPionMode < 2){
+				fHistoTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
+				fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
+				fHistoTrueConvGammaFromNeutralMesonPt[iCut] = new TH1F("ESD_TrueConvGammaFromNeutralMeson_Pt","ESD_TrueConvGammaFromNeutralMeson_Pt",250,0,25);
+				fTrueList[iCut]->Add(fHistoTrueConvGammaFromNeutralMesonPt[iCut]);
+			}
+			if (fNeutralPionMode > 0){
+				fHistoTrueClusterGammaPt[iCut] = new TH1F("ESD_TrueClusterGamma_Pt","ESD_TrueClusterGamma_Pt",250,0,25);
+				fTrueList[iCut]->Add(fHistoTrueClusterGammaPt[iCut]);
+				fHistoTrueClusterGammaFromNeutralMesonPt[iCut] = new TH1F("ESD_TrueClusterGammaFromNeutralMeson_Pt","ESD_TrueClusterGammaFromNeutralMeson_Pt",250,0,25);
+				fTrueList[iCut]->Add(fHistoTrueClusterGammaFromNeutralMesonPt[iCut]);
+			}
 			fHistoTruePosPionPt[iCut] = new TH1F("ESD_TruePosPion_Pt","ESD_TruePosPion_Pt",1000,0,25);
 			fTrueList[iCut]->Add(fHistoTruePosPionPt[iCut]);
 			fHistoTrueNegPionPt[iCut] = new TH1F("ESD_TrueNegPion_Pt","ESD_TrueNegPion_Pt",1000,0,25);
@@ -642,11 +715,20 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 				fCutFolder[iCut]->Add( ((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->GetCutHistograms() );
 			}
 		}
-		if( fGammaCutArray ) {
-			if( ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutHistograms() ) {
-				fCutFolder[iCut]->Add( ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutHistograms()  );
+		if (fNeutralPionMode < 2){
+			if( fGammaCutArray ) {
+				if( ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutHistograms() ) {
+					fCutFolder[iCut]->Add( ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutHistograms()  );
+				}
 			}
-		}
+		} 
+		if (fNeutralPionMode > 0){
+			if( fClusterCutArray ) {
+				if( ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutHistograms() ) {
+					fCutFolder[iCut]->Add( ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutHistograms()  );
+				}
+			}			
+		}	
 		if( fNeutralPionMesonCutArray  ) {
 			if( ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(iCut))->GetCutHistograms() ) {
 				fCutFolder[iCut]->Add( ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(iCut))->GetCutHistograms());
@@ -723,19 +805,33 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserExec(Option_t *){
 			ProcessMCParticles();
 		}
 
-		ProcessPhotonCandidates(); // Process this cuts gammas
-		ProcessNeutralPionCandidatesPureConversions(); // Process neutral pion candidates
+		if (fNeutralPionMode < 2){
+			ProcessConversionPhotonCandidates(); // Process this cuts conversion gammas
+		}
+		if (fNeutralPionMode > 0){
+			ProcessCaloPhotonCandidates(); // Process this cuts calo gammas
+		}
+		
+		if (fNeutralPionMode == 0 ){
+			ProcessNeutralPionCandidatesPureConversions(); // Process neutral pion candidates purely from conversions
+		}
+		if (fNeutralPionMode == 1){
+			ProcessNeutralPionCandidatesMixedConvCalo(); // Process neutral pion candidates mixed conv and calo
+		}	
+		if (fNeutralPionMode == 2){
+			ProcessNeutralPionCandidatesPureCalo(); // Process neutral pion candidates purely from calo
+		}	
+			
 		ProcessPionCandidates(); // Process this cuts gammas
 			
 		CalculateMesonCandidates();
 		CalculateBackground();
 		UpdateEventByEventData();
 				
-		fGoodGammas->Clear(); // delete this cuts good gammas
-// 		if (fNeutralPionCandidates->GetEntries()>0)cout << "##################################"<<  fNeutralPionCandidates->GetEntries() << endl;
-		if(fNeutralPionCandidates->GetEntries()>0){
-			fNeutralPionCandidates->Clear();
-		}	
+		
+		if (fGoodConvGammas->GetEntries()>0) fGoodConvGammas->Clear(); 
+		if (fClusterCandidates->GetEntries()>0) fClusterCandidates->Clear();
+		if (fNeutralPionCandidates->GetEntries()>0) fNeutralPionCandidates->Clear();
 		fGoodVirtualParticles->Clear(); // delete this cuts good gammas
 	}
 
@@ -773,8 +869,122 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::Terminate(const Option_t *){
 ///Grid
 }
 
+
 //________________________________________________________________________
-void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPhotonCandidates(){
+void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessCaloPhotonCandidates()
+{
+	
+	Int_t nclus = 0;
+	nclus = fInputEvent->GetNumberOfCaloClusters();
+	
+// 	cout << nclus << endl;
+	
+	if(nclus == 0)	return;
+	
+	// vertex
+	Double_t vertex[3] = {0};
+	InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+	
+	// Loop over EMCal clusters
+	for(Long_t i = 0; i < nclus; i++){
+		
+		AliVCluster* clus = NULL;
+		clus = fInputEvent->GetCaloCluster(i);		
+		if (!clus) continue;
+		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC)) continue;
+		// TLorentzvector with cluster
+		TLorentzVector clusterVector;
+		clus->GetMomentum(clusterVector,vertex);
+		
+		TLorentzVector* tmpvec = new TLorentzVector();
+		tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
+		
+		// convert to AODConversionPhoton
+		AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(tmpvec);
+		if(!PhotonCandidate) continue;
+		
+		// Flag Photon as CaloPhoton
+		PhotonCandidate->SetIsCaloPhoton();
+		PhotonCandidate->SetCaloClusterRef(i);
+		// get MC label
+		if(fIsMC){
+			Int_t* mclabelsCluster = clus->GetLabels();
+			PhotonCandidate->SetNCaloPhotonMCLabels(clus->GetNLabels());
+// 			cout << clus->GetNLabels() << endl;
+			if (clus->GetNLabels()>0){
+				for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
+					if (k< 20)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+// 					Int_t pdgCode = fMCStack->Particle(mclabelsCluster[k])->GetPdgCode();
+// 					cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
+				}	
+			}
+		}
+		
+		fIsFromMBHeader = kTRUE; 
+		// test whether largest contribution to cluster orginates in added signals
+		if (fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCStack, fInputEvent) == 0) fIsFromMBHeader = kFALSE;
+		
+		if (fIsFromMBHeader){
+			fHistoClusterGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
+			fHistoClusterGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
+		}	
+		fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
+		
+		if(fIsMC){
+// 			if(fInputEvent->IsA()==AliESDEvent::Class()){
+				ProcessTrueCaloPhotonCandidates(PhotonCandidate);
+// 			} else {
+// 				ProcessTrueClusterCandidatesAOD(PhotonCandidate);
+// 			}	
+		}
+		
+		delete tmpvec;
+	}
+	
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueCaloPhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
+{
+	TParticle *Photon = NULL;
+	if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
+// 	fHistoTrueNLabelsInClus[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());
+	
+	if (TruePhotonCandidate->GetNCaloPhotonMCLabels()>0)Photon = fMCStack->Particle(TruePhotonCandidate->GetCaloPhotonMCLabel(0));
+		else return;
+		
+	if(Photon == NULL){
+	//    cout << "no photon" << endl;
+		return;
+	}
+
+// 	Int_t pdgCodeParticle = Photon->GetPdgCode();
+	TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack);
+	
+	// True Photon
+	if(fIsFromMBHeader){	
+		if(TruePhotonCandidate->GetCaloPhotonMCLabel(0) <= fMCStack->GetNprimary()){
+			if (TruePhotonCandidate->IsLargestComponentPhoton()){
+				fHistoTrueClusterGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+				if (GammaIsNeutralMesonPiPlPiMiPiZeroDaughter(TruePhotonCandidate->GetCaloPhotonMCLabel(0))){
+					fHistoTrueClusterGammaFromNeutralMesonPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+				}
+			}	
+			if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()){
+					fHistoTrueClusterGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+					if (GammaIsNeutralMesonPiPlPiMiPiZeroDaughter(TruePhotonCandidate->GetCaloPhotonMCLabel(0))){
+					fHistoTrueClusterGammaFromNeutralMesonPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+				}
+			}
+		}	
+	}
+	return;
+}
+
+
+
+//________________________________________________________________________
+void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessConversionPhotonCandidates(){
 	Int_t nV0 = 0;
 	TList *GoodGammasStepOne = new TList();
 	TList *GoodGammasStepTwo = new TList();
@@ -801,7 +1011,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPhotonCandidates(){
 		if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->UseElecSharingCut() &&
 			!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->UseToCloseV0sCut()){ // if no post reader loop is required add to events good gammas
 			
-			fGoodGammas->Add(PhotonCandidate);
+			fGoodConvGammas->Add(PhotonCandidate);
 		
 			if(fIsFromMBHeader){
 				fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
@@ -809,7 +1019,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPhotonCandidates(){
 			}
 		
 			if(fMCEvent){
-				ProcessTruePhotonCandidates(PhotonCandidate);
+				ProcessTrueConversionPhotonCandidates(PhotonCandidate);
 			}
 		} else if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->UseElecSharingCut()){ // if Shared Electron cut is enabled, Fill array, add to step one
 			((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->FillElectonLabelArray(PhotonCandidate,nV0);
@@ -836,13 +1046,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPhotonCandidates(){
 			}
 			if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->RejectSharedElectronV0s(PhotonCandidate,i,GoodGammasStepOne->GetEntries())) continue;
 			if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->UseToCloseV0sCut()){ // To Colse v0s cut diabled, step two not needed
-				fGoodGammas->Add(PhotonCandidate);
+				fGoodConvGammas->Add(PhotonCandidate);
 				if(fIsFromMBHeader){
 					fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
 					fHistoConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
 				}
 				if(fMCEvent){
-					ProcessTruePhotonCandidates(PhotonCandidate);
+					ProcessTrueConversionPhotonCandidates(PhotonCandidate);
 				}
 			}
 			else GoodGammasStepTwo->Add(PhotonCandidate); // Close v0s cut enabled -> add to list two
@@ -862,7 +1072,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPhotonCandidates(){
 			}
 			
 			if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->RejectToCloseV0s(PhotonCandidate,GoodGammasStepTwo,i)) continue;
-			fGoodGammas->Add(PhotonCandidate); // Add gamma to current cut TList
+			fGoodConvGammas->Add(PhotonCandidate); // Add gamma to current cut TList
 		
 			if(fIsFromMBHeader){
 				fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt()); // Differences to old V0Reader in p_t due to conversion KF->TLorentzVector
@@ -870,7 +1080,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPhotonCandidates(){
 			}
 		
 			if(fMCEvent){
-				ProcessTruePhotonCandidates(PhotonCandidate);
+				ProcessTrueConversionPhotonCandidates(PhotonCandidate);
 			}
 		}
 	}
@@ -882,7 +1092,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPhotonCandidates(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTruePhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
+void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueConversionPhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
 {
 	// Process True Photons
 	AliStack *MCStack = fMCEvent->Stack();
@@ -922,12 +1132,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTruePhotonCandidates(Al
 //________________________________________________________________________
 void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPureConversions(){
 	// Conversion Gammas
-	if(fGoodGammas->GetEntries()>1){
-		for(Int_t firstGammaIndex=0;firstGammaIndex<fGoodGammas->GetEntries()-1;firstGammaIndex++){
-			AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(firstGammaIndex));
+	if(fGoodConvGammas->GetEntries()>1){
+		for(Int_t firstGammaIndex=0;firstGammaIndex<fGoodConvGammas->GetEntries()-1;firstGammaIndex++){
+			AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGoodConvGammas->At(firstGammaIndex));
 			if (gamma0==NULL) continue;
-			for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fGoodGammas->GetEntries();secondGammaIndex++){
-				AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fGoodGammas->At(secondGammaIndex));
+			for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fGoodConvGammas->GetEntries();secondGammaIndex++){
+				AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fGoodConvGammas->At(secondGammaIndex));
 				//Check for same Electron ID
 				if (gamma1==NULL) continue;
 				if(gamma0->GetTrackLabelPositive() == gamma1->GetTrackLabelPositive() ||
@@ -959,6 +1169,117 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
 		}
 	}
 }
+
+
+//________________________________________________________________________
+void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPureCalo(){
+	
+	// Conversion Gammas
+	if(fClusterCandidates->GetEntries()>0){
+
+		// vertex
+		Double_t vertex[3] = {0};
+		InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+
+		for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
+			AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
+			if (gamma0==NULL) continue;
+			
+			for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
+				if (firstGammaIndex == secondGammaIndex) continue;
+				AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
+				if (gamma1==NULL) continue;
+				
+				AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
+				pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
+
+				if((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+					fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+					if (pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionLow() && pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionHigh()){
+						fNeutralPionCandidates->Add(pi0cand);
+// 						cout << "Pi0 candidate " << pi0cand->M() << "\t" << pi0cand->Pt() << endl;
+					}	
+				
+					if(fIsMC){
+// 						if(fInputEvent->IsA()==AliESDEvent::Class())
+							ProcessTrueNeutralPionCandidatesPureCalo(pi0cand,gamma0,gamma1);
+// 						if(fInputEvent->IsA()==AliAODEvent::Class())
+// 							ProcessTrueNeutralPionCandidatesPureConversionsAOD(pi0cand,gamma0,gamma1);
+					}
+				}	
+			}
+		}
+	}
+}	
+
+//______________________________________________________________________
+void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidatesPureCalo( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1)
+{
+	// Process True Mesons
+	AliStack *MCStack = fMCEvent->Stack();
+	
+	Bool_t isTruePi0 = kFALSE;
+	Int_t gamma0MCLabel = TrueGammaCandidate0->GetCaloPhotonMCLabel(0); 	// get most probable MC label
+	Int_t gamma0MotherLabel = -1;
+	Int_t motherRealLabel = -1;
+	
+	if(gamma0MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
+		TParticle * gammaMC0 = (TParticle*)MCStack->Particle(gamma0MCLabel);
+		if (TrueGammaCandidate0->IsLargestComponentPhoton() || TrueGammaCandidate0->IsLargestComponentElectron()){		// largest component is electro magnetic
+			// get mother of interest (pi0 or eta)
+			if (TrueGammaCandidate0->IsLargestComponentPhoton()){														// for photons its the direct mother 
+				gamma0MotherLabel=gammaMC0->GetMother(0);
+				motherRealLabel=gammaMC0->GetFirstMother();
+			} else if (TrueGammaCandidate0->IsLargestComponentElectron()){ 												// for electrons its either the direct mother or for conversions the grandmother
+				if (TrueGammaCandidate0->IsConversion()){
+					gamma0MotherLabel=MCStack->Particle(gammaMC0->GetMother(0))->GetMother(0);
+					motherRealLabel=MCStack->Particle(gammaMC0->GetMother(0))->GetMother(0);
+				} else {
+					gamma0MotherLabel=gammaMC0->GetMother(0); 
+					motherRealLabel=gammaMC0->GetMother(0); 
+				}
+			}
+		}
+	}
+	
+	if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
+	
+	Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
+	Int_t gamma1MotherLabel = -1;
+	// check if 
+	if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
+		// Daughters Gamma 1
+		TParticle * gammaMC1 = (TParticle*)MCStack->Particle(gamma1MCLabel);
+		if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){		// largest component is electro magnetic
+			// get mother of interest (pi0 or eta)
+			if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother 
+				gamma1MotherLabel=gammaMC1->GetMother(0);
+			} else if (TrueGammaCandidate1->IsLargestComponentElectron()){ 												// for electrons its either the direct mother or for conversions the grandmother
+				if (TrueGammaCandidate1->IsConversion()) gamma1MotherLabel=MCStack->Particle(gammaMC1->GetMother(0))->GetMother(0);
+				else gamma1MotherLabel=gammaMC1->GetMother(0); 
+			}
+		} 	
+	}
+			
+	if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
+		if(((TParticle*)MCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
+			isTruePi0=kTRUE;
+		}
+	}
+	
+	if(isTruePi0){// True Pion
+		Pi0Candidate->SetTrueMesonValue(1);
+		Pi0Candidate->SetMCLabel(motherRealLabel);
+		fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt()); 		
+		if( IsEtaPiPlPiMiPiZeroDaughter(motherRealLabel) ) { 
+			fHistoTrueMotherGammaGammaFromEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+		}
+		if( IsOmegaPiPlPiMiPiZeroDaughter(motherRealLabel) ) { 
+			fHistoTrueMotherGammaGammaFromOmegaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+		}
+	}
+}
+
 
 
 //______________________________________________________________________
@@ -1044,6 +1365,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 		}	
 	}
 }
+
 //______________________________________________________________________
 void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidatesPureConversionsAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1)
 {
@@ -1141,6 +1463,134 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidat
 		}	
 	}
 	return;
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesMixedConvCalo(){
+	
+	// Conversion Gammas
+	if(fGoodConvGammas->GetEntries()>0){
+		// vertex
+		Double_t vertex[3] = {0};
+		InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+
+		for(Int_t firstGammaIndex=0;firstGammaIndex<fGoodConvGammas->GetEntries();firstGammaIndex++){
+			AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGoodConvGammas->At(firstGammaIndex));
+			if (gamma0==NULL) continue;
+			
+			for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
+				Bool_t matched = kFALSE;
+				AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
+				if (gamma1==NULL) continue;
+				
+				if (gamma1->GetIsCaloPhoton()){
+					AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+					matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent );
+				}	
+				
+				AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
+				pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
+				
+				if((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+					if (!matched){
+						fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+						if (pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionLow() && pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionHigh()){
+							fNeutralPionCandidates->Add(pi0cand);
+	// 						cout << "Pi0 candidate " << pi0cand->M() << "\t" << pi0cand->Pt() << endl;
+						}	
+					
+						if(fIsMC){
+// 							if(fInputEvent->IsA()==AliESDEvent::Class())
+								ProcessTrueNeutralPionCandidatesMixedConvCalo(pi0cand,gamma0,gamma1);
+// 							if(fInputEvent->IsA()==AliAODEvent::Class())
+// 								ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1, matched);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+//______________________________________________________________________
+void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueNeutralPionCandidatesMixedConvCalo( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1)
+{
+	// Process True Mesons
+	AliStack *MCStack = fMCEvent->Stack();
+	if(TrueGammaCandidate0->GetV0Index()<fInputEvent->GetNumberOfV0s()){
+		Bool_t isTruePi0 = kFALSE;
+		Bool_t isTruePi0Dalitz = kFALSE;
+		Bool_t gamma0DalitzCand = kFALSE;
+		
+		Int_t gamma0MCLabel = TrueGammaCandidate0->GetMCParticleLabel(MCStack);
+		Int_t gamma0MotherLabel = -1;
+		Int_t motherRealLabel = -1;
+		if(gamma0MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
+			// Daughters Gamma 0
+			TParticle * negativeMC = (TParticle*)TrueGammaCandidate0->GetNegativeMCDaughter(MCStack);
+			TParticle * positiveMC = (TParticle*)TrueGammaCandidate0->GetPositiveMCDaughter(MCStack);
+			TParticle * gammaMC0 = (TParticle*)MCStack->Particle(gamma0MCLabel);
+			if(abs(negativeMC->GetPdgCode())==11 && abs(positiveMC->GetPdgCode())==11){  // Electrons ...
+				if(negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){ // ... From Conversion ...
+					if(gammaMC0->GetPdgCode() == 22){ // ... with Gamma Mother
+						gamma0MotherLabel=gammaMC0->GetFirstMother();
+						motherRealLabel=gammaMC0->GetFirstMother();
+					}
+				}
+				if(gammaMC0->GetPdgCode() ==111){ // Dalitz candidate
+					gamma0DalitzCand = kTRUE;
+					gamma0MotherLabel=-111;
+					motherRealLabel=gamma0MCLabel;
+				}
+
+			}
+		}
+		
+		if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
+		
+		Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0); 	// get most probable MC label
+		Int_t gamma1MotherLabel = -1;
+		// check if 
+
+		if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
+			// Daughters Gamma 1
+			TParticle * gammaMC1 = (TParticle*)MCStack->Particle(gamma1MCLabel);
+			if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){		// largest component is electro magnetic
+				// get mother of interest (pi0 or eta)
+				if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother 
+					gamma1MotherLabel=gammaMC1->GetMother(0);
+				} else if (TrueGammaCandidate1->IsLargestComponentElectron()){ 												// for electrons its either the direct mother or for conversions the grandmother
+					if (TrueGammaCandidate1->IsConversion()) gamma1MotherLabel=MCStack->Particle(gammaMC1->GetMother(0))->GetMother(0);
+					else gamma1MotherLabel=gammaMC1->GetMother(0); 
+				}
+			} 	
+		}
+				
+		if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
+			if(((TParticle*)MCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
+				isTruePi0=kTRUE;
+			}
+		}
+		
+		if (gamma0DalitzCand ){
+			if (gamma0DalitzCand && gamma0MCLabel >=0 && gamma0MCLabel==gamma1MotherLabel){
+				if (gamma0MotherLabel == -111) isTruePi0Dalitz = kTRUE;
+			}	
+		}
+			
+		if(isTruePi0 || isTruePi0Dalitz ){
+			Pi0Candidate->SetTrueMesonValue(1);
+			Pi0Candidate->SetMCLabel(motherRealLabel);
+			fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt()); 		
+			if( IsEtaPiPlPiMiPiZeroDaughter(motherRealLabel) ) { 
+				fHistoTrueMotherGammaGammaFromEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+			}
+			if( IsOmegaPiPlPiMiPiZeroDaughter(motherRealLabel) ) { 
+				fHistoTrueMotherGammaGammaFromOmegaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+			}
+		}
+	}
 }
 
 
@@ -1244,13 +1694,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 				}				
 			}
 			
-			AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(virtualPhoton); //To Apply PsiPairCut
+			AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(virtualPhoton); //To apply mass 2 pion mass cut
 			if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
 				if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
 					fGoodVirtualParticles->Add(  vParticle );
+					fHistoPionPionInvMassPt[fiCut]->Fill( vParticle->GetMass(),vParticle->Pt());
 				}
 			} else {
 				fGoodVirtualParticles->Add(  vParticle );
+				fHistoPionPionInvMassPt[fiCut]->Fill( vParticle->GetMass(),vParticle->Pt());
 			}	
 
 			Double_t clsToFPos = -1.0;
@@ -1261,7 +1713,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 			Float_t dcaToVertexXYNeg = -1.0;
 			Float_t dcaToVertexZNeg  = -1.0;
 			
-			fHistoPionPionInvMassPt[fiCut]->Fill( vParticle->GetMass(),vParticle->Pt());
+			
 			
 			if ( fDoMesonQA ) {	
 				clsToFPos = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetNFindableClustersTPC(posPionCandidate);
@@ -1308,18 +1760,35 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 
 			if (fMCEvent){
 				if (fPositiveMCParticle && fNegativeMCParticle ) {
-					if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
-						fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
-						if (motherlabeln == motherlabelp){
-							fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
-							if( IsEtaPiPlPiMiPiZeroDaughter(labeln) ) { //|| IsOmegaPiPlPiMiPiZeroDaughter(labeln) 
-								fHistoTruePionPionFromEtaInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
-							}
-							if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) ) { //||  
-								fHistoTruePionPionFromOmegaInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+					if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
+						if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
+							if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
+								fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+								if (motherlabeln == motherlabelp){
+									fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+									if( IsEtaPiPlPiMiPiZeroDaughter(labeln) ) { //|| IsOmegaPiPlPiMiPiZeroDaughter(labeln) 
+										fHistoTruePionPionFromEtaInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+									}
+									if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) ) { //||  
+										fHistoTruePionPionFromOmegaInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+									}
+								}
 							}
 						}
-					}
+					} else { 
+						if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
+							fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+							if (motherlabeln == motherlabelp){
+								fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+								if( IsEtaPiPlPiMiPiZeroDaughter(labeln) ) { //|| IsOmegaPiPlPiMiPiZeroDaughter(labeln) 
+									fHistoTruePionPionFromEtaInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+								}
+								if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) ) { //||  
+									fHistoTruePionPionFromOmegaInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+								}
+							}
+						}
+					}	
 				}	
 			}
 						
@@ -1348,27 +1817,43 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
 		}
 
 		if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack,fInputEvent)){
-			
 			// find MC photons 
-			if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kFALSE)){
-				fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
-				if(particle->GetMother(0) >-1){
-					if (fMCStack->Particle(particle->GetMother(0))->GetPdgCode() ==111){
-						if (fMCStack->Particle(particle->GetMother(0))->GetMother(0) > -1){
-							if ( fMCStack->Particle((fMCStack->Particle(particle->GetMother(0)))->GetMother(0))->GetPdgCode() == 221 || 
-								 fMCStack->Particle((fMCStack->Particle(particle->GetMother(0)))->GetMother(0))->GetPdgCode() == 223 ){ 
-								if ( fMCStack->Particle(particle->GetMother(0))->GetNDaughters()==3 ) 
-									fHistoMCGammaFromNeutralMesonPt[fiCut]->Fill(particle->Pt()); // All photons from eta or omega via pi0 
+			if (fNeutralPionMode < 2){
+				if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kFALSE)){
+					fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
+					if(particle->GetMother(0) >-1){
+						if (fMCStack->Particle(particle->GetMother(0))->GetPdgCode() ==111){
+							if (fMCStack->Particle(particle->GetMother(0))->GetMother(0) > -1){
+								if ( fMCStack->Particle((fMCStack->Particle(particle->GetMother(0)))->GetMother(0))->GetPdgCode() == 221 || 
+									fMCStack->Particle((fMCStack->Particle(particle->GetMother(0)))->GetMother(0))->GetPdgCode() == 223 ){ 
+									if ( fMCStack->Particle(particle->GetMother(0))->GetNDaughters()==3 ) 
+										fHistoMCGammaFromNeutralMesonPt[fiCut]->Fill(particle->Pt()); // All photons from eta or omega via pi0 
+								}		
 							}		
 						}		
-					}		
-				}	
+					}	
+				}
+			} else if (fNeutralPionMode == 2){
+				if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(particle,fMCStack)){
+					fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
+					if(particle->GetMother(0) >-1){
+						if (fMCStack->Particle(particle->GetMother(0))->GetPdgCode() ==111){
+							if (fMCStack->Particle(particle->GetMother(0))->GetMother(0) > -1){
+								if ( fMCStack->Particle((fMCStack->Particle(particle->GetMother(0)))->GetMother(0))->GetPdgCode() == 221 || 
+									fMCStack->Particle((fMCStack->Particle(particle->GetMother(0)))->GetMother(0))->GetPdgCode() == 223 ){ 
+									if ( fMCStack->Particle(particle->GetMother(0))->GetNDaughters()==3 ) 
+										fHistoMCGammaFromNeutralMesonPt[fiCut]->Fill(particle->Pt()); // All photons from eta or omega via pi0 
+								}		
+							}		
+						}		
+					}	
+				}
+			}	
+			if (fNeutralPionMode < 2){
+				if (((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kTRUE)){
+					fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt());
+				} // Converted MC Gamma
 			}
-			
-			if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kTRUE)){
-				fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt());
-			} // Converted MC Gamma
-			
 			if(((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(i,fMCStack)){
 				if( particle->GetPdgCode() == 211){
 					fHistoMCAllPosPionsPt[fiCut]->Fill(particle->Pt()); // All pos pions
@@ -1407,15 +1892,28 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
 				TParticle *neutPion    = fMCStack->Particle(labelNeutPion);
 				TParticle *gamma1 = fMCStack->Particle(neutPion->GetDaughter(0));
 				TParticle *gamma2 = fMCStack->Particle(neutPion->GetDaughter(1));
-				if(
-					((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma1,fMCStack,kFALSE) &&					// test first daugther of pi0
-					((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma2,fMCStack,kFALSE) &&					// test second daughter of pi0
-					((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelNegPion,fMCStack) &&								// test negative pion
-					((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelPosPion,fMCStack) 								// test positive pion
-				   ) {
-						if(particle->GetPdgCode() == 221) fHistoMCEtaPiPlPiMiPiZeroInAccPt[fiCut]->Fill(particle->Pt(), weighted ); 		// MC Eta pi+ pi- pi0 with gamma's and e+e- in acc
-						if(particle->GetPdgCode() == 223) fHistoMCOmegaPiPlPiMiPiZeroInAccPt[fiCut]->Fill(particle->Pt(), weighted ); 		// MC Omega pi+ pi- pi0 with gamma's and e+e- in acc
-				}				
+				if (fNeutralPionMode == 0){					
+					if(
+						((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma1,fMCStack,kFALSE) &&					// test first daugther of pi0
+						((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma2,fMCStack,kFALSE) &&					// test second daughter of pi0
+						((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelNegPion,fMCStack) &&								// test negative pion
+						((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelPosPion,fMCStack) 								// test positive pion
+					) {
+							if(particle->GetPdgCode() == 221) fHistoMCEtaPiPlPiMiPiZeroInAccPt[fiCut]->Fill(particle->Pt(), weighted ); 		// MC Eta pi+ pi- pi0 with gamma's and e+e- in acc
+							if(particle->GetPdgCode() == 223) fHistoMCOmegaPiPlPiMiPiZeroInAccPt[fiCut]->Fill(particle->Pt(), weighted ); 		// MC Omega pi+ pi- pi0 with gamma's and e+e- in acc
+					}				
+				} else if (fNeutralPionMode == 2){
+					if(
+						((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(gamma1,fMCStack) &&					// test first daugther of pi0
+						((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(gamma2,fMCStack) &&					// test second daughter of pi0
+						((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelNegPion,fMCStack) &&								// test negative pion
+						((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelPosPion,fMCStack) 								// test positive pion
+					) {
+							if(particle->GetPdgCode() == 221) fHistoMCEtaPiPlPiMiPiZeroInAccPt[fiCut]->Fill(particle->Pt(), weighted ); 		// MC Eta pi+ pi- pi0 with gamma's and e+e- in acc
+							if(particle->GetPdgCode() == 223) fHistoMCOmegaPiPlPiMiPiZeroInAccPt[fiCut]->Fill(particle->Pt(), weighted ); 		// MC Omega pi+ pi- pi0 with gamma's and e+e- in acc
+					}
+				}	
+					
 			}
 		}
 	}
@@ -1449,7 +1947,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
 					if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 						mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fNumberOfESDTracks);
 					} else {
-						mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGoodGammas->GetEntries());
+						if (fNeutralPionMode < 2) mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGoodConvGammas->GetEntries());
+						else mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fClusterCandidates->GetEntries());
 					}
 										
 					fHistoMotherInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
@@ -1477,7 +1976,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 		mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fNumberOfESDTracks);
 	} else {
-		mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGoodGammas->GetEntries());
+		if (fNeutralPionMode < 2) mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGoodConvGammas->GetEntries());
+		else mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fClusterCandidates->GetEntries());
 	}
 
 	Int_t method = 1;
@@ -1639,8 +2139,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UpdateEventByEventData(){
 		if(fNeutralPionCandidates->GetEntries() >0 ){
 			if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 				fBGHandler[fiCut]->AddMesonEvent(fNeutralPionCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),0);
-			} else{ // means we use #V0s for multiplicity
-				fBGHandler[fiCut]->AddMesonEvent(fNeutralPionCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fGoodGammas->GetEntries(),0);
+			} else { // means we use #V0s for multiplicity
+				if (fNeutralPionMode < 2) fBGHandler[fiCut]->AddMesonEvent(fNeutralPionCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fGoodConvGammas->GetEntries(),0);
+				else fBGHandler[fiCut]->AddMesonEvent(fNeutralPionCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fClusterCandidates->GetEntries(),0);
 			}
 		}
 	} else if ( method == 2 ){
@@ -1726,8 +2227,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::IsPiPlPiMiPiZeroDecay(TParti
 			neutPion = temp;
 			break;
 		}
-	}
-  
+	}  
 	if( posPion && negPion && neutPion) return kTRUE;
 	
 	return kFALSE;

@@ -1262,10 +1262,18 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
       ok=kFALSE;
       return daughter;
     }
-    if(label >= 0 && label < reader->GetStack()->GetNtrack())
+    
+    Int_t nprimaries = reader->GetStack()->GetNtrack();
+    if(label >= 0 && label < nprimaries)
     {
       TParticle * momP = reader->GetStack()->Particle(label);
       daughlabel       = momP->GetDaughter(idaugh);
+      
+      if(daughlabel < 0 || daughlabel >= nprimaries)
+      {
+        ok = kFALSE;
+        return daughter;
+      }
       
       TParticle * daughP = reader->GetStack()->Particle(daughlabel);
       daughP->Momentum(daughter);
@@ -1295,6 +1303,12 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
     {
       AliAODMCParticle * momP = (AliAODMCParticle *) mcparticles->At(label);
       daughlabel              = momP->GetDaughter(idaugh);
+      
+      if(daughlabel < 0 || daughlabel >= nprimaries)
+      {
+        ok = kFALSE;
+        return daughter;
+      }
       
       AliAODMCParticle * daughP = (AliAODMCParticle *) mcparticles->At(daughlabel);
       daughter.SetPxPyPzE(daughP->Px(),daughP->Py(),daughP->Pz(),daughP->E());
