@@ -773,7 +773,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    if(!aodTrack->TestFilterBit(fAODtrackCutBit)) continue;
 
 		    Int_t gID = aodTrack->GetID();
-		    newAodTrack = gID >= 0 ? aodTrack : gAOD->GetTrack(trackMap->GetValue(-1-gID));
+		    newAodTrack = gID >= 0 ? aodTrack : dynamic_cast<AliAODTrack*>(gAOD->GetTrack(trackMap->GetValue(-1-gID)));
+                    if(!newAodTrack) AliFatal("Not a standard AOD");
 		    //Printf("Label: %d - Pt: %lf (old) - %d - Pt: %lf(new)",gID,aodTrack->Pt(), newAodTrack->GetID(), newAodTrack->Pt());
                     //===========================================//
 

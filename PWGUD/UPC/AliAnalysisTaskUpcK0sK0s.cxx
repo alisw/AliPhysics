@@ -273,7 +273,8 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
   
   //Track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
+    if(!trk) AliFatal("Not a standard AOD");
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 
@@ -407,7 +408,8 @@ if(!header) AliFatal("Not a standard AOD");
   
   //Track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
+    if(!trk) AliFatal("Not a standard AOD");
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<0))) continue;
 

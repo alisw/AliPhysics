@@ -727,7 +727,8 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
     Int_t nCopyTrack = 0;
     for (Int_t nTrack = 0; nTrack < fAODEvent->GetNumberOfTracks(); ++nTrack) 
     {
-      AliAODTrack *track = fAODEvent->GetTrack(nTrack);
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(nTrack));
+      if(!track) AliFatal("Not a standard AOD");
       
       // Select only hybrid tracks?
       if(fFillHybridTracks && !track->IsHybridGlobalConstrainedGlobal()) continue;

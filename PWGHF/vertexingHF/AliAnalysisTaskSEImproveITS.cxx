@@ -292,7 +292,9 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   if (!mcs) return;
   if (fImproveTracks) {
     for(Int_t itrack=0;itrack<ev->GetNumberOfTracks();++itrack) {
-      SmearTrack(ev->GetTrack(itrack),mcs);
+      AliAODTrack * trk = dynamic_cast<AliAODTrack*>(ev->GetTrack(itrack));
+      if(!trk) AliFatal("Not a standard AOD");
+      SmearTrack(trk,mcs);
     }
   }
 

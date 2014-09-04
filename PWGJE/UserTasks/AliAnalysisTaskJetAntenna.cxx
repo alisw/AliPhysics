@@ -697,7 +697,8 @@ Int_t  AliAnalysisTaskJetAntenna::GetListOfTracks(TList *list){
 
 
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
-    AliAODTrack *tr = aod->GetTrack(it);
+    AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+    if(!tr) AliFatal("Not a standard AOD");
     Bool_t bGood = false;
     if(fFilterType == 0)bGood = true;
     else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
@@ -762,7 +763,8 @@ Int_t  AliAnalysisTaskJetAntenna::GetListOfTracksExtra(TList *list){
 
 
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
-    AliAODTrack *tr = aod->GetTrack(it);
+    AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+    if(!tr) AliFatal("Not a standard AOD");
     Bool_t bGood = false;
     if(fFilterType == 0)bGood = true;
     else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();

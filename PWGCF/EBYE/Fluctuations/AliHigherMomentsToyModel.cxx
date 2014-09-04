@@ -415,7 +415,8 @@ void AliHigherMomentsToyModel::doAODEvent(){
       Int_t gID = aodTrack1->GetID();
       
       //if( aodTrack->GetID() != (-aodTrack1->GetID() -1) ) continue;
-      newAodTrack = gID >= 0 ? aodTrack1 : fAOD->GetTrack(trackMap->GetValue(-1-gID)); //Take those global track who corresponds to TPC only track
+      newAodTrack = gID >= 0 ? aodTrack1 : dynamic_cast<AliAODTrack*>(fAOD->GetTrack(trackMap->GetValue(-1-gID))); //Take those global track who corresponds to TPC only track
+      if(!newAodTrack) AliFatal("Not a standard AOD");
       
       Float_t dxy = 0., dz = 0.;
       
@@ -640,7 +641,8 @@ void AliHigherMomentsToyModel::doMCAODEvent(){
     
     //if( aodTrack->GetID() != (-aodTrack1->GetID() -1) ) continue;
     
-    newAodTrack = gID >= 0 ? aodTrack1 : fAOD->GetTrack(trackMap->GetValue(-1-gID)); //Take those global track who corresponds to TPC only track
+    newAodTrack = gID >= 0 ? aodTrack1 : dynamic_cast<AliAODTrack*>(fAOD->GetTrack(trackMap->GetValue(-1-gID))); //Take those global track who corresponds to TPC only track
+    if(!newAodTrack) AliFatal("Not a standard AOD");
     
   
     //cout << dxy << endl;

@@ -1196,8 +1196,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  if (!bitOK) continue; //128bit or 272bit
 	  
 	  Int_t gID = t->GetID();
-	  newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
-	  
+	  newAodTrack = gID >= 0 ?t : dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(trackMap->GetValue(-1-gID)));
+	  if(!newAodTrack) AliFatal("Not a standard AOD?");
+ 
 	  q      = t->Charge();
 	  charge = int(q);
 	  phi    = t->Phi();

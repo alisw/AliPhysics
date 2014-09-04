@@ -2910,7 +2910,8 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t t
     // all rec. tracks, esd filter mask, eta range
     
     for(Int_t it=0; it<fAOD->GetNumberOfTracks(); ++it){
-      AliAODTrack *tr = fAOD->GetTrack(it);
+      AliAODTrack *tr = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(it));
+      if(!tr) AliFatal("Not a standard AOD");
       
       if(type == kTrackAODCuts || type==kTrackAODQualityCuts || type==kTrackAODExtraCuts){
 

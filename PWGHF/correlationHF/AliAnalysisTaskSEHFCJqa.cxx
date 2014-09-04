@@ -398,7 +398,8 @@ void AliAnalysisTaskSEHFCJqa::UserExec(Option_t */*option*/){
   // Looping over aod tracks
   for(Int_t j=0;j<aod->GetNumberOfTracks();j++){
 
-    AliAODTrack *aodtrack=aod->GetTrack(j);
+    AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(aod->GetTrack(j));
+    if(!aodtrack) AliFatal("Not a standard AOD");
     // CHECK FILTER MAPS
     if(!FillTrackHistosAndSelectTrack(aodtrack,&vESD,magfield))continue;
     //    if(j%100==0)  

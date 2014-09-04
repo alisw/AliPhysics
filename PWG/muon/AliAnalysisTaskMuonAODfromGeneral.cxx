@@ -111,9 +111,9 @@ void AliAnalysisTaskMuonAODfromGeneral::Exec(Option_t *) {
   Double_t pos[3];
   Double_t covVtx[6];
   
-    // Access to the header
-    AliAODHeader *header = dynamic_cast<AliAODHeader*>(fNewAOD->GetHeader());
-    if(!header) AliFatal("Not a standard AOD");
+  // Access to the header
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(fNewAOD->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
 
   // fill the header
   header->SetRunNumber       (fOrgAOD->GetRunNumber()       );
@@ -163,8 +163,10 @@ void AliAnalysisTaskMuonAODfromGeneral::Exec(Option_t *) {
   static int ncal=0;
   static int numtracks=0;
   for (Int_t iTrack=0; iTrack<nMuTracks; iTrack++) {
+        AliAODTrack * track = dynamic_cast<AliAODTrack*>((fOrgAOD->GetTrack(mutrNumb[iTrack])));
+        if(!track) AliFatal("Not a standard AOD");
 	primary->AddDaughter(new(tracks[jTracks++])
-	AliAODTrack((*(fOrgAOD->GetTrack(mutrNumb[iTrack])))));
+	AliAODTrack((*track)));
         ncal++;
   }
   numtracks+=jTracks;

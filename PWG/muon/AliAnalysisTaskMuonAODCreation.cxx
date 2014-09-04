@@ -116,7 +116,8 @@ void AliAnalysisTaskMuonAODCreation::UserExec(Option_t *)
   Int_t nMuons=0;
  
   for (Int_t j = 0; j<aod->GetNumberOfTracks(); j++) { 
-    AliAODTrack *track = aod->GetTrack(j);
+    AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(j));
+    if(!track) AliFatal("Not a standard AOD");
     ((TH1D*)(fOutput->FindObject("pt_alltracks")))->Fill(track->Pt()); 
     if(track->IsMuonTrack()) {
       nMuons++;

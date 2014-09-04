@@ -415,7 +415,7 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceTracks(AliAODEvent* inputEvent){
   // use reconstruction
   if(fUseReco){
     for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) {
-      AliAODTrack* track = inputEvent->GetTrack(iTrack);
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(inputEvent->GetTrack(iTrack));
       if (!track) continue;
       if(!fhadcuts->IsHadronSelected(track,&vESD,Bz)) continue; // apply ESD level selections
       if(!fhadcuts->Charge(fDCharge,track)) continue; // apply selection on charge, if required

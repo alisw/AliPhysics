@@ -1342,7 +1342,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
   for (Int_t k=0;k<nAODtracks;k++){
-    AliAODTrack* track=aod->GetTrack(k);
+    AliAODTrack* track=dynamic_cast<AliAODTrack*>(aod->GetTrack(k));
+    if(!track) AliFatal("Not a standard AOD");
     if(track->GetID()<0) continue;
     Int_t nclsTot=0,nclsSPD=0;
     for(Int_t l=0;l<6;l++) {
@@ -1847,7 +1848,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(fOnOff[0] || fOnOff[1]){
     //loop on tracks in the event
     for (Int_t k=0;k<ntracks;k++){
-      AliAODTrack* track=aod->GetTrack(k);
+      AliAODTrack* track=dynamic_cast<AliAODTrack*>(aod->GetTrack(k));
+      if(!track) AliFatal("Not a standard AOD");
 
       // Track selection cuts
       if(track->GetID()<0) continue;

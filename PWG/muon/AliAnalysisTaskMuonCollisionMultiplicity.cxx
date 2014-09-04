@@ -281,17 +281,19 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
   
 
   // Loop on the muons tracks
-  for (Int_t ii = 0; ii < nTracks; ii++)
-    if (IsUsableMuon(fAOD->GetTrack(ii)))
+  for (Int_t ii = 0; ii < nTracks; ii++){
+    AliAODTrack * aodtrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(ii));
+    if(!aodtrack) AliFatal("Not a standard AOD");
+    if (IsUsableMuon(aodtrack))
       {
-	Double_t matchTrigger = fAOD->GetTrack(ii)->GetMatchTrigger();
+	Double_t matchTrigger = aodtrack->GetMatchTrigger();
 	if (matchTrigger > 1.0)
 	  matchTrigger = 1.0;                                            // We don't care what type of trigger it is (low or high pT)
 	
-	Double_t thetaAbs = (180.0 / TMath::Pi()) * TMath::ATan(fAOD->GetTrack(ii)->GetRAtAbsorberEnd()/505.0);
-	Double_t eta = fAOD->GetTrack(ii)->Eta();
-	Double_t p = fAOD->GetTrack(ii)->P();
-	Double_t pT = fAOD->GetTrack(ii)->Pt();
+	Double_t thetaAbs = (180.0 / TMath::Pi()) * TMath::ATan(aodtrack->GetRAtAbsorberEnd()/505.0);
+	Double_t eta = aodtrack->Eta();
+	Double_t p = aodtrack->P();
+	Double_t pT = aodtrack->Pt();
 	// For the p used in the pDCA, we want the mean between the p before the muon go through the absorber (p corrected) and after (p uncorrected)
 	// However p uncorrected is not saved in the AODs
 	// Instead we define p uncorrected as p corrected minus the mean p lost when a muon go through the absorber
@@ -299,16 +301,16 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
 	// 2.0 < theta_abs < 3.0 ---> 2.98 GeV
 	// 3.0 < theta_abs < 10.0 --->	2.4 GeV
 	// No correction applied otherwise
-	Double_t pDCA = p*fAOD->GetTrack(ii)->DCA();
+	Double_t pDCA = p*aodtrack->DCA();
 	if (2.0 < thetaAbs && thetaAbs < 3.0)
-	  pDCA = (p-2.98/2.0) * fAOD->GetTrack(ii)->DCA();
+	  pDCA = (p-2.98/2.0) * aodtrack->DCA();
 	if (3.0 < thetaAbs && thetaAbs < 10.0)
-	  pDCA = (p-2.4/2.0) * fAOD->GetTrack(ii)->DCA();
+	  pDCA = (p-2.4/2.0) * aodtrack->DCA();
 	
 	Double_t valuesMuon[9] = {static_cast<Double_t>(fTrackletMultiplicity), vertexPosition, pileUp, matchTrigger, thetaAbs, eta, pDCA, static_cast<Double_t>(p), static_cast<Double_t>(pT)};
 	((THnSparseD *)fSingleMuonList->At(triggerClass))->Fill(valuesMuon);
       }
-  
+  }
   // Loop on Dimuons
   for (Int_t ii = 0; ii < nDimuons; ii++)
     if (fAOD->GetDimuon(ii)->Charge() == 0.0)

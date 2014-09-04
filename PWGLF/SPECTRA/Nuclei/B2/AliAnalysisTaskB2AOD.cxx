@@ -456,7 +456,8 @@ Int_t AliAnalysisTaskB2AOD::GetTracks()
 	// track loop
 	for(Int_t i = 0; i < fAODevent->GetNumberOfTracks(); ++i)
 	{
-		AliAODTrack* iTrack = fAODevent->GetTrack(i);
+		AliAODTrack* iTrack = dynamic_cast<AliAODTrack*>(fAODevent->GetTrack(i));
+		if(!iTrack) AliFatal("Not a standard AOD");
 		
 		if(!iTrack) continue;
 		

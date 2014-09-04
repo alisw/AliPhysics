@@ -1560,7 +1560,8 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
       if(!fAOD)
 	AliFatal("Muon selection only implemented on AOD");//FIXME to be implemented also for ESDs as in AliAnalyseLeadingTrackUE::GetAcceptedPArticles
       for (Int_t iTrack = 0; iTrack < fAOD->GetNumberOfTracks(); iTrack++) {
-	AliAODTrack* track = fAOD->GetTrack(iTrack);
+	AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+	if(!track) AliFatal("Not a standard AOD");
 	if (!track->IsMuonTrack()) continue;
 	//Float_t dca    = track->DCA();
 	//Float_t chi2   = track->Chi2perNDF();
@@ -1589,7 +1590,8 @@ Bool_t AliAnalysisTaskPhiCorrelations::IsMuEvent(){
   if(!fAOD)
     AliFatal("Muon selection only implemented on AOD");//FIXME to be implemented also for ESDs as in AliAnalyseLeadingTrackUE::GetAcceptedPArticles
   for (Int_t iTrack = 0; iTrack < fAOD->GetNumberOfTracks(); iTrack++) {
-    AliAODTrack* track = fAOD->GetTrack(iTrack);
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (!track->IsMuonTrack()) continue;
     //Float_t dca    = track->DCA();
     //Float_t chi2   = track->Chi2perNDF();

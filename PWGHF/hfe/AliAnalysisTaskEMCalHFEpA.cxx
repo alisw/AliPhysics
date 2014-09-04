@@ -2480,7 +2480,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		if(fIsAOD){	
 				//AOD test -- Francesco suggestion
 				//aod test -- Francesco suggestion
-			AliAODTrack *aod_track=fAOD->GetTrack(iTracks);
+			AliAODTrack *aod_track=dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+			if(!aod_track) AliFatal("Not a standard AOD");
 
 			Int_t type=aod_track->GetType();
 			if(type==AliAODTrack::kPrimary) fPtPrim->Fill(aod_track->Pt());

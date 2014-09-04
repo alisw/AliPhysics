@@ -428,7 +428,8 @@ TObjArray* AliAnalysisTaskDiMuonCorrelations::GetAcceptedTracksMuonArm(AliAODEve
   AliAODTrack *track = 0;
   
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
-    track = aodEvent->GetTrack(iTrack);
+    track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+    if(!track) AliFatal("Not a standard AOD");
     if (track->IsMuonTrack() && track->GetMatchTrigger()>=fTriggerMatchLevelMuon) {
       if (track->Chi2perNDF() < fMaxChi2Muon) {
 	if (track->Eta() > fMinEtaMuon && track->Eta() < fMaxEtaMuon) {
