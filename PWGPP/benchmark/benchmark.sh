@@ -2247,6 +2247,7 @@ goMakeSummary()
   # will appear in the submission dir.
   #some defaults:
   log="summary.log"
+  jsonLog="summary.json"
   productionID="qa"
 
   configFile=${1}
@@ -2259,8 +2260,8 @@ goMakeSummary()
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
-  logTmp=${batchWorkingDirectory}/${log}
-  logDest=${commonOutputPath}/${log}
+  logTmp="${batchWorkingDirectory}/${log}"
+  jsonLogTmp="${batchWorkingDirectory}/${jsonLog}"
   
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
 
@@ -2269,8 +2270,7 @@ goMakeSummary()
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
 
   #copy some useful stuff
-  #and go to the commonOutputPath
-  cp ${configFile} ${commonOutputPath}
+  [ -f "${commonOutputPath}/${configFile}" ] || paranoidCp "${configFile}" "${commonOutputPath}"
 
   exec &> >(tee ${logTmp})
 
@@ -2282,6 +2282,9 @@ goMakeSummary()
   #summarize the stacktraces
   stackTraceTree ${commonOutputPath}/*/*/000*/cpass0/*/stacktrace* > stacktrace_cpass0.tree
   stackTraceTree ${commonOutputPath}/*/*/000*/cpass1/*/stacktrace* > stacktrace_cpass1.tree
+
+  # json header: open array of objects
+  echo '[' > "${jsonLogTmp}"
 
   echo total numbers for the production:
   echo
@@ -2375,7 +2378,37 @@ do
   statusQA=$(awk '/mergeMakeOCDB.log/ {print $2}' ${x/cpass0/cpass1} 2>/dev/null)
 
   printf "%s\t ocdb.log cpass0: %s\t ocdb.log cpass1: %s\tqa.log:%s\t| cpass0: rec:%s/%s stderr:%s/%s calib:%s/%s cpass1: rec:%s/%s stderr:%s/%s calib:%s/%s QAbarrel:%s/%s QAouter:%s/%s\n" ${runNumber} ${statusOCDBcpass0} ${statusOCDBcpass1} ${statusQA} ${statusCPass0[0]} ${statusCPass0[1]} ${statusCPass0[2]} ${statusCPass0[3]} ${statusCPass0[4]} ${statusCPass0[5]} ${statusCPass1[0]} ${statusCPass1[1]} ${statusCPass1[2]} ${statusCPass1[3]} ${statusCPass1[4]} ${statusCPass1[5]} ${statusCPass1[6]} ${statusCPass1[7]} ${statusCPass1[8]} ${statusCPass1[9]}
+
+  # produce json summary
+  statusOCDBcpass0json=false
+  statusOCDBcpass1json=false
+  statusQAjson=false
+  [[ "$statusOCDBcpass0" == 'OK' ]] && statusOCDBcpass0json=true
+  [[ "$statusOCDBcpass1" == 'OK' ]] && statusOCDBcpass1json=true
+  [[ "$statusQA" == 'OK' ]] && statusQAjson=true
+  cat >> "$jsonLogTmp" <<EOF
+  {
+    run: ${runNumber},
+    status: { ocdb_pass0: ${statusOCDBcpass0json}, ocdb_pass1: ${statusOCDBcpass1json}, qa: ${statusQAjson} },
+    cpass0: {
+      reco: { n_ok: ${statusCPass0[0]}, n_bad: ${statusCPass0[1]} },
+      stderr: { n_ok: ${statusCPass0[2]}, n_bad: ${statusCPass0[3]} },
+      calib: { n_ok: ${statusCPass0[4]}, n_bad: ${statusCPass0[5]} }
+    },
+    cpass1: {
+      reco: { n_ok: ${statusCPass1[0]}, n_bad: ${statusCPass1[1]} },
+      stderr: { n_ok: ${statusCPass1[2]}, n_bad: ${statusCPass1[3]} },
+      calib: { n_ok: ${statusCPass1[4]}, n_bad: ${statusCPass1[5]} },
+      qabarrel: { n_ok: ${statusCPass1[6]}, n_bad: ${statusCPass1[7]} },
+      qarouter: { n_ok: ${statusCPass1[8]}, n_bad: ${statusCPass1[9]} }
+    }
+  },
+EOF
+
 done
+
+  # json footer: close array of objects
+  echo ']' >> "${jsonLogTmp}"
 
   #make lists with output files - QA, trending, filtering and calibration
   ### wait for the merging of all runs to be over ###
@@ -2407,8 +2440,9 @@ done
   #if set, email the summary
   [[ -n ${MAILTO} ]] && cat ${logTmp} | mail -s "benchmark ${productionID} done" ${MAILTO}
 
-  # Copy log to destination (delete all on failure to signal error)
-  cp "$logTmp" "$logDest" || rm -f "$logTmp" "$logDest"
+  #copy logs to destination
+  paranoidCp "$logTmp" "${commonOutputPath}"
+  paranoidCp "$jsonLogTmp" "${commonOutputPath}"
   
   #copy output files
   exec &> >(tee fileCopy.log)
