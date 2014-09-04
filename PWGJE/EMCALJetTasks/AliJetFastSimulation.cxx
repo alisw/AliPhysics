@@ -198,6 +198,7 @@ Bool_t AliJetFastSimulation::Run()
 void AliJetFastSimulation::SimulateTracks()
 {
   //Apply toy detector simulation to tracks
+  Int_t it = 0;
   const Int_t nTracks = fTracks->GetEntriesFast();
    for (Int_t i = 0; i < nTracks; ++i) {
     AliPicoTrack *picotrack = static_cast<AliPicoTrack*>(fTracks->At(i));
@@ -213,12 +214,13 @@ void AliJetFastSimulation::SimulateTracks()
     AliPicoTrack *track = NULL;
     if(fUseTrPtResolutionSmearing) {
       track = SmearPt(picotrack,eff,rnd);
-      (*fTracksOut)[i] = track;
+      (*fTracksOut)[it] = track;
     } else
-      track = new ((*fTracksOut)[i]) AliPicoTrack(*picotrack);
+      track = new ((*fTracksOut)[it]) AliPicoTrack(*picotrack);
 
     track->SetBit(TObject::kBitMask,1);
     fHistPtDet->Fill(track->Pt());
+    it++;
    }
 }
 
