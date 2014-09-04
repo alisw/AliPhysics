@@ -2658,27 +2658,56 @@ aliroot()
 
 copyFileToLocal()
 (
-  #copies a file from either a remote or local location to a local destination
+  #copies a single file to a local destination: the file may either come from
+  #a local filesystem or from a remote location (whose protocol must be
+  #supported)
+  #copy is "robust" and it is repeated some times in case of failure before
+  #giving up (1 is returned in that case)
   src="$1"
   dst="$2"
+  ok=0
+  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
 
   proto="${src%%://*}"
-  if [[ "$proto" == "$src" ]]; then
-    cp "$src" "$dst"
-  else
-    case "$proto" in
-      root)
-        xrdcp -f "$src" "$dst"
-      ;;
-      http)
-        curl -L "$src" -O "$dst"
-      ;;
-      *)
-        echo "protocol not supported: $proto"
-        return 1
-      ;;
-    esac
+
+  echo "copy file to local dest started: $src -> $dst"
+
+  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
+
+    echo "...attempt $i of $maxCopyTries"
+    rm -f "$dst"
+
+    if [[ "$proto" == "$src" ]]; then
+      cp "$src" "$dst"
+    else
+      case "$proto" in
+        root)
+          xrdcp -f "$src" "$dst"
+        ;;
+        http)
+          curl -L "$src" -O "$dst"
+        ;;
+        *)
+          echo "protocol not supported: $proto"
+          return 2
+        ;;
+      esac
+    fi
+
+    if [ $? == 0 ] ; then
+      ok=1
+      break
+    fi
+
+  done
+
+  if [[ "$ok" == 1 ]] ; then
+    echo "copy file to local dest OK after $i attempt(s): $src -> $dst"
+    return 0
   fi
+
+  echo "copy file to local dest FAILED after $maxCopyTries attempt(s): $src -> $dst"
+  return 1
 )
 
 paranoidCp()
