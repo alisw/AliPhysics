@@ -8,11 +8,13 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliCutValueRange.h"
 #include "AliESDtrackCuts.h"
+#include <TClonesArray.h>
 #include <TList.h>
 
 class TArrayD;
 class Axis;
 class AliESDtrack;
+class AliVTrack;
 
 namespace EMCalTriggerPtAnalysis {
 class AliEMCalHistoContainer;
@@ -36,6 +38,7 @@ public:
 	void AddTrackCuts(AliESDtrackCuts *trackCuts) { fListTrackCuts->Add(trackCuts); }
 	void SetEtaRange(double etamin, double etamax) { fEtaRange.SetLimits(etamin, etamax); }
 	void SetPtRange(double ptmin, double ptmax) { fPtRange.SetLimits(ptmin, ptmax); }
+	void SetTrackContainerName(const char *name) { fNameTrackContainer = name; }
 	void SetSwapEta() { fSwapEta = kTRUE; }
 
 private:
@@ -49,7 +52,10 @@ private:
 	void FillEventHist(const char *trigger, double vz, bool isPileup);
 	void FillTrackHist(const char *trigger, const AliESDtrack *track, double vz, bool isPileup, int cut);
 	void FillClusterHist(const char *trigger, const AliVCluster *clust, bool isCalibrated, double vz, bool isPileup);
+	TObjArray *GetAcceptedTracks(const TClonesArray * const inputlist, AliESDtrackCuts *const cuts);
 
+	TClonesArray 				  *fCalibratedClusters;	  //! container of recalibrated EMCal clusters
+	TClonesArray 				  *fMatchedTracks;		  //! container of tracks used for track matching
 	TList                         *fResults;              //! container for results
 	AliEMCalHistoContainer        *fHistos;               //! Histogram container for the task
 	TList 						  *fListTrackCuts;		  // List of track cuts
@@ -58,6 +64,7 @@ private:
 	AliCutValueRange<double>      fEtaRange;              // Eta Selection Range
 	AliCutValueRange<double>	  fPtRange;				  // Pt Selection Range
 	Bool_t						  fSwapEta;				  // Allow swapping of the eta sign in asymmetric collision systems
+	TString 					  fNameTrackContainer;	  // Name of the Track container
 
 	ClassDef(AliAnalysisTaskPtEMCalTrigger, 1);           // Analysis of EMCal triggered events
 };
