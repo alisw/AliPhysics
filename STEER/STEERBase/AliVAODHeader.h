@@ -30,7 +30,7 @@ class AliVAODHeader : public AliVHeader {
   AliVAODHeader() : AliVHeader() {};
  
   
-  virtual ~AliVAODHeader() =0;
+  virtual ~AliVAODHeader() {};
 
   virtual void     SetMagneticField(Double_t magFld)        = 0;
   virtual void     SetMuonMagFieldScale(Double_t magFldScl) = 0;
