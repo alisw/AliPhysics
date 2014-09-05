@@ -4523,7 +4523,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     //Printf(" %lf    %lf",xDCA[0],xDCA[1]);
 
     // ---------------- Fraction of TPC Shared Cluster: 
-   
+    fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
   
     for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
       AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
