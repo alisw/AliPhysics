@@ -72,7 +72,7 @@ static Float_t ptMaxLP = 50.;               // Max cut for transverse momentum L
 static Float_t lMin = 0.0;                  // Limits in the histo for fidutial volume
 static Float_t lMax = 100.;                 // Limits in the fidutial volume
 
-//static Int_t   nMaxEvMix = 250;
+static Int_t   nMaxEvMix = 250;
 
 //
 //  
@@ -4523,7 +4523,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     //Printf(" %lf    %lf",xDCA[0],xDCA[1]);
 
     // ---------------- Fraction of TPC Shared Cluster: 
-    fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
+   
   
     for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
       AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
@@ -5062,7 +5062,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
   } // End loop over trigger particles
  
- 
+
   //-------------------------------------------------------------
   // Mixing
   //-------------------------------------------------------------
@@ -5080,7 +5080,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       AliMiniParticle* trackTriggerME = (AliMiniParticle*) (evMixList->At(ii));
       phiTrigME = trackTriggerME->Phi();
       etaTrigME = trackTriggerME->Eta();
-      
+
       // --- V0 associated particles
       for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
 	
@@ -5090,6 +5090,17 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	if( trackAssocME->WhichCandidate() ==  2 ) continue;
 
 	AliAODv0 *tAssoc=fAOD->GetV0(trackAssocME->ID());
+	const AliAODTrack *ntrack=(AliAODTrack *)tAssoc->GetDaughter(1);
+	const AliAODTrack *ptrack=(AliAODTrack *)tAssoc->GetDaughter(0);
+
+	// Fraction of TPC Shared Cluster 
+	fracPosDaugTPCSharedMap=0; fracNegDaugTPCSharedMap=0;
+	fracPosDaugTPCSharedMap = GetFractionTPCSharedCls(ptrack);
+	fracNegDaugTPCSharedMap = GetFractionTPCSharedCls(ntrack);
+
+	if( (fracPosDaugTPCSharedMap > fFracTPCcls) || (fracNegDaugTPCSharedMap > fFracTPCcls) )
+	  continue;
+
 	pt = tAssoc->Pt();
 
 	Bool_t IsSelected = kFALSE;
@@ -5162,17 +5173,22 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       AliMiniParticle* trkTrig = (AliMiniParticle*) fTriggerParticles->At(ii);
       //cout << trkTrig->Pt() << "          " << ii << endl;
     
+      // Fraction of TPC Shared Cluster 
+      const AliAODTrack *tTrig = (AliAODTrack*)fAOD->GetTrack(trkTrig->ID());
+      fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
+      if( (fracTrigTPCSharedMap > fFracTPCcls) ) continue;
+
       if(evMixList->GetSize() < nMaxEvMix)
 	evMixList->AddFirst(trkTrig);
-      / *
+      /*
 	  if(evMixList->GetSize() >= nMaxEvMix) {
 	    AliMiniParticle *tmp = (AliMiniParticle*) (evMixList->Last()) ;
 	    evMixList->RemoveLast();
 	    delete tmp;
 	  }
-      * /
+      */
       
-	  }// End loop over fTriggerParticles
+    }// End loop over fTriggerParticles
 
   }// End adding trigger particles to buffers
   
