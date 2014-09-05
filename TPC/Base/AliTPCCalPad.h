@@ -43,6 +43,13 @@ class AliTPCCalPad : public TNamed {
   AliTPCCalROC *GetCalROC(Int_t sector) const {return fROC[sector]; };  
   void SetCalROC(AliTPCCalROC* roc, Int_t sector = -1);  
   virtual void	Draw(Option_t* option = "");
+  // TTree functions
+  static AliTPCCalPad *MakePadFromTree(TTree * tree, const char *query, const char*name=0);  
+  void AddFriend(TTree * tree, const char *friendName, const char *fname=0);
+  //
+  // convolution
+  Bool_t MedianFilter(Int_t deltaRow, Int_t deltaPad);
+  Bool_t LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type);
   //
   // algebra
   void Add(Float_t c1);   // add constant c1 to all channels of all ROCs
