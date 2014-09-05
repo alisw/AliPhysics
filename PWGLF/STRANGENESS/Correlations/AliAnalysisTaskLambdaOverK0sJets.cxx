@@ -2122,7 +2122,7 @@ static Int_t CentBin(Double_t cent)
 Bool_t AliAnalysisTaskLambdaOverK0sJets::AcceptTrack(const AliAODTrack *t) 
 {
   // Track criteria for primaries particles 
-  if(fTriggerFB!=128 && fTriggerFB!=272) return kFALSE; 
+  //if(fTriggerFB!=128 && fTriggerFB!=272) return kFALSE; 
   
   if (TMath::Abs(t->Eta())>0.8 )  return kFALSE; 
   //if (!(t->TestFilterMask(1<<7))) return kFALSE; 
