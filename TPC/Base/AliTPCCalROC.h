@@ -38,6 +38,9 @@ class AliTPCCalROC : public TNamed {
   void         SetValue(UInt_t channel, Float_t vd) {fData[channel]= vd; };
   virtual void Draw(Option_t* option = "");
   //
+  Bool_t MedianFilter(Int_t deltaRow, Int_t deltaPad);
+  Bool_t LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type);
+  //
   // algebra
   void Add(Float_t c1); // add c1 to each channel of the ROC
   void Multiply(Float_t c1); // multiply each channel of the ROC with c1
