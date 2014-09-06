@@ -325,7 +325,7 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
   {
     Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
     fhDeltaPhiChargedMC[mcIndex]->Fill(ptTrig , deltaPhi);
-    if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==2 )
+    if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==2 )
       fhDeltaPhiChargedMC[7]->Fill(ptTrig , deltaPhi);
   }
   
@@ -602,7 +602,7 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   {
     Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
     fhXEChargedMC[mcIndex]->Fill(ptTrig , xE);
-    if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==2 )
+    if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==2 )
       fhXEChargedMC[7]->Fill(ptTrig , xE);
   }
   
@@ -3272,7 +3272,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(IsDataMC())
     {
       mcIndex = GetMCTagHistogramIndex(mcTag);
-      lostDecayPair = GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo);
+      lostDecayPair = GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost);
       MakeMCChargedCorrelation(particle->GetLabel(), mcIndex,lostDecayPair);
     }
     
