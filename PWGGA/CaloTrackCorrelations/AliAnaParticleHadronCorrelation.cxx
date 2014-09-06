@@ -325,7 +325,9 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
   {
     Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
     fhDeltaPhiChargedMC[mcIndex]->Fill(ptTrig , deltaPhi);
-  }  
+    if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==2 )
+      fhDeltaPhiChargedMC[7]->Fill(ptTrig , deltaPhi);
+  }
   
   if(fDecayTrigger && decayTag > 0)
   {
@@ -398,7 +400,7 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
 //___________________________________________________________________________________________________________________________________
 Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float_t mcAssocPt, Float_t mcAssocPhi, Float_t mcAssocEta,
                                                                            Float_t mcTrigPt,  Float_t mcTrigPhi,  Float_t mcTrigEta,
-                                                                           Int_t histoIndex)
+                                                                           Int_t histoIndex, Bool_t lostDecayPair)
 {
   // Fill MC histograms independently of AOD or ESD
   
@@ -470,6 +472,28 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
     fhMCPtTrigPout       [histoIndex]->Fill(mcTrigPt, mcpout) ;
   }
 
+  if(histoIndex==2 && lostDecayPair && 7 >= fMCGenTypeMin && 7 <= fMCGenTypeMax )
+  {
+    fhMCEtaCharged     [7]->Fill(mcAssocPt, mcAssocEta);
+    fhMCPhiCharged     [7]->Fill(mcAssocPt, mcAssocPhi);
+    fhMCDeltaEtaCharged[7]->Fill(mcTrigPt , mcTrigEta-mcAssocEta);
+    fhMCDeltaPhiCharged[7]->Fill(mcTrigPt , mcdeltaPhi);
+    fhMCPtAssocDeltaPhi[7]->Fill(mcAssocPt, mcdeltaPhi);
+    
+    fhMCDeltaPhiDeltaEtaCharged[7]->Fill(mcdeltaPhi,mcTrigEta-mcAssocEta);
+    
+    //delta phi cut for correlation
+    if( (mcdeltaPhi > fDeltaPhiMinCut) && (mcdeltaPhi < fDeltaPhiMaxCut) )
+    {
+      fhMCDeltaPhiChargedPt[7]->Fill(mcAssocPt,mcdeltaPhi);
+      fhMCPtXECharged      [7]->Fill(mcTrigPt, mcxE);
+      fhMCPtHbpXECharged   [7]->Fill(mcTrigPt, mchbpXE);
+      fhMCPtZTCharged      [7]->Fill(mcTrigPt, mczT);
+      fhMCPtHbpZTCharged   [7]->Fill(mcTrigPt, mchbpZT);
+      fhMCPtTrigPout       [7]->Fill(mcTrigPt, mcpout) ;
+    }
+  }
+  
   // Underlying event
   
   // Right
@@ -491,6 +515,17 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
     if(mcUezT > 0) fhMCPtHbpZTUeCharged[histoIndex]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
     
     fhMCUePart[histoIndex]->Fill(mcTrigPt);
+    
+    if(histoIndex==2 && lostDecayPair && 7 >= fMCGenTypeMin && 7 <= fMCGenTypeMax )
+    {
+      fhMCPtXEUeCharged[7]->Fill(mcTrigPt,mcUexE);
+      if(mcUexE > 0) fhMCPtHbpXEUeCharged[histoIndex]->Fill(mcTrigPt,TMath::Log(1/mcUexE));
+      
+      fhMCPtZTUeCharged[7]->Fill(mcTrigPt,mcUezT);
+      if(mcUezT > 0) fhMCPtHbpZTUeCharged[histoIndex]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
+      
+      fhMCUePart[7]->Fill(mcTrigPt);
+    }
   }
 
   if(fMakeSeveralUE)
@@ -511,6 +546,15 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
       
       fhMCPtZTUeLeftCharged[histoIndex]->Fill(mcTrigPt,mcUezT);
       if(mcUezT > 0) fhMCPtHbpZTUeLeftCharged[histoIndex]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
+      
+      if(histoIndex==2 && lostDecayPair && 7 >= fMCGenTypeMin && 7 <= fMCGenTypeMax )
+      {
+        fhMCPtXEUeLeftCharged[7]->Fill(mcTrigPt,mcUexE);
+        if(mcUexE > 0) fhMCPtHbpXEUeLeftCharged[7]->Fill(mcTrigPt,TMath::Log(1/mcUexE));
+        
+        fhMCPtZTUeLeftCharged[7]->Fill(mcTrigPt,mcUezT);
+        if(mcUezT > 0) fhMCPtHbpZTUeLeftCharged[7]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
+      }
     }
   }
   
@@ -558,6 +602,8 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   {
     Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
     fhXEChargedMC[mcIndex]->Fill(ptTrig , xE);
+    if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==2 )
+      fhXEChargedMC[7]->Fill(ptTrig , xE);
   }
   
   // Pile up studies
@@ -1213,7 +1259,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   Int_t nMixBins = GetNCentrBin()*GetNZvertBin()*GetNRPBin();
   
-  TString nameMC[]     = {"Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"};
+  TString nameMC[]     = {"Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron","Pi0DecayLostPair"};
   TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
   
   // For vz dependent histograms, if option ON
@@ -3221,10 +3267,13 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     
     // MC
     Int_t mcIndex = -1;
+    Int_t mcTag   = particle->GetTag();
+    Bool_t lostDecayPair = kFALSE;
     if(IsDataMC())
     {
-      mcIndex = GetMCTagHistogramIndex(particle->GetTag());
-      MakeMCChargedCorrelation(particle->GetLabel(), mcIndex);
+      mcIndex = GetMCTagHistogramIndex(mcTag);
+      lostDecayPair = GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo);
+      MakeMCChargedCorrelation(particle->GetLabel(), mcIndex,lostDecayPair);
     }
     
     // Do own mixed event with charged,
@@ -3246,7 +3295,11 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     //
     fhPtTrigger->Fill(pt);
     if(IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes)
+    {
       fhPtTriggerMC[mcIndex]->Fill(pt);
+      if( lostDecayPair && mcIndex==2 )
+        fhPtTriggerMC[7]->Fill(pt);
+    }
     
     if(fDecayTrigger)
     {
@@ -3260,7 +3313,11 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
             fhPtDecayTrigger[ibit]->Fill(pt);
             
             if(IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes)
+            {
               fhPtDecayTriggerMC[ibit][mcIndex]->Fill(pt);
+              if(lostDecayPair && mcIndex==2 )
+                fhPtDecayTriggerMC[ibit][7]->Fill(pt);
+            }
           }
         }
       }
@@ -4011,8 +4068,8 @@ void AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleC
   }
 }
   
-//____________________________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int_t histoIndex)
+//__________________________________________________________________________________________________________________
+void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int_t histoIndex, Bool_t lostDecayPair)
 {
   // Charged Hadron Correlation Analysis with MC information
   
@@ -4105,7 +4162,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
       Float_t phi = particle->Phi();
       if(phi < 0) phi+=TMath::TwoPi();
       
-      Bool_t lead = FillChargedMCCorrelationHistograms(particle->Pt(),phi,particle->Eta(),ptprim,phiprim,etaprim,histoIndex);
+      Bool_t lead = FillChargedMCCorrelationHistograms(particle->Pt(),phi,particle->Eta(),ptprim,phiprim,etaprim,histoIndex,lostDecayPair);
       if(!lead) leadTrig = kFALSE;
       //if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading) ) return;
       
@@ -4173,7 +4230,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
       Float_t phi = part->Phi();
       if(phi < 0) phi+=TMath::TwoPi();
       
-      Bool_t lead = FillChargedMCCorrelationHistograms(part->Pt(),phi,part->Eta(),ptprim,phiprim,etaprim, histoIndex);
+      Bool_t lead = FillChargedMCCorrelationHistograms(part->Pt(),phi,part->Eta(),ptprim,phiprim,etaprim, histoIndex,lostDecayPair);
       if(!lead) leadTrig = kFALSE;
       //if ( !lead && (fMakeAbsoluteLeading || fMakeNearSideLeading)) return;
       
@@ -4187,6 +4244,13 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
   fhMCPhiTrigger[histoIndex]->Fill(ptprim,phiprim);
   fhMCEtaTrigger[histoIndex]->Fill(ptprim,etaprim);
   
+  if(histoIndex==2 && lostDecayPair && 7 >= fMCGenTypeMin && 7 <= fMCGenTypeMax )
+  {
+    fhMCPtTrigger [7]->Fill(ptprim);
+    fhMCPhiTrigger[7]->Fill(ptprim,phiprim);
+    fhMCEtaTrigger[7]->Fill(ptprim,etaprim);
+  }
+  
   if(!leadTrig && (fMakeAbsoluteLeading || fMakeNearSideLeading) )
   {
     if(GetDebug() > 1)
@@ -4196,6 +4260,13 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
     fhMCPtTriggerNotLeading [histoIndex]->Fill(ptprim);
     fhMCPhiTriggerNotLeading[histoIndex]->Fill(ptprim,phiprim);
     fhMCEtaTriggerNotLeading[histoIndex]->Fill(ptprim,etaprim);
+    
+    if(histoIndex==2 && lostDecayPair && 7 >= fMCGenTypeMin && 7 <= fMCGenTypeMax )
+    {
+      fhMCPtTriggerNotLeading [7]->Fill(ptprim);
+      fhMCPhiTriggerNotLeading[7]->Fill(ptprim,phiprim);
+      fhMCEtaTriggerNotLeading[7]->Fill(ptprim,etaprim);
+    }
   }
 }
 
