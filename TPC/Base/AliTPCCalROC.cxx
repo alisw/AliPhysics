@@ -143,29 +143,47 @@ void AliTPCCalROC::Streamer(TBuffer &R__b)
    }
 }
 
+
+//
+
 Bool_t AliTPCCalROC::MedianFilter(Int_t deltaRow, Int_t deltaPad){
   //
-  //   Modify content of the class
-  //   write median
-  Float_t *newBuffer=new Float_t[fNChannels] ;
-  Float_t *cacheBuffer=new Float_t[fNChannels] ;
+  //   Modify content of the object - raplace value by median in neighorhood
   //
-  for (UInt_t iRow=0; iRow<fNRows; iRow++){
+  Float_t *newBuffer=new Float_t[fNChannels] ;
+  Double_t *cacheBuffer=new Double_t[fNChannels];
+  //
+  for (Int_t iRow=0; iRow< Int_t(fNRows); iRow++){
     Int_t nPads=GetNPads(iRow); // number of rows in current row
     for (Int_t iPad=0; iPad<nPads; iPad++){
+      Double_t value=GetValue(iRow,iPad);
       Int_t counter=0;
+      //
       for (Int_t dRow=-deltaRow; dRow<=deltaRow; dRow++){
-	Int_t jRow=iRow+dRow;
-	Int_t jPads= GetNPads(jRow);
-	if (jPads==0) continue;
+	Int_t jRow=iRow+dRow;  //take the row - mirror if ouside of range
+	Float_t sign0=1.;
+	if (jRow<0) sign0=-1.;
+	if (UInt_t(jRow)>=fNRows) sign0=-1.;	
+	Int_t jPads= GetNPads(iRow+sign0*dRow);
 	Int_t offset=(nPads-jPads)/2.;
+	//
 	for (Int_t dPad=-deltaPad; dPad<=deltaPad; dPad++){
-	  Int_t jPad=iPad+dPad+offset;
-	  if (jPad<0 || jPad>=jPads) continue;
-	  cacheBuffer[counter++]=GetValue(jRow,jPad);
+	  Float_t sign=sign0;
+	  Int_t jPad=iPad+dPad+offset;  //take the pad - mirror if ouside of range
+	  Int_t kRow=jRow;
+	  if (jPad<0) sign=-1;
+	  if (jPad>=jPads) sign=-1;
+	  if (sign<0){
+	    kRow=iRow-dRow;
+	    jPad=iPad-dPad+offset;
+	  }	  
+	  if (IsInRange(UInt_t(kRow),jPad)){
+	    cacheBuffer[counter]=sign*(GetValue(kRow,jPad)-value);
+	    counter++;
+	  }
 	}
       }
-      newBuffer[fkIndexes[iRow]+iPad] = TMath::Median(counter,cacheBuffer);
+      newBuffer[fkIndexes[iRow]+iPad] = TMath::Median(counter, cacheBuffer)+value;
     }
   }
   memcpy(fData, newBuffer,GetNchannels()*sizeof(Float_t));
@@ -174,33 +192,51 @@ Bool_t AliTPCCalROC::MedianFilter(Int_t deltaRow, Int_t deltaPad){
   return kTRUE;
 }
 
+
+
 Bool_t AliTPCCalROC::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type){
   //
   //
   // //
   //   Modify content of the class
-  //   write median
+  //   write LTM mean or median
   if (fraction<0 || fraction>1) return kFALSE;
   Float_t *newBuffer=new Float_t[fNChannels] ;
   Double_t *cacheBuffer=new Double_t[fNChannels];
   //
-  for (UInt_t iRow=0; iRow<fNRows; iRow++){
+  for (Int_t iRow=0; iRow< Int_t(fNRows); iRow++){
     Int_t nPads=GetNPads(iRow); // number of rows in current row
     for (Int_t iPad=0; iPad<nPads; iPad++){
+      Double_t value=GetValue(iRow,iPad);
       Int_t counter=0;
+      //
       for (Int_t dRow=-deltaRow; dRow<=deltaRow; dRow++){
-	Int_t jRow=iRow+dRow;
-	Int_t jPads= GetNPads(jRow);
-	if (jPads==0) continue;
+	Int_t jRow=iRow+dRow;  //take the row - mirror if ouside of range
+	Float_t sign0=1.;
+	if (jRow<0) sign0=-1.;
+	if (UInt_t(jRow)>=fNRows) sign0=-1.;	
+	Int_t jPads= GetNPads(iRow+sign0*dRow);
 	Int_t offset=(nPads-jPads)/2.;
+	//
 	for (Int_t dPad=-deltaPad; dPad<=deltaPad; dPad++){
-	  Int_t jPad=iPad+dPad+offset;
-	  if (jPad<0 || jPad>=jPads) continue;
-	  cacheBuffer[counter++]=GetValue(jRow,jPad);
+	  Float_t sign=sign0;
+	  Int_t jPad=iPad+dPad+offset;  //take the pad - mirror if ouside of range
+	  Int_t kRow=jRow;
+	  if (jPad<0) sign=-1;
+	  if (jPad>=jPads) sign=-1;
+	  if (sign<0){
+	    kRow=iRow-dRow;
+	    jPad=iPad-dPad+offset;
+	  } 
+	  if (IsInRange(UInt_t(kRow),jPad)){
+	    cacheBuffer[counter]=sign*(GetValue(kRow,jPad)-value);
+	    counter++;
+	  }
 	}
       }
       Double_t mean,rms;
-      AliMathBase::EvaluateUni(counter,cacheBuffer,mean,rms,fraction*Double_t(counter));
+      AliMathBase::EvaluateUni(counter,cacheBuffer,mean,rms,TMath::Nint(fraction*Double_t(counter)));
+      mean+=value;
       newBuffer[fkIndexes[iRow]+iPad] = (type==0)? mean:rms;
     }
   }

@@ -31,6 +31,7 @@ class AliTPCCalROC : public TNamed {
   UInt_t        GetSector() const { return fSector;}
   UInt_t        GetNrows() const               { return fNRows;};
   UInt_t        GetNchannels()       const     { return fNChannels;};
+  Bool_t        IsInRange(UInt_t row, UInt_t pad) { return (row<fNRows)? (fkIndexes[row]+pad)<fNChannels:kFALSE;}
   UInt_t        GetNPads(UInt_t row)  const     { return (row<fNRows)? AliTPCROC::Instance()->GetNPads(fSector,row):0;};
   Float_t      GetValue(UInt_t row, UInt_t pad) const { return ( (row<fNRows) && (fkIndexes[row]+pad)<fNChannels)? fData[fkIndexes[row]+pad]: 0; };
   Float_t      GetValue(UInt_t channel) const { return  fData[channel]; };
