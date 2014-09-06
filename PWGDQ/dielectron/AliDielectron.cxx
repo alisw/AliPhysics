@@ -413,7 +413,9 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //in case there is a histogram manager, fill the QA histograms
   if (fHistos && fSignalsMC) FillMCHistograms(ev1);
   if (fHistos) FillHistograms(ev1);
-
+  // fill histo array with event information only
+  if (fHistoArray && fHistoArray->IsEventArray()) 
+    fHistoArray->Fill(0,const_cast<Double_t *>(AliDielectronVarManager::GetData()),0x0,0x0);
 
   // clear arrays
   if (!fDontClearArrays) ClearArrays();
