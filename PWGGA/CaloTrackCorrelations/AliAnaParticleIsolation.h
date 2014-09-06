@@ -156,10 +156,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNmcPrimTypes = 7;
   
   // For histograms in arrays, index in the array, corresponding to any particle origin
-  enum mcTypes     { kmcPhoton   = 0, kmcPrompt   = 1, kmcFragment = 2,
-                     kmcPi0      = 3, kmcPi0Decay = 4, kmcEtaDecay = 5, kmcOtherDecay = 6,
-                     kmcElectron = 7, kmcHadron   = 8                                     } ;
-  static const Int_t fgkNmcTypes = 9;
+  enum mcTypes     { kmcPhoton   = 0, kmcPrompt     = 1, kmcFragment         = 2,
+                     kmcPi0      = 3, kmcPi0Decay   = 4, kmcPi0DecayLostPair = 5,
+                     kmcEtaDecay = 6, kmcOtherDecay = 7,
+                     kmcElectron = 8, kmcHadron     = 9                          } ;
+  static const Int_t fgkNmcTypes = 10;
 
  private:
   

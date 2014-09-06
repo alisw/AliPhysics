@@ -1245,6 +1245,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
         fhPtLambda0MC[kmcPhoton][isolated]->Fill(pt,m02);
       
+      if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+        fhPtLambda0MC[kmcPi0DecayLostPair][isolated]->Fill(pt,m02);
+      
       fhPtLambda0MC[mcIndex][isolated]->Fill(pt,m02);
     }
     
@@ -1475,12 +1478,12 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
   // MC histograms title and name
   TString mcPartType[] = { "#gamma", "#gamma_{prompt}", "#gamma_{fragmentation}",
-    "#pi^{0} (merged #gamma)","#gamma_{#pi decay}",
+    "#pi^{0} (merged #gamma)","#gamma_{#pi decay}","#gamma_{#pi decay} lost companion",
     "#gamma_{#eta decay}","#gamma_{other decay}",
     "e^{#pm}","hadrons?"} ;
   
   TString mcPartName[] = { "Photon","PhotonPrompt","PhotonFrag",
-    "Pi0","Pi0Decay","EtaDecay","OtherDecay",
+    "Pi0","Pi0Decay","Pi0DecayLostPair","EtaDecay","OtherDecay",
     "Electron","Hadron"} ;
   
   // Primary MC histograms title and name
@@ -1519,7 +1522,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     
     for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
     {
-      
       fhPtNoIsoMC[imc]  = new TH1F(Form("hPtNoIsoMC%s",mcPartName[imc].Data()),
                                    Form("#it{p}_{T} of NOT isolated %s, %s",mcPartType[imc].Data(),parTitle.Data()),
                                    nptbins,ptmin,ptmax);
@@ -3743,6 +3745,13 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
           fhEtaIsoMC[kmcPhoton]->Fill(pt,eta);
         }
         
+        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+        {
+          fhPtIsoMC [kmcPi0DecayLostPair]->Fill(pt);
+          fhPhiIsoMC[kmcPi0DecayLostPair]->Fill(pt,phi);
+          fhEtaIsoMC[kmcPi0DecayLostPair]->Fill(pt,eta);
+        }
+        
         fhPtIsoMC [mcIndex]->Fill(pt);
         fhPhiIsoMC[mcIndex]->Fill(pt,phi);
         fhEtaIsoMC[mcIndex]->Fill(pt,eta);
@@ -3762,6 +3771,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
             {
               if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
                 fhPtDecayIsoMC[ibit][kmcPhoton]->Fill(pt);
+              
+              if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+                fhPtDecayIsoMC[ibit][kmcPi0DecayLostPair]->Fill(pt);
               
               fhPtDecayIsoMC[ibit][mcIndex]->Fill(pt);
             }
@@ -3808,6 +3820,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
           fhPtNoIsoMC[kmcPhoton]->Fill(pt);
         
+        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+          fhPtNoIsoMC[kmcPi0DecayLostPair]->Fill(pt);
+
         fhPtNoIsoMC[mcIndex]->Fill(pt);
       }
       
@@ -3825,6 +3840,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
             {
               if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
                 fhPtDecayNoIsoMC[ibit][kmcPhoton]->Fill(pt);
+              
+              if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+                fhPtDecayNoIsoMC[ibit][kmcPi0DecayLostPair]->Fill(pt);
               
               fhPtDecayNoIsoMC[ibit][mcIndex]->Fill(pt);
             }
@@ -4354,6 +4372,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
     if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
       fhPtNoIsoMC[kmcPhoton]->Fill(ptC);
     
+    if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+      fhPtNoIsoMC[kmcPi0DecayLostPair]->Fill(ptC);
+    
     fhPtNoIsoMC[mcIndex]->Fill(ptC);
   }
   
@@ -4371,6 +4392,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
         {
           if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
             fhPtDecayNoIsoMC[ibit][kmcPhoton]->Fill(ptC);
+
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+            fhPtDecayNoIsoMC[ibit][kmcPi0DecayLostPair]->Fill(ptC);
           
           fhPtDecayNoIsoMC[ibit][mcIndex]->Fill(ptC);
         }
@@ -4481,6 +4505,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
         fhSumPtLeadingPtMC[kmcPhoton][icone]->Fill(ptC,coneptsum) ;
       
+      if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+        fhSumPtLeadingPtMC[kmcPi0DecayLostPair][icone]->Fill(ptC,coneptsum) ;
+      
       fhSumPtLeadingPtMC[mcIndex][icone]->Fill(ptC,coneptsum) ;
     }
     
@@ -4535,6 +4562,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
           if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) )
             fhPtThresIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC) ;
           
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+            fhPtThresIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC) ;
+
           fhPtThresIsolatedMC[mcIndex][icone][ipt]->Fill(ptC) ;
           
         }
@@ -4562,6 +4592,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
         {
           if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
             fhPtFracIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC) ;
+          
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+            fhPtFracIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC) ;
           
           fhPtFracIsolatedMC[mcIndex][icone][ipt]->Fill(ptC) ;
         }
@@ -4592,6 +4625,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
         {
           if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
             fhSumPtIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC) ;
+          
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairInCalo) && mcIndex==kmcPi0Decay )
+            fhSumPtIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC) ;
           
           fhSumPtIsolatedMC[mcIndex][icone][ipt]->Fill(ptC) ;
         }
