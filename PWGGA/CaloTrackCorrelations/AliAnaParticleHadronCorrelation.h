@@ -51,7 +51,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   void         MakeNeutralCorrelation   (AliAODPWG4ParticleCorrelation * particle) ;
   
-  void         MakeMCChargedCorrelation (Int_t triggerMCLable, Int_t histoIndex) ;
+  void         MakeMCChargedCorrelation (Int_t triggerMCLable, Int_t histoIndex, Bool_t lostDecayPair) ;
   
   void         MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation * particle) ;
   
@@ -66,8 +66,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         FillChargedEventMixPool();
   
   Bool_t       FillChargedMCCorrelationHistograms       (Float_t mcAssocPt, Float_t mcAssocPhi, Float_t mcAssocEta,
-                                                         Float_t mcTrigPt,  Float_t mcTrigPhi,  Float_t mcTrigEta, Int_t histoIndex);
-
+                                                         Float_t mcTrigPt,  Float_t mcTrigPhi,  Float_t mcTrigEta,
+                                                         Int_t histoIndex,  Bool_t  lostDecayPair);
   
   void         FillChargedMomentumImbalanceHistograms   (Float_t ptTrig,   Float_t ptAssoc, 
                                                          Float_t deltaPhi, Int_t cenbin, Int_t charge,
@@ -92,7 +92,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
                                                          Float_t deltaPhi);  
     
   Int_t        GetMCTagHistogramIndex(Int_t tag);
-  static const Int_t fgkNmcTypes = 7;
+  static const Int_t fgkNmcTypes = 8;
 
   Bool_t       IsTriggerTheEventLeadingParticle();
   
