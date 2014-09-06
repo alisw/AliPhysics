@@ -185,7 +185,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
   //Initialize parameters
   InitParameters();
   
-  for(Int_t i = 0; i < 7; i++)
+  for(Int_t i = 0; i < fgkNmcTypes; i++)
   { 
     fhPtTriggerMC[i] = 0;
     fhXEChargedMC[i] = 0;
@@ -1254,7 +1254,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   if(IsDataMC())
   {
-    for(Int_t i=0; i < 7; i++)
+    for(Int_t i=0; i < fgkNmcTypes; i++)
     {
       fhPtTriggerMC[i]  = new TH1F(Form("hPtTrigger_MC%s",nameMC[i].Data()),
                                    Form("#it{p}_{T} distribution of trigger particles, trigger origin is %s",nameMC[i].Data()),
@@ -1276,7 +1276,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       
       if(IsDataMC())
       {
-        for(Int_t i=0; i < 7; i++)
+        for(Int_t i=0; i < fgkNmcTypes; i++)
         {
           fhPtDecayTriggerMC[ibit][i]  = new TH1F(Form("hPtDecayTrigger_bit%d_MC%s",fDecayBits[ibit], nameMC[i].Data()),
                                             Form("#it{p}_{T} distribution of trigger particles, decay Bit %d, trigger origin is %s",fDecayBits[ibit], nameMC[i].Data()),
@@ -1505,7 +1505,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   if(IsDataMC())
   {
-    for(Int_t i=0; i < 7; i++)
+    for(Int_t i=0; i < fgkNmcTypes; i++)
     {
       
       fhDeltaPhiChargedMC[i]  = new TH2F(Form("hDeltaPhiCharged_MC%s",nameMC[i].Data()),
@@ -3245,7 +3245,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     // pT of the trigger, vs trigger origin if MC
     //
     fhPtTrigger->Fill(pt);
-    if(IsDataMC() && mcIndex >=0 && mcIndex < 7)
+    if(IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes)
       fhPtTriggerMC[mcIndex]->Fill(pt);
     
     if(fDecayTrigger)
@@ -3259,7 +3259,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
           {
             fhPtDecayTrigger[ibit]->Fill(pt);
             
-            if(IsDataMC() && mcIndex >=0 && mcIndex < 7)
+            if(IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes)
               fhPtDecayTriggerMC[ibit][mcIndex]->Fill(pt);
           }
         }
