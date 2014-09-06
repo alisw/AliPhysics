@@ -137,10 +137,10 @@ fhConeSumPtSubvsConeSumPtTotEtaCell(0),     fhConeSumPtSubNormvsConeSumPtTotEtaC
 fhConeSumPtVSUETracksEtaBand(0),            fhConeSumPtVSUETracksPhiBand(0),
 fhConeSumPtVSUEClusterEtaBand(0),           fhConeSumPtVSUEClusterPhiBand(0),
 fhPtPrimMCPi0DecayPairOutOfCone(0),         fhPtPrimMCPi0DecayPairOutOfAcceptance(0),
-fhPtPrimMCPi0DecayPairAcceptInConeLowPt(0), fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0DecayPairAcceptInConeLowPt(0), fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap(0),      fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE(0),
 fhPtPrimMCPi0DecayPairNoOverlap(0),
 fhPtPrimMCPi0DecayIsoPairOutOfCone(0),      fhPtPrimMCPi0DecayIsoPairOutOfAcceptance(0),
-fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt(0),fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt(0),fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap(0), fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE(0),
 fhPtPrimMCPi0DecayIsoPairNoOverlap(0),
 fhPtPrimMCPi0Overlap(0),                    fhPtPrimMCPi0IsoOverlap(0),
 fhPtLeadConeBinLambda0(0),                  fhSumPtConeBinLambda0(0),
@@ -2869,6 +2869,21 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                                                                         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap) ;
+
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPtNoOverlapCaloE",
+                                                                     Form("primary photon  %s, no overlap, pair in cone, E > calo min: #it{p}_{T}, %s",
+                                                                          pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                                     nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE) ;
+
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPtNoOverlapCaloE",
+                                                                        Form("isolated primary photon  %s, pair in cone,no overlap, E > calo min: #it{p}_{T}, %s",
+                                                                             pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                                        nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE) ;
+
         
         fhPtPrimMCPi0DecayPairNoOverlap  = new TH1F("hPtPrim_MCPhotonPi0DecayPairNoOverlap",
                                                                      Form("primary photon  %s, no overlap: #it{p}_{T}, %s",
@@ -3862,8 +3877,17 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   // Calorimeter cluster merging angle
   // angle smaller than 3 cells  6 cm (0.014) in EMCal, 2.2 cm in PHOS (0.014*(2.2/6))
   Float_t overlapAngle = 0;
-  if      (fCalorimeter=="EMCAL") overlapAngle = 3*0.014  ;
-  else if (fCalorimeter=="PHOS" ) overlapAngle = 3*0.00382;
+  Float_t minECalo     = 0;
+  if      (fCalorimeter=="EMCAL")
+  {
+    overlapAngle = 3*0.014  ;
+    minECalo = GetReader()->GetEMCALEMin();
+  }
+  else if (fCalorimeter=="PHOS" )
+  {
+    overlapAngle = 3*0.00382;
+    minECalo = GetReader()->GetPHOSEMin();
+  }
   
   // Get the ESD MC particles container
   AliStack * stack = 0;
@@ -4107,7 +4131,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         }
         else // neutrals E cut and acceptance
         {
-          if( partInConeE  < GetReader()->GetEMCALEMin() ) continue;
+          if( partInConeE  <= minECalo ) continue;
           
           if(!GetReader()->GetFiducialCut()->IsInFiducialCut(mcisoLV,fCalorimeter)) continue ;
           
@@ -4214,7 +4238,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         fhPtPrimMCPi0DecayPairOutOfCone->Fill(photonPt);
       
       // Second decay out of acceptance
-      if(!ok2 || !d2Acc)
+      if(!ok2 || !d2Acc || daugh2mom.E() <= minECalo)
         fhPtPrimMCPi0DecayPairOutOfAcceptance->Fill(photonPt);
     
       // Not Overlapped decay
@@ -4225,7 +4249,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
          daugh2mom.E() < GetIsolationCut()->GetPtThreshold())
       {
         fhPtPrimMCPi0DecayPairAcceptInConeLowPt->Fill(photonPt);
-        if(!overlap) fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
+        if(!overlap)
+        {
+          fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
+          if(daugh2mom.E() > minECalo)fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt);
+        }
       }
     } // pi0 decay
     
@@ -4257,7 +4285,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           fhPtPrimMCPi0DecayIsoPairOutOfCone->Fill(photonPt);
         
         // Second decay out of acceptance
-        if(!ok2 || !d2Acc)
+        if(!ok2 || !d2Acc || daugh2mom.E() <= minECalo)
           fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->Fill(photonPt);
         
         // Second decay pt smaller than threshold
@@ -4265,7 +4293,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
            daugh2mom.E() < GetIsolationCut()->GetPtThreshold())
         {
           fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->Fill(photonPt);
-          if(!overlap) fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
+          if(!overlap)
+          {
+            fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
+            if(daugh2mom.E() > minECalo) fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt);
+          }
         }
       }// pi0 decay
       
