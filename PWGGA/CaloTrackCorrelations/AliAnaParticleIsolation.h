@@ -351,12 +351,14 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCPi0DecayPairOutOfAcceptance; //! Pi0 decay photons, with decay pair out of detector acceptance
   TH1F *   fhPtPrimMCPi0DecayPairAcceptInConeLowPt;//! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold
   TH1F *   fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and do not overlap
+  TH1F *   fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and larger than detector threshold, and do not overlap
   TH1F *   fhPtPrimMCPi0DecayPairNoOverlap;        //! Pi0 decay photons, not overlapped decay
 
   TH1F *   fhPtPrimMCPi0DecayIsoPairOutOfCone;       //! Pi0 decay photons, with decay pair out of isolation cone, isolated
   TH1F *   fhPtPrimMCPi0DecayIsoPairOutOfAcceptance; //! Pi0 decay photons, with decay pair out of detector acceptance, isolated
   TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt;//! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, isolated
   TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and do not overlap, isolated
+  TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and larger than detector threshold, and do not overlap, isolated
   TH1F *   fhPtPrimMCPi0DecayIsoPairNoOverlap;    //! Pi0 decay photons isolated, not overlapped decay
 
   TH1F *   fhPtPrimMCPi0Overlap;                  //! Pi0 with overlapped decay photons
@@ -411,7 +413,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhSumPtIsolatedMC  [fgkNmcTypes][5][5];//! Isolated mcTypes particle with threshold on cone pt sum
   TH2F *   fhSumPtLeadingPtMC [fgkNmcTypes][5];   //! mcTypes particle for sum Pt, different cone
 
-  
   // Track matching studies
   TH2F *   fhTrackMatchedDEta[2]     ;            //! Eta distance between track and cluster vs cluster E
   TH2F *   fhTrackMatchedDPhi[2]     ;            //! Phi distance between track and cluster vs cluster E
