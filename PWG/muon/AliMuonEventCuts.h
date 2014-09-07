@@ -43,12 +43,12 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void SkipTestsNonInFilterMask ( UInt_t skipMask = 0xFFFF) { fCheckMask = ~skipMask; }
   
   // Handle trigger
-  void SetTrigClassPatterns (TString trigPattern );
+  void SetTrigClassPatterns ( TString trigPattern, TString trigInputsMap = "" );
   /// Get default trigger class patterns
-  TString GetDefaultTrigClassPatterns() { return fDefaultTrigClassPatterns; };
+  TString GetDefaultTrigClassPatterns() const;
+  TString GetDefaultTrigInputsMap() const;
   void SetTrigClassLevels (TString pattern = "MSL:Lpt,MUSL:Lpt,MSH:Hpt,MUSH:Hpt,MUL:LptLpt,MUU:LptLpt,MLL:LptLpt" );
   TArrayI GetTrigClassPtCutLevel (TString trigClassName ) const;
-  void SetTrigInputsMap (TString trigInputsMap );
   /// Get trigger classes found in run
   TList* GetAllSelectedTrigClasses () const { return fAllSelectedTrigClasses; }
   const TObjArray* GetSelectedTrigClassesInEvent ( const AliVEvent* event );
@@ -95,7 +95,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig, const UInt_t comboType = 0 );
   Bool_t UpdateEvent( const AliVEvent* event );
   void SetDefaultTrigClassPatterns();
-  void SetDefaultTrigInputsMap();
+  void SetTrigInputsMap ( TString trigInputsMap );
     
   UInt_t fPhysicsSelectionMask; ///< Physics selection mask
   
@@ -105,7 +105,6 @@ class AliMuonEventCuts : public AliAnalysisCuts
   
   UInt_t fCheckMask;              ///< Mask telling which cuts to check (by default check filter mask)
   
-  TString fDefaultTrigClassPatterns; ///< Default trigger class patterns
   TObjArray* fSelectedTrigPattern; ///< List of triggers to be kept
   TObjArray* fRejectedTrigPattern; ///< List of triggers to be rejected
   TObjArray* fSelectedTrigLevel;   ///< Track-trigger pt cut for selected trigger class
@@ -120,7 +119,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event
   enum {kComboSimple, kComboFormula, kComboAND, kComboOR}; //!< Trigger combination types
   
-  ClassDef(AliMuonEventCuts, 5); // Class for muon event filters
+  ClassDef(AliMuonEventCuts, 6); // Class for muon event filters
 };
 
 #endif

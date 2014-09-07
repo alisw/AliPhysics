@@ -132,9 +132,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SwitchOffSelectIsolatedDecay()              { fSelectIsolatedDecay    = kFALSE; }
   
   //For histograms
-  enum mcTypes   { kmcPi0Decay = 0, kmcEtaDecay = 1, kmcOtherDecay = 2,
-                   kmcPi0      = 3, kmcEta      = 4, kmcPhoton     = 5,
-                   kmcElectron = 6, kmcHadron   = 7                    };
+  enum mcTypes   { kmcPi0      = 0, kmcEta      = 1, kmcPhoton           = 2,
+                   kmcPi0Decay = 3, kmcEtaDecay = 4, kmcOtherDecay       = 5,
+                   kmcElectron = 6, kmcHadron   = 7                          } ;
   
   static const Int_t fgkNmcTypes = 8;
   
@@ -289,7 +289,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   //MC histograms
   
-  TH1F         * fhMCPtDecay            [fgkNmcTypes]; //! pT vs from MC particle
+  TH1F         * fhMCPtDecay            [fgkNmcTypes]; //! pT from MC particle
+  TH1F         * fhMCPtDecayLostPairPi0;               //! pT for tagged clustres when MC Pi0 Decay, when companion is lost
+  TH1F         * fhMCPtDecayLostPairEta;               //! pT for tagged clustres when MC Eta Decay, when companion is lost
   TH2F         * fhMCPtLambda0          [fgkNmcTypes]; //! pT vs lambda0 of pi0 pairs but really from MC particle
   TH2F         * fhMCPtLambda1          [fgkNmcTypes]; //! pT vs lambda1 of pi0 pairs but really from MC particle
   TH2F         * fhMCPtDispersion       [fgkNmcTypes]; //! pT vs dispersion of pi0 pairs but really from MC particle

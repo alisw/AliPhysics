@@ -1685,8 +1685,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
   Int_t momindex  = -1;
   Int_t mompdg    = -1;
   Int_t momstatus = -1;
-  if(GetDebug() > 1) printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Common ancestor label %d, pdg %d, name %s, status %d; \n",
-                            ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
+  if(GetDebug() > 1 )
+  {
+    if(ancLabel >= 0) printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Common ancestor label %d, pdg %d, name %s, status %d; \n",
+                             ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
+    else              printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Common ancestor not found \n");
+  }
   
   Float_t prodR = -1;
   Int_t mcIndex = -1;
@@ -1973,20 +1977,18 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   for(Int_t i1=0; i1<nPhot-1; i1++)
   {
     AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
-    //printf("AliAnaPi0::MakeAnalysisFillHistograms() : cluster1 id %d\n",p1->GetCaloLabel(0));
+    //printf("AliAnaPi0::MakeAnalysisFillHistograms() : cluster1 id %d/%d\n",i1,nPhot-1);
     
     // get the event index in the mixed buffer where the photon comes from 
     // in case of mixing with analysis frame, not own mixing
-    evtIndex1 = GetEventIndex(p1, vert) ; 
-    //printf("charge = %d\n", track->Charge());
+    evtIndex1 = GetEventIndex(p1, vert) ;
     if ( evtIndex1 == -1 )
       return ; 
     if ( evtIndex1 == -2 )
       continue ; 
-    
-    //printf("z vertex %f < %f\n",vert[2],GetZvertexCut());
+
+    // Only effective in case of mixed event frame
     if(TMath::Abs(vert[2]) > GetZvertexCut()) continue ;   //vertex cut
-    
     
     if (evtIndex1 != currentEvtIndex) 
     {
@@ -2020,7 +2022,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     for(Int_t i2=i1+1; i2<nPhot; i2++)
     {
       AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
-      
+      //printf("AliAnaPi0::MakeAnalysisFillHistograms() : cluster2 i %d/%d\n",i2,nPhot);
+
       //In case of mixing frame, check we are not in the same event as the first cluster
       Int_t evtIndex2 = GetEventIndex(p2, vert) ; 
       if ( evtIndex2 == -1 )
@@ -2230,7 +2233,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           {
             fhReMCFromMixConversion->Fill(pt,m);
           }
-                  
+          
           if(fFillOriginHisto)
             FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),p1->Pt(), p2->Pt(),ncell1, ncell2, m, pt, a,deta, dphi);
         }
@@ -2280,7 +2283,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             }
           }
         }// multiple cuts analysis
+        
       }// ok if same sm
+      
     }// second same event particle
   }// first cluster
   
@@ -2309,7 +2314,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       Int_t nPhot2=ev2->GetEntriesFast() ;
       Double_t m = -999;
       if(GetDebug() > 1) 
-        printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed event %d photon entries %d, centrality bin %d\n", ii, nPhot2, GetEventCentralityBin());
+        printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed event %d photon entries %d, centrality bin %d\n",
+               ii, nPhot2, GetEventCentralityBin());
 
       fhEventMixBin->Fill(eventbin) ;
 
@@ -2347,11 +2353,12 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               printf("AliAnaPi0::MakeAnalysisFillHistograms() -Mix pair angle %f not in E %f window\n",angle, (photon1+photon2).E());
             continue;
           }
-          if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut)) {
+          
+          if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut))
+          {
             if(GetDebug() > 2)
               printf("AliAnaPi0::MakeAnalysisFillHistograms() -Mix pair angle %f < cut %f\n",angle,fAngleCut);
-            continue; 
-            
+            continue;
           } 
           
           if(GetDebug() > 2)
@@ -2500,8 +2507,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       currentEvent=0 ; 
     }
   }// DoOwnMix
-  
-}	
+ 
+  if(GetDebug() > 0) printf("AliAnaPi0::MakeAnalysisFillHistograms() - End fill histograms\n");
+}
 
 //________________________________________________________________________
 Int_t AliAnaPi0::GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  
@@ -2511,17 +2519,19 @@ Int_t AliAnaPi0::GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)
   //    for normal events   returns 0 if vertex OK and -1 if vertex NOK
   
   Int_t evtIndex = -1 ; 
-  if(GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
-    
-    if (GetMixedEvent()){
-      
+  if(GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
+  {
+    if (GetMixedEvent())
+    {
       evtIndex = GetMixedEvent()->EventIndexForCaloCluster(part->GetCaloLabel(0)) ;
       GetVertex(vert,evtIndex); 
       
       if(TMath::Abs(vert[2])> GetZvertexCut())
         evtIndex = -2 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
-    } else {// Single event
-      
+    }
+    else
+    {
+      // Single event
       GetVertex(vert);
       
       if(TMath::Abs(vert[2])> GetZvertexCut())
@@ -2530,7 +2540,8 @@ Int_t AliAnaPi0::GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)
         evtIndex = 0 ;
     }
   }//No MC reader
-  else {
+  else
+  {
     evtIndex = 0;
     vert[0] = 0. ; 
     vert[1] = 0. ; 

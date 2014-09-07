@@ -31,6 +31,7 @@ AliJetModelCopyTracks* AddTaskModelCopyTracks(
   AliJetModelCopyTracks *copyTask = new AliJetModelCopyTracks(taskName);
   copyTask->SetTracksName(tracksName1);
   copyTask->SetTracksOutName(tracksName2);
+  copyTask->SetParticleMassType(massType);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

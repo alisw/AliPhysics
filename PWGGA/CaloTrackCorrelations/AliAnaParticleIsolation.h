@@ -156,10 +156,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNmcPrimTypes = 7;
   
   // For histograms in arrays, index in the array, corresponding to any particle origin
-  enum mcTypes     { kmcPhoton   = 0, kmcPrompt   = 1, kmcFragment = 2,
-                     kmcPi0      = 3, kmcPi0Decay = 4, kmcEtaDecay = 5, kmcOtherDecay = 6,
-                     kmcElectron = 7, kmcHadron   = 8                                     } ;
-  static const Int_t fgkNmcTypes = 9;
+  enum mcTypes     { kmcPhoton   = 0, kmcPrompt     = 1, kmcFragment         = 2,
+                     kmcPi0      = 3, kmcPi0Decay   = 4, kmcPi0DecayLostPair = 5,
+                     kmcEtaDecay = 6, kmcOtherDecay = 7,
+                     kmcElectron = 8, kmcHadron     = 9                          } ;
+  static const Int_t fgkNmcTypes = 10;
 
  private:
   
@@ -351,12 +352,14 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCPi0DecayPairOutOfAcceptance; //! Pi0 decay photons, with decay pair out of detector acceptance
   TH1F *   fhPtPrimMCPi0DecayPairAcceptInConeLowPt;//! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold
   TH1F *   fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and do not overlap
+  TH1F *   fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and larger than detector threshold, and do not overlap
   TH1F *   fhPtPrimMCPi0DecayPairNoOverlap;        //! Pi0 decay photons, not overlapped decay
 
   TH1F *   fhPtPrimMCPi0DecayIsoPairOutOfCone;       //! Pi0 decay photons, with decay pair out of isolation cone, isolated
   TH1F *   fhPtPrimMCPi0DecayIsoPairOutOfAcceptance; //! Pi0 decay photons, with decay pair out of detector acceptance, isolated
   TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt;//! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, isolated
   TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and do not overlap, isolated
+  TH1F *   fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE; //! Pi0 decay photons, with decay pair in cone and acceptance and lower pT than threshold, and larger than detector threshold, and do not overlap, isolated
   TH1F *   fhPtPrimMCPi0DecayIsoPairNoOverlap;    //! Pi0 decay photons isolated, not overlapped decay
 
   TH1F *   fhPtPrimMCPi0Overlap;                  //! Pi0 with overlapped decay photons
@@ -411,7 +414,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhSumPtIsolatedMC  [fgkNmcTypes][5][5];//! Isolated mcTypes particle with threshold on cone pt sum
   TH2F *   fhSumPtLeadingPtMC [fgkNmcTypes][5];   //! mcTypes particle for sum Pt, different cone
 
-  
   // Track matching studies
   TH2F *   fhTrackMatchedDEta[2]     ;            //! Eta distance between track and cluster vs cluster E
   TH2F *   fhTrackMatchedDPhi[2]     ;            //! Phi distance between track and cluster vs cluster E

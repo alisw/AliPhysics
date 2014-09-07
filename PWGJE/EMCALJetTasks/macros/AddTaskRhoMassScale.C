@@ -32,7 +32,7 @@ AliAnalysisTaskRhoMassScale* AddTaskRhoMassScale(const char *rhomNeutral,
   AliAnalysisTaskRhoMassScale *task = new AliAnalysisTaskRhoMassScale(wagonName.Data());
 
   task->SetNCentBins(1);
-  //  task->SetVzRange(-10.,10.);
+  //task->SetVzRange(-10.,10.);
 
   task->SelectCollisionCandidates(pSel);
   task->SetUseAliAnaUtils(kFALSE);
