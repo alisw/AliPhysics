@@ -53,11 +53,14 @@ class AliAnalysisTaskJetMassResponseDet : public AliAnalysisTaskEmcalJet {
   TH2F            *fh2EtaPhiMatchedPart;             //!eta,phi of matched particle level jets
   THnSparse       *fhnMassResponse;                  //!response matrix
 
+  TH1D            *fh1AreaPartAll;                   //!area of all particle level jets
+  TH1D            *fh1AreaDetAll;                    //!area of all detector level jets
+
  private:
   AliAnalysisTaskJetMassResponseDet(const AliAnalysisTaskJetMassResponseDet&);            // not implemented
   AliAnalysisTaskJetMassResponseDet &operator=(const AliAnalysisTaskJetMassResponseDet&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetMassResponseDet, 2)
+  ClassDef(AliAnalysisTaskJetMassResponseDet, 3)
 };
 #endif
 

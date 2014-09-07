@@ -49,7 +49,9 @@ AliAnalysisTaskJetMassResponseDet::AliAnalysisTaskJetMassResponseDet() :
   fh2PtVsMassJetDetTagged(0),
   fh2EtaPhiMatchedDet(0),
   fh2EtaPhiMatchedPart(0),
-  fhnMassResponse(0)
+  fhnMassResponse(0),
+  fh1AreaPartAll(0),
+  fh1AreaDetAll(0)
 {
   // Default constructor.
 
@@ -70,7 +72,9 @@ AliAnalysisTaskJetMassResponseDet::AliAnalysisTaskJetMassResponseDet(const char 
   fh2PtVsMassJetDetTagged(0),
   fh2EtaPhiMatchedDet(0),
   fh2EtaPhiMatchedPart(0),
-  fhnMassResponse(0)
+  fhnMassResponse(0),
+  fh1AreaPartAll(0),
+  fh1AreaDetAll(0)
 {
   // Standard constructor.
 
@@ -164,6 +168,12 @@ void AliAnalysisTaskJetMassResponseDet::UserCreateOutputObjects()
   fhnMassResponse = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
   fOutput->Add(fhnMassResponse);
 
+  fh1AreaPartAll = new TH1D("fh1AreaPartAll","fh1AreaPartAll",100.,0.,1.);
+  fOutput->Add(fh1AreaPartAll);
+
+  fh1AreaDetAll = new TH1D("fh1AreaDetAll","fh1AreaDetAll",100.,0.,1.);
+  fOutput->Add(fh1AreaDetAll);
+
 
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -199,10 +209,13 @@ Bool_t AliAnalysisTaskJetMassResponseDet::FillHistograms()
   AliEmcalJet* jDet = NULL;
 
   //loop on particle level jets
+  Int_t nAccPart = 0;
   if(cPart) {
     cPart->ResetCurrentID();
     while((jPart = cPart->GetNextAcceptJet())) {
       fh2PtVsMassJetPartAll->Fill(jPart->Pt(),jPart->M());
+      fh1AreaPartAll->Fill(jPart->Area());
+      nAccPart++;
       jDet = jPart->ClosestJet();
       if(jDet) fh2PtVsMassJetPartMatch->Fill(jPart->Pt(),jPart->M());
       if(jPart->GetTagStatus()<1 || !jPart->GetTaggedJet())
@@ -213,12 +226,15 @@ Bool_t AliAnalysisTaskJetMassResponseDet::FillHistograms()
   }
   
   //loop on detector level jets
+  Int_t nAccDet = 0;
   if(cDet) {
     cDet->ResetCurrentID();
     while((jDet = cDet->GetNextAcceptJet())) {
       Double_t mjet = GetJetMass(jDet);     
       fh2PtVsMassJetDetAll->Fill(jDet->Pt(),mjet);
-       if(jDet->GetTagStatus()>=1 && jDet->GetTaggedJet())
+      fh1AreaDetAll->Fill(jDet->Area());
+      nAccDet++;
+      if(jDet->GetTagStatus()>=1 && jDet->GetTaggedJet())
 	 fh2PtVsMassJetDetTagged->Fill(jDet->Pt(),mjet);
        
        //fill detector response
@@ -236,6 +252,7 @@ Bool_t AliAnalysisTaskJetMassResponseDet::FillHistograms()
        }
     }
   }
+
   return kTRUE;
 }
 
