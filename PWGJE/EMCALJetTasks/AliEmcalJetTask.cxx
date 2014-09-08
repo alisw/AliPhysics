@@ -419,6 +419,7 @@ void AliEmcalJetTask::FindJets()
     fjw.DoGenericSubtractionJetAngularity();
     fjw.DoGenericSubtractionJetpTD();
     fjw.DoGenericSubtractionJetCircularity();
+    fjw.DoGenericSubtractionJetSigma2(); 
     fjw.DoGenericSubtractionJetConstituent();
     fjw.DoGenericSubtractionJetLeSub();
   }
@@ -527,6 +528,16 @@ void AliEmcalJetTask::FindJets()
 	jet->SetFirstOrderSubtractedCircularity(jetCircularityInfo[ij].first_order_subtracted());
 	jet->SetSecondOrderSubtractedCircularity(jetCircularityInfo[ij].second_order_subtracted());
       }
+
+      std::vector<fastjet::contrib::GenericSubtractorInfo> jetSigma2Info = fjw.GetGenSubtractorInfoJetSigma2();
+      Int_t ns = (Int_t)jetSigma2Info.size();
+      if(ns>ij && ns>0) {
+	jet->SetFirstDerivativeSigma2(jetSigma2Info[ij].first_derivative());
+	jet->SetSecondDerivativeSigma2(jetSigma2Info[ij].second_derivative());
+	jet->SetFirstOrderSubtractedSigma2(jetSigma2Info[ij].first_order_subtracted());
+	jet->SetSecondOrderSubtractedSigma2(jetSigma2Info[ij].second_order_subtracted());
+      } 
+
       
       std::vector<fastjet::contrib::GenericSubtractorInfo> jetConstituentInfo = fjw.GetGenSubtractorInfoJetConstituent();
       Int_t nco= (Int_t)jetConstituentInfo.size();
@@ -548,7 +559,7 @@ void AliEmcalJetTask::FindJets()
    }
 #endif
 
-    // loop over constituents
+    // Fill constituent info
     std::vector<fastjet::PseudoJet> constituents(fjw.GetJetConstituents(ij));
     jet->SetNumberOfTracks(constituents.size());
     jet->SetNumberOfClusters(constituents.size());
@@ -566,6 +577,206 @@ void AliEmcalJetTask::FindJets()
     Double_t mcpt       = 0;
     Double_t emcpt      = 0;
 
+    FillJetConstituents(constituents,jet,vertex,jetCount,nt,nc,maxCh,maxNe,ncharged,nneutral,neutralE,mcpt,cemc,emcpt,gall,gemc);
+    jet->SetNumberOfTracks(nt);
+    jet->SetNumberOfClusters(nc);
+    jet->SortConstituents();
+    jet->SetMaxNeutralPt(maxNe);
+    jet->SetMaxChargedPt(maxCh);
+    jet->SetNEF(neutralE / jet->E());
+    fastjet::PseudoJet area(fjw.GetJetAreaVector(ij));
+    jet->SetArea(area.perp());
+    jet->SetAreaEta(area.eta());
+    jet->SetAreaPhi(area.phi());
+    jet->SetNumberOfCharged(ncharged);
+    jet->SetNumberOfNeutrals(nneutral);
+    jet->SetMCPt(mcpt);
+    jet->SetNEmc(cemc);
+    jet->SetPtEmc(emcpt);
+
+    if (gall > 0)
+      jet->SetAreaEmc(fjw.GetJetArea(ij) * gemc / gall);
+    else 
+      jet->SetAreaEmc(-1);
+    if ((jet->Phi() > geom->GetArm1PhiMin() * TMath::DegToRad()) && 
+	(jet->Phi() < geom->GetArm1PhiMax() * TMath::DegToRad()) &&
+	(jet->Eta() > geom->GetArm1EtaMin()) && 
+	(jet->Eta() < geom->GetArm1EtaMax()))
+      jet->SetAxisInEmcal(kTRUE);
+
+    AliDebug(2,Form("Added jet n. %d, pt = %f, area = %f, constituents = %d", jetCount, jet->Pt(), jet->Area(), (Int_t)constituents.size()));
+    jetCount++;
+  }
+  //fJets->Sort();
+
+  //run constituent subtractor if requested
+  if(fDoConstituentSubtraction) {
+#ifdef FASTJET_VERSION
+    if(!fJetsSub) AliWarning(Form("No jet branch to write to for subtracted jets. fJetsSubName: %s",fJetsSubName.Data()));
+    else {
+      std::vector<fastjet::PseudoJet> jets_sub;
+      jets_sub = fjw.GetConstituentSubtrJets();
+      AliDebug(1,Form("%d constituent subtracted jets found", (Int_t)jets_sub.size()));
+      for (UInt_t ijet=0, jetCount=0; ijet<jets_sub.size(); ++ijet) {
+	//Only storing 4-vector and jet area of unsubtracted jet	
+	AliEmcalJet *jet_sub = new ((*fJetsSub)[jetCount]) 
+	  AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
+	jet_sub->SetLabel(ijet);
+        // Fill constituent info
+       std::vector<fastjet::PseudoJet> constituents_sub(fjw.GetJetConstituents(ijet));
+       jet_sub->SetNumberOfTracks(constituents_sub.size());
+       jet_sub->SetNumberOfClusters(constituents_sub.size());
+       Int_t nt            = 0;
+       Int_t nc            = 0;
+       Double_t neutralE   = 0;
+       Double_t maxCh      = 0;
+       Double_t maxNe      = 0;
+       Int_t gall          = 0;
+       Int_t gemc       =0;
+       Int_t cemc          = 0;
+       Int_t ncharged      = 0;
+       Int_t nneutral      = 0;
+       Double_t mcpt       = 0;
+       Double_t emcpt      = 0;
+
+       FillJetConstituents(constituents_sub,jet_sub,vertex,jetCount,nt,nc,maxCh,maxNe,ncharged,nneutral,neutralE,mcpt,cemc,emcpt,gall,gemc);
+      jet_sub->SetNumberOfTracks(nt);
+      jet_sub->SetNumberOfClusters(nc);
+      jet_sub->SortConstituents();
+       
+
+
+	fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
+	jet_sub->SetArea(area.perp());
+	jet_sub->SetAreaEta(area.eta());
+	jet_sub->SetAreaPhi(area.phi());
+	jet_sub->SetAreaEmc(area.perp());
+	jetCount++;
+      }
+    }
+#endif
+
+
+
+
+
+  } //constituent subtraction
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const
+{
+  // Get the leading jets.
+
+  static Float_t pt[9999] = {0};
+
+  const Int_t n = (Int_t)array.size();
+
+  if (n < 1)
+    return kFALSE;
+  
+  for (Int_t i = 0; i < n; i++) 
+    pt[i] = array[i].perp();
+
+  TMath::Sort(n, pt, indexes);
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalJetTask::DoInit()
+{
+  // Init. Return true if successful.
+
+  if (fTrackEfficiency < 1.) {
+    if (gRandom) delete gRandom;
+    gRandom = new TRandom3(0);
+  }
+
+  // get input collections
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+
+  // get the event
+  fEvent = InputEvent();
+  if (!fEvent) {
+    AliError(Form("%s: Could not retrieve event! Returning", GetName()));
+    return 0;
+  }
+
+  // add jets to event if not yet there
+  if (!(fEvent->FindListObject(fJetsName)))
+    fEvent->AddObject(fJets);
+  else {
+    AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fJetsName.Data()));
+    return 0;
+  }
+
+  if (!(fEvent->FindListObject(fJetsSubName)) && fJetsSub)
+    fEvent->AddObject(fJetsSub);
+
+  if (fTracksName == "Tracks")
+    am->LoadBranch("Tracks");
+  if (!fTracks && !fTracksName.IsNull()) {
+    fTracks = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fTracksName));
+    if (!fTracks) {
+      AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data()));
+      return 0;
+    }
+  }
+  if (fTracks) {
+    TClass cls(fTracks->GetClass()->GetName());
+    if (cls.InheritsFrom("AliMCParticle") || cls.InheritsFrom("AliAODMCParticle"))
+      fIsMcPart = 1;
+  }
+  
+  if (fCaloName == "CaloClusters")
+    am->LoadBranch("CaloClusters");
+  if (!fClus && !fCaloName.IsNull()) {
+    fClus = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fCaloName));
+    if (!fClus) {
+      AliError(Form("%s: Pointer to clus %s == 0", GetName(), fCaloName.Data()));
+      return 0;
+    }
+  }
+  if (fClus) {
+    TClass cls(fClus->GetClass()->GetName());
+    if (cls.InheritsFrom("AliEmcalParticle"))
+      fIsEmcPart = 1;
+  }
+
+  if (!fRhoName.IsNull() && !fRhoParam) { // get rho from the event
+    fRhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
+    if (!fRhoParam) {
+      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
+      return 0;
+    }
+  }
+  if (!fRhomName.IsNull() && !fRhomParam) { // get rhom from the event
+    fRhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhomName));
+    if (!fRhomParam) {
+      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhomName.Data()));
+      return 0;
+    }
+  }
+  
+  return 1;
+}
+
+//___________________________________________________________________________________________________________________
+void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& constituents,AliEmcalJet *jet,Double_t vertex[3],Int_t jetCount,Int_t& nt,Int_t& nc,Double_t& maxCh,Double_t& maxNe,Int_t& ncharged,Int_t& nneutral,Double_t& neutralE,Double_t& mcpt,Int_t& cemc,Double_t& emcpt,Int_t& gall,Int_t& gemc){
+    nt            = 0;
+    nc            = 0;
+    neutralE   = 0;
+    maxCh      = 0;
+    maxNe      = 0;
+    gall          = 0;
+    gemc       =0;
+    cemc          = 0;
+    ncharged      = 0;
+    nneutral      = 0;
+    mcpt       = 0;
+    emcpt      = 0;
+   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
     for(UInt_t ic = 0; ic < constituents.size(); ++ic) {
       Int_t uid = constituents[ic].user_index();
       AliDebug(3,Form("Processing constituent %d", uid));
@@ -671,160 +882,13 @@ void AliEmcalJetTask::FindJets()
       } else {
         AliError(Form("%s: No logical way to end up here.", GetName()));
         continue;
-      }
-    } /* end of constituent loop */
+      } 
 
-    jet->SetNumberOfTracks(nt);
-    jet->SetNumberOfClusters(nc);
-    jet->SortConstituents();
-    jet->SetMaxNeutralPt(maxNe);
-    jet->SetMaxChargedPt(maxCh);
-    jet->SetNEF(neutralE / jet->E());
-    fastjet::PseudoJet area(fjw.GetJetAreaVector(ij));
-    jet->SetArea(area.perp());
-    jet->SetAreaEta(area.eta());
-    jet->SetAreaPhi(area.phi());
-    jet->SetNumberOfCharged(ncharged);
-    jet->SetNumberOfNeutrals(nneutral);
-    jet->SetMCPt(mcpt);
-    jet->SetNEmc(cemc);
-    jet->SetPtEmc(emcpt);
 
-    if (gall > 0)
-      jet->SetAreaEmc(fjw.GetJetArea(ij) * gemc / gall);
-    else 
-      jet->SetAreaEmc(-1);
-    if ((jet->Phi() > geom->GetArm1PhiMin() * TMath::DegToRad()) && 
-	(jet->Phi() < geom->GetArm1PhiMax() * TMath::DegToRad()) &&
-	(jet->Eta() > geom->GetArm1EtaMin()) && 
-	(jet->Eta() < geom->GetArm1EtaMax()))
-      jet->SetAxisInEmcal(kTRUE);
 
-    AliDebug(2,Form("Added jet n. %d, pt = %f, area = %f, constituents = %d", jetCount, jet->Pt(), jet->Area(), (Int_t)constituents.size()));
-    jetCount++;
-  }
-  //fJets->Sort();
 
-  //run constituent subtractor if requested
-  if(fDoConstituentSubtraction) {
-#ifdef FASTJET_VERSION
-    if(!fJetsSub) AliWarning(Form("No jet branch to write to for subtracted jets. fJetsSubName: %s",fJetsSubName.Data()));
-    else {
-      std::vector<fastjet::PseudoJet> jets_sub;
-      jets_sub = fjw.GetConstituentSubtrJets();
-      AliDebug(1,Form("%d constituent subtracted jets found", (Int_t)jets_sub.size()));
-      for (UInt_t ijet=0, jetCount=0; ijet<jets_sub.size(); ++ijet) {
-	//Only storing 4-vector and jet area of unsubtracted jet	
-	AliEmcalJet *jet_sub = new ((*fJetsSub)[jetCount]) 
-	  AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
-	jet_sub->SetLabel(ijet);
-	fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
-	jet_sub->SetArea(area.perp());
-	jet_sub->SetAreaEta(area.eta());
-	jet_sub->SetAreaPhi(area.phi());
-	jet_sub->SetAreaEmc(area.perp());
-	jetCount++;
-      }
     }
-#endif
-  } //constituent subtraction
+
+     
 }
-
-//________________________________________________________________________
-Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const
-{
-  // Get the leading jets.
-
-  static Float_t pt[9999] = {0};
-
-  const Int_t n = (Int_t)array.size();
-
-  if (n < 1)
-    return kFALSE;
-  
-  for (Int_t i = 0; i < n; i++) 
-    pt[i] = array[i].perp();
-
-  TMath::Sort(n, pt, indexes);
-
-  return kTRUE;
-}
-
-//________________________________________________________________________
-Bool_t AliEmcalJetTask::DoInit()
-{
-  // Init. Return true if successful.
-
-  if (fTrackEfficiency < 1.) {
-    if (gRandom) delete gRandom;
-    gRandom = new TRandom3(0);
-  }
-
-  // get input collections
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-
-  // get the event
-  fEvent = InputEvent();
-  if (!fEvent) {
-    AliError(Form("%s: Could not retrieve event! Returning", GetName()));
-    return 0;
-  }
-
-  // add jets to event if not yet there
-  if (!(fEvent->FindListObject(fJetsName)))
-    fEvent->AddObject(fJets);
-  else {
-    AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fJetsName.Data()));
-    return 0;
-  }
-
-  if (!(fEvent->FindListObject(fJetsSubName)) && fJetsSub)
-    fEvent->AddObject(fJetsSub);
-
-  if (fTracksName == "Tracks")
-    am->LoadBranch("Tracks");
-  if (!fTracks && !fTracksName.IsNull()) {
-    fTracks = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fTracksName));
-    if (!fTracks) {
-      AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data()));
-      return 0;
-    }
-  }
-  if (fTracks) {
-    TClass cls(fTracks->GetClass()->GetName());
-    if (cls.InheritsFrom("AliMCParticle") || cls.InheritsFrom("AliAODMCParticle"))
-      fIsMcPart = 1;
-  }
-  
-  if (fCaloName == "CaloClusters")
-    am->LoadBranch("CaloClusters");
-  if (!fClus && !fCaloName.IsNull()) {
-    fClus = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fCaloName));
-    if (!fClus) {
-      AliError(Form("%s: Pointer to clus %s == 0", GetName(), fCaloName.Data()));
-      return 0;
-    }
-  }
-  if (fClus) {
-    TClass cls(fClus->GetClass()->GetName());
-    if (cls.InheritsFrom("AliEmcalParticle"))
-      fIsEmcPart = 1;
-  }
-
-  if (!fRhoName.IsNull() && !fRhoParam) { // get rho from the event
-    fRhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
-    if (!fRhoParam) {
-      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
-      return 0;
-    }
-  }
-  if (!fRhomName.IsNull() && !fRhomParam) { // get rhom from the event
-    fRhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhomName));
-    if (!fRhomParam) {
-      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhomName.Data()));
-      return 0;
-    }
-  }
-  
-  return 1;
-}
+//______________________________________________________________________________________
