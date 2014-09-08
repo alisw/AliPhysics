@@ -3988,8 +3988,8 @@ void AliJetFlowTools::GetSignificance(
         Int_t up                        // upper bin
         )
 {
-    // calculate some significance levels
-    Double_t statE(0), shapeE(0), corrE(0), statT(0), totalE(0), y(0), x(0), average(0), averageStat(0), chi2(0);
+    // calculate confidence level based on statistical uncertainty only
+    Double_t statE(0), shapeE(0), corrE(0), totalE(0), y(0), x(0), chi2(0);
 
     // print some stuff
     for(Int_t i(low); i < up+1; i++) { 
@@ -4000,45 +4000,36 @@ void AliJetFlowTools::GetSignificance(
         statE = n->GetErrorYlow(i);
         printf(" > stat \t %.4f \n", statE);
     }
-    for(Int_t i(low); i < up+1; i++) {    
-        shapeE = shape->GetErrorYlow(i);
-        printf(" > shape \t %.4f \n", shapeE);
-    }
-    for(Int_t i(low); i < up+1; i++) {    
-        corrE = corr->GetErrorYlow(i);
-        printf(" > corr \t %.4f \n", corrE);
-    }
 
+    // get the p value based solely on statistical uncertainties
     for(Int_t i(low); i < up+1; i++) {
         // set some flags to 0
-        statE = 0.;
-        shapeE = 0.;
-        corrE = 0.;
         x = 0.;
         y = 0.;
-        totalE = 0.;
         // get the nominal point
         n->GetPoint(i, x, y);
-        printf(" > v2 \t %.4f \n", y);
-        // get the uncorrelated errors. all errors are 'low' errors as all v2 points are positive in this range
         statE = n->GetErrorYlow(i);
-        printf(" > stat \t %.4f \n", statE);
-        statT += statE;
-        shapeE = shape->GetErrorYlow(i);
-        printf(" > shape \t %.4f \n", shapeE);
-        // get the correalted error
-        corrE = corr->GetErrorYlow(i);
-        printf(" > corr \t %.4f \n", corrE);
         // combine the errors
-        totalE = TMath::Sqrt(statE*statE+shapeE*shapeE) + TMath::Sqrt(corrE*corrE);
-        printf(" > Bin %i \t totalE %.4f \t statE %.4f \t v2 %.4f \t nSigma %.4f \t(just stat %.4f) < \n", i, totalE, statE, y, y/totalE, y/statE);
-        average += y/totalE;
-        averageStat += y/statE;
-        chi2 += TMath::Power(y/totalE, 2);
+        chi2 += TMath::Power(y/statE, 2);
     }
-    printf(" > Average n-sigmas: %.4f \t (stat only %.4f) <\n", average/(up-low+1), averageStat/(up-low+1));
-    printf(" > Chi2: %.4f <\n", chi2);
-    printf(" > p-value %.4f <\n", 1.-TMath::Gamma((up-low+1)/2., chi2/2.)); 
+    cout << "p-value: p(" << chi2 << ", 6) " << TMath::Prob(chi2, 6) << endl;
+    cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
+    cout << "  observed data, using only statistical uncertainties, is " << TMath::Prob(chi2, 2) << endl << endl << endl ; 
+
+    // to plot the average error as function of number of events
+    for(Int_t i(low); i < up+1; i++) {
+        // set some flags to 0
+        x = 0.;
+        y = 0.;
+        // get the nominal point
+        n->GetPoint(i, x, y);
+        statE = n->GetErrorYlow(i);
+        shapeE = shape->GetErrorYlow(i);
+        corrE = corr->GetErrorYlow(i);
+        // combine the errors
+        totalE = TMath::Sqrt(statE*statE+shapeE*shapeE);// + TMath::Sqrt(corrE*corrE);
+    }
+    cout << " AVERAGE_E " << totalE/((float)(up-low+1)) << endl;
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::MinimizeChi22d()
@@ -4223,11 +4214,75 @@ void AliJetFlowTools::MinimizeChi2()
 Double_t AliJetFlowTools::PhenixChi2(const Double_t *xx )
 {
     // define arrays with results and errors
-    Double_t v2[6]      = {0.};
-    Double_t stat[6]    = {0.};
-    Double_t corr[6]    = {0.};
-    Double_t shape[6]   = {0.};
-
+ 
+  /* 
+   Double_t v2[] = {
+        0.0094,
+        0.0559,
+        0.0746,
+        0.1077,
+        0.1208,
+        0.0883
+    };
+   Double_t stat[] = {
+        0.0287,
+        0.0311, 
+        0.0443, 
+        0.0600, 
+        0.0802, 
+        0.1223
+   };
+   Double_t shape[] = {
+        0.0607, 
+        0.0623, 
+        0.0397, 
+        0.0312, 
+        0.0452, 
+        0.0716
+   };
+   Double_t corr[] = { 
+        0.0402,
+        0.0460, 
+        0.0412, 
+        0.0411, 
+        0.0403, 
+        0.0402 
+ };
+*/
+    // these points are for 30 - 50 centrality, 20-90 gev (in which data is reported)
+    Double_t v2[] = {
+        0.0816,
+        0.0955, 
+        0.0808, 
+        0.0690, 
+        0.0767, 
+        0.1005 
+    };
+    Double_t stat[] = { 
+        0.0113,
+        0.0172,
+        0.0221, 
+        0.0317, 
+        0.0469, 
+        0.0694 
+    };
+    Double_t shape[] = { 
+        0.1024,
+        0.0552, 
+        0.0275, 
+        0.0231, 
+        0.0234, 
+        0.0665
+    };
+    Double_t corr[] = { 
+        0.0165,
+        0.0164, 
+        0.0165, 
+        0.0166, 
+        0.0166, 
+        0.0165
+    };
+ 
     // return the function value at certain epsilon
     const Double_t epsc = xx[0];
     Double_t chi2(0);
@@ -4303,11 +4358,75 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
     // define arrays with results and errors here, see example at PhenixChi2()
     // very ugly, but two set of data, for 0-5  and 30-50 pct centrality
     // this function has to be static, so this is the easiest way to implement it in the class ...
-    Double_t v2[6]      = {0.};
-    Double_t stat[6]    = {0.};
-    Double_t corr[6]    = {0.};
-    Double_t shape[6]   = {0.};
-
+ 
+  /* 
+   Double_t v2[] = {
+        0.0094,
+        0.0559,
+        0.0746,
+        0.1077,
+        0.1208,
+        0.0883
+    };
+   Double_t stat[] = {
+        0.0287,
+        0.0311, 
+        0.0443, 
+        0.0600, 
+        0.0802, 
+        0.1223
+   };
+   Double_t shape[] = {
+        0.0607, 
+        0.0623, 
+        0.0397, 
+        0.0312, 
+        0.0452, 
+        0.0716
+   };
+   Double_t corr[] = { 
+        0.0402,
+        0.0460, 
+        0.0412, 
+        0.0411, 
+        0.0403, 
+        0.0402 
+ };
+*/
+    // these points are for 30 - 50 centrality, 20-90 gev (in which data is reported)
+    Double_t v2[] = {
+        0.0816,
+        0.0955, 
+        0.0808, 
+        0.0690, 
+        0.0767, 
+        0.1005 
+    };
+    Double_t stat[] = { 
+        0.0113,
+        0.0172,
+        0.0221, 
+        0.0317, 
+        0.0469, 
+        0.0694 
+    };
+    Double_t shape[] = { 
+        0.1024,
+        0.0552, 
+        0.0275, 
+        0.0231, 
+        0.0234, 
+        0.0665
+    };
+    Double_t corr[] = { 
+        0.0165,
+        0.0164, 
+        0.0165, 
+        0.0166, 
+        0.0166, 
+        0.0165
+    };
+ 
     // return the function value at certain epsilon
     const Double_t epsc = xx[0];
     const Double_t epsb = xx[1];

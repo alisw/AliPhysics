@@ -51,7 +51,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kNormPairLimit = 45000,
     kMultLimitPbPb = 1800,//1800
     kMultLimitpp = 300,
-    kMultBinspp = 11,
+    kMultBinspp = 10,
     kMCarrayLimit = 150000,// 110000
     kQbinsWeights = 40,
     kNDampValues = 16,
@@ -63,7 +63,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
   static const Int_t fEDbins   = 2;
   static const Int_t fCentBins = 10;// 0-50%
-  static const Int_t fCentBinsMixing = 10;// 5% widths
+  static const Int_t fMbinsMixing = 10;// 5% widths
   static const Int_t fRVALUES  = 7;// 7 EW radii (5-11) , was 8 Gaussian radii (3-10fm)
 
 
@@ -98,6 +98,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetMaxPt(Float_t maxPt) {fMaxPt = maxPt;}
   void SetKT3transition(Float_t KT3trans) {fKT3transition = KT3trans;}
   void SetKT4transition(Float_t KT4trans) {fKT4transition = KT4trans;}
+  void SetTriggerType(Int_t tt) {fTriggerType = tt;}
   //
 
 
@@ -261,6 +262,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Int_t fMultLimit;      
   Int_t fCentBinLowLimit;
   Int_t fCentBinHighLimit;
+  Int_t fTriggerType;
   Int_t fEventCounter;
   Int_t fEventsToMix;
   Int_t fZvertexBins;

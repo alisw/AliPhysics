@@ -89,14 +89,16 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
                                                                 if (s) fMCFlag |=  AliAODMCParticle::kPhysicalPrim ; 
                                                                 else   fMCFlag &= ~AliAODMCParticle::kPhysicalPrim ; }
 
-  void                   SetCodeDebug(Bool_t val)         { fCodeDebug = val; }
+  void                   SetCodeDebug(Bool_t val)               { fCodeDebug    = val          ; }
+  void                   SetForceIsMcPart(Bool_t b)             { fIsMcPart     = b            ; }
+  void                   SetPionMassForClusters(Bool_t b)       { fPionMassClusters = b        ; }
 
   void                   SetRhoName(const char *n)              { fRhoName      = n            ; }
   void                   SetRhomName(const char *n)             { fRhomName     = n            ; }
   void                   SetGenericSubtractionJetMass(Bool_t b) { fDoGenericSubtractionJetMass = b; }
   void                   SetGenericSubtractionGR(Bool_t b, Double_t rmax = 2., Double_t dr = 0.04, Double_t ptmin = 0.) { fDoGenericSubtractionGR = b; fRMax=rmax; fDRStep=dr; fPtMinGR=ptmin;}
   void                   SetConstituentSubtraction(Bool_t b)    { fDoConstituentSubtraction = b; }
-  void                   SetGenericSubtractionExtraJetShapes(Bool_t b)        {fDoGenericSubtractionExtraJetShapes =b;}
+  void                   SetGenericSubtractionExtraJetShapes(Bool_t b)            { fDoGenericSubtractionExtraJetShapes =b;}
   void                   SetUseExternalBkg(Bool_t b, Double_t rho, Double_t rhom) { fUseExternalBkg = b; fRho = rho; fRhom = rhom;}
 
   UInt_t                 GetJetType()                     { return fJetType; }
@@ -170,6 +172,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
   Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
   Bool_t                 fCodeDebug;              // use nontested code changes 
+  Bool_t                 fPionMassClusters;       // assume pion mass for clusters
 
   Bool_t                 fDoGenericSubtractionJetMass;        // calculate generic subtraction
   Bool_t                 fDoGenericSubtractionGR;             // calculate generic subtraction for angular structure function GR
@@ -197,6 +200,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 15) // Jet producing task
+  ClassDef(AliEmcalJetTask, 16) // Jet producing task
 };
 #endif

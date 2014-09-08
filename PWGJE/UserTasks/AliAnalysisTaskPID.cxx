@@ -604,10 +604,18 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   // This centrality estimator deals with integers! This implies that the ranges are always [lowlim, uplim - 1]
   Double_t binsCentITSTPCTracklets[nCentBins+1] = { 0, 7, 13, 20, 29, 40, 50, 60, 72, 83, 95, 105, 115 };
   
+  // Special centrality binning for pp
+  Double_t binsCentpp[nCentBins+1] =   { 0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+  
   if (fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0 && fStoreCentralityPercentile) {
     // Special binning for this centrality estimator; but keep number of bins!
     for (Int_t i = 0; i < nCentBins+1; i++)
       binsCent[i] = binsCentITSTPCTracklets[i];
+  }
+  else if (fCentralityEstimator.Contains("ppMult", TString::kIgnoreCase) && fStoreCentralityPercentile) {
+    // Special binning for this pp centrality estimator; but keep number of bins!
+    for (Int_t i = 0; i < nCentBins+1; i++)
+      binsCent[i] = binsCentpp[i];
   }
 
   const Int_t nJetPtBins = 11;
@@ -763,26 +771,26 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   
   
   fhEventsProcessed = new TH1D("fhEventsProcessed",
-                               "Number of events passing trigger selection, vtx and zvtx cuts and pile-up rejection;Centrality percentile", 
+                               "Number of events passing trigger selection, vtx and zvtx cuts and pile-up rejection;Centrality Percentile", 
                                nCentBins, binsCent);
   fhEventsProcessed->Sumw2();
   fOutputContainer->Add(fhEventsProcessed);
   
   fhEventsTriggerSelVtxCut = new TH1D("fhEventsTriggerSelVtxCut",
-                                      "Number of events passing trigger selection and vtx cut;Centrality percentile", 
+                                      "Number of events passing trigger selection and vtx cut;Centrality Percentile", 
                                       nCentBins, binsCent);
   fhEventsTriggerSelVtxCut->Sumw2();
   fOutputContainer->Add(fhEventsTriggerSelVtxCut);
   
   fhEventsTriggerSel = new TH1D("fhEventsTriggerSel",
-                                "Number of events passing trigger selection;Centrality percentile", 
+                                "Number of events passing trigger selection;Centrality Percentile", 
                                 nCentBins, binsCent);
   fOutputContainer->Add(fhEventsTriggerSel);
   fhEventsTriggerSel->Sumw2();
   
   
   fhEventsProcessedNoPileUpRejection = new TH1D("fhEventsProcessedNoPileUpRejection",
-                                                "Number of events passing trigger selection, vtx and zvtx cuts;Centrality percentile", 
+                                                "Number of events passing trigger selection, vtx and zvtx cuts;Centrality Percentile", 
                                                 nCentBins, binsCent);
   fOutputContainer->Add(fhEventsProcessedNoPileUpRejection);
   fhEventsProcessedNoPileUpRejection->Sumw2();
@@ -1053,12 +1061,17 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         AliError("Not esd event -> Cannot use tracklet multiplicity estimator!");
         centralityPercentile = -1;
       }
-      else {
+      else
         centralityPercentile = AliESDtrackCuts::GetReferenceMultiplicity(esdEvent, AliESDtrackCuts::kTrackletsITSTPC, fEtaAbsCutUp);
-      }
     }
-    else
+    else if (fCentralityEstimator.Contains("ppMult", TString::kIgnoreCase)) {
+      // Another special pp centrality estimator
+      centralityPercentile = fAnaUtils->GetMultiplicityPercentile(fEvent, GetPPCentralityEstimator().Data());
+    }
+    else {
+      // Ordinary centrality estimator
       centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
+    }
   }
   
   // Check if vertex is ok, but don't apply cut on z position
@@ -1115,10 +1128,13 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     return;
   
   IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
-  //TODO ATTENTION: Is this the right place for the pile-up rejection? Important to have still the proper bin-0 correction,
+  // ATTENTION: Is this the right place for the pile-up rejection? Important to have still the proper bin-0 correction,
   // which is done solely with sel and selVtx, since the zvtx selection does ~not change the spectra. The question is whether the pile-up
   // rejection changes the spectra. If not, then it is perfectly fine to put it here and keep the usual histo for the normalisation to number
   // of events. But if it does change the spectra, this must somehow be corrected for.
+  // NOTE: multiplicity >= 0 usually implies a properly reconstructed vertex. Hence, the bin-0 correction cannot be done in multiplicity bins.
+  // Furthermore, there seems to be no MC simulation with pile-up rejection, so the bin-0 correction cannot be extracted with it. Pile-up
+  // rejection has only a minor impact, so maybe there is no need to dig further.
   if (isPileUp)
     return;
   
@@ -3599,7 +3615,7 @@ void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_
   
   hist->GetAxis(kGenDeltaPrimeSpecies)->SetTitle("TPC #Delta'_{species} (arb. unit)");
   
-  hist->GetAxis(kGenCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
+  hist->GetAxis(kGenCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
   
   if (fStoreAdditionalJetInformation) {
     hist->GetAxis(kGenJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
@@ -3637,7 +3653,7 @@ void AliAnalysisTaskPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Do
   // Set axes titles
   hist->GetAxis(kGenYieldMCID)->SetTitle("MC PID");
   hist->GetAxis(kGenYieldPt)->SetTitle("p_{T}^{gen} (GeV/c)");
-  hist->GetAxis(kGenYieldCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
+  hist->GetAxis(kGenYieldCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
   
   if (fStoreAdditionalJetInformation) {
     hist->GetAxis(kGenYieldJetPt)->SetTitle("p_{T}^{jet, gen} (GeV/c)");
@@ -3681,7 +3697,7 @@ void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* 
     
   hist->GetAxis(kDataDeltaPrimeSpecies)->SetTitle("TPC #Delta'_{species} (arb. unit)");
   
-  hist->GetAxis(kDataCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
+  hist->GetAxis(kDataCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
   
   if (fStoreAdditionalJetInformation) {
     hist->GetAxis(kDataJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
@@ -3719,7 +3735,7 @@ void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Doubl
   hist->GetAxis(kPtResRecPt)->SetTitle("p_{T}^{rec} (GeV/c)");  
   
   hist->GetAxis(kPtResCharge)->SetTitle("Charge (e_{0})");
-  hist->GetAxis(kPtResCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
+  hist->GetAxis(kPtResCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
 }
 
 
@@ -3772,7 +3788,7 @@ void AliAnalysisTaskPID::SetUpBinZeroStudyHist(THnSparse* hist, const Double_t* 
   hist->SetBinEdges(kBinZeroStudyGenPt, binsPt);
   
   // Set axes titles
-  hist->GetAxis(kBinZeroStudyCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
+  hist->GetAxis(kBinZeroStudyCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
   hist->GetAxis(kBinZeroStudyGenEta)->SetTitle("#it{#eta}^{gen}");  
   hist->GetAxis(kBinZeroStudyGenPt)->SetTitle("#it{p}_{T}^{gen} (GeV/#it{c})"); 
 }

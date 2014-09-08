@@ -72,7 +72,7 @@ static Float_t ptMaxLP = 50.;               // Max cut for transverse momentum L
 static Float_t lMin = 0.0;                  // Limits in the histo for fidutial volume
 static Float_t lMax = 100.;                 // Limits in the fidutial volume
 
-//static Int_t   nMaxEvMix = 250;
+static Int_t   nMaxEvMix = 250;
 
 //
 //  
@@ -2122,7 +2122,7 @@ static Int_t CentBin(Double_t cent)
 Bool_t AliAnalysisTaskLambdaOverK0sJets::AcceptTrack(const AliAODTrack *t) 
 {
   // Track criteria for primaries particles 
-  if(fTriggerFB!=128 && fTriggerFB!=272) return kFALSE; 
+  //if(fTriggerFB!=128 && fTriggerFB!=272) return kFALSE; 
   
   if (TMath::Abs(t->Eta())>0.8 )  return kFALSE; 
   //if (!(t->TestFilterMask(1<<7))) return kFALSE; 
@@ -5062,120 +5062,136 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
   } // End loop over trigger particles
  
- 
+
   //-------------------------------------------------------------
   // Mixing
   //-------------------------------------------------------------
-  /*
-    Double_t phiTrigME=0, etaTrigME=0, phiAssocME=0, etaAssocME=0;
-    Double_t deltaPhi=0, deltaEta=0;
+  
+  Double_t phiTrigME=0, etaTrigME=0, phiAssocME=0, etaAssocME=0;
+  Double_t deltaPhi=0, deltaEta=0;
 
-    TList *evMixList = fMEList[curCentBin*kNVtxZ+curVtxBin];
-    Int_t nMixed = evMixList->GetSize(); 
+  TList *evMixList = fMEList[curCentBin*kNVtxZ+curVtxBin];
+  Int_t nMixed = evMixList->GetSize(); 
  
-    if( nMixed>0 && fAssocParticles->GetEntriesFast() >= 0 ){
+  if( nMixed>0 && fAssocParticles->GetEntriesFast() >= 0 ){
     
     for(Int_t ii=0; ii<nMixed; ii++){     
       
-    AliMiniParticle* trackTriggerME = (AliMiniParticle*) (evMixList->At(ii));
-    phiTrigME = trackTriggerME->Phi();
-    etaTrigME = trackTriggerME->Eta();
-      
-    // --- V0 associated particles
-    for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
+      AliMiniParticle* trackTriggerME = (AliMiniParticle*) (evMixList->At(ii));
+      phiTrigME = trackTriggerME->Phi();
+      etaTrigME = trackTriggerME->Eta();
+
+      // --- V0 associated particles
+      for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
 	
-    AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
-    if( CentBin(trackTriggerME->Centrality()) != CentBin(trackAssocME->Centrality()) ) continue;
-    if( VtxBin(trackTriggerME->VtxZ()) != VtxBin(trackAssocME->VtxZ()) ) continue;
-    if( trackAssocME->WhichCandidate() ==  2 ) continue;
+	AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
+	if( CentBin(trackTriggerME->Centrality()) != CentBin(trackAssocME->Centrality()) ) continue;
+	if( VtxBin(trackTriggerME->VtxZ()) != VtxBin(trackAssocME->VtxZ()) ) continue;
+	if( trackAssocME->WhichCandidate() ==  2 ) continue;
 
-    AliAODv0 *tAssoc=fAOD->GetV0(trackAssocME->ID());
-    pt = tAssoc->Pt();
+	AliAODv0 *tAssoc=fAOD->GetV0(trackAssocME->ID());
+	const AliAODTrack *ntrack=(AliAODTrack *)tAssoc->GetDaughter(1);
+	const AliAODTrack *ptrack=(AliAODTrack *)tAssoc->GetDaughter(0);
 
-    Bool_t IsSelected = kFALSE;
-    // K0s
-    if( trackAssocME->WhichCandidate() == 3 ){
-    massK0s = tAssoc->MassK0Short();
-    mK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-    if( fCollision.Contains("PbPb2010") )
-    sK0s = kCteK0s2010[curCentBin] + kLinearK0s2010[curCentBin]*pt;
-    else if( fCollision.Contains("PbPb2011") ) 
-    sK0s = kCteK0s2011[curCentBin] + kLinearK0s2011[curCentBin]*pt;
+	// Fraction of TPC Shared Cluster 
+	fracPosDaugTPCSharedMap=0; fracNegDaugTPCSharedMap=0;
+	fracPosDaugTPCSharedMap = GetFractionTPCSharedCls(ptrack);
+	fracNegDaugTPCSharedMap = GetFractionTPCSharedCls(ntrack);
+
+	if( (fracPosDaugTPCSharedMap > fFracTPCcls) || (fracNegDaugTPCSharedMap > fFracTPCcls) )
+	  continue;
+
+	pt = tAssoc->Pt();
+
+	Bool_t IsSelected = kFALSE;
+	// K0s
+	if( trackAssocME->WhichCandidate() == 3 ){
+	  massK0s = tAssoc->MassK0Short();
+	  mK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
+	  if( fCollision.Contains("PbPb2010") )
+	    sK0s = kCteK0s2010[curCentBin] + kLinearK0s2010[curCentBin]*pt;
+	  else if( fCollision.Contains("PbPb2011") ) 
+	    sK0s = kCteK0s2011[curCentBin] + kLinearK0s2011[curCentBin]*pt;
 	  
-    if (TMath::Abs(mK0s-massK0s) < 3*sK0s) IsSelected = kTRUE;
-    }
-    // Lambda
-    if( trackAssocME->WhichCandidate() == 4 ){
-    massL = tAssoc->MassLambda();
-    mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();	  
-    if( fCollision.Contains("PbPb2010") )
-    sL = kCteLambda2010[curCentBin] + kLinearLambda2010[curCentBin]*pt;
-    else if( fCollision.Contains("PbPb2011") ) 
-    sL = kCteLambda2011[curCentBin] + kLinearLambda2011[curCentBin]*pt;
+	  if (TMath::Abs(mK0s-massK0s) < 3*sK0s) IsSelected = kTRUE;
+	}
+	// Lambda
+	if( trackAssocME->WhichCandidate() == 4 ){
+	  massL = tAssoc->MassLambda();
+	  mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();	  
+	  if( fCollision.Contains("PbPb2010") )
+	    sL = kCteLambda2010[curCentBin] + kLinearLambda2010[curCentBin]*pt;
+	  else if( fCollision.Contains("PbPb2011") ) 
+	    sL = kCteLambda2011[curCentBin] + kLinearLambda2011[curCentBin]*pt;
 
-    if (TMath::Abs(mL-massL) < 3*sL) IsSelected = kTRUE;
-    }
-    // AntiLambda
-    if( trackAssocME->WhichCandidate() == 5 ){
-    massAL = tAssoc->MassAntiLambda();
-    mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-    if( fCollision.Contains("PbPb2010") )
-    sL = kCteAntiLambda2010[curCentBin] + kLinearAntiLambda2010[curCentBin]*pt;
-    else if( fCollision.Contains("PbPb2011") ) 
-    sL = kCteAntiLambda2011[curCentBin] + kLinearAntiLambda2011[curCentBin]*pt;
+	  if (TMath::Abs(mL-massL) < 3*sL) IsSelected = kTRUE;
+	}
+	// AntiLambda
+	if( trackAssocME->WhichCandidate() == 5 ){
+	  massAL = tAssoc->MassAntiLambda();
+	  mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
+	  if( fCollision.Contains("PbPb2010") )
+	    sL = kCteAntiLambda2010[curCentBin] + kLinearAntiLambda2010[curCentBin]*pt;
+	  else if( fCollision.Contains("PbPb2011") ) 
+	    sL = kCteAntiLambda2011[curCentBin] + kLinearAntiLambda2011[curCentBin]*pt;
 	  
-    if (TMath::Abs(mL-massAL) < 3*sL) IsSelected = kTRUE;
-    }
+	  if (TMath::Abs(mL-massAL) < 3*sL) IsSelected = kTRUE;
+	}
 
-    if(!IsSelected) continue;
+	if(!IsSelected) continue;
 
-    phiAssocME = trackAssocME->Phi();
-    etaAssocME = trackAssocME->Eta();
+	phiAssocME = trackAssocME->Phi();
+	etaAssocME = trackAssocME->Eta();
 	 
-    deltaPhi = dPHI(phiTrigME,phiAssocME);
-    deltaEta = etaTrigME - etaAssocME;
+	deltaPhi = dPHI(phiTrigME,phiAssocME);
+	deltaEta = etaTrigME - etaAssocME;
 
-    Int_t binPtv0 = PtBin( trackAssocME->Pt() );
-    if(binPtv0==-1) continue;
+	Int_t binPtv0 = PtBin( trackAssocME->Pt() );
+	if(binPtv0==-1) continue;
     
-    if( trackAssocME->WhichCandidate() == 3 ) {
-    fK0sdPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);}
-    else if( trackAssocME->WhichCandidate() == 4 )
-    fLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);
-    else if( trackAssocME->WhichCandidate() == 5 )
-    fAntiLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);
+	if( trackAssocME->WhichCandidate() == 3 ) {
+	  fK0sdPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);}
+	else if( trackAssocME->WhichCandidate() == 4 )
+	  fLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);
+	else if( trackAssocME->WhichCandidate() == 5 )
+	  fAntiLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);
 	             
-    } // End loop over V0's
+      } // End loop over V0's
        
     }
     
-    }
-  */
+  }
+  
   //--------------------------------------------------------
   //Add the current event to the list of events for mixing
   //--------------------------------------------------------  
-  /*
+  
   //Add current  event to buffer and Remove redundant events 
   if(fTriggerParticles->GetEntriesFast()>=0){
     
-  for(Int_t ii=0; ii<(fTriggerParticles->GetEntriesFast()); ii++){
-  AliMiniParticle* trkTrig = (AliMiniParticle*) fTriggerParticles->At(ii);
-  //cout << trkTrig->Pt() << "          " << ii << endl;
+    for(Int_t ii=0; ii<(fTriggerParticles->GetEntriesFast()); ii++){
+      AliMiniParticle* trkTrig = (AliMiniParticle*) fTriggerParticles->At(ii);
+      //cout << trkTrig->Pt() << "          " << ii << endl;
     
-  if(evMixList->GetSize() < nMaxEvMix)
-  evMixList->AddFirst(trkTrig);
-  / *
-  if(evMixList->GetSize() >= nMaxEvMix) {
-  AliMiniParticle *tmp = (AliMiniParticle*) (evMixList->Last()) ;
-  evMixList->RemoveLast();
-  delete tmp;
-  }
-  * /
+      // Fraction of TPC Shared Cluster 
+      const AliAODTrack *tTrig = (AliAODTrack*)fAOD->GetTrack(trkTrig->ID());
+      fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
+      if( (fracTrigTPCSharedMap > fFracTPCcls) ) continue;
+
+      if(evMixList->GetSize() < nMaxEvMix)
+	evMixList->AddFirst(trkTrig);
+      /*
+	  if(evMixList->GetSize() >= nMaxEvMix) {
+	    AliMiniParticle *tmp = (AliMiniParticle*) (evMixList->Last()) ;
+	    evMixList->RemoveLast();
+	    delete tmp;
+	  }
+      */
       
-  }// End loop over fTriggerParticles
+    }// End loop over fTriggerParticles
 
   }// End adding trigger particles to buffers
-  */
+  
 }
 
 //___________________________________________________________________________________________

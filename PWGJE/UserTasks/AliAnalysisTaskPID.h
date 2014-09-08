@@ -134,6 +134,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   ErrorCode SetParamsForConvolutedGaus(Double_t gausMean, Double_t gausSigma);
   
   const TString GetCentralityEstimator() const { return fCentralityEstimator; };
+  const TString GetPPCentralityEstimator() const {
+    TString ppCentEstimator = fCentralityEstimator; ppCentEstimator = ppCentEstimator.ReplaceAll("ppMult", ""); return ppCentEstimator; }
   void SetCentralityEstimator(TString estimator) { fCentralityEstimator = estimator; };
   
   Double_t GetCentralityPercentile(AliVEvent* evt) const;
@@ -632,6 +634,8 @@ inline Int_t AliAnalysisTaskPID::GetParticleFractionHistoNbinsCentrality() const
 //_____________________________________________________________________________
 inline Double_t AliAnalysisTaskPID::GetCentralityPercentile(AliVEvent* evt) const
 {
+  // WARNING: This function may not be used in case of special pp centrality estimators which require different handling
+  // (and sometimes ESD events)
   if (!evt)
     return -1;
   

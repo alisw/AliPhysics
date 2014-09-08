@@ -383,7 +383,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 
     // store which variables are used
     for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
-    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+    if(valTypeW!=kNoWeights)   fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     // adapt the name and title of the histogram in case they are empty
     AdaptNameTitle(hist, histClass);
@@ -1372,6 +1372,7 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
   UInt_t varz = hist->GetZaxis()->GetUniqueID();
   UInt_t varp = hist->GetUniqueID();
   Bool_t weight = (varp!=kNoWeights);
+  if(bprf && dim==3) weight=kFALSE; // no weighting for profile3D
 
   // store titles in the axis
   if(btitle) {
@@ -1462,7 +1463,7 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(vary));
 	currentName+=Form("%s",AliDielectronVarManager::GetValueName(varz));
 	if(bprf)   currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varp),(bStdOpt ? "avg" : "rms"));
-	if(weight) currentName+=Form("-wght%s",AliDielectronVarManager::GetValueName(varp));
+	if(weight&&!bprf) currentName+=Form("-wght%s",AliDielectronVarManager::GetValueName(varp));
 	break;
       case 2:
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(varx));

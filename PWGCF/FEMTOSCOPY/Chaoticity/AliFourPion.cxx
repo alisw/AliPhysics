@@ -78,6 +78,7 @@ AliAnalysisTaskSE(),
   fMultLimit(0),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
+  fTriggerType(0),
   fEventCounter(0),
   fEventsToMix(0),
   fZvertexBins(0),
@@ -257,6 +258,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fMultLimit(0),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
+  fTriggerType(0),
   fEventCounter(0),
   fEventsToMix(0),
   fZvertexBins(0),
@@ -440,6 +442,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fMultLimit(obj.fMultLimit),
     fCentBinLowLimit(obj.fCentBinLowLimit),
     fCentBinHighLimit(obj.fCentBinHighLimit),
+    fTriggerType(obj.fTriggerType),
     fEventCounter(obj.fEventCounter),
     fEventsToMix(obj.fEventsToMix),
     fZvertexBins(obj.fZvertexBins),
@@ -570,6 +573,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fMultLimit = obj.fMultLimit;
   fCentBinLowLimit = obj.fCentBinLowLimit;
   fCentBinHighLimit = obj.fCentBinHighLimit;
+  fTriggerType = obj.fTriggerType;
   fEventCounter = obj.fEventCounter;
   fEventsToMix = obj.fEventsToMix;
   fZvertexBins = obj.fZvertexBins;
@@ -757,9 +761,10 @@ void AliFourPion::ParInit()
   fShareFraction = .05;// max
   ////////////////////////////////////////////////
   
-  
-  fMultLimits[0]=0, fMultLimits[1]=2, fMultLimits[2]=4, fMultLimits[3]=6, fMultLimits[4]=8, fMultLimits[5]=10;
-  fMultLimits[6]=12, fMultLimits[7]=14, fMultLimits[8]=16, fMultLimits[9]=18, fMultLimits[10]=20, fMultLimits[11]=150;
+  // pp and pPb mult limits
+  fMultLimits[0]=0, fMultLimits[1]=5; fMultLimits[2]=10; fMultLimits[3]=15; fMultLimits[4]=20;
+  fMultLimits[5]=30, fMultLimits[6]=40; fMultLimits[7]=50; fMultLimits[8]=70; fMultLimits[9]=100;
+  fMultLimits[10]=150;
   
     
   
@@ -771,7 +776,7 @@ void AliFourPion::ParInit()
     fNormQcutHigh = 0.2;// 0.175
   }else {// pp
     fMultLimit=kMultLimitpp; 
-    fMbins=kMultBinspp; 
+    fMbins=1; 
     fQcut=0.6;
     fNormQcutLow = 1.0;
     fNormQcutHigh = 1.5;
@@ -822,9 +827,9 @@ void AliFourPion::ParInit()
   fEC = new AliFourPionEventCollection **[fZvertexBins];
   for(UShort_t i=0; i<fZvertexBins; i++){
     
-    fEC[i] = new AliFourPionEventCollection *[fCentBinsMixing];
+    fEC[i] = new AliFourPionEventCollection *[fMbinsMixing];
 
-    for(UShort_t j=0; j<fCentBinsMixing; j++){
+    for(UShort_t j=0; j<fMbinsMixing; j++){
       
       fEC[i][j] = new AliFourPionEventCollection(fEventsToMix+1, fMultLimit, kMCarrayLimit, fMCcase);
     }
@@ -920,12 +925,16 @@ void AliFourPion::UserCreateOutputObjects()
   fMultDist3->GetXaxis()->SetTitle("Multiplicity");
   fOutputList->Add(fMultDist3);
   
-  TH3F *fPtEtaDist = new TH3F("fPtEtaDist","fPtEtaDist",2,-1.1,1.1, 300,0,3., 28,-1.4,1.4);
-  fOutputList->Add(fPtEtaDist);
-
-  TH3F *fPhiPtDist = new TH3F("fPhiPtDist","fPhiPtDist",2,-1.1,1.1, 120,0,2*PI, 300,0,3.);
-  fOutputList->Add(fPhiPtDist);
+  TH3F *fChPtEtaDist = new TH3F("fChPtEtaDist","fChPtEtaDist",2,-1.1,1.1, 300,0,3., 28,-1.4,1.4);
+  fOutputList->Add(fChPtEtaDist);
+  TH3F *fChPhiPtDist = new TH3F("fChPhiPtDist","fChPhiPtDist",2,-1.1,1.1, 120,0,2*PI, 300,0,3.);
+  fOutputList->Add(fChPhiPtDist);
   
+  TH2F *fCentEtaDist = new TH2F("fCentEtaDist","",10,-.5,9.5, 28,-1.4,1.4);
+  fOutputList->Add(fCentEtaDist);
+  TH2F *fCentPtDist = new TH2F("fCentPtDist","",10,-.5,9.5, 600,0,3.);
+  fOutputList->Add(fCentPtDist);
+
   TH3F *fTOFResponse = new TH3F("fTOFResponse","TOF relative time",20,0,100, 200,0,2, 4000,-20000,20000);
   fOutputList->Add(fTOFResponse);
   TH3F *fTPCResponse = new TH3F("fTPCResponse","TPCsignal",20,0,100, 200,0,2, 1000,0,1000);
@@ -1065,7 +1074,7 @@ void AliFourPion::UserCreateOutputObjects()
 
       
   for(Int_t mb=0; mb<fMbins; mb++){
-    if((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit)) continue;
+    if(fPbPbcase) {if((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit)) continue;}
     
     for(Int_t edB=0; edB<fEDbins; edB++){
       for(Int_t c1=0; c1<2; c1++){
@@ -1433,16 +1442,16 @@ void AliFourPion::UserCreateOutputObjects()
   TH2D *fQ4Res = new TH2D("fQ4Res","",20,0,1, 200,-.4,.4);
   fOutputList->Add(fQ4Res);
   
-  TH2D *DistQinv4pion = new TH2D("DistQinv4pion","",6,0.5,6.5, 20,0,0.1);
+  TH2D *DistQinv4pion = new TH2D("DistQinv4pion","",6,0.5,6.5, fQbinsQ2,0,fQupperBoundQ2);
   fOutputList->Add(DistQinv4pion);
-  TH2D *DistQinvMC4pion = new TH2D("DistQinvMC4pion","",6,0.5,6.5, 20,0,0.1);
+  TH2D *DistQinvMC4pion = new TH2D("DistQinvMC4pion","",6,0.5,6.5, fQbinsQ2,0,fQupperBoundQ2);
   if(fMCcase) fOutputList->Add(DistQinvMC4pion);
 
-  TH2D *fAvgQ12VersusQ3 = new TH2D("fAvgQ12VersusQ3","",10,0,0.1, 20,0,0.1);
+  TH2D *fAvgQ12VersusQ3 = new TH2D("fAvgQ12VersusQ3","",40,0,0.2, fQbinsQ3,0,fQupperBoundQ3);
   fOutputList->Add(fAvgQ12VersusQ3);
-  TH2D *fAvgQ13VersusQ3 = new TH2D("fAvgQ13VersusQ3","",10,0,0.1, 20,0,0.1);
+  TH2D *fAvgQ13VersusQ3 = new TH2D("fAvgQ13VersusQ3","",40,0,0.2, fQbinsQ3,0,fQupperBoundQ3);
   fOutputList->Add(fAvgQ13VersusQ3);
-  TH2D *fAvgQ23VersusQ3 = new TH2D("fAvgQ23VersusQ3","",10,0,0.1, 20,0,0.1);
+  TH2D *fAvgQ23VersusQ3 = new TH2D("fAvgQ23VersusQ3","",40,0,0.2, fQbinsQ3,0,fQupperBoundQ3);
   fOutputList->Add(fAvgQ23VersusQ3);
 
   TH1D *fDistPionParents4 = new TH1D("fDistPionParents4","",4,0.5,4.5);
@@ -1494,7 +1503,8 @@ void AliFourPion::UserExec(Option_t *)
   // Called for each event
   //cout<<"===========  Event # "<<fEventCounter+1<<"  ==========="<<endl;
   fEventCounter++;
-  
+  if(fEventCounter%1000==0) cout<<"===========  Event # "<<fEventCounter<<"  ==========="<<endl;
+
   if(!fAODcase) {cout<<"ESDs not supported"<<endl; return;}
   
   fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
@@ -1509,8 +1519,15 @@ void AliFourPion::UserExec(Option_t *)
     Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
     Bool_t isSelected2 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
     if(!isSelected1 && !isSelected2 && !fMCcase) {return;}
-  }else {return;}
-
+  }else {
+    Bool_t isSelected[4]={kFALSE};
+    isSelected[0] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+    isSelected[1] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);
+    isSelected[2] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+    isSelected[3] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kHighMult);
+    if(!isSelected[fTriggerType] && !fMCcase) return;
+  }
+ 
   ///////////////////////////////////////////////////////////
   const AliAODVertex *primaryVertexAOD;
   AliCentrality *centrality;// for AODs and ESDs
@@ -1542,9 +1559,18 @@ void AliFourPion::UserExec(Option_t *)
   Double_t zstep=2*10/Double_t(fZvertexBins), zstart=-10.;
   /////////////////////////////////////////////////
   // ratio of Real data to HIJING reconstructed pT (10 MeV bins)
-  Double_t HIJINGptWeights[100]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.590355, 0.672751, 0.795686, 0.848618, 0.861539, 0.874636, 0.880394, 0.87923, 0.885105, 0.888841, 0.892765, 0.896278, 0.899725, 0.903054, 0.907074, 0.91066, 0.913765, 0.918804, 0.923374, 0.929005, 0.935538, 0.942802, 0.949584, 0.956928, 0.963521, 0.972898, 0.981403, 0.989027, 0.997965, 1.00558, 1.01372, 1.02148, 1.03064, 1.04131, 1.05199, 1.06319, 1.07698, 1.09113, 1.10416, 1.11662, 1.12823, 1.14161, 1.15455, 1.1683, 1.18439, 1.19696, 1.21124, 1.22607, 1.24087, 1.25386, 1.26666, 1.27374, 1.2821, 1.29218, 1.30137, 1.30795, 1.31512, 1.32047, 1.32571, 1.33242, 1.3376, 1.34084, 1.34644, 1.34978, 1.35259, 1.35149, 1.35534, 1.3541, 1.35808, 1.36003, 1.35981, 1.36037, 1.35774, 1.35814, 1.35796, 1.35764, 1.35517, 1.34804, 1.34797, 1.33822, 1.32501, 1.30844, 1.2971, 1.27107};
+  //Double_t HIJINGptWeights[100]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0.590355, 0.672751, 0.795686, 0.848618, 0.861539, 0.874636, 0.880394, 0.87923, 0.885105, 0.888841, 0.892765, 0.896278, 0.899725, 0.903054, 0.907074, 0.91066, 0.913765, 0.918804, 0.923374, 0.929005, 0.935538, 0.942802, 0.949584, 0.956928, 0.963521, 0.972898, 0.981403, 0.989027, 0.997965, 1.00558, 1.01372, 1.02148, 1.03064, 1.04131, 1.05199, 1.06319, 1.07698, 1.09113, 1.10416, 1.11662, 1.12823, 1.14161, 1.15455, 1.1683, 1.18439, 1.19696, 1.21124, 1.22607, 1.24087, 1.25386, 1.26666, 1.27374, 1.2821, 1.29218, 1.30137, 1.30795, 1.31512, 1.32047, 1.32571, 1.33242, 1.3376, 1.34084, 1.34644, 1.34978, 1.35259, 1.35149, 1.35534, 1.3541, 1.35808, 1.36003, 1.35981, 1.36037, 1.35774, 1.35814, 1.35796, 1.35764, 1.35517, 1.34804, 1.34797, 1.33822, 1.32501, 1.30844, 1.2971, 1.27107};
+  Float_t HIJINGq2WeightsSC[200]={0.72, 0.723886, 0.770856, 0.799396, 0.815821, 0.827209, 0.833142, 0.837393, 0.839721, 0.842022, 0.84374, 0.845376, 0.84732, 0.848803, 0.850515, 0.852089, 0.853712, 0.855571, 0.857279, 0.85894, 0.860671, 0.862479, 0.863945, 0.865519, 0.867301, 0.868955, 0.870215, 0.871652, 0.873089, 0.874289, 0.875633, 0.876694, 0.877712, 0.878681, 0.879694, 0.88073, 0.881459, 0.882039, 0.882761, 0.88334, 0.884004, 0.884455, 0.884816, 0.885327, 0.88556, 0.885997, 0.886291, 0.886526, 0.886975, 0.887374, 0.887712, 0.888016, 0.888627, 0.888971, 0.889295, 0.889845, 0.890088, 0.890599, 0.890893, 0.891363, 0.891598, 0.892019, 0.892141, 0.892256, 0.892372, 0.892276, 0.892012, 0.891801, 0.891554, 0.891267, 0.891074, 0.890822, 0.890737, 0.890768, 0.89081, 0.890987, 0.89124, 0.891499, 0.891887, 0.892403, 0.892978, 0.893485, 0.894214, 0.894858, 0.895669, 0.896584, 0.897447, 0.89844, 0.899375, 0.900527, 0.901568, 0.902717, 0.903952, 0.905128, 0.90645, 0.907729, 0.909055, 0.910516, 0.911916, 0.913396, 0.914911, 0.91645, 0.918067, 0.919725, 0.921435, 0.923185, 0.925044, 0.926784, 0.928747, 0.930641, 0.932574, 0.934767, 0.93666, 0.938805, 0.94098, 0.943166, 0.945492, 0.947778, 0.950146, 0.952474, 0.954981, 0.957334, 0.959891, 0.96247, 0.965063, 0.967719, 0.97025, 0.973033, 0.975868, 0.978622, 0.981536, 0.984275, 0.987362, 0.990211, 0.993284, 0.996277, 0.999363, 1.00251, 1.00555, 1.00883, 1.01209, 1.01519, 1.01853, 1.02184, 1.0252, 1.02866, 1.03206, 1.03545, 1.03881, 1.04227, 1.04569, 1.04914, 1.05259, 1.056, 1.05953, 1.063, 1.06652, 1.07005, 1.07353, 1.07719, 1.0808, 1.08426, 1.08763, 1.09136, 1.09486, 1.0985, 1.10199, 1.10562, 1.10933, 1.11293, 1.11628, 1.11992, 1.1236, 1.12736, 1.13088, 1.13448, 1.13815, 1.14168, 1.14537, 1.1489, 1.15255, 1.15629, 1.15981, 1.16349, 1.16699, 1.17076, 1.17445, 1.17833, 1.18188, 1.18551, 1.18928, 1.19318, 1.19691, 1.20059, 1.20455, 1.20817, 1.21199, 1.21609, 1.21977, 1.22367};
+  Float_t HIJINGq2WeightsMC[200]={0.83, 0.833821, 0.834928, 0.836263, 0.837359, 0.83809, 0.838463, 0.840012, 0.840868, 0.842129, 0.843379, 0.844784, 0.846186, 0.847562, 0.849184, 0.850567, 0.85239, 0.854038, 0.855708, 0.857257, 0.859145, 0.860831, 0.862469, 0.864066, 0.865664, 0.867224, 0.868654, 0.870187, 0.871525, 0.872742, 0.874066, 0.875166, 0.876261, 0.877325, 0.878249, 0.879089, 0.879897, 0.880624, 0.881234, 0.881898, 0.88248, 0.882964, 0.883452, 0.883857, 0.884323, 0.884818, 0.885157, 0.885589, 0.88595, 0.886352, 0.886864, 0.887326, 0.887809, 0.888366, 0.888873, 0.889273, 0.889781, 0.890211, 0.890571, 0.891011, 0.891294, 0.891612, 0.891867, 0.892072, 0.89211, 0.891951, 0.891729, 0.891513, 0.891194, 0.890843, 0.89054, 0.890331, 0.890168, 0.890082, 0.890156, 0.890266, 0.890395, 0.890707, 0.891075, 0.891482, 0.891972, 0.89255, 0.893115, 0.893882, 0.89471, 0.895582, 0.896505, 0.897537, 0.898425, 0.89959, 0.900708, 0.901903, 0.903061, 0.904374, 0.905684, 0.907069, 0.908443, 0.909809, 0.911322, 0.912849, 0.914481, 0.916016, 0.917755, 0.919439, 0.921197, 0.922945, 0.924892, 0.926703, 0.928648, 0.930665, 0.932648, 0.934779, 0.936863, 0.939002, 0.941158, 0.943437, 0.945753, 0.948068, 0.950428, 0.952854, 0.955338, 0.957853, 0.960329, 0.962977, 0.965578, 0.968212, 0.970931, 0.97373, 0.97653, 0.979386, 0.982208, 0.985161, 0.988179, 0.991104, 0.994135, 0.997152, 1.00033, 1.00348, 1.00664, 1.00977, 1.01307, 1.01632, 1.01975, 1.02304, 1.02628, 1.02974, 1.03302, 1.03653, 1.03986, 1.04345, 1.04684, 1.05039, 1.05374, 1.05738, 1.06089, 1.06444, 1.06794, 1.07139, 1.07506, 1.07841, 1.08201, 1.08563, 1.08919, 1.09277, 1.09637, 1.10003, 1.10361, 1.10713, 1.11064, 1.11432, 1.11795, 1.12165, 1.12533, 1.1289, 1.13251, 1.13617, 1.13979, 1.1435, 1.14709, 1.15079, 1.15436, 1.15803, 1.16164, 1.16529, 1.1688, 1.17255, 1.17619, 1.17996, 1.18369, 1.18727, 1.19104, 1.19478, 1.1986, 1.20233, 1.20613, 1.20977, 1.21385, 1.21761, 1.22134, 1.22535};
+  //
+  Float_t HIJINGq3WeightsSC[35]={0.946, 0.946, 0.946171, 0.92177, 0.958284, 0.986155, 0.99244, 0.999372, 1.00152, 1.00427, 1.00328, 1.00546, 1.00546, 1.00628, 1.00586, 1.00446, 1.00496, 1.00427, 1.00413, 1.00354, 1.00322, 1.00266, 1.00158, 1.00123, 1.00048, 0.999826, 0.99901, 0.997586, 0.996728, 0.994507, 0.993044, 0.990995, 0.989289, 0.988248, 0.988455};
+  Float_t HIJINGq3WeightsMC[35]={0.634, 0.63488, 0.963204, 0.977364, 0.992797, 1.00015, 1.00179, 1.00467, 1.00602, 1.00635, 1.00665, 1.00677, 1.00643, 1.00601, 1.00562, 1.00542, 1.00494, 1.0048, 1.00406, 1.0036, 1.00297, 1.0025, 1.00178, 1.00126, 1.00035, 0.999798, 0.998795, 0.997544, 0.996334, 0.994345, 0.992467, 0.991007, 0.988918, 0.9877, 0.98789};
+  //
+  Float_t HIJINGq4WeightsSC[50]={0.88, 0.88, 0.88, 0.88, 0.88, 0.88, 0.889957, 0.911624, 0.932747, 0.959097, 0.987571, 0.974175, 0.974291, 0.985743, 0.989953, 0.988542, 0.992858, 0.995232, 0.995808, 0.997182, 0.997073, 0.99795, 0.998597, 0.999141, 0.999598, 1.00026, 1.0002, 1.00061, 1.0003, 1.00054, 1.0006, 1.00082, 1.00094, 1.00092, 1.00058, 1.00036, 0.999695, 0.999366, 0.998782, 0.998301, 0.997107, 0.995746, 0.994276, 0.992814, 0.992403, 0.992536, 0.994614, 0.982908, 0.992077, .99};
+  Float_t HIJINGq4WeightsMC1[50]={0.82, 0.82, 0.82, 0.82, 0.82, 0.823248, 0.917691, 0.960501, 0.96697, 0.972048, 0.984931, 0.98916, 0.986344, 0.992934, 0.996263, 0.996503, 0.996566, 0.997508, 0.998417, 0.999181, 0.999746, 0.999707, 1.00034, 1.00065, 1.00081, 1.00104, 1.0009, 1.00097, 1.00088, 1.00111, 1.00101, 1.00095, 1.00078, 1.00069, 1.00037, 1.00002, 0.999555, 0.998796, 0.998073, 0.997315, 0.9964, 0.994994, 0.993685, 0.990758, 0.990211, 0.987958, 0.980713, 0.985536, 0.923206, 0.92};
+  Float_t HIJINGq4WeightsMC2[50]={0.88, 0.88, 0.88, 0.88, 0.885817, 0.9888, 1.00199, 0.974765, 0.987792, 0.989186, 0.984239, 0.991871, 0.992879, 0.995809, 0.997829, 0.998076, 0.998521, 0.998509, 0.999429, 0.999958, 1.00029, 1.00064, 1.00052, 1.00095, 1.00107, 1.00121, 1.0011, 1.00123, 1.00106, 1.00111, 1.00108, 1.00097, 1.00078, 1.00066, 1.00038, 0.999903, 0.99931, 0.998711, 0.997939, 0.997057, 0.99611, 0.994732, 0.993368, 0.991332, 0.989286, 0.987895, 0.983888, 0.986218, 0.945475, .94};
 
-  
+
   Float_t centralityPercentile=0;
   Float_t cStep=5.0, cStepMixing=5.0, cStart=0;
   Int_t MbinMixing=0;
@@ -1575,7 +1601,7 @@ void AliFourPion::UserExec(Option_t *)
     primaryVertexAOD = fAOD->GetPrimaryVertex();
     vertex[0]=primaryVertexAOD->GetX(); vertex[1]=primaryVertexAOD->GetY(); vertex[2]=primaryVertexAOD->GetZ();
     
-    if(fabs(vertex[2]) > 10) {cout<<"Zvertex Out of Range. Skip Event"<<endl; return;} // Z-Vertex Cut 
+    if(fabs(vertex[2]) > 10) {/*cout<<"Zvertex Out of Range. Skip Event"<<endl;*/ return;} // Z-Vertex Cut 
     ((TH3F*)fOutputList->FindObject("fVertexDist"))->Fill(vertex[0], vertex[1], vertex[2]);
     
     if(!fMCcase && primaryVertexAOD->GetNContributors() < 1) {cout<<"Bad Vertex. Skip Event"<<endl; return;}
@@ -1637,7 +1663,7 @@ void AliFourPion::UserExec(Option_t *)
       if(!goodMomentum) continue; 
       aodtrack->GetXYZ( fTempStruct[myTracks].fX);
       
-	 
+      
       Double_t dca2[2]={0};
       dca2[0] = sqrt( pow(fTempStruct[myTracks].fX[0] - vertex[0],2) + pow(fTempStruct[myTracks].fX[1] - vertex[1],2));
       dca2[1] = sqrt( pow(fTempStruct[myTracks].fX[2] - vertex[2],2));
@@ -1766,9 +1792,7 @@ void AliFourPion::UserExec(Option_t *)
       if(fTempStruct[myTracks].fPion && fTempStruct[myTracks].fKaon) continue;
       if(fTempStruct[myTracks].fPion && fTempStruct[myTracks].fProton) continue;
       if(fTempStruct[myTracks].fKaon && fTempStruct[myTracks].fProton) continue;
-      //if(fTempStruct[myTracks].fPion && fTempStruct[myTracks].fKaon && fTempStruct[myTracks].fProton) continue;// superfluous
-      ////////////////////////
-      //if(fTempStruct[myTracks].fProton && fTempStruct[myTracks].fMom < 0.25) continue;//extra cut for protons// superfluous
+     
 
 
    
@@ -1780,9 +1804,11 @@ void AliFourPion::UserExec(Option_t *)
 	((TH2F*)fOutputList->FindObject("fDCAzDistMinus"))->Fill(fTempStruct[myTracks].fPt, dca2[1]);
       }
      
-      ((TH3F*)fOutputList->FindObject("fPhiPtDist"))->Fill(aodtrack->Charge(), aodtrack->Phi(), aodtrack->Pt());
-      ((TH3F*)fOutputList->FindObject("fPtEtaDist"))->Fill(aodtrack->Charge(), aodtrack->Pt(), aodtrack->Eta());
-      
+      ((TH3F*)fOutputList->FindObject("fChPhiPtDist"))->Fill(aodtrack->Charge(), aodtrack->Phi(), aodtrack->Pt());
+      ((TH3F*)fOutputList->FindObject("fChPtEtaDist"))->Fill(aodtrack->Charge(), aodtrack->Pt(), aodtrack->Eta());
+      ((TH2F*)fOutputList->FindObject("fCentPtDist"))->Fill(int(centralityPercentile/5.), aodtrack->Pt());
+      ((TH2F*)fOutputList->FindObject("fCentEtaDist"))->Fill(int(centralityPercentile/5.), aodtrack->Eta());
+
       ((TH2D*)fOutputList->FindObject("fDistTPCNclsFindable"))->Fill(aodtrack->Pt(), aodtrack->GetTPCNclsF());
       ((TProfile*)fOutputList->FindObject("fProfileTPCNclsFindable"))->Fill(aodtrack->Pt(), aodtrack->GetTPCNclsF());
       //
@@ -1889,7 +1915,7 @@ void AliFourPion::UserExec(Option_t *)
 
   /////////////////////////////////////////
   // Pion Multiplicity Cut (To ensure all Correlation orders are present in each event)
-  if(myTracks < 4) {cout<<"Less than 4 tracks. Skipping Event."<<endl; return;}
+  if(myTracks < 4) {/*cout<<"Less than 4 tracks. Skipping Event."<<endl;*/ return;}
   /////////////////////////////////////////
  
 
@@ -1900,10 +1926,16 @@ void AliFourPion::UserExec(Option_t *)
   // Mbin set to Pion Count Only for pp!!!!!!!
   fMbin=-1;
   if(!fPbPbcase){
-    for(Int_t i=0; i<kMultBinspp; i++){
-      if( ( pionCount > fMultLimits[i]) && ( pionCount <= fMultLimits[i+1]) ) { fMbin=i; break;}
-      // Mbin 0 has 1 pion
+    
+    if(pionCount >= fMultLimits[3] && pionCount < fMultLimits[10]) fMbin=0;// only 1 bin
+    
+    for(Int_t i=0; i<fMbinsMixing; i++){// event-mixing M bin
+      if( ( pionCount >= fMultLimits[i]) && ( pionCount < fMultLimits[i+1]) ){
+	MbinMixing=i;// 0 = lowest mult
+	break;
+      }
     }
+
   }else{
     for(Int_t i=0; i<fCentBins; i++){// correlation analysis M bin
       if( (centralityPercentile >= cStart+i*cStep) && (centralityPercentile < cStart+(i+1)*cStep) ){
@@ -1911,15 +1943,15 @@ void AliFourPion::UserExec(Option_t *)
 	break;
       }
     }
-    for(Int_t i=0; i<fCentBinsMixing; i++){// event-mixing M bin
+    for(Int_t i=0; i<fMbinsMixing; i++){// event-mixing M bin
       if( (centralityPercentile >= cStart+i*cStepMixing) && (centralityPercentile < cStart+(i+1)*cStepMixing) ){
 	MbinMixing=i;// 0 = most central
 	break;
       }
     }
   }
-
-  if(fMbin==-1) {cout<<"Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
+  
+  if(fMbin==-1) {return;}
   
   ///////////////////
   // can only be called after fMbin has been set
@@ -2017,7 +2049,7 @@ void AliFourPion::UserExec(Option_t *)
   Int_t KT3index=0, KT4index=0;
 
   // reset to defaults
-  for(Int_t i=0; i<kMultLimitPbPb; i++) {
+  for(Int_t i=0; i<fMultLimit; i++) {
     fLowQPairSwitch_E0E0[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
     fLowQPairSwitch_E0E1[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
     fLowQPairSwitch_E0E2[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
@@ -2298,7 +2330,7 @@ void AliFourPion::UserExec(Option_t *)
   }
     
 
-   
+  
 
     ///////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////
@@ -2520,19 +2552,18 @@ void AliFourPion::UserExec(Option_t *)
 		    }// muon check
 		  
 		    
-		    Int_t index1pt = sqrt(pow(pVect1MC[1],2)+pow(pVect1MC[2],2)) / 0.01;
-		    Int_t index2pt = sqrt(pow(pVect2MC[1],2)+pow(pVect2MC[2],2)) / 0.01;
-		    if(index1pt >=100) index1pt=99; 
-		    if(index2pt >=100) index2pt=99; 
-		    Float_t WptSpectrum = HIJINGptWeights[index1pt] * HIJINGptWeights[index2pt];
+		    Int_t indexq2 = qinv12 / 0.005;
+		    if(indexq2 >=200) indexq2=199; 
+		    Float_t WSpectrum = HIJINGq2WeightsSC[indexq2];
+		    if(ch1!=ch2) WSpectrum = HIJINGq2WeightsMC[indexq2];
 		    // momentum resolution
 		    for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 		      Float_t Rvalue = 5+Riter;
 		      Float_t WInput = MCWeight(chGroup2, Rvalue, ffcSqMRC, qinv12MC, 0.);
-		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[0].fIdeal->Fill(Rvalue, qinv12MC, WInput * WptSpectrum);
-		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[1].fIdeal->Fill(Rvalue, qinv12MC, WptSpectrum);
-		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[0].fSmeared->Fill(Rvalue, qinv12, WInput * WptSpectrum);
-		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[1].fSmeared->Fill(Rvalue, qinv12, WptSpectrum);
+		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[0].fIdeal->Fill(Rvalue, qinv12MC, WInput * WSpectrum);
+		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[1].fIdeal->Fill(Rvalue, qinv12MC, WSpectrum);
+		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[0].fSmeared->Fill(Rvalue, qinv12, WInput * WSpectrum);
+		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[1].fSmeared->Fill(Rvalue, qinv12, WSpectrum);
 		    }
 		    
 		  }// ENsum check
@@ -2568,7 +2599,7 @@ void AliFourPion::UserExec(Option_t *)
 		Float_t QinvMCGroup3[3]={0};
 		Float_t kTGroup3[3]={0};
 		FilledMCtriplet123 = kFALSE;
-		if(fMCcase && fGenerateSignal){
+		if(fMCcase){
 		  if((fEvt+en3)->fTracks[k].fLabel == (fEvt+en2)->fTracks[j].fLabel) continue;
 		  if((fEvt+en3)->fTracks[k].fLabel == (fEvt)->fTracks[i].fLabel) continue;
 		  
@@ -2652,7 +2683,7 @@ void AliFourPion::UserExec(Option_t *)
 		}
 		
 		// r3 denominator
-		if(ENsum==6 && ch1==ch2 && ch1==ch3){
+		if(ENsum==6 && ch1==ch2 && ch1==ch3 && fPbPbcase){
 		  Positive1stTripletWeights = kTRUE;
 		  //
 		  GetWeight(pVect1, pVect2, weight12, weight12Err);
@@ -2721,6 +2752,7 @@ void AliFourPion::UserExec(Option_t *)
 		    }else{
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNegNorm->Fill(4, q3, 1);
 		    }
+		   
 		    //
 		    // Full Weight reconstruction
 		    
@@ -2873,20 +2905,18 @@ void AliFourPion::UserExec(Option_t *)
 		      }// pion parent check
 		    }// parentQ check (muon correction)
 
-		    Int_t index1pt = sqrt(pow(pVect1MC[1],2)+pow(pVect1MC[2],2)) / 0.01;
-		    Int_t index2pt = sqrt(pow(pVect2MC[1],2)+pow(pVect2MC[2],2)) / 0.01;
-		    Int_t index3pt = sqrt(pow(pVect3MC[1],2)+pow(pVect3MC[2],2)) / 0.01;
-		    if(index1pt >=100) index1pt=99; 
-		    if(index2pt >=100) index2pt=99; 
-		    if(index3pt >=100) index3pt=99;
-		    Float_t WptSpectrum = HIJINGptWeights[index1pt] * HIJINGptWeights[index2pt] * HIJINGptWeights[index3pt];
+		    
+		    Int_t indexq3 = q3 / 0.005;
+		    if(indexq3 >=35) indexq3=34; 
+		    Float_t WSpectrum = HIJINGq3WeightsSC[indexq3];
+		    if(ch1!=ch2 || ch1!=ch3) WSpectrum = HIJINGq3WeightsMC[indexq3];
 		    // 3-pion momentum resolution
 		    for(Int_t term=1; term<=5; term++){
 		      for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			Float_t Rvalue = 5+Riter;
 			Float_t WInput = MCWeight3(term, Rvalue, ffcSqMRC, chGroup3, QinvMCGroup3, kTGroup3);
-			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fIdeal->Fill(Rvalue, q3MC, WInput*WptSpectrum);
-			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fSmeared->Fill(Rvalue, q3, WInput*WptSpectrum);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fIdeal->Fill(Rvalue, q3MC, WInput*WSpectrum);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fSmeared->Fill(Rvalue, q3, WInput*WSpectrum);
 		      }
 		    }
 		    
@@ -2937,7 +2967,7 @@ void AliFourPion::UserExec(Option_t *)
 		  Float_t QinvMCGroup4[6]={0};
 		  Float_t kTGroup4[6]={0};
 		  
-		  if(fMCcase && fGenerateSignal){// for momentum resolution and muon correction
+		  if(fMCcase){// for momentum resolution and muon correction
 		    if((fEvt+en4)->fTracks[l].fLabel == (fEvt+en3)->fTracks[k].fLabel) continue;
 		    if((fEvt+en4)->fTracks[l].fLabel == (fEvt+en2)->fTracks[j].fLabel) continue;
 		    if((fEvt+en4)->fTracks[l].fLabel == (fEvt)->fTracks[i].fLabel) continue;
@@ -3015,7 +3045,7 @@ void AliFourPion::UserExec(Option_t *)
 		  
 		  /////////////////////////////////////////////////////////////
 		  // r4{2}
-		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6){
+		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6 && fPbPbcase){
 		    Positive2ndTripletWeights=kTRUE;
 		    //
 		    GetWeight(pVect1, pVect4, weight14, weight14Err);
@@ -3312,25 +3342,21 @@ void AliFourPion::UserExec(Option_t *)
 			}// pion parent check
 		      }// parentQ check (muon correction)
 		    
-		      Int_t index1pt = sqrt(pow(pVect1MC[1],2)+pow(pVect1MC[2],2)) / 0.01;
-		      Int_t index2pt = sqrt(pow(pVect2MC[1],2)+pow(pVect2MC[2],2)) / 0.01;
-		      Int_t index3pt = sqrt(pow(pVect3MC[1],2)+pow(pVect3MC[2],2)) / 0.01;
-		      Int_t index4pt = sqrt(pow(pVect4MC[1],2)+pow(pVect4MC[2],2)) / 0.01;
-		      if(index1pt >=100) index1pt=99; 
-		      if(index2pt >=100) index2pt=99; 
-		      if(index3pt >=100) index3pt=99;
-		      if(index4pt >=100) index4pt=99;
-		      Float_t WptSpectrum = HIJINGptWeights[index1pt] * HIJINGptWeights[index2pt] * HIJINGptWeights[index3pt] * HIJINGptWeights[index4pt];
+		      Int_t indexq4 = q4 / 0.005;
+		      if(indexq4 >=50) indexq4=49; 
+		      Float_t WSpectrum = HIJINGq4WeightsSC[indexq4];
+		      if((ch1+ch2+ch3+ch4)==3 || (ch1+ch2+ch3+ch4)==1) WSpectrum = HIJINGq4WeightsMC1[indexq4];
+		      if((ch1+ch2+ch3+ch4)==2) WSpectrum = HIJINGq4WeightsMC2[indexq4];
 		      // 4-pion momentum resolution
 		      for(Int_t term=1; term<=13; term++){
 			for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			  Float_t Rvalue = 5+Riter;
 			  Float_t WInput = MCWeight4(term, Rvalue, ffcSqMRC, chGroup4, QinvMCGroup4, kTGroup4);
-			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fIdeal->Fill(Rvalue, q4MC, WInput*WptSpectrum);
-			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fSmeared->Fill(Rvalue, q4, WInput*WptSpectrum);
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fIdeal->Fill(Rvalue, q4MC, WInput*WSpectrum);
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fSmeared->Fill(Rvalue, q4, WInput*WSpectrum);
 			}
 		      }
-		      
+		    
 		    }// label check particle 4
 		  }// MCcase
 		  
