@@ -146,7 +146,8 @@ void AliTPCCalROC::Streamer(TBuffer &R__b)
 
 //
 
-Bool_t AliTPCCalROC::MedianFilter(Int_t deltaRow, Int_t deltaPad){
+Bool_t AliTPCCalROC::MedianFilter(Int_t deltaRow, Int_t deltaPad, AliTPCCalROC* outlierROC,  Bool_t doEdge){
+  //){
   //
   //   Modify content of the object - raplace value by median in neighorhood
   //
@@ -176,14 +177,19 @@ Bool_t AliTPCCalROC::MedianFilter(Int_t deltaRow, Int_t deltaPad){
 	  if (sign<0){
 	    kRow=iRow-dRow;
 	    jPad=iPad-dPad+offset;
+	    if (!doEdge) continue;
 	  }	  
 	  if (IsInRange(UInt_t(kRow),jPad)){
-	    cacheBuffer[counter]=sign*(GetValue(kRow,jPad)-value);
-	    counter++;
+	    Bool_t isOutlier=(outlierROC==NULL)?kFALSE:outlierROC->GetValue(kRow,jPad)>0;
+	    if (!isOutlier){
+	      cacheBuffer[counter]=sign*(GetValue(kRow,jPad)-value);
+	      counter++;
+	    }
 	  }
 	}
       }
-      newBuffer[fkIndexes[iRow]+iPad] = TMath::Median(counter, cacheBuffer)+value;
+      newBuffer[fkIndexes[iRow]+iPad]=0.;
+      if (counter>1) newBuffer[fkIndexes[iRow]+iPad] = TMath::Median(counter, cacheBuffer)+value;
     }
   }
   memcpy(fData, newBuffer,GetNchannels()*sizeof(Float_t));
@@ -194,7 +200,8 @@ Bool_t AliTPCCalROC::MedianFilter(Int_t deltaRow, Int_t deltaPad){
 
 
 
-Bool_t AliTPCCalROC::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type){
+Bool_t AliTPCCalROC::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type, AliTPCCalROC* outlierROC,  Bool_t doEdge){
+  //){
   //
   //
   // //
@@ -225,17 +232,21 @@ Bool_t AliTPCCalROC::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction,
 	  if (jPad<0) sign=-1;
 	  if (jPad>=jPads) sign=-1;
 	  if (sign<0){
+	    if (!doEdge) continue;
 	    kRow=iRow-dRow;
 	    jPad=iPad-dPad+offset;
 	  } 
 	  if (IsInRange(UInt_t(kRow),jPad)){
-	    cacheBuffer[counter]=sign*(GetValue(kRow,jPad)-value);
-	    counter++;
+	    Bool_t isOutlier=(outlierROC==NULL)?kFALSE:outlierROC->GetValue(kRow,jPad)>0;
+	    if (!isOutlier){
+	      cacheBuffer[counter]=sign*(GetValue(kRow,jPad)-value);
+	      counter++;
+	    }
 	  }
 	}
       }
-      Double_t mean,rms;
-      AliMathBase::EvaluateUni(counter,cacheBuffer,mean,rms,TMath::Nint(fraction*Double_t(counter)));
+      Double_t mean=0,rms=0;
+      if (TMath::Nint(fraction*Double_t(counter))>1 ) AliMathBase::EvaluateUni(counter,cacheBuffer,mean,rms,TMath::Nint(fraction*Double_t(counter)));
       mean+=value;
       newBuffer[fkIndexes[iRow]+iPad] = (type==0)? mean:rms;
     }
