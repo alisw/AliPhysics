@@ -27,6 +27,9 @@ main()
     return
   fi
   
+  #be nice and allow group members access as well (002 will create dirs with 775 and files with 664)
+  umask 0002
+
   # try to load the config file
   #[[ ! -f $1 ]] && echo "config file $1 not found, exiting..." | tee -a $logFile && exit 1
   if ! parseConfig "$@"; then return 1; fi
@@ -45,9 +48,6 @@ main()
   echo ""|tee -a $logFile
   echo log: $logFile
   
-  #be nice and allow group members access as well (002 will create dirs with 775 and files with 664)
-  umask 0002
-
   #lock
   lockFile=$logOutputPath/runningNow.lock
   [[ -f $lockFile && ${allowConcurrent} -ne 1 ]] && echo "locked. Another process running? ($lockFile)" | tee -a $logFile && exit 1
