@@ -1892,7 +1892,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
 				TParticle *neutPion    = fMCStack->Particle(labelNeutPion);
 				TParticle *gamma1 = fMCStack->Particle(neutPion->GetDaughter(0));
 				TParticle *gamma2 = fMCStack->Particle(neutPion->GetDaughter(1));
-				if (fNeutralPionMode == 0){					
+				if (fNeutralPionMode < 2){					
 					if(
 						((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma1,fMCStack,kFALSE) &&					// test first daugther of pi0
 						((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma2,fMCStack,kFALSE) &&					// test second daughter of pi0
