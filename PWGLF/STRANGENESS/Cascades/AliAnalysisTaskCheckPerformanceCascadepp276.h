@@ -22,6 +22,7 @@ class AliESDtrackCuts;
 class AliPhysicsSelection;
 class AliCFContainer;
 class AliPIDResponse;
+class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -36,23 +37,23 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   
-  void SetAnalysisType     (const char* analysisType    = "ESD") { fAnalysisType     = analysisType;}
-  
-  void SetRelaunchV0CascVertexers    (Bool_t  rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers        = rerunV0CascVertexers;      }
-  void SetSDDSelection               (Bool_t  sddOnSelection             = kTRUE) { fkSDDselectionOn              = sddOnSelection;            }
-  void SetQualityCutZprimVtxPos      (Bool_t  qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos       = qualityCutZprimVtxPos;     }
-  void SetRejectEventPileUp          (Bool_t  rejectPileUp               = kTRUE) { fkRejectEventPileUp           = rejectPileUp;              }
-  void SetQualityCutNoTPConlyPrimVtx (Bool_t  qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx  = qualityCutNoTPConlyPrimVtx;}
-  void SetQualityCutTPCrefit         (Bool_t  qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit          = qualityCutTPCrefit;        }
-  void SetQualityCutnTPCcls          (Bool_t  qualityCutnTPCcls          = kTRUE) { fkQualityCutnTPCcls           = qualityCutnTPCcls;         }
-  void SetWithSDDOn                  (Bool_t  withsddOn                  = kTRUE) { fwithSDD                      = withsddOn;                 }
-  void SetQualityCutMinnTPCcls       (Int_t   minnTPCcls                 = 70   ) { fMinnTPCcls                   = minnTPCcls;                }
-  void SetExtraSelections            (Bool_t  extraSelections            = 0    ) { fkExtraSelections             = extraSelections;           }
-  void SetVertexRange                (Float_t vtxrange                   = 0.   ) { fVtxRange                     = vtxrange;                  }
-  void SetVertexRangeMin             (Float_t vtxrangemin                = 0.   ) { fVtxRangeMin                  = vtxrangemin;               }
-  void SetApplyAccCut                (Bool_t  acccut                     = kFALSE){ fApplyAccCut                  = acccut;                    }    
-  void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks             = 0.   ) { fMinPtCutOnDaughterTracks     = minptdaughtrks;            }
-  void SetEtaCutOnDaughterTracks     (Float_t etadaughtrks               = 0.   ) { fEtaCutOnDaughterTracks       = etadaughtrks;              }
+  void SetAnalysisType               (const char* analysisType           = "ESD") { fAnalysisType                 = analysisType;               }
+  void SetCollidingSystem            (const char* collidingSystem        = "pp" ) { fCollidingSystem              = collidingSystem;            }  
+  void SetRelaunchV0CascVertexers    (Bool_t  rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers        = rerunV0CascVertexers;       }
+  void SetSDDSelection               (Bool_t  sddOnSelection             = kTRUE) { fkSDDselectionOn              = sddOnSelection;             }
+  void SetQualityCutZprimVtxPos      (Bool_t  qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos       = qualityCutZprimVtxPos;      }
+  void SetRejectEventPileUp          (Bool_t  rejectPileUp               = kTRUE) { fkRejectEventPileUp           = rejectPileUp;               }
+  void SetQualityCutNoTPConlyPrimVtx (Bool_t  qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx  = qualityCutNoTPConlyPrimVtx; }
+  void SetQualityCutTPCrefit         (Bool_t  qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit          = qualityCutTPCrefit;         }
+  void SetQualityCutnTPCcls          (Bool_t  qualityCutnTPCcls          = kTRUE) { fkQualityCutnTPCcls           = qualityCutnTPCcls;          }
+  void SetWithSDDOn                  (Bool_t  withsddOn                  = kTRUE) { fwithSDD                      = withsddOn;                  }
+  void SetQualityCutMinnTPCcls       (Int_t   minnTPCcls                 = 70   ) { fMinnTPCcls                   = minnTPCcls;                 }
+  void SetExtraSelections            (Bool_t  extraSelections            = 0    ) { fkExtraSelections             = extraSelections;            }
+  void SetVertexRange                (Float_t vtxrange                   = 0.   ) { fVtxRange                     = vtxrange;                   }
+  void SetVertexRangeMin             (Float_t vtxrangemin                = 0.   ) { fVtxRangeMin                  = vtxrangemin;                }
+  void SetApplyAccCut                (Bool_t  acccut                     = kFALSE){ fApplyAccCut                  = acccut;                     }    
+  void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks             = 0.   ) { fMinPtCutOnDaughterTracks     = minptdaughtrks;             }
+  void SetEtaCutOnDaughterTracks     (Float_t etadaughtrks               = 0.   ) { fEtaCutOnDaughterTracks       = etadaughtrks;               }
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -61,8 +62,11 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
 
         TString         fAnalysisType;          // "ESD" or "AOD" analysis type	
         AliESDtrackCuts *fESDtrackCuts;         // ESD track cuts used for primary track definition
-      //TPaveText       *fPaveTextBookKeeping;  // TString to store all the relevant info necessary for book keeping (v0 cuts, cascade cuts, quality cuts, ...)
+        AliAnalysisUtils *fUtils;
+        TString         fCollidingSystem;       // "pPb" or "pp" colliding system
+       // AliESDtrackCuts *fESDtrackCuts;         // ESD track cuts used for primary track definition
         AliPIDResponse *fPIDResponse;           //! PID response object        
+       // AliAnalysisUtils *fUtils;
 
         Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
         Bool_t          fkSDDselectionOn;               // Boolean : kTRUE = enable the selection based on the SDD status
@@ -83,7 +87,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
         Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
 	
- 	TList	*fListHistCascade;		//! List of Cascade histograms
+ 	TList	*fListHistCascade;		        //! List of Cascade histograms
          // - General Plots
          // Cascade multiplicity plots
          TH1F *fHistCascadeMultiplicityBeforeAnySel;

@@ -441,7 +441,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
-    tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
+    tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader(),fCalorimeter);
     
     if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {
@@ -1047,7 +1047,7 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
       if(IsDataMC())
       {
         
-        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(),GetReader());
+        Int_t tag = GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(),GetReader(),fCalorimeter);
         
         if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  )
         {
@@ -2384,7 +2384,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader());
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),fCalorimeter);
       aodph.SetTag(tag);
       
       if(GetDebug() > 0)

@@ -53,11 +53,15 @@ namespace EMCalTriggerPtAnalysis {
 	//______________________________________________________________________________
 	AliAnalysisTaskPtEMCalTrigger::AliAnalysisTaskPtEMCalTrigger():
                 		AliAnalysisTaskSE(),
+                		fCalibratedClusters(NULL),
+                		fMatchedTracks(NULL),
                 		fResults(NULL),
                 		fHistos(NULL),
                 		fListTrackCuts(NULL),
                 		fEtaRange(),
-                		fPtRange()
+                		fPtRange(),
+                		fSwapEta(kFALSE),
+                		fNameTrackContainer()
 	{
 		/*
 		 * Dummy constructor, initialising the values with default (NULL) values
@@ -67,11 +71,15 @@ namespace EMCalTriggerPtAnalysis {
 	//______________________________________________________________________________
 	AliAnalysisTaskPtEMCalTrigger::AliAnalysisTaskPtEMCalTrigger(const char *name):
                 		AliAnalysisTaskSE(name),
+                		fCalibratedClusters(NULL),
+                		fMatchedTracks(NULL),
                 		fResults(NULL),
                 		fHistos(NULL),
                 		fListTrackCuts(NULL),
                 		fEtaRange(),
-                		fPtRange()
+                		fPtRange(),
+                		fSwapEta(kFALSE),
+                		fNameTrackContainer("ESDFilterTracks")
 	{
 		/*
 		 * Main constructor, setting default values for eta and zvertex cut
@@ -173,6 +181,7 @@ namespace EMCalTriggerPtAnalysis {
 				fHistos->CreateTH2(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), pileupaxis, zvertexBinning);
 				// Create track-based histogram
 				fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 6, trackaxes);
+				fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 6, trackaxes);
 				// Create cluster-based histogram (Uncalibrated and calibrated clusters)
 				fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 3, clusteraxes);
 				fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 3, clusteraxes);
@@ -204,6 +213,10 @@ namespace EMCalTriggerPtAnalysis {
 		 * @param option: Additional options
 		 */
 		// Common checks: Have SPD vertex and primary vertex from tracks, and both need to have at least one contributor
+		fCalibratedClusters = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcCaloClusters"));
+		AliDebug(1,Form("Number of calibrated clusters: %d", fCalibratedClusters->GetEntries()));
+		fMatchedTracks = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(fNameTrackContainer.Data()));
+
 		AliESDEvent *esd = static_cast<AliESDEvent *>(fInputEvent);
 		const AliESDVertex *vtxTracks = esd->GetPrimaryVertex(),
 				*vtxSPD = esd->GetPrimaryVertexSPD();
@@ -294,8 +307,8 @@ namespace EMCalTriggerPtAnalysis {
 
 		AliESDtrack *track(NULL);
 		// Loop over all tracks (No cuts applied)
-		for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
-			track = dynamic_cast<AliESDtrack *>(fInputEvent->GetTrack(itrk));
+		for(int itrk = 0; itrk < fMatchedTracks->GetEntries(); ++itrk){
+			track = dynamic_cast<AliESDtrack *>(fMatchedTracks->At(itrk));
 			if(!fEtaRange.IsInRange(track->Eta())) continue;
 			if(!fPtRange.IsInRange(track->Pt())) continue;
 			if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, 0);
@@ -315,7 +328,7 @@ namespace EMCalTriggerPtAnalysis {
 		if(fListTrackCuts && fListTrackCuts->GetEntries()){
 			for(int icut = 0; icut < fListTrackCuts->GetEntries(); icut++){
 				AliESDtrackCuts *trackSelection = static_cast<AliESDtrackCuts *>(fListTrackCuts->At(icut));
-				std::auto_ptr<TObjArray> acceptedTracks(trackSelection->GetAcceptedTracks(esd));
+				std::auto_ptr<TObjArray> acceptedTracks(GetAcceptedTracks(fMatchedTracks,trackSelection));
 				TIter trackIter(acceptedTracks.get());
 				while((track = dynamic_cast<AliESDtrack *>(trackIter()))){
 					if(!fEtaRange.IsInRange(track->Eta())) continue;
@@ -346,10 +359,9 @@ namespace EMCalTriggerPtAnalysis {
 			}
 		}
 
-		TClonesArray *calibratedClusters = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcCaloClusters"));
-		if(calibratedClusters){
-			for(int icl = 0; icl < calibratedClusters->GetEntries(); icl++){
-				const AliVCluster *clust = dynamic_cast<const AliVCluster *>((*calibratedClusters)[icl]);
+		if(fCalibratedClusters){
+			for(int icl = 0; icl < fCalibratedClusters->GetEntries(); icl++){
+				const AliVCluster *clust = dynamic_cast<const AliVCluster *>((*fCalibratedClusters)[icl]);
 				if(!clust->IsEMCAL()) continue;
 				if(triggers[0]) FillClusterHist("MinBias", clust, true, zv, isPileupEvent);
 				if(!triggerstrings.size())	// Non-EMCal-triggered
@@ -522,11 +534,33 @@ namespace EMCalTriggerPtAnalysis {
 		 * @param isPileup: flag event as pileup event
 		 * @param cut: id of the cut (0 = no cut)
 		 */
-        double data[6] = {track->Pt(), track->Eta(), track->Phi(), vz, 0, static_cast<double>(cut)};
-		char histname[1024];
+		double etasign = fSwapEta ? -1. : 1.;
+        double data[6] = {track->Pt(), etasign * track->Eta(), track->Phi(), vz, 0, static_cast<double>(cut)};
+		char histname[1024], histnameAcc[1024];
 		sprintf(histname, "hTrackHist%s", trigger);
+		sprintf(histnameAcc, "hTrackInAcceptanceHist%s", trigger);
+		Bool_t isEMCAL = kFALSE;
+		if(track->IsEMCAL()){
+			// Check if the cluster is matched to only one track
+			AliVCluster *emcclust(NULL);
+			AliDebug(2, Form("cluster id: %d\n", track->GetEMCALcluster()));
+			if(fCalibratedClusters) {
+				AliDebug(2, "Using calibrated clusters");
+				emcclust = dynamic_cast<AliVCluster *>(fCalibratedClusters->At(track->GetEMCALcluster()));
+			} else {
+				AliDebug(2, "Using uncalibrated clusters");
+				emcclust = fInputEvent->GetCaloCluster(track->GetEMCALcluster());
+			}
+			if(!emcclust) AliError("Null pointer to EMCal cluster");
+			if(emcclust && emcclust->GetNTracksMatched() <= 1){
+				isEMCAL = kTRUE;
+			}
+		}
 		try{
 			fHistos->FillTHnSparse(histname, data);
+			if(isEMCAL){
+				fHistos->FillTHnSparse(histnameAcc, data);
+			}
 		} catch (HistoContainerContentException &e){
 			std::stringstream errormessage;
 			errormessage << "Filling of histogram failed: " << e.what();
@@ -536,6 +570,9 @@ namespace EMCalTriggerPtAnalysis {
 			data[4] = 1;
 			try{
 				fHistos->FillTHnSparse(histname, data);
+				if(isEMCAL){
+					fHistos->FillTHnSparse(histnameAcc, data);
+				}
 			} catch (HistoContainerContentException &e){
 				std::stringstream errormessage;
 				errormessage << "Filling of histogram failed: " << e.what();
@@ -577,4 +614,14 @@ namespace EMCalTriggerPtAnalysis {
 		}
 	}
 
+	TObjArray *AliAnalysisTaskPtEMCalTrigger::GetAcceptedTracks(const TClonesArray * const inputlist, AliESDtrackCuts *const cuts){
+		TObjArray *acceptedTracks = new TObjArray;
+		TIter trackIter(inputlist);
+		AliESDtrack *track(NULL);
+		while((track = dynamic_cast<AliESDtrack *>(trackIter()))){
+			if(cuts->AcceptTrack(track)) acceptedTracks->Add(track);
+		}
+		return acceptedTracks;
+	}
 }
+

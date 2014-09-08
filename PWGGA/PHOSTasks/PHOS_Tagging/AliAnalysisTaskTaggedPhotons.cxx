@@ -54,6 +54,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliAnalysisUtils.h"
 #include "AliOADBContainer.h"
+#include "AliAODMCHeader.h"
 
 ClassImp(AliAnalysisTaskTaggedPhotons)
 
@@ -75,7 +76,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fCentrality(0.),
   fCentBin(0), 
   fIsMB(0),
-  fIsMC(0)
+  fIsMC(0),
+  fIsFastMC(0)
 {
   //Deafult constructor
   //no memory allocations
@@ -103,7 +105,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fCentrality(0.),
   fCentBin(0),
   fIsMB(0),
-  fIsMC(0)
+  fIsMC(0),
+  fIsFastMC(0)
 {
   // Constructor.
 
@@ -137,7 +140,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fCentrality(0.),
   fCentBin(0),
   fIsMB(0),
-  fIsMC(0)
+  fIsMC(0),
+  fIsFastMC(0)
 {
   // cpy ctor
   fZmax=ap.fZmax ;
@@ -585,15 +589,17 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     InitGeometry() ;
   }
   
-  if(!fUtils) 
-    fUtils = new AliAnalysisUtils();
+  if(!fIsFastMC){
+    if(!fUtils) 
+      fUtils = new AliAnalysisUtils();
 
-  Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)  ; 
-  Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kPHI7);
-   
-  if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
-    PostData(1, fOutputContainer);
-    return;    
+    Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)  ; 
+    Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kPHI7);
+
+    if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
+      PostData(1, fOutputContainer);
+      return;    
+    }
   }
   FillHistogram("hSelEvents",2) ;
   
@@ -607,47 +613,61 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 
   FillHistogram("hNvertexTracks",event->GetPrimaryVertex()->GetNContributors());
   FillHistogram("hZvertex"      ,vtx5[2]);
+  if(fIsFastMC){ //vertex from header
+    AliAODMCHeader *cHeaderAOD = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
+    if(!cHeaderAOD){
+      PostData(1, fOutputContainer);
+      return ;      
+    }
+    cHeaderAOD->GetVertex(vtx5);
+  }
   if (TMath::Abs(vtx5[2]) > 10. ){
     PostData(1, fOutputContainer);
     return ;
   }
-    
   FillHistogram("hSelEvents",3) ;
   //Vtx class z-bin
   Int_t zvtx = TMath::Min(9,Int_t((vtx5[2]+10.)/2.)) ; 
 
   
+  if(!fIsFastMC){
+//    if (event->IsPileupFromSPD()){
+//      PostData(1, fOutputContainer);
+//      return ;
+//    }
   
-//  if (event->IsPileupFromSPD()){
-//    PostData(1, fOutputContainer);
-//    return ;
-//  }
+    if(!fUtils->IsVertexSelected2013pA(event)){
+      PostData(1, fOutputContainer);
+      return ;
+    }
   
-  if(!fUtils->IsVertexSelected2013pA(event)){
-    PostData(1, fOutputContainer);
-    return ;
+    FillHistogram("hSelEvents",4) ;
+  
+    if(fUtils->IsPileUpEvent(event)){
+      PostData(1, fOutputContainer);
+      return ;
+    }
+    FillHistogram("hSelEvents",5) ;
   }
-  FillHistogram("hSelEvents",4) ;
-  
-  if(fUtils->IsPileUpEvent(event)){
-    PostData(1, fOutputContainer);
-    return ;
-  }
-  FillHistogram("hSelEvents",5) ;
   
   //centrality
-  AliCentrality *centrality = event->GetCentrality();
-  if( centrality )
-    fCentrality=centrality->GetCentralityPercentile("V0M");
-  else {
-    AliError("Event has 0x0 centrality");
-    fCentrality = -1.;
-  }
-  FillHistogram("hCentrality",fCentrality) ;
+  if(!fIsFastMC){  
+    AliCentrality *centrality = event->GetCentrality();
+    if( centrality )
+      fCentrality=centrality->GetCentralityPercentile("V0M");
+    else {
+      AliError("Event has 0x0 centrality");
+      fCentrality = -1.;
+    }
+    FillHistogram("hCentrality",fCentrality) ;
 
-  if(fCentrality<0. || fCentrality>=100.){
-    PostData(1, fOutputContainer);
-    return ;
+    if(fCentrality<0. || fCentrality>=100.){
+      PostData(1, fOutputContainer);
+      return ;
+    }
+  }
+  else{
+    fCentrality=1.;
   }
   fCentBin = (Int_t)(fCentrality/20.) ; 
 

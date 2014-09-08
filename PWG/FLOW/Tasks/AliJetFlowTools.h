@@ -225,7 +225,7 @@ class AliJetFlowTools {
         static void     GetSignificance(
                 TGraphErrors* n,                // points with stat error
                 TGraphAsymmErrors* shape,       // points with shape error
-                TGraphAsymmErrors* corr,        // points with stat error
+                TGraphAsymmErrors* corr,        // corr with stat error
                 Int_t low,                      // pt lower level
                 Int_t up                        // pt upper level
         );
@@ -316,7 +316,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
             return tex;
         }
 
-        static void     SavePadToPDF(TVirtualPad* pad)  {pad->SaveAs(Form("%s.pdf", pad->GetName()));}
+        static void     SavePadToPDF(TVirtualPad* pad)  {return;/*pad->SaveAs(Form("%s.pdf", pad->GetName()));*/}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
         static void     SetMinuitPrecision(Float_t s)   {AliUnfolding::SetMinuitPrecision(s);}

@@ -11,6 +11,7 @@
 #include "AliPrimaryPionSelector.h"
 #include "AliConversionMesonCuts.h"
 #include "AliConvEventCuts.h"
+#include "AliCaloPhotonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "TProfile2D.h"
 
@@ -20,7 +21,6 @@ class AliESDEvent;
 class AliESDtrack;
 class AliESDtrackCuts;
 class AliESDpidCuts;
-class AliV0Reader;
 class AliTriggerAnalysis;
 
 class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
@@ -38,7 +38,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 
 			
 		void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
-			
 		void SetIsHeavyIon(Int_t flag){
 			if (flag == 1 || flag ==2 ){
 				fIsHeavyIon = 1;    
@@ -48,37 +47,47 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		}
 		
 		void SetIsMC(Bool_t isMC){fIsMC=isMC;}
-		void SetConversionCutList(Int_t nCuts, TList *CutArray){
-			fnCuts= nCuts;
-			fGammaCutArray = CutArray;
-		}
-		void SetEventCutList(Int_t nCuts, TList *CutArray){
-			fnCuts= nCuts;
+		void SetEventCutList(Int_t nCuts, TList *CutArray){ 
+			fnCuts= nCuts;	
 			fEventCutArray = CutArray;
 		}
-
-		void SetPionCutList(TList *CutArray){
-			fPionCutArray = CutArray;
-		}
-		void SetNeutralPionCutList(TList *CutArray){
-			fNeutralPionMesonCutArray = CutArray;
-		}
-		void SetMesonCutList(TList *CutArray){
-			fMesonCutArray = CutArray;
-		}
+		void SetConversionCutList(TList *CutArray){ fGammaCutArray = CutArray;}
+		void SetClusterCutList(TList *CutArray){ fClusterCutArray = CutArray;}
+		void SetPionCutList(TList *CutArray){ fPionCutArray = CutArray;}
+		void SetNeutralPionCutList(TList *CutArray){ fNeutralPionMesonCutArray = CutArray; }
+		void SetMesonCutList(TList *CutArray){ fMesonCutArray = CutArray; }
 		void SetDoMesonQA(Bool_t flag){ fDoMesonQA = flag; }
+		void SetNeutralPionMode(Int_t mode){fNeutralPionMode = mode; }
 	
 
 	private:
 
 		void InitBack();
-		void ProcessPhotonCandidates();
-		void ProcessTruePhotonCandidates(AliAODConversionPhoton*);
+		
+		// routines for photon selection from conversions
+		void ProcessConversionPhotonCandidates();
+		void ProcessTrueConversionPhotonCandidates(AliAODConversionPhoton*);
+		
+		// routines for photon selection from clusters
+		void ProcessCaloPhotonCandidates();
+		void ProcessTrueCaloPhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate);
+		
 		void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
 		void MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
-    	void ProcessNeutralPionCandidatesPureConversions();	
+    	
+		// routines for neutral pion candidates from pure conversion
+		void ProcessNeutralPionCandidatesPureConversions();	
 		void ProcessTrueNeutralPionCandidatesPureConversions(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
 		void ProcessTrueNeutralPionCandidatesPureConversionsAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
+		
+		// routines for neutral pion candidates from pure calo
+		void ProcessNeutralPionCandidatesPureCalo();
+		void ProcessTrueNeutralPionCandidatesPureCalo(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
+
+		// routines for neutral pion candidates from mixed conv + calo
+		void ProcessNeutralPionCandidatesMixedConvCalo();
+		void ProcessTrueNeutralPionCandidatesMixedConvCalo( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
+		
 		void ProcessPionCandidates();
 		void ProcessMCParticles();
 		void CalculateMesonCandidates();
@@ -90,75 +99,82 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		Bool_t IsOmegaPiPlPiMiPiZeroDaughter( Int_t label ) const;
 		Bool_t GammaIsNeutralMesonPiPlPiMiPiZeroDaughter( Int_t label ) const;
 
-		AliV0ReaderV1 					*fV0Reader;									//
-		AliPrimaryPionSelector			*fPionSelector;								//
-		AliGammaConversionAODBGHandler 	**fBGHandler;								//
-		AliESDEvent 					*fESDEvent;									//
-		AliMCEvent 						*fMCEvent;									//
-		AliStack 						*fMCStack;									//
-		TList 							**fCutFolder;								//
-		TList 							**fESDList;									//
-		TList 							**fBackList;								//
-		TList 							**fMotherList;								//
-		TList 							**fTrueList;								//
-		TList 							**fMCList;									//
-		TList 							*fOutputContainer;							//
-		TClonesArray 					*fReaderGammas;								//
-		vector<Int_t> 					fSelectorNegPionIndex;						//
-		vector<Int_t> 					fSelectorPosPionIndex;						//
-		TList 							*fGoodGammas;								//
-		TList 							*fNeutralPionCandidates;					//
-		TList 							*fGoodVirtualParticles;						//
-		TList 							*fEventCutArray;							//
-		TList 							*fGammaCutArray;							//
-		TList 							*fPionCutArray;								//
-		TList 							*fNeutralPionMesonCutArray;					//
-		TList 							*fMesonCutArray;							//
-		AliConvEventCuts 				*fEventCuts;								//
-		AliConversionPhotonCuts 		*fConversionCuts;							//
+		AliV0ReaderV1 					*fV0Reader;									// V0Reader for basic conversion photon selection
+		AliPrimaryPionSelector			*fPionSelector;								// primary charged pion selector, basic selection of pi+,pi-
+		AliGammaConversionAODBGHandler 	**fBGHandler;								// BG handler
+		AliESDEvent 					*fESDEvent;									// current event
+		AliMCEvent 						*fMCEvent;									// current MC event
+		AliStack 						*fMCStack;									// current MC stack
+		TList 							**fCutFolder;								// list of output folders with main cut name 
+		TList 							**fESDList;									// list with main output histograms for data
+		TList 							**fBackList;								// list with THnSparseF for BG 
+		TList 							**fMotherList;								// list with THnSparseF for FG 
+		TList 							**fTrueList;								// list with validated reconstructed MC histograms
+		TList 							**fMCList;									// list with pure MC histograms
+		TList 							*fOutputContainer;							// output container
+		TClonesArray 					*fReaderGammas;								// array with photon from fV0Reader
+		vector<Int_t> 					fSelectorNegPionIndex;						// array with pion indices for negative pions from fPionSelector
+		vector<Int_t> 					fSelectorPosPionIndex;						// array with pion indices for positive pions from fPionSelector
+		TList 							*fGoodConvGammas;							// good conv gammas after selection
+		TList 							*fClusterCandidates; 						//! good calo gammas after selection 
+		TList 							*fNeutralPionCandidates;					// good neutral pion candidates
+		TList 							*fGoodVirtualParticles;						// combination of pi+pi- candidates
+		TList 							*fEventCutArray;							// array with event cuts
+		TList 							*fGammaCutArray;							// array with Conversion Cuts
+		TList 							*fClusterCutArray;							// array with Cluster Cuts
+		TList 							*fPionCutArray;								// array with charged pion cuts
+		TList 							*fNeutralPionMesonCutArray;					// array with neutral pion cuts
+		TList 							*fMesonCutArray;							// array with neutral meson cuts
+		AliConvEventCuts 				*fEventCuts;								// current event cuts
+		AliConversionPhotonCuts 		*fConversionCuts;							// current conversion cuts
+		AliCaloPhotonCuts				*fClusterCuts;								// current cluster cuts
 		
 		// reconstructed particles
-		TH1F 							**fHistoConvGammaPt;						//
-		TH1F 							**fHistoConvGammaEta;						//
-		TH1F 							**fHistoNegPionPt;							//
-		TH1F 							**fHistoPosPionPt;							//
-		TH1F 							**fHistoNegPionPhi;							//
-		TH1F 							**fHistoPosPionPhi;							//
-		TH1F 							**fHistoNegPionEta;							//
-		TH1F 							**fHistoPosPionEta;							//
-		TH2F 							**fHistoNegPionClsTPC;						//
-		TH2F 							**fHistoPosPionClsTPC;						//
-		TH2F 							**fHistoPionDCAxy;							//
-		TH2F 							**fHistoPionDCAz;							//
-		TH2F 							**fHistoPionTPCdEdxNSigma;					//
-		TH2F 							**fHistoPionTPCdEdx;						//
-		TH2F 							**fHistoPionPionInvMassPt;					//
-		TH2F	 						**fHistoGammaGammaInvMassPt;				//
-		TH2F	 						**fHistoMotherInvMassPt;					//
-		THnSparseF 						**fTHnSparseMotherInvMassPtZM;				//
-		TH2F 							**fHistoMotherBackInvMassPt;				//
-		THnSparseF				 		**fTHnSparseMotherBackInvMassPtZM;			//
+		TH1F 							**fHistoConvGammaPt;						// array of histos of conversion photon, pt
+		TH1F 							**fHistoConvGammaEta;						// array of histos of conversion photon, eta
+		TH1F 							**fHistoClusterGammaPt;						// array of histos of Cluster photon, pt
+		TH1F 							**fHistoClusterGammaEta;					// array of histos of Cluster photon, eta
+		TH1F 							**fHistoNegPionPt;							// array of histos of negative pion, pt
+		TH1F 							**fHistoPosPionPt;							// array of histos of positive pion, pt
+		TH1F 							**fHistoNegPionPhi;							// array of histos of negative pion, phi
+		TH1F 							**fHistoPosPionPhi;							// array of histos of positive pion, phi
+		TH1F 							**fHistoNegPionEta;							// array of histos of negative pion, eta
+		TH1F 							**fHistoPosPionEta;							// array of histos of positive pion, eta
+		TH2F 							**fHistoNegPionClsTPC;						// array of histos of negative pion, findable tpc cluster, pT
+		TH2F 							**fHistoPosPionClsTPC;						// array of histos of positive pion, findable tpc cluster, pT
+		TH2F 							**fHistoPionDCAxy;							// array of histos of pion, dca_xy, pT
+		TH2F 							**fHistoPionDCAz;							// array of histos of pion, dca_z, pT
+		TH2F 							**fHistoPionTPCdEdxNSigma;					// array of histos of pion, p, TPC nSigma dEdx pion
+		TH2F 							**fHistoPionTPCdEdx;						// array of histos of pion, p, TPC dEdx
+		TH2F 							**fHistoPionPionInvMassPt;					// array of histos of pion pion, invMass, pT_{pi+pi-}
+		TH2F	 						**fHistoGammaGammaInvMassPt;				// array of histos of gamma-gamma, invMass, pT_{gamma gamma}
+		TH2F	 						**fHistoMotherInvMassPt;					// array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
+		THnSparseF 						**fTHnSparseMotherInvMassPtZM;				// array of THnSparseF of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}, Z, M
+		TH2F 							**fHistoMotherBackInvMassPt;				// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+		THnSparseF				 		**fTHnSparseMotherBackInvMassPtZM;			// array of THnSparseF of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, Z, M
 		
 		// pure MC properties
-		TH1F 							**fHistoMCAllGammaPt;						//
-		TH1F 							**fHistoMCConvGammaPt;						//
-		TH1F 							**fHistoMCAllPosPionsPt;					//
-		TH1F 							**fHistoMCAllNegPionsPt;					//
-		TH1F 							**fHistoMCGammaFromNeutralMesonPt;			//
-		TH1F 							**fHistoMCPosPionsFromNeutralMesonPt;		//
-		TH1F 							**fHistoMCNegPionsFromNeutralMesonPt;		//
-		TH1F 							**fHistoMCEtaPiPlPiMiPiZeroPt;				//
-		TH1F 							**fHistoMCEtaPiPlPiMiPiZeroInAccPt;			//
-		TH1F 							**fHistoMCOmegaPiPlPiMiPiZeroPt;			//
-		TH1F 							**fHistoMCOmegaPiPlPiMiPiZeroInAccPt;		//
+		TH1F 							**fHistoMCAllGammaPt;						// array of histos of all produced gammas in the specified y range
+		TH1F 							**fHistoMCConvGammaPt;						// array of histos of all converted gammas in the specified y range 
+		TH1F 							**fHistoMCAllPosPionsPt;					// array of histos with all produced primary positive pions in the specified y range
+		TH1F 							**fHistoMCAllNegPionsPt;					// array of histos with all produced primary negative pions in the specified y range
+		TH1F 							**fHistoMCGammaFromNeutralMesonPt;			// array of histos of all produced gammas from omega or eta via pi+pi-pi0 in the specified y range/
+		TH1F 							**fHistoMCPosPionsFromNeutralMesonPt;		// array of histos of all produced positive pions from omega or eta via pi+pi-pi0 in the specified y range/
+		TH1F 							**fHistoMCNegPionsFromNeutralMesonPt;		// array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
+		TH1F 							**fHistoMCEtaPiPlPiMiPiZeroPt;				// array of histos of produced etas via pi+pi-pi0 in the specified y range
+		TH1F 							**fHistoMCEtaPiPlPiMiPiZeroInAccPt;			// array of histos of produced etas via pi+pi-pi0 in the specified y range, with decay products in respective y, eta ranges 
+		TH1F 							**fHistoMCOmegaPiPlPiMiPiZeroPt;			// array of histos of produced omegas via pi+pi-pi0 in the specified y range
+		TH1F 							**fHistoMCOmegaPiPlPiMiPiZeroInAccPt;		// array of histos of produced omegas via pi+pi-pi0 in the specified y range, with decay products in respective y, eta ranges 
 
 		// reconstructed particles MC validated
 		TH2F 							**fHistoTrueMotherPiPlPiMiPiZeroInvMassPt;	// histos with reconstructed validated eta or omega, inv mass, pT
 		TH2F 							**fHistoTrueMotherGammaGammaInvMassPt;		// histos with reconstructed validated pi0, inv mass, pT
 		TH2F 							**fHistoTrueMotherGammaGammaFromEtaInvMassPt;	// histos with reconstructed validated pi0, inv mass, pT
 		TH2F 							**fHistoTrueMotherGammaGammaFromOmegaInvMassPt;	// histos with reconstructed validated pi0, inv mass, pT
-		TH1F 							**fHistoTrueConvGammaPt;					// histos with reconstructed validated gamma, pT
-		TH1F 							**fHistoTrueConvGammaFromNeutralMesonPt;	// histos with reconstructed validated gamma from eta or omega via pi0, pT
+		TH1F 							**fHistoTrueConvGammaPt;					// histos with reconstructed validated conv gamma, pT
+		TH1F 							**fHistoTrueConvGammaFromNeutralMesonPt;	// histos with reconstructed validated conv gamma from eta or omega via pi0, pT
+		TH1F 							**fHistoTrueClusterGammaPt;					// histos with reconstructed validated cluster gamma, pT
+		TH1F 							**fHistoTrueClusterGammaFromNeutralMesonPt;	// histos with reconstructed validated cluster gamma from eta or omega via pi0, pT
 		TH1F				 			**fHistoTruePosPionPt;						// histos with reconstructed validated positive pion, pT
 		TH1F 							**fHistoTruePosPionFromNeutralMesonPt;		// histos with reconstructed validated positive pion from eta or omega, pT
 		TH1F 							**fHistoTrueNegPionPt;						// histos with reconstructed validated negative pion, pT
@@ -182,12 +198,13 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		Bool_t 							fDoMesonQA;									// Flag for switching on small meson QA
 		Bool_t 							fIsFromMBHeader;							// Flag for particle whether it belongs to accepted header
 		Bool_t 							fIsMC;										// Flag for MC  
+		Int_t							fNeutralPionMode;							// Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
 
 	private:
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 1 );
+		ClassDef( AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 2 );
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

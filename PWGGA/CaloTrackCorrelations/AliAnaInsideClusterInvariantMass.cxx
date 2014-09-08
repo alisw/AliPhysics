@@ -6217,7 +6217,7 @@ void AliAnaInsideClusterInvariantMass::GetMCIndex(AliVCluster* cluster,
   
   // Assign mc index depending on MC bit set, to be used in histograms arrays
     
-  tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader());
+  tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader(),fCalorimeter);
   
   if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
            !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPi0;

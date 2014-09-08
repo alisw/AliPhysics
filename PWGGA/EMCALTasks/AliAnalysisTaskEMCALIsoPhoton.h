@@ -87,6 +87,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   AliEMCALGeometry      *fGeom;                  // geometry utils
   TString                fGeoName;               // geometry name (def = EMCAL_FIRSTYEARV1)
   AliOADBContainer      *fOADBContainer;         //!OADB container used to load misalignment matrices
+  TVector3               fVecPv;                 // vector to hold the event's primary vertex
   TString                fPeriod;                // string to the LHC period
   TString                fTrigBit;               // string to the trigger bit name
   Bool_t                 fIsTrain;               // variable to set train mode

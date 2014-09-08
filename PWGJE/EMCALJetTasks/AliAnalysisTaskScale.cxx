@@ -16,7 +16,9 @@
 #include "AliLog.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
+#include "AliVTrack.h"
 #include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 
 ClassImp(AliAnalysisTaskScale)
 
@@ -51,7 +53,9 @@ AliAnalysisTaskScale::AliAnalysisTaskScale() :
   fHistClusterEtaPhi(0),
   fHistScalevsScale2Emcal(0),      
   fHistScalevsScaleEmcal(0),       
-  fHistScaleEmcalvsScale2Emcal(0)
+  fHistScaleEmcalvsScale2Emcal(0),
+  fTracksCont(0),
+  fCaloClustersCont(0)
 {
   // Default constructor.
 
@@ -89,7 +93,9 @@ AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
   fHistClusterEtaPhi(0),
   fHistScalevsScale2Emcal(0),      
   fHistScalevsScaleEmcal(0),       
-  fHistScaleEmcalvsScale2Emcal(0)
+  fHistScaleEmcalvsScale2Emcal(0),
+  fTracksCont(0),
+  fCaloClustersCont(0)
 {
   // Constructor.
 
@@ -103,6 +109,13 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
+  //Get track and particle container
+  fTracksCont       = GetParticleContainer(0);
+  fCaloClustersCont = GetClusterContainer(0);
+  if(fTracksCont)       fTracksCont->SetClassName("AliVTrack");
+  if(fCaloClustersCont) fCaloClustersCont->SetClassName("AliVCluster");
+
+  //Create histos
   fHistPtTPCvsCent = new TH2F("fHistPtTPCvsCent", "fHistPtTPCvsCent", 101, -1, 100, 750, 0, 1500);
   fHistPtTPCvsCent->GetXaxis()->SetTitle("Centrality (%)");
   fHistPtTPCvsCent->GetYaxis()->SetTitle("#sum p_{T,track}^{TPC} GeV/c");
@@ -290,48 +303,37 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   Double_t ptEMCAL = 0;
   Double_t ptEMCAL2 = 0;
 
-  const Int_t Ntracks = fTracks->GetEntries();
-  for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-    AliVParticle *track = static_cast<AliVParticle*>(fTracks->At(iTracks));
-
-    if (!track)
-      continue;
-
-    if (!AcceptTrack(track))
-      continue;
-
-    if (TMath::Abs(track->Eta()) > 0.7)   // only accept tracks in the EMCal eta range
-      continue;
-
-    fHistTrackPtvsCent->Fill(fCent,track->Pt());
-    fHistTrackEtaPhi->Fill(track->Eta(),track->Phi());
-    ptTPC += track->Pt();
-    if ((track->Phi() > (EmcalMaxPhi+EmcalWidth)) || (track->Phi() < (EmcalMinPhi-EmcalWidth))) continue;
-    ptEMCAL2 += track->Pt();
-    if ((track->Phi() > EmcalMaxPhi) || (track->Phi() < EmcalMinPhi)) continue;
-    ptEMCAL += track->Pt();
+  const Int_t Ntracks = fTracksCont->GetNAcceptedParticles();
+  if (fTracksCont) {
+    fTracksCont->ResetCurrentID();
+    AliVTrack *track = NULL;
+    while((track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))) {
+      fHistTrackPtvsCent->Fill(fCent,track->Pt());
+      fHistTrackEtaPhi->Fill(track->Eta(),track->Phi());
+      ptTPC += track->Pt();
+      if ((track->Phi() > (EmcalMaxPhi+EmcalWidth)) || (track->Phi() < (EmcalMinPhi-EmcalWidth))) continue;
+      ptEMCAL2 += track->Pt();
+      if ((track->Phi() > EmcalMaxPhi) || (track->Phi() < EmcalMinPhi)) continue;
+      ptEMCAL += track->Pt();
+    }
   }
 
   if (ptTPC == 0) 
     return kFALSE;
-  
-  Double_t Et = 0;
-  const Int_t Nclus = fCaloClusters->GetEntries();
-  for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
-    AliVCluster *c = static_cast<AliVCluster*>(fCaloClusters->At(iClus));
-    if (!c)
-      continue;
 
-    if (!AcceptCluster(c))
-      continue;
+  Double_t Et = 0;  
+  if (fCaloClustersCont) {
+    fCaloClustersCont->ResetCurrentID();
+    AliVCluster *c = NULL;
+    while((c = fCaloClustersCont->GetNextAcceptCluster())) {
+      TLorentzVector nPart;
+      c->GetMomentum(nPart, fVertex);
 
-    TLorentzVector nPart;
-    c->GetMomentum(nPart, fVertex);
+      fHistClusterPtvsCent->Fill(fCent, nPart.Pt());
+      fHistClusterEtaPhi->Fill(nPart.Eta(), nPart.Phi());
 
-    fHistClusterPtvsCent->Fill(fCent, nPart.Pt());
-    fHistClusterEtaPhi->Fill(nPart.Eta(), nPart.Phi());
-
-    Et += nPart.Pt();
+      Et += nPart.Pt();
+    }
   }
  
   Double_t scalecalc         = -1;
@@ -405,4 +407,7 @@ void AliAnalysisTaskScale::ExecOnce()
   if (TpcMinPhi < 0) TpcMinPhi = 0;
 
   fTpcArea = (TpcMaxPhi - TpcMinPhi) * (EmcalMinEta - EmcalMaxEta);
+
+  if (fTracksCont && fTracksCont->GetArray() == 0) fTracksCont = 0;
+  if (fCaloClustersCont && fCaloClustersCont->GetArray() == 0) fCaloClustersCont = 0;
 }

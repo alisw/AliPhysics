@@ -6,7 +6,7 @@
 #include <TString.h>
 #endif
 
-AliAnalysisTask* AddTaskPtEMCalTrigger(){
+AliAnalysisTask* AddTaskPtEMCalTrigger(const char *period ="LHC13d"){
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
          
         if (!mgr) {
@@ -22,6 +22,7 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(){
         EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger("ptemcaltriggertask");
         //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
         pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
+        if(!TString(period).CompareTo("LHC13f")) pttriggertask->SetSwapEta();
         mgr->AddTask(pttriggertask);
         pttriggertask->SetPtRange(2., 100.);
 

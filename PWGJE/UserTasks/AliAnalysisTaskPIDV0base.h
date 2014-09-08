@@ -21,13 +21,13 @@ class AliPIDResponse;
 class AliESDv0KineCuts;
 class AliPID;
 class AliAnalysisFilter;
-class AliAnalysisUtils;
 class AliVTrack;
 
 #include <TTreeStream.h>
 #include "AliInputEventHandler.h"
 #include "AliTOFPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisUtils.h"
 
 class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
  public:
@@ -49,7 +49,7 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   virtual void SetIsPbpOrpPb(Bool_t newValue) { fIsPbpOrpPb = newValue; };
   
   virtual Double_t GetZvtxCutEvent() const { return fZvtxCutEvent; };
-  virtual void SetZvtxCutEvent(Double_t newValue) { fZvtxCutEvent = newValue; };
+  virtual void SetZvtxCutEvent(Double_t newValue) { fZvtxCutEvent = newValue; if (fAnaUtils) fAnaUtils->SetMaxVtxZ(fZvtxCutEvent);};
   
   virtual Bool_t GetUsePhiCut() const { return fUsePhiCut; };
   virtual void SetUsePhiCut(Bool_t newValue) { fUsePhiCut = newValue; };
@@ -139,7 +139,7 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   AliAnalysisTaskPIDV0base(const AliAnalysisTaskPIDV0base&); // not implemented
   AliAnalysisTaskPIDV0base& operator=(const AliAnalysisTaskPIDV0base&); // not implemented
   
-  ClassDef(AliAnalysisTaskPIDV0base, 2);
+  ClassDef(AliAnalysisTaskPIDV0base, 3);
 };
 
 

@@ -137,10 +137,10 @@ fhConeSumPtSubvsConeSumPtTotEtaCell(0),     fhConeSumPtSubNormvsConeSumPtTotEtaC
 fhConeSumPtVSUETracksEtaBand(0),            fhConeSumPtVSUETracksPhiBand(0),
 fhConeSumPtVSUEClusterEtaBand(0),           fhConeSumPtVSUEClusterPhiBand(0),
 fhPtPrimMCPi0DecayPairOutOfCone(0),         fhPtPrimMCPi0DecayPairOutOfAcceptance(0),
-fhPtPrimMCPi0DecayPairAcceptInConeLowPt(0), fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0DecayPairAcceptInConeLowPt(0), fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap(0),      fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE(0),
 fhPtPrimMCPi0DecayPairNoOverlap(0),
 fhPtPrimMCPi0DecayIsoPairOutOfCone(0),      fhPtPrimMCPi0DecayIsoPairOutOfAcceptance(0),
-fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt(0),fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt(0),fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap(0), fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE(0),
 fhPtPrimMCPi0DecayIsoPairNoOverlap(0),
 fhPtPrimMCPi0Overlap(0),                    fhPtPrimMCPi0IsoOverlap(0),
 fhPtLeadConeBinLambda0(0),                  fhSumPtConeBinLambda0(0),
@@ -1245,6 +1245,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
         fhPtLambda0MC[kmcPhoton][isolated]->Fill(pt,m02);
       
+      if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+        fhPtLambda0MC[kmcPi0DecayLostPair][isolated]->Fill(pt,m02);
+      
       fhPtLambda0MC[mcIndex][isolated]->Fill(pt,m02);
     }
     
@@ -1475,12 +1478,12 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
   // MC histograms title and name
   TString mcPartType[] = { "#gamma", "#gamma_{prompt}", "#gamma_{fragmentation}",
-    "#pi^{0} (merged #gamma)","#gamma_{#pi decay}",
+    "#pi^{0} (merged #gamma)","#gamma_{#pi decay}","#gamma_{#pi decay} lost companion",
     "#gamma_{#eta decay}","#gamma_{other decay}",
     "e^{#pm}","hadrons?"} ;
   
   TString mcPartName[] = { "Photon","PhotonPrompt","PhotonFrag",
-    "Pi0","Pi0Decay","EtaDecay","OtherDecay",
+    "Pi0","Pi0Decay","Pi0DecayLostPair","EtaDecay","OtherDecay",
     "Electron","Hadron"} ;
   
   // Primary MC histograms title and name
@@ -1519,7 +1522,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     
     for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
     {
-      
       fhPtNoIsoMC[imc]  = new TH1F(Form("hPtNoIsoMC%s",mcPartName[imc].Data()),
                                    Form("#it{p}_{T} of NOT isolated %s, %s",mcPartType[imc].Data(),parTitle.Data()),
                                    nptbins,ptmin,ptmax);
@@ -2869,6 +2871,21 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                                                                         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap) ;
+
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPtNoOverlapCaloE",
+                                                                     Form("primary photon  %s, no overlap, pair in cone, E > calo min: #it{p}_{T}, %s",
+                                                                          pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                                     nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE) ;
+
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPtNoOverlapCaloE",
+                                                                        Form("isolated primary photon  %s, pair in cone,no overlap, E > calo min: #it{p}_{T}, %s",
+                                                                             pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                                        nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE) ;
+
         
         fhPtPrimMCPi0DecayPairNoOverlap  = new TH1F("hPtPrim_MCPhotonPi0DecayPairNoOverlap",
                                                                      Form("primary photon  %s, no overlap: #it{p}_{T}, %s",
@@ -3728,6 +3745,13 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
           fhEtaIsoMC[kmcPhoton]->Fill(pt,eta);
         }
         
+        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+        {
+          fhPtIsoMC [kmcPi0DecayLostPair]->Fill(pt);
+          fhPhiIsoMC[kmcPi0DecayLostPair]->Fill(pt,phi);
+          fhEtaIsoMC[kmcPi0DecayLostPair]->Fill(pt,eta);
+        }
+        
         fhPtIsoMC [mcIndex]->Fill(pt);
         fhPhiIsoMC[mcIndex]->Fill(pt,phi);
         fhEtaIsoMC[mcIndex]->Fill(pt,eta);
@@ -3747,6 +3771,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
             {
               if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
                 fhPtDecayIsoMC[ibit][kmcPhoton]->Fill(pt);
+              
+              if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+                fhPtDecayIsoMC[ibit][kmcPi0DecayLostPair]->Fill(pt);
               
               fhPtDecayIsoMC[ibit][mcIndex]->Fill(pt);
             }
@@ -3793,6 +3820,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
           fhPtNoIsoMC[kmcPhoton]->Fill(pt);
         
+        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+          fhPtNoIsoMC[kmcPi0DecayLostPair]->Fill(pt);
+
         fhPtNoIsoMC[mcIndex]->Fill(pt);
       }
       
@@ -3810,6 +3840,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
             {
               if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
                 fhPtDecayNoIsoMC[ibit][kmcPhoton]->Fill(pt);
+              
+              if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+                fhPtDecayNoIsoMC[ibit][kmcPi0DecayLostPair]->Fill(pt);
               
               fhPtDecayNoIsoMC[ibit][mcIndex]->Fill(pt);
             }
@@ -3862,8 +3895,17 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   // Calorimeter cluster merging angle
   // angle smaller than 3 cells  6 cm (0.014) in EMCal, 2.2 cm in PHOS (0.014*(2.2/6))
   Float_t overlapAngle = 0;
-  if      (fCalorimeter=="EMCAL") overlapAngle = 3*0.014  ;
-  else if (fCalorimeter=="PHOS" ) overlapAngle = 3*0.00382;
+  Float_t minECalo     = 0;
+  if      (fCalorimeter=="EMCAL")
+  {
+    overlapAngle = 3*0.014  ;
+    minECalo = GetReader()->GetEMCALEMin();
+  }
+  else if (fCalorimeter=="PHOS" )
+  {
+    overlapAngle = 3*0.00382;
+    minECalo = GetReader()->GetPHOSEMin();
+  }
   
   // Get the ESD MC particles container
   AliStack * stack = 0;
@@ -3963,7 +4005,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
-    tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader());
+    tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader(),fIsoDetector);
     
     if(pdg == 22 && !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {
@@ -4107,7 +4149,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         }
         else // neutrals E cut and acceptance
         {
-          if( partInConeE  < GetReader()->GetEMCALEMin() ) continue;
+          if( partInConeE  <= minECalo ) continue;
           
           if(!GetReader()->GetFiducialCut()->IsInFiducialCut(mcisoLV,fCalorimeter)) continue ;
           
@@ -4214,7 +4256,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         fhPtPrimMCPi0DecayPairOutOfCone->Fill(photonPt);
       
       // Second decay out of acceptance
-      if(!ok2 || !d2Acc)
+      if(!ok2 || !d2Acc || daugh2mom.E() <= minECalo)
         fhPtPrimMCPi0DecayPairOutOfAcceptance->Fill(photonPt);
     
       // Not Overlapped decay
@@ -4225,7 +4267,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
          daugh2mom.E() < GetIsolationCut()->GetPtThreshold())
       {
         fhPtPrimMCPi0DecayPairAcceptInConeLowPt->Fill(photonPt);
-        if(!overlap) fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
+        if(!overlap)
+        {
+          fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
+          if(daugh2mom.E() > minECalo)fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt);
+        }
       }
     } // pi0 decay
     
@@ -4257,7 +4303,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           fhPtPrimMCPi0DecayIsoPairOutOfCone->Fill(photonPt);
         
         // Second decay out of acceptance
-        if(!ok2 || !d2Acc)
+        if(!ok2 || !d2Acc || daugh2mom.E() <= minECalo)
           fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->Fill(photonPt);
         
         // Second decay pt smaller than threshold
@@ -4265,7 +4311,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
            daugh2mom.E() < GetIsolationCut()->GetPtThreshold())
         {
           fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->Fill(photonPt);
-          if(!overlap) fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
+          if(!overlap)
+          {
+            fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->Fill(photonPt);
+            if(daugh2mom.E() > minECalo) fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt);
+          }
         }
       }// pi0 decay
       
@@ -4322,6 +4372,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
     if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
       fhPtNoIsoMC[kmcPhoton]->Fill(ptC);
     
+    if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+      fhPtNoIsoMC[kmcPi0DecayLostPair]->Fill(ptC);
+    
     fhPtNoIsoMC[mcIndex]->Fill(ptC);
   }
   
@@ -4339,6 +4392,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
         {
           if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
             fhPtDecayNoIsoMC[ibit][kmcPhoton]->Fill(ptC);
+
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+            fhPtDecayNoIsoMC[ibit][kmcPi0DecayLostPair]->Fill(ptC);
           
           fhPtDecayNoIsoMC[ibit][mcIndex]->Fill(ptC);
         }
@@ -4449,6 +4505,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
         fhSumPtLeadingPtMC[kmcPhoton][icone]->Fill(ptC,coneptsum) ;
       
+      if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+        fhSumPtLeadingPtMC[kmcPi0DecayLostPair][icone]->Fill(ptC,coneptsum) ;
+      
       fhSumPtLeadingPtMC[mcIndex][icone]->Fill(ptC,coneptsum) ;
     }
     
@@ -4503,6 +4562,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
           if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) )
             fhPtThresIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC) ;
           
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+            fhPtThresIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC) ;
+
           fhPtThresIsolatedMC[mcIndex][icone][ipt]->Fill(ptC) ;
           
         }
@@ -4530,6 +4592,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
         {
           if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
             fhPtFracIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC) ;
+          
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+            fhPtFracIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC) ;
           
           fhPtFracIsolatedMC[mcIndex][icone][ipt]->Fill(ptC) ;
         }
@@ -4560,6 +4625,9 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
         {
           if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
             fhSumPtIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC) ;
+          
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+            fhSumPtIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC) ;
           
           fhSumPtIsolatedMC[mcIndex][icone][ipt]->Fill(ptC) ;
         }

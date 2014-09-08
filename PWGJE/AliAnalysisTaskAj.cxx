@@ -552,14 +552,14 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
    Int_t selec=-1;
    Double_t ptmax=-10; 
    Double_t areaj=0;
-   Double_t phij=0;
+   //   Double_t phij=0;
    Double_t etaj=0;
    Double_t ptj=0;
    Double_t ptcorrj=0;  
    for(Int_t i=0; i<fListJets[0]->GetEntries(); ++i){
            AliAODJet* jetj = (AliAODJet*)(fListJets[0]->At(i));
            etaj  = jetj->Eta();
-           phij  = jetj->Phi();
+	   //           phij  = jetj->Phi();
            ptj = jetj->Pt();
            if(ptj==0) continue; 
            areaj = jetj->EffectiveAreaCharged();
@@ -596,7 +596,7 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
 	   if(j==selec) continue;
            AliAODJet* jetb = (AliAODJet*)(fListJets[0]->At(j));
            etaj  = jetb->Eta();
-           phij  = jetb->Phi();
+	   //           phij  = jetb->Phi();
            ptj   = jetb->Pt();
            if(ptj<=0) continue; 
            areaj = jetb->EffectiveAreaCharged();
@@ -640,7 +640,7 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
       Float_t ptMax  = 0.;
       Float_t etaMax = 0.;
       Float_t phiMax = 0.;
-      Int_t   iMax   = -1;
+      //      Int_t   iMax   = -1;
       //1st loop over all tracks      
          for(int it = 0;it<nT;++it){
          AliVParticle *track = (AliVParticle*)ParticleList.At(it);
@@ -676,7 +676,7 @@ void AliAnalysisTaskAj::UserExec(Option_t *)
 	      // max pt
 	      if (pt > ptMax) {
 		  ptMax  = pt;
-		  iMax   = it;
+		  //		  iMax   = it;
 		  etaMax = deta;
 		  phiMax = dphi;
 	      }
@@ -884,7 +884,7 @@ Int_t  AliAnalysisTaskAj::GetListOfTracks(TList *list){
    
     Double_t ptmax=-10;
     Double_t dphi=0;
-    Double_t dif=0;
+    //    Double_t dif=0;
     Int_t iCount=0;
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
       AliAODTrack *tr = aod->GetTrack(it);
@@ -896,7 +896,8 @@ Int_t  AliAnalysisTaskAj::GetListOfTracks(TList *list){
       if(TMath::Abs(dphi)<TMath::Pi()-0.2) continue;
       if(tr->Pt()>ptmax){ ptmax=tr->Pt();
       index=iCount-1;
-      dif=dphi;  }}
+      //  dif=dphi; 
+      }}
   
       return index;
 

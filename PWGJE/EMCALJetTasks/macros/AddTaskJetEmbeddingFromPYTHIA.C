@@ -19,7 +19,7 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   Bool_t          includeNoITS  = kFALSE,
   Double_t        minCent       = -1,
   Double_t        maxCent       = -1,
-  UInt_t          mask          = AliVEvent::kAny,
+  UInt_t          mask          = 0,
   Double_t        minJetPt      = 0,
   const Bool_t    copyArray     = kFALSE,  
   const Bool_t    makeQA        = kFALSE,

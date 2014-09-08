@@ -881,21 +881,21 @@ void AliAnaParticleJetFinderCorrelation::InitParameters()
   SetInputAODName("PWG4Particle");
   AddToHistogramsName("AnaJetFinderCorr_");
 
-  fDeltaPhiMinCut    = 1.5 ;
-  fDeltaPhiMaxCut    = 4.5 ; 
+  fDeltaPhiMinCut    = 2.6 ;
+  fDeltaPhiMaxCut    = 3.7 ; 
   fRatioMaxCut       = 1.2 ; 
   fRatioMinCut       = 0.3 ; 
-  fConeSize          = 0.3 ;
+  fConeSize          = 0.4 ;
   fPtThresholdInCone = 0.5 ;
   fUseJetRefTracks   = kFALSE ;
   fMakeCorrelationInHistoMaker = kFALSE ;
   fSelectIsolated = kTRUE;
   fJetConeSize = 0.4 ;
-  fJetMinPt = 5. ; //GeV/c
+  fJetMinPt = 15. ; //GeV/c
   fJetAreaFraction = 0.6 ;
   fJetBranchName = "jets";
   fBkgJetBranchName = "jets";
-  fGammaConeSize = 0.3;
+  fGammaConeSize = 0.4;
   fUseBackgroundSubtractionGamma = kFALSE;
   fSaveGJTree = kTRUE;
   fMostEnergetic = kFALSE;
