@@ -1,4 +1,4 @@
-void CreateGainCDB(TString type){
+void CreateGainCDB(TString type="IDEAL"){
 
 	AliCDBManager* man = AliCDBManager::Instance();
 	
