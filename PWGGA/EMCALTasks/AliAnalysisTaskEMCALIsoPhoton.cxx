@@ -707,7 +707,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
-    clsVec += fVecPv;
+    clsVec -= fVecPv;
     Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
     if(fDebug)
       printf("\tcluster eta=%1.1f,phi=%1.1f,E=%1.1f\n",clsVec.Eta(),clsVec.Phi(),c->E());
@@ -859,7 +859,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 cv(clsPos);
-    cv += fVecPv;
+    cv -= fVecPv;
     Double_t Et = c->E()*TMath::Sin(cv.Theta());
     Float_t dphi = TMath::Abs(cv.Phi()-phicl);
     Float_t deta = TMath::Abs(cv.Eta()-etacl);
@@ -1124,7 +1124,7 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
   Float_t clsPos[3] = {0,0,0};
   c->GetPosition(clsPos);
   TVector3 clsVec(clsPos);
-  clsVec += fVecPv;
+  clsVec -= fVecPv;
   Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
   //ESD
   if(fStack){
@@ -1432,7 +1432,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
-    clsVec += fVecPv;
+    clsVec -= fVecPv;
     Double_t cphi = clsVec.Phi();
     Double_t ceta = clsVec.Eta();
     Short_t id;
