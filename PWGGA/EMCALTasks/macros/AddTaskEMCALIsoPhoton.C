@@ -44,16 +44,19 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
     cutsp->SetDCAToVertex2D(kTRUE);
     cutsp->SetPtRange(0.2);
     cutsp->SetEtaRange(-1.0,1.0);
+    printf("standard tracks selected ++++++++++++++++++++\n");
   }
   if(trackSelType == "hybrid"){
     cutsp = CreateTrackCutsPWGJE(10001008);
     cutsp->SetPtRange(0.2);
     ana->SetHybridOn();
+    printf("hybrid tracks (10001008) selected ++++++++++++++++++++\n");
   }
   if(trackSelType == "hybridp"){
     cutsp = CreateTrackCutsPWGJE(10011008);
     cutsp->SetPtRange(0.2);
     ana->SetHybridOn();
+    printf("prim hybrid tracks (10011008) selected ++++++++++++++++++++\n");
   }
   ana->SetPrimTrackCuts(cutsp);
   ana->SetPeriod(period.Data());
