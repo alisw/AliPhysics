@@ -191,8 +191,8 @@ AliTracker* AliITSUReconstructor::CreateTracker() const
 AliVertexer* AliITSUReconstructor::CreateVertexer() const
 {
   // create a ITS vertexer
-  // to be implemented for the upgrade
-  AliInfo("Creating dummy vertexer");
+  // 
+  AliInfo("Creating vertexer using tracklets with the first 3 ITS layers");
   //  AliDebug(1,"ITSU vertexer should be initiated here\n");
   return new AliITSUVertexer();
 }
