@@ -159,27 +159,29 @@ void AliTPCCalPad::SetCalROC(AliTPCCalROC* roc, Int_t sector){
       fROC[sector]->SetValue(ichannel, roc->GetValue(ichannel));
 }
 
-Bool_t  AliTPCCalPad::MedianFilter(Int_t deltaRow, Int_t deltaPad){
+Bool_t  AliTPCCalPad::MedianFilter(Int_t deltaRow, Int_t deltaPad, AliTPCCalPad*outlierPad,  Bool_t doEdge){
   //
   // replace constent with median in the neigborhood
   //
   Bool_t isOK=kTRUE;
   for (Int_t isec = 0; isec < kNsec; isec++) {
+    AliTPCCalROC *outlierROC=(outlierPad==NULL)?NULL:outlierPad->GetCalROC(isec);
     if (fROC[isec]){
-      isOK&=fROC[isec]->MedianFilter(deltaRow,deltaPad);
+      isOK&=fROC[isec]->MedianFilter(deltaRow,deltaPad,outlierROC,doEdge);
     }
   }
   return isOK;
 }
 
-Bool_t  AliTPCCalPad::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type){
+Bool_t  AliTPCCalPad::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type, AliTPCCalPad*outlierPad,  Bool_t doEdge){
   //
   // replace constent with LTM statistic  in  neigborhood
   //
   Bool_t isOK=kTRUE;
   for (Int_t isec = 0; isec < kNsec; isec++) {
+    AliTPCCalROC *outlierROC=(outlierPad==NULL)?NULL:outlierPad->GetCalROC(isec);
     if (fROC[isec]){
-      isOK&=fROC[isec]->LTMFilter(deltaRow, deltaPad,fraction,type);
+      isOK&=fROC[isec]->LTMFilter(deltaRow, deltaPad,fraction,type,outlierROC,doEdge);
     }
   }
   return isOK;
@@ -913,6 +915,10 @@ AliTPCCalPad *AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, 
   //
   // make cal pad from the tree 
   //
+  if (!treePad){
+    ::Error("AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, const char* name)","Input tree is missing");
+    return 0;
+  }
   if (treePad->GetEntries()!=kNsec) return 0;
   AliTPCCalPad * calPad= new AliTPCCalPad(name,name);
   if (name) calPad->SetName(name);

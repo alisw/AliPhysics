@@ -39,8 +39,8 @@ class AliTPCCalROC : public TNamed {
   void         SetValue(UInt_t channel, Float_t vd) {fData[channel]= vd; };
   virtual void Draw(Option_t* option = "");
   //
-  Bool_t MedianFilter(Int_t deltaRow, Int_t deltaPad);
-  Bool_t LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type);
+  Bool_t MedianFilter(Int_t deltaRow, Int_t deltaPad, AliTPCCalROC*outlierROC=0, Bool_t doEdge=kTRUE);
+  Bool_t LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type,  AliTPCCalROC*outlierROC=0, Bool_t doEdge=kTRUE);
   //
   // algebra
   void Add(Float_t c1); // add c1 to each channel of the ROC

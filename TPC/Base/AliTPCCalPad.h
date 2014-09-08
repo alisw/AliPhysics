@@ -48,8 +48,8 @@ class AliTPCCalPad : public TNamed {
   void AddFriend(TTree * tree, const char *friendName, const char *fname=0);
   //
   // convolution
-  Bool_t MedianFilter(Int_t deltaRow, Int_t deltaPad);
-  Bool_t LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type);
+  Bool_t MedianFilter(Int_t deltaRow, Int_t deltaPad, AliTPCCalPad*outlierPad=0, Bool_t doEdge=kTRUE);
+  Bool_t LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type, AliTPCCalPad*outlierPad=0, Bool_t doEdge=kTRUE);
   //
   // algebra
   void Add(Float_t c1);   // add constant c1 to all channels of all ROCs
