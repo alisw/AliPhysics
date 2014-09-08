@@ -83,6 +83,8 @@ fPcosEPCent(0),
 fPsinEPCent(0),
 fPcosPhiCent(0),
 fPsinPhiCent(0),
+// cross check for event plane determination
+fDeltaPhiCent(0),
 //global
 fIsMonteCarlo(0),
 fEPselector("Q"),
@@ -605,6 +607,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fPsinPhiCent->GetYaxis()->SetTitle("#LT sin 2 #phi #GT");
   fPsinPhiCent->Sumw2();
   
+  fDeltaPhiCent = new TH2F("fDeltaPhiCent","fDeltaPhiCent",200, -2.*TMath::Pi(), 2.*TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
+  fDeltaPhiCent->GetXaxis()->SetTitle("#Delta #phi");
+  fDeltaPhiCent->GetYaxis()->SetTitle("Centrality");
+  fDeltaPhiCent->Sumw2();
+  
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
   fOutputList->Add(fDeltaphiPtEtaCent);
@@ -655,6 +662,8 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fPsinEPCent);
   fOutputList->Add(fPcosPhiCent);
   fOutputList->Add(fPsinPhiCent);
+  
+  fOutputList->Add(fDeltaPhiCent);
   
   StoreCutSettingsToHistogram();
   
@@ -986,6 +995,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	dTrackPhiPtEtaCent[2] = track->Eta();
 	dTrackPhiPtEtaCent[3] = dCentrality;
 	
+	
 	if( fIsMonteCarlo )
 	{
 	  mcPart = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
@@ -1073,6 +1083,11 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  fPhiCent->Fill(track->Phi(), dCentrality);
 	  fPcosPhiCent->Fill(dCentrality, TMath::Cos(2.*track->Phi()));
 	  fPsinPhiCent->Fill(dCentrality, TMath::Sin(2.*track->Phi()));
+	  
+	  Double_t deltaphi = track->Phi() - dEventplaneAngleCorrected;
+	  if(deltaphi > TMath::Pi()) deltaphi -= 2.*TMath::Pi();
+	  
+	  fDeltaPhiCent->Fill(deltaphi, dCentrality);
 	}
   } // end track loop
   
