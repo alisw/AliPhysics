@@ -229,6 +229,63 @@ class AliJetShapeCircularity : public fastjet::FunctionOfPseudoJet<Double32_t>{
   }
 };
 
+class AliJetShapeSigma2 : public fastjet::FunctionOfPseudoJet<Double32_t>{
+ public:
+  virtual std::string description() const{return "cms sigma2";}
+  Double32_t result(const fastjet::PseudoJet &jet) const {
+    if (!jet.has_constituents())
+      return 0;
+    Double_t mxx    = 0.;
+    Double_t myy    = 0.;
+    Double_t mxy    = 0.;
+    int  nc     = 0;
+    Double_t sump2  = 0.;
+           
+       
+    std::vector<fastjet::PseudoJet> constits = jet.constituents();
+    for(UInt_t ic = 0; ic < constits.size(); ++ic) {
+      Double_t ppt=constits[ic].perp();
+      Double_t dphi = constits[ic].phi()-jet.phi();
+      if(dphi<-1.*TMath::Pi()) dphi+=TMath::TwoPi();
+      if(dphi>TMath::Pi()) dphi-=TMath::TwoPi();
+      Double_t deta = constits[ic].eta()-jet.eta();
+      mxx += ppt*ppt*deta*deta;
+      myy += ppt*ppt*dphi*dphi;
+      mxy -= ppt*ppt*deta*dphi;
+      nc++;
+      sump2 += ppt*ppt;
+    }
+    if(nc<2) return 0;
+    if(sump2==0) return 0;
+    // Sphericity Matrix
+    Double_t ele[4] = {mxx , mxy, mxy, myy };
+    TMatrixDSym m0(2,ele);
+      
+    // Find eigenvectors
+    TMatrixDSymEigen m(m0);
+    TVectorD eval(2);
+    TMatrixD evecm = m.GetEigenVectors();
+    eval  = m.GetEigenValues();
+    // Largest eigenvector
+    int jev = 0;
+    if (eval[0] < eval[1]) jev = 1;
+    TVectorD evec0(2);
+    // Principle axis
+    evec0 = TMatrixDColumn(evecm, jev);
+    Double_t compx=evec0[0];
+    Double_t compy=evec0[1];
+    TVector2 evec(compx, compy);
+    Double_t sigma2=0;
+    if(jev==1) sigma2=TMath::Sqrt(TMath::Abs(eval[0])/sump2);
+    if(jev==0) sigma2=TMath::Sqrt(TMath::Abs(eval[1])/sump2);
+    
+    return sigma2;
+    
+  }
+};
+
+
+
 class AliJetShapeLeSub : public fastjet::FunctionOfPseudoJet<Double32_t>{
  public:
   virtual std::string description() const{return "leading mins subleading";}
