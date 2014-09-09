@@ -1,5 +1,5 @@
 /*
-  fbellini@cern.ch - last update on 21/02/2014
+  fbellini@cern.ch - last update on 09/09/2014
   Macro to run the TOF QA trending by accessing the std QA output, 
   to be mainly used with the automatic scripts to fill the QA repository.
   Launch with 
@@ -8,12 +8,68 @@
   A feature that displays the plots in canvases must be enable when needed.
 */
 
-Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; set IsOnGrid to prepend "alien://"
-			Int_t runNumber,          // run number
-			Bool_t isMC=kFALSE,       //MC flag, to disable meaningless checks
-			Bool_t canvasE = kFALSE,  //enable display plots on canvas and save png
-			Bool_t IsOnGrid = kFALSE, //set to kTRUE to access files on the grid
-			TString ocdbStorage = "raw://") //set the default ocdb storage
+
+Int_t MakeTrendingTOFQA(char * runlist, 
+			Int_t year=2010, 
+			char *period="LHC10c", 
+			char* pass="cpass1_pass4", 
+			char* nameSuffix ="_barrel",
+			Bool_t isMC=kFALSE,
+			Int_t trainId=0, 
+			Bool_t saveHisto=kTRUE)
+{
+  Int_t filesCounter=0; 
+  if (!runlist) {
+    printf("Invalid list of runs given as input: nothing done\n");
+    return 1;
+  }	
+  Int_t runNumber;
+  char infile[300]; 
+  
+  char trendFileName[100]; 
+  //Define trending output
+  if (trainId==0){
+    sprintf(trendFileName,"treeTOFQA_%s_%s.root",period,pass);  
+  } else {
+    sprintf(trendFileName,"treeTOFQA_QA%i_%s_%s.root",trainId,period,pass);
+  }
+  TFile * trendFile=new TFile(trendFileName,"recreate");
+  FILE * files = fopen(runlist, "r") ; 
+  
+  //create chain of treePostQA     
+  Long64_t nentries=100000, firstentry=0; 
+  TChain *chainTree = 0;
+  chainTree=new TChain("trendTree");
+  
+  while (fscanf(files,"%d",&runNumber)==1 ){
+    
+    //get QAtrain output
+    if (trainId==0){
+      if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/%s/QAresults%s.root",year,period,runNumber,pass,nameSuffix);
+      else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QAresults%s.root",year,period,runNumber,nameSuffix);
+    } else{
+      if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QA%i/QAresults%s.root",year,period,runNumber,pass,trainId,nameSuffix);
+      else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QA%i/QAresults%s.root",year,period,runNumber,trainId,nameSuffix);
+    }
+    Printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
+    
+    //run post-analysis
+    if (MakeTrendingTOFQAv2(infile,runNumber,isMC,kFALSE,kTRUE,"raw://", saveHisto)==0){
+      filesCounter++;
+    } else Printf("Post analysis not run on QA output %s", infile);
+  }
+  Printf(":::: Processed %i runs", filesCounter);
+  return;  
+}
+
+//---------------------------------------------------------------------------------
+Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output; set IsOnGrid to prepend "alien://"
+			  Int_t runNumber,          // run number
+			  Bool_t isMC=kFALSE,       //MC flag, to disable meaningless checks
+			  Bool_t canvasE = kFALSE,  //enable display plots on canvas and save png
+			  Bool_t IsOnGrid = kFALSE, //set to kTRUE to access files on the grid
+			  TString ocdbStorage = "raw://",
+			  Bool_t saveHisto=kTRUE) //set the default ocdb storage
 {   
   // macro to generate tree with TOF QA trending variables
   // access qa PWGPP output files  
@@ -37,7 +93,7 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   gStyle->SetOptStat(10);
 
   char defaultQAoutput[30]="QAresults.root";
-  char * treePostFileName="trending.root";
+  TString treePostFileName=Form("trending_%i.root",runNumber);
   
   if (IsOnGrid) TGrid::Connect("alien://");
   TFile * fin = TFile::Open(qafilename,"r");
@@ -49,12 +105,12 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   }
   
   //access histograms lists
-  char tofQAdirName[15]="TOF_Performance";
-  char genListName[15]="cGeneralTOFqa";
-  char t0ListName[15]="cTimeZeroTOFqa";
-  char pidListName[15]="cPIDTOFqa"; 
-  char posListName[15]="cPositiveTOFqa";
-  char negListName[15]="cNegativeTOFqa";
+  char tofQAdirName[15]="TOF";
+  char genListName[15]="base_noPID";
+  char t0ListName[15]="timeZero_noPID";
+  char pidListName[15]="pid_noPID"; 
+  char trdListName[15]="trd_noPID";
+  char trgListName[15]="trigger_noPID";
   
   TDirectoryFile * tofQAdir=(TDirectoryFile*)fin->Get(tofQAdirName);
   if (!tofQAdir) {
@@ -64,14 +120,14 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   TList * generalList=(TList*)tofQAdir->Get(genListName);
   TList  *timeZeroList=(TList*)tofQAdir->Get(t0ListName);
   TList  *pidList=(TList*)tofQAdir->Get(pidListName);
-  TList  *posList=(TList*)tofQAdir->Get(posListName);
-  TList  *negList=(TList*)tofQAdir->Get(negListName);
+  TList  *trdList=(TList*)tofQAdir->Get(trdListName);
+  TList  *trgList=(TList*)tofQAdir->Get(trgListName);
   
   if (!generalList) Printf("WARNING: general QA histograms absent or not accessible\n");
   if (!timeZeroList) Printf("WARNING: timeZero QA histograms absent or not accessible\n");
   if (!pidList) Printf("WARNING: PID QA histograms absent or not accessible\n");
-  if (!posList) Printf("WARNING: general QA histograms for positive tracks absent or not accessible\n");
-  if (!negList) Printf("WARNING: general QA histograms for negative tracks absent or not accessible\n");
+  if (!trdList) Printf("WARNING: QA histograms for TRD checks absent or not accessible\n");
+  if (!trgList) Printf("WARNING: QA histograms for trigger absent or not accessible\n");
   
   if ( (!generalList) && (!timeZeroList) && (!pidList) ){
     printf("ERROR: no QA available \n");
@@ -79,7 +135,7 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   }
   
   Printf(":::: Getting post-analysis info for run %i",runNumber);
-  TFile * trendFile = new TFile(treePostFileName,"recreate");
+  TFile * trendFile = new TFile(treePostFileName.Data(),"recreate");
 
   Double_t avTime=-9999., peakTime=-9999., spreadTime=-9999., peakTimeErr=-9999., spreadTimeErr=-9999., negTimeRatio=-9999.,
     avRawTime=-9999., peakRawTime=-9999., spreadRawTime=-9999., peakRawTimeErr=-9999., spreadRawTimeErr=-9999., avTot=-9999., peakTot=-9999.,spreadTot=-9999.,  peakTotErr=-9999.,spreadTotErr=-9999.,
@@ -165,20 +221,21 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
 
   //save quantities for trending
   goodChannelRatio=(Double_t)GetGoodTOFChannelsRatio(runNumber,kFALSE,ocdbStorage);
+
 	
   //--------------------------------- Multiplicity ----------------------------------//
 
-  TH1F * hMulti = (TH1F*) generalList->FindObject("hTOFmatchedPerEvt");
+  TH1F * hMulti = (TH1F*) generalList->FindObject("hTOFmulti_all");
   TH1F* hFractionEventsWhits = new TH1F("hFractionEventsWhits","hFractionEventsWhits;fraction of events with hits (%)",200,0.,100.);
   Float_t fraction=0.0;
   if (hMulti->GetEntries()>0.0) {
     fraction = ((Float_t) hMulti->GetBinContent(1))/((Float_t) hMulti->GetEntries());
     avMulti = hMulti->GetMean();
-  } else fraction=0.0;
+  } else { fraction=0.0; }
   hFractionEventsWhits->Fill(fraction*100.);
   
   //--------------------------------- T0F signal ----------------------------------//
-  TH1F * hRawTime = (TH1F*)generalList->FindObject("hTOFmatchedESDrawTime");
+  TH1F * hRawTime = (TH1F*)generalList->FindObject("hRawTime_all");
   if ((hRawTime)&&(hRawTime->GetEntries()>0)){
     avRawTime=hRawTime->GetMean();
     if (!isMC){
@@ -188,17 +245,14 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
 	spreadRawTime=(hRawTime->GetFunction("landau"))->GetParameter(2);
 	peakRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(1);
 	spreadRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(2);
-      // 	printf("Main peak raw time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
-      // printf("Main peak raw time (landau): spread = %f +- %f\n",spreadRawTime,spreadRawTimeErr );
       }
     } else {
       printf("Reminder: Raw time not available in MC simulated data.");
     }
   }
   MakeUpHisto(hRawTime, "matched tracks", 21, kGreen+2);
-  hRawTime->Rebin(2);
   
-  TH1F * hTime = (TH1F*)generalList->FindObject("hTOFmatchedESDtime");
+  TH1F * hTime = (TH1F*)generalList->FindObject("hTime_all");
   if ((hTime)&&(hTime->GetEntries()>0)) {
     avTime=hTime->GetMean();
     hTime->Fit("landau","RQ0","",0.,50.);
@@ -208,12 +262,8 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
       peakTimeErr=(hTime->GetFunction("landau"))->GetParError(1);
       spreadTimeErr=(hTime->GetFunction("landau"))->GetParError(2);
       negTimeRatio=((Double_t)hTime->Integral(1,3)*100.)/((Double_t)hTime->Integral());
-    // printf("Main peak time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
-    // printf("Main peak time (landau): spread = %f +- %f\n",spreadTime,spreadTimeErr );
-    // printf("Ratio of tracks with time<12.5 ns / total = %f\n",negTimeRatio );
     }
     MakeUpHisto(hTime, "matched tracks", 20, kBlue+2);
-    hTime->Rebin(2);
     
     TLegend *lTime = new TLegend(0.7125881,0.6052519,0.979435,0.7408306,NULL,"brNDC");
     lTime->SetTextSize(0.04281433);
@@ -223,7 +273,7 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
     lTime->SetShadowColor(0);
   }
       
-  TH1F * hTot = (TH1F*)generalList->FindObject("hTOFmatchedESDToT");
+  TH1F * hTot = (TH1F*)generalList->FindObject("hTot_all");
   if ((hTot)&&(hTot->GetEntries()>0)){
     avTot=hTot->GetMean();
     hTot->Fit("gaus","","",0.,50.);
@@ -232,8 +282,6 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
       spreadTot=(hTot->GetFunction("gaus"))->GetParameter(2);
       peakTotErr=(hTot->GetFunction("gaus"))->GetParError(1);
       spreadTotErr=(hTot->GetFunction("gaus"))->GetParError(2);
-    // printf("Main peak ToT (gaus): mean = %f +- %f\n",peakTot,peakTotErr );
-    // printf("Main peak ToT (gaus): spread = %f +- %f\n",spreadTot,spreadTotErr );	
     }
   }      
   MakeUpHisto(hTot, "matched tracks", 8, kViolet-3);
@@ -251,7 +299,7 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   tOrphans->SetTextColor(kViolet-3);
   tOrphans->AddText(orphansTxt);
   
-  TH1F * hL=(TH1F*)generalList->FindObject("hTOFmatchedESDtrkLength");
+  TH1F * hL=(TH1F*)generalList->FindObject("hMatchedL_all");
   char negLengthTxt[200];
   if (hL->GetEntries()>0){
     avL=hL->GetMean();
@@ -268,45 +316,25 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   tLength->AddText(negLengthTxt);
 
   //--------------------------------- residuals -------------------------------------//
-  TH2F* hDxPos4profile = (TH2F*) generalList->FindObject("hTOFmatchedDxVsPtPos");
-  TH2F* hDxNeg4profile = (TH2F*) generalList->FindObject("hTOFmatchedDxVsPtNeg");    
-  const Int_t ybinMin = 0;
-  const Int_t ybinMax = hDxPos4profile->GetYaxis()->GetNbins() ;
-  TProfile * profDxPos = (TProfile*)hDxPos4profile->ProfileX("profDxPos", ybinMin,ybinMax); 
-  profDxPos->SetLineWidth(2);
-  TProfile * profDxNeg = (TProfile*)hDxNeg4profile->ProfileX("profDxNeg", ybinMin, ybinMax); 
-  profDxNeg->SetLineWidth(2);  
- 
-  TH1 *profRatioPosOverNegDx = (TH1*) profDxPos->Clone();
-  profRatioPosOverNegDx->SetName("profRatioPosOverNegDx");
-  profRatioPosOverNegDx->Divide((TH1*) profDxNeg);
-  profRatioPosOverNegDx->GetYaxis()->SetRangeUser(-5.,5.);
-  profRatioPosOverNegDx->GetXaxis()->SetRangeUser(0.,2.);
-
-  TH2F* hTOFmatchedDzVsStrip = (TH2F*)generalList->FindObject("hTOFmatchedDzVsStrip");
-
-  // fout->cd();
-  // hTOFmatchedDzVsStrip->Write();
-  // hDxPos4profile->Write();
-  // hDxNeg4profile->Write();
-  // profDxPos->Write();
-  // profDxNeg->Write();
-  // profRatioPosOverNegDx->Write();
+  TH2F* hDxPos4profile = (TH2F*) generalList->FindObject("hMatchedDxVsPt_all");
+  TH2F* hTOFmatchedDzVsStrip = (TH2F*)generalList->FindObject("hMatchedDzVsStrip_all");
  
   //--------------------------------- matching eff ----------------------------------//
   //matching as function of pT
   TH1F * hMatchingVsPt = new TH1F("hMatchingVsPt","Matching probability vs. Pt; Pt(GeV/c); matching probability", 50, 0., 5. );
-  TH1F * hDenom = (TH1F*)generalList->FindObject("hESDprimaryTrackPt"); 
+  TH1F * hDenom = (TH1F*)generalList->FindObject("hPrimaryPt_all"); 
   if (hDenom) {  
-    hMatchingVsPt=(TH1F*) generalList->FindObject("hTOFmatchedESDPt")->Clone(); 
-    hMatchingVsPt->Rebin(5);
-    hDenom->Rebin(5);
+    hDenom->Sumw2();
+    hMatchingVsPt=(TH1F*) generalList->FindObject("hMatchedPt_all")->Clone(); 
+    hMatchingVsPt->Sumw2();
+    // hMatchingVsPt->Rebin(5);
+    // hDenom->Rebin(5);
     hMatchingVsPt->Divide(hDenom);
     hMatchingVsPt->GetYaxis()->SetTitle("matching efficiency");
     hMatchingVsPt->SetTitle("TOF matching efficiency as function of transverse momentum");
     hMatchingVsPt->GetYaxis()->SetRangeUser(0,1.2); 
   }
-
+  
   if (hMatchingVsPt->GetEntries()>0){
     hMatchingVsPt->Fit("pol0","","",1.0,10.);
     hMatchingVsPt->Draw();
@@ -319,15 +347,17 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
     printf("WARNING: matching efficiency plot has 0 entries. Skipped!\n");
   }
   MakeUpHisto(hMatchingVsPt, "efficiency", 1, kBlue+2);
-
+  
   //matching as function of eta
-  TH1F * hMatchingVsEta =new TH1F("hMatchingVsEta","Matching probability vs. #\Eta; #\Eta; matching probability", 20, -1., 1.);
+  TH1F * hMatchingVsEta = new TH1F("hMatchingVsEta","Matching probability vs. #\Eta; #\Eta; matching probability", 20, -1., 1.);
   hDenom->Clear();
-  hDenom=(TH1F*)generalList->FindObject("hTOFprimaryESDeta"); 
+  hDenom=(TH1F*)generalList->FindObject("hPrimaryEta_all"); 
   if (hDenom) {  
-    hMatchingVsEta=(TH1F*) generalList->FindObject("hTOFmatchedESDeta")->Clone(); 
-    hMatchingVsEta->Rebin(5);
-    hDenom->Rebin(5);
+    hDenom->Sumw2();
+    hMatchingVsEta=(TH1F*) generalList->FindObject("hMatchedEta_all")->Clone(); 
+    hMatchingVsEta->Sumw2();
+      // hMatchingVsEta->Rebin(5);
+    // hDenom->Rebin(5);
     hMatchingVsEta->Divide(hDenom);
     hMatchingVsEta->GetXaxis()->SetRangeUser(-1,1);
     hMatchingVsEta->GetYaxis()->SetTitle("matching efficiency");
@@ -335,16 +365,17 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
     hMatchingVsEta->SetTitle("TOF matching efficiency as function of pseudorapidity");
   }
   MakeUpHisto(hMatchingVsEta, "efficiency", 1, kBlue+2);
-
   
   //matching as function of phi
   TH1F * hMatchingVsPhi = new TH1F("hMatchingVsPhi","Matching probability vs. Phi; Phi(rad); matching probability", 628, 0., 6.28);
   hDenom->Clear();
-  hDenom=(TH1F*)generalList->FindObject("hTOFprimaryESDphi");  
+  hDenom=(TH1F*)generalList->FindObject("hPrimaryPhi_all");  
   if (hDenom) {  
-    hMatchingVsPhi=(TH1F*) generalList->FindObject("hTOFmatchedESDphi")->Clone(); 
-    hMatchingVsPhi->Rebin(2);
-    hDenom->Rebin(2);    
+    hDenom->Sumw2();
+    hMatchingVsPhi=(TH1F*) generalList->FindObject("hMatchedPhi_all")->Clone(); 
+    // hMatchingVsPhi->Rebin(2);
+    // hDenom->Rebin(2);    
+    hMatchingVsPhi->Sumw2();
     hMatchingVsPhi->Divide(hDenom);
     hMatchingVsPhi->GetYaxis()->SetTitle("matching efficiency");
     hMatchingVsPhi->SetTitle("TOF matching efficiency as function of phi");
@@ -352,27 +383,34 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   }
   MakeUpHisto(hMatchingVsPhi, "efficiency", 1, kBlue+2);
 
-  // fout->cd();
-  // hMatchingVsPt->Write();
-  // hMatchingVsEta->Write();
-  // hMatchingVsPhi->Write();
+   if (saveHisto) {
+    trendFile->cd();
+    hMulti->Write();
+    hTime->Write();
+    hRawTime->Write();
+    hTot->Write();
+    hL->Write();
+    hDxPos4profile->Write();
+    hTOFmatchedDzVsStrip->Write();
+    hMatchingVsPt->Write();
+    hMatchingVsEta->Write();
+    hMatchingVsPhi->Write();
+  }  
+
   
 
   //--------------------------------- t-texp ----------------------------------//
-  TH2F * hBetaP=(TH2F*)pidList->FindObject("hTOFmatchedESDpVsBeta");
+  TH2F * hBetaP=(TH2F*)pidList->FindObject("hMatchedBetaVsP_all");
   if (hBetaP) hBetaP->GetYaxis()->SetRangeUser(0.,1.2);
   
-  TH1F * hMass=(TH1F*)pidList->FindObject("hTOFmatchedMass");
+  TH1F * hMass=(TH1F*)pidList->FindObject("hMatchedMass_all");
   MakeUpHisto(hMass, "tracks", 1, kBlue+2);
   // hMass->SetFillColor(kAzure+10);
   // hMass->SetFillStyle(1001);
   hMass->Rebin(2);
   
   //pions
-  TH2F * hDiffTimeT0TOFPion1GeV=(TH2F*)pidList->FindObject("hTOFmatchedTimePion1GeV"); 
-  TH1F * hPionDiff=(TH1F*)pidList->FindObject("hTOFmatchedExpTimePi"); 
-  TH1F * hKaonDiff=(TH1F*)pidList->FindObject("hTOFmatchedExpTimeKa"); 
-  TH1F * hProtonDiff=(TH1F*)pidList->FindObject("hTOFmatchedExpTimePro"); 
+  TH1F * hPionDiff=(TH1F*)pidList->FindObject("hExpTimePi_all"); 
   if ((hPionDiff)&&(hPionDiff->GetEntries()>0)) {
     avPiDiffTime=hPionDiff->GetMean();
     hPionDiff->Fit("gaus","","",-1000.,500.);
@@ -385,144 +423,58 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
       // printf("Main peak t-t_exp (gaus): spread = %f +- %f\n",spreadPiDiffTime,spreadPiDiffTimeErr );
     }
   }
-  
-  TH2F * hDiffTimePi=(TH2F*)pidList->FindObject("hTOFmatchedExpTimePiVsP"); 
+ 
+  TH1F * hDiffTimeT0fillPion=(TH1F*)pidList->FindObject("hExpTimePiFillSub_all"); 
+  TH1F * hDiffTimeT0TOFPion1GeV=(TH1F*)pidList->FindObject("hExpTimePiT0Sub1GeV_all");  
+  TH2F * hDiffTimePi=(TH2F*)pidList->FindObject("hExpTimePiVsP_all"); 
   hDiffTimePi->GetYaxis()->SetRangeUser(-5000.,5000.);
   hDiffTimePi->SetTitle("PIONS t-t_{exp,#pi} (from tracking) vs. P");
 
-  // TProfile * profDiffTimePi = (TProfile*)hDiffTimePi->ProfileX("profDiffTimePi", 490, 510); 
-  // if (profDiffTimePi){
-  //   profDiffTimePi->SetLineWidth(2);
-  //   profDiffTimePi->SetLineColor(kRed+2); 
-  // }
-
   //Kaon
-  TH2F * hDiffTimeKa=(TH2F*)pidList->FindObject("hTOFmatchedExpTimeKaVsP");  
+  TH2F * hDiffTimeKa=(TH2F*)pidList->FindObject("hExpTimeKaVsP_all");  
   hDiffTimeKa->SetTitle("KAONS t-t_{exp,K} (from tracking) vs. P");
   hDiffTimeKa->GetYaxis()->SetRangeUser(-5000.,5000.);
-  
-  // TProfile * profDiffTimeKa = (TProfile*)hDiffTimeKa->ProfileX("profDiffTimeKa", 490, 510); 
-  // if (profDiffTimeKa) {
-  //   profDiffTimeKa->SetLineWidth(2);
-  //   profDiffTimeKa->SetLineColor(kBlue);  
-  // }
 
   //Protons
-  TH2F * hDiffTimePro=(TH2F*)pidList->FindObject("hTOFmatchedExpTimeProVsP"); 
+  TH2F * hDiffTimePro=(TH2F*)pidList->FindObject("hExpTimeProVsP_all"); 
   hDiffTimePro->SetTitle("PROTONS t-t_{exp,p} (from tracking) vs. P");
   hDiffTimePro->GetYaxis()->SetRangeUser(-5000.,5000.);
   
-  // TProfile * profDiffTimePro = (TProfile*)hDiffTimePro->ProfileX("profDiffTimePro", 490, 510); 
-  // if (profDiffTimePro) {
-  //   profDiffTimePro->SetLineWidth(2);
-  //   profDiffTimePro->SetLineColor(kGreen+2);  
-  // }
-
-  /*
-  TH2F * hDiffTimePiTh=(TH2F*)pidList->FindObject("hTOFtheoreticalExpTimePiVsP");  
-  hDiffTimePiTh->GetYaxis()->SetRangeUser(-2000.,2000.); 
-
-  TProfile * profDiffTimePiTh = (TProfile*)hDiffTimePiTh->ProfileX("profDiffTimePiTh", 490, 510);
-  if (profDiffTimePiTh) {
-    profDiffTimePiTh->SetLineWidth(2);
-    profDiffTimePiTh->SetLineColor(kRed+2);
-  }
-
-  TH2F * hDiffTimeKaTh=(TH2F*)pidList->FindObject("hTOFtheoreticalExpTimeKaVsP"); 
-  hDiffTimeKaTh->GetYaxis()->SetRangeUser(-2000.,2000.);
-
-  TProfile * profDiffTimeKaTh = (TProfile*)hDiffTimeKaTh->ProfileX("profDiffTimeKaTh", 490, 510); 
-  if (profDiffTimeKaTh) {
-    profDiffTimeKaTh->SetLineWidth(2);
-    profDiffTimeKaTh->SetLineColor(kBlue);
-  }
-
-  TH2F * hDiffTimeProTh=(TH2F*)pidList->FindObject("hTOFtheoreticalExpTimePro"); 
-  hDiffTimeProTh->GetYaxis()->SetRangeUser(-2000.,2000.);
- 
-  TProfile * profDiffTimeProTh = (TProfile*)hDiffTimeProTh->ProfileX("profDiffTimeProTh", 490, 510);
-  if (profDiffTimeProTh) {
-    profDiffTimeProTh->SetLineWidth(2);
-    profDiffTimeProTh->SetLineColor(kGreen+2);
-  }
-  TLegend * lPid=new TLegend(0.75,0.75,0.95,0.95,"PID");
-  lPid->AddEntry(profDiffTimePi,"#pi^{#pm}","l");
-  lPid->AddEntry(profDiffTimeKa,"K^{#pm}","l");
-  lPid->AddEntry(profDiffTimePro,"p^{#pm}","l");
-  
-     if (canvasE){
-     TCanvas *cPidPerformanceTh= new TCanvas("cPidPerformanceTh","summary of pid performance - theoretical times",700,700);
-     cPidPerformanceTh->Divide(2,2);
-     cPidPerformanceTh->cd(1);
-     gPad->SetLogz();
-     gPad->SetGridx();
-     gPad->SetGridy();
-     hDiffTimePiTh->Draw("colz");
-     profDiffTimePiTh->Draw("same");
-     cPidPerformanceTh->cd(2);
-     gPad->SetLogz();
-     gPad->SetGridx();
-     gPad->SetGridy();
-     hDiffTimeKaTh->Draw("colz");
-     profDiffTimeKaTh->Draw("same");
-     cPidPerformanceTh->cd(3);
-     gPad->SetLogz();
-     gPad->SetGridx();
-     gPad->SetGridy();
-     hDiffTimeProTh->Draw("colz");
-     profDiffTimeProTh->Draw("same");
-     }
-    fout->cd();
-    hPionDiff->Write();
-    hKaonDiff->Write();
-    hProtonDiff->Write();
-    hBetaP->Write();
-    hMass->Write();
-    hDiffTimeT0TOFPion1GeV->Write();
-    hDiffTimePi->Write();
-    profDiffTimePi->Write();
-    hDiffTimeKa->Write();
-    profDiffTimeKa->Write();
-    hDiffTimePro->Write();
-    profDiffTimePro->Write();
-    //lPid->Draw();
-    hDiffTimePiTh->Write();
-    profDiffTimePiTh->Write();
-    hDiffTimeKaTh->Write();
-    profDiffTimeKaTh->Write();
-    hDiffTimeProTh->Write();
-    profDiffTimeProTh->Write();
-  */
-
-  TH2F * hSigmaPi=(TH2F*)pidList->FindObject("hTOFExpSigmaPi"); 
+  TH2F * hSigmaPi=(TH2F*)pidList->FindObject("hTOFpidSigmaPi_all"); 
   hSigmaPi->GetYaxis()->SetRangeUser(-5.,5.);
   TProfile * profSigmaPi = (TProfile*)hSigmaPi->ProfileX("profSigmaPi"); 
   profSigmaPi->SetLineWidth(2);
   profSigmaPi->SetLineColor(kRed+2); 
 
-  TH2F * hSigmaKa=(TH2F*)pidList->FindObject("hTOFExpSigmaKa"); 
+  TH2F * hSigmaKa=(TH2F*)pidList->FindObject("hTOFpidSigmaKa_all"); 
   hSigmaKa->GetYaxis()->SetRangeUser(-5.,5.);
   TProfile * profSigmaKa = (TProfile*)hSigmaKa->ProfileX("profSigmaKa"); 
   profSigmaKa->SetLineWidth(2);
   profSigmaKa->SetLineColor(kBlue);  
 
-  TH2F * hSigmaPro=(TH2F*)pidList->FindObject("hTOFExpSigmaPro"); 
+  TH2F * hSigmaPro=(TH2F*)pidList->FindObject("hTOFpidSigmaPro_all"); 
   hSigmaPro->GetYaxis()->SetRangeUser(-5.,5.);
   TProfile * profSigmaPro = (TProfile*)hSigmaPro->ProfileX("profSigmaPro"); 
   profSigmaPro->SetLineWidth(2);
   profSigmaPro->SetLineColor(kGreen+2);  
 
-  // fout->cd();
-  // hSigmaPi->Write();
-  // profSigmaPi->Write();
-  // hSigmaKa->Write();
-  // profSigmaKa->Write();
-  // hSigmaPro->Write();
-  // profSigmaPro->Write();
-  
-  //--------------------------------- T0 detector ----------------------------------//
-	
-  TH1F*hT0A=(TH1F*)timeZeroList->FindObject("hEventT0DetA");
+   if (saveHisto) {
+    trendFile->cd();
+    hBetaP->Write();
+    hMass->Write();
+    hPionDiff->Write();
+    hDiffTimeT0fillPion->Write();
+    hDiffTimeT0TOFPion1GeV->Write();
+    hDiffTimePi->Write();
+    hDiffTimeKa->Write();
+    hDiffTimePro->Write();
+    hSigmaPi->Write();
+    hSigmaKa->Write();
+    hSigmaPro->Write();
+   }  
+   //--------------------------------- T0 detector ----------------------------------//
+   
+  TH1F*hT0A=(TH1F*)timeZeroList->FindObject("hT0A");
   if ((hT0A)&&(hT0A->GetEntries()>0)) {
     avT0A = hT0A->GetMean();
     hT0A->Fit("gaus","RQ0", "", -1000., 1000.);
@@ -539,7 +491,7 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   MakeUpHisto(hT0A, "events", 8, kBlue);
   hT0A->Rebin(2);
 
-  TH1F*hT0C=(TH1F*)timeZeroList->FindObject("hEventT0DetC");
+  TH1F*hT0C=(TH1F*)timeZeroList->FindObject("hT0C");
   if ((hT0C)&&(hT0C->GetEntries()>0)) {
     avT0C=hT0C->GetMean();
     hT0C->Fit("gaus","RQ0","", -1000., 1000.);
@@ -556,7 +508,7 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   MakeUpHisto(hT0C, "events", 8, kGreen+1);
   hT0C->Rebin(2);
 	
-  TH1F*hT0AC=(TH1F*)timeZeroList->FindObject("hEventT0DetAND");
+  TH1F*hT0AC=(TH1F*)timeZeroList->FindObject("hT0AC");
   if ((hT0AC)&&(hT0AC->GetEntries()>0)) {
     avT0AC=hT0AC->GetMean();
     hT0AC->Fit("gaus","RQ0", "",-1000., 1000.);
@@ -599,14 +551,14 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
     avT0fillRes=hT0fillRes->GetMean();
   }
   
-  // fout->cd();
-  // hT0AC->Write();
-  // hT0A->Write();
-  // hT0C->Write();
-  // hT0res->Write();
-  // hT0fillRes->Write();
-  // lT0->Write();
- 	
+  if (saveHisto) {
+    trendFile->cd(); 
+    hT0AC->Write();
+    hT0A->Write();
+    hT0C->Write();
+    hT0res->Write();
+    hT0fillRes->Write();
+  }	
   //Fill tree and save to file
   ttree->Fill();
   printf("==============  Saving trending quantities in tree for run %i ===============\n",runNumber);
