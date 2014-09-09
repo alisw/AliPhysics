@@ -156,6 +156,19 @@ public:
   virtual Int_t    GetTOFBunchCrossing(Double_t = 0, Bool_t = kFALSE) const { return kTOFBCNA;}
   virtual const AliTOFHeader *GetTOFHeader() const {return NULL;};
 
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam& ) const {return 0;}
+
   ClassDef(AliVTrack,1)  // base class for tracks
 };
 

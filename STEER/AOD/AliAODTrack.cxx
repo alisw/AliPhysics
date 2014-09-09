@@ -1139,3 +1139,13 @@ Double_t AliAODTrack::GetMassForTracking() const
 const AliTOFHeader* AliAODTrack::GetTOFHeader() const {
   return fAODEvent->GetTOFHeader();
 }
+  
+Int_t AliAODTrack::GetTrackParam         ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamRefitted ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamIp       ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamTPCInner ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamOp       ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamCp       ( AliExternalTrackParam & ) const {return 0;} 
+Int_t AliAODTrack::GetTrackParamITSOut   ( AliExternalTrackParam & ) const {return 0;} 
+
+

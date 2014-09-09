@@ -488,6 +488,19 @@ class AliAODTrack : public AliVTrack {
 
   const AliAODEvent* fAODEvent;     //! pointer back to the event the track belongs to
 
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const;
+
   ClassDef(AliAODTrack, 24);
 };
 

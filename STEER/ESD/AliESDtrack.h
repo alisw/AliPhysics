@@ -451,6 +451,19 @@ public:
   static Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 );
   Double_t GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 ) const;
 
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam &p ) const {p=*this; return 0;}
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam & ) const {return 0;}
+
 protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex
