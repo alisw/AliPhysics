@@ -7,7 +7,7 @@ AliJetEmbeddingFromPYTHIATask* AddTaskJetEmbeddingFromPYTHIA(
   const char     *clusName      = "",
   const char     *cellsName     = "EMCALCells",
   const char     *MCPartName    = "",
-  const char     *simpath       = "alien:///alice/sim/2012/LHC12a15e_fix/%d/%d/AOD141/%04d/AliAOD.root",
+  const char     *simpath       = "alien:///alice/sim/2012/LHC12a15e_fix/%d/%d/AOD149/%04d/AliAOD.root",
   Int_t           nPtHard       = 11,
   Double_t       *ptHardScaling = 0,
   const char     *aodTreeName   = "aodTree",
