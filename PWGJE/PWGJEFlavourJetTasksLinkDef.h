@@ -21,5 +21,6 @@
 #pragma link C++ class AliAnalysisTaskSEPicoV0Filter+;
 #pragma link C++ class AliAnalysisTaskSEPicoV0Maker+;
 #pragma link C++ class AliAnalysisTaskSEPicoV0MakerMC+;
+#pragma link C++ class AliAnalysisTaskEmcalJetFlavourTagExample+;
 
 #endif

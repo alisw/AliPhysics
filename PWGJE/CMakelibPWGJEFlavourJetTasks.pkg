@@ -40,6 +40,7 @@ set ( SRCS
         FlavourJetTasks/AliAnalysisTaskSEPicoV0Filter.cxx
         FlavourJetTasks/AliAnalysisTaskSEPicoV0Maker.cxx
         FlavourJetTasks/AliAnalysisTaskSEPicoV0MakerMC.cxx
+        FlavourJetTasks/AliAnalysisTaskEmcalJetFlavourTagExample.cxx
 )
 
 set ( DHDR  PWGJEFlavourJetTasksLinkDef.h)
