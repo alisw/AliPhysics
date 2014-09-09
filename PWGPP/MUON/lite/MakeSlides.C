@@ -89,6 +89,20 @@ Int_t GetPage ( TString pattern, TString filename )
   return foundPages[0];
 }
 
+
+//_________________________________
+void EscapeSpecialChars ( TString& str )
+{
+  str.ReplaceAll("\\","");
+  TString specials = "_";
+  TObjArray* specialList = specials.Tokenize(" ");
+  for ( Int_t ichar=0; ichar<specialList->GetEntries(); ichar++ ) {
+    TString currChar = static_cast<TObjString*>(specialList->At(ichar))->GetString();
+    if ( str.Contains(currChar.Data()) ) str.ReplaceAll(currChar.Data(),Form("\\\%s",currChar.Data()));
+  }
+  delete specialList;
+}
+
 //_________________________________
 void BeginFrame ( TString title, ofstream& outFile )
 {
@@ -358,7 +372,7 @@ void StartAppendix ( ofstream &outFile )
 }
 
 //_________________________________
-void MakeSlides ( TString period, TString pass, TString triggerList, TString trackerQA = "images/QA_muon_tracker.pdf", TString triggerQA = "images/QA_muon_trigger.pdf", TString authors = "Cynthia Hadjidakis, Diego Stocco, Vardanush Papyakian, Jianhui Zhu", TString  texFilename = "muonQA.tex")
+void MakeSlides ( TString period, TString pass, TString triggerList, TString authors, TString trackerQA = "QA_muon_tracker.pdf", TString triggerQA = "QA_muon_trigger.pdf", TString  texFilename = "muonQA.tex" )
 {
   if ( gSystem->AccessPathName(texFilename.Data()) == 0 ) {
     printf("Output file %s already exists\nPlease remove it!\n", texFilename.Data());
@@ -370,6 +384,9 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString tra
     printf("The macro selects the pdf page with gs, but the program was not found on this machine. Sorry, but slides cannot be automatically generated on this machine.\n");
     return;
   }
+
+  EscapeSpecialChars(period);
+  EscapeSpecialChars(pass);
 
   TObjArray* trigList = triggerList.Tokenize(",");
 
@@ -387,7 +404,7 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString tra
     TString currTrig = trigList->At(itrig)->GetName();
     TString shortTrig = GetTriggerShort(currTrig);
     MakeSingleFigureSlide(Form("Number of Tracks /%s",currTrig.Data()),trackerQA,Form("Muon tracks / event in %s events",shortTrig.Data()),outFile);
-    MakeSingleFigureSlide(Form("Matched tracks charge asymmetry for %s with acc. cuts",currTrig.Data()),trackerQA,Form("Charge asymmetry in in %s events",shortTrig.Data()),outFile);
+    MakeSingleFigureSlide(Form("Matched tracks charge asymmetry for %s with acc. cuts",currTrig.Data()),trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile);
     MakeSingleFigureSlide(Form("Identified beam-gas tracks (pxDCA cuts) in matched tracks for %s",currTrig.Data()),trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile);
   }
   MakeSingleFigureSlide("averaged number of associated clusters or of the number of chamber hit per track",trackerQA,"Average number of clusters per track and dispersion",outFile);

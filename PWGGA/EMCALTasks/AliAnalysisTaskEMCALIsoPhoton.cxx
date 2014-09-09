@@ -700,22 +700,22 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
        continue;
     if(IsExotic(c))
       continue;
-    Short_t id;
+    Short_t id=-1;
     Double_t Emax = GetMaxCellEnergy( c, id);
     if(fDebug)
       printf("cluster max cell E=%1.1f",Emax);
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
-    clsVec += fVecPv;
+    clsVec -= fVecPv;
     Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
     if(fDebug)
       printf("\tcluster eta=%1.1f,phi=%1.1f,E=%1.1f\n",clsVec.Eta(),clsVec.Phi(),c->E());
     if(Et>10)
       nclus10++;
-    Float_t ceiso, cephiband, cecore;
-    Float_t triso, trphiband, trcore;
-    Float_t alliso, allphiband;//, allcore;
+    Float_t ceiso=0, cephiband=0, cecore=0;
+    Float_t triso=0, trphiband=0, trcore=0;
+    Float_t alliso=0, allphiband=0;//, allcore;
     Float_t phibandArea = (1.4 - 2*fIsoConeR)*2*fIsoConeR;
     Float_t netConeArea = TMath::Pi()*(fIsoConeR*fIsoConeR - 0.04*0.04);
     GetCeIso(clsVec, id, ceiso, cephiband, cecore);
@@ -851,7 +851,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
       continue;
     if(c->E()<fMinIsoClusE)
       continue;
-    Short_t id;
+    Short_t id=-1;
     GetMaxCellEnergy( c, id);
     Double_t maxct = cells->GetCellTime(id);
     if(TMath::Abs(maxct)>fClusTDiff/*2.5e-9*/ && (!fIsMc))
@@ -859,7 +859,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 cv(clsPos);
-    cv += fVecPv;
+    cv -= fVecPv;
     Double_t Et = c->E()*TMath::Sin(cv.Theta());
     Float_t dphi = TMath::Abs(cv.Phi()-phicl);
     Float_t deta = TMath::Abs(cv.Eta()-etacl);
@@ -939,7 +939,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetTrIso(TVector3 vec, Float_t &iso, Float_t
 Double_t AliAnalysisTaskEMCALIsoPhoton::GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax)
 {
   // Calculate the energy of cross cells around the leading cell.
-
+  idmax = -1;
   AliVCaloCells *cells = 0;
   cells = fESDCells;
   if (!cells)
@@ -1124,7 +1124,7 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
   Float_t clsPos[3] = {0,0,0};
   c->GetPosition(clsPos);
   TVector3 clsVec(clsPos);
-  clsVec += fVecPv;
+  clsVec -= fVecPv;
   Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
   //ESD
   if(fStack){
@@ -1432,10 +1432,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
-    clsVec += fVecPv;
+    clsVec -= fVecPv;
     Double_t cphi = clsVec.Phi();
     Double_t ceta = clsVec.Eta();
-    Short_t id;
+    Short_t id = -1;
     GetMaxCellEnergy( c, id);
     fEmcClusEClusCuts->Fill(c->E(),0);
     fEmcClusEPhi->Fill(c->E(), cphi);
@@ -1526,7 +1526,7 @@ void AliAnalysisTaskEMCALIsoPhoton::LoopOnCells()
 bool AliAnalysisTaskEMCALIsoPhoton::IsExotic(AliVCluster *c)
 {
   bool isExo = 0;
-  Short_t id;
+  Short_t id = -1;
   Double_t Emax = GetMaxCellEnergy( c, id);
   Double_t Ecross = GetCrossEnergy( c, id);
   if((1-Ecross/Emax)>fExoticCut)
