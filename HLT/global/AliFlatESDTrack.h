@@ -103,7 +103,7 @@ class AliFlatESDTrack :public AliVTrack {
     
   // ---------------------------------------------------------------------------------
   // AliVParticle interface
-  virtual Double_t Pt() const {AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():0.;}
+  virtual Double_t Pt() const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():0.;}
   virtual Double_t Px() const {return 0.;}
   virtual Double_t Py() const {return 0.;}
   virtual Double_t Pz() const {return 0.;}
