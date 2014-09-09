@@ -65,7 +65,7 @@ Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2012, char *period="LHC12a", 
 	return  MakeTrendingFromTreeWithErrors(chainTree, trendFileName, displayAll); 
 }
 //-----------------------------------------------------------
-Int_t MakeTrendingHistoFromTreeList(char * fileList,  Bool_t displayAll=kFALSE){
+Int_t MakeTrendingHistoFromTreeList(char * fileList, TString treeName = "trendTree", Bool_t displayAll=kFALSE){
 
 	Int_t filesCounter=0;
   
@@ -82,7 +82,7 @@ Int_t MakeTrendingHistoFromTreeList(char * fileList,  Bool_t displayAll=kFALSE){
 
 	//create chain of treePostQA
 	Long64_t nentries=100000, firstentry=0; 
-	TChain *chainTree =new TChain("trendTree");
+	TChain *chainTree =new TChain(treeName.Data());
 	
 	while (fscanf(files,"%s",&infile)==1 ){	  
 	  if (!TFile::Open(infile,"r")) 
