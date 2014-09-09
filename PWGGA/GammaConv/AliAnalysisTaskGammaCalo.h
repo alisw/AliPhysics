@@ -163,6 +163,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoTrueEtaCaloMergedClusterInvMassPt;	//! array of histos with validated mothers, merged cluster invMass, pt
 		TH2F 								**fHistoTruePi0CaloMergedClusterPartConvInvMassPt; //! array of histos with validated mothers, merged cluster part conv, invMass, pt
 		TH2F 								**fHistoTrueEtaCaloMergedClusterPartConvInvMassPt; //! array of histos with validated mothers, merged cluster part conv, invMass, pt
+		TH2F 								**fHistoTruePi0NonMergedElectronPhotonInvMassPt;	//! array of histos with validated mothers, merged cluster invMass, pt
+		TH2F 								**fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt;	//! array of histos with validated mothers, merged cluster invMass, pt
 		TH2F 								**fHistoTruePrimaryPi0InvMassPt;				//! array of histos with validated weighted primary mothers, invMass, pt
 		TH2F 								**fHistoTruePrimaryEtaInvMassPt;				//! array of histos with validated weighted primary mothers, invMass, pt
 		TH2F 								**fHistoTruePrimaryPi0W0WeightingInvMassPt;	//! array of histos with validated unweighted primary mothers, invMass, pt

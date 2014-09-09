@@ -169,7 +169,7 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 		eventCutArray[ 1] = "0000011"; clusterCutArray[1] = "20000032022000000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
 		eventCutArray[ 2] = "0006111"; clusterCutArray[2] = "20000032022000000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1
 		eventCutArray[ 3] = "0006211"; clusterCutArray[3] = "20000032022000000"; mesonCutArray[3] = "01631031009000"; //pp LHC11a PHI7
-	} else if (trainConfig == 32) { //PHOS clusters, track matching 0.04
+	} else if (trainConfig == 33) { //PHOS clusters, track matching 0.04
 		eventCutArray[ 0] = "0002011"; clusterCutArray[0] = "20000033022000000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
 		eventCutArray[ 1] = "0000011"; clusterCutArray[1] = "20000033022000000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
 		eventCutArray[ 2] = "0006111"; clusterCutArray[2] = "20000033022000000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1

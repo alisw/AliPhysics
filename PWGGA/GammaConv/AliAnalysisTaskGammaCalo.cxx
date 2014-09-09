@@ -133,6 +133,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
 	fHistoTrueEtaCaloMergedClusterInvMassPt(NULL),
 	fHistoTruePi0CaloMergedClusterPartConvInvMassPt(NULL),
 	fHistoTrueEtaCaloMergedClusterPartConvInvMassPt(NULL),
+	fHistoTruePi0NonMergedElectronPhotonInvMassPt(NULL),
+	fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt(NULL),
 	fHistoTruePrimaryPi0InvMassPt(NULL),
 	fHistoTruePrimaryEtaInvMassPt(NULL),
 	fHistoTruePrimaryPi0W0WeightingInvMassPt(NULL),
@@ -284,6 +286,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 	fHistoTrueEtaCaloMergedClusterInvMassPt(NULL),
 	fHistoTruePi0CaloMergedClusterPartConvInvMassPt(NULL),
 	fHistoTrueEtaCaloMergedClusterPartConvInvMassPt(NULL),
+	fHistoTruePi0NonMergedElectronPhotonInvMassPt(NULL),
+	fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt(NULL),
 	fHistoTruePrimaryPi0InvMassPt(NULL),
 	fHistoTruePrimaryEtaInvMassPt(NULL),
 	fHistoTruePrimaryPi0W0WeightingInvMassPt(NULL),
@@ -679,6 +683,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 				fHistoTrueEtaCaloMergedClusterInvMassPt 	= new TH2F*[fnCuts];
 				fHistoTruePi0CaloMergedClusterPartConvInvMassPt 	= new TH2F*[fnCuts];
 				fHistoTrueEtaCaloMergedClusterPartConvInvMassPt 	= new TH2F*[fnCuts];
+				fHistoTruePi0NonMergedElectronPhotonInvMassPt 	= new TH2F*[fnCuts];
+				fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt 	= new TH2F*[fnCuts];
 				fHistoTruePrimaryPi0MCPtResolPt 			= new TH2F*[fnCuts];
 				fHistoTruePrimaryEtaMCPtResolPt 			= new TH2F*[fnCuts];
 				fHistoTrueK0sWithPi0DaughterMCPt 			= new TH1F*[fnCuts];
@@ -943,6 +949,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 					fHistoTrueEtaCaloMergedClusterPartConvInvMassPt[iCut] = new TH2F("ESD_TrueEtaCaloMergedClusterPartConv_InvMass_Pt","ESD_TrueEtaCaloMergedClusterPartConv_InvMass_Pt",800,0,0.8,250,0,25);
 					fTrueList[iCut]->Add(fHistoTrueEtaCaloMergedClusterPartConvInvMassPt[iCut]);
 
+					fHistoTruePi0NonMergedElectronPhotonInvMassPt[iCut] = new TH2F("ESD_TruePi0NonMergedElectronPhoton_InvMass_Pt","ESD_TruePi0NonMergedElectronPhoton_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTruePi0NonMergedElectronPhotonInvMassPt[iCut]);
+					fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt[iCut] = new TH2F("ESD_TruePi0NonMergedElectronMergedPhoton_InvMass_Pt","ESD_TruePi0NonMergedElectronMergedPhoton_InvMass_Pt",800,0,0.8,250,0,25);
+					fTrueList[iCut]->Add(fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt[iCut]);
 					
 					fHistoTruePrimaryPi0MCPtResolPt[iCut] = new TH2F("ESD_TruePrimaryPi0_MCPt_ResolPt","ESD_TruePrimaryPi0_ResolPt_MCPt",500,0.03,25,1000,-1.,1.);
 					fHistoTruePrimaryPi0MCPtResolPt[iCut]->Sumw2();
@@ -1849,6 +1859,19 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 				if (isTruePi0) fHistoTruePi0CaloMixedPhotonConvPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 				if (isTrueEta) fHistoTrueEtaCaloMixedPhotonConvPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 			}
+			
+			if ( (TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion() && TrueGammaCandidate1->IsLargestComponentPhoton() && !TrueGammaCandidate1->IsMerged()) ||
+				 (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion() && TrueGammaCandidate0->IsLargestComponentPhoton() && !TrueGammaCandidate0->IsMerged()) 
+			) {
+				if (isTruePi0) fHistoTruePi0NonMergedElectronPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+			}	
+
+			if ( (TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion() && TrueGammaCandidate1->IsLargestComponentPhoton() && TrueGammaCandidate1->IsMerged()) ||
+				 (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion() && TrueGammaCandidate0->IsLargestComponentPhoton() && TrueGammaCandidate0->IsMerged()) 
+			) {
+				if (isTruePi0) fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+			}	
+			
 			// at least one of the photon is merged
 			if (TrueGammaCandidate0->IsMerged() || TrueGammaCandidate0->IsMergedPartConv() || TrueGammaCandidate0->IsDalitzMerged() || TrueGammaCandidate1->IsMerged() || TrueGammaCandidate1->IsMergedPartConv() || TrueGammaCandidate1->IsDalitzMerged() ){
 				if (isTruePi0) fHistoTruePi0CaloMergedClusterInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
@@ -2022,6 +2045,19 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 				if (isTruePi0) fHistoTruePi0CaloMixedPhotonConvPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 				if (isTrueEta) fHistoTrueEtaCaloMixedPhotonConvPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 			}
+			
+			if ( (TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion() && TrueGammaCandidate1->IsLargestComponentPhoton() && !TrueGammaCandidate1->IsMerged()) ||
+				 (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion() && TrueGammaCandidate0->IsLargestComponentPhoton() && !TrueGammaCandidate0->IsMerged()) 
+			) {
+				if (isTruePi0) fHistoTruePi0NonMergedElectronPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+			}	
+
+			if ( (TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion() && TrueGammaCandidate1->IsLargestComponentPhoton() && TrueGammaCandidate1->IsMerged()) ||
+				 (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion() && TrueGammaCandidate0->IsLargestComponentPhoton() && TrueGammaCandidate0->IsMerged()) 
+			) {
+				if (isTruePi0) fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+			}	
+
 			// at least one of the photon is merged
 			if (TrueGammaCandidate0->IsMerged() || TrueGammaCandidate0->IsMergedPartConv() || TrueGammaCandidate0->IsDalitzMerged() || TrueGammaCandidate1->IsMerged() || TrueGammaCandidate1->IsMergedPartConv() || TrueGammaCandidate1->IsDalitzMerged() ){
 				if (isTruePi0) fHistoTruePi0CaloMergedClusterInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
