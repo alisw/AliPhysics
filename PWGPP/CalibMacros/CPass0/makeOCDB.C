@@ -66,6 +66,18 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
   }
 
+  // Magnetic field
+  AliMagF* fld = TGeoGlobalMagField::Instance()->GetField();
+  Double_t bz = fld->SolenoidField();
+  Bool_t isMagFieldON = kTRUE;
+  if (TMath::Abs(bz)>0) {
+    printf("Mag field is %f --> ON\n", bz);
+  }
+  else {
+    isMagFieldON = kFALSE;
+    printf("Mag field is %f --> OFF\n", bz);
+  }
+
   // TPC part
   AliTPCPreprocessorOffline *procesTPC = 0;
   if (detStr.Contains("TPC")){
@@ -79,7 +91,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
 
     // Make timegain calibration
     //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
-    procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,targetStorage);
+    if (isMagFieldON) procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,targetStorage);
     
     // Make vdrift calibration
     //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
@@ -91,7 +103,10 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   if (detStr.Contains("TOF") && detStr.Contains("TPC")){
     procesTOF = new AliTOFAnalysisTaskCalibPass0;
     Printf("\n******* Calibrating TOF *******");
-    procesTOF->ProcessOutput("CalibObjects.root", targetStorage);
+    if (isMagFieldON) procesTOF->ProcessOutput("CalibObjects.root", targetStorage);
+    else {
+      printf("Not calibrating TOF in case of mag field OFF\n");
+    }
   }
 
   // T0 part

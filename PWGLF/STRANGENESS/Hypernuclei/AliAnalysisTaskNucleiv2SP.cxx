@@ -63,7 +63,7 @@ using std::endl;
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP() 
 : AliAnalysisTaskSE(), 
   fisPrimCut(kFALSE),
-  fptc(1),     
+  fptc(2),     
   fListHist(0), 
   fHistEventMultiplicity(0), 
   fHistTrackMultiplicity(0),
@@ -129,7 +129,7 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name) 
 : AliAnalysisTaskSE(name), 
   fisPrimCut(kFALSE),
-  fptc(1),     
+  fptc(2),     
   fListHist(0), 
   fHistEventMultiplicity(0), 
   fHistTrackMultiplicity(0),
