@@ -148,7 +148,7 @@ Bool_t AliJetEmbeddingFromPYTHIATask::GetNextEntry()
   }
 
   fPtHardBinCount++;
-  fHistPtHardBins->SetBinContent(fCurrentPtHardBin+1, fHistPtHardBins->GetBinContent(fCurrentPtHardBin+1)+1);
+  if (fHistPtHardBins) fHistPtHardBins->SetBinContent(fCurrentPtHardBin+1, fHistPtHardBins->GetBinContent(fCurrentPtHardBin+1)+1);
 
   return AliJetEmbeddingFromAODTask::GetNextEntry();
 }
