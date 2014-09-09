@@ -13,7 +13,6 @@
 // Origin: Markus Oldenburg, CERN, Markus.Oldenburg@cern.ch 
 //-------------------------------------------------------------------------
 
-#include "AliVVevent.h"
 #include <TObject.h>
 #include <TTree.h>
 #include <TGeoMatrix.h>
@@ -27,13 +26,15 @@
 #include "AliTOFHeader.h"
 #include "AliVTrdTrack.h"
 
+class AliVfriendEvent;
 class AliCentrality;
 class AliEventplane;
 class AliVVZERO;
 class AliVZDC;
 class AliVMFT;   // AU
+class AliESDkink;
 
-class AliVEvent : public TObject, virtual public AliVVevent {
+class AliVEvent : public TObject {
  private:
   // disable some methods from AliVEvent interface
 
@@ -44,7 +45,6 @@ class AliVEvent : public TObject, virtual public AliVVevent {
 
   Int_t GetNumberOfKinks() const { return 0; }
 
-  const AliVVtrack* GetVVTrack(Int_t /*i*/) const { return NULL; }
   AliESDkink* GetKink(Int_t /*i*/) const { return NULL; }
 
 public:

@@ -24,7 +24,7 @@
 
 
 AliVEvent::AliVEvent(const AliVEvent& vEvnt) :
-  AliVVevent(), TObject(vEvnt)  { } // Copy constructor
+  TObject(vEvnt)  { } // Copy constructor
 
 AliVEvent& AliVEvent::operator=(const AliVEvent& vEvnt)
 { if (this!=&vEvnt) { 
