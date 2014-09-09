@@ -69,7 +69,9 @@ AliGenParam::AliGenParam()
 	fDeltaPt(0.01),
 	fSelectAll(kFALSE),
   fDecayer(0),
-  fForceConv(kFALSE)
+  fForceConv(kFALSE),
+  fKeepParent(kFALSE),
+  fKeepIfOneChildSelected(kFALSE)
 {
   // Default constructor
 }
@@ -93,7 +95,9 @@ AliGenParam::AliGenParam(Int_t npart, const AliGenLib * Library,  Int_t param, c
      fDeltaPt(0.01),
      fSelectAll(kFALSE),
    fDecayer(0),
-   fForceConv(kFALSE)
+   fForceConv(kFALSE),
+   fKeepParent(kFALSE),
+   fKeepIfOneChildSelected(kFALSE)
 {
   // Constructor using number of particles parameterisation id and library
     fName = "Param";
@@ -121,7 +125,9 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char
     fDeltaPt(0.01),
     fSelectAll(kFALSE),
   fDecayer(0),
-  fForceConv(kFALSE)
+  fForceConv(kFALSE),
+  fKeepParent(kFALSE),
+  fKeepIfOneChildSelected(kFALSE)
 {
   // Constructor using parameterisation id and number of particles
   //
@@ -170,7 +176,9 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
      fDeltaPt(0.01),
      fSelectAll(kFALSE),
   fDecayer(0),
-  fForceConv(kFALSE)
+  fForceConv(kFALSE),
+  fKeepParent(kFALSE),
+  fKeepIfOneChildSelected(kFALSE)
 {
   // Constructor
   // Gines Martinez 1/10/99 
@@ -729,8 +737,10 @@ void AliGenParam::GenerateN(Int_t ntimes)
 				  pSelected[i]  = 1;
 				  ncsel++;
 			      } else {
-				  ncsel=-1;
-				  break;
+				  if(!fKeepIfOneChildSelected){
+				    ncsel=-1;
+				    break;
+				  }
 			      } // child kine cuts
 			  } else {
 			      pSelected[i]  = 1;
@@ -741,8 +751,8 @@ void AliGenParam::GenerateN(Int_t ntimes)
 	      } // if decay products
 	      
 	      Int_t iparent;
-	      if ((fCutOnChild && ncsel >0) || !fCutOnChild){
-		  ipa++;
+	      
+	      if (fKeepParent || (fCutOnChild && ncsel >0) || !fCutOnChild){
 	  //
 	  // Parent
 		  
@@ -751,6 +761,11 @@ void AliGenParam::GenerateN(Int_t ntimes)
 		  pParent[0] = nt;
 		  KeepTrack(nt); 
 		  fNprimaries++;
+		  
+		  //but count is as "generated" particle" only if it produced child(s) within cut
+	          if ((fCutOnChild && ncsel >0) || !fCutOnChild){
+		    ipa++;
+		  }
 		  
 	  //
 	  // Decay Products
