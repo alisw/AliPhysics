@@ -196,8 +196,8 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoDeinit() {
 Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 						    const AliHLTComponentBlockData* /*blocks*/, 
 						    AliHLTComponentTriggerData& /*trigData*/,
-						    AliHLTUInt8_t* outputPtr, 
-						    AliHLTUInt32_t& size,
+						    AliHLTUInt8_t* /*outputPtr*/, 
+						    AliHLTUInt32_t& /*size*/,
 						    AliHLTComponentBlockDataList& outputBlocks) {
   // see header file for class documentation
 
@@ -209,9 +209,9 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     return 0;
   
    AliESDEvent *esd;
-   AliESDEvent *pEsd;
 
 #if 0
+  AliESDEvent *pEsd;
   const TTree *tree;
 	
 	

@@ -97,7 +97,7 @@ AliFlatESDEvent::AliFlatESDEvent()
 }
 
 
-AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag f ) 
+AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag /*f*/ ) 
 //  :
 //  fContentSize(fContentSize),
 //  fMagneticField(fMagneticField),

@@ -173,7 +173,7 @@ inline AliFlatESDTrack::AliFlatESDTrack() :
   // Default constructor
 }
 
-inline AliFlatESDTrack::AliFlatESDTrack( AliVConstructorReinitialisationFlag f )
+inline AliFlatESDTrack::AliFlatESDTrack( AliVConstructorReinitialisationFlag )
 //  :
 //  fTrackParamMask(fTrackParamMask ),
 //  fNTPCClusters( fNTPCClusters ),
