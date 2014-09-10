@@ -50,4 +50,11 @@
 
 #pragma link C++ class AliAnalysisDeuteronpA+;
 
+#pragma link C++ class AliXtAnalysis+;
+#pragma link C++ class AliJBaseTrack+;
+#pragma link C++ class AliJBaseCard+;
+#pragma link C++ class AliJCard+;
+#pragma link C++ class AliJXtHistos+;
+
+
 #endif
