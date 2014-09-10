@@ -607,6 +607,14 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
 
   if(fESD){
     TList *l = fESD->GetList();
+    if(fDebug){
+      for(int nk=0;nk<l->GetEntries();nk++){
+	  TObject *obj = (TObject*)l->At(nk);
+	  TString oname = obj->GetName();
+	  if(oname.Contains("lus"))
+	    printf("Object %d has a clus array named %s +++++++++\n",nk,oname.Data());
+	}
+    }
     fESDClusters =  dynamic_cast<TClonesArray*>(l->FindObject("CaloClusters"));
     fESDCells = fESD->GetEMCALCells();
     if(fDebug)
@@ -690,17 +698,32 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
   for(Int_t ic=0;ic<nclus;ic++){
     maxE=0;
     AliVCluster *c = static_cast<AliVCluster*>(clusters->At(ic));
-    if(!c)
+    if(!c){
+      if(fDebug)
+	printf("cluster pointer does not exist! xxxx\n");
       continue;
-    if(!c->IsEMCAL())
+    }
+    if(!c->IsEMCAL()){
+      if(fDebug)
+	printf("cluster is not EMCAL! xxxx\n");
       continue;
-    if(c->E()<fECut)
+    }
+    if(c->E()<fECut){
+      if(fDebug)
+	printf("cluster has E<%1.1f! xxxx\n", fECut);
       continue;
-    if(fCpvFromTrack && fClusIdFromTracks.Contains(Form("%d",ic)))
+    }
+    if(fCpvFromTrack && fClusIdFromTracks.Contains(Form("%d",ic))){
+      if(fDebug)
+	printf("cluster does not pass CPV criterion! xxxx\n");
        continue;
-    if(IsExotic(c))
+    }
+    if(IsExotic(c)){
+      if(fDebug)
+	printf("cluster is exotic! xxxx\n");
       continue;
-    Short_t id=-1;
+    }
+    Short_t id;
     Double_t Emax = GetMaxCellEnergy( c, id);
     if(fDebug)
       printf("cluster max cell E=%1.1f",Emax);
@@ -800,6 +823,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t &iso, Float_t &phiband, Float_t &core)
 {
+  if(fDebug)
+    printf("....indside GetCeIso funtcion\n");
   // Get cell isolation.
   AliVCaloCells *cells = fESDCells;
   if (!cells){
@@ -861,16 +886,28 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     TVector3 cv(clsPos);
     cv -= fVecPv;
     Double_t Et = c->E()*TMath::Sin(cv.Theta());
-    Float_t dphi = TMath::Abs(cv.Phi()-phicl);
-    Float_t deta = TMath::Abs(cv.Eta()-etacl);
+    Float_t dphi = (cv.Phi()-phicl);
+    Float_t deta = (cv.Eta()-etacl);
     Float_t R = TMath::Sqrt(deta*deta + dphi*dphi);
     if(R<0.007)
       continue;
     if(maxid==id)
       continue;
-    Double_t matchedpt =  GetTrackMatchedPt(c->GetTrackMatchedIndex());
-    if(matchedpt>0 && fRemMatchClus)
-      continue;
+    Double_t matchedpt =  0;
+    if(fCpvFromTrack){
+      matchedpt = GetTrackMatchedPt(c->GetTrackMatchedIndex());
+      if(matchedpt>0 && fRemMatchClus )
+	continue;
+    } else {
+      if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
+	matchedpt = GetTrackMatchedPt(c->GetTrackMatchedIndex());
+	if(fRemMatchClus){
+	  if(fDebug)
+	    printf("This isolation cluster is matched to a track!++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	  continue;
+	}
+      }
+    }
     Double_t nEt = TMath::Max(Et-matchedpt, 0.0);
     if(nEt<0)
       printf("nEt=%1.1f\n",nEt);
@@ -939,7 +976,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetTrIso(TVector3 vec, Float_t &iso, Float_t
 Double_t AliAnalysisTaskEMCALIsoPhoton::GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax)
 {
   // Calculate the energy of cross cells around the leading cell.
-  idmax = -1;
+
   AliVCaloCells *cells = 0;
   cells = fESDCells;
   if (!cells)
