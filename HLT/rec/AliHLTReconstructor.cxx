@@ -49,6 +49,7 @@
 #include "AliTriggerCluster.h"
 #include "AliDAQ.h"
 #include "AliRunLoader.h"
+#include "AliRunInfo.h"
 
 class AliCDBEntry;
 
@@ -185,6 +186,7 @@ void AliHLTReconstructor::Init()
   }
 
   if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
+    pSystem->SetDetectorMask(GetRunInfo()->GetDetectorMask());
     if (pSystem->ScanOptions(option.Data())<0) {
       AliError("error setting options for HLT system");
       return;

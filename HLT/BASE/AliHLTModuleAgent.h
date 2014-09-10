@@ -67,6 +67,9 @@ class AliHLTModulePreprocessor;
  *
  * @section alihltmoduleagent_interface Agent interface
  * The child can implement the following functions:
+ * - @ref GetDetectorMask                                                   <br>
+ *       DetectorMask for which reconstruction is run.
+ *
  * - @ref CreateConfigurations                                              <br>
  *       Create HLT configuration forming an HLT analysis chain.            <br>
  *       Reconstruction of raw data or simulated data from digits needs
@@ -158,6 +161,11 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * @param [in] pHandler  the component handler instance
    */
   int ActivateComponentHandler(AliHLTComponentHandler* pHandler);
+
+  /**
+   * Return detector mask for which reconstruction is run in this module.
+   */
+  virtual UInt_t GetDetectorMask() const;
 
   /**
    * Register all configurations belonging to this module with the

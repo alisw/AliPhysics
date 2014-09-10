@@ -24,6 +24,7 @@
 #include <cassert>
 
 #include "TSystem.h"
+#include "AliDAQ.h"
 
 #include "AliHLTVZEROAgent.h"
 
@@ -69,6 +70,11 @@ AliHLTVZEROAgent::~AliHLTVZEROAgent() {
  * These functions are required for the registration process
  * ---------------------------------------------------------------------------------
  */
+
+UInt_t AliHLTVZEROAgent::GetDetectorMask() const
+{
+  return AliDAQ::kVZERO;
+}
 
 // #################################################################################
 Int_t AliHLTVZEROAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
