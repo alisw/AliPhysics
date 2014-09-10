@@ -71,10 +71,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fv2SPGap1Bmc(0),
     fResSPmc(0),
     fIsRecoEff(0),
-    fRecoEffList(0),
-    fResSPRecoEff(0),
-    fResSPRecoEff_lq(0),
-    fResSPRecoEff_sq(0)
+    fRecoEffList(0)
       {}
   AliAnalysisTaskV2AllChAOD(const char *name);
   virtual ~AliAnalysisTaskV2AllChAOD() {
@@ -223,20 +220,12 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   Bool_t fIsRecoEff;
   TList * fRecoEffList; // reconstruction efficiency file
-  TProfile * fResSPRecoEff;
-  TProfile * fv2SPGap1ARecoEff[9];
-  TProfile * fv2SPGap1BRecoEff[9];
-  TProfile * fResSPRecoEff_lq;
-  TProfile * fv2SPGap1ARecoEff_lq[9];
-  TProfile * fv2SPGap1BRecoEff_lq[9];
-  TProfile * fResSPRecoEff_sq;
-  TProfile * fv2SPGap1ARecoEff_sq[9];
-  TProfile * fv2SPGap1BRecoEff_sq[9];
+
   
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 8);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 9);
 };
 
 #endif
