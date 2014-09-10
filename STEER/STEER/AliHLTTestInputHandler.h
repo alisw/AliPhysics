@@ -38,9 +38,10 @@ class AliHLTTestInputHandler : public AliVEventHandler {
     virtual Bool_t TerminateIO() {return kTRUE;}
 
     // Especially needed for HLT
-    Bool_t InitTaskInputData(AliVEvent* /*esdEvent*/, AliVfriendEvent* /*friendEvent*/, TObjArray* /*arrTasks*/);
+    virtual Bool_t InitTaskInputData(AliVEvent* /*esdEvent*/, AliVfriendEvent* /*friendEvent*/, TObjArray* /*arrTasks*/);
 
-    AliVEvent* GetEvent() const {return NULL;}
+    AliVEvent* GetEvent() const {return fEvent;}
+    //AliVEvent* GetEvent() const {return NULL;}
     void  SetEvent(AliVEvent *event) {fEvent = event;}
 
     AliVfriendEvent* GetVFriendEvent() const {return fFriendEvent;}

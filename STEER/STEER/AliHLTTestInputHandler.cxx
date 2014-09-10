@@ -64,7 +64,7 @@ Bool_t AliHLTTestInputHandler::InitTaskInputData(AliVEvent* esdEvent, AliVfriend
   SetVFriendEvent(friendEvent);
   // set transient pointer to event inside tracks
   fEvent->ConnectTracks();
-  Printf("----> AliHLTTestInputHandler::InitTaskInpuData: ...Event set");
+  Printf("----> AliHLTTestInputHandler::InitTaskInpuData: ...Event set: fEvent = %p", fEvent);
   for (Int_t i = 0; i < arrTasks->GetEntries(); i++){
     AliAnalysisTask* t = (AliAnalysisTask*)(arrTasks->At(i));
     t->ConnectInputData("");

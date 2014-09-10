@@ -8,6 +8,7 @@
 #include "AliAnalysisManager.h"
 
 #include "AliESDEvent.h"
+//#include "AliFlatESDEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliVEventHandler.h"
 #include "AliTPCseed.h"
@@ -55,12 +56,15 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
     */
 
     AliVEventHandler *esdH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+    TString classInputHandler = esdH->ClassName();
+
+    Printf("----> AliAnalysisTaskPt: ClassName of handler = %s", classInputHandler.Data());
 
     if (!esdH) {
       Printf("ERROR: Could not get ESDInputHandler");
     } else {
       Printf("----> AliAnalysisTaskPt::ConnectInputData Getting the event from handler %p", esdH);
-      //fESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
+      //fESD = dynamic_cast<AliFlatESDEvent*>(esdH->GetEvent());
       fESD = esdH->GetEvent();
       if (fUseFriends){	
 	fESDfriend = esdH->GetVFriendEvent();
