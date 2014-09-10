@@ -136,7 +136,7 @@ class AliFlatESDEvent :public AliVEvent {
   virtual Double_t GetZDCN2Energy() const {return 0.;}
   virtual Double_t GetZDCP2Energy() const {return 0.;}
   virtual Double_t GetZDCEMEnergy(Int_t) const {return 0.;}
-  virtual AliVParticle* GetTrack(Int_t) const {return NULL;}
+  virtual AliVParticle* GetTrack(Int_t) const;
   virtual Int_t GetNumberOfCascades() const {return 0;}
   virtual AliCentrality* GetCentrality() {return NULL;}
   virtual AliEventplane* GetEventplane() {return NULL;}

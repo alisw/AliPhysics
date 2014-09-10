@@ -362,3 +362,7 @@ Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliES
   return 0;
 }
 
+AliVParticle* AliFlatESDEvent::GetTrack(Int_t i) const
+{
+  return const_cast<AliFlatESDTrack*>(GetFlatTrack(i));
+}
