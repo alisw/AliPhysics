@@ -12,6 +12,7 @@
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUTrackerCooked.h"
 #include "AliITSUTrackCooked.h" 
+#include "AliITSUReconstructor.h" 
 
 ClassImp(AliITSUTrackerCooked)
 
@@ -35,7 +36,7 @@ const Double_t kmaxChi2PerTrack=30.;
 const Double_t kRoadY=0.7;
 const Double_t kRoadZ=0.7;
 // Minimal number of attached clusters
-const Int_t kminNumberOfClusters=3;
+const Int_t kminNumberOfClusters=4;
 
 //************************************************
 // TODO:
@@ -48,12 +49,13 @@ const Int_t kminNumberOfClusters=3;
 AliITSUTrackerCooked::AliITSUlayer
               AliITSUTrackerCooked::fgLayers[AliITSUTrackerCooked::kNLayers];
 
-AliITSUTrackerCooked::AliITSUTrackerCooked(): 
-AliTracker(),
+AliITSUTrackerCooked::AliITSUTrackerCooked(AliITSUReconstructor *rec): 
+AliITSUTrackerGlo(rec),
 fSeeds(0),
 fI(kNLayers-1),
 fBestTrack(0), 
-fTrackToFollow(0) 
+fTrackToFollow(0),
+fSAonly(kTRUE) 
 {
   //--------------------------------------------------------------------
   // This default constructor needs to be provided
@@ -322,6 +324,8 @@ Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
   // The clusters must already be loaded
   //--------------------------------------------------------------------
 
+  if (!fSAonly) AliITSUTrackerGlo::Clusters2Tracks(event);
+
   Int_t nSeeds=MakeSeeds();
 
   // Possibly, icrement the seeds with additional clusters (Kalman)
@@ -473,7 +477,8 @@ Int_t AliITSUTrackerCooked::PropagateBack(AliESDEvent *event) {
   for (Int_t i=0; i<n; i++) {
       AliESDtrack *esdTrack=event->GetTrack(i);
 
-      if ((esdTrack->GetStatus()&AliESDtrack::kITSin)==0) continue;
+      if (!esdTrack->IsOn(AliESDtrack::kITSin)) continue;
+      if ( esdTrack->IsOn(AliESDtrack::kTPCin)) continue;//skip a TPC+ITS track
 
       AliITSUTrackCooked track(*esdTrack);
 
@@ -495,7 +500,9 @@ Int_t AliITSUTrackerCooked::PropagateBack(AliESDEvent *event) {
   Info("PropagateBack","Back propagated tracks: %d",ntrk);
   if (ntrk)
   Info("PropagateBack","Good tracks/back propagated: %f",Float_t(ngood)/ntrk);
-    
+  
+  if (!fSAonly) AliITSUTrackerGlo::PropagateBack(event);
+  
   return 0;
 }
 
@@ -568,7 +575,8 @@ Int_t AliITSUTrackerCooked::RefitInward(AliESDEvent *event) {
   for (Int_t i=0; i<n; i++) {
       AliESDtrack *esdTrack=event->GetTrack(i);
 
-      if ((esdTrack->GetStatus()&AliESDtrack::kITSout) == 0) continue;
+      if (!esdTrack->IsOn(AliESDtrack::kITSout)) continue;
+      if ( esdTrack->IsOn(AliESDtrack::kTPCin)) continue;//skip a TPC+ITS track
 
       AliITSUTrackCooked track(*esdTrack);
       ResetTrackToFollow(track);
@@ -592,6 +600,8 @@ Int_t AliITSUTrackerCooked::RefitInward(AliESDEvent *event) {
   if (ntrk)
   Info("RefitInward","Good tracks/refitted: %f",Float_t(ngood)/ntrk);
     
+  if (!fSAonly) AliITSUTrackerGlo::RefitInward(event);
+
   return 0;
 }
 
@@ -605,25 +615,20 @@ Int_t AliITSUTrackerCooked::LoadClusters(TTree *cTree) {
      return 1;
   }
 
-  //This TClonesArray is not the owner of the clusters
-  TClonesArray dummy("AliITSUClusterPix",kMaxClusterPerLayer), *clusters=&dummy;
+  AliITSUTrackerGlo::LoadClusters(cTree);
 
   for (Int_t i=0; i<kNLayers; i++) {
-      TBranch *br = cTree->GetBranch(Form("ITSRecPoints%d",i));
-      if (!br) {AliFatal(Form("No cluster branch for layer %d",i)); return 1;}
-      br->SetAddress(&clusters);
-      br->GetEvent(0);
+      TClonesArray *clusters=fReconstructor->GetClusters(i);
       switch (i) {
       case kSeedingLayer1: 
       case kSeedingLayer2: 
       case kSeedingLayer3: 
-         fgLayers[i].InsertClusters(clusters,kTRUE);
+	 fgLayers[i].InsertClusters(clusters,kTRUE,fSAonly);
          break;
       default:
-         fgLayers[i].InsertClusters(clusters,kFALSE);
+	 fgLayers[i].InsertClusters(clusters,kFALSE,fSAonly);
          break;
       }
-      clusters->Delete();
   }
 
   return 0;
@@ -633,6 +638,7 @@ void AliITSUTrackerCooked::UnloadClusters() {
   //--------------------------------------------------------------------
   // This function unloads ITSU clusters from the RAM
   //--------------------------------------------------------------------
+  AliITSUTrackerGlo::UnloadClusters();
   for (Int_t i=0; i<kNLayers; i++) fgLayers[i].DeleteClusters();
 }
 
@@ -663,7 +669,6 @@ AliITSUTrackerCooked::AliITSUlayer::~AliITSUlayer()
   //--------------------------------------------------------------------
   // Simple destructor
   //--------------------------------------------------------------------
-  DeleteClusters();
   delete fTrack;
 }
 
@@ -676,8 +681,8 @@ AliITSUTrackerCooked::AliITSUlayer::ResetTrack(const AliITSUTrackCooked &t) {
    fTrack=new AliITSUTrackCooked(t);
 }
 
-void AliITSUTrackerCooked::
-  AliITSUlayer::InsertClusters(TClonesArray *clusters, Bool_t seedingLayer)
+void AliITSUTrackerCooked::AliITSUlayer::
+InsertClusters(TClonesArray *clusters, Bool_t seedingLayer, Bool_t saOnly)
 {
   //--------------------------------------------------------------------
   // Load clusters to this layer
@@ -686,12 +691,13 @@ void AliITSUTrackerCooked::
   Double_t r=0.;
   for (Int_t i=0; i<ncl; i++) {
      AliITSUClusterPix *c=(AliITSUClusterPix*)clusters->UncheckedAt(i);
+     if (!saOnly) if (c->IsClusterUsed()) continue;
      c->GoToFrameGlo();
      Double_t x=c->GetX(), y=c->GetY();
      r += TMath::Sqrt(x*x + y*y);
      if (!seedingLayer) c->GoToFrameTrk();
      //if (!c->Misalign()) AliWarning("Can't misalign this cluster !");
-     InsertCluster(new AliITSUClusterPix(*c));
+     InsertCluster(c);
   }
   if (ncl) fR = r/ncl;
 }
@@ -701,7 +707,7 @@ void AliITSUTrackerCooked::AliITSUlayer::DeleteClusters()
   //--------------------------------------------------------------------
   // Load clusters to this layer
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<fN; i++) {delete fClusters[i]; fClusters[i]=0;}
+  //for (Int_t i=0; i<fN; i++) {delete fClusters[i]; fClusters[i]=0;}
   fN=0;
 }
 

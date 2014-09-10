@@ -6,7 +6,7 @@
 //    The pattern recongintion based on the "cooked covariance" approach
 //-------------------------------------------------------------------------
 
-#include "AliTracker.h"
+#include "AliITSUTrackerGlo.h"
 
 class TTree;
 class TClonesArray;
@@ -16,13 +16,14 @@ class AliESDEvent;
 class AliCluster;
 class AliITSUClusterPix;
 class AliITSUTrackCooked;
+class AliITSUReconstructor;
 
 //-------------------------------------------------------------------------
-class AliITSUTrackerCooked : public AliTracker {
+class AliITSUTrackerCooked : public AliITSUTrackerGlo {
 public:
   enum {
      kNLayers=7,kMaxClusterPerLayer=9999,kMaxSelected=kMaxClusterPerLayer/9};
-  AliITSUTrackerCooked();
+  AliITSUTrackerCooked(AliITSUReconstructor *rec);
   virtual ~AliITSUTrackerCooked();
 
   // These functions must be implemented 
@@ -35,6 +36,9 @@ public:
   RefitAt(Double_t x, AliITSUTrackCooked *seed, const AliITSUTrackCooked *t);
 
   AliCluster *GetCluster(Int_t index) const;
+
+  void SetSAonly(Bool_t sa=kTRUE) {fSAonly=sa;}
+  Bool_t GetSAonly() const {return fSAonly;}
 
   // internal helper classes
   class AliITSUlayer;
@@ -64,7 +68,9 @@ private:
   AliITSUTrackCooked *fBestTrack;        // "best" track 
   AliITSUTrackCooked *fTrackToFollow;    // followed track
   
-  ClassDef(AliITSUTrackerCooked,1)   //ITSU stand-alone tracker
+  Bool_t fSAonly; // kTRUE if the standalone tracking only
+
+  ClassDef(AliITSUTrackerCooked,2)   //ITSU stand-alone tracker
 };
 
 
@@ -75,7 +81,7 @@ class AliITSUTrackerCooked::AliITSUlayer {
     AliITSUlayer();
     ~AliITSUlayer();
 
-    void InsertClusters(TClonesArray *clusters, Bool_t seedingLayer);
+    void InsertClusters(TClonesArray *clusters, Bool_t seedingLayer, Bool_t sa);
     void SetR(Double_t r) {fR=r;}
     void DeleteClusters();
     Int_t 

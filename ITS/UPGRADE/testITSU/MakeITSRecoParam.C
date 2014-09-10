@@ -31,6 +31,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     //******************************************************************
     itsRecoParam->SetEventSpecie(AliRecoParam::kCosmic);
     itsRecoParam->SetTitle("Cosmic");
+    itsRecoParam->SetTracker(0);
+    itsRecoParam->SetSAonly(kFALSE);
     recoParamArray->AddLast(itsRecoParam);
   }
   //
@@ -113,6 +115,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     //******************************************************************
     itsRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
     itsRecoParam->SetTitle("LowMult");
+    itsRecoParam->SetTracker(0);
+    itsRecoParam->SetSAonly(kFALSE);
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);
@@ -211,6 +215,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     //******************************************************************
     itsRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
     itsRecoParam->SetTitle("HighMult");
+    itsRecoParam->SetTracker(0);
+    itsRecoParam->SetSAonly(kFALSE);
     recoParamArray->AddLast(itsRecoParam);
     //******************************************************************
     for (int i=0;i<nLr;i++) itsRecoParam->SetAllowDiagonalClusterization(i,kAllowDiagCl);

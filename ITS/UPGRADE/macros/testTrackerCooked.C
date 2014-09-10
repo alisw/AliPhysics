@@ -1,18 +1,24 @@
+//
+// A macro to test the Cooked Matrix tracker out of the reco framework
+//
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
    #include <Riostream.h>
    #include <TSystem.h>
    #include <TFile.h>
    #include <TTree.h>
-   #include <TGeoManager.h>
    #include <TGeoGlobalMagField.h>
    #include <TStopwatch.h>
 
    #include "AliRunLoader.h"
+   #include "AliGeomManager.h"
+   #include "AliLoader.h"
    #include "AliHeader.h"
    #include "AliGenEventHeader.h"
    #include "AliMagF.h"
    #include "AliESDEvent.h"
    #include "AliITSUTrackerCooked.h"
+   #include "AliITSUReconstructor.h"
 #endif
 
 extern TSystem *gSystem;
@@ -26,7 +32,12 @@ void testTrackerCooked() {
 
     TGeoGlobalMagField::Instance()->
           SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
-    TGeoManager::Import("geometry.root");
+    AliGeomManager::LoadGeometry("geometry.root");
+
+    AliITSUReconstructor rec;
+    rec.Init();
+    AliITSUTrackerCooked *tracker=new AliITSUTrackerCooked(&rec);
+    tracker->SetSAonly(kTRUE);
 
     TFile *esdFile=TFile::Open("AliESDs.root","recreate");
     TTree *esdTree = new TTree("esdTree", "Tree with ESD objects");
@@ -34,11 +45,10 @@ void testTrackerCooked() {
     esd->CreateStdContent();
     esd->WriteToTree(esdTree);
     
-    TFile *clsFile=TFile::Open("ITS.RecPoints.root");
-    AliITSUTrackerCooked *tracker=new AliITSUTrackerCooked();
-    
     AliRunLoader *rl = AliRunLoader::Open("galice.root","something");
     rl->LoadHeader();
+    AliLoader *itsl = rl->GetLoader("ITSLoader");
+    itsl->LoadRecPoints();
 
     TStopwatch timer;    
     Int_t nEvents=rl->GetNumberOfEvents();
@@ -49,7 +59,7 @@ void testTrackerCooked() {
         const AliESDVertex *vtx=SetMCvertex(rl,tracker);
         esd->SetPrimaryVertexSPD(vtx);              
 
-        TTree *cTree=(TTree *)clsFile->Get(Form("Event%d/TreeR",i));
+        TTree *cTree=itsl->TreeR();
         tracker->LoadClusters(cTree);
         tracker->Clusters2Tracks(esd);
         tracker->PropagateBack(esd);
@@ -60,19 +70,18 @@ void testTrackerCooked() {
         for (Int_t t=0; t<n; t++) {
 	  AliESDtrack *track=esd->GetTrack(t);
           if (!track->RelateToVertex(vtx, tracker->GetBz(), 33)) continue;
-          //Double_t r[3]; track->GetXYZ(r);
-	  //cout<<r[0]<<' '<<r[1]<<' '<<r[2]-vtx->GetZ()<<endl;
+          //Double_t chi2=track->GetITSchi2();
+          //Double_t ncl=track->GetITSclusters(0);
+	  //cout<<ncl<<' '<<chi2<<endl;
 	}
 
         esdTree->Fill();
         esd->Reset();
         delete vtx;
-        delete cTree;
     }
     timer.Stop(); timer.Print();
  
     delete tracker;
-    delete clsFile;
     esdFile->cd();
     esdTree->Write();
     delete esd;
@@ -85,8 +94,9 @@ const AliESDVertex *SetMCvertex(const AliRunLoader *rl, AliTracker *tracker) {
     h->PrimaryVertex(vtx);
     cout<<"Vertex "<<vtx[0]<<' '<<vtx[1]<<' '<<vtx[2]<<endl;
     Double_t xyz[]={vtx[0],vtx[1],vtx[2]};
-    Double_t ers[]={2.,2.,2.};
+    Double_t ers[]={2.e-4,2.e-4,2.e-2};
     tracker->SetVertex(xyz,ers);
     AliESDVertex *vertex=new AliESDVertex(xyz,ers);
     return vertex;
 }
+
