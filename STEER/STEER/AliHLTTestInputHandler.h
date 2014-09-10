@@ -19,9 +19,11 @@ class AliVEvent;
 class AliHLTTestInputHandler : public AliVEventHandler {
 
  public:
-    AliHLTTestInputHandler() {}
+    AliHLTTestInputHandler();
+    AliHLTTestInputHandler(AliHLTTestInputHandler&);
     AliHLTTestInputHandler(const char* name, const char* title);
     virtual ~AliHLTTestInputHandler() {}
+    AliHLTTestInputHandler& operator=(const AliHLTTestInputHandler&) {return *this;}
     virtual Bool_t Notify() { return kFALSE; }
     virtual Bool_t Notify(const char *) {return kTRUE;}
     virtual Bool_t Init(Option_t* /*opt*/) {return kTRUE;}

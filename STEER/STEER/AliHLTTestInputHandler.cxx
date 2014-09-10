@@ -27,10 +27,30 @@
 ClassImp(AliHLTTestInputHandler)
 
 //______________________________________________________________________________
+AliHLTTestInputHandler::AliHLTTestInputHandler() 
+  : AliVEventHandler()
+  , fEvent(NULL)
+  , fFriendEvent(NULL)
+{
+// default constructor
+}
+
+//______________________________________________________________________________
 AliHLTTestInputHandler::AliHLTTestInputHandler(const char* name, const char* title) 
   : AliVEventHandler(name,title)
+  , fEvent(NULL)
+  , fFriendEvent(NULL)
 {
 // Named constructor
+}
+
+//______________________________________________________________________________
+AliHLTTestInputHandler::AliHLTTestInputHandler(AliHLTTestInputHandler& that) 
+  : AliVEventHandler(that)
+  , fEvent(that.fEvent)
+  , fFriendEvent(that.fFriendEvent)
+{
+// dummy cpy constructor
 }
 
 //______________________________________________________________________________
