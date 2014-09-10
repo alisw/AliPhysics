@@ -88,6 +88,12 @@ AliAnalysisTaskSE(),
   fHistGenPrimaryParticlesInelGt0(0),
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
   fHistNtrUnCorrPSSel(0),
+  fHistNtrUnCorrPSTrigSel(0),
+  fHistNtrUnCorrPSTrigPileUpSel(0),
+  fHistNtrUnCorrPSTrigPileUpVtxSel(0),
+  fHistNtrUnCorrPSTrigPileUpVtxContSel(0),
+  fHistNtrUnCorrPSTrigPileUpVtxRangeSel(0),
+  fHistNtrUnCorrPSTrigPileUpVtxRangeCentrSel(0),
   fHistNtrUnCorrEvSel(0),
   fHistNtrUnCorrEvWithCand(0),
   fHistNtrUnCorrEvWithD(0),
@@ -167,6 +173,12 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistGenPrimaryParticlesInelGt0(0),
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
   fHistNtrUnCorrPSSel(0),
+  fHistNtrUnCorrPSTrigSel(0),
+  fHistNtrUnCorrPSTrigPileUpSel(0),
+  fHistNtrUnCorrPSTrigPileUpVtxSel(0),
+  fHistNtrUnCorrPSTrigPileUpVtxContSel(0),
+  fHistNtrUnCorrPSTrigPileUpVtxRangeSel(0),
+  fHistNtrUnCorrPSTrigPileUpVtxRangeCentrSel(0),
   fHistNtrUnCorrEvSel(0),
   fHistNtrUnCorrEvWithCand(0),
   fHistNtrUnCorrEvWithD(0),
@@ -347,6 +359,12 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   }
 
   fHistNtrUnCorrPSSel = new TH1F("hNtrUnCorrPSSel","Uncorrected tracklets multiplicity for PS selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
+  fHistNtrUnCorrPSTrigSel = new TH1F("hNtrUnCorrPSTrigSel","Uncorrected tracklets multiplicity for PS + trigger name selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
+  fHistNtrUnCorrPSTrigPileUpSel = new TH1F("hNtrUnCorrPSTrigPileUpSel","Uncorrected tracklets multiplicity for PS + trigger name + pileup selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
+  fHistNtrUnCorrPSTrigPileUpVtxSel = new TH1F("hNtrUnCorrPSTrigPileUpVtxSel","Uncorrected tracklets multiplicity for PS + trigger name + pileup + with-vertex selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
+  fHistNtrUnCorrPSTrigPileUpVtxContSel = new TH1F("hNtrUnCorrPSTrigPileUpVtxContSel","Uncorrected tracklets multiplicity for PS + trigger name + pileup + with-vertex-contrib selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
+  fHistNtrUnCorrPSTrigPileUpVtxRangeSel = new TH1F("hNtrUnCorrPSTrigPileUpVtxRangeSel","Uncorrected tracklets multiplicity for PS + trigger name + pileup + with-vertex-contrib-range selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
+  fHistNtrUnCorrPSTrigPileUpVtxRangeCentrSel = new TH1F("hNtrUnCorrPSTrigPileUpVtxRangeCentrSel","Uncorrected tracklets multiplicity for PS + trigger name + pileup + with-vertex-contrib-range + centrality selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
   fHistNtrUnCorrEvSel = new TH1F("hNtrUnCorrEvSel","Uncorrected tracklets multiplicity for selected events; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);
   fHistNtrUnCorrEvWithCand = new TH1F("hNtrUnCorrEvWithCand", "Uncorrected Tracklets multiplicity for events with D candidates; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
   fHistNtrUnCorrEvWithD = new TH1F("hNtrUnCorrEvWithD","Uncorrected Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin); // 
@@ -394,6 +412,12 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary = new TH3F("fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary", "MC: Nch (Physical Primary) vs Nch (Primary) vs Nch (Generated); Nch (Generated); Nch (Primary); Nch (Physical Primary)",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin);
 
   fHistNtrUnCorrPSSel->Sumw2();
+  fHistNtrUnCorrPSTrigSel->Sumw2();
+  fHistNtrUnCorrPSTrigPileUpSel->Sumw2();
+  fHistNtrUnCorrPSTrigPileUpVtxSel->Sumw2();
+  fHistNtrUnCorrPSTrigPileUpVtxContSel->Sumw2();
+  fHistNtrUnCorrPSTrigPileUpVtxRangeSel->Sumw2();
+  fHistNtrUnCorrPSTrigPileUpVtxRangeCentrSel->Sumw2();
   fHistNtrUnCorrEvSel->Sumw2();
   fHistNtrUnCorrEvWithCand->Sumw2();
   fHistNtrUnCorrEvWithD->Sumw2();
@@ -403,6 +427,12 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNtrCorrEvWithD->Sumw2();
   fHistGenPrimaryParticlesInelGt0->Sumw2();
   fOutput->Add(fHistNtrUnCorrPSSel);
+  fOutput->Add(fHistNtrUnCorrPSTrigSel);
+  fOutput->Add(fHistNtrUnCorrPSTrigPileUpSel);
+  fOutput->Add(fHistNtrUnCorrPSTrigPileUpVtxSel);
+  fOutput->Add(fHistNtrUnCorrPSTrigPileUpVtxContSel);
+  fOutput->Add(fHistNtrUnCorrPSTrigPileUpVtxRangeSel);
+  fOutput->Add(fHistNtrUnCorrPSTrigPileUpVtxRangeCentrSel);
   fOutput->Add(fHistNtrUnCorrEvSel);
   fOutput->Add(fHistNtrUnCorrEvWithCand);
   fOutput->Add(fHistNtrUnCorrEvWithD);
@@ -638,9 +668,33 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(6);
 
   Bool_t isEvPSRejected = fRDCutsAnalysis->IsEventRejectedDuePhysicsSelection();
+  Bool_t isEvTrigNameRejected = fRDCutsAnalysis->IsEventRejectedDueToTrigger();
+  Bool_t isEvPileUpRejected = fRDCutsAnalysis->IsEventRejectedDueToPileup();
+  Bool_t isEvNoVtxRejected = fRDCutsAnalysis->IsEventRejectedDueToNotRecoVertex();
+  Bool_t isEvVtxContribRejected = fRDCutsAnalysis->IsEventRejectedDueToVertexContributors();
+  Bool_t isEvVtxRangeRejected= fRDCutsAnalysis->IsEventRejectedDueToZVertexOutsideFiducialRegion();
+  Bool_t isEvCentralityRejected = fRDCutsAnalysis->IsEventRejectedDueToCentrality();
   if(!isEvPSRejected){
     fHistNtrUnCorrPSSel->Fill(countMult);
     fHistNtrCorrPSSel->Fill(countCorr);
+    if(!isEvTrigNameRejected){
+      fHistNtrUnCorrPSTrigSel->Fill(countMult);
+      if(!isEvPileUpRejected){
+	fHistNtrUnCorrPSTrigPileUpSel->Fill(countMult);
+	if(!isEvNoVtxRejected){
+	  fHistNtrUnCorrPSTrigPileUpVtxSel->Fill(countMult);
+	  if(!isEvVtxContribRejected){
+	    fHistNtrUnCorrPSTrigPileUpVtxContSel->Fill(countMult);
+	    if(!isEvVtxRangeRejected){
+	      fHistNtrUnCorrPSTrigPileUpVtxRangeSel->Fill(countMult);
+	      if(!isEvCentralityRejected){
+		fHistNtrUnCorrPSTrigPileUpVtxRangeCentrSel->Fill(countMult);
+	      }
+	    }
+	  }
+	}
+      }
+    }
   }
   
   if(!isEvSel)return;
