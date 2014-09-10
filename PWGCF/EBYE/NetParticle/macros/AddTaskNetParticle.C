@@ -195,7 +195,7 @@ if (sName.Contains("Proton")) {
  if (isSetExt) {
    minPt          = gMinPt;    
    maxPt          = gMinPt;
-   minPtForTOF    = gMinPtForTof.;     
+   minPtForTOF    = gMinPtForTof;     
    
    nSigmaITS      = gSigmaITS;   
    nSigmaTPC      = gSigmaTPC;   
