@@ -80,7 +80,9 @@ AliStorageDatabase::AliStorageDatabase() :
 	fServer = TSQLServer::Connect(Form("mysql://%s:%s/%s",fHost.c_str(),fPort.c_str(),fDatabase.c_str()),fUID.c_str(),fPassword.c_str());
 }
 
-AliStorageDatabase::~AliStorageDatabase(){}
+AliStorageDatabase::~AliStorageDatabase(){
+  if (fServer) {delete fServer;}
+}
 
 void AliStorageDatabase::InsertEvent(int runNumber,
 				     int eventNumber,
@@ -88,20 +90,24 @@ void AliStorageDatabase::InsertEvent(int runNumber,
 				     int multiplicity,
 				     char *filePath)
 {
-	fServer->Query(Form("replace into %s (run_number,event_number,system,multiplicity,permanent,file_path) values (%d,%d,'%s',%d,0,'%s');",fTable.c_str(),runNumber,eventNumber,system,multiplicity,filePath));
+  TSQLResult* res;
+  res = fServer->Query(Form("replace into %s (run_number,event_number,system,multiplicity,permanent,file_path) values (%d,%d,'%s',%d,0,'%s');",fTable.c_str(),runNumber,eventNumber,system,multiplicity,filePath));
+  delete res;
 
 }
 
 bool AliStorageDatabase::MarkEvent(struct eventStruct event)
-{
-	if(fServer->Query(Form("UPDATE %s SET permanent = 1 WHERE run_number = %d AND event_number = %d;",fTable.c_str(),event.runNumber,event.eventNumber)))
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
+{  
+  TSQLResult* res;
+  res = fServer->Query(Form("UPDATE %s SET permanent = 1 WHERE run_number = %d AND event_number = %d;",fTable.c_str(),event.runNumber,event.eventNumber));
+  if(res) {
+    delete res;
+    return 1;
+  }
+  else {
+    delete res;
+    return 0;
+  }
 }
 
 vector<serverListStruct> AliStorageDatabase::GetList(struct listRequestStruct list)
@@ -136,7 +142,7 @@ vector<serverListStruct> AliStorageDatabase::GetList(struct listRequestStruct li
 		eventsVector.push_back(resultList);
 		delete row;
 	}
-	
+	delete result;
 	return eventsVector;
 }
 
@@ -186,7 +192,10 @@ struct eventStruct AliStorageDatabase::GetOldestEvent()
 
 void AliStorageDatabase::RemoveEvent(struct eventStruct event)
 {
-	fServer->Query(Form("DELETE FROM %s WHERE run_number = %d AND event_number = %d",fTable.c_str(),event.runNumber,event.eventNumber));
+  TSQLResult* res;
+  res = fServer->Query(Form("DELETE FROM %s WHERE run_number = %d AND event_number = %d",fTable.c_str(),event.runNumber,event.eventNumber));
+  delete res;
+
 }
 
 string AliStorageDatabase::GetFilePath(struct eventStruct event)
@@ -235,9 +244,57 @@ AliESDEvent* AliStorageDatabase::GetNextEvent(struct eventStruct event)
 	return NULL;
 }
 
+AliESDEvent* AliStorageDatabase::GetPrevEvent(struct eventStruct event)
+{
+	TSQLResult *result = fServer->Query(Form("SELECT * FROM %s ORDER BY run_number,event_number DESC;",fTable.c_str()));
+
+	TSQLRow *row;
+	bool isCurrentEvent=false;
+	struct eventStruct nextEvent;
+	
+	while((row = result->Next()))
+	{
+		if(isCurrentEvent)
+		{
+			nextEvent.runNumber = atoi(row->GetField(0));
+			nextEvent.eventNumber = atoi(row->GetField(1));
+			return GetEvent(nextEvent);
+		}
+
+		//if current event found
+		if(atoi(row->GetField(0))==event.runNumber && atoi(row->GetField(1))==event.eventNumber)
+		{
+			isCurrentEvent=true;
+		}
+		
+		delete row;
+	}
+	delete result;
+	return NULL;
+}
+
+
 AliESDEvent* AliStorageDatabase::GetLastEvent()
 {
 	TSQLResult *result = fServer->Query(Form("SELECT * FROM %s ORDER BY run_number,event_number;",fTable.c_str()));
+
+	TSQLRow *row;
+	struct eventStruct lastEvent = {0,0};
+
+	while((row = result->Next()))
+	{
+		lastEvent.runNumber = atoi(row->GetField(0));
+		lastEvent.eventNumber = atoi(row->GetField(1));
+		delete row;
+	}
+	cout<<"Last event is:"<<lastEvent.eventNumber<<endl;
+	return GetEvent(lastEvent);
+
+}
+
+AliESDEvent* AliStorageDatabase::GetFirstEvent()
+{
+	TSQLResult *result = fServer->Query(Form("SELECT * FROM %s ORDER BY run_number,event_number DESC;",fTable.c_str()));
 
 	TSQLRow *row;
 	struct eventStruct lastEvent = {0,0};

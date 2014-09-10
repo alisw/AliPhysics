@@ -291,6 +291,7 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 	MapSubwindows();
 	MapWindow();
 	Layout();
+	delete requestMessage;
 }
 
 

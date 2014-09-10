@@ -144,6 +144,7 @@ void AliStorageAdministratorPanel::CheckClientState(int option)
 		break;
 	default:break;	
 	}
+	if(request){delete request;}
 }
 
 void AliStorageAdministratorPanel::InitWindow()

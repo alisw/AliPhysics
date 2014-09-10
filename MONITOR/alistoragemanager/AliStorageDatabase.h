@@ -30,6 +30,8 @@ public:
 	AliESDEvent* GetEvent(struct eventStruct event);
 	AliESDEvent* GetNextEvent(struct eventStruct event);
 	AliESDEvent* GetLastEvent();
+	AliESDEvent* GetPrevEvent(struct eventStruct event);
+	AliESDEvent* GetFirstEvent();
 private:
 	std::string fHost;
 	std::string fPort;

@@ -230,13 +230,18 @@ void AliStorageEventManager::Send(vector<serverListStruct> list,storageSockets s
 	if(numberOfRecords==0)return;
 	fSockets[socket]->recv((new message_t));//empty message just to keep req-rep order
 
-	//prepare message with event's list
-	char *buffer = reinterpret_cast<char*> (&list[0]);
-	message_t *reply = new message_t((void*)buffer,
-			      sizeof(serverListStruct)*numberOfRecords,0);
-	fSockets[socket]->send(*reply);
+	// //prepare message with event's list
+	// char *buffer = reinterpret_cast<char*> (&list[0]);
+	// message_t *reply = new message_t((void*)buffer,
+	// 		      sizeof(serverListStruct)*numberOfRecords,0);
+	// fSockets[socket]->send(*reply);
+	// if(reply){delete reply;}
 
-	if(reply){delete reply;}
+	zmq::message_t reply(sizeof(serverListStruct)*numberOfRecords);
+	memcpy(reply.data(), reinterpret_cast<const char*> (&list[0]), sizeof(serverListStruct)*numberOfRecords);
+
+	fSockets[socket]->send(reply);
+
 }
 
 void AliStorageEventManager::Send(struct serverRequestStruct *request,storageSockets socket)
@@ -269,6 +274,7 @@ bool AliStorageEventManager::Send(struct clientRequestStruct *request,storageSoc
 		if(fSockets[socket]){delete fSockets[socket];fSockets[socket]=0;}
 
 		CreateSocket(socket);
+		delete requestMessage;
 		return 0;
 		
 	}	
@@ -276,10 +282,11 @@ bool AliStorageEventManager::Send(struct clientRequestStruct *request,storageSoc
 	{
 		if(poll (&items[0], 1, timeout)==0)
 		{
+		  delete requestMessage;
 			return 0;
 		}
 	}
-
+	delete requestMessage;		
 	return 1;
 }
 
@@ -392,6 +399,7 @@ vector<serverListStruct> AliStorageEventManager::GetServerListVector(storageSock
 	
 	vector<serverListStruct> receivedList(static_cast<serverListStruct*>(response->data()), static_cast<serverListStruct*>(response->data()) + numberOfRecords);
 
+	if (response) {delete response;}
 	return receivedList;
 }
 

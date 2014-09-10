@@ -106,6 +106,7 @@ AliStorageClientThread::~AliStorageClientThread()
 		delete fCurrentFile;
 	}
 	if(fCommunicationThread){delete fCommunicationThread;}
+	if(fDatabase){delete fDatabase;}
 	cout<<" --- OK"<<endl;
 }
 

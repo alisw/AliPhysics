@@ -848,7 +848,61 @@ void AliEveEventManager::GotoEvent(Int_t event)
     }
     if (fExternalCtrl)
     {
-        throw (kEH + "Event-loop is under external control.");
+        // throw (kEH + "Event-loop is under external control.");
+
+#ifdef ZMQ
+
+      if (fESD) {
+	int runNumber=fESD->GetRunNumber();
+	int eventNumber=fESD->GetEventNumberInFile();
+	struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+	struct eventStruct eventToLoad;
+	eventToLoad.runNumber = runNumber;
+	// // careful! check if exists!
+	eventToLoad.eventNumber = eventNumber;
+
+	if (event == -1) {
+	  requestMessage->messageType = REQUEST_GET_LAST_EVENT;
+	} 
+	else  if (event == 0) {
+	  requestMessage->messageType = REQUEST_GET_FIRST_EVENT;
+	} 
+	else  if (event == 1) {
+	  requestMessage->messageType = REQUEST_GET_PREV_EVENT;
+	} 
+	else  if (event == 2) {
+	  requestMessage->messageType = REQUEST_GET_NEXT_EVENT;
+	} 
+
+	requestMessage->event = eventToLoad;
+
+	AliStorageEventManager *eventManager =
+	  AliStorageEventManager::GetEventManagerInstance();
+	AliESDEvent *resultEvent = NULL;
+      
+	eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
+	fMutex.Lock();
+	eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+	resultEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
+
+	if(resultEvent)
+	  {
+	    cout<<"Event Manager -- first/last or prev/next event loaded "<<resultEvent->GetRunNumber() <<endl;
+	    DestroyElements();
+	    InitOCDB(resultEvent->GetRunNumber());
+	    SetEvent(0,0,resultEvent,0);
+	    fMutex.UnLock();
+
+	  }
+	else{cout<<"No first/last event is avaliable."<<endl;}
+      }
+      else {
+
+      }
+
+
+#endif	
+
     }
     else if (!fIsOpen)
     {

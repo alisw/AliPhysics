@@ -214,14 +214,18 @@ void AliEveEventManagerWindow::DoFirstEvent()
 void AliEveEventManagerWindow::DoPrevEvent()
 {
   // Load previous event
-  fM->PrevEvent();
+  // fM->PrevEvent();
+  fM->GotoEvent(1);
+
 }
 
 //______________________________________________________________________________
 void AliEveEventManagerWindow::DoNextEvent()
 {
   // Load next event
-  fM->NextEvent();
+  // fM->NextEvent();
+  fM->GotoEvent(2);
+
 }
 
 //______________________________________________________________________________
@@ -290,9 +294,12 @@ void AliEveEventManagerWindow::Update()
   Bool_t extCtrl  = fM->IsUnderExternalControl();
   Bool_t evNavOn  = !autoLoad && !extCtrl;
 
-  fFirstEvent->SetEnabled(evNavOn);
-  fPrevEvent ->SetEnabled(evNavOn);
-  fLastEvent ->SetEnabled(evNavOn);
+  // fFirstEvent->SetEnabled(evNavOn);
+  // fPrevEvent ->SetEnabled(evNavOn);
+  // fLastEvent ->SetEnabled(evNavOn);
+  fFirstEvent->SetEnabled(!autoLoad);
+  fPrevEvent ->SetEnabled(!autoLoad);
+  fLastEvent ->SetEnabled(!autoLoad);
   fNextEvent ->SetEnabled(!autoLoad);
   fRefresh   ->SetEnabled(evNavOn);
 
