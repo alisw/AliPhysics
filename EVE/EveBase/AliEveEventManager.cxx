@@ -248,9 +248,7 @@ void AliEveEventManager::CheckStorageStatus()
         if(eventManager->Send(request,CLIENT_COMMUNICATION_REQ,5000))
         {
             StorageManagerOk();
-            cout<<"WARNING -- Storage Manager is OK."<<endl;
             long response = eventManager->GetLong(CLIENT_COMMUNICATION_REQ);
-            cout<<"RESPONSE:"<<response<<endl;
         }
         else
         {
