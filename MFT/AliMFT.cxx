@@ -63,7 +63,7 @@ AliMFT::AliMFT():
   fChargeDispersion(25.e-4),
   fSingleStepForChargeDispersion(0),
   fNStepForChargeDispersion(4),
-  fDensitySupportOverSi(0.15),
+  fDensitySupportOverSi(0.05),
   fFileNameForUnderyingEvent(0), 
   fFileNameForPileUpEvents(0),
   fNPileUpEvents(0), 
@@ -93,7 +93,7 @@ AliMFT::AliMFT(const Char_t *name, const Char_t *title):
   fChargeDispersion(25.e-4),
   fSingleStepForChargeDispersion(0),
   fNStepForChargeDispersion(4),
-  fDensitySupportOverSi(0.15),
+  fDensitySupportOverSi(0.05),
   fFileNameForUnderyingEvent(0), 
   fFileNameForPileUpEvents(0),
   fNPileUpEvents(0), 
@@ -126,7 +126,7 @@ AliMFT::AliMFT(const Char_t *name, const Char_t *title, Char_t *nameGeomFile):
   fChargeDispersion(25.e-4),
   fSingleStepForChargeDispersion(0),
   fNStepForChargeDispersion(4),
-  fDensitySupportOverSi(0.15),
+  fDensitySupportOverSi(0.05),
   fFileNameForUnderyingEvent(0), 
   fFileNameForPileUpEvents(0),
   fNPileUpEvents(0), 
@@ -278,17 +278,16 @@ void AliMFT::StepManager() {
 
   AliDebug(2, Form("Entering StepManager: TVirtualMC::GetMC()->CurrentVolName() = %s", TVirtualMC::GetMC()->CurrentVolName()));
 
-  if (!fSegmentation) AliFatal("No segmentation available");    // DO WE HAVE A SEGMENTATION???
+  if (!fSegmentation) AliFatal("No segmentation available");
 
   if (!(this->IsActive())) return;
   if (!(TVirtualMC::GetMC()->TrackCharge())) return;
 
   TString planeNumber   = TVirtualMC::GetMC()->CurrentVolName();
   TString detElemNumber = TVirtualMC::GetMC()->CurrentVolName();
-  if (planeNumber.Contains("support")) return;
-  if (planeNumber.Contains("readout")) return;
+  if (!(planeNumber.Contains("active"))) return;
   planeNumber.Remove(0,9);
-  detElemNumber.Remove(0,19);
+  detElemNumber.Remove(0,18);
   planeNumber.Remove(2);
   detElemNumber.Remove(3);
   Int_t detElemID = fSegmentation->GetDetElemGlobalID(planeNumber.Atoi(), detElemNumber.Atoi());
@@ -360,11 +359,11 @@ TGeoVolumeAssembly* AliMFT::CreateVol() {
   TGeoMedium *silicon = gGeoManager->GetMedium("MFT_Si");
   TGeoMedium *readout = gGeoManager->GetMedium("MFT_Readout");
   TGeoMedium *support = gGeoManager->GetMedium("MFT_Support");
-  TGeoMedium *carbon = gGeoManager->GetMedium("MFT_Carbon");
-  TGeoMedium *alu = gGeoManager->GetMedium("MFT_Alu");
-  TGeoMedium *water = gGeoManager->GetMedium("MFT_Water");
-  TGeoMedium *si02 = gGeoManager->GetMedium("MFT_SiO2");
-  TGeoMedium *inox = gGeoManager->GetMedium("MFT_Inox");
+  TGeoMedium *carbon  = gGeoManager->GetMedium("MFT_Carbon");
+  TGeoMedium *alu     = gGeoManager->GetMedium("MFT_Alu");
+  TGeoMedium *water   = gGeoManager->GetMedium("MFT_Water");
+  TGeoMedium *si02    = gGeoManager->GetMedium("MFT_SiO2");
+  TGeoMedium *inox    = gGeoManager->GetMedium("MFT_Inox");
 
   // ---- Cage & Services Description --------------------------------------------
   // R. Tieulent - 17/01/2014 - Basic description for ITS/TPC matching studies
