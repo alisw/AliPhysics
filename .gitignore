@@ -1,8 +1,9 @@
 
-AliRootProject/
+AliRootXcode/
+AliRootXcode.xcodeproj/
+AliRootXcode/**
 *.DS_Store
 *.xworkspace
-xAliRoot/
 *.xcodeproj
 
 # Compiled Object files
