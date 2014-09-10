@@ -127,8 +127,8 @@ class AliFlatESDTrack :public AliVTrack {
   virtual Int_t    GetID() const {return 0.;}
   virtual UChar_t  GetITSClusterMap() const {return 0.;}
   virtual ULong_t  GetStatus() const {return 0.;}
-  virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const {if (cv[0]); return kFALSE;}
-  virtual Bool_t   PropagateToDCA(const AliVVertex* /*vtx*/, Double_t /*b*/, Double_t /*maxd*/, Double_t dz[2], Double_t covar[3]) {if (dz[0]==covar[3]); return kFALSE;}
+  virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const {if (cv[0]){}; return kFALSE;}
+  virtual Bool_t   PropagateToDCA(const AliVVertex* /*vtx*/, Double_t /*b*/, Double_t /*maxd*/, Double_t dz[2], Double_t covar[3]) {if (dz[0]==covar[3]){}; return kFALSE;}
 
  private:
 
@@ -174,11 +174,11 @@ inline AliFlatESDTrack::AliFlatESDTrack() :
 }
 
 inline AliFlatESDTrack::AliFlatESDTrack( AliVConstructorReinitialisationFlag f )
-  :
-  fTrackParamMask(fTrackParamMask ),
-  fNTPCClusters( fNTPCClusters ),
-  fNITSClusters( fNITSClusters ),
-  fContentSize( fContentSize )
+//  :
+//  fTrackParamMask(fTrackParamMask ),
+//  fNTPCClusters( fNTPCClusters ),
+//  fNITSClusters( fNITSClusters ),
+//  fContentSize( fContentSize )
 {
   // Constructor for reinitialisation of vtable
 }

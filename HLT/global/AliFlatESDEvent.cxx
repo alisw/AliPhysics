@@ -98,29 +98,29 @@ AliFlatESDEvent::AliFlatESDEvent()
 
 
 AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag f ) 
-  :
-  fContentSize(fContentSize),
-  fMagneticField(fMagneticField),
-  fPeriodNumber(fPeriodNumber),
-  fRunNumber(fRunNumber),
-  fOrbitNumber(fOrbitNumber),
-  fTimeStamp(fTimeStamp),
-  fEventSpecie(fEventSpecie),
-  fBunchCrossNumber(fBunchCrossNumber),
-  fPrimaryVertexMask(fPrimaryVertexMask),
-  fTriggerMask(fTriggerMask),
-  fTriggerMaskNext50(fTriggerMaskNext50),
-  fNTriggerClasses(fNTriggerClasses),
-  fNPrimaryVertices(fNPrimaryVertices),
-  fNTracks(fNTracks),
-  fNV0s(fNV0s),
-  fTriggerPointer(fTriggerPointer),
-  fPrimaryVertexTracksPointer(fPrimaryVertexTracksPointer),
-  fPrimaryVertexSPDPointer(fPrimaryVertexSPDPointer),
-  fTrackTablePointer(fTrackTablePointer),
-  fTracksPointer(fTracksPointer),
-  fV0Pointer(fV0Pointer),
-  fFriendEvent(NULL)
+//  :
+//  fContentSize(fContentSize),
+//  fMagneticField(fMagneticField),
+//  fPeriodNumber(fPeriodNumber),
+//  fRunNumber(fRunNumber),
+//  fOrbitNumber(fOrbitNumber),
+//  fTimeStamp(fTimeStamp),
+//  fEventSpecie(fEventSpecie),
+//  fBunchCrossNumber(fBunchCrossNumber),
+//  fPrimaryVertexMask(fPrimaryVertexMask),
+//  fTriggerMask(fTriggerMask),
+//  fTriggerMaskNext50(fTriggerMaskNext50),
+//  fNTriggerClasses(fNTriggerClasses),
+//  fNPrimaryVertices(fNPrimaryVertices),
+//  fNTracks(fNTracks),
+//  fNV0s(fNV0s),
+//  fTriggerPointer(fTriggerPointer),
+//  fPrimaryVertexTracksPointer(fPrimaryVertexTracksPointer),
+//  fPrimaryVertexSPDPointer(fPrimaryVertexSPDPointer),
+//  fTrackTablePointer(fTrackTablePointer),
+//  fTracksPointer(fTracksPointer),
+//  fV0Pointer(fV0Pointer),
+//  fFriendEvent(NULL)
 {
   // Constructor for reinitialisation of vtable
 

@@ -40,27 +40,27 @@
 // _______________________________________________________________________________________________________
  AliFlatESDFriendTrack::AliFlatESDFriendTrack()
 :
- AliVfriendTrack(),
- fContentSize(0),
- fTPCOutPointer(-1),
- fITSOutPointer(-1),
- fTRDInPointer(-1),
- fTPCseedPointer(-1),
- fBitFlags(0)
+ AliVfriendTrack()
+// ,fContentSize(0),
+// fTPCOutPointer(-1),
+// fITSOutPointer(-1),
+// fTRDInPointer(-1),
+// fTPCseedPointer(-1),
+// fBitFlags(0)
 {
   // Default constructor
   fContent[0]=0;
 }
 
- AliFlatESDFriendTrack::AliFlatESDFriendTrack( AliVConstructorReinitialisationFlag f ) 
+AliFlatESDFriendTrack::AliFlatESDFriendTrack( AliVConstructorReinitialisationFlag f ) 
 :
- AliVfriendTrack( f ),
- fContentSize(fContentSize),
- fTPCOutPointer(fTPCOutPointer),
- fITSOutPointer(fITSOutPointer),
- fTRDInPointer(fTRDInPointer),
- fTPCseedPointer(fTPCseedPointer),
- fBitFlags(fBitFlags)
+AliVfriendTrack( f )
+// ,fContentSize(fContentSize),
+// fTPCOutPointer(fTPCOutPointer),
+// fITSOutPointer(fITSOutPointer),
+// fTRDInPointer(fTRDInPointer),
+// fTPCseedPointer(fTPCseedPointer),
+// fBitFlags(fBitFlags)
 {
   // constructor for reinitialisation of vtable
 }

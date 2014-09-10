@@ -49,7 +49,9 @@ class AliFlatTPCCluster
   
   private:
 
- AliFlatTPCCluster(AliVConstructorReinitialisationFlag ): fX(fX),fY(fY),fZ(fZ),fPadRow(fPadRow),fSigmaY2(fSigmaY2),fSigmaZ2(fSigmaZ2),fCharge(fCharge),fQMax(fQMax){}
+ AliFlatTPCCluster(AliVConstructorReinitialisationFlag )
+ //  : fX(fX),fY(fY),fZ(fZ),fPadRow(fPadRow),fSigmaY2(fSigmaY2),fSigmaZ2(fSigmaZ2),fCharge(fCharge),fQMax(fQMax)
+ {}
 
   Float_t fX;       // X coordinate in local coordinates
   Float_t fY;       // Y coordinate in local coordinates
