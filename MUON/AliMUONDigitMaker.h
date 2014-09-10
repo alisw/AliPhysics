@@ -63,6 +63,9 @@ class AliMUONDigitMaker : public TObject
         /// Set flag whether or not we should generate digits for the trigger
   void  SetMakeTriggerDigits(Bool_t flag = kFALSE) { fMakeTriggerDigits = flag; }
 
+  /// Set flag whether or not we should generate digits for the tracker
+  void  SetMakeTrackerDigits(Bool_t flag = kTRUE) { fMakeTrackerDigits = flag; }
+
   /// Return the raw stream object which decodes DDL raw data from tracking stations.
   AliMUONRawStreamTrackerHP* GetRawStreamTracker() const { return fRawStreamTracker; }
 
@@ -83,6 +86,7 @@ private:
 private:
   Bool_t fScalerEvent;       //!< flag to generates scaler event
   Bool_t fMakeTriggerDigits; //!< whether or not we should generate digits for the trigger
+  Bool_t fMakeTrackerDigits; //!< whether or not we should generate digits for the tracker
   
   AliMUONRawStreamTrackerHP* fRawStreamTracker; //!< pointer of raw stream for tracker
   AliMUONRawStreamTriggerHP* fRawStreamTrigger;  //!< pointer of raw stream for trigger
@@ -92,7 +96,7 @@ private:
 
   AliMUONLogger* fLogger; //!< to log messages
   
-  ClassDef(AliMUONDigitMaker,7) // MUON digit maker from rawdata
+  ClassDef(AliMUONDigitMaker,8) // MUON digit maker from rawdata
 };
 	
 #endif
