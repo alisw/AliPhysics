@@ -335,7 +335,6 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
   
   if (fRandomAccess) {
     fFirstAODEntry = TMath::Nint(gRandom->Rndm()*fCurrentAODTree->GetEntries())-1;
-    fLastAODEntry = fCurrentAODTree->GetEntries();
   }
   else {
     fFirstAODEntry = -1;
@@ -401,8 +400,6 @@ TFile* AliJetEmbeddingFromAODTask::GetNextFile()
 Bool_t AliJetEmbeddingFromAODTask::GetNextEntry() 
 {
   Int_t attempts = -1;
-
-  fLastAODEntry = fCurrentAODTree->GetEntries();
 
   do {
     if (fCurrentAODEntry+1 >= fLastAODEntry) { // in case it did not start from the first entry, it will go back

@@ -116,10 +116,13 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
     if (sum == 0) {
       AliWarning("No hard pt bin scaling!");
       sum = fPtHardBinScaling.GetSize();
+      for (Int_t i = 0; i < fPtHardBinScaling.GetSize(); i++) 
+        fPtHardBinScaling[i] /= sum;
     }
-    
-    for (Int_t i = 0; i < fPtHardBinScaling.GetSize(); i++) 
-      fPtHardBinScaling[i] /= sum;
+    else {
+      for (Int_t i = 0; i < fPtHardBinScaling.GetSize(); i++) 
+        fPtHardBinScaling[i] /= sum;
+    }
   }
 
   fPtHardBinParam = static_cast<TParameter<int>*>(InputEvent()->FindListObject("PYTHIAPtHardBin"));
