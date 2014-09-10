@@ -116,7 +116,7 @@ class AliFlatESDEvent :public AliVEvent {
 
   // --------------------------------------------------------------------------------
   // AliVEvent interface
-  virtual void Print(Option_t *option="") const {if (option); return;}
+  virtual void Print(Option_t *option="") const {if (option){}; return;}
   virtual void AddObject(TObject* /*obj*/) {}
   virtual TObject* FindListObject(const char* /*name*/) const {return NULL;}
   virtual TList* GetList() const {return NULL;}
