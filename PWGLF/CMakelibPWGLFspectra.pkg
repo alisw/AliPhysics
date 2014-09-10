@@ -71,13 +71,18 @@ set ( SRCS SPECTRA/ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
 	SPECTRA/Nuclei/B2/AliAnalysisTaskB2AOD.cxx
         SPECTRA/Nuclei/masses/AliAnalysisNucleiMass.cxx
 	SPECTRA/Nuclei/deuteronpA/AliAnalysisDeuteronpA.cxx
+	SPECTRA/XtAnalysis/AliXtAnalysis.cxx
+	SPECTRA/XtAnalysis/AliJXtHistos.cxx
+	SPECTRA/XtAnalysis/AliJBaseTrack.cxx
+	SPECTRA/XtAnalysis/AliJBaseCard.cxx
+        SPECTRA/XtAnalysis/AliJCard.cxx
 
  )
 
-string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS} SPECTRA/XtAnalysis/AliJConst.h" )
 
 set ( DHDR PWGLFspectraLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWGLF/SPECTRA/Nuclei/B2 PWGLF/SPECTRA/PiKaPr/TPCTOF PWGLF/SPECTRA/PiKaPr/TPCTOFpA PWGLF/SPECTRA/PiKaPr/TOF/pp7 PWGLF/SPECTRA/ChargedHadrons/dNdPt TPC TOF PWGUD/base STEER/STEER STEER/ESD STEER/AOD STEER/CDB STEER/STEERBase ANALYSIS PWG/Tools)
+set ( EINCLUDE  PWGLF/SPECTRA/Nuclei/B2 PWGLF/SPECTRA/PiKaPr/TPCTOF PWGLF/SPECTRA/PiKaPr/TPCTOFpA PWGLF/SPECTRA/PiKaPr/TOF/pp7 PWGLF/SPECTRA/ChargedHadrons/dNdPt PWGLF/SPECTRA/XtAnalysis TPC TOF PWGUD/base STEER/STEER STEER/ESD STEER/AOD STEER/CDB STEER/STEERBase ANALYSIS PWG/Tools)
