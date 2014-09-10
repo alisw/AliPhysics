@@ -932,7 +932,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     TString vtxTitle(vtxAOD->GetTitle());
     zVtx = vtxAOD->GetZ();
 
-    cent = fAOD->GetHeader()->GetCentrality();
+    cent = ((AliVAODHeader*)fAOD->GetHeader())->GetCentrality();
     if(cent<10)cenClass = 0;
     else if(cent<30)cenClass = 1;
     else if(cent<50)cenClass = 2;
