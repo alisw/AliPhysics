@@ -91,6 +91,9 @@ class AliAnalysisUtils : public TObject {
   Float_t fBSPDCvsTCut; // slope for the linear cut in SPD  clusters vs tracklets
   
   AliPPVsMultUtils *fPPVsMultUtils; //! multiplicity selection in pp
+
+  AliAnalysisUtils(const AliAnalysisUtils& obj); // copy constructor
+  AliAnalysisUtils& operator=(const AliAnalysisUtils& other); // assignment
     
   ClassDef(AliAnalysisUtils,3) // base helper class
 };
