@@ -37,21 +37,6 @@ class AliFlatESDTrack :public AliVTrack {
   AliFlatESDTrack( AliVConstructorReinitialisationFlag );
   void Reinitialize() { new (this) AliFlatESDTrack( AliVReinitialize ); }
 
-  Int_t GetTrackParam         ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0  ); }
-  Int_t GetTrackParamRefitted ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x1  ); }
-  Int_t GetTrackParamIp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x2  ); }
-  Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x4  ); }
-  Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x8  ); }
-  Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x10 ); }
-  Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x20 ); }
-
-  UShort_t GetTPCNcls() const {return GetNumberOfTPCClusters(); }
-  Double_t GetPt() const {
-    const AliFlatExternalTrackParam *f = GetFlatTrackParam();
-    return (f) ?f->GetPt() : kVeryBig;
-  }
-  
-
   // --------------------------------------------------------------------------------
 
   // -- Set methods
@@ -101,9 +86,25 @@ class AliFlatESDTrack :public AliVTrack {
 
   size_t GetSize() const { return fContent -  reinterpret_cast<const Byte_t*>(this) + fContentSize; }
     
+  // -------------------------------------------------------------------------------
+  // the calibration interface methods:
+  Int_t GetTrackParam         ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0  ); }
+  Int_t GetTrackParamRefitted ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x1  ); }
+  Int_t GetTrackParamIp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x2  ); }
+  Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x4  ); }
+  Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x8  ); }
+  Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x10 ); }
+  Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x20 ); }
+  UShort_t GetTPCNcls() const {return GetNumberOfTPCClusters(); }
+  Double_t GetPt() const {
+    const AliFlatExternalTrackParam *f = GetFlatTrackParam();
+    return (f) ?f->GetPt() : kVeryBig;
+  }
+  // -------------------------------------------------------------------------------
+
   // ---------------------------------------------------------------------------------
   // AliVParticle interface
-  virtual Double_t Pt() const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():0.;}
+  virtual Double_t Pt() const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():kVeryBig;}
   virtual Double_t Px() const {return 0.;}
   virtual Double_t Py() const {return 0.;}
   virtual Double_t Pz() const {return 0.;}
