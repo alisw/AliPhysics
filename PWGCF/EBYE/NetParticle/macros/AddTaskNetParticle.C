@@ -219,13 +219,13 @@ if (sName.Contains("Proton")) {
  // -- PID Strategy
  // ----------------------------------------------
  
-  if (modePID == -1) { // default
-    pidStrategy   = 7;         // 7: ITS + TPC + TOF (using minPtForTOF)
-    if (modeCuts == 1)
-      pidStrategy = 5;       // 5: TPC + TOF (using minPtForTOF) 
+  if (modePID     == -1) { // default
+    pidStrategy   =   7;         // 7: ITS + TPC + TOF (using minPtForTOF)
+    if (modeCuts  ==  1)
+      pidStrategy =   5;       // 5: TPC + TOF (using minPtForTOF) 
   }
   else
-    pidStrategy = modePID;
+    pidStrategy   = modePID;
   
   // ----------------------------------------------
   // -- Read Environment Variables 
