@@ -23,6 +23,7 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
   AliAnalysisTaskEmcal("AliEmcalTrackingQA", kTRUE),
   fSelectHIJING(kTRUE),
   fDoSigma1OverPt(kFALSE),
+  fDoSigmaPtOverPtGen(kFALSE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
   fNPtHistBins(0),
@@ -57,6 +58,7 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) :
   AliAnalysisTaskEmcal(name, kTRUE),
   fSelectHIJING(kTRUE),
   fDoSigma1OverPt(kFALSE),
+  fDoSigmaPtOverPtGen(kFALSE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
   fNPtHistBins(0),
@@ -339,10 +341,18 @@ void AliEmcalTrackingQATask::AllocateMatchedParticlesTHnSparse()
   binEdges[dim] = fPhiHistBins;
   dim++;
 
-  title[dim] = "(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}";
-  nbins[dim] = fNPtRelDiffHistBins;
-  binEdges[dim] = fPtRelDiffHistBins;
-  dim++;
+  if (fDoSigmaPtOverPtGen) {
+    title[dim] = "(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}";
+    nbins[dim] = fNPtRelDiffHistBins;
+    binEdges[dim] = fPtRelDiffHistBins;
+    dim++;
+  }
+  else {
+    title[dim] = "(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{det}";
+    nbins[dim] = fNPtRelDiffHistBins;
+    binEdges[dim] = fPtRelDiffHistBins;
+    dim++;
+  }
 
   title[dim] = "track type";
   nbins[dim] = 3;
@@ -485,6 +495,8 @@ void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double
       contents[i] = trackPhi;
     else if (title=="(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}")
       contents[i] = (partPt - trackPt) / partPt;
+    else if (title=="(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{det}")
+      contents[i] = (partPt - trackPt) / trackPt;
     else if (title=="track type")
       contents[i] = (Double_t)trackType;
     else 
