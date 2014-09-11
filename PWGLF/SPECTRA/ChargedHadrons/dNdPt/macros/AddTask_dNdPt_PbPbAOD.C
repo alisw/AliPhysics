@@ -53,8 +53,19 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
 //   Double_t binsPhi[] = {-1.*TMath::Pi(), -2.97625, -2.8109, -2.64555, -2.4802, -2.31486, -2.14951, -1.98416, -1.81882, -1.65347, -1.48812, -1.32278, -1.15743, -0.992082, -0.826735, -0.661388, -0.496041, -0.330694, -0.165347, 0, 0.165347, 0.330694, 0.496041, 0.661388, 0.826735, 0.992082, 1.15743, 1.32278, 1.48812, 1.65347, 1.81882, 1.98416, 2.14951, 2.31486, 2.4802, 2.64555, 2.8109, 2.97625, TMath::Pi()};
   
 //   Double_t binsPhi[] = {-1.*TMath::Pi(), -0.75*TMath::Pi(), -0.5*TMath::Pi(), -0.25*TMath::Pi(), 0, 0.25*TMath::Pi(), 0.5*TMath::Pi(), 0.75*TMath::Pi(), TMath::Pi()};
-  Double_t binsPhi[] = {-1.*TMath::Pi(), -7./8.*TMath::Pi(), -6./8.*TMath::Pi(), -5./8.*TMath::Pi(),  -4./8.*TMath::Pi(), -3./8.*TMath::Pi(), -2./8.*TMath::Pi(), -1./8.*TMath::Pi(),  
-  0, 1./8.*TMath::Pi(), 2./8.*TMath::Pi(), 3./8.*TMath::Pi(), 4./8.*TMath::Pi(), 5./8.*TMath::Pi(), 6./8.*TMath::Pi(), 7./8.*TMath::Pi(), 1.*TMath::Pi()};
+//   Double_t binsPhi[] = {
+// 	-2.*TMath::Pi(), -15./8.*TMath::Pi(), -14./8.*TMath::Pi(), -13./8.*TMath::Pi(), -12./8.*TMath::Pi(), -11./8.*TMath::Pi(), -10./8.*TMath::Pi(), -9./8.*TMath::Pi(),
+// 	-1.*TMath::Pi(), -7./8.*TMath::Pi(), -6./8.*TMath::Pi(), -5./8.*TMath::Pi(),  -4./8.*TMath::Pi(), -3./8.*TMath::Pi(), -2./8.*TMath::Pi(), -1./8.*TMath::Pi(),  0, 
+// 	1./8.*TMath::Pi(), 2./8.*TMath::Pi(), 3./8.*TMath::Pi(), 4./8.*TMath::Pi(), 5./8.*TMath::Pi(), 6./8.*TMath::Pi(), 7./8.*TMath::Pi(), 1.*TMath::Pi(),
+// 	10./8.*TMath::Pi(), 11./8.*TMath::Pi(), 12./8.*TMath::Pi(), 13./8.*TMath::Pi(), 14./8.*TMath::Pi(), 15./8.*TMath::Pi(), 2.*TMath::Pi()
+//   };
+
+  Double_t binsPhi[] = {
+	-2.*TMath::Pi(), -1.75*TMath::Pi(), -1.5*TMath::Pi(), -1.25*TMath::Pi(), 
+	-1.*TMath::Pi(), -0.75*TMath::Pi(), -0.5*TMath::Pi(), -0.25*TMath::Pi(), 
+	0, 0.25*TMath::Pi(), 0.5*TMath::Pi(), 0.75*TMath::Pi(), TMath::Pi(),
+	1.25*TMath::Pi(), 1.5*TMath::Pi(), 1.75*TMath::Pi(), 2.*TMath::Pi()
+  };
   
   Int_t nBinPhi = sizeof(binsPhi)/sizeof(Double_t);
   task->SetBinsPhi(nBinPhi, binsPhi);
