@@ -18,6 +18,7 @@ class TH3D;
 
 class TProfile;
 class TProfile2D;
+class TProfile3D;
 class TRandom3;
 
 class AliESDEvent;
@@ -148,7 +149,9 @@ class AliFourPion : public AliAnalysisTaskSE {
   struct St6 {
     TH1D *fNorm3; //!
     TH1D *fTerms3; //!
+    TH3D *fTerms33D; //!
     TProfile *fKfactor; //!
+    TProfile3D *fKfactor3D; //!
     TProfile *fKfactorWeighted; //!
     TProfile *fMeanQinv; //!
     TH2D *fIdeal; //!
@@ -249,6 +252,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fLinearInterpolation;
   Bool_t fMixedChargeCut;
   Int_t fRMax;
+  Float_t fRstartMC;
   Float_t ffcSq;
   Float_t ffcSqMRC;
   UInt_t fFilterBit;
@@ -281,6 +285,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t fQbinsQ3;
   Float_t fQbinsQ4;
   Float_t fQupperBoundWeights;
+  Float_t fQbinsQinv3D;
+  Float_t fQupperBoundQinv3D;
   Float_t fKstepT[fKbinsT];
   Float_t fKstepY[fKbinsY];
   Float_t fKmeanT[fKbinsT];
