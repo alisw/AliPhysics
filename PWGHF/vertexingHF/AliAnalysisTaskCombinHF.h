@@ -40,15 +40,8 @@ public:
 
   void SetEventMixingOn(){fDoEventMixing=kTRUE;}
   void SetEventMixingOff(){fDoEventMixing=kFALSE;}
-  void SetMaxNumberOfEventsForMixing(Int_t maxn){fMaxNumberOfEventsForMixing=maxn;}
-  void SetMaxzVertDistForMix(Double_t dist){
-    fUsePoolsZ=kFALSE; 
-    fMaxzVertDistForMix=dist;
-  }
-  void SetMaxMultDiffForMix(Double_t maxd){
-    fUsePoolsM=kFALSE; 
-    fMaxMultDiffForMix=maxd;
-  }
+  void SetMinNumberOfEventsForMixing(Int_t minn){fMinNumberOfEventsForMixing=minn;}
+
   void ConfigureZVertPools(Int_t nPools, Double_t*  zVertLimits);
   void ConfigureMultiplicityPools(Int_t nPools, Double_t*  multLimits);
   void SelectPromptD(){fPromptFeeddown=kPrompt;}
@@ -107,7 +100,9 @@ public:
   void FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau);
   void FillGenHistos(TClonesArray* arrayMC);
   Bool_t CheckAcceptance(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau); 
-  Bool_t CanBeMixed(Double_t zv1, Double_t zv2, Double_t mult1, Double_t mult2); 
+  Int_t GetPoolIndex(Double_t zvert, Double_t mult);
+  void ResetPool(Int_t poolIndex);
+  void DoMixing(Int_t poolIndex);
 
   enum EMesonSpecies {kDzero, kDplus, kDstar, kDs};
   enum EPrompFd {kNone,kPrompt,kFeeddown,kBoth};
@@ -142,7 +137,7 @@ private:
   TH1F *fDeltaMass;        //! hist. mass difference after rotations
   THnSparse *fDeltaMassFullAnalysis; //! hist. mass difference after rotations with more details
   TH3F *fMassVsPtVsYME;   //! hist. of Y vs. Pt vs. Mass (mixedevents)
-  
+  TH2F* fEventsPerPool;   //! hist with number of events per pool  
   UInt_t fFilterMask; // FilterMask
   AliESDtrackCuts* fTrackCutsAll; // track selection
   AliESDtrackCuts* fTrackCutsPion; // pion track selection
@@ -180,11 +175,7 @@ private:
   Double_t fBayesThresPion;  // threshold for pion identification via Bayesian PID
 
   Bool_t fDoEventMixing; // flag for event mixing
-  Int_t  fMaxNumberOfEventsForMixing; // maximum number of events to be used in event mixing
-  Double_t fMaxzVertDistForMix; // cut on zvertex distance for event mixing
-  Double_t fMaxMultDiffForMix; // cut on multiplicity difference for event mixing 
-  Bool_t fUsePoolsZ; // flag for using pools in z vertex
-  Bool_t fUsePoolsM; // flag for using pools in multiplicity
+  Int_t  fMinNumberOfEventsForMixing; // maximum number of events to be used in event mixing
   Int_t fNzVertPools; // number of pools in z vertex for event mixing
   Int_t fNzVertPoolsLimSize; // number of pools in z vertex for event mixing +1
   Double_t* fzVertPoolLims; //[fNzVertPoolsLimSize] limits of the pools in zVertex
@@ -192,12 +183,12 @@ private:
   Int_t fNMultPoolsLimSize; // number of pools in multiplicity for event mixing +1
   Double_t* fMultPoolLims; //[fNMultPoolsLimSize] limits of the pools in multiplicity
 
-  TTree* fEventBuffer;    // structure for event mixing
+  TTree** fEventBuffer;   //! structure for event mixing
   Double_t fVtxZ;         // zVertex
   Double_t fMultiplicity; // multiplicity
   TObjArray* fKaonTracks; // array of kaon-compatible tracks (TLorentzVectors)
   TObjArray* fPionTracks; // array of pion-compatible tracks (TLorentzVectors)  
-  ClassDef(AliAnalysisTaskCombinHF,7); // D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,8); // D0D+ task from AOD tracks
 };
 
 #endif
