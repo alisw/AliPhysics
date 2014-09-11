@@ -542,11 +542,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCutSettings->GetYaxis()->SetTitle("cut value");
   fCutSettings->SetBit(TH1::kCanRebin);
   
-  fEventplaneDist = new TH1F("fEventplaneDist","fEventplaneDist",200, -1./2.*TMath::Pi(), 1./2.*TMath::Pi());
+  fEventplaneDist = new TH1F("fEventplaneDist","fEventplaneDist",200, 0, 2.*TMath::Pi());
   fEventplaneDist->GetXaxis()->SetTitle("#phi (event plane)");
   fEventplaneDist->Sumw2();
   
-  fEventplaneRunDist = new TH2F("fEventplaneRunDist","fEventplaneRunDist",200, -1./2.*TMath::Pi(), 1./2.*TMath::Pi(),fRunNumberNbins-1, fBinsRunNumber );
+  fEventplaneRunDist = new TH2F("fEventplaneRunDist","fEventplaneRunDist",200, 0, 2.*TMath::Pi(),fRunNumberNbins-1, fBinsRunNumber );
   fEventplaneRunDist->GetXaxis()->SetTitle("#phi (event plane)");
   fEventplaneRunDist->GetYaxis()->SetTitle("runnumber");
   fEventplaneRunDist->Sumw2();
@@ -577,7 +577,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fEventplaneSubtractedPercentage->Sumw2();
   
   // cross check for event plane resolution
-  fEPDistCent = new TH2F("fEPDistCent","fEPDistCent",20, -1.*TMath::Pi(), TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
+  fEPDistCent = new TH2F("fEPDistCent","fEPDistCent",20, -2.*TMath::Pi(), 2.*TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
   fEPDistCent->GetXaxis()->SetTitle("#phi (#Psi_{EP})");
   fEPDistCent->GetYaxis()->SetTitle("Centrality");
   fEPDistCent->Sumw2();
@@ -664,7 +664,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fPsinPhiCent);
   
   fOutputList->Add(fDeltaPhiCent);
-  
+    
   StoreCutSettingsToHistogram();
   
   PostData(1, fOutputList);
@@ -818,6 +818,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	if(GetEventplaneSelector().CompareTo("Q") == 0) 
 	{
 	  epQvector = ep->GetQVector(); 
+	  if(epQvector) dEventplaneAngle = epQvector->Phi();//MoveEventplane(epQvector->Phi());
 	}
   }
   
@@ -873,7 +874,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  dMCTrackZvPtEtaCent[3] = dCentrality;
 	  fMCGenZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
 	  
-	  dMCTrackPhiPtEtaCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
+	  dMCTrackPhiPtEtaCent[0] = mcPart->Phi() - dEventplaneAngle;//RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
 	  // 	  if( dMCTrackPhiPtEtaCent[0] < 0) dMCTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
 	  // 	  else if( dMCTrackPhiPtEtaCent[0] > 2.*TMath::Pi()) dMCTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
 	  dMCTrackPhiPtEtaCent[1] = mcPart->Pt();
@@ -976,7 +977,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 		iSubtractedTracks++;
 	  }
 	  TVector2 epCorrected(dX, dY);
-	  dEventplaneAngleCorrected = MoveEventplane(epCorrected.Phi()/2.); // see AlEPSelectionTask.cxx:354
+	  dEventplaneAngleCorrected = epCorrected.Phi(); // see AlEPSelectionTask.cxx:354 - without dividing by 2!
 	}
 	else
 	{
@@ -987,7 +988,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	fCorrelEventplaneDefaultCorrected->Fill(dFillEPCorrectionCheck);
 	
 	
-	dTrackPhiPtEtaCent[0] = RotatePhi(track->Phi(), dEventplaneAngleCorrected); 
+	dTrackPhiPtEtaCent[0] = track->Phi() - dEventplaneAngleCorrected;//RotatePhi(track->Phi(), dEventplaneAngleCorrected); 
 	
 	// 	if( dTrackPhiPtEtaCent[0] < -1.0*TMath::Pi()) dTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
 	// 	else if( dTrackPhiPtEtaCent[0] > TMath::Pi()) dTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
@@ -1013,7 +1014,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  dMCTrackZvPtEtaCent[2] = mcPart->Eta();
 	  dMCTrackZvPtEtaCent[3] = dCentrality;
 	  
-	  dMCTrackPhiPtEtaCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
+	  dMCTrackPhiPtEtaCent[0] = mcPart->Phi() - dEventplaneAngle;//RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
 	  
 	  // 	  if( dMCTrackPhiPtEtaCent[0] < -1.0*TMath::Pi()) dMCTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
 	  // 	  else if( dMCTrackPhiPtEtaCent[0] > TMath::Pi()) dMCTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
@@ -1085,7 +1086,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  fPsinPhiCent->Fill(dCentrality, TMath::Sin(2.*track->Phi()));
 	  
 	  Double_t deltaphi = track->Phi() - dEventplaneAngleCorrected;
-	  if(deltaphi > TMath::Pi()) deltaphi -= 2.*TMath::Pi();
+// 	  if(deltaphi > TMath::Pi()) deltaphi -= 2.*TMath::Pi();
 	  
 	  fDeltaPhiCent->Fill(deltaphi, dCentrality);
 	}
@@ -1262,7 +1263,7 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   //
   
   if(!tr) return kFALSE;
-  
+   
   if(tr->Charge()==0) { return kFALSE; }
   
   //
