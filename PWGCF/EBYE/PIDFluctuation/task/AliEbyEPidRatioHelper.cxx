@@ -63,7 +63,7 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
   fCentralityBin(-1),
   fCentralityPercentile(-1.),
 
-  fCentralityBinMax(7),
+  fCentralityBinMax(11),
   fVertexZMax(10.),
   fRapidityMax(0.5),
   fPhiMin(0.),
@@ -88,7 +88,7 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
   fNTriggers(5),
 
   fHCentralityStat(NULL),
-  fNCentralityBins(10),
+  fNCentralityBins(11),
   
   fRandom(NULL) {
   // Constructor   
@@ -119,7 +119,7 @@ const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsPt      = Int_t((AliEbyEPidRat
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangeSign[]  = {-1.5, 1.5};
 const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsSign    =  3;
 
-const Char_t* AliEbyEPidRatioHelper::fgkEventNames[]         = {"All", "IsTriggered", "HasVertex", "Vz<Vz_{Max}", "Centrality [0,90]%"};
+const Char_t* AliEbyEPidRatioHelper::fgkEventNames[]         = {"All", "IsTriggered", "HasVertex", "Vz<Vz_{Max}", "Centrality [0,100]%"};
 const Char_t* AliEbyEPidRatioHelper::fgkCentralityMaxNames[] = {"5", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"};
 const Char_t* AliEbyEPidRatioHelper::fgkTriggerNames[]       = {"kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" }; 
 const Char_t* AliEbyEPidRatioHelper::fgkCentralityNames[]    = {"0-5%", "5-10%", "10-20%", "20-30%", "30-40%", "40-50%","50-60%", "60-70%", "70-80%", "80-90%", "90-100%"};
@@ -253,8 +253,8 @@ Int_t AliEbyEPidRatioHelper::SetupEvent(AliESDInputHandler *esdHandler, AliAODIn
     fStack     = fMCEvent->Stack();
 
   // -- Get event centrality
-  // >  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
-  // >   0   1     2     3     4     5     6     7     8     9
+  // >  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90|90-100 --> 11 bins
+  // >   0   1     2     3     4     5     6     7     8     9     10
 
   AliCentrality *centrality = NULL;
 
@@ -269,21 +269,15 @@ Int_t AliEbyEPidRatioHelper::SetupEvent(AliESDInputHandler *esdHandler, AliAODIn
   }
 
   Int_t centBin = centrality->GetCentralityClass10("V0M");
-  if (centBin == 0)
-    fCentralityBin = centrality->GetCentralityClass5("V0M");
-  else if (centBin == 10 || centBin == -1.)
-    fCentralityBin = -1;
-  else if (centBin > 0 && centBin < fNCentralityBins)
-    fCentralityBin = centBin + 1;
-  else
-    fCentralityBin = -2;
-
-  // -- Stay within the max centrality bin
+  if (centBin == 0) { fCentralityBin = centrality->GetCentralityClass5("V0M"); }
+  else if (centBin == 11 || centBin == -1.)           { fCentralityBin = -1; }
+  else if (centBin > 0 && centBin < fNCentralityBins) { fCentralityBin = centBin + 1; }
+  else {  fCentralityBin = -2; }
+  
   if (fCentralityBin >= fCentralityBinMax)
     fCentralityBin = -2;
 
   fCentralityPercentile = centrality->GetCentralityPercentile("V0M");
-
   
   return 0;
 }

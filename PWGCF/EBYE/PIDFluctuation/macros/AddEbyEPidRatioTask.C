@@ -114,7 +114,7 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
   task->SetPtRange(minPt, maxPt);           // pt cut range for the analysis
   task->SetPtRangeEff(minPtEff, maxPtEff);  // pt cut range for the correction / efficiency / contamination creation
   helper->SetVertexZMax(10.);   
-  helper->SetCentralityBinMax(7);
+  helper->SetCentralityBinMax(11);
   helper->SetRapidityMax(0.5); 
   helper->SetMinTrackLengthMC(70.);  
   helper->SetNSigmaMaxCdd(0.);    //  3. ||   ->> Turn off sigmaDCA cuts for now

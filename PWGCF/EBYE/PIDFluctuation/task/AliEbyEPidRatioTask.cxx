@@ -370,18 +370,8 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   return 0;
 }
 
-/*
- * ---------------------------------------------------------------------------------
- *                            Setup/Reset Methods - private
- * ---------------------------------------------------------------------------------
- */
-
 //________________________________________________________________________
 Int_t AliEbyEPidRatioTask::SetupEvent() {
-  // Setup Reading of event
-  // > return 0 for success / accepted event
-  // > return -1 for failed setup
-  // > return -2 for rejected event
 
   ResetEvent();
 
