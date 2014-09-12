@@ -618,7 +618,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       for(int nk=0;nk<l->GetEntries();nk++){
 	  TObject *obj = (TObject*)l->At(nk);
 	  TString oname = obj->GetName();
-	  if(oname.Contains("lus"))
+	  //if(oname.Contains("lus"))
 	    printf("Object %d has a clus array named %s +++++++++\n",nk,oname.Data());
 	}
     }
