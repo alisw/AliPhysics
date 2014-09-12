@@ -5,11 +5,7 @@ PACKAGE = TestShuttle
 include $(ROOTSYS)/etc/Makefile.arch
 include $(PACKAGE).pkg
 
-ALICEINC      = -I.
-
-ifneq ($(ALICE_ROOT),)
-  ALICEINC += -I$(ALICE_ROOT)/include 
-endif
+ALICEINC      = -I. -I$(ALICE_INSTALL)/include 
 
 CXXFLAGS     += $(ALICEINC) -g
 SRCS         += dict.cxx
