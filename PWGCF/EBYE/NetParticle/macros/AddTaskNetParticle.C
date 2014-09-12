@@ -68,9 +68,9 @@ AliAnalysisTask *AddTaskNetParticle(const Char_t *name      = "ITS_NetProton",
 				    Float_t gMinPtEff       = 0.3,    
 				    Float_t gMaxPtEff       = 2.5,
 				    Float_t gSigmaITS       = 4.0,
+				    Float_t gSigmaTOF       = 4.0,
 				    Float_t gSigmaTPC       = 4.0,   
-				    Float_t gSigmaTPClow    = 3.0,   
-				    Float_t gSigmaTOF       = 4.0) {
+				    Float_t gSigmaTPClow    = 3.0) {
 
   TString sName(name);
 
