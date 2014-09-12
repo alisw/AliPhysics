@@ -59,6 +59,8 @@ class AliFlatESDEvent :public AliVVevent {
   const AliVVtrack* GetVVTrack(Int_t i) const { return GetFlatTrack(i); }
   AliESDkink* GetKink(Int_t /*i*/) const { return NULL;}
 
+  Int_t GetPrimaryVertex( AliESDVertex &v ) const ;
+  Int_t GetPrimaryVertexTPC( AliESDVertex &v ) const ;
   Int_t GetPrimaryVertexSPD( AliESDVertex &v ) const ;
   Int_t GetPrimaryVertexTracks( AliESDVertex &v ) const ;
 
@@ -243,5 +245,18 @@ inline Int_t AliFlatESDEvent::GetPrimaryVertexTracks( AliESDVertex &v ) const
   flatVertex->GetESDVertex( v );
   return 0;
 }
+
+inline Int_t AliFlatESDEvent::GetPrimaryVertexTPC( AliESDVertex &/*v*/ ) const 
+{
+  return -1;
+}
+
+inline Int_t AliFlatESDEvent::GetPrimaryVertex( AliESDVertex &v ) const 
+{
+  int ret = GetPrimaryVertexTracks( v );
+  if( ret<0 ) ret = GetPrimaryVertexSPD( v );
+  return ret;
+}
+
 
 #endif
