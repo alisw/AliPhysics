@@ -20,17 +20,37 @@
 
 #include "AliHLTTestInputHandler.h"
 #include "AliVCuts.h"
-#include "AliVVevent.h"
+#include "AliVEvent.h"
 #include "TObjArray.h"
 #include "AliAnalysisTask.h"
 
 ClassImp(AliHLTTestInputHandler)
 
 //______________________________________________________________________________
+AliHLTTestInputHandler::AliHLTTestInputHandler() 
+  : AliVEventHandler()
+  , fEvent(NULL)
+  , fFriendEvent(NULL)
+{
+// default constructor
+}
+
+//______________________________________________________________________________
 AliHLTTestInputHandler::AliHLTTestInputHandler(const char* name, const char* title) 
   : AliVEventHandler(name,title)
+  , fEvent(NULL)
+  , fFriendEvent(NULL)
 {
 // Named constructor
+}
+
+//______________________________________________________________________________
+AliHLTTestInputHandler::AliHLTTestInputHandler(AliHLTTestInputHandler& that) 
+  : AliVEventHandler(that)
+  , fEvent(that.fEvent)
+  , fFriendEvent(that.fFriendEvent)
+{
+// dummy cpy constructor
 }
 
 //______________________________________________________________________________
@@ -54,17 +74,17 @@ Bool_t AliHLTTestInputHandler::BeginEvent(Long64_t)
 }     
 
 //______________________________________________________________________________
-Bool_t AliHLTTestInputHandler::InitTaskInputData(AliVVevent* esdEvent, AliVfriendEvent* friendEvent, TObjArray* arrTasks) {
+Bool_t AliHLTTestInputHandler::InitTaskInputData(AliVEvent* esdEvent, AliVfriendEvent* friendEvent, TObjArray* arrTasks) {
 
 // Method to propagte to all the connected tasks the HLT event.
 // The method gets the list of tasks from the manager
 
   Printf("----> AliHLTTestInputHandler::InitTaskInpuData: Setting the event...");
-  SetVVEvent(esdEvent);
+  SetEvent(esdEvent);
   SetVFriendEvent(friendEvent);
   // set transient pointer to event inside tracks
   fEvent->ConnectTracks();
-  Printf("----> AliHLTTestInputHandler::InitTaskInpuData: ...Event set");
+  Printf("----> AliHLTTestInputHandler::InitTaskInpuData: ...Event set: fEvent = %p", fEvent);
   for (Int_t i = 0; i < arrTasks->GetEntries(); i++){
     AliAnalysisTask* t = (AliAnalysisTask*)(arrTasks->At(i));
     t->ConnectInputData("");

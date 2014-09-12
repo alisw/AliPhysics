@@ -30,7 +30,6 @@
 #include <TBits.h>
 #include "AliExternalTrackParam.h"
 #include "AliVTrack.h"
-#include "AliVVtrack.h"
 #include "AliESDTOFCluster.h"
 #include "AliPID.h"
 #include "AliESDfriendTrack.h"
@@ -45,7 +44,7 @@ class AliDetectorPID;
 class TTreeSRedirector;
 class AliESDEvent;
 
-class AliESDtrack : public AliExternalTrackParam, public AliVVtrack {
+class AliESDtrack : public AliExternalTrackParam {
 public:
   //
   enum {kNITSchi2Std=3};
@@ -452,8 +451,18 @@ public:
   static Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 );
   Double_t GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 ) const;
 
-  // extra AliVVtrack interface
-  Double_t GetPt() const { return Pt(); }
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam &p ) const {p=*this; return 0;}
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam & ) const {return 0;}
 
 protected:
   

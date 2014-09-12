@@ -138,8 +138,5 @@
 #pragma link C++ class  AliVTOFMatch+;
 #pragma link C++ class AliVTOFcluster+;
 
-#pragma link C++ class AliVVevent+;
-#pragma link C++ class AliVVtrack+;
-
 #endif
 

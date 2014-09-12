@@ -7,7 +7,7 @@
 class TH1F;
 class AliESDEvent;
 class AliVfriendEvent;
-class AliVVevent;
+class AliVEvent;
 class AliESDtrackCuts;
 class TList;
 
@@ -29,7 +29,7 @@ class AliAnalysisTaskPt : public AliAnalysisTask {
   void   SetUseFriends(Bool_t flag) {fUseFriends = flag;}
 
  private:
-  AliVVevent*       fESD;                      // ESD object
+  AliVEvent*       fESD;                      // ESD object
   AliVfriendEvent* fESDfriend;                // ESD friend object
   TH1F*             fHistPt;                   // Pt spectrum
   AliESDtrackCuts*  fCuts;                     // cuts

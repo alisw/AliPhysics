@@ -258,6 +258,19 @@ class AliExternalTrackParam: public AliVTrack {
   static Bool_t  GetUseLogTermMS()                {return fgUseLogTermMS;} 
   static void    SetUseLogTermMS(Bool_t v=kTRUE)  {fgUseLogTermMS = v;} 
 
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam & ) const {return 0;}
+
  protected:
   AliExternalTrackParam(const AliVTrack *vTrack);
 

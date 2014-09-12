@@ -69,7 +69,6 @@
 // _______________________________________________________________________________________________________
 AliFlatESDEvent::AliFlatESDEvent() 
   :
-  AliVVevent(),
   fContentSize(0),
   fMagneticField(0),
   fPeriodNumber(0),
@@ -98,31 +97,30 @@ AliFlatESDEvent::AliFlatESDEvent()
 }
 
 
-AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag f ) 
-  :
-  AliVVevent( f ),
-  fContentSize(fContentSize),
-  fMagneticField(fMagneticField),
-  fPeriodNumber(fPeriodNumber),
-  fRunNumber(fRunNumber),
-  fOrbitNumber(fOrbitNumber),
-  fTimeStamp(fTimeStamp),
-  fEventSpecie(fEventSpecie),
-  fBunchCrossNumber(fBunchCrossNumber),
-  fPrimaryVertexMask(fPrimaryVertexMask),
-  fTriggerMask(fTriggerMask),
-  fTriggerMaskNext50(fTriggerMaskNext50),
-  fNTriggerClasses(fNTriggerClasses),
-  fNPrimaryVertices(fNPrimaryVertices),
-  fNTracks(fNTracks),
-  fNV0s(fNV0s),
-  fTriggerPointer(fTriggerPointer),
-  fPrimaryVertexTracksPointer(fPrimaryVertexTracksPointer),
-  fPrimaryVertexSPDPointer(fPrimaryVertexSPDPointer),
-  fTrackTablePointer(fTrackTablePointer),
-  fTracksPointer(fTracksPointer),
-  fV0Pointer(fV0Pointer),
-  fFriendEvent(NULL)
+AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag /*f*/ ) 
+//  :
+//  fContentSize(fContentSize),
+//  fMagneticField(fMagneticField),
+//  fPeriodNumber(fPeriodNumber),
+//  fRunNumber(fRunNumber),
+//  fOrbitNumber(fOrbitNumber),
+//  fTimeStamp(fTimeStamp),
+//  fEventSpecie(fEventSpecie),
+//  fBunchCrossNumber(fBunchCrossNumber),
+//  fPrimaryVertexMask(fPrimaryVertexMask),
+//  fTriggerMask(fTriggerMask),
+//  fTriggerMaskNext50(fTriggerMaskNext50),
+//  fNTriggerClasses(fNTriggerClasses),
+//  fNPrimaryVertices(fNPrimaryVertices),
+//  fNTracks(fNTracks),
+//  fNV0s(fNV0s),
+//  fTriggerPointer(fTriggerPointer),
+//  fPrimaryVertexTracksPointer(fPrimaryVertexTracksPointer),
+//  fPrimaryVertexSPDPointer(fPrimaryVertexSPDPointer),
+//  fTrackTablePointer(fTrackTablePointer),
+//  fTracksPointer(fTracksPointer),
+//  fV0Pointer(fV0Pointer),
+//  fFriendEvent(NULL)
 {
   // Constructor for reinitialisation of vtable
 
@@ -221,6 +219,7 @@ void AliFlatESDEvent::Reset()
   ULong64_t size = sizeof(AliFlatESDEvent);
   size += 2 * sizeof( AliFlatESDVertex );
   size += esd->GetNumberOfTracks() * ( AliFlatESDTrack::EstimateSize() + sizeof(Long64_t) );
+  size += AliESDRun::kNTriggerClasses * sizeof(AliFlatESDTrigger) ;
   if( fillV0s ) size += esd->GetNumberOfV0s()*sizeof(AliFlatESDV0);
   return size;
 }
@@ -363,3 +362,7 @@ Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliES
   return 0;
 }
 
+AliVParticle* AliFlatESDEvent::GetTrack(Int_t i) const
+{
+  return const_cast<AliFlatESDTrack*>(GetFlatTrack(i));
+}

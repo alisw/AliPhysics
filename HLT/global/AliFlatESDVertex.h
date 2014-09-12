@@ -109,9 +109,10 @@ fChi2(0)
   for( int i=0; i<6; i++) fCov[i] = -9999;
 }
 
-inline AliFlatESDVertex::AliFlatESDVertex( AliVConstructorReinitialisationFlag ): 
-fNContributors(fNContributors), 
-fChi2(fChi2)
+inline AliFlatESDVertex::AliFlatESDVertex( AliVConstructorReinitialisationFlag )
+//: 
+//fNContributors(fNContributors), 
+//fChi2(fChi2)
 {
   // do nothing
   for( int i=0; i<3; i++) fPosition[i] = fPosition[i];

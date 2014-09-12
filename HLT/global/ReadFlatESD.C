@@ -50,13 +50,13 @@ void ReadFlatESD(const char* filename="outFlatESD.dat", Int_t verbose=0) {
     
     while( curr < endBuff ){
       cout<<endl<<"Reading event "<<iEvent<<":"<<endl;
-    Printf("curr: %p \t endBuff: %p \t diff %p ", curr, endBuff, endBuff-curr);
+ //   Printf("curr: %p \t endBuff: %p \t diff %p ", curr, endBuff, endBuff-curr);
       AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent *>(curr);
 			flatEsd->Reinitialize();
 
       
-cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetPrimaryVertexSPD()
-	  <<" vtx tracks: "<<(Bool_t) flatEsd->GetPrimaryVertexTracks()	
+cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetFlatPrimaryVertexSPD()
+	  <<" vtx tracks: "<<(Bool_t) flatEsd->GetFlatPrimaryVertexTracks()	
 	  <<" ntracks: "<<flatEsd->GetNumberOfTracks()
 	  <<" nV0's: "<<flatEsd->GetNumberOfV0s()
 	  <<endl;
@@ -64,18 +64,18 @@ cout<<"vtx SPD: "<<(Bool_t) flatEsd->GetPrimaryVertexSPD()
 // compare tracks
 if(verbose){
 	static const int nExt = 4;
-	  AliFlatESDTrack *track = flatEsd->GetTracks();
+	  AliFlatESDTrack *track = const_cast<AliFlatESDTrack*> ( flatEsd->GetTracks() );
 	  //new (track)AliFlatESDTrack(1);
     for (Int_t idxTrack = 0; idxTrack < flatEsd->GetNumberOfTracks() && track; ++idxTrack) { 
 
 	cout<<"track nr "<<idxTrack<<endl;
 
-		AliFlatExternalTrackParam* ext[nExt] ={
+		const AliFlatExternalTrackParam* ext[nExt] ={
 			
-				track->GetTrackParamRefitted(),
-				track->GetTrackParamIp(),
-				track->GetTrackParamTPCInner(),
-				track->GetTrackParamOp(),
+				track->GetFlatTrackParamRefitted(),
+				track->GetFlatTrackParamIp(),
+				track->GetFlatTrackParamTPCInner(),
+				track->GetFlatTrackParamOp(),
 		
 		};
 	
@@ -102,14 +102,14 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
 		cout<<" nITSclusters: "<<track->GetNumberOfITSClusters()<< endl;
 
 // read clusters
-
+#if 0
 	Int_t nCl = track->GetNumberOfTPCClusters();
 	if(nCl && verbose > 1){
 	
-      for (Int_t idxRow = 0; idxRow <  nCl; idxRow++){
-      cout<<"rowNr "<< idxRow<<endl;
+    for (Int_t idxRow = 0; idxRow <  nCl; idxRow++){
+		cout<<"rowNr "<< idxRow<<endl;
       
-      AliFlatTPCCluster * cl = track->GetTPCCluster(idxRow);
+		AliFlatTPCCluster * cl = track->GetTPCCluster(idxRow);
 
 			 	cout<<" idx fX fY fZ  fSigmaY2 fSigmaZ2 fCharge fQMax fPadRow" <<endl;
 				if(cl) {
@@ -117,15 +117,18 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
 				
 				}
 				else cout <<"----------------------------------------------------"<<endl;
-    }
+		}
 	}
-      track = track->GetNextTrack();
+#endif
+	
+	
+      track = const_cast<AliFlatESDTrack*> (track->GetNextTrack());
 	  
 	  
 	  }
 }
 
-    Printf("curr: %p \t + %d = %p , diff:%p", curr, flatEsd->GetSize() ,curr+ flatEsd->GetSize(), endBuff-(curr+ flatEsd->GetSize())   );
+  //  Printf("curr: %p \t + %d = %p , diff:%p", curr, flatEsd->GetSize() ,curr+ flatEsd->GetSize(), endBuff-(curr+ flatEsd->GetSize())   );
       curr=curr+ flatEsd->GetSize();
       iEvent++;
     }

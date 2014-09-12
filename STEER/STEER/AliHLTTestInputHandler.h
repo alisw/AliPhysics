@@ -13,15 +13,17 @@
 #endif
 
 class TObjArray;
-class AliVVevent;
 class AliVfriendevent;
+class AliVEvent;
 
 class AliHLTTestInputHandler : public AliVEventHandler {
 
  public:
-    AliHLTTestInputHandler() {}
+    AliHLTTestInputHandler();
+    AliHLTTestInputHandler(AliHLTTestInputHandler&);
     AliHLTTestInputHandler(const char* name, const char* title);
     virtual ~AliHLTTestInputHandler() {}
+    AliHLTTestInputHandler& operator=(const AliHLTTestInputHandler&) {return *this;}
     virtual Bool_t Notify() { return kFALSE; }
     virtual Bool_t Notify(const char *) {return kTRUE;}
     virtual Bool_t Init(Option_t* /*opt*/) {return kTRUE;}
@@ -38,11 +40,11 @@ class AliHLTTestInputHandler : public AliVEventHandler {
     virtual Bool_t TerminateIO() {return kTRUE;}
 
     // Especially needed for HLT
-    Bool_t InitTaskInputData(AliVVevent* /*esdEvent*/, AliVfriendEvent* /*friendEvent*/, TObjArray* /*arrTasks*/);
+    virtual Bool_t InitTaskInputData(AliVEvent* /*esdEvent*/, AliVfriendEvent* /*friendEvent*/, TObjArray* /*arrTasks*/);
 
-    AliVEvent* GetEvent() const {return NULL;}
-    AliVVevent* GetVVEvent() const {return fEvent;}
-    void  SetVVEvent(AliVVevent *event) {fEvent = event;}
+    AliVEvent* GetEvent() const {return fEvent;}
+    //AliVEvent* GetEvent() const {return NULL;}
+    void  SetEvent(AliVEvent *event) {fEvent = event;}
 
     AliVfriendEvent* GetVFriendEvent() const {return fFriendEvent;}
     void  SetVFriendEvent(AliVfriendEvent *friendEvent) {fFriendEvent = friendEvent;}
@@ -51,7 +53,7 @@ class AliHLTTestInputHandler : public AliVEventHandler {
     AliHLTTestInputHandler(const AliVEventHandler& handler);             
     AliHLTTestInputHandler& operator=(const AliVEventHandler& handler);  
     
-    AliVVevent       *fEvent;          //! Pointer to the event
+    AliVEvent       *fEvent;          //! Pointer to the event
     AliVfriendEvent *fFriendEvent;    //! Pointer to the friend event
 
     ClassDef(AliHLTTestInputHandler, 1);

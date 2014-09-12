@@ -8,8 +8,7 @@
 #include "AliAnalysisManager.h"
 
 #include "AliESDEvent.h"
-#include "AliVVevent.h"
-#include "AliVVtrack.h"
+//#include "AliFlatESDEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliVEventHandler.h"
 #include "AliTPCseed.h"
@@ -57,13 +56,16 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
     */
 
     AliVEventHandler *esdH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+    TString classInputHandler = esdH->ClassName();
+
+    Printf("----> AliAnalysisTaskPt: ClassName of handler = %s", classInputHandler.Data());
 
     if (!esdH) {
       Printf("ERROR: Could not get ESDInputHandler");
     } else {
       Printf("----> AliAnalysisTaskPt::ConnectInputData Getting the event from handler %p", esdH);
-      //fESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
-      fESD = esdH->GetVVEvent();
+      //fESD = dynamic_cast<AliFlatESDEvent*>(esdH->GetEvent());
+      fESD = esdH->GetEvent();
       if (fUseFriends){	
 	fESDfriend = esdH->GetVFriendEvent();
       }
@@ -155,13 +157,13 @@ void AliAnalysisTaskPt::Exec(Option_t *)
   // Track loop to fill a pT spectrum
   for (Int_t iTracks = 0; iTracks < nESDtracks; iTracks++) {
     Printf("Checking track %d: Note that with Flat, the GetTrack is not yet implemented!!!", iTracks);
-    const AliVVtrack* track = fESD->GetVVTrack(iTracks);
+    const AliVTrack* track = dynamic_cast<AliVTrack*>(fESD->GetTrack(iTracks));
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTracks);
       continue;
     }
-    Printf("track %d has pt = %f", iTracks, track->GetPt());
-    fHistPt->Fill(track->GetPt());
+    Printf("track %d has pt = %f", iTracks, track->Pt());
+    fHistPt->Fill(track->Pt());
     fHistNTPCCl->Fill(track->GetTPCNcls());
   } //track loop 
 

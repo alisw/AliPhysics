@@ -17,11 +17,12 @@
 
 class AliVEvent;
 class AliVVertex;
+class AliExternalTrackParam;
 class AliTPCdEdxInfo;
 class AliDetectorPID;
 class AliTOFHeader;
-class AliExternalTrackParam;
 
+ 
 class AliVTrack: public AliVParticle {
 
 public:
@@ -124,6 +125,8 @@ public:
   virtual Double_t  GetTOFsignalTunedOnData() const {return 0.;}
   virtual Double_t  GetHMPIDsignal()     const {return 0.;}
   virtual Double_t  GetTRDsignal()       const {return 0.;}
+  virtual UChar_t GetTRDNchamberdEdx() const {return 0;}
+  virtual UChar_t GetTRDNclusterdEdx() const {return 0;}
 
   virtual Double_t  GetHMPIDoccupancy()  const {return 0.;}
   
@@ -144,8 +147,8 @@ public:
   virtual Double_t  GetIntegratedLength() const { return 0.;}
   
   virtual ULong_t  GetStatus() const = 0;
-  virtual Bool_t   GetXYZAt(Double_t /*x*/, Double_t /*b*/, Double_t* /*r*/ ) const ;
   virtual Bool_t   GetXYZ(Double_t* /*p*/) const ;
+  virtual Bool_t   GetXYZAt(Double_t /*x*/, Double_t /*b*/, Double_t* /*r*/ ) const ;
   virtual Double_t GetBz() const;
   virtual void     GetBxByBz(Double_t b[3]) const;
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const = 0;
@@ -155,6 +158,19 @@ public:
   virtual void     SetID(Short_t /*id*/) {;}
   virtual Int_t    GetTOFBunchCrossing(Double_t = 0, Bool_t = kFALSE) const { return kTOFBCNA;}
   virtual const AliTOFHeader *GetTOFHeader() const {return NULL;};
+
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam& ) const {return 0;}
 
   ClassDef(AliVTrack,1)  // base class for tracks
 };

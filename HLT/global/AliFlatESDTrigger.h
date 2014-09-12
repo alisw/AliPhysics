@@ -87,9 +87,10 @@ inline AliFlatESDTrigger::~AliFlatESDTrigger()
   // Destructor  
 }
 
-inline AliFlatESDTrigger::AliFlatESDTrigger( AliVConstructorReinitialisationFlag ) :
-  fContentSize(fContentSize),
-  fTriggerIndex(fTriggerIndex)
+inline AliFlatESDTrigger::AliFlatESDTrigger( AliVConstructorReinitialisationFlag ) 
+//  :
+//  fContentSize(fContentSize),
+//  fTriggerIndex(fTriggerIndex)
 {
   // do nothing
 }

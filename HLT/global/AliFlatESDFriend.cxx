@@ -70,14 +70,15 @@ void AliFlatESDFriend::Reset()
 }
  
 // _______________________________________________________________________________________________________
-AliFlatESDFriend::AliFlatESDFriend(AliVConstructorReinitialisationFlag f) :
-  AliVfriendEvent(),
-  fContentSize(),
-  fBitFlags(),
-  fNTracks(),
-  fNTrackEntries(),
-  fTrackTablePointer(),
-  fTracksPointer()
+AliFlatESDFriend::AliFlatESDFriend(AliVConstructorReinitialisationFlag f)
+:
+AliVfriendEvent()
+//  fContentSize(),
+//  fBitFlags(),
+//  fNTracks(),
+//  fNTrackEntries(),
+//  fTrackTablePointer(),
+//  fTracksPointer()
 {
   //special constructor, used to restore the vtable pointer
   //uses the special dummy constructors of contained objects

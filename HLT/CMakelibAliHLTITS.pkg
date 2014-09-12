@@ -47,6 +47,10 @@ set ( CLASS_HDRS
     clusterfinders/AliHLTITSClusterFinderSPD.h
     clusterfinders/AliHLTITSClusterFinderSSD.h
     AliHLTITSVertexerSPDComponent.h
+    trackingSAP/AliITSSAPLayer.h
+    trackingSAP/AliITSSAPAux.h
+    trackingSAP/AliITSSAPTracker.h
+    trackingSAP/AliHLTITSSAPTrackerComponent.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
