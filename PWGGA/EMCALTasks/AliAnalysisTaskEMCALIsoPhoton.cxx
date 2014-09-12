@@ -90,6 +90,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fNCuts(5),
   fTrCoreRem(kFALSE),
   fClusTDiff(30e-9),
+  fPileUpRejSPD(kFALSE),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -197,6 +198,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fNCuts(5),
   fTrCoreRem(kFALSE),
   fClusTDiff(30e-9),
+  fPileUpRejSPD(kFALSE),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -541,6 +543,11 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     printf("passed vertex cut\n");
 
   fEvtSel->Fill(1);
+  if(fVEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.) && fPileUpRejSPD){
+    if(fDebug)
+      printf("Event is SPD pile-up!***\n");
+    return;
+  }
   if(fESD)
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("Tracks"));
   if(fAOD)
