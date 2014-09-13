@@ -93,7 +93,7 @@ void AliEbyEPidRatioQA::CreateHistograms() {
 			  2.5,3.5};
   
 
-  fHnQA = new THnSparseF("hnQA", "cent:eta:y:phi:pt:pInner:sign:TPCsignal:nSigmaITS:nSigmaTPC:nSigmaTOF:DCAr:DCAz:nSigmaDCAr:nSigmaDCAz:MCisProbe",
+  fHnQA = new THnSparseF("hnQA", "cent:eta:y:phi:pt:pInner:sign:TPCsignal:nSigmaITS:nSigmaTPC:nSigmaTOF:DCAr:DCAz:nSigmaDCAr:nSigmaDCAz:MCisProbe:PID",
 				 17, binHnQA, minHnQA, maxHnQA);
   
   fHnQA->Sumw2();

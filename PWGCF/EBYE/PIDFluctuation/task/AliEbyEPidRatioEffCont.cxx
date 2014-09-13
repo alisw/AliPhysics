@@ -125,7 +125,7 @@ void AliEbyEPidRatioEffCont::CreateHistograms() {
 			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1],
 			   AliEbyEPidRatioHelper::fgkfHistRangeEta[1],  AliEbyEPidRatioHelper::fgkfHistRangeRap[1], 
 			   AliEbyEPidRatioHelper::fgkfHistRangePhi[1],  AliEbyEPidRatioHelper::fgkfHistRangePt[1],
-			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1]+1., -3.5};
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1]+1., 3.5};
 
   fHnEff = new THnSparseF("hnEff", "cent:etaMC:yMC:phiMC:ptMC:signMC:findable:recStatus:pidStatus:etaRec:yRec:phiRec:ptRec:signRec:deltaEta:deltaY:deltaPhi:deltaPt:deltaSign:PID", 
 			  20, binHnEff, minHnEff, maxHnEff);
@@ -208,7 +208,7 @@ void AliEbyEPidRatioEffCont::CreateHistograms() {
 			    AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
 			    AliEbyEPidRatioHelper::fgkfHistRangeEta[1],  AliEbyEPidRatioHelper::fgkfHistRangeRap[1], 
 			    AliEbyEPidRatioHelper::fgkfHistRangePhi[1],  AliEbyEPidRatioHelper::fgkfHistRangePt[1],
-			    AliEbyEPidRatioHelper::fgkfHistRangeSign[1]+1., -3.5};
+			    AliEbyEPidRatioHelper::fgkfHistRangeSign[1]+1., 3.5};
 
   fHnCont = new THnSparseF("hnCont", "cent:etaMC:yMC:phiMC:ptMC:signMC:contPart:etaRec:yRec:phiRec:ptRec:signRec:deltaEta:deltaY:deltaPhi:deltaPt:deltaSign:PID",
 			   18, binHnCont, minHnCont, maxHnCont);
