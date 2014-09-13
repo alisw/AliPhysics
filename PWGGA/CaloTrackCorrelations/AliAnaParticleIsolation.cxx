@@ -4017,7 +4017,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     
     // Check the origin of the photon or if it is a pi0, assing a tag
-    Int_t pi0d1Label = -1, pi0d2Label = -1, pi0d3Label = -1;
+    Int_t pi0d1Label = -1, pi0d2Label = -1;
     Bool_t overlapPi0 = kTRUE;
     if(pdg==111)
     {
@@ -4030,15 +4030,13 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       //printf("OK pi0 %d, ndaugh %d\n",okpi0,ndaugh);
       Int_t d1Pdg = 0, d1Status = 0; Bool_t ok1 = kFALSE;
       Int_t d2Pdg = 0, d2Status = 0; Bool_t ok2 = kFALSE;
-      Int_t d3Pdg = 0, d3Status = 0; Bool_t ok3 = kFALSE;
-      TLorentzVector daugh1mom, daugh2mom, daugh3mom;
+      TLorentzVector daugh1mom, daugh2mom;
      
       if ( ndaugh > 0 ) daugh1mom = GetMCAnalysisUtils()->GetDaughter(0,i,GetReader(),d1Pdg, d1Status,ok1, pi0d1Label);
       if ( ndaugh > 1 ) daugh2mom = GetMCAnalysisUtils()->GetDaughter(1,i,GetReader(),d2Pdg, d2Status,ok2, pi0d2Label);
-      if ( ndaugh > 2 ) daugh3mom = GetMCAnalysisUtils()->GetDaughter(2,i,GetReader(),d3Pdg, d3Status,ok3, pi0d3Label);
       
-      //printf("pi0 daug %d: a) %d, b) %d, c) %d\n", ndaugh,pi0d1Label,pi0d2Label,pi0d3Label);
-      //if ( ndaugh !=2 ) printf("PDG: %d, %d, %d\n",d1Pdg,d2Pdg,d3Pdg);
+      //printf("pi0 daug %d: a) %d, b) %d, c) %d\n", ndaugh,pi0d1Label,pi0d2Label);
+      //if ( ndaugh !=2 ) printf("PDG: %d, %d, %d\n",d1Pdg,d2Pdg);
       
       // Select decays in 2 photons
       if( ndaugh!=2 || (d2Pdg != d1Pdg && d1Pdg!=22)) okpi0 = kFALSE;
@@ -4090,7 +4088,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     {
       if(ip==i) continue;
       
-      if(pdg==111 && (ip == pi0d1Label || ip == pi0d2Label || (ip == pi0d3Label)))
+      if( pdg==111 && ( ip == pi0d1Label || ip == pi0d2Label ) )
       {
         //printf("Do not count pi0 decays in cone when isolating pi0 \n");
         continue;
