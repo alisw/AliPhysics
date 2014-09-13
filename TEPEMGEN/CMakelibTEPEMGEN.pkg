@@ -26,9 +26,9 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  TEpEmGen.cxx AliGenEpEmv1.cxx)
+set ( SRCS  TEpEmGen.cxx AliGenEpEmv1.cxx AliGenQEDBg.cxx)
 
-set ( HDRS  TEpEmGen.h AliGenEpEmv1.h)
+set ( HDRS  TEpEmGen.h AliGenEpEmv1.h AliGenQEDBg.h)
 
 set ( DHDR TEPEMGENLinkDef.h)
 

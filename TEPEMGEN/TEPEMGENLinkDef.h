@@ -6,5 +6,5 @@
  
 #pragma link C++ class TEpEmGen+;
 #pragma link C++ class AliGenEpEmv1+;
-
+#pragma link C++ class AliGenQEDBg+;
 #endif
