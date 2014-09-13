@@ -48,7 +48,32 @@
 //    Each pair has its own vertex, and time randomly distributed at originT 
 //    and originT+ integration time                    
 //
-//    For details of generation see AliGenEpEmv1.cxx by Yuri.Kharlov@cern.ch
+//    For details of pair generation see AliGenEpEmv1.cxx by Yuri.Kharlov@cern.ch
+
+/*
+  The most useful way of using it is in the overlay with other generators (using the cocktail):
+  In the Config.C 
+  // load the library:
+  gSystem->Load("libTEPEMGEN.so");
+  //
+  // add to AliGenCocktail as:
+  AliGenCocktail *cocktail = new AliGenCocktail();
+  // ... setup other stuff
+  // 
+  // QED background
+  AliGenQEDBg*  genBg = new AliGenQEDBg();
+  genBg->SetEnergyCMS(5500);
+  genBg->SetProjectile("A", 208, 82);
+  genBg->SetTarget    ("A", 208, 82);
+  genBg->SetYRange(-6.,3);
+  genBg->SetPtRange(1.e-3,1.0);      // Set pt limits (GeV) for e+-: 1MeV corresponds to max R=13.3mm at 5kGaus
+  genBg->SetLumiIntTime(6.e27,20e-6); // luminosity and integration time
+  //
+  cocktail->AddGenerator(genBg,"QEDep",1);
+  // We need to generate independent vertex for every event, this must be set after adding to cocktail
+  // Note that the IO origin and sigma's is transferred from AliGenCocktail to daughter generators
+  genBg->SetVertexSource(kInternal);
+*/
 
 #include "AliLog.h"
 #include "AliGenQEDBg.h"
