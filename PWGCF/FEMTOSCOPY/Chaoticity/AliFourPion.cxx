@@ -59,7 +59,7 @@ AliAnalysisTaskSE(),
   fLEGO(kTRUE),
   fMCcase(kFALSE),
   fAODcase(kTRUE),
-  fPbPbcase(kTRUE),
+  fCollisionType(0),
   fGenerateSignal(kFALSE),
   fGeneratorOnly(kFALSE),
   fTabulatePairs(kFALSE),
@@ -225,12 +225,19 @@ AliAnalysisTaskSE(),
       fNormWeight[i][j]=0x0;
     }
   }
-  
 
+  
+  for(Int_t i=0; i<2; i++){// EW/LG
+    ExchangeAmpFullSource[i]=0x0;
+    for(Int_t j=0; j<50; j++){// GIndex
+      ExchangeAmpPointSource[i][j]=0x0;
+    }
+  }
+  
 }
 //________________________________________________________________________
 AliFourPion::AliFourPion(const Char_t *name) 
-: AliAnalysisTaskSE(name), 
+  : AliAnalysisTaskSE(name), 
   fname(name),
   fAOD(0x0), 
   fOutputList(0x0),
@@ -242,7 +249,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fLEGO(kTRUE),
   fMCcase(kFALSE),
   fAODcase(kTRUE),
-  fPbPbcase(kTRUE),
+  fCollisionType(0),
   fGenerateSignal(kFALSE),
   fGeneratorOnly(kFALSE),
   fTabulatePairs(kFALSE),
@@ -410,7 +417,13 @@ AliFourPion::AliFourPion(const Char_t *name)
       fNormWeight[i][j]=0x0;
     }
   }
-
+  
+  for(Int_t i=0; i<2; i++){// EW/LG
+    ExchangeAmpFullSource[i]=0x0;
+    for(Int_t j=0; j<50; j++){// GIndex
+      ExchangeAmpPointSource[i][j]=0x0;
+    }
+  }
 
   DefineOutput(1, TList::Class());
 }
@@ -429,7 +442,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fLEGO(obj.fLEGO),
     fMCcase(obj.fMCcase),
     fAODcase(obj.fAODcase),
-    fPbPbcase(obj.fPbPbcase),
+    fCollisionType(obj.fCollisionType),
     fGenerateSignal(obj.fGenerateSignal),
     fGeneratorOnly(obj.fGeneratorOnly),
     fTabulatePairs(obj.fTabulatePairs),
@@ -543,7 +556,13 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     }
   }
   
-
+  for(Int_t i=0; i<2; i++){// EW/LG
+    ExchangeAmpFullSource[i]=obj.ExchangeAmpFullSource[i];
+    for(Int_t j=0; j<50; j++){// GIndex
+      ExchangeAmpPointSource[i][j]=obj.ExchangeAmpPointSource[i][j];
+    }
+  }
+  
 }
 //________________________________________________________________________
 AliFourPion &AliFourPion::operator=(const AliFourPion &obj) 
@@ -563,7 +582,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fLEGO = fLEGO;
   fMCcase = obj.fMCcase;
   fAODcase = obj.fAODcase;
-  fPbPbcase = obj.fPbPbcase; 
+  fCollisionType = obj.fCollisionType; 
   fGenerateSignal = obj.fGenerateSignal;
   fGeneratorOnly = obj.fGeneratorOnly;
   fTabulatePairs = obj.fTabulatePairs;
@@ -634,6 +653,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fMomResC2MC = obj.fMomResC2MC;
   fWeightmuonCorrection = obj.fWeightmuonCorrection;
   
+
   for(Int_t i=0; i<12; i++){
     fFSIss[i]=obj.fFSIss[i]; 
     fFSIos[i]=obj.fFSIos[i];
@@ -644,6 +664,13 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
     }
   }
   
+  for(Int_t i=0; i<2; i++){// EW/LG
+    ExchangeAmpFullSource[i]=obj.ExchangeAmpFullSource[i];
+    for(Int_t j=0; j<50; j++){// GIndex
+      ExchangeAmpPointSource[i][j]=obj.ExchangeAmpPointSource[i][j];
+    }
+  }
+
   return (*this);
 }
 //________________________________________________________________________
@@ -661,7 +688,7 @@ AliFourPion::~AliFourPion()
   if(fMomResC2SC) delete fMomResC2SC;
   if(fMomResC2MC) delete fMomResC2MC;
   if(fWeightmuonCorrection) delete fWeightmuonCorrection;
-
+  
   for(Int_t j=0; j<kMultLimitPbPb; j++){
     if(fLowQPairSwitch_E0E0[j]) delete [] fLowQPairSwitch_E0E0[j];
     if(fLowQPairSwitch_E0E1[j]) delete [] fLowQPairSwitch_E0E1[j];
@@ -724,6 +751,8 @@ AliFourPion::~AliFourPion()
 		if(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactorWeighted) delete Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactorWeighted;
 		//
 		if(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm) delete Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fFullBuildFromFits) delete Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fFullBuildFromFits;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fPartialBuildFromFits) delete Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fPartialBuildFromFits;
 	      }// term_4
 
 	    }//c4
@@ -750,13 +779,20 @@ AliFourPion::~AliFourPion()
       if(fNormWeight[i][j]) delete fNormWeight[i][j];
     }
   }
+
+  for(Int_t i=0; i<2; i++){// EW/LG
+    if(ExchangeAmpFullSource[i]) delete ExchangeAmpFullSource[i];
+    for(Int_t j=0; j<50; j++){// GIndex
+      if(ExchangeAmpPointSource[i][j]) delete ExchangeAmpPointSource[i][j];
+    }
+  }
   
 }
 //________________________________________________________________________
 void AliFourPion::ParInit()
 {
   cout<<"AliFourPion MyInit() call"<<endl;
-  cout<<"lego:"<<fLEGO<<"  MCcase:"<<fMCcase<<"  PbPbcase:"<<fPbPbcase<<"  TabulatePairs:"<<fTabulatePairs<<"  GenSignal:"<<fGenerateSignal<<"  CentLow:"<<fCentBinLowLimit<<"  CentHigh:"<<fCentBinHighLimit<<"  RMax:"<<fRMax<<"  fc^2:"<<ffcSq<<"  FB:"<<fFilterBit<<"  MaxChi2/NDF:"<<fMaxChi2NDF<<"  MinTPCncls:"<<fMinTPCncls<<"  MinPairSepEta:"<<fMinSepPairEta<<"  MinPairSepPhi:"<<fMinSepPairPhi<<"  NsigTPC:"<<fSigmaCutTPC<<"  NsigTOF:"<<fSigmaCutTOF<<endl;
+  cout<<"lego:"<<fLEGO<<"  MCcase:"<<fMCcase<<"  CollisionType:"<<fCollisionType<<"  TabulatePairs:"<<fTabulatePairs<<"  GenSignal:"<<fGenerateSignal<<"  CentLow:"<<fCentBinLowLimit<<"  CentHigh:"<<fCentBinHighLimit<<"  RMax:"<<fRMax<<"  fc^2:"<<ffcSq<<"  FB:"<<fFilterBit<<"  MaxChi2/NDF:"<<fMaxChi2NDF<<"  MinTPCncls:"<<fMinTPCncls<<"  MinPairSepEta:"<<fMinSepPairEta<<"  MinPairSepPhi:"<<fMinSepPairPhi<<"  NsigTPC:"<<fSigmaCutTPC<<"  NsigTOF:"<<fSigmaCutTOF<<endl;
 
   fRandomNumber = new TRandom3();
   fRandomNumber->SetSeed(0);
@@ -780,9 +816,9 @@ void AliFourPion::ParInit()
   fMultLimits[5]=30, fMultLimits[6]=40; fMultLimits[7]=50; fMultLimits[8]=70; fMultLimits[9]=100;
   fMultLimits[10]=150;
   
-    
   
-  if(fPbPbcase) {// PbPb
+  
+  if(fCollisionType==0) {// PbPb
     fMultLimit=kMultLimitPbPb;
     fMbins=fCentBins;
     fQcut=0.1;
@@ -880,9 +916,87 @@ void AliFourPion::ParInit()
   
   
   fTrueMassP=0.93827, fTrueMassPi=0.13957, fTrueMassK=0.493677, fTrueMassKs=0.497614, fTrueMassLam=1.11568;
-
   
 
+  // Pair-Exchange amplitudes from c3 fits
+  TString *EWequation = new TString("[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))");
+  TString *LGequation = new TString("[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))");
+
+  ExchangeAmpFullSource[0] = new TF1("ExchangeAmpFullSourceEW",EWequation->Data(), 0.,1.0);// Edgeworth
+  ExchangeAmpFullSource[1] = new TF1("ExchangeAmpFullSourceLG",LGequation->Data(), 0.,1.0);// Laguerre
+  for(Int_t i=0; i<2; i++){
+    for(Int_t j=0; j<50; j++){
+      TString *nameEA=new TString("ExchangeAmpPointSource");
+      *nameEA += i;
+      *nameEA += j;
+      if(i==0) ExchangeAmpPointSource[i][j] = new TF1(nameEA->Data(), EWequation->Data(), 0,1.0);// Edgeworth
+      else ExchangeAmpPointSource[i][j] = new TF1(nameEA->Data(), LGequation->Data(), 0,1.0);// Laguerre
+    }
+  }
+  // Expansion fit parameters: PbPb, pPb, pp
+  Float_t EWParam1Full[3]={0.96827, 0.96827, 0.96827};// PbPb, pPb, pp
+  Float_t EWParam2Full[3]={10.1674, 2.0, 2.0};
+  Float_t EWParam3Full[3]={1.03190e-01, 1.03190e-01, 1.03190e-01};
+  Float_t EWParam4Full[3]={1.84217e-01, 1.84217e-01, 1.84217e-01};
+  Float_t EWParam5Full[3]={0};
+  Float_t EWParam1Point[3][50]={{0}};
+  Float_t EWParam2Point[3][50]={{0}};
+  Float_t EWParam3Point[3][50]={{0}};
+  Float_t EWParam4Point[3][50]={{0}};
+  Float_t EWParam5Point[3][50]={{0}};
+  Float_t LGParam1Full[3]={1.3848, 1.3848, 1.3848};
+  Float_t LGParam2Full[3]={24.9985, 4.0, 4.0};
+  Float_t LGParam3Full[3]={1.99598e-01, 1.99598e-01, 1.99598e-01};
+  Float_t LGParam4Full[3]={-7.55834e-02, -7.55834e-02, -7.55834e-02};
+  Float_t LGParam5Full[3]={-8.81810e-03, -8.81810e-03, -8.81810e-03};
+  Float_t LGParam1Point[3][50]={{0}};
+  Float_t LGParam2Point[3][50]={{0}};
+  Float_t LGParam3Point[3][50]={{0}};
+  Float_t LGParam4Point[3][50]={{0}};
+  Float_t LGParam5Point[3][50]={{0}};
+  //
+  // temporary setting
+  for(Int_t i=0; i<3; i++){
+    for(Int_t j=0; j<50; j++){
+      EWParam1Point[i][j]=EWParam1Full[i];
+      EWParam2Point[i][j]=EWParam2Full[i];
+      EWParam3Point[i][j]=EWParam3Full[i];
+      EWParam4Point[i][j]=EWParam4Full[i];
+      EWParam5Point[i][j]=EWParam5Full[i];
+      //
+      LGParam1Point[i][j]=LGParam1Full[i];
+      LGParam2Point[i][j]=LGParam2Full[i];
+      LGParam3Point[i][j]=LGParam3Full[i];
+      LGParam4Point[i][j]=LGParam4Full[i];
+      LGParam5Point[i][j]=LGParam5Full[i];
+    }
+  }
+  ExchangeAmpFullSource[0]->FixParameter(0, EWParam1Full[fCollisionType]);
+  ExchangeAmpFullSource[0]->FixParameter(1, EWParam2Full[fCollisionType]);
+  ExchangeAmpFullSource[0]->FixParameter(2, EWParam3Full[fCollisionType]);
+  ExchangeAmpFullSource[0]->FixParameter(3, EWParam4Full[fCollisionType]);
+  ExchangeAmpFullSource[0]->FixParameter(4, EWParam5Full[fCollisionType]);
+  //
+  ExchangeAmpFullSource[1]->FixParameter(0, LGParam1Full[fCollisionType]);
+  ExchangeAmpFullSource[1]->FixParameter(1, LGParam2Full[fCollisionType]);
+  ExchangeAmpFullSource[1]->FixParameter(2, LGParam3Full[fCollisionType]);
+  ExchangeAmpFullSource[1]->FixParameter(3, LGParam4Full[fCollisionType]);
+  ExchangeAmpFullSource[1]->FixParameter(4, LGParam5Full[fCollisionType]);
+  for(Int_t j=0; j<50; j++){
+    ExchangeAmpPointSource[0][j]->FixParameter(0, EWParam1Point[fCollisionType][j]);
+    ExchangeAmpPointSource[0][j]->FixParameter(1, EWParam2Point[fCollisionType][j]);
+    ExchangeAmpPointSource[0][j]->FixParameter(2, EWParam3Point[fCollisionType][j]);
+    ExchangeAmpPointSource[0][j]->FixParameter(3, EWParam4Point[fCollisionType][j]);
+    ExchangeAmpPointSource[0][j]->FixParameter(4, EWParam5Point[fCollisionType][j]);
+    //
+    ExchangeAmpPointSource[1][j]->FixParameter(0, LGParam1Point[fCollisionType][j]);
+    ExchangeAmpPointSource[1][j]->FixParameter(1, LGParam2Point[fCollisionType][j]);
+    ExchangeAmpPointSource[1][j]->FixParameter(2, LGParam3Point[fCollisionType][j]);
+    ExchangeAmpPointSource[1][j]->FixParameter(3, LGParam4Point[fCollisionType][j]);
+    ExchangeAmpPointSource[1][j]->FixParameter(4, LGParam5Point[fCollisionType][j]);
+  }
+  
+  
   // Set weights, Coulomb corrections, and Momentum resolution corrections manually if not on LEGO
   if(!fLEGO) {
     SetFSICorrelations(fLEGO);// Read in 2-particle and 3-particle FSI correlations
@@ -1094,7 +1208,7 @@ void AliFourPion::UserCreateOutputObjects()
 
       
   for(Int_t mb=0; mb<fMbins; mb++){
-    if(fPbPbcase) {if((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit)) continue;}
+    if(fCollisionType==0) {if((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit)) continue;}
     
     for(Int_t edB=0; edB<fEDbins; edB++){
       for(Int_t c1=0; c1<2; c1++){
@@ -1376,6 +1490,18 @@ void AliFourPion::UserCreateOutputObjects()
 		  nameTwoPartNormErr->Append("_TwoPartNormErr");
 		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNormErr = new TH2D(nameTwoPartNormErr->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNormErr);
+		  //
+		  if(c1==0 && c2==0 && c3==0 && c4==0){
+		    TString *nameFullBuildFromFits=new TString(namePC4->Data());
+		    nameFullBuildFromFits->Append("_FullBuildFromFits");
+		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fFullBuildFromFits = new TH3D(nameFullBuildFromFits->Data(),"", 2,0.5,2.5, kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
+		    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fFullBuildFromFits);
+		    //
+		    TString *namePartialBuildFromFits=new TString(namePC4->Data());
+		    namePartialBuildFromFits->Append("_PartialBuildFromFits");
+		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fPartialBuildFromFits = new TH3D(namePartialBuildFromFits->Data(),"", 2,0.5,2.5, kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
+		    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fPartialBuildFromFits);
+		  }
 		}
 		
 		if(fMCcase==kTRUE){
@@ -1609,7 +1735,7 @@ void AliFourPion::UserExec(Option_t *)
  
   if(fAODcase){// AOD case
     
-    if(fPbPbcase){
+    if(fCollisionType==0){
       centrality = fAOD->GetCentrality();
       centralityPercentile = centrality->GetCentralityPercentile("V0M");
       if(centralityPercentile == 0) {cout<<"Centrality = 0, skipping event"<<endl; return;}
@@ -1622,11 +1748,11 @@ void AliFourPion::UserExec(Option_t *)
 
     // Pile-up rejection
     AliAnalysisUtils *AnaUtil=new AliAnalysisUtils();
-    if(!fPbPbcase) AnaUtil->SetUseMVPlpSelection(kTRUE);// use Multi-Vertex tool for pp and pPb
+    if(fCollisionType!=0) AnaUtil->SetUseMVPlpSelection(kTRUE);// use Multi-Vertex tool for pp and pPb
     else AnaUtil->SetUseMVPlpSelection(kFALSE);
     Bool_t pileUpCase=AnaUtil->IsPileUpEvent(fAOD); 
     if(pileUpCase) return;
-    
+   
     ////////////////////////////////
     // Vertexing
     ((TH1F*)fOutputList->FindObject("fMultDist1"))->Fill(fAOD->GetNumberOfTracks());
@@ -1636,7 +1762,7 @@ void AliFourPion::UserExec(Option_t *)
     if(fabs(vertex[2]) > 10) {/*cout<<"Zvertex Out of Range. Skip Event"<<endl;*/ return;} // Z-Vertex Cut 
     ((TH3F*)fOutputList->FindObject("fVertexDist"))->Fill(vertex[0], vertex[1], vertex[2]);
     
-    if(!fMCcase && primaryVertexAOD->GetNContributors() < 1) {cout<<"Bad Vertex. Skip Event"<<endl; return;}
+    if(!fMCcase && primaryVertexAOD->GetNContributors() < 1) {/*cout<<"Bad Vertex. Skip Event"<<endl;*/ return;}
    
     ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(fAOD->GetNumberOfTracks());
  
@@ -1741,7 +1867,7 @@ void AliFourPion::UserExec(Option_t *)
     
       Bool_t DoPIDWorkAround=kTRUE;
       //if(fFilterBit == 7) DoPIDWorkAround=kTRUE;
-      if(fMCcase && !fPbPbcase) DoPIDWorkAround=kFALSE;
+      if(fMCcase && fCollisionType!=0) DoPIDWorkAround=kFALSE;
       if(DoPIDWorkAround==kFALSE && fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kPion)) < 900) {
 	nSigmaTPC[0]=fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kElectron);
 	nSigmaTPC[1]=fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kMuon);
@@ -1957,7 +2083,7 @@ void AliFourPion::UserExec(Option_t *)
   //
   // Mbin set to Pion Count Only for pp!!!!!!!
   fMbin=-1;
-  if(!fPbPbcase){
+  if(fCollisionType!=0){
     
     if(pionCount >= fMultLimits[3] && pionCount < fMultLimits[10]) fMbin=0;// only 1 bin
     
@@ -2060,6 +2186,7 @@ void AliFourPion::UserExec(Option_t *)
   Float_t weight34CC[3]={0};
   //Float_t weight12CC_e=0, weight13CC_e=0, weight14CC_e=0, weight23CC_e=0, weight24CC_e=0, weight34CC_e=0;
   Float_t weightTotal=0;//, weightTotalErr=0;
+  Float_t weightPartial=0;
   Float_t qinv12MC=0, qinv13MC=0, qinv14MC=0, qinv23MC=0, qinv24MC=0, qinv34MC=0; 
   Float_t parentQinv12=0, parentQinv13=0, parentQinv14=0, parentQinv23=0, parentQinv24=0, parentQinv34=0;
   Float_t parentQ3=0;
@@ -2587,7 +2714,7 @@ void AliFourPion::UserExec(Option_t *)
 		    Int_t indexq2 = qinv12 / 0.005;
 		    if(indexq2 >=200) indexq2=199; 
 		    Float_t WSpectrum = 1.0;
-		    if(fPbPbcase) {
+		    if(fCollisionType==0) {
 		      WSpectrum = HIJINGq2WeightsSC[indexq2];
 		      if(ch1!=ch2) WSpectrum = HIJINGq2WeightsMC[indexq2];
 		    }		    
@@ -2735,7 +2862,7 @@ void AliFourPion::UserExec(Option_t *)
 		}
 		
 		// r3 denominator
-		if(ENsum==6 && ch1==ch2 && ch1==ch3 && fPbPbcase){
+		if(ENsum==6 && ch1==ch2 && ch1==ch3 && fCollisionType==0){
 		  Positive1stTripletWeights = kTRUE;
 		  //
 		  GetWeight(pVect1, pVect2, weight12, weight12Err);
@@ -2961,7 +3088,7 @@ void AliFourPion::UserExec(Option_t *)
 		    Int_t indexq3 = q3 / 0.005;
 		    if(indexq3 >=35) indexq3=34; 
 		    Float_t WSpectrum = 1;
-		    if(fPbPbcase){
+		    if(fCollisionType==0){
 		      WSpectrum = HIJINGq3WeightsSC[indexq3];
 		      if(ch1!=ch2 || ch1!=ch3) WSpectrum = HIJINGq3WeightsMC[indexq3];
 		    }
@@ -3037,8 +3164,7 @@ void AliFourPion::UserExec(Option_t *)
 		    
 		    QinvMCGroup4[0] = qinv12MC; QinvMCGroup4[1] = qinv13MC; QinvMCGroup4[2] = qinv14MC;
 		    QinvMCGroup4[3] = qinv23MC; QinvMCGroup4[4] = qinv24MC; QinvMCGroup4[5] = qinv34MC;
-		    //if(q4<0.1 && ENsum==0 && bin1==bin2 && bin1==bin3 && bin1==bin4) cout<<q4<<"  "<<fRMax<<"  "<<ffcSqMRC<<"  "<<chGroup4[0]<<"  "<<chGroup4[1]<<"  "<<chGroup4[2]<<"  "<<chGroup4[3]<<"  "<<QinvMCGroup4[0]<<"  "<<QinvMCGroup4[1]<<"  "<<QinvMCGroup4[2]<<"  "<<QinvMCGroup4[3]<<"  "<<QinvMCGroup4[4]<<"  "<<QinvMCGroup4[5]<<endl;
-		  
+		    		  
 		  }
 		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6){
 		    ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(1, qinv12); ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(2, qinv13); 
@@ -3100,127 +3226,160 @@ void AliFourPion::UserExec(Option_t *)
 		  
 		  /////////////////////////////////////////////////////////////
 		  // r4{2}
-		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6 && fPbPbcase){
-		    Positive2ndTripletWeights=kTRUE;
-		    //
-		    GetWeight(pVect1, pVect4, weight14, weight14Err);
-		    GetWeight(pVect2, pVect4, weight24, weight24Err);
-		    GetWeight(pVect3, pVect4, weight34, weight34Err);
-		    
-		    Float_t MuonCorr14=1.0, MuonCorr24=1.0, MuonCorr34=1.0;
-		    if(!fGenerateSignal && !fMCcase) {
-		      MuonCorr14 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin14);
-		      MuonCorr24 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin24);
-		      MuonCorr34 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin34);
-		    }
-		    
-		    // no MRC, no Muon Correction
-		    weight14CC[0] = ((weight14+1) - ffcSq*FSICorr14 - (1-ffcSq));
-		    weight14CC[0] /= FSICorr14*ffcSq;
-		    weight24CC[0] = ((weight24+1) - ffcSq*FSICorr24 - (1-ffcSq));
-		    weight24CC[0] /= FSICorr24*ffcSq;
-		    weight34CC[0] = ((weight34+1) - ffcSq*FSICorr34 - (1-ffcSq));
-		    weight34CC[0] /= FSICorr34*ffcSq;
-		    if(weight14CC[0] > 0 && weight24CC[0] > 0 && weight34CC[0] > 0 && weight12CC[0] > 0 && weight13CC[0] > 0 && weight23CC[0] > 0){
-		      weightTotal  = sqrt(weight12CC[0]*weight13CC[0]*weight24CC[0]*weight34CC[0]);
-		      weightTotal += sqrt(weight12CC[0]*weight14CC[0]*weight23CC[0]*weight34CC[0]);
-		      weightTotal += sqrt(weight13CC[0]*weight14CC[0]*weight23CC[0]*weight24CC[0]);
-		      weightTotal /= 3.;
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(1, q4, weightTotal);
-		    }
-		    // no Muon Correction
-		    weight14CC[1] = ((weight14+1)*MomResCorr14 - ffcSq*FSICorr14 - (1-ffcSq));
-		    weight14CC[1] /= FSICorr14*ffcSq;
-		    weight24CC[1] = ((weight24+1)*MomResCorr24 - ffcSq*FSICorr24 - (1-ffcSq));
-		    weight24CC[1] /= FSICorr24*ffcSq;
-		    weight34CC[1] = ((weight34+1)*MomResCorr34 - ffcSq*FSICorr34 - (1-ffcSq));
-		    weight34CC[1] /= FSICorr34*ffcSq;
-		    if(weight14CC[1] > 0 && weight24CC[1] > 0 && weight34CC[1] > 0 && weight12CC[1] > 0 && weight13CC[1] > 0 && weight23CC[1] > 0){
-		      weightTotal  = sqrt(weight12CC[1]*weight13CC[1]*weight24CC[1]*weight34CC[1]);
-		      weightTotal += sqrt(weight12CC[1]*weight14CC[1]*weight23CC[1]*weight34CC[1]);
-		      weightTotal += sqrt(weight13CC[1]*weight14CC[1]*weight23CC[1]*weight24CC[1]);
-		      weightTotal /= 3.;
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(2, q4, weightTotal);
-		    }
-		    // both corrections
-		    weight14CC[2] = ((weight14+1)*MomResCorr14 - ffcSq*FSICorr14 - (1-ffcSq));
-		    weight14CC[2] /= FSICorr14*ffcSq;
-		    weight14CC[2] *= MuonCorr14;
-		    weight24CC[2] = ((weight24+1)*MomResCorr24 - ffcSq*FSICorr24 - (1-ffcSq));
-		    weight24CC[2] /= FSICorr24*ffcSq;
-		    weight24CC[2] *= MuonCorr24;
-		    weight34CC[2] = ((weight34+1)*MomResCorr34 - ffcSq*FSICorr34 - (1-ffcSq));
-		    weight34CC[2] /= FSICorr34*ffcSq;
-		    weight34CC[2] *= MuonCorr34;
- 
-		    if(weight14CC[2] < 0 || weight24CC[2] < 0 || weight34CC[2] < 0) {// C2^QS can never be less than unity
-		      if(fMbin==0 && bin1==0 && KT4index==0) {
-			((TH1D*)fOutputList->FindObject("fTPNRejects4pion1"))->Fill(q4, sqrt(fabs(weight12CC[2]*weight23CC[2]*weight34CC[2]*weight14CC[2])));
+		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6 ){
+		    if(fCollisionType==0){
+		      Positive2ndTripletWeights=kTRUE;
+		      //
+		      GetWeight(pVect1, pVect4, weight14, weight14Err);
+		      GetWeight(pVect2, pVect4, weight24, weight24Err);
+		      GetWeight(pVect3, pVect4, weight34, weight34Err);
+		      
+		      Float_t MuonCorr14=1.0, MuonCorr24=1.0, MuonCorr34=1.0;
+		      if(!fGenerateSignal && !fMCcase) {
+			MuonCorr14 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin14);
+			MuonCorr24 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin24);
+			MuonCorr34 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin34);
 		      }
-		      if(weight14CC[2] < 0) weight14CC[2]=0;
-		      if(weight24CC[2] < 0) weight24CC[2]=0;
-		      if(weight34CC[2] < 0) weight34CC[2]=0;
-		      Positive2ndTripletWeights=kFALSE;
-		    }
-		    /////////////////////////////////////////////////////
-		    weightTotal  = sqrt(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2]);
-		    weightTotal += sqrt(weight12CC[2]*weight14CC[2]*weight23CC[2]*weight34CC[2]);
-		    weightTotal += sqrt(weight13CC[2]*weight14CC[2]*weight23CC[2]*weight24CC[2]);
-		    weightTotal /= 3.;
-		    if(Positive1stTripletWeights && Positive2ndTripletWeights){
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(3, q4, weightTotal);
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(4, q4, 1);
-		    }else{
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNegNorm->Fill(4, q4, 1);
-		    }
+		      
+		      // no MRC, no Muon Correction
+		      weight14CC[0] = ((weight14+1) - ffcSq*FSICorr14 - (1-ffcSq));
+		      weight14CC[0] /= FSICorr14*ffcSq;
+		      weight24CC[0] = ((weight24+1) - ffcSq*FSICorr24 - (1-ffcSq));
+		      weight24CC[0] /= FSICorr24*ffcSq;
+		      weight34CC[0] = ((weight34+1) - ffcSq*FSICorr34 - (1-ffcSq));
+		      weight34CC[0] /= FSICorr34*ffcSq;
+		      if(weight14CC[0] > 0 && weight24CC[0] > 0 && weight34CC[0] > 0 && weight12CC[0] > 0 && weight13CC[0] > 0 && weight23CC[0] > 0){
+			weightTotal  = sqrt(weight12CC[0]*weight13CC[0]*weight24CC[0]*weight34CC[0]);
+			weightTotal += sqrt(weight12CC[0]*weight14CC[0]*weight23CC[0]*weight34CC[0]);
+			weightTotal += sqrt(weight13CC[0]*weight14CC[0]*weight23CC[0]*weight24CC[0]);
+			weightTotal /= 3.;
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(1, q4, weightTotal);
+		      }
+		      // no Muon Correction
+		      weight14CC[1] = ((weight14+1)*MomResCorr14 - ffcSq*FSICorr14 - (1-ffcSq));
+		      weight14CC[1] /= FSICorr14*ffcSq;
+		      weight24CC[1] = ((weight24+1)*MomResCorr24 - ffcSq*FSICorr24 - (1-ffcSq));
+		      weight24CC[1] /= FSICorr24*ffcSq;
+		      weight34CC[1] = ((weight34+1)*MomResCorr34 - ffcSq*FSICorr34 - (1-ffcSq));
+		      weight34CC[1] /= FSICorr34*ffcSq;
+		      if(weight14CC[1] > 0 && weight24CC[1] > 0 && weight34CC[1] > 0 && weight12CC[1] > 0 && weight13CC[1] > 0 && weight23CC[1] > 0){
+			weightTotal  = sqrt(weight12CC[1]*weight13CC[1]*weight24CC[1]*weight34CC[1]);
+			weightTotal += sqrt(weight12CC[1]*weight14CC[1]*weight23CC[1]*weight34CC[1]);
+			weightTotal += sqrt(weight13CC[1]*weight14CC[1]*weight23CC[1]*weight24CC[1]);
+			weightTotal /= 3.;
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(2, q4, weightTotal);
+		      }
+		      // both corrections
+		      weight14CC[2] = ((weight14+1)*MomResCorr14 - ffcSq*FSICorr14 - (1-ffcSq));
+		      weight14CC[2] /= FSICorr14*ffcSq;
+		      weight14CC[2] *= MuonCorr14;
+		      weight24CC[2] = ((weight24+1)*MomResCorr24 - ffcSq*FSICorr24 - (1-ffcSq));
+		      weight24CC[2] /= FSICorr24*ffcSq;
+		      weight24CC[2] *= MuonCorr24;
+		      weight34CC[2] = ((weight34+1)*MomResCorr34 - ffcSq*FSICorr34 - (1-ffcSq));
+		      weight34CC[2] /= FSICorr34*ffcSq;
+		      weight34CC[2] *= MuonCorr34;
+		      
+		      if(weight14CC[2] < 0 || weight24CC[2] < 0 || weight34CC[2] < 0) {// C2^QS can never be less than unity
+			if(fMbin==0 && bin1==0 && KT4index==0) {
+			  ((TH1D*)fOutputList->FindObject("fTPNRejects4pion1"))->Fill(q4, sqrt(fabs(weight12CC[2]*weight23CC[2]*weight34CC[2]*weight14CC[2])));
+			}
+			if(weight14CC[2] < 0) weight14CC[2]=0;
+			if(weight24CC[2] < 0) weight24CC[2]=0;
+			if(weight34CC[2] < 0) weight34CC[2]=0;
+			Positive2ndTripletWeights=kFALSE;
+		      }
+		      /////////////////////////////////////////////////////
+		      weightTotal  = sqrt(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2]);
+		      weightTotal += sqrt(weight12CC[2]*weight14CC[2]*weight23CC[2]*weight34CC[2]);
+		      weightTotal += sqrt(weight13CC[2]*weight14CC[2]*weight23CC[2]*weight24CC[2]);
+		      weightTotal /= 3.;
+		      if(Positive1stTripletWeights && Positive2ndTripletWeights){
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(3, q4, weightTotal);
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(4, q4, 1);
+		      }else{
+			Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNegNorm->Fill(4, q4, 1);
+		      }
+		    }// CollisionType==0
 		    // Full Weight reconstruction
-		    for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
-		      for(Int_t GIndex=0; GIndex<50; GIndex++){// 20 is enough
-			Int_t FillBin = 5 + RcohIndex*50 + GIndex;
-			Float_t G = 0.02*GIndex;
-			if(RcohIndex==0){// Rcoh=0
-			  Float_t a = pow(1-G,2);
-			  Float_t b = 2*G*(1-G);
-			  T12 = (-b + sqrt(pow(b,2) + 4*a*weight12CC[2])) / (2*a);
-			  T13 = (-b + sqrt(pow(b,2) + 4*a*weight13CC[2])) / (2*a);
-			  T14 = (-b + sqrt(pow(b,2) + 4*a*weight14CC[2])) / (2*a);
-			  T23 = (-b + sqrt(pow(b,2) + 4*a*weight23CC[2])) / (2*a);
-			  T24 = (-b + sqrt(pow(b,2) + 4*a*weight24CC[2])) / (2*a);
-			  T34 = (-b + sqrt(pow(b,2) + 4*a*weight34CC[2])) / (2*a);
-			  weightTotal = 2*G*(1-G)*(T12 + T13 + T14 + T23 + T24 + T34) + pow(1-G,2)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
-			  weightTotal += 2*G*pow(1-G,3)*(T12*T34*T34 + T12*T12*T34 + T13*T24*T24 + T13*T13*T24 + T14*T23*T23 + T14*T14*T23);// 2-pair
-			  weightTotal += pow(1-G,4)*(pow(T12,2)*pow(T34,2) + pow(T13,2)*pow(T24,2) + pow(T14,2)*pow(T23,2));// 2-pair fully chaotic
-			  weightTotal += 2*G*pow(1-G,2)*(T12*T13 + T12*T23 + T13*T23  + T12*T14 + T12*T24 + T14*T24);// 3-pion
-			  weightTotal += 2*G*pow(1-G,2)*(T13*T14 + T13*T34 + T14*T34  + T23*T24 + T23*T34 + T24*T34);// 3-pion
-			  weightTotal += 2*pow(1-G,3)*(T12*T13*T23 + T12*T14*T24 + T13*T14*T34 + T23*T24*T34);// 3-pion fully chaotic
-			  weightTotal += 2*G*pow(1-G,3)*(T12*T14*T34 + T12*T14*T23 + T12*T23*T34 + T14*T23*T34);// 4-pion
-			  weightTotal += 2*G*pow(1-G,3)*(T12*T13*T34 + T12*T34*T24 + T12*T24*T13 + T13*T24*T34);// 4-pion
-			  weightTotal += 2*G*pow(1-G,3)*(T14*T13*T23 + T14*T13*T24 + T13*T23*T24 + T14*T24*T23);// 4-pion
-			  weightTotal += 2*pow(1-G,4)*(T12*T13*T24*T34 + T12*T14*T23*T34 + T13*T14*T23*T24);// 4-pion fully chaotic
-			}else{// Rcoh=Rch
-			  T12 = sqrt(weight12CC[2] / (1-G*G));
-			  T13 = sqrt(weight13CC[2] / (1-G*G));
-			  T14 = sqrt(weight14CC[2] / (1-G*G));
-			  T23 = sqrt(weight23CC[2] / (1-G*G));
-			  T24 = sqrt(weight24CC[2] / (1-G*G));
-			  T34 = sqrt(weight34CC[2] / (1-G*G));
-			  weightTotal = (1-G*G)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
-			  weightTotal += (4*G*pow(1-G,3)+pow(1-G,4))*(pow(T12,2)*pow(T34,2) + pow(T13,2)*pow(T24,2) + pow(T14,2)*pow(T23,2));// 2-pair
-			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T12*T13*T23);// 3-pion
-			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T12*T14*T24);// 3-pion
-			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T13*T14*T34);// 3-pion
-			  weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T23*T24*T34);// 3-pion
-			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T12*T13*T24*T34);// 4-pion
-			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T12*T14*T23*T34);// 4-pion
-			  weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T13*T14*T23*T24);// 4-pion
-			}
-			if(Positive1stTripletWeights && Positive2ndTripletWeights){
-			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(FillBin, q4, weightTotal);
-			}else{
-			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNegNorm->Fill(FillBin, q4, weightTotal);
-			}
-		      }
-		    }
+		    for(Int_t type=0; type<3; type++){// C2 interpolation, Edgeworth c3 fit, Laguerre c3 fit
+		      if(type==0 && fCollisionType!=0) continue;
+		      for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
+			for(Int_t GIndex=0; GIndex<50; GIndex++){// 20 is enough
+			  Int_t FillBin = 5 + RcohIndex*50 + GIndex;
+			  Float_t G = 0.02*GIndex;
+			  if(RcohIndex==0){// Rcoh=0
+			    if(type==0){
+			      Float_t a = pow(1-G,2);
+			      Float_t b = 2*G*(1-G);
+			      T12 = (-b + sqrt(pow(b,2) + 4*a*weight12CC[2])) / (2*a);
+			      T13 = (-b + sqrt(pow(b,2) + 4*a*weight13CC[2])) / (2*a);
+			      T14 = (-b + sqrt(pow(b,2) + 4*a*weight14CC[2])) / (2*a);
+			      T23 = (-b + sqrt(pow(b,2) + 4*a*weight23CC[2])) / (2*a);
+			      T24 = (-b + sqrt(pow(b,2) + 4*a*weight24CC[2])) / (2*a);
+			      T34 = (-b + sqrt(pow(b,2) + 4*a*weight34CC[2])) / (2*a);
+			    }else{
+			      T12 = ExchangeAmpPointSource[type-1][GIndex]->Eval(qinv12);
+			      T13 = ExchangeAmpPointSource[type-1][GIndex]->Eval(qinv13);
+			      T14 = ExchangeAmpPointSource[type-1][GIndex]->Eval(qinv14);
+			      T23 = ExchangeAmpPointSource[type-1][GIndex]->Eval(qinv23);
+			      T24 = ExchangeAmpPointSource[type-1][GIndex]->Eval(qinv24);
+			      T34 = ExchangeAmpPointSource[type-1][GIndex]->Eval(qinv34);
+			    }
+			    weightTotal = 2*G*(1-G)*(T12 + T13 + T14 + T23 + T24 + T34) + pow(1-G,2)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
+			    weightTotal += 2*G*pow(1-G,3)*(T12*T34*T34 + T12*T12*T34 + T13*T24*T24 + T13*T13*T24 + T14*T23*T23 + T14*T14*T23);// 2-pair
+			    weightTotal += pow(1-G,4)*(pow(T12,2)*pow(T34,2) + pow(T13,2)*pow(T24,2) + pow(T14,2)*pow(T23,2));// 2-pair fully chaotic
+			    weightTotal += 2*G*pow(1-G,2)*(T12*T13 + T12*T23 + T13*T23  + T12*T14 + T12*T24 + T14*T24);// 3-pion
+			    weightTotal += 2*G*pow(1-G,2)*(T13*T14 + T13*T34 + T14*T34  + T23*T24 + T23*T34 + T24*T34);// 3-pion
+			    weightTotal += 2*pow(1-G,3)*(T12*T13*T23 + T12*T14*T24 + T13*T14*T34 + T23*T24*T34);// 3-pion fully chaotic
+			    weightTotal += 2*G*pow(1-G,3)*(T12*T14*T34 + T12*T14*T23 + T12*T23*T34 + T14*T23*T34);// 4-pion
+			    weightTotal += 2*G*pow(1-G,3)*(T12*T13*T34 + T12*T34*T24 + T12*T24*T13 + T13*T24*T34);// 4-pion
+			    weightTotal += 2*G*pow(1-G,3)*(T14*T13*T23 + T14*T13*T24 + T13*T23*T24 + T14*T24*T23);// 4-pion
+			    weightTotal += 2*pow(1-G,4)*(T12*T13*T24*T34 + T12*T14*T23*T34 + T13*T14*T23*T24);// 4-pion fully chaotic
+			    //
+			    weightPartial = weightTotal - 2*G*(1-G)*(T12 + T13 + T14 + T23 + T24 + T34) + pow(1-G,2)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);
+			  }else{// Rcoh=Rch
+			    if(type==0){
+			      T12 = sqrt(weight12CC[2] / (1-G*G));
+			      T13 = sqrt(weight13CC[2] / (1-G*G));
+			      T14 = sqrt(weight14CC[2] / (1-G*G));
+			      T23 = sqrt(weight23CC[2] / (1-G*G));
+			      T24 = sqrt(weight24CC[2] / (1-G*G));
+			      T34 = sqrt(weight34CC[2] / (1-G*G));
+			    }else{
+			      T12 = ExchangeAmpFullSource[type-1]->Eval(qinv12) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
+			      T13 = ExchangeAmpFullSource[type-1]->Eval(qinv13) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
+			      T14 = ExchangeAmpFullSource[type-1]->Eval(qinv14) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
+			      T23 = ExchangeAmpFullSource[type-1]->Eval(qinv23) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
+			      T24 = ExchangeAmpFullSource[type-1]->Eval(qinv24) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
+			      T34 = ExchangeAmpFullSource[type-1]->Eval(qinv34) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
+			    }
+			    weightTotal = (1-G*G)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
+			    weightTotal += (4*G*pow(1-G,3)+pow(1-G,4))*(pow(T12,2)*pow(T34,2) + pow(T13,2)*pow(T24,2) + pow(T14,2)*pow(T23,2));// 2-pair
+			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T12*T13*T23);// 3-pion
+			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T12*T14*T24);// 3-pion
+			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T13*T14*T34);// 3-pion
+			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T23*T24*T34);// 3-pion
+			    weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T12*T13*T24*T34);// 4-pion
+			    weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T12*T14*T23*T34);// 4-pion
+			    weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(T13*T14*T23*T24);// 4-pion
+			    //
+			    weightPartial = weightTotal - (1-G*G)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);
+			  }
+			  if(type==0){
+			    if(Positive1stTripletWeights && Positive2ndTripletWeights){
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(FillBin, q4, weightTotal);
+			    }else{
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNegNorm->Fill(FillBin, q4, weightTotal);
+			    }
+			  }else{
+			    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[KT4index].FourPT[12].fFullBuildFromFits->Fill(type, FillBin, q4, weightTotal);
+			    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[KT4index].FourPT[12].fPartialBuildFromFits->Fill(type, FillBin, q4, weightPartial);
+			  }
+			  
+			}// GIndex 
+		      }// RcohIndex
+		    }// type
 		    // stat errors
 		    /*weight14CC_e = weight14Err*MomResCorr14 / FSICorr14 / ffcSq * MuonCorr14;
 		      weight24CC_e = weight24Err*MomResCorr24 / FSICorr24 / ffcSq * MuonCorr24;
@@ -3400,7 +3559,7 @@ void AliFourPion::UserExec(Option_t *)
 		      Int_t indexq4 = q4 / 0.005;
 		      if(indexq4 >=50) indexq4=49; 
 		      Float_t WSpectrum = 1.0;
-		      if(fPbPbcase){
+		      if(fCollisionType==0){
 			WSpectrum = HIJINGq4WeightsSC[indexq4];
 			if((ch1+ch2+ch3+ch4)==3 || (ch1+ch2+ch3+ch4)==1) WSpectrum = HIJINGq4WeightsMC1[indexq4];
 			if((ch1+ch2+ch3+ch4)==2) WSpectrum = HIJINGq4WeightsMC2[indexq4];
@@ -4429,7 +4588,7 @@ void AliFourPion::SetFillBins4(Int_t c1, Int_t c2, Int_t c3, Int_t c4, Int_t &b1
 //________________________________________________________________________
 void AliFourPion::SetFSIindex(Float_t R){
   if(!fMCcase){
-    if(fPbPbcase){
+    if(fCollisionType==0){
       if(fMbin==0) fFSIindex = 0;//0-5%
       else if(fMbin==1) fFSIindex = 1;//5-10%
       else if(fMbin<=3) fFSIindex = 2;//10-20%
@@ -4495,3 +4654,24 @@ Float_t AliFourPion::nCubicInterpolate (Int_t n, Float_t* p, Float_t coordinates
     return cubicInterpolate(arr, *coordinates);
   }
 }
+//__________________________________________________________________________
+/*Double_t AliFourPion::functionEW(Double_t *x, Double_t *par)
+{
+  double arg = x[0]*par[1]/FmToGeV;
+  double EW = 1;
+  EW += par[2]/(6.*pow(2,1.5))*(8*pow(arg,3) - 12*pow(arg,1));
+  EW += par[3]/(24.*pow(2,2))*(16*pow(arg,4) -48*pow(arg,2) + 12);
+  EW += par[4]/(120.*pow(2,2.5))*(32.*pow(arg,5) - 160.*pow(arg,3) + 120*arg);
+  return par[0]*exp(-pow(arg,2)/2.)*EW;
+}
+//__________________________________________________________________________
+Double_t AliFourPion::functionLG(Double_t *x, Double_t *par)
+{
+  double arg = x[0]*par[1]/FmToGeV;
+  double LG = 1; 
+  LG += par[2]*(arg - 1);
+  LG += par[3]/2.*(pow(arg,2) - 4*arg + 2);
+  LG += par[4]/6.*(-pow(arg,3) + 9*pow(arg,2) - 18*arg + 6);
+  return  par[0]*exp(-arg/2.)*LG;
+}
+*/
