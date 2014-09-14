@@ -25,6 +25,7 @@ class AliEventplane;
 class AliOADBContainer;
 class AliVTrack;
 class THnSparse;
+class TProfile;
 
 class AliEPSelectionTask : public AliAnalysisTaskSE {
 
@@ -45,15 +46,18 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   void GetQsub(TVector2& Qsub1, TVector2& Qsub2, TObjArray* event,AliEventplane* EP);
   Double_t GetWeight(TObject* track1);
   Double_t GetPhiWeight(TObject* track1);
+  void Recenter(Int_t var, Double_t * values);
 
   virtual void  SetDebugLevel(Int_t level)   {fDebug = level;}
   void SetInput(const char* input)           {fAnalysisInput = input;}
   void SetUseMCRP()			     {fUseMCRP = kTRUE;}
   void SetUsePhiWeight(Bool_t usephi = kTRUE){fUsePhiWeight = usephi;}
   void SetUsePtWeight()			     {fUsePtWeight = kTRUE;}
+  void SetUseRecentering()		     {fUseRecentering = kTRUE;}
   void SetSaveTrackContribution()	     {fSaveTrackContribution = kTRUE;}
   void SetTrackType(TString tracktype);
   void SetPhiDist();
+  void SetQvectorDist();
   void SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts);
   void SetPersonalAODtrackCuts(UInt_t filterbit = 1, Float_t etalow = -0.8, Float_t etaup = 0.8, Float_t ptlow = 0.15, Float_t ptup = 20., Int_t ntpc = 50);
   void SetPersonalPhiDistribution(const char* filename, char* listname);
@@ -73,9 +77,11 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   TString  fAnalysisInput; 		// "ESD", "AOD"
   TString  fTrackType;			// "GLOBAL", "TPC"
   TString  fPeriod;	                // "LHC11h","LHC10h"
+  Double_t fCentrality;                 // centrality percentile from "V0M"
   Bool_t   fUseMCRP;			// i.e. usable for Therminator, when MC RP is provided
   Bool_t   fUsePhiWeight;		// use of phi weights
   Bool_t   fUsePtWeight;		// use of pT weights
+  Bool_t   fUseRecentering;		// use of mean & rms of q vector components for recentering
   Bool_t   fSaveTrackContribution;	// storage of contribution of each track to Q-Vector
   Bool_t   fUserphidist;		// bool, if personal phi distribution should be used
   Bool_t   fUsercuts;			// bool, if personal cuts should be used
@@ -88,8 +94,11 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   AliESDtrackCuts* fESDtrackCuts;       // track cuts
   
   AliOADBContainer* fEPContainer;	//! OADB Container
+  AliOADBContainer* fQxContainer;	//! OADB Container for Q_x vector
+  AliOADBContainer* fQyContainer;	//! OADB Container for Q_y vector
   TH1F*	 fPhiDist[4];			// array of Phi distributions used to calculate phi weights
   THnSparse *fSparseDist;               //! THn for eta-charge phi-weighting
+  TProfile* fQDist[2];			// array of TProfiles with mean+rms for recentering
   TH1F *fHruns;                         // information about runwise statistics of phi-weights
 
   TVector2* fQVector;			//! Q-Vector of the event  

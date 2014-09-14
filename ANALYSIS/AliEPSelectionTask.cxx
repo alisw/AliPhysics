@@ -72,9 +72,11 @@ AliAnalysisTaskSE(),
   fAnalysisInput("ESD"),
   fTrackType("TPC"),
   fPeriod(""),
+  fCentrality(-1.),
   fUseMCRP(kFALSE),
   fUsePhiWeight(kFALSE),
   fUsePtWeight(kFALSE),
+  fUseRecentering(kFALSE),
   fSaveTrackContribution(kFALSE),
   fUserphidist(kFALSE),
   fUsercuts(kFALSE),
@@ -84,6 +86,8 @@ AliAnalysisTaskSE(),
   fSplitMethod(0),
   fESDtrackCuts(0),
   fEPContainer(0),
+  fQxContainer(0),
+  fQyContainer(0),
   fSparseDist(0),
   fHruns(0),
   fQVector(0),
@@ -108,7 +112,10 @@ AliAnalysisTaskSE(),
   for(Int_t i = 0; i < 4; ++i) {
      fPhiDist[i] = 0;
   }
-}   
+  for(Int_t i = 0; i < 2; ++i) {
+     fQDist[i] = 0;
+  }
+}
 
 //________________________________________________________________________
 AliEPSelectionTask::AliEPSelectionTask(const char *name):
@@ -116,9 +123,11 @@ AliEPSelectionTask::AliEPSelectionTask(const char *name):
   fAnalysisInput("ESD"),
   fTrackType("TPC"),
   fPeriod(""),
+  fCentrality(-1.),
   fUseMCRP(kFALSE),
   fUsePhiWeight(kFALSE),
   fUsePtWeight(kFALSE),  
+  fUseRecentering(kFALSE),
   fSaveTrackContribution(kFALSE),
   fUserphidist(kFALSE),
   fUsercuts(kFALSE),
@@ -128,6 +137,8 @@ AliEPSelectionTask::AliEPSelectionTask(const char *name):
   fSplitMethod(0),
   fESDtrackCuts(0),
   fEPContainer(0),
+  fQxContainer(0),
+  fQyContainer(0),
   fSparseDist(0),
   fHruns(0),
   fQVector(0),
@@ -152,6 +163,9 @@ AliEPSelectionTask::AliEPSelectionTask(const char *name):
   DefineOutput(1, TList::Class());
   for(Int_t i = 0; i < 4; i++) {
      fPhiDist[i] = 0;
+  }
+  for(Int_t i = 0; i < 2; ++i) {
+     fQDist[i] = 0;
   }
 }
  
@@ -185,6 +199,14 @@ AliEPSelectionTask::~AliEPSelectionTask()
         }
       }
       if(fHruns) delete fHruns;
+  }
+  if(fQDist[0] && fQDist[1]) {
+    for(Int_t i = 0; i < 2; i++) {
+      if(fQDist[i]){
+	delete fQDist[i];
+	fQDist[i] = 0;
+      }
+    }
   }
 }  
 
@@ -243,6 +265,7 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
           AliInfo(Form("Changing Phi-distribution to run %d",fRunNumber));
           SetOADBandPeriod();
 	  SetPhiDist();      
+	  SetQvectorDist(); // recentring objects
       }
       
       
@@ -271,8 +294,11 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
       const int nt = tracklist->GetEntries();
       
       if (nt>4){
+
+	// qvector full event
 	fQVector = new TVector2(GetQ(esdEP,tracklist));
 	fEventplaneQ = fQVector->Phi()/2; 
+	// q vector subevents
 	GetQsub(qq1, qq2, tracklist, esdEP);
 	fQsub1 = new TVector2(qq1);
 	fQsub2 = new TVector2(qq2);
@@ -319,11 +345,19 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
     AliAODEvent* aod = dynamic_cast<AliAODEvent*>(event);
 
     if (aod){
+
+      // get centrality of the event
+      AliAODHeader *header=aod->GetHeader();
+      AliCentrality *centrality=header->GetCentralityP();
+      if(!centrality)  AliError(Form("No AliCentrality attached to AOD header"));
+      fCentrality = centrality->GetCentralityPercentile("V0M");
+
       if (!(fRunNumber == aod->GetRunNumber())) {
         fRunNumber = aod->GetRunNumber();
         AliInfo(Form("Changing Phi-distribution to run %d",fRunNumber));
         SetOADBandPeriod();
-        SetPhiDist();      
+        SetPhiDist();
+        SetQvectorDist();
       }
 
       if (fUseMCRP) {
@@ -350,13 +384,16 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
       const int NT = tracklist->GetEntries();
       
       if (NT>4){
+
+	// qvector full event
 	fQVector = new TVector2(GetQ(esdEP,tracklist));
-	fEventplaneQ = fQVector->Phi()/2.; 
+	fEventplaneQ = fQVector->Phi()/2; 
+	// q vector subevents
 	GetQsub(qq1, qq2, tracklist, esdEP);
 	fQsub1 = new TVector2(qq1);
 	fQsub2 = new TVector2(qq2);
-	fQsubRes = (fQsub1->Phi()/2. - fQsub2->Phi()/2.);
-	
+	fQsubRes = (fQsub1->Phi()/2 - fQsub2->Phi()/2);
+
 	esdEP->SetQVector(fQVector);
 	esdEP->SetEventplaneQ(fEventplaneQ);
 	esdEP->SetQsub(fQsub1,fQsub2);
@@ -411,13 +448,17 @@ void AliEPSelectionTask::Terminate(Option_t */*option*/)
 //__________________________________________________________________________
 TVector2 AliEPSelectionTask::GetQ(AliEventplane* EP, TObjArray* tracklist)
 {
-// Get the Q vector
+  // Get the Q vector
   TVector2 mQ;
   float mQx=0, mQy=0;
   AliVTrack* track;
   Double_t weight;
   Int_t idtemp = -1;
-  
+  // get recentering values
+  Double_t mean[2], rms[2];
+  Recenter(0, mean);
+  Recenter(1, rms);
+
   int nt = tracklist->GetEntries();
 
   for (int i=0; i<nt; i++){
@@ -428,24 +469,28 @@ TVector2 AliEPSelectionTask::GetQ(AliEventplane* EP, TObjArray* tracklist)
     if (fSaveTrackContribution){
       idtemp = track->GetID(); 
       if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
-      EP->GetQContributionXArray()->AddAt(weight*cos(2*track->Phi()),idtemp);
-      EP->GetQContributionYArray()->AddAt(weight*sin(2*track->Phi()),idtemp);
+      EP->GetQContributionXArray()->AddAt(weight*cos(2*track->Phi())/rms[0],idtemp);
+      EP->GetQContributionYArray()->AddAt(weight*sin(2*track->Phi())/rms[1],idtemp);
      }
-     mQx += (weight*cos(2*track->Phi()));
-     mQy += (weight*sin(2*track->Phi()));
+     mQx += (weight*cos(2*track->Phi())/rms[0]);
+     mQy += (weight*sin(2*track->Phi())/rms[1]);
     }
   }
-  mQ.Set(mQx,mQy);
+  mQ.Set(mQx-(mean[0]/rms[0]), mQy-(mean[1]/rms[1]));
   return mQ;
 }
   
   //________________________________________________________________________
 void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklist,AliEventplane* EP)
 {
-// Get Qsub
+  // Get Qsub
   TVector2 mQ[2];
   float mQx1=0, mQy1=0, mQx2=0, mQy2=0;
   Double_t weight;
+  // get recentering values
+  Double_t mean[2], rms[2];
+  Recenter(0, mean);
+  Recenter(1, rms);
 
   AliVTrack* track;
   TRandom2 rn = 0;
@@ -468,39 +513,39 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
       if( trackcounter1 < int(nt/2.) && trackcounter2 < int(nt/2.)){
         float random = rn.Rndm();
         if(random < .5){
-          mQx1 += (weight*cos(2*track->Phi()));
-          mQy1 += (weight*sin(2*track->Phi()));
+          mQx1 += (weight*cos(2*track->Phi())/rms[0]);
+          mQy1 += (weight*sin(2*track->Phi())/rms[1]);
           if (fSaveTrackContribution){
-            EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi()),idtemp);
-            EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi()),idtemp);
+            EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi())/rms[0],idtemp);
+            EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi())/rms[1],idtemp);
           }
           trackcounter1++;
         }
         else {
-          mQx2 += (weight*cos(2*track->Phi()));
-          mQy2 += (weight*sin(2*track->Phi()));
+          mQx2 += (weight*cos(2*track->Phi())/rms[0]);
+          mQy2 += (weight*sin(2*track->Phi())/rms[1]);
           if (fSaveTrackContribution){
-            EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi()),idtemp);
-            EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi()),idtemp);
+            EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi())/rms[0],idtemp);
+            EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi())/rms[1],idtemp);
           }
           trackcounter2++;
         }
       }
       else if( trackcounter1 >= int(nt/2.)){
-        mQx2 += (weight*cos(2*track->Phi()));
-        mQy2 += (weight*sin(2*track->Phi()));
+        mQx2 += (weight*cos(2*track->Phi())/rms[0]);
+        mQy2 += (weight*sin(2*track->Phi())/rms[1]);
         if (fSaveTrackContribution){
-          EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi()),idtemp);
-          EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi()),idtemp);
+          EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi())/rms[0],idtemp);
+          EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi())/rms[1],idtemp);
         }
         trackcounter2++;
       }
       else {
-        mQx1 += (weight*cos(2*track->Phi()));
-        mQy1 += (weight*sin(2*track->Phi()));
+        mQx1 += (weight*cos(2*track->Phi())/rms[0]);
+        mQy1 += (weight*sin(2*track->Phi())/rms[1]);
         if (fSaveTrackContribution){
-          EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi()),idtemp);
-          EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi()),idtemp);
+          EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi())/rms[0],idtemp);
+          EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi())/rms[1],idtemp);
         }
         trackcounter1++;
       }
@@ -517,18 +562,18 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
       if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
 
       if (eta > fEtaGap/2.) {  
-        mQx1 += (weight*cos(2*track->Phi()));
-        mQy1 += (weight*sin(2*track->Phi()));
+        mQx1 += (weight*cos(2*track->Phi())/rms[0]);
+        mQy1 += (weight*sin(2*track->Phi())/rms[1]);
         if (fSaveTrackContribution){
-          EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi()),idtemp);
-          EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi()),idtemp);
+          EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi())/rms[0],idtemp);
+          EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi())/rms[1],idtemp);
         }
       } else if (eta < -1.*fEtaGap/2.) {
-        mQx2 += (weight*cos(2*track->Phi()));
-        mQy2 += (weight*sin(2*track->Phi()));
+        mQx2 += (weight*cos(2*track->Phi())/rms[0]);
+        mQy2 += (weight*sin(2*track->Phi())/rms[1]);
         if (fSaveTrackContribution){
-          EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi()),idtemp);
-          EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi()),idtemp);
+          EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi())/rms[0],idtemp);
+          EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi())/rms[1],idtemp);
         }
       }
     }
@@ -544,18 +589,18 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
       if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
 
       if (cha > 0) {  
-        mQx1 += (weight*cos(2*track->Phi()));
-        mQy1 += (weight*sin(2*track->Phi()));
+        mQx1 += (weight*cos(2*track->Phi())/rms[0]);
+        mQy1 += (weight*sin(2*track->Phi())/rms[1]);
         if (fSaveTrackContribution){
-          EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi()),idtemp);
-          EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi()),idtemp);
+          EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi())/rms[0],idtemp);
+          EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi())/rms[1],idtemp);
         }
       } else if (cha < 0) {
-        mQx2 += (weight*cos(2*track->Phi()));
-        mQy2 += (weight*sin(2*track->Phi()));
+        mQx2 += (weight*cos(2*track->Phi())/rms[0]);
+        mQy2 += (weight*sin(2*track->Phi())/rms[1]);
         if (fSaveTrackContribution){
-          EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi()),idtemp);
-          EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi()),idtemp);
+          EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi())/rms[0],idtemp);
+          EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi())/rms[1],idtemp);
         }
       }
     }
@@ -563,9 +608,9 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
     printf("plane resolution determination method not available!\n\n ");
     return;
   }
-     
-  mQ[0].Set(mQx1,mQy1);
-  mQ[1].Set(mQx2,mQy2);
+  // apply recenetering
+  mQ[0].Set(mQx1-(mean[0]/rms[0]), mQy1-(mean[1]/rms[1]));
+  mQ[1].Set(mQx2-(mean[0]/rms[0]), mQy2-(mean[1]/rms[1]));
   Q1 = mQ[0];
   Q2 = mQ[1];
 }
@@ -663,6 +708,32 @@ Double_t AliEPSelectionTask::GetPhiWeight(TObject* track1)
   return phiweight;
 }
 
+//________________________________________________________________________
+void AliEPSelectionTask::Recenter(Int_t var, Double_t * values)
+{
+  
+  if (fUseRecentering && fQDist[0] && fQDist[1] && fCentrality!=-1.) {
+    Int_t centbin = fQDist[0]->FindBin(fCentrality);
+
+    if(var==0) { // fill mean
+      values[0] = fQDist[0]->GetBinContent(centbin);
+      values[1] = fQDist[1]->GetBinContent(centbin);
+    }
+    else if(var==1) { // fill rms
+      values[0] = fQDist[0]->GetBinError(centbin);
+      values[1] = fQDist[1]->GetBinError(centbin);
+      // protection against division by zero
+      if(values[0]==0.0) values[0]=1.0;
+      if(values[1]==0.0) values[1]=1.0;
+    }
+  }
+  else { //default (no recentering)
+    values[0] = var;
+    values[1] = var;
+  }
+  return;
+}
+
 //__________________________________________________________________________
 void AliEPSelectionTask::SetPhiDist() 
 {
@@ -742,6 +813,44 @@ void AliEPSelectionTask::SetPhiDist()
 }
 
 //__________________________________________________________________________
+void AliEPSelectionTask::SetQvectorDist() 
+{
+  if(!fUseRecentering) return;
+  AliInfo(Form("Setting q vector distributions"));
+  fQDist[0] = (TProfile*) fQxContainer->GetObject(fRunNumber, "Default");
+  fQDist[1] = (TProfile*) fQyContainer->GetObject(fRunNumber, "Default");
+
+  if (!fQDist[0] || !fQDist[1]) {
+    AliError(Form("Cannot find OADB q-vector distributions for run %d. Using default values (mean=0,rms=1).", fRunNumber));
+    return;
+  }
+
+  Bool_t emptybins;
+
+  int iter = 0;  
+  while (iter<3){
+    emptybins = kFALSE;
+    
+    for (int i=1; i<=fQDist[0]->GetNbinsX()-2; i++){
+      if (!((fQDist[0]->GetBinEntries(i))>0)) {
+	emptybins = kTRUE;
+      }
+    }
+    if (emptybins) {
+      cout << "empty bins - rebinning!" << endl;
+      fQDist[0]->Rebin();
+      fQDist[1]->Rebin();
+      iter++;
+    }
+    else iter = 3;
+  }
+  
+  if (emptybins) {
+    AliError("After Maximum of rebinning still empty Qxy-bins!!!");
+  }
+}
+
+//__________________________________________________________________________
 void AliEPSelectionTask::SetPersonalPhiDistribution(const char* infilename, char* listname)
 {
   
@@ -754,7 +863,6 @@ void AliEPSelectionTask::SetPersonalPhiDistribution(const char* infilename, char
 
   f.Close();
 } 
-
 
 //_________________________________________________________________________
 TObjArray* AliEPSelectionTask::GetAODTracksAndMaxID(AliAODEvent* aod, Int_t& maxid)
@@ -832,7 +940,20 @@ void AliEPSelectionTask::SetOADBandPeriod()
            fHruns = (TH1F*)fSparseDist->Projection(0); //projection on run axis;
            fHruns->SetName("runsHisto");
       }
-      }	
+      }
+
+      if(fUseRecentering) {
+	oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/eprecentering.root", AliAnalysisManager::GetOADBPath()));
+	TFile *foadb = TFile::Open(oadbfilename);
+	if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
+
+	AliInfo("Using Standard OADB");
+	fQxContainer = (AliOADBContainer*) foadb->Get("eprecentering.Qx");    
+	fQyContainer = (AliOADBContainer*) foadb->Get("eprecentering.Qy");    
+	if (!fQxContainer || !fQyContainer) AliFatal("Cannot fetch OADB container for EP recentering");
+	foadb->Close();
+      }
+
      } 
 }
 
