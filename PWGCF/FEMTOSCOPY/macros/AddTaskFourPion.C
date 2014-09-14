@@ -23,7 +23,7 @@ AliFourPion *AddTaskFourPion(
   if(!FourPionTask) return NULL;
   FourPionTask->SetLEGOCase(kTRUE);
   FourPionTask->SetMCdecision(MCcase);
-  FourPionTask->SetPbPbCase(kTRUE);
+  FourPionTask->SetCollisionType(0);
   FourPionTask->SetGenerateSignal(kFALSE);
   FourPionTask->SetTabulatePairs(TabulatePairs);
   FourPionTask->SetInterpolationType(kFALSE);
