@@ -139,13 +139,13 @@ void AliEbyEPidRatioPhy::CreateHistograms() {
   fESDTrackCuts->GetPtRange(ptRange[0],ptRange[1]);
   TString sTitle("");
   AddHistSetCent("Phy",       Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));
-  AddHistSetCent("PhyTPC",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
-  AddHistSetCent("PhyTOF",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
+  //  AddHistSetCent("PhyTPC",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
+  // AddHistSetCent("PhyTOF",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
 
 #if USE_PHI
   AddHistSetCent("Phyphi",    Form("%s,#it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", sTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-  AddHistSetCent("PhyTPCphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-  AddHistSetCent("PhyTOFphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+  //  AddHistSetCent("PhyTPCphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+  // AddHistSetCent("PhyTOFphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
 #endif
 
   if (fIsMC) {
@@ -153,13 +153,13 @@ void AliEbyEPidRatioPhy::CreateHistograms() {
   
     AddHistSetCent("MC",      Form("%s", sTitle.Data()));
     AddHistSetCent("MCpt",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], ptRange[1]));
-    AddHistSetCent("MCTPC",   Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
-    AddHistSetCent("MCTOF",   Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
+    // AddHistSetCent("MCTPC",   Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
+    //AddHistSetCent("MCTOF",   Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
     
 #if USE_PHI
     AddHistSetCent("MCphi",   Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-    AddHistSetCent("MCTPCphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-    AddHistSetCent("MCTOFphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+    //AddHistSetCent("MCTPCphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+    //AddHistSetCent("MCTOFphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
 #endif
     
   }
@@ -216,7 +216,7 @@ Int_t AliEbyEPidRatioPhy::ProcessTracks() {
     fNp[0][0][idxPart] += 1;
     if(iPid != 0) fNp[0][iPid][idxPart] += 1;
     // -- in TPC pt Range
-    if (track->Pt() <= fHelper->GetMinPtForTOFRequired()) {
+    /*    if (track->Pt() <= fHelper->GetMinPtForTOFRequired()) {
       fNp[1][0][idxPart] += 1;
       if(iPid != 0) fNp[1][iPid][idxPart] += 1;
     }
@@ -224,7 +224,7 @@ Int_t AliEbyEPidRatioPhy::ProcessTracks() {
     if (track->Pt() > fHelper->GetMinPtForTOFRequired()){
       fNp[2][0][idxPart] += 1;
       if(iPid != 0) fNp[2][iPid][idxPart] += 1;
-    }
+      }*/
 
 #if USE_PHI
     if(!fHelper->IsTrackAcceptedPhi(track))
@@ -234,26 +234,26 @@ Int_t AliEbyEPidRatioPhy::ProcessTracks() {
     fNp[3][iPid][idxPart] += 1;
     if(iPid != 0) fNp[3][0][idxPart] += 1;
     // -- in TPC pt Range
-    if (track->Pt() <= fHelper->GetMinPtForTOFRequired()) {
+    /*   if (track->Pt() <= fHelper->GetMinPtForTOFRequired()) {
       fNp[4][0][idxPart] += 1;
       if(iPid != 0)fNp[4][iPid][idxPart] += 1;
     }
     // -- in TPC+TOF pt Range
     if (track->Pt() > fHelper->GetMinPtForTOFRequired()) {
       fNp[5][0][idxPart] += 1;
-      if(iPid != 0) fNp[5][iPid][idxPart] += 1;
+      if(iPid != 0) fNp[5][iPid][idxPart] += 1;*/
     }
 #endif
   } // for (Int_t idxTrack = 0; idxTrack < fESD->GetNumberOfTracks(); ++idxTrack) {
  
   FillHistSetCent("Phy",        0, kFALSE);
-  FillHistSetCent("PhyTPC",     1, kFALSE);
-  FillHistSetCent("PhyTOF",     2, kFALSE);
+//  FillHistSetCent("PhyTPC",     1, kFALSE);
+//  FillHistSetCent("PhyTOF",     2, kFALSE);
  
 #if USE_PHI
-  FillHistSetCent("Phyphi",     3, kFALSE);
-  FillHistSetCent("PhyTPCphi",  4, kFALSE);
-  FillHistSetCent("PhyTOFphi",  5, kFALSE);
+  FillHistSetCent("Phyphi",     1, kFALSE);
+//  FillHistSetCent("PhyTPCphi",  4, kFALSE);
+// FillHistSetCent("PhyTOFphi",  5, kFALSE);
 
  #endif
   /*  Printf("<<<<<<<<<< Inside Loop >>>>>>>>>>");
@@ -315,7 +315,7 @@ Int_t AliEbyEPidRatioPhy::ProcessParticles() {
     if(iPid != 0)fMCNp[1][iPid][idxPart] += 1.;        
     
     // -- in TPC pt Range
-    if (particle->Pt() <= fHelper->GetMinPtForTOFRequired()) {
+    /*   if (particle->Pt() <= fHelper->GetMinPtForTOFRequired()) {
       fMCNp[2][0][idxPart]    += 1;
       if(iPid != 0)fMCNp[2][iPid][idxPart] += 1;
     }
@@ -323,7 +323,7 @@ Int_t AliEbyEPidRatioPhy::ProcessParticles() {
     if (particle->Pt() > fHelper->GetMinPtForTOFRequired()) {
       fMCNp[3][0][idxPart]    += 1;
       if(iPid != 0) fMCNp[3][iPid][idxPart] += 1;
-    }
+      }*/
    
 #if USE_PHI
     if(!fHelper->IsParticleAcceptedPhi(particle))
@@ -334,7 +334,7 @@ Int_t AliEbyEPidRatioPhy::ProcessParticles() {
     fMCNp[4][0][idxPart]    += 1;
     if(iPid != 0)fMCNp[4][iPid][idxPart] += 1;
     
-    // -- in TPC pt Range
+    /*  // -- in TPC pt Range
     if (particle->Pt() <= fHelper->GetMinPtForTOFRequired()) {
       fMCNp[5][0][idxPart]    += 1;
       if(iPid != 0)fMCNp[5][iPid][idxPart] += 1;
@@ -344,19 +344,19 @@ Int_t AliEbyEPidRatioPhy::ProcessParticles() {
     if (particle->Pt() > fHelper->GetMinPtForTOFRequired()){
       fMCNp[6][0][idxPart]    += 1;
       if(iPid != 0)fMCNp[6][iPid][idxPart] += 1;
-    }
+      }*/
 #endif
   } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
   
   FillHistSetCent("MC",        0, kTRUE);
   FillHistSetCent("MCpt",      1, kTRUE);
-  FillHistSetCent("MCTPC",     2, kTRUE);
-  FillHistSetCent("MCTOF",     3, kTRUE);
+  //  FillHistSetCent("MCTPC",     2, kTRUE);
+  // FillHistSetCent("MCTOF",     3, kTRUE);
 
 #if USE_PHI
-  FillHistSetCent("MCphi",     4, kTRUE);
-  FillHistSetCent("MCTPCphi",  5, kTRUE);
-  FillHistSetCent("MCTOFphi",  6, kTRUE);
+  FillHistSetCent("MCphi",     2, kTRUE);
+  // FillHistSetCent("MCTPCphi",  5, kTRUE);
+  // FillHistSetCent("MCTOFphi",  6, kTRUE);
 
   
 #endif
@@ -545,8 +545,8 @@ void AliEbyEPidRatioPhy::FillHistSetCent(const Char_t *name, Int_t idx, Bool_t i
   }
 
   for (Int_t j = 0; j < 22; j++) {
-    (static_cast<TProfile*>(list->FindObject(Form("fProfBin%sNu%02d", name,j+23))))->Fill(centralityBin,b[j]); 
-    (static_cast<TProfile*>(list->FindObject(Form("fProf%sNu%02d", name,j+23))))->Fill(centralityPer,b[j]); 
+    (static_cast<TProfile*>(list->FindObject(Form("fProfBin%sNu%02d", name,j+24))))->Fill(centralityBin,b[j]); 
+    (static_cast<TProfile*>(list->FindObject(Form("fProf%sNu%02d", name,j+24))))->Fill(centralityPer,b[j]); 
   }
   
   return;

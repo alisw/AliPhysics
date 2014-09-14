@@ -58,7 +58,7 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
   
   Float_t minPt,     maxPt,     minPtEff,     maxPtEff,  minPtForTOF;
   Float_t nSigmaITS, nSigmaTPC, nSigmaTPClow, nSigmaTOF, maxPtForTPClow; 
-  Float_t etaMax,    etaMaxEff; 
+  Float_t etaMax,    etaMaxEff, maxRap; 
   Int_t   pidStrategy;
 
   minPtForTOF    = 0.69;   
@@ -68,7 +68,9 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
   minPtEff       = 0.3;    
   maxPtEff       = 2.5; 
   
+  maxRap         = 0.5;
   etaMax         = 0.8;  
+ 
   etaMaxEff      = 0.8;  
   nSigmaITS      = 4.0;   
   nSigmaTPC      = 4.0;   
@@ -115,7 +117,7 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
   task->SetPtRangeEff(minPtEff, maxPtEff);  // pt cut range for the correction / efficiency / contamination creation
   helper->SetVertexZMax(10.);   
   helper->SetCentralityBinMax(11);
-  helper->SetRapidityMax(0.5); 
+  helper->SetRapidityMax(maxRap); 
   helper->SetMinTrackLengthMC(70.);  
   helper->SetNSigmaMaxCdd(0.);    //  3. ||   ->> Turn off sigmaDCA cuts for now
   helper->SetNSigmaMaxCzz(0.);    //  3. ||   ->> Turn off sigmaDCA cuts for now

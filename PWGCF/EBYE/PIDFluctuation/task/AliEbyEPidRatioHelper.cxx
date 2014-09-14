@@ -65,7 +65,7 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
 
   fCentralityBinMax(11),
   fVertexZMax(10.),
-  fRapidityMax(0.5),
+  fRapidityMax(0.9),
   fPhiMin(0.),
   fPhiMax(TMath::TwoPi()),
   fMinTrackLengthMC(70.),
@@ -107,7 +107,7 @@ const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsEta     = Int_t((AliEbyEPidRat
 								   AliEbyEPidRatioHelper::fgkfHistRangeEta[0]) / 
 								  AliEbyEPidRatioHelper::fgkfHistBinWitdthRap) +1;
 
-const Float_t AliEbyEPidRatioHelper::fgkfHistRangeRap[]   = {-0.5, 0.5};
+const Float_t AliEbyEPidRatioHelper::fgkfHistRangeRap[]   = {-0.9, 0.9};
 const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsRap     = Int_t((AliEbyEPidRatioHelper::fgkfHistRangeRap[1] - AliEbyEPidRatioHelper::fgkfHistRangeRap[0]) / AliEbyEPidRatioHelper::fgkfHistBinWitdthRap) +1;
 
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangePhi[]   = {0.0, TMath::TwoPi()};
@@ -430,20 +430,16 @@ Bool_t AliEbyEPidRatioHelper::IsParticleAcceptedBasicNeutral(AliVParticle *parti
 
 //________________________________________________________________________
 Bool_t AliEbyEPidRatioHelper::IsParticleAcceptedRapidity(AliVParticle *particle, Double_t &yP, Int_t gCurPid) {
-  // -- Check if particle is accepted
-  // > in rapidity
-  // > if no pid : return kTRUE, yP = eta
-  // > return 0 if not accepted
-
+  
  if (gCurPid == 0) {
    yP = particle->Eta();
    return kTRUE;
  }
   
- Double_t mP;
+ Double_t mP = AliPID::ParticleMass(AliPID::kPion);
  if(gCurPid == 1) mP = AliPID::ParticleMass(AliPID::kPion);
- if(gCurPid == 2) mP = AliPID::ParticleMass(AliPID::kKaon);
- if(gCurPid == 3) mP = AliPID::ParticleMass(AliPID::kProton);
+ else if(gCurPid == 2) mP = AliPID::ParticleMass(AliPID::kKaon);
+ else if(gCurPid == 3) mP = AliPID::ParticleMass(AliPID::kProton);
  
  // -- Calculate rapidities and kinematics
   Double_t p  = particle->P();
@@ -507,10 +503,10 @@ Bool_t AliEbyEPidRatioHelper::IsTrackAcceptedRapidity(AliVTrack *track, Double_t
     return kTRUE;
   }
   
-  Double_t mP;
+  Double_t mP = AliPID::ParticleMass(AliPID::kPion);
   if(gCurPid == 1) mP = AliPID::ParticleMass(AliPID::kPion);
-  if(gCurPid == 2) mP = AliPID::ParticleMass(AliPID::kKaon);
-  if(gCurPid == 3) mP = AliPID::ParticleMass(AliPID::kProton);
+  else if(gCurPid == 2) mP = AliPID::ParticleMass(AliPID::kKaon);
+  else if(gCurPid == 3) mP = AliPID::ParticleMass(AliPID::kProton);
 
   // -- Calculate rapidities and kinematics
   Double_t pvec[3];
