@@ -145,7 +145,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fTrackPtPhiCut(0),   
   fTrackPtEta(0),     
   fTrackPtEtaCut(0),
-  fMaxCellEPhi(0)
+  fMaxCellEPhi(0),
+  fDetaDphiFromTM(0)
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -254,7 +255,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fTrackPtPhiCut(0),   
   fTrackPtEta(0),     
   fTrackPtEtaCut(0),   
-  fMaxCellEPhi(0)
+  fMaxCellEPhi(0),
+  fDetaDphiFromTM(0)
 {
   // Constructor
 
@@ -447,6 +449,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fMaxCellEPhi = new TH2F("fMaxCellEPhi","Most energetic cell in event; GeV;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,63,0,6.3); 
   fMaxCellEPhi->Sumw2();
   fQAList->Add(fMaxCellEPhi);
+
+  fDetaDphiFromTM = new TH2F("fDetaDphiFromTM","d#phi vs. d#eta of clusters from track->GetEMCALcluster();d#eta;d#phi",100,-0.05,0.05,200,-0.1,0.1);
+  fDetaDphiFromTM->Sumw2();
+  fQAList->Add(fDetaDphiFromTM);
 
   PostData(1, fOutputList);
   PostData(2, fQAList);
@@ -1504,8 +1510,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
       continue;
     fEmcClusNotExo->Fill(c->E());
     fEmcClusEClusCuts->Fill(c->E(),1);
-    if(fClusIdFromTracks.Contains(Form("%d",ic)))
+    if(fClusIdFromTracks.Contains(Form("%d",ic))){
       fEmcClusETM2->Fill(c->E());
+      fDetaDphiFromTM->Fill(c->GetTrackDz(),c->GetTrackDx());
+    }
     if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
       fEmcClusETM1->Fill(c->E());
       continue;

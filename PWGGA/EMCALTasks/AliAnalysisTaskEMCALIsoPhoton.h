@@ -185,6 +185,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fTrackPtEta;       //!selected tracks pt vs. eta
   TH2F        *fTrackPtEtaCut;    //!selected tracks pt vs. eta in "triggered event"
   TH2F        *fMaxCellEPhi;      //!max cell energy vs. cell phi
+  TH2F        *fDetaDphiFromTM;   //!dphi vs deta of track->GetEMCALcluster() clusters
 
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
