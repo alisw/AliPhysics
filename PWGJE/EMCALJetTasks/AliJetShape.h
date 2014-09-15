@@ -19,6 +19,7 @@
 using namespace std;
 
 #ifdef FASTJET_VERSION
+//________________________________________________________________________
 class AliJetShapeMass : public fastjet::FunctionOfPseudoJet<Double32_t>
 {
  public:
@@ -26,6 +27,7 @@ class AliJetShapeMass : public fastjet::FunctionOfPseudoJet<Double32_t>
   Double32_t result(const fastjet::PseudoJet &jet) const{ return jet.m();}
 };
 
+//________________________________________________________________________
 class AliJetShapeGRNum : public fastjet::FunctionOfPseudoJet<Double32_t>
 {
  public:
@@ -68,6 +70,7 @@ class AliJetShapeGRNum : public fastjet::FunctionOfPseudoJet<Double32_t>
   Double_t fDRStep;
 };
 
+//________________________________________________________________________
 class AliJetShapeGRDen : public fastjet::FunctionOfPseudoJet<Double32_t>
 {
  public:
@@ -109,6 +112,7 @@ class AliJetShapeGRDen : public fastjet::FunctionOfPseudoJet<Double32_t>
   Double_t fDRStep;
 };
 
+//________________________________________________________________________
 class AliJetShapeAngularity : public fastjet::FunctionOfPseudoJet<Double32_t>{
 public:
   virtual std::string description() const{return "Angularity:radial moment";}
@@ -131,7 +135,7 @@ public:
   }
 };
 
-
+//________________________________________________________________________
 class AliJetShapepTD : public fastjet::FunctionOfPseudoJet<Double32_t>{
  public:
   virtual std::string description() const{return "pTD";}
@@ -162,6 +166,7 @@ class AliJetShapeConstituent : public fastjet::FunctionOfPseudoJet<Double32_t>{
   }
 };
 
+//________________________________________________________________________
 class AliJetShapeCircularity : public fastjet::FunctionOfPseudoJet<Double32_t>{
  public:
   virtual std::string description() const{return "circularity denominator";}
@@ -229,6 +234,7 @@ class AliJetShapeCircularity : public fastjet::FunctionOfPseudoJet<Double32_t>{
   }
 };
 
+//________________________________________________________________________
 class AliJetShapeSigma2 : public fastjet::FunctionOfPseudoJet<Double32_t>{
  public:
   virtual std::string description() const{return "cms sigma2";}
@@ -240,8 +246,7 @@ class AliJetShapeSigma2 : public fastjet::FunctionOfPseudoJet<Double32_t>{
     Double_t mxy    = 0.;
     int  nc     = 0;
     Double_t sump2  = 0.;
-           
-       
+
     std::vector<fastjet::PseudoJet> constits = jet.constituents();
     for(UInt_t ic = 0; ic < constits.size(); ++ic) {
       Double_t ppt=constits[ic].perp();
@@ -280,12 +285,10 @@ class AliJetShapeSigma2 : public fastjet::FunctionOfPseudoJet<Double32_t>{
     if(jev==0) sigma2=TMath::Sqrt(TMath::Abs(eval[1])/sump2);
     
     return sigma2;
-    
   }
 };
 
-
-
+//________________________________________________________________________
 class AliJetShapeLeSub : public fastjet::FunctionOfPseudoJet<Double32_t>{
  public:
   virtual std::string description() const{return "leading mins subleading";}

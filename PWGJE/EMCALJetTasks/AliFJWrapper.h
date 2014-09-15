@@ -41,7 +41,7 @@ class AliFJWrapper
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetAngularity()  const {return fGenSubtractorInfoJetAngularity  ; } 
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetpTD()         const {return fGenSubtractorInfoJetpTD         ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetCircularity() const {return fGenSubtractorInfoJetCircularity ; }
-  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetSigma2() const {return fGenSubtractorInfoJetSigma2; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetSigma2()      const {return fGenSubtractorInfoJetSigma2      ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetConstituent() const {return fGenSubtractorInfoJetConstituent ; } 
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetLeSub()       const {return fGenSubtractorInfoJetLeSub       ; }
   const std::vector<fastjet::PseudoJet>                      GetConstituentSubtrJets()            const {return fConstituentSubtrJets            ; }
@@ -124,7 +124,7 @@ class AliFJWrapper
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetAngularity;  //!  
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetpTD;         //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetCircularity; //!
-  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetSigma2; //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetSigma2;      //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetConstituent; //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetLeSub;       //!
 #endif
@@ -713,7 +713,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetSigma2() {
     fGenSubtractorInfoJetSigma2.push_back(infoSigma);
   }
 #endif
- return 0;
+  return 0;
 }
 //_________________________________________________________________________________________________
 Int_t AliFJWrapper::DoGenericSubtractionJetConstituent() {

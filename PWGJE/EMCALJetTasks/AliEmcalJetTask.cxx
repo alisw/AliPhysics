@@ -623,29 +623,27 @@ void AliEmcalJetTask::FindJets()
 	  AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
 	jet_sub->SetLabel(ijet);
         // Fill constituent info
-       std::vector<fastjet::PseudoJet> constituents_sub(fjw.GetJetConstituents(ijet));
-       jet_sub->SetNumberOfTracks(constituents_sub.size());
-       jet_sub->SetNumberOfClusters(constituents_sub.size());
-       Int_t nt            = 0;
-       Int_t nc            = 0;
-       Double_t neutralE   = 0;
-       Double_t maxCh      = 0;
-       Double_t maxNe      = 0;
-       Int_t gall          = 0;
-       Int_t gemc       =0;
-       Int_t cemc          = 0;
-       Int_t ncharged      = 0;
-       Int_t nneutral      = 0;
-       Double_t mcpt       = 0;
-       Double_t emcpt      = 0;
+	std::vector<fastjet::PseudoJet> constituents_sub(fjw.GetJetConstituents(ijet));
+	jet_sub->SetNumberOfTracks(constituents_sub.size());
+	jet_sub->SetNumberOfClusters(constituents_sub.size());
+	Int_t nt            = 0;
+	Int_t nc            = 0;
+	Double_t neutralE   = 0;
+	Double_t maxCh      = 0;
+	Double_t maxNe      = 0;
+	Int_t gall          = 0;
+	Int_t gemc          = 0;
+	Int_t cemc          = 0;
+	Int_t ncharged      = 0;
+	Int_t nneutral      = 0;
+	Double_t mcpt       = 0;
+	Double_t emcpt      = 0;
 
-       FillJetConstituents(constituents_sub,jet_sub,vertex,jetCount,nt,nc,maxCh,maxNe,ncharged,nneutral,neutralE,mcpt,cemc,emcpt,gall,gemc);
-      jet_sub->SetNumberOfTracks(nt);
-      jet_sub->SetNumberOfClusters(nc);
-      jet_sub->SortConstituents();
-       
-
-
+	FillJetConstituents(constituents_sub,jet_sub,vertex,jetCount,nt,nc,maxCh,maxNe,ncharged,nneutral,neutralE,mcpt,cemc,emcpt,gall,gemc);
+	jet_sub->SetNumberOfTracks(nt);
+	jet_sub->SetNumberOfClusters(nc);
+	jet_sub->SortConstituents();
+	
 	fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
 	jet_sub->SetArea(area.perp());
 	jet_sub->SetAreaEta(area.eta());
@@ -655,11 +653,6 @@ void AliEmcalJetTask::FindJets()
       }
     }
 #endif
-
-
-
-
-
   } //constituent subtraction
 }
 
@@ -883,12 +876,6 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
         AliError(Form("%s: No logical way to end up here.", GetName()));
         continue;
       } 
-
-
-
-
     }
-
-     
 }
 //______________________________________________________________________________________
