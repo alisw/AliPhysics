@@ -39,12 +39,11 @@ void runTTreeFilterOnGrid() {
     alienHandler->SetGridDataDir("/alice/data/2011/LHC11h_2");
     alienHandler->SetDataPattern("*ESDs/pass2/AOD145/*AOD.root");
     alienHandler->SetRunPrefix("000");
-    // 88 samples, so maybe this needs to be submitted in 'chunks'
-    alienHandler->AddRunNumber( 137161 );
+    // runs from the 11h data taking period (36 from the 'good' tpc list, 28 from the 'semi good' list
     Int_t runs[] = {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081, 169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309}; // 36 + 28 runs
 
     // add the runnnumbers to the handler
-    for(int i = 0; i < 1; i++) alienHandler->AddRunNumber(runs[i]);
+    for(int i = 0; i < 36; i++) alienHandler->AddRunNumber(runs[i]);
 
     alienHandler->SetDefaultOutputs();
     alienHandler->SetAnalysisMacro("PhiV2.C");
@@ -62,8 +61,8 @@ void runTTreeFilterOnGrid() {
     alienHandler->SetMergeViaJDL(kTRUE);
 
     // define the output folders
-    alienHandler->SetGridWorkingDir(Form("filteredTTree_runs_%i-%i", runs[0], runs[10]));
-    alienHandler->SetGridOutputDir(Form("filteredTTree_runs_%i-%i", runs[0], runs[10]));
+    alienHandler->SetGridWorkingDir(Form("filteredTTree_runs_%i-%i", runs[0], runs[35]));
+    alienHandler->SetGridOutputDir(Form("filteredTTree_runs_%i-%i", runs[0], runs[35]));
 
     // create the analysis manager
     AliAnalysisManager* mgr = new AliAnalysisManager("MyManager");
