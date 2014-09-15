@@ -138,13 +138,13 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
 //________________________________________________________________________
 Bool_t AliJetEmbeddingFromPYTHIATask::GetNextEntry()
 {
-  if (fPtHardBinCount >= fMinEntriesPerPtHardBin || fCurrentPtHardBin < 0) {
+  if (fCurrentPtHardBin < 0 || (fMinEntriesPerPtHardBin >= 0 && fPtHardBinCount >= fMinEntriesPerPtHardBin)) {
     fPtHardBinCount = 0;
 
     Int_t newPtHard = GetRandomPtHardBin();
     
     if (newPtHard != fCurrentPtHardBin) {
-      new (fPtHardBinParam) TParameter<int>("PYTHIAPtHardBin", newPtHard);
+      fPtHardBinParam->SetVal(newPtHard);
       fCurrentPtHardBin = newPtHard;
       if (!OpenNextFile()) return kFALSE;
     }
@@ -208,6 +208,11 @@ Bool_t AliJetEmbeddingFromPYTHIATask::UserNotify()
 TFile* AliJetEmbeddingFromPYTHIATask::GetNextFile() 
 {
   fCurrentAODFileID = TMath::Nint(gRandom->Rndm()*(fTotalFiles-1))+1;
+
+  if (fMinEntriesPerPtHardBin < 0) {
+    fCurrentPtHardBin = GetRandomPtHardBin();
+    fPtHardBinParam->SetVal(fCurrentPtHardBin);
+  }
 
   TString fileName;
 
