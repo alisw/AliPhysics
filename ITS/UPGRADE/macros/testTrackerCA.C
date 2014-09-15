@@ -6,6 +6,8 @@
 #include <TGeoManager.h>
 #include <TGeoGlobalMagField.h>
 #include <TStopwatch.h>
+#include <TCanvas.h>
+#include <TVirtualPad.h>
 
 #include "AliTracker.h"
 #include "AliGeomManager.h"
@@ -19,7 +21,7 @@
 #include "AliESDEvent.h"
 #include "AliITSURecoParam.h"
 #include "AliITSUReconstructor.h"
-#include "AliITSUTrackerSA.h"
+#include "AliITSUCATracker.h"
 #endif
 
 extern TSystem *gSystem;
@@ -63,7 +65,10 @@ void testTrackerCA() {
   rec->SetRecoParam(par);
   //
   rec->Init();
-  AliITSUTrackerSA *tracker = new AliITSUTrackerSA();
+  AliITSUCATracker *tracker = new AliITSUCATracker();
+  tracker->SetPhiCut(0.15f);
+  //tracker->SetThetaBin(0.03f);
+  tracker->SetChi2Cut(3000);
   tracker->Init(rec);
 
 
@@ -77,11 +82,14 @@ void testTrackerCA() {
     
   AliRunLoader *rl = AliRunLoader::Open("galice.root","something");
   rl->LoadHeader();
-  
+
+  TH1F fGHisto("ghisto","Good tracks #chi^{2};#chi^{2};Entries",100,0,400);
+  TH1F fFHisto("fhisto","Fake tracks #chi^{2};#chi^{2};Entries",100,0,400);
 
   TStopwatch timer;    
-  Int_t nEvents=1;//rl->GetNumberOfEvents();
+  Int_t nEvents=rl->GetNumberOfEvents();
   for (Int_t i=0; i<nEvents; i++) {
+    //for ( Int_t i=1; i<2; i++) {  
     cout<<"\nEvent number "<<i<<endl;
     rl->GetEvent(i);
 
@@ -91,8 +99,10 @@ void testTrackerCA() {
     TTree *cTree=(TTree *)clsFile->Get(Form("Event%d/TreeR",i));
     tracker->LoadClusters(cTree);
     tracker->Clusters2Tracks(esd);
-    //tracker->PropagateBack(esd);
+    tracker->PropagateBack(esd);
     tracker->RefitInward(esd);
+    // fGHisto.Add(tracker->GetGHisto());
+    // fFHisto.Add(tracker->GetFHisto());
     tracker->UnloadClusters();
 
     Int_t n=esd->GetNumberOfTracks();
@@ -109,13 +119,88 @@ void testTrackerCA() {
     delete vtx;
   }
   timer.Stop(); timer.Print();
- 
+  #ifdef _TUNING_
+  TCanvas *cv1 = new TCanvas("chi2","chi2",1400,1000);
+  cv1->Divide(2,2);
+  for(int i=0;i<4;i++) {
+    cv1->cd(i+1);
+    cv1->cd(i+1)->SetLogy();
+    tracker->fGoodCombChi2[i]->Draw();
+    tracker->fFakeCombChi2[i]->SetLineColor(kRed);
+    tracker->fFakeCombChi2[i]->Draw("same");
+  }
+  TCanvas *ccv1 = new TCanvas("deltan","DeltaN",1400,1000);
+  ccv1->Divide(2,2);
+  for(int i=0;i<4;i++) {
+    ccv1->cd(i+1);
+    ccv1->cd(i+1)->SetLogy();
+    tracker->fGoodCombN[i]->Draw();
+    tracker->fFakeCombN[i]->SetLineColor(kRed);
+    tracker->fFakeCombN[i]->Draw("same");
+  }
+  TCanvas *cv2 = new TCanvas("chi2tracks","chi2tracks");
+  cv2->cd();
+  cv2->cd()->SetLogy();
+  tracker->fGoodCombChi2[4]->Draw();
+  tracker->fFakeCombChi2[4]->SetLineColor(kRed);
+  tracker->fFakeCombChi2[4]->Draw("same");
+  TCanvas *cv3 = new TCanvas();
+  cv3->cd();
+  tracker->fTanF->SetLineColor(kRed);
+  tracker->fTanF->Draw("");
+  tracker->fTan->Draw("same");
+  TCanvas *cv33 = new TCanvas();
+  cv33->cd();
+  tracker->fPhiF->SetLineColor(kRed);
+  tracker->fPhiF->Draw("");
+  tracker->fPhi->Draw("same");
+  // TCanvas *cv4 = new TCanvas();
+  // cv4->cd();
+  // tracker->fNEntries->Draw();
+  for (int i = 0; i < 6; ++i)
+  {
+    TCanvas *cv = new TCanvas(Form("Doublets%i",i),Form("Doublets%i",i),1400,500);
+    cv->Divide(2);
+    cv->cd(1);
+    tracker->fGDZ[i]->Draw();
+    tracker->fFDZ[i]->SetLineColor(kRed);
+    tracker->fFDZ[i]->Draw("same");
+    cv->cd(2);
+    tracker->fGDXY[i]->Draw();
+    tracker->fFDXY[i]->SetLineColor(kRed);
+    tracker->fFDXY[i]->Draw("same");
+  }
+  for (int i = 0; i < 5; ++i)
+  {
+    TCanvas *cv = new TCanvas(Form("Cells%i",i),Form("Cells%i",i),1400,500);
+    cv->Divide(2);
+    cv->cd(1);
+    tracker->fGDCAZ[i]->Draw();
+    tracker->fFDCAZ[i]->SetLineColor(kRed);
+    tracker->fFDCAZ[i]->Draw("same");
+    cv->cd(2);
+    tracker->fGDCAXY[i]->Draw();
+    tracker->fFDCAXY[i]->SetLineColor(kRed);
+    tracker->fFDCAXY[i]->Draw("same");
+  }
+  // TCanvas *ccv4 = new TCanvas("iparams","Impact Parameters",1000,700);
+  // ccv4->Divide(2);
+  // ccv4->cd(1);
+  // tracker->fIPGoodXY->Draw();
+  // tracker->fIPFakeXY->SetLineColor(kRed);
+  // tracker->fIPFakeXY->Draw("same");
+  // ccv4->cd(2);
+  // tracker->fIPGoodZ->Draw();
+  // tracker->fIPFakeZ->SetLineColor(kRed);
+  // tracker->fIPFakeZ->Draw("same");
+  #endif
   delete tracker;
   //delete clsFile;
   esdFile->cd();
   esdTree->Write();
   delete esd;
   delete esdFile;
+
 }
 
 const AliESDVertex *SetMCvertex(const AliRunLoader *rl, AliTracker *tracker) {
