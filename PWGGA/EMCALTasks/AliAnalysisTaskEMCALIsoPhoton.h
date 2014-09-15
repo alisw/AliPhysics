@@ -75,7 +75,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                  SetMinIsoClusE(Double_t emin)           { fMinIsoClusE        = emin;    }
   void                  SetTrCoreRemoval(Bool_t b)              { fTrCoreRem          = b;       }
   void                  SetClusTDiff(Double_t diff)             { fClusTDiff          = diff;    }
-  void                  SetPileUpRejSPD()                       { fPileUpRejSPD       = kTRUE;  }
+  void                  SetPileUpRejSPD()                       { fPileUpRejSPD       = kTRUE;   }
+  void                  SetDistanceToBadCh(Double_t d)          { fDistToBadChan      = d;       }
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
@@ -123,6 +124,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Bool_t                 fTrCoreRem;             // flag to set the removal of the core in track isolation (true removes it, default)
   Double_t               fClusTDiff;             // variable to hold the time diff between the candidate cluster and the isolation clusters
   Bool_t                 fPileUpRejSPD;          // flag to set pile-up rejection via SPD (multiple vertices)
+  Double_t               fDistToBadChan;         // distance to bad channel
   
  private:
   AliESDEvent *fESD;      //! ESD object
