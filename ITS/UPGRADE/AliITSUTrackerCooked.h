@@ -22,7 +22,8 @@ class AliITSUReconstructor;
 class AliITSUTrackerCooked : public AliITSUTrackerGlo {
 public:
   enum {
-     kNLayers=7,kMaxClusterPerLayer=9999,kMaxSelected=kMaxClusterPerLayer/9};
+     kNLayers=7, kMaxClusterPerLayer=15000, kMaxSelected=kMaxClusterPerLayer/10
+  };
   AliITSUTrackerCooked(AliITSUReconstructor *rec);
   virtual ~AliITSUTrackerCooked();
 
@@ -84,13 +85,16 @@ class AliITSUTrackerCooked::AliITSUlayer {
     void InsertClusters(TClonesArray *clusters, Bool_t seedingLayer, Bool_t sa);
     void SetR(Double_t r) {fR=r;}
     void DeleteClusters();
-    Int_t 
-    SelectClusters(Float_t zMin,Float_t zMax,Float_t phiMin, Float_t phiMax);
+    void ResetSelectedClusters() {fI=0;}
+    void SelectClusters(Float_t phi, Float_t dy, Float_t z, Float_t dz);
     const AliCluster *GetNextCluster(Int_t &i); 
     void ResetTrack(const AliITSUTrackCooked &t);
     Int_t FindClusterIndex(Double_t z) const;
-    Double_t GetR() const {return fR;}
+    Float_t GetR() const {return fR;}
     AliCluster *GetCluster(Int_t i) const { return fClusters[i]; } 
+    Float_t GetXRef(Int_t i) const { return fXRef[i]; } 
+    Float_t GetAlphaRef(Int_t i) const { return fAlphaRef[i]; } 
+    Float_t GetClusterPhi(Int_t i) const { return fPhi[i]; } 
     Int_t GetNumberOfClusters() const {return fN;}
     const AliITSUTrackCooked *GetTrack() const {return fTrack;}
 
@@ -99,13 +103,18 @@ class AliITSUTrackerCooked::AliITSUlayer {
     AliITSUlayer &operator=(const AliITSUlayer &tr);  
     Int_t InsertCluster(AliCluster *c);
 
-    Double_t fR;                // mean radius of this layer
+    Float_t fR;                // mean radius of this layer
 
-    AliCluster *fClusters[kMaxClusterPerLayer]; //All clusters
-    Int_t fN; //number of clusters 
+    AliCluster *fClusters[kMaxClusterPerLayer]; // All clusters
+    Float_t fXRef[kMaxClusterPerLayer];     // x of the reference plane
+    Float_t fAlphaRef[kMaxClusterPerLayer]; // alpha of the reference plane
+    Float_t fPhi[kMaxClusterPerLayer]; // cluster phi 
+    Int_t fN; // Total number of clusters 
 
-    Int_t fIndex[kMaxSelected]; // Indices of selected clusters 
-    Int_t fNsel;                // number of preselected clusters
+    Int_t fIndex[kMaxSelected]; 
+    Int_t fNsel;      // Number of selected clusters
+    Int_t fI;         // Running index for the selected clusters  
+
     AliITSUTrackCooked *fTrack; // track estimation at this layer
   };
 
