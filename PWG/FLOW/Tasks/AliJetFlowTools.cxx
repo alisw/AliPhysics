@@ -37,9 +37,7 @@
 // to see an example of how to use this class, see $ALICE_ROOT/PWGCF/FLOW/macros/jetFlowTools.C
 
 // root includes
-#include "TF1.h"
 #include "TF2.h"
-#include "TH1D.h"
 #include "TH2D.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
@@ -1110,6 +1108,13 @@ TH1D* AliJetFlowTools::GetPrior(
     TDirectoryFile* dirOut = new TDirectoryFile(Form("Prior_%s___%s", suffix.Data(), fActiveString.Data()), Form("Prior_%s___%s", suffix.Data(), fActiveString.Data()));
     dirOut->cd();
     switch (fPrior) {    // select the prior for unfolding
+        case kPriorTF1 : {
+            if(!fPriorUser) {
+                printf("> GetPrior:: FATAL ERROR! TF1 prior requested but prior has not been set ! < \n");
+                return 0x0;
+            }
+            return fPriorUser;
+        } break;
         case kPriorPythia : {
             if(!fPriorUser) {
                 printf("> GetPrior:: FATAL ERROR! pythia prior requested but prior has not been set ! < \n");
@@ -1663,9 +1668,9 @@ void AliJetFlowTools::GetNominalValues(
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::GetCorrelatedUncertainty(
-        TGraphAsymmErrors*& corrRatio,  // correlated uncertainty function pointer
-        TGraphAsymmErrors*& corrV2,     // correlated uncertainty function pointer
-        TArrayI* variationsIn,          // variantions in plnae
+        TGraphAsymmErrors*& corrRatio,  // correlated uncertainty pointer reference
+        TGraphAsymmErrors*& corrV2,     // correlated uncertainty pointer reference
+        TArrayI* variationsIn,          // variantions in plane
         TArrayI* variationsOut,         // variantions out of plane
         Bool_t sym,                     // treat as symmmetric
         TArrayI* variations2ndIn,       // second source of variations
@@ -1768,9 +1773,6 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
             for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
                 relativeErrorVariationOutLow->SetBinContent(i+1, 0);//lin->GetParameter(0));
             }
-
-        
-        
         }
     }
     // call the functions for a second set of systematic sources
@@ -4000,6 +4002,15 @@ void AliJetFlowTools::GetSignificance(
         statE = n->GetErrorYlow(i);
         printf(" > stat \t %.4f \n", statE);
     }
+    for(Int_t i(low); i < up+1; i++) { 
+        shapeE = n->GetErrorYlow(i);
+        printf(" > shape \t %.4f \n", shapeE);
+    }
+    for(Int_t i(low); i < up+1; i++) { 
+        corrE = n->GetErrorYlow(i);
+        printf(" > corr \t %.4f \n", corrE);
+    }
+
 
     // get the p value based solely on statistical uncertainties
     for(Int_t i(low); i < up+1; i++) {
@@ -4016,20 +4027,28 @@ void AliJetFlowTools::GetSignificance(
     cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
     cout << "  observed data, using only statistical uncertainties, is " << TMath::Prob(chi2, 2) << endl << endl << endl ; 
 
+    statE = 0.;
+    shapeE = 0.;
+    corrE = 0;
+    totalE = 0;
     // to plot the average error as function of number of events
+    Float_t ctr(0);
     for(Int_t i(low); i < up+1; i++) {
+        ctr = ctr + 1.;
         // set some flags to 0
         x = 0.;
         y = 0.;
         // get the nominal point
         n->GetPoint(i, x, y);
-        statE = n->GetErrorYlow(i);
-        shapeE = shape->GetErrorYlow(i);
-        corrE = corr->GetErrorYlow(i);
+        statE += n->GetErrorY(i);
+        shapeE += shape->GetErrorY(i);
+        corrE += corr->GetErrorY(i);
         // combine the errors
-        totalE = TMath::Sqrt(statE*statE+shapeE*shapeE);// + TMath::Sqrt(corrE*corrE);
+//        totalE += TMath::Sqrt(corrE*corrE+shapeE*shapeE);// + TMath::Sqrt(corrE*corrE);
     }
-    cout << " AVERAGE_E " << totalE/((float)(up-low+1)) << endl;
+    cout << " AVERAGE_SHAPE " << shapeE/ctr << endl;
+    cout << " AVERAGE_CORR " << corrE/ctr << endl;
+    cout << " AVERAGE_STAT " << statE/ctr << endl;
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::MinimizeChi22d()
