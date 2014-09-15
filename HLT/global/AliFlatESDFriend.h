@@ -101,6 +101,8 @@ private:
   // -- Variable Size Object
 
   Byte_t fContent[1];                  // Variale size object, which contains all data
+
+  ClassDef(AliFlatESDFriend,0)
 };
 
 

@@ -18,9 +18,12 @@
 
 
 class AliExternalTrackParam;
-class AliESDtrack;
-class AliESDEvent;
-class AliESDfriend;
+//class AliESDtrack;
+//class AliESDEvent;
+//class AliESDfriend;
+class AliVEvent;
+class AliVTrack;
+class AliVfriendEvent;
 class TGraphErrors;
 class TTree;
 class TH2F;
@@ -34,7 +37,7 @@ public:
   AliTPCcalibLaser(const AliTPCcalibLaser& laser);
   AliTPCcalibLaser & operator=(const AliTPCcalibLaser& calibLaser);
   virtual ~AliTPCcalibLaser();
-  virtual void     Process(AliESDEvent *event);
+  virtual void     Process(AliVEvent *event);
   Int_t   GetNtracks(){return fNtracks;}
   virtual void Analyze();
   static void        DumpLaser(const char *finput, Int_t run);
@@ -54,13 +57,14 @@ public:
   void         MakeDistHisto(Int_t id);
   void         AddCut(Double_t xcut, Double_t ycut, Double_t ncl){fEdgeXcuts[fNcuts]=xcut; fEdgeYcuts[fNcuts]=ycut; fNClCuts[fNcuts]=ncl; fNcuts++;}
 
-  Int_t  FindMirror(AliESDtrack *track, AliTPCseed *seed);
+  Int_t  FindMirror(AliVTrack *track, AliTPCseed *seed);
   Bool_t AcceptLaser(Int_t id);
   Float_t GetDistance(AliExternalTrackParam *track, AliTPCLaserTrack *ltrp);
   void   MakeFitHistos();
   void   UpdateFitHistos();
   void   MergeFitHistos(AliTPCcalibLaser * add);
-  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  //void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
+  void     Process(AliVTrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
   //
   void SetBeamParameters(TVectorD& meanOffset, TVectorD& meanSlope,
@@ -70,12 +74,12 @@ public:
     {fUseFixedDriftV = 1; fFixedFitAside0=aside0; fFixedFitAside1=aside1;
     fFixedFitCside0=cside0; fFixedFitCside1=cside1;}
 
-  AliESDEvent  * fESD;             //! ESD event  - not OWNER
-  AliESDfriend * fESDfriend;       //! ESD event  - not OWNER
+  AliVEvent  * fEvent;             //! ESD event  - not OWNER
+  AliVfriendEvent * fEventFriend;       //! ESD event  - not OWNER
   Int_t          fNtracks;         //! counter of associated laser tracks
   //
   TObjArray      fTracksMirror;    //! tracks with mirror information
-  TObjArray      fTracksEsd;       //! tracks with reconstructed information - 
+  TObjArray      fTracks;       //! tracks with reconstructed information -
   //                               not owner ESD
   TObjArray      fTracksEsdParam;  //! tracks with reconstructed information - 
   //                               is owner ESD at mirror

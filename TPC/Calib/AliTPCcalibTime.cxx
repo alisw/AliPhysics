@@ -39,10 +39,16 @@ Comments to be written here:
 
 #include "AliDCSSensor.h"
 #include "AliDCSSensorArray.h"
-#include "AliESDEvent.h"
+//#include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDVertex.h"
-#include "AliESDfriend.h"
+//#include "AliESDfriend.h"
+
+#include "AliVEvent.h"
+#include "AliVTrack.h"
+#include "AliVfriendEvent.h"
+#include "AliVfriendTrack.h"
+
 #include "AliLog.h"
 #include "AliRelAlignerKalman.h"
 #include "AliTPCCalROC.h"
@@ -366,19 +372,31 @@ void AliTPCcalibTime::ResetCurrent(){
 
 
 
-void AliTPCcalibTime::Process(AliESDEvent *event){
+void AliTPCcalibTime::Process(AliVEvent *event){
   //
   // main function to make calibration
   //
-  if(!event) return;
-  if (event->GetNumberOfTracks()<2) return; 
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!ESDfriend) {
+
+    //Printf("*******************AliTPCcalibTime::Process()*******************");
+  if(!event) {
+      Printf("ERROR AliTPCcalibTime::Process(): NO EVENT AVAILABLE!");
+      return;
+  }
+  if (event->GetNumberOfTracks()<2) {
+      //Printf("ACHTUNG AliTPCcalibTime::Process(): not enough tracks!");
+      return;
+  }
+  //AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  AliVfriendEvent *friendEvent=event->FindFriend();
+  if (!friendEvent) {
+    Printf("ERROR AliTPCcalibTime::Process(): NO FRIEND AVAILABLE!");
     return;
   }
-  if (ESDfriend->TestSkipBit()) return;
+  if (friendEvent->TestSkipBit()) return;
   
   ResetCurrent();
+
+  //AliESDEvent *ev=(AliESDEvent*)event;
   //if(IsLaser  (event)) 
   ProcessLaser (event);
   //if(IsCosmics(event)) 
@@ -387,7 +405,7 @@ void AliTPCcalibTime::Process(AliESDEvent *event){
   ProcessBeam  (event);
 }
 
-void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
+void AliTPCcalibTime::ProcessLaser(AliVEvent *event){
   //
   // Fit drift velocity using laser 
   // 
@@ -516,12 +534,12 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
   }
 }
 
-void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
+void AliTPCcalibTime::ProcessCosmic(const AliVEvent *const event){
   //
   // process Cosmic event - track matching A side C side
   //
   if (!event) {
-    Printf("ERROR: ESD not available");
+    Printf("ERROR: event not available");
     return;
   }  
   if (event->GetTimeStamp() == 0 ) {
@@ -542,8 +560,8 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   if (ntracks > fCutTracks) return;
   
   if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
-  AliESDfriend *esdFriend=(AliESDfriend*)(((AliESDEvent*)event)->FindListObject("AliESDfriend"));
-  
+  //AliESDfriend *esdFriend=(AliESDfriend*)(((AliESDEvent*)event)->FindListObject("AliESDfriend"));
+  AliVfriendEvent *friendEvent=event->FindFriend();
   TObjArray  tpcSeeds(ntracks);
   Double_t vtxx[3]={0,0,0};
   Double_t svtxx[3]={0.000001,0.000001,100.};
@@ -556,17 +574,17 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   for (Int_t i=0;i<ntracks;++i) {
     clusterSideA[i]=0;
     clusterSideC[i]=0;
-    AliESDtrack *track = event->GetTrack(i);
+    AliVTrack *track = event->GetVTrack(i);
     
     const AliExternalTrackParam * trackIn = track->GetInnerParam();
     const AliExternalTrackParam * trackOut = track->GetOuterParam();
     if (!trackIn) continue;
     if (!trackOut) continue;
     
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
     if (!friendTrack) continue;
     if (friendTrack) ProcessSame(track,friendTrack,event);
-    if (friendTrack) ProcessAlignITS(track,friendTrack,event,esdFriend);
+    if (friendTrack) ProcessAlignITS(track,friendTrack,event,friendEvent);
     if (friendTrack) ProcessAlignTRD(track,friendTrack);
     if (friendTrack) ProcessAlignTOF(track,friendTrack);
     TObject *calibObject;
@@ -591,7 +609,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   //
 
   for (Int_t i=0;i<ntracks;++i) {
-    AliESDtrack *track0 = event->GetTrack(i);
+    AliVTrack *track0 = event->GetVTrack(i);
     // track0 - choosen upper part
     if (!track0) continue;
     if (!track0->GetOuterParam()) continue;
@@ -600,7 +618,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
     track0->GetDirection(d1);    
     for (Int_t j=0;j<ntracks;++j) {
       if (i==j) continue;
-      AliESDtrack *track1 = event->GetTrack(j);   
+      AliVTrack *track1 = event->GetVTrack(j);
       //track 1 lower part
       if (!track1) continue;
       if (!track1->GetOuterParam()) continue;
@@ -640,8 +658,10 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
       //
       //
       Float_t dmax = TMath::Max(TMath::Abs(dist0),TMath::Abs(dist1));
-      AliExternalTrackParam param0(*track0);
-      AliExternalTrackParam param1(*track1);
+      AliExternalTrackParam param0;
+      param0.CopyFromVTrack(track0);
+      AliExternalTrackParam param1;
+      param1.CopyFromVTrack(track1);
       //
       // Propagate using Magnetic field and correct fo material budget
       //
@@ -759,7 +779,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   if (GetDebugLevel()>20) printf("Trigger: %s\n",event->GetFiredTriggerClasses().Data());
 }
 
-void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
+void AliTPCcalibTime::ProcessBeam(const AliVEvent *const event){
   //
   // Process beam data - calculates vartex
   //                     from A side and C side
@@ -792,23 +812,38 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
   if (ntracks==0) return;
   if (ntracks > fCutTracks) return;
   //
-  AliESDfriend *esdFriend=(AliESDfriend*)(((AliESDEvent*)event)->FindListObject("AliESDfriend"));
+  //AliESDfriend *esdFriend=(AliESDfriend*)(((AliESDEvent*)event)->FindListObject("AliESDfriend"));
+  AliVfriendEvent *friendEvent=event->FindFriend();
   //
   // Divide tracks to A and C side tracks - using the cluster indexes
   TObjArray tracksA(ntracks);  
   TObjArray tracksC(ntracks);  
   //
-  AliESDVertex *vertexSPD =  (AliESDVertex *)event->GetPrimaryVertexSPD();
-  AliESDVertex *vertex    =  (AliESDVertex *)event->GetPrimaryVertex();
-  AliESDVertex *vertexTracks =  (AliESDVertex *)event->GetPrimaryVertexTracks();
+  //AliESDVertex *vertexSPD =  (AliESDVertex *)event->GetPrimaryVertexSPD();
+  //AliESDVertex *vertex    =  (AliESDVertex *)event->GetPrimaryVertex();
+  //AliESDVertex *vertexTracks =  (AliESDVertex *)event->GetPrimaryVertexTracks();
+
+  AliESDVertex vtxSPD;
+  event->GetPrimaryVertexSPD(vtxSPD);
+  AliESDVertex *vertexSPD=&vtxSPD;
+
+  AliESDVertex vtx;
+  event->GetPrimaryVertex(vtx);
+  AliESDVertex *vertex=&vtx;
+
+  AliESDVertex vtxTracks;
+  event->GetPrimaryVertexTracks(vtxTracks);
+  AliESDVertex *vertexTracks=&vtxTracks;
+
+
   Double_t vertexZA[10000], vertexZC[10000];
   //
   Int_t ntracksA= 0;
   Int_t ntracksC= 0;
   //
   for (Int_t itrack=0;itrack<ntracks;itrack++) {
-    AliESDtrack *track = event->GetTrack(itrack);
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(itrack);
+    AliVTrack *track = event->GetVTrack(itrack);
+    const AliVfriendTrack *friendTrack = friendEvent->GetTrack(itrack);
     if (!friendTrack) continue;
     if (TMath::Abs(track->GetTgl())>kMaxTgl) continue;
     if (TMath::Abs(track->Pt())<kMinPt) continue;
@@ -1257,7 +1292,7 @@ Bool_t  AliTPCcalibTime::IsPair(const AliExternalTrackParam *tr0, const AliExter
 
   return kTRUE;  
 }
-Bool_t AliTPCcalibTime::IsCross(const AliESDtrack *const tr0, const AliESDtrack *const tr1){
+Bool_t AliTPCcalibTime::IsCross(const AliVTrack *const tr0, const AliVTrack *const tr1){
   //
   // check if the cosmic pair of tracks crossed A/C side
   // 
@@ -1267,7 +1302,7 @@ Bool_t AliTPCcalibTime::IsCross(const AliESDtrack *const tr0, const AliESDtrack 
   return result;
 }
 
-Bool_t AliTPCcalibTime::IsSame(const AliESDtrack *const tr0, const AliESDtrack *const tr1){
+Bool_t AliTPCcalibTime::IsSame(const AliVTrack *const tr0, const AliVTrack *const tr1){
   // 
   // track crossing the CE
   // 0. minimal number of clusters 
@@ -1320,7 +1355,7 @@ Bool_t AliTPCcalibTime::IsSame(const AliESDtrack *const tr0, const AliESDtrack *
 }
 
 
-void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event){
+void  AliTPCcalibTime::ProcessSame(const AliVTrack *const track, const AliVfriendTrack *const friendTrack, const AliVEvent *const event){
   //
   // Process  TPC tracks crossing CE
   //
@@ -1483,7 +1518,7 @@ void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendT
 
 }
 
-void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack, const AliESDEvent *const event, AliESDfriend *const esdFriend){
+void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendTrack *const friendTrack, const AliVEvent *const event, AliVfriendEvent *const friendEvent){
   //
   // Process track - Update TPC-ITS alignment
   // Updates: 
@@ -1512,7 +1547,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
   // 
   Int_t dummycl[1000];
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
-  if (!track->IsOn(AliESDtrack::kTPCrefit)) return;
+  if (!track->IsOn(AliVTrack::kTPCrefit)) return;
   if (!track->GetInnerParam())   return;
   if (!track->GetOuterParam())   return;
   if (track->GetInnerParam()->Pt()<kMinPt)  return;
@@ -1531,17 +1566,17 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
     AliTracker::PropagateTrackToBxByBz(&pITS2,pTPC.GetX(),0.1,0.1,kFALSE);
   }
 
-  AliESDfriendTrack *itsfriendTrack=0;
+  //AliESDfriendTrack *itsfriendTrack=0;
   //
   // try to find standalone ITS track corresponing to the TPC if possible
   //
   Bool_t hasAlone=kFALSE;
   Int_t ntracks=event->GetNumberOfTracks();
   for (Int_t i=0; i<ntracks; i++){
-    AliESDtrack * trackITS = event->GetTrack(i); 
+    AliVTrack * trackITS = event->GetVTrack(i);
     if (!trackITS) continue;
     if (trackITS->GetITSclusters(dummycl)<kMinITS) continue;  // minimal amount of clusters
-    itsfriendTrack = esdFriend->GetTrack(i);
+    const AliVfriendTrack *itsfriendTrack = friendEvent->GetTrack(i);
     if (!itsfriendTrack) continue;
     if (!itsfriendTrack->GetITSOut()) continue;
      
@@ -1672,7 +1707,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
 
 
 
-void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack){
+void  AliTPCcalibTime::ProcessAlignTRD(AliVTrack *const track, const AliVfriendTrack *const friendTrack){
   //
   // Process track - Update TPC-TRD alignment
   // Updates: 
@@ -1703,7 +1738,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
   //  if (!friendTrack->GetTRDIn()) return;  
   //  if (!track->IsOn(AliESDtrack::kTRDrefit)) return;   
-  if (!track->IsOn(AliESDtrack::kTRDout)) return;  
+  if (!track->IsOn(AliVTrack::kTRDout)) return;
   if (!track->GetInnerParam())   return;
   if (!friendTrack->GetTPCOut())   return;
   // exclude crossing track
@@ -1713,7 +1748,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   AliTracker::PropagateTrackToBxByBz(&pTPC,kRefX,0.1,0.1,kFALSE);
   AliExternalTrackParam *pTRDtrack = 0; 
   TObject *calibObject=0;
-  for (Int_t l=0;(calibObject=((AliESDfriendTrack*)friendTrack)->GetCalibObject(l));++l) {
+  for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
     if ((dynamic_cast< AliTPCseed*>(calibObject))) continue;
     if ((pTRDtrack=dynamic_cast< AliExternalTrackParam*>(calibObject))) break;
   }
@@ -1840,7 +1875,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
 }
 
 
-void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack){
+void  AliTPCcalibTime::ProcessAlignTOF(AliVTrack *const track, const AliVfriendTrack *const friendTrack){
   //
   //
   // Process track - Update TPC-TOF alignment
@@ -2193,7 +2228,7 @@ void        AliTPCcalibTime::FillResHistoTPCITS(const AliExternalTrackParam * pT
 }  
 
      
-void        AliTPCcalibTime::FillResHistoTPC(const AliESDtrack * pTrack){
+void        AliTPCcalibTime::FillResHistoTPC(const AliVTrack *pTrack){
   //
   // fill residual histograms pTPC - vertex
   // Histogram is filled only for primary tracks

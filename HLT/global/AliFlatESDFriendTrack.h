@@ -47,6 +47,10 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
 
   //virtual const AliVtrackPointArray *GetTrackPointArray() const {return NULL;}
 
+  TObject* GetCalibObject(Int_t) const {return NULL;}
+  const AliExternalTrackParam* GetTPCOut() const {return NULL;}
+  const AliExternalTrackParam* GetITSOut() const {return NULL;}
+
   
   // bit manipulation for filtering
 
@@ -100,6 +104,8 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
   // --------------------------------------------------------------------------------
   
   Byte_t fContent[1];                  // Variale size object, which contains all data
+
+  ClassDef(AliFlatESDFriendTrack, 0)
 
 };
 
