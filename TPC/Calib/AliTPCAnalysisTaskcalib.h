@@ -11,9 +11,13 @@
 #include "AliAnalysisTask.h"
 #include "TObjArray.h"
 #include "AliTPCcalibBase.h"
-class AliESDEvent;
-class AliESDtrack;
-class AliESDfriend;
+//class AliESDEvent;
+//class AliESDtrack;
+//class AliESDfriend;
+class AliVEvent;
+class AliVTrack;
+class AliVfriendEvent;
+
 class AliTPCseed;
 
 class AliTPCAnalysisTaskcalib:public AliAnalysisTask {
@@ -31,16 +35,16 @@ public:
   virtual void FinishTaskOutput();
   void         SetDebugOuputhPath(const char * name){fDebugOutputPath=name;}
 protected:
-  virtual void     Process(AliESDEvent *event);
+  virtual void     Process(AliVEvent *event);
   virtual void     Process(AliTPCseed *track);
-  virtual void     Process(AliESDtrack *track, Int_t run);
+  virtual void     Process(AliVTrack *track, Int_t run);
   virtual Long64_t Merge(TCollection *li);
   virtual void     Analyze();
   void             RegisterDebugOutput();
 private:
   TObjArray *fCalibJobs;      // array of calibration objects - WE ARE NOT OWNER?
-  AliESDEvent *fESD;         //! current esd
-  AliESDfriend *fESDfriend;  //! current esd friend
+  AliVEvent *fEvent;         //! current event
+  AliVfriendEvent *fEventFriend;  //! current event friend
   TString      fDebugOutputPath; // debug output path   
   AliTPCAnalysisTaskcalib(const AliTPCAnalysisTaskcalib&);
   AliTPCAnalysisTaskcalib& operator=(const AliTPCAnalysisTaskcalib&);

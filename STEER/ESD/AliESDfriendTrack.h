@@ -96,7 +96,7 @@ protected:
 private:
   AliESDfriendTrack &operator=(const AliESDfriendTrack & /* t */) {return *this;}
 
-  ClassDef(AliESDfriendTrack,6) //ESD friend track
+  ClassDef(AliESDfriendTrack,7) //ESD friend track
 };
 
 #endif

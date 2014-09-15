@@ -33,19 +33,15 @@ class AliVVZERO;
 class AliVZDC;
 class AliVMFT;   // AU
 class AliESDkink;
+class AliESDv0;
+class AliESDVertex;
+class AliVTrack;
 
 class AliVEvent : public TObject {
  private:
   // disable some methods from AliVEvent interface
 
-  UInt_t    GetTimeStamp()     const { return 0; }
-  UInt_t    GetEventSpecie() const { return 0; }
   ULong64_t GetTriggerMaskNext50() const { return 0; }
-  AliVfriendEvent* FindFriend() const { return 0; }
-
-  Int_t GetNumberOfKinks() const { return 0; }
-
-  AliESDkink* GetKink(Int_t /*i*/) const { return NULL; }
 
 public:
   enum EOfflineTriggerTypes { 
@@ -156,6 +152,7 @@ public:
  
   // Tracks
   virtual AliVParticle *GetTrack(Int_t i) const = 0;
+  virtual AliVTrack    *GetVTrack(Int_t /*i*/) const {return NULL;}
   //virtual Int_t        AddTrack(const AliVParticle *t) = 0;
   virtual Int_t        GetNumberOfTracks() const = 0;
   virtual Int_t        GetNumberOfV0s() const = 0;
@@ -180,9 +177,6 @@ public:
   const TGeoHMatrix* GetEMCALMatrix(Int_t /*i*/)   const {return NULL;}
   virtual AliVCaloTrigger *GetCaloTrigger(TString /*calo*/) const {return NULL;} 
 
-	
-  // Primary vertex
-  virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}
   virtual Bool_t IsPileupFromSPD(Int_t /*minContributors*/, 
 				 Double_t /*minZdist*/, 
 				 Double_t /*nSigmaZdist*/, 
@@ -212,6 +206,26 @@ public:
   virtual AliVTrdTrack* GetTrdTrack(Int_t /* iTrack */) const { return 0x0; }
 
   virtual Int_t     GetNumberOfESDTracks()  const { return 0; }
+  virtual Int_t     GetEventNumberInFile() const {return 0;}
+
+  //used in calibration:
+  virtual Int_t            GetV0(AliESDv0&, Int_t /*iv0*/) const {return 0;}
+  virtual UInt_t           GetTimeStamp() const { return 0; }
+  virtual AliVfriendEvent* FindFriend() const { return 0; }
+  virtual UInt_t           GetEventSpecie() const { return 0; }
+  virtual AliESDkink*      GetKink(Int_t /*i*/) const { return NULL; }
+  virtual Int_t            GetNumberOfKinks() const { return 0; }
+
+  // Primary vertex
+  virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}
+  //virtual const AliVVertex   *GetPrimaryVertexSPD() const {return 0x0;}
+  //virtual const AliVVertex   *GetPrimaryVertexTPC() const {return 0x0;}
+  //virtual const AliVVertex   *GetPrimaryVertexTracks() const {return 0x0;}
+
+  virtual Int_t GetPrimaryVertex( AliESDVertex & ) const {return 0;}
+  virtual Int_t GetPrimaryVertexTPC( AliESDVertex & ) const {return 0;}
+  virtual Int_t GetPrimaryVertexSPD( AliESDVertex & ) const {return 0;}
+  virtual Int_t GetPrimaryVertexTracks( AliESDVertex & ) const {return 0;}
 
   virtual void ConnectTracks() {}
 

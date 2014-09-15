@@ -162,6 +162,8 @@ class AliFlatESDTrack :public AliVTrack {
   // -- Variable Size Object
   Byte_t fContent[1];                  // Variale size object, which contains all data
 
+  ClassDef(AliFlatESDTrack,0)
+
 };
 
 // _______________________________________________________________________________________________________

@@ -292,6 +292,30 @@ public:
 
   const AliESDVertex *GetPrimaryVertex() const;
 
+  //getters for calibration
+  Int_t GetPrimaryVertex (AliESDVertex &v) const {
+      if(!GetPrimaryVertex()) return -1;
+      v=*GetPrimaryVertex();
+      return 0;
+  }
+
+  Int_t GetPrimaryVertexTPC (AliESDVertex &v) const {
+      if(!GetPrimaryVertexTPC()) return -1;
+      v=*GetPrimaryVertexTPC();
+      return 0;
+  }
+
+  Int_t GetPrimaryVertexSPD (AliESDVertex &v) const {
+      if(!GetPrimaryVertexSPD()) return -1;
+      v=*GetPrimaryVertexSPD();
+      return 0;
+  }
+
+  Int_t GetPrimaryVertexTracks (AliESDVertex &v) const {
+      if(!GetPrimaryVertexTracks()) return -1;
+      v=*GetPrimaryVertexTracks();
+      return 0;
+  }
 
 
   void SetTOFHeader(const AliTOFHeader * tofEventTime);
@@ -413,6 +437,12 @@ public:
   AliESDv0 *GetV0(Int_t i) const {
     return (AliESDv0*)(fV0s?fV0s->At(i):0x0);
   }
+
+  Int_t GetV0(AliESDv0 &v0dum, Int_t i) const {
+        if(!GetV0(i)) return -1;
+        v0dum=*GetV0(i);
+        return 0;}
+
   Int_t AddV0(const AliESDv0 *v);
 
   AliESDcascade *GetCascade(Int_t i) const {
