@@ -39,7 +39,7 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
 
   // --------------------   AliVfriendTrack interface    ---------------------------------
 
-  Int_t GetTPCseed( AliTPCseed &) const {return -1;}
+  Int_t GetTPCseed( AliTPCseed &) const;
  
   Int_t GetTrackParamTPCOut( AliExternalTrackParam &p ) const { return GetTrackParam( fTPCOutPointer, p ); }
   Int_t GetTrackParamITSOut( AliExternalTrackParam &p ) const { return GetTrackParam( fITSOutPointer, p ); }
@@ -129,6 +129,14 @@ inline void AliFlatESDFriendTrack::SetTPCseed( const AliTPCseed *p )
   AliFlatTPCseed *fp = reinterpret_cast< AliFlatTPCseed* >( fContent + fTPCseedPointer );
   fp->SetFromTPCseed( p );
   fContentSize += fp->GetSize();  
+}
+
+inline Int_t AliFlatESDFriendTrack::GetTPCseed( AliTPCseed &s ) const
+{
+  if( fTPCseedPointer<0 ) return -1;
+  const AliFlatTPCseed *fp = reinterpret_cast< const AliFlatTPCseed* >( fContent + fTPCseedPointer );
+  fp->GetTPCseed( &s );
+  return 0;
 }
 
 #endif

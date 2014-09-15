@@ -42,6 +42,7 @@ class AliFlatTPCseed
   void Reset();
 
   void SetFromTPCseed( const AliTPCseed *p );
+  void GetTPCseed( AliTPCseed *p ) const;
 
   
   // --------------------------------------------------------------------------------

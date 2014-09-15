@@ -46,3 +46,9 @@ void AliFlatTPCseed::SetFromTPCseed( const AliTPCseed *p )
   // initialise from AliTPCseed
 
 }
+
+void AliFlatTPCseed::GetTPCseed( AliTPCseed *p ) const
+{
+  // write to AliTPCseed
+
+}
