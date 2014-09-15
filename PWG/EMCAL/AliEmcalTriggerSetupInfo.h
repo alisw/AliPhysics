@@ -20,6 +20,12 @@ class AliEmcalTriggerSetupInfo: public TNamed {
   Int_t GetThresholdJetLowSimple() const { return fThresholdsSimple[2]; }
   Int_t GetThresholdJetHighSimple() const { return fThresholdsSimple[0]; }
   
+  Int_t GetThresholdGammaLow() const { return fThresholds[3]; }
+  Int_t GetThresholdGammaHigh() const { return fThresholds[1]; }
+  Int_t GetThresholdGammaLowSimple() const { return fThresholdsSimple[3]; }
+  Int_t GetThresholdGammaHighSimple() const { return fThresholdsSimple[1]; }
+
+
    Double_t GetThresholdGeVRoughJetLow() const { return ((Double_t)fThresholds[2])*kEMCL1ADCtoGeV; }
    Double_t GetThresholdGeVRoughJetHigh() const { return ((Double_t)fThresholds[0])*kEMCL1ADCtoGeV; }
    Double_t GetThresholdGeVRoughJetLowSimple() const { return ((Double_t)fThresholdsSimple[2])*kEMCL1ADCtoGeV; }
