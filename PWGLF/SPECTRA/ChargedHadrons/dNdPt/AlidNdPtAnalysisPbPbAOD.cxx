@@ -874,7 +874,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  dMCTrackZvPtEtaCent[3] = dCentrality;
 	  fMCGenZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
 	  
-	  dMCTrackPhiPtEtaCent[0] = mcPart->Phi() - dEventplaneAngle;//RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
+	  dMCTrackPhiPtEtaCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
 	  // 	  if( dMCTrackPhiPtEtaCent[0] < 0) dMCTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
 	  // 	  else if( dMCTrackPhiPtEtaCent[0] > 2.*TMath::Pi()) dMCTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
 	  dMCTrackPhiPtEtaCent[1] = mcPart->Pt();
@@ -988,7 +988,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	fCorrelEventplaneDefaultCorrected->Fill(dFillEPCorrectionCheck);
 	
 	
-	dTrackPhiPtEtaCent[0] = track->Phi() - dEventplaneAngleCorrected;//RotatePhi(track->Phi(), dEventplaneAngleCorrected); 
+	dTrackPhiPtEtaCent[0] = RotatePhi(track->Phi(), dEventplaneAngleCorrected); 
 	
 	// 	if( dTrackPhiPtEtaCent[0] < -1.0*TMath::Pi()) dTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
 	// 	else if( dTrackPhiPtEtaCent[0] > TMath::Pi()) dTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
@@ -1014,7 +1014,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  dMCTrackZvPtEtaCent[2] = mcPart->Eta();
 	  dMCTrackZvPtEtaCent[3] = dCentrality;
 	  
-	  dMCTrackPhiPtEtaCent[0] = mcPart->Phi() - dEventplaneAngle;//RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
+	  dMCTrackPhiPtEtaCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
 	  
 	  // 	  if( dMCTrackPhiPtEtaCent[0] < -1.0*TMath::Pi()) dMCTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
 	  // 	  else if( dMCTrackPhiPtEtaCent[0] > TMath::Pi()) dMCTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
@@ -1149,32 +1149,49 @@ Double_t AlidNdPtAnalysisPbPbAOD::MoveEventplane(Double_t dMCEP)
 Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP)
 {
   Double_t dPhi = 0;
-  dPhi = phiTrack - phiEP;
-  if ((dPhi >= -1./2. * TMath::Pi() ) && 
-	(dPhi <= 1./2. * TMath::Pi() ) )
+  dPhi = TMath::Abs(phiTrack - phiEP);
+  
+  if( dPhi <= TMath::Pi() )
   {
 	return dPhi;
   }
-  
-  if( (dPhi < 0) )
+  if( (dPhi > TMath::Pi()) && (dPhi <= 3./2.*TMath::Pi()) )
   {
-	dPhi += 2.*TMath::Pi();
-  }
-  
-  if ((dPhi > 0) && 
-	(dPhi > 1./2. * TMath::Pi() ) && 
-	(dPhi <= 3./2. * TMath::Pi() ) )
-  {
-	dPhi -= TMath::Pi();
-	return dPhi;
-  }	
-  
-  if ((dPhi > 0) && 
-	(dPhi > 3./2. * TMath::Pi() )) 
-  {
-	dPhi -= 2.*TMath::Pi();
+	dPhi = dPhi - TMath::Pi()/2.;
 	return dPhi;
   }
+  if( (dPhi > 3./2.*TMath::Pi()) )
+  {
+	dPhi = dPhi - 3./2.*TMath::Pi();
+	return dPhi;
+  }
+//   if( dPhi < 0 )
+//   
+//   if ((dPhi >= -1./2. * TMath::Pi() ) && 
+// 	(dPhi <= 1./2. * TMath::Pi() ) )
+//   {
+// 	return dPhi;
+//   }
+//   
+//   if( (dPhi < 0) )
+//   {
+// 	dPhi += 2.*TMath::Pi();
+//   }
+//   
+//   if ((dPhi > 0) && 
+// 	(dPhi > 1./2. * TMath::Pi() ) && 
+// 	(dPhi <= 3./2. * TMath::Pi() ) )
+//   {
+// 	dPhi -= TMath::Pi();
+// 	return dPhi;
+//   }	
+//   
+//   if ((dPhi > 0) && 
+// 	(dPhi > 3./2. * TMath::Pi() )) 
+//   {
+// 	dPhi -= 2.*TMath::Pi();
+// 	return dPhi;
+//   }
   
   //   Printf("[E] dphi = %.4f , phiTrack = %.4f, phiEP = %.4f", dPhi, phiTrack, phiEP);
   

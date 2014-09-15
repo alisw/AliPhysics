@@ -60,13 +60,16 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
 // 	10./8.*TMath::Pi(), 11./8.*TMath::Pi(), 12./8.*TMath::Pi(), 13./8.*TMath::Pi(), 14./8.*TMath::Pi(), 15./8.*TMath::Pi(), 2.*TMath::Pi()
 //   };
 
-  Double_t binsPhi[] = {
-	-2.*TMath::Pi(), -1.75*TMath::Pi(), -1.5*TMath::Pi(), -1.25*TMath::Pi(), 
-	-1.*TMath::Pi(), -0.75*TMath::Pi(), -0.5*TMath::Pi(), -0.25*TMath::Pi(), 
-	0, 0.25*TMath::Pi(), 0.5*TMath::Pi(), 0.75*TMath::Pi(), TMath::Pi(),
-	1.25*TMath::Pi(), 1.5*TMath::Pi(), 1.75*TMath::Pi(), 2.*TMath::Pi()
-  };
-  
+//   Double_t binsPhi[] = {
+// 	-2.*TMath::Pi(), -1.75*TMath::Pi(), -1.5*TMath::Pi(), -1.25*TMath::Pi(), 
+// 	-1.*TMath::Pi(), -0.75*TMath::Pi(), -0.5*TMath::Pi(), -0.25*TMath::Pi(), 
+// 	0, 0.25*TMath::Pi(), 0.5*TMath::Pi(), 0.75*TMath::Pi(), TMath::Pi(),
+// 	1.25*TMath::Pi(), 1.5*TMath::Pi(), 1.75*TMath::Pi(), 2.*TMath::Pi()
+//   };
+Double_t binsPhi[] = {
+  0, 0.25*TMath::Pi(), 0.5*TMath::Pi(), 0.75*TMath::Pi(), TMath::Pi()
+};
+
   Int_t nBinPhi = sizeof(binsPhi)/sizeof(Double_t);
   task->SetBinsPhi(nBinPhi, binsPhi);
     
