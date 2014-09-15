@@ -652,12 +652,12 @@ Bool_t AliITSSAPTracker::FollowToLayer(AliITSSAPTracker::ITStrack_t& track, Int_
       double ccov[3]={ cl->GetSigmaY2() + GetClSystYErr2(lrIDA) , 0., cl->GetSigmaZ2() + GetClSystZErr2(lrIDA)};
       double chi2cl = trCopy.GetPredictedChi2(cpar,ccov);
       //
+#ifdef _DEBUG_      
       float clXYZ[3]; cl->GetGlobalXYZ(clXYZ);
       double trXYZ[3]; trCopy.GetXYZ(trXYZ);
       Float_t xCl, alphaCl; 
       cl->GetXAlphaRefPlane(xCl,alphaCl);
       //
-#ifdef _DEBUG_      
       printf("cl%d Chi2:%.2f Dyz: %+e %+e Err: %e %e %e |Lb:",iclt++,chi2cl, 
 	     cl->GetY()-trCopy.GetY(),cl->GetZ()-trCopy.GetZ(),
 	     TMath::Sqrt(ccov[0]),ccov[1],TMath::Sqrt(ccov[2])); //TMP
