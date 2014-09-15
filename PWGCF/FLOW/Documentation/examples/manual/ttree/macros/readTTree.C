@@ -25,15 +25,15 @@ void readTTree()
     gROOT->LoadMacro("../objects/AliFlowTTreeTrack.cxx+");
     gROOT->LoadMacro("../objects/AliFlowEventSimpleFromTTree.cxx+");
     
-    // read the ttree to get some info
-    TFile f("myFilteredTree.root");
-    TTree* AliFlowTTreeTree = (TTree*)f.Get("tree");
+    TChain* myChain = new TChain("tree");
+    myChain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/filtered/000167988.root");
+    myChain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/filtered/000168066.root");
 
     // create pointers for the branches
     AliFlowTTreeEvent* event = 0x0;
-    AliFlowTTreeTree->SetBranchAddress("event", &event);
+    myChain->SetBranchAddress("event", &event);
     TClonesArray* tracks = 0x0;
-    AliFlowTTreeTree->SetBranchAddress("track", &tracks);
+    myChain->SetBranchAddress("track", &tracks);
     // and an example track
     AliFlowTTreeTrack* firstTrack = 0x0;
 
@@ -45,10 +45,13 @@ void readTTree()
     cutsPOI->SetPtMin(2.);
     AliFlowTrackSimpleCuts* cutsRP = new AliFlowTrackSimpleCuts();
 
+    // set how many events you want to analyze
+    Int_t maxEvents = 10000;
     // event loop
-    for(Int_t i = 0, maxEvents = 1000; i < AliFlowTTreeTree->GetEntries(); i++) {
+    printf(" > %i events in chain, processing %i of them < \n", myChain->GetEntries(), maxEvents);
+    for(Int_t i = 0; i < myChain->GetEntries(); i++) {
         cout << " > Parsing event " << i << "\r"; cout.flush();
-        AliFlowTTreeTree->GetEntry(i);
+        myChain->GetEntry(i);
         // pass info to flow package
         AliFlowEventSimple* flowevent = new AliFlowEventSimpleFromTTree(event, tracks, cutsPOI, cutsRP);
         qc->Make(flowevent);
@@ -56,9 +59,6 @@ void readTTree()
         maxEvents--;
         if(maxEvents < 1) break;
     }
-
-    // close file 
-    f.Close();
 
     // wrap up analysis
     qc->Finish();
