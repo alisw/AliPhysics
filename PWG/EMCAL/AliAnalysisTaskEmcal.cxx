@@ -99,7 +99,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
-  fTriggerType(kND),
+  fTriggers(0),
   fOutput(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
@@ -181,7 +181,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
-  fTriggerType(kND),
+  fTriggers(0),
   fOutput(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
@@ -707,33 +707,47 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
   }  
 }
 
-//_____________________________________________________
-AliAnalysisTaskEmcal::TriggerType AliAnalysisTaskEmcal::GetTriggerType()
-{
-  // Get trigger type: kND, kJ1, kJ2
- 
-  if (!fTriggerPatchInfo)
-    return kND;
-  
-  //number of patches in event
-  Int_t nPatch = fTriggerPatchInfo->GetEntries();
+//________________________________________________________________________
+ULong_t AliAnalysisTaskEmcal::GetTriggerList(){
+	  if (!fTriggerPatchInfo)
+	    return 0;
 
-  //loop over patches to define trigger type of event
-  Int_t nJ1 = 0;
-  Int_t nJ2 = 0;
-  AliEmcalTriggerPatchInfo *patch;
-  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
-    if (patch->IsJetHigh()) nJ1++;
-    if (patch->IsJetLow())  nJ2++;
-  }
+	  //number of patches in event
+	  Int_t nPatch = fTriggerPatchInfo->GetEntries();
 
-  if (nJ1>0) 
-    return kJ1;
-  else if (nJ2>0)
-    return kJ2;
-  else
-    return kND;
+	  //loop over patches to define trigger type of event
+	  Int_t nG1 = 0;
+	  Int_t nG2 = 0;
+	  Int_t nJ1 = 0;
+	  Int_t nJ2 = 0;
+	  AliEmcalTriggerPatchInfo *patch;
+	  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
+	    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+	    if (patch->IsGammaHigh()) nG1++;
+	    if (patch->IsGammaLow())  nG2++;
+	    if (patch->IsJetHigh()) nJ1++;
+	    if (patch->IsJetLow())  nJ2++;
+	  }
+
+	  ULong_t triggers(0);
+	  if (nG1>0)
+		SETBIT(triggers, kG1);
+	  if (nG2>0)
+		SETBIT(triggers, kG2);
+	  if (nJ1>0)
+		SETBIT(triggers, kJ1);
+	  if (nJ2>0)
+		SETBIT(triggers, kJ2);
+	  return triggers;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType t){
+	// Check if event has a given trigger type
+	if(t == kND){
+		return fTriggers == 0;
+	}
+	return TESTBIT(fTriggers, int(t));
 }
 
 //________________________________________________________________________
@@ -800,7 +814,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   }
 
   if (fTriggerTypeSel != kND) {
-    if (fTriggerType != fTriggerTypeSel) {
+    if (!HasTriggerType(fTriggerTypeSel)) {
       if (fGeneralHistograms) 
 	fHistEventRejection->Fill("trigTypeSel",1);
       return kFALSE;
@@ -1038,7 +1052,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     }
   }
 
-  fTriggerType = GetTriggerType();
+  fTriggers = GetTriggerList();
 
   return kTRUE;
 }
