@@ -80,6 +80,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fIsAODMC(kFALSE),
   fTotalFiles(2050),
   fAttempts(5),
+  fEmbedCentrality(kFALSE),
   fEsdTreeMode(kFALSE),
   fCurrentFileID(0),
   fCurrentAODFileID(0),
@@ -152,6 +153,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fIsAODMC(kFALSE),
   fTotalFiles(2050),
   fAttempts(5),
+  fEmbedCentrality(kFALSE),
   fEsdTreeMode(kFALSE),
   fCurrentFileID(0),
   fCurrentAODFileID(0),
@@ -433,6 +435,15 @@ Bool_t AliJetEmbeddingFromAODTask::GetNextEntry()
 
   if (!fCurrentAODTree)
     return kFALSE;
+
+  if (!fEsdMode && !fEsdTreeMode && fAODHeader) {
+    AliAODHeader *aodHeader = static_cast<AliAODHeader*>(fAODHeader);
+    AliAODHeader *evHeader = static_cast<AliAODHeader*>(InputEvent()->GetHeader());
+    if (fEmbedCentrality) {
+      AliCentrality *cent = aodHeader->GetCentralityP();
+      evHeader->SetCentrality(cent);
+    }
+  }
 
   fEmbeddingCount++;
 
