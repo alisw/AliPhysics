@@ -668,7 +668,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
 {
   // Set common bins for all analysis and MC histograms filling
     
-  histoRanges->SetHistoPtRangeAndNBins(-0.25, 99.75, 200) ; // Energy and pt histograms
+  histoRanges->SetHistoPtRangeAndNBins(0., 100., 200) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")
   {
