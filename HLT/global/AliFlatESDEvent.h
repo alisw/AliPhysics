@@ -55,7 +55,8 @@ class AliFlatESDEvent :public AliVEvent {
   UInt_t GetEventSpecie()   const { return fEventSpecie; }
   Int_t  GetNumberOfKinks() const { return 0; }  
 
-  AliESDkink* GetKink(Int_t /*i*/) const { return NULL;}
+  AliVTrack  *GetVTrack( Int_t i ) { return GetFlatTrackNonConst(i); }
+  AliESDkink *GetKink(Int_t /*i*/) const { return NULL;}
 
   Int_t GetPrimaryVertex( AliESDVertex &v ) const ;
   Int_t GetPrimaryVertexTPC( AliESDVertex &v ) const ;
@@ -108,6 +109,7 @@ class AliFlatESDEvent :public AliVEvent {
   const AliFlatESDV0      *GetV0s() const { return reinterpret_cast<const AliFlatESDV0*>( fContent + fV0Pointer ); }
 
   const AliFlatESDTrack  *GetFlatTrack( Int_t i ) const ;
+  AliFlatESDTrack  *GetFlatTrackNonConst( Int_t i );
 
   // --------------------------------------------------------------------------------
   // -- Size methods
@@ -195,6 +197,13 @@ class AliFlatESDEvent :public AliVEvent {
 };
 
 // Inline implementations 
+
+inline AliFlatESDTrack  *AliFlatESDEvent::GetFlatTrackNonConst( Int_t i )  
+{ 
+  const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
+  if( i<0 || i>(int) fNTracks || table[i]<0 ) return NULL;
+  return reinterpret_cast<AliFlatESDTrack*>( fContent + table[i] );
+}
 
 inline const AliFlatESDTrack  *AliFlatESDEvent::GetFlatTrack( Int_t i ) const 
 { 
