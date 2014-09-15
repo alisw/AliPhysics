@@ -40,7 +40,7 @@ class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
   Int_t            fAnchorRun               ;// Anchor run
   THashTable      *fFileTable               ;// Table of allowed/vetoed files
   Bool_t           fUseAsVetoTable          ;// Use fFileTable as a veto table
-  Int_t            fMinEntriesPerPtHardBin  ;// Minimum number of embedded events before changing pt hard bin
+  Int_t            fMinEntriesPerPtHardBin  ;// Minimum number of embedded events before changing pt hard bin, if < 0 change pt hard bin only when reach eof 
   Int_t            fCurrentPtHardBin        ;//!Pt hard bin of the current open file
   TParameter<int> *fPtHardBinParam          ;//!Pt hard bin param
   Int_t            fPtHardBinCount          ;//!Number of event embedded from the current pt hard bin
