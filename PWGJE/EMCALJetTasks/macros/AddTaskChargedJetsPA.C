@@ -17,7 +17,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Double_t            maxEta                  = +0.9,
   Double_t            minJetEta               = -0.5,
   Double_t            maxJetEta               = +0.5,
-  Bool_t              isEMCalTrain            = kFALSE,
+  Bool_t              isEMCalTrain            = kFALSE
 )
 {
   // #### Detect the demanded trigger with its readable name
