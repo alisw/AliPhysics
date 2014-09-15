@@ -991,7 +991,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       }
     } else {
       AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      fCentBin = 3;
+      fCentBin = fNcentBins-1;
     }
     AliEventplane *aliEP = InputEvent()->GetEventplane();
     if (aliEP) {
