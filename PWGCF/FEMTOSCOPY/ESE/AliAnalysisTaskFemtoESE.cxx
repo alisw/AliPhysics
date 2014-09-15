@@ -396,10 +396,12 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
 	      hqmix[k][e][c] = new TH3F*[nVzBins];
 	      for(Int_t v = 0; v < nVzBins; v++)
 		{
-		  hq[k][e][c][v] = new TH3F(Form("hq_%i_%i_%i_%i",k,e,c,v),Form("hq_%i_%i_%i_%i",k,e,c,v),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
+		  hq[k][e][c][v] = new TH3F(Form("hq_%i_%i_%i_%i",k,e,c,v),Form("hq_%i_%i_%i_%i",k,e,c,v),30,-0.2,0.2,30,-0.2,0.2,30,-0.2,0.2);
 		  fOutputList->Add(hq[k][e][c][v]);
-		  hqmix[k][e][c][v] = new TH3F(Form("hqmix_%i_%i_%i_%i",k,e,c,v),Form("hqmix_%i_%i_%i_%i",k,e,c,v),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
+		  //cout << "Made histogram " << hq[k][e][c][v]->GetName() << endl;
+		  hqmix[k][e][c][v] = new TH3F(Form("hqmix_%i_%i_%i_%i",k,e,c,v),Form("hqmix_%i_%i_%i_%i",k,e,c,v),30,-0.2,0.2,30,-0.2,0.2,30,-0.2,0.2);
 		  fOutputList->Add(hqmix[k][e][c][v]);
+		  //cout << "Made histogram " << hqmix[k][e][c][v]->GetName() << endl;
 		}
 	    }
 	}
@@ -414,6 +416,18 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   fOutputList->Add(hepbins);
   TH1F* hvzbins = new TH1F("hvzbins","vz bins",nVzBins,vzBins);
   fOutputList->Add(hvzbins);
+
+
+  //cout << "nktbins = " << nKtBins << "   " << ktBins << endl;
+  cout << "kt bins: ";
+  for(Int_t y = 0; y < nKtBins+1; y++) cout << ktBins[y] << "  ";
+  cout << endl << "ep bins: ";
+  for(Int_t y = 0; y < nEPBins+1; y++) cout << epBins[y] << "  ";
+  cout << endl << "cent bins: ";
+  for(Int_t y = 0; y < nCentBins+1; y++) cout << centBins[y] << "  ";
+  cout << endl << "vz bins: ";
+  for(Int_t y = 0; y < nVzBins+1; y++) cout << vzBins[y] << "  ";
+  cout << endl;
 
   Printf("************************");
   Printf("using the %s detector for event plane determination",fEPDet ? "V0C" : "V0A");
@@ -431,6 +445,8 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   nCountSamePairs = 0;
   nCountMixedPairs = 0;
   nCountTracks = 0;
+
+  cout << "Done making stuff!" << endl;
 
   PostData(1, fOutputList);
   PostData(2, fHelperPID);
@@ -451,7 +467,7 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
   if(!EventCut()) return; 
 
   fEventCounter++;
-  if(fEventCounter%1000==0) Printf("===========  Event # %i  ===========",fEventCounter);
+  if(fEventCounter%1000==0) cout<<"===========  Event # "<<fEventCounter<<"  ==========="<<endl;
 
   AliCentrality *centrality;// for AODs and ESDs
   const AliAODVertex *primaryVertexAOD;
@@ -483,7 +499,7 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
   //printf("ResMem %ld VMem %ld\n", procInfo.fMemResident, procInfo.fMemVirtual);
 
  // get event plane from V0's
-  if(!fEventCuts->IsSelected(fAOD,fTrackCuts)) Printf("Error! Event not accepted by AliAODSpectraEventCuts!");
+  if(!fEventCuts->IsSelected(fAOD,fTrackCuts)) cout << "Error! Event not accepted by AliAODSpectraEventCuts!" << endl;
   //TVector2* qvecA = fEventCuts->GetqV0A();
   //TVector2* qvecC = fEventCuts->GetqV0C();
   //Double_t psiV0 = qvecA->Phi()/2.;
@@ -771,7 +787,7 @@ void AliAnalysisTaskFemtoESE::Terminate(Option_t *)
 
   // Called once at the end of the query
  
-  Printf("Done");
+  cout<<"Done"<<endl;
 
 }
 
@@ -1186,8 +1202,10 @@ void AliAnalysisTaskFemtoESE::SetKtBins(Int_t n, Double_t* bins)
   ktBins = new Double_t[nKtBins+1];
   for(Int_t i = 0; i < nKtBins+1; i++)
     ktBins[i]=bins[i];
-  Printf("Setting %i kt bins: ",nKtBins);
-  for(Int_t i = 0; i < nKtBins+1; i++) Printf("%lf",ktBins[i]);
+  cout << endl << "Setting " << nKtBins << " kt bins: " << endl;
+  for(Int_t i = 0; i < nKtBins+1; i++)
+    cout << ktBins[i] << "   ";
+  cout << endl << endl;
 }
 void AliAnalysisTaskFemtoESE::SetCentBins(Int_t n, Double_t* bins)
 {
@@ -1197,8 +1215,10 @@ void AliAnalysisTaskFemtoESE::SetCentBins(Int_t n, Double_t* bins)
   centBins = new Double_t[nCentBins+1];
   for(Int_t i = 0; i < nCentBins+1; i++)
     centBins[i]=bins[i];
-  Printf("Setting %i centrality bins: ",nCentBins);
-  for(Int_t i = 0; i < nCentBins+1; i++) Printf("%lf",centBins[i]);
+  cout << endl << "Setting " << nCentBins << " centrality bins: " << endl;
+  for(Int_t i = 0; i < nCentBins+1; i++)
+    cout << centBins[i] << "   ";
+  cout << endl << endl;
 }
 void AliAnalysisTaskFemtoESE::SetVzBins(Int_t n, Double_t* bins)
 {
@@ -1208,8 +1228,10 @@ void AliAnalysisTaskFemtoESE::SetVzBins(Int_t n, Double_t* bins)
   vzBins = new Double_t[nVzBins+1];
   for(Int_t i = 0; i < nVzBins+1; i++)
     vzBins[i]=bins[i];
-  Printf("Setting %i vz bins: ",nVzBins);
-  for(Int_t i = 0; i < nVzBins+1; i++) Printf("%lf",vzBins[i]);
+  cout << endl << "Setting " << nVzBins << " vz bins: " << endl;
+  for(Int_t i = 0; i < nVzBins+1; i++)
+    cout << vzBins[i] << "   ";
+  cout << endl << endl;
 }
 void AliAnalysisTaskFemtoESE::SetEPBins(Int_t n, Double_t min, Double_t max)
 {
@@ -1219,7 +1241,9 @@ void AliAnalysisTaskFemtoESE::SetEPBins(Int_t n, Double_t min, Double_t max)
   epBins = new Double_t[nEPBins+1];
   for(Int_t y = 0; y < nEPBins+1; y++)
     epBins[y] = min+((max-min)/(Double_t)n)*((Double_t)y);
-  Printf("Setting %i EP bins: ",nEPBins);
-  for(Int_t i = 0; i < nEPBins+1; i++) Printf("%lf",epBins[i]);
+  cout << endl << "Setting " << nEPBins << " event plane bins: " << endl;
+  for(Int_t i = 0; i < nEPBins+1; i++)
+    cout << epBins[i] << "   ";
+  cout << endl << endl;
 }
 
