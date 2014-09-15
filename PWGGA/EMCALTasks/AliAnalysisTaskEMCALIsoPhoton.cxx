@@ -83,14 +83,15 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fClusIdFromTracks(""),
   fCpvFromTrack(kFALSE),
   fNBinsPt(200),
-  fPtBinLowEdge(-0.25),
-  fPtBinHighEdge(99.75),
+  fPtBinLowEdge(0),
+  fPtBinHighEdge(100),
   fRemMatchClus(kFALSE),
   fMinIsoClusE(0),
   fNCuts(5),
   fTrCoreRem(kFALSE),
   fClusTDiff(30e-9),
   fPileUpRejSPD(kFALSE),
+  fDistToBadChan(0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -191,14 +192,15 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fClusIdFromTracks(""),
   fCpvFromTrack(kFALSE),
   fNBinsPt(200),
-  fPtBinLowEdge(-0.25),
-  fPtBinHighEdge(99.75),
+  fPtBinLowEdge(0.),
+  fPtBinHighEdge(100),
   fRemMatchClus(kFALSE),
   fMinIsoClusE(0),
   fNCuts(5),
   fTrCoreRem(kFALSE),
   fClusTDiff(30e-9),
   fPileUpRejSPD(kFALSE),
+  fDistToBadChan(0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -728,6 +730,11 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     if(IsExotic(c)){
       if(fDebug)
 	printf("cluster is exotic! xxxx\n");
+      continue;
+    }
+    if(c->GetDistanceToBadChannel()<fDistToBadChan){
+      if(fDebug)
+	printf("cluster distance to bad channel is %1.1f (<%1.1f) xxxx\n",c->GetDistanceToBadChannel(),fDistToBadChan);
       continue;
     }
     Short_t id;

@@ -5,7 +5,8 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
 						     TString trigbitname = "kEMC7",
 						     TString geoname="EMCAL_COMPLETEV1",
 						     TString pathstrsel = "/",
-						     TString trackSelType = "standard"
+						     TString trackSelType = "standard",
+						     Int_t   distToBadCh = 0
 						     )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -62,6 +63,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   ana->SetPeriod(period.Data());
   ana->SetGeoName(geoname.Data());  
   //ana->SetTrackFilterBit(128);
+  ana->SetDistanceToBadCh(distToBadCh);
   mgr->AddTask(ana);
   TString containername = "histEMCIsoPhoton."+trigbitname;
   TString containernameQA = "histosQA."+trigbitname;
