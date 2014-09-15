@@ -28,6 +28,7 @@
 #define DEFAULT_LOGBOOK_DB "logbook"
 #define DEFAULT_LOGBOOK_USER "dqm"
 #define DEFAULT_LOGBOOK_PASS "dqm123"
+#define DEFAULT_DATA_SOURCE "local"
 
 #include <TSystem.h>
 #include <TString.h>

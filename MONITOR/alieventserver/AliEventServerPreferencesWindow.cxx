@@ -285,6 +285,11 @@ void AliEventServerPreferencesWindow::SetupLogbookTab(TGCompositeFrame* tab)
 	fEntryLogbookPass = new TGTextEntry(cfLogbook, "dqm123");
 	fEntryLogbookPass->SetEchoMode(TGTextEntry::kPassword);
 	fEntryLogbookPass->Resize(150,0);
+    
+    // data source
+    TGLabel* lbDataSource = new TGLabel(cfLogbook, "Data source:");
+    fEntryDataSource = new TGTextEntry(cfLogbook, "local");
+    fEntryDataSource->Resize(150,0);
 	
 	cfLogbook->AddFrame(lbLogbookHost, new TGLayoutHints(kLHintsCenterY));
 	cfLogbook->AddFrame(fEntryLogbookHost, new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
@@ -296,6 +301,8 @@ void AliEventServerPreferencesWindow::SetupLogbookTab(TGCompositeFrame* tab)
 	cfLogbook->AddFrame(fEntryLogbookUser, new TGLayoutHints(kLHintsNormal));
 	cfLogbook->AddFrame(lbLogbookPass, new TGLayoutHints(kLHintsCenterY));
 	cfLogbook->AddFrame(fEntryLogbookPass, new TGLayoutHints(kLHintsNormal));
+    cfLogbook->AddFrame(lbDataSource, new TGLayoutHints(kLHintsCenterY));
+    cfLogbook->AddFrame(fEntryDataSource, new TGLayoutHints(kLHintsNormal));
 	
 	tab->AddFrame(cfLogbook, new TGLayoutHints(kLHintsNormal));
 }
@@ -416,6 +423,7 @@ Int_t AliEventServerPreferencesWindow::ReadSettings()
 	fEntryLogbookDB->SetText( settings.GetValue("logbook.db", DEFAULT_LOGBOOK_DB), kFALSE);
 	fEntryLogbookUser->SetText( settings.GetValue("logbook.user", DEFAULT_LOGBOOK_USER), kFALSE);
 	fEntryLogbookPass->SetText( settings.GetValue("logbook.pass", DEFAULT_LOGBOOK_PASS), kFALSE);
+    fEntryDataSource->SetText( settings.GetValue("data.source", DEFAULT_LOGBOOK_PASS), kFALSE);
 
 	return readStatus;
 }
@@ -482,6 +490,7 @@ Int_t AliEventServerPreferencesWindow::WriteSettings()
 	settings.SetValue("logbook.db", fEntryLogbookDB->GetText());
 	settings.SetValue("logbook.user", fEntryLogbookUser->GetText());
 	settings.SetValue("logbook.pass", fEntryLogbookPass->GetText());
+    settings.SetValue("data.source", fEntryDataSource->GetText());
 	
 	printf("Writting settings to file: %s\n", Form("%s/MONITOR/%s", gSystem->Getenv("ALICE_ROOT"), ALIEVENTSERVER_CONF) );
 	
@@ -547,4 +556,5 @@ void AliEventServerPreferencesWindow::RestoreDefaults()
 	fEntryLogbookDB->SetText( DEFAULT_LOGBOOK_DB, kFALSE);
 	fEntryLogbookUser->SetText( DEFAULT_LOGBOOK_USER, kFALSE);
 	fEntryLogbookPass->SetText( DEFAULT_LOGBOOK_PASS, kFALSE);
+    fEntryDataSource->SetText( DEFAULT_DATA_SOURCE, kFALSE);
 }

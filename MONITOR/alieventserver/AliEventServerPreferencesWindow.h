@@ -66,6 +66,7 @@ protected:
 	TGTextEntry* fEntryLogbookDB;
 	TGTextEntry* fEntryLogbookUser;
 	TGTextEntry* fEntryLogbookPass;
+    TGTextEntry* fEntryDataSource;
 	
 private:
 	void SetupServerTab(TGCompositeFrame* tab);
