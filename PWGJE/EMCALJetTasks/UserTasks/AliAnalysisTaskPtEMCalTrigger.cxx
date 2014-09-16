@@ -227,10 +227,6 @@ namespace EMCalTriggerPtAnalysis {
 		AliDebug(1,Form("Number of calibrated clusters: %d", fCaloClusters->GetEntries()));
 		AliDebug(1,Form("Number of matched tracks: %d", fTracks->GetEntries()));
 
-		TList *esdentries = static_cast<AliESDEvent *>(fInputEvent)->GetList();
-		TIter esditer(esdentries);
-		TObject *esdobject(NULL);
-
 		if(fMCEvent){
 			for(int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++){
 				// Select only physical primary particles
