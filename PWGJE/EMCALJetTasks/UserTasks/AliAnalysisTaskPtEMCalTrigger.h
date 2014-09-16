@@ -5,7 +5,7 @@
 
 // Author: Markus Fasel
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskEmcal.h"
 #include "AliCutValueRange.h"
 #include "AliESDtrackCuts.h"
 #include <TClonesArray.h>
@@ -15,11 +15,12 @@ class TArrayD;
 class Axis;
 class AliESDtrack;
 class AliVTrack;
+class AliVParticle;
 
 namespace EMCalTriggerPtAnalysis {
 class AliEMCalHistoContainer;
 
-class AliAnalysisTaskPtEMCalTrigger : public AliAnalysisTaskSE {
+class AliAnalysisTaskPtEMCalTrigger : public AliAnalysisTaskEmcal {
 public:
 	enum EEMCalTriggerType_t{
 		kEMCalJetLow = 0,
@@ -31,15 +32,14 @@ public:
 	AliAnalysisTaskPtEMCalTrigger(const char *name);
 	~AliAnalysisTaskPtEMCalTrigger();
 
-	void UserCreateOutputObjects();
-	void UserExec(Option_t* /*option*/);
-	void Terminate(Option_t * /*option*/) {}
+	virtual void UserCreateOutputObjects();
+	virtual Bool_t Run();
 
-	void AddTrackCuts(AliESDtrackCuts *trackCuts) { fListTrackCuts->Add(trackCuts); }
+	void AddESDTrackCuts(AliESDtrackCuts *trackCuts);
 	void SetEtaRange(double etamin, double etamax) { fEtaRange.SetLimits(etamin, etamax); }
 	void SetPtRange(double ptmin, double ptmax) { fPtRange.SetLimits(ptmin, ptmax); }
-	void SetTrackContainerName(const char *name) { fNameTrackContainer = name; }
 	void SetSwapEta() { fSwapEta = kTRUE; }
+	void UseTriggersFromTriggerMaker() { fUseTriggersFromTriggerMaker = kTRUE; }
 
 private:
 	AliAnalysisTaskPtEMCalTrigger(const AliAnalysisTaskPtEMCalTrigger &);
@@ -50,13 +50,15 @@ private:
 	void DefineAxis(TAxis &axis, const char *name, const char *title, const TArrayD &binning, const char **labels = NULL);
 	void DefineAxis(TAxis &axis, const char *name, const char *title, int nbins, double min, double max, const char **labels = NULL);
 	void FillEventHist(const char *trigger, double vz, bool isPileup);
-	void FillTrackHist(const char *trigger, const AliESDtrack *track, double vz, bool isPileup, int cut);
+	void FillTrackHist(const char *trigger, const AliVTrack *track, double vz, bool isPileup, int cut);
 	void FillClusterHist(const char *trigger, const AliVCluster *clust, bool isCalibrated, double vz, bool isPileup);
-	TObjArray *GetAcceptedTracks(const TClonesArray * const inputlist, AliESDtrackCuts *const cuts);
+	void FillMCParticleHist(const AliVParticle * const part);
+	bool IsTrueTrack(const AliVTrack *const) const;
+	TString BuildTriggerString();
+	const AliVVertex *GetSPDVertex() const;
 
-	TClonesArray 				  *fCalibratedClusters;	  //! container of recalibrated EMCal clusters
-	TClonesArray 				  *fMatchedTracks;		  //! container of tracks used for track matching
-	TList                         *fResults;              //! container for results
+	TString						  fClusterContainerName;  // Name of the EMCal cluster container
+	TString						  fTrackContainerName;    // Name of the Container used for EMCal track matching
 	AliEMCalHistoContainer        *fHistos;               //! Histogram container for the task
 	TList 						  *fListTrackCuts;		  // List of track cuts
 
@@ -64,7 +66,7 @@ private:
 	AliCutValueRange<double>      fEtaRange;              // Eta Selection Range
 	AliCutValueRange<double>	  fPtRange;				  // Pt Selection Range
 	Bool_t						  fSwapEta;				  // Allow swapping of the eta sign in asymmetric collision systems
-	TString 					  fNameTrackContainer;	  // Name of the Track container
+	Bool_t 						  fUseTriggersFromTriggerMaker; // Use trigger classes from trigger maker
 
 	ClassDef(AliAnalysisTaskPtEMCalTrigger, 1);           // Analysis of EMCal triggered events
 };
