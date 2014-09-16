@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKEMCAL_H
 #define ALIANALYSISTASKEMCAL_H
 
-// $Id: AliAnalysisTaskEmcalDev.h 64518 2013-10-14 12:44:52Z loizides $
+// $Id: AliAnalysisTaskEmcal.h 64518 2013-10-14 12:44:52Z loizides $
 
 class TClonesArray;
 class TString;
@@ -192,6 +192,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 9) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 10) // EMCAL base analysis task
 };
 #endif
