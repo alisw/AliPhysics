@@ -54,6 +54,6 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   Bool_t NextTrigger( Bool_t &isOfflineSimple );
 	AliEmcalTriggerPatchInfo* ProcessPatch( Int_t type, Bool_t isOfflineSimple );
 
-  ClassDef(AliEmcalTriggerMaker, 3); // Task to make array of EMCAL particle
+  ClassDef(AliEmcalTriggerMaker, 4); // Task to make array of EMCAL particle
 };
 #endif
