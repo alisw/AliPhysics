@@ -53,6 +53,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fESDCells(0),
   fAODCells(0),
   fPrTrCuts(0),
+  fCompTrCuts(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fOADBContainer(0),
@@ -163,6 +164,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fESDCells(0),
   fAODCells(0),
   fPrTrCuts(0),
+  fCompTrCuts(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fOADBContainer(0),
@@ -581,6 +583,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       if(esdTrack->GetEMCALcluster()>0)
 	fClusIdFromTracks.Append(Form("%d ",esdTrack->GetEMCALcluster()));
       if (fPrTrCuts && fPrTrCuts->IsSelected(track)){
+	fSelPrimTracks->Add(track);
+      } else if(fCompTrCuts && fCompTrCuts->IsSelected(track)) {
 	fSelPrimTracks->Add(track);
       }
     }
@@ -1544,9 +1548,9 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::GetTrackMatchedPt(Int_t matchIndex)
     return pt;
   }
   if(fESD){
-    if(!fPrTrCuts)
+    if(!fPrTrCuts && !fCompTrCuts)
       return pt;
-    if(!fPrTrCuts->IsSelected(track))
+    if(!fPrTrCuts->IsSelected(track) && !fCompTrCuts->IsSelected(track))
       return pt;
     pt = track->Pt();
   }
