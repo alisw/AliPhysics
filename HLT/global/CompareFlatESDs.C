@@ -20,31 +20,25 @@
 #include "./AliFlatTPCCluster.h"
 #include "./AliFlatExternalTrackParam.h"
 #include "Riostream.h"
+#include "THnSparse.h"
 #endif   
-
+Double_t printDiff(string name, double val1, double val2);
+Double_t printDiff(string name, TString val1, TString val2);
 void CompareFlatESDs(const char* filename1="outFlatESD1.dat",const char* filename2="outFlatESD2.dat", Bool_t verbose=kFALSE) {
-  
-  
   // Create output histograms
   
   
   TString outputFilename = "$PWD/compare.root";
-  /*
-	cout<< "creating histograms"<<endl;
-	TH2F* hNTracks = new TH2F("nTracks","number of tracks", 100,0,100, 100,0,100);
-	TH2F* hNV0s = new TH2F("nV0s","number of V0s", 10,0,10, 10,0,10);
-	TH2F* hVtxTr = new TH2F("vtxTr","vtx Tracks", 2,0,2, 2,0,2);
-	TH2F* hVtxSPD = new TH2F("vtxSPD","vtx SPD", 2,0,2, 2,0,2);
-	TH1F * hStat = new TH1F("stat","statistics Differences",20,0,20);
-	hStat->GetXaxis()->SetBinLabel(1,"All events");
-	hStat->GetXaxis()->SetBinLabel(2,"no diffs");
-	hStat->GetXaxis()->SetBinLabel(3,"nTracks");
-	hStat->GetXaxis()->SetBinLabel(4,"nV0s");
-	hStat->GetXaxis()->SetBinLabel(5,"vtxTracks");
-	hStat->GetXaxis()->SetBinLabel(6,"vtxSPD");
-	hStat->GetXaxis()->SetBinLabel(7,"tracks->extParams");
-*/
   
+	cout<< "creating histograms"<<endl;
+	THnSparse * hDiff;
+	const	Int_t nDim = 12;
+	
+		Int_t bins[nDim] = {2};
+		Double_t mins[nDim] = {0};
+		Double_t maxs[nDim] = {0};
+		hDiff = new THnSparseD("Differences","Differences",nDim,bins,mins,maxs);
+	
   
 
   ifstream is1(filename1, std::ifstream::binary | std::ifstream::in);
@@ -95,29 +89,32 @@ void CompareFlatESDs(const char* filename1="outFlatESD1.dat",const char* filenam
 	while( curr1 < endBuff1  && curr2 < endBuff2 ){
 //cout<<" curr1 endBuff1 curr2 endBuff2 "<< static_cast<void*> (curr1)<<" "<<static_cast<void*> (endBuff1)<<" "<<static_cast<void*> (curr2)<<" "<<static_cast<void*> (endBuff2)<<endl;
 
-	Int_t diff[6]={0};
       AliFlatESDEvent *flatEsd1 = reinterpret_cast<AliFlatESDEvent *>(curr1);
       AliFlatESDEvent *flatEsd2 = reinterpret_cast<AliFlatESDEvent *>(curr2);
 	  
 	  flatEsd1->Reinitialize();
 	  flatEsd2->Reinitialize();
 	  
-      cout<<endl<<"Reading event "<<iEvent<<":";
-	  
-	cout<<endl<<"ntracks:\t"<<flatEsd1->GetNumberOfTracks()<< " | " <<flatEsd2->GetNumberOfTracks();
-	if(  flatEsd1->GetNumberOfTracks() != flatEsd2->GetNumberOfTracks() ) {
-		cout<<"\t\tDIFFERENCE!!!";
-		diff[0] =1;
-	}
-	//hNTracks->Fill(flatEsd1->GetNumberOfTracks(),flatEsd2->GetNumberOfTracks());
-	  
-	  cout<<endl<<"nV0's:\t"<<flatEsd1->GetNumberOfV0s()<< " | " <<flatEsd2->GetNumberOfV0s();
-	  if(  flatEsd1->GetNumberOfV0s() != flatEsd2->GetNumberOfV0s() ){
-		cout<<"\t\tDIFFERENCE!!!";
-		diff[1] =1;
-	}
-	  //hNV0s->Fill(flatEsd1->GetNumberOfV0s(),flatEsd2->GetNumberOfV0s());
-	 
+      cout<<endl<<"________________________________________________________________________"<<endl;
+      cout<<endl<<"Reading event "<<iEvent<<":\t file1 | file 2\t|\t abs. diff\t|\t rel. diff"<<endl;
+		
+		Double_t diffs[nDim] ={
+			printDiff("GetMagneticField",		flatEsd1->GetMagneticField(),		flatEsd2->GetMagneticField()),
+			printDiff("GetPeriodNumber",		flatEsd1->GetPeriodNumber(),		flatEsd2->GetPeriodNumber()),
+			printDiff("GetRunNumber",				flatEsd1->GetRunNumber(),				flatEsd2->GetRunNumber()),
+			printDiff("GetOrbitNumber",			flatEsd1->GetOrbitNumber(),			flatEsd2->GetOrbitNumber()),
+			printDiff("GetBunchCrossNumber",flatEsd1->GetBunchCrossNumber(),flatEsd2->GetBunchCrossNumber()),
+			printDiff("GetTriggerMask",			flatEsd1->GetTriggerMask(),			flatEsd2->GetTriggerMask()),
+			printDiff("GetTriggerMaskNext50",flatEsd1->GetTriggerMaskNext50(),			flatEsd2->GetTriggerMaskNext50()),
+			printDiff("GetFiredTriggerClasses",			flatEsd1->GetFiredTriggerClasses(),			flatEsd2->GetFiredTriggerClasses()),
+			printDiff("GetNumberOfTracks",	flatEsd1->GetNumberOfTracks(),	flatEsd2->GetNumberOfTracks()),
+			printDiff("GetNumberOfV0s",			flatEsd1->GetNumberOfV0s(),			flatEsd2->GetNumberOfV0s()),
+			printDiff("GetTimeStamp",			flatEsd1->GetTimeStamp(),			flatEsd2->GetTimeStamp()),
+			printDiff("GetEventSpecie",			flatEsd1->GetEventSpecie(),			flatEsd2->GetEventSpecie())
+	
+		};
+
+		hDiff->Fill(diffs);
 	  
 	  
 	  /*
@@ -198,14 +195,12 @@ if(!ext[0][iExt] && !ext[1][iExt]) continue;
 		if( (!ext[0][iExt] || !ext[1][iExt])|| ext[0][iExt]->GetAlpha() != ext[1][iExt]->GetAlpha() ) {
 			cout<<"\t\tDIFFERENCE!: "<<endl;
 	 		//cout<<" alpha"<<iExt<<" :"  << (ext[0][iExt] ? ext[0][iExt]->GetAlpha() : -99.)  << "\t\t" << (ext[1][iExt] ?  ext[1][iExt]->GetAlpha(): -99.)<<endl;
-			diff[4]=1;
 		}	cout<<" alpha"<<iExt<<" :\t"  << (ext[0][iExt] ? ext[0][iExt]->GetAlpha() : -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetAlpha(): -99.)<<endl;
 			
 
 		if( (!ext[0][iExt] || !ext[1][iExt])||ext[0][iExt]->GetX() != ext[1][iExt]->GetX() ) {
 			cout<<"\t\tDIFFERENCE!: "<<endl;
 	 		//cout<<" GetX"<<iExt<<" :"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetX(): -99.)<<endl;
-			diff[4]=1;
 		}	
 cout<<" GetX"<<iExt<<" :\t"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetX(): -99.)<<endl;
 
@@ -213,7 +208,6 @@ cout<<" GetX"<<iExt<<" :\t"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << 
 		if( (!ext[0][iExt] || !ext[1][iExt])||ext[0][iExt]->GetSigned1Pt() !=  ext[0][iExt]->GetSigned1Pt() ) {
 			cout<<"\t\tDIFFERENCE!: "<<endl;
 	 		//cout<<" 1/pt"<<iExt<<" :"  <<  (ext[0][iExt] ? ext[0][iExt]->GetSigned1Pt(): -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetSigned1Pt(): -99.)<<endl;
-			diff[4]=1;
 		}	
 	cout<<" 1/pt"<<iExt<<" :\t"  <<  (ext[0][iExt] ? ext[0][iExt]->GetSigned1Pt(): -99.)  << " | " << (ext[1][iExt] ?  ext[1][iExt]->GetSigned1Pt(): -99.)<<endl;
 			
@@ -302,16 +296,20 @@ cout<<" GetX"<<iExt<<" :\t"  << (ext[0][iExt] ? ext[0][iExt]->GetX(): -99.)  << 
     cout << "File could not be read" << endl;
   }
 
-/*
 
-  
 	TList histosList;
-	histosList.Add(hStat);
-	histosList.Add(hNTracks);
-	histosList.Add(hNV0s);
-	histosList.Add(hVtxTr);
-	histosList.Add(hVtxSPD);
+	histosList.Add(hDiff);
   histosList.SaveAs(outputFilename);
-  */
+
   return;
+}
+
+Double_t printDiff(string name, double val1, double val2){
+	double relDiff = ( val1 != 0 || val2!=0 ) ? fabs(val1-val2)/(fabs(val1) + fabs(val2)): 0;
+	cout<<name<<":\t"<<val1<<" | " << val2 <<"\t|\t"<<(val1-val2)<<"\t|\t"<<relDiff<<endl;
+	return relDiff > 1e-6 ? 1:0;
+}
+Double_t printDiff(string name, TString val1, TString val2){
+	cout<<name<<":"<<endl<<"\t"<<val1<<endl<<"\t"<< val2 <<endl;
+	return val1.EqualTo(val2) ?0:1;
 }
