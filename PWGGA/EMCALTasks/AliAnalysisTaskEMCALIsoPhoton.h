@@ -56,6 +56,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   SetPeriod(const char *n)               { fPeriod             = n;       }
   void                   SetTriggerBit(const char *tb)          { fTrigBit            = tb;      }
   void                   SetPrimTrackCuts(AliESDtrackCuts *c)   { fPrTrCuts           = c;       }
+  void                   SetComplTrackCuts(AliESDtrackCuts *c)  { fCompTrCuts         = c;       }
   void                   SetTrainMode(Bool_t t)                 { fIsTrain            = t;       }
   void                   SetMcMode(Bool_t mc)                   { fIsMc               = mc;      }
   void                   SetDebugOn(Bool_t d)                   { fDebug              = d;       }
@@ -86,6 +87,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   AliESDCaloCells       *fESDCells;              //!pointer to EMCal cells, esd
   AliAODCaloCells       *fAODCells;              //!pointer to EMCal cells, aod  
   AliESDtrackCuts       *fPrTrCuts;              //pointer to hold the prim track cuts
+  AliESDtrackCuts       *fCompTrCuts;            //pointer to hold complementary track cuts (a la Gustavo)
   AliEMCALGeometry      *fGeom;                  // geometry utils
   TString                fGeoName;               // geometry name (def = EMCAL_FIRSTYEARV1)
   AliOADBContainer      *fOADBContainer;         //!OADB container used to load misalignment matrices

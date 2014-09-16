@@ -34,6 +34,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   ana->SetPathStringSelect(pathstrsel.Data());
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
   AliESDtrackCuts *cutsp = new AliESDtrackCuts;
+  AliESDtrackCuts *cutscomp = new AliESDtrackCuts;
   if(trackSelType == "standard"){
     cutsp->SetMinNClustersTPC(70);
     cutsp->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -49,17 +50,14 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   }
   if(trackSelType == "hybrid"){
     cutsp = CreateTrackCutsPWGJE(10001008);
+    cutscomp =  CreateTrackCutsPWGJE(10011008);
     cutsp->SetPtRange(0.2);
+    cutscomp->SetPtRange(0.2);
     ana->SetHybridOn();
-    printf("hybrid tracks (10001008) selected ++++++++++++++++++++\n");
-  }
-  if(trackSelType == "hybridp"){
-    cutsp = CreateTrackCutsPWGJE(10011008);
-    cutsp->SetPtRange(0.2);
-    ana->SetHybridOn();
-    printf("prim hybrid tracks (10011008) selected ++++++++++++++++++++\n");
+    printf("hybrid tracks selected ++++++++++++++++++++\n");
   }
   ana->SetPrimTrackCuts(cutsp);
+  ana->SetComplTrackCuts(cutscomp);
   ana->SetPeriod(period.Data());
   ana->SetGeoName(geoname.Data());  
   //ana->SetTrackFilterBit(128);
