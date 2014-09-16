@@ -57,8 +57,6 @@ private:
 	TString BuildTriggerString();
 	const AliVVertex *GetSPDVertex() const;
 
-	TString						  fClusterContainerName;  // Name of the EMCal cluster container
-	TString						  fTrackContainerName;    // Name of the Container used for EMCal track matching
 	AliEMCalHistoContainer        *fHistos;               //! Histogram container for the task
 	TList 						  *fListTrackCuts;		  // List of track cuts
 
