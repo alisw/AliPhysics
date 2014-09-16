@@ -75,6 +75,8 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<double>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<int>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliEmcalJetTask+;
