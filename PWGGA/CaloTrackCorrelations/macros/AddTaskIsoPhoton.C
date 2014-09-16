@@ -251,8 +251,8 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
       //Hybrids 2011
       AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
       reader->SetTrackCuts(esdTrackCuts);
-//      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
-//      reader->SetTrackComplementaryCuts(esdTrackCuts2);
+      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
+      reader->SetTrackComplementaryCuts(esdTrackCuts2);
 //    }
 //    else
 //    {
