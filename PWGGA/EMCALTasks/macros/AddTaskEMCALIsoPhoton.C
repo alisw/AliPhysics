@@ -6,7 +6,8 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
 						     TString geoname="EMCAL_COMPLETEV1",
 						     TString pathstrsel = "/",
 						     TString trackSelType = "standard",
-						     Int_t   distToBadCh = 0
+						     Int_t   distToBadCh = 0,
+						     Bool_t  useComplTrCuts = kFALSE
 						     )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -46,6 +47,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
     cutsp->SetDCAToVertex2D(kTRUE);
     cutsp->SetPtRange(0.2);
     cutsp->SetEtaRange(-1.0,1.0);
+    cutscomp = cutsp;
     printf("standard tracks selected ++++++++++++++++++++\n");
   }
   if(trackSelType == "hybrid"){
@@ -57,7 +59,10 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
     printf("hybrid tracks selected ++++++++++++++++++++\n");
   }
   ana->SetPrimTrackCuts(cutsp);
-  ana->SetComplTrackCuts(cutscomp);
+  if(useComplTrCuts)
+    ana->SetComplTrackCuts(cutscomp);
+  else
+    ana->SetComplTrackCuts(cutsp);
   ana->SetPeriod(period.Data());
   ana->SetGeoName(geoname.Data());  
   //ana->SetTrackFilterBit(128);
