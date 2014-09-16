@@ -20,6 +20,7 @@
  * 		Markus Fasel
  */
 #include <TClonesArray.h>
+#include <memory>
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
