@@ -13,6 +13,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Double_t            areaPercentage          = 0.6,
   Double_t            ktJetRadius             = 0.4,
   Double_t            trackBgrdConeR          = 0.6,
+  Double_t            minJetTrackPt           = 0.150,
   Double_t            minEta                  = -0.9,
   Double_t            maxEta                  = +0.9,
   Double_t            minJetEta               = -0.5,
@@ -72,8 +73,8 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   {
     // #### Add necessary jet finder tasks
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-    AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
-    AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,0.150,0.300); // kt
+    AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,minJetTrackPt,0.300); // anti-kt
+    AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,minJetTrackPt,0.300); // kt
 
     // #### Define external rho task
     AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,0.150,0.300); // anti-kt
