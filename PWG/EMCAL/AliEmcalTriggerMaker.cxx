@@ -501,12 +501,16 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( Int_t type, Bool_t
 	trigger = (AliEmcalTriggerPatchInfo*)fCaloTriggersOut->At( fITrigger );
 	fITrigger++;
 	
+	Int_t isMC = MCEvent() ? 1 : 0;
+	Int_t offSet = (1 - isMC) * kTriggerTypeEnd;
+
 	trigger->SetCenterGeo( centerGeo, amp );
 	trigger->SetCenterMass( centerMass, amp );
 	trigger->SetEdge1( edge1, amp );
 	trigger->SetEdge2( edge2, amp );
 	trigger->SetADCAmp( adcAmp );
 	trigger->SetTriggerBits( tBits );
+	trigger->SetOffSet(offSet);
 	trigger->SetEdgeCell( globCol*2, globRow*2 ); // from triggers to cells
 	
 	return trigger;

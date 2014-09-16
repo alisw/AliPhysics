@@ -3,7 +3,6 @@
 // Emcal base analysis task.
 //
 // Author: S.Aiola, M. Verweij
-
 #include "AliAnalysisTaskEmcal.h"
 
 #include <TClonesArray.h>
@@ -728,6 +727,11 @@ ULong_t AliAnalysisTaskEmcal::GetTriggerList(){
 	    if (patch->IsJetHigh()) nJ1++;
 	    if (patch->IsJetLow())  nJ2++;
 	  }
+
+	  AliDebug(2, "Patch summary: ");
+	  AliDebug(2, Form("Number of patches: %d", nPatch));
+	  AliDebug(2, Form("Jet:   low[%d], high[%d]" ,nJ2, nJ1));
+	  AliDebug(2, Form("Gamma: low[%d], high[%d]" ,nG2, nG1));
 
 	  ULong_t triggers(0);
 	  if (nG1>0)
