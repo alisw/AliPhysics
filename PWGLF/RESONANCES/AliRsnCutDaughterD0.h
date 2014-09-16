@@ -104,8 +104,8 @@ inline Bool_t AliRsnCutDaughterD0::MatchTPC(const AliVTrack *vtrack)
   
   AliPIDResponse::EDetPidStatus status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTPC,vtrack);
   if (status != AliPIDResponse::kDetPidOk) return kFALSE;
-  UInt_t nclsTPCPID = vtrack->GetTPCsignalN();
-  if(nclsTPCPID<0) return kFALSE;
+  /* UInt_t nclsTPCPID = vtrack->GetTPCsignalN(); */
+  /* if(nclsTPCPID<0) return kFALSE; */
   return kTRUE;
 }
 
