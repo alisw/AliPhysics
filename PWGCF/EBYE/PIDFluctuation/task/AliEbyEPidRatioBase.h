@@ -55,7 +55,8 @@ class AliEbyEPidRatioBase : public TNamed {
   AliStack           *fStack;                 //! Ptr to stack
   Float_t             fCentralityBin;         //  Centrality of current event  
   Int_t               fNTracks;               //  N Tracks in the current event
-  
+  Bool_t              fIsRatio;                  //  Is MC event
+
   ClassDef(AliEbyEPidRatioBase, 1);
 };
 

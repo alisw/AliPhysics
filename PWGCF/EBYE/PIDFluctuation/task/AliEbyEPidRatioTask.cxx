@@ -180,15 +180,20 @@ void AliEbyEPidRatioTask::UserCreateOutputObjects() {
   list->Add(fHelper->GetHCentralityStat());
 
   if ((fIsAOD||fIsMC) && fModeEffCreation == 1) {
-    fOutListEff->Add(fEffCont->GetHnEff());
-    fOutListCont->Add(fEffCont->GetHnCont());
+    fOutListEff->Add(fEffCont->GetHnEffMc());
+    fOutListEff->Add(fEffCont->GetHnEffRec());
+
+    fOutListCont->Add(fEffCont->GetHnContMc());
+    fOutListCont->Add(fEffCont->GetHnContRec());
   }
   
   if (fModeDCACreation == 1)
     fOutListDCA->Add(fDCA->GetHnDCA());
 
-  if (fModeQACreation == 1)
-    fOutListQA->Add(fQA->GetHnQA());
+  if (fModeQACreation == 1) {
+    fOutListQA->Add(fQA->GetHnQAPid());
+    fOutListQA->Add(fQA->GetHnQADca());
+  }
 
   TH1::AddDirectory(oldStatus);
 
@@ -325,7 +330,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   // ------------------------------------------------------------------
   // -- Initialize Helper
   // ------------------------------------------------------------------
-  if (fHelper->Initialize(fESDTrackCutsEff, fIsMC, fAODtrackCutBit, fModeDistCreation))
+  if (fHelper->Initialize(fESDTrackCutsEff, fIsMC, fIsRatio, fAODtrackCutBit, fModeDistCreation))
     return -1;
 
   // ------------------------------------------------------------------

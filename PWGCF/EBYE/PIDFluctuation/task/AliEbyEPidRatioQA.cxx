@@ -52,7 +52,7 @@ ClassImp(AliEbyEPidRatioQA)
 AliEbyEPidRatioQA::AliEbyEPidRatioQA() :
   AliEbyEPidRatioBase("QA", "QA"),
 
-  fHnQA(NULL) {
+  fHnQAa(NULL), fHnQAb(NULL)  {
   // Constructor   
   
   AliLog::SetClassDebugLevel("AliEbyEPidRatioQA",10);
@@ -68,58 +68,80 @@ AliEbyEPidRatioQA::~AliEbyEPidRatioQA() {
 //________________________________________________________________________
 void AliEbyEPidRatioQA::CreateHistograms() {
  
-  Int_t    binHnQA[17] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent, AliEbyEPidRatioHelper::fgkfHistNBinsEta,  //       cent |       eta
-			  AliEbyEPidRatioHelper::fgkfHistNBinsRap,  AliEbyEPidRatioHelper::fgkfHistNBinsPhi,  //          y |       phi
-			  AliEbyEPidRatioHelper::fgkfHistNBinsPt,   AliEbyEPidRatioHelper::fgkfHistNBinsPt,   //         pt |    pInner
-			  AliEbyEPidRatioHelper::fgkfHistNBinsSign, 500,                                      //       sign | TPCsignal |  
-			  50, 50, 50,                                                                         //  nSigmaITS | nSigmaTPC |  nSigmaTOF
-			  50, 50, 50, 50,                                                                     //  DCAr      |      DCAz | nSigmaDCAr | nSigmaDCAz 
-			  3,4};                                                                                 //  MCisProbe  
-  
-  Double_t minHnQA[17] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], AliEbyEPidRatioHelper::fgkfHistRangeEta[0], 
-			  AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
-			  AliEbyEPidRatioHelper::fgkfHistRangePt[0],   AliEbyEPidRatioHelper::fgkfHistRangePt[0],   
-			  AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 30, 
-			  -10., -10., -10.,
-			  -10., -10., -10., -10., 
-			  -0.5,-0.5};
-  
-  Double_t maxHnQA[17] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], AliEbyEPidRatioHelper::fgkfHistRangeEta[1], 
-			  AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
-			  AliEbyEPidRatioHelper::fgkfHistRangePt[1],   AliEbyEPidRatioHelper::fgkfHistRangePt[1],
-			  AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 500,
-			  10., 10., 10.,
-			  10.,  10., 10., 10., 
-			  2.5,3.5};
-  
+  Int_t    binHnQAa[10] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent, 4, 
+			  AliEbyEPidRatioHelper::fgkfHistNBinsSign, 
+			  AliEbyEPidRatioHelper::fgkfHistNBinsPt, 
+			  500, 50, 50, 50, 3};
 
-  fHnQA = new THnSparseF("hnQA", "cent:eta:y:phi:pt:pInner:sign:TPCsignal:nSigmaITS:nSigmaTPC:nSigmaTOF:DCAr:DCAz:nSigmaDCAr:nSigmaDCAz:MCisProbe:PID",
-				 17, binHnQA, minHnQA, maxHnQA);
+  Double_t minHnQAa[10] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0],-0.5,
+			  AliEbyEPidRatioHelper::fgkfHistRangeSign[0],
+			  AliEbyEPidRatioHelper::fgkfHistRangePt[0],
+			  30, -10,-10, -10, -0.5};
+
+  Double_t maxHnQAa[10] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], 3.5,
+			  AliEbyEPidRatioHelper::fgkfHistRangeSign[1],
+			  AliEbyEPidRatioHelper::fgkfHistRangePt[1], 
+			  500, 10., 10., 10., 2.5};
+
+  Int_t    binHnQAb[9] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent, 4, 
+			  AliEbyEPidRatioHelper::fgkfHistNBinsSign, 
+			  AliEbyEPidRatioHelper::fgkfHistNBinsEta,  
+			  AliEbyEPidRatioHelper::fgkfHistNBinsRap,  
+			  AliEbyEPidRatioHelper::fgkfHistNBinsPhi,  
+			  AliEbyEPidRatioHelper::fgkfHistNBinsPt,   
+			  50, 50};
   
-  fHnQA->Sumw2();
+  Double_t minHnQAb[9] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0],-0.5,
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[0],
+			   AliEbyEPidRatioHelper::fgkfHistRangeEta[0], 
+			   AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  
+			   AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
+			   AliEbyEPidRatioHelper::fgkfHistRangePt[0],   
+			  -10,-10};
   
-  fHnQA->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
-  fHnQA->GetAxis(1)->SetTitle("#eta");                         //  eta  [-0.9, 0.9]
-  fHnQA->GetAxis(2)->SetTitle("#it{y}");                       //  rapidity [-0.5, 0.5]
-  fHnQA->GetAxis(3)->SetTitle("#varphi");                      //  phi  [ 0. , 2Pi]
-  fHnQA->GetAxis(4)->SetTitle("#it{p}_{T} (GeV/#it{c})");      //  pt   [ 0.46, 2.22]
-  fHnQA->GetAxis(5)->SetTitle("#it{p}_{Inner} (GeV/#it{c})");  //  pInner [ 0.1, 3.0]
-  fHnQA->GetAxis(6)->SetTitle("sign");                         //  -1 | 0 | +1 
+  Double_t maxHnQAb[9] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], 3.5,
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1],
+			   AliEbyEPidRatioHelper::fgkfHistRangeEta[1], 
+			   AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  
+			   AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
+			   AliEbyEPidRatioHelper::fgkfHistRangePt[1],
+			   10., 10.};
   
-  fHnQA->GetAxis(7)->SetTitle("TPC signal");                   //  TPCsignal [30, 500]
-  fHnQA->GetAxis(8)->SetTitle("n #sigma ITS");                 //  nSigma ITS [-10, 10]
-  fHnQA->GetAxis(9)->SetTitle("n #sigma TPC");                 //  nSigma TPC [-10, 10]
-  fHnQA->GetAxis(10)->SetTitle("n #sigma TOF");                //  nSigma TOF [-10, 10]
+  fHnQAa = new THnSparseF("hnQAPid", "cent:pid:sign:pt:pInner:TPCsignal:nSigmaITS:nSigmaTPC:nSigmaTOF:MCisProbe", 10, binHnQAa, minHnQAa, maxHnQAa);
+  fHnQAb = new THnSparseF("hnQADca", "cent:pid:sign:eta:y:phi:pt:DCAr:DCAz", 9, binHnQAb, minHnQAb, maxHnQAb);
+  fHnQAa->Sumw2();
+  fHnQAb->Sumw2();
   
-  fHnQA->GetAxis(11)->SetTitle("DCAr");                        //  DCAr [-10, 10]
-  fHnQA->GetAxis(12)->SetTitle("DCAz");                        //  DCAz [-10, 10]
-  fHnQA->GetAxis(13)->SetTitle("n #sigma #sqrt(Cdd)/DCAr");    //  nSigma DCAr [-10, 10]
-  fHnQA->GetAxis(14)->SetTitle("n #sigma #sqrt(Czz)/DCAz");    //  nSigma DCAz [-10, 10]
-  fHnQA->GetAxis(15)->SetTitle("MCisProbe");                   //  0 | 1 (isProbeParticle) | 2 (isProbeParticle wrong sign) 
-  fHnQA->GetAxis(16)->SetTitle("PID");                         //  0 | 1 | 2 | 3
+  fHnQAa->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
+  fHnQAa->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");   //  0 | 1 | 2 | 3
+  fHnQAa->GetAxis(2)->SetTitle("sign");                         //  -1 | 0 | +1 
+  fHnQAa->GetAxis(3)->SetTitle("#it{p}_{T} (GeV/#it{c})");      //  pt   [ 0.46, 2.22]
+  fHnQAa->GetAxis(4)->SetTitle("#it{p}_{Inner} (GeV/#it{c})");  //  pInner [ 0.1, 3.0]
+  fHnQAa->GetAxis(5)->SetTitle("TPC signal");                   //  TPCsignal [30, 500]
+  fHnQAa->GetAxis(6)->SetTitle("n #sigma ITS");                 //  nSigma ITS [-10, 10]
+  fHnQAa->GetAxis(7)->SetTitle("n #sigma TPC");                 //  nSigma TPC [-10, 10]
+  fHnQAa->GetAxis(8)->SetTitle("n #sigma TOF");                 //  nSigma TOF [-10, 10]
+  fHnQAa->GetAxis(9)->SetTitle("MCisProbe");                    //  0 | 1 (isProbeParticle) | 2 (isProbeParticle wrong sign) 
+
+  fHnQAb->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
+  fHnQAb->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");   //  0 | 1 | 2 | 3
+  fHnQAb->GetAxis(2)->SetTitle("sign");                         //  -1 | 0 | +1 
+  fHnQAb->GetAxis(3)->SetTitle("#eta");                         //  eta  [-0.9, 0.9]
+  fHnQAb->GetAxis(4)->SetTitle("#it{y}");                       //  rapidity [-0.5, 0.5]
+  fHnQAb->GetAxis(5)->SetTitle("#varphi");                      //  phi  [ 0. , 2Pi]
+  fHnQAb->GetAxis(6)->SetTitle("#it{p}_{T} (GeV/#it{c})");      //  pt   [ 0.46, 2.22]
+  fHnQAb->GetAxis(7)->SetTitle("DCAr");                         //  DCAr [-10, 10]
+  fHnQAb->GetAxis(8)->SetTitle("DCAz");                         //  DCAz [-10, 10]
+  // fHnQA->GetAxis(9)->SetTitle("n #sigma #sqrt(Cdd)/DCAr");   //  nSigma DCAr [-10, 10]
+  // fHnQA->GetAxis(10)->SetTitle("n #sigma #sqrt(Czz)/DCAz");  //  nSigma DCAz [-10, 10]
   
-  fHelper->BinLogAxis(fHnQA, 4);
-  fHelper->BinLogAxis(fHnQA, 5);
+  fHelper->BinLogAxis(fHnQAa, 3);
+  fHelper->BinLogAxis(fHnQAa, 4);
+  fHelper->BinLogAxis(fHnQAb, 6);
+
+
+  
+			 
 
   return;
 }
@@ -198,8 +220,8 @@ void AliEbyEPidRatioQA::Process() {
     if (fESD)
       (static_cast<AliESDtrack*>(track))->GetImpactParameters(dca,cov);
 
-    Float_t dcaRoverCdd = ( TMath::Sqrt(cov[0]) != 0. )  ? dca[0]/TMath::Sqrt(cov[0]) : -9.99;
-    Float_t dcaZoverCzz = ( TMath::Sqrt(cov[2]) != 0. )  ? dca[1]/TMath::Sqrt(cov[2]) : -9.99;
+    //  Float_t dcaRoverCdd = ( TMath::Sqrt(cov[0]) != 0. )  ? dca[0]/TMath::Sqrt(cov[0]) : -9.99;
+    //  Float_t dcaZoverCzz = ( TMath::Sqrt(cov[2]) != 0. )  ? dca[1]/TMath::Sqrt(cov[2]) : -9.99;
 
     if (iPid == 0)  
       yP = track->Eta();
@@ -208,50 +230,17 @@ void AliEbyEPidRatioQA::Process() {
     // cout << pid[0] << "  " << pid[1] << " " << pid[2] << yP << "  " << iPid << endl;
 
     if (iPid != 0) { 
-      Double_t aTrack[17] = {
-	Double_t(fCentralityBin),               //  0 centrality 
-	track->Eta(),                           //  1 eta
-	yP,                                     //  2 rapidity
-	track->Phi(),                           //  3 phi
-	track->Pt(),                            //  4 pt
-	track->GetTPCmomentum(),                //  5 pInner
-	track->Charge(),                        //  6 sign
-	track->GetTPCsignal(),                  //  7 TPC dE/dx
-	pid[0],                                 //  8 n Sigma ITS
-	pid[1],                                 //  9 n Sigma TPC
-	pid[2],                                 // 10 n Sigma TOF
-	dca[0],                                 // 11 dca r
-	dca[1],                                 // 12 dca z
-	dcaRoverCdd,                            // 13 sqrt(cov[dd])
-	dcaZoverCzz,                            // 14 sqrt(cov[zz])
-	isProbeParticle,                        // 15 isProbe
-	0                                    // 16 PID
-      };
-      
-      fHnQA->Fill(aTrack);
-    }
-    
-    Double_t aTrack[17] = {
-      Double_t(fCentralityBin),               //  0 centrality 
-      track->Eta(),                           //  1 eta
-      yP,                                     //  2 rapidity
-      track->Phi(),                           //  3 phi
-      track->Pt(),                            //  4 pt
-      track->GetTPCmomentum(),                //  5 pInner
-      track->Charge(),                        //  6 sign
-      track->GetTPCsignal(),                  //  7 TPC dE/dx
-      pid[0],                                 //  8 n Sigma ITS
-      pid[1],                                 //  9 n Sigma TPC
-      pid[2],                                 // 10 n Sigma TOF
-      dca[0],                                 // 11 dca r
-      dca[1],                                 // 12 dca z
-      dcaRoverCdd,                            // 13 sqrt(cov[dd])
-      dcaZoverCzz,                            // 14 sqrt(cov[zz])
-      isProbeParticle,                        // 15 isProbe
-      iPid                                    // 16 PID
-    };
 
-   fHnQA->Fill(aTrack);
+      Double_t aTracka[10] = {fCentralityBin,0,track->Charge(),track->Pt(),track->GetTPCmomentum(),track->GetTPCsignal(),pid[0],pid[1],pid[2],isProbeParticle};   
+      Double_t aTrackb[9] = {fCentralityBin,0,track->Charge(),track->Eta(),yP, track->Phi(),track->Pt(),dca[0],dca[1]};
+      fHnQAa->Fill(aTracka);
+      fHnQAb->Fill(aTrackb);
+    }
+   
+    Double_t aTracka[10] = {fCentralityBin,iPid,track->Charge(),track->Pt(),track->GetTPCmomentum(),track->GetTPCsignal(),pid[0],pid[1],pid[2],isProbeParticle};   
+    Double_t aTrackb[9] = {fCentralityBin,iPid,track->Charge(),track->Eta(),yP, track->Phi(),track->Pt(),dca[0],dca[1]};
+      fHnQAa->Fill(aTracka);
+      fHnQAb->Fill(aTrackb);
 
   } // for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
 
