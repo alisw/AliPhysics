@@ -956,7 +956,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fMCList[iCut]->Add(fHistoMCHeaders[iCut]);
 			fHistoMCAllGammaPt[iCut] = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt",250,0,25);
 			fMCList[iCut]->Add(fHistoMCAllGammaPt[iCut]);
-			fHistoMCAllGammaEMCALAccPt[iCut] = new TH1F("MC_AllGammaEMCALAcc_Pt","MC_AllGamma_Pt",250,0,25);
+			fHistoMCAllGammaEMCALAccPt[iCut] = new TH1F("MC_AllGammaEMCALAcc_Pt","MC_AllGammaEMCALAcc_Pt",250,0,25);
 			fMCList[iCut]->Add(fHistoMCAllGammaEMCALAccPt[iCut]);
 			fHistoMCDecayGammaPi0Pt[iCut] = new TH1F("MC_DecayGammaPi0_Pt","MC_DecayGammaPi0_Pt",250,0,25);
 			fMCList[iCut]->Add(fHistoMCDecayGammaPi0Pt[iCut]);
@@ -1178,7 +1178,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 					fHistoTrueEtaCaloConvertedPhotonMatchedInvMassPt[iCut] = new TH2F("ESD_TrueEtaCaloConvertedPhotonMatched_InvMass_Pt","ESD_TrueEtaCaloConvertedPhotonMatched_InvMass_Pt",800,0,0.8,250,0,25);
 					fTrueList[iCut]->Add(fHistoTrueEtaCaloConvertedPhotonMatchedInvMassPt[iCut]);
 
-					fHistoTruePi0CaloElectronInvMassPt[iCut] = new TH2F("ESD_TruePi0rCaloElectron_InvMass_Pt","ESD_TruePi0CaloElectron_InvMass_Pt",800,0,0.8,250,0,25);
+					fHistoTruePi0CaloElectronInvMassPt[iCut] = new TH2F("ESD_TruePi0CaloElectron_InvMass_Pt","ESD_TruePi0CaloElectron_InvMass_Pt",800,0,0.8,250,0,25);
 					fTrueList[iCut]->Add(fHistoTruePi0CaloElectronInvMassPt[iCut]);
 					fHistoTrueEtaCaloElectronInvMassPt[iCut] = new TH2F("ESD_TrueEtaCaloElectron_InvMass_Pt","ESD_TrueEtaCaloElectron_InvMass_Pt",800,0,0.8,250,0,25);
 					fTrueList[iCut]->Add(fHistoTrueEtaCaloElectronInvMassPt[iCut]);
@@ -1319,6 +1319,10 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 	if(fIsMC && fInputEvent->IsA()==AliESDEvent::Class()){
 		fMCStack = fMCEvent->Stack();
 		if(fMCStack == NULL) fIsMC = kFALSE;
+	}
+	
+	if(fInputEvent->IsA()==AliAODEvent::Class()){
+		fInputEvent->InitMagneticField();
 	}
 	
 	fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
@@ -1606,7 +1610,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
 		return;
 	}
 	TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent);
-	
+	fHistoTrueNLabelsInClus[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());	
 	// True Photon
 	if(fIsFromMBHeader){
 		if (TruePhotonCandidate->IsLargestComponentPhoton() || TruePhotonCandidate->IsLargestComponentElectron() )fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
@@ -2019,49 +2023,52 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 		if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
 		if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kFALSE)){
 			fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
-				if(particle->GetMother() >-1){ // Meson Decay Gamma
-					switch((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode()){
-					case 111: // Pi0
-						fHistoMCDecayGammaPi0Pt[fiCut]->Fill(particle->Pt());
-						break;
-					case 113: // Rho0
-						fHistoMCDecayGammaRhoPt[fiCut]->Fill(particle->Pt());
-						break;
-					case 221: // Eta
-						fHistoMCDecayGammaEtaPt[fiCut]->Fill(particle->Pt());
-						break;
-					case 223: // Omega
-						fHistoMCDecayGammaOmegaPt[fiCut]->Fill(particle->Pt());
-						break;
-					case 331: // Eta'
-						fHistoMCDecayGammaEtapPt[fiCut]->Fill(particle->Pt());
-						break;
-					case 333: // Phi
-						fHistoMCDecayGammaPhiPt[fiCut]->Fill(particle->Pt());
-						break;
-					case 3212: // Sigma
-						fHistoMCDecayGammaSigmaPt[fiCut]->Fill(particle->Pt());
-						break;
-					}
+			if (abs(particle->Eta()) < 0.66 ){
+				if (particle->Phi() > 1.39626 && particle->Phi() < 3.125) fHistoMCAllGammaEMCALAccPt[fiCut]->Fill(particle->Pt());
+			}
+			if(particle->GetMother() >-1){ // Meson Decay Gamma
+				switch((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode()){
+				case 111: // Pi0
+					fHistoMCDecayGammaPi0Pt[fiCut]->Fill(particle->Pt());
+					break;
+				case 113: // Rho0
+					fHistoMCDecayGammaRhoPt[fiCut]->Fill(particle->Pt());
+					break;
+				case 221: // Eta
+					fHistoMCDecayGammaEtaPt[fiCut]->Fill(particle->Pt());
+					break;
+				case 223: // Omega
+					fHistoMCDecayGammaOmegaPt[fiCut]->Fill(particle->Pt());
+					break;
+				case 331: // Eta'
+					fHistoMCDecayGammaEtapPt[fiCut]->Fill(particle->Pt());
+					break;
+				case 333: // Phi
+					fHistoMCDecayGammaPhiPt[fiCut]->Fill(particle->Pt());
+					break;
+				case 3212: // Sigma
+					fHistoMCDecayGammaSigmaPt[fiCut]->Fill(particle->Pt());
+					break;
 				}
 			}
-			if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kTRUE)){
-				Double_t rConv = 0;
-				for(Int_t daughterIndex=particle->GetDaughter(0);daughterIndex<=particle->GetDaughter(1);daughterIndex++){
-					AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(daughterIndex));
-					if(!tmpDaughter) continue;
-					if(abs(tmpDaughter->GetPdgCode()) == 11){
-						rConv = sqrt( (tmpDaughter->Xv()*tmpDaughter->Xv()) + (tmpDaughter->Yv()*tmpDaughter->Yv()) );
-					}
-				}
-				fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt());
-				if (fDoPhotonQA > 0){
-					fHistoMCConvGammaR[fiCut]->Fill(rConv);
-					fHistoMCConvGammaEta[fiCut]->Fill(particle->Eta());
+		}
+		if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kTRUE)){
+			Double_t rConv = 0;
+			for(Int_t daughterIndex=particle->GetDaughter(0);daughterIndex<=particle->GetDaughter(1);daughterIndex++){
+				AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(daughterIndex));
+				if(!tmpDaughter) continue;
+				if(abs(tmpDaughter->GetPdgCode()) == 11){
+					rConv = sqrt( (tmpDaughter->Xv()*tmpDaughter->Xv()) + (tmpDaughter->Yv()*tmpDaughter->Yv()) );
 				}
 			}
-			// Converted MC Gamma
-			if(fDoMesonAnalysis){
+			fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt());
+			if (fDoPhotonQA > 0){
+				fHistoMCConvGammaR[fiCut]->Fill(rConv);
+				fHistoMCConvGammaEta[fiCut]->Fill(particle->Eta());
+			}
+		}
+		// Converted MC Gamma
+		if(fDoMesonAnalysis){
 			if(particle->GetPdgCode() == 310 && fDoMesonQA > 0){
 				Double_t mesonY = 10.;
 				if(particle->E() - particle->Pz() == 0 || particle->E() + particle->Pz() == 0){
