@@ -2,6 +2,11 @@
 // Author : Gustavo Conesa;  Marie Germain.
 
 TString kAnaIsoPhotonName = "";
+Int_t   kDebug         = -1;
+TString kCalorimeter   = "EMCAL";
+TString kData = "";
+TString kPrint = 0 ;
+ 
 AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone          = 0.4,
                                                       const Float_t  pth           = 5.,
                                                       const Bool_t   leading       = kTRUE,
@@ -21,10 +26,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Bool_t   qaan          = kFALSE,
                                                       const Bool_t   primvtx       = kTRUE,
                                                       const Bool_t   notrackcut    = kTRUE,
+                                                      const Bool_t   rdmtrigger    = kFALSE,
                                                       const Int_t    debug         = -1,
                                                       const Bool_t   print         = kFALSE
                                                       )
 {
+kDebug = debug;
+kCalorimeter  = calorimeter ;
+kPrint = print ;
   // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
   
   printf("AddTaskIsoPhoton() - Settings: cone %2.2f, pth %2.2f, timeCut On %d, NLM max cut %d, calorimeter %s, simu %d, exotic %d, non lin %d, trigger %s, TM %d, qa %d, debug %d, centrality %d-%d\n",
@@ -80,11 +89,20 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   //  Int_t thresType  = AliIsolationCut::kPtThresIC;//  AliIsolationCut::kSumPtFracIC ; 
   Int_t thresType  = AliIsolationCut::kSumPtIC ; 
   
+ if(!rdmtrigger)
+{
   // Photon analysis
   maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,deltaphicut,deltaetacut,disttobad,nlmMax,simu,debug,print), n++); // Photon cluster selection
   
   // Isolation analysis
   maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,leading,kFALSE,simu,debug,print), n++); // Photon isolation
+}
+else
+{
+  maker->AddAnalysis(ConfigureRandomTriggerAnalysis(), n++); 
+  maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType,cone, pth,tm,leading,kFALSE,simu,debug,print), n++);// Ghost trigger isolation  
+}
+
 
   // QA histograms on clusters or tracks
   if(qaan)
@@ -652,6 +670,66 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(Bool_t simulation, Int_t debugL
   return ana;
   
 }
+
+AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
+{
+  
+  AliAnaRandomTrigger *ana = new AliAnaRandomTrigger();
+  ana->SetDebug(kDebug); //10 for lots of messages
+  
+  if(detector=="") detector = kCalorimeter;
+  ana->SetDetector(detector);
+
+  // selection cuts
+  ana->SetMinPt(4.); 
+  ana->SetMaxPt(61.);   
+  
+  if     (detector=="EMCAL")
+  {
+    ana->SetEtaCut(-0.27,0.27);
+    ana->SetPhiCut(103*TMath::DegToRad(), 157*TMath::DegToRad());
+  }
+  else if(detector=="PHOS")
+  {
+    ana->SetEtaCut(-0.13,0.13);
+    ana->SetPhiCut(260*TMath::DegToRad(), 320*TMath::DegToRad());
+  }
+  else if(detector=="CTS")
+  {
+    ana->SetEtaCut(-0.9,0.9);
+    ana->SetPhiCut(0, TMath::TwoPi());
+  }
+  
+  // AOD branch
+  if(!kData.Contains("delta")) 
+  {
+    ana->SetOutputAODName(Form("RandomTrigger%s%s",detector.Data(),kAnaIsoPhotonName.Data()));
+    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else 
+    ana->SetInputAODName(Form("RandomTrigger%s%s",detector.Data(),kAnaIsoPhotonName.Data()));
+  
+  printf("Set RandomTrigger%s%s\n",detector.Data(),kAnaIsoPhotonName.Data());
+  
+  //Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName(Form("AnaRandomTrigger%s_",detector.Data()));
+  
+  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
+  
+  if(detector=="CTS")
+  {
+    ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
+    ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
+  }
+  
+  if(kPrint) ana->Print("");
+  
+  return ana;
+  
+}
+
+
 
 //________________________________________________________
 void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana, Bool_t simu = kFALSE)
