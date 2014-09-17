@@ -9,7 +9,7 @@
 
 AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",                        Bool_t isModeDist = 1, 
 				     Bool_t  isModeEff    = 0,    Bool_t isModeDCA        = 0,  Bool_t isModeQA   = 0, 
-				     Bool_t  isCreateCSC  = 0,    Bool_t isModeAOD        = 0,  Bool_t isSetExt   = 0, 
+				     Bool_t  isRatio      = 0,    Bool_t isModeAOD        = 0,  Bool_t isSetExt   = 0, 
 				     Int_t   aodFilterBit = 1024, 
 				     Int_t   modeCSC      = 0,    Int_t   modeCuts        = 0,  Int_t modePID     =-1,    
 				     Float_t gMinPt       = 0.3,  Float_t gMaxPt          = 2.5, 
@@ -19,11 +19,6 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
 				     Float_t gSigmaTPC    = 4.0, Float_t  gSigmaTPClow    = 3.0) {
   
   TString sName(name);
-
-  if (isCreateCSC && !isModeEff) {
-    Error("AddTaskNetParticle", "Creating CrossSectionCorrection needs 'isModeEff' to be set.");
-    return NULL;
-  }
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -55,7 +50,9 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
   }
   if (isModeQA)
     task->SetModeQACreation(1);              // => 1 = on    | 0 = off (default)
-  
+  if (isRatio)
+    task->SetIsRatio();
+
   Float_t minPt,     maxPt,     minPtEff,     maxPtEff,  minPtForTOF;
   Float_t nSigmaITS, nSigmaTPC, nSigmaTPClow, nSigmaTOF, maxPtForTPClow; 
   Float_t etaMax,    etaMaxEff, maxRap; 
@@ -76,10 +73,7 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
   nSigmaTPC      = 4.0;   
   nSigmaTPClow   = 3.0;   
   nSigmaTOF      = 4.0; 
-  
-  if (isCreateCSC && modeCSC == 1)
-    minPtForTOF = maxPtEff;
-  
+    
   if (isSetExt) {
     minPt          = gMinPt;    
     maxPt          = gMaxPt;
@@ -129,6 +123,7 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
   helper->SetNSigmaMaxTOF(nSigmaTOF);
   helper->SetMinPtForTOFRequired(minPtForTOF);
   helper->SetMaxPtForTPClow(maxPtForTPClow);
+ 
   task->SetNetParticleHelper(helper);
   mgr->AddTask(task);
   

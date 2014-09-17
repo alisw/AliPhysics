@@ -38,6 +38,10 @@ class AliEbyEPidRatioPhy : public AliEbyEPidRatioBase {
   void ResetHistSet();
   void AddHistSetCent(const Char_t *name, const Char_t *title);
   void FillHistSetCent(const Char_t *name, Int_t idx, Bool_t isMC);
+
+  void AddHistSetRatio(const Char_t *name, const Char_t *title);
+  void FillHistSetRatio(const Char_t *name, Int_t idx, Bool_t isMC);
+  
   
   TList                *fOutList;               //! Output data container
   Int_t                 fOrder;                 //  Max order of higher order distributions

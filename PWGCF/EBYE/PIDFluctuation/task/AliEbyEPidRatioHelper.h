@@ -52,7 +52,7 @@ class AliEbyEPidRatioHelper : public TNamed {
   void SetNSigmaMaxTOF(Float_t f)              {fNSigmaMaxTOF        = f;}
   void SetMinPtForTOFRequired(Float_t f)       {fMinPtForTOFRequired = f;}
   void SetMaxPtForTPClow(Float_t f)            {fMaxPtForTPClow      = f;}
-   
+     
   void SetPhiRange(Float_t f1, Float_t f2);
 
   TH1F*    GetHEventStat0()                    {return fHEventStat0;}
@@ -69,12 +69,13 @@ class AliEbyEPidRatioHelper : public TNamed {
   Float_t  GetPhiMax()                         {return fPhiMax;}
   AliESDtrackCuts* GetESDTrackCuts()           {return fESDTrackCuts;}
   Bool_t           GetIsMC()                   {return fIsMC;}
+  Bool_t           GetIsRatio()                {return fIsRatio;}
   Int_t            GetAODtrackCutBit()         {return fAODtrackCutBit;}
   AliInputEventHandler* GetInputEventHandler() {return fInputEventHandler;}
   AliMCEvent*           GetMCEvent()           {return fMCEvent;}
  
   /** Initialize Helper */
-  Int_t Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Int_t trackCutBit, Int_t modeDistCreation);
+  Int_t Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Int_t trackCutBit, Int_t modeDistCreation);
 
   /** Setup Event */
   Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
@@ -114,7 +115,8 @@ class AliEbyEPidRatioHelper : public TNamed {
 
   /** Check if trackis  accepted for Phi */
   Bool_t IsTrackAcceptedPhi(AliVTrack *track);
-  
+ 
+
   /** Method for the correct logarithmic binning of histograms 
    *  and Update MinPtForTOFRequired, using the pT log-scale 
    */
@@ -190,6 +192,8 @@ class AliEbyEPidRatioHelper : public TNamed {
   TH1F                 *fHCentralityStat;          //  Centrality statistics
   Int_t                 fNCentralityBins;          //  N centrality bins used
   TRandom3             *fRandom;                   //  Random generator
+  Bool_t                fIsRatio;
+
 
   ClassDef(AliEbyEPidRatioHelper, 1);
 };
