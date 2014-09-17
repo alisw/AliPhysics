@@ -1525,7 +1525,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
 					AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(daughterIndex));
 					if(!tmpDaughter) continue;
 					if(abs(tmpDaughter->GetPdgCode()) == 11){
-					rConv = sqrt( (tmpDaughter->Xv()*tmpDaughter->Xv()) + (tmpDaughter->Yv()*tmpDaughter->Yv()) );
+						rConv = sqrt( (tmpDaughter->Xv()*tmpDaughter->Xv()) + (tmpDaughter->Yv()*tmpDaughter->Yv()) );
 					}
 				}
 				hMCConvGammaPt[fiCut]->Fill(particle->Pt());

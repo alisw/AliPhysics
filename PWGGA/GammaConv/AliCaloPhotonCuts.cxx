@@ -727,7 +727,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 				}
 			}
 		}
-	if( inTrack->Pt() < 0.005 ) continue;
+		// 	if( inTrack->Pt() < 0.005 ) continue;
 
 		AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
 		AliAODTrack *aodt = 0;
@@ -748,7 +748,8 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 			aodt->GetCovarianceXYZPxPyPz(cv);
 			trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
 		}
-
+		if (!trackParam){AliError("Could not get TrackParameters, continue"); continue;}
+		
 		Bool_t propagated = kFALSE;
 		AliExternalTrackParam emcParam(*trackParam);
 		Float_t dPhi = 0;
