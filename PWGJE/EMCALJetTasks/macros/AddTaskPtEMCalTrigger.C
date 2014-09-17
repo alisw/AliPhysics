@@ -6,7 +6,7 @@
 #include <TString.h>
 #endif
 
-AliAnalysisTask* AddTaskPtEMCalTrigger(bool isMC, const char *period ="LHC13d"){
+AliAnalysisTask* AddTaskPtEMCalTrigger(bool usePythiaHard, const char *period ="LHC13d", const char *triggerContainer = ""){
 		//AliLog::SetClassDebugLevel("EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger", 2);
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
          
@@ -26,10 +26,10 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(bool isMC, const char *period ="LHC13d"){
         if(!TString(period).CompareTo("LHC13f")) pttriggertask->SetSwapEta();
         mgr->AddTask(pttriggertask);
         pttriggertask->SetPtRange(2., 100.);
-        if(isMC){
+        if(usePythiaHard){
         	pttriggertask->SetIsPythia(kTRUE);
         }
-        std::cout << EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger::Class_Name() << std::endl;
+        pttriggertask->SetCaloTriggerPatchInfoName(triggerContainer);
 
         // Create charged hadrons pPb standard track cuts
         AliESDtrackCuts *standardTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
