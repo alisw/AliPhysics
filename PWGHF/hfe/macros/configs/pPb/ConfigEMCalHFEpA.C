@@ -96,6 +96,9 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 		//Bool_t isTrigger = kFALSE;
 	if(isTrigger) task->SetUseTrigger();
 	
+		//task->SetUseTender();
+
+	
 	if(configIndex==104)  task->SetdcaCut(2,3);//r,z
 	else if(configIndex==105)  task->SetdcaCut(1.5,2.5);//r,z
 	else if(configIndex==106)  task->SetdcaCut(0.5,1);//r,z
@@ -182,7 +185,10 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	
 	else task->SetEoverPCut(0.80,1.2);
-
+	
+		
+	//this line is to set the change on the E/p cut used in the efficiency calculations.
+    task->SetEoverPnsigma(kTRUE);
 	
 	
 	if(centralityIndex==0) task->SetCentrality(0,20);
