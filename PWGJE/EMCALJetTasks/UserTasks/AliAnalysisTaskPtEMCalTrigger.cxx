@@ -119,7 +119,6 @@ namespace EMCalTriggerPtAnalysis {
 		AliParticleContainer *trackContainer = this->AddParticleContainer(trackContainerName.Data());
 		trackContainer->SetClassName("AliVTrack");
 		this->AddClusterContainer(clusterContainerName.Data());
-		this->SetCaloTriggerPatchInfoName("EmcalTriggers");
 		fHistos = new AliEMCalHistoContainer("PtEMCalTriggerHistograms");
 		fHistos->ReleaseOwner();
 
