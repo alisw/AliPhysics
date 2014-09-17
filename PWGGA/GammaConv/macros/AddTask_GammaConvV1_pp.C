@@ -367,6 +367,43 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 		eventCutArray[ 1] = "0009411"; photonCutArray[ 1] = "002092570028250400000"; mesonCutArray[1] = "01521065000000"; // trigger kEMCEJ1 + CINT8
 		eventCutArray[ 2] = "0009511"; photonCutArray[ 2] = "002092570028250400000"; mesonCutArray[2] = "01521065000000"; // trigger kEMCEJ2 + CINT7
 		eventCutArray[ 3] = "0009611"; photonCutArray[ 3] = "002092570028250400000"; mesonCutArray[3] = "01521065000000"; // trigger kEMCEJ2 + CINT8		
+	} else if (trainConfig == 52) { //pp 2.76TeV cuts
+		eventCutArray[ 0] = "0004211"; photonCutArray[ 0] = "002093663003800000000"; mesonCutArray[0] = "01631031009000"; // trigger kTRD CINT8 HEE
+		eventCutArray[ 1] = "0004411"; photonCutArray[ 1] = "002093663003800000000"; mesonCutArray[1] = "01631031009000"; // trigger kTRD CINT8 HSE
+		eventCutArray[ 2] = "0004611"; photonCutArray[ 2] = "002093663003800000000"; mesonCutArray[2] = "01631031009000"; // trigger kTRD CINT8 HJE
+		eventCutArray[ 3] = "0004811"; photonCutArray[ 3] = "002093663003800000000"; mesonCutArray[3] = "01631031009000"; // trigger kTRD CINT8 HQU
+	} else if (trainConfig == 53) { //pp 2.76TeV cuts
+		eventCutArray[ 0] = "0004111"; photonCutArray[ 0] = "002093663003800000000"; mesonCutArray[0] = "01631031009000"; // trigger kTRD CINT7 HEE
+		eventCutArray[ 1] = "0004311"; photonCutArray[ 1] = "002093663003800000000"; mesonCutArray[1] = "01631031009000"; // trigger kTRD CINT7 HSE
+		eventCutArray[ 2] = "0004511"; photonCutArray[ 2] = "002093663003800000000"; mesonCutArray[2] = "01631031009000"; // trigger kTRD CINT7 HJE
+		eventCutArray[ 3] = "0004711"; photonCutArray[ 3] = "002093663003800000000"; mesonCutArray[3] = "01631031009000"; // trigger kTRD CINT7 HQU
+	} else if (trainConfig == 54) { //pp 2.76TeV cuts
+		eventCutArray[ 0] = "0005211"; photonCutArray[ 0] = "002093663003800000000"; mesonCutArray[0] = "01631031009000"; // trigger kEMC7
+		eventCutArray[ 1] = "0005311"; photonCutArray[ 1] = "002093663003800000000"; mesonCutArray[1] = "01631031009000"; // trigger kEMC8
+		eventCutArray[ 2] = "0006211"; photonCutArray[ 2] = "002093663003800000000"; mesonCutArray[2] = "01631031009000"; // trigger kPHI7
+		eventCutArray[ 3] = "0006311"; photonCutArray[ 3] = "002093663003800000000"; mesonCutArray[3] = "01631031009000"; // trigger kPHI8
+	} else if (trainConfig == 55) { //pp 2.76TeV cuts
+		eventCutArray[ 0] = "0005111"; photonCutArray[ 0] = "002093663003800000000"; mesonCutArray[0] = "01631031009000"; // trigger kEMC1
+		eventCutArray[ 1] = "0007111"; photonCutArray[ 1] = "002093663003800000000"; mesonCutArray[1] = "01631031009000"; // trigger kSHM1
+		eventCutArray[ 2] = "0007211"; photonCutArray[ 2] = "002093663003800000000"; mesonCutArray[2] = "01631031009000"; // trigger kSHM7
+		eventCutArray[ 3] = "0007311"; photonCutArray[ 3] = "002093663003800000000"; mesonCutArray[3] = "01631031009000"; // trigger kSHM8
+	} else if (trainConfig == 56) { //pp 2.76TeV cuts
+		eventCutArray[ 0] = "0008111"; photonCutArray[ 0] = "002093663003800000000"; mesonCutArray[0] = "01631031009000"; // trigger kEMCEGA + CINT7
+		eventCutArray[ 1] = "0008211"; photonCutArray[ 1] = "002093663003800000000"; mesonCutArray[1] = "01631031009000"; // trigger kEMCEGA + CINT8
+		eventCutArray[ 2] = "0008311"; photonCutArray[ 2] = "002093663003800000000"; mesonCutArray[2] = "01631031009000"; // trigger kEMCEG1 + CINT7
+		eventCutArray[ 3] = "0008411"; photonCutArray[ 3] = "002093663003800000000"; mesonCutArray[3] = "01631031009000"; // trigger kEMCEG1 + CINT8
+	} else if (trainConfig == 57) { //pp 2.76TeV cuts
+		eventCutArray[ 0] = "0008511"; photonCutArray[ 0] = "002093663003800000000"; mesonCutArray[0] = "01631031009000"; // trigger kEMCEG2 + CINT7
+		eventCutArray[ 1] = "0008611"; photonCutArray[ 1] = "002093663003800000000"; mesonCutArray[1] = "01631031009000"; // trigger kEMCEG2 + CINT8
+		eventCutArray[ 2] = "0009111"; photonCutArray[ 2] = "002093663003800000000"; mesonCutArray[2] = "01631031009000"; // trigger kEMCEJE + CINT7
+		eventCutArray[ 3] = "0009211"; photonCutArray[ 3] = "002093663003800000000"; mesonCutArray[3] = "01631031009000"; // trigger kEMCEJE + CINT8
+	} else if (trainConfig == 58) { //pp 2.76TeV cuts
+		eventCutArray[ 0] = "0009311"; photonCutArray[ 0] = "002093663003800000000"; mesonCutArray[0] = "01631031009000"; // trigger kEMCEJ1 + CINT7
+		eventCutArray[ 1] = "0009411"; photonCutArray[ 1] = "002093663003800000000"; mesonCutArray[1] = "01631031009000"; // trigger kEMCEJ1 + CINT8
+		eventCutArray[ 2] = "0009511"; photonCutArray[ 2] = "002093663003800000000"; mesonCutArray[2] = "01631031009000"; // trigger kEMCEJ2 + CINT7
+		eventCutArray[ 3] = "0009611"; photonCutArray[ 3] = "002093663003800000000"; mesonCutArray[3] = "01631031009000"; // trigger kEMCEJ2 + CINT8		
+
+		
 	} else {
 			Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 			return;
