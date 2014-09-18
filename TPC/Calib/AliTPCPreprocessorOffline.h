@@ -95,7 +95,9 @@ public:
   //
   Int_t GetStatus();
   enum ECalibStatusBit { kCalibFailedTimeDrift =0x0001,
-                         kCalibFailedTimeGain  =0x0002 };
+                         kCalibFailedTimeGain  =0x0002 ,
+			  kCalibFailedExport  =0x0004 
+  };
 
 private:
   Int_t fMinEntries;                      // minimal number of entries for fit
