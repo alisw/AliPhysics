@@ -16,10 +16,10 @@ class AliAnalysisManager;
 class AliVParticle;
 class AliJetContainer;
 
-namespace fastjet {
-  class PseudoJet;
-  class GenericSubtractor;
-}
+/* namespace fastjet { */
+/*   class PseudoJet; */
+/*   class GenericSubtractor; */
+/* } */
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -38,6 +38,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
 
   void SetJetContainerBase(Int_t c)                             { fContainerBase     = c   ; }
   void SetJetContainerSub(Int_t c)                              { fContainerSub      = c   ; }
+  void SetJetContainerNoEmb(Int_t c)                            { fContainerNoEmb    = c   ; }
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
   void SetSingleTrackEmbedding(Bool_t b)                        { fSingleTrackEmb    = b   ; }
 
@@ -50,6 +51,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
 
   Int_t                               fContainerBase;              // jets to be analyzed
   Int_t                               fContainerSub;               // subtracted jets to be analyzed
+  Int_t                               fContainerNoEmb;             // subtracted jets from Pb-Pb only events
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   Bool_t                              fSingleTrackEmb;             // single track embedding
   Bool_t                              fCreateTree;                 // create output tree
@@ -79,7 +81,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetShapeConst(const AliAnalysisTaskJetShapeConst&);            // not implemented
   AliAnalysisTaskJetShapeConst &operator=(const AliAnalysisTaskJetShapeConst&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeConst, 1)
+  ClassDef(AliAnalysisTaskJetShapeConst, 2)
 };
 #endif
 
