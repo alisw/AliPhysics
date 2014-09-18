@@ -1735,8 +1735,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
 			AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
 			if (gamma0==NULL) continue;
 			
-			for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
-				if (firstGammaIndex == secondGammaIndex) continue;
+			for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
 				AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
 				if (gamma1==NULL) continue;
 				
