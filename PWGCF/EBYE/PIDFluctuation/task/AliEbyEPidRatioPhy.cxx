@@ -390,26 +390,7 @@ void  AliEbyEPidRatioPhy::AddHistSetCent(const Char_t *name, const Char_t *title
   Int_t nBinsCent         =  AliEbyEPidRatioHelper::fgkfHistNBinsCent;
   Double_t centBinRange[] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], AliEbyEPidRatioHelper::fgkfHistRangeCent[1]};
 
-  TString xyz = Form("|y| < %.1f",fHelper->GetRapidityMax()); 
-
-  list->Add(new TH2F(Form("fHistRatioKPi%s",name), 
-		     Form("(%s %s) : K/#pi;Centrality(11);K/#pi", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
-  
-  list->Add(new TH2F(Form("fHistRatioKpPip%s",name), 
-		     Form("(%s %s) : K^{+}/#pi^{+};Centrality(11);K^{+}/#pi^{+}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
-  
-  list->Add(new TH2F(Form("fHistRatioKmPip%s",name), 
-		     Form("(%s %s) : K^{-}/#pi^{+};Centrality(11);K^{-}/#pi^{+}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
-  
-  list->Add(new TH2F(Form("fHistRatioKmPim%s",name), 
-		     Form("(%s %s) : K^{-}/#pi^{-};Centrality(11);K^{-}/#pi^{-}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
-
  
-
   for (Int_t iPid = 0; iPid < 4; ++iPid) {
     // fOutList->Add(new TList);
     // list[iPid] = static_cast<TList*>(fOutList->Last());
@@ -614,17 +595,7 @@ void AliEbyEPidRatioPhy::FillHistSetCent(const Char_t *name, Int_t idx, Bool_t i
     }
   }
 
-  Double_t KPi   = -1; if(np[idx][1][1]+np[idx][1][0] != 0 ) KPi = (np[idx][2][1]+np[idx][2][0])/(np[idx][1][1]+np[idx][1][0]);
-  Double_t KpPip = -1;
-  Double_t KmPip = -1;if (np[idx][1][1] != 0 ) { KpPip  = (np[idx][2][1])/(np[idx][1][1]); KmPip =  (np[idx][2][0])/(np[idx][1][1]); }
-  Double_t KmPim = -1;if (np[idx][1][0] != 0) KmPim = (np[idx][2][0])/(np[idx][1][0]);
-  
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioKPi%s",name))))->Fill(centralityBin, KPi);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioKpPip%s",name))))->Fill(centralityBin, KpPip);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioKmPip%s",name))))->Fill(centralityBin, KmPip);
-  (static_cast<TProfile*>(list->FindObject(Form("fHistRatioKmPim%s",name))))->Fill(centralityBin, KmPim);
-
-
+ 
   Double_t a[6][4]; Double_t b[22];
   for (Int_t iPid = 0; iPid < 4; ++iPid) {
     a[0][iPid] = np[idx][iPid][1]+np[idx][iPid][0];       // 0  n+ + n-
