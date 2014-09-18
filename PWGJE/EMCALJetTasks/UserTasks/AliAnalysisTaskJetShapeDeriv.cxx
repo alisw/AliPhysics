@@ -40,6 +40,7 @@ ClassImp(AliAnalysisTaskJetShapeDeriv)
 AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetShapeDeriv", kTRUE),
   fContainerBase(0),
+  fContainerNoEmb(1),
   fMinFractionShared(0),
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
@@ -120,6 +121,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
 AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),  
   fContainerBase(0),
+  fContainerNoEmb(1),
   fMinFractionShared(0),
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
@@ -220,9 +222,13 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   const Double_t minM = -20.;
   const Double_t maxM = 80.;
 
-  const Int_t nBinsMT  = 50;
-  const Double_t minMT = 0.;
-  const Double_t maxMT = 50.;
+  // const Int_t nBinsMT  = 50;
+  // const Double_t minMT = 0.;
+  // const Double_t maxMT = 50.;
+
+  const Int_t nBinsDRToLJ  = 20; //distance to leading jet in Pb-Pb only event
+  const Double_t minDRToLJ = 0.;
+  const Double_t maxDRToLJ = 1.;
 
   const Int_t nBinsV1  = 60;
   const Double_t minV1 = -60.;
@@ -234,9 +240,9 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
 
   //Binning for THnSparse
   const Int_t nBinsSparse0 = 5;
-  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsMT};
-  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minMT};
-  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxMT};
+  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsDRToLJ};
+  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minDRToLJ};
+  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxDRToLJ};
 
   TString histName = "";
   TString histTitle = "";
@@ -367,18 +373,24 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
 
   AliEmcalJet* jet1  = NULL; //AA jet
   AliEmcalJet *jet2  = NULL; //Embedded Pythia jet
-  AliEmcalJet *jet1T = NULL; //tagged AA jet
+  //  AliEmcalJet *jet1T = NULL; //tagged AA jet
   //  AliEmcalJet *jet2T = NULL; //tagged Pythia jet
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   fRho  = (Float_t)jetCont->GetRhoVal();
   fRhoM = (Float_t)jetCont->GetRhoMassVal();
+
+  //Get leading jet in Pb-Pb event without embedded objects
+  AliJetContainer *jetContNoEmb = GetJetContainer(fContainerNoEmb);
+  AliEmcalJet *jetL = NULL;
+  if(jetContNoEmb) jetL = jetContNoEmb->GetLeadingJet("rho");
+
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
       jet2 = NULL;
-      jet1T = NULL;
+      //      jet1T = NULL;
       //   jet2T = NULL;
-      if(jet1->GetTagStatus()>0) jet1T = jet1->GetTaggedJet();
+      //      if(jet1->GetTagStatus()>0) jet1T = jet1->GetTaggedJet();
       //Fill histograms for all AA jets
       fh2MSubPtRawAll[fCentBin]->Fill(jet1->GetSecondOrderSubtracted(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area());
       fh2PtRawSubFacV1[fCentBin]->Fill(jet1->Pt(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
@@ -421,9 +433,11 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
 	  fh2MTruePtTrue[fCentBin]->Fill(jet2->M(),jet2->Pt());
 	  fh2PtTrueDeltaM[fCentBin]->Fill(jet2->Pt(),jet1->GetSecondOrderSubtracted()-jet2->M());
 	  if(jet2->M()>0.) fh2PtTrueDeltaMRel[fCentBin]->Fill(jet2->Pt(),(jet1->GetSecondOrderSubtracted()-jet2->M())/jet2->M());
-	  Double_t mJet1Tagged = -1.;
-	  if(jet1T) mJet1Tagged = jet1T->M();
-	  Double_t var[5] = {jet1->GetSecondOrderSubtracted(),jet2->M(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area(),jet2->Pt(),mJet1Tagged};
+	  // Double_t mJet1Tagged = -1.;
+	  // if(jet1T) mJet1Tagged = jet1T->M();
+	  Double_t drToLJ = 0.;
+	  if(jetL) drToLJ = jet1->DeltaR(jetL);
+	  Double_t var[5] = {jet1->GetSecondOrderSubtracted(),jet2->M(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area(),jet2->Pt(),drToLJ};
 	  fhnMassResponse[fCentBin]->Fill(var);
 	}
       }
