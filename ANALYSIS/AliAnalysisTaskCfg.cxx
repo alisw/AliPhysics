@@ -290,7 +290,9 @@ Bool_t AliAnalysisTaskCfg::CheckLoadLibraries() const
    for (Int_t i=0; i<nlibs; i++) {
       library = GetLibrary(i);
       library.Prepend("lib");
-      Int_t loaded = strlen(gSystem->GetLibraries(library,"",kFALSE));
+      TString libext = library;
+      libext.Append(".");
+      Int_t loaded = strlen(gSystem->GetLibraries(libext,"",kFALSE));
       if (!loaded) loaded = gSystem->Load(library);
       if (loaded < 0) {
          Error("CheckLoadLibraries", "Cannot load library %s", library.Data());
