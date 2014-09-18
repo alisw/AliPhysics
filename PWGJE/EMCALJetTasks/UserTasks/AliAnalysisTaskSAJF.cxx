@@ -103,7 +103,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
     dim++;
   }
 
-  title[dim] = "#eta";
+  title[dim] = "#eta_{jet}";
   nbins[dim] = 100;
   min[dim] = -1;
   max[dim] = 1;
