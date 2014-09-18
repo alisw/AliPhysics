@@ -97,11 +97,11 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
 
   if(doJetAnalysis)
   {
-    task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA_%s_%s", jetFinderTask->GetName(), triggerName.Data()), usedTracks, jetFinderTask->GetName(),jetFinderTaskKT->GetName(), doJetProfileAnalysis, doTrackcutAnalysis);
+    task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA%s_%s_%s", containerNameSuffix.Data(), jetFinderTask->GetName(), triggerName.Data()), usedTracks, jetFinderTask->GetName(),jetFinderTaskKT->GetName(), doJetProfileAnalysis, doTrackcutAnalysis);
     task->SetExternalRhoTaskName(bgrdName.Data());
   }
   else
-    task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA_%s", "", triggerName.Data()), usedTracks, "","", doJetProfileAnalysis, doTrackcutAnalysis);
+    task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA%s_%s", containerNameSuffix.Data(), triggerName.Data()), usedTracks, "","", doJetProfileAnalysis, doTrackcutAnalysis);
 
   cout << " Main task created: " <<  task << endl;
 
