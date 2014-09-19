@@ -137,6 +137,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
 //    -- "ROTATE2" --> rotated background (rotate second track)
 //    -- "TRUE"    --> true pairs (like track pair, but checking that come from same mother)
 //    -- "MOTHER"  --> mother (loop on MC directly for mothers --> denominator of efficiency)
+//    -- "MOTHER_IN_ACC"  --> mother (loop on MC directly for mothers (in a defined acceptance interval)--> needed for efficiency calcutation using  an enriched sample)
 //
 
    TString input;
@@ -168,6 +169,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
       fComputation = kTruePair;
    else if (!input.CompareTo("MOTHER"))
       fComputation = kMother;
+    else if (!input.CompareTo("MOTHER_IN_ACC"))
+      fComputation = kMotherInAcc;   
    else
       AliWarning(Form("String '%s' does not define a meaningful computation type", compType));
 
@@ -429,6 +432,31 @@ Bool_t AliRsnMiniOutput::FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent 
 
    // check computation type
    if (fComputation != kMother) {
+      AliError("This method can be called only for mother-based computations");
+      return kFALSE;
+   }
+
+   // copy passed pair info
+   fPair = (*pair);
+
+   // check pair against cuts
+   if (fPairCuts) if (!fPairCuts->IsSelected(&fPair)) return kFALSE;
+
+   // compute & fill
+   ComputeValues(event, valueList);
+   FillHistogram();
+   return kTRUE;
+}
+
+//________________________________________________________________________________________
+Bool_t AliRsnMiniOutput::FillMotherInAcceptance(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList)
+{
+//
+// Compute values for mother-based computations
+//
+
+   // check computation type
+   if (fComputation != kMotherInAcc) {
       AliError("This method can be called only for mother-based computations");
       return kFALSE;
    }

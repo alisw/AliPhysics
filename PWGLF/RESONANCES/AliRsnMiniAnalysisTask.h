@@ -54,6 +54,9 @@ public:
    void                SetCheckFeedDown(Bool_t checkFeedDown)      {fCheckFeedDown = checkFeedDown;}
    void                SetDselection(UShort_t originDselection);
    void 	       SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
+   void                SetMotherAcceptanceCutMinPt(Float_t minPt)  {fMotherAcceptanceCutMinPt = minPt;}
+   void                SetMotherAcceptanceCutMaxEta(Float_t maxEta){fMotherAcceptanceCutMaxEta = maxEta;}
+   void                KeepMotherInAcceptance(Bool_t keepMotherInAcceptance) {fKeepMotherInAcceptance = keepMotherInAcceptance;}
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
@@ -127,8 +130,11 @@ private:
    Bool_t   		fKeepDfromB;  	     // flag for the feed down from b quark decay (specific for D meson analysis)			
    Bool_t   		fKeepDfromBOnly;     // flag to keep only the charm particles that comes from beauty decays (specific for D meson analysis)
    Bool_t 		fRejectIfNoQuark;    // flag to remove events not generated with PYTHIA
+   Float_t              fMotherAcceptanceCutMinPt;              // cut value to apply when selecting the mothers inside a defined acceptance
+   Float_t              fMotherAcceptanceCutMaxEta;             // cut value to apply when selecting the mothers inside a defined acceptance
+   Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
 
-   ClassDef(AliRsnMiniAnalysisTask, 10);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 11);   // AliRsnMiniAnalysisTask
 };
 
 

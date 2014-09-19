@@ -74,10 +74,9 @@ Bool_t ConfigD0
    else cutQuality->SetDCARPtFormula(formula);
    if(minDCAcutFixed) cutQuality->SetDCARmin(trackDCAcutMin);
    else cutQuality->SetDCARPtFormulaMin(formulaMin);
-   cutQuality->SetTPCminNClusters(NTPCcluster); 
-   //if(!isPP)cutQuality->SetTPCminNClusters(NTPCcluster);
-   //if(isPP)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
-   //if(isPP)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
+   if(!isPP)cutQuality->SetTPCminNClusters(NTPCcluster);
+   if(isPP)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
+   if(isPP)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
    cutQuality->SetPtRange(minpt,1E20);
    cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
@@ -112,10 +111,9 @@ Bool_t ConfigD0
    else cutQuality->SetDCARPtFormula(formula);
    if(minDCAcutFixed) cutQuality->SetDCARmin(trackDCAcutMin);
    else cutQuality->SetDCARPtFormulaMin(formulaMin);
-   cutQuality->SetTPCminNClusters(NTPCcluster);
-   //if(!isPP)cutQuality->SetTPCminNClusters(NTPCcluster);
-   //if(isPP)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
-   //if(isPP)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
+   if(!isPP)cutQuality->SetTPCminNClusters(NTPCcluster);
+   if(isPP)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
+   if(isPP)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
    cutQuality->SetPtRange(minpt,1E20);
    cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
@@ -136,81 +134,6 @@ Bool_t ConfigD0
    Int_t iCutK = task->AddTrackCuts(cutSetK);
    
    
-   
-   
-   
-   ////////////////////////////////////////////////////////////////////////////////////////////////
-   // Cut set for mothers -- To be used only for the efficiency evaluation when using the charm enriched sample
-   /*
-   AliRsnCutDaughterD0 *cutPi_mother = new AliRsnCutDaughterD0("cutPionForD0_MC", AliPID::kPion);
-   cutPi_mother->SetIsCheckOnMother(kTRUE);
-   cutPi_mother->SetNoPID(kTRUE);
-   cutPi_mother->SetTPCPionPIDCut(1E20);
-   cutPi_mother->SetTOFPionPIDCut(1E20);
-   cutPi_mother->SetPtDependentPIDCut(kFALSE);
-   AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi_mother->CutQuality();
-   cutQuality->SetCheckOnlyFilterBit(kFALSE);
-   cutQuality->SetAODTestFilterBit(-1);
-   if(maxDCAcutFixed)cutQuality->SetDCARmax(1E20);	         
-   else cutQuality->SetDCARPtFormula("");
-   if(minDCAcutFixed) cutQuality->SetDCARmin(0);
-   else cutQuality->SetDCARPtFormulaMin(""); 
-   if(!isPP)cutQuality->SetTPCminNClusters(0);
-   if(isPP)cutQuality->SetMinNCrossedRowsTPC(0,kTRUE);
-   if(isPP)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(0,kTRUE);
-   cutQuality->SetPtRange(0,1E20);
-   cutQuality->SetEtaRange(-1E20, 1E20);
-   cutQuality->SetDCAZmax(1E20);
-   cutQuality->SetSPDminNClusters(0);
-   cutQuality->SetITSminNClusters(0);
-   cutQuality->SetITSmaxChi2(1E20);
-   cutQuality->SetTPCmaxChi2(1E20);
-   cutQuality->SetRejectKinkDaughters();
-   cutQuality->Print();
-   
-   
-   // cut set
-   AliRsnCutSet *cutSetPi_mother = new AliRsnCutSet("setPionD0_mother", AliRsnTarget::kDaughter);
-   cutSetPi_mother->AddCut(cutPi_mother);
-   cutSetPi_mother->SetCutScheme(cutPi_mother->GetName());
-   // add to task
-   Int_t iCutPi_mother = task->AddTrackCuts(cutSetPi_mother);
-   
-   
-   AliRsnCutDaughterD0 *cutK_mother = new AliRsnCutDaughterD0("cutKaonForD0_MC", AliPID::kKaon);
-   cutK_mother->SetIsCheckOnMother(kTRUE);
-   cutK_mother->SetNoPID(kTRUE);
-   cutK_mother->SetTPCKaonPIDCut(1E20);
-   cutK_mother->SetTOFKaonPIDCut(1E20);
-   cutK_mother->SetPtDependentPIDCut(kFALSE);	
-   AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutK_mother->CutQuality();
-   cutQuality->SetCheckOnlyFilterBit(kFALSE);
-   cutQuality->SetAODTestFilterBit(-1);
-   if(maxDCAcutFixed)cutQuality->SetDCARmax(1E20);	         
-   else cutQuality->SetDCARPtFormula("");
-   if(minDCAcutFixed) cutQuality->SetDCARmin(0);
-   else cutQuality->SetDCARPtFormulaMin("");
-   if(!isPP)cutQuality->SetTPCminNClusters(0);
-   if(isPP)cutQuality->SetMinNCrossedRowsTPC(0,kTRUE);
-   if(isPP)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(0,kTRUE);
-   cutQuality->SetPtRange(0,1E20);
-   cutQuality->SetEtaRange(-1E20, 1E20);
-   cutQuality->SetDCAZmax(1E20);
-   cutQuality->SetSPDminNClusters(0);
-   cutQuality->SetITSminNClusters(0);
-   cutQuality->SetITSmaxChi2(1E20);
-   cutQuality->SetTPCmaxChi2(1E20);
-   cutQuality->SetRejectKinkDaughters();
-   cutQuality->Print();
-   
-   
-   // cut set
-   AliRsnCutSet *cutSetK_mother = new AliRsnCutSet("setKaonD0_mother", AliRsnTarget::kDaughter);
-   cutSetK_mother->AddCut(cutK_mother);
-   cutSetK_mother->SetCutScheme(cutK_mother->GetName());
-   // add to task
-   Int_t iCutK_mother = task->AddTrackCuts(cutSetK_mother);
-   */
    
    ////////////////////////////////////////////////////////////////////////////////////////////////
   
@@ -416,27 +339,18 @@ Bool_t ConfigD0
    
    
    // GENERATED MOTHERS IN THE ACCEPTANCE
-   /*
+   
    TString mode = "SPARSE";
    
    // create output
-   AliRsnMiniOutput *out = task->CreateOutput("D0_TrueMC1_Acc", mode.Data(), "TRUE");
+   AliRsnMiniOutput *out = task->CreateOutput("D0_TrueMC_InAcc1", mode.Data(), "MOTHER_IN_ACC");
    // selection settings
-   out->SetCutID(0, iCutK_mother);
-   out->SetCutID(1, iCutPi_mother);
    out->SetDaughter(0, AliRsnDaughter::kKaon);
    out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetCharge(0, '-');
-   out->SetCharge(1, '+');
    out->SetMotherPDG(421);
    out->SetMotherMass(1.86486);
    // pair cuts
    out->SetPairCuts(cutsPairY);
-   out->SetMaxNSisters(maxSisters);
-   out->SetCheckMomentumConservation(checkP);
-   out->SetCheckFeedDown(checkFeedDown);
-   out->SetRejectCandidateIfNotFromQuark(checkQuark);
-   out->SetDselection(originDselection);
    // binnings
    out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
@@ -446,23 +360,14 @@ Bool_t ConfigD0
    else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
-   AliRsnMiniOutput *out = task->CreateOutput("D0_TrueMC2_Acc", mode.Data(), "TRUE");
+   AliRsnMiniOutput *out = task->CreateOutput("D0_TrueMC_InAcc2", mode.Data(), "MOTHER_IN_ACC");
    // selection settings
-   out->SetCutID(0, iCutK_mother);
-   out->SetCutID(1, iCutPi_mother);
    out->SetDaughter(0, AliRsnDaughter::kKaon);
    out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetCharge(0, '+');
-   out->SetCharge(1, '-');
    out->SetMotherPDG(-421);
    out->SetMotherMass(1.86486);
    // pair cuts
    out->SetPairCuts(cutsPairY);
-   out->SetMaxNSisters(maxSisters);
-   out->SetCheckMomentumConservation(checkP);
-   out->SetCheckFeedDown(checkFeedDown);
-   out->SetRejectCandidateIfNotFromQuark(checkQuark);
-   out->SetDselection(originDselection);
    // binnings
    out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
@@ -473,7 +378,7 @@ Bool_t ConfigD0
    
    
    }
-   */
+
 
    return kTRUE;
 }
