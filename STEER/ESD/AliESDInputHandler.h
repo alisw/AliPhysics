@@ -67,6 +67,9 @@ class AliESDInputHandler : public AliInputEventHandler {
     virtual void CreatePIDResponse(Bool_t isMC=kFALSE);
     AliESDpid           *GetESDpid()       const {return fESDpid;}
     void                 SetESDpid(AliESDpid* pid)     {Changed(); fESDpid = pid;}
+
+    //HLT
+    virtual AliVfriendEvent*   GetVFriendEvent() const {return fFriend;};
   
  private:
     AliESDInputHandler(const AliESDInputHandler& handler);             

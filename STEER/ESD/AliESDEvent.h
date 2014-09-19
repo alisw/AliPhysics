@@ -274,7 +274,7 @@ public:
 
   void SetESDfriend(const AliESDfriend *f) const;
   void GetESDfriend(AliESDfriend *f) const;
-  AliESDfriend* FindFriend() const { return static_cast<AliESDfriend*>(FindListObject("AliESDfriend")); }
+  virtual AliESDfriend* FindFriend() const;
 
   void SetPrimaryVertexTPC(const AliESDVertex *vertex); 
   const AliESDVertex *GetPrimaryVertexTPC() const {return fTPCVertex;}
