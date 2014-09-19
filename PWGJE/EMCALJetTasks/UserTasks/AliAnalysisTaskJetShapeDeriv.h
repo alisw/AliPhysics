@@ -4,10 +4,8 @@
 class TH1;
 class TH2;
 class TH3;
-class TH3F;
 class THnSparse;
 class TF1;
-class TLorentzVector;
 class TClonesArray;
 class TArrayI;
 class TTree;
@@ -15,11 +13,6 @@ class TLorentzVector;
 class AliAnalysisManager;
 class AliVParticle;
 class AliJetContainer;
-
-/* namespace fastjet { */
-/*   class PseudoJet; */
-/*   class GenericSubtractor; */
-/* } */
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -71,11 +64,11 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
 
   TH2F          **fh2MSubMatch;                                    //! subtracted jet mass vs match index (0: no match; 1:match)
   TH2F          **fh2MSubPtRawAll;                                 //! subtracted jet mass vs subtracted jet pT
-  TH2F          **fh2MSubPtRawMatch;                               //! subtracted jet mass vs subtracted jet pT for matched jets
-  TH2F          **fh2MSubPtTrue;                                   //! subtracted jet mass vs true jet pT for matched jets
-  TH2F          **fh2MTruePtTrue;                                  //! true jet mass vs true jet pT for matched jets
-  TH2F          **fh2PtTrueDeltaM;                                 //! true jet pT vs (Msub - Mtrue)
-  TH2F          **fh2PtTrueDeltaMRel;                              //! true jet pT vs (Msub - Mtrue)/Mtrue
+  TH3F          **fh3MSubPtRawDRMatch;                             //! subtracted jet mass vs subtracted jet pT vs distance to leading Pb-Pb jet
+  TH3F          **fh3MSubPtTrueDR;                                 //! subtracted jet mass vs true jet pT vs DR for matched jets for matched jets 
+  TH3F          **fh3MTruePtTrueDR;                                //! true jet mass vs true jet pT vs DR for matched jets for matched jets
+  TH3F          **fh3PtTrueDeltaMDR;                               //! true jet pT vs (Msub - Mtrue) vs distance to leading Pb-Pb jet for matched jets
+  TH3F          **fh3PtTrueDeltaMRelDR;                            //! true jet pT vs (Msub - Mtrue)/Mtrue vs DR for matched jets
   THnSparse     **fhnMassResponse;                                 //! Msub vs Mtrue vs PtCorr vs PtTrue
 
   TH2F          **fh2PtTrueSubFacV1;                               //! true pT vs -(rho+rhom)*V1
@@ -91,7 +84,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetShapeDeriv(const AliAnalysisTaskJetShapeDeriv&);            // not implemented
   AliAnalysisTaskJetShapeDeriv &operator=(const AliAnalysisTaskJetShapeDeriv&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeDeriv, 2)
+  ClassDef(AliAnalysisTaskJetShapeDeriv, 3)
 };
 #endif
 
