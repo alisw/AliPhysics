@@ -38,7 +38,7 @@ namespace AliEventServerUtil
 // return full path to the server configuration file
 	inline const char* GetPathToServerConf()
 	{
-		return Form("%s/MONITOR/%s",
+		return Form("%s/MONITOR/alieventserver/%s",
 			    gSystem->Getenv("ALICE_ROOT"),
 			    ALIEVENTSERVER_CONF);
 	}

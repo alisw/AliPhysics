@@ -338,11 +338,19 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
     {
         fStorageStatus->SetText("Storage: DOWN");
         fMarkEvent->SetEnabled(false);
+        fNextEvent->SetEnabled(false);
+        fLastEvent->SetEnabled(false);
+        fPrevEvent->SetEnabled(false);
+        fFirstEvent->SetEnabled(false);
     }
     else if(state == 1)
     {
         fStorageStatus->SetText("Storage: OK");
         fMarkEvent->SetEnabled(true);
+        fNextEvent->SetEnabled(true);
+        fLastEvent->SetEnabled(true);
+        fPrevEvent->SetEnabled(true);
+        fFirstEvent->SetEnabled(true);
     }
 }
 

@@ -169,33 +169,17 @@ AliESDEvent* AliStorageDatabase::GetEvent(struct eventStruct event)
 	return data;
 }
 
-struct eventStruct AliStorageDatabase::GetOldestEvent()
-{
-	struct eventStruct oldestEvent = {0,0};
-
-	TSQLResult *result = fServer->Query(Form("SELECT * FROM %s ORDER BY run_number,event_number;",fTable.c_str()));
-
-	TSQLRow *row;	
-	if((row = result->Next()))
-	{
-		oldestEvent.runNumber = atoi(row->GetField(0));
-		oldestEvent.eventNumber = atoi(row->GetField(1));
-	
-		delete row;
-	}
-	else
-	{
-		cout<<"DATABASE -- NO OLDEST EVENT FOUND. Storage may be corrupted."<<endl;
-	}
-	return oldestEvent;
-}
-
 void AliStorageDatabase::RemoveEvent(struct eventStruct event)
 {
   TSQLResult* res;
   res = fServer->Query(Form("DELETE FROM %s WHERE run_number = %d AND event_number = %d",fTable.c_str(),event.runNumber,event.eventNumber));
   delete res;
+}
 
+void AliStorageDatabase::RemoveEventsWithPath(string path)
+{
+    TSQLResult *res = fServer->Query(Form("DELETE FROM %s WHERE file_path = \"%s\";",fTable.c_str(),path.c_str()));
+    delete res;
 }
 
 string AliStorageDatabase::GetFilePath(struct eventStruct event)
@@ -217,6 +201,8 @@ string AliStorageDatabase::GetFilePath(struct eventStruct event)
 
 AliESDEvent* AliStorageDatabase::GetNextEvent(struct eventStruct event)
 {
+    cout<<"Database:"<<event.runNumber<<"\t"<<event.eventNumber<<endl;
+    
 	TSQLResult *result = fServer->Query(Form("SELECT * FROM %s ORDER BY run_number,event_number;",fTable.c_str()));
 
 	TSQLRow *row;
@@ -273,6 +259,25 @@ AliESDEvent* AliStorageDatabase::GetPrevEvent(struct eventStruct event)
 	return NULL;
 }
 
+struct eventStruct AliStorageDatabase::GetOldestEvent()
+{
+    TSQLResult *result = fServer->Query(Form("SELECT * FROM %s ORDER BY run_number,event_number;",fTable.c_str()));
+    
+    TSQLRow *row;
+    struct eventStruct oldestEvent = {0,0};
+    
+    if((row = result->Next()))
+    {
+        oldestEvent.runNumber = atoi(row->GetField(0));
+        oldestEvent.eventNumber = atoi(row->GetField(1));
+        delete row;
+    }
+    else
+    {
+        cout<<"DATABASE -- NO OLDEST EVENT FOUND. Storage may be corrupted."<<endl;
+    }
+    return oldestEvent;
+}
 
 AliESDEvent* AliStorageDatabase::GetLastEvent()
 {
@@ -294,18 +299,19 @@ AliESDEvent* AliStorageDatabase::GetLastEvent()
 
 AliESDEvent* AliStorageDatabase::GetFirstEvent()
 {
+    cout<<"Database - first"<<endl;
 	TSQLResult *result = fServer->Query(Form("SELECT * FROM %s ORDER BY run_number,event_number DESC;",fTable.c_str()));
 
 	TSQLRow *row;
-	struct eventStruct lastEvent = {0,0};
+	struct eventStruct firstEvent = {0,0};
 
 	while((row = result->Next()))
 	{
-		lastEvent.runNumber = atoi(row->GetField(0));
-		lastEvent.eventNumber = atoi(row->GetField(1));
+		firstEvent.runNumber = atoi(row->GetField(0));
+		firstEvent.eventNumber = atoi(row->GetField(1));
 		delete row;
 	}
-	cout<<"Last event is:"<<lastEvent.eventNumber<<endl;
-	return GetEvent(lastEvent);
+	cout<<"First event is:"<<firstEvent.eventNumber<<endl;
+	return GetEvent(firstEvent);
 
 }

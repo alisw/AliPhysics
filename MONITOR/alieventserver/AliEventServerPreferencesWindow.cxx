@@ -264,7 +264,7 @@ void AliEventServerPreferencesWindow::SetupLogbookTab(TGCompositeFrame* tab)
 	cfLogbook->SetLayoutManager(new TGMatrixLayout(cfLogbook, 0, 2));
 	
 	TGLabel* lbLogbookHost = new TGLabel(cfLogbook, "Host:");
-	fEntryLogbookHost = new TGTextEntry(cfLogbook, "pcaldbl501");
+	fEntryLogbookHost = new TGTextEntry(cfLogbook, "localhost");
 	fEntryLogbookHost->Resize(150,0);
 	TGLabel* lbLogbookPort = new TGLabel(cfLogbook, "Port:");
 	fEntryLogbookPort = new TGTextEntry(cfLogbook, "3306");

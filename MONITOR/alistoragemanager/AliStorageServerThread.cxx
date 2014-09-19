@@ -86,6 +86,7 @@ void AliStorageServerThread::StartCommunication()
 		    }
 		  case REQUEST_GET_NEXT_EVENT:
 		    {
+                cout<<"NEXT EVENT request received"<<endl;
 		      AliESDEvent *event = fDatabase->GetNextEvent(request->event);
 		      eventManager->Send(event,socket);
 		      delete event;
