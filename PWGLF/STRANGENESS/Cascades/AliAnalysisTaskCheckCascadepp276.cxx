@@ -1022,7 +1022,8 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    fCFContCascadeCuts->SetVarTitle(3,  "R_{2d}(cascade decay) (cm)");
    fCFContCascadeCuts->SetVarTitle(4,  "M_{#Lambda}(as casc dghter) (GeV/c^{2})");
    fCFContCascadeCuts->SetVarTitle(5,  "Dca(V0 daughters) in Xi (cm)");
-   fCFContCascadeCuts->SetVarTitle(6,  "cos(V0 PA) to cascade vtx");
+   if (fCollidingSystem == "pp")       fCFContCascadeCuts->SetVarTitle(6,  "cos(V0 PA) to cascade vtx");
+   else if (fCollidingSystem == "pPb") fCFContCascadeCuts->SetVarTitle(6,  "cos(V0 PA) to primary vtx");
    fCFContCascadeCuts->SetVarTitle(7,  "R_{2d}(V0 decay) (cm)");
    fCFContCascadeCuts->SetVarTitle(8,  "ImpactParamToPV(V0) (cm)");
    fCFContCascadeCuts->SetVarTitle(9,  "ImpactParamToPV(Pos) (cm)");
@@ -1719,23 +1720,21 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
            //-----------------------------------------
 	   // - Extra-selection for cascade candidates
            if (fkExtraSelections) { //in AliCascadeVertexer
-               if (lDcaXiDaughters > 0.3) continue;  
-               if (lXiCosineOfPointingAngle < 0.999 ) continue; 
-               if (lDcaV0ToPrimVertexXi < 0.05) continue; 
-               if (lDcaBachToPrimVertexXi < 0.03) continue; 
-               //if (TMath::Abs(lInvMassLambdaAsCascDghter-1.11568) > 0.006 ) continue;   
-               if (lDcaV0DaughtersXi > 1.) continue;  
-               if (lV0CosineOfPointingAngleXi < 0.998) continue; 
-               if (lDcaPosToPrimVertexXi < 0.1) continue; 
-               if (lDcaNegToPrimVertexXi < 0.1) continue; 
-	       if (lXiRadius < .9) continue; 
-               //if (lXiRadius > 100) continue; 
-	       if (lV0RadiusXi < 0.9) continue;   
-               //if (lV0RadiusXi > 100) continue; 
+                if (lDcaXiDaughters > 0.3) continue;                                              // in AliCascadeVertexer
+                if (lXiCosineOfPointingAngle < 0.999 ) continue;                                  // in AliCascadeVertexer
+                if (lDcaV0ToPrimVertexXi < 0.05) continue;                                        // in AliCascadeVertexer
+                if (lDcaBachToPrimVertexXi < 0.03) continue;                                      // in AliCascadeVertexer
+                if (lDcaV0DaughtersXi > 1.) continue;                                             // in AliV0vertexer
+                if ((fCollidingSystem == "pp") && (lV0toXiCosineOfPointingAngle < 0.998)) continue; // in AliV0vertexer
+                if ((fCollidingSystem == "pPb") && (lV0CosineOfPointingAngleXi < 0.998)) continue;  // in AliV0vertexer
+                if (lDcaPosToPrimVertexXi < 0.1) continue;                                        // in AliV0vertexer
+                if (lDcaNegToPrimVertexXi < 0.1) continue;                                        // in AliV0vertexer
+                if (lXiRadius < .9) continue;                                                     // in AliCascadeVertexer
+                if (lV0RadiusXi < 0.9) continue;                                                  // in AliV0vertexer
            }
 
-           //----------------------------------------------------------------------------------------------------	
-           // - Around effective masses. Change mass hypotheses to cover all the possibilities:  Xi-/+, Omega -/+
+           //---------------------------------------------------------------------------------------------------	
+           // - Around effective masses. Change mass hypotheses to cover all the possibilities:  Xi-/+, Omega-/+
            if ( bachTrackXi->Charge() < 0 )	{
                 //Calculate the effective mass of the Xi- candidate: Xi- hyp. (pdg code 3312)
                 lV0quality = 0.;
@@ -2217,7 +2216,8 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
     lContainerCutVars[3]  = lXiRadius;
     lContainerCutVars[4]  = lInvMassLambdaAsCascDghter;
     lContainerCutVars[5]  = lDcaV0DaughtersXi;
-    lContainerCutVars[6]  = lV0toXiCosineOfPointingAngle;
+    if (fCollidingSystem == "pp")       lContainerCutVars[6]  = lV0toXiCosineOfPointingAngle;
+    else if (fCollidingSystem == "pPb") lContainerCutVars[6]  = lV0CosineOfPointingAngleXi;
     lContainerCutVars[7]  = lV0RadiusXi;
     lContainerCutVars[8]  = lDcaV0ToPrimVertexXi;	
     lContainerCutVars[9]  = lDcaPosToPrimVertexXi;

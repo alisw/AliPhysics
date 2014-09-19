@@ -56,6 +56,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   SetPeriod(const char *n)               { fPeriod             = n;       }
   void                   SetTriggerBit(const char *tb)          { fTrigBit            = tb;      }
   void                   SetPrimTrackCuts(AliESDtrackCuts *c)   { fPrTrCuts           = c;       }
+  void                   SetComplTrackCuts(AliESDtrackCuts *c)  { fCompTrCuts         = c;       }
   void                   SetTrainMode(Bool_t t)                 { fIsTrain            = t;       }
   void                   SetMcMode(Bool_t mc)                   { fIsMc               = mc;      }
   void                   SetDebugOn(Bool_t d)                   { fDebug              = d;       }
@@ -75,6 +76,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                  SetMinIsoClusE(Double_t emin)           { fMinIsoClusE        = emin;    }
   void                  SetTrCoreRemoval(Bool_t b)              { fTrCoreRem          = b;       }
   void                  SetClusTDiff(Double_t diff)             { fClusTDiff          = diff;    }
+  void                  SetPileUpRejSPD()                       { fPileUpRejSPD       = kTRUE;   }
+  void                  SetDistanceToBadCh(Double_t d)          { fDistToBadChan      = d;       }
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
@@ -84,6 +87,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   AliESDCaloCells       *fESDCells;              //!pointer to EMCal cells, esd
   AliAODCaloCells       *fAODCells;              //!pointer to EMCal cells, aod  
   AliESDtrackCuts       *fPrTrCuts;              //pointer to hold the prim track cuts
+  AliESDtrackCuts       *fCompTrCuts;            //pointer to hold complementary track cuts (a la Gustavo)
   AliEMCALGeometry      *fGeom;                  // geometry utils
   TString                fGeoName;               // geometry name (def = EMCAL_FIRSTYEARV1)
   AliOADBContainer      *fOADBContainer;         //!OADB container used to load misalignment matrices
@@ -121,6 +125,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  fNCuts;                 // number of cuts (QA purposes)
   Bool_t                 fTrCoreRem;             // flag to set the removal of the core in track isolation (true removes it, default)
   Double_t               fClusTDiff;             // variable to hold the time diff between the candidate cluster and the isolation clusters
+  Bool_t                 fPileUpRejSPD;          // flag to set pile-up rejection via SPD (multiple vertices)
+  Double_t               fDistToBadChan;         // distance to bad channel
   
  private:
   AliESDEvent *fESD;      //! ESD object
@@ -181,6 +187,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fTrackPtEta;       //!selected tracks pt vs. eta
   TH2F        *fTrackPtEtaCut;    //!selected tracks pt vs. eta in "triggered event"
   TH2F        *fMaxCellEPhi;      //!max cell energy vs. cell phi
+  TH2F        *fDetaDphiFromTM;   //!dphi vs deta of track->GetEMCALcluster() clusters
 
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented

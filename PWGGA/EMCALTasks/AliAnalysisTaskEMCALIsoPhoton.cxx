@@ -53,6 +53,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fESDCells(0),
   fAODCells(0),
   fPrTrCuts(0),
+  fCompTrCuts(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fOADBContainer(0),
@@ -83,13 +84,15 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fClusIdFromTracks(""),
   fCpvFromTrack(kFALSE),
   fNBinsPt(200),
-  fPtBinLowEdge(-0.25),
-  fPtBinHighEdge(99.75),
+  fPtBinLowEdge(0),
+  fPtBinHighEdge(100),
   fRemMatchClus(kFALSE),
   fMinIsoClusE(0),
   fNCuts(5),
   fTrCoreRem(kFALSE),
   fClusTDiff(30e-9),
+  fPileUpRejSPD(kFALSE),
+  fDistToBadChan(0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -143,7 +146,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fTrackPtPhiCut(0),   
   fTrackPtEta(0),     
   fTrackPtEtaCut(0),
-  fMaxCellEPhi(0)
+  fMaxCellEPhi(0),
+  fDetaDphiFromTM(0)
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -160,6 +164,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fESDCells(0),
   fAODCells(0),
   fPrTrCuts(0),
+  fCompTrCuts(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fOADBContainer(0),
@@ -190,13 +195,15 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fClusIdFromTracks(""),
   fCpvFromTrack(kFALSE),
   fNBinsPt(200),
-  fPtBinLowEdge(-0.25),
-  fPtBinHighEdge(99.75),
+  fPtBinLowEdge(0.),
+  fPtBinHighEdge(100),
   fRemMatchClus(kFALSE),
   fMinIsoClusE(0),
   fNCuts(5),
   fTrCoreRem(kFALSE),
   fClusTDiff(30e-9),
+  fPileUpRejSPD(kFALSE),
+  fDistToBadChan(0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -250,7 +257,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fTrackPtPhiCut(0),   
   fTrackPtEta(0),     
   fTrackPtEtaCut(0),   
-  fMaxCellEPhi(0)
+  fMaxCellEPhi(0),
+  fDetaDphiFromTM(0)
 {
   // Constructor
 
@@ -394,13 +402,13 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fEmcNClus = new TH1F("fEmcNClus",";n/event;count",120,-0.5,119.5);    
   fEmcNClus->Sumw2();
   fQAList->Add(fEmcNClus);
-  fEmcNClusCut = new TH1F("fEmcNClusCut",";n/event;count",120,-0.5,119.5); 
+  fEmcNClusCut = new TH1F("fEmcNClusCut",Form("(at least one E_{clus}>%1.1f);n/event;count",fECut),120,-0.5,119.5); 
   fEmcNClusCut->Sumw2();
   fQAList->Add(fEmcNClusCut);
-  fNTracksECut = new TH1F("fNTracksECut",";n/event;count",120,-0.5,119.5); 
+  fNTracksECut = new TH1F("fNTracksECut",Form("(at least one E_{clus}>%1.1f);n/event;count",fECut),120,-0.5,119.5); 
   fNTracksECut->Sumw2();
   fQAList->Add(fNTracksECut);
-  fEmcNCellsCut = new TH1F("fEmcNCellsCut",";n/event;count",120,-0.5,119.5);
+  fEmcNCellsCut = new TH1F("fEmcNCellsCut",Form("(at least one E_{clus}>%1.1f);n/event;count",fECut),120,-0.5,119.5);
   fEmcNCellsCut->Sumw2();
   fQAList->Add(fEmcNCellsCut);
   fEmcClusETM1 = new TH1F("fEmcClusETM1","(method clus->GetTrackDx,z);GeV;counts",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge);
@@ -415,25 +423,25 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fEmcClusEPhi = new TH2F("fEmcClusEPhi",";GeV;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,63,0,6.3);    
   fEmcClusEPhi->Sumw2();
   fQAList->Add(fEmcClusEPhi);
-  fEmcClusEPhiCut = new TH2F("fEmcClusEPhiCut",";GeV;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,63,0,6.3); 
+  fEmcClusEPhiCut = new TH2F("fEmcClusEPhiCut",Form("(at least one E_{clus}>%1.1f);GeV;#phi",fECut),fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,63,0,6.3); 
   fEmcClusEPhiCut->Sumw2();
   fQAList->Add(fEmcClusEPhiCut);
   fEmcClusEEta = new TH2F("fEmcClusEEta",";GeV;#eta",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,19,-0.9,0.9);    
   fEmcClusEEta->Sumw2();
   fQAList->Add(fEmcClusEEta);
-  fEmcClusEEtaCut = new TH2F("fEmcClusEEtaCut",";GeV;#eta",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,18,-0.9,0.9); 
+  fEmcClusEEtaCut = new TH2F("fEmcClusEEtaCut",Form("(at least one E_{clus}>%1.1f);GeV;#eta",fECut),fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,18,-0.9,0.9); 
   fEmcClusEEtaCut->Sumw2();
   fQAList->Add(fEmcClusEEtaCut);
   fTrackPtPhi = new TH2F("fTrackPtPhi",";p_{T} [GeV/c];#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,63,0,6.3);     
   fTrackPtPhi->Sumw2();
   fQAList->Add(fTrackPtPhi);
-  fTrackPtPhiCut = new TH2F("fTrackPtPhiCut",";p_{T} [GeV/c];#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,63,0,6.3);     
+  fTrackPtPhiCut = new TH2F("fTrackPtPhiCut",Form("(at least one E_{clus}>%1.1f);p_{T} [GeV/c];#phi",fECut),fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,63,0,6.3);     
   fTrackPtPhiCut->Sumw2();
   fQAList->Add(fTrackPtPhiCut);
   fTrackPtEta = new TH2F("fTrackPtEta",";p_{T} [GeV/c];#eta",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,18,-0.9,0.9);     
   fTrackPtEta->Sumw2();
   fQAList->Add(fTrackPtEta);
-  fTrackPtEtaCut = new TH2F("fTrackPtEtaCut",";p_{T} [GeV/c];#eta",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,18,-0.9,0.9);     
+  fTrackPtEtaCut = new TH2F("fTrackPtEtaCut",Form("(at least one E_{clus}>%1.1f);p_{T} [GeV/c];#eta",fECut),fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,18,-0.9,0.9);     
   fTrackPtEtaCut->Sumw2();
   fQAList->Add(fTrackPtEtaCut);
   fEmcClusEClusCuts = new TH2F("fEmcClusEClusCuts",";GeV;cut",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,fNCuts,-0.5,fNCuts-0.5);
@@ -443,6 +451,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fMaxCellEPhi = new TH2F("fMaxCellEPhi","Most energetic cell in event; GeV;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,63,0,6.3); 
   fMaxCellEPhi->Sumw2();
   fQAList->Add(fMaxCellEPhi);
+
+  fDetaDphiFromTM = new TH2F("fDetaDphiFromTM","d#phi vs. d#eta of clusters from track->GetEMCALcluster();d#eta;d#phi",100,-0.05,0.05,200,-0.1,0.1);
+  fDetaDphiFromTM->Sumw2();
+  fQAList->Add(fDetaDphiFromTM);
 
   PostData(1, fOutputList);
   PostData(2, fQAList);
@@ -541,6 +553,11 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     printf("passed vertex cut\n");
 
   fEvtSel->Fill(1);
+  if(fVEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.) && fPileUpRejSPD){
+    if(fDebug)
+      printf("Event is SPD pile-up!***\n");
+    return;
+  }
   if(fESD)
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("Tracks"));
   if(fAOD)
@@ -566,6 +583,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       if(esdTrack->GetEMCALcluster()>0)
 	fClusIdFromTracks.Append(Form("%d ",esdTrack->GetEMCALcluster()));
       if (fPrTrCuts && fPrTrCuts->IsSelected(track)){
+	fSelPrimTracks->Add(track);
+      } else if(fCompTrCuts && fCompTrCuts->IsSelected(track)) {
 	fSelPrimTracks->Add(track);
       }
     }
@@ -611,7 +630,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       for(int nk=0;nk<l->GetEntries();nk++){
 	  TObject *obj = (TObject*)l->At(nk);
 	  TString oname = obj->GetName();
-	  if(oname.Contains("lus"))
+	  //if(oname.Contains("lus"))
 	    printf("Object %d has a clus array named %s +++++++++\n",nk,oname.Data());
 	}
     }
@@ -721,6 +740,11 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     if(IsExotic(c)){
       if(fDebug)
 	printf("cluster is exotic! xxxx\n");
+      continue;
+    }
+    if(c->GetDistanceToBadChannel()<fDistToBadChan){
+      if(fDebug)
+	printf("cluster distance to bad channel is %1.1f (<%1.1f) xxxx\n",c->GetDistanceToBadChannel(),fDistToBadChan);
       continue;
     }
     Short_t id;
@@ -1490,8 +1514,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
       continue;
     fEmcClusNotExo->Fill(c->E());
     fEmcClusEClusCuts->Fill(c->E(),1);
-    if(fClusIdFromTracks.Contains(Form("%d",ic)))
+    if(fClusIdFromTracks.Contains(Form("%d",ic))){
       fEmcClusETM2->Fill(c->E());
+      fDetaDphiFromTM->Fill(c->GetTrackDz(),c->GetTrackDx());
+    }
     if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
       fEmcClusETM1->Fill(c->E());
       continue;
@@ -1522,9 +1548,9 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::GetTrackMatchedPt(Int_t matchIndex)
     return pt;
   }
   if(fESD){
-    if(!fPrTrCuts)
+    if(!fPrTrCuts && !fCompTrCuts)
       return pt;
-    if(!fPrTrCuts->IsSelected(track))
+    if(!fPrTrCuts->IsSelected(track) && !fCompTrCuts->IsSelected(track))
       return pt;
     pt = track->Pt();
   }

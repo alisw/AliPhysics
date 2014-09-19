@@ -1,5 +1,6 @@
 AliAnalysisTaskJetShapeConst *AddTaskJetShapeConst(const char * njetsBase,
 						   const char * njetsSub,
+						   const char * njetsNoEmb,
 						   const Double_t R,
 						   const char * nrhoBase,
 						   const char * nrhoMass,
@@ -61,6 +62,16 @@ AliAnalysisTaskJetShapeConst *AddTaskJetShapeConst(const char * njetsBase,
     jetContSub->ConnectClusterContainer(clusterCont);
     jetContSub->SetPercAreaCut(0.6);
     jetContSub->SetJetPtCut(-1e6);
+  }
+
+  AliJetContainer *jetContNoEmb = task->AddJetContainer(njetsNoEmb,strType,R);
+  if(jetContNoEmb) {
+    jetContNoEmb->SetRhoName(nrhoBase);
+    jetContNoEmb->SetRhoMassName(nrhoMass);
+    jetContNoEmb->ConnectParticleContainer(trackCont);
+    jetContNoEmb->ConnectClusterContainer(clusterCont);
+    jetContNoEmb->SetPercAreaCut(0.6);
+    jetContNoEmb->SetJetPtCut(-1e6);
   }
 
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());

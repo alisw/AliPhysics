@@ -141,6 +141,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Int_t * GetAcceptedHeaderEnd(){return fNotRejectedEnd;}
 		TList* GetAcceptedHeader(){return fHeaderList;}
 		
+		
 		// Eta shift Setting
 		void SetEtaShift(Double_t etaShift) {
 			fEtaShift = etaShift;
@@ -165,6 +166,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t SetSelectSpecialTrigger(Int_t selectSpecialTrigger);
 		Bool_t SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
 		Bool_t SetRejectExtraSignalsCut(Int_t extraSignal);
+		void SetV0ReaderName(TString name) {fV0ReaderName = name;}
 		
 	protected:
 		TList 				*fHistograms;
@@ -224,10 +226,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		TString 			fSpecialTriggerName; 					// Name of the Special Triggers
 		TString 			fSpecialSubTriggerName; 				// Name of the Special Triggers
 		Int_t 				fNSpecialSubTriggerOptions;
+		TString 			fV0ReaderName;							// Name of V0Reader
+		
 		
 	private:
 
-		ClassDef(AliConvEventCuts,1)
+		ClassDef(AliConvEventCuts,2)
 };
 
 

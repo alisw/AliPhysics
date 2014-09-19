@@ -173,9 +173,9 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
   const Double_t minArea = 0.;
   const Double_t maxArea = 1.;
 
-  const Int_t nBinsNConst = 100;
+  const Int_t nBinsNConst = 200;
   const Double_t minNConst = 0.;
-  const Double_t maxNConst = 500.;
+  const Double_t maxNConst = 200.;
 
   TString histName = "";
   TString histTitle = "";

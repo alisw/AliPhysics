@@ -828,10 +828,9 @@ AliFemtoEvent* AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if(aodv0->GetCharge()!=0) continue;
       if(aodv0->ChargeProng(0)==aodv0->ChargeProng(1)) continue;
       if(aodv0->CosPointingAngle(fV1)<0.998) continue;
-      AliFemtoV0* trackCopyV0 = new AliFemtoV0();
-      count_pass++;
-      trackCopyV0 = CopyAODtoFemtoV0(aodv0);
+      AliFemtoV0* trackCopyV0 = CopyAODtoFemtoV0(aodv0);
       tEvent->V0Collection()->push_back(trackCopyV0);
+      count_pass++;
       //cout<<"Pushback v0 to v0collection"<<endl;
     }
   }
@@ -1587,7 +1586,7 @@ bool AliFemtoEventReaderAOD::RejectEventCentFlat(float MagField, float CentPerce
                              {.828,.793,.776,.772,.775,.796,.788,.804,.839}};
   int weightBinCent = (int) CentPercent;
   if(fRandomNumber->Rndm() > kCentWeight[weightBinSign][weightBinCent]) RejectEvent = kTRUE;
-
+  delete fRandomNumber;
   return RejectEvent;
 }
 

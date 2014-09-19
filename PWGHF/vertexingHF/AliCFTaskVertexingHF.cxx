@@ -107,6 +107,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseZWeight(kFALSE),
   fUseNchWeight(kFALSE),
   fUseTrackletsWeight(kFALSE),
+  fUseMultRatioAsWeight(kFALSE),
   fNvar(0),
   fPartName(""),
   fDauNames(""),
@@ -165,6 +166,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseZWeight(kFALSE),
   fUseNchWeight(kFALSE),
   fUseTrackletsWeight(kFALSE),
+  fUseMultRatioAsWeight(kFALSE),
   fNvar(0),
   fPartName(""),
   fDauNames(""),
@@ -254,6 +256,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseZWeight(c.fUseZWeight),
   fUseNchWeight(c.fUseNchWeight),
   fUseTrackletsWeight(c.fUseTrackletsWeight),
+  fUseMultRatioAsWeight(c.fUseMultRatioAsWeight),
   fNvar(c.fNvar),
   fPartName(c.fPartName),
   fDauNames(c.fDauNames),
@@ -1560,7 +1563,7 @@ Double_t AliCFTaskVertexingHF::GetNchWeight(Int_t nch){
   Double_t pMeas=fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nch));
   Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nch));
   Double_t weight = pMC>0 ? pMeas/pMC : 0.;
-  if(fUseTrackletsWeight)  weight = pMC;
+  if(fUseMultRatioAsWeight)  weight = pMC;
   return weight;
 }
 //__________________________________________________________________________________________________

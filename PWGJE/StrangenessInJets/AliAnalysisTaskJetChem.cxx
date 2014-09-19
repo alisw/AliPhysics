@@ -1247,9 +1247,9 @@ void AliAnalysisTaskJetChem::AliFragFuncHistosInvMass::FillFF(Float_t trackPt, F
  
   if(incrementJetPt) fh1JetPt->Fill(jetPt);    
   //fh3TrackPt->Fill(jetPt,invM,trackPt);//Fill(x,y,z)
-  //  invM = 0;
-  //  Double_t z = 0.;
-  // if(jetPt>0) z = trackPt / jetPt;
+  invM = 0;
+  Double_t z = 0.;
+  if(jetPt>0) z = trackPt / jetPt;
   // Double_t xi = 0;
   //if(z>0) xi = TMath::Log(1/z);
   
@@ -1638,10 +1638,10 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1IMLaConeSmear                = new TH1F("fh1IMLaConeSmear","Smeared jet pt study for La-in-cone-jets; smeared jet #it{p}_{T}", 19,5.,100.);
   fh1IMALaConeSmear               = new TH1F("fh1IMALaConeSmear","Smeared jet pt study for ALa-in-cone-jets; smeared jet #it{p}_{T}", 19,5.,100.);
   
-  fh2CorrHijingLaProton           = new TH2F("fh2CorrHijingLaProton","#Lambda - proton pT correlation, Hijing;#it{p^{#Lambda}}_{T} (GeV/c);#it{p^{proton}}_{T} (GeV/c)",20,0.,20.,20,0.,20.);        
-  fh2CorrInjectLaProton           = new TH2F("fh2CorrInjectLaProton","#Lambda - proton pT correlation, Injected;#it{p^{#Lambda}}_{T} (GeV/c);#it{p^{proton}}_{T} (GeV/c)",20,0.,20.,20,0.,20.);
-  fh2CorrHijingALaAProton         = new TH2F("fh2CorrHijingALaAProton","#bar{#Lambda} - proton pT correlation, Hijing;#it{p^{#Lambda}}_{T} (GeV/c);#it{p^{#bar{proton}}}_{T} (GeV/c)",20,0.,20.,20,0.,20.);        
-  fh2CorrInjectALaAProton         = new TH2F("fh2CorrInjectALaAProton","#bar{#Lambda} - proton pT correlation, Injected;#it{p^{#Lambda}}_{T} (GeV/c);#it{p^{#bar{proton}}}_{T} (GeV/c)",20,0.,20.,20,0.,20.);
+  fh2CorrHijingLaProton           = new TH2F("fh2CorrHijingLaProton","#Lambda - proton pT correlation, Hijing;#it{p^{#Lambda}}_{T} (GeV/c);#it{p^{proton}}_{T} (GeV/c)",120,0.,12.,120,0.,12.);        
+  fh2CorrInjectLaProton           = new TH2F("fh2CorrInjectLaProton","#Lambda - proton pT correlation, Injected;#it{p^{#Lambda}}_{T} (GeV/c);#it{p^{proton}}_{T} (GeV/c)",120,0.,12.,120,0.,12.);
+  fh2CorrHijingALaAProton         = new TH2F("fh2CorrHijingALaAProton","#bar{#Lambda} - proton pT correlation, Hijing;#it{p^{#Lambda}}_{T} (GeV/c);#it{p^{#bar{proton}}}_{T} (GeV/c)",120,0.,12.,120,0.,12.);        
+  fh2CorrInjectALaAProton         = new TH2F("fh2CorrInjectALaAProton","#bar{#Lambda} - proton pT correlation, Injected;#it{p^{#Lambda}}_{T} (GeV/c);#it{p^{#bar{proton}}}_{T} (GeV/c)",120,0.,12.,120,0.,12.);
   //12 new histograms: Cone, Incl, Lambda, Antilambda, Hijing, Injected:
    
   fh2MCEtaVsPtHijingLa              = new TH2F("fh2MCEtaVsPtHijingLa","MC Hijing gen. #Lambda #eta; #it{p}_{T}",200,0.,20.,200,-1.,1.);
@@ -2384,7 +2384,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       }
       
       if(istrackInject == kTRUE){
-	fh2MCEtaVsPtHijingLa->Fill(fPtCurrentPart,fEtaCurrentPart);
+	fh2MCEtaVsPtInjectLa->Fill(fPtCurrentPart,fEtaCurrentPart);
       }  
       
     }//end of the loop
@@ -2404,11 +2404,28 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       //Double_t fRapCurrentPart   = MyRapidity(mcp0->E(),mcp0->Pz());
       Double_t fEtaCurrentPart   = mcp0->Eta();
       Double_t fPtCurrentPart    = mcp0->Pt();
-      
+      TString generatorName;
+
       fh1MCEtaAntiLambda->Fill(fEtaCurrentPart); 
       //fh1MCRapAntiLambda->Fill(fRapCurrentPart);
       fh1MCPtAntiLambda->Fill(fPtCurrentPart);	  
       fh2MCEtaVsPtALa->Fill(fPtCurrentPart,fEtaCurrentPart);                  //eta cut, physical primary selection and decay mode considered
+
+
+      Int_t mcp0label = mcp0->GetLabel();
+      Bool_t istrackInject = IsTrackInjected(mcp0label, mcHdr, stackMC, generatorName);  
+    
+      //std::cout<<"generatorName: "<<generatorName<<std::endl;
+
+
+      if(generatorName == "Hijing"){
+	fh2MCEtaVsPtHijingALa->Fill(fPtCurrentPart,fEtaCurrentPart);
+      }
+      
+      if(istrackInject == kTRUE){
+	fh2MCEtaVsPtInjectALa->Fill(fPtCurrentPart,fEtaCurrentPart);
+      }  
+
 	
     }//end of the loop
 
