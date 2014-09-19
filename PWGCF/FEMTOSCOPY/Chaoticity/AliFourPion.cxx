@@ -579,7 +579,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fEvt = obj.fEvt;
   fTempStruct = obj.fTempStruct;
   fRandomNumber = obj.fRandomNumber;
-  fLEGO = fLEGO;
+  fLEGO = obj.fLEGO;
   fMCcase = obj.fMCcase;
   fAODcase = obj.fAODcase;
   fCollisionType = obj.fCollisionType; 
@@ -786,7 +786,7 @@ AliFourPion::~AliFourPion()
       if(ExchangeAmpPointSource[i][j]) delete ExchangeAmpPointSource[i][j];
     }
   }
-  
+ 
 }
 //________________________________________________________________________
 void AliFourPion::ParInit()
@@ -919,7 +919,7 @@ void AliFourPion::ParInit()
   
 
   // Pair-Exchange amplitudes from c3 fits
-  TString *EWequation = new TString("[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))");
+  TString *EWequation = new TString("[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))");
   TString *LGequation = new TString("[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))");
 
   ExchangeAmpFullSource[0] = new TF1("ExchangeAmpFullSourceEW",EWequation->Data(), 0.,1.0);// Edgeworth
@@ -934,21 +934,21 @@ void AliFourPion::ParInit()
     }
   }
   // Expansion fit parameters: PbPb, pPb, pp
-  Float_t EWParam1Full[3]={0.96827, 0.96827, 0.96827};// PbPb, pPb, pp
-  Float_t EWParam2Full[3]={10.1674, 2.0, 2.0};
-  Float_t EWParam3Full[3]={1.03190e-01, 1.03190e-01, 1.03190e-01};
-  Float_t EWParam4Full[3]={1.84217e-01, 1.84217e-01, 1.84217e-01};
-  Float_t EWParam5Full[3]={0};
+  Float_t EWParam1Full[3]={1.00746, 1.04269, 1.13887};// (lam_3 / 2)^{1/3}
+  Float_t EWParam2Full[3]={1.16820e+01, 2.77982, 2.24686};// Radius
+  Float_t EWParam3Full[3]={2.02382e-01, 2.73547e-01, 3.20273e-01};// kappa3
+  Float_t EWParam4Full[3]={1.43395e-01, 2.41378e-01, 1.49935e-01};// kappa4
+  Float_t EWParam5Full[3]={0};// kappa5
   Float_t EWParam1Point[3][50]={{0}};
   Float_t EWParam2Point[3][50]={{0}};
   Float_t EWParam3Point[3][50]={{0}};
   Float_t EWParam4Point[3][50]={{0}};
   Float_t EWParam5Point[3][50]={{0}};
-  Float_t LGParam1Full[3]={1.3848, 1.3848, 1.3848};
-  Float_t LGParam2Full[3]={24.9985, 4.0, 4.0};
-  Float_t LGParam3Full[3]={1.99598e-01, 1.99598e-01, 1.99598e-01};
-  Float_t LGParam4Full[3]={-7.55834e-02, -7.55834e-02, -7.55834e-02};
-  Float_t LGParam5Full[3]={-8.81810e-03, -8.81810e-03, -8.81810e-03};
+  Float_t LGParam1Full[3]={0.854617, 0.95057, 0.908581};// (lam_3 / 2)^{1/3}
+  Float_t LGParam2Full[3]={1.06967e+01, 2.7007, 1.68574};// Radius
+  Float_t LGParam3Full[3]={-4.44702e-01, -2.24353e-01, -1.92821e-01};// l1
+  Float_t LGParam4Full[3]={-7.98543e-05, 9.16278e-02, 2.57693e-01};// l2
+  Float_t LGParam5Full[3]={0};// l3
   Float_t LGParam1Point[3][50]={{0}};
   Float_t LGParam2Point[3][50]={{0}};
   Float_t LGParam3Point[3][50]={{0}};
@@ -3164,7 +3164,7 @@ void AliFourPion::UserExec(Option_t *)
 		    
 		    QinvMCGroup4[0] = qinv12MC; QinvMCGroup4[1] = qinv13MC; QinvMCGroup4[2] = qinv14MC;
 		    QinvMCGroup4[3] = qinv23MC; QinvMCGroup4[4] = qinv24MC; QinvMCGroup4[5] = qinv34MC;
-		    		  
+		    	  
 		  }
 		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6){
 		    ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(1, qinv12); ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(2, qinv13); 
@@ -3347,13 +3347,14 @@ void AliFourPion::UserExec(Option_t *)
 			      T24 = sqrt(weight24CC[2] / (1-G*G));
 			      T34 = sqrt(weight34CC[2] / (1-G*G));
 			    }else{
-			      T12 = ExchangeAmpFullSource[type-1]->Eval(qinv12) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
-			      T13 = ExchangeAmpFullSource[type-1]->Eval(qinv13) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
-			      T14 = ExchangeAmpFullSource[type-1]->Eval(qinv14) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
-			      T23 = ExchangeAmpFullSource[type-1]->Eval(qinv23) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
-			      T24 = ExchangeAmpFullSource[type-1]->Eval(qinv24) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
-			      T34 = ExchangeAmpFullSource[type-1]->Eval(qinv34) / pow( pow(1-G,3) + 3*G*pow(1-G,2), 1/3.);
+			      T12 = ExchangeAmpFullSource[type-1]->Eval(qinv12) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
+			      T13 = ExchangeAmpFullSource[type-1]->Eval(qinv13) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
+			      T14 = ExchangeAmpFullSource[type-1]->Eval(qinv14) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
+			      T23 = ExchangeAmpFullSource[type-1]->Eval(qinv23) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
+			      T24 = ExchangeAmpFullSource[type-1]->Eval(qinv24) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
+			      T34 = ExchangeAmpFullSource[type-1]->Eval(qinv34) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
 			    }
+			 
 			    weightTotal = (1-G*G)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
 			    weightTotal += (4*G*pow(1-G,3)+pow(1-G,4))*(pow(T12,2)*pow(T34,2) + pow(T13,2)*pow(T24,2) + pow(T14,2)*pow(T23,2));// 2-pair
 			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(T12*T13*T23);// 3-pion
@@ -4654,24 +4655,3 @@ Float_t AliFourPion::nCubicInterpolate (Int_t n, Float_t* p, Float_t coordinates
     return cubicInterpolate(arr, *coordinates);
   }
 }
-//__________________________________________________________________________
-/*Double_t AliFourPion::functionEW(Double_t *x, Double_t *par)
-{
-  double arg = x[0]*par[1]/FmToGeV;
-  double EW = 1;
-  EW += par[2]/(6.*pow(2,1.5))*(8*pow(arg,3) - 12*pow(arg,1));
-  EW += par[3]/(24.*pow(2,2))*(16*pow(arg,4) -48*pow(arg,2) + 12);
-  EW += par[4]/(120.*pow(2,2.5))*(32.*pow(arg,5) - 160.*pow(arg,3) + 120*arg);
-  return par[0]*exp(-pow(arg,2)/2.)*EW;
-}
-//__________________________________________________________________________
-Double_t AliFourPion::functionLG(Double_t *x, Double_t *par)
-{
-  double arg = x[0]*par[1]/FmToGeV;
-  double LG = 1; 
-  LG += par[2]*(arg - 1);
-  LG += par[3]/2.*(pow(arg,2) - 4*arg + 2);
-  LG += par[4]/6.*(-pow(arg,3) + 9*pow(arg,2) - 18*arg + 6);
-  return  par[0]*exp(-arg/2.)*LG;
-}
-*/

@@ -63,7 +63,7 @@ using std::endl;
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP() 
 : AliAnalysisTaskSE(), 
   fisPrimCut(kFALSE),
-  fptc(2),     
+  fptc(3),     
   fListHist(0), 
   fHistEventMultiplicity(0), 
   fHistTrackMultiplicity(0),
@@ -129,7 +129,7 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name) 
 : AliAnalysisTaskSE(name), 
   fisPrimCut(kFALSE),
-  fptc(2),     
+  fptc(3),     
   fListHist(0), 
   fHistEventMultiplicity(0), 
   fHistTrackMultiplicity(0),
@@ -667,6 +667,9 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
     Float_t  mass  = -99;
     Double_t pt  = esdtrack->Pt();
 
+    if(fptc==3)
+      pt = 2*pt;
+
     if(TMath::Abs(ptot) < pmax && TMath::Abs(pullTPC) <= 3 && TMath::Abs(pt) < ptmax){
 
       fhBBDeu->Fill(ptot*esdtrack->GetSign(),TPCSignal);
@@ -680,8 +683,18 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
 	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
 	
 	fhTOF->Fill(ptot*esdtrack->GetSign(),beta);
-	if(TMath::Abs(mass) > 2.7)continue;
-	if(TMath::Abs(mass) < 1. )continue;
+	if(fptc==1){
+	  if(TMath::Abs(mass) > 2.7)continue;
+	  if(TMath::Abs(mass) < 1. )continue;
+	}
+	if(fptc==2){
+	  if(TMath::Abs(mass) > 5.0)continue;
+	  if(TMath::Abs(mass) < 1.8 )continue;
+	}
+	if(fptc==3){
+	  if(TMath::Abs(mass) > 5.0)continue;
+	  if(TMath::Abs(mass) < 1.8 )continue;
+	}
 	fhMassTOF->Fill(mass);
       }
    

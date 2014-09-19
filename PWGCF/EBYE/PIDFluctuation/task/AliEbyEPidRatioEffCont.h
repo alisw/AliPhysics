@@ -26,8 +26,10 @@ class AliEbyEPidRatioEffCont: public AliEbyEPidRatioBase {
   AliEbyEPidRatioEffCont();
   virtual ~AliEbyEPidRatioEffCont();
   virtual void Process();
-  THnSparseF* GetHnEff()  {return fHnEff;}
-  THnSparseF* GetHnCont() {return fHnCont;}
+  THnSparseF* GetHnEffMc()  {return fHnEffMc;}
+  THnSparseF* GetHnContMc() {return fHnContMc;}
+  THnSparseF* GetHnEffRec()  {return fHnEffRec;}
+  THnSparseF* GetHnContRec() {return fHnContRec;}
 
  private:
 
@@ -44,8 +46,10 @@ class AliEbyEPidRatioEffCont: public AliEbyEPidRatioBase {
   void CheckContTrack(AliVTrack* track, Int_t iPid, Int_t gPdgCode);
     
   Int_t            ***fLabelsRec;             //! 2x nTracks large array with labels for MC particles
-  THnSparseF         *fHnEff;                 //  THnSparseF efficiency 
-  THnSparseF         *fHnCont;                //  THnSparseF contamination
+  THnSparseF         *fHnEffMc;                 //  THnSparseF efficiency 
+  THnSparseF         *fHnContMc;                //  THnSparseF contamination
+  THnSparseF         *fHnEffRec;                 //  THnSparseF efficiency 
+  THnSparseF         *fHnContRec;                //  THnSparseF contamination
   
   ClassDef(AliEbyEPidRatioEffCont, 1);
 };

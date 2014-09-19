@@ -53,6 +53,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fESDCells(0),
   fAODCells(0),
   fPrTrCuts(0),
+  fCompTrCuts(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fOADBContainer(0),
@@ -83,14 +84,15 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fClusIdFromTracks(""),
   fCpvFromTrack(kFALSE),
   fNBinsPt(200),
-  fPtBinLowEdge(-0.25),
-  fPtBinHighEdge(99.75),
+  fPtBinLowEdge(0),
+  fPtBinHighEdge(100),
   fRemMatchClus(kFALSE),
   fMinIsoClusE(0),
   fNCuts(5),
   fTrCoreRem(kFALSE),
   fClusTDiff(30e-9),
   fPileUpRejSPD(kFALSE),
+  fDistToBadChan(0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -144,7 +146,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fTrackPtPhiCut(0),   
   fTrackPtEta(0),     
   fTrackPtEtaCut(0),
-  fMaxCellEPhi(0)
+  fMaxCellEPhi(0),
+  fDetaDphiFromTM(0)
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -161,6 +164,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fESDCells(0),
   fAODCells(0),
   fPrTrCuts(0),
+  fCompTrCuts(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fOADBContainer(0),
@@ -191,14 +195,15 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fClusIdFromTracks(""),
   fCpvFromTrack(kFALSE),
   fNBinsPt(200),
-  fPtBinLowEdge(-0.25),
-  fPtBinHighEdge(99.75),
+  fPtBinLowEdge(0.),
+  fPtBinHighEdge(100),
   fRemMatchClus(kFALSE),
   fMinIsoClusE(0),
   fNCuts(5),
   fTrCoreRem(kFALSE),
   fClusTDiff(30e-9),
   fPileUpRejSPD(kFALSE),
+  fDistToBadChan(0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -252,7 +257,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fTrackPtPhiCut(0),   
   fTrackPtEta(0),     
   fTrackPtEtaCut(0),   
-  fMaxCellEPhi(0)
+  fMaxCellEPhi(0),
+  fDetaDphiFromTM(0)
 {
   // Constructor
 
@@ -446,6 +452,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fMaxCellEPhi->Sumw2();
   fQAList->Add(fMaxCellEPhi);
 
+  fDetaDphiFromTM = new TH2F("fDetaDphiFromTM","d#phi vs. d#eta of clusters from track->GetEMCALcluster();d#eta;d#phi",100,-0.05,0.05,200,-0.1,0.1);
+  fDetaDphiFromTM->Sumw2();
+  fQAList->Add(fDetaDphiFromTM);
+
   PostData(1, fOutputList);
   PostData(2, fQAList);
 }
@@ -573,6 +583,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       if(esdTrack->GetEMCALcluster()>0)
 	fClusIdFromTracks.Append(Form("%d ",esdTrack->GetEMCALcluster()));
       if (fPrTrCuts && fPrTrCuts->IsSelected(track)){
+	fSelPrimTracks->Add(track);
+      } else if(fCompTrCuts && fCompTrCuts->IsSelected(track)) {
 	fSelPrimTracks->Add(track);
       }
     }
@@ -728,6 +740,11 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     if(IsExotic(c)){
       if(fDebug)
 	printf("cluster is exotic! xxxx\n");
+      continue;
+    }
+    if(c->GetDistanceToBadChannel()<fDistToBadChan){
+      if(fDebug)
+	printf("cluster distance to bad channel is %1.1f (<%1.1f) xxxx\n",c->GetDistanceToBadChannel(),fDistToBadChan);
       continue;
     }
     Short_t id;
@@ -1497,8 +1514,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
       continue;
     fEmcClusNotExo->Fill(c->E());
     fEmcClusEClusCuts->Fill(c->E(),1);
-    if(fClusIdFromTracks.Contains(Form("%d",ic)))
+    if(fClusIdFromTracks.Contains(Form("%d",ic))){
       fEmcClusETM2->Fill(c->E());
+      fDetaDphiFromTM->Fill(c->GetTrackDz(),c->GetTrackDx());
+    }
     if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
       fEmcClusETM1->Fill(c->E());
       continue;
@@ -1529,9 +1548,9 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::GetTrackMatchedPt(Int_t matchIndex)
     return pt;
   }
   if(fESD){
-    if(!fPrTrCuts)
+    if(!fPrTrCuts && !fCompTrCuts)
       return pt;
-    if(!fPrTrCuts->IsSelected(track))
+    if(!fPrTrCuts->IsSelected(track) && !fCompTrCuts->IsSelected(track))
       return pt;
     pt = track->Pt();
   }

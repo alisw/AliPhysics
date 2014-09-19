@@ -9,9 +9,7 @@
 #define AliJetFlowTools_H
 
 // root forward declarations
-class TF1;
 class TF2;
-class TH1D;
 class TH2D;
 class TCanvas;
 class TString;
@@ -32,6 +30,8 @@ class AliUnfolding;
 #include "TPaveText.h"
 #include "TLegend.h"
 #include "TLatex.h"
+#include "TF1.h"
+#include "TH1D.h"
 //_____________________________________________________________________________
 class AliJetFlowTools {
     public: 
@@ -50,7 +50,8 @@ class AliJetFlowTools {
         enum prior {                    // prior that is used for unfolding
             kPriorChi2,                 // prior from chi^2 method
             kPriorMeasured,             // use measured spectrum as prior
-            kPriorPythia };             // use pythia spectrum as prior
+            kPriorPythia,               // use pythia spectrum as prior
+            kPriorTF1 };                // use properly binned TF1 as prior
         enum histoType {                // histogram identifier, only used internally
             kInPlaneSpectrum,           // default style for spectrum
             kOutPlaneSpectrum,
@@ -115,6 +116,13 @@ class AliJetFlowTools {
         void            SetAvoidRoundingError(Bool_t r)         {fAvoidRoundingError    = r;}
         void            SetUnfoldingAlgorithm(unfoldingAlgorithm ua)    {fUnfoldingAlgorithm                    = ua;}
         void            SetPrior(prior p)                       {fPrior                 = p;}
+        void            SetPrior(prior p, TF1* function, TArrayD* bins) {
+            fPrior = p;
+            // set prior to value supplied in TF1
+            fPriorUser = new TH1D("prior_user", "prior_user", bins->GetSize()-1, bins->GetArray());
+            // loop over bins and fill the histo from the tf1
+            for(Int_t i(0); i < fPriorUser->GetNbinsX() + 1; i++) fPriorUser->SetBinContent(i, function->Integral(fPriorUser->GetXaxis()->GetBinLowEdge(i), fPriorUser->GetXaxis()->GetBinUpEdge(i))/fPriorUser->GetXaxis()->GetBinWidth(i));
+        }
         void            SetPrior(prior p, TH1D* spectrum)       {fPrior                 = p; fPriorUser         = spectrum;}
         void            SetNormalizeSpectra(Bool_t b)           {fNormalizeSpectra      = b;}
         void            SetNormalizeSpectra(Int_t e)            { // use to normalize to this no of events

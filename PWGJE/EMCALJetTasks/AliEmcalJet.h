@@ -210,6 +210,17 @@ class AliEmcalJet : public AliVParticle
   Double_t          GetFirstOrderSubtractedCircularity()      const { return fJetShapeCircularityFirstSub             ; }
   Double_t          GetSecondOrderSubtractedCircularity()     const { return fJetShapeCircularitySecondSub            ; }
 
+  //Sigma2
+  void              SetFirstDerivativeSigma2(Double_t d)            { fJetShapeSigma2FirstDer = d                     ; }
+  void              SetSecondDerivativeSigma2(Double_t d)           { fJetShapeSigma2SecondDer = d                    ; }
+  void              SetFirstOrderSubtractedSigma2(Double_t d)       { fJetShapeSigma2FirstSub = d                     ; }
+  void              SetSecondOrderSubtractedSigma2(Double_t d)      { fJetShapeSigma2SecondSub = d                    ; }
+  Double_t          GetFirstDerivativeSigma2()           const      { return fJetShapeSigma2FirstDer                  ; }
+  Double_t          GetSecondDerivativeSigma2()          const      { return fJetShapeSigma2SecondDer                 ; }
+  Double_t          GetFirstOrderSubtractedSigma2()      const      { return fJetShapeSigma2FirstSub                  ; }
+  Double_t          GetSecondOrderSubtractedSigma2()     const      { return fJetShapeSigma2SecondSub                 ; }
+
+
   //number of contituents
   void              SetFirstDerivativeConstituent(Double_t d)       { fJetShapeConstituentFirstDer = d                ; }
   void              SetSecondDerivativeConstituent(Double_t d)      { fJetShapeConstituentSecondDer = d               ; }
@@ -287,6 +298,11 @@ class AliEmcalJet : public AliVParticle
   Double_t          fJetShapeCircularityFirstSub;  //!   result from shape derivatives for jet circularity: 1st order subtracted
   Double_t          fJetShapeCircularitySecondSub; //!   result from shape derivatives for jetcircularity: 2nd order subtracted
 
+  Double_t          fJetShapeSigma2FirstDer;       //!   result from shape derivatives for jet sigma2: 1st derivative
+  Double_t          fJetShapeSigma2SecondDer;      //!   result from shape derivatives for jet sigma2: 2nd derivative
+  Double_t          fJetShapeSigma2FirstSub;       //!   result from shape derivatives for jet sigma2: 1st order subtracted
+  Double_t          fJetShapeSigma2SecondSub;      //!   result from shape derivatives for jetsigma2: 2nd order subtracted
+
   Double_t          fJetShapeConstituentFirstDer;  //!   result from shape derivatives for jet const: 1st derivative
   Double_t          fJetShapeConstituentSecondDer; //!   result from shape derivatives for jet const: 2nd derivative
   Double_t          fJetShapeConstituentFirstSub;  //!   result from shape derivatives for jet const: 1st order subtracted
@@ -304,6 +320,6 @@ class AliEmcalJet : public AliVParticle
         bool operator () (const std::pair<Double_t, Int_t>& p1, const std::pair<Double_t, Int_t>& p2)  { return p1.first > p2.first ; }
         };
 
-  ClassDef(AliEmcalJet,15) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,16) // Emcal jet class in cylindrical coordinates
 };
 #endif

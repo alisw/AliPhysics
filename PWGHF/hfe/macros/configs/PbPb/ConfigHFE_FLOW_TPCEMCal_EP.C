@@ -11,7 +11,7 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t
   hfecuts->SetMinRatioTPCclusters(0.6);
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetMinNClustersITS(3);
-  hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+  hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetVertexRange(10.);
   hfecuts->SetTOFPIDStep(kFALSE);

@@ -1398,7 +1398,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      fCFContAsCascadeCuts->SetVarTitle(3,  "R_{2d}(cascade decay) (cm)");
      fCFContAsCascadeCuts->SetVarTitle(4,  "M_{#Lambda}(as casc dghter) (GeV/c^{2})");
      fCFContAsCascadeCuts->SetVarTitle(5,  "DCA(V0 daughters) (cm)");
-     fCFContAsCascadeCuts->SetVarTitle(6,  "cos(V0 PA) in cascade");
+     if (fCollidingSystem == "pp")       fCFContAsCascadeCuts->SetVarTitle(6,  "cos(V0 PA) to cascade vtx");
+     else if (fCollidingSystem == "pPb") fCFContAsCascadeCuts->SetVarTitle(6,  "cos(V0 PA) to primary vtx");
      fCFContAsCascadeCuts->SetVarTitle(7,  "R_{2d}(V0 decay) (cm)");
      fCFContAsCascadeCuts->SetVarTitle(8,  "ImpactParamToPV(V0) (cm)");
      fCFContAsCascadeCuts->SetVarTitle(9,  "ImpactParamToPV(Pos) (cm)");
@@ -3063,16 +3064,17 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
        
         // - Extra-selection for cascade candidates
         if (fkExtraSelections) {
-                if (lDcaXiDaughters > 0.3) continue;              // in AliCascadeVertexer
-                if (lXiCosineOfPointingAngle < 0.999 ) continue;  // in AliCascadeVertexer
-                if (lDcaV0ToPrimVertexXi < 0.05) continue;        // in AliCascadeVertexer
-                if (lDcaBachToPrimVertexXi < 0.03) continue;      // in AliCascadeVertexer
-                if (lDcaV0DaughtersXi > 1.) continue;             // in AliV0vertexer
-                if (lV0CosineOfPointingAngleXi < 0.998) continue; // in AliV0vertexer
-                if (lDcaPosToPrimVertexXi < 0.1) continue;        // in AliV0vertexer
-                if (lDcaNegToPrimVertexXi < 0.1) continue;        // in AliV0vertexer
-                if(lXiRadius < .9) continue;                      // in AliCascadeVertexer
-                if(lV0RadiusXi < 0.9) continue;                   // in AliV0vertexer
+                if (lDcaXiDaughters > 0.3) continue;                                              // in AliCascadeVertexer
+                if (lXiCosineOfPointingAngle < 0.999 ) continue;                                  // in AliCascadeVertexer
+                if (lDcaV0ToPrimVertexXi < 0.05) continue;                                        // in AliCascadeVertexer
+                if (lDcaBachToPrimVertexXi < 0.03) continue;                                      // in AliCascadeVertexer
+                if (lDcaV0DaughtersXi > 1.) continue;                                             // in AliV0vertexer
+                if ((fCollidingSystem == "pp") && (lV0CosineOfPointingAngleXi < 0.998)) continue; // in AliV0vertexer
+                if ((fCollidingSystem == "pPb") && (lV0CosineOfPointingAngle < 0.998)) continue;  // in AliV0vertexer
+                if (lDcaPosToPrimVertexXi < 0.1) continue;                                        // in AliV0vertexer
+                if (lDcaNegToPrimVertexXi < 0.1) continue;                                        // in AliV0vertexer
+                if (lXiRadius < .9) continue;                                                     // in AliCascadeVertexer
+                if (lV0RadiusXi < 0.9) continue;                                                  // in AliV0vertexer
         }
 
         //-------------------------
@@ -3169,7 +3171,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
         lContainerCutVars[3]  = lXiRadius;
         lContainerCutVars[4]  = lInvMassLambdaAsCascDghter;
         lContainerCutVars[5]  = lDcaV0DaughtersXi;
-        lContainerCutVars[6]  = lV0CosineOfPointingAngleXi;
+        if (fCollidingSystem == "pp")       lContainerCutVars[6]  = lV0CosineOfPointingAngleXi;
+        else if (fCollidingSystem == "pPb") lContainerCutVars[6]  = lV0CosineOfPointingAngle;
         lContainerCutVars[7]  = lV0RadiusXi;
         lContainerCutVars[8]  = lDcaV0ToPrimVertexXi;	
         lContainerCutVars[9]  = lDcaPosToPrimVertexXi;

@@ -7,16 +7,16 @@
  *                             (Test Only)                                 *
  ***************************************************************************/
 
-AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",                        Bool_t isModeDist = 1, 
-				     Bool_t  isModeEff    = 0,    Bool_t isModeDCA        = 0,  Bool_t isModeQA   = 0, 
-				     Bool_t  isRatio      = 0,    Bool_t isModeAOD        = 0,  Bool_t isSetExt   = 0, 
-				     Int_t   aodFilterBit = 1024, 
-				     Int_t   modeCSC      = 0,    Int_t   modeCuts        = 0,  Int_t modePID     =-1,    
-				     Float_t gMinPt       = 0.3,  Float_t gMaxPt          = 2.5, 
-				     Float_t gMinPtForTof = 0.21, Float_t gMaxPtForTPClow = 0.69, 
-				     Float_t gMinPtEff    = 0.3,  Float_t gMaxPtEff       = 2.5,
-				     Float_t gSigmaITS    = 4.0,  Float_t gSigmaTOF       = 4.0, 
-				     Float_t gSigmaTPC    = 4.0, Float_t  gSigmaTPClow    = 3.0) {
+AliAnalysisTask *AddEbyEPidRatioTaskV1(const Char_t *name   = "TPC_NuDyn",                        Bool_t isModeDist = 1, 
+				       Bool_t  isModeEff    = 0,    Bool_t isModeDCA        = 0,  Bool_t isModeQA   = 0, 
+				       Bool_t  isRatio      = 0,    Bool_t isModeAOD        = 0,  Bool_t isSetExt   = 0, 
+				       Int_t   aodFilterBit = 1024, 
+				       Float_t gEta         = 0.8,    Int_t   modeCuts        = 0,  Int_t modePID     =-1,    
+				       Float_t gMinPt       = 0.3,  Float_t gMaxPt          = 2.5, 
+				       Float_t gMinPtForTof = 0.21, Float_t gMaxPtForTPClow = 0.69, 
+				       Float_t gMinPtEff    = 0.3,  Float_t gMaxPtEff       = 2.5,
+				       Float_t gSigmaITS    = 4.0,  Float_t gSigmaTOF       = 4.0, 
+				       Float_t gSigmaTPC    = 4.0, Float_t  gSigmaTPClow    = 3.0) {
   
   TString sName(name);
 
@@ -82,6 +82,9 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
     minPtEff       = gMinPtEff;
     maxPtEff       = gMaxPtEff;
     
+    maxRap         = gEta;
+    etaMax         = gEta;  
+
     nSigmaITS      = gSigmaITS;   
     nSigmaTPC      = gSigmaTPC;   
     nSigmaTPClow   = gSigmaTPClow;  
