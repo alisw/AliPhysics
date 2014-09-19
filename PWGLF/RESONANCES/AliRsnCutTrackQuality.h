@@ -33,8 +33,8 @@ public:
 
    void      AddStatusFlag(ULong_t f, Bool_t on)       {if (on) fFlagsOn = fFlagsOn | f; else fFlagsOff = fFlagsOff | f;}
    void      SetStatusFlags(ULong_t f, Bool_t on)      {if (on) fFlagsOn = f; else fFlagsOff = f;}
-   void      SetPtRange(Double_t a, Double_t b)        {fPt[0] = TMath::Min(a, b); fPt[1] = TMath::Max(a, b);}
-   void      SetEtaRange(Double_t a, Double_t b)       {fEta[0] = TMath::Min(a, b); fEta[1] = TMath::Max(a, b);}
+   void      SetPtRange(Double_t a, Double_t b);
+   void      SetEtaRange(Double_t a, Double_t b);
 
    void      SetDCARPtFormula(const char *formula)     {fDCARptFormula = formula; fDCARmaxfixed = kFALSE;}
    void      SetDCARPtFormulaMin(const char *formula)  {fDCARptFormulaMin = formula; fDCARminfixed = kFALSE;}
@@ -59,9 +59,9 @@ public:
    void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
    void      SetCheckOnlyFilterBit(Bool_t on=kTRUE)    {fCheckOnlyFilterBit=on;}
  
-   void      SetDefaults2010();
-   void      SetDefaults2011(Bool_t useTPCCrossedRows = kTRUE);
-   void      SetDefaultsHighPt2011(Bool_t useTPCCrossedRows = kTRUE);
+   void      SetDefaults2010(Bool_t useTPCCrossedRows = kTRUE, Bool_t useDefaultKinematicCuts=kTRUE);
+   void      SetDefaults2011(Bool_t useTPCCrossedRows = kTRUE, Bool_t useDefaultKinematicCuts=kTRUE);
+   void      SetDefaultsHighPt2011(Bool_t useTPCCrossedRows = kTRUE, Bool_t useDefaultKinematicCuts=kTRUE);
    void      SetESDtrackCuts(AliESDtrackCuts *esdTrackCuts) {fESDtrackCuts = esdTrackCuts;}
    AliESDtrackCuts  *GetESDtrackCuts() {return fESDtrackCuts;}
    Double_t   GetPtRange(Bool_t max) {return fPt[max];}
