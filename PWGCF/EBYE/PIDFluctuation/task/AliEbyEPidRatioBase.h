@@ -44,7 +44,7 @@ class AliEbyEPidRatioBase : public TNamed {
   virtual void CreateHistograms() {};
   virtual void Reset() {};
   virtual Int_t Setup() { return 0;};
-  AliEbyEPidRatioHelper *fHelper;      //! Ptr to helper class
+  AliEbyEPidRatioHelper *fHelper;             //! Ptr to helper class
   AliESDEvent        *fESD;                   //! ESD object
   AliESDtrackCuts    *fESDTrackCuts;          //! ESD cuts  
   AliAODEvent        *fAOD;                   //! AOD object
@@ -55,7 +55,8 @@ class AliEbyEPidRatioBase : public TNamed {
   AliStack           *fStack;                 //! Ptr to stack
   Float_t             fCentralityBin;         //  Centrality of current event  
   Int_t               fNTracks;               //  N Tracks in the current event
-  Bool_t              fIsRatio;                  //  Is MC event
+  Bool_t              fIsRatio;               //  Is MC event
+  Bool_t              fIsPtBin;               //  Is Pt Bin event
 
   ClassDef(AliEbyEPidRatioBase, 1);
 };

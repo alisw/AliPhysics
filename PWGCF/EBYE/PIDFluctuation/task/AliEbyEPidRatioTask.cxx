@@ -81,6 +81,8 @@ AliEbyEPidRatioTask::AliEbyEPidRatioTask(const char *name) :
   fAODHandler(NULL),
 
   fIsMC(kFALSE),
+  fIsRatio(kFALSE),
+  fIsPtBin(kFALSE),
   fIsAOD(kFALSE),
   fESDTrackCutMode(0),
   fModeEffCreation(0),
@@ -97,17 +99,14 @@ AliEbyEPidRatioTask::AliEbyEPidRatioTask(const char *name) :
   fPtRangeEff(),
 
   fAODtrackCutBit(1024) {
-  // Constructor   
-
+  
   AliLog::SetClassDebugLevel("AliEbyEPidRatioTask",10);
 
-  fPtRange[0] = 0.4;
-  fPtRange[1] = 0.8;
+  fPtRange[0]    = 0.4;
+  fPtRange[1]    = 0.8;
   fPtRangeEff[0] = 0.2;
   fPtRangeEff[1] = 1.6;
 
-  // -- Output slots
-  // -------------------------------------------------
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
@@ -131,19 +130,10 @@ AliEbyEPidRatioTask::~AliEbyEPidRatioTask() {
   if (fHelper)           delete fHelper;
 }
 
-/*
- * ---------------------------------------------------------------------------------
- *                                 Public Methods
- * ---------------------------------------------------------------------------------
- */
+
 
 //________________________________________________________________________
 void AliEbyEPidRatioTask::UserCreateOutputObjects() {
-  // Create histograms
-
-  // ------------------------------------------------------------------
-  // -- Create Output Lists
-  // ------------------------------------------------------------------
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
@@ -330,8 +320,13 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   // ------------------------------------------------------------------
   // -- Initialize Helper
   // ------------------------------------------------------------------
-  if (fHelper->Initialize(fESDTrackCutsEff, fIsMC, fIsRatio, fAODtrackCutBit, fModeDistCreation))
+
+
+  if (fHelper->Initialize(fESDTrackCutsEff, fIsMC,fIsRatio,fIsPtBin, fAODtrackCutBit, fModeDistCreation))
     return -1;
+
+  // fHelper->SetIsRatio(fIsRatio);  
+  // fHelper->SetIsPtBin(fIsPtBin);  
 
   // ------------------------------------------------------------------
   // -- Create / Initialize Efficiency/Contamination

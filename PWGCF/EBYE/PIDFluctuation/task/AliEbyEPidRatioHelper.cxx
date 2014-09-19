@@ -91,7 +91,8 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
   fNCentralityBins(11),
   
   fRandom(NULL),
-  fIsRatio(kFALSE) {
+  fIsRatio(kFALSE), 
+  fIsPtBin(kFALSE) {
   // Constructor   
   
   AliLog::SetClassDebugLevel("AliEbyEPidRatioHelper",10);
@@ -176,7 +177,7 @@ void AliEbyEPidRatioHelper::SetPhiRange(Float_t f1, Float_t f2) {
 
 
 //________________________________________________________________________
-Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Int_t trackCutBit, Int_t modeDistCreation) {
+Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Bool_t isPtBin, Int_t trackCutBit, Int_t modeDistCreation) {
   // -- Initialize helper
 
   Int_t iResult = 0;
@@ -184,9 +185,14 @@ Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool
   // -- ESD track cuts
   fESDTrackCuts     = cuts;
 
+  
   // -- Is MC
   fIsMC             = isMC;
   fIsRatio          = isRatio;
+  fIsPtBin          = isPtBin;
+
+
+  
 
   // -- AOD track filter bit
   fAODtrackCutBit   = trackCutBit;

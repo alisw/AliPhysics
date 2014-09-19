@@ -9,7 +9,7 @@
 
 AliAnalysisTask *AddEbyEPidRatioTaskV1(const Char_t *name   = "TPC_NuDyn",                        Bool_t isModeDist = 1, 
 				       Bool_t  isModeEff    = 0,    Bool_t isModeDCA        = 0,  Bool_t isModeQA   = 0, 
-				       Bool_t  isRatio      = 0,    Bool_t isModeAOD        = 0,  Bool_t isSetExt   = 0, 
+				       Int_t   isRatio      = 3,    Bool_t isModeAOD        = 0,  Bool_t isSetExt   = 0, 
 				       Int_t   aodFilterBit = 1024, 
 				       Float_t gEta         = 0.8,    Int_t   modeCuts        = 0,  Int_t modePID     =-1,    
 				       Float_t gMinPt       = 0.3,  Float_t gMaxPt          = 2.5, 
@@ -50,8 +50,8 @@ AliAnalysisTask *AddEbyEPidRatioTaskV1(const Char_t *name   = "TPC_NuDyn",      
   }
   if (isModeQA)
     task->SetModeQACreation(1);              // => 1 = on    | 0 = off (default)
-  if (isRatio)
-    task->SetIsRatio();
+
+  task->SetIsRatio(isRatio);
 
   Float_t minPt,     maxPt,     minPtEff,     maxPtEff,  minPtForTOF;
   Float_t nSigmaITS, nSigmaTPC, nSigmaTPClow, nSigmaTOF, maxPtForTPClow; 
