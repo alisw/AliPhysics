@@ -148,6 +148,7 @@ Int_t AliHLTAnaManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/
   fAnalysisManager->SetExternalLoop(kTRUE); 
 
   AliAnalysisTaskPt *task = new AliAnalysisTaskPt("TaskPt");
+  printf("-----> AliHLTAnaManagerComponent: here we set the usage of the friends to %d\n", (Int_t)task->GetUseFriends());
   task->SetUseFriends(kTRUE);
   fAnalysisManager->AddTask(task);
   AliAnalysisDataContainer *cinput  = fAnalysisManager->GetCommonInputContainer();

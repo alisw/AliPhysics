@@ -8,13 +8,13 @@
 #include "AliAnalysisManager.h"
 
 #include "AliESDEvent.h"
-//#include "AliFlatESDEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliVEventHandler.h"
 #include "AliTPCseed.h"
 #include "AliTPCclusterMI.h"
 #include "AliVfriendEvent.h"
 #include "AliVfriendTrack.h"
+#include "AliESDInputHandler.h"
 
 #include "AliAnalysisTaskPt.h"
 
@@ -47,7 +47,8 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
-  } else {
+  } 
+  else {
     // Disable all branches and enable only the needed ones
     // The next two lines are different when data produced as AliESDEvent is read
     /*
@@ -62,12 +63,32 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
 
     if (!esdH) {
       Printf("ERROR: Could not get ESDInputHandler");
-    } else {
+    } 
+    else {
       Printf("----> AliAnalysisTaskPt::ConnectInputData Getting the event from handler %p", esdH);
-      //fESD = dynamic_cast<AliFlatESDEvent*>(esdH->GetEvent());
       fESD = esdH->GetEvent();
-      if (fUseFriends){	
-	fESDfriend = esdH->GetVFriendEvent();
+      if (fUseFriends){
+	Printf("...We have to use the friends...");
+	if (classInputHandler.Contains("HLT")) { // we are running in HLT
+	  fESDfriend = esdH->GetVFriendEvent();
+	}
+	else { /// we are running offline
+	  if (esdH && esdH->GetTree()) {
+	    Printf("...We got the tree...");
+	    if (esdH->GetTree()->GetBranch("ESDfriend.")){
+	      Printf("Yu-huuuu!!! friend branch found");
+	      fESDfriend = ((AliESDInputHandler*)esdH)->GetESDfriend();
+	    }
+	    else {
+	      Printf("No friend branch found");
+	    }
+	  }
+	}
+       
+	Printf("and the result is: fESDfriend = %p", fESDfriend);
+      }
+      else {
+	Printf("The friends are not requested");
       }
     }
     if (!fESD) {
@@ -138,11 +159,26 @@ void AliAnalysisTaskPt::Exec(Option_t *)
     Printf("ERROR: fESD not available");
     return;
   }
-  if (!fESDfriend) {
-    Printf("ERROR: fESDfriend not available");
-      if (fUseFriends){
+
+  /*
+  if (fUseFriends){
+    Printf("In Exec: ...We have to use the friends...");
+    fESDfriend = fESD->FindFriend();
+    Printf("...and we got friends = %p", fESDfriend);
+    if (!fESDfriend) {
+      Printf("ERROR: fESDfriend not available");
 	return;
-      }
+    }
+  }
+  */
+
+  if (fUseFriends){
+    Printf("In Exec: ...We have to use the friends...");
+    Printf("...and we got friends = %p", fESDfriend);
+    if (!fESDfriend) {
+      Printf("ERROR: fESDfriend not available");
+	return;
+    }
   }
 
   Int_t nESDtracks = fESD->GetNumberOfTracks();
@@ -156,7 +192,7 @@ void AliAnalysisTaskPt::Exec(Option_t *)
 
   // Track loop to fill a pT spectrum
   for (Int_t iTracks = 0; iTracks < nESDtracks; iTracks++) {
-    Printf("Checking track %d: Note that with Flat, the GetTrack is not yet implemented!!!", iTracks);
+    Printf("Checking track %d", iTracks);
     const AliVTrack* track = dynamic_cast<AliVTrack*>(fESD->GetTrack(iTracks));
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTracks);
@@ -169,17 +205,22 @@ void AliAnalysisTaskPt::Exec(Option_t *)
 
 
   if (fUseFriends){
+    Printf("In the loop over the friends");
     // Friend Track loop
     for (Int_t iFriend = 0; iFriend < nESDfriendtracks; iFriend++) {
-      //Printf("Getting friend %d", iFriend);
+      Printf("Getting friend %d", iFriend);
       const AliVfriendTrack* friendTrack = fESDfriend->GetTrack(iFriend);
       if (!friendTrack) {
 	Printf("ERROR: Could not receive track %d", iFriend);
 	continue;
       }
+      else {
+	Printf("friend track = %p", friendTrack);
+      }
       
       AliTPCseed seed;
       Int_t err = friendTrack->GetTPCseed( seed );
+      Printf("err = %d", err);
       if( err==0 ){
 	Printf("Found TPC seed" );
 	for (Int_t irow = 0; irow < 160; irow++){
