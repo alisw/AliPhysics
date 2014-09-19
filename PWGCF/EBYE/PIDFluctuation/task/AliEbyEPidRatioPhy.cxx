@@ -55,9 +55,12 @@ AliEbyEPidRatioPhy::AliEbyEPidRatioPhy() :
   fOrder(8),
   fNNp(6),
   fNp(NULL),
+  fNpPt(NULL),
   fNMCNp(7),
   fMCNp(NULL),
-  fRedFactp(NULL) {
+  fMCNpPt(NULL),
+  fRedFactp(NULL),
+  fPtBinHist(NULL) {
   AliLog::SetClassDebugLevel("AliEbyEPidRatioPhy",10);
 }
 
@@ -65,12 +68,14 @@ AliEbyEPidRatioPhy::AliEbyEPidRatioPhy() :
 AliEbyEPidRatioPhy::~AliEbyEPidRatioPhy() {
   // Destructor
 
+ 
   for (Int_t ii = 0; ii < fNNp; ++ii) {
     for (Int_t kk = 0; kk < 2; ++kk)
       if (fNp[ii][kk]) delete[] fNp[ii][kk];
     if (fNp[ii]) delete[] fNp[ii];
   }
   if (fNp) delete[] fNp;
+
 
  for (Int_t ii = 0; ii < fNMCNp; ++ii) {
     for (Int_t kk = 0; kk < 2; ++kk)
@@ -82,6 +87,34 @@ AliEbyEPidRatioPhy::~AliEbyEPidRatioPhy() {
   for (Int_t ii = 0; ii <= fOrder; ++ii) 
     if (fRedFactp[ii]) delete[] fRedFactp[ii];
   if (fRedFactp) delete[] fRedFactp;
+
+  if(fPtBinHist) delete fPtBinHist;
+
+ for (Int_t ii = 0; ii < fNNp; ++ii) {
+    for (Int_t kk = 0; kk < 2; ++kk)
+      for (Int_t jj = 0; jj < 2; ++jj) {
+	if (fNpPt[ii][kk][jj]) delete[] fNpPt[ii][kk][jj];
+	if(fNpPt[ii][kk]) delete[] fNpPt[ii][kk];
+      }
+    if (fNpPt[ii]) delete[] fNpPt[ii];
+  }
+  if (fNpPt) delete[] fNpPt;
+
+
+
+ for (Int_t ii = 0; ii < fNNp; ++ii) {
+    for (Int_t kk = 0; kk < 2; ++kk)
+      for (Int_t jj = 0; jj < 2; ++jj) {
+	if (fMCNpPt[ii][kk][jj]) delete[] fMCNpPt[ii][kk][jj];
+	if(fMCNpPt[ii][kk]) delete[] fMCNpPt[ii][kk];
+      }
+    if (fMCNpPt[ii]) delete[] fMCNpPt[ii];
+  }
+  if (fMCNpPt) delete[] fMCNpPt;
+
+
+
+
 
   return;
 }
@@ -103,6 +136,16 @@ void AliEbyEPidRatioPhy::Init() {
       fNp[ii][kk] = new Int_t[2];
   }
 
+ fNpPt = new Int_t***[fNNp];
+  for (Int_t ii = 0 ; ii < fNNp; ++ii) {
+    fNpPt[ii] = new Int_t**[4];
+    for (Int_t kk = 0 ; kk < 4; ++kk) {
+      fNpPt[ii][kk] = new Int_t*[2];
+      for (Int_t ll = 0 ; ll < 2; ++ll)
+	fNpPt[ii][kk][ll] = new Int_t[AliEbyEPidRatioHelper::fgkfHistNBinsPt];
+    }
+  }
+
   fMCNp = new Int_t**[fNMCNp];
   for (Int_t ii = 0 ; ii < fNMCNp; ++ii) {
     fMCNp[ii] = new Int_t*[4];
@@ -110,6 +153,16 @@ void AliEbyEPidRatioPhy::Init() {
       fMCNp[ii][kk] = new Int_t[2];
   }
   
+ fMCNpPt = new Int_t***[fNMCNp];
+  for (Int_t ii = 0 ; ii < fNMCNp; ++ii) {
+    fMCNpPt[ii] = new Int_t**[4];
+    for (Int_t kk = 0 ; kk < 4; ++kk) {
+      fMCNpPt[ii][kk] = new Int_t*[2];
+      for (Int_t ll = 0 ; ll < 2; ++ll)
+	fMCNpPt[ii][kk][ll] = new Int_t[AliEbyEPidRatioHelper::fgkfHistNBinsPt];
+    }
+  }
+
   fRedFactp = new Double_t*[fOrder+1];
   for (Int_t ii = 0 ; ii <= fOrder; ++ii)
     fRedFactp[ii] = new Double_t[2];
@@ -128,27 +181,45 @@ void AliEbyEPidRatioPhy::Reset() {
   for (Int_t ii = 0; ii <= fOrder; ++ii) 
     for (Int_t jj = 0; jj < 2; ++jj)
       fRedFactp[ii][jj] = 1.;
+
+  for (Int_t ii = 0; ii < fNNp; ++ii) 
+    for (Int_t kk = 0; kk < 4; ++kk)
+      for (Int_t jj = 0; jj < 2; ++jj)
+	for (Int_t ll = 0; ll < AliEbyEPidRatioHelper::fgkfHistNBinsPt; ++ll)
+	  fNpPt[ii][kk][jj][ll] = 0;
+
+ for (Int_t ii = 0; ii < fNMCNp; ++ii) 
+    for (Int_t kk = 0; kk < 4; ++kk)
+      for (Int_t jj = 0; jj < 2; ++jj)
+	for (Int_t ll = 0; ll < AliEbyEPidRatioHelper::fgkfHistNBinsPt; ++ll)
+	  fMCNpPt[ii][kk][jj][ll] = 0;
+
 }
 
 //________________________________________________________________________
 void AliEbyEPidRatioPhy::CreateHistograms() {
+
   Float_t etaRange[2];
   fESDTrackCuts->GetEtaRange(etaRange[0],etaRange[1]);
 
   Float_t ptRange[2];
   fESDTrackCuts->GetPtRange(ptRange[0],ptRange[1]);
   TString sTitle("");
-
- if (fIsRatio) AddHistSetRatio("Ratio",       Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));
-
+  fPtBinHist = new TH1F("hPtBinHist","Make the pT Bins",AliEbyEPidRatioHelper::fgkfHistNBinsPt, AliEbyEPidRatioHelper::fgkfHistRangePt[0], AliEbyEPidRatioHelper::fgkfHistRangePt[1]);
+  if (fIsRatio) AddHistSetRatio("Ratio",       Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));
+  
   AddHistSetCent("Phy",       Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));
-  //  AddHistSetCent("PhyTPC",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
+  // AddHistSetCent("PhyTPC",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
   // AddHistSetCent("PhyTOF",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
+  if (fIsPtBin) AddHistSetCentPt("PhyBin",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));  
+
 
 #if USE_PHI
   AddHistSetCent("Phyphi",    Form("%s,#it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", sTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
   //  AddHistSetCent("PhyTPCphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
   // AddHistSetCent("PhyTOFphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+  if (fIsPtBin) AddHistSetCentPt("PhyBinPhi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
+				     sTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
 #endif
 
   if (fIsMC) {
@@ -160,11 +231,13 @@ void AliEbyEPidRatioPhy::CreateHistograms() {
     AddHistSetCent("MCpt",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], ptRange[1]));
     // AddHistSetCent("MCTPC",   Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
     //AddHistSetCent("MCTOF",   Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
-    
+    if (fIsPtBin) AddHistSetCentPt("MCBin",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], ptRange[1])); 
 #if USE_PHI
-    AddHistSetCent("MCphi",   Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+    AddHistSetCent("MCPhi",   Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
     //AddHistSetCent("MCTPCphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
     //AddHistSetCent("MCTOFphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+ if (fIsPtBin) AddHistSetCentPt("MCBinPhi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
+					sMCTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
 #endif
     
   }
@@ -220,6 +293,14 @@ Int_t AliEbyEPidRatioPhy::ProcessTracks() {
     // -- in pt Range
     fNp[0][0][idxPart] += 1;
     if(iPid != 0) fNp[0][iPid][idxPart] += 1;
+
+    Int_t idxPt = fPtBinHist->FindBin(track->Pt()) -1;
+
+    if (idxPt>=0 && idxPt < AliEbyEPidRatioHelper::fgkfHistNBinsPt) {
+      fNpPt[0][0][idxPart][idxPt] += 1;
+      if(iPid != 0) fNpPt[0][iPid][idxPart][idxPt] += 1;
+    }
+
     // -- in TPC pt Range
     /*    if (track->Pt() <= fHelper->GetMinPtForTOFRequired()) {
       fNp[1][0][idxPart] += 1;
@@ -238,6 +319,12 @@ Int_t AliEbyEPidRatioPhy::ProcessTracks() {
     // -- in pt Range
     fNp[3][iPid][idxPart] += 1;
     if(iPid != 0) fNp[3][0][idxPart] += 1;
+
+    if (idxPt>=0 && idxPt < AliEbyEPidRatioHelper::fgkfHistNBinsPt) {
+      fNpPt[1][0][idxPart][idxPt] += 1;
+      if(iPid != 0) fNpPt[1][iPid][idxPart][idxPt] += 1;
+    }
+
     // -- in TPC pt Range
     /*   if (track->Pt() <= fHelper->GetMinPtForTOFRequired()) {
       fNp[4][0][idxPart] += 1;
@@ -255,22 +342,13 @@ FillHistSetCent("Phy",        0, kFALSE);
 if (fIsRatio) FillHistSetRatio("Ratio",        0, kFALSE);
 //  FillHistSetCent("PhyTPC",     1, kFALSE);
 //  FillHistSetCent("PhyTOF",     2, kFALSE);
- 
+if (fIsPtBin)  FillHistSetCentPt("PhyBin",    0, kFALSE);
 #if USE_PHI
-  FillHistSetCent("Phyphi",     1, kFALSE);
+  FillHistSetCent("Phyphi",     3, kFALSE);
 //  FillHistSetCent("PhyTPCphi",  4, kFALSE);
 // FillHistSetCent("PhyTOFphi",  5, kFALSE);
-
+if (fIsPtBin) FillHistSetCentPt("PhyBinPhi", 1, kFALSE);
  #endif
-  /*  Printf("<<<<<<<<<< Inside Loop >>>>>>>>>>");
-  for (Int_t id = 0; id < 6; ++id) {
-    printf(" == %2d == ", id);
-    for (Int_t iPid = 0; iPid < 4; ++iPid) {
-      printf("%7d %7d ", fNp[id][iPid][0] , fNp[id][iPid][1]);
-    }
-    Printf("");
-    }  */
-    
 
   return 0;
 }
@@ -320,6 +398,15 @@ Int_t AliEbyEPidRatioPhy::ProcessParticles() {
     fMCNp[1][0][idxPart]    += 1.;        
     if(iPid != 0)fMCNp[1][iPid][idxPart] += 1.;        
     
+
+    Int_t idxPt = fPtBinHist->FindBin(particle->Pt()) -1;
+    
+    if (idxPt>=0 && idxPt < AliEbyEPidRatioHelper::fgkfHistNBinsPt) {
+      fMCNpPt[0][0][idxPart][idxPt] += 1;
+      if(iPid != 0) fMCNpPt[0][iPid][idxPart][idxPt] += 1;
+    }
+
+
     // -- in TPC pt Range
     /*   if (particle->Pt() <= fHelper->GetMinPtForTOFRequired()) {
       fMCNp[2][0][idxPart]    += 1;
@@ -335,6 +422,11 @@ Int_t AliEbyEPidRatioPhy::ProcessParticles() {
     if(!fHelper->IsParticleAcceptedPhi(particle))
       continue;
     // idxPhi = 1;
+
+    if (idxPt>=0 && idxPt < AliEbyEPidRatioHelper::fgkfHistNBinsPt) {
+      fMCNpPt[1][0][idxPart][idxPt] += 1;
+      if(iPid != 0) fMCNpPt[1][iPid][idxPart][idxPt] += 1;
+    }
 
     // -- in pt Range
     fMCNp[4][0][idxPart]    += 1;
@@ -357,11 +449,14 @@ Int_t AliEbyEPidRatioPhy::ProcessParticles() {
   FillHistSetCent("MC",        0, kTRUE);
   if (fIsRatio) FillHistSetRatio("MCRatio",     0, kTRUE);
   FillHistSetCent("MCpt",      1, kTRUE);
+
   //  FillHistSetCent("MCTPC",     2, kTRUE);
   // FillHistSetCent("MCTOF",     3, kTRUE);
+  if (fIsPtBin) FillHistSetCentPt("MCBin",    0, kTRUE);
 
 #if USE_PHI
-  FillHistSetCent("MCphi",     2, kTRUE);
+  FillHistSetCent("MCphi",     4, kTRUE);
+  if (fIsPtBin)  FillHistSetCentPt("MCBinPhi",   1, kTRUE);
   
   // FillHistSetCent("MCTPCphi",  5, kTRUE);
   // FillHistSetCent("MCTOFphi",  6, kTRUE);
@@ -378,6 +473,7 @@ void  AliEbyEPidRatioPhy::AddHistSetCent(const Char_t *name, const Char_t *title
   TString sTitle(title);
  
   Float_t etaRange[2];
+
   fESDTrackCuts->GetEtaRange(etaRange[0],etaRange[1]);
 
   //TList *list[4];
@@ -472,6 +568,8 @@ void  AliEbyEPidRatioPhy::AddHistSetRatio(const Char_t *name, const Char_t *titl
   list->SetName(Form("f%s", name));
   list->SetOwner(kTRUE);
   
+  Int_t nRbin     = 10000;
+  Double_t mRat[] = {0,1};
 
   Int_t nBinsCent         =  AliEbyEPidRatioHelper::fgkfHistNBinsCent;
   Double_t centBinRange[] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], AliEbyEPidRatioHelper::fgkfHistRangeCent[1]};
@@ -480,63 +578,57 @@ void  AliEbyEPidRatioPhy::AddHistSetRatio(const Char_t *name, const Char_t *titl
 
   list->Add(new TH2F(Form("fHistRatioKPi%s",name), 
 		     Form("(%s %s) : K/#pi;Centrality(11);K/#pi", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
   
   list->Add(new TH2F(Form("fHistRatioKpPip%s",name), 
 		     Form("(%s %s) : K^{+}/#pi^{+};Centrality(11);K^{+}/#pi^{+}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
   
   list->Add(new TH2F(Form("fHistRatioKmPip%s",name), 
 		     Form("(%s %s) : K^{-}/#pi^{+};Centrality(11);K^{-}/#pi^{+}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
   
   list->Add(new TH2F(Form("fHistRatioKmPim%s",name), 
 		     Form("(%s %s) : K^{-}/#pi^{-};Centrality(11);K^{-}/#pi^{-}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
 
 
 
  list->Add(new TH2F(Form("fHistRatioPK%s",name), 
 		     Form("(%s %s) : P/K;Centrality(11);P/K", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
   
   list->Add(new TH2F(Form("fHistRatioPpKp%s",name), 
 		     Form("(%s %s) : P/K^{+};Centrality(11);P/K^{+}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
   
   list->Add(new TH2F(Form("fHistRatioPmKp%s",name), 
 		     Form("(%s %s) : #bar{P}/K^{+};Centrality(11);#bar{P}/K^{+}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
   
   list->Add(new TH2F(Form("fHistRatioPmKm%s",name), 
 		     Form("(%s %s) : #bar{P}/K^{-};Centrality(11);#bar{P}/K^{-}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
 
 
 
  list->Add(new TH2F(Form("fHistRatioPPi%s",name), 
 		     Form("(%s %s) : P/#pi;Centrality(11);K/#pi", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
   
   list->Add(new TH2F(Form("fHistRatioPpPip%s",name), 
 		     Form("(%s %s) : P/#pi^{+};Centrality(11);P/#pi^{+}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
   
   list->Add(new TH2F(Form("fHistRatioPmPip%s",name), 
 		     Form("(%s %s) : #bar{P}/#pi^{+};Centrality(11);#bar{P}/#pi^{+}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
   
   list->Add(new TH2F(Form("fHistRatioPmPim%s",name), 
 		     Form("(%s %s) : #bar{P}/#pi^{-};Centrality(11);#bar{P}/#pi^{-}", xyz.Data(), sTitle.Data()),
-		     nBinsCent, centBinRange[0], centBinRange[1], 2500,0,0.25));
-
- 
-  
+		     nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
   return;
 }
-
-
-
 
 //________________________________________________________________________
 void AliEbyEPidRatioPhy::FillHistSetCent(const Char_t *name, Int_t idx, Bool_t isMC)  {
@@ -594,7 +686,6 @@ void AliEbyEPidRatioPhy::FillHistSetCent(const Char_t *name, Int_t idx, Bool_t i
       }
     }
   }
-
  
   Double_t a[6][4]; Double_t b[22];
   for (Int_t iPid = 0; iPid < 4; ++iPid) {
@@ -691,6 +782,220 @@ void AliEbyEPidRatioPhy::FillHistSetRatio(const Char_t *name, Int_t idx, Bool_t 
   return;
 }
 
+/*
+//________________________________________________________________________
+void  AliEbyEPidRatioPhy::AddHistSetCentPt(const Char_t *name, const Char_t *title)  {
+  TString sName(name);
+  TString sTitle(title);
+  
+  Float_t etaRange[2];
+  fESDTrackCuts->GetEtaRange(etaRange[0],etaRange[1]);
 
+  //TList *list[4];
+  fOutList->Add(new TList);
+  TList *list =  static_cast<TList*>(fOutList->Last());
+  list->SetName(Form("f%s", name));
+  list->SetOwner(kTRUE);
+  
+
+  Int_t nBinsCent         =  AliEbyEPidRatioHelper::fgkfHistNBinsCent;
+  Double_t centBinRange[] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], AliEbyEPidRatioHelper::fgkfHistRangeCent[1]};
+  Int_t nBinsPt           =  AliEbyEPidRatioHelper::fgkfHistNBinsPt;
+  Double_t ptBinRange[]   = {-0.5, AliEbyEPidRatioHelper::fgkfHistNBinsPt - 0.5};
+
+  for (Int_t idxPt  = 0; idxPt < AliEbyEPidRatioHelper::fgkfHistNBinsPt; ++idxPt) { 
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      TString sNetTitle(Form("%s - %s", AliEbyEPidRatioHelper::fgkPidLatex[iPid][1], AliEbyEPidRatioHelper::fgkPidLatex[iPid][0]));
+      sTitle = (iPid != 0 ) ? Form("|y| < %.1f", fHelper->GetRapidityMax()) : Form(" |#eta|<%.1f", etaRange[1]);
+      for (Int_t idx = 1; idx <= fOrder; ++idx) {
+	list->Add(new TProfile(Form("fProf%s%sNetPt%02d%02dM", AliEbyEPidRatioHelper::fgkPidName[iPid],name, idxPt, idx), 
+			       Form("(%s)^{%d} Pt: %s;Centrality(100);(%s)^{%d}",
+				    sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
+				 100,-0.5,99.5));
+      }
+    
+      for (Int_t ii = 0; ii <= fOrder; ++ii) {
+	for (Int_t kk = 0; kk <= fOrder; ++kk) {
+	  list->Add(new TProfile(Form("fProf%s%sNetPt%02dF%02d%02d", AliEbyEPidRatioHelper::fgkPidName[iPid], name, idxPt,ii, kk),
+				   Form("f_{%02d%02d} Pt: %s;Centrality(100);f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+				   100,-0.5,99.5));
+	}
+      }
+      
+    }
+    
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      TString sNetTitle(Form("%s - %s", AliEbyEPidRatioHelper::fgkPidLatex[iPid][1], AliEbyEPidRatioHelper::fgkPidLatex[iPid][0]));
+      sTitle = (iPid != 0 ) ? Form("|y| < %.1f", fHelper->GetRapidityMax()) : Form(" |#eta|<%.1f", etaRange[1]);
+      for (Int_t idx = 1; idx <= fOrder; ++idx) {
+	list->Add(new TProfile(Form("fProfBin%s%sNetPt%02d%02dM", AliEbyEPidRatioHelper::fgkPidName[iPid],name, idxPt,idx), 
+				 Form("(%s)^{%d} Pt: %s;Centrality(11);(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
+				 nBinsCent, centBinRange[0], centBinRange[1]));
+      }
+      
+      for (Int_t ii = 0; ii <= fOrder; ++ii) {
+	for (Int_t kk = 0; kk <= fOrder; ++kk) {
+	  list->Add(new TProfile(Form("fProfBin%s%sNetPt%02dF%02d%02d", AliEbyEPidRatioHelper::fgkPidName[iPid], name, idxPt,ii, kk),
+				   Form("f_{%02d%02d} Pt : %s;Centrality(11);f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+				   nBinsCent, centBinRange[0], centBinRange[1]));
+	}
+      }
+    }  
+  }
+  
+  return;
+}
+
+//________________________________________________________________________
+void AliEbyEPidRatioPhy::FillHistSetCentPt(const Char_t *name, Int_t idx, Bool_t isMC)  {
+ 
+  Int_t ****np = (isMC) ? fMCNpPt : fNpPt;
+  
+  Float_t centralityBin = fHelper->GetCentralityBin();
+  Float_t centralityPer = fHelper->GetCentralityPercentile();
+  
+  TList *list = static_cast<TList*>(fOutList->FindObject(Form("f%s",name)));
+  
+  
+  for (Int_t idxPt  = 0; idxPt < AliEbyEPidRatioHelper::fgkfHistNBinsPt; ++idxPt) {
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      Int_t deltaNp = np[idx][iPid][1][idxPt]-np[idx][iPid][0][idxPt];  
+      Double_t delta = 1.;
+      for (Int_t idxOrder = 1; idxOrder <= fOrder; ++idxOrder) {
+	delta *= deltaNp;
+	(static_cast<TProfile*>(list->FindObject(Form("fProfBin%s%sNetPt%02d%02dM", AliEbyEPidRatioHelper::fgkPidName[iPid], name, idxPt, idxOrder))))->Fill(centralityBin, delta);
+	(static_cast<TProfile*>(list->FindObject(Form("fProf%s%sNetPt%02d%02dM", AliEbyEPidRatioHelper::fgkPidName[iPid], name, idxPt,idxOrder))))->Fill(centralityPer, delta);
+      }
+    
+      for (Int_t idxOrder = 0; idxOrder <= fOrder; ++ idxOrder) {
+	fRedFactp[idxOrder][0]  = 1.;
+	fRedFactp[idxOrder][1]  = 1.;
+      }
+      
+      for (Int_t idxOrder = 1; idxOrder <= fOrder; ++ idxOrder) {
+	fRedFactp[idxOrder][0]  = fRedFactp[idxOrder-1][0] * Double_t(np[idx][iPid][0][idxPt]-(idxOrder-1));
+	fRedFactp[idxOrder][1]  = fRedFactp[idxOrder-1][1] * Double_t(np[idx][iPid][1][idxPt]-(idxOrder-1));
+      }
+      
+      for (Int_t ii = 0; ii <= fOrder; ++ii) {   // ii -> p    -> n1
+	for (Int_t kk = 0; kk <= fOrder; ++kk) { // kk -> pbar -> n2
+	  Double_t fik = fRedFactp[ii][1] * fRedFactp[kk][0];   // n1 *n2 -> p * pbar
+	  (static_cast<TProfile*>(list->FindObject(Form("fProfBin%s%sNetPt%02dF%02d%02d", AliEbyEPidRatioHelper::fgkPidName[iPid], name, idxPt,ii, kk))))->Fill(centralityBin, fik);
+	  (static_cast<TProfile*>(list->FindObject(Form("fProf%s%sNetPt%02dF%02d%02d", AliEbyEPidRatioHelper::fgkPidName[iPid], name, idxPt,ii, kk))))->Fill(centralityPer, fik);
+	}
+      }
+    }
+  }// for (Int_t idxPt  = 0; idxPt < AliEbyEPidRatioHelper::fgkfHistNBinsPt; ++idxPt) {
+  
+  return;
+}
+
+*/
+
+
+
+//________________________________________________________________________
+void  AliEbyEPidRatioPhy::AddHistSetCentPt(const Char_t *name, const Char_t *title)  {
+  TString sName(name);
+  TString sTitle(title);
+  
+  Float_t etaRange[2];
+  fESDTrackCuts->GetEtaRange(etaRange[0],etaRange[1]);
+
+  //TList *list[4];
+  fOutList->Add(new TList);
+  TList *list =  static_cast<TList*>(fOutList->Last());
+  list->SetName(Form("f%s", name));
+  list->SetOwner(kTRUE);
+  
+
+  Int_t nBinsCent         =  AliEbyEPidRatioHelper::fgkfHistNBinsCent;
+  Double_t centBinRange[] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], AliEbyEPidRatioHelper::fgkfHistRangeCent[1]};
+  Int_t nBinsPt           =  AliEbyEPidRatioHelper::fgkfHistNBinsPt;
+  Double_t ptBinRange[]   = {-0.5, AliEbyEPidRatioHelper::fgkfHistNBinsPt - 0.5};
+ 
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+    TString sNetTitle(Form("%s - %s", AliEbyEPidRatioHelper::fgkPidLatex[iPid][1], AliEbyEPidRatioHelper::fgkPidLatex[iPid][0]));
+    sTitle = (iPid != 0 ) ? Form("|y| < %.1f", fHelper->GetRapidityMax()) : Form(" |#eta|<%.1f", etaRange[1]);
+    for (Int_t idx = 1; idx <= fOrder; ++idx) {
+      list->Add(new TProfile2D(Form("fProf%s%sNetPt%dM", AliEbyEPidRatioHelper::fgkPidName[iPid],name, idx), 
+			     Form("(%s)^{%d} Pt: %s;Centrality(100);(%s)^{%d}",sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
+			       100,-0.5,99.5, nBinsPt, ptBinRange[0], ptBinRange[1]));
+    }
+    
+    for (Int_t ii = 0; ii <= fOrder; ++ii) {
+      for (Int_t kk = 0; kk <= fOrder; ++kk) {
+	list->Add(new TProfile2D(Form("fProf%s%sNetPtF%02d%02d", AliEbyEPidRatioHelper::fgkPidName[iPid], name, ii, kk),
+			       Form("f_{%02d%02d} Pt: %s;Centrality(100);f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+			       100,-0.5,99.5, nBinsPt, ptBinRange[0], ptBinRange[1]));
+      }
+    }
+  
+    }
+  
+  for (Int_t iPid = 0; iPid < 4; ++iPid) {
+    TString sNetTitle(Form("%s - %s", AliEbyEPidRatioHelper::fgkPidLatex[iPid][1], AliEbyEPidRatioHelper::fgkPidLatex[iPid][0]));
+    sTitle = (iPid != 0 ) ? Form("|y| < %.1f", fHelper->GetRapidityMax()) : Form(" |#eta|<%.1f", etaRange[1]);
+    for (Int_t idx = 1; idx <= fOrder; ++idx) {
+      list->Add(new TProfile2D(Form("fProfBin%s%sNetPt%dM", AliEbyEPidRatioHelper::fgkPidName[iPid],name, idx), 
+			       Form("(%s)^{%d} Pt: %s;Centrality(11);(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
+			       nBinsCent, centBinRange[0], centBinRange[1],nBinsPt, ptBinRange[0], ptBinRange[1]));
+    }
+    
+    for (Int_t ii = 0; ii <= fOrder; ++ii) {
+      for (Int_t kk = 0; kk <= fOrder; ++kk) {
+	list->Add(new TProfile2D(Form("fProfBin%s%sNetPtF%02d%02d", AliEbyEPidRatioHelper::fgkPidName[iPid], name, ii, kk),
+				 Form("f_{%02d%02d} Pt : %s;Centrality(11);f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+				 nBinsCent, centBinRange[0], centBinRange[1],nBinsPt, ptBinRange[0], ptBinRange[1]));
+      }
+    }
+  }  
+   
+  return;
+}
+
+//________________________________________________________________________
+void AliEbyEPidRatioPhy::FillHistSetCentPt(const Char_t *name, Int_t idx, Bool_t isMC)  {
+ 
+  Int_t ****np = (isMC) ? fMCNpPt : fNpPt;
+  
+  Float_t centralityBin = fHelper->GetCentralityBin();
+  Float_t centralityPer = fHelper->GetCentralityPercentile();
+  
+  TList *list = static_cast<TList*>(fOutList->FindObject(Form("f%s",name)));
+  
+  
+  for (Int_t idxPt  = 0; idxPt < AliEbyEPidRatioHelper::fgkfHistNBinsPt; ++idxPt) {
+    for (Int_t iPid = 0; iPid < 4; ++iPid) {
+      Int_t deltaNp = np[idx][iPid][1][idxPt]-np[idx][iPid][0][idxPt];  
+      Double_t delta = 1.;
+      for (Int_t idxOrder = 1; idxOrder <= fOrder; ++idxOrder) {
+	delta *= deltaNp;
+	(static_cast<TProfile2D*>(list->FindObject(Form("fProfBin%s%sNetPt%dM", AliEbyEPidRatioHelper::fgkPidName[iPid], name, idxOrder))))->Fill(centralityBin,idxPt, delta);
+	(static_cast<TProfile2D*>(list->FindObject(Form("fProf%s%sNetPt%dM", AliEbyEPidRatioHelper::fgkPidName[iPid], name, idxOrder))))->Fill(centralityPer,idxPt, delta);
+      }
+    
+      for (Int_t idxOrder = 0; idxOrder <= fOrder; ++ idxOrder) {
+	fRedFactp[idxOrder][0]  = 1.;
+	fRedFactp[idxOrder][1]  = 1.;
+      }
+      
+      for (Int_t idxOrder = 1; idxOrder <= fOrder; ++ idxOrder) {
+	fRedFactp[idxOrder][0]  = fRedFactp[idxOrder-1][0] * Double_t(np[idx][iPid][0][idxPt]-(idxOrder-1));
+	fRedFactp[idxOrder][1]  = fRedFactp[idxOrder-1][1] * Double_t(np[idx][iPid][1][idxPt]-(idxOrder-1));
+      }
+      
+      for (Int_t ii = 0; ii <= fOrder; ++ii) {   // ii -> p    -> n1
+	for (Int_t kk = 0; kk <= fOrder; ++kk) { // kk -> pbar -> n2
+	  Double_t fik = fRedFactp[ii][1] * fRedFactp[kk][0];   // n1 *n2 -> p * pbar
+	  (static_cast<TProfile2D*>(list->FindObject(Form("fProfBin%s%sNetPtF%02d%02d", AliEbyEPidRatioHelper::fgkPidName[iPid], name, ii, kk))))->Fill(centralityBin,idxPt, fik);
+	  (static_cast<TProfile2D*>(list->FindObject(Form("fProf%s%sNetPtF%02d%02d", AliEbyEPidRatioHelper::fgkPidName[iPid], name, ii, kk))))->Fill(centralityPer,idxPt, fik);
+	}
+      }
+    }
+  }// for (Int_t idxPt  = 0; idxPt < AliEbyEPidRatioHelper::fgkfHistNBinsPt; ++idxPt) {
+  
+  return;
+}
 
 

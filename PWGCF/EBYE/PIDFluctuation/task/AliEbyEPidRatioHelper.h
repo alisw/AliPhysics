@@ -52,30 +52,31 @@ class AliEbyEPidRatioHelper : public TNamed {
   void SetNSigmaMaxTOF(Float_t f)              {fNSigmaMaxTOF        = f;}
   void SetMinPtForTOFRequired(Float_t f)       {fMinPtForTOFRequired = f;}
   void SetMaxPtForTPClow(Float_t f)            {fMaxPtForTPClow      = f;}
-     
-  void SetPhiRange(Float_t f1, Float_t f2);
 
-  TH1F*    GetHEventStat0()                    {return fHEventStat0;}
-  TH1F*    GetHEventStat1()                    {return fHEventStat1;}
-  TH1F*    GetHTriggerStat()                   {return fHTriggerStat;}
-  TH1F*    GetHCentralityStat()                {return fHCentralityStat;}
-  Int_t    GetCentralityBin()                  {return fCentralityBin;}
-  Float_t  GetCentralityPercentile()           {return fCentralityPercentile;}
- 
-  Float_t  GetMinPtForTOFRequired()            {return fMinPtForTOFRequired;}
-  Float_t  GetMaxPtForTPClow()                 {return fMaxPtForTPClow;}
-  Float_t  GetRapidityMax()                    {return fRapidityMax;}
-  Float_t  GetPhiMin()                         {return fPhiMin;}
-  Float_t  GetPhiMax()                         {return fPhiMax;}
-  AliESDtrackCuts* GetESDTrackCuts()           {return fESDTrackCuts;}
-  Bool_t           GetIsMC()                   {return fIsMC;}
-  Bool_t           GetIsRatio()                {return fIsRatio;}
-  Int_t            GetAODtrackCutBit()         {return fAODtrackCutBit;}
+  // void SetIsRatio(Bool_t b)                    {fIsRatio             = b;}  
+  // void SetIsPtBin(Bool_t   b)                  {fIsPtBin             = b;}  
+
+  TH1F*    GetHEventStat0()                    {return fHEventStat0;     }
+  TH1F*    GetHEventStat1()                    {return fHEventStat1;     }
+  TH1F*    GetHTriggerStat()                   {return fHTriggerStat;    }
+  TH1F*    GetHCentralityStat()                {return fHCentralityStat; }
+  Int_t    GetCentralityBin()                  {return fCentralityBin;   }
+  Float_t  GetMaxPtForTPClow()                 {return fMaxPtForTPClow;  }
+  Float_t  GetRapidityMax()                    {return fRapidityMax;     }
+  Float_t  GetPhiMin()                         {return fPhiMin;          }
+  Float_t  GetPhiMax()                         {return fPhiMax;          }
+  AliESDtrackCuts* GetESDTrackCuts()           {return fESDTrackCuts;    }
+  Bool_t           GetIsMC()                   {return fIsMC;            }
+  Bool_t           GetIsRatio()                {return fIsRatio;         }
+  Bool_t           GetIsPtBin()                {return fIsPtBin;         }
+  Int_t            GetAODtrackCutBit()         {return fAODtrackCutBit;  }
+  AliMCEvent*           GetMCEvent()           {return fMCEvent;         }
   AliInputEventHandler* GetInputEventHandler() {return fInputEventHandler;}
-  AliMCEvent*           GetMCEvent()           {return fMCEvent;}
- 
+  void SetPhiRange(Float_t f1, Float_t f2);
+  Float_t  GetCentralityPercentile()           {return fCentralityPercentile;}
+  Float_t  GetMinPtForTOFRequired()            {return fMinPtForTOFRequired;}
   /** Initialize Helper */
-  Int_t Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Int_t trackCutBit, Int_t modeDistCreation);
+  Int_t Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Bool_t isPtBin, Int_t trackCutBit, Int_t modeDistCreation);
 
   /** Setup Event */
   Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
@@ -192,7 +193,8 @@ class AliEbyEPidRatioHelper : public TNamed {
   TH1F                 *fHCentralityStat;          //  Centrality statistics
   Int_t                 fNCentralityBins;          //  N centrality bins used
   TRandom3             *fRandom;                   //  Random generator
-  Bool_t                fIsRatio;
+  Bool_t                fIsRatio;                  //  Is ratio
+  Bool_t                fIsPtBin;                  //  Is Pt Bin
 
 
   ClassDef(AliEbyEPidRatioHelper, 1);
