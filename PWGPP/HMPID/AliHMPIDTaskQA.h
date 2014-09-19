@@ -14,12 +14,13 @@
  **************************************************************************/
 
 //==============================================================================
-// AliHMPIDTaskQA - Class representing a quality check tool of HMPID
+// AliHMPIDAnalysysTask - Class representing a basic analysis tool of HMPID data at  
+// level of ESD.
 // A set of histograms is created.
 //==============================================================================
 
-#ifndef ALIHMPIDTASKQA_H
-#define ALIHMPIDTASKQA_H
+#ifndef AliHMPIDTASKQA_H
+#define AliHMPIDTASKQA_H
 
 #include "AliAnalysisTaskSE.h"
 #include "AliStack.h"
@@ -28,7 +29,11 @@ class TH1;
 class TParticle;
 class TFile;
 class AliESDtrack;
+class AliESDtrackCuts;
+class AliAnalysisFilter;
 class AliESDEvent;
+class AliVEvent;
+class AliPIDResposne;
 
 class AliHMPIDTaskQA : public AliAnalysisTaskSE {
   public:
@@ -42,6 +47,7 @@ class AliHMPIDTaskQA : public AliAnalysisTaskSE {
   virtual ~AliHMPIDTaskQA();
   
   virtual void   ConnectInputData(Option_t *);
+ // virtual void AliHMPIDTaskQA::UserCreateObject(Option_t *)
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
@@ -53,44 +59,23 @@ class AliHMPIDTaskQA : public AliAnalysisTaskSE {
      
  private:     
  
-  AliESDEvent *fESD;                    //! ESD object
-  AliMCEvent  *fMC;                     //! MC event
+  AliESDEvent        *fESD;             //! ESD object
+  AliMCEvent         *fMC;              //! MC event
 
-  Bool_t       fUseMC;                  // decide whether use or not the MC information
+  Bool_t             fUseMC;            // decide whether use or not the MC information
 
-  TList         *fHmpHistList ;         // list of histograms
+  TList              *fHmpHistList ;    // list of histograms
 
-  TH2F          *fHmpPesdPhmp;          // HMP momentum vs ESD momentum
-  TH2F          *fHmpCkovPesd;          // Ckov angle vs ESD momentum
-  TH2F          *fHmpCkovPhmp;          // Ckov angle vs HMP momenutm
-  TH1F          *fHmpMipCharge3cm;      // Mip charge with 3 cm distance cut
-  TH1F          *fHmpMipTrkDist;        // Mip-track distance over-all
-  TH1F          *fHmpTrkFlags;          // track flags
-  TH1F          *fHmpPhotons[7];        // Photons per ring
-  TH2F          *fHmpPhotP[7];          // Photons per ring vs momentum
-  TH2F          *fHmpPhotSin2th[7];     // Photons per ring vs sin(th)^2
-  TH1F          *fHmpMipTrkDistPosX[7]; // Xtrk - Xmip of positive tracks
-  TH1F          *fHmpMipTrkDistNegX[7]; // Xtrk - Xmip of negative tracks
-  TH1F          *fHmpMipTrkDistPosY[7]; // Ytrk - Ymip of positive tracks
-  TH1F          *fHmpMipTrkDistNegY[7]; // Ytrk - Ymip of negative tracks
-  TH1F          *fHmpMipCharge[7];      // Mip charge distribution
+  TH1F               *fHmpNevents;
+  TH1F               *fZvertex;
 
-  Int_t          fN1;                   // number of points for pi and K
-  Int_t          fN2;                   // number of point for p
-  TH1F          *fPionEff;              // identified pions
-  TH1F          *fKaonEff;              // identified kaons
-  TH1F          *fProtEff;              // identified protons
-  TH1I          *fPionTot;              // total pions
-  TH1I          *fKaonTot;              // total kaons
-  TH1I          *fProtTot;              // total protons
-  TH1F          *fPionNot;              // non-pion tracks
-  TH1F          *fKaonNot;              // non-kaon tracks
-  TH1F          *fProtNot;              // non-proton tracks
-  TH1I          *fPionCon;              // tracks identified as pions
-  TH1I          *fKaonCon;              // tracks identified as kaons
-  TH1I          *fProtCon;              // tracks identified as protons
+  AliESDtrackCuts    *fTrackCuts;
+  AliAnalysisFilter  *fTrackFilter;
+  
+  TTree              *fTree;            // tree with useful data for subsequent analysis
+  Float_t            fVar[69];          // array of data to fill the tree
 
-  ClassDef(AliHMPIDTaskQA,2);
+  ClassDef(AliHMPIDTaskQA,4);
 };
 
 #endif
