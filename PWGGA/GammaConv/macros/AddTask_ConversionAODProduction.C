@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = kFALSE){
 
-// Before doing anything, we load the needed library
+	// Before doing anything, we load the needed library
 	gSystem->Load("libPWGGAGammaConv.so");
 	// dataset 0: pp
 	// dataset 1: PbPb
@@ -9,8 +9,8 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 	//get the current analysis manager
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
-	Error("AddTask_V0ReaderV1", "No analysis manager found.");
-	return 0;
+		Error("AddTask_V0ReaderV1", "No analysis manager found.");
+		return 0;
 	}
 
 //========= Add PID Reponse to ANALYSIS manager ====
@@ -24,9 +24,6 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 	TString analysiscutB;
 
 	if(dataset == 1){
-	// Old cut string, no longer compatible with AliConversionCuts
-	// analysiscut="9001770093501132112000010000000000";
-	// New cut string as of April 2013
 		analysiscutEvent = "1000000";
 		analysiscut= "060084000001500000000";
 		analysiscutB="160084000001500000000";
@@ -35,7 +32,6 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 		analysiscut= "060084000001500000000";
 		analysiscutB="160084000001500000000";
 	} else{
-	// analysiscut="
 		analysiscutEvent = "0000000";
 		analysiscut ="060084001001500000000";
 		analysiscutB="160084001001500000000";
@@ -55,12 +51,20 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 	fV0ReaderB->SetUseAODConversionPhoton(kTRUE);
 //     fV0ReaderB->CheckAODConsistency();
 
-	AliConvEventCuts *fEventCuts=NULL;
+	AliConvEventCuts *fEventCutsA=NULL;
+	AliConvEventCuts *fEventCutsB=NULL;
 	if(analysiscutEvent!=""){
-		fEventCuts= new AliConvEventCuts(analysiscutEvent.Data(),analysiscutEvent.Data());
-		if(fEventCuts->InitializeCutsFromCutString(analysiscutEvent.Data())){
-			fV0Reader->SetEventCuts(fEventCuts);
-			fV0ReaderB->SetEventCuts(fEventCuts);
+		fEventCutsA= new AliConvEventCuts(analysiscutEvent.Data(),analysiscutEvent.Data());
+		fEventCutsA->SetPreSelectionCutFlag(kTRUE);
+		fEventCutsA->SetV0ReaderName("ConvGammaAODProduction");
+		if(fEventCutsA->InitializeCutsFromCutString(analysiscutEvent.Data())){
+			fV0Reader->SetEventCuts(fEventCutsA);
+		}
+		fEventCutsB= new AliConvEventCuts(analysiscutEvent.Data(),analysiscutEvent.Data());
+		fEventCutsB->SetPreSelectionCutFlag(kTRUE);
+		fEventCutsB->SetV0ReaderName("ConvGammaAODProductionB");
+		if(fEventCutsB->InitializeCutsFromCutString(analysiscutEvent.Data())){
+			fV0ReaderB->SetEventCuts(fEventCutsB);
 		}
 	}
 	
@@ -80,7 +84,6 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 	}
 	fV0ReaderB->Init();
 
-	
 	AliLog::SetGlobalLogLevel(AliLog::kInfo);
 
 	//================================================
@@ -91,11 +94,9 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 	AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
 	// connect input V0Reader
-	//fV0Reader->SelectCollisionCandidates(AliVEvent::kAny);
 	mgr->AddTask(fV0Reader);
 	mgr->ConnectInput (fV0Reader,0,cinput);
 
-	//fV0ReaderB->SelectCollisionCandidates(AliVEvent::kAny);
 	mgr->AddTask(fV0ReaderB);
 	mgr->ConnectInput (fV0ReaderB,0,cinput);
 
