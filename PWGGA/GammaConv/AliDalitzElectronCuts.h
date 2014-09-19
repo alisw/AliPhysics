@@ -134,7 +134,6 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetEtaCut(Int_t etaCut);
   Bool_t SetPtCut(Int_t ptCut);
   Bool_t SetDCACut(Int_t dcaCut);
-  void SetEtaShift(Double_t etaShift){fEtaShift = etaShift;}
   Bool_t SetMinMomPiondEdxCut(Int_t piMinMomdedxSigmaCut);
   Bool_t SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut);
   Bool_t SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut);
@@ -176,7 +175,6 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   AliESDtrackCuts *fesdTrackCuts;
 
   Double_t fEtaCut; //eta cutç
-  Double_t fEtaShift;
   Bool_t   fDoEtaCut;
   Double_t fPtMinCut;
   Double_t fPtMaxCut;

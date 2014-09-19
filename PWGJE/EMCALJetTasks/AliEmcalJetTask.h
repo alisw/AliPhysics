@@ -13,7 +13,7 @@ namespace fastjet {
 #include "AliAnalysisTaskSE.h"
 #include "AliFJWrapper.h"
 #include "AliAODMCParticle.h"
-
+#include "AliEmcalJet.h"
 class AliEmcalJetTask : public AliAnalysisTaskSE {
  public:
 
@@ -40,7 +40,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   UserCreateOutputObjects();
   void                   UserExec(Option_t *option);
   void                   Terminate(Option_t *option);
-
+ 
   Bool_t                 IsLocked()                       { if(fLocked) {AliFatal("Jet finder task is locked! Changing properties is not allowed."); return kTRUE;} else return kFALSE;};
   void                   SetLocked()                      { fLocked = kTRUE;}
   void                   SelectConstituents(UInt_t constSel, UInt_t MCconstSel)  { fConstSel = constSel; fMCConstSel = MCconstSel; };
@@ -137,6 +137,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   FindJets();
   Bool_t                 DoInit();
   Bool_t                 GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
+  void                   FillJetConstituents(std::vector<fastjet::PseudoJet>& constituents,AliEmcalJet *jet,Double_t vertex[3],Int_t jetCount,Int_t& nt,Int_t& nc,Double_t& maxCh,Double_t& maxNe,Int_t& ncharged,Int_t& nneutral,Double_t& neutralE,Double_t& mcpt,Int_t& cemc,Double_t& emcpt,Int_t& gall,Int_t& gemc); 
 
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection

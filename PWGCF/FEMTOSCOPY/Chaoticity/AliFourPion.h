@@ -128,8 +128,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   //
   Float_t cubicInterpolate(Float_t[4], Float_t);
   Float_t nCubicInterpolate(Int_t, Float_t*, Float_t[]);
-  //Double_t functionEW(Double_t *x, Double_t *par);
-  //Double_t functionLG(Double_t *x, Double_t *par);
+  
   
   const char* fname;// name of class
   AliAODEvent            *fAOD; //!    // AOD object
@@ -329,22 +328,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t farrP1[4][4][4];
   Float_t farrP2[4][4][4];
   
-  /* bool LowQPairSwitch_E0E0[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E0E1[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E0E2[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E0E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E1E2[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E1E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E2E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  //
-  bool NormQPairSwitch_E0E0[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E0E1[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E0E2[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E0E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E1E2[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E1E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E2E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  */
+ 
   //
   Char_t fDefaultsCharSwitch[kMultLimitPbPb];//!
   TArrayC *fLowQPairSwitch_E0E0[kMultLimitPbPb];//!

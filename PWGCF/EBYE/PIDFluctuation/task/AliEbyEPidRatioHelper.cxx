@@ -90,13 +90,14 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
   fHCentralityStat(NULL),
   fNCentralityBins(11),
   
-  fRandom(NULL) {
+  fRandom(NULL),
+  fIsRatio(kFALSE) {
   // Constructor   
   
   AliLog::SetClassDebugLevel("AliEbyEPidRatioHelper",10);
 }
 
-const Float_t AliEbyEPidRatioHelper::fgkfHistBinWitdthRap = 0.075;
+const Float_t AliEbyEPidRatioHelper::fgkfHistBinWitdthRap = 0.1;
 const Float_t AliEbyEPidRatioHelper::fgkfHistBinWitdthPt  = 0.3; // 0.08 // 300 MeV  // was 80 MeV
 
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangeCent[]  = {-0.5, 10.5};
@@ -107,11 +108,11 @@ const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsEta     = Int_t((AliEbyEPidRat
 								   AliEbyEPidRatioHelper::fgkfHistRangeEta[0]) / 
 								  AliEbyEPidRatioHelper::fgkfHistBinWitdthRap) +1;
 
-const Float_t AliEbyEPidRatioHelper::fgkfHistRangeRap[]   = {-0.9, 0.9};
+const Float_t AliEbyEPidRatioHelper::fgkfHistRangeRap[]   = {-0.8, 0.8};
 const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsRap     = Int_t((AliEbyEPidRatioHelper::fgkfHistRangeRap[1] - AliEbyEPidRatioHelper::fgkfHistRangeRap[0]) / AliEbyEPidRatioHelper::fgkfHistBinWitdthRap) +1;
 
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangePhi[]   = {0.0, TMath::TwoPi()};
-const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsPhi     = 42 ;
+const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsPhi     = 21 ;
 
 const Float_t AliEbyEPidRatioHelper::fgkfHistRangePt[]    = {0.2, 2.9}; // {0.2, 5.}; // was {0.3, 2.22}
 const Int_t   AliEbyEPidRatioHelper::fgkfHistNBinsPt      = Int_t((AliEbyEPidRatioHelper::fgkfHistRangePt[1] - AliEbyEPidRatioHelper::fgkfHistRangePt[0]) / AliEbyEPidRatioHelper::fgkfHistBinWitdthPt); 
@@ -175,7 +176,7 @@ void AliEbyEPidRatioHelper::SetPhiRange(Float_t f1, Float_t f2) {
 
 
 //________________________________________________________________________
-Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Int_t trackCutBit, Int_t modeDistCreation) {
+Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Int_t trackCutBit, Int_t modeDistCreation) {
   // -- Initialize helper
 
   Int_t iResult = 0;
@@ -185,6 +186,7 @@ Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Int_
 
   // -- Is MC
   fIsMC             = isMC;
+  fIsRatio          = isRatio;
 
   // -- AOD track filter bit
   fAODtrackCutBit   = trackCutBit;

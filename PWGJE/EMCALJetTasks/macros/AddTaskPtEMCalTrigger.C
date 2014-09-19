@@ -6,7 +6,8 @@
 #include <TString.h>
 #endif
 
-AliAnalysisTask* AddTaskPtEMCalTrigger(const char *period ="LHC13d"){
+AliAnalysisTask* AddTaskPtEMCalTrigger(bool usePythiaHard, const char *period ="LHC13d", const char *triggerContainer = ""){
+		//AliLog::SetClassDebugLevel("EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger", 2);
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
          
         if (!mgr) {
@@ -25,13 +26,17 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(const char *period ="LHC13d"){
         if(!TString(period).CompareTo("LHC13f")) pttriggertask->SetSwapEta();
         mgr->AddTask(pttriggertask);
         pttriggertask->SetPtRange(2., 100.);
+        if(usePythiaHard){
+        	pttriggertask->SetIsPythia(kTRUE);
+        }
+        pttriggertask->SetCaloTriggerPatchInfoName(triggerContainer);
 
         // Create charged hadrons pPb standard track cuts
         AliESDtrackCuts *standardTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
         standardTrackCuts->SetName("Standard Track cuts");
         standardTrackCuts->SetMinNCrossedRowsTPC(120);
         standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-        pttriggertask->AddTrackCuts(standardTrackCuts);
+        pttriggertask->AddESDTrackCuts(standardTrackCuts);
 
         // Create hybrid track cuts as used in the jet analysis
         AliESDtrackCuts* hybridTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
@@ -41,7 +46,7 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(const char *period ="LHC13d"){
         hybridTrackCuts->SetDCAToVertex2D(kTRUE);
         hybridTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
         hybridTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-        pttriggertask->AddTrackCuts(hybridTrackCuts);
+        pttriggertask->AddESDTrackCuts(hybridTrackCuts);
 
         TString containerName = mgr->GetCommonFileName();
         containerName += ":PtEMCalTriggerTask";

@@ -125,7 +125,7 @@ void AliEbyEPidRatioDCA::Process() {
     // -- Fill THnSparse 
     
     if(iPid != 0) {   
-      Double_t hnDCA[10] = {fCentralityBin, 
+      Double_t hnDCA[10] = {fCentralityBin,0, 
 			    track->Eta(), 
 			    yP, 
 			    track->Phi(), 
@@ -133,21 +133,19 @@ void AliEbyEPidRatioDCA::Process() {
 			    track->Charge(), 
 			    contIdx,
 			    isDCArAccepted, 
-			    dca[0], 
-			    0};
+			    dca[0]};
       fHnDCA->Fill(hnDCA);
     }      
-
-      Double_t hnDCA[10] = {fCentralityBin, 
-			    track->Eta(), 
-			    yP, 
-			    track->Phi(), 
-			    track->Pt(), 
-			    track->Charge(), 
-			    contIdx,
-			    isDCArAccepted, 
-			    dca[0], 
-			    iPid};
+    
+    Double_t hnDCA[10] = {fCentralityBin, iPid,
+			  track->Eta(), 
+			  yP, 
+			  track->Phi(), 
+			  track->Pt(), 
+			  track->Charge(), 
+			  contIdx,
+			  isDCArAccepted, 
+			  dca[0]};
       fHnDCA->Fill(hnDCA);
 
 
@@ -158,43 +156,53 @@ void AliEbyEPidRatioDCA::Process() {
 
 //________________________________________________________________________
 void AliEbyEPidRatioDCA::CreateHistograms() {
-  Int_t    binHnDCA[10] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent, AliEbyEPidRatioHelper::fgkfHistNBinsEta,        //     cent |       etaRec
-			  AliEbyEPidRatioHelper::fgkfHistNBinsRap,  AliEbyEPidRatioHelper::fgkfHistNBinsPhi,        //     yRec |       phiRec
-			  AliEbyEPidRatioHelper::fgkfHistNBinsPt,   AliEbyEPidRatioHelper::fgkfHistNBinsSign,       //    ptRec |         sign
-			   4,  2,  77,4};                                                                                            //  contPart| DCArAccepted | DCAr
-
-  Double_t minHnDCA[10] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], AliEbyEPidRatioHelper::fgkfHistRangeEta[0], 
-			  AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
-			  AliEbyEPidRatioHelper::fgkfHistRangePt[0],   AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 
+  Int_t    binHnDCA[11] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent,4,
+			   AliEbyEPidRatioHelper::fgkfHistNBinsEta,       
+			   AliEbyEPidRatioHelper::fgkfHistNBinsRap,  
+			   AliEbyEPidRatioHelper::fgkfHistNBinsPhi,        
+			   AliEbyEPidRatioHelper::fgkfHistNBinsPt,   
+			   AliEbyEPidRatioHelper::fgkfHistNBinsSign,      
+			   4,  2,  77};      
+  
+  Double_t minHnDCA[11] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0],-0.5, 
+			   AliEbyEPidRatioHelper::fgkfHistRangeEta[0], 
+			   AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  
+			   AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
+			   AliEbyEPidRatioHelper::fgkfHistRangePt[0],   
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 
 			   0.5, -0.5, -3.,-0.5};
   
-  Double_t maxHnDCA[10] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], AliEbyEPidRatioHelper::fgkfHistRangeEta[1], 
-			  AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
-			  AliEbyEPidRatioHelper::fgkfHistRangePt[1],   AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
+  Double_t maxHnDCA[11] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1],3.5,
+			   AliEbyEPidRatioHelper::fgkfHistRangeEta[1], 
+			   AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  
+			   AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
+			   AliEbyEPidRatioHelper::fgkfHistRangePt[1],   
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
 			   4.5, 1.5, 3., 3.5};
 
 
-  fHnDCA = new THnSparseD("hnDCA", "cent:etaRec:yRec:phiRec:ptRec:sign:contPart:contSign:DCArAccepted:DCAr", 10, binHnDCA, minHnDCA, maxHnDCA);
+  fHnDCA = new THnSparseD("hnDCA", "cent:pid:etaRec:yRec:phiRec:ptRec:sign:contPart:contSign:DCArAccepted:DCAr", 11, binHnDCA, minHnDCA, maxHnDCA);
   
   fHnDCA->Sumw2();
-  fHnDCA->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
-  fHnDCA->GetAxis(1)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
-  fHnDCA->GetAxis(2)->SetTitle("#it{y}_{Rec}");                 //  rapidity  [-0.5, 0.5]
-  fHnDCA->GetAxis(3)->SetTitle("#varphi_{Rec} (rad)");          //  phi  [ 0. , 2Pi]
-  fHnDCA->GetAxis(4)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})");  //  pT   [ 0.2, 2.6]
-  fHnDCA->GetAxis(5)->SetTitle("sign");                         //  -1 | 0 | +1 
 
-  fHnDCA->GetAxis(6)->SetTitle("contPart");                     //  1  primary | 2 missId | 3 from WeakDecay | 4 p from Material
-  fHnDCA->GetAxis(7)->SetTitle("DCArAccepted");                 //  0 not accepted | 1 accepted 
-  fHnDCA->GetAxis(8)->SetTitle("DCAr");                         //  DCAr [-3, 3]
-  fHnDCA->GetAxis(9)->SetTitle("PID");                          //  0 | 1 | 2 | 3
+  fHnDCA->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
+  fHnDCA->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");   //  0 | 1 | 2 | 3 
+  fHnDCA->GetAxis(2)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
+  fHnDCA->GetAxis(3)->SetTitle("#it{y}_{Rec}");                 //  rapidity  [-0.5, 0.5]
+  fHnDCA->GetAxis(4)->SetTitle("#varphi_{Rec} (rad)");          //  phi  [ 0. , 2Pi]
+  fHnDCA->GetAxis(5)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})");  //  pT   [ 0.2, 2.6]
+  fHnDCA->GetAxis(6)->SetTitle("sign");                         //  -1 | 0 | +1 
+  fHnDCA->GetAxis(7)->SetTitle("contPart");                     //  1  primary | 2 missId | 3 from WeakDecay | 4 p from Material
+  fHnDCA->GetAxis(8)->SetTitle("DCArAccepted");                 //  0 not accepted | 1 accepted 
+  fHnDCA->GetAxis(9)->SetTitle("DCAr");                         //  DCAr [-3, 3]
+
 
   fHelper->BinLogAxis(fHnDCA,  4, fESDTrackCuts);
   fHelper->BinLogAxis(fHnDCA,  4, fESDTrackCutsBkg);
 
   // -- Set binning for DCAr
   Double_t binsDCAr[77] = {-3.,-2.85,-2.7,-2.55,-2.4,-2.25,-2.1,-1.95,-1.8,-1.65,-1.5,-1.35,-1.2,-1.05,-0.9,-0.75,-0.6,-0.45,-0.3,-0.285,-0.27,-0.255,-0.24,-0.225,-0.21,-0.195,-0.18,-0.165,-0.15,-0.135,-0.12,-0.105,-0.09,-0.075,-0.06,-0.045,-0.03,-0.015,0.,0.015,0.03,0.045,0.06,0.075,0.09,0.105,0.12,0.135,0.15,0.165,0.18,0.195,0.21,0.225,0.24,0.255,0.27,0.285,0.3,0.45,0.6,0.75,0.9,1.05,1.2,1.35,1.5,1.65,1.8,1.95,2.1,2.25,2.4,2.55,2.7,2.85,3.};
-  fHnDCA->GetAxis(8)->Set(76, binsDCAr);
+  fHnDCA->GetAxis(9)->Set(76, binsDCAr);
 
   // ------------------------------------------------------------------
   

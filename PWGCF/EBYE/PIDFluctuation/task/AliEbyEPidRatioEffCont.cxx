@@ -44,8 +44,10 @@ ClassImp(AliEbyEPidRatioEffCont)
 AliEbyEPidRatioEffCont::AliEbyEPidRatioEffCont() :
   AliEbyEPidRatioBase("EffCont", "EffCont"),
   fLabelsRec(NULL),
-  fHnEff(NULL),
-  fHnCont(NULL) {
+  fHnEffMc(NULL),
+  fHnContMc(NULL),
+  fHnEffRec(NULL),
+  fHnContRec(NULL) {
   // Constructor   
 
   AliLog::SetClassDebugLevel("AliEbyEPidRatioEffCont",10);
@@ -93,70 +95,79 @@ void AliEbyEPidRatioEffCont::Init() {
 //________________________________________________________________________
 void AliEbyEPidRatioEffCont::CreateHistograms() {
   // Copied from NetParticle class
-  Int_t    binHnEff[20] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent,    AliEbyEPidRatioHelper::fgkfHistNBinsEta,       //     cent |     etaMC
-			   AliEbyEPidRatioHelper::fgkfHistNBinsRap,     AliEbyEPidRatioHelper::fgkfHistNBinsPhi,       //      yMC |     phiMC
-			   AliEbyEPidRatioHelper::fgkfHistNBinsPt,      AliEbyEPidRatioHelper::fgkfHistNBinsSign,      //     ptMC |    signMC
-			   2,      2  ,      2  ,                                                                                    // findable | recStatus  | pidStatus
-			   AliEbyEPidRatioHelper::fgkfHistNBinsEta,     AliEbyEPidRatioHelper::fgkfHistNBinsRap,       //   etaRec |      yRec
-			   AliEbyEPidRatioHelper::fgkfHistNBinsPhi,     AliEbyEPidRatioHelper::fgkfHistNBinsPt,        //   phiRec |     ptRec
-			   AliEbyEPidRatioHelper::fgkfHistNBinsSign,                                                          //  signRec
-  			   AliEbyEPidRatioHelper::fgkfHistNBinsEta,     AliEbyEPidRatioHelper::fgkfHistNBinsRap,       // deltaEta | deltaY
-			   2*AliEbyEPidRatioHelper::fgkfHistNBinsPhi+1, 2*AliEbyEPidRatioHelper::fgkfHistNBinsPt+1,    // deltaPhi | deltaPt
-			   AliEbyEPidRatioHelper::fgkfHistNBinsSign+2, 4};                                                       // deltaSign
-
+  Int_t    binHnEff[10] = { AliEbyEPidRatioHelper::fgkfHistNBinsCent, 4,   
+			    AliEbyEPidRatioHelper::fgkfHistNBinsSign, 2,      2  ,      2  ,                       
+			    AliEbyEPidRatioHelper::fgkfHistNBinsEta,     
+			    AliEbyEPidRatioHelper::fgkfHistNBinsRap,     
+			    AliEbyEPidRatioHelper::fgkfHistNBinsPhi,     
+			    AliEbyEPidRatioHelper::fgkfHistNBinsPt};
   
-  Double_t minHnEff[20] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], AliEbyEPidRatioHelper::fgkfHistRangeEta[0], 
-			   AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
-			   AliEbyEPidRatioHelper::fgkfHistRangePt[0],   AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 
-			   -0.5,     -0.5,     -0.5,
-			   AliEbyEPidRatioHelper::fgkfHistRangeEta[0],  AliEbyEPidRatioHelper::fgkfHistRangeRap[0], 
-			   AliEbyEPidRatioHelper::fgkfHistRangePhi[0],  AliEbyEPidRatioHelper::fgkfHistRangePt[0],
-			   AliEbyEPidRatioHelper::fgkfHistRangeSign[0],
-			   AliEbyEPidRatioHelper::fgkfHistRangeEta[0],  AliEbyEPidRatioHelper::fgkfHistRangeRap[0], 
-			   -1.*AliEbyEPidRatioHelper::fgkfHistRangePhi[1], -1.*AliEbyEPidRatioHelper::fgkfHistRangePt[1],
-			   AliEbyEPidRatioHelper::fgkfHistRangeSign[0]-1., -0.5};
+  Double_t minHnEff[10] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], -0.5, 
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[0], -0.5, -0.5, -0.5,  
+			   AliEbyEPidRatioHelper::fgkfHistRangeEta[0], 
+			   AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  
+			   AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
+			   AliEbyEPidRatioHelper::fgkfHistRangePt[0]};
 
-  Double_t maxHnEff[20] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], AliEbyEPidRatioHelper::fgkfHistRangeEta[1], 
-			   AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
-			   AliEbyEPidRatioHelper::fgkfHistRangePt[1],   AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
-			   1.5,      1.5,      1.5,
-			   AliEbyEPidRatioHelper::fgkfHistRangeEta[1],  AliEbyEPidRatioHelper::fgkfHistRangeRap[1], 
-			   AliEbyEPidRatioHelper::fgkfHistRangePhi[1],  AliEbyEPidRatioHelper::fgkfHistRangePt[1],
-			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1],
-			   AliEbyEPidRatioHelper::fgkfHistRangeEta[1],  AliEbyEPidRatioHelper::fgkfHistRangeRap[1], 
-			   AliEbyEPidRatioHelper::fgkfHistRangePhi[1],  AliEbyEPidRatioHelper::fgkfHistRangePt[1],
-			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1]+1., 3.5};
 
-  fHnEff = new THnSparseF("hnEff", "cent:etaMC:yMC:phiMC:ptMC:signMC:findable:recStatus:pidStatus:etaRec:yRec:phiRec:ptRec:signRec:deltaEta:deltaY:deltaPhi:deltaPt:deltaSign:PID", 
-			  20, binHnEff, minHnEff, maxHnEff);
-  fHnEff->Sumw2();    
-
-  fHnEff->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
-  fHnEff->GetAxis(1)->SetTitle("#eta_{MC}");                    //  eta  [-0.9, 0.9]
-  fHnEff->GetAxis(2)->SetTitle("#it{y}_{MC}");                  //  rapidity  [-0.5, 0.5]
-  fHnEff->GetAxis(3)->SetTitle("#varphi_{MC} (rad)");           //  phi  [ 0. , 2Pi]
-  fHnEff->GetAxis(4)->SetTitle("#it{p}_{T,MC} (GeV/#it{c})");   //  pT   [ 0.2, 2.3]
+  Double_t maxHnEff[10] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], 3.5,
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 1.5,      1.5,      1.5,
+			   AliEbyEPidRatioHelper::fgkfHistRangeEta[1],  
+			   AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  
+			   AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
+			   AliEbyEPidRatioHelper::fgkfHistRangePt[1]};
   
-  fHnEff->GetAxis(5)->SetTitle("sign");                         //  -1 | 0 | +1 
-  fHnEff->GetAxis(6)->SetTitle("findable");                     //  0 not findable      |  1 findable
-  fHnEff->GetAxis(7)->SetTitle("recStatus");                    //  0 not reconstructed |  1 reconstructed
-  fHnEff->GetAxis(8)->SetTitle("recPid");                       //  0 not accepted      |  1 accepted
+  fHnEffMc    = new THnSparseF("hnEffMc", "cent:pid:SignMC:findable:recStatus:pidStatus:etaMC:yMC:phiMC:ptMC", 10, binHnEff, minHnEff, maxHnEff);
+  fHnEffRec   = new THnSparseF("hnEffRec", "cent:pid:SignMC:findable:recStatus:pidStatus:etaRec:yRec:phiRec:ptRec", 10, binHnEff, minHnEff, maxHnEff);
+  //fHnEffRecMc = new THnSparseF("hnEffRecMMc", "cent:pid:SignMC:findable:recStatus:pidStatus:deltaEta:deltaY:deltaPhi:deltaPt" 10, binHnEff, minHnEff, maxHnEff);
 
-  fHnEff->GetAxis(9)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
-  fHnEff->GetAxis(10)->SetTitle("#it{y}_{Rec}");                //  rapidity  [-0.5, 0.5]
-  fHnEff->GetAxis(11)->SetTitle("#varphi_{Rec} (rad)");         //  phi  [ 0. , 2Pi]
-  fHnEff->GetAxis(12)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ 0.2, 2.3]
-  fHnEff->GetAxis(13)->SetTitle("sign");                        //  -1 | 0 | +1 
+  fHnEffMc->Sumw2();    
+  fHnEffRec->Sumw2();    
+ 
+  
 
-  fHnEff->GetAxis(14)->SetTitle("#eta_{MC}-#eta_{Rec}");                      //  eta  [-0.9, 0.9]
-  fHnEff->GetAxis(15)->SetTitle("#it{y}_{MC}-#it{y}_{Rec}");                  //  rapidity  [-0.5, 0.5]
-  fHnEff->GetAxis(16)->SetTitle("#varphi_{MC}-#varphi_{Rec} (rad)");          //  phi  [ -2Pi , 2Pi]
-  fHnEff->GetAxis(17)->SetTitle("#it{p}_{T,MC}-#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ -2.3, 2.3]
-  fHnEff->GetAxis(18)->SetTitle("sign_{MC}-sign_{Rec}");                      //  -2 | 0 | +2 
-  fHnEff->GetAxis(19)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
+  fHnEffMc->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
+  fHnEffMc->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
+  fHnEffMc->GetAxis(2)->SetTitle("sign");                         //  -1 | 0 | +1 
+  fHnEffMc->GetAxis(3)->SetTitle("findable");                     //  0 not findable      |  1 findable
+  fHnEffMc->GetAxis(4)->SetTitle("recStatus");                    //  0 not reconstructed |  1 reconstructed
+  fHnEffMc->GetAxis(5)->SetTitle("recPid");                       //  0 not accepted      |  1 accepted
+  fHnEffMc->GetAxis(6)->SetTitle("#eta_{MC}");                    //  eta  [-0.9, 0.9]
+  fHnEffMc->GetAxis(7)->SetTitle("#it{y}_{MC}");                  //  rapidity  [-0.5, 0.5]
+  fHnEffMc->GetAxis(8)->SetTitle("#varphi_{MC} (rad)");           //  phi  [ 0. , 2Pi]
+  fHnEffMc->GetAxis(9)->SetTitle("#it{p}_{T,MC} (GeV/#it{c})");   //  pT   [ 0.2, 2.3]
+  
 
-  fHelper->BinLogAxis(fHnEff,  4);
-  fHelper->BinLogAxis(fHnEff, 12);
+  fHnEffRec->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
+  fHnEffRec->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
+  fHnEffRec->GetAxis(2)->SetTitle("sign");                         //  -1 | 0 | +1 
+  fHnEffRec->GetAxis(3)->SetTitle("findable");                     //  0 not findable      |  1 findable
+  fHnEffRec->GetAxis(4)->SetTitle("recStatus");                    //  0 not reconstructed |  1 reconstructed
+  fHnEffRec->GetAxis(5)->SetTitle("recPid");                       //  0 not accepted      |  1 accepted
+  fHnEffRec->GetAxis(6)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
+  fHnEffRec->GetAxis(7)->SetTitle("#it{y}_{Rec}");                 //  rapidity  [-0.5, 0.5]
+  fHnEffRec->GetAxis(8)->SetTitle("#varphi_{Rec} (rad)");          //  phi  [ 0. , 2Pi]
+  fHnEffRec->GetAxis(9)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})");  //  pt   [ 0.2, 2.3]
+ 
+
+  // fHnEff->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
+  // fHnEff->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
+  // fHnEff->GetAxis(2)->SetTitle("sign");                         //  -1 | 0 | +1 
+  // fHnEff->GetAxis(3)->SetTitle("findable");                     //  0 not findable      |  1 findable
+  // fHnEff->GetAxis(4)->SetTitle("recStatus");                    //  0 not reconstructed |  1 reconstructed
+  // fHnEff->GetAxis(5)->SetTitle("recPid");                       //  0 not accepted      |  1 accepted
+  // fHnEff->GetAxis(6)->SetTitle("#eta_{MC}-#eta_{Rec}");                      //  eta  [-0.9, 0.9]
+  // fHnEff->GetAxis(7)->SetTitle("#it{y}_{MC}-#it{y}_{Rec}");                  //  rapidity  [-0.5, 0.5]
+  // fHnEff->GetAxis(8)->SetTitle("#varphi_{MC}-#varphi_{Rec} (rad)");          //  phi  [ -2Pi , 2Pi]
+  // fHnEff->GetAxis(9)->SetTitle("#it{p}_{T,MC}-#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ -2.3, 2.3]
+  //  fHnEff->GetAxis(10)->SetTitle("sign_{MC}-sign_{Rec}");                      //  -2 | 0 | +2 
+  
+  
+
+  fHelper->BinLogAxis(fHnEffMc,  7);
+  fHelper->BinLogAxis(fHnEffMc, 9);
+  fHelper->BinLogAxis(fHnEffRec,  7);
+  fHelper->BinLogAxis(fHnEffRec, 9);
 
   /* 
      >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Copied from NetParticle
@@ -176,68 +187,62 @@ void AliEbyEPidRatioEffCont::CreateHistograms() {
   // -- Create THnSparse - Cont
   // ------------------------------------------------------------------
 
-  Int_t    binHnCont[18] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent, AliEbyEPidRatioHelper::fgkfHistNBinsEta,       //     cent |    etaMC
-			    AliEbyEPidRatioHelper::fgkfHistNBinsRap,  AliEbyEPidRatioHelper::fgkfHistNBinsPhi,       //      yMC |    phiMC
-			    AliEbyEPidRatioHelper::fgkfHistNBinsPt,   AliEbyEPidRatioHelper::fgkfHistNBinsSign,      //     ptMC |   signMC=contSign
-			    8,                                                                                                     // contPart | 
-			    AliEbyEPidRatioHelper::fgkfHistNBinsEta,  AliEbyEPidRatioHelper::fgkfHistNBinsRap,       //   etaRec |     yRec
-			    AliEbyEPidRatioHelper::fgkfHistNBinsPhi,  AliEbyEPidRatioHelper::fgkfHistNBinsPt,        //   phiRec |    ptRec
-			    AliEbyEPidRatioHelper::fgkfHistNBinsSign,                                                       //  signRec  
-			    AliEbyEPidRatioHelper::fgkfHistNBinsEta,     AliEbyEPidRatioHelper::fgkfHistNBinsRap,    // deltaEta | deltaY
-			    2*AliEbyEPidRatioHelper::fgkfHistNBinsPhi+1, 2*AliEbyEPidRatioHelper::fgkfHistNBinsPt+1, // deltaPhi | deltaPt
-			    AliEbyEPidRatioHelper::fgkfHistNBinsSign+2, 4};                                          // deltaSign| pid 0-3
+  Int_t    binHnCont[8] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent, 4, 
+			   AliEbyEPidRatioHelper::fgkfHistNBinsSign, 8,   
+			   AliEbyEPidRatioHelper::fgkfHistNBinsEta,     
+			   AliEbyEPidRatioHelper::fgkfHistNBinsRap,  
+			   AliEbyEPidRatioHelper::fgkfHistNBinsPhi,     
+			   AliEbyEPidRatioHelper::fgkfHistNBinsPt};   
   
-  Double_t minHnCont[18] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], AliEbyEPidRatioHelper::fgkfHistRangeEta[0], 
-			    AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
-			    AliEbyEPidRatioHelper::fgkfHistRangePt[0],   AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 
-			    0.5,                                            
-			    AliEbyEPidRatioHelper::fgkfHistRangeEta[0],  AliEbyEPidRatioHelper::fgkfHistRangeRap[0], 
-			    AliEbyEPidRatioHelper::fgkfHistRangePhi[0],  AliEbyEPidRatioHelper::fgkfHistRangePt[0],
-			    AliEbyEPidRatioHelper::fgkfHistRangeSign[0],
-			    AliEbyEPidRatioHelper::fgkfHistRangeEta[0],  AliEbyEPidRatioHelper::fgkfHistRangeRap[0], 
-			    -1.*AliEbyEPidRatioHelper::fgkfHistRangePhi[1], -1.*AliEbyEPidRatioHelper::fgkfHistRangePt[1],
-			    AliEbyEPidRatioHelper::fgkfHistRangeSign[0]-1., -0.5};
-
+  Double_t minHnCont[8] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0], -0.5,
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[0],  0.5,
+			   AliEbyEPidRatioHelper::fgkfHistRangeEta[0], 
+			   AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  
+			   AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
+			   AliEbyEPidRatioHelper::fgkfHistRangePt[0]};   
   
-  Double_t maxHnCont[18] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], AliEbyEPidRatioHelper::fgkfHistRangeEta[1], 
-			    AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
-			    AliEbyEPidRatioHelper::fgkfHistRangePt[1],   AliEbyEPidRatioHelper::fgkfHistRangeSign[1],
-			    8.5,                        
-			    AliEbyEPidRatioHelper::fgkfHistRangeEta[1],  AliEbyEPidRatioHelper::fgkfHistRangeRap[1], 
-			    AliEbyEPidRatioHelper::fgkfHistRangePhi[1],  AliEbyEPidRatioHelper::fgkfHistRangePt[1],
-			    AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
-			    AliEbyEPidRatioHelper::fgkfHistRangeEta[1],  AliEbyEPidRatioHelper::fgkfHistRangeRap[1], 
-			    AliEbyEPidRatioHelper::fgkfHistRangePhi[1],  AliEbyEPidRatioHelper::fgkfHistRangePt[1],
-			    AliEbyEPidRatioHelper::fgkfHistRangeSign[1]+1., 3.5};
-
-  fHnCont = new THnSparseF("hnCont", "cent:etaMC:yMC:phiMC:ptMC:signMC:contPart:etaRec:yRec:phiRec:ptRec:signRec:deltaEta:deltaY:deltaPhi:deltaPt:deltaSign:PID",
-			   18, binHnCont, minHnCont, maxHnCont);
-  fHnCont->Sumw2();    
-
-  fHnCont->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
-  fHnCont->GetAxis(1)->SetTitle("#eta_{MC}");                    //  eta  [-0.9,0.9]
-  fHnCont->GetAxis(2)->SetTitle("#it{y}_{MC}");                  //  rapidity  [-0.5, 0.5]
-  fHnCont->GetAxis(3)->SetTitle("#varphi_{MC} (rad)");           //  phi  [ 0. ,2Pi]
-  fHnCont->GetAxis(4)->SetTitle("#it{p}_{T,MC} (GeV/#it{c})");   //  pT   [ 0.2,2.3]
-  fHnCont->GetAxis(5)->SetTitle("sign");                         //  -1 | 0 | +1 
+  Double_t maxHnCont[8] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1], 3.5,
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 8.5,
+			   AliEbyEPidRatioHelper::fgkfHistRangeEta[1], 
+			   AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  
+			   AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
+			   AliEbyEPidRatioHelper::fgkfHistRangePt[1]};   
   
-  fHnCont->GetAxis(6)->SetTitle("contPart");                     //  1 pi | 2 K | 3 p | 4 e | 5 mu | 6 other | 7 p from WeakDecay | 8 p from Material
+  fHnContMc  = new THnSparseF("hnContMc", "cent:pid:SignMC:contPart:etaMC:yMC:phiMC:ptMC",8, binHnCont, minHnCont, maxHnCont);
+  fHnContRec = new THnSparseF("hnContRec", "cent:pid:SignRec:contPart:etaRec:yRec:phiRec:ptRec",8, binHnCont, minHnCont, maxHnCont);
+
+  fHnContMc->Sumw2();    
+  fHnContRec->Sumw2();    
+
+  fHnContMc->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
+  fHnContMc->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
+  fHnContMc->GetAxis(2)->SetTitle("sign");                         //  -1 | 0 | +1  
+  fHnContMc->GetAxis(3)->SetTitle("contPart");                     //  1 pi | 2 K | 3 p | 4 e | 5 mu | 6 other | 7 p from WeakDecay | 8 p from Material
+  fHnContMc->GetAxis(4)->SetTitle("#eta_{MC}");                    //  eta  [-0.9,0.9]
+  fHnContMc->GetAxis(5)->SetTitle("#it{y}_{MC}");                  //  rapidity  [-0.5, 0.5]
+  fHnContMc->GetAxis(6)->SetTitle("#varphi_{MC} (rad)");           //  phi  [ 0. ,2Pi]
+  fHnContMc->GetAxis(7)->SetTitle("#it{p}_{T,MC} (GeV/#it{c})");   //  pT   [ 0.2,2.3]
+  
+  
+  fHnContRec->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
+  fHnContRec->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
+  fHnContRec->GetAxis(2)->SetTitle("sign");                         //  -1 | 0 | +1  
+  fHnContRec->GetAxis(3)->SetTitle("contPart");                     //  1 pi | 2 K | 3 p | 4 e | 5 mu | 6 other | 7 p from WeakDecay | 8 p from Material
+  fHnContRec->GetAxis(4)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
+  fHnContRec->GetAxis(5)->SetTitle("#it{y}_{Rec}");                 //  rapidity  [-0.5, 0.5]
+  fHnContRec->GetAxis(6)->SetTitle("#varphi_{Rec} (rad)");          //  phi  [ 0. , 2Pi]
+  fHnContRec->GetAxis(7)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ 0.2, 2.3]
  
-  fHnCont->GetAxis(7)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
-  fHnCont->GetAxis(8)->SetTitle("#it{y}_{Rec}");                 //  rapidity  [-0.5, 0.5]
-  fHnCont->GetAxis(9)->SetTitle("#varphi_{Rec} (rad)");          //  phi  [ 0. , 2Pi]
-  fHnCont->GetAxis(10)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ 0.2, 2.3]
-  fHnCont->GetAxis(11)->SetTitle("sign");                        //  -1 | 0 | +1 
 
-  fHnCont->GetAxis(12)->SetTitle("#eta_{MC}-#eta_{Rec}");                      //  eta  [-0.9, 0.9]
-  fHnCont->GetAxis(13)->SetTitle("#it{y}_{MC}-#it{y}_{Rec}");                  //  rapidity  [-0.5, 0.5]
-  fHnCont->GetAxis(14)->SetTitle("#varphi_{MC}-#varphi_{Rec} (rad)");          //  phi  [ -2Pi , 2Pi]
-  fHnCont->GetAxis(15)->SetTitle("#it{p}_{T,MC}-#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ -2.3, 2.3]
-  fHnCont->GetAxis(16)->SetTitle("sign_{MC}-sign_{Rec}");                      //  -2 | 0 | +2 
-  fHnCont->GetAxis(17)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
+  //  fHnCont->GetAxis(12)->SetTitle("#eta_{MC}-#eta_{Rec}");                      //  eta  [-0.9, 0.9]
+  // fHnCont->GetAxis(13)->SetTitle("#it{y}_{MC}-#it{y}_{Rec}");                  //  rapidity  [-0.5, 0.5]
+  // fHnCont->GetAxis(14)->SetTitle("#varphi_{MC}-#varphi_{Rec} (rad)");          //  phi  [ -2Pi , 2Pi]
+  // fHnCont->GetAxis(15)->SetTitle("#it{p}_{T,MC}-#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ -2.3, 2.3]
+  // fHnCont->GetAxis(16)->SetTitle("sign_{MC}-sign_{Rec}");                      //  -2 | 0 | +2 
+  // fHnCont->GetAxis(17)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
 
-  fHelper->BinLogAxis(fHnCont,  4);
-  fHelper->BinLogAxis(fHnCont, 10);
+  // fHelper->BinLogAxis(fHnCont,  4);
+  // fHelper->BinLogAxis(fHnCont, 10);
 
   return;
 }
@@ -410,25 +415,10 @@ void AliEbyEPidRatioEffCont::CheckContTrack(AliVTrack *track, Int_t iPid, Int_t 
       deltaPhi -= TMath::TwoPi();
   }
 
-    Double_t hnCont[18] = {fCentralityBin, 
-			   particle->Eta(), 
-			   particle->Y(), 
-			   particle->Phi(), 
-			   particle->Pt(), 
-			   signMC, 
-			   contPart, 
-			   track->Eta(), 
-			   yRec, 
-			   track->Phi(), 
-			   track->Pt(), 
-			   signRec,
-			   particle->Eta()-track->Eta(), 
-			   particle->Y()-yRec, 
-			   deltaPhi, 
-			   particle->Pt()-track->Pt(), 
-			   signMC-signRec, 
-			   iPid};
-    fHnCont->Fill(hnCont);
+  Double_t hnContMc[8]  = {fCentralityBin,iPid,signMC,contPart,particle->Eta(),particle->Y(),particle->Phi(),particle->Pt()};
+  Double_t hnContRec[8] = {fCentralityBin,iPid,signRec,contPart, track->Eta(),yRec,track->Phi(),track->Pt()};
+  fHnContMc->Fill(hnContMc);
+  fHnContRec->Fill(hnContRec);
    
 }
 
@@ -450,9 +440,9 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
 
     Int_t iPid = 0;
     Int_t gPdgCode = 0;
-    if ( particle->PdgCode() ==  211 ) {  iPid = 1; gPdgCode = 211;}
-    if ( particle->PdgCode() ==  321 ) {  iPid = 1; gPdgCode = 321;}
-    if ( particle->PdgCode() == 2212 ) {  iPid = 1; gPdgCode = 2212;}
+    if ( particle->PdgCode()      ==  211 ) {  iPid = 1; gPdgCode = 211;}
+    else if ( particle->PdgCode() ==  321 ) {  iPid = 1; gPdgCode = 321;}
+    else if ( particle->PdgCode() == 2212 ) {  iPid = 1; gPdgCode = 2212;}
     else {iPid = 0; gPdgCode = 0;}
 
     // -- Check if accepted in rapidity window -- for identified particles
@@ -524,51 +514,17 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
     }
     
     if(iPid != 0) {
-      Double_t hnEff[20] = {fCentralityBin, 
-			    particle->Eta(), 
-			    particle->Y(), 
-			    particle->Phi(), 
-			    particle->Pt(), 
-			    signMC, 
-			    findable, 
-			    recStatus, 
-			    recPid, 
-			    etaRec, 
-			    yRec, 
-			    phiRec, 
-			    ptRec, 
-			    signRec,
-			    particle->Eta()-etaRec, 
-			    particle->Y()-yRec, 
-			    deltaPhi, 
-			    particle->Pt()-ptRec, 
-			    signMC-signRec, 
-			    0};
-      fHnEff->Fill(hnEff);
+      Double_t hnEffMc[10]  = {fCentralityBin,0,signMC,findable, recStatus,recPid,particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
+      Double_t hnEffRec[10] = {fCentralityBin,0,signRec,findable, recStatus,recPid,etaRec, yRec, phiRec, ptRec};
+      fHnEffMc->Fill(hnEffMc);
+      fHnEffRec->Fill(hnEffRec);
     }
+    Double_t hnEffMc[10]  = {fCentralityBin,iPid,signMC,findable, recStatus,recPid,particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
+    Double_t hnEffRec[10] = {fCentralityBin,iPid,signRec,findable, recStatus,recPid,etaRec, yRec, phiRec, ptRec};
+    fHnEffMc->Fill(hnEffMc);
+    fHnEffRec->Fill(hnEffRec);
     
-    Double_t hnEff[20] = {fCentralityBin, 
-			  particle->Eta(), 
-			  particle->Y(), 
-			  particle->Phi(), 
-			  particle->Pt(), 
-			  signMC, 
-			  findable, 
-			  recStatus, 
-			  recPid, 
-			  etaRec, 
-			  yRec, 
-			  phiRec, 
-			  ptRec, 
-			  signRec,
-			  particle->Eta()-etaRec, 
-			  particle->Y()-yRec, 
-			  deltaPhi, 
-			  particle->Pt()-ptRec, 
-			  signMC-signRec, 
-			  iPid};
-    fHnEff->Fill(hnEff);
-
+   
 
   } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
   

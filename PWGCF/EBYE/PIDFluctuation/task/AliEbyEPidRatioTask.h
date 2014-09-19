@@ -65,6 +65,7 @@ class AliEbyEPidRatioTask : public AliAnalysisTaskSE {
    */
 
   void SetIsMC()                             {fIsMC             = kTRUE;}
+  void SetIsRatio()                          {fIsRatio          = kTRUE;}
   void SetIsAOD(Bool_t b)                    {fIsAOD            = b;}
   
   void SetESDTrackCutMode(Int_t i)           {fESDTrackCutMode  = i;}
@@ -148,6 +149,7 @@ class AliEbyEPidRatioTask : public AliAnalysisTaskSE {
   
   // --- Flags -------------------------------------------------------------
   Bool_t              fIsMC;                    //  Is MC event
+  Bool_t              fIsRatio;                    //  Is MC event
   Bool_t              fIsAOD;                   //  analysis mode            : 0 = ESDs  | 1 = AODs
   Int_t               fESDTrackCutMode;         //  ESD track cut mode       : 0 = clean | 1 = dirty
   Int_t               fModeEffCreation ;        //  Correction creation mode : 1 = on    | 0 = off
