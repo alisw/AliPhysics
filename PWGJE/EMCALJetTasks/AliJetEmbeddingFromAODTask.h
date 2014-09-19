@@ -53,6 +53,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetZVertexCut(Double_t z)                         { fZVertexCut         = z     ; }
   void           SetMaxVertexDist(Double_t d)                      { fMaxVertexDist      = d     ; }
   void           SetParticlePtRange(Double_t min, Double_t max, Byte_t t=1) { fParticleMinPt = min; fParticleMaxPt = max; fParticleSelection = t; }
+  void           SetEmbedCentrality(Bool_t d)                      { fEmbedCentrality    = d     ; }
 
  protected:
   Bool_t          ExecOnce()            ;// intialize task
@@ -99,6 +100,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   Bool_t         fIsAODMC             ;//  Whether the embedding AOD is MC or not
   Int_t          fTotalFiles          ;//  Total number of files per pt hard bin
   Int_t          fAttempts            ;//  Attempts to be tried before giving up in opening the next file
+  Bool_t         fEmbedCentrality     ;//  If true, embed centrality (only works when running on AOD) - carefull: it overwrites the event centrality (if any) 
   Bool_t         fEsdTreeMode         ;//! True = embed from ESD (must be a skimmed ESD!)
   Int_t          fCurrentFileID       ;//! Current file being processed (via the event handler)
   Int_t          fCurrentAODFileID    ;//! Current file ID
@@ -126,6 +128,6 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 12) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 13) // Jet embedding from AOD task
 };
 #endif

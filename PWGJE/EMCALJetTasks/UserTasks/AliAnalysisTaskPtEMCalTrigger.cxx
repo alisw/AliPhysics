@@ -37,13 +37,19 @@
 #include <TObjArray.h>
 #include <TString.h>
 
-#include "AliESDCaloCluster.h"
+#include "AliAODEvent.h"
 #include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliESDtrack.h"
-#include "AliESDVertex.h"
+#include "AliInputEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliParticleContainer.h"
+#include "AliVCluster.h"
+#include "AliVParticle.h"
+#include "AliVTrack.h"
+#include "AliVVertex.h"
 
 #include "AliEMCalHistoContainer.h"
+#include "AliEMCalPtTaskVTrackSelection.h"
+#include "AliEMCalPtTaskTrackSelectionESD.h"
 #include "AliAnalysisTaskPtEMCalTrigger.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger)
@@ -52,16 +58,13 @@ namespace EMCalTriggerPtAnalysis {
 
 	//______________________________________________________________________________
 	AliAnalysisTaskPtEMCalTrigger::AliAnalysisTaskPtEMCalTrigger():
-                		AliAnalysisTaskSE(),
-                		fCalibratedClusters(NULL),
-                		fMatchedTracks(NULL),
-                		fResults(NULL),
+                		AliAnalysisTaskEmcal(),
                 		fHistos(NULL),
                 		fListTrackCuts(NULL),
                 		fEtaRange(),
                 		fPtRange(),
                 		fSwapEta(kFALSE),
-                		fNameTrackContainer()
+                		fUseTriggersFromTriggerMaker(kFALSE)
 	{
 		/*
 		 * Dummy constructor, initialising the values with default (NULL) values
@@ -70,21 +73,17 @@ namespace EMCalTriggerPtAnalysis {
 
 	//______________________________________________________________________________
 	AliAnalysisTaskPtEMCalTrigger::AliAnalysisTaskPtEMCalTrigger(const char *name):
-                		AliAnalysisTaskSE(name),
-                		fCalibratedClusters(NULL),
-                		fMatchedTracks(NULL),
-                		fResults(NULL),
+                		AliAnalysisTaskEmcal(name, kTRUE),
                 		fHistos(NULL),
                 		fListTrackCuts(NULL),
                 		fEtaRange(),
                 		fPtRange(),
                 		fSwapEta(kFALSE),
-                		fNameTrackContainer("ESDFilterTracks")
+                		fUseTriggersFromTriggerMaker(kFALSE)
 	{
 		/*
 		 * Main constructor, setting default values for eta and zvertex cut
 		 */
-		DefineOutput(1, TList::Class());
 
 		fListTrackCuts = new TList;
 		fListTrackCuts->SetOwner(false);
@@ -92,7 +91,7 @@ namespace EMCalTriggerPtAnalysis {
 		// Set default cuts
 		fEtaRange.SetLimits(-0.8, 0.8);
 		fPtRange.SetLimits(0.15, 100.);
-
+		SetMakeGeneralHistograms(kTRUE);
 	}
 
 	//______________________________________________________________________________
@@ -111,9 +110,15 @@ namespace EMCalTriggerPtAnalysis {
 		 * Create the list of output objects and define the histograms.
 		 * Also adding the track cuts to the list of histograms.
 		 */
-		fResults = new TList;
-		fResults->SetOwner();
-
+		AliAnalysisTaskEmcal::UserCreateOutputObjects();
+		TString trackContainerName = "ESDFilterTracks", clusterContainerName = "EmcCaloClusters";
+		if(!fIsEsd){
+			trackContainerName = "AODFilterTracks";
+			clusterContainerName = "EmcCaloClusters";
+		}
+		AliParticleContainer *trackContainer = this->AddParticleContainer(trackContainerName.Data());
+		trackContainer->SetClassName("AliVTrack");
+		this->AddClusterContainer(clusterContainerName.Data());
 		fHistos = new AliEMCalHistoContainer("PtEMCalTriggerHistograms");
 		fHistos->ReleaseOwner();
 
@@ -175,6 +180,8 @@ namespace EMCalTriggerPtAnalysis {
 		const TAxis *clusteraxes[3];
 		for(int iaxis = 0; iaxis < 3; ++iaxis) clusteraxes[iaxis] = hclusteraxes + iaxis;
 		try{
+			// Create histogram for MC-truth
+			fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 3, trackaxes);
 			for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
 				const std::string name = it->first, &title = it->second;
 				// Create event-based histogram
@@ -193,35 +200,46 @@ namespace EMCalTriggerPtAnalysis {
 			errormessage << "Creation of histogram failed: " << e.what();
 			AliError(errormessage.str().c_str());
 		}
-		fResults->Add(fHistos->GetListOfHistograms());
+		fOutput->Add(fHistos->GetListOfHistograms());
 		if(fListTrackCuts && fListTrackCuts->GetEntries()){
 			TIter cutIter(fListTrackCuts);
-			AliESDtrackCuts *cutObject(NULL);
-			while((cutObject = dynamic_cast<AliESDtrackCuts *>(cutIter()))){
-				cutObject->DefineHistograms();
-				fResults->Add(cutObject);
+			AliEMCalPtTaskVTrackSelection *cutObject(NULL);
+			while((cutObject = dynamic_cast<AliEMCalPtTaskVTrackSelection *>(cutIter()))){
+				AliESDtrackCuts *cuts = dynamic_cast<AliESDtrackCuts *>(cutObject->GetTrackCuts());
+				if(cuts){
+					cuts->DefineHistograms();
+					fOutput->Add(cuts);
+				}
 			}
 		}
-		PostData(1, fResults);
+		PostData(1, fOutput);
 	}
 
 	//______________________________________________________________________________
-	void AliAnalysisTaskPtEMCalTrigger::UserExec(Option_t* /*option*/){
+	Bool_t AliAnalysisTaskPtEMCalTrigger::Run(){
 		/*
 		 * Runs the event loop
 		 *
 		 * @param option: Additional options
 		 */
 		// Common checks: Have SPD vertex and primary vertex from tracks, and both need to have at least one contributor
-		fCalibratedClusters = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcCaloClusters"));
-		AliDebug(1,Form("Number of calibrated clusters: %d", fCalibratedClusters->GetEntries()));
-		fMatchedTracks = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(fNameTrackContainer.Data()));
+		AliDebug(1,Form("Number of calibrated clusters: %d", fCaloClusters->GetEntries()));
+		AliDebug(1,Form("Number of matched tracks: %d", fTracks->GetEntries()));
 
-		AliESDEvent *esd = static_cast<AliESDEvent *>(fInputEvent);
-		const AliESDVertex *vtxTracks = esd->GetPrimaryVertex(),
-				*vtxSPD = esd->GetPrimaryVertexSPD();
-		if(!(vtxTracks && vtxSPD)) return;
-		if(vtxTracks->GetNContributors() < 1 || vtxSPD->GetNContributors() < 1) return;
+		if(fMCEvent){
+			for(int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++){
+				// Select only physical primary particles
+				if(!fMCEvent->IsPhysicalPrimary(ipart)) continue;
+				FillMCParticleHist(fMCEvent->GetTrack(ipart));
+			}
+			// Build always trigger strig from the trigger maker in case of MC
+    		fUseTriggersFromTriggerMaker = kTRUE;
+		}
+
+		const AliVVertex *vtxTracks = fInputEvent->GetPrimaryVertex(),
+				*vtxSPD = GetSPDVertex();
+		if(!(vtxTracks && vtxSPD)) return false;
+		if(vtxTracks->GetNContributors() < 1 || vtxSPD->GetNContributors() < 1) return false;
 
 		double triggers[5]; memset(triggers, 0, sizeof(double) * 5);
 		double triggerbits[4]; memset(triggerbits, 0, sizeof(double) * 4);
@@ -250,7 +268,8 @@ namespace EMCalTriggerPtAnalysis {
 
 		std::vector<std::string> triggerstrings;
 		// EMCal-triggered event, distinguish types
-		TString trgstr(fInputEvent->GetFiredTriggerClasses());
+		TString trgstr(fUseTriggersFromTriggerMaker ? BuildTriggerString() : fInputEvent->GetFiredTriggerClasses());
+		AliDebug(1, Form("Triggerstring: %s\n", trgstr.Data()));
 		if(trgstr.Contains("EJ1")){
 			triggerstrings.push_back("EMCJHigh");
 			triggers[1] = 1;
@@ -289,7 +308,7 @@ namespace EMCalTriggerPtAnalysis {
 		}
 
 		// apply event selection: Combine the Pileup cut from SPD with the other pA Vertex selection cuts.
-		bool isPileupEvent = esd->IsPileupFromSPD();
+		bool isPileupEvent = fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.);
 		isPileupEvent = isPileupEvent || (TMath::Abs(vtxTracks->GetZ() - vtxSPD->GetZ()) > 0.5);
 		double covSPD[6]; vtxSPD->GetCovarianceMatrix(covSPD);
 		isPileupEvent = isPileupEvent || (TString(vtxSPD->GetTitle()).Contains("vertexer:Z") && TMath::Sqrt(covSPD[5]) > 0.25);
@@ -305,10 +324,11 @@ namespace EMCalTriggerPtAnalysis {
 				FillEventHist(it->c_str(), zv, isPileupEvent);
 		}
 
-		AliESDtrack *track(NULL);
+		AliVTrack *track(NULL);
 		// Loop over all tracks (No cuts applied)
-		for(int itrk = 0; itrk < fMatchedTracks->GetEntries(); ++itrk){
-			track = dynamic_cast<AliESDtrack *>(fMatchedTracks->At(itrk));
+		TIter allTrackIter(fTracks);
+		while((track = dynamic_cast<AliVTrack *>(allTrackIter()))){
+			if(!IsTrueTrack(track)) continue;
 			if(!fEtaRange.IsInRange(track->Eta())) continue;
 			if(!fPtRange.IsInRange(track->Pt())) continue;
 			if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, 0);
@@ -327,10 +347,10 @@ namespace EMCalTriggerPtAnalysis {
 		// cut ID 0 is reserved for the case of no cuts
 		if(fListTrackCuts && fListTrackCuts->GetEntries()){
 			for(int icut = 0; icut < fListTrackCuts->GetEntries(); icut++){
-				AliESDtrackCuts *trackSelection = static_cast<AliESDtrackCuts *>(fListTrackCuts->At(icut));
-				std::auto_ptr<TObjArray> acceptedTracks(GetAcceptedTracks(fMatchedTracks,trackSelection));
-				TIter trackIter(acceptedTracks.get());
-				while((track = dynamic_cast<AliESDtrack *>(trackIter()))){
+				AliEMCalPtTaskVTrackSelection *trackSelection = static_cast<AliEMCalPtTaskVTrackSelection *>(fListTrackCuts->At(icut));
+				TIter trackIter(trackSelection->GetAcceptedTracks(fTracks));
+				while((track = dynamic_cast<AliVTrack *>(trackIter()))){
+					//if(!IsTrueTrack(track)) continue;
 					if(!fEtaRange.IsInRange(track->Eta())) continue;
 					if(!fPtRange.IsInRange(track->Pt())) continue;
 					if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, icut + 1);
@@ -346,8 +366,9 @@ namespace EMCalTriggerPtAnalysis {
 		}
 
 		// Next step we loop over the (uncalibrated) emcal clusters and fill histograms with the cluster energy
+		const AliVCluster *clust(NULL);
 		for(int icl = 0; icl < fInputEvent->GetNumberOfCaloClusters(); icl++){
-			const AliVCluster *clust = fInputEvent->GetCaloCluster(icl);
+			clust = fInputEvent->GetCaloCluster(icl);
 			if(!clust->IsEMCAL()) continue;
 			if(triggers[0]) FillClusterHist("MinBias", clust, false, zv, isPileupEvent);
 			if(!triggerstrings.size())	// Non-EMCal-triggered
@@ -359,9 +380,9 @@ namespace EMCalTriggerPtAnalysis {
 			}
 		}
 
-		if(fCalibratedClusters){
-			for(int icl = 0; icl < fCalibratedClusters->GetEntries(); icl++){
-				const AliVCluster *clust = dynamic_cast<const AliVCluster *>((*fCalibratedClusters)[icl]);
+		if(fCaloClusters){
+			TIter clustIter(fCaloClusters);
+			while((clust = dynamic_cast<const AliVCluster *>(clustIter()))){
 				if(!clust->IsEMCAL()) continue;
 				if(triggers[0]) FillClusterHist("MinBias", clust, true, zv, isPileupEvent);
 				if(!triggerstrings.size())	// Non-EMCal-triggered
@@ -374,7 +395,8 @@ namespace EMCalTriggerPtAnalysis {
 			}
 		}
 
-		PostData(1, fResults);
+		PostData(1, fOutput);
+		return true;
 	}
 
 	//______________________________________________________________________________
@@ -492,6 +514,7 @@ namespace EMCalTriggerPtAnalysis {
 		}
 	}
 
+
 	//______________________________________________________________________________
 	void AliAnalysisTaskPtEMCalTrigger::FillEventHist(const char* trigger,
 			double vz, bool isPileup) {
@@ -524,7 +547,7 @@ namespace EMCalTriggerPtAnalysis {
 
 	//______________________________________________________________________________
 	void AliAnalysisTaskPtEMCalTrigger::FillTrackHist(const char* trigger,
-			const AliESDtrack* track, double vz, bool isPileup, int cut) {
+			const AliVTrack* track, double vz, bool isPileup, int cut) {
 		/*
 		 * Fill track-based histogram with corresponding information
 		 *
@@ -544,9 +567,9 @@ namespace EMCalTriggerPtAnalysis {
 			// Check if the cluster is matched to only one track
 			AliVCluster *emcclust(NULL);
 			AliDebug(2, Form("cluster id: %d\n", track->GetEMCALcluster()));
-			if(fCalibratedClusters) {
+			if(fCaloClusters) {
 				AliDebug(2, "Using calibrated clusters");
-				emcclust = dynamic_cast<AliVCluster *>(fCalibratedClusters->At(track->GetEMCALcluster()));
+				emcclust = dynamic_cast<AliVCluster *>(fCaloClusters->At(track->GetEMCALcluster()));
 			} else {
 				AliDebug(2, "Using uncalibrated clusters");
 				emcclust = fInputEvent->GetCaloCluster(track->GetEMCALcluster());
@@ -614,14 +637,76 @@ namespace EMCalTriggerPtAnalysis {
 		}
 	}
 
-	TObjArray *AliAnalysisTaskPtEMCalTrigger::GetAcceptedTracks(const TClonesArray * const inputlist, AliESDtrackCuts *const cuts){
-		TObjArray *acceptedTracks = new TObjArray;
-		TIter trackIter(inputlist);
-		AliESDtrack *track(NULL);
-		while((track = dynamic_cast<AliESDtrack *>(trackIter()))){
-			if(cuts->AcceptTrack(track)) acceptedTracks->Add(track);
-		}
-		return acceptedTracks;
+	//______________________________________________________________________________
+	void AliAnalysisTaskPtEMCalTrigger::FillMCParticleHist(const AliVParticle * const track){
+		/*
+		 * Fill histogram for MC-true particles with the information pt, eta and phi
+		 *
+		 * @param track: the Monte-Carlo track
+		 */
+		double data[3] = {TMath::Abs(track->Pt()), track->Eta(), track->Phi()};
+		fHistos->FillTHnSparse("hMCtrueParticles", data);
 	}
+
+	//______________________________________________________________________________
+	bool AliAnalysisTaskPtEMCalTrigger::IsTrueTrack(const AliVTrack *const track) const{
+		/*
+		 * Check if the track has an associated MC particle, and that the particle is a physical primary
+		 * In case of data we do not do the selection at that step (always return true)
+		 *
+		 * @param track: Track to check
+		 * @result: true primary track (true or false)
+		 */
+		if(!fMCEvent) return true;
+		AliVParticle *mcassociate = fMCEvent->GetTrack(TMath::Abs(track->GetLabel()));
+		if(!mcassociate) return false;
+		return fMCEvent->IsPhysicalPrimary(TMath::Abs(track->GetLabel()));
+	}
+
+	//______________________________________________________________________________
+	void AliAnalysisTaskPtEMCalTrigger::AddESDTrackCuts(AliESDtrackCuts* trackCuts) {
+		/*
+		 * Add new track cuts to the task
+		 *
+		 * @param trackCuts: Object of type AliESDtrackCuts
+		 */
+		fListTrackCuts->AddLast(new AliEMCalPtTaskTrackSelectionESD(trackCuts));
+	}
+
+	//______________________________________________________________________________
+	TString AliAnalysisTaskPtEMCalTrigger::BuildTriggerString() {
+		/*
+		 * Build trigger string from the trigger maker
+		 *
+		 * @return: blank-separated string of fired trigger classes
+		 */
+		AliDebug(1, "trigger checking");
+		TString result = "";
+		if(HasTriggerType(kJ1)) result += "EJ1 ";
+		if(HasTriggerType(kJ2)) result += "EJ2 ";
+		if(HasTriggerType(kG1)) result += "EG1 ";
+		if(HasTriggerType(kG2)) result += "EG2 ";
+		return result;
+	}
+
+	//______________________________________________________________________________
+	const AliVVertex* AliAnalysisTaskPtEMCalTrigger::GetSPDVertex() const {
+		/*
+		 * Accessor for the SPD vertex, creating transparency for ESDs and AODs
+		 *
+		 * @return: the spd vertex
+		 */
+		AliESDEvent *esd = dynamic_cast<AliESDEvent *>(fInputEvent);
+		if(esd){
+			return esd->GetPrimaryVertexSPD();
+		} else {
+			AliAODEvent *aod = dynamic_cast<AliAODEvent *>(fInputEvent);
+			if(aod){
+				return aod->GetPrimaryVertexSPD();
+			}
+		}
+		return NULL;
+	}
+
 }
 

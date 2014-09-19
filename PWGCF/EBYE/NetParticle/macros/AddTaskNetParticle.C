@@ -49,25 +49,28 @@
  *
  ********************************************************************************* */
 
-AliAnalysisTask *AddTaskNetParticle(const Char_t *name   = "jthaeder_NetProton", 
-				    Bool_t  isModeDist   = kTRUE, 
-				    Bool_t  isModeEff    = kFALSE, 
-				    Bool_t  isModeDCA    = kFALSE,
-				    Bool_t  isModeQA     = kFALSE,
-				    Bool_t  isCreateCSC  = kFALSE, 
-				    Bool_t  isModeAOD    = kFALSE,
-				    Bool_t  isSetExt     = kFALSE,
-				    Int_t   aodFilterBit = 1024, /* 1024 = RAA cuts */
-				    Int_t   modeCSC      = 0, 
-				    Int_t   modeCuts     = 0, 
-				    Int_t   modePID      =-1,
-				    Float_t gMinPt       = 0.3,
-				    Float_t gMaxPt       = 2.5,
-				    Float_t gMinPtForTof = 0.21,
-				    Float_t gSigmaITS    = 4.0,
-				    Float_t gSigmaTPC    = 4.0,   
-				    Float_t gSigmaTPClow = 3.0,   
-				    Float_t gSigmaTOF    = 4.0) {
+AliAnalysisTask *AddTaskNetParticle(const Char_t *name      = "ITS_NetProton", 
+				    Bool_t  isModeDist      = kTRUE, 
+				    Bool_t  isModeEff       = kFALSE, 
+				    Bool_t  isModeDCA       = kFALSE,
+				    Bool_t  isModeQA        = kFALSE,
+				    Bool_t  isCreateCSC     = kFALSE, 
+				    Bool_t  isModeAOD       = kFALSE,
+				    Bool_t  isSetExt        = kFALSE,
+				    Int_t   aodFilterBit    = 1024, /* 1024 = RAA cuts */
+				    Int_t   modeCSC         = 0, 
+				    Int_t   modeCuts        = 0, 
+				    Int_t   modePID         =-1,
+				    Float_t gMinPt          = 0.3,
+				    Float_t gMaxPt          = 2.5,
+				    Float_t gMinPtForTof    = 0.21,
+				    Float_t gMaxPtForTPClow = 0.69,
+				    Float_t gMinPtEff       = 0.3,    
+				    Float_t gMaxPtEff       = 2.5,
+				    Float_t gSigmaITS       = 4.0,
+				    Float_t gSigmaTOF       = 4.0,
+				    Float_t gSigmaTPC       = 4.0,   
+				    Float_t gSigmaTPClow    = 3.0) {
 
   TString sName(name);
 
@@ -143,7 +146,8 @@ if (sName.Contains("Proton")) {
     minPtForTOF    = 0.69;                //    minPtForTOF = 0.21;
     maxPtForTPClow = 0.69;
     minPt          = 0.5;     maxPt   = 2.0;    //    minPt    = 0.22;     maxPt   = 4.5;
-    minPtEff       = 0.5;    maxPtEff = 2.0;    //    minPtEff = 0.22;     maxPtEff = 4.5;
+    minPtEff       = 0.3;    maxPtEff = 2.5;    //    minPtEff = 0.22;     maxPtEff = 4.5;
+    
     etaMax         = 0.8;  
     etaMaxEff      = 0.8;  
     nSigmaITS      = 4.0;   nSigmaTPC = 4.0;   nSigmaTPClow = 3.0;   nSigmaTOF = 4.0; 
@@ -154,33 +158,39 @@ if (sName.Contains("Proton")) {
   }
   else if (sName.Contains("Pion")) {
     helper->SetParticleSpecies(AliPID::kPion);
-    minPt       = 0.3;    maxPt    = 0.6;
-    minPtEff    = 0.2;    maxPtEff = 1.0;
-    minPtForTOF = 0.8;
-    etaMax      = 8.8;    
-    etaMaxEff   = 8.8;    
-    nSigmaITS   = 2.5;   nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
-    pidStrategy = 1;
+    minPtForTOF    = 0.3;
+    maxPtForTPClow = 0.69;
+    minPt          = 0.3;    maxPt    = 1.5;
+    minPtEff       = 0.3;    maxPtEff = 2.5;
+  
+    etaMax         = 8.8;    
+    etaMaxEff      = 8.8;  
+    nSigmaITS      = 4.0;   nSigmaTPC = 4.0;   nSigmaTPClow = 3.0;   nSigmaTOF = 4.0;   
+    pidStrategy    = 1;
   }
   else if (sName.Contains("Kaon")) {
     helper->SetParticleSpecies(AliPID::kKaon);
-    minPt       = 0.5;    maxPt    = 1.4;
-    minPtEff    = 0.1;    maxPtEff = 2.5;
-    minPtForTOF = 0.5;
-    etaMax      = 0.8;   
-    etaMaxEff   = 0.8;    
-    nSigmaITS   = 2.5;   nSigmaTPC = 2.5;   nSigmaTOF = 2.5;
-    pidStrategy = 1;
+    minPtForTOF    = 0.3;
+    maxPtForTPClow = 0.69;
+    minPt          = 0.3;    maxPt    = 1.5;
+    minPtEff       = 0.3;    maxPtEff = 2.5;
+ 
+    etaMax         = 0.8;   
+    etaMaxEff      = 0.8; 
+    nSigmaITS      = 4.0;   nSigmaTPC = 4.0;   nSigmaTPClow = 3.0;   nSigmaTOF = 4.0;      
+    pidStrategy    = 1;
   }
   else if (sName.Contains("Charge")) {
     helper->SetUsePID(kFALSE);
-    minPt       = 0.3;    maxPt    = 2.5;
-    minPtEff    = 0.1;    maxPtEff = 3.0;
-    minPtForTOF =-1.0;
-    etaMax      = 0.8; 
-    etaMaxEff   = 0.8; 
-    nSigmaITS   = -1.;   nSigmaTPC = -1.;   nSigmaTOF = -1.;
-    pidStrategy = 1;
+    minPtForTOF    = 0.1;
+    maxPtForTPClow = 0.1;
+    minPt          = 0.1;    maxPt    = 2.5;
+    minPtEff       = 0.1;    maxPtEff = 3.0;
+
+    etaMax         = 0.8; 
+    etaMaxEff      = 0.8; 
+    nSigmaITS      = -1.;   nSigmaTPC = -1.;   nSigmaTOF = -1.;
+    pidStrategy    = 1;
   }
   else {
     Error("AddTaskNetParticle", "Unknown Particle type.");
@@ -191,11 +201,13 @@ if (sName.Contains("Proton")) {
 // ----------------------------------------------
 // -- use value arguments --
 // ----------------------------------------------
- 
  if (isSetExt) {
    minPt          = gMinPt;    
-   maxPt          = gMinPt;
+   maxPt          = gMaxPt;
    minPtForTOF    = gMinPtForTof;     
+   maxPtForTPClow = gMaxPtForTPClow;
+   minPtEff       = gMinPtEff;
+   maxPtEff       = gMaxPtEff;
    
    nSigmaITS      = gSigmaITS;   
    nSigmaTPC      = gSigmaTPC;   
@@ -207,13 +219,13 @@ if (sName.Contains("Proton")) {
  // -- PID Strategy
  // ----------------------------------------------
  
-  if (modePID == -1) { // default
-    pidStrategy   = 7;         // 7: ITS + TPC + TOF (using minPtForTOF)
-    if (modeCuts == 1)
-      pidStrategy = 5;       // 5: TPC + TOF (using minPtForTOF) 
+  if (modePID     == -1) { // default
+    pidStrategy   =   7;         // 7: ITS + TPC + TOF (using minPtForTOF)
+    if (modeCuts  ==  1)
+      pidStrategy =   5;       // 5: TPC + TOF (using minPtForTOF) 
   }
   else
-    pidStrategy = modePID;
+    pidStrategy   = modePID;
   
   // ----------------------------------------------
   // -- Read Environment Variables 

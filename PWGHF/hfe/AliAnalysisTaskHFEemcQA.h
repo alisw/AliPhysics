@@ -4,25 +4,46 @@
 //QA task for EMCAL electron analysis 
 
 class TH1F;
+class THnSparse;
 class AliESDEvent;
 class AliAODEvent;
+class AliHFEcontainer;
+class AliHFEcuts;
+class AliHFEpid;
+class AliHFEpidQAmanager;
+class AliCFManager;
 
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskHFEemcQA() : AliAnalysisTaskSE(), fVevent(0),fESD(0),fAOD(0),fOutputList(0),fVtxZ(0),fVtxX(0),fVtxY(0),fTrigMulti(0),fHistClustE(0),fEMCClsEtaPhi(0),fNegTrkIDPt(0),fTrkPt(0),fTrketa(0),fTrkphi(0),fdEdx(0),fTPCNpts(0),fHistPtMatch(0),fEMCTrkMatch(0),fEMCTrkPt(0),fEMCTrketa(0),fEMCTrkphi(0),fEMCdEdx(0),fEMCTPCNpts(0),fHistdEdxEop(0),fHistEop(0),fEleCanTPCNpts(0),fEleCanTPCNCls(0),fEleCanITSNCls(0),fEleCanITShit(0),fEleCanSPD1(0),fEleCanSPD2(0),fEleCanSPDBoth(0),fEleCanSPDOr(0) {}
+  AliAnalysisTaskHFEemcQA();
   AliAnalysisTaskHFEemcQA(const char *name);
-  virtual ~AliAnalysisTaskHFEemcQA() {}
+  virtual ~AliAnalysisTaskHFEemcQA();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  
+
+  void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
+  void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
+  Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
+
+  Bool_t GetElecIDsparse() {return fFlagSparse;};
+  void SetElecIDsparse(Bool_t flagelecIDsparse){fFlagSparse = flagelecIDsparse;};
+
  private:
+  enum{
+    kAODanalysis = BIT(20),
+  };
+
   AliVEvent   *fVevent;  //!V event object
   AliESDEvent *fESD;    //!ESD object
   AliAODEvent *fAOD;    //!AOD object
+  AliPIDResponse *fpidResponse; //!pid response
+
+  Bool_t      fFlagSparse;// switch to THnspare
+
   TList       *fOutputList; //!Output list
   TH1F        *fVtxZ;//!Vertex z 
   TH1F        *fVtxX;//!Vertex x 
@@ -36,6 +57,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
   TH1F        *fTrkphi;//!track phi 
   TH2F        *fdEdx;//!dedx vs pt
   TH2F        *fTPCNpts;//!TPC Npoints used for dedx
+  TH2F        *fTPCnsig;//!TPC Nsigma
   TH1F        *fHistPtMatch;//!tracks matched to EMCAL 
   TH2F        *fEMCTrkMatch;//!Distance of EMC cluster to closest track in phi and z
   TH1F        *fEMCTrkPt;//!tracks with EMCAL cluster
@@ -54,9 +76,12 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
   TH2F        *fEleCanSPDBoth;//!ele cand SPD both layer
   TH2F        *fEleCanSPDOr;//!ele cand SPD or
 
+  THnSparse  *fSparseElectron;//!Electron info 
+  Double_t *fvalueElectron;//!Electron info
+
   AliAnalysisTaskHFEemcQA(const AliAnalysisTaskHFEemcQA&); // not implemented
   AliAnalysisTaskHFEemcQA& operator=(const AliAnalysisTaskHFEemcQA&); // not implemented
-  
+
   ClassDef(AliAnalysisTaskHFEemcQA, 1); // example of analysis
 };
 

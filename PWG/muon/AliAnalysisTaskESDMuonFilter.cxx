@@ -51,7 +51,6 @@
 #include "AliESDMuonTrack.h"
 #include "AliESDtrack.h"
 #include "AliESDMuonGlobalTrack.h"   // AU
-#include "AliMFTAnalysisTools.h"     // AU
 #include "AliESDVertex.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
@@ -413,7 +412,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     if (mcH) mcH->SelectParticle(esdMuGlobalTrack->GetLabel()); // to insure that particle's ancestors will be in output MC branches
 
     Double_t covTr[21] = {0};
-    AliMFTAnalysisTools::ConvertCovMatrixMUON2AOD(esdMuGlobalTrack->GetCovariances(), covTr);
+    ConvertCovMatrixMUON2AOD(esdMuGlobalTrack->GetCovariances(), covTr);
     
     aodTrack = new(tracks[jTracks++]) AliAODTrack(esdMuGlobalTrack->GetUniqueID(), // ID
                                                   esdMuGlobalTrack->GetLabel(),    // label
@@ -503,3 +502,47 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   }
   
 }
+
+//====================================================================================================================================================
+
+void AliAnalysisTaskESDMuonFilter::ConvertCovMatrixMUON2AOD(const TMatrixD& covMUON, Double_t covAOD[21]) {
+
+  // Converts the cov matrix from the MUON format (TMatrixD) to the AOD one (Double_t[21])
+  // 
+  // Cov(x,x)       ... :   cv[0]
+  // Cov(x,slopeX)  ... :   cv[1]  cv[2]
+  // Cov(x,y)       ... :   cv[3]  cv[4]  cv[5]
+  // Cov(x,slopeY)  ... :   cv[6]  cv[7]  cv[8]  cv[9]
+  // Cov(x,invP_yz) ... :   cv[10] cv[11] cv[12] cv[13] cv[14]
+  // not-used       ... :   cv[15] cv[16] cv[17] cv[18] cv[19] cv[20]
+
+  covAOD[0]  = covMUON(0,0);
+
+  covAOD[1]  = covMUON(1,0);
+  covAOD[2]  = covMUON(1,1);
+
+  covAOD[3]  = covMUON(2,0);  
+  covAOD[4]  = covMUON(2,1);  
+  covAOD[5]  = covMUON(2,2);  
+
+  covAOD[6]  = covMUON(3,0);  
+  covAOD[7]  = covMUON(3,1);  
+  covAOD[8]  = covMUON(3,2);  
+  covAOD[9]  = covMUON(3,3);  
+
+  covAOD[10] = covMUON(4,0);  
+  covAOD[11] = covMUON(4,1);  
+  covAOD[12] = covMUON(4,2);  
+  covAOD[13] = covMUON(4,3);  
+  covAOD[14] = covMUON(4,4);  
+
+  covAOD[15] = 0;  
+  covAOD[16] = 0;  
+  covAOD[17] = 0;  
+  covAOD[18] = 0;  
+  covAOD[19] = 0;  
+  covAOD[20] = 0;  
+
+}
+
+//====================================================================================================================================================

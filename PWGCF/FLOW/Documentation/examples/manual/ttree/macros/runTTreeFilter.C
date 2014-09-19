@@ -40,21 +40,9 @@ void runTTreeFilter() {
     // and connect it to the manager
     mgr->SetInputEventHandler(inputH);
 
-     // the manager is static, so get the existing manager via the static method
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if (!mgr) {
-        printf("No analysis manager to connect to!\n");
-        return NULL;
-    }
-        
-    // just to see if all went well, check if the input event handler has been connected
-    if (!mgr->GetInputEventHandler()) {
-        printf("This task requires an input event handler!\n");
-        return NULL;
-      }
-
     // compile the relevant classes
-      // include paths, necessary for compilation
+
+    // include paths, necessary for compilation
     gSystem->AddIncludePath("-Wno-deprecated");
     gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/EMCAL");
     gSystem->AddIncludePath("-I$ALICE_ROOT/PWGDQ/dielectron -I$ALICE_ROOT/PWGHF/hfe");

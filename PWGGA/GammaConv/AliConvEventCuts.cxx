@@ -122,7 +122,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
    fTriggerSelectedManually(kFALSE),
    fSpecialTriggerName(""),
    fSpecialSubTriggerName(""),
-   fNSpecialSubTriggerOptions(0)
+   fNSpecialSubTriggerOptions(0),
+   fV0ReaderName("")
 
 {
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -191,7 +192,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
    fTriggerSelectedManually(ref.fTriggerSelectedManually),
    fSpecialTriggerName(ref.fSpecialTriggerName),
    fSpecialSubTriggerName(ref.fSpecialSubTriggerName),
-   fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions)
+   fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions),
+   fV0ReaderName(ref.fV0ReaderName)
 {
    // Copy Constructor
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -451,7 +453,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
    if(hCentralityVsNumberOfPrimaryTracks)
       hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
                                                ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-                                                ->GetTask("V0ReaderV1"))->GetNumberOfPrimaryTracks());
+                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
    fEventQuality = 0;
    return kTRUE;
 }
@@ -549,6 +551,9 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
 		return kFALSE;
 	}
 
+	if (fV0ReaderName.CompareTo("") == 0){
+		fV0ReaderName = "V0ReaderV1";
+	}	
 	const char *cutSelection = analysisCutSelection.Data();
 	#define ASSIGNARRAY(i)  fCuts[i] = cutSelection[i] - '0'
 	for(Int_t ii=0;ii<kNCuts;ii++){
@@ -1202,7 +1207,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
 		else return kFALSE;
 	}
 
-	Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetNumberOfPrimaryTracks();
+	Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
 	Int_t PrimaryTracks10[10][2] =
 		{
 			{9999,9999}, //  0
@@ -1306,7 +1311,7 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
 	if(abs(fVertexZ)>fMaxVertexZ)return kFALSE;
 
 	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-													->GetTask("V0ReaderV1"))->GetPeriodName();
+													->GetTask(fV0ReaderName.Data()))->GetPeriodName();
 	if (periodName.CompareTo("LHC11h")==0){
 		if (abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
 	}						
@@ -1372,7 +1377,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent)
 	AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 	
 	UInt_t isSelected = AliVEvent::kAny;
-	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
+	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
 	//    cout << 	periodName.Data() << endl;
 	
 	if (fInputHandler==NULL) return kFALSE;
@@ -1515,7 +1520,7 @@ TString AliConvEventCuts::GetCutNumber(){
 ///________________________________________________________________________
 void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent){
 
-	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
+	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
 
 
 	if(fNotRejectedStart){
@@ -1811,7 +1816,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 	if(hCentralityVsNumberOfPrimaryTracks)
 		hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
 												((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-												->GetTask("V0ReaderV1"))->GetNumberOfPrimaryTracks());     
+												->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());     
 
 	return 0;
 }

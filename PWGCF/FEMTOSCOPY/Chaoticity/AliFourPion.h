@@ -18,6 +18,7 @@ class TH3D;
 
 class TProfile;
 class TProfile2D;
+class TProfile3D;
 class TRandom3;
 
 class AliESDEvent;
@@ -79,7 +80,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
   void SetInterpolationType(Bool_t linearInterp) {fLinearInterpolation = linearInterp;}
-  void SetPbPbCase(Bool_t pbpb) {fPbPbcase = pbpb;}
+  void SetCollisionType(Bool_t ct) {fCollisionType = ct;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
   void SetGeneratorOnly(Bool_t genOnly) {fGeneratorOnly = genOnly;}
   void SetCentBinRange(Int_t low, Int_t high) {fCentBinLowLimit = low; fCentBinHighLimit = high;}
@@ -100,7 +101,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetKT4transition(Float_t KT4trans) {fKT4transition = KT4trans;}
   void SetTriggerType(Int_t tt) {fTriggerType = tt;}
   //
-
+ 
 
  private:
 
@@ -127,6 +128,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   //
   Float_t cubicInterpolate(Float_t[4], Float_t);
   Float_t nCubicInterpolate(Int_t, Float_t*, Float_t[]);
+  //Double_t functionEW(Double_t *x, Double_t *par);
+  //Double_t functionLG(Double_t *x, Double_t *par);
   
   const char* fname;// name of class
   AliAODEvent            *fAOD; //!    // AOD object
@@ -148,7 +151,9 @@ class AliFourPion : public AliAnalysisTaskSE {
   struct St6 {
     TH1D *fNorm3; //!
     TH1D *fTerms3; //!
+    TH3D *fTerms33D; //!
     TProfile *fKfactor; //!
+    TProfile3D *fKfactor3D; //!
     TProfile *fKfactorWeighted; //!
     TProfile *fMeanQinv; //!
     TH2D *fIdeal; //!
@@ -202,6 +207,8 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH2D *fTwoPartNorm; //!
     TH2D *fTwoPartNegNorm; //!
     TH2D *fTwoPartNormErr; //!
+    TH3D *fFullBuildFromFits; //!
+    TH3D *fPartialBuildFromFits; //!
   };
   struct St_EDB {
     struct St5 TwoPT[2];
@@ -242,13 +249,14 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fLEGO;
   Bool_t fMCcase;
   Bool_t fAODcase;
-  Bool_t fPbPbcase;
+  Short_t fCollisionType;
   Bool_t fGenerateSignal;
   Bool_t fGeneratorOnly;
   Bool_t fTabulatePairs;
   Bool_t fLinearInterpolation;
   Bool_t fMixedChargeCut;
   Int_t fRMax;
+  Float_t fRstartMC;
   Float_t ffcSq;
   Float_t ffcSqMRC;
   UInt_t fFilterBit;
@@ -281,6 +289,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t fQbinsQ3;
   Float_t fQbinsQ4;
   Float_t fQupperBoundWeights;
+  Float_t fQbinsQinv3D;
+  Float_t fQupperBoundQinv3D;
   Float_t fKstepT[fKbinsT];
   Float_t fKstepY[fKbinsY];
   Float_t fKmeanT[fKbinsT];
@@ -355,6 +365,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   TArrayC *fNormQPairSwitch_E1E3[kMultLimitPbPb];//!
   TArrayC *fNormQPairSwitch_E2E3[kMultLimitPbPb];//!
 
+  
 
  public:
   TH2D *fMomResC2SC;
@@ -363,7 +374,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH1D *fFSIss[12];
   TH1D *fFSIos[12];
   TH3F *fNormWeight[fKbinsT][fCentBins];
- 
+  TF1 *ExchangeAmpFullSource[2];
+  TF1 *ExchangeAmpPointSource[2][50];
 
   ClassDef(AliFourPion, 1); 
 };

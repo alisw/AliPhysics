@@ -324,13 +324,13 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	fHistograms->Add(fHistNCellsBeforeQA);
 	fHistNCellsAfterQA = new TH1F(Form("NCellPerCluster_afterClusterQA %s",GetCutNumber().Data()),"NCellPerCluster_afterClusterQA",50,0,50);
 	fHistograms->Add(fHistNCellsAfterQA);
-	fHistM02BeforeQA = new TH1F(Form("M02_beforeClusterQA %s",GetCutNumber().Data()),"M02_beforeClusterQA",100,0,5);
+	fHistM02BeforeQA = new TH1F(Form("M02_beforeClusterQA %s",GetCutNumber().Data()),"M02_beforeClusterQA",400,0,5);
 	fHistograms->Add(fHistM02BeforeQA);
-	fHistM02AfterQA = new TH1F(Form("M02_afterClusterQA %s",GetCutNumber().Data()),"M02_afterClusterQA",100,0,5);
+	fHistM02AfterQA = new TH1F(Form("M02_afterClusterQA %s",GetCutNumber().Data()),"M02_afterClusterQA",400,0,5);
 	fHistograms->Add(fHistM02AfterQA);
-	fHistM20BeforeQA = new TH1F(Form("M20_beforeClusterQA %s",GetCutNumber().Data()),"M20_beforeClusterQA",100,0,2.5);
+	fHistM20BeforeQA = new TH1F(Form("M20_beforeClusterQA %s",GetCutNumber().Data()),"M20_beforeClusterQA",400,0,2.5);
 	fHistograms->Add(fHistM20BeforeQA);
-	fHistM20AfterQA = new TH1F(Form("M20_afterClusterQA %s",GetCutNumber().Data()),"M20_afterClusterQA",100,0,2.5);
+	fHistM20AfterQA = new TH1F(Form("M20_afterClusterQA %s",GetCutNumber().Data()),"M20_afterClusterQA",400,0,2.5);
 	fHistograms->Add(fHistM20AfterQA);
 	fHistDispersionBeforeQA = new TH1F(Form("Dispersion_beforeClusterQA %s",GetCutNumber().Data()),"Dispersion_beforeClusterQA",100,0,4);
 	fHistograms->Add(fHistDispersionBeforeQA);
@@ -727,7 +727,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 				}
 			}
 		}
-	if( inTrack->Pt() < 0.005 ) continue;
+		// 	if( inTrack->Pt() < 0.005 ) continue;
 
 		AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
 		AliAODTrack *aodt = 0;
@@ -748,7 +748,8 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 			aodt->GetCovarianceXYZPxPyPz(cv);
 			trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
 		}
-
+		if (!trackParam){AliError("Could not get TrackParameters, continue"); continue;}
+		
 		Bool_t propagated = kFALSE;
 		AliExternalTrackParam emcParam(*trackParam);
 		Float_t dPhi = 0;
@@ -998,7 +999,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
 	if (fUseDistTrackToCluster) printf("\tmin distance to track > %3.2f\n", fMinDistTrackToCluster );
 	if (fUseExoticCell)printf("\t min distance to track > %3.2f\n", fMinDistTrackToCluster );
     if (fUseMinEnergy)printf("\t E_{cluster} > %3.2f\n", fMinEnergy );
-	if (fUseNCells) printf("\t number of cells per cluster > %d\n", fMinNCells );
+	if (fUseNCells) printf("\t number of cells per cluster >= %d\n", fMinNCells );
 	if (fUseM02) printf("\t %3.2f < M02 < %3.2f\n", fMinM02, fMaxM02 );
 	if (fUseM20) printf("\t %3.2f < M20 < %3.2f\n", fMinM20, fMaxM20 );
 	if (fUseDispersion) printf("\t dispersion < %3.2f\n", fMaxDispersion );
@@ -1280,19 +1281,19 @@ Bool_t AliCaloPhotonCuts::SetMinEnergyCut(Int_t minEnergy)
 		break;
 	case 6: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=0.5; 
+		fMinEnergy=0.4; 
 		break;
 	case 7: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=0.75; 
+		fMinEnergy=0.5; 
 		break;
 	case 8: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=1.; 
+		fMinEnergy=0.75; 
 		break;
 	case 9: 
 		if (!fUseMinEnergy) fUseMinEnergy=1;
-		fMinEnergy=1.25; 
+		fMinEnergy=1.; 
 		break;
 	default:
 		AliError(Form("Minimum Energy Cut not defined %d",minEnergy));

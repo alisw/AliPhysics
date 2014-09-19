@@ -22,6 +22,7 @@ class TProfile;
 class THnSparse; 
 class TRandom3;
 class TArrayS;
+class AliAnalysisUtils;
 class AliAODTrack;
 class AliAODMCParticle;
 
@@ -495,6 +496,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   
   TH2F  *fhJetPtRefMultEta5;      //! Jet pT vs. reference multiplicity (|eta|<0.5)
   TH2F  *fhJetPtRefMultEta8;      //! Jet pT vs. reference multiplicity (|eta|<0.8)
+  TH2F  *fhJetPtMultPercent;      //! Jet pT vs. multiplicity percentile (usually V0M)
 
   TH2F  *fhDCA_XY_prim_MCID[AliPID::kSPECIES];   //! DCA XY for all rec. prim. particles sorted by MC-ID
   TH2F  *fhDCA_Z_prim_MCID[AliPID::kSPECIES];    //! DCA Z for all rec. prim. particles sorted by MC-ID
@@ -587,6 +589,8 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   
   Bool_t fOnlyLeadingJets;                  // Flag indicating whether some histos are filled with leading jets only or all jets
   
+  AliAnalysisUtils *fAnaUtils;              //! Object to use analysis utils like pile-up rejection
+  
   // PID framework
   Int_t fNumInclusivePIDtasks;              // Number of inclusive PID tasks used 
   Int_t fNumJetPIDtasks;                    // Number of jet PID tasks used
@@ -605,7 +609,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncHistos* fIDFFHistosRecCuts[AliPID::kSPECIES];    //! Identified FF reconstructed tracks after cuts 
   AliFragFuncHistos* fIDFFHistosGen[AliPID::kSPECIES];    //! Identified FF generated tracks after cuts 
 
-  ClassDef(AliAnalysisTaskIDFragmentationFunction, 19);
+  ClassDef(AliAnalysisTaskIDFragmentationFunction, 20);
 };
 
 
