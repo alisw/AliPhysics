@@ -88,6 +88,8 @@ class AliHLTZDCAgent : public AliHLTModuleAgent {
 /** destructor */
   virtual ~AliHLTZDCAgent();
 
+  UInt_t GetDetectorMask() const;
+
   /**
    * Register all configurations belonging to the ZDC library with the
    * AliHLTConfigurationHandler. 

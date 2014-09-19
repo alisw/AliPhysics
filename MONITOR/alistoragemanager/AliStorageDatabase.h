@@ -23,6 +23,7 @@ public:
 
 	bool MarkEvent(struct eventStruct event);
 	void RemoveEvent(struct eventStruct event);
+    void RemoveEventsWithPath(std::string path);
 	std::string GetFilePath(struct eventStruct event);
 	struct eventStruct GetOldestEvent();
 	std::vector<serverListStruct> GetList(struct listRequestStruct listStruct);
@@ -30,6 +31,8 @@ public:
 	AliESDEvent* GetEvent(struct eventStruct event);
 	AliESDEvent* GetNextEvent(struct eventStruct event);
 	AliESDEvent* GetLastEvent();
+	AliESDEvent* GetPrevEvent(struct eventStruct event);
+	AliESDEvent* GetFirstEvent();
 private:
 	std::string fHost;
 	std::string fPort;

@@ -53,6 +53,7 @@ AliStorageServerThread::AliStorageServerThread() :
 AliStorageServerThread::~AliStorageServerThread()
 {
 	cout<<"SERVER -- AliStorageServerThread destructor called";	
+	if (fDatabase) {delete fDatabase;}
 	cout<<" --- OK"<<endl;
 }
 
@@ -69,62 +70,78 @@ void AliStorageServerThread::StartCommunication()
 		request = eventManager->GetServerStruct(socket);
 		
 		switch(request->messageType)
-		{
-		case REQUEST_LIST_EVENTS:
-		{
-			vector<serverListStruct> result = fDatabase->GetList(request->list);
-			eventManager->Send(result,socket);
-			break;
-		}
-		case REQUEST_GET_EVENT:
-		{
-			AliESDEvent *event = fDatabase->GetEvent(request->event);
-			eventManager->Send(event,socket);
-			delete event;
-		    	break;
-		}
-		case REQUEST_GET_NEXT_EVENT:
-		{
-			AliESDEvent *event = fDatabase->GetNextEvent(request->event);
-			eventManager->Send(event,socket);
-			delete event;
-			break;
-		}
-		case REQUEST_GET_LAST_EVENT:
-		{
-			AliESDEvent *event = fDatabase->GetLastEvent();
-			eventManager->Send(event,socket);
-			delete event;
-			break;
-		}
-		case REQUEST_MARK_EVENT:
-		{
-			struct eventStruct *markData  = &(request->event);
-			eventManager->Send(MarkEvent(*markData),socket);
-			break;
-		}
-		default:break;
-		}
+		  {
+		  case REQUEST_LIST_EVENTS:
+		    {
+		      vector<serverListStruct> result = fDatabase->GetList(request->list);
+		      eventManager->Send(result,socket);
+		      break;
+		    }
+		  case REQUEST_GET_EVENT:
+		    {
+		      AliESDEvent *event = fDatabase->GetEvent(request->event);
+		      eventManager->Send(event,socket);
+		      delete event;
+		      break;
+		    }
+		  case REQUEST_GET_NEXT_EVENT:
+		    {
+                cout<<"NEXT EVENT request received"<<endl;
+		      AliESDEvent *event = fDatabase->GetNextEvent(request->event);
+		      eventManager->Send(event,socket);
+		      delete event;
+		      break;
+		    }
+		  case REQUEST_GET_PREV_EVENT:
+		    {
+		      AliESDEvent *event = fDatabase->GetPrevEvent(request->event);
+		      eventManager->Send(event,socket);
+		      delete event;
+		      break;
+		    }
+		  case REQUEST_GET_LAST_EVENT:
+		    {
+		      AliESDEvent *event = fDatabase->GetLastEvent();
+		      eventManager->Send(event,socket);
+		      delete event;
+		      break;
+		    }
+		  case REQUEST_GET_FIRST_EVENT:
+		    {
+		      AliESDEvent *event = fDatabase->GetFirstEvent();
+		      eventManager->Send(event,socket);
+		      delete event;
+		      break;
+		    }
+		  case REQUEST_MARK_EVENT:
+		    {
+		      struct eventStruct *markData  = &(request->event);
+		      eventManager->Send(MarkEvent(*markData),socket);
+		      break;
+		    }
+		  default:break;
+		  }
+
 	}
 }
 
 bool AliStorageServerThread::MarkEvent(struct eventStruct event)
 {
-	string pathToFile = fDatabase->GetFilePath(event);
-	TFile *tmpFile = new TFile(pathToFile.c_str(),"read");
-	if(!tmpFile)
-	{
-		cout<<"SERVER -- couldn't open temp file"<<endl;
-		return false;
-	}
-	AliESDEvent *eventToMark = (AliESDEvent*)tmpFile->Get(Form("event%d",event.eventNumber));
-	if(!eventToMark)
-	{
-		cout<<"SERVER -- couldn't find such event"<<endl;
-		if(tmpFile){delete tmpFile;}
-		return false;
-	}
-	cout<<"SERVER -- Marking event:"<<eventToMark->GetEventNumberInFile()<<endl;
+  string pathToFile = fDatabase->GetFilePath(event);
+  TFile *tmpFile = new TFile(pathToFile.c_str(),"read");
+  if(!tmpFile)
+    {
+      cout<<"SERVER -- couldn't open temp file"<<endl;
+      return false;
+    }
+  AliESDEvent *eventToMark = (AliESDEvent*)tmpFile->Get(Form("event%d",event.eventNumber));
+  if(!eventToMark)
+    {
+      cout<<"SERVER -- couldn't find such event"<<endl;
+      if(tmpFile){delete tmpFile;}
+      return false;
+    }
+  cout<<"SERVER -- Marking event:"<<eventToMark->GetEventNumberInFile()<<endl;
 		
 	TFile *permFile = new TFile(Form("%s/permEvents.root",fStoragePath.c_str()),"update");//open/create perm file
 	

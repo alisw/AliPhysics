@@ -158,11 +158,15 @@ void AliEventServerWindow::SetupToolbar()
 	mToolBar->AddButton(this, new TGPictureButton(mToolBar, Form("%s/MONITOR/icons/stop.png", gSystem->Getenv("ALICE_ROOT")), TOOLBUTTON_STOP) );
 	mToolBar->AddButton(this, new TGPictureButton(mToolBar, Form("%s/MONITOR/icons/preferences.png", gSystem->Getenv("ALICE_ROOT")), TOOLBUTTON_PREFERENCES) );
 	mToolBar->AddButton(this, new TGPictureButton(mToolBar, Form("%s/MONITOR/icons/exit.png", gSystem->Getenv("ALICE_ROOT")), TOOLBUTTON_EXIT) );
+    
+    TGTextButton *fakeButton= new TGTextButton(this,"Fake",TOOLBUTTON_FAKE);
 	
+    fakeButton->Connect("Clicked()", "AliEventServerWindow", this, "onFake()");
 	mToolBar->Connect("Clicked(Int_t)", "AliEventServerWindow", this, "HandleToolBarAction(Int_t)");
 	
 	AddFrame(mToolBar, new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
 	AddFrame(new TGHorizontal3DLine(this), new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
+    AddFrame(fakeButton,new TGLayoutHints(kLHintsNormal));
 }
 
 void AliEventServerWindow::HandleToolBarAction(Int_t id)
@@ -231,10 +235,23 @@ Warning("FinishedReconstruction", "Run number %d not registered.", run);
 
 void AliEventServerWindow::StartReco(Int_t run)
 {
-	AliInfo(Form("Starting Reco for run %d", run));
-  
-	TString eventSource = Form("mem://%s/run%d", gSystem->Getenv("ONLINERECO_RAWFILES_DIR"), run);
-  
+    TEnv settings;
+    settings.ReadFile(AliEventServerUtil::GetPathToServerConf(), kEnvUser);
+    
+    TString dataSource = settings.GetValue("data.source", DEFAULT_DATA_SOURCE);
+    TString eventSource;
+    
+    if(dataSource=="local")
+    {
+        AliInfo(Form("Starting Reco for run %d", run));
+        eventSource = Form("mem://%s/run%d", gSystem->Getenv("ONLINERECO_RAWFILES_DIR"), run);
+    }
+    else if(dataSource=="run")
+    {
+        AliInfo("Starting Reco for GDCs active in current run");
+        eventSource = "mem://@*:";
+    }
+    
 	if(!fRecoServer) LaunchRecoServer();
     
 	fRecoServer->StartReconstruction(run, eventSource.Data());
@@ -308,6 +325,12 @@ void AliEventServerWindow::onExit()
 	CloseWindow();
 	
 	gSystem->ExitLoop();
+}
+
+void AliEventServerWindow::onFake()
+{
+    AliInfo("Faking Dim signal: starting reco for run 197669");
+    StartOfRun(197669);
 }
 
 void AliEventServerWindow::LaunchRecoServer()

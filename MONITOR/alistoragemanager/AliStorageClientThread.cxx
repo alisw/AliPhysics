@@ -106,6 +106,7 @@ AliStorageClientThread::~AliStorageClientThread()
 		delete fCurrentFile;
 	}
 	if(fCommunicationThread){delete fCommunicationThread;}
+	if(fDatabase){delete fDatabase;}
 	cout<<" --- OK"<<endl;
 }
 
@@ -408,7 +409,8 @@ void AliStorageClientThread::CheckCurrentStorageSize()
 			//remove oldest event
 			cout<<"CLIENT -- Removing old events:"<<oldestEventPath<<endl;
 			gSystem->Exec(Form("rm -f %s",oldestEventPath.c_str()));
-			fDatabase->RemoveEvent(fDatabase->GetOldestEvent());
+            fDatabase->RemoveEventsWithPath(oldestEventPath);
+//			fDatabase->RemoveEvent(oldestEvent);
 		}
 	}
 }

@@ -28,6 +28,7 @@
 #define DEFAULT_LOGBOOK_DB "logbook"
 #define DEFAULT_LOGBOOK_USER "dqm"
 #define DEFAULT_LOGBOOK_PASS "dqm123"
+#define DEFAULT_DATA_SOURCE "local"
 
 #include <TSystem.h>
 #include <TString.h>
@@ -37,7 +38,7 @@ namespace AliEventServerUtil
 // return full path to the server configuration file
 	inline const char* GetPathToServerConf()
 	{
-		return Form("%s/MONITOR/%s",
+		return Form("%s/MONITOR/alieventserver/%s",
 			    gSystem->Getenv("ALICE_ROOT"),
 			    ALIEVENTSERVER_CONF);
 	}

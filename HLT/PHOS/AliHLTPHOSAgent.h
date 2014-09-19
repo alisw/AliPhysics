@@ -32,6 +32,8 @@ class AliHLTPHOSAgent : public AliHLTModuleAgent {
   /** destructor */
   virtual ~AliHLTPHOSAgent();
 
+  UInt_t GetDetectorMask() const;
+
   /**
    * Register all configurations belonging to this module with the
    * AliHLTConfigurationHandler. The agent can adapt the configurations

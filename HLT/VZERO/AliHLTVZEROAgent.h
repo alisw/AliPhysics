@@ -101,6 +101,8 @@ class AliHLTVZEROAgent : public AliHLTModuleAgent {
    * ---------------------------------------------------------------------------------
    */
 
+  UInt_t GetDetectorMask() const;
+
   /**
    * Register all configurations belonging to the VZERO library with the
    * AliHLTConfigurationHandler. 

@@ -28,6 +28,7 @@
 #include "AliHLTOUTHandlerChain.h"
 #include "AliHLTErrorGuard.h"
 #include "AliRunLoader.h"
+#include "AliDAQ.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 
@@ -75,6 +76,11 @@ AliHLTEMCALAgent::AliHLTEMCALAgent() : AliHLTModuleAgent("EMCAL")
 AliHLTEMCALAgent::~AliHLTEMCALAgent()
 {
     // see header file for class documentation
+}
+
+UInt_t AliHLTEMCALAgent::GetDetectorMask() const
+{
+  return AliDAQ::kEMCAL;
 }
 
 int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,

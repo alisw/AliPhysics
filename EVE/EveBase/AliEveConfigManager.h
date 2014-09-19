@@ -53,6 +53,7 @@ private:
     AliEveConfigManager();
     
     AliStorageAdministratorPanelListEvents *fListEventsWindow;
+    AliStorageAdministratorPanelListEvents *fListEventsTab;
 
     
     AliEveConfigManager(const AliEveConfigManager&);            // Not implemented

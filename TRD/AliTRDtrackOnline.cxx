@@ -18,7 +18,8 @@ AliTRDtrackOnline::AliTRDtrackOnline() :
   TObject(),
   fNTracklets(0),
   fTracklets(),
-  fTrackParametrizations()
+  fTrackParametrizations(),
+  fErrorY(0.05)
 {
 
 }
@@ -351,7 +352,7 @@ Double_t AliTRDtrackResiduals::DoEval(const Double_t *par) const
 
     deltaY = ycorr - yext;
     deltaZ = zpad  - zext;
-    deltaY /= 0.05;
+    deltaY /= fTrack->GetErrorY();
     deltaZ /= pp->GetRowSize(trkl->GetBinZ()) / TMath::Sqrt(12.);
     // printf("for tracklet %i: deltaY = %f, deltaZ = %f\n", iTracklet, deltaY, deltaZ);
 
