@@ -80,7 +80,10 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fOriginDselection(kFALSE),
    fKeepDfromB(kFALSE),
    fKeepDfromBOnly(kFALSE),
-   fRejectIfNoQuark(kFALSE)
+   fRejectIfNoQuark(kFALSE),
+   fMotherAcceptanceCutMinPt(0.0),
+   fMotherAcceptanceCutMaxEta(0.9),
+   fKeepMotherInAcceptance(kFALSE) 
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -126,7 +129,10 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fOriginDselection(kFALSE),
    fKeepDfromB(kFALSE),
    fKeepDfromBOnly(kFALSE),
-   fRejectIfNoQuark(kFALSE)
+   fRejectIfNoQuark(kFALSE),
+   fMotherAcceptanceCutMinPt(0.0),
+   fMotherAcceptanceCutMaxEta(0.9),
+   fKeepMotherInAcceptance(kFALSE)
 {
 //
 // Default constructor.
@@ -177,7 +183,10 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fOriginDselection(copy.fOriginDselection),
    fKeepDfromB(copy.fOriginDselection),
    fKeepDfromBOnly(copy.fKeepDfromBOnly),
-   fRejectIfNoQuark(copy.fRejectIfNoQuark)
+   fRejectIfNoQuark(copy.fRejectIfNoQuark),
+   fMotherAcceptanceCutMinPt(copy.fMotherAcceptanceCutMinPt),
+   fMotherAcceptanceCutMaxEta(copy.fMotherAcceptanceCutMaxEta),
+   fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance)
 {
 //
 // Copy constructor.
@@ -231,6 +240,9 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fKeepDfromB = copy.fOriginDselection;
    fKeepDfromBOnly = copy.fKeepDfromBOnly;
    fRejectIfNoQuark = copy.fRejectIfNoQuark;
+   fMotherAcceptanceCutMinPt = copy.fMotherAcceptanceCutMinPt;
+   fMotherAcceptanceCutMaxEta = copy.fMotherAcceptanceCutMaxEta;
+   fKeepMotherInAcceptance = copy.fKeepMotherInAcceptance;
    return (*this);
 }
 
@@ -983,7 +995,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
-      if (!def->IsMother()) continue;
+      if (!def->IsMother() && !def->IsMotherInAcc()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliMCParticle *part = (AliMCParticle *)fMCEvent->GetTrack(ip);
          //get mother pdg code
@@ -1063,6 +1075,12 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
          miniPair.FillRef(def->GetMotherMass());
          // do computations
          def->FillMother(&miniPair, miniEvent, &fValues);
+	 if(fKeepMotherInAcceptance){
+	      if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
+	      def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
+	 }	 
+	 
+	 
       }
    }
 }
@@ -1086,7 +1104,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
-      if (!def->IsMother()) continue;
+      if (!def->IsMother() && !def->IsMotherInAcc()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliAODMCParticle *part = (AliAODMCParticle *)list->At(ip);
          if (part->GetPdgCode() != def->GetMotherPDG()) continue;
@@ -1164,6 +1182,10 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
          miniPair.FillRef(def->GetMotherMass());
          // do computations
          def->FillMother(&miniPair, miniEvent, &fValues);
+	 if(fKeepMotherInAcceptance){
+	      if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
+	      def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
+	 }
       }
    }
 }

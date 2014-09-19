@@ -102,13 +102,17 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    task->SetCheckFeedDown(checkFeedDown);
    task->SetRejectCandidateIfNotFromQuark(checkQuark);
    task->SetDselection(originDselection);
+   task->KeepMotherInAcceptance(kTRUE);
+   task->SetMotherAcceptanceCutMinPt(minpt);
+   task->SetMotherAcceptanceCutMaxEta(maxeta);
    
       
    ::Info("AddAnalysisTaskD0", Form("Maximum numbers of daughters allowed (-1 means cut not applied): %i",maxSisters));
    ::Info("AddAnalysisTaskD0", Form("Are we checking the momentum conservation? %s", checkP? "yes" : "no"));
-   ::Info("AddAnalysisTaskD0", Form("Are we checking the feedown? %s", checkFeedDown? "yes" : "no"));
+   ::Info("AddAnalysisTaskD0", Form("Are we checking the feeddown? %s", checkFeedDown? "yes" : "no"));
    ::Info("AddAnalysisTaskD0", Form("Are we rejecting the Hijing generated? %s", checkQuark? "yes" : "no"));
    ::Info("AddAnalysisTaskD0", Form("Which D0 are we keeping? %s", (originDselection==0? "only from c quark" : originDselection==1? "only from b quark" : "both from c and b quark") ));
+   ::Info("AddAnalysisTaskD0", Form("Selecting Mother in Acceptance: Min pT %.1f, Eta Range %.1f - %.1f", minpt, mineta, maxeta));
 
 
    if (isPP) 
