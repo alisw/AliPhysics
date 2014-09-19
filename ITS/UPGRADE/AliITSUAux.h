@@ -21,7 +21,8 @@ using namespace TMath;
 
 
 namespace AliITSUAux {
-  void   BringTo02Pi(double &phi);
+  template<typename F>
+  void   BringTo02Pi(F &phi);
   Bool_t OKforPhiMin(double phiMin,double phi);
   Bool_t OKforPhiMax(double phiMax,double phi);
   Double_t MeanPhiSmall(double phi0, double phi1);
@@ -44,7 +45,8 @@ namespace AliITSUAux {
 }
 
 //_________________________________________________________________________________
-inline void AliITSUAux::BringTo02Pi(double &phi) {   
+template<typename F>
+inline void AliITSUAux::BringTo02Pi(F &phi) {
   // bring phi to 0-2pi range
   if (phi<0) phi+=TwoPi(); else if (phi>TwoPi()) phi-=TwoPi();
 }

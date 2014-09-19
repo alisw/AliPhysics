@@ -264,12 +264,6 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 	
 	vector<serverListStruct> receivedList = fEventManager->GetServerListVector(fServerSocket);
 	
-	cout<<"PANEL:"<<receivedList[0].runNumber<<endl;	
-	cout<<"VECTOR SIZE:"<<receivedList.size()<<endl;
-	
-//do something with list of maching events
-	cout<<"Received list of perm events"<<endl;
-
 	for(unsigned int i=0;i<receivedList.size();i++)
 	{
 		fEventsList->InsertEntry(Form("%d   %d   %s   %d   %d   ",
@@ -291,6 +285,7 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 	MapSubwindows();
 	MapWindow();
 	Layout();
+	delete requestMessage;
 }
 
 
@@ -301,8 +296,6 @@ void AliStorageAdministratorPanelListEvents::onMarkButton()
 
 	//get run and event number from selected row
 	int selectedEventNumber = fEventsList->GetSelected()-1;
-
-	cout<<"SELECTED:"<<selectedEventNumber<<endl;
 	
 	if(selectedEventNumber<0)return;
 	

@@ -146,7 +146,7 @@ int AliPHOSTriggerRawDigiProducer::Get2x2Signal(AliPHOSTriggerRawReader* reader,
     if( parameters )
       return signal - parameters->GetTRUPedestal(mod, TRURow, branch, TRUX, TRUZ);
     else
-      return signal - AliPHOSTRURawReader::kDefaultSignalValue;
+      return signal - AliPHOSTRURawReader::GetDefaultSignalValue();
   }
   else
     return 0;
