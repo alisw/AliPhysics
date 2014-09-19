@@ -127,6 +127,8 @@ public:
   virtual UShort_t  GetTPCsignalN()      const {return 0 ;}
   virtual Double_t  GetTPCmomentum()     const {return 0.;}
   virtual Double_t  GetTPCTgl()          const {return 0.;}
+  virtual Double_t  GetTgl()             const {return 0.;}
+  virtual void GetImpactParameters(Float_t& ,Float_t& ) const {}
   virtual Double_t  GetTOFsignal()       const {return 0.;}
   virtual Double_t  GetTOFsignalTunedOnData() const {return 0.;}
   virtual Double_t  GetHMPIDsignal()     const {return 0.;}

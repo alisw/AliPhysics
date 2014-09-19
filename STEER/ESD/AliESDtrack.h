@@ -421,7 +421,7 @@ public:
   Bool_t 
   RelateToVertexBxByBz(const AliESDVertex *vtx, Double_t b[3], Double_t maxd,
                         AliExternalTrackParam *cParam=0);
-  void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
+  virtual void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
   void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {
     p[0]=fD; p[1]=fZ; cov[0]=fCdd; cov[1]=fCdz; cov[2]=fCzz;
   }
