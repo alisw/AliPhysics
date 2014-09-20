@@ -44,6 +44,33 @@ AliITSSAPTracker* tracker=0;
 TTree* treeInp = 0;
 AliRunLoader* runLoader = 0;
 AliESDEvent* esd=0;
+typedef struct {
+  Bool_t  validSPD;
+  Bool_t  validTrc;
+  Bool_t  isPrim;
+  Char_t  ntlC;
+  Char_t  ntlF;
+  Char_t  mtlC;
+  Char_t  mtlF;
+  Char_t  ntrC;
+  Char_t  ntrF;
+  Int_t   pdg;
+  Int_t   evID;
+  Int_t   mult;
+  Float_t pt;
+  Float_t eta;
+  Float_t phi;
+  Float_t zv;
+  //
+  Float_t spdDPhi;
+  Float_t spdDTht;
+  Float_t spdChi2;
+} tres_t;
+
+tres_t tres;
+TFile* flOut = 0;
+TTree* trOut = 0;
+
 
 void ProcessEvent(int iev);
 void Process(const char* path);
@@ -51,7 +78,12 @@ void ProcChunk(const char* path);
 void TestTracker(TTree* tRP, const AliESDVertex* vtx);
 void LoadClusters(TTree* tRP);
 Double_t* DefLogAx(double xMn,double xMx, int nbin);
+void CheckRecStatus();
+void InitOutTree(const char* fname="rcInfo.root");
+void SaveOutTree();
 void InitTracker(int runNumber);
+
+
 
 #ifdef _TIMING_
 TProfile* hTiming[AliITSSAPTracker::kNSW];
@@ -60,6 +92,7 @@ TProfile* hTiming[AliITSSAPTracker::kNSW];
 void Process(const char* inpData)
 {
   //
+  InitOutTree();
   TString inpDtStr = inpData;
   if (inpDtStr.EndsWith(".root") || inpDtStr.EndsWith(".zip#")) {
     ProcChunk(inpDtStr.Data());
@@ -84,6 +117,7 @@ void Process(const char* inpData)
 #ifdef _CONTROLH_
   tracker->SaveHistos();
 #endif
+  SaveOutTree();
 }
 
 void ProcChunk(const char* path)
@@ -183,6 +217,7 @@ void ProcessEvent(int iEv)
   }
 #endif
   //
+  CheckRecStatus();
   //esd->Reset();
   //
 }
@@ -217,16 +252,27 @@ void TestTracker(TTree* tRP, const AliESDVertex* vtx)
 //_________________________________________________
 void LoadClusters(TTree* tRP)
 {
-  AliITSRecPointContainer* rpcont = AliITSRecPointContainer::Instance();
-  TClonesArray* itsClusters = rpcont->FetchClusters(0,tRP);
-  if(!rpcont->IsSPDActive()){
-    printf("No SPD rec points found, multiplicity not calculated\n");
-    tRP->Print();
-    return;
+  //  AliITSRecPointContainer* rpcont = AliITSRecPointContainer::Instance();
+  //  TClonesArray* itsClusters = rpcont->FetchClusters(0,tRP);
+  //  if(!rpcont->IsSPDActive()){
+  //    printf("No SPD rec points found, multiplicity not calculated\n");
+  //    tRP->Print();
+  //    return;
+  //  }
+  //  else printf("NSP0: %d\n",itsClusters->GetEntriesFast());
+  static TClonesArray* itsModAdd[2198] = {0};
+  static Bool_t first = kTRUE;
+  if (first) {
+    first = 0;
+    for (int i=0;i<2198;i++) itsModAdd[i] = new TClonesArray("AliITSRecPoint");
   }
   int nMod = AliITSgeomTGeo::GetNModules();
   for (int imd=0;imd<nMod;imd++) {
-    itsClusters = rpcont->UncheckedGetClusters(imd);
+    TClonesArray* itsClusters = itsModAdd[imd];
+    tRP->SetBranchAddress("ITSRecPoints",&itsClusters);    
+    tRP->GetEntry(imd);
+    //    itsClusters = rpcont->UncheckedGetClusters(imd);
+    
     int nClusters = itsClusters->GetEntriesFast();
     if (!nClusters) continue;
     while(nClusters--) {
@@ -250,6 +296,190 @@ Double_t* DefLogAx(double xMn,double xMx, int nbin)
   double *xax = new Double_t[nbin+1];
   for (int i=0;i<=nbin;i++) xax[i]= xMn*exp(dx*i);
   return xax;
+}
+//______________________________________________
+void CheckRecStatus()
+{
+  //
+  static int nev = -1;
+  static TBits patternMC;
+  static vector<char> ntrCorr;
+  static vector<char> ntrFake;
+  static vector<char> mtlCorr;
+  static vector<char> mtlFake;
+  static vector<char> ntlCorr;
+  static vector<char> ntlFake;
+  static vector<float> spdDPhi;
+  static vector<float> spdDTht;
+  static vector<float> spdChi2;
+  //
+  AliStack* stack = 0;
+  AliRunLoader* rl = AliRunLoader::Instance();
+  if (!rl || !(stack=rl->Stack())) return;
+  nev++;
+  //
+  enum {kIsPrim=AliITSSAPTracker::kNLrActive,kValidTracklet,kValidTrack,kRecDone,kBitPerTrack};
+  int nTrkMC = stack->GetNtrack();
+  patternMC.SetBitNumber(nTrkMC*kBitPerTrack,0);
+  patternMC.ResetAllBits();
+  //
+  ntrCorr.clear();
+  ntrFake.clear();
+  ntlCorr.clear();
+  ntlFake.clear();
+  mtlCorr.clear();
+  mtlFake.clear();
+  //
+  spdDPhi.clear();
+  spdDTht.clear();
+  spdChi2.clear();
+  //  
+  ntrCorr.resize(nTrkMC,0);
+  ntrFake.resize(nTrkMC,0);
+  ntlCorr.resize(nTrkMC,0);
+  ntlFake.resize(nTrkMC,0);
+  mtlCorr.resize(nTrkMC,0);
+  mtlFake.resize(nTrkMC,0);
+  spdDPhi.resize(nTrkMC,0);
+  spdDTht.resize(nTrkMC,0);
+  spdChi2.resize(nTrkMC,0);
+  
+  //
+  // fill MC track patterns
+  for (int ilr=6;ilr--;) {
+    AliITSSAPLayer *lr = tracker->GetLayer(ilr);
+    int ncl = lr->GetNClusters();
+    for (int icl=ncl;icl--;) {
+      AliITSRecPoint* cl = lr->GetClusterUnSorted(icl);
+      for (int j=0;j<3;j++) {
+	int lb = cl->GetLabel(j);
+	if (lb<0 || lb>=nTrkMC) break;
+	patternMC.SetBitNumber(lb*kBitPerTrack+ilr,kTRUE);
+      }
+    }
+  }
+  //
+  int nTrk = tracker->GetNTracklets();
+  if (!nTrk) return;
+  for (int itr=0;itr<nTrk;itr++) {
+    const AliITSSAPTracker::SPDtracklet_t& trlet = tracker->GetTracklet(itr);
+    //    PrintTracklet(itr);
+    //
+    int lbl = trlet.label;
+    if (lbl==-3141593) continue;
+    int lblA = TMath::Abs(lbl);
+    if (lblA==lbl) ntlCorr[lblA]++;
+    else           ntlFake[lblA]++;
+    //
+    if (spdChi2[lblA]==0 || spdChi2[lblA]<trlet.chi2) {
+      spdChi2[lblA] = trlet.chi2;
+      spdDPhi[lblA] = trlet.dphi;
+      spdDTht[lblA] = trlet.dtht;
+    }
+  }
+  //
+  AliITSSAPLayer* lr0 = tracker->GetLayer(0);
+  AliITSSAPLayer* lr1 = tracker->GetLayer(1);
+  for (int itrm=0;itrm<nTrkMC;itrm++) {
+    if (ntlCorr[itrm]+ntlFake[itrm]<2) continue;
+    printf("\nExtra for tr %d nC:%d nF:%d\n",itrm,ntlCorr[itrm],ntlFake[itrm]);
+    //
+    int cnt = 0;
+    for (int itr=0;itr<nTrk;itr++) {
+      const AliITSSAPTracker::SPDtracklet_t& trlet = tracker->GetTracklet(itr);
+      if (TMath::Abs(trlet.label)!=itrm) continue;
+      AliITSSAPLayer::ClsInfo_t* clinf0 = lr0->GetClusterInfo(trlet.id1);
+      AliITSSAPLayer::ClsInfo_t* clinf1 = lr1->GetClusterInfo(trlet.id2);
+      printf("#%2d%s%4d chi:%.2f [%4d/%3d] [%4d/%3d]\n",cnt++,trlet.label<0 ? "-":"+",itr,trlet.chi2,
+             trlet.id1,clinf0->detid,
+             trlet.id2,clinf1->detid);
+    }
+  }
+  //
+  const AliMultiplicity* mltESD = esd->GetMultiplicity();
+  nTrk = mltESD->GetNumberOfTracklets();
+  for (int itr=0;itr<nTrk;itr++) {
+    int lb0 = mltESD->GetLabel(itr,0);
+    int lb1 = mltESD->GetLabel(itr,1);    
+    if (lb0==lb1) mtlCorr[lb1]++;
+    else          mtlFake[lb1]++;
+  }
+  //
+  nTrk = tracker->GetNTracks();
+  for (int itr=0;itr<nTrk;itr++) {
+    const AliITSSAPTracker::ITStrack_t &track = tracker->GetTrack(itr);
+    //
+    int lbl = track.label;
+    if (lbl==-3141593) continue;
+    int lblA = TMath::Abs(lbl);
+    if (lblA==lbl) ntrCorr[lblA]++;
+    else           ntrFake[lblA]++;
+  }
+  //
+  // set reconstructability
+  for (int itr=nTrkMC;itr--;) {
+    int bitoffs = itr*kBitPerTrack;
+    //
+    tres.validSPD = patternMC.TestBitNumber(bitoffs+AliITSSAPTracker::kALrSPD1) && 
+      patternMC.TestBitNumber(bitoffs+AliITSSAPTracker::kALrSPD2);
+    int nmiss = 0;
+    for (int il=AliITSSAPTracker::kALrSDD1;il<=AliITSSAPTracker::kALrSSD2;il++) 
+      if (tracker->IsObligatoryLayer(il) && !patternMC.TestBitNumber(bitoffs+il)) nmiss++;
+    tres.validTrc = tres.validSPD && (nmiss<=tracker->GetMaxMissedLayers());
+    //
+    if ( !tres.validSPD && !tres.validTrc && 
+	 (ntlCorr[itr]+ntlFake[itr])==0 && 
+	 (ntrCorr[itr]+ntrFake[itr])==0 &&
+	 (mtlCorr[itr]+mtlFake[itr])==0 ) continue;
+    //
+    TParticle* mctr = stack->Particle(itr);
+    tres.isPrim = stack->IsPhysicalPrimary(itr);
+    tres.pdg = mctr->GetPdgCode();
+    tres.pt =  mctr->Pt();
+    tres.eta = mctr->Eta();
+    tres.phi = mctr->Phi();
+    //
+    tres.ntlC = ntlCorr[itr];
+    tres.ntlF = ntlFake[itr];
+    tres.ntrC = ntrCorr[itr];
+    tres.ntrF = ntrFake[itr];
+    //
+    tres.mtlC = mtlCorr[itr];
+    tres.mtlF = mtlFake[itr];
+    //
+    tres.evID = nev;
+    tres.mult = tracker->GetNTracklets();
+    tres.zv = tracker->GetSPDVertex()->GetZ();
+    //
+    tres.spdDPhi = spdDPhi[itr];
+    tres.spdDTht = spdDTht[itr];
+    tres.spdChi2 = spdChi2[itr];
+    //
+    trOut->Fill();
+  }
+  //
+}
+
+//___________________________________________________
+void InitOutTree(const char* fname)
+{
+  // output tree
+  flOut = TFile::Open(fname,"recreate");
+  trOut = new TTree("rcinfo","rcinfo");
+  trOut->Branch("res",&tres);
+}
+
+//___________________________________________________
+void SaveOutTree()
+{
+  if (!trOut) return;
+  flOut->cd();
+  trOut->Write();
+  delete trOut;
+  flOut->Close();
+  delete flOut;
+  trOut = 0;
+  flOut = 0;
 }
 
 
