@@ -40,6 +40,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fpidResponse(0),
   fFlagSparse(kFALSE),
   fOutputList(0),
+  fNevents(0),
   fVtxZ(0),
   fVtxX(0),
   fVtxY(0),
@@ -59,8 +60,10 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fEMCTrketa(0),
   fEMCTrkphi(0),
   fEMCdEdx(0),
+  fEMCTPCnsig(0),
   fEMCTPCNpts(0),
   fHistdEdxEop(0),
+  fHistNsigEop(0),
   fHistEop(0),
   fEleCanTPCNpts(0),
   fEleCanTPCNCls(0),
@@ -92,6 +95,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fpidResponse(0),
   fFlagSparse(kFALSE),
   fOutputList(0),
+  fNevents(0),
   fVtxZ(0),
   fVtxX(0),
   fVtxY(0),
@@ -111,8 +115,10 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fEMCTrketa(0),
   fEMCTrkphi(0),
   fEMCdEdx(0),
+  fEMCTPCnsig(0),
   fEMCTPCNpts(0),
   fHistdEdxEop(0),
+  fHistNsigEop(0),
   fHistEop(0),
   fEleCanTPCNpts(0),
   fEleCanTPCNCls(0),
@@ -168,6 +174,13 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   ///////////////
   fOutputList = new TList();
   fOutputList->SetOwner();  
+
+  fNevents = new TH1F("fNevents","No of events",3,-0.5,2.5);
+  fOutputList->Add(fNevents);
+  fNevents->GetYaxis()->SetTitle("counts");
+  fNevents->GetXaxis()->SetBinLabel(1,"All");
+  fNevents->GetXaxis()->SetBinLabel(2,"With >2 Trks");
+  fNevents->GetXaxis()->SetBinLabel(3,"Vtx_{z}<10cm");
 
   fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
   fOutputList->Add(fVtxZ);
@@ -225,6 +238,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fEMCdEdx = new TH2F("fEMCdEdx","dE/dx distribution of tracks matched to EMCAL;p (GeV/c);dE/dx",200,0,20,500,0,160);
   fOutputList->Add(fEMCdEdx);
+    
+  fEMCTPCnsig = new TH2F("fEMCTPCnsig","TPC Nsigma distribution of tracks matched to EMCAL;p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
+  fOutputList->Add(fEMCTPCnsig);
 
   fEMCTPCNpts = new TH2F("fEMCTPCNpts","TPC Npoints used for dE/dx for tracks matched to EMCAL;p (GeV/c);N points",200,0,20,200,0.,200.);
   fOutputList->Add(fEMCTPCNpts);
@@ -232,8 +248,11 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
   fOutputList->Add(fHistEop);
 
-  fHistdEdxEop = new TH2F("fHistdEdxEop", "E/p vs. dE/dx;E/p;dE/dx", 60, 0.0, 3.0, 500,0,160);
+  fHistdEdxEop = new TH2F("fHistdEdxEop", "E/p vs dE/dx;E/p;dE/dx", 60, 0.0, 3.0, 500,0,160);
   fOutputList->Add(fHistdEdxEop);
+    
+  fHistNsigEop = new TH2F ("fHistNsigEop", "E/p vs TPC nsig",60, 0.0, 3.0, 200, -10,10);
+  fOutputList->Add(fHistNsigEop);
 
   fEleCanTPCNpts = new TH2F("fEleCanTPCNpts","TPC Npoints used for dE/dx for electron candidates;p_{T} (GeV/c);N points",200,0,20,200,0,200);
   fOutputList->Add(fEleCanTPCNpts);
@@ -259,9 +278,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fEleCanSPDOr = new TH2F("fEleCanSPDOr","Tracks with hits on both SPD layer;p_{T} (GeV/c);Hit",200,0,20,1,0,1);
   fOutputList->Add(fEleCanSPDOr);
 
-  Int_t bins[6]={6,500,200,100,100,100}; //trigger, pt, TPCnsig, E/p, M20, M02 
-  Double_t xmin[6]={-1.5,0,-10,0,0,0};
-  Double_t xmax[6]={4.5,25,10,2,2,2};
+  Int_t bins[6]={8,500,200,400,400,400}; //trigger, pt, TPCnsig, E/p, M20, M02
+  Double_t xmin[6]={-0.5,0,-10,0,0,0};
+  Double_t xmax[6]={7.5,25,10,2,2,2};
   fSparseElectron = new THnSparseD ("Electron","Electron",6,bins,xmin,xmax);
   fOutputList->Add(fSparseElectron);
 
@@ -315,10 +334,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   ntracks = fVevent->GetNumberOfTracks();
   printf("There are %d tracks in this event\n",ntracks);
 
+  fNevents->Fill(0); //all events
   Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
   Double_t NcontV = pVtx->GetNContributors();
   if(NcontV<2)return;
+  fNevents->Fill(1); //events with 2 tracks
 
   Zvertex = pVtx->GetZ();  
   Yvertex = pVtx->GetY();  
@@ -356,17 +377,21 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     if(evSelMask & AliVEvent::kEMCEGA) fTrigMulti->Fill(8.5, multiplicity);
     if(evSelMask & AliVEvent::kEMCEGA & EG2tr) fTrigMulti->Fill(9.5, multiplicity);
 
-    if((evSelMask & AliVEvent::kMB) || (evSelMask & AliVEvent::kINT7) || (evSelMask & AliVEvent::kINT8)) trigger =0;
-    if(evSelMask & AliVEvent::kEMC1) trigger =1;
-    if(evSelMask & AliVEvent::kEMC8) trigger =2;
-    if(evSelMask & AliVEvent::kEMCEJE) trigger =3;
-    if(evSelMask & AliVEvent::kEMCEGA) trigger =4;
+    if(evSelMask & AliVEvent::kMB) trigger =0;
+    if(evSelMask & AliVEvent::kINT7) trigger =1;
+    if(evSelMask & AliVEvent::kINT8) trigger =2;
+    if(evSelMask & AliVEvent::kEMC1) trigger =3;
+    if(evSelMask & AliVEvent::kEMC7) trigger =4;
+    if(evSelMask & AliVEvent::kEMC8) trigger =5;
+    if(evSelMask & AliVEvent::kEMCEJE) trigger =6;
+    if(evSelMask & AliVEvent::kEMCEGA) trigger =7;
   }
 
   ////////////////////
   //event selection//
   ///////////////////
   if(fabs(Zvertex>10.0))return; 
+  fNevents->Fill(2); //events after z vtx cut
 
   /////////////////////////////
   //EMCAL cluster information//
@@ -393,10 +418,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   /////////////////////////////////
   //Look for kink mother for AOD//
   /////////////////////////////////
-  Int_t numberofvertices = fAOD->GetNumberOfVertices();
+  Int_t numberofvertices = 100;
+  if(fAOD) numberofvertices = fAOD->GetNumberOfVertices();
   Double_t listofmotherkink[numberofvertices];
   Int_t numberofmotherkink = 0;
-  if(IsAODanalysis()){
+  if(IsAODanalysis())
+  {
     for(Int_t ivertex=0; ivertex < numberofvertices; ivertex++) {
       AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
       if(!aodvertex) continue;
@@ -408,10 +435,11 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         numberofmotherkink++;
       }
     }
-  }
+  } //+++
+
 
   ///////////////
-  //Track loop//
+  //Track loop///
   ///////////////
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
 
@@ -428,11 +456,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     //Apply track cuts//
     ////////////////////
     if(fAOD)
-      if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+      if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
 
     if(fESD)
       if(!esdTrackCutsH->AcceptTrack(etrack))continue;
 
+    //reject kink
     if(IsAODanalysis()){
       Bool_t kinkmotherpass = kTRUE;
       for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
@@ -447,12 +476,14 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       if(etrack->GetKinkIndex(0) != 0) continue;
     }
 
+
     ////////////////////
     //Track properties//
     ///////////////////
     Double_t dEdx =-999, fTPCnSigma=-999;
     dEdx = track->GetTPCsignal();
     fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+
     if(track->GetID()<0) fNegTrkIDPt->Fill(track->Pt());
     fTrkPt->Fill(track->Pt());
     fTrketa->Fill(track->Eta());
@@ -480,6 +511,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fEMCTrketa->Fill(track->Eta());
       fEMCTrkphi->Fill(track->Phi());
       fEMCdEdx->Fill(track->P(),dEdx);
+      fEMCTPCnsig->Fill(track->P(),fTPCnSigma);
       fEMCTPCNpts->Fill(track->P(),track->GetTPCsignalN());
 
       //E/p distribution
@@ -487,7 +519,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       Double_t eop = -1.0;
       if(track->P()>0)eop = clustMatchE/track->P();
 
-      if(track->Pt()>1.0)fHistdEdxEop->Fill(eop,dEdx);
+      if(track->Pt()>1.0){
+        fHistdEdxEop->Fill(eop,dEdx);
+        fHistNsigEop->Fill(eop,fTPCnSigma);
+      }
       fHistEop->Fill(track->Pt(),eop);
 
       //EID THnsparse
@@ -498,7 +533,6 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fvalueElectron[4] = clustMatch->GetM20();
       fvalueElectron[5] = clustMatch->GetM02();
 
-      cout << "flag for sparse: " << GetElecIDsparse() <<endl; 
       if(fFlagSparse){
         cout << "filling sparse"<<endl;
         fSparseElectron->Fill(fvalueElectron);
@@ -507,7 +541,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       ////////////////////////////////////////////////
       //Track properties of EMCAL electron cadidates//
       ///////////////////////////////////////////////
-      if(eop>0.8 and eop<1.2){
+      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.8 && eop<1.2){
         fEleCanTPCNpts->Fill(track->Pt(),track->GetTPCsignalN());
         fEleCanTPCNCls->Fill(track->Pt(),track->GetTPCNcls());
 
