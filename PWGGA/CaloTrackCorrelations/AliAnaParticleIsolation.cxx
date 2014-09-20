@@ -4141,12 +4141,16 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       {
         if( partInConeCharge > 0) // charged pT cut and acceptance
         {
+          if( GetIsolationCut()->GetParticleTypeInCone() == AliIsolationCut::kOnlyNeutral ) continue;
+          
           if( partInConePt < GetReader()->GetCTSPtMin () ) continue;
           
           if(!GetReader()->GetFiducialCut()->IsInFiducialCut(mcisoLV,"CTS")) continue ;
         }
         else // neutrals E cut and acceptance
         {
+          if( GetIsolationCut()->GetParticleTypeInCone() == AliIsolationCut::kOnlyCharged ) continue;
+          
           if( partInConeE  <= minECalo ) continue;
           
           if(!GetReader()->GetFiducialCut()->IsInFiducialCut(mcisoLV,fCalorimeter)) continue ;
