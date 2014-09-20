@@ -95,7 +95,7 @@ class AliPHOSpPbPi0Header : public TNamed {
   Bool_t   fIsPileup;               // is Pileup from SPD
   Float_t  fCentrality;             // event certrality
 
-  ClassDef(AliPHOSpPbPi0Header, 2)
+  ClassDef(AliPHOSpPbPi0Header, 3)
 };
 
 #endif
