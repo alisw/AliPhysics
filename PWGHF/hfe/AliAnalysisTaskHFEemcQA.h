@@ -37,7 +37,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     kAODanalysis = BIT(20),
   };
 
-  AliVEvent   *fVevent;  //!V event object
+  AliVEvent   *fVevent;  //!event object
   AliESDEvent *fESD;    //!ESD object
   AliAODEvent *fAOD;    //!AOD object
   AliPIDResponse *fpidResponse; //!pid response
@@ -45,6 +45,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
   Bool_t      fFlagSparse;// switch to THnspare
 
   TList       *fOutputList; //!Output list
+  TH1F        *fNevents;//! no of events
   TH1F        *fVtxZ;//!Vertex z 
   TH1F        *fVtxX;//!Vertex x 
   TH1F        *fVtxY;//!Vertex y 
@@ -64,8 +65,10 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
   TH1F        *fEMCTrketa;//!EMC trk eta
   TH1F        *fEMCTrkphi;//!EMC trk phi
   TH2F        *fEMCdEdx;//!EMC trk dedx
+  TH2F        *fEMCTPCnsig;//! EMC trk nsig
   TH2F        *fEMCTPCNpts;//!EMC Npoints used for dedx
   TH2F        *fHistdEdxEop;//!E/p vs dedx
+  TH2F        *fHistNsigEop;//!E/p vs dedx
   TH2F        *fHistEop;//!pt vs E/p
   TH2F        *fEleCanTPCNpts;//!ele cand TPC Npoints used for dedx
   TH2F        *fEleCanTPCNCls;//!ele cand TPC N clusters
