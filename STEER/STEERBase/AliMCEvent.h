@@ -99,6 +99,7 @@ public:
     virtual Int_t     GetNumberOfV0s()       const {return -1;}
     virtual Int_t     GetNumberOfCascades()  const {return -1;}
     // Vertex
+    using AliVEvent::GetPrimaryVertex;
     virtual const AliVVertex *GetPrimaryVertex() const;
     
     //
@@ -148,7 +149,8 @@ public:
 
   virtual AliVVZERO    *GetVZEROData() const {return 0;}
   virtual AliVZDC      *GetZDCData()   const {return 0;}
-    
+
+  virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
 private:
     virtual void      ReorderAndExpandTreeTR();
@@ -178,7 +180,6 @@ private:
     
     ClassDef(AliMCEvent, 2)              // AliVEvent realisation for MC data
 };
-
 
 #endif 
 

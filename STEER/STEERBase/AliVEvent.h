@@ -44,6 +44,7 @@ class AliVEvent : public TObject {
   ULong64_t GetTriggerMaskNext50() const { return 0; }
 
 public:
+  enum EDataLayoutType { kESD, kMC, kAOD, kMixed, kFlat };
   enum EOfflineTriggerTypes { 
       kMB           = BIT(0), // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
       kINT7         = BIT(1), // V0AND trigger, offline V0 selection
@@ -228,6 +229,8 @@ public:
   virtual Int_t GetPrimaryVertexTracks( AliESDVertex & ) const {return 0;}
 
   virtual void ConnectTracks() {}
+  virtual EDataLayoutType GetDataLayoutType() const = 0;
+  const char* Whoami();
 
   ClassDef(AliVEvent, 3)  // base class for AliEvent data
 };

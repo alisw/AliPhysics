@@ -855,7 +855,6 @@ Bool_t  AliMCEvent::GetCocktailGenerator(Int_t index,TString &nameGen){
    return 1;
 }
 
-
-
+AliVEvent::EDataLayoutType AliMCEvent::GetDataLayoutType() const {return AliVEvent::kMC;}
 
 ClassImp(AliMCEvent)

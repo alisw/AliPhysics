@@ -201,6 +201,7 @@ class AliAODTrack : public AliVTrack {
   //
   Int_t   GetTOFBunchCrossing(Double_t b=0, Bool_t tpcPIDonly=kFALSE) const;
   //
+  using AliVTrack::GetP;
   template <typename T> void GetP(T *p) const {
     p[0]=fMomentum[0]; p[1]=fMomentum[1]; p[2]=fMomentum[2];}
 

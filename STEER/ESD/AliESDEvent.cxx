@@ -2435,3 +2435,5 @@ AliESDfriend* AliESDEvent::FindFriend() const
   return static_cast<AliESDfriend*>(FindListObject("AliESDfriend")); 
 }
 
+AliVEvent::EDataLayoutType AliESDEvent::GetDataLayoutType() const {return AliVEvent::kESD;}
+

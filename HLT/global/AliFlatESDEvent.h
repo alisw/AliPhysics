@@ -150,6 +150,7 @@ class AliFlatESDEvent :public AliVEvent {
   virtual Int_t EventIndexForEMCALCell(Int_t) const {return 0;}
   virtual AliVVZERO* GetVZEROData() const {return NULL;}
   virtual AliVZDC   *GetZDCData() const {return NULL;}
+  virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
  private:
 

@@ -1072,3 +1072,5 @@ void AliAODEvent::ConnectTracks() {
   fTracksConnected = kTRUE;
 }
 
+AliVEvent::EDataLayoutType AliAODEvent::GetDataLayoutType() const {return AliVEvent::kAOD;}
+
