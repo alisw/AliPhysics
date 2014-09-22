@@ -46,6 +46,8 @@ const char* AliVEvent::Whoami()
       return "AOD";
     case AliVEvent::kMC :
       return "MC";
+    case AliVEvent::kMixed :
+      return "Mixed";
     default:
       return "unknown";
   }
