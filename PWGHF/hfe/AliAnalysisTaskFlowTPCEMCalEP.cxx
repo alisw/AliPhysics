@@ -422,6 +422,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackEP)) continue;
 
     if (trackEP->Pt() < 2) Qweight = trackEP->Pt()/2;
+    if (trackEP->Pt() >= 2) Qweight = 1;
+
 
     if(trackEP->Eta()>0 && trackEP->Eta()<0.8){
       Qx2pos += Qweight*TMath::Cos(2*trackEP->Phi());
