@@ -234,8 +234,8 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
       Error("ExecuteMacro", "The macro did not add any tasks to the manager");
       return -1;
    }
-   Long64_t ptrTask = (Long64_t)mgr->GetTasks()->At(ntasks0);
-   if (retval >= ptrTask) {
+//   Long64_t ptrTask = (Long64_t)mgr->GetTasks()->At(ntasks0);
+   if (retval) {
       TObject::SetBit(AliAnalysisTaskCfg::kLoaded, kTRUE);
       fRAddTask = reinterpret_cast<TObject*>(retval);
       if (fConfigDeps && dynamic_cast<TObject*>(fRAddTask)) {
