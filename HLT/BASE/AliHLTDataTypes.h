@@ -1294,6 +1294,11 @@ extern "C" {
    */	
   extern const AliHLTComponentDataType fgkITSTracksDataType;
 
+  /** Container of ITS SAP tracker data
+   * @ingroup alihlt_component_datatypes
+   */	
+  extern const AliHLTComponentDataType kAliHLTDataTypeITSSAPData;
+
   /** Container of calorimeter clusters
    * @ingroup alihlt_component_datatypes
    */	

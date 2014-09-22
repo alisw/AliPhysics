@@ -47,6 +47,7 @@
 #include "AliGeomManager.h"
 #include "AliHLTTrackMCLabel.h"
 #include "AliITSRecPoint.h"
+#include "AliHLTSAPTrackerData.h"
 #include <map>
 
 using namespace std;
@@ -100,7 +101,7 @@ AliHLTITSSAPTrackerComponent::~AliHLTITSSAPTrackerComponent()
 const char* AliHLTITSSAPTrackerComponent::GetComponentID()
 {
   // see header file for class documentation
-  return "ITSTracker";
+  return "ITSSAPTracker";
 }
 
 void AliHLTITSSAPTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list )
@@ -323,13 +324,13 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   const AliHLTComponentEventData& evtData,
   const AliHLTComponentBlockData* blocks,
   AliHLTComponentTriggerData& /*trigData*/,
-  AliHLTUInt8_t* /*outputPtr*/,
+  AliHLTUInt8_t* outputPtr,
   AliHLTUInt32_t& size,
-  vector<AliHLTComponentBlockData>& /*outputBlocks*/ )
+  vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //* process event
 
-  //  AliHLTUInt32_t maxBufferSize = size;
+  AliHLTUInt32_t maxBufferSize = size;
   size = 0; // output size
   
   if (!IsDataEvent()) return 0;
@@ -351,7 +352,7 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   const AliESDVertex *vertexSPD = 0;
 
   {
-    const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS);
+    const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD);
     if( iter != NULL  ) {
       if( !( vertexSPD = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) ) ) ){    
 	HLTError("ITS SPD vertex object is corrupted");
@@ -407,36 +408,55 @@ int AliHLTITSSAPTrackerComponent::DoEvent
 
   
   // Fill output tracks
-  
-  // RS??: HERE I AM NOT SURE WHAT TO DO
-  int nFoundTracks = fTracker->GetNTracks();
   int nAddedTracks = 0;
-  for (int itr=0;itr<nFoundTracks;itr++) {
-    const AliITSSAPTracker::ITStrack_t& track = fTracker->GetTrack(itr);
-    // the track is just a struct of 2 AliExternalTrackParams (params at vertex and at the outer ITS layer)
-    // + some extra info, see "struct ITStrack" in the AliITSSAPTracker.h
-    if ( track.paramOut.TestBit(AliITSSAPTracker::kInvalidBit) || 
-	 track.paramInw.TestBit(AliITSSAPTracker::kInvalidBit)) continue;
-    // use only those tracks whose both inward and outward params are OK.
-    
-    nAddedTracks++;
-    // RS??: 
-
-    // I don't know if it should be passes as it is or converted to ESDtrack?
+  {  
+    int nFoundTracks = fTracker->GetNTracks();
+    AliHLTUInt32_t blockSize = sizeof(AliHLTITSSAPTrackerDataContainer) + nFoundTracks*sizeof(AliHLTITSSAPTrackerData);
+    if( size + blockSize > maxBufferSize ){    	
+      HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d tracks are not stored", 
+		  maxBufferSize, size + blockSize, nFoundTracks);
+      iResult = -ENOSPC;
+    }    
+    if( iResult>=0 ){
+      blockSize = sizeof(AliHLTITSSAPTrackerDataContainer);
+      AliHLTITSSAPTrackerDataContainer *data = reinterpret_cast<AliHLTITSSAPTrackerDataContainer*>(outputPtr);
+      data->fCount=0;
+      for (int itr=0;itr<nFoundTracks;itr++) {
+	const AliITSSAPTracker::ITStrack_t& track = fTracker->GetTrack(itr);
+	// the track is just a struct of 2 AliExternalTrackParams (params at vertex and at the outer ITS layer)
+	// + some extra info, see "struct ITStrack" in the AliITSSAPTracker.h
+	if ( track.paramOut.TestBit(AliITSSAPTracker::kInvalidBit) || 
+	     track.paramInw.TestBit(AliITSSAPTracker::kInvalidBit)) continue;
+	// use only those tracks whose both inward and outward params are OK.
+	AliHLTITSSAPTrackerData &trcHLT = data->fTracks[data->fCount];
+	trcHLT.paramOut.SetExternalTrackParam(&track.paramOut);
+	trcHLT.paramInw.SetExternalTrackParam(&track.paramInw);
+	trcHLT.chi2 = track.chi2;
+	trcHLT.ncl  = track.ncl;
+	trcHLT.label = track.label;
+	data->fCount++;
+	blockSize += sizeof(AliHLTITSSAPTrackerData);
+	nAddedTracks++;
+      }
+      
+      AliHLTComponentBlockData resultData;
+      FillBlockData( resultData );
+      resultData.fOffset = size;
+      resultData.fSize = blockSize;      
+      resultData.fDataType = kAliHLTDataTypeITSSAPData|kAliHLTDataOriginITS;
+      fBenchmark.AddOutput(resultData.fSize);
+      outputBlocks.push_back( resultData );
+      size += resultData.fSize;
+    }
   }
 
-  // Fill output vertexTracks
-  
-  // RS: HERE I AM NOT SURE WHAT TO DO
-
   Bool_t vtxOK = kFALSE;
-  AliESDVertex& vtxTracks = fTracker->GetTrackVertex();
-  if (vtxTracks.GetStatus()==1) {
-    // here we should add the vertex to the output
-
-    // RS??: ADD TO THE OUTPUT
-    PushBack( (TObject*) &vtxTracks, kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut,0 );
-    vtxOK = kTRUE;
+  { // Fill output vertexTracks  
+    AliESDVertex& vtxTracks = fTracker->GetTrackVertex();
+    if (vtxTracks.GetStatus()==1) {
+      PushBack( (TObject*) &vtxTracks, kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS,0 );
+      vtxOK = kTRUE;
+    }
   }
   //
   fTracker->Clear();

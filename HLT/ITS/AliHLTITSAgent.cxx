@@ -34,6 +34,7 @@
 #include "AliHLTITSClusterFinderComponent.h"
 #include "AliHLTITSClusterHistoComponent.h"
 #include "AliHLTITSTrackerComponent.h"
+#include "AliHLTITSSAPTrackerComponent.h"
 #include "AliHLTITSVertexerSPDComponent.h"
 #include "AliHLTITSDigitPublisherComponent.h"
 
@@ -78,6 +79,7 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
   // to run on digits, a digit publisher needs to be implemented
 
   TString trackerInput="";
+  TString trackerSAPInput="";
   TString vertexerSPDInput="";
   if (rawReader || !runloader) {
     // AliSimulation: use the AliRawReaderPublisher if the raw reader is available
@@ -113,6 +115,7 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // define the ITS tracker input
     //
     trackerInput="ITS-SPD-CF ITS-SDD-CF ITS-SSD-CF";
+    trackerSAPInput="ITS-SPD-CF ITS-SDD-CF ITS-SSD-CF";
   }
   else if (runloader && !rawReader) {
     // indicates AliSimulation with no RawReader available -> run on digits
@@ -140,6 +143,8 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // Currently there is a seg fault in the TTree access from the DigitClusterFinder
     // needs first to be investigated
     trackerInput="DigitClusterFinder";
+    trackerSAPInput="DigitClusterFinder";
+    vertexerSPDInput="DigitClusterFinder";
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,6 +170,11 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     }
     handler->CreateConfiguration("ITS-tracker","ITSTracker",trackerInput.Data(),"");
   }
+  
+  if( !trackerSAPInput.IsNull() ) trackerSAPInput+=" ";
+  trackerSAPInput+="ITS-SPD-vertexer";
+
+  handler->CreateConfiguration("ITS-SAPtracker","ITSSAPTracker",trackerSAPInput.Data(),"");
 
   return iResult;
 }
@@ -206,6 +216,7 @@ int AliHLTITSAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTITSClusterFinderComponent(AliHLTITSClusterFinderComponent::kClusterFinderDigits));
   pHandler->AddComponent(new AliHLTITSClusterHistoComponent);
   pHandler->AddComponent(new AliHLTITSTrackerComponent);
+  pHandler->AddComponent(new AliHLTITSSAPTrackerComponent);
   pHandler->AddComponent(new AliHLTITSVertexerSPDComponent);
   pHandler->AddComponent(new AliHLTITSDigitPublisherComponent);
 
