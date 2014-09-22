@@ -421,7 +421,7 @@ struct QABase
 	   << "</ul>" << std::endl;
     if (fPeriod.IsNull()) return;
     Bool_t isMC = (fDataType.EqualTo("sim", TString::kIgnoreCase) || 
-		   fPass.StartsWith("passMC", TString::kIgnoreCase));
+		   fPass.BeginsWith("passMC", TString::kIgnoreCase));
     *fHtml << "<ul>\n"
 	   << " <li><a href='https://alimonitor.cern.ch/" 
 	   <<  (isMC ? "job_details.jsp" : "production/raw.jsp") 
