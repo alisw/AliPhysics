@@ -28,6 +28,7 @@
 #--------------------------------------------------------------------------------#
 
 set ( CLASS_HDRS
+    AliHLTGlobalCompareFlatComponent.h
     AliHLTGlobalFlatEsdTestComponent.h
     AliHLTGlobalFlatEsdConverterComponent.h
     AliHLTGlobalEsdToFlatConverterComponent.h

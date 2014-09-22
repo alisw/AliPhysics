@@ -98,8 +98,8 @@ AliHLTComponentDataType AliHLTGlobalEsdToFlatConverterComponent::GetOutputDataTy
 // #################################################################################
 void AliHLTGlobalEsdToFlatConverterComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 100000;
-  inputMultiplier = 1.0;
+  constBase = 100;
+  inputMultiplier = 10.0;
 }
 
 
@@ -196,8 +196,8 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoDeinit() {
 Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 						    const AliHLTComponentBlockData* /*blocks*/, 
 						    AliHLTComponentTriggerData& /*trigData*/,
-						    AliHLTUInt8_t* /*outputPtr*/, 
-						    AliHLTUInt32_t& /*size*/,
+						    AliHLTUInt8_t* outputPtr, 
+						    AliHLTUInt32_t& size,
 						    AliHLTComponentBlockDataList& outputBlocks) {
   // see header file for class documentation
 
@@ -209,30 +209,6 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     return 0;
   
    AliESDEvent *esd;
-
-#if 0
-  AliESDEvent *pEsd;
-  const TTree *tree;
-	
-	
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDTree | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
-    cout<<"Found ESD tree in esd test component !!!"<<endl;
-		
-    tree = dynamic_cast<const TTree*>(iter);
-		if(tree)
-			pEsd->ReadFromTree( const_cast< TTree*>(tree) );
-    if( pEsd ){
-      cout<<"N ESD tracks: "<<pEsd->GetNumberOfTracks()<<endl;
-			iResult=1;
-    } else {
-      cout<<"ESD pointer is NULL "<<endl;
-    }
-		
-		
-		
-  }
-	
-#endif
 	
 	
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
@@ -258,23 +234,15 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     }
   }
   
-	/*
+	
 	
    if (iResult>=0) {            
  
-		 
-  Bool_t useESDFriends = 0;
  AliFlatESDEvent *flatEsd ;
-  Byte_t *mem = new Byte_t[AliFlatESDEvent::EstimateSize(const_cast<AliESDEvent*>(esd), useESDFriends)];
 
-    flatEsd = reinterpret_cast<AliFlatESDEvent*>(mem);
+    flatEsd = reinterpret_cast<AliFlatESDEvent*>(outputPtr);
     new (flatEsd) AliFlatESDEvent;
-//  flatEsd->Fill(esd,useESDFriends);  
-		 
-		 
-		 
-		 
-		 
+  flatEsd->SetFromESD(AliFlatESDEvent::EstimateSize(esd),esd, kTRUE); 
 		 
     AliHLTComponentBlockData outBlock;
     FillBlockData( outBlock );
@@ -284,10 +252,10 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     outBlock.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( 0, 35, 0, 5 );
 
     outputBlocks.push_back( outBlock );
-      
+
     size += outBlock.fSize;
   }
- */
+ 
  
  
  
