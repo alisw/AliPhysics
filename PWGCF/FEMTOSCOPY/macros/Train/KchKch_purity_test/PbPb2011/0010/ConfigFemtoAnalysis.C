@@ -55,7 +55,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
-  const int cMu=3;
+  const int cMu=1;
   const int cKt=3;
 
   //-------Single track cuts------------------------------------------------->
@@ -70,7 +70,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   // Switches for QA analyses
  
-  int runmults[4] = {1, 1, 1, 0};
+  int runmults[4] = {1, 0, 0, 0};
   int multbins[5] = {0, 100, 300, 500, 900};
 
   //.................................................
@@ -81,7 +81,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   
   int runktdep = 1;
 //YS  double ktrng[cKt+1] = {0.2, 0.36, 0.48, 0.6, 1.0, 1.5};
-  double ktrng[cKt+1] = {0.2, 0.4, 0.6, 1.5};
+  double ktrng[cKt+1] = {0.2, 0.4, 0.6, 1.3};
 
 // double ktrng[8] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.0};
 
@@ -212,7 +212,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  else if (ichg == 1)
 	    dtc1etaphitpc[aniter]->SetCharge(-1.0);
 	    
-	  dtc1etaphitpc[aniter]->SetPt(0.14,1.5);
+	  dtc1etaphitpc[aniter]->SetPt(0.14,1.3);
 	  //	  dtc1etaphitpc[aniter]->SetEta(-1.2,1.2);
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8); //0.5
 	  // 	//    dtc1etaphitpc[aniter]->SetEta(-0.5,0.5);
