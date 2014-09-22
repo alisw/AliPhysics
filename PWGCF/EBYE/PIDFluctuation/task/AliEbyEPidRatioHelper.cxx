@@ -88,6 +88,8 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
   fNTriggers(5),
 
   fHCentralityStat(NULL),
+  fHCentralityPer(NULL),
+  fHCentralityPerAll(NULL),
   fNCentralityBins(11),
   
   fRandom(NULL),
@@ -781,9 +783,17 @@ void AliEbyEPidRatioHelper::InitializeCentralityStats() {
 
   fHCentralityStat = new TH1F("hCentralityStat","Centrality statistics;Centrality Bins;Events", 
 			      fNCentralityBins,-0.5,fNCentralityBins-0.5);
-
+  
   for ( Int_t ii=0; ii < fNCentralityBins; ii++ )
     fHCentralityStat->GetXaxis()->SetBinLabel(ii+1, AliEbyEPidRatioHelper::fgkCentralityNames[ii]);
+  
+  fHCentralityPer = new TH1F("hCentralityPercentileAccepted","Centrality Percentile statistics;Centrality Bins;Events", 
+			     100,-0.5,99.5);
+
+  fHCentralityPerAll = new TH1F("hCentralityPercentileAll","Centrality Percentile statistics;Centrality Bins;Events", 
+			     100,-0.5,99.5);
+
+
 }
 //________________________________________________________________________
 Bool_t AliEbyEPidRatioHelper::FillEventStats(Int_t *aEventCuts) {
@@ -807,8 +817,14 @@ Bool_t AliEbyEPidRatioHelper::FillEventStats(Int_t *aEventCuts) {
   }
 
   // -- Fill centrality statistics of accepted events
-  if (!isRejected)
+  if (!isRejected) {
     fHCentralityStat->Fill(fCentralityBin);
+    fHCentralityPer->Fill(fCentralityPercentile);
+  }
+
+  fHCentralityPerAll->Fill(fCentralityPercentile);
+
+
 
   return isRejected;
 }

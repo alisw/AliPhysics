@@ -285,6 +285,9 @@ Int_t AliEbyEPidRatioPhy::ProcessTracks() {
     else if (fHelper->IsTrackAcceptedPID(track, pid, (AliPID::kProton))) iPid = 3;
     else iPid = 0;
    
+    //cout << idxTrack <<" --- PHY ---- " << iPid  << endl;
+
+
     Double_t yP;
     if (iPid != 0 && !fHelper->IsTrackAcceptedRapidity(track, yP, iPid))
       continue;

@@ -167,7 +167,11 @@ void AliEbyEPidRatioTask::UserCreateOutputObjects() {
   list->Add(fHelper->GetHEventStat0());
   list->Add(fHelper->GetHEventStat1());
   list->Add(fHelper->GetHTriggerStat());
-  list->Add(fHelper->GetHCentralityStat());
+  list->Add(fHelper->GetHCentralityPercentile());
+  list->Add(fHelper->GetHCentralityPercentileAll());
+
+
+
 
   if ((fIsAOD||fIsMC) && fModeEffCreation == 1) {
     fOutListEff->Add(fEffCont->GetHnEffMc());
@@ -333,7 +337,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   // ------------------------------------------------------------------
   if ((fIsMC||fIsAOD) && fModeEffCreation == 1) {
     fEffCont = new AliEbyEPidRatioEffCont;
-    fEffCont->Initialize(fHelper);
+    fEffCont->Initialize(fHelper, fESDTrackCuts);
   }
 
   // ------------------------------------------------------------------
@@ -342,7 +346,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   if (fModeDCACreation == 1) {
     fDCA = new AliEbyEPidRatioDCA;
     fDCA->SetESDTrackCutsBkg(fESDTrackCutsBkg);
-    fDCA->Initialize(fHelper);
+    fDCA->Initialize(fHelper, fESDTrackCuts);
   }
 
   // ------------------------------------------------------------------
@@ -359,7 +363,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   // ------------------------------------------------------------------
   if (fModeQACreation == 1) {
     fQA = new AliEbyEPidRatioQA();
-    fQA->Initialize(fHelper);
+    fQA->Initialize(fHelper, fESDTrackCuts);
   }
 
   // ------------------------------------------------------------------
