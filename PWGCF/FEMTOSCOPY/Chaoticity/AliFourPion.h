@@ -76,6 +76,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2DSC=0x0, TH2D *temp2DMC=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH1D *tempss[12]=0x0, TH1D *tempos[12]=0x0);
   void SetMuonCorrections(Bool_t legoCase=kTRUE, TH2D *tempMuon=0x0);
+  void Setc3FitEAs(Bool_t legoCase=kTRUE, TH3D *histoPbPb=0x0, TH3D *histopPb=0x0, TH3D *histopp=0x0);
   //
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
@@ -355,10 +356,12 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH2D *fMomResC2SC;
   TH2D *fMomResC2MC;
   TH2D *fWeightmuonCorrection;
+  TH3D *fPbPbc3FitEA;
+  TH3D *fpPbc3FitEA;
+  TH3D *fppc3FitEA;
   TH1D *fFSIss[12];
   TH1D *fFSIos[12];
   TH3F *fNormWeight[fKbinsT][fCentBins];
-  TF1 *ExchangeAmpFullSource[2];
   TF1 *ExchangeAmpPointSource[2][50];
 
   ClassDef(AliFourPion, 1); 
