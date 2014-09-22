@@ -1,16 +1,19 @@
 #!/bin/bash
 #
-# This script runs the Forward QA for the specified production number
+# This script runs the Forwardqq QA for the specified production number
 #
 # The scripts downloads and runs the single run QA in parallel 
 #
 
 # --- Some aux files -------------------------------------------------
-style=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/style.css 
-favicon=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/fmd_favicon.png
-logo=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/fmd_logo.png
-script=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/script.js
-topmk=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/makeIndex.sh
+if test "X$QA_FWD" = "X" ; then 
+    QA_FWD=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa
+fi 
+style=${QA_FWD}/style.css 
+favicon=${QA_FWD}/fmd_favicon.png
+logo=${QA_FWD}/fmd_logo.png
+script=${QA_FWD}/script.js
+topmk=${QA_FWD}/makeIndex.sh
 
 # --- Check AliEn token ----------------------------------------------
 check_token()
@@ -184,8 +187,19 @@ get_filelist()
 	esdd= 
     fi 
 
+    local post=${passpost}
+    case x$post in 
+	x_*) ;; 
+	x) ;; 
+	*) post="_${post}" ;; 
+    esac
+
     local paid=
-    if echo "$passno" | grep -q -E '^[0-9]*[.]?[0-9]*$' ; then 
+    if test "x${passpre}pass${passno}${post}" != "x$passfull" ; then 
+	passpre=
+	paid=${passfull}
+	post=
+    elif echo "$passno" | grep -q -E '^[0-9]*[.]?[0-9]*$' ; then 
 	if test "x$passfull" != "x" && test $passno -gt 0 ; then 
 	    paid=pass${passno}
 	fi
@@ -196,12 +210,6 @@ get_filelist()
     fi
     passid=${paid}
     if test $mc -gt 0 ; then passid="passMC" ; fi 
-    local post=${passpost}
-    case x$post in 
-	x_*) ;; 
-	x) ;; 
-	*) post="_${post}" ;; 
-    esac
 
     local search=
     if test "x$path" = "x" ; then 
@@ -263,8 +271,8 @@ check_file()
 {
     if test $docheck -lt 1 ; then return 0; fi 
     root -l -b  <<EOF >> ${redir} 2>&1 
-.L $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/CheckQAFile.C
-CheckQAFile("$1");
+.L ${QA_FWD}/CheckQAFile.C
+CheckQAFile("$1","QA");
 .q
 EOF
     local ret=$? 
@@ -296,9 +304,10 @@ analyse_file()
     mess 3 "runQA.sh '$inp' '$type' '$prodyear' '$prodfull' '$passid' '$r'"
     (cd $dir 
 	for i in QABase QAPlotter QARing QAStructs QATrender ; do 
+	    rm -f ${i}*
 	    ln -s ../${i}* . 
 	done 
-	$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/runQA.sh \
+	${QA_FWD}/runQA.sh \
 	    "$inp" "$type" $prodyear "$prodfull" "$passid" "$r" > runQA.log 2>&1
 	ret=$? ) 
     if test ! -f $dir/trending.root ; then ret=1 ; fi
@@ -469,7 +478,7 @@ make_trend()
 	rm -f trending.root 
 	hadd -k trending.root 000*/trending.root 
 	if test $? -eq 0 && test -f trending.root ; then 
- 	  $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/periodQA.sh trending.root 
+ 	  ${QA_FWD}/periodQA.sh trending.root 
 	  ret=$?
 	else 
 	  ret=1
@@ -641,7 +650,7 @@ fi
 
 # --- Copy scripts to target and compile -----------------------------
 for i in QABase.h QAPlotter.C QARing.h QAStructs.h QATrender.C ; do
-    cp $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/$i ${store}/${i}
+    cp ${QA_FWD}/$i ${store}/${i}
     rm -f ${store}/`echo $i | tr '.' '_'`.{so,d}
     fix_perm ${store}/${i}
 done

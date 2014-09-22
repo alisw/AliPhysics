@@ -14,7 +14,7 @@
  * 
  * @ingroup pwglf_forward_qa_scripts
  */
-void CheckQAFile(const char* filename)
+void CheckQAFile(const char* filename, const char* type="")
 {
   int    ret  = 0;
   TFile* file = TFile::Open(filename, "READ");
@@ -22,15 +22,29 @@ void CheckQAFile(const char* filename)
     Error("CheckQAFile", "No such file %s", filename);
     exit(1);
   }
-  TObject* forward1 = file->Get("Forward");
+  TString check    = Form("Forward%s",type);
+  TString check2;
+  TObject* forward1 = file->Get(check);
   if (!forward1) {
-    Error("CheckQAFile", "No Forward object found in %s", filename);
-    ret |= 2;
+    check2    = Form("Forward%sSums",type);
+    forward1 = file->Get(Form("Forward%sSums",type));
+    if (!forward1) {
+      Error("CheckQAFile", "No %s or %s object found in %s", 
+	    check.Data(),check2.Data(), filename);
+      ret |= 2;
+    }
   } 
-  TObject* forward2 = file->Get("ForwardResults");
+  check = Form("Forward%sResults", type);
+  TObject* forward2 = file->Get(check);
   if (!forward2) {
-    Error("CheckQAFile", "No ForwardResults object found in %s", filename);
-    ret |= 4;
+    check2   = Form("forward%sResults",type);
+    forward2 = file->Get(check2);
+    if (!forward2) { 
+      Error("CheckQAFile", "No %s or %s object found in %s", 
+	    check.Data(), check2.Data(), filename);
+      file->ls();
+      ret |= 4;
+    }
   } 
   file->Close();
   exit(ret);
