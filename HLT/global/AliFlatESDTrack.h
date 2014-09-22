@@ -176,15 +176,14 @@ inline AliFlatESDTrack::AliFlatESDTrack() :
   // Default constructor
 }
 
-inline AliFlatESDTrack::AliFlatESDTrack( AliVConstructorReinitialisationFlag )
-//  :
-//  fTrackParamMask(fTrackParamMask ),
-//  fNTPCClusters( fNTPCClusters ),
-//  fNITSClusters( fNITSClusters ),
-//  fContentSize( fContentSize )
+#pragma GCC diagnostic ignored "-Weffc++" 
+inline AliFlatESDTrack::AliFlatESDTrack( AliVConstructorReinitialisationFlag f )
+ :
+ AliVTrack(f)
 {
   // Constructor for reinitialisation of vtable
 }
+#pragma GCC diagnostic warning "-Weffc++" 
 
 inline UInt_t AliFlatESDTrack::CountBits(Byte_t field, UInt_t mask) {
   // Count bits in field

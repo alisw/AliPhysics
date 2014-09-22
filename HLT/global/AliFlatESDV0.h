@@ -22,9 +22,7 @@ class AliFlatESDV0
   ~AliFlatESDV0(){}
  
   // constructor and method for reinitialisation of virtual table
-  AliFlatESDV0( AliVConstructorReinitialisationFlag )
-  //  : fNegTrackID(fNegTrackID), fPosTrackID(fPosTrackID) 
-  {}
+  AliFlatESDV0( AliVConstructorReinitialisationFlag );
   void Reinitialize() const {} // no virtual table - do nothing
  
   //--
@@ -50,5 +48,9 @@ class AliFlatESDV0
   Int_t fNegTrackID;
   Int_t fPosTrackID;
 };
+
+#pragma GCC diagnostic ignored "-Weffc++" 
+inline AliFlatESDV0::AliFlatESDV0( AliVConstructorReinitialisationFlag ){} 
+#pragma GCC diagnostic warning "-Weffc++" 
 
 #endif

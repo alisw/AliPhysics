@@ -41,29 +41,29 @@
  AliFlatESDFriendTrack::AliFlatESDFriendTrack()
 :
  AliVfriendTrack()
-// ,fContentSize(0),
-// fTPCOutPointer(-1),
-// fITSOutPointer(-1),
-// fTRDInPointer(-1),
-// fTPCseedPointer(-1),
-// fBitFlags(0)
+ ,fContentSize(0),
+ fTPCOutPointer(-1),
+ fITSOutPointer(-1),
+ fTRDInPointer(-1),
+ fTPCseedPointer(-1),
+ fBitFlags(0)
 {
   // Default constructor
   fContent[0]=0;
 }
 
+#pragma GCC diagnostic ignored "-Weffc++" 
 AliFlatESDFriendTrack::AliFlatESDFriendTrack( AliVConstructorReinitialisationFlag f ) 
-:
-AliVfriendTrack( f )
-// ,fContentSize(fContentSize),
-// fTPCOutPointer(fTPCOutPointer),
-// fITSOutPointer(fITSOutPointer),
-// fTRDInPointer(fTRDInPointer),
-// fTPCseedPointer(fTPCseedPointer),
-// fBitFlags(fBitFlags)
+  :
+  AliVfriendTrack( f )
 {
   // constructor for reinitialisation of vtable
+  if( fTPCseedPointer >= 0 ){
+    AliFlatTPCseed *fp = reinterpret_cast< AliFlatTPCseed* >( fContent + fTPCseedPointer );
+    fp->Reinitialize();
+  }
 }
+#pragma GCC diagnostic warning "-Weffc++" 
 
 void AliFlatESDFriendTrack::Reset()
 {

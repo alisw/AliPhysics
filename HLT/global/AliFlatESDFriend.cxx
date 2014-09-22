@@ -39,63 +39,11 @@
 #include "AliESDfriend.h"
 
 // _______________________________________________________________________________________________________
-AliFlatESDFriend::AliFlatESDFriend() :
-  fContentSize(0),
-  fBitFlags(0),
-  fNTracks(0),
-  fNTrackEntries(0),
-  fTrackTablePointer(0),
-  fTracksPointer(0)
-{
-  // Default constructor
-  Reset();
-}
 
-void AliFlatESDFriend::Reset() 
-{
-  fBitFlags = 0;
-  fNTracks = 0;
-  fNTrackEntries = 0; 
-  fTrackTablePointer = 0;
-  fTracksPointer = 0;
-  for( int i=0; i<72; i++ ){
-    fNclustersTPC[i]=0;
-    fNclustersTPCused[i]=0;
-  }
-  // We set size of the fContent array such, that it reaches the end of the AliFlatESDFriend structure. 
-  // To be sure that actual GetSize() is always >= size of the structure. 
-  // First, it makes the memory alignment better. Second, just for a case..
-  fContentSize = sizeof(AliFlatESDFriend) - (fContent - reinterpret_cast<const Byte_t*>(this));
-  for( UInt_t i=0; i<fContentSize; i++ ) fContent[i]=0;
-}
- 
-// _______________________________________________________________________________________________________
-AliFlatESDFriend::AliFlatESDFriend(AliVConstructorReinitialisationFlag f)
-:
-AliVfriendEvent()
-//  fContentSize(),
-//  fBitFlags(),
-//  fNTracks(),
-//  fNTrackEntries(),
-//  fTrackTablePointer(),
-//  fTracksPointer()
-{
-  //special constructor, used to restore the vtable pointer
-  //uses the special dummy constructors of contained objects
 
-  // the vtable pointer for this AliFlatESDFriend object is already reset when this constructor is called
-  // we should only initialise vtable pointers for all contained objects
 
-  if(f == AliVReinitialize){   
-    for( int i=0; i<fNTracks; i++ ){
-      AliFlatESDFriendTrack  *tr = GetFlatTrackNonConst(i);
-      if( tr ) tr->Reinitialize();
-    }
-  }
-  else{
-    AliFlatESDFriend();
-  }
-}
+
+
 
 void AliFlatESDFriend::Ls() const
 {
@@ -106,6 +54,7 @@ void AliFlatESDFriend::Ls() const
 
 
 // _______________________________________________________________________________________________________
+
 Int_t AliFlatESDFriend::SetFromESDfriend( const size_t allocatedMemorySize, const AliESDfriend *esdFriend )
 {
   // Fill flat ESD friend from ALiESDfriend

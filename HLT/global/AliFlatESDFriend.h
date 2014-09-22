@@ -69,6 +69,11 @@ public:
     if( i<0 || i>fNTracks || table[i]<0 ) return NULL;
     return reinterpret_cast<const AliFlatESDFriendTrack*>( fContent + table[i] );
   }
+ 
+  const AliFlatESDFriendTrack  *GetFlatTrackEntry( Int_t i ) const { 
+    if( i<0 || i>fNTrackEntries ) return NULL;
+    return reinterpret_cast<const AliFlatESDFriendTrack*>( fContent + i );
+  }
 
   // -- Size methods
 
@@ -84,6 +89,11 @@ private:
     const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
     if( i<0 || i>fNTracks || table[i]<0 ) return NULL;
     return reinterpret_cast<AliFlatESDFriendTrack*>( fContent + table[i] );
+  }
+
+  AliFlatESDFriendTrack  *GetFlatTrackEntryNonConst( Int_t i ){ 
+    if( i<0 || i>fNTrackEntries ) return NULL;
+    return reinterpret_cast< AliFlatESDFriendTrack*>( fContent + i );
   }
 
   size_t fContentSize;     // Size of fContent
@@ -104,6 +114,51 @@ private:
 
   ClassDef(AliFlatESDFriend,0)
 };
+
+
+inline AliFlatESDFriend::AliFlatESDFriend() 
+:
+  fContentSize(0),
+  fBitFlags(0),
+  fNTracks(0),
+  fNTrackEntries(0),
+  fTrackTablePointer(0),
+  fTracksPointer(0)
+{
+  // Default constructor
+  Reset();
+}
+
+inline void AliFlatESDFriend::Reset() 
+{
+  fBitFlags = 0;
+  fNTracks = 0;
+  fNTrackEntries = 0; 
+  fTrackTablePointer = 0;
+  fTracksPointer = 0;
+  for( int i=0; i<72; i++ ){
+    fNclustersTPC[i]=0;
+    fNclustersTPCused[i]=0;
+  }
+  // We set size of the fContent array such, that it reaches the end of the AliFlatESDFriend structure. 
+  // To be sure that actual GetSize() is always >= size of the structure. 
+  // First, it makes the memory alignment better. Second, just for a case..
+  fContentSize = sizeof(AliFlatESDFriend) - (fContent - reinterpret_cast<const Byte_t*>(this));
+  for( UInt_t i=0; i<fContentSize; i++ ) fContent[i]=0;
+}
+ 
+#pragma GCC diagnostic ignored "-Weffc++" 
+inline AliFlatESDFriend::AliFlatESDFriend(AliVConstructorReinitialisationFlag f)
+:
+  AliVfriendEvent(f)
+{
+  //special constructor, used to restore the vtable pointer
+  for( int i=0; i<fNTrackEntries; i++ ){
+    AliFlatESDFriendTrack  *tr = GetFlatTrackEntryNonConst(i);
+    if( tr ) tr->Reinitialize();
+  }
+}
+#pragma GCC diagnostic warning "-Weffc++" 
 
 
 inline Int_t AliFlatESDFriend::SetTracksStart( AliFlatESDFriendTrack* &t, Long64_t* &table, Int_t nTracks, size_t freeMem)

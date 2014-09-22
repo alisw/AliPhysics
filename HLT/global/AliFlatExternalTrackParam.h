@@ -12,17 +12,17 @@
 #include "Rtypes.h"
 #include "AliExternalTrackParam.h"
 
-struct AliFlatExternalTrackParam
+class AliFlatExternalTrackParam
 {
-  Float_t fAlpha;     // azimuthal angle of reference frame
-  Float_t fX;         // x: radial distance
-  Float_t fY;         // local Y-coordinate of a track (cm)
-  Float_t fZ;         // local Z-coordinate of a track (cm)
-  Float_t fSnp;       // local sine of the track momentum azimuthal angle
-  Float_t fTgl;       // tangent of the track momentum dip angle
-  Float_t fSigned1Pt; // 1/pt (1/(GeV/c))
-  Float_t fC[15];     // covariance matrix
+ public:
 
+  AliFlatExternalTrackParam();
+  ~AliFlatExternalTrackParam() {}
+
+  // constructor and method for reinitialisation of virtual table
+  AliFlatExternalTrackParam( AliVConstructorReinitialisationFlag );
+  void Reinitialize() { new (this) AliFlatExternalTrackParam( AliVReinitialize ); }
+ 
   void SetAlpha(Float_t alpha)             {fAlpha = alpha;}
   void SetX(Float_t x)                     {fX = x;}
   void SetY(Float_t y)                     {fY = y;}
@@ -47,9 +47,35 @@ struct AliFlatExternalTrackParam
   }
   void GetExternalTrackParam( AliExternalTrackParam &p ) const;
   void SetExternalTrackParam( const AliExternalTrackParam *p );
+
+ private:
+
+  Float_t fAlpha;     // azimuthal angle of reference frame
+  Float_t fX;         // x: radial distance
+  Float_t fY;         // local Y-coordinate of a track (cm)
+  Float_t fZ;         // local Z-coordinate of a track (cm)
+  Float_t fSnp;       // local sine of the track momentum azimuthal angle
+  Float_t fTgl;       // tangent of the track momentum dip angle
+  Float_t fSigned1Pt; // 1/pt (1/(GeV/c))
+  Float_t fC[15];     // covariance matrix
 };
 
-typedef struct AliFlatExternalTrackParam AliFlatExternalTrackParam;
+inline AliFlatExternalTrackParam::AliFlatExternalTrackParam()
+ :
+ fAlpha(0),  
+ fX(0),      				 
+ fY(0),
+ fZ(0),
+ fSnp(0),
+ fTgl(0),
+ fSigned1Pt(0)
+{
+  for( int i=0; i<15; i++ ) fC[i]=0;
+}
+
+#pragma GCC diagnostic ignored "-Weffc++" 
+inline AliFlatExternalTrackParam::AliFlatExternalTrackParam( AliVConstructorReinitialisationFlag ){}
+#pragma GCC diagnostic warning "-Weffc++" 
 
 inline void AliFlatExternalTrackParam::GetExternalTrackParam( AliExternalTrackParam &p ) const
 {

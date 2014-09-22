@@ -2,6 +2,7 @@
 #define ALIVFRIENDEVENT_H
 
 #include "Rtypes.h"
+#include "AliVMisc.h"
 class AliVfriendTrack;
 
 //_____________________________________________________________________________
@@ -9,6 +10,10 @@ class AliVfriendEvent {
 public:
   AliVfriendEvent() {}
   virtual ~AliVfriendEvent() {}
+
+  // constructor and method for reinitialisation of virtual table
+  AliVfriendEvent( AliVConstructorReinitialisationFlag );
+  void Reinitialize(){} // do nothing
 
   virtual Int_t GetNumberOfTracks() const = 0;
   virtual const AliVfriendTrack *GetTrack(Int_t /*i*/) const = 0;
@@ -33,6 +38,10 @@ private:
   AliVfriendEvent(const AliVfriendEvent &);
   AliVfriendEvent& operator=(const AliVfriendEvent& esd);
 };
+
+#pragma GCC diagnostic ignored "-Weffc++" 
+inline AliVfriendEvent::AliVfriendEvent(AliVConstructorReinitialisationFlag ) {} // do nothing
+#pragma GCC diagnostic warning "-Weffc++" 
 
 #endif
 

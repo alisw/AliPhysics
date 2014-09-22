@@ -26,29 +26,53 @@
  **************************************************************************/
 
 #include "AliFlatTPCseed.h"
+#include "AliTPCseed.h"
+#include "AliHLTTPCTransform.h"
 #include "Riostream.h"
 
-AliFlatTPCseed::AliFlatTPCseed()
-  :
-  fContentSize(0)
-{
-  // constructor
-  fContent[0]=0;
-}
-
-void AliFlatTPCseed::Reset()
-{
-  // Reset
-}
 
 void AliFlatTPCseed::SetFromTPCseed( const AliTPCseed *p )
 {
   // initialise from AliTPCseed
 
+  Reset();
+  if( !p ) return;
+
+  fParam.SetExternalTrackParam(  p );
+  fLabel = p->GetLabel();
+  AliFlatTPCCluster *clusters = reinterpret_cast< AliFlatTPCCluster* >( fContent );  
+  for( Int_t irow=0; irow<160; irow++ ){
+    const AliTPCclusterMI *cl = p->GetClusterPointer(irow);
+    if( !cl ) continue;
+    AliFlatTPCCluster &flatCluster = clusters[fNTPCClusters];
+    flatCluster.SetTPCCluster( cl );
+    fNTPCClusters++;
+  }
 }
 
 void AliFlatTPCseed::GetTPCseed( AliTPCseed *p ) const
 {
-  // write to AliTPCseed
+   // write to AliTPCseed
+  if( !p ) return;
+  p->Reset();
 
+  AliTPCseed seed;
+
+  fParam.GetExternalTrackParam( seed );
+  seed.SetLabel(fLabel);  
+  seed.SetNumberOfClusters(fNTPCClusters);
+
+  AliTPCclusterMI clusters[fNTPCClusters];
+
+  const AliFlatTPCCluster *flatClusters = reinterpret_cast< const AliFlatTPCCluster* >( fContent );
+
+  for( Int_t ic=0; ic<fNTPCClusters; ic++){
+    const AliFlatTPCCluster &flatCluster = flatClusters[ic];    
+    flatCluster.GetTPCCluster( &(clusters[ic]) );
+    int sec = flatCluster.GetSector();
+    int row = flatCluster.GetPadRow();
+    if(sec >= 36) row = row + AliHLTTPCTransform::GetNRowLow();
+    if( row<160 ) seed.SetClusterPointer( row , &(clusters[ic]) );
+  }
+  new (p) AliTPCseed( seed, kTRUE ); // true means that p creates its own cluster objects
 }

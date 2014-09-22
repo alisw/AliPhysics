@@ -109,15 +109,9 @@ fChi2(0)
   for( int i=0; i<6; i++) fCov[i] = -9999;
 }
 
-inline AliFlatESDVertex::AliFlatESDVertex( AliVConstructorReinitialisationFlag )
-//: 
-//fNContributors(fNContributors), 
-//fChi2(fChi2)
-{
-  // do nothing
-  for( int i=0; i<3; i++) fPosition[i] = fPosition[i];
-  for( int i=0; i<6; i++) fCov[i] = fCov[i];
-}
+#pragma GCC diagnostic ignored "-Weffc++" 
+inline AliFlatESDVertex::AliFlatESDVertex( AliVConstructorReinitialisationFlag ){}  // do nothing
+#pragma GCC diagnostic warning "-Weffc++" 
 
 inline void AliFlatESDVertex::SetFromESDVertex(const AliESDVertex &v )
 {

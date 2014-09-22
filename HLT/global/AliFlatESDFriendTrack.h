@@ -12,10 +12,8 @@
 
 #include "Rtypes.h"
 
-#include "AliFlatTPCCluster.h"
 #include "AliVfriendTrack.h"
 #include "AliVMisc.h"
-#include "AliFlatExternalTrackParam.h"
 #include "AliFlatTPCseed.h"
 
 class AliESDtrack;
@@ -105,10 +103,11 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
   
   Byte_t fContent[1];                  // Variale size object, which contains all data
 
-  ClassDef(AliFlatESDFriendTrack, 0)
+  //ClassDef(AliFlatESDFriendTrack, 0)
 
 };
 
+/*
 inline Int_t AliFlatESDFriendTrack::GetTrackParam( Long64_t ptr, AliExternalTrackParam &param ) const
 {
   if( ptr<0 ) return -1;
@@ -144,5 +143,5 @@ inline Int_t AliFlatESDFriendTrack::GetTPCseed( AliTPCseed &s ) const
   fp->GetTPCseed( &s );
   return 0;
 }
-
+*/
 #endif

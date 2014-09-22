@@ -87,14 +87,10 @@ inline AliFlatESDTrigger::~AliFlatESDTrigger()
   // Destructor  
 }
 
-inline AliFlatESDTrigger::AliFlatESDTrigger( AliVConstructorReinitialisationFlag ) 
-//  :
-//  fContentSize(fContentSize),
-//  fTriggerIndex(fTriggerIndex)
-{
-  // do nothing
-}
- 
+#pragma GCC diagnostic ignored "-Weffc++" 
+inline AliFlatESDTrigger::AliFlatESDTrigger( AliVConstructorReinitialisationFlag ) {} // do nothing
+#pragma GCC diagnostic warning "-Weffc++" 
+
 inline Int_t AliFlatESDTrigger::SetTriggerClass(  const char *TriggerClassName, Int_t TriggerIndex, ULong64_t MaxSize )
 {
   // Set trigger class, returns non-zero when the memory needed exeeeds MaxSize
