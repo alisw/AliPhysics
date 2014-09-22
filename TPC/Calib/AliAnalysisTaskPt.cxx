@@ -72,7 +72,18 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
 	if (classInputHandler.Contains("HLT")) { // we are running in HLT
 	  fESDfriend = esdH->GetVfriendEvent();
 	}
-	
+	else { /// we are running offline
+	  if (esdH && esdH->GetTree()) {
+	    Printf("...We got the tree...");
+	    if (esdH->GetTree()->GetBranch("ESDfriend.")){
+	      Printf("Yu-huuuu!!! friend branch found");
+	      fESDfriend = ((AliESDInputHandler*)esdH)->GetESDfriend();
+	    }
+	    else {
+	      Printf("No friend branch found");
+	    }
+	  }
+	}	
 	Printf("and the result is: fESDfriend = %p", fESDfriend);
       }
       else {
