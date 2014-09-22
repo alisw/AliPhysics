@@ -6,7 +6,8 @@ AliFourPion *AddTaskFourPion(
 				 TString StWeightName="alien:///alice/cern.ch/user/d/dgangadh/WeightFile_FourPion.root",
 				 TString StMomResName="alien:///alice/cern.ch/user/d/dgangadh/MomResFile_FourPion.root",
 				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_FourPion.root",
-				 TString StMuonName="alien:///alice/cern.ch/user/d/dgangadh/MuonCorrection_FourPion.root"
+				 TString StMuonName="alien:///alice/cern.ch/user/d/dgangadh/MuonCorrection_FourPion.root",
+				 TString StEAName="alien:///alice/cern.ch/user/d/dgangadh/c3EAfile.root"
 			     ) {
   
   //===========================================================================
@@ -59,7 +60,8 @@ AliFourPion *AddTaskFourPion(
   TFile *inputFileWeight = 0;
   TFile *inputFileMomRes = 0;
   TFile *inputFileFSI = 0;
-
+  TFile *inputFileMuon = 0;
+  TFile *inputFileEA = 0;
  
   if(!TabulatePairs){
     inputFileWeight = TFile::Open(StWeightName,"OLD");
@@ -87,6 +89,20 @@ AliFourPion *AddTaskFourPion(
       }
     }
     FourPionTask->SetWeightArrays( kTRUE, weightHisto );
+    //
+    //
+    inputFileEA = TFile::Open(StEAName,"OLD");
+    if (!inputFileEA){
+      cout << "Requested file:" << inputFileEA << " was not opened. ABORT." << endl;
+      return NULL;
+    }
+    TH3D *PbPbEA = 0;
+    TH3D *pPbEA = 0;
+    TH3D *ppEA = 0;
+    PbPbEA = (TH3D*)inputFileEA->Get("PbPbEA");
+    pPbEA = (TH3D*)inputFileEA->Get("pPbEA");
+    ppEA = (TH3D*)inputFileEA->Get("ppEA");
+    FourPionTask->Setc3FitEAs( kTRUE, PbPbEA, pPbEA, ppEA );
     ////////////////////////////////////////////////////
   }// TabulatePairs check
   
