@@ -1,17 +1,18 @@
 #!/bin/sh
-fwd=${ALICE_ROOT}/PWGLF/FORWARD/analysis2
-fwd=$ANA_SRC
+if test "X$QA_FWD" = "X" ; then 
+    QA_FWD=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa
+fi 
 
 # 1: file
 # 2: data type 
 # 3: year
 # 4: period
 # 5: pass 
-aliroot -l -b -q ${fwd}/qa/PeriodQA.C\(\"$1\",\"\",0,\"\",\"\"\)
-cp ${fwd}/qa/style.css .
-cp ${fwd}/qa/script.js .
-cp ${fwd}/qa/fmd_favicon.png . 
-cp ${fwd}/qa/fmd_logo.png .
+aliroot -l -b -q ${QA_FWD}/PeriodQA.C\(\"$1\",\"\",0,\"\",\"\"\)
+cp ${QA_FWD}/style.css .
+cp ${QA_FWD}/script.js .
+cp ${QA_FWD}/fmd_favicon.png . 
+cp ${QA_FWD}/fmd_logo.png .
 
 
 #

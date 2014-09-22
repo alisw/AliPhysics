@@ -754,7 +754,13 @@ public:
   void CleanStack(THStack* stack, const char* what)
   {
     TList*   l = stack->GetHists();
-
+    if (!l || l->GetEntries() <= 0) {
+      Warning("CleanStack", "No histograms in stack %s", stack->GetName());
+      return;
+    }
+    Printf("Stack to clean %s", stack->GetName());
+    l->ls();
+    
     // Clean up list of histogram.  Histograms with no entries or 
     // no functions are deleted.  We have to do this using the TObjLink 
     // objects stored in the list since ROOT cannot guaranty the validity 
@@ -804,6 +810,10 @@ public:
       THStack* stacks[] = { chi2, c, delta, xi, sigma, 0 };
       for (int i = 0; i < 5; i++) { 
 	THStack*     stack = stacks[i];
+	if (!stack->GetHists() || stack->GetHists()->GetEntries() < 0) {
+	  Warning("", "No histograms in stack %s", stack->GetName());
+	  continue;
+	}
 	TVirtualPad* p     = GetPad(i+1);
 	// stack->GetHists()->ls();
 
@@ -1165,9 +1175,17 @@ public:
     const char* folder = "ForwardResults";
     TList* forward = static_cast<TList*>(fCurrentFile->Get(folder));
     if (!forward) { 
-      Error("GetLists", "List %s not found in %s", folder, 
-	    fCurrentFile->GetName());
-      return false;
+      const char* folder2 = "ForwardQAResults";
+      forward = static_cast<TList*>(fCurrentFile->Get(folder2));
+      if (!forward) { 
+	const char* folder3 = "forwardQAResults";
+	forward = static_cast<TList*>(fCurrentFile->Get(folder3));
+	if (!forward) {
+	  Error("GetLists", "List %s/%s/%s not found in %s", 
+		folder, folder2, folder3, fCurrentFile->GetName());
+	  return false;
+	}
+      }
     }
     
     fEventInspector    = GetSubList(forward, "fmdEventInspector");
