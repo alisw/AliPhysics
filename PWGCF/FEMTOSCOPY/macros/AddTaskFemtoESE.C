@@ -32,11 +32,15 @@ AliAnalysisTaskFemtoESE *AddTaskFemtoESE(Double_t qmin = 0, Double_t qmax = 100,
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutputA = mgr->CreateContainer(contname, TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("HelperPIDOutput_%s",contname.Data()), AliHelperPID::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("EventCutsOutput_%s",contname.Data()), AliSpectraAODEventCuts::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("TrackCutsOutput_%s",contname.Data()), AliSpectraAODTrackCuts::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
   
   //connect containers
   mgr->ConnectInput(ana, 0, cinput);
   mgr->ConnectOutput(ana, 1, coutputA);
   mgr->ConnectOutput(ana, 2, coutput1);
+  mgr->ConnectOutput(ana, 3, coutput2);
+  mgr->ConnectOutput(ana, 4, coutput3);
   mgr->AddTask(ana);
   return ana;
 
