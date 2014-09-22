@@ -46,7 +46,7 @@ class AliHLTTestInputHandler : public AliVEventHandler {
     //AliVEvent* GetEvent() const {return NULL;}
     void  SetEvent(AliVEvent *event) {fEvent = event;}
 
-    AliVfriendEvent* GetVFriendEvent() const {return fFriendEvent;}
+    AliVfriendEvent* GetVfriendEvent() const {return fFriendEvent;}
     void  SetVFriendEvent(AliVfriendEvent *friendEvent) {fFriendEvent = friendEvent;}
       
  private:

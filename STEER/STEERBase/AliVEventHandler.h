@@ -65,7 +65,7 @@ enum EEventHandlerFlags {
     // HLT
     virtual Bool_t              InitTaskInputData(AliVEvent* /*event*/, AliVfriendEvent* /*esdFriend*/, TObjArray* /*arrTasks*/) {return kTRUE;};
     virtual AliVEvent*          GetEvent() const {return 0x0;};
-    virtual AliVfriendEvent*   GetVFriendEvent() const {return 0x0;};
+    virtual AliVfriendEvent*   GetVfriendEvent() const {return 0x0;};
 
  private :
   ClassDef(AliVEventHandler, 1);

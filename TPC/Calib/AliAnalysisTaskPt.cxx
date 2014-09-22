@@ -70,7 +70,7 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
       if (fUseFriends){
 	Printf("...We have to use the friends...");
 	if (classInputHandler.Contains("HLT")) { // we are running in HLT
-	  fESDfriend = esdH->GetVFriendEvent();
+	  fESDfriend = esdH->GetVfriendEvent();
 	}
 	else { /// we are running offline
 	  if (esdH && esdH->GetTree()) {
