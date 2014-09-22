@@ -1951,24 +1951,24 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
   if(pdg == 111){
   //Pi0
      if(x<1) return 1. ;
-     else return fWeightParamPi0[0]*TMath::Power(x,fWeightParamPi0[1])*
+     else return fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
        (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
-       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) ;
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) +fWeightParamPi0[6])  ;
   }
   if(pdg == 221){
   //Eta - same same shape, but yield 0.48 and Br(eta->2gamma)
      Double_t norm=0.48 * 0.3943;
      if(x<1) return norm ;
-     else return norm*fWeightParamPi0[0]*TMath::Power(x,fWeightParamPi0[1])*
+     else return norm*fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
        (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
-       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) ;
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) +fWeightParamPi0[6]) ;
   }
   return 1. ;
 }
 //_________________________________________________________________________________
 void AliAnalysisTaskTaggedPhotons::SetPi0WeightParameters(TArrayD * ar){
  
-  for(Int_t i=0; i<6; i++){ //Array range
+  for(Int_t i=0; i<7; i++){ //Array range
     if(ar->GetSize()>i) fWeightParamPi0[i]=ar->At(i) ;
     else fWeightParamPi0[i]=0.;
   }
@@ -1976,7 +1976,7 @@ void AliAnalysisTaskTaggedPhotons::SetPi0WeightParameters(TArrayD * ar){
   Double_t x=1. ;
   fWeightParamPi0[0]=1./(TMath::Power(x,fWeightParamPi0[1])*
        (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
-       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x)) ;
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) +fWeightParamPi0[6]) ;
   
   
 }
@@ -2061,5 +2061,3 @@ Bool_t AliAnalysisTaskTaggedPhotons::IsGoodChannel(Int_t mod, Int_t ix, Int_t iz
   else
     return kTRUE ;
 }
-
-

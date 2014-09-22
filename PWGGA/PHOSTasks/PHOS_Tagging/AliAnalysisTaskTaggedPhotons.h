@@ -84,7 +84,7 @@ private:
   Float_t fZmin ;               //area
   Float_t fPhimax ;             //covered by
   Float_t fPhimin ;             //full calorimeter
-  Double_t fWeightParamPi0[6] ; //Parameters to calculate weights
+  Double_t fWeightParamPi0[7] ; //Parameters to calculate weights
   //
   Double_t fCentrality;
   Int_t fCentBin ;
