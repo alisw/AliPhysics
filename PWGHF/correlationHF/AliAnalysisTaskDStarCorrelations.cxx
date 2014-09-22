@@ -559,7 +559,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             
            // cout << "DStar pt = " << ptDStar << endl;
            //  cout << "pt bin = " << ptbin << endl;
-            if(ptbin<1) continue;
+          //  if(ptbin<3) continue;
             
              Double_t mD0Window= fD0Window[ptbin]/3;
              invMassDZero = dstarD0pi->InvMassD0();
@@ -598,14 +598,14 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             
             
             // fill mass histograms
-            
+           // cout << "crash here 1" << endl;
             // plot D0 vs DStar mass
             if(!fmixing){
-              
+                cout << Form("histDZerovsDStarMass_%d",ptbin) <<endl;
                 ((TH2D*)fDmesonOutput->FindObject(Form("histDZerovsDStarMass_%d",ptbin)))->Fill(invMassDZero,deltainvMDStar);
                if(fUseDmesonEfficiencyCorrection) ((TH2D*)fDmesonOutput->FindObject(Form("histDZerovsDStarMassWeight_%d",ptbin)))->Fill(invMassDZero,deltainvMDStar,DmesonWeight);
             }
-            
+           // cout << "crash here 2" << endl;
             
            
             // fill D0 invariant mass
@@ -687,29 +687,33 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             trackidsoftPi = ((AliAODTrack*)dstarD0pi->GetBachelor())->GetID();
         }// end if reconstruction
         
-        
+        // cout << "crash here 3" << endl;
         
           // ============================================ using MC kinematics only
         Int_t DStarLabel = -1;
         
         if(!fReco){ // use pure MC information
-            
+          //  cout << "0 - Running on kine " << endl;
             // get the DStar Particle
             DStarMC = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iDStartoD0pi));
             if (!DStarMC) {
                 AliWarning("Careful: DStar MC Particle not found in tree, skipping");
                 continue;
             }
+          //  cout << "1 - Have D* " << endl;
             DStarLabel = DStarMC->GetLabel();
             if(DStarLabel>0)isDStarMCtag = kTRUE;
             
             Int_t PDG =TMath::Abs(DStarMC->PdgCode());
             if(PDG !=413) continue; // skip if it is not a DStar
-            
+           // cout << "PDG = " << PDG << endl;
             // check fiducial acceptance
             if(!fCuts->IsInFiducialAcceptance(DStarMC->Pt(),DStarMC->Y())) continue;
-            ptbin=fCuts->PtBin(DStarMC->Pt());
+          //  cout << "2 - Have D* in fiducial acceptance " << endl;
             
+            if(DStarMC->Pt()<fCuts->GetMinPtCandidate()||DStarMC->Pt()>fCuts->GetMaxPtCandidate()) continue;
+            ptbin=fCuts->PtBin(DStarMC->Pt());
+           //  cout << "3 - Have D* in ptrange acceptance " << endl;
             //check if DStar from B
             Int_t labelMother = DStarMC->GetMother();
             AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelMother));
@@ -766,7 +770,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             etaDStar = DStarMC->Eta();
             
             if(TMath::Abs(etaDStar) > fMaxEtaDStar) continue;
-            
+           // cout << "Dstars are selected" << endl;
             
         }// end if pure MC information
         
@@ -784,7 +788,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
         fCorrelator->SetTriggerParticleDaughterCharge(daughtercharge);
         
         
-        
+       // cout << "crash here 4" << endl;
         
          // ************************************************ CORRELATION ANALYSIS STARTS HERE *****************************************************
         
@@ -826,6 +830,8 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
         Int_t NofEventsinPool = 1;
         if(fmixing) NofEventsinPool = fCorrelator->GetNofEventsInPool();
         
+        Bool_t *trackOrigin = NULL;
+       // cout << "crash here 5" << endl;
         //************************************************** LOOP ON EVENTS IN EVENT POOL *****************************************************
         
         for (Int_t jMix =0; jMix < NofEventsinPool; jMix++){// loop on events in the pool; if it is SE analysis, stops at one
@@ -837,15 +843,15 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             }
             
             Double_t arraytofill[5];
-          // Double_t MCarraytofill[4]; // think about this
+            Double_t MCarraytofill[6]; // think about this
             Double_t weight;
             
               Int_t NofTracks = fCorrelator->GetNofTracks(); // number of tracks in event
             
              //************************************************** LOOP ON TRACKS *****************************************************
-            
+           // cout << "crash here 6" << endl;
              for(Int_t iTrack = 0; iTrack<NofTracks; iTrack++){ // looping on track candidates
-                 
+                // cout << "crash correlation 1" << endl;
                  Bool_t runcorrelation = fCorrelator->Correlate(iTrack); // calculate correlations
                  if(!runcorrelation) continue;
                  
@@ -862,9 +868,9 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  Int_t label = hadron->GetLabel();
                  Int_t trackid = hadron->GetID();
                  Double_t efficiency = hadron->GetWeight();
-                 
-                 
-                 
+                 // cout << "crash correlation 2" << endl;
+                 if(fmontecarlo) trackOrigin = fAssocCuts->IsMCpartFromHF(label,fmcArray);
+                 // cout << "crash correlation 3" << endl;
                   
                  if(!isTrackForPeakFilled && !fmixing && EventHasDStarCandidate){
                      
@@ -884,20 +890,32 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                      ((TH2F*)fTracksOutput->FindObject("EtaSidebandTracks"))->Fill(etaHad,ptHad); // fill phi, eta
                      isTrackForSBFilled = kTRUE;
                  }
-                 
+                 // cout << "crash correlation 4" << endl;
                  
                  weight = 1;
                  if(fUseEfficiencyCorrection && efficiency){
                      weight = DmesonWeight * (1./efficiency);
                  }
                  
-                 
+                 // cout << "crash correlation 5" << endl;
                  arraytofill[0] = DeltaPhi;
                  arraytofill[1] = deltainvMDStar;
                  arraytofill[2] = DeltaEta;
                  arraytofill[3] = ptHad;
                  arraytofill[4] = poolbin;
                  
+                 if(fmontecarlo){
+                 MCarraytofill[0] = DeltaPhi;
+                 MCarraytofill[1] = deltainvMDStar;
+                 MCarraytofill[2] = DeltaEta;
+                 MCarraytofill[3] = ptHad;
+                 MCarraytofill[4] = poolbin;
+                 
+                if(trackOrigin[0]) MCarraytofill[5] = 1 ;
+                else if(trackOrigin[1]) MCarraytofill[5] = 2 ;
+                else MCarraytofill[5] = 0;
+                 }
+                 // cout << "crash correlation 6" << endl;
                  
                  // skip the D daughters in the correlation
               //   Bool_t isDdaughter = kFALSE;
@@ -920,8 +938,8 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  
                  // filling signal
                  if(isInPeak){
-                     cout << "Filling signal " << endl;
-                   //  if(!fReco && TMath::Abs(etaHad)>0.8) continue;
+                   //  cout << "Filling signal " << endl;
+                   // if(!fReco && TMath::Abs(etaHad)>0.8) continue;
                      //cout ("CorrelationsDStarHadron_%d",ptbin)
                      if(fselect==1)((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsDStarHadron_%d",ptbin)))->Fill(arraytofill,weight);
                      if(fselect==2)((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsDStarKaon_%d",ptbin)))->Fill(arraytofill,weight);
@@ -930,8 +948,8 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  
                   // filling bkg
                  if(fBkgMethod == kDStarSB && isInPeak){ // bkg from DStar
-                   //  if(!fReco && TMath::Abs(etaHad)>0.8) continue;
-                      cout << "Filling bkg from D* sidebands " << endl;
+                    // if(!fReco && TMath::Abs(etaHad)>0.8) continue;
+                    //  cout << "Filling bkg from D* sidebands " << endl;
                      if(fselect==1)((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsBkgFromDStarSBHadron_%d",ptbin)))->Fill(arraytofill,weight);
                      if(fselect==2)((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsBkgFromDStarSBKaon_%d",ptbin)))->Fill(arraytofill,weight);
                      if(fselect==3)((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsBkgFromDStarSBKZero_%d",ptbin)))->Fill(arraytofill,weight);
@@ -940,14 +958,35 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  
                  if(fBkgMethod == kDZeroSB && isInDZeroSideBand){ // bkg from DStar
                    //  if(!fReco && TMath::Abs(etaHad)>0.8) continue;
-                     cout << "Filling bkg from Dzero sidebands " << endl;
+                   //  cout << "Filling bkg from Dzero sidebands " << endl;
                      if(fselect==1)((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsBkgFromDZeroSBHadron_%d",ptbin)))->Fill(arraytofill,weight);
                      if(fselect==2)((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsBkgFromDZeroSBKaon_%d",ptbin)))->Fill(arraytofill,weight);
                      if(fselect==3)((THnSparseF*)fCorrelationOutput->FindObject(Form("CorrelationsBkgFromDZeroSBKZero_%d",ptbin)))->Fill(arraytofill,weight);
                      
                  } // end if bkg from DZero
                  
-                                                                        
+                     
+                 
+                 if(fmontecarlo){
+                     // add the montecarlos
+                       if(!fReco && TMath::Abs(etaHad)>0.8) continue;
+                     if(!isDfromB){
+                     //cout << "Filling correlations from charm  " << endl;
+                     //    cout << "Ik zoek op " << Form("CorrelationsMCfromCharmHadron_%d",ptbin) << endl;
+                     //    cout << "de lijst bevat : " << endl;
+                         fOutputMC->ls();
+                     if(fselect==1)((THnSparseF*)fOutputMC->FindObject(Form("CorrelationsMCfromCharmHadron_%d",ptbin)))->Fill(MCarraytofill,weight);
+                     if(fselect==2)((THnSparseF*)fOutputMC->FindObject(Form("CorrelationsMCfromCharmKaon_%d",ptbin)))->Fill(MCarraytofill,weight);
+                     if(fselect==3)((THnSparseF*)fOutputMC->FindObject(Form("CorrelationsMCfromCharmKZero_%d",ptbin)))->Fill(MCarraytofill,weight);
+                     }
+                     if(isDfromB){
+                     //cout << "Filling correlations from beauty  " << endl;
+                     if(fselect==1)((THnSparseF*)fOutputMC->FindObject(Form("CorrelationsMCfromBeautyHadron_%d",ptbin)))->Fill(MCarraytofill,weight);
+                     if(fselect==2)((THnSparseF*)fOutputMC->FindObject(Form("CorrelationsMCfromBeautyKaon_%d",ptbin)))->Fill(MCarraytofill,weight);
+                     if(fselect==3)((THnSparseF*)fOutputMC->FindObject(Form("CorrelationsMCfromBeautyKZero_%d",ptbin)))->Fill(MCarraytofill,weight);
+                     }
+                 }
+                 
                  
              } // end loop on associated tracks
             
@@ -1045,11 +1084,20 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     Double_t binLowLimitSparseDStarSB[5]={lowcorrbin,0.14788 ,-1.6,  0,-0.5};
     Double_t binUpLimitSparseDStarSB[5]= {upcorrbin ,0.1504 , 1.6,  5,nbinsPool-0.5};
     
+    Int_t nbinsSparseMC[6]=         {nbinscorr ,     32 ,  32, 10,nbinsPool,3};
+    Double_t binLowLimitSparseMC[6]={lowcorrbin,0.14314 ,-1.6,  0,-0.5,-0.5};
+    Double_t binUpLimitSparseMC[6]= {upcorrbin ,0.14794 , 1.6,  5,nbinsPool-0.5,2.5};
+    
     TString signalSparseName = "";
     TString bkgSparseName = "";
+    TString MCSparseNameCharm = "";
+    TString MCSparseNameBeauty = "";
     
     THnSparseF * CorrelationsSignal = NULL;
     THnSparseF * CorrelationsBkg = NULL;
+    
+    THnSparseF * MCCorrelationsCharm = NULL;
+    THnSparseF * MCCorrelationsBeauty = NULL;
     
     
     Float_t * ptbinlims = fCuts->GetPtBinLimits();
@@ -1077,8 +1125,20 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
         if(fselect==2) bkgSparseName += "Kaon_";
         if(fselect==3) bkgSparseName += "KZero_";
         
+        MCSparseNameCharm = "CorrelationsMCfromCharm";
+        if(fselect==1) MCSparseNameCharm += "Hadron_";
+        if(fselect==2) MCSparseNameCharm += "Kaon_";
+        if(fselect==3) MCSparseNameCharm += "KZero_";
+        
+        MCSparseNameBeauty = "CorrelationsMCfromBeauty";
+        if(fselect==1) MCSparseNameBeauty += "Hadron_";
+        if(fselect==2) MCSparseNameBeauty += "Kaon_";
+        if(fselect==3) MCSparseNameBeauty += "KZero_";
+        
         signalSparseName+=Form("%d",iBin);
         bkgSparseName+=Form("%d",iBin);
+        MCSparseNameCharm+=Form("%d",iBin);
+        MCSparseNameBeauty+=Form("%d",iBin);
         cout << "ThNSparses name = " << signalSparseName << endl;
         
         // define thnsparses for signal candidates
@@ -1098,6 +1158,16 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
             CorrelationsBkg = new THnSparseF(bkgSparseName.Data(),"Correlations for bkg from DZero; #Delta#Phi; invariant mass;  #Delta #eta;AssocTrk p_{T}",5,nbinsSparse,binLowLimitSparse,binUpLimitSparse);
             CorrelationsBkg->Sumw2();
             fCorrelationOutput->Add(CorrelationsBkg);
+        }
+        
+        if(fmontecarlo){
+        MCCorrelationsCharm = new THnSparseF(MCSparseNameCharm.Data(),"Correlations for DStar from charm; #Delta#Phi; invariant mass;  #Delta #eta;AssocTrk p_{T}",6,nbinsSparseMC,binLowLimitSparseMC,binUpLimitSparseMC);
+        MCCorrelationsCharm->Sumw2();
+        fOutputMC->Add(MCCorrelationsCharm);
+            
+        MCCorrelationsBeauty = new THnSparseF(MCSparseNameBeauty.Data(),"Correlations for DStar from beauty; #Delta#Phi; invariant mass;  #Delta #eta;AssocTrk p_{T}",6,nbinsSparseMC,binLowLimitSparseMC,binUpLimitSparseMC);
+            MCCorrelationsBeauty->Sumw2();
+            fOutputMC->Add(MCCorrelationsBeauty);
         }
         
     } // end loop on bins
