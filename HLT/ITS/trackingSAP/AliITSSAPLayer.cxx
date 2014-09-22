@@ -33,8 +33,9 @@ AliITSSAPLayer::AliITSSAPLayer() :
   ,fNFoundClusters(0)
   ,fFoundClusterIterator(0)
   ,fFoundBinIterator(0)
-  ,fFoundBins(0)
-  ,fSortedClInfo(0)
+  ,fFoundBins()
+  ,fSortedClInfo()
+  ,fDetectors()
 {
   // def. c-tor
 }
@@ -61,8 +62,9 @@ AliITSSAPLayer::AliITSSAPLayer(int id, float zspan,int nzbins,int nphibins, int 
   ,fNFoundClusters(0)
   ,fFoundClusterIterator(0)
   ,fFoundBinIterator(0)
-  ,fFoundBins(0)
-  ,fSortedClInfo(0)
+  ,fFoundBins()
+  ,fSortedClInfo()
+  ,fDetectors()
 {
   // c-tor
   Init(buffer);

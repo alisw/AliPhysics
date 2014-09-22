@@ -68,7 +68,10 @@ const char* AliITSSAPTracker::fgkSWNames[AliITSSAPTracker::kNSW] = {
 
 //______________________________________________
 AliITSSAPTracker::AliITSSAPTracker() :
-  fBlacklist(0)
+  fSPD2Discard()
+  ,fTracklets()
+  ,fSPD1Tracklet()
+  ,fBlacklist(0)
   ,fPhiShift(0.0045)
   ,fSigThetaTracklet(0.025)
   ,fSigPhiTracklet(0.08)
@@ -92,6 +95,8 @@ AliITSSAPTracker::AliITSSAPTracker() :
   ,fMissChi2Penalty(3)
   ,fMaxMissedLayers(1)
   ,fNTracks(0)
+  ,fTracks()
+  ,fTrackVertex()
   ,fFitVertex(kTRUE)
   //
   ,fSPDVertex(0)
@@ -211,6 +216,12 @@ void AliITSSAPTracker::ProcessEvent()
 #ifdef _CONTROLH_
   FillRecoStat();
 #endif
+  /*
+  PrintTracklets();
+  PrintTracks();  
+  if (fSPDVertex) {printf("SPDvtx: "); fSPDVertex->Print();}
+  printf("TRKVtx: "); fTrackVertex.Print();
+  */
 }
 
 
@@ -431,7 +442,7 @@ void AliITSSAPTracker::Tracklets2Tracks()
 }
 
 //______________________________________________
-Bool_t AliITSSAPTracker::IsAcceptableTrack(const AliITSSAPTracker::ITStrack_t& track) const
+Bool_t AliITSSAPTracker::IsAcceptableTrack(const AliITSSAPTracker::ITStrack_t& /*track*/) const
 {
   // check if the track is acceptable
   return kTRUE;

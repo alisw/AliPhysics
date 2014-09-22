@@ -40,6 +40,7 @@ class AliITSSAPTracker : public TObject
   typedef struct SPDtracklet SPDtracklet_t;
   //
   struct ITStrack {
+  ITStrack() : paramOut(),paramInw(),chi2(0),ncl(0),nmiss(0),label(0),trackletID(0) {}
     AliExternalTrackParam paramOut;
     AliExternalTrackParam paramInw;
     float chi2;
