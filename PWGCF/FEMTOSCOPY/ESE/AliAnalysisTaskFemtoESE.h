@@ -56,6 +56,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   Int_t GetTrackFilterBit(){return fFilterBit;}
   void SetTrackFilterBit(Int_t bit){fFilterBit=bit;}
   void SetEventSelectionBit( UInt_t val ) {fSelectBit = val;}
+  void SetIsLHC10h(Bool_t val) {bIsLHC10h = val;}
   void SetMinSepPair(Double_t eta,Double_t phi){fMinSepPairEta = eta; fMinSepPairPhi = phi;}
   void SetShareFraction(Double_t val) {fShareFraction = val;}
   Double_t GetShareFraction() {return fShareFraction;}
@@ -66,12 +67,14 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   Double_t GetMaxQPerc(){return fMaxQPerc;}
   void SetQPercDetector(Int_t det){fQPercDet = det;};
   void SetEPDetector(Int_t det){fEPDet = det;};
-
+  void SetNMixingTracks(Int_t n){fMixingTracks = n;};
 
   void SetKtBins(Int_t n, Double_t* bins);
   void SetEPBins(Int_t n, Double_t min, Double_t max);
   void SetCentBins(Int_t n, Double_t* bins);
   void SetVzBins(Int_t n, Double_t* bins);
+
+  Double_t GetQPercLHC11h(Double_t qvec);
 
  private:
   Double_t GetQinv(Double_t[], Double_t[]);
@@ -93,7 +96,8 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   AliSpectraAODTrackCuts* fTrackCuts;
 
   Int_t          fFilterBit;         // track selection cuts
-  UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
+  UInt_t         fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
+  Bool_t         bIsLHC10h;
   Int_t fEventCounter;
   Int_t fMixingTracks;
   Double_t fBfield;
@@ -133,6 +137,10 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
 
   TH3F***** hq;
   TH3F***** hqmix;
+
+  Int_t nqPercBinsLHC11h;
+  Double_t* qPercBinsLHC11h; //[nqPercBinsLHC11h]
+
 
   ClassDef(AliAnalysisTaskFemtoESE, 1);
 };
