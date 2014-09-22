@@ -229,8 +229,11 @@ namespace EMCalTriggerPtAnalysis {
 		if(fMCEvent){
 			for(int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++){
 				// Select only physical primary particles
+				AliVParticle *part = fMCEvent->GetTrack(ipart);
+				if(!fEtaRange.IsInRange(part->Eta())) continue;
+				if(!fPtRange.IsInRange(part->Pt())) continue;
 				if(!fMCEvent->IsPhysicalPrimary(ipart)) continue;
-				FillMCParticleHist(fMCEvent->GetTrack(ipart));
+				FillMCParticleHist(part);
 			}
 			// Build always trigger strig from the trigger maker in case of MC
     		fUseTriggersFromTriggerMaker = kTRUE;
