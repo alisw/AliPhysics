@@ -60,6 +60,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE() :
   fTrackCuts(0x0),
   fFilterBit(128),
   fSelectBit(AliVEvent::kMB),
+  bIsLHC10h(1),
   fEventCounter(0),
   fMixingTracks(10000),
   fBfield(0.),
@@ -89,7 +90,9 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE() :
   nVzBins1(1),
   vzBins(0),
   hq(0x0),
-  hqmix(0x0)
+  hqmix(0x0), 
+  nqPercBinsLHC11h(1), 
+  qPercBinsLHC11h(0)
 {
 }
 
@@ -105,6 +108,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   fTrackCuts(0x0),
   fFilterBit(128),
   fSelectBit(AliVEvent::kMB),
+  bIsLHC10h(1),
   fEventCounter(0),
   fMixingTracks(10000),
   fBfield(0.),
@@ -134,7 +138,9 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   nVzBins1(1),
   vzBins(0),
   hq(0x0),
-  hqmix(0x0)
+  hqmix(0x0),
+  nqPercBinsLHC11h(1), 
+  qPercBinsLHC11h(0)
 {
   
   Printf("*******************************************");
@@ -155,6 +161,8 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, AliHelperPID::Class());
+  DefineOutput(3, AliSpectraAODEventCuts::Class());
+  DefineOutput(4, AliSpectraAODTrackCuts::Class());
 
 }
 
@@ -176,6 +184,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const AliAnalysisTaskFemtoESE &
   fTrackCuts(0x0),
   fFilterBit(128),
   fSelectBit(AliVEvent::kMB),
+  bIsLHC10h(1),
   fEventCounter(0),
   fMixingTracks(10000),
   fBfield(0.),
@@ -205,7 +214,9 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const AliAnalysisTaskFemtoESE &
   nVzBins1(1),
   vzBins(0),
   hq(0x0),
-  hqmix(0x0)
+  hqmix(0x0),
+  nqPercBinsLHC11h(1), 
+  qPercBinsLHC11h(0)
 {
   /* do nothing yet */  
 } 
@@ -260,7 +271,7 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hvzcent->GetXaxis()->SetTitle("v_{z}");
   hvzcent->GetYaxis()->SetTitle("centrality");
   fOutputList->Add(hvzcent);
-  TH1D *hcent = new TH1D("hcent","cent",10,0,100);
+  TH1D *hcent = new TH1D("hcent","cent",50,0,50);
   hcent->GetXaxis()->SetTitle("centrality");
   fOutputList->Add(hcent);
   TH2D *hcentn = new TH2D("hcentn","cent vs npions",50,0,50,100,0,2000);
@@ -313,7 +324,7 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   TH1D *hkt = new TH1D("hkt","k_{T}",100,0,2);
   hkt->GetXaxis()->SetTitle("k_{T}");
   fOutputList->Add(hkt);
-  TH1D *hktcheck = new TH1D("hktcheck","k_{T} check",100,0,2);
+  TH1D *hktcheck = new TH1D("hktcheck","k_{T} check",50,0,1);
   hktcheck->GetXaxis()->SetTitle("k_{T}");
   fOutputList->Add(hktcheck);
   TH3D *hkt3 = new TH3D("hkt3","kt vs pt",50,0,1,50,0,5,50,0,5);
@@ -359,12 +370,20 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hCheckEPmix->GetXaxis()->SetTitle("Psi1 - Psi_mix");
   hCheckEPmix->GetYaxis()->SetTitle("Psi1 - Psi2");
   fOutputList->Add(hCheckEPmix);
-  TH2D *hcentq = new TH2D("hcentq","qvec vs cent",100,0,100,5,0,50);
+  TH2D *hcentq = new TH2D("hcentq","qvec vs cent",100,0,100,50,0,50);
   hcentq->GetXaxis()->SetTitle("q_{2} percentile");
   hcentq->GetYaxis()->SetTitle("centrality");
   fOutputList->Add(hcentq);
   TH2D* hMixedDist = new TH2D("hMixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5);
   fOutputList->Add(hMixedDist);
+  TH2D *hQvecV0A = new TH2D("hQvecV0A","Qvector in V0A",50,0,50,200,0,5);
+  hQvecV0A->GetXaxis()->SetTitle("Centrality");
+  hQvecV0A->GetYaxis()->SetTitle("normalized Qvector");
+  fOutputList->Add(hQvecV0A);
+  TH2D *hQvecV0C = new TH2D("hQvecV0C","Qvector in V0C",50,0,50,200,0,5);
+  hQvecV0C->GetXaxis()->SetTitle("Centrality");
+  hQvecV0C->GetYaxis()->SetTitle("normalized Qvector");
+  fOutputList->Add(hQvecV0C);
 
   // resolution histograms (same binning as hvzcent)
   TH2D *hresV0ATPC = new TH2D("hresV0ATPC","vz vs cent vs cos(2*(V0A-TPC))",nVzBins,vzBins,nCentBins,centBins);
@@ -434,6 +453,8 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
 
   PostData(1, fOutputList);
   PostData(2, fHelperPID);
+  PostData(3, fEventCuts);
+  PostData(4, fTrackCuts);
 }
 
 //________________________________________________________________________
@@ -483,17 +504,19 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
   //printf("ResMem %ld VMem %ld\n", procInfo.fMemResident, procInfo.fMemVirtual);
 
  // get event plane from V0's
-  if(!fEventCuts->IsSelected(fAOD,fTrackCuts)) Printf("Error! Event not accepted by AliAODSpectraEventCuts!");
-  //TVector2* qvecA = fEventCuts->GetqV0A();
-  //TVector2* qvecC = fEventCuts->GetqV0C();
-  //Double_t psiV0 = qvecA->Phi()/2.;
-  //fEventCuts->CalculateQVectorLHC10h();
+  if(!fEventCuts->IsSelected(fAOD,fTrackCuts)) {Printf("Error! Event not accepted by AliAODSpectraEventCuts!"); return;}
   Double_t psiV0A = fEventCuts->GetPsiV0A();
   Double_t psiV0C = fEventCuts->GetPsiV0C();
-  //Double_t qV0a = fEventCuts->GetqV0A();
-  Double_t qperc = fEventCuts->GetQvecPercentile(fQPercDet);//0: VZERO-A 1: VZERO-C
-  //cout << "Psi = " << psiV0 << "   qV0a = " << qV0a << "   percentile = " << qperc << endl;
-
+  Double_t qperc = -999;
+  if(bIsLHC10h) qperc = fEventCuts->GetQvecPercentile(fQPercDet);//0: VZERO-A 1: VZERO-C
+  else
+    {
+      if(fQPercDet == 0) qperc = GetQPercLHC11h(fEventCuts->GetqV0A());
+      if(fQPercDet == 1) qperc = GetQPercLHC11h(fEventCuts->GetqV0C());
+      //Printf("q vector = %lf  percentile = %lf",fEventCuts->GetqV0A(),qperc);
+      ((TH2D*)fOutputList->FindObject("hQvecV0A"))->Fill(centralityPercentile,fEventCuts->GetqV0A());
+      ((TH2D*)fOutputList->FindObject("hQvecV0C"))->Fill(centralityPercentile,fEventCuts->GetqV0C());
+    }
   if(psiV0A == -999) return;
   if(psiV0C == -999) return;
   if(qperc < fMinQPerc || qperc > fMaxQPerc) return;
@@ -759,6 +782,8 @@ void AliAnalysisTaskFemtoESE::UserExec(Option_t *)
   // Post output data.
   PostData(1, fOutputList);
   PostData(2, fHelperPID);
+  PostData(3, fEventCuts);
+  PostData(4, fTrackCuts);
 }
 //________________________________________________________________________
 void AliAnalysisTaskFemtoESE::Terminate(Option_t *) 
@@ -768,6 +793,7 @@ void AliAnalysisTaskFemtoESE::Terminate(Option_t *)
   if(epBins) delete [] epBins;
   if(centBins) delete [] centBins;
   if(vzBins) delete [] vzBins;
+  if(qPercBinsLHC11h) delete [] qPercBinsLHC11h;
 
   // Called once at the end of the query
  
@@ -1223,3 +1249,23 @@ void AliAnalysisTaskFemtoESE::SetEPBins(Int_t n, Double_t min, Double_t max)
   for(Int_t i = 0; i < nEPBins+1; i++) Printf("%lf",epBins[i]);
 }
 
+Double_t AliAnalysisTaskFemtoESE::GetQPercLHC11h(Double_t qvec)
+{
+  // preliminary attemp at calculating qvector percentile in LHC11h -- still very approximate and only works in 5% bins
+  if(!qPercBinsLHC11h)
+    {
+      Double_t tempArray[21] = {0.0, 0.22995, 0.33047, 0.410831, 0.480728, 0.545566, 0.606841, 0.66634, 0.725193, 0.783813, 0.843311, 0.904185, 0.96796, 1.03522, 1.10768, 1.18774, 1.27808, 1.3857, 1.52438, 1.73633, 4.95};
+      nqPercBinsLHC11h = 21;
+      qPercBinsLHC11h = new Double_t[nqPercBinsLHC11h];
+      for(Int_t n = 0; n < nqPercBinsLHC11h; n++) qPercBinsLHC11h[n] = tempArray[n];
+    }
+
+  for(Int_t t = 0; t < nqPercBinsLHC11h-1; t++)
+    if(qvec > qPercBinsLHC11h[t] && qvec < qPercBinsLHC11h[t+1]) return 50.*(2*t+1)/(Double_t)(nqPercBinsLHC11h-1);
+
+  if(qvec < qPercBinsLHC11h[0]) return 0.0;
+  if(qvec > qPercBinsLHC11h[nqPercBinsLHC11h-1]) return 100.0;
+
+  return 0.0;
+
+}
