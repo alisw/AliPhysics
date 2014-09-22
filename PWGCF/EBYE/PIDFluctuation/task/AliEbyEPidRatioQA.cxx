@@ -156,7 +156,7 @@ void AliEbyEPidRatioQA::Process() {
   
   // -- Track Loop
   for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
-    
+   
     AliVTrack *track = (fESD) ? static_cast<AliVTrack*>(fESD->GetTrack(idxTrack)) : static_cast<AliVTrack*>(fAOD->GetTrack(idxTrack)); 
 
     // -- Check if track is accepted for basic parameters
@@ -164,9 +164,12 @@ void AliEbyEPidRatioQA::Process() {
       continue;
     
     // -- Check if accepted - ESD
-    if (fESD && !fESDTrackCuts->AcceptTrack(dynamic_cast<AliESDtrack*>(track)))
-      continue;
-    
+    if (fESD){
+      if (!fESDTrackCuts->AcceptTrack(dynamic_cast<AliESDtrack*>(track)))
+	continue;
+    }
+   
+  
     // -- Check if accepted - AOD
     if (fAOD){
       AliAODTrack * trackAOD = dynamic_cast<AliAODTrack*>(track);
@@ -191,6 +194,9 @@ void AliEbyEPidRatioQA::Process() {
     else if (fHelper->IsTrackAcceptedPID(track, pid, (AliPID::kKaon)))  {  iPid = 2; gPdgCode = 321;}
     else if (fHelper->IsTrackAcceptedPID(track, pid, (AliPID::kProton))){  iPid = 3; gPdgCode = 2212;}
     else iPid = 0;
+
+
+    //cout << idxTrack << " --- QA ---- " << iPid << "  " << gPdgCode << endl;
 
     Double_t yP;
     if ((iPid != 0) && !fHelper->IsTrackAcceptedRapidity(track, yP, iPid))

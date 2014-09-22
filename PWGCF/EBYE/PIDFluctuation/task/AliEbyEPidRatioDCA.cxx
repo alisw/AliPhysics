@@ -100,7 +100,7 @@ void AliEbyEPidRatioDCA::Process() {
     else if (fHelper->IsTrackAcceptedPID(track, pid, (AliPID::kProton))){  iPid = 3; gPdgCode = 2212;}
     else iPid = 0;
 
-
+    //  cout << " --- DCA ---- " << iPid << "  " << gPdgCode << endl;
     Double_t yP;
     if (!fHelper->IsTrackAcceptedRapidity(track, yP, iPid))
       continue;

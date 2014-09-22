@@ -331,6 +331,7 @@ void AliEbyEPidRatioEffCont::FillMCLabels() {
     else if (fHelper->IsTrackAcceptedPID(track, pid, (AliPID::kProton))){  iPid = 3; gPdgCode = 2212;}
     else iPid = 0;
 
+    //  cout << " --- EFF ---- " << iPid << "  " << gPdgCode << endl;
     
     Double_t yP;
     if (!fHelper->IsTrackAcceptedRapidity(track, yP, iPid))
@@ -402,6 +403,8 @@ void AliEbyEPidRatioEffCont::CheckContTrack(AliVTrack *track, Int_t iPid, Int_t 
     else                                              contPart = 6; // other
   }
   
+  // cout << " --- CONT ---- " << iPid << "  " << gPdgCode << endl;
+
   // -- Get Reconstructed y
   //    yRec = y for identified particles | yRec = eta for charged particles
   Double_t yRec  = 0.;

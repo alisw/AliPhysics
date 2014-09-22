@@ -53,13 +53,13 @@ class AliEbyEPidRatioHelper : public TNamed {
   void SetMinPtForTOFRequired(Float_t f)       {fMinPtForTOFRequired = f;}
   void SetMaxPtForTPClow(Float_t f)            {fMaxPtForTPClow      = f;}
 
-  // void SetIsRatio(Bool_t b)                    {fIsRatio             = b;}  
-  // void SetIsPtBin(Bool_t   b)                  {fIsPtBin             = b;}  
-
+  
   TH1F*    GetHEventStat0()                    {return fHEventStat0;     }
   TH1F*    GetHEventStat1()                    {return fHEventStat1;     }
   TH1F*    GetHTriggerStat()                   {return fHTriggerStat;    }
   TH1F*    GetHCentralityStat()                {return fHCentralityStat; }
+  TH1F*    GetHCentralityPercentile()          {return fHCentralityPer; }
+  TH1F*    GetHCentralityPercentileAll()       {return fHCentralityPerAll; }
   Int_t    GetCentralityBin()                  {return fCentralityBin;   }
   Float_t  GetMaxPtForTPClow()                 {return fMaxPtForTPClow;  }
   Float_t  GetRapidityMax()                    {return fRapidityMax;     }
@@ -123,6 +123,9 @@ class AliEbyEPidRatioHelper : public TNamed {
    */
   void BinLogAxis(const THnBase *h, Int_t axisNumber, AliESDtrackCuts* cuts = NULL);
 
+  // void SetIsRatio(Bool_t b)                    {fIsRatio             = b;}  
+  // void SetIsPtBin(Bool_t   b)                  {fIsPtBin             = b;}  
+  
   static const Float_t fgkfHistBinWitdthRap;   // Histogram std bin width for rapidity/eta
   static const Float_t fgkfHistBinWitdthPt;    // Histogram std bin width for pt
 
@@ -191,6 +194,8 @@ class AliEbyEPidRatioHelper : public TNamed {
   TH1F                 *fHTriggerStat;             //  Trigger statistics
   Int_t                 fNTriggers;                //  N triggers used
   TH1F                 *fHCentralityStat;          //  Centrality statistics
+  TH1F                 *fHCentralityPer;           //  Centrality Percentile
+  TH1F                 *fHCentralityPerAll;        //  Centrality Percentile
   Int_t                 fNCentralityBins;          //  N centrality bins used
   TRandom3             *fRandom;                   //  Random generator
   Bool_t                fIsRatio;                  //  Is ratio
