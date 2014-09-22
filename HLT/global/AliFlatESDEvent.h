@@ -55,9 +55,13 @@ class AliFlatESDEvent :public AliVEvent {
   UInt_t GetEventSpecie()   const { return fEventSpecie; }
   Int_t  GetNumberOfKinks() const { return 0; }  
 
-  AliVTrack  *GetVTrack( Int_t i ) { return GetFlatTrackNonConst(i); }
+  AliVTrack  *GetVTrack( Int_t i ) const { return GetFlatTrackNonConst(i); }
   AliESDkink *GetKink(Int_t /*i*/) const { return NULL;}
 
+  using AliVEvent::GetPrimaryVertex;
+  using AliVEvent::GetPrimaryVertexTPC;
+  using AliVEvent::GetPrimaryVertexSPD;
+  using AliVEvent::GetPrimaryVertexTracks;
   Int_t GetPrimaryVertex( AliESDVertex &v ) const ;
   Int_t GetPrimaryVertexTPC( AliESDVertex &v ) const ;
   Int_t GetPrimaryVertexSPD( AliESDVertex &v ) const ;
@@ -109,7 +113,7 @@ class AliFlatESDEvent :public AliVEvent {
   const AliFlatESDV0      *GetV0s() const { return reinterpret_cast<const AliFlatESDV0*>( fContent + fV0Pointer ); }
 
   const AliFlatESDTrack  *GetFlatTrack( Int_t i ) const ;
-  AliFlatESDTrack  *GetFlatTrackNonConst( Int_t i );
+  AliFlatESDTrack  *GetFlatTrackNonConst( Int_t i ) const;
 
   // --------------------------------------------------------------------------------
   // -- Size methods
@@ -150,6 +154,7 @@ class AliFlatESDEvent :public AliVEvent {
   virtual Int_t EventIndexForEMCALCell(Int_t) const {return 0;}
   virtual AliVVZERO* GetVZEROData() const {return NULL;}
   virtual AliVZDC   *GetZDCData() const {return NULL;}
+  virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
  private:
 
@@ -200,11 +205,11 @@ class AliFlatESDEvent :public AliVEvent {
 
 // Inline implementations 
 
-inline AliFlatESDTrack  *AliFlatESDEvent::GetFlatTrackNonConst( Int_t i )  
+inline AliFlatESDTrack  *AliFlatESDEvent::GetFlatTrackNonConst( Int_t i ) const 
 { 
   const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
   if( i<0 || i>(int) fNTracks || table[i]<0 ) return NULL;
-  return reinterpret_cast<AliFlatESDTrack*>( fContent + table[i] );
+  return reinterpret_cast<AliFlatESDTrack*>( const_cast<Byte_t*>(fContent + table[i]) );
 }
 
 inline const AliFlatESDTrack  *AliFlatESDEvent::GetFlatTrack( Int_t i ) const 

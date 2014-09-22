@@ -345,3 +345,9 @@ AliVParticle* AliFlatESDEvent::GetTrack(Int_t i) const
 {
   return const_cast<AliFlatESDTrack*>(GetFlatTrack(i));
 }
+  
+AliVEvent::EDataLayoutType AliFlatESDEvent::GetDataLayoutType() const 
+{
+  return AliVEvent::kFlat;
+}
+

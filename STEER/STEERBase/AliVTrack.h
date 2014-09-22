@@ -127,6 +127,7 @@ public:
   virtual UShort_t  GetTPCsignalN()      const {return 0 ;}
   virtual Double_t  GetTPCmomentum()     const {return 0.;}
   virtual Double_t  GetTPCTgl()          const {return 0.;}
+  virtual Double_t  GetTgl()             const {return 0.;}
   virtual Double_t  GetTOFsignal()       const {return 0.;}
   virtual Double_t  GetTOFsignalTunedOnData() const {return 0.;}
   virtual Double_t  GetHMPIDsignal()     const {return 0.;}
@@ -193,7 +194,6 @@ public:
   virtual void              GetDirection(Double_t []) const {;}
   virtual Double_t          GetLinearD(Double_t /*xv*/, Double_t /*yv*/) const {return 0;}
   virtual void              GetDZ(Double_t /*x*/,Double_t /*y*/,Double_t /*z*/,Double_t /*b*/,Float_t [] /*dz[2]*/) const {;}
-  virtual Double_t          GetTgl()  const {return 0;}
   virtual Char_t            GetITSclusters(Int_t */**idx*/) const {return 0;}
   virtual UChar_t           GetTRDclusters(Int_t */**idx*/) const {return 0;}
 

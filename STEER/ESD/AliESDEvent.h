@@ -274,7 +274,7 @@ public:
 
   void SetESDfriend(const AliESDfriend *f) const;
   void GetESDfriend(AliESDfriend *f) const;
-  AliESDfriend* FindFriend() const { return static_cast<AliESDfriend*>(FindListObject("AliESDfriend")); }
+  virtual AliESDfriend* FindFriend() const;
 
   void SetPrimaryVertexTPC(const AliESDVertex *vertex); 
   const AliESDVertex *GetPrimaryVertexTPC() const {return fTPCVertex;}
@@ -554,6 +554,8 @@ public:
   UInt_t GetDAQDetectorPattern() const {return fDAQDetectorPattern;}
   UInt_t GetDAQAttributes() const {return fDAQAttributes;}
 
+  virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
+
 protected:
   AliESDEvent(const AliESDEvent&);
   static Bool_t ResetWithPlacementNew(TObject *pObject);
@@ -624,5 +626,6 @@ protected:
 
   ClassDef(AliESDEvent,23)  //ESDEvent class 
 };
+  
 #endif 
 

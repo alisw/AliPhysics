@@ -89,7 +89,9 @@ class AliExternalTrackParam: public AliVTrack {
   Double_t GetY()    const {return fP[0];}
   Double_t GetZ()    const {return fP[1];}
   Double_t GetSnp()  const {return fP[2];}
-  Double_t GetTgl()  const {return fP[3];}
+  virtual Double_t GetTgl()  const {return fP[3];}
+  using AliVTrack::GetImpactParameters;
+  virtual void GetImpactParameters(Float_t& ,Float_t&) const {}
   Double_t GetSigned1Pt()  const {return fP[4];}
 
   Double_t GetSigmaY2() const {return fC[0];}

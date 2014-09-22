@@ -85,6 +85,10 @@ class AliITSSAPLayer
   virtual void Clear(Option_t *opt="");
   virtual void Print(Option_t *opt="")  const;
 
+ private:
+  AliITSSAPLayer(const AliITSSAPLayer&);
+  AliITSSAPLayer& operator=(const AliITSSAPLayer&);
+  //
  protected:
   TObjArray* fClusters;       // externally supplied clusters
   int   fLrID;                // layer id

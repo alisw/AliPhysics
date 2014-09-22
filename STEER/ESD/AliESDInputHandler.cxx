@@ -188,7 +188,7 @@ void AliESDInputHandler::ConnectFriends()
 
     cTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
     cTree->SetBranchStatus("ESDfriend.", 1);
-    fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
+    fFriend = fEvent->FindFriend();
     if (fFriend) cTree->SetBranchAddress("ESDfriend.", &fFriend);
   }
 }
