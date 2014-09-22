@@ -115,6 +115,8 @@ AliAnalysisTaskSE(),
   fPrecisionPhi(0.001),
   fUseMCReactionPlane(kFALSE),
   fSP(kFALSE),
+  fVariableMultiplicity(0),
+  fTriggerUsed(0),
   fMCPID(kFALSE),
   fNoPID(kFALSE),
   fChi2OverNDFCut(3.0),
@@ -228,6 +230,8 @@ AliAnalysisTaskFlowTPCTOFEPSP:: AliAnalysisTaskFlowTPCTOFEPSP(const char *name) 
   fPrecisionPhi(0.001),
   fUseMCReactionPlane(kFALSE),
   fSP(kFALSE),
+  fVariableMultiplicity(0),
+  fTriggerUsed(0),  
   fMCPID(kFALSE),
   fNoPID(kFALSE),
   fChi2OverNDFCut(3.0),
@@ -363,6 +367,8 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   fPrecisionPhi(ref.fPrecisionPhi),
   fUseMCReactionPlane(ref.fUseMCReactionPlane),
   fSP(ref.fSP),
+  fVariableMultiplicity(ref.fVariableMultiplicity),
+  fTriggerUsed(ref.fTriggerUsed),
   fMCPID(ref.fMCPID),
   fNoPID(ref.fNoPID),
   fChi2OverNDFCut(ref.fChi2OverNDFCut),
@@ -494,6 +500,8 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fPrecisionPhi = fPrecisionPhi;
   target.fUseMCReactionPlane = fUseMCReactionPlane;
   target.fSP = fSP;
+  target.fVariableMultiplicity = fVariableMultiplicity;
+  target.fTriggerUsed = fTriggerUsed;
   target.fMCPID = fMCPID;
   target.fNoPID = fNoPID;
   target.fChi2OverNDFCut = fChi2OverNDFCut;
@@ -1379,6 +1387,40 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     }
   }
 
+  /////////////////////
+  // Trigger selection
+  ////////////////////
+  if(fTriggerUsed==0){
+    
+    // central, semi-central and central
+    
+    if ( !((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral) || (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral) || (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)) ) return;
+    
+  }
+  if(fTriggerUsed==1){
+    
+    // semi-central Ionut
+
+    if ( !((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral) || (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral) || (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)) ) return;
+    
+    //Bool_t isMB = (InputEvent()->GetTriggerMask() & (ULong64_t(1)<<1));
+    //Bool_t isCentral = (InputEvent()->GetTriggerMask() & (ULong64_t(1)<<4));
+    Bool_t isSemiCentral = (InputEvent()->GetTriggerMask() & (ULong64_t(1)<<7));
+    
+    if(!isSemiCentral) return;
+    
+  }
+  if(fTriggerUsed==2){
+
+    // semi-central Andrea and Muons
+    
+    if ( !(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny) ) return;
+    
+    //TString firedTriggerClasses = static_cast<const AliAODEvent*>(InputEvent())->GetFiredTriggerClasses();
+    TString firedTriggerClasses = InputEvent()->GetFiredTriggerClasses();
+        
+    if ( ! ( firedTriggerClasses.Contains("CVLN_B2-B-NOPF-ALLNOTRD") || firedTriggerClasses.Contains("CVLN_R1-B-NOPF-ALLNOTRD") || firedTriggerClasses.Contains("CSEMI_R1-B-NOPF-ALLNOTRD") ) ) return;
+  }
    
   /////////////////
   // centrality
@@ -2097,10 +2139,23 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
 	AliHFEpidObject hfetrack;
 	if(!fAODAnalysis){
 	  hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-	  if(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()) hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
+	  if(fVariableMultiplicity==0){
+	    if(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()) {
+	      hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
+	      printf("SPD vertex contributors %d and number of ESD tracks %d\n",((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors(),((AliESDEvent*)fInputEvent)->GetNumberOfESDTracks());
+	    }
+	  }
+	  if(fVariableMultiplicity==1){
+	    hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetNumberOfESDTracks()/8.);
+	  }
 	}else{
 	  hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
-	  if(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD())  hfetrack.SetMulitplicity(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
+	  if(fVariableMultiplicity==0){
+	    if(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD())  hfetrack.SetMulitplicity(((AliAODEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
+	  }
+	  if(fVariableMultiplicity==1){
+	    hfetrack.SetMulitplicity(((AliAODEvent*)fInputEvent)->GetNumberOfESDTracks()/8.);
+	  }
 	}
 	hfetrack.SetRecTrack(track);
 	hfetrack.SetCentrality((Int_t)binct);
