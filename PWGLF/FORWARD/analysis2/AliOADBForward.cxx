@@ -149,6 +149,11 @@ AliOADBForward::Table::Table(TTree* tree, Bool_t isNew, ERunSelectMode mode)
 {
   if (!tree) return;
 
+#if 0
+  Info("Table", "Making table %s (%s) with mode %s (%s)", 
+       tree->GetName(), (isNew ? "new" : "old"), tree->GetTitle(), 
+       Mode2String(fMode));
+#endif
   if (isNew) {
     fTree->Branch("e", "AliOADBForward::Entry", &fEntry);
     fMode = String2Mode(fTree->GetTitle());
@@ -160,6 +165,9 @@ AliOADBForward::Table::Table(TTree* tree, Bool_t isNew, ERunSelectMode mode)
     }
     fTree->SetBranchAddress("e", &fEntry);
   }
+#if 0
+  Info("", "Mode set to %d (%s)", fMode, Mode2String(fMode));
+#endif
 }
 //____________________________________________________________________
 AliOADBForward::Table::Table(const Table& o)
