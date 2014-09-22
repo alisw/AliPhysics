@@ -106,6 +106,7 @@ class AliFlatESDTrack :public AliVTrack {
   // AliVParticle interface
   virtual Double_t Pt() const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():kVeryBig;}
   virtual Double_t GetTgl()  const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetTgl():kVeryBig;}
+  using AliVTrack::GetImpactParameters;
   virtual void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=0.; z=0.;}
   virtual Double_t Px() const {return 0.;}
   virtual Double_t Py() const {return 0.;}
