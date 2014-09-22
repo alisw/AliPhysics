@@ -74,7 +74,7 @@ struct dNdetaDrawer
     kOldFormat      = 0x01000,
     kVerbose        = 0x02000,
     kHiRes          = 0x04000,
-    kExtraWhite      = 0x08000,
+    kExtraWhite     = 0x08000,
     kLogo           = 0x10000,
     kNoCentral      = 0x20000,
     kNoLabels       = 0x40000,
@@ -375,9 +375,9 @@ struct dNdetaDrawer
    */
   void SetTrigger(UShort_t trig)
   {
-    fTrigString = new TNamed("trigString", (trig & 0x1 ? "INEL" : 
+    fTrigString = new TNamed("trigString", (trig & 0x1 ? "MBOR" : 
 					    trig & 0x2 ? "INEL>0" : 
-					    trig & 0x4 ? "NSD" :
+					    trig & 0x4 ? "MBAND5" :
 					    trig & 0x2000 ? "V0-AND" :
 					    "unknown"));
     fTrigString->SetUniqueID(trig);
@@ -883,6 +883,15 @@ struct dNdetaDrawer
       fCentAxis->Set(nBins, bins.GetArray());
     }
 	
+    if (fTrigString) { 
+      UInt_t mask = 0x200f & fTrigString->GetUniqueID();
+      if      (mask == 0x2)      fTrigString->SetTitle("INEL>0");
+      else if (fTriggerEff != 1) {
+	if      (mask == 0x1)    fTrigString->SetTitle("INEL");
+	else if (mask == 0x2000) fTrigString->SetTitle("NSD");
+	else if (mask == 0x4)    fTrigString->SetTitle("NSD");
+      }
+    }
 
     if (true /*fOptions & kVerbose*/) {
       TString centTxt("none");
@@ -2820,7 +2829,11 @@ struct dNdetaDrawer
    */
   Bool_t HasCent() const 
   { 
-    return fCentAxis && fCentAxis->GetNbins() > 0 && !(fOptions & kForceMB); 
+    return (!(fOptions & kForceMB) && 
+	    fCentAxis && 
+	    (fCentAxis->GetNbins() > 1 ||
+	     (fCentAxis->GetNbins() == 1 && 
+	      fCentAxis->GetXmin() <= fCentAxis->GetXmax()))); 
   }
 
 
