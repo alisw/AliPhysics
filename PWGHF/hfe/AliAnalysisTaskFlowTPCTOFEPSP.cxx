@@ -2142,7 +2142,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
 	  if(fVariableMultiplicity==0){
 	    if(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()) {
 	      hfetrack.SetMulitplicity(((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors());
-	      printf("SPD vertex contributors %d and number of ESD tracks %d\n",((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors(),((AliESDEvent*)fInputEvent)->GetNumberOfESDTracks());
+	      //printf("SPD vertex contributors %d and number of ESD tracks %d\n",((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetNContributors(),((AliESDEvent*)fInputEvent)->GetNumberOfESDTracks());
 	    }
 	  }
 	  if(fVariableMultiplicity==1){
