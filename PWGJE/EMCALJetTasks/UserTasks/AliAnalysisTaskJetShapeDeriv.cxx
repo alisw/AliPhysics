@@ -44,6 +44,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fMinFractionShared(0),
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
+  fJetMassVarType(kMass),
   fTreeJetBkg(),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -125,6 +126,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fMinFractionShared(0),
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
+  fJetMassVarType(kMass),
   fTreeJetBkg(0),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -218,13 +220,23 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   const Double_t minPt = -50.;
   const Double_t maxPt = 150.;
 
-  const Int_t nBinsM  = 100;
-  const Double_t minM = -20.;
-  const Double_t maxM = 80.;
+  Int_t nBinsM  = 100;
+  Double_t minM = -20.;
+  Double_t maxM = 80.;
+  if(fJetMassVarType==kRatMPt) {
+    nBinsM = 100;
+    minM   = -0.2;
+    maxM   = 0.8;
+  }
 
-  // const Int_t nBinsMT  = 50;
-  // const Double_t minMT = 0.;
-  // const Double_t maxMT = 50.;
+  Int_t nBinsDM  = 100;
+  Double_t minDM = -50.;
+  Double_t maxDM = 50.;
+  if(fJetMassVarType==kRatMPt) {
+    nBinsDM = 100;
+    minDM   = -0.5;
+    maxDM   = 0.5;
+  }
 
   const Int_t nBinsDRToLJ  = 20; //distance to leading jet in Pb-Pb only event
   const Double_t minDRToLJ = 0.;
@@ -246,45 +258,47 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
 
   TString histName = "";
   TString histTitle = "";
+  TString varName = "#it{M}_{jet}";
+  if(fJetMassVarType==kRatMPt) varName = "#it{M}_{jet}/#it{p}_{T,jet}";
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     histName = Form("fh2MSubMatch_%d",i);
-    histTitle = Form("fh2MSubMatch_%d;#it{M}_{sub};match",i);
+    histTitle = Form("fh2MSubMatch_%d;%s;match",i,varName.Data());
     fh2MSubMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,2,-0.5,1.5);
     fOutput->Add(fh2MSubMatch[i]);
 
     histName = Form("fh2MSubPtRawAll_%d",i);
-    histTitle = Form("fh2MSubPtRawAll_%d;#it{M}_{sub};#it{p}_{T}",i);
+    histTitle = Form("fh2MSubPtRawAll_%d;%s;#it{p}_{T}",i,varName.Data());
     fh2MSubPtRawAll[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt);
     fOutput->Add(fh2MSubPtRawAll[i]);
 
     histName = Form("fh3MSubPtRawDRMatch_%d",i);
-    histTitle = Form("fh3MSubPtRawDRMatch_%d;#it{M}_{sub};#it{p}_{T}",i);
+    histTitle = Form("fh3MSubPtRawDRMatch_%d;%s;#it{p}_{T}",i,varName.Data());
     fh3MSubPtRawDRMatch[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
     fOutput->Add(fh3MSubPtRawDRMatch[i]);
 
     histName = Form("fh3MSubPtTrueDR_%d",i);
-    histTitle = Form("fh3MSubPtTrueDR_%d;#it{M}_{sub};#it{p}_{T}",i);
+    histTitle = Form("fh3MSubPtTrueDR_%d;%s;#it{p}_{T}",i,varName.Data());
     fh3MSubPtTrueDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
     fOutput->Add(fh3MSubPtTrueDR[i]);
 
     histName = Form("fh3MTruePtTrueDR_%d",i);
-    histTitle = Form("fh3MTruePtTrueDR_%d;#it{M}_{sub};#it{p}_{T}",i);
+    histTitle = Form("fh3MTruePtTrueDR_%d;%s;#it{p}_{T}",i,varName.Data());
     fh3MTruePtTrueDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
     fOutput->Add(fh3MTruePtTrueDR[i]);
 
     histName = Form("fh3PtTrueDeltaMDR_%d",i);
-    histTitle = Form("fh3PtTrueDeltaMDR_%d;#it{p}_{T,true};#it{M}_{sub}-#it{M}_{true}",i);
-    fh3PtTrueDeltaMDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,100,-50.,50.,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
+    histTitle = Form("fh3PtTrueDeltaMDR_%d;#it{p}_{T,true};#Delta %s",i,varName.Data());
+    fh3PtTrueDeltaMDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsDM,minDM,maxDM,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
     fOutput->Add(fh3PtTrueDeltaMDR[i]);
 
     histName = Form("fh3PtTrueDeltaMRelDR_%d",i);
-    histTitle = Form("fh3PtTrueDeltaMRelDR_%d;#it{p}_{T,true};(#it{M}_{sub}-#it{M}_{true})/#it{M}_{true}",i);
+    histTitle = Form("fh3PtTrueDeltaMRelDR_%d;#it{p}_{T,true};Rel #Delta %s",i,varName.Data());
     fh3PtTrueDeltaMRelDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,200,-1.,1.,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
     fOutput->Add(fh3PtTrueDeltaMRelDR[i]);
 
     histName = Form("fhnMassResponse_%d",i);
-    histTitle = Form("fhnMassResponse_%d;#it{M}_{sub};#it{M}_{true};#it{p}_{T,sub};#it{p}_{T,true};#it{M}_{sub}^{tagged}",i);
+    histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#Delta R_{LJ}",i,varName.Data(),varName.Data());
     fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnMassResponse[i]);
 
@@ -388,11 +402,17 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
       jet2 = NULL;
-      //      jet1T = NULL;
-      //   jet2T = NULL;
-      //      if(jet1->GetTagStatus()>0) jet1T = jet1->GetTaggedJet();
+
+      Double_t mjet1 = jet1->GetSecondOrderSubtracted();
+      Double_t ptjet1 = jet1->Pt()-jetCont->GetRhoVal()*jet1->Area();
+      Double_t var = mjet1;
+      if(fJetMassVarType==kRatMPt) {
+	if(ptjet1>0. || ptjet1<0.) var = mjet1/ptjet1;
+	else var = -999.;
+      }
+
       //Fill histograms for all AA jets
-      fh2MSubPtRawAll[fCentBin]->Fill(jet1->GetSecondOrderSubtracted(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area());
+      fh2MSubPtRawAll[fCentBin]->Fill(var,ptjet1);
       fh2PtRawSubFacV1[fCentBin]->Fill(jet1->Pt(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
       fh2PtCorrSubFacV1[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
       fh2NConstSubFacV1[fCentBin]->Fill(jet1->GetNumberOfTracks(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
@@ -425,20 +445,20 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       //      if(fMatch==1 && jet2->GetTagStatus()>0) jet2T = jet2->GetTaggedJet();
 
       //Fill histograms for matched jets
-      fh2MSubMatch[fCentBin]->Fill(jet1->GetSecondOrderSubtracted(),fMatch);
+      fh2MSubMatch[fCentBin]->Fill(var,fMatch);
       if(fMatch==1) {
 	Double_t drToLJ = -1.;
 	if(jetL) drToLJ = jet1->DeltaR(jetL);
-	fh3MSubPtRawDRMatch[fCentBin]->Fill(jet1->GetSecondOrderSubtracted(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area(),drToLJ);
+	fh3MSubPtRawDRMatch[fCentBin]->Fill(var,ptjet1,drToLJ);
 	if(jet2) {
-	  fh3MSubPtTrueDR[fCentBin]->Fill(jet1->GetSecondOrderSubtracted(),jet2->Pt(),drToLJ);
-	  fh3MTruePtTrueDR[fCentBin]->Fill(jet2->M(),jet2->Pt(),drToLJ);
-	  fh3PtTrueDeltaMDR[fCentBin]->Fill(jet2->Pt(),jet1->GetSecondOrderSubtracted()-jet2->M(),drToLJ);
-	  if(jet2->M()>0.) fh3PtTrueDeltaMRelDR[fCentBin]->Fill(jet2->Pt(),(jet1->GetSecondOrderSubtracted()-jet2->M())/jet2->M(),drToLJ);
-	  // Double_t mJet1Tagged = -1.;
-	  // if(jet1T) mJet1Tagged = jet1T->M();
-	  Double_t var[5] = {jet1->GetSecondOrderSubtracted(),jet2->M(),jet1->Pt()-jetCont->GetRhoVal()*jet1->Area(),jet2->Pt(),drToLJ};
-	  fhnMassResponse[fCentBin]->Fill(var);
+	  Double_t var2 = -999.;
+	  if(jet2->Pt()>0. || jet2->Pt()<0.) var2 = jet2->M()/jet2->Pt();
+	  fh3MSubPtTrueDR[fCentBin]->Fill(var,jet2->Pt(),drToLJ);
+	  fh3MTruePtTrueDR[fCentBin]->Fill(var2,jet2->Pt(),drToLJ);
+	  fh3PtTrueDeltaMDR[fCentBin]->Fill(jet2->Pt(),var-var2,drToLJ);
+	  if(jet2->M()>0.) fh3PtTrueDeltaMRelDR[fCentBin]->Fill(jet2->Pt(),(var-var2)/var2,drToLJ);
+	  Double_t varsp[5] = {var,var2,ptjet1,jet2->Pt(),drToLJ};
+	  fhnMassResponse[fCentBin]->Fill(varsp);
 	}
       }
 

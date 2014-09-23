@@ -53,6 +53,18 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
   fh2MassVsNConstJet1All(0),
   fh2MassVsNConstJet1Tagged(0),
   fh2MassVsNConstJet1TaggedMatch(0),
+  fh3PtJet1VsRatVsLeadPtAllSel(0),
+  fh3PtJet1VsRatVsLeadPtTagged(0),
+  fh3PtJet1VsRatVsLeadPtTaggedMatch(0),
+  fpPtVsRatJet1All(0),
+  fpPtVsRatJet1Tagged(0),
+  fpPtVsRatJet1TaggedMatch(0),
+  fh2RatVsAreaJet1All(0),
+  fh2RatVsAreaJet1Tagged(0),
+  fh2RatVsAreaJet1TaggedMatch(0),
+  fh2RatVsNConstJet1All(0),
+  fh2RatVsNConstJet1Tagged(0),
+  fh2RatVsNConstJet1TaggedMatch(0),
   fh2EtMassOverEtRSq(0)
 {
   // Default constructor.
@@ -69,6 +81,20 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
   fh2MassVsNConstJet1All               = new TH2F*[fNcentBins];
   fh2MassVsNConstJet1Tagged            = new TH2F*[fNcentBins];
   fh2MassVsNConstJet1TaggedMatch       = new TH2F*[fNcentBins];
+
+  fh3PtJet1VsRatVsLeadPtAllSel        = new TH3F*[fNcentBins];
+  fh3PtJet1VsRatVsLeadPtTagged        = new TH3F*[fNcentBins];
+  fh3PtJet1VsRatVsLeadPtTaggedMatch   = new TH3F*[fNcentBins];
+  fpPtVsRatJet1All                    = new TProfile*[fNcentBins];
+  fpPtVsRatJet1Tagged                 = new TProfile*[fNcentBins];
+  fpPtVsRatJet1TaggedMatch            = new TProfile*[fNcentBins];
+  fh2RatVsAreaJet1All                 = new TH2F*[fNcentBins];
+  fh2RatVsAreaJet1Tagged              = new TH2F*[fNcentBins];
+  fh2RatVsAreaJet1TaggedMatch         = new TH2F*[fNcentBins];
+  fh2RatVsNConstJet1All               = new TH2F*[fNcentBins];
+  fh2RatVsNConstJet1Tagged            = new TH2F*[fNcentBins];
+  fh2RatVsNConstJet1TaggedMatch       = new TH2F*[fNcentBins];
+
   fh2EtMassOverEtRSq                   = new TH2F*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
@@ -84,6 +110,20 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
     fh2MassVsNConstJet1All[i]               = 0;
     fh2MassVsNConstJet1Tagged[i]            = 0;
     fh2MassVsNConstJet1TaggedMatch[i]       = 0;
+
+    fh3PtJet1VsRatVsLeadPtAllSel[i]        = 0;
+    fh3PtJet1VsRatVsLeadPtTagged[i]        = 0;
+    fh3PtJet1VsRatVsLeadPtTaggedMatch[i]   = 0;
+    fpPtVsRatJet1All[i]                    = 0;
+    fpPtVsRatJet1Tagged[i]                 = 0;
+    fpPtVsRatJet1TaggedMatch[i]            = 0;
+    fh2RatVsAreaJet1All[i]                 = 0;
+    fh2RatVsAreaJet1Tagged[i]              = 0;
+    fh2RatVsAreaJet1TaggedMatch[i]         = 0;
+    fh2RatVsNConstJet1All[i]               = 0;
+    fh2RatVsNConstJet1Tagged[i]            = 0;
+    fh2RatVsNConstJet1TaggedMatch[i]       = 0;
+
     fh2EtMassOverEtRSq[i]                   = 0;
   }
 
@@ -108,6 +148,18 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   fh2MassVsNConstJet1All(0),
   fh2MassVsNConstJet1Tagged(0),
   fh2MassVsNConstJet1TaggedMatch(0),
+  fh3PtJet1VsRatVsLeadPtAllSel(0),
+  fh3PtJet1VsRatVsLeadPtTagged(0),
+  fh3PtJet1VsRatVsLeadPtTaggedMatch(0),
+  fpPtVsRatJet1All(0),
+  fpPtVsRatJet1Tagged(0),
+  fpPtVsRatJet1TaggedMatch(0),
+  fh2RatVsAreaJet1All(0),
+  fh2RatVsAreaJet1Tagged(0),
+  fh2RatVsAreaJet1TaggedMatch(0),
+  fh2RatVsNConstJet1All(0),
+  fh2RatVsNConstJet1Tagged(0),
+  fh2RatVsNConstJet1TaggedMatch(0),
   fh2EtMassOverEtRSq(0)
 {
   // Standard constructor.
@@ -124,6 +176,20 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   fh2MassVsNConstJet1All               = new TH2F*[fNcentBins];
   fh2MassVsNConstJet1Tagged            = new TH2F*[fNcentBins];
   fh2MassVsNConstJet1TaggedMatch       = new TH2F*[fNcentBins];
+
+  fh3PtJet1VsRatVsLeadPtAllSel        = new TH3F*[fNcentBins];
+  fh3PtJet1VsRatVsLeadPtTagged        = new TH3F*[fNcentBins];
+  fh3PtJet1VsRatVsLeadPtTaggedMatch   = new TH3F*[fNcentBins];
+  fpPtVsRatJet1All                    = new TProfile*[fNcentBins];
+  fpPtVsRatJet1Tagged                 = new TProfile*[fNcentBins];
+  fpPtVsRatJet1TaggedMatch            = new TProfile*[fNcentBins];
+  fh2RatVsAreaJet1All                 = new TH2F*[fNcentBins];
+  fh2RatVsAreaJet1Tagged              = new TH2F*[fNcentBins];
+  fh2RatVsAreaJet1TaggedMatch         = new TH2F*[fNcentBins];
+  fh2RatVsNConstJet1All               = new TH2F*[fNcentBins];
+  fh2RatVsNConstJet1Tagged            = new TH2F*[fNcentBins];
+  fh2RatVsNConstJet1TaggedMatch       = new TH2F*[fNcentBins];
+
   fh2EtMassOverEtRSq                   = new TH2F*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
@@ -139,6 +205,20 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
     fh2MassVsNConstJet1All[i]               = 0;
     fh2MassVsNConstJet1Tagged[i]            = 0;
     fh2MassVsNConstJet1TaggedMatch[i]       = 0;
+
+    fh3PtJet1VsRatVsLeadPtAllSel[i]        = 0;
+    fh3PtJet1VsRatVsLeadPtTagged[i]        = 0;
+    fh3PtJet1VsRatVsLeadPtTaggedMatch[i]   = 0;
+    fpPtVsRatJet1All[i]                    = 0;
+    fpPtVsRatJet1Tagged[i]                 = 0;
+    fpPtVsRatJet1TaggedMatch[i]            = 0;
+    fh2RatVsAreaJet1All[i]                 = 0;
+    fh2RatVsAreaJet1Tagged[i]              = 0;
+    fh2RatVsAreaJet1TaggedMatch[i]         = 0;
+    fh2RatVsNConstJet1All[i]               = 0;
+    fh2RatVsNConstJet1Tagged[i]            = 0;
+    fh2RatVsNConstJet1TaggedMatch[i]       = 0;
+
     fh2EtMassOverEtRSq[i]                   = 0;
   }
 
@@ -168,6 +248,10 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
   const Int_t nBinsM  = 100;
   const Double_t minM = -20.;
   const Double_t maxM = 80.;
+
+  const Int_t nBinsR  = 100;
+  const Double_t minR = -0.2;
+  const Double_t maxR = 0.8;
 
   const Int_t nBinsArea = 50;
   const Double_t minArea = 0.;
@@ -232,13 +316,75 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
 
     histName = TString::Format("fh2MassVsNConstJet1Tagged_%d",i);
     histTitle = TString::Format("%s;#it{M}_{jet1};#it{N}_{constituents}",histName.Data());
-    fh2MassVsNConstJet1Tagged[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsNConst,minNConst,maxNConst);
+    fh2MassVsNConstJet1Tagged[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsNConst,minNConst,maxNConst);
     fOutput->Add(fh2MassVsNConstJet1Tagged[i]);
 
     histName = TString::Format("fh2MassVsNConstJet1TaggedMatch_%d",i);
     histTitle = TString::Format("%s;#it{M}_{jet1};#it{N}_{constituents}",histName.Data());
-    fh2MassVsNConstJet1TaggedMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsNConst,minNConst,maxNConst);
+    fh2MassVsNConstJet1TaggedMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsNConst,minNConst,maxNConst);
     fOutput->Add(fh2MassVsNConstJet1TaggedMatch[i]);
+
+    //
+    histName = TString::Format("fh3PtJet1VsRatVsLeadPtAllSel_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1}/#it{p}_{T,jet1};#it{p}_{T,lead trk}",histName.Data());
+    fh3PtJet1VsRatVsLeadPtAllSel[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,20,0.,20.);
+    fOutput->Add(fh3PtJet1VsRatVsLeadPtAllSel[i]);
+
+    histName = TString::Format("fh3PtJet1VsRatVsLeadPtTagged_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1}/#it{p}_{T,jet1};#it{p}_{T,lead trk}",histName.Data());
+    fh3PtJet1VsRatVsLeadPtTagged[i] =  new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,20,0.,20.);
+    fOutput->Add(fh3PtJet1VsRatVsLeadPtTagged[i]);
+
+    histName = TString::Format("fh3PtJet1VsRatVsLeadPtTaggedMatch_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1}/#it{p}_{T,jet1};#it{p}_{T,lead trk}",histName.Data());
+    fh3PtJet1VsRatVsLeadPtTaggedMatch[i] =  new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,20,0.,20.);
+    fOutput->Add(fh3PtJet1VsRatVsLeadPtTaggedMatch[i]);
+
+    histName = TString::Format("fpPtVsRatJet1All_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};Avg #it{M}_{jet1}/#it{p}_{T,jet1}",histName.Data());
+    fpPtVsRatJet1All[i] = new TProfile(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt);
+    fOutput->Add(fpPtVsRatJet1All[i]);
+
+    histName = TString::Format("fpPtVsRatJet1Tagged_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};Avg #it{M}_{jet1}/#it{p}_{T,jet1}",histName.Data());
+    fpPtVsRatJet1Tagged[i] = new TProfile(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt);
+    fOutput->Add(fpPtVsRatJet1Tagged[i]);
+
+    histName = TString::Format("fpPtVsRatJet1TaggedMatch_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};Avg #it{M}_{jet1}/#it{p}_{T,jet1}",histName.Data());
+    fpPtVsRatJet1TaggedMatch[i] = new TProfile(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt);
+    fOutput->Add(fpPtVsRatJet1TaggedMatch[i]);
+
+    histName = TString::Format("fh2RatVsAreaJet1All_%d",i);
+    histTitle = TString::Format("%s;#it{M}_{jet1}/#it{p}_{T,jet1};#it{A}",histName.Data());
+    fh2RatVsAreaJet1All[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsArea,minArea,maxArea);
+    fOutput->Add(fh2RatVsAreaJet1All[i]);
+
+    histName = TString::Format("fh2RatVsAreaJet1Tagged_%d",i);
+    histTitle = TString::Format("%s;#it{M}_{jet1}/#it{p}_{T,jet1};#it{A}",histName.Data());
+    fh2RatVsAreaJet1Tagged[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsArea,minArea,maxArea);
+    fOutput->Add(fh2RatVsAreaJet1Tagged[i]);
+
+    histName = TString::Format("fh2RatVsAreaJet1TaggedMatch_%d",i);
+    histTitle = TString::Format("%s;#it{M}_{jet1}/#it{p}_{T,jet1};#it{A}",histName.Data());
+    fh2RatVsAreaJet1TaggedMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsArea,minArea,maxArea);
+    fOutput->Add(fh2RatVsAreaJet1TaggedMatch[i]);
+
+    histName = TString::Format("fh2RatVsNConstJet1All_%d",i);
+    histTitle = TString::Format("%s;#it{M}_{jet1}/#it{p}_{T,jet1};#it{N}_{constituents}",histName.Data());
+    fh2RatVsNConstJet1All[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsNConst,minNConst,maxNConst);
+    fOutput->Add(fh2RatVsNConstJet1All[i]);
+
+    histName = TString::Format("fh2RatVsNConstJet1Tagged_%d",i);
+    histTitle = TString::Format("%s;#it{M}_{jet1}/#it{p}_{T,jet1};#it{N}_{constituents}",histName.Data());
+    fh2RatVsNConstJet1Tagged[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsNConst,minNConst,maxNConst);
+    fOutput->Add(fh2RatVsNConstJet1Tagged[i]);
+
+    histName = TString::Format("fh2RatVsNConstJet1TaggedMatch_%d",i);
+    histTitle = TString::Format("%s;#it{M}_{jet1}/#it{p}_{T,jet1};#it{N}_{constituents}",histName.Data());
+    fh2RatVsNConstJet1TaggedMatch[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsR,minR,maxR,nBinsNConst,minNConst,maxNConst);
+    fOutput->Add(fh2RatVsNConstJet1TaggedMatch[i]);
+
 
     histName = TString::Format("fh2EtMassOverEtRSq_%d",i);
     histTitle = TString::Format("%s;#it{E}_{T};(#it{M}/(#it{E}_{T}#it{R}))^{2}",histName.Data());
@@ -283,10 +429,17 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 
       Double_t ptJet1 = jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();
       Double_t mJet1 = GetJetMass(jet1);
+      Double_t rat = -1.;
+      if(ptJet1<0. || ptJet1<0.) rat = mJet1/ptJet1;
       fh3PtJet1VsMassVsLeadPtAllSel[fCentBin]->Fill(ptJet1,mJet1,jet1->MaxTrackPt());
       fpPtVsMassJet1All[fCentBin]->Fill(ptJet1,mJet1);
       fh2MassVsAreaJet1All[fCentBin]->Fill(mJet1,jet1->Area());
       fh2MassVsNConstJet1All[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
+
+      fh3PtJet1VsRatVsLeadPtAllSel[fCentBin]->Fill(ptJet1,rat,jet1->MaxTrackPt());
+      fpPtVsRatJet1All[fCentBin]->Fill(ptJet1,rat);
+      fh2RatVsAreaJet1All[fCentBin]->Fill(rat,jet1->Area());
+      fh2RatVsNConstJet1All[fCentBin]->Fill(rat,jet1->GetNumberOfConstituents());
       
       if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
 	continue;
@@ -296,12 +449,22 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       fh2MassVsAreaJet1Tagged[fCentBin]->Fill(mJet1,jet1->Area());
       fh2MassVsNConstJet1Tagged[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
 
+      fh3PtJet1VsRatVsLeadPtTagged[fCentBin]->Fill(ptJet1,rat,jet1->MaxTrackPt());
+      fpPtVsRatJet1Tagged[fCentBin]->Fill(ptJet1,rat);
+      fh2RatVsAreaJet1Tagged[fCentBin]->Fill(rat,jet1->Area());
+      fh2RatVsNConstJet1Tagged[fCentBin]->Fill(rat,jet1->GetNumberOfConstituents());
+
       Double_t fraction = jetCont->GetFractionSharedPt(jet1);
       if(fMinFractionShared>0. && fraction>fMinFractionShared) {
 	fh3PtJet1VsMassVsLeadPtTaggedMatch[fCentBin]->Fill(ptJet1,mJet1,jet1->MaxTrackPt());
 	fpPtVsMassJet1TaggedMatch[fCentBin]->Fill(ptJet1,mJet1);
 	fh2MassVsAreaJet1TaggedMatch[fCentBin]->Fill(mJet1,jet1->Area());
 	fh2MassVsNConstJet1TaggedMatch[fCentBin]->Fill(mJet1,jet1->GetNumberOfConstituents());
+
+	fh3PtJet1VsRatVsLeadPtTaggedMatch[fCentBin]->Fill(ptJet1,rat,jet1->MaxTrackPt());
+	fpPtVsRatJet1TaggedMatch[fCentBin]->Fill(ptJet1,rat);
+	fh2RatVsAreaJet1TaggedMatch[fCentBin]->Fill(rat,jet1->Area());
+	fh2RatVsNConstJet1TaggedMatch[fCentBin]->Fill(rat,jet1->GetNumberOfConstituents());
       }
       
       Double_t Et2 = mJet1*mJet1 + ptJet1*ptJet1;
