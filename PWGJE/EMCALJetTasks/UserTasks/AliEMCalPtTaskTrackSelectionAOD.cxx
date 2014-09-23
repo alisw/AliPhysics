@@ -29,6 +29,8 @@
 #include <AliESDtrack.h>
 #include <AliEMCalPtTaskTrackSelectionAOD.h>
 
+ClassImp(EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD)
+
 namespace EMCalTriggerPtAnalysis {
 
 	//______________________________________________________________________________
