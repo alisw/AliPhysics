@@ -23,6 +23,7 @@ class TTree;
 class AliExternalTrackParam;
 class AliTPCPointCorrection;
 class AliTPCseed;
+class AliVEvent;
 
 class AliTPCcalibAlign:public AliTPCcalibBase {
 public:
@@ -35,13 +36,13 @@ public:
   AliTPCcalibAlign(const AliTPCcalibAlign &align);
   //
   virtual ~AliTPCcalibAlign();
-  void     Process(AliESDEvent *event);
+  void     Process(AliVEvent *event);
   virtual void ProcessSeed(AliTPCseed *track);
   virtual void Process(AliTPCseed */*track*/){ return ;}
   virtual void Analyze();
   virtual void Terminate();  
   virtual Long64_t Merge(TCollection* const list);
-  void ExportTrackPoints(AliESDEvent *event);
+  void ExportTrackPoints(AliVEvent *event);
   //
   //
   void MakeReportDy(TFile *output); 
@@ -90,7 +91,8 @@ public:
 //   Bool_t GetTransformationCovar6(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
   void Add(AliTPCcalibAlign * align);
   const Int_t *GetPoints() const {return fPoints;}
-  void     Process(AliESDtrack *const track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  //void     Process(AliESDtrack *const track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
+  void     Process(AliVTrack *const track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   TLinearFitter* GetOrMakeFitter12(Int_t s1,Int_t s2);
   TLinearFitter* GetOrMakeFitter9(Int_t s1,Int_t s2);
   TLinearFitter* GetOrMakeFitter6(Int_t s1,Int_t s2);

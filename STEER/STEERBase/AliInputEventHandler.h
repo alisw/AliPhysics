@@ -14,7 +14,6 @@
 #include <TTree.h>
 
 
-class AliVEvent;
 class AliVCuts;
 class AliRunTag;
 class AliEventTag;

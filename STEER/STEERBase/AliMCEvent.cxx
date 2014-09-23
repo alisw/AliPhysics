@@ -498,10 +498,7 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
     //
 
     if (fExternal) {
-       
-  
 	return ((AliVParticle*) (fMCParticles->At(i)));
-  
     }
     
     //
@@ -950,6 +947,15 @@ void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
      Int_t mother=0;
      mother = mcpart->GetMother();
    
+   while(nameGen.IsWhitespace()){
+     
+     AliMCParticle* mcpart = (AliMCParticle*) (GetTrack(index));
+   
+    if(!mcpart){
+      printf("AliMCEvent-BREAK: No valid AliMCParticle at label %i\n",index);
+      break;
+    }
+    Int_t mother = mcpart->GetMother();
     if(mother<0){
       printf("AliMCEvent - BREAK: Reached primary particle without valid mother\n");
       break;
@@ -965,7 +971,7 @@ void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
    }
    
    return 1;
-   }
+}
 
 void  AliMCEvent::SetParticleArray(TClonesArray* mcParticles) 
   {

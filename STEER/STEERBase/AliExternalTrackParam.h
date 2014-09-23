@@ -21,7 +21,7 @@
 #include "TMath.h"
 
 #include "AliVTrack.h"
-
+#include "AliVMisc.h"
 const Double_t kVeryBig=1./kAlmost0;
 const Double_t kMostProbablePt=0.35;
 
@@ -43,6 +43,10 @@ class AliExternalTrackParam: public AliVTrack {
 			const Double_t param[5], const Double_t covar[15]);
   AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
 			Double_t cv[21],Short_t sign);
+  // constructor for reinitialisation of vtable
+  AliExternalTrackParam( AliVConstructorReinitialisationFlag f) :AliVTrack(f), fX(), fAlpha(){}
+  void Reinitialize() { new (this) AliExternalTrackParam( AliVReinitialize ); }
+
   virtual ~AliExternalTrackParam(){}
   void CopyFromVTrack(const AliVTrack *vTrack);
   
@@ -85,7 +89,9 @@ class AliExternalTrackParam: public AliVTrack {
   Double_t GetY()    const {return fP[0];}
   Double_t GetZ()    const {return fP[1];}
   Double_t GetSnp()  const {return fP[2];}
-  Double_t GetTgl()  const {return fP[3];}
+  virtual Double_t GetTgl()  const {return fP[3];}
+  using AliVTrack::GetImpactParameters;
+  virtual void GetImpactParameters(Float_t& ,Float_t&) const {}
   Double_t GetSigned1Pt()  const {return fP[4];}
 
   Double_t GetSigmaY2() const {return fC[0];}
@@ -218,7 +224,7 @@ class AliExternalTrackParam: public AliVTrack {
   Bool_t ConstrainToVertex(const AliVVertex* vtx, Double_t b[3]);
   
   void GetDirection(Double_t d[3]) const;
-  Bool_t GetPxPyPz(Double_t *p) const;
+  Bool_t GetPxPyPz(Double_t *p) const;  
   Bool_t GetXYZ(Double_t *p) const;
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const;
   Bool_t GetPxPyPzAt(Double_t x, Double_t b, Double_t p[3]) const;
@@ -253,6 +259,19 @@ class AliExternalTrackParam: public AliVTrack {
 
   static Bool_t  GetUseLogTermMS()                {return fgUseLogTermMS;} 
   static void    SetUseLogTermMS(Bool_t v=kTRUE)  {fgUseLogTermMS = v;} 
+
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam & ) const {return 0;}
 
  protected:
   AliExternalTrackParam(const AliVTrack *vTrack);

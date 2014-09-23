@@ -13,6 +13,7 @@
 
 #include "AliVParticle.h"
 #include "AliPID.h"
+#include "AliVMisc.h"
 
 class AliVEvent;
 class AliVVertex;
@@ -70,6 +71,8 @@ public:
   virtual ~AliVTrack() { }
   AliVTrack(const AliVTrack& vTrack); 
   AliVTrack& operator=(const AliVTrack& vTrack);
+  // constructor for reinitialisation of vtable
+  AliVTrack( AliVConstructorReinitialisationFlag f) :AliVParticle(f){}
 
   virtual const AliVEvent* GetEvent() const {return 0;}
   virtual Int_t    GetID() const = 0;
@@ -89,6 +92,13 @@ public:
   virtual void     SetDetectorPID(const AliDetectorPID */*pid*/) {;}
   virtual const    AliDetectorPID* GetDetectorPID() const { return 0x0; }
   virtual Double_t GetTRDchi2()          const { return -1;}
+  virtual Int_t    GetNumberOfClusters() const {return 0;}
+
+  virtual Float_t GetTPCCrossedRows() const {return 0;}
+  virtual void GetImpactParameters(Float_t [], Float_t []) const {;}
+  virtual void GetImpactParameters(Float_t &/*&xy*/,Float_t &/*&z*/) const {;}
+  virtual void GetImpactParametersTPC(Float_t &/*&xy*/,Float_t &/*&z*/) const {;}
+  virtual void GetImpactParametersTPC(Float_t [] /*p[2]*/, Float_t [] /*cov[3]*/) const {;}
   
   virtual Int_t GetEMCALcluster()     const {return kEMCALNoMatch;}
   virtual void SetEMCALcluster(Int_t)       {;}
@@ -117,6 +127,7 @@ public:
   virtual UShort_t  GetTPCsignalN()      const {return 0 ;}
   virtual Double_t  GetTPCmomentum()     const {return 0.;}
   virtual Double_t  GetTPCTgl()          const {return 0.;}
+  virtual Double_t  GetTgl()             const {return 0.;}
   virtual Double_t  GetTOFsignal()       const {return 0.;}
   virtual Double_t  GetTOFsignalTunedOnData() const {return 0.;}
   virtual Double_t  GetHMPIDsignal()     const {return 0.;}
@@ -132,8 +143,13 @@ public:
   virtual void GetHMPIDmip(Float_t &/*x*/, Float_t &/*y*/, Int_t &/*q*/,Int_t &/*nph*/) const {;}
   
   virtual Bool_t GetOuterHmpPxPyPz(Double_t */*p*/) const {return kFALSE;}
-  
-  virtual void      GetIntegratedTimes(Double_t */*times*/, Int_t nspec=AliPID::kSPECIES) const;
+
+  virtual const AliExternalTrackParam * GetInnerParam() const { return NULL;}
+  virtual const AliExternalTrackParam * GetOuterParam() const { return NULL;}
+  virtual const AliExternalTrackParam * GetTPCInnerParam() const { return NULL;}
+  virtual const AliExternalTrackParam * GetConstrainedParam() const {return NULL;}
+
+  virtual void      GetIntegratedTimes(Double_t */*times*/, Int_t nspec=AliPID::kSPECIESC) const;
   virtual Double_t  GetTRDmomentum(Int_t /*plane*/, Double_t */*sp*/=0x0) const {return 0.;}
   virtual void      GetHMPIDpid(Double_t */*p*/) const {;}
   virtual Double_t  GetIntegratedLength() const { return 0.;}
@@ -152,6 +168,37 @@ public:
   virtual void     SetID(Short_t /*id*/) {;}
   virtual Int_t    GetTOFBunchCrossing(Double_t = 0, Bool_t = kFALSE) const { return kTOFBCNA;}
   virtual const AliTOFHeader *GetTOFHeader() const {return NULL;};
+
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam& ) const {return 0;}
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam& ) const {return 0;}
+
+  virtual Int_t             GetKinkIndex(Int_t /*i*/) const { return 0;}
+  virtual Double_t          GetSigned1Pt()         const { return 0;}
+  virtual Bool_t            IsOn(Int_t /*mask*/) const {return 0;}
+  virtual Double_t          GetX()    const {return 0;}
+  virtual Double_t          GetY()    const {return 0;}
+  virtual Double_t          GetZ()    const {return 0;}
+  virtual const Double_t   *GetParameter() const {return 0;}
+  virtual Double_t          GetAlpha() const {return 0;}
+  virtual UShort_t          GetTPCncls(Int_t /*row0*/=0, Int_t /*row1*/=159) const {return 0;}
+  virtual Double_t          GetTOFsignalDz() const {return 0;}
+  virtual Double_t          GetP() const {return 0;}
+  virtual void              GetDirection(Double_t []) const {;}
+  virtual Double_t          GetLinearD(Double_t /*xv*/, Double_t /*yv*/) const {return 0;}
+  virtual void              GetDZ(Double_t /*x*/,Double_t /*y*/,Double_t /*z*/,Double_t /*b*/,Float_t [] /*dz[2]*/) const {;}
+  virtual Char_t            GetITSclusters(Int_t */**idx*/) const {return 0;}
+  virtual UChar_t           GetTRDclusters(Int_t */**idx*/) const {return 0;}
+
 
   ClassDef(AliVTrack,1)  // base class for tracks
 };

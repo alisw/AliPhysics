@@ -20,6 +20,7 @@
 #include "AliTPCtrack.h"
 #include "AliComplexCluster.h"
 #include "AliPID.h"
+#include "AliVTPCseed.h"
 
 class TFile;
 class AliTPCParam;
@@ -30,7 +31,7 @@ class AliESD;
 class AliTPCCalPad;
 class TClonesArray;
 
-class AliTPCseed : public AliTPCtrack {
+class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
   public:  
      AliTPCseed();
      virtual ~AliTPCseed();
@@ -152,6 +153,11 @@ class AliTPCseed : public AliTPCtrack {
   void    SetPoolID(Int_t id) {fPoolID = id;}
   Int_t   GetPoolID()  const {return fPoolID;}
   Int_t   GetNumberOfClustersIndices();  // Should be in AliTPCtrack
+
+  // AliVVTPCseed interface
+
+  void CopyToTPCseed( AliTPCseed &s) const { s = *this; }
+
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}

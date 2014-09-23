@@ -118,6 +118,7 @@ set ( SRCS
     STEER/AliTransportMonitor.cxx
     STEER/AliParamList.cxx
     STEER/AliMCGenHandler.cxx
+    STEER/AliHLTTestInputHandler.cxx
     )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")

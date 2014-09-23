@@ -158,6 +158,8 @@ class AliAODEvent : public AliVEvent {
   {new((*fVertices)[fVertices->GetEntriesFast()]) AliAODVertex(*vtx); return fVertices->GetEntriesFast()-1;}
   
   // primary vertex
+  using AliVEvent::GetPrimaryVertex;
+  using AliVEvent::GetPrimaryVertexSPD;
   virtual AliAODVertex *GetPrimaryVertex() const { return GetVertex(0); }
   virtual AliAODVertex *GetPrimaryVertexSPD() const;
 
@@ -173,6 +175,7 @@ class AliAODEvent : public AliVEvent {
   // V0
   TClonesArray *GetV0s()                 const { return fV0s; }
   Int_t         GetNumberOfV0s()         const { return fV0s->GetEntriesFast(); }
+  using AliVEvent::GetV0;
   AliAODv0     *GetV0(Int_t nV0)         const { return (AliAODv0*)fV0s->UncheckedAt(nV0); }
   Int_t         AddV0(const AliAODv0* v0)
   {new((*fV0s)[fV0s->GetEntriesFast()]) AliAODv0(*v0); return fV0s->GetEntriesFast()-1;}
@@ -309,6 +312,7 @@ class AliAODEvent : public AliVEvent {
   //ZDC
   AliAODZDC   *GetZDCData() const { return fAODZDC; }
 
+  virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
   private :
 

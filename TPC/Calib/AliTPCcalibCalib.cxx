@@ -50,9 +50,15 @@
 #include "TTreeStream.h"
 #include "AliLog.h"
 #include "TTimeStamp.h"
-#include "AliESDEvent.h"
-#include "AliESDfriend.h"
-#include "AliESDtrack.h"
+//#include "AliESDEvent.h"
+//#include "AliESDfriend.h"
+//#include "AliESDtrack.h"
+
+#include "AliVEvent.h"
+#include "AliVfriendEvent.h"
+#include "AliVTrack.h"
+#include "AliVfriendTrack.h"
+
 #include "AliTracker.h"
 #include "AliTPCClusterParam.h"
 #include "AliTPCParam.h"
@@ -128,20 +134,21 @@ AliTPCcalibCalib::~AliTPCcalibCalib() {
 }
 
 
-void     AliTPCcalibCalib::Process(AliESDEvent *event){
+void     AliTPCcalibCalib::Process(AliVEvent *event){
   //
   // 
   //
   if (!event) {
     return;
   }  
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!ESDfriend) {
+  //AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  AliVfriendEvent *friendEvent=event->FindFriend();
+  if (!friendEvent) {
    return;
   }
-  if (ESDfriend->TestSkipBit()) return;
+  if (friendEvent->TestSkipBit()) return;
   if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
-  Int_t ntracks=ESDfriend->GetNumberOfTracks();   
+  Int_t ntracks=friendEvent->GetNumberOfTracks();
   //AliTPCcalibDB::Instance()->SetExBField(fMagF);
 
   //
@@ -149,14 +156,14 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
   //
 
   for (Int_t i=0;i<ntracks;++i) {
-    AliESDtrack *track = event->GetTrack(i);     
-    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*) ESDfriend->GetTrack(i);
+    AliVTrack *track = event->GetVTrack(i);
+    const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
     if (!friendTrack) continue;
     //track->SetFriendTrack(friendTrack);
-    fCurrentFriendTrack=friendTrack;
+    fCurrentFriendTrack=(AliVfriendTrack*)(friendTrack);
     const AliExternalTrackParam * trackIn  = track->GetInnerParam();
     const AliExternalTrackParam * trackOut = track->GetOuterParam();
-    AliExternalTrackParam * tpcOut   = (AliExternalTrackParam *)friendTrack->GetTPCOut();
+    AliExternalTrackParam * tpcOut   = (AliExternalTrackParam *)(friendTrack->GetTPCOut());
     if (!trackIn) continue;
     if (!trackOut) continue;
     if (!tpcOut) continue;   
@@ -172,7 +179,7 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
   return;
 }
 
-Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Float_t magesd){
+Bool_t  AliTPCcalibCalib::RefitTrack(AliVTrack *track, AliTPCseed *seed, Float_t magesd){
   //
   // Refit track
   // if magesd==0 forget the curvature
@@ -189,7 +196,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
 
   static Int_t streamCounter=0;
   streamCounter++;
-  AliESDfriendTrack *friendTrack = fCurrentFriendTrack;
+  AliVfriendTrack *friendTrack = fCurrentFriendTrack;
 
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
   AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();

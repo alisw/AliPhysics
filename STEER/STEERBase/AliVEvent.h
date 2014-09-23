@@ -26,15 +26,21 @@
 #include "AliTOFHeader.h"
 #include "AliVTrdTrack.h"
 #include "AliVMultiplicity.h"
+class AliVfriendEvent;
 class AliCentrality;
 class AliEventplane;
 class AliVVZERO;
 class AliVZDC;
 class AliVMFT;   // AU
+class AliESDkink;
+class AliESDv0;
+class AliESDVertex;
+class AliVTrack;
 
 class AliVEvent : public TObject {
 
 public:
+  enum EDataLayoutType { kESD, kMC, kAOD, kMixed, kFlat };
   enum EOfflineTriggerTypes { 
       kMB           = BIT(0), // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
       kINT7         = BIT(1), // V0AND trigger, offline V0 selection
@@ -143,6 +149,8 @@ public:
  
   // Tracks
   virtual AliVParticle *GetTrack(Int_t i) const = 0;
+  virtual AliVTrack    *GetVTrack(Int_t /*i*/) const {return NULL;}
+  //virtual AliVTrack    *GetVTrack(Int_t /*i*/) {return NULL;}
   //virtual Int_t        AddTrack(const AliVParticle *t) = 0;
   virtual Int_t        GetNumberOfTracks() const = 0;
   virtual Int_t        GetNumberOfV0s() const = 0;
@@ -203,8 +211,32 @@ public:
   virtual AliVTrdTrack* GetTrdTrack(Int_t /* iTrack */) const { return 0x0; }
 
   virtual Int_t     GetNumberOfESDTracks()  const { return 0; }
+  virtual Int_t     GetEventNumberInFile() const {return 0;}
 
-  ClassDef(AliVEvent,2)  // base class for AliEvent data
+  //used in calibration:
+  virtual Int_t            GetV0(AliESDv0&, Int_t /*iv0*/) const {return 0;}
+  virtual UInt_t           GetTimeStamp() const { return 0; }
+  virtual AliVfriendEvent* FindFriend() const { return 0; }
+  virtual UInt_t           GetEventSpecie() const { return 0; }
+  virtual AliESDkink*      GetKink(Int_t /*i*/) const { return NULL; }
+  virtual Int_t            GetNumberOfKinks() const { return 0; }
+
+  // Primary vertex
+  virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}
+  //virtual const AliVVertex   *GetPrimaryVertexSPD() const {return 0x0;}
+  //virtual const AliVVertex   *GetPrimaryVertexTPC() const {return 0x0;}
+  //virtual const AliVVertex   *GetPrimaryVertexTracks() const {return 0x0;}
+
+  virtual Int_t GetPrimaryVertex( AliESDVertex & ) const {return 0;}
+  virtual Int_t GetPrimaryVertexTPC( AliESDVertex & ) const {return 0;}
+  virtual Int_t GetPrimaryVertexSPD( AliESDVertex & ) const {return 0;}
+  virtual Int_t GetPrimaryVertexTracks( AliESDVertex & ) const {return 0;}
+
+  virtual void ConnectTracks() {}
+  virtual EDataLayoutType GetDataLayoutType() const = 0;
+  const char* Whoami();
+
+  ClassDef(AliVEvent, 3)  // base class for AliEvent data
 };
 #endif 
 

@@ -40,7 +40,7 @@ public:
   virtual void Clear(Option_t* option) {TNamed::Clear(option);}
 
 
-  ClassDef(AliVVertex,1)  // base class for vertices
+  ClassDef(AliVVertex,2)  // base class for vertices
 };
 
 #endif

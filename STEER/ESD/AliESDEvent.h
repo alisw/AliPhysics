@@ -47,16 +47,14 @@
 #include "AliESDTOFCluster.h"
 #include "AliESDTOFHit.h"
 #include "AliESDTOFMatch.h"
+#include "AliESDv0.h"
+#include "AliESDkink.h"
+#include "AliESDfriend.h"
 
-
-
-class AliESDfriend;
 class AliESDHLTtrack;
 class AliESDVertex;
 class AliESDPmdTrack;
 class AliESDFMD;
-class AliESDkink;
-class AliESDv0;
 class AliRawDataErrorLog;
 class AliESDRun;
 class AliESDTrdTrigger;
@@ -280,8 +278,7 @@ public:
 
   void SetESDfriend(const AliESDfriend *f) const;
   void GetESDfriend(AliESDfriend *f) const;
-
-
+  virtual AliESDfriend* FindFriend() const;
 
   void SetPrimaryVertexTPC(const AliESDVertex *vertex); 
   const AliESDVertex *GetPrimaryVertexTPC() const {return fTPCVertex;}
@@ -299,6 +296,30 @@ public:
 
   const AliESDVertex *GetPrimaryVertex() const;
 
+  //getters for calibration
+  Int_t GetPrimaryVertex (AliESDVertex &v) const {
+      if(!GetPrimaryVertex()) return -1;
+      v=*GetPrimaryVertex();
+      return 0;
+  }
+
+  Int_t GetPrimaryVertexTPC (AliESDVertex &v) const {
+      if(!GetPrimaryVertexTPC()) return -1;
+      v=*GetPrimaryVertexTPC();
+      return 0;
+  }
+
+  Int_t GetPrimaryVertexSPD (AliESDVertex &v) const {
+      if(!GetPrimaryVertexSPD()) return -1;
+      v=*GetPrimaryVertexSPD();
+      return 0;
+  }
+
+  Int_t GetPrimaryVertexTracks (AliESDVertex &v) const {
+      if(!GetPrimaryVertexTracks()) return -1;
+      v=*GetPrimaryVertexTracks();
+      return 0;
+  }
 
 
   void SetTOFHeader(const AliTOFHeader * tofEventTime);
@@ -531,7 +552,9 @@ public:
   void SetDAQAttributes(UInt_t attributes) {fDAQAttributes = attributes;}
   UInt_t GetDAQDetectorPattern() const {return fDAQDetectorPattern;}
   UInt_t GetDAQAttributes() const {return fDAQAttributes;}
-  
+
+  virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
+
 protected:
   AliESDEvent(const AliESDEvent&);
   static Bool_t ResetWithPlacementNew(TObject *pObject);

@@ -10,12 +10,16 @@
 #include <TObject.h>
 #include <TClonesArray.h>
 #include <AliExternalTrackParam.h>
+#include "AliVfriendTrack.h"
+#include "AliTrackPointArray.h"
 
-class AliTrackPointArray;
 class AliKalmanTrack;
 class TObjArrray;
+class AliTPCseed;
+
+
 //_____________________________________________________________________________
-class AliESDfriendTrack : public TObject {
+class AliESDfriendTrack : public TObject, public AliVfriendTrack {
 public:
   enum {
     kMaxITScluster=12,
@@ -41,7 +45,8 @@ public:
   AliKalmanTrack *GetTRDtrack() {return fTRDtrack;}
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
-  TObject * GetCalibObject(Int_t index);
+  TObject * GetCalibObject(Int_t index) const;
+
   //
   // parameters backup
   void SetTPCOut(const AliExternalTrackParam &param);
@@ -63,7 +68,11 @@ public:
   
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
-  Bool_t TestSkipBit() {return TestBit(23);}
+  Bool_t TestSkipBit() const {return TestBit(23);}
+
+  // VfriendTrack interface
+
+  Int_t GetTPCseed( AliTPCseed &) const;
 
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))
@@ -87,7 +96,7 @@ protected:
 private:
   AliESDfriendTrack &operator=(const AliESDfriendTrack & /* t */) {return *this;}
 
-  ClassDef(AliESDfriendTrack,6) //ESD friend track
+  ClassDef(AliESDfriendTrack,7) //ESD friend track
 };
 
 #endif

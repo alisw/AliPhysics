@@ -79,10 +79,7 @@
 #include "AliTriggerCluster.h"
 #include "AliEventplane.h"
 
-
 ClassImp(AliESDEvent)
-
-
 
 // here we define the names, some classes are no TNamed, therefore the classnames 
 // are the Names
@@ -1470,7 +1467,7 @@ void AliESDEvent::GetESDfriend(AliESDfriend *ev) const
 
   }
 
-  AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindListObject("AliESDfriend"));
+  AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindFriend());
   if (fr) ev->SetVZEROfriend(fr->GetVZEROfriend());
 }
 
@@ -2431,3 +2428,12 @@ void AliESDEvent::ConnectTracks() {
   fTracksConnected = kTRUE;
   //
 }
+
+//______________________________________________________________________________
+AliESDfriend* AliESDEvent::FindFriend() const 
+{ 
+  return static_cast<AliESDfriend*>(FindListObject("AliESDfriend")); 
+}
+
+AliVEvent::EDataLayoutType AliESDEvent::GetDataLayoutType() const {return AliVEvent::kESD;}
+

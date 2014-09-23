@@ -383,6 +383,26 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTESDObjectDataTypeID    {'A','L','I','E','S','D','V','0'}
 
+/** ESD friend data block
+ * an AliESDfriend object of varying origin
+ * The 'V0' at the end allows a versioning
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTESDfriendObjectDataTypeID    {'E','S','D','F','R','N','D','0'}
+
+/** Flat ESD Vertex data block
+ * The '0' at the end allows a versioning
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTFlatESDVertexDataTypeID    {'F','L','A','T','V','T','X','0'}
+
+/** Flat ESD data block
+ * an AliFlatESD object of varying origin
+ * The '0' at the end allows a versioning
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTFlatESDDataTypeID    {'F','L','A','T','E','S','D','0'}
+
 /** ESD 
  * data blocks designated for the ESD
  * @ingroup alihlt_component_datatypes
@@ -1099,10 +1119,25 @@ extern "C" {
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeV0Finder;
 
+  /** flat ESD object data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeFlatESD;
+
+  /** flat ESD vertex object data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeFlatESDVertex;
+
   /** ESD object data specification, origin is 'any' 
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeESDObject;
+
+  /** ESD friend object data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeESDfriendObject;
 
   /** ESD content data specification, origin is 'any' 
    * @ingroup alihlt_component_datatypes
@@ -1269,6 +1304,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */	
   extern const AliHLTComponentDataType fgkITSTracksDataType;
+
+  /** Container of ITS SAP tracker data
+   * @ingroup alihlt_component_datatypes
+   */	
+  extern const AliHLTComponentDataType kAliHLTDataTypeITSSAPData;
 
   /** Container of calorimeter clusters
    * @ingroup alihlt_component_datatypes

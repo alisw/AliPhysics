@@ -97,7 +97,7 @@ public:
   Double_t M() const;
   Double_t E() const;
   Double_t Y() const;
-
+ 
   Bool_t GetConstrainedPxPyPz(Double_t *p) const {
     if (!fCp) return kFALSE;
     return fCp->GetPxPyPz(p);
@@ -421,7 +421,7 @@ public:
   Bool_t 
   RelateToVertexBxByBz(const AliESDVertex *vtx, Double_t b[3], Double_t maxd,
                         AliExternalTrackParam *cParam=0);
-  void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
+  virtual void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
   void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {
     p[0]=fD; p[1]=fZ; cov[0]=fCdd; cov[1]=fCdz; cov[2]=fCzz;
   }
@@ -450,6 +450,20 @@ public:
   static bool OnlineMode() {return fgkOnlineMode;}
   static Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 );
   Double_t GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 ) const;
+
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam &p ) const {p=*this; return 0;}
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam & ) const {return 0;}
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam & ) const {return 0;}
+
 protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex

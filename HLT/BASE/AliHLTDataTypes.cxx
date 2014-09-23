@@ -118,6 +118,18 @@ const AliHLTComponentDataType kAliHLTDataTypeV0Finder = AliHLTComponentDataTypeI
 const char kAliHLTESDObjectDataTypeIDstring[8] = kAliHLTESDObjectDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDObject = AliHLTComponentDataTypeInitializer(kAliHLTESDObjectDataTypeIDstring, kAliHLTDataOriginAny);
 
+/** ESD friend data specification */
+const char kAliHLTESDfriendObjectDataTypeIDstring[8] = kAliHLTESDfriendObjectDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeESDfriendObject = AliHLTComponentDataTypeInitializer(kAliHLTESDfriendObjectDataTypeIDstring, kAliHLTDataOriginAny);
+
+/** Flat ESD data specification */
+const char kAliHLTFlatESDDataTypeIDstring[8] = kAliHLTFlatESDDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeFlatESD = AliHLTComponentDataTypeInitializer(kAliHLTFlatESDDataTypeIDstring, kAliHLTDataOriginAny);
+
+/** Flat ESD Vertex data specification */
+const char kAliHLTFlatESDVertexDataTypeIDstring[8] = kAliHLTFlatESDVertexDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeFlatESDVertex = AliHLTComponentDataTypeInitializer(kAliHLTFlatESDVertexDataTypeIDstring, kAliHLTDataOriginAny);
+
 /** ESD content specification */
 const char kAliHLTESDContentDataTypeIDstring[8] = kAliHLTESDContentDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDContent = AliHLTComponentDataTypeInitializer(kAliHLTESDContentDataTypeIDstring, kAliHLTDataOriginAny);
@@ -220,6 +232,9 @@ const AliHLTComponentDataType kAliHLTDataTypeJet = AliHLTComponentDataTypeInitia
 
 /** Container of HLT ITS tracks */
 const AliHLTComponentDataType fgkITSTracksDataType = AliHLTComponentDataTypeInitializer( "ITSTRACK", kAliHLTDataOriginITS );
+
+/** Container of HLT ITS SAP tracker data */
+const AliHLTComponentDataType kAliHLTDataTypeITSSAPData = AliHLTComponentDataTypeInitializer( "SAPTRACK", kAliHLTDataOriginITS );
 
 /** Container of HLT calorimeter clusters */
 const AliHLTComponentDataType kAliHLTDataTypeCaloCluster = AliHLTComponentDataTypeInitializer( "CALOCLUS", kAliHLTDataOriginAny );

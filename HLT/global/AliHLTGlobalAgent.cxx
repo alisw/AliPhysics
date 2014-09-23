@@ -27,9 +27,12 @@
 #include "AliHLTConfigurationHandler.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "AliHLTGlobalFlatEsdTestComponent.h"
 
 // header files of library components
 #include "AliHLTGlobalTrackMergerComponent.h"
+#include "AliHLTGlobalEsdToFlatConverterComponent.h"
+#include "AliHLTGlobalFlatEsdConverterComponent.h"
 #include "AliHLTGlobalEsdConverterComponent.h"
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTGlobalOfflineVertexerComponent.h"
@@ -43,6 +46,8 @@
 #include "AliHLTMultiplicityCorrelationsComponent.h"
 #include "AliHLTPrimaryVertexFinderComponent.h"
 #include "AliHLTV0FinderComponent.h"
+#include "AliHLTAnaManagerComponent.h"
+#include "AliHLTFlatAnaManagerComponent.h"
 
 // header file for preprocessor plugin
 #include "AliHLTGlobalPreprocessor.h"
@@ -74,7 +79,10 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   // see header file for class documentation
   assert(pHandler);
   if (!pHandler) return -EINVAL;
+  pHandler->AddComponent(new AliHLTGlobalEsdToFlatConverterComponent);
+  pHandler->AddComponent(new AliHLTGlobalFlatEsdTestComponent);
   pHandler->AddComponent(new AliHLTGlobalTrackMergerComponent);
+  pHandler->AddComponent(new AliHLTGlobalFlatEsdConverterComponent);
   pHandler->AddComponent(new AliHLTGlobalEsdConverterComponent);
   pHandler->AddComponent(new AliHLTGlobalVertexerComponent);
   pHandler->AddComponent(new AliHLTGlobalOfflineVertexerComponent);
@@ -88,6 +96,8 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTV0FinderComponent);
   pHandler->AddComponent(new AliHLTGlobalHistoCollector );
   pHandler->AddComponent(new AliHLTGlobalDCSPublisherComponent );
+  pHandler->AddComponent(new AliHLTAnaManagerComponent);
+  pHandler->AddComponent(new AliHLTFlatAnaManagerComponent);
   return 0;
 }
 
@@ -120,11 +130,12 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
     delete pTokens;
     pTokens=NULL;
   }
+  cout<<endl<<"\n\nConfiguring inputs to global HLT Vertexer: %s\n\n"<<vertexerInputs.Data()<<endl<<endl;
   if (!vertexerInputs.IsNull()) {
-    HLTInfo("Configuring inputs to global HLT Vertexer: %s", vertexerInputs.Data());
+    HLTInfo("\n\nConfiguring inputs to global HLT Vertexer: %s\n\n", vertexerInputs.Data());
     pHandler->CreateConfiguration("GLOBAL-vertexer","GlobalVertexer",vertexerInputs,"");
   } else {
-    HLTWarning("No inputs to global HLT Vertexer found");
+    HLTWarning("\n\nNo inputs to global HLT Vertexer found\n\n");
   }
 
   /////////////////////////////////////////////////////////////////////////////////////
@@ -132,7 +143,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   // assembly of the global ESD
 
   // define the inputs to the global ESD
-  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker ITS-tracker GLOBAL-vertexer ITS-SPD-vertexer TPC-dEdx VZERO-RECO";
+  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker ITS-tracker TPC-ClusterTransformation GLOBAL-vertexer ITS-SPD-vertexer TPC-dEdx VZERO-RECO";
 
   // check for the availibility
   pTokens=esdInputs.Tokenize(" ");
@@ -150,12 +161,16 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   }
 
   if (esdInputs.Length()>0) {
+    esdInputs+=" TPC-ClusterTransformation";
     HLTInfo("Configuring inputs to global HLT ESD: %s", esdInputs.Data());
   } else {
     HLTWarning("No inputs to global HLT ESD found");
   }
-
+  
+  pHandler->CreateConfiguration("GLOBAL-flat-esd-converter", "GlobalFlatEsdConverter", esdInputs.Data(), "");
   pHandler->CreateConfiguration("GLOBAL-esd-converter", "GlobalEsdConverter", esdInputs.Data(), "");
+  pHandler->CreateConfiguration("GLOBAL-flat-esd-test", "GlobalFlatEsdTest", "GLOBAL-esd-converter GLOBAL-flat-esd-converter", "");
+  pHandler->CreateConfiguration("esd-to-flat-conversion", "GlobalEsdToFlatConverter", "GLOBAL-esd-converter", "");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //

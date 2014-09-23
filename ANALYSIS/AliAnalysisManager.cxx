@@ -54,6 +54,8 @@
 #include "AliVEventPool.h"
 #include "AliSysInfo.h"
 #include "AliAnalysisStatistics.h"
+#include "AliVEvent.h"
+#include "AliHLTTestInputHandler.h"
 
 using std::ofstream;
 using std::ios;
@@ -2296,7 +2298,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          return;
       }   
       cont->SetData(fTree); // This set activity for all tasks reading only from the top container
-      Long64_t entry = fTree->GetTree()->GetReadEntry();      
+      Long64_t entry = fTree->GetTree()->GetReadEntry();
 //
 //    Call BeginEvent() for optional input/output and MC services 
       if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
@@ -2315,7 +2317,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       Int_t itask = 0;
       while ((task=(AliAnalysisTask*)next1())) {
          task->SetActive(kTRUE);
-         if (fDebug >1) {
+	  if (fDebug >1) {
             cout << "    Executing task " << task->GetName() << endl;
          }
          if (fStatistics) fStatistics->StartTimer(GetTaskIndex(task), task->GetName(), task->ClassName());
@@ -2952,4 +2954,27 @@ void AliAnalysisManager::Changed()
 // All critical setters pass through the Changed method that throws an exception 
 // in case the lock was set.
    if (fLocked) Fatal("Changed","Critical setter called in locked mode");
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::InitInputData(AliVEvent* esdEvent, AliVfriendEvent* esdFriend)
+{
+
+// Method to propagte to all the connected tasks the HLT event.
+// This method expects that the input hanlder is of type HLT, should 
+// not be used otherwise
+
+  if (fInputEventHandler)  {
+    TString classInputHandler = fInputEventHandler->ClassName();
+    if (classInputHandler.Contains("HLT")){
+      TObjArray* arrTasks = GetTasks();
+      fInputEventHandler->InitTaskInputData(esdEvent, esdFriend, arrTasks);
+    }
+    else {
+      Fatal("PropagateHLTEvent", "Input Handler not of type HLT, we cannot use this method!");
+    }
+  }
+  else {
+    Fatal("PropagateHLTEvent", "Input Handler not found, we cannot use this method!");
+  }
 }

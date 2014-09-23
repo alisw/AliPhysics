@@ -17,6 +17,7 @@
 #include "AliAODVertex.h"
 #include "AliAODRedCov.h"
 #include "AliAODPid.h"
+#include "AliExternalTrackParam.h"
  
 
 class AliVVertex;
@@ -200,6 +201,7 @@ class AliAODTrack : public AliVTrack {
   //
   Int_t   GetTOFBunchCrossing(Double_t b=0, Bool_t tpcPIDonly=kFALSE) const;
   //
+  using AliVTrack::GetP;
   template <typename T> void GetP(T *p) const {
     p[0]=fMomentum[0]; p[1]=fMomentum[1]; p[2]=fMomentum[2];}
 
@@ -220,7 +222,7 @@ class AliAODTrack : public AliVTrack {
     fCovMatrix->GetCovMatrix(covMatrix); return kTRUE;}
 
   Bool_t GetXYZ(Double_t *p) const {
-    return GetPosition(p); }
+    return GetPosition(p); }  
   
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t *r) const;
   Bool_t GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz=0, Double_t* alpSect=0) const;  
@@ -276,6 +278,9 @@ class AliAODTrack : public AliVTrack {
   void    SetTPCFitMap(const TBits amap) {fTPCFitMap = amap;}
   void    SetTPCPointsF(UShort_t  findable){fTPCnclsF = findable;}
   void    SetTPCNCrossedRows(UInt_t n)     {fTPCNCrossedRows = n;}
+  
+  virtual const    AliExternalTrackParam * GetInnerParam() const { return NULL; }
+  virtual const    AliExternalTrackParam * GetOuterParam() const { return NULL; }
 
   UShort_t GetTPCNclsF() const { return fTPCnclsF;}
   UShort_t GetTPCNCrossedRows()  const { return fTPCNCrossedRows;}
@@ -484,6 +489,19 @@ class AliAODTrack : public AliVTrack {
   ULong_t fMFTClusterPattern;       // Tells us which MFT clusters are contained in the track, and which one is a good one (if MC)  // AU
 
   const AliAODEvent* fAODEvent;     //! pointer back to the event the track belongs to
+
+  //---------------------------------------------------------------------------
+  //--the calibration interface--
+  //--to be used in online calibration/QA
+  //--should also be implemented in ESD so it works offline as well
+  //-----------
+  virtual Int_t GetTrackParam         ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamRefitted ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamIp       ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamTPCInner ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const;
+  virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const;
 
   ClassDef(AliAODTrack, 24);
 };
