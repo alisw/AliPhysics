@@ -28,6 +28,7 @@ Bool_t ConfigD0
    Double_t                minpt = 0.15,
    Short_t     		   maxSisters = 2,
    Bool_t                  checkP = kTRUE,
+   Bool_t      		   useNTPCclt = kTRUE,
    Bool_t                  minDCAcutFixed = kFALSE,
    Bool_t                  maxDCAcutFixed = kFALSE,
    Bool_t                  ptdepPIDcut = kFALSE,
@@ -74,9 +75,9 @@ Bool_t ConfigD0
    else cutQuality->SetDCARPtFormula(formula);
    if(minDCAcutFixed) cutQuality->SetDCARmin(trackDCAcutMin);
    else cutQuality->SetDCARPtFormulaMin(formulaMin);
-   if(!isPP)cutQuality->SetTPCminNClusters(NTPCcluster);
-   if(isPP)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
-   if(isPP)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
+   if(useNTPCclt)cutQuality->SetTPCminNClusters(NTPCcluster);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
    cutQuality->SetPtRange(minpt,1E20);
    cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
@@ -111,9 +112,9 @@ Bool_t ConfigD0
    else cutQuality->SetDCARPtFormula(formula);
    if(minDCAcutFixed) cutQuality->SetDCARmin(trackDCAcutMin);
    else cutQuality->SetDCARPtFormulaMin(formulaMin);
-   if(!isPP)cutQuality->SetTPCminNClusters(NTPCcluster);
-   if(isPP)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
-   if(isPP)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
+   if(useNTPCclt)cutQuality->SetTPCminNClusters(NTPCcluster);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsTPC(NTPCcluster,kTRUE);
+   if(!useNTPCclt)cutQuality->SetMinNCrossedRowsOverFindableClsTPC(NTPCcrratio,kTRUE);
    cutQuality->SetPtRange(minpt,1E20);
    cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
