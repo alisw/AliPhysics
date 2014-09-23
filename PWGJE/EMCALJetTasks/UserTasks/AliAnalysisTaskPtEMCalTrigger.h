@@ -50,8 +50,8 @@ private:
 	void DefineAxis(TAxis &axis, const char *name, const char *title, const TArrayD &binning, const char **labels = NULL);
 	void DefineAxis(TAxis &axis, const char *name, const char *title, int nbins, double min, double max, const char **labels = NULL);
 	void FillEventHist(const char *trigger, double vz, bool isPileup);
-	void FillTrackHist(const char *trigger, const AliVTrack *track, double vz, bool isPileup, int cut);
-	void FillClusterHist(const char *trigger, const AliVCluster *clust, bool isCalibrated, double vz, bool isPileup);
+	void FillTrackHist(const char *trigger, const AliVTrack *track, double vz, bool isPileup, int cut, bool isMinBias);
+	void FillClusterHist(const char *trigger, const AliVCluster *clust, bool isCalibrated, double vz, bool isPileup, bool isMinBias);
 	void FillMCParticleHist(const AliVParticle * const part);
 	bool IsTrueTrack(const AliVTrack *const) const;
 	TString BuildTriggerString();

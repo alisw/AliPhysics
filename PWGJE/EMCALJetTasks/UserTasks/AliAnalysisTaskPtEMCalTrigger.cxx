@@ -164,21 +164,23 @@ namespace EMCalTriggerPtAnalysis {
 		CreateDefaultPtBinning(ptbinning);
 		CreateDefaultZVertexBinning(zvertexBinning);
 		CreateDefaultEtaBinning(etabinning);
-		TAxis htrackaxes[6];
+		TAxis htrackaxes[7];
 		DefineAxis(htrackaxes[0], "pt", "p_{t} (GeV/c)", ptbinning);
 		DefineAxis(htrackaxes[1], "eta", "#eta", etabinning);
 		DefineAxis(htrackaxes[2], "phi", "#phi", 20, 0, 2 * TMath::Pi());
 		DefineAxis(htrackaxes[3], "zvertex", "z_{V} (cm)", zvertexBinning);
 		DefineAxis(htrackaxes[4], "pileup", "Pileup rejection", 2, -0.5, 1.5);
 		DefineAxis(htrackaxes[5], "trackcuts", "Track Cuts", (fListTrackCuts ? fListTrackCuts->GetEntries() : 0) + 1, -0.5, (fListTrackCuts ? fListTrackCuts->GetEntries() : 0) + 0.5);
-		const TAxis *trackaxes[6];
-		for(int iaxis = 0; iaxis < 6; ++iaxis) trackaxes[iaxis] = htrackaxes + iaxis;
-		TAxis hclusteraxes[3];
+		DefineAxis(htrackaxes[6], "mbtrigger", "Has MB trigger", 2, -0.5, 1.5);
+		const TAxis *trackaxes[7];
+		for(int iaxis = 0; iaxis < 7; ++iaxis) trackaxes[iaxis] = htrackaxes + iaxis;
+		TAxis hclusteraxes[4];
 		DefineAxis(hclusteraxes[0], "energy", "E (GeV)", ptbinning);
 		DefineAxis(hclusteraxes[1], "zvertex", "z_{V} (cm)", zvertexBinning);
 		DefineAxis(hclusteraxes[2], "pileup", "Pileup rejection", 2, -0.5, 1.5);
-		const TAxis *clusteraxes[3];
-		for(int iaxis = 0; iaxis < 3; ++iaxis) clusteraxes[iaxis] = hclusteraxes + iaxis;
+		DefineAxis(hclusteraxes[3], "mbtrigger", "Has MB trigger", 2, -0.5, 1.5);
+		const TAxis *clusteraxes[4];
+		for(int iaxis = 0; iaxis < 4; ++iaxis) clusteraxes[iaxis] = hclusteraxes + iaxis;
 		try{
 			// Create histogram for MC-truth
 			fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 3, trackaxes);
@@ -187,11 +189,13 @@ namespace EMCalTriggerPtAnalysis {
 				// Create event-based histogram
 				fHistos->CreateTH2(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), pileupaxis, zvertexBinning);
 				// Create track-based histogram
-				fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 6, trackaxes);
-				fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 6, trackaxes);
+				fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes);
+				fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes);
+				fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes);
+				fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes);
 				// Create cluster-based histogram (Uncalibrated and calibrated clusters)
-				fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 3, clusteraxes);
-				fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 3, clusteraxes);
+				fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes);
+				fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes);
 			}
 			fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
 			fHistos->CreateTHnSparse("hEventsTriggerbit", "Trigger bits for the different events", 4, bitaxes);
@@ -334,13 +338,13 @@ namespace EMCalTriggerPtAnalysis {
 			if(!IsTrueTrack(track)) continue;
 			if(!fEtaRange.IsInRange(track->Eta())) continue;
 			if(!fPtRange.IsInRange(track->Pt())) continue;
-			if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, 0);
+			if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, 0, triggers[0]);
 			if(!triggerstrings.size()) // Non-EMCal-triggered
-				FillTrackHist("NoEMCal", track, zv, isPileupEvent, 0);
+				FillTrackHist("NoEMCal", track, zv, isPileupEvent, 0, triggers[0]);
 			else {
 				// EMCal-triggered events
 				for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it)
-					FillTrackHist(it->c_str(), track, zv, isPileupEvent, 0);
+					FillTrackHist(it->c_str(), track, zv, isPileupEvent, 0, triggers[0]);
 			}
 		}
 
@@ -356,13 +360,13 @@ namespace EMCalTriggerPtAnalysis {
 					//if(!IsTrueTrack(track)) continue;
 					if(!fEtaRange.IsInRange(track->Eta())) continue;
 					if(!fPtRange.IsInRange(track->Pt())) continue;
-					if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, icut + 1);
+					if(triggers[0]) FillTrackHist("MinBias", track, zv, isPileupEvent, icut + 1, triggers[0]);
 					if(!triggerstrings.size()) // Non-EMCal-triggered
-						FillTrackHist("NoEMCal", track, zv, isPileupEvent, icut + 1);
+						FillTrackHist("NoEMCal", track, zv, isPileupEvent, icut + 1, triggers[0]);
 					else {
 						// EMCal-triggered events
 						for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it)
-							FillTrackHist(it->c_str(), track, zv, isPileupEvent, icut + 1);
+							FillTrackHist(it->c_str(), track, zv, isPileupEvent, icut + 1, triggers[0]);
 					}
 				}
 			}
@@ -373,12 +377,12 @@ namespace EMCalTriggerPtAnalysis {
 		for(int icl = 0; icl < fInputEvent->GetNumberOfCaloClusters(); icl++){
 			clust = fInputEvent->GetCaloCluster(icl);
 			if(!clust->IsEMCAL()) continue;
-			if(triggers[0]) FillClusterHist("MinBias", clust, false, zv, isPileupEvent);
+			if(triggers[0]) FillClusterHist("MinBias", clust, false, zv, isPileupEvent, triggers[0]);
 			if(!triggerstrings.size())	// Non-EMCal-triggered
-				FillClusterHist("NoEMCal", clust, false, zv, isPileupEvent);
+				FillClusterHist("NoEMCal", clust, false, zv, isPileupEvent, triggers[0]);
 			else{
 				for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it){
-					FillClusterHist(it->c_str(), clust, false, zv, isPileupEvent);
+					FillClusterHist(it->c_str(), clust, false, zv, isPileupEvent, triggers[0]);
 				}
 			}
 		}
@@ -387,12 +391,12 @@ namespace EMCalTriggerPtAnalysis {
 			TIter clustIter(fCaloClusters);
 			while((clust = dynamic_cast<const AliVCluster *>(clustIter()))){
 				if(!clust->IsEMCAL()) continue;
-				if(triggers[0]) FillClusterHist("MinBias", clust, true, zv, isPileupEvent);
+				if(triggers[0]) FillClusterHist("MinBias", clust, true, zv, isPileupEvent, triggers[0]);
 				if(!triggerstrings.size())	// Non-EMCal-triggered
-					FillClusterHist("NoEMCal", clust, true, zv, isPileupEvent);
+					FillClusterHist("NoEMCal", clust, true, zv, isPileupEvent, triggers[0]);
 				else{
 					for(std::vector<std::string>::iterator it = triggerstrings.begin(); it != triggerstrings.end(); ++it){
-						FillClusterHist(it->c_str(), clust, true, zv, isPileupEvent);
+						FillClusterHist(it->c_str(), clust, true, zv, isPileupEvent, triggers[0]);
 					}
 				}
 			}
@@ -550,7 +554,7 @@ namespace EMCalTriggerPtAnalysis {
 
 	//______________________________________________________________________________
 	void AliAnalysisTaskPtEMCalTrigger::FillTrackHist(const char* trigger,
-			const AliVTrack* track, double vz, bool isPileup, int cut) {
+			const AliVTrack* track, double vz, bool isPileup, int cut, bool isMinBias) {
 		/*
 		 * Fill track-based histogram with corresponding information
 		 *
@@ -561,10 +565,19 @@ namespace EMCalTriggerPtAnalysis {
 		 * @param cut: id of the cut (0 = no cut)
 		 */
 		double etasign = fSwapEta ? -1. : 1.;
-        double data[6] = {track->Pt(), etasign * track->Eta(), track->Phi(), vz, 0, static_cast<double>(cut)};
-		char histname[1024], histnameAcc[1024];
+        double data[7] = {TMath::Abs(track->Pt()), etasign * track->Eta(), track->Phi(), vz, 0, static_cast<double>(cut), isMinBias ? 1. : 0.};
+        double dataMC[7] = {0., 0., 0., vz, 0, static_cast<double>(cut), isMinBias ? 1. : 0.};
+        AliVParticle *assocMC(NULL);
+        if(fMCEvent && (assocMC = fMCEvent->GetTrack(TMath::Abs(track->GetLabel())))){
+        	dataMC[0] = TMath::Abs(assocMC->Pt());
+        	dataMC[1] = etasign * assocMC->Eta();
+        	dataMC[2] = assocMC->Phi();
+        }
+		char histname[1024], histnameAcc[1024], histnameMC[1024], histnameMCAcc[1024];
 		sprintf(histname, "hTrackHist%s", trigger);
 		sprintf(histnameAcc, "hTrackInAcceptanceHist%s", trigger);
+		sprintf(histnameMC, "hMCTrackHist%s", trigger);
+		sprintf(histnameMCAcc, "hMCTrackInAcceptanceHist%s", trigger);
 		Bool_t isEMCAL = kFALSE;
 		if(track->IsEMCAL()){
 			// Check if the cluster is matched to only one track
@@ -584,8 +597,10 @@ namespace EMCalTriggerPtAnalysis {
 		}
 		try{
 			fHistos->FillTHnSparse(histname, data);
+			if(fMCEvent) fHistos->FillTHnSparse(histnameMC, dataMC);
 			if(isEMCAL){
 				fHistos->FillTHnSparse(histnameAcc, data);
+				if(fMCEvent) fHistos->FillTHnSparse(histnameMCAcc, dataMC);
 			}
 		} catch (HistoContainerContentException &e){
 			std::stringstream errormessage;
@@ -594,10 +609,13 @@ namespace EMCalTriggerPtAnalysis {
 		}
 		if(!isPileup){
 			data[4] = 1;
+			dataMC[4] = 1;
 			try{
 				fHistos->FillTHnSparse(histname, data);
+				if(fMCEvent) fHistos->FillTHnSparse(histnameMC, dataMC);
 				if(isEMCAL){
 					fHistos->FillTHnSparse(histnameAcc, data);
+					if(fMCEvent) fHistos->FillTHnSparse(histnameMCAcc, dataMC);
 				}
 			} catch (HistoContainerContentException &e){
 				std::stringstream errormessage;
@@ -609,7 +627,7 @@ namespace EMCalTriggerPtAnalysis {
 
 	//______________________________________________________________________________
 	void AliAnalysisTaskPtEMCalTrigger::FillClusterHist(const char* trigger,
-			const AliVCluster* clust, bool isCalibrated, double vz, bool isPileup) {
+			const AliVCluster* clust, bool isCalibrated, double vz, bool isPileup, bool isMinBias) {
 		/*
 		 * Fill cluster-based histogram with corresponding information
 		 *
@@ -618,7 +636,7 @@ namespace EMCalTriggerPtAnalysis {
 		 * @param vz: z-position of the vertex
 		 * @param isPileup: flag event as pileup event
 		 */
-		double data[3] =  {clust->E(), vz, 0};
+		double data[4] =  {clust->E(), vz, 0, isMinBias ? 1. : 0.};
 		char histname[1024];
 		sprintf(histname, "hCluster%sHist%s", isCalibrated ? "Calib" : "Uncalib", trigger);
 		try{
