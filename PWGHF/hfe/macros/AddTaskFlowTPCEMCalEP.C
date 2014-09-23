@@ -50,11 +50,25 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t openingAngle = 0.1,
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
 
   AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
+  AliAnalysisTaskFlowTPCEMCalEP *taskcorrMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
   AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
  
+  mgr->AddTask(taskcorrMB);
   mgr->AddTask(taskMB);
   mgr->AddTask(taskTR);
   
+  // Flattened semi central trigger
+
+  taskcorrMB->SelectCollisionCandidates(AliVEvent::kAny);
+
+  TString containerName = mgr->GetCommonFileName();
+  containerName += ":PWGHF_hfeCalcorrSemiCentralV2";
+  
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histcorrMB", TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
+  mgr->ConnectInput(taskcorrMB, 0, cinput);
+  mgr->ConnectOutput(taskcorrMB, 1, coutput1);
+
   // Central trigger
   taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
 
