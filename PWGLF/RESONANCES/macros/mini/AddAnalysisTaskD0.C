@@ -35,6 +35,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Int_t       minSPDclt = 0,
    Double_t    minpt = 0.15,
    TString     triggerMask = AliVEvent::kMB,
+   Bool_t      useNTPCclt = kTRUE,
    Bool_t      minDCAcutFixed = kFALSE,
    Bool_t      maxDCAcutFixed = kFALSE,
    Bool_t      ptdepPIDcut = kFALSE,
@@ -243,7 +244,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
        Printf("========================== MC analysis - PID cuts used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigD0(task, isPP, isMC, monitor, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, trackDCAZcutMax, NTPCcluster, NTPCcrratio, minSPDclt, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut, checkFeedDown, checkQuark, doCalculationInMC, originDselection, mineta, maxeta, min_inv_mass, max_inv_mass, bins, "", cutsPairY, cutsPair)) return 0x0;
+   if (!ConfigD0(task, isPP, isMC, monitor, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, trackDCAZcutMax, NTPCcluster, NTPCcrratio, minSPDclt, minpt, maxSisters, checkP, useNTPCclt, minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut, checkFeedDown, checkQuark, doCalculationInMC, originDselection, mineta, maxeta, min_inv_mass, max_inv_mass, bins, "", cutsPairY, cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
