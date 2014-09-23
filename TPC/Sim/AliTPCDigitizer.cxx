@@ -770,10 +770,10 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
  
   TObjArray *ionTailArr = (TObjArray*)AliTPCcalibDB::Instance()->GetIonTailArray();
   if (!ionTailArr) {AliFatal("TPC - Missing IonTail OCDB object");}
-  TObject *rocFactorIROC  = ionTailArr->FindObject("factorIROC");
-  TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROC");
-  Float_t factorIROC      = (atof(rocFactorIROC->GetTitle()));
-  Float_t factorOROC      = (atof(rocFactorOROC->GetTitle()));
+ //  TObject *rocFactorIROC  = ionTailArr->FindObject("factorIROC");
+//   TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROC");
+//   Float_t factorIROC      = (atof(rocFactorIROC->GetTitle()));
+//   Float_t factorOROC      = (atof(rocFactorOROC->GetTitle()));
   Int_t nIonTailBins =0;
   TObjArray timeResFunc(nROCs); 
   for (Int_t isec = 0;isec<nROCs;isec++){        //loop overs sectors
@@ -876,6 +876,39 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       qTotTPC += q;                                                        // Qtot for whole TPC       
     } // end of q loop
   } // end of global row loop
+
+  //
+  // 1.b) Dump the content of the crossTalk signal to the debug stremer - to be corealted later with the same crosstalk correction
+  //      assumed during reconstruction 
+  //
+  if (AliTPCReconstructor::StreamLevel()==1) {
+    //
+    // dump the crosstalk matrices to tree for further investigation
+    //     a.) to estimate fluctuation of pedestal in indiviula wire segments
+    //     b.) to check correlation between regions
+    //     c.) to check relative conribution of signal below threshold to crosstalk
+    for (Int_t isector=0; isector<nROCs; isector++){  //set all ellemts of crosstalk matrix to 0
+      TMatrixD * crossTalkMatrix = (TMatrixD*)crossTalkSignalArray.At(isector);
+      //TMatrixD * crossTalkMatrixBelow = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs);
+      TVectorD vecAll(crossTalkMatrix->GetNrows());
+      //TVectorD vecBelow(crossTalkMatrix->GetNrows());
+      //
+      for (Int_t itime=0; itime<crossTalkMatrix->GetNcols(); itime++){
+	for (Int_t iwire=0; iwire<crossTalkMatrix->GetNrows(); iwire++){
+	  vecAll[iwire]=(*crossTalkMatrix)(iwire,itime);
+	  //vecBelow[iwire]=(*crossTalkMatrixBelow)(iwire,itime);
+	}
+	(*fDebugStreamer)<<"crosstalkMatrix"<<
+	  "sector="<<isector<<
+	  "itime="<<itime<<
+	  "vecAll.="<<&vecAll<<                // crosstalk charge + charge below threshold
+	  //"vecBelow.="<<&vecBelow<<            // crosstalk contribution from signal below threshold
+	  "\n";
+      }
+    }
+  }
+
+
 
 
   //
