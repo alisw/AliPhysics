@@ -21,6 +21,7 @@ class TObjArray;
 class AliAnaChargedJetResponseMaker;
 class AliUnfolding;
 // root includes
+#include "TRandom3.h"
 #include "TMatrixD.h"
 #include "TList.h"
 #include "TDirectoryFile.h"
@@ -148,6 +149,17 @@ class AliJetFlowTools {
         void            SetRMS(Bool_t r)                        {fRMS                   = r;}
         void            SetSymmRMS(Bool_t r)                    {fSymmRMS               = r; fRMS               = r;}
         void            SetRho0(Bool_t r)                       {fRho0                  = r;}
+        void            SetBootstrap(Bool_t b, Bool_t r = kTRUE) {
+            // note that setting this option will not lead to true resampling
+            // but rather to randomly drawing a new distribution from a pdf
+            // of the measured distribution
+            fBootstrap             = r;
+            // by default fully randomize randomizer from system time
+            if(r) {
+                delete gRandom;
+                gRandom = new TRandom3(0);
+            }
+        }
         void            Make();
         void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
@@ -163,6 +175,10 @@ class AliJetFlowTools {
                 Float_t rangeUp = 80,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ProcessedSpectra.root") const;
+        void            BootstrapSpectra(
+                TString def,
+                TString in = "UnfoldedSpectra.root", 
+                TString out = "BootstrapSpectra.root") const;
         void            GetNominalValues(
                 TH1D*& ratio,
                 TGraphErrors*& v2,
@@ -214,6 +230,7 @@ class AliJetFlowTools {
         static TH1D*    ResizeXaxisTH1D(TH1D* histo, Int_t low, Int_t up, TString suffix = "");
         static TH2D*    ResizeYaxisTH2D(TH2D* histo, TArrayD* x, TArrayD* y, TString suffix = "");
         static TH2D*    NormalizeTH2D(TH2D* histo, Bool_t noError = kTRUE);
+        static TH1*     Bootstrap(TH1* hist, Bool_t kill = kTRUE);
         static TH1D*    RebinTH1D(TH1D* histo, TArrayD* bins, TString suffix = "", Bool_t kill = kTRUE);
         TH2D*           RebinTH2D(TH2D* histo, TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
         static TH2D*    MatrixMultiplication(TH2D* a, TH2D* b, TString name = "CombinedResponse");
@@ -400,6 +417,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         Bool_t                  fRMS;                   // systematic method
         Bool_t                  fSymmRMS;               // symmetric systematic method
         Bool_t                  fRho0;                  // use the result obtained with the 'classic' fixed rho
+        Bool_t                  fBootstrap;             // use bootstrap resampling of input data
         TF1*                    fPower;                 // smoothening fit
         Bool_t                  fSaveFull;              // save all generated histograms to file
         TString                 fActiveString;          // identifier of active output
