@@ -390,6 +390,12 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTESDfriendObjectDataTypeID    {'E','S','D','F','R','N','D','0'}
 
+/** Flat ESD Vertex data block
+ * The '0' at the end allows a versioning
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTFlatESDVertexDataTypeID    {'F','L','A','T','V','T','X','0'}
+
 /** Flat ESD data block
  * an AliFlatESD object of varying origin
  * The '0' at the end allows a versioning
@@ -1117,6 +1123,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeFlatESD;
+
+  /** flat ESD vertex object data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeFlatESDVertex;
 
   /** ESD object data specification, origin is 'any' 
    * @ingroup alihlt_component_datatypes
