@@ -124,6 +124,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	hMCEtaInAccPt(NULL),
 	hMCPi0PtY(NULL),
 	hMCEtaPtY(NULL),
+	hMCPi0PtAlpha(NULL),
+	hMCEtaPtAlpha(NULL),
 	hMCK0sPt(NULL),
 	hMCK0sWOWeightPt(NULL),
 	hMCK0sPtY(NULL),
@@ -268,6 +270,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	hMCEtaInAccPt(NULL),
 	hMCPi0PtY(NULL),
 	hMCEtaPtY(NULL),
+	hMCPi0PtAlpha(NULL),
+	hMCEtaPtAlpha(NULL),
 	hMCK0sPt(NULL),
 	hMCK0sWOWeightPt(NULL),
 	hMCK0sPtY(NULL),
@@ -677,6 +681,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			if (fDoMesonQA > 0){
 				hMCPi0PtY = new TH2F*[fnCuts];
 				hMCEtaPtY = new TH2F*[fnCuts];
+				hMCPi0PtAlpha = new TH2F*[fnCuts];
+				hMCEtaPtAlpha = new TH2F*[fnCuts];
 				hMCK0sPt = new TH1F*[fnCuts];
 				hMCK0sWOWeightPt = new TH1F*[fnCuts];
 				hMCK0sPtY = new TH2F*[fnCuts];
@@ -767,6 +773,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 					hMCEtaPtY[iCut]->Sumw2();
 					SetLogBinningXTH2(hMCEtaPtY[iCut]);
 					fMCList[iCut]->Add(hMCEtaPtY[iCut]);
+					hMCPi0PtAlpha[iCut] = new TH2F("MC_Pi0_Pt_Alpha","MC_Pi0_Pt_Alpha",150,0.03,15.,100,0,1);
+					SetLogBinningXTH2(hMCPi0PtAlpha[iCut]);
+					fMCList[iCut]->Add(hMCPi0PtAlpha[iCut]);
+					hMCEtaPtAlpha[iCut] = new TH2F("MC_Eta_Pt_Alpha","MC_Eta_Pt_Alpha",150,0.03,15.,100,0,1);
+					SetLogBinningXTH2(hMCEtaPtAlpha[iCut]);
+					fMCList[iCut]->Add(hMCEtaPtAlpha[iCut]);
+
 					hMCK0sPt[iCut] = new TH1F("MC_K0s_Pt","MC_K0s_Pt",150,0,15);
 					hMCK0sPt[iCut]->Sumw2();
 					fMCList[iCut]->Add(hMCK0sPt[iCut]);
@@ -1051,6 +1064,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 					if (nameBin.CompareTo("")== 0){
 						TString nameHeader = ((TObjString*)((TList*)((AliConvEventCuts*)fEventCutArray->At(iCut))
 															->GetAcceptedHeader())->At(i))->GetString();
+// 						cout << nameHeader << endl;
 						hMCHeaders[iCut]->GetXaxis()->SetBinLabel(i+1,nameHeader.Data());
 					}
 				}
@@ -1524,7 +1538,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
 					AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(daughterIndex));
 					if(!tmpDaughter) continue;
 					if(abs(tmpDaughter->GetPdgCode()) == 11){
-					rConv = sqrt( (tmpDaughter->Xv()*tmpDaughter->Xv()) + (tmpDaughter->Yv()*tmpDaughter->Yv()) );
+						rConv = sqrt( (tmpDaughter->Xv()*tmpDaughter->Xv()) + (tmpDaughter->Yv()*tmpDaughter->Yv()) );
 					}
 				}
 				hMCConvGammaPt[fiCut]->Fill(particle->Pt());
@@ -1574,14 +1588,25 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
 						-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
 					}
 
+					Double_t alpha = -1;
+					if (particle->GetPdgCode() == 111 || particle->GetPdgCode() == 221){
+						alpha = TMath::Abs((daughter0->E() - daughter1->E()))/(daughter0->E() + daughter1->E());
+					}
+
 					if(particle->GetPdgCode() == 111){
 						hMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted); // All MC Pi0
 						hMCPi0WOWeightPt[fiCut]->Fill(particle->Pt());
-						if (fDoMesonQA > 0) hMCPi0PtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
+						if (fDoMesonQA > 0){
+							hMCPi0PtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
+							hMCPi0PtAlpha[fiCut]->Fill(particle->Pt(),alpha); // All MC Pi0
+						}	
 					} else if(particle->GetPdgCode() == 221){
 						hMCEtaPt[fiCut]->Fill(particle->Pt(),weighted); // All MC Eta
 						hMCEtaWOWeightPt[fiCut]->Fill(particle->Pt());
-						if (fDoMesonQA > 0) hMCEtaPtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
+						if (fDoMesonQA > 0){
+							hMCEtaPtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
+							hMCEtaPtAlpha[fiCut]->Fill(particle->Pt(),alpha); // All MC Pi0
+						}	
 					}
 					
 					// Check the acceptance for both gammas
@@ -1696,15 +1721,25 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 					mesonY = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))
 					-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
 				}
+				Double_t alpha = -1;
+				if (particle->GetPdgCode() == 111 || particle->GetPdgCode() == 221){
+					alpha = TMath::Abs((daughter0->Energy() - daughter1->Energy()))/(daughter0->Energy() + daughter1->Energy());
+				}
 
 				if(particle->GetPdgCode() == 111){
 					hMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted); // All MC Pi0
 					hMCPi0WOWeightPt[fiCut]->Fill(particle->Pt());
-					if (fDoMesonQA > 0) hMCPi0PtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
+					if (fDoMesonQA > 0){
+						hMCPi0PtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
+						hMCPi0PtAlpha[fiCut]->Fill(particle->Pt(),alpha); // All MC Pi0
+					}	
 				} else if(particle->GetPdgCode() == 221){
 					hMCEtaPt[fiCut]->Fill(particle->Pt(),weighted); // All MC Eta
 					hMCEtaWOWeightPt[fiCut]->Fill(particle->Pt());
-					if (fDoMesonQA > 0) hMCEtaPtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
+					if (fDoMesonQA > 0){
+						hMCEtaPtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
+						hMCEtaPtAlpha[fiCut]->Fill(particle->Pt(),alpha); // All MC Pi0
+					}	
 				} 
 
 				// Check the acceptance for both gammas

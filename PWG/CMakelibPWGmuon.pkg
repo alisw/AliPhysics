@@ -78,6 +78,7 @@ set ( SRCS
     muon/AliAnalysisMuMuSingle.cxx
     muon/AliAnalysisMuMuMinv.cxx
     muon/AliAnalysisMuMuNch.cxx
+    muon/AliAnalysisTaskNorm.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

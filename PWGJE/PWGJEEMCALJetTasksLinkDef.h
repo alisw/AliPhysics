@@ -20,7 +20,9 @@
 #pragma link C++ class AliJetEmbeddingTask+;
 #pragma link C++ class AliJetEmbeddingFromGenTask+;
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
+#pragma link C++ class AliJetFastSimulation+;
 #pragma link C++ class AliJetModelBaseTask+;
+#pragma link C++ class AliJetModelCopyTracks+;
 #pragma link C++ class AliJetModelMergeBranches+;
 #pragma link C++ class AliJetRandomizerTask+;
 #pragma link C++ class AliJetConstituentTagCopier+;
@@ -40,7 +42,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadCorQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadEPpid+;
-#pragma link C++ class AliAnalysisTaskEmcalJetHF+;
 #pragma link C++ class AliAnalysisTaskEmcalJetMass+;
 #pragma link C++ class AliAnalysisTaskEmcalJetMassBkg+;
 #pragma link C++ class AliAnalysisTaskEmcalJetMassResponse+;
@@ -55,16 +56,27 @@
 #pragma link C++ class AliAnalysisTaskJetShapeDeriv+;
 #pragma link C++ class AliAnalysisTaskJetShapeConst+;
 #pragma link C++ class AliAnalysisTaskJetShapeGR+;
+#pragma link C++ class AliAnalysisTaskJetMassResponseDet+;
 #pragma link C++ class AliAnalysisTaskJetMatching+;
 #pragma link C++ class AliAnalysisTaskJetV2+;
+#pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
 #pragma link C++ class AliAnalysisTaskRhoMass+;
 #pragma link C++ class AliAnalysisTaskRhoMassBase+;
+#pragma link C++ class AliAnalysisTaskRhoMassScale+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliEmcalPicoTrackFromJetMaker+;
 #pragma link C++ class AliNtupCumInfo+;
 #pragma link C++ class AliNtupZdcInfo+;
+#pragma link C++ namespace EMCalTriggerPtAnalysis+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalHistoContainer+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<float>+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<double>+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<int>+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliEmcalJetTask+;

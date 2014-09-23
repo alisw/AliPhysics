@@ -26,11 +26,11 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   SetEtaRange(Float_t min, Float_t max) { fEtaMin       = min;  fEtaMax = max; }
   void                   SetPhiRange(Float_t min, Float_t max) { fPhiMin       = min;  fPhiMax = max; }
   void                   SetPtRange(Float_t min, Float_t max)  { fPtMin        = min;  fPtMax  = max; }
-  void                   SetPtSpectrum(TH1 *f)                 { fPtSpectrum   = f;    }
+  void                   SetPtSpectrum(TH1F *f)                { fPtSpectrum   = f;    }
   void                   SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = new TH1F("ptSpectrum","ptSpectrum",1000,f->GetXmin(),f->GetXmax()); 
                                                                  fPtSpectrum->Add(f); }
   void                   SetPtPhiEvPlDistribution(TF2 *f)      { fPtPhiEvPlDistribution   = f;    }
-  void                   SetDensitySpectrum(TH1 *f)            { fDensitySpectrum = f;    }
+  void                   SetDensitySpectrum(TH1F *f)           { fDensitySpectrum = f;    }
   void                   SetDensitySpectrum(TF1 *f)            { fDensitySpectrum = new TH1F("densitypectrum","densitypectrum",1000,f->GetXmin(),f->GetXmax()); 
                                                                  fDensitySpectrum->Add(f); }
   void                   SetDifferentialV2(TF1* f)             { fDifferentialV2 = f;  }
@@ -97,9 +97,9 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Int_t                  fNCells;                 // how many cells are being processed
   Int_t                  fNTracks;                // how many tracks are being processed
   Int_t                  fMarkMC;                 // which MC label is to be used (default=100)
-  TH1                   *fPtSpectrum;             // pt spectrum to extract random pt values
+  TH1F                  *fPtSpectrum;             // pt spectrum to extract random pt values
   TF2                   *fPtPhiEvPlDistribution;  // pt vs. (phi-psi) distribution to extract random pt/phi values
-  TH1                   *fDensitySpectrum;        // particle density spectrum to extract random density values
+  TH1F                  *fDensitySpectrum;        // particle density spectrum to extract random density values
   TF1                   *fDifferentialV2;         // v2 as function of pt
   Bool_t                 fAddV2;                  // add v2 sampled from a tf1
   Bool_t                 fFlowFluctuations;       // introduce gaussian flow fluctuation 
@@ -127,6 +127,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
   AliJetModelBaseTask &operator=(const AliJetModelBaseTask&); // not implemented
 
-  ClassDef(AliJetModelBaseTask, 11) // Jet modelling task
+  ClassDef(AliJetModelBaseTask, 12) // Jet modelling task
 };
 #endif

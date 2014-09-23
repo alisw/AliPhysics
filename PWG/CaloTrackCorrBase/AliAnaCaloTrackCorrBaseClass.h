@@ -79,11 +79,16 @@ public:
   virtual void           SetDebug(Int_t d)                      { fDebug = d                  ; }
   
   virtual Int_t          GetEventNumber() const ;
-   	
+  
+  // Track multiplicity
+  virtual Int_t GetTrackMultiplicity()                     const { return fReader->GetTrackMultiplicity() ; }
+  
   //Centrality
   virtual AliCentrality* GetCentrality()                   const { return fReader->GetCentrality()       ; }
-  virtual Int_t          GetEventCentrality()              const { return fReader->GetEventCentrality()  ; }
-	
+  virtual Int_t          GetEventCentrality()              const { if(fUseTrackMultBins)
+                                                                        return GetTrackMultiplicity();
+                                                                   else return fReader->GetEventCentrality(); }
+  
   //Event plane
   virtual AliEventplane* GetEventPlane()                   const { return fReader->GetEventPlane()       ; }           
   virtual Double_t       GetEventPlaneAngle()              const { return fReader->GetEventPlaneAngle()  ; }           
@@ -153,11 +158,6 @@ public:
   virtual void           SwitchOnPlotsMaking()                   { fMakePlots = kTRUE       ; }
   virtual void           SwitchOffPlotsMaking()                  { fMakePlots = kFALSE      ; }
   
-  virtual Bool_t         DoEventSelect()                   const { return fUseSelectEvent   ; }   // Do correlation analysis with different event buffers
-
-  virtual void           SwitchOnEventSelection()                { fUseSelectEvent = kTRUE  ; }
-  virtual void           SwitchOffEventSelection()               { fUseSelectEvent = kFALSE ; } 
-  
   // Cluster energy/momentum cut
   
   virtual Float_t        GetMaxPt()                        const { return fMaxPt ; }
@@ -176,29 +176,31 @@ public:
   virtual void           SetPairTimeCut(Float_t t)               { fPairTimeCut  = t   ; } //ns
   virtual Float_t        GetPairTimeCut()                  const { return fPairTimeCut ; } //ns
   
+  // Number of TRD modules in front of EMCAL (year <=2012)
+  Int_t                  GetFirstSMCoveredByTRD()          const { return fTRDSMCovered ; }
+  void                   SetFirstSMCoveredByTRD(Int_t n)         { fTRDSMCovered    = n ; }
+  
   //Getters / Setters for parameters of event buffers
-    
-  virtual Int_t          GetMultiBin()                     const { return fMultiBin  ; } // number of bins in Multiplicity 
-  virtual Int_t          GetNZvertBin()                    const { return fNZvertBin ; } // number of bins in vertex   
-  virtual Int_t          GetNRPBin()                       const { return fNrpBin    ; } // number of bins in reaction plain 
+  
+  virtual Int_t          GetNZvertBin()                    const { return fNZvertBin ; } // number of bins in vertex
+  virtual Int_t          GetNRPBin()                       const { return fNrpBin    ; } // number of bins in reaction plain
   virtual Int_t          GetNCentrBin()                    const { return fNCentrBin ; } // number of bins in centrality
+  virtual Int_t          GetNTrackMultBin()                const { return GetNCentrBin(); } // number of bins in track multiplicity
   virtual Int_t          GetNMaxEvMix()                    const { return fNmaxMixEv ; } // maximal number of events for mixin
-  virtual Float_t        GetZvertexCut()                   const { return GetReader()->GetZvertexCut();} // cut on vertex position  
-  virtual Int_t          GetMaxMulti()                     const { return fMaxMulti  ; }  
-  virtual Int_t          GetMinMulti()                     const { return fMinMulti  ; }  
-    
-  virtual Int_t          GetEventCentralityBin()          const;
-  virtual Int_t          GetEventRPBin()                  const;
-  virtual Int_t          GetEventVzBin()                  const;
-  virtual Int_t          GetEventMixBin()                 const;
+  virtual Float_t        GetZvertexCut()                   const { return GetReader()->GetZvertexCut();} // cut on vertex position
+  virtual Int_t          GetTrackMultiplicityBin()         const ;
+  virtual Int_t          GetEventCentralityBin()           const ;
+  virtual Int_t          GetEventRPBin()                   const ;
+  virtual Int_t          GetEventVzBin()                   const ;
+  virtual Int_t          GetEventMixBin()                  const ;
   virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const;
   
-  virtual void           SetMultiBin (Int_t n = 1 )              { fMultiBin  = n ; if(n < 1) fMultiBin  = 1 ; } // number of bins in Multiplicity  
   virtual void           SetNZvertBin(Int_t n = 1 )              { fNZvertBin = n ; if(n < 1) fNZvertBin = 1 ; } // number of bins for vertex position
-  virtual void           SetNRPBin   (Int_t n = 1 )              { fNrpBin    = n ; if(n < 1) fNrpBin    = 1 ; } // number of bins in reaction plain  
-  virtual void           SetNCentrBin(Int_t n = 1 )              { fNCentrBin = n ; if(n < 1) fNCentrBin = 1 ; } // number of bins in centrality 
+  virtual void           SetNRPBin   (Int_t n = 1 )              { fNrpBin    = n ; if(n < 1) fNrpBin    = 1 ; } // number of bins in reaction plain
+  virtual void           SetNCentrBin(Int_t n = 1 )              { fNCentrBin = n ; if(n < 1) fNCentrBin = 1 ; } // number of bins in centrality
+  virtual void           SetNTrackMultBin(Int_t n = 1 )          { SetNCentrBin(n); } // number of bins in track multiplicity
   virtual void           SetNMaxEvMix(Int_t n = 20)              { fNmaxMixEv = n ; if(n < 1) fNmaxMixEv = 1 ; } // maximal number of events for mixing
-  virtual void           SetMultiplicity(Int_t multimin, Int_t multimax) {fMinMulti = multimin ; fMaxMulti = multimax ; }
+  virtual void           SetTrackMultiplicityBin(Int_t bin, Int_t mult) { if(bin < 20) fTrackMultBins[bin] = mult ; }
   
   virtual void           SwitchOnTrackMultBins()                 { fUseTrackMultBins = kTRUE  ; }
   virtual void           SwitchOffTrackMultBins()                { fUseTrackMultBins = kFALSE ; }
@@ -219,12 +221,6 @@ public:
   virtual Double_t*      GetVertex(Int_t evtIndex)         const { return GetReader()->GetVertex(evtIndex) ; }
   virtual void           GetVertex(Double_t vertex[3],
                                    Int_t evtIndex)         const { GetReader()->GetVertex(vertex,evtIndex) ; }
-
-  
-  //MULTIPLICITY
-  
-  virtual Int_t GetTrackMultiplicity()                     const { return fReader->GetTrackMultiplicity() ; }
-  
   //VZERO
   
   virtual Int_t GetV0Signal(Int_t i )                      const { return fReader->GetV0Signal(i)         ; }
@@ -304,16 +300,15 @@ private:
   Float_t                    fMinPt ;              // Maximum pt of (trigger) particles in the analysis
   Float_t                    fMaxPt ;              // Minimum pt of (trigger) particles in the analysis
   Float_t                    fPairTimeCut;         // Maximum difference between time of cluster pairs (ns)
-  Int_t                      fMultiBin ;	         // Number of bins in event container for multiplicity
+  Int_t                      fTRDSMCovered;        // From which SM EMCal is covered by TRD
+
   Int_t                      fNZvertBin ;	         // Number of bins in event container for vertex position
   Int_t                      fNrpBin ;	           // Number of bins in event container for reaction plain
   Int_t                      fNCentrBin ;	         // Number of bins in event container for centrality
   Int_t                      fNmaxMixEv ;	         // Maximal number of events stored in buffer for mixing
   Bool_t                     fDoOwnMix;            // Do combinatorial background not the one provided by the frame
   Bool_t                     fUseTrackMultBins;    // Use track multiplicity and not centrality bins in mixing
-  Int_t                      fMaxMulti ;           // Maximum multiplicity of particles in the analysis
-  Int_t                      fMinMulti ;           // Maximum multiplicity of particles in the analysis
-  Bool_t                     fUseSelectEvent ;     // Select events based on multiplicity and vertex cuts
+  Int_t                      fTrackMultBins[20];   // Multiplicity bins limits. Number of bins set with SetNTrackMult() that calls SetNCentrBin().
   Bool_t                     fMakePlots   ;        // Print plots
     
   TClonesArray*              fInputAODBranch ;     //! Selected input particles branch
@@ -338,7 +333,7 @@ private:
   AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy ctor
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrBaseClass,23)
+  ClassDef(AliAnaCaloTrackCorrBaseClass,25)
 } ;
 
 

@@ -68,6 +68,7 @@ public:
     kStdRowsToCls085, 
     kStdCls70, 
     kStdChi2TPCCls35,
+    kStdUseTPCNcls,
     kNcustomQualityCuts
   };
   
@@ -76,7 +77,8 @@ public:
                                 AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID,
                                 AliPID::EParticleType pid,
                                 Float_t nsigmaFast,
-                                Int_t AODfilterBit);
+                                Int_t AODfilterBit,
+				Bool_t useTPCCrossedRows);
    AliRsnCutSetDaughterParticle(const char *name, 
 				AliRsnCutTrackQuality *rsnTrackQualityCut, 
 				AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID, 
@@ -87,7 +89,7 @@ public:
    virtual ~AliRsnCutSetDaughterParticle();
 
    void           Init();
-   void           InitStdQualityCuts();
+   void           InitStdQualityCuts(Bool_t useTPCCrossedRows=kTRUE);
    void           SetNsigmaForFastTPCpid(Float_t nsigma) {fNsigmaTPC=nsigma; return;};
    void           SetNsigmaForFastTOFpid(Float_t nsigma) {fNsigmaTOF=nsigma; return;};
    void           SetAODTrackCutFilterBit(Int_t ibit) {fAODTrkCutFilterBit=ibit; return;}
@@ -117,7 +119,7 @@ public:
    Float_t               fEtaRange[2]; //single track eta range (min, max)
    Bool_t                fIsUse2011stdQualityCuts;//flag to enalble std quality cuts 2011 
    Bool_t                fIsUse2011stdQualityCutsHighPt;//flag to enalble std quality cuts 2011 
- 
+
    ClassDef(AliRsnCutSetDaughterParticle, 5) // cut definitions for K*
 
 };

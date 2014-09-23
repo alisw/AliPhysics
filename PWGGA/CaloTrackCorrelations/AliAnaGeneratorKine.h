@@ -24,7 +24,7 @@ class AliAnaGeneratorKine : public AliAnaCaloTrackCorrBaseClass {
 public:
   
   AliAnaGeneratorKine() ; // default ctor
-  virtual ~AliAnaGeneratorKine() { ; } //virtual dtor              
+  virtual ~AliAnaGeneratorKine() { delete fFidCutTrigger ; } //virtual dtor
   
   Bool_t CorrelateWithPartonOrJet(TLorentzVector trigger,
                                   Int_t   indexTrig,
@@ -51,12 +51,31 @@ public:
                                Int_t  pdgTrig,
                                Bool_t leading[4],     
                                Bool_t isolated[4]) ;
-  
-  void    MakeAnalysisFillAOD()  { ; }
-  
-  void    MakeAnalysisFillHistograms() ; 
     
+  void    MakeAnalysisFillHistograms() ;
+  
+  void    SetTriggerDetector( TString name ) { fTriggerDetector = name ; }
+  void    SetCalorimeter    ( TString name ) { fCalorimeter     = name ; }
+  
+  void    SetMinChargedPt   ( Float_t pt )   { fMinChargedPt    = pt   ; }
+  void    SetMinNeutralPt   ( Float_t pt )   { fMinNeutralPt    = pt   ; }
+  
+  // Detector for trigger particles acceptance
+  AliFiducialCut * GetFiducialCutForTrigger()
+  { if(!fFidCutTrigger)  fFidCutTrigger  = new AliFiducialCut(); return  fFidCutTrigger  ; }
+  virtual void     SetFiducialCut(AliFiducialCut * fc)
+  { delete fFidCutTrigger;  fFidCutTrigger  = fc      ; }
+
+  
 private:
+  
+  TString     fTriggerDetector;             //! trigger detector, for fiducial region
+  TString     fCalorimeter;                 //! detector neutral particles, for fiducial region
+  
+  AliFiducialCut* fFidCutTrigger;           //! fiducial cut for the trigger detector
+  
+  Float_t     fMinChargedPt;                //! Minimum energy for charged particles in correlation
+  Float_t     fMinNeutralPt;                //! Minimum energy for neutral particles in correlation
   
   AliStack  * fStack;                       //! access stack
   
@@ -84,8 +103,11 @@ private:
   
   // Histograms arrays for 4 isolation options and 2 options on leading or not leading particle
   
-  TH1F      * fhPtPhotonLeading[4];         //! Leading photon
-  TH1F      * fhPtPi0Leading[4];            //! Leading pi0
+  TH1F      * fhPtPhotonLeading[4];         //! Leading photon pT
+  TH1F      * fhPtPi0Leading[4];            //! Leading pi0 pT
+
+  TH2F      * fhPtPhotonLeadingSumPt[4];    //! Leading photon pT vs sum in cone
+  TH2F      * fhPtPi0LeadingSumPt[4];       //! Leading pi0 pT vs sum in cone
   
   TH1F      * fhPtPhotonLeadingIsolated[4]; //! Leading photon, isolated
   TH1F      * fhPtPi0LeadingIsolated[4];    //! Leading pi0, isolated
@@ -128,7 +150,7 @@ private:
   AliAnaGeneratorKine              (const AliAnaGeneratorKine & gk) ; // cpy ctor
   AliAnaGeneratorKine & operator = (const AliAnaGeneratorKine & gk) ; // cpy assignment
   
-  ClassDef(AliAnaGeneratorKine,2)
+  ClassDef(AliAnaGeneratorKine,3)
   
 } ;
 

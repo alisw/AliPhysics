@@ -2,22 +2,20 @@
 
 #include "TMath.h"
 #include "TAxis.h"
-#include "TSystem.h" 
 #include "TProfile.h" 
-#include "TH2F.h" 
-#include "TH3F.h" 
-#include "TFile.h" 
-#include "TPRegexp.h"
+#include "TProfile2D.h" 
+#include "TH2D.h" 
+#include "TH3D.h" 
 
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
+#include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
-#include "AliESDInputHandler.h"
-#include "AliESDpid.h"
+
 #include "AliCentrality.h"
 #include "AliTracker.h"
-#include "AliAODInputHandler.h"
+
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
@@ -27,7 +25,7 @@
 using namespace std;
 
 /**
- * Class for for NetParticle Distributions
+ * Class for NetParticle Distributions
  * -- Create input for distributions
  * Authors: Jochen Thaeder <jochen@thaeder.de>
  *          Michael Weber <m.weber@cern.ch>
@@ -42,31 +40,19 @@ ClassImp(AliAnalysisNetParticleDistribution)
  */
 
 //________________________________________________________________________
-AliAnalysisNetParticleDistribution::AliAnalysisNetParticleDistribution() :
-  fHelper(NULL),
-  fPdgCode(2212),
+AliAnalysisNetParticleDistribution::AliAnalysisNetParticleDistribution() : 
+  AliAnalysisNetParticleBase("Dist", "Dist"),
+
   fOutList(NULL),
 
-  fESD(NULL),
-  fESDTrackCuts(NULL),
-  fPIDResponse(NULL),
-  fAOD(NULL),
-  fArrayMC(NULL),
-  fAODtrackCutBit(1024),
-  fIsMC(kFALSE),
-  fMCEvent(NULL),
-  fStack(NULL),
-
-  fOrder(12),
+  fOrder(8),
   fNNp(6),
   fNp(NULL),
+  fNpPt(NULL),
   fNMCNp(7),
   fMCNp(NULL),
-  fFactp(NULL),
-
-  fCentralityBin(-1.),
-  fNTracks(0),
-
+  fMCNpPt(NULL),
+  fRedFactp(NULL),
   fHnTrackUnCorr(NULL) {
   // Constructor   
   
@@ -81,13 +67,29 @@ AliAnalysisNetParticleDistribution::~AliAnalysisNetParticleDistribution() {
     if (fNp[ii]) delete[] fNp[ii];
   if (fNp) delete[] fNp;
 
+  for (Int_t ii = 0; ii < 2; ++ii) {
+    for (Int_t kk = 0; kk < 2; ++kk)
+      if (fNpPt[ii][kk]) delete[] fNpPt[ii][kk];      
+    if (fNpPt[ii]) delete[] fNpPt[ii];
+  }
+  if (fNpPt) delete[] fNpPt;
+
+  // -------------------------------------------
   for (Int_t ii = 0; ii < fNMCNp; ++ii) 
     if (fMCNp[ii]) delete[] fMCNp[ii];
   if (fMCNp) delete[] fMCNp;
 
+  for (Int_t ii = 0; ii < 2; ++ii) {
+    for (Int_t kk = 0; kk < 2; ++kk)
+      if (fMCNpPt[ii][kk]) delete[] fMCNpPt[ii][kk];      
+    if (fMCNpPt[ii]) delete[] fMCNpPt[ii];
+  }
+  if (fMCNpPt) delete[] fMCNpPt;
+
+  // -------------------------------------------
   for (Int_t ii = 0; ii <= fOrder; ++ii) 
-    if (fFactp[ii]) delete[] fFactp[ii];
-  if (fFactp) delete[] fFactp;
+    if (fRedFactp[ii]) delete[] fRedFactp[ii];
+  if (fRedFactp) delete[] fRedFactp;
 
   return;
 }
@@ -99,66 +101,108 @@ AliAnalysisNetParticleDistribution::~AliAnalysisNetParticleDistribution() {
  */
 
 //________________________________________________________________________
-Int_t AliAnalysisNetParticleDistribution::Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts* cuts, Bool_t isMC, Int_t trackCutBit) {
-  // -- Initialize
+void AliAnalysisNetParticleDistribution::Process() {
+  // -- Process NetParticle Distributions
 
-  // -- Get Helper
-  // ---------------
-  fHelper           = helper;
-
-  // -- ESD track cuts
-  // -------------------
-  fESDTrackCuts     = cuts;
-
-  // -- Is MC
-  // ----------
-  fIsMC             = isMC;
-
-  // -- AOD track filter bit
-  // -------------------------
-  fAODtrackCutBit   = trackCutBit;
-
-  // -- Get particle species / pdgCode
-  // -------------------------
+  // -- Fill ESD/AOD tracks
+  ProcessTracks();
+      
+  // -- Fill MC truth particles (missing for AOD MW - However AliVParticle already used)
   if (fIsMC)
-    fPdgCode        = AliPID::ParticleCode(fHelper->GetParticleSpecies());
+    ProcessParticles();
+
+  return;
+}
+
+/*
+ * ---------------------------------------------------------------------------------
+ *                                Methods - private
+ * ---------------------------------------------------------------------------------
+ */
+
+//________________________________________________________________________
+void AliAnalysisNetParticleDistribution::Init() {
+  // -- Init eventwise
 
   // ------------------------------------------------------------------
   // -- N particles / N anti-particles
   // ------------------------------------------------------------------
-  //  Np          : arr[set][particle]
-  //  MCNp        : arr[set][particle] - MC
-  //  Factorials  : arr[order][particle]
+  //  Np            : arr[set][particle]
+  //  MCNp          : arr[set][particle] - MC
+  //  Factorials    : arr[order][particle]
+
+  //  NpPt          : arr[phiBin][particle][ptBins]
+  //  MCNpPt        : arr[phiBin][particle][ptBins] - MC
+  //  FactorialsPt  : arr[order][particle][ptBins]
   
-  fNp = new Double_t*[fNNp];
+  //   set      ->  fNNp  / fNMCNp
+  //   order    ->  fOrder
+  //   particle ->  2 {0,1}
+  //   phiBin   ->  2 {0,1}
+
+  fNp = new Int_t*[fNNp];
   for (Int_t ii = 0 ; ii < fNNp; ++ii)
-    fNp[ii] = new Double_t[2];
+    fNp[ii] = new Int_t[2];
 
-  fMCNp = new Double_t*[fNMCNp];
+  fNpPt = new Int_t**[2];
+  for (Int_t ii = 0 ; ii < 2; ++ii) {
+    fNpPt[ii] = new Int_t*[2];
+    for (Int_t kk = 0 ; kk < 2; ++kk)
+      fNpPt[ii][kk] = new Int_t[AliAnalysisNetParticleHelper::fgkfHistNBinsPt];
+  }
+
+  // -------------------------------------------
+  fMCNp = new Int_t*[fNMCNp];
   for (Int_t ii = 0 ; ii < fNMCNp; ++ii)
-    fMCNp[ii] = new Double_t[2];
+    fMCNp[ii] = new Int_t[2];
 
-  fFactp = new Double_t*[fOrder+1];
+  fMCNpPt = new Int_t**[2];
+  for (Int_t ii = 0 ; ii < 2; ++ii) {
+    fMCNpPt[ii] = new Int_t*[2];
+    for (Int_t kk = 0 ; kk < 2; ++kk)
+      fMCNpPt[ii][kk] = new Int_t[AliAnalysisNetParticleHelper::fgkfHistNBinsPt];
+  }
+
+  // -------------------------------------------
+  fRedFactp = new Double_t*[fOrder+1];
   for (Int_t ii = 0 ; ii <= fOrder; ++ii)
-    fFactp[ii] = new Double_t[2];
-
-  ResetEvent();
-
-  return 0;
+    fRedFactp[ii] = new Double_t[2];
 }
 
 //________________________________________________________________________
-void AliAnalysisNetParticleDistribution::CreateHistograms(TList* outList) {
+void AliAnalysisNetParticleDistribution::Reset() {
+  // -- Reset eventwise
+
+  // -- Reset N particles/anti-particles
+  for (Int_t ii = 0; ii < fNNp; ++ii) 
+    for (Int_t jj = 0; jj < 2; ++jj)
+      fNp[ii][jj] = 0;
+
+  for (Int_t ii = 0; ii < 2; ++ii) 
+    for (Int_t jj = 0; jj < 2; ++jj)
+      for (Int_t kk = 0; kk < AliAnalysisNetParticleHelper::fgkfHistNBinsPt; ++kk)
+	fNpPt[ii][jj][kk] = 0;
+
+  // -- Reset N MC particles/anti-particles
+  for (Int_t ii = 0; ii < fNMCNp; ++ii) 
+    for (Int_t jj = 0; jj < 2; ++jj)
+      fMCNp[ii][jj] = 0;
+
+  for (Int_t ii = 0; ii < 2; ++ii) 
+    for (Int_t jj = 0; jj < 2; ++jj)
+      for (Int_t kk = 0; kk < AliAnalysisNetParticleHelper::fgkfHistNBinsPt; ++kk)
+	fMCNpPt[ii][jj][kk] = 0;
+
+  // -- Reset reduced factorials for particles/anti-particles
+  for (Int_t ii = 0; ii <= fOrder; ++ii) 
+    for (Int_t jj = 0; jj < 2; ++jj)
+      fRedFactp[ii][jj] = 1.;
+
+}
+
+//________________________________________________________________________
+void AliAnalysisNetParticleDistribution::CreateHistograms() {
   // -- Add histograms to outlist
-
-  fOutList = outList;
-
-  // -- Get ranges for pt and eta 
-  Float_t etaRange[2];
-  fESDTrackCuts->GetEtaRange(etaRange[0],etaRange[1]);
-
-  Float_t ptRange[2];
-  fESDTrackCuts->GetPtRange(ptRange[0],ptRange[1]);
 
   // ------------------------------------------------------------------
   // -- Get Probe Particle Container
@@ -177,8 +221,8 @@ void AliAnalysisNetParticleDistribution::CreateHistograms(TList* outList) {
 			     AliAnalysisNetParticleHelper::fgkfHistRangePt[1],   AliAnalysisNetParticleHelper::fgkfHistRangeSign[1]};
   
   // -- UnCorrected
-  fOutList->Add(new THnSparseF("fHnTrackUnCorr", "cent:eta:y:phi:pt:sign", 6, binHnUnCorr, minHnUnCorr, maxHnUnCorr));  
-  fHnTrackUnCorr = static_cast<THnSparseF*>(fOutList->Last());
+  fOutList->Add(new THnSparseD("hnTrackUnCorr", "cent:eta:y:phi:pt:sign", 6, binHnUnCorr, minHnUnCorr, maxHnUnCorr));  
+  fHnTrackUnCorr = static_cast<THnSparseD*>(fOutList->Last());
   fHnTrackUnCorr->Sumw2(); 
   fHnTrackUnCorr->GetAxis(0)->SetTitle("centrality");
   fHnTrackUnCorr->GetAxis(1)->SetTitle("#eta");
@@ -187,41 +231,74 @@ void AliAnalysisNetParticleDistribution::CreateHistograms(TList* outList) {
   fHnTrackUnCorr->GetAxis(4)->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fHnTrackUnCorr->GetAxis(5)->SetTitle("sign");
 
-  fHelper->BinLogAxis(fHnTrackUnCorr, 1);
+  fHelper->BinLogAxis(fHnTrackUnCorr, 4, fESDTrackCuts);
+
+  for (Int_t idx = 1 ; idx <= fHnTrackUnCorr->GetAxis(4)->GetNbins(); ++idx)
+    printf("%02d |  %f > %f < %f\n", idx, fHnTrackUnCorr->GetAxis(4)->GetBinLowEdge(idx), fHnTrackUnCorr->GetAxis(4)->GetBinCenter(idx), fHnTrackUnCorr->GetAxis(4)->GetBinUpEdge(idx));
 
   // ------------------------------------------------------------------
   // -- Create net particle histograms
   // ------------------------------------------------------------------
 
+  // -- Get ranges for pt and eta 
+  Float_t etaRange[2];
+  fESDTrackCuts->GetEtaRange(etaRange[0],etaRange[1]);
+
+  Float_t ptRange[2];
+  fESDTrackCuts->GetPtRange(ptRange[0],ptRange[1]);
+
+  // ------------------------------------------------------------------
+
   TString sTitle("");
-  sTitle = (fHelper->GetUsePID()) ? Form("Uncorrected in |y| < %.1f", fHelper->GetRapidityMax()) : Form("Uncorrected in |#eta| < %.1f", etaRange[1]);
+  sTitle = (fHelper->GetUsePID()) ? Form("|y|<%.1f", fHelper->GetRapidityMax()) : Form("|#eta|<%.1f", etaRange[1]);
 
-  AddHistSet("fHDist",       Form("%s + #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));
-  AddHistSet("fHDistTPC",    Form("%s + #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
-  AddHistSet("fHDistTOF",    Form("%s + #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
+  // -- centrality dependent
+  AddHistSetCent("Dist",       Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));
+  AddHistSetCent("DistTPC",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
+  AddHistSetCent("DistTOF",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
 
-  AddHistSet("fHDistphi",    Form("%s + #it{p}_{T} [%.1f,%.1f] + #varphi [%.1f,%.1f]", 
-				  sTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-  AddHistSet("fHDistTPCphi", Form("%s + #it{p}_{T} [%.1f,%.1f] + #varphi [%.1f,%.1f]", 
-				  sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-  AddHistSet("fHDistTOFphi", Form("%s + #it{p}_{T} [%.1f,%.1f] + #varphi [%.1f,%.1f]", 
-				  sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+#if USE_PHI
+  AddHistSetCent("Distphi",    Form("%s,#it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
+				     sTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+  AddHistSetCent("DistTPCphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
+				     sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+  AddHistSetCent("DistTOFphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
+				     sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+#endif
+
+  // -- centrality + pt dependent
+  AddHistSetCentPt("PtDist",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));  
+#if USE_PHI
+  AddHistSetCentPt("PtDistphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
+				      sTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+#endif
   
   if (fIsMC) {
     TString sMCTitle("");
     sMCTitle = (fHelper->GetUsePID()) ?  Form("MC primary in |y| < %.1f", fHelper->GetRapidityMax()) : Form("MC primary in |#eta| < %.1f", etaRange[1]);
 
-    AddHistSet("fHMC",         Form("%s", sTitle.Data()));
-    AddHistSet("fHMCpt",       Form("%s + #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], ptRange[1]));
-    AddHistSet("fHMCptTPC",    Form("%s + #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
-    AddHistSet("fHMCptTOF",    Form("%s + #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
+    // -- centrality dependent
+    AddHistSetCent("MC",         Form("%s", sTitle.Data()));
 
-    AddHistSet("fHMCptphi",    Form("%s + #it{p}_{T} [%.1f,%.1f] + #varphi [%.1f,%.1f]", 
-				    sMCTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-    AddHistSet("fHMCptTPCphi", Form("%s + #it{p}_{T} [%.1f,%.1f] + #varphi [%.1f,%.1f]", 
-				    sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-    AddHistSet("fHMCptTOFphi", Form("%s + #it{p}_{T} [%.1f,%.1f] + #varphi [%.1f,%.1f]", 
-				    sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+    AddHistSetCent("MCpt",       Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], ptRange[1]));
+    AddHistSetCent("MCptTPC",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
+    AddHistSetCent("MCptTOF",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
+
+#if USE_PHI
+    AddHistSetCent("MCptphi",    Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
+				       sMCTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+    AddHistSetCent("MCptTPCphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
+				       sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+    AddHistSetCent("MCptTOFphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
+				       sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+#endif
+
+    // -- centrality + pt dependent
+    AddHistSetCentPt("PtMCpt",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], ptRange[1]));
+#if USE_PHI
+    AddHistSetCentPt("PtMCptphi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
+					sMCTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+#endif
   }
 
   // ------------------------------------------------------------------
@@ -229,92 +306,15 @@ void AliAnalysisNetParticleDistribution::CreateHistograms(TList* outList) {
   return;
 }
 
-//________________________________________________________________________
-Int_t AliAnalysisNetParticleDistribution::SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler,  AliMCEvent *mcEvent) {
-  // -- Setup Event
-  
-  ResetEvent();
-
-  // -- Get ESD objects
-  if(esdHandler){
-    fPIDResponse = esdHandler->GetPIDResponse();
-    fESD         = esdHandler->GetEvent();
-    fNTracks     = fESD->GetNumberOfTracks();
-  }
-
-  // -- Get AOD objects
-  else if(aodHandler){
-    fPIDResponse = aodHandler->GetPIDResponse();
-    fAOD         = aodHandler->GetEvent();
-    fNTracks     = fAOD->GetNumberOfTracks();
-    
-    if (fIsMC) {
-      fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (!fArrayMC)
-	AliFatal("No array of MC particles found !!!"); // MW  no AliFatal use return values
-    }
-  }
-
-  // -- Get MC objects
-  if (fIsMC && mcEvent) {
-    fMCEvent     = mcEvent;
-    if (fMCEvent)
-      fStack     = fMCEvent->Stack();
-  }
-
-  // -- Get CentralityBin
-  fCentralityBin = fHelper->GetCentralityBin();
-
-  return 0;
-}
-
-//________________________________________________________________________
-void AliAnalysisNetParticleDistribution::ResetEvent() {
-  // -- Reset event
-  
-  // -- Reset ESD Event
-  fESD       = NULL;
-
-  // -- Reset AOD Event
-  fAOD       = NULL;
-
-  // -- Reset MC Event
-  if (fIsMC)
-    fMCEvent = NULL;
-
-  // -- Reset N particles/anti-particles
-  for (Int_t ii = 0; ii < fNNp; ++ii) 
-    for (Int_t jj = 0; jj < 2; ++jj)
-      fNp[ii][jj] = 0.;
-  
-  // -- Reset N MC particles/anti-particles
-  for (Int_t ii = 0; ii < fNMCNp; ++ii) 
-    for (Int_t jj = 0; jj < 2; ++jj)
-      fMCNp[ii][jj] = 0.;
-
- // -- Reset factorials for particles/anti-particles
-  for (Int_t ii = 0; ii <= fOrder; ++ii) 
-    for (Int_t jj = 0; jj < 2; ++jj)
-      fFactp[ii][jj] = 0.;
-}
-
-//________________________________________________________________________
-Int_t AliAnalysisNetParticleDistribution::Process() {
-  // -- Process NetParticle Distributions
-
-  // -- Fill ESD/AOD tracks
-  ProcessTracks();
-      
-  // -- Fill MC truth particles (missing for AOD MW - However AliVParticle already used)
-  if (fIsMC)
-    ProcessParticles();
-
-  return 0;
-}
+/*
+ * ---------------------------------------------------------------------------------
+ *                                Methods - private
+ * ---------------------------------------------------------------------------------
+ */
 
 //________________________________________________________________________
 Int_t AliAnalysisNetParticleDistribution::ProcessTracks() {
-  // -- Process ESD/AOD tracks and fill QA histogram
+  // -- Process ESD/AOD tracks and fill histograms
 
   // -- Get ranges for AOD particles
   Float_t etaRange[2];
@@ -368,7 +368,7 @@ Int_t AliAnalysisNetParticleDistribution::ProcessTracks() {
       continue;
 
     // -- Check if accepted by PID from TPC or TPC+TOF
-    Double_t pid[2];
+    Double_t pid[3];
     if (!fHelper->IsTrackAcceptedPID(track, pid))
       continue;
 
@@ -385,7 +385,7 @@ Int_t AliAnalysisNetParticleDistribution::ProcessTracks() {
       yP,                                     //  2 rapidity
       track->Phi(),                           //  3 phi
       track->Pt(),                            //  4 pt
-      static_cast<Double_t>(track->Charge())                         //  5 sign
+      track->Charge()                         //  5 sign
     };
     
     fHnTrackUnCorr->Fill(aTrack);
@@ -394,48 +394,69 @@ Int_t AliAnalysisNetParticleDistribution::ProcessTracks() {
     // ------------------------------------------------------------------
     //  idxPart = 0 -> anti particle
     //  idxPart = 1 -> particle
-
     Int_t idxPart = (track->Charge() < 0) ? 0 : 1;
 
+    //  idxPhi  = 0 -> Full Acceptance
+    //  idxPhi  = 1 -> Partial Acceptance
+    Int_t idxPhi = 0;
+
+    //  idxPt       -> [0, nBins-1]
+    Int_t idxPt = static_cast<TAxis*>(fHnTrackUnCorr->GetAxis(4))->FindBin(track->Pt())-1;
+
+    // -- using pt Bins
+    fNpPt[idxPhi][idxPart][idxPt] += 1;
+
     // -- in pt Range
-    fNp[0][idxPart] += 1.;
+    fNp[0][idxPart] += 1;
 
     // -- in TPC pt Range
     if (track->Pt() <= fHelper->GetMinPtForTOFRequired())
-      fNp[1][idxPart] += 1.;
+      fNp[1][idxPart] += 1;
 
     // -- in TPC+TOF pt Range
     if (track->Pt() > fHelper->GetMinPtForTOFRequired())
-      fNp[2][idxPart] += 1.;
+      fNp[2][idxPart] += 1;
 
     // -- check phi range ----------------------------------------------------------
+#if USE_PHI
     if(!fHelper->IsTrackAcceptedPhi(track))
       continue;
+    idxPhi = 1;
+
+    // -- using pt Bins
+    fNpPt[idxPhi][idxPart][idxPt] += 1;
 
     // -- in pt Range
-    fNp[3][idxPart] += 1.;
+    fNp[3][idxPart] += 1;
 
     // -- in TPC pt Range
-    if (track->Pt() <= fHelper->GetMinPtForTOFRequired())
-      fNp[4][idxPart] += 1.;
-
+    if (track->Pt() <= fHelper->GetMinPtForTOFRequired()) 
+      fNp[4][idxPart] += 1;
+    
     // -- in TPC+TOF pt Range
     if (track->Pt() > fHelper->GetMinPtForTOFRequired())
-      fNp[5][idxPart] += 1.;
-  
+      fNp[5][idxPart] += 1;
+#endif
   } // for (Int_t idxTrack = 0; idxTrack < fESD->GetNumberOfTracks(); ++idxTrack) {
 
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
   // -- Fill Particle Fluctuation Histograms
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-  FillHistSet("fHDist",       fNp[0]);
-  FillHistSet("fHDistTPC",    fNp[1]);
-  FillHistSet("fHDistTOF",    fNp[2]);
-  FillHistSet("fHDistphi",    fNp[3]);
-  FillHistSet("fHDistTPCphi", fNp[4]);
-  FillHistSet("fHDistTOFphi", fNp[5]);
-    
+  FillHistSetCent("Dist",        0, kFALSE);
+  FillHistSetCent("DistTPC",     1, kFALSE);
+  FillHistSetCent("DistTOF",     2, kFALSE);
+
+  FillHistSetCentPt("PtDist",    0, kFALSE);
+
+#if USE_PHI
+  FillHistSetCent("Distphi",     3, kFALSE);
+  FillHistSetCent("DistTPCphi",  4, kFALSE);
+  FillHistSetCent("DistTOFphi",  5, kFALSE);
+
+  FillHistSetCentPt("PtDistphi", 1, kFALSE);
+#endif
+ 
   return 0;
 }
 
@@ -476,54 +497,77 @@ Int_t AliAnalysisNetParticleDistribution::ProcessParticles() {
     // ------------------------------------------------------------------
     //  idxPart = 0 -> anti particle
     //  idxPart = 1 -> particle
-
     Int_t idxPart = (particle->PdgCode() < 0) ? 0 : 1;
+
+    //  idxPhi  = 0 -> Full Acceptance
+    //  idxPhi  = 1 -> Partial Acceptance
+    Int_t idxPhi = 0;
+
+    //  idxPt       -> [0, nBins-1]
+    Int_t idxPt = static_cast<TAxis*>(fHnTrackUnCorr->GetAxis(4))->FindBin(particle->Pt()) - 1;
 
     // -- MCrapidity for identfied particles
     //    MCeta for charged particles
     fMCNp[0][idxPart] += 1.;        
+     
+    // -- Check main pt window
+    if (!(particle->Pt() > ptRange[0] && particle->Pt() <= ptRange[1]))
+      continue;
+
+    // -- using pt Bin
+    fMCNpPt[idxPhi][idxPart][idxPt] += 1;
 
     // -- in pt Range
-    if (particle->Pt() > ptRange[0] && particle->Pt() <= ptRange[1])
-      fMCNp[1][idxPart] += 1.;
-
+    fMCNp[1][idxPart] += 1;
+    
     // -- in TPC pt Range
-    if (particle->Pt() > ptRange[0] && particle->Pt() <= fHelper->GetMinPtForTOFRequired())
-      fMCNp[2][idxPart] += 1.;
+    if (particle->Pt() <= fHelper->GetMinPtForTOFRequired())
+      fMCNp[2][idxPart] += 1;
 
     // -- in TPC+TOF pt Range
-    if (particle->Pt() > fHelper->GetMinPtForTOFRequired() && particle->Pt() <= ptRange[1])
-      fMCNp[3][idxPart] += 1.;
-      
+    if (particle->Pt() > fHelper->GetMinPtForTOFRequired())
+      fMCNp[3][idxPart] += 1;
+
     // -- check phi range ----------------------------------------------------------
+#if USE_PHI
     if(!fHelper->IsParticleAcceptedPhi(particle))
       continue;
+    idxPhi = 1;
+
+    // -- using pt Bin
+    fMCNpPt[idxPhi][idxPart][idxPt] += 1;
     
     // -- in pt Range
-    if (particle->Pt() > ptRange[0] && particle->Pt() <= ptRange[1])
-      fMCNp[4][idxPart] += 1.;
+    fMCNp[4][idxPart] += 1;
 
     // -- in TPC pt Range
-    if (particle->Pt() > ptRange[0] && particle->Pt() <= fHelper->GetMinPtForTOFRequired())
-      fMCNp[5][idxPart] += 1.;
+    if (particle->Pt() <= fHelper->GetMinPtForTOFRequired())
+      fMCNp[5][idxPart] += 1;
 
     // -- in TPC+TOF pt Range
-    if (particle->Pt() > fHelper->GetMinPtForTOFRequired() && particle->Pt() <= ptRange[1])
-      fMCNp[6][idxPart] += 1.;
-
+    if (particle->Pt() > fHelper->GetMinPtForTOFRequired())
+      fMCNp[6][idxPart] += 1;
+#endif
   } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
   
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
   // -- Fill Particle Fluctuation Histograms
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-  FillHistSet("fHMC",         fMCNp[0]);
-  FillHistSet("fHMCpt",       fMCNp[1]);
-  FillHistSet("fHMCptTPC",    fMCNp[2]);
-  FillHistSet("fHMCptTOF",    fMCNp[3]);
-  FillHistSet("fHMCptphi",    fMCNp[4]);
-  FillHistSet("fHMCptTPCphi", fMCNp[5]);
-  FillHistSet("fHMCptTOFphi", fMCNp[6]);
+  FillHistSetCent("MC",          0, kTRUE);
+  FillHistSetCent("MCpt",        1, kTRUE);
+  FillHistSetCent("MCptTPC",     2, kTRUE);
+  FillHistSetCent("MCptTOF",     3, kTRUE);
+
+  FillHistSetCentPt("PtMCpt",    0, kTRUE);
+
+#if USE_PHI
+  FillHistSetCent("MCptphi",     4, kTRUE);
+  FillHistSetCent("MCptTPCphi",  5, kTRUE);
+  FillHistSetCent("MCptTOFphi",  6, kTRUE);
+
+  FillHistSetCentPt("PtMCptphi", 1, kTRUE);
+#endif
 
   return 0;
 }
@@ -535,105 +579,416 @@ Int_t AliAnalysisNetParticleDistribution::ProcessParticles() {
  */
 
 //________________________________________________________________________
-void  AliAnalysisNetParticleDistribution::AddHistSet(const Char_t *name, const Char_t *title)  {
+void  AliAnalysisNetParticleDistribution::AddHistSetCent(const Char_t *name, const Char_t *title)  {
   // -- Add histogram sets for particle and anti-particle
-
-  fOutList->Add(new TList);
-  TList *list = static_cast<TList*>(fOutList->Last());
-  list->SetName(name);
-  list->SetOwner(kTRUE);
+  //    dependence : centrality
 
   TString sName(name);
   TString sTitle(title);
 
-  Float_t ptRange[2];
-  fESDTrackCuts->GetPtRange(ptRange[0],ptRange[1]);
+  // -- Add List
+  fOutList->Add(new TList);
+  TList *list = static_cast<TList*>(fOutList->Last());
+  list->SetName(Form("f%s", name));
+  list->SetOwner(kTRUE);
 
-  TString sPtTitle("");
-  if (!sName.Contains("fHMC"))
-    sPtTitle += Form("#it{p}_{T} [%.1f,%.1f]", ptRange[0], ptRange[1]);
-  
-  TString sNetTitle(Form("N_{%s} - N_{%s}", fHelper->GetParticleTitleLatex(0).Data(), fHelper->GetParticleTitleLatex(1).Data()));
-  TString sSumTitle(Form("N_{%s} + N_{%s}", fHelper->GetParticleTitleLatex(0).Data(), fHelper->GetParticleTitleLatex(1).Data()));
+  // -- Get Bin Ranges
+  Int_t nBinsCent         =  AliAnalysisNetParticleHelper::fgkfHistNBinsCent;
+  Double_t centBinRange[] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[0], AliAnalysisNetParticleHelper::fgkfHistRangeCent[1]};
+
+  // -- Create Titles
+  TString sNetTitle(Form("N_{%s} - N_{%s}", fHelper->GetParticleTitleLatex(1).Data(), fHelper->GetParticleTitleLatex(0).Data()));
+  TString sSumTitle(Form("N_{%s} + N_{%s}", fHelper->GetParticleTitleLatex(1).Data(), fHelper->GetParticleTitleLatex(0).Data()));
 
   // -- Add Particle / Anti-Particle Distributions
   for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
-    list->Add(new TH2F(Form("%s%s", name, fHelper->GetParticleName(idxPart).Data()), 
-		       Form("N_{%s} : %s;Centrality;N_{%s}", fHelper->GetParticleTitleLatex(idxPart).Data(), sTitle.Data(), 
-			    fHelper->GetParticleTitleLatex(idxPart).Data()), 24, -0.5, 11.5, 2601, -0.5, 2600.49));
+    list->Add(new TH2D(Form("h%s%s", name, fHelper->GetParticleName(idxPart).Data()), 
+		       Form("N_{%s} : %s;Centrality;N_{%s}", fHelper->GetParticleTitleLatex(idxPart).Data(), sTitle.Data(), fHelper->GetParticleTitleLatex(idxPart).Data()),
+		       nBinsCent, centBinRange[0], centBinRange[1], 2601, -0.5, 2600.49));
   } // for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
    
   // -- Add NetParticle Distributions
-  list->Add(new TH2F(Form("%sNet%s", name, fHelper->GetParticleName(1).Data()), 
+  list->Add(new TH2D(Form("h%sNet%s", name, fHelper->GetParticleName(1).Data()), 
 		     Form("%s : %s;Centrality;%s", sNetTitle.Data(), sTitle.Data(), sNetTitle.Data()), 
-		     24, -0.5, 11.5, 601, -300.5, 300.49));
+		       nBinsCent, centBinRange[0], centBinRange[1], 601, -300.5, 300.49));
 
   // -- Add NetParticle vs SumParticle
-  list->Add(new TH2F(Form("%sNet%sOverSum", name, fHelper->GetParticleName(1).Data()), 
-		     Form("(%s)/(%s) : %s;Centrality;(%s)/(%s)", sNetTitle.Data(), sSumTitle.Data(), sTitle.Data(), 
-			  sNetTitle.Data(), sSumTitle.Data()), 24, -0.5, 11.5, 801, -20.5, 20.49));
+  list->Add(new TH2D(Form("h%sNet%sOverSum", name, fHelper->GetParticleName(1).Data()), 
+		     Form("(%s)/(%s) : %s;Centrality;(%s)/(%s)", sNetTitle.Data(), sSumTitle.Data(), sTitle.Data(), sNetTitle.Data(), sSumTitle.Data()), 
+		       nBinsCent, centBinRange[0], centBinRange[1], 41, -2.5, 2.49));
 
+  // -----------------------------------------------------------------------------------------------
+
+  // -- Add Particle / Anti-Particle Distributions
+  for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
+    list->Add(new TH2D(Form("h%s%sX", name, fHelper->GetParticleName(idxPart).Data()), 
+		       Form("N_{%s} : %s;Centrality;N_{%s}", fHelper->GetParticleTitleLatex(idxPart).Data(), sTitle.Data(), fHelper->GetParticleTitleLatex(idxPart).Data()),
+		       nBinsCent, centBinRange[0], centBinRange[1], 2601, -0.5, 2600.49));
+  } // for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
+   
+  // -- Add NetParticle Distributions
+  list->Add(new TH2D(Form("h%sNet%sX", name, fHelper->GetParticleName(1).Data()), 
+		     Form("%s : %s;Centrality;%s", sNetTitle.Data(), sTitle.Data(), sNetTitle.Data()), 
+		       nBinsCent, centBinRange[0], centBinRange[1], 601, -300.5, 300.49));
+
+  // -- Add NetParticle vs SumParticle
+  list->Add(new TH2D(Form("h%sNet%sOverSumX", name, fHelper->GetParticleName(1).Data()), 
+		     Form("(%s)/(%s) : %s;Centrality;(%s)/(%s)", sNetTitle.Data(), sSumTitle.Data(), sTitle.Data(), sNetTitle.Data(), sSumTitle.Data()), 
+		       nBinsCent, centBinRange[0], centBinRange[1], 41, -2.5, 2.49));
+
+  // -----------------------------------------------------------------------------------------------
   // -- Add TProfiles for <NetParticle^k>
+  // -----------------------------------------------------------------------------------------------
   for (Int_t idx = 1; idx <= fOrder; ++idx) {
-    list->Add(new TProfile(Form("%sNet%s%dM", name, fHelper->GetParticleName(1).Data(), idx), 
-			   Form("(%s)^{%d} : %s;Centrality;(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx), 
-			   24, -0.5, 11.5));
+    list->Add(new TProfile(Form("p%sNet%s%dM", name, fHelper->GetParticleName(1).Data(), idx), 
+			   Form("(%s)^{%d} : %s;Centrality;(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
+			   nBinsCent, centBinRange[0], centBinRange[1]));
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // -- Add TProfiles for <NetParticle^k> for every SubSample
+  // -----------------------------------------------------------------------------------------------
+  for (Int_t idxSub = 0; idxSub < fHelper->GetNSubSamples(); ++ idxSub) {
+    for (Int_t idx = 1; idx <= fOrder; ++idx) {
+      list->Add(new TProfile(Form("p%sNet%s%dM_%02d", name, fHelper->GetParticleName(1).Data(), idx, idxSub), 
+			     Form("(%s)^{%d} : %s;Centrality;(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
+			     nBinsCent, centBinRange[0], centBinRange[1]));
+    }
   }
   
+  // -----------------------------------------------------------------------------------------------
   // -- Add TProfiles for <f_ik>
+  // -----------------------------------------------------------------------------------------------
   list->Add(new TList);
   TList *fikList = static_cast<TList*>(list->Last());
-  fikList->SetName(Form("%sFik",name));
+  fikList->SetName(Form("f%sFik",name));
   fikList->SetOwner(kTRUE);
 
   for (Int_t ii = 0; ii <= fOrder; ++ii) {
     for (Int_t kk = 0; kk <= fOrder; ++kk) {
-      fikList->Add(new TProfile(Form("%sNet%sF%02d%02d", name, fHelper->GetParticleName(1).Data(), ii, kk),
-				Form("f_{%d%d} : %s;Centrality;f_{%d%d}", ii, kk, sTitle.Data(), ii, kk), 24, -0.5, 11.5));
+      fikList->Add(new TProfile(Form("p%sNet%sF%02d%02d", name, fHelper->GetParticleName(1).Data(), ii, kk),
+				Form("f_{%02d%02d} : %s;Centrality;f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+				nBinsCent, centBinRange[0], centBinRange[1]));
     }
+  }
+
+  // -- Add counter for number of Non-zero entries
+  for (Int_t idxCent = 0; idxCent < nBinsCent; ++idxCent) 
+    fikList->Add(new TH2D(Form("p%sNet%sFCounts_%02d", name, fHelper->GetParticleName(1).Data(), idxCent),
+			  Form("f_ik counts : %s Cent %d;i;k;", sTitle.Data(), idxCent),
+			  fOrder+1, -0.5, Double_t(fOrder)+0.49, fOrder+1, -0.5, Double_t(fOrder)+0.49));
+  
+  // -----------------------------------------------------------------------------------------------
+  // -- Add TProfiles for <f_ik> for every SubSample
+  // -----------------------------------------------------------------------------------------------
+  for (Int_t idxSub = 0; idxSub < fHelper->GetNSubSamples(); ++ idxSub) {
+    list->Add(new TList);
+    TList *fikListSub = static_cast<TList*>(list->Last());
+    fikListSub->SetName(Form("f%sFik_%02d",name, idxSub));
+    fikListSub->SetOwner(kTRUE);
+
+    for (Int_t ii = 0; ii <= fOrder; ++ii) {
+      for (Int_t kk = 0; kk <= fOrder; ++kk) {
+	fikListSub->Add(new TProfile(Form("p%sNet%sF%02d%02d_%02d", name, fHelper->GetParticleName(1).Data(), ii, kk, idxSub),
+				     Form("f_{%02d%02d} : %s;Centrality;f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk),
+				     nBinsCent, centBinRange[0], centBinRange[1]));
+      }
+    }
+
+    // -- Add counter for number of Non-zero entries
+    for (Int_t idxCent = 0; idxCent < nBinsCent; ++idxCent) 
+      fikListSub->Add(new TH2D(Form("p%sNet%sFCounts_%02d_%02d", name, fHelper->GetParticleName(1).Data(), idxCent, idxSub),
+			       Form("f_ik counts : %s Cent %d;i;k;", sTitle.Data(), idxCent),
+			       fOrder+1, -0.5, Double_t(fOrder)+0.49, fOrder+1, -0.5, Double_t(fOrder)+0.49));
   }
   
   return;
 }
 
 //________________________________________________________________________
-void AliAnalysisNetParticleDistribution::FillHistSet(const Char_t *name, Double_t *np)  {
+void  AliAnalysisNetParticleDistribution::AddHistSetCentPt(const Char_t *name, const Char_t *title)  {
   // -- Add histogram sets for particle and anti-particle
+  //    dependence : centrality and pt 
+  
+  TString sName(name);
+  TString sTitle(title);
 
-  TList *list = static_cast<TList*>(fOutList->FindObject(name));
+  // -- Add List
+  fOutList->Add(new TList);
+  TList *list = static_cast<TList*>(fOutList->Last());
+  list->SetName(Form("f%s", name));
+  list->SetOwner(kTRUE);
 
+  // -- Get Bin Ranges
+  Int_t nBinsPt           =  AliAnalysisNetParticleHelper::fgkfHistNBinsPt;
+  Double_t ptBinRange[]   = {-0.5, AliAnalysisNetParticleHelper::fgkfHistNBinsPt - 0.5};
+
+  Int_t nBinsCent         =  AliAnalysisNetParticleHelper::fgkfHistNBinsCent;
+  Double_t centBinRange[] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[0], AliAnalysisNetParticleHelper::fgkfHistRangeCent[1]};
+
+  // -- Create Titles
+  TString sNetTitle(Form("N_{%s} - N_{%s}", fHelper->GetParticleTitleLatex(1).Data(), fHelper->GetParticleTitleLatex(0).Data()));
+  TString sSumTitle(Form("N_{%s} + N_{%s}", fHelper->GetParticleTitleLatex(1).Data(), fHelper->GetParticleTitleLatex(0).Data()));
+
+  // -- Add Particle / Anti-Particle Distributions
+  for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
+    list->Add(new TH3D(Form("h%s%s", name, fHelper->GetParticleName(idxPart).Data()), 
+		       Form("N_{%s} : %s;Centrality;N_{%s}", fHelper->GetParticleTitleLatex(idxPart).Data(), sTitle.Data(), fHelper->GetParticleTitleLatex(idxPart).Data()),
+		       nBinsCent, centBinRange[0], centBinRange[1], nBinsPt, ptBinRange[0], ptBinRange[1], 2601, -0.5, 2600.49));
+  } // for (Int_t idxPart = 0; idxPart < 2; ++idxPart) {
+   
+  // -- Add NetParticle Distributions
+  list->Add(new TH3D(Form("h%sNet%s", name, fHelper->GetParticleName(1).Data()), 
+		     Form("%s : %s;Centrality;%s", sNetTitle.Data(), sTitle.Data(), sNetTitle.Data()),
+		     nBinsCent, centBinRange[0], centBinRange[1], nBinsPt, ptBinRange[0], ptBinRange[1], 601, -300.5, 300.49));
+
+  // -- Add NetParticle vs SumParticle
+  list->Add(new TH3D(Form("h%sNet%sOverSum", name, fHelper->GetParticleName(1).Data()), 
+		     Form("(%s)/(%s) : %s;Centrality;(%s)/(%s)", sNetTitle.Data(), sSumTitle.Data(), sTitle.Data(), sNetTitle.Data(), sSumTitle.Data()), 
+		     nBinsCent, centBinRange[0], centBinRange[1], nBinsPt, ptBinRange[0], ptBinRange[1], 41, -2.5, 2.49));
+
+  // -----------------------------------------------------------------------------------------------
+  // -- Add TProfiles for <NetParticle^k>
+  // -----------------------------------------------------------------------------------------------
+  for (Int_t idx = 1; idx <= fOrder; ++idx) {
+    list->Add(new TProfile2D(Form("p%sNet%s%dM", name, fHelper->GetParticleName(1).Data(), idx), 
+			     Form("(%s)^{%d} : %s;Centrality;(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
+			     nBinsCent, centBinRange[0], centBinRange[1], nBinsPt, ptBinRange[0], ptBinRange[1]));
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // -- Add TProfiles for <NetParticle^k>  for every SubSample
+  // -----------------------------------------------------------------------------------------------
+  for (Int_t idxSub = 0; idxSub < fHelper->GetNSubSamples(); ++ idxSub) {
+    for (Int_t idx = 1; idx <= fOrder; ++idx) {
+      list->Add(new TProfile2D(Form("p%sNet%s%dM_%02d", name, fHelper->GetParticleName(1).Data(), idx, idxSub), 
+			       Form("(%s)^{%d} : %s;Centrality;(%s)^{%d}", sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
+			       nBinsCent, centBinRange[0], centBinRange[1], nBinsPt, ptBinRange[0], ptBinRange[1]));
+    }
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  // -- Add TProfiles for <f_ik>
+  // -----------------------------------------------------------------------------------------------
+  list->Add(new TList);
+  TList *fikListPt = static_cast<TList*>(list->Last());
+  fikListPt->SetName(Form("f%sPtFik",name));
+  fikListPt->SetOwner(kTRUE);
+
+  for (Int_t ii = 0; ii <= fOrder; ++ii) {
+    for (Int_t kk = 0; kk <= fOrder; ++kk) {
+      fikListPt->Add(new TProfile2D(Form("p%sNet%sF%02d%02d", name, fHelper->GetParticleName(1).Data(), ii, kk),
+				    Form("f_{%02d%02d} : %s;Centrality;#it{p}_{T} (GeV/#it{c});f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk), 
+				    nBinsCent, centBinRange[0], centBinRange[1], nBinsPt, ptBinRange[0], ptBinRange[1]));
+    }
+  }
+
+  // -- Add counter for number of Non-zero entries
+  for (Int_t idxCent = 0; idxCent < nBinsCent; ++idxCent) 
+    fikListPt->Add(new TH3D(Form("p%sNet%sFCounts_%02d", name, fHelper->GetParticleName(1).Data(), idxCent),
+			    Form("f_ik counts : %s Cent %d;i;k;#it{p}_{T} Bins", sTitle.Data(), idxCent),
+			    fOrder+1, -0.5, Double_t(fOrder)+0.49, fOrder+1, -0.5, Double_t(fOrder)+0.49, nBinsPt+1, -0.5, Double_t(nBinsPt)+0.49));
+ 
+  // -----------------------------------------------------------------------------------------------
+  // -- Add TProfiles for <f_ik> for every SubSample
+  // -----------------------------------------------------------------------------------------------
+  for (Int_t idxSub = 0; idxSub < fHelper->GetNSubSamples(); ++ idxSub) {
+    list->Add(new TList);
+    TList *fikListPtSub = static_cast<TList*>(list->Last());
+    fikListPtSub->SetName(Form("f%sPtFik_%02d",name, idxSub));
+    fikListPtSub->SetOwner(kTRUE);
+    
+    for (Int_t ii = 0; ii <= fOrder; ++ii) {
+      for (Int_t kk = 0; kk <= fOrder; ++kk) {
+	fikListPtSub->Add(new TProfile2D(Form("p%sNet%sF%02d%02d_%02d", name, fHelper->GetParticleName(1).Data(), ii, kk, idxSub),
+					 Form("f_{%02d%02d} : %s;Centrality;#it{p}_{T} (GeV/#it{c});f_{%02d%02d}", ii, kk, sTitle.Data(), ii, kk), 
+					 nBinsCent, centBinRange[0], centBinRange[1], nBinsPt, ptBinRange[0], ptBinRange[1]));
+      }
+    }
+
+    // -- Add counter for number of Non-zero entries
+    for (Int_t idxCent = 0; idxCent < nBinsCent; ++idxCent) 
+      fikListPtSub->Add(new TH3D(Form("p%sNet%sFCounts_%02d_%02d", name, fHelper->GetParticleName(1).Data(), idxCent, idxSub),
+				 Form("f_ik counts : %s Cent %d;i;k;#it{p}_{T} Bins", sTitle.Data(), idxCent),
+				 fOrder+1, -0.5, Double_t(fOrder)+0.49, fOrder+1, -0.5, Double_t(fOrder)+0.49, nBinsPt+1, -0.5, Double_t(nBinsPt)+0.49));
+  }
+
+  return;
+}
+
+//________________________________________________________________________
+void AliAnalysisNetParticleDistribution::FillHistSetCent(const Char_t *name, Int_t idx, Bool_t isMC)  {
+  // -- Fill histogram sets for particle and anti-particle
+  //    dependence : centrality 
+  
+  // -- Get List
+  TList *list = static_cast<TList*>(fOutList->FindObject(Form("f%s",name)));
+  
+  // -- Get Centrality Bin
   Float_t centralityBin = fHelper->GetCentralityBin();
 
-  (static_cast<TH2F*>(list->FindObject(Form("%s%s", name, fHelper->GetParticleName(0).Data()))))->Fill(centralityBin, np[0]);
-  (static_cast<TH2F*>(list->FindObject(Form("%s%s", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, np[1]);
+  // -- Select MC or Data
+  Int_t **np = (isMC) ? fMCNp : fNp;
 
-  Double_t sumNp    = np[1]+np[0];
-  Double_t deltaNp  = np[1]-np[0];
+  // -----------------------------------------------------------------------------------------------
 
-  (static_cast<TH2F*>(list->FindObject(Form("%sNet%s",  name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp);
-  (static_cast<TH2F*>(list->FindObject(Form("%sNet%sOverSum", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp/sumNp);
+  Int_t sumNp   = np[idx][1]+np[idx][0];  // p + pbar
+  Int_t deltaNp = np[idx][1]-np[idx][0];  // p - pbar
+
+  // -- Fill Particle / Anti-Particle Distributions
+  (static_cast<TH2D*>(list->FindObject(Form("h%s%s", name, fHelper->GetParticleName(0).Data()))))->Fill(centralityBin, np[idx][0]);
+  (static_cast<TH2D*>(list->FindObject(Form("h%s%s", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, np[idx][1]);
+
+  // -- Fill NetParticle Distributions
+  (static_cast<TH2D*>(list->FindObject(Form("h%sNet%s",  name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNp);
+
+  // -- Fill NetParticle vs SumParticle
+  Double_t deltaNpOverSumNp = (sumNp == 0.) ? 0. : deltaNp/Double_t(sumNp);
+  (static_cast<TH2D*>(list->FindObject(Form("h%sNet%sOverSum", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNpOverSumNp);
+
+  // -----------------------------------------------------------------------------------------------
+
+  Double_t CENT[7] = {1.157990, 1.153218, 1.147382, 1.142218, 1.139568, 1.138152, 1.134517};
+
+  Double_t sumNpX   = np[idx][1]+(np[idx][0]*CENT[Int_t(centralityBin)]);
+  Double_t deltaNpX = np[idx][1]-(np[idx][0]*CENT[Int_t(centralityBin)]);
+
+  // -- Fill Particle / Anti-Particle Distributions
+  (static_cast<TH2D*>(list->FindObject(Form("h%s%sX", name, fHelper->GetParticleName(0).Data()))))->Fill(centralityBin, np[idx][0]*CENT[Int_t(centralityBin)]);
+  (static_cast<TH2D*>(list->FindObject(Form("h%s%sX", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, np[idx][1]);
+
+  // -- Fill NetParticle Distributions
+  (static_cast<TH2D*>(list->FindObject(Form("h%sNet%sX",  name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNpX);
+
+  // -- Fill NetParticle vs SumParticle
+  Double_t deltaNpXOverSumNpX = (sumNpX == 0.) ? 0. : deltaNpX/sumNpX;
+  (static_cast<TH2D*>(list->FindObject(Form("h%sNet%sOverSumX", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, deltaNpXOverSumNpX);
+
+  // -----------------------------------------------------------------------------------------------
 
   // -- Fill TProfile for <NetParticle^k>
   Double_t delta = 1.;
-  for (Int_t idx = 1; idx <= fOrder; ++idx) {
+  for (Int_t idxOrder = 1; idxOrder <= fOrder; ++idxOrder) {
     delta *= deltaNp;
-    (static_cast<TProfile*>(list->FindObject(Form("%sNet%s%dM", name, fHelper->GetParticleName(1).Data(), idx))))->Fill(centralityBin, delta);
+    (static_cast<TProfile*>(list->FindObject(Form("p%sNet%s%dM", name, fHelper->GetParticleName(1).Data(), idxOrder))))->Fill(centralityBin, delta);
+    (static_cast<TProfile*>(list->FindObject(Form("p%sNet%s%dM_%02d", name, fHelper->GetParticleName(1).Data(), idxOrder, fHelper->GetSubSampleIdx()))))->Fill(centralityBin, delta);
   }
 
-  // -- Calculate all factorials only once before filling
-  for (Int_t idx = 0; idx <= fOrder; ++ idx) {
-    fFactp[idx][0] = TMath::Factorial(np[0] - idx);
-    fFactp[idx][1] = TMath::Factorial(np[1] - idx);
+  // -- Generate reduced factorials - explictly removing the factorials
+  //    - Reset all to 1
+  for (Int_t idxOrder = 0; idxOrder <= fOrder; ++ idxOrder) {
+    fRedFactp[idxOrder][0]  = 1.;
+    fRedFactp[idxOrder][1]  = 1.;
+  }
+  
+  //    - start at idx 1, as idx 0 = 1 done by reset
+  for (Int_t idxOrder = 1; idxOrder <= fOrder; ++ idxOrder) {
+    fRedFactp[idxOrder][0]  = fRedFactp[idxOrder-1][0]  * Double_t(np[idx][0]-(idxOrder-1));
+    fRedFactp[idxOrder][1]  = fRedFactp[idxOrder-1][1]  * Double_t(np[idx][1]-(idxOrder-1));
   }
 
   // -- Fill TProfiles for <f_ik> 
-  TList *fikList = static_cast<TList*>(list->FindObject(Form("%sFik",name)));
-  for (Int_t ii = 0; ii <= fOrder; ++ii) {
-    for (Int_t kk = 0; kk <= fOrder; ++kk) {
-      Double_t fik = fFactp[0][1]*fFactp[0][0]/(fFactp[ii][1]*fFactp[kk][0]);
-      (static_cast<TProfile*>(fikList->FindObject(Form("%sNet%sF%02d%02d", name, fHelper->GetParticleName(1).Data(), ii, kk))))->Fill(centralityBin, fik);
+  TList *fikList    = static_cast<TList*>(list->FindObject(Form("f%sFik",name)));
+  TList *fikListSub = static_cast<TList*>(list->FindObject(Form("f%sFik_%02d",name, fHelper->GetSubSampleIdx())));
+  TH2D  *hCntik     = static_cast<TH2D*>(fikList->FindObject(Form("p%sNet%sFCounts_%02d", name, fHelper->GetParticleName(1).Data(), Int_t(centralityBin))));
+  TH2D  *hCntikSub  = static_cast<TH2D*>(fikListSub->FindObject(Form("p%sNet%sFCounts_%02d_%02d", name, fHelper->GetParticleName(1).Data(), Int_t(centralityBin), fHelper->GetSubSampleIdx())));
+
+  for (Int_t ii = 0; ii <= fOrder; ++ii) {   // ii -> p    -> n1
+    for (Int_t kk = 0; kk <= fOrder; ++kk) { // kk -> pbar -> n2
+      // -- use the reduced factorials only 
+      Double_t fik = fRedFactp[ii][1] * fRedFactp[kk][0];   // n1 *n2 -> p * pbar
+      (static_cast<TProfile*>(fikList->FindObject(Form("p%sNet%sF%02d%02d", name, fHelper->GetParticleName(1).Data(), ii, kk))))->Fill(centralityBin, fik);
+      (static_cast<TProfile*>(fikListSub->FindObject(Form("p%sNet%sF%02d%02d_%02d", 
+							  name, fHelper->GetParticleName(1).Data(), ii, kk, fHelper->GetSubSampleIdx()))))->Fill(centralityBin, fik);
+
+      if (fik != 0.) {
+	hCntik->Fill(ii, kk);
+	hCntikSub->Fill(ii, kk);
+      }
     }
   }
+
+  return;
+}
+
+//________________________________________________________________________
+void AliAnalysisNetParticleDistribution::FillHistSetCentPt(const Char_t *name, Int_t idx, Bool_t isMC)  {
+  // -- Add histogram sets for particle and anti-particle
+  //    dependence : centrality and pt
+
+  // -- Get List
+  TList *list = static_cast<TList*>(fOutList->FindObject(Form("f%s",name)));  
+
+  // -- Get Centrality Bin
+  Float_t centralityBin = fHelper->GetCentralityBin();
+
+  // -- Select MC or Data
+  Int_t ***npPt = (isMC) ? fMCNpPt : fNpPt;
+
+  // -----------------------------------------------------------------------------------------------
+
+  // -- Loop over the pt bins
+  for (Int_t idxPt  = 0; idxPt < AliAnalysisNetParticleHelper::fgkfHistNBinsPt; ++idxPt) {
+    
+    Int_t deltaNp = npPt[idx][1][idxPt]-npPt[idx][0][idxPt]; // p - pbar
+    Int_t sumNp   = npPt[idx][1][idxPt]+npPt[idx][0][idxPt]; // p + pbar
+
+    // -- Fill Particle / Anti-Particle Distributions
+    (static_cast<TH3D*>(list->FindObject(Form("h%s%s", name, fHelper->GetParticleName(0).Data()))))->Fill(centralityBin, idxPt, npPt[idx][0][idxPt]);
+    (static_cast<TH3D*>(list->FindObject(Form("h%s%s", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, idxPt, npPt[idx][1][idxPt]);
+    
+    // -- Fill NetParticle Distributions
+    (static_cast<TH3D*>(list->FindObject(Form("h%sNet%s",  name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, idxPt, deltaNp);
+    
+    // -- Fill NetParticle vs SumParticle
+    Double_t deltaNpOverSumNp = (sumNp == 0.) ? 0. : deltaNp/Double_t(sumNp);
+    (static_cast<TH3D*>(list->FindObject(Form("h%sNet%sOverSum", name, fHelper->GetParticleName(1).Data()))))->Fill(centralityBin, idxPt, deltaNpOverSumNp);
+
+    // -----------------------------------------------------------------------------------------------
+
+    // -- Fill TProfile for <NetParticle^k>
+    Double_t delta = 1.;
+    for (Int_t idxOrder = 1; idxOrder <= fOrder; ++idxOrder) {
+      delta *= deltaNp;
+      (static_cast<TProfile2D*>(list->FindObject(Form("p%sNet%s%dM", name, fHelper->GetParticleName(1).Data(), idxOrder))))->Fill(centralityBin, idxPt, delta);
+      (static_cast<TProfile2D*>(list->FindObject(Form("p%sNet%s%dM_%02d", 
+						      name, fHelper->GetParticleName(1).Data(), idxOrder, fHelper->GetSubSampleIdx()))))->Fill(centralityBin, idxPt, delta);
+    }
+    
+    // -- Generate reduced factorials - explictly removing the factorials
+    //    - Reset all to 1
+    for (Int_t idxOrder = 0; idxOrder <= fOrder; ++ idxOrder) {
+      fRedFactp[idxOrder][0] = 1.;
+      fRedFactp[idxOrder][1] = 1.;
+    }
+
+    //    - start at idx 1, as idx 0 = 1 done by reset
+    for (Int_t idxOrder = 1; idxOrder <= fOrder; ++ idxOrder) {
+      fRedFactp[idxOrder][0] = fRedFactp[idxOrder-1][0] * Double_t(npPt[idx][0][idxPt]-(idxOrder-1));
+      fRedFactp[idxOrder][1] = fRedFactp[idxOrder-1][1] * Double_t(npPt[idx][1][idxPt]-(idxOrder-1));
+    }
+
+    // -- Fill TProfiles for <f_ik> 
+    TList *fikListPt    = static_cast<TList*>(list->FindObject(Form("f%sPtFik",name)));
+    TList *fikListPtSub = static_cast<TList*>(list->FindObject(Form("f%sPtFik_%02d",name, fHelper->GetSubSampleIdx())));
+    TH3D  *hCntikPt     = static_cast<TH3D*>(fikListPt->FindObject(Form("p%sNet%sFCounts_%02d", name, fHelper->GetParticleName(1).Data(), Int_t(centralityBin))));
+    TH3D  *hCntikPtSub  = static_cast<TH3D*>(fikListPtSub->FindObject(Form("p%sNet%sFCounts_%02d_%02d", name, fHelper->GetParticleName(1).Data(), 
+									   Int_t(centralityBin), fHelper->GetSubSampleIdx())));
+    for (Int_t ii = 0; ii <= fOrder; ++ii) {   // ii -> p    -> n1
+      for (Int_t kk = 0; kk <= fOrder; ++kk) { // kk -> pbar -> n2
+	Double_t fik = fRedFactp[ii][1] * fRedFactp[kk][0];   // n1 *n2 -> p * pbar
+	(static_cast<TProfile2D*>(fikListPt->FindObject(Form("p%sNet%sF%02d%02d", name, fHelper->GetParticleName(1).Data(), ii, kk))))->Fill(centralityBin, idxPt, fik);
+	(static_cast<TProfile2D*>(fikListPtSub->FindObject(Form("p%sNet%sF%02d%02d_%02d", 
+								name, fHelper->GetParticleName(1).Data(), ii, kk, fHelper->GetSubSampleIdx()))))->Fill(centralityBin, idxPt, fik);
+	
+	if (fik != 0.) {
+	  hCntikPt->Fill(ii, kk, idxPt);
+	  hCntikPtSub->Fill(ii, kk, idxPt);
+	}
+      }
+    }
+    
+  } // for (Int_t idxPt  = 0; idxPt < AliAnalysisNetParticleHelper::fgkfHistNBinsPt; ++idxPt) {
 
   return;
 }

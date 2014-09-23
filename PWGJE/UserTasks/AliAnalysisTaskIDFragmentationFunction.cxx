@@ -47,6 +47,7 @@
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisUtils.h"
 #include "AliVParticle.h"
 #include "AliVEvent.h"
 
@@ -170,6 +171,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fQATrackPhiMax(0)
    ,fCommonHistList(0)
    ,fh1EvtSelection(0)
+   ,fh1VtxSelection(0)
    ,fh1VertexNContributors(0)
    ,fh1VertexZ(0)
    ,fh1EvtMult(0)
@@ -190,6 +192,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fhDCA_Z(0)
    ,fhJetPtRefMultEta5(0)
    ,fhJetPtRefMultEta8(0)
+   ,fhJetPtMultPercent(0)
    ,fQATrackHistosRecEffGen(0)  
    ,fQATrackHistosRecEffRec(0)
    ,fQATrackHistosSecRecNS(0)   
@@ -249,6 +252,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fRandom(0)
    
    ,fOnlyLeadingJets(kFALSE)
+   
+   ,fAnaUtils(0)
    
    // PID framework
    ,fNumInclusivePIDtasks(0)
@@ -400,6 +405,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fQATrackPhiMax(0)  
   ,fCommonHistList(0)
   ,fh1EvtSelection(0)
+  ,fh1VtxSelection(0)
   ,fh1VertexNContributors(0)
   ,fh1VertexZ(0)
   ,fh1EvtMult(0)
@@ -420,6 +426,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fhDCA_Z(0)
   ,fhJetPtRefMultEta5(0)
   ,fhJetPtRefMultEta8(0)
+  ,fhJetPtMultPercent(0)
   ,fQATrackHistosRecEffGen(0)  
   ,fQATrackHistosRecEffRec(0)
   ,fQATrackHistosSecRecNS(0) 
@@ -477,6 +484,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fProNtracksLeadingJetRecSecSsc(0)
   ,fRandom(0)
   ,fOnlyLeadingJets(kFALSE)
+  ,fAnaUtils(0)
   // PID framework
   ,fNumInclusivePIDtasks(0)
   ,fNumJetPIDtasks(0)
@@ -629,6 +637,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fQATrackPhiMax(copy.fQATrackPhiMax)
   ,fCommonHistList(copy.fCommonHistList)
   ,fh1EvtSelection(copy.fh1EvtSelection)
+  ,fh1VtxSelection(copy.fh1VtxSelection)
   ,fh1VertexNContributors(copy.fh1VertexNContributors)
   ,fh1VertexZ(copy.fh1VertexZ)
   ,fh1EvtMult(copy.fh1EvtMult)
@@ -649,6 +658,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fhDCA_Z(copy.fhDCA_Z)
   ,fhJetPtRefMultEta5(copy.fhJetPtRefMultEta5)
   ,fhJetPtRefMultEta8(copy.fhJetPtRefMultEta8)
+  ,fhJetPtMultPercent(copy.fhJetPtMultPercent)
   ,fQATrackHistosRecEffGen(copy.fQATrackHistosRecEffGen)  
   ,fQATrackHistosRecEffRec(copy.fQATrackHistosRecEffRec)  
   ,fQATrackHistosSecRecNS(copy.fQATrackHistosSecRecNS)  
@@ -706,6 +716,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fProNtracksLeadingJetRecSecSsc(copy.fProNtracksLeadingJetRecSecSsc)
   ,fRandom(copy.fRandom)
   ,fOnlyLeadingJets(copy.fOnlyLeadingJets)
+  ,fAnaUtils(copy.fAnaUtils)
   // PID framework
   ,fNumInclusivePIDtasks(copy.fNumInclusivePIDtasks)
   ,fNumJetPIDtasks(copy.fNumJetPIDtasks)
@@ -915,6 +926,7 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fQATrackPhiMax                 = o.fQATrackPhiMax;  
     fCommonHistList                = o.fCommonHistList;
     fh1EvtSelection                = o.fh1EvtSelection;
+    fh1VtxSelection                = o.fh1VtxSelection;
     fh1VertexNContributors         = o.fh1VertexNContributors;
     fh1VertexZ                     = o.fh1VertexZ;
     fh1EvtMult                     = o.fh1EvtMult;
@@ -953,6 +965,7 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fhDCA_Z                        = o.fhDCA_Z;
     fhJetPtRefMultEta5             = o.fhJetPtRefMultEta5;
     fhJetPtRefMultEta8             = o.fhJetPtRefMultEta8;
+    fhJetPtMultPercent             = o.fhJetPtMultPercent;
     fQABckgHisto0RecCuts           = o.fQABckgHisto0RecCuts;  
     fQABckgHisto0Gen               = o.fQABckgHisto0Gen;      
     fQABckgHisto1RecCuts           = o.fQABckgHisto1RecCuts;  
@@ -989,6 +1002,7 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fProNtracksLeadingJetRecSecSsc = o.fProNtracksLeadingJetRecSecSsc;
     fRandom                        = o.fRandom;
     fOnlyLeadingJets               = o.fOnlyLeadingJets;
+    fAnaUtils                      = o.fAnaUtils;
     
     // PID framework
    fUseInclusivePIDtask            = o.fUseInclusivePIDtask;
@@ -1131,6 +1145,9 @@ AliAnalysisTaskIDFragmentationFunction::~AliAnalysisTaskIDFragmentationFunction(
     
   delete [] fJetPIDtask;
   fJetPIDtask = 0x0;
+  
+  delete fAnaUtils;
+  fAnaUtils = 0x0;
 }
 
 //______________________________________________________________________________________________________
@@ -1658,6 +1675,18 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   fh1EvtSelection->GetXaxis()->SetBinLabel(5,"vertex z: rejected");
   fh1EvtSelection->GetXaxis()->SetBinLabel(6,"vertex type: rejected");
   
+  fh1VtxSelection            = new TH1F("fh1VtxSelection", "Vertex Selection", 10, -1, 9);
+  fh1VtxSelection->GetXaxis()->SetBinLabel(1,"Undef");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(2,"Primary");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(3,"Kink");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(4,"V0");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(5,"Cascade");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(6,"Multi");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(7,"SPD");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(8,"PileUpSPD");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(9,"PileUpTracks");
+  fh1VtxSelection->GetXaxis()->SetBinLabel(10,"TPC");
+  
   fh1VertexNContributors     = new TH1F("fh1VertexNContributors", "Vertex N contributors", 2500,-.5, 2499.5);
   fh1VertexZ                 = new TH1F("fh1VertexZ", "Vertex z distribution", 30, -15., 15.);
   fh1EvtMult 	             = new TH1F("fh1EvtMult","Event multiplicity, track pT cut > 150 MeV/c, |#eta| < 0.9",120,0.,12000.);
@@ -2095,6 +2124,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   Bool_t recJetsEff = (fJetTypeRecEff != kJetsUndef) ? kTRUE : kFALSE;
 
   fCommonHistList->Add(fh1EvtSelection);
+  fCommonHistList->Add(fh1VtxSelection);
   fCommonHistList->Add(fh1EvtMult);
   fCommonHistList->Add(fh1EvtCent);
   fCommonHistList->Add(fh1VertexNContributors);
@@ -2306,6 +2336,12 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
       for(Int_t ii=0; ii<5; ii++)  fCommonHistList->Add(fProDelRPtSumRecSecSsc[ii]);
     }
   }
+  
+  // Default analysis utils
+  fAnaUtils = new AliAnalysisUtils();
+  
+  // Not used yet, but to be save, forward vertex z cut to analysis utils object
+  fAnaUtils->SetMaxVtxZ(fMaxVertexZ);
 
   // Load PID framework if desired
   if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Loading PID framework");
@@ -2375,14 +2411,21 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   const Double_t jetPtUp = 100.;
   const Double_t jetPtDown = 0.;
   
+  const Int_t nCentBins = 12;
+  const Double_t binsCentpp[nCentBins+1] =   { 0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+  
   fhJetPtRefMultEta5 = new TH2F("fhJetPtRefMultEta5",
                                 "Correlation between jet energy and event multiplicity (|#eta| < 0.5);Ref. mult. (|#eta| < 0.5);#it{p}_{T, jet}^{ch} (GeV/#it{c})",
                                 nRefMultBins, refMultDown, refMultUp, nJetPtBins, jetPtDown, jetPtUp);
   fhJetPtRefMultEta8 = new TH2F("fhJetPtRefMultEta8",
                                 "Correlation between jet energy and event multiplicity (|#eta| < 0.8);Ref. mult. (|#eta| < 0.8);#it{p}_{T, jet}^{ch} (GeV/#it{c})",
                                 nRefMultBins, refMultDown, refMultUp, nJetPtBins, jetPtDown, jetPtUp);
+  fhJetPtMultPercent  = new TH2F("fhJetPtMultPercent",
+                                "Correlation between jet energy and event multiplicity percentile (V0M);Multiplicity Percentile (V0M);#it{p}_{T, jet}^{ch} (GeV/#it{c})",
+                                nCentBins, binsCentpp, nJetPtBins, jetPtDown, jetPtUp);
   fCommonHistList->Add(fhJetPtRefMultEta5);
   fCommonHistList->Add(fhJetPtRefMultEta8);
+  fCommonHistList->Add(fhJetPtMultPercent);
   
   if (fUseJetPIDtask) {
     const Int_t nPtBins = 68;
@@ -2560,6 +2603,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   // Retrieve reference multiplicities in |eta|<0.8 and <0.5
   const Int_t refMult5 = fAOD->GetHeader()->GetRefMultiplicityComb05();
   const Int_t refMult8 = fAOD->GetHeader()->GetRefMultiplicityComb08();
+  const Double_t centPercentPP = fAnaUtils->GetMultiplicityPercentile(fAOD, "V0M");
   
   
   // Count events with trigger selection, note: Set centrality percentile fix to -1 for pp for PID framework
@@ -2640,6 +2684,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   
   if (fDebug > 1) Printf("%s:%d event ACCEPTED ...",(char*)__FILE__,__LINE__); 
   fh1EvtSelection->Fill(0.);
+  fh1VtxSelection->Fill(primVtx->GetType());
   fh1EvtCent->Fill(centPercent);
 	
 	// Set centrality percentile fix to -1 for pp to be used for the PID framework
@@ -3250,6 +3295,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
 
         fhJetPtRefMultEta5->Fill(refMult5, jet->Pt());
         fhJetPtRefMultEta8->Fill(refMult8, jet->Pt());
+        fhJetPtMultPercent->Fill(centPercentPP, jet->Pt());
       
 	Double_t ptFractionEmbedded = 0; 
 	AliAODJet* embeddedJet = 0; 

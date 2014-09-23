@@ -89,8 +89,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
 		Bool_t ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, Bool_t isMC);
-		Bool_t PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma=kTRUE);
-		Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
+		Bool_t ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
+		Bool_t ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
 			
 		void InitCutHistograms(TString name="");
 		void SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
@@ -100,6 +100,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		///Cut functions
 		Bool_t AcceptanceCuts(AliVCluster* cluster, AliVEvent *event);
 		Bool_t ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, Bool_t isMC);
+
+		Bool_t MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event );
 
 		// Set Individual Cuts
 		Bool_t SetClusterTypeCut(Int_t);
@@ -168,6 +170,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		TH2F* fHistClusterEtavsPhiAfterQA; 			// eta-phi-distribution of all after cluster quality cuts
 		TH1F* fHistDistanceToBadChannelBeforeAcc;   // distance to bad channel before acceptance cuts
 		TH1F* fHistDistanceToBadChannelAfterAcc;	// distance to bad channel after acceptance cuts
+		TH1F* fHistClusterRBeforeQA;				// cluster position in R=SQRT(x^2+y^2) (before QA)
+		TH1F* fHistClusterRAfterQA;					// cluster position in R=SQRT(x^2+y^2) for matched tracks (After QA)
+		TH2F* fHistClusterdEtadPhiBeforeQA;			// 2-dim plot dEta vs. dPhi
+		TH2F* fHistClusterdEtadPhiAfterQA;			// 2-dim plot dEta vs. dPhi for matched tracks (after QA)
 		TH2F* fHistClusterTimevsEBeforeQA;			// Cluster time vs E before cluster quality cuts
 		TH2F* fHistClusterTimevsEAfterQA;			// Cluster time vs E after cluster quality cuts
 		TH2F* fHistExoticCellBeforeQA;				// Exotic cell: 1-Ecross/E cell vs Ecluster before acceptance cuts
@@ -190,7 +196,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 				
 	private:
 
-		ClassDef(AliCaloPhotonCuts,1)
+		ClassDef(AliCaloPhotonCuts,2)
 };
 
 #endif

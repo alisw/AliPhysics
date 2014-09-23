@@ -45,6 +45,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID() :
   fESDpid(new AliESDpid()),
   fTOFHeader(0x0),
   fEnableAdvancedCheck(kFALSE),
+  fEnableChargeSplit(kFALSE),
   fExpTimeBinWidth(24.4),
   fExpTimeRangeMin(-25010.),
   fExpTimeRangeMax(25010.),
@@ -63,7 +64,8 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID() :
   fPhi(1e10),
   fTPCOuterPhi(1e10),
   fL(1e10),
-  fMatchingMomCut(1e10),
+  fMatchingMomCut(0.0),
+  fMatchingEtaCut(1e10),
   fTof(1e10),
   fHlist(0x0),
   fHlistTimeZero(0x0),
@@ -94,6 +96,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char *name) :
   fESDpid(new AliESDpid()),
   fTOFHeader(0x0),
   fEnableAdvancedCheck(kFALSE),
+  fEnableChargeSplit(kFALSE),
   fExpTimeBinWidth(24.4),
   fExpTimeRangeMin(-25010.),
   fExpTimeRangeMax(25010.),
@@ -113,6 +116,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char *name) :
   fTPCOuterPhi(1e10),
   fL(1e10),
   fMatchingMomCut(1.0),
+  fMatchingEtaCut(0.8),
   fTof(1e10),
   fHlist(0x0),
   fHlistTimeZero(0x0),
@@ -157,6 +161,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
   fESDpid(copy.fESDpid),
   fTOFHeader(copy.fTOFHeader),
   fEnableAdvancedCheck(copy.fEnableAdvancedCheck),
+  fEnableChargeSplit(copy.fEnableChargeSplit),
   fExpTimeBinWidth(copy.fExpTimeBinWidth),
   fExpTimeRangeMin(copy.fExpTimeRangeMin),
   fExpTimeRangeMax(copy.fExpTimeRangeMax),
@@ -176,6 +181,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
   fTPCOuterPhi(copy.fTPCOuterPhi),
   fL(copy.fL),
   fMatchingMomCut(copy.fMatchingMomCut),
+  fMatchingEtaCut(copy.fMatchingEtaCut),
   fTof(copy.fTof),
   fHlist(copy.fHlist),
   fHlistTimeZero(copy.fHlistTimeZero),
@@ -213,6 +219,7 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     fESDpid=copy.fESDpid;
     fTOFHeader=copy.fTOFHeader;
     fEnableAdvancedCheck=copy.fEnableAdvancedCheck;
+    fEnableChargeSplit=copy.fEnableChargeSplit;
     fExpTimeBinWidth=copy.fExpTimeBinWidth;
     fExpTimeRangeMin=copy.fExpTimeRangeMin;
     fExpTimeRangeMax=copy.fExpTimeRangeMax;
@@ -241,6 +248,7 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     fTPCOuterPhi=copy.fTPCOuterPhi;
     fL=copy.fL;
     fMatchingMomCut=copy.fMatchingMomCut;
+    fMatchingEtaCut=copy.fMatchingEtaCut;
     fTof=copy.fTof;
     fHlist=copy.fHlist;
     fHlistTimeZero=copy.fHlistTimeZero;
@@ -341,23 +349,34 @@ void AliAnalysisTaskTOFqaID::UserCreateOutputObjects()
   //add plots for start time QA
   AddStartTimeHisto(fHlistTimeZero,"");
   
-  //add plots for base TO quantities
-  AddTofBaseHisto(fHlist,  1, "");
-  AddTofBaseHisto(fHlist, -1, "");
-  
+  //add plots for base TOF quantities
+  if (fEnableChargeSplit) {
+    AddTofBaseHisto(fHlist,  1, "");
+    AddTofBaseHisto(fHlist, -1, "");
+  } else {
+    AddTofBaseHisto(fHlist,  0, "");
+  }
   //add plots for matching efficiency
-  AddMatchingEffHisto(fHlist,  1, "");
-  AddMatchingEffHisto(fHlist, -1, "");
-
+   if (fEnableChargeSplit) {
+     AddMatchingEffHisto(fHlist,  1, "");
+     AddMatchingEffHisto(fHlist, -1, "");
+   } else {
+     AddMatchingEffHisto(fHlist,  0, "");
+   }
   //add plots for PID checks
-  AddPidHisto(fHlistPID,  1, ""); 
-  AddPidHisto(fHlistPID, -1, ""); 
-
+   if (fEnableChargeSplit) {
+     AddPidHisto(fHlistPID,  1, ""); 
+     AddPidHisto(fHlistPID, -1, ""); 
+   } else {
+     AddPidHisto(fHlistPID,  0, ""); 
+   }
   //add trd plots
   if (fEnableAdvancedCheck) {
     AddTrdHisto();
-    AddTofTrgHisto("");
   }
+  //Add trigger plots
+  AddTofTrgHisto("");
+  
   PostData(1, fHlist);
   PostData(2, fHlistTimeZero);
   PostData(3, fHlistPID);
@@ -382,12 +401,12 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   */
   fESD=(AliESDEvent*)InputEvent();
   if (!fESD) {
-    Printf("ERROR: fESD not available");
+    AliError("fESD event not available");
     return;
   }
   
   if (!fESDpid) {
-    Printf("ERROR: fESDpid not available");
+    AliError("PID object fESDpid not available");
     return;
   }
   
@@ -401,7 +420,7 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   if (fIsMC) {
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if (!mcH) {
-      AliError("ERROR: Could not get MCeventHandler");
+      AliError("Cannot get MCeventHandler");
       return;
     } else {
       fMCevent = (AliMCEvent *) mcH->MCEvent();
@@ -425,11 +444,11 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   //set response tof_t0 for all other checks
   fESDpid->SetTOFResponse(fESD,AliESDpid::kTOF_T0);//(fill_t0, tof_t0, t0_t0, best_t0)
   
-  Printf("Momentum cut for eta and phi distributions set: Pt>%3.2f", fMatchingMomCut);
+  AliDebug(3, Form("Momentum cut for eta and phi distributions set: Pt>%3.2f", fMatchingMomCut));
 
   //check existence of track filter
   if (!fTrackFilter){
-    Printf("No track filter found, skipping the track loop");
+    AliInfo("No track filter found, skipping the track loop");
     return;
   }
   
@@ -437,7 +456,7 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack* track = fESD->GetTrack(iTracks);
     if (!track) {
-      Printf("ERROR: Could not receive track %d", iTracks);
+      AliInfo(Form("Cannot receive track %d", iTracks));
       continue;
     }
     
@@ -453,7 +472,7 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
     
     //apply cut for eta acceptance
     fEta=track->Eta();
-    if (TMath::Abs(fEta)>0.8) continue; 
+    if (TMath::Abs(fEta)>fMatchingEtaCut) continue; 
     
     //get other track variables
     fP = track->P();
@@ -463,11 +482,12 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
     fL = track->GetIntegratedLength();
     track->GetIntegratedTimes(fTrkExpTimes);
     
-    Int_t charge = track->Charge();
+    Int_t charge = 0;
+    if (fEnableChargeSplit) charge = track->Charge();
     
     //Fill histograms for primary particles
     FillPrimaryTrkHisto(charge,"");
-
+    
     if (IsTPCTOFMatched(track)) {     
       fTof=track->GetTOFsignal()*1E-3;//in ps
       //increment track counters
@@ -481,12 +501,15 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
     }    
     if (fEnableAdvancedCheck) FillTrdHisto(track, charge);
   }//end loop on tracks
-   
+  
   //fill time zero histos  
   FillStartTimeHisto("");  
-  ((TH1F*)fHlist->FindObject("hTOFmulti_pos"))->Fill(fNTOFtracks[1]);
-  ((TH1F*)fHlist->FindObject("hTOFmulti_neg"))->Fill(fNTOFtracks[2]);
-  
+  if (fEnableChargeSplit) {
+    ((TH1F*)fHlist->FindObject("hTOFmulti_pos"))->Fill(fNTOFtracks[1]);
+    ((TH1F*)fHlist->FindObject("hTOFmulti_neg"))->Fill(fNTOFtracks[2]);
+  } else {
+    ((TH1F*)fHlist->FindObject("hTOFmulti_all"))->Fill(fNTOFtracks[0]);
+  }
   //fill TOF trg histos from infos in TOF header
   fTOFHeader=(AliTOFHeader*)fESD->GetTOFHeader();
   if (!fTOFHeader) {
@@ -512,12 +535,12 @@ void AliAnalysisTaskTOFqaID::Terminate(Option_t *)
   //check on output validity
   fHlist = dynamic_cast<TList*> (GetOutputData(1));
   if (!fHlist) {
-    Printf("ERROR: lists not available");
+    AliError("Base histograms list not available");
     return;   
   } 
   
-  // TH1D*hDummy = ((TH1D*)fHlist->FindObject("hTOFmatchedESDPt"));
-  // TH1D*hMatchingEff = (TH1D*) hDummy->Clone("hMatchingEff");
+  // TH1F*hDummy = ((TH1F*)fHlist->FindObject("hTOFmatchedESDPt"));
+  // TH1F*hMatchingEff = (TH1F*) hDummy->Clone("hMatchingEff");
   // hMatchingEff->SetTitle("Matching efficiency");
   // hMatchingEff->Divide((TH1F*) fHlist->FindObject("hESDprimaryTrackPt"));
   // TCanvas *c1 = new TCanvas("AliAnalysisTaskTOFqaID","Matching vs Pt",10,10,510,510);
@@ -646,7 +669,7 @@ void AliAnalysisTaskTOFqaID::FillStartTimeMaskHisto(TString suffix)
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack* track = fESD->GetTrack(iTracks);
     if (!track) {
-      Printf("ERROR: Could not receive track %d", iTracks);
+      AliInfo(Form("Cannot receive track %d", iTracks));
       continue;
     }    
     //primary tracks selection: kTPCrefit and std cuts
@@ -654,10 +677,10 @@ void AliAnalysisTaskTOFqaID::FillStartTimeMaskHisto(TString suffix)
       if(!fTrackFilter->IsSelected(track)) continue;
     }
     else{
-      Printf("No track filter found, skipping the track loop");
+      AliInfo("No track filter found, skipping the track loop");
       break;
     }
-    if (TMath::Abs(track->Eta())>0.8) continue; //cut for acceptance  
+    if (TMath::Abs(track->Eta())>fMatchingEtaCut) continue; //cut for acceptance  
     
     Int_t StartTimeBit = fESDpid->GetTOFResponse().GetStartTimeMask(track->P());
     ((TH2F*)fHlistTimeZero->FindObject(Form("hStartTimeMask%s",suffix.Data())))->Fill(track->P(),StartTimeBit);
@@ -751,8 +774,8 @@ Bool_t AliAnalysisTaskTOFqaID::SelectMCspecies(AliMCEvent * ev, AliESDtrack * tr
   Int_t pdgCode = mcPart->PdgCode();
   if (!(TMath::Abs(pdgCode)==fSelectedPdg))
     return kFALSE;
-  else  //Printf("Found particle with selected pdg code = %i", pdgCode);
-  return  kTRUE;
+  else  
+    return  kTRUE;
 }
 
 //----------------------------------------------------------------------------------
@@ -779,10 +802,10 @@ Bool_t  AliAnalysisTaskTOFqaID::ComputeMatchingEfficiency(TList* list, TString v
     xAxisTitle = "#phi_vtx (deg)";
   }
   
-  TH1D*hDummy = ((TH1D*)list->FindObject(matchedName.Data()));
+  TH1F*hDummy = ((TH1F*)list->FindObject(matchedName.Data()));
   if (!hDummy) return 0;
 
-  TH1D*hMatchingEff = (TH1D*) hDummy->Clone("hMatchingEff");
+  TH1F*hMatchingEff = (TH1F*) hDummy->Clone("hMatchingEff");
   hMatchingEff->SetNameTitle(Form("hMatchingEff_%s", variable.Data()),Form("Matching efficiency vs %s", variable.Data()));
   hMatchingEff->Divide((TH1F*) list->FindObject(primaryName.Data()));
   hMatchingEff->GetXaxis()->SetTitle(xAxisTitle.Data());
@@ -805,7 +828,7 @@ void AliAnalysisTaskTOFqaID::HistogramMakeUp(TH1* hist, Color_t color, Int_t mar
   hist->SetMarkerStyle(markerStyle);
   hist->SetMarkerSize(0.7);
   hist->SetDrawOption(drawOpt.Data());
-  hist->Sumw2();
+  //hist->Sumw2();
   return;
 }
 
@@ -819,12 +842,14 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(TList *list, Int_t charge, TString 
   }
  
   TString cLabel; 
-  if (charge<0) cLabel.Form("neg"); 
+  if (charge == 0) cLabel.Form("all");
   else 
-    if (charge>0) cLabel.Form("pos"); 
-    else cLabel.Form("all");
+    if (charge<0) cLabel.Form("neg"); 
+    else 
+      if (charge>0) cLabel.Form("pos"); 
   
-  TH1I* hTOFmulti = new TH1I(Form("hTOFmulti%s_%s",suffix.Data(), cLabel.Data()), Form("%s matched trk per event (|#eta|#leq0.8, p_{T}#geq0.3 GeV/c)", cLabel.Data()), 100, 0, 100);  
+  
+  TH1I* hTOFmulti = new TH1I(Form("hTOFmulti%s_%s",suffix.Data(), cLabel.Data()), Form("%s matched trk per event (|#eta|#leq%3.2f, p_{T}#geq0.3 GeV/c)", cLabel.Data(), fMatchingEtaCut), 100, 0, 100);  
   HistogramMakeUp(hTOFmulti, ((charge>0)? kRed : kBlue+2), 1, "E1", "","", "N","events");
   list->AddLast(hTOFmulti);
   
@@ -840,15 +865,22 @@ void AliAnalysisTaskTOFqaID::AddTofBaseHisto(TList *list, Int_t charge, TString 
   HistogramMakeUp(hTOFtot,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "ToT (ns)","tracks");
   list->AddLast(hTOFtot);
     
-  TH1F* hMatchedL  = new TH1F(Form("hMatchedL%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk lenght", cLabel.Data()), 1200, -400., 800) ; 
+  TH1F* hMatchedL  = new TH1F(Form("hMatchedL%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk lenght", cLabel.Data()), 900, -100., 800) ; 
   HistogramMakeUp(hMatchedL,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "L (cm)","tracks");
   list->AddLast(hMatchedL);
-     
-  TH2F* hMatchedDxVsPt = new TH2F(Form("hMatchedDxVsPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk dx vs.p_{T}", cLabel.Data()), 1000,0.,10.,200, -10., 10.) ; 
+  
+  const Int_t nBinsPt = 300;
+  Double_t xBins[nBinsPt+1];
+  for (Int_t j=0;j<nBinsPt+1; j++) {  
+    if (j<200) xBins[j] = j*0.025;
+    else xBins[j] = 5.0 + (j-200)*0.050;  
+  }
+
+  TH2F* hMatchedDxVsPt = new TH2F(Form("hMatchedDxVsPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk dx vs.p_{T}", cLabel.Data()), nBinsPt, xBins, 200, -10., 10.); 
   HistogramMakeUp(hMatchedDxVsPt,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "p_{T} (GeV/c)","dx (cm)");
   list->AddLast(hMatchedDxVsPt); 
 
-  TH2F* hMatchedDzVsStrip = new TH2F(Form("hMatchedDzVsStrip%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk dz vs. strip (#eta)", cLabel.Data()), 92,0.,92.,200, -10., 10.) ; 
+  TH2F* hMatchedDzVsStrip = new TH2F(Form("hMatchedDzVsStrip%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk dz vs. strip (#eta)", cLabel.Data()), 92, 0., 92., 200, -10., 10.) ; 
   HistogramMakeUp(hMatchedDzVsStrip,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "strip index","dz (cm)");
   list->AddLast(hMatchedDzVsStrip) ; 
 
@@ -871,13 +903,24 @@ void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, T
     return;
   }
   TString cLabel; 
-  if (charge<0) cLabel.Form("neg"); else if (charge>0) cLabel.Form("pos"); else cLabel.Form("all");
-  
-  TH1F* hMatchedP  = new TH1F(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p", cLabel.Data()), 1000,0.,10.) ;  
+  if (charge == 0) cLabel.Form("all");
+  else 
+    if (charge<0) cLabel.Form("neg"); 
+    else 
+      if (charge>0) cLabel.Form("pos"); 
+
+  const Int_t nBinsX = 300;
+  Double_t xBins[nBinsX+1];
+  for (Int_t j=0;j<nBinsX+1; j++) {  
+    if (j<200) xBins[j] = j*0.025;
+    else xBins[j] = 5.0 + (j-200)*0.050;  
+  }
+
+  TH1F* hMatchedP  = new TH1F(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p", cLabel.Data()), nBinsX, xBins);// 1000,0.,10.) ;  
   HistogramMakeUp(hMatchedP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p (GeV/c)","tracks");
   list->AddLast(hMatchedP) ; 
 
-  TH1F* hMatchedPt  = new TH1F(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T}", cLabel.Data()), 1000,0.,10.) ;  
+  TH1F* hMatchedPt  = new TH1F(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T}", cLabel.Data()), nBinsX, xBins);// 1000,0.,10.) ;  
   HistogramMakeUp(hMatchedPt,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p_{T} (GeV/c)","tracks");
   list->AddLast(hMatchedPt) ; 
 
@@ -889,15 +932,15 @@ void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, T
   HistogramMakeUp(hMatchedPhi,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "#phi_{vtx} (deg)","tracks");
   list->AddLast(hMatchedPhi) ; 
 
-  TH2F* hMatchedPtVsOutPhi  = new TH2F(Form("hMatchedPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T} vs. #phi_{TPC out}", cLabel.Data()), 72, 0.0, 360.0, 1000,0.,10.) ;  
+  TH2F* hMatchedPtVsOutPhi  = new TH2F(Form("hMatchedPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T} vs. #phi_{TPC out}", cLabel.Data()), 72, 0.0, 360.0, nBinsX, xBins);// 1000,0.,10.) ;  
   HistogramMakeUp(hMatchedPtVsOutPhi,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "#phi_{TPC out} (deg)","p_{T} (GeV/c)");
   list->AddLast(hMatchedPtVsOutPhi) ;
    
-  TH1F* hPrimaryP  = new TH1F(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p", cLabel.Data()), 1000,0.,10.) ;  
+  TH1F* hPrimaryP  = new TH1F(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p", cLabel.Data()), nBinsX, xBins);// 1000,0.,10.) ;  
   HistogramMakeUp(hPrimaryP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p (GeV/c)","tracks");
   list->AddLast(hPrimaryP) ; 
 
-  TH1F* hPrimaryPt  = new TH1F(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T}", cLabel.Data()), 1000,0.,10.) ;  
+  TH1F* hPrimaryPt  = new TH1F(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T}", cLabel.Data()), nBinsX, xBins);// 1000,0.,10.) ;  
   HistogramMakeUp(hPrimaryPt,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p_{T} (GeV/c)","tracks");
   list->AddLast(hPrimaryPt) ; 
 
@@ -909,7 +952,7 @@ void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, T
   HistogramMakeUp(hPrimaryPhi,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "#phi_{vtx} (deg)","tracks");
   list->AddLast(hPrimaryPhi) ; 
    
-  TH2F* hPrimaryPtVsOutPhi  = new TH2F(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T} vs. #phi_{TPC out}", cLabel.Data()), 72, 0.0, 360.0, 1000,0.,10.) ;  
+  TH2F* hPrimaryPtVsOutPhi  = new TH2F(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T} vs. #phi_{TPC out}", cLabel.Data()), 72, 0.0, 360.0, nBinsX, xBins);// 1000,0.,10.) ;  
   HistogramMakeUp(hPrimaryPtVsOutPhi,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "#phi_{TPC out} (deg)","p_{T} (GeV/c)");
   list->AddLast(hPrimaryPtVsOutPhi) ; 
   return;
@@ -924,9 +967,20 @@ void  AliAnalysisTaskTOFqaID::AddPidHisto(TList *list, Int_t charge, TString suf
     return;
   }
   TString cLabel; 
-  if (charge<0) cLabel.Form("neg"); else if (charge>0) cLabel.Form("pos"); else cLabel.Form("all");
-    
-  TH2F* hMatchedBetaVsP  = new TH2F(Form("hMatchedBetaVsP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk #beta vs. p", cLabel.Data()), 1000, 0.0, 10.0, 150, 0., 1.5) ; 
+  if (charge == 0) cLabel.Form("all");
+  else 
+    if (charge<0) cLabel.Form("neg"); 
+    else 
+      if (charge>0) cLabel.Form("pos"); 
+  
+  const Int_t nBinsX = 300;
+  Double_t xBins[nBinsX+1];
+  for (Int_t j=0;j<nBinsX+1; j++) {  
+    if (j<200) xBins[j] = j*0.025;
+    else xBins[j] = 5.0 + (j-200)*0.050;  
+  }
+
+  TH2F* hMatchedBetaVsP  = new TH2F(Form("hMatchedBetaVsP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk #beta vs. p", cLabel.Data()), nBinsX, xBins, 150, 0., 1.5) ; 
   HistogramMakeUp(hMatchedBetaVsP,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "p (GeV/c)","#beta");
   list->AddLast(hMatchedBetaVsP);
     
@@ -954,15 +1008,15 @@ void  AliAnalysisTaskTOFqaID::AddPidHisto(TList *list, Int_t charge, TString suf
   HistogramMakeUp(hExpTimePi,((charge>0)? kRed+2 : kBlue+2), 1, "", "","", "t_{TOF}-t_{#pi,exp} [ps]","tracks");
   list->AddLast(hExpTimePi);
   
-  TH2F* hExpTimePiVsP = new TH2F(Form("hExpTimePiVsP%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{#pi,exp}",cLabel.Data()), 1000, 0.0, 10.0, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  TH2F* hExpTimePiVsP = new TH2F(Form("hExpTimePiVsP%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{#pi,exp}",cLabel.Data()), nBinsX, xBins, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   HistogramMakeUp(hExpTimePiVsP,kRed+2, 1, "colz", "","", "p (GeV/c)","t_{TOF}-t_{#pi,exp} [ps]");
   list->AddLast(hExpTimePiVsP);
   
-  TH2F* hExpTimeKaVsP = new TH2F(Form("hExpTimeKaVsP%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{K,exp}",cLabel.Data()), 1000, 0.0, 10.0, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  TH2F* hExpTimeKaVsP = new TH2F(Form("hExpTimeKaVsP%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{K,exp}",cLabel.Data()), nBinsX, xBins, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   HistogramMakeUp(hExpTimeKaVsP,kBlue+2, 1, "colz", "","", "p (GeV/c)","t_{TOF}-t_{K,exp} [ps]");
   list->AddLast(hExpTimeKaVsP);
   
-  TH2F* hExpTimeProVsP = new TH2F(Form("hExpTimeProVsP%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{p,exp}",cLabel.Data()),1000, 0.0, 10.0, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  TH2F* hExpTimeProVsP = new TH2F(Form("hExpTimeProVsP%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{p,exp}",cLabel.Data()), nBinsX, xBins, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   HistogramMakeUp(hExpTimeProVsP,kGreen+2, 1, "colz", "","", "p (GeV/c)","t_{TOF}-t_{p,exp} [ps]");
   list->AddLast(hExpTimeProVsP);
   
@@ -978,15 +1032,15 @@ void  AliAnalysisTaskTOFqaID::AddPidHisto(TList *list, Int_t charge, TString suf
   HistogramMakeUp(hTOFpidSigmaPro,kGreen+2, 1, "colz", "","","p (GeV/c)","n#sigma_{p,exp} [ps]");
   list->AddLast(hTOFpidSigmaPro);
     
-  TH2F* hExpTimePiT0SubVsP = new TH2F(Form("hExpTimePiT0SubVsP%s_%s",suffix.Data(),cLabel.Data()), Form("%s trk t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}",cLabel.Data()), 1000, 0.,10., fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  TH2F* hExpTimePiT0SubVsP = new TH2F(Form("hExpTimePiT0SubVsP%s_%s",suffix.Data(),cLabel.Data()), Form("%s trk t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}",cLabel.Data()), nBinsX, xBins, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   HistogramMakeUp(hExpTimePiT0SubVsP,kRed+2, 1, "colz", "","","p (GeV/c)","t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}");
   list->AddLast(hExpTimePiT0SubVsP) ;
     
-  TH2F* hExpTimeKaT0SubVsP = new TH2F(Form("hExpTimeKaT0SubVsP%s_%s",suffix.Data(),cLabel.Data()), Form("%s trk t_{TOF}-t_{K,exp}-t_{0}^{TOF}",cLabel.Data()), 1000, 0.,10., fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  TH2F* hExpTimeKaT0SubVsP = new TH2F(Form("hExpTimeKaT0SubVsP%s_%s",suffix.Data(),cLabel.Data()), Form("%s trk t_{TOF}-t_{K,exp}-t_{0}^{TOF}",cLabel.Data()), nBinsX, xBins, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   HistogramMakeUp(hExpTimeKaT0SubVsP,kBlue+2, 1, "colz", "","","p (GeV/c)","t_{TOF}-t_{K,exp}-t_{0}^{TOF}");
   list->AddLast(hExpTimeKaT0SubVsP) ;
     
-  TH2F* hExpTimeProT0SubVsP = new TH2F(Form("hExpTimeProT0SubVsP%s_%s",suffix.Data(),cLabel.Data()), Form("%s trk t_{TOF}-t_{p,exp}-t_{0}^{TOF}",cLabel.Data()), 1000, 0.,10., fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  TH2F* hExpTimeProT0SubVsP = new TH2F(Form("hExpTimeProT0SubVsP%s_%s",suffix.Data(),cLabel.Data()), Form("%s trk t_{TOF}-t_{p,exp}-t_{0}^{TOF}",cLabel.Data()), nBinsX, xBins, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   HistogramMakeUp(hExpTimeProT0SubVsP,kGreen+2, 1, "colz", "","","p (GeV/c)","t_{TOF}-t_{p,exp}-t_{0}^{TOF}");
   list->AddLast(hExpTimeProT0SubVsP) ;
   
@@ -1012,35 +1066,35 @@ void    AliAnalysisTaskTOFqaID::AddStartTimeHisto(TList *list, TString suffix)
     AliError("Invalid list passed as argument.");
     return;
   }
-  TH1D* hT0AC = new TH1D(Form("hT0AC%s",suffix.Data()), "Event timeZero from T0A&C; t_{0,AC} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0AC = new TH1F(Form("hT0AC%s",suffix.Data()), "Event timeZero from T0A&C; t_{0,AC} [ps]; events", 1000, -12500., 12500.) ; 
   HistogramMakeUp(hT0AC, kRed+2, 20, "", "","","","");    
   list->AddLast(hT0AC);
 
-  TH1D* hT0A = new TH1D(Form("hT0A%s",suffix.Data()), "Event timeZero from T0A; t_{0,A} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0A = new TH1F(Form("hT0A%s",suffix.Data()), "Event timeZero from T0A; t_{0,A} [ps]; events", 1000, -12500., 12500.) ; 
   HistogramMakeUp(hT0A, kBlue+2, 25, "", "","","","");    
   list->AddLast(hT0A);
     
-  TH1D* hT0C = new TH1D(Form("hT0C%s",suffix.Data()), "Event timeZero from T0C; t_{0,C} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0C = new TH1F(Form("hT0C%s",suffix.Data()), "Event timeZero from T0C; t_{0,C} [ps]; events", 1000, -12500., 12500.) ; 
   HistogramMakeUp(hT0C, kGreen+2, 28, "", "","","","");    
   list->AddLast(hT0C);
     
-  TH1D* hT0DetRes = new TH1D(Form("hT0DetRes%s",suffix.Data()), "T0 detector (T0A-T0C)/2; (T0A-T0C)/2 [ps]; events", 200, -500.,500. ) ; 
+  TH1F* hT0DetRes = new TH1F(Form("hT0DetRes%s",suffix.Data()), "T0 detector (T0A-T0C)/2; (T0A-T0C)/2 [ps]; events", 200, -500.,500. ) ; 
   HistogramMakeUp(hT0DetRes, kMagenta+1, 1, "", "","","","");    
   list->AddLast(hT0DetRes) ; 
 
-  TH1F* hT0fill = new TH1F(Form("hT0fill%s",suffix.Data()), "Event timeZero of fill; t_{0,fill} [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0fill = new TH1F(Form("hT0fill%s",suffix.Data()), "Event timeZero of fill; t_{0,fill} [ps]; events", 1000, -12500., 12500. ) ; 
   HistogramMakeUp(hT0fill, kOrange+1, 25, "", "","","","");    
   list->AddLast(hT0fill) ; 
     
-  TH1F* hT0TOF = new TH1F(Form("hT0TOF%s",suffix.Data()), "Event timeZero estimated by TOF; t0 [ps]; events", 1000, -25000., 25000. ) ; 
+  TH1F* hT0TOF = new TH1F(Form("hT0TOF%s",suffix.Data()), "Event timeZero estimated by TOF; t0 [ps]; events", 1000, -12500., 12500. ) ; 
   HistogramMakeUp(hT0TOF, kTeal-5, 21, "", "","","","");    
   list->AddLast(hT0TOF) ; 
     
-  TH1F* hT0T0 = new TH1F(Form("hT0T0%s",suffix.Data()), "Best timeZero between AC, A, C; t_{0} [ps]; events", 1000, -25000.,25000. ) ; 
+  TH1F* hT0T0 = new TH1F(Form("hT0T0%s",suffix.Data()), "Best timeZero between AC, A, C; t_{0} [ps]; events", 1000, -12500., 12500. ) ; 
   HistogramMakeUp(hT0T0, kAzure+7, 26, "", "","","","");    
   list->AddLast(hT0T0) ; 
     
-  TH1F* hT0best = new TH1F(Form("hT0best%s",suffix.Data()), "Event timeZero estimated as T0best; t0 [ps]; events", 1000, -25000.,25000. ) ; 
+  TH1F* hT0best = new TH1F(Form("hT0best%s",suffix.Data()), "Event timeZero estimated as T0best; t0 [ps]; events", 1000, -12500., 12500.) ; 
   HistogramMakeUp(hT0best, kBlack, 20, "", "","","","");    
   list->AddLast(hT0best) ; 
 
@@ -1060,15 +1114,15 @@ void    AliAnalysisTaskTOFqaID::AddStartTimeHisto(TList *list, TString suffix)
   HistogramMakeUp(hT0bestRes, kBlack, 20, "", "","","","");    
   list->AddLast(hT0bestRes) ; 
 
-  TH2F* hT0TOFvsNtrk = new TH2F(Form("hT0TOFvsNtrk%s",suffix.Data()), "Event timeZero estimated by TOF vs. number of tracks in event;TOF-matching tracks; t0 [ps]", 100, 0., 100.,1000,-25000.,25000. ) ; 
+  TH2F* hT0TOFvsNtrk = new TH2F(Form("hT0TOFvsNtrk%s",suffix.Data()), "Event timeZero estimated by TOF vs. number of tracks in event;TOF-matching tracks; t0 [ps]", 100, 0., 100., 500,-2500.,2500. ) ; 
   HistogramMakeUp(hT0TOFvsNtrk, kTeal-5, 1, "colz", "","","","");    
   list->AddLast(hT0TOFvsNtrk) ;
   
-  TH2F* hEventT0MeanVsVtx = new TH2F(Form("hEventT0MeanVsVtx%s",suffix.Data()), "T0 detector: mean vs vertex ; (t0_{A}-t0_{C})/2 [ns]; (t0_{A}+t0_{C})/2 [ns]; events", 500, -25., 25., 500, -25., 25. ) ; 
+  TH2F* hEventT0MeanVsVtx = new TH2F(Form("hEventT0MeanVsVtx%s",suffix.Data()), "T0 detector: mean vs vertex ; (t0_{A}-t0_{C})/2 [ns]; (t0_{A}+t0_{C})/2 [ns]; events", 50, -25., 25., 50, -25., 25. ) ; 
   HistogramMakeUp(hEventT0MeanVsVtx, kBlue+2, 1, "colz", "","","","");    
   list->AddLast(hEventT0MeanVsVtx) ;
     
-  TH2F* hEventV0MeanVsVtx = new TH2F(Form("hEventV0MeanVsVtx%s",suffix.Data()), "V0 detector: mean vs vertex ; (V0_{A}-V0_{C})/2 [ns]; (V0_{A}+V0_{C})/2 [ns]; events", 500, -50., 50., 500, -50., 50. ) ; 
+  TH2F* hEventV0MeanVsVtx = new TH2F(Form("hEventV0MeanVsVtx%s",suffix.Data()), "V0 detector: mean vs vertex ; (V0_{A}-V0_{C})/2 [ns]; (V0_{A}+V0_{C})/2 [ns]; events", 50, -25., 25., 50, -25., 25.) ; 
   HistogramMakeUp(hEventV0MeanVsVtx, kBlack, 1, "colz", "","","","");    
   list->AddLast(hEventV0MeanVsVtx) ;
   
@@ -1109,15 +1163,23 @@ void AliAnalysisTaskTOFqaID::AddTrdHisto()
     return;
   }
 
-  AddMatchingEffHisto(fHlistTRD, 1, "_noTrd");
-  AddMatchingEffHisto(fHlistTRD, -1, "_noTrd");
-  AddMatchingEffHisto(fHlistTRD, 1, "_Trd");
-  AddMatchingEffHisto(fHlistTRD, -1, "_Trd");
+  if (fEnableChargeSplit) {
+    AddMatchingEffHisto(fHlistTRD, 1, "_noTrd");
+    AddMatchingEffHisto(fHlistTRD, -1, "_noTrd");
+    AddMatchingEffHisto(fHlistTRD, 1, "_Trd");
+    AddMatchingEffHisto(fHlistTRD, -1, "_Trd");
+    
+    AddPidHisto(fHlistTRD, 1, "_noTrd");
+    AddPidHisto(fHlistTRD, -1, "_noTrd");
+    AddPidHisto(fHlistTRD, 1, "_Trd");
+    AddPidHisto(fHlistTRD, -1, "_Trd");
+  } else {
+    AddMatchingEffHisto(fHlistTRD, 0, "_noTrd");
+    AddMatchingEffHisto(fHlistTRD, 0, "_Trd");
+    AddPidHisto(fHlistTRD, 0, "_noTrd");
+    AddPidHisto(fHlistTRD, 0, "_Trd");
+  }
 
-  AddPidHisto(fHlistTRD, 1, "_noTrd");
-  AddPidHisto(fHlistTRD, -1, "_noTrd");
-  AddPidHisto(fHlistTRD, 1, "_Trd");
-  AddPidHisto(fHlistTRD, -1, "_Trd");
   return;
 }
  
@@ -1166,7 +1228,12 @@ void AliAnalysisTaskTOFqaID::FillTofBaseHisto(AliESDtrack * track, Int_t charge,
   Int_t channel=track->GetTOFCalChannel(); 
   Int_t volId[5]; //(sector, plate,strip,padZ,padX)
   AliTOFGeometry::GetVolumeIndices(channel,volId);
-  TString cLabel; if (charge<0) cLabel.Form("neg"); else if (charge>0) cLabel.Form("pos"); else cLabel.Form("all");
+  TString cLabel;
+  if (charge == 0) cLabel.Form("all");
+  else 
+    if (charge<0) cLabel.Form("neg"); 
+    else 
+      if (charge>0) cLabel.Form("pos"); 
 
   ((TH1F*)fHlist->FindObject(Form("hTime%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTof); //ns
   ((TH1F*)fHlist->FindObject(Form("hRawTime%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofTimeRaw*1E-3); //ns
@@ -1185,8 +1252,12 @@ void AliAnalysisTaskTOFqaID::FillPrimaryTrkHisto(Int_t charge, TString suffix)
   // fill histos with primary tracks info
   // => denominator for matching efficiency
   TString cLabel; 
+  if (charge == 0) cLabel.Form("all");
+  else 
+    if (charge<0) cLabel.Form("neg"); 
+    else 
+      if (charge>0) cLabel.Form("pos"); 
   
-  if (charge<0) cLabel.Form("neg"); else if (charge>0) cLabel.Form("pos"); else cLabel.Form("all");
   if (suffix.Contains("Trd")) {
     ((TH1F*)fHlistTRD->FindObject(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
     ((TH1F*)fHlistTRD->FindObject(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
@@ -1212,12 +1283,12 @@ void AliAnalysisTaskTOFqaID::FillMatchedTrkHisto(Int_t charge, TString suffix)
   //get matched tracks variables (matching cut to be applied externally)
   //=> numerator for matching efficiency
   TString cLabel; 
-
-  if (charge<0) cLabel.Form("neg"); 
+  if (charge == 0) cLabel.Form("all");
   else 
-    if (charge>0) cLabel.Form("pos"); 
-    else cLabel.Form("all");
-
+    if (charge<0) cLabel.Form("neg"); 
+    else 
+      if (charge>0) cLabel.Form("pos"); 
+  
   if (suffix.Contains("Trd")) { 
     ((TH1F*)fHlistTRD->FindObject(Form("hMatchedP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP); 
     ((TH1F*)fHlistTRD->FindObject(Form("hMatchedPt%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt); 
@@ -1253,10 +1324,11 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack * track, Int_t charge, TSt
   if (!track) return;
   
   TString cLabel; 
-  if (charge<0) cLabel.Form("neg"); 
+  if (charge == 0) cLabel.Form("all");
   else 
-    if (charge>0) cLabel.Form("pos");
-    else cLabel.Form("all");
+    if (charge<0) cLabel.Form("neg"); 
+    else 
+      if (charge>0) cLabel.Form("pos"); 
   
   //calculate beta
   Double_t c=TMath::C()*1.E-9;// m/ns
@@ -1390,7 +1462,7 @@ void AliAnalysisTaskTOFqaID::FillStartTimeHisto(TString suffix)
     //&& TMath::Abs(fT0[2]-fT0[1]) < 500)  //add this condition to check t0 used in tof response
     ((TH1F*)fHlistTimeZero->FindObject(Form("hT0DetRes%s",suffix.Data())))->Fill((fT0[2]-fT0[1])*0.5);
     ((TH1F*)fHlistTimeZero->FindObject(Form("hT0AC%s",suffix.Data())))->Fill(fT0[0]);  
-    ((TH2F*)fHlistTimeZero->FindObject(Form("hEventT0MeanVsVtx%s",suffix.Data())))->Fill((fT0[2]-fT0[1])*0.5,(fT0[2]+fT0[1])*0.5);
+    ((TH2F*)fHlistTimeZero->FindObject(Form("hEventT0MeanVsVtx%s",suffix.Data())))->Fill( ((fT0[2]-fT0[1])*0.5e-3), ((fT0[2]+fT0[1])*0.5e-3) );
   } 
   if(TMath::Abs(fT0[1]) < t0cut){
     ((TH1F*)fHlistTimeZero->FindObject(Form("hT0A%s",suffix.Data())))->Fill(fT0[1]);   
@@ -1411,8 +1483,8 @@ void AliAnalysisTaskTOFqaID::FillStartTimeHisto(TString suffix)
     fESDpid->SetTOFResponse(fESD, (AliESDpid::EStartTimeType_t) j);//(fill_t0, tof_t0, t0_t0, best_t0)
     timeZero[j]=fESDpid->GetTOFResponse().GetStartTime(10.); //timeZero for bin pT>10GeV/c
     timeZeroRes[j]=fESDpid->GetTOFResponse().GetStartTimeRes(10.); //timeZero for bin pT>10GeV/c
-    ((TH1D*)(fHlistTimeZero->FindObject(timeZeroHisto[j].Data())))->Fill(timeZero[j]);
-    ((TH1D*)(fHlistTimeZero->FindObject(timeZeroHistoRes[j].Data())))->Fill(timeZeroRes[j]);
+    ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHisto[j].Data())))->Fill(timeZero[j]);
+    ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHistoRes[j].Data())))->Fill(timeZeroRes[j]);
   }
   ((TH2F*)fHlistTimeZero->FindObject("hT0TOFvsNtrk"))->Fill(fNTOFtracks[0],timeZero[AliESDpid::kTOF_T0]);
    

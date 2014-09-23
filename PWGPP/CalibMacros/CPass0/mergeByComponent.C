@@ -69,6 +69,18 @@ void MergeCPass(const Char_t *list, TString component, TString outputFileName="C
     merger.AddReject("esdFriend");
   else
     merger.AddAccept(component.Data());
+  //
+  // temporary solution: reject THn and THnSparse of  TPCAlign directory, since they
+  // will be merged using their owner AliTPCcalibAlign object
+  {
+    merger.AddReject("AliTPCcalibAlign.alignTPC.fClusterDelta_0");
+    merger.AddReject("AliTPCcalibAlign.alignTPC.fClusterDelta_1");
+    merger.AddReject("AliTPCcalibAlign.alignTPC.fTrackletDelta_0");
+    merger.AddReject("AliTPCcalibAlign.alignTPC.fTrackletDelta_1");
+    merger.AddReject("AliTPCcalibAlign.alignTPC.fTrackletDelta_2");
+    merger.AddReject("AliTPCcalibAlign.alignTPC.fTrackletDelta_3");
+  }
+  //
   /* merge */
   merger.IterTXT(list, outputFileName.Data(), kFALSE);
   /* notify */

@@ -17,6 +17,8 @@ class AliSpectraAODTrackCuts;
 class AliSpectraAODEventCuts;
 
 #include "AliAnalysisTaskSE.h"
+#include "TFile.h"
+#include "TKey.h"
 #include <TProfile.h>
 
 class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
@@ -67,7 +69,9 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fResSP_mb(0),
     fv2SPGap1Amc(0),
     fv2SPGap1Bmc(0),
-    fResSPmc(0)
+    fResSPmc(0),
+    fIsRecoEff(0),
+    fRecoEffList(0)
       {}
   AliAnalysisTaskV2AllChAOD(const char *name);
   virtual ~AliAnalysisTaskV2AllChAOD() {
@@ -106,6 +110,18 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   
   Bool_t GetDCA(const AliAODTrack* trk, Double_t * p);
   void MCclosure();
+  
+  void EnableRecoEff (Bool_t val) { fIsRecoEff = val; }
+  Double_t GetRecoEff(Double_t pt, Int_t iC);
+  
+  void SetRecoEffFile(TFile *f)    {
+    TIter next(f->GetListOfKeys());
+    TKey *key;
+    while ((key = (TKey*)next())) {
+      TH1D * h=(TH1D*)key->ReadObj();
+      fRecoEffList->Add(h);
+    }
+  };
 
   void     SetEtaGap(Float_t etamin,Float_t etamax)   { fEtaGapMin = etamin; fEtaGapMax = etamax; }
   void     SetQvecCut(Float_t qmin,Float_t qmax)      { fCutSmallQperc = qmin; fCutLargeQperc = qmax; }
@@ -202,11 +218,14 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   TProfile* fv2SPGap1Bmc;
   TProfile* fResSPmc;
   
+  Bool_t fIsRecoEff;
+  TList * fRecoEffList; // reconstruction efficiency file
+
   
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 7);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 9);
 };
 
 #endif

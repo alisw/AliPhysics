@@ -59,6 +59,18 @@ AliDielectronPairLegCuts::AliDielectronPairLegCuts(const char* name, const char*
   //
 }
 
+AliDielectronPairLegCuts::~AliDielectronPairLegCuts()
+{
+  //
+  // Dtor
+  //
+
+  // remove all cuts in the leg2 filter which are also in the leg1 filter
+  // to avoid doule deletion
+  TIter nextCut(fFilterLeg1.GetCuts());
+  TObject *o=0x0;
+  while ( (o=nextCut()) ) fFilterLeg2.GetCuts()->Remove(o);
+}
 
 //________________________________________________________________________
 Bool_t AliDielectronPairLegCuts::IsSelected(TObject* track)

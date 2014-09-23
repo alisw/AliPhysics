@@ -3,7 +3,6 @@
 // Emcal base analysis task.
 //
 // Author: S.Aiola, M. Verweij
-
 #include "AliAnalysisTaskEmcal.h"
 
 #include <TClonesArray.h>
@@ -77,6 +76,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMCLabelShift(0),
   fNcentBins(4),
   fNeedEmcalGeom(kTRUE),
+  fIsEsd(kFALSE),
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
@@ -98,7 +98,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
-  fTriggerType(kND),
+  fTriggers(0),
   fOutput(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
@@ -158,6 +158,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMCLabelShift(0),
   fNcentBins(4),
   fNeedEmcalGeom(kTRUE),
+  fIsEsd(kFALSE),
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
@@ -179,7 +180,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
-  fTriggerType(kND),
+  fTriggers(0),
   fOutput(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
@@ -259,6 +260,26 @@ void AliAnalysisTaskEmcal::SetTrackPhiLimits(Double_t min, Double_t max, Int_t c
 void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 {
   // Create user output.
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (mgr) {
+    AliVEventHandler *evhand = mgr->GetInputEventHandler();
+    if (evhand) {
+      if (evhand->InheritsFrom("AliESDInputHandler")) {
+        fIsEsd = kTRUE;
+      }
+      else {
+        fIsEsd = kFALSE;        
+      }
+    }
+    else {
+      AliError("Event handler not found!");
+    }
+  }
+  else {
+    AliError("Analysis manager not found!");
+  }  
+
   if (!fCreateHisto)
     return;
 
@@ -685,33 +706,52 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
   }  
 }
 
-//_____________________________________________________
-AliAnalysisTaskEmcal::TriggerType AliAnalysisTaskEmcal::GetTriggerType()
-{
-  // Get trigger type: kND, kJ1, kJ2
- 
-  if (!fTriggerPatchInfo)
-    return kND;
-  
-  //number of patches in event
-  Int_t nPatch = fTriggerPatchInfo->GetEntries();
+//________________________________________________________________________
+ULong_t AliAnalysisTaskEmcal::GetTriggerList(){
+	  if (!fTriggerPatchInfo)
+	    return 0;
 
-  //loop over patches to define trigger type of event
-  Int_t nJ1 = 0;
-  Int_t nJ2 = 0;
-  AliEmcalTriggerPatchInfo *patch;
-  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
-    if (patch->IsJetHigh()) nJ1++;
-    if (patch->IsJetLow())  nJ2++;
-  }
+	  //number of patches in event
+	  Int_t nPatch = fTriggerPatchInfo->GetEntries();
 
-  if (nJ1>0) 
-    return kJ1;
-  else if (nJ2>0)
-    return kJ2;
-  else
-    return kND;
+	  //loop over patches to define trigger type of event
+	  Int_t nG1 = 0;
+	  Int_t nG2 = 0;
+	  Int_t nJ1 = 0;
+	  Int_t nJ2 = 0;
+	  AliEmcalTriggerPatchInfo *patch;
+	  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
+	    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+	    if (patch->IsGammaHigh()) nG1++;
+	    if (patch->IsGammaLow())  nG2++;
+	    if (patch->IsJetHigh()) nJ1++;
+	    if (patch->IsJetLow())  nJ2++;
+	  }
+
+	  AliDebug(2, "Patch summary: ");
+	  AliDebug(2, Form("Number of patches: %d", nPatch));
+	  AliDebug(2, Form("Jet:   low[%d], high[%d]" ,nJ2, nJ1));
+	  AliDebug(2, Form("Gamma: low[%d], high[%d]" ,nG2, nG1));
+
+	  ULong_t triggers(0);
+	  if (nG1>0)
+		SETBIT(triggers, kG1);
+	  if (nG2>0)
+		SETBIT(triggers, kG2);
+	  if (nJ1>0)
+		SETBIT(triggers, kJ1);
+	  if (nJ2>0)
+		SETBIT(triggers, kJ2);
+	  return triggers;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType t){
+	// Check if event has a given trigger type
+	if(t == kND){
+		return fTriggers == 0;
+	}
+	return TESTBIT(fTriggers, int(t));
 }
 
 //________________________________________________________________________
@@ -778,7 +818,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   }
 
   if (fTriggerTypeSel != kND) {
-    if (fTriggerType != fTriggerTypeSel) {
+    if (!HasTriggerType(fTriggerTypeSel)) {
       if (fGeneralHistograms) 
 	fHistEventRejection->Fill("trigTypeSel",1);
       return kFALSE;
@@ -958,7 +998,10 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 	}
       } else {
 	Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
-	fCentBin = TMath::FloorNint(fCent/centWidth);
+	if(centWidth>0.)
+	  fCentBin = TMath::FloorNint(fCent/centWidth);
+	else 
+	  fCentBin = 0;
 	if (fCentBin>=fNcentBins) {
 	  AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
 	  fCentBin = fNcentBins-1;
@@ -966,7 +1009,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       }
     } else {
       AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      fCentBin = 3;
+      fCentBin = fNcentBins-1;
     }
     AliEventplane *aliEP = InputEvent()->GetEventplane();
     if (aliEP) {
@@ -1013,7 +1056,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     }
   }
 
-  fTriggerType = GetTriggerType();
+  fTriggers = GetTriggerList();
 
   return kTRUE;
 }

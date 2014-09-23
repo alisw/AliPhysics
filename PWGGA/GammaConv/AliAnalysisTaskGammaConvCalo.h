@@ -48,8 +48,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate);
 		void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
 		void ProcessTruePhotonCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
-		void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
-		void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
+		void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched);
+		void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched);
 		
 		// switches for additional analysis streams or outputs
 		void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
@@ -80,10 +80,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 			fnCuts = nCuts;
 			fMesonCutArray = CutArray;
 		}
-
-		// emcal functions
-		Double_t GetMaxCellEnergy(const AliVCluster *c) const { Short_t id=-1; return GetMaxCellEnergy(c,id); }
-		Double_t GetMaxCellEnergy(const AliVCluster *c, Short_t &id) const;
 
 		// BG HandlerSettings
 		void CalculateBackground();
@@ -157,6 +153,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 											// 6: primary gamma
 		//histograms for mesons reconstructed quantities
 		TH2F 								**fHistoMotherInvMassPt;			//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
+		TH2F 								**fHistoMotherMatchedInvMassPt;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
 		THnSparseF 							**fSparseMotherInvMassPtZM;			//! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
 		TH2F 								**fHistoMotherBackInvMassPt;		//! array of histogram with BG for mixed event photon pairs, inv Mass, pt
 		THnSparseF 							**fSparseMotherBackInvMassPtZM;		//! array of THnSparseF with BG for same event photon pairs, inv Mass, pt
@@ -167,6 +164,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoMotherEtaPtAlpha;			//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, alpha
 		TH2F 								**fHistoMotherPi0PtOpenAngle;		//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
 		TH2F 								**fHistoMotherEtaPtOpenAngle;		//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, openAngle
+		TH2F								**fHistoMotherInvMassECalib;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster
+		TH2F								**fHistoMotherInvMassECalibalpha;	//! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster, alpha cut 0.1
 		TTree 								**fTreeMesonsInvMassPtDcazMinDcazMaxFlag; //! array of trees with dca information for mesons
 		Float_t 							fInvMass;							// inv mass for meson tree
 		Float_t 							fPt;								// pt for meson tree 
@@ -195,6 +194,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		//histograms for pure MC quantities
 		TH1I 								**fHistoMCHeaders;					//! array of histos for header names
 		TH1F 								**fHistoMCAllGammaPt;				//! array of histos with all gamma, pT
+		TH1F 								**fHistoMCAllGammaEMCALAccPt;		//! array of histos with all gamma in EMCAL acceptance, pT
 		TH1F 								**fHistoMCDecayGammaPi0Pt;			//! array of histos with decay gamma from pi0, pT
 		TH1F 								**fHistoMCDecayGammaRhoPt;			//! array of histos with decay gamma from rho, pT
 		TH1F 								**fHistoMCDecayGammaEtaPt;			//! array of histos with decay gamma from eta, pT
@@ -213,6 +213,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F 								**fHistoMCEtaInAccPt;				//! array of histos with weighted eta in acceptance, pT
 		TH2F 								**fHistoMCPi0PtY;					//! array of histos with weighted pi0, pT, Y
 		TH2F 								**fHistoMCEtaPtY;					//! array of histos with weighted eta, pT, Y
+		TH2F 								**fHistoMCPi0PtAlpha;					//! array of histos with weighted pi0, pT, alpha
+		TH2F 								**fHistoMCEtaPtAlpha;					//! array of histos with weighted eta, pT, alpha
 		TH1F 								**fHistoMCK0sPt;					//! array of histos with weighted K0s, pT
 		TH1F 								**fHistoMCK0sWOWeightPt;			//! array of histos with unweighted K0s, pT
 		TH2F 								**fHistoMCK0sPtY;					//! array of histos with weighted K0s, pT, Y
@@ -221,24 +223,36 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F 								**fHistoMCSecEtaPt;					//! array of histos with secondary eta, pT
 		TH1F 								**fHistoMCSecEtaSource;				//! array of histos with secondary eta, source
 		// MC validated reconstructed quantities mesons
-		TH2F 								**fHistoTrueMotherInvMassPt;					//! array of histos with validated mothers, invMass, pt
-		TH2F 								**fHistoTrueMotherCaloPhotonInvMassPt;			//! array of histos with validated mothers, photon leading, invMass, pt
-		TH2F 								**fHistoTrueMotherCaloConvertedPhotonInvMassPt;	//! array of histos with validated mothers, converted photon leading, invMass, pt
-		TH2F 								**fHistoTrueMotherCaloElectronInvMassPt;		//! array of histos with validated mothers, electron leading, invMass, pt
-		TH2F 								**fHistoTrueMotherCaloMergedClusterInvMassPt;	//! array of histos with validated mothers, merged cluster invMass, pt
+		TH2F 								**fHistoTruePi0InvMassPt;					//! array of histos with validated pi0, invMass, pt
+		TH2F 								**fHistoTrueEtaInvMassPt;					//! array of histos with validated eta, invMass, pt
+		TH2F 								**fHistoTruePi0CaloPhotonInvMassPt;			//! array of histos with validated pi0, photon leading, invMass, pt
+		TH2F 								**fHistoTrueEtaCaloPhotonInvMassPt;			//! array of histos with validated eta, photon leading, invMass, pt
+		TH2F 								**fHistoTruePi0CaloConvertedPhotonInvMassPt;	//! array of histos with validated pi0, converted photon leading, invMass, pt
+		TH2F 								**fHistoTruePi0CaloConvertedPhotonMatchedInvMassPt;	//! array of histos with validated pi0 matched with conv photon, converted photon leading, invMass, pt
+		TH2F 								**fHistoTrueEtaCaloConvertedPhotonInvMassPt;	//! array of histos with validated eta, converted photon leading, invMass, pt
+		TH2F 								**fHistoTrueEtaCaloConvertedPhotonMatchedInvMassPt;	//! array of histos with validated eta matched with conv photon, converted photon leading, invMass, pt
+		TH2F 								**fHistoTruePi0CaloElectronInvMassPt;		//! array of histos with validated mothers, electron leading, invMass, pt
+		TH2F 								**fHistoTrueEtaCaloElectronInvMassPt;		//! array of histos with validated mothers, electron leading, invMass, pt
+		TH2F 								**fHistoTruePi0CaloMergedClusterInvMassPt;	//! array of histos with validated mothers, merged cluster invMass, pt
+		TH2F 								**fHistoTrueEtaCaloMergedClusterInvMassPt;	//! array of histos with validated mothers, merged cluster invMass, pt
 		TH2F 								**fHistoTrueMotherCaloEMNonLeadingInvMassPt;	//! array of histos with validated mothers, EM non leading, invMass, pt
-		TH2F 								**fHistoTrueMotherCaloMergedClusterPartConvInvMassPt; //! array of histos with validated mothers, merged cluster part conv, invMass, pt
-		TH2F 								**fHistoTruePrimaryMotherInvMassPt;				//! array of histos with validated weighted primary mothers, invMass, pt
-		TH2F 								**fHistoTruePrimaryMotherW0WeightingInvMassPt;	//! array of histos with validated unweighted primary mothers, invMass, pt
-		TProfile2D 							**fProfileTruePrimaryMotherWeightsInvMassPt;	//! array of profiles with weights for validated primary mothers, invMass, pt	
+		TH2F 								**fHistoTruePi0CaloMergedClusterPartConvInvMassPt; //! array of histos with validated mothers, merged cluster part conv, invMass, pt
+		TH2F 								**fHistoTrueEtaCaloMergedClusterPartConvInvMassPt; //! array of histos with validated mothers, merged cluster part conv, invMass, pt
+		TH2F 								**fHistoTruePrimaryPi0InvMassPt;				//! array of histos with validated weighted primary mothers, invMass, pt
+		TH2F 								**fHistoTruePrimaryEtaInvMassPt;				//! array of histos with validated weighted primary mothers, invMass, pt
+		TH2F 								**fHistoTruePrimaryPi0W0WeightingInvMassPt;	//! array of histos with validated unweighted primary mothers, invMass, pt
+		TH2F 								**fHistoTruePrimaryEtaW0WeightingInvMassPt;	//! array of histos with validated unweighted primary mothers, invMass, pt
+		TProfile2D 							**fProfileTruePrimaryPi0WeightsInvMassPt;	//! array of profiles with weights for validated primary mothers, invMass, pt	
+		TProfile2D 							**fProfileTruePrimaryEtaWeightsInvMassPt;	//! array of profiles with weights for validated primary mothers, invMass, pt	
 		TH2F 								**fHistoTruePrimaryPi0MCPtResolPt;				//! array of histos with validated weighted primary pi0, MCpt, resol pt
 		TH2F	 							**fHistoTruePrimaryEtaMCPtResolPt;				//! array of histos with validated weighted primary eta, MCpt, resol pt
-		TH2F 								**fHistoTrueSecondaryMotherInvMassPt;			//! array of histos with validated secondary mothers, invMass, pt
-		TH2F 								**fHistoTrueSecondaryMotherFromK0sInvMassPt;	//! array of histos with validated secondary mothers from K0s, invMass, pt
+		TH2F 								**fHistoTrueSecondaryPi0InvMassPt;			//! array of histos with validated secondary mothers, invMass, pt
+		TH2F 								**fHistoTrueSecondaryEtaInvMassPt;			//! array of histos with validated secondary mothers, invMass, pt
+		TH2F 								**fHistoTrueSecondaryPi0FromK0sInvMassPt;	//! array of histos with validated secondary mothers from K0s, invMass, pt
 		TH1F 								**fHistoTrueK0sWithPi0DaughterMCPt;				//! array of histos with K0s with reconstructed pi0 as daughter, pt
-		TH2F 								**fHistoTrueSecondaryMotherFromEtaInvMassPt;	//! array of histos with validated secondary mothers from eta, invMass, pt
+		TH2F 								**fHistoTrueSecondaryPi0FromEtaInvMassPt;	//! array of histos with validated secondary mothers from eta, invMass, pt
 		TH1F 								**fHistoTrueEtaWithPi0DaughterMCPt;				//! array of histos with eta with reconstructed pi0 as daughter, pt
-		TH2F 								**fHistoTrueSecondaryMotherFromLambdaInvMassPt;	//! array of histos with validated secondary mothers from Lambda, invMass, pt
+		TH2F 								**fHistoTrueSecondaryPi0FromLambdaInvMassPt;	//! array of histos with validated secondary mothers from Lambda, invMass, pt
 		TH1F 								**fHistoTrueLambdaWithPi0DaughterMCPt;			//! array of histos with lambda with reconstructed pi0 as daughter, pt
 		TH2F 								**fHistoTrueBckGGInvMassPt;						//! array of histos with pure gamma gamma combinatorial BG, invMass, pt
 		TH2F 								**fHistoTrueBckContInvMassPt;					//! array of histos with contamination BG, invMass, pt
@@ -260,8 +274,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F 								**fHistoTrueSecondaryConvGammaFromXFromLambdaPt;//! array of histos with validated secondary conversion photon from Lambda, pt  
 		TH1F								**fHistoTrueClusGammaPt;						//! array of histos with validated cluster (electron or photon), pt
 		TH1F								**fHistoTrueClusUnConvGammaPt;					//! array of histos with validated unconverted photon, pt
+		TH1F								**fHistoTrueClusUnConvGammaMCPt;					//! array of histos with validated unconverted photon, pt
 		TH1F								**fHistoTrueClusElectronPt;						//! array of histos with validated electron, pt
 		TH1F								**fHistoTrueClusConvGammaPt;					//! array of histos with validated converted photon, pt
+		TH1F								**fHistoTrueClusConvGammaMCPt;					//! array of histos with validated converted photon, pt
 		TH1F								**fHistoTrueClusConvGammaFullyPt;				//! array of histos with validated converted photon, fully contained, pt
 		TH1F								**fHistoTrueClusMergedGammaPt;					//! array of histos with validated merged photons, electrons, dalitz, pt
 		TH1F								**fHistoTrueClusMergedPartConvGammaPt;			//! array of histos with validated merged partially converted photons, pt
@@ -307,24 +323,11 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		Bool_t 								fIsFromMBHeader;					// flag for MC headers
 		Bool_t 								fIsMC;								// flag for MC information
 
-
-		// cluster cut variables
-		Double_t 							fMinE;
-		Int_t 								fNminCells;
-		Double_t 							fEMCm02cut;
-		//double 							fMinErat = 0;
-		//double 							fMinEcc = 0;
-
-		
-		//  TString							 fClusName;							// cluster branch name (def="")
-		//  const TObjArray					*fRecPoints;						// pointer to rec points (AliAnalysisTaskEMCALClusterizeFast)
-		//  const TClonesArray				*fDigits;							// pointer to digits     (AliAnalysisTaskEMCALClusterizeFast)
-
 	private:
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 3);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 4);
 };
 
 #endif

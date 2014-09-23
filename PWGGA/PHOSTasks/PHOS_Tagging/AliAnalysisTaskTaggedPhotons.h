@@ -41,6 +41,7 @@ public:
 
   void SetTrigger(Bool_t isPHOSTrig){fIsMB=isPHOSTrig;}
   void SetMC(Bool_t isMC=kTRUE){fIsMC=isMC;}
+  void SetFastMC(void){fIsFastMC=kTRUE;fIsMC=kTRUE; } //same as MC, but bypass event checks
   void SetPi0WeightParameters(TArrayD * ar) ;
 
 protected:
@@ -83,12 +84,13 @@ private:
   Float_t fZmin ;               //area
   Float_t fPhimax ;             //covered by
   Float_t fPhimin ;             //full calorimeter
-  Double_t fWeightParamPi0[6] ; //Parameters to calculate weights
+  Double_t fWeightParamPi0[7] ; //Parameters to calculate weights
   //
   Double_t fCentrality;
   Int_t fCentBin ;
   Bool_t fIsMB ; //which trigger to use
   Bool_t fIsMC ; //Is this is MC
+  Bool_t fIsFastMC; //This is fast MC, bypass event checks
   TH2I * fPHOSBadMap[6] ; 
     
   ClassDef(AliAnalysisTaskTaggedPhotons, 2);   // a PHOS photon analysis task 

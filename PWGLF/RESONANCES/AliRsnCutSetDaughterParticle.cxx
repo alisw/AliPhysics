@@ -27,7 +27,7 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle() :
    fCheckOnlyFilterBit(kTRUE),
    fUseCustomQualityCuts(kFALSE),
    fIsUse2011stdQualityCuts(kFALSE),  
-   fIsUse2011stdQualityCutsHighPt(kFALSE)  
+   fIsUse2011stdQualityCutsHighPt(kFALSE)
 {
    //
    // Default constructor
@@ -36,7 +36,7 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle() :
 }
 
 //__________________________________________________________________________________________________
-AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID, AliPID::EParticleType pid, Float_t nSigmaFast = -1.0, Int_t AODfilterBit = 0) :
+AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID, AliPID::EParticleType pid, Float_t nSigmaFast = -1.0, Int_t AODfilterBit = 0, Bool_t useTPCCrossedRows=kTRUE) :
    AliRsnCutSet(name, AliRsnTarget::kDaughter),
    fPID(pid),
    fAppliedCutSetID(cutSetID),
@@ -47,11 +47,11 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, Ali
    fCheckOnlyFilterBit(kTRUE),
    fUseCustomQualityCuts(kFALSE),
    fIsUse2011stdQualityCuts(kFALSE),  
-   fIsUse2011stdQualityCutsHighPt(kFALSE)  
+   fIsUse2011stdQualityCutsHighPt(kFALSE)
 {
-   //
-   // Constructor
-   //
+  //
+  // Constructor
+  //
   //set here pt and eta range
   SetPtRange(0.15, 20.0);
   SetEtaRange(-0.8, 0.8);
@@ -61,10 +61,10 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, Ali
     fNsigmaTPC=1e20;
     fNsigmaTOF=1e20;
     AliWarning("Requested fast n-sigma PID with negative value for n. --> Setting n = 1E20");
-  }   
-
+  }
+  
   //initialize quality std and PID cuts
-  InitStdQualityCuts();
+  InitStdQualityCuts(useTPCCrossedRows);
   Init();
 }
 
@@ -80,16 +80,16 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, Ali
   fCheckOnlyFilterBit(kFALSE),
   fUseCustomQualityCuts(kFALSE),
   fIsUse2011stdQualityCuts(kFALSE),  
-  fIsUse2011stdQualityCutsHighPt(kFALSE)  
+  fIsUse2011stdQualityCutsHighPt(kFALSE)
 {
   //
   // Constructor: uses externally-defined track-quality cut object
   //
   if (!rsnTrackQualityCut) {
     //if external track quality cut object not defined,
-    //sets default track quality to be initialised +
+    //sets default track quality to be initialised (with cut on TPC crossed rows) +
     //sets here pt and eta cuts
-    InitStdQualityCuts();
+    InitStdQualityCuts(kTRUE);
     SetPtRange(0.15, 20.0);
     SetEtaRange(-0.8, 0.8);
   } else {
@@ -127,7 +127,7 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const AliRsnCutSetDau
   fCheckOnlyFilterBit(copy.fCheckOnlyFilterBit),
   fUseCustomQualityCuts(copy.fUseCustomQualityCuts),
   fIsUse2011stdQualityCuts(copy.fIsUse2011stdQualityCuts),  
-  fIsUse2011stdQualityCutsHighPt(copy.fIsUse2011stdQualityCutsHighPt)  
+  fIsUse2011stdQualityCutsHighPt(copy.fIsUse2011stdQualityCutsHighPt)
 {
   //
   // copy constructor
@@ -644,7 +644,7 @@ void AliRsnCutSetDaughterParticle::PrintTrackQualityCuts()
 }
 
 //-----------------------------------------------
-void AliRsnCutSetDaughterParticle::InitStdQualityCuts()
+void AliRsnCutSetDaughterParticle::InitStdQualityCuts(Bool_t useTPCCrossedRows)
 {
   // initialize quality std (if not externally defined) and PID cuts
   // init cut sets by setting variable params
@@ -662,37 +662,29 @@ void AliRsnCutSetDaughterParticle::InitStdQualityCuts()
   if (fAppliedCutSetID==AliRsnCutSetDaughterParticle::kQualityStd2011) {
     fIsUse2011stdQualityCuts = kTRUE;
     fIsUse2011stdQualityCutsHighPt = kFALSE;
-  }
+  } 
   if (fAppliedCutSetID==AliRsnCutSetDaughterParticle::kQualityStd2011HighPt) {
     fIsUse2011stdQualityCuts = kFALSE;
     fIsUse2011stdQualityCutsHighPt = kTRUE;
   }
-
+  
   if (fIsUse2011stdQualityCuts) {
-    fCutQuality->SetDefaults2011();//uses filter bit 5 as default
+    AliInfo(Form("Using 2011 std quality cuts with cut on TPC %s",(useTPCCrossedRows?"crossed rows":"N clusters")));
+    fCutQuality->SetDefaults2011(useTPCCrossedRows, kFALSE);//uses filter bit 5 as default
   } else {
     if (fIsUse2011stdQualityCutsHighPt) {
-      fCutQuality->SetDefaultsHighPt2011();//uses filter bit 5 as default
+      AliInfo(Form("Using 2011 std quality cuts with cut on TPC %s for high-pT", (useTPCCrossedRows?"crossed rows":"N clusters")));
+      fCutQuality->SetDefaultsHighPt2011(useTPCCrossedRows, kFALSE);//uses filter bit 10 as default
     } else {
-      fCutQuality->SetDefaults2010();
-      fCutQuality->SetDCARPtFormula("0.0182+0.0350/pt^1.01");
-      fCutQuality->SetDCAZmax(2.0);
-      fCutQuality->SetSPDminNClusters(1);
-      fCutQuality->SetITSminNClusters(0);
-      fCutQuality->SetITSmaxChi2(36);
-      fCutQuality->SetTPCminNClusters(70);
-      fCutQuality->SetTPCmaxChi2(4.0);
-      fCutQuality->SetRejectKinkDaughters();
-      //fCutQuality->SetITSmaxChi2(36);
-      //fCutQuality->SetMaxChi2TPCConstrainedGlobal(36);
+      AliInfo(Form("Using 2010 std quality cuts with cut on TPC %s", (useTPCCrossedRows?"crossed rows":"N clusters")));
+      fCutQuality->SetDefaults2010(useTPCCrossedRows, kFALSE);
     }
   }
   fCutQuality->SetAODTestFilterBit(fAODTrkCutFilterBit); //changes default filter bit to the chosen filter bit
-  
+  AliInfo(Form("Applying cut on AOD filter bit %i", fAODTrkCutFilterBit));
   //apply pt and eta cuts
   fCutQuality->SetPtRange(fPtRange[0], fPtRange[1]);
   fCutQuality->SetEtaRange(fEtaRange[0], fEtaRange[1]);
-  AliInfo("Standard quality cuts applied");
-  fCutQuality->Print();
+  AliInfo(Form("Pt range [%3.2f,%3.2f], Eta range [%3.2f, %3.2f]", fPtRange[0], fPtRange[1], fEtaRange[0], fEtaRange[1]));
   return;
 }

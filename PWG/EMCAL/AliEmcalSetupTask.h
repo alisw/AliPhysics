@@ -17,6 +17,7 @@ class AliEmcalSetupTask : public AliAnalysisTaskSE {
   virtual ~AliEmcalSetupTask();
 
   void               SetGeoPath(const char *n)  { fGeoPath  = n; }
+  void               SetNoOCDB(Bool_t b)        { fNoOCDB   = b; }
   void               SetOadbPath(const char *n) { fOadbPath = n; }
   void               SetOcdbPath(const char *n) { fOcdbPath = n; }
   void               SetObjs(const char *n)     { fObjs     = n; }
@@ -31,6 +32,7 @@ class AliEmcalSetupTask : public AliAnalysisTaskSE {
   TString            fOadbPath;        // path to oadb
   TString            fGeoPath;         // path to geometry
   TString            fObjs;            // string of objects for alignment to apply
+  Bool_t             fNoOCDB;          // if true then do not mess with OCDB
   Bool_t             fIsInit;          //!=true then already initialized 
   TString            fLocalOcdb;       //!directory path to local ocdb
   TString            fLocalOcdbStor;   //!storage path to local ocdb
@@ -39,7 +41,7 @@ class AliEmcalSetupTask : public AliAnalysisTaskSE {
   AliEmcalSetupTask(const AliEmcalSetupTask&);            // not implemented
   AliEmcalSetupTask &operator=(const AliEmcalSetupTask&); // not implemented
 
-  ClassDef(AliEmcalSetupTask, 5); // Class to setup geometry for EMCal
+  ClassDef(AliEmcalSetupTask, 6); // Class to setup geometry for EMCal
 };
 
 #endif

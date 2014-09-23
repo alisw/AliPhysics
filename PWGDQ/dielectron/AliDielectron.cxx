@@ -413,7 +413,9 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //in case there is a histogram manager, fill the QA histograms
   if (fHistos && fSignalsMC) FillMCHistograms(ev1);
   if (fHistos) FillHistograms(ev1);
-
+  // fill histo array with event information only
+  if (fHistoArray && fHistoArray->IsEventArray()) 
+    fHistoArray->Fill(0,const_cast<Double_t *>(AliDielectronVarManager::GetData()),0x0,0x0);
 
   // clear arrays
   if (!fDontClearArrays) ClearArrays();
@@ -1193,9 +1195,6 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
 
   AliDielectronPair *candidate=new AliDielectronPair;
   candidate->SetKFUsage(fUseKF);
-  // switch OFF the KF usage in case of AODs && ME (since there is no MoveToSameVertex functionality)
-  Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
-  if(!isESD && pairIndex>AliDielectron::kEv1MM) candidate->SetKFUsage(kFALSE);
 
   UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1;
   
@@ -1243,7 +1242,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       PairArray(pairIndex)->Add(candidate);
       //get a new candidate
       candidate=new AliDielectronPair;
-	  candidate->SetKFUsage(fUseKF);
+      candidate->SetKFUsage(fUseKF);
     }
   }
   //delete the surplus candidate

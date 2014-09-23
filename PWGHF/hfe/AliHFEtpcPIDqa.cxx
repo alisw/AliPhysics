@@ -194,7 +194,7 @@ void AliHFEtpcPIDqa::Initialize(){
   const Double_t kMaxEta = 0.9;
 
   // Quantities where one can switch between low and high resolution
-  Int_t kPbins = fQAmanager->HasHighResolutionHistos() ? 1000 : 100;
+  Int_t kPbins = (fQAmanager->HasHighResolutionHistos() || fQAmanager->HasMidResolutionHistos()) ? 1000 : 100;
   Int_t kDedxbins = fQAmanager->HasHighResolutionHistos() ? 400 : 200;
   Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 240;
   kSigmaBins = fQAmanager->HasMidResolutionHistos() ? 400 : kSigmaBins;
@@ -228,7 +228,7 @@ void AliHFEtpcPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
 
   AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
   const AliPIDResponse *pidResponse = tpcpid ? tpcpid->GetPIDResponse() : NULL;
-  Double_t contentSignal[6];
+  Double_t contentSignal[7];
   contentSignal[0] = species;
   contentSignal[1] = tpcpid ? tpcpid->GetP(track->GetRecTrack(), anatype) : 0.;
   contentSignal[2] = GetTPCsignal(track->GetRecTrack(), anatype);

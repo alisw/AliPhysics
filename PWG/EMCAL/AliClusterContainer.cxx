@@ -210,6 +210,21 @@ Bool_t AliClusterContainer::AcceptCluster(AliVCluster *clus) const
 }
 
 //________________________________________________________________________
+Int_t AliClusterContainer::GetNAcceptedClusters()
+{
+  // Get number of accepted particles
+
+  Int_t nClus = 0;
+
+  AliVCluster *clus = GetNextAcceptCluster(0);
+  if(clus) nClus = 1;
+  while (GetNextAcceptCluster())
+    nClus++;
+
+  return nClus;
+}
+
+//________________________________________________________________________
 void AliClusterContainer::SetClassName(const char *clname)
 {
   // Set the class name

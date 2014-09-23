@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: July 28, 2014.								      //
+	//		version: September 16, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -126,12 +126,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fCorrelationFlag(0)
 ,fIsMC(0)
 ,fUseEMCal(kFALSE)
-
 ,fUseTrigger(kFALSE)
+,fUseTender(kFALSE)
 ,fUseShowerShapeCut(kFALSE)
 ,fFillBackground(kFALSE)
+,fEoverPnsigma(kFALSE)
 ,fAssocWithSPD(kFALSE)
-
 ,fEMCEG1(kFALSE)
 ,fEMCEG2(kFALSE)
 ,fIsHFE1(kFALSE)
@@ -175,12 +175,19 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,ftimingEle2(0)
 ,fPtElec_ULS(0)
 ,fPtElec_LS(0)
+
 ,fPtElec_ULS_NoPid(0)
 ,fPtElec_LS_NoPid(0)
 ,fPtElec_ULS_MC(0)
 ,fPtElec_ULS_MC_weight(0)
 ,fPtElec_ULS2(0)
 ,fPtElec_LS2(0)
+
+,fPtElec_ULS_mc_closure(0)
+,fPtElec_LS_mc_closure(0)
+,fPtElec_ULS2_mc_closure(0)
+,fPtElec_LS2_mc_closure(0)
+
 ,fPtElec_ULS_weight(0)
 ,fPtElec_LS_weight(0)
 ,fPtElec_ULS2_weight(0)
@@ -189,6 +196,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTOF02(0)
 ,fTOF03(0)
 ,fpid(0)
+,fEoverP_pt_true_electrons(0)
+,fEoverP_pt_true_hadrons(0)
+,fEoverP_pt_true_electrons0(0)
+,fEoverP_pt_true_hadrons0(0)
 ,fEoverP_pt(0)
 ,fEoverP_tpc(0)
 ,fEoverP_tpc_p_trigger(0)
@@ -417,8 +428,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fIsMC(0)
 ,fUseEMCal(kFALSE)
 ,fUseTrigger(kFALSE)
+,fUseTender(kFALSE)
 ,fUseShowerShapeCut(kFALSE)
 ,fFillBackground(kFALSE)
+,fEoverPnsigma(kFALSE)
 ,fAssocWithSPD(kFALSE)
 ,fEMCEG1(kFALSE)
 ,fEMCEG2(kFALSE)
@@ -469,6 +482,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fPtElec_ULS_MC_weight(0)
 ,fPtElec_ULS2(0)
 ,fPtElec_LS2(0)
+
+,fPtElec_ULS_mc_closure(0)
+,fPtElec_LS_mc_closure(0)
+,fPtElec_ULS2_mc_closure(0)
+,fPtElec_LS2_mc_closure(0)
+
 ,fPtElec_ULS_weight(0)
 ,fPtElec_LS_weight(0)
 ,fPtElec_ULS2_weight(0)
@@ -477,6 +496,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTOF02(0)
 ,fTOF03(0)
 ,fpid(0)
+,fEoverP_pt_true_electrons(0)
+,fEoverP_pt_true_hadrons(0)
+,fEoverP_pt_true_electrons0(0)
+,fEoverP_pt_true_hadrons0(0)
 ,fEoverP_pt(0)
 ,fEoverP_tpc(0)
 ,fEoverP_tpc_p_trigger(0)
@@ -801,6 +824,14 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		
 		fPtElec_ULS2_weight = new TH1F("fPtElec_ULS2_weight","ULS; p_{T} (GeV/c); Count",300,0,30);
 		fPtElec_LS2_weight = new TH1F("fPtElec_LS2_weight","LS; p_{T} (GeV/c); Count",300,0,30);
+		
+			//mc closure
+		fPtElec_ULS_mc_closure = new TH1F("fPtElec_ULS_mc_closure","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS_mc_closure = new TH1F("fPtElec_LS_mc_closure","LS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_ULS2_mc_closure = new TH1F("fPtElec_ULS2_mc_closure","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS2_mc_closure = new TH1F("fPtElec_LS2_mc_closure","LS; p_{T} (GeV/c); Count",300,0,30);
+		
+		
 
 	}
 	
@@ -895,6 +926,11 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fPtElec_LS2);
 		fOutputList->Add(fPtElec_ULS2_weight);
 		fOutputList->Add(fPtElec_LS2_weight);
+		
+		fOutputList->Add(fPtElec_ULS_mc_closure);
+		fOutputList->Add(fPtElec_LS_mc_closure);
+		fOutputList->Add(fPtElec_ULS2_mc_closure);
+		fOutputList->Add(fPtElec_LS2_mc_closure);
 	}
 	
 	
@@ -984,7 +1020,19 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fTPCNcls_EoverP= new TH2F *[3];	
 	fTPCNcls_pid=new TH2F *[4];
 	
+	fEoverP_pt_true_electrons = new TH2F("fEoverP_pt_true_electrons",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+	fOutputList->Add(fEoverP_pt_true_electrons);
+	fEoverP_pt_true_electrons0 = new TH2F("fEoverP_pt_true_electrons0",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+	fOutputList->Add(fEoverP_pt_true_electrons0);
+
 	
+	fEoverP_pt_true_hadrons = new TH2F("fEoverP_pt_true_hadrons",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+	fOutputList->Add(fEoverP_pt_true_hadrons);
+	fEoverP_pt_true_hadrons0 = new TH2F("fEoverP_pt_true_hadrons0",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+	fOutputList->Add(fEoverP_pt_true_hadrons0);
+
+
+
 	
 	for(Int_t i = 0; i < 3; i++)
 	{
@@ -1009,8 +1057,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fTPCNcls_EoverP[i]= new TH2F(Form("fTPCNcls_EoverP%d",i),"TPCNcls_EoverP",1000,0,200,200,0,2);	
 			
 		
-		
-		fOutputList->Add(fEoverP_pt[i]);
+			fOutputList->Add(fEoverP_pt[i]);
 		fOutputList->Add(fTPC_p[i]);
 		fOutputList->Add(fTPCnsigma_p[i]);
 		
@@ -1028,6 +1075,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fNClusters[i]);
 		fOutputList->Add(fTPCNcls_EoverP[i]);
 	}
+	
+		
+
 	
 	fTrack_Multi= new  TH1F("fTrack_Multi","fTrack_Multi",1000, 0,1000);
 	
@@ -2198,7 +2248,20 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 	///_____________________________________________________________________
 	///Track loop
-	for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) 
+	Int_t NTracks=fVevent->GetNumberOfTracks();
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//To use tender
+	if(fUseTender){
+		TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+		NTracks = fTracks_tender->GetEntries();
+		TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+		ClsNo = fCaloClusters_tender->GetEntries();
+		
+	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	for(Int_t iTracks = 0; iTracks < NTracks; iTracks++) 
 	{
 		AliVParticle* Vtrack = fVevent->GetTrack(iTracks);
 		if (!Vtrack) 
@@ -2207,10 +2270,23 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			continue;
 		}
 		
+			//main place where track is defined
+		
 		AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
 		AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
 		AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//To use tender
+		if(fUseTender){
+			TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+			track = static_cast<AliAODTrack*>(fTracks_tender->At(iTracks));
+			if (!track) {
+				printf("ERROR: Could not receive track calibrated %d\n", iTracks);
+				continue;
+			}
+		}
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////
 				
 		Double_t fTPCnSigma = -999;
 		Double_t fTOFnSigma = -999;
@@ -2258,6 +2334,16 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		if(track->GetEMCALcluster()>0)
 		{
 			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//to use tender
+			if(fUseTender){
+				int EMCalIndex = -1;
+				EMCalIndex = track->GetEMCALcluster();
+				TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+				fClus = static_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+			}
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			
 			if(fClus->IsEMCAL())
 			{
 				
@@ -2373,7 +2459,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 //HFE cuts: TPC PID cleanup
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
 		
-//DCA cut done by hand -- July 29th, 2014
+//DCA cut done by hand -- July 29th, 2014  -> fix it... has to be in absolute values!!!!
 		if(fIsAOD){
 			Double_t d0z0[2], cov[3];
 			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
@@ -2508,6 +2594,16 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		if(track->GetEMCALcluster()>0)
 		{
 			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//to use tender
+			if(fUseTender){
+				int EMCalIndex = -1;
+				EMCalIndex = track->GetEMCALcluster();
+				TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+				fClus = static_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+			}
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			
 			if(fClus->IsEMCAL())
 			{
 				if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
@@ -2544,21 +2640,60 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 					
 					// EtaCut -> dados
 					if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
-							//main
+						
+						//-------------------------------------------------------------------
+						//true hadrons E/p shape before cuts
+						if(fIsMC && fIsAOD && track->GetLabel()>=0){
+							fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+							Int_t pdg = fMCparticle->GetPdgCode();
+							
+							if( TMath::Abs(pdg) != 11){
+								fEoverP_pt_true_hadrons0->Fill(fPt,(fClus->E() / fP));
+							}
+						}
+						
+						
+						//true electrons E/p shape before cuts
+						if(fIsMC && fIsAOD && track->GetLabel()>=0){
+							fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+							Int_t pdg = fMCparticle->GetPdgCode();
+							
+							if( TMath::Abs(pdg) == 11){
+								fEoverP_pt_true_electrons0->Fill(fPt,(fClus->E() / fP));
+							}
+						}
+						//-------------------------------------------------------------------
+						
+						
+						//main
 						if(TMath::Abs(fTPCnSigma_pion)<3 || TMath::Abs(fTPCnSigma_proton)<3 || TMath::Abs(fTPCnSigma_kaon)<3 ){
 							
 							if(fTPCnSigma<-3.5){
 								fEoverP_pt_hadrons->Fill(fPt,EoverP);
 								if(fUseEMCal) fShowerShape_ha->Fill(M02,M20);
+								
+								
+								//after cut -> Are they really hadrons? E/p shape
+								if(fIsMC && fIsAOD && track->GetLabel()>=0){
+									fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+									Int_t pdg = fMCparticle->GetPdgCode();
+									
+									if( TMath::Abs(pdg) != 11){
+										fEoverP_pt_true_hadrons->Fill(fPt,(fClus->E() / fP));
+									}
+								}
+								
+								
 							}
 						}
-							//for systematic studies of hadron contamination
-						if(fTPCnSigma < -4){
+						
+						//for systematic studies of hadron contamination
+						if(fTPCnSigma < -3){
 							fEoverP_pt_pions->Fill(fPt, EoverP);
 							
 						}
 						
-						if(fTPCnSigma < -5){
+						if(fTPCnSigma < -3.5){
 							fEoverP_pt_pions2->Fill(fPt, EoverP);
 							
 						}
@@ -2849,6 +2984,16 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		if(track->GetEMCALcluster()>0)
 		{
 			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//to use tender
+			if(fUseTender){
+				int EMCalIndex = -1;
+				EMCalIndex = track->GetEMCALcluster();
+				TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+				fClus = static_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+			}
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			
 			if(fClus->IsEMCAL())
 			{
 				
@@ -2993,8 +3138,20 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
 								fEoverP_pt[2]->Fill(fPt,(fClus->E() / fP));
 								fShowerShapeCut->Fill(M02,M20);
-									//in order to check if there are exotic cluster in this selected cluster (27 may 2014)
+								//in order to check if there are exotic cluster in this selected cluster (27 may 2014)
 								fNcells_energy_elec_selected->Fill(ncells,Energy);
+								
+									//true electrons E/p shape
+								if(fIsMC && fIsAOD && track->GetLabel()>=0){
+									fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+									Int_t pdg = fMCparticle->GetPdgCode();
+									
+									if( TMath::Abs(pdg) == 11){
+										fEoverP_pt_true_electrons->Fill(fPt,(fClus->E() / fP));
+									}
+								}
+								
+								
 								
 							}
 							
@@ -3003,6 +3160,16 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							fEoverP_pt[2]->Fill(fPt,(fClus->E() / fP));
 							fShowerShapeCut->Fill(M02,M20);
 							fNcells_energy_elec_selected->Fill(ncells,Energy);
+							
+							//after cut -> Are they really electrons ? E/p shape
+							if(fIsMC && fIsAOD && track->GetLabel()>=0){
+								fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+								Int_t pdg = fMCparticle->GetPdgCode();
+								
+								if( TMath::Abs(pdg) == 11){
+									fEoverP_pt_true_electrons->Fill(fPt,(fClus->E() / fP));
+								}
+							}
 
 							
 						}
@@ -3111,6 +3278,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 					
 					//_______________________________________________________
 					//PID using EMCal
+					if(fEoverPnsigma)SetEoverPCutPtDependentMC(track->Pt());
+
 					if((fClus->E() / fP) >= fEoverPCutMin && (fClus->E() / fP) <= fEoverPCutMax)
 					{	
 						
@@ -3860,6 +4029,18 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 				if(fNonHFE->IsLS()) fPtElec_LS2->Fill(fPtE,fNonHFE->GetNLS());
 			}
 		}
+		
+	//for MC closure test
+	// to be used as data, with MC input
+	if(!IsTPConly){
+		if(fNonHFE->IsULS()) fPtElec_ULS_mc_closure->Fill(fPtE,fNonHFE->GetNULS());
+		if(fNonHFE->IsLS()) fPtElec_LS_mc_closure->Fill(fPtE,fNonHFE->GetNLS());
+	}
+	
+	if(IsTPConly){
+		if(fNonHFE->IsULS()) fPtElec_ULS2_mc_closure->Fill(fPtE,fNonHFE->GetNULS());
+		if(fNonHFE->IsLS()) fPtElec_LS2_mc_closure->Fill(fPtE,fNonHFE->GetNLS());
+	}
 		
 		
 		
@@ -4707,7 +4888,259 @@ Double_t AliAnalysisTaskEMCalHFEpA::CalculateWeight(Int_t pdg_particle, Double_t
 	    return weight;
 	
 }
+Double_t AliAnalysisTaskEMCalHFEpA::SetEoverPCutPtDependentMC(Double_t pt)
+{
+	
+	fEoverPCutMin=0.8;
+	fEoverPCutMax=1.2;
+	
+	/*
+	////====================================================================================== 
+	////====================================================================================== 
+	////============================= data 2 sigma =========================================== 
+	if(!fIsMC){
+			//data 2 sigma 
+		if(pt>= 2.00 &&  pt < 2.50){
+			fEoverPCutMin=0.7719;
+			fEoverPCutMax=1.1023;
+		}
+		if(pt>= 2.50 &&  pt < 3.00){
+			fEoverPCutMin=0.7966;
+			fEoverPCutMax=1.1088;
+		}
+		if(pt>= 3.00 &&  pt < 4.00){
+			fEoverPCutMin=0.8175;
+			fEoverPCutMax=1.1101;
+		}
+		if(pt>= 4.00 &&  pt < 5.00){
+			fEoverPCutMin=0.8302;
+			fEoverPCutMax=1.1194;
+		}
+		if(pt>= 5.00 &&  pt < 6.00){
+			fEoverPCutMin=0.8517;
+			fEoverPCutMax=1.1177;
+		}
+		if(pt>= 6.00 &&  pt < 8.00){
+			fEoverPCutMin=0.8901;
+			fEoverPCutMax=1.1139;
+		}
+		if(pt>= 8.00 &&  pt < 10.00){
+			fEoverPCutMin=0.8703;
+			fEoverPCutMax=1.1377;
+		}
+		if(pt>= 10.00 &&  pt < 12.00){
+			fEoverPCutMin=0.9043;
+			fEoverPCutMax=1.1977;
+		}
+	}
+	
+	////=========================================== MC 2 sigma =========================================== 
+	
+	
+	if(fIsMC){
+	
+		if(pt>= 2.00 &&  pt < 2.50){
+			fEoverPCutMin=0.7712;
+			fEoverPCutMax=1.0746;
+		}
+		if(pt>= 2.50 &&  pt < 3.00){
+			fEoverPCutMin=0.7946;
+			fEoverPCutMax=1.0708;
+		}
+		if(pt>= 3.00 &&  pt < 4.00){
+			fEoverPCutMin=0.8196;
+			fEoverPCutMax=1.0678;
+		}
+		if(pt>= 4.00 &&  pt < 5.00){
+			fEoverPCutMin=0.8396;
+			fEoverPCutMax=1.0646;
+		}
+		if(pt>= 5.00 &&  pt < 6.00){
+			fEoverPCutMin=0.8527;
+			fEoverPCutMax=1.0647;
+		}
+		if(pt>= 6.00 &&  pt < 8.00){
+			fEoverPCutMin=0.8652;
+			fEoverPCutMax=1.0670;
+		}
+		if(pt>= 8.00 &&  pt < 10.00){
+			fEoverPCutMin=0.8748;
+			fEoverPCutMax=1.0804;
+		}
+		if(pt>= 10.00 &&  pt < 12.00){
+			fEoverPCutMin=0.8814;
+			fEoverPCutMax=1.0842;
+		}
+	
+	}
+	*/
+		////====================================================================================== 
+		////====================================================================================== 
+		////=========================== data 1.5 sigma =========================================== 
+	/*
+	if(!fIsMC){
+		//data 1.5 sigmas 
+		if(pt>= 2.00 &&  pt < 2.50){
+			fEoverPCutMin=0.8132;
+			fEoverPCutMax=1.0610;
+		}
+		if(pt>= 2.50 &&  pt < 3.00){
+			fEoverPCutMin=0.8356;
+			fEoverPCutMax=1.0698;
+		}
+		if(pt>= 3.00 &&  pt < 4.00){
+			fEoverPCutMin=0.8541;
+			fEoverPCutMax=1.0735;
+		}
+		if(pt>= 4.00 &&  pt < 5.00){
+			fEoverPCutMin=0.8664;
+			fEoverPCutMax=1.0832;
+		}
+		if(pt>= 5.00 &&  pt < 6.00){
+			fEoverPCutMin=0.8849;
+			fEoverPCutMax=1.0845;
+		}
+		if(pt>= 6.00 &&  pt < 8.00){
+			fEoverPCutMin=0.9180;
+			fEoverPCutMax=1.0860;
+		}
+		if(pt>= 8.00 &&  pt < 10.00){
+			fEoverPCutMin=0.9037;
+			fEoverPCutMax=1.1043;
+		}
+		if(pt>= 10.00 &&  pt < 12.00){
+			fEoverPCutMin=0.9409;
+			fEoverPCutMax=1.1611;
+		}
+	}
+	
+	////====================================================================================== 
+	////====================================================================================== 
+	////=========================== MC 1.5 sigma =========================================== 
+	
+	if(fIsMC){
+		//MC 1.5 sigmas 
+		if(pt>= 2.00 &&  pt < 2.50){
+			fEoverPCutMin=0.8091;
+			fEoverPCutMax=1.0367;
+		}
+		if(pt>= 2.50 &&  pt < 3.00){
+		fEoverPCutMin=0.8292;
+		fEoverPCutMax=1.0362;
+		}
+		if(pt>= 3.00 &&  pt < 4.00){
+			fEoverPCutMin=0.8506;
+			fEoverPCutMax=1.0368;
+		}
+		if(pt>= 4.00 &&  pt < 5.00){
+			fEoverPCutMin=0.8677;
+			fEoverPCutMax=1.0365;
+		}
+		if(pt>= 5.00 &&  pt < 6.00){
+			fEoverPCutMin=0.8792;
+			fEoverPCutMax=1.0382;
+		}
+		if(pt>= 6.00 &&  pt < 8.00){
+			fEoverPCutMin=0.8904;
+			fEoverPCutMax=1.0418;
+		}
+		if(pt>= 8.00 &&  pt < 10.00){
+			fEoverPCutMin=0.9005;
+			fEoverPCutMax=1.0547;
+		}
+		if(pt>= 10.00 &&  pt < 12.00){
+			fEoverPCutMin=0.9067;
+			fEoverPCutMax=1.0589;
+		}
+	
+	}
+	*/
+		////====================================================================================== 
+		////====================================================================================== 
+		////=========================== data 2.5 sigma =========================================== 
+	
+	if(!fIsMC){
+			//data 2.5 sigmas 
+		if(pt>= 2.00 &&  pt < 2.50){
+			fEoverPCutMin=0.7306;
+			fEoverPCutMax=1.1436;
+		}
+		if(pt>= 2.50 &&  pt < 3.00){
+			fEoverPCutMin=0.7575;
+			fEoverPCutMax=1.1479;
+		}
+		if(pt>= 3.00 &&  pt < 4.00){
+			fEoverPCutMin=0.7809;
+			fEoverPCutMax=1.1467;
+		}
+		if(pt>= 4.00 &&  pt < 5.00){
+			fEoverPCutMin=0.7941;
+			fEoverPCutMax=1.1555;
+		}
+		if(pt>= 5.00 &&  pt < 6.00){
+			fEoverPCutMin=0.8184;
+			fEoverPCutMax=1.1510;
+		}
+		if(pt>= 6.00 &&  pt < 8.00){
+			fEoverPCutMin=0.8621;
+			fEoverPCutMax=1.1419;
+		}
+		if(pt>= 8.00 &&  pt < 10.00){
+			fEoverPCutMin=0.8368;
+			fEoverPCutMax=1.1712;
+		}
+		if(pt>= 10.00 &&  pt < 12.00){
+			fEoverPCutMin=0.8676;
+			fEoverPCutMax=1.2344;
+		}
+	
+}
+	
+		////====================================================================================== 
+		////====================================================================================== 
+		////=========================== MC 2.5 sigma =========================================== 
+	
+	if(fIsMC){
+			//MC 2.5 sigmas 
+		if(pt>= 2.00 &&  pt < 2.50){
+			fEoverPCutMin=0.7333;
+			fEoverPCutMax=1.1125;
+		}
+		if(pt>= 2.50 &&  pt < 3.00){
+			fEoverPCutMin=0.7601;
+			fEoverPCutMax=1.1053;
+		}
+		if(pt>= 3.00 &&  pt < 4.00){
+			fEoverPCutMin=0.7885;
+			fEoverPCutMax=1.0989;
+		}
+		if(pt>= 4.00 &&  pt < 5.00){
+			fEoverPCutMin=0.8115;
+			fEoverPCutMax=1.0927;
+		}
+		if(pt>= 5.00 &&  pt < 6.00){
+			fEoverPCutMin=0.8262;
+			fEoverPCutMax=1.0912;
+		}
+		if(pt>= 6.00 &&  pt < 8.00){
+			fEoverPCutMin=0.8400;
+			fEoverPCutMax=1.0922;
+		}
+		if(pt>= 8.00 &&  pt < 10.00){
+			fEoverPCutMin=0.8492;
+			fEoverPCutMax=1.1060;
+		}
+		if(pt>= 10.00 &&  pt < 12.00){
+			fEoverPCutMin=0.8560;
+			fEoverPCutMax=1.1096;
+		}
+	}
+	
+	
+	return fEoverPCutMin;
+	return fEoverPCutMax;	
 
+}
 	
 
 

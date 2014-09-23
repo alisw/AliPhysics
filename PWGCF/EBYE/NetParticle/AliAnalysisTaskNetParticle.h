@@ -7,7 +7,7 @@
  * See cxx source for full Copyright notice                               */
  
 /**
- * Class for for NetParticle Distributions
+ * Class for NetParticle Distributions
  * -- AnalysisTask
  * Authors: Jochen Thaeder <jochen@thaeder.de>
  *          Michael Weber <m.weber@cern.ch>
@@ -35,12 +35,6 @@ class AliESDResponse;
 class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
 
  public:
-
-  /*
-   * ---------------------------------------------------------------------------------
-   *                            Constructor / Destructor
-   * ---------------------------------------------------------------------------------
-   */
 
   AliAnalysisTaskNetParticle(const char *name = "AliAnalysisTaskNetParticle");
   virtual ~AliAnalysisTaskNetParticle();
@@ -130,33 +124,29 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   AliAnalysisNetParticleEffCont      *fEffCont; //! Efficiency and Contamination class
   AliAnalysisNetParticleDCA          *fDCA;     //! DCA class
   AliAnalysisNetParticleDistribution *fDist;    //! Distributions class
-  AliAnalysisNetParticleQA           *fQA;    //! QA class
+  AliAnalysisNetParticleQA           *fQA;      //! QA class
 
   // --- OutLists ----------------------------------------------------------
-
   TList              *fOutList;                 //! Ptr to output data container
   TList              *fOutListEff;              //! Ptr to output data container - efficiency
   TList              *fOutListCont;             //! Ptr to output data container - contamination
   TList              *fOutListDCA;              //! Ptr to output data container - DCA
-  TList              *fOutListQA;               //! Ptr to QA output data container
+  TList              *fOutListQA;               //! Ptr to output data container - QA
 
   // --- ESD only ----------------------------------------------------------
-
   AliESDEvent        *fESD;                     //! Ptr to ESD event
   AliESDInputHandler *fESDHandler;              //! Ptr to ESD Handler
-
+  // -----------------------------------------------------------------------
   AliESDtrackCuts    *fESDTrackCutsBase;        //! ESD cuts - base settings
   AliESDtrackCuts    *fESDTrackCuts;            //! ESD cuts  
   AliESDtrackCuts    *fESDTrackCutsBkg;         //! ESD cuts for Bkg
   AliESDtrackCuts    *fESDTrackCutsEff;         //! ESD cuts for efficiency determination -> larger pt Range
 
   // --- AOD only ----------------------------------------------------------
-
   AliAODEvent        *fAOD;                     //! Ptr to AOD event
   AliAODInputHandler *fAODHandler;              //! Ptr to AOD Handler
   
   // --- Flags -------------------------------------------------------------
-
   Bool_t              fIsMC;                    //  Is MC event
   Bool_t              fIsAOD;                   //  analysis mode            : 0 = ESDs  | 1 = AODs
   Int_t               fESDTrackCutMode;         //  ESD track cut mode       : 0 = clean | 1 = dirty
@@ -166,20 +156,17 @@ class AliAnalysisTaskNetParticle : public AliAnalysisTaskSE {
   Int_t               fModeQACreation;          //  QA creation mode         : 1 = on    | 0 = off
 
   // --- MC only -----------------------------------------------------------
-
   AliMCEvent         *fMCEvent;                 //! Ptr to MC event
   AliStack           *fMCStack;                 //! Ptr to MC stack
-
   // -----------------------------------------------------------------------
-
   Float_t             fEtaMax;                  //  Max, absolut eta 
   Float_t             fEtaMaxEff;               //  Max, absolut eta for efficiency
   Float_t             fPtRange[2];              //  Array of pt [min,max]
   Float_t             fPtRangeEff[2];           //  Array of pt [min,max] for efficiency
-
-  Int_t               fAODtrackCutBit;          //  Track filter bit for AOD tracks
-
   // -----------------------------------------------------------------------
+  Int_t               fAODtrackCutBit;          //  Track filter bit for AOD tracks
+  // =======================================================================
+
   
   ClassDef(AliAnalysisTaskNetParticle, 1);
 };

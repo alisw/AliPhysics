@@ -38,7 +38,8 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetIncludeNoITS(Bool_t f)                         { fIncludeNoITS       = f     ; }
   void           SetCutMaxFractionSharedTPCClusters(Double_t c = 0.4) { fCutMaxFractionSharedTPCClusters  = c ; }
   void           SetUseNegativeLabels(Bool_t f)                    { fUseNegativeLabels  = f     ; }
-  void           SetTrackEfficiency(Double_t eff = 0.95)           { fTrackEfficiency    = eff   ; }
+  void           SetTrackEfficiency(Double_t eff = 0.95)           { fTrackEfficiency    = new TF1("eff", "[0]", 0, 500); fTrackEfficiency->FixParameter(0,eff); }
+  void           SetTrackEfficiency(TF1* eff)                      { fTrackEfficiency    = eff   ; }
   void           SetTotalFiles(Int_t n)                            { fTotalFiles         = n     ; }
   void           SetAttempts(Int_t n)                              { fAttempts           = n     ; }
   void           SetRandomAccess(Bool_t r=kTRUE)                   { fRandomAccess       = r     ; }
@@ -52,6 +53,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetZVertexCut(Double_t z)                         { fZVertexCut         = z     ; }
   void           SetMaxVertexDist(Double_t d)                      { fMaxVertexDist      = d     ; }
   void           SetParticlePtRange(Double_t min, Double_t max, Byte_t t=1) { fParticleMinPt = min; fParticleMaxPt = max; fParticleSelection = t; }
+  void           SetEmbedCentrality(Bool_t d)                      { fEmbedCentrality    = d     ; }
 
  protected:
   Bool_t          ExecOnce()            ;// intialize task
@@ -94,10 +96,11 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   Bool_t         fIncludeNoITS        ;//  True = includes tracks with failed ITS refit
   Double_t       fCutMaxFractionSharedTPCClusters;  // max fraction of shared TPC clusters
   Bool_t         fUseNegativeLabels   ;//  Whether or not should use negative MC labels
-  Double_t       fTrackEfficiency     ;//  Track efficiency
+  TF1           *fTrackEfficiency     ;//  Track efficiency
   Bool_t         fIsAODMC             ;//  Whether the embedding AOD is MC or not
   Int_t          fTotalFiles          ;//  Total number of files per pt hard bin
   Int_t          fAttempts            ;//  Attempts to be tried before giving up in opening the next file
+  Bool_t         fEmbedCentrality     ;//  If true, embed centrality (only works when running on AOD) - carefull: it overwrites the event centrality (if any) 
   Bool_t         fEsdTreeMode         ;//! True = embed from ESD (must be a skimmed ESD!)
   Int_t          fCurrentFileID       ;//! Current file being processed (via the event handler)
   Int_t          fCurrentAODFileID    ;//! Current file ID
@@ -111,6 +114,8 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliVCaloCells *fAODCaloCells        ;//! AOD cell collection
   TClonesArray  *fAODMCParticles      ;//! AOD MC particles collection
   Int_t          fCurrentAODEntry     ;//! Current entry in the AOD tree
+  Int_t          fFirstAODEntry       ;//! First entry in the AOD tree
+  Int_t          fLastAODEntry        ;//! Last entry in the AOD tree
   AliNamedString *fAODFilePath        ;//! Current AOD file path being embedded
   TH2           *fHistFileMatching    ;//! Current file ID vs. AOD file ID (to be embedded)
   TH1           *fHistAODFileError    ;//! AOD file ID (to be embedded) error
@@ -123,6 +128,6 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 11) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 13) // Jet embedding from AOD task
 };
 #endif

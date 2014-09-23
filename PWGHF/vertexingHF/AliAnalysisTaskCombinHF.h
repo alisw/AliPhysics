@@ -34,8 +34,16 @@ public:
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+  virtual void FinishTaskOutput();
   
   void SetReadMC(Bool_t read){fReadMC=read;}
+
+  void SetEventMixingOn(){fDoEventMixing=kTRUE;}
+  void SetEventMixingOff(){fDoEventMixing=kFALSE;}
+  void SetMinNumberOfEventsForMixing(Int_t minn){fMinNumberOfEventsForMixing=minn;}
+
+  void ConfigureZVertPools(Int_t nPools, Double_t*  zVertLimits);
+  void ConfigureMultiplicityPools(Int_t nPools, Double_t*  multLimits);
   void SelectPromptD(){fPromptFeeddown=kPrompt;}
   void SelectFeeddownD(){fPromptFeeddown=kFeeddown;}
   void SelectPromptAndFeeddownD(){fPromptFeeddown=kBoth;}
@@ -69,6 +77,7 @@ public:
   }
   void SetMassWindow(Double_t minMass, Double_t maxMass){fMinMass=minMass; fMaxMass=maxMass;}
   void SetMaxPt(Double_t maxPt){fMaxPt=maxPt;}
+  void SetPtBinWidth(Double_t binw){fPtBinWidth=binw;}
   void SetEtaAccCut(Double_t etacut){fEtaAccCut=etacut;}
   void SetPtAccCut(Double_t ptcut){fPtAccCut=ptcut;}
   
@@ -88,9 +97,13 @@ public:
   
   Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, Int_t* dgLabels);
   void FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
+  void FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau);
   void FillGenHistos(TClonesArray* arrayMC);
-  Bool_t CheckAcceptance(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau);
-  
+  Bool_t CheckAcceptance(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau); 
+  Int_t GetPoolIndex(Double_t zvert, Double_t mult);
+  void ResetPool(Int_t poolIndex);
+  void DoMixing(Int_t poolIndex);
+
   enum EMesonSpecies {kDzero, kDplus, kDstar, kDs};
   enum EPrompFd {kNone,kPrompt,kFeeddown,kBoth};
   enum EPIDstrategy {knSigma, kBayesianMaxProb, kBayesianThres};
@@ -123,7 +136,8 @@ private:
   TH1F *fNormRotated;      //! hist. rotated/selected D+
   TH1F *fDeltaMass;        //! hist. mass difference after rotations
   THnSparse *fDeltaMassFullAnalysis; //! hist. mass difference after rotations with more details
-  
+  TH3F *fMassVsPtVsYME;   //! hist. of Y vs. Pt vs. Mass (mixedevents)
+  TH2F* fEventsPerPool;   //! hist with number of events per pool  
   UInt_t fFilterMask; // FilterMask
   AliESDtrackCuts* fTrackCutsAll; // track selection
   AliESDtrackCuts* fTrackCutsPion; // pion track selection
@@ -134,6 +148,7 @@ private:
   Double_t fMinMass; // minimum value of invariant mass
   Double_t fMaxMass; // maximum value of invariant mass
   Double_t fMaxPt;   // maximum pT value for inv. mass histograms
+  Double_t fPtBinWidth; // width of pt bin (GeV/c)
   Double_t fEtaAccCut; // eta limits for acceptance step
   Double_t fPtAccCut; // pt limits for acceptance step
   
@@ -158,8 +173,22 @@ private:
   Int_t    fPIDselCaseZero;  // flag to change PID strategy
   Double_t fBayesThresKaon;  // threshold for kaon identification via Bayesian PID
   Double_t fBayesThresPion;  // threshold for pion identification via Bayesian PID
-  
-  ClassDef(AliAnalysisTaskCombinHF,4); // D0D+ task from AOD tracks
+
+  Bool_t fDoEventMixing; // flag for event mixing
+  Int_t  fMinNumberOfEventsForMixing; // maximum number of events to be used in event mixing
+  Int_t fNzVertPools; // number of pools in z vertex for event mixing
+  Int_t fNzVertPoolsLimSize; // number of pools in z vertex for event mixing +1
+  Double_t* fzVertPoolLims; //[fNzVertPoolsLimSize] limits of the pools in zVertex
+  Int_t fNMultPools; // number of pools in multiplicity for event mixing
+  Int_t fNMultPoolsLimSize; // number of pools in multiplicity for event mixing +1
+  Double_t* fMultPoolLims; //[fNMultPoolsLimSize] limits of the pools in multiplicity
+
+  TTree** fEventBuffer;   //! structure for event mixing
+  Double_t fVtxZ;         // zVertex
+  Double_t fMultiplicity; // multiplicity
+  TObjArray* fKaonTracks; // array of kaon-compatible tracks (TLorentzVectors)
+  TObjArray* fPionTracks; // array of pion-compatible tracks (TLorentzVectors)  
+  ClassDef(AliAnalysisTaskCombinHF,8); // D0D+ task from AOD tracks
 };
 
 #endif

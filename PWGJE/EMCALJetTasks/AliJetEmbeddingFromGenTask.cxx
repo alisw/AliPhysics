@@ -82,7 +82,7 @@ void AliJetEmbeddingFromGenTask::UserCreateOutputObjects()
   fHistPt = new TH1F("fHistpt","fHistPt;#it{p}_{T};N",100,0.,100.);
   fOutput->Add(fHistPt);
 
-  fHistEtaPhi = new TH2F("fHistEtapHI","fHistEtaPhi;#eta;#varphi",100,-3.,3.,100.,0.,TMath::TwoPi());
+  fHistEtaPhi = new TH2F("fHistEtaPhi","fHistEtaPhi;#eta;#varphi",100,-3.,3.,100.,0.,TMath::TwoPi());
   fOutput->Add(fHistEtaPhi);
 
   fHistTrials = new TH1F("fHistTrials", "fHistTrials", 1, 0, 1);

@@ -93,6 +93,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetTrackEtaCut( Double_t val )    { fTrackEtaCut = val; }
     void   SetTrackEtaCutMin( Double_t val )    { fTrackEtaCutMin = val; }
     void   SetOnlyOneEtaSide(Int_t flag)     { fOnlyOneEtaSide = flag; }
+    void   SetTrackPhiCutEvPlMin(Double_t val)  { fTrackPhiCutEvPlMin = val; }
+    void   SetTrackPhiCutEvPlMax(Double_t val)  { fTrackPhiCutEvPlMax = val; }
     void   SetPtMin(Double_t val)            { fPtMin = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
     void   SetDCAXYCut(TFormula* value)      { fDCAXYCut = value; }
@@ -207,6 +209,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     // Track cuts
     Double_t      	fTrackEtaCut;          // Maximum Eta cut on particles
     Double_t      	fTrackEtaCutMin;          // Minimum Eta cut on particles
+    Double_t            fTrackPhiCutEvPlMin;   // Minimum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2)
+    Double_t            fTrackPhiCutEvPlMax;   // Maximum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2), if = 0, then no cut is performed
     Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
     Double_t            fPtMin;                // Min pT to start correlations
     TFormula*           fDCAXYCut;             // additional pt dependent cut on DCA XY (only for AOD)
@@ -234,7 +238,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
     Bool_t fFillOnlyStep0; 	   // fill only step 0
     Bool_t fSkipStep6;		   // skip step 6 when filling
-    Bool_t fRejectCentralityOutliers;  // enable rejection of outliers in centrality vs no track correlation
+    Bool_t fRejectCentralityOutliers;  // enable rejection of outliers in centrality vs no track correlation. Interferes with the event plane dependence code
     Bool_t fRejectZeroTrackEvents;  // reject events which have no tracks (using the eta, pT cuts defined)
     Bool_t fRemoveWeakDecays;	   // remove secondaries from weak decays from tracks and particles
     Bool_t fRemoveDuplicates;      // remove particles with the same label (double reconstruction)
@@ -248,7 +252,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 46); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 47); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

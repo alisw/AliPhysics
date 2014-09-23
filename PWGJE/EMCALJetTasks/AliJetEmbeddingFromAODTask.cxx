@@ -76,10 +76,11 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fIncludeNoITS(kFALSE),
   fCutMaxFractionSharedTPCClusters(0.4),
   fUseNegativeLabels(kTRUE),
-  fTrackEfficiency(1),
+  fTrackEfficiency(0),
   fIsAODMC(kFALSE),
   fTotalFiles(2050),
   fAttempts(5),
+  fEmbedCentrality(kFALSE),
   fEsdTreeMode(kFALSE),
   fCurrentFileID(0),
   fCurrentAODFileID(0),
@@ -93,6 +94,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fAODCaloCells(0),
   fAODMCParticles(0),
   fCurrentAODEntry(-1),
+  fFirstAODEntry(-1),
+  fLastAODEntry(-1),
   fAODFilePath(0),
   fHistFileMatching(0),
   fHistAODFileError(0),
@@ -146,10 +149,11 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fIncludeNoITS(kFALSE),
   fCutMaxFractionSharedTPCClusters(0.4),
   fUseNegativeLabels(kTRUE),
-  fTrackEfficiency(1),
+  fTrackEfficiency(0),
   fIsAODMC(kFALSE),
   fTotalFiles(2050),
   fAttempts(5),
+  fEmbedCentrality(kFALSE),
   fEsdTreeMode(kFALSE),
   fCurrentFileID(0),
   fCurrentAODFileID(0),
@@ -163,6 +167,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fAODCaloCells(0),  
   fAODMCParticles(0),
   fCurrentAODEntry(-1),
+  fFirstAODEntry(-1),
+  fLastAODEntry(-1),
   fAODFilePath(0),
   fHistFileMatching(0),
   fHistAODFileError(0),
@@ -329,10 +335,15 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
   if (!fAODMCParticlesName.IsNull()) 
     fCurrentAODTree->SetBranchAddress(fAODMCParticlesName, &fAODMCParticles);
   
-  if (fRandomAccess)
-    fCurrentAODEntry = TMath::Nint(gRandom->Rndm()*fCurrentAODTree->GetEntries());
-  else
-    fCurrentAODEntry = -1;
+  if (fRandomAccess) {
+    fFirstAODEntry = TMath::Nint(gRandom->Rndm()*fCurrentAODTree->GetEntries())-1;
+  }
+  else {
+    fFirstAODEntry = -1;
+  }
+
+  fLastAODEntry = fCurrentAODTree->GetEntries();
+  fCurrentAODEntry = fFirstAODEntry;
 
   AliDebug(3,Form("Will start embedding from entry %d", fCurrentAODEntry+1));
   
@@ -393,7 +404,12 @@ Bool_t AliJetEmbeddingFromAODTask::GetNextEntry()
   Int_t attempts = -1;
 
   do {
-    if (!fCurrentAODFile || !fCurrentAODTree || fCurrentAODEntry+1 >= fCurrentAODTree->GetEntries()) {
+    if (fCurrentAODEntry+1 >= fLastAODEntry) { // in case it did not start from the first entry, it will go back
+      fLastAODEntry = fFirstAODEntry;
+      fFirstAODEntry = -1;
+      fCurrentAODEntry = -1;
+    }
+    if (!fCurrentAODFile || !fCurrentAODTree || fCurrentAODEntry+1 >= fLastAODEntry) {
       if (!OpenNextFile()) {
 	AliError("Could not open the next file!");
 	return kFALSE;
@@ -420,6 +436,15 @@ Bool_t AliJetEmbeddingFromAODTask::GetNextEntry()
   if (!fCurrentAODTree)
     return kFALSE;
 
+  if (!fEsdMode && !fEsdTreeMode && fAODHeader) {
+    AliAODHeader *aodHeader = static_cast<AliAODHeader*>(fAODHeader);
+    AliAODHeader *evHeader = static_cast<AliAODHeader*>(InputEvent()->GetHeader());
+    if (fEmbedCentrality) {
+      AliCentrality *cent = aodHeader->GetCentralityP();
+      evHeader->SetCentrality(cent);
+    }
+  }
+
   fEmbeddingCount++;
 
   return kTRUE;
@@ -434,13 +459,12 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
     AliAODHeader *aodHeader = static_cast<AliAODHeader*>(fAODHeader);
 
     // Trigger selection
-    if (fTriggerMask != AliVEvent::kAny) {
+    if (fTriggerMask != 0) {
       UInt_t offlineTrigger = aodHeader->GetOfflineTrigger();
-      
       if ((offlineTrigger & fTriggerMask) == 0) {
-	AliDebug(2,Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.", 
-			offlineTrigger, fTriggerMask));
-	return kFALSE;
+        AliDebug(2,Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.", 
+                        offlineTrigger, fTriggerMask));
+        return kFALSE;
       }
     }
     
@@ -665,10 +689,10 @@ void AliJetEmbeddingFromAODTask::Run()
 	  continue;
 	}
 	
-	if (fTrackEfficiency < 1) {
+	if (fTrackEfficiency) {
 	  Double_t r = gRandom->Rndm();
-	  if (fTrackEfficiency < r) {
-	    AliDebug(3, "Track not embedded because of artificial inefiiciency.");
+	  if (fTrackEfficiency->Eval(track->Pt()) < r) {
+	    AliDebug(3, "Track not embedded because of artificial inefficiency.");
 	    continue;
 	  }
 	}
