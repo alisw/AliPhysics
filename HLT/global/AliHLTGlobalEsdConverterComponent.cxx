@@ -39,6 +39,7 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
+#include "AliITStrackV2.h"
 #include "AliESDfriend.h"
 #include "AliESDfriendTrack.h"
 #include "AliHLTTPCTransform.h"
@@ -63,6 +64,8 @@
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTVertexFinderBase.h"
 #include "AliSysInfo.h"
+#include "AliHLTSAPTrackerData.h"
+#include "AliFlatESDVertex.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -179,6 +182,8 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypePrimaryFinder); // array of track ids for prim vertex
   list.push_back(kAliHLTDataTypeESDContent);
   list.push_back( AliHLTTPCDefinitions::fgkClustersDataType   );
+  list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
+  list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
 }
 
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
@@ -499,7 +504,20 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   // read the clusters
   // ---------- Access to clusters --------------------//
-
+  /*
+  const AliHLTComponentBlockData* pBl0=GetFirstInputBlock();
+  int cnt = 0;
+  while (pBl0) {
+    char tp[9],org[5];
+    strncpy(tp,pBl0->fDataType.fID,8);
+    tp[8] = '0';
+    strncpy(org,pBl0->fDataType.fOrigin,4);
+    org[4] = '0';
+    //
+    printf(">>> Bl%3d %8s|%4s of size %d\n",cnt++,tp,org,pBl0->fSize);
+    pBl0 = GetNextInputBlock();
+  };
+  */
   for(Int_t i=0; i<fkNPartition; i++){
     delete[] fPartitionClusters[i];    
     fPartitionClusters[i]  = 0;
@@ -770,6 +788,55 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     AliESDVertex *vtx = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) );
     pESD->SetPrimaryVertexSPD( vtx );
   }
+
+  // Get ITS Standalone primaries (SAP) vertexTracks
+  {
+    const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS);
+    if (pBlock) {
+      fBenchmark.AddInput(pBlock->fSize);
+      AliFlatESDVertex *vtxFlat =  reinterpret_cast<AliFlatESDVertex*>( pBlock->fPtr );
+      if (vtxFlat->GetNContributors()>0) {
+	cout<<"\n\n ESD converter: input vertexTrackSAP with "<<vtxFlat->GetNContributors()<<" contributors"<<endl;
+	AliESDVertex vtx;
+	vtxFlat->GetESDVertex(vtx);
+	vtx.SetTitle("vertexITSSAP");
+	pESD->SetPrimaryVertexSPD( &vtx );
+      }
+    }
+  }
+
+  // Get ITS Standalone primary (SAP) Tracks
+  {
+    const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeITSSAPData|kAliHLTDataOriginITS);
+    if (pBlock) {
+      fBenchmark.AddInput(pBlock->fSize);
+      const AliHLTITSSAPTrackerDataContainer *dataSAP = reinterpret_cast<const AliHLTITSSAPTrackerDataContainer*>(pBlock->fPtr);
+      AliITStrackV2 trcV2;
+      int ntrITSSAP = dataSAP->fCount;
+      cout<<"\n\n ESD converter: input "<<ntrITSSAP<<" ITS SAP tracks"<<endl;
+      for (int itr=0;itr<ntrITSSAP;itr++) {
+	const AliHLTITSSAPTrackerData& trcFlatSAP = dataSAP->fTracks[itr];
+	AliESDtrack inpESDtrc;
+	inpESDtrc.SetID(pESD->GetNumberOfTracks());
+	trcFlatSAP.paramInw.GetExternalTrackParam(trcV2); // track at the vertex
+	trcV2.SetLabel(trcFlatSAP.label);
+	trcV2.SetNumberOfClusters(trcFlatSAP.ncl);
+	trcV2.SetChi2(trcFlatSAP.chi2);
+	inpESDtrc.UpdateTrackParams(&trcV2,AliESDtrack::kITSrefit);
+	inpESDtrc.SetStatus( (AliESDtrack::kITSin|AliESDtrack::kITSout|AliESDtrack::kITSpureSA) );
+	pESD->AddTrack(&inpESDtrc);
+	//
+	if( pESDfriend ) {
+	  AliESDfriendTrack friendTrack;
+	  trcFlatSAP.paramOut.GetExternalTrackParam(trcV2); // track at the vertex
+	  friendTrack.SetITSOut(trcV2);
+	  pESDfriend->AddTrack(&friendTrack);
+	}
+      }
+    }
+  }
+  
+
 
   // 3.1. now update ESD tracks with the ITSOut info
   // updating track parameters with flag kITSout will overwrite parameter set above with flag kTPCout
