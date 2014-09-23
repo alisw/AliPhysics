@@ -107,7 +107,6 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
 
 };
 
-/*
 inline Int_t AliFlatESDFriendTrack::GetTrackParam( Long64_t ptr, AliExternalTrackParam &param ) const
 {
   if( ptr<0 ) return -1;
@@ -143,5 +142,5 @@ inline Int_t AliFlatESDFriendTrack::GetTPCseed( AliTPCseed &s ) const
   fp->GetTPCseed( &s );
   return 0;
 }
-*/
+
 #endif
