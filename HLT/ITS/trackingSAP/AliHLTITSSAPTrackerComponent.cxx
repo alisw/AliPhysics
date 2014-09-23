@@ -48,6 +48,8 @@
 #include "AliHLTTrackMCLabel.h"
 #include "AliITSRecPoint.h"
 #include "AliHLTSAPTrackerData.h"
+#include "AliHLTMessage.h"
+#include "AliFlatESDVertex.h"
 #include <map>
 
 using namespace std;
@@ -125,10 +127,8 @@ int AliHLTITSSAPTrackerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList
 {
   // see header file for class documentation  
   tgtList.clear();
-  tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
-  tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut);
-  tgtList.push_back(kAliHLTDataTypeTrackMC|kAliHLTDataOriginITS );
-  tgtList.push_back(kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ); // RS??: is this correct?
+  tgtList.push_back(kAliHLTDataTypeITSSAPData|kAliHLTDataOriginITS);
+  tgtList.push_back(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS ); // RS??: is this correct?
   return tgtList.size();
 }
 
@@ -412,7 +412,7 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   {  
     int nFoundTracks = fTracker->GetNTracks();
     AliHLTUInt32_t blockSize = sizeof(AliHLTITSSAPTrackerDataContainer) + nFoundTracks*sizeof(AliHLTITSSAPTrackerData);
-    if( size + blockSize > maxBufferSize ){    	
+    if( size + blockSize + AliFlatESDVertex::GetSize() > maxBufferSize ){    	
       HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d tracks are not stored", 
 		  maxBufferSize, size + blockSize, nFoundTracks);
       iResult = -ENOSPC;
@@ -453,8 +453,17 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   Bool_t vtxOK = kFALSE;
   { // Fill output vertexTracks  
     AliESDVertex& vtxTracks = fTracker->GetTrackVertex();
-    if (vtxTracks.GetStatus()==1) {
-      PushBack( (TObject*) &vtxTracks, kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS,0 );
+    if ( iResult>=0 && vtxTracks.GetStatus()==1 ) {
+      AliFlatESDVertex *flatVtx = reinterpret_cast<AliFlatESDVertex*>( outputPtr + size );
+      flatVtx->SetFromESDVertex( vtxTracks );
+      AliHLTComponentBlockData resultData;
+      FillBlockData( resultData );
+      resultData.fOffset = size;
+      resultData.fSize = flatVtx->GetSize();      
+      resultData.fDataType = kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS;
+      fBenchmark.AddOutput(resultData.fSize);
+      outputBlocks.push_back( resultData );
+      size += resultData.fSize;
       vtxOK = kTRUE;
     }
   }
