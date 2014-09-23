@@ -58,7 +58,8 @@ class AliTPCROC : public TObject {
   Float_t GetPadRowRadii(UInt_t isec, UInt_t irow) const {
     return ( (isec < fNSectors[0]) ?GetPadRowRadiiLow(irow):GetPadRowRadiiUp(irow));}
   //
-  
+  static UInt_t GetTPCUniqueID(UInt_t sector, UInt_t row, UInt_t pad, UInt_t time){UInt_t uid=sector+(row<<7)+(pad<<14)+(time<<22); return uid;
+  }  // unique Id can be used for absolute adressing of the TPC element 
 protected:
   //
   //     number of pads
