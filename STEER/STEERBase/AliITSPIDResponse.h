@@ -26,10 +26,15 @@ public:
  void SetBetheBlochParamsITSTPC(Double_t* param){
    for(Int_t iPar=0; iPar<5; iPar++) fBBtpcits[iPar]=param[iPar];
  }
+ void SetBetheBlochParamsITSTPCDeuteron(Double_t* param){
+   for(Int_t iPar=0; iPar<5; iPar++) fBBdeu[iPar]=param[iPar];
+ }
+ void SetBetheBlochParamsITSTPCTriton(Double_t* param){
+   for(Int_t iPar=0; iPar<5; iPar++) fBBtri[iPar]=param[iPar];
+ }
  void SetBetheBlochParamsITSsa(Double_t* param){
    for(Int_t iPar=0; iPar<5; iPar++) fBBsa[iPar]=param[iPar];
  }
- 
  void SetBetheBlochHybridParamsITSsa(Double_t* param){
    for(Int_t iPar=0; iPar<9; iPar++) fBBsaHybrid[iPar]=param[iPar];
  }
@@ -38,9 +43,9 @@ public:
  }
 
  Double_t BetheAleph(Double_t p,Double_t mass) const;
- Double_t Bethe(Double_t p, Double_t mass, Bool_t iSA=kFALSE) const;
+ Double_t Bethe(Double_t p, Double_t mass, Bool_t isSA=kFALSE,Bool_t isNuclei=kFALSE) const;
  Double_t BetheITSsaHybrid(Double_t p, Double_t mass) const;
- Double_t GetResolution(Double_t bethe, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const;
+ Double_t GetResolution(Double_t bethe, Int_t nPtsForPid=4, Bool_t isSA=kFALSE,Double_t p=0., AliPID::EParticleType type=AliPID::kPion) const;
  void GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES],Bool_t isMC=kFALSE) const;
 
  Double_t GetNumberOfSigmas( const AliVTrack* track, AliPID::EParticleType species) const;
@@ -50,7 +55,7 @@ public:
  Float_t GetNumberOfSigmas(Float_t mom, Float_t signal, AliPID::EParticleType type, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const {
    const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(type),2.);
    Float_t bethe = Bethe(mom,AliPID::ParticleMassZ(type),isSA)*chargeFactor;
-   return (signal - bethe)/GetResolution(bethe,nPtsForPid,isSA);
+   return (signal - bethe)/GetResolution(bethe,nPtsForPid,isSA,mom,type);
  }
  Int_t GetParticleIdFromdEdxVsP(Float_t mom, Float_t signal, Bool_t isSA=kFALSE) const;
 
@@ -68,8 +73,14 @@ private:
   Double_t  fBBsaHybrid[9];  // parameters of Hybrid BB for SA tracks, PHOB + Polinomial al low beta*gamma
   Double_t  fBBsaElectron[5];// parameters of electron BB for SA tracks
   Double_t  fBBtpcits[5];     // parameters of BB for TPC+ITS tracks
+  Double_t fBBdeu[5]; // parameters of deuteron BB for TPC+ITS tracks
+  Double_t fBBtri[5]; // parameters of triton BB for TPC+ITS tracks
   Float_t  fResolSA[5];      // resolutions vs. n. of SDD/SSD points
   Float_t  fResolTPCITS[5];  // resolutions vs. n. of SDD/SSD points
+  Double_t fResolTPCITSDeu3[3]; // deuteron resolutions vs. p for tracks with 3 SDD/SSD points
+  Double_t fResolTPCITSDeu4[3]; // deuteron resolutions vs. p for tracks with 4 SDD/SSD points
+  Double_t fResolTPCITSTri3[3]; // triton resolutions vs. p for tracks with 3 SDD/SSD points
+  Double_t fResolTPCITSTri4[3]; // triton resolutions vs. p for tracks with 4 SDD/SSD points
 
   ClassDef(AliITSPIDResponse,4)   // ITS PID class
 };

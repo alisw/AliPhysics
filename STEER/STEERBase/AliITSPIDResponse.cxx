@@ -43,6 +43,16 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fBBtpcits[2]=0.905;
     fBBtpcits[3]=1.2;
     fBBtpcits[4]=6.6;
+    fBBdeu[0]=76.43; // parameters for the deuteron - tpcits - value from PbPb 2010 run (S.Trogolo - July 2014)
+    fBBdeu[1]=-34.21;
+    fBBdeu[2]=113.2;
+    fBBdeu[3]=-18.12;
+    fBBdeu[4]=0.6019;
+    fBBtri[0]=13.34; // parameters for the triton - tpcits - value from PbPb 2010 run (S.Trogolo - July 2014)
+    fBBtri[1]=55.17;
+    fBBtri[2]=66.41;
+    fBBtri[3]=-6.601;
+    fBBtri[4]=-0.4134;
     fBBsa[0]=2.73198E7; //pure PHOBOS parameterization
     fBBsa[1]=6.92389;
     fBBsa[2]=1.90088E-6;
@@ -68,6 +78,18 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fResolSA[3]=0.113; // value from pp 2010 run 
     fResolSA[4]=0.104; // value from pp 2010 run
     for(Int_t i=0; i<5;i++) fResolTPCITS[i]=0.13;
+    fResolTPCITSDeu3[0]=0.06918; // deuteron resolution vs p
+    fResolTPCITSDeu3[1]=0.02498; // 3 ITS clusters for PId
+    fResolTPCITSDeu3[2]=1.1; // value from PbPb 2010 run (July 2014)
+    fResolTPCITSDeu4[0]=0.06756;// deuteron resolution vs p
+    fResolTPCITSDeu4[1]=0.02078; // 4 ITS clusters for PId
+    fResolTPCITSDeu4[2]=1.05; // value from PbPb 2010 run (July 2014)
+    fResolTPCITSTri3[0]=0.07239; // triton resolution vs p
+    fResolTPCITSTri3[1]=0.0192; // 3 ITS clusters for PId
+    fResolTPCITSTri3[2]=1.1; // value from PbPb 2010 run (July 2014)
+    fResolTPCITSTri4[0]=0.06083; // triton resolution
+    fResolTPCITSTri4[1]=0.02579; // 4 ITS clusters for PId
+    fResolTPCITSTri4[2]=1.15; // value from PbPb 2010 run (July 2014)
   }else{
     fBBtpcits[0]=1.04;
     fBBtpcits[1]=27.14;
@@ -137,11 +159,17 @@ Double_t AliITSPIDResponse::BetheAleph(Double_t p, Double_t mass) const {
 }
 
 //_________________________________________________________________________
-Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const {
+Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA, Bool_t isNuclei) const {
+
   //
   // returns AliExternalTrackParam::BetheBloch normalized to 
   // fgMIP at the minimum
   //
+
+  // NEW: Parameterization for Deuteron and Triton energy loss, reproduced with a polynomial in fixed p range
+  // fBBdeu --> parameters for deuteron
+  // fBBtri --> parameters for triton
+
 
   Double_t bg=p/mass;
   Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
@@ -150,7 +178,7 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
   
   Double_t par[5];
   if(isSA){
-    if(mass>0.0005 && mass<0.00052){
+    if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(0),0.00001)){
       //if is an electron use a specific BB parameterization
       //To be used only between 100 and 160 MeV/c
       for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsaElectron[ip];
@@ -158,8 +186,15 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
       for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsa[ip];
     }
   }else{
-    for(Int_t ip=0; ip<5;ip++) par[ip]=fBBtpcits[ip];
+    if(isNuclei){
+      if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(5),0.002)) for(Int_t ip=0; ip<5;ip++) par[ip]=fBBdeu[ip];
+      if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(6),0.001)) for(Int_t ip=0; ip<5;ip++) par[ip]=fBBtri[ip];
+    }
+    else{
+      for(Int_t ip=0; ip<5;ip++) par[ip]=fBBtpcits[ip];
+    }
   }
+
   Double_t eff=1.0;
   if(bg<par[2])
     eff=(bg-par[3])*(bg-par[3])+par[4];
@@ -167,8 +202,14 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
     eff=(par[2]-par[3])*(par[2]-par[3])+par[4];
   
   if(gamma>=0. && beta>0.){
-    bb=(par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;
+    if(isNuclei){
+      //Parameterization for deuteron between 0.4 - 1.5 GeV/c; triton between 0.58 - 1.65 GeV/c
+      bb=par[0] + par[1]/bg + par[2]/(bg*bg) + par[3]/(bg*bg*bg) + par[4]/(bg*bg*bg*bg);
+    }else{ //Parameterization for pion, kaon, proton, electron
+      bb=(par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;
+    }
   }
+
   return bb;
 }
 
@@ -209,19 +250,45 @@ Double_t AliITSPIDResponse::BetheITSsaHybrid(Double_t p, Double_t mass) const {
 }
 
 //_________________________________________________________________________
-Double_t AliITSPIDResponse::GetResolution(Double_t bethe, 
+Double_t AliITSPIDResponse::GetResolution(Double_t bethe,
 					  Int_t nPtsForPid, 
-					  Bool_t isSA) const {
-  // 
+                                         Bool_t isSA,
+                                         Double_t p,
+                                         AliPID::EParticleType type) const {
+  //
   // Calculate expected resolution for truncated mean
   //
+  // NEW: Added new variables which are Double_t p and AliPID::EParticleType type
+  // AliPID::EParticleType type is used to set the correct resolution for the different particles
+  // default -> AliPID::EParticleType type = AliPID::kPion
+  // Double_t p is used for the resolution of deuteron and triton, because they are function of the momentum
+  // default -> Double_t p=0.
+
   Float_t r;
+  Float_t c=1.; //this is a correction factor used for the nuclei resolution, while for pion/kaon/proton/electron is 1.
+  Double_t par[3];
+
   if(isSA) r=fResolSA[nPtsForPid];
-  else r=fResolTPCITS[nPtsForPid];
-  return r*bethe;
+  else{
+    if(AliPID::ParticleMass(type)>=AliPID::ParticleMass(5)){ //if mass >= mass_deu -->resolution for nuclei is selected
+      if(type==AliPID::kDeuteron){
+       if(nPtsForPid==3) for(Int_t j=0; j<3; j++) par[j] = fResolTPCITSDeu3[j];
+       if(nPtsForPid==4) for(Int_t j=0; j<3; j++) par[j] = fResolTPCITSDeu4[j];
+       c=par[2];
+      }
+      if(type==AliPID::kTriton){
+       if(nPtsForPid==3) for(Int_t j=0; j<3; j++) par[j] = fResolTPCITSTri3[j];
+       if(nPtsForPid==4) for(Int_t j=0; j<3; j++) par[j] = fResolTPCITSTri4[j];
+       c=par[2];
+      }
+
+      r=par[0]+par[1]*p;
+    }
+    else r=fResolTPCITS[nPtsForPid];
+  }
+
+  return r*bethe*c;
 }
-
-
 
 
 //_________________________________________________________________________
