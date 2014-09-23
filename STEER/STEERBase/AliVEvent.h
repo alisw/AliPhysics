@@ -177,7 +177,6 @@ public:
 
 	
   // Primary vertex
-  virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}
   virtual Bool_t IsPileupFromSPD(Int_t /*minContributors*/, 
 				 Double_t /*minZdist*/, 
 				 Double_t /*nSigmaZdist*/, 

@@ -156,13 +156,11 @@ public:
   
   virtual ULong_t  GetStatus() const = 0;
   virtual Bool_t   GetXYZ(Double_t *p) const = 0;
-  virtual Bool_t   GetXYZAt(Double_t /*x*/, Double_t /*b*/, Double_t* /*r*/ ) const {return kFALSE;}
+  virtual Bool_t   GetXYZAt(Double_t /*x*/, Double_t /*b*/, Double_t* /*r*/ ) const;
   virtual Double_t GetBz() const;
   virtual void     GetBxByBz(Double_t b[3]) const;
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const = 0;
   virtual Bool_t   PropagateToDCA(const AliVVertex *vtx,Double_t b,Double_t maxd,Double_t dz[2],Double_t covar[3]) = 0;
-  virtual const    AliExternalTrackParam * GetOuterParam() const { return NULL; }
-  virtual const    AliExternalTrackParam * GetInnerParam() const { return NULL; }
   virtual Int_t    GetNcls(Int_t /*idet*/) const { return 0; }
   virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
   virtual void     SetID(Short_t /*id*/) {;}

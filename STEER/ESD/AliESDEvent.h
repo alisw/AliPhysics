@@ -439,6 +439,7 @@ public:
   void AddTrdTracklet(const AliESDTrdTracklet *trkl);
   void AddTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t label = -1);
 
+  using AliVEvent::GetV0;
   AliESDv0 *GetV0(Int_t i) const {
     return (AliESDv0*)(fV0s?fV0s->At(i):0x0);
   }
