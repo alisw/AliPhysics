@@ -29,21 +29,22 @@ class AliCaloBunchInfo;
 class AliCaloFitResults;
 class AliCaloNeuralFit;
 
-
 class  AliCaloRawAnalyzerNN : public AliCaloRawAnalyzer
 {
   friend class AliCaloRawAnalyzerFactory; // self explanatory
+  
  public:
-  // AliCaloRawAnalyzerNN();
+  
   virtual ~AliCaloRawAnalyzerNN();
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
-				       const UInt_t altrocfg1,  const UInt_t altrocfg2 );
-  //  virtual void SelectSubarray( const Double_t *fData, const int length, const short maxindex, int *const  first, int *const last ) const;
+                                      UInt_t altrocfg1, UInt_t altrocfg2 );
 
  private:
+
   AliCaloRawAnalyzerNN();
-  AliCaloRawAnalyzerNN( const AliCaloRawAnalyzerNN   & );
-  AliCaloRawAnalyzerNN   & operator = ( const  AliCaloRawAnalyzerNN  & );
+  AliCaloRawAnalyzerNN(                 const AliCaloRawAnalyzerNN & );
+  AliCaloRawAnalyzerNN   & operator = ( const AliCaloRawAnalyzerNN & );
+  
   AliCaloNeuralFit *fNeuralNet; // pointer to the class whick actually implements the Neural Network for EMCAL
   Double_t fNNInput[5]; // The 5 input Neurons to the network ( mix bin + to samples on each side )
   ClassDef( AliCaloRawAnalyzerNN, 1 )

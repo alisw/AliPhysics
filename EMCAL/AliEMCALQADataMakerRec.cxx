@@ -64,23 +64,19 @@ Also calculate the ratio of amplitude from LED Monitor system (current/Reference
 
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
-#include "AliCaloRawAnalyzerFastFit.h"
-#include "AliCaloRawAnalyzerNN.h"
-//#include "AliCaloRawAnalyzerLMS.h"
-#include "AliCaloRawAnalyzerKStandard.h"
-#include "AliCaloRawAnalyzerPeakFinder.h"
-#include "AliCaloRawAnalyzerCrude.h"
+#include "AliCaloRawAnalyzer.h"
+#include "AliCaloRawAnalyzerFactory.h"
+
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerSTURawStream.h"
 
-#include "AliCaloRawAnalyzerFactory.h"
 
 using namespace std;
 
 ClassImp(AliEMCALQADataMakerRec)
            
 //____________________________________________________________________________ 
-AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(fitAlgorithm fitAlgo) : 
+AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(Int_t fitAlgo) :
   AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kEMCAL), "EMCAL Quality Assurance Data Maker"),
   fFittingAlgorithm(0),
   fRawAnalyzer(0),
@@ -112,13 +108,6 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(fitAlgorithm fitAlgo) :
 {
   // ctor
   SetFittingAlgorithm(fitAlgo);
-  
-  //fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
-  
-  fRawAnalyzerTRU =  ( AliCaloRawAnalyzerKStandard*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kLMS);
-  
-  fRawAnalyzerTRU->SetFixTau(kTRUE); 
-  fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 
   fGeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1_DCAL_8SM", "EMCAL");
 //  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
@@ -161,10 +150,6 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qad
   SetTitle((const char*)qadm.GetTitle()); 
   SetFittingAlgorithm(qadm.GetFittingAlgorithm());
   
-  //fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
-  fRawAnalyzerTRU = (AliCaloRawAnalyzerKStandard*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kLMS);
-  fRawAnalyzerTRU->SetFixTau(kTRUE); 
-  fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 //  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
 //    fTextSM[sm] = qadm.fTextSM[sm] ;
 //  }  
@@ -986,47 +971,15 @@ void AliEMCALQADataMakerRec::StartOfDetectorCycle()
 void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)              
 {
   //Set fitting algorithm and initialize it if this same algorithm was not set before.
-  //printf("**** Set Algorithm , number %d ****\n",fitAlgo);
 
+  fFittingAlgorithm = fitAlgo; // Not sure we need this
+
+  fRawAnalyzer    =  AliCaloRawAnalyzerFactory::CreateAnalyzer(fitAlgo);
   
-  fRawAnalyzer =  AliCaloRawAnalyzerFactory::CreateAnalyzer(fitAlgo);
-  fFittingAlgorithm = fitAlgo; 
-
-  /*
-  if(fitAlgo == fFittingAlgorithm && fRawAnalyzer) {
-    //Do nothing, this same algorithm already set before.
-    //printf("**** Algorithm already set before, number %d, %s ****\n",fitAlgo, fRawAnalyzer->GetName());
-    return;
-  }
-  //Initialize the requested algorithm
-  if(fitAlgo != fFittingAlgorithm || !fRawAnalyzer) {
-    //printf("**** Init Algorithm , number %d ****\n",fitAlgo);
-		
-    fFittingAlgorithm = fitAlgo; 
-    if (fRawAnalyzer) delete fRawAnalyzer;  // delete prev. analyzer if existed.
-		
-    if (fitAlgo == kFastFit) {
-      fRawAnalyzer = new AliCaloRawAnalyzerFastFit();
-    }
-    else if (fitAlgo == kNeuralNet) {
-      fRawAnalyzer = new AliCaloRawAnalyzerNN();
-    }
-    else if (fitAlgo == kLMS) {
-      fRawAnalyzer = new AliCaloRawAnalyzerLMS();
-    }
-    else if (fitAlgo == kPeakFinder) {
-      fRawAnalyzer = new AliCaloRawAnalyzerPeakFinder();
-    }
-    else if (fitAlgo == kCrude) {
-      fRawAnalyzer = new AliCaloRawAnalyzerCrude();
-    }
-    else {
-      AliWarning("EMCAL QA invalid fit algorithm choice") ; 
-    }
-
-  }
-  return;
-  */
+  // Init also here the TRU algo, even if it is fixed type.
+  fRawAnalyzerTRU = AliCaloRawAnalyzerFactory::CreateAnalyzer(Algo::kFakeAltro);
+  fRawAnalyzerTRU->SetFixTau(kTRUE);
+  fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 }
 
 //_____________________________________________________________________________________

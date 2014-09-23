@@ -1,4 +1,4 @@
-AliEPSelectionTask *AddTaskEventplane(Bool_t useEtaGap=kFALSE,Float_t etaGap=0.,Bool_t posTPCAOD=kFALSE,TString containername = "EPStat")
+AliEPSelectionTask *AddTaskEventplane(Bool_t useEtaGap=kFALSE,Float_t etaGap=0.,Bool_t posTPCAOD=kFALSE,TString containername = "EPStat",Bool_t doRecenter=kFALSE)
 {
   // Macro to connect an event plane selection task to an existing analysis manager.
 
@@ -29,6 +29,7 @@ AliEPSelectionTask *AddTaskEventplane(Bool_t useEtaGap=kFALSE,Float_t etaGap=0.,
   eventplaneTask->SetTrackType("TPC");
   eventplaneTask->SetUsePtWeight();
   eventplaneTask->SetUsePhiWeight();
+  if(doRecenter) eventplaneTask->SetUseRecentering();
   eventplaneTask->SetSaveTrackContribution();
   if(useEtaGap){
     eventplaneTask->SetSubeventsSplitMethod(AliEPSelectionTask::kEta); 

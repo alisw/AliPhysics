@@ -86,7 +86,8 @@ set ( SRCS
   AliGenMUONLMR.cxx
   AliGenLcLib.cxx
   AliGenITSULib.cxx
-  AliGenTunedOnPbPb.cxx  
+  AliGenTunedOnPbPb.cxx
+  AliGenReaderHepMC.cxx  
   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -101,4 +102,6 @@ set ( EXPORT
   AliOmegaDalitz.h
   )
 
-set ( EINCLUDE FASTSIM THijing PYTHIA6 LHAPDF STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EINCLUDE FASTSIM THijing PYTHIA6 LHAPDF STEER/STEER STEER/ESD STEER/STEERBase TEvtGen)
+
+# set ( ELIBS ${ROOTCLIBS} -lHepMC -lHepMCParser)

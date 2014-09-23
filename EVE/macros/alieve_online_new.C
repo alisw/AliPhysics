@@ -4,8 +4,6 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#include <../../MONITOR/AliSocket.h>
-
 class TEveProjectionManager;
 class TEveGeoShape;
 class TEveUtil;
@@ -19,13 +17,12 @@ Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 void alieve_online_new()
 {
     printf("alieve_online_init() ...\n");
- printf("================================ Correct macro r ...\n");
  
-	if (gSystem->Getenv("ALICE_ROOT") != 0)
-  {
-    gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
-    gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
-  }
+ if (gSystem->Getenv("ALICE_ROOT") != 0)
+ {
+	 gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
+	 gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
+ }
   
    AliEveEventManager::SetCdbUri("local://$ALICE_ROOT/OCDB");
   
@@ -63,11 +60,13 @@ void alieve_online_new()
                              geom_gentle_rhoz(),
                              geom_gentle_rhoz());
 
-  TEveUtil::LoadMacro("geom_gentle_trd.C");
-  multiView->InitGeomGentleTrd(geom_gentle_trd());
+    //These macros crashes on mac os. To be checked
+    
+  //TEveUtil::LoadMacro("geom_gentle_trd.C");
+  //multiView->InitGeomGentleTrd(geom_gentle_trd());
 
-  TEveUtil::LoadMacro("geom_gentle_muon.C");
-  multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kFALSE, kTRUE);
+  //TEveUtil::LoadMacro("geom_gentle_muon.C");
+  //multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kFALSE, kTRUE);
 
   //============================================================================
   // Standard macros to execute -- not all are enabled by default.
@@ -95,8 +94,8 @@ void alieve_online_new()
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus HMPID", "hmpid_clusters.C", "hmpid_clusters"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus MUON",  "muon_clusters.C",  "muon_clusters"));
 
+  
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG EMCAL",   "emcal_digits.C",   "emcal_digits"));
-
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ITS",     "its_raw.C",     "its_raw"));
   //  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TPC",     "tpc_raw.C",     "tpc_raw"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TOF",     "tof_raw.C",     "tof_raw"));
@@ -104,13 +103,20 @@ void alieve_online_new()
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ACORDE",  "acorde_raw.C",  "acorde_raw", "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON",    "muon_raw.C",  "muon_raw"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW FMD",     "fmd_raw.C",     "fmd_raw"));
+ 
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks",             "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks_MI",          "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks_by_category", "", kTRUE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track MUON", "esd_muon_tracks.C", "esd_muon_tracks",        "kTRUE,kFALSE", kTRUE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC FMD",        "fmd_esd.C",           "fmd_esd",                "", kTRUE));
 
+    
+    // these macros were leaking:
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks_by_category", "", kTRUE));// just a little
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC FMD",        "fmd_esd.C",           "fmd_esd",                "", kTRUE));//huge leak
+    //
+    
+    
+    
   // ???
   // exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC TRD", "trd_detectors.C", "trd_detectors",         "", kFALSE));
   // trd_tracks disabled due to memory leaks
@@ -148,31 +154,12 @@ void alieve_online_new()
   glv2->CurrentCamera().Dolly(450, kFALSE, kFALSE);
   glv3->CurrentCamera().Dolly(1500, kFALSE, kFALSE);
 
+//////
+  AliEveEventManager::GetMaster()->AddNewEventCommand("alieve_online_on_new_event();");
+   ///////
   gEve->FullRedraw3D();
   gSystem->ProcessEvents();
-  
-  // Register command to call on each event.
-  // AliEveEventManager::GetMaster()->AddNewEventCommand("alieve_online_on_new_event();");
-  //AliEveEventManager::GetMaster()->GotoEvent(-1);
- 
-  printf("================================ Connecting to Server ...\n");
-   
-    //AliEveEventManager::ConnectToServer("tcp://137.138.55.173", 5024);
-  if(AliEveEventManager::ConnectToServer("tcp://137.138.93.150", 5024))
-  {
-	  printf("\nconnected\n");
-  }	else printf("not connected\n");
-    
-    AliSocket* subscriber = AliEveEventManager::AssertSubscriber();
-  
-  	if(subscriber ==0) {
-  		printf("===================== Not connected! ====================\n");
-    }
-
-  
-
   gEve->Redraw3D(kTRUE);
-    
 }
 
 
@@ -182,8 +169,41 @@ TTimeStamp g_pic_prev(0, 0);
 
 void alieve_online_on_new_event()
 {
-  AliSysInfo::AddStamp("on_new_event_start");
- 
+	AliSysInfo::AddStamp("on_new_event_start");
+
+	Double_t x[3] = { 0, 0, 0 };
+
+	if (AliEveEventManager::HasESD())
+	{
+		AliESDEvent* esd = AliEveEventManager::AssertESD();
+		esd->GetPrimaryVertex()->GetXYZ(x);
+
+		TTimeStamp ts(esd->GetTimeStamp());
+		TString win_title("Eve Main Window -- Timestamp: ");
+		win_title += ts.AsString("s");
+		win_title += "; Event # in ESD file: ";
+		win_title += esd->GetEventNumberInFile();
+		gEve->GetBrowser()->SetWindowName(win_title);
+	}
+
+	TEveElement* top = gEve->GetCurrentEvent();
+
+	AliEveMultiView *mv = AliEveMultiView::Instance();
+
+	//mv->DestroyEventRPhi();
+	if (gCenterProjectionsAtPrimaryVertex)
+		mv->SetCenterRPhi(x[0], x[1], x[2]);
+	mv->ImportEventRPhi(top);
+
+	//mv->DestroyEventRhoZ();
+	if (gCenterProjectionsAtPrimaryVertex)
+		mv->SetCenterRhoZ(x[0], x[1], x[2]);
+	mv->ImportEventRhoZ(top);
+
+	if (gCenterProjectionsAtPrimaryVertex)
+		mv->SetCenterMuon(x[0], x[1], x[2]);
+	mv->ImportEventMuon(top);
+
 	AliSysInfo::AddStamp("on_new_event_end");
 }
 

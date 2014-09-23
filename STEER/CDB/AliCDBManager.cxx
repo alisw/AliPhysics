@@ -410,7 +410,6 @@ AliCDBParam* AliCDBManager::CreateParameter(const char* dbString) const {
 
   AliCDBStorageFactory* factory=0;
   while ((factory = (AliCDBStorageFactory*) iter.Next())) {
-    //AliCDBParam* param = factory->CreateParameter(dbString);
     AliCDBParam* param = factory->CreateParameter(uriString);
     if(param) return param;
   }
@@ -462,15 +461,20 @@ void AliCDBManager::AlienToCvmfsUri(TString& uriString) const {
 
 //_____________________________________________________________________________
 AliCDBStorage* AliCDBManager::GetStorage(const char* dbString) {
-// get storage object from URI string
+// Get the CDB storage corresponding to the URI string passed as argument
+// If "raw://" is passed, get the storage for the raw OCDB for the current run (fRun)
 
-  // Check environment variable OCDB_PATH. It is set in case the user (job) expects
-  // to find in the local /cvmfs the required OCDB tag. The OCDB_PATH variable
-  // contains the path to the directory in /cvmfs/ which is an AliRoot tag based snapshot
-  // of the AliEn file catalogue. The directory has to contain:
-  // 1) catalogue/20??.list.gz gzipped text files listing the OCDB files (seen by that AliRoot tag)
-  // 2) bin/getOCDBperRun.sh   (shell+awk) script extracting from 1) the list
-  // of valid files for the given run.
+  TString uriString(dbString);
+  if (uriString.EqualTo("raw://")) {
+    if (!fLHCPeriod.IsNull() && !fLHCPeriod.IsWhitespace()) {
+      return GetDefaultStorage();
+    } else {
+      TString lhcPeriod("");
+      Int_t startRun = -1, endRun = -1;
+      GetLHCPeriodAgainstAlienFile(fRun, lhcPeriod, startRun, endRun);
+      return GetStorage(lhcPeriod.Data());
+    }
+  }
 
   AliCDBParam* param = CreateParameter(dbString);
   if (!param) {
@@ -717,6 +721,14 @@ void AliCDBManager::SetDefaultStorage(const char* mcString, const char* simType)
 
 //_____________________________________________________________________________
 void AliCDBManager::ValidateCvmfsCase() const {
+  // The OCDB_PATH variable contains the path to the directory in /cvmfs/ which is
+  // an AliRoot tag based snapshot of the AliEn file catalogue (e.g. 
+  // /cvmfs/alice.cern.ch/x86_64-2.6-gnu-4.1.2/Packages/OCDB/v5-05-76-AN).
+  // The directory has to contain:
+  // 1) <data|MC>/20??.list.gz gzipped text files listing the OCDB files (seen by that AliRoot tag)
+  // 2) bin/getOCDBFilesPerRun.sh   (shell+awk) script extracting from 1) the list
+  //    of valid files for the given run.
+
     if (! fCvmfsOcdb.BeginsWith("/cvmfs"))  //!!!! to be commented out for testing
       AliFatal(Form("OCDB_PATH set to an invalid path: %s", fCvmfsOcdb.Data()));
 
@@ -746,85 +758,102 @@ void AliCDBManager::SetDefaultStorageFromRun(Int_t run) {
     }
   }	
 
-  // fRaw and cvmfs case
-  if (! fCvmfsOcdb.IsNull()) {
-    // we don't want to connect to AliEn just to set the uri from the runnumber
-    // for that we use the script getUriFromYear.sh in the cvmfs AliRoot package
-    // check that we find the two scripts we need
-    TString getYearScript(fCvmfsOcdb);
-    getYearScript = getYearScript.Strip(TString::kTrailing, '/');
-    getYearScript.Append("/bin/getUriFromYear.sh");
-    if (gSystem->AccessPathName(getYearScript))
-      AliFatal(Form("Cannot find valid script: %s", getYearScript.Data()));
-    TString inoutFile(gSystem->WorkingDirectory());
-    inoutFile += "/uri_range_";
-    inoutFile += TString::Itoa(fRun,10);
-    TString command(getYearScript);
-    command += ' ';
-    command += TString::Itoa(fRun,10);
-    command += Form(" > %s", inoutFile.Data());
-    AliDebug(3, Form("Running command: \"%s\"",command.Data()));
-    Int_t result = gSystem->Exec(command.Data());
-    if(result != 0) {
-      AliFatal(Form("Was not able to execute \"%s\"", command.Data()));
-    }
-
-    // now read the file with the uri and first and last run
-    std::ifstream file(inoutFile.Data());
-    if (!file.is_open()) {
-      AliFatal(Form("Error opening file \"%s\"!", inoutFile.Data()));
-    }
-    TString lhcPeriod;
-    TObjArray* oStringsArray = 0;
-    while (lhcPeriod.ReadLine(file)){
-      oStringsArray = lhcPeriod.Tokenize(' ');
-    }
-    TObjString *oStrUri = dynamic_cast<TObjString*> (oStringsArray->At(0));
-    TObjString *oStrFirst = dynamic_cast<TObjString*> (oStringsArray->At(1));
-    TString firstRun = oStrFirst->GetString();
-    TObjString *oStrLast = dynamic_cast<TObjString*> (oStringsArray->At(2));
-    TString lastRun = oStrLast->GetString();
-
-    fLHCPeriod = oStrUri->GetString();
-    fStartRunLHCPeriod = firstRun.Atoi();
-    fEndRunLHCPeriod = lastRun.Atoi();
-
-    file.close();
-
-  } else { // if not cvmfs case, "plain" AliEn case
-    // retrieve XML file from alien
-    if(!gGrid) {
-      TGrid::Connect("alien://","");
-      if(!gGrid) {
-        AliError("Connection to alien failed!");
-        return;
-      }
-    }
-    TUUID uuid;
-    TString rndname = "/tmp/";
-    rndname += "OCDBFolderXML.";
-    rndname += uuid.AsString();
-    rndname += ".xml";
-    AliDebug(2, Form("file to be copied = %s", fgkOCDBFolderXMLfile.Data()));
-    if (!TFile::Cp(fgkOCDBFolderXMLfile.Data(), rndname.Data())) {
-      AliFatal(Form("Cannot make a local copy of OCDBFolder xml file in %s",rndname.Data()));
-    }
-    AliCDBHandler* saxcdb = new AliCDBHandler();
-    saxcdb->SetRun(run);
-    TSAXParser *saxParser = new TSAXParser();
-    saxParser->ConnectToHandler("AliCDBHandler", saxcdb);
-    saxParser->ParseFile(rndname.Data());
-    AliInfo(Form(" LHC folder = %s", saxcdb->GetOCDBFolder().Data()));
-    AliInfo(Form(" LHC period start run = %d", saxcdb->GetStartRunRange()));
-    AliInfo(Form(" LHC period end run = %d", saxcdb->GetEndRunRange()));
-    fLHCPeriod = saxcdb->GetOCDBFolder();
-    fStartRunLHCPeriod = saxcdb->GetStartRunRange();
-    fEndRunLHCPeriod = saxcdb->GetEndRunRange();
+  TString lhcPeriod("");
+  Int_t startRun = 0, endRun = 0;
+  if (! fCvmfsOcdb.IsNull()) { // fRaw and cvmfs case: set LHC period from cvmfs file
+    GetLHCPeriodAgainstCvmfsFile(run, lhcPeriod, startRun, endRun);
+  } else {                     // fRaw: set LHC period from AliEn XML file
+    GetLHCPeriodAgainstAlienFile(run, lhcPeriod, startRun, endRun);
   }
+
+  fLHCPeriod = lhcPeriod;
+  fStartRunLHCPeriod = startRun;
+  fEndRunLHCPeriod = endRun;
 
   SetDefaultStorage(fLHCPeriod.Data());
   if(!fDefaultStorage) AliFatal(Form("%s storage not there! Please check!",fLHCPeriod.Data()));
 
+}
+
+//_____________________________________________________________________________
+void AliCDBManager::GetLHCPeriodAgainstAlienFile(Int_t run, TString& lhcPeriod, Int_t& startRun, Int_t& endRun) {
+// set LHC period (year + first, last run) comparing run number and AliEn XML file
+ 
+// retrieve XML file from alien
+  if(!gGrid) {
+    TGrid::Connect("alien://","");
+    if(!gGrid) {
+      AliError("Connection to alien failed!");
+      return;
+    }
+  }
+  TUUID uuid;
+  TString rndname = "/tmp/";
+  rndname += "OCDBFolderXML.";
+  rndname += uuid.AsString();
+  rndname += ".xml";
+  AliDebug(2, Form("file to be copied = %s", fgkOCDBFolderXMLfile.Data()));
+  if (!TFile::Cp(fgkOCDBFolderXMLfile.Data(), rndname.Data())) {
+    AliFatal(Form("Cannot make a local copy of OCDBFolder xml file in %s",rndname.Data()));
+  }
+  AliCDBHandler* saxcdb = new AliCDBHandler();
+  saxcdb->SetRun(run);
+  TSAXParser *saxParser = new TSAXParser();
+  saxParser->ConnectToHandler("AliCDBHandler", saxcdb);
+  saxParser->ParseFile(rndname.Data());
+  AliInfo(Form(" LHC folder = %s", saxcdb->GetOCDBFolder().Data()));
+  AliInfo(Form(" LHC period start run = %d", saxcdb->GetStartRunRange()));
+  AliInfo(Form(" LHC period end run = %d", saxcdb->GetEndRunRange()));
+  lhcPeriod = saxcdb->GetOCDBFolder();
+  startRun = saxcdb->GetStartRunRange();
+  endRun = saxcdb->GetEndRunRange();
+}
+
+//_____________________________________________________________________________
+void AliCDBManager::GetLHCPeriodAgainstCvmfsFile(Int_t run, TString& lhcPeriod, Int_t& startRun, Int_t& endRun) {
+// set LHC period (year + first, last run) comparing run number and CVMFS file
+// We don't want to connect to AliEn just to set the uri from the runnumber
+// for that we use the script getUriFromYear.sh in the cvmfs AliRoot package
+
+  TString getYearScript(fCvmfsOcdb);
+  getYearScript = getYearScript.Strip(TString::kTrailing, '/');
+  getYearScript.Append("/bin/getUriFromYear.sh");
+  if (gSystem->AccessPathName(getYearScript))
+    AliFatal(Form("Cannot find valid script: %s", getYearScript.Data()));
+  TString inoutFile(gSystem->WorkingDirectory());
+  inoutFile += "/uri_range_";
+  inoutFile += TString::Itoa(run,10);
+  TString command(getYearScript);
+  command += ' ';
+  command += TString::Itoa(run,10);
+  command += Form(" > %s", inoutFile.Data());
+  AliDebug(3, Form("Running command: \"%s\"",command.Data()));
+  Int_t result = gSystem->Exec(command.Data());
+  if(result != 0) {
+    AliFatal(Form("Was not able to execute \"%s\"", command.Data()));
+  }
+
+  // now read the file with the uri and first and last run
+  std::ifstream file(inoutFile.Data());
+  if (!file.is_open()) {
+    AliFatal(Form("Error opening file \"%s\"!", inoutFile.Data()));
+  }
+  TString line;
+  TObjArray* oStringsArray = 0;
+  while (line.ReadLine(file)){
+    oStringsArray = line.Tokenize(' ');
+  }
+  TObjString *oStrUri = dynamic_cast<TObjString*> (oStringsArray->At(0));
+  TObjString *oStrFirst = dynamic_cast<TObjString*> (oStringsArray->At(1));
+  TString firstRun = oStrFirst->GetString();
+  TObjString *oStrLast = dynamic_cast<TObjString*> (oStringsArray->At(2));
+  TString lastRun = oStrLast->GetString();
+
+  lhcPeriod = oStrUri->GetString();
+  startRun = firstRun.Atoi();
+  endRun = lastRun.Atoi();
+
+  file.close();
 }
 
 //_____________________________________________________________________________
@@ -1530,7 +1559,7 @@ void AliCDBManager::SetRun(Int_t run) {
     if (fStartRunLHCPeriod <= run && fEndRunLHCPeriod >= run){
       AliInfo("LHCPeriod alien folder for current run already in memory");
     }else{
-      SetDefaultStorageFromRun(run);
+      SetDefaultStorageFromRun(fRun);
       if(fEntryCache.GetEntries()!=0) ClearCache();
       return;
     }

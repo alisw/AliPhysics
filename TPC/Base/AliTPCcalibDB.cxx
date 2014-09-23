@@ -318,7 +318,8 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //
   // destructor
   //
-  delete fIonTailArray; 
+
+  //delete fIonTailArray; 
   delete fActiveChannelMap;
   delete fGrRunState;
 }
@@ -494,7 +495,7 @@ void AliTPCcalibDB::Update(){
   //Calibration ION tail data
   entry          = GetCDBEntry("TPC/Calib/IonTail");
   if (entry){
-    delete fIonTailArray; fIonTailArray=NULL;
+    //delete fIonTailArray; fIonTailArray=NULL;
     entry->SetOwner(kTRUE);
      fIonTailArray=(TObjArray*)(entry->GetObject());
      fIonTailArray->SetOwner(); //own the keys
@@ -1644,6 +1645,15 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
 
   const Int_t startTimeGRP = grp->GetTimeStart();
   const Int_t stopTimeGRP  = grp->GetTimeEnd();
+
+  //
+  // In case we use a generated GRP we cannot make use of the start time and end time information
+  // therefore we cannot calculate proper HV information and will skip this
+  //
+  if (startTimeGRP==0 && stopTimeGRP==0) {
+    AliWarning("Using a generated GRP with 'GetTimeStart()' and 'GetTimeEnd()' == 0. Cannot calculate HV information.");
+    return;
+  }
 
   //
   // check active state by analysing the scalers

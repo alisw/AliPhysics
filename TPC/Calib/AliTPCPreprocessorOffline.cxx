@@ -519,6 +519,7 @@ void AliTPCPreprocessorOffline::AddHistoGraphs(  TObjArray * vdriftArray, AliTPC
       THnSparse* newHist=hist->Projection(4,dim);
       newHist->SetName(name);
       TGraphErrors* graph=AliTPCcalibBase::FitSlices(newHist,2,0,400,100,0.05,0.95, kTRUE);
+      delete newHist;
       if (!graph) {
 	printf("Graph =%s filtered out\n", name.Data());
 	continue;
@@ -626,6 +627,7 @@ void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, Al
       graph->SetName(grName.Data());
       vdriftArray->AddLast(graph);
     }
+    delete arrays[iarray];
   }  
 }
 
@@ -715,7 +717,7 @@ TGraphErrors * AliTPCPreprocessorOffline::MakeGraphFilter0(THnSparse *hisN, Int_
       if(minBin <= 0) minBin = 1;
       if(maxBin >= hisN->GetAxis(itime)->GetNbins()) maxBin = hisN->GetAxis(itime)->GetNbins()-1;
       hisN->GetAxis(itime)->SetRange(minBin,maxBin);
-      
+
       Double_t time = hisT->GetBinCenter(ibin);
       TH1 * his = hisN->Projection(ival);
       Double_t nentries0= his->GetBinContent(his->FindBin(0));
@@ -733,6 +735,7 @@ TGraphErrors * AliTPCPreprocessorOffline::MakeGraphFilter0(THnSparse *hisN, Int_
   delete hisT;
   delete hisV;
   TGraphErrors * graph =  new TGraphErrors(entries,vecTime.GetMatrixArray(), vecMean0.GetMatrixArray(),					   0, vecMean1.GetMatrixArray());
+
   return graph;
 }
 
@@ -1206,6 +1209,9 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
 
   TGraphErrors * graphMax = TStatToolkit::MakeStat1D( histQmax,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
   TGraphErrors * graphTot = TStatToolkit::MakeStat1D( histQtot,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
+  delete histQmax;
+  delete histQtot;
+
   //
   const char* names[4]={"SHORT","MEDIUM","LONG","ABSOLUTE"};
   //
@@ -1269,6 +1275,8 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
   TH1D * meanMax = (TH1D*)arrMax.At(1);
   TH1D * meanTot = (TH1D*)arrTot.At(1);
   Float_t meanMult = histMultMax->GetMean();
+  delete histMultMax;
+  delete histMultTot;
   if(meanMax->GetBinContent(meanMax->FindBin(meanMult))) {
     meanMax->Scale(1./meanMax->GetBinContent(meanMax->FindBin(meanMult)));
   }
@@ -1415,7 +1423,8 @@ void AliTPCPreprocessorOffline::MakeQAPlot(Float_t  FPtoMIPratio) {
     grfFitMIP->Draw("lu");    
     fGainArray->AddLast(gainHistoMIP);
     //fGainArray->AddLast(canvasMIP->Clone());
-    delete canvasMIP;    
+    delete canvasMIP;  
+    delete grfFitMIP;
   }  
 }
 
@@ -1468,6 +1477,8 @@ void AliTPCPreprocessorOffline::MakeFitTime(){
   tokArr->Print();
   delete tokArr;
   fAlignTree->SetAlias("fitYFast",strDeltaITS->Data());
+  delete strDeltaITS;
+
   // 
   TVectorD paramC= param;
   TMatrixD covarC= covar;
@@ -1478,7 +1489,6 @@ void AliTPCPreprocessorOffline::MakeFitTime(){
   TString strFitConst=TStatToolkit::MakeFitString(fstringFast, paramC,covar);
   fAlignTree->SetAlias("fitYFastC",strFitConst.Data());
   CreateAlignTime(fstringFast,paramC);
-
 
 }
 
@@ -1576,6 +1586,9 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     his->GetAxis(3)->SetRangeUser(-0.35,0.35);
     AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("TRD%s",hname[ihis]),run,0.,ihis,3);
 
+  }
+  if (dir || (!dir && !array)) { // the object is taken from a directory or a file
+    delete calibTime;
   }
   delete pcstream;
 }

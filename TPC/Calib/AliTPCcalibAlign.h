@@ -206,7 +206,9 @@ protected:
 private:
   AliTPCcalibAlign&  operator=(const AliTPCcalibAlign&);// not implemented
 
-  ClassDef(AliTPCcalibAlign,6)
+  // IMPORTANT: If you change the data members, 
+  // please do not forget to increment the ClassDef and to update the Streamer in AliTPCcalibAlign.cxx
+  ClassDef(AliTPCcalibAlign,7)
 };
 
 

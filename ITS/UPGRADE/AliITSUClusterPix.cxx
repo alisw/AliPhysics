@@ -4,6 +4,8 @@
 #include <TGeoMatrix.h>
 #include <TString.h>
 
+#include <cstdlib>
+
 using namespace TMath;
 
 ClassImp(AliITSUClusterPix)

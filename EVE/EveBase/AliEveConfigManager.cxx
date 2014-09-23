@@ -21,6 +21,12 @@
 #include "AliEveMacroExecutorWindow.h"
 #include "AliEveMacro.h"
 
+//Storage Manager:
+#ifdef ZMQ
+#include "AliStorageAdministratorPanelListEvents.h"
+#include "AliStorageAdministratorPanelMarkEvent.h"
+#endif
+
 class AliEveMacroExecutor;
 class TEveProjectionManager;
 class TEveGeoShape;
@@ -42,7 +48,7 @@ namespace
 {
  enum EAliEveMenu_e
  {
-   kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui
+	 kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui, kStorageListEvents, kStorageMarkEvent
  };
 }
  
@@ -179,6 +185,23 @@ AliEveConfigManager::AliEveConfigManager() :
   fAnalysisPopup->Connect("Activated(Int_t)", "AliEveConfigManager",
                         this, "AliEvePopupHandler(Int_t)");
 
+  //Storage Manager:
+  fStoragePopup = new TGPopupMenu(gClient->GetRoot());
+#ifdef ZMQ
+//  fStoragePopup->AddEntry("&List events",kStorageListEvents);
+  fStoragePopup->AddEntry("&Mark event",kStorageMarkEvent);
+    
+    gEve->GetBrowser()->StartEmbedding(0);
+    fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+    gEve->GetBrowser()->StopEmbedding("List");
+    
+    fListEventsTab->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
+    
+#endif
+
+  fStoragePopup->Connect("Activated(Int_t)","AliEveConfigManager",
+			 this, "AliEvePopupHandler(Int_t)");
+  
   fLoadCheck = kFALSE;
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4)
@@ -186,6 +209,9 @@ AliEveConfigManager::AliEveConfigManager() :
   mBar->AddPopup("&AliEve", fAliEvePopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
   ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
   mBar->AddPopup("&Tools", fAnalysisPopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
+    ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
+   mBar->AddPopup("&Storage Manager",fStoragePopup,new TGLayoutHints(kLHintsTop | kLHintsLeft,0,4,0,0));
+  
   gEve->GetBrowser()->GetTopMenuFrame()->Layout();
 #else
   // Uber hack as TRootBrowser does not provede manu-bar getter.
@@ -201,6 +227,8 @@ AliEveConfigManager::AliEveConfigManager() :
   ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
   mBar->AddPopup("&Tools", fAnalysisPopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
   ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
+  mBar->AddPopup("&Storage Manager",fStoragePopup,new TGLayoutHints(kLHintsTop | kLHintsLeft,0,4,0,0));
+    ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
 #endif
 }
 
@@ -221,6 +249,13 @@ const char *gMacroSaveAsTypes[] = {"CINT Macro", "*.C",
 const char *gPictureSaveAsTypes[] = {"PNG Image", "*.png",
                                    0, 0}; //for saving pictures
 
+}
+
+void AliEveConfigManager::ConnectEventManagerSignals()
+{
+    AliEveEventManager *manager = AliEveEventManager::GetCurrent();
+    manager->Connect("StorageManagerOk()","AliEveConfigManager",this,"StorageManagerChangedState(=1)");
+    manager->Connect("StorageManagerDown()","AliEveConfigManager",this,"StorageManagerChangedState(=0)");
 }
 
 void AliEveConfigManager::AliEvePopupHandler(Int_t id)
@@ -1014,11 +1049,62 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
     }
 */
-
-    default:
-    {
-      Warning(kEH, "Unknown menu entry.");
-      break;
-    }
+          /*
+      case kStorageListEvents:
+      {
+#ifdef ZMQ
+          fListEventsWindow =
+          AliStorageAdministratorPanelListEvents::GetInstance();
+          
+          fListEventsWindow->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
+#endif
+          break;
+          
+      }
+           */
+      case kStorageMarkEvent:
+      {
+#ifdef ZMQ
+          AliStorageAdministratorPanelMarkEvent *markEventWindow =
+          AliStorageAdministratorPanelMarkEvent::GetInstance();
+#endif
+          break;
+      }
+          
+      default:
+      {
+          Warning(kEH, "Unknown menu entry.");
+          break;
+      }
   }
 }
+
+void AliEveConfigManager::SetEventInEventManager()
+{
+    AliEveEventManager *manager = AliEveEventManager::GetMaster();
+    AliESDEvent *event = fListEventsTab->GetSelectedEvent();
+    
+    if(event)
+    {
+	    cout<<"SETTING EVENT IN ED"<<endl;
+	    //fListEventsWindow->onExit();
+        manager->SetAutoLoad(kFALSE);
+        manager->PrepareForNewEvent(event);
+    }
+}
+
+void AliEveConfigManager::StorageManagerChangedState(int state)
+{
+    if (state == 0)// storage manager is down
+    {
+        fStoragePopup->DisableEntry(kStorageListEvents);
+        fStoragePopup->DisableEntry(kStorageMarkEvent);
+    }
+    else if(state == 1)// storage manager is alive
+    {
+        fStoragePopup->EnableEntry(kStorageListEvents);
+        fStoragePopup->EnableEntry(kStorageMarkEvent);
+    }
+}
+
+

@@ -932,8 +932,8 @@ Bool_t AliTRDCalibraFit::AnalysePRFMarianFit(const TProfile2D *prf)
   if(!SetModeCalibration(name,2)) return kFALSE;
 
   // Number of Ybins (detectors or groups of pads)
-  TAxis   *xprf    = prf->GetXaxis();
-  TAxis   *yprf    = prf->GetYaxis();
+  const TAxis   *xprf    = prf->GetXaxis();
+  const TAxis   *yprf    = prf->GetYaxis();
   Int_t    nybins  = yprf->GetNbins();// calibration groups
   Int_t    nbins   = xprf->GetNbins();// bins
   Float_t  lowedge = (Float_t) xprf->GetBinLowEdge(1);//lowedge in bins
@@ -6436,7 +6436,7 @@ TH1I *AliTRDCalibraFit::ReBin(const TH1I *hist) const
   // you have to choose fRebin, divider of fNumberBinCharge
   //
 
- TAxis *xhist  = hist->GetXaxis();
+  const TAxis *xhist  = hist->GetXaxis();
  TH1I  *rehist = new TH1I("projrebin","",(Int_t) xhist->GetNbins()/fRebin
                                         ,xhist->GetBinLowEdge(1)
                                         ,xhist->GetBinUpEdge(xhist->GetNbins()));
@@ -6465,7 +6465,7 @@ TH1F *AliTRDCalibraFit::ReBin(const TH1F *hist) const
   // you have to choose fRebin divider of fNumberBinCharge
   //
 
-  TAxis *xhist  = hist->GetXaxis();
+  const TAxis *xhist  = hist->GetXaxis();
   TH1F  *rehist = new TH1F("projrebin","",(Int_t) xhist->GetNbins()/fRebin
                                          ,xhist->GetBinLowEdge(1)
                                          ,xhist->GetBinUpEdge(xhist->GetNbins()));

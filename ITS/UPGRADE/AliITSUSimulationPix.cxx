@@ -581,8 +581,9 @@ void AliITSUSimulationPix::FrompListToDigits()
         AliITSUSDigit* sd = (AliITSUSDigit*)fSensMap->At(i); // ordered in index
         if (fSensMap->IsDisabled(sd)) continue;
         //
+	sig=sd->GetSumSignal();
         if ( fResponseParam->GetParameter(kDigitalSim) < 1.0 &&
-            (sig=sd->GetSumSignal())<=fSimuParam->GetPixThreshold(modId)) continue;   //Threshold only applies in analogue simulation
+	     sig<=fSimuParam->GetPixThreshold(modId)) continue;   //Threshold only applies in analogue simulation
         //
         if (Abs(sig)>2147483647.0) { //RS?
             //PH 2147483647 is the max. integer
@@ -612,44 +613,41 @@ void AliITSUSimulationPix::FrompListToDigits()
 //______________________________________________________________________
 Int_t AliITSUSimulationPix::AddRandomNoisePixels(Double_t tof)
 {
-    // create random noisy sdigits above threshold
+  // create random noisy sdigits above threshold
+  //
+  int modId = fChip->GetIndex();
+  int npix = fSeg->GetNPads();
+  int ncand = gRandom->Poisson( npix*fSimuParam->GetPixFakeRate() );
+  if (ncand<1) return 0;
+  //
+  double probNoisy,noiseSig,noiseMean,thresh;
+  //
+  UInt_t row,col;
+  Int_t iCycle;
+  static TArrayI ordSampleInd(100),ordSample(100); //RS!!! static is not thread-safe!!!
+  ncand = GenOrderedSample(npix,ncand,ordSample,ordSampleInd);
+  int* ordV = ordSample.GetArray();
+  int* ordI = ordSampleInd.GetArray();
+  //
+  if ( fResponseParam->GetParameter(kDigitalSim) < 1.0 ) {
+    thresh = fSimuParam->GetPixThreshold(modId);
+    fSimuParam->GetPixNoise(modId, noiseSig, noiseMean);
+    probNoisy = AliITSUSimuParam::CalcProbNoiseOverThreshold(noiseMean,noiseSig,thresh); // prob. to have noise above threshold
     //
-    int modId = fChip->GetIndex();
-    int npix = fSeg->GetNPads();
-    int ncand = gRandom->Poisson( npix*fSimuParam->GetPixFakeRate() );
-    if (ncand<1) return 0;
-    //
-    double probNoisy,noiseSig,noiseMean,thresh;
-    //
-    UInt_t row,col;
-    Int_t iCycle;
-    static TArrayI ordSampleInd(100),ordSample(100); //RS!!! static is not thread-safe!!!
-    ncand = GenOrderedSample(npix,ncand,ordSample,ordSampleInd);
-    int* ordV = ordSample.GetArray();
-    int* ordI = ordSampleInd.GetArray();
-    //
-    if ( fResponseParam->GetParameter(kDigitalSim) < 1.0 ) {
-        thresh = fSimuParam->GetPixThreshold(modId);
-        fSimuParam->GetPixNoise(modId, noiseSig, noiseMean);
-        probNoisy = AliITSUSimuParam::CalcProbNoiseOverThreshold(noiseMean,noiseSig,thresh); // prob. to have noise above threshold
-       //
-        for (int j=0;j<ncand;j++) {
-            fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
-            iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
-            UpdateMapNoise(col,row,AliITSUSimuParam::GenerateNoiseQFunction(probNoisy,noiseMean,noiseSig),  iCycle);
-        }
-        return ncand;
+    for (int j=0;j<ncand;j++) {
+      fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
+      iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
+      UpdateMapNoise(col,row,AliITSUSimuParam::GenerateNoiseQFunction(probNoisy,noiseMean,noiseSig),  iCycle);
     }
-    else
-    {
-        for (int j=0;j<ncand;j++) {
-         fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
-         iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
-         UpdateMapNoise(col,row,kNoisyPixRnd, iCycle);
-        }
-        
-        
+  }
+  else {
+    for (int j=0;j<ncand;j++) {
+      fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
+      iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
+      UpdateMapNoise(col,row,kNoisyPixRnd, iCycle);
     }
+  }
+  return ncand;
 }
 
 
@@ -862,21 +860,21 @@ void AliITSUSimulationPix::Hits2SDigitsFastDigital()
     //
     Int_t h,ix,iz;
     Int_t idtrack;
-    Float_t x,y,z; // keep coordinates float (required by AliSegmentation)
     Double_t tof,x0=0.0,x1=0.0,y0=0.0,y1=0.0,z0=0.0,z1=0.0;
-    Double_t st,el,de=0.0;
+    Double_t el,de=0.0;
     
     //
     for (h=0;h<nhits;h++) {
         //
         if (!fChip->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,tof,idtrack)) continue;
         //
-        st = Sqrt(x1*x1+y1*y1+z1*z1);
+	//double st = Sqrt(x1*x1+y1*y1+z1*z1);
         
         //___ place hit to the middle of the path segment - CHANGE LATER !
-        x   = (x0+x1)/2.0;
-        y   = (y0+y1)/2.0;
-        z   = (z0+z1)/2.0;
+	// keep coordinates float (required by AliSegmentation)
+        float x   = (x0+x1)/2.0;
+        //float y   = (y0+y1)/2.0;
+        float z   = (z0+z1)/2.0;
         //
         if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
         //

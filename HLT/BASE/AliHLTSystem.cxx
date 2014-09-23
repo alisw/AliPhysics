@@ -91,6 +91,7 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name
   fName(name)
   , fECSParams()
   , fUseHLTOUTComponentTypeGlobal(true)
+  , fDetMask(0)
 {
   // see header file for class documentation
   // or
@@ -1388,8 +1389,12 @@ int AliHLTSystem::LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runl
   if (agents.GetEntries()) {
     TIter next(&agents);
     while ((pAgent = dynamic_cast<AliHLTModuleAgent*>(next()))) {
-      HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
-      pAgent->CreateConfigurations(fpConfigurationHandler, rawReader, runloader);
+      if(fDetMask && !(fDetMask & pAgent->GetDetectorMask())) {
+	HLTInfo("Skipping %s due to active detector mask.", pAgent->GetName());
+      } else {
+	HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
+	pAgent->CreateConfigurations(fpConfigurationHandler, rawReader, runloader);
+      }
     }
   }
 

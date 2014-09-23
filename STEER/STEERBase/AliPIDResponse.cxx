@@ -714,7 +714,7 @@ void AliPIDResponse::SetRecoInfo()
     fBeamTypeNum=kPP;
     fMCperiodTPC="LHC10F6A";
     if (fCurrentAliRootRev >= 62714)
-      fMCperiodTPC="LHC13B2_FIXn1";
+      fMCperiodTPC="LHC14E2";
   }
   // for the moment use LHC12b parameters up to LHC12d
   if (fRun>=177312 /*&& fRun<=179356*/) {
@@ -723,7 +723,7 @@ void AliPIDResponse::SetRecoInfo()
     fBeamTypeNum=kPP;
     fMCperiodTPC="LHC10F6A";
     if (fCurrentAliRootRev >= 62714)
-      fMCperiodTPC="LHC13B2_FIXn1";
+      fMCperiodTPC="LHC14E2";
   }
 //   if (fRun>=179357 && fRun<=183173) { fLHCperiod="LHC12C"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
 //   if (fRun>=183174 && fRun<=186345) { fLHCperiod="LHC12D"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
@@ -779,8 +779,8 @@ void AliPIDResponse::SetRecoInfo()
   if (fCurrentFile.Contains("LHC12f1") || fCurrentFile.Contains("LHC12i3")) fMCperiodTPC="LHC12F1";
   // exception for 12c4
   if (fCurrentFile.Contains("LHC12c4")) fMCperiodTPC="LHC12C4";
-	// exception for 12d and 13d pp periods
-	if (fBeamType=="PP" && fCurrentAliRootRev >= 61605) fMCperiodTPC="LHC13D1";
+  // exception for 13d1 11d anchored prod
+  if (fLHCperiod=="LHC11D" && fCurrentFile.Contains("LHC13d1")) fMCperiodTPC="LHC13D1";
 }
 
 //______________________________________________________________________________

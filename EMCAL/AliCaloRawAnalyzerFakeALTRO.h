@@ -16,13 +16,18 @@ class  AliCaloRawAnalyzerFakeALTRO : public AliCaloRawAnalyzerFitter
   friend class AliCaloRawAnalyzerFactory;
 
  public:
+  
   virtual ~AliCaloRawAnalyzerFakeALTRO();
-  virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
+  
+  virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector,
+                                       UInt_t altrocfg1,
+                                       UInt_t altrocfg2 );
   
  private:
+  
   AliCaloRawAnalyzerFakeALTRO();
-  AliCaloRawAnalyzerFakeALTRO(const AliCaloRawAnalyzerFakeALTRO & );
-  AliCaloRawAnalyzerFakeALTRO  & operator = (const AliCaloRawAnalyzerFakeALTRO  &);
+  AliCaloRawAnalyzerFakeALTRO(               const AliCaloRawAnalyzerFakeALTRO & );
+  AliCaloRawAnalyzerFakeALTRO  & operator = (const AliCaloRawAnalyzerFakeALTRO & );
   ClassDef(AliCaloRawAnalyzerFakeALTRO,1)
 
 };

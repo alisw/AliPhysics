@@ -82,6 +82,7 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger, Bool_t a, Bool_t 
 TObject(),
 fScalerEvent(kFALSE),
 fMakeTriggerDigits(kFALSE),
+fMakeTrackerDigits(kFALSE),
 fRawStreamTracker(new AliMUONRawStreamTrackerHP),
 fRawStreamTrigger(new AliMUONRawStreamTriggerHP),
 fDigitStore(0x0),
@@ -105,6 +106,7 @@ fLogger(new AliMUONLogger(10000)){
   }
   
   SetMakeTriggerDigits();
+  SetMakeTrackerDigits();
   
   // Load mapping
   if ( ! AliMpCDB::LoadDDLStore() ) {
@@ -117,6 +119,7 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger) :
 TObject(),
     fScalerEvent(kFALSE),
     fMakeTriggerDigits(kFALSE),
+    fMakeTrackerDigits(kFALSE),
     fRawStreamTracker(new AliMUONRawStreamTrackerHP),
     fRawStreamTrigger(new AliMUONRawStreamTriggerHP),
     fDigitStore(0x0),
@@ -139,6 +142,7 @@ TObject(),
   }
 
   SetMakeTriggerDigits();
+  SetMakeTrackerDigits();
 
   // Load mapping
   if ( ! AliMpCDB::LoadDDLStore() ) {
@@ -197,10 +201,11 @@ AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader,
   Int_t tracker(kOK);
   Int_t trigger(kOK);
   
-  if ( fDigitStore ) 
-  {
-    fDigitStore->Clear(); // insure we start with an empty container
-    tracker = ReadTrackerDDL(rawReader);
+  if ( fDigitStore ) fDigitStore->Clear(); // insure we start with an empty container
+
+  if ( fMakeTrackerDigits ) {
+    if ( fDigitStore ) tracker = ReadTrackerDDL(rawReader);
+    else fLogger->Log("Asking for tracker digits but digitStore is null");
   }
   
   if ( fTriggerStore || fMakeTriggerDigits ) 

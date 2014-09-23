@@ -191,7 +191,7 @@ bool AliPHOSDApi0mip::CreateHist(){
   snprintf(hname,100,"h1_time_mod%d_iter%d",fMod,fIterId);
   snprintf(htitle,100,"Time : Mod:%d Iter:%d",fMod,fIterId);
   fH1Time = (TH1I*) gDirectory->Get(hname);
-  if( fH1Time>0 ){
+  if( fH1Time ){
     std::cout<<" AliPHOSDApi0mip:Warning!! Output object already exist : "<<fH1Time->GetName()<<std::endl;
     return false;
   }

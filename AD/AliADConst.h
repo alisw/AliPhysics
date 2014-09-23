@@ -7,14 +7,14 @@ const Float_t kIntTimeRes = 0.39; // intrinsic time resolution of the scintillat
 const Float_t kV0CDelayCables = 8.1; // delay cables on the C side (in ns)
 const Float_t kV0Offset = -1338.6; // general V0 offset between the TDCs and the trigger
 const Int_t   kNClocks = 21; // Number of ADC clocks that are read out
-const Float_t kChargePerADC = 0.6e-12; // Charge per ADC
+const Float_t kChargePerADC = 1e-23; // Charge per ADC
 const Int_t   kMinTDCWidth = 13; // minimum signal width measured by TDC
 const Int_t   kMaxTDCWidth = 128; // maximum signal width measured by TDC
 const Float_t kPMRespTime = 6.0; // PM response time (corresponds to 1.9 ns rise time)
 const Float_t kPMTransparency = 0.25; // Transparency of the first dynode of the PM
 const Float_t kPMNbOfSecElec = 6.0;   // Number of secondary electrons emitted from first dynode (per ph.e.)
 const Float_t kPhotoCathodeEfficiency = 0.18; // Photocathode efficiency
-const Int_t   kNCIUBoards = 16; //Number of CIU boards
+const Int_t   kNCIUBoards = 2; //Number of CIU boards
 
 #endif
 

@@ -256,6 +256,8 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
       
       Int_t nCandidates = fCandidateTracks->GetEntriesFast();
       for (Int_t iCandidate=0; iCandidate<nCandidates; iCandidate++) {
+
+	if (!(fCandidateTracks->UncheckedAt(iCandidate))) continue;
 	fCurrentTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iCandidate);
 
 	// if the old track is compatible with the new cluster, the track is updated and inserted as new track in the array 
@@ -298,6 +300,7 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
 
     for (Int_t iFinalCandidate=0; iFinalCandidate<nFinalTracks; iFinalCandidate++) {
       
+      if (!(fCandidateTracks->UncheckedAt(iFinalCandidate))) continue;
       AliMuonForwardTrack *finalTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iFinalCandidate);
       Int_t nMFTClusters  = finalTrack->GetNMFTClusters();
 
@@ -578,19 +581,20 @@ Bool_t AliMFTTrackerMU::IsCorrectMatch(AliMFTCluster *cluster, Int_t labelMC) {
 
 void AliMFTTrackerMU::GetVertexFromMC() {
 
-  AliRunLoader *fRunLoader = AliRunLoader::Open("galice.root");
-  if (!fRunLoader) {
+  AliRunLoader *runLoader = AliRunLoader::Open("galice.root");
+  if (!runLoader) {
     AliError("no run loader found in file galice.root");
     return;
   }
 
-  fRunLoader->CdGAFile();
-  fRunLoader->LoadgAlice();
-  fRunLoader->LoadHeader();
-  fRunLoader->GetEvent(gAlice->GetEvNumber());
+  runLoader->CdGAFile();
+  runLoader->LoadgAlice();
+  runLoader->LoadHeader();
+  runLoader->GetEvent(gAlice->GetEvNumber());
   
   TArrayF vtx(3);
-  fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vtx);
+  runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vtx);
+  AliInfo(Form("Primary vertex from MC found in (%f, %f, %f)\n",vtx[0], vtx[1], vtx[2]));
 
   fXExtrapVertex = gRandom->Gaus(vtx[0], AliMFTConstants::fPrimaryVertexResX);
   fYExtrapVertex = gRandom->Gaus(vtx[1], AliMFTConstants::fPrimaryVertexResY);

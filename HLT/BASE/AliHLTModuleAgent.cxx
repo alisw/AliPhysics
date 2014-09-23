@@ -99,6 +99,12 @@ void AliHLTModuleAgent::PrintStatus(const char* agent)
   }
 }
 
+UInt_t AliHLTModuleAgent::GetDetectorMask() const
+{
+  /* all detectors */
+  return (UInt_t)(-1);
+}
+
 int AliHLTModuleAgent::CreateConfigurations(AliHLTConfigurationHandler* /*handler*/,
 					    AliRawReader* /*rawReader*/,
 					    AliRunLoader* /*runloader*/) const

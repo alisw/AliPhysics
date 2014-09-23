@@ -23,8 +23,8 @@ public:
   AliGenEpEmv1();
   
   virtual ~AliGenEpEmv1();
-  void Generate();
-  void Init();
+  virtual void Generate();
+  virtual void Init();
   void SetDebug(Int_t debug) {fDebug=debug;}
   
  protected:

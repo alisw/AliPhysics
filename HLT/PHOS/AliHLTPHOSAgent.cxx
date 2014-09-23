@@ -26,6 +26,7 @@
 #include "AliHLTOUT.h"
 #include "AliHLTOUTHandlerChain.h"
 #include "AliRunLoader.h"
+#include "AliDAQ.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 
@@ -73,6 +74,11 @@ AliHLTPHOSAgent::AliHLTPHOSAgent()
 AliHLTPHOSAgent::~AliHLTPHOSAgent()
 {
   // see header file for class documentation
+}
+
+UInt_t AliHLTPHOSAgent::GetDetectorMask() const
+{
+  return AliDAQ::kPHOS;
 }
 
 int AliHLTPHOSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,

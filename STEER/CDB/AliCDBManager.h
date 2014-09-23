@@ -160,6 +160,8 @@ class AliCDBManager: public TObject {
     void SetSpecificStorage(const char* calibType, const AliCDBParam* param);
     void AlienToCvmfsUri(TString& uriString) const;
     void ValidateCvmfsCase() const;
+    void GetLHCPeriodAgainstAlienFile(Int_t run, TString& lhcPeriod, Int_t& startRun, Int_t& endRun);
+    void GetLHCPeriodAgainstCvmfsFile(Int_t run, TString& lhcPeriod, Int_t& startRun, Int_t& endRun);
 
     void CacheEntry(const char* path, AliCDBEntry* entry);
 

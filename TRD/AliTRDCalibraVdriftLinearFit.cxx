@@ -371,8 +371,8 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
     if ( linearfitterhisto != 0 ){
       
       // Fill a linearfitter
-      TAxis *xaxis = linearfitterhisto->GetXaxis();
-      TAxis *yaxis = linearfitterhisto->GetYaxis();
+      const TAxis *xaxis = linearfitterhisto->GetXaxis();
+      const TAxis *yaxis = linearfitterhisto->GetYaxis();
       TLinearFitter linearfitter = TLinearFitter(2,"pol1");
       //printf("test\n");
       Double_t integral = linearfitterhisto->Integral();
@@ -516,8 +516,8 @@ TGraphErrors* AliTRDCalibraVdriftLinearFit::DrawMS(const TH2 *const h2, Int_t &n
   TF1 fg("fg", "gaus", -10., 30.);
   TGraphErrors *gp = new TGraphErrors();
 
-  TAxis *ax(h2->GetXaxis());
-  TAxis *ay(h2->GetYaxis());
+  const TAxis *ax(h2->GetXaxis());
+  const TAxis *ay(h2->GetYaxis());
   TH1D *h1(NULL);
   for(Int_t ipt(0), jpt(1), ig(0); ipt<ax->GetNbins(); ipt++, jpt++){
     h1 = h2->ProjectionY("py", jpt, jpt);

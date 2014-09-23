@@ -45,6 +45,7 @@
 #include "AliRunLoader.h"
 #include "AliRun.h"
 #include "AliMUON.h"
+#include "AliDAQ.h"
 #include "TSystem.h"
 #include "TObjArray.h"
 #include "TString.h"
@@ -102,6 +103,11 @@ AliHLTMUONAgent::~AliHLTMUONAgent()
 	///
 	/// Default destructor.
 	///
+}
+
+UInt_t AliHLTMUONAgent::GetDetectorMask() const
+{
+  return AliDAQ::kMUON;
 }
 
 const char* AliHLTMUONAgent::GetReconstructionChains(AliRawReader* rawReader,

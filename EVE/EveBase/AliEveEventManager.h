@@ -13,23 +13,14 @@
 #include <TEveEventManager.h>
 #include <TQObject.h>
 #include <TObjArray.h>
+#include <TThread.h>
 
 #include <AliEventInfo.h>
-
 #include <AliESDEvent.h>
-
-
-#ifdef ZMQ
-#include <zmq.hpp>
-#else
-namespace zmq{
-	class context_t;
-}
-#endif
+#include "AliStorageTypes.h"
 
 class AliEveMacroExecutor;
 class AliEveEventSelector; 
-class AliSocket;
 
 class AliRunLoader;
 class AliESDEvent;
@@ -57,10 +48,12 @@ class TMap;
 //
 
 
-class AliEveEventManager : public TEveEventManager,
-        public TQObject
+class AliEveEventManager : public TEveEventManager, public TQObject
 {
 public:
+    AliEveEventManager(const TString& name="Event", Int_t ev=0);
+    virtual ~AliEveEventManager();
+	
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
 
     static void SetESDFileName(const TString& esd, EVisibleESDTrees shown=kOfflineTree);
@@ -76,21 +69,19 @@ public:
     // assumes the filenames of ESD, AOD, etc are standard ALICE names
     // (AliESDs.root, AliESDfriends.root, AliAOD.root, AliAODfriend.root, galice.root,raw.root)
     static void SetFilesPath(const TString& path);
-
     static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
                                   Bool_t assertAod, Bool_t assertRaw);
     static void SearchRawForCentralReconstruction();
 
-    AliEveEventManager(const TString& name="Event", Int_t ev=0);
-    virtual ~AliEveEventManager();
-
     virtual void  Open();
-    void          SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf);
     virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const;
     virtual void  GotoEvent(Int_t event);
     virtual void  NextEvent();
     virtual void  PrevEvent();
+    void MarkCurrentEvent();
     virtual void  Close();
+
+    void          SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf);
     void Timeout(); // * SIGNAL*
 
     Int_t         GetEventId()         const { return fEventId; }
@@ -109,10 +100,7 @@ public:
     TString       GetEventInfoVertical()   const;
     const AliEventInfo*	GetEventInfo();
 
-		static bool ConnectToServer(const char* host, int port); // connect to the events server
-
     static Int_t  CurrentEventId();
-
     static Bool_t HasRunLoader();
     static Bool_t HasESD();
     static Bool_t HasESDfriend();
@@ -124,22 +112,16 @@ public:
     static AliESDfriend* AssertESDfriend();
     static AliAODEvent*  AssertAOD();
     static AliRawReader* AssertRawReader();
-
     static AliMagF*      AssertMagField();
     static TGeoManager*  AssertGeometry();
     static AliRecoParam* AssertRecoParams();
-    
-    static AliSocket* AssertSubscriber();
 
     static AliEveEventManager* AddDependentManager(const TString& name, const TString& path);
     static AliEveEventManager* GetDependentManager(const TString& name);
-
     static AliEveEventManager* GetMaster();
     static AliEveEventManager* GetCurrent();
-
     static void                RegisterTransient    (TEveElement* element);
     static void                RegisterTransientList(TEveElement* element);
-
 
     Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
     Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
@@ -160,9 +142,13 @@ public:
     virtual void  AfterNewEventLoaded();
     void          NewEventDataLoaded();  // *SIGNAL*
     void          NewEventLoaded();      // *SIGNAL*
+    void          StorageManagerOk();    // *SIGNAL*
+    void          StorageManagerDown();  // *SIGNAL*
 
     AliEveMacroExecutor* GetExecutor() const { return fExecutor; }
-	    void InitOCDB(int runNo=-1);
+    void InitOCDB(int runNo=-1);
+
+    void PrepareForNewEvent(AliESDEvent *event);
 protected:
     Int_t         fEventId;		// Id of current event.
 
@@ -223,27 +209,38 @@ protected:
     static AliRecoParam* fgRecoParam;
     static Bool_t        fgUniformField;  // Track with uniform field.
 
-		static zmq::context_t* fgSubContext;
-		static AliSocket* fgSubSock;
-private:
-    AliEveEventManager(const AliEveEventManager&);            // Not implemented
-    AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
 
+private:
     void InitInternals();
 
     void StartAutoLoadTimer();
     void StopAutoLoadTimer();
+    Bool_t fAutoLoadTimerRunning; // State of auto-load timer.
 
     static Bool_t InitGRP();
     static Bool_t InitRecoParam();
-
     TTree* readESDTree(const char* treeName, int &run);
-
-    Bool_t fAutoLoadTimerRunning; // State of auto-load timer.
 
     static AliEveEventManager* fgMaster;
     static AliEveEventManager* fgCurrent;
 
+    static void* DispatchEventListener(void *arg){static_cast<AliEveEventManager*>(arg)->GetNextEvent();}
+    static void* DispatchStorageManagerWatcher(void *arg){static_cast<AliEveEventManager*>(arg)->CheckStorageStatus();}
+    void GetNextEvent();
+    void CheckStorageStatus();
+    TThread *fEventListenerThread;
+    TThread *fStorageManagerWatcherThread;
+    TMutex fMutex;
+    AliESDEvent *fCurrentEvent[2];
+    TTree *fCurrentTree[2];
+    int fEventInUse;
+    int fWritingToEventIndex;
+    bool fIsNewEventAvaliable;
+    storageSockets fgSubSock;
+    
+    AliEveEventManager(const AliEveEventManager&);            // Not implemented
+    AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
+    
     ClassDef(AliEveEventManager, 0); // Interface for getting all event components in a uniform way.
 };
 

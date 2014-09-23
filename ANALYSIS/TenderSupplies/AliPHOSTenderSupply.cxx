@@ -159,7 +159,10 @@ void AliPHOSTenderSupply::InitTender()
   //Init geometry 
   if(!fPHOSGeo){
     AliOADBContainer geomContainer("phosGeo");
-    geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+    if(fIsMC) //use excatly the same geometry as in simulation
+      geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
+    else //Use best approaximation to real geometry
+      geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
     fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
     for(Int_t mod=0; mod<5; mod++) {
@@ -167,7 +170,7 @@ void AliPHOSTenderSupply::InitTender()
       fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
       printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
       ((TGeoHMatrix*)matrixes->At(mod))->Print() ;
-    }
+    } 
   }
   
   //Init Bad channels map
@@ -543,6 +546,9 @@ Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
   //For backward compatibility, if no RecoParameters found
   if(fNonlinearityVersion=="Default"){
     return 0.0241+1.0504*en+0.000249*en*en ;
+  }
+  if(fNonlinearityVersion=="MC"){ //Default + some correction
+    return (0.0241+1.0504*en+0.000249*en*en)*fNonlinearityParams[0]*(1+fNonlinearityParams[1]/(1.+en*en/fNonlinearityParams[2]/fNonlinearityParams[2])) ;
   }
 
   if(fNonlinearityVersion=="NoCorrection"){

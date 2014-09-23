@@ -98,30 +98,19 @@ void AliITSReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) co
 {
 // reconstruct clusters
 
-  Int_t cluFindOpt = GetRecoParam()->GetClusterFinder();
-  // cluFindOpt = 0 --> ClusterFinder V2 
-  // cluFindOpt = 1 --> as cluFindOpt = 0 for SPD and SSD. Fast SDD algo
   TString recopt = GetRecoParam()->GetOptReco();
   fDetTypeRec->SetTreeAddressD(digitsTree);
   fDetTypeRec->MakeBranch(clustersTree,"R");
   fDetTypeRec->SetTreeAddressR(clustersTree);
-  fDetTypeRec->DigitsToRecPoints(digitsTree,clustersTree,0,recopt.Data(),cluFindOpt);    
+  fDetTypeRec->DigitsToRecPoints(digitsTree,clustersTree,0,recopt.Data(),1);    
 }
 
 //_________________________________________________________________
 void AliITSReconstructor::Reconstruct(AliRawReader* rawReader, TTree *clustersTree) const
 {
   // reconstruct clusters from raw data
-  Int_t cluFindOpt = GetRecoParam()->GetClusterFinder();
-  // cluFindOpt = 0 --> ClusterFinder V2 
-  // cluFindOpt = 1 --> as cluFindOpt = 0 for SPD and SSD. Fast SDD algo
   TString recopt = GetRecoParam()->GetOptReco();
-  if(cluFindOpt == 0){
-    fDetTypeRec->SetDefaultClusterFindersV2(kTRUE);
-  }
-  else {
-    fDetTypeRec->SetDefaultClusterFindersV2(kTRUE,kTRUE);
-  }
+  fDetTypeRec->SetDefaultClusterFindersV2(kTRUE,kTRUE);
   fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree,recopt.Data());
 }
 
