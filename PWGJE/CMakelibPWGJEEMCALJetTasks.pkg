@@ -90,6 +90,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskPtEMCalTrigger.cxx 
  EMCALJetTasks/UserTasks/AliEMCalPtTaskVTrackSelection.cxx
  EMCALJetTasks/UserTasks/AliEMCalPtTaskTrackSelectionESD.cxx
+ EMCALJetTasks/UserTasks/AliEMCalPtTaskTrackSelectionAOD.cxx
 )
 
 # Add code that needs fastjet or FJWrapper here

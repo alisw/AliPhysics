@@ -36,6 +36,7 @@ public:
 	virtual Bool_t Run();
 
 	void AddESDTrackCuts(AliESDtrackCuts *trackCuts);
+	void AddCutsForAOD(AliESDtrackCuts *trackCuts, UInt_t filterBits);
 	void SetEtaRange(double etamin, double etamax) { fEtaRange.SetLimits(etamin, etamax); }
 	void SetPtRange(double ptmin, double ptmax) { fPtRange.SetLimits(ptmin, ptmax); }
 	void SetSwapEta() { fSwapEta = kTRUE; }

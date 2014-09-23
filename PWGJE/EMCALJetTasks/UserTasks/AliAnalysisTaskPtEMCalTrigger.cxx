@@ -49,6 +49,7 @@
 
 #include "AliEMCalHistoContainer.h"
 #include "AliEMCalPtTaskVTrackSelection.h"
+#include "AliEMCalPtTaskTrackSelectionAOD.h"
 #include "AliEMCalPtTaskTrackSelectionESD.h"
 #include "AliAnalysisTaskPtEMCalTrigger.h"
 
@@ -693,6 +694,17 @@ namespace EMCalTriggerPtAnalysis {
 		 */
 		fListTrackCuts->AddLast(new AliEMCalPtTaskTrackSelectionESD(trackCuts));
 	}
+
+	//______________________________________________________________________________
+	void AliAnalysisTaskPtEMCalTrigger::AddCutsForAOD(AliESDtrackCuts* trackCuts, UInt_t filterbits) {
+		/*
+		 * Add new track cuts to the task
+		 *
+		 * @param trackCuts: Object of type AliESDtrackCuts
+		 */
+		fListTrackCuts->AddLast(new AliEMCalPtTaskTrackSelectionAOD(trackCuts, filterbits));
+	}
+
 
 	//______________________________________________________________________________
 	TString AliAnalysisTaskPtEMCalTrigger::BuildTriggerString() {
