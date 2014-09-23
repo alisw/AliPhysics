@@ -77,6 +77,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fRMS                (kTRUE),
     fSymmRMS            (kTRUE),
     fRho0               (kFALSE),
+    fBootstrap          (kFALSE),
     fPower              (new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,300.)),
     fSaveFull           (kTRUE),
     fActiveString       (""),
@@ -166,8 +167,27 @@ void AliJetFlowTools::Make() {
     }
     // 1a) resize the jet spectrum according to the binning scheme in fBinsTrue
     //     parts of the spectrum can end up in over or underflow bins
+
+    // if bootstrap mode is kTRUE, resample the underlying distributions
+    // FIXME think about resampling the rebinned results or raw results, could lead to difference
+    // in smoothness of tail of spectrum (which is probably not used in any case, but still ... )
+
+    if(fBootstrap) {
+        // resample but leave original spectra intact for the next unfolding round
+        fSpectrumIn = reinterpret_cast<TH1D*>(Bootstrap(fSpectrumIn, kFALSE));
+        fSpectrumOut = reinterpret_cast<TH1D*>(Bootstrap(fSpectrumOut, kFALSE));
+    }
+
     TH1D* measuredJetSpectrumIn  = RebinTH1D(fSpectrumIn, fBinsRec, TString("resized_in_"), kFALSE);
     TH1D* measuredJetSpectrumOut = RebinTH1D(fSpectrumOut, fBinsRec,  TString("resized_out_"), kFALSE);
+/*
+    if(fBootstrap) {
+        measuredJetSpectrumIn = reinterpret_cast<TH1D*>(Bootstrap(measuredJetSpectrumIn, kFALSE));
+        measuredJetSpectrumOut = reinterpret_cast<TH1D*>(Bootstrap(measuredJetSpectrumOut, kFALSE));
+    }
+    // for now do it BEFORE as after gives an issue in Rebin function (counts are wrong)
+*/
+
     
     // 1b) resize the jet spectrum to 'true' bins. can serve as a prior and as a template for unfolding
     // the template will be used as a prior for the chi2 unfolding
@@ -1259,6 +1279,26 @@ TH2D* AliJetFlowTools::NormalizeTH2D(TH2D* histo, Bool_t noError) {
     return histo;
 }
 //_____________________________________________________________________________
+TH1* AliJetFlowTools::Bootstrap(TH1* hist, Bool_t kill) {
+    // resample a TH1
+    // the returned histogram is new, the original is deleted from the heap if kill is true
+    if(!hist) {
+        printf(" > Bootstrap:: fatal error,NULL pointer passed! \n");
+        return 0x0;
+    }
+    else printf(" > Bootstrap:: resampling, may take some time \n");
+    // clone input histo
+    TH1* bootstrapped((TH1*)(hist->Clone(Form("%s_bootstrapped", hist->GetName()))));
+    // reset the content
+    bootstrapped->Reset();
+    // resample the input histogram 
+    for(Int_t i(0); i < hist->GetEntries(); i++) bootstrapped->Fill(hist->GetRandom());
+    // if requested kill input histo
+    if(kill) delete hist;
+    // return resampled histogram
+    return bootstrapped;
+}
+//_____________________________________________________________________________
 TH1D* AliJetFlowTools::RebinTH1D(TH1D* histo, TArrayD* bins, TString suffix, Bool_t kill) {
     // return a TH1D with the supplied histogram rebinned to the supplied bins
     // the returned histogram is new, the original is deleted from the heap if kill is true
@@ -1281,6 +1321,7 @@ TH1D* AliJetFlowTools::RebinTH1D(TH1D* histo, TArrayD* bins, TString suffix, Boo
 //_____________________________________________________________________________
 TH2D* AliJetFlowTools::RebinTH2D(TH2D* rebinMe, TArrayD* binsTrue, TArrayD* binsRec, TString suffix) {
     // weighted rebinning of a th2d, implementation for function call to AliAnaChargedJetResponseMaker
+    // not static as it is just a wrapper for the response maker object
     if(!fResponseMaker || !binsTrue || !binsRec) {
         printf(" > RebinTH2D:: function called with NULL arguments < \n");
         return 0x0;
@@ -3418,6 +3459,158 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
    }
    SavePadToPDF(canvasMISC);
    canvasMISC->Write();
+   output.Write();
+   output.Close();
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::BootstrapSpectra(TString def, TString in, TString out) const
+{
+   // function to interpret results of bootstrapping routine
+   // TString def should hold the true emperical distribution
+   if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();
+   TFile readMe(in.Data(), "READ");     // open file read-only
+   if(readMe.IsZombie()) {
+       printf(" > Fatal error, couldn't read %s for post processing ! < \n", in.Data());
+       return;
+   }
+   printf("\n\n\n\t\t BootstrapSpectra \n > Recovered the following file structure : \n <");
+   readMe.ls();
+   TList* listOfKeys((TList*)readMe.GetListOfKeys());
+   if(!listOfKeys) {
+       printf(" > Fatal error, couldn't retrieve list of keys. Input file might have been corrupted ! < \n");
+       return;
+   }
+   // get an estimate of the number of outputs and find the default set
+   TDirectoryFile* defDir(0x0);
+   for(Int_t i(0); i < listOfKeys->GetSize(); i++) {
+       if(dynamic_cast<TDirectoryFile*>(readMe.Get(listOfKeys->At(i)->GetName()))) {
+           if(!strcmp(listOfKeys->At(i)->GetName(), def.Data())) defDir = dynamic_cast<TDirectoryFile*>(readMe.Get(listOfKeys->At(i)->GetName()));
+       }
+   }
+
+   // extract the default output this is the 'emperical' distribution 
+   // w.r.t. which the other distributions will be evaluated
+   TH1D* defaultUnfoldedJetSpectrumIn(0x0);
+   TH1D* defaultUnfoldedJetSpectrumOut(0x0);
+   TH1D* defaultInputSpectrumIn(0x0);
+   TH1D* defaultInputSpectrumOut(0x0);
+   TGraphErrors* v2Emperical(0x0);
+   if(defDir) {
+       TDirectoryFile* defDirIn = (TDirectoryFile*)defDir->Get(Form("InPlane___%s", def.Data()));
+       TDirectoryFile* defDirOut = (TDirectoryFile*)defDir->Get(Form("OutOfPlane___%s", def.Data()));
+       if(defDirIn) {
+           defaultUnfoldedJetSpectrumIn = (TH1D*)defDirIn->Get(Form("UnfoldedSpectrum_in_%s", def.Data()));
+           defaultInputSpectrumIn = (TH1D*)defDirIn->Get(Form("InputSpectrum_in_%s", def.Data()));
+       }
+       if(defDirOut) {
+           defaultUnfoldedJetSpectrumOut = (TH1D*)defDirOut->Get(Form("UnfoldedSpectrum_out_%s", def.Data()));
+           defaultInputSpectrumOut = (TH1D*)defDirOut->Get(Form("InputSpectrum_out_%s", def.Data()));
+       }
+   }
+   if((!defaultUnfoldedJetSpectrumIn && defaultUnfoldedJetSpectrumOut)) {
+       printf(" BootstrapSpectra: couldn't extract default spectra, aborting! \n");
+       return;
+   }
+   else v2Emperical = GetV2(defaultUnfoldedJetSpectrumIn, defaultUnfoldedJetSpectrumOut, fEventPlaneRes);
+
+   // now that we know for sure that the input is in place, reserve the bookkeeping histograms
+   TH1F* delta0[fBinsTrue->GetSize()-1];
+   for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
+       delta0[i] = new TH1F(Form("delta%i_%.2f-%.2f_gev", i, fBinsTrue->At(i), fBinsTrue->At(i+1)), Form("#Delta_{0, %i} p_{T} %.2f-%.2f GeV/c", i, fBinsTrue->At(i), fBinsTrue->At(i+1)), 30, -1., 1.);//.15, .15);
+       delta0[i]->Sumw2();
+   }
+   // and a canvas for illustration purposes only
+   TCanvas* spectraIn(new TCanvas("spectraIn", "spectraIn"));
+   TCanvas* spectraOut(new TCanvas("spectraOut", "spectraOut"));
+   // common reference (in this case the generated v2)
+   TF1* commonReference = new TF1("v2_strong_bkg_comb", "(x<=3)*.07+(x>3&&x<5)*(.07-(x-3)*.035)+(x>30&&x<40)*(x-30)*.005+(x>40)*.05", 0, 200);
+
+   // loop through the directories, only plot the graphs if the deconvolution converged
+   TDirectoryFile* tempDir(0x0); 
+   TDirectoryFile* tempIn(0x0);
+   TDirectoryFile*  tempOut(0x0);
+   TH1D* unfoldedSpectrumIn(0x0);
+   TH1D* unfoldedSpectrumOut(0x0);
+   TH1D* measuredSpectrumIn(0x0);
+   TH1D* measuredSpectrumOut(0x0);
+   for(Int_t i(0), j(0); i < listOfKeys->GetSize(); i++) {
+       // read the directory by its name
+       tempDir = dynamic_cast<TDirectoryFile*>(readMe.Get(listOfKeys->At(i)->GetName()));
+       if(!tempDir) continue;
+       TString dirName(tempDir->GetName());
+       // read only bootstrapped outputs
+       if(!dirName.Contains("bootstrap")) continue;
+       // try to read the in- and out of plane subdirs
+       tempIn = (TDirectoryFile*)tempDir->Get(Form("InPlane___%s", dirName.Data()));
+       tempOut = (TDirectoryFile*)tempDir->Get(Form("OutOfPlane___%s", dirName.Data()));
+       j++;
+       // extract the unfolded spectra only if both in- and out-of-plane converted (i.e. pearson coefficients were saved)
+       if(tempIn) {
+           if(!(TH2D*)tempIn->Get(Form("PearsonCoefficients_in_%s", dirName.Data()))) continue;
+           unfoldedSpectrumIn = (TH1D*)tempIn->Get(Form("UnfoldedSpectrum_in_%s", dirName.Data()));
+           measuredSpectrumIn = (TH1D*)tempIn->Get(Form("InputSpectrum_in_%s", dirName.Data()));
+           spectraIn->cd();
+           (j==1) ? measuredSpectrumIn->DrawCopy() : measuredSpectrumIn->DrawCopy("same");
+       }
+       if(tempOut) {
+           if(!(TH2D*)tempOut->Get(Form("PearsonCoefficients_out_%s", dirName.Data()))) continue;
+           unfoldedSpectrumOut = (TH1D*)tempOut->Get(Form("UnfoldedSpectrum_out_%s", dirName.Data()));
+           measuredSpectrumOut = (TH1D*)tempOut->Get(Form("InputSpectrum_out_%s", dirName.Data()));
+           spectraOut->cd();
+           (j==1) ? measuredSpectrumOut->DrawCopy() : measuredSpectrumOut->DrawCopy("same");
+       }
+       // get v2 with statistical uncertainties from the extracted spectra
+       TGraphErrors* v2Bootstrapped(GetV2(unfoldedSpectrumIn, unfoldedSpectrumOut, fEventPlaneRes));
+       // and loop over all bins to fill the bookkeeping histograms
+       Double_t yBoot(0), yEmp(0), xDud(0);
+       // optional: common reference (in this case the sampled v2 value)
+       for(Int_t k(0); k < fBinsTrue->GetSize()-1; k++) {
+           // read values point by point (passed by reference)
+           v2Bootstrapped->GetPoint(k, xDud, yBoot);
+           v2Emperical->GetPoint(k, xDud, yEmp);
+           if(commonReference) {
+               if(!commonReference->Eval(xDud)<1e-10) {
+                   yEmp/=commonReference->Eval(xDud);
+                   yBoot/=commonReference->Eval(xDud);
+               } else { // if reference equals zero, take emperical distribution as reference
+                   yEmp/=yEmp;  // 1
+                   yBoot/=yEmp;
+               }
+           }
+           cout << " yEmp " << yEmp << " yBoot  " << yBoot << endl;
+           // save relative difference per pt bin
+           if(TMath::Abs(yBoot)>1e-10) delta0[k]->Fill(yEmp - yBoot);
+       }
+   }
+   // extracting final results now, as first estimate just a gaus fit to the distributions 
+   // (should be changed perhaps to proper rms eventually)
+   // attach relevant data to current buffer in the same loop
+   TFile output(out.Data(), "RECREATE");
+   defaultInputSpectrumIn->SetLineColor(kRed);
+   spectraIn->cd();
+   defaultInputSpectrumIn->DrawCopy("same");
+   defaultInputSpectrumOut->SetLineColor(kRed);
+   spectraOut->cd();
+   defaultInputSpectrumOut->DrawCopy("same");
+   spectraIn->Write();
+   spectraOut->Write();
+
+   TH1F* delta0spread(new TH1F("delta0spread", "#sigma(#Delta_{0})", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+   TF1* gaus(new TF1("gaus", "gaus"/*[0]*exp(-0.5*((x-[1])/[2])**2)"*/, -1., 1.));
+   for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
+       delta0[i]->Fit(gaus);
+       delta0[i]->GetYaxis()->SetTitle("counts");
+       delta0[i]->GetXaxis()->SetTitle("(v_{2, jet}^{measured} - v_{2, jet}^{generated}) / input v_{2}");
+       delta0spread->SetBinContent(i+1, gaus->GetParameter(1)); // mean of gaus
+       delta0spread->SetBinError(i+1, gaus->GetParameter(2));   // sigma of gaus
+       cout << " mean " << gaus->GetParameter(1) << endl;
+       cout << " sigm " << gaus->GetParameter(2) << endl;
+       delta0[i]->Write();
+   }
+   delta0spread->GetXaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
+   delta0spread->GetYaxis()->SetTitle("(mean v_{2, jet}^{measured} - v_{2, jet}^{generated}) / input v_{2}");
+   delta0spread->Write();
+   // write the buffer and close the file
    output.Write();
    output.Close();
 }
