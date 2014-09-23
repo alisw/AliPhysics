@@ -646,18 +646,8 @@ Bool_t AliV0ReaderV1::GetHelixCenter(const AliExternalTrackParam *track,Double_t
 			xpoint = - xpoint;
 			ypoint = - ypoint;
 		}
-
-		if(charge < 0){
-			xpoint =	xpoint;
-			ypoint =	ypoint;
-		}
 	}
 	if(b>0){
-		if(charge > 0){
-			xpoint =	xpoint;
-			ypoint =	ypoint;
-		}
-
 		if(charge < 0){
 			xpoint = - xpoint;
 			ypoint = - ypoint;

@@ -163,7 +163,7 @@ public:
                                                              fEMCALTimeCutMax = b          ; } // ns
   
   void             SetEMCALParametrizedMinTimeCut(Int_t i, Float_t par) { fEMCALParamTimeCutMin[i] = par ; } 
-  void             SetEMCALParametrizedMaxTimeCut(Int_t i, Float_t par) { fEMCALParamTimeCutMax[i] = par ; } 
+  void             SetEMCALParametrizedMaxTimeCut(Int_t i, Float_t par) { fEMCALParamTimeCutMax[i] = par ; }
   
   void             SwitchOnUseEMCALTimeCut()               { fUseEMCALTimeCut = kTRUE      ; }
   void             SwitchOffUseEMCALTimeCut()              { fUseEMCALTimeCut = kFALSE     ; }
@@ -267,14 +267,21 @@ public:
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
   TString          GetFiredTriggerClasses()          const { return GetInputEvent()->GetFiredTriggerClasses() ; }
   
+  
+  // Event selection when mixed event is used
+  
   UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
   void             SetEventTriggerMask(UInt_t evtTrig = AliVEvent::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
+  UInt_t           GetMixEventTriggerMask()          const { return fMixEventTriggerMask     ; }
+  void             SetMixEventTriggerMask(UInt_t evtTrig = AliVEvent::kAnyINT)
+                                                           { fMixEventTriggerMask = evtTrig  ; }
 	Bool_t           IsEventTriggerAtSEOn()            const { return fEventTriggerAtSE        ; }
   void             SwitchOnEventTriggerAtSE()              { fEventTriggerAtSE      = kTRUE  ; }
   void             SwitchOffEventTriggerAtSE()             { fEventTriggerAtSE      = kFALSE ; }
 		
-	
+  // EMCal Triggered events selection, studies
+  
   TArrayI          GetTriggerPatches(Int_t tmin, Int_t tmax);
   void             MatchTriggerCluster(TArrayI patches);
 
@@ -316,9 +323,6 @@ public:
   void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal  = kTRUE  ; }
   void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal  = kFALSE ; }
   
-  UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
-  void             SetMixEventTriggerMask(UInt_t evtTrig = AliVEvent::kAnyINT) 
-                                                           { fMixEventTriggerMask = evtTrig  ; }
 	void             SetEventTriggerBit();
 	Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
 	Bool_t           IsEventCentral()                  const { return fEventTrigCentral        ; }
@@ -335,6 +339,8 @@ public:
   void             SwitchOnEMCALEventRejectionWith2Thresholds()  { fRejectEMCalTriggerEventsWith2Tresholds = kTRUE  ; }
   void             SwitchOffEMCALEventRejectionWith2Thresholds() { fRejectEMCalTriggerEventsWith2Tresholds = kFALSE ; }
 	
+  // Other event rejections criteria
+  
   void             SwitchOnPileUpEventRejection()          { fDoPileUpEventRejection= kTRUE  ; }
   void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= kFALSE ; }
   Bool_t           IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
@@ -374,6 +380,8 @@ public:
   void             SwitchOffSelectEventTimeStamp()         { fTimeStampEventSelect = kFALSE  ; }
   
   Bool_t           IsSelectEventTimeStampOn()              {return  fTimeStampEventSelect    ; }
+  
+  // Event tagging as pile-up
   
   Bool_t           IsPileUpFromSPD()               const ;
   Bool_t           IsPileUpFromEMCal()             const ;
@@ -450,7 +458,7 @@ public:
   virtual void     SwitchOnConstrainTrackToVertex()  { ; }
   virtual void     SwitchOffConstrainTrackToVertex() { ; }
 
-  // Calorimeter specific and patches
+  // Calorimeter pure LED events selection
   void             AnalyzeOnlyLED()                        { fAnaLED             = kTRUE  ; }
   void             AnalyzeOnlyPhysics()                    { fAnaLED             = kFALSE ; }
   
@@ -496,8 +504,8 @@ public:
   Int_t   GetLastCaloMixedEvent()                    const { return fLastMixedCaloEvent          ; }
   Int_t   GetLastTracksMixedEvent ()                 const { return fLastMixedTracksEvent        ; }
   
-  TList * GetListWithMixedEventsForCalo  (Int_t bi)  const { if(fListMixedCaloEvents)   return fListMixedCaloEvents[bi]     ; else return 0 ; }
-  TList * GetListWithMixedEventsForTracks(Int_t bi)  const { if(fListMixedTracksEvents) return fListMixedTracksEvents [bi]  ; else return 0 ; }  
+  TList * GetListWithMixedEventsForCalo  (Int_t bi)  const { if(fListMixedCaloEvents)   return fListMixedCaloEvents  [bi] ; else return 0 ; }
+  TList * GetListWithMixedEventsForTracks(Int_t bi)  const { if(fListMixedTracksEvents) return fListMixedTracksEvents[bi] ; else return 0 ; }
    
   Bool_t  ListWithMixedEventsForCaloExists()         const { if(fListMixedCaloEvents) return kTRUE  ;
                                                              else                     return kFALSE ; }

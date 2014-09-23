@@ -51,7 +51,8 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   void SetisSignalCheck(Int_t IsSignalCheck=2) {kSignalCheck=IsSignalCheck;}
   void SetMtofMethod(Int_t iMtofMethod=1) {iMtof=iMtofMethod;}
   void SetPvtxNucleiCorrection(Int_t kMomVtxCorr=1) {kPvtxCorr=kMomVtxCorr;}
-  
+  //void SetiTriggerSel(Int_t ItriggerSel=-99) {iTriggerSel=ItriggerSel;}
+
  private:
   AliAnalysisNucleiMass(const AliAnalysisNucleiMass &old); 
   AliAnalysisNucleiMass& operator=(const AliAnalysisNucleiMass &source);
@@ -78,12 +79,15 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   Int_t iBconf;                                   //! If Magnetic Field configuration is down or up
   Bool_t kTOF;                                    //! kTOFout and kTIME required
   
+  static const Int_t iTriggerSel=-99;                   // -99->no trigger required ; 0-> if kMB ; 16-> if kCentral ; 17-> if kSemiCentral ; -2 -> No MB, No Central and No SemiCentral  
+
   AliAODEvent* fAOD;                              //! AOD object
   AliESDEvent* fESD;                              //! ESD object
   AliVEvent* fEvent;                              //! general object
   AliPIDResponse *fPIDResponse;                   //! pointer to PID response
   TList *fList[nBconf];                           //! lists for slot
   
+  TH1I *htriggerbits[nBconf][2];                  //! Trigger bits distribution
   TH1F *htemp[nBconf];                            //! Temp. plot: avoid a problem with the merge of the output when a TList is empty (of the opposite magnetic field configuration)
   TH1F *hCentrality[nBconf][2];                   //! Centrality of the selected and analyzed events
   TH1F *hZvertex[nBconf][2];                      //! z-vertex distribution before and after the cuts on the event
@@ -98,27 +102,27 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   TH2F *fdEdxVSp[nBconf][2];                      //! dedx vs pTpc
   TProfile *hDeDxExp[nBconf][9];                  //! TPC spline used
   TH2F *fNsigmaTpc[nBconf][18];                    //! NsigmaTPC vs. pTpc
-  TH2F *fNsigmaTpc_kTOF[nBconf][18];              //! NsigmaTPC vs. pt when kTOF is required and in DCAxyCut 
+  TH2F *fNsigmaTpc_kTOF[nBconf][18];              //! NsigmaTPC vs. pt when kTOF is required 
   
   //TOF info:
   TH2F *fBetaTofVSp[nBconf][2];                   //! beta vs pVtx
   TProfile *hBetaExp[nBconf][9];                  //! TOF expected beta
   TH2F *fNsigmaTof[nBconf][9];                    //! NsigmaTOF vs. pT
-  TH2F *fNsigmaTof_DcaCut[nBconf][18];            //! NsigmaTOF vs. pT
-
+  
   //TPC and TOF conbined
-  TH2F *fM2vsP_NoTpcCut[nBconf][2][2];            //! M2 vs. P w/o the DCAxyCut
-  TH2F *fM2vsP[nBconf][2][18];                    //! M2 vs. P with NsigmaTpcCut for each particle species, w/o the DCAxyCut
+  TH2F *fM2vsP_NoTpcCut[nBconf][1][2];            //! M2 vs. P
+  TH2F *fM2vsP[nBconf][1][18];                    //! M2 vs. P with NsigmaTpcCut for each particle species
   TH2F *fM2vsZ[nBconf][10];                       //! M2 vs. Z in various pT bins
 
   //DCA distributions
   TH1D *hDCAxy[nBconf][18][nbin];                 //! DCAxy distribution with NsigmaTpcCut for each particle species, in p bins
   TH1D *hDCAz[nBconf][18][nbin];                  //! DCAz distribution with NsigmaTpcCut for each particle species, in p bins
-  
+  //TH2F *h2DCA[nBconf][18][nbin];                //! DCAxy vs DCAz with NsigmaTpcCut for each particle species, in p bins
+  TH2F *h2DCAap[nBconf][18];                      //! DCAxy vs DCAz with NsigmaTpcCut for each particle species
+    
   //TOF mass distributions
-  TH1D *hM2CutDCAxy[nBconf][18][nbin];            //! Tof m2 distribution in DCAxyCut and with NsigmaTpcCut
-  TH1D *hM2CutGroundDCAxy[nBconf][18][nbin];      //! Tof m2 distribution in the background of DCAxyCut (secondary nuclei selection) and with NsigmaTpcCut
-
+  TH1D *hM2CutDCAxy[nBconf][18][nbin];            //! Tof m2 distribution with NsigmaTpcCut
+  
   //...
   TH2F *fPmeanVsBetaGamma[nBconf][18];            //! <p>/p vs beta*gamma for pi,K,p
   TProfile *prPmeanVsBetaGamma[nBconf][18];       //! <p>/p vs beta*gamma for pi,K,p (profile)
@@ -133,15 +137,17 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   //------------------------------Methods----------------------------------------
   void MomVertexCorrection(Double_t p, Double_t *pC, Double_t eta, Int_t FlagPid);
   
+  void FillDCAdist(Double_t DCAxy, Double_t DCAz, Double_t charge, Int_t FlagPid, Int_t stdFlagPid[9], Double_t *pC);
+  
   void GetMassFromPvertex(Double_t beta, Double_t p, Double_t &M2);
   void GetZTpc(Double_t dedx, Double_t pTPC, Double_t M2, Double_t &Z2);
 
   void GetMassFromPvertexCorrected(Double_t beta, Double_t *pC, Double_t *Mass2);
   
   void GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2);
-  void GetPmeanVsBetaGamma(Double_t *IntTimes, Double_t *pVtx, Int_t FlagPid, Int_t FlagPidTof, Double_t charge, Double_t DCAxy);
+  void GetPmeanVsBetaGamma(Double_t *IntTimes, Double_t *pVtx, Int_t FlagPid, Int_t FlagPidTof, Double_t charge);
 
-  void GetMassFromMeanMom(Double_t beta, Double_t *IntTimes, Double_t *pVtx, Double_t eta, Double_t charge, Double_t *Mass2, Int_t FlagPid, Int_t FlagPidTof, Double_t DCAxy);
+  void GetMassFromMeanMom(Double_t beta, Double_t *IntTimes, Double_t *pVtx, Double_t eta, Double_t charge, Double_t *Mass2, Int_t FlagPid, Int_t FlagPidTof);
   
   void SetPvtxCorrections();
   void SetPmeanCorrections();

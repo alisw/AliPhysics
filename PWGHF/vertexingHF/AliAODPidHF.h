@@ -4,11 +4,11 @@
 /* Copyright(c) 1998-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 //***********************************************************
 //// Class AliAODPidHF
-//// class for PID with AliAODRecoDecayHF 
+//// class for PID with AliAODRecoDecayHF
 //// Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de
 ////***********************************************************
 
@@ -21,9 +21,9 @@
 #include "AliPID.h"
 
 class AliAODPidHF : public TObject{
-
- public:
-
+  
+public:
+  
   enum ECombDetectors {
     kTPC,
     kTOF,
@@ -31,12 +31,12 @@ class AliAODPidHF : public TObject{
     kTPCITS,
     kTPCAndTOF
   };
-
+  
   AliAODPidHF();
   AliAODPidHF(const AliAODPidHF& pid);
   AliAODPidHF& operator=(const AliAODPidHF& pid);
   virtual ~AliAODPidHF();
-
+  
   //Setters
   void SetSigma(Double_t *sigma){
     for(Int_t i=0; i<fnNSigma; i++) fnSigma[i]=sigma[i];
@@ -48,14 +48,14 @@ class AliAODPidHF : public TObject{
   void SetSigmaForTOF(Double_t sigma){fnSigma[3]=sigma;return;}
   void SetSigmaForITS(Double_t sigma){fnSigma[4]=sigma;return;}
   void SetTofSigma(Double_t sigma){fTOFSigma=sigma;return;}
-
+  
   void SetCutOnTOFmismatchProb(Double_t cut=0.01){fCutTOFmismatch=cut;}
   void DisableCutOnTOFmismatchProb(){fCutTOFmismatch=999.;}
-
+  
   void SetMinNClustersTPCPID(Int_t minc) {fMinNClustersTPCPID=minc;}
-
+  
   void SetCombinednSigmaCutForPiKP(Float_t sigpi, Float_t sigk, Float_t sigp){
-    fMaxnSigmaCombined[0]=sigpi; 
+    fMaxnSigmaCombined[0]=sigpi;
     fMaxnSigmaCombined[1]=sigk;
     fMaxnSigmaCombined[2]=sigp;
   }
@@ -83,13 +83,13 @@ class AliAODPidHF : public TObject{
     fMinnSigmaTOF[2]=smin;
     fMaxnSigmaTOF[2]=smax;
   }
-
+  
   void SetPriors(Double_t *priors){fPriors=priors;return;}
   void SetPLimit(Double_t *plim){for(Int_t i=0;i<fnPLimit;i++) fPLimit[i]=plim[i];return;}
   void SetPLimit(Double_t *plim,Int_t npLim){fnPLimit=npLim;for(Int_t i=0;i<fnPLimit;i++) fPLimit[i]=plim[i];return;}
   void SetAsym(Bool_t asym){fAsym=asym;return;}
   void SetUseAsymmnSigmaTOF(Double_t nsmin, Double_t nsmax, Double_t nscompmin, Double_t nscompmax){
-    fUseAsymTOF=kTRUE; 
+    fUseAsymTOF=kTRUE;
     fLownSigmaTOF=nsmin; fUpnSigmaTOF=nsmax;
     fLownSigmaCompatTOF=nscompmin; fUpnSigmaCompatTOF=nscompmax;
   }
@@ -98,6 +98,7 @@ class AliAODPidHF : public TObject{
   void SetITS(Bool_t its){fITS=its;return;}
   void SetTRD(Bool_t trd){fTRD=trd;return;}
   void SetMatch(Int_t match){fMatch=match;return;}
+  void SetForceTOFforKaons(Bool_t forceTOF){fForceTOFforKaons=forceTOF;return;}
   void SetCompat(Bool_t comp){fCompat=comp;return;}
   void SetMC(Bool_t mc){fMC=mc;return;}
   void SetMClowenpp2011(Bool_t mc){fMCLowEn2011=mc;return;}
@@ -125,10 +126,10 @@ class AliAODPidHF : public TObject{
     if(fPriorsH[AliPID::kProton]) delete fPriorsH[AliPID::kProton];
     fPriorsH[AliPID::kProton] = new TH1F(*histo);
   }
-
- 
+  
+  
   //Getters
- 
+  
   Int_t GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &sigma) const;
   Int_t GetnSigmaTOF(AliAODTrack *track, Int_t species, Double_t &sigma) const;
   Int_t GetnSigmaITS(AliAODTrack *track, Int_t species, Double_t &sigma) const;
@@ -144,6 +145,7 @@ class AliAODPidHF : public TObject{
   Bool_t GetITS() const{return fITS;}
   Bool_t GetTRD() const{return fTRD;}
   Int_t GetMatch() const{return fMatch;}
+  Bool_t GetForceTOFforKaons() const{return fForceTOFforKaons;}
   Bool_t GetCompat() const{return fCompat;}
   Bool_t GetMC() const{return fMC;}
   Bool_t GetOnePad() const{return fOnePad;}
@@ -164,7 +166,7 @@ class AliAODPidHF : public TObject{
   }
   Bool_t GetUseCombined() {return fUseCombined;}
   Bool_t GetDefaultPriors() {return fDefaultPriors;}
- 
+  
   Int_t RawSignalPID (AliAODTrack *track, TString detector) const;
   Bool_t IsKaonRaw (AliAODTrack *track, TString detector) const;
   Bool_t IsPionRaw (AliAODTrack *track, TString detector) const;
@@ -172,21 +174,21 @@ class AliAODPidHF : public TObject{
   Bool_t IsElectronRaw (AliAODTrack *track, TString detector) const;
   void CombinedProbability(AliAODTrack *track,Bool_t *type) const; //0 = pion, 1 = kaon, 2 = proton
   Bool_t CheckStatus(AliAODTrack *track,TString detectors) const;
-
+  
   Bool_t CheckITSPIDStatus(AliAODTrack *track) const;
   Bool_t CheckTPCPIDStatus(AliAODTrack *track) const;
   Bool_t CheckTOFPIDStatus(AliAODTrack *track) const;
   Bool_t CheckTRDPIDStatus(AliAODTrack *track) const;
-
+  
   Bool_t TPCRawAsym(AliAODTrack* track,Int_t specie) const;
   Int_t MatchTPCTOF(AliAODTrack *track,Int_t specie);
-
+  
   Int_t MakeRawPid(AliAODTrack *track,Int_t specie); //general method to perform PID using raw signals
-
+  
   Bool_t IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK);
-
+  
   Bool_t IsExcluded(AliAODTrack *track, Int_t labelTrack, Double_t nsigmaCut, TString detector);
-
+  
   void GetTPCBetheBlochParams(Double_t alephParameters[5]) const;
   void SetBetheBloch();
   // method for AliPIDCombined object
@@ -201,16 +203,16 @@ class AliAODPidHF : public TObject{
   Int_t ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const;
   Int_t ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const;
   Int_t ApplyTOFCompatibilityBand(AliAODTrack *track,Int_t specie) const;
-
+  
   void PrintAll() const;
-
- protected:
-
-
- private:
+  
+protected:
+  
+  
+private:
   Int_t fnNSigma; // number of sigmas
   Double_t *fnSigma; // [fnNSigma], sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS
-  Double_t fTOFSigma; // TOF precision 
+  Double_t fTOFSigma; // TOF precision
   Double_t fCutTOFmismatch; // Cut of TOF mismatch probability
   UInt_t fMinNClustersTPCPID;       // Minimum TPC PID clusters cut
   Int_t fnPriors; //number of priors
@@ -218,47 +220,48 @@ class AliAODPidHF : public TObject{
   Int_t fnPLimit; //number of Plimit
   Double_t *fPLimit; // [fnPLimit], limit of p intervals for asimmetric PID: fPLimit<p[0], fPLimit[0]<p<fPLimit[1], p>fPLimit[1]
   Bool_t fAsym; // asimmetric PID required
-  Bool_t fTPC; //switch to include or exclude TPC 
+  Bool_t fTPC; //switch to include or exclude TPC
   Bool_t fTOF; // switch to include or exclude TOF
   Bool_t fITS; //switch to include or exclude ITS
   Bool_t fTRD; // switch to include or exclude TRD
   Int_t fMatch; //switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
+  Bool_t fForceTOFforKaons; // force TOF for kaons in mode fMatch==5
   Bool_t fCompat; // compatibility region : useful only if fMatch=1
-  Double_t fPCompatTOF; //  compatibility p limit for TOF  
+  Double_t fPCompatTOF; //  compatibility p limit for TOF
   Bool_t fUseAsymTOF; // flag for using asymmetrig nSigmaCut in TOF for fMatch==1
   Double_t fLownSigmaTOF;  // lower nsigma TOF (for fUseAsymTOF)
   Double_t fUpnSigmaTOF;  // upper nsigma TOF (for fUseAsymTOF)
   Double_t fLownSigmaCompatTOF;  // lower nsigma TOF (for fUseAsymTOF)
   Double_t fUpnSigmaCompatTOF;  // upper nsigma TOF (for fUseAsymTOF)
   Int_t fnNSigmaCompat; // number of sigmas
-  Double_t *fnSigmaCompat; //[fnNSigmaCompat]  0: n sigma for TPC compatibility band, 1: for TOF  
+  Double_t *fnSigmaCompat; //[fnNSigmaCompat]  0: n sigma for TPC compatibility band, 1: for TOF
   Double_t fMaxnSigmaCombined[3];  // nSigma cut for pi,K,p (TPC^2+TOF^2)
   Double_t fMinnSigmaTPC[3]; //min. of nSigma range for pi,K,p in TPC (match==5)
   Double_t fMaxnSigmaTPC[3]; //max. of nSigma range for pi,K,p in TPC (match==5)
   Double_t fMinnSigmaTOF[3]; //min. of nSigma range for pi,K,p in TOF (match==5)
   Double_t fMaxnSigmaTOF[3]; //max. of nSigma range for pi,K,p in TOF (match==5)
   Bool_t fMC; // MC(kTRUE) or real data (kFALSE, default option)
-  Bool_t fOnePad; //  real data with one pad clusters 
+  Bool_t fOnePad; //  real data with one pad clusters
   Bool_t fMCLowEn2011; //  MC for low energy MC
   Bool_t fppLowEn2011; //  Data for low energy pp 2011
-  Bool_t fPbPb; //  real data PbPb 
-  Bool_t fTOFdecide; //  real data PbPb 
+  Bool_t fPbPb; //  real data PbPb
+  Bool_t fTOFdecide; //  real data PbPb
   Bool_t fOldPid; //  old PID method implemented
   Double_t fPtThresholdTPC; //  pT threshold to use TPC PID
   Double_t fMaxTrackMomForCombinedPID; // momentum threshold to use PID
   AliPIDResponse *fPidResponse; //! pid response
-  AliPIDCombined* fPidCombined; //! combined PID object 
-
-  AliTPCPIDResponse* fTPCResponse; //! TPC response 
-
+  AliPIDCombined* fPidCombined; //! combined PID object
+  
+  AliTPCPIDResponse* fTPCResponse; //! TPC response
+  
   TH1F* fPriorsH[AliPID::kSPECIES]; // priors histos
   ECombDetectors fCombDetectors; // detectors to be involved for combined PID
   Bool_t fUseCombined; // detectors to be involved for combined PID
   Bool_t fDefaultPriors; // use default priors for combined PID
-
-  ClassDef(AliAODPidHF,22) // AliAODPid for heavy flavor PID
-
-    };
+  
+  ClassDef(AliAODPidHF,23) // AliAODPid for heavy flavor PID
+  
+};
 
 #endif
 

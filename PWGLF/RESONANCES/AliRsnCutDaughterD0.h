@@ -9,6 +9,8 @@
 //
 
 #include "AliVTrack.h"
+#include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliRsnCut.h"
 #include "AliRsnCutTrackQuality.h"
 
@@ -22,6 +24,7 @@ class AliRsnCutDaughterD0 : public AliRsnCut {
   virtual ~AliRsnCutDaughterD0() { }
 
   void           SetNoPID(Bool_t yn = kTRUE)                  {fNoPID = yn;}
+  //void           SetIsCheckOnMother(Bool_t yn = kTRUE)        {fIsCheckOnMother = yn;}
   void           SetPtDependentPIDCut(Bool_t yn = kTRUE)      {fPtDepPIDCut = yn;}
   void           SetPID(AliPID::EParticleType type)           {fPID = type;}
    
@@ -33,10 +36,12 @@ class AliRsnCutDaughterD0 : public AliRsnCut {
    
   AliRsnCutTrackQuality *CutQuality()                       {return &fCutQuality;}
   Bool_t                 MatchTOF(const AliVTrack *vtrack);
+  Bool_t                 MatchTPC(const AliVTrack *vtrack);
   virtual Bool_t         IsSelected(TObject *obj);
    
  private:
   Bool_t                fNoPID;            // flag to switch off PID check
+  //Bool_t                fIsCheckOnMother;  // flag to switch off tracks check
   AliPID::EParticleType fPID;              // PID for track
   AliRsnCutTrackQuality fCutQuality;       // track quality cut 
 
@@ -47,7 +52,7 @@ class AliRsnCutDaughterD0 : public AliRsnCut {
   Double_t         fKaonTOFPIDCut;                // TOF nsigmas for kaons
   Bool_t           fPtDepPIDCut;                  // flag for setting a pt dependent or independent PID cut
 
-  ClassDef(AliRsnCutDaughterD0, 2)          // cut definitions for D0
+  ClassDef(AliRsnCutDaughterD0, 3)          // cut definitions for D0
     };
 
 //__________________________________________________________________________________________________
@@ -61,10 +66,46 @@ inline Bool_t AliRsnCutDaughterD0::MatchTOF(const AliVTrack *vtrack)
     AliWarning("NULL argument: impossible to check status");
     return kFALSE;
   }
+  AliPIDResponse *fPidResponse = fEvent->GetPIDResponse();
+  if (!fPidResponse) {
+    AliFatal("NULL PID response");
+    return kFALSE;
+  }
+  
+  AliPIDResponse::EDetPidStatus status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTOF,vtrack);
+  if (status != AliPIDResponse::kDetPidOk) return kFALSE; 
+  Float_t probMis = fPidResponse->GetTOFMismatchProbability(vtrack);
+  if (probMis > 0.01) return kFALSE;
+  if ((vtrack->GetStatus()&AliESDtrack::kTOFpid )==0 && vtrack->GetStatus()&AliESDtrack::kITSrefit )   return kFALSE;
+  return kTRUE;
+  
 
-  if (!(vtrack->GetStatus() & AliESDtrack::kTOFout)) return kFALSE;
-  if (!(vtrack->GetStatus() & AliESDtrack::kTIME  )) return kFALSE;
+  //if (!(vtrack->GetStatus() & AliESDtrack::kTOFout)) return kFALSE;
+  //if (!(vtrack->GetStatus() & AliESDtrack::kTIME  )) return kFALSE;
 
+  return kTRUE;
+}
+
+//___________________________________________________________________________________________________
+inline Bool_t AliRsnCutDaughterD0::MatchTPC(const AliVTrack *vtrack) 
+{
+  // Check if the track is good for TPC PID
+  
+  
+  if (!vtrack) {
+    AliWarning("NULL argument: impossible to check status");
+    return kFALSE;
+  }
+  AliPIDResponse *fPidResponse = fEvent->GetPIDResponse();
+  if (!fPidResponse) {
+    AliFatal("NULL PID response");
+    return kFALSE;
+  }
+  
+  AliPIDResponse::EDetPidStatus status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTPC,vtrack);
+  if (status != AliPIDResponse::kDetPidOk) return kFALSE;
+  /* UInt_t nclsTPCPID = vtrack->GetTPCsignalN(); */
+  /* if(nclsTPCPID<0) return kFALSE; */
   return kTRUE;
 }
 

@@ -62,11 +62,20 @@ set ( SRCS
     EBYE/PIDFluctuation/task/AliEbyEPidTaskFastGen.cxx	 
     EBYE/PIDFluctuation/task/AliEbyEPidTTask.cxx 
     EBYE/PIDFluctuation/task/AliEbyEPidTTaskMC.cxx 
+    EBYE/PIDFluctuation/task/AliEbyEPidRatioBase.cxx
+    EBYE/PIDFluctuation/task/AliEbyEPidRatioDCA.cxx
+    EBYE/PIDFluctuation/task/AliEbyEPidRatioPhy.cxx
+    EBYE/PIDFluctuation/task/AliEbyEPidRatioEffCont.cxx
+    EBYE/PIDFluctuation/task/AliEbyEPidRatioHelper.cxx
+    EBYE/PIDFluctuation/task/AliEbyEPidRatioQA.cxx	
+    EBYE/PIDFluctuation/task/AliEbyEPidRatioTask.cxx
+    EBYE/NetParticle/AliAnalysisNetParticleBase.cxx
     EBYE/NetParticle/AliAnalysisNetParticleDCA.cxx
     EBYE/NetParticle/AliAnalysisNetParticleDistribution.cxx
     EBYE/NetParticle/AliAnalysisNetParticleEffCont.cxx
     EBYE/NetParticle/AliAnalysisNetParticleHelper.cxx
     EBYE/NetParticle/AliAnalysisTaskNetParticle.cxx
+    EBYE/NetParticle/AliAnalysisNetParticleQA.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

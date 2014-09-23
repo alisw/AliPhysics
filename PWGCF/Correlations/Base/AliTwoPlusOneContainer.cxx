@@ -188,9 +188,9 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	if(dphi_triggers>TMath::Pi()) dphi_triggers -= TMath::TwoPi();
 
 	//look at delta phi = +/- pi/2
-	if(TMath::Abs(dphi_triggers)<0)
+	if(dphi_triggers<0)
 	  dphi_triggers += 0.5*TMath::Pi();
-	else if(TMath::Abs(dphi_triggers)>0)
+	else if(dphi_triggers>0)
 	  dphi_triggers -= 0.5*TMath::Pi();
       }
       if(!is1plus1 && TMath::Abs(dphi_triggers)>fAlpha)

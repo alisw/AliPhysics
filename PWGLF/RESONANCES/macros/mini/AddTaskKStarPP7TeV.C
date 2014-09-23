@@ -5,8 +5,8 @@
 //Allows basic configuration of pile-up check and event cuts
 //
 ****************************************************************************/
-enum pairYCutSet { kPairDefault,
-		   kCentral
+enum pairYCutSet { kPairDefault=0,
+		   kCentral //=1
                  };
 
 enum eventCutSet { kEvtDefault=0,
@@ -184,8 +184,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP7TeV
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //   
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigKStarPPb.C");
-   if (!ConfigKStarPPb(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
+   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigKStarPP7TeV.C");
+   if (!ConfigKStarPP7TeV(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
    
    
    //

@@ -75,6 +75,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     void SetBinsZv(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting Zv Bins"); fZvNbins = nbins; fBinsZv= GetArrayClone(nbins,edges); }
     void SetBinsCentrality(Int_t nbins, Double_t* edges) 	{ Printf("[I] Setting Cent Bins"); fCentralityNbins = nbins; fBinsCentrality = GetArrayClone(nbins,edges); }
     void SetBinsPhi(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting Phi Bins"); fPhiNbins = nbins; fBinsPhi = GetArrayClone(nbins,edges); }
+    void SetBinsRunNumber(Int_t nbins, Double_t* edges) 	{ Printf("[I] Setting RunNumber Bins"); fRunNumberNbins = nbins; fBinsRunNumber = GetArrayClone(nbins,edges); }
     
     // set event cut variables
     void SetCutMaxZVertex( Double_t d)					    { fCutMaxZVertex = d; }
@@ -181,7 +182,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F	    *fPt; // simple pT histogramm
     TH1F	    *fMCPt; // simple pT truth histogramm
     THnSparseF 	*fZvPtEtaCent; //-> Zv:Pt:Eta:Cent
-    THnSparseF 	*fDeltaphiPtEtaCent; //-> Phi:Pt:Eta:Cent
+    THnSparseF 	*fDeltaphiPtEtaCent; //-> DeltaPhi:Pt:Eta:Cent
     THnSparseF 	*fPtResptCent; //-> 1/pt:ResolutionPt:Cent
     THnSparseF 	*fMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
@@ -213,6 +214,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F        *fCutSettings; // control histo: cut settings
     
     TH1F		*fEventplaneDist; // event plane distribution in phi
+    TH2F		*fEventplaneRunDist; // event plane distribution in phi
     TH1F		*fMCEventplaneDist; // MC event plane distribution in phi
     TH2F		*fCorrelEventplaneMCDATA; // correlation between data and MC eventplane
     THnSparseF	*fCorrelEventplaneDefaultCorrected; // correlation between default and corrected (== subtraction of current track) eventplane
@@ -225,6 +227,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	TProfile	*fPsinEPCent; // < sin 2 psi_ep > vs centrality
 	TProfile	*fPcosPhiCent; // < cos 2 phi > vs centrality
 	TProfile	*fPsinPhiCent; // < sin 2 phi > vs centrality
+
+	// cross check for event plane determination
+	TH2F		*fDeltaPhiCent; // DeltaPhi:Cent - DeltaPhi in the range from -pi to pi
 
 	// global variables
     Bool_t fIsMonteCarlo;
@@ -275,6 +280,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Int_t       fZvNbins;
     Int_t       fCentralityNbins;
     Int_t       fPhiNbins;
+	Int_t		fRunNumberNbins;
     Double_t*   fBinsMult; //[fMultNbins]
     Double_t*   fBinsPt; //[fPtNbins]
     Double_t*   fBinsPtCorr; //[fPtCorrNbins]
@@ -284,11 +290,12 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Double_t*   fBinsZv; //[fZvNbins]
     Double_t*   fBinsCentrality; //[fCentralityNbins]
     Double_t*   fBinsPhi; //[fPhiNbins]
+    Double_t*	fBinsRunNumber; //[fRunNumberNbins]
     
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,9); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,11); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

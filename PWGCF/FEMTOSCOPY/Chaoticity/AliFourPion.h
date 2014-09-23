@@ -18,6 +18,7 @@ class TH3D;
 
 class TProfile;
 class TProfile2D;
+class TProfile3D;
 class TRandom3;
 
 class AliESDEvent;
@@ -51,7 +52,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kNormPairLimit = 45000,
     kMultLimitPbPb = 1800,//1800
     kMultLimitpp = 300,
-    kMultBinspp = 11,
+    kMultBinspp = 10,
     kMCarrayLimit = 150000,// 110000
     kQbinsWeights = 40,
     kNDampValues = 16,
@@ -63,6 +64,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
   static const Int_t fEDbins   = 2;
   static const Int_t fCentBins = 10;// 0-50%
+  static const Int_t fMbinsMixing = 10;// 5% widths
   static const Int_t fRVALUES  = 7;// 7 EW radii (5-11) , was 8 Gaussian radii (3-10fm)
 
 
@@ -74,11 +76,12 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2DSC=0x0, TH2D *temp2DMC=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH1D *tempss[12]=0x0, TH1D *tempos[12]=0x0);
   void SetMuonCorrections(Bool_t legoCase=kTRUE, TH2D *tempMuon=0x0);
+  void Setc3FitEAs(Bool_t legoCase=kTRUE, TH3D *histoPbPb=0x0, TH3D *histopPb=0x0, TH3D *histopp=0x0);
   //
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
   void SetInterpolationType(Bool_t linearInterp) {fLinearInterpolation = linearInterp;}
-  void SetPbPbCase(Bool_t pbpb) {fPbPbcase = pbpb;}
+  void SetCollisionType(Bool_t ct) {fCollisionType = ct;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
   void SetGeneratorOnly(Bool_t genOnly) {fGeneratorOnly = genOnly;}
   void SetCentBinRange(Int_t low, Int_t high) {fCentBinLowLimit = low; fCentBinHighLimit = high;}
@@ -97,8 +100,9 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetMaxPt(Float_t maxPt) {fMaxPt = maxPt;}
   void SetKT3transition(Float_t KT3trans) {fKT3transition = KT3trans;}
   void SetKT4transition(Float_t KT4trans) {fKT4transition = KT4trans;}
+  void SetTriggerType(Int_t tt) {fTriggerType = tt;}
   //
-
+ 
 
  private:
 
@@ -126,6 +130,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t cubicInterpolate(Float_t[4], Float_t);
   Float_t nCubicInterpolate(Int_t, Float_t*, Float_t[]);
   
+  
   const char* fname;// name of class
   AliAODEvent            *fAOD; //!    // AOD object
   TList                  *fOutputList; //! Compact Output list
@@ -146,7 +151,9 @@ class AliFourPion : public AliAnalysisTaskSE {
   struct St6 {
     TH1D *fNorm3; //!
     TH1D *fTerms3; //!
+    TH3D *fTerms33D; //!
     TProfile *fKfactor; //!
+    TProfile3D *fKfactor3D; //!
     TProfile *fKfactorWeighted; //!
     TProfile *fMeanQinv; //!
     TH2D *fIdeal; //!
@@ -200,6 +207,8 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH2D *fTwoPartNorm; //!
     TH2D *fTwoPartNegNorm; //!
     TH2D *fTwoPartNormErr; //!
+    TH3D *fFullBuildFromFits; //!
+    TH3D *fPartialBuildFromFits; //!
   };
   struct St_EDB {
     struct St5 TwoPT[2];
@@ -240,13 +249,14 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fLEGO;
   Bool_t fMCcase;
   Bool_t fAODcase;
-  Bool_t fPbPbcase;
+  Short_t fCollisionType;
   Bool_t fGenerateSignal;
   Bool_t fGeneratorOnly;
   Bool_t fTabulatePairs;
   Bool_t fLinearInterpolation;
   Bool_t fMixedChargeCut;
   Int_t fRMax;
+  Float_t fRstartMC;
   Float_t ffcSq;
   Float_t ffcSqMRC;
   UInt_t fFilterBit;
@@ -260,6 +270,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Int_t fMultLimit;      
   Int_t fCentBinLowLimit;
   Int_t fCentBinHighLimit;
+  Int_t fTriggerType;
   Int_t fEventCounter;
   Int_t fEventsToMix;
   Int_t fZvertexBins;
@@ -278,6 +289,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t fQbinsQ3;
   Float_t fQbinsQ4;
   Float_t fQupperBoundWeights;
+  Float_t fQbinsQinv3D;
+  Float_t fQupperBoundQinv3D;
   Float_t fKstepT[fKbinsT];
   Float_t fKstepY[fKbinsY];
   Float_t fKmeanT[fKbinsT];
@@ -316,22 +329,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t farrP1[4][4][4];
   Float_t farrP2[4][4][4];
   
-  /* bool LowQPairSwitch_E0E0[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E0E1[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E0E2[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E0E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E1E2[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E1E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool LowQPairSwitch_E2E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  //
-  bool NormQPairSwitch_E0E0[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E0E1[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E0E2[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E0E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E1E2[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E1E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  bool NormQPairSwitch_E2E3[kMultLimitPbPb][kMultLimitPbPb];//!
-  */
+ 
   //
   Char_t fDefaultsCharSwitch[kMultLimitPbPb];//!
   TArrayC *fLowQPairSwitch_E0E0[kMultLimitPbPb];//!
@@ -352,15 +350,19 @@ class AliFourPion : public AliAnalysisTaskSE {
   TArrayC *fNormQPairSwitch_E1E3[kMultLimitPbPb];//!
   TArrayC *fNormQPairSwitch_E2E3[kMultLimitPbPb];//!
 
+  
 
  public:
   TH2D *fMomResC2SC;
   TH2D *fMomResC2MC;
   TH2D *fWeightmuonCorrection;
+  TH3D *fPbPbc3FitEA;
+  TH3D *fpPbc3FitEA;
+  TH3D *fppc3FitEA;
   TH1D *fFSIss[12];
   TH1D *fFSIos[12];
   TH3F *fNormWeight[fKbinsT][fCentBins];
- 
+  TF1 *ExchangeAmpPointSource[2][50];
 
   ClassDef(AliFourPion, 1); 
 };

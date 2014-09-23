@@ -1342,16 +1342,9 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
 Bool_t AliAnalysisTaskGammaConvDalitzV1::Notify()
 {
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+	  
 		if( !((AliConvEventCuts*)fCutEventArray->At(iCut))->GetDoEtaShift() ){
 
-			/*if (((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift() != 0.){
-				printf("Error: Gamma Conversion Dalitz Task %s :: Eta Shift not requested but set to %f, reset to 00. \n\n",
-					(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetCutNumber()).Data(),((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift());
-				((AliConvEventCuts*)fCutEventArray->At(iCut))->SetEtaShift(0.);
-				((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->SetEtaShift(0.);
-		
-				
-			}*/
 			hEtaShift[iCut]->Fill(0.,0.);
 			continue; // No Eta Shift requested, continue
 		}
@@ -1360,14 +1353,12 @@ Bool_t AliAnalysisTaskGammaConvDalitzV1::Notify()
 		if( ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
 			((AliConvEventCuts*)fCutEventArray->At(iCut))->GetCorrectEtaShiftFromPeriod(fV0Reader->GetPeriodName());
 			((AliConvEventCuts*)fCutEventArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
-			((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->SetEtaShift( ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift() );
-			hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift()));
+			 hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift()));
 			continue;
 		} else {
 			printf(" Gamma Conversion Dalitz Task %s :: Eta Shift Manually Set to %f \n\n",
 			(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetCutNumber()).Data(),((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift());
 			((AliConvEventCuts*)fCutEventArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
-			((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->SetEtaShift( ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift() );
 			hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift()));
 		}
 	}

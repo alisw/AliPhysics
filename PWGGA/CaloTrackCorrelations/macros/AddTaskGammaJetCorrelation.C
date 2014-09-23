@@ -756,9 +756,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
 
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below
   
-  ana->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
-  ana->SetHistoPtSumRangeAndNBins   (0, 100, 250);
-  
   if(particle=="Hadron"  || particle.Contains("CTS"))
   {
     ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
@@ -835,6 +832,10 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,TString calorimeter 
   histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,500);
   histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
   histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
+  
+  // Isolation
+  histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
+  histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
   
 }
 

@@ -202,68 +202,44 @@ Bool_t AliMuonTrackCuts::ReadParamFromOADB ( Int_t runNumber, TString passName )
   if ( passName.IsNull() && ! fAllowDefaultParams ) AliFatal("Pass name not specified! Please provide one or allow for default parameters");
   
   TString filename = Form("%s/PWG/MUON/MuonTrackCuts.root",AliAnalysisManager::GetOADBPath());
-  if ( fIsMC ) filename.ReplaceAll(".root", "_MC.root");
 
   TFile* file = TFile::Open(filename.Data(), "READ");
   if ( ! file ) {
     AliFatal(Form("OADB file %s not found!", filename.Data()));
     return kFALSE;
   }
-
-  // Search the container name to find the correct pass
-  AliOADBContainer* matchContainer = 0x0, *defaultContainer = 0x0;
-  AliOADBMuonTrackCutsParam* matchParams = 0x0, *defaultParams = 0x0;
   
-  TList* listOfKeys = file->GetListOfKeys();
-  TIter next(listOfKeys);
-  TObject* key = 0x0;
-  // loop on keys
-  while ( ( key = next() ) ) {
+  TString containerName = "MuonTrackCutsParam_data";
+  if ( fIsMC ) containerName.ReplaceAll("_data", "_MC");
+  TString defaultName = "default";
 
-    TString checkName(key->GetName());
-    checkName.ToUpper();
-    Bool_t isDefault = checkName.Contains("DEFAULT");
-    // if user selects a specific pass name, check for it
-    // otherwise use default
-    if ( isDefault ) {
-      if ( ! fAllowDefaultParams ) continue;
-    }
-    else if ( passName.CompareTo(key->GetName()) ) continue;
+  AliOADBContainer* oadbContainer = static_cast<AliOADBContainer*>(file->Get(containerName.Data()));
+  if ( ! oadbContainer ) {
+    AliFatal(Form("OADB container %s not found in %s!", containerName.Data(), filename.Data()));
+    return kFALSE;
+  }
+  AliOADBMuonTrackCutsParam* param = static_cast<AliOADBMuonTrackCutsParam*>(oadbContainer->GetObject(runNumber,defaultName.Data(),passName));
 
-    AliOADBContainer* oadbContainer = static_cast<AliOADBContainer*> (file->Get(key->GetName()));
-    // Check if the found parameters are default or match the requested run
-    AliOADBMuonTrackCutsParam* currParams = static_cast<AliOADBMuonTrackCutsParam*> (oadbContainer->GetObject(runNumber, "default"));
-    if ( ! currParams ) continue;
-    if ( isDefault ) {
-      defaultContainer = oadbContainer;
-      defaultParams = currParams;
+  TString paramName = param->GetName();
+  if ( paramName == "default" ) {
+    if ( ! fAllowDefaultParams ) {
+      AliFatal(Form("Requested run %i not found in %s! Please check your pass name or allow default parameters", runNumber, passName.Data()));
+      return kFALSE; // Coverity fix
     }
-    else {
-      matchContainer = oadbContainer;
-      matchParams = currParams;
-      break;
-    }
-  } // loop on keys
 
-  AliOADBContainer* selectedContainer = 0x0;
-  if ( matchParams ) {
-    selectedContainer = matchContainer;
-    fOADBParam = *matchParams;
+    // Search if there is a better tuned default for the considered period
+    containerName.Append("_def");
+    oadbContainer = static_cast<AliOADBContainer*>(file->Get(containerName.Data()));
+    param = static_cast<AliOADBMuonTrackCutsParam*>(oadbContainer->GetObject(runNumber,defaultName.Data(),passName));
+
+    AliWarning(Form("Requested run %i not found in %s: using %s", runNumber, passName.Data(), param->GetName()));
   }
-  else if ( defaultParams ) {
-    selectedContainer = defaultContainer;
-    fOADBParam = *defaultParams;
-    AliWarning(Form("Requested run %i not found in %s: using %s (%s)", runNumber, passName.Data(), fOADBParam.GetName(), selectedContainer->GetName()));
-  }
-  else {
-    AliFatal(Form("Requested run %i not found in %s! Please check your pass name or allow default parameters", runNumber, passName.Data()));
-    return kFALSE; // Coverity fix
-  }
-  
+
+  fOADBParam = *param;
   file->Close();
 
-  AliInfo(Form("Requested run %i in pass %s. Param. set: %s (%s)", runNumber, passName.Data(), fOADBParam.GetName(), selectedContainer->GetName()));
-  
+  AliInfo(Form("Requested run %i in pass %s. Param. set: %s", runNumber, passName.Data(), fOADBParam.GetName()));
+
   return kTRUE;
 }
 

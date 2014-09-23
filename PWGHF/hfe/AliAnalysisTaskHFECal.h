@@ -68,7 +68,6 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void FindTriggerClusters();
   double MCEopMeanCorrection(double pTmc, float central);
   double NsigmaCorrection(double tmpeta, float central);
-  int TrMatch(AliESDtrack *tr);
  private:
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);

@@ -43,6 +43,7 @@ public:
       kTrackPairRotated2,
       kTruePair,
       kMother,
+      kMotherInAcc,
       kComputations
    };
 
@@ -57,6 +58,7 @@ public:
    Bool_t          IsTrackPairMix()     const {return (fComputation == kTrackPairMix);}
    Bool_t          IsTruePair()         const {return (fComputation == kTruePair);}
    Bool_t          IsMother()           const {return (fComputation == kMother);}
+   Bool_t          IsMotherInAcc()      const {return (fComputation == kMotherInAcc);}
    Bool_t          IsDefined()          const {return (IsEventOnly() || IsTrackPair() || IsTrackPairMix() || IsTruePair() || IsMother());}
    Bool_t          IsLikeSign()         const {return (fCharge[0] == fCharge[1]);}
    Bool_t          IsSameCut()          const {return (fCutID[0] == fCutID[1]);}
@@ -100,6 +102,7 @@ public:
    AliRsnMiniPair &Pair() {return fPair;}
    Bool_t          Init(const char *prefix, TList *list);
    Bool_t          FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList);
+   Bool_t          FillMotherInAcceptance(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList);
    Bool_t          FillEvent(AliRsnMiniEvent *event, TClonesArray *valueList);
    Int_t           FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList, Bool_t refFirst = kTRUE);
 

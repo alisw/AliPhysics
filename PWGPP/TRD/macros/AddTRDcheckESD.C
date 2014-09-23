@@ -54,7 +54,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   // configure output CF containers
   //
   Double_t bcLimits[3501]; for(Int_t i=0; i<=3500; ++i) bcLimits[i] = -0.5+Double_t(i);
-  Double_t phiLimits[181]; for(Int_t i=0; i<=180; ++i) phiLimits[i] = 0.0+i*2.0*TMath::Pi()/180.0;
+  //Double_t phiLimits[181]; for(Int_t i=0; i<=180; ++i) phiLimits[i] = 0.0+i*2.0*TMath::Pi()/180.0;
   Double_t phiParamLimits[181]; for(Int_t i=0; i<=180; ++i) phiParamLimits[i] = -1.0*TMath::Pi()+i*2.0*TMath::Pi()/180.0;
   Double_t ptLimits[19] = {0.0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 
                            3.5, 4.0, 4.5,  5.0, 6.0,  7.0, 8.0,  9.0, 10.0};
@@ -70,12 +70,12 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   Double_t sliceLimits[9] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5};
   Double_t pLossLimits[101]; for(Int_t i=0;i<=100;++i) pLossLimits[i] = -500.+i*1000.0/100.;
   Double_t trdClustersLimits[201]; for(Int_t i=0;i<=200;++i) trdClustersLimits[i] = -0.5+i*200.0/200.;
-  Double_t trdQualityLimits[101]; for(Int_t i=0;i<=100;++i) trdQualityLimits[i] = 0.0+i*2.0/100.;
+  //Double_t trdQualityLimits[101]; for(Int_t i=0;i<=100;++i) trdQualityLimits[i] = 0.0+i*2.0/100.;
   Double_t trdBudgetLimits[101]; for(Int_t i=0;i<=100;++i) trdBudgetLimits[i] = 0.0+i*100.0/100.;
   Double_t trdChi2Limits[101]; for(Int_t i=0;i<=100;++i) trdChi2Limits[i] = 0.0+i*10.0/100.;
   Double_t trackletClustersLimits[31]; for(Int_t i=0;i<=30;++i) trackletClustersLimits[i] = 0.0+i*1.0;
   Double_t trackletClsRowsLimits[31]; for(Int_t i=0;i<=30;++i) trackletClsRowsLimits[i] = 0.0+Double_t(i)*1.0/30.0;
-  Double_t outerParamRadLimits[51]; for(Int_t i=0;i<=50;++i) outerParamRadLimits[i] = 0.0+Double_t(i)*500.0/50.0;
+  //Double_t outerParamRadLimits[51]; for(Int_t i=0;i<=50;++i) outerParamRadLimits[i] = 0.0+Double_t(i)*500.0/50.0;
     
   // BC container
   cout << "Container 1 :: BunchCrossingsCF" << endl;

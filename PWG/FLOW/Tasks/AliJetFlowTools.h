@@ -9,9 +9,7 @@
 #define AliJetFlowTools_H
 
 // root forward declarations
-class TF1;
 class TF2;
-class TH1D;
 class TH2D;
 class TCanvas;
 class TString;
@@ -23,6 +21,7 @@ class TObjArray;
 class AliAnaChargedJetResponseMaker;
 class AliUnfolding;
 // root includes
+#include "TRandom3.h"
 #include "TMatrixD.h"
 #include "TList.h"
 #include "TDirectoryFile.h"
@@ -32,6 +31,8 @@ class AliUnfolding;
 #include "TPaveText.h"
 #include "TLegend.h"
 #include "TLatex.h"
+#include "TF1.h"
+#include "TH1D.h"
 //_____________________________________________________________________________
 class AliJetFlowTools {
     public: 
@@ -50,7 +51,8 @@ class AliJetFlowTools {
         enum prior {                    // prior that is used for unfolding
             kPriorChi2,                 // prior from chi^2 method
             kPriorMeasured,             // use measured spectrum as prior
-            kPriorPythia };             // use pythia spectrum as prior
+            kPriorPythia,               // use pythia spectrum as prior
+            kPriorTF1 };                // use properly binned TF1 as prior
         enum histoType {                // histogram identifier, only used internally
             kInPlaneSpectrum,           // default style for spectrum
             kOutPlaneSpectrum,
@@ -115,6 +117,13 @@ class AliJetFlowTools {
         void            SetAvoidRoundingError(Bool_t r)         {fAvoidRoundingError    = r;}
         void            SetUnfoldingAlgorithm(unfoldingAlgorithm ua)    {fUnfoldingAlgorithm                    = ua;}
         void            SetPrior(prior p)                       {fPrior                 = p;}
+        void            SetPrior(prior p, TF1* function, TArrayD* bins) {
+            fPrior = p;
+            // set prior to value supplied in TF1
+            fPriorUser = new TH1D("prior_user", "prior_user", bins->GetSize()-1, bins->GetArray());
+            // loop over bins and fill the histo from the tf1
+            for(Int_t i(0); i < fPriorUser->GetNbinsX() + 1; i++) fPriorUser->SetBinContent(i, function->Integral(fPriorUser->GetXaxis()->GetBinLowEdge(i), fPriorUser->GetXaxis()->GetBinUpEdge(i))/fPriorUser->GetXaxis()->GetBinWidth(i));
+        }
         void            SetPrior(prior p, TH1D* spectrum)       {fPrior                 = p; fPriorUser         = spectrum;}
         void            SetNormalizeSpectra(Bool_t b)           {fNormalizeSpectra      = b;}
         void            SetNormalizeSpectra(Int_t e)            { // use to normalize to this no of events
@@ -140,6 +149,17 @@ class AliJetFlowTools {
         void            SetRMS(Bool_t r)                        {fRMS                   = r;}
         void            SetSymmRMS(Bool_t r)                    {fSymmRMS               = r; fRMS               = r;}
         void            SetRho0(Bool_t r)                       {fRho0                  = r;}
+        void            SetBootstrap(Bool_t b, Bool_t r = kTRUE) {
+            // note that setting this option will not lead to true resampling
+            // but rather to randomly drawing a new distribution from a pdf
+            // of the measured distribution
+            fBootstrap             = r;
+            // by default fully randomize randomizer from system time
+            if(r) {
+                delete gRandom;
+                gRandom = new TRandom3(0);
+            }
+        }
         void            Make();
         void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
@@ -155,6 +175,10 @@ class AliJetFlowTools {
                 Float_t rangeUp = 80,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ProcessedSpectra.root") const;
+        void            BootstrapSpectra(
+                TString def,
+                TString in = "UnfoldedSpectra.root", 
+                TString out = "BootstrapSpectra.root") const;
         void            GetNominalValues(
                 TH1D*& ratio,
                 TGraphErrors*& v2,
@@ -206,6 +230,7 @@ class AliJetFlowTools {
         static TH1D*    ResizeXaxisTH1D(TH1D* histo, Int_t low, Int_t up, TString suffix = "");
         static TH2D*    ResizeYaxisTH2D(TH2D* histo, TArrayD* x, TArrayD* y, TString suffix = "");
         static TH2D*    NormalizeTH2D(TH2D* histo, Bool_t noError = kTRUE);
+        static TH1*     Bootstrap(TH1* hist, Bool_t kill = kTRUE);
         static TH1D*    RebinTH1D(TH1D* histo, TArrayD* bins, TString suffix = "", Bool_t kill = kTRUE);
         TH2D*           RebinTH2D(TH2D* histo, TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
         static TH2D*    MatrixMultiplication(TH2D* a, TH2D* b, TString name = "CombinedResponse");
@@ -225,7 +250,7 @@ class AliJetFlowTools {
         static void     GetSignificance(
                 TGraphErrors* n,                // points with stat error
                 TGraphAsymmErrors* shape,       // points with shape error
-                TGraphAsymmErrors* corr,        // points with stat error
+                TGraphAsymmErrors* corr,        // corr with stat error
                 Int_t low,                      // pt lower level
                 Int_t up                        // pt upper level
         );
@@ -316,7 +341,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
             return tex;
         }
 
-        static void     SavePadToPDF(TVirtualPad* pad)  {pad->SaveAs(Form("%s.pdf", pad->GetName()));}
+        static void     SavePadToPDF(TVirtualPad* pad)  {return;/*pad->SaveAs(Form("%s.pdf", pad->GetName()));*/}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
         static void     SetMinuitPrecision(Float_t s)   {AliUnfolding::SetMinuitPrecision(s);}
@@ -392,6 +417,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         Bool_t                  fRMS;                   // systematic method
         Bool_t                  fSymmRMS;               // symmetric systematic method
         Bool_t                  fRho0;                  // use the result obtained with the 'classic' fixed rho
+        Bool_t                  fBootstrap;             // use bootstrap resampling of input data
         TF1*                    fPower;                 // smoothening fit
         Bool_t                  fSaveFull;              // save all generated histograms to file
         TString                 fActiveString;          // identifier of active output

@@ -74,7 +74,6 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fPIDResponse(NULL),
     fesdTrackCuts(NULL),
     fEtaCut(0.9),
-    fEtaShift(0.0),
     fDoEtaCut(kFALSE),
     fPtMinCut(0.0),
     fPtMaxCut(9999),
@@ -389,7 +388,7 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliStack 
         if( TMath::Abs( particle->GetPdgCode() ) != 11 )  return kFALSE;
         
         if( fDoEtaCut ){
-	  if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
+	  if( particle->Eta() > fEtaCut  || particle->Eta() < -fEtaCut  )
 	  return kFALSE;
 	}
         
@@ -499,7 +498,7 @@ Bool_t AliDalitzElectronCuts::TrackIsSelected(AliESDtrack* lTrack) {
     }
     
     if( fDoEtaCut ) {
-      if(  lTrack->Eta() > (fEtaCut + fEtaShift) || lTrack->Eta() < (-fEtaCut + fEtaShift) ) {
+      if(  lTrack->Eta() > fEtaCut  || lTrack->Eta() < -fEtaCut ) {
         return kFALSE;
       }
    }

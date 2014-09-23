@@ -122,9 +122,9 @@ void AliPHOSpPbPi0Header::SetEventInfo(AliInputEventHandler* const handler)
 Bool_t AliPHOSpPbPi0Header::IsSelected()
 {
   // select event according to the event selection cuts
+  if (!fIsVertexOK)                                    return kFALSE; // pA vertex cut
   if (TMath::Abs(fVtx[2])>fgCuts[0])                   return kFALSE; // Vtxz cut
   if (fCentrality<fgCuts[1] || fCentrality>fgCuts[2])  return kFALSE; // centrality selection
-  if (!fIsVertexOK)                                    return kFALSE; // pA vertex cut
 
   return kTRUE;
 }
@@ -302,15 +302,6 @@ void AliPHOSpPbPi0Header::CreateHistosCaloCluster(TList *listQA)
     }
   }
 
-  hName  = Form("hCaloCluster_%s%s", tName[kEtaClu].Data(), tName[kPhiClu].Data());
-  histo2 = new TH2D(hName.Data(), hName.Data(), bins[kEtaClu], xMin[kEtaClu], xMax[kEtaClu], bins[kPhiClu], xMin[kPhiClu], xMax[kPhiClu]);
-  histo2->Sumw2(); listQA->Add(histo2); histo2 = 0;
-  for (Int_t i=0; i<kVarsClu-3; i++) {
-    hName  = Form("hCaloCluster_%s%s", tName[0].Data(), tName[i+1].Data());
-    histo2 = new TH2D(hName.Data(), hName.Data(), bins[0], xMin[0], xMax[0], bins[i+1], xMin[i+1], xMax[i+1]);
-    histo2->Sumw2(); listQA->Add(histo2); histo2 = 0;
-  }
-
   return;
 }
 
@@ -441,9 +432,9 @@ void AliPHOSpPbPi0Header::CreateHistosMC(TList *listMC)
   TString namePID[kPIDs]   = { "All", "Cpv", "Disp", "Both", "Cpv2", "Disp2", "Both2"              };
                          //  { kPtMC, kRapidityMC, kRadiusMC,         kPhiMC, kInvMassMC, kVarsMC  };  // MC
   TString tName[kVarsMC]   = {  "Pt",  "Rapidity",  "Radius",          "Phi",  "InvMass"           };
-  Int_t    bins[kVarsMC]   = {  500 ,        200 ,      1000,           360 ,       500            };
-  Double_t xMin[kVarsMC]   = {    0.,         -1.,        0.,             0.,         0.           };
-  Double_t xMax[kVarsMC]   = {   50.,          1.,      500., TMath::TwoPi(),         0.5          };
+  Int_t    bins[kVarsMC]   = {  500 ,        600 ,      1000,           360 ,       500            };
+  Double_t xMin[kVarsMC]   = {    0.,         -3.,        0.,             0.,         0.           };
+  Double_t xMax[kVarsMC]   = {   50.,          3.,      500., TMath::TwoPi(),         0.5          };
 
   const Int_t    nPtbins     = 32;
   Double_t ptbins[nPtbins+1] = {  0.8,  1.0,  1.2,  1.4,  1.6,  1.8,  2.0,  2.2,  2.4,  2.6,
@@ -451,60 +442,95 @@ void AliPHOSpPbPi0Header::CreateHistosMC(TList *listMC)
                                   6.0,  7.0,  8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 25.0,
                                  30.0, 36.0, 44.0 };
 
-  TH1D   *histo1 = 0;
-  TH2D   *histo2 = 0;
+  TH2D   *histo = 0;
   TString hName;
 
   for (Int_t iType=0; iType<types; iType++) {
     hName  = Form("hMC%s_%s%s", pName[iType], tName[kPtMC].Data(), tName[kRapidityMC].Data());
-    histo2 = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRapidityMC], xMin[kRapidityMC], xMax[kRapidityMC]);
-    histo2->Sumw2(); listMC->Add(histo2); histo2 = 0;
+    histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRapidityMC], xMin[kRapidityMC], xMax[kRapidityMC]);
+    histo->Sumw2(); listMC->Add(histo); histo = 0;
+    hName  = Form("hMC%s_%s%s_Check", pName[iType], tName[kPtMC].Data(), tName[kRadiusMC].Data());
+    histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
+    histo->Sumw2(); listMC->Add(histo); histo = 0;
     hName  = Form("hMC%s_%s%s", pName[iType], tName[kPtMC].Data(), tName[kRadiusMC].Data());
-    histo2 = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
-    histo2->Sumw2(); listMC->Add(histo2); histo2 = 0;
+    histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
+    histo->Sumw2(); listMC->Add(histo); histo = 0;
+    hName  = Form("hMC%s_%s%s_MergedCluster", pName[iType], tName[kPtMC].Data(), tName[kRadiusMC].Data());
+    histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
+    histo->Sumw2(); listMC->Add(histo); histo = 0;
+    hName  = Form("hMC%s_%s%s_Reco", pName[iType], tName[kPtMC].Data(), tName[kRadiusMC].Data());
+    histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
+    histo->Sumw2(); listMC->Add(histo); histo = 0;
     if (strncmp(pName[iType], "2ndPi0FromK0s", 13) == 0) {
       hName  = Form("hMC%s_%sMatrix", pName[iType], tName[kPtMC].Data());
-      histo2 = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kPtMC], xMin[kPtMC], xMax[kPtMC]);
-      histo2->Sumw2(); listMC->Add(histo2); histo2 = 0;
+      histo = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kPtMC], xMin[kPtMC], xMax[kPtMC]);
+      histo->Sumw2(); listMC->Add(histo); histo = 0;
     }
     for (Int_t iAcc=0; iAcc<acc; iAcc++) {
-      hName  = Form("hMC%s_%s_%s", pName[iType], tName[kPtMC].Data(), aName[iAcc]);
-      histo1 = new TH1D(hName.Data(), hName.Data(), nPtbins, ptbins);
-      histo1->Sumw2(); listMC->Add(histo1); histo1 = 0;
+      hName  = Form("hMC%s_%s%s_%s", pName[iType], tName[kPtMC].Data(), tName[kRadiusMC].Data(), aName[iAcc]);
+      histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
+      histo->Sumw2(); listMC->Add(histo); histo = 0;
       if (strncmp(pName[iType], "2ndPi0FromK0s", 13) == 0) {
         hName  = Form("hMC%s_%sMatrix_%s", pName[iType], tName[kPtMC].Data(), aName[iAcc]);
-        histo2 = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kPtMC], xMin[kPtMC], xMax[kPtMC]);
-        histo2->Sumw2(); listMC->Add(histo2); histo2 = 0;
+        histo = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kPtMC], xMin[kPtMC], xMax[kPtMC]);
+        histo->Sumw2(); listMC->Add(histo); histo = 0;
       }
     }
     for (Int_t iPID=0; iPID<kPIDs; iPID++) {
       hName  = Form("hMC%s_%s%s_%s_Reco", pName[iType], tName[kPtMC].Data(), tName[kInvMassMC].Data(), namePID[iPID].Data());
-      histo2 = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kInvMassMC], xMin[kInvMassMC], xMax[kInvMassMC]);
-      histo2->Sumw2(); listMC->Add(histo2); histo2 = 0;
+      histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kInvMassMC], xMin[kInvMassMC], xMax[kInvMassMC]);
+      histo->Sumw2(); listMC->Add(histo); histo = 0;
     }
 
     for (Int_t iCent=0; iCent<fgNCent; iCent++) {
       hName  = Form("hMC%s_%s%s_cent%d", pName[iType], tName[kPtMC].Data(), tName[kRapidityMC].Data(), iCent);
-      histo2 = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRapidityMC], xMin[kRapidityMC], xMax[kRapidityMC]);
-      histo2->Sumw2(); listMC->Add(histo2); histo2 = 0;
+      histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRapidityMC], xMin[kRapidityMC], xMax[kRapidityMC]);
+      histo->Sumw2(); listMC->Add(histo); histo = 0;
       hName  = Form("hMC%s_%s%s_cent%d", pName[iType], tName[kPtMC].Data(), tName[kRadiusMC].Data(), iCent);
-      histo2 = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
-      histo2->Sumw2(); listMC->Add(histo2); histo2 = 0;
+      histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
+      histo->Sumw2(); listMC->Add(histo); histo = 0;
+      hName  = Form("hMC%s_%s%s_MergedCluster_cent%d", pName[iType], tName[kPtMC].Data(), tName[kRadiusMC].Data(), iCent);
+      histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
+      histo->Sumw2(); listMC->Add(histo); histo = 0;
+      hName  = Form("hMC%s_%s%s_Reco_cent%d", pName[iType], tName[kPtMC].Data(), tName[kRadiusMC].Data(), iCent);
+      histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
+      histo->Sumw2(); listMC->Add(histo); histo = 0;
       if (strncmp(pName[iType], "2ndPi0FromK0s", 13) == 0) {
         hName  = Form("hMC%s_%sMatrix_cent%d", pName[iType], tName[kPtMC].Data(), iCent);
-        histo2 = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kPtMC], xMin[kPtMC], xMax[kPtMC]);
-        histo2->Sumw2(); listMC->Add(histo2); histo2 = 0;
+        histo = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kPtMC], xMin[kPtMC], xMax[kPtMC]);
+        histo->Sumw2(); listMC->Add(histo); histo = 0;
       }
       for (Int_t iAcc=0; iAcc<acc; iAcc++) {
-        hName  = Form("hMC%s_%s_%s_cent%d", pName[iType], tName[kPtMC].Data(), aName[iAcc], iCent);
-        histo1 = new TH1D(hName.Data(), hName.Data(), nPtbins, ptbins);
-        histo1->Sumw2(); listMC->Add(histo1); histo1 = 0;
+        hName  = Form("hMC%s_%s%s_%s_cent%d", pName[iType], tName[kPtMC].Data(), tName[kRadiusMC].Data(), aName[iAcc], iCent);
+        histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kRadiusMC], xMin[kRadiusMC], xMax[kRadiusMC]);
+        histo->Sumw2(); listMC->Add(histo); histo = 0;
+        if (strncmp(pName[iType], "2ndPi0FromK0s", 13) == 0) {
+          hName  = Form("hMC%s_%sMatrix_%s_cent%d", pName[iType], tName[kPtMC].Data(), aName[iAcc], iCent);
+          histo = new TH2D(hName.Data(), hName.Data(), bins[kPtMC], xMin[kPtMC], xMax[kPtMC], bins[kPtMC], xMin[kPtMC], xMax[kPtMC]);
+          histo->Sumw2(); listMC->Add(histo); histo = 0;
+        }
       }
       for (Int_t iPID=0; iPID<kPIDs; iPID++) {
         hName  = Form("hMC%s_%s%s_%s_Reco_cent%d", pName[iType], tName[kPtMC].Data(), tName[kInvMassMC].Data(), namePID[iPID].Data(), iCent);
-        histo2 = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kInvMassMC], xMin[kInvMassMC], xMax[kInvMassMC]);
-        histo2->Sumw2(); listMC->Add(histo2); histo2 = 0;
+        histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kInvMassMC], xMin[kInvMassMC], xMax[kInvMassMC]);
+        histo->Sumw2(); listMC->Add(histo); histo = 0;
       }
+    }
+  }
+  for (Int_t iPID=0; iPID<kPIDs; iPID++) {
+    hName  = Form("hMCInclusiveCvtedPi0_%s%s_%s_Reco", tName[kPtMC].Data(), tName[kInvMassMC].Data(), namePID[iPID].Data());
+    histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kInvMassMC], xMin[kInvMassMC], xMax[kInvMassMC]);
+    histo->Sumw2(); listMC->Add(histo); histo = 0;
+    hName  = Form("hMCInclusivePurePi0_%s%s_%s_Reco", tName[kPtMC].Data(), tName[kInvMassMC].Data(), namePID[iPID].Data());
+    histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kInvMassMC], xMin[kInvMassMC], xMax[kInvMassMC]);
+    histo->Sumw2(); listMC->Add(histo); histo = 0;
+    for (Int_t iCent=0; iCent<fgNCent; iCent++) {
+      hName  = Form("hMCInclusiveCvtedPi0_%s%s_%s_Reco_cent%d", tName[kPtMC].Data(), tName[kInvMassMC].Data(), namePID[iPID].Data(), iCent);
+      histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kInvMassMC], xMin[kInvMassMC], xMax[kInvMassMC]);
+      histo->Sumw2(); listMC->Add(histo); histo = 0;
+      hName  = Form("hMCInclusivePurePi0_%s%s_%s_Reco_cent%d", tName[kPtMC].Data(), tName[kInvMassMC].Data(), namePID[iPID].Data(), iCent);
+      histo = new TH2D(hName.Data(), hName.Data(), nPtbins, ptbins, bins[kInvMassMC], xMin[kInvMassMC], xMax[kInvMassMC]);
+      histo->Sumw2(); listMC->Add(histo); histo = 0;
     }
   }
 
@@ -522,12 +548,12 @@ void AliPHOSpPbPi0Header::FillHistosEvent(TList *listQA)
   TString tName[nhs+1] = { "Centrality",    "Vz", "Pileup" };
   Double_t dist[nhs]   = {  fCentrality, fVtx[2]           };
   for (Int_t i=nhs; i--;) {
-    ((TH1D*)listQA->FindObject(Form("hEvent_%s",tName[i].Data())))->Fill(dist[i]);
-    if (this->IsSelected()) ((TH1D*)listQA->FindObject(Form("hEventSel_%s",tName[i].Data())))->Fill(dist[i]);
+    ((TH1D*)listQA->FindObject(Form("hEvent_%s", tName[i].Data())))->Fill(dist[i]);
+    if (this->IsSelected()) ((TH1D*)listQA->FindObject(Form("hEventSel_%s", tName[i].Data())))->Fill(dist[i]);
   }
   if (fIsPileup) {
-    ((TH1D*)listQA->FindObject(Form("hEvent_%s",tName[nhs].Data())))->Fill(dist[nhs-1]);
-    if (this->IsSelected())  ((TH1D*)listQA->FindObject(Form("hEventSel_%s",tName[nhs].Data())))->Fill(dist[nhs-1]);
+    ((TH1D*)listQA->FindObject(Form("hEvent_%s", tName[nhs].Data())))->Fill(dist[nhs-1]);
+    if (this->IsSelected())  ((TH1D*)listQA->FindObject(Form("hEventSel_%s", tName[nhs].Data())))->Fill(dist[nhs-1]);
   }
 
   return;
@@ -546,7 +572,7 @@ void AliPHOSpPbPi0Header::FillHistosCaloCellsQA(TList *listQA, AliVCaloCells* co
   ((TH2D*)listQA->FindObject(Form("hCaloCellsQA_%s", tName[0].Data())))->Fill(fCentrality, cells->GetNumberOfCells());
   for (Int_t iCell=0; iCell<cells->GetNumberOfCells(); iCell++) {
     Int_t relID[4] = {0,0,0,0};
-    phosGeo->AbsToRelNumbering(cells->GetCellNumber(iCell),relID); // Int_t mod   = relID[0]; Int_t cellX = relID[2]; Int_t cellZ = relID[3];
+    phosGeo->AbsToRelNumbering(cells->GetCellNumber(iCell), relID); // Int_t mod   = relID[0]; Int_t cellX = relID[2]; Int_t cellZ = relID[3];
     Double_t wight[2] = { 1., cells->GetAmplitude(iCell)};
     ((TH1D*)listQA->FindObject(Form("hCaloCellsQA_%s", "E")))->Fill(wight[1]);
     ((TH1D*)listQA->FindObject(Form("hCaloCellsQA_%s_Mod%d", "E", relID[0])))->Fill(wight[1]);
@@ -602,11 +628,6 @@ void AliPHOSpPbPi0Header::FillHistosCaloCluster(TList *listQA, TClonesArray* con
         for (Int_t j=0; j<kVarsClu-3; j++)
           ((TH2D*)listQA->FindObject(Form("hCaloCluster_%s%s_%s", tName[0].Data(), tName[j+1].Data(), namePID[iPID].Data())))->Fill(vars[0], vars[j+1]);
       }
-    }
-
-    ((TH2D*)listQA->FindObject(Form("hCaloCluster_%s%s", tName[kEtaClu].Data(), tName[kPhiClu].Data())))->Fill(vars[kEtaClu], vars[kPhiClu]);
-    for (Int_t j=0; j<kVarsClu-3; j++) {
-      ((TH2D*)listQA->FindObject(Form("hCaloCluster_%s%s", tName[0].Data(), tName[j+1].Data())))->Fill(vars[0], vars[j+1]);
     }
   } // End loop calo cluster
 
@@ -777,28 +798,38 @@ void AliPHOSpPbPi0Header::FillHistosMC(TList *listMC, AliStack* const stack, TCl
   Int_t iMod = 0, jMod = 0;
   for(Int_t iParticle=0; iParticle<nParticles; iParticle++) {
     TParticle* pMC  = stack->Particle(iParticle);
-    if (pMC->GetPdgCode() != 111) continue;   // Pi0
-    pName = ClassifyMCPi0(iParticle, stack);
+    if (pMC->GetPdgCode() != 111)  continue;   // Pi0
+    if (pMC->GetNDaughters() != 2) continue;   // Do not account Dalitz decays
+    TParticle *iGamma = stack->Particle(pMC->GetFirstDaughter());
+    TParticle *jGamma = stack->Particle(pMC->GetLastDaughter());
+    if (!(iGamma->GetPdgCode()==22 && jGamma->GetPdgCode()==22)) continue; // Get into the branch: pi0->gamma+gamma
+//  if (!(iGamma->GetPdgCode()==22 && jGamma->GetPdgCode()==22)) { Printf("PDG: P1=%d, P2=%d\n", iGamma->GetPdgCode(), jGamma->GetPdgCode()); continue; }
+
+    pName = ClassifyMCPi0(iParticle, stack);   // Classify pi0
 
     //Pi0 Information
-    Double_t pt     = pMC->Pt();
-    Double_t r      = pMC->R();
-    Double_t y      = pMC->Y();
-    Double_t phi    = pMC->Phi();   while (phi<0.) phi += TMath::TwoPi(); while (phi>TMath::TwoPi()) phi -= TMath::TwoPi();
+    Double_t pt       = pMC->Pt();
+    Double_t radius   = pMC->R();
+    Double_t rapidity = pMC->Y();
+    Double_t eta      = pMC->Eta();
+    Double_t phi      = pMC->Phi(); while (phi<0.) phi += TMath::TwoPi(); while (phi>TMath::TwoPi()) phi -= TMath::TwoPi();
 
-    ((TH2D*)listMC->FindObject("hMCInclusivePi0_PtRapidity"))->Fill(pt, y);
-    ((TH2D*)listMC->FindObject(Form("hMCInclusivePi0_PtRapidity_cent%d", cent)))->Fill(pt, y);
+    ((TH2D*)listMC->FindObject("hMCInclusivePi0_PtRapidity"))->Fill(pt, rapidity);
+    ((TH2D*)listMC->FindObject(Form("hMCInclusivePi0_PtRapidity_cent%d", cent)))->Fill(pt, rapidity);
 
-    ((TH2D*)listMC->FindObject(Form("hMC%s_PtRapidity", pName.Data())))->Fill(pt, y);
-    ((TH2D*)listMC->FindObject(Form("hMC%s_PtRapidity_cent%d", pName.Data(), cent)))->Fill(pt, y);
-    if (TMath::Abs(y)<0.5) {
-      ((TH2D*)listMC->FindObject("hMCInclusivePi0_PtRadius"))->Fill(pt, r);
-      ((TH2D*)listMC->FindObject(Form("hMCInclusivePi0_PtRadius_cent%d", cent)))->Fill(pt, r);
+    ((TH2D*)listMC->FindObject(Form("hMC%s_PtRapidity", pName.Data())))->Fill(pt, rapidity);
+    ((TH2D*)listMC->FindObject(Form("hMC%s_PtRapidity_cent%d", pName.Data(), cent)))->Fill(pt, rapidity);
 
-      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius", pName.Data())))->Fill(pt, r);
-      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_cent%d", pName.Data(), cent)))->Fill(pt, r);
+    ((TH2D*)listMC->FindObject("hMCInclusivePi0_PtRadius_Check"))->Fill(pt, radius);
+    ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_Check", pName.Data())))->Fill(pt, radius);
+    if (TMath::Abs(rapidity)<0.5) {
+      ((TH2D*)listMC->FindObject("hMCInclusivePi0_PtRadius"))->Fill(pt, radius);
+      ((TH2D*)listMC->FindObject(Form("hMCInclusivePi0_PtRadius_cent%d", cent)))->Fill(pt, radius);
 
-      if (pName.Contains("K0s")) {
+      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius", pName.Data())))->Fill(pt, radius);
+      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_cent%d", pName.Data(), cent)))->Fill(pt, radius);
+
+      if (pName.Contains("K0s") && stack->IsPhysicalPrimary(pMC->GetFirstMother()) ) {
         TParticle* pMother = stack->Particle(pMC->GetFirstMother());
         ((TH2D*)listMC->FindObject(Form("hMC%s_PtMatrix", pName.Data())))->Fill(pt, pMother->Pt());
         ((TH2D*)listMC->FindObject(Form("hMC%s_PtMatrix_cent%d", pName.Data(), cent)))->Fill(pt, pMother->Pt());
@@ -806,78 +837,100 @@ void AliPHOSpPbPi0Header::FillHistosMC(TList *listMC, AliStack* const stack, TCl
     }
 
     if ((((phi>260.*TMath::DegToRad()) && (phi<280.*TMath::DegToRad())) || ((phi>300.*TMath::DegToRad())
-           && (phi<320.*TMath::DegToRad()))) && (TMath::Abs(y)<0.135)) {
-      ((TH1D*)listMC->FindObject("hMCInclusivePi0_Pt_Pi0InAcc"))->Fill(pt);
-      ((TH1D*)listMC->FindObject(Form("hMCInclusivePi0_Pt_Pi0InAcc_cent%d", cent)))->Fill(pt);
+           && (phi<320.*TMath::DegToRad()))) && (TMath::Abs(eta)<0.135)) {
+      ((TH2D*)listMC->FindObject("hMCInclusivePi0_PtRadius_Pi0InAcc"))->Fill(pt, radius);
+      ((TH2D*)listMC->FindObject(Form("hMCInclusivePi0_PtRadius_Pi0InAcc_cent%d", cent)))->Fill(pt, radius);
 
-      ((TH1D*)listMC->FindObject(Form("hMC%s_Pt_Pi0InAcc", pName.Data())))->Fill(pt);
-      ((TH1D*)listMC->FindObject(Form("hMC%s_Pt_Pi0InAcc_cent%d", pName.Data(), cent)))->Fill(pt);
+      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_Pi0InAcc", pName.Data())))->Fill(pt, radius);
+      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_Pi0InAcc_cent%d", pName.Data(), cent)))->Fill(pt, radius);
 
-      if (pName.Contains("K0s")) {
+      if (pName.Contains("K0s") && stack->IsPhysicalPrimary(pMC->GetFirstMother())) {
         TParticle* pMother = stack->Particle(pMC->GetFirstMother());
         ((TH2D*)listMC->FindObject(Form("hMC%s_PtMatrix_Pi0InAcc", pName.Data())))->Fill(pt, pMother->Pt());
         ((TH2D*)listMC->FindObject(Form("hMC%s_PtMatrix_Pi0InAcc_cent%d", pName.Data(), cent)))->Fill(pt, pMother->Pt());
       }
     }
 
-    TParticle *iGamma = 0x0, *jGamma = 0x0;
-    if (pMC->GetNDaughters()==2) { // Do not account Dalitz decays
-      iGamma = stack->Particle(pMC->GetFirstDaughter());
-      jGamma = stack->Particle(pMC->GetLastDaughter());
-      //Pi0's daughter particles in PHOS acceptance
-      iMod = HitPHOSModule(iGamma, phosGeo);
-      jMod = HitPHOSModule(jGamma, phosGeo);
-      if (iMod!=-1 && iMod!=2 && jMod!=-1 && jMod!=2 && TMath::Abs(iMod-jMod)<2) { // !remove module 2
-        ((TH1D*)listMC->FindObject("hMCInclusivePi0_Pt_GammaInAcc"))->Fill(pt);
-        ((TH1D*)listMC->FindObject(Form("hMCInclusivePi0_Pt_GammaInAcc_cent%d", cent)))->Fill(pt);
+    //Pi0's daughter particles in PHOS acceptance
+    iMod = HitPHOSModule(iGamma, phosGeo);
+    jMod = HitPHOSModule(jGamma, phosGeo);
+    if (iMod!=-1 && iMod!=2 && jMod!=-1 && jMod!=2 && TMath::Abs(iMod-jMod)<2) { // !remove module 2
+      ((TH2D*)listMC->FindObject("hMCInclusivePi0_PtRadius_GammaInAcc"))->Fill(pt, radius);
+      ((TH2D*)listMC->FindObject(Form("hMCInclusivePi0_PtRadius_GammaInAcc_cent%d", cent)))->Fill(pt, radius);
 
-        ((TH1D*)listMC->FindObject(Form("hMC%s_Pt_GammaInAcc", pName.Data())))->Fill(pt);
-        ((TH1D*)listMC->FindObject(Form("hMC%s_Pt_GammaInAcc_cent%d", pName.Data(), cent)))->Fill(pt);
+      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_GammaInAcc", pName.Data())))->Fill(pt, radius);
+      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_GammaInAcc_cent%d", pName.Data(), cent)))->Fill(pt, radius);
 
-      if (pName.Contains("K0s")) {
+      if (pName.Contains("K0s") && stack->IsPhysicalPrimary(pMC->GetFirstMother())) {
         TParticle* pMother = stack->Particle(pMC->GetFirstMother());
         ((TH2D*)listMC->FindObject(Form("hMC%s_PtMatrix_GammaInAcc", pName.Data())))->Fill(pt, pMother->Pt());
         ((TH2D*)listMC->FindObject(Form("hMC%s_PtMatrix_GammaInAcc_cent%d", pName.Data(), cent)))->Fill(pt, pMother->Pt());
-      }
       }
     }
   }
 
   // Reconstruction info
+  Bool_t isConverted_i = kFALSE, isConverted_j = kFALSE;
   Int_t  entries  = caloClArr->GetEntriesFast();
-  Int_t  iPi0Indx =-1, jPi0Indx =-1;
-  UInt_t iPIDBit  = 0, jPIDBit  = 0;
+  Int_t  iPi0Indx =-1,  jPi0Indx   =-1;
+  UInt_t iPIDBit  = 0,  jPIDBit    = 0;
+  Double_t pi0Pt  = 0., pi0InvMass = 0., radius = 0.;
   AliCaloClusterInfo *iCaloCluster = 0, *jCaloCluster = 0;
   TLorentzVector iLorentz, jLorentz;
-  for(Int_t i=0; i<entries-1; i++) { // Loop calo cluster i
+  for(Int_t i=0; i<entries; i++) { // Loop calo cluster i
     iCaloCluster = (AliCaloClusterInfo*)caloClArr->At(i);
-    if (!iCaloCluster->CheckIsClusterFromPi0(stack, iPi0Indx)) { iCaloCluster = 0; continue; }
-    iMod     = iCaloCluster->GetModule();
-    iPIDBit  = iCaloCluster->GetPIDBit();
-    iLorentz = iCaloCluster->LorentzVector();
+    if (iCaloCluster->IsMergedClusterFromPi0(stack, iPi0Indx)) {
+      pName  = ClassifyMCPi0(iPi0Indx, stack);
+      pi0Pt  = (iCaloCluster->LorentzVector()).E();
+      radius = stack->Particle(iPi0Indx)->R();
+      ((TH2D*)listMC->FindObject("hMCInclusivePi0_PtRadius_MergedCluster"))->Fill(pi0Pt, radius);
+      ((TH2D*)listMC->FindObject(Form("hMCInclusivePi0_PtRadius_MergedCluster_cent%d", cent)))->Fill(pi0Pt, radius);
+
+      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_MergedCluster", pName.Data())))->Fill(pi0Pt, radius);
+      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_MergedCluster_cent%d", pName.Data(), cent)))->Fill(pi0Pt, radius);
+    }
+    else if (!iCaloCluster->IsClusterFromCvtedPi0(stack, isConverted_i, iPi0Indx) || i==entries-1) { iCaloCluster = 0; continue; }
 
     for (Int_t j=i+1; j<entries; j++) { // Loop calo cluster j
       jCaloCluster = (AliCaloClusterInfo*)caloClArr->At(j);
-      if (!jCaloCluster->CheckIsClusterFromPi0(stack, jPi0Indx)) { jCaloCluster = 0; continue; }
+      
+      if (!jCaloCluster->IsClusterFromCvtedPi0(stack, isConverted_j, jPi0Indx)) { jCaloCluster = 0; continue; }
       if (jPi0Indx != iPi0Indx) { jCaloCluster = 0; continue; }  // coming from the same pi0
+      iMod     = iCaloCluster->GetModule();
+      iPIDBit  = iCaloCluster->GetPIDBit();
+      iLorentz = iCaloCluster->LorentzVector();
+
       pName    = ClassifyMCPi0(iPi0Indx, stack);
       jMod     = jCaloCluster->GetModule();
       jPIDBit  = jCaloCluster->GetPIDBit();
       jLorentz = jCaloCluster->LorentzVector();
       if (TMath::Abs(iMod-jMod)>1) { jCaloCluster = 0; continue; }
 
-      Double_t pi0Pt      = (iLorentz+jLorentz).E();
-      Double_t pi0InvMass = (iLorentz+jLorentz).M();
+      pi0Pt      = (iLorentz+jLorentz).E();
+      pi0InvMass = (iLorentz+jLorentz).M();
+      radius     = stack->Particle(iPi0Indx)->R();
+      ((TH2D*)listMC->FindObject("hMCInclusivePi0_PtRadius_Reco"))->Fill(pi0Pt, radius);
+      ((TH2D*)listMC->FindObject(Form("hMCInclusivePi0_PtRadius_Reco_cent%d", cent)))->Fill(pi0Pt, radius);
 
-      for (Int_t iPID=0; iPID<kPIDs; iPID++) {
+      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_Reco", pName.Data())))->Fill(pi0Pt, radius);
+      ((TH2D*)listMC->FindObject(Form("hMC%s_PtRadius_Reco_cent%d", pName.Data(), cent)))->Fill(pi0Pt, radius);
+
+      for (Int_t iPID=0; iPID<kPIDs; iPID++)
         if ((iPIDBit & jPIDBit & PIDBIT[iPID])==PIDBIT[iPID]) {
           ((TH2D*)listMC->FindObject(Form("hMCInclusivePi0_PtInvMass_%s_Reco", namePID[iPID].Data())))->Fill(pi0Pt, pi0InvMass);
           ((TH2D*)listMC->FindObject(Form("hMCInclusivePi0_PtInvMass_%s_Reco_cent%d", namePID[iPID].Data(), cent)))->Fill(pi0Pt, pi0InvMass);
 
           ((TH2D*)listMC->FindObject(Form("hMC%s_PtInvMass_%s_Reco", pName.Data(), namePID[iPID].Data())))->Fill(pi0Pt, pi0InvMass);
           ((TH2D*)listMC->FindObject(Form("hMC%s_PtInvMass_%s_Reco_cent%d", pName.Data(), namePID[iPID].Data(), cent)))->Fill(pi0Pt, pi0InvMass);
+
+          if (isConverted_i || isConverted_j) {
+            ((TH2D*)listMC->FindObject(Form("hMCInclusiveCvtedPi0_PtInvMass_%s_Reco", namePID[iPID].Data())))->Fill(pi0Pt, pi0InvMass);
+            ((TH2D*)listMC->FindObject(Form("hMCInclusiveCvtedPi0_PtInvMass_%s_Reco_cent%d", namePID[iPID].Data(), cent)))->Fill(pi0Pt, pi0InvMass);
+          } else {
+            ((TH2D*)listMC->FindObject(Form("hMCInclusivePurePi0_PtInvMass_%s_Reco", namePID[iPID].Data())))->Fill(pi0Pt, pi0InvMass);
+            ((TH2D*)listMC->FindObject(Form("hMCInclusivePurePi0_PtInvMass_%s_Reco_cent%d", namePID[iPID].Data(), cent)))->Fill(pi0Pt, pi0InvMass);
+          }
         }
-      }
     } // End loop calo cluster j 
   } // End loop calo cluster i
 

@@ -33,7 +33,7 @@
 using namespace std;
 
 /**
- * Class for for NetParticle Distributions
+ * Class for NetParticle Distributions
  * -- AnalysisTask
  * Authors: Jochen Thaeder <jochen@thaeder.de>
  *          Michael Weber <m.weber@cern.ch>
@@ -117,11 +117,11 @@ AliAnalysisTaskNetParticle::~AliAnalysisTaskNetParticle() {
   if (fESDTrackCutsBkg)  delete fESDTrackCutsBkg;
   if (fESDTrackCutsEff)  delete fESDTrackCutsEff;
 
-  if (fHelper)           delete fHelper;
   if (fEffCont)          delete fEffCont;
   if (fDCA)              delete fDCA;
   if (fDist)             delete fDist;
   if (fQA)               delete fQA;
+  if (fHelper)           delete fHelper;
 }
 
 /*
@@ -134,9 +134,9 @@ AliAnalysisTaskNetParticle::~AliAnalysisTaskNetParticle() {
 void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   // Create histograms
 
-  // -- Initialize all classes
-  Initialize();
-
+  // ------------------------------------------------------------------
+  // -- Create Output Lists
+  // ------------------------------------------------------------------
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
@@ -159,6 +159,11 @@ void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   fOutListQA = new TList;
   fOutListQA->SetName(Form("%s_qa",GetName()));
   fOutListQA->SetOwner(kTRUE) ;
+
+  // ------------------------------------------------------------------
+  // -- Initialize all classes
+  // ------------------------------------------------------------------
+  Initialize();
  
   // ------------------------------------------------------------------
   // -- Get event / trigger statistics histograms
@@ -167,12 +172,6 @@ void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   fOutList->Add(fHelper->GetHEventStat1());
   fOutList->Add(fHelper->GetHTriggerStat());
   fOutList->Add(fHelper->GetHCentralityStat());
-
-  // ------------------------------------------------------------------
-  // -- Add histograms from distribution class
-  // ------------------------------------------------------------------
-  if (fModeDistCreation == 1)
-    fDist->CreateHistograms(fOutList);
 
   // ------------------------------------------------------------------
   // -- Add histograms from efficiency/contamination class
@@ -197,6 +196,12 @@ void AliAnalysisTaskNetParticle::UserCreateOutputObjects() {
   // ------------------------------------------------------------------
 
   TH1::AddDirectory(oldStatus);
+
+  PostData(1,fOutList);
+  PostData(2,fOutListEff);
+  PostData(3,fOutListCont);
+  PostData(4,fOutListDCA);
+  PostData(5,fOutListQA);
 
   return;
 }
@@ -277,66 +282,81 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   // -- Create ESD track cuts
   // --------------------------
   fESDTrackCutsBase = new AliESDtrackCuts;
-  fESDTrackCutsBase->SetMinNCrossedRowsTPC(70);                                             // TPC
-  fESDTrackCutsBase->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);                    // TPC
-
-  fESDTrackCutsBase->SetMaxChi2PerClusterTPC(4);                                            // TPC
-  fESDTrackCutsBase->SetAcceptKinkDaughters(kFALSE);                                        // TPC
-  fESDTrackCutsBase->SetRequireTPCRefit(kTRUE);                                             // TPC
-
-  fESDTrackCutsBase->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); // ITS
-  fESDTrackCutsBase->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kOff); // ITS
-  fESDTrackCutsBase->SetClusterRequirementITS(AliESDtrackCuts::kSSD,AliESDtrackCuts::kOff); // ITS
-
-  fESDTrackCutsBase->SetDCAToVertex2D(kFALSE);                                              // VertexConstrained 
-  fESDTrackCutsBase->SetRequireSigmaToVertex(kFALSE);                                       // VertexConstrained 
-
-  fESDTrackCutsBase->SetEtaRange(-1.*fEtaMax, fEtaMax);                                     // Acceptance
-  fESDTrackCutsBase->SetPtRange(fPtRange[0],fPtRange[1]);                                   // Acceptance
-
-  // -- Mode : clean cuts -> small contamination
+  
   if (fESDTrackCutMode == 0) {
-    sModeName = "Clean";
-    fESDTrackCutsBase->SetRequireITSRefit(kTRUE);                                           // ITS
-    fESDTrackCutsBase->SetMaxChi2PerClusterITS(36);                                         // ITS
-  }  
-  // -- Mode : dirty cuts -> high efficiency
-  else if (fESDTrackCutMode == 1) {
-    sModeName = "Dirty";
-    fESDTrackCutsBase->SetRequireITSRefit(kFALSE);                                          // ITS
+    fESDTrackCutsBase->SetMinNCrossedRowsTPC(70);                                             // TPC
+    fESDTrackCutsBase->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);                    // TPC
   }
-  // -- Mode : Default
-  else {
-    sModeName = "Base";
+  else if (fESDTrackCutMode == 1) {
+    fESDTrackCutsBase->SetMinNClustersTPC(70);                                                // TPC  2010
   }
 
+  fESDTrackCutsBase->SetMaxChi2PerClusterTPC(4);                                              // TPC  2010
+  fESDTrackCutsBase->SetAcceptKinkDaughters(kFALSE);                                          // TPC  2010
+  fESDTrackCutsBase->SetRequireTPCRefit(kTRUE);                                               // TPC  2010
+
+  if (fESDTrackCutMode == 0) {
+    fESDTrackCutsBase->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); // ITS
+    fESDTrackCutsBase->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kOff); // ITS
+    fESDTrackCutsBase->SetClusterRequirementITS(AliESDtrackCuts::kSSD,AliESDtrackCuts::kOff); // ITS
+  } 
+  else if (fESDTrackCutMode == 1) {
+    fESDTrackCutsBase->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); // ITS 2010
+  //  fESDTrackCutsBase->SetMinNClustersITS(4);
+  }
+
+  fESDTrackCutsBase->SetRequireITSRefit(kTRUE);                                               // ITS 2010 
+  fESDTrackCutsBase->SetMaxChi2PerClusterITS(36);                                             // ITS 2010
+
+  fESDTrackCutsBase->SetDCAToVertex2D(kFALSE);                                                // VertexConstrained  2010
+  fESDTrackCutsBase->SetRequireSigmaToVertex(kFALSE);                                         // VertexConstrained  2010
+  fESDTrackCutsBase->SetMaxDCAToVertexZ(2);                                                   // VertexConstrained  2010
+ 
+  fESDTrackCutsBase->SetEtaRange(-1.*fEtaMax, fEtaMax);                                       // Acceptance
+  fESDTrackCutsBase->SetPtRange(fPtRange[0],fPtRange[1]);                                     // Acceptance
+
+  // -- Mode : standard cuts
+  if (fESDTrackCutMode == 0) 
+    sModeName = "Std";
+  // -- Mode : for comparison to LF
+  else if (fESDTrackCutMode == 1)
+    sModeName = "LF";
+  // -- Mode : Default
+  else
+    sModeName = "Base";
+  
   fESDTrackCutsBase->SetName(Form("NetParticleCuts2010_%s",sModeName.Data()));
 
-  // -- Create ESD BKG track cuts
-  // ------------------------------
-  fESDTrackCutsBkg = static_cast<AliESDtrackCuts*>(fESDTrackCutsBase->Clone());
-  fESDTrackCutsBkg->SetName(Form("NetParticleCuts2010_%s_Bkg",sModeName.Data()));
-  fESDTrackCutsBkg->SetMaxDCAToVertexZ(10.);                                                // VertexConstrained 
-  
-  // -- Create ESD track cuts
+  // -- Create ESD track cuts -> Base + DCA
   // ------------------------------
   fESDTrackCuts = static_cast<AliESDtrackCuts*>(fESDTrackCutsBase->Clone());
   fESDTrackCuts->SetName(Form("NetParticleCuts2010_%s",sModeName.Data()));
-  fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");                         // VertexConstrained  ->  7*(0.0026+0.0050/pt^1.01)
-  fESDTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);                                        // VertexConstrained
-  fESDTrackCuts->SetMaxDCAToVertexZ(2);                                                     // VertexConstrained 
+  if (fESDTrackCutMode == 0) 
+    fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");                       // 2010 VertexConstrained  ->  7*(0.0026+0.0050/pt^1.01)
+    //    fESDTrackCuts->SetMaxDCAToVertexXY(0.3);
+  else if (fESDTrackCutMode == 1)
+    fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");                       // 2010 VertexConstrained  ->  7*(0.0026+0.0050/pt^1.01)
 
-  // -- Create ESD Eff track cuts
+  //  fESDTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);                                    // golden cut off
+
+  // -- Create ESD BKG track cuts -> Base + Acceptance(Eff)
+  // ------------------------------
+  fESDTrackCutsBkg = static_cast<AliESDtrackCuts*>(fESDTrackCutsBase->Clone());
+  fESDTrackCutsBkg->SetName(Form("NetParticleCuts2010_%s_Bkg",sModeName.Data()));
+  fESDTrackCutsBkg->SetPtRange(fPtRangeEff[0],fPtRangeEff[1]);                              // Acceptance
+  fESDTrackCutsBkg->SetEtaRange(-1.*fEtaMaxEff, fEtaMaxEff);                                // Acceptance
+  
+  // -- Create ESD Eff track cuts -> Base + DCA + Acceptance(Eff)
   // ------------------------------
   fESDTrackCutsEff = static_cast<AliESDtrackCuts*>(fESDTrackCuts->Clone());
   fESDTrackCutsEff->SetName(Form("NetParticleCuts2010_%s_Eff",sModeName.Data()));
   fESDTrackCutsEff->SetPtRange(fPtRangeEff[0],fPtRangeEff[1]);                              // Acceptance
-  fESDTrackCutsBase->SetEtaRange(-1.*fEtaMaxEff, fEtaMaxEff);                               // Acceptance
+  fESDTrackCutsEff->SetEtaRange(-1.*fEtaMaxEff, fEtaMaxEff);                                // Acceptance
 
   // ------------------------------------------------------------------
   // -- Initialize Helper
   // ------------------------------------------------------------------
-  if (fHelper->Initialize(fIsMC, fModeDistCreation))
+  if (fHelper->Initialize(fESDTrackCutsEff, fIsMC, fAODtrackCutBit, fModeDistCreation))
     return -1;
 
   // ------------------------------------------------------------------
@@ -344,7 +364,7 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   // ------------------------------------------------------------------
   if ((fIsMC||fIsAOD) && fModeEffCreation == 1) {
     fEffCont = new AliAnalysisNetParticleEffCont;
-    fEffCont->Initialize(fHelper, fESDTrackCutsEff, fAODtrackCutBit);
+    fEffCont->Initialize(fHelper);
   }
 
   // ------------------------------------------------------------------
@@ -352,7 +372,8 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   // ------------------------------------------------------------------
   if (fModeDCACreation == 1) {
     fDCA = new AliAnalysisNetParticleDCA;
-    fDCA->Initialize(fHelper, fESDTrackCuts, fESDTrackCutsBkg);
+    fDCA->SetESDTrackCutsBkg(fESDTrackCutsBkg);
+    fDCA->Initialize(fHelper);
   }
 
   // ------------------------------------------------------------------
@@ -360,15 +381,16 @@ Int_t AliAnalysisTaskNetParticle::Initialize() {
   // ------------------------------------------------------------------
   if (fModeDistCreation == 1) {
     fDist = new AliAnalysisNetParticleDistribution;
-    fDist->Initialize(fHelper, fESDTrackCuts, fIsMC, fAODtrackCutBit);
+    fDist->SetOutList(fOutList);
+    fDist->Initialize(fHelper, fESDTrackCuts);
   }
 
   // ------------------------------------------------------------------
   // -- Create / Initialize QA Determination
   // ------------------------------------------------------------------
   if (fModeQACreation == 1) {
-    fQA = new AliAnalysisNetParticleQA;
-    fQA->Initialize(fHelper, fESDTrackCuts, fIsMC, fAODtrackCutBit);
+    fQA = new AliAnalysisNetParticleQA();
+    fQA->Initialize(fHelper);
   }
 
   // ------------------------------------------------------------------
@@ -420,16 +442,16 @@ Int_t AliAnalysisTaskNetParticle::SetupEvent() {
   fHelper->SetupEvent(fESDHandler, fAODHandler, fMCEvent);
 
   if (fModeEffCreation && (fIsMC || fIsAOD) )
-    fEffCont->SetupEvent(fESDHandler, fAODHandler, fMCEvent); 
+    fEffCont->SetupEvent(); 
 
   if (fModeDCACreation == 1)
-    fDCA->SetupEvent(fESDHandler, fAODHandler, fMCEvent);
+    fDCA->SetupEvent();
 
   if (fModeDistCreation == 1)
-    fDist->SetupEvent(fESDHandler, fAODHandler, fMCEvent); 
+    fDist->SetupEvent(); 
 
   if (fModeQACreation == 1)
-    fQA->SetupEvent(fESDHandler, fAODHandler, fMCEvent); 
+    fQA->SetupEvent(); 
 
   // -- Evaluate Event cuts
   // ------------------------------------------------------------------

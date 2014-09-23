@@ -28,12 +28,15 @@ AliHMPIDTaskQA *AddTaskHmpidQA(Bool_t useMC=kTRUE)
 
    AliAnalysisDataContainer *cout_hmpid= mgr->CreateContainer("HmpidQA", TList::Class(),AliAnalysisManager::kOutputContainer,
                                            Form("%s:HmpidQA",AliAnalysisManager::GetCommonFileName()));
+   AliAnalysisDataContainer *cout_tree = mgr->CreateContainer("HmpidQAtree", TTree::Class(),AliAnalysisManager::kOutputContainer,
+                                           Form("%s:HmpidQA",AliAnalysisManager::GetCommonFileName()));
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
    mgr->ConnectInput  (hmpTask, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (hmpTask, 1, cout_hmpid);
+   mgr->ConnectOutput (hmpTask, 2, cout_tree);
 
    return hmpTask;
 }

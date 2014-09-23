@@ -8,9 +8,10 @@
 // UInt_t kTriggerInt = AliVEvent::kAnyINT;
 // UInt_t kTriggerMask = kTriggerInt;
 
-AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t flagEnableAdvancedCheck=kFALSE, 
+AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t flagEnableAdvancedCheck = kFALSE, 
 				   UInt_t triggerMask = AliVEvent::kAnyINT, 
 				   Int_t trackCutSetTOFqa = 0, 
+				   Bool_t flagEnableChargeSplit = kFALSE,
 				   TString cutName = "",
 				   Bool_t isMC = kFALSE, 
 				   Short_t absPdgCode = 0) 
@@ -37,6 +38,7 @@ AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t flagEnableAdvancedCheck=kFALSE,
   // Create the task
   AliAnalysisTaskTOFqaID *task = new AliAnalysisTaskTOFqaID(Form("taskTOFqaID_%i",absPdgCode));
   task->EnableAdvancedCheck(flagEnableAdvancedCheck);
+  task->EnableChargeSplit(flagEnableChargeSplit);
   task->SetSelectMCspecies(isMC, absPdgCode);
   task->SelectCollisionCandidates(triggerMask);
   //AliLog::SetClassDebugLevel("AliAnalysisTaskTOFqaID",4);

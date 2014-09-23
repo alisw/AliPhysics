@@ -20,11 +20,13 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoCascadeHF.h"
 
+class AliStack;
 class AliAODMCParticle;
 class AliAODMCHeader;
 class AliGenEventHeader;
 class AliAODEvent;
 class TProfile;
+class TParticle;
 class TClonesArray;
 class TH1F;
 class TH2F;
@@ -90,6 +92,9 @@ class AliVertexingHFUtils : public TObject{
   // Functions for computing average pt 
   static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Float_t minMass=0., Float_t maxMass=3., Int_t rebin=1);
 
+  // Functions for processing trigger information
+  static Bool_t CheckT0TriggerFired(AliAODEvent* aodEv);
+
   // Functions for computing true impact parameter of D meson
   static Double_t GetTrueImpactParameterDzero(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);
   static Double_t GetTrueImpactParameterDplus(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);
@@ -97,8 +102,15 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
   static Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
+  static Int_t CheckOrigin(AliStack* stack, TParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
+  static Int_t CheckD0Decay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckD0Decay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckDplusDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckDplusDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckDsDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckDstarDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckDstarDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 
  private:
 

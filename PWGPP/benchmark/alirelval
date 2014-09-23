@@ -194,14 +194,20 @@ function RunVM() {
 
 # Prepare the validation session directory. Syntax:
 #
-#   PrepareSession <aliroot_tag>
+#   PrepareSession <aliroot_tag> <new_session_name>
 #
 # Returns 0 on success, nonzero on failure. Session tag returned on stdout.
 function PrepareSession() {
   local aliRootTag sessionTag sessionDir
   aliRootTag="$1"
-  shift
-  sessionTag="${aliRootTag}_$(ndate)"
+
+  # session tag can be "auto" or any user-specified value
+  if [ "$2" != 'auto' ] ; then
+    sessionTag="$2"
+  else
+    sessionTag="${aliRootTag}_$(ndate)"
+  fi
+  shift 2
   sessionDir="$sessionPrefix/$sessionTag"
 
   # session directory already exists? abort
@@ -220,10 +226,11 @@ function PrepareSession() {
   # aliroot version written to a file
   echo "$aliRootTag" > "$sessionDir/aliroot-version.txt"
 
-  # benchmark script, configuration and file list
-  cp benchmark.sh benchmark.config files.list "$sessionDir/"
+  # benchmark script, benchmark config, cloud config and file list
+  cp -L benchmark.sh cloud.config benchmark.config files.list "$sessionDir/"
   if [ $? != 0 ] ; then
-    pr "Cannot copy benchmark configuration and script to $sessionDir"
+    pr "Cannot copy configuration files to $sessionDir"
+    rm -rf "$sessionDir"
     return $errSessionDir
   fi
 
@@ -275,7 +282,7 @@ function RecycleSession() {
   local f
 
   for f in 'instance-id.txt' 'instance-address.txt' 'key.pem' ; do
-    cp "$fromSessionDir/$f" "$f" > /dev/null 2>&1
+    cp -L "$fromSessionDir/$f" "$f" > /dev/null 2>&1
     if [ $? != 0 ] ; then
       pr "Cannot copy $f from the source session dir $fromSessionDir"
       return $errRecycleSession
@@ -303,7 +310,7 @@ function MoveToSessionDir_Undo() {
 
 # Load the benchmark configuration
 function LoadConfig() {
-  source benchmark.config > /dev/null 2>&1
+  source cloud.config > /dev/null 2>&1
   if [ $? != 0 ] ; then
     pr "Cannot load benchmark configuration"
     return $errCfg
@@ -335,7 +342,7 @@ function InstantiateValidationVM() {
     # copy key to session dir
     pr -n "Copying private key $cloudKeyFile to session directory..."
     rm -f 'key.pem'
-    cp "$cloudKeyFile" 'key.pem' 2> /dev/null
+    cp -L "$cloudKeyFile" 'key.pem' 2> /dev/null
     if [ $? != 0 ] ; then
       pr 'error'
       return $errCopyKey
@@ -465,10 +472,11 @@ function Validate() {
   # create helper script to launch benchmark
   cat > run-benchmark.sh <<_EoF_
 #!/bin/bash
+export LANG=C
 cd \$(dirname "\$0")
 v=validation.done
 rm -f \$v
-env ALIROOT_VERSION=$(cat aliroot-version.txt) ./benchmark.sh run $sessionTag files.list benchmark.config
+env ALIROOT_VERSION=$(cat aliroot-version.txt) ./benchmark.sh run $sessionTag files.list benchmark.config 2>&1 | tee run-benchmark.log
 #sleep 1000
 ret=\$?
 echo \$ret > \$v
@@ -585,7 +593,7 @@ function Help() {
   pr "$Prog -- by Dario Berzano <dario.berzano@cern.ch>"
   pr 'Controls the Release Validation workflow on the cloud for AliRoot.'
   pr
-  pr "Usage 1: $Prog [--prepare|--launch|--recycle] [--from-session] --aliroot <aliroot_tag> [-- arbitraryOpt1=value [arbitraryOpt2=value2...]]"
+  pr "Usage 1: $Prog [--prepare|--launch|--recycle] [--from-session] --aliroot <aliroot_tag> [--session <custom_session_tag>] [-- arbitraryOpt1=value [arbitraryOpt2=value2...]]"
   pr
   pr 'A new session is created to validate the specified AliRoot tag.'
   pr
@@ -597,6 +605,8 @@ function Help() {
   pr '  --launch   : launches the full validation process: prepares session,'
   pr '               runs the virtual machine, launches the validation program'
   pr '  --aliroot  : the AliRoot tag to validate, in the form "vAN-20140610"'
+  pr '  --session  : custom session name to provide to the validation session:'
+  pr '               if omitted, defaults to <aliroot_tag>_<utc_datetime_now>'
   pr
   pr 'Arbitrary options (in the form variable=value) can be specified after the'
   pr 'double dash and will override the corresponding options in any of the'
@@ -749,11 +759,8 @@ function Main() {
         pr 'Specify an AliRoot version with --aliroot <tag>'
         return $errInvalidOpt
       fi
-      if [ "$sessionTag" != '' ] ; then
-        pr 'Cannot use --session with --prepare. Use --help for assistance.'
-        return $errInvalidOpt
-      fi
-      sessionTag=$( RunAction "$A" "$aliRootTag" "$@" )
+      [ "$sessionTag" == '' ] && sessionTag='auto'
+      sessionTag=$( RunAction "$A" "$aliRootTag" "$sessionTag" "$@" )
       ret=$?
     elif [ "$A" == 'RecycleSession' ] ; then
       # special action requiring additional parameters

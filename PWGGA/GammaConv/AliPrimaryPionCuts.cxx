@@ -47,15 +47,15 @@ ClassImp(AliPrimaryPionCuts)
 
 
 const char* AliPrimaryPionCuts::fgkCutNames[AliPrimaryPionCuts::kNCuts] = {
-	"kEtaCut",
-	"kClsITSCut",
-	"kClsTPCCut",
-	"kDCAcut",	
-	"kPtCut",
-	"kPiDedxSigmaITSCut",
-	"kPiDedxSigmaTPCCut",
-	"kPiTOFSigmaCut",
-	"kMassCut"
+	"kEtaCut",				// 0
+	"kClsITSCut",			// 1
+	"kClsTPCCut",			// 2
+	"kDCAcut",				// 3
+	"kPtCut",				// 4
+	"kPiDedxSigmaITSCut",	// 5
+	"kPiDedxSigmaTPCCut",	// 6
+	"kPiTOFSigmaCut",		// 7 
+	"kMassCut"				// 8
 };
 
 //________________________________________________________________________
@@ -100,7 +100,8 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fHistTrackDCAzPtbefore(NULL),
 	fHistTrackDCAzPtafter(NULL),
 	fHistTrackNFindClsPtTPCbefore(NULL),
-	fHistTrackNFindClsPtTPCafter(NULL)
+	fHistTrackNFindClsPtTPCafter(NULL),
+	fStringITSClusterCut("")
 {
 	InitPIDResponse();
 	for(Int_t jj=0;jj<kNCuts;jj++){ fCuts[jj]=0; }
@@ -108,7 +109,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 
 	// Using standard function for setting Cuts
 	Bool_t selectPrimaries=kFALSE;
-	fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+	if (fEsdTrackCuts==NULL)fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 }
 
 //________________________________________________________________________
@@ -510,7 +511,7 @@ Bool_t AliPrimaryPionCuts::InitializeCutsFromCutString(const TString analysisCut
 		if(!SetCut(cutIds(ii),fCuts[ii]))return kFALSE;
 	}
 
-	PrintCuts();
+	PrintCutsWithValues();
 	return kTRUE;
 }
 ///________________________________________________________________________
@@ -584,13 +585,41 @@ Bool_t AliPrimaryPionCuts::SetCut(cutIds cutID, const Int_t value) {
 }
 
 ///________________________________________________________________________
-
 void AliPrimaryPionCuts::PrintCuts() {
     // Print out current Cut Selection
 	for(Int_t ic = 0; ic < kNCuts; ic++) {
 		printf("%-30s : %d \n", fgkCutNames[ic], fCuts[ic]);
 	}
 }
+
+///________________________________________________________________________
+void AliPrimaryPionCuts::PrintCutsWithValues() {
+   // Print out current Cut Selection with value
+	printf("\nCharged Pion cutnumber \n");
+	for(Int_t ic = 0; ic < kNCuts; ic++) {
+		printf("%d",fCuts[ic]);
+	}
+	printf("\n\n");
+
+	printf("Acceptance cuts \n");
+	if (fDoEtaCut) printf("\t |eta_{pi+-}| < %3.2f  \n", fEtaCut);
+	else 	printf("\t none \n");
+	printf("Track cuts \n");
+	printf("\t %s \n", fStringITSClusterCut.Data());
+	printf("\t min N cluster TPC > %3.2f \n", fMinClsTPC);
+	printf("\t min N cluster TPC/ findable > %3.2f \n", fMinClsTPCToF);
+// 	printf("\t dca > %3.2f \n", fMinClsTPCToF);
+// 	"kDCAcut",				// 3
+	printf("\t min pT > %3.2f \n", fPtCut);
+	printf("PID cuts \n");
+	if (fDodEdxSigmaITSCut)printf("\t %3.2f < ITS n_sigma pi < %3.2f \n", fPIDnSigmaBelowPionLineITS, fPIDnSigmaAbovePionLineITS );
+	if (fDodEdxSigmaTPCCut)printf("\t %3.2f < TPC n_sigma pi < %3.2f \n", fPIDnSigmaBelowPionLineTPC, fPIDnSigmaAbovePionLineTPC );
+	if (fDoTOFsigmaCut)printf("\t %3.2f < TOF n_sigma pi < %3.2f \n", fPIDnSigmaBelowPionLineTOF, fPIDnSigmaAbovePionLineTOF );
+	if (fDoMassCut) printf("two-pion mass cut < %3.2f \n", fMassCut);
+	printf("\n\n");
+}
+
+
 
 ///________________________________________________________________________
 Bool_t AliPrimaryPionCuts::SetITSdEdxCutPionLine(Int_t ededxSigmaCut){ 
@@ -676,25 +705,25 @@ Bool_t AliPrimaryPionCuts::SetTPCdEdxCutPionLine(Int_t ededxSigmaCut){
 			fPIDnSigmaBelowPionLineTPC=-4;
 			fPIDnSigmaAbovePionLineTPC=5;
 			break;	
-		case 5: // -3,5
-			fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowPionLineTPC=-3;
-			fPIDnSigmaAbovePionLineTPC=5;
-			break;
-		case 6: // -4,4
+		case 5: // -4,4
 			fDodEdxSigmaTPCCut = kTRUE;
 			fPIDnSigmaBelowPionLineTPC=-4;
 			fPIDnSigmaAbovePionLineTPC=4;
 			break;
-		case 7: // -2.5,4
+		case 6: // -3,4
 			fDodEdxSigmaTPCCut = kTRUE;
-			fPIDnSigmaBelowPionLineTPC=-2.5;
+			fPIDnSigmaBelowPionLineTPC=-3;
 			fPIDnSigmaAbovePionLineTPC=4;
 			break;
-		case 8: // -2,3.5
+		case 7: // -3,3
+			fDodEdxSigmaTPCCut = kTRUE;
+			fPIDnSigmaBelowPionLineTPC=-3;
+			fPIDnSigmaAbovePionLineTPC=3;
+			break;
+		case 8: // -2,3.
 			fDodEdxSigmaTPCCut = kTRUE;
 			fPIDnSigmaBelowPionLineTPC=-2;
-			fPIDnSigmaAbovePionLineTPC=3.5;
+			fPIDnSigmaAbovePionLineTPC=3.;
 			break;
 		default:
 			cout<<"Warning: TPCdEdxCutPionLine not defined"<<ededxSigmaCut<<endl;
@@ -713,31 +742,38 @@ Bool_t AliPrimaryPionCuts::SetITSClusterCut(Int_t clsITSCut){
 	switch(clsITSCut){
 		case 0: 
 			fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+			fStringITSClusterCut= "no SPD cluster requirement";
 			break;
 		case 1: 
 			fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+			fStringITSClusterCut= "first SPD cluster required";
 			break;  //1 hit first layer of SPD
 		case 2: 
 			fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+			fStringITSClusterCut= "first or second SPD cluster required";
 			break; //1 hit in any layer of SPD
 		case 3: 
 			fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
 			fEsdTrackCuts->SetMinNClustersITS(4);
+			fStringITSClusterCut= "first SPD cluster required, min number of ITS clusters = 4";
 			// 4 hits in total in the ITS. At least 1 hit in the first layer of SPD  
 			break;
 		case 4: 
 			fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 			fEsdTrackCuts->SetMinNClustersITS(3);
+			fStringITSClusterCut= "first or second SPD cluster required, min number of ITS clusters = 3";
 			// 3 hits in total in the ITS. At least 1 hit in any layer of SPD
 			break;
 		case 5: 
 			fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 			fEsdTrackCuts->SetMinNClustersITS(4);
+			fStringITSClusterCut= "first or second SPD cluster required, min number of ITS clusters = 4";
 			// 4 hits in total in the ITS. At least 1 hit in any layer of SPD
 			break;
 		case 6: 
 			fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 			fEsdTrackCuts->SetMinNClustersITS(5);
+			fStringITSClusterCut= "first or second SPD cluster required, min number of ITS clusters = 5";
 			// 5 hits in total in the ITS. At least 1 hit in any layer of SPD
 			break;
 		default:
@@ -899,7 +935,8 @@ Bool_t AliPrimaryPionCuts::SetDCACut(Int_t dcaCut)
 			fEsdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 			fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 			break;
-		case 2: fEsdTrackCuts->SetMaxDCAToVertexZ(2);
+		case 2: 
+			fEsdTrackCuts->SetMaxDCAToVertexZ(2);
 			fEsdTrackCuts->SetMaxDCAToVertexXY(1);
 			fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 			break; 
@@ -971,7 +1008,7 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
 			break;
 		case 2: // cut at 0.7 GeV/c^2
 			fDoMassCut = kTRUE;
-			fMassCut = 0.7;
+			fMassCut = 0.75;
 			break;
 		case 3: // cut at 0.6 GeV/c^2
 			fDoMassCut = kTRUE;

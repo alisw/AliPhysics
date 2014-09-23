@@ -13,7 +13,7 @@ namespace fastjet {
 #include "AliAnalysisTaskSE.h"
 #include "AliFJWrapper.h"
 #include "AliAODMCParticle.h"
-
+#include "AliEmcalJet.h"
 class AliEmcalJetTask : public AliAnalysisTaskSE {
  public:
 
@@ -40,7 +40,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   UserCreateOutputObjects();
   void                   UserExec(Option_t *option);
   void                   Terminate(Option_t *option);
-
+ 
   Bool_t                 IsLocked()                       { if(fLocked) {AliFatal("Jet finder task is locked! Changing properties is not allowed."); return kTRUE;} else return kFALSE;};
   void                   SetLocked()                      { fLocked = kTRUE;}
   void                   SelectConstituents(UInt_t constSel, UInt_t MCconstSel)  { fConstSel = constSel; fMCConstSel = MCconstSel; };
@@ -89,13 +89,16 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
                                                                 if (s) fMCFlag |=  AliAODMCParticle::kPhysicalPrim ; 
                                                                 else   fMCFlag &= ~AliAODMCParticle::kPhysicalPrim ; }
 
-  void                   SetCodeDebug(Bool_t val)         { fCodeDebug = val; }
+  void                   SetCodeDebug(Bool_t val)               { fCodeDebug    = val          ; }
+  void                   SetForceIsMcPart(Bool_t b)             { fIsMcPart     = b            ; }
+  void                   SetPionMassForClusters(Bool_t b)       { fPionMassClusters = b        ; }
 
   void                   SetRhoName(const char *n)              { fRhoName      = n            ; }
   void                   SetRhomName(const char *n)             { fRhomName     = n            ; }
   void                   SetGenericSubtractionJetMass(Bool_t b) { fDoGenericSubtractionJetMass = b; }
   void                   SetGenericSubtractionGR(Bool_t b, Double_t rmax = 2., Double_t dr = 0.04, Double_t ptmin = 0.) { fDoGenericSubtractionGR = b; fRMax=rmax; fDRStep=dr; fPtMinGR=ptmin;}
   void                   SetConstituentSubtraction(Bool_t b)    { fDoConstituentSubtraction = b; }
+  void                   SetGenericSubtractionExtraJetShapes(Bool_t b)            { fDoGenericSubtractionExtraJetShapes =b;}
   void                   SetUseExternalBkg(Bool_t b, Double_t rho, Double_t rhom) { fUseExternalBkg = b; fRho = rho; fRhom = rhom;}
 
   UInt_t                 GetJetType()                     { return fJetType; }
@@ -134,6 +137,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   FindJets();
   Bool_t                 DoInit();
   Bool_t                 GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
+  void                   FillJetConstituents(std::vector<fastjet::PseudoJet>& constituents,AliEmcalJet *jet,Double_t vertex[3],Int_t jetCount,Int_t& nt,Int_t& nc,Double_t& maxCh,Double_t& maxNe,Int_t& ncharged,Int_t& nneutral,Double_t& neutralE,Double_t& mcpt,Int_t& cemc,Double_t& emcpt,Int_t& gall,Int_t& gemc); 
 
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
@@ -169,18 +173,20 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
   Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
   Bool_t                 fCodeDebug;              // use nontested code changes 
+  Bool_t                 fPionMassClusters;       // assume pion mass for clusters
 
-  Bool_t                 fDoGenericSubtractionJetMass; // calculate generic subtraction
-  Bool_t                 fDoGenericSubtractionGR;      // calculate generic subtraction for angular structure function GR
-  Bool_t                 fDoConstituentSubtraction;    // calculate constituent subtraction
-  Bool_t                 fUseExternalBkg;         // use external background for generic subtractor
-  TString                fRhoName;                // name of rho
-  TString                fRhomName;               // name of rhom
-  Double_t               fRho;                    // pT background density
-  Double_t               fRhom;                   // mT background density
-  Double_t               fRMax;                   // R max for GR calculation
-  Double_t               fDRStep;                 // step width for GR calculation
-  Double_t               fPtMinGR;                // min pT for GR calculation
+  Bool_t                 fDoGenericSubtractionJetMass;        // calculate generic subtraction
+  Bool_t                 fDoGenericSubtractionGR;             // calculate generic subtraction for angular structure function GR
+  Bool_t                 fDoGenericSubtractionExtraJetShapes; //calculate generic subtraction for other jet shapes like radialmoment,pTD etc
+  Bool_t                 fDoConstituentSubtraction;           // calculate constituent subtraction
+  Bool_t                 fUseExternalBkg;                     // use external background for generic subtractor
+  TString                fRhoName;                            // name of rho
+  TString                fRhomName;                           // name of rhom
+  Double_t               fRho;                                // pT background density
+  Double_t               fRhom;                               // mT background density
+  Double_t               fRMax;                               // R max for GR calculation
+  Double_t               fDRStep;                             // step width for GR calculation
+  Double_t               fPtMinGR;                            // min pT for GR calculation
  
 
   TClonesArray          *fJets;                   //!jet collection
@@ -195,6 +201,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 15) // Jet producing task
+  ClassDef(AliEmcalJetTask, 16) // Jet producing task
 };
 #endif

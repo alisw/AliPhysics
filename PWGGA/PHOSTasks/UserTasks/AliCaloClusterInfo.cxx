@@ -132,28 +132,73 @@ Bool_t AliCaloClusterInfo::IsInFiducialRegion(Int_t cellX, Int_t cellZ)
 }
 
 //-----------------------------------------------------------------------------
-Bool_t AliCaloClusterInfo::CheckIsClusterFromPi0(AliStack* const stack, Int_t &pi0Indx)
+Bool_t AliCaloClusterInfo::IsMergedClusterFromPi0(AliStack* const stack, Int_t &pi0Indx)
 {
-  if (GetLabel()>-1) {
-    TParticle* track = stack->Particle(GetLabel());
+  pi0Indx = -1;
+  if (GetNLabels()>1) {
+    Int_t pi0Indx1 = -1, pi0Indx2 = -2;
+    if (IsClusterFromPi0(stack, GetLabelAt(0), pi0Indx1) &&
+        IsClusterFromPi0(stack, GetLabelAt(1), pi0Indx2) && pi0Indx1 == pi0Indx2) {
+      pi0Indx = pi0Indx1;
+      return kTRUE;
+    } else return kFALSE;
+  } else return kFALSE;
+}
+
+//-----------------------------------------------------------------------------
+Bool_t AliCaloClusterInfo::IsClusterFromCvtedPi0(AliStack* const stack, Bool_t &isConverted, Int_t &pi0Indx)
+{
+
+  if (IsClusterFromPi0Pure(stack, GetLabel(), pi0Indx))
+    return kTRUE;
+  else { 
+    isConverted = IsClusterFromPi0Converted(stack, GetLabel(), pi0Indx);
+    if (isConverted) return kTRUE;
+    else return kFALSE;
+  }
+}
+
+//-----------------------------------------------------------------------------
+Bool_t AliCaloClusterInfo::IsClusterFromPi0(AliStack* const stack, Int_t label, Int_t &pi0Indx)
+{
+  if (IsClusterFromPi0Pure(stack, label, pi0Indx))
+    return kTRUE;
+  else if (IsClusterFromPi0Converted(stack, label, pi0Indx)) 
+    return kTRUE;
+  else return kFALSE;
+}
+
+//-----------------------------------------------------------------------------
+Bool_t AliCaloClusterInfo::IsClusterFromPi0Pure(AliStack* const stack, Int_t label, Int_t &pi0Indx)
+{
+  if (label>-1) {
+    TParticle* track = stack->Particle(label);
     if (track->GetPdgCode() == 22) {
       pi0Indx = track->GetFirstMother();
       if (pi0Indx>-1 && ((TParticle*)stack->Particle(pi0Indx))->GetPdgCode() == 111)
         return kTRUE;
       else return kFALSE;
     }
-    else if (TMath::Abs(track->GetPdgCode()) == 11)
+    else return kFALSE;
+  } else return kFALSE;
+}
+
+//-----------------------------------------------------------------------------
+Bool_t AliCaloClusterInfo::IsClusterFromPi0Converted(AliStack* const stack, Int_t label, Int_t &pi0Indx)
+{
+  if (label>-1) {
+    TParticle* track = stack->Particle(label);
+    if (TMath::Abs(track->GetPdgCode()) == 11)
       if (track->GetFirstMother()>-1 && ((TParticle*)stack->Particle(track->GetFirstMother()))->GetPdgCode() == 22) {
         TParticle *gamma = stack->Particle(track->GetFirstMother());
         pi0Indx = gamma->GetFirstMother();
         if (pi0Indx>-1 && ((TParticle*)stack->Particle(pi0Indx))->GetPdgCode() == 111) {
-          Int_t gamma1 = ((TParticle*)stack->Particle(pi0Indx))->GetFirstDaughter();
-          Int_t gamma2 = ((TParticle*)stack->Particle(pi0Indx))->GetLastDaughter();
-          if (GetLabel() == (((TParticle*)stack->Particle(gamma1))->Pt()>((TParticle*)stack->Particle(gamma2))->Pt() ? gamma1 : gamma2))
+          Int_t e1 = gamma->GetFirstDaughter();
+          Int_t e2 = gamma->GetLastDaughter();
+          if (label == (((TParticle*)stack->Particle(e1))->Pt()>((TParticle*)stack->Particle(e2))->Pt() ? e1 : e2))
             return kTRUE;
           else return kFALSE;
-        }
-        else return kFALSE;
+        } else return kFALSE;
       } else return kFALSE;
     else return kFALSE;
   } else return kFALSE;

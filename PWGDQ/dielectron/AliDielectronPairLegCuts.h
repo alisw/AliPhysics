@@ -30,7 +30,7 @@ public:
 
   AliDielectronPairLegCuts();
   AliDielectronPairLegCuts(const char* name, const char* title);
-  virtual ~AliDielectronPairLegCuts() {;}
+  virtual ~AliDielectronPairLegCuts();
   //TODO: make copy constructor and assignment operator public
   //      and implement them
   
