@@ -136,11 +136,19 @@ fhConeSumPtSubvsConeSumPtTotPhiCell(0),     fhConeSumPtSubNormvsConeSumPtTotPhiC
 fhConeSumPtSubvsConeSumPtTotEtaCell(0),     fhConeSumPtSubNormvsConeSumPtTotEtaCell(0),
 fhConeSumPtVSUETracksEtaBand(0),            fhConeSumPtVSUETracksPhiBand(0),
 fhConeSumPtVSUEClusterEtaBand(0),           fhConeSumPtVSUEClusterPhiBand(0),
-fhPtPrimMCPi0DecayPairOutOfCone(0),         fhPtPrimMCPi0DecayPairOutOfAcceptance(0),
-fhPtPrimMCPi0DecayPairAcceptInConeLowPt(0), fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap(0),      fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE(0),
+fhPtPrimMCPi0DecayPairOutOfCone(0),
+fhPtPrimMCPi0DecayPairOutOfAcceptance(0),
+fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap(0),
+fhPtPrimMCPi0DecayPairAcceptInConeLowPt(0),
+fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE(0),
 fhPtPrimMCPi0DecayPairNoOverlap(0),
-fhPtPrimMCPi0DecayIsoPairOutOfCone(0),      fhPtPrimMCPi0DecayIsoPairOutOfAcceptance(0),
-fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt(0),fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap(0), fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE(0),
+fhPtPrimMCPi0DecayIsoPairOutOfCone(0),
+fhPtPrimMCPi0DecayIsoPairOutOfAcceptance(0),
+fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap(0),
+fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt(0),
+fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap(0),
+fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE(0),
 fhPtPrimMCPi0DecayIsoPairNoOverlap(0),
 fhPtPrimMCPi0Overlap(0),                    fhPtPrimMCPi0IsoOverlap(0),
 fhPtLeadConeBinLambda0(0),                  fhSumPtConeBinLambda0(0),
@@ -2920,12 +2928,25 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtPrimMCPi0DecayPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairOutOfAcceptance) ;
         
+        fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap  = new TH1F("hPtPrim_MCPhotonPi0DecayPairOutOfAcceptanceNoOverlap",
+                                                          Form("primary photon %s : #it{p}_{T}, pair out of acceptance, no overlap, %s",pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                          nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap) ;
+        
         fhPtPrimMCPi0DecayIsoPairOutOfAcceptance  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairOutOfAcceptance",
                                                              Form("isolated primary photon %s, pair out of acceptance : #it{p}_{T}, %s",
                                                                   pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
                                                              nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairOutOfAcceptance) ;
+ 
+        fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairOutOfAcceptanceNoOverlap",
+                                                             Form("isolated primary photon %s, pair out of acceptance, no overlap : #it{p}_{T}, %s",
+                                                                  pptype[kmcPrimPi0Decay].Data(),parTitle.Data()),
+                                                             nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap) ;
         
         fhPtPrimMCPi0Overlap  = new TH1F("hPtPrim_MCPi0Overlap",
                                          Form("primary %s, overlap: #it{p}_{T}, %s",
@@ -4259,8 +4280,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       // Second decay out of acceptance
       if(!ok2 || !d2Acc || daugh2mom.E() <= minECalo)
+      {
         fhPtPrimMCPi0DecayPairOutOfAcceptance->Fill(photonPt);
-    
+        if(!overlap) fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap->Fill(photonPt);
+      }
+      
       // Not Overlapped decay
       if(!overlap) fhPtPrimMCPi0DecayPairNoOverlap->Fill(photonPt);
       
@@ -4306,7 +4330,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         
         // Second decay out of acceptance
         if(!ok2 || !d2Acc || daugh2mom.E() <= minECalo)
+        {
           fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->Fill(photonPt);
+          if(!overlap) fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap->Fill(photonPt);
+        }
         
         // Second decay pt smaller than threshold
         if(d2Acc && dRdaugh2 < GetIsolationCut()->GetConeSize() &&
