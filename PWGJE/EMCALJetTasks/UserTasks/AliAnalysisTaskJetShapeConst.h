@@ -18,6 +18,10 @@ class AliJetContainer;
 
 class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
  public:
+  enum JetMassVarType {
+    kMass   = 0,  //jet mass
+    kRatMPt = 1    //ratio mass/pt jet
+  };
 
   AliAnalysisTaskJetShapeConst();
   AliAnalysisTaskJetShapeConst(const char *name);
@@ -34,6 +38,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   void SetJetContainerNoEmb(Int_t c)                            { fContainerNoEmb    = c   ; }
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
   void SetSingleTrackEmbedding(Bool_t b)                        { fSingleTrackEmb    = b   ; }
+  void SetJetMassVarType(JetMassVarType t)                      { fJetMassVarType    = t   ; }
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -48,6 +53,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   Bool_t                              fSingleTrackEmb;             // single track embedding
   Bool_t                              fCreateTree;                 // create output tree
+  JetMassVarType                      fJetMassVarType;             // observable to use
 
   TTree           *fTreeJetBkg;                                    //!tree with jet and bkg variables
   TLorentzVector  *fJet1Vec;                                       // jet1(AA) vector  
@@ -74,7 +80,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetShapeConst(const AliAnalysisTaskJetShapeConst&);            // not implemented
   AliAnalysisTaskJetShapeConst &operator=(const AliAnalysisTaskJetShapeConst&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeConst, 3)
+  ClassDef(AliAnalysisTaskJetShapeConst, 4)
 };
 #endif
 
