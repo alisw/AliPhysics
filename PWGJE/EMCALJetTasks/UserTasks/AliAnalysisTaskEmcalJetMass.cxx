@@ -430,7 +430,7 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       Double_t ptJet1 = jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();
       Double_t mJet1 = GetJetMass(jet1);
       Double_t rat = -1.;
-      if(ptJet1<0. || ptJet1<0.) rat = mJet1/ptJet1;
+      if(ptJet1<0. || ptJet1>0.) rat = mJet1/ptJet1;
       fh3PtJet1VsMassVsLeadPtAllSel[fCentBin]->Fill(ptJet1,mJet1,jet1->MaxTrackPt());
       fpPtVsMassJet1All[fCentBin]->Fill(ptJet1,mJet1);
       fh2MassVsAreaJet1All[fCentBin]->Fill(mJet1,jet1->Area());
