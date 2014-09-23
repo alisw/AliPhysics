@@ -31,7 +31,6 @@ class AliVEvent;
 class AliMultiplicity; 
 class AliAODTracklets;  // XZhang 20120615
 class AliAODTrack;
-class AliESDtrack;
 class AliESDPmdTrack;
 class AliFlowBayesianPID;
 class AliESDkink;

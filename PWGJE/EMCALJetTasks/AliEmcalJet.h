@@ -68,7 +68,7 @@ class AliEmcalJet : public AliVParticle
   Short_t           ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx);       }
   AliVCluster      *ClusterAt(Int_t idx, TClonesArray *ca)  const { if (!ca) return 0; return dynamic_cast<AliVCluster*>(ca->At(ClusterAt(idx))); }
   AliVCluster      *GetLeadingCluster(TClonesArray *clusters) const;
-  UShort_t          GetNumberOfClusters()        const { return fClusterIDs.GetSize();     }
+  Int_t          GetNumberOfClusters()        const { return fClusterIDs.GetSize();     }
   UShort_t          GetNumberOfTracks()          const { return fTrackIDs.GetSize();       }
   UShort_t          GetNumberOfConstituents()    const { return GetNumberOfClusters()+GetNumberOfTracks();       }
   Double_t          FracEmcalArea()              const { return fAreaEmc/fArea;            }
