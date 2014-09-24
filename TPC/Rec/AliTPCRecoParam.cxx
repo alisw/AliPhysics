@@ -66,6 +66,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fUseOuterDetectors(kFALSE),
   fMaxChi2TPCTRD(36),     // maximal allowed chi2 between the TRD in and TPC out to be accepted for refit
   fMaxChi2TPCITS(36),     // maximal allowed chi2 between the ITS in and TPC out to be accepted for backpropagation
+  fUseOulierClusterFilter(0),  // swith to use outlier cluster filter
   fDumpSignal(kFALSE),
   fFirstBin(0),
   fLastBin(-1),

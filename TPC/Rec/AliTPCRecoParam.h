@@ -41,6 +41,11 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t GetClusterMaxRange(Int_t index)const { return fClusterMaxRange[index];}
   void     SetClusterMaxRange(Int_t index, Int_t value){ fClusterMaxRange[index]=value;}
   //
+  // Outlier filtering configuration
+  //
+  Int_t   GetUseOulierClusterFilter() const { return fUseOulierClusterFilter;}  // swith to use outlier cluster filter
+  void    SetUseOulierClusterFilter(Int_t value){ fUseOulierClusterFilter=value;}  // swith to use outlier cluster filter
+  //
   Bool_t   DumpSignal()     const  { return fDumpSignal;}
   void     SetTimeInterval(Int_t first, Int_t last) { fFirstBin=first, fLastBin =last;}
   Int_t    GetFirstBin() const     { return fFirstBin;}
@@ -164,7 +169,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fMaxChi2TPCTRD;     // maximal allowed chi2 between the TRD in and TPC out to be accepted for refit
   Double_t fMaxChi2TPCITS;     // maximal allowed chi2 between the ITS in and TPC out to be accepted for backpropagation
   //
+  // Outlier filtering configuration
   //
+  Int_t   fUseOulierClusterFilter;  // swith to use outlier cluster filter
+
   Double_t fCutSharedClusters[2]; // cut value - maximal amount  of shared clusters  
   Int_t fClusterMaxRange[2];   // neighborhood  - to define local maxima for cluster  
   //

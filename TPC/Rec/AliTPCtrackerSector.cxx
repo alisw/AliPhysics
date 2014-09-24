@@ -182,6 +182,7 @@ AliTPCclusterMI * AliTPCtrackerRow::FindNearest2(Double_t y, Double_t z, Double_
       if ( c->GetY()-y >  roady ) continue;
       if ( y-c->GetY() >  roady ) continue;
       if (skipUsed && c->IsUsed(11)) continue;
+      if (c->IsDisabled()) continue;
       Float_t distance = (c->GetZ()-z)*(c->GetZ()-z)+(c->GetY()-y)*(c->GetY()-y);
       if (maxdistance>distance) {
 	maxdistance = distance;
