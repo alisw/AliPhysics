@@ -65,8 +65,7 @@ AliBaseAODTask::Configure(const char* macro)
     gROOT->SetMacroPath(macroPath);
   }
   TString mac(macro);
-  if (mac.EqualTo("-default-")) 
-    mac = "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/dNdetaConfig.C";
+  if (mac.EqualTo("-default-")) mac = DefaultConfig();
   const char* config = gSystem->Which(gROOT->GetMacroPath(), mac.Data());
   if (!config) {
     AliWarningF("%s not found in %s", mac.Data(), gROOT->GetMacroPath());
