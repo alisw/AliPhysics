@@ -179,6 +179,8 @@ public:
   AliCDBEntry* GetRefEntry(const char* cdbPath);
 
   static TTree* ConnectGainTrees(TString baseDir);
+  static TTree* ConnectPulserTrees(TString baseDir, TTree * tree=0);
+  //static TTree* ConnectNoiseTrees(TString baseDir,  TTree * tree=0); 
   
 private:
   AliTPCcalibDB *fCalibDB;            //pointer to calibDB object
