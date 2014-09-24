@@ -8,8 +8,8 @@ TString kData = "";
 TString kPrint = 0 ;
  
 AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone          = 0.4,
-                                                      const Float_t  pth           = 5.,
-                                                      const Bool_t   leading       = kTRUE,
+                                                      const Float_t  pth           = 2.,
+                                                      const Bool_t   leading       = kFALSE,
                                                       const Bool_t   timecut       = kFALSE,
                                                       const TString  calorimeter   = "EMCAL",
                                                       const Bool_t   simu          = kFALSE,
@@ -21,8 +21,10 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Int_t    maxCen        = -1,
                                                       const Float_t  deltaphicut   = 0.03,
                                                       const Float_t  deltaetacut   = 0.02,
-                                                      const Int_t    disttobad     = 0,
-                                                      const Int_t    nlmMax        =  2,
+                                                      const Float_t  tmin          = -30.,
+                                                      const Float_t  tmax          = 30.,
+                                                      const Int_t    disttobad     = 2,
+                                                      const Int_t    nlmMax        =  20,
                                                       const Bool_t   qaan          = kFALSE,
                                                       const Bool_t   primvtx       = kTRUE,
                                                       const Bool_t   notrackcut    = kTRUE,
@@ -78,7 +80,7 @@ kPrint = print ;
   
   // General frame setting and configuration
   maker->SetReader   (ConfigureReader   (mgr->GetInputEventHandler()->GetDataType(),useKinematics,simu,
-                                         calorimeter,nonlin, timecut, primvtx, notrackcut,minCen, maxCen, debug,print));
+                                         calorimeter,nonlin, timecut, primvtx, notrackcut,tmin,tmax,minCen, maxCen, debug,print));
   maker->SetCaloUtils(ConfigureCaloUtils(nonlin,exotic,simu,timecut,debug,print));
   
   // Analysis tasks setting and configuration
@@ -160,8 +162,8 @@ else
 //____________________________________
 AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKinematics = kFALSE, Bool_t simu = kFALSE,
                                      TString calorimeter = "EMCAL", Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
-                                     Bool_t primvtx = kFALSE, Bool_t notrackcut = kFALSE, Float_t minCen = -1, 
-                                     Float_t maxCen = -1, Int_t debug = -1, Bool_t print = kFALSE)
+                                     Bool_t primvtx = kFALSE, Bool_t notrackcut = kFALSE, Float_t tmin, Float_t tmax,
+                                     Float_t minCen = -1, Float_t maxCen = -1, Int_t debug = -1, Bool_t print = kFALSE)
 {
   // Init reader settings: event selection, basic cluster track cuts, etc
   
@@ -228,7 +230,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
       printf("Set time cut \n");
       reader->SwitchOnUseEMCALTimeCut();
       //Absolute window
-      reader->SetEMCALTimeCut(-30.,30.); // default is -25ns-20ns
+      reader->SetEMCALTimeCut(tmin,tmax); // default is -25ns-20ns
     }
     else
     {
