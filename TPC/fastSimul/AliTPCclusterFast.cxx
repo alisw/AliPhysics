@@ -467,7 +467,7 @@ void AliTPCclusterFast::Init(){
   //
   // reset all counters  
   //
-  const Int_t knMax=1000;
+  const Int_t knMax=10000;
   fMNprim=0;     // mean number of primary electrons
   //                   //electrons part input
   fNprim=0;      // mean number of primary electrons
@@ -690,6 +690,7 @@ Double_t  AliTPCclusterFast::GetQtotCorr(Float_t rmsy0, Float_t rmsz0, Float_t g
   Double_t sz = TMath::Sqrt(rmsz0*rmsz0+fDiff*fDiff);
   Double_t sumAll=0,sumThr=0;
   Double_t qtot = GetQtot(gain,thr,0); // sum of signal over threshold
+  Double_t qmax = GetQmax(gain,thr,0); // qmax
   //
   Double_t corr =1;
   Double_t qnorm=qtot;
@@ -702,6 +703,7 @@ Double_t  AliTPCclusterFast::GetQtotCorr(Float_t rmsy0, Float_t rmsz0, Float_t g
 	sumAll+=qlocal;
       }
     if (sumAll>0&&sumThr>0) corr=(sumThr)/sumAll;
+    if (sumThr==0) corr=GetQmaxCorr(0.5,0.5);
     //corr = sumThr;
     if (corr>0) qnorm=qtot/corr;
     

@@ -32,7 +32,7 @@ exampleCase(){
 # 
    source $ALICE_ROOT/TPC/fastSimul/simul.sh
    makeEnvLocal
-   makeSubmitRUN 80 400 0.3
+   makeSubmitRUN 160 1600 0.6
    ls `pwd`/MC*/trackerSimul.root >  trackerSimul.list
 
 }
