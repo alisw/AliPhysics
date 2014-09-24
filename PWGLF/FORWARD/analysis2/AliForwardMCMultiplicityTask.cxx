@@ -319,15 +319,25 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
     return false;
   }
   fCorrections.CompareResults(fHistos, fMCHistos);
-    
-  if (!fHistCollector.Collect(fHistos, fRingSums, 
-			      ivz, fAODFMD.GetHistogram(),
-			      fAODFMD.GetCentrality())) {
+   
+  Bool_t add = fAODFMD.IsTriggerBits(AliAODForwardMult::kInel);
+  if (!fHistCollector.Collect(fHistos, 
+			      fRingSums, 
+			      ivz, 
+			      fAODFMD.GetHistogram(),
+			      fAODFMD.GetCentrality(),
+			      false,
+			      add)) {
     AliWarning("Histogram collector failed");
     return false;
   }
-  if (!fHistCollector.Collect(fMCHistos, fMCRingSums, 
-			      ivz, fMCAODFMD.GetHistogram(), -1, true)) {
+  if (!fHistCollector.Collect(fMCHistos, 
+			      fMCRingSums, 
+			      ivz, 
+			      fMCAODFMD.GetHistogram(), 
+			      -1, 
+			      true,
+			      add)) {
     AliWarning("MC Histogram collector failed");
     return false;
   }
@@ -341,7 +351,7 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   }
 #endif
 
-  if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel))
+  if (add)
     fHData->Add(&(fAODFMD.GetHistogram()));
 
   return true;
