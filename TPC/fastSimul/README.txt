@@ -18,9 +18,9 @@ a) Which macro to use (I know it was somewhere in AliRoot
 
    Example case - submit 40 jobs with 100 tracks.
    
-   source $ALICE_ROOT/TPCdev/TPC/fastSimul/simul.sh
+   source $ALICE_ROOT/TPC/fastSimul/simul.sh
    makeEnvLocal             #this is just example please setup your environmnet script to set env variables 
-   makeSubmitRUN 40 100
+   makeSubmitRUN 80 100 0.9
 
 c) what do I need to run it (aliroot version?) 
    Recent AliRoot
