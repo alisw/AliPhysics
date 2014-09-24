@@ -28,10 +28,9 @@ public:
   MakeFMDELossTrain(const char* name  = "FMD Energy Loss")
     : TrainSetup(name)
   {
-    fOptions.Add("cent", "Use centrality");
     fOptions.Add("only-mb", "Only collect statistics from MB events");
-    fOptions.Add("residuals", "MODE", "Optional calculation of residuals", "");
-    fOptions.Add("corr", "DIR", "Corrections dir", "");
+    fOptions.Add("config",  "FILE", "Configuration", "elossFitConfig.C");
+    fOptions.Add("corr",    "DIR",  "Corrections dir", "");
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -69,24 +68,20 @@ protected:
 
     // --- Check if this is MC ---------------------------------------
     Bool_t   mc     = HasMCHandler();
-    Bool_t   cent   = fOptions.Has("cent");
     Bool_t   onlyMB = fOptions.AsBool("only-mb");
-    Int_t    verb   = fOptions.AsInt("verbose");
+    TString  config = fOptions.Get("config"); 
     TString  corrs  = "";
-    if (fOptions.Has("corr")) {
-      corrs = fOptions.Get("corr"); 
-    }
-    TString  resi   = "";
-    if (fOptions.Has("residuals")) resi = fOptions.Get("residuals"); 
+    if (fOptions.Has("corr")) corrs = fOptions.Get("corr"); 
 
     // --- Add the task ----------------------------------------------
-    AddTask("AddTaskFMDELoss.C", Form("%d,%d,%d,%d,\"%s\",\"%s\"", 
-				      mc, cent, onlyMB, verb, 
-				      resi.Data(), corrs.Data()));
-
-    if (!corrs.IsNull()) {
+    AddTask("AddTaskFMDELoss.C", Form("%d,%d,\"%s\",\"%s\"", 
+				      mc, onlyMB,  
+				      config.Data(), 
+				      corrs.Data()));
+    fHelper->LoadAux(gSystem->Which(gROOT->GetMacroPath(), config), true);
+    if (!corrs.IsNull())
       fHelper->LoadAux(Form("%s/fmd_corrections.root",corrs.Data()), true);
-    }
+    
   }
   /** 
    * Create entrality selection if enabled 
