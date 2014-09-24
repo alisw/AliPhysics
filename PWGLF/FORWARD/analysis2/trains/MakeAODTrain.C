@@ -186,8 +186,7 @@ protected:
     opts.Add("trig", "TRIGGER", "Trigger type", "INEL");
     opts.Add("vzMin", "CENTIMETER", "Lower bound on Ip Z", -10.);
     opts.Add("vzMax", "CENTIMETER", "Upper bound on Ip Z", +10.);
-    opts.Add("scheme", "FLAGS", "Normalization scheme", 
-	     "TRIGGER EVENT BACKGROUND");
+    opts.Add("scheme", "FLAGS", "Normalization scheme", "TRIGGER,EVENT");
     opts.Add("trigEff", "EFFICIENCY", "Trigger efficiency", 1.);
     opts.Add("trigEff0", "EFFICIENCY", "0-bin trigger efficiency", 1.);
     opts.Add("mc", "Also analyse MC truth", fHelper->IsMC());
@@ -230,14 +229,12 @@ protected:
       
       name.ReplaceAll("inel", "nsd");
       opts.Set("trig", "V0AND");
-      opts.Set("scheme", "EVENT TRIGGER");
       SaveSetupROOT("dNdetaNSD", cls, name, opts, &uopts);
       if (asShellScript) 
 	SaveSetupShell("dndeta_nsd", cls, name, opts, &uopts);
       
       name.ReplaceAll("nsd", "inelgt0");
       opts.Set("trig", "INELGT0");
-      opts.Set("scheme", "EVENT TRIGGER");
       SaveSetupROOT("dNdetaINELGt0", cls, name, opts, &uopts);
       if (asShellScript) 
 	SaveSetupShell("dndeta_inelgt0", cls, name, opts, &uopts);
