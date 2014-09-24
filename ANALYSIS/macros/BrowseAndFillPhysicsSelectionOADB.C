@@ -65,9 +65,8 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbContFillingScheme->AddDefaultObject(fsDefault);
 
   // DefaultPP
-  // TODO: this is also used for pA at the moment. Do we need a separate category?
-  Int_t triggerCount = 0;
   AliOADBPhysicsSelection * oadbDefaultPP = new AliOADBPhysicsSelection("oadbDefaultPP");
+  Int_t triggerCount = 0;
   oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kINT7,"+CINT7-[I|B|S]-NOPF-ALLNOTRD,CINT7-[B|S]-NOPF-CENTNOTRD","B",triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT7,"+CINT7-AC-NOPF-ALLNOTRD","AC",  triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT7,"+CINT7-E-NOPF-ALLNOTRD","E",    triggerCount);  
@@ -1192,14 +1191,12 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC12g->SetOfflineTrigger          ( triggerCount,"(SPDGFOL1 >= 10 && V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
 
   oadbContPS->AppendObject(oadbLHC12g, 188124, 188374);
-  triggerCount=0;
-
 
   //
   // OADB Object for pA run (Jan 2013)
   //
   AliOADBPhysicsSelection * oadbLHC13b = new AliOADBPhysicsSelection("oadbLHC13b");
-
+  triggerCount=0;
   oadbLHC13b->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-B-NOPF-ALLNOTRD","B", triggerCount);
   oadbLHC13b->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-A-NOPF-ALLNOTRD","A", triggerCount);
   oadbLHC13b->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-C-NOPF-ALLNOTRD","C", triggerCount);
@@ -1339,6 +1336,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   //
   AliOADBPhysicsSelection * oadbLHC13bIncompleteEvents = new AliOADBPhysicsSelection("oadbLHC13bIncompleteEvents");
 
+  triggerCount=0;
   oadbLHC13bIncompleteEvents->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-B-NOPF-ALLNOTRD","B", triggerCount);
   oadbLHC13bIncompleteEvents->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-A-NOPF-ALLNOTRD","A", triggerCount);
   oadbLHC13bIncompleteEvents->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-C-NOPF-ALLNOTRD","C", triggerCount);
@@ -1476,6 +1474,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   //
   AliOADBPhysicsSelection * oadbLHC13f = new AliOADBPhysicsSelection("oadbLHC13f");
 
+  triggerCount=0;
   oadbLHC13f->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-B-NOPF-ALLNOTRD","B", triggerCount);
   oadbLHC13f->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-A-NOPF-ALLNOTRD","A", triggerCount);
   oadbLHC13f->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-C-NOPF-ALLNOTRD","C", triggerCount);
@@ -1692,7 +1691,6 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC13g->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG");
 
   oadbContPS->AppendObject(oadbLHC13g, 197412, 250000);
-  triggerCount=0;
   // ------------------------------------------------------------------------------------------------------------
 
   // Trigger Analysis: ZDC timing cuts
