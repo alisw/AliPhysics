@@ -557,7 +557,7 @@ protected:
 
     // Beautify the text
     calc.ReplaceAll("beta", "#beta");
-    calc.ReplaceAll("eps", "#epsilon");
+    calc.ReplaceAll("eps", "#varepsilon");
     const char* sufs[] = { "all", "acc", "trg", "vtx", "B", "A", "C", "E", 
 			   "V", "T", 0 };
     const char** suf = sufs;
