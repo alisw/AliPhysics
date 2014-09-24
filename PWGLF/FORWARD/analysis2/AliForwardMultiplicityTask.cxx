@@ -149,9 +149,15 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   UInt_t   found     = fEventInspector.Process(&esd, triggers, lowFlux, 
 					       ivz, ip, cent, nClusters);
   FILL_SW(individual,kTimingEventInspector);
-  
-  if (found & AliFMDEventInspector::kNoEvent)    return false;
-  if (found & AliFMDEventInspector::kNoTriggers) return false;
+
+  if (found & AliFMDEventInspector::kNoEvent)    { 
+    fHStatus->Fill(1);
+    return false;
+  }
+  if (found & AliFMDEventInspector::kNoTriggers) {
+    fHStatus->Fill(2);
+    return false;
+  } 
 
   // Set trigger bits, and mark this event for storage 
   fAODFMD.SetTriggerBits(triggers);
@@ -162,13 +168,28 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   MarkEventForStore();
  
   // Do not check if SPD data is there - potential bias 
-  // if (found & AliFMDEventInspector::kNoSPD)      return false;
-  if (found    & AliFMDEventInspector::kNoFMD)      return false;
-  if (found    & AliFMDEventInspector::kNoVertex)   return false;
+  // if (found & AliFMDEventInspector::kNoSPD) {
+  //   fHStatus->Fill(3);
+  //   return false;
+  // }
+  if (found    & AliFMDEventInspector::kNoFMD) {
+    fHStatus->Fill(4);
+    return false;
+  }
+  if (found    & AliFMDEventInspector::kNoVertex) {
+    fHStatus->Fill(5);
+    return false;
+  }
   // Also analyse pile-up events - we'll remove them in later steps. 
-  // if (triggers & AliAODForwardMult::kPileUp)        return false;
+  if (triggers & AliAODForwardMult::kPileUp) {
+    fHStatus->Fill(6);
+    return false;
+  }
   fAODFMD.SetIpZ(ip.Z());
-  if (found & AliFMDEventInspector::kBadVertex)     return false;
+  if (found & AliFMDEventInspector::kBadVertex) {
+    fHStatus->Fill(7);
+    return false;
+  }
 
   // We we do not want to use low flux specific code, we disable it here. 
   if (!fEnableLowFlux) lowFlux = false;
@@ -183,6 +204,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   START_SW(individual);
   if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, ip.Z())) { 
     AliWarning("Sharing filter failed!");
+    fHStatus->Fill(8);
     return false;
   }
   FILL_SW(individual,kTimingSharingFilter);
@@ -192,6 +214,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
+    fHStatus->Fill(9);
     return false;
   }
   FILL_SW(individual,kTimingDensityCalculator);
@@ -200,8 +223,10 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   if (fEventInspector.GetCollisionSystem() == AliFMDEventInspector::kPbPb) {
     START_SW(individual);
     if (!fEventPlaneFinder.FindEventplane(&esd, fAODEP, 
-					  &(fAODFMD.GetHistogram()), &fHistos))
+					  &(fAODFMD.GetHistogram()), &fHistos)){
       AliWarning("Eventplane finder failed!");
+      fHStatus->Fill(10);
+    }
     FILL_SW(individual,kTimingEventPlaneFinder);
   }
   
@@ -213,33 +238,48 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
       if (h && h->TestBit(AliForwardUtil::kSkipRing)) nSkip++;
     }
   }
-  if (nSkip > 0) 
+  if (nSkip > 0) {
     // Skip the rest if we have too many outliers 
+    fHStatus->Fill(11);
     return false;
+  }
   
   // Do the secondary and other corrections. 
   START_SW(individual);
   if (!fCorrections.Correct(fHistos, ivz)) { 
     AliWarning("Corrections failed");
+    fHStatus->Fill(12);
     return false;
   }
   FILL_SW(individual,kTimingCorrections);
 
+  // Check if we should add to internal caches 
+  Bool_t add = (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel) && 
+		!(triggers & AliAODForwardMult::kPileUp) && nSkip < 1);
+
   // Collect our `super' histogram 
   START_SW(individual);
-  if (!fHistCollector.Collect(fHistos, fRingSums, 
-			      ivz, fAODFMD.GetHistogram(),
-			      fAODFMD.GetCentrality())) {
+  if (!fHistCollector.Collect(fHistos, 
+			      fRingSums, 
+			      ivz, 
+			      fAODFMD.GetHistogram(),
+			      fAODFMD.GetCentrality(),
+			      false, 
+			      add)) {
     AliWarning("Histogram collector failed");
+    fHStatus->Fill(13);
     return false;
   }
   FILL_SW(individual,kTimingHistCollector);
 
-  if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel) && 
-      !(triggers & AliAODForwardMult::kPileUp) && nSkip < 1) 
+  if (!add) {
+    fHStatus->Fill(14);
+  }
+  else {
     // Collect rough Min. Bias result
     fHData->Add(&(fAODFMD.GetHistogram()));
-
+    fHStatus->Fill(15);
+  }
   FILL_SW(total,kTimingTotal);
   
   return true;
