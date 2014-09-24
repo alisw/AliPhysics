@@ -20,5 +20,6 @@
 #pragma link C++ class AliStorageAdministratorPanelSetStorageParams+;
 #pragma link C++ class AliEventServerReconstruction+;
 #pragma link C++ class AliEventServerWindow+;
+#pragma link C++ class AliEventServer+;
 
 #endif
