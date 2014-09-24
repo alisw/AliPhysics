@@ -256,7 +256,8 @@ protected:
       fAODEP(),
       fRingSums(),
       fDoTiming(false), 
-      fHTiming(0)
+      fHTiming(0),
+      fHStatus(0)
   {}
   /** 
    * Copy constructor 
@@ -331,9 +332,10 @@ protected:
   AliAODForwardEP        fAODEP;        // Output object
   AliForwardUtil::Histos fRingSums;     // Cache histograms 
   Bool_t                 fDoTiming;     // Whether to do timing or not
-  TProfile*              fHTiming;
+  TProfile*              fHTiming;      // Timing histogram 
+  TH1*                   fHStatus;      // Status histogram
 
-  ClassDef(AliForwardMultiplicityBase,5) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityBase,6) // Forward multiplicity class
 };
 
 #endif
