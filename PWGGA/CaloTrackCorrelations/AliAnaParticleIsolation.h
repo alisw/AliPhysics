@@ -98,6 +98,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt     ; } 
   void 	       SetSumPtThresholds(Int_t i, Float_t pt){ fSumPtThresholds[i] = pt ; }
 
+  void         SetMinCellsAngleOverlap(Float_t n)    { fMinCellsAngleOverlap = n ; }
+
+  
   Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
   void         SwitchOnReIsolation()                 { fReMakeIC      = kTRUE    ; }
   void         SwitchOffReIsolation()                { fReMakeIC      = kFALSE   ; }
@@ -187,6 +190,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNBkgBin;                              // Number of bins on pt content in cone
   Float_t  fBkgBinLimit[20];                      // Pt bin limits on pt content in the cone
 
+  Float_t  fMinCellsAngleOverlap;                 // Number of cells that define the cluster overlap
+  
   // Analysis data members for multiple cones and pt thresholds
   Int_t    fNCones ;                              //! Number of cone sizes to test
   Int_t    fNPtThresFrac ;                        //! Number of ptThres and ptFrac to test
