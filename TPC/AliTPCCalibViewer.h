@@ -80,7 +80,7 @@ public:
    TFriendElement* AddFriend(TTree* tree, const char* alias, Bool_t warn=kFALSE) {return fTree->AddFriend(tree, alias, warn);};
    TFriendElement* AddFriend(const char* treename, TFile* file) {return fTree->AddFriend(treename, file);};
    TTree * GetTree() const { return fTree;}
-
+   static void MakeCalPadAliases(TTree * tree);
    TString* Fit(const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, TVectorD &fitParam, TMatrixD &covMatrix);
 
   // 
