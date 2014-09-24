@@ -196,39 +196,39 @@ void AliEventServerWindow::HandleToolBarAction(Int_t id)
 }
 
 /*
-  void AliEventServerWindow::FinishedReconstruction(Int_t status)
-  {
-// Slot called on termination of child process.
-Int_t run = fServer->GetRunId();
+void AliEventServerWindow::FinishedReconstruction(Int_t status)
+{
+  // Slot called on termination of child process.
+  Int_t run = fServer->GetRunId();
 	
-Info("FinishedReconstruction", "Reconstruction Thread finished \tRunId:%d \tstatus=%d", run, status);
+  Info("FinishedReconstruction", "Reconstruction Thread finished \tRunId:%d \tstatus=%d", run, status);
 
-mIntInt_i i =fRun2PidMap.find(run);
-if (i != fRun2PidMap.end())
-{
-fRunList->RemoveEntry(run);
+  mIntInt_i i =fRun2PidMap.find(run);
+  if (i != fRun2PidMap.end())
+    {
+      fRunList->RemoveEntry(run);
     
-// clean (remove) run's reconstructed directory
-//gSystem->Exec(Form("rm -rf %s/reco/run%d_%d",gSystem->Getenv("ONLINERECO_BASE_DIR"),run,pid));
+      // clean (remove) run's reconstructed directory
+      //gSystem->Exec(Form("rm -rf %s/reco/run%d_%d",gSystem->Getenv("ONLINERECO_BASE_DIR"),run,pid));
       
-if (status == 0)
-{
-fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED", run), run);
-}
-else
-{
-fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED [%d]", run, status), run);
-}
-fRunList->Layout();
+      if (status == 0)
+	{
+	  fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED", run), run);
+	}
+      else
+	{
+	  fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED [%d]", run, status), run);
+	}
+      fRunList->Layout();
     
-}
-else
-{
-Warning("FinishedReconstruction", "Run number %d not registered.", run);
-}
+    }
+  else
+    {
+      Warning("FinishedReconstruction", "Run number %d not registered.", run);
+    }
 
-}
-*/
+    }*/
+
  //------------------------------------------------------------------------------
  // Private methods
  //------------------------------------------------------------------------------
@@ -279,7 +279,8 @@ void AliEventServerWindow::StartOfRun(Int_t run)
 	fRunList->AddEntrySort(TString::Format("%d", run), run);
 	fRunList->Layout();
 	gClient->NeedRedraw(fRunList);
-	
+
+	if(fRecoServer){fRecoServer->StopReconstruction();}
 	StartReco(run);
 }
 
@@ -289,8 +290,9 @@ void AliEventServerWindow::EndOfRun(Int_t run)
 	
 	// Slot called from DIM handler on stop of run.
 	AliInfo(Form("called for Run %d", run) );
-	if(fRecoServer) fRecoServer->StopReconstruction();
+	if(fRecoServer){fRecoServer->StopReconstruction();}
 	
+	printf("Updating GUI");
 	fRunList->RemoveEntry(run);
 	fRunList->Layout();
 	gClient->NeedRedraw(fRunList);

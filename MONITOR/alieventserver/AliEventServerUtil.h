@@ -8,7 +8,7 @@
 #define DEFAULT_SERVER_HOST "tcp://*"
 #define DEFAULT_SERVER_PORT 5024
 #define DEFAULT_SERVER_SAVE_RECO_DIR "/local/reco"
-#define DEFAULT_CDB_STORAGE "local:///local/OCDB/2013"
+#define DEFAULT_CDB_STORAGE "local:///local/cdb"
 #define DEFAULT_CDB_SPEC_STORAGE_PATH1 "/local/reco/GRP/GRP/Data"
 #define DEFAULT_CDB_SPEC_STORAGE_VALUE1 ""
 #define DEFAULT_CDB_SPEC_STORAGE_PATH2 "/local/reco/GRP/CTP/Config"
@@ -23,11 +23,11 @@
 #define DEFAULT_RECO_WRITE_ALIGN 1
 #define DEFAULT_RECO_CLEAN_ESD 0
 #define DEFAULT_RECO_DETECTORS "ALL -PHOS -EMCAL"
-#define DEFAULT_LOGBOOK_HOST "localhost"
+#define DEFAULT_LOGBOOK_HOST "aldaqdb"
 #define DEFAULT_LOGBOOK_PORT 3306
-#define DEFAULT_LOGBOOK_DB "logbook"
-#define DEFAULT_LOGBOOK_USER "dqm"
-#define DEFAULT_LOGBOOK_PASS "dqm123"
+#define DEFAULT_LOGBOOK_DB "LOGBOOK"
+#define DEFAULT_LOGBOOK_USER "logbookdqm"
+#define DEFAULT_LOGBOOK_PASS "SivaGJqi"
 #define DEFAULT_DATA_SOURCE "local"
 
 #include <TSystem.h>

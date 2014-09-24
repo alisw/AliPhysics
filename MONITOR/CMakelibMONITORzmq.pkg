@@ -10,7 +10,7 @@ set ( SRCS
     alistoragemanager/AliStorageDatabase.cxx
     alieventserver/AliEventServerReconstruction.cxx
     alieventserver/AliEventServerWindow.cxx
-
+    alieventserver/AliEventServer.cxx
 )
 
 string ( REPLACE ".cxx" ".h" CINTHDRS "${SRCS}" )
