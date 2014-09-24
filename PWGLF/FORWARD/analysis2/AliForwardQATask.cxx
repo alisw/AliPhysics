@@ -301,9 +301,9 @@ AliForwardQATask::Finalize()
 				       hEventsTrVtx, 
 				       hEventsAcc,
 				       hTriggers)) { 
-    AliError(Form("Didn't get histograms from event selector "
-		  "(hEventsTr=%p,hEventsTrVtx=%p,hEventsAcc=%p)", 
-		  hEventsTr, hEventsTrVtx,hEventsAcc));
+    AliErrorF("Didn't get histograms from event selector "
+	      "(hEventsTr=%p,hEventsTrVtx=%p,hEventsAcc=%p)", 
+	      hEventsTr, hEventsTrVtx,hEventsAcc);
     return false;
   }
 
