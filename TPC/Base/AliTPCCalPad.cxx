@@ -926,7 +926,7 @@ AliTPCCalPad *AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, 
     AliTPCCalROC* calROC  = calPad->GetCalROC(iSec);
     UInt_t nchannels = (UInt_t)treePad->Draw(query,"1","goff",1,iSec);
     if (nchannels!=calROC->GetNchannels()) {
-      ::Error("AliTPCCalPad::MakePad",TString::Format("Wrong query sector\t%d\t%d",iSec,nchannels).Data());
+      ::Error("AliTPCCalPad::MakePad",TString::Format("%s\t:Wrong query sector\t%d\t%d",treePad->GetName(),iSec,nchannels).Data());
       break;
     }
     for (UInt_t index=0; index<nchannels; index++) calROC->SetValue(index,treePad->GetV1()[index]);

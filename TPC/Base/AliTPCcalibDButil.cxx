@@ -3277,3 +3277,47 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
   return tMain;
 }
 
+
+//_____________________________________________________________________________________
+TTree* AliTPCcalibDButil::ConnectPulserTrees(TString baseDir, TTree *tMain)
+{
+  //
+  // baseDir:   Base directory with Pulser information
+  // TTrees are added to the base tree as a friend tree
+  //  
+  // === add the calibPulser trees ======================================
+  TString inputTreesPulserCalib       = gSystem->GetFromPipe(Form("ls %s/calibPulser/20*/*.tree.root",baseDir.Data()));
+  TObjArray *arrInputTreesPulserCalib = inputTreesPulserCalib.Tokenize("\n");
+  for (Int_t itree=0; itree<arrInputTreesPulserCalib->GetEntriesFast(); ++itree) {
+    TFile *fin2 = TFile::Open(arrInputTreesPulserCalib->At(itree)->GetName());
+    TTree *tin = (TTree*)fin2->Get("calPads");
+    gROOT->cd();
+    TString friendName=gSystem->BaseName(arrInputTreesPulserCalib->At(itree)->GetName());
+    friendName.ReplaceAll("calibPulser.","");
+    friendName.ReplaceAll(".tree.root","");
+    friendName="Pulser."+friendName;
+    tMain->AddFriend(tin,friendName.Data());    
+    // set aliases
+
+    tMain->SetAlias((friendName+".CEQmean_LTMRatio").Data(),
+                    TString::Format("(%s.CEQmean.fElements/%s.CEQmean_LTM)",
+                                    friendName.Data(),friendName.Data()).Data());    
+    tMain->SetAlias((friendName+".CEQmean_MedianRatio").Data(),
+                    TString::Format("(%s.CEQmean.fElements/%s.CEQmean_Median)",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".CEQmean_MeanRatio").Data(),
+                    TString::Format("(%s.CEQmean.fElements/%s.CEQmean_Mean)",
+                                    friendName.Data(),friendName.Data()).Data());        
+    //
+    tMain->SetAlias((friendName+".CETmean_LTMDelta").Data(),
+                    TString::Format("(%s.CETmean.fElements-%s.CETmean_LTM)",
+                                    friendName.Data(),friendName.Data()).Data());    
+    tMain->SetAlias((friendName+".CETmean_MedianDelta").Data(),
+                    TString::Format("(%s.CETmean.fElements-s.CETmean_Median)",
+                                    friendName.Data(),friendName.Data()).Data());
+    tMain->SetAlias((friendName+".CETmean_MeanDelta").Data(),
+                    TString::Format("(%s.CETmean.fElements-%s.CETmean_Mean)",
+                                    friendName.Data(),friendName.Data()).Data());        
+  }
+}  
+  
