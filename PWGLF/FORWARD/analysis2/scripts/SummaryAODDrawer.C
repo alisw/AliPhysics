@@ -89,6 +89,15 @@ public:
     // --- Set pause flag --------------------------------------------
     fPause = what & kPause;
 
+    // Plot status if found 
+    TH1* hStatus = GetH1(fSums, "status");
+    if (hStatus) { 
+      hStatus->SetMaximum(hStatus->GetMaximum()*1.2);
+      fBody->SetRightMargin(0.10);
+      DrawInPad(fBody,0,hStatus, "hist text30");
+      PrintCanvas("Status");
+    }
+
     // --- Do each sub-algorithm -------------------------------------
     if (what & kEventInspector)    DrawEventInspector(fSums);
     if (what & kESDFixer)          DrawESDFixer(fSums);
@@ -182,13 +191,14 @@ protected:
     Double_t y1  = eloss->GetMaximum();
     Double_t min = 1000;
     Double_t max = 0;
+    Int_t    iiy = (iy == 4 ? 5 : iy == 5 ? 4 : iy);
     if (method == 0) { // Fixed value
-      max = cuts->GetBinContent(1, iy);
+      max = cuts->GetBinContent(1, iiy);
       min = eloss->GetXaxis()->GetXmin();
     }
     else {
       for (Int_t ix=1; ix <= cuts->GetNbinsX(); ix++) {
-	Double_t c = cuts->GetBinContent(ix, iy);
+	Double_t c = cuts->GetBinContent(ix, iiy);
 	if (c <= 0.0001) continue;
 	min = TMath::Min(c, min);
 	max = TMath::Max(c, max);
@@ -315,8 +325,10 @@ protected:
       hm              = PrintCut(hc, y, "High cut");
       hLow            = GetH2(c, "lowCuts");
       hHigh           = GetH2(c, "highCuts");
-      if (hLow  && nFiles > 0) hLow->Scale(1. / nFiles);
-      if (hHigh && nFiles > 0) hHigh->Scale(1. / nFiles);
+      if (hLow  && nFiles > 0 && !hLow->TestBit(BIT(20)))
+	hLow->Scale(1. / nFiles);
+      if (hHigh && nFiles > 0 && !hHigh->TestBit(BIT(20))) 
+	hHigh->Scale(1. / nFiles);
       DrawCut(fBody, 2, hLow);
       DrawCut(fBody, 3, hHigh);
     }
@@ -339,12 +351,15 @@ protected:
 	
 	TH1*    esdELoss = GetH1(sc, "esdEloss");
 	TH1*    anaELoss = GetH1(sc, "anaEloss");
-	Double_t esdInt  = esdELoss->Integral(0,esdELoss->GetNbinsX()+1);
-	Double_t anaInt  = anaELoss->Integral(0,anaELoss->GetNbinsX()+1);
-	Double_t frac    = esdInt > 0 ? (esdInt-anaInt)/esdInt : 1;
-	esdELoss->GetXaxis()->SetRangeUser(-.1, 2);
 	TGraph* lowCut   = CreateCutGraph(lm, iq,  hLow,  esdELoss, kYellow+1);
 	TGraph* highCut  = CreateCutGraph(hm, iq,  hHigh, esdELoss, kCyan+1);
+	Double_t ignCut  = TMath::Max(lowCut->GetX()[3],0.);
+	Int_t    esdLow  = esdELoss->FindBin(ignCut);
+	Int_t    anaLow  = anaELoss->FindBin(ignCut);
+	Double_t esdInt  = esdELoss->Integral(esdLow,esdELoss->GetNbinsX()+1);
+	Double_t anaInt  = anaELoss->Integral(anaLow,anaELoss->GetNbinsX()+1);
+	Double_t frac    = esdInt > 0 ? (esdInt-anaInt)/esdInt : 1;
+	esdELoss->GetXaxis()->SetRangeUser(-.1, 2);
 	
 	DrawInPad(fBody, 1, esdELoss, "", kLogy,
 		  "#Delta/#Delta_{mip} reconstructed and merged");
@@ -358,6 +373,8 @@ protected:
 	l->SetNDC();
 	l->SetTextAlign(32);
 	l->Draw();
+	l->DrawLatex(1-p->GetRightMargin(), 0.45,
+		     Form("%f #rightarrow #infty", ignCut));
 
 	TH1*     singles  = GetH1(sc, "singleEloss");
 	TH1*     doubles  = GetH1(sc, "doubleEloss");
@@ -400,11 +417,18 @@ protected:
 	  nB->GetXaxis()->SetRangeUser(0,2); 
 	  nB->GetYaxis()->SetRangeUser(0,2); 
 	}
-	DrawInPad(fBody, 5, nB, "colz cont3", kLogz);
-	DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "col same", kLogz,
-		  "Correlation of neighbors before and after merging");
+	DrawInPad(fBody, 5, nB, "colz cont3", kLogz,
+		  "Correlation of neighbors before merging");
 
-	DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   kLogz);
+	TH2* nA = GetH2(sc, "neighborsAfter");
+	if (nA) { 
+	  nA->GetXaxis()->SetRangeUser(0,2); 
+	  nA->GetYaxis()->SetRangeUser(0,2); 
+	}
+	DrawInPad(fBody, 6, nA, "colz cont3", kLogz,
+		  "Correlation of neighbors after merging");
+
+	// DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   kLogz);
 	
 	PrintCanvas(Form("Sharing filter - %s", *ptr));
 	ptr++;
