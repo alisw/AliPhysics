@@ -44,14 +44,18 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		task->SetCentralityEstimator("V0M");
 		if( downCentLimit == 0 && upCentLimit == 10 ) 
 		{
-			task->SetMassMeanParametrs(-4.03237e-05, 0.138352);
-			task->SetMassSigmaParametrs(0.00722915, 1.24329e-08, 0.00553326, 0.00128347);
+			Double_t meanParametrs[2]  = { -4.03237e-05, 0.138352 };
+			Double_t sigmaParametrs[4] = { 0.00722915, 1.24329e-08, 0.00553326, 0.00128347 };
+			task->SetMassMeanParametrs(meanParametrs);
+			task->SetMassSigmaParametrs(sigmaParametrs);
 		}
 
 		if( downCentLimit == 20 && upCentLimit == 50 ) 
 		{
-			task->SetMassMeanParametrs(1.00796e-05, 0.136096);
-			task->SetMassSigmaParametrs(0.00100059, 1.10485, 0.00570446, 0.00100001);
+			Double_t meanParametrs[2]  = { 1.00796e-05, 0.136096 };
+			Double_t sigmaParametrs[4] = { 0.00100059, 1.10485, 0.00570446, 0.00100001 };
+			task->SetMassMeanParametrs(meanParametrs);
+			task->SetMassSigmaParametrs(sigmaParametrs);
 		}
 
 	}
@@ -60,15 +64,18 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		task->SetCentralityEstimator("V0A");
 		if( downCentLimit == 0 && upCentLimit == 10 ) 
 		{
-			task->SetMassMeanParametrs(-1.15288e-05, 0.134496);
-			task->SetMassSigmaParametrs(0.00541561, 1.55431e-15, 0.00661674, 0.00899229);
+			Double_t meanParametrs[2]  = { -1.15288e-05, 0.134496 };
+			Double_t sigmaParametrs[4] = {0.00541561, 1.55431e-15, 0.00661674, 0.00899229 };
+			task->SetMassMeanParametrs(meanParametrs);
+			task->SetMassSigmaParametrs(sigmaParametrs);
 		}
 
 		if( downCentLimit == 20 && upCentLimit == 50 ) 
 		{
-			task->SetMassMeanParametrs(-8.28487e-06, 0.134528);
-			task->SetMassSigmaParametrs(0.0070921, 2.05058e-12, 0.00660061, 0.00750263);
-
+			Double_t meanParametrs[2]  = { -8.28487e-06, 0.134528 };
+			Double_t sigmaParametrs[4] = { 0.0070921, 2.05058e-12, 0.00660061, 0.00750263 };
+			task->SetMassMeanParametrs(meanParametrs);
+			task->SetMassSigmaParametrs(sigmaParametrs);
 		}
 	}
 
@@ -96,8 +103,6 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
 
-	task->SetAnalysisAlgoritmForReal("ME");
-	task->SetAnalysisAlgoritmForMix("ME");
 	task->EnableTOFCut(false, 100.e-9);
 	task->SelectCollisionCandidates(AliVEvent::kAny);
 	task->SetCentralityBorders(downCentLimit , upCentLimit) ;
