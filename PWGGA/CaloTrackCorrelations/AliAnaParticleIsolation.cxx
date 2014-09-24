@@ -70,6 +70,7 @@ fFillNLMHistograms(0),
 fLeadingOnly(0),                  fCheckLeadingWithNeutralClusters(0),
 fSelectPrimariesInCone(0),        fMakePrimaryPi0DecayStudy(0),
 fFillBackgroundBinHistograms(0),  fNBkgBin(0),
+fMinCellsAngleOverlap(0),
 // Several IC
 fNCones(0),                       fNPtThresFrac(0),
 fConeSizes(),                     fPtThresholds(),
@@ -3357,6 +3358,8 @@ void AliAnaParticleIsolation::InitParameters()
   fReMakeIC = kFALSE ;
   fMakeSeveralIC = kFALSE ;
   
+  fMinCellsAngleOverlap = 3.;
+  
   fLeadingOnly = kTRUE;
   fCheckLeadingWithNeutralClusters = kTRUE;
   
@@ -3919,12 +3922,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   Float_t minECalo     = 0;
   if      (fCalorimeter=="EMCAL")
   {
-    overlapAngle = 3*0.014  ;
+    overlapAngle = fMinCellsAngleOverlap*0.014  ;
     minECalo = GetReader()->GetEMCALEMin();
   }
   else if (fCalorimeter=="PHOS" )
   {
-    overlapAngle = 3*0.00382;
+    overlapAngle = fMinCellsAngleOverlap*0.00382;
     minECalo = GetReader()->GetPHOSEMin();
   }
   
