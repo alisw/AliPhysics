@@ -203,7 +203,7 @@ public:
    * 
    * @return true on success, false otherwise
    */
-  virtual Bool_t Configure(const char* macro="ForwardAODConfig.C");
+  virtual Bool_t Configure(const char* macro="-default-");
   /** 
    * Get a reference to the event inspector. User must override this
    * to return proper object
@@ -342,6 +342,11 @@ protected:
    * @return Pointer to ESD event structore 
    */
   virtual AliESDEvent* GetESDEvent();
+
+  virtual const char* DefaultConfig() const 
+  {
+    return "ForwardAODConfig.C";
+  }
 
   // --- Members -----------------------------------------------------
   Bool_t fFirstEvent;        // Wheter we're waiting for the first event
