@@ -147,7 +147,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fTrackPtEta(0),     
   fTrackPtEtaCut(0),
   fMaxCellEPhi(0),
-  fDetaDphiFromTM(0)
+  fDetaDphiFromTM(0),
+  fEoverPvsE(0)
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -258,7 +259,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fTrackPtEta(0),     
   fTrackPtEtaCut(0),   
   fMaxCellEPhi(0),
-  fDetaDphiFromTM(0)
+  fDetaDphiFromTM(0),
+  fEoverPvsE(0)
 {
   // Constructor
 
@@ -455,6 +457,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fDetaDphiFromTM = new TH2F("fDetaDphiFromTM","d#phi vs. d#eta of clusters from track->GetEMCALcluster();d#eta;d#phi",100,-0.05,0.05,200,-0.1,0.1);
   fDetaDphiFromTM->Sumw2();
   fQAList->Add(fDetaDphiFromTM);
+
+  fEoverPvsE = new TH2F("fEoverPvsE","E^{clus}/p^{track} vs E^{clus} (80<TPCsignal<100);E^{clus} [GeV];E^{clus}/p^{track} [c^{-1}]",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,100,0,2);
+  fEoverPvsE->Sumw2();
+  fQAList->Add(fEoverPvsE);
 
   PostData(1, fOutputList);
   PostData(2, fQAList);
@@ -1482,6 +1488,14 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
       fTrackPtPhiCut->Fill(t->Pt(), t->Phi());
       fTrackPtEtaCut->Fill(t->Pt(), t->Eta());
     }
+    if(t->GetTPCsignal()<80 || t->GetTPCsignal()>100)
+      continue;
+    if(t->GetEMCALcluster()<=0 || t->GetEMCALcluster()>nclus)
+      continue;
+    AliVCluster *c = dynamic_cast<AliVCluster*>(clusters->At(t->GetEMCALcluster()));
+    if(!c)
+      continue;
+    fEoverPvsE->Fill(c->E(),c->E()/t->P());
   }
   for(int ic=0;ic<nclus;ic++){
     AliVCluster *c = dynamic_cast<AliVCluster*>(clusters->At(ic));
