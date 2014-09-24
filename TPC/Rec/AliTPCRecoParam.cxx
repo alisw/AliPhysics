@@ -124,6 +124,10 @@ AliTPCRecoParam::AliTPCRecoParam():
   fSystematicErrorClusterInner[0]=0.5;   // 0.5 cm
   fSystematicErrorClusterInner[1]=5;     // 5 cm slope  
   //
+  fSystematicErrorCluster[0]=0;   // sy cluster error
+  fSystematicErrorCluster[1]=0;   // sz cluster error  
+
+  //
   fCutSharedClusters[0]=0.5; // maximal allowed fraction of shared clusters - shorter track
   fCutSharedClusters[1]=0.25; // maximal allowed fraction of shared clusters - longer  track
   fClusterMaxRange[0]=1;     // y - pad      range

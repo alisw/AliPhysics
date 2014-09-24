@@ -138,8 +138,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
 
   //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
+  void     SetSystematicErrorCluster(Double_t *systematic){ for (Int_t i=0; i<2;i++) fSystematicErrorCluster[i]=systematic[i];}
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
   const Double_t * GetSystematicErrorClusterInner() const { return fSystematicErrorClusterInner;}
+  const Double_t * GetSystematicErrorCluster() const { return fSystematicErrorCluster;}
 
   void    SetUseSystematicCorrelation(Bool_t useCorrelation)  {fUseSystematicCorrelation=useCorrelation;}
   Bool_t  GetUseSystematicCorrelation() const { return fUseSystematicCorrelation;}
@@ -227,6 +229,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix 
   Double_t fSystematicErrorClusterInner[2];  // systematic error of the cluster - used to downscale the information
+  Double_t fSystematicErrorCluster[2];        // systematic error of the cluster - used e.g in OpenGG run to provide better cluster to track association efficiency
   Bool_t fUseSystematicCorrelation;         // switch to use the correlation for the sys
 public:   
   static Bool_t fgUseTimeCalibration; // flag usage the time dependent calibration
