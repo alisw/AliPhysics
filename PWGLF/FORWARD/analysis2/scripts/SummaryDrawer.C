@@ -1567,13 +1567,20 @@ protected:
       DrawInPad(fBody, 6, GetH1(c, "type"),            "hist text");
 
     TH1* cent     = GetH1(c, "cent");
-    TH2* centQual = GetH2(c, "centVsQuality");
-    if (cent && centQual) { 
+    if (cent) { 
       cent->Scale(1, "width");
-      centQual->Scale(1, "width");
       DrawInPad(fBody, 7, cent, "", kLogy);
+    }
+
+#if 0
+    TH2* centQual = GetH2(c, "centVsQuality");
+    if (centQual) { 
+      centQual->Scale(1, "width");
       DrawInPad(fBody, 8, centQual, "colz", kLogz);
     }
+#else 
+    DrawInPad(fBody, 8, GetH1(c, "pileupStatus"), "hist text30");
+#endif
     
     PrintCanvas("EventInspector - Histograms");  
 
