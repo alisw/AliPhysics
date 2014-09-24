@@ -291,7 +291,7 @@ AliCentralMultiplicityTask::Finalize()
   AliInfoF("\n"
 	   "\t# events w/trigger:                 %f\n"
 	   "\t# events w/trigger+vertex:          %f\n"
-	   "\t# events accepted y cuts:           %f", 
+	   "\t# events accepted by cuts:          %f", 
 	   nTr, nTrVtx, nAcc);
   return true;
 }
