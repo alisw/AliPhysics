@@ -202,6 +202,8 @@ protected:
    */
   AliFMDEnergyFitterTask& operator=(const AliFMDEnergyFitterTask& o);
 
+  virtual const char* DefaultConfig() const { return "elossFitConfig.C"; }
+
   AliFMDEventInspector fEventInspector; // Algorithm
   AliFMDESDFixer       fESDFixer;       // Algorithm
   AliFMDEnergyFitter   fEnergyFitter;   // Algorithm
