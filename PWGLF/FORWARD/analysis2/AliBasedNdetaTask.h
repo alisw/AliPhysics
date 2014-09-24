@@ -57,8 +57,7 @@ public:
     /** 
      * Do the full normalisation 
      * @f[ 
-     *   N = \frac{1}{\epsilon_X}(N_A-N_A/N_V(N_T-N_V)) = 
-     *       \frac{1}{\epsilon_X}\frac{1}{\epsilon_V}N_A
+     *   N = (N_A-N_A/N_V(N_T-N_V)) = \frac{1}{\epsilon_V}N_A
      * @f]
      */
     kEventLevel = 0x1,
@@ -67,11 +66,15 @@ public:
      */
     kDummy = 0x2, 
     /** 
-     * Correct for background events (A+C-E). Not implemented yet
+     * Correct for background events (A+C-E)
      */
     kBackground = 0x4,
     /**
-     * Correct for the trigger efficiency from MC 
+     * Correct for the trigger efficiency
+     *
+     * @f[
+     *   N = N_A \frac{1}{\epsilon_X}
+     * @f]
      */
     kTriggerEfficiency = 0x8,
     /** 
