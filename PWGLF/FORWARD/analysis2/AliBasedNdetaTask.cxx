@@ -29,8 +29,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fEmpiricalCorrection(0),
     fMeanVsC(0),
     fCentMethod("VOM"),
-  fPileupMask(0),
-  fAnaUtil(),
+    fPileupMask(0),
+    fAnaUtil(),
     fCheckSPDOutlier(false)
 {
   // 
