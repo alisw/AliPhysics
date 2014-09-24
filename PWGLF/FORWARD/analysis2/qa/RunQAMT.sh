@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This script runs the Forwardqq QA for the specified production number
+# This script runs the Forward QA for the specified production number
 #
 # The scripts downloads and runs the single run QA in parallel 
 #
