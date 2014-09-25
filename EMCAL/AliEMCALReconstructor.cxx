@@ -151,30 +151,31 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
 
   //AliDebug(2, "Mark.");
 
-  if(fGeom)              delete fGeom;
+  ////RS  if(fGeom)              delete fGeom;
   
   //No need to delete, recovered from OCDB
   //if(fCalibData)         delete fCalibData;
   //if(fPedestalData)      delete fPedestalData;
   
-  if(fgDigitsArr){
-    fgDigitsArr->Clear("C");
-    delete fgDigitsArr; 
-  }
+  if(fgDigitsArr) fgDigitsArr->Clear("C");
+  delete fgDigitsArr; 
+  fgDigitsArr = 0;
   
-  if(fgClustersArr){
-    fgClustersArr->Clear();
-    delete fgClustersArr; 
-  }
+  if(fgClustersArr) fgClustersArr->Clear();
+  delete fgClustersArr; 
+  fgClustersArr = 0;
   
-  if(fgTriggerDigits){
-    fgTriggerDigits->Clear();
-    delete fgTriggerDigits; 
-  }
+  if(fgTriggerDigits) fgTriggerDigits->Clear();
+  delete fgTriggerDigits; 
+  fgTriggerDigits = 0;
   
-  if(fgRawUtils)         delete fgRawUtils;
-  if(fgClusterizer)      delete fgClusterizer;
-  if(fgTriggerProcessor) delete fgTriggerProcessor;
+  delete fgRawUtils;
+  fgRawUtils = 0;
+  delete fgClusterizer;
+  fgClusterizer = 0;
+  
+  delete fgTriggerProcessor;
+  fgTriggerProcessor = 0;
   
   if(fMatches) { fMatches->Delete(); delete fMatches; fMatches = 0;}
   
