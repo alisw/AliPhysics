@@ -23,6 +23,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Float_t  deltaetacut   = 0.02,
                                                       const Float_t  tmin          = -30.,
                                                       const Float_t  tmax          = 30.,
+                                                      const Bool_t   trackTcut     = kFALSE,
                                                       const Int_t    disttobad     = 2,
                                                       const Int_t    nlmMax        =  20,
                                                       const Bool_t   qaan          = kFALSE,
@@ -80,7 +81,7 @@ kPrint = print ;
   
   // General frame setting and configuration
   maker->SetReader   (ConfigureReader   (mgr->GetInputEventHandler()->GetDataType(),useKinematics,simu,
-                                         calorimeter,nonlin, timecut, primvtx, notrackcut,tmin,tmax,minCen, maxCen, debug,print));
+                                         calorimeter,nonlin, timecut, primvtx, notrackcut,tmin,tmax,trackTcut,minCen, maxCen, debug,print));
   maker->SetCaloUtils(ConfigureCaloUtils(nonlin,exotic,simu,timecut,debug,print));
   
   // Analysis tasks setting and configuration
@@ -163,7 +164,8 @@ else
 AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKinematics = kFALSE, Bool_t simu = kFALSE,
                                      TString calorimeter = "EMCAL", Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
                                      Bool_t primvtx = kFALSE, Bool_t notrackcut = kFALSE, Float_t tmin, Float_t tmax,
-                                     Float_t minCen = -1, Float_t maxCen = -1, Int_t debug = -1, Bool_t print = kFALSE)
+                                     Bool_t trackTcut = kFALSE, Float_t minCen = -1, Float_t maxCen = -1,
+                                     Int_t debug = -1, Bool_t print = kFALSE)
 {
   // Init reader settings: event selection, basic cluster track cuts, etc
   
@@ -251,7 +253,11 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
   reader->SwitchOffRecalculateVertexBC();
   reader->SwitchOffVertexBCEventSelection();
   
+if(trackTcut)
+  reader->SwitchOnUseTrackTimeCut();
+else
   reader->SwitchOffUseTrackTimeCut();
+
   reader->SetTrackTimeCut(0,50);
   
   reader->SwitchOffUseTrackDCACut();
