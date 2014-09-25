@@ -35,6 +35,7 @@
 #include "TTree.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliSysInfo.h"
 
 using namespace std;
 
@@ -201,7 +202,10 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
 						    AliHLTComponentBlockDataList& outputBlocks) {
   // see header file for class documentation
 
-  printf("AliHLTGlobalEsdToFlatConverterComponent::DoEvent\n");
+	
+	
+	
+  AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Start");
   Int_t iResult=0;
 
 	
@@ -217,25 +221,19 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
 	
 	
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
-    cout<<"Found ESD in esd test component !!!"<<endl;
     esd =dynamic_cast<AliESDEvent*>(const_cast<TObject*>(iter));
     if( esd ){
       esd->GetStdContent();
-      cout<<"N ESD tracks: "<<esd->GetNumberOfTracks()<<endl;
 			iResult=1;
     } else {
-      cout<<"ESD pointer is NULL "<<endl;
     }
   }
 
    for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject | kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {     
      //fBenchmark.AddInput(pBlock->fSize);
-    cout<<"Found ESD friend in esd test component !!!"<<endl;
     const AliESDfriend *esdFriend = dynamic_cast<const AliESDfriend*>(iter);
     if( esdFriend ){
-      cout<<"N friend tracks: "<<esdFriend->GetNumberOfTracks()<<endl;
     } else {
-      cout<<"ESD friend pointer is NULL "<<endl;
     }
   }
            
@@ -268,6 +266,8 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
 	}
  
  
+	
+  AliSysInfo::AddStamp("AliHLTGlobalEsdToFlatConverterComponent::DoEvent.Stop",0, flatEsd->GetSize(),flatEsd->GetNumberOfV0s(),flatEsd->GetNumberOfTracks());
  
  
   return iResult;

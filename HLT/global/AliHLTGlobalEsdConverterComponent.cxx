@@ -343,7 +343,7 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
   int iResult=0;
 
 
-  AliSysInfo::AddStamp("DoEvent.Start", evtData.fStructSize);
+  AliSysInfo::AddStamp("AliHLTGlobalEsdConverterComponent::DoEvent.Start", evtData.fStructSize);
 
   bool benchmark = true;
 
@@ -430,21 +430,13 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
   
     if(benchmark){
 	
-		Int_t nV0s = pESD->GetNumberOfV0s();
-		Int_t nTracks = pESD->GetNumberOfTracks();
-	
 	
 	Double_t statistics[10]; 
 	TString names[10];
 	fBenchmark.GetStatisticsData(statistics, names);
-	//  statistics[5] = nTracks;
-	//  statistics[6] = time;
-	//  statistics[7] = nV0s;
-	  
-	//  FillBenchmarkHistos( statistics, names);
 	  fBenchmark.Reset();
   
-	AliSysInfo::AddStamp("DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]),pESD->GetNumberOfV0s(),pESD->GetNumberOfTracks() );
+	AliSysInfo::AddStamp("AliHLTGlobalEsdConverterComponent::DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]),pESD->GetNumberOfV0s(),pESD->GetNumberOfTracks() );
   }
   
   for(Int_t i=0; i<fkNPartition; i++){
