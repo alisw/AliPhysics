@@ -47,7 +47,7 @@
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 
-#include "AliEMCalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliEMCalPtTaskVTrackSelection.h"
 #include "AliEMCalPtTaskTrackSelectionAOD.h"
