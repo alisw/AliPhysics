@@ -85,7 +85,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   Double_t DeltaPhiStar(AliAODTrack* ftrack1, AliAODTrack* ftrack2, Double_t r);
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks, Double_t psi);
   Double_t GetDeltaPhiEP(Double_t px1, Double_t py1, Double_t px2, Double_t py2, Double_t psi);
-  Bool_t FindBin(Double_t kt, Double_t phi, Double_t cent, Double_t vz, Int_t& a, Int_t& b, Int_t&c, Int_t& d);
+  Bool_t FindBin(Double_t kt, Double_t phi, Double_t cent, Int_t& a, Int_t& b, Int_t&c);
 
   AliAODEvent            *fAOD; //!    // AOD object
   TList                  *fOutputList; //! Compact Output list
@@ -135,8 +135,8 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
 
   Double_t vertex[3];
 
-  TH3F***** hq;
-  TH3F***** hqmix;
+  TH3F**** hq;
+  TH3F**** hqmix;
 
   Int_t nqPercBinsLHC11h;
   Double_t* qPercBinsLHC11h; //[nqPercBinsLHC11h]
