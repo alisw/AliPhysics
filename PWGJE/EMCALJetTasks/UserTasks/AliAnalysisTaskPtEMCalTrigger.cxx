@@ -47,6 +47,7 @@
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 
+#include "AliEMCalTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliEMCalPtTaskVTrackSelection.h"
 #include "AliEMCalPtTaskTrackSelectionAOD.h"
@@ -120,6 +121,7 @@ namespace EMCalTriggerPtAnalysis {
 		AliParticleContainer *trackContainer = this->AddParticleContainer(trackContainerName.Data());
 		trackContainer->SetClassName("AliVTrack");
 		this->AddClusterContainer(clusterContainerName.Data());
+		this->SetCaloTriggerPatchInfoName("EmcalTriggers");
 		fHistos = new AliEMCalHistoContainer("PtEMCalTriggerHistograms");
 		fHistos->ReleaseOwner();
 
@@ -183,6 +185,12 @@ namespace EMCalTriggerPtAnalysis {
 		const TAxis *clusteraxes[4];
 		for(int iaxis = 0; iaxis < 4; ++iaxis) clusteraxes[iaxis] = hclusteraxes + iaxis;
 		try{
+			std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
+			for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
+				fHistos->CreateTH1(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 100, 0., 100.);
+				fHistos->CreateTH1(Form("EnergyMain%s", triggerpatch->c_str()), Form("Patch energy for main %s trigger patches", triggerpatch->c_str()), 100, 0., 100.);
+			}
+
 			// Create histogram for MC-truth
 			fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 3, trackaxes);
 			for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
@@ -242,6 +250,37 @@ namespace EMCalTriggerPtAnalysis {
 			}
 			// Build always trigger strig from the trigger maker in case of MC
     		fUseTriggersFromTriggerMaker = kTRUE;
+		}
+
+		// Loop over trigger patches, fill patch energy
+		AliEmcalTriggerPatchInfo *triggerpatch(NULL);
+		TIter patchIter(this->fTriggerPatchInfo);
+		while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
+			if(triggerpatch->IsJetHigh()){
+				fHistos->FillTH1("EnergyJetHigh", triggerpatch->GetPatchE());
+				if(triggerpatch->IsMainTrigger())
+					fHistos->FillTH1("EnergyMainJetHigh", triggerpatch->GetPatchE());
+			}
+			if(triggerpatch->IsJetLow()){
+				fHistos->FillTH1("EnergyJetLow", triggerpatch->GetPatchE());
+				if(triggerpatch->IsMainTrigger())
+					fHistos->FillTH1("EnergyMainJetLow", triggerpatch->GetPatchE());
+			}
+			if(triggerpatch->IsGammaHigh()){
+				fHistos->FillTH1("EnergyGammaHigh", triggerpatch->GetPatchE());
+				if(triggerpatch->IsMainTrigger())
+					fHistos->FillTH1("EnergyMainGammaHigh", triggerpatch->GetPatchE());
+			}
+			if(triggerpatch->IsGammaLow()){
+				fHistos->FillTH1("EnergyGammaLow", triggerpatch->GetPatchE());
+				if(triggerpatch->IsMainTrigger())
+					fHistos->FillTH1("EnergyMainGammaLow", triggerpatch->GetPatchE());
+			}
+			if(triggerpatch->IsLevel0()){
+				fHistos->FillTH1("EnergyLevel0", triggerpatch->GetPatchE());
+				if(triggerpatch->IsMainTrigger())
+					fHistos->FillTH1("EnergyMainLevel0", triggerpatch->GetPatchE());
+			}
 		}
 
 		const AliVVertex *vtxTracks = fInputEvent->GetPrimaryVertex(),
