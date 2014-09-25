@@ -106,6 +106,9 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedExternal_Phi1", "Jets p_{T} distribution, external background (Improved CMS) subtracted (1st part of azimuth)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedExternal_Phi2", "Jets p_{T} distribution, external background (Improved CMS) subtracted (2nd part of azimuth)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS", "Jets p_{T} distribution, KT background (Improved CMS) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS_Biased_10GeV", "Jets p_{T} distribution, KT background (Improved CMS) subtracted, leading track bias 10 GeV", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS_Biased_5GeV", "Jets p_{T} distribution, KT background (Improved CMS) subtracted, leading track bias 5 GeV", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS_Biased_2GeV", "Jets p_{T} distribution, KT background (Improved CMS) subtracted, leading track bias 2 GeV", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedTR", "Jets p_{T} distribution, TR background (Cone R=0.6 around jets excluded) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTPbPb", "Jets p_{T} distribution, KT background (PbPb w/o ghosts) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTPbPbWithGhosts", "Jets p_{T} distribution, KT background (PbPb w/ ghosts) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
@@ -792,11 +795,13 @@ void AliAnalysisTaskChargedJetsPA::CreateITSTPCMatchingHistograms()
 
       AliESDtrack* trESD = fESD->GetTrack(it1);
       if (!trESD->IsOn(AliESDtrack::kTPCrefit)) continue;
+
       Match(trSA,trESD, nmatch, fExcludeMomFromChi2ITSTPC);
     }
     //
     
     hNMatch->Fill(pt,nmatch);
+
     if (nmatch>0){
       hBestMatch->Fill(pt,fMatchChi[0]);
       hPtCorr_ITSTPC->Fill(pt,fMatchTr[0]->Pt()); 
@@ -807,7 +812,7 @@ void AliAnalysisTaskChargedJetsPA::CreateITSTPCMatchingHistograms()
     if (nmatch>0 && fHybridESDtrackCuts){
       
       if(fHybridESDtrackCuts->AcceptTrack(fMatchTr[0])){
-	hBestMatch_cuts->Fill(pt,fMatchChi[0]);
+        hBestMatch_cuts->Fill(pt,fMatchChi[0]);
       }
     }
     
@@ -823,10 +828,13 @@ void AliAnalysisTaskChargedJetsPA::CreateITSTPCMatchingHistograms()
       if (it1==it) continue;
       AliESDtrack* trESD = fESD->GetTrack(it1);
       if (!trESD->IsOn(AliESDtrack::kTPCrefit)) continue;
+
       Match(trSA,trESD, nmatch, fExcludeMomFromChi2ITSTPC, TMath::Pi());
     }
     //
+
     hNMatchBg->Fill(pt,nmatch);
+
     if (nmatch>0){
       hBestMatchBg->Fill(pt,fMatchChi[0]);
       hdPtRelBg_ITSTPC->Fill(pt,(pt-fMatchTr[0]->Pt())/pt); 
@@ -835,7 +843,7 @@ void AliAnalysisTaskChargedJetsPA::CreateITSTPCMatchingHistograms()
 
     if (nmatch>0 && fHybridESDtrackCuts){
       if(fHybridESDtrackCuts->AcceptTrack(fMatchTr[0])){
-	hBestMatchBg_cuts->Fill(pt,fMatchChi[0]);
+        hBestMatchBg_cuts->Fill(pt,fMatchChi[0]);
       }
     }
 
@@ -885,7 +893,7 @@ void AliAnalysisTaskChargedJetsPA::Match(AliESDtrack* tr0, AliESDtrack* tr1, Int
     chi2 = tr0->GetPredictedChi2(&trtpc);
 
     //std::cout<<" in Match, nmatch "<<nmatch<<" par[4] after "<<trtpc.GetParameter()[4]<<" tr0 mom "<<tr0->GetParameter()[4]
-    //	     <<" chi2 "<<chi2<<std::endl;
+    //         <<" chi2 "<<chi2<<std::endl;
   }
 
 
@@ -893,12 +901,12 @@ void AliAnalysisTaskChargedJetsPA::Match(AliESDtrack* tr0, AliESDtrack* tr1, Int
 
   // std::cout<<" found good match, tr1 "<<tr1<<" chi2 "<<chi2<<std::endl;
   // std::cout<<" before: fMatchChi[0]  "<<fMatchChi[0]<<" [1] "<<fMatchChi[1]
-  // 	   <<" [2]  "<<fMatchChi[2]<<" [3] "<<fMatchChi[3]
-  // 	   <<" [4]  "<<fMatchChi[4]<<std::endl; 
+  //          <<" [2]  "<<fMatchChi[2]<<" [3] "<<fMatchChi[3]
+  //          <<" [4]  "<<fMatchChi[4]<<std::endl; 
 
   // std::cout<<" before: fMatchTr[0]  "<<fMatchTr[0]<<" [1] "<<fMatchTr[1]
-  // 	   <<" [2]  "<<fMatchTr[2]<<" [3] "<<fMatchTr[3]
-  // 	   <<" [4]  "<<fMatchTr[4]<<std::endl; 
+  //          <<" [2]  "<<fMatchTr[2]<<" [3] "<<fMatchTr[3]
+  //          <<" [4]  "<<fMatchTr[4]<<std::endl; 
 
   //
   int ins;
@@ -1911,6 +1919,21 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
 
       for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
         FillHistogram("hJetConstituentPtVsJetPt", tmpJet->TrackAt(j, fTrackArray)->Pt(), tmpJet->Pt());
+
+      // Leading track biased jets
+      Double_t leadingTrackPt = 0.0;
+      for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
+      {
+        if(tmpJet->TrackAt(j, fTrackArray)->Pt() > leadingTrackPt)
+          leadingTrackPt = tmpJet->TrackAt(j, fTrackArray)->Pt();
+      }
+
+      if(leadingTrackPt >= 10)
+        FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS_Biased_10GeV", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
+      else if(leadingTrackPt >= 5)
+        FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS_Biased_5GeV", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
+      else if(leadingTrackPt >= 2)
+        FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS_Biased_2GeV", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
 
       if(tmpJet->Pt() >= 5.0)
       {
