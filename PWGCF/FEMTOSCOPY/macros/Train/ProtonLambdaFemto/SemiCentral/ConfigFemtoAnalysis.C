@@ -65,7 +65,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double psid = TMath::Pi()/6.;
 
   // Switches for QA analyses
-  int runmults[10] = {1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+  int runmults[10] = {0, 0, 1, 1, 1, 1, 0, 0, 0, 0};
   int multbins[11] = {0.00001, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
   int runch[10] = {1, 1, 1, 1, 1, 1, 1, 0, 0, 0};
   //int runch[10] = {1, 1, 1, 0, 0, 0, 0, 0, 0, 0};
@@ -89,7 +89,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
   Reader->SetFilterBit(7);
-  Reader->SetCentralityPreSelection(0.00001, 310);
+  Reader->SetCentralityPreSelection(0.00001, 710);
   Reader->SetReadV0(1); //Read V0
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
