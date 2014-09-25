@@ -20,6 +20,7 @@
 #include "./AliFlatTPCCluster.h"
 #include "./AliFlatExternalTrackParam.h"
 #include "./AliFlatESDTrigger.h"
+#include "./AliFlatESDV0.h"
 #include "Riostream.h"
 #endif   
 
@@ -108,7 +109,7 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
 	  
 	  // compare triggers
 	  
-	  
+	  /*
 		cout<<"------------------\ntriggers\n------------------\n";
     AliFlatESDTrigger * trigger =const_cast<AliFlatESDTrigger*>(flatEsd->GetTriggerClasses() ) ;
     for( Int_t i = 0; i < flatEsd->GetNumberOfTriggerClasses() ; i++ ){
@@ -119,9 +120,27 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
 			
       trigger= trigger->GetNextTriggerNonConst();
     }
+	  **/
 	  
-	  
+	  // compare v0s
 
+	  
+	if(flatEsd->GetNumberOfV0s()  ){
+		cout<<"------------------\nv0s\n------------------\n";
+		
+    AliFlatESDV0 * v0 = const_cast<AliFlatESDV0*>(flatEsd->GetV0s() ) ;
+    for( Int_t i = 0; i < flatEsd->GetNumberOfV0s(); i++ ){
+      cout<<"\nnew v0\n";
+			cout<<"AliFlatESDV0::GetSize "<<v0->GetSize()<<endl; 
+			cout<<"AliFlatESDV0::GetNegTrackID "<<v0->GetNegTrackID()<<endl ; 
+			cout<<"AliFlatESDV0::GetPosTrackID "<<v0->GetPosTrackID()<<endl; 
+			
+      v0 = v0->GetNextV0NonConst();
+    }
+	}
+	  
+	  
+	  
 	  
 	  
 }

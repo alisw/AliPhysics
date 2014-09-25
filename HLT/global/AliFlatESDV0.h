@@ -37,8 +37,9 @@ class AliFlatESDV0
 
   // --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  
   
-  const AliFlatESDV0 *GetNextV0() const { return reinterpret_cast<const AliFlatESDV0*>( this+GetSize() ); }
-  AliFlatESDV0 *GetNextV0NonConst() { return reinterpret_cast<AliFlatESDV0*>( this+GetSize() ); }
+  const AliFlatESDV0 *GetNextV0() const { return reinterpret_cast<const AliFlatESDV0*>( this+1 ); }
+  AliFlatESDV0 *GetNextV0NonConst() { return reinterpret_cast<AliFlatESDV0*>( this+1 ); }
+
 
  private:
 
