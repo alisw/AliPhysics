@@ -108,6 +108,7 @@ TGeoManager* AliGeomManager::fgGeometry = 0x0;
 void AliGeomManager::Destroy()
 {
   // destroy the manager as well as gGeoManager (if it was not attached to fgGeometry)
+  TGeoManager::UnlockGeometry();
   delete gGeoManager;
   fgGeometry = gGeoManager = 0;
   ResetPNEntriesLUT();
