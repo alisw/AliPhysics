@@ -1152,28 +1152,3 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   if (iResult>=0) iResult=iAddedDataBlocks;
   return iResult;
 }
-
-
-
-/*
-void AliHLTGlobalEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString *names){
-return;
-
-//  cout<<"Now writing benchmarks to " <<  fBenchmarkHistosFilename <<endl<<endl;
-    
-  TFile *f = TFile::Open(fBenchmarkHistosFilename,"UPDATE");
-  THnSparseD *s = (THnSparseD*)f->Get("benchmarkInformation");
-  TNamed *t = (TNamed*)f->Get("time");
-	
-  if(!s){
-	HLTWarning( "Benchmark Histograms not available!" );
-	return;
-  }
-  s->Fill(statistics);
-
-  TList histosList;
-  histosList.Add(s);
-  histosList.Add(t);
-  histosList.SaveAs(fBenchmarkHistosFilename);
-}
-*/

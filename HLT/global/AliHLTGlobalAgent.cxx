@@ -174,6 +174,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   pHandler->CreateConfiguration("GLOBAL-flat-esd-test", "GlobalFlatEsdTest", "GLOBAL-esd-converter GLOBAL-flat-esd-converter", "");
   pHandler->CreateConfiguration("esd-to-flat-conversion", "GlobalEsdToFlatConverter", "GLOBAL-esd-converter", "");
   pHandler->CreateConfiguration("compare-flat", "GlobalCompareFlat", "GLOBAL-flat-esd-converter esd-to-flat-conversion", "");
+  //pHandler->CreateConfiguration("compare-flat", "GlobalCompareFlat", "GLOBAL-flat-esd-converter", "");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //

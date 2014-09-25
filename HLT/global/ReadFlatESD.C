@@ -97,29 +97,9 @@ cout<<" GetX"<<iExt<<" :"  << (ext[iExt] ? ext[iExt]->GetX(): -9999) <<endl;
 			
 
 }
-	
-		cout<<" nTPCclusters: "<<track->GetNumberOfTPCClusters()<< endl;
-		cout<<" nITSclusters: "<<track->GetNumberOfITSClusters()<< endl;
 
 // read clusters
-#if 0
-	Int_t nCl = track->GetNumberOfTPCClusters();
-	if(nCl && verbose > 1){
-	
-    for (Int_t idxRow = 0; idxRow <  nCl; idxRow++){
-		cout<<"rowNr "<< idxRow<<endl;
-      
-		AliFlatTPCCluster * cl = track->GetTPCCluster(idxRow);
 
-			 	cout<<" idx fX fY fZ  fSigmaY2 fSigmaZ2 fCharge fQMax fPadRow" <<endl;
-				if(cl) {
-				cout<< idxRow <<" "<< cl->GetX()<<" "<< cl->GetY()<<" "<< cl->GetZ()<<" "<< cl->GetSigmaY2()<<" "<< cl->GetSigmaZ2()<<" "<< cl->GetCharge()<<" "<< cl->GetQMax() <<" "<< cl->GetPadRow()<<endl;
-				
-				}
-				else cout <<"----------------------------------------------------"<<endl;
-		}
-	}
-#endif
 	
 	
       track = const_cast<AliFlatESDTrack*> (track->GetNextTrack());

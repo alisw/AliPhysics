@@ -36,7 +36,7 @@ void CompareFlatESDs(const char* filename1="outFlatESD1.dat",const char* filenam
 	
 		Int_t bins[nDim] = {2};
 		Double_t mins[nDim] = {0};
-		Double_t maxs[nDim] = {0};
+		Double_t maxs[nDim] = {1};
 		hDiff = new THnSparseD("Differences","Differences",nDim,bins,mins,maxs);
 	
   

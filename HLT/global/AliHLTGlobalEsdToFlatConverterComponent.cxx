@@ -98,7 +98,7 @@ AliHLTComponentDataType AliHLTGlobalEsdToFlatConverterComponent::GetOutputDataTy
 // #################################################################################
 void AliHLTGlobalEsdToFlatConverterComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 100;
+  constBase = 10000;
   inputMultiplier = 10.0;
 }
 
@@ -204,6 +204,11 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
   printf("AliHLTGlobalEsdToFlatConverterComponent::DoEvent\n");
   Int_t iResult=0;
 
+	
+	
+  size_t maxOutputSize = size;
+  size = 0;
+	
   // -- Only use data event
   if (!IsDataEvent()) 
     return 0;
@@ -233,10 +238,7 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
       cout<<"ESD friend pointer is NULL "<<endl;
     }
   }
-  
-	
-	
-   if (iResult>=0) {            
+           
  
  AliFlatESDEvent *flatEsd ;
 
@@ -244,6 +246,9 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     new (flatEsd) AliFlatESDEvent;
   flatEsd->SetFromESD(AliFlatESDEvent::EstimateSize(esd),esd, kTRUE); 
 		 
+	
+	if( maxOutputSize > flatEsd->GetSize() ){
+	
     AliHLTComponentBlockData outBlock;
     FillBlockData( outBlock );
     outBlock.fOffset = size;
@@ -254,7 +259,13 @@ Int_t AliHLTGlobalEsdToFlatConverterComponent::DoEvent(const AliHLTComponentEven
     outputBlocks.push_back( outBlock );
 
     size += outBlock.fSize;
-  }
+		
+	}
+	
+	else {
+		
+	return 0;	
+	}
  
  
  
