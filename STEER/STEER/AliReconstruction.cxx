@@ -334,7 +334,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fMaxVMEM(0)
 {
 // create reconstruction object with default parameters
-  gGeoManager = NULL;
+  AliGeomManager::Destroy();
   
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     fReconstructor[iDet] = NULL;
@@ -1601,7 +1601,6 @@ void AliReconstruction::Begin(TTree *)
   // Should follow the TSelector convention
   // i.e. initialize only the object on the client side
   AliCodeTimerAuto("",0);
-
   AliReconstruction *reco = NULL;
   if (fInput) {
     if ((reco = (AliReconstruction*)fInput->FindObject("AliReconstruction"))) {
