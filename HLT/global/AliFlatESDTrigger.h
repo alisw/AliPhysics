@@ -94,13 +94,17 @@ inline AliFlatESDTrigger::AliFlatESDTrigger( AliVConstructorReinitialisationFlag
 inline Int_t AliFlatESDTrigger::SetTriggerClass(  const char *TriggerClassName, Int_t TriggerIndex, ULong64_t MaxSize )
 {
   // Set trigger class, returns non-zero when the memory needed exeeeds MaxSize
-
-  size_t len = strlen( TriggerClassName );
-
+	
+	
+  size_t len = strlen( TriggerClassName ) ;
+	
+	// strlen does not count the terminating \0 character, but this has to be safed too
+	len ++;
+    
   if( ( fContent + len ) > reinterpret_cast<Byte_t*>(this) + MaxSize ) return -1;
   
   fTriggerIndex = TriggerIndex;
-  fContentSize = len;
+  fContentSize =len;
   strcpy( reinterpret_cast<char*>(fContent), TriggerClassName );
   return 0;
 }
