@@ -93,7 +93,7 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
 AliPHOSReconstructor::~AliPHOSReconstructor()
 {
   // dtor
-  delete fGeom;
+  //  delete fGeom; // RS: fGeom is a static object owned by AliPHOSGeometry::fGeom, don't delete
   delete fClusterizer;
   delete fTSM;
   delete fPID;
