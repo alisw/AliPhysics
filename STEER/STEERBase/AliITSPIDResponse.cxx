@@ -159,41 +159,12 @@ Double_t AliITSPIDResponse::BetheAleph(Double_t p, Double_t mass) const {
 }
 
 //_________________________________________________________________________
-Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA, Bool_t isNuclei) const {
+Double_t AliITSPIDResponse::Bethe(Double_t bg, const Double_t * const par, Bool_t isNuclei) const
+{
 
-  //
-  // returns AliExternalTrackParam::BetheBloch normalized to 
-  // fgMIP at the minimum
-  //
-
-  // NEW: Parameterization for Deuteron and Triton energy loss, reproduced with a polynomial in fixed p range
-  // fBBdeu --> parameters for deuteron
-  // fBBtri --> parameters for triton
-
-
-  Double_t bg=p/mass;
-  Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
-  Double_t gamma=bg/beta;
+  const Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
+  const Double_t gamma=bg/beta;
   Double_t bb=1.;
-  
-  Double_t par[5];
-  if(isSA){
-    if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(0),0.00001)){
-      //if is an electron use a specific BB parameterization
-      //To be used only between 100 and 160 MeV/c
-      for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsaElectron[ip];
-    }else{
-      for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsa[ip];
-    }
-  }else{
-    if(isNuclei){
-      if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(5),0.002)) for(Int_t ip=0; ip<5;ip++) par[ip]=fBBdeu[ip];
-      if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(6),0.001)) for(Int_t ip=0; ip<5;ip++) par[ip]=fBBtri[ip];
-    }
-    else{
-      for(Int_t ip=0; ip<5;ip++) par[ip]=fBBtpcits[ip];
-    }
-  }
 
   Double_t eff=1.0;
   if(bg<par[2])
@@ -209,8 +180,83 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA, Bool_t
       bb=(par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;
     }
   }
-
+  
   return bb;
+}
+
+//_________________________________________________________________________
+Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA, Bool_t isNuclei) const {
+
+  //
+  // returns AliExternalTrackParam::BetheBloch normalized to 
+  // fgMIP at the minimum
+  //
+
+  // NEW: Parameterization for Deuteron and Triton energy loss, reproduced with a polynomial in fixed p range
+  // fBBdeu --> parameters for deuteron
+  // fBBtri --> parameters for triton
+
+
+  const Double_t bg=p/mass;
+
+  //NOTE
+  //NOTE: if changes are made here, please also check the alternative function below
+  //NOTE
+  const Double_t *par=fBBtpcits;
+  if(isSA){
+    if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(0),0.00001)){
+      //if is an electron use a specific BB parameterization
+      //To be used only between 100 and 160 MeV/c
+      par=fBBsaElectron;
+    }else{
+      par=fBBsa;
+    }
+  }else{
+    if(isNuclei){
+      if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(5),0.002)) par=fBBdeu;
+      if(TMath::AreEqualAbs(mass,AliPID::ParticleMass(6),0.001)) par=fBBtri;
+    }
+  }
+
+  return Bethe(bg, par, isNuclei);
+}
+
+//_________________________________________________________________________
+Double_t AliITSPIDResponse::Bethe(Double_t p, AliPID::EParticleType species, Bool_t isSA) const
+{
+  //
+  // Aliternative bethe function assuming a particle type not a mass
+  // should be slightly faster
+  //
+
+  const Double_t m=AliPID::ParticleMassZ(species);
+  const Double_t bg=p/m;
+  Bool_t isNuclei=kFALSE;
+  
+  //NOTE
+  //NOTE: if changes are made here, please also check the alternative function above
+  //NOTE
+  const Double_t *par=fBBtpcits;
+  if(isSA){
+    if(species == AliPID::kElectron){
+      //if is an electron use a specific BB parameterization
+      //To be used only between 100 and 160 MeV/c
+      par=fBBsaElectron;
+    }else{
+      par=fBBsa;
+    }
+  }else{
+    if(species == AliPID::kDeuteron) {
+      par=fBBdeu;
+      isNuclei=kTRUE;
+    }
+    if(species == AliPID::kTriton  ) {
+      par=fBBtri;
+      isNuclei=kTRUE;
+    }
+  }
+
+  return Bethe(bg, par, isNuclei);
 }
 
 //_________________________________________________________________________
@@ -264,27 +310,25 @@ Double_t AliITSPIDResponse::GetResolution(Double_t bethe,
   // Double_t p is used for the resolution of deuteron and triton, because they are function of the momentum
   // default -> Double_t p=0.
 
-  Float_t r;
-  Float_t c=1.; //this is a correction factor used for the nuclei resolution, while for pion/kaon/proton/electron is 1.
-  Double_t par[3];
+  Float_t r=0.f;
+  Double_t c=1.; //this is a correction factor used for the nuclei resolution, while for pion/kaon/proton/electron is 1.
 
   if(isSA) r=fResolSA[nPtsForPid];
   else{
-    if(AliPID::ParticleMass(type)>=AliPID::ParticleMass(5)){ //if mass >= mass_deu -->resolution for nuclei is selected
-      if(type==AliPID::kDeuteron){
-       if(nPtsForPid==3) for(Int_t j=0; j<3; j++) par[j] = fResolTPCITSDeu3[j];
-       if(nPtsForPid==4) for(Int_t j=0; j<3; j++) par[j] = fResolTPCITSDeu4[j];
-       c=par[2];
-      }
-      if(type==AliPID::kTriton){
-       if(nPtsForPid==3) for(Int_t j=0; j<3; j++) par[j] = fResolTPCITSTri3[j];
-       if(nPtsForPid==4) for(Int_t j=0; j<3; j++) par[j] = fResolTPCITSTri4[j];
-       c=par[2];
-      }
-
+    const Double_t *par=0x0;
+    if(type==AliPID::kDeuteron){
+      if(nPtsForPid==3) par = fResolTPCITSDeu3;
+      if(nPtsForPid==4) par = fResolTPCITSDeu4;
+      c=par[2];
       r=par[0]+par[1]*p;
+    } else if(type==AliPID::kTriton){
+      if(nPtsForPid==3) par = fResolTPCITSTri3;
+      if(nPtsForPid==4) par = fResolTPCITSTri4;
+      c=par[2];
+      r=par[0]+par[1]*p;
+    } else{
+      r=fResolTPCITS[nPtsForPid];
     }
-    else r=fResolTPCITS[nPtsForPid];
   }
 
   return r*bethe*c;
