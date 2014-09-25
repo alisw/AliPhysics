@@ -6,6 +6,7 @@
 
 #include <TClonesArray.h>
 #include <iostream>
+#include <bitset>
 
 #include "AliLog.h"
 #include "AliEmcalTriggerPatchInfo.h"
@@ -126,7 +127,7 @@ Bool_t AliEmcalTriggerMaker::Run()
   ULong64_t v0S, thresh;
   Bool_t isOfflineSimple;
   
-  AliEmcalTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma;
+  AliEmcalTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
   AliEmcalTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
 
   // delete patch array, clear setup object
@@ -245,7 +246,6 @@ Bool_t AliEmcalTriggerMaker::Run()
 
   // class is not empty
   if( fCaloTriggers->GetEntries() > 0 ||  fSimpleOfflineTriggers->GetEntries() > 0 ){
- 
     fITrigger = 0;
 		triggerMainGamma = 0;
 		triggerMainJet = 0;
@@ -254,9 +254,8 @@ Bool_t AliEmcalTriggerMaker::Run()
 
     // go throuth the trigger channels, real first, then offline
     while( NextTrigger( isOfflineSimple ) ){
-      
 			// process jet
-			trigger = ProcessPatch( 0, isOfflineSimple );
+			trigger = ProcessPatch( kTMEMCalJet, isOfflineSimple );
 			
 			// save main jet triggers in event
 			if( trigger != 0 ){
@@ -276,7 +275,7 @@ Bool_t AliEmcalTriggerMaker::Run()
 			}
       
 			// process gamma
-			trigger = ProcessPatch( 1, isOfflineSimple );
+			trigger = ProcessPatch( kTMEMCalGamma, isOfflineSimple );
 			
 			// save main gamma triggers in event
 			if( trigger != 0 ){
@@ -293,6 +292,15 @@ Bool_t AliEmcalTriggerMaker::Run()
 					else if( triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE() )
 						triggerMainGammaSimple = trigger;
 				}
+			}
+
+			// level 0 triggers
+			trigger = ProcessPatch(kTMEMCalLevel0, isOfflineSimple);
+
+			// save main level0 trigger in the event
+			if(trigger){
+				if(!triggerMainLevel0) triggerMainLevel0 = trigger;
+				else if(triggerMainLevel0->GetPatchE() < trigger->GetPatchE()) triggerMainLevel0 = trigger;
 			}
 
 //       cout << " pi:" << trigger->GetPhiMin() << " px:" << trigger->GetPhiMax();
@@ -332,6 +340,12 @@ Bool_t AliEmcalTriggerMaker::Run()
       tBits = tBits | ( 1 << 24 );
       triggerMainGammaSimple->SetTriggerBits( tBits );
     }
+    if(triggerMainLevel0){
+    	tBits = triggerMainLevel0->GetTriggerBits();
+    	// main trigger flag
+    	tBits |= (1 << 24);
+    	triggerMainLevel0->SetTriggerBits(tBits);
+    }
     
   } // there are some triggers
 
@@ -339,10 +353,10 @@ Bool_t AliEmcalTriggerMaker::Run()
 }
 
 //________________________________________________________________________
-AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( Int_t type, Bool_t isOfflineSimple ){
+AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( TriggerMakerTriggerType_t type, Bool_t isOfflineSimple ){
 
 	
-  Int_t globCol, globRow, tBits, cellAbsId[4];
+  Int_t globCol, globRow, tBits, cellAbsId[4], posOffset;
   Int_t absId, adcAmp;
   Int_t i, j, k, cmCol, cmRow, cmiCellCol, cmiCellRow;
   Double_t amp, ca, cmiCol, cmiRow;
@@ -357,7 +371,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( Int_t type, Bool_t
 	else
 		fSimpleOfflineTriggers->GetTriggerBits( tBits );
 	
-	if(( type == 0 && ! IsEJE( tBits )) || ( type == 1 && ! IsEGA( tBits )))
+	if(( type == kTMEMCalJet && ! IsEJE( tBits )) || ( type == kTMEMCalGamma && ! IsEGA( tBits )) || (type == kTMEMCalLevel0 && !IsLevel0(tBits)))
 		return 0;
 	
 	// save primary vertex in vector
@@ -385,7 +399,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( Int_t type, Bool_t
 	cmiCol = 0;
 	cmiRow = 0;
 	adcAmp = 0;
-	if( IsEJE( tBits ) && type == 0 ){
+	if( IsEJE( tBits ) && type == kTMEMCalJet ){
 		for( i = 0; i < 16; i++ ){
 			for( j = 0; j < 16; j++ ){
 				// get the 4 cells composing the trigger channel
@@ -408,7 +422,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( Int_t type, Bool_t
 		} // 32x32 cell window
 	}
 	
-	if( IsEGA( tBits ) && type == 1 ){
+	if( (IsEGA( tBits ) && type == kTMEMCalGamma) || (IsLevel0( tBits ) && type == kTMEMCalLevel0)){
 		for( i = 0; i < 2; i++ ){
 			for( j = 0; j < 2; j++ ){
 				// get the 4 cells composing the trigger channel
@@ -430,6 +444,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( Int_t type, Bool_t
 			}
 		} // 4x4 cell window
 	}
+
 	if( amp == 0 ){
 		AliDebug(2,"EMCal trigger patch with 0 energy.");
 		return 0;
@@ -452,10 +467,18 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( Int_t type, Bool_t
 	
 	// get up right edge (eta min, phi max)
 	// get the absolute trigger ID
-	if( type == 0 )
-		fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol+15, globRow+15, absId );
-	else if( type == 1)
-		fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol+1, globRow+1, absId );
+	switch(type){
+	case kTMEMCalJet:
+		posOffset = 15;
+		break;
+	case kTMEMCalGamma:
+		posOffset = 1;
+		break;
+	case kTMEMCalLevel0:
+		posOffset = 1;
+		break;
+	};
+	fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol+posOffset, globRow+posOffset, absId );
 	// convert to the 4 absId of the cells composing the trigger channel
 	fGeom->GetCellIndexFromFastORIndex( absId, cellAbsId );
 
@@ -464,18 +487,35 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( Int_t type, Bool_t
 	// get the geometrical center as an average of two diagonally
 	// adjacent patches in the center
 	// picking two diagonally closest cells from the patches
-	if( type == 0 )
-		fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol+7, globRow+7, absId );
-	else if( type == 1 )
-		fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol, globRow, absId );
+	switch(type){
+	case kTMEMCalJet:
+		posOffset = 7;
+		break;
+	case kTMEMCalGamma:
+		posOffset = 0;
+		break;
+	case kTMEMCalLevel0:
+		posOffset = 0;
+		break;
+	};
+	fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol+posOffset, globRow+posOffset, absId );
+
 
 	fGeom->GetCellIndexFromFastORIndex( absId, cellAbsId );
 	fGeom->GetGlobal( cellAbsId[3], center1 );
 	
-	if( type == 0 )
-		fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol+8, globRow+8, absId );
-	else if( type == 1 )
-		fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol+1, globRow+1, absId );
+	switch(type){
+	case kTMEMCalJet:
+		posOffset = 8;
+		break;
+	case kTMEMCalGamma:
+		posOffset = 1;
+		break;
+	case kTMEMCalLevel0:
+		posOffset = 1;
+		break;
+	};
+	fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol+posOffset, globRow+posOffset, absId );
 
 	fGeom->GetCellIndexFromFastORIndex( absId, cellAbsId );
 	fGeom->GetGlobal( cellAbsId[0], center2 );
@@ -491,10 +531,22 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( Int_t type, Bool_t
 	edge2 -= vertex;
 	
 	// fix tbits .. remove the unwanted type triggers
-	if( type == 0 )
-		tBits = tBits & ~( 1 << (kTriggerTypeEnd + kL1GammaLow) | 1 << (kTriggerTypeEnd + kL1GammaHigh) | 1 << (kL1GammaLow) | 1 << (kL1GammaHigh));
-	else if( type == 1 )
-		tBits = tBits & ~( 1 << (kTriggerTypeEnd + kL1JetLow) | 1 << (kTriggerTypeEnd + kL1JetHigh) | 1 << (kL1JetLow) | 1 << (kL1JetHigh));
+	// for Jet and Gamma triggers we remove also the level 0 bit since it will be stored in the level 0 patch
+	// for level 0 we remove all gamma and jet trigger bits
+	switch(type){
+	case kTMEMCalJet:
+		tBits = tBits & ~( 1 << (kTriggerTypeEnd + kL1GammaLow) | 1 << (kTriggerTypeEnd + kL1GammaHigh) | 1 << (kL1GammaLow) | 1 << (kL1GammaHigh) |
+				1 << (kTriggerTypeEnd + kL0) | 1 << (kL0));
+		break;
+	case kTMEMCalGamma:
+		tBits = tBits & ~( 1 << (kTriggerTypeEnd + kL1JetLow) | 1 << (kTriggerTypeEnd + kL1JetHigh) | 1 << (kL1JetLow) | 1 << (kL1JetHigh) |
+				1 << (kTriggerTypeEnd + kL0) | 1 << (kL0));
+		break;
+	case kTMEMCalLevel0:
+		tBits = tBits & ~( 1 << (kTriggerTypeEnd + kL1JetLow) | 1 << (kTriggerTypeEnd + kL1JetHigh) | 1 << (kL1JetLow) | 1 << (kL1JetHigh) |
+				1 << (kTriggerTypeEnd + kL1GammaLow) | 1 << (kTriggerTypeEnd + kL1GammaHigh) | 1 << (kL1GammaLow) | 1 << (kL1GammaHigh));
+		break;
+	};
 
 	// save the trigger object
 	new ((*fCaloTriggersOut)[fITrigger])AliEmcalTriggerPatchInfo();
