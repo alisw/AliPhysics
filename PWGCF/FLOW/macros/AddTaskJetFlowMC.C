@@ -17,7 +17,8 @@ AliAnalysisTaskJetFlowMC* AddTaskJetFlowMC(
   const char *outputTracks      = "JetFlowToyMC",
   const char *inputTracks       = "PicoTracks",
   const char *name              ="AliAnalysisTaskJetFlowMC",
-  Bool_t doQA                   = kFALSE
+  Bool_t doQA                   = kFALSE,
+  Bool_t doDecay                = kFALSE
   )
 {  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -37,13 +38,25 @@ AliAnalysisTaskJetFlowMC* AddTaskJetFlowMC(
       // this task only produces output when the qa flag is set to true
       mgr->ConnectOutput (eTask, 1, mgr->CreateContainer(Form("%s_container", fileName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   }
+  if(doDecay) task->SetDecayer(TaskJetFlowMC::GetDecayer(kTRUE));
   return eTask;
 }
 
 namespace TaskJetFlowMC {
+
     TF1* GetSpectrum() {
+        // thermal spectrum used for ALICE SIMULATION PLOTS ALI-SIMUL-75145 ALI-SIMUL-75171
         TF1* spectrum = new TF1("fspectrum", "[0]*(TMath::Power([1], 2)*x*TMath::Exp(-[1]*x))+(x>1)*[2]*(1.17676e-01*TMath::Sqrt(0.1396*0.1396+x*x)*TMath::Power(1.+1./[3]/8.21795e-01*TMath::Sqrt(0.1396*0.1396+x*x),-1.*[3]))*(1/(1 + TMath::Exp(-(x - [4])/[5])))", .2, 200.);
         fspectrum->SetParameters(2434401791.20528 ,2.98507 ,10069622.25117 ,5.50000 ,2.80000 ,0.20000 );
         return fspectrum;   
     }
+
+    TVirtualDecayer* GetDecayer(Bool_t local = kTRUE) {
+        // setup a decayer
+        if(local) gSystem->Load("$ALICE_ROOT/lib/tgt_linuxx8664gcc/libpythia6");
+        TPythia6Decayer* decayer = new TPythia6Decayer();
+        decayer->SetForceDecay(TPythia6Decayer::kHardonicD);
+        return decayer;
+    }
+
 }
