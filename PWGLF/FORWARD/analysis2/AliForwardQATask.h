@@ -210,6 +210,12 @@ public:
    * @param option Not used
    */
   void Print(Option_t* option="") const;
+  /** 
+   * Check if we're running over MC data
+   * 
+   * @return true if the event inspector thinks it's MC
+   */
+  Bool_t IsMC() const { return GetEventInspector().IsMC(); }
 protected: 
   /** 
    * Copy constructor 
