@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -7,11 +7,13 @@
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notifce   *
+ * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+// Comment describing what this class does needed!
 
 // $Id: AliJTrack.cxx,v 1.2 2008/01/21 11:56:39 djkim Exp $
 
@@ -38,17 +40,14 @@ AliJTrack::AliJTrack() :
     fFilterMap(0),
     fTPCnClust(-1),
     fTPCdEdx(-1), 
-    fTOFbeta(0)
+    fTOFsignal(9999),
+    fTPCmom(0)
 {
   // default constructor
-  for( int i=0;i<kNAliJTrkPID;i++ ) SetPID( AliJTrkPID(i), 0, kTOF);
-  for( int i=0;i<kNAliJTrkPID;i++ ) SetPID( AliJTrkPID(i), 0, kTPC);
-  for( int i=0;i<kNAliJTrkPID;i++ ) SetPID( AliJTrkPID(i), 0, kTPCTOF);
-  for( int i=0;i<kNAliJTrkPID;i++) fExpTOFbeta[i]= 0;
-  for( int i=0;i<kNAliJTrkPID;i++) fExpTPCdEdx[i]= 0;
-  for( int i=0;i<kNAliJTrkPID;i++) fTPCsigma[i]= 0;
-  for( int i=0;i<kNAliJTrkPID;i++) fTOFsigma[i]= 0;
+  for( int i=0;i<kNAliJTrkPID;i++) fExpTOFsignal[i]= 9999;
   for( int i=0;i<3;i++) fTPCTrack[i] = 0;
+  for( int i=0;i<3;i++) fGCGTrack[i] = 0;
+  for( int i=0;i<3;i++) fTrackPos[i] = 0;
 
 }
 
@@ -58,17 +57,14 @@ AliJTrack::AliJTrack(const AliJTrack& a):
     fFilterMap( a.fFilterMap ),
     fTPCnClust(a.fTPCnClust),
     fTPCdEdx(a.fTPCdEdx), 
-    fTOFbeta( a.fTOFbeta )
+    fTOFsignal(a.fTOFsignal),
+    fTPCmom(a.fTPCmom)
 { 
   //copy constructor
-  for(Int_t i=0;i<kNAliJTrkPID;i++) fTrkPID[i][kTOF] = a.fTrkPID[i][kTOF];
-  for(Int_t i=0;i<kNAliJTrkPID;i++) fTrkPID[i][kTPC] = a.fTrkPID[i][kTPC];
-  for(Int_t i=0;i<kNAliJTrkPID;i++) fTrkPID[i][kTPCTOF] = a.fTrkPID[i][kTPCTOF];
-  for(Int_t i=0;i<kNAliJTrkPID;i++) fExpTOFbeta[i]= a.fExpTOFbeta[i];
-  for( int i=0;i<kNAliJTrkPID;i++) fExpTPCdEdx[i]= a.fExpTPCdEdx[i];
-  for( int i=0;i<kNAliJTrkPID;i++) fTPCsigma[i]= a.fTPCsigma[i];
-  for( int i=0;i<kNAliJTrkPID;i++) fTOFsigma[i]= a.fTOFsigma[i];
+  for(Int_t i=0;i<kNAliJTrkPID;i++) fExpTOFsignal[i]= a.fExpTOFsignal[i];
   for( int i=0;i<3;i++) fTPCTrack[i] = a.fTPCTrack[i];
+  for( int i=0;i<3;i++) fGCGTrack[i] = a.fGCGTrack[i];
+  for( int i=0;i<3;i++) fTrackPos[i] = a.fTrackPos[i];
 }
 
 
@@ -78,19 +74,15 @@ AliJTrack&  AliJTrack::operator=(const AliJTrack& trk){
   if(this != &trk){
     AliJBaseTrack::operator=(trk);
     for(Int_t i=0;i<kNAliJTrkPID;i++){
-      fTrkPID[i][kTOF] = trk.fTrkPID[i][kTOF];
-      fTrkPID[i][kTPC] = trk.fTrkPID[i][kTPC];
-      fTrkPID[i][kTPCTOF] = trk.fTrkPID[i][kTPCTOF];
-      fExpTOFbeta[i]= trk.fExpTOFbeta[i];
-      fExpTPCdEdx[i] = trk.fExpTPCdEdx[i];
-      fTPCsigma[i]  = trk.fTPCsigma[i];
-      fTOFsigma[i]  = trk.fTOFsigma[i];
+	 fExpTOFsignal[i]= trk.fExpTOFsignal[i];
     }
     for( int i=0;i<3;i++) fTPCTrack[i] = trk.fTPCTrack[i];
+    for( int i=0;i<3;i++) fGCGTrack[i] = trk.fGCGTrack[i];
+    for( int i=0;i<3;i++) fTrackPos[i] = trk.fTrackPos[i];
     fFilterMap  = trk.fFilterMap;
     fTPCnClust  = trk.fTPCnClust;
     fTPCdEdx = trk.fTPCdEdx;
-    fTOFbeta = trk.fTOFbeta;
+    fTOFsignal = trk.fTOFsignal;
   }
   return *this;
 }
