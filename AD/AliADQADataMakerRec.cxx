@@ -145,7 +145,7 @@ void AliADQADataMakerRec::StartOfDetectorCycle()
   if (!entry1) AliFatal("CTP time-alignment is not found in OCDB !");
   AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
   l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
-
+  /*/
   AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("AD/Calib/TimeDelays");
   if (!entry2) AliFatal("AD time delays are not found in OCDB !");
   TH1F *delays = (TH1F*)entry2->GetObject();
@@ -153,7 +153,7 @@ void AliADQADataMakerRec::StartOfDetectorCycle()
   AliCDBEntry *entry3 = AliCDBManager::Instance()->Get("AD/Calib/TimeSlewing");
   if (!entry3) AliFatal("AD time slewing function is not found in OCDB !");
   fTimeSlewing = (TF1*)entry3->GetObject();
-
+  /*/
 
   for(Int_t i = 0 ; i < 16; ++i) {
     //Int_t board = AliADCalibData::GetBoardNumber(i);
@@ -162,8 +162,9 @@ void AliADQADataMakerRec::StartOfDetectorCycle()
 		      //	(Float_t)fCalibData->GetRollOver(board))*25.0 +
 		      //     fCalibData->GetTimeOffset(i) -
 		      //     l1Delay+
-		      delays->GetBinContent(i+1)//+
+		      //delays->GetBinContent(i+1)//+
 		      //      kV0Offset
+		      0
 		      );
     //		      AliInfo(Form(" fTimeOffset[%d] = %f  kV0offset %f",i,fTimeOffset[i],kV0Offset));
   }
@@ -256,7 +257,10 @@ void AliADQADataMakerRec::InitRaws()
   const Float_t kChannelMax    =   16;
   const Int_t kNPedestalBins =  200;
   const Float_t kPedestalMin   =    0;
-  const Float_t kPedestalMax   =  200;
+  const Float_t kPedestalMax   =  200; 
+  const Int_t kNPairBins  =   8;
+  const Float_t kPairMin    =    0;
+  const Float_t kPairMax    =   8;
 
   TH2I * h2i;
   TH2F * h2d;
@@ -266,9 +270,9 @@ void AliADQADataMakerRec::InitRaws()
   int iHisto =0;
 
   // Creation of Cell Multiplicity Histograms
-  h1i = new TH1I("H1I_Multiplicity_ADA", "Cell Multiplicity in ADA;# of Cells;Entries", 35, 0, 35) ;  
+  h1i = new TH1I("H1I_Multiplicity_ADA", "Number of fired cells in ADA;# of Cells;Entries", 10, 0, 10) ;  
   Add2RawsList(h1i,kMultiADA, !expert, image, saveCorr);   iHisto++;
-  h1i = new TH1I("H1I_Multiplicity_ADC", "Cell Multiplicity in ADC;# of Cells;Entries", 35, 0, 35) ;  
+  h1i = new TH1I("H1I_Multiplicity_ADC", "Number of fired cells in ADC;# of Cells;Entries", 10, 0, 10) ;  
   Add2RawsList(h1i,kMultiADC, !expert, image, saveCorr);   iHisto++;
  
   // Creation of Total Charge Histograms
@@ -318,7 +322,16 @@ void AliADQADataMakerRec::InitRaws()
   h2d = new TH2F("H2D_TimeADA_ADC", "Mean Time in ADC versus ADA;Time ADA [ns];Time ADC [ns]", kNTdcTimeBins/8, kTdcTimeMin,kTdcTimeMax,kNTdcTimeBins/8, kTdcTimeMin,kTdcTimeMax) ;  
   Add2RawsList(h2d,kTimeADAADC, !expert, image, saveCorr);   iHisto++;
   
+  //Creation of pair coincidence histograms
+  h1i = new TH1I("H1I_MultiCoincidence_ADA", "Number of coincidences in ADA;# of Cells;Entries", 5, 0, 5) ;  
+  Add2RawsList(h1i,kNCoincADA, !expert, image, saveCorr);   iHisto++;
+  h1i = new TH1I("H1I_MultiCoincidence_ADC", "Number of coincidences in ADC;# of Cells;Entries", 5, 0, 5) ;  
+  Add2RawsList(h1i,kNCoincADC, !expert, image, saveCorr);   iHisto++;
+  
+  h2d = new TH2F("H2D_Pair_Diff_Time","Diff Pair Time;Time [ns];Counts",kNPairBins, kPairMin, kPairMax,kNTdcTimeBins, -50., 50.);
+  Add2RawsList(h2d,kPairDiffTime, !expert, image, saveCorr); iHisto++;
 
+  
   AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
@@ -348,6 +361,10 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   Double_t chargeADA=0., chargeADC=0.;
 
   Double_t diffTime=-100000.;
+  
+  Int_t	   pmulADA = 0;
+  Int_t	   pmulADC = 0;
+  Double_t pDiffTime =-100000.;
 
   
   switch (eventType){
@@ -357,12 +374,13 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
     Int_t  iFlag=0;
     Int_t  pedestal;
-    Int_t  integrator;
+    Int_t  integrator[16];
     Bool_t flagBB[16];	 
     Bool_t flagBG[16];	 
     Float_t charge;
     Int_t  offlineCh;
     Float_t adc[16], time[16], width[16], timeCorr[16]; 
+    Int_t  iPair=0;
 
     for(Int_t iChannel=0; iChannel<16; iChannel++) { // BEGIN : Loop over channels
 		   
@@ -377,9 +395,9 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       if(iFlag == 0){ //No Flag found
 	for(Int_t j=15; j<21; j++){
 	  pedestal= (Int_t) rawStream->GetPedestal(iChannel, j);
-	  integrator = rawStream->GetIntegratorFlag(iChannel, j);
+	  integrator[offlineCh] = rawStream->GetIntegratorFlag(iChannel, j);
 
-	  FillRawsData((integrator == 0 ? kPedestalInt0 : kPedestalInt1),offlineCh,pedestal);
+	  FillRawsData((integrator[offlineCh] == 0 ? kPedestalInt0 : kPedestalInt1),offlineCh,pedestal);
 	}
       }
 
@@ -394,7 +412,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       Float_t adcPedSub[21];
       for(Int_t iClock=0; iClock<21; iClock++){
 	Bool_t iIntegrator = rawStream->GetIntegratorFlag(iChannel,iClock);
-	Int_t k = offlineCh+64*iIntegrator;
+	Int_t k = offlineCh+16*iIntegrator;
 
 	//printf(Form("clock = %d adc = %f ped %f\n",iClock,rawStream->GetPedestal(iChannel,iClock),fPedestal[k]));
 
@@ -428,7 +446,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       Int_t iClock  = imax;
       charge = rawStream->GetPedestal(iChannel,iClock); // Charge at the maximum 
 
-      integrator    = rawStream->GetIntegratorFlag(iChannel,iClock);
+      integrator[offlineCh]    = rawStream->GetIntegratorFlag(iChannel,iClock);
       flagBB[offlineCh]	 = rawStream->GetBBFlag(iChannel, iClock);
       flagBG[offlineCh]	 = rawStream->GetBGFlag(iChannel,iClock );
       Int_t board = AliADCalibData::GetBoardNumber(offlineCh);
@@ -437,9 +455,9 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
       if (time[offlineCh] >= 1e-6) FillRawsData(kChargeEoI,offlineCh,adc[offlineCh]);
 
-      FillRawsData((integrator == 0 ? kChargeEoIInt0 : kChargeEoIInt1),offlineCh,charge);
+      FillRawsData((integrator[offlineCh] == 0 ? kChargeEoIInt0 : kChargeEoIInt1),offlineCh,charge);
 
-      Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator);
+      Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator[offlineCh]);
 		  
       if((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)){ 
 	if(offlineCh<8) {
@@ -460,12 +478,13 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       const Float_t p2 = 3.00; // sleewing related term in the time resolution
       if(timeCorr[offlineCh]>-1024 + 1.e-6){
 	Float_t nphe = adc[offlineCh]*kChargePerADC/(fCalibData->GetGain(offlineCh)*TMath::Qe());
-	Float_t timeErr = 0;
+	Float_t timeErr = 1;
+	/*/
 	if (nphe>1.e-6) timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
 					      p1*p1/nphe+
 					      p2*p2*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*
 					      TMath::Power(adc[offlineCh]/fCalibData->GetCalibDiscriThr(offlineCh,kTRUE),2.*(fTimeSlewing->GetParameter(1)-1.))/
-					      (fCalibData->GetCalibDiscriThr(offlineCh,kTRUE)*fCalibData->GetCalibDiscriThr(offlineCh,kTRUE)));
+					      (fCalibData->GetCalibDiscriThr(offlineCh,kTRUE)*fCalibData->GetCalibDiscriThr(offlineCh,kTRUE)));/*/
 
 	if (timeErr>1.e-6) {
 	  if (offlineCh<8) {
@@ -483,7 +502,33 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       FillRawsData(kWidth,offlineCh,width[offlineCh]);
 
     }// END of Loop over channels
-
+    
+    for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs ADC
+    	offlineCh = rawStream->GetOfflineChannel(iChannel);
+	Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator[offlineCh]);
+	Float_t sigma4 = fCalibData->GetSigma(offlineCh+4+16*integrator[offlineCh]);		
+    	if( ((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)) && ((adc[offlineCh+4] > 2.*sigma4) && !(time[offlineCh+4] <1.e-6)) ){ 
+		pmulADC++;
+		if(timeCorr[offlineCh]<-1024.+1.e-6 || timeCorr[offlineCh+4]<-1024.+1.e-6) pDiffTime = -1024.;
+		else pDiffTime = timeCorr[offlineCh+4] - timeCorr[offlineCh]; 
+		FillRawsData(kPairDiffTime,iPair,pDiffTime);
+		iPair++;
+		}
+	}
+    for(Int_t iChannel=8; iChannel<12; iChannel++) {//Loop over pairs ADA
+    	offlineCh = rawStream->GetOfflineChannel(iChannel);
+	Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator[offlineCh]);
+	Float_t sigma4 = fCalibData->GetSigma(offlineCh+4+16*integrator[offlineCh]);
+    	if( ((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)) && ((adc[offlineCh+4] > 2.*sigma4) && !(time[offlineCh+4] <1.e-6)) ) pmulADA++;
+	if(timeCorr[offlineCh]<-1024.+1.e-6 || timeCorr[offlineCh+4]<-1024.+1.e-6) pDiffTime = -1024.;
+		else pDiffTime = timeCorr[offlineCh+4] - timeCorr[offlineCh]; 
+		FillRawsData(kPairDiffTime,iPair,pDiffTime);
+		iPair++;
+	}
+    FillRawsData(kNCoincADA,pmulADA);
+    FillRawsData(kNCoincADC,pmulADC);
+	
+	
     if(weightADA>1.e-6) timeADA /= weightADA; 
     else timeADA = -1024.;
     if(weightADC>1.e-6) timeADC /= weightADC;
@@ -553,12 +598,12 @@ Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t i, Float_t time, Float_t a
   //AliInfo(Form("time-offset %f", time));
 
   // In case of pathological signals
-  if (adc < 1e-6) return time;
+  //if (adc < 1e-6) return time;
 
   // Slewing correction
-  Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE);
+  //Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE);
   //AliInfo(Form("adc %f thr %f dtime %f ", adc,thr,fTimeSlewing->Eval(adc/thr)));
-  time -= fTimeSlewing->Eval(adc/thr);
+  //time -= fTimeSlewing->Eval(adc/thr);
 
   return time;
 }

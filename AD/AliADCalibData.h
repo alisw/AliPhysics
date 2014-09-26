@@ -55,15 +55,54 @@ class AliADCalibData: public TNamed {
 
   Float_t  GetDiscriThr(Int_t channel)	const {return fDiscriThr[channel];}
   Float_t* GetDiscriThr()   const {return (Float_t*)fDiscriThr;}
+  Float_t  GetCalibDiscriThr(Int_t channel, Bool_t scaled);
 
   static Int_t GetBoardNumber(Int_t channel);
+  static Int_t GetFEEChannelNumber(Int_t channel);
+  static Int_t GetOfflineChannelNumber(Int_t board, Int_t channel);
   
   Float_t  GetLightYields(Int_t channel);
 
   Float_t *GetPMGainsA() const { return fPMGainsA; }
   Float_t *GetPMGainsB() const { return fPMGainsB; }
 
-  Float_t  GetCalibDiscriThr(Int_t channel, Bool_t scaled);
+  void     SetPedestal(Float_t val, Int_t channel) {fPedestal[channel]=val;}
+  void     SetPedestal(const Float_t* Pedestal);
+  void     SetSigma(Float_t val, Int_t channel) {fSigma[channel]=val;}
+  void     SetSigma(const Float_t* Sigma);
+  void 	   SetADCmean(Float_t val, Int_t channel) {fADCmean[channel]=val;}
+  void 	   SetADCmean(const Float_t* ADCmean);  
+  void 	   SetADCsigma(Float_t val, Int_t channel) {fADCsigma[channel]=val;}
+  void 	   SetADCsigma(const Float_t* ADCsigma);
+  void     SetMeanHV(Float_t val, Int_t channel) {fMeanHV[channel]=val;}
+  void     SetMeanHV(const Float_t* MeanHV);  
+  void     SetWidthHV(Float_t val, Int_t channel) {fWidthHV[channel]=val;}
+  void     SetWidthHV(const Float_t* WidthHV); 
+  void     SetDeadChannel(Bool_t val, Int_t channel) {fDeadChannel[channel]=val;}
+  void     SetDeadMap(const Bool_t* deadMap);  
+   
+  void     SetTimeOffset(Float_t val, Int_t board, Int_t channel);
+  void     SetTimeOffset(const Float_t* TimeOffset);
+  void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
+  void     SetTimeGain(const Float_t* TimeGain);
+  
+  void 	   SetParameter(TString name, Int_t val);
+  void     SetTimeResolution(UShort_t *resols);
+  void     SetTimeResolution(UShort_t resol, Int_t board);
+  void     SetWidthResolution(UShort_t *resols);
+  void     SetWidthResolution(UShort_t resol, Int_t board);
+
+  void     SetMatchWindow(UInt_t *windows);
+  void     SetMatchWindow(UInt_t window, Int_t board);
+  void     SetSearchWindow(UInt_t *windows);
+  void     SetSearchWindow(UInt_t window, Int_t board);
+  void     SetTriggerCountOffset(UInt_t *offsets);
+  void     SetTriggerCountOffset(UInt_t offset, Int_t board);
+  void     SetRollOver(UInt_t *offsets);
+  void     SetRollOver(UInt_t offset, Int_t board);
+
+  void     SetDiscriThr(Float_t thr, Int_t board, Int_t channel);
+  void     SetDiscriThr(const Float_t* thresholds);
 
 
  protected:

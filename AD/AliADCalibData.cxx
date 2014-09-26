@@ -41,7 +41,7 @@ AliADCalibData::AliADCalibData():
     for(int t=0; t<16; t++) {
         fMeanHV[t]      = 100.0;
         fWidthHV[t]     = 0.0; 
-	fTimeOffset[t]  = 5.0;
+	fTimeOffset[t]  = 0.0;
         fTimeGain[t]    = 1.0;
 	fDeadChannel[t]= kFALSE;
 	fDiscriThr[t]  = 2.5;
@@ -293,3 +293,356 @@ Float_t AliADCalibData::GetCalibDiscriThr(Int_t channel, Bool_t scaled)
 
   return calThr;
 }
+
+//_____________________________________________________________________________
+void AliADCalibData::SetParameter(TString name, Int_t val){
+	// Set given parameter
+	
+	Int_t iBoard = -1;
+	Int_t iChannel = -1;
+
+	TSeqCollection* nameSplit = name.Tokenize("/");
+	TObjString * boardName = (TObjString *)nameSplit->At(2);
+	sscanf(boardName->String().Data(),"CIU%d",&iBoard);
+
+	TString paramName = ((TObjString *)nameSplit->At(3))->String();
+	Char_t channel[2] ; channel[1] = '\0';
+	channel[0] = paramName[paramName.Sizeof()-2];
+	sscanf(channel,"%d",&iChannel);
+		
+	if(name.Contains("TimeResolution")) SetTimeResolution((UShort_t) val,iBoard);
+	else if(name.Contains("WidthResolution")) SetWidthResolution((UShort_t) val,iBoard);
+	else if(name.Contains("MatchWindow")) SetMatchWindow((UInt_t) val,iBoard);
+	else if(name.Contains("SearchWindow")) SetSearchWindow((UInt_t) val,iBoard);
+	else if(name.Contains("TriggerCountOffset")) SetTriggerCountOffset((UInt_t) val,iBoard);
+	else if(name.Contains("RollOver")) SetRollOver((UInt_t) val,iBoard);
+	else if(name.Contains("DelayHit")) SetTimeOffset(0.01*(Float_t)val,iBoard,(iChannel-1));
+	else if(name.Contains("DiscriThr")) SetDiscriThr(((Float_t)val-2040.)/112.,iBoard,(iChannel-1));
+	else AliError(Form("No Setter found for FEE parameter : %s",name.Data()));
+	//
+	delete nameSplit;
+}
+
+//________________________________________________________________
+void AliADCalibData::SetPedestal(const Float_t* Pedestal)
+{
+  if(Pedestal) for(int t=0; t<32; t++) fPedestal[t] = Pedestal[t];
+  else for(int t=0; t<32; t++) fPedestal[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliADCalibData::SetSigma(const Float_t* Sigma)
+{
+  if(Sigma) for(int t=0; t<32; t++) fSigma[t] = Sigma[t];
+  else for(int t=0; t<32; t++) fSigma[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliADCalibData::SetADCmean(const Float_t* ADCmean) 
+{
+  if(ADCmean) for(int t=0; t<32; t++) fADCmean[t] = ADCmean[t];
+  else for(int t=0; t<32; t++) fADCmean[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliADCalibData::SetADCsigma(const Float_t* ADCsigma) 
+{
+  if(ADCsigma) for(int t=0; t<32; t++) fADCsigma[t] = ADCsigma[t];
+  else for(int t=0; t<32; t++) fADCsigma[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliADCalibData::SetMeanHV(const Float_t* MeanHV) 
+{
+  if(MeanHV) for(int t=0; t<16; t++) fMeanHV[t] = MeanHV[t];
+  else for(int t=0; t<16; t++) fMeanHV[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliADCalibData::SetWidthHV(const Float_t* WidthHV) 
+{
+  if(WidthHV) for(int t=0; t<16; t++) fWidthHV[t] = WidthHV[t];
+  else for(int t=0; t<16; t++) fWidthHV[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliADCalibData::SetDeadMap(const Bool_t* deadMap) 
+{
+  if(deadMap) for(int t=0; t<16; t++) fDeadChannel[t] = deadMap[t];
+  else for(int t=0; t<16; t++) fDeadChannel[t] = kFALSE;
+}
+
+//________________________________________________________________
+void AliADCalibData::SetTimeOffset(Float_t val, Int_t board, Int_t channel)
+{
+  Int_t ch = AliADCalibData::GetOfflineChannelNumber(board,channel);
+  if(ch >= 0){
+    fTimeOffset[ch]=val;
+    AliInfo(Form("Time offset for channel %d set to %f",ch,fTimeOffset[ch]));
+  }
+  else
+    AliError("Board/Channel numbers are not valid");
+}
+
+//________________________________________________________________
+void AliADCalibData::SetTimeOffset(const Float_t* TimeOffset) 
+{
+  if(TimeOffset) for(int t=0; t<16; t++) fTimeOffset[t] = TimeOffset[t];
+  else for(int t=0; t<16; t++) fTimeOffset[t] = 5.0;
+}
+//________________________________________________________________
+void AliADCalibData::SetTimeGain(const Float_t* TimeGain) 
+{
+  if(TimeGain) for(int t=0; t<16; t++) fTimeGain[t] = TimeGain[t];
+  else for(int t=0; t<16; t++) fTimeGain[t] = 0.0;
+}
+//________________________________________________________________
+void AliADCalibData::SetTimeResolution(UShort_t *resols){
+	// Set Time Resolution of the TDC
+	if(resols)  for(int t=0; t<kNCIUBoards; t++) SetTimeResolution(resols[t],t);
+	else AliError("Time Resolution not defined.");
+	
+}
+//________________________________________________________________
+void AliADCalibData::SetTimeResolution(UShort_t resol, Int_t board)
+{
+	// Set Time Resolution of the TDC
+	if((board>=0) && (board<kNCIUBoards)) {
+		switch(resol){
+			case 0:
+				fTimeResolution[board] = 25./256.;
+				break;
+			case 1:
+				fTimeResolution[board] = 25./128.;
+				break;
+			case 2:
+				fTimeResolution[board] = 25./64.;
+				break;
+			case 3:
+				fTimeResolution[board] = 25./32.;
+				break;
+			case 4:
+				fTimeResolution[board] = 25./16.;
+				break;
+			case 5:
+				fTimeResolution[board] = 25./8.;
+				break;
+			case 6:
+				fTimeResolution[board] = 6.25;
+				break;
+			case 7:
+				fTimeResolution[board] = 12.5;
+				break;
+		}
+		AliInfo(Form("Time Resolution of board %d set to %f",board,fTimeResolution[board]));
+	} else AliError(Form("Board %d is not valid",board));
+}
+//________________________________________________________________
+void AliADCalibData::SetWidthResolution(UShort_t *resols){
+	// Set Time Width Resolution of the TDC
+	if(resols)  for(int t=0; t<kNCIUBoards; t++) SetWidthResolution(resols[t],t);
+	else AliError("Width Resolution not defined.");
+	
+}
+//________________________________________________________________
+void AliADCalibData::SetWidthResolution(UShort_t resol, Int_t board)
+{
+	// Set Time Width Resolution of the TDC
+	if((board>=0) && (board<kNCIUBoards)){
+		switch(resol){
+			case 0:
+				fWidthResolution[board] = 25./256.;
+				break;
+			case 1:
+				fWidthResolution[board] = 25./128.;
+				break;
+			case 2:
+				fWidthResolution[board] = 25./64.;
+				break;
+			case 3:
+				fWidthResolution[board] = 25./32.;
+				break;
+			case 4:
+				fWidthResolution[board] = 25./16.;
+				break;
+			case 5:
+				fWidthResolution[board] = 25./8.;
+				break;
+			case 6:
+				fWidthResolution[board] = 6.25;
+				break;
+			case 7:
+				fWidthResolution[board] = 12.5;
+				break;
+			case 8:
+				fWidthResolution[board] = 25.;
+				break;
+			case 9:
+				fWidthResolution[board] = 50.;
+				break;
+			case 10:
+				fWidthResolution[board] = 100.;
+				break;
+			case 11:
+				fWidthResolution[board] = 200.;
+				break;
+			case 12:
+				fWidthResolution[board] = 400.;
+				break;
+			case 13:
+				fWidthResolution[board] = 800.;
+				break;
+				
+		}
+		AliInfo(Form("Width Resolution of board %d set to %f",board,fWidthResolution[board]));
+	}else AliError(Form("Board %d is not valid",board));
+}
+
+//________________________________________________________________
+void AliADCalibData::SetMatchWindow(UInt_t *windows)
+{
+  // Set Match window of the HPTDC
+  // The units are 25ns
+  if(windows)  for(Int_t b=0; b<kNCIUBoards; b++) SetMatchWindow(windows[b],b);
+  else AliError("Match windows not defined.");
+}
+
+//________________________________________________________________
+void AliADCalibData::SetMatchWindow(UInt_t window, Int_t board)
+{
+  // Set Match window of the HPTDC
+  // The units are 25ns
+  if((board>=0) && (board<kNCIUBoards)){
+    fMatchWindow[board] = window;
+    AliInfo(Form("Match window of board %d set to %d",board,fMatchWindow[board]));
+  }
+  else
+    AliError(Form("Board %d is not valid",board));
+}
+
+//________________________________________________________________
+void AliADCalibData::SetSearchWindow(UInt_t *windows)
+{
+  // Set Search window of the HPTDC
+  // The units are 25ns
+  if(windows)  for(Int_t b=0; b<kNCIUBoards; b++) SetSearchWindow(windows[b],b);
+  else AliError("Search windows not defined.");
+}
+
+//________________________________________________________________
+void  AliADCalibData::SetSearchWindow(UInt_t window, Int_t board)
+{
+  // Set Search window of the HPTDC
+  // The units are 25ns
+  if((board>=0) && (board<kNCIUBoards)){
+    fSearchWindow[board] = window;
+    AliInfo(Form("Search window of board %d set to %d",board,fSearchWindow[board]));
+  }
+  else
+    AliError(Form("Board %d is not valid",board));
+}
+
+//________________________________________________________________
+void AliADCalibData::SetTriggerCountOffset(UInt_t *offsets)
+{
+  // Set trigger-count offset of the HPTDC
+  // The units are 25ns
+  if(offsets)  for(Int_t b=0; b<kNCIUBoards; b++) SetTriggerCountOffset(offsets[b],b);
+  else AliError("Trigger count offsets not defined.");
+}
+
+//________________________________________________________________
+void AliADCalibData::SetTriggerCountOffset(UInt_t offset, Int_t board)
+{
+  // Set trigger-count offsets of the HPTDC
+  // The units are 25ns
+  if((board>=0) && (board<kNCIUBoards)){
+    fTriggerCountOffset[board] = offset;
+    AliInfo(Form("Trigger-count offset of board %d set to %d",board,fTriggerCountOffset[board]));
+  }
+  else
+    AliError(Form("Board %d is not valid",board));
+}
+
+//________________________________________________________________
+void AliADCalibData::SetRollOver(UInt_t *offsets)
+{
+  // Set Roll-over of the HPTDC
+  // The units are 25ns
+  if(offsets)  for(Int_t b=0; b<kNCIUBoards; b++) SetRollOver(offsets[b],b);
+  else AliError("Roll-over offsets not defined.");
+}
+
+//________________________________________________________________
+void AliADCalibData::SetRollOver(UInt_t offset, Int_t board)
+{
+  // Set Roll-over of the HPTDC
+  // The units are 25ns
+  if((board>=0) && (board<kNCIUBoards)){
+    fRollOver[board] = offset;
+    AliInfo(Form("Roll-over offset of board %d set to %d",board,fRollOver[board]));
+  }
+  else
+    AliError(Form("Board %d is not valid",board));
+}
+
+//________________________________________________________________
+void AliADCalibData::SetDiscriThr(Float_t thr, Int_t board, Int_t channel)
+{
+  // Set the TDC discriminator
+  // threshold values expressed in units of ADC
+  Int_t ch = AliADCalibData::GetOfflineChannelNumber(board,channel);
+  if(ch >= 0){
+    if (thr > 0) {
+      fDiscriThr[ch]=thr;
+      AliInfo(Form("Discriminator threshold for channel %d set to %f",ch,fDiscriThr[ch]));
+    }
+    else {
+      AliWarning(Form("Ignore wrong threshold value (%f) for channel %d !",thr,ch));
+    }
+  }
+  else
+    AliError("Board/Channel numbers are not valid");
+}
+
+//________________________________________________________________
+void AliADCalibData::SetDiscriThr(const Float_t* thresholds) 
+{
+  // Set the TDC discriminator
+  // threshold values expressed in units of ADC
+  if(thresholds) for(int t=0; t<16; t++) fDiscriThr[t] = thresholds[t];
+  else for(int t=0; t<16; t++) fDiscriThr[t] = 2.5;
+}
+
+//________________________________________________________________
+Int_t AliADCalibData::GetOfflineChannelNumber(Int_t board, Int_t channel)
+{
+  // Get the offline channel number from
+  // the FEE board and channel indexes
+
+  if (board < 0 || board >= 2) {
+    AliErrorClass(Form("Wrong FEE board number: %d",board));
+    return -1;
+  }
+  if (channel < 0 || channel >= 8) {
+    AliErrorClass(Form("Wrong FEE channel number: %d",channel));
+    return -1;
+  }
+
+  Int_t offCh = (board+1)*channel;
+
+  return offCh;
+}
+//________________________________________________________________
+Int_t AliADCalibData::GetFEEChannelNumber(Int_t channel)
+{
+  // Get FEE channel number
+  // from offline channel index
+  if (channel >= 0 && channel < 16) return ((channel % 8));
+
+  AliErrorClass(Form("Wrong channel index: %d",channel));
+  return -1;
+}
+
+
+
