@@ -9,6 +9,8 @@
 #include "TClonesArray.h"
 #include "TArrayI.h"
 #include "TRandom3.h"
+#include "TParticle.h"
+#include "TVirtualMCDecayer.h"
 // aliroot includes
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
@@ -22,7 +24,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlowMC)
 
 //_____________________________________________________________________________
-AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC() : AliAnalysisTaskSE("AliAnalysisTaskJetFlowMC"), fQA(kFALSE), fTracksOutName("JetFlowMC"),  fTracksInName("PicoTrack"), fTracksIn(0),  fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kFixedEP), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
+AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC() : AliAnalysisTaskSE("AliAnalysisTaskJetFlowMC"), fQA(kFALSE), fTracksOutName("JetFlowMC"),  fTracksInName("PicoTrack"), fTracksIn(0),  fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kFixedEP), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0), fDecayer(0x0), fDecayerIterations(1), fDecayerCache(0x0) {
     // default constructor for root IO
     for(Int_t i(0); i < 10; i++) {
         fFuncDiffV2[i]                  = 0x0;
@@ -39,7 +41,7 @@ AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC() : AliAnalysisTaskSE("AliAna
     }
 }
 //_____________________________________________________________________________
-AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC(const char *name, Bool_t qa, Int_t seed) : AliAnalysisTaskSE(name), fQA(qa), fTracksOutName("JetFlowMC"), fTracksInName("PicoTrack"), fTracksIn(0), fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kFixedEP), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
+AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC(const char *name, Bool_t qa, Int_t seed) : AliAnalysisTaskSE(name), fQA(qa), fTracksOutName("JetFlowMC"), fTracksInName("PicoTrack"), fTracksIn(0), fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kFixedEP), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0), fDecayer(0x0), fDecayerIterations(1), fDecayerCache(0x0) {
     // constructor
     DefineInput(0, TChain::Class());
     if(fQA) DefineOutput(1, TList::Class());
@@ -139,7 +141,12 @@ void AliAnalysisTaskJetFlowMC::UserCreateOutputObjects()
         gRandom = new TRandom3(0);
     }
     if(!fQA) return;
-
+    // if presente initialize the decayer
+    if(fDecayer) {
+        fDecayer->Init();
+        fDecayerCache = new TClonesArray("TParticle", 10);
+    }
+    // post output
     fOutputList->Sort();
     PostData(1, fOutputList);
 }
@@ -217,23 +224,75 @@ void AliAnalysisTaskJetFlowMC::UserExec(Option_t *)
             if(fQA) FillHistogramsOriginalData(pt, eta, phi);
             if(fHistDiffV2[fCenBin] || fFuncDiffV2[fCenBin])        V2AfterBurner(phi, eta, pt);
             else if(fHistDiffV3[fCenBin] || fFuncDiffV3[fCenBin])   V3AfterBurner(phi, eta, pt);
-            else if(fHistIntV2 || fHistIntV3)                       SampleVnFromTF1(phi);        
-            /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(pt, eta, phi, track->Charge(), track->GetLabel(), 4, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), track->GetTrackPtOnEMCal(), 1); 
-            nacc++;
+            else if(fHistIntV2 || fHistIntV3)                       SampleVnFromTF1(phi);
+            if(fDecayer) {
+                ReturnDecayDaughters(track, fDecayerCache);
+                if(fDecayerCache->GetEntries() > 2) {
+                    for(Int_t iDaughters(1); iDaughters < fDecayerCache->GetEntries(); iDaughters++) {
+                        TParticle* tParticle = static_cast<TParticle*>(fDecayerCache->At(iDaughters));
+                        if(!tParticle) continue;
+                        /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(
+                                tParticle->Pt(), 
+                                tParticle->Eta(), 
+                                tParticle->Phi(), 
+                                (tParticle->GetPdgCode() > 0) ? 1 : -1, 
+                                track->GetLabel(), 
+                                4, 
+                                track->GetTrackEtaOnEMCal(), 
+                                track->GetTrackPhiOnEMCal(), 
+                                track->GetTrackPtOnEMCal(), 
+                                1); 
+                    nacc++;
+                    }
+                } else {
+                    /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(pt, eta, phi, track->Charge(), track->GetLabel(), 4, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), track->GetTrackPtOnEMCal(), 1); 
+                    nacc++;
+                }
+            } else {
+                /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(pt, eta, phi, track->Charge(), track->GetLabel(), 4, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), track->GetTrackPtOnEMCal(), 1); 
+                nacc++;
+            }
         }
     } else {
         Double_t pt(0), eta(0), phi(0);
+        Short_t charge(0);
         for (Int_t iTracks = 0; iTracks < fMult; ++iTracks) {
             pt = GetTrackPt();
             eta = gRandom->Uniform(-.9, .9);
             phi = gRandom->Uniform(0., TMath::TwoPi());
+            charge = (gRandom->Uniform() < 0.5) ? -1 : 1;
             // fill qa histo's before applying any (possible) afterburner
             if(fQA) FillHistogramsOriginalData(pt, eta, phi);
             if(fHistDiffV2[fCenBin] || fFuncDiffV2[fCenBin])        V2AfterBurner(phi, eta, pt);
             else if(fHistDiffV3[fCenBin] || fFuncDiffV3[fCenBin])   V3AfterBurner(phi, eta, pt);
             else if(fHistIntV2 || fHistIntV3)                       SampleVnFromTF1(phi);        
-            /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(pt, eta, phi, 1, 0, 4, eta, phi, pt, 1); 
-            nacc++;
+            if(fDecayer) {
+                ReturnDecayDaughters(pt, phi, eta, -999, charge, fDecayerCache);
+                if(fDecayerCache->GetEntries() > 2) {
+                    for(Int_t iDaughters(1); iDaughters < fDecayerCache->GetEntries(); iDaughters++) {
+                        TParticle* tParticle = static_cast<TParticle*>(fDecayerCache->At(iDaughters));
+                        if(!tParticle) continue;
+                        /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(
+                            tParticle->Pt(), 
+                            tParticle->Eta(), 
+                            tParticle->Phi(), 
+                            (tParticle->GetPdgCode() > 0) ? 1 : -1, 
+                            0, 
+                            4, 
+                            tParticle->Eta(),
+                            tParticle->Phi(),
+                            tParticle->Pt(),
+                            1); 
+                    nacc++;
+                    }
+                } else {
+                    /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(pt, eta, phi, 1, 0, 4, eta, phi, pt, 1); 
+                    nacc++;
+                }
+            } else {
+                /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(pt, eta, phi, 1, 0, 4, eta, phi, pt, 1); 
+                nacc++;
+            }
         }
     }
     if(fJetSpectrumSF && fNoOfSFJets > 0) InjectSingleFragmentationJetSpectrum(nacc);
@@ -350,6 +409,49 @@ void AliAnalysisTaskJetFlowMC::CalculateEventPlane() {
         if(fFlowFluctuations > -10) GetFlowFluctuation(v3);
         fFuncVn->SetParameter(3, v3);
     }
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskJetFlowMC::ReturnDecayDaughters(
+        AliPicoTrack* mother,
+        TClonesArray* daughters)
+{                
+    // wrapper function to return decay daughters
+    ReturnDecayDaughters(
+            mother->Pt(),
+            mother->Phi(),
+            mother->Eta(),
+            mother->M(),
+            mother->Charge(),
+            daughters);
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskJetFlowMC::ReturnDecayDaughters(
+        Double_t pt,
+        Double_t phi,
+        Double_t eta,
+        Double_t mass,
+        Short_t charge,
+        TClonesArray* daughters)
+{                
+    // use TVirtualMCDecayer to force decay, daughters will be 
+    // stored in the TClonesArray as TParticle's
+    // note that index 0 in the final array refers to the mother
+    TLorentzVector pMother(     // 4-vector for mother
+        pt*TMath::Cos(phi),     // px
+        pt*TMath::Sin(phi),     // py
+        pt*TMath::SinH(eta),    // pz
+        TMath::Sqrt(mass*mass+pt*pt*TMath::CosH(eta)*TMath::CosH(eta)));        // total energy
+    // make sure input array is empty
+    daughters->Delete();
+    // FIXME we need a fix for the PDG code ... 
+    Int_t pdgCode(211); // default to charged pion 
+    if(mass == 0.13957) pdgCode = (charge > 0 ) ? 211 : -211;
+    // decay the mother and import the daughters
+    fDecayer->Decay(pdgCode, &pMother);
+    fDecayer->ImportParticles(daughters);
+    // FIXME the decay should happen in a nested loop of depth fDecayerIterations
+    // so that we can have fDecayerIterations generations of tracks
+    return;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetFlowMC::Terminate(Option_t *)
