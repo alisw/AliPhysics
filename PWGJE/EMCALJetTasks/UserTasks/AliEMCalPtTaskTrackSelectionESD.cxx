@@ -74,9 +74,12 @@ AliEMCalPtTaskTrackSelectionESD& AliEMCalPtTaskTrackSelectionESD::operator=(
 	 */
 	AliEMCalPtTaskVTrackSelection::operator=(ref);
 	if(&ref != this){
-		this->~AliEMCalPtTaskTrackSelectionESD();
+		if(fTrackCuts) {
+			delete fTrackCuts;
+			fTrackCuts = NULL;
+		}
+		if(ref.fTrackCuts) fTrackCuts = new AliESDtrackCuts(*(ref.fTrackCuts));
 	}
-	if(ref.fTrackCuts) fTrackCuts = new AliESDtrackCuts(*(ref.fTrackCuts));
 	return *this;
 }
 
