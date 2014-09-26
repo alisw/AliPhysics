@@ -566,11 +566,13 @@ protected:
    */
   void ClearCanvas()
   {
-    fTop->Clear();
-    fTop->SetNumber(1);
-    fTop->SetFillColor(kBlue-5);
-    fTop->SetBorderSize(0);
-    fTop->SetBorderMode(0);
+    if (fTop) {
+      fTop->Clear();
+      fTop->SetNumber(1);
+      fTop->SetFillColor(kBlue-5);
+      fTop->SetBorderSize(0);
+      fTop->SetBorderMode(0);
+    }
 
     fBody->Clear();
     fBody->SetNumber(2);
@@ -604,7 +606,8 @@ protected:
    */
   void CreateCanvas(const TString& pname, 
 		    Bool_t landscape=false, 
-		    Bool_t pdf=true)
+		    Bool_t pdf=true,
+		    Bool_t useTop=true)
   {
     // Info("CreateCanvas", "Creating canvas");
     fLandscape = landscape;
@@ -641,15 +644,17 @@ protected:
     gStyle->SetFrameBorderMode(1);
     gStyle->SetPalette(1);
 
-    Float_t dy = .05;
-    fTop = new TPad("top", "Top", 0, 1-dy, 1, 1, 0, 0);
-    fTop->SetNumber(1);
-    fTop->SetFillColor(kBlue-5);
-    fTop->SetBorderSize(0);
-    fTop->SetBorderMode(0);
-    fCanvas->cd();
-    fTop->Draw();
-    
+    Float_t dy = useTop ? .05 : 0;
+    if (useTop) {
+      fTop = new TPad("top", "Top", 0, 1-dy, 1, 1, 0, 0);
+      fTop->SetNumber(1);
+      fTop->SetFillColor(kBlue-5);
+      fTop->SetBorderSize(0);
+      fTop->SetBorderMode(0);
+      fCanvas->cd();
+      fTop->Draw();
+    }
+
     fBody = new TPad("body", "Body", 0, 0, 1, 1-dy, 0, 0);
     fBody->SetNumber(2);
     fBody->SetFillColor(0);
@@ -715,9 +720,11 @@ protected:
    */
   void PrintCanvas(const TString& title, Float_t size=.7)
   {
-    fTop->cd();
-    fHeader->SetTextSize(size);
-    fHeader->DrawLatex(.5,.5,title);
+    if (fTop) {
+      fTop->cd();
+      fHeader->SetTextSize(size);
+      fHeader->DrawLatex(.5,.5,title);
+    }
   
     fCanvas->Modified();
     fCanvas->Update();
