@@ -48,6 +48,7 @@ struct AvailableSoftware
     
     TString c("wget -q http://alimonitor.cern.ch/packages/ -O - | "
 	      "sed -n -e '/<tr/,/<\\/tr>/ p' | ");
+#if 0
     if (rele || anat || nots) {
       c.Append("sed -n '/<a.*VO_ALICE@AliRoot::v[0-9]\\{1,\\}-[0-9]\\{1,\\}-");
       if (rele)
@@ -60,7 +61,20 @@ struct AvailableSoftware
     }
     else 
       c.Append("sed -n '/<a.*VO_ALICE@AliRoot::/,/VO_ALICE@ROOT::/ p' | ");
-    
+#else 
+    if (rele || anat || nots) { 
+      c.Append("sed -n '/<a.*VO_ALICE@AliRoot::v");
+      const char* relPat = "[0-9]\\{1,\\}-[0-9]\\{1,\\}-Rev-[0-9]\\{1,\\}";
+      const char* anaPat = "AN-[0-9]\\{8,\\}";
+      if      (rele) 	c.Append(relPat);
+      else if (anat)  	c.Append(anaPat);
+      else if (nots)    c.Append(Form("\\(%s\\|%s\\)", relPat, anaPat));
+      c.Append("/,/VO_ALICE@ROOT::/ p' | ");
+    }
+    else  
+      c.Append("sed -n '/<a.*VO_ALICE@AliRoot::/,/VO_ALICE@ROOT::/ p' | ");
+#endif
+
     c.Append("sed -n -e 's/.*VO_ALICE@AliRoot::\\([-0-9a-zA-Z]*\\).*/%\\1%/p' "
 	     "  -e 's/.*VO_ALICE@ROOT::\\([-0-9a-zA-Z]*\\).*/\\1@/p' | "
 	     "tr -d '\\n' | tr '@' '\\n' | tr '%' '\\t' ");
