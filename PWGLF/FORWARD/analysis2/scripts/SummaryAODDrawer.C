@@ -6,6 +6,7 @@
 # include <TArrow.h>
 #else
 class TGraph;
+class TFile;
 #endif
 
 /**
@@ -40,6 +41,138 @@ public:
       fSums(0),
       fResults(0)
   {}
+  //__________________________________________________________________
+  TFile* Init(const char* fname)
+  {
+    // --- Open the file ---------------------------------------------
+    TString filename(fname);
+    TFile*  file = TFile::Open(filename, "READ");
+    if (!file) { 
+      Error("Run", "Failed to open \"%s\"", filename.Data());
+      return 0;
+    }
+
+    // --- Get top-level collection ----------------------------------
+    fSums = GetCollection(file, "ForwardSums");
+    if (!fSums) {
+      Info("Run", "Trying old name Forward");
+      fSums = GetCollection(file, "Forward");
+      if (!fSums) return 0;
+    }
+
+    // --- Do the results ----------------------------------------------
+    fResults = GetCollection(file, "ForwardResults");
+    if (!fResults) fResults = fSums; // Old-style
+
+    return file;
+  }
+  void SummarizeSharing(const char* fname, UShort_t what=0)
+  {
+    // --- Initialize ------------------------------------------------
+    TFile* file = 0;
+    if (!(file = Init(fname))) return;
+
+    // --- Make our canvas -------------------------------------------
+    TString pdfName("sharing.pdf");
+    pdfName.ReplaceAll(".root", ".pdf");
+    CreateCanvas(pdfName, what & kLandscape, true, false);
+    
+    TCollection* c = GetCollection(fSums, "fmdSharingFilter");
+    if (!c) return;
+    TCollection* rc = GetCollection(fResults, "fmdSharingFilter");
+    if (!rc) rc = c;
+
+    Int_t    nFiles = 0;
+    TParameter<int>* pnFiles = 
+      static_cast<TParameter<int>*>(GetObject(c, "nFiles"));
+    if (pnFiles) {
+      nFiles = pnFiles->GetVal();
+    }
+
+    TCollection* lc    = GetCollection(c, "lCuts");
+    TCollection* hc    = GetCollection(c, "hCuts");
+    Int_t        lm    = 0;
+    Int_t        hm    = 0;
+    TH2*         hLow  = GetH2(c, "lowCuts");
+    TH2*         hHigh = GetH2(c, "highCuts");
+    GetParameter(lc, "method", lm);
+    GetParameter(hc, "method", hm);
+    if (hLow  && nFiles > 0 && !hLow->TestBit(BIT(20)))
+      hLow->Scale(1. / nFiles);
+    if (hHigh && nFiles > 0 && !hHigh->TestBit(BIT(20))) 
+      hHigh->Scale(1. / nFiles);
+    
+    DivideForRings(true,true);
+    const char** ptr   = GetRingNames(false);
+    UShort_t     iq    = 1;
+    while (*ptr) { 
+      TCollection* sc = GetCollection(c, *ptr);
+      if (!sc) { ptr++; iq++; continue; }
+      UShort_t d = Int_t((*ptr)[3])-48;
+      Char_t   r = (*ptr)[4];
+      
+      TH1*     esdELoss = GetH1(sc, "esdEloss");
+      TH1*     anaELoss = GetH1(sc, "anaEloss");
+      TGraph*  lowCut   = CreateCutGraph(lm, iq,  hLow,  esdELoss, kYellow+1);
+      TGraph*  highCut  = CreateCutGraph(hm, iq,  hHigh, esdELoss, kCyan+1);
+      // Double_t ignCut   = TMath::Max(lowCut->GetX()[3],0.);
+      // Int_t    esdLow   = esdELoss->FindBin(ignCut);
+      // Int_t    anaLow   = anaELoss->FindBin(ignCut);
+      // Double_t esdInt   = esdELoss->Integral(esdLow,esdELoss->GetNbinsX()+1);
+      // Double_t anaInt   = anaELoss->Integral(anaLow,anaELoss->GetNbinsX()+1);
+      // Double_t frac     = esdInt > 0 ? (esdInt-anaInt)/esdInt : 1;
+      esdELoss->GetXaxis()->SetRangeUser(-.1, 2);
+      
+      DrawInRingPad(d,r, esdELoss, "", kLogy, *ptr);
+      // 		    "#Delta/#Delta_{mip} reconstructed and merged");
+      DrawInRingPad(d, r, anaELoss, "same");
+      DrawInRingPad(d, r, lowCut,  "lf same"); 
+      DrawInRingPad(d, r, highCut, "lf same"); 
+      ptr++;
+      iq++;
+    }
+    TVirtualPad* p = RingPad(0,0);
+    p->cd();
+    TLegend* l = new TLegend(0.1, 0.1, 0.98, 0.98, "");
+    l->SetFillStyle(0);
+    l->SetFillColor(0);
+    l->SetBorderSize(0);
+    TLegendEntry* e = 0;
+    e = l->AddEntry("dummy", "ESD signal", "f");
+    e->SetFillStyle(3002);
+    e->SetFillColor(kBlack);
+    e = l->AddEntry("dummy", "Merged signal", "f");
+    e->SetFillStyle(3001);
+    e->SetFillColor(kBlack);
+    e = l->AddEntry("dummy", "Low cut", "f");
+    e->SetFillStyle(3002);
+    e->SetFillColor(kYellow+1);
+    e->SetLineWidth(0);
+    e->SetLineColor(kWhite);
+    e = l->AddEntry("dummy", "High cut", "f");
+    e->SetFillStyle(3002);
+    e->SetFillColor(kCyan+1);
+    e->SetLineWidth(0);
+    e->SetLineColor(kWhite);
+    l->Draw();
+    
+    PrintCanvas("Summary of sharing filter");
+    CloseCanvas();
+    
+  }
+  void SummarizeSteps(const char* fname, UShort_t what=0)
+  {
+    // --- Initialize ------------------------------------------------
+    TFile* file = 0;
+    if (!(file = Init(fname))) return;
+
+    // --- Make our canvas -------------------------------------------
+    TString pdfName("steps.pdf");
+    pdfName.ReplaceAll(".root", ".pdf");
+    CreateCanvas(pdfName, what & kLandscape, true, false);
+    DrawSteps();
+    CloseCanvas();
+  }
   
   //__________________________________________________________________
   /** 
@@ -50,29 +183,12 @@ public:
    */
   void Run(const char* fname, UShort_t what=kNormal)
   {
-    // --- Open the file ---------------------------------------------
-    TString filename(fname);
-    TFile*  file = TFile::Open(filename, "READ");
-    if (!file) { 
-      Error("Run", "Failed to open \"%s\"", filename.Data());
-      return;
-    }
-   
-
-    // --- Get top-level collection ----------------------------------
-    fSums = GetCollection(file, "ForwardSums");
-    if (!fSums) {
-      Info("Run", "Trying old name Forward");
-      fSums = GetCollection(file, "Forward");
-      if (!fSums) return;
-    }
-
-    // --- Do the results ----------------------------------------------
-    fResults = GetCollection(file, "ForwardResults");
-    if (!fResults) fResults = fSums; // Old-style
+    // --- Initialize ------------------------------------------------
+    TFile* file = 0;
+    if (!(file = Init(fname))) return;
 
     // --- Make our canvas -------------------------------------------
-    TString pdfName(filename);
+    TString pdfName(fname);
     pdfName.ReplaceAll(".root", ".pdf");
     CreateCanvas(pdfName, what & kLandscape);
     DrawTitlePage(file);
