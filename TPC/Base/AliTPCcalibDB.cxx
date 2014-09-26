@@ -318,11 +318,12 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //
   // destructor
   //
-
   //delete fIonTailArray; 
   delete fActiveChannelMap;
   delete fGrRunState;
+  fgInstance = 0;
 }
+
 AliTPCCalPad* AliTPCcalibDB::GetDistortionMap(Int_t i) const {
   //
   // get distortion map - due E field distortions

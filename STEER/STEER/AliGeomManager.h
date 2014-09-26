@@ -43,6 +43,7 @@ public:
 		kLastLayer=21};
 
   static TGeoManager* GetGeometry() { return fgGeometry; }
+  static void         Destroy();
 
   static Int_t       LayerSize(Int_t layerId);
   static const char* LayerName(Int_t layerId);

@@ -105,6 +105,16 @@ Int_t AliGeomManager::fgNalignable[fgkNDetectors] = {0,0, 0, 0, 0, 0, 0, 0, 0, 0
 TGeoManager* AliGeomManager::fgGeometry = 0x0;
 
 //_____________________________________________________________________________
+void AliGeomManager::Destroy()
+{
+  // destroy the manager as well as gGeoManager (if it was not attached to fgGeometry)
+  TGeoManager::UnlockGeometry();
+  delete gGeoManager;
+  fgGeometry = gGeoManager = 0;
+  ResetPNEntriesLUT();
+}
+
+//_____________________________________________________________________________
 void AliGeomManager::LoadGeometry(const char *geomFileName)
 {
   // initialization

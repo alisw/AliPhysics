@@ -427,9 +427,13 @@ AliESDEvent* AliStorageEventManager::GetEvent(storageSockets socket,int timeout)
   mess->ResetMap();
 	
   AliESDEvent* data = (AliESDEvent*)(mess->ReadObjectAny(AliESDEvent::Class()));
-    
+
   if (data)
   {
+    data->GetStdContent();
+    if(message){delete message;}
+    return data; 
+    /*
     TTree* tree= new TTree("esdTree", "esdTree");
     data->WriteToTree(tree);
     tree->Fill();
@@ -440,6 +444,7 @@ AliESDEvent* AliStorageEventManager::GetEvent(storageSockets socket,int timeout)
     if(tree){delete tree;}
     if(message){delete message;}
     return event;
+    */
   }
   else
   {
