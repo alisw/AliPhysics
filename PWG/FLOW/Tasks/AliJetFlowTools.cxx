@@ -3596,7 +3596,9 @@ void AliJetFlowTools::BootstrapSpectra(TString def, TString in, TString out) con
    spectraOut->Write();
 
    TH1F* delta0spread(new TH1F("delta0spread", "#sigma(#Delta_{0})", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+   TH1F* unfoldingError(new TH1F("unfoldingError", "error from unfolding algorithm", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
    TF1* gaus(new TF1("gaus", "gaus"/*[0]*exp(-0.5*((x-[1])/[2])**2)"*/, -1., 1.));
+   Double_t xDud(0), yDud(0);
    for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
        delta0[i]->Fit(gaus);
        delta0[i]->GetYaxis()->SetTitle("counts");
@@ -3606,10 +3608,18 @@ void AliJetFlowTools::BootstrapSpectra(TString def, TString in, TString out) con
        cout << " mean " << gaus->GetParameter(1) << endl;
        cout << " sigm " << gaus->GetParameter(2) << endl;
        delta0[i]->Write();
+       v2Emperical->GetPoint(i, xDud, yDud);
+       unfoldingError->SetBinContent(i+1, 1e-10/*gaus->GetParameter(1)*/);
+       if(commonReference && !commonReference->Eval(xDud)<1e-10) unfoldingError->SetBinError(i+1, v2Emperical->GetErrorY(i)/(commonReference->Eval(xDud)));
+       else if(yDud>10e-10) unfoldingError->SetBinError(i+1, v2Emperical->GetErrorY(i)/yDud);
+       else unfoldingError->SetBinError(i+1, 0.);
    }
    delta0spread->GetXaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
    delta0spread->GetYaxis()->SetTitle("(mean v_{2, jet}^{measured} - v_{2, jet}^{generated}) / input v_{2}");
    delta0spread->Write();
+   unfoldingError->GetXaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
+   unfoldingError->GetYaxis()->SetTitle("(mean v_{2, jet}^{measured} - v_{2, jet}^{generated}) / input v_{2}");
+   unfoldingError->Write();
    // write the buffer and close the file
    output.Write();
    output.Close();
