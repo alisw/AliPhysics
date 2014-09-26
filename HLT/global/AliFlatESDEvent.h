@@ -267,14 +267,14 @@ inline void AliFlatESDEvent::SetTriggersEnd( Int_t nTriggerClasses, size_t trigg
   fContentSize += triggersSize;
 }
 
-inline const AliFlatESDVertex* AliFlatESDEvent::GetFlatPrimaryVertexSPD() const 
-{
-  return (fPrimaryVertexMask & 0x1) ? reinterpret_cast<const AliFlatESDVertex*>(fContent + fPrimaryVertexSPDPointer) : NULL;
-} 
-
 inline const AliFlatESDVertex* AliFlatESDEvent::GetFlatPrimaryVertexTracks() const 
 { 
-  return (fPrimaryVertexMask & 0x2) ? (reinterpret_cast<const AliFlatESDVertex*>(fContent + fPrimaryVertexTracksPointer)  ) : NULL;
+  return (fPrimaryVertexMask & 0x1) ? (reinterpret_cast<const AliFlatESDVertex*>(fContent + fPrimaryVertexTracksPointer)  ) : NULL;
+} 
+
+inline const AliFlatESDVertex* AliFlatESDEvent::GetFlatPrimaryVertexSPD() const 
+{
+  return (fPrimaryVertexMask & 0x2) ? reinterpret_cast<const AliFlatESDVertex*>(fContent + fPrimaryVertexSPDPointer) : NULL;
 } 
 
 inline Int_t AliFlatESDEvent::GetPrimaryVertexSPD( AliESDVertex &v ) const 

@@ -30,6 +30,7 @@
 #include "AliFlatESDEvent.h"
 #include "AliFlatESDTrigger.h"
 #include "AliFlatESDV0.h"
+#include "AliFlatESDVertex.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTGlobalCompareFlatComponent.h"
@@ -230,7 +231,10 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
  cout<<"nTracks event 2: "<<flatEsd[1]->GetNumberOfTracks()<<endl;
  
  outFile.open("comparison.txt",ios::app);
- outFile<<"\n\n------------------\nnew event\n------------------\n";
+ 
+ // Compare Event variables
+ 
+ outFile<<"\n\n------------------\nnew AliFlatESDEvent\n------------------\n";
  printDiff( "AliFlatESDEvent::GetSize" ,flatEsd[0]->GetSize(), flatEsd[1]->GetSize() ) ;
 	printDiff( "AliFlatESDEvent::GetMagneticField",flatEsd[0]->GetMagneticField(),flatEsd[1]->GetMagneticField() );
 	printDiff( "AliFlatESDEvent::GetPeriodNumber",flatEsd[0]->GetPeriodNumber(),flatEsd[1]->GetPeriodNumber() );
@@ -246,11 +250,38 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 	printDiff( "AliFlatESDEvent::GetEventSpecie",flatEsd[0]->GetEventSpecie(),flatEsd[1]->GetEventSpecie() ); 
 	printDiff( "AliFlatESDEvent::GetNumberOfTriggerClasses",flatEsd[0]->GetNumberOfTriggerClasses(),flatEsd[1]->GetNumberOfTriggerClasses() ); 
 	
+ const AliFlatESDVertex * vertexTracks[2] = {flatEsd[0]->GetFlatPrimaryVertexTracks(), flatEsd[1]->GetFlatPrimaryVertexTracks()};
+	printDiff("AliFlatESDEvent::GetFlatPrimaryVertexTracks", (vertexTracks[0] ? 1:0), (vertexTracks[1] ? 1:0) );
+	
+ const AliFlatESDVertex * vertexSPD[2] = {flatEsd[0]->GetFlatPrimaryVertexSPD(), flatEsd[1]->GetFlatPrimaryVertexSPD()};
+	printDiff("AliFlatESDEvent::GetFlatPrimaryVertexSPD", (vertexSPD[0] ? 1:0), (vertexSPD[1] ? 1:0) );
+	
+ // Compare primary vertices
+	
+	if(vertexTracks[0] && vertexTracks[1]){
+      outFile<<"\nnew AliFlatESDVertexTracks\n";
+			printDiff( "AliFlatESDVertexTracks::GetSize",vertexTracks[0]->GetSize(),vertexTracks[1]->GetSize() ); 
+			printDiff( "AliFlatESDVertexTracks::GetX",vertexTracks[0]->GetX(),vertexTracks[1]->GetX() ); 
+			printDiff( "AliFlatESDVertexTracks::GetY",vertexTracks[0]->GetY(),vertexTracks[1]->GetY() ); 
+			printDiff( "AliFlatESDVertexTracks::GetZ",vertexTracks[0]->GetZ(),vertexTracks[1]->GetZ() ); 
+	}
+ 
+	if(vertexSPD[0] && vertexSPD[1]){
+      outFile<<"\nnew AliFlatESDVertexSPD\n";
+			printDiff( "AliFlatESDVertexSPD::GetSize",vertexSPD[0]->GetSize(),vertexSPD[1]->GetSize() ); 
+			printDiff( "AliFlatESDVertexSPD::GetX",vertexSPD[0]->GetX(),vertexSPD[1]->GetX() ); 
+			printDiff( "AliFlatESDVertexSPD::GetY",vertexSPD[0]->GetY(),vertexSPD[1]->GetY() ); 
+			printDiff( "AliFlatESDVertexSPD::GetZ",vertexSPD[0]->GetZ(),vertexSPD[1]->GetZ() ); 
+	}
+ 
+ 
+ // Compare triggers
+	
 	if(flatEsd[0]->GetNumberOfTriggerClasses()  && flatEsd[1]->GetNumberOfTriggerClasses() ){
 		outFile<<"------------------\ntriggers\n------------------\n";
     AliFlatESDTrigger * trigger[2] = { const_cast<AliFlatESDTrigger*>(flatEsd[0]->GetTriggerClasses() ) , const_cast<AliFlatESDTrigger*>(flatEsd[1]->GetTriggerClasses() ) };
     for( Int_t i = 0; i < flatEsd[0]->GetNumberOfTriggerClasses()  && i < flatEsd[1]->GetNumberOfTriggerClasses()  ; i++ ){
-      outFile<<"\nnew trigger\n";
+      outFile<<"\nnew AliFlatESDTrigger\n";
 			printDiff( "AliFlatESDTrigger::GetSize",trigger[0]->GetSize(),trigger[1]->GetSize() ); 
 			printDiff( "AliFlatESDTrigger::GetTriggerIndex",trigger[0]->GetTriggerIndex(),trigger[1]->GetTriggerIndex() ); 
 			printDiff( "AliFlatESDTrigger::GetTriggerClassName",trigger[0]->GetTriggerClassName(),trigger[1]->GetTriggerClassName() ); 
@@ -259,12 +290,15 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			trigger[1] = trigger[1]->GetNextTriggerNonConst();
     }
 	}
+	
+ // Compare v0s
+	
 	if(flatEsd[0]->GetNumberOfV0s()  && flatEsd[1]->GetNumberOfV0s() ){
 		outFile<<"------------------\nv0s\n------------------\n";
 		
     AliFlatESDV0 * v0[2] = { const_cast<AliFlatESDV0*>(flatEsd[0]->GetV0s() ) , const_cast<AliFlatESDV0*>(flatEsd[1]->GetV0s() ) };
     for( Int_t i = 0; i < flatEsd[0]->GetNumberOfV0s()  && i < flatEsd[1]->GetNumberOfV0s()  ; i++ ){
-      outFile<<"\nnew v0\n";
+      outFile<<"\nnew AliFlatESDV0\n";
 			printDiff( "AliFlatESDV0::GetSize",v0[0]->GetSize(),v0[1]->GetSize() ); 
 			printDiff( "AliFlatESDV0::GetNegTrackID",v0[0]->GetNegTrackID(),v0[1]->GetNegTrackID() ); 
 			printDiff( "AliFlatESDV0::GetPosTrackID",v0[0]->GetPosTrackID(),v0[1]->GetPosTrackID() ); 
@@ -273,8 +307,6 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 			v0[1] = v0[1]->GetNextV0NonConst();
     }
 	}
-	
-	
 	
 	
  outFile.close();
