@@ -31,7 +31,8 @@ public:
   		   kChargeEoI,kChargeEoIInt0,kChargeEoIInt1,
 		   kWidth,kHPTDCTime,
 		   kMultiADA,kMultiADC,kChargeADA,kChargeADC,kChargeAD, 
-		   kADATime,kADCTime,kDiffTime,kTimeADAADC};
+		   kADATime,kADCTime,kDiffTime,kTimeADAADC,
+		   kNCoincADA,kNCoincADC,kPairDiffTime};
 	
 public:
   AliADQADataMakerRec() ;            // constructor
@@ -55,13 +56,13 @@ private:
   virtual void   StartOfDetectorCycle() ; 
   Float_t CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
   
-  Int_t   fEven[64];                  // even charge integrators
-  Int_t   fOdd[64];                   // odd charge intergators
-  Float_t fADCmean[128];              // mean adc per integrator
+  Int_t   fEven[16];                  // even charge integrators
+  Int_t   fOdd[16];                   // odd charge intergators
+  Float_t fADCmean[32];              // mean adc per integrator
   size_t fTrendingUpdateTime;         // trending histos update time
   UInt_t fCycleStartTime;             // timestamp of QA start-of-cycle
   UInt_t fCycleStopTime;              // timestamp of QA end-of-cycle
-  Float_t            fTimeOffset[64]; //! HPTDC time offsets channel by channel
+  Float_t            fTimeOffset[16]; //! HPTDC time offsets channel by channel
   TF1*               fTimeSlewing;    //! Function for time slewing correction
 
   ClassDef(AliADQADataMakerRec,4)  // description 
