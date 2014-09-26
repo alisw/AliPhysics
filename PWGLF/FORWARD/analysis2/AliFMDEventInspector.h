@@ -350,6 +350,7 @@ public:
    * @param isMC If true, assume MC input 
    */
   void SetMC(Bool_t isMC=true) { fMC = isMC; }
+  Bool_t IsMC() const { return fMC; }
   /** 
    * Fetch our histograms from the passed list 
    * 
