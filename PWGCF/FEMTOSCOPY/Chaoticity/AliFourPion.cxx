@@ -3305,7 +3305,7 @@ void AliFourPion::UserExec(Option_t *)
 			    weightTotal += 2*G*pow(1-G,3)*(T14*T13*T23 + T14*T13*T24 + T13*T23*T24 + T14*T24*T23);// 4-pion
 			    weightTotal += 2*pow(1-G,4)*(T12*T13*T24*T34 + T12*T14*T23*T34 + T13*T14*T23*T24);// 4-pion fully chaotic
 			    //
-			    weightPartial = weightTotal - 2*G*(1-G)*(T12 + T13 + T14 + T23 + T24 + T34) + pow(1-G,2)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);
+			    weightPartial = weightTotal - (2*G*(1-G)*(T12 + T13 + T14 + T23 + T24 + T34) + pow(1-G,2)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34));
 			  }else{// Rcoh=Rch
 			    if(type==0){
 			      T12 = sqrt(weight12CC[2] / (1-G*G));
@@ -3315,12 +3315,12 @@ void AliFourPion::UserExec(Option_t *)
 			      T24 = sqrt(weight24CC[2] / (1-G*G));
 			      T34 = sqrt(weight34CC[2] / (1-G*G));
 			    }else{
-			      T12 = ExchangeAmpPointSource[type-1][0]->Eval(qinv12) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));;
-			      T13 = ExchangeAmpPointSource[type-1][0]->Eval(qinv13) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));;
-			      T14 = ExchangeAmpPointSource[type-1][0]->Eval(qinv14) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));;
-			      T23 = ExchangeAmpPointSource[type-1][0]->Eval(qinv23) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));;
-			      T24 = ExchangeAmpPointSource[type-1][0]->Eval(qinv24) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));;
-			      T34 = ExchangeAmpPointSource[type-1][0]->Eval(qinv34) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));;
+			      T12 = ExchangeAmpPointSource[type-1][0]->Eval(qinv12) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
+			      T13 = ExchangeAmpPointSource[type-1][0]->Eval(qinv13) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
+			      T14 = ExchangeAmpPointSource[type-1][0]->Eval(qinv14) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
+			      T23 = ExchangeAmpPointSource[type-1][0]->Eval(qinv23) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
+			      T24 = ExchangeAmpPointSource[type-1][0]->Eval(qinv24) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
+			      T34 = ExchangeAmpPointSource[type-1][0]->Eval(qinv34) / pow( float(pow(1-G,3) + 3*G*pow(1-G,2)), float(1/3.));
 			    }
 			 
 			    weightTotal = (1-G*G)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
@@ -3343,6 +3343,7 @@ void AliFourPion::UserExec(Option_t *)
 			    }
 			  }else{
 			    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[KT4index].FourPT[12].fFullBuildFromFits->Fill(type, 4, q4, 1);
+			    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[KT4index].FourPT[12].fPartialBuildFromFits->Fill(type, 4, q4, 1);
 			    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[KT4index].FourPT[12].fFullBuildFromFits->Fill(type, FillBin, q4, weightTotal);
 			    Charge1[0].Charge2[0].Charge3[0].Charge4[0].MB[fMbin].EDB[KT4index].FourPT[12].fPartialBuildFromFits->Fill(type, FillBin, q4, weightPartial);
 			  }
