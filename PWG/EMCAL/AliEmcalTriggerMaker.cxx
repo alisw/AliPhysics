@@ -5,8 +5,6 @@
 // Author: J.Kral
 
 #include <TClonesArray.h>
-#include <iostream>
-#include <bitset>
 
 #include "AliLog.h"
 #include "AliEmcalTriggerPatchInfo.h"
@@ -251,6 +249,7 @@ Bool_t AliEmcalTriggerMaker::Run()
 		triggerMainJet = 0;
 		triggerMainGammaSimple = 0;
 		triggerMainJetSimple = 0;
+		triggerMainLevel0 = 0;
 
     // go throuth the trigger channels, real first, then offline
     while( NextTrigger( isOfflineSimple ) ){
@@ -356,7 +355,7 @@ Bool_t AliEmcalTriggerMaker::Run()
 AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( TriggerMakerTriggerType_t type, Bool_t isOfflineSimple ){
 
 	
-  Int_t globCol, globRow, tBits, cellAbsId[4], posOffset;
+  Int_t globCol, globRow, tBits, cellAbsId[4], posOffset(0);
   Int_t absId, adcAmp;
   Int_t i, j, k, cmCol, cmRow, cmiCellCol, cmiCellRow;
   Double_t amp, ca, cmiCol, cmiRow;
@@ -477,6 +476,9 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( TriggerMakerTrigge
 	case kTMEMCalLevel0:
 		posOffset = 1;
 		break;
+	default:
+		posOffset = 0;
+		break;
 	};
 	fGeom->GetAbsFastORIndexFromPositionInEMCAL( globCol+posOffset, globRow+posOffset, absId );
 	// convert to the 4 absId of the cells composing the trigger channel
@@ -495,6 +497,9 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch( TriggerMakerTrigge
 		posOffset = 0;
 		break;
 	case kTMEMCalLevel0:
+		posOffset = 0;
+		break;
+	default:
 		posOffset = 0;
 		break;
 	};
