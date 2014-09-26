@@ -1,3 +1,4 @@
+
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4Correlations/JCORRAN                                              #
@@ -27,24 +28,38 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-   Correlations/JCORRAN/AliJBaseTrack.cxx 
-        Correlations/JCORRAN/AliJPhoton.cxx 
-        Correlations/JCORRAN/AliJTrack.cxx 
-        Correlations/JCORRAN/AliJMCTrack.cxx 
-        Correlations/JCORRAN/AliJBaseEventHeader.cxx 
-        Correlations/JCORRAN/AliJEventHeader.cxx 
-        Correlations/JCORRAN/AliJRunHeader.cxx 
+	Correlations/JCORRAN/AliJCORRAN.cxx
+	Correlations/JCORRAN/AliJTrackCounter.cxx
 	Correlations/JCORRAN/AliJCORRANTask.cxx
-    )
-
+	Correlations/JCORRAN/AliJEfficiencyTask.cxx
+	Correlations/JCORRAN/AliJDiHadronCorrTask.cxx
+	Correlations/JCORRAN/AliJFilter.cxx
+	Correlations/JCORRAN/AliJEfficiencyScanner.cxx
+	Correlations/JCORRAN/AliJBaseEventHeader.cxx
+	Correlations/JCORRAN/AliJBaseTrack.cxx
+	Correlations/JCORRAN/AliJEventHeader.cxx
+	Correlations/JCORRAN/AliJJet.cxx
+	Correlations/JCORRAN/AliJMCTrack.cxx
+	Correlations/JCORRAN/AliJPhoton.cxx
+	Correlations/JCORRAN/AliJPiZero.cxx
+	Correlations/JCORRAN/AliJRunHeader.cxx
+	Correlations/JCORRAN/AliJTrack.cxx
+	Correlations/JCORRAN/AliJHistManager.cxx
+	Correlations/JCORRAN/AliJCorrelations.cxx
+	Correlations/JCORRAN/AliJDataManager.cxx
+	Correlations/JCORRAN/AliJRunTable.cxx
+	Correlations/JCORRAN/AliJHistos.cxx
+	Correlations/JCORRAN/AliJEventPool.cxx
+	Correlations/JCORRAN/AliJEfficiency.cxx
+	Correlations/JCORRAN/AliJTrackCut.cxx
+	Correlations/JCORRAN/AliJBaseCard.cxx
+	Correlations/JCORRAN/AliJCard.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS} Correlations/JCORRAN/AliJConst.h" )
 
-set ( DHDR  PWGCFCorrelationsJCORRANLinkDef.h)
+set ( DHDR  PWGCFCorrelationsJCORRANLinkDef.h )
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( EINCLUDE ANALYSIS CORRFW PWGCF/Correlations/JCORRAN PWG/Tools STEER/AOD STEER/ESD STEER/STEERBase EMCAL PHOS)
-
-
-
