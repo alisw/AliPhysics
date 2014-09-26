@@ -1,3 +1,8 @@
+/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice */
+
+// Short comment describing what this class does needed!
+
 // $Id: AliJBaseTrack.h,v 1.5 2008/05/08 15:19:52 djkim Exp $
 
 ///////////////////////////////////////////////////
@@ -18,56 +23,82 @@
 #include <TObject.h>
 #endif
 
+#include <iostream>
+#include <TLorentzVector.h>
+#include <TMath.h>
 #include  "AliJConst.h"
-#include  "TLorentzVector.h"
+
+using namespace std;
 
 class AliJBaseTrack : public TLorentzVector {
- public:
-  enum { kIsIsolated, kNFlag };
-  AliJBaseTrack();
-  AliJBaseTrack(float px,float py, float pz, float e, Int_t id, Short_t ptype, Char_t charge); // constructor
-  AliJBaseTrack(const AliJBaseTrack& a);
-  AliJBaseTrack(const TLorentzVector & a);
-  virtual ~AliJBaseTrack(){;}		//destructor
+    public:
+        enum { kIsIsolated, kNFlag };
+        AliJBaseTrack();
+        AliJBaseTrack(float px,float py, float pz, float e, Int_t id, Short_t ptype, Char_t charge); // constructor
+        AliJBaseTrack(const AliJBaseTrack& a);
+        AliJBaseTrack(const TLorentzVector & a);
+        virtual ~AliJBaseTrack(){;}    //destructor
 
-  float   GetTwoPiPhi() const {return Phi()>-AliJConst::kJPi/3 ? Phi() : AliJConst::kJTwoPi+Phi();} 
-  TLorentzVector GetLorentzVector(){ return TLorentzVector( *this);}
+        double EtaAbs(){ return TMath::Abs(Eta()); }
+        float   GetTwoPiPhi() const {return Phi()>-kJPi/3 ? Phi() : kJTwoPi+Phi();} 
+        TLorentzVector GetLorentzVector(){ return TLorentzVector(Px(), Py(), Pz(), E());}
 
-  Int_t         GetID()           const { return fID;}
-  Int_t         GetLabel()        const { return fLabel; }
-  Short_t       GetParticleType() const { return fParticleType;}
-  ULong_t       GetStatus()       const { return fStatus; }
-  Short_t       GetCharge()       const { return fCharge; } 
-  UInt_t        GetFlags()        const { return fFlags; }
-  Bool_t        GetIsIsolated()   const { return IsTrue(kIsIsolated);}
+        Int_t         GetID()           const { return fID;}
+        Int_t         GetLabel()        const { return fLabel; }
+        Short_t       GetParticleType() const { return fParticleType;}
+        ULong_t       GetStatus()       const { return fStatus; }
+        Short_t       GetCharge()       const { return fCharge; } 
+        UInt_t        GetFlags()        const { return fFlags; }
+        Bool_t        GetIsIsolated()   const { return IsTrue(kIsIsolated);}
 
+        Int_t         GetTriggBin()     const { return fTriggID; }
+        Int_t         GetAssocBin()     const { return fAssocID; }
+        Double32_t    GetTrackEff()     const { 
+            if(fTracEff==-1) {  cout<<"AliJBaseTrack: Uninitilized track eff " <<endl;  exit(-1);
+            } else return fTracEff;  }
+        Bool_t        IsInTriggerBin()  const { return fTriggID>=0; }
+        Bool_t        IsInAssocBin()    const { return fAssocID>=0; }
+        Double_t      GetWeight()       const { return fWeight;}             
+        Int_t         GetMCIndex()      const { return fMCIndex;}
 
-  void SetID      (const int id){fID=id;}
-  void SetLabel   (const Int_t label ){ fLabel=label; }
-  void SetParticleType(const Short_t ptype){ fParticleType=ptype; }
-  void SetStatus  (const ULong_t status){ fStatus=status; }
-  void SetCharge  (const Char_t charge){ fCharge=charge; }
-  void SetFlags   (const UInt_t bits ){ fFlags=bits; }
-  void SetIsIsolated(Bool_t tf){ SetFlag( kIsIsolated, tf); }
+        void SetID      (const int id){fID=id;}
+        void SetLabel   (const Int_t label ){ fLabel=label; }
+        void SetParticleType(const Short_t ptype){ fParticleType=ptype; }
+        void SetStatus  (const ULong_t status){ fStatus=status; }
+        void SetCharge  (const Char_t charge){ fCharge=charge; }
+        void SetFlags   (const UInt_t bits ){ fFlags=bits; }        //MC, is primary flag
+        void SetIsIsolated(Bool_t tf){ SetFlag( kIsIsolated, tf); }
 
-  void Print(Option_t* option) const;
+        void SetTriggBin(const int id){fTriggID = id;}
+        void SetAssocBin(const int id){fAssocID = id;}
+        void SetTrackEff(const Double32_t inEff){fTracEff = inEff;}
 
-  // Handel BitsData
-  Bool_t IsTrue(int i ) const { return TESTBIT(fFlags, i); }
-  void SetFlag(int i, Bool_t t){ if(t){SETBIT(fFlags,i);}else{CLRBIT(fFlags, i);}}
+        void SetWeight(Double_t weight) { fWeight = weight;}
+        void SetMCIndex(Int_t idx) {      fMCIndex = idx;}
 
-  // Operators
-  AliJBaseTrack& operator=(const AliJBaseTrack& trk);
+        virtual void Print(Option_t *option="") const;
 
- protected:
-  Int_t         fID;            // Unique track ID
-  Int_t         fLabel;         // Unique track label for MC-Data relation
-  Short_t       fParticleType;  // ParticleType 
-  Char_t        fCharge;        // track charge for real data
-  ULong_t       fStatus;        // reconstruction status flags or MC status 
-  UInt_t        fFlags;         // store series of any boolen value.
+        // Handel BitsData
+        Bool_t IsTrue(int i ) const { return TESTBIT(fFlags, i); }
+        void SetFlag(int i, Bool_t t){ if(t){SETBIT(fFlags,i);}else{CLRBIT(fFlags, i);}}
 
-  ClassDef(AliJBaseTrack,1)
+        // Operators
+        AliJBaseTrack& operator=(const AliJBaseTrack& trk);
+
+    protected:
+        Int_t         fID;            // Unique track ID
+        Int_t         fLabel;         // Unique track label for MC-Data relation
+        Short_t       fParticleType;  // ParticleType 
+        Char_t        fCharge;        // track charge for real data
+        ULong_t       fStatus;        // reconstruction status flags or MC status 
+        UInt_t        fFlags;         // store series of any boolen value.
+
+        Int_t         fTriggID, fAssocID; //!   //id of trigger and assoc particle 
+        Double32_t    fTracEff;           //!   //track efficiency
+        Int_t         fMCIndex;           //!   //index of corresp. MC track
+        Double_t      fWeight;            //!   //particle weight
+
+        ClassDef(AliJBaseTrack,1)
 };
 
 #endif
