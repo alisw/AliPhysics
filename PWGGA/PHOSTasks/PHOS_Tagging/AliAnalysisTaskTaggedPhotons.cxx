@@ -73,6 +73,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fZmin(0.),
   fPhimax(0.),
   fPhimin(0.),
+  fMinBCDistance(0.),
   fCentrality(0.),
   fCentBin(0), 
   fIsMB(0),
@@ -102,6 +103,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fZmin(60.),
   fPhimax(250.),
   fPhimin(320.),
+  fMinBCDistance(0.),
   fCentrality(0.),
   fCentBin(0),
   fIsMB(0),
@@ -137,6 +139,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fZmin(60.),
   fPhimax(250.),
   fPhimin(320.),
+  fMinBCDistance(0.),  
   fCentrality(0.),
   fCentBin(0),
   fIsMB(0),
@@ -727,6 +730,9 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   
     if(clu->GetMCEnergyFraction()>kEcrossCut) //Ecross cut, should be filled with Tender
      continue ;    
+    
+    if(clu->GetDistanceToBadChannel()<fMinBCDistance)
+      continue ;
 
     Float_t pos[3] ;
     clu->GetPosition(pos) ;
