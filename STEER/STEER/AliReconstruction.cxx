@@ -1601,6 +1601,7 @@ void AliReconstruction::Begin(TTree *)
   // Should follow the TSelector convention
   // i.e. initialize only the object on the client side
   AliCodeTimerAuto("",0);
+
   AliReconstruction *reco = NULL;
   if (fInput) {
     if ((reco = (AliReconstruction*)fInput->FindObject("AliReconstruction"))) {
@@ -3695,6 +3696,7 @@ void AliReconstruction::CleanUp()
 {
 // delete trackers and the run loader and close and delete the file
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    if (fReconstructor[iDet]) fReconstructor[iDet]->SetRecoParam(NULL);
     delete fReconstructor[iDet];
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
