@@ -168,7 +168,7 @@ AliTRDtransform::~AliTRDtransform()
   //
   // AliTRDtransform destructor
   //
-
+  delete fCalibration;
 }
 
 //_____________________________________________________________________________
