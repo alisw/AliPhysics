@@ -27,6 +27,8 @@ TPCda_pedestal.cxx - calibration algorithm for TPC pedestal runs
 19/09/2008  J.Wiechula@gsi.de:            Added export of the calibration data to the AMORE data base.
                                           Added support for configuration files.
 31/01/2011  Christian.Lippmann@cern.ch :  Updates for changed setup at P2 with 2 LDCs per sector
+26/09/2014  Christian.Lippmann@cern.ch :  Updates for changed setup at P2 1 CRORC per LDC
+26/09/2014  Jens.Wiechula@cern.ch      :  comment out obsolete AliTPCRawStream
 
 contact: marian.ivanov@cern.ch
 
@@ -74,6 +76,7 @@ extern "C" {
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliTPCmapper.h"
+//#include "AliTPCRawStreamV3.h"
 #include "AliTPCROC.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
@@ -109,6 +112,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  /*
   TString daterolename(gSystem->Getenv("DATE_ROLE_NAME"));
   if ( daterolename == "" ) {
     printf("Error: Variable DATE_ROLE_NAME not defined! Exiting ...\n");
@@ -121,7 +125,9 @@ int main(int argc, char **argv) {
     printf("Error: Variable DATE_ROLE_NAME neither ends with -0 nor -1 (E.g. ldc-TPC-C12-1)! Exiting ...\n");
     return -1;
   }
+  */
 
+  //AliLog::SetClassDebugLevel("AliTPCRawStreamV3",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
@@ -362,8 +368,9 @@ int main(int argc, char **argv) {
     Int_t sector = mapping->GetSectorFromRoc(roc);
     Int_t minrcu, maxrcu;
     if      ( isIROC ) { minrcu=0; maxrcu=1; }
-    else if ( inner  ) { minrcu=2; maxrcu=2; }
-    else               { minrcu=3; maxrcu=5; }
+    //else if ( inner  ) { minrcu=2; maxrcu=2; }
+    //else               { minrcu=3; maxrcu=5; }
+    else               { minrcu=2; maxrcu=5; }
     for ( int rcu = minrcu; rcu <= maxrcu; rcu++ ) {
       //Int_t patch = mapping->IsIROC(roc) ? rcu : rcu+2;
       for ( int branch = 0; branch < 2; branch++ ) {
