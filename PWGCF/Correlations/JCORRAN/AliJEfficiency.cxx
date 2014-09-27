@@ -1,6 +1,7 @@
 #include "AliJEfficiency.h"
 #include <TSystem.h>
 #include <iostream>
+#include <TGrid.h>
 
 // AliJEfficiency
 // ...
@@ -16,7 +17,7 @@ AliJEfficiency::AliJEfficiency():
   fPeriod(-1),
   fTrackCut(),
   fRunTable(),
-  fDataPath("$ALICE_ROOT/PWGCF/Correlations/macros/jcorran"),
+  fDataPath(""),
   fName(""),
   fPeriodStr(""),
   fMCPeriodStr(""),
@@ -116,10 +117,12 @@ bool AliJEfficiency::Load(){
     return true;
   }
   GetEffFullName();
-  fInputRoot = new TFile( fInputRootName,"READ");
+  if (TString(fInputRootName).BeginsWith("alien:"))  TGrid::Connect("alien:");
+  fInputRoot = TFile::Open( fInputRootName);
+  //fInputRoot = new TFile( fInputRootName,"READ");
   if( !fInputRoot ) {
-    cout<< "J_ERROR : "<<fInputRootName <<" is not exist"<<endl;
-    gSystem->Exit(1);
+	  cout<< "J_ERROR : "<<fInputRootName <<" is not exist"<<endl;
+	  gSystem->Exit(1);
   }
 
   //fEffDir[0] = (TDirectory*)fInputRoot->Get("EffRE");
@@ -128,82 +131,82 @@ bool AliJEfficiency::Load(){
   //iif( fEffDir[0] && fEffDir[1] && fEffDir[2] )
   if( !fEffDir[2] )
   {
-    cout<< "J_ERROR : Directory EFF is not exist"<<endl;
-    gSystem->Exit(1);
+	  cout<< "J_ERROR : Directory EFF is not exist"<<endl;
+	  gSystem->Exit(1);
   }
 
   fCentBin = (TAxis*)fEffDir[2]->Get("CentralityBin");
   if( !fCentBin ){
-    cout<< "J_ERROR : No CentralityBin in directory"<<endl;
-    gSystem->Exit(1);
+	  cout<< "J_ERROR : No CentralityBin in directory"<<endl;
+	  gSystem->Exit(1);
   }
 
 
   int nVtx = 1;
   int nCentBin = fCentBin->GetNbins();
   for( int ivtx=0;ivtx<nVtx;ivtx++ ){
-    for( int icent=0;icent<nCentBin;icent++ ){
-      for( int icut=0;icut<fTrackCut.GetNCut();icut++ ){
-        fCorrection[ivtx][icent][icut] 
-          = (TGraphErrors*) fEffDir[2]->Get(Form("gCor%02d%02d%02d", ivtx,icent,icut));
-        //cout<<"J_LOG : Eff graph - "<<Form("gCor%02d%02d%02d", ivtx,icent,icut)<<" - "<<g<<endl;
-      }
-    }
+	  for( int icent=0;icent<nCentBin;icent++ ){
+		  for( int icut=0;icut<fTrackCut.GetNCut();icut++ ){
+			  fCorrection[ivtx][icent][icut] 
+				  = (TGraphErrors*) fEffDir[2]->Get(Form("gCor%02d%02d%02d", ivtx,icent,icut));
+			  //cout<<"J_LOG : Eff graph - "<<Form("gCor%02d%02d%02d", ivtx,icent,icut)<<" - "<<g<<endl;
+		  }
+	  }
   }
   cout<<"J_LOG : Eff file is "<<fInputRootName<<endl;
   cout<<"J_LOG : Eff Cent Bins are ";
   for( int i=0;i<=nCentBin;i++ ){
-    cout<<fCentBin->GetXbins()->At(i)<<" ";
+	  cout<<fCentBin->GetXbins()->At(i)<<" ";
   }
   cout<<endl;
   return true;
 }
 
 double AliJEfficiency::GetCorrection( double pt, int icut , double cent ) const {
-  // TODO : Function mode
-  if( fMode == kNotUse ) return 1;
-  int icent = fCentBin->FindBin( cent ) -1 ;
-  if( icent < 0 || icent > fCentBin->GetNbins()-1 ) {
-    cout<<"J_WARNING : Centrality "<<cent<<" is out of CentBinBorder"<<endl;
-    return 1;
-  }
-  // TODO error check for icent;
-  int ivtx = 0;
-  if( ! fCorrection[ivtx][icent][icut] ) {
-    cout<<"J_WARNING : No Eff Info "<<pt<<"\t"<<icut<<"\t"<<cent<<"\t"<<icent<<endl;
-    return 1;
-  }
-  TGraphErrors * gr = fCorrection[ivtx][icent][icut];
-  //=== TEMPERORY SETTING. IT will be removed soon.
-  if( pt > 30 ) pt = 30; // Getting eff of 30GeV for lager pt
-  double cor = gr->Eval(pt);
-  if ( cor < 0.2 ) cor = 0.2;
-  return cor;
+	// TODO : Function mode
+	if( fMode == kNotUse ) return 1;
+	int icent = fCentBin->FindBin( cent ) -1 ;
+	if( icent < 0 || icent > fCentBin->GetNbins()-1 ) {
+		cout<<"J_WARNING : Centrality "<<cent<<" is out of CentBinBorder"<<endl;
+		return 1;
+	}
+	// TODO error check for icent;
+	int ivtx = 0;
+	if( ! fCorrection[ivtx][icent][icut] ) {
+		cout<<"J_WARNING : No Eff Info "<<pt<<"\t"<<icut<<"\t"<<cent<<"\t"<<icent<<endl;
+		return 1;
+	}
+	TGraphErrors * gr = fCorrection[ivtx][icent][icut];
+	//=== TEMPERORY SETTING. IT will be removed soon.
+	if( pt > 30 ) pt = 30; // Getting eff of 30GeV for lager pt
+	double cor = gr->Eval(pt);
+	if ( cor < 0.2 ) cor = 0.2;
+	return cor;
 }
 
 void AliJEfficiency::Write(){
-    // Write Efficiency information to root file 
-  if( fMode == kNotUse ){
-    cout<<"J_LOG : Efficiency mode is \"NotUse\", nothing will be Written" <<endl;
-    return;
-  }
-  cout<<"J_LOG : Efficiency Write to "<<gDirectory->GetName()<<endl;
-  TDirectory *cwd = gDirectory;
-  TDirectory *eff = gDirectory->mkdir("Efficiency");
-  eff->cd();
-  int nVtx = 1;
-  int nCentBin = fCentBin->GetNbins();
-  cout<<nCentBin<<endl;
-  for( int ivtx=0;ivtx<nVtx;ivtx++ ){
-    for( int icent=0;icent<nCentBin;icent++ ){
-      for( int icut=0;icut<fTrackCut.GetNCut();icut++ ){
-        cout<<fCorrection[ivtx][icent][icut]<<endl;
-        if( !fCorrection[ivtx][icent][icut]) continue;
-        fCorrection[ivtx][icent][icut]->Write(Form("gCor%02d%02d%02d", ivtx,icent,icut));
-      }
-    }
-  }
-  fCentBin->Write("CentralityBin");
-  cwd->cd();
+	// Write Efficiency information to root file 
+	if( fMode == kNotUse ){
+		cout<<"J_LOG : Efficiency mode is \"NotUse\", nothing will be Written" <<endl;
+		return;
+	}
+	cout<<"J_LOG : Efficiency Write to "<<gDirectory->GetName()<<endl;
+	TDirectory *cwd = gDirectory;
+	TDirectory *eff = gDirectory->mkdir("Efficiency");
+	eff->cd();
+	int nVtx = 1;
+	int nCentBin = fCentBin->GetNbins();
+	cout<<nCentBin<<endl;
+	for( int ivtx=0;ivtx<nVtx;ivtx++ ){
+		for( int icent=0;icent<nCentBin;icent++ ){
+			for( int icut=0;icut<fTrackCut.GetNCut();icut++ ){
+				cout<<fCorrection[ivtx][icent][icut]<<endl;
+				if( !fCorrection[ivtx][icent][icut]) continue;
+				fCorrection[ivtx][icent][icut]->Write(Form("gCor%02d%02d%02d", ivtx,icent,icut));
+			}
+		}
+	}
+	fCentBin->Write("CentralityBin");
+	cwd->cd();
 }
 
