@@ -286,6 +286,11 @@ void AliJCORRAN::UserCreateOutputObjects(){
 	//==== Efficiency ====
 	fEfficiency = new AliJEfficiency;
 	fEfficiency->SetMode( fcard->Get("EfficiencyMode") ); // 0:NoEff, 1:Period 2:RunNum 3:Auto
+	if(fExecLocal) { 
+		fEfficiency->SetDataPath("/mnt/flustre/alice/taxi_jcorran/2013/EFF/data"); // Efficiency root file location local or alien
+	} else {
+		fEfficiency->SetDataPath("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data"); // Efficiency root file location local or alien
+	}
 
 	//-------------------------------------------------------------------
 	fEventCounter=0;
@@ -306,7 +311,7 @@ void AliJCORRAN::UserCreateOutputObjects(){
 
 	// fast parameter load
 
-	
+
 	fhistos->fHMG->WriteConfig();
 	fFirstEvent = kTRUE;
 	fevt = -1;
@@ -344,11 +349,6 @@ void AliJCORRAN::UserExec(){
 		fSQRTS = fRunTable->GetBeamEnergy(fRunTable->GetPeriod());
 		cout << "sqrts = "<< fSQRTS << ",runnumber = "<< frunHeader->GetRunNumber() << endl;
 		fEfficiency->SetRunNumber( frunHeader->GetRunNumber() );
-		TString effTag = fcard->GetStr("EfficiencyTag");
-
-		if( effTag.Length() > 0 ){
-			fEfficiency->SetTag( effTag );
-		}
 		fEfficiency->Load();
 		fFirstEvent = kFALSE;
 	}
