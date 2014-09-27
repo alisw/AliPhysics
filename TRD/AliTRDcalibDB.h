@@ -57,7 +57,7 @@ class AliTRDcalibDB : public TObject {
 
   static AliTRDcalibDB               *Instance();
   static void                         Terminate();
-
+  virtual                            ~AliTRDcalibDB();
   void                                SetRun(Long64_t run);
   Long64_t                            GetRun() const { return fRun; }
 
@@ -210,7 +210,6 @@ class AliTRDcalibDB : public TObject {
   AliTRDcalibDB();                                  //  This is a singleton, constructor is private!  
   AliTRDcalibDB(const AliTRDcalibDB &c);   
   AliTRDcalibDB &operator=(const AliTRDcalibDB &c); 
-  virtual ~AliTRDcalibDB();
 
   ClassDef(AliTRDcalibDB, 8)                        //  Provides central access to the CDB
 
