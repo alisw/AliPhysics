@@ -154,11 +154,11 @@ void AliJEventPool::AcceptList(TClonesArray *inList, float cent, float Z, float 
 
     fLists[cBin][fwhereToStore[cBin]]->Clear();
     for(int i=0;i<inList->GetEntriesFast();i++){
-				if( fthisPoolType == kPhoton || fthisPoolType == kDecayphoton ){
+				if( fthisPoolType == kJPhoton || fthisPoolType == kJDecayphoton ){
 					AliJPhoton *tkp = (AliJPhoton*)inList->At(i);
 					new ((*fLists[cBin][fwhereToStore[cBin]])[i]) AliJPhoton(*tkp);
 				}
-				else if( fthisPoolType == kPizero || fthisPoolType == kEta ){
+				else if( fthisPoolType == kJPizero || fthisPoolType == kJEta ){
 					AliJPiZero *tkpz = (AliJPiZero*)inList->At(i);
 					new ((*fLists[cBin][fwhereToStore[cBin]])[i]) AliJPiZero(*tkpz);
 				}

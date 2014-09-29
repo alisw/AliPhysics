@@ -53,7 +53,7 @@ private:
 	void FillEventHist(const char *trigger, double vz, bool isPileup);
 	void FillTrackHist(const char *trigger, const AliVTrack *track, double vz, bool isPileup, int cut, bool isMinBias);
 	void FillClusterHist(const char *trigger, const AliVCluster *clust, bool isCalibrated, double vz, bool isPileup, bool isMinBias);
-	void FillMCParticleHist(const AliVParticle * const part);
+	void FillMCParticleHist(const AliVParticle * const part, double vz, bool isPileup);
 	bool IsTrueTrack(const AliVTrack *const) const;
 	TString BuildTriggerString();
 	const AliVVertex *GetSPDVertex() const;

@@ -1,12 +1,11 @@
-const Bool_t IsMC = kFALSE; //With real data kMC = kFALSE
 const TString kInputData = "AOD";
 const TString kJCORRANInputFormat = "AOD"; // ESD, AODout, AODin
-const Bool_t kDoStoreJOD = kTRUE;
 
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJCORRANFilter(){
+AliAnalysisTask *AddTaskJCORRANFilter(Bool_t IsMC = kFALSE, Int_t beamtype = 1){
     // Load Custom Configuration and parameters
     // override values with parameters
+	cout <<"AddTaskJCORRANFilter:: IsMC = "<< IsMC <<"\t beamtype = "<< beamtype <<endl;
     UInt_t triggerSelection;
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -34,14 +33,11 @@ AliAnalysisTask *AddTaskJCORRANFilter(){
 
     //==== JCORRAN TASK
     AliJCORRANTask *jctask = new AliJCORRANTask("PWGCFJCORRANTask",kJCORRANInputFormat);
-    jctask->SetOutputAODName("jcorran.root");
     jctask->SetDebugLevel(0);
-    jctask->SetDoStoreJOD( kDoStoreJOD );
-    cout<<"DEBUG 4"<< jctask->GetDoStoreJOD() <<"\t"<<kDoStoreJOD<<endl;
 
     AliJRunHeader * hdr = new AliJRunHeader;
     hdr->SetIsMC( IsMC );
-    hdr->SetBeamTypeI( 0 ); // 0:pp 1:PbPb
+    hdr->SetBeamTypeI( beamtype ); // 0:pp 1:PbPb
     hdr->SetWithoutSDD(false);
     hdr->SetRunType("LHC13c");
     hdr->SetInputFormat( 1 ); // 0: ESD;
@@ -72,12 +68,6 @@ AliAnalysisTask *AddTaskJCORRANFilter(){
 
 // Connect input/output
 	mgr->ConnectInput(jctask, 0, cinput);
-	if( kDoStoreJOD ){ 
-		AliAnalysisDataContainer *runinfoOutput = mgr->CreateContainer("RunInfo",  TList::Class(), AliAnalysisManager::kOutputContainer, "jcorran.root");
-		AliAnalysisDataContainer *treeOutput = mgr->CreateContainer("JODTree",  TTree::Class(), AliAnalysisManager::kOutputContainer, "jcorran.root");
-		mgr->ConnectOutput(jctask, 1, treeOutput );
-		mgr->ConnectOutput(jctask, 2, runinfoOutput );
-	}
 
 	return jctask;
 }

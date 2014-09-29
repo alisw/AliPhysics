@@ -79,28 +79,18 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
   virtual void Init();   
   virtual void LocalInit() { Init(); }
   virtual void UserExec(Option_t *option);
-  virtual void Terminate(Option_t* option="");
+  virtual void Terminate(Option_t* );
 
   AliJFilter *GetFilter() { return fFilter; }
 
   AliJRunHeader * GetJRunHeader(){ return fAliJRunHeader; }
   void SetJRunHeader( AliJRunHeader * hdr ){ fAliJRunHeader = hdr ; }
-  void SetOutputAODName(const char* aodname){ fAODName=aodname;}
-  TString *GetOutputAODName() {return &fAODName;}
-
-  void SetDoStoreJOD(Bool_t doeff){ fDoStoreJOD=doeff; }
-  Bool_t GetDoStoreJOD(){ return fDoStoreJOD; }
 
  private:
   
   AliJFilter *fFilter; // filter object
-  TString fAODName; //output delta AOD name
-  TTree      *fJODTree;
   AliJRunHeader * fAliJRunHeader;
 
-  Bool_t fDoStoreJOD;
-
-
-  ClassDef(AliJCORRANTask, 2); 
+  ClassDef(AliJCORRANTask, 3); 
 };
 #endif // AliJCORRANTask_H
