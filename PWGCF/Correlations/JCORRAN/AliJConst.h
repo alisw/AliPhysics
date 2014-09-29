@@ -54,7 +54,7 @@ const double kPionMass     = .1395675;
 
 //====================== particle types ============================================
 const int kNumberOfParticleTypes = 10;
-enum particleType   {kHadron, kPion, kKaon, kProton, kPhoton, kDecayphoton, kPizero, kEta,kHadronMC, kJet, kJNone};
+enum particleType   {kJHadron, kJPion, kJKaon, kJProton, kJPhoton, kJDecayphoton, kJPizero, kJEta,kJHadronMC, kJJet, kJNone};
 
 const char* const kParticleTypeStrName[kNumberOfParticleTypes] =
                     {"hadron", "pion", "kaon", "proton", "photon", "decayphoton", "pizero", "eta", "hadronMC", "none"};

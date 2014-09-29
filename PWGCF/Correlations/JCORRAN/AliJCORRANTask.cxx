@@ -45,16 +45,10 @@
 AliJCORRANTask::AliJCORRANTask() :   
     AliAnalysisTaskSE("PWG4JCORRAN"),
     fFilter(0x0),
-    fAODName("jcorran.root"),
-    fJODTree(0x0),
-    fAliJRunHeader(0x0),
-    fDoStoreJOD(kFALSE)
-
+    fAliJRunHeader(0x0)
 {
 
   DefineInput (0, TChain::Class());
-  DefineOutput (1, TTree::Class());
-  DefineOutput (2, TList::Class());
   
    fFilter = new AliJFilter();
 }
@@ -63,10 +57,7 @@ AliJCORRANTask::AliJCORRANTask() :
 AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat):
     AliAnalysisTaskSE(name), 
     fFilter(0x0),
-    fAODName("jcorran.root"),
-    fJODTree(0x0),
-    fAliJRunHeader(0x0),
-    fDoStoreJOD(kFALSE)
+    fAliJRunHeader(0x0)
 {
   // Constructor
   AliInfo("---- AliJCORRANTask Constructor ----");
@@ -74,8 +65,6 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat):
   JUNUSED(inputformat);
 
   DefineInput (0, TChain::Class());
-  DefineOutput (1, TTree::Class());
-  DefineOutput (2, TList::Class());
 
    fFilter = new AliJFilter( Form("%sFilter",name), this );
 }
@@ -84,10 +73,7 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat):
 AliJCORRANTask::AliJCORRANTask(const AliJCORRANTask& ap) :
     AliAnalysisTaskSE(ap.GetName()), 
     fFilter(ap.fFilter),
-    fAODName(ap.fAODName),
-    fJODTree(ap.fJODTree),
-    fAliJRunHeader(ap.fAliJRunHeader),
-    fDoStoreJOD(ap.fDoStoreJOD)
+    fAliJRunHeader(ap.fAliJRunHeader)
 { 
 
   AliInfo("----DEBUG AliJCORRANTask COPY ----");
@@ -111,7 +97,6 @@ AliJCORRANTask::~AliJCORRANTask()
   // destructor 
 
    delete fFilter;
-   delete fJODTree;
    delete fAliJRunHeader;
 
 }
@@ -135,32 +120,6 @@ void AliJCORRANTask::UserCreateOutputObjects()
    fFilter->SetAliJRunHeader( fAliJRunHeader );
    fFilter->UserCreateOutputObjects();
 
-  // register ouput branches
-
-  if(fDoStoreJOD){
-		TFile * file1 = OpenFile(1);
-		file1-> SetCompressionLevel(9);
-		TTree * tree = new TTree("JODTree","JYFL Object Data");
-		int split = 2;
-		int basketsize = 32000;
-		tree->Branch("TrackList", fFilter->GetTrackList(),basketsize, split);
-		if( fFilter->IsMC() ) 
-				tree->Branch("MCTrackList", fFilter->GetMCTrackList(),basketsize, split );
-		//== Event Header
-		tree->Branch("HeaderList", fFilter->GetHeaderList(),basketsize, split );
-		//== EventPlane SRC
-		if( fFilter->GetStoreEventPlaneSource() ){
-				tree->Branch("AliESDVZERO", fFilter->GetESDVZERO());
-				tree->Branch("AliESDTZERO", fFilter->GetESDTZERO());
-				tree->Branch("AliESDZDC",   fFilter->GetESDZDC());
-		}
-		fJODTree = tree;
-  }
-
-  PostData( 1, fJODTree );
-  //OpenFile(2);
-  PostData( 2,fFilter->GetRunInfoList());
-
 
   cout << "Add(fAliRunHeader) in UserCreateObject() ======= " << endl;
 
@@ -176,15 +135,6 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
 
 	fFilter->UserExec("");
 
-	if(  1 || fFilter->GetEventSuccess() ){ // TODO
-		if( fDoStoreJOD ){
-			fJODTree->Fill();
-		}
-	}
-	PostData(1,fJODTree);
-	PostData(2,fFilter->GetRunInfoList());
-
-
 	if(fDebug > 5) cout << "\t------- End UserExec "<<endl;
 }
 
@@ -195,31 +145,14 @@ void AliJCORRANTask::Init()
 	AliInfo("Doing initialization") ; 
 
 	fFilter->Init();
-
-	//   TString formula(fEsdTrackCuts->GetMaxDCAToVertexXYPtDep());
-	//   if(formula.Length()>0){ // momentum dep DCA cut for AOD
-	//     formula.ReplaceAll("pt","x");
-	//   }
 }
 
 //______________________________________________________________________________
-void AliJCORRANTask::Terminate(Option_t * option)
+void AliJCORRANTask::Terminate(Option_t *)
 {
 	fFilter->Terminate();
 
 	// Processing when the event loop is ended
 	fAliJRunHeader->PrintOut();
 	cout<<"AliJCORRANTask Analysis DONE !!"<<endl; 
-	// Printout fRunInfoList here
-	TList* fRunInfoList = dynamic_cast<TList*> (GetOutputData(1));
-	if(fRunInfoList)
-	{
-		AliJRunHeader *fAliRunHeader = dynamic_cast<AliJRunHeader*> (fRunInfoList->FindObject("AliJRunHeader"));
-		if(fAliRunHeader) {fAliRunHeader->Print();}
-	}
-	else
-	{
-		cout << "WARNING : Run Information List is empty" << endl;
-	}
-
 }

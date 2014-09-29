@@ -256,11 +256,11 @@ void AliJDataManager::RegisterList(TClonesArray* listToFill, TClonesArray* listF
 
     switch (whatToFill) {
 
-        case kPhoton:
+        case kJPhoton:
             break;
-        case kPizero:
+        case kJPizero:
             break;
-        case kHadron:       
+        case kJHadron:       
             noIn    = fTrackList->GetEntriesFast(); 
             counter = 0;
             {
@@ -283,14 +283,14 @@ void AliJDataManager::RegisterList(TClonesArray* listToFill, TClonesArray* listF
                             && fCard->IsInEtaRange(cgl->Eta()) 
                       ){  // 
                         cgl->SetID(ii);
-                        cgl->SetParticleType(kHadron);
+                        cgl->SetParticleType(kJHadron);
                         new ((*listToFill)[counter++]) AliJTrack(*cgl);
                     }
                 }
             }
             break;
 
-        case kProton:       
+        case kJProton:       
             noIn    = fTrackList->GetEntriesFast(); 
             counter = 0;
             for(int ii=0;ii<noIn;ii++){ // loop for all tracks 
@@ -304,7 +304,7 @@ void AliJDataManager::RegisterList(TClonesArray* listToFill, TClonesArray* listF
                         && prob > 0.9
                   ){  // All cuts applied in the Train production stage
                     cgl->SetID(ii);
-                    cgl->SetParticleType(kHadron);
+                    cgl->SetParticleType(kJHadron);
                     new ((*listToFill)[counter++]) AliJTrack(*cgl);
                 }
             }
