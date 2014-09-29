@@ -31,6 +31,7 @@ class AliVEvent;
 class AliMultiplicity; 
 class AliAODTracklets;  // XZhang 20120615
 class AliAODTrack;
+class AliESDtrack;
 class AliESDPmdTrack;
 class AliFlowBayesianPID;
 class AliESDkink;
@@ -47,7 +48,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliFlowTrackCuts& operator=(const AliFlowTrackCuts& someCuts);
   virtual ~AliFlowTrackCuts();
 
-  static AliFlowTrackCuts* GetAODTrackCutsForFilterBit(UInt_t bit = 1, TString suffix = "");
+  static AliFlowTrackCuts* GetAODTrackCutsForFilterBit(UInt_t bit = 1);
   static AliFlowTrackCuts* GetStandardTPCStandaloneTrackCuts();
   static AliFlowTrackCuts* GetStandardTPCStandaloneTrackCuts2010();
   static AliFlowTrackCuts* GetStandardGlobalTrackCuts2010();
@@ -67,10 +68,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kV0,    //neutral reconstructed v0 particle
                             kVZERO, //forward VZERO detector
                             kMUON,  // XZhang 20120604
-                            kKink,
-                            kAODFilterBit,
-                            kUserA, // reserved for custom cuts
-                            kUserB  // reserved for custom cuts
+                            kKink
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 

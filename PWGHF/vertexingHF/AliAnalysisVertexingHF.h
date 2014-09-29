@@ -43,7 +43,6 @@ class AliAODVertex;
 class AliVertexerTracks;
 class AliESDv0; 
 class AliAODv0; 
-class AliExternalTrackParam;
 
 //-----------------------------------------------------------------------------
 class AliAnalysisVertexingHF : public TNamed {
