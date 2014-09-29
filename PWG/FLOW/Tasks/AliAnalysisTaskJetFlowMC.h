@@ -89,8 +89,8 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
             fHistToySpectrum[fCenBin]->Fill(pt);         fHistToyEtaPhi[fCenBin]->Fill(eta, phi);
             fHistToyDeltaPhi[fCenBin]->Fill(PhaseShift(phi-fPsi2, 2));  fHistToyVn[fCenBin]->Fill(pt, vn);
         }
-        void    ReturnDecayDaughters(AliPicoTrack* mother, TClonesArray* daughters);
-        void    ReturnDecayDaughters(Double_t pt, Double_t phi, Double_t eta, Double_t mass, Short_t charge, TClonesArray* daughters);
+        Int_t   InsertDecayDaughters(AliPicoTrack* mother, TClonesArray* daughters);
+        Int_t   InsertDecayDaughters(Double_t pt, Double_t phi, Double_t eta, Double_t mass, Short_t charge, TClonesArray* daughters);
         void    Terminate(Option_t* option);
         void    PrintInfo() const;
     protected:
@@ -134,7 +134,8 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         // decayer
         TVirtualMCDecayer*      fDecayer;               // decayer, needs to be set in macro (avoid dependencies)
         Int_t                   fDecayerIterations;     // max no of possible decay vertices from one track
-        TClonesArray*           fDecayerCache;          //! cached tparticle's
+        TClonesArray*           fDecayerCache[25];      //! cached tparticle's, used as intermediate buffer
+        TClonesArray*           fDecayerResults;        //! decayer results
     private:
         AliAnalysisTaskJetFlowMC(const AliAnalysisTaskJetFlowMC&);            // not implemented
         AliAnalysisTaskJetFlowMC &operator=(const AliAnalysisTaskJetFlowMC&); // not implemented
