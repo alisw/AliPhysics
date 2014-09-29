@@ -2298,7 +2298,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          return;
       }   
       cont->SetData(fTree); // This set activity for all tasks reading only from the top container
-      Long64_t entry = fTree->GetTree()->GetReadEntry();
+      Long64_t entry = fTree->GetTree()->GetReadEntry();      
 //
 //    Call BeginEvent() for optional input/output and MC services 
       if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
@@ -2317,7 +2317,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       Int_t itask = 0;
       while ((task=(AliAnalysisTask*)next1())) {
          task->SetActive(kTRUE);
-	  if (fDebug >1) {
+         if (fDebug >1) {
             cout << "    Executing task " << task->GetName() << endl;
          }
          if (fStatistics) fStatistics->StartTimer(GetTaskIndex(task), task->GetName(), task->ClassName());
