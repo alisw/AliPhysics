@@ -314,12 +314,12 @@ particleType AliJPhoton::GetParticleType() {
     }
     
   
-   particleType pdg = kHadron;
+   particleType pdg = kJHadron;
 
   //Select most probable ID
   if(fCaloType == kPHOSCalo){
-    if(fCaloPID[kPhotonAli] > wPhoton) pdg = kPhoton ;
-    else if(fCaloPID[kPi0Ali] > wPi0) pdg = kPizero ; 
+    if(fCaloPID[kPhotonAli] > wPhoton) pdg = kJPhoton ;
+    else if(fCaloPID[kPi0Ali] > wPi0) pdg = kJPizero ; 
     //else if(fCaloPID[kElectronAli] > wElectron)  pdg = electron ;
     //else if(fCaloPID[kEleConAli] >  wElectron) pdg = electronCon ;
     //else if(chargedHadronWeight > wCharged) pdg = chargedHadron ;  
@@ -331,8 +331,8 @@ particleType AliJPhoton::GetParticleType() {
   }
   else{//EMCAL
     //Temporal solution, electrons and photons not differenciated
-    if(fCaloPID[kPhotonAli] + fCaloPID[kElectronAli]  > wPhoton) pdg = kPhoton ;
-    else if(fCaloPID[kPi0Ali] > wPi0) pdg = kPizero ; 
+    if(fCaloPID[kPhotonAli] + fCaloPID[kElectronAli]  > wPhoton) pdg = kJPhoton ;
+    else if(fCaloPID[kPi0Ali] > wPi0) pdg = kJPizero ; 
     //else if(chargedHadronWeight + neutralHadronWeight > wCharged) pdg = chargedHadron ;  
     //else if(neutralHadronWeight + chargedHadronWeight > wNeutral) pdg = neutralHadron ; 
     //else pdg =  neutralUnknown ;
