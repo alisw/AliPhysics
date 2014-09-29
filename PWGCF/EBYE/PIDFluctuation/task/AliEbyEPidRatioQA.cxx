@@ -136,7 +136,6 @@ void AliEbyEPidRatioQA::CreateHistograms() {
   // fHnQA->GetAxis(10)->SetTitle("n #sigma #sqrt(Czz)/DCAz");  //  nSigma DCAz [-10, 10]
   
   fHelper->BinLogAxis(fHnQAa, 3);
-  fHelper->BinLogAxis(fHnQAa, 4);
   fHelper->BinLogAxis(fHnQAb, 3);
 
 

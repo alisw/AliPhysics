@@ -164,9 +164,8 @@ void AliEbyEPidRatioEffCont::CreateHistograms() {
   
   
 
-  fHelper->BinLogAxis(fHnEffMc,  7);
+ 
   fHelper->BinLogAxis(fHnEffMc, 9);
-  fHelper->BinLogAxis(fHnEffRec,  7);
   fHelper->BinLogAxis(fHnEffRec, 9);
 
   /* 
@@ -241,8 +240,8 @@ void AliEbyEPidRatioEffCont::CreateHistograms() {
   // fHnCont->GetAxis(16)->SetTitle("sign_{MC}-sign_{Rec}");                      //  -2 | 0 | +2 
   // fHnCont->GetAxis(17)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
 
-  // fHelper->BinLogAxis(fHnCont,  4);
-  // fHelper->BinLogAxis(fHnCont, 10);
+  fHelper->BinLogAxis(fHnContMc,  7);
+  fHelper->BinLogAxis(fHnContRec, 7);
 
   return;
 }
