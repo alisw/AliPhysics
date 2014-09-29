@@ -87,7 +87,9 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fQvecIntList(0),
   fQvecIntegral(0), 
   fSplineArrayV0A(0),
-  fSplineArrayV0C(0)
+  fSplineArrayV0C(0),
+  fNch(0),
+  fQvecCalibType(0)
 {
   // Constructor
   fOutput=new TList();
@@ -177,6 +179,7 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
       Nch++;
     }
   }
+  fNch = Nch;
   if(fIsSelected)((TH1F*)fOutput->FindObject("fHistoNChAftSel"))->Fill(Nch);
   return fIsSelected;
 }
@@ -646,14 +649,20 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
   if(v0side==0/*V0A*/){ fQvecIntegral = (TH2D*)fQvecIntList->FindObject("VZEROA"); }
   if(v0side==1/*V0C*/){ fQvecIntegral = (TH2D*)fQvecIntList->FindObject("VZEROC"); }
 
-  Double_t ic = (Int_t)fCent; //fQvecIntegral: 1% centrality bin
+
+  Int_t ic = -999;
+  
+  if(fQvecCalibType==1){
+    if(fNch<0.) return -999.;
+    ic = GetNchBin();
+  } else ic = (Int_t)fCent; //fQvecIntegral: 1% centrality bin
   
   TH1D *h1D = (TH1D*)fQvecIntegral->ProjectionY("h1D",ic+1,ic+1);
   
   TSpline *spline = 0x0;
   
   if(v0side==0/*V0A*/){
-    if( CheckSplineArray(fSplineArrayV0A) ) {
+    if( CheckSplineArray(fSplineArrayV0A, ic) ) {
       spline = (TSpline*)fSplineArrayV0A->At(ic);
       //cout<<"Qvec V0A - ic: "<<ic<<" - Found TSpline..."<<endl;
     } else {
@@ -663,7 +672,7 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
     }
   }
   else if(v0side==1/*V0C*/){
-    if( CheckSplineArray(fSplineArrayV0C) ) {
+    if( CheckSplineArray(fSplineArrayV0C, ic) ) {
       spline = (TSpline*)fSplineArrayV0C->At(ic);
     } else {
       spline = new TSpline3(h1D,"sp3");
@@ -720,10 +729,10 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side){
 }
 
 //______________________________________________________
-Bool_t AliSpectraAODEventCuts::CheckSplineArray(TObjArray * splarr){
+Bool_t AliSpectraAODEventCuts::CheckSplineArray(TObjArray * splarr, Int_t n){
   //check TSpline array consistency
   
-  Int_t n = (Int_t)fCent;
+//   Int_t n = (Int_t)fCent; //FIXME should be ok for icentr and nch
   
   if(splarr->GetSize()<n) return kFALSE;
   
@@ -732,3 +741,15 @@ Bool_t AliSpectraAODEventCuts::CheckSplineArray(TObjArray * splarr){
   return kTRUE;
   
 }
+
+//______________________________________________________
+Int_t AliSpectraAODEventCuts::GetNchBin(){
+  
+  Double_t xmax = fQvecIntegral->GetXaxis()->GetXmax();
+  
+  if(fNch>xmax) return fQvecIntegral->GetNbinsX();
+  
+  return (fNch*fQvecIntegral->GetNbinsX())/fQvecIntegral->GetXaxis()->GetXmax();
+  
+}
+
