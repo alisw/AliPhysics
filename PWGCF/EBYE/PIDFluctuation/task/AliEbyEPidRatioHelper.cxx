@@ -720,11 +720,11 @@ void AliEbyEPidRatioHelper::BinLogAxis(const THnBase *hn, Int_t axisNumber, AliE
   Float_t maxPtForTPClow      = fMaxPtForTPClow;
 
   // -- Update minPt Cut
-  Int_t bin = axis->FindBin(ptRange[0]+10e-6);
+  Int_t bin = axis->FindBin(ptRange[0]+10e-7);
   ptRange[0] = axis->GetBinLowEdge(bin); 
 
   // -- Update maxPt Cut
-  bin = axis->FindBin(ptRange[1]-10e-6);
+  bin = axis->FindBin(ptRange[1]-10e-7);
   ptRange[1] = axis->GetBinUpEdge(bin); 
 
   if (ptRange[0] != oldPtRange[0] || ptRange[1] != oldPtRange[1]) {
@@ -733,7 +733,7 @@ void AliEbyEPidRatioHelper::BinLogAxis(const THnBase *hn, Int_t axisNumber, AliE
   }
 
   // -- Update MinPtForTOFRequired
-  bin = axis->FindBin(minPtForTOFRequired-10e-6);
+  bin = axis->FindBin(minPtForTOFRequired-10e-7);
   minPtForTOFRequired = axis->GetBinUpEdge(bin); 
 
   if (minPtForTOFRequired != fMinPtForTOFRequired) {
@@ -742,7 +742,7 @@ void AliEbyEPidRatioHelper::BinLogAxis(const THnBase *hn, Int_t axisNumber, AliE
   }
 
   // -- Update MaxPtForTPClow
-  bin = axis->FindBin(maxPtForTPClow-10e-6);
+  bin = axis->FindBin(maxPtForTPClow-10e-7);
   maxPtForTPClow = axis->GetBinUpEdge(bin); 
 
   if (maxPtForTPClow != fMaxPtForTPClow) {

@@ -96,6 +96,11 @@ void AliEbyEPidRatioBase::Initialize(AliEbyEPidRatioHelper* helper, AliESDtrackC
   Init();
   CreateHistograms();
  
+  Float_t ptRange[2];
+  fESDTrackCuts->GetPtRange(ptRange[0],ptRange[1]);
+ 
+  Printf(">>>> Initialisation: [%f,%f]",ptRange[0],ptRange[1]);
+
   return;
 }
 

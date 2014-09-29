@@ -197,8 +197,8 @@ void AliEbyEPidRatioDCA::CreateHistograms() {
   fHnDCA->GetAxis(9)->SetTitle("DCAr");                         //  DCAr [-3, 3]
 
 
-  fHelper->BinLogAxis(fHnDCA,  4, fESDTrackCuts);
-  fHelper->BinLogAxis(fHnDCA,  4, fESDTrackCutsBkg);
+  fHelper->BinLogAxis(fHnDCA,  5, fESDTrackCuts);
+  fHelper->BinLogAxis(fHnDCA,  5, fESDTrackCutsBkg);
 
   // -- Set binning for DCAr
   Double_t binsDCAr[77] = {-3.,-2.85,-2.7,-2.55,-2.4,-2.25,-2.1,-1.95,-1.8,-1.65,-1.5,-1.35,-1.2,-1.05,-0.9,-0.75,-0.6,-0.45,-0.3,-0.285,-0.27,-0.255,-0.24,-0.225,-0.21,-0.195,-0.18,-0.165,-0.15,-0.135,-0.12,-0.105,-0.09,-0.075,-0.06,-0.045,-0.03,-0.015,0.,0.015,0.03,0.045,0.06,0.075,0.09,0.105,0.12,0.135,0.15,0.165,0.18,0.195,0.21,0.225,0.24,0.255,0.27,0.285,0.3,0.45,0.6,0.75,0.9,1.05,1.2,1.35,1.5,1.65,1.8,1.95,2.1,2.25,2.4,2.55,2.7,2.85,3.};
