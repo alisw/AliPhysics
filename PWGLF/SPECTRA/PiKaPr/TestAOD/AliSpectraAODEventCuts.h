@@ -70,7 +70,9 @@ class AliSpectraAODEventCuts : public TNamed
     fQvecIntList(0),
     fQvecIntegral(0), 
     fSplineArrayV0A(0),
-    fSplineArrayV0C(0)
+    fSplineArrayV0C(0),
+    fNch(0),
+    fQvecCalibType(0)
       {
 	for (Int_t i = 0; i<10; i++){
 	  fMeanQxa2[i] = -1;
@@ -155,9 +157,14 @@ class AliSpectraAODEventCuts : public TNamed
   Long64_t Merge(TCollection* list);
 
   Double_t GetQvecPercentile(Int_t v0side);  
-  Bool_t CheckSplineArray(TObjArray * splarr);
+  Bool_t CheckSplineArray(TObjArray * splarr, Int_t n);
   TObjArray *GetSplineArrayV0A() { return fSplineArrayV0A; }
   TObjArray *GetSplineArrayV0C() { return fSplineArrayV0C; }
+  
+  Int_t GetNch() { return fNch; }
+  
+  void SetQVecCalibType(Int_t val) { fQvecCalibType=val; }  //0. centrality - 1. Nch
+  Int_t GetNchBin();
   
   Double_t CalculateQVectorMC(Int_t v0side);
 
@@ -209,11 +216,14 @@ class AliSpectraAODEventCuts : public TNamed
   TH2D * fQvecIntegral;           // ! Integrated Qvec distribution
   TObjArray * fSplineArrayV0A;    // TSpline array for VZERO-A
   TObjArray * fSplineArrayV0C;    // TSpline array for VZERO-C
+  
+  Int_t fNch;
+  Int_t fQvecCalibType; //0. centrality - 1. Nch
 
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   
-  ClassDef(AliSpectraAODEventCuts, 6);
+  ClassDef(AliSpectraAODEventCuts, 7);
   
 };
 #endif
