@@ -7,16 +7,28 @@
  *                             (Test Only)                                 *
  ***************************************************************************/
 
-AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",                        Bool_t isModeDist = 1, 
-				     Bool_t  isModeEff    = 0,    Bool_t isModeDCA        = 0,  Bool_t isModeQA   = 0, 
-				     Int_t  isRatio      = 3,    Bool_t isModeAOD        = 0,  Bool_t isSetExt   = 0, 
-				     Int_t   aodFilterBit = 1024, 
-				     Int_t   modeCSC      = 0,    Int_t   modeCuts        = 0,  Int_t modePID     =-1,    
-				     Float_t gMinPt       = 0.3,  Float_t gMaxPt          = 2.5, 
-				     Float_t gMinPtForTof = 0.21, Float_t gMaxPtForTPClow = 0.69, 
-				     Float_t gMinPtEff    = 0.3,  Float_t gMaxPtEff       = 2.5,
-				     Float_t gSigmaITS    = 4.0,  Float_t gSigmaTOF       = 4.0, 
-				     Float_t gSigmaTPC    = 4.0, Float_t  gSigmaTPClow    = 3.0) {
+AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name      = "NuDyn", //  0      
+				     Bool_t  isModeDist      = 1,       //  1
+				     Bool_t  isModeEff       = 0,       //  2
+				     Bool_t  isModeDCA       = 0,       //  3
+				     Bool_t  isModeQA        = 0,       //  4
+				     Int_t   isRatio         = 3,       //  5
+				     Bool_t  isModeAOD       = 0,       //  6
+				     Bool_t  isSetExt        = 0,       //  7
+				     Int_t   aodFilterBit    = 1024,    //  8 
+				     Float_t gEta            = 0.8,     //  9
+				     Int_t   modeCuts        = 0,       // 10 
+				     Int_t   modePID         =-1,       // 11
+				     Float_t gMinPt          = 0.3,     // 12
+				     Float_t gMaxPt          = 2.5,     // 13
+				     Float_t gMinPtForTof    = 0.21,    // 14
+				     Float_t gMaxPtForTPClow = 0.69,    // 15
+				     Float_t gMinPtEff       = 0.3,     // 16
+				     Float_t gMaxPtEff       = 2.5,     // 17 
+				     Float_t gSigmaITS       = 4.0,     // 18
+				     Float_t gSigmaTOF       = 4.0,     // 19
+				     Float_t gSigmaTPC       = 4.0,     // 20
+				     Float_t gSigmaTPClow    = 3.0) {   // 21
   
   TString sName(name);
 
@@ -81,14 +93,16 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
     maxPtForTPClow = gMaxPtForTPClow;
     minPtEff       = gMinPtEff;
     maxPtEff       = gMaxPtEff;
-    
+
+    etaMax         = gEta;
+
     nSigmaITS      = gSigmaITS;   
     nSigmaTPC      = gSigmaTPC;   
     nSigmaTPClow   = gSigmaTPClow;  
     nSigmaTOF      = gSigmaTOF;
   }
  
-  if (modePID == -1) { // default
+  if (modePID    == -1) { // default
     pidStrategy   = 7;         // 7: ITS + TPC + TOF (using minPtForTOF)
     if (modeCuts == 1)
       pidStrategy = 5;       // 5: TPC + TOF (using minPtForTOF) 
@@ -109,13 +123,14 @@ AliAnalysisTask *AddEbyEPidRatioTask(const Char_t *name   = "TPC_NuDyn",        
   task->SetEtaMaxEff(etaMaxEff);            // eta cut for efficiency
   task->SetPtRange(minPt, maxPt);           // pt cut range for the analysis
   task->SetPtRangeEff(minPtEff, maxPtEff);  // pt cut range for the correction / efficiency / contamination creation
+ 
   helper->SetVertexZMax(10.);   
   helper->SetCentralityBinMax(11);
   helper->SetRapidityMax(maxRap); 
   helper->SetMinTrackLengthMC(70.);  
-  helper->SetNSigmaMaxCdd(0.);    //  3. ||   ->> Turn off sigmaDCA cuts for now
-  helper->SetNSigmaMaxCzz(0.);    //  3. ||   ->> Turn off sigmaDCA cuts for now
-  helper->SetPhiRange(0., 3.88);  //  Only used if requested in task - default is TwoPi
+  helper->SetNSigmaMaxCdd(0.);              //  3. ||   ->> Turn off sigmaDCA cuts for now
+  helper->SetNSigmaMaxCzz(0.);              //  3. ||   ->> Turn off sigmaDCA cuts for now
+  helper->SetPhiRange(0., 3.88);            //  Only used if requested in task - default is TwoPi
   helper->SetPIDStrategy(pidStrategy);
   helper->SetNSigmaMaxITS(nSigmaITS);
   helper->SetNSigmaMaxTPC(nSigmaTPC);
