@@ -345,7 +345,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   if (fModeDCACreation == 1) {
     fDCA = new AliEbyEPidRatioDCA;
     fDCA->SetESDTrackCutsBkg(fESDTrackCutsBkg);
-    fDCA->Initialize(fHelper, fESDTrackCuts);
+    fDCA->Initialize(fHelper, fESDTrackCutsEff);
   }
 
   // ------------------------------------------------------------------
@@ -362,7 +362,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   // ------------------------------------------------------------------
   if (fModeQACreation == 1) {
     fQA = new AliEbyEPidRatioQA();
-    fQA->Initialize(fHelper, fESDTrackCuts);
+    fQA->Initialize(fHelper, fESDTrackCutsEff);
   }
 
   // ------------------------------------------------------------------
