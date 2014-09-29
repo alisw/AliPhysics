@@ -104,7 +104,6 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name
     // AliHLTSystem is used in multiple instances for the kChain HLTOUT handler
     //HLTWarning("multiple instances of AliHLTSystem, you should not use more than one at a time");
   }
-
   SetGlobalLoggingLevel(loglevel);
   SetFrameworkLog(loglevel);
   if (fpComponentHandler) {

@@ -53,8 +53,6 @@
 // The single global instance of the dimuon HLT agent.
 AliHLTMUONAgent AliHLTMUONAgent::fgkInstance;
 
-AliHLTOUTHandlerChain AliHLTMUONAgent::fgkESDMakerChain("libAliHLTMUON.so chains=dHLT-make-esd");
-AliHLTOUTHandlerChain AliHLTMUONAgent::fgkRootifyDumpChain("libAliHLTMUON.so chains=dHLT-rootify-and-dump");
 AliHLTOUTHandlerIgnore AliHLTMUONAgent::fgkDataIgnoreHandler;
 Int_t AliHLTMUONAgent::fgMuonModuleLoaded = 0;
 bool AliHLTMUONAgent::fgRunRootifyChain = false;
@@ -91,7 +89,9 @@ bool AliHLTMUONAgent::IsMuonModuleLoaded()
 }
 
 
-AliHLTMUONAgent::AliHLTMUONAgent() : AliHLTModuleAgent("MUON")
+AliHLTMUONAgent::AliHLTMUONAgent() : AliHLTModuleAgent("MUON"),
+				     fgkESDMakerChain(NULL),
+				     fgkRootifyDumpChain(NULL)
 {
 	///
 	/// Default constructor.
@@ -587,7 +587,10 @@ AliHLTOUTHandler* AliHLTMUONAgent::GetOutputHandler(
 	    dt == AliHLTMUONConstants::TracksBlockDataType()
 	   )
 	{
-		return &fgkESDMakerChain;
+	  if(fgkESDMakerChain==NULL){
+	    fgkESDMakerChain=new AliHLTOUTHandlerChain("libAliHLTMUON.so chains=dHLT-make-esd");
+	  }
+	  return fgkESDMakerChain;
 	}
 
 	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
@@ -604,7 +607,10 @@ AliHLTOUTHandler* AliHLTMUONAgent::GetOutputHandler(
 	{
 		if (fgRunRootifyChain)
 		{
-			return &fgkRootifyDumpChain;
+		  if(fgkRootifyDumpChain==NULL){
+		    fgkRootifyDumpChain=new AliHLTOUTHandlerChain("libAliHLTMUON.so chains=dHLT-rootify-and-dump");
+		  }
+		  return fgkRootifyDumpChain;
 		}
 		else
 		{
@@ -623,18 +629,19 @@ AliHLTOUTHandler* AliHLTMUONAgent::GetOutputHandler(
 
 int AliHLTMUONAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
 {
-	/// Deletes the HLTOUT handlers. In this case since the handlers are
-	/// allocated statically, we just check that the right pointer was
-	/// given and exit.
-	
 	HLTDebug("Trying to delete HLTOUT handler: %p", pInstance);
 	
-	if (pInstance != &fgkESDMakerChain or pInstance != &fgkRootifyDumpChain
-	    or pInstance != &fgkDataIgnoreHandler
-	   )
-	{
-		return -EINVAL;
+	if (pInstance==NULL) return -EINVAL;
+
+	if (pInstance==fgkESDMakerChain) {
+	  delete fgkESDMakerChain;
+	  fgkESDMakerChain=NULL;
 	}
-	
+
+	if (pInstance==fgkRootifyDumpChain) {
+	  delete fgkRootifyDumpChain;
+	  fgkRootifyDumpChain=NULL;
+	}
+
 	return 0;
 }
