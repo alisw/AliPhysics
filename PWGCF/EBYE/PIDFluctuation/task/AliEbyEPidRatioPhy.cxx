@@ -471,12 +471,26 @@ void  AliEbyEPidRatioPhy::AddHistSetCent(const Char_t *name, const Char_t *title
 
     sTitle = (iPid != 0 ) ? Form("|y| < %.1f", fHelper->GetRapidityMax()) : Form(" |#eta|<%.1f", etaRange[1]);
 
+    list->Add(new TProfile(Form("fProfTot%sPlus%s", AliEbyEPidRatioHelper::fgkPidName[iPid],name), 
+			   Form("(%s) : %s;Centrality(100);(%s)",AliEbyEPidRatioHelper::fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
+			   100,-0.5,99.5));
+
+    list->Add(new TProfile(Form("fProfTot%sMinus%s", AliEbyEPidRatioHelper::fgkPidName[iPid],name), 
+			   Form("(%s) : %s;Centrality(100);(%s)",AliEbyEPidRatioHelper::fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
+			   100,-0.5,99.5));
+
+
+    
+
     for (Int_t idx = 1; idx <= fOrder; ++idx) {
       list->Add(new TProfile(Form("fProf%s%sNet%dM", AliEbyEPidRatioHelper::fgkPidName[iPid],name, idx), 
 			     Form("(%s)^{%d} : %s;Centrality(100);(%s)^{%d}",sNetTitle.Data(), idx, sTitle.Data(), sNetTitle.Data(), idx),
 			     100,-0.5,99.5));
     }
     
+
+  
+
     for (Int_t ii = 0; ii <= fOrder; ++ii) {
       for (Int_t kk = 0; kk <= fOrder; ++kk) {
 	list->Add(new TProfile(Form("fProf%s%sNetF%02d%02d", AliEbyEPidRatioHelper::fgkPidName[iPid], name, ii, kk),
@@ -486,15 +500,20 @@ void  AliEbyEPidRatioPhy::AddHistSetCent(const Char_t *name, const Char_t *title
     }
   
   }  
-
-  for (Int_t iPhy = 0; iPhy < 46; ++iPhy) { 
-    list->Add(new TProfile(Form("fProf%sNu%02d",name,iPhy),Form("Physics Variable for index %d | %s ; Centrality;",iPhy,name),100,-0.5,99.5));
-  }
-  
    
   for (Int_t iPid = 0; iPid < 4; ++iPid) {
     TString sNetTitle(Form("%s - %s", AliEbyEPidRatioHelper::fgkPidLatex[iPid][1], AliEbyEPidRatioHelper::fgkPidLatex[iPid][0]));
     sTitle = (iPid != 0 ) ? Form(" |y|<%.1f", fHelper->GetRapidityMax()) : Form(" |#eta| < %.1f", etaRange[1]);
+
+    list->Add(new TProfile(Form("fProfBinTot%sPlus%s", AliEbyEPidRatioHelper::fgkPidName[iPid],name), 
+			   Form("(%s) : %s;Centrality(11);(%s)",AliEbyEPidRatioHelper::fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
+			   nBinsCent, centBinRange[0], centBinRange[1]));
+
+    list->Add(new TProfile(Form("fProfBinTot%sMinus%s", AliEbyEPidRatioHelper::fgkPidName[iPid],name), 
+			   Form("(%s) : %s;Centrality(11);(%s)",AliEbyEPidRatioHelper::fgkPidName[iPid], sTitle.Data(), sNetTitle.Data()),
+			   nBinsCent, centBinRange[0], centBinRange[1]));
+
+
 
     for (Int_t idx = 1; idx <= fOrder; ++idx) {
       list->Add(new TProfile(Form("fProfBin%s%sNet%dM", AliEbyEPidRatioHelper::fgkPidName[iPid],name, idx), 
@@ -513,6 +532,10 @@ void  AliEbyEPidRatioPhy::AddHistSetCent(const Char_t *name, const Char_t *title
   }  
     
 
+
+  for (Int_t iPhy = 0; iPhy < 46; ++iPhy) { 
+    list->Add(new TProfile(Form("fProf%sNu%02d",name,iPhy),Form("Physics Variable for index %d | %s ; Centrality;",iPhy,name),100,-0.5,99.5));
+  }
   for (Int_t iPhy = 0; iPhy < 46; ++iPhy) { 
     list->Add(new TProfile(Form("fProfBin%sNu%02d",name,iPhy),Form("Physics Variable for index %d | %s ; Centrality;",iPhy,name),nBinsCent, centBinRange[0], centBinRange[1]));
   }
@@ -610,8 +633,17 @@ void AliEbyEPidRatioPhy::FillHistSetCent(const Char_t *name, Int_t idx, Bool_t i
   for (Int_t iPid = 0; iPid < 4; ++iPid) {
     Int_t deltaNp = np[idx][iPid][1]-np[idx][iPid][0];  
     Double_t delta = 1.;
+
+    (static_cast<TProfile*>(list->FindObject(Form("fProfBinTot%sPlus%s", AliEbyEPidRatioHelper::fgkPidName[iPid], name))))->Fill(centralityBin, np[idx][iPid][1]);
+    (static_cast<TProfile*>(list->FindObject(Form("fProfTot%sPlus%s", AliEbyEPidRatioHelper::fgkPidName[iPid], name))))->Fill(centralityPer, np[idx][iPid][1]);
+
+    (static_cast<TProfile*>(list->FindObject(Form("fProfBinTot%sMinus%s", AliEbyEPidRatioHelper::fgkPidName[iPid], name))))->Fill(centralityBin, np[idx][iPid][0]);
+    (static_cast<TProfile*>(list->FindObject(Form("fProfTot%sMinus%s", AliEbyEPidRatioHelper::fgkPidName[iPid], name))))->Fill(centralityPer, np[idx][iPid][0]);
+
+
     for (Int_t idxOrder = 1; idxOrder <= fOrder; ++idxOrder) {
       delta *= deltaNp;
+
       (static_cast<TProfile*>(list->FindObject(Form("fProfBin%s%sNet%dM", AliEbyEPidRatioHelper::fgkPidName[iPid], name, idxOrder))))->Fill(centralityBin, delta);
       (static_cast<TProfile*>(list->FindObject(Form("fProf%s%sNet%dM", AliEbyEPidRatioHelper::fgkPidName[iPid], name, idxOrder))))->Fill(centralityPer, delta);
     }
@@ -635,21 +667,25 @@ void AliEbyEPidRatioPhy::FillHistSetCent(const Char_t *name, Int_t idx, Bool_t i
     }
   }
  
-  /* Printf("%6d %20s %6.2f %6d %6d %6d %6d  %6d %6d %6d %6d", idx, name, centralityBin,
-	 np[idx][0][1],  np[idx][0][0], 
-	 np[idx][1][1],  np[idx][1][0], 
-	 np[idx][2][1],  np[idx][2][0], 
-	 np[idx][3][1],  np[idx][3][0]);*/
+  //Printf("%6d %20s %6.2f %6d %6d %6d %6d  %6d %6d %6d %6d", idx, name, centralityBin,
+  //	 np[idx][0][1],  np[idx][0][0], 
+  //	 np[idx][1][1],  np[idx][1][0], 
+  ///	 np[idx][2][1],  np[idx][2][0], 
+  //	 np[idx][3][1],  np[idx][3][0]);
+  //
 
+   Int_t a[6][4]; Int_t b[22];
+   for (Int_t iPid = 0; iPid < 4; ++iPid) {
+     a[0][iPid] = np[idx][iPid][1]+np[idx][iPid][0];       // 0  n+ + n-
+     a[1][iPid] = np[idx][iPid][1];                        // 1  n+
+     a[2][iPid] = np[idx][iPid][0];                        // 2  n-
+     a[3][iPid] = np[idx][iPid][1]*np[idx][iPid][0];       // 3  n+ . n-
+     a[4][iPid] = np[idx][iPid][1]*(np[idx][iPid][1]-1);   // 4  n+ (n+ - 1)
+     a[5][iPid] = np[idx][iPid][0]*(np[idx][iPid][0]-1);   // 5  n- (n- - 1)
+     
+     // Printf("%6d %20s %6.2f %6d %6d %6d ", idx, name, centralityBin,
+     //	   a[0][iPid], a[1][iPid], a[2][iPid]);
 
-  Double_t a[6][4]; Double_t b[22];
-  for (Int_t iPid = 0; iPid < 4; ++iPid) {
-    a[0][iPid] = np[idx][iPid][1]+np[idx][iPid][0];       // 0  n+ + n-
-    a[1][iPid] = np[idx][iPid][1];                        // 1  n+
-    a[2][iPid] = np[idx][iPid][0];                        // 2  n-
-    a[3][iPid] = np[idx][iPid][1]*np[idx][iPid][0];       // 3  n+ . n-
-    a[4][iPid] = np[idx][iPid][1]*(np[idx][iPid][1]-1);   // 4  n+ (n+ - 1)
-    a[5][iPid] = np[idx][iPid][0]*(np[idx][iPid][0]-1);   // 5  n- (n- - 1)
   }
   
   b[0]  = a[0][0]*a[0][2];       // 24 N   K
@@ -679,8 +715,8 @@ void AliEbyEPidRatioPhy::FillHistSetCent(const Char_t *name, Int_t idx, Bool_t i
   b[21] = a[0][3]*(a[0][3] - 1); // 45 P ( P - 1 )
   // TList *list_nu = static_cast<TList*>(fOutList->FindObject(Form("f%s_nu",name)));
   Int_t k = 0;
-  for (Int_t i = 0; i < 6; i++) {
-    for (Int_t j = 0; j < 4; j++) {
+  for (Int_t j = 0; j < 4; j++) {
+    for (Int_t i = 0; i < 6; i++) {
       (static_cast<TProfile*>(list->FindObject(Form("fProfBin%sNu%02d", name,k))))->Fill(centralityBin,a[i][j]); 
       (static_cast<TProfile*>(list->FindObject(Form("fProf%sNu%02d", name,k))))->Fill(centralityPer,a[i][j]); 
       k++;
