@@ -325,7 +325,6 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   // -- Initialize Helper
   // ------------------------------------------------------------------
 
-
   if (fHelper->Initialize(fESDTrackCutsEff, fIsMC,fIsRatio,fIsPtBin, fAODtrackCutBit, fModeDistCreation))
     return -1;
 
@@ -337,7 +336,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   // ------------------------------------------------------------------
   if ((fIsMC||fIsAOD) && fModeEffCreation == 1) {
     fEffCont = new AliEbyEPidRatioEffCont;
-    fEffCont->Initialize(fHelper, fESDTrackCuts);
+    fEffCont->Initialize(fHelper, fESDTrackCutsEff);
   }
 
   // ------------------------------------------------------------------
