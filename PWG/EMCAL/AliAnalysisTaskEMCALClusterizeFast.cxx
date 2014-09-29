@@ -622,7 +622,7 @@ void AliAnalysisTaskEMCALClusterizeFast::TrackClusterMatching(AliVCluster *c, TC
     AliVTrack *track = static_cast<AliVTrack*>(tarr->At(t));
     if (!track)
       continue;
-    const AliExternalTrackParam *outp = dynamic_cast<const AliExternalTrackParam*>(track->GetOuterParam());
+    const AliExternalTrackParam *outp = track->GetOuterParam();
     if (!outp)
       continue;
     Double_t trkPos[3] = {0.,0.,0.};
