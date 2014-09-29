@@ -47,10 +47,10 @@
 #include "AliESDTOFCluster.h"
 #include "AliESDTOFHit.h"
 #include "AliESDTOFMatch.h"
-#include "AliESDv0.h"
-#include "AliESDkink.h"
 #include "AliESDfriend.h"
 
+class AliESDv0;
+class AliESDkink;
 class AliESDHLTtrack;
 class AliESDVertex;
 class AliESDPmdTrack;
