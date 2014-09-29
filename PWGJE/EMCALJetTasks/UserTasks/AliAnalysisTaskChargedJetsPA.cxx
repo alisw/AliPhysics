@@ -188,6 +188,40 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TH2D>("hJetPtPhiEta", "Jets p_{T} angular distribution", "LEGO2", 360, 0., 2*TMath::Pi(),100, -1.0, 1.0, "#phi","#eta","dp_{T}^{Jets}/(d#phi d#eta)");
     AddHistogram2D<TH2D>("hJetPtVsConstituentCount", "Jets number of constituents vs. jet p_{T}", "COLZ", 400, 0., 200., 100, 0., 100., "p_{T}","N^{Tracks}","dN^{Jets}/(dp_{T} dN^{tracks})");
 
+    // ######## Jet constituent analysis
+
+    {
+      //                        jet pt,  const pT,  const count,  RC const count,  PC const count
+      Int_t    bins [5]     = { 30,         50,           30,              30,              30};
+      Double_t minEdges[5]  = { 0,              0.1,            0,               0,             0};
+      Double_t maxEdges[5]  = { 150,          150,           30,              30,              30};
+      TString axisName[5]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","RC constituent count","PC constituent count"};
+      TString axisTitle[5]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","RC constituent count","PC constituent count"};
+      THnF * histJetConstituents = new THnF("hJetConstituents", "Jet constituent count/p_{T} in jet, RC, and PC", 5, bins, minEdges, maxEdges);
+      BinLogAxis(histJetConstituents,1);
+      for (Int_t iaxis=0; iaxis<5;iaxis++){
+        histJetConstituents->GetAxis(iaxis)->SetName(axisName[iaxis]);
+        histJetConstituents->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
+      }
+      fCurrentOutputList->Add(histJetConstituents);
+    }
+
+    {
+      //                        jet pt,  const pt,        distance
+      Int_t    bins [3]     = { 30,         50,             50};
+      Double_t minEdges[3]  = { 0,           0.1,               0};
+      Double_t maxEdges[3]  = { 150,          150,             0.5};
+      TString axisName[3]  = {"jet p_{T}","Constituent p_{T}","Distance from jet axis"};
+      TString axisTitle[3]  = {"jet p_{T}","Constituent p_{T}","Distance from jet axis"};
+      THnF * histJetConstituentDistance = new THnF("hJetConstituentDistance", "Jet constituent distance vs jet and constituent p_{T}", 3, bins, minEdges, maxEdges);
+      BinLogAxis(histJetConstituentDistance,1);
+      for (Int_t iaxis=0; iaxis<3;iaxis++){
+        histJetConstituentDistance->GetAxis(iaxis)->SetName(axisName[iaxis]);
+        histJetConstituentDistance->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
+      }
+      fCurrentOutputList->Add(histJetConstituentDistance);
+    }
+
     // ######## Jet profiles
     if(fAnalyzeJetProfile)
     {
@@ -1226,6 +1260,22 @@ inline Double_t AliAnalysisTaskChargedJetsPA::GetCorrectedConePt(Double_t eta, D
 }
 
 //________________________________________________________________________
+inline Int_t AliAnalysisTaskChargedJetsPA::GetConeConstituentCount(Double_t eta, Double_t phi, Double_t radius)
+{
+  Int_t tmpConeCount = 0.0;
+
+  for (Int_t i = 0; i < fTrackArray->GetEntries(); i++)
+  {
+    AliVTrack* tmpTrack = static_cast<AliVTrack*>(fTrackArray->At(i));
+    if (IsTrackInAcceptance(tmpTrack))
+      if(IsTrackInCone(tmpTrack, eta, phi, radius))
+        tmpConeCount++;
+  }
+ 
+  return tmpConeCount;
+}
+
+//________________________________________________________________________
 inline Bool_t AliAnalysisTaskChargedJetsPA::IsTrackInCone(AliVTrack* track, Double_t eta, Double_t phi, Double_t radius)
 {
   // This is to use a full cone in phi even at the edges of phi (2pi -> 0) (0 -> 2pi)
@@ -1352,10 +1402,10 @@ Double_t AliAnalysisTaskChargedJetsPA::GetDeltaPt(Double_t rho, Double_t leading
   if (coneValid)
     deltaPt = GetConePt(tmpRandConeEta,tmpRandConePhi,fRandConeRadius) - (rho*fRandConeRadius*fRandConeRadius*TMath::Pi());
 
-  return deltaPt;
   #ifdef DEBUGMODE
     AliInfo("Got Delta Pt.");
   #endif
+  return deltaPt;
 }
 
 //________________________________________________________________________
@@ -1915,10 +1965,40 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
       FillHistogram("hJetPtSubtractedRhoPP", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundPP));
       FillHistogram("hDeltaPtExternalBgrdVsPt", GetDeltaPt(backgroundExternal), GetCorrectedJetPt(tmpJet, backgroundExternal));
 
-      FillHistogram("hJetPtVsConstituentCount", tmpJet->Pt(),tmpJet->GetNumberOfTracks());
+      // ###### CONSTITUENT ANALYSIS
+ 
+      THnF* tmpConstituentHist = static_cast<THnF*>(fCurrentOutputList->FindObject("hJetConstituents"));
+      THnF* tmpConstituentDistanceHist = static_cast<THnF*>(fCurrentOutputList->FindObject(GetHistoName("hJetConstituentDistance")));
 
       for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
-        FillHistogram("hJetConstituentPtVsJetPt", tmpJet->TrackAt(j, fTrackArray)->Pt(), tmpJet->Pt());
+      {
+        AliVParticle* tmpTrack = tmpJet->TrackAt(j, fTrackArray);
+        // Define random cone  
+        Double_t tmpRandConeEta = fMinJetEta + fRandom->Rndm()*TMath::Abs(fMaxJetEta-fMinJetEta);
+        Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
+
+        Double_t tmpPConeEta = tmpJet->Eta();
+        Double_t tmpPConePhi = tmpJet->Phi() + TMath::Pi();
+
+        if(tmpPConePhi>=TMath::TwoPi())
+          tmpPConePhi = tmpPConePhi - TMath::TwoPi();
+
+        Double_t tmpRCcount  = GetConeConstituentCount(tmpRandConeEta, tmpRandConePhi, fSignalJetRadius);
+        Double_t tmpPCcount  = GetConeConstituentCount(tmpPConeEta, tmpPConePhi, fSignalJetRadius);
+
+        Double_t tmpDistance = TMath::Sqrt( (tmpJet->Eta()-tmpTrack->Eta())*(tmpJet->Eta()-tmpTrack->Eta()) 
+                                          + (tmpJet->Phi()-tmpTrack->Phi())*(tmpJet->Phi()-tmpTrack->Phi()) ); // distance between jet axis and track
+
+        Double_t tmpVec1[5] = {tmpJet->Pt(), tmpTrack->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpRCcount, tmpPCcount};
+        Double_t tmpVec2[3] = {tmpJet->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpDistance};
+
+
+        tmpConstituentHist->Fill(tmpVec1);
+        tmpConstituentDistanceHist->Fill(tmpVec2);
+        FillHistogram("hJetConstituentPtVsJetPt", tmpTrack->Pt(), tmpJet->Pt());
+      }
+
+      FillHistogram("hJetPtVsConstituentCount", tmpJet->Pt(),tmpJet->GetNumberOfTracks());
 
       // Leading track biased jets
       Double_t leadingTrackPt = 0.0;
