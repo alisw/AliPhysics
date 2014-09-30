@@ -81,8 +81,14 @@ void AliEventServer::StartOfRun(Int_t run)
 {
   cout<<"SOR signal received for run:"<<run<<endl;
   if(run<=0) return;
+  /*
+  while(!fRecoServer->StopReconstruction())
+    {
+      cout<<"Waiting for previous reco to be fully initialized"<<endl;
+      sleep(10);
+      }*/
   fRecoServer->StopReconstruction();
-	
+
   TEnv settings;
   settings.ReadFile(AliEventServerUtil::GetPathToServerConf(), kEnvUser);
     

@@ -45,7 +45,8 @@ AliEventServerReconstruction::AliEventServerReconstruction()
 	  fSettings(0),
 	  fHost(0),
 	  fRecoThread(0),
-	  fRecoIsRunning(false)
+	  fRecoIsRunning(false),
+	  fRecoWasInitialized(false)
 {}
 
 AliEventServerReconstruction::~AliEventServerReconstruction()
@@ -67,6 +68,7 @@ void AliEventServerReconstruction::Close()
 
 Bool_t AliEventServerReconstruction::StartReconstruction(Int_t run, const char* input)
 {
+  cout<<"Start of run:"<<run<<endl;
 	fCurrentRunId = run;
 
 	// re-read settings
@@ -85,6 +87,7 @@ Bool_t AliEventServerReconstruction::StartReconstruction(Int_t run, const char* 
 	}
 	gSystem->cd(recoBaseDir.Data());
 
+
 	TString gdcs;
 	if (RetrieveGRP(run,gdcs) <= 0 || gdcs.IsNull()){return kFALSE;}
 	  
@@ -92,32 +95,33 @@ Bool_t AliEventServerReconstruction::StartReconstruction(Int_t run, const char* 
 	gSystem->cd(Form("run%d", run));
 
 	// Create Reco and Reco Thread
+	cout<<"Setup reco will be called"<<endl;
 	SetupReco(input);
 	
 	fHost = (const char*)Form("%s:%d", fSettings->GetValue("server.host", DEFAULT_SERVER_HOST), fSettings->GetValue("server.port", DEFAULT_SERVER_PORT));
 	
-	fRecoThread = new TThread("AliEventServerReconstruction",
-                              Dispatch,
-                              (void*)this);
+	cout<<"Creating new thread"<<endl;
+	fRecoThread = new TThread("AliEventServerReconstruction",Dispatch, (void*)this);
 	fRecoThread->Run();
 	fIsListenning = kTRUE;
 	fRecoIsRunning=true;
-
+	cout<<"Reco started"<<endl;
 	return true;
 }
 
-void AliEventServerReconstruction::StopReconstruction()
+bool AliEventServerReconstruction::StopReconstruction()
 {
   cout<<"Reco server -- StopPeconstruction() called"<<endl;
-  if(!fRecoIsRunning)
+  if(!fRecoIsRunning || !fRecoThread)
     {
-      cout<<"Reco is not running. Returning"<<endl;
-      return;
+      cout<<"Reco is not running. No need to stop it."<<endl;
+      return true;
     }
-  if(!fRecoThread) 
+  if(!fRecoWasInitialized)
     {
-      cout<<"Reco server -- no thread. Returning"<<endl;
-      return;
+      cout<<"Reco is under initialization. Wait until it's finished"<<endl;
+      
+      return false;
     }
   cout<<"killing thread"<<endl;
   fRecoThread->Kill();
@@ -129,15 +133,17 @@ void AliEventServerReconstruction::StopReconstruction()
 
   cout<<"Reco server -- terminating reconstruction"<<endl;	
   fAliReco->SlaveTerminate();
-  if (fAliReco->GetAbort() != TSelector::kContinue) return;
+  if (fAliReco->GetAbort() != TSelector::kContinue) return false;
   fAliReco->Terminate();
-  if (fAliReco->GetAbort() != TSelector::kContinue) return; 
+  if (fAliReco->GetAbort() != TSelector::kContinue) return false; 
 	
   if(fAliReco){delete fAliReco;fAliReco=0;}
   cout<<"Reco server -- deleting CDBManager"<<endl;
-  if(fCDBmanager){delete fCDBmanager;fCDBmanager=0;}
+  if(fCDBmanager){fCDBmanager->Destroy();fCDBmanager=0;}
   cout<<"Reco server -- recontruction stopped"<<endl;
   fRecoIsRunning=false;
+  fRecoWasInitialized=false;
+  return true;
 }
 
 void AliEventServerReconstruction::ReconstructionHandle()
@@ -146,20 +152,22 @@ void AliEventServerReconstruction::ReconstructionHandle()
 	TThread::SetCancelOn();
 	
 	if(!fAliReco) return;
-	
-	AliESDEvent* event;
-	
+
 	AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
 	eventManager->CreateSocket(EVENTS_SERVER_PUB);
 	eventManager->CreateSocket(XML_PUB);
-
+	cout<<"Sockets created"<<endl;
 	fAliReco->Begin(NULL);
+	cout<<"Reco began"<<endl;
 	if (fAliReco->GetAbort() != TSelector::kContinue) return;
 	fAliReco->SlaveBegin(NULL);
+	cout<<"Slave began"<<endl;
 	if (fAliReco->GetAbort() != TSelector::kContinue) return;
 
+	fRecoWasInitialized=true;
 	//******* The loop over events
 	Int_t iEvent = 0;
+	AliESDEvent* event;
 	while (fAliReco->HasNextEventAfter(iEvent))
 	{
 		// check if process has enough resources 
@@ -180,12 +188,7 @@ void AliEventServerReconstruction::ReconstructionHandle()
 		fAliReco->CleanProcessedEvent();
 		iEvent++;
 	}
-	fAliReco->SlaveTerminate();
-	if (fAliReco->GetAbort() != TSelector::kContinue) return;
-	fAliReco->Terminate();
-	if (fAliReco->GetAbort() != TSelector::kContinue) return;
 	StopReconstruction();
-	fRecoIsRunning=false;
 }
 
 Int_t AliEventServerReconstruction::RetrieveGRP(UInt_t run, TString &gdc)
