@@ -110,7 +110,7 @@ message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 # AliRoot modules
 add_subdirectory (STEER)
 add_subdirectory (STAT)
-#add_subdirectory (OADB)
+add_subdirectory (OADB)
 #add_subdirectory (ANALYSIS)
 #add_subdirectory (RAW)
 #add_subdirectory (ITS)
