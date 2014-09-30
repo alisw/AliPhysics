@@ -20,7 +20,7 @@ set(MODULE CDB)
 include_directories(${CMAKE_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional include directories
-include_directories(${ROOTSYS}/include
+include_directories(${ROOT_INCLUDE_DIRS}
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
                     ${CMAKE_BINARY_DIR}/version/
                    )

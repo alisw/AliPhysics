@@ -20,7 +20,7 @@ set (MODULE AOD)
 include_directories(${CMAKE_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional include directories - alphabetical order except ROOT
-include_directories(${ROOTSYS}/include
+include_directories(${ROOT_INCLUDE_DIRS}
                     ${CMAKE_SOURCE_DIR}/STEER/ESD
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
                    )
