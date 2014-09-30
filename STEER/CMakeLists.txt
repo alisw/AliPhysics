@@ -1,10 +1,7 @@
-# AliRoot Build System CMakeLists for STEER
-#
-# Author: Johny Jose m(johny.jose@cern.ch)
-#         Port of previous Makefile build to cmake
+# include the libraries
+add_subdirectory (STEERBase)
+add_subdirectory (ESD)
+add_subdirectory (AOD)
+add_subdirectory (CDB)
+add_subdirectory (STEER)
 
-cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
-
-file(GLOB PACKAGES CMake*.pkg)
-
-ALICE_BuildModule()
