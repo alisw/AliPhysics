@@ -14,28 +14,62 @@
 # **************************************************************************
 
 # Module
-set(MODULE ANALYSIS)
+set(MODULE TenderSupplies)
 
 # Module include folder
 include_directories(${CMAKE_SOURCE_DIR}/ANALYSIS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS} 
+include_directories(${ROOT_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${CMAKE_SOURCE_DIR}/ANALYSIS/Tender
+                    ${CMAKE_SOURCE_DIR}/EMCAL
+                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALrec
+                    ${CMAKE_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${CMAKE_SOURCE_DIR}/CORRFW
+                    ${CMAKE_SOURCE_DIR}/OADB
+                    ${CMAKE_SOURCE_DIR}/PHOS
+                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSbase
+                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSrec
+                    ${CMAKE_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${CMAKE_SOURCE_DIR}/STEER/AOD
+                    ${CMAKE_SOURCE_DIR}/STEER/CDB
+                    ${CMAKE_SOURCE_DIR}/STEER/ESD
+                    ${CMAKE_SOURCE_DIR}/STEER/STEER
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${CMAKE_SOURCE_DIR}/T0
+                    ${CMAKE_SOURCE_DIR}/T0/T0rec
+                    ${CMAKE_SOURCE_DIR}/TOF/
+                    ${CMAKE_SOURCE_DIR}/TOF/TOFbase
+                    ${CMAKE_SOURCE_DIR}/TOF/TOFrec
+                    ${CMAKE_SOURCE_DIR}/TPC
+                    ${CMAKE_SOURCE_DIR}/TPC/Base
+                    ${CMAKE_SOURCE_DIR}/TPC/TPCbase
+                    ${CMAKE_SOURCE_DIR}/TRD
+                    ${CMAKE_SOURCE_DIR}/TRD/Cal
+                    ${CMAKE_SOURCE_DIR}/TRD/TRDbase
+                    ${CMAKE_SOURCE_DIR}/VZERO
+                    ${CMAKE_SOURCE_DIR}/VZERO/VZERObase
+                    ${CMAKE_SOURCE_DIR}/VZERO/VZEROrec
                    )
 
 # Sources
 set(SRCS
-    AliAnalysisDataContainer.cxx
-    AliAnalysisDataSlot.cxx
-    AliAnalysisGrid.cxx
-    AliAnalysisManager.cxx
-    AliAnalysisSelector.cxx
-    AliAnalysisStatistics.cxx
-    AliAnalysisTaskCfg.cxx
-    AliAnalysisTask.cxx
-    AliXMLParser.cxx
-   )
+    AliAnalysisTaskVZEROEqFactorTask.cxx
+    AliEMCALTenderSupply.cxx
+    AliHMPIDTenderSupply.cxx
+    AliPHOSTenderSupply.cxx
+    AliPIDTenderSupply.cxx
+    AliT0TenderSupply.cxx
+    AliTOFTenderSupply.cxx
+    AliTPCTenderSupply.cxx
+    AliTrackFixTenderSupply.cxx
+    AliTRDTenderSupply.cxx
+    AliVtxTenderSupply.cxx
+    AliVZEROTenderSupply.cxx
+  )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -58,7 +92,7 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
 install(TARGETS ${MODULE}
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib)
-
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+

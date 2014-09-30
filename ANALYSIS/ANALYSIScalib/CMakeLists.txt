@@ -29,7 +29,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources in slphabetical order
 set(SRCS
     AliAnalysisTaskAddObject.cxx
-    AliAnalysisTaskCopyESD.cxx
     AliAnalysisTaskFilter.cxx
     AliAnalysisTaskFilterFriend.cxx
     AliAnalysisTaskFilterFriendSecond.cxx

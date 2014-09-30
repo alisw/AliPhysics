@@ -21,7 +21,6 @@ include_directories(${CMAKE_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional include directories - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/
                     ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${CMAKE_SOURCE_DIR}/HLT/sim
                     ${CMAKE_SOURCE_DIR}/RAW/

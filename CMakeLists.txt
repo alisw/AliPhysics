@@ -37,6 +37,11 @@ include(CMakeALICE)
 # ROOT configuration mandatory
 if(ROOTSYS)
     find_package(ROOT REQUIRED)
+
+    # ROOT must be build with XML2 support
+    if(ROOT_HASXML STREQUAL "no")
+        message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
+    endif(ROOT_HASXML STREQUAL "no")
 else()
     message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
 endif(ROOTSYS)

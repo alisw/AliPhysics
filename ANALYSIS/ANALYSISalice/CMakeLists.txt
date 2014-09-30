@@ -30,7 +30,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order 
 set(SRCS 
-    AliAnalysisAlien.cxx
     AliAnalysisCuts.cxx
     AliAnalysisFilter.cxx
     AliAnalysisTaskBadChunkID.cxx
@@ -72,6 +71,13 @@ set(SRCS
     AliVZEROEPSelectionTask.cxx
     AliXMLCollection.cxx
   )
+
+# If ROOT was build with no AliEn support we disable the AliROOT AliEn support
+if(ROOT_HASALIEN STREQUAL "no")
+    message(STATUS "ROOT was build with no alien support. Disabling AliROOT AliEn support")
+else()
+    set(SRCS ${SRCS} AliAnalysisAlien.cxx)
+endif(ROOT_HASALIEN STREQUAL "no")
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

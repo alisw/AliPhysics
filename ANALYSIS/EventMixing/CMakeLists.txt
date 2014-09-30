@@ -14,28 +14,29 @@
 # **************************************************************************
 
 # Module
-set(MODULE ANALYSIS)
+set(MODULE EventMixing)
 
 # Module include folder
 include_directories(${CMAKE_SOURCE_DIR}/ANALYSIS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS} 
+include_directories(${ROOT_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${CMAKE_SOURCE_DIR}/STEER/AOD
+                    ${CMAKE_SOURCE_DIR}/STEER/ESD
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources
 set(SRCS
-    AliAnalysisDataContainer.cxx
-    AliAnalysisDataSlot.cxx
-    AliAnalysisGrid.cxx
-    AliAnalysisManager.cxx
-    AliAnalysisSelector.cxx
-    AliAnalysisStatistics.cxx
-    AliAnalysisTaskCfg.cxx
-    AliAnalysisTask.cxx
-    AliXMLParser.cxx
-   )
+    AliAnalysisTaskMixInfo.cxx
+    AliMixEventCutObj.cxx
+    AliMixEventPool.cxx
+    AliMixInfo.cxx
+    AliMixInputEventHandler.cxx
+    AliMixInputHandlerInfo.cxx
+  )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -58,7 +59,6 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
 install(TARGETS ${MODULE}
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib)
-
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
