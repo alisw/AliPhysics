@@ -98,7 +98,7 @@ void AliEbyEPidRatioDCA::Process() {
     if      (fHelper->IsTrackAcceptedPID(track, pid, (AliPID::kPion)))  {  iPid = 1; gPdgCode = 211;}
     else if (fHelper->IsTrackAcceptedPID(track, pid, (AliPID::kKaon)))  {  iPid = 2; gPdgCode = 321;}
     else if (fHelper->IsTrackAcceptedPID(track, pid, (AliPID::kProton))){  iPid = 3; gPdgCode = 2212;}
-    else iPid = 0;
+    else { iPid = 0; gPdgCode = 0;}
 
     //  cout << " --- DCA ---- " << iPid << "  " << gPdgCode << endl;
     Double_t yP;
@@ -125,24 +125,22 @@ void AliEbyEPidRatioDCA::Process() {
     // -- Fill THnSparse 
     
     if(iPid != 0) {   
-      Double_t hnDCA[10] = {fCentralityBin,0, 
+      Double_t hnDCA[10] = {fCentralityBin,0,  track->Charge(), 
 			    track->Eta(), 
 			    yP, 
 			    track->Phi(), 
 			    track->Pt(), 
-			    track->Charge(), 
 			    contIdx,
 			    isDCArAccepted, 
 			    dca[0]};
       fHnDCA->Fill(hnDCA);
     }      
     
-    Double_t hnDCA[10] = {fCentralityBin, iPid,
+    Double_t hnDCA[10] = {fCentralityBin, iPid, track->Charge(), 
 			  track->Eta(), 
 			  yP, 
 			  track->Phi(), 
 			  track->Pt(), 
-			  track->Charge(), 
 			  contIdx,
 			  isDCArAccepted, 
 			  dca[0]};
@@ -156,42 +154,42 @@ void AliEbyEPidRatioDCA::Process() {
 
 //________________________________________________________________________
 void AliEbyEPidRatioDCA::CreateHistograms() {
-  Int_t    binHnDCA[11] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent,4,
+  Int_t    binHnDCA[10] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent,4,
+			   AliEbyEPidRatioHelper::fgkfHistNBinsSign,      
 			   AliEbyEPidRatioHelper::fgkfHistNBinsEta,       
 			   AliEbyEPidRatioHelper::fgkfHistNBinsRap,  
 			   AliEbyEPidRatioHelper::fgkfHistNBinsPhi,        
 			   AliEbyEPidRatioHelper::fgkfHistNBinsPt,   
-			   AliEbyEPidRatioHelper::fgkfHistNBinsSign,      
 			   4,  2,  77};      
   
-  Double_t minHnDCA[11] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0],-0.5, 
+  Double_t minHnDCA[10] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0],-0.5, 
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 
 			   AliEbyEPidRatioHelper::fgkfHistRangeEta[0], 
 			   AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  
 			   AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
 			   AliEbyEPidRatioHelper::fgkfHistRangePt[0],   
-			   AliEbyEPidRatioHelper::fgkfHistRangeSign[0], 
-			   0.5, -0.5, -3.,-0.5};
+			   0.5, -0.5, -3.};
   
-  Double_t maxHnDCA[11] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1],3.5,
+  Double_t maxHnDCA[10] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1],3.5,
+			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
 			   AliEbyEPidRatioHelper::fgkfHistRangeEta[1], 
 			   AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  
 			   AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
 			   AliEbyEPidRatioHelper::fgkfHistRangePt[1],   
-			   AliEbyEPidRatioHelper::fgkfHistRangeSign[1], 
-			   4.5, 1.5, 3., 3.5};
+			   4.5, 1.5, 3.};
 
 
-  fHnDCA = new THnSparseD("hnDCA", "cent:pid:etaRec:yRec:phiRec:ptRec:sign:contPart:contSign:DCArAccepted:DCAr", 11, binHnDCA, minHnDCA, maxHnDCA);
+  fHnDCA = new THnSparseD("hnDCA", "cent:pid:etaRec:yRec:phiRec:ptRec:sign:contPart:contSign:DCArAccepted:DCAr", 10, binHnDCA, minHnDCA, maxHnDCA);
   
   fHnDCA->Sumw2();
 
   fHnDCA->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
   fHnDCA->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");   //  0 | 1 | 2 | 3 
-  fHnDCA->GetAxis(2)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
-  fHnDCA->GetAxis(3)->SetTitle("#it{y}_{Rec}");                 //  rapidity  [-0.5, 0.5]
-  fHnDCA->GetAxis(4)->SetTitle("#varphi_{Rec} (rad)");          //  phi  [ 0. , 2Pi]
-  fHnDCA->GetAxis(5)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})");  //  pT   [ 0.2, 2.6]
-  fHnDCA->GetAxis(6)->SetTitle("sign");                         //  -1 | 0 | +1 
+  fHnDCA->GetAxis(2)->SetTitle("sign");                         //  -1 | 0 | +1 
+  fHnDCA->GetAxis(3)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
+  fHnDCA->GetAxis(4)->SetTitle("#it{y}_{Rec}");                 //  rapidity  [-0.5, 0.5]
+  fHnDCA->GetAxis(5)->SetTitle("#varphi_{Rec} (rad)");          //  phi  [ 0. , 2Pi]
+  fHnDCA->GetAxis(6)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})");  //  pT   [ 0.2, 2.6]
   fHnDCA->GetAxis(7)->SetTitle("contPart");                     //  1  primary | 2 missId | 3 from WeakDecay | 4 p from Material
   fHnDCA->GetAxis(8)->SetTitle("DCArAccepted");                 //  0 not accepted | 1 accepted 
   fHnDCA->GetAxis(9)->SetTitle("DCAr");                         //  DCAr [-3, 3]
@@ -217,7 +215,7 @@ Int_t AliEbyEPidRatioDCA::GetContIdxTrack(Int_t label, Int_t sign, Int_t gPdgCod
   if (!particle)
     return contIdx;
 
-  Bool_t isPhysicalPrimary = (fESD) ? fStack->IsPhysicalPrimary(label): (static_cast<AliAODMCParticle*>(particle))->IsPhysicalPrimary();
+  Bool_t isPhysicalPrimary        = (fESD) ? fStack->IsPhysicalPrimary(label): (static_cast<AliAODMCParticle*>(particle))->IsPhysicalPrimary();
   Bool_t isSecondaryFromWeakDecay = (fESD) ? fStack->IsSecondaryFromWeakDecay(label) : (static_cast<AliAODMCParticle*>(particle))->IsSecondaryFromWeakDecay();
   Bool_t isSecondaryFromMaterial  = (fESD) ? fStack->IsSecondaryFromMaterial(label)  : (static_cast<AliAODMCParticle*>(particle))->IsSecondaryFromMaterial();
   
