@@ -145,12 +145,3 @@ add_subdirectory (STEER)
 #add_subdirectory (PWG)
 #add_subdirectory (Vc)
 #add_subdirectory (HLT)
-
-# build a CPack driven installer package
-include (InstallRequiredSystemLibraries)
-set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/License.txt")
-set (CPACK_PACKAGE_VERSION_MAJOR "5.04")
-set (CPACK_PACKAGE_VERSION_MINOR "01")
-set (CPACK_PACKAGE_CONTACT       "Peter.Hristov@cern.ch")
-set (CPACK_PACKAGING_INSTALL_PREFIX "/opt/aliroot")
-include (CPack)
