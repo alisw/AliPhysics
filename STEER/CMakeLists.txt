@@ -20,3 +20,4 @@ add_subdirectory (AOD)
 add_subdirectory (CDB)
 add_subdirectory (STEER)
 
+message(STATUS "STEER enabled")

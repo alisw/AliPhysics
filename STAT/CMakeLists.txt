@@ -59,3 +59,4 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
+message(STATUS "${MODULE} enabled")
