@@ -2641,7 +2641,7 @@ void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1,
        GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCEtaDecay)    )
      )
   {
-    Int_t pdg1    = -1, pdg2    = -1;
+    Int_t pdg1    = -1;//, pdg2    = -1;
     Int_t ndaugh1 = -1, ndaugh2 = -1;
     //Check if pi0/eta mother is the same
     if(GetReader()->ReadStack())
@@ -2659,7 +2659,7 @@ void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1,
         TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
         label2 = mother2->GetFirstMother();
         mother2 = GetMCStack()->Particle(label2);//pi0
-        pdg2=mother2->GetPdgCode();
+        //pdg2=mother2->GetPdgCode();
         ndaugh2 = mother2->GetNDaughters();
       }
     } // STACK
@@ -2678,7 +2678,7 @@ void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1,
         AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label2);//photon in kine tree
         label2 = mother2->GetMother();
         mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles())->At(label2);//pi0
-        pdg2=mother2->GetPdgCode();
+        //pdg2=mother2->GetPdgCode();
         ndaugh2 = mother2->GetNDaughters();
       }
     }// AOD
