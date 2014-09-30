@@ -13,8 +13,10 @@
   #include <TMath.h>
   #include <TTree.h>
   #include <TParticle.h>
+  #include <TParticlePDG.h>
   #include <TCanvas.h>
   #include <TFile.h>
+  #include <TLine.h>
   #include <TROOT.h>
 
   #include "AliStack.h"
@@ -35,8 +37,50 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    ::Info("AliITSUComparisonPileup.C","Doing comparison...");
 
    // **** Book histogramms   
-   TH2F *h2=(TH2F*)gROOT->FindObject("h2");
-   if (!h2) h2=new TH2F("h2",";Number of good vertices;Number of reconstructed vertices",100,0.,100.,10,0.,10.);
+   Int_t nb=20;
+   Float_t min=0, max=30.;
+   TH2F *h2spd=(TH2F*)gROOT->FindObject("h2spd");
+   if (!h2spd) 
+      h2spd=new TH2F("h2spd",";Good vertices;Reconstructed vertices",
+      nb,min,max, nb,min,max);
+   h2spd->SetLineColor(2);
+   TH2F *h2trk=(TH2F*)gROOT->FindObject("h2trk");
+   if (!h2trk) 
+      h2trk=new TH2F("h2trk",";Good vertices;Reconstructed vertices",
+      nb,min,max, nb,min,max);
+   h2trk->SetLineColor(4);
+
+   nb=100;
+   min=-0.03; max=0.03;
+   TH1F *hzspd=(TH1F*)gROOT->FindObject("hzspd");
+   if (!hzspd) 
+     hzspd=new TH1F("hzspd","Resolution in Z;#DeltaZ (cm);",nb,min,max);
+   hzspd->SetLineColor(2);
+   TH1F *hztrk=(TH1F*)gROOT->FindObject("hztrk");
+   if (!hztrk) 
+     hztrk=new TH1F("hztrk","Resolution in Z;#DeltaZ (cm);",nb,min,max);
+   hztrk->SetLineColor(4);
+
+   
+   nb=30;
+   min=-10.; max=10.; 
+   TH1F *hgood=(TH1F*)gROOT->FindObject("hgood");
+   if (!hgood) 
+     hgood=new TH1F("hgood",";Z (cm);",nb,min,max);
+   TH1F *hfoundspd=(TH1F*)gROOT->FindObject("hfoundspd");
+   if (!hfoundspd) 
+    hfoundspd=new TH1F("hfoundspd",";Z (cm);",nb,min,max);
+   TH1F *heffspd=(TH1F*)gROOT->FindObject("heffspd");
+   if (!heffspd) 
+      heffspd=new TH1F("heffspd","Efficiency;Z (cm);Efficiency",nb,min,max);
+   heffspd->SetLineColor(2);
+   TH1F *hfoundtrk=(TH1F*)gROOT->FindObject("hfoundtrk");
+   if (!hfoundtrk) 
+    hfoundtrk=new TH1F("hfoundtrk",";Z (cm);",nb,min,max);
+   TH1F *hefftrk=(TH1F*)gROOT->FindObject("hefftrk");
+   if (!hefftrk) 
+      hefftrk=new TH1F("hefftrk",";Z (cm);Efficiency",nb,min,max);
+   hefftrk->SetLineColor(4);
 
 
    // **** Generate a rerefence file with reconstructable vertices
@@ -86,23 +130,69 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    event->ReadFromTree(esdTree);
 
 
-   //******* Loop over events *********
+   //******* Loop over reconstructed events *********
    Int_t e=0;
    while (esdTree->GetEvent(e)) {
      cout<<endl<<endl<<"********* Processing event number: "<<e<<"*******\n";
-     TClonesArray *vertices=event->GetPileupVerticesTracks();
-     Int_t nrec=vertices->GetEntriesFast(); 
+     TClonesArray *verticesSPD=event->GetPileupVerticesSPD();
+     Int_t nfoundSPD=verticesSPD->GetEntries(); 
+     TClonesArray *verticesTRK=event->GetPileupVerticesTracks();
+     Int_t nfoundTRK=verticesTRK->GetEntries(); 
 
      if (refTree->GetEvent(e++)==0) {
         cerr<<"No reconstructable vertices for this event !\n";
         continue;
      }
      Int_t ngood=refs->GetEntriesFast(); 
-     cout<<"reconstructed: "<<nrec<<"  good: "<<ngood<<endl;
+     cout<<"Found SPD: "<<nfoundSPD<<"  good: "<<ngood<<endl;
 
-     h2->Fill(ngood,nrec);
+     h2spd->Fill(ngood,nfoundSPD);
+     h2trk->Fill(ngood,nfoundTRK);
 
-   } //***** End of the loop over events
+     for (Int_t g=0; g<ngood; g++) {
+         const AliESDVertex *vtxg=(AliESDVertex*)refs->UncheckedAt(g);
+         Double_t zg=vtxg->GetZv();
+         hgood->Fill(zg);
+
+         const AliESDVertex *vtxf=0;
+         Double_t zf=0.;
+         Int_t f=0;
+         for (; f<nfoundSPD; f++) {
+             vtxf=(AliESDVertex*)verticesSPD->UncheckedAt(f);
+             if (!vtxf->GetStatus()) continue;
+             zf=vtxf->GetZv();
+             if (TMath::Abs(zf-zg)>2e-2) continue;
+             break;
+         }
+         if (f>=nfoundSPD) {
+	     vtxf=event->GetPrimaryVertexSPD();
+             if (!vtxf->GetStatus()) goto trk;
+             zf=vtxf->GetZv();
+             if (TMath::Abs(zf-zg)>2e-2) goto trk;
+	 }
+         hfoundspd->Fill(zg);
+         hzspd->Fill(zf-zg);
+
+     trk:
+         for (f=0; f<nfoundTRK; f++) {
+             vtxf=(AliESDVertex*)verticesTRK->UncheckedAt(f);
+             if (!vtxf->GetStatus()) continue;
+             zf=vtxf->GetZv();
+             if (TMath::Abs(zf-zg)>2e-2) continue;
+             break;
+         }
+         if (f>=nfoundTRK) {
+	     vtxf=event->GetPrimaryVertexTracks();
+             if (!vtxf->GetStatus()) continue;
+             zf=vtxf->GetZv();
+             if (TMath::Abs(zf-zg)>2e-2) continue;
+	 }
+	 hfoundtrk->Fill(zg);
+         hztrk->Fill(zf-zg);
+
+     }
+
+   } //***** End of the loop over reconstructed events
 
    delete event;
    delete esdTree;
@@ -110,10 +200,29 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
 
    refFile->Close();
    
-   TCanvas *c1=new TCanvas("c1","",0,0,750,500);
-   h2->Draw("box");
+   TCanvas *c1=new TCanvas("c1","",0,0,700,1000);
+   c1->Divide(1,3);
+   c1->cd(1);
+   gPad->SetGridx(); gPad->SetGridy();
+   h2spd->Draw("box");
+   h2trk->Draw("boxsame");
+   TLine *l=new TLine(0,0,30,30);
+   l->Draw("same");
 
-   TFile fc("AliITSUComparisonCooked.root","RECREATE");
+   c1->cd(2);
+   gPad->SetGridx(); gPad->SetGridy();
+   heffspd->Divide(hfoundspd,hgood,1,1,"b");
+   heffspd->SetMinimum(0.); heffspd->SetMaximum(1.);
+   heffspd->Draw("hist");
+   hefftrk->Divide(hfoundtrk,hgood,1,1,"b");
+   hefftrk->Draw("histsame");
+
+   c1->cd(3);
+   gPad->SetGridx(); gPad->SetGridy();
+   hzspd->Draw();
+   hztrk->Draw("same");
+
+   TFile fc("AliITSUComparisonPileup.root","RECREATE");
    c1->Write();
    fc.Close();
 
@@ -123,6 +232,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
 
 
 Int_t GoodPileupVertices(const Char_t *dir) {
+  Int_t FindContributors(Float_t tz, AliStack *stack, Int_t ntrk);
    if (gAlice) { 
        delete AliRunLoader::Instance();
        delete gAlice;//if everything was OK here it is already NULL
@@ -155,23 +265,29 @@ Int_t GoodPileupVertices(const Char_t *dir) {
    //********  Loop over generated events 
    for (Int_t e=0; e<nev; e++) {
      rl->GetEvent(e);  refFile->cd();
+     AliStack* stack = rl->Stack();
 
      AliHeader *ah=rl->GetHeader();
      AliGenCocktailEventHeader *cock=
             (AliGenCocktailEventHeader*)ah->GenEventHeader();
      TList *headers=cock->GetHeaders();
      const Int_t nvtx=headers->GetEntries();
-     cout<<"Event "<<e<<" Number of vertices: "<<nvtx<<endl;
+     const Int_t np=ah->GetNtrack();
+     cout<<"Event "<<e<<" Number of vertices, particles: "
+	 <<nvtx<<' '<<np<<endl;
 
      Int_t nv=0;
      for (Int_t v=0; v<nvtx; v++) {
          AliGenEventHeader *h=(AliGenEventHeader *)headers->At(v);
          TArrayF vtx(3); h->PrimaryVertex(vtx);
-         //if (...) continue; // Check if this vertex is reconstructable
+         Float_t t=h->InteractionTime();
+         Int_t ntrk=FindContributors(t,stack,np);
+         if (ntrk<3) continue;
          AliESDVertex *vertex=new ((*refs)[nv]) AliESDVertex();
          vertex->SetXv(vtx[0]);
          vertex->SetYv(vtx[1]);
          vertex->SetZv(vtx[2]);
+         vertex->SetNContributors(ntrk);
          nv++;
      }
      refTree.Fill();
@@ -185,4 +301,19 @@ Int_t GoodPileupVertices(const Char_t *dir) {
    return 0;
 }
 
-
+Int_t FindContributors(Float_t tz, AliStack *stack, Int_t np) {
+  Int_t ntrk=0;
+  for (Int_t i=0; i<np; i++) {
+      if (!stack->IsPhysicalPrimary(i)) continue;
+      TParticle *part=stack->Particle(i);
+      if (!part) continue;
+      TParticlePDG *partPDG = part->GetPDG();
+      if (!partPDG) continue;
+      if (TMath::Abs(partPDG->Charge())<1e-10) continue;
+      if (part->Pt()<1) continue;
+      Float_t dt=0.5*(tz-part->T())/(tz+part->T());
+      if (TMath::Abs(dt)>1e-5) continue;
+      ntrk++;
+  }
+  return ntrk;
+}
