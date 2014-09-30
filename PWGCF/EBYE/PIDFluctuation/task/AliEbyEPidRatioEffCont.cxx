@@ -443,8 +443,8 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
     Int_t iPid = 0;
     Int_t gPdgCode = 0;
     if ( particle->PdgCode()      ==  211 ) {  iPid = 1; gPdgCode = 211;}
-    else if ( particle->PdgCode() ==  321 ) {  iPid = 1; gPdgCode = 321;}
-    else if ( particle->PdgCode() == 2212 ) {  iPid = 1; gPdgCode = 2212;}
+    else if ( particle->PdgCode() ==  321 ) {  iPid = 2; gPdgCode = 321;}
+    else if ( particle->PdgCode() == 2212 ) {  iPid = 3; gPdgCode = 2212;}
     else {iPid = 0; gPdgCode = 0;}
 
     // -- Check if accepted in rapidity window -- for identified particles
