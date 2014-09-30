@@ -37,8 +37,8 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    ::Info("AliITSUComparisonPileup.C","Doing comparison...");
 
    // **** Book histogramms   
-   Int_t nb=20;
-   Float_t min=0, max=30.;
+   Int_t nb=35;
+   Float_t min=0, max=70.;
    TH2F *h2spd=(TH2F*)gROOT->FindObject("h2spd");
    if (!h2spd) 
       h2spd=new TH2F("h2spd",";Good vertices;Reconstructed vertices",
@@ -150,6 +150,8 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
      h2trk->Fill(ngood,nfoundTRK);
 
      for (Int_t g=0; g<ngood; g++) {
+         Bool_t Associate(const AliESDVertex *g, const AliESDVertex *f, 
+            const AliESDEvent *esd); 
          const AliESDVertex *vtxg=(AliESDVertex*)refs->UncheckedAt(g);
          Double_t zg=vtxg->GetZv();
          hgood->Fill(zg);
@@ -160,15 +162,15 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
          for (; f<nfoundSPD; f++) {
              vtxf=(AliESDVertex*)verticesSPD->UncheckedAt(f);
              if (!vtxf->GetStatus()) continue;
+             if (!Associate(vtxg,vtxf,event)) continue; 
              zf=vtxf->GetZv();
-             if (TMath::Abs(zf-zg)>2e-2) continue;
              break;
          }
          if (f>=nfoundSPD) {
 	     vtxf=event->GetPrimaryVertexSPD();
              if (!vtxf->GetStatus()) goto trk;
+             if (!Associate(vtxg,vtxf,event)) goto trk; 
              zf=vtxf->GetZv();
-             if (TMath::Abs(zf-zg)>2e-2) goto trk;
 	 }
          hfoundspd->Fill(zg);
          hzspd->Fill(zf-zg);
@@ -177,15 +179,15 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
          for (f=0; f<nfoundTRK; f++) {
              vtxf=(AliESDVertex*)verticesTRK->UncheckedAt(f);
              if (!vtxf->GetStatus()) continue;
+             if (!Associate(vtxg,vtxf,event)) continue; 
              zf=vtxf->GetZv();
-             if (TMath::Abs(zf-zg)>2e-2) continue;
              break;
          }
          if (f>=nfoundTRK) {
 	     vtxf=event->GetPrimaryVertexTracks();
              if (!vtxf->GetStatus()) continue;
+             if (!Associate(vtxg,vtxf,event)) continue; 
              zf=vtxf->GetZv();
-             if (TMath::Abs(zf-zg)>2e-2) continue;
 	 }
 	 hfoundtrk->Fill(zg);
          hztrk->Fill(zf-zg);
@@ -206,21 +208,21 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    gPad->SetGridx(); gPad->SetGridy();
    h2spd->Draw("box");
    h2trk->Draw("boxsame");
-   TLine *l=new TLine(0,0,30,30);
+   TLine *l=new TLine(0,0,60,60);
    l->Draw("same");
 
    c1->cd(2);
    gPad->SetGridx(); gPad->SetGridy();
    heffspd->Divide(hfoundspd,hgood,1,1,"b");
-   heffspd->SetMinimum(0.); heffspd->SetMaximum(1.);
+   heffspd->SetMinimum(0.); heffspd->SetMaximum(1.2);
    heffspd->Draw("hist");
    hefftrk->Divide(hfoundtrk,hgood,1,1,"b");
    hefftrk->Draw("histsame");
 
    c1->cd(3);
    gPad->SetGridx(); gPad->SetGridy();
-   hzspd->Draw();
-   hztrk->Draw("same");
+   hztrk->Draw();
+   hzspd->Draw("same");
 
    TFile fc("AliITSUComparisonPileup.root","RECREATE");
    c1->Write();
@@ -229,10 +231,37 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    return 0;
 }
 
+Bool_t 
+Associate(const AliESDVertex *g,const AliESDVertex *f,const AliESDEvent *esd) { 
+   UShort_t *idxg=g->GetIndices(); Int_t ng=g->GetNIndices(); 
+   UShort_t *idxf=f->GetIndices(); Int_t nf=f->GetNIndices();
 
+   if (nf==0) { 
+   // SPD vertex
+       Double_t zg=g->GetZv();
+       Double_t zf=f->GetZv();
+       if (TMath::Abs(zf-zg)>2e-2) return kFALSE;
+       return kTRUE;
+   }
+   // TRK vertex
+   Int_t nass=0;
+   for (Int_t i=0; i<ng; i++) {
+       UShort_t labg=idxg[i];
+       for (Int_t j=0; j<nf; j++) {
+           const AliESDtrack *t=esd->GetTrack(idxf[j]);
+           UShort_t labf=TMath::Abs(t->GetLabel());
+           if (labg != labf) continue;
+           nass++;
+           break; 
+       }
+   } 
+
+   if (Float_t(nass)/ng > 0.5) return kTRUE;
+   return kFALSE;
+}
 
 Int_t GoodPileupVertices(const Char_t *dir) {
-  Int_t FindContributors(Float_t tz, AliStack *stack, Int_t ntrk);
+  Int_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx);
    if (gAlice) { 
        delete AliRunLoader::Instance();
        delete gAlice;//if everything was OK here it is already NULL
@@ -281,13 +310,16 @@ Int_t GoodPileupVertices(const Char_t *dir) {
          AliGenEventHeader *h=(AliGenEventHeader *)headers->At(v);
          TArrayF vtx(3); h->PrimaryVertex(vtx);
          Float_t t=h->InteractionTime();
-         Int_t ntrk=FindContributors(t,stack,np);
+         UShort_t *idx=new UShort_t[np];
+         Int_t ntrk=FindContributors(t,stack,idx);
          if (ntrk<3) continue;
          AliESDVertex *vertex=new ((*refs)[nv]) AliESDVertex();
          vertex->SetXv(vtx[0]);
          vertex->SetYv(vtx[1]);
          vertex->SetZv(vtx[2]);
          vertex->SetNContributors(ntrk);
+         vertex->SetIndices(ntrk,idx);
+         delete idx;
          nv++;
      }
      refTree.Fill();
@@ -301,8 +333,9 @@ Int_t GoodPileupVertices(const Char_t *dir) {
    return 0;
 }
 
-Int_t FindContributors(Float_t tz, AliStack *stack, Int_t np) {
+Int_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx) {
   Int_t ntrk=0;
+  Int_t np=stack->GetNtrack();
   for (Int_t i=0; i<np; i++) {
       if (!stack->IsPhysicalPrimary(i)) continue;
       TParticle *part=stack->Particle(i);
@@ -310,9 +343,10 @@ Int_t FindContributors(Float_t tz, AliStack *stack, Int_t np) {
       TParticlePDG *partPDG = part->GetPDG();
       if (!partPDG) continue;
       if (TMath::Abs(partPDG->Charge())<1e-10) continue;
-      if (part->Pt()<1) continue;
+      if (part->Pt()<0.5) continue;
       Float_t dt=0.5*(tz-part->T())/(tz+part->T());
       if (TMath::Abs(dt)>1e-5) continue;
+      idx[ntrk]=i;
       ntrk++;
   }
   return ntrk;
