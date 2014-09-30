@@ -36,6 +36,8 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   //-------------------------------------------------------
 
   AliJetEmbeddingFromGenTask *jetEmb = new AliJetEmbeddingFromGenTask(taskName,drawQA);
+  // if pythia is used as a generator, tell it not to print the event history to the screen
+  if(TString(genGen->IsA()->GetName()).EqualTo("AliGenPythia")) genGen->AliGenPythia::SetEventListRange(0, 0);
   jetEmb->SetGen(genGen);
   jetEmb->SetTracksName(tracksName);
   jetEmb->SetEtaRange(minEta, maxEta);
