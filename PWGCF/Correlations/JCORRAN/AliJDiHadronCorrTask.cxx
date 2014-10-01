@@ -163,7 +163,7 @@ void AliJDiHadronCorrTask::Init()
 //______________________________________________________________________________
 void AliJDiHadronCorrTask::Terminate(Option_t *)
 {
-
+/*
 	fJCORRAN->Terminate();
 	OpenFile(1);
 	fOutput->cd();
@@ -172,6 +172,7 @@ void AliJDiHadronCorrTask::Terminate(Option_t *)
 	//write Trigg ID and Assoc ID
 	fOutput->Write(0,TObject::kOverwrite);
 	PostData(1,fOutput);
+*/
 	cout<<"AliJDiHadronCorrTask Analysis DONE !!"<<endl; 
 
 }
