@@ -38,6 +38,7 @@
 #include <TF2.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TProfile.h>
 #include <TFile.h>
 // aliroot includes
@@ -82,6 +83,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnaly
         fHistPsiVZEROALeadingJet[i] = 0;  
         fHistPsiVZEROCLeadingJet[i] = 0;
         fHistPsiVZEROCombLeadingJet[i] = 0;
+        fHistPsi2Correlation[i] = 0;
         fHistRhoPackage[i] = 0;
         fHistRho[i] = 0;
         fHistRCPhiEta[i] = 0;
@@ -140,6 +142,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) :
         fHistPsiVZEROALeadingJet[i] = 0;  
         fHistPsiVZEROCLeadingJet[i] = 0;
         fHistPsiVZEROCombLeadingJet[i] = 0;
+        fHistPsi2Correlation[i] = 0;
         fHistRhoPackage[i] = 0;
         fHistRho[i] = 0;
         fHistRCPhiEta[i] = 0;
@@ -380,7 +383,7 @@ TH1F* AliAnalysisTaskJetV2::BookTH1F(const char* name, const char* x, Int_t bins
     return histogram;   
 }
 //_____________________________________________________________________________
-TH2F* AliAnalysisTaskJetV2::BookTH2F(const char* name, const char* x, const char*y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c, Bool_t append)
+TH2F* AliAnalysisTaskJetV2::BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c, Bool_t append)
 {
     // book a TH2F and connect it to the output container
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
@@ -394,6 +397,28 @@ TH2F* AliAnalysisTaskJetV2::BookTH2F(const char* name, const char* x, const char
     }
     title += Form(";%s;%s", x, y);
     TH2F* histogram = new TH2F(name, title.Data(), binsx, minx, maxx, binsy, miny, maxy);
+    histogram->Sumw2();
+    if(append) fOutputList->Add(histogram);
+    return histogram;   
+}
+//_____________________________________________________________________________
+TH3F* AliAnalysisTaskJetV2::BookTH3F(const char* name, const char* x, const char* y, const char* z, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t binsz, Double_t minz, Double_t maxz, Int_t c, Bool_t append)
+{
+    // book a TH2F and connect it to the output container
+    if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    if(fReduceBinsXByFactor > 0 ) {
+        binsx = TMath::Nint(binsx/fReduceBinsXByFactor);
+        binsy = TMath::Nint(binsy/fReduceBinsXByFactor);
+        binsz = TMath::Nint(binsz/fReduceBinsXByFactor);
+    }
+    if(!fOutputList) return 0x0;
+    TString title(name);
+    if(c!=-1) { // format centrality dependent histograms accordingly
+        name = Form("%s_%i", name, c);
+        title += Form("_%i-%i", (int)fCentralityClasses->At(c), (int)(fCentralityClasses->At((1+c))));
+    }
+    title += Form(";%s;%s;%s", x, y, z);
+    TH3F* histogram = new TH3F(name, title.Data(), binsx, minx, maxx, binsy, miny, maxy, binsz, minz, maxz);
     histogram->Sumw2();
     if(append) fOutputList->Add(histogram);
     return histogram;   
@@ -446,6 +471,7 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
             fHistPsiVZEROALeadingJet[i] =   BookTH2F("fHistPsiVZEROALeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROA}", 350, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
             fHistPsiVZEROCLeadingJet[i] =   BookTH2F("fHistPsiVZEROCLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROC}", 350, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
             fHistPsiVZEROCombLeadingJet[i] = BookTH2F("fHistPsiVZEROCombLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROComb}", 350, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
+            fHistPsi2Correlation[i] = BookTH3F("fHistPsi2Correlation", "#Psi_{TPC}", "#Psi_{VZEROA}", "#Psi_{VZEROC}",  20, -1.*TMath::Pi()/2., TMath::Pi()/2., 20, -1.*TMath::Pi()/2., TMath::Pi()/2., 20, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
         }
     }
 
@@ -1758,7 +1784,7 @@ void AliAnalysisTaskJetV2::FillClusterHistograms() const
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::FillEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const
 {
-    // fill event plane histograms
+    // fill event plane histograms, only called in qa mode
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     fHistPsiControl->Fill(0.5, vzero[0][0]);    // vzero a psi2
     fHistPsiControl->Fill(1.5, vzero[1][0]);    // vzero c psi2
@@ -1793,7 +1819,8 @@ void AliAnalysisTaskJetV2::FillEventPlaneHistograms(Double_t vzero[2][2], Double
         fHistPsiVZEROCLeadingJet[fInCentralitySelection]->Fill(pt, vzero[1][0]);
         fHistPsiVZEROCombLeadingJet[fInCentralitySelection]->Fill(pt, vzeroComb[0]);
     }
-
+    // correlation of event planes
+    fHistPsi2Correlation[fInCentralitySelection]->Fill(tpc[0], vzero[0][0], vzero[1][0]);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::FillRhoHistograms()
