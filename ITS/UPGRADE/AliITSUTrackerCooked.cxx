@@ -234,9 +234,6 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
   // This is the main pattern recongition function.
   // Creates seeds out of two clusters and another point.
   //--------------------------------------------------------------------
-   if (fSeeds) {fSeeds->Delete(); delete fSeeds;}
-   fSeeds=new TObjArray(77777);
-
    const Double_t zv=GetZ();
 
    AliITSUlayer &layer1=fgLayers[kSeedingLayer1];
@@ -314,7 +311,6 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
      ((AliITSUClusterPix*)c3)->GoToFrameTrk();
    }
 
-   fSeeds->Sort();
    return fSeeds->GetEntriesFast();
 }
 
@@ -326,7 +322,30 @@ Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
 
   if (!fSAonly) AliITSUTrackerGlo::Clusters2Tracks(event);
 
-  Int_t nSeeds=MakeSeeds();
+  if (fSeeds) {fSeeds->Delete(); delete fSeeds;}
+  fSeeds=new TObjArray(77777);
+
+  //Seeding with the triggered primary vertex
+  Double_t xyz[3];
+  const AliESDVertex *vtx=0;
+  vtx=event->GetPrimaryVertexSPD();
+  if (vtx->GetStatus()) {
+     xyz[0]=vtx->GetXv(); xyz[1]=vtx->GetYv(); xyz[2]=vtx->GetZv();
+     SetVertex(xyz);
+     MakeSeeds();
+  }
+  //Seeding with the pileup primary vertices
+  TClonesArray *verticesSPD=event->GetPileupVerticesSPD();
+  Int_t nfoundSPD=verticesSPD->GetEntries(); 
+  for (Int_t v=0; v<nfoundSPD; v++) {
+      vtx=(AliESDVertex *)verticesSPD->UncheckedAt(v);
+      if (!vtx->GetStatus()) continue;
+      xyz[0]=vtx->GetXv(); xyz[1]=vtx->GetYv(); xyz[2]=vtx->GetZv();
+      SetVertex(xyz);
+      MakeSeeds();
+  }
+  fSeeds->Sort();
+  Int_t nSeeds=fSeeds->GetEntriesFast();
 
   // Possibly, icrement the seeds with additional clusters (Kalman)
 
