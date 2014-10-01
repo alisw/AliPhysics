@@ -207,15 +207,15 @@ void AliAnalysisTaskChargedJetsPA::Init()
     }
 
     {
-      //                        jet pt,  const pt,        distance
-      Int_t    bins [3]     = { 30,         50,             50};
-      Double_t minEdges[3]  = { 0,           0.1,               0};
-      Double_t maxEdges[3]  = { 150,          150,             0.5};
-      TString axisName[3]  = {"jet p_{T}","Constituent p_{T}","Distance from jet axis"};
-      TString axisTitle[3]  = {"jet p_{T}","Constituent p_{T}","Distance from jet axis"};
-      THnF * histJetConstituentDistance = new THnF("hJetConstituentDistance", "Jet constituent distance vs jet and constituent p_{T}", 3, bins, minEdges, maxEdges);
+      //                        jet pt,  const pt,   const count      distance
+      Int_t    bins [4]     = { 30,         50,        30,     50};
+      Double_t minEdges[4]  = { 0,           0.1,       0,       0};
+      Double_t maxEdges[4]  = { 150,          150,     30,      0.5};
+      TString axisName[4]  = {"jet p_{T}","Constituent p_{T}","Constituent count","Distance from jet axis"};
+      TString axisTitle[4]  = {"jet p_{T}","Constituent p_{T}","Constituent count","Distance from jet axis"};
+      THnF * histJetConstituentDistance = new THnF("hJetConstituentDistance", "Jet constituent distance vs. jet and constituent p_{T}", 4, bins, minEdges, maxEdges);
       BinLogAxis(histJetConstituentDistance,1);
-      for (Int_t iaxis=0; iaxis<3;iaxis++){
+      for (Int_t iaxis=0; iaxis<4;iaxis++){
         histJetConstituentDistance->GetAxis(iaxis)->SetName(axisName[iaxis]);
         histJetConstituentDistance->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
       }
@@ -1968,7 +1968,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
       // ###### CONSTITUENT ANALYSIS
  
       THnF* tmpConstituentHist = static_cast<THnF*>(fCurrentOutputList->FindObject("hJetConstituents"));
-      THnF* tmpConstituentDistanceHist = static_cast<THnF*>(fCurrentOutputList->FindObject(GetHistoName("hJetConstituentDistance")));
+      THnF* tmpConstituentDistanceHist = static_cast<THnF*>(fCurrentOutputList->FindObject("hJetConstituentDistance"));
 
       for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
       {
@@ -1990,7 +1990,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
                                           + (tmpJet->Phi()-tmpTrack->Phi())*(tmpJet->Phi()-tmpTrack->Phi()) ); // distance between jet axis and track
 
         Double_t tmpVec1[5] = {tmpJet->Pt(), tmpTrack->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpRCcount, tmpPCcount};
-        Double_t tmpVec2[3] = {tmpJet->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpDistance};
+        Double_t tmpVec2[4] = {tmpJet->Pt(), tmpTrack->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpDistance};
 
 
         tmpConstituentHist->Fill(tmpVec1);
