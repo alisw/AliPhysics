@@ -467,10 +467,10 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
                 fHistClusterEtaPhi[i] = BookTH2F("fHistClusterEtaPhi", "#eta", "#phi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
                 fHistClusterEtaPhiWeighted[i] = BookTH2F("fHistClusterEtaPhiWeighted", "#eta", "#phi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
             }
-            fHistPsiTPCLeadingJet[i] =      BookTH2F("fHistPsiTPCLeadingJet", "p_{t} [GeV/c]", "#Psi_{TPC}", 350, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
-            fHistPsiVZEROALeadingJet[i] =   BookTH2F("fHistPsiVZEROALeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROA}", 350, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
-            fHistPsiVZEROCLeadingJet[i] =   BookTH2F("fHistPsiVZEROCLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROC}", 350, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
-            fHistPsiVZEROCombLeadingJet[i] = BookTH2F("fHistPsiVZEROCombLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROComb}", 350, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
+            fHistPsiTPCLeadingJet[i] =      BookTH3F("fHistPsiTPCLeadingJet", "p_{t} [GeV/c]", "#Psi_{TPC}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, 0., TMath::TwoPi(), i);
+            fHistPsiVZEROALeadingJet[i] =   BookTH3F("fHistPsiVZEROALeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROA}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, 0., TMath::TwoPi(), i);
+            fHistPsiVZEROCLeadingJet[i] =   BookTH3F("fHistPsiVZEROCLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROC}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, 0., TMath::TwoPi(), i);
+            fHistPsiVZEROCombLeadingJet[i] = BookTH3F("fHistPsiVZEROCombLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROComb}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, 0., TMath::TwoPi(), i);
             fHistPsi2Correlation[i] = BookTH3F("fHistPsi2Correlation", "#Psi_{TPC}", "#Psi_{VZEROA}", "#Psi_{VZEROC}",  20, -1.*TMath::Pi()/2., TMath::Pi()/2., 20, -1.*TMath::Pi()/2., TMath::Pi()/2., 20, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
         }
     }
@@ -1813,11 +1813,11 @@ void AliAnalysisTaskJetV2::FillEventPlaneHistograms(Double_t vzero[2][2], Double
     // leading jet vs event plane bias
     if(fLeadingJet) {
         Double_t rho(fLocalRho->GetLocalVal(fLeadingJet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
-        Double_t pt = fLeadingJet->Pt() - fLeadingJet->Area()*rho;
-        fHistPsiTPCLeadingJet[fInCentralitySelection]->Fill(pt, tpc[0]);
-        fHistPsiVZEROALeadingJet[fInCentralitySelection]->Fill(pt, vzero[0][0]);
-        fHistPsiVZEROCLeadingJet[fInCentralitySelection]->Fill(pt, vzero[1][0]);
-        fHistPsiVZEROCombLeadingJet[fInCentralitySelection]->Fill(pt, vzeroComb[0]);
+        Double_t pt(fLeadingJet->Pt() - fLeadingJet->Area()*rho);
+        fHistPsiTPCLeadingJet[fInCentralitySelection]->Fill(pt, tpc[0], fLeadingJet->Phi());
+        fHistPsiVZEROALeadingJet[fInCentralitySelection]->Fill(pt, vzero[0][0], fLeadingJet->Phi());
+        fHistPsiVZEROCLeadingJet[fInCentralitySelection]->Fill(pt, vzero[1][0], fLeadingJet->Phi());
+        fHistPsiVZEROCombLeadingJet[fInCentralitySelection]->Fill(pt, vzeroComb[0], fLeadingJet->Phi());
     }
     // correlation of event planes
     fHistPsi2Correlation[fInCentralitySelection]->Fill(tpc[0], vzero[0][0], vzero[1][0]);
