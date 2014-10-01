@@ -71,6 +71,9 @@ class AliSpectraAODEventCuts : public TNamed
     fQvecIntegral(0), 
     fSplineArrayV0A(0),
     fSplineArrayV0C(0),
+    fQgenIntegral(0), 
+    fSplineArrayV0Agen(0),
+    fSplineArrayV0Cgen(0),
     fNch(0),
     fQvecCalibType(0)
       {
@@ -167,6 +170,7 @@ class AliSpectraAODEventCuts : public TNamed
   Int_t GetNchBin();
   
   Double_t CalculateQVectorMC(Int_t v0side);
+  Double_t GetQvecPercentileMC(Int_t v0side);
 
  private:
   
@@ -216,6 +220,9 @@ class AliSpectraAODEventCuts : public TNamed
   TH2D * fQvecIntegral;           // ! Integrated Qvec distribution
   TObjArray * fSplineArrayV0A;    // TSpline array for VZERO-A
   TObjArray * fSplineArrayV0C;    // TSpline array for VZERO-C
+  TH2D * fQgenIntegral;           // ! Integrated Qvec distribution for generated tracks
+  TObjArray * fSplineArrayV0Agen;    // TSpline array for VZERO-A for generated tracks
+  TObjArray * fSplineArrayV0Cgen;    // TSpline array for VZERO-C for generated tracks
   
   Int_t fNch;
   Int_t fQvecCalibType; //0. centrality - 1. Nch
@@ -223,7 +230,7 @@ class AliSpectraAODEventCuts : public TNamed
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   
-  ClassDef(AliSpectraAODEventCuts, 7);
+  ClassDef(AliSpectraAODEventCuts, 8);
   
 };
 #endif
