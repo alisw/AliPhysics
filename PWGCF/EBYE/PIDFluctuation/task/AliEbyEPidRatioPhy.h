@@ -25,6 +25,7 @@ class AliEbyEPidRatioPhy : public AliEbyEPidRatioBase {
   virtual ~AliEbyEPidRatioPhy();
   virtual void Process();
   void SetOutList(TList* l) {fOutList = l;}
+  void SetQA() {fIsQA = kTRUE;}  
 
  private:
 
@@ -35,6 +36,7 @@ class AliEbyEPidRatioPhy : public AliEbyEPidRatioBase {
   virtual void CreateHistograms();  
   Int_t ProcessTracks();
   Int_t ProcessParticles();  
+ 
   void ResetHistSet();
   void AddHistSetCent(const Char_t *name, const Char_t *title);
   void AddHistSetCentPt(const Char_t *name, const Char_t *title);
@@ -52,8 +54,12 @@ class AliEbyEPidRatioPhy : public AliEbyEPidRatioBase {
   Int_t              ***fMCNp;                  //  Array of MC particle/anti-particle counts
   Int_t             ****fMCNpPt;                //  Array of MC particle/anti-particle counts
   Double_t            **fRedFactp;              //  Array of particle/anti-particle reduced factorial
-
+  
   TH1F *fPtBinHist; // Hist
+  Bool_t                fIsQA;                  // Check for QA
+  THnSparseD           *fHnTrackUnCorrRec;          //  THnSparseD : uncorrected probe particles
+  THnSparseD           *fHnTrackUnCorrMc;           //  THnSparseD : Original Corrected probe particles Mc
+
 
   ClassDef(AliEbyEPidRatioPhy, 1);
 };
