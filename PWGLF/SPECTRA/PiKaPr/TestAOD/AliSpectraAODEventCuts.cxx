@@ -88,6 +88,9 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fQvecIntegral(0), 
   fSplineArrayV0A(0),
   fSplineArrayV0C(0),
+  fQgenIntegral(0), 
+  fSplineArrayV0Agen(0),
+  fSplineArrayV0Cgen(0),
   fNch(0),
   fQvecCalibType(0)
 {
@@ -123,6 +126,10 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fSplineArrayV0A->SetOwner();
   fSplineArrayV0C = new TObjArray();
   fSplineArrayV0C->SetOwner();
+  fSplineArrayV0Agen = new TObjArray();
+  fSplineArrayV0Agen->SetOwner();
+  fSplineArrayV0Cgen = new TObjArray();
+  fSplineArrayV0Cgen->SetOwner();
   
   fOutput->Add(fHistoCuts);
   fOutput->Add(fHistoVtxBefSel);
@@ -726,6 +733,58 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side){
   // 5. return q vector
   return TMath::Sqrt((Qx2mc*Qx2mc + Qy2mc*Qy2mc)/mult2mc);
   
+}
+
+//______________________________________________________
+Double_t AliSpectraAODEventCuts::GetQvecPercentileMC(Int_t v0side){
+ 
+  //check Qvec and Centrality consistency
+  if(fCent>90.) return -999.;
+  
+  Double_t qvec = CalculateQVectorMC(v0side);
+  if(qvec==-999.) return -999.;
+  
+  fQgenIntegral = 0x0;
+
+  if(v0side==0/*V0A*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROAgen"); }
+  if(v0side==1/*V0C*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROCgen"); }
+  //FIXME you need a check on the TH2D, add AliFatal or a return.
+
+  Int_t ic = -999;
+  
+  if(fQvecCalibType==1){
+    if(fNch<0.) return -999.;
+    ic = GetNchBin();
+  } else ic = (Int_t)fCent; //fQvecIntegral: 1% centrality bin
+  
+  TH1D *h1D = (TH1D*)fQgenIntegral->ProjectionY("h1Dgen",ic+1,ic+1);
+  
+  TSpline *spline = 0x0;
+  
+  if(v0side==0/*V0A*/){
+    if( CheckSplineArray(fSplineArrayV0Agen, ic) ) {
+      spline = (TSpline*)fSplineArrayV0Agen->At(ic);
+      //cout<<"Qvec V0A - ic: "<<ic<<" - Found TSpline..."<<endl;
+    } else {
+      spline = new TSpline3(h1D,"sp3");
+      fSplineArrayV0Agen->AddAtAndExpand(spline,ic);
+    }
+  }
+  else if(v0side==1/*V0C*/){
+    if( CheckSplineArray(fSplineArrayV0Cgen, ic) ) {
+      spline = (TSpline*)fSplineArrayV0Cgen->At(ic);
+    } else {
+      spline = new TSpline3(h1D,"sp3");
+      fSplineArrayV0Cgen->AddAtAndExpand(spline,ic);
+    }
+  }
+  
+  Double_t percentile = 100*spline->Eval(qvec);
+  
+  if(percentile>100. || percentile<0.) return -999.;
+
+  return percentile;
+
 }
 
 //______________________________________________________
