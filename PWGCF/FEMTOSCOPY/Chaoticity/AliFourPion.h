@@ -81,7 +81,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
   void SetInterpolationType(Bool_t linearInterp) {fLinearInterpolation = linearInterp;}
-  void SetCollisionType(Bool_t ct) {fCollisionType = ct;}
+  void SetCollisionType(Short_t ct) {fCollisionType = ct;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
   void SetGeneratorOnly(Bool_t genOnly) {fGeneratorOnly = genOnly;}
   void SetCentBinRange(Int_t low, Int_t high) {fCentBinLowLimit = low; fCentBinHighLimit = high;}

@@ -956,8 +956,7 @@ void AliFourPion::ParInit()
 	ExchangeAmpPointSource[i][j]->FixParameter(2, fPbPbc3FitEA->GetBinContent(i+1, 3, j+1));
 	ExchangeAmpPointSource[i][j]->FixParameter(3, fPbPbc3FitEA->GetBinContent(i+1, 4, j+1));
 	ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
-      }
-      else if(fCollisionType==1){
+      }else if(fCollisionType==1){
 	ExchangeAmpPointSource[i][j]->FixParameter(0, fpPbc3FitEA->GetBinContent(i+1, 1, j+1));
 	ExchangeAmpPointSource[i][j]->FixParameter(1, fpPbc3FitEA->GetBinContent(i+1, 2, j+1));
 	ExchangeAmpPointSource[i][j]->FixParameter(2, fpPbc3FitEA->GetBinContent(i+1, 3, j+1));
@@ -972,7 +971,7 @@ void AliFourPion::ParInit()
       }
     }
   }
-  
+ 
   /////////////////////////////////////////////
   /////////////////////////////////////////////
   
