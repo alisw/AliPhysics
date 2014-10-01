@@ -60,7 +60,8 @@ AliEbyEPidRatioPhy::AliEbyEPidRatioPhy() :
   fMCNp(NULL),
   fMCNpPt(NULL),
   fRedFactp(NULL),
-  fPtBinHist(NULL) {
+  fPtBinHist(NULL), 
+  fIsQA(kFALSE), fHnTrackUnCorrRec(NULL), fHnTrackUnCorrMc(NULL) {
   AliLog::SetClassDebugLevel("AliEbyEPidRatioPhy",10);
 }
 
@@ -205,20 +206,90 @@ void AliEbyEPidRatioPhy::CreateHistograms() {
   fESDTrackCuts->GetPtRange(ptRange[0],ptRange[1]);
 
   
+  
+  
+  Int_t    binHnUnCorr[7] = {AliEbyEPidRatioHelper::fgkfHistNBinsCent, 4,
+			     AliEbyEPidRatioHelper::fgkfHistNBinsSign,
+			     AliEbyEPidRatioHelper::fgkfHistNBinsEta, 
+			     AliEbyEPidRatioHelper::fgkfHistNBinsRap,  
+			     AliEbyEPidRatioHelper::fgkfHistNBinsPhi,   
+			     AliEbyEPidRatioHelper::fgkfHistNBinsPt };      
+  
+  Double_t minHnUnCorr[7] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[0],-0.5, 
+			     AliEbyEPidRatioHelper::fgkfHistRangeSign[0],
+			     AliEbyEPidRatioHelper::fgkfHistRangeEta[0], 
+			     AliEbyEPidRatioHelper::fgkfHistRangeRap[0],  
+			     AliEbyEPidRatioHelper::fgkfHistRangePhi[0], 
+			     AliEbyEPidRatioHelper::fgkfHistRangePt[0]};  
+			     
+  
+  Double_t maxHnUnCorr[7] = {AliEbyEPidRatioHelper::fgkfHistRangeCent[1],3.5, 
+			     AliEbyEPidRatioHelper::fgkfHistRangeSign[1],
+			     AliEbyEPidRatioHelper::fgkfHistRangeEta[1], 
+			     AliEbyEPidRatioHelper::fgkfHistRangeRap[1],  
+			     AliEbyEPidRatioHelper::fgkfHistRangePhi[1], 
+			     AliEbyEPidRatioHelper::fgkfHistRangePt[1]};  
+			     
+  
+  // -- UnCorrected
+
+  if (fIsQA) {
+    fOutList->Add(new THnSparseD("hnTrackUnCorrRec", "cent:pid:sign:eta:y:phi:pt", 7, binHnUnCorr, minHnUnCorr, maxHnUnCorr));  
+    fHnTrackUnCorrRec = static_cast<THnSparseD*>(fOutList->Last());
+    fHnTrackUnCorrRec->Sumw2(); 
+    fHnTrackUnCorrRec->GetAxis(0)->SetTitle("centrality");
+    fHnTrackUnCorrRec->GetAxis(1)->SetTitle("N #pi K  P");
+    fHnTrackUnCorrRec->GetAxis(2)->SetTitle("sign");
+    fHnTrackUnCorrRec->GetAxis(3)->SetTitle("#eta");
+    fHnTrackUnCorrRec->GetAxis(4)->SetTitle("#it{y}");
+    fHnTrackUnCorrRec->GetAxis(5)->SetTitle("#varphi");
+    fHnTrackUnCorrRec->GetAxis(6)->SetTitle("#it{p}_{T} (GeV/#it{c})");
+
+    if (fIsMC)  {
+      fOutList->Add(new THnSparseD("hnTrackUnCorrMc", "cent:pid:sign:eta:y:phi:pt", 7, binHnUnCorr, minHnUnCorr, maxHnUnCorr));  
+      fHnTrackUnCorrMc = static_cast<THnSparseD*>(fOutList->Last());
+      fHnTrackUnCorrMc->Sumw2(); 
+      fHnTrackUnCorrMc->GetAxis(0)->SetTitle("centrality");
+      fHnTrackUnCorrMc->GetAxis(1)->SetTitle("N #pi K  P");
+      fHnTrackUnCorrMc->GetAxis(2)->SetTitle("sign");
+      fHnTrackUnCorrMc->GetAxis(3)->SetTitle("#eta");
+      fHnTrackUnCorrMc->GetAxis(4)->SetTitle("#it{y}");
+      fHnTrackUnCorrMc->GetAxis(5)->SetTitle("#varphi");
+      fHnTrackUnCorrMc->GetAxis(6)->SetTitle("#it{p}_{T} (GeV/#it{c})");
+      
+    }
+
+  }
+
+
+
+
+
+  // fHelper->BinLogAxis(fHnTrackUnCorr, 4, fESDTrackCuts);
+
+  // for (Int_t idx = 1 ; idx <= fHnTrackUnCorr->GetAxis(4)->GetNbins(); ++idx)
+  //  printf("%02d |  %f > %f < %f\n", idx, fHnTrackUnCorr->GetAxis(4)->GetBinLowEdge(idx), fHnTrackUnCorr->GetAxis(4)->GetBinCenter(idx), fHnTrackUnCorr->GetAxis(4)->GetBinUpEdge(idx));
+
+
+
+
   TString sTitle("");
   fPtBinHist = new TH1F("hPtBinHist","Make the pT Bins",AliEbyEPidRatioHelper::fgkfHistNBinsPt, AliEbyEPidRatioHelper::fgkfHistRangePt[0], AliEbyEPidRatioHelper::fgkfHistRangePt[1]);
   if (fIsRatio) AddHistSetRatio("Ratio",       Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));
   
   AddHistSetCent("Phy",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));
-  AddHistSetCent("PhyTPC", Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
-  AddHistSetCent("PhyTOF", Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
+  if (fIsDetectorWise) AddHistSetCent("PhyTPC", Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
+  if (fIsDetectorWise) AddHistSetCent("PhyTOF", Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
+  
   if (fIsPtBin) AddHistSetCentPt("PhyBin",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sTitle.Data(), ptRange[0], ptRange[1]));  
 
 
 #if USE_PHI
   AddHistSetCent("Phyphi", Form("%s,#it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", sTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-  AddHistSetCent("PhyTPCphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-  AddHistSetCent("PhyTOFphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+  if (fIsDetectorWise) AddHistSetCent("PhyTPCphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",
+						       sTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+  if (fIsDetectorWise) AddHistSetCent("PhyTOFphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",
+						       sTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
   if (fIsPtBin) AddHistSetCentPt("PhyBinPhi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
 				     sTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
 #endif
@@ -230,13 +301,15 @@ void AliEbyEPidRatioPhy::CreateHistograms() {
 
     AddHistSetCent("MC",      Form("%s", sTitle.Data()));
     AddHistSetCent("MCpt",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], ptRange[1]));
-    AddHistSetCent("MCTPC",   Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
-    AddHistSetCent("MCTOF",   Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
+    if (fIsDetectorWise) AddHistSetCent("MCTPC",   Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired()));
+    if (fIsDetectorWise) AddHistSetCent("MCTOF",   Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1]));
     if (fIsPtBin) AddHistSetCentPt("MCBin",    Form("%s, #it{p}_{T} [%.1f,%.1f]", sMCTitle.Data(), ptRange[0], ptRange[1])); 
 #if USE_PHI
     AddHistSetCent("MCPhi",   Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-    AddHistSetCent("MCTPCphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
-    AddHistSetCent("MCTOFphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+    if (fIsDetectorWise) AddHistSetCent("MCTPCphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",
+							sMCTitle.Data(), ptRange[0], fHelper->GetMinPtForTOFRequired(), fHelper->GetPhiMin(), fHelper->GetPhiMax()));
+    if (fIsDetectorWise) AddHistSetCent("MCTOFphi",Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]",
+							sMCTitle.Data(), fHelper->GetMinPtForTOFRequired(), ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
  if (fIsPtBin) AddHistSetCentPt("MCBinPhi", Form("%s, #it{p}_{T} [%.1f,%.1f], #varphi [%.2f,%.2f]", 
 					sMCTitle.Data(), ptRange[0], ptRange[1], fHelper->GetPhiMin(), fHelper->GetPhiMax()));
 #endif
@@ -286,9 +359,22 @@ Int_t AliEbyEPidRatioPhy::ProcessTracks() {
     else if (fHelper->IsTrackAcceptedPID(track, pid, (AliPID::kProton))) iPid = 3;
     else iPid = 0;
    
+
     Double_t yP;
     if (iPid != 0 && !fHelper->IsTrackAcceptedRapidity(track, yP, iPid))
       continue;
+    
+    
+    if (fIsQA) {
+      if (iPid != 0) {
+	Double_t aTrack[7] = {Double_t(fCentralityBin), 0, track->Charge(), track->Eta(),yP,track->Phi(),track->Pt()};
+	fHnTrackUnCorrRec->Fill(aTrack);
+      }
+      Double_t aTrack[7] = {Double_t(fCentralityBin), iPid, track->Charge(), track->Eta(),yP,track->Phi(),track->Pt()};
+      fHnTrackUnCorrRec->Fill(aTrack);
+    }
+
+   
     
     Int_t idxPart = (track->Charge() < 0) ? 0 : 1;
     // -- in pt Range
@@ -340,15 +426,15 @@ Int_t AliEbyEPidRatioPhy::ProcessTracks() {
   } // for (Int_t idxTrack = 0; idxTrack < fESD->GetNumberOfTracks(); ++idxTrack) {
  
   FillHistSetCent("Phy",    0, kFALSE);
-  FillHistSetCent("PhyTPC", 1, kFALSE);
-  FillHistSetCent("PhyTOF", 2, kFALSE);
+  if (fIsDetectorWise) FillHistSetCent("PhyTPC", 1, kFALSE);
+  if (fIsDetectorWise) FillHistSetCent("PhyTOF", 2, kFALSE);
   
  if (fIsRatio) FillHistSetRatio("Ratio",   0, kFALSE);
  if (fIsPtBin) FillHistSetCentPt("PhyBin", 0, kFALSE);
 #if USE_PHI
   FillHistSetCent("Phyphi",    3, kFALSE);
-  FillHistSetCent("PhyTPCphi", 4, kFALSE);
-  FillHistSetCent("PhyTOFphi", 5, kFALSE);
+  if (fIsDetectorWise) FillHistSetCent("PhyTPCphi", 4, kFALSE);
+  if (fIsDetectorWise) FillHistSetCent("PhyTOFphi", 5, kFALSE);
   if (fIsPtBin) FillHistSetCentPt("PhyBinPhi", 1, kFALSE);
  #endif
 
@@ -388,6 +474,18 @@ Int_t AliEbyEPidRatioPhy::ProcessParticles() {
       continue;
     
     Int_t idxPart = (particle->PdgCode() < 0) ? 0 : 1;
+   
+
+    if (fIsQA) {
+      Float_t signMC    = (particle->PdgCode() < 0) ? -1. : 1.;
+      if (iPid != 0) {
+	Double_t aTrack[7] = {Double_t(fCentralityBin), 0, signMC, particle->Eta(),yMC,particle->Phi(),particle->Pt()};
+	fHnTrackUnCorrMc->Fill(aTrack);
+      }
+      Double_t aTrack[7] = {Double_t(fCentralityBin), iPid, signMC, particle->Eta(),yMC,particle->Phi(),particle->Pt()};
+      fHnTrackUnCorrMc->Fill(aTrack);
+    }
+
 
     // idx 0
     fMCNp[0][0][idxPart]    += 1.;        

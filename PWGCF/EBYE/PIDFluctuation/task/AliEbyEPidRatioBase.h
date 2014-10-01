@@ -57,7 +57,7 @@ class AliEbyEPidRatioBase : public TNamed {
   Int_t               fNTracks;               //  N Tracks in the current event
   Bool_t              fIsRatio;               //  Is MC event
   Bool_t              fIsPtBin;               //  Is Pt Bin event
-
+  Bool_t              fIsDetectorWise;        //  Is Detector Wise
   ClassDef(AliEbyEPidRatioBase, 1);
 };
 
