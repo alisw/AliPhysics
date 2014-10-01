@@ -53,7 +53,7 @@ AliEbyEPidRatioBase::AliEbyEPidRatioBase() :
   fStack(NULL),
   
   fCentralityBin(-1.),
-  fNTracks(0), fIsRatio(kFALSE), fIsPtBin(kFALSE) {
+  fNTracks(0), fIsRatio(kFALSE), fIsPtBin(kFALSE), fIsDetectorWise(kFALSE) {
   // Constructor   
 
   AliLog::SetClassDebugLevel("AliEbyEPidRatioBase",10);
@@ -70,11 +70,13 @@ AliEbyEPidRatioBase::AliEbyEPidRatioBase(const Char_t* name, const Char_t* title
   fArrayMC(NULL),
   fAODtrackCutBit(1024),
   fIsMC(kFALSE),
+  
+  
   fMCEvent(NULL),
   fStack(NULL),
   
   fCentralityBin(-1.),
-  fNTracks(0), fIsRatio(kFALSE),fIsPtBin(kFALSE) {
+  fNTracks(0), fIsRatio(kFALSE),fIsPtBin(kFALSE), fIsDetectorWise(kFALSE){
   // Constructor   
 
   AliLog::SetClassDebugLevel("AliEbyEPidRatioBase",10);
@@ -92,6 +94,7 @@ void AliEbyEPidRatioBase::Initialize(AliEbyEPidRatioHelper* helper, AliESDtrackC
   fIsMC             = helper->GetIsMC();
   fIsRatio          = helper->GetIsRatio();
   fIsPtBin          = helper->GetIsPtBin();
+  fIsDetectorWise   = helper->GetDetWise();
   fAODtrackCutBit   = helper->GetAODtrackCutBit();
   Init();
   CreateHistograms();

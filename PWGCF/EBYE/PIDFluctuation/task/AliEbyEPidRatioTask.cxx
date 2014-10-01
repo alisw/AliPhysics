@@ -83,7 +83,9 @@ AliEbyEPidRatioTask::AliEbyEPidRatioTask(const char *name) :
   fIsMC(kFALSE),
   fIsRatio(kFALSE),
   fIsPtBin(kFALSE),
+  fIsDetectorWise(kFALSE),
   fIsAOD(kFALSE),
+ 
   fESDTrackCutMode(0),
   fModeEffCreation(0),
   fModeDCACreation(0),
@@ -130,7 +132,29 @@ AliEbyEPidRatioTask::~AliEbyEPidRatioTask() {
   if (fHelper)           delete fHelper;
 }
 
+void AliEbyEPidRatioTask::SetIsRatio(Int_t i) {
+  if      (i == 1) { fIsRatio = 1;  fIsPtBin = 0; fIsDetectorWise = 0; }
+  else if (i == 2) { fIsRatio = 0;  fIsPtBin = 1; fIsDetectorWise = 0; }
+  else if (i == 3) { fIsRatio = 1;  fIsPtBin = 1; fIsDetectorWise = 0; }         
+  else if (i == 4) { fIsRatio = 0;  fIsPtBin = 0; fIsDetectorWise = 1; }         
+  else if (i == 5) { fIsRatio = 0;  fIsPtBin = 1; fIsDetectorWise = 1; }         
+  else if (i == 6) { fIsRatio = 1;  fIsPtBin = 1; fIsDetectorWise = 1; }         
+  else             { fIsRatio = 0;  fIsPtBin = 0; fIsDetectorWise = 0; }   
 
+  if (fModeDistCreation == 0) 
+    Printf(">>>> Task: No Physics Variable <<<<"); 
+  if (fModeDistCreation > 0 && fIsRatio)       
+    Printf(">>>> Task: Setting Ratios      : ON <<<<"); 
+  else Printf(">>>> Task: Setting Ratios      : OFF <<<<");
+  if (fModeDistCreation > 0 && fIsPtBin)        
+    Printf(">>>> Task: Setting Binwise     : ON <<<<"); 
+  else Printf(">>>> Task: Setting Binwise     : OFF <<<<");
+  if (fModeDistCreation > 0 && fIsDetectorWise) 
+    Printf(">>>> Task: Setting TOF-TPC wise: ON <<<<"); 
+  else Printf(">>>> Task: Setting TOF-TPC wise: OFF <<<<");
+
+
+}
 
 //________________________________________________________________________
 void AliEbyEPidRatioTask::UserCreateOutputObjects() {
@@ -219,7 +243,7 @@ void AliEbyEPidRatioTask::UserExec(Option_t *) {
   if (fModeDCACreation == 1)
     fDCA->Process();
 
-  if (fModeDistCreation == 1)
+  if (fModeDistCreation > 0)
     fDist->Process();
 
   if (fModeQACreation == 1)
@@ -325,7 +349,7 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   // -- Initialize Helper
   // ------------------------------------------------------------------
 
-  if (fHelper->Initialize(fESDTrackCutsEff, fIsMC,fIsRatio,fIsPtBin, fAODtrackCutBit, fModeDistCreation))
+  if (fHelper->Initialize(fESDTrackCutsEff, fIsMC,fIsRatio,fIsPtBin, fIsDetectorWise, fAODtrackCutBit, fModeDistCreation))
     return -1;
 
   // fHelper->SetIsRatio(fIsRatio);  
@@ -351,9 +375,10 @@ Int_t AliEbyEPidRatioTask::Initialize() {
   // ------------------------------------------------------------------
   // -- Create / Initialize Phy Determination
   // ------------------------------------------------------------------
-  if (fModeDistCreation == 1) {
+  if (fModeDistCreation > 0) {
     fDist = new AliEbyEPidRatioPhy;
     fDist->SetOutList(fOutList);
+    if (fModeDistCreation == 2)  fDist->SetQA();
     fDist->Initialize(fHelper, fESDTrackCuts);
   }
 
@@ -410,7 +435,7 @@ Int_t AliEbyEPidRatioTask::SetupEvent() {
   if (fModeDCACreation == 1)
     fDCA->SetupEvent();
 
-  if (fModeDistCreation == 1)
+  if (fModeDistCreation > 0)
     fDist->SetupEvent(); 
 
   if (fModeQACreation == 1)
@@ -575,7 +600,7 @@ void AliEbyEPidRatioTask::ResetEvent() {
     fMCEvent = NULL;
 
   // -- Reset Dist Creation 
-  if (fModeDistCreation == 1)
+  if (fModeDistCreation > 0)
     fDist->ResetEvent();
 
   return;

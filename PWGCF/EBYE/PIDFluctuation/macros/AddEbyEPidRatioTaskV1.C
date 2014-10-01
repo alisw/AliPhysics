@@ -8,7 +8,7 @@
  ***************************************************************************/
 
 AliAnalysisTask *AddEbyEPidRatioTaskV1(const Char_t *name = "NuDyn",   //  0                     
-				       Bool_t isModeDist  = 1,         //  1
+				       Int_t  isModeDist  = 1,         //  1
 				       Bool_t isModeEff   = 0,         //  2
 				       Bool_t isModeDCA   = 0,         //  3
 				       Bool_t isModeQA    = 0,         //  4
@@ -55,8 +55,8 @@ AliAnalysisTask *AddEbyEPidRatioTaskV1(const Char_t *name = "NuDyn",   //  0
     task->SetModeEffCreation(1);             // => 1 = on    | 0 = off (default)
   if (isModeDCA)
     task->SetModeDCACreation(1);             // => 1 = on    | 0 = off (default)
-  if (isModeDist)
-    task->SetModeDistCreation(1);            // => 1 = on    | 0 = off (default)
+ 
+ 
   if (isModeAOD) {
     task->SetIsAOD(1);                       // => 1 = AOD   | 0 = ESD (default)
     task->SetTrackFilterBit(aodFilterBit);   
@@ -64,6 +64,7 @@ AliAnalysisTask *AddEbyEPidRatioTaskV1(const Char_t *name = "NuDyn",   //  0
   if (isModeQA)
     task->SetModeQACreation(1);              // => 1 = on    | 0 = off (default)
 
+  task->SetModeDistCreation(isModeDist);            // => 1 = on    | 0 = off (default)
   task->SetIsRatio(isRatio);
 
   Float_t minPt,     maxPt,     minPtEff,     maxPtEff,  minPtForTOF;
