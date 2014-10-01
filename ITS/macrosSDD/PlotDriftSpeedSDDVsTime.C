@@ -29,7 +29,7 @@
 
 void FillErrors(Float_t errSpeed[260]);
 
-void PlotDriftSpeedSDDVsTime(Int_t year=2012, Int_t firstRun=172600, 
+void PlotDriftSpeedSDDVsTime(Int_t year=2014, Int_t firstRun=172600, 
 			     Int_t lastRun=999999999,
 			     Int_t anode=128){
   TGrid::Connect("alien:",0,0,"t");
@@ -150,7 +150,10 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2012, Int_t firstRun=172600,
   if(year==2009) timeZero=1247762992;
   else if(year==2010) timeZero=1262300400;
   else if(year==2011) timeZero=1293836400; // 1/1/2011 at 0:00 CEST
-  else timeZero=1325372400;
+  else if(year==2012) timeZero=1325372400;
+  else if(year==2013) timeZero=1356994800;
+  else timeZero=1388530800;
+
   while(!feof(listruns)){
     fscanf(listruns,"%s\n",filnam);
     Char_t directory[100];
@@ -436,12 +439,8 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2012, Int_t firstRun=172600,
   Char_t title[100];
   if(year==2009){
     sprintf(title,"Time (days since July 16th 2009)");
-  }else if (year==2010){
-    sprintf(title,"Time (days since January 1st 2010)");
-  }else if (year==2011){
-    sprintf(title,"Time (days since January 1st 2011)");
   }else{
-    sprintf(title,"Time (days since January 1st 2012)");
+    sprintf(title,Form("Time (days since January 1st %d)",year));
   }
   gvdrvstime[2*mod1]->GetXaxis()->SetTitle(title);
   gvdrvstime[2*mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
