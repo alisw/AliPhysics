@@ -32,7 +32,7 @@ public:
 		   kWidth,kHPTDCTime,
 		   kMultiADA,kMultiADC,kChargeADA,kChargeADC,kChargeAD, 
 		   kADATime,kADCTime,kDiffTime,kTimeADAADC,
-		   kNCoincADA,kNCoincADC,kPairDiffTime};
+		   kNCoincADA,kNCoincADC,kPairDiffTime,kPairDiffCharge};
 	
 public:
   AliADQADataMakerRec() ;            // constructor

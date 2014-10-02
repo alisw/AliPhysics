@@ -323,13 +323,16 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h2d,kTimeADAADC, !expert, image, saveCorr);   iHisto++;
   
   //Creation of pair coincidence histograms
-  h1i = new TH1I("H1I_MultiCoincidence_ADA", "Number of coincidences in ADA;# of Cells;Entries", 5, 0, 5) ;  
+  h1i = new TH1I("H1I_MultiCoincidence_ADA", "Number of coincidences in ADA;# of Coincidences;Entries", 5, 0, 5) ;  
   Add2RawsList(h1i,kNCoincADA, !expert, image, saveCorr);   iHisto++;
-  h1i = new TH1I("H1I_MultiCoincidence_ADC", "Number of coincidences in ADC;# of Cells;Entries", 5, 0, 5) ;  
+  h1i = new TH1I("H1I_MultiCoincidence_ADC", "Number of coincidences in ADC;# of Coincidences;Entries", 5, 0, 5) ;  
   Add2RawsList(h1i,kNCoincADC, !expert, image, saveCorr);   iHisto++;
   
-  h2d = new TH2F("H2D_Pair_Diff_Time","Diff Pair Time;Time [ns];Counts",kNPairBins, kPairMin, kPairMax,kNTdcTimeBins, -50., 50.);
+  h2d = new TH2F("H2D_Pair_Diff_Time","Diff Pair Time;Pair number;Time [ns]",kNPairBins, kPairMin, kPairMax,kNTdcTimeBins, -50., 50.);
   Add2RawsList(h2d,kPairDiffTime, !expert, image, saveCorr); iHisto++;
+  
+  h2d = new TH2F("H2D_Pair_Diff_Charge","Diff Pair Charge;Pair number;Charge [ADC counts]",kNPairBins, kPairMin, kPairMax, 2*kNChargeBins, -kChargeMax, kChargeMax);
+  Add2RawsList(h2d,kPairDiffCharge, !expert, image, saveCorr); iHisto++;
 
   
   AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
@@ -512,18 +515,22 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		if(timeCorr[offlineCh]<-1024.+1.e-6 || timeCorr[offlineCh+4]<-1024.+1.e-6) pDiffTime = -1024.;
 		else pDiffTime = timeCorr[offlineCh+4] - timeCorr[offlineCh]; 
 		FillRawsData(kPairDiffTime,iPair,pDiffTime);
-		iPair++;
 		}
+	FillRawsData(kPairDiffCharge,iPair,TMath::Abs(adc[offlineCh]-adc[offlineCh+4]));
+	iPair++;
 	}
     for(Int_t iChannel=8; iChannel<12; iChannel++) {//Loop over pairs ADA
     	offlineCh = rawStream->GetOfflineChannel(iChannel);
 	Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator[offlineCh]);
 	Float_t sigma4 = fCalibData->GetSigma(offlineCh+4+16*integrator[offlineCh]);
-    	if( ((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)) && ((adc[offlineCh+4] > 2.*sigma4) && !(time[offlineCh+4] <1.e-6)) ) pmulADA++;
-	if(timeCorr[offlineCh]<-1024.+1.e-6 || timeCorr[offlineCh+4]<-1024.+1.e-6) pDiffTime = -1024.;
+    	if( ((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)) && ((adc[offlineCh+4] > 2.*sigma4) && !(time[offlineCh+4] <1.e-6)) ){ 
+		pmulADA++;
+		if(timeCorr[offlineCh]<-1024.+1.e-6 || timeCorr[offlineCh+4]<-1024.+1.e-6) pDiffTime = -1024.;
 		else pDiffTime = timeCorr[offlineCh+4] - timeCorr[offlineCh]; 
 		FillRawsData(kPairDiffTime,iPair,pDiffTime);
-		iPair++;
+		}
+	FillRawsData(kPairDiffCharge,iPair,TMath::Abs(adc[offlineCh]-adc[offlineCh+4]));
+	iPair++;	
 	}
     FillRawsData(kNCoincADA,pmulADA);
     FillRawsData(kNCoincADC,pmulADC);
