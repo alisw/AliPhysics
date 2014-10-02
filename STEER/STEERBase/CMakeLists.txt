@@ -148,6 +148,11 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
     set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
+# Generate the ROOT map
+# Dependecies
+#set(LIBDEPS OADB)
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
 # Installation
 install(TARGETS ${MODULE} 
   ARCHIVE DESTINATION lib

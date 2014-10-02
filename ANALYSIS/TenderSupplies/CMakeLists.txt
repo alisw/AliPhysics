@@ -79,6 +79,11 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+# Generate the ROOT map
+# Dependecies
+set(LIBDEPS ANALYSIS ANALYSISalice Tender EMCAL EMCALbase EMCALrec EMCALUtils CORRFW OADB PHOS PHOSbase PHOSrec PHOSUtils AOD CDB ESD STEER STEERBase T0 T0rec TOF TOFbase TOFrec TPC TPCBase TRD TRDCal TRDBase VZERO VZEROBase VZEROrec)
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 

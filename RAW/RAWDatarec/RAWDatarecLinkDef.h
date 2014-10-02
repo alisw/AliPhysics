@@ -4,7 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliFilter;
+#pragma link C++ class AliFilter+;
 #pragma link C++ class AliRawReader+;
 #pragma link C++ class AliRawReaderFile+;
 #pragma link C++ class AliRawReaderRoot+;

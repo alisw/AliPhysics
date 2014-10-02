@@ -26,7 +26,9 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliRawReaderDateOnline.cxx)
+set ( SRCS   
+AliRawReaderDateOnline.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

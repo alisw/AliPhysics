@@ -22,6 +22,7 @@
 # - ROOT_VERSION_PATCH
 # - ROOT_CONFIG - path to root-config script
 # - ROOT_CINT - path to rootcint executable
+# - ROOT_LIBMAP - path to rlibmap executable
 # - ROOT_FEATURES - list of build features for ROOT
 # - ROOT_LIBDIR - full path to ROOT library folder
 # - ROOT_LIBRARIES - libraries needed for the package to be used
@@ -46,6 +47,14 @@ if(ROOTSYS)
     else()
         message(FATAL_ERROR "Could not find root-config script.")
     endif(ROOT_CONFIG)
+
+    # Check for rlibmap
+    find_program(ROOT_LIBMAP NAMES rlibmap PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
+    if(ROOT_LIBMAP)
+        message(STATUS "Found ${ROOT_LIBMAP}")
+    else()
+        message(FATAL_ERROR "Could not find rlibmap executable.")
+    endif(ROOT_LIBMAP)
 
     # Check for rootcint
     find_program(ROOT_CINT NAMES rootcint PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
@@ -77,6 +86,12 @@ if(ROOTSYS)
 
     # Checking for ROOT libdir
     execute_process(COMMAND ${ROOT_CONFIG} --libdir OUTPUT_VARIABLE ROOT_LIBDIR ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(error)
+        message(FATAL_ERROR "Error retrieving ROOT libdir: ${error}")
+    endif(error)
+
+    # Checking for ROOT libs
+    execute_process(COMMAND ${ROOT_CONFIG} --libs OUTPUT_VARIABLE ROOT_LIBRARIES ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT libdir: ${error}")
     endif(error)

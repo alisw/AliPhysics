@@ -14,27 +14,31 @@
 # **************************************************************************
 
 # Module
-set(MODULE ANALYSIScalib)
+set(MODULE MDC)
 
 # Module include folder
-include_directories(${CMAKE_SOURCE_DIR}/ANALYSIS/${MODULE})
+include_directories(${CMAKE_SOURCE_DIR}/RAW/${MODULE})
 
-# Additional include folders in alphabetical ordere except ROOT
+# Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${CMAKE_SOURCE_DIR}/ITS
                     ${CMAKE_SOURCE_DIR}/STEER/ESD
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${CMAKE_SOURCE_DIR}/TPC
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskAddObject.cxx
-    AliAnalysisTaskFilter.cxx
-    AliAnalysisTaskFilterFriend.cxx
-    AliAnalysisTaskFilterFriendSecond.cxx
-    AliAnalysisTaskFilterSteer.cxx
-    AliFileMerger.cxx
-  )
+    AliMDC.cxx
+    AliRawCastorDB.cxx
+    AliRawDB.cxx
+    AliRawNullDB.cxx
+    AliRawRFIODB.cxx
+    AliRawRootdDB.cxx
+    AliTagDB.cxx
+    AliTagNullDB.cxx
+    mdc.cxx
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -43,12 +47,6 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
-
-# Generate the ROOT map
-# Dependecies
-set(LIBDEPS ANALYSIS ESD STEERBase)
-generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
-
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
@@ -63,6 +61,7 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
 install(TARGETS ${MODULE}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
 install(FILES ${HDRS} DESTINATION include)
