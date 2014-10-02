@@ -71,6 +71,7 @@ fIsMC(isMC),
 fCachePID(kFALSE),
 fOADBPath(),
 fCustomTPCpidResponse(),
+fCustomTPCetaMaps(),
 fBeamType("PP"),
 fLHCperiod(),
 fMCperiodTPC(),
@@ -137,6 +138,7 @@ fIsMC(other.fIsMC),
 fCachePID(other.fCachePID),
 fOADBPath(other.fOADBPath),
 fCustomTPCpidResponse(other.fCustomTPCpidResponse),
+fCustomTPCetaMaps(other.fCustomTPCetaMaps),
 fBeamType("PP"),
 fLHCperiod(),
 fMCperiodTPC(),
@@ -189,6 +191,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fITSPIDmethod=other.fITSPIDmethod;
     fOADBPath=other.fOADBPath;
     fCustomTPCpidResponse=other.fCustomTPCpidResponse;
+    fCustomTPCetaMaps=other.fCustomTPCetaMaps;
     fTuneMConData=other.fTuneMConData;
     fTuneMConDataMask=other.fTuneMConDataMask;
     fIsMC=other.fIsMC;
@@ -1020,17 +1023,20 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   fTPCResponse.SetEtaCorrMap(0x0);
   fTPCResponse.SetSigmaParams(0x0, 0);
   
+  
+  TString fileNameMaps(Form("%s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()));
+  if (!fCustomTPCetaMaps.IsNull()) fileNameMaps=fCustomTPCetaMaps;
+  
   // Load the eta correction maps
   AliOADBContainer etaMapsCont(Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass)); 
   
-  Int_t statusCont = etaMapsCont.InitFromFile(Form("%s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()),
-                                              Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass));
+  Int_t statusCont = etaMapsCont.InitFromFile(fileNameMaps.Data(), Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass));
   if (statusCont) {
     AliError("Failed initializing TPC eta correction maps from OADB -> Disabled eta correction");
     fUseTPCEtaCorrection = kFALSE;
   }
   else {
-    AliInfo(Form("Loading TPC eta correction map from %s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()));
+    AliInfo(Form("Loading TPC eta correction map from %s", fileNameMaps.Data()));
     
     TH2D* etaMap = 0x0;
     
@@ -1061,8 +1067,8 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
           fUseTPCEtaCorrection = kFALSE;
         }
         else {
-          AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s (MD5(map) = %s)", 
-                       refineFactorMapX, refineFactorMapY, fOADBPath.Data(), fTPCResponse.GetEtaCorrMap()->GetTitle(),
+          AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s: %s (MD5(map) = %s)", 
+                       refineFactorMapX, refineFactorMapY, fileNameMaps.Data(), fTPCResponse.GetEtaCorrMap()->GetTitle(),
                        GetChecksum(fTPCResponse.GetEtaCorrMap()).Data()));
         }
         
@@ -1084,13 +1090,12 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   // Load the sigma parametrisation (1/dEdx vs tanTheta_local (~eta))
   AliOADBContainer etaSigmaMapsCont(Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass)); 
   
-  statusCont = etaSigmaMapsCont.InitFromFile(Form("%s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()),
-                                             Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass));
+  statusCont = etaSigmaMapsCont.InitFromFile(fileNameMaps.Data(), Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass));
   if (statusCont) {
     AliError("Failed initializing TPC eta sigma maps from OADB -> Using old sigma parametrisation");
   }
   else {
-    AliInfo(Form("Loading TPC eta sigma map from %s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()));
+    AliInfo(Form("Loading TPC eta sigma map from %s", fileNameMaps.Data()));
     
     TObjArray* etaSigmaPars = 0x0;
     
@@ -1132,8 +1137,8 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
           fTPCResponse.SetSigmaParams(0x0, 0);
         }
         else {
-          AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s (MD5(map) = %s, sigmaPar0 = %f)", 
-                       refineFactorSigmaMapX, refineFactorSigmaMapY, fOADBPath.Data(), fTPCResponse.GetSigmaPar1Map()->GetTitle(),
+          AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s: %s (MD5(map) = %s, sigmaPar0 = %f)", 
+                       refineFactorSigmaMapX, refineFactorSigmaMapY, fileNameMaps.Data(), fTPCResponse.GetSigmaPar1Map()->GetTitle(),
                        GetChecksum(fTPCResponse.GetSigmaPar1Map()).Data(), sigmaPar0));
         }
         
@@ -1162,11 +1167,11 @@ void AliPIDResponse::SetTPCPidResponseMaster()
   delete fArrPidResponseMaster;
   fArrPidResponseMaster=NULL;
   
-  TString fileName(Form("%s/COMMON/PID/data/TPCPIDResponse.root", fOADBPath.Data()));
   TFile *f=NULL;
-  if (!fCustomTPCpidResponse.IsNull()) fileName=fCustomTPCpidResponse;
   
   TString fileNamePIDresponse(Form("%s/COMMON/PID/data/TPCPIDResponse.root", fOADBPath.Data()));
+  if (!fCustomTPCpidResponse.IsNull()) fileNamePIDresponse=fCustomTPCpidResponse;
+  
   f=TFile::Open(fileNamePIDresponse.Data());
   if (f && f->IsOpen() && !f->IsZombie()){
     fArrPidResponseMaster=dynamic_cast<TObjArray*>(f->Get("TPCPIDResponse"));
