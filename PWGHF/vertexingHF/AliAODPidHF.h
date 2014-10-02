@@ -28,8 +28,7 @@ public:
     kTPC,
     kTOF,
     kTPCTOF,
-    kTPCITS,
-    kTPCAndTOF
+    kTPCITS
   };
   
   AliAODPidHF();
