@@ -42,6 +42,7 @@
 #include <AliPID.h>
 #include <AliOADBContainer.h>
 #include <AliTRDPIDResponseObject.h>
+#include <AliTRDdEdxParams.h>
 #include <AliTOFPIDParams.h>
 #include <AliHMPIDPIDParams.h>
 
@@ -89,6 +90,7 @@ fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(kFALSE),
 fUseTPCMultiplicityCorrection(kFALSE),
 fTRDPIDResponseObject(NULL),
+fTRDdEdxParams(NULL),
 fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
@@ -114,6 +116,7 @@ AliPIDResponse::~AliPIDResponse()
   //
   delete fArrPidResponseMaster;
   delete fTRDPIDResponseObject;
+  delete fTRDdEdxParams;
   delete fTOFPIDParams;
 }
 
@@ -153,6 +156,7 @@ fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(other.fUseTPCEtaCorrection),
 fUseTPCMultiplicityCorrection(other.fUseTPCMultiplicityCorrection),
 fTRDPIDResponseObject(NULL),
+fTRDdEdxParams(NULL),
 fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
@@ -209,6 +213,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fUseTPCEtaCorrection=other.fUseTPCEtaCorrection;
     fUseTPCMultiplicityCorrection=other.fUseTPCMultiplicityCorrection;
     fTRDPIDResponseObject=NULL;
+    fTRDdEdxParams=NULL;
     fEMCALPIDParams=NULL;
     fTOFtail=0.9;
     fTOFPIDParams=NULL;
@@ -623,6 +628,8 @@ void AliPIDResponse::ExecNewRun()
   SetTPCEtaMaps();
 
   SetTRDPidResponseMaster(); 
+  //has to precede InitializeTRDResponse(), otherwise the read-out fTRDdEdxParams is not pased in TRDResponse!
+  SetTRDdEdxParams();
   InitializeTRDResponse();
 
   SetEMCALPidResponseMaster(); 
@@ -1565,6 +1572,7 @@ void AliPIDResponse::InitializeTRDResponse(){
   // Set PID Params and references to the TRD PID response
   // 
     fTRDResponse.SetPIDResponseObject(fTRDPIDResponseObject);
+    fTRDResponse.SetdEdxParams(fTRDdEdxParams);
 }
 
 //______________________________________________________________________________
@@ -1586,6 +1594,32 @@ void AliPIDResponse::SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::E
 	}
     }
     AliDebug(1,Form("Slice Range set to %d - %d",TRDslicesForPID[0],TRDslicesForPID[1]));
+}
+
+//______________________________________________________________________________ 
+void AliPIDResponse::SetTRDdEdxParams()
+{
+  if(fTRDdEdxParams) return;
+
+  const TString containerName = "TRDdEdxParamsContainer";
+  AliOADBContainer cont(containerName.Data()); 
+  
+  const TString filePathNamePackage=Form("%s/COMMON/PID/data/TRDdEdxParams.root", fOADBPath.Data());
+
+  const Int_t statusCont = cont.InitFromFile(filePathNamePackage.Data(), cont.GetName());
+  if (statusCont){
+    AliFatal("Failed initializing settings from OADB"); 
+  }
+  else{
+    AliInfo(Form("Loading %s from %s\n", cont.GetName(), filePathNamePackage.Data()));
+
+    fTRDdEdxParams = (AliTRDdEdxParams*)(cont.GetObject(fRun, "default"));
+    //fTRDdEdxParams->Print();
+
+    if(!fTRDdEdxParams){
+      AliError(Form("TRD dEdx Params default not found"));
+    }
+  }
 }
 
 //______________________________________________________________________________

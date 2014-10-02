@@ -121,7 +121,7 @@ void AliGenQEDBg::Init()
   AliInfo(Form("Estimating x-section with min.relative precision of %f and min/max test: %d/%d",
 	       fXSectionEps,int(fMinXSTest),int(fMaxXSTest)));
   //
-  double yElectron,yPositron,xElectron,xPositron,phi12,weight,err;
+  double yElectron,yPositron,xElectron,xPositron,phi12,weight,err=0;
   fXSection = -1;
   do {
     fEpEmGen->GenerateEvent(fYMin,fYMax,fPtMin,fPtMax,yElectron,yPositron,xElectron,xPositron,phi12,weight);

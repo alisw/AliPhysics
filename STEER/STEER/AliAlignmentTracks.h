@@ -8,15 +8,19 @@
 // functionalities of the class.                                          *
 //*************************************************************************
 
-#include <TObject.h>
-
-#include "AliAlignObj.h"
-
 class TChain;
+class TSelector;
+class TFile;
+class TTree;
+class TArrayI;
 class AliTrackPointArray;
 class AliAlignObj;
 class AliTrackFitter;
 class AliTrackResiduals;
+
+#include <TObject.h>
+#include "AliAlignObj.h"
+
 
 class AliAlignmentTracks : public TObject {
 

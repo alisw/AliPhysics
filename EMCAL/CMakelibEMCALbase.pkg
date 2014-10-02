@@ -79,4 +79,5 @@ set (EXPORT
   AliEMCALCalibData.h
   AliCaloCalibPedestal.h
   AliEMCALSimParam.h
-  AliEMCALRecParam.h)
+  AliEMCALRecParam.h
+  AliEMCALTriggerTypes.h)

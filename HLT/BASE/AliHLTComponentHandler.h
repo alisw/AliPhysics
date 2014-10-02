@@ -300,6 +300,12 @@ class AliHLTComponentHandler : public AliHLTLogging {
    */
   int ActivateAgents(const char* library=NULL, const char* blackList=NULL);
 
+  /**
+   * Loop through all the agents and deregister this instance if neccessary.
+   */
+
+  int DeactivateAgents() const;
+
 public:
   /**
    * Compound descriptor for component libraries - must be public 

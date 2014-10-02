@@ -30,6 +30,7 @@ class TLinearFitter;
 
 class AliVEvent;
 class AliTRDPIDResponseObject;
+class AliTRDdEdxParams;
 class AliTOFPIDParams;
 class AliHMPIDPIDParams;
 class AliOADBContainer;
@@ -237,6 +238,7 @@ private:
   Bool_t fUseTPCMultiplicityCorrection; // Use TPC multiplicity correction
 
   AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object
+  AliTRDdEdxParams * fTRDdEdxParams; //! TRD dEdx Response for truncated mean signal
 
   Float_t fTOFtail;                    //! TOF tail effect used in TOF probability
   AliTOFPIDParams *fTOFPIDParams;      //! TOF PID Params - period depending (OADB loaded)
@@ -275,6 +277,7 @@ private:
   void SetTRDPidResponseMaster();
   void InitializeTRDResponse();
   void SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::ETRDPIDMethod method) const;
+  void SetTRDdEdxParams();
 
   //TOF
   void SetTOFPidResponseMaster();

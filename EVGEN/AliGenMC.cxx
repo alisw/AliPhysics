@@ -129,6 +129,7 @@ void AliGenMC::Init()
 	break;
     case kHardMuons:	
     case kBSemiMuonic:
+    case kDSemiMuonic:
     case kSemiMuonic:
     case kDiMuon:
     case kJpsiDiMuon:
