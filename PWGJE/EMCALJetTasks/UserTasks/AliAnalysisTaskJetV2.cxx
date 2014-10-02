@@ -454,6 +454,18 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
     fHistCentrality =           BookTH1F("fHistCentrality", "centrality", 102, -2, 100);
     fHistVertexz =              BookTH1F("fHistVertexz", "vertex z (cm)", 100, -12, 12);
 
+    // for some histograms adjust the bounds according to analysis acceptance
+    Double_t etaMin(-1.), etaMax(1.), phiMin(0.), phiMax(TMath::TwoPi());
+    switch (fAnalysisType) {
+        case kFull : {
+           etaMin = -.7;       
+           etaMax = .7;
+           phiMin = 1.405;
+           phiMax = 3.135;
+        } break;
+        default : break;
+    }
+
     // pico track and emcal cluster kinematics
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) { 
         fHistPicoTrackPt[i] =           BookTH1F("fHistPicoTrackPt", "p_{t} [GeV/c]", 100, 0, 100, i);
@@ -464,13 +476,13 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
             fHistPicoCat3[i] =          BookTH2F("fHistPicoCat3", "#eta", "#phi", 50, -1, 1, 50, 0, TMath::TwoPi(), i);
             if(fAnalysisType == AliAnalysisTaskJetV2::kFull) {
                 fHistClusterPt[i] =     BookTH1F("fHistClusterPt", "p_{t} [GeV/c]", 100, 0, 100, i);
-                fHistClusterEtaPhi[i] = BookTH2F("fHistClusterEtaPhi", "#eta", "#phi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
-                fHistClusterEtaPhiWeighted[i] = BookTH2F("fHistClusterEtaPhiWeighted", "#eta", "#phi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
+                fHistClusterEtaPhi[i] = BookTH2F("fHistClusterEtaPhi", "#eta", "#phi", 100, etaMax, etaMax, 100, phiMin, phiMax, i);
+                fHistClusterEtaPhiWeighted[i] = BookTH2F("fHistClusterEtaPhiWeighted", "#eta", "#phi", 100, etaMin, etaMax, 100, phiMin, phiMax, i);
             }
-            fHistPsiTPCLeadingJet[i] =      BookTH3F("fHistPsiTPCLeadingJet", "p_{t} [GeV/c]", "#Psi_{TPC}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, 0., TMath::TwoPi(), i);
-            fHistPsiVZEROALeadingJet[i] =   BookTH3F("fHistPsiVZEROALeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROA}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, 0., TMath::TwoPi(), i);
-            fHistPsiVZEROCLeadingJet[i] =   BookTH3F("fHistPsiVZEROCLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROC}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, 0., TMath::TwoPi(), i);
-            fHistPsiVZEROCombLeadingJet[i] = BookTH3F("fHistPsiVZEROCombLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROComb}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, 0., TMath::TwoPi(), i);
+            fHistPsiTPCLeadingJet[i] =      BookTH3F("fHistPsiTPCLeadingJet", "p_{t} [GeV/c]", "#Psi_{TPC}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
+            fHistPsiVZEROALeadingJet[i] =   BookTH3F("fHistPsiVZEROALeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROA}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
+            fHistPsiVZEROCLeadingJet[i] =   BookTH3F("fHistPsiVZEROCLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROC}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
+            fHistPsiVZEROCombLeadingJet[i] = BookTH3F("fHistPsiVZEROCombLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROComb}", "#varphi_{jet}", 70, -100, 250, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
             fHistPsi2Correlation[i] = BookTH3F("fHistPsi2Correlation", "#Psi_{TPC}", "#Psi_{VZEROA}", "#Psi_{VZEROC}",  20, -1.*TMath::Pi()/2., TMath::Pi()/2., 20, -1.*TMath::Pi()/2., TMath::Pi()/2., 20, -1.*TMath::Pi()/2., TMath::Pi()/2., i);
         }
     }
@@ -536,10 +548,10 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
     }
     // delta pt distributions
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i ++) {
-        if(fFillQAHistograms)   fHistRCPhiEta[i] = BookTH2F("fHistRCPhiEta", "#phi (RC)", "#eta (RC)", 40, 0, TMath::TwoPi(), 40, -1, 1, i);
+        if(fFillQAHistograms)   fHistRCPhiEta[i] = BookTH2F("fHistRCPhiEta", "#phi (RC)", "#eta (RC)", 40, phiMin, phiMax, 40, etaMin, etaMax, i);
         fHistRhoVsRCPt[i] =            BookTH2F("fHistRhoVsRCPt", "p_{t} (RC) [GeV/c]", "#rho * A (RC) [GeV/c]", 100, 0, 300, 100, 0, 350, i);
         fHistRCPt[i] =                 BookTH1F("fHistRCPt", "p_{t} (RC) [GeV/c]", 130, -20, 150, i);
-        if(fFillQAHistograms)   fHistRCPhiEtaExLJ[i] = BookTH2F("fHistRCPhiEtaExLJ", "#phi (RC)", "#eta (RC)", 40, 0, TMath::TwoPi(), 40, -1, 1, i);
+        if(fFillQAHistograms)   fHistRCPhiEtaExLJ[i] = BookTH2F("fHistRCPhiEtaExLJ", "#phi (RC)", "#eta (RC)", 40, phiMin, phiMax, 40, etaMin, etaMax, i);
         fHistDeltaPtDeltaPhi2[i] =  BookTH2F("fHistDeltaPtDeltaPhi2", Form("#phi - #Psi_{2, %s}", detector.Data()), "#delta p_{t} [GeV/c]", 40, 0, TMath::Pi(), 400, -70, 130, i);
         fHistDeltaPtDeltaPhi2Rho0[i] =  BookTH2F("fHistDeltaPtDeltaPhi2Rho0", Form("#phi - #Psi_{2, %s}", detector.Data()), "#delta p_{t} [GeV/c]", 40, 0, TMath::Pi(), 400, -70, 130, i);
         fHistRhoVsRCPtExLJ[i] =        BookTH2F("fHistRhoVsRCPtExLJ", "p_{t} (RC) [GeV/c]", "#rho * A (RC) [GeV/c]", 100, 0, 300, 100, 0, 350, i);
@@ -549,11 +561,11 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
         // jet histograms (after kinematic cuts)
         fHistJetPtRaw[i] =             BookTH1F("fHistJetPtRaw", "p_{t, jet} RAW [GeV/c]", 200, -50, 150, i);
         fHistJetPt[i] =                BookTH1F("fHistJetPt", "p_{t, jet} [GeV/c]", 350, -100, 250, i);
-        if(fFillQAHistograms)   fHistJetEtaPhi[i] =            BookTH2F("fHistJetEtaPhi", "#eta", "#phi", 100, -1, 1, 100, 0, TMath::TwoPi(), i);
+        if(fFillQAHistograms)   fHistJetEtaPhi[i] =            BookTH2F("fHistJetEtaPhi", "#eta", "#phi", 100, etaMin, etaMax, 100, phiMin, phiMax, i);
         fHistJetPtArea[i] =            BookTH2F("fHistJetPtArea", "p_{t, jet} [GeV/c]", "Area", 175, -100, 250, 30, 0, 0.9, i);
-        fHistJetPtEta[i] =             BookTH2F("fHistJetPtEta", "p_{t, jet} [GeV/c]", "Eta", 175, -100, 250, 30, -0.9, 0.9, i);
+        fHistJetPtEta[i] =             BookTH2F("fHistJetPtEta", "p_{t, jet} [GeV/c]", "Eta", 175, -100, 250, 30, etaMin, etaMax, i);
         fHistJetPtConstituents[i] =    BookTH2F("fHistJetPtConstituents", "p_{t, jet} [GeV/c]", "no. of constituents", 350, -100, 250, 60, 0, 150, i);
-        fHistJetEtaRho[i] =            BookTH2F("fHistJetEtaRho", "#eta", "#rho", 100, -1, 1, 100, 0, 300, i);
+        fHistJetEtaRho[i] =            BookTH2F("fHistJetEtaRho", "#eta", "#rho", 100, etaMin, etaMax, 100, 0, 300, i);
         // in plane and out of plane spectra
         fHistJetPsi2Pt[i] =            BookTH2F("fHistJetPsi2Pt", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::Pi(), 350, -100, 250, i);
         fHistJetPsi2PtRho0[i] =        BookTH2F("fHistJetPsi2PtRho0", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::Pi(), 350, -100, 250, i);
@@ -1128,9 +1140,9 @@ void AliAnalysisTaskJetV2::CalculateRandomCone(Float_t &pt, Float_t &eta, Float_
     }
     // get the neutral energy (if clusters are provided)
     if(clusterCont) {
+        TLorentzVector momentum;
         AliVCluster* cluster = clusterCont->GetNextAcceptCluster(0);
         while(cluster) {
-            TLorentzVector momentum;
             cluster->GetMomentum(momentum, const_cast<Double_t*>(fVertex));
             Float_t etaClus(momentum.Eta()), phiClus(momentum.Phi());
             // get distance from cone
@@ -1770,10 +1782,10 @@ void AliAnalysisTaskJetV2::FillClusterHistograms() const
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(!fClusterCont) return;
     Int_t iClusters(fClusterCont->GetNClusters());
+    TLorentzVector clusterLorentzVector;
     for(Int_t i(0); i < iClusters; i++) {
         AliVCluster* cluster = fClusterCont->GetCluster(i);
         if (!PassesCuts(cluster)) continue;
-        TLorentzVector clusterLorentzVector;
         cluster->GetMomentum(clusterLorentzVector, const_cast<Double_t*>(fVertex));
         fHistClusterPt[fInCentralitySelection]->Fill(clusterLorentzVector.Pt());
         fHistClusterEtaPhi[fInCentralitySelection]->Fill(clusterLorentzVector.Eta(), clusterLorentzVector.Phi());
