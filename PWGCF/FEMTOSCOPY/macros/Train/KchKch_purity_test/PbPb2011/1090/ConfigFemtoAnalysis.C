@@ -128,7 +128,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
     Reader->SetFilterBit(7);
-    Reader->SetCentralityPreSelection(0, 100);
+//    Reader->SetCentralityPreSelection(0, 100);
+    Reader->SetCentralityPreSelection(100, 900);
     Reader->SetDCAglobalTrack(kTRUE);//option the DCA information from global tracks (ITS+TPC)
     
   AliFemtoManager* Manager=new AliFemtoManager();
