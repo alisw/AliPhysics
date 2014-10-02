@@ -83,7 +83,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   void SetCentrality(Float_t min=0., Float_t max=90.) {fCentMin=min;fCentMax=max;} 
   void SetQA(Bool_t doQA=kFALSE){fDoQA=doQA;}
   void SetDoMix(Bool_t doMixEvt=kTRUE) {fDoMixEvt=doMixEvt;} 
-  void SetTriggerFilterBit(Int_t triggerFB=128){fTriggerFB=triggerFB;}
+  void SetTriggerFilterBit(Int_t triggerFB=768){fTriggerFB=triggerFB;}
   void SetTriggerPt(Float_t ptMinTrig=8., Float_t ptMaxTrig=50.) {fTrigPtMin=ptMinTrig;fTrigPtMax=ptMaxTrig;} 
   void SetTriggerEta(Float_t etaMaxTrig=0.8){fTrigEtaMax=etaMaxTrig;} 
   void SetCheckIDTrig(Bool_t checkIDTrig=kFALSE){fCheckIDTrig=checkIDTrig;}
@@ -172,8 +172,6 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Float_t fTPCRadius;                    // Radial position of TPC to obtain the separation between the trigger particle and the daughter particle
   Float_t fTrigSftR125[3];               // Shifted position of the daughter track to the Primary verterx
   Float_t fDaugSftR125[3];               // Shifted position of the trigger track to the Primary verterx
-  //Float_t fTriggerFracTPCSharedCls;    // Trigger particle: fraction of shared clusters to allow
-  //Float_t fDaugFracTPCSharedCls;       // Daughter track: fraction of shared clusters to allow
   Float_t fFracTPCcls;                   // Threshold for the fraction of TPC shared clusters for single track
   Float_t fDiffTrigDaugFracTPCSharedCls; // Allowed dispertion in the fraction of TPC shared clusters between trigger particle and the daughter track
 
@@ -209,6 +207,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH2F*   fNTrigPerEvt;                  //! Trigger particle: Number of particle triggers per event
   TH1F*   fTriggerWiSPDHit;              //! Trigger particle: Has Hits in the SPD?
   TH2F*   fTriggerEtaPhi;                //! Trigger particle: eta vs phi
+  TH2F*   fTrigFracShTPCcls;             //! Trigger particle: pt vs fraction of shared TPC cls
   TH2F*   fTriggerDCA;                   //! Trigger particle: dca to primary vertex
   TH1F*   fCheckTriggerFromV0Daug;       //! Trigger particle: it is a daughter from a V0-candidate
   TH1F*   fTriggerComingFromDaug;        //! Trigger particle: pt when LP is a daughter from a V0-candidate
@@ -250,6 +249,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fK0sAssocMassPtCPA[kNCent];          //! K0s Assoc: mass vs pt vs cpa
   THnSparse*  fK0sAssocMassPtDCAPV[kNCent];        //! K0s Assoc: mass vs pt vs dca to prim. vtx
   THnSparse*  fK0sAssocMassPtDaugNClsTPC[kNCent];  //! K0s Assoc: mass vs pt vs num. of tpc clusters
+  THnSparse*  fK0sAssocMassPtShTPCcls[kNCent];     //! K0s Assoc: mass vs pt vs fraction of shared TPC cls
 
   THnSparse*  fK0sAssocPtMassArmEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs rapidity  (embeded particles)
   THnSparse*  fK0sAssocMassPtVtxEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs Z vertex position  (embeded particles)
@@ -257,6 +257,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fK0sAssocMassPtCPAEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs cpa  (embeded particles)
   THnSparse*  fK0sAssocMassPtDCAPVEmbeded[kNCent];        //! K0s Assoc: mass vs pt vs dca to prim. vtx  (embeded particles)
   THnSparse*  fK0sAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! K0s Assoc: mass vs pt vs num. o ftpc clusters (embeded particles)
+  THnSparse*  fK0sAssocMassPtShTPCclsEmbeded[kNCent];     //! K0s Assoc: mass vs pt vs fraction of shared TPC cls
 
   TH3F*   fK0sMCResEta;                 //! K0s Assoc: eta resolution
   TH3F*   fK0sMCResPhi;                 //! K0s Assoc: phi resolution
@@ -290,6 +291,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fLambdaAssocMassPtCPA[kNCent];          //! Lambda Assoc: mass vs pt vs cpa
   THnSparse*  fLambdaAssocMassPtDCAPV[kNCent];        //! Lambda Assoc: mass vs pt vs dca to prim vtx
   THnSparse*  fLambdaAssocMassPtDaugNClsTPC[kNCent];  //! Lambda Assoc: mass vs pt vs num.of tpc clusters
+  THnSparse*  fLambdaAssocMassPtShTPCcls[kNCent];     //! Lambda Assoc: mass vs pt vs fraction of shared TPC cls
 
   THnSparse*  fLambdaAssocMassPtRapEmbeded[kNCent];          //! Lambda Assoc: pt vs rapidity vs mass (embeded)
   THnSparse*  fLambdaAssocMassPtRapEmbeded2[kNCent];         //! Lambda Assoc: pt vs rapidity vs mass  (wo Cross contamination) (embeded)
@@ -298,6 +300,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fLambdaAssocMassPtCPAEmbeded[kNCent];          //! Lambda Assoc: mass vs pt vs cpa  (embeded particles)
   THnSparse*  fLambdaAssocMassPtDCAPVEmbeded[kNCent];        //! Lambda Assoc: mass vs pt vs dca to prim vtx  (embeded particles)
   THnSparse*  fLambdaAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! Lambda Assoc: mass vs pt vs num. of tpc clusters  (embeded particles)
+  THnSparse*  fLambdaAssocMassPtShTPCclsEmbeded[kNCent];     //! Lambda Assoc: mass vs pt vs fraction of shared TPC cls
 
   TH3F*   fLambdaMCResEta;                 //! Lambda Assoc: eta resolution
   TH3F*   fLambdaMCResPhi;                 //! Lambda Assoc: phi resolution
@@ -331,6 +334,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fAntiLambdaAssocMassPtCPA[kNCent];          //! AntiLambda Assoc: mass vs pt vs cpa
   THnSparse*  fAntiLambdaAssocMassPtDCAPV[kNCent];        //! AntiLambda Assoc: mass vs pt vs dca to prim. vtx
   THnSparse*  fAntiLambdaAssocMassPtDaugNClsTPC[kNCent];  //! AntiLambda Assoc: mass vs pt vs num. of tpc clusters
+  THnSparse*  fAntiLambdaAssocMassPtShTPCcls[kNCent];     //! AntiLambda Assoc: mass vs pt vs fraction of shared TPC cls
 
   THnSparse*  fAntiLambdaAssocMassPtRapEmbeded[kNCent];          //! AntiLambda Assoc: mass vs pt vs rapidity  (embeded)
   THnSparse*  fAntiLambdaAssocMassPtRapEmbeded2[kNCent];         //! AntiLambda Assoc: mass vs pt vs rapidity  (wo Cross contamination) (embeded)
@@ -339,6 +343,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse*  fAntiLambdaAssocMassPtCPAEmbeded[kNCent];          //! AntiLambda Assoc: mass vs pt vs cpa  (embeded particles)
   THnSparse*  fAntiLambdaAssocMassPtDCAPVEmbeded[kNCent];        //! AntiLambda Assoc: mass vs pt vs dca to prim. vtx  (embeded particles)
   THnSparse*  fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! AntiLambda Assoc: mass vs pt vs num. of tpc clusters  (embeded particles)
+  THnSparse*  fAntiLambdaAssocMassPtShTPCclsEmbeded[kNCent];    //! AntiLambda Assoc: mass vs pt vs fraction of shared TPC cls
 
   TH3F*   fAntiLambdaMCResEta;              //! AntiLambda Assoc: eta resolution
   TH3F*   fAntiLambdaMCResPhi;              //! AntiLambda Assoc: phi resolution
@@ -363,6 +368,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fK0sMassPtEta;                 //! K0s: mass vs pt vs eta
   TH3F*   fK0sMassPtRap[kNCent];         //! K0s: mass vs pt vs rap vs centrality
   TH3F*   fK0sMassPtPhi;                 //! K0s: mass vs pt vs phi
+  TH3F*   fK0sPosDaugFracShTPCcls;       //! K0s Pos. Daug: mass vs pt vs fraction of shared TPC cls
+  TH3F*   fK0sNegDaugFracShTPCcls;       //! K0s Neg Daug: mass vs pt vs fraction of shared TPC cls
 
   TH2F*   fK0sDaughtersPt;                       //! K0s: pt of daughters
   THnSparse* fK0sPosDaugdPhiSdEtaS[kNCent];      //! K0s: Positive daughter: delta(phi)* delta(eta)*    
@@ -371,6 +378,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse* fK0sNegDaugSplCheckCovMat[kNCent];  //! K0s: Check Covariance Matrix elemenets between trigger trcak and daughter track
   THnSparse* fK0sPosMCResdEtaSdPhiS[kNCent];     //! K0s: Positive daughter: resolution for  delta(phi)* delta(eta)*
   THnSparse* fK0sNegMCResdEtaSdPhiS[kNCent];     //! K0s: Negative daughter: resolution for  delta(phi)* delta(eta)* 
+  TH3F*   fK0sPosDaugFracShTPCclsTrig;           //! K0s Pos. Daug: mass vs pt vs fraction of shared TPC cls
+  TH3F*   fK0sNegDaugFracShTPCclsTrig;           //! K0s Neg Daug: mass vs pt vs fraction of shared TPC cls
   TH3F*   fK0sDCADaugToPrimVtx;                  //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fK0sSpatialRes;                        //! K0s: Spatial resolution  
    
@@ -395,6 +404,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaMassPtEta;              //! Lambda: mass vs pt vs eta
   TH3F*   fLambdaMassPtRap[kNCent];      //! Lambda: mass vs pt vs rap
   TH3F*   fLambdaMassPtPhi;              //! Lambda: mass vs pt vs phi 
+  TH3F*   fLambdaPosDaugFracShTPCcls;    //! Lambda Pos. Daug: mass vs pt vs fraction of shared TPC cls
+  TH3F*   fLambdaNegDaugFracShTPCcls;    //! Lambda Neg Daug: mass vs pt vs fraction of shared TPC cls
 
   TH2F*   fLambdaDaughtersPt;                       //! Lambda: pt of daughters
   THnSparse* fLambdaPosDaugdPhiSdEtaS[kNCent];      //! Lambda:Positive daughter: delta(phi)* delta(eta)*    
@@ -403,6 +414,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse* fLambdaNegDaugSplCheckCovMat[kNCent];  //! Lambda: Check Covariance Matrix elemenets between trigger trcak and daughter track
   THnSparse* fLambdaPosMCResdEtaSdPhiS[kNCent];     //! Lambda: Positive daughter: resolution for  delta(phi)* delta(eta)*
   THnSparse* fLambdaNegMCResdEtaSdPhiS[kNCent];     //! Lambda: Negative daughter: resolution for  delta(phi)* delta(eta)* 
+  TH3F*   fLambdaPosDaugFracShTPCclsTrig;           //! Lambda Pos. Daug: mass vs pt vs fraction of shared TPC cls
+  TH3F*   fLambdaNegDaugFracShTPCclsTrig;           //! Lambda Neg Daug: mass vs pt vs fraction of shared TPC cls
   TH3F*   fLambdaDCADaugToPrimVtx;                  //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fLambdaSpatialRes;                        //! Lambda: Spatial resolution  
 
@@ -427,7 +440,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
   TH3F*   fAntiLambdaMassPtEta;                //! AntiLambda: pt vs eta
   TH3F*   fAntiLambdaMassPtRap[kNCent];        //! AntiLambda: pt vs rap
-  TH3F*   fAntiLambdaMassPtPhi;                //! Lambda: mass vs phi 
+  TH3F*   fAntiLambdaMassPtPhi;                //! AntiLambda: mass vs phi 
+  TH3F*   fAntiLambdaPosDaugFracShTPCcls;      //! AntiLambda Pos. Daug: mass vs pt vs fraction of shared TPC cls
+  TH3F*   fAntiLambdaNegDaugFracShTPCcls;      //! AntiLambda Neg Daug: mass vs pt vs fraction of shared TPC cls
 
   TH2F*   fAntiLambdaDaughtersPt;                       //! AntiLambda: pt of daughters
   THnSparse* fAntiLambdaPosDaugdPhiSdEtaS[kNCent];      //! AntiLambda: Positive daughter: delta(phi)* delta(eta)*    
@@ -436,6 +451,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   THnSparse* fAntiLambdaNegDaugSplCheckCovMat[kNCent];  //! AntiLambda: Check Covariance Matrix elemenets between trigger trcak and daughter track
   THnSparse* fAntiLambdaPosMCResdEtaSdPhiS[kNCent];     //! AntiLambda: Positive daughter: resolution for  delta(phi)* delta(eta)*
   THnSparse* fAntiLambdaNegMCResdEtaSdPhiS[kNCent];     //! AntiLambda: Negative daughter: resolution for  delta(phi)* delta(eta)* 
+  TH3F*   fAntiLambdaPosDaugFracShTPCclsTrig;           //! AntiLambda Pos. Daug: mass vs pt vs fraction of shared TPC cls
+  TH3F*   fAntiLambdaNegDaugFracShTPCclsTrig;           //! AntiLambda Neg Daug: mass vs pt vs fraction of shared TPC cls
   TH3F*   fAntiLambdaDCADaugToPrimVtx;                  //! AntiLambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fAntiLambdaSpatialRes;                        //! AntiLambda: Spatial resolution  
 
@@ -556,9 +573,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
 
   ///  ==== Mixed Events plots === ///
-  TH2F*  fK0sdPhidEtaME[kNVtxZ*kNCent*kN1+1];             //! K0s Mixed Events
-  TH2F*  fLambdadPhidEtaME[kNVtxZ*kNCent*kN1+1];          //! Lambda Mixed Events
-  TH2F*  fAntiLambdadPhidEtaME[kNVtxZ*kNCent*kN1+1];      //! AntiLambda Mixed Events
+  TH3F*  fK0sdPhidEtaME[kNVtxZ*kNCent*kN1+1];             //! K0s Mixed Events
+  TH3F*  fLambdadPhidEtaME[kNVtxZ*kNCent*kN1+1];          //! Lambda Mixed Events
+  TH3F*  fAntiLambdadPhidEtaME[kNVtxZ*kNCent*kN1+1];      //! AntiLambda Mixed Events
 
   ClassDef(AliAnalysisTaskLambdaOverK0sJets,1);
 

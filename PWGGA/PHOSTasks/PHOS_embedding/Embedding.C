@@ -7,6 +7,7 @@ void Embedding(const char* dataset="collection.xml")
   gSystem->Load("libPhysics.so");
   
   //load analysis framework
+  gSystem->Load("libSTEERBase");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice"); //AliAnalysisTaskSE
   
@@ -26,9 +27,6 @@ void Embedding(const char* dataset="collection.xml")
   // Create the chain
   TChain* chain = new TChain("esdTree");
 
-  chain->Add("/home/prsnko/PbPb/Embedding/Data/AliESDs.root") ;
-/*
-
   TGridCollection * collection = dynamic_cast<TGridCollection*>(TAlienCollection::Open(dataset));
   
   TAlienResult* result = collection->GetGridResult("",0 ,0);
@@ -42,9 +40,10 @@ void Embedding(const char* dataset="collection.xml")
   }
   TFileInfo * fi =  static_cast<TFileInfo*>(rawFileList->At(0));
   const char * fn = fi->GetCurrentUrl()->GetUrl() ;
-*/
-  char runNum[7]={"139438"}; 
-//  for(Int_t i=0;i<6;i++)runNum[i]=fn[35+i] ;
+
+  char runNum[7]; 
+  for(Int_t i=0;i<6;i++)runNum[i]=fn[35+i] ;
+
   runNum[6]=0 ;
   Int_t iRunNum=atoi(runNum) ;
   printf("Run number=%d \n",iRunNum) ;
@@ -90,7 +89,7 @@ void Embedding(const char* dataset="collection.xml")
   sprintf(nSimEvents,"%d",chain->GetEntries());
   gSystem->Setenv("SIM_EVENTS",nSimEvents); 
   gSystem->Exec("mv geometry.root geometry_PHOS.root") ;
-//  gSystem->Exec("aliroot -b -q simrun.C > simrun.log 2>&1");
+  gSystem->Exec("aliroot -b -q simrun.C > simrun.log 2>&1");
   gSystem->Exec("mv geometry_PHOS.root geometry.root") ;
 
   // Make the analysis manager
@@ -110,14 +109,16 @@ void Embedding(const char* dataset="collection.xml")
   // Debug level
   mgr->SetDebugLevel(0);
 
-  // Add physics selection
-//  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-//  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE,kFALSE);
 
-  //Add centrality
+  // Add physics selection
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE);
+
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality() ;
-  taskCentrality->SetPass(2); // remember to set the pass you are processing!!! 
+
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
+  AliEPSelectionTask *taskEP = AddTaskEventplane() ;
 
   // Add my task
   AliPHOSEmbedding *task1 = new AliPHOSEmbedding("Embedding");
@@ -125,7 +126,7 @@ void Embedding(const char* dataset="collection.xml")
   TChain* chainAOD = new TChain("aodTree");
   chainAOD->AddFile("AliAOD.root") ;
   task1->SetSignalChain(chainAOD) ;
- // task1->SelectCollisionCandidates();
+  task1->SelectCollisionCandidates();
 
 
   TFile *fOldCalib = TFile::Open("OldCalibration.root");
@@ -175,6 +176,6 @@ printf("RunNunm===%d \n",iRunNum) ;
   else{
     gSystem->Exec("mv BadMap_LHC10h_period234.root BadMap_LHC10h.root") ;
   }
-//  gSystem->Exec("aliroot -b -q Analyze.C> analyze.log 2>&1");
+  gSystem->Exec("aliroot -b -q AnalyzeDiff.C> analyze3.log 2>&1");
 
 }

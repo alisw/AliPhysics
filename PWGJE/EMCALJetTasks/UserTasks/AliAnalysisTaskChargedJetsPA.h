@@ -140,6 +140,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
 
   Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius);
   Double_t    GetCorrectedConePt(Double_t eta, Double_t phi, Double_t radius, Double_t background);
+  Int_t       GetConeConstituentCount(Double_t eta, Double_t phi, Double_t radius);
   Double_t    GetExternalRho();
   void        CreateJetProfilePlots(Double_t bgrd);
   void        CreateCutHistograms();

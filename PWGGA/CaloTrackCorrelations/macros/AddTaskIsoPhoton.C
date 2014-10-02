@@ -30,6 +30,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Bool_t   primvtx       = kTRUE,
                                                       const Bool_t   notrackcut    = kTRUE,
                                                       const Bool_t   rdmtrigger    = kFALSE,
+                                                      const TString  tag           = "",
                                                       const Int_t    debug         = -1,
                                                       const Bool_t   print         = kFALSE
                                                       )
@@ -67,7 +68,10 @@ kPrint = print ;
 
   // Name for containers
   
-  kAnaIsoPhotonName = Form("%s_Trig%s_TM%d_%1.3f_dB%d_R%1.1f_Pt%1.1f",calorimeter.Data(), trigger.Data(),tm,deltaphicut,disttobad,cone,pth);
+ if(tag!="")
+ kAnaIsoPhotonName = Form("%s_Trig%s_TM%d_%1.3f_dB%d_R%1.1f_Pt%1.1f_%s",calorimeter.Data(), trigger.Data(),tm,deltaphicut,disttobad,cone,pth,tag.Data());
+ else
+ kAnaIsoPhotonName = Form("%s_Trig%s_TM%d_%1.3f_dB%d_R%1.1f_Pt%1.1f",calorimeter.Data(), trigger.Data(),tm,deltaphicut,disttobad,cone,pth);
 
   if(maxCen>=0) kAnaIsoPhotonName+=Form("Cen%d_%d",minCen,maxCen);
     

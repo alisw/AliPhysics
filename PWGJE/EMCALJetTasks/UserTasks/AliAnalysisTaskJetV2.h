@@ -19,8 +19,9 @@
 
 class TFile;
 class TF1;
-class THF1;
-class THF2;
+class TH1F;
+class TH2F;
+class TH3F;
 class TProfile;
 class AliLocalRhoParameter;
 class AliClusterContainer;
@@ -50,6 +51,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         virtual Bool_t          Run();
         TH1F*                   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c = -1, Bool_t append = kTRUE);
         TH2F*                   BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c = -1, Bool_t append = kTRUE);
+        TH3F*                   BookTH3F(const char* name, const char* x, const char* y, const char* z, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t binsz, Double_t minz, Double_t maxz, Int_t c = -1, Bool_t append = kTRUE);
         /* inline */    static Double_t PhaseShift(Double_t x) {  
             while (x>=TMath::TwoPi())x-=TMath::TwoPi();
             while (x<0.)x+=TMath::TwoPi();
@@ -350,10 +352,11 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistPsiVZEROCTRK;      //! psi 2 from vzero c
         TH2F*                   fHistPsiVZEROTRK;       //! psi 2 from combined vzero
         TH2F*                   fHistPsiTPCTRK;         //! psi 2 from tpc
-        TH2F*                   fHistPsiTPCLeadingJet[10];      //! correlation tpc EP, LJ pt
-        TH2F*                   fHistPsiVZEROALeadingJet[10];   //! correlation vzeroa EP, LJ pt
-        TH2F*                   fHistPsiVZEROCLeadingJet[10];   //! correlation vzeroc EP, LJ pt
-        TH2F*                   fHistPsiVZEROCombLeadingJet[10];//! correlation vzerocomb EP, LJ pt
+        TH3F*                   fHistPsiTPCLeadingJet[10];      //! correlation tpc EP, LJ pt
+        TH3F*                   fHistPsiVZEROALeadingJet[10];   //! correlation vzeroa EP, LJ pt
+        TH3F*                   fHistPsiVZEROCLeadingJet[10];   //! correlation vzeroc EP, LJ pt
+        TH3F*                   fHistPsiVZEROCombLeadingJet[10];//! correlation vzerocomb EP, LJ pt
+        TH3F*                   fHistPsi2Correlation[10];       //! correlation of event planes
         // background
         TH1F*                   fHistRhoPackage[10];    //! rho as estimated by emcal jet package
         TH1F*                   fHistRho[10];           //! background

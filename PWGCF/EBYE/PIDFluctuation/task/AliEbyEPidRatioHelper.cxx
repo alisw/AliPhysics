@@ -94,7 +94,7 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
   
   fRandom(NULL),
   fIsRatio(kFALSE), 
-  fIsPtBin(kFALSE) {
+  fIsPtBin(kFALSE), fIsDetectorWise(kFALSE) {
   // Constructor   
   
   AliLog::SetClassDebugLevel("AliEbyEPidRatioHelper",10);
@@ -179,7 +179,7 @@ void AliEbyEPidRatioHelper::SetPhiRange(Float_t f1, Float_t f2) {
 
 
 //________________________________________________________________________
-Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Bool_t isPtBin, Int_t trackCutBit, Int_t modeDistCreation) {
+Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Bool_t isPtBin, Bool_t isDetWise, Int_t trackCutBit, Int_t modeDistCreation) {
   // -- Initialize helper
 
   Int_t iResult = 0;
@@ -192,7 +192,7 @@ Int_t AliEbyEPidRatioHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool
   fIsMC             = isMC;
   fIsRatio          = isRatio;
   fIsPtBin          = isPtBin;
-
+  fIsDetectorWise   = isDetWise;
 
   
 
@@ -720,11 +720,11 @@ void AliEbyEPidRatioHelper::BinLogAxis(const THnBase *hn, Int_t axisNumber, AliE
   Float_t maxPtForTPClow      = fMaxPtForTPClow;
 
   // -- Update minPt Cut
-  Int_t bin = axis->FindBin(ptRange[0]+10e-6);
+  Int_t bin = axis->FindBin(ptRange[0]+10e-7);
   ptRange[0] = axis->GetBinLowEdge(bin); 
 
   // -- Update maxPt Cut
-  bin = axis->FindBin(ptRange[1]-10e-6);
+  bin = axis->FindBin(ptRange[1]-10e-7);
   ptRange[1] = axis->GetBinUpEdge(bin); 
 
   if (ptRange[0] != oldPtRange[0] || ptRange[1] != oldPtRange[1]) {
@@ -733,7 +733,7 @@ void AliEbyEPidRatioHelper::BinLogAxis(const THnBase *hn, Int_t axisNumber, AliE
   }
 
   // -- Update MinPtForTOFRequired
-  bin = axis->FindBin(minPtForTOFRequired-10e-6);
+  bin = axis->FindBin(minPtForTOFRequired-10e-7);
   minPtForTOFRequired = axis->GetBinUpEdge(bin); 
 
   if (minPtForTOFRequired != fMinPtForTOFRequired) {
@@ -742,7 +742,7 @@ void AliEbyEPidRatioHelper::BinLogAxis(const THnBase *hn, Int_t axisNumber, AliE
   }
 
   // -- Update MaxPtForTPClow
-  bin = axis->FindBin(maxPtForTPClow-10e-6);
+  bin = axis->FindBin(maxPtForTPClow-10e-7);
   maxPtForTPClow = axis->GetBinUpEdge(bin); 
 
   if (maxPtForTPClow != fMaxPtForTPClow) {

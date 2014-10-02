@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -7,11 +7,13 @@
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notifce   *
+ * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+// Comment describing what this class does needed!
 
 // $Id: AliJMCTrack.cxx,v 1.2 2008/05/08 13:44:45 djkim Exp $
 
@@ -42,8 +44,8 @@ AliJMCTrack::AliJMCTrack() :
     fVz(0)
 {
   // default constructor
-  fMother[0] = fMother[1] = 0;
-  fDaughter[0] = fDaughter[1] = 0;
+  fMother[0] = fMother[1] = -1;
+  fDaughter[0] = fDaughter[1] = -1;
 
 
 }
@@ -69,8 +71,8 @@ void AliJMCTrack::SetPdgCode(Int_t icode) {
   // Set PDG code, charge,  recalculate E
   if( TMath::Abs(icode) > 32767 ) icode = 0; // Short_t
   fPdgCode=icode;
-  SetVectM(Vect(), GetPDGData().Mass());
-  SetCharge( TMath::Nint(GetPDGData().Charge()) ); // is this right?
+//   SetVectM(Vect(), GetPDGData().Mass());
+//   SetCharge( TMath::Nint(GetPDGData().Charge()) ); // is this right?
 }
 
 

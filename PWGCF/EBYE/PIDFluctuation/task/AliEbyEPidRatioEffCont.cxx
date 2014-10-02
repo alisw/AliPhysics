@@ -164,9 +164,8 @@ void AliEbyEPidRatioEffCont::CreateHistograms() {
   
   
 
-  fHelper->BinLogAxis(fHnEffMc,  7);
+ 
   fHelper->BinLogAxis(fHnEffMc, 9);
-  fHelper->BinLogAxis(fHnEffRec,  7);
   fHelper->BinLogAxis(fHnEffRec, 9);
 
   /* 
@@ -241,8 +240,8 @@ void AliEbyEPidRatioEffCont::CreateHistograms() {
   // fHnCont->GetAxis(16)->SetTitle("sign_{MC}-sign_{Rec}");                      //  -2 | 0 | +2 
   // fHnCont->GetAxis(17)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
 
-  // fHelper->BinLogAxis(fHnCont,  4);
-  // fHelper->BinLogAxis(fHnCont, 10);
+  fHelper->BinLogAxis(fHnContMc,  7);
+  fHelper->BinLogAxis(fHnContRec, 7);
 
   return;
 }
@@ -443,24 +442,30 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
 
     Int_t iPid = 0;
     Int_t gPdgCode = 0;
-    if ( particle->PdgCode()      ==  211 ) {  iPid = 1; gPdgCode = 211;}
-    else if ( particle->PdgCode() ==  321 ) {  iPid = 1; gPdgCode = 321;}
-    else if ( particle->PdgCode() == 2212 ) {  iPid = 1; gPdgCode = 2212;}
+    if ( TMath::Abs(particle->PdgCode())      ==  211 ) {  iPid = 1; gPdgCode = 211;}
+    else if ( TMath::Abs(particle->PdgCode()) ==  321 ) {  iPid = 2; gPdgCode = 321;}
+    else if ( TMath::Abs(particle->PdgCode()) == 2212 ) {  iPid = 3; gPdgCode = 2212;}
     else {iPid = 0; gPdgCode = 0;}
 
     // -- Check if accepted in rapidity window -- for identified particles
     Double_t yMC;
-    if (iPid != 0 && !fHelper->IsParticleAcceptedRapidity(particle, yMC, iPid))
-      continue;
-
-    // -- Check if accepted in eta window -- for charged particles
-    if (iPid == 0 && TMath::Abs(particle->Eta()) > etaRange[1])
-      continue;
-
+    if (iPid != 0) {
+      if(!fHelper->IsParticleAcceptedRapidity(particle, yMC, iPid))
+	continue;
+    } else {
+      // -- Check if accepted in eta window -- for charged particles
+      if (TMath::Abs(particle->Eta()) > etaRange[1])
+	continue;
+    }
+  
+    // cout << particle->PdgCode() << "  " <<iPid << endl;
+    
     // -- Check if probeParticle / anti-probeParticle 
     //    > skip check if PID is not required
-    if (iPid == 0 && TMath::Abs(particle->PdgCode()) != gPdgCode)
+    if (iPid != 0) { 
+      if (TMath::Abs(particle->PdgCode()) != gPdgCode)
       continue;
+    }
     
     // -- Get sign of particle
     Float_t signMC    = (particle->PdgCode() < 0) ? -1. : 1.;
@@ -516,6 +521,8 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
     	deltaPhi -= TMath::TwoPi();
     }
     
+    // if (signRec == 0) continue;
+
     if(iPid != 0) {
       Double_t hnEffMc[10]  = {fCentralityBin,0,signMC,findable, recStatus,recPid,particle->Eta(), particle->Y(), particle->Phi(),particle->Pt()};
       Double_t hnEffRec[10] = {fCentralityBin,0,signRec,findable, recStatus,recPid,etaRec, yRec, phiRec, ptRec};
@@ -528,6 +535,8 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
     fHnEffRec->Fill(hnEffRec);
     
    
+    //  cout << signMC << "  " << signRec << "  " << iPid << "  " << gPdgCode << endl;
+
 
   } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {
   

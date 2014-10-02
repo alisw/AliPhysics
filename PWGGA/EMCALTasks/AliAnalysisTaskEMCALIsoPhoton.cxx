@@ -312,15 +312,15 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fClusEtCPVBGISO->Sumw2();
   fOutputList->Add(fClusEtCPVBGISO);
 
-  fMCDirPhotonPtEtaPhi = new TH3F("hMCDirPhotonPtEtaPhi","photon (gq->#gammaq) p_{T}, #eta, #phi;GeV/c;#eta;#phi",100,-0.5,99.5,154,-0.77,0.77,130,1.38,3.20);
+  fMCDirPhotonPtEtaPhi = new TH3F("hMCDirPhotonPtEtaPhi","photon (gq->#gammaq) p_{T}, #eta, #phi;GeV/c;#eta;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,154,-0.77,0.77,130,1.38,3.20);
   fMCDirPhotonPtEtaPhi->Sumw2();
   fOutputList->Add(fMCDirPhotonPtEtaPhi);
 
-  fMCIsoDirPhotonPtEtaPhi = new TH3F("hMCIsoDirPhotonPtEtaPhi","photon (gq->#gammaq, isolated@MC) p_{T}, #eta, #phi;GeV/c;#eta;#phi",100,-0.5,99.5,154,-0.77,0.77,130,1.38,3.20);
+  fMCIsoDirPhotonPtEtaPhi = new TH3F("hMCIsoDirPhotonPtEtaPhi","photon (gq->#gammaq, isolated@MC) p_{T}, #eta, #phi;GeV/c;#eta;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,154,-0.77,0.77,130,1.38,3.20);
   fMCIsoDirPhotonPtEtaPhi->Sumw2();
   fOutputList->Add(fMCIsoDirPhotonPtEtaPhi);
 
-  fMCDirPhotonPtEtIso = new TH2F("hMCDirPhotonPtEtIso",Form("photon (gq->#gammaq @MC) p_{T}, E_{T}^{ISO} (R=%1.1f);GeV/c;E_{T}^{ISO} GeV/c",fIsoConeR),100,-0.5,99.5,20,-0.25,9.75);
+  fMCDirPhotonPtEtIso = new TH2F("hMCDirPhotonPtEtIso",Form("photon (gq->#gammaq @MC) p_{T}, E_{T}^{ISO} (R=%1.1f);GeV/c;E_{T}^{ISO} GeV/c",fIsoConeR),fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,20,-0.25,9.75);
   fMCDirPhotonPtEtIso->Sumw2();
   fOutputList->Add(fMCDirPhotonPtEtIso);
 

@@ -21,6 +21,11 @@ class AliEventPoolManager;
 class AliSpectraAODEventCuts;
 class AliSpectraAODTrackCuts;
 class AliAODTrack;
+class AliEventPool;
+
+//class TStopwatch;
+
+class AliFemtoESEBasicParticle;
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisTaskSE.h"
@@ -44,6 +49,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
+  void TrackLoop(TObjArray *tracks, AliEventPool *pool, Double_t psiEP, Float_t centralityPercentile);
   virtual void   Terminate(Option_t *);
 
   AliHelperPID* GetHelperPID() { return fHelperPID; }
@@ -77,11 +83,11 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   Double_t GetQPercLHC11h(Double_t qvec);
 
  private:
-  Double_t GetQinv(Double_t[], Double_t[]);
+  Double_t GetQinv2(Double_t[], Double_t[]);
   void GetQosl(Double_t[], Double_t[], Double_t&, Double_t&, Double_t&);
   Bool_t TrackCut(AliAODTrack* ftrack);
   Bool_t EventCut(/*AliAODEvent* fevent*/);
-  Bool_t PairCut(AliAODTrack* ftrack1, AliAODTrack* ftrack2, Bool_t mix);
+  Bool_t PairCut(AliFemtoESEBasicParticle* ftrack1, AliFemtoESEBasicParticle* ftrack2, Bool_t mix);
   Double_t DeltaPhiStar(AliAODTrack* ftrack1, AliAODTrack* ftrack2, Double_t r);
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks, Double_t psi);
   Double_t GetDeltaPhiEP(Double_t px1, Double_t py1, Double_t px2, Double_t py2, Double_t psi);
@@ -91,7 +97,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   TList                  *fOutputList; //! Compact Output list
   //AliPIDResponse         *fPIDResponse; //! PID response object; equivalent to AliAODpidUtil
   AliHelperPID*     fHelperPID;      // points to class for PID
-  AliEventPoolManager*     fPoolMgr;         //! event pool manager
+  AliEventPoolManager**     fPoolMgr;         //[2] event pool manager
   AliSpectraAODEventCuts* fEventCuts;
   AliSpectraAODTrackCuts* fTrackCuts;
 
@@ -141,6 +147,54 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   Int_t nqPercBinsLHC11h;
   Double_t* qPercBinsLHC11h; //[nqPercBinsLHC11h]
 
+  //TStopwatch *stopwatch;
+
+  // histograms
+  TH1D *hpx;
+  TH1D *hpy;
+  TH1D *hpz;
+  TH1D *hpt;
+  TH1D *hE;
+  TH2D *hphieta;
+  TH2D *hphieta_pid;
+  TH1D *hpt_pid;
+  TH2D *hvzcent;
+  TH1D *hcent;
+  TH2D *hcentn;
+  TH3D *hphistaretapair10;
+  TH3D *hphistaretapair16;
+  TH3D *hphistaretapair10a;
+  TH3D *hphistaretapair16a;
+  TH3D *hphistaretapair10b;
+  TH3D *hphistaretapair16b;
+  TH3D *hphietapair;
+  TH3D *hphietapair2;
+  TH1D *hpidid;
+  TH1D *hkt;
+  TH1D *hktcheck;
+  TH3D *hkt3;
+  TH2D* hdcaxy;
+  TH1D* hdcaz;
+  TH1D* hsharequal;
+  TH1D* hsharefrac;
+  TH1D* hsharequalmix;
+  TH1D* hsharefracmix;
+  TH1D *hPsiTPC;
+  TH1D *hPsiV0A;
+  TH1D *hPsiV0C;
+  TH1D *hCheckEPA;
+  TH1D *hCheckEPC;
+  TH2D* hCheckEPmix;
+  TH2D *hcentq;
+  TH2D* hMixedDist;
+  TH2D *hQvecV0A;
+  TH2D *hQvecV0C;
+  TH1D *hresV0ATPC;
+  TH1D *hresV0CTPC;
+  TH1D *hresV0AV0C;
+  TH1F* hktbins;
+  TH1F* hcentbins;
+  TH1F* hepbins;
 
   ClassDef(AliAnalysisTaskFemtoESE, 1);
 };

@@ -230,8 +230,8 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   }
 
   Int_t nBinsDM  = 100;
-  Double_t minDM = -50.;
-  Double_t maxDM = 50.;
+  Double_t minDM = -25.;
+  Double_t maxDM = 25.;
   if(fJetMassVarType==kRatMPt) {
     nBinsDM = 100;
     minDM   = -0.5;
@@ -294,7 +294,7 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
 
     histName = Form("fh3PtTrueDeltaMRelDR_%d",i);
     histTitle = Form("fh3PtTrueDeltaMRelDR_%d;#it{p}_{T,true};Rel #Delta %s",i,varName.Data());
-    fh3PtTrueDeltaMRelDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,200,-1.,1.,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
+    fh3PtTrueDeltaMRelDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,400,-1.,3.,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
     fOutput->Add(fh3PtTrueDeltaMRelDR[i]);
 
     histName = Form("fhnMassResponse_%d",i);
@@ -451,8 +451,10 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
 	if(jetL) drToLJ = jet1->DeltaR(jetL);
 	fh3MSubPtRawDRMatch[fCentBin]->Fill(var,ptjet1,drToLJ);
 	if(jet2) {
-	  Double_t var2 = -999.;
-	  if(jet2->Pt()>0. || jet2->Pt()<0.) var2 = jet2->M()/jet2->Pt();
+	  Double_t var2 = jet2->M();
+	  if(fJetMassVarType==kRatMPt) {
+	    if(jet2->Pt()>0. || jet2->Pt()<0.) var2 = jet2->M()/jet2->Pt();
+	  }
 	  fh3MSubPtTrueDR[fCentBin]->Fill(var,jet2->Pt(),drToLJ);
 	  fh3MTruePtTrueDR[fCentBin]->Fill(var2,jet2->Pt(),drToLJ);
 	  fh3PtTrueDeltaMDR[fCentBin]->Fill(jet2->Pt(),var-var2,drToLJ);
