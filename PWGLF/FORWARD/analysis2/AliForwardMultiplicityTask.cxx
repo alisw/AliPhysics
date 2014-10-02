@@ -254,8 +254,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   FILL_SW(individual,kTimingCorrections);
 
   // Check if we should add to internal caches 
-  Bool_t add = (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel) && 
-		!(triggers & AliAODForwardMult::kPileUp) && nSkip < 1);
+  Bool_t add = (fAODFMD.IsTriggerBits(fAddMask) && nSkip < 1);
 
   // Collect our `super' histogram 
   START_SW(individual);
