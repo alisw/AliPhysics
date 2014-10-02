@@ -206,6 +206,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
     if(fIsQvecCalibMode){
       QvecMC = fEventCuts->CalculateQVectorMC(fVZEROside);
     }
+  else QvecMC = fEventCuts->GetQvecPercentileMC(fVZEROside);
   }
   
   Double_t Cent=fEventCuts->GetCent();

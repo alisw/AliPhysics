@@ -109,8 +109,6 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
 	TString *mesonCutArray = new TString[numberOfCuts];
-
-	0000011_01631031009000
 	
 	if(trainConfig == 1){
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC

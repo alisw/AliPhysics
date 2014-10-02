@@ -4298,6 +4298,8 @@ void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_
 		
 		//______________________________________________________________
 		//Check if this track is a Non-HFE partner
+		fUlsIsPartner = kFALSE;
+		fLsIsPartner = kFALSE;
 		for(Int_t i = 0; i < fNonHFE->GetNULS(); i++)
 		{
 			if(fUlsPartner[i]==iTracks) fUlsIsPartner=kTRUE;
