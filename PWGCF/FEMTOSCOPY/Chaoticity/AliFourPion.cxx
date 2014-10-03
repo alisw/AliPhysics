@@ -935,43 +935,44 @@ void AliFourPion::ParInit()
     if(!fMCcase && !fTabulatePairs) SetMuonCorrections(fLEGO);// Read Muon corrections
     if(!fMCcase && !fTabulatePairs) Setc3FitEAs(fLEGO);// Read EAs from c3 fits
   }
-
+  
 
 
   // Pair-Exchange amplitudes from c3 fits
   TString *EWequation = new TString("[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))");
   TString *LGequation = new TString("[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))");
 
-  for(Int_t i=0; i<2; i++){
-    for(Int_t j=0; j<50; j++){
-      TString *nameEA=new TString("ExchangeAmpPointSource");
-      *nameEA += i;
-      *nameEA += j;
-      if(i==0) ExchangeAmpPointSource[i][j] = new TF1(nameEA->Data(), EWequation->Data(), 0,1.0);// Edgeworth
-      else ExchangeAmpPointSource[i][j] = new TF1(nameEA->Data(), LGequation->Data(), 0,1.0);// Laguerre
-      //
-      if(fCollisionType==0){
-	ExchangeAmpPointSource[i][j]->FixParameter(0, fPbPbc3FitEA->GetBinContent(i+1, 1, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(1, fPbPbc3FitEA->GetBinContent(i+1, 2, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(2, fPbPbc3FitEA->GetBinContent(i+1, 3, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(3, fPbPbc3FitEA->GetBinContent(i+1, 4, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
-      }else if(fCollisionType==1){
-	ExchangeAmpPointSource[i][j]->FixParameter(0, fpPbc3FitEA->GetBinContent(i+1, 1, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(1, fpPbc3FitEA->GetBinContent(i+1, 2, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(2, fpPbc3FitEA->GetBinContent(i+1, 3, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(3, fpPbc3FitEA->GetBinContent(i+1, 4, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
-      }else{
-	ExchangeAmpPointSource[i][j]->FixParameter(0, fppc3FitEA->GetBinContent(i+1, 1, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(1, fppc3FitEA->GetBinContent(i+1, 2, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(2, fppc3FitEA->GetBinContent(i+1, 3, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(3, fppc3FitEA->GetBinContent(i+1, 4, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
+  if(!fMCcase && !fTabulatePairs){
+    for(Int_t i=0; i<2; i++){
+      for(Int_t j=0; j<50; j++){
+	TString *nameEA=new TString("ExchangeAmpPointSource");
+	*nameEA += i;
+	*nameEA += j;
+	if(i==0) ExchangeAmpPointSource[i][j] = new TF1(nameEA->Data(), EWequation->Data(), 0,1.0);// Edgeworth
+	else ExchangeAmpPointSource[i][j] = new TF1(nameEA->Data(), LGequation->Data(), 0,1.0);// Laguerre
+	//
+	if(fCollisionType==0){
+	  ExchangeAmpPointSource[i][j]->FixParameter(0, fPbPbc3FitEA->GetBinContent(i+1, 1, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(1, fPbPbc3FitEA->GetBinContent(i+1, 2, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(2, fPbPbc3FitEA->GetBinContent(i+1, 3, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(3, fPbPbc3FitEA->GetBinContent(i+1, 4, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
+	}else if(fCollisionType==1){
+	  ExchangeAmpPointSource[i][j]->FixParameter(0, fpPbc3FitEA->GetBinContent(i+1, 1, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(1, fpPbc3FitEA->GetBinContent(i+1, 2, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(2, fpPbc3FitEA->GetBinContent(i+1, 3, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(3, fpPbc3FitEA->GetBinContent(i+1, 4, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
+	}else{
+	  ExchangeAmpPointSource[i][j]->FixParameter(0, fppc3FitEA->GetBinContent(i+1, 1, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(1, fppc3FitEA->GetBinContent(i+1, 2, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(2, fppc3FitEA->GetBinContent(i+1, 3, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(3, fppc3FitEA->GetBinContent(i+1, 4, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
+	}
       }
     }
   }
- 
   /////////////////////////////////////////////
   /////////////////////////////////////////////
   
