@@ -140,6 +140,11 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
+# Generate the ROOT map
+# Dependecies
+set(LIBDEPS Core EG Geom Hist MathCore Matrix Physics RIO Tree VMC)
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
 
@@ -147,11 +152,6 @@ set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-O -g")
 if(${CMAKE_SYSTEM} MATCHES Darwin)
     set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
-
-# Generate the ROOT map
-# Dependecies
-#set(LIBDEPS OADB)
-generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Installation
 install(TARGETS ${MODULE} 
