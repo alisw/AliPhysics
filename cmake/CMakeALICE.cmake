@@ -35,25 +35,25 @@ endmacro(generate_dictionary)
 # @LIBDEPS - library dependencies
 # @LINKDEF - LinkDef header
 macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
-    message(STATUS "LIBNAME = ${LIBNAME}")
-    message(STATUS "LIBDEPS = ${LIBDEPS}")
-    message(STATUS "LINKDEF = ${LINKDEF}")
+#    message(STATUS "LIBNAME = ${LIBNAME}")
+#    message(STATUS "LIBDEPS = ${LIBDEPS}")
+#    message(STATUS "LINKDEF = ${LINKDEF}")
     
-    message(STATUS "ROOT_LIBMAP=${ROOT_LIBMAP}")
+#    message(STATUS "ROOT_LIBMAP=${ROOT_LIBMAP}")
     
-    foreach(d ${LIBDEPS})
-        get_filename_component(_ext ${d} EXT)
-        if(_ext)
-            set(Int_DEPENDENCIES ${Int_DEPENDENCIES} ${d})
+    foreach(file ${LIBDEPS})
+        get_filename_component(ext ${file} EXT)
+        if(ext)
+            set(LOCAL_DEPS ${DEPENDENCIES} ${file})
         else()
-            set(Int_DEPENDENCIES ${Int_DEPENDENCIES} lib${d}.so)
+            set(LOCAL_DEPS ${DEPENDENCIES} lib${file}.so)
         endif()
     endforeach()
     
     message(STATUS "Generating ROOT map for ${LIBNAME}")
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap
                        COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_LIBMAP}
-                       ARGS -o ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap -l lib${LIBNAME}.so -d ${Int_DEPENDENCIES} -c ${LINKDEF}
+                       ARGS -o ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap -l lib${LIBNAME}.so -d ${LOCAL_DEPS} -c ${LINKDEF}
                        DEPENDS ${LIBNAME}
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} VERBATIM
                       )

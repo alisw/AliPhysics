@@ -26,11 +26,16 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
                    )
 
-set(ROOTEXTRALIBS "-L${ROOTLIBDIR} -lThread -lGeom -lVMC -lMinuit")
+link_directories(${ROOT_LIBDIR})
+
+# Libraries which are not in the default ROOT list (root-config --libs)
+set(ROOTEXTRALIBS Geom VMC Minuit)
 
 # Add an executable to the project using the specified source files
 add_executable(${MODULE} alirawdump_main.cxx)
-target_link_libraries(${MODULE} STEERBase RAWDatabase ${ROOTEXTRALIBS} ${ROOTLIBS})
+
+message(STATUS "LIBS = ${ROOT_LIBRARIES}")
+target_link_libraries(${MODULE} STEERBase RAWDatabase ${ROOTEXTRALIBS} ${ROOT_LIBRARIES})
 
 # Installation
 install(TARGETS ${MODULE} RUNTIME DESTINATION bin)

@@ -12,6 +12,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
+
 #ifndef ROOT_TObject
 #include <TObject.h>
 #endif
@@ -24,10 +25,10 @@
 #include <TString.h>
 #endif
 
-
 // Forward class declarations
-class TH1F;
-
+#ifndef ROOT_TH1F
+#include <TH1F.h>
+#endif
 
 class AliStats : public TObject {
 

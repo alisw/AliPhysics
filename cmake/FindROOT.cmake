@@ -26,8 +26,8 @@
 # - ROOT_FEATURES - list of build features for ROOT
 # - ROOT_LIBDIR - full path to ROOT library folder
 # - ROOT_LIBRARIES - libraries needed for the package to be used
+# - ROOT_GLIBRARIES - regular + GUI ROOT libraries + path to be used during linking
 # - ROOT_INCLUDE_DIRS - full path to ROOT include folder
-# - ROOT_GLIBS - regular + GUI ROOT libraries + path to be used during linking
 # - ROOT_HASALIEN - ROOT was built with AliEn support
 # - ROOT_HASXML - ROOT was built with XML support
 
@@ -69,7 +69,8 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT version : ${error}")
     endif(error)
-
+    string(STRIP ${ROOT_VERSION} ROOT_VERSION)
+    
     # Extract major, minor, and patch versions from
     string(REGEX REPLACE "^([0-9]+)\\.[0-9][0-9]+\\/[0-9][0-9]+.*" "\\1" ROOT_VERSION_MAJOR "${ROOT_VERSION}")
     string(REGEX REPLACE "^[0-9]+\\.([0-9][0-9])+\\/[0-9][0-9]+.*" "\\1" ROOT_VERSION_MINOR "${ROOT_VERSION}")
@@ -83,42 +84,68 @@ if(ROOTSYS)
     else()
         message(STATUS "ROOT was build with the following features: ${ROOT_FEATURES}")
     endif(error)
-
+    string(STRIP ${ROOT_FEATURES} ROOT_FEATURES)
+    
     # Checking for ROOT libdir
     execute_process(COMMAND ${ROOT_CONFIG} --libdir OUTPUT_VARIABLE ROOT_LIBDIR ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT libdir: ${error}")
     endif(error)
+    string(STRIP ${ROOT_LIBDIR} ROOT_LIBDIR)
 
     # Checking for ROOT libs
-    execute_process(COMMAND ${ROOT_CONFIG} --libs OUTPUT_VARIABLE ROOT_LIBRARIES ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    execute_process(COMMAND ${ROOT_CONFIG} --noldflags --libs OUTPUT_VARIABLE ROOT_LIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT libdir: ${error}")
     endif(error)
-
+    string(STRIP ${ROOT_LIBS} ROOT_LIBS)
+    
+    foreach(lib ${ROOT_LIBS})
+        string(REPLACE "-rdynamic" "" new_lib ${lib})
+        string(REPLACE "-l" "" lib ${new_lib})
+        set(ROOT_LIBRARIES ${ROOT_LIBRARIES} ${lib})
+    endforeach()
+    string(STRIP ${ROOT_LIBRARIES} ROOT_LIBRARIES)
+    separate_arguments(ROOT_LIBRARIES)
+    
     # Checking for ROOT incdir
     execute_process(COMMAND ${ROOT_CONFIG} --incdir OUTPUT_VARIABLE ROOT_INCDIR ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT incdir: ${error}")
     endif(error)
-
+    string(STRIP ${ROOT_INCDIR} ROOT_INCDIR)
+    
     # Checking for glibs
-    execute_process(COMMAND ${ROOT_CONFIG} --glibs OUTPUT_VARIABLE ROOT_GLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    execute_process(COMMAND ${ROOT_CONFIG} --noldflags --glibs OUTPUT_VARIABLE ROOT_GLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT glibs: ${error}")
     endif(error)
 
     # Checking for glibs
+    string(STRIP ${ROOT_GLIBS} ROOT_GLIBS)
+
+    foreach(lib ${ROOT_GLIBS})
+        string(REPLACE "-rdynamic" "" new_lib "${lib}")
+        string(REPLACE "-l" "" lib "${new_lib}")
+        set(ROOT_GLIBRARIES ${ROOT_GLIBRARIES} ${lib})
+    endforeach()
+    string(STRIP ${ROOT_GLIBRARIES} ROOT_GLIBRARIES)
+    separate_arguments(ROOT_GLIBRARIES)
+    
+    # Checking for AliEn support
     execute_process(COMMAND ${ROOT_CONFIG} --has-alien OUTPUT_VARIABLE ROOT_HASALIEN ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was build with AliEn support: ${error}")
     endif(error)
-
+    string(STRIP ${ROOT_HASALIEN} ROOT_HASALIEN)
+    
+    # Checking for xml support
     execute_process(COMMAND ${ROOT_CONFIG} --has-xml OUTPUT_VARIABLE ROOT_HASXML ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was build with xml support: ${error}")
     endif(error)
-
+    string(STRIP ${ROOT_HASXML} ROOT_HASXML)
+    
     set(ROOT_FOUND TRUE)
 else()
     message(FATAL_ERROR "ROOT installation not found! Please point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR.")

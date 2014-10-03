@@ -48,12 +48,17 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Extra headers in alphabetical order
-set(HDRS ${HDRS} AliRawEventHeaderVersions.h)
+set(HDRS ${HDRS} AliRawEventHeaderVersions.h AliRawDataHeader.h AliRawDataHeaderV3.h)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+
+# Generate the ROOT map
+# Dependecies
+set(LIBDEPS ESD STEERBase)
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
