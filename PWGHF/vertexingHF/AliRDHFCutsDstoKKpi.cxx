@@ -38,10 +38,15 @@ ClassImp(AliRDHFCutsDstoKKpi)
 //--------------------------------------------------------------------------
 AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const char* name) : 
 AliRDHFCuts(name),
-fPidOption(0),
-fMaxPtStrongPid(0.),
-fMaxPStrongPidK(0.),
-fMaxPStrongPidpi(0.)
+  fCutOnResonances(kTRUE),
+  fPidOption(0),
+  fMaxPtStrongPid(0.),
+  fMaxPStrongPidK(0.),
+  fMaxPStrongPidpi(0.),
+  fDistToMaxProb(0.01),
+  fBayesThreshold(0.05),
+  fWeightKKpi(1.),
+  fWeightpiKK(1.)
 {
   //
   // Default Constructor
@@ -133,10 +138,15 @@ fMaxPStrongPidpi(0.)
 //--------------------------------------------------------------------------
 AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const AliRDHFCutsDstoKKpi &source) :
   AliRDHFCuts(source),
+  fCutOnResonances(source.fCutOnResonances),
   fPidOption(source.fPidOption),
   fMaxPtStrongPid(source.fMaxPtStrongPid),
   fMaxPStrongPidK(source.fMaxPStrongPidK),
-  fMaxPStrongPidpi(source.fMaxPStrongPidpi)
+  fMaxPStrongPidpi(source.fMaxPStrongPidpi),
+  fDistToMaxProb(source.fDistToMaxProb),
+  fBayesThreshold(source.fBayesThreshold),
+  fWeightKKpi(source.fWeightKKpi),
+  fWeightpiKK(source.fWeightpiKK)
 {
   //
   // Copy constructor
@@ -152,11 +162,16 @@ AliRDHFCutsDstoKKpi &AliRDHFCutsDstoKKpi::operator=(const AliRDHFCutsDstoKKpi &s
   if(&source == this) return *this;
 
   AliRDHFCuts::operator=(source);
-
+  
+  fCutOnResonances=source.fCutOnResonances;
   fPidOption=source.fPidOption;
   fMaxPtStrongPid=source.fMaxPtStrongPid;
   fMaxPStrongPidK=source.fMaxPStrongPidK;
   fMaxPStrongPidpi=source.fMaxPStrongPidpi;
+  fDistToMaxProb=source.fDistToMaxProb;
+  fBayesThreshold=source.fBayesThreshold;
+  fWeightKKpi=source.fWeightKKpi;
+  fWeightpiKK=source.fWeightpiKK;
 
   return *this;
 }
@@ -364,6 +379,94 @@ Bool_t AliRDHFCutsDstoKKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) cons
 }
 
 //---------------------------------------------------------------------------
+Int_t AliRDHFCutsDstoKKpi::IsSelectedPIDBayes(AliAODRecoDecayHF *rd) {
+  Int_t retCode=3;
+  Bool_t okKKpi=kTRUE;
+  Bool_t okpiKK=kTRUE;
+  if(!fUsePID || !rd) return retCode;
+  if(!fPidHF){
+    AliWarning("AliAODPidHF not created!");
+    return retCode;
+  }
+  if(fPidOption!=kBayesianMaxProb && fPidOption!=kBayesianThreshold && fPidOption!=kBayesianWeights){
+    AliWarning("Wrong call to Bayesian PID");
+    return retCode;
+  }
+    
+  AliPIDCombined* copid=fPidHF->GetPidCombined();
+  copid->SetDetectorMask(AliPIDResponse::kDetTPC | AliPIDResponse::kDetTOF);
+  AliPIDResponse* pidres=fPidHF->GetPidResponse();
+  Double_t bayesProb[AliPID::kSPECIES];
+  Int_t nKaons=0;
+  Int_t nNotKaons=0;
+  Int_t sign= rd->GetCharge(); 
+  fWeightKKpi=1.;
+  fWeightpiKK=1.;
+  for(Int_t iDaught=0; iDaught<3; iDaught++){
+    AliAODTrack *track=(AliAODTrack*)rd->GetDaughter(iDaught);
+
+    Int_t isPion=0;
+    Int_t isKaon=0;
+    Int_t isProton=0;
+    UInt_t usedDet=copid->ComputeProbabilities(track,pidres,bayesProb);
+    if(usedDet!=0){
+      if(fPidOption==kBayesianMaxProb){
+	Double_t maxProb=TMath::MaxElement(AliPID::kSPECIES,bayesProb);
+	if(TMath::Abs(maxProb-bayesProb[AliPID::kPion])<fDistToMaxProb) isPion=1;
+	else isPion=-1;
+	if(TMath::Abs(maxProb-bayesProb[AliPID::kKaon])<fDistToMaxProb) isKaon=1;
+	else isKaon=-1;
+	if(TMath::Abs(maxProb-bayesProb[AliPID::kProton])<fDistToMaxProb) isProton=1;
+	else isProton=-1;
+      }
+      if(fPidOption==kBayesianThreshold){
+	if(bayesProb[AliPID::kPion]>fBayesThreshold) isPion=1;
+	else isPion=-1;
+	if(bayesProb[AliPID::kKaon]>fBayesThreshold) isKaon=1;
+	else isKaon=-1;
+	if(bayesProb[AliPID::kProton]>fBayesThreshold) isProton=1;
+	else isProton=-1;
+      }
+    }
+    if(fPidOption==kBayesianWeights){ // store the probabilities in the case kBayesianWeights
+      if(iDaught==0){
+	fWeightKKpi*=bayesProb[AliPID::kKaon];
+	fWeightpiKK*=bayesProb[AliPID::kPion];
+      }else if(iDaught==1){
+	fWeightKKpi*=bayesProb[AliPID::kKaon];
+	fWeightpiKK*=bayesProb[AliPID::kKaon];
+      }else if(iDaught==2){
+	fWeightKKpi*=bayesProb[AliPID::kPion];
+	fWeightpiKK*=bayesProb[AliPID::kKaon];
+      }
+    }else{ // selection for the other cases
+      if(isProton>0 &&  isKaon<0  && isPion<0) return 0;
+      if(sign!=track->Charge()){// must be kaon
+	if(isKaon<0) return 0;
+      }
+      if(isKaon>0 && isPion<0) nKaons++;
+      if(isKaon<0) nNotKaons++;
+      if(iDaught==0){
+	if(isKaon<0) okKKpi=kFALSE;
+	if(isPion<0) okpiKK=kFALSE;      
+      }else if(iDaught==2){
+	if(isKaon<0) okpiKK=kFALSE;
+	if(isPion<0) okKKpi=kFALSE;
+      }
+    }
+  }
+  if(fPidOption==kBayesianWeights) return retCode;
+
+  if(nKaons>2)return 0;
+  if(nNotKaons>1) return 0;
+  
+  if(!okKKpi) retCode-=1;
+  if(!okpiKK) retCode-=2;
+
+  return retCode;
+}
+
+//---------------------------------------------------------------------------
 Int_t AliRDHFCutsDstoKKpi::IsSelectedPID(AliAODRecoDecayHF *rd) {
   // PID selection
   // return values: 0->NOT OK, 1->OK as KKpi, 2->OK as piKK, 3->OK as both 
@@ -374,6 +477,10 @@ Int_t AliRDHFCutsDstoKKpi::IsSelectedPID(AliAODRecoDecayHF *rd) {
   if(!fPidHF){
     AliWarning("AliAODPidHF not created!");
     return retCode;
+  }
+  if(fPidOption==kBayesianMaxProb || fPidOption==kBayesianThreshold || fPidOption==kBayesianWeights){
+    // call method for Bayesian probability
+    return IsSelectedPIDBayes(rd);
   }
 
   Double_t origCompatTOF=fPidHF->GetPCompatTOF();
@@ -534,29 +641,31 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 
 
     // cuts on resonant decays (via Phi or K0*)
-    Double_t mPhiPDG = TDatabasePDG::Instance()->GetParticle(333)->Mass();
-    Double_t mK0starPDG = TDatabasePDG::Instance()->GetParticle(313)->Mass();
-    if(okDsKKpi){
-      Double_t mass01phi=d->InvMass2Prongs(0,1,321,321);
-      Double_t mass12K0s=d->InvMass2Prongs(1,2,321,211);
-      if(TMath::Abs(mass01phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhiKKpi=1;
-      if(TMath::Abs(mass12K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starKKpi = 1;
-      if(!okMassPhiKKpi && !okMassK0starKKpi) okDsKKpi=0;
-      if(okMassPhiKKpi) okDsPhiKKpi=1;
-      if(okMassK0starKKpi) okDsK0starKKpi=1;
-    }
-    if(okDspiKK){
-      Double_t mass01K0s=d->InvMass2Prongs(0,1,211,321);
-      Double_t mass12phi=d->InvMass2Prongs(1,2,321,321);
-      if(TMath::Abs(mass01K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starpiKK = 1;
-      if(TMath::Abs(mass12phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhipiKK=1;
-      if(!okMassPhipiKK && !okMassK0starpiKK) okDspiKK=0;
-      if(okMassPhipiKK) okDsPhipiKK=1;
-      if(okMassK0starpiKK) okDsK0starpiKK=1;
-    }
-    if(!okDsKKpi && !okDspiKK){
-      CleanOwnPrimaryVtx(d,aod,origownvtx);
-      return 0;
+    if(fCutOnResonances){
+      Double_t mPhiPDG = TDatabasePDG::Instance()->GetParticle(333)->Mass();
+      Double_t mK0starPDG = TDatabasePDG::Instance()->GetParticle(313)->Mass();
+      if(okDsKKpi){
+	Double_t mass01phi=d->InvMass2Prongs(0,1,321,321);
+	Double_t mass12K0s=d->InvMass2Prongs(1,2,321,211);
+	if(TMath::Abs(mass01phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhiKKpi=1;
+	if(TMath::Abs(mass12K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starKKpi = 1;
+	if(!okMassPhiKKpi && !okMassK0starKKpi) okDsKKpi=0;
+	if(okMassPhiKKpi) okDsPhiKKpi=1;
+	if(okMassK0starKKpi) okDsK0starKKpi=1;
+      }
+      if(okDspiKK){
+	Double_t mass01K0s=d->InvMass2Prongs(0,1,211,321);
+	Double_t mass12phi=d->InvMass2Prongs(1,2,321,321);
+	if(TMath::Abs(mass01K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starpiKK = 1;
+	if(TMath::Abs(mass12phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhipiKK=1;
+	if(!okMassPhipiKK && !okMassK0starpiKK) okDspiKK=0;
+	if(okMassPhipiKK) okDsPhipiKK=1;
+	if(okMassK0starpiKK) okDsK0starpiKK=1;
+      }
+      if(!okDsKKpi && !okDspiKK){
+	CleanOwnPrimaryVtx(d,aod,origownvtx);
+	return 0;
+      }
     }
 
     // Cuts on track pairs
