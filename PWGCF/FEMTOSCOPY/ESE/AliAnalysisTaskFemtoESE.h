@@ -143,6 +143,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
 
   TH3F**** hq;
   TH3F**** hqmix;
+  TH3F**** hqinv;
 
   Int_t nqPercBinsLHC11h;
   Double_t* qPercBinsLHC11h; //[nqPercBinsLHC11h]
@@ -192,6 +193,8 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   TH1D *hresV0ATPC;
   TH1D *hresV0CTPC;
   TH1D *hresV0AV0C;
+  TH3F* hqinvcheck;
+
   TH1F* hktbins;
   TH1F* hcentbins;
   TH1F* hepbins;

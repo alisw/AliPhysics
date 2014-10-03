@@ -92,7 +92,8 @@ AliAnalysisTaskSE(),
     nVzBins1(1),
     vzBins(0),
     hq(0x0),
-    hqmix(0x0), 
+    hqmix(0x0),
+    hqinv(0x0),
     nqPercBinsLHC11h(1), 
     qPercBinsLHC11h(0),
     hpx(0x0),
@@ -137,6 +138,7 @@ AliAnalysisTaskSE(),
     hresV0ATPC(0x0),
     hresV0CTPC(0x0),
     hresV0AV0C(0x0),
+    hqinvcheck(0x0),
     hktbins(0x0),
     hcentbins(0x0),
     hepbins(0x0)
@@ -186,6 +188,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   vzBins(0),
   hq(0x0),
   hqmix(0x0),
+  hqinv(0x0),
   nqPercBinsLHC11h(1), 
   qPercBinsLHC11h(0),
   hpx(0x0),
@@ -230,6 +233,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   hresV0ATPC(0x0),
   hresV0CTPC(0x0),
   hresV0AV0C(0x0),
+  hqinvcheck(0x0),
   hktbins(0x0),
   hcentbins(0x0),
   hepbins(0x0)
@@ -308,6 +312,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const AliAnalysisTaskFemtoESE &
   vzBins(0),
   hq(0x0),
   hqmix(0x0),
+  hqinv(0x0),
   nqPercBinsLHC11h(1), 
   qPercBinsLHC11h(0),
   hpx(0x0),
@@ -352,6 +357,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const AliAnalysisTaskFemtoESE &
   hresV0ATPC(0x0),
   hresV0CTPC(0x0),
   hresV0AV0C(0x0),
+  hqinvcheck(0x0),
   hktbins(0x0),
   hcentbins(0x0),
   hepbins(0x0)
@@ -409,7 +415,7 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hvzcent->GetXaxis()->SetTitle("v_{z}");
   hvzcent->GetYaxis()->SetTitle("centrality");
   fOutputList->Add(hvzcent);
-  hcent = new TH1D("hcent","cent",50,0,200);
+  hcent = new TH1D("hcent","cent",200,0,50);
   hcent->GetXaxis()->SetTitle("centrality");
   fOutputList->Add(hcent);
   hcentn = new TH2D("hcentn","cent vs npions",50,0,50,100,0,2000);
@@ -534,22 +540,33 @@ void AliAnalysisTaskFemtoESE::UserCreateOutputObjects()
   hresV0AV0C->GetXaxis()->SetTitle("centrality");
   fOutputList->Add(hresV0AV0C);
 
+  hqinvcheck = new TH3F("hqinvcheck","Qinv vs kt vs cent",100,0,1,50,0,1,10,0,50);
+  hqinvcheck->GetXaxis()->SetTitle("qinv");
+  hqinvcheck->GetYaxis()->SetTitle("kt");
+  hqinvcheck->GetZaxis()->SetTitle("centrality");
+  fOutputList->Add(hqinvcheck);
+
   hq = new TH3F***[nKtBins];
   hqmix = new TH3F***[nKtBins];
+  hqinv = new TH3F***[nKtBins];
   for(Int_t k = 0; k < nKtBins; k++)
     {
       hq[k] = new TH3F**[nEPBins];
       hqmix[k] = new TH3F**[nEPBins];
+      hqinv[k] = new TH3F**[nEPBins];
       for(Int_t e = 0; e < nEPBins; e++)
 	{
 	  hq[k][e] = new TH3F*[nCentBins];
 	  hqmix[k][e] = new TH3F*[nCentBins];
+	  hqinv[k][e] = new TH3F*[nCentBins];
 	  for(Int_t c = 0; c < nCentBins; c++)
 	    {
 	      hq[k][e][c] = new TH3F(Form("hq_%i_%i_%i",k,e,c),Form("hq_%i_%i_%i",k,e,c),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
 	      fOutputList->Add(hq[k][e][c]);
 	      hqmix[k][e][c] = new TH3F(Form("hqmix_%i_%i_%i",k,e,c),Form("hqmix_%i_%i_%i",k,e,c),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
 	      fOutputList->Add(hqmix[k][e][c]);
+	      hqinv[k][e][c] = new TH3F(Form("hqinv_%i_%i_%i",k,e,c),Form("hqinv_%i_%i_%i",k,e,c),20,-0.2,0.2,20,-0.2,0.2,20,-0.2,0.2);
+	      fOutputList->Add(hqinv[k][e][c]);
 	    }
 	}
     }
@@ -833,6 +850,8 @@ void AliAnalysisTaskFemtoESE::TrackLoop(TObjArray *tracks, AliEventPool *pool, D
 	  if(!FindBin(kt,deltaphi,centralityPercentile,k,e,c)) continue;
 	  hktcheck->Fill(kt);
 	  hq[k][e][c]->Fill(qout,qside,qlong);
+	  hqinv[k][e][c]->Fill(qout,qside,qlong,sqrt(GetQinv2(pVect1, pVect2)));
+	  hqinvcheck->Fill(sqrt(GetQinv2(pVect1, pVect2)),kt,centralityPercentile);
 	  Double_t dphi = track1->Phi()-track2->Phi();
 	  if(dphi<-TMath::Pi()) dphi += 2*TMath::Pi();
 	  if(dphi>TMath::Pi()) dphi -= 2*TMath::Pi();
