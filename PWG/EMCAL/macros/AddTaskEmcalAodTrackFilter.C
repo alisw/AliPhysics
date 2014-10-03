@@ -41,7 +41,6 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
   Bool_t doProp = kFALSE;
   TString runPeriod(runperiod);
   runPeriod.ToLower();
-  std::cout << "run period" << runPeriod.Data() << std::endl;
   if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h" || 
       runPeriod == "lhc11h" || runPeriod == "lhc12a" || runPeriod == "lhc12b" ||
       runPeriod == "lhc12c" || runPeriod == "lhc12d" || runPeriod == "lhc12e" ||
