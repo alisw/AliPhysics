@@ -101,8 +101,10 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetKT3transition(Float_t KT3trans) {fKT3transition = KT3trans;}
   void SetKT4transition(Float_t KT4trans) {fKT4transition = KT4trans;}
   void SetTriggerType(Int_t tt) {fTriggerType = tt;}
+  void SetNormLow(Float_t nl) {fNormQcutLow = nl;}
+  void SetNormHigh(Float_t nh) {fNormQcutHigh = nh;}
   //
- 
+  
 
  private:
 

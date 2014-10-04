@@ -89,8 +89,8 @@ AliAnalysisTaskSE(),
   fMaxPt(1.0),
   fQcut(0),
   fQLowerCut(0),
-  fNormQcutLow(0),
-  fNormQcutHigh(0),
+  fNormQcutLow(0.15),
+  fNormQcutHigh(0.2),
   fKupperBound(0),
   fQupperBoundQ2(0),
   fQupperBoundQ3(0),
@@ -281,8 +281,8 @@ AliFourPion::AliFourPion(const Char_t *name)
   fMaxPt(1.0),
   fQcut(0),
   fQLowerCut(0),
-  fNormQcutLow(0),
-  fNormQcutHigh(0),
+  fNormQcutLow(0.15),
+  fNormQcutHigh(0.2),
   fKupperBound(0),
   fQupperBoundQ2(0),
   fQupperBoundQ3(0),
@@ -476,8 +476,8 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fMaxPt(obj.fMaxPt),
     fQcut(obj.fQcut),
     fQLowerCut(obj.fQLowerCut),
-    fNormQcutLow(0),
-    fNormQcutHigh(0),
+    fNormQcutLow(obj.fNormQcutLow),
+    fNormQcutHigh(obj.fNormQcutHigh),
     fKupperBound(obj.fKupperBound),
     fQupperBoundQ2(obj.fQupperBoundQ2),
     fQupperBoundQ3(obj.fQupperBoundQ3),
@@ -831,8 +831,8 @@ void AliFourPion::ParInit()
     fMultLimit=kMultLimitPbPb;
     fMbins=fCentBins;
     fQcut=0.1;
-    fNormQcutLow = 0.15;// 0.15
-    fNormQcutHigh = 0.2;// 0.2
+    //fNormQcutLow = 0.15;// 0.15
+    //fNormQcutHigh = 0.2;// 0.2
     fRstartMC = 5.0;
     fQbinsQinv3D = 20;
     fQupperBoundQinv3D = 0.1;
@@ -840,8 +840,8 @@ void AliFourPion::ParInit()
     fMultLimit=kMultLimitpp; 
     fMbins=1; 
     fQcut=0.6;
-    fNormQcutLow = 0.6;// was 1.0
-    fNormQcutHigh = 0.8;// was 1.5
+    //fNormQcutLow = 0.6;// was 1.0
+    //fNormQcutHigh = 0.8;// was 1.5
     fRstartMC = 1.0;
     fQbinsQinv3D = 60;
     fQupperBoundQinv3D = 0.6;
