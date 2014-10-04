@@ -194,9 +194,6 @@ void AliEbyEPidRatioTask::UserCreateOutputObjects() {
   list->Add(fHelper->GetHCentralityPercentile());
   list->Add(fHelper->GetHCentralityPercentileAll());
 
-
-
-
   if ((fIsAOD||fIsMC) && fModeEffCreation == 1) {
     fOutListEff->Add(fEffCont->GetHnEffMc());
     fOutListEff->Add(fEffCont->GetHnEffRec());
