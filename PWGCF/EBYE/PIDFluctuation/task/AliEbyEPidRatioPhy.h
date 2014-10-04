@@ -48,11 +48,11 @@ class AliEbyEPidRatioPhy : public AliEbyEPidRatioBase {
   TList                *fOutList;               //! Output data container
   Int_t                 fOrder;                 //  Max order of higher order distributions
   Int_t                 fNNp;                   //  N sets of arrays of particle/anti-particle counts
-  Int_t              ***fNp;                    //  Array of particle/anti-particle counts
-  Int_t             ****fNpPt;                  //  Array of particle/anti-particle counts
+  Int_t              ***fNp;                    //!  Array of particle/anti-particle counts
+  Int_t             ****fNpPt;                  //!  Array of particle/anti-particle counts
   Int_t                 fNMCNp;                 //  N sets of arrays of MC particle/anti-particle counts
-  Int_t              ***fMCNp;                  //  Array of MC particle/anti-particle counts
-  Int_t             ****fMCNpPt;                //  Array of MC particle/anti-particle counts
+  Int_t              ***fMCNp;                  //!  Array of MC particle/anti-particle counts
+  Int_t             ****fMCNpPt;                //!  Array of MC particle/anti-particle counts
   Double_t            **fRedFactp;              //  Array of particle/anti-particle reduced factorial
   
   TH1F *fPtBinHist; // Hist

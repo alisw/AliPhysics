@@ -12,7 +12,6 @@
 //                             (Test Only)                                 //
 //=========================================================================//
 
-
 #include "AliAnalysisTaskSE.h"
 #include "TList.h"
 #include "THnSparse.h"
@@ -124,7 +123,6 @@ class AliEbyEPidRatioTask : public AliAnalysisTaskSE {
   Int_t               fModeDCACreation;         //  DCA creation mode        : 1 = on    | 0 = off
   Int_t               fModeDistCreation;        //  Dist creation mode       : 1 = on    | 0 = off
   Int_t               fModeQACreation;          //  QA creation mode         : 1 = on    | 0 = off
-
   AliMCEvent         *fMCEvent;                 //! Ptr to MC event
   AliStack           *fMCStack;                 //! Ptr to MC stack
   

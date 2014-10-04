@@ -101,8 +101,6 @@ AliEbyEPidRatioPhy::~AliEbyEPidRatioPhy() {
   }
   if (fNpPt) delete[] fNpPt;
 
-
-
  for (Int_t ii = 0; ii < fNNp; ++ii) {
     for (Int_t kk = 0; kk < 2; ++kk)
       for (Int_t jj = 0; jj < 2; ++jj) {
@@ -112,10 +110,6 @@ AliEbyEPidRatioPhy::~AliEbyEPidRatioPhy() {
     if (fMCNpPt[ii]) delete[] fMCNpPt[ii];
   }
   if (fMCNpPt) delete[] fMCNpPt;
-
-
-
-
 
   return;
 }
