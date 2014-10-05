@@ -75,6 +75,7 @@ AliAnalysisTaskSE(),
   fBfield(0),
   fMbin(0),
   fFSIindex(0),
+  fFSIindexSmallSystem(9),
   fEDbin(0),
   fMbins(fCentBins),
   fMultLimit(0),
@@ -216,7 +217,7 @@ AliAnalysisTaskSE(),
   }// Mbin
   
   // Initialize FSI histograms
-  for(Int_t i=0; i<12; i++){
+  for(Int_t i=0; i<13; i++){
     fFSIss[i]=0x0; 
     fFSIos[i]=0x0;
   }
@@ -267,6 +268,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fBfield(0),
   fMbin(0),
   fFSIindex(0),
+  fFSIindexSmallSystem(9),
   fEDbin(0),
   fMbins(fCentBins),
   fMultLimit(0),
@@ -411,7 +413,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   }// Mbin
   
   // Initialize FSI histograms
-  for(Int_t i=0; i<12; i++){
+  for(Int_t i=0; i<13; i++){
     fFSIss[i]=0x0; 
     fFSIos[i]=0x0;
   }
@@ -462,6 +464,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fBfield(obj.fBfield),
     fMbin(obj.fMbin),
     fFSIindex(obj.fFSIindex),
+    fFSIindexSmallSystem(obj.fFSIindexSmallSystem),
     fEDbin(obj.fEDbin),
     fMbins(obj.fMbins),
     fMultLimit(obj.fMultLimit),
@@ -551,7 +554,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
 {
   // Copy Constructor
   
-  for(Int_t i=0; i<12; i++){
+  for(Int_t i=0; i<13; i++){
     fFSIss[i]=obj.fFSIss[i]; 
     fFSIos[i]=obj.fFSIos[i];
   }
@@ -604,6 +607,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fBfield = obj.fBfield;
   fMbin = obj.fMbin;
   fFSIindex = obj.fFSIindex;
+  fFSIindexSmallSystem = obj.fFSIindexSmallSystem;
   fEDbin = obj.fEDbin;
   fMbins = obj.fMbins;
   fMultLimit = obj.fMultLimit;
@@ -662,7 +666,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fpPbc3FitEA = obj.fpPbc3FitEA;
   fppc3FitEA = obj.fppc3FitEA;
   
-  for(Int_t i=0; i<12; i++){
+  for(Int_t i=0; i<13; i++){
     fFSIss[i]=obj.fFSIss[i]; 
     fFSIos[i]=obj.fFSIos[i];
   }
@@ -780,7 +784,7 @@ AliFourPion::~AliFourPion()
   }// Mbin
   
    
-  for(Int_t i=0; i<12; i++){
+  for(Int_t i=0; i<13; i++){
     if(fFSIss[i]) delete fFSIss[i]; 
     if(fFSIos[i]) delete fFSIos[i];
   }
@@ -4388,12 +4392,12 @@ void AliFourPion::SetMomResCorrections(Bool_t legoCase, TH2D *temp2DSC, TH2D *te
   cout<<"Done reading momentum resolution file"<<endl;
 }
 //________________________________________________________________________
-void AliFourPion::SetFSICorrelations(Bool_t legoCase, TH1D *tempss[12], TH1D *tempos[12]){
+void AliFourPion::SetFSICorrelations(Bool_t legoCase, TH1D *tempss[13], TH1D *tempos[13]){
   // read in 2-particle and 3-particle FSI correlations = K2 & K3
   // 2-particle input histo from file is binned in qinv.  3-particle in qinv of each pair
   if(legoCase){
     cout<<"LEGO call to SetFSICorrelations"<<endl;
-    for(Int_t MB=0; MB<12; MB++) {
+    for(Int_t MB=0; MB<13; MB++) {
       fFSIss[MB] = (TH1D*)tempss[MB]->Clone();
       fFSIos[MB] = (TH1D*)tempos[MB]->Clone();
       //
@@ -4408,9 +4412,9 @@ void AliFourPion::SetFSICorrelations(Bool_t legoCase, TH1D *tempss[12], TH1D *te
       AliFatal("No FSI file found.  Kill process.");
     }else {cout<<"Good FSI File Found!"<<endl;}
     
-    TH1D *temphistoSS[12];
-    TH1D *temphistoOS[12];
-    for(Int_t MB=0; MB<12; MB++) {
+    TH1D *temphistoSS[13];
+    TH1D *temphistoOS[13];
+    for(Int_t MB=0; MB<13; MB++) {
       TString *nameK2SS = new TString("K2ss_");
       *nameK2SS += MB;
       temphistoSS[MB] = (TH1D*)fsifile->Get(nameK2SS->Data());
@@ -4570,7 +4574,7 @@ void AliFourPion::SetFSIindex(Float_t R){
       else if(fMbin<=15) fFSIindex = 7;//40-50%
       else if(fMbin<=18) fFSIindex = 8;//40-50%
       else fFSIindex = 8;//90-100%
-    }else fFSIindex = 9;// pp and pPb
+    }else fFSIindex = fFSIindexSmallSystem;// pPb and pp
   }else{// FSI binning for MC 
     if(R>=10.) fFSIindex = 0;
     else if(R>=9.) fFSIindex = 1;
