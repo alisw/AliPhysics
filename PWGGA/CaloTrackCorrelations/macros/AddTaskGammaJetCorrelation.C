@@ -81,7 +81,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation(const Float_t  i
   
   //kGammaJetCorrelationName = Form("%s_Trig%s_Cl%s_TM%d_R%1.1f_Pt%1.1f",calorimeter.Data(), trigger.Data(),clustersArray.Data(),tm,cone,pth);
   //  kGammaJetCorrelationName = Form("%s_Trig%s_Cl%s_TM%d",calorimeter.Data(), trigger.Data(),clustersArray.Data(),tm);
-  kGammaJetCorrelationName = Form("%s_Trig%s_Fired%s_Cl%s_TM%d",calorimeter.Data(), trigger.Data(),firedTrigger.Data(),clustersArray.Data(),tm);//<<<---changed here
+  kGammaJetCorrelationName = Form("%s_Trig%s_Fired%s_Cl%s_TM%d_l02%1.2f",calorimeter.Data(), trigger.Data(),firedTrigger.Data(),clustersArray.Data(),tm,maxLambda0Cut);//<<<---changed here
 
   
   if(collision=="PbPb" && maxCen>=0) kGammaJetCorrelationName+=Form("Cen%d_%d",minCen,maxCen);
