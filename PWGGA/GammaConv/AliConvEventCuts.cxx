@@ -68,63 +68,71 @@ const char* AliConvEventCuts::fgkCutNames[AliConvEventCuts::kNCuts] = {
 
 //________________________________________________________________________
 AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
-   AliAnalysisCuts(name,title),
-   fHistograms(NULL),
-   fHeaderList(NULL),
-   fEventQuality(-1),
-   fIsHeavyIon(0),
-   fDetectorCentrality(0),
-   fModCentralityClass(0),
-   fMaxVertexZ(10),
-   fCentralityMin(0),
-   fCentralityMax(0),
-   fMultiplicityMethod(0),
-   fSpecialTrigger(0),
-   fSpecialSubTrigger(0),
-   fRemovePileUp(kFALSE),
-   fRejectExtraSignals(0),
-   fOfflineTriggerMask(0),
-   fHasV0AND(kTRUE),
-   fIsSDDFired(kTRUE),
-   fRandom(0),
-   fnHeaders(0),
-   fNotRejectedStart(NULL),
-   fNotRejectedEnd(NULL),
-   fGeneratorNames(NULL),
-   fCutString(NULL),
-   fUtils(NULL),
-   fEtaShift(0.0),
-   fDoEtaShift(kFALSE),
-   fDoReweightHistoMCPi0(kFALSE),
-   fDoReweightHistoMCEta(kFALSE),
-   fDoReweightHistoMCK0s(kFALSE),
-   fPathTrFReweighting(""),
-   fNameHistoReweightingPi0(""),
-   fNameHistoReweightingEta(""),
-   fNameHistoReweightingK0s(""),
-   fNameFitDataPi0(""),
-   fNameFitDataEta(""),
-   fNameFitDataK0s(""),
-   fHistoEventCuts(NULL),
-   hCentrality(NULL),
-   hCentralityVsNumberOfPrimaryTracks(NULL),
-   hVertexZ(NULL),
-   hTriggerClass(NULL),
-   hTriggerClassSelected(NULL),
-   hReweightMCHistPi0(NULL),
-   hReweightMCHistEta(NULL),
-   hReweightMCHistK0s(NULL),
-   fFitDataPi0(NULL),
-   fFitDataEta(NULL),
-   fFitDataK0s(NULL),
-   fAddedSignalPDGCode(0),
-   fPreSelCut(kFALSE),
-   fTriggerSelectedManually(kFALSE),
-   fSpecialTriggerName(""),
-   fSpecialSubTriggerName(""),
-   fNSpecialSubTriggerOptions(0),
-   fV0ReaderName("")
-
+	AliAnalysisCuts(name,title),
+	fHistograms(NULL),
+	fHeaderList(NULL),
+	fEventQuality(-1),
+	fIsHeavyIon(0),
+	fDetectorCentrality(0),
+	fModCentralityClass(0),
+	fMaxVertexZ(10),
+	fCentralityMin(0),
+	fCentralityMax(0),
+	fMultiplicityMethod(0),
+	fSpecialTrigger(0),
+	fSpecialSubTrigger(0),
+	fRemovePileUp(kFALSE),
+	fRejectExtraSignals(0),
+	fOfflineTriggerMask(0),
+	fHasV0AND(kTRUE),
+	fIsSDDFired(kTRUE),
+	fRandom(0),
+	fnHeaders(0),
+	fNotRejectedStart(NULL),
+	fNotRejectedEnd(NULL),
+	fGeneratorNames(NULL),
+	fCutString(NULL),
+	fUtils(NULL),
+	fEtaShift(0.0),
+	fDoEtaShift(kFALSE),
+	fDoReweightHistoMCPi0(kFALSE),
+	fDoReweightHistoMCEta(kFALSE),
+	fDoReweightHistoMCK0s(kFALSE),
+	fPathTrFReweighting(""),
+	fNameHistoReweightingPi0(""),
+	fNameHistoReweightingEta(""),
+	fNameHistoReweightingK0s(""),
+	fNameFitDataPi0(""),
+	fNameFitDataEta(""),
+	fNameFitDataK0s(""),
+	fHistoEventCuts(NULL),
+	hCentrality(NULL),
+	hCentralityVsNumberOfPrimaryTracks(NULL),
+	hVertexZ(NULL),
+	hTriggerClass(NULL),
+	hTriggerClassSelected(NULL),
+	hReweightMCHistPi0(NULL),
+	hReweightMCHistEta(NULL),
+	hReweightMCHistK0s(NULL),
+	fFitDataPi0(NULL),
+	fFitDataEta(NULL),
+	fFitDataK0s(NULL),
+	fAddedSignalPDGCode(0),
+	fPreSelCut(kFALSE),
+	fTriggerSelectedManually(kFALSE),
+	fSpecialTriggerName(""),
+	fSpecialSubTriggerName(""),
+	fNSpecialSubTriggerOptions(0),
+	fV0ReaderName(""),
+	fCaloTriggers(NULL),
+	fTriggerPatchInfo(NULL),
+	fMainTriggerPatchEMCAL(NULL),
+	fCaloTriggersName(""),
+	fCaloTriggerPatchInfoName(""),
+	fTriggersEMCAL(0),
+	fTriggersEMCALSelected(-1),
+	fEMCALTrigInitialized(kFALSE)
+	
 {
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
    fCutString=new TObjString((GetCutNumber()).Data());
@@ -138,62 +146,70 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 
 //________________________________________________________________________
 AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
-   AliAnalysisCuts(ref),
-   fHistograms(NULL),
-   fHeaderList(ref.fHeaderList),
-   fEventQuality(ref.fEventQuality),
-   fIsHeavyIon(ref.fIsHeavyIon),
-   fDetectorCentrality(ref.fDetectorCentrality),
-   fModCentralityClass(ref.fModCentralityClass),
-   fMaxVertexZ(ref.fMaxVertexZ),
-   fCentralityMin(ref.fCentralityMin),
-   fCentralityMax(ref.fCentralityMax),
-   fMultiplicityMethod(ref.fMultiplicityMethod),
-   fSpecialTrigger(ref.fSpecialTrigger),
-   fSpecialSubTrigger(ref.fSpecialSubTrigger),
-   fRemovePileUp(ref.fRemovePileUp),
-   fRejectExtraSignals(ref.fRejectExtraSignals),
-   fOfflineTriggerMask(ref.fOfflineTriggerMask),
-   fHasV0AND(ref.fHasV0AND),
-   fIsSDDFired(ref.fIsSDDFired),
-   fRandom(ref.fRandom),
-   fnHeaders(ref.fnHeaders),
-   fNotRejectedStart(NULL),
-   fNotRejectedEnd(NULL),
-   fGeneratorNames(ref.fGeneratorNames),
-   fCutString(NULL),
-   fUtils(NULL),
-   fEtaShift(ref.fEtaShift),
-   fDoEtaShift(ref.fDoEtaShift),
-   fDoReweightHistoMCPi0(ref.fDoReweightHistoMCPi0),
-   fDoReweightHistoMCEta(ref.fDoReweightHistoMCEta),
-   fDoReweightHistoMCK0s(ref.fDoReweightHistoMCK0s),
-   fPathTrFReweighting(ref.fPathTrFReweighting),
-   fNameHistoReweightingPi0(ref.fNameHistoReweightingPi0),
-   fNameHistoReweightingEta(ref.fNameHistoReweightingEta),
-   fNameHistoReweightingK0s(ref.fNameHistoReweightingK0s),
-   fNameFitDataPi0(ref.fNameFitDataPi0),
-   fNameFitDataEta(ref.fNameFitDataEta),
-   fNameFitDataK0s(ref.fNameFitDataK0s),
-   fHistoEventCuts(NULL),
-   hCentrality(NULL),
-   hCentralityVsNumberOfPrimaryTracks(NULL),
-   hVertexZ(NULL),
-   hTriggerClass(NULL),
-   hTriggerClassSelected(NULL),
-   hReweightMCHistPi0(ref.hReweightMCHistPi0),
-   hReweightMCHistEta(ref.hReweightMCHistEta),
-   hReweightMCHistK0s(ref.hReweightMCHistK0s),
-   fFitDataPi0(ref.fFitDataPi0),
-   fFitDataEta(ref.fFitDataEta),
-   fFitDataK0s(ref.fFitDataK0s),
-   fAddedSignalPDGCode(ref.fAddedSignalPDGCode),
-   fPreSelCut(ref.fPreSelCut),
-   fTriggerSelectedManually(ref.fTriggerSelectedManually),
-   fSpecialTriggerName(ref.fSpecialTriggerName),
-   fSpecialSubTriggerName(ref.fSpecialSubTriggerName),
-   fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions),
-   fV0ReaderName(ref.fV0ReaderName)
+	AliAnalysisCuts(ref),
+	fHistograms(NULL),
+	fHeaderList(ref.fHeaderList),
+	fEventQuality(ref.fEventQuality),
+	fIsHeavyIon(ref.fIsHeavyIon),
+	fDetectorCentrality(ref.fDetectorCentrality),
+	fModCentralityClass(ref.fModCentralityClass),
+	fMaxVertexZ(ref.fMaxVertexZ),
+	fCentralityMin(ref.fCentralityMin),
+	fCentralityMax(ref.fCentralityMax),
+	fMultiplicityMethod(ref.fMultiplicityMethod),
+	fSpecialTrigger(ref.fSpecialTrigger),
+	fSpecialSubTrigger(ref.fSpecialSubTrigger),
+	fRemovePileUp(ref.fRemovePileUp),
+	fRejectExtraSignals(ref.fRejectExtraSignals),
+	fOfflineTriggerMask(ref.fOfflineTriggerMask),
+	fHasV0AND(ref.fHasV0AND),
+	fIsSDDFired(ref.fIsSDDFired),
+	fRandom(ref.fRandom),
+	fnHeaders(ref.fnHeaders),
+	fNotRejectedStart(NULL),
+	fNotRejectedEnd(NULL),
+	fGeneratorNames(ref.fGeneratorNames),
+	fCutString(NULL),
+	fUtils(NULL),
+	fEtaShift(ref.fEtaShift),
+	fDoEtaShift(ref.fDoEtaShift),
+	fDoReweightHistoMCPi0(ref.fDoReweightHistoMCPi0),
+	fDoReweightHistoMCEta(ref.fDoReweightHistoMCEta),
+	fDoReweightHistoMCK0s(ref.fDoReweightHistoMCK0s),
+	fPathTrFReweighting(ref.fPathTrFReweighting),
+	fNameHistoReweightingPi0(ref.fNameHistoReweightingPi0),
+	fNameHistoReweightingEta(ref.fNameHistoReweightingEta),
+	fNameHistoReweightingK0s(ref.fNameHistoReweightingK0s),
+	fNameFitDataPi0(ref.fNameFitDataPi0),
+	fNameFitDataEta(ref.fNameFitDataEta),
+	fNameFitDataK0s(ref.fNameFitDataK0s),
+	fHistoEventCuts(NULL),
+	hCentrality(NULL),
+	hCentralityVsNumberOfPrimaryTracks(NULL),
+	hVertexZ(NULL),
+	hTriggerClass(NULL),
+	hTriggerClassSelected(NULL),
+	hReweightMCHistPi0(ref.hReweightMCHistPi0),
+	hReweightMCHistEta(ref.hReweightMCHistEta),
+	hReweightMCHistK0s(ref.hReweightMCHistK0s),
+	fFitDataPi0(ref.fFitDataPi0),
+	fFitDataEta(ref.fFitDataEta),
+	fFitDataK0s(ref.fFitDataK0s),
+	fAddedSignalPDGCode(ref.fAddedSignalPDGCode),
+	fPreSelCut(ref.fPreSelCut),
+	fTriggerSelectedManually(ref.fTriggerSelectedManually),
+	fSpecialTriggerName(ref.fSpecialTriggerName),
+	fSpecialSubTriggerName(ref.fSpecialSubTriggerName),
+	fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions),
+	fV0ReaderName(ref.fV0ReaderName),
+   	fCaloTriggers(NULL),
+	fTriggerPatchInfo(NULL),
+	fMainTriggerPatchEMCAL(NULL),
+	fCaloTriggersName(ref.fCaloTriggersName),
+	fCaloTriggerPatchInfoName(ref.fCaloTriggerPatchInfoName),
+	fTriggersEMCAL(ref.fTriggersEMCAL),
+	fTriggersEMCALSelected(ref.fTriggersEMCALSelected),
+	fEMCALTrigInitialized(kFALSE)
 {
    // Copy Constructor
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -373,6 +389,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
    cutindex++;
 
    // Check for MC event
+   Bool_t isMC = kFALSE;
    if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
       // Check if MC event is correctly loaded
       AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -392,11 +409,14 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
          fEventQuality = 2;
          return kFALSE;
       }
+      isMC = kTRUE;
    }
 
+   
+   
    // Event Trigger
 //    cout << "before event trigger" << endl;
-   if(!IsTriggerSelected(fInputEvent)){
+   if(!IsTriggerSelected(fInputEvent, isMC )){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
       fEventQuality = 3;
       return kFALSE;
@@ -812,6 +832,8 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
 		fSpecialTrigger=5; // trigger alias kEMC
 		fOfflineTriggerMask=AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 ;
 		fTriggerSelectedManually = kTRUE;
+		fTriggersEMCALSelected= 0;
+		SETBIT(fTriggersEMCALSelected, kL0);
 		fSpecialTriggerName="AliVEvent::kEMC7/kEMC8/kEMC1";
 		break;
 	case 6:
@@ -830,12 +852,16 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
 		fSpecialTrigger=8; // trigger alias kEMCEGA
 		fOfflineTriggerMask=AliVEvent::kEMCEGA;
 		fTriggerSelectedManually = kTRUE;
+		fTriggersEMCALSelected= 0;
+		SETBIT(fTriggersEMCALSelected, kG2);
 		fSpecialTriggerName="AliVEvent::kEMCEGA";
 		break;
 		case 9:
 		fSpecialTrigger=9; // trigger alias kEMCEJE
 		fOfflineTriggerMask=AliVEvent::kEMCEJE;
 		fTriggerSelectedManually = kTRUE;
+		fTriggersEMCALSelected= 0;
+		SETBIT(fTriggersEMCALSelected, kJ2);
 		fSpecialTriggerName="AliVEvent::kEMCEJE";
 		break;
 	default:
@@ -1020,31 +1046,43 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="7EGA";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kG2);
 			break;
 		case 2: // 8EGA - CINT8 EGA
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="8EGA";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kG2);
 			break;
 		case 3: // 7EG1 - CINT7 EG1
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="7EG1";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kG1);
 			break;
 		case 4: // 8EG1 - CINT8 EG1
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="8EG1";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kG1);
 			break;
 		case 5: // 7EG2 - CINT7 EG2
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="7EG2";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kG2);
 			break;
 		case 6: // 8EG2 - CINT8 EG2
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="8EG2";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kG2);
 			break;
 		default:
 			AliError("Warning: Special Subtrigger Class Not known");
@@ -1061,31 +1099,43 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="7EJE";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kJ2);
 			break;
 		case 2: // 8EJE - CINT8 EJE
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="8EJE";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kJ2);
 			break;
 		case 3: // 7EJ1 - CINT7 EJ1
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="7EJ1";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kJ1);
 			break;
 		case 4: // 8EJ1 - CINT8 EJ1
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="8EJ1";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kJ1);
 			break;
 		case 5: // 7EJ2 - CINT7 EJ2
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="7EJ2";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kJ2);
 			break;
 		case 6: // 8EJ2 - CINT8 EJ2
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="8EJ2";
+			fTriggersEMCALSelected= 0;
+			SETBIT(fTriggersEMCALSelected, kJ2);
 			break;
 		default:
 			AliError("Warning: Special Subtrigger Class Not known");
@@ -1371,7 +1421,7 @@ Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 
 
 ///________________________________________________________________________
-Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent)
+Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 {
 
 	AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -1403,10 +1453,25 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent)
 
 		if (fOfflineTriggerMask){
 			isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();		 
+			
 			if (isSelected && !fPreSelCut){
-				if (fSpecialSubTrigger>0){
+// 				cout << "Special trigger: "<< fSpecialTrigger << " initialized " << fEMCALTrigInitialized << endl;
+				if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
+					if (!fEMCALTrigInitialized ) InitializeEMCALTrigger(fInputEvent);
+					fTriggersEMCAL= GetTriggerList();	
+				}
+				if (fSpecialSubTrigger>0 && !isMC){
 					if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
-				}	 
+				} else if (fSpecialSubTrigger>0 && isMC){
+					if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
+						isSelected = 0;
+// 						cout << "triggers: " << fTriggersEMCAL << "    selected triggers: " << fTriggersEMCALSelected << endl;
+						if (fTriggersEMCAL&fTriggersEMCALSelected){
+// 							cout << "accepted ++++++++++++++++++++" << endl;
+							isSelected = 1;
+						}	
+					}	
+				}	
 			}				
 		} 	 
 	}
@@ -1792,7 +1857,10 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, Al
 //_________________________________________________________________________
 Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon){
 
-	if ( !IsTriggerSelected(InputEvent) )
+	Bool_t isMC = kFALSE;
+	if (MCEvent){isMC = kTRUE;}
+	
+	if ( !IsTriggerSelected(InputEvent, isMC) )
 		return 3;
 
 	if(isHeavyIon != 0 && !(IsCentralitySelected(InputEvent,MCEvent)))
@@ -2048,3 +2116,164 @@ void AliConvEventCuts::GetCorrectEtaShiftFromPeriod(TString periodName){
    else printf(" Gamma Conversion Cuts %s :: Automatic Eta Shift requested but Period is not known -> No Shift \n\n",(GetCutNumber()).Data());
 }
 
+//________________________________________________________________________
+AliEmcalTriggerPatchInfo* AliConvEventCuts::GetMainTriggerPatch() 
+{
+  //get main trigger match; if not known yet, look for it and cache
+
+  if (fMainTriggerPatchEMCAL) 
+    return fMainTriggerPatchEMCAL;
+
+  if (!fTriggerPatchInfo) {
+    AliError(Form("%s: fTriggerPatchInfo not available",GetName()));
+    return 0;
+  }
+
+  //number of patches in event
+  Int_t nPatch = fTriggerPatchInfo->GetEntries();
+
+  //extract main trigger patch
+  AliEmcalTriggerPatchInfo *patch;
+  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
+    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    if (patch->IsMainTrigger()) {
+      fMainTriggerPatchEMCAL = patch;
+      break;
+    }
+  }
+
+  return fMainTriggerPatchEMCAL;
+}
+
+
+//________________________________________________________________________
+void AliConvEventCuts::InitializeEMCALTrigger(AliVEvent *fInputEvent)
+{
+// 	cout << "entered EMCAL trigger initialization" << endl;
+	
+	// Init the analysis.
+	if (fCaloTriggersName.IsNull()){
+		if (fInputEvent->IsA()==AliESDEvent::Class()){
+			fCaloTriggersName = "EMCALTrigger";
+		} else {
+			fCaloTriggersName = "emcalTrigger";
+		}	
+	}
+	
+	if (!fCaloTriggersName.IsNull() && !fCaloTriggers) {
+		fCaloTriggers =  dynamic_cast<AliVCaloTrigger*>(fInputEvent->FindListObject(fCaloTriggersName));
+		if (!fCaloTriggers) {
+			AliError(Form("%s: Could not retrieve calo triggers %s!", GetName(), fCaloTriggersName.Data())); 
+		return;
+		}
+	}
+
+	if (fCaloTriggerPatchInfoName.IsNull()){
+		if (fInputEvent->IsA()==AliESDEvent::Class()){
+			fCaloTriggerPatchInfoName = "EmcalTriggers";
+		} else {
+			fCaloTriggerPatchInfoName = "EmcalTriggers";
+		}
+	}	
+	
+	if (!fCaloTriggerPatchInfoName.IsNull() && !fTriggerPatchInfo) {
+		fTriggerPatchInfo = GetArrayFromEvent(fInputEvent, fCaloTriggerPatchInfoName.Data(), "AliEmcalTriggerPatchInfo");
+		if (!fTriggerPatchInfo) {
+			AliError(Form("%s: Could not retrieve calo trigger patch info %s!", GetName(), fCaloTriggerPatchInfoName.Data())); 
+		return;
+		}
+
+	}
+
+	fEMCALTrigInitialized = kTRUE;
+}
+
+//________________________________________________________________________
+ULong_t AliConvEventCuts::GetTriggerList(){
+	if (!fTriggerPatchInfo)
+	return 0;
+	//number of patches in event
+	Int_t nPatch = fTriggerPatchInfo->GetEntries();
+
+	//loop over patches to define trigger type of event
+	Int_t nG1 = 0;
+	Int_t nG2 = 0;
+	Int_t nJ1 = 0;
+	Int_t nJ2 = 0;
+	Int_t nL0 = 0;
+	AliEmcalTriggerPatchInfo *patch;
+	for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
+		patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+		if (patch->IsGammaHigh()) nG1++;
+		if (patch->IsGammaLow())  nG2++;
+		if (patch->IsJetHigh()) nJ1++;
+		if (patch->IsJetLow())  nJ2++;
+		if (patch->IsLevel0())  nL0++;
+	}
+
+// 	  AliDebug(2, "Patch summary: ");
+// 	  AliDebug(2, Form("Number of patches: %d", nPatch));
+// 	  AliDebug(2, Form("Level0: [%d]" ,nL0));
+// 	  AliDebug(2, Form("Jet:    low[%d], high[%d]" ,nJ2, nJ1));
+// 	  AliDebug(2, Form("Gamma:  low[%d], high[%d]" ,nG2, nG1));
+
+// 	if (nPatch > 0){
+// 		cout << 	  Form("Number of patches: %d", nPatch) << endl;
+// 		cout << 	  Form("Level0: [%d]" ,nL0) << endl;
+// 		cout << 	  Form("Jet:    low[%d], high[%d]" ,nJ2, nJ1) << endl;
+// 		cout << 	  Form("Gamma:  low[%d], high[%d]" ,nG2, nG1) << endl;
+// 	}
+	  
+	ULong_t triggers(0);
+	if (nG1>0)
+	SETBIT(triggers, kG1);
+	if (nG2>0)
+	SETBIT(triggers, kG2);
+	if (nJ1>0)
+	SETBIT(triggers, kJ1);
+	if (nJ2>0)
+	SETBIT(triggers, kJ2);
+	if (nL0>0)
+	SETBIT(triggers, kL0);
+	return triggers;
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::HasTriggerType(TriggerTypeEMCAL t){
+	// Check if event has a given trigger type
+	if(t == kND){
+		return fTriggersEMCAL == 0;
+	}
+	return TESTBIT(fTriggersEMCAL, int(t));
+}
+
+
+//________________________________________________________________________
+TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* fInputEvent, const char *name, const char *clname)
+{
+	// Get array from event.
+
+	TClonesArray *arr = 0;
+	TString sname(name);
+	if (!sname.IsNull()) {
+		arr = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(sname));
+		if (!arr) {
+		AliWarning(Form("%s: Could not retrieve array with name %s!", GetName(), name)); 
+		return 0;
+		}
+	} else {
+		return 0;
+	}
+
+	if (!clname)
+		return arr;
+
+	TString objname(arr->GetClass()->GetName());
+	TClass cls(objname);
+	if (!cls.InheritsFrom(clname)) {
+		AliWarning(Form("%s: Objects of type %s in %s are not inherited from %s!", 
+						GetName(), cls.GetName(), name, clname)); 
+		return 0;
+	}
+	return arr;
+}

@@ -86,6 +86,10 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	task->SetAssHadronPtRange(0.5,2.0);
 	
 	task->SetAdditionalCuts(0.0,80);
+	if(configIndex==20) task->SetAdditionalCuts(0.0,80);
+	if(configIndex==21) task->SetAdditionalCuts(0.3,80);
+	if(configIndex==22) task->SetAdditionalCuts(0.5,80);
+	if(configIndex==23) task->SetAdditionalCuts(0.7,80);
 	
 	if(configIndex==11) task->SetSPDCutForHadrons();
 	

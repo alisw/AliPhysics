@@ -25,6 +25,7 @@ class AliEbyEPidRatioPhy : public AliEbyEPidRatioBase {
   virtual ~AliEbyEPidRatioPhy();
   virtual void Process();
   void SetOutList(TList* l) {fOutList = l;}
+  void SetQA() {fIsQA = kTRUE;}  
 
  private:
 
@@ -35,6 +36,7 @@ class AliEbyEPidRatioPhy : public AliEbyEPidRatioBase {
   virtual void CreateHistograms();  
   Int_t ProcessTracks();
   Int_t ProcessParticles();  
+ 
   void ResetHistSet();
   void AddHistSetCent(const Char_t *name, const Char_t *title);
   void AddHistSetCentPt(const Char_t *name, const Char_t *title);
@@ -46,14 +48,18 @@ class AliEbyEPidRatioPhy : public AliEbyEPidRatioBase {
   TList                *fOutList;               //! Output data container
   Int_t                 fOrder;                 //  Max order of higher order distributions
   Int_t                 fNNp;                   //  N sets of arrays of particle/anti-particle counts
-  Int_t              ***fNp;                    //  Array of particle/anti-particle counts
-  Int_t             ****fNpPt;                  //  Array of particle/anti-particle counts
+  Int_t              ***fNp;                    //!  Array of particle/anti-particle counts
+  Int_t             ****fNpPt;                  //!  Array of particle/anti-particle counts
   Int_t                 fNMCNp;                 //  N sets of arrays of MC particle/anti-particle counts
-  Int_t              ***fMCNp;                  //  Array of MC particle/anti-particle counts
-  Int_t             ****fMCNpPt;                //  Array of MC particle/anti-particle counts
+  Int_t              ***fMCNp;                  //!  Array of MC particle/anti-particle counts
+  Int_t             ****fMCNpPt;                //!  Array of MC particle/anti-particle counts
   Double_t            **fRedFactp;              //  Array of particle/anti-particle reduced factorial
-
+  
   TH1F *fPtBinHist; // Hist
+  Bool_t                fIsQA;                  // Check for QA
+  THnSparseD           *fHnTrackUnCorrRec;          //  THnSparseD : uncorrected probe particles
+  THnSparseD           *fHnTrackUnCorrMc;           //  THnSparseD : Original Corrected probe particles Mc
+
 
   ClassDef(AliEbyEPidRatioPhy, 1);
 };

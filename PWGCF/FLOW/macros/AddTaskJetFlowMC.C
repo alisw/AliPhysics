@@ -26,7 +26,10 @@ AliAnalysisTaskJetFlowMC* AddTaskJetFlowMC(
   const char *name              ="AliAnalysisTaskJetFlowMC",
   Bool_t doQA                   = kFALSE,
   Bool_t doDecay                = kFALSE,       // be sure to load pythia libs
-  Bool_t doEmbedding            = kFALSE        // not to be used on train
+  Bool_t doEmbedding            = kFALSE,       // not to be used on train
+  Double_t ptHardPythiaMin      = 0.,           // pt hard bin lower bound
+  Double_t ptHardPythiaMax      = 10.           // pt hard bin upper bound
+
   )
 {  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -49,17 +52,25 @@ AliAnalysisTaskJetFlowMC* AddTaskJetFlowMC(
   // to decay tracks using as a default pythia
   if(doDecay) task->SetDecayer(TaskJetFlowMC::GetDecayer(kTRUE));
   // to embed pythia jets to the events
-  if(doEmbedding) AliJetEmbeddingFromGenTask* eTask = TaskJetFlowMC::EmbedGeneratedJets(TaskJetFlowMC::GetPythiaGenerator(), outputTracks);
+  if(doEmbedding) AliJetEmbeddingFromGenTask* eTask = TaskJetFlowMC::EmbedGeneratedJets(TaskJetFlowMC::GetPythiaGenerator(2760., ptHardPythiaMin, ptHardPythiaMax), outputTracks);
   return task;
 }
 
 namespace TaskJetFlowMC {
 
     TF1* GetSpectrum() {
-        // thermal spectrum used for ALICE SIMULATION PLOTS ALI-SIMUL-75145 ALI-SIMUL-75171
+        // full spectrum used for ALICE SIMULATION PLOTS ALI-SIMUL-75145 ALI-SIMUL-75171
+        // combination of boltzmann spectrum and hard jet spectrum
         TF1* fspectrum = new TF1("fspectrum", "[0]*(TMath::Power([1], 2)*x*TMath::Exp(-[1]*x))+(x>1)*[2]*(1.17676e-01*TMath::Sqrt(0.1396*0.1396+x*x)*TMath::Power(1.+1./[3]/8.21795e-01*TMath::Sqrt(0.1396*0.1396+x*x),-1.*[3]))*(1/(1 + TMath::Exp(-(x - [4])/[5])))", .2, 200.);
-        fspectrum->SetParameters(2434401791.20528 ,2.98507 ,10069622.25117 ,5.50000 ,2.80000 ,0.20000 );
+        fspectrum->SetParameters(2434401791.20528, 2.98507, 10069622.25117, 5.50000, 2.80000, 0.20000);
         return fspectrum;   
+    }
+
+    TF1* GetThermalSpectrum() {
+        // pure boltzmann part of thermal spectrum
+        TF1* boltzmann = new TF1("boltzmann", "[0]*(TMath::Power([1], 2)*x*TMath::Exp(-[1]*x))");
+        boltzmann->SetParameters(2434401791.20528, 2.98507);
+        return boltzmann;
     }
 
     TVirtualDecayer* GetDecayer(Bool_t local = kTRUE) {

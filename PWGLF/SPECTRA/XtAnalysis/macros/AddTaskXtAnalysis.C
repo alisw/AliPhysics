@@ -14,7 +14,7 @@ AliAnalysisTask *AddTaskXtAnalysis() {
   TString type = mgr->GetInputEventHandler()->GetDataType();
   
   // parameter provides the location of the input card
-  AliXtAnalysis *xtTask = new AliXtAnalysis("AliXtAnalysis","$ALICE_ROOT/PWGLF/SPECTRA/XtAnalysis/card_xT.input");
+  AliXtAnalysis *xtTask = new AliXtAnalysis("AliXtAnalysis",Form("%s%s",gSystem->Getenv("ALICE_ROOT"),"/PWGLF/SPECTRA/XtAnalysis/card_xT.input"));
   xtTask->SetDebugLevel(0);
   xtTask->SetDebugMode(0);  
 

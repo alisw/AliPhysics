@@ -69,6 +69,8 @@ class AliEbyEPidRatioHelper : public TNamed {
   Bool_t           GetIsMC()                   {return fIsMC;            }
   Bool_t           GetIsRatio()                {return fIsRatio;         }
   Bool_t           GetIsPtBin()                {return fIsPtBin;         }
+  Bool_t           GetDetWise()                {return fIsDetectorWise ; }
+
   Int_t            GetAODtrackCutBit()         {return fAODtrackCutBit;  }
   AliMCEvent*           GetMCEvent()           {return fMCEvent;         }
   AliInputEventHandler* GetInputEventHandler() {return fInputEventHandler;}
@@ -76,7 +78,7 @@ class AliEbyEPidRatioHelper : public TNamed {
   Float_t  GetCentralityPercentile()           {return fCentralityPercentile;}
   Float_t  GetMinPtForTOFRequired()            {return fMinPtForTOFRequired;}
   /** Initialize Helper */
-  Int_t Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Bool_t isPtBin, Int_t trackCutBit, Int_t modeDistCreation);
+  Int_t Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Bool_t isPtBin, Bool_t isDetWise, Int_t trackCutBit, Int_t modeDistCreation);
 
   /** Setup Event */
   Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
@@ -116,7 +118,6 @@ class AliEbyEPidRatioHelper : public TNamed {
 
   /** Check if trackis  accepted for Phi */
   Bool_t IsTrackAcceptedPhi(AliVTrack *track);
- 
 
   /** Method for the correct logarithmic binning of histograms 
    *  and Update MinPtForTOFRequired, using the pT log-scale 
@@ -200,7 +201,7 @@ class AliEbyEPidRatioHelper : public TNamed {
   TRandom3             *fRandom;                   //  Random generator
   Bool_t                fIsRatio;                  //  Is ratio
   Bool_t                fIsPtBin;                  //  Is Pt Bin
-
+  Bool_t                fIsDetectorWise;           // is detector wise
 
   ClassDef(AliEbyEPidRatioHelper, 1);
 };
