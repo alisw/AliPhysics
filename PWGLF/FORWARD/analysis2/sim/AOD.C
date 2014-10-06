@@ -364,7 +364,7 @@ void AddAnalysisTasks(const char *cdb_location)
   }
 
   // ---- PWG3 JPSI filtering (only pp) ------------------------------
-  if (aodCfg->UsePWGDQJPSIfilter() && (iCollision==0)) {
+  if (aodCfg->UsePWGDQJPSIfilter()) {
     gROOT->LoadMacro(pwgdq+"/dielectron/macros/AddTaskJPSIFilter.C");
     AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter();
 
@@ -390,7 +390,7 @@ void AddAnalysisTasks(const char *cdb_location)
 
   // Configurations flags, move up?
   if (aodCfg->UseJETAN()) {
-#if 1
+#if 0
     Warning("", "JET analysis disabled - major restructuring ofg JETAN");
 #else
     TString jetAOD             = "AliAOD.Jets.root";
@@ -511,21 +511,25 @@ void AODMerge()
   // Merging method. No staging and no terminate phase.
   TStopwatch  timer; timer.Start();
   TString     outputDir     = "wn.xml";
-  TString     outputFiles   = ("EventStat_temp.root," +
-			       "AODQA.root," +
-			       "AliAOD.root," +
-			       "AliAOD.VertexingHF.root," +
-			       "AliAOD.Muons.root," +
-			       "AliAOD.Jets.root," +
-			       "pyxsec_hists.root");
+  TObjArray   outputFiles;
+  outputFiles.Add(new TObjString("EventStat_temp.root,"));
+  outputFiles.Add(new TObjString("AODQA.root,"));
+  outputFiles.Add(new TObjString("AliAOD.root,"));
+  if (aodCfg->UsePWGHFvertexing()) 
+    outputFiles.Add(new TObjString("AliAOD.VertexingHF.root,"));
+  if (aodCfg->UseESDfilter() && aodCfg->UseMUONcopyAOD())
+    outputFiles.Add(new TObjString("AliAOD.Muons.root,"));
+  if (aodCfg->UseJETAN()) 
+    outputFiles.Add(new TObjString("AliAOD.Jets.root,"));
+  if (aodCfg->UsePWGDQJPSIfilter()) 
+    outputFiles.Add(new TObjString("AliAOD.Dielectron.root,"));
+  outputFiles.Add(new TObjString("pyxsec_hists.root"));
   TString     mergeExcludes = "";
-  TObjArray*  tokens        = outputFiles.Tokenize(",");
-  TIter       iter(tokens);
+  TIter       iter(outputFiles);
   TObjString* str           = 0;
-  TString     outputFile;
-  Bool_t      merged = kTRUE;
+  Bool_t      merged        = kTRUE;
   while ((str = static_cast<TObjString*>(iter()))) {
-    outputFile = str->GetString();
+    TString& outputFile = str->GetString();
     // Skip already merged outputs
     if (!gSystem->AccessPathName(outputFile)) {
       printf("Output file <%s> found. Not merging again.",outputFile.Data());

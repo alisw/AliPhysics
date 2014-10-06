@@ -116,11 +116,15 @@ merge()
     local tag=$5 
     local run=$6
     local tmpdir=`mktemp -d` 
-    
+    local pre=$what
+    if test "x$what" = "xAOD" ; then 
+	pre="aod";
+    fi 
+
     local top=${out}/${tag}/${run}
     local bse=${what}_Stage_${stage}.xml 
     local xml=${tmpdir}/${bse}
-    local arc=${what}_archive.zip
+    local arc=${pre}_archive.zip
     local jdl=Merge.jdl
     local ret=0
 
@@ -336,6 +340,7 @@ ahome=/alice/cern.ch/user/`echo $auid | sed 's/^\(.\).*/\1/'`/$auid
 adir=${ahome}/mc
 abin=${ahome}/mc
 aout=${ahome}/test
+stages="AOD QA"
 
 # --- Proces command line options ------------------------------------
 while test $# -gt 0 ; do 
@@ -349,6 +354,7 @@ while test $# -gt 0 ; do
 	-n|--jobs)      jobs=$2   	; shift ;;
 	-m|--events)    events=$2 	; shift ;;
 	-s|--stage)     stage=$2  	; shift ;; 
+	-S|--stages)    stages=$2       ; shift ;; 
 	-b|--bin)       abin=$2   	; shift ;; 
 	-o|--output)    aout=$2   	; shift ;; 
 	-d|--data)      adir=$2   	; shift ;; 
@@ -422,7 +428,9 @@ if test $stage -le 0 ; then
     exit $ret
 fi
 
-merge QA ${stage} ${adir} ${aout} ${id} ${run}
+for s in $stages ; do 
+    merge ${s} ${stage} ${adir} ${aout} ${id} ${run}
+done
 
 #
 # EOF

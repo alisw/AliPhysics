@@ -1,9 +1,23 @@
+/** 
+ * Read an integer valued environment variable 
+ * 
+ * @param name environment variable name 
+ * 
+ * @return Value or 0
+ */
 Int_t getIntEnv(const char* name)
 {
   TString env = gSystem->Getenv(name);
   if (env.IsNull()) return 0;
   return env.Atoi();
 }
+/** 
+ * Set specific storage 
+ * 
+ * @param s   Simlation object
+ * @param key Key to set specific storage for
+ * @param sub Sub-component of storage
+ */
 void SetSpecStore(AliSimulation& s, 
 		  const char* key, 
 		  const char* sub)
@@ -11,7 +25,12 @@ void SetSpecStore(AliSimulation& s,
   s.SetSpecificStorage(key, Form("alien://Folder=/alice/simulation/%s",sub));
 }
 
-
+/** 
+ * Run the simulation 
+ * 
+ * @param nev Number of events per job
+ * @param run Run number to simulate 
+ */
 void Simulate(Int_t nev=1, UInt_t run=0) 
 {
   // -----------------------------------------------------------------
@@ -20,6 +39,11 @@ void Simulate(Int_t nev=1, UInt_t run=0)
   //
   gROOT->Macro(Form("GRP.C(%d)", run));
 
+  // --- Get GRP to deduce collision system --------------------------
+  Bool_t         isAA  = grp->IsAA();
+  Bool_t         isPP  = grp->IsPP();
+  Bool_t         is10h = grp->period.EqualTo("LHC10h");
+
   // -----------------------------------------------------------------
   // 
   // Basic setup 
@@ -27,6 +51,12 @@ void Simulate(Int_t nev=1, UInt_t run=0)
   AliSimulation steer; 
   steer.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
   steer.SetMakeDigitsFromHits("ITS TPC");
+
+  // -----------------------------------------------------------------
+  // 
+  // Vertex, Mag.field, and trigger from OCDB
+  //
+  steer.SetTriggerConfig(!isAA ? "p-p" : "Pb-Pb");//Replace with "ocdb"
   steer.UseMagFieldFromGRP();
   steer.UseVertexFromCDB();
 
@@ -38,11 +68,6 @@ void Simulate(Int_t nev=1, UInt_t run=0)
   cdb->SetDefaultStorageFromRun(grp->run);
   // cdb->SetRun(grp.run);
   steer.SetDefaultStorage(cdb->GetDefaultStorage()->GetURI());
-
-  // --- Get GRP to deduce collision system --------------------------
-  Bool_t         isAA  = grp->IsAA();
-  Bool_t         isPP  = grp->IsPP();
-  Bool_t         is10h = grp->period.EqualTo("LHC10h");
 
   // --- ITS  (1 Total) ----------------------------------------------
   SetSpecStore(steer,"ITS/Align/Data",	"2008/v4-15-Release/Ideal");
@@ -67,14 +92,6 @@ void Simulate(Int_t nev=1, UInt_t run=0)
   if (is10h)
     SetSpecStore(steer,"ZDC/Align/Data",	"2008/v4-15-Release/Ideal/"); 
 
-  // -----------------------------------------------------------------
-  // 
-  // Vertex, Mag.field, and trigger from OCDB
-  //
-  steer.UseVertexFromCDB();
-  steer.UseMagFieldFromGRP();
-  // steer.SetTriggerConfig("OCDB");
-  steer.SetTriggerConfig(!isAA ? "p-p" : "Pb-Pb");
 
   // -----------------------------------------------------------------
   // 
@@ -89,3 +106,6 @@ void Simulate(Int_t nev=1, UInt_t run=0)
   timer.Stop();
   timer.Print();
 }
+// 
+// EOF
+//  
