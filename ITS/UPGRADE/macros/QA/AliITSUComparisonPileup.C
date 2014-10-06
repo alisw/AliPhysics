@@ -5,6 +5,16 @@
  *  Before running, load the ITSU libraries:                                *
  *  gSystem->Load("libITSUpgradeBase");gSystem->Load("libITSUpgradeRec");   *
  *                                                                          *
+ *  Definifions:                                                            *
+ *  1) Reconstructable track: physical primary, charged, pT > pTmin         * 
+ *  2) Reconstructable vertex: has at least nMin reconstructable tracks     *
+ *  3) Associated vertex: has at least nAssMin correctly associated tracks  *
+ *  4) Good associated vertex: the fraction of correctly associated tracks  *
+ *        is at least fracMin                                               *
+ *  5) Fake associated vertex: not a good associated vertex                 *
+ *  6) Efficiency:  the ratio of 4) over 3)                                 *
+ *  7) Fake rate:   the ratio of 5) over 3)                                 *
+ *                                                                          *
  *           Origin: I.Belikov, IPHC, Iouri.Belikov@iphc.cnrs.fr            *
  ****************************************************************************/
 
@@ -18,6 +28,8 @@
   #include <TFile.h>
   #include <TLine.h>
   #include <TROOT.h>
+  #include <TStyle.h>
+  #include <TLegend.h>
 
   #include "AliStack.h"
   #include "AliHeader.h"
@@ -28,37 +40,42 @@
   #include "AliESDtrack.h"
 #endif
 
-Int_t GoodPileupVertices(const Char_t *dir=".");
+//**** Parameters used in the definitions
+const Float_t pTmin=0.2;   // Minimal pT for a reconstructable track
+const Int_t nMin=3;        // Minimal N of reconstructable tracks per vertex
+const Int_t nAssMin=2;     // Minimal number of correctly associated tracks
+const Float_t fracMin=0.8; // Minimal fraction of correctly associated tracks
 
 extern AliRun *gAlice;
 extern TROOT *gROOT;
+extern TStyle *gStyle;
 
 Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    ::Info("AliITSUComparisonPileup.C","Doing comparison...");
+   Int_t GoodPileupVertices(const Char_t *dir=".");
 
    // **** Book histogramms   
    Int_t nb=35;
    Float_t min=0, max=70.;
    TH2F *h2spd=(TH2F*)gROOT->FindObject("h2spd");
    if (!h2spd) 
-      h2spd=new TH2F("h2spd",";Good vertices;Reconstructed vertices",
-      nb,min,max, nb,min,max);
+     h2spd=new TH2F("h2spd","SPD vertices;Number of good vertices;Number of reconstructed vertices",nb,min,max, nb,min,max);
    h2spd->SetLineColor(2);
    TH2F *h2trk=(TH2F*)gROOT->FindObject("h2trk");
    if (!h2trk) 
-      h2trk=new TH2F("h2trk",";Good vertices;Reconstructed vertices",
-      nb,min,max, nb,min,max);
+     h2trk=new TH2F("h2trk","TRK vertices;Good vertices;Reconstructed vertices",
+     nb,min,max, nb,min,max);
    h2trk->SetLineColor(4);
 
    nb=100;
    min=-0.03; max=0.03;
    TH1F *hzspd=(TH1F*)gROOT->FindObject("hzspd");
    if (!hzspd) 
-     hzspd=new TH1F("hzspd","Resolution in Z;#DeltaZ (cm);",nb,min,max);
+     hzspd=new TH1F("hzspd","SPD resolution in Z;#DeltaZ (cm);",nb,min,max);
    hzspd->SetLineColor(2);
    TH1F *hztrk=(TH1F*)gROOT->FindObject("hztrk");
    if (!hztrk) 
-     hztrk=new TH1F("hztrk","Resolution in Z;#DeltaZ (cm);",nb,min,max);
+     hztrk=new TH1F("hztrk","TRK resolution in Z;#DeltaZ (cm);",nb,min,max);
    hztrk->SetLineColor(4);
 
    
@@ -67,20 +84,32 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    TH1F *hgood=(TH1F*)gROOT->FindObject("hgood");
    if (!hgood) 
      hgood=new TH1F("hgood",";Z (cm);",nb,min,max);
+
    TH1F *hfoundspd=(TH1F*)gROOT->FindObject("hfoundspd");
    if (!hfoundspd) 
     hfoundspd=new TH1F("hfoundspd",";Z (cm);",nb,min,max);
    TH1F *heffspd=(TH1F*)gROOT->FindObject("heffspd");
    if (!heffspd) 
-      heffspd=new TH1F("heffspd","Efficiency;Z (cm);Efficiency",nb,min,max);
+      heffspd=new TH1F("heffspd","SPD efficiency + fake rate;Z position of a prim. vertex (cm);Efficiency",nb,min,max);
    heffspd->SetLineColor(2);
+
    TH1F *hfoundtrk=(TH1F*)gROOT->FindObject("hfoundtrk");
    if (!hfoundtrk) 
     hfoundtrk=new TH1F("hfoundtrk",";Z (cm);",nb,min,max);
    TH1F *hefftrk=(TH1F*)gROOT->FindObject("hefftrk");
    if (!hefftrk) 
-      hefftrk=new TH1F("hefftrk",";Z (cm);Efficiency",nb,min,max);
+      hefftrk=new TH1F("hefftrk","TRK efficiency;Z (cm);Efficiency",nb,min,max);
    hefftrk->SetLineColor(4);
+
+   TH1F *hfaketrk=(TH1F*)gROOT->FindObject("hfaketrk");
+   if (!hfaketrk) 
+    hfaketrk=new TH1F("hfaketrk",";Z (cm);",nb,min,max);
+   TH1F *heffaketrk=(TH1F*)gROOT->FindObject("heffaketrk");
+   if (!heffaketrk) 
+      heffaketrk=new TH1F("heffaketrk","TRK fake rate;Z (cm);Fake rate",nb,min,max);
+   heffaketrk->SetLineColor(4);
+   heffaketrk->SetFillColor(590);
+
 
 
    // **** Generate a rerefence file with reconstructable vertices
@@ -131,9 +160,13 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
 
 
    //******* Loop over reconstructed events *********
+   Int_t ntrk=0, ntrkcor=0, ntrkwro=0;
    Int_t e=0;
    while (esdTree->GetEvent(e)) {
      cout<<endl<<endl<<"********* Processing event number: "<<e<<"*******\n";
+     Int_t nn=event->GetNumberOfTracks();
+     ntrk += nn;
+
      TClonesArray *verticesSPD=event->GetPileupVerticesSPD();
      Int_t nfoundSPD=verticesSPD->GetEntries(); 
      TClonesArray *verticesTRK=event->GetPileupVerticesTracks();
@@ -144,55 +177,72 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
         continue;
      }
      Int_t ngood=refs->GetEntriesFast(); 
-     cout<<"Found SPD: "<<nfoundSPD<<"  good: "<<ngood<<endl;
+     cout<<"Found SPD vertices: "<<nfoundSPD<<
+           "  Reconstructable vertics: "<<ngood<<endl;
 
      h2spd->Fill(ngood,nfoundSPD);
      h2trk->Fill(ngood,nfoundTRK);
 
+     Int_t ncor=0, nwro=0;
      for (Int_t g=0; g<ngood; g++) {
-         Bool_t Associate(const AliESDVertex *g, const AliESDVertex *f, 
+         Int_t Associate(const AliESDVertex *g, const AliESDVertex *f, 
             const AliESDEvent *esd); 
          const AliESDVertex *vtxg=(AliESDVertex*)refs->UncheckedAt(g);
          Double_t zg=vtxg->GetZv();
          hgood->Fill(zg);
 
-         const AliESDVertex *vtxf=0;
+         AliESDVertex *vtxf=0;
          Double_t zf=0.;
          Int_t f=0;
          for (; f<nfoundSPD; f++) {
              vtxf=(AliESDVertex*)verticesSPD->UncheckedAt(f);
              if (!vtxf->GetStatus()) continue;
-             if (!Associate(vtxg,vtxf,event)) continue; 
-             zf=vtxf->GetZv();
+             if (Associate(vtxg,vtxf,event)==0) continue; 
              break;
          }
          if (f>=nfoundSPD) {
-	     vtxf=event->GetPrimaryVertexSPD();
+	     vtxf=(AliESDVertex *)event->GetPrimaryVertexSPD();
              if (!vtxf->GetStatus()) goto trk;
-             if (!Associate(vtxg,vtxf,event)) goto trk; 
-             zf=vtxf->GetZv();
+             if (Associate(vtxg,vtxf,event)==0) goto trk; 
 	 }
+
+         zf=vtxf->GetZv();
          hfoundspd->Fill(zg);
          hzspd->Fill(zf-zg);
 
      trk:
+         Int_t n=0;
          for (f=0; f<nfoundTRK; f++) {
              vtxf=(AliESDVertex*)verticesTRK->UncheckedAt(f);
              if (!vtxf->GetStatus()) continue;
-             if (!Associate(vtxg,vtxf,event)) continue; 
-             zf=vtxf->GetZv();
+             n=Associate(vtxg,vtxf,event);
+	     if (n < nAssMin) continue;
              break;
          }
          if (f>=nfoundTRK) {
-	     vtxf=event->GetPrimaryVertexTracks();
+	     vtxf=(AliESDVertex*)event->GetPrimaryVertexTracks();
              if (!vtxf->GetStatus()) continue;
-             if (!Associate(vtxg,vtxf,event)) continue; 
-             zf=vtxf->GetZv();
+             n=Associate(vtxg,vtxf,event);
+             if (n < nAssMin) continue;
 	 }
-	 hfoundtrk->Fill(zg);
+
+         ncor+=n;
+         nwro+=(vtxf->GetNIndices()-n); 
+         zf=vtxf->GetZv();
+
+         if (Float_t(n)/vtxf->GetNIndices() > fracMin) {
+	    hfoundtrk->Fill(zg);
+	 } else {
+	    hfaketrk->Fill(zg);
+	 }
          hztrk->Fill(zf-zg);
 
+         vtxf->SetNContributors(0); // Mark this vertex as already associated
+
      }
+     // Increase the counter of tracks (not)associated with verices
+     ntrkcor += ncor;
+     ntrkwro += nwro;
 
    } //***** End of the loop over reconstructed events
 
@@ -202,13 +252,25 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
 
    refFile->Close();
    
+   cout<<"\nTotal number of found tracks: "<<ntrk<<endl;
+   cout<<"Number of tracks correctly associated with vertices: "<<ntrkcor<<endl;
+   cout<<"Number of tracks wrongly associated with vertices: "<<ntrkwro<<endl;
+   if (ntrk != 0) {
+     cout<<"Correctly associated/Found:\t"<<Float_t(ntrkcor)/ntrk<<endl;
+     cout<<"Wrongly associated/Found:\t"<<Float_t(ntrkwro)/ntrk<<endl;
+     cout<<"Not associated/Found:\t\t"<<1.-Float_t(ntrkwro+ntrkcor)/ntrk<<endl;
+   }
+
+   gStyle->SetOptStat(0);
+   gStyle->SetOptTitle(0);
    TCanvas *c1=new TCanvas("c1","",0,0,700,1000);
    c1->Divide(1,3);
    c1->cd(1);
    gPad->SetGridx(); gPad->SetGridy();
    h2spd->Draw("box");
    h2trk->Draw("boxsame");
-   TLine *l=new TLine(0,0,60,60);
+   gPad->BuildLegend(0.13,0.65,0.46,0.86)->SetFillColor(0);
+   TLine *l=new TLine(0,0,70,70);
    l->Draw("same");
 
    c1->cd(2);
@@ -218,11 +280,15 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    heffspd->Draw("hist");
    hefftrk->Divide(hfoundtrk,hgood,1,1,"b");
    hefftrk->Draw("histsame");
+   heffaketrk->Divide(hfaketrk,hgood,1,1,"b");
+   heffaketrk->Draw("histsame");
+   gPad->BuildLegend(0.13,0.65,0.46,0.86)->SetFillColor(0);
 
    c1->cd(3);
    gPad->SetGridx(); gPad->SetGridy();
    hztrk->Draw();
    hzspd->Draw("same");
+   gPad->BuildLegend(0.13,0.65,0.46,0.86)->SetFillColor(0);
 
    TFile fc("AliITSUComparisonPileup.root","RECREATE");
    c1->Write();
@@ -231,7 +297,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    return 0;
 }
 
-Bool_t 
+Int_t 
 Associate(const AliESDVertex *g,const AliESDVertex *f,const AliESDEvent *esd) { 
    UShort_t *idxg=g->GetIndices(); Int_t ng=g->GetNIndices(); 
    UShort_t *idxf=f->GetIndices(); Int_t nf=f->GetNIndices();
@@ -240,8 +306,8 @@ Associate(const AliESDVertex *g,const AliESDVertex *f,const AliESDEvent *esd) {
    // SPD vertex
        Double_t zg=g->GetZv();
        Double_t zf=f->GetZv();
-       if (TMath::Abs(zf-zg)>2e-2) return kFALSE;
-       return kTRUE;
+       if (TMath::Abs(zf-zg)>2e-2) return 0;
+       return 1;
    }
    // TRK vertex
    Int_t nass=0;
@@ -256,8 +322,7 @@ Associate(const AliESDVertex *g,const AliESDVertex *f,const AliESDEvent *esd) {
        }
    } 
 
-   if (Float_t(nass)/ng > 0.5) return kTRUE;
-   return kFALSE;
+   return nass;
 }
 
 Int_t GoodPileupVertices(const Char_t *dir) {
@@ -312,7 +377,7 @@ Int_t GoodPileupVertices(const Char_t *dir) {
          Float_t t=h->InteractionTime();
          UShort_t *idx=new UShort_t[np];
          Int_t ntrk=FindContributors(t,stack,idx);
-         if (ntrk<3) continue;
+         if (ntrk < nMin) continue;
          AliESDVertex *vertex=new ((*refs)[nv]) AliESDVertex();
          vertex->SetXv(vtx[0]);
          vertex->SetYv(vtx[1]);
@@ -343,7 +408,7 @@ Int_t FindContributors(Float_t tz, AliStack *stack, UShort_t *idx) {
       TParticlePDG *partPDG = part->GetPDG();
       if (!partPDG) continue;
       if (TMath::Abs(partPDG->Charge())<1e-10) continue;
-      if (part->Pt()<0.5) continue;
+      if (part->Pt() < pTmin) continue;
       Float_t dt=0.5*(tz-part->T())/(tz+part->T());
       if (TMath::Abs(dt)>1e-5) continue;
       idx[ntrk]=i;
