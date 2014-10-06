@@ -84,42 +84,42 @@ AliAnalysisTaskSE(),
   // Default constructor
 
   for(Int_t i=0;i<3;i++){
-    if(fHistCentrality[i])fHistCentrality[i]=0;
-    if(fCorreld0Kd0pi[i])fCorreld0Kd0pi[i]=0;
+    fHistCentrality[i]=0;
+    fCorreld0Kd0pi[i]=0;
   }
   
   for(Int_t i=0; i<5; i++)fHistMassPtImpParTC[i]=0;
     
   
   for(Int_t i=0;i<3*kMaxPtBins;i++){
-    if(fMassHist[i])fMassHist[i]=0;
-    if(fCosPHist[i])fCosPHist[i]=0;
-    if(fDLenHist[i])fDLenHist[i]=0;
-    if(fSumd02Hist[i])fSumd02Hist[i]=0;
-    if(fSigVertHist[i])fSigVertHist[i]=0;
-    if(fPtMaxHist[i])fPtMaxHist[i]=0;
-    if(fPtKHist[i])fPtKHist[i]=0;
-    if(fPtpi1Hist[i])fPtpi1Hist[i]=0;
-    if(fPtpi2Hist[i])fPtpi2Hist[i]=0;
-    if(fDCAHist[i])fDCAHist[i]=0;
-    if(fMassHistTC[i])fMassHistTC[i]=0;
-    if(fMassHistTCPlus[i])fMassHistTCPlus[i]=0;
-    if(fMassHistTCMinus[i])fMassHistTCMinus[i]=0;
+    fMassHist[i]=0;
+    fCosPHist[i]=0;
+    fDLenHist[i]=0;
+    fSumd02Hist[i]=0;
+    fSigVertHist[i]=0;
+    fPtMaxHist[i]=0;
+    fPtKHist[i]=0;
+    fPtpi1Hist[i]=0;
+    fPtpi2Hist[i]=0;
+    fDCAHist[i]=0;
+    fMassHistTC[i]=0;
+    fMassHistTCPlus[i]=0;
+    fMassHistTCMinus[i]=0;
     
-    if(fDLxy[i])fDLxy[i]=0;
-    if(fDLxyTC[i])fDLxyTC[i]=0;
-    if(fCosxy[i])fCosxy[i]=0;
-    if(fCosxyTC[i])fCosxyTC[i]=0;
-    if(fCosPHistLS[i])fCosPHistLS[i]=0;
-    if(fDLenHistLS[i])fDLenHistLS[i]=0;
-    if(fSumd02HistLS[i])fSumd02HistLS[i]=0;
-    if(fSigVertHistLS[i])fSigVertHistLS[i]=0;
-    if(fPtMaxHistLS[i])fPtMaxHistLS[i]=0;
-    if(fDCAHistLS[i])fDCAHistLS[i]=0;
+    fDLxy[i]=0;
+    fDLxyTC[i]=0;
+    fCosxy[i]=0;
+    fCosxyTC[i]=0;
+    fCosPHistLS[i]=0;
+    fDLenHistLS[i]=0;
+    fSumd02HistLS[i]=0;
+    fSigVertHistLS[i]=0;
+    fPtMaxHistLS[i]=0;
+    fDCAHistLS[i]=0;
   }
   for(Int_t i=0;i<5*kMaxPtBins;i++){
-    if(fMassHistLS[i])fMassHistLS[i]=0;
-    if(fMassHistLSTC[i])fMassHistLSTC[i]=0;
+    fMassHistLS[i]=0;
+    fMassHistLSTC[i]=0;
   }
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fArrayBinLimits[i]=0;
@@ -168,41 +168,41 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fNPtBins=fRDCutsAnalysis->GetNPtBins();
   
   for(Int_t i=0;i<3;i++){
-    if(fHistCentrality[i])fHistCentrality[i]=0;
-    if(fCorreld0Kd0pi[i])fCorreld0Kd0pi[i]=0;
+    fHistCentrality[i]=0;
+    fCorreld0Kd0pi[i]=0;
   }
   
   for(Int_t i=0; i<5; i++)fHistMassPtImpParTC[i]=0;
     
   for(Int_t i=0;i<3*kMaxPtBins;i++){
-    if(fMassHist[i])fMassHist[i]=0;
-    if(fCosPHist[i])fCosPHist[i]=0;
-    if(fDLenHist[i])fDLenHist[i]=0;
-    if(fSumd02Hist[i])fSumd02Hist[i]=0;
-    if(fSigVertHist[i])fSigVertHist[i]=0;
-    if(fPtMaxHist[i])fPtMaxHist[i]=0;
-    if(fPtKHist[i])fPtKHist[i]=0;
-    if(fPtpi1Hist[i])fPtpi1Hist[i]=0;
-    if(fPtpi2Hist[i])fPtpi2Hist[i]=0;
-    if(fDCAHist[i])fDCAHist[i]=0;
-    if(fMassHistTC[i])fMassHistTC[i]=0;
-    if(fMassHistTCPlus[i])fMassHistTCPlus[i]=0;
-    if(fMassHistTCMinus[i])fMassHistTCMinus[i]=0;
+    fMassHist[i]=0;
+    fCosPHist[i]=0;
+    fDLenHist[i]=0;
+    fSumd02Hist[i]=0;
+    fSigVertHist[i]=0;
+    fPtMaxHist[i]=0;
+    fPtKHist[i]=0;
+    fPtpi1Hist[i]=0;
+    fPtpi2Hist[i]=0;
+    fDCAHist[i]=0;
+    fMassHistTC[i]=0;
+    fMassHistTCPlus[i]=0;
+    fMassHistTCMinus[i]=0;
     
-    if(fDLxy[i])fDLxy[i]=0;
-    if(fDLxyTC[i])fDLxyTC[i]=0;
-    if(fCosxy[i])fCosxy[i]=0;
-    if(fCosxyTC[i])fCosxyTC[i]=0;
-    if(fCosPHistLS[i])fCosPHistLS[i]=0;
-    if(fDLenHistLS[i])fDLenHistLS[i]=0;
-    if(fSumd02HistLS[i])fSumd02HistLS[i]=0;
-    if(fSigVertHistLS[i])fSigVertHistLS[i]=0;
-    if(fPtMaxHistLS[i])fPtMaxHistLS[i]=0;
-    if(fDCAHistLS[i])fDCAHistLS[i]=0;
+    fDLxy[i]=0;
+    fDLxyTC[i]=0;
+    fCosxy[i]=0;
+    fCosxyTC[i]=0;
+    fCosPHistLS[i]=0;
+    fDLenHistLS[i]=0;
+    fSumd02HistLS[i]=0;
+    fSigVertHistLS[i]=0;
+    fPtMaxHistLS[i]=0;
+    fDCAHistLS[i]=0;
   }
   for(Int_t i=0;i<5*kMaxPtBins;i++){
-    if(fMassHistLS[i])fMassHistLS[i]=0;
-    if(fMassHistLSTC[i])fMassHistLSTC[i]=0;
+    fMassHistLS[i]=0;
+    fMassHistLSTC[i]=0;
   }
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fArrayBinLimits[i]=0;
@@ -230,29 +230,60 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
   //
   // Destructor
   //
-  if (fOutput) {
-    delete fOutput;
-    fOutput = 0;
+  if(fOutput && !fOutput->IsOwner()){
+    delete fHistNEvents;
+    for(Int_t i=0;i<3*fNPtBins;i++){    
+      delete fMassHist[i];
+      delete fCosPHist[i];
+      delete fDLenHist[i];
+      delete fSumd02Hist[i];
+      delete fSigVertHist[i];
+      delete fPtMaxHist[i];
+      delete fPtKHist[i];
+      delete fPtpi1Hist[i];
+      delete fPtpi2Hist[i];
+      delete fDCAHist[i];
+      delete fDLxy[i];
+      delete fDLxyTC[i];
+      delete fCosxy[i];
+      delete fCosxyTC[i];
+      delete fMassHistTC[i];
+      delete fMassHistTCPlus[i];
+      delete fMassHistTCMinus[i];
+      delete fCosPHistLS[i];
+      delete fDLenHistLS[i];
+      delete fSumd02HistLS[i];
+      delete fSigVertHistLS[i];
+      delete fPtMaxHistLS[i];
+      delete fDCAHistLS[i];
+    }
+    for(Int_t i=0;i<5*fNPtBins;i++){
+      delete fMassHistLS[i];
+      delete fMassHistLSTC[i];
+    }
+    for(Int_t i=0;i<3;i++){
+      delete fCorreld0Kd0pi[i];
+      delete fHistCentrality[i];
+    }
+    for(Int_t i=0;i<5;i++){
+      delete fHistMassPtImpParTC[i];
+    }
+    delete fPtVsMass;
+    delete fPtVsMassTC;
+    delete fYVsPt;
+    delete fYVsPtTC;
+    delete fYVsPtSig;
+    delete fYVsPtSigTC;
+    delete fPhiEtaCand;
+    delete fPhiEtaCandSigReg;
+    delete fSPDMult;
   }
 
-  
-  if(fNtupleDplus){
-    delete fNtupleDplus;
-    fNtupleDplus=0;
-  }
-  if (fListCuts) {
-    delete fListCuts;
-    fListCuts = 0;
-  }
-  if(fRDCutsAnalysis){
-    delete fRDCutsAnalysis;
-    fRDCutsAnalysis = 0;
-  }
-  if(fCounter){
-    delete fCounter;
-    fCounter = 0;
-  }
-
+  delete fOutput;  
+  delete fNtupleDplus;
+  delete fListCuts;
+  delete fRDCutsAnalysis;
+  delete fCounter;
 
 }  
 //_________________________________________________________________
@@ -425,6 +456,24 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
+
+  fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
+  fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents accepted");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"Rejected due to trigger");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Rejected pileup events");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Rejected due to centrality"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Rejected due to vtxz");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"Rejected due to Physics Sel");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"Total no. of candidate");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"D+ after loose cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"D+ after tight cuts");
+ 
+  fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);  
+  fHistNEvents->Sumw2();
+  fHistNEvents->SetMinimum(0);
+  fOutput->Add(fHistNEvents);
 
   TString hisname;
   Int_t index=0;
@@ -633,33 +682,16 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
   }
   
+  fCorreld0Kd0pi[0]=new TH2F("hCorreld0Kd0piAll","",100,-0.02,0.02,100,-0.02,0.02);
+  fCorreld0Kd0pi[1]=new TH2F("hCorreld0Kd0piSig","",100,-0.02,0.02,100,-0.02,0.02);
+  fCorreld0Kd0pi[2]=new TH2F("hCorreld0Kd0piBkg","",100,-0.02,0.02,100,-0.02,0.02);
   if(fCutsDistr){  
-    fCorreld0Kd0pi[0]=new TH2F("hCorreld0Kd0piAll","",100,-0.02,0.02,100,-0.02,0.02);
-    fCorreld0Kd0pi[1]=new TH2F("hCorreld0Kd0piSig","",100,-0.02,0.02,100,-0.02,0.02);
-    fCorreld0Kd0pi[2]=new TH2F("hCorreld0Kd0piBkg","",100,-0.02,0.02,100,-0.02,0.02);
     for(Int_t i=0; i<3; i++){
       fCorreld0Kd0pi[i]->Sumw2();
       fOutput->Add(fCorreld0Kd0pi[i]);
     }
   }
   
-  fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
-  fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents accepted");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"Rejected due to trigger");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Rejected pileup events");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"Rejected due to centrality"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"Rejected due to vtxz");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"Rejected due to Physics Sel");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"Total no. of candidate");
-  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
-  fHistNEvents->GetXaxis()->SetBinLabel(10,"D+ after loose cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(11,"D+ after tight cuts");
- 
-  fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);  
-  fHistNEvents->Sumw2();
-  fHistNEvents->SetMinimum(0);
-  fOutput->Add(fHistNEvents);
 
   fPtVsMass=new TH2F("hPtVsMass","PtVsMass (prod. cuts)",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
   fPtVsMassTC=new TH2F("hPtVsMassTC","PtVsMass (analysis cuts)",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);  
@@ -861,7 +893,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	labDp = d->MatchToMC(411,arrayMC,3,pdgDgDplustoKpipi);
 	if(labDp>=0){
 	  AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
-	  if(CheckOrigin(arrayMC,partDp)==5) isPrimary=kFALSE;
+	  if(AliVertexingHFUtils::CheckOrigin(arrayMC,partDp,kFALSE)==5) isPrimary=kFALSE;
 	  pdgCode=TMath::Abs(partDp->GetPdgCode());
 	  if(!isPrimary){
 	    trueImpParXY=GetTrueImpactParameter(mcHeader,arrayMC,partDp)*10000.;
@@ -1234,39 +1266,6 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
   }
 
   return;
-}
-//_________________________________________________________________________________________________
-Int_t AliAnalysisTaskSEDplus::CheckOrigin(TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const {		
-  //
-  // checking whether the mother of the particles come from a charm or a bottom quark
-  //
-	
-  Int_t pdgGranma = 0;
-  Int_t mother = 0;
-  mother = mcPartCandidate->GetMother();
-  Int_t istep = 0;
-  Int_t abspdgGranma =0;
-  Bool_t isFromB=kFALSE;
-  //  Bool_t isQuarkFound=kFALSE;
-  while (mother >0 ){
-    istep++;
-    AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
-    if (mcGranma){
-      pdgGranma = mcGranma->GetPdgCode();
-      abspdgGranma = TMath::Abs(pdgGranma);
-      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
-	isFromB=kTRUE;
-      }
-      //     if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
-      mother = mcGranma->GetMother();
-    }else{
-      AliError("Failed casting the mother particle!");
-      break;
-    }
-  }
-  
-  if(isFromB) return 5;
-  else return 4;
 }
 //_________________________________________________________________________________________________
 Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const {

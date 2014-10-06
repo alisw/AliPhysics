@@ -39,9 +39,10 @@ class AliJEfficiencyTask : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t * opt = "");
 
   void SetFilterTaskName(TString name){ fFilterTaskName=name; }
+  void SetJEfficiencyScanner(AliJEfficiencyScanner * jco){ fEfficiencyScanner=jco; }
 
  private:
-  
+
   AliJCORRANTask * fFilterTask;
   TString          fFilterTaskName;
   AliJEfficiencyScanner * fEfficiencyScanner;

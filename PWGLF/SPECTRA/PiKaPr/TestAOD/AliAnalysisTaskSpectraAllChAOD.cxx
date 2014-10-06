@@ -71,7 +71,8 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fnDCABins(60),
   fDCAmin(-3),
   fDCAmax(3),
-  fDCAzCut(999999.)
+  fDCAzCut(999999.),
+  fQvecGen(0)
 {
   // Default constructor
   DefineInput(0, TChain::Class());
@@ -192,7 +193,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
 
   //Default TPC priors
-  //if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
+  if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME we should modify the task to change priors
   
   Double_t Qvec=0.;
   if(fIsQvecCalibMode){
@@ -206,6 +207,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
     if(fIsQvecCalibMode){
       QvecMC = fEventCuts->CalculateQVectorMC(fVZEROside);
     }
+    else QvecMC = fEventCuts->GetQvecPercentileMC(fVZEROside);
   }
   
   Double_t Cent=fEventCuts->GetCent();
@@ -290,7 +292,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       Double_t varTrk[8];
       varTrk[0]=track->Pt();
       varTrk[1]=Cent;
-      varTrk[2]=Qvec;
+      if(fIsMC && fQvecGen) varTrk[2]=QvecMC;
+        else varTrk[2]=Qvec;
       varTrk[3]=(Double_t)IDrec;
       varTrk[4]=(Double_t)IDgen;
       varTrk[5]=(Double_t)isph;

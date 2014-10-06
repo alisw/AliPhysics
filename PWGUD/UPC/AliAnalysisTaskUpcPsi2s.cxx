@@ -1083,6 +1083,12 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
 {
 
+  fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
+  fTriggerInputsMC[0] = kFALSE;//0SM2
+  fTriggerInputsMC[1] = fL0inputs & (1 << 0);//0VBA
+  fTriggerInputsMC[2] = fL0inputs & (1 << 1);//0VBC
+  fTriggerInputsMC[3] = fL0inputs & (1 << 9);//0OMU
+
   fGenPart->Clear("C");
 
   TClonesArray *arrayMC = (TClonesArray*) aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());

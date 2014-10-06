@@ -964,9 +964,6 @@ void AliAODPidHF::SetUpCombinedPID(){
     case kTPCTOF:
       fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
       break;
-    case kTPCAndTOF:
-      fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC & AliPIDResponse::kDetTOF);
-      break;
     case kTPCITS:
       fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetITS);
       break;
