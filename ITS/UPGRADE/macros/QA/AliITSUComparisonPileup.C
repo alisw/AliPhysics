@@ -112,6 +112,29 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
 
 
 
+   nb=51;
+   min=-0.5; max=50.5;
+   TH1F *hngood=(TH1F*)gROOT->FindObject("hngood");
+   if (!hngood) 
+      hngood=new TH1F("hngood",";Z (cm);",nb,min,max);
+   TH1F *hnfoundtrk=(TH1F*)gROOT->FindObject("hnfoundtrk");
+   if (!hnfoundtrk) 
+      hnfoundtrk=new TH1F("hnfoundtrk",";Z (cm);",nb,min,max);
+   TH1F *hnefftrk=(TH1F*)gROOT->FindObject("hnefftrk");
+   if (!hnefftrk) 
+      hnefftrk=new TH1F("hnefftrk","TRK efficiency;Number of tracks;Efficiency",nb,min,max);
+   hnefftrk->SetLineColor(4);
+
+   TH1F *hnfaketrk=(TH1F*)gROOT->FindObject("hnfaketrk");
+   if (!hnfaketrk) 
+      hnfaketrk=new TH1F("hnfaketrk",";Z (cm);",nb,min,max);
+   TH1F *hneffaketrk=(TH1F*)gROOT->FindObject("hneffaketrk");
+   if (!hneffaketrk) 
+      hneffaketrk=new TH1F("hneffaketrk","TRK fake rate;Number of tracks;Efficiency",nb,min,max);
+   hneffaketrk->SetLineColor(4);
+   hneffaketrk->SetFillColor(590);
+
+
    // **** Generate a rerefence file with reconstructable vertices
    Char_t fname[100];
    sprintf(fname,"%s/GoodPileupVertices.root",dir);
@@ -189,7 +212,9 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
             const AliESDEvent *esd); 
          const AliESDVertex *vtxg=(AliESDVertex*)refs->UncheckedAt(g);
          Double_t zg=vtxg->GetZv();
+         Double_t ng=vtxg->GetNIndices();
          hgood->Fill(zg);
+         hngood->Fill(ng);
 
          AliESDVertex *vtxf=0;
          Double_t zf=0.;
@@ -232,8 +257,10 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
 
          if (Float_t(n)/vtxf->GetNIndices() > fracMin) {
 	    hfoundtrk->Fill(zg);
+	    hnfoundtrk->Fill(ng);
 	 } else {
 	    hfaketrk->Fill(zg);
+	    hnfaketrk->Fill(ng);
 	 }
          hztrk->Fill(zf-zg);
 
@@ -264,7 +291,7 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
    TCanvas *c1=new TCanvas("c1","",0,0,700,1000);
-   c1->Divide(1,3);
+   c1->Divide(1,2);
    c1->cd(1);
    gPad->SetGridx(); gPad->SetGridy();
    h2spd->Draw("box");
@@ -275,6 +302,15 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
 
    c1->cd(2);
    gPad->SetGridx(); gPad->SetGridy();
+   hztrk->Draw();
+   hzspd->Draw("same");
+   gPad->BuildLegend(0.13,0.65,0.46,0.86)->SetFillColor(0);
+
+
+   TCanvas *c2=new TCanvas("c2","",0,0,700,1000);
+   c2->Divide(1,2);
+   c2->cd(1);
+   gPad->SetGridx(); gPad->SetGridy();
    heffspd->Divide(hfoundspd,hgood,1,1,"b");
    heffspd->SetMinimum(0.); heffspd->SetMaximum(1.2);
    heffspd->Draw("hist");
@@ -284,14 +320,19 @@ Int_t AliITSUComparisonPileup(const Char_t *dir=".") {
    heffaketrk->Draw("histsame");
    gPad->BuildLegend(0.13,0.65,0.46,0.86)->SetFillColor(0);
 
-   c1->cd(3);
+   c2->cd(2);
+   hnefftrk->Divide(hnfoundtrk,hngood,1,1,"b");
+   hnefftrk->SetMinimum(0.); hnefftrk->SetMaximum(1.2);
+   hneffaketrk->Divide(hnfaketrk,hngood,1,1,"b");
    gPad->SetGridx(); gPad->SetGridy();
-   hztrk->Draw();
-   hzspd->Draw("same");
+   hnefftrk->Draw();
+   hneffaketrk->Draw("same");
    gPad->BuildLegend(0.13,0.65,0.46,0.86)->SetFillColor(0);
+
 
    TFile fc("AliITSUComparisonPileup.root","RECREATE");
    c1->Write();
+   c2->Write();
    fc.Close();
 
    return 0;
