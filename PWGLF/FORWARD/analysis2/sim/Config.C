@@ -175,26 +175,29 @@ struct Setup
   {
     Bool_t asym = grp->IsPA()||grp->IsAP();
     TString& rt = runType;
-    if (rt.EndsWith("perugia0chadr"))     return PythiaHF(0);
-    if (rt.EndsWith("perugia0bchadr"))    return PythiaHF(1);
-    if (rt.EndsWith("perugia0cele"))      return PythiaHF(2);
-    if (rt.EndsWith("perugia0bele"))      return PythiaHF(3);
-    if (rt.EndsWith("perugia0jspi2e"))    return PythiaHF(4);
-    if (rt.EndsWith("perugia0btojspi2e")) return PythiaHF(5);
-    if (rt.BeginsWith("pythia"))          return Pythia(rt);
-    if (rt.BeginsWith("hijing2000hf"))    return HFCocktail(rt);
-    if (rt.BeginsWith("hijing2000"))      return Hijing(asym, 
+    AliGenerator* g = 0;
+    if      (rt.EndsWith("perugia0chadr"))     g=PythiaHF(0);
+    else if (rt.EndsWith("perugia0bchadr"))    g=PythiaHF(1);
+    else if (rt.EndsWith("perugia0cele"))      g=PythiaHF(2);
+    else if (rt.EndsWith("perugia0bele"))      g=PythiaHF(3);
+    else if (rt.EndsWith("perugia0jspi2e"))    g=PythiaHF(4);
+    else if (rt.EndsWith("perugia0btojspi2e")) g=PythiaHF(5);
+    else if (rt.BeginsWith("pythia"))          g=Pythia(rt);
+    else if (rt.BeginsWith("hijing2000hf"))    g=HFCocktail(rt);
+    else if (rt.BeginsWith("hijing2000"))      g=Hijing(asym, 
 							false, 2.3);
-    if (rt.BeginsWith("hijing"))          return Hijing(asym, 
+    else if (rt.BeginsWith("hijing"))          g=Hijing(asym, 
 							grp->IsAA(), 0);
-    if (rt.BeginsWith("ampthf"))          return HFCocktail(rt);
-    if (rt.BeginsWith("ampt"))            return Ampt();
-    if (rt.BeginsWith("dpmjet"))          return Dpmjet();
-    if (rt.BeginsWith("phojet"))          return Dpmjet();
-    if (rt.BeginsWith("hydjet"))          return Hydjet();
+    else if (rt.BeginsWith("ampthf"))          g=HFCocktail(rt);
+    else if (rt.BeginsWith("ampt"))            g=Ampt();
+    else if (rt.BeginsWith("dpmjet"))          g=Dpmjet();
+    else if (rt.BeginsWith("phojet"))          g=Dpmjet();
+    else if (rt.BeginsWith("hydjet"))          g=Hydjet();
 
-    Fatal("", "Invalid run type \"%s\" specified", runType.Data());
-    return 0;
+    if (g) g->SetVertexSmear(AliGenerator::kPerEvent);
+    else 
+      Fatal("", "Invalid run type \"%s\" specified", runType.Data());
+    return g;
   }
   TVirtualMCDecayer* MakeDecayer()
   {
