@@ -86,6 +86,9 @@ public:
 
   Double_t GetDistanceFromPixel(AliMFTDigit *pixel);
 
+  void SetClusterFront(Bool_t clusterFront) { if(fIsClusterEditable) fIsClusterFront = clusterFront; }
+  Bool_t IsClusterFront() { return fIsClusterFront; }
+
   AliMUONRawCluster* CreateMUONCluster();
   
 private:
@@ -108,7 +111,7 @@ private:
   
   TClonesArray *fDigitsInCluster;   //! (Temporary) Array of the digits composing the cluster
 
-  Bool_t fIsClusterEditable;
+  Bool_t fIsClusterEditable, fIsClusterFront;
 
   ClassDef(AliMFTCluster, 1)
 
