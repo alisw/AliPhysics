@@ -9,7 +9,6 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliITSUClusterPix.h"
-#include "AliITSUGeomTGeo.h"
 #include "AliITSUTrackerCooked.h"
 #include "AliITSUTrackCooked.h" 
 #include "AliITSUReconstructor.h" 
@@ -62,9 +61,6 @@ fSAonly(kTRUE)
   //--------------------------------------------------------------------
   const Double_t 
   klRadius[7]={2.34, 3.15, 3.93, 19.61, 24.55, 34.39, 39.34}; //tdr6
-
-  AliITSUGeomTGeo *gm  = new AliITSUGeomTGeo(kTRUE,kTRUE);
-  AliITSUClusterPix::SetGeom(gm);
 
   for (Int_t i=0; i<kNLayers; i++) fgLayers[i].SetR(klRadius[i]);
 

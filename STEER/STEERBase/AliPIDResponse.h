@@ -139,6 +139,9 @@ public:
   void SetCustomTPCpidResponse(const char* tpcpid) { fCustomTPCpidResponse = tpcpid; }
   const char* GetCustomTPCpidResponse() const { return fCustomTPCpidResponse.Data(); }
   
+  void SetCustomTPCetaMaps(const char* tpcEtaMaps) { fCustomTPCetaMaps = tpcEtaMaps; }
+  const char* GetCustomTPCetaMaps() const { return fCustomTPCetaMaps.Data(); }
+  
   void InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run=-1);
   void SetCurrentFile(const char* file) { fCurrentFile=file; }
   
@@ -218,6 +221,7 @@ private:
 
   TString fOADBPath;                   // OADB path to use
   TString fCustomTPCpidResponse;       // Custom TPC Pid Response file for debugging purposes
+  TString fCustomTPCetaMaps;           // Custom TPC eta map file for debugging purposes
   
   TString fBeamType;                   //! beam type (PP) or (PBPB)
   TString fLHCperiod;                  //! LHC period
