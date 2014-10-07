@@ -78,7 +78,7 @@ const Double_t AliAnalysisTaskPi0FlowMC::kRCut = 1.;
 
 AliAnalysisTaskPi0FlowMC::AliAnalysisTaskPi0FlowMC(const char* name, AliAnalysisTaskPi0Flow::Period period)
 : AliAnalysisTaskPi0Flow(name, period),
-  fStack(0x0)
+  fStack(0x0),kOffVertexCutSet(kTRUE)
 {
 }
 
@@ -266,15 +266,17 @@ void AliAnalysisTaskPi0FlowMC::SelectPhotonClusters()
     photon->SetWeight(PrimaryWeight(primary)) ;
   }
 
-  for (Int_t i1=0; i1<fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
-    AliCaloPhoton * photon = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
-    Int_t primary = photon->GetPrimary();
-    TParticle* p = fStack->Particle(primary);
-    if(p->R() >kRCut) {
-      if(p->GetPdgCode()==11 || p->GetPdgCode()==-11) continue;
-      else { fCaloPhotonsPHOS->Remove(photon); fCaloPhotonsPHOS->Compress(); }
+    if(kOffVertexCutSet) {
+        for (Int_t i1=0; i1<fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
+            AliCaloPhoton * photon = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
+            Int_t primary = photon->GetPrimary();
+            TParticle* p = fStack->Particle(primary);
+            if(p->R() >kRCut) {
+                if(p->GetPdgCode()==11 || p->GetPdgCode()==-11) continue;
+                else { fCaloPhotonsPHOS->Remove(photon); fCaloPhotonsPHOS->Compress(); }
+            }
+        }
     }
-  }
     
 }
 
