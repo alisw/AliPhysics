@@ -157,7 +157,7 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
 }
 
 
-void AddMoreJetFinders(
+void AddTasksFlavourJet(
    /*input for Jet Finder*/   
    const UInt_t uTriggerMask = AliVEvent::kMB, /*for jets; the D mesons trigger is defined in the cut object*/
    const TString sRunPeriod = "LHC13b", /*for track selection*/
