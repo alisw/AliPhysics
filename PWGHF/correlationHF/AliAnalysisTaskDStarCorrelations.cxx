@@ -636,7 +636,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                     
                     // count D* sideband candidates
                     if(fBkgMethod == kDStarSB ){
-                        if((deltainvMDStar-(mPDGDstar-mPDGD0))>0.1473 && (deltainvMDStar-(mPDGDstar-mPDGD0))<0.1644){
+                         if(deltainvMDStar>0.1473 && deltainvMDStar<0.1644){
                        // if ((deltainvMDStar-(mPDGDstar-mPDGD0))>fDMesonSigmas[2]*dmDStarWindow && (deltainvMDStar-(mPDGDstar-mPDGD0))<fDMesonSigmas[3]*dmDStarWindow ){
                             ((TH1F*)fDmesonOutput->FindObject("RecoPtBkg"))->Fill(ptDStar,DmesonWeight); // fill pt
                             if(!fmixing)	((TH2F*)fDmesonOutput->FindObject("PhiSidebandDStar"))->Fill(phiDStar,ptDStar); // fill phi, eta
