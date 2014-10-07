@@ -152,25 +152,10 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TList*                  GetOutputList() const                           {return fOutputList;}
         AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}
         Double_t                GetJetRadius() const                            {return GetJetContainer()->GetJetRadius();}
-        /* inline */    AliEmcalJet* GetLeadingJet() {
-            // return pointer to the highest pt jet (before background subtraction) within acceptance
-            // only rudimentary cuts are applied on this level, hence the implementation outside of
-            // the framework
-            Int_t iJets(fJets->GetEntriesFast());
-            Double_t pt(0);
-            AliEmcalJet* leadingJet(0x0);
-            for(Int_t i(0); i < iJets; i++) {
-                AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
-                if(!PassesSimpleCuts(jet)) continue;
-                if(jet->Pt() > pt) {
-                   leadingJet = jet;
-                   pt = leadingJet->Pt();
-                }
-            }
-            return leadingJet;
-        }
-        void                    ExecMe()                                {ExecOnce();}
-        AliAnalysisTaskJetV2*   ReturnMe()                              {return this;}
+        AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
+        void                    ExecMe()                                        {ExecOnce();}
+
+        AliAnalysisTaskJetV2*   ReturnMe()                                      {return this;}
         // local cuts
         void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)          {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}
         void                    SetSemiGoodJetMinMaxPhi(Double_t a, Double_t b)         {fSemiGoodJetMinPhi = a; fSemiGoodJetMaxPhi = b;}
@@ -258,6 +243,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliClusterContainer*    fClusterCont;           //! cluster container
         AliJetContainer*        fJetsCont;              //! jets
         AliEmcalJet*            fLeadingJet;            //! leading jet
+        AliEmcalJet*            fLeadingJetAfterSub;    //! leading jet after background subtraction
         // members
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
         Int_t                   fNAcceptedTracksQCn;    //! accepted tracks for QCn
@@ -357,6 +343,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH3F*                   fHistPsiVZEROCLeadingJet[10];   //! correlation vzeroc EP, LJ pt
         TH3F*                   fHistPsiVZEROCombLeadingJet[10];//! correlation vzerocomb EP, LJ pt
         TH3F*                   fHistPsi2Correlation[10];       //! correlation of event planes
+        TH2F*                   fHistLeadingJetBackground[10];  //! geometric correlation of leading jet w/wo bkg subtraction
         // background
         TH1F*                   fHistRhoPackage[10];    //! rho as estimated by emcal jet package
         TH1F*                   fHistRho[10];           //! background
