@@ -153,6 +153,7 @@ class AliJCard : public AliJBaseCard {
 
         virtual void InitCard(); //TODO
         void FinishCard(); // TODO
+        void ReCompile();
 
 
     protected:
@@ -162,7 +163,7 @@ class AliJCard : public AliJBaseCard {
         corrType GetCorrType( TString inStr );
 
         //====   D a t a    M e m b e r s  ========
-        
+
         //   double effPar[16];
         //   double corrCent[10]; //FK// additional scaling factor to effPar to correct on hi fcentrality
         TH2D *fhCorr;  // comment me
