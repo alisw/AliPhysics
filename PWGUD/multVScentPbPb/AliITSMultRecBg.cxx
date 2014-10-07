@@ -520,7 +520,7 @@ Int_t AliITSMultRecBg::SearchInjTracklet(const Float_t *vtx)
     Double_t dTheta = clustersLayInj[kClTh] - partnerCl[kClTh]; 
     Double_t dPhi   = clustersLayInj[kClPh] - partnerCl[kClPh];
     if (dPhi>TMath::Pi()) dPhi=2.*TMath::Pi()-dPhi;     // take into account boundary condition
-    Float_t d = CalcDist(dPhi,dTheta, fInjLr==0 ? clustersLayInj[kClTh]:partnerCl[kClTh]);
+    Float_t d = CalcDist(dPhi,fInjLr==0 ? -dTheta:dTheta, fInjLr==0 ? clustersLayInj[kClTh]:partnerCl[kClTh]);
     if (d>fNStdDev) continue;
     //
     int competitor = fAssociations[partnerLr][icl]; // is the cluster of partner layer already used by some tracklet?
