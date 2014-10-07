@@ -1,9 +1,9 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJDiHadronCorr(TString cardName, TString jtrigg, TString jassoc, TString inclusFileName=""){
-    // Load Custom Configuration and parameters
-    // override values with parameters
+AliAnalysisTask *AddTaskJDiHadronCorr(TString cardName, TString jtrigg, TString jassoc, TString cardSetting, TString inclusFileName=""){
+	// Load Custom Configuration and parameters
+	// override values with parameters
 
-    cout<<"### DEGUG Input is "<< cardName <<"\t"<<jtrigg<<"\t"<<jassoc<<"\t"<<inclusFileName<<"\t"<<"#########"<<endl;
+	cout<<"### DEGUG Input is "<< cardName <<"\t"<<jtrigg<<"\t"<<jassoc<<"\t"<<inclusFileName<<"\t"<<"#########"<<endl;
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
 	//==== JCORRAN Efficiency TASK
@@ -14,6 +14,9 @@ AliAnalysisTask *AddTaskJDiHadronCorr(TString cardName, TString jtrigg, TString 
 
 	// === Create AliJCORRAN ====
 	AliJCard *card = new AliJCard(cardName.Data());
+	card->PrintOut();
+	card->ReadLine( cardSetting.Data() );
+	card->ReCompile();
 	card->PrintOut();
 
 	AliJCORRAN *fJCORRAN;

@@ -56,6 +56,7 @@ public:
   virtual void InitCard();
   void FinishCard();
   void ReadInputLine( const char* buffer );
+  void ReadLine( const char * buffer );
 
 protected:
   void    ReadInputCard();

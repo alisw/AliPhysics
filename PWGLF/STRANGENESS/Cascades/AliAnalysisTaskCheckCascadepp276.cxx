@@ -52,7 +52,6 @@
 //             Adapted to pPb 5.02 TeV analysis: D. Colella, domenico.colella@ba.infn.it
 //               Aug-Sep 2014
 //               - Added the parameter fCollidingSystem, to distingish between pp and pPb procedures
-//               - 
 //
 //
 //
@@ -905,12 +904,12 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    const Int_t  lNbVariables  =  19 ;
      //Array for the number of bins in each dimension :
    Int_t lNbBinsPerVar[lNbVariables] = {0};
-   lNbBinsPerVar[0]  = 25;     //DcaCascDaughters             :  [0.0,2.4,3.0]       -> Rec.Cut = 2.0;
+   lNbBinsPerVar[0]  = 25;     //DcaCascDaughters             :  [0.0,2.5]           -> Rec.Cut = 2.0;
    lNbBinsPerVar[1]  = 25;     //DcaBachToPrimVertex          :  [0.0,0.24,100.0]    -> Rec.Cut = 0.01; 
-   lNbBinsPerVar[2]  = 60;     //CascCosineOfPointingAngle    :  [0.94,1.0]          -> Rec.Cut = 0.95;
+   lNbBinsPerVar[2]  = 61;     //CascCosineOfPointingAngle    :  [0.94,1.001]        -> Rec.Cut = 0.95;
    lNbBinsPerVar[3]  = 40;     //CascRadius                   :  [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
    lNbBinsPerVar[4]  = 30;     //InvMassLambdaAsCascDghter    :  [1.1,1.3]           -> Rec.Cut = 0.008;
-   lNbBinsPerVar[5]  = 20;     //DcaV0Daughters               :  [0.0,2.0]           -> Rec.Cut = 1.5;
+   lNbBinsPerVar[5]  = 21;     //DcaV0Daughters               :  [0.0,2.0]           -> Rec.Cut = 1.5;
    lNbBinsPerVar[6]  = 201;    //V0CosineOfPointingAngleToXi  :  [0.89,1.0]          -> No Rec.Cut;
    lNbBinsPerVar[7]  = 40;     //V0Radius                     :  [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
    lNbBinsPerVar[8]  = 40;     //DcaV0ToPrimVertex            :  [0.0,0.39,110.0]    -> Rec.Cut = 0.01;  
@@ -942,11 +941,12 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    }
      //Setting the bin limits 
      //0 -  DcaXiDaughters
-   Double_t *lBinLim0  = new Double_t[ lNbBinsPerVar[0] + 1 ];
-        for(Int_t i=0; i< lNbBinsPerVar[0]; i++) lBinLim0[i] = (Double_t)0.0 + (2.4 - 0.0)/(lNbBinsPerVar[0] - 1) * (Double_t)i;
-        lBinLim0[ lNbBinsPerVar[0] ] = 3.0;
-   fCFContCascadeCuts -> SetBinLimits(0, lBinLim0);  
-   delete [] lBinLim0;
+   //Double_t *lBinLim0  = new Double_t[ lNbBinsPerVar[0] + 1 ];
+   //     for(Int_t i=0; i< lNbBinsPerVar[0]; i++) lBinLim0[i] = (Double_t)0.0 + (2.4 - 0.0)/(lNbBinsPerVar[0] - 1) * (Double_t)i;
+   //     lBinLim0[ lNbBinsPerVar[0] ] = 3.0;
+   //fCFContCascadeCuts -> SetBinLimits(0, lBinLim0);  
+   //delete [] lBinLim0;
+   fCFContCascadeCuts->SetBinLimits(0,0.0,2.5);
      //1 - DcaToPrimVertexXi
    Double_t *lBinLim1  = new Double_t[ lNbBinsPerVar[1] + 1 ];
         for(Int_t i=0; i<lNbBinsPerVar[1]; i++) lBinLim1[i] = (Double_t)0.0 + (0.24  - 0.0)/(lNbBinsPerVar[1] - 1) * (Double_t)i;
@@ -954,7 +954,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    fCFContCascadeCuts -> SetBinLimits(1, lBinLim1);  
    delete [] lBinLim1;    
      //2 - CascCosineOfPointingAngle 
-   fCFContCascadeCuts->SetBinLimits(2, 0.94, 1.);
+   fCFContCascadeCuts->SetBinLimits(2, 0.94, 1.001);
      //3 - CascRadius
    Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
         for(Int_t i=0; i< lNbBinsPerVar[3]; i++)   lBinLim3[i]  = (Double_t)0.0   + (3.9  - 0.0 )/(lNbBinsPerVar[3] - 1)  * (Double_t)i ;
@@ -964,7 +964,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
      //4 - InvMassLambdaAsCascDghter
    fCFContCascadeCuts->SetBinLimits(4, 1.1, 1.13);
      //5 - DcaV0Daughters
-   fCFContCascadeCuts -> SetBinLimits(5, 0., 2.);
+   fCFContCascadeCuts -> SetBinLimits(5, 0., 2.1);
      //6 - V0CosineOfPointingAngle
    fCFContCascadeCuts -> SetBinLimits(6, 0.8, 1.001);
      //7 - V0Radius
@@ -1323,16 +1323,25 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
           if (vertex->GetNContributors() < 1) {
               vertex = lESDevent->GetPrimaryVertexSPD();
               if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
-              else fHasVertex = kTRUE;
+              else                                fHasVertex = kTRUE;
               TString vtxTyp = vertex->GetTitle();
               Double_t cov[6]={0};
               vertex->GetCovarianceMatrix(cov);
               Double_t zRes = TMath::Sqrt(cov[5]);
               if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
-          }
-          else fHasVertex = kTRUE;
-          if (fUtils->IsFirstEventInChunk(lESDevent)) { //Is First event in chunk rejection: Still present!
+          } else fHasVertex = kTRUE;
+          if (fHasVertex == kFALSE) {
               AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+              PostData(1, fListHistCascade);
+              PostData(2, fCFContCascadePIDXiMinus);
+              PostData(3, fCFContCascadePIDXiPlus);
+              PostData(4, fCFContCascadePIDOmegaMinus);
+              PostData(5, fCFContCascadePIDOmegaPlus);
+              PostData(6, fCFContCascadeCuts);
+              return;
+          }
+          if (fUtils->IsFirstEventInChunk(lESDevent)) { //Is First event in chunk rejection: Still present!
+              AliWarning("Pb / This is the first event in the chunk! ... return !");
               PostData(1, fListHistCascade);
               PostData(2, fCFContCascadePIDXiMinus);
               PostData(3, fCFContCascadePIDXiPlus);
@@ -1350,16 +1359,25 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
           if (vertex->GetNContributors() < 1) {
               vertex = lAODevent->GetPrimaryVertexSPD();
               if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
-              else fHasVertex = kTRUE;
+              else                                fHasVertex = kTRUE;
               TString vtxTyp = vertex->GetTitle();
               Double_t cov[6]={0};
               vertex->GetCovarianceMatrix(cov);
               Double_t zRes = TMath::Sqrt(cov[5]);
               if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
-          }  
-          else fHasVertex = kTRUE;
-          if (fHasVertex == kFALSE) { //Is First event in chunk rejection: Still present!  //FIXME
+          } else fHasVertex = kTRUE;
+          if (fHasVertex == kFALSE) {
               AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+              PostData(1, fListHistCascade);
+              PostData(2, fCFContCascadePIDXiMinus);
+              PostData(3, fCFContCascadePIDXiPlus);
+              PostData(4, fCFContCascadePIDOmegaMinus);
+              PostData(5, fCFContCascadePIDOmegaPlus);
+              PostData(6, fCFContCascadeCuts);
+              return;
+          }
+          if (fHasVertex == kFALSE) { //Is First event in chunk rejection: Still present!  //FIXME
+              AliWarning("Pb / This is the first event in the chunk! ... return !");
               PostData(1, fListHistCascade);
               PostData(2, fCFContCascadePIDXiMinus);
               PostData(3, fCFContCascadePIDXiPlus);

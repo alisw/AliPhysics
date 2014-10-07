@@ -34,6 +34,7 @@
 // user tasks
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA;
+#pragma link C++ class AliAnalysisTaskDcalDijetPerf;
 #pragma link C++ class AliAnalysisTaskDeltaPtJEmb+;
 #pragma link C++ class AliAnalysisTaskEmcalBadCells+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetBase+;
