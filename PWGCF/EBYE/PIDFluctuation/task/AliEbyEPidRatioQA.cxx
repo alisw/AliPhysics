@@ -135,15 +135,12 @@ void AliEbyEPidRatioQA::CreateHistograms() {
   fHnQAb->GetAxis(6)->SetTitle("#varphi");                      //  phi  [ 0. , 2Pi]
   fHnQAb->GetAxis(7)->SetTitle("DCAr");                         //  DCAr [-10, 10]
   fHnQAb->GetAxis(8)->SetTitle("DCAz");                         //  DCAz [-10, 10]
+// needed to be add later
   // fHnQA->GetAxis(9)->SetTitle("n #sigma #sqrt(Cdd)/DCAr");   //  nSigma DCAr [-10, 10]
   // fHnQA->GetAxis(10)->SetTitle("n #sigma #sqrt(Czz)/DCAz");  //  nSigma DCAz [-10, 10]
   
   fHelper->BinLogAxis(fHnQAa, 3);
   fHelper->BinLogAxis(fHnQAb, 3);
-
-
-  
-			 
 
   return;
 }

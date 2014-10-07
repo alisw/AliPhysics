@@ -162,6 +162,11 @@ float AliJCard::GetFast(corrType ctype, int VectorComponent){
     }
 }
 
+void AliJCard::ReCompile(){
+    InitCard();
+    MakeFastCorrTypeIndex();
+}
+
 
 void AliJCard::InitCard(){
     // Init card

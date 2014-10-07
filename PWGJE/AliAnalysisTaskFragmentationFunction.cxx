@@ -4048,15 +4048,15 @@ void AliAnalysisTaskFragmentationFunction::GetClusterTracksMedian(TList* outputl
     AliAODJet* medianCluster1 = (AliAODJet*)(fBckgJetsRec->At(medianIndex1));
     AliAODJet* medianCluster2 = (AliAODJet*)(fBckgJetsRec->At(medianIndex2));
     
-    Double_t density1 = 0;
-    Double_t clusterPt1 = medianCluster1->Pt();
-    Double_t area1      = medianCluster1->EffectiveAreaCharged();
-    if(area1>0) density1 = clusterPt1/area1;
+    //Double_t density1 = 0;
+    //Double_t clusterPt1 = medianCluster1->Pt();
+    //Double_t area1      = medianCluster1->EffectiveAreaCharged();
+    //if(area1>0) density1 = clusterPt1/area1;
     
-    Double_t density2 = 0;
-    Double_t clusterPt2 = medianCluster2->Pt();
-    Double_t area2      = medianCluster2->EffectiveAreaCharged();
-    if(area2>0) density2 = clusterPt2/area2;
+    //Double_t density2 = 0;
+    //Double_t clusterPt2 = medianCluster2->Pt();
+    //Double_t area2      = medianCluster2->EffectiveAreaCharged();
+    //if(area2>0) density2 = clusterPt2/area2;
     
     //medianDensity = 0.5*(density1+density2);
     

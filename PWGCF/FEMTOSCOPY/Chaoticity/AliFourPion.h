@@ -101,8 +101,11 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetKT3transition(Float_t KT3trans) {fKT3transition = KT3trans;}
   void SetKT4transition(Float_t KT4trans) {fKT4transition = KT4trans;}
   void SetTriggerType(Int_t tt) {fTriggerType = tt;}
+  void SetNormLow(Float_t nl) {fNormQcutLow = nl;}
+  void SetNormHigh(Float_t nh) {fNormQcutHigh = nh;}
+  void SetFSIindexSmallSystem(Int_t ind) {fFSIindexSmallSystem = ind;}
   //
- 
+  
 
  private:
 
@@ -265,6 +268,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Double_t fBfield;
   Int_t fMbin;
   Int_t fFSIindex;
+  Int_t fFSIindexSmallSystem;
   Int_t fEDbin;
   Int_t fMbins;
   Int_t fMultLimit;      
@@ -359,8 +363,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH3D *fPbPbc3FitEA;
   TH3D *fpPbc3FitEA;
   TH3D *fppc3FitEA;
-  TH1D *fFSIss[12];
-  TH1D *fFSIos[12];
+  TH1D *fFSIss[13];
+  TH1D *fFSIos[13];
   TH3F *fNormWeight[fKbinsT][fCentBins];
   TF1 *ExchangeAmpPointSource[2][50];
 

@@ -118,7 +118,6 @@ class AliEbyEPidRatioHelper : public TNamed {
 
   /** Check if trackis  accepted for Phi */
   Bool_t IsTrackAcceptedPhi(AliVTrack *track);
- 
 
   /** Method for the correct logarithmic binning of histograms 
    *  and Update MinPtForTOFRequired, using the pT log-scale 
