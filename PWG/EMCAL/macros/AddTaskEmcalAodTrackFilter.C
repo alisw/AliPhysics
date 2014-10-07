@@ -55,7 +55,7 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
     else if (runPeriod == "lhc11h") // fix cascade bug in LHC11h AOD145
       aodTask->SetAttemptProp(kTRUE);
   } else if (runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
-	     runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1")
+	     runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1") || runPeriod.Contains("lhc13b2_efix")
 	     ) {
     aodTask->SetAODfilterBits(256,512); // hybrid tracks
     aodTask->SetMC(kTRUE);

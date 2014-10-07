@@ -252,6 +252,9 @@ goCPass0()
   echo
   chmod u+x runCPass0.sh
 
+  #remove spaces from around arguments to root macros
+  #for example this sometimes fails: 
+  #  root 'macro.C(argument1, argument2)'
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
 
   if [[ -n ${postSetUpActionCPass0} ]]; then
@@ -464,7 +467,9 @@ goCPass1()
   /bin/ls
   echo
 
-  #remove spaces around commas from calls to root
+  #remove spaces from around arguments to root macros
+  #for example this sometimes fails: 
+  #  root 'macro.C(argument1, argument2)'
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
 
   if [[ -n ${postSetUpActionCPass1} ]]; then
@@ -697,6 +702,9 @@ goMergeCPass0()
     [[ ${file##*/} =~ .*\.sh ]] && chmod +x ${file##*/}
   done
   
+  #remove spaces from around arguments to root macros
+  #for example this sometimes fails: 
+  #  root 'macro.C(argument1, argument2)'
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
 
   alirootInfo > ALICE_ROOT.log
@@ -871,6 +879,9 @@ goMergeCPass1()
     [[ ${file##*/} =~ .*\.sh ]] && chmod +x ${file##*/}
   done
 
+  #remove spaces from around arguments to root macros
+  #for example this sometimes fails: 
+  #  root 'macro.C(argument1, argument2)'
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
 
   #configure local OCDB storage from CPass0 (creates the localOCDBaccessConfig.C script)

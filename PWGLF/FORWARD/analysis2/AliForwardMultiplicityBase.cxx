@@ -57,7 +57,8 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
     fRingSums(),
     fDoTiming(false),
   fHTiming(0),
-  fHStatus(0)
+  fHStatus(0),
+    fAddMask(AliAODForwardMult::kInel)
 {
   DGUARD(fDebug, 3,"Named CTOR of AliForwardMultiplicityBase %s",name);
 
@@ -581,6 +582,10 @@ AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input,
     AliForwardUtil::PrintName(N);					\
     std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
   } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
 //____________________________________________________________________
 void
 AliForwardMultiplicityBase::Print(Option_t* option) const
@@ -596,6 +601,7 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   PFB("Enable low flux code", fEnableLowFlux);
   PFB("Store per-ring hists", fStorePerRing);
   PFB("Make timing histogram", fDoTiming);
+  PFV("Trigger mask for adding", AliAODForwardMult::GetTriggerString(fAddMask));
   // gROOT->IncreaseDirLevel();
   GetESDFixer()         .Print(option);        
   GetSharingFilter()    .Print(option);

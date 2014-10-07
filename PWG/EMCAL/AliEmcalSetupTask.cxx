@@ -138,8 +138,8 @@ void AliEmcalSetupTask::Setup(Int_t runno)
   // Setup everything
 
   // Setup AliEMCALGeometry corresponding to year
-  TString geoname("EMCAL_COMPLETE12SMV1");
-  Int_t year = 2013;
+  TString geoname("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+  Int_t year = 2015;
   if (runno>0 && runno<=139517) {
     year = 2010;
     geoname = "EMCAL_FIRSTYEARV1";
@@ -148,6 +148,9 @@ void AliEmcalSetupTask::Setup(Int_t runno)
     geoname = "EMCAL_COMPLETEV1";
   } else if ((runno>170593) && (runno<=193766)) {
     year = 2012;
+  } else if ((runno>193766) && (runno <= 199161)) {
+    geoname = "EMCAL_COMPLETE12SMV1";
+    year = 2013;
   }
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
   if (!geom) {
@@ -155,7 +158,7 @@ void AliEmcalSetupTask::Setup(Int_t runno)
     return;
   }
 
-  if (runno<=0)
+  if (runno<0)  // Run number 0 can occur for MC
     return;
 
   // Setup CDB manager

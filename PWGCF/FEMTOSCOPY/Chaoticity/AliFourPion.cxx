@@ -75,6 +75,7 @@ AliAnalysisTaskSE(),
   fBfield(0),
   fMbin(0),
   fFSIindex(0),
+  fFSIindexSmallSystem(9),
   fEDbin(0),
   fMbins(fCentBins),
   fMultLimit(0),
@@ -89,8 +90,8 @@ AliAnalysisTaskSE(),
   fMaxPt(1.0),
   fQcut(0),
   fQLowerCut(0),
-  fNormQcutLow(0),
-  fNormQcutHigh(0),
+  fNormQcutLow(0.15),
+  fNormQcutHigh(0.2),
   fKupperBound(0),
   fQupperBoundQ2(0),
   fQupperBoundQ3(0),
@@ -216,7 +217,7 @@ AliAnalysisTaskSE(),
   }// Mbin
   
   // Initialize FSI histograms
-  for(Int_t i=0; i<12; i++){
+  for(Int_t i=0; i<13; i++){
     fFSIss[i]=0x0; 
     fFSIos[i]=0x0;
   }
@@ -267,6 +268,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fBfield(0),
   fMbin(0),
   fFSIindex(0),
+  fFSIindexSmallSystem(9),
   fEDbin(0),
   fMbins(fCentBins),
   fMultLimit(0),
@@ -281,8 +283,8 @@ AliFourPion::AliFourPion(const Char_t *name)
   fMaxPt(1.0),
   fQcut(0),
   fQLowerCut(0),
-  fNormQcutLow(0),
-  fNormQcutHigh(0),
+  fNormQcutLow(0.15),
+  fNormQcutHigh(0.2),
   fKupperBound(0),
   fQupperBoundQ2(0),
   fQupperBoundQ3(0),
@@ -411,7 +413,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   }// Mbin
   
   // Initialize FSI histograms
-  for(Int_t i=0; i<12; i++){
+  for(Int_t i=0; i<13; i++){
     fFSIss[i]=0x0; 
     fFSIos[i]=0x0;
   }
@@ -462,6 +464,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fBfield(obj.fBfield),
     fMbin(obj.fMbin),
     fFSIindex(obj.fFSIindex),
+    fFSIindexSmallSystem(obj.fFSIindexSmallSystem),
     fEDbin(obj.fEDbin),
     fMbins(obj.fMbins),
     fMultLimit(obj.fMultLimit),
@@ -476,8 +479,8 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fMaxPt(obj.fMaxPt),
     fQcut(obj.fQcut),
     fQLowerCut(obj.fQLowerCut),
-    fNormQcutLow(0),
-    fNormQcutHigh(0),
+    fNormQcutLow(obj.fNormQcutLow),
+    fNormQcutHigh(obj.fNormQcutHigh),
     fKupperBound(obj.fKupperBound),
     fQupperBoundQ2(obj.fQupperBoundQ2),
     fQupperBoundQ3(obj.fQupperBoundQ3),
@@ -551,7 +554,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
 {
   // Copy Constructor
   
-  for(Int_t i=0; i<12; i++){
+  for(Int_t i=0; i<13; i++){
     fFSIss[i]=obj.fFSIss[i]; 
     fFSIos[i]=obj.fFSIos[i];
   }
@@ -604,6 +607,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fBfield = obj.fBfield;
   fMbin = obj.fMbin;
   fFSIindex = obj.fFSIindex;
+  fFSIindexSmallSystem = obj.fFSIindexSmallSystem;
   fEDbin = obj.fEDbin;
   fMbins = obj.fMbins;
   fMultLimit = obj.fMultLimit;
@@ -662,7 +666,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fpPbc3FitEA = obj.fpPbc3FitEA;
   fppc3FitEA = obj.fppc3FitEA;
   
-  for(Int_t i=0; i<12; i++){
+  for(Int_t i=0; i<13; i++){
     fFSIss[i]=obj.fFSIss[i]; 
     fFSIos[i]=obj.fFSIos[i];
   }
@@ -780,7 +784,7 @@ AliFourPion::~AliFourPion()
   }// Mbin
   
    
-  for(Int_t i=0; i<12; i++){
+  for(Int_t i=0; i<13; i++){
     if(fFSIss[i]) delete fFSIss[i]; 
     if(fFSIos[i]) delete fFSIos[i];
   }
@@ -831,8 +835,8 @@ void AliFourPion::ParInit()
     fMultLimit=kMultLimitPbPb;
     fMbins=fCentBins;
     fQcut=0.1;
-    fNormQcutLow = 0.15;// 0.15
-    fNormQcutHigh = 0.2;// 0.2
+    //fNormQcutLow = 0.15;// 0.15
+    //fNormQcutHigh = 0.2;// 0.2
     fRstartMC = 5.0;
     fQbinsQinv3D = 20;
     fQupperBoundQinv3D = 0.1;
@@ -840,8 +844,8 @@ void AliFourPion::ParInit()
     fMultLimit=kMultLimitpp; 
     fMbins=1; 
     fQcut=0.6;
-    fNormQcutLow = 0.6;// was 1.0
-    fNormQcutHigh = 0.8;// was 1.5
+    //fNormQcutLow = 0.6;// was 1.0
+    //fNormQcutHigh = 0.8;// was 1.5
     fRstartMC = 1.0;
     fQbinsQinv3D = 60;
     fQupperBoundQinv3D = 0.6;
@@ -935,43 +939,44 @@ void AliFourPion::ParInit()
     if(!fMCcase && !fTabulatePairs) SetMuonCorrections(fLEGO);// Read Muon corrections
     if(!fMCcase && !fTabulatePairs) Setc3FitEAs(fLEGO);// Read EAs from c3 fits
   }
-
+  
 
 
   // Pair-Exchange amplitudes from c3 fits
   TString *EWequation = new TString("[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))");
   TString *LGequation = new TString("[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))");
 
-  for(Int_t i=0; i<2; i++){
-    for(Int_t j=0; j<50; j++){
-      TString *nameEA=new TString("ExchangeAmpPointSource");
-      *nameEA += i;
-      *nameEA += j;
-      if(i==0) ExchangeAmpPointSource[i][j] = new TF1(nameEA->Data(), EWequation->Data(), 0,1.0);// Edgeworth
-      else ExchangeAmpPointSource[i][j] = new TF1(nameEA->Data(), LGequation->Data(), 0,1.0);// Laguerre
-      //
-      if(fCollisionType==0){
-	ExchangeAmpPointSource[i][j]->FixParameter(0, fPbPbc3FitEA->GetBinContent(i+1, 1, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(1, fPbPbc3FitEA->GetBinContent(i+1, 2, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(2, fPbPbc3FitEA->GetBinContent(i+1, 3, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(3, fPbPbc3FitEA->GetBinContent(i+1, 4, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
-      }else if(fCollisionType==1){
-	ExchangeAmpPointSource[i][j]->FixParameter(0, fpPbc3FitEA->GetBinContent(i+1, 1, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(1, fpPbc3FitEA->GetBinContent(i+1, 2, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(2, fpPbc3FitEA->GetBinContent(i+1, 3, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(3, fpPbc3FitEA->GetBinContent(i+1, 4, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
-      }else{
-	ExchangeAmpPointSource[i][j]->FixParameter(0, fppc3FitEA->GetBinContent(i+1, 1, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(1, fppc3FitEA->GetBinContent(i+1, 2, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(2, fppc3FitEA->GetBinContent(i+1, 3, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(3, fppc3FitEA->GetBinContent(i+1, 4, j+1));
-	ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
+  if(!fMCcase && !fTabulatePairs){
+    for(Int_t i=0; i<2; i++){
+      for(Int_t j=0; j<50; j++){
+	TString *nameEA=new TString("ExchangeAmpPointSource");
+	*nameEA += i;
+	*nameEA += j;
+	if(i==0) ExchangeAmpPointSource[i][j] = new TF1(nameEA->Data(), EWequation->Data(), 0,1.0);// Edgeworth
+	else ExchangeAmpPointSource[i][j] = new TF1(nameEA->Data(), LGequation->Data(), 0,1.0);// Laguerre
+	//
+	if(fCollisionType==0){
+	  ExchangeAmpPointSource[i][j]->FixParameter(0, fPbPbc3FitEA->GetBinContent(i+1, 1, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(1, fPbPbc3FitEA->GetBinContent(i+1, 2, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(2, fPbPbc3FitEA->GetBinContent(i+1, 3, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(3, fPbPbc3FitEA->GetBinContent(i+1, 4, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
+	}else if(fCollisionType==1){
+	  ExchangeAmpPointSource[i][j]->FixParameter(0, fpPbc3FitEA->GetBinContent(i+1, 1, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(1, fpPbc3FitEA->GetBinContent(i+1, 2, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(2, fpPbc3FitEA->GetBinContent(i+1, 3, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(3, fpPbc3FitEA->GetBinContent(i+1, 4, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
+	}else{
+	  ExchangeAmpPointSource[i][j]->FixParameter(0, fppc3FitEA->GetBinContent(i+1, 1, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(1, fppc3FitEA->GetBinContent(i+1, 2, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(2, fppc3FitEA->GetBinContent(i+1, 3, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(3, fppc3FitEA->GetBinContent(i+1, 4, j+1));
+	  ExchangeAmpPointSource[i][j]->FixParameter(4, 0);
+	}
       }
     }
   }
- 
   /////////////////////////////////////////////
   /////////////////////////////////////////////
   
@@ -4387,12 +4392,12 @@ void AliFourPion::SetMomResCorrections(Bool_t legoCase, TH2D *temp2DSC, TH2D *te
   cout<<"Done reading momentum resolution file"<<endl;
 }
 //________________________________________________________________________
-void AliFourPion::SetFSICorrelations(Bool_t legoCase, TH1D *tempss[12], TH1D *tempos[12]){
+void AliFourPion::SetFSICorrelations(Bool_t legoCase, TH1D *tempss[13], TH1D *tempos[13]){
   // read in 2-particle and 3-particle FSI correlations = K2 & K3
   // 2-particle input histo from file is binned in qinv.  3-particle in qinv of each pair
   if(legoCase){
     cout<<"LEGO call to SetFSICorrelations"<<endl;
-    for(Int_t MB=0; MB<12; MB++) {
+    for(Int_t MB=0; MB<13; MB++) {
       fFSIss[MB] = (TH1D*)tempss[MB]->Clone();
       fFSIos[MB] = (TH1D*)tempos[MB]->Clone();
       //
@@ -4407,9 +4412,9 @@ void AliFourPion::SetFSICorrelations(Bool_t legoCase, TH1D *tempss[12], TH1D *te
       AliFatal("No FSI file found.  Kill process.");
     }else {cout<<"Good FSI File Found!"<<endl;}
     
-    TH1D *temphistoSS[12];
-    TH1D *temphistoOS[12];
-    for(Int_t MB=0; MB<12; MB++) {
+    TH1D *temphistoSS[13];
+    TH1D *temphistoOS[13];
+    for(Int_t MB=0; MB<13; MB++) {
       TString *nameK2SS = new TString("K2ss_");
       *nameK2SS += MB;
       temphistoSS[MB] = (TH1D*)fsifile->Get(nameK2SS->Data());
@@ -4569,7 +4574,7 @@ void AliFourPion::SetFSIindex(Float_t R){
       else if(fMbin<=15) fFSIindex = 7;//40-50%
       else if(fMbin<=18) fFSIindex = 8;//40-50%
       else fFSIindex = 8;//90-100%
-    }else fFSIindex = 9;// pp and pPb
+    }else fFSIindex = fFSIindexSmallSystem;// pPb and pp
   }else{// FSI binning for MC 
     if(R>=10.) fFSIindex = 0;
     else if(R>=9.) fFSIindex = 1;

@@ -32,8 +32,8 @@ class AliEbyEPidRatioQA : public AliEbyEPidRatioBase {
   AliEbyEPidRatioQA& operator=(const AliEbyEPidRatioQA&); // not implemented
   virtual void CreateHistograms();
 
-  THnSparseF           *fHnQAa;                  //! THnSparseF : tracks for QA
-  THnSparseF           *fHnQAb;                  //! THnSparseF : tracks for QA
+  THnSparseF           *fHnQAa;        //! THnSparseF : tracks for QA
+  THnSparseF           *fHnQAb;        //! THnSparseF : tracks for QA
 
   ClassDef(AliEbyEPidRatioQA, 1);
 };
