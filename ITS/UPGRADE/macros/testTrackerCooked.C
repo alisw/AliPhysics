@@ -97,6 +97,7 @@ const AliESDVertex *SetMCvertex(const AliRunLoader *rl, AliTracker *tracker) {
     Double_t ers[]={2.e-4,2.e-4,2.e-2};
     tracker->SetVertex(xyz,ers);
     AliESDVertex *vertex=new AliESDVertex(xyz,ers);
+    vertex->SetNContributors(33); // Set some dummy number of contributors
     return vertex;
 }
 

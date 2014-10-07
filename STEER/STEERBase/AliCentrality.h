@@ -28,6 +28,9 @@ class AliCentrality : public TNamed
   void SetCentralityV0A0(Float_t cent) {fCentralityV0A0 = cent;} 
   void SetCentralityV0A123(Float_t cent) {fCentralityV0A123 = cent;} 
   void SetCentralityV0C(Float_t cent) {fCentralityV0C = cent;} 
+  void SetCentralityV0A23(Float_t cent) {fCentralityV0A23 = cent;} 
+  void SetCentralityV0C01(Float_t cent) {fCentralityV0C01 = cent;} 
+  void SetCentralityV0S(Float_t cent) {fCentralityV0S = cent;} 
   void SetCentralityV0MEq(Float_t cent) {fCentralityV0MEq = cent;} 
   void SetCentralityV0AEq(Float_t cent) {fCentralityV0AEq = cent;} 
   void SetCentralityV0CEq(Float_t cent) {fCentralityV0CEq = cent;} 
@@ -81,6 +84,9 @@ class AliCentrality : public TNamed
   Float_t fCentralityV0A0;  // Centrality from V0A0
   Float_t fCentralityV0A123;// Centrality from V0A123
   Float_t fCentralityV0C;   // Centrality from V0C
+  Float_t fCentralityV0A23; // Centrality from V0A23
+  Float_t fCentralityV0C01; // Centrality from V0C01
+  Float_t fCentralityV0S;   // Centrality from V0S
   Float_t fCentralityV0MEq; // Centrality from V0A+V0C equalized channel
   Float_t fCentralityV0AEq; // Centrality from V0A equalized channel
   Float_t fCentralityV0CEq; // Centrality from V0C equalized channel
@@ -116,6 +122,6 @@ class AliCentrality : public TNamed
   Float_t fCentralityZPAtrue;   // Centrality from true (sim) ZNA
   Float_t fCentralityZPCtrue;   // Centrality from true (sim) ZNC
 
-  ClassDef(AliCentrality, 9)
+  ClassDef(AliCentrality, 10)
 };
 #endif //ALICENTRALITY_H

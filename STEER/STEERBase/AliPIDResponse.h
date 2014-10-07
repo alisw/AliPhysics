@@ -187,6 +187,8 @@ public:
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
 
+  EBeamType GetBeamType() const {return fBeamTypeNum;};
+
 
 protected:
   AliITSPIDResponse   fITSResponse;    //PID response function of the ITS
@@ -325,7 +327,7 @@ private:
   EDetPidStatus GetComputePIDProbability  (EDetector detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
-  EDetPidStatus GetComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus GetComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],Bool_t kNoMism=kFALSE) const;
   EDetPidStatus GetComputeEMCALProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputePHOSProbability (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus GetComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;

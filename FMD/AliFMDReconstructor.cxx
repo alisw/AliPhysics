@@ -118,7 +118,7 @@ AliFMDReconstructor::Init()
 
   // Initialize the parameters
   AliFMDParameters* param = AliFMDParameters::Instance();
-  if (param->Init() != 0) {
+  if (param->Init(true) != 0) {
     AliError("Failed to initialize parameters, making zombie");
     fZombie = true;
   }
