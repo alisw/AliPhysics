@@ -947,7 +947,7 @@ Int_t AliITSMultReconstructor::AssociateClusterOfL1(Int_t iC1)
       fhClustersDThetaAll->Fill(dTheta);    
       fhDPhiVsDThetaAll->Fill(dTheta, dPhi);
     }
-    Float_t d = CalcDist(dPhi,dTheta,clPar1[kClTh]);     // make "elliptical" cut in Phi and Theta! 
+    Float_t d = CalcDist(dPhi,clPar2[kClTh] - clPar1[kClTh],clPar1[kClTh]);     // make "elliptical" cut in Phi and Theta! 
     // look for the minimum distance: the minimum is in iC2WithBestDist
     if (d<fNStdDev && d<minDist) { minDist=d; iC2WithBestDist = iC2; }
   }
