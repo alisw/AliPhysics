@@ -1944,11 +1944,11 @@ void AliAnalysisTaskJetV2::FillQAHistograms(AliVEvent* vevent)
     fHistVertexz->Fill(vevent->GetPrimaryVertex()->GetZ());
     fHistCentrality->Fill(fCent);
     Int_t runNumber(InputEvent()->GetRunNumber());
+    if(fLeadingJet && fLeadingJetAfterSub) fHistLeadingJetBackground[fInCentralitySelection]->Fill(TMath::Abs(fLeadingJet->Eta()-fLeadingJetAfterSub->Eta()), PhaseShift(fLeadingJet->Phi()-fLeadingJetAfterSub->Phi()));
     for(fMappedRunNumber = 0; fMappedRunNumber < fExpectedRuns->GetSize(); fMappedRunNumber++) {
         if(fExpectedRuns->At(fMappedRunNumber) == runNumber) return;
     }
     if(fDebug > 0) printf("\n > TASK %s CANNOT IDENTIFY RUN - CONFIGURATION COULD BE INCORRECT < \n", GetName());
-    if(fLeadingJet && fLeadingJetAfterSub) fHistLeadingJetBackground[fInCentralitySelection]->Fill(TMath::Abs(fLeadingJet->Eta()-fLeadingJetAfterSub->Eta()), PhaseShift(fLeadingJet->Phi()-fLeadingJetAfterSub->Phi()));
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::FillAnalysisSummaryHistogram() const
