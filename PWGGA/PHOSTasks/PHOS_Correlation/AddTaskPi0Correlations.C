@@ -20,68 +20,65 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		return NULL;
 	}
 	
-		
-	stringstream ss;
-	ss << downCentLimit;
-	string strDownCentLimit = ss.str();
-	char text[255];
-	sprintf(text,"%2i",upCentLimit);
-	string strUpCentLimit = text;
-	TString centralityBorder = TString ("CB") + strDownCentLimit.c_str() + TString ("t") + strUpCentLimit.c_str() + TString ("Cnt");
-	TString sigmaBorder = Form("%2iSigma", int(sigmaWidth*10.));
-	if (sigmaWidth == 0) sigmaBorder = "00Sigma";
-	TString sName = TString (name) + sigmaBorder + centralityBorder ;
-
+	
+	TString className = name;
+	TString sigmaName = Form( "%2iSigma", int(sigmaWidth*10.) ) ;
+	if( sigmaWidth==0 ) sigmaName = "00Sigma";
+	TString sName = Form("%s%sCB%it%iCnt", className.Data(), sigmaName.Data(), downCentLimit, upCentLimit);
+	//TString sName = "LOL";
 
 	AliPHOSCorrelations* task = new AliPHOSCorrelations( Form("%sTask", sName.Data()) );
 
-	if( TString(options).Contains("10h") )	{
+	if( TString(options).Contains("10h") )	
+	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC10h );
 		task->SetCentralityEstimator("V0M");
 	}
-	if( TString(options).Contains("11h") )	{
+	
+	if( TString(options).Contains("11h") )	
+	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC11h );
 		task->SetCentralityEstimator("V0M");
 		if( downCentLimit == 0 && upCentLimit == 10 ) 
 		{
-			Double_t meanParametrs[2]  = { -4.03237e-05, 0.138352 };
-			Double_t sigmaParametrs[4] = { 0.00722915, 1.24329e-08, 0.00553326, 0.00128347 };
+			Double_t meanParametrs[2]  = {-0.000129767, 0.138874 };
+			Double_t sigmaParametrs[4] = {5.73226e-06, -0.00879368, 0.00462739 };
 			task->SetMassMeanParametrs(meanParametrs);
 			task->SetMassSigmaParametrs(sigmaParametrs);
 		}
 
 		if( downCentLimit == 20 && upCentLimit == 50 ) 
 		{
-			Double_t meanParametrs[2]  = { 1.00796e-05, 0.136096 };
-			Double_t sigmaParametrs[4] = { 0.00100059, 1.10485, 0.00570446, 0.00100001 };
+			Double_t meanParametrs[2]  = {-8.35555e-05, 0.136538 };
+			Double_t sigmaParametrs[4] = {-7.61949e-06, 1.20701e-06, 0.00474992 };
 			task->SetMassMeanParametrs(meanParametrs);
 			task->SetMassSigmaParametrs(sigmaParametrs);
 		}
-
 	}
-	if( TString(options).Contains("13") )	{
+	
+	if( TString(options).Contains("13") )	
+	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC13 );
 		task->SetCentralityEstimator("V0A");
 		if( downCentLimit == 0 && upCentLimit == 10 ) 
 		{
-			Double_t meanParametrs[2]  = { -1.15288e-05, 0.134496 };
-			Double_t sigmaParametrs[4] = {0.00541561, 1.55431e-15, 0.00661674, 0.00899229 };
+			Double_t meanParametrs[2]  = {-4.64539e-05, 0.134773 };
+			Double_t sigmaParametrs[3] = {0.00383029, 0.0041709, 0.00468736 };
 			task->SetMassMeanParametrs(meanParametrs);
 			task->SetMassSigmaParametrs(sigmaParametrs);
 		}
 
 		if( downCentLimit == 20 && upCentLimit == 50 ) 
 		{
-			Double_t meanParametrs[2]  = { -8.28487e-06, 0.134528 };
-			Double_t sigmaParametrs[4] = { 0.0070921, 2.05058e-12, 0.00660061, 0.00750263 };
+			Double_t meanParametrs[2]  = {-4.90799e-06, 0.134566 };
+			Double_t sigmaParametrs[4] = {0.00293721, 0.00622308, 0.00468625 };
 			task->SetMassMeanParametrs(meanParametrs);
 			task->SetMassSigmaParametrs(sigmaParametrs);
 		}
 	}
 
 
-	// Binning 
-	// TODO: Make other binning for 0-10% and 20-50%
+	// Mixed binning 
 	//Central:
 	if( downCentLimit == 0 && upCentLimit == 10 ) 
 	{
@@ -103,11 +100,22 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
 
-	task->EnableTOFCut(false, 100.e-9);
+	// Events
 	task->SelectCollisionCandidates(AliVEvent::kAny);
-	task->SetCentralityBorders(downCentLimit , upCentLimit) ;
+	task->SetCentralityBorders((Double_t)downCentLimit , (Double_t)upCentLimit) ;
+	// Clasters
+	task->EnableTOFCut(false, 100.e-9);
+	task->SwitchOnPionEfficiency();
+	task->SwitchOnMassParametrisation();
 	task->SetSigmaWidth(sigmaWidth);
-	task->SetUseEfficiency(true);
+	// Tracks
+	task->SwitchOnAODHybridTrackSelection(); // Check that the AODs have Hybrids!!!!
+    task->SetTrackStatus(AliVTrack::kITSrefit);
+    task->SetTPCSharedClusterFraction(0.4);
+    task->SwitchOnAODTrackSharedClusterSelection();
+    task->SwitchOffTrackHitSPDSelection();
+    task->SetTrackFilterMask(786);
+
 
 	mgr->AddTask(task);
 	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
