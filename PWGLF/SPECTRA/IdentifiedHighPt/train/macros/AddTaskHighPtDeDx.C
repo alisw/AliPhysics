@@ -145,7 +145,7 @@ AliAnalysisTaskHighPtDeDx* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* ta
     //outputFileName += ":PWGLF_StrVsMult";
     //if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
      
-    cout_hist = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
+    cout_hist = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
     mgr->ConnectInput (taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskHighPtDeDx, 1, cout_hist);
     
