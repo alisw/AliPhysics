@@ -622,7 +622,7 @@ void AliEmcalJetTask::FindJets()
 	AliEmcalJet *jet_sub = new ((*fJetsSub)[jetCount]) 
 	  AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
 	jet_sub->SetLabel(ijet);
-        // Fill constituent info
+	 // Fill constituent info
 	std::vector<fastjet::PseudoJet> constituents_sub(fjw.GetJetConstituents(ijet));
 	jet_sub->SetNumberOfTracks(constituents_sub.size());
 	jet_sub->SetNumberOfClusters(constituents_sub.size());
@@ -875,7 +875,7 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
       } else {
         AliError(Form("%s: No logical way to end up here.", GetName()));
         continue;
-      } 
+      }
     }
 }
 //______________________________________________________________________________________

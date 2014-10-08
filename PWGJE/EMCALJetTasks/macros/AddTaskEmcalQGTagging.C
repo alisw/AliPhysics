@@ -1,0 +1,95 @@
+AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
+						     const char * njetsTrue,
+						     const Double_t R,
+						     const char * nrhoBase, 
+						     const char * ntracks, 
+						     const char * nclusters,
+						     const char * ntracksTrue,
+						     const char *type,				      
+						     const char *CentEst,
+						     Int_t       pSel,
+						     TString     trigClass      = "",
+						     TString     kEmcalTriggers = "",
+						     TString     tag            = "",
+						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType, Int_t isEmbedding = 0) {
+  
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+    {
+      Error("AddTaskEmcalQGTagging","No analysis manager found.");
+      return 0;
+    }
+  Bool_t ismc=kFALSE;
+  ismc = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler())
+    {
+      ::Error("AddTaskEmcalQGTagging", "This task requires an input event handler");
+      return NULL;
+    }
+
+  TString wagonName = Form("JetQGTaggings_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
+
+  //Configure jet tagger task
+  AliAnalysisTaskEmcalQGTagging *task = new AliAnalysisTaskEmcalQGTagging(wagonName.Data());
+
+  //task->SetNCentBins(4);
+  task->SetJetShapeType(jetShapeType);
+  TString thename(njetsBase);
+  if(thename.Contains("Sub")) task->SetIsConstSub(kTRUE);
+  //task->SetVzRange(-10.,10.);
+
+  AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
+  AliParticleContainer *trackContTrue  = task->AddParticleContainer(ntracksTrue);
+  AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
+
+  task->SetJetContainer(0);
+  
+  TString strType(type);
+  AliJetContainer *jetContBase = task->AddJetContainer(njetsBase,strType,R);
+  if(jetContBase) {
+    jetContBase->SetRhoName(nrhoBase);
+    jetContBase->ConnectParticleContainer(trackCont);
+    jetContBase->ConnectClusterContainer(clusterCont);
+    jetContBase->SetPercAreaCut(0.6);
+    if(jetShapeType == AliAnalysisTaskEmcalQGTagging::kTrue){ jetContBase->SetPartonInfoName("PartonsInfo");}
+  }
+
+
+  if(isEmbedding){
+    task->SetJetContainer(1);
+    
+    AliJetContainer *jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
+    if(jetContTrue) {
+      jetContTrue->SetRhoName(nrhoBase);
+      jetContTrue->ConnectParticleContainer(trackContTrue);
+      jetContTrue->SetPercAreaCut(0.6); 
+      jetContTrue->SetPartonInfoName("PartonsInfo");
+    }
+  } 
+    //  task->SetJetContainer(1);
+
+  task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
+  task->SetCentralityEstimator(CentEst);
+  task->SelectCollisionCandidates(pSel);
+  task->SetUseAliAnaUtils(kFALSE);
+
+  mgr->AddTask(task);
+
+  //Connnect input
+  mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
+
+  //Connect output
+  TString contName1(wagonName);
+  
+  TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+    
+  mgr->ConnectOutput(task,1,coutput1);
+
+  return task;  
+
+}
+
