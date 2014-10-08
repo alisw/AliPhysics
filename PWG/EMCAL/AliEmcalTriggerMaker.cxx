@@ -3,9 +3,8 @@
 // Class to make array of trigger patch objects in AOD/ESD events.
 //
 // Author: J.Kral
-#include <TArrayI.h>
-
 #include <TClonesArray.h>
+#include <TArrayI.h>
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerTypes.h"
@@ -156,8 +155,8 @@ Bool_t AliEmcalTriggerMaker::Run()
   // class is not empty
   if (fCaloTriggers->GetEntries() > 0) {
     // zero the arrays
-	memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
-	memset(fPatchAmplitude, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
+    memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+    memset(fPatchAmplitude, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
 
     // go throuth the trigger channels
     while (fCaloTriggers->Next()) {
@@ -166,8 +165,11 @@ Bool_t AliEmcalTriggerMaker::Run()
       Int_t globCol=-1, globRow=-1;
       fCaloTriggers->GetPosition(globCol, globRow);
       // Look at L0 information
+      Float_t amp = -1;
       if(CheckForL0(*fCaloTriggers))
-    	  fCaloTriggers->GetAmplitude(fPatchAmplitude[globCol][globRow]);
+    	  fCaloTriggers->GetAmplitude(amp);
+      if(amp > -1)
+        fPatchAmplitude[globCol][globRow]  = amp;
       // for some strange reason some ADC amps are initialized in reconstruction
       // as -1, neglect those 
       Int_t adcAmp=-1;
@@ -248,36 +250,36 @@ Bool_t AliEmcalTriggerMaker::Run()
       trigger = ProcessPatch(kTMEMCalJet, isOfflineSimple);
       // save main jet triggers in event
       if (trigger != 0) {
-	    // check if more energetic than others for main patch marking
-	    if (!isOfflineSimple) {
-	      if (triggerMainJet == 0 || (triggerMainJet->GetPatchE() < trigger->GetPatchE()))
-	        triggerMainJet = trigger;
-	    } else {
-	      if (triggerMainJetSimple == 0 || (triggerMainJetSimple->GetPatchE() < trigger->GetPatchE()))
-	        triggerMainJetSimple = trigger;
-	    }
+        // check if more energetic than others for main patch marking
+        if (!isOfflineSimple) {
+          if (triggerMainJet == 0 || (triggerMainJet->GetPatchE() < trigger->GetPatchE()))
+            triggerMainJet = trigger;
+        } else {
+          if (triggerMainJetSimple == 0 || (triggerMainJetSimple->GetPatchE() < trigger->GetPatchE()))
+            triggerMainJetSimple = trigger;
+        }
       }
       
       // process gamma
       trigger = ProcessPatch(kTMEMCalGamma, isOfflineSimple);
       // save main gamma triggers in event
       if (trigger != 0) {
-	    // check if more energetic than others for main patch marking
-	    if (!isOfflineSimple) {
-	      if (triggerMainGamma == 0 || (triggerMainGamma->GetPatchE() < trigger->GetPatchE()))
-	        triggerMainGamma = trigger;
-	    } else {
-	      if (triggerMainGammaSimple == 0 || (triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE()))
-	        triggerMainGammaSimple = trigger;
-	    }
+        // check if more energetic than others for main patch marking
+        if (!isOfflineSimple) {
+          if (triggerMainGamma == 0 || (triggerMainGamma->GetPatchE() < trigger->GetPatchE()))
+            triggerMainGamma = trigger;
+        } else {
+          if (triggerMainGammaSimple == 0 || (triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE()))
+            triggerMainGammaSimple = trigger;
+        }
       }
 
       // level 0 triggers
       trigger = ProcessPatch(kTMEMCalLevel0, isOfflineSimple);
       // save main level0 trigger in the event
       if (trigger) {
-	    if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
-	      triggerMainLevel0 = trigger;
+        if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
+          triggerMainLevel0 = trigger;
       }
     } // triggers
     
@@ -380,9 +382,9 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 	  }
 	  // add the STU ADCs in the patch (in case of L1) or the TRU Amplitude (in case of L0)
 	  if (!isOfflineSimple )
-	      if(type == kTMEMCalLevel0)
+	      if(type == kTMEMCalLevel0){
 	        adcAmp += static_cast<Int_t>(fPatchAmplitude[globCol+i][globRow+j]); // precision loss in case of global integer field
-	      else
+	      } else
 	        adcAmp += fPatchADC[globCol+i][globRow+j];
 	  else
 	    adcAmp += fPatchADCSimple[globCol+i][globRow+j];
@@ -479,6 +481,9 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   centerMass -= vertex;
   edge1 -= vertex;
   edge2 -= vertex;
+
+  Int_t isMC = MCEvent() ? 1 : 0;
+  Int_t offSet = (1 - isMC) * kTriggerTypeEnd;
 	
   // fix tbits .. remove the unwanted type triggers
   // for Jet and Gamma triggers we remove also the level 0 bit since it will be stored in the level 0 patch
@@ -493,6 +498,8 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 		       1 << (kTriggerTypeEnd + kL0) | 1 << (kL0));
     break;
   case kTMEMCalLevel0:
+    // Explicitly set the level 0 bit to overcome the masking out
+    tBits |= 1 << (offSet + kL0);
     tBits = tBits & ~( 1 << (kTriggerTypeEnd + kL1JetLow) | 1 << (kTriggerTypeEnd + kL1JetHigh) | 1 << (kL1JetLow) | 1 << (kL1JetHigh) |
 		       1 << (kTriggerTypeEnd + kL1GammaLow) | 1 << (kTriggerTypeEnd + kL1GammaHigh) | 1 << (kL1GammaLow) | 1 << (kL1GammaHigh));
     break;
@@ -502,8 +509,6 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   AliEmcalTriggerPatchInfo *trigger = 
     new ((*fCaloTriggersOut)[fITrigger]) AliEmcalTriggerPatchInfo();
   fITrigger++;
-  Int_t isMC = MCEvent() ? 1 : 0;
-  Int_t offSet = (1 - isMC) * kTriggerTypeEnd;
   trigger->SetCenterGeo(centerGeo, amp);
   trigger->SetCenterMass(centerMass, amp);
   trigger->SetEdge1(edge1, amp);
@@ -620,7 +625,7 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
   Bool_t l0fired(kFALSE);
   trg.GetNL0Times(nl0times);
   if(nl0times){
-	TArrayI l0times(nl0times);
+    TArrayI l0times(nl0times);
   	trg.GetL0Times(l0times.GetArray());
   	// Apply timing cut to see if a L0 has fired
   	for(Int_t *l0timeIter = l0times.GetArray(); l0timeIter < l0times.GetArray() + l0times.GetSize(); l0timeIter++){
