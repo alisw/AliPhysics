@@ -171,18 +171,22 @@ AliEveEventManager::~AliEveEventManager()
     fAutoLoadTimer->Stop();
     fAutoLoadTimer->Disconnect("Timeout");
 
-    delete fSubManagers;
+    AliEveEventManager *manager = AliEveEventManager::GetCurrent();
+    manager->Disconnect("StorageManagerOk");
+    manager->Disconnect("StorageManagerDown");
+
+    if(fSubManagers){delete fSubManagers;}
 
     if (fIsOpen)
     {
         Close();
     }
 
-    fTransients->DecDenyDestroy();
-    fTransients->Destroy();
+//    fTransients->DecDenyDestroy();
+//    fTransients->Destroy();
 
-    fTransientLists->DecDenyDestroy();
-    fTransientLists->Destroy();
+//    fTransientLists->DecDenyDestroy();
+//    fTransientLists->Destroy();
 
     //delete fExecutor;
 }
