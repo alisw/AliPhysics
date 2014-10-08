@@ -381,6 +381,7 @@ class AliJHistManager: public AliJNamed{
         void SetDirectory(TDirectory* d){ fDirectory = d; }
         static AliJHistManager* GlobalManager();
         static AliJHistManager* CurrentManager( AliJHistManager * hmg=NULL);
+        AliJHistManager * cd(){ return AliJHistManager::CurrentManager(this); }
         void SetLoadMode(bool b=true){ fIsLoadMode = b; }
         bool IsLoadMode(){ return fIsLoadMode; }
         TString GetString(){
@@ -402,13 +403,14 @@ class AliJHistManager: public AliJNamed{
         AliJTH1D& GetTH1D( TString name){ return dynamic_cast<AliJTH1D&>(*GetTH1(name)); }
         AliJTH2D& GetTH2D( TString name){ return dynamic_cast<AliJTH2D&>(*GetTH1(name)); }
         bool fIsLoadMode;
-        TDirectory * fDirectory;
 
         TString GetHistName(int i){ return fHistNames[i]; }
 
         AliJTH1 * GetAliJTH1(int i){ return GetTH1(fHistNames[i]); }
         int GetNAliJTH1(){ return fHistNames.size(); }
 
+
+        TDirectory * fDirectory; // TODO move to private?
 
     private:
         TString                     fConfigStr;

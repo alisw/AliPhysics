@@ -20,7 +20,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
 {
     public:
         // enumerators
-        enum matchingSceme      {kGeoEtaPhi, kGeoR};
+        enum matchingSceme      {kGeoEtaPhi, kGeoR, kDiJet};
         enum sourceBKG          {kNoSourceBKG, kSourceRho, kSourceLocalRho};
         enum targetBKG          {kNoTargetBKG, kTargetRho, kTargetLocalRho};
         // constructors, destructor
@@ -79,6 +79,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         // methods
         void                    DoGeometricMatchingEtaPhi();
         void                    DoGeometricMatchingR();
+        void                    DoDiJetMatching();
         void                    DoConstituentMatching();
         void                    GetBijection();
         void                    PostMatchedJets();
@@ -95,6 +96,8 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
                 fMatchedJetContainer[i][0] = 0x0; fMatchedJetContainer[i][1] = 0x0; }
             fNoMatchedJets = 0;
         }
+        AliEmcalJet*            GetLeadingJet(TClonesArray* source, Int_t &leadingJetIndex, Double_t etaMin = -.7, Double_t etaMax = .7);
+        AliEmcalJet*            GetSubLeadingJet(TClonesArray* source, Int_t leadingJetIndex, Int_t &subLeadingJetIndex, Double_t etaMin = -.7, Double_t etaMax = .7);
         void                    PrintInfo() const;
         virtual void            Terminate(Option_t* option);
 
@@ -134,6 +137,8 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         TProfile*               fProfFracPtJets;        //! sum pt fraction for matched jets
         TProfile*               fProfFracNoMatched;     //! no of constituents fraction found / jet
         TProfile*               fProfFracNoJets;        //! no of consstituents fraction jet / jet
+        TH2F*                   fHistDiJet;             //! matched dijet eta, phi
+        TH2F*                   fHistDiJetLeadingJet;   //! leading jet (for dijet) eta, phi
         TH1F*                   fHistAnalysisSummary;   //! flags
         TProfile*               fProfQAMatched;         //! QA spreads of matched jets
         TProfile*               fProfQA;                //! QA spreads of source and target jets

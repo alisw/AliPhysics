@@ -20,6 +20,8 @@
 #include  "AliJBaseTrack.h"
 #include  "AliJPhoton.h"
 #include  "AliJTrack.h"
+#include <TGrid.h>
+#include <TPRegexp.h>
 
 //______________________________________________________________________________
 AliJHistos::AliJHistos(AliJCard* cardP) :
@@ -111,6 +113,12 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
   fhJTPta(),
   fhJTPtaBg(),
   fhJTPtaBgR(),
+  fHmgInclusive(NULL),
+  fhIetaTriggFromFile(),
+  fhIetaAssocFromFile(),
+  fhIphiTriggFromFile(),
+  fhIphiAssocFromFile(),
+  fhDphiAssocMixFromFile(),
   fhLPpt(),
   fhLPpairPt(),
   fhChargedPt(),
@@ -201,7 +209,7 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
     ftriggFiducCut =  fCard->Get("TriggerFiducialEtaCut"); //FK// Fiduc cut 
     fmaxTriggEtaRange =  fmaxEtaRange - ftriggFiducCut; //FK// Trigger range
 
-    fHMG = AliJHistManager::GlobalManager();
+    fHMG = new AliJHistManager( "HistManager");
     //for (int hiklong = 0; hiklong < fCard->GetNoOfBins(kLongType); hiklong++)
     //kRGapType kEtaGapType
     fCentBin   .Set("Cent",   "C", "C %2.0f-%2.0f%%" ).SetBin( fCard->GetVector("CentBinBorders"));
@@ -356,6 +364,12 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fhJTPta(obj.fhJTPta),
   fhJTPtaBg(obj.fhJTPtaBg),
   fhJTPtaBgR(obj.fhJTPtaBgR),
+  fHmgInclusive(obj.fHmgInclusive),
+  fhIetaTriggFromFile(),
+  fhIetaAssocFromFile(),
+  fhIphiTriggFromFile(),
+  fhIphiAssocFromFile(),
+  fhDphiAssocMixFromFile(),
   fhLPpt(obj.fhLPpt),
   fhLPpairPt(obj.fhLPpairPt),
   fhChargedPt(obj.fhChargedPt),
@@ -452,10 +466,16 @@ AliJHistos& AliJHistos::operator=(const AliJHistos& obj){
     return *this;
 }
 
+AliJHistos::~AliJHistos() {
+	delete fHMG;
+	delete fHmgInclusive;
+}
+
 //______________________________________________________________________________
 void AliJHistos::CreateAzimuthCorrHistos()
 {
   // Comment needed here!
+  fHMG->cd();
   
     int    bins = 240; // 240 is divisible by 2,3,4,612*24=280    -1/3 and  0.5 and 5/3  are bin edges 
     //double fLowRange = -1.0/3, fHighRange= 5.0/3;
@@ -681,6 +701,7 @@ void AliJHistos::CreateAzimuthCorrHistos()
 
 void AliJHistos::CreateIAAMoons()
 {
+    fHMG->cd();
     //--- IAA signal ---
     fhDRNearPt
         << TH1D( "hDRNearPt", "",  fnUE, fUEBinsx) 
@@ -719,6 +740,7 @@ void AliJHistos::CreateXEHistos(){
     //==================================
     //  xe slopes
     //==================================
+    fHMG->cd();
     double xel=0.0, xeh=1.2;
     int nbxE = int((xeh-xel)/0.04);
 
@@ -739,6 +761,7 @@ void AliJHistos::CreateXEHistos(){
 
 void AliJHistos::CreatePairPtCosThetaStar(){
     // pairs
+    fHMG->cd();
     int    bins = 288; // 12*24    -1/3 and  0.5 and 5/3  are bin edges 
     double lowRange = -1./3, highRange= 5./3;
     //=================
@@ -781,6 +804,7 @@ void AliJHistos::CreatePairPtCosThetaStar(){
 //______________________________________________________________________________
 void AliJHistos::CreatePtCorrHistos(){
     // pt corr histos
+    fHMG->cd();
     int ptbins=30;
     double lpt=0,upt=8;
     fhPtNear
@@ -794,6 +818,7 @@ void AliJHistos::CreatePtCorrHistos(){
 //______________________________________________________________________________
 void AliJHistos::CreateRunByRunHistos(int runID, int runcounter) const {
   // Todo
+  fHMG->cd();
   JUNUSED(runID);
   JUNUSED(runcounter);
 } //TODO
@@ -802,6 +827,7 @@ void AliJHistos::CreateRunByRunHistos(int runID, int runcounter) const {
 //______________________________________________________________________________
 void AliJHistos::CreateEventTrackHistos(){
   // comment needed
+  fHMG->cd();
     int nBINS=150;
     double logBinsX[nBINS+1], limL=0.1, limH=100;
     double logBW = (log(limH)-log(limL))/nBINS;
@@ -882,6 +908,7 @@ void AliJHistos::CreateEventTrackHistos(){
 }
 
 void AliJHistos::CreateJetHistos(){
+    fHMG->cd();
     // jet histos
     int nBINS=200;
     double logBinsX[nBINS+1], limL=0.1, limH=200;
@@ -963,8 +990,9 @@ void AliJHistos::CreateJetHistos(){
 
 //______________________________________________________________________________
 void AliJHistos::CreateXtHistos() {
-
-    // TODO MakeDirectory("xT");
+    // TODO comment
+    //
+    fHMG->cd();
     // Esko
     TH1::SetDefaultSumw2(kTRUE);
     cout << "GetDefaultSumw2() = " << TH1::GetDefaultSumw2() << endl;
@@ -1007,76 +1035,85 @@ void AliJHistos::CreateXtHistos() {
 //______________________________________________________________________________
 //void AliJHistos::ReadInclusiveHistos(TFile *inFile){
 void AliJHistos::ReadInclusiveHistos(const char *inclusFileName){
-    // read inclusive histos
-    TFile *inclusFile = new TFile(inclusFileName, "READ");
+	// read inclusive histos
+	fHMG->cd();
 
-    //inFile->ls();
-    //cout<<((TH1D*) inclusFile->Get(Form("hIetaTrigg%02d%02d", 0, 0)))->GetEntries() <<endl; 
-    //abort();
+	TPMERegexp sep("::");
+	int ncol = sep.Split( inclusFileName );
+    TString filename = sep[0];
 
-    for (int hic = 0;hic < fCard->GetNoOfBins(kCentrType);hic++) {
-        for (int hit = 0; hit < fCard->GetNoOfBins(kTriggType);hit++){
-            fhIetaTriggFromFile[hic][hit] = (TH1D*) inclusFile->Get(Form("hIetaTrigg%02d%02d", hic, hit));//FK//mix2 
-            //fhistoList->Add(fhIetaTriggFromFile[hic][hit]);
-            fhIphiTriggFromFile[hic][hit] = (TH1D*) inclusFile->Get(Form("hIphiTrigg%02d%02d", hic, hit));//FK//mix2 
-            //fhistoList->Add(fhIphiTriggFromFile[hic][hit]);
-            cout<<"c=" << hic <<" tr="<< hit <<" "<<fhIetaTriggFromFile[hic][hit]<<flush;
-            cout<<" entries="<<fhIetaTriggFromFile[hic][hit]->GetEntries() << endl; 
-        }
-    }
+	if (TString(inclusFileName).BeginsWith("alien:"))  TGrid::Connect("alien:");
+	TFile *inclusFile = TFile::Open(filename);
+    TDirectory * dir =  (TDirectory*) inclusFile;
+    if( ncol > 1 ) dir = (TDirectory*)( inclusFile->Get(sep[1]));
+    if( !dir ) {
+		cout << " ReadInclusiveHistos wrong file name or dirname !!!!" << endl;
+	}
 
-    for (int hic = 0;hic < fCard->GetNoOfBins(kCentrType);hic++) {
-        for (int hia = 0; hia < fCard->GetNoOfBins(kAssocType); hia++){
-            fhIetaAssocFromFile[hic][hia] = (TH1D*) inclusFile->Get(Form("hIetaAssoc%02d%02d", hic, hia));//FK//mix2
-            //fhistoList->Add(fhIetaAssocFromFile[hic][hia]);
-            fhIphiAssocFromFile[hic][hia] = (TH1D*) inclusFile->Get(Form("hIphiAssoc%02d%02d", hic, hia));//FK//mix2
-            //fhistoList->Add(fhIphiAssocFromFile[hic][hia]);
-            cout<<"c=" << hic <<" as="<< hia <<" entries="<< fhIetaAssocFromFile[hic][hia]->GetEntries() <<endl; 
-        }
-    }
+     cout<<inclusFileName<<"\t"<<filename<<"\t";
+     if( ncol > 1 ) cout<<sep[1];
+	 cout<<endl;
+	 dir->Print();
 
-    int numCent = fCard->GetNoOfBins(kCentrType);
-    int numPtt  = fCard->GetNoOfBins(kTriggType);
-    int numPta  = fCard->GetNoOfBins(kAssocType);
-    int numEtaGaps = fCard->GetNoOfBins(kEtaGapType);
-    int numZvtx = fCard->GetNoOfBins(kZVertType);
+	 dir->cd();
 
-    //------------ R e a d   mixed  D a t a ------------    
-    const int zFirstBin = 0 ;
-    const int etaGapFirstBin = 0 ;
-    for (int hic = 0;hic < numCent; hic++) {
-        for (int hit = 0; hit < numPtt;hit++){
-            for (int hia = 0; hia < numPta; hia++){
-                fhDEtaNearMixFromFile[hic][hit][hia]=  (TH1D*) inclusFile->Get(Form("hDEtaNear/hDEtaNear%02d%02d%02d%02d%02d%02d", 1, hic, zFirstBin, etaGapFirstBin, hit, hia));
-                for (int iEtaGap=0; iEtaGap < numEtaGaps; iEtaGap++){//fdphi slices 
-                    for (int hiz = 0; hiz < numZvtx; hiz++) {
-                        if( iEtaGap==etaGapFirstBin && hiz==zFirstBin ) continue;
-                        TH1D *hid = (TH1D*) inclusFile->Get(Form("hDEtaNear/hDEtaNear%02d%02d%02d%02d%02d%02d", 1, hic, hiz, iEtaGap, hit, hia));
-                        fhDEtaNearMixFromFile[hic][hit][hia]->Add(hid);
-                    }
-                }
-                //normalize to traingle
-                double counts  = fhDEtaNearMixFromFile[hic][hit][hia]->Integral();
-                double bw      = fhDEtaNearMixFromFile[hic][hit][hia]->GetBinWidth(1);
-                int rebin = 4;
-                if(counts<5000) rebin=8;
-                if(counts<3000) rebin=10;
-                if(counts<1000) rebin=16;
-                fhDEtaNearMixFromFile[hic][hit][hia]->Rebin(rebin);
-                if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw/rebin);//triangle  f(0)=1, f(1.6)=0
-                //if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw);
-                //cout<<"c=" << hic <<" as="<< hia <<" entries="<< fhDEtaNearMixFromFile[hic][hit][hia]->GetEntries() <<endl; 
+	 fHmgInclusive = new AliJHistManager("hst");
+	 fHmgInclusive->LoadConfig();
 
-            }   
-        }   
-    }   
+	 fhIetaTriggFromFile = fHmgInclusive->GetTH1D("hIetaTrigg");
+	 fhIetaTriggFromFile.Print();
+	 fhIetaTriggFromFile[0][0]->Print();
+
+	 fhIphiTriggFromFile = fHmgInclusive->GetTH1D("fhIphiTrigg"); // TODO
+	 fhIphiTriggFromFile.Print();
+	 fhIetaAssocFromFile = fHmgInclusive->GetTH1D("hIetaAssoc");
+	 fhIetaAssocFromFile.Print();
+	 fhIphiAssocFromFile = fHmgInclusive->GetTH1D("fhIphiAssoc");
+	 fhIphiAssocFromFile.Print();
+
+	 int numCent = fCard->GetNoOfBins(kCentrType);
+	 int numPtt  = fCard->GetNoOfBins(kTriggType);
+	 int numPta  = fCard->GetNoOfBins(kAssocType);
+	 int numEtaGaps = fCard->GetNoOfBins(kEtaGapType);
+	 int numZvtx = fCard->GetNoOfBins(kZVertType);
+
+	 //------------ R e a d   mixed  D a t a ------------    
+	 const int zFirstBin = 0 ;
+	 const int etaGapFirstBin = 0 ;
+	 AliJTH1D hDEtaNearTmp = fHmgInclusive->GetTH1D("hDEtaNear");
+	 for (int hic = 0;hic < numCent; hic++) {
+		 for (int hit = 0; hit < numPtt;hit++){
+			 for (int hia = 0; hia < numPta; hia++){
+				 fhDEtaNearMixFromFile[hic][hit][hia]= hDEtaNearTmp[hic][zFirstBin][etaGapFirstBin][hit][hia]; 
+				 for (int iEtaGap=0; iEtaGap < numEtaGaps; iEtaGap++){//fdphi slices 
+					 for (int hiz = 0; hiz < numZvtx; hiz++) {
+						 if( iEtaGap==etaGapFirstBin && hiz==zFirstBin ) continue;
+						 TH1D *hid = hDEtaNearTmp[hic][hiz][iEtaGap][hit][hia];
+							 fhDEtaNearMixFromFile[hic][hit][hia]->Add(hid);
+					 }
+				 }
+				 //normalize to traingle
+				 double counts  = fhDEtaNearMixFromFile[hic][hit][hia]->Integral();
+				 double bw      = fhDEtaNearMixFromFile[hic][hit][hia]->GetBinWidth(1);
+				 int rebin = 4;
+				 if(counts<5000) rebin=8;
+				 if(counts<3000) rebin=10;
+				 if(counts<1000) rebin=16;
+				 fhDEtaNearMixFromFile[hic][hit][hia]->Rebin(rebin);
+				 if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw/rebin);//triangle  f(0)=1, f(1.6)=0
+				 //if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw);
+				 //cout<<"c=" << hic <<" as="<< hia <<" entries="<< fhDEtaNearMixFromFile[hic][hit][hia]->GetEntries() <<endl; 
+
+			 }   
+		 }   
+	 }   
 
 
-    //for (int hic = 0;hic < fCard->GetNoOfBins(kCentrType);hic++) {
-    //   for (int hit = 0; hit < fCard->GetNoOfBins(kTriggType);hit++){
-    //      for (int hia = 0; hia < fCard->GetNoOfBins(kAssocType); hia++){
-    //         hDphiAssocMixSpectraFile[hic][hit][hia]= (TH1D*) inclusFile->Get(Form("xhDphiAssoc%02dC%02dE00T%02dA%02d",1, hic, hit, hia));//FK//mix2
-    //      }
-    //   }
-    //}
+	 //for (int hic = 0;hic < fCard->GetNoOfBins(kCentrType);hic++) {
+	 //   for (int hit = 0; hit < fCard->GetNoOfBins(kTriggType);hit++){
+	 //      for (int hia = 0; hia < fCard->GetNoOfBins(kAssocType); hia++){
+	 //         hDphiAssocMixSpectraFile[hic][hit][hia]= (TH1D*) inclusFile->Get(Form("xhDphiAssoc%02dC%02dE00T%02dA%02d",1, hic, hit, hia));//FK//mix2
+	 //      }
+	 //   }
+	 //}
 }
