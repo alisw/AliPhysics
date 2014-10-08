@@ -168,8 +168,6 @@ void AliXtAnalysis::UserCreateOutputObjects(){
     TH1::AddDirectory(kTRUE);
     if( !orignalTH1AdddirectoryStatus ) cout<<"DEBUG : TH1::AddDirectory is turned on"<<endl;
     TFile * file2 = OpenFile(2);
-    file2-> SetCompressionLevel(9);
-    file2->cd();
     
     fHistDir=gDirectory;
     fHistos = new AliJXtHistos(fCard);
@@ -334,9 +332,6 @@ void AliXtAnalysis::UserExec(Option_t *) {
 //________________________________________________________________________
 void AliXtAnalysis::Terminate(Option_t *)
 {
-    OpenFile(2);
-    fHistDir->Write();
-    
     cout<<"Successfully finished"<<endl;
 }
 //________________________________________________________________________
