@@ -19,7 +19,7 @@ void SetMFTGeometry() {
   const Float_t pixelSizeY[nPlanes]       = { 28.e-4,  28.e-4,  28.e-4,  28.e-4,  28.e-4 };   // expressed in cm
 
   const Float_t thicknessActive[nPlanes]  = {  50.e-4,   50.e-4,   50.e-4,   50.e-4,   50.e-4 };   // expressed in cm
-  const Float_t thicknessSupport[nPlanes] = {   1.   ,    1.   ,    1.   ,    1.   ,    1.    };   // expressed in cm
+  const Float_t thicknessSupport[nPlanes] = {   1.4  ,    1.4  ,    1.4  ,    1.4  ,    1.4   };   // expressed in cm
   const Float_t thicknessReadout[nPlanes] = {  50.e-4,   50.e-4,   50.e-4,   50.e-4,   50.e-4 };   // expressed in cm
 
   const Float_t equivalentSilicon[nPlanes]            = { 600.e-4, 600.e-4, 600.e-4, 600.e-4, 600.e-4 };    // expressed in cm

@@ -445,12 +445,14 @@ void AliITSUTrackerGlo::UnloadClusters()
   //
   // Remove clusters from the memory 
   //
+  /*
   AliITSURecoDet *det=fReconstructor->GetITSInterface();
   Int_t nlayers=det->GetNLayersActive();
   for (Int_t i=0; i<nlayers; i++) {
       TClonesArray *clusters=*(det->GetLayerActive(i)->GetClustersAddress());
       clusters->Delete();
   }
+  */
 } 
 
 //_________________________________________________________________________
