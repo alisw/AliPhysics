@@ -37,6 +37,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliGeomManager.h"
+#include "AliVVertex.h"
 
 // ANALYSIS includes
 #include "AliAnalysisDataSlot.h"
@@ -86,10 +87,12 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution() :
   fResiduals(NULL),
   fResidualsVsP(NULL),
   fResidualsVsCent(NULL),
+  fResidualsVsAngle(NULL),
   fLocalChi2(NULL),
   fChamberRes(NULL),
   fTrackRes(NULL),
   fCanvases(NULL),
+  fTmpHists(NULL),
   fDefaultStorage(""),
   fNEvents(0),
   fShowProgressBar(kFALSE),
@@ -106,6 +109,11 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution() :
   fCorrectForSystematics(kTRUE),
   fRemoveMonoCathCl(kFALSE),
   fCheckAllPads(kFALSE),
+  fImproveTracks(kFALSE),
+  fShiftHalfCh(kFALSE),
+  fPrintHalfChShift(kFALSE),
+  fShiftDE(kFALSE),
+  fPrintDEShift(kFALSE),
   fOCDBLoaded(kFALSE),
   fNDE(0),
   fReAlign(kFALSE),
@@ -113,13 +121,16 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution() :
   fNewAlignStorage(""),
   fOldGeoTransformer(NULL),
   fNewGeoTransformer(NULL),
-  fSelectTriggerClass(NULL)
+  fSelectTriggerClass(NULL),
+  fMuonTrackCuts(0x0)
 {
   /// Default constructor
   
   for (Int_t i = 0; i < 10; i++) SetStartingResolution(i, -1., -1.);
   for (Int_t i = 0; i < 1100; i++) fDEIndices[i] = 0;
   for (Int_t i = 0; i < 200; i++) fDEIds[i] = 0;
+  for (Int_t i = 0; i < 20; i++) SetHalfChShift(i, 0., 0.);
+  for (Int_t i = 0; i < 200; i++) SetDEShift(i, 0., 0.);
   
 }
 
@@ -129,10 +140,12 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution(const char *name) :
   fResiduals(NULL),
   fResidualsVsP(NULL),
   fResidualsVsCent(NULL),
+  fResidualsVsAngle(NULL),
   fLocalChi2(NULL),
   fChamberRes(NULL),
   fTrackRes(NULL),
   fCanvases(NULL),
+  fTmpHists(NULL),
   fDefaultStorage("raw://"),
   fNEvents(0),
   fShowProgressBar(kFALSE),
@@ -149,6 +162,11 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution(const char *name) :
   fCorrectForSystematics(kTRUE),
   fRemoveMonoCathCl(kFALSE),
   fCheckAllPads(kFALSE),
+  fImproveTracks(kFALSE),
+  fShiftHalfCh(kFALSE),
+  fPrintHalfChShift(kFALSE),
+  fShiftDE(kFALSE),
+  fPrintDEShift(kFALSE),
   fOCDBLoaded(kFALSE),
   fNDE(0),
   fReAlign(kFALSE),
@@ -156,13 +174,17 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution(const char *name) :
   fNewAlignStorage(""),
   fOldGeoTransformer(NULL),
   fNewGeoTransformer(NULL),
-  fSelectTriggerClass(NULL)
+  fSelectTriggerClass(NULL),
+  fMuonTrackCuts(0x0)
 {
   /// Constructor
   
   for (Int_t i = 0; i < 10; i++) SetStartingResolution(i, -1., -1.);
   for (Int_t i = 0; i < 1100; i++) fDEIndices[i] = 0;
   for (Int_t i = 0; i < 200; i++) fDEIds[i] = 0;
+  for (Int_t i = 0; i < 20; i++) SetHalfChShift(i, 0., 0.);
+  for (Int_t i = 0; i < 200; i++) SetDEShift(i, 0., 0.);
+  
   FitResiduals();
   
   // Output slot #1 writes into a TObjArray container
@@ -175,8 +197,10 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution(const char *name) :
   DefineOutput(4,TObjArray::Class());
   // Output slot #5 writes into a TObjArray container
   DefineOutput(5,TObjArray::Class());
-  // Output slot #5 writes into a TObjArray container
+  // Output slot #6 writes into a TObjArray container
   DefineOutput(6,TObjArray::Class());
+  // Output slot #7 writes into a TObjArray container
+  DefineOutput(7,TObjArray::Class());
 }
 
 //________________________________________________________________________
@@ -187,14 +211,18 @@ AliAnalysisTaskMuonResolution::~AliAnalysisTaskMuonResolution()
     SafeDelete(fResiduals);
     SafeDelete(fResidualsVsP);
     SafeDelete(fResidualsVsCent);
+    SafeDelete(fResidualsVsAngle);
     SafeDelete(fTrackRes);
   }
+  SafeDelete(fLocalChi2);
   SafeDelete(fChamberRes);
   SafeDelete(fCanvases);
+  SafeDelete(fTmpHists);
   SafeDelete(fGaus);
   SafeDelete(fOldGeoTransformer);
   SafeDelete(fNewGeoTransformer);
   SafeDelete(fSelectTriggerClass);
+  SafeDelete(fMuonTrackCuts);
 }
 
 //___________________________________________________________________________
@@ -220,6 +248,8 @@ void AliAnalysisTaskMuonResolution::UserCreateOutputObjects()
   fResidualsVsP->SetOwner();
   fResidualsVsCent = new TObjArray(1000);
   fResidualsVsCent->SetOwner();
+  fResidualsVsAngle = new TObjArray(1000);
+  fResidualsVsAngle->SetOwner();
   fTrackRes = new TObjArray(1000);
   fTrackRes->SetOwner();
   TH2F* h2;
@@ -232,92 +262,141 @@ void AliAnalysisTaskMuonResolution::UserCreateOutputObjects()
     if (recoParam->GetDefaultBendingReso(i) > maxSigma[1]) maxSigma[1] = recoParam->GetDefaultBendingReso(i);
   }
   const char* axes[2] = {"X", "Y"};
+  const char* side[2] = {"I", "O"};
   const Int_t nBins = 5000;
   const Int_t nSigma = 10;
   const Int_t pNBins = 20;
   const Double_t pEdges[2] = {0., 50.};
   Int_t nCentBins = 12;
   Double_t centRange[2] = {-10., 110.};
+  Int_t nAngleBins = 20;
+  Double_t angleRange[2][2] = {{-15., 15.}, {-40., 40.}};
+  TString name, title;
   
   for (Int_t ia = 0; ia < 2; ia++) {
     
     Double_t maxRes = nSigma*maxSigma[ia];
     
     // List of residual histos
-    h2 = new TH2F(Form("hResidual%sPerCh_ClusterIn",axes[ia]), Form("cluster-track residual-%s distribution per chamber (cluster attached to the track);chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), 10, 0.5, 10.5, nBins, -maxRes, maxRes);
+    name = Form("hResidual%sPerCh_ClusterIn",axes[ia]); title = Form("cluster-track residual-%s distribution per chamber (cluster attached to the track);chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 10, 0.5, 10.5, nBins, -maxRes, maxRes);
     fResiduals->AddAtAndExpand(h2, kResidualPerChClusterIn+ia);
-    h2 = new TH2F(Form("hResidual%sPerCh_ClusterOut",axes[ia]), Form("cluster-track residual-%s distribution per chamber (cluster not attached to the track);chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), 10, 0.5, 10.5, nBins, -2.*maxRes, 2.*maxRes);
+    name = Form("hResidual%sPerCh_ClusterOut",axes[ia]); title = Form("cluster-track residual-%s distribution per chamber (cluster not attached to the track);chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 10, 0.5, 10.5, nBins, -2.*maxRes, 2.*maxRes);
     fResiduals->AddAtAndExpand(h2, kResidualPerChClusterOut+ia);
     
-    h2 = new TH2F(Form("hResidual%sPerHalfCh_ClusterIn",axes[ia]), Form("cluster-track residual-%s distribution per half chamber (cluster attached to the track);half chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), 20, 0.5, 20.5, nBins, -maxRes, maxRes);
+    name = Form("hResidual%sPerHalfCh_ClusterIn",axes[ia]); title = Form("cluster-track residual-%s distribution per half chamber (cluster attached to the track);half chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 20, 0.5, 20.5, nBins, -maxRes, maxRes);
     for (Int_t i = 0; i < 10; i++) { h2->GetXaxis()->SetBinLabel(2*i+1, Form("%d-I",i+1)); h2->GetXaxis()->SetBinLabel(2*i+2, Form("%d-O",i+1)); }
     fResiduals->AddAtAndExpand(h2, kResidualPerHalfChClusterIn+ia);
-    h2 = new TH2F(Form("hResidual%sPerHalfCh_ClusterOut",axes[ia]), Form("cluster-track residual-%s distribution per half chamber (cluster not attached to the track);half chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), 20, 0.5, 20.5, nBins, -2.*maxRes, 2.*maxRes);
+    name = Form("hResidual%sPerHalfCh_ClusterOut",axes[ia]); title = Form("cluster-track residual-%s distribution per half chamber (cluster not attached to the track);half chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 20, 0.5, 20.5, nBins, -2.*maxRes, 2.*maxRes);
     for (Int_t i = 0; i < 10; i++) { h2->GetXaxis()->SetBinLabel(2*i+1, Form("%d-I",i+1)); h2->GetXaxis()->SetBinLabel(2*i+2, Form("%d-O",i+1)); }
     fResiduals->AddAtAndExpand(h2, kResidualPerHalfChClusterOut+ia);
     
-    h2 = new TH2F(Form("hResidual%sPerDE_ClusterIn",axes[ia]), Form("cluster-track residual-%s distribution per DE (cluster attached to the track);DE ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), fNDE, 0.5, fNDE+0.5, nBins, -maxRes, maxRes);
+    name = Form("hResidual%sPerDE_ClusterIn",axes[ia]); title = Form("cluster-track residual-%s distribution per DE (cluster attached to the track);DE ID;#Delta_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), fNDE, 0.5, fNDE+0.5, nBins, -maxRes, maxRes);
     for (Int_t i = 1; i <= fNDE; i++) h2->GetXaxis()->SetBinLabel(i, Form("%d",fDEIds[i]));
     fResiduals->AddAtAndExpand(h2, kResidualPerDEClusterIn+ia);
-    h2 = new TH2F(Form("hResidual%sPerDE_ClusterOut",axes[ia]), Form("cluster-track residual-%s distribution per DE (cluster not attached to the track);DE ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), fNDE, 0.5, fNDE+0.5, nBins, -2.*maxRes, 2.*maxRes);
+    name = Form("hResidual%sPerDE_ClusterOut",axes[ia]); title = Form("cluster-track residual-%s distribution per DE (cluster not attached to the track);DE ID;#Delta_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), fNDE, 0.5, fNDE+0.5, nBins, -2.*maxRes, 2.*maxRes);
     for (Int_t i = 1; i <= fNDE; i++) h2->GetXaxis()->SetBinLabel(i, Form("%d",fDEIds[i]));
     fResiduals->AddAtAndExpand(h2, kResidualPerDEClusterOut+ia);
     
-    h2 = new TH2F(Form("hTrackRes%sPerCh",axes[ia]), Form("track #sigma_{%s} per Ch;chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), 10, 0.5, 10.5, nBins, 0., maxRes);
+    name = Form("hTrackRes%sPerCh",axes[ia]); title = Form("track #sigma_{%s} per Ch;chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 10, 0.5, 10.5, nBins, 0., maxRes);
     fResiduals->AddAtAndExpand(h2, kTrackResPerCh+ia);
-    h2 = new TH2F(Form("hTrackRes%sPerHalfCh",axes[ia]), Form("track #sigma_{%s} per half Ch;half chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), 20, 0.5, 20.5, nBins, 0., maxRes);
+    name = Form("hTrackRes%sPerHalfCh",axes[ia]); title = Form("track #sigma_{%s} per half Ch;half chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 20, 0.5, 20.5, nBins, 0., maxRes);
     for (Int_t i = 0; i < 10; i++) { h2->GetXaxis()->SetBinLabel(2*i+1, Form("%d-I",i+1)); h2->GetXaxis()->SetBinLabel(2*i+2, Form("%d-O",i+1)); }
     fResiduals->AddAtAndExpand(h2, kTrackResPerHalfCh+ia);
-    h2 = new TH2F(Form("hTrackRes%sPerDE",axes[ia]), Form("track #sigma_{%s} per DE;DE ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), fNDE, 0.5, fNDE+0.5, nBins, 0., maxRes);
+    name = Form("hTrackRes%sPerDE",axes[ia]); title = Form("track #sigma_{%s} per DE;DE ID;#sigma_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), fNDE, 0.5, fNDE+0.5, nBins, 0., maxRes);
     for (Int_t i = 1; i <= fNDE; i++) h2->GetXaxis()->SetBinLabel(i, Form("%d",fDEIds[i]));
     fResiduals->AddAtAndExpand(h2, kTrackResPerDE+ia);
     
-    h2 = new TH2F(Form("hMCS%sPerCh",axes[ia]), Form("MCS %s-dispersion of extrapolated track per Ch;chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), 10, 0.5, 10.5, nBins, 0., 0.2);
+    name = Form("hMCS%sPerCh",axes[ia]); title = Form("MCS %s-dispersion of extrapolated track per Ch;chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 10, 0.5, 10.5, nBins, 0., 0.2);
     fResiduals->AddAtAndExpand(h2, kMCSPerCh+ia);
-    h2 = new TH2F(Form("hMCS%sPerHalfCh",axes[ia]), Form("MCS %s-dispersion of extrapolated track per half Ch;half chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), 20, 0.5, 20.5, nBins, 0., 0.2);
+    name = Form("hMCS%sPerHalfCh",axes[ia]); title = Form("MCS %s-dispersion of extrapolated track per half Ch;half chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 20, 0.5, 20.5, nBins, 0., 0.2);
     for (Int_t i = 0; i < 10; i++) { h2->GetXaxis()->SetBinLabel(2*i+1, Form("%d-I",i+1)); h2->GetXaxis()->SetBinLabel(2*i+2, Form("%d-O",i+1)); }
     fResiduals->AddAtAndExpand(h2, kMCSPerHalfCh+ia);
-    h2 = new TH2F(Form("hMCS%sPerDE",axes[ia]), Form("MCS %s-dispersion of extrapolated track per DE;DE ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), fNDE, 0.5, fNDE+0.5, nBins, 0., 0.2);
+    name = Form("hMCS%sPerDE",axes[ia]); title = Form("MCS %s-dispersion of extrapolated track per DE;DE ID;#sigma_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), fNDE, 0.5, fNDE+0.5, nBins, 0., 0.2);
     for (Int_t i = 1; i <= fNDE; i++) h2->GetXaxis()->SetBinLabel(i, Form("%d",fDEIds[i]));
     fResiduals->AddAtAndExpand(h2, kMCSPerDE+ia);
     
-    h2 = new TH2F(Form("hClusterRes2%sPerCh",axes[ia]), Form("cluster #sigma_{%s}^{2} per Ch;chamber ID;#sigma_{%s}^{2} (cm^{2})",axes[ia],axes[ia]), 10, 0.5, 10.5, nSigma*nBins, -0.1*maxRes*maxRes, maxRes*maxRes);
+    name = Form("hClusterRes2%sPerCh",axes[ia]); title = Form("cluster #sigma_{%s}^{2} per Ch;chamber ID;#sigma_{%s}^{2} (cm^{2})",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 10, 0.5, 10.5, nSigma*nBins, -0.1*maxRes*maxRes, maxRes*maxRes);
     fResiduals->AddAtAndExpand(h2, kClusterRes2PerCh+ia);
     
-    // List of residual vs. p or vs. centrality histos
+    // List of residual histos vs. p or vs. centrality or vs. angle
     for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
-      h2 = new TH2F(Form("hResidual%sInCh%dVsP_ClusterIn",axes[ia],i+1), Form("cluster-track residual-%s distribution in chamber %d versus momentum (cluster attached to the track);p (GeV/c^{2});#Delta_{%s} (cm)",axes[ia],i+1,axes[ia]), pNBins, pEdges[0], pEdges[1], nBins, -maxRes, maxRes);
+      name = Form("hResidual%sInCh%dVsP_ClusterIn",axes[ia],i+1); title = Form("cluster-track residual-%s distribution in chamber %d versus momentum (cluster attached to the track);p (GeV/c^{2});#Delta_{%s} (cm)",axes[ia],i+1,axes[ia]);
+      h2 = new TH2F(name.Data(), title.Data(), pNBins, pEdges[0], pEdges[1], nBins, -maxRes, maxRes);
       fResidualsVsP->AddAtAndExpand(h2, kResidualInChVsPClusterIn+10*ia+i);
-      h2 = new TH2F(Form("hResidual%sInCh%dVsP_ClusterOut",axes[ia],i+1), Form("cluster-track residual-%s distribution in chamber %d versus momentum (cluster not attached to the track);p (GeV/c^{2});#Delta_{%s} (cm)",axes[ia],i+1,axes[ia]), pNBins, pEdges[0], pEdges[1], nBins, -2.*maxRes, 2.*maxRes);
+      name = Form("hResidual%sInCh%dVsP_ClusterOut",axes[ia],i+1); title = Form("cluster-track residual-%s distribution in chamber %d versus momentum (cluster not attached to the track);p (GeV/c^{2});#Delta_{%s} (cm)",axes[ia],i+1,axes[ia]);
+      h2 = new TH2F(name.Data(), title.Data(), pNBins, pEdges[0], pEdges[1], nBins, -2.*maxRes, 2.*maxRes);
       fResidualsVsP->AddAtAndExpand(h2, kResidualInChVsPClusterOut+10*ia+i);
       
-      h2 = new TH2F(Form("hResidual%sInCh%dVsCent_ClusterIn",axes[ia],i+1), Form("cluster-track residual-%s distribution in chamber %d versus centrality (cluster attached to the track);centrality (%%);#Delta_{%s} (cm)",axes[ia],i+1,axes[ia]), nCentBins, centRange[0], centRange[1], nBins, -maxRes, maxRes);
+      name = Form("hResidual%sInCh%dVsCent_ClusterIn",axes[ia],i+1); title = Form("cluster-track residual-%s distribution in chamber %d versus centrality (cluster attached to the track);centrality (%%);#Delta_{%s} (cm)",axes[ia],i+1,axes[ia]);
+      h2 = new TH2F(name.Data(), title.Data(), nCentBins, centRange[0], centRange[1], nBins, -maxRes, maxRes);
       fResidualsVsCent->AddAtAndExpand(h2, kResidualInChVsCentClusterIn+10*ia+i);
-      h2 = new TH2F(Form("hResidual%sInCh%dVsCent_ClusterOut",axes[ia],i+1), Form("cluster-track residual-%s distribution in chamber %d versus centrality (cluster not attached to the track);centrality (%%);#Delta_{%s} (cm)",axes[ia],i+1,axes[ia]), nCentBins, centRange[0], centRange[1], nBins, -2.*maxRes, 2.*maxRes);
+      name = Form("hResidual%sInCh%dVsCent_ClusterOut",axes[ia],i+1); title = Form("cluster-track residual-%s distribution in chamber %d versus centrality (cluster not attached to the track);centrality (%%);#Delta_{%s} (cm)",axes[ia],i+1,axes[ia]);
+      h2 = new TH2F(name.Data(), title.Data(), nCentBins, centRange[0], centRange[1], nBins, -2.*maxRes, 2.*maxRes);
       fResidualsVsCent->AddAtAndExpand(h2, kResidualInChVsCentClusterOut+10*ia+i);
+      
+      name = Form("hResidual%sInCh%dVsAngle_ClusterIn",axes[ia],i+1); title = Form("cluster-track residual-%s distribution in chamber %d versus track angle (cluster attached to the track);%s-angle (deg);#Delta_{%s} (cm)",axes[ia],i+1,axes[ia],axes[ia]);
+      h2 = new TH2F(name.Data(), title.Data(), nAngleBins, angleRange[ia][0], angleRange[ia][1], nBins, -maxRes, maxRes);
+      fResidualsVsAngle->AddAtAndExpand(h2, kResidualInChVsAngleClusterIn+10*ia+i);
+      name = Form("hResidual%sInCh%dVsAngle_ClusterOut",axes[ia],i+1); title = Form("cluster-track residual-%s distribution in chamber %d versus track angle (cluster not attached to the track);%s-angle (deg);#Delta_{%s} (cm)",axes[ia],i+1,axes[ia],axes[ia]);
+      h2 = new TH2F(name.Data(), title.Data(), nAngleBins, angleRange[ia][0], angleRange[ia][1], nBins, -2.*maxRes, 2.*maxRes);
+      fResidualsVsAngle->AddAtAndExpand(h2, kResidualInChVsAngleClusterOut+10*ia+i);
+      
+      for (Int_t j = 0; j < 2; j++) {
+	name = Form("hResidual%sInHalfCh%d%sVsAngle_ClusterIn",axes[ia],i+1,side[j]); title = Form("cluster-track residual-%s distribution in half-chamber %d-%s versus track angle (cluster attached to the track);%s-angle (deg);#Delta_{%s} (cm)",axes[ia],i+1,side[j],axes[ia],axes[ia]);
+	h2 = new TH2F(name.Data(), title.Data(), nAngleBins, angleRange[ia][0], angleRange[ia][1], nBins, -maxRes, maxRes);
+	fResidualsVsAngle->AddAtAndExpand(h2, kResidualInHalfChVsAngleClusterIn+20*ia+2*i+j);
+      }
     }
     
-    h2 = new TH2F(Form("hResidual%sVsP_ClusterIn",axes[ia]), Form("cluster-track residual-%s distribution integrated over chambers versus momentum (cluster attached to the track);p (GeV/c^{2});#Delta_{%s} (cm)",axes[ia],axes[ia]), pNBins, pEdges[0], pEdges[1], nBins, -maxRes, maxRes);
+    name = Form("hResidual%sVsP_ClusterIn",axes[ia]); title = Form("cluster-track residual-%s distribution integrated over chambers versus momentum (cluster attached to the track);p (GeV/c^{2});#Delta_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), pNBins, pEdges[0], pEdges[1], nBins, -maxRes, maxRes);
     fResidualsVsP->AddAtAndExpand(h2, kResidualVsPClusterIn+ia);
-    h2 = new TH2F(Form("hResidual%sVsP_ClusterOut",axes[ia]), Form("cluster-track residual-%s distribution integrated over chambers versus momentum (cluster not attached to the track);p (GeV/c^{2});#Delta_{%s} (cm)",axes[ia],axes[ia]), pNBins, pEdges[0], pEdges[1], nBins, -2.*maxRes, 2.*maxRes);
+    name = Form("hResidual%sVsP_ClusterOut",axes[ia]); title = Form("cluster-track residual-%s distribution integrated over chambers versus momentum (cluster not attached to the track);p (GeV/c^{2});#Delta_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), pNBins, pEdges[0], pEdges[1], nBins, -2.*maxRes, 2.*maxRes);
     fResidualsVsP->AddAtAndExpand(h2, kResidualVsPClusterOut+ia);
     
-    h2 = new TH2F(Form("hResidual%sVsCent_ClusterIn",axes[ia]), Form("cluster-track residual-%s distribution integrated over chambers versus centrality (cluster attached to the track);centrality (%%);#Delta_{%s} (cm)",axes[ia],axes[ia]), nCentBins, centRange[0], centRange[1], nBins, -maxRes, maxRes);
+    name = Form("hResidual%sVsCent_ClusterIn",axes[ia]); title = Form("cluster-track residual-%s distribution integrated over chambers versus centrality (cluster attached to the track);centrality (%%);#Delta_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), nCentBins, centRange[0], centRange[1], nBins, -maxRes, maxRes);
     fResidualsVsCent->AddAtAndExpand(h2, kResidualVsCentClusterIn+ia);
-    h2 = new TH2F(Form("hResidual%sVsCent_ClusterOut",axes[ia]), Form("cluster-track residual-%s distribution integrated over chambers versus centrality (cluster not attached to the track);centrality (%%);#Delta_{%s} (cm)",axes[ia],axes[ia]), nCentBins, centRange[0], centRange[1], nBins, -2.*maxRes, 2.*maxRes);
+    name = Form("hResidual%sVsCent_ClusterOut",axes[ia]); title = Form("cluster-track residual-%s distribution integrated over chambers versus centrality (cluster not attached to the track);centrality (%%);#Delta_{%s} (cm)",axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), nCentBins, centRange[0], centRange[1], nBins, -2.*maxRes, 2.*maxRes);
     fResidualsVsCent->AddAtAndExpand(h2, kResidualVsCentClusterOut+ia);
     
+    name = Form("hResidual%sVsAngle_ClusterIn",axes[ia]); title = Form("cluster-track residual-%s distribution integrated over chambers versus track angle (cluster attached to the track);%s-angle (deg);#Delta_{%s} (cm)",axes[ia],axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), nAngleBins, angleRange[ia][0], angleRange[ia][1], nBins, -maxRes, maxRes);
+    fResidualsVsAngle->AddAtAndExpand(h2, kResidualVsAngleClusterIn+ia);
+    name = Form("hResidual%sVsAngle_ClusterOut",axes[ia]); title = Form("cluster-track residual-%s distribution integrated over chambers versus track angle (cluster not attached to the track);%s-angle (deg);#Delta_{%s} (cm)",axes[ia],axes[ia],axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), nAngleBins, angleRange[ia][0], angleRange[ia][1], nBins, -2.*maxRes, 2.*maxRes);
+    fResidualsVsAngle->AddAtAndExpand(h2, kResidualVsAngleClusterOut+ia);
+    
     // local chi2
-    h2 = new TH2F(Form("hLocalChi2%sPerCh",axes[ia]), Form("local chi2-%s distribution per chamber;chamber ID;local #chi^{2}_{%s}", axes[ia], axes[ia]), 10, 0.5, 10.5, 1000, 0., 25.);
+    name = Form("hLocalChi2%sPerCh",axes[ia]); title = Form("local chi2-%s distribution per chamber;chamber ID;local #chi^{2}_{%s}", axes[ia], axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 10, 0.5, 10.5, 1000, 0., 25.);
     fResiduals->AddAtAndExpand(h2, kLocalChi2PerCh+ia);
-    h2 = new TH2F(Form("hLocalChi2%sPerDE",axes[ia]), Form("local chi2-%s distribution per DE;DE ID;local #chi^{2}_{%s}", axes[ia], axes[ia]), fNDE, 0.5, fNDE+0.5, 1000, 0., 25.);
+    name = Form("hLocalChi2%sPerDE",axes[ia]); title = Form("local chi2-%s distribution per DE;DE ID;local #chi^{2}_{%s}", axes[ia], axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), fNDE, 0.5, fNDE+0.5, 1000, 0., 25.);
     for (Int_t i = 1; i <= fNDE; i++) h2->GetXaxis()->SetBinLabel(i, Form("%d",fDEIds[i]));
     fResiduals->AddAtAndExpand(h2, kLocalChi2PerDE+ia);
     
     // track resolution
-    h2 = new TH2F(Form("hUncorrSlope%sRes",axes[ia]), Form("muon slope_{%s} reconstructed resolution at first cluster vs p;p (GeV/c); #sigma_{slope_{%s}}", axes[ia], axes[ia]), 300, 0., 300., 1000, 0., 0.003);
+    name = Form("hUncorrSlope%sRes",axes[ia]); title = Form("muon slope_{%s} reconstructed resolution at first cluster vs p;p (GeV/c); #sigma_{slope_{%s}}", axes[ia], axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 300, 0., 300., 1000, 0., 0.003);
     fTrackRes->AddAtAndExpand(h2, kUncorrSlopeRes+ia);
-    h2 = new TH2F(Form("hSlope%sRes",axes[ia]), Form("muon slope_{%s} reconstructed resolution at vertex vs p;p (GeV/c); #sigma_{slope_{%s}}", axes[ia], axes[ia]), 300, 0., 300., 1000, 0., 0.02);
+    name = Form("hSlope%sRes",axes[ia]); title = Form("muon slope_{%s} reconstructed resolution at vertex vs p;p (GeV/c); #sigma_{slope_{%s}}", axes[ia], axes[ia]);
+    h2 = new TH2F(name.Data(), title.Data(), 300, 0., 300., 1000, 0., 0.02);
     fTrackRes->AddAtAndExpand(h2, kSlopeRes+ia);
   }
   
@@ -342,7 +421,8 @@ void AliAnalysisTaskMuonResolution::UserCreateOutputObjects()
   PostData(1, fResiduals);
   PostData(2, fResidualsVsP);
   PostData(3, fResidualsVsCent);
-  PostData(6, fTrackRes);
+  PostData(4, fResidualsVsAngle);
+  PostData(5, fTrackRes);
 }
 
 //________________________________________________________________________
@@ -351,7 +431,7 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
   /// Main event loop
   
   // check if OCDB properly loaded
-  if (!fOCDBLoaded) return;
+  if (!fOCDBLoaded) AliFatal("Problem occur while loading OCDB objects");
   
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) return;
@@ -391,8 +471,17 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
     Double_t eta = esdTrack->Eta();
     if (fApplyAccCut && (thetaAbs < 2. || thetaAbs > 10. || eta < -4. || eta > -2.5)) continue;
     
+    // apply standard track cuts if any
+    if (fMuonTrackCuts && !fMuonTrackCuts->IsSelected(esdTrack)) continue;
+    
     // skip low momentum tracks
     if (esdTrack->PUncorrected() < fMinMomentum) continue;
+    
+    // select positive or negative tracks
+    //if (esdTrack->Charge() < 0) continue;
+    
+    // skip tracks with not enough clusters
+    //if (esdTrack->GetNClusters() < 8) continue;
     
     // get the corresponding MUON track
     AliMUONTrack track;
@@ -402,14 +491,14 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
     ModifyClusters(track);
     
     // refit the track
-    if (!tracker->RefitTrack(track, kFALSE)) break;
+    if (!tracker->RefitTrack(track, fImproveTracks) || (fImproveTracks && !track.IsImproved())) break;
     
     // save track unchanged
     AliMUONTrack referenceTrack(track);
     
     // get track param at first cluster and add MCS in first chamber
     AliMUONTrackParam trackParamAtFirstCluster(*(static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->First())));
-    Int_t firstCh = 0; while (firstCh < 10 && !esdTrack->IsInMuonClusterMap(firstCh)) firstCh++;
+    Int_t firstCh = trackParamAtFirstCluster.GetClusterPtr()->GetChamberId();
     AliMUONTrackExtrap::AddMCSEffect(&trackParamAtFirstCluster, AliMUONConstants::ChamberThicknessInX0(firstCh)/2., -1.);
     
     // fill momentum error at first cluster
@@ -469,9 +558,15 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
 	track.RecursiveDump();
 	break;
       }
-      
-      // remove mono-cathod clusters if required
-      if (fRemoveMonoCathCl) {
+      /*
+      if (trackParam->GetClusterPtr()->GetDetElemId() == 915) continue;
+      if (trackParam->GetClusterPtr()->GetDetElemId() == 710) continue;
+      if (trackParam->GetClusterPtr()->GetDetElemId() == 1025) continue;
+      if (trackParam->GetClusterPtr()->GetDetElemId() == 818) continue;
+      if (trackParam->GetClusterPtr()->GetDetElemId() == 806) continue;
+      */
+      // remove mono-cathod clusters on stations 3-4-5 if required
+      if (fRemoveMonoCathCl && trackParam->GetClusterPtr()->GetChamberId() > 3) {
 	Bool_t hasBending, hasNonBending;
 	if (fCheckAllPads) CheckPads(trackParam->GetClusterPtr(), hasBending, hasNonBending);
 	else CheckPadsBelow(trackParam->GetClusterPtr(), hasBending, hasNonBending);
@@ -492,6 +587,10 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
       AliMUONTrackParam* referenceTrackParam = static_cast<AliMUONTrackParam*>(referenceTrack.GetTrackParamAtCluster()->UncheckedAt(iCluster));
       Double_t deltaX = cluster->GetX() - referenceTrackParam->GetNonBendingCoor();
       Double_t deltaY = cluster->GetY() - referenceTrackParam->GetBendingCoor();
+      
+      // compute local track angles
+      Double_t angleX = TMath::ATan(referenceTrackParam->GetNonBendingSlope())*TMath::RadToDeg();
+      Double_t angleY = TMath::ATan(referenceTrackParam->GetBendingSlope())*TMath::RadToDeg();
       
       // compute local chi2
       Double_t sigmaDeltaX2 = cluster->GetErrX2() - referenceTrackParam->GetCovariances()(0,0);
@@ -530,6 +629,12 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
 	  ((TH2F*)fResidualsVsCent->UncheckedAt(kResidualInChVsCentClusterIn+10+chId))->Fill(centrality, deltaY);
 	  ((TH2F*)fResidualsVsCent->UncheckedAt(kResidualVsCentClusterIn))->Fill(centrality, deltaX);
 	  ((TH2F*)fResidualsVsCent->UncheckedAt(kResidualVsCentClusterIn+1))->Fill(centrality, deltaY);
+	  ((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInChVsAngleClusterIn+chId))->Fill(angleX, deltaX);
+	  ((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInChVsAngleClusterIn+10+chId))->Fill(angleY, deltaY);
+	  ((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualVsAngleClusterIn))->Fill(angleX, deltaX);
+	  ((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualVsAngleClusterIn+1))->Fill(angleY, deltaY);
+	  ((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInHalfChVsAngleClusterIn+halfChId))->Fill(angleX, deltaX);
+	  ((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInHalfChVsAngleClusterIn+20+halfChId))->Fill(angleY, deltaY);
 	  
 	  // find the track parameters closest to the current cluster position
 	  Double_t dZWithPrevious = (previousTrackParam) ? TMath::Abs(previousTrackParam->GetClusterPtr()->GetZ() - cluster->GetZ()) : FLT_MAX;
@@ -581,6 +686,10 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
 	    ((TH2F*)fResidualsVsCent->UncheckedAt(kResidualInChVsCentClusterOut+10+chId))->Fill(centrality, deltaY);
 	    ((TH2F*)fResidualsVsCent->UncheckedAt(kResidualVsCentClusterOut))->Fill(centrality, deltaX);
 	    ((TH2F*)fResidualsVsCent->UncheckedAt(kResidualVsCentClusterOut+1))->Fill(centrality, deltaY);
+	    ((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInChVsAngleClusterOut+chId))->Fill(angleX, deltaX);
+	    ((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInChVsAngleClusterOut+10+chId))->Fill(angleY, deltaY);
+	    ((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualVsAngleClusterOut))->Fill(angleX, deltaX);
+	    ((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualVsAngleClusterOut+1))->Fill(angleY, deltaY);
 	    ((TH2F*)fResiduals->UncheckedAt(kTrackResPerCh))->Fill(chId+1, TMath::Sqrt(trackResX2));
 	    ((TH2F*)fResiduals->UncheckedAt(kTrackResPerCh+1))->Fill(chId+1, TMath::Sqrt(trackResY2));
 	    ((TH2F*)fResiduals->UncheckedAt(kTrackResPerHalfCh))->Fill(halfChId+1, TMath::Sqrt(trackResX2));
@@ -612,7 +721,8 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
   PostData(1, fResiduals);
   PostData(2, fResidualsVsP);
   PostData(3, fResidualsVsCent);
-  PostData(6, fTrackRes);
+  PostData(4, fResidualsVsAngle);
+  PostData(5, fTrackRes);
 }
 
 //________________________________________________________________________
@@ -632,6 +742,9 @@ void AliAnalysisTaskMuonResolution::NotifyRun()
   
   AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
   if (!recoParam) return;
+  
+  if (fImproveTracks) recoParam->ImproveTracks(kTRUE);
+  else recoParam->ImproveTracks(kFALSE);
   
   AliMUONESDInterface::ResetTracker(recoParam);
   
@@ -690,12 +803,13 @@ void AliAnalysisTaskMuonResolution::NotifyRun()
     
   } else {
     
-    // load geometry for track extrapolation to vertex
+    // load geometry to check pads below clusters and for track extrapolation to vertex
     if (cdbm->GetEntryCache()->Contains("GRP/Geometry/Data")) cdbm->UnloadFromCache("GRP/Geometry/Data");
     if (cdbm->GetEntryCache()->Contains("MUON/Align/Data")) cdbm->UnloadFromCache("MUON/Align/Data");
     if (AliGeomManager::GetGeometry()) AliGeomManager::GetGeometry()->UnlockGeometry();
     AliGeomManager::LoadGeometry();
     if (!AliGeomManager::GetGeometry()) return;
+    if (!fNewAlignStorage.IsNull()) cdbm->SetSpecificStorage("MUON/Align/Data",fNewAlignStorage.Data());
     AliGeomManager::ApplyAlignObjsFromCDB("MUON");
     fNewGeoTransformer = new AliMUONGeometryTransformer();
     fNewGeoTransformer->LoadGeometryData();
@@ -712,6 +826,9 @@ void AliAnalysisTaskMuonResolution::NotifyRun()
     printf("\n\n");
   }
   
+  // get the trackCuts for this run
+  if (fMuonTrackCuts) fMuonTrackCuts->SetRun(fInputHandler);
+  
   fOCDBLoaded = kTRUE;
   
   UserCreateOutputObjects();
@@ -727,23 +844,32 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   fResiduals = static_cast<TObjArray*> (GetOutputData(1));
   fResidualsVsP = static_cast<TObjArray*> (GetOutputData(2));
   fResidualsVsCent = static_cast<TObjArray*> (GetOutputData(3));
-  fTrackRes = static_cast<TObjArray*> (GetOutputData(6));
-  if (!fResiduals || !fResidualsVsP || !fTrackRes) return;
+  fResidualsVsAngle = static_cast<TObjArray*> (GetOutputData(4));
+  fTrackRes = static_cast<TObjArray*> (GetOutputData(5));
+  if (!fResiduals || !fResidualsVsP || !fResidualsVsCent || !fResidualsVsAngle || !fTrackRes) return;
   
   // summary graphs
   fLocalChi2 = new TObjArray(1000);
   fLocalChi2->SetOwner();
   fChamberRes = new TObjArray(1000);
   fChamberRes->SetOwner();
+  fCanvases = new TObjArray(1000);
+  fCanvases->SetOwner();
+  fTmpHists = new TObjArray(1000);
+  fTmpHists->SetOwner();
   TGraphErrors* g;
   TMultiGraph* mg;
+  TCanvas* c;
   
   const char* axes[2] = {"X", "Y"};
+  const char* side[2] = {"I", "O"};
   Double_t newClusterRes[2][10], newClusterResErr[2][10];
   fNDE = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterIn))->GetXaxis()->GetNbins();
+  TString name, title;
   
   for (Int_t ia = 0; ia < 2; ia++) {
     
+    // shifts per chamber
     g = new TGraphErrors(AliMUONConstants::NTrackingCh());
     g->SetName(Form("gResidual%sPerChMean_ClusterIn",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per Ch: mean (cluster in);chamber ID;<#Delta_{%s}> (cm)",axes[ia],axes[ia]));
@@ -755,6 +881,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     g->SetMarkerStyle(kFullDotLarge);
     fChamberRes->AddAtAndExpand(g, kResidualPerChMeanClusterOut+ia);
     
+    // shifts per half-chamber
     g = new TGraphErrors(2*AliMUONConstants::NTrackingCh());
     g->SetName(Form("gResidual%sPerHalfChMean_ClusterIn",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per half Ch: mean (cluster in);half chamber ID;<#Delta_{%s}> (cm)",axes[ia],axes[ia]));
@@ -766,6 +893,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     g->SetMarkerStyle(kFullDotLarge);
     fChamberRes->AddAtAndExpand(g, kResidualPerHalfChMeanClusterOut+ia);
     
+    // shifts per DE
     g = new TGraphErrors(fNDE);
     g->SetName(Form("gResidual%sPerDEMean_ClusterIn",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per DE: mean (cluster in);DE ID;<#Delta_{%s}> (cm)",axes[ia],axes[ia]));
@@ -777,6 +905,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     g->SetMarkerStyle(kFullDotLarge);
     fChamberRes->AddAtAndExpand(g, kResidualPerDEMeanClusterOut+ia);
     
+    // resolution per chamber
     g = new TGraphErrors(AliMUONConstants::NTrackingCh());
     g->SetName(Form("gResidual%sPerChSigma_ClusterIn",axes[ia]));
     g->SetTitle(Form("cluster-track residual-%s per Ch: sigma (cluster in);chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]));
@@ -800,19 +929,35 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     g->SetMarkerStyle(kFullDotLarge);
     fChamberRes->AddAtAndExpand(g, kCombinedResidualPerChSigma+ia);
     
+    // resolution per half-chamber
     g = new TGraphErrors(2*AliMUONConstants::NTrackingCh());
     g->SetName(Form("gCombinedResidual%sPerHalfChSigma",axes[ia]));
     g->SetTitle(Form("combined cluster-track residual-%s per half Ch: sigma;half chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
     fChamberRes->AddAtAndExpand(g, kCombinedResidualPerHalfChSigma+ia);
     
+    // resolution per DE
     g = new TGraphErrors(fNDE);
     g->SetName(Form("gCombinedResidual%sPerDESigma",axes[ia]));
     g->SetTitle(Form("combined cluster-track residual-%s per DE: sigma;DE ID;#sigma_{%s} (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
     fChamberRes->AddAtAndExpand(g, kCombinedResidualPerDESigma+ia);
     
-    mg = new TMultiGraph(Form("mgCombinedResidual%sSigmaVsP",axes[ia]),Form("cluster %s-resolution per chamber versus momentum;p (GeV/c^{2});#sigma_{%s} (cm)",axes[ia],axes[ia]));
+    // shifts versus p
+    name = Form("mgResidual%sMeanVsP_ClusterIn",axes[ia]); title = Form("cluster-track residual-%s per chamber versus momentum: mean (cluster in);p (GeV/c^{2});<#Delta_{%s}> (cm)",axes[ia],axes[ia]);
+    mg = new TMultiGraph(name.Data(), title.Data());
+    for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
+      g = new TGraphErrors(((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterIn+10*ia+i))->GetNbinsX());
+      g->SetName(Form("gShift%sVsP_ch%d",axes[ia],i+1));
+      g->SetMarkerStyle(kFullDotMedium);
+      g->SetMarkerColor(i+1+i/9);
+      mg->Add(g,"p");
+    }
+    fChamberRes->AddAtAndExpand(mg, kResidualMeanClusterInVsP+ia);
+    
+    // resolutions versus p
+    name = Form("mgCombinedResidual%sSigmaVsP",axes[ia]); title = Form("cluster %s-resolution per chamber versus momentum;p (GeV/c^{2});#sigma_{%s} (cm)",axes[ia],axes[ia]);
+    mg = new TMultiGraph(name.Data(), title.Data());
     for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
       g = new TGraphErrors(((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterIn+10*ia+i))->GetNbinsX());
       g->SetName(Form("gRes%sVsP_ch%d",axes[ia],i+1));
@@ -828,7 +973,21 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     g->SetMarkerStyle(kFullDotLarge);
     fChamberRes->AddAtAndExpand(g, kCombinedResidualAllChSigmaVsP+ia);
     
-    mg = new TMultiGraph(Form("mgCombinedResidual%sSigmaVsCent",axes[ia]),Form("cluster %s-resolution per chamber versus centrality;centrality (%%);#sigma_{%s} (cm)",axes[ia],axes[ia]));
+    // shifts versus centrality
+    name = Form("mgResidual%sMeanVsCent_ClusterIn",axes[ia]); title = Form("cluster-track residual-%s per chamber versus centrality: mean (cluster in);centrality (%%);<#Delta_{%s}> (cm)",axes[ia],axes[ia]);
+    mg = new TMultiGraph(name.Data(), title.Data());
+    for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
+      g = new TGraphErrors(((TH2F*)fResidualsVsCent->UncheckedAt(kResidualInChVsCentClusterIn+10*ia+i))->GetNbinsX());
+      g->SetName(Form("gShift%sVsCent_ch%d",axes[ia],i+1));
+      g->SetMarkerStyle(kFullDotMedium);
+      g->SetMarkerColor(i+1+i/9);
+      mg->Add(g,"p");
+    }
+    fChamberRes->AddAtAndExpand(mg, kResidualMeanClusterInVsCent+ia);
+    
+    // resolutions versus centrality
+    name = Form("mgCombinedResidual%sSigmaVsCent",axes[ia]); title = Form("cluster %s-resolution per chamber versus centrality;centrality (%%);#sigma_{%s} (cm)",axes[ia],axes[ia]);
+    mg = new TMultiGraph(name.Data(), title.Data());
     for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
       g = new TGraphErrors(((TH2F*)fResidualsVsCent->UncheckedAt(kResidualInChVsCentClusterIn+10*ia+i))->GetNbinsX());
       g->SetName(Form("gRes%sVsCent_ch%d",axes[ia],i+1));
@@ -843,6 +1002,49 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     g->SetTitle(Form("cluster %s-resolution integrated over chambers versus centrality: sigma;centrality (%%);#sigma_{%s} (cm)",axes[ia],axes[ia]));
     g->SetMarkerStyle(kFullDotLarge);
     fChamberRes->AddAtAndExpand(g, kCombinedResidualAllChSigmaVsCent+ia);
+    
+    // shifts versus track angle
+    name = Form("mgResidual%sMeanVsAngle_ClusterIn",axes[ia]); title = Form("cluster-track residual-%s per chamber versus track angle: mean (cluster in);%s-angle (deg);<#Delta_{%s}> (cm)",axes[ia],axes[ia],axes[ia]);
+    mg = new TMultiGraph(name.Data(), title.Data());
+    for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
+      g = new TGraphErrors(((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInChVsAngleClusterIn+10*ia+i))->GetNbinsX());
+      g->SetName(Form("gShift%sVsAngle_ch%d",axes[ia],i+1));
+      g->SetMarkerStyle(kFullDotMedium);
+      g->SetMarkerColor(i+1+i/9);
+      mg->Add(g,"p");
+    }
+    fChamberRes->AddAtAndExpand(mg, kResidualMeanClusterInVsAngle+ia);
+    
+    name = Form("mgHChResidual%sMeanVsAngle_ClusterIn",axes[ia]); title = Form("cluster-track residual-%s per half-chamber versus track angle: mean (cluster in);%s-angle (deg);<#Delta_{%s}> (cm)",axes[ia],axes[ia],axes[ia]);
+    mg = new TMultiGraph(name.Data(), title.Data());
+    for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
+      for (Int_t j = 0; j < 2; j++) {
+	g = new TGraphErrors(((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInHalfChVsAngleClusterIn+20*ia+2*i+j))->GetNbinsX());
+	g->SetName(Form("gShift%sVsAngle_halfCh%d%s",axes[ia],i+1,side[j]));
+	g->SetMarkerStyle(kFullDotMedium);
+	g->SetMarkerColor(2*i+j+1+(2*i+j)/9);
+	mg->Add(g,"p");
+      }
+    }
+    fChamberRes->AddAtAndExpand(mg, kHChResidualMeanClusterInVsAngle+ia);
+    
+    // resolutions versus track angle
+    name = Form("mgCombinedResidual%sSigmaVsAngle",axes[ia]); title = Form("cluster %s-resolution per chamber versus track angle;%s-angle (deg);#sigma_{%s} (cm)",axes[ia],axes[ia],axes[ia]);
+    mg = new TMultiGraph(name.Data(), title.Data());
+    for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
+      g = new TGraphErrors(((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInChVsAngleClusterIn+10*ia+i))->GetNbinsX());
+      g->SetName(Form("gRes%sVsAngle_ch%d",axes[ia],i+1));
+      g->SetMarkerStyle(kFullDotMedium);
+      g->SetMarkerColor(i+1+i/9);
+      mg->Add(g,"p");
+    }
+    fChamberRes->AddAtAndExpand(mg, kCombinedResidualSigmaVsAngle+ia);
+    
+    g = new TGraphErrors(((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualVsAngleClusterIn+ia))->GetNbinsX());
+    g->SetName(Form("gCombinedResidual%sSigmaVsAngle",axes[ia]));
+    g->SetTitle(Form("cluster %s-resolution integrated over chambers versus track angle: sigma;%s-angle (deg);#sigma_{%s} (cm)",axes[ia],axes[ia],axes[ia]));
+    g->SetMarkerStyle(kFullDotLarge);
+    fChamberRes->AddAtAndExpand(g, kCombinedResidualAllChSigmaVsAngle+ia);
     
     g = new TGraphErrors(AliMUONConstants::NTrackingCh());
     g->SetName(Form("gTrackRes%sPerCh",axes[ia]));
@@ -892,31 +1094,70 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     g->SetMarkerStyle(kFullDotLarge);
     fLocalChi2->AddAtAndExpand(g, kLocalChi2PerDEMean+ia);
     
+    // canvases
+    name = Form("cDetailRes%sPerChClIn",axes[ia]); title = Form("cDetailRes%sPerChClIn",axes[ia]);
+    c = new TCanvas(name.Data(), title.Data(), 1200, 500);
+    c->Divide(5,2);
+    fCanvases->AddAtAndExpand(c, kDetailResPerCh+2*ia);
+    
+    name = Form("cDetailRes%sPerChClOut",axes[ia]); title = Form("cDetailRes%sPerChClOut",axes[ia]);
+    c = new TCanvas(name.Data(), title.Data(), 1200, 500);
+    c->Divide(5,2);
+    fCanvases->AddAtAndExpand(c, kDetailResPerCh+1+2*ia);
+    
+    name = Form("cDetailRes%sPerHalfChClIn",axes[ia]); title = Form("cDetailRes%sPerHalfChClIn",axes[ia]);
+    c = new TCanvas(name.Data(), title.Data(), 1200, 800);
+    c->Divide(5,4);
+    fCanvases->AddAtAndExpand(c, kDetailResPerHalfCh+2*ia);
+    
+    name = Form("cDetailRes%sPerHalfChClOut",axes[ia]); title = Form("cDetailRes%sPerHalfChClOut",axes[ia]);
+    c = new TCanvas(name.Data(), title.Data(), 1200, 800);
+    c->Divide(5,4);
+    fCanvases->AddAtAndExpand(c, kDetailResPerHalfCh+1+2*ia);
+    
+    name = Form("cDetailRes%sPerDEClIn",axes[ia]); title = Form("cDetailRes%sPerDEClIn",axes[ia]);
+    c = new TCanvas(name.Data(), title.Data(), 1200, 800);
+    c->Divide(13,12);
+    fCanvases->AddAtAndExpand(c, kDetailResPerDE+2*ia);
+    
+    name = Form("cDetailRes%sPerDEClOut",axes[ia]); title = Form("cDetailRes%sPerDEClOut",axes[ia]);
+    c = new TCanvas(name.Data(), title.Data(), 1200, 800);
+    c->Divide(13,12);
+    fCanvases->AddAtAndExpand(c, kDetailResPerDE+1+2*ia);
+    
     // compute residual mean and dispersion integrated over chambers versus p
-    FillSigmaClusterVsP((TH2F*)fResidualsVsP->UncheckedAt(kResidualVsPClusterIn+ia),
-			(TH2F*)fResidualsVsP->UncheckedAt(kResidualVsPClusterOut+ia),
-			(TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualAllChSigmaVsP+ia));
+    FillMeanSigmaClusterVsX((TH2F*)fResidualsVsP->UncheckedAt(kResidualVsPClusterIn+ia),
+			    (TH2F*)fResidualsVsP->UncheckedAt(kResidualVsPClusterOut+ia),
+			    0x0, (TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualAllChSigmaVsP+ia));
     
     // compute residual mean and dispersion integrated over chambers versus centrality
-    FillSigmaClusterVsCent((TH2F*)fResidualsVsCent->UncheckedAt(kResidualVsCentClusterIn+ia),
-			   (TH2F*)fResidualsVsCent->UncheckedAt(kResidualVsCentClusterOut+ia),
-			   (TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualAllChSigmaVsCent+ia));
+    FillMeanSigmaClusterVsX((TH2F*)fResidualsVsCent->UncheckedAt(kResidualVsCentClusterIn+ia),
+			    (TH2F*)fResidualsVsCent->UncheckedAt(kResidualVsCentClusterOut+ia),
+			    0x0, (TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualAllChSigmaVsCent+ia));
+    
+    // compute residual mean and dispersion integrated over chambers versus track angle
+    FillMeanSigmaClusterVsX((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualVsAngleClusterIn+ia),
+			    (TH2F*)fResidualsVsAngle->UncheckedAt(kResidualVsAngleClusterOut+ia),
+			    0x0, (TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualAllChSigmaVsAngle+ia));
     
     // compute residual mean and dispersion and averaged local chi2 per chamber and half chamber
     Double_t meanIn, meanInErr, meanOut, meanOutErr, sigma, sigmaIn, sigmaInErr, sigmaOut, sigmaOutErr;
     Double_t sigmaTrack, sigmaTrackErr, sigmaMCS, sigmaMCSErr, clusterRes, clusterResErr, sigmaCluster, sigmaClusterErr;
+    Double_t dumy1, dumy2;
     for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
       
       // method 1
-      TH1D *tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerChClusterIn+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, meanIn, meanInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMeanClusterIn+ia), i, i+1);
-      GetRMS(tmp, sigmaIn, sigmaInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigmaClusterIn+ia), i, i+1);
-      delete tmp;
+      TH1D *tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerChClusterIn+ia))->ProjectionY(Form("hRes%sCh%dClIn",axes[ia],i+1),i+1,i+1,"e");
+      tmp->SetTitle(Form("chamber %d",i+1));
+      GetMeanRMS(tmp, meanIn, meanInErr, sigmaIn, sigmaInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMeanClusterIn+ia),
+		 (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigmaClusterIn+ia), i, i+1);
+      fTmpHists->AddLast(tmp);
       
-      tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerChClusterOut+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, meanOut, meanOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMeanClusterOut+ia), i, i+1);
-      GetRMS(tmp, sigmaOut, sigmaOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigmaClusterOut+ia), i, i+1);
-      delete tmp;
+      tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerChClusterOut+ia))->ProjectionY(Form("hRes%sCh%dClOut",axes[ia],i+1),i+1,i+1,"e");
+      tmp->SetTitle(Form("chamber %d",i+1));
+      GetMeanRMS(tmp, meanOut, meanOutErr, sigmaOut, sigmaOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMeanClusterOut+ia),
+		 (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigmaClusterOut+ia), i, i+1);
+      fTmpHists->AddLast(tmp);
       
       if (fCorrectForSystematics) {
 	sigma = TMath::Sqrt(sigmaIn*sigmaIn + meanIn*meanIn);
@@ -939,11 +1180,11 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
       
       // method 2
       tmp = ((TH2F*)fResiduals->UncheckedAt(kTrackResPerCh+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, sigmaTrack, sigmaTrackErr, (TGraphErrors*)fChamberRes->UncheckedAt(kTrackResPerChMean+ia), i, i+1, kFALSE, kFALSE);
+      GetMeanRMS(tmp, sigmaTrack, sigmaTrackErr, dumy1, dumy2, (TGraphErrors*)fChamberRes->UncheckedAt(kTrackResPerChMean+ia), 0x0, i, i+1, kFALSE, kFALSE);
       delete tmp;
       
       tmp = ((TH2F*)fResiduals->UncheckedAt(kMCSPerCh+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, sigmaMCS, sigmaMCSErr, (TGraphErrors*)fChamberRes->UncheckedAt(kMCSPerChMean+ia), i, i+1, kFALSE, kFALSE);
+      GetMeanRMS(tmp, sigmaMCS, sigmaMCSErr, dumy1, dumy2, (TGraphErrors*)fChamberRes->UncheckedAt(kMCSPerChMean+ia), 0x0, i, i+1, kFALSE, kFALSE);
       delete tmp;
       
       sigmaCluster = sigmaOut*sigmaOut - sigmaTrack*sigmaTrack;
@@ -971,29 +1212,37 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
       delete tmp;
       
       // method 1 versus p
-      FillSigmaClusterVsP((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterIn+10*ia+i),
-			  (TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterOut+10*ia+i),
-			  (TGraphErrors*)((TMultiGraph*)fChamberRes->UncheckedAt(kCombinedResidualSigmaVsP+ia))->GetListOfGraphs()->FindObject(Form("gRes%sVsP_ch%d",axes[ia],i+1)));
+      FillMeanSigmaClusterVsX((TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterIn+10*ia+i),
+			      (TH2F*)fResidualsVsP->UncheckedAt(kResidualInChVsPClusterOut+10*ia+i),
+			      (TGraphErrors*)((TMultiGraph*)fChamberRes->UncheckedAt(kResidualMeanClusterInVsP+ia))->GetListOfGraphs()->FindObject(Form("gShift%sVsP_ch%d",axes[ia],i+1)),
+			      (TGraphErrors*)((TMultiGraph*)fChamberRes->UncheckedAt(kCombinedResidualSigmaVsP+ia))->GetListOfGraphs()->FindObject(Form("gRes%sVsP_ch%d",axes[ia],i+1)));
       
       // method 1 versus centrality
-      FillSigmaClusterVsCent((TH2F*)fResidualsVsCent->UncheckedAt(kResidualInChVsCentClusterIn+10*ia+i),
-			     (TH2F*)fResidualsVsCent->UncheckedAt(kResidualInChVsCentClusterOut+10*ia+i),
-			     (TGraphErrors*)((TMultiGraph*)fChamberRes->UncheckedAt(kCombinedResidualSigmaVsCent+ia))->GetListOfGraphs()->FindObject(Form("gRes%sVsCent_ch%d",axes[ia],i+1)));
+      FillMeanSigmaClusterVsX((TH2F*)fResidualsVsCent->UncheckedAt(kResidualInChVsCentClusterIn+10*ia+i),
+			      (TH2F*)fResidualsVsCent->UncheckedAt(kResidualInChVsCentClusterOut+10*ia+i),
+			      (TGraphErrors*)((TMultiGraph*)fChamberRes->UncheckedAt(kResidualMeanClusterInVsCent+ia))->GetListOfGraphs()->FindObject(Form("gShift%sVsCent_ch%d",axes[ia],i+1)),
+			      (TGraphErrors*)((TMultiGraph*)fChamberRes->UncheckedAt(kCombinedResidualSigmaVsCent+ia))->GetListOfGraphs()->FindObject(Form("gRes%sVsCent_ch%d",axes[ia],i+1)));
+      
+      // method 1 versus track angle
+      FillMeanSigmaClusterVsX((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInChVsAngleClusterIn+10*ia+i),
+			      (TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInChVsAngleClusterOut+10*ia+i),
+			      (TGraphErrors*)((TMultiGraph*)fChamberRes->UncheckedAt(kResidualMeanClusterInVsAngle+ia))->GetListOfGraphs()->FindObject(Form("gShift%sVsAngle_ch%d",axes[ia],i+1)),
+			      (TGraphErrors*)((TMultiGraph*)fChamberRes->UncheckedAt(kCombinedResidualSigmaVsAngle+ia))->GetListOfGraphs()->FindObject(Form("gRes%sVsAngle_ch%d",axes[ia],i+1)));
       
       // compute residual mean and dispersion per half chamber
       for (Int_t j = 0; j < 2; j++) {
 	Int_t k = 2*i+j;
 	
 	// method 1
-	tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterIn+ia))->ProjectionY("tmp",k+1,k+1,"e");
-	GetMean(tmp, meanIn, meanInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterIn+ia), k, k+1);
-	GetRMS(tmp, sigmaIn, sigmaInErr);
-	delete tmp;
+	tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterIn+ia))->ProjectionY(Form("hRes%sHalfCh%dClIn",axes[ia],k+1),k+1,k+1,"e");
+	tmp->SetTitle(Form("half chamber %s",((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterIn+ia))->GetXaxis()->GetBinLabel(k+1)));
+	GetMeanRMS(tmp, meanIn, meanInErr, sigmaIn, sigmaInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterIn+ia), 0x0, k, k+1);
+	fTmpHists->AddLast(tmp);
 	
-	tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterOut+ia))->ProjectionY("tmp",k+1,k+1,"e");
-	GetMean(tmp, meanOut, meanOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterOut+ia), k, k+1);
-	GetRMS(tmp, sigmaOut, sigmaOutErr);
-	delete tmp;
+	tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterOut+ia))->ProjectionY(Form("hRes%sHalfCh%dClOut",axes[ia],k+1),k+1,k+1,"e");
+	tmp->SetTitle(Form("half chamber %s",((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterOut+ia))->GetXaxis()->GetBinLabel(k+1)));
+	GetMeanRMS(tmp, meanOut, meanOutErr, sigmaOut, sigmaOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterOut+ia), 0x0, k, k+1);
+	fTmpHists->AddLast(tmp);
 	
 	if (fCorrectForSystematics) {
 	  sigma = TMath::Sqrt(sigmaIn*sigmaIn + meanIn*meanIn);
@@ -1012,11 +1261,11 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
 	
 	// method 2
 	tmp = ((TH2F*)fResiduals->UncheckedAt(kTrackResPerHalfCh+ia))->ProjectionY("tmp",k+1,k+1,"e");
-	GetMean(tmp, sigmaTrack, sigmaTrackErr, 0x0, 0, 0, kFALSE, kFALSE);
+	GetMeanRMS(tmp, sigmaTrack, sigmaTrackErr, dumy1, dumy2, 0x0, 0x0, 0, 0, kFALSE, kFALSE);
 	delete tmp;
 	
 	tmp = ((TH2F*)fResiduals->UncheckedAt(kMCSPerHalfCh+ia))->ProjectionY("tmp",k+1,k+1,"e");
-	GetMean(tmp, sigmaMCS, sigmaMCSErr, 0x0, 0, 0, kFALSE, kFALSE);
+	GetMeanRMS(tmp, sigmaMCS, sigmaMCSErr, dumy1, dumy2, 0x0, 0x0, 0, 0, kFALSE, kFALSE);
 	delete tmp;
 	
 	sigmaCluster = sigmaOut*sigmaOut - sigmaTrack*sigmaTrack;
@@ -1029,6 +1278,10 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
 	}
 	((TGraphErrors*)fChamberRes->UncheckedAt(kClusterResPerHalfCh+ia))->SetPoint(k, k+1, sigmaCluster);
 	((TGraphErrors*)fChamberRes->UncheckedAt(kClusterResPerHalfCh+ia))->SetPointError(k, 0., sigmaClusterErr);
+	
+	// method 1 versus track angle
+	FillMeanSigmaClusterVsX((TH2F*)fResidualsVsAngle->UncheckedAt(kResidualInHalfChVsAngleClusterIn+20*ia+2*i+j), 0x0,
+				(TGraphErrors*)((TMultiGraph*)fChamberRes->UncheckedAt(kHChResidualMeanClusterInVsAngle+ia))->GetListOfGraphs()->FindObject(Form("gShift%sVsAngle_halfCh%d%s",axes[ia],i+1,side[j])), 0x0);
 	
       }
       
@@ -1044,15 +1297,15 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     for (Int_t i = 0; i < fNDE; i++) {
       
       // method 1
-      TH1D *tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterIn+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, meanIn, meanInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterIn+ia), i, i+1);
-      GetRMS(tmp, sigmaIn, sigmaInErr);
-      delete tmp;
+      TH1D *tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterIn+ia))->ProjectionY(Form("hRes%sDE%dClIn",axes[ia],i+1),i+1,i+1,"e");
+      tmp->SetTitle(Form("DE %s",((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterIn+ia))->GetXaxis()->GetBinLabel(i+1)));
+      GetMeanRMS(tmp, meanIn, meanInErr, sigmaIn, sigmaInErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterIn+ia), 0x0, i, i+1);
+      fTmpHists->AddLast(tmp);
       
-      tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterOut+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, meanOut, meanOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterOut+ia), i, i+1);
-      GetRMS(tmp, sigmaOut, sigmaOutErr);
-      delete tmp;
+      tmp = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterOut+ia))->ProjectionY(Form("hRes%sDE%dClOut",axes[ia],i+1),i+1,i+1,"e");
+      tmp->SetTitle(Form("DE %s",((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterOut+ia))->GetXaxis()->GetBinLabel(i+1)));
+      GetMeanRMS(tmp, meanOut, meanOutErr, sigmaOut, sigmaOutErr, (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterOut+ia), 0x0, i, i+1);
+      fTmpHists->AddLast(tmp);
       
       if (fCorrectForSystematics) {
 	sigma = TMath::Sqrt(sigmaIn*sigmaIn + meanIn*meanIn);
@@ -1071,11 +1324,11 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
       
       // method 2
       tmp = ((TH2F*)fResiduals->UncheckedAt(kTrackResPerDE+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, sigmaTrack, sigmaTrackErr, 0x0, 0, 0, kFALSE, kFALSE);
+      GetMeanRMS(tmp, sigmaTrack, sigmaTrackErr, dumy1, dumy2, 0x0, 0x0, 0, 0, kFALSE, kFALSE);
       delete tmp;
       
       tmp = ((TH2F*)fResiduals->UncheckedAt(kMCSPerDE+ia))->ProjectionY("tmp",i+1,i+1,"e");
-      GetMean(tmp, sigmaMCS, sigmaMCSErr, 0x0, 0, 0, kFALSE, kFALSE);
+      GetMeanRMS(tmp, sigmaMCS, sigmaMCSErr, dumy1, dumy2, 0x0, 0x0, 0, 0, kFALSE, kFALSE);
       delete tmp;
       
       sigmaCluster = sigmaOut*sigmaOut - sigmaTrack*sigmaTrack;
@@ -1165,9 +1418,6 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   }
   
   // display
-  fCanvases = new TObjArray(1000);
-  fCanvases->SetOwner();
-  
   TLegend *lResPerChMean = new TLegend(0.75,0.85,0.99,0.99);
   TLegend *lResPerChSigma1 = new TLegend(0.75,0.85,0.99,0.99);
   TLegend *lResPerChSigma2 = new TLegend(0.75,0.85,0.99,0.99);
@@ -1314,6 +1564,42 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   }
   fCanvases->AddAtAndExpand(cResPerChVsCent, kResPerChVsCent);
   
+  TCanvas* cResPerChVsAngle = new TCanvas("cResPerChVsAngle","cResPerChVsAngle");
+  cResPerChVsAngle->Divide(1,2);
+  for (Int_t ia = 0; ia < 2; ia++) {
+    cResPerChVsAngle->cd(1+ia);
+    mg = (TMultiGraph*)fChamberRes->UncheckedAt(kCombinedResidualSigmaVsAngle+ia);
+    mg->Draw("ap");
+  }
+  fCanvases->AddAtAndExpand(cResPerChVsAngle, kResPerChVsAngle);
+  
+  TCanvas* cShiftPerChVsP = new TCanvas("cShiftPerChVsP","cShiftPerChVsP");
+  cShiftPerChVsP->Divide(1,2);
+  for (Int_t ia = 0; ia < 2; ia++) {
+    cShiftPerChVsP->cd(1+ia);
+    mg = (TMultiGraph*)fChamberRes->UncheckedAt(kResidualMeanClusterInVsP+ia);
+    mg->Draw("ap");
+  }
+  fCanvases->AddAtAndExpand(cShiftPerChVsP, kShiftPerChVsP);
+  
+  TCanvas* cShiftPerChVsCent = new TCanvas("cShiftPerChVsCent","cShiftPerChVsCent");
+  cShiftPerChVsCent->Divide(1,2);
+  for (Int_t ia = 0; ia < 2; ia++) {
+    cShiftPerChVsCent->cd(1+ia);
+    mg = (TMultiGraph*)fChamberRes->UncheckedAt(kResidualMeanClusterInVsCent+ia);
+    mg->Draw("ap");
+  }
+  fCanvases->AddAtAndExpand(cShiftPerChVsCent, kShiftPerChVsCent);
+  
+  TCanvas* cShiftPerChVsAngle = new TCanvas("cShiftPerChVsAngle","cShiftPerChVsAngle");
+  cShiftPerChVsAngle->Divide(1,2);
+  for (Int_t ia = 0; ia < 2; ia++) {
+    cShiftPerChVsAngle->cd(1+ia);
+    mg = (TMultiGraph*)fChamberRes->UncheckedAt(kResidualMeanClusterInVsAngle+ia);
+    mg->Draw("ap");
+  }
+  fCanvases->AddAtAndExpand(cShiftPerChVsAngle, kShiftPerChVsAngle);
+  
   // print results
   if (fPrintClResPerCh) {
     printf("\nchamber resolution:\n");
@@ -1340,9 +1626,41 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     printf("\n\n");
   }
   
+  if (fPrintHalfChShift) {
+    Double_t iHCh, hChShift;
+    printf("\nhalf-chamber residual displacements:\n");
+    printf(" - non-bending:");
+    for (Int_t i = 0; i < 2*AliMUONConstants::NTrackingCh(); i++) {
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterIn))->GetPoint(i, iHCh, hChShift);
+      printf((i==0)?" %6.4f":", %6.4f", hChShift);
+    }
+    printf("\n -     bending:");
+    for (Int_t i = 0; i < 2*AliMUONConstants::NTrackingCh(); i++) {
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterIn+1))->GetPoint(i, iHCh, hChShift);
+      printf((i==0)?" %6.4f":", %6.4f", hChShift);
+    }
+    printf("\n\n");
+  }
+  
+  if (fPrintDEShift) {
+    Double_t iDE, deShift;
+    printf("\nDE residual displacements:\n");
+    printf(" - non-bending:");
+    for (Int_t i = 0; i < fNDE; i++) {
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterIn))->GetPoint(i, iDE, deShift);
+      printf((i==0)?" %6.4f":", %6.4f", deShift);
+    }
+    printf("\n -     bending:");
+    for (Int_t i = 0; i < fNDE; i++) {
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterIn+1))->GetPoint(i, iDE, deShift);
+      printf((i==0)?" %6.4f":", %6.4f", deShift);
+    }
+    printf("\n\n");
+  }
+  
   // Post final data.
-  PostData(4, fLocalChi2);
-  PostData(5, fChamberRes);
+  PostData(6, fLocalChi2);
+  PostData(7, fChamberRes);
 }
 
 //________________________________________________________________________
@@ -1358,18 +1676,46 @@ void AliAnalysisTaskMuonResolution::ModifyClusters(AliMUONTrack& track)
   for (Int_t iCluster=0; iCluster<nClusters; iCluster++) {
     
     AliMUONVCluster* cl = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->UncheckedAt(iCluster))->GetClusterPtr();
+    Int_t chId = cl->GetChamberId();
+    Int_t halfChId = (cl->GetX() > 0) ? 2*chId : 2*chId+1;
+    Int_t deId = cl->GetDetElemId();
     
     // change their resolution
-    cl->SetErrXY(fClusterResNB[cl->GetChamberId()], fClusterResB[cl->GetChamberId()]);
-    
+    cl->SetErrXY(fClusterResNB[chId], fClusterResB[chId]);
+    /*
+    //    if (deId == 915 || deId == 710 ||deId == 1025 || deId == 818 || deId == 806) printf("Bad DE!!!\n");
+    if (deId == 915) cl->SetErrXY(10., 10.);
+    if (deId == 710) cl->SetErrXY(10., 10.);
+    if (deId == 1025) cl->SetErrXY(10., 10.);
+    if (deId == 818) cl->SetErrXY(10., 10.);
+    if (deId == 806) cl->SetErrXY(10., 10.);
+    */
     // change their position
-    if (fReAlign) {
-      gX = cl->GetX();
-      gY = cl->GetY();
-      gZ = cl->GetZ();
-      fOldGeoTransformer->Global2Local(cl->GetDetElemId(),gX,gY,gZ,lX,lY,lZ);
-      fNewGeoTransformer->Local2Global(cl->GetDetElemId(),lX,lY,lZ,gX,gY,gZ);
-      cl->SetXYZ(gX,gY,gZ);
+    gX = cl->GetX();
+    gY = cl->GetY();
+    gZ = cl->GetZ();
+    if (fReAlign) { // change the alignement
+      fOldGeoTransformer->Global2Local(deId,gX,gY,gZ,lX,lY,lZ);
+      fNewGeoTransformer->Local2Global(deId,lX,lY,lZ,gX,gY,gZ);
+    }
+    if (fShiftHalfCh) { // correct for half-chamber displacement
+      gX -= fHalfChShiftNB[halfChId];
+      gY -= fHalfChShiftB[halfChId];
+    }
+    if (fShiftDE) { // correct for DE displacement
+      gX -= fDEShiftNB[fDEIndices[deId]-1];
+      gY -= fDEShiftB[fDEIndices[deId]-1];
+    }
+    cl->SetXYZ(gX,gY,gZ);
+    
+    // "remove" mono-cathod clusters on stations 3-4-5 if required
+    // (to be done after moving clusters to the new position)
+    if (fRemoveMonoCathCl && chId > 3) {
+      Bool_t hasBending, hasNonBending;
+      if (fCheckAllPads) CheckPads(cl, hasBending, hasNonBending);
+      else CheckPadsBelow(cl, hasBending, hasNonBending);
+      if (!hasNonBending) cl->SetErrXY(10., cl->GetErrY());
+      if (!hasBending) cl->SetErrXY(cl->GetErrX(), 10.);
     }
     
   }
@@ -1423,39 +1769,61 @@ void AliAnalysisTaskMuonResolution::ZoomRight(TH1* h, Double_t fractionCut)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMuonResolution::GetMean(TH1* h, Double_t& mean, Double_t& meanErr, TGraphErrors* g, Int_t i, Double_t x, Bool_t zoom, Bool_t enableFit)
+void AliAnalysisTaskMuonResolution::GetMeanRMS(TH1* h, Double_t& mean, Double_t& meanErr,
+					       Double_t& rms, Double_t& rmsErr,
+					       TGraphErrors* gMean, TGraphErrors* gRMS,
+					       Int_t i, Double_t x, Bool_t zoom, Bool_t enableFit)
 {
-  /// Fill graph with the mean value and the corresponding error (zooming if required)
+  /// Fill graphs with the mean and rms values and the corresponding error (zooming if required)
   
   if (h->GetEntries() < fgkMinEntries) { // not enough entries
     
     mean = 0.;
     meanErr = 0.;
+    rms = 0.;
+    rmsErr = 0.;
     
   } else if (enableFit && fGaus) { // take the mean of a gaussian fit
     
+    // first fit
+    Double_t xMin = h->GetXaxis()->GetXmin();
+    Double_t xMax = h->GetXaxis()->GetXmax();
+    fGaus->SetRange(xMin, xMax);
     fGaus->SetParameters(h->GetEntries(), 0., 0.1);
+    fGaus->SetParLimits(1, xMin, xMax);
+    h->Fit("fGaus", "WWNQ");
     
-    if (h->GetUniqueID() != 10) {
-      
-      // first fit
-      h->Fit("fGaus", "WWNQ");
-      
-      // rebin histo
-      Int_t rebin = TMath::Max(static_cast<Int_t>(0.2*fGaus->GetParameter(2)/h->GetBinWidth(1)),1);
-      while (h->GetNbinsX()%rebin!=0) rebin--;
-      h->Rebin(rebin);
-      
-      // use the unique ID to remember that this histogram has already been rebinned
-      h->SetUniqueID(10);
-      
-    }
+    // rebin histo
+    Int_t rebin = TMath::Max(static_cast<Int_t>(0.3*fGaus->GetParameter(2)/h->GetBinWidth(1)),1);
+    while (h->GetNbinsX()%rebin!=0) rebin--;
+    h->Rebin(rebin);
     
     // second fit
-    h->Fit("fGaus","NQ");
+    xMin = TMath::Max(fGaus->GetParameter(1)-10.*fGaus->GetParameter(2), h->GetXaxis()->GetXmin());
+    xMax = TMath::Min(fGaus->GetParameter(1)+10.*fGaus->GetParameter(2), h->GetXaxis()->GetXmax());
+    fGaus->SetRange(xMin, xMax);
+    fGaus->SetParLimits(1, xMin, xMax);
+    h->Fit("fGaus","NQR");
     
     mean = fGaus->GetParameter(1);
     meanErr = fGaus->GetParError(1);
+    rms = fGaus->GetParameter(2);
+    rmsErr = fGaus->GetParError(2);
+    
+    // display the detail of the fit
+    if (!strstr(h->GetName(),"tmp")) {
+      Int_t ia = (strstr(h->GetName(),"ResX")) ? 0 : 1;
+      Int_t ib = (strstr(h->GetName(),"ClIn")) ? 0 : 1;
+      if (strstr(h->GetName(),"Half")) ((TCanvas*)fCanvases->UncheckedAt(kDetailResPerHalfCh+ib+2*ia))->cd(i+1);
+      else if (strstr(h->GetName(),"Ch")) ((TCanvas*)fCanvases->UncheckedAt(kDetailResPerCh+ib+2*ia))->cd(i+1);
+      else ((TCanvas*)fCanvases->UncheckedAt(kDetailResPerDE+ib+2*ia))->cd(i+1);
+      gPad->SetLogy();
+      h->Draw("hist");
+      TF1* f = (TF1*)fGaus->DrawClone("same");
+      f->SetLineWidth(1);
+      f->SetLineColor(2);
+      fTmpHists->AddLast(f);
+    }
     
   } else { // take the mean of the distribution
     
@@ -1463,58 +1831,6 @@ void AliAnalysisTaskMuonResolution::GetMean(TH1* h, Double_t& mean, Double_t& me
     
     mean = h->GetMean();
     meanErr = h->GetMeanError();
-    
-    if (zoom) h->GetXaxis()->SetRange(0,0);
-    
-  }
-  
-  // fill graph if required
-  if (g) {
-    g->SetPoint(i, x, mean);
-    g->SetPointError(i, 0., meanErr);
-  }
-  
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskMuonResolution::GetRMS(TH1* h, Double_t& rms, Double_t& rmsErr, TGraphErrors* g, Int_t i, Double_t x, Bool_t zoom)
-{
-  /// Return the dispersion value and the corresponding error (zooming if required) and fill graph if !=0x0
-  
-  if (h->GetEntries() < fgkMinEntries) { // not enough entries
-    
-    rms = 0.;
-    rmsErr = 0.;
-    
-  } else if (fGaus) { // take the sigma of a gaussian fit
-    
-    fGaus->SetParameters(h->GetEntries(), 0., 0.1);
-    
-    if (h->GetUniqueID() != 10) {
-      
-      // first fit
-      h->Fit("fGaus", "WWNQ");
-      
-      // rebin histo
-      Int_t rebin = TMath::Max(static_cast<Int_t>(0.2*fGaus->GetParameter(2)/h->GetBinWidth(1)),1);
-      while (h->GetNbinsX()%rebin!=0) rebin--;
-      h->Rebin(rebin);
-      
-      // use the unique ID to remember that this histogram has already been rebinned
-      h->SetUniqueID(10);
-      
-    }
-    
-    // second fit
-    h->Fit("fGaus","NQ");
-    
-    rms = fGaus->GetParameter(2);
-    rmsErr = fGaus->GetParError(2);
-    
-  } else { // take the RMS of the distribution
-    
-    if (zoom) Zoom(h);
-    
     rms = h->GetRMS();
     rmsErr = h->GetRMSError();
     
@@ -1523,54 +1839,46 @@ void AliAnalysisTaskMuonResolution::GetRMS(TH1* h, Double_t& rms, Double_t& rmsE
   }
   
   // fill graph if required
-  if (g) {
-    g->SetPoint(i, x, rms);
-    g->SetPointError(i, 0., rmsErr);
+  if (gMean) {
+    gMean->SetPoint(i, x, mean);
+    gMean->SetPointError(i, 0., meanErr);
+  }
+  if (gRMS) {
+    gRMS->SetPoint(i, x, rms);
+    gRMS->SetPointError(i, 0., rmsErr);
   }
   
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMuonResolution::FillSigmaClusterVsP(const TH2* hIn, const TH2* hOut, TGraphErrors* g, Bool_t zoom)
+void AliAnalysisTaskMuonResolution::FillMeanSigmaClusterVsX(const TH2* hIn, const TH2* hOut,
+							    TGraphErrors* gMean, TGraphErrors* gSigma)
 {
-  /// Fill graph with cluster resolution from combined residuals with cluster in/out (zooming if required)
-  Double_t sigmaIn, sigmaInErr, sigmaOut, sigmaOutErr, clusterRes, clusterResErr;
+  /// Fill graph with cluster shift (cluster in) if gMean != OxO
+  /// and resolution from combined residuals with cluster in/out (zooming if required)
+  Double_t meanIn, meanInErr, sigmaIn, sigmaInErr, sigmaOut, sigmaOutErr, clusterRes, clusterResErr, dumy1, dumy2;
   for (Int_t j = 1; j <= hIn->GetNbinsX(); j++) {
     TH1D* tmp = hIn->ProjectionY("tmp",j,j,"e");
-    GetRMS(tmp, sigmaIn, sigmaInErr, 0x0, 0, 0., zoom);
+    GetMeanRMS(tmp, meanIn, meanInErr, sigmaIn, sigmaInErr, 0x0, 0x0, 0, 0.);
     delete tmp;
-    tmp = hOut->ProjectionY("tmp",j,j,"e");
-    GetRMS(tmp, sigmaOut, sigmaOutErr, 0x0, 0, 0., zoom);
-    delete tmp;
-    Double_t p = 0.5 * (hIn->GetBinLowEdge(j) + hIn->GetBinLowEdge(j+1));
-    Double_t pErr = p - hIn->GetBinLowEdge(j);
-    clusterRes = TMath::Sqrt(sigmaIn*sigmaOut);
-    //clusterResErr = (clusterRes > 0.) ? 0.5 * TMath::Sqrt(sigmaInErr*sigmaInErr*sigmaOut*sigmaOut + sigmaIn*sigmaIn*sigmaOutErr*sigmaOutErr) / clusterRes : 0.;
-    clusterResErr = TMath::Sqrt(sigmaInErr*sigmaOutErr);
-    g->SetPoint(j, p, clusterRes);
-    g->SetPointError(j, pErr, clusterResErr);
-  }
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskMuonResolution::FillSigmaClusterVsCent(const TH2* hIn, const TH2* hOut, TGraphErrors* g, Bool_t zoom)
-{
-  /// Fill graph with cluster resolution from combined residuals with cluster in/out (zooming if required)
-  Double_t sigmaIn, sigmaInErr, sigmaOut, sigmaOutErr, clusterRes, clusterResErr;
-  for (Int_t j = 1; j <= hIn->GetNbinsX(); j++) {
-    TH1D* tmp = hIn->ProjectionY("tmp",j,j,"e");
-    GetRMS(tmp, sigmaIn, sigmaInErr, 0x0, 0, 0., zoom);
-    delete tmp;
-    tmp = hOut->ProjectionY("tmp",j,j,"e");
-    GetRMS(tmp, sigmaOut, sigmaOutErr, 0x0, 0, 0., zoom);
-    delete tmp;
-    Double_t cent = 0.5 * (hIn->GetBinLowEdge(j) + hIn->GetBinLowEdge(j+1));
-    Double_t centErr = cent - hIn->GetBinLowEdge(j);
-    clusterRes = TMath::Sqrt(sigmaIn*sigmaOut);
-    //clusterResErr = (clusterRes > 0.) ? 0.5 * TMath::Sqrt(sigmaInErr*sigmaInErr*sigmaOut*sigmaOut + sigmaIn*sigmaIn*sigmaOutErr*sigmaOutErr) / clusterRes : 0.;
-    clusterResErr = TMath::Sqrt(sigmaInErr*sigmaOutErr);
-    g->SetPoint(j, cent, clusterRes);
-    g->SetPointError(j, centErr, clusterResErr);
+    if (hOut) {
+      tmp = hOut->ProjectionY("tmp",j,j,"e");
+      GetMeanRMS(tmp, dumy1, dumy2, sigmaOut, sigmaOutErr, 0x0, 0x0, 0, 0.);
+      delete tmp;
+    }
+    Double_t x = 0.5 * (hIn->GetBinLowEdge(j) + hIn->GetBinLowEdge(j+1));
+    Double_t xErr = x - hIn->GetBinLowEdge(j);
+    if (gMean) {
+      gMean->SetPoint(j-1, x, meanIn);
+      gMean->SetPointError(j-1, xErr, meanInErr);
+    }
+    if (gSigma) {
+      clusterRes = TMath::Sqrt(sigmaIn*sigmaOut);
+      //clusterResErr = (clusterRes > 0.) ? 0.5 * TMath::Sqrt(sigmaInErr*sigmaInErr*sigmaOut*sigmaOut + sigmaIn*sigmaIn*sigmaOutErr*sigmaOutErr) / clusterRes : 0.;
+      clusterResErr = TMath::Sqrt(sigmaInErr*sigmaOutErr);
+      gSigma->SetPoint(j-1, x, clusterRes);
+      gSigma->SetPointError(j-1, xErr, clusterResErr);
+    }
   }
 }
 
@@ -1670,11 +1978,25 @@ void AliAnalysisTaskMuonResolution::CheckPadsBelow(AliMUONVCluster *cl, Bool_t &
   const AliMpVSegmentation* seg2 = AliMpSegmentation::Instance()->GetMpSegmentation(deId, cath2);
   if (!seg1 || !seg2) return;
   
-  // get local coordinate of the cluster
-  Double_t lX,lY,lZ;
+  // get global coordinate of the cluster
   Double_t gX = cl->GetX();
   Double_t gY = cl->GetY();
   Double_t gZ = cl->GetZ();
+  
+  // revert half-chamber or DE displacement if any
+  Int_t chId = cl->GetChamberId();
+  Int_t halfChId = (cl->GetX() > 0) ? 2*chId : 2*chId+1;
+  if (fShiftHalfCh) {
+    gX += fHalfChShiftNB[halfChId];
+    gY += fHalfChShiftB[halfChId];
+  }
+  if (fShiftDE) {
+    gX += fDEShiftNB[fDEIndices[deId]-1];
+    gY += fDEShiftB[fDEIndices[deId]-1];
+  }
+  
+  // get local coordinate of the cluster
+  Double_t lX,lY,lZ;
   fNewGeoTransformer->Global2Local(deId,gX,gY,gZ,lX,lY,lZ);
   
   // find pads below the cluster

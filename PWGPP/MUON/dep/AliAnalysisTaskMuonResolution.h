@@ -14,6 +14,7 @@
 #include <TMatrixD.h>
 #include <TF1.h>
 #include "AliAnalysisTaskSE.h"
+#include "AliMuonTrackCuts.h"
 
 class TH1;
 class TH2;
@@ -39,6 +40,18 @@ public:
   void SetStartingResolution(Double_t valNB[10], Double_t valB[10]);
   void GetStartingResolution(Double_t valNB[10], Double_t valB[10]) const;
   
+  void SetHalfChShift(Int_t hchId, Double_t valNB, Double_t valB);
+  void SetHalfChShift(Double_t valNB[20], Double_t valB[20]);
+  void GetHalfChShift(Double_t valNB[20], Double_t valB[20]) const;
+  void ShiftHalfCh(Bool_t flag = kTRUE) { fShiftHalfCh = flag; }
+  void PrintHalfChShift(Bool_t flag = kTRUE) { fPrintHalfChShift = flag; }
+  
+  void SetDEShift(Int_t iDE, Double_t valNB, Double_t valB);
+  void SetDEShift(Double_t valNB[200], Double_t valB[200]);
+  void GetDEShift(Double_t valNB[200], Double_t valB[200]) const;
+  void ShiftDE(Bool_t flag = kTRUE) { fShiftDE = flag; }
+  void PrintDEShift(Bool_t flag = kTRUE) { fPrintDEShift = flag; }
+  
   /// set the minimum momentum value of the tracks used to compute the resolution
   void SetMinMomentum(Double_t val) { fMinMomentum = val; }
   
@@ -51,6 +64,9 @@ public:
   /// set the flag to use only tracks passing the acceptance cuts (Rabs, eta)
   void ApplyAccCut(Bool_t flag = kTRUE) { fApplyAccCut = flag; }
   
+  // set standard cuts to select tracks to be considered
+  void SetMuonTrackCuts(AliMuonTrackCuts &trackCuts);
+  
   /// Select events belonging to at least one of the trigger classes selected by the mask to fill histograms:
   /// - if the physics selection is used, apply the mask to the trigger word returned by the physics selection
   /// - if not, apply the mask to the trigger word built by looking for triggers listed in "fSelectTriggerClass"
@@ -62,6 +78,9 @@ public:
   
   /// set the flag to add or not the systematic shifts of the residuals to the resolution
   void CorrectForSystematics(Bool_t flag = kTRUE) { fCorrectForSystematics = flag; }
+  
+  /// Set the OCDB path to the alignment file used in the reco (if not set use default storage)
+  void SetAlignStorage(const char* ocdbPath) { fNewAlignStorage = ocdbPath; }
   
   void ReAlign(const char* oldAlignStorage = 0x0, const char* newAlignStorage = "");
   
@@ -79,6 +98,9 @@ public:
   /// set the flag to remove mono-cathod clusters (either considering all the pads or only the ones directly below)
   void RemoveMonoCathodClusters(Bool_t flag = kTRUE, Bool_t checkAllPads = kTRUE) {fRemoveMonoCathCl = flag; fCheckAllPads = checkAllPads;}
   
+  /// set the flag to improve the track before measuring the resolution
+  void ImproveTracks(Bool_t flag = kTRUE) {fImproveTracks = flag;}
+  
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
   virtual void   NotifyRun();
@@ -95,10 +117,9 @@ private:
   void Zoom(TH1* h, Double_t fractionCut = 0.01);
   void ZoomLeft(TH1* h, Double_t fractionCut = 0.02);
   void ZoomRight(TH1* h, Double_t fractionCut = 0.02);
-  void GetMean(TH1* h, Double_t& mean, Double_t& meanErr, TGraphErrors* g = 0x0, Int_t i = 0, Double_t x = 0, Bool_t zoom = kTRUE, Bool_t enableFit = kTRUE);
-  void GetRMS(TH1* h, Double_t& rms, Double_t& rmsErr, TGraphErrors* g = 0x0, Int_t i = 0, Double_t x = 0, Bool_t zoom = kTRUE);
-  void FillSigmaClusterVsP(const TH2* hIn, const TH2* hOut, TGraphErrors* g, Bool_t zoom = kTRUE);
-  void FillSigmaClusterVsCent(const TH2* hIn, const TH2* hOut, TGraphErrors* g, Bool_t zoom = kTRUE);
+  void GetMeanRMS(TH1* h, Double_t& mean, Double_t& meanErr,Double_t& rms, Double_t& rmsErr, TGraphErrors* gMean = 0x0,
+		  TGraphErrors* gRMS = 0x0, Int_t i = 0, Double_t x = 0, Bool_t zoom = kTRUE, Bool_t enableFit = kTRUE);
+  void FillMeanSigmaClusterVsX(const TH2* hIn, const TH2* hOut, TGraphErrors* gMean, TGraphErrors* gSigma);
   void Cov2CovP(const AliMUONTrackParam &param, TMatrixD &covP);
   UInt_t BuildTriggerWord(const TString& FiredTriggerClasses);
   void CheckPads(AliMUONVCluster *cl, Bool_t &hasBending, Bool_t &hasNonBending) const;
@@ -138,6 +159,14 @@ private:
     kResidualVsCentClusterOut           = 42  ///< cluster-track residual-X/Y distribution integrated over chambers versus centrality (cluster not attached to the track)
   };
   
+  enum eResidualsVsAngle {
+    kResidualInChVsAngleClusterIn       = 0,  ///< cluster-track residual-X/Y distribution in chamber i versus track angle in X/Y direction (cluster attached to the track)
+    kResidualInChVsAngleClusterOut      = 20, ///< cluster-track residual-X/Y distribution in chamber i versus track angle in X/Y direction (cluster not attached to the track)
+    kResidualVsAngleClusterIn           = 40, ///< cluster-track residual-X/Y distribution integrated over chambers versus track angle in X/Y direction (cluster attached to the track)
+    kResidualVsAngleClusterOut          = 42, ///< cluster-track residual-X/Y distribution integrated over chambers versus track angle in X/Y direction (cluster not attached to the track)
+    kResidualInHalfChVsAngleClusterIn   = 44  ///< cluster-track residual-X/Y distribution in half-chamber i versus track angle in X/Y direction (cluster attached to the track)
+  };
+  
   enum eLocalChi2 {
     kLocalChi2PerChMean                 = 0,  ///< local chi2-X/Y/total per chamber: mean
     kLocalChi2PerDEMean                 = 3   ///< local chi2-X/Y/total per DE: mean
@@ -150,22 +179,28 @@ private:
     kResidualPerChSigmaClusterOut       = 6,  ///< cluster-track residual-X/Y per chamber: sigma (cluster out)
     kResidualPerChDispersionClusterOut  = 8,  ///< cluster-track residual-X/Y per chamber: dispersion (cluster out)
     kCombinedResidualPerChSigma         = 10, ///< combined cluster-track residual-X/Y per chamber
-    kCombinedResidualSigmaVsP           = 12, ///< cluster X/Y-resolution per chamber versus momentum
-    kTrackResPerChMean                  = 14, ///< track X/Y-resolution per chamber
-    kMCSPerChMean                       = 16, ///< MCS X/Y-dispersion of extrapolated track per chamber
-    kClusterResPerCh                    = 18, ///< cluster X/Y-resolution per chamber
-    kCalcClusterResPerCh                = 20, ///< calculated cluster X/Y-resolution per chamber
-    kResidualPerDEMeanClusterIn         = 22, ///< cluster-track residual-X/Y per DE: mean (cluster in)
-    kResidualPerDEMeanClusterOut        = 24, ///< cluster-track residual-X/Y per DE: mean (cluster out)
-    kCombinedResidualPerDESigma         = 26, ///< combined cluster-track residual-X/Y per DE
-    kClusterResPerDE                    = 28, ///< cluster X/Y-resolution per DE
-    kResidualPerHalfChMeanClusterIn     = 30, ///< cluster-track residual-X/Y per half chamber: mean (cluster in)
-    kResidualPerHalfChMeanClusterOut    = 32, ///< cluster-track residual-X/Y per half chamber: mean (cluster out)
-    kCombinedResidualPerHalfChSigma     = 34, ///< combined cluster-track residual-X/Y per half chamber
-    kClusterResPerHalfCh                = 36, ///< cluster X/Y-resolution per half chamber
-    kCombinedResidualSigmaVsCent        = 38, ///< cluster X/Y-resolution per chamber versus centrality
+    kTrackResPerChMean                  = 12, ///< track X/Y-resolution per chamber
+    kMCSPerChMean                       = 14, ///< MCS X/Y-dispersion of extrapolated track per chamber
+    kClusterResPerCh                    = 16, ///< cluster X/Y-resolution per chamber
+    kCalcClusterResPerCh                = 18, ///< calculated cluster X/Y-resolution per chamber
+    kResidualPerDEMeanClusterIn         = 20, ///< cluster-track residual-X/Y per DE: mean (cluster in)
+    kResidualPerDEMeanClusterOut        = 22, ///< cluster-track residual-X/Y per DE: mean (cluster out)
+    kCombinedResidualPerDESigma         = 24, ///< combined cluster-track residual-X/Y per DE
+    kClusterResPerDE                    = 26, ///< cluster X/Y-resolution per DE
+    kResidualPerHalfChMeanClusterIn     = 28, ///< cluster-track residual-X/Y per half chamber: mean (cluster in)
+    kResidualPerHalfChMeanClusterOut    = 30, ///< cluster-track residual-X/Y per half chamber: mean (cluster out)
+    kCombinedResidualPerHalfChSigma     = 32, ///< combined cluster-track residual-X/Y per half chamber
+    kClusterResPerHalfCh                = 34, ///< cluster X/Y-resolution per half chamber
+    kResidualMeanClusterInVsP           = 36, ///< cluster-track residual-X/Y per chamber versus momentum: mean (cluster in)
+    kCombinedResidualSigmaVsP           = 38, ///< cluster X/Y-resolution per chamber versus momentum
     kCombinedResidualAllChSigmaVsP      = 40, ///< cluster X/Y-resolution integrated over chambers versus momentum
-    kCombinedResidualAllChSigmaVsCent   = 42  ///< cluster X/Y-resolution integrated over chambers versus centrality
+    kResidualMeanClusterInVsCent        = 42, ///< cluster-track residual-X/Y per chamber versus centrality: mean (cluster in)
+    kCombinedResidualSigmaVsCent        = 44, ///< cluster X/Y-resolution per chamber versus centrality
+    kCombinedResidualAllChSigmaVsCent   = 46, ///< cluster X/Y-resolution integrated over chambers versus centrality
+    kResidualMeanClusterInVsAngle       = 48, ///< cluster-track residual-X/Y per chamber versus track angle in X/Y direction: mean (cluster in)
+    kCombinedResidualSigmaVsAngle       = 50, ///< cluster X/Y-resolution per chamber versus track angle in X/Y direction
+    kCombinedResidualAllChSigmaVsAngle  = 52, ///< cluster X/Y-resolution integrated over chambers versus track angle in X/Y direction
+    kHChResidualMeanClusterInVsAngle    = 54  ///< cluster-track residual-X/Y per half-chamber versus track angle in X/Y direction: mean (cluster in)
   };
   
   enum eTrackRes {
@@ -179,10 +214,17 @@ private:
   
   enum eCanvases {
     kResPerCh                           = 0,  ///< summary canvas
-    kResPerChVsP                        = 1,  ///< summary canvas
-    kResPerDE                           = 2,  ///< summary canvas
-    kResPerHalfCh                       = 3,  ///< summary canvas
-    kResPerChVsCent                     = 4   ///< summary canvas
+    kResPerDE                           = 1,  ///< summary canvas
+    kResPerHalfCh                       = 2,  ///< summary canvas
+    kResPerChVsP                        = 3,  ///< summary canvas
+    kResPerChVsCent                     = 4,  ///< summary canvas
+    kResPerChVsAngle                    = 5,  ///< summary canvas
+    kShiftPerChVsP                      = 6,  ///< summary canvas
+    kShiftPerChVsCent                   = 7,  ///< summary canvas
+    kShiftPerChVsAngle                  = 8,  ///< summary canvas
+    kDetailResPerCh                     = 9,  ///< summary canvas
+    kDetailResPerHalfCh                 = 13, ///< summary canvas
+    kDetailResPerDE                     = 17  ///< summary canvas
   };
   
   static const Int_t fgkMinEntries; ///< minimum number of entries needed to compute resolution
@@ -190,13 +232,21 @@ private:
   TObjArray*  fResiduals;       //!< List of residual histos
   TObjArray*  fResidualsVsP;    //!< List of residual vs. p histos
   TObjArray*  fResidualsVsCent; //!< List of residual vs. centrality histos
+  TObjArray*  fResidualsVsAngle;//!< List of residual vs. track angle histos
   TObjArray*  fLocalChi2;       //!< List of plots related to local chi2 per chamber/DE
   TObjArray*  fChamberRes;      //!< List of plots related to chamber/DE resolution
   TObjArray*  fTrackRes;        //!< List of plots related to track resolution (p, pT, ...)
   TObjArray*  fCanvases;        //!< List of canvases summarizing the results
+  TObjArray*  fTmpHists;        //!< List of temporary histograms
   
-  Double_t fClusterResNB[10]; ///< cluster resolution in non-bending direction
-  Double_t fClusterResB[10];  ///< cluster resolution in bending direction
+  Double_t fClusterResNB[10];   ///< cluster resolution in non-bending direction
+  Double_t fClusterResB[10];    ///< cluster resolution in bending direction
+  
+  Double_t fHalfChShiftNB[20];  ///< half-chamber deplacements in non-bending direction
+  Double_t fHalfChShiftB[20];   ///< half-chamber deplacements in bending direction
+  
+  Double_t fDEShiftNB[200];     ///< DE deplacements in non-bending direction
+  Double_t fDEShiftB[200];      ///< DE deplacements in bending direction
   
   TString  fDefaultStorage;        ///< location of the default OCDB storage
   Int_t    fNEvents;               //!< number of processed events
@@ -214,11 +264,16 @@ private:
   Bool_t   fCorrectForSystematics; ///< add or not the systematic shifts of the residuals to the resolution
   Bool_t   fRemoveMonoCathCl;      ///< remove or not the mono-cathod clusters
   Bool_t   fCheckAllPads;          ///< use all pads or only the ones directly below the cluster to look for mono-cathods
+  Bool_t   fImproveTracks;         ///< flag telling whether to improve or not the track before measuring the resolution
+  Bool_t   fShiftHalfCh;           ///< flag telling wether to displace half-chambers by fHalfChShift(N)B[i] or not
+  Bool_t   fPrintHalfChShift;      ///< print the half-chamber displacements
+  Bool_t   fShiftDE;               ///< flag telling wether to displace DEs by fDEShift(N)B[i] or not
+  Bool_t   fPrintDEShift;          ///< print the DE displacements
   Bool_t   fOCDBLoaded;            //!< flag telling if the OCDB has been properly loaded or not
   Int_t    fNDE;                   //!< total number of DE
   Int_t    fDEIndices[1100];       //!< index of DE in histograms refered by ID
   Int_t    fDEIds[200];            //!< ID of DE refered by index in histograms
-  Bool_t   fReAlign;               ///< flag telling wether to re-align the spectrometer or not before computing resolution
+  Bool_t   fReAlign;               ///< flag telling whether to re-align the spectrometer or not before computing resolution
   TString  fOldAlignStorage;       ///< location of the OCDB storage where to find old MUON/Align/Data (use the default one if empty)
   TString  fNewAlignStorage;       ///< location of the OCDB storage where to find new MUON/Align/Data (use the default one if empty)
   AliMUONGeometryTransformer* fOldGeoTransformer; //!< geometry transformer used to recontruct the present data
@@ -226,7 +281,9 @@ private:
   
   TList* fSelectTriggerClass; //!< list of trigger class that can be selected to fill histograms
   
-  ClassDef(AliAnalysisTaskMuonResolution, 3); // chamber resolution analysis
+  AliMuonTrackCuts* fMuonTrackCuts; ///< cuts to select tracks to be considered
+  
+  ClassDef(AliAnalysisTaskMuonResolution, 4); // chamber resolution analysis
 };
 
 //________________________________________________________________________
@@ -259,6 +316,64 @@ inline void AliAnalysisTaskMuonResolution::GetStartingResolution(Double_t valNB[
 }
 
 //________________________________________________________________________
+inline void AliAnalysisTaskMuonResolution::SetHalfChShift(Int_t hchId, Double_t valNB, Double_t valB)
+{
+  /// set chamber non-bending and bending resolutions
+  if (hchId < 0 || hchId >= 20) return;
+  fHalfChShiftNB[hchId] = valNB;
+  fHalfChShiftB[hchId] = valB;
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonResolution::SetHalfChShift(Double_t valNB[20], Double_t valB[20])
+{
+  /// set chambers non-bending and bending resolutions
+  for (Int_t i = 0; i < 20; i++) {
+    fHalfChShiftNB[i] = valNB[i];
+    fHalfChShiftB[i] = valB[i];
+  }
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonResolution::GetHalfChShift(Double_t valNB[20], Double_t valB[20]) const
+{
+  /// set chambers non-bending and bending resolutions
+  for (Int_t i = 0; i < 20; i++) {
+    valNB[i] = fHalfChShiftNB[i];
+    valB[i] = fHalfChShiftB[i];
+  }
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonResolution::SetDEShift(Int_t iDE, Double_t valNB, Double_t valB)
+{
+  /// set chamber non-bending and bending resolutions
+  if (iDE < 0 || iDE >= 200) return;
+  fDEShiftNB[iDE] = valNB;
+  fDEShiftB[iDE] = valB;
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonResolution::SetDEShift(Double_t valNB[200], Double_t valB[200])
+{
+  /// set chambers non-bending and bending resolutions
+  for (Int_t i = 0; i < 200; i++) {
+    fDEShiftNB[i] = valNB[i];
+    fDEShiftB[i] = valB[i];
+  }
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonResolution::GetDEShift(Double_t valNB[200], Double_t valB[200]) const
+{
+  /// set chambers non-bending and bending resolutions
+  for (Int_t i = 0; i < 200; i++) {
+    valNB[i] = fDEShiftNB[i];
+    valB[i] = fDEShiftB[i];
+  }
+}
+
+//________________________________________________________________________
 inline void AliAnalysisTaskMuonResolution::ReAlign(const char* oldAlignStorage, const char* newAlignStorage)
 {
   /// Set the flag to activate the re-alignment and the specific storage where to find the old/new alignment data.
@@ -278,6 +393,14 @@ inline void AliAnalysisTaskMuonResolution::FitResiduals(Bool_t flag)
   delete fGaus;
   if (flag) fGaus = new TF1("fGaus","gaus");
   else fGaus = NULL;
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonResolution::SetMuonTrackCuts(AliMuonTrackCuts &trackCuts)
+{
+  /// set standard cuts to select tracks to be considered
+  delete fMuonTrackCuts;
+  fMuonTrackCuts = new AliMuonTrackCuts(trackCuts);
 }
 
 #endif
