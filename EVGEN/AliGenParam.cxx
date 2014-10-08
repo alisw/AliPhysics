@@ -213,9 +213,9 @@ TVector3 AliGenParam::OrthogonalVector(TVector3 &inVec){
   int solvDim=0;
   double tmp=abc[0];
   for(int i=0; i<3; i++)
-    if(abs(abc[i])>tmp){
+    if(fabs(abc[i])>tmp){
       solvDim=i;
-      tmp=abs(abc[i]);
+      tmp=fabs(abc[i]);
     }
   xyz[solvDim]=(-abc[(1+solvDim)%3]-abc[(2+solvDim)%3])/abc[(0+solvDim)%3];
   
