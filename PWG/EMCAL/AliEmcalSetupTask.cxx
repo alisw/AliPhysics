@@ -138,8 +138,8 @@ void AliEmcalSetupTask::Setup(Int_t runno)
   // Setup everything
 
   // Setup AliEMCALGeometry corresponding to year
-  TString geoname("EMCAL_COMPLETE12SMV1_DCAL_8SM");
-  Int_t year = 2015;
+  TString geoname("EMCAL_COMPLETE12SMV1");
+  Int_t year = 2013;
   if (runno>0 && runno<=139517) {
     year = 2010;
     geoname = "EMCAL_FIRSTYEARV1";
@@ -151,6 +151,9 @@ void AliEmcalSetupTask::Setup(Int_t runno)
   } else if ((runno>193766) && (runno <= 199161)) {
     geoname = "EMCAL_COMPLETE12SMV1";
     year = 2013;
+  } else if (runno>199161) { //MV: is this the last run of run 1?
+    geoname = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
+    year = 2015;
   }
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
   if (!geom) {
