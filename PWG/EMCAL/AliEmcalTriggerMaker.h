@@ -35,11 +35,16 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   Bool_t IsLevel0(Int_t tBits) const { if( tBits & (1 << (kTriggerTypeEnd + kL0) | (1 << kL0))) return kTRUE; return kFALSE; }
 
  protected:  
+  enum{
+	  kPatchCols = 48,
+	  kPatchRows = 64
+  };
   void                       ExecOnce();
   Bool_t                     Run();
   void                       RunSimpleOfflineTrigger();
   Bool_t                     NextTrigger( Bool_t &isOfflineSimple );
   AliEmcalTriggerPatchInfo*  ProcessPatch(TriggerMakerTriggerType_t type, Bool_t isOfflineSimple);
+  Bool_t 					 CheckForL0(const AliVCaloTrigger &trg) const;
 
   TString                    fCaloTriggersOutName;      // name of output track array
   TString                    fCaloTriggerSetupOutName;  // name of output track array
@@ -49,8 +54,9 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   AliEmcalTriggerSetupInfo  *fCaloTriggerSetupOut;      //!trigger setup
   AliAODCaloTrigger         *fSimpleOfflineTriggers;    //!simple offline trigger
   AliVVZERO                 *fV0;                       //!V0 object
-  Double_t                   fPatchADCSimple[48][64];   //!patch map for simple offline trigger
-  Int_t                      fPatchADC[48][64];         //!ADC values map
+  Double_t                   fPatchADCSimple[kPatchCols][kPatchRows];   //!patch map for simple offline trigger
+  Int_t                      fPatchADC[kPatchCols][kPatchRows];         //!ADC values map
+  Float_t 					 fPatchAmplitude[kPatchCols][kPatchRows];	//!Trigger patch amplituded(for L0 triggers)
   Int_t                      fITrigger;                 //!trigger counter
 
  private:

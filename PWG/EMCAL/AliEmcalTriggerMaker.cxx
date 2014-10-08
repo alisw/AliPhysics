@@ -3,6 +3,7 @@
 // Class to make array of trigger patch objects in AOD/ESD events.
 //
 // Author: J.Kral
+#include <TArrayI.h>
 
 #include <TClonesArray.h>
 #include "AliAODCaloTrigger.h"
@@ -33,9 +34,10 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fITrigger(0)
 {
   // Constructor.
-  for (Int_t i = 0; i < 4; ++i)
-    for (Int_t j = 0; j < 3; ++j)
-      fThresholdConstants[i][j] = 0;
+  memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
+  memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+  memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+  memset(fPatchAmplitude, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
 }
 
 //________________________________________________________________________
@@ -51,9 +53,10 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name) :
   fITrigger(0)
 {
   // Constructor.
-  for (Int_t i = 0; i < 4; ++i)
-    for (Int_t j = 0; j < 3; ++j)
-      fThresholdConstants[i][j] = 0;
+	  memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
+	  memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+	  memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+	  memset(fPatchAmplitude, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
 }
 
 //________________________________________________________________________
@@ -152,31 +155,31 @@ Bool_t AliEmcalTriggerMaker::Run()
   // which is then needed to construct the full patch ADC energy
   // class is not empty
   if (fCaloTriggers->GetEntries() > 0) {
-    // zero the array
-    for (Int_t i = 0; i < 48; ++i)
-      for (Int_t j = 0; j < 64; ++j)
-	fPatchADC[i][j] = 0;
-		
+    // zero the arrays
+	memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+	memset(fPatchAmplitude, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
+
     // go throuth the trigger channels
     while (fCaloTriggers->Next()) {
       // get position in global 2x2 tower coordinates
       // A0 left bottom (0,0)
       Int_t globCol=-1, globRow=-1;
       fCaloTriggers->GetPosition(globCol, globRow);
+      // Look at L0 information
+      if(CheckForL0(*fCaloTriggers))
+    	  fCaloTriggers->GetAmplitude(fPatchAmplitude[globCol][globRow]);
       // for some strange reason some ADC amps are initialized in reconstruction
       // as -1, neglect those 
       Int_t adcAmp=-1;
       fCaloTriggers->GetL1TimeSum(adcAmp);
       if (adcAmp>-1)
-	fPatchADC[globCol][globRow] = adcAmp;
+	    fPatchADC[globCol][globRow] = adcAmp;
     } // patches
   } // array not empty
   
   // fill the array for offline trigger processing
   // using calibrated cell energies
-  for (Int_t i = 0; i < 48; ++i)
-    for (Int_t j = 0; j < 64; ++j)
-      fPatchADCSimple[i][j] = 0;
+  memset(fPatchADCSimple, 0, sizeof(Int_t) * kPatchRows * kPatchCols);
 
   // fill the patch ADCs from cells
   Int_t nCell = fCaloCells->GetNumberOfCells();
@@ -245,46 +248,36 @@ Bool_t AliEmcalTriggerMaker::Run()
       trigger = ProcessPatch(kTMEMCalJet, isOfflineSimple);
       // save main jet triggers in event
       if (trigger != 0) {
-	// check if more energetic than others for main patch marking
-	if (!isOfflineSimple) {
-	  if (triggerMainJet == 0)
-	    triggerMainJet = trigger;
-	  else if (triggerMainJet->GetPatchE() < trigger->GetPatchE())
-	    triggerMainJet = trigger;
-	} else {
-	  if (triggerMainJetSimple == 0)
-	    triggerMainJetSimple = trigger;
-	  else if (triggerMainJetSimple->GetPatchE() < trigger->GetPatchE())
-	    triggerMainJetSimple = trigger;
-	}
+	    // check if more energetic than others for main patch marking
+	    if (!isOfflineSimple) {
+	      if (triggerMainJet == 0 || (triggerMainJet->GetPatchE() < trigger->GetPatchE()))
+	        triggerMainJet = trigger;
+	    } else {
+	      if (triggerMainJetSimple == 0 || (triggerMainJetSimple->GetPatchE() < trigger->GetPatchE()))
+	        triggerMainJetSimple = trigger;
+	    }
       }
       
       // process gamma
       trigger = ProcessPatch(kTMEMCalGamma, isOfflineSimple);
       // save main gamma triggers in event
       if (trigger != 0) {
-	// check if more energetic than others for main patch marking
-	if (!isOfflineSimple) {
-	  if (triggerMainGamma == 0)
-	    triggerMainGamma = trigger;
-	  else if (triggerMainGamma->GetPatchE() < trigger->GetPatchE())
-	    triggerMainGamma = trigger;
-	} else {
-	  if (triggerMainGammaSimple == 0)
-	    triggerMainGammaSimple = trigger;
-	  else if (triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE())
-	    triggerMainGammaSimple = trigger;
-	}
+	    // check if more energetic than others for main patch marking
+	    if (!isOfflineSimple) {
+	      if (triggerMainGamma == 0 || (triggerMainGamma->GetPatchE() < trigger->GetPatchE()))
+	        triggerMainGamma = trigger;
+	    } else {
+	      if (triggerMainGammaSimple == 0 || (triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE()))
+	        triggerMainGammaSimple = trigger;
+	    }
       }
 
       // level 0 triggers
       trigger = ProcessPatch(kTMEMCalLevel0, isOfflineSimple);
       // save main level0 trigger in the event
       if (trigger) {
-	if (!triggerMainLevel0) 
-	  triggerMainLevel0 = trigger;
-	else if (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()) 
-	  triggerMainLevel0 = trigger;
+	    if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
+	      triggerMainLevel0 = trigger;
       }
     } // triggers
     
@@ -338,7 +331,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 	
   if ((type == kTMEMCalJet    && !IsEJE( tBits )) || 
       (type == kTMEMCalGamma  && !IsEGA( tBits )) || 
-      (type == kTMEMCalLevel0 && !IsLevel0(tBits)))
+      (type == kTMEMCalLevel0 && !(IsLevel0(tBits) || CheckForL0(*fCaloTriggers))))
     return 0;
 	
   // save primary vertex in vector
@@ -367,54 +360,33 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   // sum the available energy in the 32/32 window of cells
   // step over trigger channels and get all the corresponding cells
   // make CM
-  Int_t amp = 0;
+  Double_t amp = 0;
   Int_t cmiCol = 0;
   Int_t cmiRow = 0;
   Int_t adcAmp = 0;
-  if (IsEJE(tBits) && type == kTMEMCalJet) {
-    for (Int_t i = 0; i < 16; ++i) {
-      for (Int_t j = 0; j < 16; ++j) {
-	// get the 4 cells composing the trigger channel
-	fGeom->GetAbsFastORIndexFromPositionInEMCAL(globCol+i, globRow+j, absId);
-	fGeom->GetCellIndexFromFastORIndex(absId, cellAbsId);
-	// add amplitudes and find patch edges
-	for (Int_t k = 0; k < 4; ++k) {
-	  Int_t ca = fCaloCells->GetCellAmplitude(cellAbsId[k]);
-	  //fGeom->GetGlobal(cellAbsId[k], cellCoor);
-	  amp += ca;
-	  cmiCol += ca*(Double_t)i;
-	  cmiRow += ca*(Double_t)j;
-	}
-	// add the STU ADCs in the patch
-	if (!isOfflineSimple )
-	  adcAmp += fPatchADC[globCol+i][globRow+j];
-	else
-	  adcAmp += fPatchADCSimple[globCol+i][globRow+j];
-      }
-    } // 32x32 cell window
-  }
-	
-  if ((IsEGA( tBits ) && type == kTMEMCalGamma) || (IsLevel0(tBits) && type == kTMEMCalLevel0)) {
-    for (Int_t i = 0; i < 2; ++i){
-      for (Int_t j = 0; j < 2; ++j) {
-	// get the 4 cells composing the trigger channel
-	fGeom->GetAbsFastORIndexFromPositionInEMCAL(globCol+i, globRow+j, absId);
-	fGeom->GetCellIndexFromFastORIndex(absId, cellAbsId);
-	// add amplitudes and find patch edges
-	for (Int_t k = 0; k < 4; ++k) {
-	  Int_t ca = fCaloCells->GetCellAmplitude(cellAbsId[k]);
-	  //fGeom->GetGlobal( cellAbsId[k], cellCoor );
-	  amp += ca;
-	  cmiCol += ca*(Double_t)i;
-	  cmiRow += ca*(Double_t)j;
-	}
-	// add the STU ADCs in the patch
-	if (!isOfflineSimple)
-	  adcAmp += fPatchADC[globCol+i][globRow+j];
-	else
-	  adcAmp += fPatchADCSimple[globCol+i][globRow+j];
-      }
-    } // 4x4 cell window
+  int nfastor = (type == kTMEMCalJet) ? 16 : 2; // 32x32 cell window for L1 Jet trigger, 4x4 for L1 Gamma or L0 trigger
+  for (Int_t i = 0; i < nfastor; ++i) {
+    for (Int_t j = 0; j < nfastor; ++j) {
+	  // get the 4 cells composing the trigger channel
+	  fGeom->GetAbsFastORIndexFromPositionInEMCAL(globCol+i, globRow+j, absId);
+	  fGeom->GetCellIndexFromFastORIndex(absId, cellAbsId);
+	  // add amplitudes and find patch edges
+	  for (Int_t k = 0; k < 4; ++k) {
+	    Double_t ca = fCaloCells->GetCellAmplitude(cellAbsId[k]);
+	    //fGeom->GetGlobal(cellAbsId[k], cellCoor);
+	    amp += ca;
+	    cmiCol += ca*(Double_t)i;
+	    cmiRow += ca*(Double_t)j;
+	  }
+	  // add the STU ADCs in the patch (in case of L1) or the TRU Amplitude (in case of L0)
+	  if (!isOfflineSimple )
+	      if(type == kTMEMCalLevel0)
+	        adcAmp += static_cast<Int_t>(fPatchAmplitude[globCol+i][globRow+j]); // precision loss in case of global integer field
+	      else
+	        adcAmp += fPatchADC[globCol+i][globRow+j];
+	  else
+	    adcAmp += fPatchADCSimple[globCol+i][globRow+j];
+    }
   }
 
   if (amp == 0) {
@@ -639,4 +611,24 @@ Bool_t AliEmcalTriggerMaker::NextTrigger(Bool_t &isOfflineSimple)
     isOfflineSimple = kTRUE;
   }
   return loopContinue;
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
+  // Check from the level0 times if the trigger has fired at level0
+  Int_t nl0times(0);
+  Bool_t l0fired(kFALSE);
+  trg.GetNL0Times(nl0times);
+  if(nl0times){
+	TArrayI l0times(nl0times);
+  	trg.GetL0Times(l0times.GetArray());
+  	// Apply timing cut to see if a L0 has fired
+  	for(Int_t *l0timeIter = l0times.GetArray(); l0timeIter < l0times.GetArray() + l0times.GetSize(); l0timeIter++){
+  	  if(*l0timeIter > 7 && *l0timeIter < 10){
+  	    l0fired = kTRUE;
+  	    break;
+  	  }
+    }
+  }
+  return l0fired;
 }
