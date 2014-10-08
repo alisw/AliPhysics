@@ -177,7 +177,9 @@ void AliEventServerReconstruction::ReconstructionHandle()
 		if (status)
 		{
 			event = fAliReco->GetESDEvent();
+			cout<<"Event server -- sending event"<<endl;
 			eventManager->Send(event,EVENTS_SERVER_PUB);
+			cout<<"Event server -- sending event as xml"<<endl;
 			eventManager->SendAsXml(event,XML_PUB);
 		}
 		else
