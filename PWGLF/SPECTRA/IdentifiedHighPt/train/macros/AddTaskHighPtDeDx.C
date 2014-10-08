@@ -1,8 +1,9 @@
 /*
   Last update: 26/03/2012, vzero branch, in PbPb macro execute the vzero code, a bug was fixed 
+  New modifications: 08/10/2014 - more modularity 
 */
 
-AliAnalysisTaskHighPtDeDx* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, Float_t minc[], Float_t maxc[] )
+AliAnalysisTaskHighPtDeDx* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, Float_t minc, Float_t maxc )
 {
   // Creates a pid task and adds it to the analysis manager
   UInt_t kTriggerInt[2] = { AliVEvent::kMB, AliVEvent::kCentral + AliVEvent::kSemiCentral };
@@ -90,141 +91,23 @@ AliAnalysisTaskHighPtDeDx* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* ta
   
   AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");
   AliESDtrackCuts* esdTrackCutsTPC = 
-    AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   trackFilterTPC->AddCuts(esdTrackCutsTPC);
-
-
 
   // Create the task and configure it 
   //========================================================================
   if(typerun==2){//heavy ion analysis
-    
-    
-    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx[6];
-    for( Int_t i=0; i<6; ++i ){
-      taskHighPtDeDx[i]=0;
-      Char_t TaskName[256]={0};
-      sprintf(TaskName,"%s_%1.0f_%1.0f",taskname,minc[i],maxc[i]);
-      
-      taskHighPtDeDx[i] = new AliAnalysisTaskHighPtDeDx(TaskName);
-      TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-      taskHighPtDeDx[i]->SetAnalysisType(type);
-      taskHighPtDeDx[i]->SetAnalysisMC(AnalysisMC);
-      taskHighPtDeDx[i]->SetAnalysisPbPb(kTRUE);
-      taskHighPtDeDx[i]->SetProduceVZEROBranch(kTRUE);
-      taskHighPtDeDx[i]->SetProduceTPCBranch(kFALSE);
-      taskHighPtDeDx[i]->SetDebugLevel(0);
-      taskHighPtDeDx[i]->SetEtaCut(0.8);
-      taskHighPtDeDx[i]->SetVtxCut(10.0);
-      taskHighPtDeDx[i]->SetMinPt(0.0); // default 2.0
-      taskHighPtDeDx[i]->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
-      taskHighPtDeDx[i]->SetTreeOption(1);
-      taskHighPtDeDx[i]->SetTrigger1(kTriggerInt[0]);
-      taskHighPtDeDx[i]->SetTrigger2(kTriggerInt[1]);
-      taskHighPtDeDx[i]->SetMinCent(minc[i]);
-      taskHighPtDeDx[i]->SetMaxCent(maxc[i]);
-      //Set Filtesr
-      taskHighPtDeDx[i]->SetTrackFilterGolden(trackFilterGolden);
-      taskHighPtDeDx[i]->SetTrackFilter(trackFilter0);
-      taskHighPtDeDx[i]->SetTrackFilterTPC(trackFilterTPC);
-      
-      //V0's cuts
-      taskHighPtDeDx[i]->SetMassCut(0.1);         // def: 0.03
-      taskHighPtDeDx[i]->SetRequireRecV0(kTRUE); // def: kTRUE
-      //taskHighPtDeDx[i]->SetStoreMcIn(kFALSE);     // def: kFALSE
-      taskHighPtDeDx[i]->SetStoreMcIn(kTRUE);     // def: kFALSE
-
-      mgr->AddTask(taskHighPtDeDx[i]);
-      
-    }
-    
-    // Create ONLY the output containers for the data produced by the
-    // task.  Get and connect other common input/output containers via
-    // the manager as below
-    //=======================================================================
-    AliAnalysisDataContainer *cout_hist[6];
-    for( Int_t i=0; i<6; ++i ){
-      
-      cout_hist[i]=0;
-      Char_t outFileName[256]={0};
-      sprintf(outFileName,"%s_Tree_%1.0f_%1.0f.root",taskname,minc[i],maxc[i]);
-      //AliAnalysisDataContainer *cout_hist    = 0;
-      
-      cout_hist[i] = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc[i],maxc[i]), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
-      mgr->ConnectInput (taskHighPtDeDx[i], 0, mgr->GetCommonInputContainer());
-      mgr->ConnectOutput(taskHighPtDeDx[i], 1, cout_hist[i]);
-      
-    }  
-    
-    // Return task pointer at the end
-    return taskHighPtDeDx[0];
-  }
-  if(typerun==3){//pp analysis
-  
-    
-    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx = new AliAnalysisTaskHighPtDeDx("taskHighPtDeDxpp");
-    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-    taskHighPtDeDx->SetAnalysisType(type);
-    taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
-    taskHighPtDeDx->SetAnalysisPbPb(kFALSE);
-    taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
-    taskHighPtDeDx->SetProduceTPCBranch(kFALSE);
-    taskHighPtDeDx->SetDebugLevel(0);
-    taskHighPtDeDx->SetEtaCut(0.8);
-    taskHighPtDeDx->SetVtxCut(10.0);
-    taskHighPtDeDx->SetMinPt(0.0); // default 2.0
-    taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
-    taskHighPtDeDx->SetTreeOption(1);
-    taskHighPtDeDx->SetTrigger1(kTriggerInt[0]);
-    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
-    //Set Filtesr
-    taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
-    taskHighPtDeDx->SetTrackFilter(trackFilter0);
-    taskHighPtDeDx->SetTrackFilterTPC(trackFilterTPC);
-    //V0's cuts
-    taskHighPtDeDx->SetMassCut(0.1);         // def: 0.03
-    taskHighPtDeDx->SetRequireRecV0(kTRUE); // def: kTRUE
-    taskHighPtDeDx->SetStoreMcIn(kFALSE);     // def: kFALSE
-
-    mgr->AddTask(taskHighPtDeDx);
-      
-    // Create ONLY the output containers for the data produced by the
-    // task.  Get and connect other common input/output containers via
-    // the manager as below
-    //=======================================================================
-  
-    AliAnalysisDataContainer *cout_histdedx;
-
-    cout_histdedx=0;
-    Char_t outFileName[256]={0};
-    sprintf(outFileName,"%s_Tree.root",taskname);
-    //AliAnalysisDataContainer *cout_hist    = 0;
- 
-    cout_histdedx = mgr->CreateContainer("outputdedx", TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
-    mgr->ConnectInput (taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskHighPtDeDx, 1, cout_histdedx);
- 
-    // Return task pointer at the end
-    return taskHighPtDeDx;
-    
-
-    
-    
-    
-  }
-
-
-
- if(typerun==4){//pPb analysis
-   cout<<"<<<<<<<<<<<<<<<<<<<<<<<<<<                 Runing pPb    <<<<<<<<<<<<<<"<<endl;
-    
-    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx = new AliAnalysisTaskHighPtDeDx("taskHighPtDeDxpp");
+        
+    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx;
+    taskHighPtDeDx=0;
+    Char_t TaskName[256]={0};
+    sprintf(TaskName,"%s_%1.0f_%1.0f",taskname,minc,maxc);
+     
+    taskHighPtDeDx = new AliAnalysisTaskHighPtDeDx(TaskName);
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     taskHighPtDeDx->SetAnalysisType(type);
     taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
     taskHighPtDeDx->SetAnalysisPbPb(kTRUE);
-    taskHighPtDeDx->SetMinCent(-200);
-    taskHighPtDeDx->SetMaxCent(200);
     taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
     taskHighPtDeDx->SetProduceTPCBranch(kFALSE);
     taskHighPtDeDx->SetDebugLevel(0);
@@ -235,33 +118,37 @@ AliAnalysisTaskHighPtDeDx* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* ta
     taskHighPtDeDx->SetTreeOption(1);
     taskHighPtDeDx->SetTrigger1(kTriggerInt[0]);
     taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    taskHighPtDeDx->SetMinCent(minc);
+    taskHighPtDeDx->SetMaxCent(maxc);
     //Set Filtesr
     taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
     taskHighPtDeDx->SetTrackFilter(trackFilter0);
     taskHighPtDeDx->SetTrackFilterTPC(trackFilterTPC);
+     
     //V0's cuts
     taskHighPtDeDx->SetMassCut(0.1);         // def: 0.03
     taskHighPtDeDx->SetRequireRecV0(kTRUE); // def: kTRUE
     taskHighPtDeDx->SetStoreMcIn(kTRUE);     // def: kFALSE
 
     mgr->AddTask(taskHighPtDeDx);
-      
+    
     // Create ONLY the output containers for the data produced by the
     // task.  Get and connect other common input/output containers via
     // the manager as below
     //=======================================================================
-  
-    AliAnalysisDataContainer *cout_histdedx;
-
-    cout_histdedx=0;
-    Char_t outFileName[256]={0};
-    sprintf(outFileName,"%s_Tree.root",taskname);
-    //AliAnalysisDataContainer *cout_hist    = 0;
- 
-    cout_histdedx = mgr->CreateContainer("outputdedx", TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
+    AliAnalysisDataContainer *cout_hist;
+    cout_hist=0;
+    
+    TString outputFileName = AliAnalysisManager::GetCommonFileName();
+    
+    //Arrangements for subdirectories (not implemented yet) 
+    //outputFileName += ":PWGLF_StrVsMult";
+    //if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+     
+    cout_hist = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
     mgr->ConnectInput (taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskHighPtDeDx, 1, cout_histdedx);
- 
+    mgr->ConnectOutput(taskHighPtDeDx, 1, cout_hist);
+    
     // Return task pointer at the end
     return taskHighPtDeDx;
   }

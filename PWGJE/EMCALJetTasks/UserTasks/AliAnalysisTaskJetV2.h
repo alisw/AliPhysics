@@ -104,6 +104,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
                                                                                  fUserSuppliedV3 = j; }
         void                    SetOnTheFlyResCorrection(TH1F* r2, TH1F* r3)    {fUserSuppliedR2 = r2;
                                                                                  fUserSuppliedR3 = r3; }
+        void                    SetEventPlaneWeights(TH1F* ep)                  {fEventPlaneWeights = ep; }
         void                    SetNameRhoSmall(TString name)                   {fNameSmallRho = name; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit);
@@ -211,6 +212,14 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    FillJetHistograms(Double_t psi2);
         void                    FillQAHistograms(AliVTrack* vtrack) const;
         void                    FillQAHistograms(AliVEvent* vevent);
+        void                    FillWeightedTrackHistograms() const;
+        void                    FillWeightedClusterHistograms() const;
+        void                    FillWeightedEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
+        void                    FillWeightedRhoHistograms();
+        void                    FillWeightedDeltaPtHistograms(Double_t psi2) const; 
+        void                    FillWeightedJetHistograms(Double_t psi2);
+        void                    FillWeightedQAHistograms(AliVTrack* vtrack) const;
+        void                    FillWeightedQAHistograms(AliVEvent* vevent);
         void                    FillAnalysisSummaryHistogram() const;
         virtual void            Terminate(Option_t* option);
         // interface methods for the output file
@@ -239,6 +248,8 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
+        TH1F*                   fEventPlaneWeights;     // weight histo for the event plane
+        Float_t                 fEventPlaneWeight;      //! the actual weight of an event
         AliParticleContainer*   fTracksCont;            //! tracks
         AliClusterContainer*    fClusterCont;           //! cluster container
         AliJetContainer*        fJetsCont;              //! jets
