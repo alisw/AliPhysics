@@ -78,7 +78,8 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fOutMCParticlesMap(0),
   fMCLabelShift(0),
   fEsdMode(kFALSE),
-  fOutput(0)
+  fOutput(0),
+  fStackPartonInfo(0x0)
 {
   // Default constructor.
 
@@ -135,7 +136,8 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fOutMCParticlesMap(0),
   fMCLabelShift(0),
   fEsdMode(kFALSE),
-  fOutput(0)
+  fOutput(0),
+  fStackPartonInfo(0x0)
 {
   // Standard constructor.
 
@@ -218,9 +220,9 @@ void AliJetModelBaseTask::UserExec(Option_t *)
 
   if (fPtPhiEvPlDistribution || fAddV2)
     fPsi = gRandom->Rndm() * TMath::Pi();
-
+  
   Run();
-
+  
   if (fCaloCells && !fCopyArray) {
     delete fCaloCells;
     fCaloCells = tempCaloCells;
