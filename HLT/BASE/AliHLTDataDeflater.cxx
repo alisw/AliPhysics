@@ -327,6 +327,7 @@ int AliHLTDataDeflater::FillStatistics(int id, AliHLTUInt64_t value, unsigned le
       fHistograms->GetEntriesFast()<=id ||
       id<0) return 0;
 
+  if (value<(~(AliHLTUInt64_t)0)) {
   TObject* o=fHistograms->At(id);
   if (o) {
     TH1* h=dynamic_cast<TH1*>(o);
@@ -334,19 +335,20 @@ int AliHLTDataDeflater::FillStatistics(int id, AliHLTUInt64_t value, unsigned le
       h->Fill(value);
     }
   }
+  }
 
   if (!fParameterCompression) {
     int bins=fHistograms->GetEntriesFast();
     fParameterCompression=new TH2D("ParameterCompression", "ParameterCompression", bins, 0, bins, 1000, 0., 5.0);
   }
-  if (fParameterCompression) {
+  if (fParameterCompression && codingWeight>=.0) {
     fParameterCompression->Fill(id, codingWeight);
   }
   if (!fParameterSize) {
     int bins=fHistograms->GetEntriesFast();
     fParameterSize=new TH2D("ParameterSize", "ParameterSize", bins, 0, bins, 1000, 0., 64.0);
   }
-  if (fParameterSize) {
+  if (fParameterSize && length>0) {
     fParameterSize->Fill(id, length);
   }
 
