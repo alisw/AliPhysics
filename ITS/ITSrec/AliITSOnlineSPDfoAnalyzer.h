@@ -15,6 +15,7 @@ class THnSparse;
 class TObject;
 class TArrayI;
 class AliITSOnlineSPDfo;
+class AliITSOnlineSPDfoChip;
 class AliITSOnlineSPDfoInfo;
 
 class AliITSOnlineSPDfoAnalyzer {

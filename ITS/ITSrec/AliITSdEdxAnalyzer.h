@@ -21,6 +21,7 @@
 #include <TGraph.h>
 
 class AliESDEvent;
+class AliESDtrack;
 class AliStack;
 class AliLog;
 

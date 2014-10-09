@@ -20,7 +20,11 @@ set(MODULE ITSsim)
 include_directories(${CMAKE_SOURCE_DIR}/ITS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS} 
+include_directories(${ROOT_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/ITS/ITSbase
+                    ${CMAKE_SOURCE_DIR}/ITS/ITSrec
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
                     ${CMAKE_SOURCE_DIR}/STEER/CDB
                     ${CMAKE_SOURCE_DIR}/STEER/ESD
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
@@ -76,7 +80,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS CDB ESD STEERBase STEER Graf)
+set(LIBDEPS CDB ESD STEERBase STEER ITSbase ITSrec RAWDatabase RAWDatarec Graf)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 
