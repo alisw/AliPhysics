@@ -13,9 +13,17 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-add_subdirectory(ITSbase)
-add_subdirectory(ITSrec)
-add_subdirectory(ITSsim)
-add_subdirectory(UPGRADE)
+# Macros in alphabetical order
+set(MACRO_SRCS
+    AliITSUComparison.C
+    AliITSUComparisonCooked.C
+    AliITSUComparisonPileup.C
+    AliTPCUComparison.C
+    CheckPileupVerticesMC.C
+    check_radii.C
+    CMakeLists.txt
+    compClusHits.C
+    plotHits.C
+)
 
-message(STATUS "ITS enabled")
+install(FILES ${MACRO_SRCS} DESTINATION macros/ITS/UPGRADE/QA)

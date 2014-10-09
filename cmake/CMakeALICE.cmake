@@ -38,15 +38,14 @@ macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
 #    message(STATUS "LIBNAME = ${LIBNAME}")
 #    message(STATUS "LIBDEPS = ${LIBDEPS}")
 #    message(STATUS "LINKDEF = ${LINKDEF}")
-    
 #    message(STATUS "ROOT_LIBMAP=${ROOT_LIBMAP}")
     
     foreach(file ${LIBDEPS})
         get_filename_component(ext ${file} EXT)
         if(ext)
-            set(LOCAL_DEPS ${DEPENDENCIES} ${file})
+            set(LOCAL_DEPS ${LOCAL_DEPS} ${file})
         else()
-            set(LOCAL_DEPS ${DEPENDENCIES} lib${file}.so)
+            set(LOCAL_DEPS ${LOCAL_DEPS} lib${file}.so)
         endif()
     endforeach()
     

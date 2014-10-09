@@ -13,9 +13,17 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-add_subdirectory(ITSbase)
-add_subdirectory(ITSrec)
-add_subdirectory(ITSsim)
-add_subdirectory(UPGRADE)
+# Macros in alphabetical order
+set(MACRO_SRCS
+    Config_pileup.C
+    efficiency.C
+    FastVsSlowSim.C
+    PlotDoseExtrapolat.C
+    PlotOptimizeLenght.C
+    recGloCooked.C
+    ScanDigitsSuze02_v15.C
+    testTrackerCA.C
+    testTrackerCooked.C
+)
 
-message(STATUS "ITS enabled")
+install(FILES ${MACRO_SRCS} DESTINATION macros/ITS/UPGRADE)
