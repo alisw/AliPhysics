@@ -57,6 +57,9 @@ class AliAnalysisTaskToyModel : public TObject {
   void SetSigmaGaussEta(Double_t sigmaGaussEta){
     fSigmaGaussEta = sigmaGaussEta;
   }
+  void SetConstantEta(Double_t constantEta){
+    fConstantEta = constantEta;
+  }
   void SetFixPt(Double_t fixPt){
     fFixPt = fixPt;
   } 
@@ -225,6 +228,7 @@ class AliAnalysisTaskToyModel : public TObject {
   Double_t fEtaMin; //eta min for acceptance
   Double_t fEtaMax; //eta max for acceptance
   Double_t fSigmaGaussEta; //sigma for the Gaussian distribution of randomly produced particles (default = 4.0)
+  Double_t fConstantEta; //eta value for a constant distribution of particles, if -1. then Gauss is used (default = -1)
   Double_t fFixPt; //fixed pT for unidentified particles (default = -1., i.e. randomly produced pT from fPtSpectraAllCharges)
   Bool_t fFixedPositiveRatio; //fix ratio of produced positive to negative particles (dafult = kFALSE, i.e. randomly produced ratio)
   
