@@ -48,9 +48,9 @@ set ( SRCS
  EMCALJetTasks/AliJetModelMergeBranches.cxx
  EMCALJetTasks/AliJetRandomizerTask.cxx
  EMCALJetTasks/AliJetResponseMaker.cxx
- EMCALJetTasks/AliRhoParameter.cxx
- EMCALJetTasks/AliLocalRhoParameter.cxx
  EMCALJetTasks/AliJetTriggerSelectionTask.cxx
+ EMCALJetTasks/AliLocalRhoParameter.cxx
+ EMCALJetTasks/AliRhoParameter.cxx
  EMCALJetTasks/AliStackPartonInfo.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskCLQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskChargedJetsPA.cxx
@@ -66,11 +66,13 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMassBkg.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMassResponse.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMassStructure.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetPatchTriggerQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
@@ -83,7 +85,6 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassBase.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassScale.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
