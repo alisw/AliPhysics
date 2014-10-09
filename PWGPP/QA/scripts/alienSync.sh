@@ -559,6 +559,7 @@ parseConfig()
 
   #things that by default depend on other variables should be set here, after the dependencies
   [[ -z ${logOutputPath} ]] && logOutputPath="${localPathPrefix}/alienSyncLogs"
+  return 0
 }
 
 checkMD5sum()
