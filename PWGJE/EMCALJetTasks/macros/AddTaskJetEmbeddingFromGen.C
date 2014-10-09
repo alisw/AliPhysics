@@ -2,17 +2,17 @@
 
 AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   AliGenerator   *genGen,
-  const char     *tracksName   = "GenParticles",
-  const char     *partonInfoName = "PartonsInfo",
-  const char     *taskName     = "JetEmbeddingFromGenTask",
-  const Double_t  minPt        = 10,
-  const Double_t  maxPt        = 10,
-  const Double_t  minEta       = -0.9,
-  const Double_t  maxEta       = 0.9,
-  const Double_t  minPhi       = 0,
-  const Double_t  maxPhi       = TMath::Pi() * 2,
-  const Bool_t    copyArray    = kTRUE,
-  const Bool_t    drawQA       = kFALSE
+  const char     *tracksName     = "GenParticles",
+  const char     *taskName       = "JetEmbeddingFromGenTask",
+  const Double_t  minPt          = 10,
+  const Double_t  maxPt          = 10,
+  const Double_t  minEta         = -0.9,
+  const Double_t  maxEta         = 0.9,
+  const Double_t  minPhi         = 0,
+  const Double_t  maxPhi         = TMath::Pi() * 2,
+  const Bool_t    copyArray      = kTRUE,
+  const Bool_t    drawQA         = kFALSE,
+  const char     *partonInfoName = ""
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.

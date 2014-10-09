@@ -19,7 +19,7 @@ AliStackPartonInfo::AliStackPartonInfo() :
 //_______________________________________________
 
 AliStackPartonInfo::AliStackPartonInfo(const char* name) :
-  TNamed(),
+  TNamed(name,name),
   fPartonFlag6(0),
   fPartonPt6(0),
   fPartonEta6(0),
