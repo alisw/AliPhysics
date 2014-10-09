@@ -46,6 +46,7 @@
 #include "AliTRDtrackletWord.h"
 #include "AliTRDtrackletMCM.h"
 #include "AliTRDonlineTrackMatching.h"
+#include "AliTRDcalibDB.h"
 
 #define SETFLG(n,f) ((n) |= f)
 #define CLRFLG(n,f) ((n) &= ~f)
@@ -122,7 +123,9 @@ AliTRDReconstructor::~AliTRDReconstructor()
   //
   // Destructor
   //
-
+  AliTRDcalibDB* calib = AliTRDcalibDB::Instance();
+  if (calib) calib->Invalidate();
+  //
   if(fClusterizer){
     delete fClusterizer;
     fClusterizer = NULL;

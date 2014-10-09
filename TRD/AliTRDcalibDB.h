@@ -57,7 +57,6 @@ class AliTRDcalibDB : public TObject {
 
   static AliTRDcalibDB               *Instance();
   static void                         Terminate();
-  virtual                            ~AliTRDcalibDB();
   void                                SetRun(Long64_t run);
   Long64_t                            GetRun() const { return fRun; }
 
@@ -139,12 +138,13 @@ class AliTRDcalibDB : public TObject {
   void                                GetTrapConfig(TString &name, TString &version) { name = fTrapConfigName; version = fTrapConfigVersion; }
   void                                SetTrapConfig(const TString name, const TString version) { fTrapConfigName = name; fTrapConfigVersion = version; }
   void                                SetTrapConfig(AliTRDtrapConfig *trapcfg) { fTrapConfig = trapcfg; }
+  void                                Invalidate();
 
  protected:
 
   AliTRDtrapConfig*                   LoadTrapConfig(const TString &name = "", const TString &version = "");
   Int_t                               GetNumberOfTimeBinsDCSBoard(); // Old method as fallback for patched OCDB 
-
+  virtual                            ~AliTRDcalibDB();
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
   enum { kIDVdriftPad = 0
        , kIDVdriftChamber
@@ -176,7 +176,6 @@ class AliTRDcalibDB : public TObject {
 
   const TObject *GetCachedCDBObject(Int_t id);
   
-  void           Invalidate();
   void           SamplePRF();
   
   AliCDBEntry   *GetCDBEntry(const Char_t *cdbPath);
