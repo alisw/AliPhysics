@@ -214,8 +214,13 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, bgTracks, bgTracks, tracksClone, tracksClone, 1.0 / (2*nMix), kFALSE, kFALSE);
       }
 
+      //1plus1 mixed event
+      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixed1plus1, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / (2*nMix), kTRUE, kFALSE);
+      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixed1plus1, bgTracks, bgTracks, tracksClone, tracksClone, 1.0 / (2*nMix), kTRUE, kFALSE);
+
       //mixed combinatorics
-      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / nMix, kFALSE, kFALSE);
+      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / (2*nMix), kFALSE, kFALSE);
+      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / (2*nMix), kFALSE, kFALSE);
     }
     
     

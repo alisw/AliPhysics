@@ -43,6 +43,17 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   virtual void            SetEventMixing(Int_t yesno)              { fDoEventMixing=yesno;}
   virtual void            SetMixingTracks(Int_t tracks)            { fMixingTracks = tracks; }
 
+  // event trigger/mixed selection - setters
+  virtual void            SetTrigType(UInt_t te)       { fTriggerEventType = te; }
+  virtual void            SetMixType(UInt_t me)        { fMixingEventType = me; }
+  virtual void            SetNMixedTracks(Int_t nmt)   { fNMIXtracks = nmt; }
+  virtual void            SetNMixedEvents(Int_t nme)   { fNMIXevents = nme; }
+
+  // switch to cut out some unneeded sparse axis
+  void                    SetDoLessSparseAxes(Bool_t dlsa) { fDoLessSparseAxes = dlsa; }
+  void                    SetDoWiderTrackBin(Bool_t wtrbin) { fDoWiderTrackBin = wtrbin; }
+
+  virtual void            SetCentBinSize(Bool_t centbins) { fCentBinSize = centbins; }
 
  protected:
   void					 ExecOnce();
@@ -63,7 +74,18 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   Double_t               fTrkEta;                  // eta min/max of tracks
   Int_t                  fDoEventMixing;           // flag to do evt mixing
   Int_t  		         fMixingTracks;		       // size of track buffer for event mixing
+  Int_t                  fNMIXtracks;              // threshold to use event pool # tracks
+  Int_t                  fNMIXevents;              // threshold to use event pool # events
   TObjArray*             CloneAndReduceTrackList(TObjArray* tracks);
+
+  // event selection types
+  UInt_t         fTriggerEventType;
+  UInt_t         fMixingEventType;
+
+  Bool_t         fDoLessSparseAxes;
+  Bool_t         fDoWiderTrackBin;
+
+  UInt_t         fCentBinSize;
 
   AliESDEvent           *fESD;    //! ESD object
   AliAODEvent			*fAOD;    //! AOD object
