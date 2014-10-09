@@ -93,6 +93,20 @@
 /* strict control...                                                    */
 #define EVENT_HEAD_BASE_SIZE 80
 
+// DATE datatypes
+#ifndef long32
+#define  long32 int
+#endif
+
+#ifndef long64
+#define long64 long long
+#endif
+
+#ifndef datePointer
+#define datePointer long
+#endif
+
+
 /* ---------- Event size ---------- */
 typedef unsigned long32 eventSizeType;
 
