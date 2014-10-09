@@ -6,6 +6,9 @@
 #    (the local chache location and paths can be manipulated.)
 #  - needs a configured config file (by default alienSync.config)
 #    and a working alien environment (token and at least $ALIEN_DIR or $ALIEN_ROOT set)
+#  - can be also used without a config file
+#  
+# run the script without argument to see the examples
 #
 #  origin: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 #
