@@ -854,12 +854,21 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
     
     // Here we want to add some of the MC histograms!
     
+    Bool_t lIsStrangeness = kFALSE; 
+    if ( TMath::Abs(pdgCode)==310 || TMath::Abs(pdgCode)==3122 || TMath::Abs(pdgCode)==3312 || TMath::Abs(pdgCode)==3334 ) lIsStrangeness = kTRUE; 
+    
     // And therefore we first cut here!
-    if (trackMC->Pt() < fMinPt) {
-      
+    if (trackMC->Pt() < fMinPt && !lIsStrangeness) {
       // Keep small fraction of low pT tracks
-      if(fRandom->Rndm() > fLowPtFraction)
-	continue;
+      if(fRandom->Rndm() > fLowPtFraction)	continue; 
+    } // else {
+    // Here we want to add the high pt part of the MC histograms!
+    //    }
+    
+    // And therefore we first cut here!
+    if (trackMC->Pt() < fMinPtV0 && lIsStrangeness) {
+      // Keep small fraction of low pT tracks
+      if(fRandom->Rndm() > fLowPtFraction)	continue; 
     } // else {
     // Here we want to add the high pt part of the MC histograms!
     //    }
@@ -936,16 +945,26 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
  
  
     // Here we want to add some of the MC histograms!
-    
+        
+    Bool_t lIsStrangeness = kFALSE; 
+    if ( TMath::Abs(pdgCode)==310 || TMath::Abs(pdgCode)==3122 || TMath::Abs(pdgCode)==3312 || TMath::Abs(pdgCode)==3334 ) lIsStrangeness = kTRUE; 
+
     // And therefore we first cut here!
-    if (trackMC->Pt() < fMinPt) {
-      
+    if (trackMC->Pt() < fMinPt && !lIsStrangeness) {
       // Keep small fraction of low pT tracks
-      if(fRandom->Rndm() > fLowPtFraction)
-	continue;
+      if(fRandom->Rndm() > fLowPtFraction)	continue; 
     } // else {
     // Here we want to add the high pt part of the MC histograms!
     //    }
+    
+    // And therefore we first cut here!
+    if (trackMC->Pt() < fMinPtV0 && lIsStrangeness) {
+      // Keep small fraction of low pT tracks
+      if(fRandom->Rndm() > fLowPtFraction)	continue; 
+    } // else {
+    // Here we want to add the high pt part of the MC histograms!
+    //    }
+    
     //cout << " debug 36 " << endl;
  
     //cout << "fTreeOption " << fTreeOption << endl;
