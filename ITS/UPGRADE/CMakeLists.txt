@@ -19,7 +19,10 @@ add_subdirectory(ITSUpgradeRec)
 add_subdirectory(ITSUpgradeSim)
 
 # Macros
-add_subdirectory(macros)
-add_subdirectory(macros/QA)
+# Do not forget the ending / from macros/
+# The / will point to install the content of the folder to 
+# macros/ITS/UPGRADE Without the / it will create a new folder 
+# macros/ITS/UPGRADE/macros
+install(DIRECTORY macros/ DESTINATION macros/ITS/UPGRADE)
 
 message(STATUS "ITS UPGRADE enabled")

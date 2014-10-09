@@ -20,4 +20,11 @@ add_subdirectory (AOD)
 add_subdirectory (CDB)
 add_subdirectory (STEER)
 
+# Macros
+# Do not forget the ending / from macros/
+# The / will point to install the content of the folder to 
+# macros/STEER Without the / it will create a new folder 
+# macros/STEER/macros
+install(DIRECTORY macros/ DESTINATION macros/STEER)
+
 message(STATUS "STEER enabled")

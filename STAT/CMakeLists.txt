@@ -64,4 +64,11 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
+# Macros
+# Do not forget the ending / from macros/
+# The / will point to install the content of the folder to 
+# macros/STAT Without the / it will create a new folder 
+# macros/STAT/Macros
+install(DIRECTORY Macros/ DESTINATION macros/STAT)
+
 message(STATUS "${MODULE} enabled")
