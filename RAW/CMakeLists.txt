@@ -14,9 +14,14 @@
 # **************************************************************************
 
 # include the libraries
-add_subdirectory (RAWDatabase)
-add_subdirectory (RAWDatarec)
-add_subdirectory (RAWDatasim)
-add_subdirectory (RAWDatarecOnline)
-add_subdirectory (MDC)
-add_subdirectory (alirawdump)
+add_subdirectory(RAWDatabase)
+add_subdirectory(RAWDatarec)
+add_subdirectory(RAWDatasim)
+add_subdirectory(RAWDatarecOnline)
+add_subdirectory(MDC)
+add_subdirectory(alirawdump)
+add_subdirectory(alimdc)
+
+if(DATE_FOUND)
+    add_subdirectory(dateStream)
+endif(DATE_FOUND)

@@ -55,7 +55,11 @@
 #pragma link C++ class  AliITSGainSSDv2+;
 #pragma link C++ class  AliITSNoiseSSD+;
 #pragma link C++ class  AliITSNoiseSSDv2+;
+
+#ifdef ALI_DATE
 #pragma link C++ class  AliITSHandleDaSSD+;
+#endif
+
 #pragma link C++ class  AliITSModuleDaSSD+;
 #pragma link C++ class  AliITSChannelDaSSD+;
 #pragma link C++ class  AliITSpList+;

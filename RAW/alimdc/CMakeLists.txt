@@ -19,9 +19,11 @@ include_directories(${CMAKE_SOURCE_DIR}/${MODULE})
 
 # Aditional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS} 
-                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${CMAKE_SOURCE_DIR}/RAW/MDC
                     ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
                     ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
+                    ${CMAKE_SOURCE_DIR}/STEER/ESD
+                    ${CMAKE_SOURCE_DIR}/STEER/STEERBase
                    )
 
 link_directories(${ROOT_LIBDIR})
@@ -31,7 +33,7 @@ set(ROOTEXTRALIBS Geom VMC Minuit)
 
 # Add an executable to the project using the specified source files
 add_executable(${MODULE} alimdc_main.cxx)
-target_link_libraries(${MODULE} STEERBase RAWDatabase ${ROOTEXTRALIBS} ${ROOT_LIBRARIES})
+target_link_libraries(${MODULE} STEERBase MDC RAWDatabase RAWDatarec ESD  ${ROOTEXTRALIBS} ${ROOT_LIBRARIES})
 
 # Installation
 install(TARGETS ${MODULE} RUNTIME DESTINATION bin)

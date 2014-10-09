@@ -46,6 +46,9 @@ else()
     message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
 endif(ROOTSYS)
 
+# DATE
+find_package(DATE)
+
 # Configure ARVerion.h using Git informatiion
 # Sets 3 git variables
 #  - GIT_REFSPEC - complete name of the current reference
@@ -118,7 +121,7 @@ add_subdirectory (STAT)
 add_subdirectory (OADB)
 add_subdirectory (ANALYSIS)
 add_subdirectory (RAW)
-#add_subdirectory (ITS)
+add_subdirectory (ITS)
 #add_subdirectory (TPC)
 #add_subdirectory (VZERO)
 #add_subdirectory (T0)

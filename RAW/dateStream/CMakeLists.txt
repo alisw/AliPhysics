@@ -32,7 +32,7 @@ link_directories(${ROOT_LIBDIR})
 set(ROOTEXTRALIBS Geom VMC Minuit)
 
 # Add an executable to the project using the specified source files
-add_executable(${MODULE} alimdc_main.cxx)
+add_executable(${MODULE} dateStream.cxx)
 target_link_libraries(${MODULE} STEERBase RAWDatabase ${ROOTEXTRALIBS} ${ROOT_LIBRARIES})
 
 # Installation
