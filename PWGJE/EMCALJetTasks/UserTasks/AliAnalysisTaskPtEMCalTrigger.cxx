@@ -184,17 +184,26 @@ namespace EMCalTriggerPtAnalysis {
 		DefineAxis(hclusteraxes[3], "mbtrigger", "Has MB trigger", 2, -0.5, 1.5);
 		const TAxis *clusteraxes[4];
 		for(int iaxis = 0; iaxis < 4; ++iaxis) clusteraxes[iaxis] = hclusteraxes + iaxis;
-		TAxis hpatchaxes[3];
-		DefineAxis(hpatchaxes[0], "energy", "Patch energy (GeV)", 100, 0., 100.);
-		DefineAxis(hpatchaxes[1], "eta", "#eta", etabinning);
-		DefineAxis(hpatchaxes[2], "phi", "#phi",  20, 0, 2 * TMath::Pi());
-		const TAxis *patchaxes[3];
-		for(int iaxis = 0; iaxis < 3; ++iaxis) patchaxes[iaxis] = hpatchaxes + iaxis;
+		TAxis hpatchenergyaxes[4];
+		DefineAxis(hpatchenergyaxes[0], "energy", "Patch energy (GeV)", 100, 0., 100.);
+		DefineAxis(hpatchenergyaxes[1], "eta", "#eta", etabinning);
+		DefineAxis(hpatchenergyaxes[2], "phi", "#phi",  20, 0, 2 * TMath::Pi());
+		DefineAxis(hpatchenergyaxes[3], "isMain", "Main trigger", 2, -0.5, 1.5);
+		const TAxis *patchenergyaxes[4];
+		for(int iaxis = 0; iaxis < 4; ++iaxis) patchenergyaxes[iaxis] = hpatchenergyaxes + iaxis;
+    TAxis hpatchampaxes[4];
+    DefineAxis(hpatchampaxes[0], "amplitude", "Patch energy (GeV)", 2000, 0., 2000.);
+    DefineAxis(hpatchampaxes[1], "eta", "#eta", etabinning);
+    DefineAxis(hpatchampaxes[2], "phi", "#phi",  20, 0, 2 * TMath::Pi());
+    DefineAxis(hpatchampaxes[3], "isMain", "Main trigger", 2, -0.5, 1.5);
+    const TAxis *patchampaxes[4];
+    for(int iaxis = 0; iaxis < 4; ++iaxis) patchampaxes[iaxis] = hpatchampaxes + iaxis;
 		try{
 			std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
 			for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
-				fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 3, patchaxes);
-				fHistos->CreateTHnSparse(Form("EnergyMain%s", triggerpatch->c_str()), Form("Patch energy for main %s trigger patches", triggerpatch->c_str()), 3, patchaxes);
+				fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes);
+        fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes);
+				fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 4, patchampaxes);
 			}
 
 			// Create histogram for MC-truth
@@ -253,31 +262,33 @@ namespace EMCalTriggerPtAnalysis {
 		AliEmcalTriggerPatchInfo *triggerpatch(NULL);
 		TIter patchIter(this->fTriggerPatchInfo);
 		while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
-			double triggerpatchinfo[3] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaCM(), triggerpatch->GetPhiCM()};
+			double triggerpatchinfo[4] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1 : 0};
+      double triggerpatchinfoamp[4] = {triggerpatch->GetADCAmp(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1 : 0};
+      double triggerpatchinfoer[4] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1 : 0};
 			if(triggerpatch->IsJetHigh()){
 				fHistos->FillTHnSparse("EnergyJetHigh", triggerpatchinfo);
-				if(triggerpatch->IsMainTrigger())
-					fHistos->FillTHnSparse("EnergyMainJetHigh", triggerpatchinfo);
+				fHistos->FillTHnSparse("AmplitudeJetHigh", triggerpatchinfoamp);
+				fHistos->FillTHnSparse("EnergyRoughJetHigh", triggerpatchinfoer);
 			}
 			if(triggerpatch->IsJetLow()){
 				fHistos->FillTHnSparse("EnergyJetLow", triggerpatchinfo);
-				if(triggerpatch->IsMainTrigger())
-					fHistos->FillTHnSparse("EnergyMainJetLow", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeJetLow", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughJetLow", triggerpatchinfoer);
 			}
 			if(triggerpatch->IsGammaHigh()){
 				fHistos->FillTHnSparse("EnergyGammaHigh", triggerpatchinfo);
-				if(triggerpatch->IsMainTrigger())
-					fHistos->FillTHnSparse("EnergyMainGammaHigh", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeGammaHigh", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughGammaHigh", triggerpatchinfoer);
 			}
 			if(triggerpatch->IsGammaLow()){
 				fHistos->FillTHnSparse("EnergyGammaLow", triggerpatchinfo);
-				if(triggerpatch->IsMainTrigger())
-					fHistos->FillTHnSparse("EnergyMainGammaLow", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeGammaLow", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughGammaLow", triggerpatchinfoer);
 			}
 			if(triggerpatch->IsLevel0()){
 				fHistos->FillTHnSparse("EnergyLevel0", triggerpatchinfo);
-				if(triggerpatch->IsMainTrigger())
-					fHistos->FillTHnSparse("EnergyMainLevel0", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeLevel0", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughLevel0", triggerpatchinfoer);
 			}
 		}
 

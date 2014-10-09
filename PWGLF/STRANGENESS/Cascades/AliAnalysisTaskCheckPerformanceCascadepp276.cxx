@@ -1317,11 +1317,12 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      fCFContAsCascadeCuts = new AliCFContainer(Form("fCFContAsCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),"Cut Container for Asso. Cascades", lNbSteps, lNbVariables, lNbBinsPerVar );
        //Setting the bin limits 
        //0 - DcaCascDaughters
-     Double_t *lBinLim0 = new Double_t[ lNbBinsPerVar[0]+1 ];
-     for(Int_t i=0; i<lNbBinsPerVar[0]; i++) lBinLim0[i] = (Double_t)0.0 + (2.4 -0.0)/(lNbBinsPerVar[0] - 1) * (Double_t)i;
-     lBinLim0[ lNbBinsPerVar[0] ] = 3.0;
-     fCFContAsCascadeCuts -> SetBinLimits(0, lBinLim0);
-     delete[] lBinLim0;
+     //Double_t *lBinLim0 = new Double_t[ lNbBinsPerVar[0]+1 ];
+     //for(Int_t i=0; i<lNbBinsPerVar[0]; i++) lBinLim0[i] = (Double_t)0.0 + (2.4 -0.0)/(lNbBinsPerVar[0] - 1) * (Double_t)i;
+     //lBinLim0[ lNbBinsPerVar[0] ] = 3.0;
+     //fCFContAsCascadeCuts -> SetBinLimits(0, lBinLim0);
+     //delete[] lBinLim0;
+     fCFContAsCascadeCuts->SetBinLimits(0,0.0,2.5);
        //1 - DcaBachToPrimVertex
      Double_t *lBinLim1 = new Double_t[ lNbBinsPerVar[1]+1 ];
      for(Int_t i=0; i<lNbBinsPerVar[1]; i++) lBinLim1[i] = (Double_t)0.0 + (0.24 - 0.0)/(lNbBinsPerVar[1] - 1) * (Double_t)i;

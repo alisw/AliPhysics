@@ -117,13 +117,16 @@ void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
   if (!fEventCuts) AliFatal("Event Cuts should be set in the steering macro");
     
   // binning common to all the THn
-  const Double_t ptBins[] = {0.15,5.,10.,15.,20.,25.,30.,35.,40.,50.,75.,100.,150.,200.};
-  const Int_t nptBins=13;
+  const Double_t ptBins[] = {0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,50.,60.,70.,80.,100.,150.,200.};
+  const Int_t nptBins=16;
+  
+  const Double_t ptBins2[] = {-50.,-40.,-35.,-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,50.,60.,70.,80.,100.,150.,200.};
+  const Int_t nptBins2=25;
   
   //dimensions of THnSparse for jets
   const Int_t nvarjet=6;
   //                                        pt_raw    pt_corr           cent             Q vec            rho          pt_lead
-  Int_t    binsHistRealJet[nvarjet] = {    nptBins,   nptBins,       fnCentBins,      fnQvecBins,          40,     fnptLeadBins};
+  Int_t    binsHistRealJet[nvarjet] = {    nptBins,   nptBins2,       fnCentBins,      fnQvecBins,         100,     fnptLeadBins};
   Double_t xminHistRealJet[nvarjet] = {         0.,        0.,             0.,                0.,           0.,              0.};
   Double_t xmaxHistRealJet[nvarjet] = {       200.,      200.,           100.,     fQvecUpperLim,         200.,             20.};    
   THnSparseF* NSparseHistJet = new THnSparseF("NSparseHistJet","NSparseHistJet",nvarjet,binsHistRealJet,xminHistRealJet,xmaxHistRealJet);
@@ -132,7 +135,7 @@ void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
   NSparseHistJet->SetBinEdges(0,ptBins);
   NSparseHistJet->GetAxis(1)->SetTitle("#it{p}_{T,corr}");
   NSparseHistJet->GetAxis(1)->SetName("pT_corr");
-  NSparseHistJet->SetBinEdges(1,ptBins);
+  NSparseHistJet->SetBinEdges(1,ptBins2);
   NSparseHistJet->GetAxis(2)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistJet->GetAxis(2)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistJet->GetAxis(3)->SetTitle("Q vec");
@@ -146,7 +149,7 @@ void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
   //dimensions of THnSparse for the normalization
   const Int_t nvarev=3;
   //                                             cent         Q vec         rho
-  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,       40 };
+  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,      100 };
   Double_t xminHistRealEv[nvarev] = {           0.,               0.,        0.};
   Double_t xmaxHistRealEv[nvarev] = {         100.,      fQvecUpperLim,    200.};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
@@ -301,7 +304,7 @@ void AliAnalysisTaskJetSpectraAOD::UserExec(Option_t *)
   Float_t rho = 0;
   if(externalBackground)rho = externalBackground->GetBackground(0);  //default schema
   
-  // fetch jets
+  // fetch jets 
   TClonesArray *aodJets = dynamic_cast<TClonesArray*>(fAODJets->FindListObject(fJetBranchName.Data()));
   if(!aodJets){
     AliError(Form("no jet branch \"%s\" found, in the AODs are:", fJetBranchName.Data()));
