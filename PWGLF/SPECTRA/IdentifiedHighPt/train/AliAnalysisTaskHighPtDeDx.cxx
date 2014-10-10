@@ -124,6 +124,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fVZEROArray(0x0),
   fVtxCut(10.0),  
   fEtaCut(0.9),  
+  fEtaCutStack(1.4),  
   fMinPt(0.1),
   fMinPtV0(0.1),
   fMinCent(0.0),
@@ -181,7 +182,8 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fTrackArrayMC(0x0),
   fVZEROArray(0x0),
   fVtxCut(10.0),  
-  fEtaCut(0.9),  
+  fEtaCut(0.9),
+  fEtaCutStack(1.4),    
   fMinPt(0.1),
   fMinPtV0(0.1),
   fMinCent(0.0),
@@ -836,7 +838,7 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
     Double_t chargeMC = pdgPart->Charge();
 
     
-    if (TMath::Abs(trackMC->Eta()) > 2.4 )
+    if (TMath::Abs(trackMC->Eta()) > fEtaCutStack )
       continue;
     
     trackmult++;
@@ -925,7 +927,7 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
     Double_t chargeMC = trackMC->Charge();
 
     
-    if (TMath::Abs(trackMC->Eta()) > 2.4 )
+    if (TMath::Abs(trackMC->Eta()) > fEtaCutStack )
       continue;
     //cout << " debug 34 " << endl;
     trackmult++;
