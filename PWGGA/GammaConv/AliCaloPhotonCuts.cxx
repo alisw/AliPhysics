@@ -135,7 +135,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
     //fHistNLMAfterQA(NULL),
     fHistClusterRBeforeQA(NULL),
     fHistClusterRAfterQA(NULL),
-    fHistClusterdEtadPhiBeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksBeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksBeforeQA(NULL),
     fHistClusterdEtadPhiAfterQA(NULL),
     fHistDistanceTrackToClusterBeforeQA(NULL),
     fHistDistanceTrackToClusterAfterQA(NULL)
@@ -206,7 +207,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
     //fHistNLMAfterQA(NULL),
     fHistClusterRBeforeQA(NULL),
     fHistClusterRAfterQA(NULL),
-    fHistClusterdEtadPhiBeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksBeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksBeforeQA(NULL),
     fHistClusterdEtadPhiAfterQA(NULL),
     fHistDistanceTrackToClusterBeforeQA(NULL),
     fHistDistanceTrackToClusterAfterQA(NULL)
@@ -330,14 +332,15 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     //fHistograms->Add(fHistNLMAfterQA);
 
     //TrackMatching histograms
-    if(fUseDistTrackToCluster)
-    {
+    if(fUseDistTrackToCluster) {
         fHistClusterRBeforeQA = new TH1F(Form("R_Cluster_beforeClusterQA %s",GetCutNumber().Data()),"R of cluster",200,400,500);
         fHistograms->Add(fHistClusterRBeforeQA);
         fHistClusterRAfterQA = new TH1F(Form("R_Cluster_afterClusterQA %s",GetCutNumber().Data()),"R of cluster_matched",200,400,500);
         fHistograms->Add(fHistClusterRAfterQA);
-        fHistClusterdEtadPhiBeforeQA=new TH2F(Form("dEtaVsdPhi_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
-        fHistograms->Add(fHistClusterdEtadPhiBeforeQA);
+        fHistClusterdEtadPhiPosTracksBeforeQA=new TH2F(Form("dEtaVsdPhi_posTracks_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
+        fHistograms->Add(fHistClusterdEtadPhiPosTracksBeforeQA);
+		fHistClusterdEtadPhiNegTracksBeforeQA=new TH2F(Form("dEtaVsdPhi_negTracks_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
+        fHistograms->Add(fHistClusterdEtadPhiNegTracksBeforeQA);
         fHistClusterdEtadPhiAfterQA=new TH2F(Form("dEtaVsdPhi_afterClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_afterClusterQA",240,-0.3,0.3,240,-0.3,0.3);
         fHistograms->Add(fHistClusterdEtadPhiAfterQA);
         fHistDistanceTrackToClusterBeforeQA = new TH1F(Form("DistanceToTrack_beforeClusterQA %s",GetCutNumber().Data()),"DistanceToTrack_beforeClusterQA",200,0,2);
@@ -643,8 +646,8 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event)
 	cutIndex++;
 
 	
-	Double_t vertex[3] = {0};
-	event->GetPrimaryVertex()->GetXYZ(vertex);
+	Double_t vertex[3] = {0,0,0};
+// 	event->GetPrimaryVertex()->GetXYZ(vertex);
 	// TLorentzvector with cluster
 	TLorentzVector clusterVector;
 	cluster->GetMomentum(clusterVector,vertex);
@@ -782,14 +785,14 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 		if (propagated){
 			Float_t dR2 = dPhi*dPhi + dEta*dEta;
 			if (fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2));
-			if (fHistClusterdEtadPhiBeforeQA) fHistClusterdEtadPhiBeforeQA->Fill(dEta, dPhi);
+			if (fHistClusterdEtadPhiPosTracksBeforeQA && inTrack->Charge()< 0) fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi);
+			if (fHistClusterdEtadPhiNegTracksBeforeQA && inTrack->Charge()> 0) fHistClusterdEtadPhiNegTracksBeforeQA->Fill(dEta, dPhi);
 			if(dR2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
 				matched = kTRUE;
 				if (fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2));
 				if (fHistClusterdEtadPhiAfterQA) fHistClusterdEtadPhiAfterQA->Fill(dEta, dPhi);
 				if (fHistClusterRAfterQA) fHistClusterRAfterQA->Fill(clusterR);
 			}
-
 		}
 		delete trackParam;
 	}

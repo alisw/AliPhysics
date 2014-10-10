@@ -189,7 +189,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 // 		TH1F* fHistNLMAfterQA;						// number of local maxima in cluster after cluster quality cuts
 		TH1F* fHistClusterRBeforeQA;				// cluster position in R=SQRT(x^2+y^2) (before QA)
 		TH1F* fHistClusterRAfterQA;					// cluster position in R=SQRT(x^2+y^2) for matched tracks (After QA)
-		TH2F* fHistClusterdEtadPhiBeforeQA;			// 2-dim plot dEta vs. dPhi
+		TH2F* fHistClusterdEtadPhiPosTracksBeforeQA;			// 2-dim plot dEta vs. dPhi
+		TH2F* fHistClusterdEtadPhiNegTracksBeforeQA;			// 2-dim plot dEta vs. dPhi
 		TH2F* fHistClusterdEtadPhiAfterQA;			// 2-dim plot dEta vs. dPhi for matched tracks (after QA)
 		TH1F* fHistDistanceTrackToClusterBeforeQA;	// distance cluster to track before acceptance cuts
 		TH1F* fHistDistanceTrackToClusterAfterQA;	// distance cluster to track after cluster quality cuts				
