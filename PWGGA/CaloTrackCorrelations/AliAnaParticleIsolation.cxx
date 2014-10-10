@@ -70,6 +70,7 @@ fFillNLMHistograms(0),
 fLeadingOnly(0),                  fCheckLeadingWithNeutralClusters(0),
 fSelectPrimariesInCone(0),        fMakePrimaryPi0DecayStudy(0),
 fFillBackgroundBinHistograms(0),  fNBkgBin(0),
+fFillPtTrigBinSSHistograms(0),    fNPtTrigBin(0),
 fMinCellsAngleOverlap(0),
 // Several IC
 fNCones(0),                       fNPtThresFrac(0),
@@ -152,6 +153,9 @@ fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap(0),
 fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE(0),
 fhPtPrimMCPi0DecayIsoPairNoOverlap(0),
 fhPtPrimMCPi0Overlap(0),                    fhPtPrimMCPi0IsoOverlap(0),
+fhPtLeadConeBin(0),                         fhSumPtConeBin(0),
+fhPtLeadConeBinMC(0),                       fhSumPtConeBinMC(0),
+fhPtLeadConeBinDecay(0),                    fhSumPtConeBinDecay(0),
 fhPtLeadConeBinLambda0(0),                  fhSumPtConeBinLambda0(0),
 fhPtLeadConeBinLambda0MC(0),                fhSumPtConeBinLambda0MC(0),
 // Number of local maxima in cluster
@@ -1210,8 +1214,34 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     if( GetDebug() > 1 && ptsumBin  >=0 ) printf("\t Sum bin %d [%2.2f,%2.2f]\n" , ptsumBin ,fBkgBinLimit[ptsumBin] ,fBkgBinLimit[ptsumBin +1]);
     if( GetDebug() > 1 && leadptBin >=0 ) printf("\t Lead bin %d [%2.2f,%2.2f]\n", leadptBin,fBkgBinLimit[leadptBin],fBkgBinLimit[leadptBin+1]);
     
-    if( leadptBin >=0 ) fhPtLeadConeBinLambda0[leadptBin]->Fill(pt,m02);
-    if( ptsumBin  >=0 ) fhSumPtConeBinLambda0 [ ptsumBin]->Fill(pt,m02);
+    if( leadptBin >=0 )
+    {
+      fhPtLeadConeBin[leadptBin]->Fill(pt);
+      if(fFillSSHisto) fhPtLeadConeBinLambda0[leadptBin]->Fill(pt,m02);
+    }
+    
+    if( ptsumBin  >=0 )
+    {
+      fhSumPtConeBin[ptsumBin]->Fill(pt);
+      if(fFillSSHisto) fhSumPtConeBinLambda0[ptsumBin]->Fill(pt,m02);
+    }
+    
+    // Check if it was a decay
+    if(fFillTaggedDecayHistograms)
+    {
+      Int_t decayTag = pCandidate->GetBtag(); // temporary
+      if(decayTag < 0) decayTag = 0;    // temporary
+      for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
+      {
+        if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
+        {
+          Int_t leadptBinDecay = leadptBin+ibit*fNBkgBin;
+          Int_t  ptsumBinDecay =  ptsumBin+ibit*fNBkgBin;
+          if( leadptBin >=0 ) fhPtLeadConeBinDecay[leadptBinDecay]->Fill(pt);
+          if( ptsumBin  >=0 ) fhSumPtConeBinDecay [ ptsumBinDecay]->Fill(pt);
+        }
+      }
+    }
     
     if( GetDebug() > 1 && leadptBin == 0 )
       printf("No track/clusters in isolation cone: cand pt %2.2f GeV/c, track multiplicity %d, N clusters %d\n",
@@ -1221,14 +1251,35 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     {
       Int_t leadptBinMC = leadptBin+mcIndex*fNBkgBin;
       Int_t  ptsumBinMC =  ptsumBin+mcIndex*fNBkgBin;
-      if( leadptBin >=0 ) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt,m02);
-      if( ptsumBin  >=0 ) fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt,m02);
+     
+      if( leadptBin >=0 )
+      {
+        fhPtLeadConeBinMC[leadptBinMC]->Fill(pt);
+        if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt,m02);
+      }
+      
+      if( ptsumBin  >=0 )
+      {
+         fhSumPtConeBinMC [ ptsumBinMC]->Fill(pt);
+        if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt,m02);
+      }
+
+      
       if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
       {
         leadptBinMC = leadptBin+kmcPhoton*fNBkgBin;
         ptsumBinMC  =  ptsumBin+kmcPhoton*fNBkgBin;
-        if( leadptBin >=0 ) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt,m02);
-        if( ptsumBin  >=0 ) fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt,m02);
+        if( leadptBin >=0 )
+        {
+          fhPtLeadConeBinMC[leadptBinMC]->Fill(pt);
+          if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt,m02);
+        }
+        
+        if( ptsumBin  >=0 )
+        {
+          fhSumPtConeBinMC [ ptsumBinMC]->Fill(pt);
+          if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt,m02);
+        }
       }
     }
   }
@@ -1275,6 +1326,47 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       else if(nMaxima==2) { fhELambda0LocMax2[isolated]->Fill(energy,m02); fhELambda1LocMax2[isolated]->Fill(energy,m02); }
       else                { fhELambda0LocMaxN[isolated]->Fill(energy,m02); fhELambda1LocMaxN[isolated]->Fill(energy,m02); }
     }
+    
+    if(fFillPtTrigBinSSHistograms)
+    {
+      // Get the background bin for this cone and trigger
+      Int_t ptTrigBin  = -1;
+      
+      for(Int_t ibin = 0; ibin < fNPtTrigBin; ibin++)
+      {
+        if( pt  >= fPtTrigBinLimit[ibin] && coneptsum  < fPtTrigBinLimit[ibin+1]) ptTrigBin  = ibin;
+      }
+      
+      // Fill the histograms per pT candidate bin of pt lead or pt sum
+      if( GetDebug() > 1 && ptTrigBin  >=0 ) printf("Trigger pT %f, bin %d [%2.2f,%2.2f]\n" , pt , ptTrigBin, fPtTrigBinLimit[ptTrigBin] ,fPtTrigBinLimit[ptTrigBin +1]);
+      
+      if( ptTrigBin >=0 )
+      {
+        fhPtTrigBinLambda0vsPtLeadCone[ptTrigBin]->Fill(coneleadpt,m02);
+        fhPtTrigBinLambda0vsSumPtCone [ptTrigBin]->Fill(coneptsum ,m02);
+      }
+      
+      if(IsDataMC())
+      {
+        Int_t ptTrigBinMC = ptTrigBin+mcIndex*fNPtTrigBin;
+        
+        if( ptTrigBin >=0 )
+        {
+          fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt,m02);
+          fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMC]->Fill(coneptsum ,m02);
+        }
+        
+        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
+        {
+          ptTrigBinMC = ptTrigBin+kmcPhoton*fNPtTrigBin;
+          if( ptTrigBin >=0 )
+          {
+           fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt,m02);
+           fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMC]->Fill(coneptsum ,m02);
+          }
+        } // photon MC
+      } // MC
+    } // pT trigger bins
   } // SS histo fill
   
   if(fFillTMHisto)
@@ -1733,58 +1825,194 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     
     if(fFillBackgroundBinHistograms)
     {
-      fhPtLeadConeBinLambda0 = new TH2F*[fNBkgBin];
-      fhSumPtConeBinLambda0  = new TH2F*[fNBkgBin];
+      fhPtLeadConeBin              = new TH1F*[fNBkgBin];
+      fhSumPtConeBin               = new TH1F*[fNBkgBin];
+      if(fFillSSHisto)
+      {
+        fhPtLeadConeBinLambda0     = new TH2F*[fNBkgBin];
+        fhSumPtConeBinLambda0      = new TH2F*[fNBkgBin];
+      }
+      
+      if(fFillTaggedDecayHistograms)
+      {
+        fhPtLeadConeBinDecay       = new TH1F*[fNBkgBin*fNDecayBits];
+        fhSumPtConeBinDecay        = new TH1F*[fNBkgBin*fNDecayBits];
+      }
       
       if(IsDataMC())
       {
-        fhPtLeadConeBinLambda0MC = new TH2F*[fNBkgBin*fgkNmcTypes];
-        fhSumPtConeBinLambda0MC  = new TH2F*[fNBkgBin*fgkNmcTypes];
+        fhPtLeadConeBinMC          = new TH1F*[fNBkgBin*fgkNmcTypes];
+        fhSumPtConeBinMC           = new TH1F*[fNBkgBin*fgkNmcTypes];
+        
+        if(fFillSSHisto)
+        {
+          fhPtLeadConeBinLambda0MC = new TH2F*[fNBkgBin*fgkNmcTypes];
+          fhSumPtConeBinLambda0MC  = new TH2F*[fNBkgBin*fgkNmcTypes];
+        }
       }
       
       for(Int_t ibin = 0; ibin < fNBkgBin; ibin++)
       {
-        fhPtLeadConeBinLambda0[ibin]  = new TH2F
-        (Form("hPtLeadConeLambda0_Bin%d",ibin),
-         Form("#lambda_{0}, in cone %2.2f<#it{p}_{T}^{leading}<%2.2f (GeV/#it{c}), %s",
-              fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhPtLeadConeBinLambda0[ibin]->SetYTitle("#lambda_{0}^{2}");
-        fhPtLeadConeBinLambda0[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhPtLeadConeBinLambda0[ibin]) ;
+        fhPtLeadConeBin[ibin]  = new TH1F
+        (Form("hPtLeadCone_Bin%d",ibin),
+         Form("cone %2.2f<#it{p}_{T}^{leading}<%2.2f GeV/#it{c}, %s",
+              fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax);
+        fhPtLeadConeBin[ibin]->SetYTitle("d #it{N} / d #it{p}_{T}");
+        fhPtLeadConeBin[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtLeadConeBin[ibin]) ;
         
-        fhSumPtConeBinLambda0[ibin]  = new TH2F
-        (Form("hSumPtConeLambda0_Bin%d",ibin),
-         Form("#lambda_{0}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f (GeV/#it{c}), %s",
-              fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhSumPtConeBinLambda0[ibin]->SetYTitle("#lambda_{0}^{2}");
-        fhSumPtConeBinLambda0[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhSumPtConeBinLambda0[ibin]) ;
+        fhSumPtConeBin[ibin]  = new TH1F
+        (Form("hSumPtCone_Bin%d",ibin),
+         Form("in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, %s",
+              fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax);
+        fhSumPtConeBin[ibin]->SetYTitle("d #it{N} / d #it{p}_{T}");
+        fhSumPtConeBin[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhSumPtConeBin[ibin]) ;
+        
+        if(fFillTaggedDecayHistograms)
+        {
+          for(Int_t idecay = 0; idecay < fNDecayBits; idecay++)
+          {
+            Int_t bindecay = ibin+idecay*fNBkgBin;
+
+            fhPtLeadConeBinDecay[bindecay]  = new TH1F
+            (Form("hPtLeadConeDecay_Bin%d_bit%d",ibin,idecay),
+             Form("Decay bit %d, cone %2.2f<#it{p}_{T}^{leading}<%2.2f GeV/#it{c}, %s",
+                  fDecayBits[idecay],fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax);
+            fhPtLeadConeBinDecay[bindecay]->SetYTitle("d #it{N} / d #it{p}_{T}");
+            fhPtLeadConeBinDecay[bindecay]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhPtLeadConeBinDecay[bindecay]) ;
+            
+            fhSumPtConeBinDecay[bindecay]  = new TH1F
+            (Form("hSumPtConeDecay_Bin%d_bit%d",ibin,fDecayBits[idecay]),
+             Form("Decay bit %d, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c},  %s",
+                  fDecayBits[idecay],fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax);
+            fhSumPtConeBinDecay[bindecay]->SetYTitle("d #it{N} / d #it{p}_{T}");
+            fhSumPtConeBinDecay[bindecay]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhSumPtConeBinDecay[bindecay]) ;
+          }
+        }
         
         if(IsDataMC())
         {
           for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
           {
             Int_t binmc = ibin+imc*fNBkgBin;
-            fhPtLeadConeBinLambda0MC[binmc]  = new TH2F
-            (Form("hPtLeadConeLambda0_Bin%d_MC%s",ibin, mcPartName[imc].Data()),
-             Form("#lambda_{0}, in cone %2.2f<#it{p}_{T}^{leading}<%2.2f (GeV/#it{c}), MC %s, %s",
-                  fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhPtLeadConeBinLambda0MC[binmc]->SetYTitle("#lambda_{0}^{2}");
-            fhPtLeadConeBinLambda0MC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            outputContainer->Add(fhPtLeadConeBinLambda0MC[binmc]) ;
+            fhPtLeadConeBinMC[binmc]  = new TH1F
+            (Form("hPtLeadCone_Bin%d_MC%s",ibin, mcPartName[imc].Data()),
+             Form("in cone %2.2f<#it{p}_{T}^{leading}<%2.2f GeV/#it{c}, MC %s, %s",
+                  fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax);
+            fhPtLeadConeBinMC[binmc]->SetYTitle("d #it{N} / d #it{p}_{T}");
+            fhPtLeadConeBinMC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhPtLeadConeBinMC[binmc]) ;
             
-            fhSumPtConeBinLambda0MC[binmc]  = new TH2F
-            (Form("hSumPtConeLambda0_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
-             Form("#lambda_{0}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f (GeV/#it{c}), MC %s, %s",
-                  fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhSumPtConeBinLambda0MC[binmc]->SetYTitle("#lambda_{0}^{2}");
-            fhSumPtConeBinLambda0MC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            outputContainer->Add(fhSumPtConeBinLambda0MC[binmc]) ;
+            fhSumPtConeBinMC[binmc]  = new TH1F
+            (Form("hSumPtCone_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
+             Form("in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, MC %s, %s",
+                  fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax);
+            fhSumPtConeBinMC[binmc]->SetYTitle("d #it{N} / d #it{p}_{T}");
+            fhSumPtConeBinMC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhSumPtConeBinMC[binmc]) ;
           } // MC particle loop
         }
         
-      }// pt bin loop
+        if(fFillSSHisto)
+        {
+          fhPtLeadConeBinLambda0[ibin]  = new TH2F
+          (Form("hPtLeadConeLambda0_Bin%d",ibin),
+           Form("#lambda_{0}, in cone %2.2f<#it{p}_{T}^{leading}<%2.2f GeV/#it{c}, %s",
+                fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhPtLeadConeBinLambda0[ibin]->SetYTitle("#lambda_{0}^{2}");
+          fhPtLeadConeBinLambda0[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPtLeadConeBinLambda0[ibin]) ;
+          
+          fhSumPtConeBinLambda0[ibin]  = new TH2F
+          (Form("hSumPtConeLambda0_Bin%d",ibin),
+           Form("#lambda_{0}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, %s",
+                fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhSumPtConeBinLambda0[ibin]->SetYTitle("#lambda_{0}^{2}");
+          fhSumPtConeBinLambda0[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhSumPtConeBinLambda0[ibin]) ;
+          
+          if(IsDataMC())
+          {
+            for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
+            {
+              Int_t binmc = ibin+imc*fNBkgBin;
+              fhPtLeadConeBinLambda0MC[binmc]  = new TH2F
+              (Form("hPtLeadConeLambda0_Bin%d_MC%s",ibin, mcPartName[imc].Data()),
+               Form("#lambda_{0}, in cone %2.2f<#it{p}_{T}^{leading}<%2.2f GeV/#it{c}, MC %s, %s",
+                    fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+              fhPtLeadConeBinLambda0MC[binmc]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLeadConeBinLambda0MC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhPtLeadConeBinLambda0MC[binmc]) ;
+              
+              fhSumPtConeBinLambda0MC[binmc]  = new TH2F
+              (Form("hSumPtConeLambda0_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
+               Form("#lambda_{0}, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, MC %s, %s",
+                    fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+              fhSumPtConeBinLambda0MC[binmc]->SetYTitle("#lambda_{0}^{2}");
+              fhSumPtConeBinLambda0MC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhSumPtConeBinLambda0MC[binmc]) ;
+            } // MC particle loop
+          }
+        } // shower shape on
+      } // pt in cone bin loop
     } // bkg cone pt bin histograms
+
+    if(fFillPtTrigBinSSHistograms && fFillSSHisto)
+    {
+      fhPtTrigBinLambda0vsPtLeadCone = new TH2F*[fNPtTrigBin];
+      fhPtTrigBinLambda0vsSumPtCone  = new TH2F*[fNPtTrigBin];
+      
+      if(IsDataMC())
+      {
+        fhPtTrigBinLambda0vsPtLeadConeMC = new TH2F*[fNPtTrigBin*fgkNmcTypes];
+        fhPtTrigBinLambda0vsSumPtConeMC  = new TH2F*[fNPtTrigBin*fgkNmcTypes];
+      }
+      
+      for(Int_t ibin = 0; ibin < fNPtTrigBin; ibin++)
+      {
+        fhPtTrigBinLambda0vsPtLeadCone[ibin]  = new TH2F
+        (Form("hPtTrigBin_PtLeadConeVSLambda0_Bin%d",ibin),
+         Form("#lambda_{0} vs #it{p}_{T}^{lead. in cone}, %2.2f<#it{p}_{T}^{cand}<%2.2f GeV/#it{c}, %s",
+              fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhPtTrigBinLambda0vsPtLeadCone[ibin]->SetYTitle("#lambda_{0}^{2}");
+        fhPtTrigBinLambda0vsPtLeadCone[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtTrigBinLambda0vsPtLeadCone[ibin]) ;
+        
+        fhPtTrigBinLambda0vsSumPtCone[ibin]  = new TH2F
+        (Form("hPtTrigBin_SumPtConeVSLambda0_Bin%d",ibin),
+         Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone} %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, %s",
+              fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhPtTrigBinLambda0vsSumPtCone[ibin]->SetYTitle("#lambda_{0}^{2}");
+        fhPtTrigBinLambda0vsSumPtCone[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtTrigBinLambda0vsSumPtCone[ibin]) ;
+        
+        if(IsDataMC())
+        {
+          for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
+          {
+            Int_t binmc = ibin+imc*fNPtTrigBin;
+            fhPtTrigBinLambda0vsPtLeadConeMC[binmc]  = new TH2F
+            (Form("hPtTrigBin_PtLeadConeVSLambda0_Bin%d_MC%s",ibin, mcPartName[imc].Data()),
+             Form("#lambda_{0} vs #it{p}_{T}^{lead. in cone}, %2.2f<#it{p}_{T}^{cand}<%2.2f GeV/#it{c}, MC %s, %s",
+                  fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+            fhPtTrigBinLambda0vsPtLeadConeMC[binmc]->SetYTitle("#lambda_{0}^{2}");
+            fhPtTrigBinLambda0vsPtLeadConeMC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhPtTrigBinLambda0vsPtLeadConeMC[binmc]) ;
+            
+            fhPtTrigBinLambda0vsSumPtConeMC[binmc]  = new TH2F
+            (Form("hPtTrigBin_SumPtConeVSLambda0_Bin%d_MC%s",ibin,mcPartName[imc].Data()),
+             Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC %s, %s",
+                  fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+            fhPtTrigBinLambda0vsSumPtConeMC[binmc]->SetYTitle("#lambda_{0}^{2}");
+            fhPtTrigBinLambda0vsSumPtConeMC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhPtTrigBinLambda0vsSumPtConeMC[binmc]) ;
+          } // MC particle loop
+        } // MC
+      } // pt trig bin loop
+    } // pt trig bin histograms
     
     if(fFillHighMultHistograms)
     {
@@ -3369,11 +3597,16 @@ void AliAnaParticleIsolation::InitParameters()
   fDecayBits[2] = AliNeutralMesonSelection::kPi0Side;
   fDecayBits[3] = AliNeutralMesonSelection::kEtaSide;
   
-  fNBkgBin = 11;
+  fNBkgBin = 10;
   fBkgBinLimit[ 0] = 00.0; fBkgBinLimit[ 1] = 00.2; fBkgBinLimit[ 2] = 00.3; fBkgBinLimit[ 3] = 00.4; fBkgBinLimit[ 4] = 00.5;
   fBkgBinLimit[ 5] = 01.0; fBkgBinLimit[ 6] = 01.5; fBkgBinLimit[ 7] = 02.0; fBkgBinLimit[ 8] = 03.0; fBkgBinLimit[ 9] = 05.0;
   fBkgBinLimit[10] = 10.0; fBkgBinLimit[11] = 100.;
-  for(Int_t ibin = 12; ibin < 20; ibin++) fBkgBinLimit[ibin] = 00.0;
+  for(Int_t ibin = fNBkgBin; ibin < 20; ibin++) fBkgBinLimit[ibin] = 00.0;
+
+  fNPtTrigBin = 6;
+  fPtTrigBinLimit[ 0] =  8; fPtTrigBinLimit[ 1] = 10; fPtTrigBinLimit[ 2] = 12; fPtTrigBinLimit[ 3] = 14; fPtTrigBinLimit[ 4] = 16;
+  fPtTrigBinLimit[ 5] = 20; fPtTrigBinLimit[ 6] = 25; ;
+  for(Int_t ibin = fNPtTrigBin; ibin < 20; ibin++) fPtTrigBinLimit[ibin] = 00.0;
   
   //----------- Several IC-----------------
   fNCones             = 5 ;
