@@ -181,7 +181,8 @@ TString getEventInfo()
 		esd->GetESDRun()->GetBeamType(),
 		esd->GetRunNumber(),
 		AliEveEventManager::CurrentEventId(),
-		AliRawEventHeaderBase::GetTypeName(esd->GetEventType())
+			     "PHYSICS_EVENT"
+			     /*AliRawEventHeaderBase::GetTypeName(esd->GetEventType())*/
 		);
   }
 
