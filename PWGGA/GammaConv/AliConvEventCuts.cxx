@@ -1425,6 +1425,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 {
 
 	AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+
 	
 	UInt_t isSelected = AliVEvent::kAny;
 	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
@@ -1451,6 +1452,8 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 	//       if (fPreSelCut) cout << "Trigger selected from outside: "<< fTriggerSelectedManually <<"\t Offline Trigger mask for Precut: " << fOfflineTriggerMask << endl;
 	//       else cout << "Trigger selected from outside: "<< fTriggerSelectedManually <<"\t Offline Trigger mask: " << fOfflineTriggerMask << endl;
 
+		if (isMC) fOfflineTriggerMask = AliVEvent::kAny;
+	
 		if (fOfflineTriggerMask){
 			isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();		 
 			
@@ -1462,10 +1465,10 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 				}
 				if (fSpecialSubTrigger>0 && !isMC){
 					if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
-				} else if (fSpecialSubTrigger>0 && isMC){
+				} else if (isMC){
 					if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
 						isSelected = 0;
-// 						cout << "triggers: " << fTriggersEMCAL << "    selected triggers: " << fTriggersEMCALSelected << endl;
+// 						if (fTriggersEMCAL > 0)cout << "Special Trigger " << fSpecialTrigger << " triggers: " << fTriggersEMCAL << "    selected triggers: " << fTriggersEMCALSelected << " run number: " <<fInputEvent->GetRunNumber()<<endl;
 						if (fTriggersEMCAL&fTriggersEMCALSelected){
 // 							cout << "accepted ++++++++++++++++++++" << endl;
 							isSelected = 1;
@@ -2202,21 +2205,46 @@ ULong_t AliConvEventCuts::GetTriggerList(){
 	Int_t nJ2 = 0;
 	Int_t nL0 = 0;
 	AliEmcalTriggerPatchInfo *patch;
+// 	if (nPatch> 0) {cout << "NEW Triggers in this event*********************************" << endl;}
 	for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
 		patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
-		if (patch->IsGammaHigh()) nG1++;
-		if (patch->IsGammaLow())  nG2++;
-		if (patch->IsJetHigh()) nJ1++;
-		if (patch->IsJetLow())  nJ2++;
-		if (patch->IsLevel0())  nL0++;
+// 		cout << "Patch energy: "<<patch->GetPatchE() << "\t ADC counts: " << patch->GetADCAmp() << endl;
+// 		cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<abs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
+// 		cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<abs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
+		if (patch->IsGammaHigh()){
+// 			cout << "fired L1GA high" << endl;
+			nG1++;
+		}	
+		if (patch->IsGammaLow()){
+// 			cout << "fired L1GA low" << endl;
+			nG2++;
+		}	
+		if (patch->IsJetHigh()){
+// 			cout << "fired L1JE high" << endl;
+			nJ1++;
+		}
+		if (patch->IsJetLow()){
+// 			cout << "fired L1JE low" << endl;
+			nJ2++;
+		}	
+		if (patch->IsLevel0()){
+// 			cout << "fired L0" << endl;
+			nL0++;
+		}	
+// 		cout << patch->GetPatchE() 	<< "\t" << patch->GetADCAmp()	<< "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()  
+// 		     << "\t" << patch->IsJetHigh()	<< "\t" << patch->IsJetLow()	<< "\t" << patch->IsLevel0() 
+// 			 << "\t" << patch->GetPhiMin()	<< "\t" << patch->GetPhiMax()	<< "\t" << abs(patch->GetPhiMin()-patch->GetPhiMax())
+// 			 << "\t" << patch->GetEtaMin()	<< "\t" << patch->GetEtaMax()	<< "\t" << abs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
 	}
 
-// 	  AliDebug(2, "Patch summary: ");
-// 	  AliDebug(2, Form("Number of patches: %d", nPatch));
-// 	  AliDebug(2, Form("Level0: [%d]" ,nL0));
-// 	  AliDebug(2, Form("Jet:    low[%d], high[%d]" ,nJ2, nJ1));
-// 	  AliDebug(2, Form("Gamma:  low[%d], high[%d]" ,nG2, nG1));
-
+	if (nPatch > 0){
+		AliDebug(2, "Patch summary: ");
+		AliDebug(2, Form("Number of patches: %d", nPatch));
+		AliDebug(2, Form("Level0: [%d]" ,nL0));
+		AliDebug(2, Form("Jet:    low[%d], high[%d]" ,nJ2, nJ1));
+		AliDebug(2, Form("Gamma:  low[%d], high[%d]" ,nG2, nG1));
+	}
+		
 // 	if (nPatch > 0){
 // 		cout << 	  Form("Number of patches: %d", nPatch) << endl;
 // 		cout << 	  Form("Level0: [%d]" ,nL0) << endl;
@@ -2226,15 +2254,15 @@ ULong_t AliConvEventCuts::GetTriggerList(){
 	  
 	ULong_t triggers(0);
 	if (nG1>0)
-	SETBIT(triggers, kG1);
+		SETBIT(triggers, kG1);
 	if (nG2>0)
-	SETBIT(triggers, kG2);
+		SETBIT(triggers, kG2);
 	if (nJ1>0)
-	SETBIT(triggers, kJ1);
+		SETBIT(triggers, kJ1);
 	if (nJ2>0)
-	SETBIT(triggers, kJ2);
+		SETBIT(triggers, kJ2);
 	if (nL0>0)
-	SETBIT(triggers, kL0);
+		SETBIT(triggers, kL0);
 	return triggers;
 }
 
