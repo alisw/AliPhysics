@@ -795,7 +795,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				
 			}
 			if(fDoMesonQA == 1){
-				fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_Pt_Calib","ESD_Mother_InvMass_Pt_Calib",800,0,0.8,250,0,25);
+                fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_vs_E_Calib","ESD_Mother_InvMass_vs_E_Calib",800,0,0.8,250,0,25);
 				fESDList[iCut]->Add(fHistoMotherInvMassECalib[iCut]);
 				fHistoMotherInvMassECalibalpha[iCut] = new TH2F("ESD_Mother_InvMass_vs_E_Calib_alpha","ESD_Mother_InvMass_vs_E_Calib_alpha",800,0,0.8,250,0,25);
 				fESDList[iCut]->Add(fHistoMotherInvMassECalibalpha[iCut]);
@@ -1056,7 +1056,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fHistoTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
 			fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
       
-			fHistoTrueConvPi0GammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
+            fHistoTrueConvPi0GammaPt[iCut] = new TH1F("ESD_TrueConvPi0Gamma_Pt","ESD_TrueConvPi0Gamma_Pt",250,0,25);
 			fTrueList[iCut]->Add(fHistoTrueConvPi0GammaPt[iCut]);
       
 			fHistoCombinatorialPt[iCut] = new TH2F("ESD_TrueCombinatorial_Pt","ESD_TrueCombinatorial_Pt",250,0,25,16,-0.5,15.5);
@@ -1925,7 +1925,12 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversi
 			}
 		}
 	}
-  
+
+    if( ((AliAODMCParticle*)AODMCTrackArray->At(Photon->GetMother()))->GetPdgCode() == 111)
+    {
+        fHistoTrueConvPi0GammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+    }
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)

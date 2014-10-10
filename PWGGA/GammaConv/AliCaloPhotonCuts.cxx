@@ -114,19 +114,13 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fHistClusterEtavsPhiBeforeAcc(NULL),
 	fHistClusterEtavsPhiAfterAcc(NULL),
 	fHistClusterEtavsPhiAfterQA(NULL),
-	fHistDistanceToBadChannelBeforeAcc(NULL),
-	fHistDistanceToBadChannelAfterAcc(NULL),
-    fHistClusterRBeforeQA(NULL),
-    fHistClusterRAfterQA(NULL),
-    fHistClusterdEtadPhiBeforeQA(NULL),
-    fHistClusterdEtadPhiAfterQA(NULL),
+    //fHistDistanceToBadChannelBeforeAcc(NULL),
+    //fHistDistanceToBadChannelAfterAcc(NULL),
 	fHistClusterTimevsEBeforeQA(NULL),
 	fHistClusterTimevsEAfterQA(NULL),
-	fHistExoticCellBeforeQA(NULL),
-	fHistExoticCellAfterQA(NULL),
-	fHistNMatchedTracks(NULL),
-	fHistDistanceTrackToClusterBeforeQA(NULL),
-	fHistDistanceTrackToClusterAfterQA(NULL),
+    //fHistExoticCellBeforeQA(NULL),
+    //fHistExoticCellAfterQA(NULL),
+    //fHistNMatchedTracks(NULL),
 	fHistEnergyOfClusterBeforeQA(NULL),
 	fHistEnergyOfClusterAfterQA(NULL),
 	fHistNCellsBeforeQA(NULL),
@@ -136,9 +130,15 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fHistM20BeforeQA(NULL),
 	fHistM20AfterQA(NULL),
 	fHistDispersionBeforeQA(NULL),
-	fHistDispersionAfterQA(NULL),
-	fHistNLMBeforeQA(NULL),
-	fHistNLMAfterQA(NULL)
+    fHistDispersionAfterQA(NULL),
+    //fHistNLMBeforeQA(NULL),
+    //fHistNLMAfterQA(NULL),
+    fHistClusterRBeforeQA(NULL),
+    fHistClusterRAfterQA(NULL),
+    fHistClusterdEtadPhiBeforeQA(NULL),
+    fHistClusterdEtadPhiAfterQA(NULL),
+    fHistDistanceTrackToClusterBeforeQA(NULL),
+    fHistDistanceTrackToClusterAfterQA(NULL)
 {
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
    fCutString=new TObjString((GetCutNumber()).Data());
@@ -185,19 +185,13 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fHistClusterEtavsPhiBeforeAcc(NULL),
 	fHistClusterEtavsPhiAfterAcc(NULL),
 	fHistClusterEtavsPhiAfterQA(NULL),
-	fHistDistanceToBadChannelBeforeAcc(NULL),
-	fHistDistanceToBadChannelAfterAcc(NULL),
-	fHistClusterRBeforeQA(NULL),
-	fHistClusterRAfterQA(NULL),
-	fHistClusterdEtadPhiBeforeQA(NULL),
-	fHistClusterdEtadPhiAfterQA(NULL),
+    //fHistDistanceToBadChannelBeforeAcc(NULL),
+    //fHistDistanceToBadChannelAfterAcc(NULL),
 	fHistClusterTimevsEBeforeQA(NULL),
 	fHistClusterTimevsEAfterQA(NULL),
-	fHistExoticCellBeforeQA(NULL),
-	fHistExoticCellAfterQA(NULL),
-	fHistNMatchedTracks(NULL),
-	fHistDistanceTrackToClusterBeforeQA(NULL),
-	fHistDistanceTrackToClusterAfterQA(NULL),
+    //fHistExoticCellBeforeQA(NULL),
+    //fHistExoticCellAfterQA(NULL),
+    //fHistNMatchedTracks(NULL),
 	fHistEnergyOfClusterBeforeQA(NULL),
 	fHistEnergyOfClusterAfterQA(NULL),
 	fHistNCellsBeforeQA(NULL),
@@ -207,9 +201,15 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fHistM20BeforeQA(NULL),
 	fHistM20AfterQA(NULL),
 	fHistDispersionBeforeQA(NULL),
-	fHistDispersionAfterQA(NULL),
-	fHistNLMBeforeQA(NULL),
-	fHistNLMAfterQA(NULL)
+    fHistDispersionAfterQA(NULL),
+    //fHistNLMBeforeQA(NULL),
+    //fHistNLMAfterQA(NULL),
+    fHistClusterRBeforeQA(NULL),
+    fHistClusterRAfterQA(NULL),
+    fHistClusterdEtadPhiBeforeQA(NULL),
+    fHistClusterdEtadPhiAfterQA(NULL),
+    fHistDistanceTrackToClusterBeforeQA(NULL),
+    fHistDistanceTrackToClusterAfterQA(NULL)
 {
    // Copy Constructor
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -288,34 +288,22 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
 	fHistClusterEtavsPhiAfterQA=new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",462,-TMath::Pi(),TMath::Pi(),110,-0.7,0.7);
 	fHistograms->Add(fHistClusterEtavsPhiAfterQA);
-	fHistDistanceToBadChannelBeforeAcc = new TH1F(Form("DistanceToBadChannel_beforeAcceptance %s",GetCutNumber().Data()),"DistanceToBadChannel_beforeAcceptance",200,0,40);
-	fHistograms->Add(fHistDistanceToBadChannelBeforeAcc);
-	fHistDistanceToBadChannelAfterAcc = new TH1F(Form("DistanceToBadChannel_afterAcceptance %s",GetCutNumber().Data()),"DistanceToBadChannel_afterAcceptance",200,0,40);
-	fHistograms->Add(fHistDistanceToBadChannelAfterAcc);
+    //fHistDistanceToBadChannelBeforeAcc = new TH1F(Form("DistanceToBadChannel_beforeAcceptance %s",GetCutNumber().Data()),"DistanceToBadChannel_beforeAcceptance",200,0,40);
+    //fHistograms->Add(fHistDistanceToBadChannelBeforeAcc);
+    //fHistDistanceToBadChannelAfterAcc = new TH1F(Form("DistanceToBadChannel_afterAcceptance %s",GetCutNumber().Data()),"DistanceToBadChannel_afterAcceptance",200,0,40);
+    //fHistograms->Add(fHistDistanceToBadChannelAfterAcc);
 	
 	// Cluster quality related histograms
-	fHistClusterRBeforeQA = new TH1F(Form("R_Cluster_beforeClusterQA %s",GetCutNumber().Data()),"R of cluster",200,400,500);
-	fHistograms->Add(fHistClusterRBeforeQA);
-	fHistClusterRAfterQA = new TH1F(Form("R_Cluster_afterClusterQA %s",GetCutNumber().Data()),"R of cluster_matched",200,400,500);
-	fHistograms->Add(fHistClusterRAfterQA);
-	fHistClusterdEtadPhiBeforeQA=new TH2F(Form("dEtaVsdPhi_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
-	fHistograms->Add(fHistClusterdEtadPhiBeforeQA);
-	fHistClusterdEtadPhiAfterQA=new TH2F(Form("dEtaVsdPhi_afterClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_afterClusterQA",240,-0.3,0.3,240,-0.3,0.3);
-	fHistograms->Add(fHistClusterdEtadPhiAfterQA);
 	fHistClusterTimevsEBeforeQA=new TH2F(Form("ClusterTimeVsE_beforeClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_beforeClusterQA",400,-10e-6,10e-6,100,0.,40);
 	fHistograms->Add(fHistClusterTimevsEBeforeQA);
 	fHistClusterTimevsEAfterQA=new TH2F(Form("ClusterTimeVsE_afterClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_afterClusterQA",400,-10e-6,10e-6,100,0.,40);
 	fHistograms->Add(fHistClusterTimevsEAfterQA);
-	fHistExoticCellBeforeQA=new TH2F(Form("ExoticCell_beforeClusterQA %s",GetCutNumber().Data()),"ExoticCell_beforeClusterQA",400,0,40,50,0.75,1);
-	fHistograms->Add(fHistExoticCellBeforeQA);
-	fHistExoticCellAfterQA=new TH2F(Form("ExoticCell_afterClusterQA %s",GetCutNumber().Data()),"ExoticCell_afterClusterQA",400,0,40,50,0.75,1);
-	fHistograms->Add(fHistExoticCellAfterQA);
-	fHistNMatchedTracks = new TH1F(Form("NMatchedTracks_%s",GetCutNumber().Data()),"NMatchedTracks",22,-1.5,20.5);
-	fHistograms->Add(fHistNMatchedTracks);
-	fHistDistanceTrackToClusterBeforeQA = new TH1F(Form("DistanceToTrack_beforeClusterQA %s",GetCutNumber().Data()),"DistanceToTrack_beforeClusterQA",200,0,2);
-	fHistograms->Add(fHistDistanceTrackToClusterBeforeQA);
-	fHistDistanceTrackToClusterAfterQA = new TH1F(Form("DistanceToTrack_afterClusterQA %s",GetCutNumber().Data()),"DistanceToTrack_afterClusterQA",200,0,2);
-	fHistograms->Add(fHistDistanceTrackToClusterAfterQA);
+    //fHistExoticCellBeforeQA=new TH2F(Form("ExoticCell_beforeClusterQA %s",GetCutNumber().Data()),"ExoticCell_beforeClusterQA",400,0,40,50,0.75,1);
+    //fHistograms->Add(fHistExoticCellBeforeQA);
+    //fHistExoticCellAfterQA=new TH2F(Form("ExoticCell_afterClusterQA %s",GetCutNumber().Data()),"ExoticCell_afterClusterQA",400,0,40,50,0.75,1);
+    //fHistograms->Add(fHistExoticCellAfterQA);
+    //fHistNMatchedTracks = new TH1F(Form("NMatchedTracks_%s",GetCutNumber().Data()),"NMatchedTracks",22,-1.5,20.5);
+    //fHistograms->Add(fHistNMatchedTracks);
 	fHistEnergyOfClusterBeforeQA = new TH1F(Form("EnergyOfCluster_beforeClusterQA %s",GetCutNumber().Data()),"EnergyOfCluster_beforeClusterQA",300,0,30);
 	fHistograms->Add(fHistEnergyOfClusterBeforeQA);
 	fHistEnergyOfClusterAfterQA = new TH1F(Form("EnergyOfCluster_afterClusterQA %s",GetCutNumber().Data()),"EnergyOfCluster_afterClusterQA",300,0,30);
@@ -336,10 +324,27 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	fHistograms->Add(fHistDispersionBeforeQA);
 	fHistDispersionAfterQA = new TH1F(Form("Dispersion_afterClusterQA %s",GetCutNumber().Data()),"Dispersion_afterClusterQA",100,0,4);
 	fHistograms->Add(fHistDispersionAfterQA);
-	fHistNLMBeforeQA = new TH1F(Form("NLM_beforeClusterQA %s",GetCutNumber().Data()),"NLM_beforeClusterQA",10,0,10);
-	fHistograms->Add(fHistNLMBeforeQA);
-	fHistNLMAfterQA = new TH1F(Form("NLM_afterClusterQA %s",GetCutNumber().Data()),"NLM_afterClusterQA",10,0,10);
-	fHistograms->Add(fHistNLMAfterQA);
+    //fHistNLMBeforeQA = new TH1F(Form("NLM_beforeClusterQA %s",GetCutNumber().Data()),"NLM_beforeClusterQA",10,0,10);
+    //fHistograms->Add(fHistNLMBeforeQA);
+    //fHistNLMAfterQA = new TH1F(Form("NLM_afterClusterQA %s",GetCutNumber().Data()),"NLM_afterClusterQA",10,0,10);
+    //fHistograms->Add(fHistNLMAfterQA);
+
+    //TrackMatching histograms
+    if(fUseDistTrackToCluster)
+    {
+        fHistClusterRBeforeQA = new TH1F(Form("R_Cluster_beforeClusterQA %s",GetCutNumber().Data()),"R of cluster",200,400,500);
+        fHistograms->Add(fHistClusterRBeforeQA);
+        fHistClusterRAfterQA = new TH1F(Form("R_Cluster_afterClusterQA %s",GetCutNumber().Data()),"R of cluster_matched",200,400,500);
+        fHistograms->Add(fHistClusterRAfterQA);
+        fHistClusterdEtadPhiBeforeQA=new TH2F(Form("dEtaVsdPhi_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_beforeClusterQA",240,-0.3,0.3,240,-0.3,0.3);
+        fHistograms->Add(fHistClusterdEtadPhiBeforeQA);
+        fHistClusterdEtadPhiAfterQA=new TH2F(Form("dEtaVsdPhi_afterClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_afterClusterQA",240,-0.3,0.3,240,-0.3,0.3);
+        fHistograms->Add(fHistClusterdEtadPhiAfterQA);
+        fHistDistanceTrackToClusterBeforeQA = new TH1F(Form("DistanceToTrack_beforeClusterQA %s",GetCutNumber().Data()),"DistanceToTrack_beforeClusterQA",200,0,2);
+        fHistograms->Add(fHistDistanceTrackToClusterBeforeQA);
+        fHistDistanceTrackToClusterAfterQA = new TH1F(Form("DistanceToTrack_afterClusterQA %s",GetCutNumber().Data()),"DistanceToTrack_afterClusterQA",200,0,2);
+        fHistograms->Add(fHistDistanceTrackToClusterAfterQA);
+    }
 	
 	TH1::AddDirectory(kTRUE);
 }
