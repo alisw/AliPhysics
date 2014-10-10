@@ -218,16 +218,13 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
   
   for(Int_t ibit =0; ibit< 4; ibit++)
   {
-    fhPtDecayIso       [ibit] = 0;
-    fhPtLambda0Decay[0][ibit] = 0;
-    fhPtLambda0Decay[1][ibit] = 0;
-    fhPtDecayNoIso     [ibit] = 0;
-    fhEtaPhiDecayIso   [ibit] = 0;
-    fhEtaPhiDecayNoIso [ibit] = 0;
-    for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
+    for(Int_t iso =0; iso< 4; iso++)
     {
-      fhPtDecayIsoMC  [ibit][imc]    = 0;
-      fhPtDecayNoIsoMC[ibit][imc]    = 0;
+      fhPtDecay       [iso][ibit] = 0;
+      fhEtaPhiDecay   [iso][ibit] = 0;
+      fhPtLambda0Decay[iso][ibit] = 0;
+      for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
+        fhPtDecayMC[iso][ibit][imc]    = 0;
     }
   }
   
@@ -1165,7 +1162,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
                                                                             Int_t mcIndex)
 {
   // Fill Track matching and Shower Shape control histograms
-  if(!fFillTMHisto && !fFillSSHisto && !fFillBackgroundBinHistograms) return;
+  if(!fFillTMHisto && !fFillSSHisto && !fFillBackgroundBinHistograms && !fFillTaggedDecayHistograms) return;
   
   Int_t  clusterID = pCandidate->GetCaloLabel(0) ;
   Int_t  nMaxima   = pCandidate->GetFiducialArea(); // bad name, just place holder for the moment
@@ -1190,7 +1187,43 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   Float_t m02    = cluster->GetM02() ;
   Float_t energy = pCandidate->E();
   Float_t pt     = pCandidate->Pt();
+  Float_t eta    = pCandidate->Eta();
+  Float_t phi    = pCandidate->Phi();
+  if(phi<0) phi+= TMath::TwoPi();
+  
+  // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
+  if(fFillTaggedDecayHistograms)
+  {
+    Int_t decayTag = pCandidate->GetBtag(); // temporary
+    if(decayTag < 0) decayTag = 0; // temporary
 
+    for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
+    {
+      if(!GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit])) continue;
+      
+      if(fFillSSHisto) fhPtLambda0Decay[isolated][ibit]->Fill(pt,m02);
+      
+      // In case it was not done on the trigger selection task
+      // apply here a shower shape cut, not too strong, to select photons
+      if( m02 < 0.3 ) continue;
+      
+      fhPtDecay    [isolated][ibit]->Fill(pt);
+      fhEtaPhiDecay[isolated][ibit]->Fill(eta,phi);
+     
+      if(IsDataMC())
+      {
+        fhPtDecayMC[isolated][ibit][mcIndex]->Fill(pt);
+
+        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
+          fhPtDecayMC[isolated][ibit][kmcPhoton]->Fill(pt);
+        
+        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
+          fhPtDecayMC[isolated][ibit][kmcPi0DecayLostPair]->Fill(pt);
+      }
+    } // bit loop
+  } // decay histograms
+
+  
   // Get the max pt leading in cone or the sum of pt in cone
   // assign a bin to the candidate, depending on both quantities
   // see the shower shape in those bins.
@@ -1284,21 +1317,12 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     }
   }
   
+  // Shower shape dependent histograms
   if(fFillSSHisto)
   {
     fhELambda0 [isolated]->Fill(energy, m02);
     fhPtLambda0[isolated]->Fill(pt,     m02);
     fhELambda1 [isolated]->Fill(energy, m02);
-    if(fFillTaggedDecayHistograms)
-    {
-      Int_t decayTag = pCandidate->GetBtag(); // temporary
-      if(decayTag < 0) decayTag = 0;    // temporary
-      for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
-      {
-        if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
-          fhPtLambda0Decay[isolated][ibit]->Fill(pt,m02);
-      }
-    }
     
     if(IsDataMC())
     {
@@ -1369,6 +1393,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     } // pT trigger bins
   } // SS histo fill
   
+  // Track matching dependent histograms
   if(fFillTMHisto)
   {
     Float_t dZ  = cluster->GetTrackDz();
@@ -1656,74 +1681,61 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   // Histograms for tagged candidates as decay
   if(fFillTaggedDecayHistograms)
   {
+    TString isoName [] = {"NoIso","Iso"};
+    TString isoTitle[] = {"Not isolated"  ,"isolated"};
+    
     for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
     {
-      fhPtDecayNoIso[ibit]  =
-      new TH1F(Form("hPtDecayNoIso_bit%d",fDecayBits[ibit]),
-               Form("Number of not isolated leading pi0 decay particles vs #it{p}_{T}, bit %d, %s",fDecayBits[ibit],parTitle.Data()),
-               nptbins,ptmin,ptmax);
-      fhPtDecayNoIso[ibit]->SetYTitle("#it{counts}");
-      fhPtDecayNoIso[ibit]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPtDecayNoIso[ibit]) ;
-      
-      fhEtaPhiDecayNoIso[ibit]  =
-      new TH2F(Form("hEtaPhiDecayNoIso_bit%d",fDecayBits[ibit]),
-               Form("Number of not isolated leading Pi0 decay particles #eta vs #phi, bit %d, %s",fDecayBits[ibit],parTitle.Data()),
-               netabins,etamin,etamax,nphibins,phimin,phimax);
-      fhEtaPhiDecayNoIso[ibit]->SetXTitle("#eta");
-      fhEtaPhiDecayNoIso[ibit]->SetYTitle("#phi");
-      outputContainer->Add(fhEtaPhiDecayNoIso[ibit]) ;
-      
-      if(!fMakeSeveralIC)
+      for(Int_t iso = 0; iso < 2; iso++)
       {
-        fhPtDecayIso[ibit]  =
-        new TH1F(Form("hPtDecayIso_bit%d",fDecayBits[ibit]),
-                 Form("Number of isolated #pi^{0} decay particles vs #it{p}_{T}, bit %d, %s",fDecayBits[ibit],parTitle.Data()),
+        if(fMakeSeveralIC && iso) continue;
+        fhPtDecay[iso][ibit]  =
+        new TH1F(Form("hPtDecay%s_bit%d",isoName[iso].Data(),fDecayBits[ibit]),
+                 Form("Number of %s leading pi0 decay particles vs #it{p}_{T}, bit %d, %s",isoTitle[iso].Data(),fDecayBits[ibit],parTitle.Data()),
                  nptbins,ptmin,ptmax);
-        fhPtDecayIso[ibit]->SetYTitle("#it{counts}");
-        fhPtDecayIso[ibit]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-        outputContainer->Add(fhPtDecayIso[ibit]) ;
+        fhPtDecay[iso][ibit]->SetYTitle("#it{counts}");
+        fhPtDecay[iso][ibit]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtDecay[iso][ibit]) ;
         
-        fhEtaPhiDecayIso[ibit]  =
-        new TH2F(Form("hEtaPhiDecayIso_bit%d",fDecayBits[ibit]),
-                 Form("Number of isolated Pi0 decay particles #eta vs #phi, bit %d, %s",fDecayBits[ibit],parTitle.Data()),
+        fhEtaPhiDecay[iso][ibit]  =
+        new TH2F(Form("hEtaPhiDecay%s_bit%d",isoName[iso].Data(),fDecayBits[ibit]),
+                 Form("Number of %s leading Pi0 decay particles #eta vs #phi, bit %d, %s",isoTitle[iso].Data(),fDecayBits[ibit],parTitle.Data()),
                  netabins,etamin,etamax,nphibins,phimin,phimax);
-        fhEtaPhiDecayIso[ibit]->SetXTitle("#eta");
-        fhEtaPhiDecayIso[ibit]->SetYTitle("#phi");
-        outputContainer->Add(fhEtaPhiDecayIso[ibit]) ;
-      }
-      
-      if(IsDataMC())
-      {
-        for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
+        fhEtaPhiDecay[iso][ibit]->SetXTitle("#eta");
+        fhEtaPhiDecay[iso][ibit]->SetYTitle("#phi");
+        outputContainer->Add(fhEtaPhiDecay[iso][ibit]) ;
+        
+        if(fFillSSHisto)
         {
-          
-          fhPtDecayNoIsoMC[ibit][imc]  =
-          new TH1F(Form("hPtDecayNoIso_bit%d_MC%s",fDecayBits[ibit],mcPartName[imc].Data()),
-                   Form("#it{p}_{T} of NOT isolated, decay bit %d,  %s, %s",fDecayBits[ibit],mcPartType[imc].Data(),parTitle.Data()),
-                   nptbins,ptmin,ptmax);
-          fhPtDecayNoIsoMC[ibit][imc]->SetYTitle("#it{counts}");
-          fhPtDecayNoIsoMC[ibit][imc]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-          outputContainer->Add(fhPtDecayNoIsoMC[ibit][imc]) ;
-          
-          if(!fMakeSeveralIC)
+          fhPtLambda0Decay[iso][ibit]  = new TH2F
+          (Form("hPtLambda0Decay%s_bit%d",isoName[iso].Data(),fDecayBits[ibit]),
+           Form("%s cluster : #it{p}_{T} vs #lambda_{0}, decay bit %d, %s",isoTitle[iso].Data(), fDecayBits[ibit], parTitle.Data()),
+           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhPtLambda0Decay[iso][ibit]->SetYTitle("#lambda_{0}^{2}");
+          fhPtLambda0Decay[iso][ibit]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPtLambda0Decay[iso][ibit]) ;
+        }
+        
+        if(IsDataMC())
+        {
+          for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
           {
-            fhPtDecayIsoMC[ibit][imc]  =
-            new TH1F(Form("hPtDecay_bit%d_MC%s",fDecayBits[ibit],mcPartName[imc].Data()),
-                     Form("#it{p}_{T} of isolated %s, decay bit %d, %s",mcPartType[imc].Data(),fDecayBits[ibit],parTitle.Data()),
+            fhPtDecayMC[iso][ibit][imc]  =
+            new TH1F(Form("hPtDecay%s_bit%d_MC%s",isoName[iso].Data(),fDecayBits[ibit],mcPartName[imc].Data()),
+                     Form("#it{p}_{T} of %s, decay bit %d,  %s, %s",isoTitle[iso].Data(),fDecayBits[ibit],mcPartType[imc].Data(),parTitle.Data()),
                      nptbins,ptmin,ptmax);
-            fhPtDecayIsoMC[ibit][imc]->SetYTitle("#it{counts}");
-            fhPtDecayIsoMC[ibit][imc]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-            outputContainer->Add(fhPtDecayIsoMC[ibit][imc]) ;
-          }
-        }// MC particle loop
-      }// MC
-    } // bit loop
+            fhPtDecayMC[iso][ibit][imc]->SetYTitle("#it{counts}");
+            fhPtDecayMC[iso][ibit][imc]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+            outputContainer->Add(fhPtDecayMC[iso][ibit][imc]) ;
+          }// MC particle loop
+        }// MC
+      } // bit loop
+    } //iso loop
   }// decay
   
   if(!fMakeSeveralIC)
   {
-    TString isoName [] = {"NoIso",""};
+    TString isoName [] = {"NoIso","Iso"};
     TString isoTitle[] = {"Not isolated"  ,"isolated"};
     
     fhEIso   = new TH1F("hE",
@@ -2883,21 +2895,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtLambda0[iso]->SetYTitle("#lambda_{0}^{2}");
         fhPtLambda0[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtLambda0[iso]) ;
-        
-        if(fFillTaggedDecayHistograms)
-        {
-          for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
-          {
-            fhPtLambda0Decay[iso][ibit]  = new TH2F
-            (Form("hPtLambda0Decay%s_bit%d",isoName[iso].Data(),fDecayBits[ibit]),
-             Form("%s cluster : #it{p}_{T} vs #lambda_{0}, decay bit %d, %s",isoTitle[iso].Data(), fDecayBits[ibit], parTitle.Data()),
-             nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhPtLambda0Decay[iso][ibit]->SetYTitle("#lambda_{0}^{2}");
-            fhPtLambda0Decay[iso][ibit]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            outputContainer->Add(fhPtLambda0Decay[iso][ibit]) ;
-          }
-        }
-        
+         
         if(IsDataMC())
         {
           for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
@@ -3909,13 +3907,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Float_t energy     = aod->E();
     Float_t phi        = aod->Phi();
     Float_t eta        = aod->Eta();
-
-    Int_t   decayTag = 0;
-    if(fFillTaggedDecayHistograms)
-    {
-      decayTag = aod->GetBtag(); // temporary
-      if(decayTag < 0) decayTag = 0; // temporary
-    }
     
     if(GetDebug() > 0)
       printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d\n",
@@ -4014,30 +4005,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         fhEtaIsoMC[mcIndex]->Fill(pt,eta);
       }//Histograms with MC
       
-      // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
-      if(fFillTaggedDecayHistograms && decayTag > 0)
-      {
-        for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
-        {
-          if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
-          {
-            fhPtDecayIso       [ibit]->Fill(pt);
-            fhEtaPhiDecayIso   [ibit]->Fill(eta,phi);
-
-            if(IsDataMC())
-            {
-              if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
-                fhPtDecayIsoMC[ibit][kmcPhoton]->Fill(pt);
-              
-              if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
-                fhPtDecayIsoMC[ibit][kmcPi0DecayLostPair]->Fill(pt);
-              
-              fhPtDecayIsoMC[ibit][mcIndex]->Fill(pt);
-            }
-          } // bit ok
-        } // bit loop
-      } // decay histograms
-      
       if(fFillNLMHistograms)
         fhPtNLocMaxIso ->Fill(pt,aod->GetFiducialArea()) ; // remember to change method name
       
@@ -4082,30 +4049,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
 
         fhPtNoIsoMC[mcIndex]->Fill(pt);
       }
-      
-      // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
-      if(fFillTaggedDecayHistograms && decayTag > 0)
-      {
-        for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
-        {
-          if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
-          {
-            fhPtDecayNoIso[ibit]    ->Fill(pt);
-            fhEtaPhiDecayNoIso[ibit]->Fill(eta,phi);
-            
-            if(IsDataMC())
-            {
-              if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
-                fhPtDecayNoIsoMC[ibit][kmcPhoton]->Fill(pt);
-              
-              if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
-                fhPtDecayNoIsoMC[ibit][kmcPi0DecayLostPair]->Fill(pt);
-              
-              fhPtDecayNoIsoMC[ibit][mcIndex]->Fill(pt);
-            }
-          } // bit ok
-        } // bit loop
-      } // decay histograms
       
       if(fFillNLMHistograms)
         fhPtNLocMaxNoIso ->Fill(pt,aod->GetFiducialArea()); // remember to change method name
@@ -4604,6 +4547,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   Float_t ptC   = ph->Pt();
   Float_t etaC  = ph->Eta();
   Float_t phiC  = ph->Phi();
+  if(phiC<0) phiC += TMath::TwoPi();
   Int_t   tag   = ph->GetTag();
 
   Int_t   decayTag = 0;
@@ -4650,18 +4594,18 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
     {
       if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
       {
-        fhPtDecayNoIso[ibit]    ->Fill(ptC);
-        fhEtaPhiDecayNoIso[ibit]->Fill(etaC,phiC);
+        fhPtDecay    [0][ibit]->Fill(ptC);
+        fhEtaPhiDecay[0][ibit]->Fill(etaC,phiC);
         
         if(IsDataMC())
         {
           if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-            fhPtDecayNoIsoMC[ibit][kmcPhoton]->Fill(ptC);
+            fhPtDecayMC[0][ibit][kmcPhoton]->Fill(ptC);
 
           if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==kmcPi0Decay )
-            fhPtDecayNoIsoMC[ibit][kmcPi0DecayLostPair]->Fill(ptC);
+            fhPtDecayMC[0][ibit][kmcPi0DecayLostPair]->Fill(ptC);
           
-          fhPtDecayNoIsoMC[ibit][mcIndex]->Fill(ptC);
+          fhPtDecayMC[0][ibit][mcIndex]->Fill(ptC);
         }
       } // bit ok
     } // bit loop

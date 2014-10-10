@@ -224,10 +224,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhENoIso ;                             //! Number of not isolated leading particles vs Energy
   TH1F *   fhPtNoIso ;                            //! Number of not isolated leading particles vs pT
   TH2F *   fhPtNLocMaxNoIso ;                     //! Number of not isolated particles vs NLM in cluster
-  TH1F *   fhPtDecayIso[4] ;                      //! Number of isolated Pi0 decay particles (invariant mass tag)
-  TH1F *   fhPtDecayNoIso[4] ;                    //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
-  TH2F *   fhEtaPhiDecayIso[4] ;                  //! eta vs phi of isolated Pi0 decay particles
-  TH2F *   fhEtaPhiDecayNoIso[4] ;                //! eta vs phi of not isolated leading Pi0 decay particles
+  TH1F *   fhPtDecay[2][4] ;                      //! Number of (non) isolated Pi0 decay particles (invariant mass tag)
+  TH2F *   fhEtaPhiDecay[2][4] ;                  //! eta vs phi of (not) isolated leading Pi0 decay particles
   TH2F *   fhPtLambda0Decay[2][4];                //! Shower shape of (non) isolated leading Pi0 decay particles (do not apply SS cut previously)
 
   TH2F *   fhPtInCone ;                           //! Cluster/track Pt in the cone
@@ -387,9 +385,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiIsoMC   [fgkNmcTypes];            //! Phi of isolated mcTypes particle
   TH2F *   fhEtaIsoMC   [fgkNmcTypes];            //! eta of isolated mcTypes particle
   
-  TH1F *   fhPtDecayIsoMC  [4][fgkNmcTypes] ;     //! Number of isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
-  TH1F *   fhPtDecayNoIsoMC[4][fgkNmcTypes] ;     //! Number of not isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
-
+  TH1F *   fhPtDecayMC  [2][4][fgkNmcTypes] ;     //! Number of (not) isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
+  
   TH2F *   fhPtLambda0MC   [fgkNmcTypes][2];      //! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously)
  
   // Multiple cut analysis
