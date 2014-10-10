@@ -382,7 +382,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fMCDirPhotonPtEtaPhiNoClus = new TH3F("hMCDirPhotonPhiEtaNoClus","p_{T}, #eta and  #phi of prompt photons with no reco clusters;p_{T};#eta;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,154,-0.77,0.77,130,1.38,3.20);
   fOutputList->Add(fMCDirPhotonPtEtaPhiNoClus);
 
-  fInvMassWithConeVsEtAndIso = new TH3F("hInvMassWithConeVsEtAndIso","M_{cand+in_cone_clus} vs E_{T}^{cand} vs. E_{T}^{ISO} (EMC+Trk) (0.1<M02<0.3 only)",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,100,0,1,1000,0,200);
+  fInvMassWithConeVsEtAndIso = new TH3F("hInvMassWithConeVsEtAndIso","M_{cand+in_cone_clus} vs E_{T}^{cand} vs. E_{T}^{ISO} (EMC+Trk) (0.1<M02<0.3 only)",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,400,0,1,1000,0,200);
   fOutputList->Add(fInvMassWithConeVsEtAndIso);
 
   Int_t nEt=fNBinsPt*5, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=fNBinsPt;
@@ -959,18 +959,18 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
 	}
       }
     }
-    if(c->GetM02()>0.1 && c->GetM02()<0.33){
-      TLorentzVector lv, lvec;
-      lv.SetPtEtaPhiM(Et,cv.Eta(),cv.Phi(),0);
-      lvec.SetPtEtaPhiM(EtCl,vec.Eta(),vec.Phi(),0);
-      TLorentzVector lpair = lv + lvec;
-      fInConeInvMass += Form(";%f",lpair.M());
-    }
     Double_t nEt = TMath::Max(Et-matchedpt, 0.0);
     if(nEt<0)
       printf("nEt=%1.1f\n",nEt);
     if(R<fIsoConeR){
       totiso += nEt;
+      if(c->GetM02()>0.1 && c->GetM02()<0.3 && !(matchedpt>0)){
+	TLorentzVector lv, lvec;
+	lv.SetPtEtaPhiM(Et,cv.Eta(),cv.Phi(),0);
+	lvec.SetPtEtaPhiM(EtCl,vec.Eta(),vec.Phi(),0);
+	TLorentzVector lpair = lv + lvec;
+	fInConeInvMass += Form(";%f",lpair.M());
+      }
       if(R<0.04)
 	totcore += nEt;
     }
