@@ -39,7 +39,7 @@ AliAnalysisTaskEMCAPi0V2ShSh *AddTaskEMCAPi0V2ShSh()
 		mgr->AddTask(task);
 
 		AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-		AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("hist", TList::Class(),AliAnalysisManager::kOutputContainer, "lhc11h_2_EMCAPi0V2ShSh.root");
+		AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("hist", TList::Class(),AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName()));
 			
 		mgr->ConnectInput(task, 0, cinput);
 		mgr->ConnectOutput(task, 1, coutput1);
