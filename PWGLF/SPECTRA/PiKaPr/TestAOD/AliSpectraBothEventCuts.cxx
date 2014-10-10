@@ -246,7 +246,6 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
         	fHistoVtxAftSelwithoutZvertexCutusingMCz->Fill(mcZ);	
      	if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
      	{
-      		fHistoCuts->Fill(kAcceptedEvents);
 		fIsSelected=kTRUE;
 		fHistoVtxAftSel->Fill(vertex->GetZ());
      	}
@@ -259,6 +258,8 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
   {
 	if( CheckCentralityCut() && CheckMultiplicityCut() && CheckQVectorCut())
 		fIsSelected=kTRUE;
+	else
+		fIsSelected=kFALSE;	
   }	
 
 
@@ -283,7 +284,10 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
     	}
   }
   if(fIsSelected)
-	fHistoNChAftSel->Fill(Nch);
+  {	
+  	fHistoNChAftSel->Fill(Nch);
+	fHistoCuts->Fill(kAcceptedEvents);
+  }	
   return fIsSelected;
 }
 
@@ -348,7 +352,7 @@ Bool_t AliSpectraBothEventCuts::CheckCentralityCut()
 		cent=ApplyCentralityPatchAOD049();
   }	
   fHistoCentrality->Fill(0.5,cent);	
-  if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  
+  if ( (cent < fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  
   {
 	 fHistoCentrality->Fill(1.5,cent);	
   	return kTRUE;
