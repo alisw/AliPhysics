@@ -1375,7 +1375,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     trigCount->Count(Form("triggerType:All/Run:%d",runNumber));
     trigCount2->Count(Form("triggerType:All/Run:%d",runNumber));
     if(evSelMask==0){
-      if(aod->GetEventType()!=7){
+      if(aod->GetEventType()!=7 || trigClass.Contains("BEAMB")){
 	trigCount->Count(Form("triggerType:NoPhysSelEvNot7/Run:%d",runNumber));
 	trigCount2->Count(Form("triggerType:NoPhysSelEvNot7/Run:%d",runNumber));
       }else if(trigClass.Contains("CMUP1")){
