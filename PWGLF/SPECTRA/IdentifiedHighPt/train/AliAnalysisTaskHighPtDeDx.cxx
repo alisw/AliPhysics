@@ -2255,10 +2255,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
 	continue;
       
-      // Pt cut on decay products
-      if (esdV0->Pt() < fMinPtV0)
-	//	if (pTrack->Pt() < fMinPt && nTrack->Pt() < fMinPt)
-	continue;
+        //Pre-selection to reduce output size
+        // Pt cut on decay products
+        if (esdV0->Pt() < fMinPtV0) continue;
+        // No point in keeping low cospa values...
+        if (esdV0->GetV0CosineOfPointingAngle() < 0.996 ) continue;
+        //Reject on-the-fly tracks too
+        if (esdV0->GetOnFlyStatus() != 0 ) continue;
+        
 
       //filter for positive track
       UShort_t filterFlag_p = 0;
@@ -2806,10 +2810,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       if(TMath::Abs(pTrackTPC->Eta()) > fEtaCut || TMath::Abs(nTrackTPC->Eta()) > fEtaCut)
 	continue;
       
-      // Pt cut on decay products
-      if (esdV0->Pt() < fMinPtV0)
-	//	if (pTrack->Pt() < fMinPt && nTrack->Pt() < fMinPt)
-	continue;
+        //Pre-selection to reduce output size
+        // Pt cut on decay products
+        if (esdV0->Pt() < fMinPtV0) continue;
+        // No point in keeping low cospa values...
+        if (esdV0->GetV0CosineOfPointingAngle() < 0.996 ) continue;
+        //Reject on-the-fly tracks too
+        if (esdV0->GetOnFlyStatus() != 0 ) continue;
  
       
       // Check if switch does anything!
@@ -3241,10 +3248,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
 	continue;
       
-      // Pt cut on decay products
-      if (aodV0->Pt() < fMinPtV0)
-	//	if (pTrack->Pt() < fMinPt && nTrack->Pt() < fMinPt)
-	continue;
+        //Pre-selection to reduce output size
+        // Pt cut on decay products
+        if (aodV0->Pt() < fMinPtV0) continue;
+        // No point in keeping low cospa values...
+        if (aodV0->CosPointingAngle(myBestPrimaryVertex) < 0.996 ) continue;
+        //Reject on-the-fly tracks too
+        if (aodV0->GetOnFlyStatus() != 0 ) continue;
       
 
 
@@ -3728,10 +3738,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
        Int_t nsharedtpcclusters=nsharedTPC.CountBits(0)-nsharedTPC.CountBits(159);
        
 
-       // Pt cut on decay products
-       if (aodV0->Pt() < fMinPt)
-	 //	if (pTrack->Pt() < fMinPt && nTrack->Pt() < fMinPt)
-	 continue;
+         //Pre-selection to reduce output size
+         // Pt cut on decay products
+         if (aodV0->Pt() < fMinPtV0) continue;
+         // No point in keeping low cospa values...
+         if (aodV0->CosPointingAngle(myBestPrimaryVertex) < 0.996 ) continue;
+         //Reject on-the-fly tracks too
+         if (aodV0->GetOnFlyStatus() != 0 ) continue;
+         
        
        //check positive tracks
        UShort_t filterFlag_p = 0;
