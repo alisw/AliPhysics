@@ -547,6 +547,9 @@ Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
   if(fNonlinearityVersion=="Default"){
     return 0.0241+1.0504*en+0.000249*en*en ;
   }
+  if(fNonlinearityVersion=="MC"){ //Default + some correction
+    return (0.0241+1.0504*en+0.000249*en*en)*fNonlinearityParams[0]*(1+fNonlinearityParams[1]/(1.+en*en/fNonlinearityParams[2]/fNonlinearityParams[2])) ;
+  }
 
   if(fNonlinearityVersion=="NoCorrection"){
     return en ;

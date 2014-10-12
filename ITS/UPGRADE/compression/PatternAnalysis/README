@@ -1,0 +1,9 @@
+Macros from Luca Barioglio for claster patterns analysis
+Presented in 
+https://indico.cern.ch/event/339513/contribution/3/material/slides/0.pdf
+- BuildClTopDB.C
+- compClusHits.C (modified with impact angles)
+- SecondcompClusHits.C (with DB Loading)
+- complete1.C (all the histograms)
+- errClus.C (just 1D histograms)
+- groupdef.C (grouping)

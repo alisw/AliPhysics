@@ -46,6 +46,8 @@ class AliITSURecoParam : public AliDetectorRecoParam
   Int_t       GetNTrackingConditions()           const {return fTrackingConditions.GetEntriesFast();}
   AliITSUTrackCond* GetTrackingCondition(Int_t i) const {return (AliITSUTrackCond*)fTrackingConditions[i];}
   Bool_t      GetUseMatLUT(Int_t step)           const {return (step<0||step>=kNTrackingPhases) ? kFALSE:fUseMatLUT[step];}
+  Int_t GetTracker() const {return fTracker;}
+  Bool_t GetSAonly() const {return fSAonly;}
   //
   void        SetNLayers(Int_t n);
   void        SetTanLorentzAngle(Int_t lr, Double_t v);
@@ -66,6 +68,8 @@ class AliITSURecoParam : public AliDetectorRecoParam
   void        SetUseMatLUT(Int_t step, Bool_t v)                      {if (step>=0&&step<kNTrackingPhases) fUseMatLUT[step]=v;}
   void        AddTrackingCondition(AliITSUTrackCond* cond);
   virtual void Print(Option_t *opt="")  const;
+  void SetTracker(Int_t opt) {fTracker=opt;}
+  void SetSAonly(Bool_t sa=kTRUE) {fSAonly=sa;}
   //
  protected:
   Int_t          fNLayers;          // number of layers 
@@ -105,11 +109,13 @@ class AliITSURecoParam : public AliDetectorRecoParam
   static const Bool_t   fgkUseMatLUT[kNTrackingPhases];        // def. mat. LUT usage 
   static const Bool_t   fgkAllowDiagonalClusterization;        // clusters of pixels with common corners
   //
+  Int_t fTracker;  // 0 - global, 1 - cooked, 2 - CA
+  Bool_t fSAonly;  // kTRUE, if ITSU standalone tracking only  
  private:
   AliITSURecoParam(const AliITSURecoParam & param);
   AliITSURecoParam & operator=(const AliITSURecoParam &param);
 
-  ClassDef(AliITSURecoParam,5) // ITS reco parameters
+  ClassDef(AliITSURecoParam,6) // ITS reco parameters
 };
 
 //_____________________________________________________________________________

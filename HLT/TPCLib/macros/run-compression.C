@@ -17,7 +17,7 @@
 // aliroot -b -q -l run-compressor.C'(1, 2, 1, "writer", "compressor compressor-publisher", 167808, "local://OCDB")'
 //
 // Chains:
-// 'hltout-cluster-writer' writes clusters for every event in directory
+// 'hltout-cluster-writer' writes cluster blocks in binary format from HLTOUT for every event in directory
 //              hltout-compressed-cluster and a publisher configuration
 //              file hltout-compressed-cluster.txt 
 //
@@ -30,6 +30,8 @@
 //
 // 'compressor' the compressor component is configured to write a
 //              statistics file HLT.TPCDataCompression-histograms*.root
+//              the command line arguments of the macro are passed to the compressor component
+//              configuration in order to specify the compression algorithms
 //
 // 'huffmantrainer' huffman table trainer
 //
@@ -68,8 +70,8 @@ void run_compression(int mode=defaultMode, int deflaterMode=defaultDeflaterMode,
   //
   ///////////////////////////////////////////////////////////////////////////////////////////
 
-  // handling of compressed clusters from HLTOUT
-  // 'hltout-cluster-writer' writes clusters for every event in directory hltout-compressed-cluster
+  // handling of compressed cluster blocks from HLTOUT
+  // 'hltout-cluster-writer' writes cluster blocks in binary format from HLTOUT for every event in directory hltout-compressed-cluster
   // and a publisher configuration file hltout-compressed-cluster.txt 
   // 'compressed-cluster-publisher' publishes according to list hltout-compressed-cluster.txt
   AliHLTConfiguration hltoutpublisher("hltout-publisher", "AliHLTOUTPublisher", "", "-datatype 'REMCLSCM' 'TPC '");
@@ -80,10 +82,12 @@ void run_compression(int mode=defaultMode, int deflaterMode=defaultDeflaterMode,
   // 'tpc-raw-writer' writes TPC raw DDL files per event in directory tpc-raw and a publisher
   // configuration file tpc-raw.txt
   // 'compressor-input-writer' writes input to compression component (clusters from HWCF and reconstructed tracks)
+  // the chains TPC-hwcfdata and TPC-globalmerger are executed to emulate clusters from raw data
+  // and produce the track data binary block
   // to directory compressor-input and publisher configuration file compressor-input.txt
   // 'compressor-publisher' publishes files according to configuration file
   AliHLTConfiguration tpcrawwriter("tpc-raw-writer", "FileWriter","TPC-raw-data", "-directory tpc-raw -subdir -specfmt=_0x%08x -blocknofmt= -publisher-conf tpc-raw.txt");
-  AliHLTConfiguration emulatorhwclust1writer("compressor-input-writer", "FileWriter","TPC-hwcfdata TPC-globalmerger", "-directory compressor-input -subdir -specfmt=_0x%08x -blocknofmt= -publisher-conf compressor-input.txt");
+  AliHLTConfiguration emulatorhwclust1writer("compressor-input-writer", "FileWriter","TPC-HWCFDecoder TPC-globalmerger", "-directory compressor-input -subdir -specfmt=_0x%08x -blocknofmt= -publisher-conf compressor-input.txt");
   AliHLTConfiguration compressorpublisher("compressor-publisher", "FilePublisher", "", "-datafilelist compressor-input.txt");
 
   // compressor configuration
@@ -115,6 +119,7 @@ void run_compression(int mode=defaultMode, int deflaterMode=defaultDeflaterMode,
 
   if (chain) {
     pHLT->ScanOptions("loglevel=0x7c");
+    //pHLT->ScanOptions("loglevel=0x7f frameworklog=0x7f");
     pHLT->BuildTaskList(chain);
     pHLT->Run(events);
   }
@@ -133,11 +138,22 @@ void run_compression(int mode, int events,
 // an abbreviated version setting default deflaterMode to 2 and
 // omitting monitorInput
 // example:
-//  aliroot -b -q -l run-compression.C'(1, 5, "compressor", "", 167808)'
+//  aliroot -b -q -l run-compression.C'(1, 5, "compressor", 167808)'
 void run_compression(int mode, int events,
 		const char* chain,
 		int runno,
 		const char* cdbURI=defaultCDBUri)
 {
   run_compression(mode, defaultDeflaterMode, events, chain, defaultMonitorInput, runno, cdbURI);
+}
+
+// an abbreviated version omitting monitorInput
+// example:
+//  aliroot -b -q -l run-compression.C'(1, 2, 5, "compressor", 167808)'
+void run_compression(int mode, int deflaterMode, int events,
+		const char* chain,
+		int runno,
+		const char* cdbURI=defaultCDBUri)
+{
+  run_compression(mode, deflaterMode, events, chain, defaultMonitorInput, runno, cdbURI);
 }

@@ -102,7 +102,7 @@ private:
 
     TGPicturePool* fPicturePool;
 
-    TEveManager* fEve;
+//    TEveManager* fEve;
     AliEveFileDialog* fFileDialog;
 
     ClassDef(AliEveMainWindow, 0); // Short description.

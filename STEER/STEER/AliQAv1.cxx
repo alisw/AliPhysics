@@ -607,8 +607,7 @@ AliQAv1 * AliQAv1::Instance()
   // Get an instance of the singleton. The only authorized way to call the ctor
 
   if ( ! fgQA) {
-    GetQAResultFile() ; 
-    fgQA = static_cast<AliQAv1 *>(fgQAResultFile->Get("QA")) ; 
+    if (GetQAResultFile()) fgQA = static_cast<AliQAv1 *>(fgQAResultFile->Get("QA")) ; 
     if ( ! fgQA ) 
       fgQA = new AliQAv1() ;
   }

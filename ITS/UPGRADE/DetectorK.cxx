@@ -758,14 +758,14 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 
   Int_t nPt = kNptBins;
   // Clean up ......
-  for (Int_t i=0; i<kMaxNumberOfDetectors; i++) {
-    for (Int_t j=0; j<nPt; j++) {
+  for (Int_t j=0; j<nPt; j++) {
+    for (Int_t i=0; i<kMaxNumberOfDetectors; i++) {
       fDetPointRes[i][j]  = RIDICULOUS;
       fDetPointZRes[i][j] = RIDICULOUS;
-      fTransMomenta[i] =0;
-      fMomentumRes[i] =0;
-      fResolutionRPhi[i] =0;
     }
+    fTransMomenta[j] =0;
+    fMomentumRes[j] =0;
+    fResolutionRPhi[j] =0;
   }
   
   if (!allPt) { // not the whole pt range -> allows a faster minimization at a defined 'meanpt'

@@ -8,6 +8,8 @@
 #include "AliVEvent.h"
 #include <TMatrixDSym.h>
 #include <TMath.h>
+#include "AliVMultiplicity.h"
+#include "AliPPVsMultUtils.h"
 
 #include "AliAnalysisUtils.h"
 
@@ -30,7 +32,10 @@ AliAnalysisUtils::AliAnalysisUtils():TObject(),
   fnSigmaPlpZdistSPD(3.),
   fnSigmaPlpDiamXYSPD(2.),
   fnSigmaPlpDiamZSPD(5.),
-  fUseSPDCutInMultBins(kFALSE)
+  fUseSPDCutInMultBins(kFALSE),
+  fASPDCvsTCut(65.),
+  fBSPDCvsTCut(4.),
+  fPPVsMultUtils(0x0)
 {
   // Default contructor
 }
@@ -222,6 +227,17 @@ Bool_t AliAnalysisUtils::IsOutOfBunchPileUp(AliVEvent *event)
   return kFALSE;
 }
 
+
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsSPDClusterVsTrackletBG(AliVEvent *event){
+  Int_t nClustersLayer0 = event->GetNumberOfITSClusters(0);
+  Int_t nClustersLayer1 = event->GetNumberOfITSClusters(1);
+  Int_t nTracklets      = event->GetMultiplicity()->GetNumberOfTracklets();
+  if (nClustersLayer0 + nClustersLayer1 > fASPDCvsTCut + nTracklets*fBSPDCvsTCut) return kTRUE;
+  return kFALSE;
+}
+
+
 //______________________________________________________________________
 Double_t AliAnalysisUtils::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
 {
@@ -249,4 +265,15 @@ Double_t AliAnalysisUtils::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
     +    2*vVb(0,1)*dx*dy + 2*vVb(0,2)*dx*dz + 2*vVb(1,2)*dy*dz;
   return dist>0 ? TMath::Sqrt(dist) : -1; 
 
+}
+
+//______________________________________________________________________
+Float_t AliAnalysisUtils::GetMultiplicityPercentile(AliVEvent *event, TString lMethod ){
+  if(!fPPVsMultUtils)
+    fPPVsMultUtils=new AliPPVsMultUtils();
+  if( (event->InheritsFrom("AliAODEvent")) || (event->InheritsFrom("AliESDEvent")) ) return fPPVsMultUtils->GetMultiplicityPercentile(event,lMethod);
+  else {
+    AliFatal("Event is neither of AOD nor ESD type"); 
+    return -999.;
+  }
 }

@@ -230,12 +230,15 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
       for (Int_t iCluster=0; iCluster<clustersPerDetElem[iDetElem]->GetEntries(); iCluster++) {
 	newCluster = (AliMFTCluster*) (clustersPerDetElem[iDetElem]->At(iCluster));
 	newCluster -> TerminateCluster();
+	newCluster -> SetClusterEditable(kTRUE);
+	if (TMath::Abs(newCluster->GetZ())<TMath::Abs(fSegmentation->GetPlane(iPlane)->GetZCenter())) newCluster->SetClusterFront(kTRUE);
+	else                                                                                          newCluster->SetClusterFront(kFALSE);
 	if (fApplyMisalignment) {
-	  newCluster -> SetClusterEditable(kTRUE);
 	  newCluster -> SetX(newCluster->GetX()+misalignmentX);
 	  newCluster -> SetY(newCluster->GetY()+misalignmentY);
-	  newCluster -> SetClusterEditable(kFALSE);
 	}
+	newCluster -> SetClusterEditable(kFALSE);
+
 	new ((*fClustersPerPlane[iPlane])[fClustersPerPlane[iPlane]->GetEntries()]) AliMFTCluster(*newCluster);
       }
     }

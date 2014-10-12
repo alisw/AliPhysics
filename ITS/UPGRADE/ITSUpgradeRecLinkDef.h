@@ -23,7 +23,7 @@
 #pragma link C++ class AliITSUClusterPix+;
 #pragma link C++ class AliITSUSeed+;
 #pragma link C++ class AliITSUTrackerGlo+;
-#pragma link C++ class AliITSUTrackerSA+;
+#pragma link C++ class AliITSUCATracker+;
 #pragma link C++ class AliITSUTrackerCooked+;
 #pragma link C++ class AliITSUTrackCooked+;
 #pragma link C++ class AliITSUTrackCond+;

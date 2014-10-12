@@ -39,6 +39,7 @@
 
 // initialize static members
 TH2F* AliPIDCombined::fDefaultPriorsTPC[]={0x0};
+TH2F* AliPIDCombined::fDefaultPriorsTPCpPb[]={0x0};
 Float_t AliPIDCombined::fTOFmismProb = 0;
 
 ClassImp(AliPIDCombined);
@@ -100,10 +101,10 @@ void AliPIDCombined::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior
 }
 
 //-------------------------------------------------------------------------------------------------	
-UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPIDResponse *response, Double_t* bayesProbabilities) const {
+UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPIDResponse *response, Double_t* bayesProbabilities,Double_t *priorsOwn) const {
   //
   // (1) Get raw probabilities of requested detectors and combine
-  // (2) Get priors and propagate depending on detectors used
+  // (2) priors passed as argument
   // (3) Compute Bayes probabilities
   //
 
@@ -113,20 +114,20 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
   fTOFmismProb = 0; // reset TOF mismatch weights
 
   AliPIDResponse::EDetPidStatus status=AliPIDResponse::kDetNoSignal;
-  Double_t p[fSelectedSpecies];  // combined probabilities of selected detectors
-  Double_t pMismTOF[fSelectedSpecies];  // combined TOF mismatch probabilities using selected detectors
+  Double_t p[AliPID::kSPECIESC];  // combined probabilities of selected detectors
+  Double_t pMismTOF[AliPID::kSPECIESC];  // combined TOF mismatch probabilities using selected detectors
   for (Int_t i=0;i<fSelectedSpecies;i++){ p[i]=1.;pMismTOF[i]=1.;} // no decision
   for (Int_t ibit = 0; ibit < 7 ; ibit++) {
     AliPIDResponse::EDetCode detBit = (AliPIDResponse::EDetCode)(1<<ibit);
     if (fDetectorMask & detBit) {  	    // getting probabilities for requested detectors only
-      Double_t detProb[fSelectedSpecies];
+      Double_t detProb[AliPID::kSPECIESC];
       status = response->ComputePIDProbability(detBit,track,fSelectedSpecies,detProb);
       if (status == AliPIDResponse::kDetPidOk) {
 	if (fRejectMismatchMask & detBit) {         // mismatch check (currently just for TOF)
 	  if (detBit == AliPIDResponse::kDetTOF) {
 	    fTOFmismProb = response->GetTOFMismatchProbability(); // mismatch weights computed with TOF probs (no arguments)
-	    Float_t probMis = response->GetTOFMismatchProbability(track); // mismatch compatibility TPC-TOF cut
-	    SetCombinedStatus(status,&usedMask,detBit,detProb,probMis);
+	    //Float_t probMis = response->GetTOFMismatchProbability(track); // mismatch compatibility TPC-TOF cut
+	    SetCombinedStatus(status,&usedMask,detBit,detProb,fTOFmismProb);
 	  } else {
 	    SetCombinedStatus(status,&usedMask,detBit);
 	  }
@@ -135,7 +136,11 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	}
 	for (Int_t i=0;i<fSelectedSpecies;i++){
 	  p[i] *= detProb[i];
-	  if(detBit == AliPIDResponse::kDetTOF) pMismTOF[i] *= fTOFmismProb;
+	  if(detBit == AliPIDResponse::kDetTOF){
+	    Float_t pt = track->Pt();
+	    Float_t mismPropagationFactor[] = {1.,1.,1.,1 + TMath::Exp(1 - 1.12*pt),1 + 1./(4.71114 - 5.72372*pt + 2.94715*pt*pt),1.,1.,1.,1.,1.}; // correction for kaons and protons which has to be alligned with the one in AliPIDResponse
+	    pMismTOF[i] *= fTOFmismProb*mismPropagationFactor[i];
+	  }
 	  else pMismTOF[i] *= detProb[i];
 	}
       }
@@ -145,10 +150,17 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
   if (usedMask == 0) return usedMask;
 
   // (2) Get priors and propagate depending on detectors used
-  Double_t priors[fSelectedSpecies];
+  Double_t priors[AliPID::kSPECIESC];
   memset(priors,0,fSelectedSpecies*sizeof(Double_t));
-  if (fEnablePriors){
-    GetPriors(track,priors,response->GetCurrentCentrality());
+
+  if(priorsOwn){
+    for(Int_t ipr=0;ipr < fSelectedSpecies;ipr++)
+      priors[ipr] = priorsOwn[ipr];
+  }
+
+  else if (fEnablePriors){
+    Bool_t isPPB = (response->GetBeamType() == AliPIDResponse::kPPB);
+    GetPriors(track,priors,response->GetCurrentCentrality(),isPPB);
 
     // We apply the propagation factors of the more external detector
     // 
@@ -219,10 +231,14 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
     } // end of outer cases: EMCAL/HMPID
       else if ( (usedMask & AliPIDResponse::kDetTOF) == AliPIDResponse::kDetTOF ){
 	Float_t kaonTOFfactor = 0.1;
-	if(pt > 0.35) kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/5.68017E-01)*TMath::Power(pt,-1.50705);
+	if(pt > 0.29){
+	  kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/4.96502e-01)*TMath::Power(pt,-1.50705);
+	  if(pt < 0.4) kaonTOFfactor *= 1-1.29854e-04/TMath::Power(pt,7.5);
+	}
+
 	Float_t protonTOFfactor = 0.1;
 	if(pt > 0.4) protonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,3.30978)/8.57396E-02)*TMath::Power(pt,-4.42661E-01);
-	       
+
 	if(track->Charge() < 0){ // for negative tracks
 	  kaonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,4.87912E-07)/3.26431E-01)*TMath::Power(pt,-1.22893);
 	  protonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,2.00575E-07)/4.95605E-01)*TMath::Power(pt,-6.71305E-01);
@@ -258,8 +274,8 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
   }   // end of use priors
   else { for (Int_t i=0;i<fSelectedSpecies;i++) priors[i]=1.;}
 
-  // (3) Compute Bayes probabilities
-  ComputeBayesProbabilities(bayesProbabilities,p,priors);
+  //  Compute Bayes probabilities
+  ComputeBayesProbabilities(bayesProbabilities,p,priors,pMismTOF);
 
   // compute TOF probability contribution from mismatch
   fTOFmismProb = 0; 
@@ -270,12 +286,13 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 
 
 //-------------------------------------------------------------------------------------------------
-void AliPIDCombined::GetPriors(const AliVTrack *track, Double_t* p,Float_t centrality) const {
+void AliPIDCombined::GetPriors(const AliVTrack *track, Double_t* p,Float_t centrality,Bool_t isPPB) const {
 	
 	//
 	// get priors from distributions
 	//
 	
+
 	Double_t pt=TMath::Abs(track->Pt());
 
         if(fUseDefaultTPCPriors){ // use default priors if requested
@@ -284,8 +301,11 @@ void AliPIDCombined::GetPriors(const AliVTrack *track, Double_t* p,Float_t centr
 	  else if(usedCentr > 99) usedCentr = 99;
 	  if(pt > 9.99) pt = 9.99;
 	  else if(pt < 0.01)  pt = 0.01;
-	  
-	  for(Int_t i=0;i<5;i++) p[i] = fDefaultPriorsTPC[i]->Interpolate(usedCentr,pt);
+
+	  if(! isPPB)
+	    for(Int_t i=0;i<AliPID::kSPECIESC;i++) p[i] = fDefaultPriorsTPC[i]->Interpolate(usedCentr,pt);
+	  else
+	    for(Int_t i=0;i<AliPID::kSPECIESC;i++) p[i] = fDefaultPriorsTPCpPb[i]->Interpolate(usedCentr,pt);
 
 	  return;
 	}
@@ -323,12 +343,15 @@ void AliPIDCombined::GetPriors(const AliVTrack *track,Double_t* p,const AliPIDRe
 	  if(pt > 9.99) pt = 9.99;
 	  else if(pt < 0.01)  pt = 0.01;
 	  
-	  for(Int_t i=0;i<5;i++) p[i] = fDefaultPriorsTPC[i]->Interpolate(usedCentr,pt);
+	  for(Int_t i=0;i<AliPID::kSPECIESC;i++) p[i] = fDefaultPriorsTPC[i]->Interpolate(usedCentr,pt);
 
 	  // Extra factor if TOF matching was required
 	  if(detUsed & AliPIDResponse::kDetTOF){
 	    Float_t kaonTOFfactor = 0.1;
-	    if(pt > 0.35) kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/5.68017E-01)*TMath::Power(pt,-1.50705);
+	    if(pt > 0.29){
+	      kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/4.96502e-01)*TMath::Power(pt,-1.50705);
+	      if(pt < 0.4) kaonTOFfactor *= 1-1.29854e-04/TMath::Power(pt,7.5);
+	    }
 	    Float_t protonTOFfactor = 0.1;
 	    if(pt > 0.4) protonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,3.30978)/8.57396E-02)*TMath::Power(pt,-4.42661E-01);
 	    
@@ -404,15 +427,16 @@ void AliPIDCombined::SetCombinedStatus(AliPIDResponse::EDetPidStatus status, UIn
 }
 
 //----------------------------------------------------------------------------------------
-void AliPIDCombined::SetCombinedStatus(AliPIDResponse::EDetPidStatus status, UInt_t *maskDetIn, AliPIDResponse::EDetCode bit, Double_t* p, const Float_t probMis) const {
+void AliPIDCombined::SetCombinedStatus(AliPIDResponse::EDetPidStatus status, UInt_t *maskDetIn, AliPIDResponse::EDetCode bit, Double_t* /*p*/, const Float_t /*probMis*/) const {
   switch (status) {
   case AliPIDResponse::kDetNoParams:
   case AliPIDResponse::kDetNoSignal:
   case AliPIDResponse::kDetMismatch: // for backward compatibility, we need then to remove kDeteMismatch from AliPIDResponse
     break;
   case AliPIDResponse::kDetPidOk:
-      if (probMis > 0.5) for (Int_t j=0;j<fSelectedSpecies;j++) p[j]=1./fSelectedSpecies;
-      else *maskDetIn = *maskDetIn | bit;
+    //      if (probMis > 0.5) for (Int_t j=0;j<fSelectedSpecies;j++) p[j]=1./fSelectedSpecies; // no longer used because mismatch is in the framework now
+    //else 
+    *maskDetIn = *maskDetIn | bit;
     break;
   }
 
@@ -440,13 +464,18 @@ void AliPIDCombined::SetDefaultTPCPriors(){
   AliOADBContainer * priorsContainer = (AliOADBContainer*) foadb->Get("priorsTPC");
   if (!priorsContainer) AliFatal("Cannot fetch OADB container for Priors");
   
-  const char *namespecies[AliPID::kSPECIES] = {"El","Mu","Pi","Ka","Pr"};
+  const char *namespecies[AliPID::kSPECIESC] = {"El","Mu","Pi","Ka","Pr","De","Tr","He3","He3"};
   char name[100];
 
-  for(Int_t i=0;i < AliPID::kSPECIES;i++){
+  for(Int_t i=0;i < AliPID::kSPECIESC;i++){
     snprintf(name,99,"hDefault%sPriors",namespecies[i]);
     fDefaultPriorsTPC[i] = (TH2F*) priorsContainer->GetDefaultObject(name);
     if (!fDefaultPriorsTPC[i]) AliFatal(Form("Cannot find priors for %s", namespecies[i]));
+    snprintf(name,99,"hDefault%sPriorsPPb",namespecies[i]);
+    fDefaultPriorsTPCpPb[i] = (TH2F*) priorsContainer->GetDefaultObject(name);
+    if (!fDefaultPriorsTPCpPb[i]) {
+        fDefaultPriorsTPCpPb[i] = fDefaultPriorsTPC[i]; // use PbPb ones
+    }
   }
 
   delete foadb;

@@ -158,11 +158,15 @@ void AliEventServerWindow::SetupToolbar()
 	mToolBar->AddButton(this, new TGPictureButton(mToolBar, Form("%s/MONITOR/icons/stop.png", gSystem->Getenv("ALICE_ROOT")), TOOLBUTTON_STOP) );
 	mToolBar->AddButton(this, new TGPictureButton(mToolBar, Form("%s/MONITOR/icons/preferences.png", gSystem->Getenv("ALICE_ROOT")), TOOLBUTTON_PREFERENCES) );
 	mToolBar->AddButton(this, new TGPictureButton(mToolBar, Form("%s/MONITOR/icons/exit.png", gSystem->Getenv("ALICE_ROOT")), TOOLBUTTON_EXIT) );
+    
+    TGTextButton *fakeButton= new TGTextButton(this,"Fake",TOOLBUTTON_FAKE);
 	
+    fakeButton->Connect("Clicked()", "AliEventServerWindow", this, "onFake()");
 	mToolBar->Connect("Clicked(Int_t)", "AliEventServerWindow", this, "HandleToolBarAction(Int_t)");
 	
 	AddFrame(mToolBar, new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
 	AddFrame(new TGHorizontal3DLine(this), new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
+    AddFrame(fakeButton,new TGLayoutHints(kLHintsNormal));
 }
 
 void AliEventServerWindow::HandleToolBarAction(Int_t id)
@@ -192,49 +196,62 @@ void AliEventServerWindow::HandleToolBarAction(Int_t id)
 }
 
 /*
-  void AliEventServerWindow::FinishedReconstruction(Int_t status)
-  {
-// Slot called on termination of child process.
-Int_t run = fServer->GetRunId();
+void AliEventServerWindow::FinishedReconstruction(Int_t status)
+{
+  // Slot called on termination of child process.
+  Int_t run = fServer->GetRunId();
 	
-Info("FinishedReconstruction", "Reconstruction Thread finished \tRunId:%d \tstatus=%d", run, status);
+  Info("FinishedReconstruction", "Reconstruction Thread finished \tRunId:%d \tstatus=%d", run, status);
 
-mIntInt_i i =fRun2PidMap.find(run);
-if (i != fRun2PidMap.end())
-{
-fRunList->RemoveEntry(run);
+  mIntInt_i i =fRun2PidMap.find(run);
+  if (i != fRun2PidMap.end())
+    {
+      fRunList->RemoveEntry(run);
     
-// clean (remove) run's reconstructed directory
-//gSystem->Exec(Form("rm -rf %s/reco/run%d_%d",gSystem->Getenv("ONLINERECO_BASE_DIR"),run,pid));
+      // clean (remove) run's reconstructed directory
+      //gSystem->Exec(Form("rm -rf %s/reco/run%d_%d",gSystem->Getenv("ONLINERECO_BASE_DIR"),run,pid));
       
-if (status == 0)
-{
-fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED", run), run);
-}
-else
-{
-fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED [%d]", run, status), run);
-}
-fRunList->Layout();
+      if (status == 0)
+	{
+	  fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED", run), run);
+	}
+      else
+	{
+	  fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED [%d]", run, status), run);
+	}
+      fRunList->Layout();
     
-}
-else
-{
-Warning("FinishedReconstruction", "Run number %d not registered.", run);
-}
+    }
+  else
+    {
+      Warning("FinishedReconstruction", "Run number %d not registered.", run);
+    }
 
-}
-*/
+    }*/
+
  //------------------------------------------------------------------------------
  // Private methods
  //------------------------------------------------------------------------------
 
 void AliEventServerWindow::StartReco(Int_t run)
 {
-	AliInfo(Form("Starting Reco for run %d", run));
-  
-	TString eventSource = Form("mem://%s/run%d", gSystem->Getenv("ONLINERECO_RAWFILES_DIR"), run);
-  
+    TEnv settings;
+    settings.ReadFile(AliEventServerUtil::GetPathToServerConf(), kEnvUser);
+    
+    TString dataSource = settings.GetValue("data.source", DEFAULT_DATA_SOURCE);
+    TString eventSource;
+    
+    if(dataSource=="local")
+    {
+        AliInfo(Form("Starting Reco for run %d", run));
+        eventSource = Form("mem://%s/run%d", gSystem->Getenv("ONLINERECO_RAWFILES_DIR"), run);
+    }
+    else if(dataSource=="run")
+    {
+        AliInfo("Starting Reco for GDCs active in current run");
+        eventSource = "mem://@*:";
+    }
+    
 	if(!fRecoServer) LaunchRecoServer();
     
 	fRecoServer->StartReconstruction(run, eventSource.Data());
@@ -262,7 +279,8 @@ void AliEventServerWindow::StartOfRun(Int_t run)
 	fRunList->AddEntrySort(TString::Format("%d", run), run);
 	fRunList->Layout();
 	gClient->NeedRedraw(fRunList);
-	
+
+	if(fRecoServer){fRecoServer->StopReconstruction();}
 	StartReco(run);
 }
 
@@ -272,8 +290,9 @@ void AliEventServerWindow::EndOfRun(Int_t run)
 	
 	// Slot called from DIM handler on stop of run.
 	AliInfo(Form("called for Run %d", run) );
-	if(fRecoServer) fRecoServer->StopReconstruction();
+	if(fRecoServer){fRecoServer->StopReconstruction();}
 	
+	printf("Updating GUI");
 	fRunList->RemoveEntry(run);
 	fRunList->Layout();
 	gClient->NeedRedraw(fRunList);
@@ -308,6 +327,12 @@ void AliEventServerWindow::onExit()
 	CloseWindow();
 	
 	gSystem->ExitLoop();
+}
+
+void AliEventServerWindow::onFake()
+{
+    AliInfo("Faking Dim signal: starting reco for run 197669");
+    StartOfRun(197669);
 }
 
 void AliEventServerWindow::LaunchRecoServer()

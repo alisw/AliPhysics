@@ -48,7 +48,8 @@ AliMFTCluster::AliMFTCluster():
   fTrackChi2(0),
   fLocalChi2(0),
   fDigitsInCluster(0),
-  fIsClusterEditable(kTRUE)
+  fIsClusterEditable(kTRUE),
+  fIsClusterFront(kTRUE)
 {
 
   // default constructor
@@ -77,7 +78,8 @@ AliMFTCluster::AliMFTCluster(const AliMFTCluster& cluster):
   fTrackChi2(cluster.fTrackChi2),
   fLocalChi2(cluster.fLocalChi2),
   fDigitsInCluster(NULL),
-  fIsClusterEditable(cluster.fIsClusterEditable)
+  fIsClusterEditable(cluster.fIsClusterEditable),
+  fIsClusterFront(cluster.fIsClusterFront)
 {
 
   // copy constructor
@@ -122,6 +124,7 @@ AliMFTCluster& AliMFTCluster::operator=(const AliMFTCluster& cluster) {
   fTrackChi2         = cluster.fTrackChi2;
   fLocalChi2         = cluster.fLocalChi2;
   fIsClusterEditable = cluster.fIsClusterEditable;
+  fIsClusterFront    = cluster.fIsClusterFront;
 
   for (Int_t iTrack=0; iTrack<fNMaxMCTracks; iTrack++) fMCLabel[iTrack] = (cluster.fMCLabel)[iTrack];
   fDigitsInCluster      = new TClonesArray(*(cluster.fDigitsInCluster));

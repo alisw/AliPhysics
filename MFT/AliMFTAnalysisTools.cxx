@@ -96,6 +96,8 @@ Bool_t AliMFTAnalysisTools::ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Doub
 
 Bool_t AliMFTAnalysisTools::ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Double_t xy[2], TLorentzVector &kinem, TMatrixD &cov) {
 
+  // Extrapolate muon to a given z providing the corresponding (x,y) position and updating kinematics and covariance matrix
+
   if (!(muon->Pz()!=0)) return kFALSE;
 
   AliMUONTrackParam *param = new AliMUONTrackParam();
@@ -128,12 +130,136 @@ Bool_t AliMFTAnalysisTools::ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Doub
 
 //====================================================================================================================================================
 
+Bool_t AliMFTAnalysisTools::ExtrapAODMuonToXY(AliAODTrack *muon, Double_t xy[2], Double_t &zFinal, TLorentzVector &kinem, TMatrixD &cov) {
+
+  // Find the point of closest approach between the muon and the direction parallel to the z-axis defined by the given (x,y)
+  // Provide the z of the above point as weel as the updated kinematics and covariance matrix
+
+  // We look for the above-defined PCA
+
+  Double_t xPCA=0, yPCA=0, zPCA=0;
+
+  AliMUONTrackParam *param = new AliMUONTrackParam();
+  param -> SetNonBendingCoor(muon->XAtDCA());
+  param -> SetBendingCoor(muon->YAtDCA());
+  param -> SetZ(AliMFTConstants::fZEvalKinem);
+  param -> SetNonBendingSlope(muon->Px()/muon->Pz());
+  param -> SetBendingSlope(muon->Py()/muon->Pz());
+  param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->Pz()) / (TMath::Sqrt(1+TMath::Power(muon->Py()/muon->Pz(),2))) );
+  
+  // here we want to understand in which direction we have to search the minimum...
+  
+  Double_t step = 1.;  // initial step, in cm
+  Double_t startPoint = 0.;
+  
+  Double_t r[3]={0}, z[3]={startPoint, startPoint+step, startPoint+2*step};
+  
+  TVector3 **points = new TVector3*[2];     // points[0] for the muon, points[1] for the direction parallel to the z-axis defined by the given (x,y)
+  
+  for (Int_t i=0; i<3; i++) {
+    AliMUONTrackExtrap::ExtrapToZ(param, z[i]);
+    points[0] = new TVector3(param->GetNonBendingCoor(),param->GetBendingCoor(),z[i]);
+    points[1] = new TVector3(xy[0],xy[1],z[i]);
+    r[i] = GetDistanceBetweenPoints(points,2);
+    for (Int_t iMu=0; iMu<2; iMu++) delete points[iMu];
+  }
+  
+  Int_t researchDirection = 0;
+  
+  if      (r[0]>r[1] && r[1]>r[2]) researchDirection = +1;   // towards z positive
+  else if (r[0]<r[1] && r[1]<r[2]) researchDirection = -1;   // towards z negative
+  else if (r[0]<r[1] && r[1]>r[2]) {
+    printf("E-AliMFTAnalysisTools::ExtrapAODMuonToXY: Point of closest approach cannot be found (no minima)\n");
+    delete param;
+    delete points;
+    return kFALSE;
+  }
+  
+  while (TMath::Abs(researchDirection)>0.5) {
+      
+    if (researchDirection>0) {
+      z[0] = z[1];
+      z[1] = z[2];
+      z[2] = z[1]+researchDirection*step;
+    }
+    else {
+      z[2] = z[1];
+      z[1] = z[0];
+      z[0] = z[1]+researchDirection*step;
+    }
+    if (TMath::Abs(z[0])>900.) {
+      printf("E-AliMFTAnalysisTools::ExtrapAODMuonToXY: Point of closest approach cannot be found (no minima in the fiducial region)\n");
+      delete param;
+      delete points;
+      return kFALSE;
+    }
+    
+    for (Int_t i=0; i<3; i++) {
+      AliMUONTrackExtrap::ExtrapToZ(param, z[i]);
+      points[0] = new TVector3(param->GetNonBendingCoor(),param->GetBendingCoor(),z[i]);
+      points[1] = new TVector3(xy[0],xy[1],z[i]);
+      r[i] = GetDistanceBetweenPoints(points,2);
+      for (Int_t iMu=0; iMu<2; iMu++) delete points[iMu];
+    }
+
+    researchDirection=0;
+    if      (r[0]>r[1] && r[1]>r[2]) researchDirection = +1;   // towards z positive
+    else if (r[0]<r[1] && r[1]<r[2]) researchDirection = -1;   // towards z negative
+    
+  }
+  
+  // now we now that the minimum is between z[0] and z[2] and we search for it
+  
+  step *= 0.5;
+  while (step>AliMFTConstants::fPrecisionPointOfClosestApproach) {
+    z[0] = z[1]-step;
+    z[2] = z[1]+step;
+    for (Int_t i=0; i<3; i++) {
+      AliMUONTrackExtrap::ExtrapToZ(param, z[i]);
+      points[0] = new TVector3(param->GetNonBendingCoor(),param->GetBendingCoor(),z[i]);
+      points[1] = new TVector3(xy[0],xy[1],z[i]);
+      r[i] = GetDistanceBetweenPoints(points,2);
+      for (Int_t iMu=0; iMu<2; iMu++) delete points[iMu];
+    }
+    if      (r[0]<r[1]) z[1] = z[0];
+    else if (r[2]<r[1]) z[1] = z[2];
+    else step *= 0.5;
+  }
+  
+  zFinal = z[1];
+
+  Double_t xyMuon[2] = {0};
+  ExtrapAODMuonToZ(muon, zFinal, xyMuon, kinem, cov);
+
+  return kTRUE;
+
+}
+
+//====================================================================================================================================================
+
 Bool_t AliMFTAnalysisTools::GetAODMuonOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv, Double_t &offset) {
 
   Double_t xy[2] = {0};
   ExtrapAODMuonToZ(muon, zv, xy);
   
   offset = TMath::Sqrt((xv-xy[0])*(xv-xy[0]) + (yv-xy[1])*(yv-xy[1]));
+
+  return kTRUE;
+
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMFTAnalysisTools::GetAODMuonOffsetZ(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv, Double_t &offset) {
+
+  Double_t xy[2] = {xv, yv};
+  Double_t zFinal = 0;
+  TLorentzVector kinem(0,0,0,0);
+  TMatrixD cov(5,5);
+
+  ExtrapAODMuonToXY(muon, xy, zFinal, kinem, cov);
+
+  offset = TMath::Abs(zFinal - zv);
 
   return kTRUE;
 
@@ -249,7 +375,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
     param[iMu] = new AliMUONTrackParam();
     param[iMu] -> SetNonBendingCoor(muon[iMu]->XAtDCA());
     param[iMu] -> SetBendingCoor(muon[iMu]->YAtDCA());
-    param[iMu] -> SetZ(0.);
+    param[iMu] -> SetZ(AliMFTConstants::fZEvalKinem);
     param[iMu] -> SetNonBendingSlope(muon[iMu]->Px()/muon[iMu]->Pz());
     param[iMu] -> SetBendingSlope(muon[iMu]->Py()/muon[iMu]->Pz());
     param[iMu] -> SetInverseBendingMomentum( muon[iMu]->Charge() * (1./muon[iMu]->Pz()) / (TMath::Sqrt(1+TMath::Power(muon[iMu]->Py()/muon[iMu]->Pz(),2))) );

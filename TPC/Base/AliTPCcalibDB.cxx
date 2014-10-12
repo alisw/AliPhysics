@@ -318,11 +318,12 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //
   // destructor
   //
-
   //delete fIonTailArray; 
   delete fActiveChannelMap;
   delete fGrRunState;
+  fgInstance = 0;
 }
+
 AliTPCCalPad* AliTPCcalibDB::GetDistortionMap(Int_t i) const {
   //
   // get distortion map - due E field distortions
@@ -1647,6 +1648,15 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
 
   const Int_t startTimeGRP = grp->GetTimeStart();
   const Int_t stopTimeGRP  = grp->GetTimeEnd();
+
+  //
+  // In case we use a generated GRP we cannot make use of the start time and end time information
+  // therefore we cannot calculate proper HV information and will skip this
+  //
+  if (startTimeGRP==0 && stopTimeGRP==0) {
+    AliWarning("Using a generated GRP with 'GetTimeStart()' and 'GetTimeEnd()' == 0. Cannot calculate HV information.");
+    return;
+  }
 
   //
   // check active state by analysing the scalers

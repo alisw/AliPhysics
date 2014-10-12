@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -63,8 +64,6 @@ ClassImp(AliGenHerwig)
     fMaxPr(10),
     fMaxErrors(1000),
     fEnSoft(1),
-    fEv1Pr(0),
-    fEv2Pr(0),
     fFileName(0),
     fEtaMinParton(-20.),     
     fEtaMaxParton(20.),     
@@ -103,8 +102,6 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     fMaxPr(10),
     fMaxErrors(1000),
     fEnSoft(1),
-    fEv1Pr(0),
-    fEv2Pr(0),
     fFileName(0),
     fEtaMinParton(-20.),     
     fEtaMaxParton(20.),     
@@ -129,13 +126,6 @@ AliGenHerwig::~AliGenHerwig()
 // Destructor
 }
 
-void AliGenHerwig::SetEventListRange(Int_t eventFirst, Int_t eventLast)
-{
-  fEv1Pr = eventFirst;
-  fEv2Pr = eventLast;
-  if ( fEv2Pr == -1 ) fEv2Pr = fEv1Pr;
-}
-
 void AliGenHerwig::Init()
 {
 // Initialisation
@@ -150,6 +140,7 @@ void AliGenHerwig::Init()
   fHerwig->SetPTMIN(fPtHardMin);
   fHerwig->SetPTMAX(fPtHardMax);
   fHerwig->SetPTRMS(fPtRMS);
+  printf("SetMAXPR %15d \n", fMaxPr);
   fHerwig->SetMAXPR(fMaxPr);
   fHerwig->SetMAXER(fMaxErrors);
   fHerwig->SetENSOF(fEnSoft);
@@ -311,14 +302,6 @@ void AliGenHerwig::Generate()
 	    if (!CheckParton(parton1, parton2))  continue ;
 	} 
 
-	// 
-	if (gAlice) {
-	    if (gAlice->GetEvNumber()>=fEv1Pr &&
-		gAlice->GetEvNumber()<=fEv2Pr) fHerwig->PrintEvt();
-
-	}
-
-	
 	Int_t nc = 0;
 	fNprimaries = 0;
 	

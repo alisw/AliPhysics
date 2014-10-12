@@ -46,6 +46,8 @@
 
 using std::cout;
 using std::endl;
+using std::map;
+
 ClassImp(AliGenExtFile)
 
 AliGenExtFile::AliGenExtFile()

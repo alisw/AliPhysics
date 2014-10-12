@@ -271,7 +271,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   Float_t xPos = 0., yPos = 0., zPos = 0.;
   Int_t xpad = -1, ypad = -1;
   Float_t edep = 0.;
-  Float_t vx = -999.0, vy = -999.0, vz = -999.0;
+ // Float_t vx = -999.0, vy = -999.0, vz = -999.0; //coverity (8443) fix satya (1/9/2014) 
 
 
   if (!fSDigits) fSDigits = new TClonesArray("AliPMDsdigit", 1000);
@@ -323,24 +323,25 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      trackpid  = mparticle->GetPdgCode();
 	      Int_t  ks = mparticle->GetStatusCode();
 	      Int_t imo;
-	      Int_t tracknoOld=0, trackpidOld=0, statusOld = 0;
+	      Int_t tracknoOld=0, trackpidOld=0;
+             // Int_t statusOld = 0; //coverity (8443) fix satya (1/9/2014)
 	      
 	      if (mparticle->GetFirstMother() == -1)
 		{
 		  tracknoOld  = trackno;
 		  trackpidOld = trackpid;
-		  statusOld   = -1;
+		  //statusOld   = -1;
 		}
-	      Int_t igstatus = 0;
+	     // Int_t igstatus = 0;
 
-	      Int_t trnotemp = trackno;    // Modified on 25th Nov 2009
+	      Int_t trnotemp = trackno;    
 	      if(ks==1||(imo = mparticle->GetFirstMother())<0 ){
-		vx = mparticle->Vx();
-		vy = mparticle->Vy();
-		vz = mparticle->Vz();
+	      //	vx = mparticle->Vx(); //coverity (8443) fix satya (1/9/2014) 
+	      //	vy = mparticle->Vy();
+	      //	vz = mparticle->Vz();
 		
-		if(trackpid==kGamma||trackpid==11||trackpid==-11||
-		   trackpid==kPi0)igstatus=1;
+	      //	if(trackpid==kGamma||trackpid==11||trackpid==-11||
+	      //	   trackpid==kPi0)igstatus=1;
 	      }
 	      
 	      
@@ -350,11 +351,10 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  mparticle =  gAlice->GetMCApp()->Particle(imo);
 		  trackpid = mparticle->GetPdgCode();
 		  ks = mparticle->GetStatusCode();
-		  vx = mparticle->Vx();
-		  vy = mparticle->Vy();
-		  vz = mparticle->Vz();
+		//  vx = mparticle->Vx();//coverity (8443) fix satya (1/9/2014) 
+		//  vy = mparticle->Vy();
+		//  vz = mparticle->Vz();
 		  
-		  // Modified on 25th Nov 2009
 
 		  trnotemp = trackno;
                   if(trackpid == 111)
@@ -368,8 +368,8 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  // end of modification on 25th Nov 2009
 		}
 	 
-	      if(trackpid==kGamma||trackpid==11||trackpid==-11||
-		 trackpid==kPi0)igstatus=1;
+	     // if(trackpid==kGamma||trackpid==11||trackpid==-11||
+	     //	trackpid==kPi0)igstatus=1;
 	      mtrackpid=trackpid;
 	      mtrackno=trackno;
 	      trackpid=trackpidOld;
@@ -516,7 +516,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   Float_t xPos = 0., yPos = 0., zPos = 0.;
   Int_t xpad = -1, ypad = -1;
   Float_t edep = 0.;
-  Float_t vx = -999.0, vy = -999.0, vz = -999.0;
+ // Float_t vx = -999.0, vy = -999.0, vz = -999.0; //coverity (8443) fix satya (1/9/2014) 
 
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
   ResetDigit();
@@ -574,24 +574,25 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      trackpid  = mparticle->GetPdgCode();
 	      Int_t  ks = mparticle->GetStatusCode();
 	      Int_t imo;
-	      Int_t tracknoOld=0, trackpidOld=0, statusOld = 0;
+	      Int_t tracknoOld=0, trackpidOld=0;
+              //Int_t statusOld = 0; //coverity (8443) fix satya (1/9/2014)
 	      if (mparticle->GetFirstMother() == -1)
 		{
 		  tracknoOld  = trackno;
 		  trackpidOld = trackpid;
-		  statusOld   = -1;
+		 // statusOld   = -1; 
 		}
 
-	      Int_t igstatus = 0;
+	         // Int_t igstatus = 0;  
 
-	      Int_t trnotemp = trackno;   // modified on 25th Nov 2009
+	      Int_t trnotemp = trackno;   
 	      if(ks==1||(imo = mparticle->GetFirstMother())<0 ){
-		vx = mparticle->Vx();
-		vy = mparticle->Vy();
-		vz = mparticle->Vz();
+		//	vx = mparticle->Vx(); //coverity (8443) fix satya (1/9/2014) 
+		//	vy = mparticle->Vy();
+		//	vz = mparticle->Vz();
 		
-		if(trackpid==kGamma||trackpid==11||trackpid==-11||trackpid==kPi0)
-		  igstatus=1;
+      		//	if(trackpid==kGamma||trackpid==11||trackpid==-11||trackpid==kPi0)
+       		//       igstatus=1;  
 	      }
 	      
 	      
@@ -601,11 +602,10 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		  mparticle =  gAlice->GetMCApp()->Particle(imo);
 		  trackpid = mparticle->GetPdgCode();
 		  ks = mparticle->GetStatusCode();
-		  vx = mparticle->Vx();
-		  vy = mparticle->Vy();
-		  vz = mparticle->Vz();
+		//	  vx = mparticle->Vx(); //coverity (8443) fix satya (1/9/2014) 
+		//	  vy = mparticle->Vy();
+		//	  vz = mparticle->Vz();
 		  
-		  // Modified on 25th Nov 2009
 		  
 		  trnotemp = trackno;
                   if(trackpid == 111)
@@ -618,8 +618,8 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		    }
 		}
 	 
-	      if(trackpid==kGamma||trackpid==11||trackpid==-11||trackpid==kPi0)
-		igstatus=1;
+	     	// if(trackpid==kGamma||trackpid==11||trackpid==-11||trackpid==kPi0)
+		//	igstatus=1; //coverity (8443) fix satya (1/9/2014) 
 	      mtrackpid=trackpid;
 	      mtrackno=trackno;
 	      trackpid=trackpidOld;

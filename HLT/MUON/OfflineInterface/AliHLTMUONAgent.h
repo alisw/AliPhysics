@@ -29,7 +29,9 @@ public:
 	virtual ~AliHLTMUONAgent();
 
 	// The following methods are all inherited from AliHLTModuleAgent:
-	
+
+	UInt_t GetDetectorMask() const;
+
 	/**
 	 * Register all processing configurations belonging to the dimuon HLT
 	 * library with the AliHLTConfigurationHandler.
@@ -113,11 +115,14 @@ public:
 	static void RunRootifyChain(bool value) { fgRunRootifyChain = value; }
 	
 private:
+	AliHLTMUONAgent(const AliHLTMUONAgent&);
+	AliHLTMUONAgent& operator=(const AliHLTMUONAgent&);
+
 	// The following instance is used for automatic agent and component registration.
 	static AliHLTMUONAgent fgkInstance;  ///< The single global instance of the dimuon HLT agent.
 	
-	static AliHLTOUTHandlerChain  fgkESDMakerChain;  ///< Chain handler for converting dHLT raw data to ESD format.
-	static AliHLTOUTHandlerChain  fgkRootifyDumpChain;  ///< Chain handler for converting dHLT raw data to ROOT objects and dumping to file.
+	AliHLTOUTHandlerChain*  fgkESDMakerChain;  ///< Chain handler for converting dHLT raw data to ESD format.
+	AliHLTOUTHandlerChain*  fgkRootifyDumpChain;  ///< Chain handler for converting dHLT raw data to ROOT objects and dumping to file.
 	static AliHLTOUTHandlerIgnore fgkDataIgnoreHandler;  ///< HLTOUT handler for ignoring data blocks.
 
 	static Int_t fgMuonModuleLoaded; ///< Cached flag for indicating if the MUON module was loaded for a simulation.

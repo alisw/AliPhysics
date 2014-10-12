@@ -47,6 +47,9 @@ public:
     virtual void SetDeltaPt(Float_t delta=0.01) {fDeltaPt = delta;}
     virtual void SetDecayer(AliDecayer* decayer) {fDecayer = decayer;}
     virtual void SetForceGammaConversion(Bool_t force=kTRUE) {fForceConv = force;}
+    virtual void SetKeepParent(Bool_t keep=kTRUE){fKeepParent= keep;} //Store parent even if it does not have childs within cuts
+    virtual void SetKeepIfOneChildSelected(Bool_t keep=kTRUE){fKeepIfOneChildSelected = keep;} //Accept parent and child even if other children are not within cut.
+    
     virtual void Draw(const char * opt);
     TF1 *  GetPt() { return fPtPara;}
     TF1 *  GetY() {return fYPara;}
@@ -82,6 +85,8 @@ protected:
     Bool_t      fSelectAll;    // Flag for transportation of Background while using SetForceDecay()
     AliDecayer  *fDecayer;     // ! Pointer to pythia object for decays
     Bool_t      fForceConv;    //
+    Bool_t      fKeepParent;   //  Store parent even if it does not have childs within cuts
+    Bool_t      fKeepIfOneChildSelected; //Accept parent and child even if other children are not within cut.
 
 private:
     AliGenParam(const AliGenParam &Param);

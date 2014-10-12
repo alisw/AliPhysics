@@ -43,14 +43,14 @@ public:
   
   void SetDefaultTPCPriors();
 	
-  UInt_t ComputeProbabilities(const AliVTrack *track, const AliPIDResponse *response, Double_t* bayesProbabilities) const;
+  UInt_t ComputeProbabilities(const AliVTrack *track, const AliPIDResponse *response, Double_t* bayesProbabilities,Double_t* priorsOwn=NULL) const;
   void SetSelectedSpecies(Int_t selectedSpecies) {fSelectedSpecies = selectedSpecies;}
   Int_t GetSelectedSpecies() const {return fSelectedSpecies;}
 
   static Float_t GetTOFmismatchProb() {return fTOFmismProb;}
 
 protected:
-  void GetPriors(const AliVTrack *track,Double_t* priors,Float_t centrality=-1) const;
+  void GetPriors(const AliVTrack *track,Double_t* priors,Float_t centrality=-1,Bool_t isPPB=kFALSE) const;
   void ComputeBayesProbabilities(Double_t* bayesProbabilities,const Double_t* probDensity, const Double_t* priors, Double_t* probDensityMism=NULL) const;
   void SetCombinedStatus(const AliPIDResponse::EDetPidStatus status,UInt_t *mask, const AliPIDResponse::EDetCode bit) const;
   void SetCombinedStatus(const AliPIDResponse::EDetPidStatus status,UInt_t *mask, const AliPIDResponse::EDetCode bit, Double_t* p,const Float_t probMis) const;
@@ -65,10 +65,11 @@ private:
   Int_t fSelectedSpecies;    // Number of selected species to study
   TH1F *fPriorsDistributions[AliPID::kSPECIESC]; // priors
   Bool_t fUseDefaultTPCPriors; // switch to use Defaul TPC Priors
-  static TH2F *fDefaultPriorsTPC[AliPID::kSPECIES]; // Default priors for TPC tracks
+  static TH2F *fDefaultPriorsTPC[AliPID::kSPECIESC]; // Default priors for TPC tracks
+  static TH2F *fDefaultPriorsTPCpPb[AliPID::kSPECIESC]; // Default priors for TPC tracks in pPb
   static Float_t fTOFmismProb; //TOF mismatch probability
 
-  ClassDef(AliPIDCombined, 3);   // Combined PID using priors
+  ClassDef(AliPIDCombined, 4);   // Combined PID using priors
 };
 
 #endif

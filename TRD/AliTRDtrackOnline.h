@@ -123,6 +123,9 @@ class AliTRDtrackOnline : public TObject
 
   void Print(Option_t *option = "") const;
 
+  void    SetErrorY(Float_t error) { fErrorY = error; }
+  Float_t GetErrorY() const { return fErrorY; }
+
   static Float_t GetX(AliVTrdTracklet *trkl) { return fgGeometry->GetTime0(trkl->GetDetector() % 6); }
   static Float_t GetZ(AliVTrdTracklet *trkl) { return
       fgGeometry->GetPadPlane(trkl->GetDetector())->GetRowPos(trkl->GetBinZ()) -
@@ -136,6 +139,8 @@ class AliTRDtrackOnline : public TObject
   TObjArray fTracklets;
 
   TList fTrackParametrizations;
+
+  Float_t fErrorY;
 
   ClassDef(AliTRDtrackOnline, 1);
 };

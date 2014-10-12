@@ -32,7 +32,8 @@ public:
 		TOOLBUTTON_START=1,
 		TOOLBUTTON_STOP,
 		TOOLBUTTON_PREFERENCES,
-		TOOLBUTTON_EXIT 	
+		TOOLBUTTON_EXIT,
+        TOOLBUTTON_FAKE
 	};
   
 	AliEventServerWindow();
@@ -51,6 +52,7 @@ public:
 	void onStartServer();
 	void onStopServer();
 	void onExit();
+    void onFake();
 
 	void HandleToolBarAction(Int_t id=-1);
 

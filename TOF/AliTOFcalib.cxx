@@ -2442,12 +2442,11 @@ AliTOFcalib::CalibrateESD(AliESDEvent *event)
 	track->SetTOFsignal(time);
       }
     }
+    
+    if (fCorrectTExp) 
+      CalibrateTExp(event);
   }
-
-  if (fCorrectTExp) {
-    AliWarning("\n\nfCorrectTExp is a DEPRECATED flag, it will do NOTHING\n\n");
-  }
-
+  
 }
 
 //----------------------------------------------------------------------------
@@ -2525,6 +2524,13 @@ AliTOFcalib::CalibrateTExp(AliESDEvent *event) const
    * calibrate TExp
    */
 
+  /* check if new TOF data structure, crash in case */
+  TClonesArray* esdTOFhits = event->GetESDTOFHits();
+  if (esdTOFhits) { 
+    AliFatal("This method is DEPRECATED, doing NOTHING");
+    return ;
+  }
+
   if (!fInitFlag) {
     AliError("class not yet initialized. Initialize it before.");
     return;
@@ -2560,8 +2566,12 @@ AliTOFcalib::TuneForMC(AliESDEvent *event, Double_t resolution)
    * tune for MC
    */
 
-  AliFatal("This method is DEPRECATED, doing NOTHING");
-  return 0.;
+  /* check if new TOF data structure, crash in case */
+  TClonesArray* esdTOFhits = event->GetESDTOFHits();
+  if (esdTOFhits) { 
+    AliFatal("This method is DEPRECATED, doing NOTHING");
+    return 0.;
+  }
 
   /* get vertex spread and define T0-spread */
   Double_t diamond2 = TMath::Abs(event->GetSigma2DiamondZ());

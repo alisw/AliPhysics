@@ -30,6 +30,9 @@ AliCentrality::AliCentrality() : TNamed("Centrality", "Centrality"),
   fCentralityV0A0(0),
   fCentralityV0A123(0),
   fCentralityV0C(0),
+  fCentralityV0A23(0),
+  fCentralityV0C01(0),
+  fCentralityV0S(0),
   fCentralityV0MEq(0),
   fCentralityV0AEq(0),
   fCentralityV0CEq(0),
@@ -75,6 +78,9 @@ AliCentrality::AliCentrality(const AliCentrality& cnt) :
   fCentralityV0A0(cnt.fCentralityV0A0),
   fCentralityV0A123(cnt.fCentralityV0A123),
   fCentralityV0C(cnt.fCentralityV0C),
+  fCentralityV0A23(cnt.fCentralityV0A23),
+  fCentralityV0C01(cnt.fCentralityV0C01),
+  fCentralityV0S(cnt.fCentralityV0S),
   fCentralityV0MEq(cnt.fCentralityV0MEq),
   fCentralityV0AEq(cnt.fCentralityV0AEq),
   fCentralityV0CEq(cnt.fCentralityV0CEq),
@@ -123,6 +129,9 @@ AliCentrality& AliCentrality::operator=(const AliCentrality& c)
     fCentralityV0A0 = c.fCentralityV0A0;
     fCentralityV0A123 = c.fCentralityV0A123;
     fCentralityV0C = c.fCentralityV0C;
+    fCentralityV0A23 = c.fCentralityV0A23;
+    fCentralityV0C01 = c.fCentralityV0C01;
+    fCentralityV0S = c.fCentralityV0S;
     fCentralityV0MEq = c.fCentralityV0MEq;
     fCentralityV0AEq = c.fCentralityV0AEq;
     fCentralityV0CEq = c.fCentralityV0CEq;
@@ -181,6 +190,9 @@ Float_t AliCentrality::GetCentralityPercentile(const char *x) const
     if(method.CompareTo("V0A0")==0)   return fCentralityV0A0;
     if(method.CompareTo("V0A123")==0)   return fCentralityV0A123;
     if(method.CompareTo("V0C")==0)      return fCentralityV0C;
+    if(method.CompareTo("V0A23")==0)    return fCentralityV0A23;
+    if(method.CompareTo("V0C01")==0)    return fCentralityV0C01;
+    if(method.CompareTo("V0S")==0)      return fCentralityV0S;
     if(method.CompareTo("V0MEq")==0)    return fCentralityV0MEq;
     if(method.CompareTo("V0AEq")==0)    return fCentralityV0AEq;
     if(method.CompareTo("V0CEq")==0)    return fCentralityV0CEq;
@@ -230,6 +242,9 @@ Int_t AliCentrality::GetCentralityClass10(const char *x) const
     if(method.CompareTo("V0A0")==0)     return (Int_t) (fCentralityV0A0 / 10.0);
     if(method.CompareTo("V0A123")==0)   return (Int_t) (fCentralityV0A123 / 10.0);
     if(method.CompareTo("V0C")==0)      return (Int_t) (fCentralityV0C / 10.0);
+    if(method.CompareTo("V0A23")==0)    return (Int_t) (fCentralityV0A23 / 10.0);
+    if(method.CompareTo("V0C01")==0)    return (Int_t) (fCentralityV0C01 / 10.0);
+    if(method.CompareTo("V0S")==0)      return (Int_t) (fCentralityV0S / 10.0);
     if(method.CompareTo("V0MEq")==0)    return (Int_t) (fCentralityV0MEq / 10.0);
     if(method.CompareTo("V0AEq")==0)    return (Int_t) (fCentralityV0AEq / 10.0);
     if(method.CompareTo("V0CEq")==0)    return (Int_t) (fCentralityV0CEq / 10.0);
@@ -279,6 +294,9 @@ Int_t AliCentrality::GetCentralityClass5(const char *x) const
     if(method.CompareTo("V0A0")==0)     return (Int_t) (fCentralityV0A0 / 5.0);
     if(method.CompareTo("V0A123")==0)   return (Int_t) (fCentralityV0A123 / 5.0);
     if(method.CompareTo("V0C")==0)      return (Int_t) (fCentralityV0C / 5.0);
+    if(method.CompareTo("V0A23")==0)    return (Int_t) (fCentralityV0A23 / 5.0);
+    if(method.CompareTo("V0C01")==0)    return (Int_t) (fCentralityV0C01 / 5.0);
+    if(method.CompareTo("V0S")==0)      return (Int_t) (fCentralityV0S / 5.0);
     if(method.CompareTo("V0MEq")==0)    return (Int_t) (fCentralityV0MEq / 5.0);
     if(method.CompareTo("V0AEq")==0)    return (Int_t) (fCentralityV0AEq / 5.0);
     if(method.CompareTo("V0CEq")==0)    return (Int_t) (fCentralityV0CEq / 5.0);
@@ -329,6 +347,9 @@ Bool_t AliCentrality::IsEventInCentralityClass(Float_t a, Float_t b, const char 
     if ((method.CompareTo("V0A0")==0) && (fCentralityV0A0 >=a && fCentralityV0A0 < b)) return kTRUE;
     if ((method.CompareTo("V0A123")==0) && (fCentralityV0A123 >=a && fCentralityV0A123 < b)) return kTRUE;
     if ((method.CompareTo("V0C")==0) && (fCentralityV0C >=a && fCentralityV0C < b)) return kTRUE;
+    if ((method.CompareTo("V0A23")==0) && (fCentralityV0A23 >=a && fCentralityV0A23 < b)) return kTRUE;
+    if ((method.CompareTo("V0C01")==0) && (fCentralityV0C01 >=a && fCentralityV0C01 < b)) return kTRUE;
+    if ((method.CompareTo("V0S")==0) && (fCentralityV0S >=a && fCentralityV0S < b)) return kTRUE;
     if ((method.CompareTo("V0MEq")==0) && (fCentralityV0MEq >=a && fCentralityV0MEq < b)) return kTRUE;
     if ((method.CompareTo("V0AEq")==0) && (fCentralityV0AEq >=a && fCentralityV0AEq < b)) return kTRUE;
     if ((method.CompareTo("V0CEq")==0) && (fCentralityV0CEq >=a && fCentralityV0CEq < b)) return kTRUE;
@@ -377,6 +398,9 @@ Float_t AliCentrality::GetCentralityPercentileUnchecked(const char *x) const
   if(method.CompareTo("V0A0")==0)     return fCentralityV0A0;
   if(method.CompareTo("V0A123")==0)   return fCentralityV0A123;
   if(method.CompareTo("V0C")==0)      return fCentralityV0C;
+  if(method.CompareTo("V0A23")==0)    return fCentralityV0A23;
+  if(method.CompareTo("V0C01")==0)    return fCentralityV0C01;
+  if(method.CompareTo("V0S")==0)      return fCentralityV0S;
   if(method.CompareTo("V0MEq")==0)    return fCentralityV0MEq;
   if(method.CompareTo("V0AEq")==0)    return fCentralityV0AEq;
   if(method.CompareTo("V0CEq")==0)    return fCentralityV0CEq;
@@ -421,6 +445,9 @@ Int_t AliCentrality::GetCentralityClass10Unchecked(const char *x) const
     if(method.CompareTo("V0A")==0)      return (Int_t) (fCentralityV0A / 10.0);
     if(method.CompareTo("V0A0")==0)     return (Int_t) (fCentralityV0A0 / 10.0);
     if(method.CompareTo("V0C")==0)      return (Int_t) (fCentralityV0C / 10.0);
+    if(method.CompareTo("V0A23")==0)    return (Int_t) (fCentralityV0A23 / 10.0);
+    if(method.CompareTo("V0C01")==0)    return (Int_t) (fCentralityV0C01 / 10.0);
+    if(method.CompareTo("V0S")==0)      return (Int_t) (fCentralityV0S / 10.0);
     if(method.CompareTo("V0MEq")==0)    return (Int_t) (fCentralityV0MEq / 10.0);
     if(method.CompareTo("V0AEq")==0)    return (Int_t) (fCentralityV0AEq / 10.0);
     if(method.CompareTo("V0CEq")==0)    return (Int_t) (fCentralityV0CEq / 10.0);
@@ -466,6 +493,9 @@ Int_t AliCentrality::GetCentralityClass5Unchecked(const char *x) const
     if(method.CompareTo("V0A0")==0)     return (Int_t) (fCentralityV0A0 / 5.0);
     if(method.CompareTo("V0A123")==0)   return (Int_t) (fCentralityV0A123 / 5.0);
     if(method.CompareTo("V0C")==0)      return (Int_t) (fCentralityV0C / 5.0);
+    if(method.CompareTo("V0A23")==0)    return (Int_t) (fCentralityV0A23 / 5.0);
+    if(method.CompareTo("V0C01")==0)    return (Int_t) (fCentralityV0C01 / 5.0);
+    if(method.CompareTo("V0S")==0)      return (Int_t) (fCentralityV0S / 5.0);
     if(method.CompareTo("V0MEq")==0)    return (Int_t) (fCentralityV0MEq / 5.0);
     if(method.CompareTo("V0AEq")==0)    return (Int_t) (fCentralityV0AEq / 5.0);
     if(method.CompareTo("V0CEq")==0)    return (Int_t) (fCentralityV0CEq / 5.0);
@@ -511,6 +541,9 @@ Bool_t AliCentrality::IsEventInCentralityClassUnchecked(Float_t a, Float_t b, co
     if ((method.CompareTo("V0A0")==0) && (fCentralityV0A0 >=a && fCentralityV0A0 < b)) return kTRUE;
     if ((method.CompareTo("V0A123")==0) && (fCentralityV0A123 >=a && fCentralityV0A123 < b)) return kTRUE;
     if ((method.CompareTo("V0C")==0) && (fCentralityV0C >=a && fCentralityV0C < b)) return kTRUE;
+    if ((method.CompareTo("V0A23")==0) && (fCentralityV0A23 >=a && fCentralityV0A23 < b)) return kTRUE;
+    if ((method.CompareTo("V0C01")==0) && (fCentralityV0C01 >=a && fCentralityV0C01 < b)) return kTRUE;
+    if ((method.CompareTo("V0S")==0) && (fCentralityV0S >=a && fCentralityV0S < b)) return kTRUE;
     if ((method.CompareTo("V0MEq")==0) && (fCentralityV0MEq >=a && fCentralityV0MEq < b)) return kTRUE;
     if ((method.CompareTo("V0AEq")==0) && (fCentralityV0AEq >=a && fCentralityV0AEq < b)) return kTRUE;
     if ((method.CompareTo("V0CEq")==0) && (fCentralityV0CEq >=a && fCentralityV0CEq < b)) return kTRUE;
@@ -557,6 +590,9 @@ void AliCentrality::Reset()
   fCentralityV0A0     =  0;
   fCentralityV0A123   =  0;
   fCentralityV0C      =  0;
+  fCentralityV0A23    =  0;
+  fCentralityV0C01    =  0;
+  fCentralityV0S      =  0;
   fCentralityV0MEq    =  0;
   fCentralityV0AEq    =  0;
   fCentralityV0CEq    =  0;

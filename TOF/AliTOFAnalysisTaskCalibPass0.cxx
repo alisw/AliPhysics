@@ -759,8 +759,10 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   /*** CALIBRATION STAGE ***/
 
   /* get fit function */
-  TF1 *fitFunc = (TF1 *)gROOT->GetFunction("gaus");
-
+  //  TF1 *fitFunc = (TF1 *)gROOT->GetFunction("gaus");
+  TF1 ftgs("ftgs","gaus",-1,1);
+  TF1 *fitFunc = &ftgs; //new (TF1 *)gROOT->GetFunction("gaus");
+  
   /* projection-x */
   TH1D *histoVertexTimestamppx = histoVertexTimestamp->ProjectionX("histoVertexTimestamppx");
   TH1D *histoDeltatTimestamppx = histoDeltatTimestamp->ProjectionX("histoDeltatTimestamppx");
@@ -949,7 +951,8 @@ AliTOFAnalysisTaskCalibPass0::FitPeak(TF1 *fitFunc, TH1D *h, Float_t startSigma,
   /*
    * fit peak
    */
-
+  for (int i=3;i--;) fitFunc->SetParError(i,0);
+  fitFunc->SetRange(h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax());
   Double_t fitCent = h->GetBinCenter(h->GetMaximumBin());
   Double_t fitMin = fitCent - nSigmaMin * startSigma;
   Double_t fitMax = fitCent + nSigmaMax * startSigma;

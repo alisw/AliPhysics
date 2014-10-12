@@ -169,7 +169,7 @@ Bool_t AliCentralTrigger::LoadConfiguration( TString & config )
   DeleteConfiguration();
 
    // Load the selected configuration
-   if (!config.IsNull()) {
+  if (!config.IsNull() && !config.EqualTo("ocdb",TString::kIgnoreCase)) {
      fConfiguration = AliTriggerConfiguration::LoadConfiguration( config );
      SetOwner();
      if(fConfiguration)

@@ -688,6 +688,7 @@ void
 AliEveFMDLoader::LoadESD()
 {
   // Load and display ESD information 
+  
   ClearDigitSets(kESD);
 
   AliESDEvent* esd =  AliEveEventManager::AssertESD();
@@ -715,9 +716,18 @@ AliEveFMDLoader::LoadESD()
 	  Float_t mult = fmd->Multiplicity(det,*rng,sec,str);
 	  if (mult == AliESDFMD::kInvalidMult) continue;
 	  Float_t eta  = fmd->Eta(det,*rng,sec,str);
-	  AddSignal(kESD, det, *rng, sec, str, mult, min, max, 
-		    new TNamed(Form("FMD%d%c[%02d,%03d]", det, *rng, sec, str), 
-			       Form("Mch=%f, eta=%f", mult, eta)));
+	  
+        // As it was before, it causes big memory leak:
+//        AddSignal(kESD, det, *rng, sec, str, mult, min, max,
+//                  new TNamed(Form("FMD%d%c[%02d,%03d]", det, *rng, sec, str),
+//                             Form("Mch=%f, eta=%f", mult, eta)));
+                
+        // I propose to replace it with:
+        TNamed *tmpNamed = new TNamed(Form("FMD%d%c[%02d,%03d]", det, *rng, sec, str),Form("Mch=%f, eta=%f", mult, eta));
+        AddSignal(kESD, det, *rng, sec, str, mult, min, max,tmpNamed);
+        if(tmpNamed)delete tmpNamed;
+        //
+        
 	}
       }
     }
