@@ -158,6 +158,8 @@ fhPtLeadConeBinMC(0),                       fhSumPtConeBinMC(0),
 fhPtLeadConeBinDecay(0),                    fhSumPtConeBinDecay(0),
 fhPtLeadConeBinLambda0(0),                  fhSumPtConeBinLambda0(0),
 fhPtLeadConeBinLambda0MC(0),                fhSumPtConeBinLambda0MC(0),
+fhPtTrigBinLambda0vsPtLeadCone(0),          fhPtTrigBinLambda0vsSumPtCone(0),
+fhPtTrigBinLambda0vsPtLeadConeMC(0),        fhPtTrigBinLambda0vsSumPtConeMC(0),
 // Number of local maxima in cluster
 fhNLocMax(),
 fhELambda0LocMax1(),              fhELambda1LocMax1(),
