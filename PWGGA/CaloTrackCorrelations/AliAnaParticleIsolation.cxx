@@ -218,9 +218,9 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
     }
   }
   
-  for(Int_t ibit =0; ibit< 4; ibit++)
+  for(Int_t ibit =0; ibit < 4; ibit++)
   {
-    for(Int_t iso =0; iso< 4; iso++)
+    for(Int_t iso =0; iso < 2; iso++)
     {
       fhPtDecay       [iso][ibit] = 0;
       fhEtaPhiDecay   [iso][ibit] = 0;
