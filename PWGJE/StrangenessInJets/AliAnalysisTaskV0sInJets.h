@@ -26,17 +26,19 @@ public:
   virtual ~AliAnalysisTaskV0sInJets(); // Destructor
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
-  virtual void Terminate(Option_t*){}
+  virtual void Terminate(Option_t*) {}
 
   void SetTypeAOD(Int_t type = 1) {fiAODAnalysis = type;}
-  void SetJetBranchName(char* line){fsJetBranchName = line;}
-  void SetJetBgBranchName(char* line){fsJetBgBranchName = line;}
-  void SetCuts(Double_t z = 10,Double_t r = 1,Double_t cL = 0,Double_t cH = 80){fdCutVertexZ = z; fdCutVertexR2 = r*r;fdCutCentLow = cL;fdCutCentHigh = cH;}
-  void SetPtJetMin(Double_t ptMin = 0){fdCutPtJetMin = ptMin;}
-  void SetPtTrackMin(Double_t ptMin = 0){fdCutPtTrackMin = ptMin;}
-  void SetJetRadius(Double_t r = 0.4){fdRadiusJet = r;}
-  void SetJetSelection(Bool_t select = kTRUE){fbJetSelection = select;}
-  void SetMCAnalysis(Bool_t select = kTRUE){fbMCAnalysis = select;}
+  void SetIsPbPb(Bool_t val = 1) {fbIsPbPb = val;}
+  void SetJetBranchName(char* line) {fsJetBranchName = line;}
+  void SetJetBgBranchName(char* line) {fsJetBgBranchName = line;}
+  void SetCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH;}
+  void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
+  void SetPtTrackMin(Double_t ptMin = 0) {fdCutPtTrackMin = ptMin;}
+  void SetJetRadius(Double_t r = 0.4) {fdRadiusJet = r;}
+  void SetJetRadiusBg(Double_t r = 0.4) {fdRadiusJetBg = r;}
+  void SetJetSelection(Bool_t select = kTRUE) {fbJetSelection = select;}
+  void SetMCAnalysis(Bool_t select = kTRUE) {fbMCAnalysis = select;}
 //  void SetTreeOutput(Bool_t select = kTRUE){fbTreeOutput = select;}
   void FillQAHistogramV0(AliAODVertex* vtx, const AliAODv0* vZero, Int_t iIndexHisto, Bool_t IsCandK0s, Bool_t IsCandLambda, Bool_t IsInPeakK0s, Bool_t IsInPeakLambda);
 //  virtual Double_t MassPeakSigma(Double_t pt, Int_t particle);
@@ -48,17 +50,18 @@ public:
   AliAODJet* GetMedianCluster(const TClonesArray* array, Double_t dEtaConeMax) const; // get median kt cluster
   Double_t AreaCircSegment(Double_t dRadius, Double_t dDistance) const; // area of circular segment
 
-  void SetCutDCAToPrimVtxMin(Double_t val = 0.1){fdCutDCAToPrimVtxMin = val;}
-  void SetCutDCADaughtersMax(Double_t val = 1.){fdCutDCADaughtersMax = val;}
-  void SetCutNSigmadEdxMax(Double_t val = 3.){fdCutNSigmadEdxMax = val;}
-  void SetCutCPAMin(Double_t val = 0.998){fdCutCPAMin = val;}
-  void SetCutNTauMax(Double_t val = 5.){fdCutNTauMax = val;}
+  void SetCutDCAToPrimVtxMin(Double_t val = 0.1) {fdCutDCAToPrimVtxMin = val;}
+  void SetCutDCADaughtersMax(Double_t val = 1.) {fdCutDCADaughtersMax = val;}
+  void SetCutNSigmadEdxMax(Double_t val = 3.) {fdCutNSigmadEdxMax = val;}
+  void SetCutCPAMin(Double_t val = 0.998) {fdCutCPAMin = val;}
+  void SetCutNTauMax(Double_t val = 5.) {fdCutNTauMax = val;}
 
-  static Bool_t IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Bool_t bCutDeltaZ=kFALSE, Double_t dDeltaZMax=100.);
-  static Int_t GetCentralityBinIndex(Double_t centrality);
-  static Int_t GetCentralityBinEdge(Int_t index);
-  static TString GetCentBinLabel(Int_t index);
-  static Double_t MassPeakSigmaOld(Double_t pt, Int_t particle);
+  Bool_t IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Bool_t bCutDeltaZ = kFALSE, Double_t dDeltaZMax = 100.);
+  Int_t GetCentralityBinIndex(Double_t centrality);
+  Int_t GetCentralityBinEdge(Int_t index);
+  TString GetCentBinLabel(Int_t index);
+  Double_t MassPeakSigmaOld(Double_t pt, Int_t particle);
+  static bool CompareClusters(const std::vector<Double_t> cluster1, const std::vector<Double_t> cluster2); // compare clusters by their pt/area
 
   // upper edges of centrality bins
   static const Int_t fgkiNBinsCent = 1; // number of centrality bins
@@ -81,15 +84,16 @@ public:
   static const Double_t fgkdMassLambdaMax; // maximum
 
 private:
-  AliAODEvent*  fAODIn; //! Input AOD event
-  AliAODEvent*  fAODOut; //! Output AOD event
-  TList*      fOutputListStd; //! Output list for standard analysis results
-  TList*      fOutputListQA; //! Output list for quality assurance
-  TList*      fOutputListCuts; //! Output list for checking cuts
-  TList*      fOutputListMC; //! Output list for MC related results
-//  TTree*      ftreeOut; //! output tree
+  AliAODEvent* fAODIn; //! Input AOD event
+  AliAODEvent* fAODOut; //! Output AOD event
+  TList* fOutputListStd; //! Output list for standard analysis results
+  TList* fOutputListQA; //! Output list for quality assurance
+  TList* fOutputListCuts; //! Output list for checking cuts
+  TList* fOutputListMC; //! Output list for MC related results
+//  TTree* ftreeOut; //! output tree
 
-  Int_t       fiAODAnalysis; // switch for input AOD/ESD
+  Int_t fiAODAnalysis; // switch for input AOD/ESD
+  Bool_t fbIsPbPb; // switch Pb-Pb / p-p collisions
 
   // V0 selection
   Double_t fdCutDCAToPrimVtxMin; // [cm] min DCA of daughters to the prim vtx
@@ -98,54 +102,55 @@ private:
   Double_t fdCutCPAMin; // min cosine of the pointing angle
   Double_t fdCutNTauMax; // [tau] max proper lifetime in multiples of the mean lifetime
   // jet selection
-  TString     fsJetBranchName; // name of the branch with jets
-  TString     fsJetBgBranchName; // name of the branch with kt clusters used for the rho calculation
-  Double_t     fdCutPtJetMin; // [GeV/c] minimum jet pt
-  Double_t     fdCutPtTrackMin; // [GeV/c] minimum pt of leading jet-track
-  Double_t    fdRadiusJet; // R of jet finder used for finding V0s in the jet cone
-  Bool_t      fbJetSelection; // switch for the analysis of V0s in jets
+  TString fsJetBranchName; // name of the branch with jets
+  TString fsJetBgBranchName; // name of the branch with kt clusters used for the rho calculation
+  Double_t fdCutPtJetMin; // [GeV/c] minimum jet pt
+  Double_t fdCutPtTrackMin; // [GeV/c] minimum pt of leading jet-track
+  Double_t fdRadiusJet; // R of jet finder used for finding V0s in the jet cone
+  Double_t fdRadiusJetBg; // R of kt jet finder used for reconstruction of bg clusters
+  Bool_t fbJetSelection; // switch for the analysis of V0s in jets
 
-  Bool_t      fbMCAnalysis; // switch for the analysis of simulated data
-//  Bool_t      fbTreeOutput; // switch for the output tree
-  TRandom*   fRandom; //! random-number generator
+  Bool_t fbMCAnalysis; // switch for the analysis of simulated data
+//  Bool_t fbTreeOutput; // switch for the output tree
+  TRandom* fRandom; //! random-number generator
 
   // event cuts
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
   Double_t fdCutVertexR2; // [cm^2] maximum r^2 of primary vertex
   Double_t fdCutCentLow; // [%] minimum centrality
   Double_t fdCutCentHigh; // [%] maximum centrality
-/*
+  /*
   // output branches
   TClonesArray* fBranchV0Rec; //! output branch for reconstructed V0s
   TClonesArray* fBranchV0Gen; //! output branch for generated V0s
   TClonesArray* fBranchJet; //! output branch for selected jets
   AliEventInfoObject* fEventInfo; //! class to store info about events
-*/
+  */
   Double_t fdCentrality; //!
 
   // event histograms
-  TH1D*       fh1EventCounterCut; //! number of events for different selection steps
-  TH1D*       fh1EventCounterCutCent[fgkiNBinsCent]; //! number of events for different selection steps and different centralities
-  TH1D*       fh1EventCent; //! number of events for different centralities
-  TH1D*       fh1EventCent2; //! number of events for different centralities
-  TH1D*       fh1EventCent2Jets; //! number of events for different centralities
-  TH1D*       fh1EventCent2NoJets; //! number of events for different centralities
-  TH2D*       fh2EventCentTracks; //! number of tracks vs centrality
-  TH1D*       fh1VtxZ[fgkiNBinsCent]; //! z coordinate of the primary vertex
-  TH2D*       fh2VtxXY[fgkiNBinsCent]; //! xy coordinates of the primary vertex
-  TH1D*       fh1V0CandPerEvent; //! number of V0 cand per event
+  TH1D* fh1EventCounterCut; //! number of events for different selection steps
+  TH1D* fh1EventCounterCutCent[fgkiNBinsCent]; //! number of events for different selection steps and different centralities
+  TH1D* fh1EventCent; //! number of events for different centralities
+  TH1D* fh1EventCent2; //! number of events for different centralities
+  TH1D* fh1EventCent2Jets; //! number of events for different centralities
+  TH1D* fh1EventCent2NoJets; //! number of events for different centralities
+  TH2D* fh2EventCentTracks; //! number of tracks vs centrality
+  TH1D* fh1VtxZ[fgkiNBinsCent]; //! z coordinate of the primary vertex
+  TH2D* fh2VtxXY[fgkiNBinsCent]; //! xy coordinates of the primary vertex
+  TH1D* fh1V0CandPerEvent; //! number of V0 cand per event
 
   // jet histograms
-  TH1D*       fh1PtJet[fgkiNBinsCent]; //! pt spectra of jets for normalisation of in-jet V0 spectra
-  TH1D*       fh1EtaJet[fgkiNBinsCent]; //! jet eta
-  TH2D*       fh2EtaPtJet[fgkiNBinsCent]; //! jet eta-pT
-  TH1D*       fh1PhiJet[fgkiNBinsCent]; //! jet phi
-  TH1D*       fh1NJetPerEvent[fgkiNBinsCent]; //! number of jets per event
-  TH1D*       fh1NRndConeCent; //! number of generated random cones in centrality bins
-  TH2D*       fh2EtaPhiRndCone[fgkiNBinsCent]; //! random cone eta-pT
-  TH1D*       fh1NMedConeCent; //! number of found median-cluster cones in centrality bins
-  TH2D*       fh2EtaPhiMedCone[fgkiNBinsCent]; //! median-cluster cone eta-phi
-  TH1D*       fh1AreaExcluded; //! area of excluded cones for outside-cones V0s
+  TH1D* fh1PtJet[fgkiNBinsCent]; //! pt spectra of jets for normalisation of in-jet V0 spectra
+  TH1D* fh1EtaJet[fgkiNBinsCent]; //! jet eta
+  TH2D* fh2EtaPtJet[fgkiNBinsCent]; //! jet eta-pT
+  TH1D* fh1PhiJet[fgkiNBinsCent]; //! jet phi
+  TH1D* fh1NJetPerEvent[fgkiNBinsCent]; //! number of jets per event
+  TH1D* fh1NRndConeCent; //! number of generated random cones in centrality bins
+  TH2D* fh2EtaPhiRndCone[fgkiNBinsCent]; //! random cone eta-pT
+  TH1D* fh1NMedConeCent; //! number of found median-cluster cones in centrality bins
+  TH2D* fh2EtaPhiMedCone[fgkiNBinsCent]; //! median-cluster cone eta-phi
+  TH1D* fh1AreaExcluded; //! area of excluded cones for outside-cones V0s
 
   static const Int_t fgkiNCategV0 = 17; // number of V0 selection steps
 
@@ -187,7 +192,7 @@ private:
   TH2D* fh2V0PtJetAngleK0s[fgkiNBinsCent]; //! pt jet vs angle V0-jet, in centrality bins
   TH1D* fh1DCAInK0s[fgkiNBinsCent]; //! DCA between daughters of V0 inside jets, in centrality bins
   TH1D* fh1DCAOutK0s[fgkiNBinsCent]; //! DCA between daughters of V0 outside jets, in centrality bins
-  TH1D* fh1DeltaZK0s[fgkiNBinsCent]; //! z-distance between V0 vertex and primary vertex, in centrality bins
+//  TH1D* fh1DeltaZK0s[fgkiNBinsCent]; //! z-distance between V0 vertex and primary vertex, in centrality bins
   // MC histograms
   // inclusive
   TH1D* fh1V0K0sPtMCGen[fgkiNBinsCent]; //! pt spectrum of all generated K0s in event
@@ -237,7 +242,7 @@ private:
   TH2D* fh2V0PtJetAngleLambda[fgkiNBinsCent]; //!
   TH1D* fh1DCAInLambda[fgkiNBinsCent]; //!
   TH1D* fh1DCAOutLambda[fgkiNBinsCent]; //!
-  TH1D* fh1DeltaZLambda[fgkiNBinsCent]; //!
+//  TH1D* fh1DeltaZLambda[fgkiNBinsCent]; //!
   // MC histograms
   // inclusive
   TH1D* fh1V0LambdaPtMCGen[fgkiNBinsCent]; //!
@@ -293,7 +298,7 @@ private:
   TH2D* fh2V0PtJetAngleALambda[fgkiNBinsCent]; //!
   TH1D* fh1DCAInALambda[fgkiNBinsCent]; //!
   TH1D* fh1DCAOutALambda[fgkiNBinsCent]; //!
-  TH1D* fh1DeltaZALambda[fgkiNBinsCent]; //!
+//  TH1D* fh1DeltaZALambda[fgkiNBinsCent]; //!
   // MC histograms
   // inclusive
   TH1D* fh1V0ALambdaPtMCGen[fgkiNBinsCent]; //!
@@ -343,6 +348,7 @@ private:
 
   // Cut tuning
   // crossed/findable, daughter pt, dca, cpa, r, pseudorapidity, y, decay length, PID sigma
+  /*
   TH2D* fh2CutTPCRowsK0s[fgkiNQAIndeces]; //! inv mass vs TPC rows
   TH2D* fh2CutTPCRowsLambda[fgkiNQAIndeces]; //!
   TH2D* fh2CutPtPosK0s[fgkiNQAIndeces]; //! inv mass vs pt of positive daughter
@@ -365,6 +371,7 @@ private:
   TH2D* fh2CutPIDNegLambda[fgkiNQAIndeces]; //!
 
   TH2D* fh2Tau3DVs2D[fgkiNQAIndeces]; //! pt vs ratio 3D lifetime / 2D lifetime
+  */
 
   AliAnalysisTaskV0sInJets(const AliAnalysisTaskV0sInJets&); // not implemented
   AliAnalysisTaskV0sInJets& operator=(const AliAnalysisTaskV0sInJets&); // not implemented
