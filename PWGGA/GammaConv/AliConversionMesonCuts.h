@@ -158,6 +158,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Double_t 	fDCAGammaGammaCut; 			// cut value for the maximum distance between the two photons [cm]
 		Double_t 	fDCAZMesonPrimVtxCut; 		// cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
 		Double_t 	fDCARMesonPrimVtxCut; 		// cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
+		Bool_t 		fDCAGammaGammaCutOn; 		// cut flag for the maximum distance between the two photons
+		Bool_t 		fDCAZMesonPrimVtxCutOn; 	// cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex 
+		Bool_t 		fDCARMesonPrimVtxCutOn; 	// cut flag for the maximum distance in R between the production point of the Meson & the primary vertex 
+
 		Int_t 		fBackgroundHandler; 		//
 		
 		// Histograms
@@ -174,7 +178,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 	private:
 
 
-		ClassDef(AliConversionMesonCuts,6)
+		ClassDef(AliConversionMesonCuts,7)
 };
 
 

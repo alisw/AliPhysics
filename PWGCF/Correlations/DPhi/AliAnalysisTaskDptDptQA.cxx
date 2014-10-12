@@ -995,7 +995,7 @@ void  AliAnalysisTaskDptDptQA::UserExec(Option_t */*option*/)
   
   int    k1,k2;
   int    iPhi, iEta, iEtaPhi, iPt, charge;
-  float  q, p, phi, pt, eta, corr, corrPt, dedx, px, py, pz;
+  float  q,  p,phi, pt, eta, corr, corrPt, dedx, px, py, pz;
   int    ij;
   int    id_1, q_1, iEtaPhi_1, iPt_1;
   float  pt_1, px_1, py_1, pz_1, corr_1, dedx_1;

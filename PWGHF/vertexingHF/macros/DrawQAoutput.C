@@ -1279,11 +1279,25 @@ void DrawEventSelection(TString partname="D0", TString path="./",TString suffixd
   cout<<endl;
 
   TH1D** htrig=new TH1D*[nkeys]; //each trigger type in one histogram of counts vs run
-  TH1D** htrignorm=new TH1D*[nkeys]; //normalized to the counts in kAny
-  TCanvas* ctrigfraction=new TCanvas("cvtrigfrac","Fraction of given trigger type vs run",1400,800);
+  TH1D** htrignormAll=new TH1D*[nkeys]; //normalized to the counts in kAll
+  TH1D** htrignormAny=new TH1D*[nkeys]; //normalized to the counts in kAny
+  TCanvas* ctrigfractionAll=new TCanvas("cvtrigfrac","Fraction of given trigger type vs run (kAll)",1400,800);
+  TCanvas* ctrigfractionAny=new TCanvas("cvtrigfracAll","Fraction of given trigger type vs run (kAny)",1400,800);
   TLegend* legtr=new TLegend(0.15,0.5,0.35,0.8);
   legtr->SetBorderSize(0);
   legtr->SetFillStyle(0);
+
+  TH1D* htrigkAny=new TH1D();
+  htrigkAny = coll->Get("run",Form("triggertype:%s","ANY"));
+  htrigkAny->SetName(Form("h%s","ANY"));
+  htrigkAny->SetTitle("Trigger type;RUN; counts");
+  htrigkAny->Sumw2();
+  TH1D* htrigkAll=new TH1D();
+  htrigkAll = coll->Get("run",Form("triggertype:%s","ALL"));
+  htrigkAll->SetName(Form("h%s","ALL"));
+  htrigkAll->SetTitle("Trigger type;RUN; counts");
+  htrigkAll->Sumw2();
+
   for(Int_t k=0;k<nkeys;k++){
     htrig[k]=coll->Get("run",Form("triggertype:%s",words[k].Data()));
     htrig[k]->SetName(Form("h%s",words[k].Data()));
@@ -1293,23 +1307,39 @@ void DrawEventSelection(TString partname="D0", TString path="./",TString suffixd
     htrig[k]->Sumw2();
     legtr->AddEntry(htrig[k],Form("%s",words[k].Data()),"P");
     //drawings
+    //1) counts of a given trigger over counts in kAll
+    htrignormAll[k]=(TH1D*)htrig[k]->Clone(Form("h%snormAll",words[k].Data()));
+    htrignormAll[k]->SetTitle("Trigger type over ALL trigger;RUN; counts/countsALL");
+    htrignormAll[k]->Divide(htrig[k],htrigkAll,1.,1.,"B");
+    htrignormAll[k]->GetXaxis()->SetRangeUser(0,1.1);
+
+    ctrigfractionAll->cd();
+    if(k>0)htrignormAll[k]->Draw("PEsames");
+    else htrignormAll[k]->Draw("PE");
+
     //1) counts of a given trigger over counts in kAny
-    htrignorm[k]=(TH1D*)htrig[k]->Clone(Form("h%snormAny",words[k].Data()));
-    htrignorm[k]->SetTitle("Trigger type over ANY trigger;RUN; counts/countsANY");
-    htrignorm[k]->Divide(htrig[k],htrig[0],1.,1.,"B");
-    htrignorm[k]->GetXaxis()->SetRangeUser(0,1.1);
+    htrignormAny[k]=(TH1D*)htrig[k]->Clone(Form("h%snormAny",words[k].Data()));
+    htrignormAny[k]->SetTitle("Trigger type over ANY trigger;RUN; counts/countsANY");
+    htrignormAny[k]->Divide(htrig[k],htrigkAny,1.,1.,"B");
+    htrignormAny[k]->GetXaxis()->SetRangeUser(0,1.1);
     
-    ctrigfraction->cd();
-    if(k>0)htrignorm[k]->Draw("PEsames");
-    else htrignorm[k]->Draw("PE");
-  } 
-  
-  ctrigfraction->cd();
+    ctrigfractionAny->cd();
+    if(k>0)htrignormAny[k]->Draw("PEsames");
+    else htrignormAny[k]->Draw("PE");
+  }
+
+  ctrigfractionAll->cd();
   legtr->Draw();
-  ctrigfraction->SaveAs("TrgFractionOverANY.pdf");
-  ctrigfraction->SaveAs("TrgFractionOverANY.eps");
+  ctrigfractionAll->SaveAs("TrgFractionOverALL.pdf");
+  ctrigfractionAll->SaveAs("TrgFractionOverALL.eps");
+  
+  ctrigfractionAny->cd();
+  legtr->Draw();
+  ctrigfractionAny->SaveAs("TrgFractionOverANY.pdf");
+  ctrigfractionAny->SaveAs("TrgFractionOverANY.eps");
 
   delete [] words;
+  delete htrigkAll; delete htrigkAny;
 
   //draw number of events per trigger
   TH2F* hTrigMul=(TH2F*)list->FindObject("hTrigMul");

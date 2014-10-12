@@ -23,7 +23,7 @@
 using namespace std;
 
 /**
- * Class for for NetParticle Distributions
+ * Class for NetParticle Distributions
  * -- Helper class for net particle istributions
  * Authors: Jochen Thaeder <jochen@thaeder.de>
  *          Michael Weber <m.weber@cern.ch>
@@ -75,7 +75,10 @@ AliAnalysisNetParticleHelper::AliAnalysisNetParticleHelper() :
   fInputEventHandler(NULL),
   fPIDResponse(NULL),
   fESD(NULL),
+  fESDTrackCuts(NULL),
   fAOD(NULL),
+  fAODtrackCutBit(1024),
+  fIsMC(kFALSE),
   fMCEvent(NULL),
   fStack(NULL),
 
@@ -94,9 +97,13 @@ AliAnalysisNetParticleHelper::AliAnalysisNetParticleHelper() :
   fParticleSpecies(AliPID::kProton),
 
   fUsePID(kTRUE),
-  fNSigmaMaxTPC(2.5),
-  fNSigmaMaxTOF(2.5),
-  fMinPtForTOFRequired(0.8),
+  fPIDStrategy(0),
+  fNSigmaMaxITS(4.),
+  fNSigmaMaxTPC(4.),
+  fNSigmaMaxTPClow(3.),
+  fNSigmaMaxTOF(4.),
+  fMinPtForTOFRequired(0.69),
+  fMaxPtForTPClow(0.69),
 
   fHEventStat0(NULL),
   fHEventStat1(NULL),
@@ -108,14 +115,16 @@ AliAnalysisNetParticleHelper::AliAnalysisNetParticleHelper() :
   fHCentralityStat(NULL),
   fNCentralityBins(10),
 
-  fEtaCorrFunc(NULL) {
+  fNSubSamples(20),
+  fSubSampleIdx(0),
+  fRandom(NULL) {
   // Constructor   
   
   AliLog::SetClassDebugLevel("AliAnalysisNetParticleHelper",10);
 }
 
 const Float_t AliAnalysisNetParticleHelper::fgkfHistBinWitdthRap = 0.075;
-const Float_t AliAnalysisNetParticleHelper::fgkfHistBinWitdthPt  = 0.15;   // 150 MeV
+const Float_t AliAnalysisNetParticleHelper::fgkfHistBinWitdthPt  = 0.3; // 0.08 // 300 MeV  // was 80 MeV
 
 const Float_t AliAnalysisNetParticleHelper::fgkfHistRangeCent[]  = {-0.5, 8.5};
 const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsCent    = 9 ;
@@ -130,10 +139,10 @@ const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsRap     = Int_t((AliAna
 									  AliAnalysisNetParticleHelper::fgkfHistRangeRap[0]) / 
 									 AliAnalysisNetParticleHelper::fgkfHistBinWitdthRap) +1;
 
-const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePhi[]   = {0.0, static_cast<Float_t>(TMath::TwoPi())};
+const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePhi[]   = {0.0, TMath::TwoPi()};
 const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsPhi     = 42 ;
 
-const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePt[]    = {0.1, 3.0};
+const Float_t AliAnalysisNetParticleHelper::fgkfHistRangePt[]    = {0.2, 2.9}; // {0.2, 5.}; // was {0.3, 2.22}
 const Int_t   AliAnalysisNetParticleHelper::fgkfHistNBinsPt      = Int_t((AliAnalysisNetParticleHelper::fgkfHistRangePt[1] -
 									  AliAnalysisNetParticleHelper::fgkfHistRangePt[0]) / 
 									 AliAnalysisNetParticleHelper::fgkfHistBinWitdthPt); 
@@ -151,6 +160,9 @@ const Char_t* AliAnalysisNetParticleHelper::fgkCentralityNames[]    = {"0-5%", "
 AliAnalysisNetParticleHelper::~AliAnalysisNetParticleHelper() {
   // Destructor
 
+  if (fRandom)
+    delete fRandom;
+
   return;
 }
 
@@ -166,6 +178,9 @@ void AliAnalysisNetParticleHelper::SetPhiRange(Float_t f1, Float_t f2) {
   
   fPhiMin = f1; 
   fPhiMax = (f1 < f2) ? f2 : f2+TMath::TwoPi();
+
+  Float_t phiMin = fPhiMin;
+  Float_t phiMax = fPhiMax;
   
   // -- Update Ranges
   Float_t binWidth = (AliAnalysisNetParticleHelper::fgkfHistRangePhi[1] - AliAnalysisNetParticleHelper::fgkfHistRangePhi[0]) / 
@@ -178,12 +193,15 @@ void AliAnalysisNetParticleHelper::SetPhiRange(Float_t f1, Float_t f2) {
     lowEdge += binWidth;
     highEdge += binWidth;
 
-    if (fPhiMin >= lowEdge && fPhiMin < highEdge ) 
-      fPhiMin = lowEdge;
-    if (fPhiMax > lowEdge && fPhiMax <= highEdge ) 
-      fPhiMax = highEdge;
+    if (phiMin >= lowEdge && phiMin < highEdge ) 
+      phiMin = lowEdge;
+    if (phiMax > lowEdge && phiMax <= highEdge ) 
+      phiMax = highEdge;
   }
   
+  printf(">>>> Update Phi Range : [%f,%f] -> [%f,%f]\n", fPhiMin, fPhiMax, phiMin, phiMax);
+  fPhiMin = phiMin;
+  fPhiMax = phiMax;
 }
 
 
@@ -273,10 +291,21 @@ TString AliAnalysisNetParticleHelper::GetParticleTitleLatex(Int_t idxPart) {
  */
 
 //________________________________________________________________________
-Int_t AliAnalysisNetParticleHelper::Initialize(Bool_t isMC, Int_t modeDistCreation) {
+Int_t AliAnalysisNetParticleHelper::Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Int_t trackCutBit, Int_t modeDistCreation) {
   // -- Initialize helper
 
   Int_t iResult = 0;
+
+  // -- ESD track cuts
+  fESDTrackCuts     = cuts;
+
+  // -- Is MC
+  fIsMC             = isMC;
+
+  // -- AOD track filter bit
+  fAODtrackCutBit   = trackCutBit;
+    
+  // -- mode Distribution creation
   fModeDistCreation = modeDistCreation;
 
   // -- Setup event cut statistics 
@@ -288,9 +317,22 @@ Int_t AliAnalysisNetParticleHelper::Initialize(Bool_t isMC, Int_t modeDistCreati
   // -- Setup centrality statistics 
   InitializeCentralityStats();
 
-  // -- Load Eta correction function 
-  iResult = InitializeEtaCorrection(isMC);
-
+  // -- PRINT PID Strategy
+  //    0 :   TPC(TPClow+TPCHigh)
+  //    1 :   ITS
+  //    2 :   TOF
+  //    3 :   ITS+TPC(TPClow+TPCHigh)
+  //    4 :   TPC(TPClow+TPCHigh)+TOF
+  //    5 :   TPC(TPClow+TPCHigh)+TOF for pT >= fMinPtForTOFRequired TOF is required, below, only used if there
+  //    6 :   TPC(TPClow+TPCHigh)+ITS+TOF with TOF only for those tracks which have TOF information
+  //    7 :   TPC(TPClow+TPCHigh)+ITS+TOF for pT >= fMinPtForTOFRequired TOF is required, below, only used if there
+  //    8 :   TPC(TPClow+TPCHigh)+ITS+TOF 
+  printf(">>>> USE PID %d || PID STRATEGY: %d || sigmaMax: ITS %.2f TPC %.2f TOF %.2f \n", fUsePID, fPIDStrategy, fNSigmaMaxITS, fNSigmaMaxTPC, fNSigmaMaxTOF);            
+                      
+  // -- Initialize random number generator
+  fRandom = new TRandom3();
+  fRandom->SetSeed();
+                      
   return iResult;
 }
 
@@ -358,9 +400,8 @@ Int_t AliAnalysisNetParticleHelper::SetupEvent(AliESDInputHandler *esdHandler, A
 
   fCentralityPercentile = centrality->GetCentralityPercentile("V0M");
 
-  // -- Update TPC pid with eta correction (only for ESDs!!)
-  if(esdHandler)
-    UpdateEtaCorrectedTPCPid();
+  // -- Get current subsample idx
+  fSubSampleIdx = fRandom->Integer(fNSubSamples);
 
   return 0;
 }
@@ -669,47 +710,111 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedDCA(AliVTrack *vTrack) {
 //________________________________________________________________________
 Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedPID(AliVTrack *track, Double_t* pid) {
   // -- Check if track is accepted 
-  // > provides TPC and TOF nSigmas to the argument
+  // > provides ITS, TPC and TOF nSigmas to the argument
 
-  Bool_t isAcceptedTPC = kFALSE;
-  Bool_t isAcceptedTOF = kTRUE;
+  Bool_t isAcceptedITS    = kFALSE;
+  Bool_t isAcceptedTPC    = kFALSE;
+  Bool_t isAcceptedTPClow = kFALSE;
+  Bool_t isAcceptedTOF    = kFALSE;
+  Bool_t isAccepted       = kFALSE;
 
   // -- In case not PID is used
   if (!fUsePID) {
     pid[0] = 10.;
     pid[1] = 10.;
+    pid[2] = 10.;
     return kTRUE;
   }
   
-  // -- Get PID
-  pid[0] = fPIDResponse->NumberOfSigmasTPC(track, fParticleSpecies);
-  pid[1] = fPIDResponse->NumberOfSigmasTOF(track, fParticleSpecies);
+  // -- Get PID with ITS and check
+  if (fPIDResponse->NumberOfSigmas(AliPIDResponse::kITS, track, fParticleSpecies, pid[0]) == AliPIDResponse::kDetPidOk) {
+    if (TMath::Abs(pid[0]) < fNSigmaMaxITS) 
+      isAcceptedITS = kTRUE;
+  }
 
-  // -- Check PID with TPC
-  if (TMath::Abs(pid[0]) < fNSigmaMaxTPC) 
-    isAcceptedTPC = kTRUE;
+  // -- Get PID with TPC and check
+  if (fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, fParticleSpecies, pid[1]) == AliPIDResponse::kDetPidOk) {
+    if (TMath::Abs(pid[1]) < fNSigmaMaxTPC) 
+      isAcceptedTPC = kTRUE;
+    if (TMath::Abs(pid[1]) < fNSigmaMaxTPClow) 
+      isAcceptedTPClow = kTRUE;
+    if (track->Pt() < fMaxPtForTPClow)
+      isAcceptedTPC = isAcceptedTPClow;
+  }
+
+  // -- Get PID with TOF and check
+  Bool_t hasPIDTOF = kFALSE;
+  if (fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, fParticleSpecies, pid[2]) == AliPIDResponse::kDetPidOk) {
+    hasPIDTOF = kTRUE;
+    if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) 
+      isAcceptedTOF = kTRUE;
+  }
+
+  // -- Check TOF missmatch for MC
   
-  // -- Check PID with TOF
-  if (isAcceptedTPC) {
+  //if (ESD)
+  if (fIsMC && isAcceptedTOF) {
+    Int_t tofLabel[3];                                                                                                                                        
+    //    AliESDtrack* track = dynamic_cast<AliESDtrack*>(vTrack);
+    // TODO add code for AOD 
 
-    // Has TOF PID availible
-    if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) {
-      if (TMath::Abs(pid[1]) < fNSigmaMaxTOF) 
-	isAcceptedTOF = kTRUE;
-      else 
-	isAcceptedTOF = kFALSE;
-    }
-    
-    // Has no TOF PID availible
-    else { 
-      if (track->Pt() >= fMinPtForTOFRequired) 
-	isAcceptedTOF = kFALSE;
-      else
-	isAcceptedTOF = kTRUE;
-    }
-  } // if (isAcceptedTPC) {
+    (dynamic_cast<AliESDtrack*>(track))->GetTOFLabel(tofLabel);
+   
+    Bool_t hasMatchTOF = kTRUE;
+    if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0) 
+      hasMatchTOF = kFALSE;
 
-  return (isAcceptedTPC && isAcceptedTOF);
+    TParticle *matchedTrack = fStack->Particle(TMath::Abs(tofLabel[0]));
+    if (TMath::Abs(matchedTrack->GetFirstMother()) == TMath::Abs(track->GetLabel())) 
+      hasMatchTOF = kTRUE;
+
+    isAcceptedTOF = hasMatchTOF;
+  }
+
+  //    0 :   TPC(TPClow+TPCHigh)
+  //    1 :   ITS
+  //    2 :   TOF
+  //    3 :   ITS+TPC(TPClow+TPCHigh)
+  //    4 :   TPC(TPClow+TPCHigh)+TOF
+  //    5 :   TPC(TPClow+TPCHigh)+TOF for pT >= fMinPtForTOFRequired TOF is required, below, only used if there
+  //    6 :   TPC(TPClow+TPCHigh)+ITS+TOF with TOF only for those tracks which have TOF information
+  //    7 :   TPC(TPClow+TPCHigh)+ITS+TOF for pT >= fMinPtForTOFRequired TOF is required, below, only used if there
+  //    8 :   TPC(TPClow+TPCHigh)+ITS+TOF 
+  if (fPIDStrategy == 0) {             //  TPC PID
+    isAccepted = isAcceptedTPC;
+  }
+  else if (fPIDStrategy == 1) {        //  ITS PID
+    isAccepted = isAcceptedITS;
+  }
+  else if (fPIDStrategy == 2) {        //  TOF PID
+    isAccepted = isAcceptedTOF;
+  }
+  else if (fPIDStrategy == 3) {        //  TPC+ITS PID
+    isAccepted = isAcceptedTPC && isAcceptedITS;
+  }
+  else if (fPIDStrategy == 4) {        //  TPC+TOF PID
+    isAccepted = isAcceptedTPC && isAcceptedTOF;
+  }
+  else if (fPIDStrategy == 5) {        //  TPC+TOF PID -- for pT >= fMinPtForTOFRequired TOF is required
+    if (!hasPIDTOF && track->Pt() < fMinPtForTOFRequired) 
+      isAcceptedTOF = kTRUE;
+    isAccepted = isAcceptedTPC && isAcceptedTOF;
+  }
+  else if (fPIDStrategy == 6) {        //  ITS+TPC+TOF PID -- TOF only for those tracks which have TOF information
+    isAccepted = isAcceptedTPC && isAcceptedITS;
+    if (hasPIDTOF)
+      isAccepted = isAccepted && isAcceptedTOF;
+  }
+  else if (fPIDStrategy == 7) {        //  ITS+TPC+TOF PID -- for pT >= fMinPtForTOFRequired TOF is required
+    if (!hasPIDTOF && track->Pt() < fMinPtForTOFRequired)
+      isAcceptedTOF = kTRUE;
+    isAccepted = isAcceptedITS && isAcceptedTPC && isAcceptedTOF;
+  }
+  else if (fPIDStrategy == 8) {        //  ITS+TPC+TOF PID
+    isAccepted = isAcceptedITS && isAcceptedTPC && isAcceptedTOF;
+  }
+
+  return isAccepted;
 }
 
 //________________________________________________________________________
@@ -733,28 +838,11 @@ Bool_t AliAnalysisNetParticleHelper::IsTrackAcceptedPhi(AliVTrack *track) {
  */
 
 //________________________________________________________________________
-void AliAnalysisNetParticleHelper::UpdateEtaCorrectedTPCPid() {
-  // -- Update eta corrected TPC pid 
-
-  if (!fEtaCorrFunc)
-    return;
-  
-  for (Int_t idxTrack = 0; idxTrack < fESD->GetNumberOfTracks(); ++idxTrack) {
-    AliESDtrack *track = fESD->GetTrack(idxTrack); 
-
-    // -- Check if charged track is accepted for basic parameters
-    if (!IsTrackAcceptedBasicCharged(track))
-      continue;
-    
-    Double_t newTPCSignal = track->GetTPCsignal() / fEtaCorrFunc->Eval(track->Eta());
-    track->SetTPCsignal(newTPCSignal, track->GetTPCsignalSigma(), track->GetTPCsignalN());
-  }
-}
-
-//________________________________________________________________________
-void AliAnalysisNetParticleHelper::BinLogAxis(const THnBase *hn, Int_t axisNumber) {
+void AliAnalysisNetParticleHelper::BinLogAxis(const THnBase *hn, Int_t axisNumber, AliESDtrackCuts* cuts) {
   // -- Method for the correct logarithmic binning of histograms
   // -- and update fMinPtForTOFRequired using the logarithmic scale
+  
+  AliESDtrackCuts* esdTrackCuts = (cuts) ? cuts : fESDTrackCuts;
 
   // -- Make logarithmic binning 
   TAxis *axis = hn->GetAxis(axisNumber);
@@ -774,10 +862,46 @@ void AliAnalysisNetParticleHelper::BinLogAxis(const THnBase *hn, Int_t axisNumbe
 
   delete [] newBins;
 
+  // -- Update Ranges
+  // ------------------
+  Float_t ptRange[2];
+  Float_t oldPtRange[2];
+  esdTrackCuts->GetPtRange(ptRange[0],ptRange[1]);
+  esdTrackCuts->GetPtRange(oldPtRange[0],oldPtRange[1]);
+
+  Float_t minPtForTOFRequired = fMinPtForTOFRequired;
+  Float_t maxPtForTPClow      = fMaxPtForTPClow;
+
+  // -- Update minPt Cut
+  Int_t bin = axis->FindBin(ptRange[0]+10e-6);
+  ptRange[0] = axis->GetBinLowEdge(bin); 
+
+  // -- Update maxPt Cut
+  bin = axis->FindBin(ptRange[1]-10e-6);
+  ptRange[1] = axis->GetBinUpEdge(bin); 
+
+  if (ptRange[0] != oldPtRange[0] || ptRange[1] != oldPtRange[1]) {
+    printf(">>>> Update Pt Range : [%f,%f] -> [%f,%f]\n", oldPtRange[0], oldPtRange[1], ptRange[0], ptRange[1]);
+    esdTrackCuts->SetPtRange(ptRange[0],ptRange[1]);
+  }
+
   // -- Update MinPtForTOFRequired
-  for (Int_t ii = 1; ii <= nBins; ++ii)
-    if (axis->GetBinLowEdge(ii) <= fMinPtForTOFRequired && axis->GetBinLowEdge(ii) + axis->GetBinWidth(ii) >  fMinPtForTOFRequired)
-      fMinPtForTOFRequired = axis->GetBinLowEdge(ii) + axis->GetBinWidth(ii);
+  bin = axis->FindBin(minPtForTOFRequired-10e-6);
+  minPtForTOFRequired = axis->GetBinUpEdge(bin); 
+
+  if (minPtForTOFRequired != fMinPtForTOFRequired) {
+    printf(">>>> Update Min Pt for TOF : %f -> %f\n", fMinPtForTOFRequired, minPtForTOFRequired);
+    fMinPtForTOFRequired = minPtForTOFRequired;
+  }
+
+  // -- Update MaxPtForTPClow
+  bin = axis->FindBin(maxPtForTPClow-10e-6);
+  maxPtForTPClow = axis->GetBinUpEdge(bin); 
+
+  if (maxPtForTPClow != fMaxPtForTPClow) {
+    printf(">>>> Update Max Pt for TPC Low : %f -> %f\n", fMaxPtForTPClow, maxPtForTPClow);
+    fMaxPtForTPClow = maxPtForTPClow;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -792,8 +916,8 @@ void AliAnalysisNetParticleHelper::BinLogAxis(const THnBase *hn, Int_t axisNumbe
 void AliAnalysisNetParticleHelper::InitializeEventStats() {
   // -- Initialize event statistics histograms
 
-  fHEventStat0 = new TH1F("fHEventStat0","Event cut statistics 0;Event Cuts;Events", fHEventStatMax,-0.5,fHEventStatMax-0.5);
-  fHEventStat1 = new TH1F("fHEventStat1","Event cut statistics 1;Event Cuts;Events", fHEventStatMax,-0.5,fHEventStatMax-0.5);
+  fHEventStat0 = new TH1F("hEventStat0","Event cut statistics 0;Event Cuts;Events", fHEventStatMax,-0.5,fHEventStatMax-0.5);
+  fHEventStat1 = new TH1F("hEventStat1","Event cut statistics 1;Event Cuts;Events", fHEventStatMax,-0.5,fHEventStatMax-0.5);
 
   for ( Int_t ii=0; ii < fHEventStatMax-1; ii++ ) {
     fHEventStat0->GetXaxis()->SetBinLabel(ii+1, AliAnalysisNetParticleHelper::fgkEventNames[ii]);
@@ -808,7 +932,7 @@ void AliAnalysisNetParticleHelper::InitializeEventStats() {
 void AliAnalysisNetParticleHelper::InitializeTriggerStats() {
   // -- Initialize trigger statistics histograms
 
-  fHTriggerStat = new TH1F("fHTriggerStat","Trigger statistics;Trigger;Events", fNTriggers,-0.5,fNTriggers-0.5);
+  fHTriggerStat = new TH1F("hTriggerStat","Trigger statistics;Trigger;Events", fNTriggers,-0.5,fNTriggers-0.5);
 
   for ( Int_t ii=0; ii < fNTriggers; ii++ )
     fHTriggerStat->GetXaxis()->SetBinLabel(ii+1, AliAnalysisNetParticleHelper::fgkTriggerNames[ii]);
@@ -818,37 +942,11 @@ void AliAnalysisNetParticleHelper::InitializeTriggerStats() {
 void AliAnalysisNetParticleHelper::InitializeCentralityStats() {
   // -- Initialize trigger statistics histograms
 
-  fHCentralityStat = new TH1F("fHCentralityStat","Centrality statistics;Centrality Bins;Events", 
+  fHCentralityStat = new TH1F("hCentralityStat","Centrality statistics;Centrality Bins;Events", 
 			      fNCentralityBins,-0.5,fNCentralityBins-0.5);
 
   for ( Int_t ii=0; ii < fNCentralityBins; ii++ )
     fHCentralityStat->GetXaxis()->SetBinLabel(ii+1, AliAnalysisNetParticleHelper::fgkCentralityNames[ii]);
-}
-
-//________________________________________________________________________
-Int_t AliAnalysisNetParticleHelper::InitializeEtaCorrection(Bool_t isMC) {
-  // -- Initialize eta correction maps for TPC pid
-  
-  TFile fileEtaCorrMaps("${ALICE_ROOT}/PWGDQ/dielectron/files/EtaCorrMaps.root");
-  if (!fileEtaCorrMaps.IsOpen()) 
-    return -1;
-
-  TList *keyList = fileEtaCorrMaps.GetListOfKeys();
-  
-  TString sList("");
-  sList = (isMC) ? "LHC11a10" :  "LHC10h.pass2";
-  
-  for (Int_t idx = 0; idx < keyList->GetEntries(); ++idx) {
-    TString keyName = keyList->At(idx)->GetName();
-    TPRegexp reg(keyName);
-    if (reg.MatchB(sList)){
-      AliInfo(Form("Using Eta Correction Function: %s",keyName.Data()));
-      fEtaCorrFunc = static_cast<TF1*>(fileEtaCorrMaps.Get(keyName.Data()));
-      return 0;
-    }
-  }
-
-  return -2;
 }
 
 /*

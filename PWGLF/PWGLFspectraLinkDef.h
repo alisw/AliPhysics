@@ -47,7 +47,21 @@
 #pragma link C++ class AliAnalysisTaskB2+;
 #pragma link C++ class AliAnalysisTaskB2AOD+;
 #pragma link C++ class AliAnalysisNucleiMass+;
+#pragma link C++ class AliAnalysisNucleiInfo+;
 
 #pragma link C++ class AliAnalysisDeuteronpA+;
+
+#pragma link C++ class AliXtAnalysis+;
+#pragma link C++ class AliJBaseTrack+;
+#pragma link C++ class AliJBaseCard+;
+#pragma link C++ class AliJCard+;
+#pragma link C++ class AliJXtHistos+;
+#pragma link C++ class AliAnalysisTaskHighPtDeDx+; 
+
+#pragma link C++ class DeDxTrack+; 
+#pragma link C++ class VZEROCell+; 
+#pragma link C++ class DeDxV0+; 
+#pragma link C++ class DeDxTrackMC+; 
+#pragma link C++ class DeDxEvent+;
 
 #endif

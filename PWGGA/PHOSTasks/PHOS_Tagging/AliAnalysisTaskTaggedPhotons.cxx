@@ -54,6 +54,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliAnalysisUtils.h"
 #include "AliOADBContainer.h"
+#include "AliAODMCHeader.h"
 
 ClassImp(AliAnalysisTaskTaggedPhotons)
 
@@ -72,10 +73,12 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fZmin(0.),
   fPhimax(0.),
   fPhimin(0.),
+  fMinBCDistance(0.),
   fCentrality(0.),
   fCentBin(0), 
   fIsMB(0),
-  fIsMC(0)
+  fIsMC(0),
+  fIsFastMC(0)
 {
   //Deafult constructor
   //no memory allocations
@@ -100,10 +103,12 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fZmin(60.),
   fPhimax(250.),
   fPhimin(320.),
+  fMinBCDistance(0.),
   fCentrality(0.),
   fCentBin(0),
   fIsMB(0),
-  fIsMC(0)
+  fIsMC(0),
+  fIsFastMC(0)
 {
   // Constructor.
 
@@ -134,10 +139,12 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fZmin(60.),
   fPhimax(250.),
   fPhimin(320.),
+  fMinBCDistance(0.),  
   fCentrality(0.),
   fCentBin(0),
   fIsMB(0),
-  fIsMC(0)
+  fIsMC(0),
+  fIsFastMC(0)
 {
   // cpy ctor
   fZmax=ap.fZmax ;
@@ -585,15 +592,17 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     InitGeometry() ;
   }
   
-  if(!fUtils) 
-    fUtils = new AliAnalysisUtils();
+  if(!fIsFastMC){
+    if(!fUtils) 
+      fUtils = new AliAnalysisUtils();
 
-  Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)  ; 
-  Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kPHI7);
-   
-  if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
-    PostData(1, fOutputContainer);
-    return;    
+    Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)  ; 
+    Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kPHI7);
+
+    if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
+      PostData(1, fOutputContainer);
+      return;    
+    }
   }
   FillHistogram("hSelEvents",2) ;
   
@@ -607,47 +616,61 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 
   FillHistogram("hNvertexTracks",event->GetPrimaryVertex()->GetNContributors());
   FillHistogram("hZvertex"      ,vtx5[2]);
+  if(fIsFastMC){ //vertex from header
+    AliAODMCHeader *cHeaderAOD = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
+    if(!cHeaderAOD){
+      PostData(1, fOutputContainer);
+      return ;      
+    }
+    cHeaderAOD->GetVertex(vtx5);
+  }
   if (TMath::Abs(vtx5[2]) > 10. ){
     PostData(1, fOutputContainer);
     return ;
   }
-    
   FillHistogram("hSelEvents",3) ;
   //Vtx class z-bin
   Int_t zvtx = TMath::Min(9,Int_t((vtx5[2]+10.)/2.)) ; 
 
   
+  if(!fIsFastMC){
+//    if (event->IsPileupFromSPD()){
+//      PostData(1, fOutputContainer);
+//      return ;
+//    }
   
-//  if (event->IsPileupFromSPD()){
-//    PostData(1, fOutputContainer);
-//    return ;
-//  }
+    if(!fUtils->IsVertexSelected2013pA(event)){
+      PostData(1, fOutputContainer);
+      return ;
+    }
   
-  if(!fUtils->IsVertexSelected2013pA(event)){
-    PostData(1, fOutputContainer);
-    return ;
+    FillHistogram("hSelEvents",4) ;
+  
+    if(fUtils->IsPileUpEvent(event)){
+      PostData(1, fOutputContainer);
+      return ;
+    }
+    FillHistogram("hSelEvents",5) ;
   }
-  FillHistogram("hSelEvents",4) ;
-  
-  if(fUtils->IsPileUpEvent(event)){
-    PostData(1, fOutputContainer);
-    return ;
-  }
-  FillHistogram("hSelEvents",5) ;
   
   //centrality
-  AliCentrality *centrality = event->GetCentrality();
-  if( centrality )
-    fCentrality=centrality->GetCentralityPercentile("V0M");
-  else {
-    AliError("Event has 0x0 centrality");
-    fCentrality = -1.;
-  }
-  FillHistogram("hCentrality",fCentrality) ;
+  if(!fIsFastMC){  
+    AliCentrality *centrality = event->GetCentrality();
+    if( centrality )
+      fCentrality=centrality->GetCentralityPercentile("V0M");
+    else {
+      AliError("Event has 0x0 centrality");
+      fCentrality = -1.;
+    }
+    FillHistogram("hCentrality",fCentrality) ;
 
-  if(fCentrality<0. || fCentrality>=100.){
-    PostData(1, fOutputContainer);
-    return ;
+    if(fCentrality<0. || fCentrality>=100.){
+      PostData(1, fOutputContainer);
+      return ;
+    }
+  }
+  else{
+    fCentrality=1.;
   }
   fCentBin = (Int_t)(fCentrality/20.) ; 
 
@@ -707,6 +730,9 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   
     if(clu->GetMCEnergyFraction()>kEcrossCut) //Ecross cut, should be filled with Tender
      continue ;    
+    
+    if(clu->GetDistanceToBadChannel()<fMinBCDistance)
+      continue ;
 
     Float_t pos[3] ;
     clu->GetPosition(pos) ;
@@ -1341,8 +1367,8 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       }
       Int_t oldTag1=p1->GetTagInfo() ;
       for(Int_t ibit=0; ibit<18; ibit++){
-        if(((oldTag1 & (1<<ibit))==1) && //Already tagged 
-           ((tag1 & (1<<ibit))==1)){//Multiple tagging
+        if(((oldTag1 & (1<<ibit))!=0) && //Already tagged 
+           ((tag1 & (1<<ibit))!=0)){//Multiple tagging
          Int_t iFidArea = p1->GetFiducialArea(); 
          if(iFidArea>0){
            FillPIDHistograms(Form("hPhot_TaggedMult%d_Area1",ibit),p1) ;
@@ -1372,8 +1398,8 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       }
       Int_t oldTag2=p2->GetTagInfo() ;
       for(Int_t ibit=0; ibit<18; ibit++){
-        if(((oldTag2 & (1<<ibit))==1) && //Already tagged 
-           ((tag2 & (1<<ibit))==1)){//Multiple tagging
+        if(((oldTag2 & (1<<ibit))!=0) && //Already tagged 
+           ((tag2 & (1<<ibit))!=0)){//Multiple tagging
          Int_t iFidArea = p2->GetFiducialArea(); 
          if(iFidArea>0){
            FillPIDHistograms(Form("hPhot_TaggedMult%d_Area1",ibit),p2) ;
@@ -1436,7 +1462,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       //strict and loose PID cut on partner
       Int_t tag=p->GetTagInfo() ;
       for(Int_t ibit=0; ibit<18; ibit++){
-        if((tag & (1<<ibit))==1){ 
+        if((tag & (1<<ibit))!=0){ 
           FillPIDHistograms(Form("hPhot_Tagged%d_Area1",ibit),p) ;
 	  if(p->IsntUnfolded()) //true tag
              FillPIDHistograms(Form("hPhot_TrueTagged%d",ibit),p) ;
@@ -1447,14 +1473,14 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       if(iFidArea>1){
         FillPIDHistograms("hPhot_Area2",p) ;
         for(Int_t ibit=0; ibit<18; ibit++){
-          if((tag & (1<<ibit))==1){ 
+          if((tag & (1<<ibit))!=0){ 
             FillPIDHistograms(Form("hPhot_Tagged%d_Area2",ibit),p) ;
 	  }
         }
 	if(iFidArea>2){
           FillPIDHistograms("hPhot_Area3",p) ;
           for(Int_t ibit=0; ibit<18; ibit++){
-            if((tag & (1<<ibit))==1){ 
+            if((tag & (1<<ibit))!=0){ 
               FillPIDHistograms(Form("hPhot_Tagged%d_Area3",ibit),p) ;
 	    }
 	  }
@@ -1931,24 +1957,24 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
   if(pdg == 111){
   //Pi0
      if(x<1) return 1. ;
-     else return fWeightParamPi0[0]*TMath::Power(x,fWeightParamPi0[1])*
+     else return fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
        (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
-       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) ;
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) +fWeightParamPi0[6])  ;
   }
   if(pdg == 221){
   //Eta - same same shape, but yield 0.48 and Br(eta->2gamma)
      Double_t norm=0.48 * 0.3943;
      if(x<1) return norm ;
-     else return norm*fWeightParamPi0[0]*TMath::Power(x,fWeightParamPi0[1])*
+     else return norm*fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
        (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
-       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) ;
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) +fWeightParamPi0[6]) ;
   }
   return 1. ;
 }
 //_________________________________________________________________________________
 void AliAnalysisTaskTaggedPhotons::SetPi0WeightParameters(TArrayD * ar){
  
-  for(Int_t i=0; i<6; i++){ //Array range
+  for(Int_t i=0; i<7; i++){ //Array range
     if(ar->GetSize()>i) fWeightParamPi0[i]=ar->At(i) ;
     else fWeightParamPi0[i]=0.;
   }
@@ -1956,7 +1982,7 @@ void AliAnalysisTaskTaggedPhotons::SetPi0WeightParameters(TArrayD * ar){
   Double_t x=1. ;
   fWeightParamPi0[0]=1./(TMath::Power(x,fWeightParamPi0[1])*
        (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
-       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x)) ;
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) +fWeightParamPi0[6]) ;
   
   
 }
@@ -2041,5 +2067,3 @@ Bool_t AliAnalysisTaskTaggedPhotons::IsGoodChannel(Int_t mod, Int_t ix, Int_t iz
   else
     return kTRUE ;
 }
-
-

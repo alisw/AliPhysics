@@ -302,18 +302,20 @@ Bool_t AliCFVertexingHF::CheckMCPartFamily(AliAODMCParticle */*mcPart*/, TClones
 
 	Int_t pdgGranma = CheckOrigin();
 
+	AliDebug(3, Form("pdgGranma = %d", pdgGranma));
+
 	if (pdgGranma == -99999){
-		AliDebug(2,"This particle does not have a quark in his genealogy\n");
-		return kFALSE;
+	  AliDebug(2, "This particle does not have a quark in his genealogy\n");
+	  return kFALSE;
 	}
 	if (pdgGranma == -9999){
-		AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
-		return kFALSE;
+	  AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
+	  return kFALSE;
 	}	
 	
 	if (pdgGranma == -999){
-		AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
-		return kFALSE;
+	  AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
+	  return kFALSE;
 	}	
 	
 	if (!CheckMCDaughters()) {
@@ -321,8 +323,8 @@ Bool_t AliCFVertexingHF::CheckMCPartFamily(AliAODMCParticle */*mcPart*/, TClones
 	  return kFALSE;
 	}
 	if (!CheckMCChannelDecay()) {
-		AliDebug(3,"CheckMCChannelDecay false");
-		return kFALSE;
+	  AliDebug(3, "CheckMCChannelDecay false");
+	  return kFALSE;
 	}
 	return kTRUE;
 }
@@ -354,18 +356,25 @@ Int_t AliCFVertexingHF::CheckOrigin() const
 			}
 			if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
 			mother = mcGranma->GetMother();
+			AliDebug(3, Form("mother = %d", mother));
 		}else{
 			AliError("Failed casting the mother particle!");
 			break;
 		}
 	}
 
-	if(fRejectIfNoQuark && !isQuarkFound) return -99999;
+	if(fRejectIfNoQuark && !isQuarkFound) {
+	  return -99999;
+	}
 	if(isFromB){
-	  if (!fKeepDfromB) return -9999; //skip particle if come from a B meson.
+	  if (!fKeepDfromB) {
+	    return -9999; //skip particle if come from a B meson.
+	  }
 	}
 	else{
-	  if (fKeepDfromBOnly) return -999;
+	  if (fKeepDfromBOnly) {
+	    return -999;
+	  }
 	}
 	return pdgGranma;
 }
@@ -382,22 +391,27 @@ Bool_t AliCFVertexingHF::CheckMCDaughters()const
 	
 	Int_t label0 = fmcPartCandidate->GetDaughter(0);
 	Int_t label1 = fmcPartCandidate->GetDaughter(1);
-	AliDebug(3,Form("label0 = %d, label1 = %d",label0,label1));
+	AliDebug(3,Form("label0 = %d, label1 = %d", label0, label1));
 	if (label1<=0 || label0 <= 0){
-		AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
-		return checkDaughters;  
+	  AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
+	  return checkDaughters;  
 	}
 	
 	if (fLabelArray == 0x0) {
-		return checkDaughters;
+	  return checkDaughters;
 	}  
-
+	
 	for (Int_t iProng = 0; iProng<fProngs; iProng++){
-		mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fLabelArray[iProng]));    
-		if (!mcPartDaughter) {
-			AliWarning("At least one Daughter Particle not found in tree, skipping"); 
-			return checkDaughters;  
-		}
+	  AliDebug(3, Form("fLabelArray[%d] = %d", iProng, fLabelArray[iProng]));
+	}
+	AliDebug(3, Form("Entries in MC array = %d (fast  = %d)", fmcArray->GetEntries(), fmcArray->GetEntriesFast()));
+	for (Int_t iProng = 0; iProng<fProngs; iProng++){
+	  AliDebug(3, Form("fLabelArray[%d] = %d", iProng, fLabelArray[iProng]));
+	  mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fLabelArray[iProng]));    
+	  if (!mcPartDaughter) {
+	    AliWarning("At least one Daughter Particle not found in tree, skipping"); 
+	    return checkDaughters;  
+	  }
 	}
 	
 	checkDaughters = kTRUE;
@@ -421,6 +435,9 @@ Bool_t AliCFVertexingHF::FillMCContainer(Double_t *containerInputMC)
 			containerInputMC[iVar] = vectorMC[iVar];
 		}		
 		mcContainerFilled = kTRUE;		
+	}
+	else {
+	  AliDebug(3, "We could not fill the array for the container");
 	}
 	delete [] vectorMC;
 	vectorMC = 0x0;
@@ -621,11 +638,11 @@ Bool_t AliCFVertexingHF::RecoStep()
 	Int_t pdgGranma = CheckOrigin();
 	
 	if (pdgGranma == -99999){
-		AliDebug(2,"This particle does not have a quark in his genealogy\n");
+       	        AliDebug(2,"This particle does not have a quark in his genealogy\n");
 		return bRecoStep;
 	}
 	if (pdgGranma == -9999){
-		AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only prompt charm particles\n");
+		AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only prompt charm particles\n");		
 		return bRecoStep;
 	}
 
@@ -771,9 +788,13 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 	AliAODMCParticle *mcPartDaughter;
 	Int_t label0 = fmcPartCandidate->GetDaughter(0);
 	Int_t label1 = fmcPartCandidate->GetDaughter(1);
-	AliDebug(2,Form("label0 = %d, label1 = %d",label0,label1));
+	//AliDebug(2,Form("label0 = %d, label1 = %d",label0,label1));
+	AliAODMCParticle* tmp0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label0));
+	AliAODMCParticle* tmp1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label1));
+
+	AliDebug(2, Form("label0 = %d (pdg = %d), label1 = %d (pdg = %d)", label0, tmp0->GetPdgCode(), label1, tmp1->GetPdgCode()));
 	if (label1<=0 || label0 <= 0){
-		AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
+	        AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
 		delete [] fLabelArray; 
 		fLabelArray = 0x0;  
 		return bLabelArray;
@@ -796,6 +817,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 	}
 	// resonant decay channel
 	else if (label1 - label0 == fProngs-2 && fProngs > 2){
+	  AliDebug(3, "In the resonance decay channel");
 		Int_t labelFirstDau = fmcPartCandidate->GetDaughter(0);
 		Int_t foundDaughters = 0;
 		for(Int_t iDau=0; iDau<fProngs-1; iDau++){
@@ -808,9 +830,11 @@ Bool_t AliCFVertexingHF::SetLabelArray()
                           return bLabelArray;
                         }  
 			Int_t pdgCode=TMath::Abs(part->GetPdgCode());
+			AliDebug(3, Form("Prong %d had pdg = %d", iDau, pdgCode));
 			if(pdgCode==211 || pdgCode==321 || pdgCode==2212){
 				if (part) {
 					fLabelArray[foundDaughters] = part->GetLabel();
+					AliDebug(3, Form("part found at %d has label = %d", iLabelDau, part->GetLabel()));
 					foundDaughters++;
 				}
 				else{
@@ -822,6 +846,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			}
 			// added K0S case - Start
 			else if (pdgCode==311) {
+			  AliDebug(3, "K0S case");
 			  if (part->GetNDaughters()!=1) {
 			    delete [] fLabelArray; 
 			    fLabelArray = 0x0;  
@@ -835,19 +860,22 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			    fLabelArray = 0x0;
 			    return bLabelArray;
 			  }		    
-			  Int_t nDauRes=partK0S->GetNDaughters();
-			  if(nDauRes!=2 || partK0S->GetPdgCode()!=310) {
-			    AliDebug(2,"No K0S on no 2-body decay");
+			  Int_t nDauRes = partK0S->GetNDaughters();
+			  AliDebug(3, Form("nDauRes = %d", nDauRes));
+			  if (nDauRes!=2 || partK0S->GetPdgCode() != 310) {
+			    AliDebug(2, "No K0S on no 2-body decay");
 			    delete [] fLabelArray;
 			    fLabelArray = 0x0;
 			    return bLabelArray;
 			  }
 			  Int_t labelFirstDauRes = partK0S->GetDaughter(0);
-			  AliDebug(2,Form(" Found K0S (%d)",labelK0Dau));
+			  AliDebug(2, Form(" Found K0S (%d)", labelK0Dau));
 			  for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
 			    Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
 			    AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
+			    AliDebug(3, Form("daughter = %d, pointer = %p", iLabelDauRes, dauRes));
 			    if (dauRes){
+			      AliDebug(3, Form("PDG code = %d", dauRes->GetPdgCode()));
 			      if (TMath::Abs(dauRes->GetPdgCode())!=211) {
 				AliDebug(2,"K0S doesn't decay in 2 charged pions!");
 				delete [] fLabelArray; 
@@ -856,6 +884,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			      }
 			      else {
 				fLabelArray[foundDaughters] = dauRes->GetLabel();
+
 				foundDaughters++;
 			      }
 			    }
@@ -869,44 +898,56 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			}
 			// added K0S case - End
 			else{
-				Int_t nDauRes=part->GetNDaughters();
-				if(nDauRes!=2) {
-					delete [] fLabelArray; 
-					fLabelArray = 0x0;  
-					return bLabelArray;
-				}
-				Int_t labelFirstDauRes = part->GetDaughter(0); 
-				for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
-					Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
-					AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
-					if (dauRes){
-						fLabelArray[foundDaughters] = dauRes->GetLabel();
-						foundDaughters++;
-					}
-					else{
-						AliError("Error while casting resonant daughter! returning a NULL array");
-						delete [] fLabelArray; 
-						fLabelArray = 0x0;  
-						return bLabelArray;
-					}
-				}
+			  Int_t nDauRes=part->GetNDaughters();
+			  AliDebug(3, Form("nDauRes = %d", nDauRes));
+			  if(nDauRes!=2) {
+			    AliDebug(3, Form("nDauRes = %d, different from 2", nDauRes));
+			    Int_t labelFirstDauResTest = part->GetDaughter(0);
+			    for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
+			      Int_t iLabelDauResTest = labelFirstDauResTest+iDauRes;
+			      AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauResTest));
+			      if (dauRes){
+				AliDebug(3, Form("pdg of daugh %d = %d", iDauRes, dauRes->GetPdgCode()));
+			      }
+			    }
+			    delete [] fLabelArray; 
+			    fLabelArray = 0x0;  
+			    return bLabelArray;			    
+			  }
+			  Int_t labelFirstDauRes = part->GetDaughter(0); 
+			  for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
+			    Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
+			    AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
+			    if (dauRes){
+			      fLabelArray[foundDaughters] = dauRes->GetLabel();
+			      foundDaughters++;
+			    }
+			    else{
+			      AliError("Error while casting resonant daughter! returning a NULL array");
+			      delete [] fLabelArray; 
+			      fLabelArray = 0x0;  
+			      return bLabelArray;
+			    }
+			  }
 			}
 		}
 		if (foundDaughters != fProngs){
-			delete [] fLabelArray; 
-			fLabelArray = 0x0;  
-			return bLabelArray;
+		  AliDebug(3, Form("foundDaughters (%d) != fProngs (%d)", foundDaughters, fProngs));
+		  delete [] fLabelArray; 
+		  fLabelArray = 0x0;  
+		  return bLabelArray;
 		}
 	}
 	// wrong correspondance label <--> prongs
 	else{
-		delete [] fLabelArray; 
-		fLabelArray = 0x0;  
-		return bLabelArray;
+	  delete [] fLabelArray; 
+	  fLabelArray = 0x0;  
+	  return bLabelArray;
 	}
-	SetAccCut();   // setting the pt and eta acceptance cuts
-	bLabelArray = kTRUE;
-	return bLabelArray;
+        AliDebug(3, "Setting AccCuts");
+        SetAccCut();   // setting the pt and eta acceptance cuts
+        bLabelArray = kTRUE;
+        return bLabelArray;
 }
 
 //___________________________________________________________

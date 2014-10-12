@@ -386,16 +386,18 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
   fListHist->SetOwner();  // IMPORTANT!
 
   if(! fHistEventMultiplicity ){
-    fHistEventMultiplicity   = new TH1F( "fHistEventMultiplicity" , "Nb of Events" , 10 , 0, 10);
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(1,"All Events");
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(2,"Events w/PV");
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(3,"Events w/|Vz|<10cm");
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(4,"Central Events");
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(5,"SemiCentral Events");
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(6,"MB Events");
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(7,"Central Events  w/|Vz|<10cm");
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(8,"SemiCentral Events  w/|Vz|<10cm");
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(9,"MB Events   w/|Vz|<10cm");
+    fHistEventMultiplicity   = new TH1F( "fHistEventMultiplicity" , "Nb of Events" , 12 , -0.5, 11.5);
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(1 ,"All Events");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(2 ,"Events w/PV");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(3 ,"Events w/|Vz|<10cm");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(4 ,"Central Events");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(5 ,"SemiCentral Events");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(6 ,"MB Events");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(7 ,"Central Events  w/|Vz|<10cm");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(8 ,"SemiCentral Events  w/|Vz|<10cm");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(9 ,"MB Events w/|Vz|<10cm");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(10,"Any Events");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(11,"Any Events w/|Vz|<10cm");
 
     fListHist->Add(fHistEventMultiplicity);
   }
@@ -700,8 +702,6 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
   TrackNumber = lESDevent->GetNumberOfTracks();
   if (TrackNumber<2) return;  
 
-  fHistTrackMultiplicity->Fill(TrackNumber,percentile); //tracce per evento
-
   //****************************************
   
   // PID
@@ -717,6 +717,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
   Bool_t isSelectedCentral     = (inputHandler->IsEventSelected() & AliVEvent::kCentral);
   Bool_t isSelectedSemiCentral = (inputHandler->IsEventSelected() & AliVEvent::kSemiCentral);
   Bool_t isSelectedMB          = (inputHandler->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelectedAny         = (inputHandler->IsEventSelected() & AliVEvent::kAny);
  
   if(isSelectedCentral){
     fHistEventMultiplicity->Fill(3);
@@ -735,8 +736,15 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     fHistTrackMultiplicityMB->Fill(TrackNumber,percentile); 
     eventtype=3;
   }
-  
-  if(isSelectedCentral || isSelectedSemiCentral || isSelectedMB){
+ 
+  if(!isSelectedCentral && !isSelectedSemiCentral && !isSelectedMB && isSelectedAny){
+    fHistEventMultiplicity->Fill(9);
+    fHistTrackMultiplicity->Fill(TrackNumber,percentile); //tracce per evento
+    eventtype=4;
+  }
+
+  //if(isSelectedCentral || isSelectedSemiCentral || isSelectedMB || isSelectedAny){
+  if(eventtype ==1  || eventtype ==2  || eventtype==3  || eventtype==4){
     
     // ANALISYS
     
@@ -776,6 +784,10 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     if(eventtype==3){
       fHistTrackMultiplicityPVMB->Fill(TrackNumber,percentile); 
       fHistEventMultiplicity->Fill(8); 
+    }
+
+    if(eventtype==4){
+      fHistEventMultiplicity->Fill(10); 
     }
     
     
@@ -823,7 +835,6 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       status  = (ULong_t)esdtrack->GetStatus();
       isTPC   = (((status) & AliESDtrack::kTPCin)  != 0);
       isTOF   = ((((status) & AliESDtrack::kTOFout) != 0) && (((status) & AliESDtrack::kTIME) != 0));
-
       
       UInt_t mapITS=esdtrack->GetITSClusterMap();
             
@@ -965,7 +976,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	  tHelzPrimaryVertex    =(Float_t)zPrimaryVertex;
 	  tHelchi2PerClusterTPC =(Float_t)chi2PerClusterTPC;            
 	  	  
-	  fNtuple4->Fill();
+	  //	  fNtuple4->Fill();
 	}
       }
     }  //! track

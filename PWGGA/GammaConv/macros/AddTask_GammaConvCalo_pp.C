@@ -43,9 +43,12 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 		AddTaskPIDResponse(isMC);
 	}
 	
+	Printf("here \n");
+	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "002084000002200000000";
+	TString cutnumberPhoton = "060084001001500000000";
 	TString cutnumberEvent = "0000000";
+	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -66,12 +69,12 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
 			fEventCuts->SetPreSelectionCutFlag(kTRUE);
 			if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
+				fEventCuts->DoEtaShift(doEtaShift);
 				fV0ReaderV1->SetEventCuts(fEventCuts);
 				fEventCuts->SetFillCutHistograms("",kTRUE);
 			}
 		}
 
-		
 		// Set AnalysisCut Number
 		AliConversionPhotonCuts *fCuts=NULL;
 		if(cutnumberPhoton!=""){
@@ -83,7 +86,6 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 				fCuts->SetFillCutHistograms("",kTRUE);
 			}
 		}
-
 		if(inputHandler->IsA()==AliAODInputHandler::Class()){
 		// AOD mode
 			fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
@@ -103,27 +105,95 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 	//================================================
 	AliAnalysisTaskGammaConvCalo *task=NULL;
 	task= new AliAnalysisTaskGammaConvCalo(Form("GammaConvCalo_%i",trainConfig));
-	task->SetIsHeavyIon(0);
+	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
-	Int_t numberOfCuts = 3;
-
+	Int_t numberOfCuts = 4;
+	
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
 	TString *clusterCutArray = new TString[numberOfCuts];
 	TString *mesonCutArray = new TString[numberOfCuts];
 
-	// meson cuts
-	// meson type (Dalitz or not), BG scheme, pool depth, rotation degrees, rapidity cut, radius cut, alpha, chi2, shared electrons, reject to close v0, MC smearing, dca, dca, dca
+	// cluster cuts
+	// 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
+	// 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
 	
-	if (trainConfig == 1){ 
-		eventCutArray[ 0] = "0000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, kMB // EMCAL clusters
-		eventCutArray[ 1] = "0005101"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "10000040022030000"; mesonCutArray[1] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, kEMC1 // EMCAL clusters
-		eventCutArray[ 2] = "0002001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[2] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, SDD V0OR // EMCAL clusters
-	} else if (trainConfig == 2){ 
-		eventCutArray[ 0] = "0000001"; photonCutArray[ 0] = "002092970028250400000"; clusterCutArray[0] = "20000030022000000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, kMB   // PHOS clusters
-		eventCutArray[ 1] = "0006101"; photonCutArray[ 1] = "002092970028250400000"; clusterCutArray[1] = "20000030022000000"; mesonCutArray[1] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, kPHI1 // PHOS clusters
-		eventCutArray[ 2] = "0002001"; photonCutArray[ 2] = "002092970028250400000"; clusterCutArray[2] = "20000030022000000"; mesonCutArray[2] = "01525065000000"; //standard cut LHC11h pp 2.76TeV, SDD V0OR //PHOS clusters
+	if (trainConfig == 1){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0,1), kEMC1 (2,3)
+		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 1] = "0002011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
+		eventCutArray[ 2] = "0005111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[2] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 3] = "0005111"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01631031009000"; // 300 MeV cluster min energy
+	} else if (trainConfig == 2){  // EMCAL clusters, EMCEGA triggers
+		eventCutArray[ 0] = "0008311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01631031009000"; // EMCEG1, 100 MeV cluster min energy
+		eventCutArray[ 1] = "0008311"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01631031009000"; // EMCEG1, 300 MeV cluster min energy
+		eventCutArray[ 2] = "0008511"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[2] = "01631031009000"; // EMCEG2, 100 MeV cluster min energy
+		eventCutArray[ 3] = "0008511"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01631031009000"; // EMCEG2, 300 MeV cluster min energy
+	} else if (trainConfig == 3){  // EMCAL clusters, EMCEJE triggers
+		eventCutArray[ 0] = "0009311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01631031009000"; // EMCEJ1, 100 MeV cluster min energy
+		eventCutArray[ 1] = "0009311"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01631031009000"; // EMCEJ1, 300 MeV cluster min energy
+		eventCutArray[ 2] = "0009511"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[2] = "01631031009000"; // EMCEJ2, 100 MeV cluster min energy
+		eventCutArray[ 3] = "0009511"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01631031009000"; // EMCEJ2, 300 MeV cluster min energy
+	} else if (trainConfig == 4){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0,1), kEMC1 (2,3), track matching 0.035
+		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000042022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 1] = "0002011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000042052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
+		eventCutArray[ 2] = "0005111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000042022030000"; mesonCutArray[2] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 3] = "0005111"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000042052030000"; mesonCutArray[3] = "01631031009000"; // 300 MeV cluster min energy
+	} else if (trainConfig == 5){  // EMCAL clusters, EMCEGA triggers, track matching 0.035
+		eventCutArray[ 0] = "0008311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000042022030000"; mesonCutArray[0] = "01631031009000"; // EMCEG1, 100 MeV cluster min energy
+		eventCutArray[ 1] = "0008311"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000042052030000"; mesonCutArray[1] = "01631031009000"; // EMCEG1, 300 MeV cluster min energy
+		eventCutArray[ 2] = "0008511"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000042022030000"; mesonCutArray[2] = "01631031009000"; // EMCEG2, 100 MeV cluster min energy
+		eventCutArray[ 3] = "0008511"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000042052030000"; mesonCutArray[3] = "01631031009000"; // EMCEG2, 300 MeV cluster min energy
+	} else if (trainConfig == 6){  // EMCAL clusters, EMCEJE triggers, track matching 0.035
+		eventCutArray[ 0] = "0009311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000042022030000"; mesonCutArray[0] = "01631031009000"; // EMCEJ1, 100 MeV cluster min energy
+		eventCutArray[ 1] = "0009311"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000042052030000"; mesonCutArray[1] = "01631031009000"; // EMCEJ1, 300 MeV cluster min energy
+		eventCutArray[ 2] = "0009511"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000042022030000"; mesonCutArray[2] = "01631031009000"; // EMCEJ2, 100 MeV cluster min energy
+		eventCutArray[ 3] = "0009511"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000042052030000"; mesonCutArray[3] = "01631031009000"; // EMCEJ2, 300 MeV cluster min energy
+	} else if (trainConfig == 7){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0,1), kEMC1 (2,3), track matching 0.04
+		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 1] = "0002011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000043052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
+		eventCutArray[ 2] = "0005111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[2] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 3] = "0005111"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000043052030000"; mesonCutArray[3] = "01631031009000"; // 300 MeV cluster min energy
+	} else if (trainConfig == 8){  // EMCAL clusters, EMCEGA triggers, track matching 0.04
+		eventCutArray[ 0] = "0008311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[0] = "01631031009000"; // EMCEG1, 100 MeV cluster min energy
+		eventCutArray[ 1] = "0008311"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000043052030000"; mesonCutArray[1] = "01631031009000"; // EMCEG1, 300 MeV cluster min energy
+		eventCutArray[ 2] = "0008511"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[2] = "01631031009000"; // EMCEG2, 100 MeV cluster min energy
+		eventCutArray[ 3] = "0008511"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000043052030000"; mesonCutArray[3] = "01631031009000"; // EMCEG2, 300 MeV cluster min energy
+	} else if (trainConfig == 9){  // EMCAL clusters, EMCEJE triggers, track matching 0.04
+		eventCutArray[ 0] = "0009311"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[0] = "01631031009000"; // EMCEJ1, 100 MeV cluster min energy
+		eventCutArray[ 1] = "0009311"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000043052030000"; mesonCutArray[1] = "01631031009000"; // EMCEJ1, 300 MeV cluster min energy
+		eventCutArray[ 2] = "0009511"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[2] = "01631031009000"; // EMCEJ2, 100 MeV cluster min energy
+		eventCutArray[ 3] = "0009511"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000043052030000"; mesonCutArray[3] = "01631031009000"; // EMCEJ2, 300 MeV cluster min energy
+	} else if (trainConfig == 10){  // EMCAL clusters 2.76 TeV LHC11g, INT7 (0,1), kEMC7 (2,3)
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000040022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000040052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
+		eventCutArray[ 2] = "0005211"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000040022030000"; mesonCutArray[2] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 3] = "0005211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000040052030000"; mesonCutArray[3] = "01631031009000"; // 300 MeV cluster min energy
+	} else if (trainConfig == 11){ // EMCAL clusters 2.76 TeV LHC11g, INT7 (0,1), kEMC7 (2,3), track matching 0.035
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000042022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000042052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
+		eventCutArray[ 2] = "0005211"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000042022030000"; mesonCutArray[2] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 3] = "0005211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000042052030000"; mesonCutArray[3] = "01631031009000"; // 300 MeV cluster min energy
+	} else if (trainConfig == 12){ // EMCAL clusters 2.76 TeV LHC11g, INT7 (0,1), kEMC7 (2,3), track matching 0.04
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[0] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "10000043052030000"; mesonCutArray[1] = "01631031009000"; // 300 MeV cluster min energy
+		eventCutArray[ 2] = "0005211"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[2] = "01631031009000"; // 100 MeV cluster min energy
+		eventCutArray[ 3] = "0005211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "10000043052030000"; mesonCutArray[3] = "01631031009000"; // 300 MeV cluster min energy
+	} else if (trainConfig == 31) { //PHOS clusters
+		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "20000030022000000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "20000030022000000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
+		eventCutArray[ 2] = "0006111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "20000030022000000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1
+		eventCutArray[ 3] = "0006211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "20000030022000000"; mesonCutArray[3] = "01631031009000"; //pp LHC11a PHI7
+	} else if (trainConfig == 32) { //PHOS clusters, track matching 0.035
+		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "20000032022000000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "20000032022000000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
+		eventCutArray[ 2] = "0006111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "20000032022000000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1
+		eventCutArray[ 3] = "0006211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "20000032022000000"; mesonCutArray[3] = "01631031009000"; //pp LHC11a PHI7
+	} else if (trainConfig == 32) { //PHOS clusters, track matching 0.04
+		eventCutArray[ 0] = "0002011"; photonCutArray[ 0] = "002093663003800000000"; clusterCutArray[0] = "20000033022000000"; mesonCutArray[0] = "01631031009000"; //pp LHC11a with SDD, PHOS
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "002093663003800000000"; clusterCutArray[1] = "20000033022000000"; mesonCutArray[1] = "01631031009000"; //pp LHC13g default MB
+		eventCutArray[ 2] = "0006111"; photonCutArray[ 2] = "002093663003800000000"; clusterCutArray[2] = "20000033022000000"; mesonCutArray[2] = "01631031009000"; //pp LHC11a PHI1
+		eventCutArray[ 3] = "0006211"; photonCutArray[ 3] = "002093663003800000000"; clusterCutArray[3] = "20000033022000000"; mesonCutArray[3] = "01631031009000"; //pp LHC11a PHI7
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -134,9 +204,21 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 	TList *ClusterCutList = new TList();
 	TList *MesonCutList = new TList();
 
-	TList *HeaderList = new TList();
-	TObjString *Header1 = new TObjString("BOX");
-	HeaderList->Add(Header1);
+// 	TList *HeaderList = new TList();
+// 	if (doWeightingPart==1) {
+// 		TObjString *Header1 = new TObjString("pi0_1");
+// 		HeaderList->Add(Header1);
+// 	}
+// 	if (doWeightingPart==2){
+// 		TObjString *Header3 = new TObjString("eta_2");
+// 		HeaderList->Add(Header3);
+// 	}
+// 	if (doWeightingPart==3) {
+// 		TObjString *Header1 = new TObjString("pi0_1");
+// 		HeaderList->Add(Header1);
+// 		TObjString *Header3 = new TObjString("eta_2");
+// 		HeaderList->Add(Header3);
+// 	}
 
 	EventCutList->SetOwner(kTRUE);
 	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
@@ -148,26 +230,27 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 	AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
-		analysisEventCuts[i] = new AliConvEventCuts();
+		analysisEventCuts[i] = new AliConvEventCuts();   
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-
+		
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-		
+	
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
-
+		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
 		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
 		MesonCutList->Add(analysisMesonCuts[i]);
 		analysisMesonCuts[i]->SetFillCutHistograms("");
-		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+// 		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
 	}
 
 	task->SetEventCutList(numberOfCuts,EventCutList);
@@ -179,7 +262,7 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  //change different set o
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
-	
+
 	//connect containers
 	AliAnalysisDataContainer *coutput =
 		mgr->CreateContainer(Form("GammaConvCalo_%i",trainConfig), TList::Class(),

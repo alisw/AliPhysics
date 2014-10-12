@@ -1009,15 +1009,15 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
 Bool_t
 AliFMDEventInspector::CheckFastPartition(bool fastonly) const
 {
-  // For the 2.76 TeV p+p run, the FMD ran in the slow partition 
+  // For the 2.76 TeV p+p run (LHC11a), the FMD ran in the slow partition 
   // so it received no triggers from the fast partition. Therefore
   // the fast triggers are removed here but not for MC where all 
   // triggers are fast.
   if (TMath::Abs(fEnergy - 2750.) > 20) return false;
   if (fCollisionSystem != AliForwardUtil::kPP) return false;
   if (fMC) return false; // All MC events for pp @ 2.76TeV are `fast'
-  if (fastonly)
-    DMSG(fDebug,1,"Fast trigger in pp @ sqrt(s)=2.76TeV removed");
+  // if (fastonly)
+  //   DMSG(fDebug,1,"Fast trigger in pp @ sqrt(s)=2.76TeV removed");
 
   return fastonly;
 }
@@ -1041,6 +1041,7 @@ AliFMDEventInspector::CheckINELGT0(const AliESDEvent& esd,
 				   UShort_t& nClusters, 
 				   UInt_t& triggers) const
 {
+  Int_t nTracklets = 0;
   nClusters = 0;
 
   // If this is inel, see if we have a tracklet 
@@ -1057,10 +1058,11 @@ AliFMDEventInspector::CheckINELGT0(const AliESDEvent& esd,
   // Also count tracklets as a single cluster 
   Int_t n = spdmult->GetNumberOfTracklets();
   for (Int_t j = 0; j < n; j++) { 
-    if(TMath::Abs(spdmult->GetEta(j)) < 1) nClusters++;
+    if(TMath::Abs(spdmult->GetEta(j)) < 1) nTracklets++;
   }
   // If we at this point had non-zero nClusters, it's INEL>0
-  if (nClusters > 0) triggers |= AliAODForwardMult::kInelGt0;
+  if (nTracklets > 0) triggers |= AliAODForwardMult::kInelGt0;
+  nClusters = nTracklets;
 
   // Loop over single clusters 
   n = spdmult->GetNumberOfSingleClusters();
@@ -1120,7 +1122,8 @@ AliFMDEventInspector::CheckPileup(const AliESDEvent& esd,
   }
   
   // Our result
-  Bool_t pileup    = locTrig != 0;
+  triggers      |= locTrig;
+  Bool_t pileup =  locTrig != 0;
   if (pileup)    triggers |= AliAODForwardMult::kPileUp;
   return pileup;
 }
@@ -1202,7 +1205,8 @@ AliFMDEventInspector::CheckMultiVertex(const AliESDEvent& esd,
 Bool_t
 AliFMDEventInspector::CheckEmpty(const TString& trigStr, UInt_t& triggers) const
 {
-  if (trigStr.Contains("CBEAMB-ABCE-NOPF-ALL")) {
+  if (trigStr.Contains("CBEAMB-ABCE-NOPF-ALL")|| 
+      trigStr.Contains("CBEAMB-B-NOPF-ALLNOTRD")) {
     triggers |= AliAODForwardMult::kEmpty;
     return true;
   }

@@ -61,6 +61,7 @@
 #pragma link C++ class AliAnalysisMuMuSingle+;
 #pragma link C++ class AliAnalysisMuMuMinv+;
 #pragma link C++ class AliAnalysisMuMuNch+;
+#pragma link C++ class AliAnalysisTaskNorm+;
 //#pragma link C++ class AliAnalysisMuMuMeanPt+;
 
 #endif

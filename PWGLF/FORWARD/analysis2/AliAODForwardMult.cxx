@@ -194,9 +194,9 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
   //   Character string representation of mask 
   static TString trg;
   trg = "";
-  if ((mask & kInel)        != 0x0) AppendAnd(trg, "INEL");
+  if ((mask & kInel)        != 0x0) AppendAnd(trg, "MBOR");
   if ((mask & kInelGt0)     != 0x0) AppendAnd(trg, "INEL>0");
-  if ((mask & kNSD)         != 0x0) AppendAnd(trg, "NSD");
+  if ((mask & kNSD)         != 0x0) AppendAnd(trg, "MBAND");
   if ((mask & kV0AND)       != 0x0) AppendAnd(trg, "V0AND");
   if ((mask & kA)           != 0x0) AppendAnd(trg, "A");
   if ((mask & kB)           != 0x0) AppendAnd(trg, "B");
@@ -205,6 +205,7 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
   if ((mask & kMCNSD)       != 0x0) AppendAnd(trg, "MCNSD");
   if ((mask & kNClusterGt0) != 0x0) AppendAnd(trg, "NCluster>0");
   if ((mask & kSatellite)   != 0x0) AppendAnd(trg, "Satellite");
+  if ((mask & kOffline)     != 0x0) AppendAnd(trg, "Offline");
   return trg.Data();
 }
   
@@ -242,9 +243,9 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name, Int_t mask)
   ret->GetXaxis()->SetBinLabel(kBinA,           Form("A%s", andSel.Data()));
   ret->GetXaxis()->SetBinLabel(kBinC,           Form("C%s", andSel.Data()));
   ret->GetXaxis()->SetBinLabel(kBinE,           Form("E%s", andSel.Data()));
-  ret->GetXaxis()->SetBinLabel(kBinInel,        "Coll. & INEL");
-  ret->GetXaxis()->SetBinLabel(kBinInelGt0,     "Coll. & INEL>0");
-  ret->GetXaxis()->SetBinLabel(kBinNSD,         "Coll. & NSD");
+  ret->GetXaxis()->SetBinLabel(kBinInel,        "Coll. & MBOR");
+  ret->GetXaxis()->SetBinLabel(kBinInelGt0,     "Coll. & MBOR&&nTracklet>0");
+  ret->GetXaxis()->SetBinLabel(kBinNSD,         "Coll. & V0AND||FASTOR>5");
   ret->GetXaxis()->SetBinLabel(kBinV0AND,       "Coll. & V0AND");
   ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
   ret->GetXaxis()->SetBinLabel(kBinSatellite,   "Satellite");
@@ -308,9 +309,11 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     s.ToUpper();
     if      (s.IsNull()) continue;
     if      (s.CompareTo("INEL")       == 0) trgMask |= kInel;
+    else if (s.CompareTo("MBOR")       == 0) trgMask |= kInel;
     else if (s.CompareTo("INEL>0")     == 0) trgMask |= kInelGt0;
     else if (s.CompareTo("INELGT0")    == 0) trgMask |= kInelGt0;
-    else if (s.CompareTo("NSD")        == 0) trgMask |= kNSD;
+    else if (s.CompareTo("MBAND")      == 0) trgMask |= kNSD;
+    else if (s.CompareTo("NSD")        == 0) trgMask |= kV0AND;
     else if (s.CompareTo("V0AND")      == 0) trgMask |= kV0AND;
     else if (s.CompareTo("MCNSD")      == 0) trgMask |= kMCNSD;
     else if (s.CompareTo("B")          == 0) trgMask |= kB;
@@ -320,6 +323,7 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     else if (s.CompareTo("E")          == 0) trgMask |= kE;
     else if (s.CompareTo("NCLUSTER>0") == 0) trgMask |= kNClusterGt0;
     else if (s.CompareTo("CENT")       == 0) trgMask |= kInel;
+    else if (s.CompareTo("OFFLINE")    == 0) trgMask |= kOffline;
     // trgMask &= ~(kInel|kInelGt0|kNSD|kV0AND|kMCNSD);
     else 
       AliWarningGeneral("MakeTriggerMask", 

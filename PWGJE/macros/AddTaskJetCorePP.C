@@ -26,6 +26,7 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    const Char_t* mcChargFlag="",  // real="", charged jets = "MC2" 
    Bool_t bfillrespmx=0,  // 0=dont fill resp mx histos, 1=fill histos
    Bool_t bDiceEff=0,  // 0=leave efficiency as it is,  1= reduce efficiency by constant amount via SetFixedEfficiency
+   Bool_t bMomSmear=0,  // 0=leave efficiency as it is,  1= reduce efficiency by constant amount via SetFixedEfficiency
    Bool_t bDoubleBinning=0,  // 0= 2GeV bin size  1= 1GeV/bin size
    Bool_t bUseExchContainer=0, //
    Int_t triggerType=0,  //0=single incl trigger, 1=leading track, 2=hadron pt>10 
@@ -71,6 +72,9 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    TString jet="";
    TString jetbg="";
    TString otherparams="";
+   mcFullSuffix=Form("%s",mcFullFlag);    //MC = all jets
+   mcChargSuffix=Form("%s",mcChargFlag);  //MC2= charged jets,  MC = all jets
+
 
    jet   = jet   + "_" + stJetAlgo   + Form("%02d",(Int_t) (10*jetParameterR));  // _ANTIKT02
    jetbg = jetbg + "_" + stJetBgAlgo + Form("%02d",(Int_t) (10*bgjetParameterR));
@@ -87,13 +91,14 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
       if(analBranch.BeginsWith("clustersAOD")){
          otherparams = otherparams + Form("_Skip%02d",0);
       }
-   
-      analBranch   = analBranch   + jet   + otherparams; //antikt jet 
-      analBranchBg = analBranchBg + jetbg + otherparams; //kt bg jet
+  
+      TString  smearMC  = (!bMomSmear) ?  "" : mcChargSuffix; //smearing affects MC branch 
+      analBranch   = analBranch   + smearMC + jet   + otherparams; //antikt jet 
+      analBranchBg = analBranchBg + smearMC + jetbg + otherparams; //kt bg jet
 
-      if(bDiceEff){ //dicing efficiency relates rec only
-         analBranch   = analBranch   + "Detector10Fr0"; //dice=1, smear=0, change eff fraction =0
-         analBranchBg = analBranchBg + "Detector10Fr0"; 
+      if(bDiceEff || bMomSmear){ //dicing efficiency relates rec only
+         analBranch   = analBranch   + Form("Detector%d%dFr0",(Int_t) bDiceEff,(Int_t) bMomSmear); //dice=1, smear=0, change eff fraction =0
+         analBranchBg = analBranchBg + Form("Detector%d%dFr0",(Int_t) bDiceEff,(Int_t) bMomSmear); 
       }
 
       //clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00   
@@ -102,8 +107,6 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
       //Cut00150  pT min cut on track
       //Filter00272
    
-      mcFullSuffix=Form("%s",mcFullFlag);    //MC = all jets
-      mcChargSuffix=Form("%s",mcChargFlag);  //MC2= charged jets,  MC = all jets
    
       if(mcChargSuffix.Length()>0 && mcChargSuffix=="MC2"){  //charged jets generator level
          analBranchChargMC   = bpfx + mcChargSuffix + jet   + otherparams; 

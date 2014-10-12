@@ -1,5 +1,5 @@
 #ifndef ALIANALYSISTASKSEPHOSPPBPI0_H
-#define ALIANALYSISTAKSSEPHOSPPBPI0_H
+#define ALIANALYSISTASKSEPHOSPPBPI0_H
 
 /* Copyright(c) 1998-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -18,8 +18,6 @@ class TList;
 class TString;
 class TArray;
 class TClonesArray;
-class AliAODEvent;
-class AliESDEvent;
 class AliPHOSGeoUtils;
 class AliPHOSpPbPi0Header;
 
@@ -48,7 +46,7 @@ class AliAnalysisTaskSEPHOSpPbPi0 : public AliAnalysisTaskSE {
   AliAnalysisTaskSEPHOSpPbPi0(const AliAnalysisTaskSEPHOSpPbPi0&);            // not implemented
   AliAnalysisTaskSEPHOSpPbPi0& operator=(const AliAnalysisTaskSEPHOSpPbPi0&); // not implemented
 
-  void PHOSInitialize(AliESDEvent* const esd);
+  void PHOSInitialize();
   void FillCaloClusterInfo(/*AliAODEvent* const aod, AliESDEvent* const esd*/);
 
   static Bool_t        fgRemovePileup;      // flag of remove pileup events

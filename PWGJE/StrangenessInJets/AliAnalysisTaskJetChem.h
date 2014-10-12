@@ -240,8 +240,27 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
  private:
   
+
+
+
+
   Int_t fK0Type;                                           // K0 cuts
-  UInt_t fFilterMaskK0;                                    //! K0 legs cuts
+  UInt_t fFilterMaskK0;  
+  TList* jettracklist;
+  TList* jetConeK0list;
+  TList* jetConeLalist;
+  TList* jetConeALalist;
+  TList* jetPerpConeK0list;
+  TList* jetPerpConeLalist;
+  TList* jetPerpConeALalist;
+  TList* jetMedianConeK0list;
+  TList* jetMedianConeLalist;
+  TList* jetMedianConeALalist;
+  TList* fListK0sRC;
+  TList* fListLaRC;
+  TList* fListALaRC;
+
+                                  //! K0 legs cuts
   TList* fListK0s;                                         //! K0 list 
   AliPIDResponse *fPIDResponse;	                           // PID
 

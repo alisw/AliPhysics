@@ -48,6 +48,8 @@
 
 #include "AliAnalysisTaskChargedJetsPA.h"
 using std::min;
+using std::cout;
+using std::endl;
 
 //TODO: FillHistogram can be done better with virtual TH1(?)
 ClassImp(AliAnalysisTaskChargedJetsPA)
@@ -104,6 +106,9 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedExternal_Phi1", "Jets p_{T} distribution, external background (Improved CMS) subtracted (1st part of azimuth)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedExternal_Phi2", "Jets p_{T} distribution, external background (Improved CMS) subtracted (2nd part of azimuth)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS", "Jets p_{T} distribution, KT background (Improved CMS) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS_Biased_10GeV", "Jets p_{T} distribution, KT background (Improved CMS) subtracted, leading track bias 10 GeV", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS_Biased_5GeV", "Jets p_{T} distribution, KT background (Improved CMS) subtracted, leading track bias 5 GeV", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS_Biased_2GeV", "Jets p_{T} distribution, KT background (Improved CMS) subtracted, leading track bias 2 GeV", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedTR", "Jets p_{T} distribution, TR background (Cone R=0.6 around jets excluded) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTPbPb", "Jets p_{T} distribution, KT background (PbPb w/o ghosts) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTPbPbWithGhosts", "Jets p_{T} distribution, KT background (PbPb w/ ghosts) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
@@ -182,6 +187,40 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TH2D>("hJetPhiEta", "Jets angular distribution", "LEGO2", 360, 0., 2*TMath::Pi(),100, -1.0, 1.0, "#phi","#eta","dN^{Jets}/(d#phi d#eta)");
     AddHistogram2D<TH2D>("hJetPtPhiEta", "Jets p_{T} angular distribution", "LEGO2", 360, 0., 2*TMath::Pi(),100, -1.0, 1.0, "#phi","#eta","dp_{T}^{Jets}/(d#phi d#eta)");
     AddHistogram2D<TH2D>("hJetPtVsConstituentCount", "Jets number of constituents vs. jet p_{T}", "COLZ", 400, 0., 200., 100, 0., 100., "p_{T}","N^{Tracks}","dN^{Jets}/(dp_{T} dN^{tracks})");
+
+    // ######## Jet constituent analysis
+
+    {
+      //                        jet pt,  const pT,  const count,  RC const count,  PC const count
+      Int_t    bins [5]     = { 30,         50,           30,              30,              30};
+      Double_t minEdges[5]  = { 0,              0.1,            0,               0,             0};
+      Double_t maxEdges[5]  = { 150,          150,           30,              30,              30};
+      TString axisName[5]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","RC constituent count","PC constituent count"};
+      TString axisTitle[5]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","RC constituent count","PC constituent count"};
+      THnF * histJetConstituents = new THnF("hJetConstituents", "Jet constituent count/p_{T} in jet, RC, and PC", 5, bins, minEdges, maxEdges);
+      BinLogAxis(histJetConstituents,1);
+      for (Int_t iaxis=0; iaxis<5;iaxis++){
+        histJetConstituents->GetAxis(iaxis)->SetName(axisName[iaxis]);
+        histJetConstituents->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
+      }
+      fCurrentOutputList->Add(histJetConstituents);
+    }
+
+    {
+      //                        jet pt,  const pt,   const count      distance
+      Int_t    bins [4]     = { 30,         50,        30,     50};
+      Double_t minEdges[4]  = { 0,           0.1,       0,       0};
+      Double_t maxEdges[4]  = { 150,          150,     30,      0.5};
+      TString axisName[4]  = {"jet p_{T}","Constituent p_{T}","Constituent count","Distance from jet axis"};
+      TString axisTitle[4]  = {"jet p_{T}","Constituent p_{T}","Constituent count","Distance from jet axis"};
+      THnF * histJetConstituentDistance = new THnF("hJetConstituentDistance", "Jet constituent distance vs. jet and constituent p_{T}", 4, bins, minEdges, maxEdges);
+      BinLogAxis(histJetConstituentDistance,1);
+      for (Int_t iaxis=0; iaxis<4;iaxis++){
+        histJetConstituentDistance->GetAxis(iaxis)->SetName(axisName[iaxis]);
+        histJetConstituentDistance->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
+      }
+      fCurrentOutputList->Add(histJetConstituentDistance);
+    }
 
     // ######## Jet profiles
     if(fAnalyzeJetProfile)
@@ -790,11 +829,13 @@ void AliAnalysisTaskChargedJetsPA::CreateITSTPCMatchingHistograms()
 
       AliESDtrack* trESD = fESD->GetTrack(it1);
       if (!trESD->IsOn(AliESDtrack::kTPCrefit)) continue;
+
       Match(trSA,trESD, nmatch, fExcludeMomFromChi2ITSTPC);
     }
     //
     
     hNMatch->Fill(pt,nmatch);
+
     if (nmatch>0){
       hBestMatch->Fill(pt,fMatchChi[0]);
       hPtCorr_ITSTPC->Fill(pt,fMatchTr[0]->Pt()); 
@@ -805,7 +846,7 @@ void AliAnalysisTaskChargedJetsPA::CreateITSTPCMatchingHistograms()
     if (nmatch>0 && fHybridESDtrackCuts){
       
       if(fHybridESDtrackCuts->AcceptTrack(fMatchTr[0])){
-	hBestMatch_cuts->Fill(pt,fMatchChi[0]);
+        hBestMatch_cuts->Fill(pt,fMatchChi[0]);
       }
     }
     
@@ -821,10 +862,13 @@ void AliAnalysisTaskChargedJetsPA::CreateITSTPCMatchingHistograms()
       if (it1==it) continue;
       AliESDtrack* trESD = fESD->GetTrack(it1);
       if (!trESD->IsOn(AliESDtrack::kTPCrefit)) continue;
+
       Match(trSA,trESD, nmatch, fExcludeMomFromChi2ITSTPC, TMath::Pi());
     }
     //
+
     hNMatchBg->Fill(pt,nmatch);
+
     if (nmatch>0){
       hBestMatchBg->Fill(pt,fMatchChi[0]);
       hdPtRelBg_ITSTPC->Fill(pt,(pt-fMatchTr[0]->Pt())/pt); 
@@ -833,7 +877,7 @@ void AliAnalysisTaskChargedJetsPA::CreateITSTPCMatchingHistograms()
 
     if (nmatch>0 && fHybridESDtrackCuts){
       if(fHybridESDtrackCuts->AcceptTrack(fMatchTr[0])){
-	hBestMatchBg_cuts->Fill(pt,fMatchChi[0]);
+        hBestMatchBg_cuts->Fill(pt,fMatchChi[0]);
       }
     }
 
@@ -883,7 +927,7 @@ void AliAnalysisTaskChargedJetsPA::Match(AliESDtrack* tr0, AliESDtrack* tr1, Int
     chi2 = tr0->GetPredictedChi2(&trtpc);
 
     //std::cout<<" in Match, nmatch "<<nmatch<<" par[4] after "<<trtpc.GetParameter()[4]<<" tr0 mom "<<tr0->GetParameter()[4]
-    //	     <<" chi2 "<<chi2<<std::endl;
+    //         <<" chi2 "<<chi2<<std::endl;
   }
 
 
@@ -891,12 +935,12 @@ void AliAnalysisTaskChargedJetsPA::Match(AliESDtrack* tr0, AliESDtrack* tr1, Int
 
   // std::cout<<" found good match, tr1 "<<tr1<<" chi2 "<<chi2<<std::endl;
   // std::cout<<" before: fMatchChi[0]  "<<fMatchChi[0]<<" [1] "<<fMatchChi[1]
-  // 	   <<" [2]  "<<fMatchChi[2]<<" [3] "<<fMatchChi[3]
-  // 	   <<" [4]  "<<fMatchChi[4]<<std::endl; 
+  //          <<" [2]  "<<fMatchChi[2]<<" [3] "<<fMatchChi[3]
+  //          <<" [4]  "<<fMatchChi[4]<<std::endl; 
 
   // std::cout<<" before: fMatchTr[0]  "<<fMatchTr[0]<<" [1] "<<fMatchTr[1]
-  // 	   <<" [2]  "<<fMatchTr[2]<<" [3] "<<fMatchTr[3]
-  // 	   <<" [4]  "<<fMatchTr[4]<<std::endl; 
+  //          <<" [2]  "<<fMatchTr[2]<<" [3] "<<fMatchTr[3]
+  //          <<" [4]  "<<fMatchTr[4]<<std::endl; 
 
   //
   int ins;
@@ -1216,6 +1260,22 @@ inline Double_t AliAnalysisTaskChargedJetsPA::GetCorrectedConePt(Double_t eta, D
 }
 
 //________________________________________________________________________
+inline Int_t AliAnalysisTaskChargedJetsPA::GetConeConstituentCount(Double_t eta, Double_t phi, Double_t radius)
+{
+  Int_t tmpConeCount = 0.0;
+
+  for (Int_t i = 0; i < fTrackArray->GetEntries(); i++)
+  {
+    AliVTrack* tmpTrack = static_cast<AliVTrack*>(fTrackArray->At(i));
+    if (IsTrackInAcceptance(tmpTrack))
+      if(IsTrackInCone(tmpTrack, eta, phi, radius))
+        tmpConeCount++;
+  }
+ 
+  return tmpConeCount;
+}
+
+//________________________________________________________________________
 inline Bool_t AliAnalysisTaskChargedJetsPA::IsTrackInCone(AliVTrack* track, Double_t eta, Double_t phi, Double_t radius)
 {
   // This is to use a full cone in phi even at the edges of phi (2pi -> 0) (0 -> 2pi)
@@ -1342,10 +1402,10 @@ Double_t AliAnalysisTaskChargedJetsPA::GetDeltaPt(Double_t rho, Double_t leading
   if (coneValid)
     deltaPt = GetConePt(tmpRandConeEta,tmpRandConePhi,fRandConeRadius) - (rho*fRandConeRadius*fRandConeRadius*TMath::Pi());
 
-  return deltaPt;
   #ifdef DEBUGMODE
     AliInfo("Got Delta Pt.");
   #endif
+  return deltaPt;
 }
 
 //________________________________________________________________________
@@ -1905,10 +1965,55 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
       FillHistogram("hJetPtSubtractedRhoPP", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundPP));
       FillHistogram("hDeltaPtExternalBgrdVsPt", GetDeltaPt(backgroundExternal), GetCorrectedJetPt(tmpJet, backgroundExternal));
 
-      FillHistogram("hJetPtVsConstituentCount", tmpJet->Pt(),tmpJet->GetNumberOfTracks());
+      // ###### CONSTITUENT ANALYSIS
+ 
+      THnF* tmpConstituentHist = static_cast<THnF*>(fCurrentOutputList->FindObject("hJetConstituents"));
+      THnF* tmpConstituentDistanceHist = static_cast<THnF*>(fCurrentOutputList->FindObject("hJetConstituentDistance"));
 
       for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
-        FillHistogram("hJetConstituentPtVsJetPt", tmpJet->TrackAt(j, fTrackArray)->Pt(), tmpJet->Pt());
+      {
+        AliVParticle* tmpTrack = tmpJet->TrackAt(j, fTrackArray);
+        // Define random cone  
+        Double_t tmpRandConeEta = fMinJetEta + fRandom->Rndm()*TMath::Abs(fMaxJetEta-fMinJetEta);
+        Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
+
+        Double_t tmpPConeEta = tmpJet->Eta();
+        Double_t tmpPConePhi = tmpJet->Phi() + TMath::Pi();
+
+        if(tmpPConePhi>=TMath::TwoPi())
+          tmpPConePhi = tmpPConePhi - TMath::TwoPi();
+
+        Double_t tmpRCcount  = GetConeConstituentCount(tmpRandConeEta, tmpRandConePhi, fSignalJetRadius);
+        Double_t tmpPCcount  = GetConeConstituentCount(tmpPConeEta, tmpPConePhi, fSignalJetRadius);
+
+        Double_t tmpDistance = TMath::Sqrt( (tmpJet->Eta()-tmpTrack->Eta())*(tmpJet->Eta()-tmpTrack->Eta()) 
+                                          + (tmpJet->Phi()-tmpTrack->Phi())*(tmpJet->Phi()-tmpTrack->Phi()) ); // distance between jet axis and track
+
+        Double_t tmpVec1[5] = {tmpJet->Pt(), tmpTrack->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpRCcount, tmpPCcount};
+        Double_t tmpVec2[4] = {tmpJet->Pt(), tmpTrack->Pt(), static_cast<Double_t>(tmpJet->GetNumberOfTracks()), tmpDistance};
+
+
+        tmpConstituentHist->Fill(tmpVec1);
+        tmpConstituentDistanceHist->Fill(tmpVec2);
+        FillHistogram("hJetConstituentPtVsJetPt", tmpTrack->Pt(), tmpJet->Pt());
+      }
+
+      FillHistogram("hJetPtVsConstituentCount", tmpJet->Pt(),tmpJet->GetNumberOfTracks());
+
+      // Leading track biased jets
+      Double_t leadingTrackPt = 0.0;
+      for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
+      {
+        if(tmpJet->TrackAt(j, fTrackArray)->Pt() > leadingTrackPt)
+          leadingTrackPt = tmpJet->TrackAt(j, fTrackArray)->Pt();
+      }
+
+      if(leadingTrackPt >= 10)
+        FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS_Biased_10GeV", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
+      else if(leadingTrackPt >= 5)
+        FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS_Biased_5GeV", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
+      else if(leadingTrackPt >= 2)
+        FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS_Biased_2GeV", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
 
       if(tmpJet->Pt() >= 5.0)
       {

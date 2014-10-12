@@ -182,7 +182,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F	    *fPt; // simple pT histogramm
     TH1F	    *fMCPt; // simple pT truth histogramm
     THnSparseF 	*fZvPtEtaCent; //-> Zv:Pt:Eta:Cent
-    THnSparseF 	*fDeltaphiPtEtaCent; //-> Phi:Pt:Eta:Cent
+    THnSparseF 	*fDeltaphiPtEtaCent; //-> DeltaPhi:Pt:Eta:Cent
     THnSparseF 	*fPtResptCent; //-> 1/pt:ResolutionPt:Cent
     THnSparseF 	*fMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
@@ -227,6 +227,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	TProfile	*fPsinEPCent; // < sin 2 psi_ep > vs centrality
 	TProfile	*fPcosPhiCent; // < cos 2 phi > vs centrality
 	TProfile	*fPsinPhiCent; // < sin 2 phi > vs centrality
+
+	// cross check for event plane determination
+	TH2F		*fDeltaPhiCent; // DeltaPhi:Cent - DeltaPhi in the range from -pi to pi
 
 	// global variables
     Bool_t fIsMonteCarlo;
@@ -292,7 +295,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,10); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,11); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

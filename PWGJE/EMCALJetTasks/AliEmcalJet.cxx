@@ -61,6 +61,10 @@ AliEmcalJet::AliEmcalJet() :
   fJetShapeCircularitySecondDer(0),
   fJetShapeCircularityFirstSub(0),
   fJetShapeCircularitySecondSub(0),
+  fJetShapeSigma2FirstDer(0),
+  fJetShapeSigma2SecondDer(0),
+  fJetShapeSigma2FirstSub(0),
+  fJetShapeSigma2SecondSub(0),
   fJetShapeConstituentFirstDer(0),
   fJetShapeConstituentSecondDer(0),
   fJetShapeConstituentFirstSub(0),
@@ -128,11 +132,15 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fJetShapeCircularitySecondDer(0),
   fJetShapeCircularityFirstSub(0),
   fJetShapeCircularitySecondSub(0),
+  fJetShapeSigma2FirstDer(0),
+  fJetShapeSigma2SecondDer(0),
+  fJetShapeSigma2FirstSub(0),
+  fJetShapeSigma2SecondSub(0),
   fJetShapeConstituentFirstDer(0),
   fJetShapeConstituentSecondDer(0),
   fJetShapeConstituentFirstSub(0),
   fJetShapeConstituentSecondSub(0),
-   fJetShapeLeSubFirstDer(0),
+  fJetShapeLeSubFirstDer(0),
   fJetShapeLeSubSecondDer(0),
   fJetShapeLeSubFirstSub(0),
   fJetShapeLeSubSecondSub(0)
@@ -202,6 +210,10 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fJetShapeCircularitySecondDer(0),
   fJetShapeCircularityFirstSub(0),
   fJetShapeCircularitySecondSub(0),
+  fJetShapeSigma2FirstDer(0),
+  fJetShapeSigma2SecondDer(0),
+  fJetShapeSigma2FirstSub(0),
+  fJetShapeSigma2SecondSub(0),
   fJetShapeConstituentFirstDer(0),
   fJetShapeConstituentSecondDer(0),
   fJetShapeConstituentFirstSub(0),
@@ -274,6 +286,10 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fJetShapeCircularitySecondDer(jet.fJetShapeCircularitySecondDer),
   fJetShapeCircularityFirstSub(jet.fJetShapeCircularityFirstSub),
   fJetShapeCircularitySecondSub(jet.fJetShapeCircularitySecondSub),
+  fJetShapeSigma2FirstDer(jet.fJetShapeSigma2FirstDer),
+  fJetShapeSigma2SecondDer(jet.fJetShapeSigma2SecondDer),
+  fJetShapeSigma2FirstSub(jet.fJetShapeSigma2FirstSub),
+  fJetShapeSigma2SecondSub(jet.fJetShapeSigma2SecondSub),
   fJetShapeConstituentFirstDer(jet.fJetShapeConstituentFirstDer),
   fJetShapeConstituentSecondDer(jet.fJetShapeConstituentSecondDer),
   fJetShapeConstituentFirstSub(jet.fJetShapeConstituentFirstSub),
@@ -348,6 +364,10 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fJetShapeCircularitySecondDer = jet.fJetShapeCircularitySecondDer;
     fJetShapeCircularityFirstSub  = jet.fJetShapeCircularityFirstSub;
     fJetShapeCircularitySecondSub = jet.fJetShapeCircularitySecondSub;
+    fJetShapeSigma2FirstDer  = jet.fJetShapeSigma2FirstDer;
+    fJetShapeSigma2SecondDer = jet.fJetShapeSigma2SecondDer;
+    fJetShapeSigma2FirstSub  = jet.fJetShapeSigma2FirstSub;
+    fJetShapeSigma2SecondSub = jet.fJetShapeSigma2SecondSub;
     fJetShapeConstituentFirstDer  = jet.fJetShapeConstituentFirstDer;
     fJetShapeConstituentSecondDer = jet.fJetShapeConstituentSecondDer;
     fJetShapeConstituentFirstSub  = jet.fJetShapeConstituentFirstSub;
@@ -454,6 +474,26 @@ std::vector<int> AliEmcalJet::SortConstituentsPt( TClonesArray *tracks ) const
 
     return index_sorted_list;
 }
+
+//________________________________________________________________________
+Double_t AliEmcalJet::GetZ ( const Double_t trkPx, const Double_t trkPy, const Double_t trkPz ) const
+    {
+    // Get the z of a constituent inside of a jet
+    Double_t pJetSq = this->Px() * this->Px() + this->Py() * this->Py() + this->Pz() * this->Pz();
+
+    if(pJetSq>1e-6)
+        { return ( trkPx * this->Px() + trkPy * this->Py() + trkPz * this->Pz() ) / pJetSq ; }
+    else
+        { AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f",GetName(), pJetSq)); return -1; }
+
+    }
+
+//________________________________________________________________________
+Double_t AliEmcalJet::GetZ ( const AliVParticle* trk )          const
+    {
+    // Get Z of constituent trk
+    return GetZ ( trk->Px(), trk->Py(), trk->Pz() );
+    }
 
 //__________________________________________________________________________________________________
 AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray *tracks) const

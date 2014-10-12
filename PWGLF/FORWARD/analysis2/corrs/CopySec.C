@@ -13,9 +13,9 @@ CopySec(Bool_t      fmd=true,
   const char* fwd = "${ALICE_ROOT}/PWGLF/FORWARD/analysis2";
   gROOT->LoadMacro(Form("%s/corrs/CopyCorr.C", fwd));
 
-  CopyCorr(true, "secondary", 
+  CopyCorr(fmd, "secondary", 
 	   tgtRun, tgtSys, tgtSNN, tgtFld, 
-	   srcRun, srcSys, srcSNN, srcFld);
+	   srcRun, srcSys, srcSNN, srcFld, false);
 }
 //
 // EOF

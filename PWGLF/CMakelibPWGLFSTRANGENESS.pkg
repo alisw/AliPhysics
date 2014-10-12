@@ -67,7 +67,6 @@ set ( SRCS
   STRANGENESS/Hypernuclei/AliAnalysisTaskAntiHe4.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskNucleiv2.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskNucleiv2SP.cxx
-  STRANGENESS/Cascades/AliPPVsMultUtils.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

@@ -63,6 +63,7 @@ AliDielectronHF::AliDielectronHF() :
   fAxes(kMaxCuts),
   fHasMC(kFALSE),
   fStepGenerated(kFALSE),
+  fEventArray(kFALSE),
   fRefObj(1)
 {
   //
@@ -89,6 +90,7 @@ AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
   fAxes(kMaxCuts),
   fHasMC(kFALSE),
   fStepGenerated(kFALSE),
+  fEventArray(kFALSE),
   fRefObj(1)
 {
   //
@@ -383,7 +385,7 @@ void AliDielectronHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
   // fill the pure MC part of the container starting from a pair of 2 particles (part1 and part2 are legs)
   //
   // fill only if we have asked for these steps
-  if(!fStepGenerated) return;
+  if(!fStepGenerated || fEventArray) return;
 
   AliVParticle* part1 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(label1);
   AliVParticle* part2 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(label2);
@@ -433,7 +435,7 @@ void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
   //////////////////////////////  if(fHasMC && pairIndex!=AliDielectron::kEv1PM) return;
 
   // only selected pair types in case of data
-  if(!IsPairTypeSelected(pairIndex)) return;
+  if(!IsPairTypeSelected(pairIndex) || fEventArray) return;
 
   // get event and pair variables
   Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
@@ -553,11 +555,12 @@ void AliDielectronHF::Init()
   fHasMC=AliDielectronMC::Instance()->HasMC();
   Int_t steps = 0;
   if(fHasMC) steps=fSignalsMC->GetEntries();
-  if(fStepGenerated) steps*=2; 
+  if(fStepGenerated) steps*=2;
+  if(fEventArray) steps=1;
 
   // init pair type array
   fArrPairType.SetName(Form("%s_HF",GetName()));
-  if(fHasMC && fPairType==kMConly) fArrPairType.Expand(steps);
+  if( (fHasMC && fPairType==kMConly) || fEventArray) fArrPairType.Expand(steps);
   else fArrPairType.Expand(AliDielectron::kEv1PMRot+1+steps);
 
   Int_t size  = GetNumberOfBins();
@@ -616,38 +619,46 @@ void AliDielectronHF::Init()
     sizeAdd*=nbins;
   } //end: cut loop
 
-  // copy array to the selected pair types/ MC sources
-
-  // pair types
+  // copy array to the selected event,  pair types/ MC sources
   Int_t istep=0;
-  if(fPairType != kMConly) {
-    for(istep=0; istep<AliDielectron::kEv1PMRot+1; istep++) {
 
-      if(IsPairTypeSelected(istep)) {
-	// add a deep copy of the array
-	fArrPairType[istep]=(TObjArray*)histArr->Clone(AliDielectron::PairClassName(istep));
-	((TObjArray*)fArrPairType[istep])->SetOwner();
-      }
-      else {
-	fArrPairType[istep]=new TObjArray(0);
-	((TObjArray*)fArrPairType[istep])->SetOwner();
-	((TObjArray*)fArrPairType[istep])->SetName(AliDielectron::PairClassName(istep));
-      }
-    } //end: loop over pair types
+  ////////////////// only event array
+  if(fEventArray) {
+    // add a deep copy of the array
+    fArrPairType[istep]=(TObjArray*)histArr->Clone("Event");
+    ((TObjArray*)fArrPairType[istep])->SetOwner();
   }
+  else {
+    /////////////// pair types
+    if(fPairType != kMConly) {
+      for(istep=0; istep<AliDielectron::kEv1PMRot+1; istep++) {
 
-  // mc sources
-  if(fHasMC) {
-    for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) {
-      TString title = Form("(Signal: %s)",fSignalsMC->At(i)->GetTitle());
-      fArrPairType[istep+i]=(TObjArray*)histArr->Clone(title.Data());
-      if(fStepGenerated)  {
-	title+=" MC truth";
-	fArrPairType[istep+i+fSignalsMC->GetEntries()]=(TObjArray*)histArr->Clone(title.Data());
-      }
-    } // end: loop over sources
-  }
+	// pair type should be filled
+	if(IsPairTypeSelected(istep)) {
+	  // add a deep copy of the array
+	  fArrPairType[istep]=(TObjArray*)histArr->Clone(AliDielectron::PairClassName(istep));
+	  ((TObjArray*)fArrPairType[istep])->SetOwner();
+	}
+	else { //empty array
+	  fArrPairType[istep]=new TObjArray(0);
+	  ((TObjArray*)fArrPairType[istep])->SetOwner();
+	  ((TObjArray*)fArrPairType[istep])->SetName(AliDielectron::PairClassName(istep));
+	}
+      } //end: loop over pair types
+    }
 
+    // mc sources
+    if(fHasMC) {
+      for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) {
+	TString title = Form("(Signal: %s)",fSignalsMC->At(i)->GetTitle());
+	fArrPairType[istep+i]=(TObjArray*)histArr->Clone(title.Data());
+	if(fStepGenerated)  {
+	  title+=" MC truth";
+	  fArrPairType[istep+i+fSignalsMC->GetEntries()]=(TObjArray*)histArr->Clone(title.Data());
+	}
+      } // end: loop over sources
+    } //end: hasMC
+  } //end: pair type array
 
   // clean up
   if(histArr) {

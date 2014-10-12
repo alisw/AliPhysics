@@ -15,6 +15,7 @@
 #include <TString.h>
 #include <TArrayI.h>
 #include <TLorentzVector.h>
+#include <TParticle.h>
 
 class AliStack;
 class AliESDEvent;
@@ -35,8 +36,9 @@ class AliCaloClusterInfo : public TObject{
   Int_t    GetTRUNumber()       const { return fTRUNumber;       }
   Int_t    GetNCells()          const { return fNCells;          }
   TArrayI* GetLabelsArray()     const { return fLabels;          }
-  Int_t    GetLabel()           const { if(fLabels && fLabels->GetSize() >0)        return fLabels->At(0); else return -1;   }
-  Int_t    GetLabelAt(UInt_t i) const { if(fLabels && i<(UInt_t)fLabels->GetSize()) return fLabels->At(i); else return -999; }
+  Int_t    GetLabel()           const { if (fLabels && fLabels->GetSize() >0)        return fLabels->At(0);     else return -1;   }
+  Int_t    GetLabelAt(UInt_t i) const { if (fLabels && i<(UInt_t)fLabels->GetSize()) return fLabels->At(i);     else return -999; }
+  UInt_t   GetNLabels()         const { if (fLabels)                                 return fLabels->GetSize(); else return (0);  }
 
   UInt_t   GetPIDBit()          const { return fPIDBit;          }
   Double_t GetDistToBad()       const { return fDistToBad;       }
@@ -45,10 +47,11 @@ class AliCaloClusterInfo : public TObject{
   Double_t GetTOF()             const { return fTOF;             }
 
   void SetLorentzVector(TLorentzVector momentum) { fLorentzVector = momentum; }
-  void SetLabels(UInt_t size, Int_t* labels)     { if(fLabels) delete fLabels; fLabels = new TArrayI(size, labels); }
+  void SetLabels(UInt_t size, Int_t* labels)     { if (fLabels) delete fLabels; fLabels = new TArrayI(size, labels); }
 
   Bool_t IsInFiducialRegion(Int_t cellX, Int_t cellZ);
-  Bool_t CheckIsClusterFromPi0(AliStack* const stack, Int_t &pi0Indx);
+  Bool_t IsMergedClusterFromPi0(AliStack* const stack, Int_t &pi0Indx);
+  Bool_t IsClusterFromCvtedPi0(AliStack* const stack, Bool_t &isConverted, Int_t &pi0Indx);
 
  private:
 
@@ -56,6 +59,9 @@ class AliCaloClusterInfo : public TObject{
   void SetPIDBit(UInt_t bit)   { fPIDBit |= bit; }
   Double_t TestDisp();
 
+  Bool_t IsClusterFromPi0(AliStack* const stack, Int_t label, Int_t &pi0Indx);
+  Bool_t IsClusterFromPi0Pure(AliStack* const stack, Int_t label, Int_t &pi0Indx);
+  Bool_t IsClusterFromPi0Converted(AliStack* const stack, Int_t label, Int_t &pi0Indx);
   Int_t  GetTRUNumber(Int_t cellX, Int_t cellZ);
 
   TLorentzVector fLorentzVector;
@@ -70,7 +76,7 @@ class AliCaloClusterInfo : public TObject{
   Double_t fM20;                // lambda1
   Double_t fTOF;
 
-  ClassDef(AliCaloClusterInfo, 2);
+  ClassDef(AliCaloClusterInfo, 3);
 };
 
 #endif // #ifdef ALICALOCLUSTERINFO_H

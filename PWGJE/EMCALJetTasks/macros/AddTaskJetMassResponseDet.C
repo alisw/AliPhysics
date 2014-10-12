@@ -30,14 +30,14 @@ AliAnalysisTaskJetMassResponseDet* AddTaskJetMassResponseDet(const char * njetsP
   AliAnalysisTaskJetMassResponseDet *task = new AliAnalysisTaskJetMassResponseDet(wagonName.Data());
 
   task->SetNCentBins(1);
-  task->SetVzRange(-10.,10.);
+  //task->SetVzRange(-10.,10.);
 
   task->SetJetContainerPart(0);
   task->SetJetContainerDet(1);
 
   AliJetContainer *jetContPart = task->AddJetContainer(njetsPart,strType,R);
   if(jetContPart) {
-    jetContPart->SetPercAreaCut(0.6);
+    // jetContPart->SetPercAreaCut(0.6);
   }
 
   AliJetContainer *jetContDet = task->AddJetContainer(njetsDet,strType,R);

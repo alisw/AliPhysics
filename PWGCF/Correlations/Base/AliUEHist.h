@@ -58,7 +58,7 @@ class AliUEHist : public TObject
   void GetHistsZVtx(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, TH3** trackHist, TH1** eventHist);
   void GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, THnBase** trackHist, TH2** eventHist);
   
-  TH2* GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t normalizePerTrigger = kTRUE, Int_t stepForMixed = -1);
+  TH2* GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t normalizePerTrigger = kTRUE, Int_t stepForMixed = -1, Int_t *trigger = NULL);
   
   TH1* GetTriggersAsFunctionOfMultiplicity(AliUEHist::CFStep step, Float_t ptLeadMin, Float_t ptLeadMax);
 

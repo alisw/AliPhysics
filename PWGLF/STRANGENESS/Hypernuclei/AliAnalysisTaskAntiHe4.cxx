@@ -906,9 +906,9 @@ void AliAnalysisTaskAntiHe4::BinLogAxis(const TH3 *h, Int_t axisNumber) {
   //
   // Method for the correct logarithmic binning of histograms
   //
-  TAxis *axis = h->GetXaxis();
-  if (axisNumber == 1) axis = h->GetYaxis();
-  if (axisNumber == 2) axis = h->GetZaxis();
+  TAxis *axis = const_cast<TAxis*>(h->GetXaxis());
+  if (axisNumber == 1) axis = const_cast<TAxis*>(h->GetYaxis());
+  if (axisNumber == 2) axis = const_cast<TAxis*>(h->GetZaxis());
   int bins = axis->GetNbins();
 
   Double_t from = axis->GetXmin();
@@ -930,7 +930,7 @@ void AliAnalysisTaskAntiHe4::BinLogAxis(const TH1 *h) {
   //
   // Method for the correct logarithmic binning of histograms
   //
-  TAxis *axis = h->GetXaxis();
+  TAxis *axis = const_cast<TAxis*>(h->GetXaxis());
   int bins = axis->GetNbins();
 
   Double_t from = axis->GetXmin();

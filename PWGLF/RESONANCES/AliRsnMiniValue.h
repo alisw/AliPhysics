@@ -19,6 +19,7 @@ public:
    enum EType {
       kVz,            // event Z position of primary vertex
       kMult,          // event multiplicity or centrality (depends on task settings)
+      kTracklets,     // event tracklets
       kPlaneAngle,    // event reaction plane angle
       kLeadingPt,     // event leading particle momentum
       kEventCuts,     // -- limit of event cuts ----------------------------------------------------
