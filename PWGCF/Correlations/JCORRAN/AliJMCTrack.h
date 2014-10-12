@@ -1,3 +1,8 @@
+/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice */
+
+// Short comment describing what this class does needed!
+
 // $Id: AliJMCTrack.h,v 1.3 2008/05/08 15:19:52 djkim Exp $
 
 ////////////////////////////////////////////////////
@@ -26,15 +31,15 @@
 class AliJMCTrack : public AliJBaseTrack {
 
  public:
-  enum { kPrimary=AliJBaseTrack::kNFlag, kPHOS, kEMCAL, kTPC, kNFlag };//For ALICE
+  enum { kPrimary=AliJBaseTrack::kNFlag, kPHOS, kEMCAL, kTPC, kInjected, kNFlag };//For ALICE
   enum { kFinal=AliJBaseTrack::kNFlag };// for MC
   //usage : this->SetFlag( kPrimary, kTRUE );
   //usage : this->IsTrue( kFinal );
 
-  AliJMCTrack();	    //default constructor
-  AliJMCTrack(const AliJMCTrack& a);	//copy constructor
+  AliJMCTrack();      //default constructor
+  AliJMCTrack(const AliJMCTrack& a);  //copy constructor
 
-  ~AliJMCTrack(){;}		//destructor
+  ~AliJMCTrack(){;}    //destructor
 
   Int_t  GetPdgCode()    const {return fPdgCode;}
   Int_t  GetMother  (Int_t i) const {return fMother[i];}
@@ -60,7 +65,7 @@ class AliJMCTrack : public AliJBaseTrack {
   //TODO
   Bool_t IsHadron() const;
   Bool_t IsCharged() const { return GetCharge(); }
-  Bool_t IsParton()  const {return ( fPdgCode < -7 && fPdgCode < 7 && fPdgCode !=0 );}
+  Bool_t IsParton()  const {return ( fPdgCode > -7 && fPdgCode < 7 && fPdgCode !=0 );}
 
  private:
 

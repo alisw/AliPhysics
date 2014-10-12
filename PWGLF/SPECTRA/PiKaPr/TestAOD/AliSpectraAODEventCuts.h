@@ -70,7 +70,13 @@ class AliSpectraAODEventCuts : public TNamed
     fQvecIntList(0),
     fQvecIntegral(0), 
     fSplineArrayV0A(0),
-    fSplineArrayV0C(0)
+    fSplineArrayV0C(0),
+    fQgenIntegral(0), 
+    fSplineArrayV0Agen(0),
+    fSplineArrayV0Cgen(0),
+    fQvecMC(0),
+    fNch(0),
+    fQvecCalibType(0)
       {
 	for (Int_t i = 0; i<10; i++){
 	  fMeanQxa2[i] = -1;
@@ -146,6 +152,8 @@ class AliSpectraAODEventCuts : public TNamed
   Bool_t OpenInfoCalbration(Int_t run);
   Short_t  GetCentrCode(AliVEvent* ev);
   
+  Double_t CalculateQVector();
+  
   Float_t  NumberOfEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kAcceptedEvents+1); }
   Float_t  NumberOfProcessedEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kProcessedEvents+1); }
   Float_t  NumberOfPhysSelEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kPhysSelEvents+1); }
@@ -153,9 +161,19 @@ class AliSpectraAODEventCuts : public TNamed
   Long64_t Merge(TCollection* list);
 
   Double_t GetQvecPercentile(Int_t v0side);  
-  Bool_t CheckSplineArray(TObjArray * splarr);
+  Bool_t CheckSplineArray(TObjArray * splarr, Int_t n);
   TObjArray *GetSplineArrayV0A() { return fSplineArrayV0A; }
   TObjArray *GetSplineArrayV0C() { return fSplineArrayV0C; }
+  
+  Double_t GetQvecMC() {return fQvecMC;}
+  
+  Int_t GetNch() { return fNch; }
+  
+  void SetQVecCalibType(Int_t val) { fQvecCalibType=val; }  //0. centrality - 1. Nch
+  Int_t GetNchBin();
+  
+  Double_t CalculateQVectorMC(Int_t v0side);
+  Double_t GetQvecPercentileMC(Int_t v0side);
 
  private:
   
@@ -205,11 +223,18 @@ class AliSpectraAODEventCuts : public TNamed
   TH2D * fQvecIntegral;           // ! Integrated Qvec distribution
   TObjArray * fSplineArrayV0A;    // TSpline array for VZERO-A
   TObjArray * fSplineArrayV0C;    // TSpline array for VZERO-C
+  TH2D * fQgenIntegral;           // ! Integrated Qvec distribution for generated tracks
+  TObjArray * fSplineArrayV0Agen;    // TSpline array for VZERO-A for generated tracks
+  TObjArray * fSplineArrayV0Cgen;    // TSpline array for VZERO-C for generated tracks
+  Double_t fQvecMC; //q-vector value from MC
+  
+  Int_t fNch;
+  Int_t fQvecCalibType; //0. centrality - 1. Nch
 
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   
-  ClassDef(AliSpectraAODEventCuts, 6);
+  ClassDef(AliSpectraAODEventCuts, 9);
   
 };
 #endif

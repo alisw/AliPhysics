@@ -4,12 +4,10 @@
 #include "TAxis.h"
 
 #include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
-#include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 
 #include "AliAnalysisNetParticleEffCont.h"
@@ -17,7 +15,7 @@
 using namespace std;
 
 /**
- * Class for for NetParticle Distributions
+ * Class for NetParticle Distributions
  * -- Efficiency and contaminations for netParticle distributions
  * Authors: Jochen Thaeder <jochen@thaeder.de>
  *          Michael Weber <m.weber@cern.ch>
@@ -33,25 +31,8 @@ ClassImp(AliAnalysisNetParticleEffCont)
 
 //________________________________________________________________________
 AliAnalysisNetParticleEffCont::AliAnalysisNetParticleEffCont() :
-  fHelper(NULL),
-  fPdgCode(2212),
-
-  fESD(NULL), 
-  fESDTrackCuts(NULL),
-
-  fAOD(NULL), 
-  fArrayMC(NULL),
-
-  fCentralityBin(-1.),
-  fNTracks(0),
-
-  fAODtrackCutBit(1024),
-
-  fStack(NULL),
-  fMCEvent(NULL),
-
+  AliAnalysisNetParticleBase("EffCont", "EffCont"),
   fLabelsRec(NULL),
-
   fHnEff(NULL),
   fHnCont(NULL) {
   // Constructor   
@@ -80,125 +61,13 @@ AliAnalysisNetParticleEffCont::~AliAnalysisNetParticleEffCont() {
  */
 
 //________________________________________________________________________
-void AliAnalysisNetParticleEffCont::Initialize(AliAnalysisNetParticleHelper* helper, AliESDtrackCuts *cuts, Int_t trackCutBit) {
-  // -- Initialize
-  
-  // -- Get Helper
-  // ---------------
-  fHelper           = helper;
-
-  // -- ESD track cuts
-  // -------------------
-  fESDTrackCuts     = cuts;
-
-  // -- AOD track filter bit
-  // -------------------------
-  fAODtrackCutBit = trackCutBit;
-
-  // -- Get particle species / pdgCode
-  // -------------------------
-  fPdgCode          = AliPID::ParticleCode(fHelper->GetParticleSpecies());
-
-  // -- MC Labels for efficiency
-  // -----------------------------
-  fLabelsRec        = new Int_t*[2];
-  for (Int_t ii = 0; ii < 2 ; ++ii)
-    fLabelsRec[ii] = NULL;
-
-  // -- Create THnSparse Histograms
-  // --------------------------------
-  CreateHistograms();
-  
-  return;
-}
-
-/*
- * ---------------------------------------------------------------------------------
- *                            Setup/Reset Methods - private
- * ---------------------------------------------------------------------------------
- */
-
-//________________________________________________________________________
-Int_t AliAnalysisNetParticleEffCont::SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent) {
-  // -- Setup event
-
-  // -- Reset of event
-  // -------------------
-  ResetEvent();
-
-  // -- Setup of event
-  // -------------------
-  
-  // -- Get ESD objects
-  if(esdHandler) {
-    fESD     = esdHandler->GetEvent(); 
-    fNTracks = fESD->GetNumberOfTracks();
-  }
-  
-  // -- Get AOD objects
-  else if(aodHandler) {
-    fAOD     = aodHandler->GetEvent();
-    fNTracks = fAOD->GetNumberOfTracks();
-    
-    fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!fArrayMC)
-      AliFatal("No array of MC particles found !!!"); // MW  no AliFatal use return values
-  }           
-
-  // -- Get MC objects
-  if (mcEvent) {
-    fMCEvent     = mcEvent;
-    if (fMCEvent)
-      fStack     = fMCEvent->Stack();
-  }
-
-  fCentralityBin = fHelper->GetCentralityBin();
-
-  // -- Create label arrays
-  // ------------------------
-  fLabelsRec[0] = new Int_t[fNTracks];
-  if(!fLabelsRec[0]) {
-    AliError("Cannot create fLabelsRec[0]");
-    return -1;
-  }
-
-  fLabelsRec[1] = new Int_t[fNTracks];
-  if(!fLabelsRec[1]) {
-    AliError("Cannot create fLabelsRec[1] for PID");
-    return -1;
- }
-
-  for(Int_t ii = 0; ii < fNTracks; ++ii) {
-    fLabelsRec[0][ii] = 0;
-    fLabelsRec[1][ii] = 0;
-  }
-
-  return 0;
-}
-
-//________________________________________________________________________
-void AliAnalysisNetParticleEffCont::ResetEvent() {
-  // -- Reset event
-  
-  for (Int_t ii = 0; ii < 2 ; ++ii) {
-    if (fLabelsRec[ii])
-      delete[] fLabelsRec[ii];
-    fLabelsRec[ii] = NULL;
-  }
-
-  return;
-}
-
-//________________________________________________________________________
 void AliAnalysisNetParticleEffCont::Process() {
   // -- Process event
 
   // -- Setup (clean, create and fill) MC labels
-  // ---------------------------------------------
   FillMCLabels();
  
   // -- Fill  MC histograms for efficiency studies
-  // -----------------------------------------------
   FillMCEffHist();
 
   return;
@@ -206,48 +75,71 @@ void AliAnalysisNetParticleEffCont::Process() {
 
 /*
  * ---------------------------------------------------------------------------------
- *                                 Private Methods
+ *                                Methods - private
  * ---------------------------------------------------------------------------------
  */
+
+//________________________________________________________________________
+void AliAnalysisNetParticleEffCont::Init() {
+  // -- Init eventwise
+
+  // -- MC Labels for efficiency
+  fLabelsRec        = new Int_t*[2];
+  for (Int_t ii = 0; ii < 2 ; ++ii)
+    fLabelsRec[ii] = NULL;
+}
 
 //________________________________________________________________________
 void AliAnalysisNetParticleEffCont::CreateHistograms() {
   // -- Create histograms
 
   // ------------------------------------------------------------------
-  // -- Create THnSparseF - Eff
+  // -- Create THnSparse - Eff
   // ------------------------------------------------------------------
 
-  Int_t    binHnEff[13] = {AliAnalysisNetParticleHelper::fgkfHistNBinsCent, AliAnalysisNetParticleHelper::fgkfHistNBinsEta,       //     cent |     etaMC
-			   AliAnalysisNetParticleHelper::fgkfHistNBinsRap,  AliAnalysisNetParticleHelper::fgkfHistNBinsPhi,       //      yMC |     phiMC
-			   AliAnalysisNetParticleHelper::fgkfHistNBinsPt,   AliAnalysisNetParticleHelper::fgkfHistNBinsSign,      //     ptMC |      sign
-			   2,      2  ,      2  ,                                                                                 // findable | recStatus  | pidStatus
-			   AliAnalysisNetParticleHelper::fgkfHistNBinsEta,  AliAnalysisNetParticleHelper::fgkfHistNBinsRap,       //   etaRec |      yRec
-			   AliAnalysisNetParticleHelper::fgkfHistNBinsPhi,  AliAnalysisNetParticleHelper::fgkfHistNBinsPt};       //   phiRec |     ptRec
+  Int_t    binHnEff[19] = {AliAnalysisNetParticleHelper::fgkfHistNBinsCent,    AliAnalysisNetParticleHelper::fgkfHistNBinsEta,       //     cent |     etaMC
+			   AliAnalysisNetParticleHelper::fgkfHistNBinsRap,     AliAnalysisNetParticleHelper::fgkfHistNBinsPhi,       //      yMC |     phiMC
+			   AliAnalysisNetParticleHelper::fgkfHistNBinsPt,      AliAnalysisNetParticleHelper::fgkfHistNBinsSign,      //     ptMC |    signMC
+			   2,      2  ,      2  ,                                                                                    // findable | recStatus  | pidStatus
+			   AliAnalysisNetParticleHelper::fgkfHistNBinsEta,     AliAnalysisNetParticleHelper::fgkfHistNBinsRap,       //   etaRec |      yRec
+			   AliAnalysisNetParticleHelper::fgkfHistNBinsPhi,     AliAnalysisNetParticleHelper::fgkfHistNBinsPt,        //   phiRec |     ptRec
+			   AliAnalysisNetParticleHelper::fgkfHistNBinsSign,                                                          //  signRec
+  			   AliAnalysisNetParticleHelper::fgkfHistNBinsEta,     AliAnalysisNetParticleHelper::fgkfHistNBinsRap,       // deltaEta | deltaY
+			   2*AliAnalysisNetParticleHelper::fgkfHistNBinsPhi+1, 2*AliAnalysisNetParticleHelper::fgkfHistNBinsPt+1,    // deltaPhi | deltaPt
+			   AliAnalysisNetParticleHelper::fgkfHistNBinsSign+2};                                                       // deltaSign
+
   
-  Double_t minHnEff[13] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[0], AliAnalysisNetParticleHelper::fgkfHistRangeEta[0], 
+  Double_t minHnEff[19] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[0], AliAnalysisNetParticleHelper::fgkfHistRangeEta[0], 
 			   AliAnalysisNetParticleHelper::fgkfHistRangeRap[0],  AliAnalysisNetParticleHelper::fgkfHistRangePhi[0], 
 			   AliAnalysisNetParticleHelper::fgkfHistRangePt[0],   AliAnalysisNetParticleHelper::fgkfHistRangeSign[0], 
 			   -0.5,     -0.5,     -0.5,
 			   AliAnalysisNetParticleHelper::fgkfHistRangeEta[0],  AliAnalysisNetParticleHelper::fgkfHistRangeRap[0], 
-			   AliAnalysisNetParticleHelper::fgkfHistRangePhi[0],  AliAnalysisNetParticleHelper::fgkfHistRangePt[0]}; 
+			   AliAnalysisNetParticleHelper::fgkfHistRangePhi[0],  AliAnalysisNetParticleHelper::fgkfHistRangePt[0],
+			   AliAnalysisNetParticleHelper::fgkfHistRangeSign[0],
+			   AliAnalysisNetParticleHelper::fgkfHistRangeEta[0],  AliAnalysisNetParticleHelper::fgkfHistRangeRap[0], 
+			   -1.*AliAnalysisNetParticleHelper::fgkfHistRangePhi[1], -1.*AliAnalysisNetParticleHelper::fgkfHistRangePt[1],
+			   AliAnalysisNetParticleHelper::fgkfHistRangeSign[0]-1.};
 
-  Double_t maxHnEff[13] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[1], AliAnalysisNetParticleHelper::fgkfHistRangeEta[1], 
+  Double_t maxHnEff[19] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[1], AliAnalysisNetParticleHelper::fgkfHistRangeEta[1], 
 			   AliAnalysisNetParticleHelper::fgkfHistRangeRap[1],  AliAnalysisNetParticleHelper::fgkfHistRangePhi[1], 
 			   AliAnalysisNetParticleHelper::fgkfHistRangePt[1],   AliAnalysisNetParticleHelper::fgkfHistRangeSign[1], 
 			   1.5,      1.5,      1.5,
 			   AliAnalysisNetParticleHelper::fgkfHistRangeEta[1],  AliAnalysisNetParticleHelper::fgkfHistRangeRap[1], 
-			   AliAnalysisNetParticleHelper::fgkfHistRangePhi[1],  AliAnalysisNetParticleHelper::fgkfHistRangePt[1]}; 
+			   AliAnalysisNetParticleHelper::fgkfHistRangePhi[1],  AliAnalysisNetParticleHelper::fgkfHistRangePt[1],
+			   AliAnalysisNetParticleHelper::fgkfHistRangeSign[1],
+			   AliAnalysisNetParticleHelper::fgkfHistRangeEta[1],  AliAnalysisNetParticleHelper::fgkfHistRangeRap[1], 
+			   AliAnalysisNetParticleHelper::fgkfHistRangePhi[1],  AliAnalysisNetParticleHelper::fgkfHistRangePt[1],
+			   AliAnalysisNetParticleHelper::fgkfHistRangeSign[1]+1.};
 
-  fHnEff = new THnSparseF("fHnEff", "cent:etaMC:yMC:phiMC:ptMC:sign:findable:recStatus:pidStatus:etaRec:yRec:phiRec:ptRec", 
-			  13, binHnEff, minHnEff, maxHnEff);
+  fHnEff = new THnSparseF("hnEff", "cent:etaMC:yMC:phiMC:ptMC:signMC:findable:recStatus:pidStatus:etaRec:yRec:phiRec:ptRec:signRec:deltaEta:deltaY:deltaPhi:deltaPt:deltaSign", 
+			  19, binHnEff, minHnEff, maxHnEff);
   fHnEff->Sumw2();    
 
   fHnEff->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
   fHnEff->GetAxis(1)->SetTitle("#eta_{MC}");                    //  eta  [-0.9, 0.9]
   fHnEff->GetAxis(2)->SetTitle("#it{y}_{MC}");                  //  rapidity  [-0.5, 0.5]
   fHnEff->GetAxis(3)->SetTitle("#varphi_{MC} (rad)");           //  phi  [ 0. , 2Pi]
-  fHnEff->GetAxis(4)->SetTitle("#it{p}_{T,MC} (GeV/#it{c})");   //  pt   [ 0.1, 3.0]
+  fHnEff->GetAxis(4)->SetTitle("#it{p}_{T,MC} (GeV/#it{c})");   //  pT   [ 0.2, 2.3]
   
   fHnEff->GetAxis(5)->SetTitle("sign");                         //  -1 | 0 | +1 
   fHnEff->GetAxis(6)->SetTitle("findable");                     //  0 not findable      |  1 findable
@@ -257,7 +149,14 @@ void AliAnalysisNetParticleEffCont::CreateHistograms() {
   fHnEff->GetAxis(9)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
   fHnEff->GetAxis(10)->SetTitle("#it{y}_{Rec}");                //  rapidity  [-0.5, 0.5]
   fHnEff->GetAxis(11)->SetTitle("#varphi_{Rec} (rad)");         //  phi  [ 0. , 2Pi]
-  fHnEff->GetAxis(12)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ 0.1, 3.0]
+  fHnEff->GetAxis(12)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ 0.2, 2.3]
+  fHnEff->GetAxis(13)->SetTitle("sign");                        //  -1 | 0 | +1 
+
+  fHnEff->GetAxis(14)->SetTitle("#eta_{MC}-#eta_{Rec}");                      //  eta  [-0.9, 0.9]
+  fHnEff->GetAxis(15)->SetTitle("#it{y}_{MC}-#it{y}_{Rec}");                  //  rapidity  [-0.5, 0.5]
+  fHnEff->GetAxis(16)->SetTitle("#varphi_{MC}-#varphi_{Rec} (rad)");          //  phi  [ -2Pi , 2Pi]
+  fHnEff->GetAxis(17)->SetTitle("#it{p}_{T,MC}-#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ -2.3, 2.3]
+  fHnEff->GetAxis(18)->SetTitle("sign_{MC}-sign_{Rec}");                      //  -2 | 0 | +2 
 
   fHelper->BinLogAxis(fHnEff,  4);
   fHelper->BinLogAxis(fHnEff, 12);
@@ -277,56 +176,115 @@ void AliAnalysisNetParticleEffCont::CreateHistograms() {
   */ 
 
   // ------------------------------------------------------------------
-  // -- Create THnSparseF - Cont
+  // -- Create THnSparse - Cont
   // ------------------------------------------------------------------
 
-  Int_t    binHnCont[13] = {AliAnalysisNetParticleHelper::fgkfHistNBinsCent, AliAnalysisNetParticleHelper::fgkfHistNBinsEta,       //     cent |    etaMC
+  Int_t    binHnCont[17] = {AliAnalysisNetParticleHelper::fgkfHistNBinsCent, AliAnalysisNetParticleHelper::fgkfHistNBinsEta,       //     cent |    etaMC
 			    AliAnalysisNetParticleHelper::fgkfHistNBinsRap,  AliAnalysisNetParticleHelper::fgkfHistNBinsPhi,       //      yMC |    phiMC
-			    AliAnalysisNetParticleHelper::fgkfHistNBinsPt,   AliAnalysisNetParticleHelper::fgkfHistNBinsSign,      //     ptMC |     sign
-			    8,                                               AliAnalysisNetParticleHelper::fgkfHistNBinsSign,      // contPart | contSign
+			    AliAnalysisNetParticleHelper::fgkfHistNBinsPt,   AliAnalysisNetParticleHelper::fgkfHistNBinsSign,      //     ptMC |   signMC=contSign
+			    8,                                                                                                     // contPart | 
 			    AliAnalysisNetParticleHelper::fgkfHistNBinsEta,  AliAnalysisNetParticleHelper::fgkfHistNBinsRap,       //   etaRec |     yRec
-			    AliAnalysisNetParticleHelper::fgkfHistNBinsPhi,  AliAnalysisNetParticleHelper::fgkfHistNBinsPt};       //   phiRec |    ptRec
+			    AliAnalysisNetParticleHelper::fgkfHistNBinsPhi,  AliAnalysisNetParticleHelper::fgkfHistNBinsPt,        //   phiRec |    ptRec
+			    AliAnalysisNetParticleHelper::fgkfHistNBinsSign,                                                       //  signRec  
+			    AliAnalysisNetParticleHelper::fgkfHistNBinsEta,     AliAnalysisNetParticleHelper::fgkfHistNBinsRap,    // deltaEta | deltaY
+			    2*AliAnalysisNetParticleHelper::fgkfHistNBinsPhi+1, 2*AliAnalysisNetParticleHelper::fgkfHistNBinsPt+1, // deltaPhi | deltaPt
+			    AliAnalysisNetParticleHelper::fgkfHistNBinsSign+2};                                                    // deltaSign
   
-  Double_t minHnCont[13] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[0], AliAnalysisNetParticleHelper::fgkfHistRangeEta[0], 
+  Double_t minHnCont[17] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[0], AliAnalysisNetParticleHelper::fgkfHistRangeEta[0], 
 			    AliAnalysisNetParticleHelper::fgkfHistRangeRap[0],  AliAnalysisNetParticleHelper::fgkfHistRangePhi[0], 
 			    AliAnalysisNetParticleHelper::fgkfHistRangePt[0],   AliAnalysisNetParticleHelper::fgkfHistRangeSign[0], 
-			    0.5,                                                AliAnalysisNetParticleHelper::fgkfHistRangeSign[0], 
+			    0.5,                                            
 			    AliAnalysisNetParticleHelper::fgkfHistRangeEta[0],  AliAnalysisNetParticleHelper::fgkfHistRangeRap[0], 
-			    AliAnalysisNetParticleHelper::fgkfHistRangePhi[0],  AliAnalysisNetParticleHelper::fgkfHistRangePt[0]}; 
+			    AliAnalysisNetParticleHelper::fgkfHistRangePhi[0],  AliAnalysisNetParticleHelper::fgkfHistRangePt[0],
+			    AliAnalysisNetParticleHelper::fgkfHistRangeSign[0],
+			    AliAnalysisNetParticleHelper::fgkfHistRangeEta[0],  AliAnalysisNetParticleHelper::fgkfHistRangeRap[0], 
+			    -1.*AliAnalysisNetParticleHelper::fgkfHistRangePhi[1], -1.*AliAnalysisNetParticleHelper::fgkfHistRangePt[1],
+			    AliAnalysisNetParticleHelper::fgkfHistRangeSign[0]-1.};
+
   
-  Double_t maxHnCont[13] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[1], AliAnalysisNetParticleHelper::fgkfHistRangeEta[1], 
+  Double_t maxHnCont[17] = {AliAnalysisNetParticleHelper::fgkfHistRangeCent[1], AliAnalysisNetParticleHelper::fgkfHistRangeEta[1], 
 			    AliAnalysisNetParticleHelper::fgkfHistRangeRap[1],  AliAnalysisNetParticleHelper::fgkfHistRangePhi[1], 
 			    AliAnalysisNetParticleHelper::fgkfHistRangePt[1],   AliAnalysisNetParticleHelper::fgkfHistRangeSign[1],
-			    8.5,                                                AliAnalysisNetParticleHelper::fgkfHistRangeSign[1], 
+			    8.5,                        
 			    AliAnalysisNetParticleHelper::fgkfHistRangeEta[1],  AliAnalysisNetParticleHelper::fgkfHistRangeRap[1], 
-			    AliAnalysisNetParticleHelper::fgkfHistRangePhi[1],  AliAnalysisNetParticleHelper::fgkfHistRangePt[1]}; 
+			    AliAnalysisNetParticleHelper::fgkfHistRangePhi[1],  AliAnalysisNetParticleHelper::fgkfHistRangePt[1],
+			    AliAnalysisNetParticleHelper::fgkfHistRangeSign[1], 
+			    AliAnalysisNetParticleHelper::fgkfHistRangeEta[1],  AliAnalysisNetParticleHelper::fgkfHistRangeRap[1], 
+			    AliAnalysisNetParticleHelper::fgkfHistRangePhi[1],  AliAnalysisNetParticleHelper::fgkfHistRangePt[1],
+			    AliAnalysisNetParticleHelper::fgkfHistRangeSign[1]+1.};
 
-  fHnCont = new THnSparseF("fHnCont", "cent:etaMC:yMC:phiMC:ptMC:sign:contPart:contSign:etaRec:yRec:phiRec:ptRec",
-			   12, binHnCont, minHnCont, maxHnCont);
+  fHnCont = new THnSparseF("hnCont", "cent:etaMC:yMC:phiMC:ptMC:signMC:contPart:etaRec:yRec:phiRec:ptRec:signRec:deltaEta:deltaY:deltaPhi:deltaPt:deltaSign",
+			   17, binHnCont, minHnCont, maxHnCont);
   fHnCont->Sumw2();    
-  
+
   fHnCont->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
   fHnCont->GetAxis(1)->SetTitle("#eta_{MC}");                    //  eta  [-0.9,0.9]
   fHnCont->GetAxis(2)->SetTitle("#it{y}_{MC}");                  //  rapidity  [-0.5, 0.5]
   fHnCont->GetAxis(3)->SetTitle("#varphi_{MC} (rad)");           //  phi  [ 0. ,2Pi]
-  fHnCont->GetAxis(4)->SetTitle("#it{p}_{T,MC} (GeV/#it{c})");   //  pT   [ 0.1,1.3]
-  
+  fHnCont->GetAxis(4)->SetTitle("#it{p}_{T,MC} (GeV/#it{c})");   //  pT   [ 0.2,2.3]
   fHnCont->GetAxis(5)->SetTitle("sign");                         //  -1 | 0 | +1 
+  
   fHnCont->GetAxis(6)->SetTitle("contPart");                     //  1 pi | 2 K | 3 p | 4 e | 5 mu | 6 other | 7 p from WeakDecay | 8 p from Material
-  fHnCont->GetAxis(7)->SetTitle("contSign");                     //  -1 | 0 | +1 
-   
-  fHnCont->GetAxis(8)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
-  fHnCont->GetAxis(9)->SetTitle("#it{y}_{Rec}");                 //  rapidity  [-0.5, 0.5]
-  fHnCont->GetAxis(10)->SetTitle("#varphi_{Rec} (rad)");         //  phi  [ 0. , 2Pi]
-  fHnCont->GetAxis(11)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ 0.1, 3.0]
+ 
+  fHnCont->GetAxis(7)->SetTitle("#eta_{Rec}");                   //  eta  [-0.9, 0.9]
+  fHnCont->GetAxis(8)->SetTitle("#it{y}_{Rec}");                 //  rapidity  [-0.5, 0.5]
+  fHnCont->GetAxis(9)->SetTitle("#varphi_{Rec} (rad)");          //  phi  [ 0. , 2Pi]
+  fHnCont->GetAxis(10)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ 0.2, 2.3]
+  fHnCont->GetAxis(11)->SetTitle("sign");                        //  -1 | 0 | +1 
+
+  fHnCont->GetAxis(12)->SetTitle("#eta_{MC}-#eta_{Rec}");                      //  eta  [-0.9, 0.9]
+  fHnCont->GetAxis(13)->SetTitle("#it{y}_{MC}-#it{y}_{Rec}");                  //  rapidity  [-0.5, 0.5]
+  fHnCont->GetAxis(14)->SetTitle("#varphi_{MC}-#varphi_{Rec} (rad)");          //  phi  [ -2Pi , 2Pi]
+  fHnCont->GetAxis(15)->SetTitle("#it{p}_{T,MC}-#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ -2.3, 2.3]
+  fHnCont->GetAxis(16)->SetTitle("sign_{MC}-sign_{Rec}");                      //  -2 | 0 | +2 
 
   fHelper->BinLogAxis(fHnCont,  4);
-  fHelper->BinLogAxis(fHnCont, 11);
+  fHelper->BinLogAxis(fHnCont, 10);
 
-  // ------------------------------------------------------------------
-  
   return;
 }
+
+//________________________________________________________________________
+Int_t AliAnalysisNetParticleEffCont::Setup() {
+  // -- Setup eventwise
+
+  // -- Create label arrays
+  fLabelsRec[0] = new Int_t[fNTracks];
+  if(!fLabelsRec[0]) {
+    AliError("Cannot create fLabelsRec[0]");
+    return -1;
+  }
+  
+  fLabelsRec[1] = new Int_t[fNTracks];
+  if(!fLabelsRec[1]) {
+    AliError("Cannot create fLabelsRec[1] for PID");
+    return -1;
+  }
+  
+  for(Int_t ii = 0; ii < fNTracks; ++ii) {
+    fLabelsRec[0][ii] = 0;
+    fLabelsRec[1][ii] = 0;
+  }
+
+  return 0;
+}
+
+//________________________________________________________________________
+void AliAnalysisNetParticleEffCont::Reset() {
+  // -- Reset eventwise
+
+  for (Int_t ii = 0; ii < 2 ; ++ii) {
+    if (fLabelsRec[ii])
+      delete[] fLabelsRec[ii];
+    fLabelsRec[ii] = NULL;
+  }
+}
+
+/*
+ * ---------------------------------------------------------------------------------
+ *                                 Private Methods
+ * ---------------------------------------------------------------------------------
+ */
 
 //________________________________________________________________________
 void AliAnalysisNetParticleEffCont::FillMCLabels() {
@@ -390,7 +348,7 @@ void AliAnalysisNetParticleEffCont::FillMCLabels() {
     fLabelsRec[0][idxTrack] = label;
 
     // -- Check if accepted by PID from TPC or TPC+TOF
-    Double_t pid[2];
+    Double_t pid[3];
     if (!fHelper->IsTrackAcceptedPID(track, pid))
       continue;
 
@@ -398,7 +356,7 @@ void AliAnalysisNetParticleEffCont::FillMCLabels() {
     fLabelsRec[1][idxTrack] = label;    
     
     // -- Check for contamination and fill contamination THnSparse
-    CheckContTrack(label, track->Charge(), idxTrack);
+    CheckContTrack(track);
 
   } // for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
 
@@ -406,11 +364,15 @@ void AliAnalysisNetParticleEffCont::FillMCLabels() {
 }
 
 //________________________________________________________________________
-void AliAnalysisNetParticleEffCont::CheckContTrack(Int_t label, Float_t sign, Int_t idxTrack) {
+void AliAnalysisNetParticleEffCont::CheckContTrack(AliVTrack *track) {
   // Check if particle is contamination or correctly identified for ESDs and AODs
   // Check for missidentified primaries and secondaries
   // Fill contamination THnSparse
 
+  Int_t label     = TMath::Abs(track->GetLabel()); 
+  Float_t signRec = track->Charge();
+
+  
   AliVParticle* particle = (fESD) ? fMCEvent->GetTrack(label) : static_cast<AliVParticle*>(fArrayMC->At(label));
   if (!particle)
     return;
@@ -422,7 +384,7 @@ void AliAnalysisNetParticleEffCont::CheckContTrack(Int_t label, Float_t sign, In
   //    > if PID required check -> for the correct (signed pdgcode) particle
   //    > no PID just check for primary 
   if (fHelper->GetUsePID()) {
-    if (particle->PdgCode() == (sign*fPdgCode))
+    if (particle->PdgCode() == (signRec*fPdgCode))
       if (isPhysicalPrimary)
 	return;
   }
@@ -435,11 +397,11 @@ void AliAnalysisNetParticleEffCont::CheckContTrack(Int_t label, Float_t sign, In
   Bool_t isSecondaryFromWeakDecay = (fESD) ? fStack->IsSecondaryFromWeakDecay(label) : (static_cast<AliAODMCParticle*>(particle))->IsSecondaryFromWeakDecay();
   Bool_t isSecondaryFromMaterial  = (fESD) ? fStack->IsSecondaryFromMaterial(label)  : (static_cast<AliAODMCParticle*>(particle))->IsSecondaryFromMaterial();
 
-  // -- Get PDG Charge
-  Float_t contSign = 0.;
-  if      (particle->Charge() == 0.) contSign =  0.;
-  else if (particle->Charge() <  0.) contSign = -1.;	
-  else if (particle->Charge() >  0.) contSign =  1.;	
+  // -- Get PDG Charge of contaminating particle
+  Float_t signMC = 0.;
+  if      (particle->Charge() == 0.) signMC =  0.;
+  else if (particle->Charge() <  0.) signMC = -1.;	
+  else if (particle->Charge() >  0.) signMC =  1.;	
 
   // -- Get contaminating particle
   Float_t contPart = 0;
@@ -454,28 +416,23 @@ void AliAnalysisNetParticleEffCont::CheckContTrack(Int_t label, Float_t sign, In
     else                                              contPart = 6; // other
   }
   
-  // -- Get Reconstructed values 
-  Float_t etaRec = 0.;
-  Float_t phiRec = 0.;
-  Float_t ptRec  = 0.;
+  // -- Get Reconstructed y
+  //    yRec = y for identified particles | yRec = eta for charged particles
   Double_t yRec  = 0.;
+  fHelper->IsTrackAcceptedRapidity(track, yRec); 
 
-  AliVTrack *track = (fESD) ? static_cast<AliVTrack*>(fESD->GetTrack(idxTrack)) : static_cast<AliVTrack*>(fAOD->GetTrack(idxTrack)); 
-
-  if (track) {
-    // if no track present (which should not happen)
-    // -> pt = 0. , which is not in the looked at range
-    
-    // -- Get Reconstructed eta/phi/pt/y
-    etaRec = track->Eta();
-    phiRec = track->Phi();	  
-    ptRec  = track->Pt();
-    fHelper->IsTrackAcceptedRapidity(track, yRec); // yRec = y for identified particles | yRec = eta for charged particles
-  } 	
+  Double_t deltaPhi = particle->Phi()-track->Phi();
+  if (TMath::Abs(deltaPhi) > TMath::TwoPi()) {
+    if (deltaPhi < 0)
+      deltaPhi += TMath::TwoPi();
+    else
+      deltaPhi -= TMath::TwoPi();
+  }
 
   // -- Fill THnSparse
-  Double_t hnCont[12] = {fCentralityBin, particle->Eta(), particle->Y(), particle->Phi(), particle->Pt(), sign, 
-			 contPart, contSign, etaRec, yRec, phiRec, ptRec};
+  Double_t hnCont[17] = {fCentralityBin, particle->Eta(), particle->Y(), particle->Phi(), particle->Pt(), signMC, 
+			 contPart, track->Eta(), yRec, track->Phi(), track->Pt(), signRec,
+			 particle->Eta()-track->Eta(), particle->Y()-yRec, deltaPhi, particle->Pt()-track->Pt(), signMC-signRec};
   fHnCont->Fill(hnCont);
 }
 
@@ -510,7 +467,7 @@ void AliAnalysisNetParticleEffCont::FillMCEffHist() {
       continue;
     
     // -- Get sign of particle
-    Float_t sign      = (particle->PdgCode() < 0) ? -1. : 1.;
+    Float_t signMC    = (particle->PdgCode() < 0) ? -1. : 1.;
 
     // -- Get if particle is findable --- not availible for AODs yet
     Float_t findable  = (fESD) ? Float_t(fHelper->IsParticleFindable(idxMC)) : 1.;
@@ -520,10 +477,11 @@ void AliAnalysisNetParticleEffCont::FillMCEffHist() {
     Float_t recPid    = 0.;
 
     // -- Get Reconstructed values 
-    Float_t etaRec = 0.;
-    Float_t phiRec = 0.;
-    Float_t ptRec  = 0.;
-    Double_t yRec  = 0.;
+    Float_t etaRec  = 0.;
+    Float_t phiRec  = 0.;
+    Float_t ptRec   = 0.;
+    Double_t yRec   = 0.;
+    Float_t signRec = 0.;
 
     // -- Loop over all labels
     for (Int_t idxRec=0; idxRec < fNTracks; ++idxRec) {
@@ -543,19 +501,29 @@ void AliAnalysisNetParticleEffCont::FillMCEffHist() {
           // if no track present (which should not happen)
           // -> pt = 0. , which is not in the looked at range
 	  
-          // -- Get Reconstructed eta/phi/pt/y
-          etaRec = track->Eta();
-          phiRec = track->Phi();         
-          ptRec  = track->Pt();
+          // -- Get Reconstructed values
+          etaRec  = track->Eta();
+          phiRec  = track->Phi();         
+          ptRec   = track->Pt();
+	  signRec = track->Charge();
           fHelper->IsTrackAcceptedRapidity(track, yRec); // yRec = y for identified particles | yRec = eta for charged particles
         }      
         break;
       }
     } // for (Int_t idxRec=0; idxRec < fNTracks; ++idxRec) {  
+
+    Double_t deltaPhi = particle->Phi()-phiRec;
+    if (TMath::Abs(deltaPhi) > TMath::TwoPi()) {
+      if (deltaPhi < 0)
+	deltaPhi += TMath::TwoPi();
+      else
+    	deltaPhi -= TMath::TwoPi();
+    }
     
     // -- Fill THnSparse
-    Double_t hnEff[15] = {fCentralityBin, particle->Eta(), particle->Y(), particle->Phi(), particle->Pt(), sign, 
-			  findable, recStatus, recPid, etaRec, yRec, phiRec, ptRec};
+    Double_t hnEff[19] = {fCentralityBin, particle->Eta(), particle->Y(), particle->Phi(), particle->Pt(), signMC, 
+			  findable, recStatus, recPid, etaRec, yRec, phiRec, ptRec, signRec,
+			  particle->Eta()-etaRec, particle->Y()-yRec, deltaPhi, particle->Pt()-ptRec, signMC-signRec};
     fHnEff->Fill(hnEff);
 
   } // for (Int_t idxMC = 0; idxMC < nPart; ++idxMC) {

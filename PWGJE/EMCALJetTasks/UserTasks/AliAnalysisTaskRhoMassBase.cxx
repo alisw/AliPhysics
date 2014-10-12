@@ -13,6 +13,8 @@
 #include "AliLog.h"
 #include "AliRhoParameter.h"
 #include "AliEmcalJet.h"
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 
 #include "AliAnalysisTaskRhoMassBase.h"
 
@@ -145,27 +147,27 @@ void AliAnalysisTaskRhoMassBase::UserCreateOutputObjects()
   }
 
   if (fScaleFunction) {
-    fHistRhoMassScaledvsCent = new TH2F("fHistRhoMassScaledvsCent", "fHistRhoMassScaledvsCent", 101, -1, 100, fNbins, fMinBinPt , fMaxBinPt*2);
+    fHistRhoMassScaledvsCent = new TH2F("fHistRhoMassScaledvsCent", "fHistRhoMassScaledvsCent", 101, -1, 100, nBinsRhom,minRhom,maxRhom);
     fHistRhoMassScaledvsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistRhoMassScaledvsCent->GetYaxis()->SetTitle("#rho_{m,scaled} (GeV/c * rad^{-1})");
     fOutput->Add(fHistRhoMassScaledvsCent);
 
     if (fParticleCollArray.GetEntriesFast()>0) {
-      fHistRhoMassScaledvsNtrack = new TH2F("fHistRhoMassScaledvsNtrack", "fHistRhoMassScaledvsNtrack", 150, 0, 6000, fNbins, fMinBinPt, fMaxBinPt*2);
+      fHistRhoMassScaledvsNtrack = new TH2F("fHistRhoMassScaledvsNtrack", "fHistRhoMassScaledvsNtrack", 150, 0, 6000, nBinsRhom,minRhom,maxRhom);
       fHistRhoMassScaledvsNtrack->GetXaxis()->SetTitle("No. of tracks");
       fHistRhoMassScaledvsNtrack->GetYaxis()->SetTitle("#rho_{m,scaled} (GeV/c * rad^{-1})");
       fOutput->Add(fHistRhoMassScaledvsNtrack);
     }
 
     if (fClusterCollArray.GetEntriesFast()>0) {
-      fHistRhoMassScaledvsNcluster = new TH2F("fHistRhoMassScaledvsNcluster", "fHistRhoMassScaledvsNcluster", 50, 0, 1500, fNbins, fMinBinPt, fMaxBinPt*2);
+      fHistRhoMassScaledvsNcluster = new TH2F("fHistRhoMassScaledvsNcluster", "fHistRhoMassScaledvsNcluster", 50, 0, 1500, nBinsRhom,minRhom,maxRhom);
       fHistRhoMassScaledvsNcluster->GetXaxis()->SetTitle("No. of clusters");
       fHistRhoMassScaledvsNcluster->GetYaxis()->SetTitle("#rho_{m,scaled} (GeV/c * rad^{-1})");
       fOutput->Add(fHistRhoMassScaledvsNcluster);
     }
 
     if (!fCompareRhoMassScaledName.IsNull()) {
-      fHistDeltaRhoMassScalevsCent = new TH2F("fHistDeltaRhoMassScalevsCent", "fHistDeltaRhoMassScalevsCent", 101, -1, 100, fNbins, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaRhoMassScalevsCent = new TH2F("fHistDeltaRhoMassScalevsCent", "fHistDeltaRhoMassScalevsCent", 101, -1, 100, nBinsRhom,minRhom,maxRhom);
       fHistDeltaRhoMassScalevsCent->GetXaxis()->SetTitle("Centrality (%)");
       fHistDeltaRhoMassScalevsCent->GetYaxis()->SetTitle("#Delta#rho_{m,scaled} (GeV/c * rad^{-1})");
       fOutput->Add(fHistDeltaRhoMassScalevsCent);
@@ -204,10 +206,10 @@ Bool_t AliAnalysisTaskRhoMassBase::FillHistograms()
   Int_t Ntracks   = 0;
   Int_t Nclusters = 0;
 
-  if (fTracks)
-    Ntracks = fTracks->GetEntries();
-  if (fCaloClusters)
-    Nclusters = fCaloClusters->GetEntries();
+  if (GetParticleContainer(0))
+    Ntracks = GetParticleContainer(0)->GetNAcceptedParticles();
+  if (GetClusterContainer(0))
+    Nclusters = GetClusterContainer(0)->GetNAcceptedClusters();
 
   if (fJets) {
     Int_t    Njets         = fJets->GetEntries();

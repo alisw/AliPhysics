@@ -42,16 +42,21 @@ set ( SRCS
  EMCALJetTasks/AliJetEmbeddingFromGenTask.cxx
  EMCALJetTasks/AliJetEmbeddingFromPYTHIATask.cxx
  EMCALJetTasks/AliJetEmbeddingTask.cxx
+ EMCALJetTasks/AliJetFastSimulation.cxx
  EMCALJetTasks/AliJetModelBaseTask.cxx
+ EMCALJetTasks/AliJetModelCopyTracks.cxx
  EMCALJetTasks/AliJetModelMergeBranches.cxx
  EMCALJetTasks/AliJetRandomizerTask.cxx
  EMCALJetTasks/AliJetResponseMaker.cxx
- EMCALJetTasks/AliRhoParameter.cxx
- EMCALJetTasks/AliLocalRhoParameter.cxx
  EMCALJetTasks/AliJetTriggerSelectionTask.cxx
+ EMCALJetTasks/AliLocalRhoParameter.cxx
+ EMCALJetTasks/AliRhoParameter.cxx
+ EMCALJetTasks/AliStackPartonInfo.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskCLQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskChargedJetsPA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskDeltaPtJEmb.cxx	
+ EMCALJetTasks/UserTasks/AliAnalysisTaskDijetHadron.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalBadCells.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetAna.cxx
@@ -59,15 +64,16 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMassBkg.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMassResponse.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMassStructure.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetPatchTriggerQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
@@ -79,6 +85,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassBase.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassScale.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
@@ -86,6 +93,9 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliCutValueRange.cxx 
  EMCALJetTasks/UserTasks/AliEMCalHistoContainer.cxx 
  EMCALJetTasks/UserTasks/AliAnalysisTaskPtEMCalTrigger.cxx 
+ EMCALJetTasks/UserTasks/AliEMCalPtTaskVTrackSelection.cxx
+ EMCALJetTasks/UserTasks/AliEMCalPtTaskTrackSelectionESD.cxx
+ EMCALJetTasks/UserTasks/AliEMCalPtTaskTrackSelectionAOD.cxx
 )
 
 # Add code that needs fastjet or FJWrapper here

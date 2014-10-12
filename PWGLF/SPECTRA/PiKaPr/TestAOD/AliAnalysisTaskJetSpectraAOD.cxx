@@ -85,7 +85,8 @@ AliAnalysisTaskJetSpectraAOD::AliAnalysisTaskJetSpectraAOD(const char *name) : A
   fHistEvtSelection(0x0),
   fDebug(0),
   fMinNcontributors(0),
-  fRejectPileup(0)
+  fRejectPileup(0),
+  fR(0.4)
 {
   // Default constructor
   
@@ -105,8 +106,7 @@ AliAnalysisTaskJetSpectraAOD::~AliAnalysisTaskJetSpectraAOD()
 //________________________________________________________________________
 void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
 {
-  Printf("\n\n\n\n\n\n In CreateOutput Object:");
-  
+  // create output objects
   fOutput = new TList();
   fOutput->SetOwner();
   fOutput->SetName("chistpt");
@@ -117,15 +117,15 @@ void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
   if (!fEventCuts) AliFatal("Event Cuts should be set in the steering macro");
     
   // binning common to all the THn
-  const Double_t ptBins[] = {0.15,5.,10.,15.,20.,25.,30.,35.,40.,50.,75.,100.,150.,200.};
-  const Int_t nptBins=13;
+  const Double_t ptBins[] = {-50.,-45.,-40.,-35.,-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,85.,90.,100.,150.,200.};
+  const Int_t nptBins=31;
   
   //dimensions of THnSparse for jets
-  const Int_t nvarjet=6;
-  //                                        pt_raw    pt_corr           cent             Q vec            rho          pt_lead
-  Int_t    binsHistRealJet[nvarjet] = {    nptBins,   nptBins,       fnCentBins,      fnQvecBins,          40,     fnptLeadBins};
-  Double_t xminHistRealJet[nvarjet] = {         0.,        0.,             0.,                0.,           0.,              0.};
-  Double_t xmaxHistRealJet[nvarjet] = {       200.,      200.,           100.,     fQvecUpperLim,         200.,             20.};    
+  const Int_t nvarjet=5;
+  //                                        pt_raw    pt_corr           cent             Q vec                pt_lead
+  Int_t    binsHistRealJet[nvarjet] = {    nptBins,   nptBins,       fnCentBins,      fnQvecBins,       fnptLeadBins};
+  Double_t xminHistRealJet[nvarjet] = {         0.,        0.,             0.,                0.,                  0.};
+  Double_t xmaxHistRealJet[nvarjet] = {       200.,      200.,           100.,     fQvecUpperLim,                 20.};    
   THnSparseF* NSparseHistJet = new THnSparseF("NSparseHistJet","NSparseHistJet",nvarjet,binsHistRealJet,xminHistRealJet,xmaxHistRealJet);
   NSparseHistJet->GetAxis(0)->SetTitle("#it{p}_{T,raw}");
   NSparseHistJet->GetAxis(0)->SetName("pT_raw");
@@ -137,16 +137,14 @@ void AliAnalysisTaskJetSpectraAOD::UserCreateOutputObjects()
   NSparseHistJet->GetAxis(2)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistJet->GetAxis(3)->SetTitle("Q vec");
   NSparseHistJet->GetAxis(3)->SetName("Q_vec");
-  NSparseHistJet->GetAxis(4)->SetTitle("rho");
-  NSparseHistJet->GetAxis(4)->SetName("rho");
-  NSparseHistJet->GetAxis(5)->SetTitle("#it{p}_{T,lead}");
-  NSparseHistJet->GetAxis(5)->SetName("pT_lead");
+  NSparseHistJet->GetAxis(4)->SetTitle("#it{p}_{T,lead}");
+  NSparseHistJet->GetAxis(4)->SetName("pT_lead");
   fOutput->Add(NSparseHistJet);
   
   //dimensions of THnSparse for the normalization
   const Int_t nvarev=3;
   //                                             cent         Q vec         rho
-  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,       40 };
+  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,      100 };
   Double_t xminHistRealEv[nvarev] = {           0.,               0.,        0.};
   Double_t xmaxHistRealEv[nvarev] = {         100.,      fQvecUpperLim,    200.};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
@@ -301,7 +299,7 @@ void AliAnalysisTaskJetSpectraAOD::UserExec(Option_t *)
   Float_t rho = 0;
   if(externalBackground)rho = externalBackground->GetBackground(0);  //default schema
   
-  // fetch jets
+  // fetch jets 
   TClonesArray *aodJets = dynamic_cast<TClonesArray*>(fAODJets->FindListObject(fJetBranchName.Data()));
   if(!aodJets){
     AliError(Form("no jet branch \"%s\" found, in the AODs are:", fJetBranchName.Data()));
@@ -311,6 +309,13 @@ void AliAnalysisTaskJetSpectraAOD::UserExec(Option_t *)
     }
     return;
   }
+  
+  Bool_t kDeltaPt = kFALSE;
+  if(fJetBranchName.Contains("RandomCone")){
+//     cout<<"RANDOM CONES BRANCH!"<<endl;
+    kDeltaPt = kTRUE;
+  }
+  
   
   fListJets->Clear();
   for (Int_t iJet = 0; iJet < aodJets->GetEntriesFast(); iJet++) {
@@ -329,19 +334,23 @@ void AliAnalysisTaskJetSpectraAOD::UserExec(Option_t *)
     
     Double_t areaJet = jet->EffectiveAreaCharged();
 
-    Double_t ptcorr = ptJet-rho*areaJet;
+    Double_t ptcorr = -999.;
+    if(kDeltaPt) ptcorr = ptJet - (rho*TMath::Pi()*fR*fR);
+    else ptcorr = ptJet-(rho*areaJet);
            
-    Double_t varJet[6];
+    Double_t varJet[5];
     varJet[0]=jet->Pt();
     varJet[1]=(Double_t)ptcorr;
     varJet[2]=(Double_t)Cent;
     varJet[3]=(Double_t)Qvec;
-    varJet[4]=(Double_t)rho;
     
-    AliVParticle *leadTrack = LeadingTrackFromJetRefs(jet);
-    if(fLeadPtMin>0 && leadTrack->Pt()<fLeadPtMin)continue;
+    if(!kDeltaPt){
+      AliVParticle *leadTrack = LeadingTrackFromJetRefs(jet);
+      if(fLeadPtMin>0 && leadTrack->Pt()<fLeadPtMin)continue;
     
-    varJet[5]=(Double_t)leadTrack->Pt();
+      varJet[4]=(Double_t)leadTrack->Pt();
+    }
+    else varJet[4] = -1;
     
     ((THnSparseF*)fOutput->FindObject("NSparseHistJet"))->Fill(varJet);//jet loop
   }
@@ -392,7 +401,6 @@ AliVParticle *AliAnalysisTaskJetSpectraAOD::LeadingTrackFromJetRefs(AliAODJet* j
 void   AliAnalysisTaskJetSpectraAOD::Terminate(Option_t *)
 {
   // Terminate
-  printf("AliAnalysisTaskJetSpectraAOD: Terminate() \n");
 }
 
 //jet

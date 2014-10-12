@@ -1,7 +1,8 @@
 AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFiles = kTRUE,
                             Bool_t useConvolutedGauss = kTRUE, TString centralityEstimator = "V0A",
                             Bool_t considerJets = kTRUE, Bool_t overrideStoreCentralityPercentile = kFALSE,
-                            Bool_t overrideStoreCentralityPercentileValue = kFALSE)
+                            Bool_t overrideStoreCentralityPercentileValue = kFALSE,
+                            TString listOfFiles = "")
 {
   // Macro to set up and add PID task with default settings.
   //
@@ -27,7 +28,6 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   
   
   printf("\nSetting up task %s:\n", taskName.Data());
-  TString listOfFiles = gSystem->Getenv("LIST");
   
   if (!considerJets) {
     //
@@ -68,6 +68,7 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   if (listOfFiles.Contains("pPb") || listOfFiles.Contains("Pbp")) {
     task->SetIsPbpOrpPb(kTRUE);
     printf("pPb/Pbp detected -> Adapting vertex cuts!\n");
+    task->SetCentralityEstimator("V0A");
   }
   else  {
     task->SetIsPbpOrpPb(kFALSE);

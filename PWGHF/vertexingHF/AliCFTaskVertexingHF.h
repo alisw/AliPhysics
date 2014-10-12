@@ -135,8 +135,10 @@ public:
 	void SetIsPPData(Bool_t flag){ fIsPPData = flag; }
 	void SetIsPPbData(Bool_t flag){ fIsPPbData = flag; }
 
-	void SetUseNchTrackletsWeight(Bool_t useWeight = kTRUE) { fUseNchWeight=useWeight; fUseTrackletsWeight=useWeight; }
+	void SetUseNchTrackletsWeight(Bool_t useWeight = kTRUE) { fUseNchWeight=useWeight; fUseTrackletsWeight=useWeight; fUseMultRatioAsWeight=useWeight; }
 	Bool_t GetUseNchTrackletsWeight() const {return fUseTrackletsWeight;}
+	void SetUseRatioMultiplicityDistributionsAsWeight(Bool_t flag=kTRUE){ fUseMultRatioAsWeight=flag; }
+	Bool_t GetUseRatioMultiplicityDistributionsAsWeight() const {return fUseMultRatioAsWeight;}
 
 	void SetUseZvtxCorrectedNtrkEstimator(Bool_t flag) { fZvtxCorrectedNtrkEstimator=flag; }
 	Bool_t GetUseZvtxCorrectedNtrkEstimator() { return fZvtxCorrectedNtrkEstimator; }
@@ -232,6 +234,11 @@ public:
 
 	Bool_t ProcessLctoV0Bachelor(Int_t returnCodeDs) const;
 
+	void SetUseAdditionalCuts(Bool_t flag) { fDecayChannel == 22 ? fUseAdditionalCuts = flag : fUseAdditionalCuts = kFALSE;}
+	Bool_t GetUseAdditionalCuts() const { return fUseAdditionalCuts; }
+	void SetUseCutsForTMVA(Bool_t useCutsForTMVA) { fDecayChannel == 22 ? fUseCutsForTMVA = useCutsForTMVA : fUseAdditionalCuts = kFALSE;}
+	Bool_t GetUseCutsForTMVA() const {return fUseCutsForTMVA;}
+
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
@@ -258,6 +265,7 @@ protected:
 	Bool_t fUseZWeight;           // flag to decide whether to use z-vtx weights != 1 when filling the container or not
 	Bool_t fUseNchWeight;         // flag to decide whether to use Ncharged weights != 1 when filling the container or not
 	Bool_t fUseTrackletsWeight;   // flag to decide whether to use Ncharged weights != 1 when filling the container or not
+	Bool_t fUseMultRatioAsWeight; // flag to use directly the ratio of the distributions (fHistoMCNch) instead of computing it
 	Int_t fNvar;                  // number of variables for the container
 	TString fPartName;    // D meson name
 	TString fDauNames;    // daughter in fin state
@@ -284,8 +292,11 @@ protected:
 	Bool_t fZvtxCorrectedNtrkEstimator; // flag to use the z-vtx corrected (if not use uncorrected) multiplicity estimator
 	Bool_t fIsPPData; // flag for pp data (not checking centrality)
 	Bool_t fIsPPbData; // flag for pPb data (used for multiplicity corrections)
+	Bool_t fUseAdditionalCuts;  // flag to use additional cuts needed for Lc --> K0S + p, TMVA
+	Bool_t fUseCutsForTMVA;     // flag to use additional cuts needed for Lc --> K0S + p, TMVA
+	                            // these are the pre-selection cuts for the TMVA
    
-	ClassDef(AliCFTaskVertexingHF,19); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,21); // class for HF corrections as a function of many variables
 };
 
 #endif

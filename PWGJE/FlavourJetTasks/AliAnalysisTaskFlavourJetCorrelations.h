@@ -31,6 +31,7 @@
 class TH3F;
 class TParticle ;
 class TClonesArray ;
+class THnSparse;
 class AliMCParticle;
 class AliAODMCParticle;
 class AliRDHFCuts;
@@ -128,7 +129,7 @@ private:
    Double_t Z(AliVParticle* part,AliEmcalJet* jet, Bool_t transverse=kFALSE) const;
    Double_t Z(Double_t* p, Double_t *pj) const;
    Double_t ZT(Double_t* p, Double_t *pj) const;
-   Float_t DeltaR(AliVParticle *p1, AliVParticle *p2) const;
+   Float_t DeltaR(AliEmcalJet *p1, AliVParticle *p2) const;
    Bool_t AreDaughtersInJet(AliEmcalJet *thejet, AliAODRecoDecayHF* charm, Int_t*& daughOutOfJet, AliAODTrack**& dtrks, Bool_t fillH);
    Bool_t IsDInJet(AliEmcalJet *thejet, AliAODRecoDecayHF* charm, Bool_t fillH=kFALSE);
    void RecalculateMomentum(Double_t* pj, const Double_t* pmissing) const;
@@ -166,6 +167,60 @@ private:
     
    Int_t fNAxesBigSparse;      // number of axis
    
+   // Histograms
+   TH1I* fhstat;
+   //generic jet and jet track distributions
+   TH1F* fhPtJetTrks;
+   TH1F* fhPhiJetTrks;
+   TH1F* fhEtaJetTrks;
+   TH1F* fhEjetTrks;
+   TH1F* fhPtJet;
+   TH1F* fhPhiJet;
+   TH1F* fhEtaJet;
+   TH1F* fhEjet;
+   TH1F* fhNtrArr;
+   TH1F* fhNJetPerEv;
+   TH1F* fhdeltaRJetTracks;
+   THnSparse* fhsJet; //available in jet only mode
+   // event characteristics;
+   TH1F* fhNDPerEvNoJet;
+   TH1F* fhptDPerEvNoJet;
+   TH1F* fhNJetPerEvNoD;
+   TH1F* fhPtJetPerEvNoD;
+   //D mesons
+   THnSparse* fhsDstandalone;
+   TH2F* fhInvMassptD;
+   TH2F* fhDiffSideBand;
+   TH2F* fhInvMassptDbg;
+   TH1F* fhPtPion;
+
+   //histograms for checks
+   TH1F* fhztracksinjet;
+   TH1F* fhDiffPtTrPtJzNok;
+   TH1F* fhDiffPtTrPtJzok;
+   TH1F* fhDiffPzTrPtJzok;
+   TH1F* fhDiffPzTrPtJzNok;
+   TH1I* fhNtrkjzNok;
+   TH1F* fhztracksinjetT;
+   TH1I* fhControlDInJ;
+   TH1I* fhIDddaugh   ;
+   TH1I* fhIDddaughOut;
+   TH1I* fhIDjetTracks;
+   TH1F* fhDRdaughOut ;
+   TH1F* fhzDinjet;
+   TH1F* fhmissingp;
+   TH1F**fhMissPi;
+   TH1F* fhDeltaPtJet;
+   TH1F* fhRelDeltaPtJet;
+   // D-jet correlation histograms
+   TH1F* fhzDT;
+   TH1F* fhDeltaRD;
+   TH3F* fhDeltaRptDptj;
+   TH3F* fhDeltaRptDptjB;
+   //main histograms
+   THnSparse* fhsDphiz;
+   
+
    ClassDef(AliAnalysisTaskFlavourJetCorrelations,6); // class for charm-jet CorrelationsExch
 };
 

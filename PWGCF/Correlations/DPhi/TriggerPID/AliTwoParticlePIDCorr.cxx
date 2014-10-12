@@ -1254,8 +1254,8 @@ axisTitleTrig[dim_val_trig+1]=axisTitlePair[dim_val+2];
   //AliTHns for trigger counting(truth MC)
   fTHnTrigcountMCTruthPrim = new  AliTHn("fTHnTrigcountMCTruthPrim", "fTHnTrigcountMCTruthPrim", 2, dims, fBinst); //2 steps;;;;0->same event;;;;;1->mixed event
  for(Int_t i=0; i<dims;i++){
-    fTHnTrigcount->SetBinLimits(i, dBinsTrig[i]);
-    fTHnTrigcount->SetVarTitle(i, axisTitleTrig[i]);
+    fTHnTrigcountMCTruthPrim->SetBinLimits(i, dBinsTrig[i]);
+    fTHnTrigcountMCTruthPrim->SetVarTitle(i, axisTitleTrig[i]);
   } 
   fOutput->Add(fTHnTrigcountMCTruthPrim);
  }
@@ -2935,7 +2935,7 @@ if(mixcase==kTRUE && firstTime)   fTHnTrigcountMCTruthPrim->Fill(trigval,1,1.0/t
 
   if(!tracksasso && j==i) continue;
 
-   // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event,i.e. both Trig and asso TObjArray belongs to the same Pi range but say Trig is Unidentified but asso is identified then the serial no. wise particles are not same and and j==i doesn't aplly)
+   // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event,i.e. both Trig and asso TObjArray belongs to the same Pt range but say Trig is Unidentified but asso is identified then the serial no. wise particles are not same and and j==i doesn't aplly)
    // if (tracksasso && trig->IsEqual(asso))  continue;
 
   if (tracksasso && (trig->GetUniqueID()==asso->GetUniqueID())) continue;

@@ -6,6 +6,9 @@
 #    (the local chache location and paths can be manipulated.)
 #  - needs a configured config file (by default alienSync.config)
 #    and a working alien environment (token and at least $ALIEN_DIR or $ALIEN_ROOT set)
+#  - can be also used without a config file
+#  
+# run the script without argument to see the examples
 #
 #  origin: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 #
@@ -27,6 +30,9 @@ main()
     return
   fi
   
+  #be nice and allow group members access as well (002 will create dirs with 775 and files with 664)
+  umask 0002
+
   # try to load the config file
   #[[ ! -f $1 ]] && echo "config file $1 not found, exiting..." | tee -a $logFile && exit 1
   if ! parseConfig "$@"; then return 1; fi
@@ -45,9 +51,6 @@ main()
   echo ""|tee -a $logFile
   echo log: $logFile
   
-  #be nice and allow group members access as well (002 will create dirs with 775 and files with 664)
-  umask 0002
-
   #lock
   lockFile=$logOutputPath/runningNow.lock
   [[ -f $lockFile && ${allowConcurrent} -ne 1 ]] && echo "locked. Another process running? ($lockFile)" | tee -a $logFile && exit 1
@@ -559,6 +562,7 @@ parseConfig()
 
   #things that by default depend on other variables should be set here, after the dependencies
   [[ -z ${logOutputPath} ]] && logOutputPath="${localPathPrefix}/alienSyncLogs"
+  return 0
 }
 
 checkMD5sum()

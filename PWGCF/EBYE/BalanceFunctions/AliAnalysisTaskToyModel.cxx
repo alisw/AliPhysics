@@ -55,6 +55,7 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fPtMin(0.0), fPtMax(100.0),
   fEtaMin(-1.0), fEtaMax(1.0),
   fSigmaGaussEta(4.0),
+  fConstantEta(-1.),
   fFixPt(-1.),
   fFixedPositiveRatio(kFALSE),
   fUseAcceptanceParameterization(kFALSE), fAcceptanceParameterization(0),
@@ -675,8 +676,15 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       if(fUseDebug) 
 	Printf("Generating positive: %d(%d)",iParticleCount+1,nGeneratedPositive);
 
+      // use a constant distribution of particles in eta in a certain range, -fConstantEta - +fConstantEta
+      if(fConstantEta>0){
+	vEta = gRandom->Uniform(-fConstantEta,fConstantEta);
+      }
+
       //Pseudo-rapidity sampled from a Gaussian centered @ 0
-      vEta = gRandom->Gaus(0.0,fSigmaGaussEta);
+      else{
+	vEta = gRandom->Gaus(0.0,fSigmaGaussEta);
+      }
 
       //Fill QA histograms (full phase space)
       fHistEtaTotal->Fill(vEta);

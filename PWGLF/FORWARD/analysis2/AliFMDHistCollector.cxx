@@ -469,7 +469,8 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
 			     UShort_t                vtxbin, 
 			     TH2D&                   out,
 			     Double_t 		     cent,
-			     Bool_t                  eta2phi)
+			     Bool_t                  eta2phi,
+			     Bool_t                  add)
 {
   // 
   // Do the calculations 
@@ -491,7 +492,7 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
   if (!bin) return false;
   Bool_t   ret     = bin->Collect(hists, sums, out, fSumRings, fSkipped, cent, 
 				  fMergeMethod, fSkipFMDRings,
-				  fByCent, eta2phi);
+				  fByCent, eta2phi, add);
 
   return ret;
 }
@@ -772,7 +773,8 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
 				     MergeMethod                   m,
 				     UShort_t                      skips,
 				     TList*                        byCent,
-				     Bool_t                        eta2phi)
+				     Bool_t                        eta2phi,
+				     Bool_t                        add)
 {
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
@@ -817,45 +819,48 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
 	  t->SetBinContent(iEta,nY+1,1);
       }
       
-      // Add to our per-ring sum 
-      o->Add(t);
+      if (add) {
+	// Add to our per-ring sum 
+	o->Add(t);
 
-      // If we store hit maps, update here 
-      if (fHitMap) fHitMap->Get(d, r)->Add(t);
+	// If we store hit maps, update here 
+	if (fHitMap) fHitMap->Get(d, r)->Add(t);
+      
 
-      if (byCent) { 
-	TH3* dNdetaCent = static_cast<TH3*>(byCent->At(i-1));
-	if (cent >= 0 && dNdetaCent) { 
-	  Int_t iCent = dNdetaCent->GetYaxis()->FindBin(cent);
+	if (byCent) { 
+	  TH3* dNdetaCent = static_cast<TH3*>(byCent->At(i-1));
+	  if (cent >= 0 && dNdetaCent) { 
+	    Int_t iCent = dNdetaCent->GetYaxis()->FindBin(cent);
 	  
-	  if (iCent > 0 && iCent <= dNdetaCent->GetNbinsY()) { 
-	    // Make a projection of data 
-	    TH1* proj = static_cast<TH1*>(t->ProjectionX("tmp", 1, nY));
-	    proj->SetDirectory(0);
-	    for (Int_t iEta = 1; iEta <= nX; iEta++) {
-	      Double_t v1 = proj->GetBinContent(iEta);
-	      Double_t e1 = proj->GetBinError(iEta);
-	      Double_t v2 = dNdetaCent->GetBinContent(iEta, iCent, 1);
-	      Double_t e2 = dNdetaCent->GetBinError(iEta, iCent, 1);
-	      dNdetaCent->SetBinContent(iEta,iCent,1, v1+v2);
-	      dNdetaCent->SetBinError(iEta,iCent,1, TMath::Sqrt(e1*e1+e2*e2));
+	    if (iCent > 0 && iCent <= dNdetaCent->GetNbinsY()) { 
+	      // Make a projection of data 
+	      TH1* proj = static_cast<TH1*>(t->ProjectionX("tmp", 1, nY));
+	      proj->SetDirectory(0);
+	      for (Int_t iEta = 1; iEta <= nX; iEta++) {
+		Double_t v1 = proj->GetBinContent(iEta);
+		Double_t e1 = proj->GetBinError(iEta);
+		Double_t v2 = dNdetaCent->GetBinContent(iEta, iCent, 1);
+		Double_t e2 = dNdetaCent->GetBinError(iEta, iCent, 1);
+		dNdetaCent->SetBinContent(iEta,iCent,1, v1+v2);
+		dNdetaCent->SetBinError(iEta,iCent,1, TMath::Sqrt(e1*e1+e2*e2));
 	      
-	      // Check under-/overflow bins
-	      Double_t uF = t->GetBinContent(iEta, 0);
-	      Double_t oF = t->GetBinContent(iEta, nY+1);
-	      if (uF > 0) {
-		Double_t old = dNdetaCent->GetBinContent(iEta, iCent, 0);
-		dNdetaCent->SetBinContent(iEta, iCent, 0, old + uF);
-	      }
-	      if (oF > 0) {
-		Double_t old = dNdetaCent->GetBinContent(iEta, iCent, 2);
-		dNdetaCent->SetBinContent(iEta, iCent, 2, old + oF);
-	      }
-	    } // for(iEta)
-	    delete proj;
-	  } // if(iCent)
-	} // if (cent)
-      } // if (byCent)
+		// Check under-/overflow bins
+		Double_t uF = t->GetBinContent(iEta, 0);
+		Double_t oF = t->GetBinContent(iEta, nY+1);
+		if (uF > 0) {
+		  Double_t old = dNdetaCent->GetBinContent(iEta, iCent, 0);
+		  dNdetaCent->SetBinContent(iEta, iCent, 0, old + uF);
+		}
+		if (oF > 0) {
+		  Double_t old = dNdetaCent->GetBinContent(iEta, iCent, 2);
+		  dNdetaCent->SetBinContent(iEta, iCent, 2, old + oF);
+		}
+	      } // for(iEta)
+	      delete proj;
+	    } // if(iCent)
+	  } // if (cent)
+	} // if (byCent)
+      } // if (add)
 
       // Outer rings have better phi segmentation - rebin to same as inner. 
       if (q == 1) {

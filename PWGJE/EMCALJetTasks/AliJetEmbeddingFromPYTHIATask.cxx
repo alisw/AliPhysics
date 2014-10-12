@@ -30,9 +30,10 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask() :
   fAnchorRun(-1),
   fFileTable(0),
   fUseAsVetoTable(kTRUE),
-  fMinEntriesFromFile(0),
+  fMinEntriesPerPtHardBin(1),
   fCurrentPtHardBin(-1),
   fPtHardBinParam(0),
+  fPtHardBinCount(0),
   fHistPtHardBins(0)
 {
   // Default constructor.
@@ -51,9 +52,10 @@ AliJetEmbeddingFromPYTHIATask::AliJetEmbeddingFromPYTHIATask(const char *name, B
   fAnchorRun(-1),
   fFileTable(0),
   fUseAsVetoTable(kTRUE),
-  fMinEntriesFromFile(0),
+  fMinEntriesPerPtHardBin(1),
   fCurrentPtHardBin(-1),
   fPtHardBinParam(0),
+  fPtHardBinCount(0),
   fHistPtHardBins(0)
 {
   // Standard constructor.
@@ -114,10 +116,13 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
     if (sum == 0) {
       AliWarning("No hard pt bin scaling!");
       sum = fPtHardBinScaling.GetSize();
+      for (Int_t i = 0; i < fPtHardBinScaling.GetSize(); i++) 
+        fPtHardBinScaling[i] /= sum;
     }
-    
-    for (Int_t i = 0; i < fPtHardBinScaling.GetSize(); i++) 
-      fPtHardBinScaling[i] /= sum;
+    else {
+      for (Int_t i = 0; i < fPtHardBinScaling.GetSize(); i++) 
+        fPtHardBinScaling[i] /= sum;
+    }
   }
 
   fPtHardBinParam = static_cast<TParameter<int>*>(InputEvent()->FindListObject("PYTHIAPtHardBin"));
@@ -133,19 +138,20 @@ Bool_t AliJetEmbeddingFromPYTHIATask::ExecOnce()
 //________________________________________________________________________
 Bool_t AliJetEmbeddingFromPYTHIATask::GetNextEntry()
 {
-  if (fEmbeddingCount >= fMinEntriesFromFile) {
+  if (fCurrentPtHardBin < 0 || (fMinEntriesPerPtHardBin >= 0 && fPtHardBinCount >= fMinEntriesPerPtHardBin)) {
+    fPtHardBinCount = 0;
+
     Int_t newPtHard = GetRandomPtHardBin();
     
-    new (fPtHardBinParam) TParameter<int>("PYTHIAPtHardBin", newPtHard);
-    
-    if (fHistPtHardBins)
-      fHistPtHardBins->SetBinContent(newPtHard+1, fHistPtHardBins->GetBinContent(newPtHard+1)+1);
-    
     if (newPtHard != fCurrentPtHardBin) {
+      fPtHardBinParam->SetVal(newPtHard);
       fCurrentPtHardBin = newPtHard;
       if (!OpenNextFile()) return kFALSE;
     }
   }
+
+  fPtHardBinCount++;
+  if (fHistPtHardBins) fHistPtHardBins->SetBinContent(fCurrentPtHardBin+1, fHistPtHardBins->GetBinContent(fCurrentPtHardBin+1)+1);
 
   return AliJetEmbeddingFromAODTask::GetNextEntry();
 }
@@ -202,6 +208,11 @@ Bool_t AliJetEmbeddingFromPYTHIATask::UserNotify()
 TFile* AliJetEmbeddingFromPYTHIATask::GetNextFile() 
 {
   fCurrentAODFileID = TMath::Nint(gRandom->Rndm()*(fTotalFiles-1))+1;
+
+  if (fMinEntriesPerPtHardBin < 0) {
+    fCurrentPtHardBin = GetRandomPtHardBin();
+    fPtHardBinParam->SetVal(fCurrentPtHardBin);
+  }
 
   TString fileName;
 

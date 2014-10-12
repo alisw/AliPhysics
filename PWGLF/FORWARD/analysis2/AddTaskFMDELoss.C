@@ -31,10 +31,8 @@
  */
 AliAnalysisTask*
 AddTaskFMDELoss(Bool_t        mc, 
-		Bool_t        useCent,
 		Bool_t        onlyMB=false, 
-		Int_t         debug=0,
-		const Char_t* residuals="",
+		const Char_t* config="elossFitConfig.C",
 		const Char_t* corrs="")
 {
   // --- Load libraries ----------------------------------------------
@@ -54,83 +52,16 @@ AddTaskFMDELoss(Bool_t        mc,
   // --- Make the task and add it to the manager ---------------------
   AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("ForwardELoss");
   // --- Set parameters on the algorithms ----------------------------
+  task->Configure(config);
 
-  // --- Event inspector ---------------------------------------------
-  // Set the number of SPD tracklets for which we consider the event a
-  // low flux event
-  task->GetEventInspector().SetLowFluxCut(1000); 
-  // Set the maximum error on v_z [cm]
-  task->GetEventInspector().SetMaxVzErr(0.2);
-  task->GetEventInspector().SetPileupFlags(0x7);
-
-  // --- ESD Fixer ---------------------------------------------------
   // For MC input we explicitly disable the noise correction 
   if (mc) task->GetESDFixer().SetRecoNoiseFactor(4);
-  // IF the noise correction is bigger than this, flag strip as dead 
-  task->GetESDFixer().SetMaxNoiseCorrection(0.05);
-  // Dead region in FMD2i
-  task->GetESDFixer().AddDeadRegion(2, 'I', 16, 17, 256, 511);  
-
-  // --- Energy loss fitter ------------------------------------------
-  // Set the eta axis to use - note, this overrides whatever is used
-  // by the rest of the algorithms - but only for the energy fitter
-  // algorithm. 
-  task->GetEnergyFitter().SetEtaAxis(200, -4, 6);
-  // Set maximum energy loss to consider 
-  task->GetEnergyFitter().SetMaxE(15); 
-  // Set number of energy loss bins 
-  task->GetEnergyFitter().SetNEbins(500);
-  // Set whether to use increasing bin sizes 
-  task->GetEnergyFitter().SetUseIncreasingBins(true);
-  // Set whether to do fit the energy distributions 
-  task->GetEnergyFitter().SetDoFits(kTRUE);
-  // Set whether to make the correction object 
-  task->GetEnergyFitter().SetDoMakeObject(kTRUE);
-  // Set the low cut used for energy
-  task->GetEnergyFitter().SetLowCut(0.4);
-  // Set the number of bins to subtract from maximum of distributions
-  // to get the lower bound of the fit range
-  task->GetEnergyFitter().SetFitRangeBinWidth(4);
-  // Set the maximum number of landaus to try to fit (max 5)
-  task->GetEnergyFitter().SetNParticles(5);
-  // Set the minimum number of entries in the distribution before
-  // trying to fit to the data - 10K seems the absolute minimum
-  task->GetEnergyFitter().SetMinEntries(10000);
-  // Set reqularization cut 
-  task->GetEnergyFitter()->SetRegularizationCut(1e8);
-
-  // Check if we're to store the residuals 
-  TString resi(residuals);
-  resi.ToUpper();
-  AliFMDEnergyFitter::EResidualMethod rm = AliFMDEnergyFitter::kNoResiduals;
-  if (!resi.IsNull() && !resi.BeginsWith("no")) {
-    if (resi.BeginsWith("square")) 
-      rm = AliFMDEnergyFitter::kResidualSquareDifference;
-    else if (resi.BeginsWith("scale")) 
-      rm = AliFMDEnergyFitter::kResidualScaledDifference;
-    else // Anything else gives plain difference and errors in errors
-      rm = AliFMDEnergyFitter::kResidualDifference;
-  }
-  task->GetEnergyFitter().SetStoreResiduals(rm);
-
 
   // --- General -----------------------------------------------------
   // If set, only collect statistics for MB.  This is to prevent a
   // bias when looping over data where the MB trigger is downscaled.
   task->SetOnlyMB(onlyMB);
-  // Debug
-  task->SetDebug(debug);
 
-
-  // --- Set limits on fits the energy -------------------------------
-  // DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING
-  // Maximum relative error on parameters 
-  // AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
-  // Least weight to use 
-  // AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
-  // Maximum value of reduced chi^2 
-  // AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
-  
   // --- Make the output container and connect it --------------------
   task->Connect(0,0);
 

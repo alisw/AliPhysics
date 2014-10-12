@@ -175,7 +175,8 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
     cont->SetRunNumber(InputEvent()->GetRunNumber());
     cont->SetEMCALGeometry();
     cont->SetArray(InputEvent());
-    cont->LoadRho(InputEvent());
+    cont->LoadRho(InputEvent()); 
+    cont->LoadPartonsInfo(InputEvent());
   }
 
   //Get Jets, cuts and rho for first jet container

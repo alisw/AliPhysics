@@ -17,8 +17,10 @@
 #pragma link C++ class AliPicoV0RD+;
 #pragma link C++ class AliAnalysisTaskEmcalJetV0CF+;
 #pragma link C++ class AliAnalysisTaskEmcalJetV0Filter+;
+#pragma link C++ class AliAnalysisTaskEmcalJetHF+;
 #pragma link C++ class AliAnalysisTaskSEPicoV0Filter+;
 #pragma link C++ class AliAnalysisTaskSEPicoV0Maker+;
 #pragma link C++ class AliAnalysisTaskSEPicoV0MakerMC+;
+#pragma link C++ class AliAnalysisTaskEmcalJetFlavourTagExample+;
 
 #endif

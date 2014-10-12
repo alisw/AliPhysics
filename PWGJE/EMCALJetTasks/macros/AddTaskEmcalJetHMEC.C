@@ -13,6 +13,13 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const Double_t TrkBias     = 5,
    const Double_t ClusBias    = 5,
    const Double_t TrkEta      = 0.9,
+   const Int_t nmixingTR      = 5000,
+   const Int_t nmixingEV      = 5,
+   UInt_t trigevent           = AliVEvent::kAny,
+   UInt_t mixevent            = AliVEvent::kAny,
+   Bool_t lessSparseAxes      = 0,
+   Bool_t widertrackbin       = 0,
+   UInt_t centbinsize         = 1,
    const char *branch         = "biased"
                                                  
 )
@@ -48,14 +55,20 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   if(EvtMix>0){
     correlationtask->SetMixingTracks(EvtMix);
     correlationtask->SetEventMixing(1);
+    correlationtask->SetNMixedTracks(nmixingTR);
+    correlationtask->SetNMixedEvents(nmixingEV);
   }else{
     correlationtask->SetEventMixing(EvtMix);
   }
   correlationtask->SetTrkBias(TrkBias);
   correlationtask->SetClusBias(ClusBias);
   correlationtask->SetTrkEta(TrkEta);
+  correlationtask->SetTrigType(trigevent);
+  correlationtask->SetMixType(mixevent);
+  correlationtask->SetDoLessSparseAxes(lessSparseAxes);
+  correlationtask->SetDoWiderTrackBin(widertrackbin);
+  correlationtask->SetCentBinSize(centbinsize);
 
- 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

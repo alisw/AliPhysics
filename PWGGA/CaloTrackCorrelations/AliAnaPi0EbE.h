@@ -128,11 +128,13 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SwitchOnAllNLMHistoFill()                   { fFillAllNLMHistograms   = kTRUE ; }
   void           SwitchOffAllNLMHistoFill()                  { fFillAllNLMHistograms   = kFALSE; }
 
+  void           SwitchOnSelectIsolatedDecay()               { fSelectIsolatedDecay    = kTRUE ; }
+  void           SwitchOffSelectIsolatedDecay()              { fSelectIsolatedDecay    = kFALSE; }
   
   //For histograms
-  enum mcTypes   { kmcPi0Decay = 0, kmcEtaDecay = 1, kmcOtherDecay = 2,
-                   kmcPi0      = 3, kmcEta      = 4, kmcPhoton     = 5,
-                   kmcElectron = 6, kmcHadron   = 7                    };
+  enum mcTypes   { kmcPi0      = 0, kmcEta      = 1, kmcPhoton           = 2,
+                   kmcPi0Decay = 3, kmcEtaDecay = 4, kmcOtherDecay       = 5,
+                   kmcElectron = 6, kmcHadron   = 7                          } ;
   
   static const Int_t fgkNmcTypes = 8;
   
@@ -151,7 +153,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Double_t       fTimeCutMin  ;            // Remove clusters/cells with time smaller than this value, in ns
   Double_t       fTimeCutMax  ;            // Remove clusters/cells with time larger than this value, in ns
   Bool_t         fRejectTrackMatch ;       // Remove clusters which have an associated TPC track
-
+  Bool_t         fSelectIsolatedDecay;     // Select pairs where at least one is declared isolated (run first AliAnaParticleIsolation)
+  
   Bool_t         fFillPileUpHistograms;    // Fill pile-up related histograms
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   Bool_t         fFillTMHisto;             // Fill track matching plots
@@ -286,7 +289,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   //MC histograms
   
-  TH1F         * fhMCPtDecay            [fgkNmcTypes]; //! pT vs from MC particle
+  TH1F         * fhMCPtDecay            [fgkNmcTypes]; //! pT from MC particle
+  TH1F         * fhMCPtDecayLostPairPi0;               //! pT for tagged clustres when MC Pi0 Decay, when companion is lost
+  TH1F         * fhMCPtDecayLostPairEta;               //! pT for tagged clustres when MC Eta Decay, when companion is lost
   TH2F         * fhMCPtLambda0          [fgkNmcTypes]; //! pT vs lambda0 of pi0 pairs but really from MC particle
   TH2F         * fhMCPtLambda1          [fgkNmcTypes]; //! pT vs lambda1 of pi0 pairs but really from MC particle
   TH2F         * fhMCPtDispersion       [fgkNmcTypes]; //! pT vs dispersion of pi0 pairs but really from MC particle
@@ -417,7 +422,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,40)
+  ClassDef(AliAnaPi0EbE,41)
 } ;
 
 

@@ -21,6 +21,8 @@ class AliAnalysisTaskPi0FlowMC : public AliAnalysisTaskPi0Flow
 public:
   AliAnalysisTaskPi0FlowMC(const char* name = "AliAnalysisTaskPi0Flow", Period period = kUndefinedPeriod);
   virtual ~AliAnalysisTaskPi0FlowMC();
+    
+  void SetOffVertexPhotonCut(Bool_t setCut=kTRUE) { kOffVertexCutSet=setCut; }
 
 protected: // Override:
   virtual void UserCreateOutputObjects();
@@ -40,7 +42,8 @@ protected: // member functions:
 
 protected: // member variables:
   AliStack* fStack;
-  
+  Bool_t kOffVertexCutSet;
+    
   void FillMCHist();
   
   virtual Double_t PrimaryWeight(Int_t primary);

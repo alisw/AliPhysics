@@ -44,6 +44,7 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        SetGeneratorIndex(Short_t i)                      { fGeneratorIndex = i  ; }
   void                        SelectPhysicalPrimaries(Bool_t s)                 { if (s) fMCFlag |=  AliAODMCParticle::kPhysicalPrim ; 
                                                                                   else   fMCFlag &= ~AliAODMCParticle::kPhysicalPrim ; }
+  void                        SetCharge(Short_t c)                              { fCharge = c         ; }
 
  protected:
   Double_t                    fParticlePtCut;                 // cut on particle pt
@@ -56,12 +57,13 @@ class AliParticleContainer : public AliEmcalContainer {
   Int_t                       fMinMCLabel;                    // minimum MC label value for the tracks/clusters being considered MC particles
   UInt_t                      fMCFlag;                        // select MC particles with flags
   Short_t                     fGeneratorIndex;                // select MC particles with generator index (default = -1 = switch off selection)
+  Short_t                     fCharge;                        // select particles with charge=fCharge
 
  private:
   AliParticleContainer(const AliParticleContainer& obj); // copy constructor
   AliParticleContainer& operator=(const AliParticleContainer& other); // assignment
 
-  ClassDef(AliParticleContainer,2);
+  ClassDef(AliParticleContainer,3);
 
 };
 

@@ -164,6 +164,12 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH3F* fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary; //! hist of Nch (generated) vs Nch (Primary) vs Nch (Physical Primary) 
   
   TH1F* fHistNtrUnCorrPSSel; //! hist. of ntracklets for physics selection only selected events
+  TH1F* fHistNtrUnCorrPSTrigSel; //! hist. of ntracklets for physics selection + trigger name selected events
+  TH1F* fHistNtrUnCorrPSTrigPileUpSel; //! hist. of ntracklets for physics selection + trigger name + pileup selected events
+  TH1F* fHistNtrUnCorrPSTrigPileUpVtxSel; //! hist. of ntracklets for physics selection + trigger name + pileup + with-vertex selected events
+  TH1F* fHistNtrUnCorrPSTrigPileUpVtxContSel; //! hist. of ntracklets for physics selection + trigger name + pileup + with-vertex-contrib selected events
+  TH1F* fHistNtrUnCorrPSTrigPileUpVtxRangeSel; //! hist. of ntracklets for physics selection + trigger name + pileup + with-vertex-contrib-range selected events
+  TH1F* fHistNtrUnCorrPSTrigPileUpVtxRangeCentrSel; //! hist. of ntracklets for physics selection + trigger name + pileup + with-vertex-contrib-range + centrality selected events
   TH1F* fHistNtrUnCorrEvSel; //! hist. of ntracklets for selected events
   TH1F* fHistNtrUnCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
   TH1F* fHistNtrUnCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
@@ -213,7 +219,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
   Int_t fMCPrimariesEstimator;  // Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2 
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,12); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,13); // D vs. mult task
 };
 
 #endif
