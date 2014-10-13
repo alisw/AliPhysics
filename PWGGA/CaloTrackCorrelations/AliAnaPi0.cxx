@@ -164,7 +164,7 @@ void AliAnaPi0::InitParameters()
   
   fMultiCutAna = kFALSE;
   
-  fNPtCuts = 1;
+  fNPtCuts = 3;
   fPtCuts[0] = 0.; fPtCuts[1] = 0.3;   fPtCuts[2] = 0.5;
   for(Int_t i = fNPtCuts; i < 10; i++)fPtCuts[i] = 0.;
   
@@ -172,11 +172,11 @@ void AliAnaPi0::InitParameters()
   fAsymCuts[0] = 1.;  fAsymCuts[1] = 0.7; //fAsymCuts[2] = 0.6; //  fAsymCuts[3] = 0.1;    
   for(Int_t i = fNAsymCuts; i < 10; i++)fAsymCuts[i] = 0.;
   
-  fNCellNCuts = 1;
+  fNCellNCuts = 3;
   fCellNCuts[0] = 0; fCellNCuts[1] = 1;   fCellNCuts[2] = 2;   
   for(Int_t i = fNCellNCuts; i < 10; i++)fCellNCuts[i]  = 0;
   
-  fNPIDBits = 1;
+  fNPIDBits = 2;
   fPIDBits[0] = 0;   fPIDBits[1] = 2; //  fPIDBits[2] = 4; fPIDBits[3] = 6;// check, no cut,  dispersion, neutral, dispersion&&neutral
   for(Int_t i = fNPIDBits; i < 10; i++)fPIDBits[i] = 0;
   
@@ -1311,7 +1311,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       //Photon kinematics
       primStack->Momentum(lvmeson);
       
-      mesonY = 0.5*TMath::Log((primStack->Energy()-primStack->Pz())/(primStack->Energy()+primStack->Pz())) ;
+      mesonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
     }
     else
     {
@@ -1335,7 +1335,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       //Photon kinematics
       lvmeson.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
       
-      mesonY = 0.5*TMath::Log((primAOD->E()-primAOD->Pz())/(primAOD->E()+primAOD->Pz())) ;
+      mesonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
     }
     
     // Select only pi0 or eta

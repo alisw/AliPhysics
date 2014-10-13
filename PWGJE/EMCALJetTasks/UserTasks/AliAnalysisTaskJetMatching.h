@@ -139,6 +139,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         TProfile*               fProfFracNoJets;        //! no of consstituents fraction jet / jet
         TH2F*                   fHistDiJet;             //! matched dijet eta, phi
         TH2F*                   fHistDiJetLeadingJet;   //! leading jet (for dijet) eta, phi
+        TH1F*                   fHistDiJetDPhi;         //! dijet dphi
         TH1F*                   fHistAnalysisSummary;   //! flags
         TProfile*               fProfQAMatched;         //! QA spreads of matched jets
         TProfile*               fProfQA;                //! QA spreads of source and target jets

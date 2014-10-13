@@ -298,6 +298,7 @@ void AliAnalysisTaskJetSpectraAOD::UserExec(Option_t *)
   
   Float_t rho = 0;
   if(externalBackground)rho = externalBackground->GetBackground(0);  //default schema
+    if(rho==0) rho=-9999.; //rho value = 0 are non-physical -> removed from the distribution
   
   // fetch jets 
   TClonesArray *aodJets = dynamic_cast<TClonesArray*>(fAODJets->FindListObject(fJetBranchName.Data()));

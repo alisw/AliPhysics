@@ -218,9 +218,9 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
     }
   }
   
-  for(Int_t ibit =0; ibit< 4; ibit++)
+  for(Int_t ibit =0; ibit < 4; ibit++)
   {
-    for(Int_t iso =0; iso< 4; iso++)
+    for(Int_t iso =0; iso < 2; iso++)
     {
       fhPtDecay       [iso][ibit] = 0;
       fhEtaPhiDecay   [iso][ibit] = 0;
@@ -4148,7 +4148,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
       //       prim->GetName(), prim->GetPdgCode());
       
-      //photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+      //photonY   = 0.5*TMath::Log((prim->Energy()+prim->Pz())/(prim->Energy()-prim->Pz())) ;
       
       //Photon kinematics
       primStack->Momentum(lv);
@@ -4168,7 +4168,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
       
-      //photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+      //photonY   = 0.5*TMath::Log((prim->Energy()+prim->Pz())/(prim->Energy()-prim->Pz())) ;
       
       //Photon kinematics
       lv.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
