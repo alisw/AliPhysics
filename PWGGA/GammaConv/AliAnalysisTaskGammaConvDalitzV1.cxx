@@ -489,7 +489,8 @@ void AliAnalysisTaskGammaConvDalitzV1::InitBack(){
 		fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
 																collisionSystem,centMin,centMax,
 																((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->NumberOfRotationEvents(),
-																((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->UseTrackMultiplicity());
+																((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->UseTrackMultiplicity(),
+																1,8,5);
 		
 		if( ( (AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetBKGMethod() == 3 ){
 			fGammasPool[iCut] = new TList();

@@ -383,9 +383,9 @@ AliAnalysisTaskGammaCalo::~AliAnalysisTaskGammaCalo()
 void AliAnalysisTaskGammaCalo::InitBack(){
 	
 	const Int_t nDim = 4;
-	Int_t nBins[nDim] = {800,250,7,4};
+	Int_t nBins[nDim] = {800,250,7,6};
 	Double_t xMin[nDim] = {0,0, 0,0};
-	Double_t xMax[nDim] = {0.8,25,7,4};
+	Double_t xMax[nDim] = {0.8,25,7,6};
 	
 	fSparseMotherInvMassPtZM = new THnSparseF*[fnCuts];
 	fSparseMotherBackInvMassPtZM = new THnSparseF*[fnCuts];
@@ -437,7 +437,8 @@ void AliAnalysisTaskGammaCalo::InitBack(){
 				fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
 																	collisionSystem,centMin,centMax,
 																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
-																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity());
+																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+																	4,8,7);
 			}
 		}
 	}
@@ -1156,10 +1157,12 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 		fHistoNGoodESDTracksVsNGammaCanditates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fClusterCandidates->GetEntries());
 		if(fDoMesonAnalysis){ // Meson Analysis
 
+			
 			CalculatePi0Candidates(); // Combine Gammas from conversion and from calo
 
 			if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation()){
 				if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
+					
 					CalculateBackground(); // Combinatorial Background
 					UpdateEventByEventData(); // Store Event for mixed Events
 				}
@@ -1741,9 +1744,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
 				
 				AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
 				pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
-				
-				
-				
+								
 				if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
 					fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
 					// fill new histograms
@@ -2194,13 +2195,13 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
 	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 		for(Int_t nEventsInBG=0;nEventsInBG<fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
 			AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
-			
 			for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
 				AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
 				for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
 					AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
 					AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
 					backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
+				
 					if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
 						->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
 						fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
@@ -2223,6 +2224,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
 						AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
 						AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
 						backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
+				
 						if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
 							fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
 							Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
