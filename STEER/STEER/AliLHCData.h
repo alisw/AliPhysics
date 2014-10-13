@@ -438,7 +438,7 @@ inline Float_t AliLHCData::GetLumiAliceSBDelivered(Double_t tStamp) const { // g
 }
 
 inline Float_t AliLHCData::GetBckgAlice(int bg,Double_t tStamp) const { // get closest in time value on integrated bckg
-  if (bg<0||bg>kNBGs) return 0;
+  if (bg<0||bg>=kNBGs) return 0;
   int idx = FindEntryValidFor(fBckgAlice[bg][kStart],fBckgAlice[bg][kNStor],tStamp);
   return idx<0 ? -1 : ((AliLHCDipValF*)fData[fBckgAlice[bg][kStart]+idx])->GetValue();
 }
