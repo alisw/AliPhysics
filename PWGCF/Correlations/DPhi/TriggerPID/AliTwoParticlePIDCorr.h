@@ -102,6 +102,8 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     virtual void    doMCAODevent();
     virtual void     Terminate(Option_t *);
   void	   SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
+  void	   SetSharedTPCmapCut(Double_t value1) { fSharedTPCmapCut = value1; }
+
 
   void SettwoTrackEfficiencyCutDataReco(Bool_t twoTrackEfficiencyCutDataReco,Float_t twoTrackEfficiencyCutValue1)
   {
@@ -261,7 +263,8 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Float_t zvtx;
     Int_t    fFilterBit;         // track selection cuts
      UInt_t         fTrackStatus;       // if non-0, the bits set in this variable are required for each track
-    Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD)
+    Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD, give the actual cut value)
+    Double_t fSharedTPCmapCut;//cut on TPC shared map(set any non negative value to implement this cut automatically, no meaning of te value itself)
     Int_t fVertextype;
     Int_t skipParticlesAbove;
     Double_t fzvtxcut;
@@ -306,6 +309,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Double_t fmaxPtAsso;
     Double_t fmincentmult;
     Double_t fmaxcentmult;
+    TH1F *fPriHistShare;//!
     TH1F *fhistcentrality;//!
     TH1F *fEventCounter; //!
     TH2F *fEtaSpectrasso;//!
