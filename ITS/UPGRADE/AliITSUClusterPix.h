@@ -6,7 +6,7 @@
 
 // uncomment this to have cluster topology in stored
 
-#define _ClusterTopology_  
+//#define _ClusterTopology_  
 
 #define CLUSTER_VERSION 2 
 

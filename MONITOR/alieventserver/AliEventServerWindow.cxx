@@ -275,7 +275,6 @@ void AliEventServerWindow::StartOfRun(Int_t run)
 
 	// Slot called from DIM handler on start of run.
 	AliInfo(Form("called for Run %d ", run));
-
 	fRunList->AddEntrySort(TString::Format("%d", run), run);
 	fRunList->Layout();
 	gClient->NeedRedraw(fRunList);

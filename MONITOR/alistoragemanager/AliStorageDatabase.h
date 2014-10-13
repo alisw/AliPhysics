@@ -22,6 +22,7 @@ public:
 			 char *filePath); //more parameters of the event can be added to this method
 
 	bool MarkEvent(struct eventStruct event);
+	bool UpdateEventPath(struct eventStruct event,const char *newPath);
 	void RemoveEvent(struct eventStruct event);
     void RemoveEventsWithPath(std::string path);
 	std::string GetFilePath(struct eventStruct event);
