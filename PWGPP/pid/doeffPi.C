@@ -529,7 +529,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
  if(pt > 2.5){
    if(pt < 2.8) h2->RebinX(2);
    else if(pt < 3) h2->RebinX(4);
-   else h2->RebinX(10);
+   else h2->RebinX(4);
  }
 
  h=h2;
