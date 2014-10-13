@@ -2260,7 +2260,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 
     AliESDtrack *trackTPC = 0;
     if(tpcrefit) trackTPC = AliESDtrackCuts::GetTPCOnlyTrack(fESD,itr);
-    if(trackTPC) trackTPC->RelateToVertex(spdv,fESD->GetMagneticField(),100.); // relate it to the SPD vertex
+    //    if(trackTPC) trackTPC->RelateToVertex(spdv,fESD->GetMagneticField(),100.); // relate it to the SPD vertex
    
 
     Int_t nclsITS = track->GetNcls(0);

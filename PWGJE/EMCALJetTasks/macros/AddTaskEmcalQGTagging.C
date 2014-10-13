@@ -83,7 +83,12 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
 
   //Connect output
   TString contName1(wagonName);
-  
+
+  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kRaw) contName1 += "_Raw"; 
+  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kConstSub) contName1 += "_ConstSub"; 
+  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kTrue) contName1 += "_True"; 
+  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kDeriv) contName1 += "_Deriv"; 
+ 
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
     

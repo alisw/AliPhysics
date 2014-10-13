@@ -72,6 +72,9 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    TString jet="";
    TString jetbg="";
    TString otherparams="";
+   mcFullSuffix=Form("%s",mcFullFlag);    //MC = all jets
+   mcChargSuffix=Form("%s",mcChargFlag);  //MC2= charged jets,  MC = all jets
+
 
    jet   = jet   + "_" + stJetAlgo   + Form("%02d",(Int_t) (10*jetParameterR));  // _ANTIKT02
    jetbg = jetbg + "_" + stJetBgAlgo + Form("%02d",(Int_t) (10*bgjetParameterR));
@@ -88,9 +91,10 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
       if(analBranch.BeginsWith("clustersAOD")){
          otherparams = otherparams + Form("_Skip%02d",0);
       }
-   
-      analBranch   = analBranch   + jet   + otherparams; //antikt jet 
-      analBranchBg = analBranchBg + jetbg + otherparams; //kt bg jet
+  
+      TString  smearMC  = (!bMomSmear) ?  "" : mcChargSuffix; //smearing affects MC branch 
+      analBranch   = analBranch   + smearMC + jet   + otherparams; //antikt jet 
+      analBranchBg = analBranchBg + smearMC + jetbg + otherparams; //kt bg jet
 
       if(bDiceEff || bMomSmear){ //dicing efficiency relates rec only
          analBranch   = analBranch   + Form("Detector%d%dFr0",(Int_t) bDiceEff,(Int_t) bMomSmear); //dice=1, smear=0, change eff fraction =0
@@ -103,8 +107,6 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
       //Cut00150  pT min cut on track
       //Filter00272
    
-      mcFullSuffix=Form("%s",mcFullFlag);    //MC = all jets
-      mcChargSuffix=Form("%s",mcChargFlag);  //MC2= charged jets,  MC = all jets
    
       if(mcChargSuffix.Length()>0 && mcChargSuffix=="MC2"){  //charged jets generator level
          analBranchChargMC   = bpfx + mcChargSuffix + jet   + otherparams; 

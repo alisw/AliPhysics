@@ -92,7 +92,10 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
   fHCentralityPerAll(NULL),
   fNCentralityBins(11),
   
+  fSubSamples(25),
   fRandom(NULL),
+  fSubSampleIdx(1), 
+
   fIsRatio(kFALSE), 
   fIsPtBin(kFALSE), fIsDetectorWise(kFALSE) {
   // Constructor   
@@ -300,6 +303,7 @@ Int_t AliEbyEPidRatioHelper::SetupEvent(AliESDInputHandler *esdHandler, AliAODIn
 
   fCentralityPercentile = centrality->GetCentralityPercentile("V0M");
   
+  fSubSampleIdx = fRandom->Integer(fSubSamples);
 
   return 0;
 }
