@@ -244,19 +244,28 @@ void AliPIPEupgrade::CreateGeometry()
   Float_t fFirstBellowZmax = fZ9;
   
   //---------------- Be pipe around the IP ----------
-  TGeoPcon* berylliumTube = new TGeoPcon(0., 360., 2);
-  berylliumTube->DefineSection(0,fBeryliumSectionZmax,fBeryliumSectionOuterRadius-fBeryliumSectionThickness,fBeryliumSectionOuterRadius);
-  berylliumTube->DefineSection(1,fBeryliumSectionZmin,fBeryliumSectionOuterRadius-fBeryliumSectionThickness,fBeryliumSectionOuterRadius);
-  TGeoVolume* voberylliumTube = new TGeoVolume("berylliumTube",berylliumTube,kMedBe);
+  TGeoTube *berylliumTube =  new TGeoTube("IP_PIPEsh",
+			fBeryliumSectionOuterRadius-fBeryliumSectionThickness,
+			fBeryliumSectionOuterRadius,
+		       (fBeryliumSectionZmax-fBeryliumSectionZmin)/2);
+  TGeoVolume* voberylliumTube = new TGeoVolume("IP_PIPE",berylliumTube,kMedBe);
   voberylliumTube->SetLineColor(kRed);
-  beamPipeCsideSection->AddNode(voberylliumTube,1,new TGeoTranslation(0., 0., 0.));
 
-  TGeoPcon* berylliumTubeVacuum = new TGeoPcon(0., 360., 2);
-  berylliumTubeVacuum->DefineSection(0,fBeryliumSectionZmax, 0.,fBeryliumSectionOuterRadius-fBeryliumSectionThickness);
-  berylliumTubeVacuum->DefineSection(1,fBeryliumSectionZmin, 0.,fBeryliumSectionOuterRadius-fBeryliumSectionThickness);
-  TGeoVolume* voberylliumTubeVacuum = new TGeoVolume("berylliumTubeVacuum",berylliumTubeVacuum,kMedVac);
-  voberylliumTubeVacuum->SetVisibility(0);voberylliumTubeVacuum->SetLineColor(kGreen);
-  beamPipeCsideSection->AddNode(voberylliumTubeVacuum,1,new TGeoTranslation(0., 0., 0.));
+  TGeoTube *berylliumTubeVacuum =  new TGeoTube("IP_PIPEVACUUMsh",
+			0., 
+			fBeryliumSectionOuterRadius-fBeryliumSectionThickness,
+		       (fBeryliumSectionZmax-fBeryliumSectionZmin)/2);
+
+  TGeoVolume* voberylliumTubeVacuum = new TGeoVolume("IP_PIPEVACUUM",
+						     berylliumTubeVacuum,
+						     kMedVac);
+  voberylliumTubeVacuum->SetVisibility(0);
+  voberylliumTubeVacuum->SetLineColor(kGreen);
+
+  voberylliumTube->AddNode(voberylliumTubeVacuum, 1,
+			   new TGeoTranslation(0., 0., 0.));
+  beamPipeCsideSection->AddNode(voberylliumTube, 1, new TGeoTranslation(0., 0.,
+			      (fBeryliumSectionZmax+fBeryliumSectionZmin)/2));
   //-------------------------------------------------
 
 
