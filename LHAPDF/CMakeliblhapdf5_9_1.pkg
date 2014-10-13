@@ -51,7 +51,7 @@ set ( FSRCS
  lhapdf-5.9.1/src/inputPDF.f 
  lhapdf-5.9.1/src/LHpdflib.F 
  lhapdf-5.9.1/src/parameter.f
- lhapdf-5.9.1/src/QCDNUM.f
+ lhapdf-5.9.1/src/QCDNUM.F
  lhapdf-5.9.1/src/QCDparams.f
  lhapdf-5.9.1/src/Smrst.f 
  lhapdf-5.9.1/src/Sqcdnum.f
@@ -91,9 +91,10 @@ set ( FSRCS
  lhapdf-5.9.1/src/wrapmrst2006.f 
  lhapdf-5.9.1/src/wrapmrst98.f 
  lhapdf-5.9.1/src/wrapmrstqed.f 
+ lhapdf-5.9.1/src/wrapQCDNUM.F 
  lhapdf-5.9.1/src/wrapQCDNUM3.f 
  lhapdf-5.9.1/src/wrapQCDNUM4.f 
- lhapdf-5.9.1/src/wrapQCDNUM.f 
+ lhapdf-5.9.1/src/wrapQCDNUM.F 
  lhapdf-5.9.1/src/wrapsasg.f 
  lhapdf-5.9.1/src/wrapmstw.f 
  lhapdf-5.9.1/src/wrapowpi.f 
@@ -108,7 +109,7 @@ set ( FSRCS
 if( ALICE_TARGET STREQUAL "solarisCC5")
 	  set ( PACKFFLAGS "${FFLAGS} -free")
 elseif( ALICE_TARGET STREQUAL "linuxx8664icc")
-	 	set ( PACKFFLAGS "${FFLAGS} -nofixed" )
+	 	set ( PACKFFLAGS "${FFLAGS}  -nofixed" )
 else()
 		set ( PACKFFLAGS "${FFLAGS} -cpp -ffree-form -DCTEQ")
 endif( ALICE_TARGET STREQUAL "solarisCC5")
