@@ -22,7 +22,9 @@ typedef enum
     kCTEQ61,  // cteq61.LHpdf
     kCTEQ6m,  // cteq6m.LHpdf
     kCTEQ6l,  // cteq6l.LHpdf 
-    kCTEQ6ll  // cteq6ll.LHpdf
+    kCTEQ6ll, // cteq6ll.LHpdf
+    kCT10,    // CT10.LHgrid
+    kCT10nlo  // CT10nlo.LHgrid
 }
 StrucFunc_t;
 
