@@ -388,7 +388,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       //Photon kinematics
       primStack->Momentum(lv);
       
-      photonY = 0.5*TMath::Log((primStack->Energy()-primStack->Pz())/(primStack->Energy()+primStack->Pz())) ;
+      photonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
     }
     else
     {
@@ -407,7 +407,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       //Photon kinematics
       lv.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
 
-      photonY = 0.5*TMath::Log((primAOD->E()-primAOD->Pz())/(primAOD->E()+primAOD->Pz())) ;
+      photonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
     }
 
     // Select only photons in the final state
@@ -2606,7 +2606,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhMCDeltaPt[kmcPhoton] ->Fill(ptcluster,ptprim-ptcluster);
         
         if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) &&
-           GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)     &&
            fhMCE[kmcConversion])
         {
           fhMCE  [kmcConversion] ->Fill(ecluster);
