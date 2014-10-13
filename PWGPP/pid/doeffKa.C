@@ -214,6 +214,8 @@ void doeffKa(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
     else hh2=GetHistoKan(ptmin,ptmax,pp,0.0);
     AddHisto(hh,hh2,weightS);
 
+    if(xx[i] > 2.5) rebinsize = 2;
+
     h = hh->ProjectionX(name,cmin,cmax);
     h->RebinX(rebinsize);
     h->Draw("ERR");
