@@ -162,7 +162,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
  private:
   
-  TString  fCalorimeter ;                         // Calorimeter where neutral particles in cone for isolation are;
   TString  fIsoDetector ;                         // Candidate particle for isolation detector ;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
