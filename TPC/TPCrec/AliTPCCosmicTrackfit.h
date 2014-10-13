@@ -35,6 +35,8 @@ const Double_t _TPCOUR  =  246.6;
 #include "TVector3.h"
 #endif
 
+class AliTPCseed;
+
 class AliTPCCosmicTrackfit
 {
  public:

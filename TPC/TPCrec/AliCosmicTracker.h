@@ -24,6 +24,14 @@
 #ifndef ALICOSMICTRACKER_H
 #define ALICOSMICTRACKER_H
 
+#include "AliESDtrackCuts.h"
+#include "AliExternalTrackParam.h"
+#include "TTreeStream.h"
+
+#ifndef TVECTOR3_H
+#include "TVector3.h"
+#endif
+
 class AliESDCosmicTrack;
 class AliTPCCosmicTrackfit;
 
