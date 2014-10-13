@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskNucleiInfo(Bool_t kAOD=kTRUE, Int_t filterBit=16, Double_t EtaMin=-0.8, Double_t EtaMax=0.8, Double_t DCAxyCut=1000.0, Double_t DCAzCut=1000.0, Double_t fNsigmaTpcCut=2.0){
+AliAnalysisTaskSE *AddTaskNucleiInfo(Bool_t kAOD=kTRUE, Int_t filterBit=16, Double_t EtaMin=-0.8, Double_t EtaMax=0.8, Double_t DCAxyCut=1000.0, Double_t DCAzCut=1000.0, Double_t fNsigmaTpcCut=2.0, Double_t StartTimeTofRes=9999.9){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -26,24 +26,25 @@ AliAnalysisTaskSE *AddTaskNucleiInfo(Bool_t kAOD=kTRUE, Int_t filterBit=16, Doub
   task->SetEtaLimit(EtaMin,EtaMax);
   task->SetDCACut(DCAxyCut,DCAzCut);
   task->SetNsigmaTPCCut(fNsigmaTpcCut);
+  task->SetStartTimeTofRes(StartTimeTofRes);
   
   mgr->AddTask(task);
 
   //Attach input to my tasks
   char name[1000];
 
-  snprintf(name,1000,"cchain1_FilterBit=%02i_EtaMin=%.1f_EtaMax=%.1f_DCAxyCUT=%.1f_DCAzCUT=%.1f_NsigTPCcut=%1.0f",filterBit,EtaMin,EtaMax,DCAxyCut,DCAzCut,fNsigmaTpcCut);
+  snprintf(name,1000,"cchain1_FilterBit=%02i_EtaMin=%.1f_EtaMax=%.1f_DCAxyCUT=%.1f_DCAzCUT=%.1f_NsigTPCcut=%1.0f_StartTimeRes=%.1f",filterBit,EtaMin,EtaMax,DCAxyCut,DCAzCut,fNsigmaTpcCut,StartTimeTofRes);
 
   AliAnalysisDataContainer *cinput = mgr->CreateContainer(name,TChain::Class(),AliAnalysisManager::kInputContainer);
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 
   // Attach output to my tasks
   
-  snprintf(name,1000,"ResultsBmm_FilterBit=%02i_EtaMin=%.1f_EtaMax=%.1f_DCAxyCUT=%.1f_DCAzCUT=%.1f_NsigTPCcut=%1.0f",filterBit,EtaMin,EtaMax,DCAxyCut,DCAzCut,fNsigmaTpcCut);
+  snprintf(name,1000,"ResultsBmm_FilterBit=%02i_EtaMin=%.1f_EtaMax=%.1f_DCAxyCUT=%.1f_DCAzCUT=%.1f_NsigTPCcut=%1.0f_StartTimeRes=%.1f",filterBit,EtaMin,EtaMax,DCAxyCut,DCAzCut,fNsigmaTpcCut,StartTimeTofRes);
   AliAnalysisDataContainer *cOutputL= mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
   mgr->ConnectOutput(task, 1, cOutputL);
 
-  snprintf(name,1000,"ResultsBpp_FilterBit=%02i_EtaMin=%.1f_EtaMax=%.1f_DCAxyCUT=%.1f_DCAzCUT=%.1f_NsigTPCcut=%1.0f",filterBit,EtaMin,EtaMax,DCAxyCut,DCAzCut,fNsigmaTpcCut);
+  snprintf(name,1000,"ResultsBpp_FilterBit=%02i_EtaMin=%.1f_EtaMax=%.1f_DCAxyCUT=%.1f_DCAzCUT=%.1f_NsigTPCcut=%1.0f_StartTimeRes=%.1f",filterBit,EtaMin,EtaMax,DCAxyCut,DCAzCut,fNsigmaTpcCut,StartTimeTofRes);
   AliAnalysisDataContainer *cOutputL2= mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
   mgr->ConnectOutput(task, 2, cOutputL2);
 
