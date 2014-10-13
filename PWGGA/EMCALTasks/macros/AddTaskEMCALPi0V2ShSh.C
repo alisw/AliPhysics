@@ -1,11 +1,12 @@
-AliAnalysisTaskEMCAPi0V2ShSh *AddTaskEMCAPi0V2ShSh()
+//astahlle
+AliAnalysisTaskEMCALPi0V2ShSh *AddTaskEMCALPi0V2ShSh()
 {
 
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	
 	if (!mgr)
 	{
-		::Error("AddTaskEMCAPi0V2ShSh", "No analysis manager to connect to.");
+		::Error("AddTaskEMCALPi0V2ShSh", "No analysis manager to connect to.");
 		return NULL;
   	}  
   	
@@ -18,7 +19,7 @@ AliAnalysisTaskEMCAPi0V2ShSh *AddTaskEMCAPi0V2ShSh()
 
 	Bool_t ismc=kFALSE;
   	ismc = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE; 
-  	cout<<"AddTaskEMCAPi0V2ShSh - MC config is: "<<ismc<<endl;
+  	cout<<"AddTaskEMCALPi0V2ShSh - MC config is: "<<ismc<<endl;
   
 	if (ismc) return 0;
 	
@@ -29,7 +30,7 @@ AliAnalysisTaskEMCAPi0V2ShSh *AddTaskEMCAPi0V2ShSh()
 		
 	TString sGeomName = AliEMCALGeometry::GetDefaultGeometryName();
 	
-	AliAnalysisTaskEMCAPi0V2ShSh *task = new AliAnalysisTaskEMCAPi0V2ShSh("EMCALTry_astahlle");
+	AliAnalysisTaskEMCALPi0V2ShSh *task = new AliAnalysisTaskEMCALPi0V2ShSh("EMCALPi0ShowerShV2");
 
 	task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
 
