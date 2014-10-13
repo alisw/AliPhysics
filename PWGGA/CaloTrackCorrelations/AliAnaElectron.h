@@ -72,9 +72,6 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   // Analysis parameters setters getters
   //---------------------------------------
   
-  TString      GetCalorimeter()                 const { return fCalorimeter        ; }
-  void         SetCalorimeter(TString  & det)         { fCalorimeter = det         ; }
-    
   // ** Cluster selection methods **
   
   void         SetdEdxCut(Double_t min, Double_t max) { fdEdxMin    = min ; 
@@ -122,7 +119,6 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   
   private:
  
-  TString  fCalorimeter ;                      // Calorimeter where the gamma is searched;
   Float_t  fMinDist ;                          // Minimal distance to bad channel to accept cluster
   Float_t  fMinDist2;                          // Cuts on Minimal distance to study acceptance evaluation
   Float_t  fMinDist3;                          // One more cut on distance used for acceptance-efficiency study

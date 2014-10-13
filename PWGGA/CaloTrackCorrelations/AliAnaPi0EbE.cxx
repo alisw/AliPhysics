@@ -49,15 +49,14 @@ ClassImp(AliAnaPi0EbE)
 //____________________________
 AliAnaPi0EbE::AliAnaPi0EbE() :
 AliAnaCaloTrackCorrBaseClass(),
-fAnaType(kIMCalo),                  fCalorimeter(""),
+fAnaType(kIMCalo),
 fMinDist(0.),fMinDist2(0.),         fMinDist3(0.),
 fNLMCutMin(-1),                     fNLMCutMax(10),
 fTimeCutMin(-10000),                fTimeCutMax(10000),
 fRejectTrackMatch(kTRUE),           fSelectIsolatedDecay(kFALSE),
-fFillPileUpHistograms(0),
 fFillWeightHistograms(kFALSE),      fFillTMHisto(0),
 fFillSelectClHisto(0),              fFillOnlySimpleSSHisto(1),
-fFillEMCALBCHistograms(0),          fFillHighMultHistograms(0),
+fFillEMCALBCHistograms(0),
 fFillAllNLMHistograms(0),
 fInputAODGammaConvName(""),
 fCheckSplitDistToBad(0),
@@ -312,7 +311,7 @@ void AliAnaPi0EbE::FillEMCALBCHistograms(Float_t energy, Float_t eta, Float_t ph
 void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * calo)
 {
   // Fill some histograms to understand pile-up
-  if(!fFillPileUpHistograms) return;
+  if(!IsPileUpAnalysisOn()) return;
   
   //printf("E %f, time %f\n",energy,time);
   AliVEvent * event = GetReader()->GetInputEvent();
@@ -333,14 +332,14 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * 
   // cells in cluster
   
   AliVCaloCells* cells = 0;
-  if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
+  if(GetCalorimeter() == "EMCAL") cells = GetEMCALCells();
   else                        cells = GetPHOSCells();
 
   Float_t maxCellFraction = 0.;
   Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells,calo,maxCellFraction);
   
   Double_t tmax  = cells->GetCellTime(absIdMax);
-  GetCaloUtils()->RecalibrateCellTime(tmax, fCalorimeter, absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+  GetCaloUtils()->RecalibrateCellTime(tmax, GetCalorimeter(), absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
   tmax*=1.e9;
     
   //Loop on cells inside cluster, max cell must be over 100 MeV and time in BC=0
@@ -559,7 +558,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
   AliVCaloCells * cell = 0x0;
   Float_t maxCellFraction = 0;
 
-  if(fCalorimeter == "EMCAL" && !fFillOnlySimpleSSHisto)
+  if(GetCalorimeter() == "EMCAL" && !fFillOnlySimpleSSHisto)
   {
     cell = GetEMCALCells();
     
@@ -607,7 +606,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
   }
   
   
-  if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+  if(GetCalorimeter()=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
      GetModuleNumber(cluster) < GetFirstSMCoveredByTRD() )
   {
     fhPtLambda0NoTRD    ->Fill(pt, l0  );
@@ -671,7 +670,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
         fhEOverP->Fill(pt,  eOverp);
         
         // Change nSM for year > 2011 (< 4 in 2012-13, none after)
-        if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+        if(GetCalorimeter()=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
            GetModuleNumber(cluster) < GetFirstSMCoveredByTRD() )
           fhEOverPNoTRD->Fill(pt,  eOverp);
         
@@ -716,11 +715,11 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
     fhMCPtLambda1[mcIndex]    ->Fill(pt, l1);
     if(fFillAllNLMHistograms) fhMCPtLambda0LocMax[mcIndex][indexMax]->Fill(pt,l0);
 
-    if(fCalorimeter=="EMCAL" && GetFirstSMCoveredByTRD() >= 0 &&
+    if(GetCalorimeter()=="EMCAL" && GetFirstSMCoveredByTRD() >= 0 &&
        GetModuleNumber(cluster) < GetFirstSMCoveredByTRD() )
       fhMCPtLambda0NoTRD[mcIndex]->Fill(pt, l0  );
     
-    if(fCalorimeter == "EMCAL" && !fFillOnlySimpleSSHisto)
+    if(GetCalorimeter() == "EMCAL" && !fFillOnlySimpleSSHisto)
     {
       if(maxCellFraction < 0.5)
         fhMCPtLambda0FracMaxCellCut[mcIndex]->Fill(pt, l0  );
@@ -758,7 +757,7 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
   if(!fFillWeightHistograms || GetMixedEvent()) return;
   
   AliVCaloCells* cells = 0;
-  if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
+  if(GetCalorimeter() == "EMCAL") cells = GetEMCALCells();
   else                        cells = GetPHOSCells();
   
   // First recalculate energy in case non linearity was applied
@@ -771,7 +770,7 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
     
     //Recalibrate cell energy if needed
     Float_t amp = cells->GetCellAmplitude(id);
-    GetCaloUtils()->RecalibrateCellAmplitude(amp,fCalorimeter, id);
+    GetCaloUtils()->RecalibrateCellAmplitude(amp,GetCalorimeter(), id);
     
     energy    += amp;
     
@@ -796,14 +795,14 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
     
     //Recalibrate cell energy if needed
     Float_t amp = cells->GetCellAmplitude(id);
-    GetCaloUtils()->RecalibrateCellAmplitude(amp,fCalorimeter, id);
+    GetCaloUtils()->RecalibrateCellAmplitude(amp,GetCalorimeter(), id);
     
     fhECellClusterRatio   ->Fill(energy,amp/energy);
     fhECellClusterLogRatio->Fill(energy,TMath::Log(amp/energy));
   }
   
   //Recalculate shower shape for different W0
-  if(fCalorimeter=="EMCAL"){
+  if(GetCalorimeter()=="EMCAL"){
     
     Float_t l0org = clus->GetM02();
     Float_t l1org = clus->GetM20();
@@ -839,7 +838,7 @@ TObjString * AliAnaPi0EbE::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fAnaType=%d (selection type) \n",fAnaType) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Calorimeter: %s;",fCalorimeter.Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s;",GetCalorimeter().Data()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Local maxima in cluster: %d < nlm < %d;",fNLMCutMin,fNLMCutMax) ;
   parList+=onePar ;
@@ -960,7 +959,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhEtaPhi->SetXTitle("#eta");
   outputContainer->Add(fhEtaPhi) ;
   
-  if(fCalorimeter=="EMCAL" && fFillEMCALBCHistograms)
+  if(GetCalorimeter()=="EMCAL" && fFillEMCALBCHistograms)
   {
     fhEtaPhiEMCALBC0  = new TH2F
     ("hEtaPhiEMCALBC0","cluster, #it{E} > 2 GeV, #eta vs #phi, for clusters with |#it{t}| < 25 ns, EMCAL-BC=0",netabins,etamin,etamax,nphibins,phimin,phimax);
@@ -1048,7 +1047,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
   }
   
-  if(fFillHighMultHistograms)
+  if(IsHighMultiplicityAnalysisOn())
   {
     fhPtCentrality  = new TH2F("hPtCentrality","centrality vs #it{p}_{T}",nptbins,ptmin,ptmax, 100,0,100);
     fhPtCentrality->SetYTitle("centrality");
@@ -1255,7 +1254,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhPtLambda1->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtLambda1) ;
     
-    if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >=0 )
+    if(GetCalorimeter()=="EMCAL" &&  GetFirstSMCoveredByTRD() >=0 )
     {
       fhPtLambda0NoTRD  = new TH2F
       ("hPtLambda0NoTRD","Selected #pi^{0} (#eta) pairs: #it{p}_{T} vs #lambda_{0}, not behind TRD",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
@@ -1402,7 +1401,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhPtLambda1LocMax[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtLambda1LocMax[i]) ;
         
-        if(fCalorimeter == "EMCAL" && !fFillOnlySimpleSSHisto)
+        if(GetCalorimeter() == "EMCAL" && !fFillOnlySimpleSSHisto)
         {
           fhPtDispersionLocMax[i]  = new TH2F(Form("hPtDispersionLocMax%d",i+1),
                                               Form("Selected #pi^{0} (#eta) pairs: #it{p}_{T} vs dispersion^{2}, %s",nlm[i].Data()),
@@ -1581,7 +1580,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhEOverP->SetYTitle("#it{E}/#it{p}");
     outputContainer->Add(fhEOverP);
     
-    if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >=0)
+    if(GetCalorimeter()=="EMCAL" &&  GetFirstSMCoveredByTRD() >=0)
     {
       fhEOverPNoTRD  = new TH2F ("hEOverPNoTRD","matched track E/p vs cluster E, SM not behind TRD ", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
       fhEOverPNoTRD->SetXTitle("#it{E} (GeV)");
@@ -1826,7 +1825,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       fhMCPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhMCPt[i]) ;
       
-      if(fFillHighMultHistograms)
+      if(IsHighMultiplicityAnalysisOn())
       {
         fhMCPtCentrality[i]  = new TH2F
         (Form("hPtCentrality_MC%s",pname[i].Data()),
@@ -1942,7 +1941,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCPtLambda1[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCPtLambda1[i]) ;
         
-        if(fCalorimeter=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0)
+        if(GetCalorimeter()=="EMCAL" &&  GetFirstSMCoveredByTRD() >= 0)
         {
           fhMCPtLambda0NoTRD[i]  = new TH2F(Form("hELambda0NoTRD_MC%s",pname[i].Data()),
                                             Form("Selected pair, cluster from %s : #it{p}_{T} vs #lambda_{0}^{2}, NoTRD",ptype[i].Data()),
@@ -2448,7 +2447,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     }
   }
   
-  if(fFillPileUpHistograms)
+  if(IsPileUpAnalysisOn())
   {
     
     TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
@@ -2726,11 +2725,11 @@ void AliAnaPi0EbE::Init()
 {
   //Init
   //Do some checks
-  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
+  if(GetCalorimeter() == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
     printf("AliAnaPi0EbE::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
-  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
+  else  if(GetCalorimeter() == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
     printf("AliAnaPi0EbE::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
     abort();
   }
@@ -2745,7 +2744,7 @@ void AliAnaPi0EbE::InitParameters()
   
   fInputAODGammaConvName = "PhotonsCTS" ;
   fAnaType = kIMCalo ;
-  fCalorimeter = "EMCAL" ;
+  GetCalorimeter() = "EMCAL" ;
   fMinDist  = 2.;
   fMinDist2 = 4.;
   fMinDist3 = 5.;
@@ -2802,8 +2801,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
   
   //Get shower shape information of clusters
   TObjArray *clusters = 0;
-  if     (fCalorimeter=="EMCAL") clusters = GetEMCALClusters();
-  else if(fCalorimeter=="PHOS")  clusters = GetPHOSClusters() ;
+  if     (GetCalorimeter()=="EMCAL") clusters = GetEMCALClusters();
+  else if(GetCalorimeter()=="PHOS")  clusters = GetPHOSClusters() ;
   
   Int_t nphoton = GetInputAODBranch()->GetEntriesFast();
   for(Int_t iphoton = 0; iphoton < nphoton-1; iphoton++)
@@ -2937,7 +2936,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       //
       // Select good pair (good phi, pt cuts, aperture and invariant mass)
       //
-      if(!GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter)) continue;
+      if(!GetNeutralMesonSelection()->SelectPair(mom1, mom2,GetCalorimeter())) continue;
       
       if(GetDebug()>1)
         printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Selected gamma pair: pt %f, phi %f, eta%f \n",
@@ -3087,8 +3086,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
   
   //Get shower shape information of clusters
   TObjArray *clusters = 0;
-  if     (fCalorimeter=="EMCAL") clusters = GetEMCALClusters();
-  else if(fCalorimeter=="PHOS")  clusters = GetPHOSClusters() ;
+  if     (GetCalorimeter()=="EMCAL") clusters = GetEMCALClusters();
+  else if(GetCalorimeter()=="PHOS")  clusters = GetPHOSClusters() ;
   
   Int_t nCTS  = inputAODGammaConv->GetEntriesFast();
   Int_t nCalo = GetInputAODBranch()->GetEntriesFast();
@@ -3170,7 +3169,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       //
       // Select good pair (good phi, pt cuts, aperture and invariant mass)
       //
-      if(!GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter)) continue ;
+      if(!GetNeutralMesonSelection()->SelectPair(mom1, mom2,GetCalorimeter())) continue ;
       
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Selected gamma pair: pt %f, phi %f, eta%f\n",
                                 mom.Pt(), mom.Phi()*TMath::RadToDeg(), mom.Eta());
@@ -3257,17 +3256,17 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
 //_________________________________________________
 void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 {
-  //Search for pi0 in fCalorimeter with shower shape analysis
+  //Search for pi0 in GetCalorimeter() with shower shape analysis
 
   TObjArray * pl        = 0x0;
   AliVCaloCells * cells = 0x0;
   //Select the Calorimeter of the photon
-  if      (fCalorimeter == "EMCAL" )
+  if      (GetCalorimeter() == "EMCAL" )
   {
     pl    = GetEMCALClusters();
     cells = GetEMCALCells();
   }
-  else if (fCalorimeter == "PHOS")
+  else if (GetCalorimeter() == "PHOS")
   {
     AliFatal("kSSCalo case not implememted for PHOS");
     return; // for coverity
@@ -3278,7 +3277,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   
   if(!pl)
   {
-    Info("MakeShowerShapeIdentification","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
+    Info("MakeShowerShapeIdentification","TObjArray with %s clusters is NULL!\n",GetCalorimeter().Data());
     return;
   }
 
@@ -3311,7 +3310,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //Check acceptance selection
     if(IsFiducialCutOn())
     {
-      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,GetCalorimeter()) ;
       if(! in ) continue ;
     }
     
@@ -3323,7 +3322,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Int_t tag	= 0 ;
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),fCalorimeter);
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(),GetCalorimeter());
       //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
       if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",tag);
     }
@@ -3585,11 +3584,11 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     //Check split-clusters with good time window difference
     Double_t tof1  = cells->GetCellTime(absId1);
-    GetCaloUtils()->RecalibrateCellTime(tof1, fCalorimeter, absId1,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    GetCaloUtils()->RecalibrateCellTime(tof1, GetCalorimeter(), absId1,GetReader()->GetInputEvent()->GetBunchCrossNumber());
     tof1*=1.e9;
     
     Double_t tof2  = cells->GetCellTime(absId2);
-    GetCaloUtils()->RecalibrateCellTime(tof2, fCalorimeter, absId2,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    GetCaloUtils()->RecalibrateCellTime(tof2, GetCalorimeter(), absId2,GetReader()->GetInputEvent()->GetBunchCrossNumber());
     tof2*=1.e9;
     
     Double_t t12diff = tof1-tof2;
@@ -3632,7 +3631,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     FillPileUpHistograms(mom.Pt(),tofcluster,calo);
     
-    if(fFillEMCALBCHistograms && fCalorimeter=="EMCAL")
+    if(fFillEMCALBCHistograms && GetCalorimeter()=="EMCAL")
       FillEMCALBCHistograms(mom.E(), mom.Eta(), mom.Phi(), tofcluster);
     
     //-----------------------
@@ -3643,7 +3642,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     //Set the indeces of the original caloclusters
     aodpi0.SetCaloLabel(calo->GetID(),-1);
-    aodpi0.SetDetector(fCalorimeter);
+    aodpi0.SetDetector(GetCalorimeter());
     
     if     (distBad > fMinDist3) aodpi0.SetDistToBad(2) ;
     else if(distBad > fMinDist2) aodpi0.SetDistToBad(1) ;
@@ -3705,7 +3704,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     fhPtPhi  ->Fill(pt  ,phi);
     fhEtaPhi ->Fill(eta ,phi);
     
-    if(fFillHighMultHistograms)
+    if(IsHighMultiplicityAnalysisOn())
     {
       fhPtCentrality ->Fill(pt,cen) ;
       fhPtEventPlane ->Fill(pt,ep ) ;
@@ -3724,7 +3723,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
       fhMCPtPhi[mcIndex] ->Fill(pt,phi);
       fhMCPtEta[mcIndex] ->Fill(pt,eta);
       
-      if(fFillHighMultHistograms) fhMCPtCentrality[mcIndex]->Fill(pt,cen);
+      if(IsHighMultiplicityAnalysisOn()) fhMCPtCentrality[mcIndex]->Fill(pt,cen);
       
       if((mcIndex==kmcPi0Decay || mcIndex==kmcEtaDecay ||
           mcIndex==kmcPi0      || mcIndex==kmcEta         ) &&
@@ -3865,7 +3864,7 @@ void AliAnaPi0EbE::Print(const Option_t * opt) const
   printf("Analysis Type = %d \n",  fAnaType) ;
   if(fAnaType == kSSCalo)
   {
-    printf("Calorimeter            =     %s\n", fCalorimeter.Data()) ;
+    printf("Calorimeter            =     %s\n", GetCalorimeter().Data()) ;
     printf("Min Distance to Bad Channel   = %2.1f\n",fMinDist);
     printf("Min Distance to Bad Channel 2 = %2.1f\n",fMinDist2);
     printf("Min Distance to Bad Channel 3 = %2.1f\n",fMinDist3);

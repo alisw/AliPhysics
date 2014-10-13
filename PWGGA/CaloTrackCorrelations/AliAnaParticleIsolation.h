@@ -23,7 +23,6 @@ class TObjString;
 class AliAODPWG4Particle;
 class AliAODPWG4ParticleCorrelation ;
 
-
 class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
  public:   
@@ -78,7 +77,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis Setters and Getters
   
-  TString      GetCalorimeter()                const { return fCalorimeter       ; }
   TString      GetTriggerDetector()            const { return fIsoDetector       ; }
   Int_t        GetNCones()                     const { return fNCones            ; }
   Int_t        GetNPtThresFrac()               const { return fNPtThresFrac      ; }
@@ -89,7 +87,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t        GetMCIndex(Int_t mcTag);
   
-  void         SetCalorimeter(TString & det)         { fCalorimeter     = det    ; }
   void         SetTriggerDetector(TString & det)     { fIsoDetector     = det    ; }
   void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
   void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
@@ -99,7 +96,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void 	       SetSumPtThresholds(Int_t i, Float_t pt){ fSumPtThresholds[i] = pt ; }
 
   void         SetMinCellsAngleOverlap(Float_t n)    { fMinCellsAngleOverlap = n ; }
-
   
   Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
   void         SwitchOnReIsolation()                 { fReMakeIC      = kTRUE    ; }
@@ -108,9 +104,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       IsSeveralIsolationOn()          const { return fMakeSeveralIC     ; }
   void         SwitchOnSeveralIsolation()            { fMakeSeveralIC = kTRUE    ; }
   void         SwitchOffSeveralIsolation()           { fMakeSeveralIC = kFALSE   ; }
-
-  void         SwitchOnFillPileUpHistograms()        { fFillPileUpHistograms = kTRUE  ; }
-  void         SwitchOffFillPileUpHistograms()       { fFillPileUpHistograms = kFALSE ; }    
   
   void         SwitchOnTMHistoFill()                 { fFillTMHisto   = kTRUE    ; }
   void         SwitchOffTMHistoFill()                { fFillTMHisto   = kFALSE   ; }
@@ -130,9 +123,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnCellHistoFill()               { fFillCellHistograms = kTRUE ; }
   void         SwitchOffCellHistoFill()              { fFillCellHistograms = kFALSE; }
-
-  void         SwitchOnHighMultiplicityHistoFill()   { fFillHighMultHistograms = kTRUE ; }
-  void         SwitchOffHighMultiplicityHistoFill()  { fFillHighMultHistograms = kFALSE; }
 
   void         SwitchOnNLMHistoFill()                { fFillNLMHistograms = kTRUE ; }
   void         SwitchOffNLMHistoFill()               { fFillNLMHistograms = kFALSE; }
@@ -176,12 +166,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TString  fIsoDetector ;                         // Candidate particle for isolation detector ;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
-  Bool_t   fFillPileUpHistograms;                 // Fill pile-up related histograms
   Bool_t   fFillTMHisto;                          // Fill track matching plots
   Bool_t   fFillSSHisto;                          // Fill Shower shape plots
   Bool_t   fFillUEBandSubtractHistograms;         // Fill histograms working on the UE subtraction
   Bool_t   fFillCellHistograms;                   // Fill cell histograms
-  Bool_t   fFillHighMultHistograms;               // Fill high multiplicity histograms
   Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
   Int_t    fNDecayBits ;                          // in case of study of decay triggers, select the decay bit
   UInt_t   fDecayBits[4] ;                        // in case of study of decay triggers, select the decay bit
