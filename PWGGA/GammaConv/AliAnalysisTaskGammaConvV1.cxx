@@ -421,7 +421,8 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
 				fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
 																	collisionSystem,centMin,centMax,
 																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
-																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity());
+																	((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+																	0,8,5);
 				fBGHandlerRP[iCut] = NULL;
 			} else {
 				fBGHandlerRP[iCut] = new AliConversionAODBGHandlerRP(

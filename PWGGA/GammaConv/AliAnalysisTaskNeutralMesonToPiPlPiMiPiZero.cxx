@@ -353,7 +353,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::InitBack(){
 		
 		fBGHandler[iCut] = new AliGammaConversionAODBGHandler(	collisionSystem,centMin,centMax,
 																((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfBGEvents(),
-																((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity());
+																((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity(),
+																0,8,5);
 	}
 }
 

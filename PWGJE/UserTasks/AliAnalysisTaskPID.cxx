@@ -1877,6 +1877,7 @@ Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Double_t
   }
   
   if (absMotherPDG == 3122) { // Lambda
+  //if (absMotherPDG == 3122 || absMotherPDG == 3112 || absMotherPDG == 3222) { // Lambda / Sigma- / Sigma+
     if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.645162;
     else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.627431;
     else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.457136;
