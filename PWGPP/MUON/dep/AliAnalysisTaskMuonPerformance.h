@@ -32,6 +32,12 @@ class AliAnalysisTaskMuonPerformance : public AliAnalysisTaskSE {
   /// Set location of the default OCDB storage (if not set use "raw://")
   void SetDefaultStorage(const char* ocdbPath) { fDefaultStorage = ocdbPath; }
   
+  /// Set the OCDB path to the alignment file used in the reco (if not set use default storage)
+  void SetAlignStorage(const char* ocdbPath) { fAlignOCDBpath = ocdbPath; }
+  
+  /// Set the OCDB path to the recoParam file used in the reco (if not set use default storage)
+  void SetRecoParamStorage(const char* ocdbPath) { fRecoParamOCDBpath = ocdbPath; }
+  
   // Set the binning to be used to study the detector resolution versus momentum
   void SetPBins(Int_t nBins, Double_t min, Double_t max);
   
@@ -297,6 +303,8 @@ class AliAnalysisTaskMuonPerformance : public AliAnalysisTaskSE {
   };
   
   TString  fDefaultStorage;          ///< location of the default OCDB storage
+  TString  fAlignOCDBpath;           ///< OCDB path to the alignment file
+  TString  fRecoParamOCDBpath;       ///< OCDB path to the recoParam file
   Int_t    fNPBins;                  ///< number of momentum bins
   Double_t fPRange[2];               ///< momentum range
   Bool_t   fCorrectForSystematics;   ///< add or not the systematic shifts of the residuals to the resolution
@@ -325,7 +333,7 @@ class AliAnalysisTaskMuonPerformance : public AliAnalysisTaskSE {
   TObjArray* fDCAList;          //!< List of graph and canvas about DCA
   TObjArray* fClusterList;      //!< List of graph and canvas about cluster resolution
   
-  ClassDef(AliAnalysisTaskMuonPerformance, 2); // Muon performance analysis
+  ClassDef(AliAnalysisTaskMuonPerformance, 3); // Muon performance analysis
 };
 
 inline void AliAnalysisTaskMuonPerformance::SetPBins(Int_t nBins, Double_t pMin, Double_t pMax)

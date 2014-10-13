@@ -911,7 +911,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
 
       if(fPtKn > 4.299) fPtKn = 4.299;
 
-      Float_t xTOfill[] = {static_cast<Float_t>(fPtLambdaC),static_cast<Float_t>(KpTrack->Eta()),static_cast<Float_t>(fPtKp),static_cast<Float_t>(fPtKn,(fPidKp%128)*0.01),static_cast<Float_t>((fPidKn%128)*0.01),static_cast<Float_t>(tofMatch1),static_cast<Float_t>(tofMatch2),static_cast<Float_t>(isTrue),static_cast<Float_t>(nSigmaComb),static_cast<Float_t>(nSigmaComb2),static_cast<Float_t>(deltaphi1),static_cast<Float_t>(deltaphi2),static_cast<Float_t>(fPsi)};
+      Float_t xTOfill[] =  {static_cast<Float_t>(fPtLambdaC),static_cast<Float_t>(KpTrack->Eta()),static_cast<Float_t>(fPtKp),static_cast<Float_t>(fPtKn),static_cast<Float_t>((fPidKp%128)*0.01),static_cast<Float_t>((fPidKn%128)*0.01),static_cast<Float_t>(tofMatch1),static_cast<Float_t>(tofMatch2),static_cast<Float_t>(isTrue),static_cast<Float_t>(nSigmaComb),static_cast<Float_t>(nSigmaComb2),static_cast<Float_t>(deltaphi1),static_cast<Float_t>(deltaphi2),static_cast<Float_t>(fPsi)};
       Float_t xTOfill2[] = {static_cast<Float_t>(fPtLambdaC),static_cast<Float_t>(KpTrack->Eta()),static_cast<Float_t>(fPtKn),static_cast<Float_t>(fPtKp),static_cast<Float_t>((fPidKn%128)*0.01),static_cast<Float_t>((fPidKp%128)*0.01),static_cast<Float_t>(tofMatch2),static_cast<Float_t>(tofMatch1),static_cast<Float_t>(isTrue),static_cast<Float_t>(nSigmaComb2),static_cast<Float_t>(nSigmaComb),static_cast<Float_t>(deltaphi2),static_cast<Float_t>(deltaphi1),static_cast<Float_t>(fPsi)};
       
 

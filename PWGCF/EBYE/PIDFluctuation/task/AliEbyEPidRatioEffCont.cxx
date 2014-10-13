@@ -457,6 +457,8 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
     // -- Get if particle is findable --- not availible for AODs yet
     Float_t findable  = (fESD) ? Float_t(fHelper->IsParticleFindable(idxMC)) : 1.;
 
+    // cout << findable << "  " << fHelper->IsParticleFindable(idxMC)<< endl;
+
     // -- Get recStatus and pidStatus
     Float_t recStatus = 0.;
     Float_t recPid    = 0.;

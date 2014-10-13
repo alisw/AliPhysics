@@ -85,7 +85,10 @@ AliEbyEPidRatioTask::AliEbyEPidRatioTask(const char *name) :
   fIsPtBin(kFALSE),
   fIsDetectorWise(kFALSE),
   fIsAOD(kFALSE),
- 
+  fIsSub(kFALSE),
+  fIsBS(kFALSE),
+  fIsPer(kFALSE),
+
   fESDTrackCutMode(0),
   fModeEffCreation(0),
   fModeDCACreation(0),
@@ -138,7 +141,13 @@ void AliEbyEPidRatioTask::SetIsRatio(Int_t i) {
   else if (i == 3) { fIsRatio = 1;  fIsPtBin = 1; fIsDetectorWise = 0; }         
   else if (i == 4) { fIsRatio = 0;  fIsPtBin = 0; fIsDetectorWise = 1; }         
   else if (i == 5) { fIsRatio = 0;  fIsPtBin = 1; fIsDetectorWise = 1; }         
-  else if (i == 6) { fIsRatio = 1;  fIsPtBin = 1; fIsDetectorWise = 1; }         
+  else if (i == 6) { fIsRatio = 1;  fIsPtBin = 1; fIsDetectorWise = 1; } 
+  else if (i == 7) { fIsSub   = 1;  fIsBS    = 0; fIsPtBin        = 0; }
+  else if (i == 8) { fIsSub   = 0;  fIsBS    = 1; fIsPtBin        = 0; }
+  else if (i == 9) { fIsSub   = 1;  fIsBS    = 1; fIsPtBin        = 0; }
+  else if (i ==10) { fIsSub   = 1;  fIsBS    = 0; fIsPtBin        = 1; }
+  else if (i ==11) { fIsSub   = 0;  fIsBS    = 1; fIsPtBin        = 1; }
+  else if (i ==12) { fIsSub   = 1;  fIsBS    = 1; fIsPtBin        = 1; }
   else             { fIsRatio = 0;  fIsPtBin = 0; fIsDetectorWise = 0; }   
 
   if (fModeDistCreation == 0) 
@@ -376,6 +385,9 @@ Int_t AliEbyEPidRatioTask::Initialize() {
     fDist = new AliEbyEPidRatioPhy;
     fDist->SetOutList(fOutList);
     if (fModeDistCreation == 2)  fDist->SetQA();
+    if (fIsSub) fDist->SetSubRun();
+    if (fIsBS) fDist->SetBSRun();
+    if (fIsPer) fDist->SetIsPer();
     fDist->Initialize(fHelper, fESDTrackCuts);
   }
 
