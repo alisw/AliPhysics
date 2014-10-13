@@ -28,7 +28,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-
+extern char* strdup(const char*);
 
 /** @internal
  * Find the canonical filename of the executable. Returns the filename
