@@ -55,7 +55,6 @@ public:
   void    MakeAnalysisFillHistograms() ;
   
   void    SetTriggerDetector( TString name ) { fTriggerDetector = name ; }
-  void    SetCalorimeter    ( TString name ) { fCalorimeter     = name ; }
   
   void    SetMinChargedPt   ( Float_t pt )   { fMinChargedPt    = pt   ; }
   void    SetMinNeutralPt   ( Float_t pt )   { fMinNeutralPt    = pt   ; }
@@ -70,7 +69,6 @@ public:
 private:
   
   TString     fTriggerDetector;             //! trigger detector, for fiducial region
-  TString     fCalorimeter;                 //! detector neutral particles, for fiducial region
   
   AliFiducialCut* fFidCutTrigger;           //! fiducial cut for the trigger detector
   

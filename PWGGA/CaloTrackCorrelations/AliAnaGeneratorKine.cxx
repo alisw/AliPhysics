@@ -37,7 +37,7 @@ ClassImp(AliAnaGeneratorKine)
 //__________________________________________
 AliAnaGeneratorKine::AliAnaGeneratorKine() : 
 AliAnaCaloTrackCorrBaseClass(), 
-fTriggerDetector(""),fCalorimeter(""),
+fTriggerDetector(""),
 fFidCutTrigger(0),
 fMinChargedPt(0),    fMinNeutralPt(0),
 fStack(0),
@@ -801,7 +801,6 @@ void AliAnaGeneratorKine::InitParameters()
   //Initialize the parameters of the analysis.
   AddToHistogramsName("AnaGenKine_");
   
-  fCalorimeter     = "EMCAL";
   fTriggerDetector = "EMCAL";
   
   fMinChargedPt    = 0.2;
@@ -923,7 +922,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
       }
       
       //Calorimeter acceptance
-      Bool_t inCalo = GetFiducialCut()->IsInFiducialCut(trigger,fCalorimeter) ;
+      Bool_t inCalo = GetFiducialCut()->IsInFiducialCut(trigger,GetCalorimeter()) ;
       if(!inCalo) continue;
       
       if( ptMaxNeutEMCAL < pt ) ptMaxNeutEMCAL = pt;

@@ -68,7 +68,7 @@ public:
 
   //Histograms, cuts 
 	
-  virtual void           AddToHistogramsName(TString add)       { fAddToHistogramsName = add  ; }  
+  virtual void           AddToHistogramsName(TString add)       { fAddToHistogramsName = add  ; }
   virtual TString        GetAddedHistogramsStringToName() const { return fAddToHistogramsName ; }
   
   virtual TObjString *   GetAnalysisCuts()                      { return 0x0                  ; }
@@ -102,7 +102,7 @@ public:
   virtual TClonesArray * GetCreateOutputAODBranch() ;
   
   virtual TString        GetInputAODName()                 const { return fInputAODName  ; }
-  virtual void           SetInputAODName(TString name)           { fInputAODName = name  ; }	
+  virtual void           SetInputAODName(TString name)           { fInputAODName = name  ; }
   
   virtual TString        GetOutputAODName()                const { return fOutputAODName ; }
   virtual void           SetOutputAODName(TString name)          { fNewAOD = kTRUE ; fOutputAODName = name; }
@@ -117,7 +117,7 @@ public:
   
   virtual TClonesArray * GetInputAODBranch()               const { return fInputAODBranch  ; }
   virtual TClonesArray * GetOutputAODBranch()              const { if(fNewAOD) return fOutputAODBranch; else return fInputAODBranch ; }
-  virtual TClonesArray * GetAODBranch(TString aodBranchName) const ;
+  virtual TClonesArray * GetAODBranch(const TString & aodBranchName) const ;
 	
   //Track cluster arrays access methods
   virtual TClonesArray*  GetAODCaloClusters()              const ; // Output AOD clusters, not used?
@@ -135,6 +135,9 @@ public:
 
   // Common analysis switchs 
   
+  virtual TString        GetCalorimeter()                 const  { return fCalorimeter           ; }
+  virtual void           SetCalorimeter(TString & calo)          { fCalorimeter = calo           ; }
+
   virtual Bool_t         IsDataMC()                        const { return fDataMC                ; }
   virtual void           SwitchOnDataMC()                        { fDataMC = kTRUE ;
                                                                    if(!fMCUtils) fMCUtils = new AliMCAnalysisUtils() ; }
@@ -154,10 +157,18 @@ public:
                                                                    if(!fCaloPID)  fCaloPID = new AliCaloPID()         ; }
   virtual void           SwitchOffCaloPID()                      { fCheckCaloPID = kFALSE        ; }
   
-  virtual Bool_t         MakePlotsOn()                     const { return fMakePlots        ; }
-  virtual void           SwitchOnPlotsMaking()                   { fMakePlots = kTRUE       ; }
-  virtual void           SwitchOffPlotsMaking()                  { fMakePlots = kFALSE      ; }
+  virtual Bool_t         MakePlotsOn()                     const { return fMakePlots             ; }
+  virtual void           SwitchOnPlotsMaking()                   { fMakePlots = kTRUE            ; }
+  virtual void           SwitchOffPlotsMaking()                  { fMakePlots = kFALSE           ; }
   
+  virtual Bool_t         IsPileUpAnalysisOn()              const { return fFillPileUpHistograms  ; }
+  virtual void           SwitchOnFillPileUpHistograms()          { fFillPileUpHistograms = kTRUE ; }
+  virtual void           SwitchOffFillPileUpHistograms()         { fFillPileUpHistograms = kFALSE; }
+  
+  virtual Bool_t         IsHighMultiplicityAnalysisOn()     const { return fFillHighMultHistograms   ; }
+  virtual void           SwitchOnFillHighMultiplicityHistograms() { fFillHighMultHistograms = kTRUE  ; }
+  virtual void           SwitchOffFillHighMultiplicityHistograms(){ fFillHighMultHistograms = kFALSE ; }
+
   // Cluster energy/momentum cut
   
   virtual Float_t        GetMaxPt()                        const { return fMaxPt ; }
@@ -278,7 +289,7 @@ public:
   virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) {
    return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event) ; } 
   
-  virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
+  virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, const TString & calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
 	  return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }
   
   virtual Int_t          GetModuleNumber(AliAODPWG4Particle * part) const {
@@ -293,6 +304,7 @@ private:
   
   Bool_t                     fDataMC ;             // Flag to access MC data when using ESD or AOD     
   Int_t                      fDebug ;              // Debug level
+  TString                    fCalorimeter ;        // Calorimeter selection
   Bool_t                     fCheckFidCut ;        // Do analysis for clusters in defined region
   Bool_t                     fCheckRealCaloAcc ;   // When analysis of MC particle kinematics, check their hit in Calorimeter in Real Geometry or use FidCut
   Bool_t                     fCheckCaloPID ;       // Do analysis for calorimeters
@@ -301,7 +313,7 @@ private:
   Float_t                    fMaxPt ;              // Minimum pt of (trigger) particles in the analysis
   Float_t                    fPairTimeCut;         // Maximum difference between time of cluster pairs (ns)
   Int_t                      fTRDSMCovered;        // From which SM EMCal is covered by TRD
-
+  
   Int_t                      fNZvertBin ;	         // Number of bins in event container for vertex position
   Int_t                      fNrpBin ;	           // Number of bins in event container for reaction plain
   Int_t                      fNCentrBin ;	         // Number of bins in event container for centrality
@@ -309,6 +321,8 @@ private:
   Bool_t                     fDoOwnMix;            // Do combinatorial background not the one provided by the frame
   Bool_t                     fUseTrackMultBins;    // Use track multiplicity and not centrality bins in mixing
   Int_t                      fTrackMultBins[20];   // Multiplicity bins limits. Number of bins set with SetNTrackMult() that calls SetNCentrBin().
+  Bool_t                     fFillPileUpHistograms;   // Fill pile-up related histograms
+  Bool_t                     fFillHighMultHistograms; // Histograms with centrality and event plane for triggers pT
   Bool_t                     fMakePlots   ;        // Print plots
     
   TClonesArray*              fInputAODBranch ;     //! Selected input particles branch
@@ -333,7 +347,7 @@ private:
   AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy ctor
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrBaseClass,25)
+  ClassDef(AliAnaCaloTrackCorrBaseClass,26)
 } ;
 
 

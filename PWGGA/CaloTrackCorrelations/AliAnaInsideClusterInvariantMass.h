@@ -120,8 +120,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         MakeAnalysisFillHistograms() ;
   
   void         Print(const Option_t * opt) const;
-
-  void         SetCalorimeter(TString & det)             { fCalorimeter = det ; }
   
   void         SetMinNCells(Int_t cut)                   { fMinNCells   = cut ; }
 
@@ -203,7 +201,6 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
  private:
   
-  TString      fCalorimeter ;          // Calorimeter where the gamma is searched
   Int_t        fMinNCells   ;          // Study clusters with ncells larger than cut
   Float_t      fMinBadDist  ;          // Minimal distance to bad channel to accept cluster
   Float_t      fHistoECut   ;          // Fixed E cut for some histograms

@@ -94,9 +94,6 @@ public:
   
   Float_t      GetInvMassMinECut()       const  { return fMinInvMassECut     ; }
   void         SetInvMassMinECut(Float_t cut)   { fMinInvMassECut = cut      ; }
-
-  TString      GetCalorimeter()          const  { return fCalorimeter        ; }
-  void         SetCalorimeter(TString calo)     { fCalorimeter = calo        ; }
   
   Double_t     GetTimeCutMin()           const  { return fTimeCutMin         ; }
   Double_t     GetTimeCutMax()           const  { return fTimeCutMax         ; }
@@ -145,8 +142,6 @@ public:
   void SetExoDTimeCuts  (Int_t i, Float_t c)    { if (i<fExoNDTimeCuts ) fExoDTimeCuts [i] = c ; }
   
  private:
-  
-  TString  fCalorimeter ;                     // Calorimeter selection
   
   //Switches
   Bool_t   fFillAllCellTimeHisto;             // Fill all cell time histo
