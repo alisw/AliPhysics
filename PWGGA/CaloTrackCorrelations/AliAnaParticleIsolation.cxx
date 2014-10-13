@@ -4148,7 +4148,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
       //       prim->GetName(), prim->GetPdgCode());
       
-      //photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+      //photonY   = 0.5*TMath::Log((prim->Energy()+prim->Pz())/(prim->Energy()-prim->Pz())) ;
       
       //Photon kinematics
       primStack->Momentum(lv);
@@ -4168,7 +4168,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
       
-      //photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+      //photonY   = 0.5*TMath::Log((prim->Energy()+prim->Pz())/(prim->Energy()-prim->Pz())) ;
       
       //Photon kinematics
       lv.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
