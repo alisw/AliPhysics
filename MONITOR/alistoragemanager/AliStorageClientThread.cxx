@@ -281,22 +281,18 @@ Long64_t AliStorageClientThread::GetSizeOfAllChunks()
 void AliStorageClientThread::CollectData()
 {
 	AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-	if(eventManager->CreateSocket(EVENTS_SERVER_SUB))
-	{
-		fConnectionStatus=STATUS_OK;
-	}
-	else
-	{
-		fConnectionStatus=STATUS_ERROR;
-	}
+	if(eventManager->CreateSocket(EVENTS_SERVER_SUB)){fConnectionStatus=STATUS_OK;}
+	else{fConnectionStatus=STATUS_ERROR;}
 	
 	int chunkNumber=0;
 	int previousChunkNumber=-1;
 	int eventsInChunk=0;
 	int previousRunNumber=-1;
 	AliESDEvent *event = NULL;
-//        TTree *tree = NULL;
-        
+	vector<struct eventStruct> eventsToUpdate;
+        struct eventStruct currentEvent;
+	
+
 	while(!gClientQuit)
 	{		
           event = eventManager->GetEvent(EVENTS_SERVER_SUB);
@@ -353,6 +349,17 @@ void AliStorageClientThread::CollectData()
 					delete fCurrentFile;
 					fCurrentFile=0;
 				}
+				for(unsigned int i=0;i<eventsToUpdate.size();i++)
+				  {
+				    fDatabase->UpdateEventPath(eventsToUpdate[i],
+							       Form("%s/run%d/chunk%d.root", 
+								    fStoragePath.c_str(),
+								    event->GetRunNumber(),
+								    chunkNumber-1));
+				  }
+				eventsToUpdate.clear();
+
+
 				fCurrentStorageSize=GetSizeOfAllChunks();
 				CheckCurrentStorageSize();
 				
@@ -360,14 +367,23 @@ void AliStorageClientThread::CollectData()
 
 				previousChunkNumber = chunkNumber;
 			}
-			
-			if(0 != fCurrentFile->WriteObject(event,Form("event%d",event->GetEventNumberInFile())))//if event was written to file
+
+			//create new directory for this run
+			TDirectory *currentRun;
+			if((currentRun = fCurrentFile->mkdir(Form("run%d",event->GetRunNumber()))))
+			  {
+			    cout<<"CLIENT -- creating new directory for this run"<<endl;
+			    currentRun->cd();
+			  }
+			else
+			  {
+			    cout<<"CLIENT -- opening existing directory for this run"<<endl;
+			    fCurrentFile->cd(Form("run%d",event->GetRunNumber()));
+			  }
+
+			if(0 != event->Write(Form("event%d",event->GetEventNumberInFile()))) 
+			  //fCurrentFile->WriteObject(event,Form("event%d",event->GetEventNumberInFile())))//if event was written to file
 			{
-				fDatabase->InsertEvent(event->GetRunNumber(),
-					      event->GetEventNumberInFile(),
-					      (char*)event->GetBeamType(),
-						       event->GetMultiplicity()->GetNumberOfTracklets(),Form("%s/run%d/chunk%d.root",fStoragePath.c_str(),event->GetRunNumber(),chunkNumber));
-				
 				eventsInChunk++;
 				
 				if(eventsInChunk == fNumberOfEventsInFile)//if max events number in file was reached
@@ -385,6 +401,40 @@ void AliStorageClientThread::CollectData()
 			{
 				fSavingStatus=STATUS_ERROR;
 			}
+
+		// save to event file as well:
+
+		TFile *eventFile = new TFile(Form("%s/run%d/event%d.root", fStoragePath.c_str(),event->GetRunNumber(),eventsInChunk),"recreate");
+
+		if((currentRun = eventFile->mkdir(Form("run%d",event->GetRunNumber()))))
+			  {
+			    cout<<"CLIENT -- creating new directory for this run"<<endl;
+			    currentRun->cd();
+			  }
+			else
+			  {
+			    cout<<"CLIENT -- opening existing directory for this run"<<endl;
+			    eventFile->cd(Form("run%d",event->GetRunNumber()));
+			  }
+
+		if(0 == event->Write(Form("event%d",event->GetEventNumberInFile())) && 
+		   fSavingStatus!=STATUS_ERROR){fSavingStatus=STATUS_ERROR;}
+		else
+		  {
+		    eventFile->Close();
+		    delete eventFile;
+		    fDatabase->InsertEvent(event->GetRunNumber(),
+					   event->GetEventNumberInFile(),
+					   (char*)event->GetBeamType(),
+					   event->GetMultiplicity()->GetNumberOfTracklets(),
+					   Form("%s/run%d/event%d.root",fStoragePath.c_str(),
+						event->GetRunNumber(),
+						eventsInChunk));
+		    
+		    currentEvent.runNumber = event->GetRunNumber();
+		    currentEvent.eventNumber = event->GetEventNumberInFile();
+		    eventsToUpdate.push_back(currentEvent);
+		  }
 			delete event;event=0;
                         //delete tree;
 		}

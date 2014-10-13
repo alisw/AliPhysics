@@ -99,7 +99,7 @@ AliStorageEventManager* AliStorageEventManager::GetEventManagerInstance()
 
 void freeBuff (void *data, void *hint)
 {
- //   free(data);
+  //  free(data);
 }
 
 bool AliStorageEventManager::CreateSocket(storageSockets socket)
@@ -432,19 +432,7 @@ AliESDEvent* AliStorageEventManager::GetEvent(storageSockets socket,int timeout)
   {
     data->GetStdContent();
     if(message){delete message;}
-    return data; 
-    /*
-    TTree* tree= new TTree("esdTree", "esdTree");
-    data->WriteToTree(tree);
-    tree->Fill();
-    AliESDEvent* event= new AliESDEvent();
-    event->ReadFromTree(tree);
-    tree->GetEntry(0);
-    if(data){delete data;}
-    if(tree){delete tree;}
-    if(message){delete message;}
-    return event;
-    */
+    return data;
   }
   else
   {
