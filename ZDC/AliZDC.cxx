@@ -774,35 +774,37 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
   // Returns a pedestal for detector det, PM quad, channel with res.
   //
   // Getting calibration object for ZDC set
+  Float_t pedValue = 0.;
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBEntry  *entry = man->Get("ZDC/Calib/Pedestals");
+  AliZDCPedestals *calibPed = 0x0;
   if(!entry) AliFatal("No calibration data loaded!");  
-  AliZDCPedestals *calibPed = (AliZDCPedestals*) entry->GetObject();
-  //
-  if(!calibPed){
-    printf("\t No calibration object found for ZDC!");
-    return -1;
+  else{
+    calibPed = (AliZDCPedestals*) entry->GetObject();
+    //
+    if(!calibPed){
+      printf("\t No calibration object found for ZDC!");
+      return -1;
+    }
+    //
+    Int_t index=0, kNch=24;
+    if(Quad!=5){
+      if(Det==1)        index = Quad+kNch*Res;	 // ZN1
+      else if(Det==2)   index = Quad+5+kNch*Res;  	 // ZP1
+      else if(Det==3)   index = Quad+9+kNch*Res; // ZEM
+      else if(Det==4)   index = Quad+12+kNch*Res; // ZN2
+      else if(Det==5)   index = Quad+17+kNch*Res; // ZP2
+    }
+    else index = (Det-1)/3+22+kNch*Res; // Reference PMs
+    //
+    //
+    Float_t meanPed = calibPed->GetMeanPed(index);
+    Float_t pedWidth = calibPed->GetMeanPedWidth(index);
+    pedValue = gRandom->Gaus(meanPed,pedWidth);
+    //
+    //printf("\t AliZDC::Pedestal - det(%d, %d) - Ped[%d] = %d\n",Det, Quad, index,(Int_t) pedValue); // Chiara debugging!
   }
-  //
-  Int_t index=0, kNch=24;
-  if(Quad!=5){
-    if(Det==1)        index = Quad+kNch*Res;	 // ZN1
-    else if(Det==2)   index = Quad+5+kNch*Res;  	 // ZP1
-    else if(Det==3)   index = Quad+9+kNch*Res; // ZEM
-    else if(Det==4)   index = Quad+12+kNch*Res; // ZN2
-    else if(Det==5)   index = Quad+17+kNch*Res; // ZP2
-  }
-  else index = (Det-1)/3+22+kNch*Res; // Reference PMs
-  //
-  //
-  Float_t meanPed = calibPed->GetMeanPed(index);
-  Float_t pedWidth = calibPed->GetMeanPedWidth(index);
-  Float_t pedValue = gRandom->Gaus(meanPed,pedWidth);
-  //
-  //printf("\t AliZDC::Pedestal - det(%d, %d) - Ped[%d] = %d\n",Det, Quad, index,(Int_t) pedValue); // Chiara debugging!
   
-  
-
   return (Int_t) pedValue;
 }
 
@@ -847,12 +849,12 @@ AliZDCChMap* AliZDC::GetChMap() const
 {
 
   // Getting calibration object for ZDC
-
+  AliZDCChMap *calibdata = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/ChMap");
   if(!entry) AliFatal("No calibration data loaded!");  
-
-  AliZDCChMap *calibdata = dynamic_cast<AliZDCChMap*> (entry->GetObject());
-  if(!calibdata) AliFatal("Wrong calibration object in calibration  file!");
-
+  else{
+    calibdata = dynamic_cast<AliZDCChMap*> (entry->GetObject());
+    if(!calibdata) AliFatal("Wrong calibration object in calibration  file!");
+  }
   return calibdata;
 }

@@ -26,7 +26,7 @@ public:
 	virtual ~AliEventServerReconstruction();
 
 	Bool_t StartReconstruction(Int_t run, const char* input="mem://@*:");
-	void  StopReconstruction();  
+	bool  StopReconstruction();  
 	
 	// Closes the server. The server will no longer listen/serve
 	void Close();
@@ -49,6 +49,8 @@ private:
 	TString fHost;
 	TThread *fRecoThread;
 	bool fRecoIsRunning;
+	bool fRecoWasInitialized;
+	const char *fInput;
 
 	AliEventServerReconstruction(const AliEventServerReconstruction&);
 	AliEventServerReconstruction& operator=(const AliEventServerReconstruction&);

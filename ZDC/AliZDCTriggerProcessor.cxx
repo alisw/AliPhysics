@@ -155,10 +155,10 @@ AliZDCTriggerParameters* AliZDCTriggerProcessor::GetTriggerParamFromOCDB() const
   // retrieving trigger parameter configuration form OCDB
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Trigger/");
   if(!entry) AliFatal("No calibration data loaded!");  
+  else{
+    AliZDCTriggerParameters *trigParam = dynamic_cast<AliZDCTriggerParameters*>  (entry->GetObject());
+    if(!trigParam)  AliFatal("Wrong calibration object in calibration  file!");
 
-  AliZDCTriggerParameters *trigParam = dynamic_cast<AliZDCTriggerParameters*>  (entry->GetObject());
-  if(!trigParam)  AliFatal("Wrong calibration object in calibration  file!");
-
-  return trigParam;
-  
+    return trigParam;
+  }
 }

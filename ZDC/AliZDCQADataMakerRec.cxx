@@ -883,7 +883,8 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    h23->SetBinContent(6, h19->GetMean());
 	    h23->SetBinError(6, h19->GetRMS());
 	    //
-	    h23->SetLineColor(kAzure+6); h22->SetLineWidth(2);
+	    h23->SetLineColor(kAzure+6); 
+	    h23->SetLineWidth(2);
 	  }
 	  else printf(" Warning: Raw TDC QA histo not found\n\n");
         }

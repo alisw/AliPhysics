@@ -832,10 +832,11 @@ AliZDCPedestals* AliZDCDigitizer::GetPedData() const
 
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Pedestals");
   if(!entry) AliFatal("No calibration data loaded!");  
+  else{
+    AliZDCPedestals *calibdata = dynamic_cast<AliZDCPedestals*>  (entry->GetObject());
+    if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
-  AliZDCPedestals *calibdata = dynamic_cast<AliZDCPedestals*>  (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
-
-  return calibdata;
+    return calibdata;
+  }
 }
 
