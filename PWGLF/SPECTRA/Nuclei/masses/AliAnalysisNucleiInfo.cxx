@@ -15,6 +15,7 @@
 #include "TH2F.h"
 #include "TH2D.h"
 #include "TH1F.h"
+#include "TH1I.h"
 #include "TF1.h"
 #include "TF2.h"
 #include "TGraph.h"
@@ -33,6 +34,7 @@ AliAnalysisNucleiInfo::AliAnalysisNucleiInfo():
   DCAxyCut(1000.),                               
   DCAzCut(1000.),                                
   NsigmaTpcCut(2.0),
+  StartTimeTofRes(9999.9),
   iBconf(0),                           
   kTOF(0),
 //iTriggerSel(-99),
@@ -57,7 +59,8 @@ AliAnalysisNucleiInfo::AliAnalysisNucleiInfo(const char *name):
   EtaLimit(),                           
   DCAxyCut(1000.),                               
   DCAzCut(1000.),                                
-  NsigmaTpcCut(2.0),                           
+  NsigmaTpcCut(2.0),
+  StartTimeTofRes(9999.9),
   iBconf(0),                                  
   kTOF(0),
   //iTriggerSel(-99),
@@ -109,9 +112,9 @@ void AliAnalysisNucleiInfo::UserCreateOutputObjects()
   snprintf(name[7],20,"He3");
   snprintf(name[8],20,"He4");
   snprintf(name[9],20,"e_minus");
-  snprintf(name[10],20,"mu_plus");
-  snprintf(name[11],20,"pi_plus");
-  snprintf(name[12],20,"K_plus");
+  snprintf(name[10],20,"mu_minus");
+  snprintf(name[11],20,"pi_minus");
+  snprintf(name[12],20,"K_minus");
   snprintf(name[13],20,"p_bar");
   snprintf(name[14],20,"d_bar");
   snprintf(name[15],20,"t_bar");
@@ -134,6 +137,10 @@ void AliAnalysisNucleiInfo::UserCreateOutputObjects()
     hEta[iB] = new TH1F("hEta_Analyzed","|#eta| distribution after the track cuts;#eta",200,-1.0,1.0);
     
     hPhi[iB] = new TH1F("hPhi_Analyzed","#phi distribution after the track cuts;#phi (rad.)",90,0,6.3);//Each TRD supermodule is divided for 5 (DeltaPhi(TRD)=0.35 theoretical)
+    
+    hNtrackAtTof[iB] = new TH1I("hNtrackAtTof","num. tracks when kTOF is required; Number of tracks",3000,0,3000);
+          
+    hStartTimeRes[iB] = new TH1F("hStartTimeRes","hStartTimeRes;t_{0} (ps)",500,0,500);
     
     //hbins[0]=500; hbins[1]=2000;
     hbins[0]=500; hbins[1]=2000;//hbins[0]=100; hbins[1]=500
@@ -169,14 +176,22 @@ void AliAnalysisNucleiInfo::UserCreateOutputObjects()
       hBetaExp[iB][i] = new TProfile(name_hBetaExp[i],title_hBetaExp[i],200,0,10,0.4,1.05,"");
     }
     
-    Char_t name_fNsigmaTof[nSpec][200];
-    Char_t title_fNsigmaTof[nSpec][200];    
-    hbins[0]=200; hbins[1]=200;
+    Char_t name_fNsigmaTof[2][nSpec][200];
+    Char_t title_fNsigmaTof[2][nSpec][200];    
+    hbins[0]=200; hbins[1]=2000;//hbins[0]=200; hbins[1]=200;
     for(Int_t i=0;i<nSpec;i++) {
-      snprintf(name_fNsigmaTof[i],200,"NsigmaTof_%s",name[i]);
-      snprintf(title_fNsigmaTof[i],200,"NsigmaTof_%s;p_{T}/z (GeV/c);n_{#sigma_{TOF}}^{%s}",name[i],name[i]);
-      fNsigmaTof[iB][i] = new TH2F(name_fNsigmaTof[i],title_fNsigmaTof[i],hbins[0],0,10,hbins[1],-10,10);
+      snprintf(name_fNsigmaTof[0][i],200,"NsigmaTof_%s",name[i]);
+      snprintf(title_fNsigmaTof[0][i],200,"NsigmaTof_%s;p_{T}/z (GeV/c);n_{#sigma_{TOF}}^{%s}",name[i],name[i]);
+      
+      snprintf(name_fNsigmaTof[1][i],200,"NsigmaTofWtpc_%s",name[i]);
+      snprintf(title_fNsigmaTof[1][i],200,"NsigmaTofWtpc_%s (with a 2#sigma TPC cut);p_{T}/z (GeV/c);n_{#sigma_{TOF}}^{%s}",name[i],name[i]);
     }
+    for(Int_t it=0;it<2;it++) {
+      for(Int_t i=0;i<nSpec;i++) {
+	fNsigmaTof[iB][it][i] = new TH2F(name_fNsigmaTof[it][i],title_fNsigmaTof[it][i],hbins[0],0,10,hbins[1],-100,100);//,hbins[0],0,10,hbins[1],-10,10
+      }
+    }
+
 
     Char_t name_fTofMinusExp[2][nSpec][200];
     Char_t title_fTofMinusExp[2][nSpec][200];    
@@ -221,9 +236,14 @@ void AliAnalysisNucleiInfo::UserCreateOutputObjects()
     for(Int_t i=0;i<nPart;i++) {
       fList[iB]->Add(hBetaExp[iB][i]);
     }
+    fList[iB]->Add(hNtrackAtTof[iB]);
+    fList[iB]->Add(hStartTimeRes[iB]);
     for(Int_t i=0;i<nSpec;i++) {
-      fList[iB]->Add(fNsigmaTof[iB][i]);
+      fList[iB]->Add(fNsigmaTof[iB][0][i]);
     }  
+    for(Int_t i=0;i<nSpec;i++) {
+      fList[iB]->Add(fNsigmaTof[iB][1][i]);
+    }
     for(Int_t i=0;i<nSpec;i++) {
       fList[iB]->Add(fTofMinusExp[iB][0][i]);
     } 
@@ -416,6 +436,14 @@ void AliAnalysisNucleiInfo::UserExec(Option_t *)
            
       if(kTOF) {
 	
+	Float_t startTimeRes = -9.9;
+	startTimeRes = fPIDResponse->GetTOFResponse().GetStartTimeRes(p);
+	
+	if(startTimeRes>StartTimeTofRes) continue;
+	
+	hStartTimeRes[iBconf]->Fill(startTimeRes);
+	hNtrackAtTof[iBconf]->Fill(nTracks);
+	
 	Double_t exptimes[9];
 	track->GetIntegratedTimes(exptimes);
 	//Integrated times of the Nuclei:
@@ -432,25 +460,31 @@ void AliAnalysisNucleiInfo::UserExec(Option_t *)
 	  nsigmaTOF[iS] = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType) iS);
 	  if(charge>0) {
 	    hBetaExp[iBconf][iS]->Fill(p,exptimes[0]/exptimes[iS]);
-	    fNsigmaTof[iBconf][iS]->Fill(pt,nsigmaTOF[iS]);
+	    fNsigmaTof[iBconf][0][iS]->Fill(pt,nsigmaTOF[iS]);
 	  }
 	  else {
 	    hBetaExp[iBconf][iS+nPart]->Fill(p,exptimes[0]/exptimes[iS]);
-	    fNsigmaTof[iBconf][iS+nPart]->Fill(pt,nsigmaTOF[iS]);
+	    fNsigmaTof[iBconf][0][iS+nPart]->Fill(pt,nsigmaTOF[iS]);
 	  }
 	}
 	
 	if(charge>0) fBetaTofVSp[iBconf][0]->Fill(p,beta);
 	else fBetaTofVSp[iBconf][1]->Fill(p,beta);
-	
+
 	for(Int_t iS=0;iS<9;iS++){
 	  if(charge>0) {
 	    fTofMinusExp[iBconf][0][iS]->Fill(pt,tof-exptimes[iS]);
-	    if(FlagPid & stdFlagPid[iS]) fTofMinusExp[iBconf][1][iS]->Fill(pt,tof-exptimes[iS]);
+	    if(FlagPid & stdFlagPid[iS]) {
+	      fTofMinusExp[iBconf][1][iS]->Fill(pt,tof-exptimes[iS]);
+	      fNsigmaTof[iBconf][1][iS]->Fill(pt,nsigmaTOF[iS]);
+	    }
 	  }
 	  else {
 	    fTofMinusExp[iBconf][0][iS+nPart]->Fill(pt,tof-exptimes[iS]);
-	    if(FlagPid & stdFlagPid[iS]) fTofMinusExp[iBconf][1][iS+nPart]->Fill(pt,tof-exptimes[iS]);
+	    if(FlagPid & stdFlagPid[iS]) {
+	      fTofMinusExp[iBconf][1][iS+nPart]->Fill(pt,tof-exptimes[iS]);
+	      fNsigmaTof[iBconf][1][iS+nPart]->Fill(pt,nsigmaTOF[iS]);
+	    }
 	  }
 	}
 
