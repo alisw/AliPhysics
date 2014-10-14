@@ -332,6 +332,10 @@ updateQA()
 executePlanB()
 {
   #in case of emergency
+  #first check if we have the email of the detector expert defined,
+  #if yes, append to the mailing list
+  local detExpertEmailVar="MAILTO_${detector}"
+  [[ -n "${!detExpertEmailVar}" ]] && MAILTO+=" ${!detExpertEmailVar}"
   if [[ -n ${MAILTO} ]]; then 
     echo
     echo "trouble detected, sending email to ${MAILTO}"
