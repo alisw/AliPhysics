@@ -71,12 +71,12 @@ const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJet = sizeof(AliAnalysisTa
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJetInit = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJet] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[0]) / 5.); // bin width 5 GeV/c
 // axis: K0S invariant mass
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsMassK0s = 300;
-const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassK0sMin = 0.35;
-const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassK0sMax = 0.65;
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassK0sMin = 0.35; // [GeV/c^2]
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassK0sMax = 0.65; // [GeV/c^2]
 // axis: Lambda invariant mass
 const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsMassLambda = 200;
-const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassLambdaMin = 1.05;
-const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassLambdaMax = 1.25;
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassLambdaMin = 1.05; // [GeV/c^2]
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassLambdaMax = 1.25; // [GeV/c^2]
 
 
 // Default constructor
@@ -317,6 +317,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh1EtaJet[i] = 0;
     fh2EtaPtJet[i] = 0;
     fh1PhiJet[i] = 0;
+    fh1PtJetTrackLeading[i] = 0;
     fh1NJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
     fh2EtaPhiMedCone[i] = 0;
@@ -564,6 +565,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh1EtaJet[i] = 0;
     fh2EtaPtJet[i] = 0;
     fh1PhiJet[i] = 0;
+    fh1PtJetTrackLeading[i] = 0;
     fh1NJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
     fh2EtaPhiMedCone[i] = 0;
@@ -870,6 +872,8 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStd->Add(fh2EtaPhiMedCone[i]);
     fh1PhiJet[i] = new TH1D(Form("fh1PhiJet_%d", i), Form("Jet phi spectrum, cent: %s;#it{#phi} jet", GetCentBinLabel(i).Data()), 100, 0., TMath::TwoPi());
     fOutputListStd->Add(fh1PhiJet[i]);
+    fh1PtJetTrackLeading[i] = new TH1D(Form("fh1PtJetTrackLeading_%d", i), Form("Leading track pt spectrum, cent: %s;#it{p}_{T} leading track (GeV/#it{c})", GetCentBinLabel(i).Data()), 200, 0., 20);
+    fOutputListStd->Add(fh1PtJetTrackLeading[i]);
     fh1NJetPerEvent[i] = new TH1D(Form("fh1NJetPerEvent_%d", i), Form("Number of selected jets per event, cent: %s;# jets;# events", GetCentBinLabel(i).Data()), 100, 0., 100.);
     fOutputListStd->Add(fh1NJetPerEvent[i]);
     // event histograms
@@ -1497,9 +1501,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           continue;
         }
       }
+      Double_t dPtTrack = fJetsCont->GetLeadingHadronPt(jetSel);
       if(fdCutPtTrackMin > 0)  // a positive min leading track pt is set
       {
-        if(fJetsCont->GetLeadingHadronPt(jetSel) < fdCutPtTrackMin)  // selection of high-pt jet-track events
+        if(dPtTrack < fdCutPtTrackMin)  // selection of high-pt jet-track events
         {
           if(bPrintJetSelection)
             if(fDebug > 7) printf("rejected (track pt)\n");
@@ -1516,10 +1521,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       vecPerpPlus.RotateZ(TMath::Pi() / 2.); // rotate vector by +90 deg around z
       vecPerpMinus.RotateZ(-TMath::Pi() / 2.); // rotate vector by -90 deg around z
       if(fDebug > 5) printf("TaskV0sInJetsEmcal: Adding perp. cones number %d, %d\n", iNJetPerp, iNJetPerp + 1);
-      new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpPlus);  // write perp. cone to the array
-      new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus);  // write perp. cone to the array
+      new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpPlus); // write perp. cone to the array
+      new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus); // write perp. cone to the array
       if(fDebug > 5) printf("TaskV0sInJetsEmcal: Adding jet number %d\n", iNJetSel);
-      new((*jetArraySel)[iNJetSel++]) AliAODJet(vecJetSel);  // copy selected jet to the array
+      new((*jetArraySel)[iNJetSel++]) AliAODJet(vecJetSel); // copy selected jet to the array
+      fh1PtJetTrackLeading[iCentIndex]->Fill(dPtTrack); // pt of leading jet track
     }
     if(fDebug > 5) printf("TaskV0sInJetsEmcal: Added jets: %d\n", iNJetSel);
     iNJetSel = jetArraySel->GetEntriesFast();
@@ -2889,7 +2895,7 @@ AliEmcalJet* AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster(AliJetContainer* co
     iIndex = ((fRandom->Rndm() > 0.5) ? iIndex1 : iIndex2);
 //    printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: Even, median index = %d or %d -> %d/%d\n", iIndex1, iIndex2, iIndex, iNCl);
   }
-  iIndexMed = (vecListClusters[iIndex])[0];
+  iIndexMed = Int_t((vecListClusters[iIndex])[0]);
 
 //  printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: getting median cluster %d/%d ok, rho = %g\n", iIndexMed, iNClTot, (vecListClusters[iIndex])[1]);
   clusterMed = (AliEmcalJet*)(cont->GetAcceptJet(iIndexMed));
