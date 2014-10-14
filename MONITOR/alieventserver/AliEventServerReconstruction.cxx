@@ -171,8 +171,11 @@ void AliEventServerReconstruction::ReconstructionHandle()
 	while (fAliReco->HasNextEventAfter(iEvent))
 	{
 		// check if process has enough resources 
+	  cout<<"Event server -- checking resources"<<endl;
 		if (!fAliReco->HasEnoughResources(iEvent)) break;
+		cout<<"Event server -- resources checked"<<endl;
 		Bool_t status = fAliReco->ProcessEvent(iEvent);
+		cout<<"Event server -- event processed"<<endl;
       
 		if (status)
 		{
@@ -181,13 +184,16 @@ void AliEventServerReconstruction::ReconstructionHandle()
 			eventManager->Send(event,EVENTS_SERVER_PUB);
 			cout<<"Event server -- sending event as xml"<<endl;
 			eventManager->SendAsXml(event,XML_PUB);
+			cout<<"Event server -- xml sent"<<endl;
 		}
 		else
 		{
+		  cout<<"Event server -- aborting"<<endl;
 			fAliReco->Abort("ProcessEvent",TSelector::kAbortFile);
 		}
-      		
+      		cout<<"Event server -- cleaning event"<<endl;
 		fAliReco->CleanProcessedEvent();
+		cout<<"Event server -- event cleaned"<<endl;
 		iEvent++;
 	}
 	StopReconstruction();
