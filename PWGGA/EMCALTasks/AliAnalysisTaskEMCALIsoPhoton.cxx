@@ -283,6 +283,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   // Create histograms, called once.
     
   fESDClusters = new TObjArray();
+  fAODClusters = new TObjArray();
   fSelPrimTracks = new TObjArray();
 
   
@@ -686,8 +687,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     FillQA();
   if(fDebug)
     printf("passed calling of FillQA\n");
-  /*if(fESD)
-    fESDClusters->Clear();*/
+  if(fESD)
+    fESDClusters->Clear();
   fSelPrimTracks->Clear();
   fNClusForDirPho = 0;
   fNCells50 = 0;
