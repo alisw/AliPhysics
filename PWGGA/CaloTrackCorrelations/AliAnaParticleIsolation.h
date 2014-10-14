@@ -137,8 +137,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetNBackgroundBins(Int_t n)           { if(n < 19) fNBkgBin = n ; }
   void         SetBackgroundLimits(Int_t i,Float_t l){ if(i <= fNBkgBin) fBkgBinLimit[i] = l; }
 
-  void         SwitchOnPtTrigBinShowerShapeHistoFill()  { fFillPtTrigBinHistograms = kTRUE ; }
-  void         SwitchOffPtTrigBinShowerShapeHistoFill() { fFillPtTrigBinHistograms = kFALSE; }
+  void         SwitchOnPtTrigBinHistoFill()          { fFillPtTrigBinHistograms = kTRUE ; }
+  void         SwitchOffPtTrigBinHistoFill()         { fFillPtTrigBinHistograms = kFALSE; }
   void         SetNPtTrigBins(Int_t n)               { if(n < 19) fNPtTrigBin = n ; }
   void         SetPtTrigLimits(Int_t i,Float_t l)    { if(i <= fNPtTrigBin) fPtTrigBinLimit[i] = l; }
 
