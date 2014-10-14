@@ -10,6 +10,8 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
    const Bool_t bIsReco = kFALSE,
    const Bool_t bIsMap = kFALSE,
    TString sText=""/*completes the name of the candidate task lists*/
+   const Bool_t bUseEMCalTrig = kFALSE,
+   const Bool_t bIsTrain=kFALSE
    )
 {
    const TString sInputTrkMC  = "MCParticlesSelected";
@@ -78,7 +80,7 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
    // Jet preparation
    //gROOT->LoadMacro("/data/Work/jets/testEMCalJetFramework/code/v4/AddTaskJetPreparation.C");
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
-   AddTaskJetPreparation(sRunPeriod,"PicoTracks",bIsMC ? "MCParticlesSelected" : "",/*next 7 emcal default settings*/"","",2.,0.,0.03,0.015,0.15,uTriggerMask, kFALSE /*track cluster*/,kFALSE /*do histos*/,kTRUE /*make pico tracks*/,kTRUE /*make emcal trigger*/,kFALSE /*is emcal train*/);
+   AddTaskJetPreparation(sRunPeriod,"PicoTracks",bIsMC ? "MCParticlesSelected" : "",/*next 7 emcal default settings*/"","",2.,0.,0.03,0.015,0.15,uTriggerMask, kFALSE /*track cluster*/,kFALSE /*do histos*/,kTRUE /*make pico tracks*/,bUseEMCalTrig /*make emcal trigger*/,bIsTrain /*is emcal train*/);
    
    
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
@@ -172,7 +174,10 @@ void AddTasksFlavourJet(
    const Bool_t bIsReco = kFALSE,
    const Bool_t bIsMap = kFALSE,
    TString sText="",/*completes the name of the candidate task lists*/
-   Bool_t triggerOnLeadingJet = kFALSE
+   Bool_t triggerOnLeadingJet = kFALSE,
+   const Bool_t bUseEMCalTrig = kFALSE,
+   const Bool_t bIsTrain=kFALSE
+
 ){
    Printf("############## JETS WITH RESOLUTION PARAMETER 0.2, 0.4, 0.6 ####################");
 
@@ -214,7 +219,7 @@ void AddTasksFlavourJet(
    
    // Jet preparation
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
-   AddTaskJetPreparation(sRunPeriod,"PicoTracks",bIsMC ? "MCParticlesSelected" : "",/*next 7 emcal default settings*/"","",2.,0.,0.03,0.015,0.15,uTriggerMask, kFALSE /*track cluster*/,kFALSE /*do histos*/,kTRUE /*make pico tracks*/,kTRUE /*make emcal trigger*/,kFALSE /*is emcal train*/);
+   AddTaskJetPreparation(sRunPeriod,"PicoTracks",bIsMC ? "MCParticlesSelected" : "",/*next 7 emcal default settings*/"","",2.,0.,0.03,0.015,0.15,uTriggerMask, kFALSE /*track cluster*/,kFALSE /*do histos*/,kTRUE /*make pico tracks*/,bUseEMCalTrig /*make emcal trigger*/,bIsTrain /*is emcal train*/);
    
    
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
