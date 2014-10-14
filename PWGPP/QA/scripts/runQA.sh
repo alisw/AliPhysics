@@ -334,12 +334,13 @@ executePlanB()
   #in case of emergency
   #first check if we have the email of the detector expert defined,
   #if yes, append to the mailing list
+  local mailTo=${MAILTO}
   local detExpertEmailVar="MAILTO_${detector}"
-  [[ -n "${!detExpertEmailVar}" ]] && MAILTO+=" ${!detExpertEmailVar}"
-  if [[ -n ${MAILTO} ]]; then 
+  [[ -n "${!detExpertEmailVar}" ]] && mailTo+=" ${!detExpertEmailVar}"
+  if [[ -n ${mailTo} ]]; then 
     echo
-    echo "trouble detected, sending email to ${MAILTO}"
-    cat ${logSummary} | mail -s "qa in need of assistance" ${MAILTO}
+    echo "trouble detected, sending email to ${mailTo}"
+    cat ${logSummary} | mail -s "qa in need of assistance" ${mailTo}
   fi
 }
 
