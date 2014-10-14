@@ -134,6 +134,8 @@ public:
     Bool_t        IsEventAvailable()       const { return fHasEvent;     }
     Bool_t        IsUnderExternalControl() const { return fExternalCtrl; }
 
+    Bool_t        IsOnlineMode() const { return fOnlineMode; }
+
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model);
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model,
                                Bool_t replace, Bool_t update);
@@ -142,6 +144,7 @@ public:
     virtual void  AfterNewEventLoaded();
     void          NewEventDataLoaded();  // *SIGNAL*
     void          NewEventLoaded();      // *SIGNAL*
+    void          NoEventLoaded();      // *SIGNAL*
     void          StorageManagerOk();    // *SIGNAL*
     void          StorageManagerDown();  // *SIGNAL*
 
@@ -149,6 +152,8 @@ public:
     void InitOCDB(int runNo=-1);
 
     void PrepareForNewEvent(AliESDEvent *event);
+    Int_t NewEventAvailable();
+
 protected:
     Int_t         fEventId;		// Id of current event.
 
@@ -237,7 +242,10 @@ private:
     int fWritingToEventIndex;
     bool fIsNewEventAvaliable;
     storageSockets fgSubSock;
-    
+
+    Bool_t fOnlineMode;
+    Bool_t fStorageDown;
+
     AliEveEventManager(const AliEveEventManager&);            // Not implemented
     AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
     

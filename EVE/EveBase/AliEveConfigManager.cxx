@@ -192,7 +192,7 @@ AliEveConfigManager::AliEveConfigManager() :
   fStoragePopup->AddEntry("&Mark event",kStorageMarkEvent);
     
     gEve->GetBrowser()->StartEmbedding(0);
-    fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+    AliStorageAdministratorPanelListEvents* fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
     gEve->GetBrowser()->StopEmbedding("List");
     
     fListEventsTab->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
@@ -1081,7 +1081,10 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
 void AliEveConfigManager::SetEventInEventManager()
 {
+#ifdef ZMQ
+
     AliEveEventManager *manager = AliEveEventManager::GetMaster();
+    AliStorageAdministratorPanelListEvents* fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
     AliESDEvent *event = fListEventsTab->GetSelectedEvent();
     
     if(event)
@@ -1091,20 +1094,35 @@ void AliEveConfigManager::SetEventInEventManager()
         manager->SetAutoLoad(kFALSE);
         manager->PrepareForNewEvent(event);
     }
+#endif
 }
 
 void AliEveConfigManager::StorageManagerChangedState(int state)
 {
+#ifdef ZMQ
+
+  AliEveEventManager *manager = AliEveEventManager::GetMaster();
+  AliStorageAdministratorPanelListEvents* fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+
+  if (manager->IsOnlineMode()) {
     if (state == 0)// storage manager is down
-    {
-        fStoragePopup->DisableEntry(kStorageListEvents);
+      {
         fStoragePopup->DisableEntry(kStorageMarkEvent);
-    }
+	fListEventsTab->SetOfflineMode(kTRUE);
+
+      }
     else if(state == 1)// storage manager is alive
-    {
-        fStoragePopup->EnableEntry(kStorageListEvents);
+      {
         fStoragePopup->EnableEntry(kStorageMarkEvent);
-    }
+	fListEventsTab->SetOfflineMode(kFALSE);
+
+      }
+  }
+#endif
+}
+
+void AliEveConfigManager::DisableStoragePopup(){
+  fStoragePopup->DisableEntry(kStorageMarkEvent);
 }
 
 

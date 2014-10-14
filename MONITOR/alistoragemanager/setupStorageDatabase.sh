@@ -1,13 +1,12 @@
 #!/bin/bash
-DB_PASS=""
 HOST="localhost"   # IP of machine on which mysql database is located
 PORT="5055"
 DATABASE="storage"
 USER="storage"
 PASS="storage123"
 TABLE="events"
-STORAGE_PATH="/local/storedFiles"
-MAX_SIZE="3000000"
+STORAGE_PATH="/Users/Jerus/storedFiles"
+MAX_SIZE="30000000"
 MAX_OCCUPATION="80"
 REMOVE_PERCENT="60"
 EVENTS_IN_FILE="5"
@@ -17,10 +16,10 @@ STORAGE_SERVER="localhost"      # IP of machine running alistorage
 STORAGE_SERVER_PORT="5066"      # server thread communication port
 STORAGE_CLIENT_PORT="5088"      # client thread communication port
 XML_SERVER_PORT="5099"          # server of xml files
-mysql -u root -p$DB_PASS -e "create database if not exists $DATABASE;"
-mysql -u root -p$DB_PASS -e "grant ALL PRIVILEGES on $DATABASE.* to '$USER'@'$HOST' identified by '$PASS';"
-mysql -u root -p$DB_PASS -e "use $DATABASE;"
-mysql -u root -p$DB_PASS -e "CREATE TABLE IF NOT EXISTS $DATABASE.$TABLE(\
+mysql -u root -pdaq -e "create database if not exists $DATABASE;"
+mysql -u root -pdaq -e "grant ALL PRIVILEGES on $DATABASE.* to '$USER'@'$HOST' identified by '$PASS';"
+mysql -u root -pdaq -e "use $DATABASE;"
+mysql -u root -pdaq -e "CREATE TABLE IF NOT EXISTS $DATABASE.$TABLE(\
 run_number int(6) NOT NULL,\
 event_number int(6) NOT NULL,\
 system text(7) DEFAULT NULL,\
