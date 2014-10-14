@@ -39,7 +39,7 @@
 #include "TPDGCode.h"
 
 #include "AliLog.h"
-#include "Cal/AliTRDCalPID.h"
+#include "AliTRDCalPID.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliESDtrack.h"

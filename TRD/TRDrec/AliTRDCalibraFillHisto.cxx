@@ -68,9 +68,9 @@
 #include "AliRawReaderDate.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDfeeParam.h"
-#include "./Cal/AliTRDCalROC.h"
-#include "./Cal/AliTRDCalPad.h"
-#include "./Cal/AliTRDCalDet.h"
+#include "AliTRDCalROC.h"
+#include "AliTRDCalPad.h"
+#include "AliTRDCalDet.h"
 
 #include "AliTRDdigitsManager.h"
 #include "AliTRDdigitsParam.h"

@@ -16,10 +16,10 @@
 
 
 #include <TObject.h>
-#include "Cal/AliTRDCalDCSGTUCtpOpc.h"
-#include "Cal/AliTRDCalDCSGTUBoardInfo.h"
-#include "Cal/AliTRDCalDCSGTUSegment.h"
-#include "Cal/AliTRDCalDCSGTUTmu.h" 
+#include "AliTRDCalDCSGTUCtpOpc.h"
+#include "AliTRDCalDCSGTUBoardInfo.h"
+#include "AliTRDCalDCSGTUSegment.h"
+#include "AliTRDCalDCSGTUTmu.h" 
 
 class TObjArray;
 class AliTRDCalDCSv2;

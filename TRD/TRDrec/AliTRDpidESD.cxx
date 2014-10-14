@@ -38,7 +38,7 @@
 #include "AliTRDpidESD.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
-#include "Cal/AliTRDCalPID.h"
+#include "AliTRDCalPID.h"
 
 ClassImp(AliTRDpidESD)
 

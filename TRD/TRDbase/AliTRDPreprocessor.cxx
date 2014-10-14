@@ -53,12 +53,12 @@
 #include "AliTRDSaxHandler.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCalibChamberStatus.h"
-#include "Cal/AliTRDCalPad.h"
-#include "Cal/AliTRDCalPadStatus.h"
-#include "Cal/AliTRDCalDCSv2.h"
-#include "Cal/AliTRDCalSingleChamberStatus.h"
-#include "Cal/AliTRDCalChamberStatus.h"
-#include "Cal/AliTRDCalROC.h"
+#include "AliTRDCalPad.h"
+#include "AliTRDCalPadStatus.h"
+#include "AliTRDCalDCSv2.h"
+#include "AliTRDCalSingleChamberStatus.h"
+#include "AliTRDCalChamberStatus.h"
+#include "AliTRDCalROC.h"
 
 ClassImp(AliTRDPreprocessor)
 

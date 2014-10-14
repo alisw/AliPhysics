@@ -59,10 +59,10 @@
 #include "AliTRDCommonParam.h"
 #include "AliTRDtrackletOflHelper.h"
 
-#include "Cal/AliTRDCalTrkAttach.h"
-#include "Cal/AliTRDCalPID.h"
-#include "Cal/AliTRDCalROC.h"
-#include "Cal/AliTRDCalDet.h"
+#include "AliTRDCalTrkAttach.h"
+#include "AliTRDCalPID.h"
+#include "AliTRDCalROC.h"
+#include "AliTRDCalDet.h"
 
 class AliTracker;
 

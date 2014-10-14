@@ -13,7 +13,7 @@
 
 #include "TNamed.h"
 
-#include "../AliTRDgeometry.h"
+#include "AliTRDgeometry.h"
 
 class TH1F;
 class TH2F;

@@ -79,9 +79,9 @@
 #include "AliTRDpadPlane.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
-#include "./Cal/AliTRDCalROC.h"
-#include "./Cal/AliTRDCalPad.h"
-#include "./Cal/AliTRDCalDet.h"
+#include "AliTRDCalROC.h"
+#include "AliTRDCalPad.h"
+#include "AliTRDCalDet.h"
 
 
 ClassImp(AliTRDCalibraFit)

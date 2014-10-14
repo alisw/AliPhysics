@@ -16,7 +16,7 @@
 /* $Id: AliTRDqaGuiMain.cxx 23871 2008-02-12 11:48:20Z hristov $ */
 
 #include "AliTRDqaGuiMain.h"
-#include "qaGui/AliTRDqaGuiClusters.h"
+#include "AliTRDqaGuiClusters.h"
 #include "AliTRDqaGuiClustersSM.h"
 #include "AliTRDqaGuiClustersStack.h"
 #include "AliTRDqaGuiESDs.h"

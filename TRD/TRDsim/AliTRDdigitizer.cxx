@@ -68,9 +68,9 @@
 #include "AliTRDmcmSim.h"
 #include "AliTRDdigitsParam.h"
 
-#include "Cal/AliTRDCalROC.h"
-#include "Cal/AliTRDCalDet.h"
-#include "Cal/AliTRDCalOnlineGainTableROC.h"
+#include "AliTRDCalROC.h"
+#include "AliTRDCalDet.h"
+#include "AliTRDCalOnlineGainTableROC.h"
 
 ClassImp(AliTRDdigitizer)
 

@@ -50,10 +50,10 @@
 
 #include "TTreeStream.h"
 
-#include "Cal/AliTRDCalROC.h"
-#include "Cal/AliTRDCalDet.h"
-#include "Cal/AliTRDCalSingleChamberStatus.h"
-#include "Cal/AliTRDCalOnlineGainTableROC.h"
+#include "AliTRDCalROC.h"
+#include "AliTRDCalDet.h"
+#include "AliTRDCalSingleChamberStatus.h"
+#include "AliTRDCalOnlineGainTableROC.h"
 
 ClassImp(AliTRDclusterizer)
 

@@ -29,17 +29,17 @@
 #include <TList.h>
 #include <TMath.h>
 #include "AliLog.h"
-#include "Cal/AliTRDCalDCSGTUTgu.h"
-#include "Cal/AliTRDCalDCSPTR.h"
+#include "AliTRDCalDCSGTUTgu.h"
+#include "AliTRDCalDCSPTR.h"
 
 #include <TXMLAttr.h>
 #include <TObjArray.h>
 #include "AliTRDSaxHandler.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
-#include "Cal/AliTRDCalDCSv2.h"
-#include "Cal/AliTRDCalDCSFEEv2.h"
-#include "Cal/AliTRDCalDCSGTU.h"
+#include "AliTRDCalDCSv2.h"
+#include "AliTRDCalDCSFEEv2.h"
+#include "AliTRDCalDCSGTU.h"
 
 ClassImp(AliTRDSaxHandler)
   

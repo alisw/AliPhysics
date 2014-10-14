@@ -18,6 +18,7 @@
 #  include <TProfile2D.h> 
 #endif
 
+#include "TObjArray.h"
 
 class TProfile2D;
 class TObjArray;

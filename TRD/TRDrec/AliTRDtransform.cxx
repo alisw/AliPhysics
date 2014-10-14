@@ -32,8 +32,8 @@
 #include "AliTRDpadPlane.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDcalibDB.h"
-#include "Cal/AliTRDCalDet.h"
-#include "Cal/AliTRDCalROC.h"
+#include "AliTRDCalDet.h"
+#include "AliTRDCalROC.h"
 
 ClassImp(AliTRDtransform)
 

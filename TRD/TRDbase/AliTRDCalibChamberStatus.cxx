@@ -48,9 +48,9 @@
 #include "AliTRDdigitsManager.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDpadPlane.h"
-#include "./Cal/AliTRDCalChamberStatus.h"
-#include "./Cal/AliTRDCalDCSv2.h"
-#include "./Cal/AliTRDCalDCSFEEv2.h"
+#include "AliTRDCalChamberStatus.h"
+#include "AliTRDCalDCSv2.h"
+#include "AliTRDCalDCSFEEv2.h"
 
 #include "AliTRDrawStream.h"
 #include "AliTRDseedV1.h"

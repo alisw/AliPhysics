@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////
 
 #include "AliTRDarrayADC.h"
-#include "Cal/AliTRDCalPadStatus.h"
+#include "AliTRDCalPadStatus.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDSignalIndex.h"
 #include "AliLog.h"

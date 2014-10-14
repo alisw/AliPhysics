@@ -38,8 +38,8 @@
 #include "AliTRDpadPlane.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
-#include "Cal/AliTRDCalDet.h"
-#include "Cal/AliTRDCalROC.h"
+#include "AliTRDCalDet.h"
+#include "AliTRDCalROC.h"
 
 ClassImp(AliTRDtrackingChamber)
 

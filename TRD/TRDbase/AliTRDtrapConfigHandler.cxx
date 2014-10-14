@@ -39,9 +39,9 @@
 #include "TGeoMatrix.h"
 #include "TGraph.h"
 
-#include "Cal/AliTRDCalOnlineGainTable.h"
-#include "Cal/AliTRDCalOnlineGainTableROC.h"
-#include "Cal/AliTRDCalOnlineGainTableMCM.h"
+#include "AliTRDCalOnlineGainTable.h"
+#include "AliTRDCalOnlineGainTableROC.h"
+#include "AliTRDCalOnlineGainTableMCM.h"
 
 using namespace std;
 
