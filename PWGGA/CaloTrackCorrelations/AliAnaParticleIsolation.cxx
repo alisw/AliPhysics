@@ -59,12 +59,11 @@ ClassImp(AliAnaParticleIsolation)
 //______________________________________________________________________________
 AliAnaParticleIsolation::AliAnaParticleIsolation() :
 AliAnaCaloTrackCorrBaseClass(),
-fCalorimeter(""),                 fIsoDetector(""),
+fIsoDetector(""),
 fReMakeIC(0),                     fMakeSeveralIC(0),
-fFillPileUpHistograms(0),
 fFillTMHisto(0),                  fFillSSHisto(1),
 fFillUEBandSubtractHistograms(1), fFillCellHistograms(0),
-fFillHighMultHistograms(0),       fFillTaggedDecayHistograms(0),
+fFillTaggedDecayHistograms(0),
 fNDecayBits(0),                   fDecayBits(),
 fFillNLMHistograms(0),
 fLeadingOnly(0),                  fCheckLeadingWithNeutralClusters(0),
@@ -301,9 +300,9 @@ void AliAnaParticleIsolation::CalculateCaloUEBand(AliAODPWG4ParticleCorrelation 
   
   //Select the Calorimeter
   TObjArray * pl = 0x0;
-  if      (fCalorimeter == "PHOS" )
+  if      (GetCalorimeter() == "PHOS" )
     pl    = GetPHOSClusters();
-  else if (fCalorimeter == "EMCAL")
+  else if (GetCalorimeter() == "EMCAL")
     pl    = GetEMCALClusters();
   
   if(!pl) return ;
@@ -904,7 +903,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     fhPtInCone       ->Fill(ptTrig, mom.Pt());
     fhPtClusterInCone->Fill(ptTrig, mom.Pt());
     
-    if(fFillPileUpHistograms)
+    if(IsPileUpAnalysisOn())
     {
       if(GetReader()->IsPileUpFromSPD())               fhPtInConePileUp[0]->Fill(ptTrig,mom.Pt());
       if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig,mom.Pt());
@@ -915,7 +914,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig,mom.Pt());
     }
     
-    if(fFillHighMultHistograms) fhPtInConeCent->Fill(GetEventCentrality(),mom.Pt());
+    if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(),mom.Pt());
     
     coneptsumCluster+=mom.Pt();
     if(mom.Pt() > coneptLeadCluster) coneptLeadCluster = mom.Pt();
@@ -1030,7 +1029,7 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     fhPtInCone     ->Fill(ptTrig,pTtrack);
     fhPtTrackInCone->Fill(ptTrig,pTtrack);
     
-    if(fFillPileUpHistograms)
+    if(IsPileUpAnalysisOn())
     {
       ULong_t status = track->GetStatus();
       Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
@@ -1054,7 +1053,7 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig,pTtrack);
     }
     
-    if(fFillHighMultHistograms) fhPtInConeCent->Fill(GetEventCentrality(),pTtrack);
+    if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(),pTtrack);
     
     coneptsumTrack+=pTtrack;
     if(pTtrack > coneptLeadTrack) coneptLeadTrack = pTtrack;
@@ -1078,8 +1077,8 @@ void AliAnaParticleIsolation::FillPileUpHistograms(Int_t clusterID)
   
   Int_t iclus = -1;
   TObjArray* clusters = 0x0;
-  if     (fCalorimeter == "EMCAL") clusters = GetEMCALClusters();
-  else if(fCalorimeter == "PHOS" ) clusters = GetPHOSClusters();
+  if     (GetCalorimeter() == "EMCAL") clusters = GetEMCALClusters();
+  else if(GetCalorimeter() == "PHOS" ) clusters = GetPHOSClusters();
   
   Float_t energy = 0;
   Float_t time   = -1000;
@@ -1179,8 +1178,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   
   Int_t iclus = -1;
   TObjArray* clusters = 0x0;
-  if     (fCalorimeter == "EMCAL") clusters = GetEMCALClusters();
-  else if(fCalorimeter == "PHOS" ) clusters = GetPHOSClusters();
+  if     (GetCalorimeter() == "EMCAL") clusters = GetEMCALClusters();
+  else if(GetCalorimeter() == "PHOS" ) clusters = GetPHOSClusters();
   
   if(!clusters) return;
   
@@ -1337,7 +1336,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       fhPtLambda0MC[mcIndex][isolated]->Fill(pt,m02);
     }
     
-    if(fCalorimeter == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
+    if(GetCalorimeter() == "EMCAL" &&  GetFirstSMCoveredByTRD() >= 0 &&
        GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
     {
       fhELambda0TRD [isolated]->Fill(energy, m02 );
@@ -1471,7 +1470,7 @@ TObjString *  AliAnaParticleIsolation::GetAnalysisCuts()
   
   snprintf(onePar, buffersize,"--- AliAnaParticleIsolation ---\n") ;
   parList+=onePar ;
-  snprintf(onePar, buffersize,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+  snprintf(onePar, buffersize,"Calorimeter: %s\n",GetCalorimeter().Data()) ;
   parList+=onePar ;
   snprintf(onePar, buffersize,"Isolation Cand Detector: %s\n",fIsoDetector.Data()) ;
   parList+=onePar ;
@@ -1775,7 +1774,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhEtaPhiIso->SetYTitle("#phi");
     outputContainer->Add(fhEtaPhiIso) ;
     
-    if(fFillHighMultHistograms)
+    if(IsHighMultiplicityAnalysisOn())
     {
       fhPtCentralityIso  = new TH2F("hPtCentrality",
                                     Form("centrality vs #it{p}_{T} for isolated particles, %s",parTitle.Data()),
@@ -2028,7 +2027,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       } // pt trig bin loop
     } // pt trig bin histograms
     
-    if(fFillHighMultHistograms)
+    if(IsHighMultiplicityAnalysisOn())
     {
       fhPtInConeCent  = new TH2F("hPtInConeCent",
                                  Form("#it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
@@ -2991,7 +2990,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     } // control histograms for isolated and non isolated objects
     
     
-    if(fFillPileUpHistograms)
+    if(IsPileUpAnalysisOn())
     {
       fhPtTrackInConeOtherBC  = new TH2F("hPtTrackInConeOtherBC",
                                          Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f, TOF from BC!=0",r),
@@ -3429,7 +3428,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     }//ipt loop
   }
   
-  if(fFillPileUpHistograms)
+  if(IsPileUpAnalysisOn())
   {
     for (Int_t i = 0; i < 7 ; i++)
     {
@@ -3580,7 +3579,6 @@ void AliAnaParticleIsolation::InitParameters()
   SetAODObjArrayName("IsolationCone");
   AddToHistogramsName("AnaIsolation_");
   
-  fCalorimeter = "EMCAL" ;
   fIsoDetector = "EMCAL" ;
   
   fReMakeIC = kFALSE ;
@@ -3756,7 +3754,7 @@ Bool_t AliAnaParticleIsolation::IsTriggerTheNearSideEventLeadingParticle(Int_t &
 void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
 {
   // Do analysis and fill aods
-  // Search for the isolated photon in fCalorimeter with GetMinPt() < pt < GetMaxPt()
+  // Search for the isolated photon in GetCalorimeter() with GetMinPt() < pt < GetMaxPt()
   // and if the particle is leading in the near side (if requested)
   
   if(!GetInputAODBranch())
@@ -3771,9 +3769,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   TObjArray * pl    = 0x0; ;
   
   //Select the calorimeter for candidate isolation with neutral particles
-  if      (fCalorimeter == "PHOS" )
+  if      (GetCalorimeter() == "PHOS" )
     pl = GetPHOSClusters();
-  else if (fCalorimeter == "EMCAL")
+  else if (GetCalorimeter() == "EMCAL")
     pl = GetEMCALClusters();
   
   //Loop on AOD branch, filled previously in AliAnaPhoton, find leading particle to do isolation only with it
@@ -4010,13 +4008,13 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       if(fFillNLMHistograms)
         fhPtNLocMaxIso ->Fill(pt,aod->GetFiducialArea()) ; // remember to change method name
       
-      if(fFillHighMultHistograms)
+      if(IsHighMultiplicityAnalysisOn())
       {
         fhPtCentralityIso ->Fill(pt,GetEventCentrality()) ;
         fhPtEventPlaneIso ->Fill(pt,GetEventPlaneAngle() ) ;
       }
 
-      if(fFillPileUpHistograms)
+      if(IsPileUpAnalysisOn())
       {
         if(GetReader()->IsPileUpFromSPD())               { fhEIsoPileUp[0] ->Fill(energy) ; fhPtIsoPileUp[0]->Fill(pt) ; }
         if(GetReader()->IsPileUpFromEMCal())             { fhEIsoPileUp[1] ->Fill(energy) ; fhPtIsoPileUp[1]->Fill(pt) ; }
@@ -4055,7 +4053,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       if(fFillNLMHistograms)
         fhPtNLocMaxNoIso ->Fill(pt,aod->GetFiducialArea()); // remember to change method name
       
-      if(fFillPileUpHistograms)
+      if(IsPileUpAnalysisOn())
       {
         if(GetReader()->IsPileUpFromSPD())                { fhENoIsoPileUp[0] ->Fill(energy) ; fhPtNoIsoPileUp[0]->Fill(pt) ; }
         if(GetReader()->IsPileUpFromEMCal())              { fhENoIsoPileUp[1] ->Fill(energy) ; fhPtNoIsoPileUp[1]->Fill(pt) ; }
@@ -4098,12 +4096,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   // angle smaller than 3 cells  6 cm (0.014) in EMCal, 2.2 cm in PHOS (0.014*(2.2/6))
   Float_t overlapAngle = 0;
   Float_t minECalo     = 0;
-  if      (fCalorimeter=="EMCAL")
+  if      (GetCalorimeter()=="EMCAL")
   {
     overlapAngle = fMinCellsAngleOverlap*0.014  ;
     minECalo = GetReader()->GetEMCALEMin();
   }
-  else if (fCalorimeter=="PHOS" )
+  else if (GetCalorimeter()=="PHOS" )
   {
     overlapAngle = fMinCellsAngleOverlap*0.00382;
     minECalo = GetReader()->GetPHOSEMin();
@@ -4355,14 +4353,14 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           if( partInConeE  <= minECalo ) continue;
           
-          if(!GetReader()->GetFiducialCut()->IsInFiducialCut(mcisoLV,fCalorimeter)) continue ;
+          if(!GetReader()->GetFiducialCut()->IsInFiducialCut(mcisoLV,GetCalorimeter())) continue ;
           
           if(IsRealCaloAcceptanceOn()) // defined on base class
           {
             if(GetReader()->ReadStack()          &&
-               !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fCalorimeter, mcisopStack)) continue ;
+               !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), mcisopStack)) continue ;
             if(GetReader()->ReadAODMCParticles() &&
-               !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fCalorimeter, mcisopAOD  )) continue ;
+               !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), mcisopAOD  )) continue ;
           }
         }
       }
@@ -4910,7 +4908,7 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
   
   printf("ReMake Isolation          = %d \n",  fReMakeIC) ;
   printf("Make Several Isolation    = %d \n",  fMakeSeveralIC) ;
-  printf("Calorimeter for isolation = %s \n",  fCalorimeter.Data()) ;
+  printf("Calorimeter for isolation = %s \n",  GetCalorimeter().Data()) ;
   printf("Detector for candidate isolation = %s \n", fIsoDetector.Data()) ;
   
   if(fMakeSeveralIC)

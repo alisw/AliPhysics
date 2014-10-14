@@ -197,12 +197,6 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnCorrelationVzBin()        { fCorrelVzBin          = kTRUE  ; }
   void         SwitchOffCorrelationVzBin()       { fCorrelVzBin          = kFALSE ; }  
   
-  void         SwitchOnFillPileUpHistograms()    { fFillPileUpHistograms = kTRUE  ; }
-  void         SwitchOffFillPileUpHistograms()   { fFillPileUpHistograms = kFALSE ; }
-
-  void         SwitchOnFillHighMultiplicityHistograms() { fFillHighMultHistograms = kTRUE  ; }
-  void         SwitchOffFillHighMultiplicityHistograms(){ fFillHighMultHistograms = kFALSE ; }
-  
   void         SwitchOnFillTriggerAODWithReferences()   { fFillAODWithReferences = kTRUE  ; }
   void         SwitchOffFillTriggerAODWithReferences()  { fFillAODWithReferences = kFALSE ; }
 
@@ -253,9 +247,6 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   Float_t      fM02MaxCut   ;                  // Study photon clusters with l0 smaller than cut
   Float_t      fM02MinCut   ;                  // Study photon clusters with l0 larger than cut
-  
-  Bool_t       fFillPileUpHistograms;          // Fill pile-up related histograms
-  Bool_t       fFillHighMultHistograms;        // Histograms with centrality and event plane for triggers pT
   
   Bool_t       fSelectLeadingHadronAngle;      // Select events with leading particle within a range
   Bool_t       fFillLeadHadOppositeHisto;      // Fill histograms for leading hadrons in opposite side of trigger

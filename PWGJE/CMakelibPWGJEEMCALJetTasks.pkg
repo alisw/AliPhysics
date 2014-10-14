@@ -88,6 +88,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassScale.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
  EMCALJetTasks/UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
  EMCALJetTasks/UserTasks/AliCutValueRange.cxx 

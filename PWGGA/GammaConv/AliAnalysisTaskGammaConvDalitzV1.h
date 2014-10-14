@@ -41,11 +41,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
 			
 		void SetIsHeavyIon(Int_t flag){
-			if (flag == 1 || flag ==2 ){
-				fIsHeavyIon = 1;    
-			} else {
-				fIsHeavyIon = 0;    
-			}
+			fIsHeavyIon = flag;
 		}
 		
 		void SetIsMC(Bool_t isMC){fIsMC=isMC;}
@@ -243,7 +239,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		Int_t 									fNumberOfESDTrackskBoth;
 		Int_t 									fNVirtualGammas;
 		Bool_t 									fMoveParticleAccordingToVertex;
-		Bool_t 									fIsHeavyIon;
+		Int_t									fIsHeavyIon;
 		Bool_t 									fDoMesonAnalysis;
 		Bool_t 									fDoChicAnalysis;
 		Bool_t 									fDoMesonQA;

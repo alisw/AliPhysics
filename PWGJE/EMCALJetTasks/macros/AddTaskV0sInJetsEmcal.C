@@ -1,10 +1,10 @@
-//AliAnalysisTaskV0sInJets* AddTaskV0sInJets(TString jetBranchName = "", TString outputFile = "output.root", Bool_t bIsMC, TString label = "", Bool_t bTreeOutput = 0, TString outputFileTree = "TreeV0.root")
-AliAnalysisTaskV0sInJets* AddTaskV0sInJets(TString jetBranchName = "", TString outputFile = "output.root", Bool_t bIsMC, TString label = "")
+//AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(TString jetBranchName = "", TString outputFile = "output.root", Bool_t bIsMC, TString label = "", Bool_t bTreeOutput = 0, TString outputFileTree = "TreeV0.root")
+AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(TString jetBranchName = "", Double_t dRadius = 0.4, TString jetBranchBgName = "", Double_t dRadiusBg = 0.2, TString outputFile = "output.root", Bool_t bIsMC, TString label = "", TString tracksName, TString clustersCorrName, TString rhoName, TString sType)
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr)
   {
-    Error("AddTaskV0sInJets", "No analysis manager found.");
+    Error("AddTaskV0sInJetsEmcal", "No analysis manager found.");
     return 0;
   }
 
@@ -20,12 +20,31 @@ AliAnalysisTaskV0sInJets* AddTaskV0sInJets(TString jetBranchName = "", TString o
     taskName += Form("_%s", label.Data());
     containerName += Form("_%s", label.Data());
   }
-  AliAnalysisTaskV0sInJets* mytask = new AliAnalysisTaskV0sInJets(taskName.Data());
-
+  AliAnalysisTaskV0sInJetsEmcal* mytask = new AliAnalysisTaskV0sInJetsEmcal(taskName.Data());
   // Configure task
-  mytask->SetJetBranchName(jetBranchName.Data());
   mytask->SetMCAnalysis(bIsMC);
 //  mytask->SetTreeOutput(bTreeOutput);
+
+  AliParticleContainer* trackCont  = mytask->AddParticleContainer(tracksName);
+  trackCont->SetClassName("AliVTrack");
+  AliClusterContainer* clusterCont = mytask->AddClusterContainer(clustersCorrName);
+
+  AliJetContainer* jetCont = mytask->AddJetContainer(jetBranchName, sType, dRadius);
+  if(jetCont)
+  {
+    jetCont->SetRhoName(rhoName);
+    jetCont->ConnectParticleContainer(trackCont);
+    jetCont->ConnectClusterContainer(clusterCont);
+  }
+  AliJetContainer* jetContBg = mytask->AddJetContainer(jetBranchBgName, sType, dRadiusBg);
+  if (jetContBg)
+  {
+    jetContBg->SetJetAreaCut(0.01);
+    jetContBg->SetAreaEmcCut(0);
+    jetContBg->SetJetPtCut(0);
+    jetContBg->ConnectParticleContainer(trackCont);
+    jetContBg->ConnectClusterContainer(clusterCont);
+  }
 
   // Add task
   mgr->AddTask(mytask);
@@ -42,7 +61,6 @@ AliAnalysisTaskV0sInJets* AddTaskV0sInJets(TString jetBranchName = "", TString o
 
   // Connect input/output
   mgr->ConnectInput(mytask, 0, cinput0);
-  mgr->ConnectOutput(mytask, 0, coutput0);  // No need to connect to a common AOD output container if the task does not fill AOD info.
   mgr->ConnectOutput(mytask, 1, coutput1);
   mgr->ConnectOutput(mytask, 2, coutput2);
   mgr->ConnectOutput(mytask, 3, coutput3);
