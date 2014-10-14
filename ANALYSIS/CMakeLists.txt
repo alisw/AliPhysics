@@ -22,7 +22,6 @@ add_subdirectory(ESDfilter)
 add_subdirectory(EventMixing)
 
 # Installing the macros
-install(DIRECTORY macros
-        DESTINATION ANALYSIS)
+install(DIRECTORY macros DESTINATION ANALYSIS)
 
 message(STATUS "ANALYSIS enabled")

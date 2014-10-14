@@ -24,11 +24,7 @@ add_subdirectory(TPCmon)
 install(DIRECTORY mapping DESTINATION TPC)
 
 # Installing the macros
-# Do not forget the ending / from macros/
-# The / will point to install the content of the folder to 
-# macros/TPC. Without the / it will create a new folder 
-# macros/TPC/macros
-install(DIRECTORY macros/ DESTINATION macros/TPC)
+install(DIRECTORY macros DESTINATION TPC)
 
 # Install root & dat files
 set(ROOTFILES 

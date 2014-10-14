@@ -22,6 +22,8 @@ class TGeoManager;
 class TObjArray;
 class TString;
 class TGeoMatrix;
+class TGeoManager;
+class TGeoHMatrix;
 
 class AliTOFAlignment :public TTask{
 

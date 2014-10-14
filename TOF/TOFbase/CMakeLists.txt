@@ -14,25 +14,74 @@
 # **************************************************************************
 
 # Module
-set(MODULE STAT)
+set(MODULE TOFbase)
 
-# Module include folders
-include_directories(${CMAKE_SOURCE_DIR}/${MODULE})
+# Module include folder
+include_directories(${CMAKE_SOURCE_DIR}/TOF/${MODULE})
 
-# Additional include directories in alphabetical order except ROOT
+# Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatasim
+                    ${CMAKE_SOURCE_DIR}/STEER/CDB
+                    ${CMAKE_SOURCE_DIR}/STEER/ESD
+                    ${CMAKE_SOURCE_DIR}/STEER/STEER
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${CMAKE_SOURCE_DIR}/TOF/TOFrec
+                    ${CMAKE_SOURCE_DIR}/TOF/TOFsim
                    )
+
 # Sources in alphabetical order
 set(SRCS
-    AliTMinuitToolkit.cxx
-    TKDInterpolatorBase.cxx
-    TKDInterpolator.cxx
-    TKDNodeInfo.cxx
-    TKDPDF.cxx
-    TKDSpline.cxx
-    TStatToolkit.cxx
-  )
+    AliTOFAlignment.cxx
+    AliTOFArray.cxx
+    AliTOFCableLengthMap.cxx
+    AliTOFcalib.cxx
+    AliTOFcalibHisto.cxx
+    AliTOFChainSummaryData.cxx
+    AliTOFChannelOffline.cxx
+    AliTOFChannelOnlineArray.cxx
+    AliTOFChannelOnline.cxx
+    AliTOFChannelOnlineStatusArray.cxx
+    AliTOFChannelOnlineStatus.cxx
+    AliTOFCTPLatency.cxx
+    AliTOFDaConfigHandler.cxx
+    AliTOFDataDCS.cxx
+    AliTOFDCSmaps.cxx
+    AliTOFDecoder.cxx
+    AliTOFDecoderSummaryData.cxx
+    AliTOFDecoderV2.cxx
+    AliTOFDeltaBCOffset.cxx
+    AliTOFdigit.cxx
+    AliTOFDigitMap.cxx
+    AliTOFDRMSummaryData.cxx
+    AliTOFFEEDump.cxx
+    AliTOFFEEReader.cxx
+    AliTOFFormatDCS.cxx
+    AliTOFGeometry.cxx
+    AliTOFHitDataBuffer.cxx
+    AliTOFHitData.cxx
+    AliTOFHitField.cxx
+    AliTOFLTMSummaryData.cxx
+    AliTOFLvHvDataPoints.cxx
+    AliTOFNoiseConfigHandler.cxx
+    AliTOFPreprocessor.cxx
+    AliTOFPreprocessorFDR.cxx
+    AliTOFrawData.cxx
+    AliTOFRawMap.cxx
+    AliTOFRawStream.cxx
+    AliTOFReadoutInfo.cxx
+    AliTOFResponseParams.cxx
+    AliTOFRunParams.cxx
+    AliTOFT0Fill.cxx
+    AliTOFT0FillOnlineCalib.cxx
+    AliTOFTDCErrorBuffer.cxx
+    AliTOFTDCError.cxx
+    AliTOFTDCHitBuffer.cxx
+    AliTOFTDCHit.cxx
+    AliTOFTRMSummaryData.cxx
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -44,8 +93,9 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase Graf)
+set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec RAWDatasim TOFrec TOFsim)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
@@ -60,11 +110,7 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
 install(TARGETS ${MODULE}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
 install(FILES ${HDRS} DESTINATION include)
-
-# Macros
-install(DIRECTORY Macros DESTINATION STAT)
-
-message(STATUS "${MODULE} enabled")

@@ -36,6 +36,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
+    AliAnalysisTaskPt.cxx
     AliTPCAnalysisTaskcalib.cxx
     AliTPCcalibAlign.cxx
     AliTPCcalibBase.cxx

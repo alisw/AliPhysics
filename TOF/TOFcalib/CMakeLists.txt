@@ -14,25 +14,26 @@
 # **************************************************************************
 
 # Module
-set(MODULE STAT)
+set(MODULE TOFcalib)
 
-# Module include folders
-include_directories(${CMAKE_SOURCE_DIR}/${MODULE})
+# Module include folder
+include_directories(${CMAKE_SOURCE_DIR}/TOF/${MODULE})
 
-# Additional include directories in alphabetical order except ROOT
+# Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${CMAKE_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${CMAKE_SOURCE_DIR}/STEER/CDB
+                    ${CMAKE_SOURCE_DIR}/STEER/ESD
+                    ${CMAKE_SOURCE_DIR}/STEER/STEER
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${CMAKE_SOURCE_DIR}/TOF/TOFbase
                    )
+
 # Sources in alphabetical order
 set(SRCS
-    AliTMinuitToolkit.cxx
-    TKDInterpolatorBase.cxx
-    TKDInterpolator.cxx
-    TKDNodeInfo.cxx
-    TKDPDF.cxx
-    TKDSpline.cxx
-    TStatToolkit.cxx
-  )
+    AliTOFAnalysisTaskCalibPass0.cxx
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -44,8 +45,9 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase Graf)
+set(LIBDEPS STEERBase STEER CDB ESD ANALYSIS ANALYSISalice TOFbase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
@@ -60,11 +62,7 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
 install(TARGETS ${MODULE}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
 install(FILES ${HDRS} DESTINATION include)
-
-# Macros
-install(DIRECTORY Macros DESTINATION STAT)
-
-message(STATUS "${MODULE} enabled")

@@ -14,25 +14,40 @@
 # **************************************************************************
 
 # Module
-set(MODULE STAT)
+set(MODULE TOFsim)
 
-# Module include folders
-include_directories(${CMAKE_SOURCE_DIR}/${MODULE})
+# Module include folder
+include_directories(${CMAKE_SOURCE_DIR}/TOF/${MODULE})
 
-# Additional include directories in alphabetical order except ROOT
+# Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatabase
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatarec
+                    ${CMAKE_SOURCE_DIR}/RAW/RAWDatasim
+                    ${CMAKE_SOURCE_DIR}/STEER/CDB
+                    ${CMAKE_SOURCE_DIR}/STEER/ESD
+                    ${CMAKE_SOURCE_DIR}/STEER/STEER
                     ${CMAKE_SOURCE_DIR}/STEER/STEERBase
+                    ${CMAKE_SOURCE_DIR}/TOF/TOFbase
+                    ${CMAKE_SOURCE_DIR}/TOF/TOFrec
                    )
+
 # Sources in alphabetical order
 set(SRCS
-    AliTMinuitToolkit.cxx
-    TKDInterpolatorBase.cxx
-    TKDInterpolator.cxx
-    TKDNodeInfo.cxx
-    TKDPDF.cxx
-    TKDSpline.cxx
-    TStatToolkit.cxx
-  )
+    AliTOF.cxx
+    AliTOFDDLRawData.cxx
+    AliTOFDigitizer.cxx
+    AliTOFhit.cxx
+    AliTOFHitMap.cxx
+    AliTOFhitT0.cxx
+    AliTOFQAChecker.cxx
+    AliTOFQADataMakerSim.cxx
+    AliTOFSDigit.cxx
+    AliTOFSDigitizer.cxx
+    AliTOFT0.cxx
+    AliTOFTrigger.cxx
+    AliTOFv6T0.cxx
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -44,8 +59,9 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase Graf)
+set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec RAWDatasim TOFbase TOFrec)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
@@ -60,11 +76,7 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
 install(TARGETS ${MODULE}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
 install(FILES ${HDRS} DESTINATION include)
-
-# Macros
-install(DIRECTORY Macros DESTINATION STAT)
-
-message(STATUS "${MODULE} enabled")

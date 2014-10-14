@@ -79,8 +79,4 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
-# Do not forget the ending / from macros/
-# The / will point to install the content of the folder to 
-# macros/TPC/TPCmon. Without the / it will create a new folder 
-# macros/TPC/TPCmon/macros
-install(DIRECTORY macros/ DESTINATION macros/TPC/${MODULE})
+install(DIRECTORY macros DESTINATION TPC/${MODULE})

@@ -19,13 +19,8 @@ add_subdirectory(ITSsim)
 add_subdirectory(UPGRADE)
 
 # Macros
-# Macros
-# Do not forget the ending / from macros/
-# The / will point to install the content of the folder to 
-# macros/ITS/UPGRADE Without the / it will create a new folder 
-# macros/ITS/UPGRADE/macros
-install(DIRECTORY oldmacros/ DESTINATION macros/ITS/oldmacros)
-install(DIRECTORY macrosSDD/ DESTINATION macros/ITS/macrosSDD)
+install(DIRECTORY oldmacros DESTINATION ITS)
+install(DIRECTORY macrosSDD DESTINATION ITS)
 
 
 message(STATUS "ITS enabled")
