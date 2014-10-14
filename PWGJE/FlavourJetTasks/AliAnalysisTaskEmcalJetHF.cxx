@@ -468,8 +468,9 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
       //AliEmcalJet::EFlavourTag tag=AliEmcalJet::kDStar;
       //jet->AddFlavourTag(tag);
  
-      Bool_t bkgrnd1  = kFALSE;
-      Bool_t sig1     = kFALSE;
+      //MV: removed to avoid compiler warnings
+      //      Bool_t bkgrnd1  = kFALSE;
+      // Bool_t sig1     = kFALSE;
  
       Int_t JetClusters = jet->GetNumberOfClusters();
       Int_t JetTracks = jet -> GetNumberOfTracks();
@@ -654,16 +655,24 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
           TVector3 mcp(pos_mc);
           Double_t EovP_mc = -999;
           EovP_mc = mClusterE/acceptTrackP;
-          if(EovP_mc < 0.2){
-            bkgrnd1 = kTRUE;      //Hadron Background
-          }
-          if(0.8 < EovP_mc < 1.2){
-            if(-1.5<nSigmaElectron_TPC_at<5.0){
-              if(4.0<acceptTrackPt<10.0){
-                sig1 = kTRUE;                    //Electron Candidate
-              }
-            }
-          }
+	  //MV: removed to avoid compiler warnings
+          // if(EovP_mc < 0.2){
+          //   bkgrnd1 = kTRUE;      //Hadron Background
+          // }
+
+	  //Code without meaning:
+          //if(0.8 < EovP_mc < 1.2){
+	  //            if(-1.5<nSigmaElectron_TPC_at<5.0){
+	  //              if(4.0<acceptTrackPt<10.0){
+
+	  //Corrected code:
+	  // if(EovP_mc >0.8 && EovP_mc<1.2){ 
+          //   if(nSigmaElectron_TPC_at>-1.5 && nSigmaElectron_TPC_at<5.0){
+          //     if(acceptTrackPt>4.0 && acceptTrackPt<10.0){
+          //       sig1 = kTRUE;                    //Electron Candidate
+          //     }
+          //   }
+          // }
           
           Double_t HF_tracks2[18] = {fCent, acceptTrackPt, acceptTrackP ,acceptTrackEta, acceptTrackPhi, EovP_mc, 0, 0, dEdxat,nSigmaElectron_TPC_at, nSigmaElectron_TOF_at,0 , jetPt, jet->Phi(), jet->Eta(),mClusterE,mcp.PseudoRapidity(),mcp.Phi()};
           fhnPIDHFTtoC->Fill(HF_tracks2);    // fill Sparse Histo with trigger entries
