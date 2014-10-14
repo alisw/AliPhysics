@@ -9,9 +9,13 @@ class TH2F;
 class THnSparse;
 class TList;
 class TObjArray;
+class AliOADBContainer;
 class AliEMCALGeometry;
 class AliESDEvent;
 class AliESDtrack;
+class AliESDCaloCells;
+class AliAODEvent;
+class AliAODCaloCells;
 class AliVCluster;
 class AliCentrality;
 
@@ -32,14 +36,23 @@ class AliAnalysisTaskEMCALPi0V2ShSh : public AliAnalysisTaskSE {
   void                   Terminate(Option_t *);
 
  protected:
-  TRefArray             *fCaloClusters;          //!pointer to EMCal clusters
   AliEventplane         *fEventPlane;
   Double_t               fCentralityV0M;
+  TObjArray             *fESDClusters;           //!pointer to EMCal clusters
+  TObjArray             *fAODClusters;           //!pointer to EMCal clusters
+  TRefArray             *fCaloClusters;          //!pointer to EMCal clusters
+  AliESDCaloCells       *fESDCells;              //!pointer to EMCal cells, esd
+  AliAODCaloCells       *fAODCells;              //!pointer to EMCal cells, aod  
+  AliEMCALGeometry      *fGeom;                  // geometry utils
+  TString                fGeoName;               // geometry name (def = EMCAL_FIRSTYEARV1)
+  AliOADBContainer      *fOADBContainer;         //!OADB container used to load misalignment matrices
   
   
  private:
-  AliESDEvent *fESD;      //! ESD object
-  TList       *fOutputList; //! General Output list
+  AliESDEvent *fESD;                 //! ESD object
+  AliAODEvent *fAOD;                 //! AOD object
+  TList       *fOutputList;          //! General Output list
+  TGeoHMatrix *fGeomMatrix[12];      //! Geometry misalignment matrices for EMCal
 
   Double_t    fEPTPC;
   Double_t    fEPTPCResolution;

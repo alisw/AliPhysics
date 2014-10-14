@@ -23,17 +23,21 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTask.h"
 #include "AliStack.h"
+#include "AliEMCALGeometry.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
+#include "AliESDCaloCells.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
 #include "AliESDHeader.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
 #include "AliKFParticle.h"
+#include "AliAODEvent.h"
 #include "AliVCluster.h"
 #include "AliCentrality.h"
 #include "AliEventplane.h"
+#include "AliOADBContainer.h"
 
 
 
@@ -42,37 +46,160 @@ ClassImp(AliAnalysisTaskEMCALPi0V2ShSh)
 //________________________________________________________________________
 AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh() : 
   AliAnalysisTaskSE(), 
-  fCaloClusters(0), fEventPlane(0), fCentralityV0M(99.), fESD(0), fOutputList(0),
-  fEPTPC(-999.), fEPTPCResolution(0.), 
-  fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
-  fEPV0A4r(-999.), fEPV0A5r(-999.), fEPV0A6r(-999.), fEPV0A7r(-999.), fEPV0C0r(-999.), fEPV0C1r(-999.), fEPV0C2r(-999.), fEPV0C3r(-999.),
-  fHistAllcentV0(0), fHistAllcentV0r(0), fHistAllcentV0A(0), fHistAllcentV0C(0), fHistAllcentTPC(0),
-  fHistEPTPC(0), fHistEPTPCResolution(0),
-  fHistEPV0(0), fHistEPV0A(0), fHistEPV0C(0), fHistEPV0Ar(0), fHistEPV0Cr(0), fHistEPV0r(0), fHistEPV0A4r(0), fHistEPV0A7r(0), fHistEPV0C0r(0), fHistEPV0C3r(0),
-  fHistdifV0A_V0C0r(0), fHistdifV0A_V0C3r(0), fHistdifV0C0r_V0C3r(0), fHistdifV0C_V0A4r(0), fHistdifV0C_V0A7r(0), fHistdifV0A4r_V0A7r(0), fHistdifV0Ar_V0Cr(0),
-  fHistClusterEta(0), fHistClusterPhi(0), fHistClusterE(0), fHistClusterEt(0), fHistClusterN(0), fHistClusterM02(0),
-  fHistClusterEN(0), fHistClusterEM02(0), fHistClusterPhiEta(0), fHistClusterEtN(0), fHistClusterEtM02(0), fHistClusterdphiV0(0),
-  fHistTrackPt(0), fHistTrackEta(0), fHistTrackPhi(0), fHistTrackPhiEta(0),
-  fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0)
+  fEventPlane(0),
+  fCentralityV0M(99.),
+  fESDClusters(0),
+  fAODClusters(0),
+  fCaloClusters(0),
+  fESDCells(0),
+  fAODCells(0),
+  fGeom(0),
+  fGeoName("EMCAL_COMPLETEV1"),
+  fOADBContainer(0),
+  fESD(0),
+  fAOD(0),
+  fOutputList(0),
+  fEPTPC(-999.),
+  fEPTPCResolution(0.),
+  fEPV0(-999.),
+  fEPV0A(-999.),
+  fEPV0C(-999.),
+  fEPV0Ar(-999.),
+  fEPV0Cr(-999.),
+  fEPV0r(-999.),
+  fEPV0A4r(-999.),
+  fEPV0A5r(-999.),
+  fEPV0A6r(-999.),
+  fEPV0A7r(-999.),
+  fEPV0C0r(-999.),
+  fEPV0C1r(-999.),
+  fEPV0C2r(-999.),
+  fEPV0C3r(-999.),
+  fHistAllcentV0(0),
+  fHistAllcentV0r(0),
+  fHistAllcentV0A(0),
+  fHistAllcentV0C(0),
+  fHistAllcentTPC(0),
+  fHistEPTPC(0),
+  fHistEPTPCResolution(0),
+  fHistEPV0(0),
+  fHistEPV0A(0),
+  fHistEPV0C(0),
+  fHistEPV0Ar(0),
+  fHistEPV0Cr(0),
+  fHistEPV0r(0),
+  fHistEPV0A4r(0),
+  fHistEPV0A7r(0),
+  fHistEPV0C0r(0),
+  fHistEPV0C3r(0),
+  fHistdifV0A_V0C0r(0),
+  fHistdifV0A_V0C3r(0),
+  fHistdifV0C0r_V0C3r(0),
+  fHistdifV0C_V0A4r(0),
+  fHistdifV0C_V0A7r(0),
+  fHistdifV0A4r_V0A7r(0),
+  fHistdifV0Ar_V0Cr(0),
+  fHistClusterEta(0),
+  fHistClusterPhi(0),
+  fHistClusterE(0),
+  fHistClusterEt(0),
+  fHistClusterN(0),
+  fHistClusterM02(0),
+  fHistClusterEN(0),
+  fHistClusterEM02(0),
+  fHistClusterPhiEta(0),
+  fHistClusterEtN(0),
+  fHistClusterEtM02(0),
+  fHistClusterdphiV0(0),
+  fHistTrackPt(0),
+  fHistTrackEta(0),
+  fHistTrackPhi(0),
+  fHistTrackPhiEta(0),
+  fClusterPbV0(0),
+  fClusterPbV0A(0),
+  fClusterPbV0C(0),
+  fClusterPbTPC(0)
 {
   // Default constructor.
+  for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
 }
 
 //________________________________________________________________________
 AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh(const char *name) : 
   AliAnalysisTaskSE(name), 
-  fCaloClusters(0), fEventPlane(0), fCentralityV0M(99.), fESD(0), fOutputList(0),
-  fEPTPC(-999.), fEPTPCResolution(0.), 
-  fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
-  fEPV0A4r(-999.), fEPV0A5r(-999.), fEPV0A6r(-999.), fEPV0A7r(-999.), fEPV0C0r(-999.), fEPV0C1r(-999.), fEPV0C2r(-999.), fEPV0C3r(-999.),
-  fHistAllcentV0(0), fHistAllcentV0r(0), fHistAllcentV0A(0), fHistAllcentV0C(0), fHistAllcentTPC(0),
-  fHistEPTPC(0), fHistEPTPCResolution(0),
-  fHistEPV0(0), fHistEPV0A(0), fHistEPV0C(0), fHistEPV0Ar(0), fHistEPV0Cr(0), fHistEPV0r(0), fHistEPV0A4r(0), fHistEPV0A7r(0), fHistEPV0C0r(0), fHistEPV0C3r(0),
-  fHistdifV0A_V0C0r(0), fHistdifV0A_V0C3r(0), fHistdifV0C0r_V0C3r(0), fHistdifV0C_V0A4r(0), fHistdifV0C_V0A7r(0), fHistdifV0A4r_V0A7r(0), fHistdifV0Ar_V0Cr(0),
-  fHistClusterEta(0), fHistClusterPhi(0), fHistClusterE(0), fHistClusterEt(0), fHistClusterN(0), fHistClusterM02(0),
-  fHistClusterEN(0), fHistClusterEM02(0), fHistClusterPhiEta(0), fHistClusterEtN(0), fHistClusterEtM02(0), fHistClusterdphiV0(0),
-  fHistTrackPt(0), fHistTrackEta(0), fHistTrackPhi(0), fHistTrackPhiEta(0),
-  fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0)
+  fEventPlane(0), 
+  fCentralityV0M(99.), 
+  fESDClusters(0),
+  fAODClusters(0),
+  fCaloClusters(0), 
+  fESDCells(0),
+  fAODCells(0),
+  fGeom(0),
+  fGeoName("EMCAL_COMPLETEV1"),
+  fOADBContainer(0),
+  fESD(0), 
+  fAOD(0),
+  fOutputList(0),
+  fEPTPC(-999.), 
+  fEPTPCResolution(0.), 
+  fEPV0(-999.), 
+  fEPV0A(-999.), 
+  fEPV0C(-999.),
+  fEPV0Ar(-999.),
+  fEPV0Cr(-999.),
+  fEPV0r(-999.),
+  fEPV0A4r(-999.),
+  fEPV0A5r(-999.),
+  fEPV0A6r(-999.), 
+  fEPV0A7r(-999.),
+  fEPV0C0r(-999.), 
+  fEPV0C1r(-999.), 
+  fEPV0C2r(-999.), 
+  fEPV0C3r(-999.),
+  fHistAllcentV0(0), 
+  fHistAllcentV0r(0), 
+  fHistAllcentV0A(0), 
+  fHistAllcentV0C(0), 
+  fHistAllcentTPC(0),
+  fHistEPTPC(0), 
+  fHistEPTPCResolution(0),
+  fHistEPV0(0), 
+  fHistEPV0A(0), 
+  fHistEPV0C(0), 
+  fHistEPV0Ar(0), 
+  fHistEPV0Cr(0), 
+  fHistEPV0r(0), 
+  fHistEPV0A4r(0),
+  fHistEPV0A7r(0),
+  fHistEPV0C0r(0),
+  fHistEPV0C3r(0),
+  fHistdifV0A_V0C0r(0),
+  fHistdifV0A_V0C3r(0),
+  fHistdifV0C0r_V0C3r(0),
+  fHistdifV0C_V0A4r(0), 
+  fHistdifV0C_V0A7r(0), 
+  fHistdifV0A4r_V0A7r(0), 
+  fHistdifV0Ar_V0Cr(0),
+  fHistClusterEta(0), 
+  fHistClusterPhi(0), 
+  fHistClusterE(0), 
+  fHistClusterEt(0), 
+  fHistClusterN(0), 
+  fHistClusterM02(0),
+  fHistClusterEN(0), 
+  fHistClusterEM02(0), 
+  fHistClusterPhiEta(0), 
+  fHistClusterEtN(0), 
+  fHistClusterEtM02(0), 
+  fHistClusterdphiV0(0),
+  fHistTrackPt(0), 
+  fHistTrackEta(0), 
+  fHistTrackPhi(0), 
+  fHistTrackPhiEta(0),
+  fClusterPbV0(0), 
+  fClusterPbV0A(0), 
+  fClusterPbV0C(0), 
+  fClusterPbTPC(0)
 {
   // Constructor
   // Define input and output slots here
@@ -88,7 +215,12 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
 {
   // Create histograms, called once.
     
+  fESDClusters = new TObjArray();
+  fAODClusters = new TObjArray();
   fCaloClusters = new TRefArray();
+  fGeom = AliEMCALGeometry::GetInstance(fGeoName.Data());
+  fOADBContainer = new AliOADBContainer("AliEMCALgeo");
+  fOADBContainer->InitFromFile(Form("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
 
   fOutputList = new TList();
   fOutputList->SetOwner();// Container cleans up all histos (avoids leaks in merging)   
@@ -287,6 +419,10 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
 void AliAnalysisTaskEMCALPi0V2ShSh::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
+  fESDClusters = 0;
+  fESDCells = 0;
+  fAODClusters = 0;
+  fAODCells = 0;
 
   // Create pointer to reconstructed event
   AliVEvent *event = InputEvent();
@@ -294,37 +430,77 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserExec(Option_t *)
 
   fESD = dynamic_cast<AliESDEvent*>(event);
   if (!fESD) {
-    printf("ERROR: Could not retrieve the ESD event\n");
-    return;
+    fAOD =  dynamic_cast<AliAODEvent*>(event);
+    if(!fAOD){
+      printf("ERROR: Could not retrieve the event\n");
+      return;
+    }
   }
 
   //Bool_t isSelected =0;      
   //isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral));
   //if(!isSelected) { return; }
   
-  if(fESD->GetCentrality()){
-     fCentralityV0M = fESD->GetCentrality()->GetCentralityPercentile("V0M");
+  if(event->GetCentrality()){
+    fCentralityV0M = event->GetCentrality()->GetCentralityPercentile("V0M");
   } else {
     printf("ERROR: Could not retrieve the Centrality\n");
     return;
   }	
-
-  fEventPlane = fESD->GetEventplane(); 
+  
+  fEventPlane = event->GetEventplane(); 
   if (fEventPlane) {
      VZEROEventPlane();
   } else {
      printf("ERROR: Could not retrieve the Centrality\n");
      return;
   }
+  Int_t   runnumber = InputEvent()->GetRunNumber() ;
 
-  if(fESD->GetEMCALClusters(fCaloClusters)) { //select EMCAL clusters only 
-     FillClusterHists(); 
-  } else{
-     printf("ERROR: Could not get EMCAL Cluster\n");
-     return;
+  TObjArray *matEMCAL=(TObjArray*)fOADBContainer->GetObject(runnumber,"EmcalMatrices");
+  for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+    if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
+      break;
+    /*if(fESD)
+      fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
+      else*/
+    // if(fVEvent->GetEMCALMatrix(mod))
+    fGeomMatrix[mod] = (TGeoHMatrix*) matEMCAL->At(mod);
+    fGeom->SetMisalMatrix(fGeomMatrix[mod] , mod);
   }
 
-  FillTrackHists();
+  if(fESD){
+    TList *l = fESD->GetList();
+    if(1){//fDebug){
+      for(int nk=0;nk<l->GetEntries();nk++){
+	  TObject *obj = (TObject*)l->At(nk);
+	  TString oname = obj->GetName();
+	  //if(oname.Contains("lus"))
+	  printf("Object %d has a clus array named %s +++++++++\n",nk,oname.Data());
+	}
+    }
+    fESDClusters =  dynamic_cast<TClonesArray*>(l->FindObject("CaloClusters"));
+    fESDCells = fESD->GetEMCALCells();
+    if(fDebug)
+      printf("ESD cluster mult= %d\n",fESDClusters->GetEntriesFast());
+    if(fESDClusters->GetEntriesFast()<1){
+      printf("ERROR: There are no EMCAL clusters in this event\n");
+      return;
+    }
+  }
+  else if(fAOD){
+    fAODClusters = dynamic_cast<TClonesArray*>(fAOD->GetCaloClusters());
+    fAODCells = fAOD->GetEMCALCells();
+    if(fDebug)
+      printf("AOD cluster mult= %d\n",fAODClusters->GetEntriesFast());
+    if(fAODClusters->GetEntriesFast()<1){
+      printf("ERROR: There are no EMCAL clusters in this event\n");
+      return;
+    }
+  }
+    
+  if(fESD)
+    FillTrackHists();
 
   fCaloClusters->Clear();
   PostData(1, fOutputList);
@@ -396,16 +572,19 @@ void AliAnalysisTaskEMCALPi0V2ShSh::FillClusterHists()
 
   Float_t pos[3] ; 
 
-  if(!fCaloClusters)  
+  TObjArray *clusters = fESDClusters;
+  if (!clusters)
+    clusters = fAODClusters;
+  if (!clusters)
     return;
 
-  const Int_t nclus = fCaloClusters->GetEntries();
+  const Int_t nclus = clusters->GetEntries();
 
   if(nclus==0)
     return;
 
   for(Int_t iclus=0;iclus<nclus;iclus++){
-    AliESDCaloCluster *clus = (AliESDCaloCluster *) fCaloClusters->At(iclus); // retrieve cluster from esd
+    AliVCluster *clus = (AliVCluster *) clusters->At(iclus); // retrieve cluster from esd
     if(!clus)
       continue;
     if(!clus->IsEMCAL()){ 
@@ -471,7 +650,8 @@ void AliAnalysisTaskEMCALPi0V2ShSh::FillClusterHists()
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0V2ShSh::FillTrackHists()
 {// Fill track histograms.
-
+  if(!fESD)
+    return;
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack* track = (AliESDtrack*)fESD->GetTrack(iTracks);
     if (!track){
