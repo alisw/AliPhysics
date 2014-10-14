@@ -17,6 +17,7 @@
 
 
 #include <TObject.h>
+#include <AliLog.h>
 
 class AliVZEROLogicalSignal  : public TObject {
 public:
