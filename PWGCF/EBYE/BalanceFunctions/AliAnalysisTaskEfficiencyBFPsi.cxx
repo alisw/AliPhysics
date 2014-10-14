@@ -459,13 +459,11 @@ void AliAnalysisTaskEfficiencyBFPsi::UserExec(Option_t *) {
 		    if(IsLabelUsed(labelArray,label)) continue;
 		    labelArray.AddAt(label,labelCounter);
 		    labelCounter += 1;
-
-		    Bool_t iFound = kFALSE;
+		  
 		    Int_t mcGoods = nMCLabelCounter;
 		    for (Int_t k = 0; k < mcGoods; k++) {
 		      Int_t mcLabel = labelMCArray.At(k);
-		      iFound = kFALSE;
-		    			      
+		      		    			      
 		      if (mcLabel != TMath::Abs(label)) continue;
 		      if(mcLabel != label) continue;
 		      if(label > stack->GetNtrack()) continue;
