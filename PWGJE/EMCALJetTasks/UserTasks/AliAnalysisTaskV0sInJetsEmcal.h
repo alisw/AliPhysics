@@ -138,6 +138,7 @@ private:
   TH1D* fh1EtaJet[fgkiNBinsCent]; //! jet eta
   TH2D* fh2EtaPtJet[fgkiNBinsCent]; //! jet eta-pT
   TH1D* fh1PhiJet[fgkiNBinsCent]; //! jet phi
+  TH1D* fh1PtJetTrackLeading[fgkiNBinsCent]; //! pt spectra of leading jet tracks
   TH1D* fh1NJetPerEvent[fgkiNBinsCent]; //! number of jets per event
   TH1D* fh1NRndConeCent; //! number of generated random cones in centrality bins
   TH2D* fh2EtaPhiRndCone[fgkiNBinsCent]; //! random cone eta-pT
