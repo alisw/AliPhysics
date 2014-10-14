@@ -1095,16 +1095,27 @@ void AliEveConfigManager::SetEventInEventManager()
 
 void AliEveConfigManager::StorageManagerChangedState(int state)
 {
+  AliEveEventManager *manager = AliEveEventManager::GetMaster();
+  AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+
+  if (manager->IsOnlineMode()) {
     if (state == 0)// storage manager is down
-    {
-        fStoragePopup->DisableEntry(kStorageListEvents);
+      {
         fStoragePopup->DisableEntry(kStorageMarkEvent);
-    }
+	listEventsTab->SetOfflineMode(kTRUE);
+
+      }
     else if(state == 1)// storage manager is alive
-    {
-        fStoragePopup->EnableEntry(kStorageListEvents);
+      {
         fStoragePopup->EnableEntry(kStorageMarkEvent);
-    }
+	listEventsTab->SetOfflineMode(kFALSE);
+
+      }
+  }
+}
+
+void AliEveConfigManager::DisableStoragePopup(){
+  fStoragePopup->DisableEntry(kStorageMarkEvent);
 }
 
 
