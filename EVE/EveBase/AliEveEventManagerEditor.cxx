@@ -306,13 +306,16 @@ void AliEveEventManagerWindow::DoSetTrigSel()
 //______________________________________________________________________________
 void AliEveEventManagerWindow::Update(int state)
 {
-  AliESDEvent*  esd = fM->GetESD();
-  AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
-  AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
 
   Bool_t autoLoad = fM->GetAutoLoad();
   Bool_t extCtrl  = fM->IsUnderExternalControl();
   Bool_t evNavOn  = !autoLoad && !extCtrl;
+
+#ifdef ZMQ
+
+  AliESDEvent*  esd = fM->GetESD();
+  AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+  AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
 
   if (!fM->IsOnlineMode()) {
 
@@ -365,6 +368,7 @@ void AliEveEventManagerWindow::Update(int state)
     fMarkEvent ->SetEnabled(kTRUE);
     listEventsTab->SetOfflineMode(kFALSE);
   }
+#endif
 
   if (1 == state) {
     fRefresh   ->SetEnabled(evNavOn);
@@ -401,6 +405,8 @@ void AliEveEventManagerWindow::Update(int state)
 
 void AliEveEventManagerWindow::StorageManagerChangedState(int state)
 {
+#ifdef ZMQ
+
   Bool_t autoLoad = fM->GetAutoLoad();
   AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
   AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
@@ -431,6 +437,7 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
 	fEventId->SetState(!autoLoad);
       }
   }
+#endif
 }
 
 //------------------------------------------------------------------------------

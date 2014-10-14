@@ -11,7 +11,6 @@
 #define AliEveConfigManager_H
 
 #include "TObject.h"
-#include "AliStorageAdministratorPanelListEvents.h"
 
 class TGPopupMenu;
 
@@ -52,10 +51,6 @@ protected:
     
 private:
     AliEveConfigManager();
-    
-    AliStorageAdministratorPanelListEvents *fListEventsWindow;
-    AliStorageAdministratorPanelListEvents *fListEventsTab;
-
     
     AliEveConfigManager(const AliEveConfigManager&);            // Not implemented
     AliEveConfigManager& operator=(const AliEveConfigManager&); // Not implemented
