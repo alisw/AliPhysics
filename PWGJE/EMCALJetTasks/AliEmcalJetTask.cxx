@@ -577,7 +577,7 @@ void AliEmcalJetTask::FindJets()
     Double_t mcpt       = 0;
     Double_t emcpt      = 0;
 
-    FillJetConstituents(constituents,jet,vertex,jetCount,nt,nc,maxCh,maxNe,ncharged,nneutral,neutralE,mcpt,cemc,emcpt,gall,gemc);
+    FillJetConstituents(constituents,jet,vertex,jetCount,nt,nc,maxCh,maxNe,ncharged,nneutral,neutralE,mcpt,cemc,emcpt,gall,gemc,constituents,0);
     jet->SetNumberOfTracks(nt);
     jet->SetNumberOfClusters(nc);
     jet->SortConstituents();
@@ -623,8 +623,9 @@ void AliEmcalJetTask::FindJets()
 	  AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
 	jet_sub->SetLabel(ijet);
 	 // Fill constituent info
-	std::vector<fastjet::PseudoJet> constituents_sub(fjw.GetJetConstituents(ijet));
-	jet_sub->SetNumberOfTracks(constituents_sub.size());
+        std::vector<fastjet::PseudoJet> constituents_unsub(fjw.GetJetConstituents(ijet));
+	std::vector<fastjet::PseudoJet> constituents_sub = jets_sub[ijet].constituents(); 
+        jet_sub->SetNumberOfTracks(constituents_sub.size());
 	jet_sub->SetNumberOfClusters(constituents_sub.size());
 	Int_t nt            = 0;
 	Int_t nc            = 0;
@@ -638,8 +639,8 @@ void AliEmcalJetTask::FindJets()
 	Int_t nneutral      = 0;
 	Double_t mcpt       = 0;
 	Double_t emcpt      = 0;
-
-	FillJetConstituents(constituents_sub,jet_sub,vertex,jetCount,nt,nc,maxCh,maxNe,ncharged,nneutral,neutralE,mcpt,cemc,emcpt,gall,gemc);
+       
+	FillJetConstituents(constituents_sub,jet_sub,vertex,jetCount,nt,nc,maxCh,maxNe,ncharged,nneutral,neutralE,mcpt,cemc,emcpt,gall,gemc,constituents_unsub,1);
 	jet_sub->SetNumberOfTracks(nt);
 	jet_sub->SetNumberOfClusters(nc);
 	jet_sub->SortConstituents();
@@ -756,7 +757,7 @@ Bool_t AliEmcalJetTask::DoInit()
 }
 
 //___________________________________________________________________________________________________________________
-void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& constituents,AliEmcalJet *jet,Double_t vertex[3],Int_t jetCount,Int_t& nt,Int_t& nc,Double_t& maxCh,Double_t& maxNe,Int_t& ncharged,Int_t& nneutral,Double_t& neutralE,Double_t& mcpt,Int_t& cemc,Double_t& emcpt,Int_t& gall,Int_t& gemc){
+void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& constituents,AliEmcalJet *jet,Double_t vertex[3],UInt_t jetCount,Int_t& nt,Int_t& nc,Double_t& maxCh,Double_t& maxNe,Int_t& ncharged,Int_t& nneutral,Double_t& neutralE,Double_t& mcpt,Int_t& cemc,Double_t& emcpt,Int_t& gall,Int_t& gemc,std::vector<fastjet::PseudoJet>& constituentsunsub,Int_t flagsub){
     nt            = 0;
     nc            = 0;
     neutralE   = 0;
@@ -769,9 +770,11 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
     nneutral      = 0;
     mcpt       = 0;
     emcpt      = 0;
+    Int_t uid   = -1;
    AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
     for(UInt_t ic = 0; ic < constituents.size(); ++ic) {
-      Int_t uid = constituents[ic].user_index();
+      if(flagsub==0) uid = constituents[ic].user_index();
+      if(flagsub!=0) uid=GetIndexSub(constituents[ic].perp(),constituentsunsub);
       AliDebug(3,Form("Processing constituent %d", uid));
       if ((uid == -1) /*&& (constituents[ic].kt2() < 1e-25)*/) { //ghost particle
         ++gall;
@@ -819,7 +822,7 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
           emcpt += cPt;
           ++cemc;
         }
-
+	// cout<<"Adding the track"<<endl;
         jet->AddTrackAt(tid, nt);
         ++nt;
       } else if (fClus) { // cluster constituent
@@ -878,4 +881,13 @@ void  AliEmcalJetTask::FillJetConstituents(std::vector<fastjet::PseudoJet>& cons
       }
     }
 }
+//______________________________________________________________________________________
+Int_t AliEmcalJetTask::GetIndexSub(Double_t ptsub,std::vector<fastjet::PseudoJet>& constituentsunsub){
+
+    for(UInt_t ii=0;ii<constituentsunsub.size();ii++){
+    Double_t ptunsub=constituentsunsub[ii].perp();
+    //cout<<ptunsub<<" "<<ptsub<<endl; 
+    if(ptsub==ptunsub) return constituentsunsub[ii].user_index();
+    
+    } return -1;}
 //______________________________________________________________________________________

@@ -5,6 +5,7 @@ void *AddTaskDFilterAndCorrelations(
   Bool_t reco = kTRUE /*must be true if theMCon is false*/,
   TString suffix = "",
   TString jetArrname = "",
+  TString trackArrname = "PicoTracks",
   Bool_t triggerOnLeadingJet = kFALSE,
   Int_t leadingHadType = 0 /*0 = charged, 1 = neutral, 2 = both*/,
   Float_t R = 0.4,
@@ -89,13 +90,22 @@ void *AddTaskDFilterAndCorrelations(
   AliAnalysisTaskFlavourJetCorrelations *taskCorr = new AliAnalysisTaskFlavourJetCorrelations(taskCorrName.Data(), 
      analysiscuts, cand);
   
-  taskCorr->SetJetsName(jetArrname);
+  taskCorr->SetJetArrayName(jetArrname);
+  taskCorr->SetTrackArrayName(trackArrname);
+  //taskCorr->SetRadius(R);
+  AliParticleContainer *trackCont  = taskCorr->AddParticleContainer(trackArrname);
+  trackCont->SetClassName("AliVTrack");
+  
+  AliJetContainer *jetCont = taskCorr->AddJetContainer(jetArrname,cutType,R);
+  if(jetCont) {
+     jetCont->ConnectParticleContainer(trackCont);
+     //jetCont->SetJetAcceptanceType(cutType);
+     jetCont->SetJetPtCut(jptcut);
+     jetCont->SetPercAreaCut(percjetareacut);
+  }
   taskCorr->SetMC(theMCon);
   taskCorr->SetUseReco(reco);
   taskCorr->SetTriggerOnLeadingJet(triggerOnLeadingJet);
-  taskCorr->SetJetAcceptanceType(cutType);
-  taskCorr->SetJetPtCut(jptcut);
-  taskCorr->SetPercAreaCut(percjetareacut);
   taskCorr->SetTypeDJetSelection(typeDjet);
   if(theMCon && trType!=AliAnalysisTaskEmcal::kND){
      taskCorr->SetCaloTriggerPatchInfoName("EmcalTriggers");

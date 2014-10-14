@@ -63,7 +63,7 @@ using std::endl;
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP() 
 : AliAnalysisTaskSE(), 
   fisPrimCut(kFALSE),
-  fptc(3),     
+  fptc(1),     
   fListHist(0), 
   fHistEventMultiplicity(0), 
   fHistTrackMultiplicity(0),
@@ -114,6 +114,7 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
   timpactXY(0),
   timpactZ(0),
   tpull(0),
+  tphi(0),
   fESDtrackCuts(0),
   fESDtrackCutsEP(0),
   fPIDResponse(0)
@@ -129,7 +130,7 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name) 
 : AliAnalysisTaskSE(name), 
   fisPrimCut(kFALSE),
-  fptc(3),     
+  fptc(1),     
   fListHist(0), 
   fHistEventMultiplicity(0), 
   fHistTrackMultiplicity(0),
@@ -180,6 +181,7 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name)
   timpactXY(0),
   timpactZ(0),
   tpull(0),
+  tphi(0),
   fESDtrackCuts(0),
   fESDtrackCutsEP(0),
   fPIDResponse(0)
@@ -403,7 +405,7 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
     ftree->Branch("timpactXY"        ,&timpactXY        ,"timpactXY/D"      );
     ftree->Branch("timpactZ"         ,&timpactZ         ,"timpactZ/D"       );
     ftree->Branch("tpull"            ,&tpull            ,"tpull/D"          );
-
+    ftree->Branch("tphi"             ,&tphi             ,"tphi/D"          );
 
   }
 
@@ -459,7 +461,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   ULong_t  status=0;
  
   Double_t pmax  = 10;
-  Double_t ptmax = 10;
+  Double_t ptmax = 7;
   // Primary vertex cut
   
   const AliESDVertex *vtx = lESDevent->GetPrimaryVertexTracks();
@@ -728,6 +730,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       timpactXY        = impactXY;
       timpactZ         = impactZ;
       tpull            = pullTPC;
+      tphi             = tPhi;
 
       ftree->Fill();
     } 
