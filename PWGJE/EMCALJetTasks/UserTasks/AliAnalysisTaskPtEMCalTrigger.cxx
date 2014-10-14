@@ -192,7 +192,7 @@ namespace EMCalTriggerPtAnalysis {
     const TAxis *patchenergyaxes[4];
     for(int iaxis = 0; iaxis < 4; ++iaxis) patchenergyaxes[iaxis] = hpatchenergyaxes + iaxis;
     TAxis hpatchampaxes[4];
-    DefineAxis(hpatchampaxes[0], "amplitude", "Patch energy (GeV)", 10000, 0., 1000.);
+    DefineAxis(hpatchampaxes[0], "amplitude", "Patch energy (GeV)", 10000, 0., 10000.);
     DefineAxis(hpatchampaxes[1], "eta", "#eta", etabinning);
     DefineAxis(hpatchampaxes[2], "phi", "#phi",  20, 0, 2 * TMath::Pi());
     DefineAxis(hpatchampaxes[3], "isMain", "Main trigger", 2, -0.5, 1.5);
