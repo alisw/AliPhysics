@@ -5,6 +5,7 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
   UInt_t pSel=AliVEvent::kAny,
   TString trigClass="",
   TString suffix = "",
+  TString trackArrname = "PicoTracks",
   Bool_t triggerOnLeadingJet = kFALSE,
   Int_t leadingHadType = 0 /*0 = charged, 1 = neutral, 2 = both*/,
   Float_t R = 0.4,
@@ -33,7 +34,8 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
      // create the task
      AliAnalysisTaskFlavourJetCorrelations *task = new AliAnalysisTaskFlavourJetCorrelations("AnaTaskFlavourJetCorrelations", 
      	dummyDcut, dummycand, bJetOnly);
-     task->SetJetsName(jetArrname);
+     task->SetJetArrayName(jetArrname);
+     task->SetTrackArrayName(trackArrname);
      task->SetMC(theMCon);
      task->SetUseReco(reco);
      task->SetTriggerOnLeadingJet(triggerOnLeadingJet);

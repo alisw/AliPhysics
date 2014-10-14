@@ -107,7 +107,8 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   Double_t timpactXY        ;
   Double_t timpactZ         ;
   Double_t tpull            ;
- 
+  Double_t tphi             ;
+  
   //---------------------------------------------------------------------------
   AliESDtrackCuts *fESDtrackCuts; 
   AliESDtrackCuts *fESDtrackCutsEP;
