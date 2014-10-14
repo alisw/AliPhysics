@@ -3595,7 +3595,7 @@ void AliAnaParticleIsolation::InitParameters()
   fDecayBits[2] = AliNeutralMesonSelection::kPi0Side;
   fDecayBits[3] = AliNeutralMesonSelection::kEtaSide;
   
-  fNBkgBin = 10;
+  fNBkgBin = 11;
   fBkgBinLimit[ 0] = 00.0; fBkgBinLimit[ 1] = 00.2; fBkgBinLimit[ 2] = 00.3; fBkgBinLimit[ 3] = 00.4; fBkgBinLimit[ 4] = 00.5;
   fBkgBinLimit[ 5] = 01.0; fBkgBinLimit[ 6] = 01.5; fBkgBinLimit[ 7] = 02.0; fBkgBinLimit[ 8] = 03.0; fBkgBinLimit[ 9] = 05.0;
   fBkgBinLimit[10] = 10.0; fBkgBinLimit[11] = 100.;
