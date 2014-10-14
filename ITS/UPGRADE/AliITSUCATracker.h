@@ -11,16 +11,14 @@
 
 #define _TUNING_
 
-#include "AliTracker.h"
-#include "AliITSUGeomTGeo.h"
-#include <TClonesArray.h>
 #include <vector>
-#include "AliITSUMatLUT.h"
-#include "AliITSUAux.h"
-#include "AliExternalTrackParam.h"
-#include "AliITSUCATrackingStation.h"
+
+#include <TClonesArray.h>
 #include "AliITSUCACell.h"
-#include "AliITSUTrackCooked.h"
+#include "AliITSUCATrackingStation.h"
+typedef struct AliITSUCATrackingStation::ClsInfo ClsInfo_t;
+
+#include "AliITSUTrackerGlo.h"
 
 class AliITSUReconstructor;
 class AliITSURecoDet;
@@ -31,7 +29,9 @@ class TTree;
 class AliCluster;
 class AliESDEvent;
 
-typedef struct AliITSUCATrackingStation::ClsInfo ClsInfo_t;
+#ifdef _TUNING_
+#include <TH1F.h>
+#endif
 
 using std::vector;
 
@@ -48,7 +48,7 @@ public:
 };
 
 //__________________________________________________________________________________________________
-class AliITSUCATracker : public AliTracker {
+class AliITSUCATracker : public AliITSUTrackerGlo {
 public:
   AliITSUCATracker(AliITSUReconstructor* rec=0);
   virtual ~AliITSUCATracker();
@@ -62,18 +62,12 @@ public:
   AliCluster *GetCluster(Int_t index) const;
 
   // Possibly, other public functions
-  void     Init(AliITSUReconstructor* rec);
-  Double_t RefitTrack(AliExternalTrackParam* trc, Int_t clInfo[2 * AliITSUAux::kMaxLayers], Double_t rDest, Int_t stopCond);
-  Bool_t   PropagateSeed(AliExternalTrackParam *seed, Double_t xToGo, Double_t mass, Double_t maxStep=1.0, Bool_t matCorr=kTRUE);
-  Double_t GetMaterialBudget(const double* pnt0, const double* pnt1, double& x2x0, double& rhol) const;
-  Bool_t   GoToEntranceToLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kFALSE);
-  Bool_t   GoToExitFromLayer(AliExternalTrackParam* seed, AliITSURecoLayer* lr, Int_t dir, Bool_t check=kTRUE);
-  Bool_t   TransportToLayerX(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo, Double_t xStop);
-  Bool_t   TransportToLayer(AliExternalTrackParam* seed, Int_t lFrom, Int_t lTo, Double_t rLim=-1);
-
-  void SetChi2Cut(float cut) { fChi2Cut = cut; }
-  void SetPhiCut(float cut) { fPhiCut = cut; }
-  void SetZCut(float cut) { fZCut = cut; }
+  Double_t GetMaterialBudget(const double* p0, const double* p1, double& x2x0, double& rhol) const;
+  Bool_t   GetSAonly() const { return fSAonly; }
+  void     SetChi2Cut(float cut) { fChi2Cut = cut; }
+  void     SetPhiCut(float cut) { fPhiCut = cut; }
+  void     SetSAonly(Bool_t sa=kTRUE) { fSAonly=sa; }
+  void     SetZCut(float cut) { fZCut = cut; }
 
 #ifdef _TUNING_
   bool                            fGood;
@@ -94,35 +88,25 @@ public:
   TH1F *                          fPhi;
   TH1F *                          fPhiF;
   TH1F *                          fNEntries;
+  void ResetHistos();
 #endif
   //
 protected:
-  AliITSUCATracker(const AliITSUCATracker&);
-
-  //  void MakeTriplets();
-  void CellsTreeTraversal(vector<AliITSUCARoad> &roads, const int &iD, const int &doubl);
-  Bool_t InitTrackParams(AliITSUTrackCooked &track, int points[]);
-  void FindTracksCA(int iteration);
-  void GlobalFit();
-  void MergeTracks( vector<AliITSUTrackCooked> &vec, bool flags[] );
-  float FilterSeed(AliITSUCACell &c1, AliITSUCACell &c2, int lrStart);
-  bool CellParams(int l, ClsInfo_t* c1, ClsInfo_t* c2, ClsInfo_t* c3, float &curv, float np[3]);
-
+  bool   CellParams(int l, ClsInfo_t* c1, ClsInfo_t* c2, ClsInfo_t* c3, float &curv, float np[3]);
+  void   CellsTreeTraversal(vector<AliITSUCARoad> &roads, const int &iD, const int &doubl);
+  void   FindTracksCA(int iteration);
+  void   MakeCells(int iteration);
   Bool_t RefitAt(Double_t xx, AliITSUTrackCooked *t, const AliITSUTrackCooked *c);
+  void   SetCuts(int it);
+  void   SetLabel(AliITSUTrackCooked &t, Float_t wrong);
+  
 private:
+  AliITSUCATracker(const AliITSUCATracker&);
   AliITSUCATracker &operator=(const AliITSUCATracker &tr);
-  void SetLabel(AliITSUTrackCooked &t, Float_t wrong);
 
   // Data members
 
-  // classes for interfacing the geometry, materials etc.
-  AliITSUReconstructor*           fReconstructor;  // ITS global reconstructor
-  AliITSURecoDet*                 fITS;            // interface to ITS, borrowed from reconstructor
-  AliITSUMatLUT*                  fMatLUT;         // material lookup table
-  Bool_t                          fUseMatLUT;      //! use material lookup table rather than TGeo
-  Double_t                        fCurrMass;       // assumption about particle mass
-
-
+  // classes for interfacing the geometry, materials etc
   // Internal tracker arrays, layers, modules, etc
   AliITSUCATrackingStation        fLayer[7];
   vector<bool>                    fUsedClusters[7];
@@ -132,8 +116,20 @@ private:
   vector<Doublets>                fDoublets[6];
   vector<AliITSUCACell>           fCells[5];
   TClonesArray                   *fCandidates[4];
+  Bool_t                          fSAonly;             // kTRUE if the standalone tracking only
 
-  static const Double_t           fgkToler;        // tracking tolerance
+  
+  // Cuts
+  float fCPhi;
+  float fCDTanL;
+  float fCDPhi;
+  float fCZ;
+  float fCDCAz[5];
+  float fCDCAxy[5];
+  float fCDN[4];
+  float fCDP[4];
+  float fCDZ[6];
+
   static const Double_t           fgkChi2Cut;      // chi2 cut during track merging
   static const int                fgkNumberOfIterations;
   static const float              fgkR[7];
