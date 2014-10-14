@@ -2065,7 +2065,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
              Form("Decay bit %d, #it{p}_{T}^{lead. in cone}, %2.2f<#it{p}_{T}^{cand}<%2.2f GeV/#it{c}, %s",
                   fDecayBits[idecay],fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax);
             fhPtTrigBinPtLeadConeDecay[binDecay]->SetYTitle("d #it{N} / d #it{p}_{T}");
-            fhPtTrigBinPtLeadConeDecay[binDecay]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhPtTrigBinPtLeadConeDecay[binDecay]->SetXTitle("#it{p}_{T}^{lead in cone} (GeV/#it{c})");
             outputContainer->Add(fhPtTrigBinPtLeadConeDecay[binDecay]) ;
             
             fhPtTrigBinSumPtConeDecay[binDecay]  = new TH1F
@@ -2073,7 +2073,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
              Form("Decay bit %d, #Sigma #it{p}_{T}^{in cone} %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, %s",
                   fDecayBits[idecay],fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], parTitle.Data()),nptsumbins,ptsummin,ptsummax);
             fhPtTrigBinSumPtConeDecay[binDecay]->SetYTitle("d #it{N} / d #it{p}_{T}");
-            fhPtTrigBinSumPtConeDecay[binDecay]->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+            fhPtTrigBinSumPtConeDecay[binDecay]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
             outputContainer->Add(fhPtTrigBinSumPtConeDecay[binDecay]) ;
           }
         }
@@ -2088,7 +2088,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
              Form("#it{p}_{T}^{lead. in cone}, %2.2f<#it{p}_{T}^{cand}<%2.2f GeV/#it{c}, MC %s, %s",
                   fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax);
             fhPtTrigBinPtLeadConeMC[binmc]->SetYTitle("d #it{N} / d #it{p}_{T}");
-            fhPtTrigBinPtLeadConeMC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhPtTrigBinPtLeadConeMC[binmc]->SetXTitle("#it{p}_{T}^{lead in cone} (GeV/#it{c})");
             outputContainer->Add(fhPtTrigBinPtLeadConeMC[binmc]) ;
             
             fhPtTrigBinSumPtConeMC[binmc]  = new TH1F
@@ -2096,7 +2096,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
              Form("#Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC %s, %s",
                   fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptsumbins,ptsummin,ptsummax);
             fhPtTrigBinSumPtConeMC[binmc]->SetYTitle("d #it{N} / d #it{p}_{T}");
-            fhPtTrigBinSumPtConeMC[binmc]->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+            fhPtTrigBinSumPtConeMC[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
             outputContainer->Add(fhPtTrigBinSumPtConeMC[binmc]) ;
           } // MC particle loop
         } // MC
@@ -2108,7 +2108,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
            Form("#lambda_{0} vs #it{p}_{T}^{lead. in cone}, %2.2f<#it{p}_{T}^{cand}<%2.2f GeV/#it{c}, %s",
                 fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
           fhPtTrigBinLambda0vsPtLeadCone[ibin]->SetYTitle("#lambda_{0}^{2}");
-          fhPtTrigBinLambda0vsPtLeadCone[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhPtTrigBinLambda0vsPtLeadCone[ibin]->SetXTitle("#it{p}_{T}^{lead in cone} (GeV/#it{c})");
           outputContainer->Add(fhPtTrigBinLambda0vsPtLeadCone[ibin]) ;
           
           fhPtTrigBinLambda0vsSumPtCone[ibin]  = new TH2F
@@ -2116,7 +2116,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
            Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone} %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, %s",
                 fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], parTitle.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
           fhPtTrigBinLambda0vsSumPtCone[ibin]->SetYTitle("#lambda_{0}^{2}");
-          fhPtTrigBinLambda0vsSumPtCone[ibin]->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhPtTrigBinLambda0vsSumPtCone[ibin]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
           outputContainer->Add(fhPtTrigBinLambda0vsSumPtCone[ibin]) ;
           
           if(IsDataMC())
@@ -2129,7 +2129,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                Form("#lambda_{0} vs #it{p}_{T}^{lead. in cone}, %2.2f<#it{p}_{T}^{cand}<%2.2f GeV/#it{c}, MC %s, %s",
                     fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
               fhPtTrigBinLambda0vsPtLeadConeMC[binmc]->SetYTitle("#lambda_{0}^{2}");
-              fhPtTrigBinLambda0vsPtLeadConeMC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              fhPtTrigBinLambda0vsPtLeadConeMC[binmc]->SetXTitle("#it{p}_{T}^{lead in cone} (GeV/#it{c})");
               outputContainer->Add(fhPtTrigBinLambda0vsPtLeadConeMC[binmc]) ;
               
               fhPtTrigBinLambda0vsSumPtConeMC[binmc]  = new TH2F
@@ -2137,7 +2137,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                Form("#lambda_{0} vs #Sigma #it{p}_{T}^{in cone}, %2.2f <#it{p}_{T}^{cand}< %2.2f GeV/#it{c}, MC %s, %s",
                     fPtTrigBinLimit[ibin],fPtTrigBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptsumbins,ptsummin,ptsummax,ssbins,ssmin,ssmax);
               fhPtTrigBinLambda0vsSumPtConeMC[binmc]->SetYTitle("#lambda_{0}^{2}");
-              fhPtTrigBinLambda0vsSumPtConeMC[binmc]->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+              fhPtTrigBinLambda0vsSumPtConeMC[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
               outputContainer->Add(fhPtTrigBinLambda0vsSumPtConeMC[binmc]) ;
             } // MC particle loop
           } // MC
