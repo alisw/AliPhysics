@@ -24,12 +24,30 @@
 #include "AliPID.h"
 #endif
 
-TH1F* CreateHisto(const char* name, const char* title, 
-		  Int_t nBins, Double_t xMin, Double_t xMax,
-		  const char* xLabel = NULL, const char* yLabel = NULL)
+//____________________________________________________________________
+/** 
+ * Create a histogram 
+ * 
+ * @param name   Name of histogram
+ * @param title  Title of histogram
+ * @param nBins  Number of bins 
+ * @param xMin   Lease X valuee 
+ * @param xMax   Largest X value 
+ * @param xLabel X label
+ * @param yLabel Y label 
+ * 
+ * @return newly allocated histogram 
+ */
+TH1* 
+CreateHisto(const char* name, 
+	    const char* title, 
+	    Int_t       nBins, 
+	    Double_t    xMin, 
+	    Double_t    xMax,
+	    const char* xLabel = NULL, 
+	    const char* yLabel = NULL)
 {
-// create a histogram
-
+  // create a histogram
   TH1F* result = new TH1F(name, title, nBins, xMin, xMax);
   result->SetOption("E");
   if (xLabel) result->GetXaxis()->SetTitle(xLabel);
@@ -38,12 +56,21 @@ TH1F* CreateHisto(const char* name, const char* title,
   return result;
 }
 
-TH1F* CreateEffHisto(TH1F* hGen, TH1F* hRec)
+//____________________________________________________________________
+/** 
+ * Create efficiency histogram 
+ * 
+ * @param hGen Generated 
+ * @param hRec Reconstructed 
+ * 
+ * @return Newly allocated histogram
+ */
+TH1* CreateEffHisto(TH1* hGen, TH1* hRec)
 {
-// create an efficiency histogram
-
+  // create an efficiency histogram
+  
   Int_t nBins = hGen->GetNbinsX();
-  TH1F* hEff = (TH1F*) hGen->Clone("hEff");
+  TH1* hEff = static_cast<TH1*>(hGen->Clone("hEff"));
   hEff->SetTitle("");
   hEff->SetStats(kFALSE);
   hEff->SetMinimum(0.);
@@ -68,35 +95,50 @@ TH1F* CreateEffHisto(TH1F* hGen, TH1F* hRec)
   return hEff;
 }
 
-Bool_t FitHisto(TH1* histo, Double_t& res, Double_t& resError)
+//____________________________________________________________________
+/** 
+ * Fit a Gaussian distribution to data in histogram 
+ * 
+ * @param histo      Histogram to fit 
+ * @param res        On return, the result 
+ * @param resError   On return, the error on the result
+ * 
+ * @return true on success, false if too few entries 
+ */
+Bool_t 
+FitHisto(TH1* histo, Double_t& res, Double_t& resError)
 {
-// fit a gaussian to a histogram
-
   static TF1* fitFunc = new TF1("fitFunc", "gaus");
   fitFunc->SetLineWidth(2);
   fitFunc->SetFillStyle(0);
   Double_t maxFitRange = 2;
 
-  if (histo->Integral() > 50) {
-    Float_t mean = histo->GetMean();
-    Float_t rms = histo->GetRMS();
-    fitFunc->SetRange(mean - maxFitRange*rms, mean + maxFitRange*rms);
-    fitFunc->SetParameters(mean, rms);
-    histo->Fit(fitFunc, "QRI0");
-    histo->GetFunction("fitFunc")->ResetBit(1<<9);
-    res = TMath::Abs(fitFunc->GetParameter(2));
-    resError = TMath::Abs(fitFunc->GetParError(2));
-    return kTRUE;
-  }
+  if (histo->Integral() <= 50) return false;
 
-  return kFALSE;
+  Float_t mean = histo->GetMean();
+  Float_t rms = histo->GetRMS();
+  fitFunc->SetRange(mean - maxFitRange*rms, mean + maxFitRange*rms);
+  fitFunc->SetParameters(mean, rms);
+  histo->Fit(fitFunc, "QRI0");
+  histo->GetFunction("fitFunc")->ResetBit(1<<9);
+  res = TMath::Abs(fitFunc->GetParameter(2));
+  resError = TMath::Abs(fitFunc->GetParError(2));
+  return true;
 }
 
-
+//====================================================================
+/** 
+ * Run the check.
+ * 
+ * @param gAliceFileName  MC steering file 
+ * @param esdFileName     Reconstructed data 
+ * 
+ * @return true on success 
+ */
 Bool_t Check(const char* gAliceFileName = "galice.root", 
 	     const char* esdFileName = "AliESDs.root")
 {
-// check the content of the ESD
+  // check the content of the ESD
  
   // check values
   Int_t    checkNGenLow = 1;
@@ -691,3 +733,6 @@ Bool_t Check(const char* gAliceFileName = "galice.root",
   Info("CheckESD", "check of ESD was successfull");
   return kTRUE;
 }
+// 
+// EOF
+//

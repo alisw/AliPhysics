@@ -604,10 +604,6 @@ struct Setup
   }
 };
 
-
-
-
-
 void Config()
 {
   // --- Get settings from environment variables --------------------
@@ -695,47 +691,23 @@ void Config()
   // --- Go back to galice.root --------------------------------------
   rl->CdGAFile();
   
-  // --- Switch on and off detectors ---------------------------------
-  Int_t iABSO  = 1;
-  Int_t iACORDE= 0;
-  Int_t iDIPO  = 1;
-  Int_t iEMCAL = 1;
-  Int_t iFMD   = 1;
-  Int_t iFRAME = 1;
-  Int_t iHALL  = 1;
-  Int_t iITS   = 1;
-  Int_t iMAG   = 1;
-  Int_t iMUON  = 1;
-  Int_t iPHOS  = 1;
-  Int_t iPIPE  = 1;
-  Int_t iPMD   = 1;
-  Int_t iHMPID = 1;
-  Int_t iSHIL  = 1;
-  Int_t iT0    = 1;
-  Int_t iTOF   = 1;
-  Int_t iTPC   = 1;
-  Int_t iTRD   = 1;
-  Int_t iVZERO = 1;
-  Int_t iZDC   = 1;
-  
-
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
   
   
-  if (iMAG)    new AliMAG("MAG", "Magnet");
-  if (iABSO)   new AliABSOv3("ABSO", "Muon Absorber");
-  if (iDIPO)   new AliDIPOv3("DIPO", "Dipole version 3");
-  if (iHALL)   new AliHALLv3("HALL", "Alice Hall");
-  if (iFRAME)  (new AliFRAMEv2("FRAME", "Space Frame"))->SetHoles(1);
-  if (iSHIL)   new AliSHILv3("SHIL", "Shielding Version 3");
-  if (iPIPE)   new AliPIPEv3("PIPE", "Beam Pipe");
-  if (iITS)    new AliITSv11("ITS","ITS v11");
-  // if (iITS)   new AliITSv11Hybrid("ITS","ITS v11Hybrid");
-  if (iTPC)    new AliTPCv2("TPC", "Default");
-  if (iTOF)    new AliTOFv6T0("TOF", "normal TOF");
-  if (iHMPID)  new AliHMPIDv3("HMPID", "normal HMPID");
-  if (iZDC) {
+  if (detCfg->UseMAG())   new AliMAG("MAG", "Magnet");
+  if (detCfg->UseABSO())  new AliABSOv3("ABSO", "Muon Absorber");
+  if (detCfg->UseDIPO())  new AliDIPOv3("DIPO", "Dipole version 3");
+  if (detCfg->UseHALL())  new AliHALLv3("HALL", "Alice Hall");
+  if (detCfg->UseFRAME()) (new AliFRAMEv2("FRAME", "Space Frame"))->SetHoles(1);
+  if (detCfg->UseSHIL())  new AliSHILv3("SHIL", "Shielding Version 3");
+  if (detCfg->UsePIPE())  new AliPIPEv3("PIPE", "Beam Pipe");
+  if (detCfg->UseITS())   new AliITSv11("ITS","ITS v11");
+  // if (detCfg->UseITS())   new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+  if (detCfg->UseTPC())   new AliTPCv2("TPC", "Default");
+  if (detCfg->UseTOF())   new AliTOFv6T0("TOF", "normal TOF");
+  if (detCfg->UseHMPID()) new AliHMPIDv3("HMPID", "normal HMPID");
+  if (detCfg->UseZDC()) {
     AliZDC *ZDC = 0;
     if (grp->period.EqualTo("LHC10h")) {
       // Need to use older ZDC for PbPb 
@@ -763,7 +735,7 @@ void Config()
       ZDC->SetBeamEnergy(82.*grp->beamEnergy/208.);
     }
   }
-  if (iTRD) {
+  if (detCfg->UseTRD()) {
     AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
     AliTRDgeometry *geoTRD = TRD->GetGeometry();
     // Total of 18 super modules. We turn them all off by default 
@@ -799,18 +771,18 @@ void Config()
       geoTRD->SetSMstatus(13,1);
     }      
   }
-  if (iFMD)    new AliFMDv1("FMD", "normal FMD");
-  if (iMUON) {
+  if (detCfg->UseFMD())    new AliFMDv1("FMD", "normal FMD");
+  if (detCfg->UseMUON()) {
     AliMUON *MUON = new AliMUONv1("MUON", "default");
     MUON->SetTriggerEffCells(1); // not needed if raw masks
     MUON->SetTriggerResponseV1(2);
   }
-  if (iPHOS)   new AliPHOSv1("PHOS", "noCPV_Modules123");
-  if (iPMD)    new AliPMDv1("PMD", "normal PMD");
-  if (iT0)     new AliT0v1("T0", "T0 Detector");
-  if (iEMCAL)  new AliEMCALv2("EMCAL", "EMCAL_COMPLETE12SMV1");
-  if (iACORDE) new AliACORDEv1("ACORDE", "normal ACORDE");
-  if (iVZERO)  new AliVZEROv7("VZERO", "normal VZERO");
+  if (detCfg->UsePHOS())   new AliPHOSv1("PHOS", "noCPV_Modules123");
+  if (detCfg->UsePMD())    new AliPMDv1("PMD", "normal PMD");
+  if (detCfg->UseT0())     new AliT0v1("T0", "T0 Detector");
+  if (detCfg->UseEMCAL())  new AliEMCALv2("EMCAL", "EMCAL_COMPLETE12SMV1");
+  if (detCfg->UseACORDE()) new AliACORDEv1("ACORDE", "normal ACORDE");
+  if (detCfg->UseVZERO())  new AliVZEROv7("VZERO", "normal VZERO");
 }
 
 

@@ -31,6 +31,66 @@ However, since all steps need to have access to the GRP data, it means
 that all steering scripts must load `GRP.C`, and hence we can at no
 point use any of previously used scripts. 
 
+## Setting up a simulation
+
+The idea of these scripts are that we only change things in one
+well-defined place, and that the scripts react to JDL parameters so
+that we can re-use the scripts (and settings) for many kinds of
+simulation passes.
+
+### Configuring which detectors to include
+
+Create a class called `DetCfg` deriving from `VirtualDetCfg` and
+have it return true/false for the detectors you want to have on/off.
+The class _must_ be declared in `DetConfig.C` and the function
+`DetConfig()` _must_ set the global object pointer `detCfg` to point
+to a new instance of the class `DetCfg`.
+
+The script `DetConfig.C` is executed by both `Simulate.C` and
+`Reconstruct.C` to get the list of enabled detectors.  The script is
+also executed by `AOD.C` and `QA.C` to ensure that we do not add tasks
+for which we have no data because the needed detectors was turned
+off. 
+
+### Configuring OCDB specific storage locations
+
+Create a class called `OCDBCfg` deriving from `VirtualOCDBCfg` and put
+it in the script `OCDBConfig.C`.  The function `OCDBConfig` _must_ set
+the global object pointer `ocdbCfg` to point to a new instance of the
+class `OCDBCfg`. 
+
+The script `OCDBConfig.C` is executed by both `Simulate.C` and
+`Reconstruct.C` to set the list of specific storage locations.
+
+One can override `VirtualOCDBCfg::Prefix()` to return the default
+prefix for specific storage locations.  The member function
+`VirtualOCDBCfg::Init(bool forSim)` _must_ declare all specific storage
+locations.  The parameter `forSim` is true when executed from
+`Simulate.C` and false when executed from `Reconstruct.C`
+
+### Configuring the QA tasks
+
+Create the class `QACfg` deriving from `VirtualQACfg`, and override
+member functions from `VirtualQACfg` to enable/disable specific QA
+tasks and options.  Put the class `QACfg` in the script `QAConfig.C`.
+The function `QAConfig` _must_ set the global object pointer
+`qaCfg` to point to a new instance of the class `QACfg`.
+
+The script `QAConfig.C` is executed by `QA.C` to set which tasks and
+features to include. 
+
+### Configuring the AOD tasks
+
+Create the class `AODCfg` deriving from `VirtualAODCfg`, and override
+member functions from `VirtualAODCfg` to enable/disable specific AOD
+tasks and options.  Put the class `AODCfg` in the script `AODConfig.C`.
+The function `AODConfig` _must_ set the global object pointer
+`aodCfg` to point to a new instance of the class `AODCfg`.
+
+The script `AODConfig.C` is executed by `AOD.C` to set which tasks and
+features to include. 
+
+
 ## The files
 
 * `run.sh`: main steering executable (same as
@@ -45,6 +105,8 @@ point use any of previously used scripts.
 * `Check.C`: Perform ESD check. Derived from `CheckESD.C`. 
 * `Config.C`: Simulation configuration script.  Uses `GRP.C` to
   automatically load the proper parameters for the Anchor run.
+* `DetConfig.C`: Configuration script that sets which detectors to
+  turn on. This is used by all passes to ensure consistency. 
 * `Final.jdl.in`: Skeleton for final merging JDL.  This is used for
   both QA and AOD filtering.
 * `GRP.C`: Script that defines the global variable `grp` which is
@@ -56,6 +118,9 @@ point use any of previously used scripts.
   tell. 
 * `Merge.jdl.in`: Skeleton for intermediate merging JDL.  This is used for
   both QA and AOD filtering.
+* `OCDBConfig.C`: Set-up specific storage locations for simulation
+  and reconstruction.  It defines the global object ocdbCfg which is
+  used in the `Simulate.C` and `Reconstruct.C` scripts. 
 * `QA.C`: QA train set-up. Derived from `QAtrainsim.C` but
   modified to automatically get GRP parameters from OCDB using the
   script `GRP.C` and set-up the train accordingly. Also, selection of

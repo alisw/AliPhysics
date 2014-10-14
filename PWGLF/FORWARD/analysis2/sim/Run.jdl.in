@@ -42,6 +42,8 @@ Validationcommand="/alice/validation/validation.sh";
 InputFile={
 	"LF:@data@/Check.C",
 	"LF:@data@/Config.C",
+	"LF:@data@/DetConfig.C",
+	"LF:@data@/OCDBConfig.C",
 	"LF:@data@/Reconstruct.C",
 	"LF:@data@/Simulate.C",
 	"LF:@data@/simrun.sh",
@@ -70,7 +72,7 @@ JDLVariables={
 };
 
 #
-splitarguments="--run $1 --event $3 --process $5 --qa --aod --number #alien_counter#";
+splitarguments="--run $1 --event $3 --process $5 --qa --aod --check --number #alien_counter# --bmin 0 --bmax 3";
 split="production:1-$2";
 
-Workdirectorysize={"5000MB"};
+Workdirectorysize={"10000MB"};

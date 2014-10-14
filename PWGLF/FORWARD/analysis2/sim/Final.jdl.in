@@ -43,6 +43,7 @@ Arguments = "$4 $1 $4_Stage_$2.xml $2";
 InputFile = {
 	"LF:@data@/$4.C",
 	"LF:@data@/$4Config.C",
+	"LF:@data@/DetConfig.C",
 	"LF:@data@/GRP.C",
 	"LF:@data@/fmd_corrections.root",
 	"LF:@out@/$3/$1/$4_Stage_$2.xml"
@@ -50,7 +51,7 @@ InputFile = {
 OutputDir = "@out@/$3/$1";
 OutputArchive = {
    "$4_merge_log_archive.zip:std*,fileinfo*.log@disk=1",
-   "$4_merge_archive.zip:*.root,*.stat*@disk=2"
+   "$4_merge_archive.zip:*$4*.root,*.stat*@disk=2"
 };
 TTL = "36000";
 Price = "1";

@@ -247,6 +247,8 @@ push()
 	GRP.C			\
 	Simulate.C		\
 	Config.C		\
+	DetConfig.C		\
+	OCDBConfig.C		\
 	Reconstruct.C		\
 	Check.C			\
 	Tag.C			\
