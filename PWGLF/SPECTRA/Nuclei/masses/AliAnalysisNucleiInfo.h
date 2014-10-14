@@ -14,9 +14,9 @@ class AliVEvent;
 class TH2F;
 class TH2D;
 class TH1F;
+class TH1I;
 class TF1;
 class TF2;
-class TH2D;
 class TGraph;
 class AliESDtrackCuts;
 class TProfile;
@@ -42,7 +42,8 @@ class AliAnalysisNucleiInfo : public AliAnalysisTaskSE {
   void SetDCACut(Double_t DCAxyCUT=1000.0, Double_t DCAzCUT=1000.0) {DCAxyCut=DCAxyCUT; DCAzCut=DCAzCUT;}
   //Other cuts 
   void SetNsigmaTPCCut(Double_t nSigmaTpcCut=2) {NsigmaTpcCut=nSigmaTpcCut;}
-  
+  void SetStartTimeTofRes(Double_t startTimeTofRes=9999.9){StartTimeTofRes=startTimeTofRes;}
+
  private:
   AliAnalysisNucleiInfo(const AliAnalysisNucleiInfo &old); 
   AliAnalysisNucleiInfo& operator=(const AliAnalysisNucleiInfo &source);
@@ -57,6 +58,7 @@ class AliAnalysisNucleiInfo : public AliAnalysisTaskSE {
   Double_t DCAxyCut;                               // Cut on DCA-xy
   Double_t DCAzCut;                                // Cut on DCA-z
   Double_t NsigmaTpcCut;                           // number of sigma Tpc Cut
+  Double_t StartTimeTofRes;
   
   //other:
   Int_t iBconf;                                   //! If Magnetic Field configuration is down or up
@@ -76,6 +78,7 @@ class AliAnalysisNucleiInfo : public AliAnalysisTaskSE {
   
   TH1F *hEta[nBconf];                             //! Eta distribution of the tracks
   TH1F *hPhi[nBconf];                             //! Phi particle distribution
+  TH1I *hNtrackAtTof[nBconf];                        //! Number of the tracks when kTOF is required
   
   //TPC info:
   TH2F *fdEdxVSp[nBconf][2];                      //! dedx vs pTpc
@@ -85,13 +88,14 @@ class AliAnalysisNucleiInfo : public AliAnalysisTaskSE {
   //TOF info:
   TH2F *fBetaTofVSp[nBconf][2];                   //! beta vs pVtx
   TProfile *hBetaExp[nBconf][9];                  //! TOF expected beta
-  TH2F *fNsigmaTof[nBconf][18];                   //! NsigmaTOF vs. pT
+  TH2F *fNsigmaTof[nBconf][2][18];                //! NsigmaTOF vs. pT
   TH2F *fTofMinusExp[nBconf][2][18];              //! tof-t_exp w/o tpc
-  
+  TH1F *hStartTimeRes[nBconf];                    //! start time resolution
+ 
   //ITS info:
   TH2F *h2DCAap[nBconf][18];                      //! DCAxy vs DCAz with NsigmaTpcCut for each particle species
   
-  ClassDef(AliAnalysisNucleiInfo, 1);
+  ClassDef(AliAnalysisNucleiInfo, 2);
 };
 
 #endif
