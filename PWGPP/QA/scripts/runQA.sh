@@ -340,7 +340,7 @@ executePlanB()
   if [[ -n ${mailTo} ]]; then 
     echo
     echo "trouble detected, sending email to ${mailTo}"
-    cat ${logSummary} | mail -s "qa in need of assistance" ${mailTo}
+    cat ${logSummary} | mail -s "${detector} QA in need of assistance" ${mailTo}
   fi
 }
 
