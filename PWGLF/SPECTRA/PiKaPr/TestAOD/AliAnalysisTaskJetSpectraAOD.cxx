@@ -86,7 +86,9 @@ AliAnalysisTaskJetSpectraAOD::AliAnalysisTaskJetSpectraAOD(const char *name) : A
   fDebug(0),
   fMinNcontributors(0),
   fRejectPileup(0),
-  fR(0.4)
+  fR(0.4),
+  fZvertexDiff(1),
+  fZvertex(10.)
 {
   // Default constructor
   
@@ -259,7 +261,33 @@ void AliAnalysisTaskJetSpectraAOD::UserExec(Option_t *)
     PostData(3, fTrackCuts);
     return;
   }
+    
+  //cut on difference of the z-vertex
+  if (fZvertexDiff || (fZvertex>0)) {
+    
+    Double_t vzPRI = +999;
+    Double_t vzSPD = -999;
+    
+    const AliVVertex *pv = fAOD->GetPrimaryVertex(); // AOD
+    if (pv && pv->GetNContributors()>0) {
+      vzPRI = pv->GetZ();
+    }
+    
+    const AliVVertex *sv = fAOD->GetPrimaryVertexSPD();
+    if (sv && sv->GetNContributors()>0) {
+      vzSPD = sv->GetZ();
+    }
+    
+    Double_t  dvertex = TMath::Abs(vzPRI-vzSPD);
 
+    if (fZvertexDiff && (dvertex>0.1)) {
+      if (fDebug) Printf("%s:%d ZvertexDiff Event selection: event REJECTED...",(char*)__FILE__,__LINE__);
+      return;}
+    if ((fZvertex>0) && (TMath::Abs(vzPRI)>fZvertex)) {
+      if (fDebug) Printf("%s:%d ZvertexDiff Event selection: event REJECTED...",(char*)__FILE__,__LINE__);
+      return;}
+  }
+  
   //ESE event cuts
   if(!fEventCuts->IsSelected(fAOD,fTrackCuts)){
     if (fDebug) Printf("%s:%d ESE Event selection: event REJECTED...",(char*)__FILE__,__LINE__);

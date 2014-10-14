@@ -192,11 +192,11 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   
   if( fFillTHn ){ 
     //dimensions of THnSparse for Q vector checks
-    const Int_t nvarev=6;
-    //                                             cent         q-rec_perc        qvec-rec        q-gen_perc     qvec-gen             Nch
-    Int_t    binsHistRealEv[nvarev] = {     fnCentBins,              100,        fnQvecBins,            100,    fnQvecBins,     fnNchBins};
-    Double_t xminHistRealEv[nvarev] = {             0.,               0.,                0.,             0.,            0.,            0.};
-    Double_t xmaxHistRealEv[nvarev] = {           100.,             100.,     fQvecUpperLim,           100., fQvecUpperLim,         2000.};
+    const Int_t nvarev=7;
+    //                                             cent         q-rec_perc        qvec-rec        q-gen_perc     qvec-gen             Nch      qrec-qgen
+    Int_t    binsHistRealEv[nvarev] = {     fnCentBins,              100,        fnQvecBins,            100,    fnQvecBins,     fnNchBins,        20};
+    Double_t xminHistRealEv[nvarev] = {             0.,               0.,                0.,             0.,            0.,            0.,      -10.};
+    Double_t xmaxHistRealEv[nvarev] = {           100.,             100.,     fQvecUpperLim,           100., fQvecUpperLim,         2000.,       10.};
     
     THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
     NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
@@ -216,6 +216,10 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
     
     NSparseHistEv->GetAxis(5)->SetTitle("Ncharged");
     NSparseHistEv->GetAxis(5)->SetName("Nch");
+    fOutput->Add(NSparseHistEv);
+    
+    NSparseHistEv->GetAxis(6)->SetTitle("#Delta q-vec");
+    NSparseHistEv->GetAxis(6)->SetName("Delta_qvec");
     fOutput->Add(NSparseHistEv);
   }
   
@@ -672,13 +676,16 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
     if(fVZEROside==0)qvzero=(Double_t)fEventCuts->GetqV0A();
     else if (fVZEROside==1)qvzero=(Double_t)fEventCuts->GetqV0C(); // qvec_rec
     
-    Double_t varEv[6];
+    Double_t varEv[7];
     varEv[0]=Cent;
     varEv[1]=(Double_t)QvecVZERO; // qvec_rec_perc
     varEv[2]=(Double_t)qvzero; // qvec from VZERO
     varEv[3]=(Double_t)QvecMC; // qvec_gen_perc
     varEv[4]=(Double_t)fEventCuts->GetQvecMC(); // qvec_gen
     varEv[5]=(Double_t)fEventCuts->GetNch(); // Nch
+    
+    Double_t delta_q = qvzero- (Double_t)fEventCuts->GetQvecMC();
+    varEv[6]=(Double_t)delta_q;
     
     ((THnSparseF*)fOutput->FindObject("NSparseHistEv"))->Fill(varEv);//event loop
 

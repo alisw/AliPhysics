@@ -45,7 +45,9 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
      fDebug(0),
      fMinNcontributors(0),
      fRejectPileup(0),
-     fR(0.4)
+     fR(0.4),
+     fZvertexDiff(1),
+     fZvertex(10.)
        {}
   AliAnalysisTaskJetSpectraAOD(const char *name);
   virtual ~AliAnalysisTaskJetSpectraAOD();
@@ -92,6 +94,8 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
   
   void    SetMinNcontributors(Int_t val)  {fMinNcontributors = val;}
   void    SetPileupRejection(Bool_t val)  {fRejectPileup = val;}
+  
+  void    SetZvertexDiff (Bool_t val) { fZvertexDiff = val; }
   
   void SetJetParameterR(Double_t val) {fR = val;}
 
@@ -141,10 +145,13 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
   
   Double_t fR; // cone radius
   
+  Bool_t fZvertexDiff;
+  Double_t fZvertex;
+  
   AliAnalysisTaskJetSpectraAOD(const AliAnalysisTaskJetSpectraAOD&);
   AliAnalysisTaskJetSpectraAOD& operator=(const AliAnalysisTaskJetSpectraAOD&);
   
-  ClassDef(AliAnalysisTaskJetSpectraAOD, 3);
+  ClassDef(AliAnalysisTaskJetSpectraAOD, 4);
 };
 
 #endif

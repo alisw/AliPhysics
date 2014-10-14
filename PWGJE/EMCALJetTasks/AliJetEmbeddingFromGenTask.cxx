@@ -148,6 +148,8 @@ void AliJetEmbeddingFromGenTask::Run()
   stack->Reset();
   fGen->Generate();
   const Int_t nprim = stack->GetNprimary();
+  // reject if partons are missing from stack for some reason
+  if(nprim < 8) return;
   TParticle *part6 = stack->Particle(6);
   TParticle *part7 = stack->Particle(7);
 
