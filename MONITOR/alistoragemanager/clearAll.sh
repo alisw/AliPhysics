@@ -1,6 +1,6 @@
 #!/bin/bash
 rm -fr /opt/reco/run197669/
 rm -fr /opt/reco/log/run197669.log
-rm -fr /local/storedFiles/
+rm -fr ~/storedFiles/
 mysql -u storage -pstorage123 -e "drop database storage"
 ./setupStorageDatabase.sh
