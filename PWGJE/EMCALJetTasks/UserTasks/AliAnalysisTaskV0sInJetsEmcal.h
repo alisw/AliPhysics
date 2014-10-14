@@ -1,7 +1,8 @@
-#ifndef AliAnalysisTaskV0sInJets_cxx
-#define AliAnalysisTaskV0sInJets_cxx
+#ifndef AliAnalysisTaskV0sInJetsEmcal_cxx
+#define AliAnalysisTaskV0sInJetsEmcal_cxx
 
 // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+// fork of AliAnalysisTaskV0sInJets for the EMCal framework
 // Author: Vit Kucera (vit.kucera@cern.ch)
 
 class TH1D;
@@ -14,40 +15,35 @@ class AliAODv0;
 class AliAODVertex;
 class AliAODJet;
 
-#include "AliAnalysisTaskSE.h"
-#include "THnSparse.h"
-//#include "AuxFunctions.h"
+class AliJetContainer;
+class AliParticleContainer;
+class AliClusterContainer;
 
-class AliAnalysisTaskV0sInJets : public AliAnalysisTaskSE
+#include "AliAnalysisTaskEmcalJet.h"
+#include "THnSparse.h"
+
+class AliAnalysisTaskV0sInJetsEmcal : public AliAnalysisTaskEmcalJet
 {
 public:
-  AliAnalysisTaskV0sInJets(); // Default constructor
-  AliAnalysisTaskV0sInJets(const char* name); // Constructor
-  virtual ~AliAnalysisTaskV0sInJets(); // Destructor
-  virtual void UserCreateOutputObjects();
-  virtual void UserExec(Option_t* option);
-  virtual void Terminate(Option_t*) {}
+  AliAnalysisTaskV0sInJetsEmcal(); // Default constructor
+  AliAnalysisTaskV0sInJetsEmcal(const char* name); // Constructor
+  virtual ~AliAnalysisTaskV0sInJetsEmcal(); // Destructor
+  void UserCreateOutputObjects();
+  void Terminate(Option_t*) {}
 
-  void SetTypeAOD(Int_t type = 1) {fiAODAnalysis = type;}
   void SetIsPbPb(Bool_t val = 1) {fbIsPbPb = val;}
-  void SetJetBranchName(char* line) {fsJetBranchName = line;}
-  void SetJetBgBranchName(char* line) {fsJetBgBranchName = line;}
   void SetCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH;}
   void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
   void SetPtTrackMin(Double_t ptMin = 0) {fdCutPtTrackMin = ptMin;}
   void SetJetRadius(Double_t r = 0.4) {fdRadiusJet = r;}
-  void SetJetRadiusBg(Double_t r = 0.4) {fdRadiusJetBg = r;}
   void SetJetSelection(Bool_t select = kTRUE) {fbJetSelection = select;}
   void SetMCAnalysis(Bool_t select = kTRUE) {fbMCAnalysis = select;}
-//  void SetTreeOutput(Bool_t select = kTRUE){fbTreeOutput = select;}
   void FillQAHistogramV0(AliAODVertex* vtx, const AliAODv0* vZero, Int_t iIndexHisto, Bool_t IsCandK0s, Bool_t IsCandLambda, Bool_t IsInPeakK0s, Bool_t IsInPeakLambda);
-//  virtual Double_t MassPeakSigma(Double_t pt, Int_t particle);
-//  virtual Double_t MassPeakSigma(Int_t iCent, Double_t pt, Int_t particle);
   void FillCandidates(Double_t mK, Double_t mL, Double_t mAL, Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut, Int_t iCent);
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const; // decides whether a particle is inside a jet cone
   Bool_t OverlapWithJets(const TClonesArray* array, const AliVParticle* cone, Double_t dDistance) const; // decides whether a cone overlaps with other jets
   AliAODJet* GetRandomCone(const TClonesArray* array, Double_t dEtaConeMax, Double_t dDistance) const; // generate a random cone which does not overlap with selected jets
-  AliAODJet* GetMedianCluster(const TClonesArray* array, Double_t dEtaConeMax) const; // get median kt cluster
+  AliEmcalJet* GetMedianCluster(AliJetContainer* cont, Double_t dEtaConeMax) const; // get median kt cluster
   Double_t AreaCircSegment(Double_t dRadius, Double_t dDistance) const; // area of circular segment
 
   void SetCutDCAToPrimVtxMin(Double_t val = 0.1) {fdCutDCAToPrimVtxMin = val;}
@@ -83,6 +79,11 @@ public:
   static const Double_t fgkdMassLambdaMin; // minimum
   static const Double_t fgkdMassLambdaMax; // maximum
 
+protected:
+  void ExecOnce();
+  Bool_t FillHistograms();
+  Bool_t Run();
+
 private:
   AliAODEvent* fAODIn; //! Input AOD event
   AliAODEvent* fAODOut; //! Output AOD event
@@ -90,9 +91,6 @@ private:
   TList* fOutputListQA; //! Output list for quality assurance
   TList* fOutputListCuts; //! Output list for checking cuts
   TList* fOutputListMC; //! Output list for MC related results
-//  TTree* ftreeOut; //! output tree
-
-  Int_t fiAODAnalysis; // switch for input AOD/ESD
   Bool_t fbIsPbPb; // switch Pb-Pb / p-p collisions
 
   // V0 selection
@@ -102,30 +100,25 @@ private:
   Double_t fdCutCPAMin; // min cosine of the pointing angle
   Double_t fdCutNTauMax; // [tau] max proper lifetime in multiples of the mean lifetime
   // jet selection
-  TString fsJetBranchName; // name of the branch with jets
-  TString fsJetBgBranchName; // name of the branch with kt clusters used for the rho calculation
   Double_t fdCutPtJetMin; // [GeV/c] minimum jet pt
   Double_t fdCutPtTrackMin; // [GeV/c] minimum pt of leading jet-track
   Double_t fdRadiusJet; // R of jet finder used for finding V0s in the jet cone
-  Double_t fdRadiusJetBg; // R of kt jet finder used for reconstruction of bg clusters
   Bool_t fbJetSelection; // switch for the analysis of V0s in jets
 
   Bool_t fbMCAnalysis; // switch for the analysis of simulated data
-//  Bool_t fbTreeOutput; // switch for the output tree
   TRandom* fRandom; //! random-number generator
+
+  // EMCal containers
+  AliJetContainer* fJetsCont; //! Signal Jets
+  AliJetContainer* fJetsBgCont; //! Background Jets
+  AliParticleContainer* fTracksCont; //! Tracks
+  AliClusterContainer* fCaloClustersCont; //! Clusters
 
   // event cuts
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
   Double_t fdCutVertexR2; // [cm^2] maximum r^2 of primary vertex
   Double_t fdCutCentLow; // [%] minimum centrality
   Double_t fdCutCentHigh; // [%] maximum centrality
-  /*
-  // output branches
-  TClonesArray* fBranchV0Rec; //! output branch for reconstructed V0s
-  TClonesArray* fBranchV0Gen; //! output branch for generated V0s
-  TClonesArray* fBranchJet; //! output branch for selected jets
-  AliEventInfoObject* fEventInfo; //! class to store info about events
-  */
   Double_t fdCentrality; //!
 
   // event histograms
@@ -192,7 +185,6 @@ private:
   TH2D* fh2V0PtJetAngleK0s[fgkiNBinsCent]; //! pt jet vs angle V0-jet, in centrality bins
   TH1D* fh1DCAInK0s[fgkiNBinsCent]; //! DCA between daughters of V0 inside jets, in centrality bins
   TH1D* fh1DCAOutK0s[fgkiNBinsCent]; //! DCA between daughters of V0 outside jets, in centrality bins
-//  TH1D* fh1DeltaZK0s[fgkiNBinsCent]; //! z-distance between V0 vertex and primary vertex, in centrality bins
   // MC histograms
   // inclusive
   TH1D* fh1V0K0sPtMCGen[fgkiNBinsCent]; //! pt spectrum of all generated K0s in event
@@ -242,7 +234,6 @@ private:
   TH2D* fh2V0PtJetAngleLambda[fgkiNBinsCent]; //!
   TH1D* fh1DCAInLambda[fgkiNBinsCent]; //!
   TH1D* fh1DCAOutLambda[fgkiNBinsCent]; //!
-//  TH1D* fh1DeltaZLambda[fgkiNBinsCent]; //!
   // MC histograms
   // inclusive
   TH1D* fh1V0LambdaPtMCGen[fgkiNBinsCent]; //!
@@ -298,7 +289,6 @@ private:
   TH2D* fh2V0PtJetAngleALambda[fgkiNBinsCent]; //!
   TH1D* fh1DCAInALambda[fgkiNBinsCent]; //!
   TH1D* fh1DCAOutALambda[fgkiNBinsCent]; //!
-//  TH1D* fh1DeltaZALambda[fgkiNBinsCent]; //!
   // MC histograms
   // inclusive
   TH1D* fh1V0ALambdaPtMCGen[fgkiNBinsCent]; //!
@@ -373,10 +363,10 @@ private:
   TH2D* fh2Tau3DVs2D[fgkiNQAIndeces]; //! pt vs ratio 3D lifetime / 2D lifetime
   */
 
-  AliAnalysisTaskV0sInJets(const AliAnalysisTaskV0sInJets&); // not implemented
-  AliAnalysisTaskV0sInJets& operator=(const AliAnalysisTaskV0sInJets&); // not implemented
+  AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
+  AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJets, 3) // example of analysis
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 4) // example of analysis
 };
 
 #endif

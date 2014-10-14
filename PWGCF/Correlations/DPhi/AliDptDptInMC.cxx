@@ -1211,7 +1211,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
   float vertexX  = -999;
   float vertexY  = -999;
   float vertexZ  = -999;
-  float vertexXY = -999;
+  //float vertexXY = -999;
 
   float centrality = -999;
   //Double_t nSigma =-999;  
@@ -1259,7 +1259,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
           vertexX = vertex->GetX();
           vertexY = vertex->GetY();
           vertexZ = vertex->GetZ();
-          vertexXY = sqrt(vertexX*vertexX+vertexY*vertexY);
+          //vertexXY = sqrt(vertexX*vertexX+vertexY*vertexY);
         }
       if (vertexZ  < _vertexZMin  || vertexZ  > _vertexZMax ) return;
 

@@ -14,6 +14,7 @@
  **************************************************************************/
 
 // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+// fork of AliAnalysisTaskV0sInJets for the EMCal framework
 // Author: Vit Kucera (vit.kucera@cern.ch)
 
 #include "TChain.h"
@@ -36,51 +37,57 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "TClonesArray.h"
-//#include "AliEventInfoObject.cxx"
-//#include "AliV0Object.cxx"
-//#include "AliJetObject.cxx"
 #include "TRandom3.h"
 
-#include "AliAnalysisTaskV0sInJets.h"
+#include "AliVCluster.h"
+#include "AliAODCaloCluster.h"
+#include "AliESDCaloCluster.h"
+#include "AliVTrack.h"
+#include "AliEmcalJet.h"
+#include "AliRhoParameter.h"
+#include "AliLog.h"
+#include "AliJetContainer.h"
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
+#include "AliPicoTrack.h"
 
-ClassImp(AliAnalysisTaskV0sInJets)
+#include "AliAnalysisTaskV0sInJetsEmcal.h"
+
+ClassImp(AliAnalysisTaskV0sInJetsEmcal)
 
 // upper edges of centrality bins
-//const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {10, 30, 50, 80}; // Alice Zimmermann
-//const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {10, 20, 40, 60, 80}; // Vit Kucera, initial binning
-//const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {5, 10, 20, 40, 60, 80}; // Iouri Belikov, LF analysis
-const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {10}; // only central
+//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsCent] = {10, 30, 50, 80}; // Alice Zimmermann
+//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsCent] = {10, 20, 40, 60, 80}; // Vit Kucera, initial binning
+//const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsCent] = {5, 10, 20, 40, 60, 80}; // Iouri Belikov, LF analysis
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiCentBinRanges[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsCent] = {10}; // only central
 
 // axis: pT of V0
-const Double_t AliAnalysisTaskV0sInJets::fgkdBinsPtV0[2] = {0, 12};
-const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsPtV0 = sizeof(AliAnalysisTaskV0sInJets::fgkdBinsPtV0) / sizeof((AliAnalysisTaskV0sInJets::fgkdBinsPtV0)[0]) - 1;
-const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsPtV0Init = int(((AliAnalysisTaskV0sInJets::fgkdBinsPtV0)[AliAnalysisTaskV0sInJets::fgkiNBinsPtV0] - (AliAnalysisTaskV0sInJets::fgkdBinsPtV0)[0]) / 0.1); // bin width 0.1 GeV/c
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0[2] = {0, 12};
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0 = sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0) / sizeof((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) - 1;
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0Init = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtV0] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtV0)[0]) / 0.1); // bin width 0.1 GeV/c
 // axis: pT of jets
-const Double_t AliAnalysisTaskV0sInJets::fgkdBinsPtJet[2] = {0, 100};
-const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsPtJet = sizeof(AliAnalysisTaskV0sInJets::fgkdBinsPtJet) / sizeof(AliAnalysisTaskV0sInJets::fgkdBinsPtJet[0]) - 1;
-const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsPtJetInit = int(((AliAnalysisTaskV0sInJets::fgkdBinsPtJet)[AliAnalysisTaskV0sInJets::fgkiNBinsPtJet] - (AliAnalysisTaskV0sInJets::fgkdBinsPtJet)[0]) / 5.); // bin width 5 GeV/c
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet[2] = {0, 100};
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJet = sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet) / sizeof(AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet[0]) - 1;
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJetInit = int(((AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsPtJet] - (AliAnalysisTaskV0sInJetsEmcal::fgkdBinsPtJet)[0]) / 5.); // bin width 5 GeV/c
 // axis: K0S invariant mass
-const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsMassK0s = 300;
-const Double_t AliAnalysisTaskV0sInJets::fgkdMassK0sMin = 0.35;
-const Double_t AliAnalysisTaskV0sInJets::fgkdMassK0sMax = 0.65;
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsMassK0s = 300;
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassK0sMin = 0.35;
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassK0sMax = 0.65;
 // axis: Lambda invariant mass
-const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsMassLambda = 200;
-const Double_t AliAnalysisTaskV0sInJets::fgkdMassLambdaMin = 1.05;
-const Double_t AliAnalysisTaskV0sInJets::fgkdMassLambdaMax = 1.25;
+const Int_t AliAnalysisTaskV0sInJetsEmcal::fgkiNBinsMassLambda = 200;
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassLambdaMin = 1.05;
+const Double_t AliAnalysisTaskV0sInJetsEmcal::fgkdMassLambdaMax = 1.25;
 
 
 // Default constructor
-AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets():
-  AliAnalysisTaskSE(),
+AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
+  AliAnalysisTaskEmcalJet(),
   fAODIn(0),
   fAODOut(0),
   fOutputListStd(0),
   fOutputListQA(0),
   fOutputListCuts(0),
   fOutputListMC(0),
-//  ftreeOut(0),
-
-  fiAODAnalysis(1),
   fbIsPbPb(1),
 
   fdCutDCAToPrimVtxMin(0.1),
@@ -89,28 +96,23 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets():
   fdCutCPAMin(0.998),
   fdCutNTauMax(5),
 
-  fsJetBranchName(0),
-  fsJetBgBranchName(0),
   fdCutPtJetMin(0),
   fdCutPtTrackMin(5),
   fdRadiusJet(0.4),
-  fdRadiusJetBg(0.4),
   fbJetSelection(0),
   fbMCAnalysis(0),
-//  fbTreeOutput(0),
   fRandom(0),
+
+  fJetsCont(0),
+  fJetsBgCont(0),
+  fTracksCont(0),
+  fCaloClustersCont(0),
 
   fdCutVertexZ(10),
   fdCutVertexR2(1),
   fdCutCentLow(0),
   fdCutCentHigh(80),
 
-/*
-  fBranchV0Rec(0),
-  fBranchV0Gen(0),
-  fBranchJet(0),
-  fEventInfo(0),
-*/
   fdCentrality(0),
   fh1EventCounterCut(0),
   fh1EventCent(0),
@@ -310,9 +312,6 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets():
     fh1DCAOutK0s[i] = 0;
     fh1DCAOutLambda[i] = 0;
     fh1DCAOutALambda[i] = 0;
-//    fh1DeltaZK0s[i] = 0;
-//    fh1DeltaZLambda[i] = 0;
-//    fh1DeltaZALambda[i] = 0;
 
     fh1PtJet[i] = 0;
     fh1EtaJet[i] = 0;
@@ -328,17 +327,14 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets():
 }
 
 // Constructor
-AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets(const char* name):
-  AliAnalysisTaskSE(name),
+AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fAODIn(0),
   fAODOut(0),
   fOutputListStd(0),
   fOutputListQA(0),
   fOutputListCuts(0),
   fOutputListMC(0),
-//  ftreeOut(0),
-
-  fiAODAnalysis(1),
   fbIsPbPb(1),
 
   fdCutDCAToPrimVtxMin(0.1),
@@ -347,27 +343,23 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets(const char* name):
   fdCutCPAMin(0.998),
   fdCutNTauMax(5),
 
-  fsJetBranchName(0),
-  fsJetBgBranchName(0),
   fdCutPtJetMin(0),
   fdCutPtTrackMin(5),
   fdRadiusJet(0.4),
-  fdRadiusJetBg(0.4),
   fbJetSelection(0),
   fbMCAnalysis(0),
-//  fbTreeOutput(0),
   fRandom(0),
+
+  fJetsCont(0),
+  fJetsBgCont(0),
+  fTracksCont(0),
+  fCaloClustersCont(0),
 
   fdCutVertexZ(10),
   fdCutVertexR2(1),
   fdCutCentLow(0),
   fdCutCentHigh(80),
-/*
-  fBranchV0Rec(0),
-  fBranchV0Gen(0),
-  fBranchJet(0),
-  fEventInfo(0),
-*/
+
   fdCentrality(0),
   fh1EventCounterCut(0),
   fh1EventCent(0),
@@ -567,9 +559,6 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets(const char* name):
     fh1DCAOutK0s[i] = 0;
     fh1DCAOutLambda[i] = 0;
     fh1DCAOutALambda[i] = 0;
-//    fh1DeltaZK0s[i] = 0;
-//    fh1DeltaZLambda[i] = 0;
-//    fh1DeltaZALambda[i] = 0;
 
     fh1PtJet[i] = 0;
     fh1EtaJet[i] = 0;
@@ -594,70 +583,60 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets(const char* name):
   DefineOutput(5, TTree::Class());
 }
 
-AliAnalysisTaskV0sInJets::~AliAnalysisTaskV0sInJets()
+AliAnalysisTaskV0sInJetsEmcal::~AliAnalysisTaskV0sInJetsEmcal()
 {
-/*
-  if (fBranchV0Rec)
-    fBranchV0Rec->Delete();
-  delete fBranchV0Rec;
-  fBranchV0Rec = 0;
-  if (fBranchV0Gen)
-    fBranchV0Gen->Delete();
-  delete fBranchV0Gen;
-  fBranchV0Gen = 0;
-  if (fBranchJet)
-    fBranchJet->Delete();
-  delete fBranchJet;
-  fBranchJet = 0;
-  if (fEventInfo)
-    fEventInfo->Delete();
-  delete fEventInfo;
-  fEventInfo = 0;
-*/
   delete fRandom;
   fRandom = 0;
 }
 
-void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
+void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
 {
-  // Create histograms
+  AliAnalysisTaskEmcalJet::ExecOnce();
+//  printf("AliAnalysisTaskV0sInJetsEmcal: ExecOnce\n");
+
+  if(fJetsCont && fJetsCont->GetArray() == 0)
+    fJetsCont = 0;
+  if(fJetsBgCont && fJetsBgCont->GetArray() == 0)
+    fJetsBgCont = 0;
+  if(fTracksCont && fTracksCont->GetArray() == 0)
+    fTracksCont = 0;
+  if(fCaloClustersCont && fCaloClustersCont->GetArray() == 0)
+    fCaloClustersCont = 0;
+}
+
+Bool_t AliAnalysisTaskV0sInJetsEmcal::Run()
+{
+  // Run analysis code here, if needed. It will be executed before FillHistograms().
+//  printf("AliAnalysisTaskV0sInJetsEmcal: Run\n");
+  return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
+}
+
+void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
+{
   // Called once
 
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+//  printf("AliAnalysisTaskV0sInJetsEmcal: UserCreateOutputObjects\n");
+
+  fJetsCont = GetJetContainer(0);
+  fJetsBgCont = GetJetContainer(1);
+  if(fJetsCont) //get particles and clusters connected to jets
+  {
+    fTracksCont = fJetsCont->GetParticleContainer();
+    fCaloClustersCont = fJetsCont->GetClusterContainer();
+  }
+  else //no jets, just analysis tracks and clusters
+  {
+    fTracksCont = GetParticleContainer(0);
+    fCaloClustersCont = GetClusterContainer(0);
+  }
+  fTracksCont->SetClassName("AliVTrack");
+  fCaloClustersCont->SetClassName("AliAODCaloCluster");
+
+  // Initialise random-number generator
   fRandom = new TRandom3(0);
 
-/*
-  if (!fBranchV0Rec && fbTreeOutput)
-    {
-//      fBranchV0Rec = new TClonesArray("AliAODv0",0);
-      fBranchV0Rec = new TClonesArray("AliV0Object",0);
-      fBranchV0Rec->SetName("branch_V0Rec");
-    }
-  if (!fBranchV0Gen && fbTreeOutput)
-    {
-      fBranchV0Gen = new TClonesArray("AliAODMCParticle",0);
-      fBranchV0Gen->SetName("branch_V0Gen");
-    }
-  if (!fBranchJet && fbTreeOutput)
-    {
-//      fBranchJet = new TClonesArray("AliAODJet",0);
-      fBranchJet = new TClonesArray("AliJetObject",0);
-      fBranchJet->SetName("branch_Jet");
-    }
-  if (!fEventInfo && fbTreeOutput)
-    {
-      fEventInfo = new AliEventInfoObject();
-      fEventInfo->SetName("eventInfo");
-    }
-  Int_t dSizeBuffer = 32000; // default 32000
-  if (fbTreeOutput)
-  {
-  ftreeOut = new TTree("treeV0","Tree V0");
-  ftreeOut->Branch("branch_V0Rec",&fBranchV0Rec,dSizeBuffer,2);
-  ftreeOut->Branch("branch_V0Gen",&fBranchV0Gen,dSizeBuffer,2);
-  ftreeOut->Branch("branch_Jet",&fBranchJet,dSizeBuffer,2);
-  ftreeOut->Branch("eventInfo",&fEventInfo,dSizeBuffer,2);
-  }
-*/
+  // Create histograms
 
   fOutputListStd = new TList();
   fOutputListStd->SetOwner();
@@ -877,15 +856,6 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
     fOutputListQA->Add(fh1DCAOutLambda[i]);
     fh1DCAOutALambda[i] = new TH1D(Form("fh1DCAOutALambda_%d", i), Form("ALambda outside jets: DCA daughters, cent %s;DCA (#sigma)", GetCentBinLabel(i).Data()), 50, 0, 1);
     fOutputListQA->Add(fh1DCAOutALambda[i]);
-
-    /*
-    fh1DeltaZK0s[i] = new TH1D(Form("fh1DeltaZK0s_%d", i), Form("K0s: #Delta#it{z} vertices, cent %s;#it{z} (cm)", GetCentBinLabel(i).Data()), 50, -10, 10);
-    fOutputListQA->Add(fh1DeltaZK0s[i]);
-    fh1DeltaZLambda[i] = new TH1D(Form("fh1DeltaZLambda_%d", i), Form("Lambda: #Delta#it{z} vertices, cent %s;#it{z} (cm)", GetCentBinLabel(i).Data()), 50, -10, 10);
-    fOutputListQA->Add(fh1DeltaZLambda[i]);
-    fh1DeltaZALambda[i] = new TH1D(Form("fh1DeltaZALambda_%d", i), Form("ALambda: #Delta#it{z} vertices, cent %s;#it{z} (cm)", GetCentBinLabel(i).Data()), 50, -10, 10);
-    fOutputListQA->Add(fh1DeltaZALambda[i]);
-    */
 
     // jet histograms
     fh1PtJet[i] = new TH1D(Form("fh1PtJet_%d", i), Form("Jet pt spectrum, cent: %s;#it{p}_{T} jet (GeV/#it{c})", GetCentBinLabel(i).Data()), iNJetPtBins, dJetPtMin, dJetPtMax);
@@ -1233,45 +1203,24 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
   PostData(2, fOutputListQA);
   PostData(3, fOutputListCuts);
   PostData(4, fOutputListMC);
-//  if (fbTreeOutput)
-//    PostData(5,ftreeOut);
 }
 
-void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
+Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 {
   // Main loop, called for each event
-  if(fDebug > 5) printf("TaskV0sInJets: UserExec: Start\n");
-/*
-  // reset branches for each event
-  if (fBranchV0Rec)
-    fBranchV0Rec->Clear();
-  if (fBranchV0Gen)
-    fBranchV0Gen->Clear();
-  if (fBranchJet)
-    fBranchJet->Clear();
-  if (fEventInfo)
-    fEventInfo->Reset();
-*/
-  if(!fiAODAnalysis)
-    return;
+  if(fDebug > 5) printf("TaskV0sInJetsEmcal: FillHistograms: Start\n");
 
-  if(fDebug > 2) printf("TaskV0sInJets: AOD analysis\n");
+  if(fDebug > 2) printf("TaskV0sInJetsEmcal: AOD analysis\n");
   fh1EventCounterCut->Fill(0); // all available selected events (collision candidates)
 
-  if(fDebug > 5) printf("TaskV0sInJets: UserExec: Loading AOD\n");
+  if(fDebug > 5) printf("TaskV0sInJetsEmcal: FillHistograms: Loading AOD\n");
   fAODIn = dynamic_cast<AliAODEvent*>(InputEvent()); // input AOD
-  fAODOut = AODEvent(); // output AOD
-  if(!fAODOut)
-  {
-    if(fDebug > 0) printf("TaskV0sInJets: No output AOD found\n");
-    return;
-  }
   if(!fAODIn)
   {
-    if(fDebug > 0) printf("TaskV0sInJets: No input AOD found\n");
-    return;
+    if(fDebug > 0) printf("TaskV0sInJetsEmcal: No input AOD found\n");
+    return kFALSE;
   }
-  if(fDebug > 5) printf("TaskV0sInJets: UserExec: Loading AOD OK\n");
+  if(fDebug > 5) printf("TaskV0sInJetsEmcal: FillHistograms: Loading AOD OK\n");
 
   TClonesArray* arrayMC = 0; // array particles in the MC event
   AliAODMCHeader* headerMC = 0; // MC header
@@ -1284,19 +1233,17 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
     arrayMC = (TClonesArray*)fAODIn->FindListObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC)
     {
-      if(fDebug > 0) printf("TaskV0sInJets: No MC array found\n");
-      return;
+      if(fDebug > 0) printf("TaskV0sInJetsEmcal: No MC array found\n");
+      return kFALSE;
     }
-    if(fDebug > 5) printf("TaskV0sInJets: MC array found\n");
+    if(fDebug > 5) printf("TaskV0sInJetsEmcal: MC array found\n");
     iNTracksMC = arrayMC->GetEntriesFast();
-    if(fDebug > 5) printf("TaskV0sInJets: There are %d MC tracks in this event\n", iNTracksMC);
-//      if (!iNTracksMC)
-//        return;
+    if(fDebug > 5) printf("TaskV0sInJetsEmcal: There are %d MC tracks in this event\n", iNTracksMC);
     headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
     if(!headerMC)
     {
-      if(fDebug > 0) printf("TaskV0sInJets: No MC header found\n");
-      return;
+      if(fDebug > 0) printf("TaskV0sInJetsEmcal: No MC header found\n");
+      return kFALSE;
     }
     // get position of the MC primary vertex
     dPrimVtxMCX = headerMC->GetVtxX();
@@ -1310,19 +1257,19 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
   AliPIDResponse* fPIDResponse = inputHandler->GetPIDResponse();
   if(!fPIDResponse)
   {
-    if(fDebug > 0) printf("TaskV0sInJets: No PID response object found\n");
-    return;
+    if(fDebug > 0) printf("TaskV0sInJetsEmcal: No PID response object found\n");
+    return kFALSE;
   }
 
   // AOD files are OK
   fh1EventCounterCut->Fill(1);
 
   // Event selection
-  if(!IsSelectedForJets(fAODIn, fdCutVertexZ, fdCutVertexR2, fdCutCentLow, fdCutCentHigh, 1, 0.1)) // cut on |delta z| in  2011 data between SPD vertex and nominal primary vertex
+  if(!IsSelectedForJets(fAODIn, fdCutVertexZ, fdCutVertexR2, fdCutCentLow, fdCutCentHigh, 1, 0.1)) // cut on |delta z| in 2011 data between SPD vertex and nominal primary vertex
 //  if (!IsSelectedForJets(fAODIn,fdCutVertexZ,fdCutVertexR2,fdCutCentLow,fdCutCentHigh)) // no need for cutting in 2010 data
   {
-    if(fDebug > 5) printf("TaskV0sInJets: Event rejected\n");
-    return;
+    if(fDebug > 5) printf("TaskV0sInJetsEmcal: Event rejected\n");
+    return kFALSE;
   }
 
 //  fdCentrality = fAODIn->GetHeader()->GetCentrality(); // event centrality
@@ -1332,22 +1279,19 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
   Int_t iCentIndex = GetCentralityBinIndex(fdCentrality); // get index of centrality bin
   if(iCentIndex < 0)
   {
-    if(fDebug > 5) printf("TaskV0sInJets: Event is out of histogram range\n");
-    return;
+    if(fDebug > 5) printf("TaskV0sInJetsEmcal: Event is out of histogram range\n");
+    return kFALSE;
   }
   fh1EventCounterCut->Fill(2); // selected events (vertex, centrality)
   fh1EventCounterCutCent[iCentIndex]->Fill(2);
 
   UInt_t iNTracks = fAODIn->GetNumberOfTracks(); // get number of tracks in event
-  if(fDebug > 5) printf("TaskV0sInJets: There are %d tracks in this event\n", iNTracks);
-//  if (!iNTracks)
-//    return;
+  if(fDebug > 5) printf("TaskV0sInJetsEmcal: There are %d tracks in this event\n", iNTracks);
 
   Int_t iNV0s = fAODIn->GetNumberOfV0s(); // get the number of V0 candidates
   if(!iNV0s)
   {
-    if(fDebug > 2) printf("TaskV0sInJets: No V0s found in event\n");
-//      return;
+    if(fDebug > 2) printf("TaskV0sInJetsEmcal: No V0s found in event\n");
   }
 
   //===== Event is OK for the analysis =====
@@ -1355,21 +1299,13 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
   fh1EventCent2->Fill(fdCentrality);
   fh2EventCentTracks->Fill(fdCentrality, iNTracks);
 
-//  if (fbTreeOutput)
-//    fEventInfo->SetAODEvent(fAODIn);
-//  printf("V0sInJets: EventInfo: Centrality: %f\n",fEventInfo->GetCentrality());
-
   if(iNV0s)
   {
     fh1EventCounterCut->Fill(3); // events with V0s
     fh1EventCounterCutCent[iCentIndex]->Fill(3);
   }
 
-//  Int_t iNV0SelV0Rec = 0;
-//  Int_t iNV0SelV0Gen = 0;
-
   AliAODv0* v0 = 0; // pointer to V0 candidates
-//  AliV0Object* objectV0 = 0;
   TVector3 vecV0Momentum; // 3D vector of V0 momentum
   Double_t dMassV0K0s = 0; // invariant mass of the K0s candidate
   Double_t dMassV0Lambda = 0; // invariant mass of the Lambda candidate
@@ -1469,53 +1405,49 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
     bLeadingJetOnly = 0;
   }
 
-//  Int_t iNJetAll = 0; // number of reconstructed jets in fBranchJet
-//  iNJetAll = fBranchJet->GetEntriesFast(); // number of reconstructed jets
-  TClonesArray* jetArray = 0; // object where the input jets are stored
-  TClonesArray* jetArrayBg = 0; // object where the kt clusters are stored
+  if(fJetsCont)
+  {
+//    fJetsCont->SetJetPtCut(fdCutPtJetMin); // needs to be applied on the pt after bg subtraction
+    fJetsCont->SetPtBiasJetTrack(fdCutPtTrackMin);
+    fJetsCont->SetPercAreaCut(0.6);
+    fJetsCont->SetJetEtaLimits(-dJetEtaWindow, dJetEtaWindow);
+  }
+
   Int_t iNJet = 0; // number of reconstructed jets in the input
   TClonesArray* jetArraySel = new TClonesArray("AliAODJet", 0); // object where the selected jets are copied
   Int_t iNJetSel = 0; // number of selected reconstructed jets
-//  iNJetSel = jetArraySel->GetEntriesFast(); // number of selected reconstructed jets
   TClonesArray* jetArrayPerp = new TClonesArray("AliAODJet", 0); // object where the perp. cones are stored
   Int_t iNJetPerp = 0; // number of perpendicular cones
 
   AliAODJet* jet = 0; // pointer to a jet
-//  AliJetObject* objectJet = 0;
   AliAODJet* jetPerp = 0; // pointer to a perp. cone
   AliAODJet* jetRnd = 0; // pointer to a rand. cone
-  AliAODJet* jetMed = 0; // pointer to a median cluster
+  AliEmcalJet* jetMed = 0; // pointer to a median cluster
   TVector3 vecJetMomentum; // 3D vector of jet momentum
-//  TVector3 vecPerpConeMomentum; // 3D vector of perpendicular cone momentum
-//  TVector3 vecRndConeMomentum; // 3D vector of random cone momentum
   Bool_t bJetEventGood = kTRUE; // indicator of good jet events
-
-//  printf("iNJetAll, iNJetSel: %d %d\n",iNJetAll,iNJetSel);
+  Double_t dRho = 0; // average bg pt density
+  TLorentzVector vecJetSel; // 4-momentum of selected jet
+  TLorentzVector vecPerpPlus; // 4-momentum of perpendicular cone plus
+  TLorentzVector vecPerpMinus; // 4-momentum of perpendicular cone minus
 
   if(fbJetSelection)  // analysis of V0s in jets is switched on
   {
-    jetArray = (TClonesArray*)(fAODOut->FindListObject(fsJetBranchName.Data())); // find object with jets in the output AOD
-    if(!jetArray)
+    if(!fJetsCont)
     {
-      if(fDebug > 0) printf("TaskV0sInJets: No array of name: %s\n", fsJetBranchName.Data());
+      if(fDebug > 0) printf("TaskV0sInJetsEmcal: No jet container\n");
       bJetEventGood = kFALSE;
     }
     if(bJetEventGood)
-      iNJet = jetArray->GetEntriesFast();
+      iNJet = fJetsCont->GetNJets();
     if(bJetEventGood && !iNJet)  // check whether there are some jets
     {
-      if(fDebug > 2) printf("TaskV0sInJets: No jets in array\n");
+      if(fDebug > 2) printf("TaskV0sInJetsEmcal: No jets in array\n");
       bJetEventGood = kFALSE;
     }
-    if(bJetEventGood)
+    if(bJetEventGood && !fJetsBgCont)
     {
-//          printf("TaskV0sInJets: Loading bg array of name: %s\n",fsJetBgBranchName.Data());
-      jetArrayBg = (TClonesArray*)(fAODOut->FindListObject(fsJetBgBranchName.Data())); // find object with jets in the output AOD
-      if(!jetArrayBg)
-      {
-        if(fDebug > 0) printf("TaskV0sInJets: No bg array of name: %s\n", fsJetBgBranchName.Data());
-//              bJetEventGood = kFALSE;
-      }
+      if(fDebug > 0) printf("TaskV0sInJetsEmcal: No bg jet container\n");
+//        bJetEventGood = kFALSE;
     }
   }
   else // no in-jet analysis
@@ -1524,27 +1456,32 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
   // select good jets and copy them to another array
   if(bJetEventGood)
   {
+    dRho = fJetsCont->GetRhoVal();
+//    printf("TaskV0sInJetsEmcal: Loaded rho value: %g\n",dRho);
     if(bLeadingJetOnly)
       iNJet = 1; // only leading jets
-    if(fDebug > 5) printf("TaskV0sInJets: Jet selection for %d jets\n", iNJet);
+    if(fDebug > 5) printf("TaskV0sInJetsEmcal: Jet selection for %d jets\n", iNJet);
     for(Int_t iJet = 0; iJet < iNJet; iJet++)
     {
-      AliAODJet* jetSel = (AliAODJet*)jetArray->At(iJet); // load a jet in the list
+      AliEmcalJet* jetSel = (AliEmcalJet*)(fJetsCont->GetAcceptJet(iJet)); // load a jet in the list
+      if(bLeadingJetOnly)
+        jetSel = fJetsCont->GetLeadingJet();
       if(!jetSel)
       {
-        if(fDebug > 0) printf("TaskV0sInJets: Cannot load jet %d\n", iJet);
+        if(fDebug > 5) printf("TaskV0sInJetsEmcal: Jet %d not accepted in container\n", iJet);
         continue;
       }
+      Double_t dPtJetCorr = jetSel->Pt() - dRho * jetSel->Area();
       if(bPrintJetSelection)
-        if(fDebug > 7) printf("jet: i = %d, pT = %f, eta = %f, phi = %f, pt lead tr = %f ", iJet, jetSel->Pt(), jetSel->Eta(), jetSel->Phi(), jetSel->GetPtLeading());
-//          printf("TaskV0sInJets: Checking pt > %.2f for jet %d with pt %.2f\n",fdCutPtJetMin,iJet,jetSel->Pt());
-      if(jetSel->Pt() < fdCutPtJetMin)  // selection of high-pt jets
+        if(fDebug > 7) printf("jet: i = %d, pT = %g, eta = %g, phi = %g, pt lead tr = %g, pt corr = %g ", iJet, jetSel->Pt(), jetSel->Eta(), jetSel->Phi(), fJetsCont->GetLeadingHadronPt(jetSel), dPtJetCorr);
+//          printf("TaskV0sInJetsEmcal: Checking pt > %.2f for jet %d with pt %.2f\n",fdCutPtJetMin,iJet,jetSel->Pt());
+      if(dPtJetCorr < fdCutPtJetMin)  // selection of high-pt jets, needs to be applied on the pt after bg subtraction
       {
         if(bPrintJetSelection)
           if(fDebug > 7) printf("rejected (pt)\n");
         continue;
       }
-//          printf("TaskV0sInJets: Checking |eta| < %.2f for jet %d with |eta| %.2f\n",dJetEtaWindow,iJet,TMath::Abs(jetSel->Eta()));
+//          printf("TaskV0sInJetsEmcal: Checking |eta| < %.2f for jet %d with |eta| %.2f\n",dJetEtaWindow,iJet,TMath::Abs(jetSel->Eta()));
       if(TMath::Abs(jetSel->Eta()) > dJetEtaWindow)  // selection of jets in the chosen pseudorapidity range
       {
         if(bPrintJetSelection)
@@ -1553,31 +1490,16 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
       }
       if(!bUseOldCuts)
       {
-        if(jetSel->EffectiveAreaCharged() < dCutJetAreaMin)
+        if(jetSel->Area() < dCutJetAreaMin)
+        {
+          if(bPrintJetSelection)
+            if(fDebug > 7) printf("rejected (area)\n");
           continue;
+        }
       }
-      Int_t iNTracksInJet = 0;
-      Double_t dPtLeadTrack = 0; // pt of the leading track
-//          Int_t iLeadTrack = 0;
-      iNTracksInJet = jetSel->GetRefTracks()->GetEntriesFast(); // number od tracks that constitute the jet
-//          printf("TaskV0sInJets: Searching for leading track from %d tracks in jet %d\n",iNTracksInJet,iJet);
       if(fdCutPtTrackMin > 0)  // a positive min leading track pt is set
       {
-        for(Int_t j = 0; j < iNTracksInJet; j++)  // find the track with the highest pt
-        {
-          AliAODTrack* track = (AliAODTrack*)jetSel->GetTrack(j); // is this the leading track?
-          if(!track)
-            continue;
-//                  printf("TaskV0sInJets: %d: %.2f\n",j,track->Pt());
-          if(track->Pt() > dPtLeadTrack)
-          {
-            dPtLeadTrack = track->Pt();
-//                      iLeadTrack = j;
-          }
-        }
-//        printf("Leading track pT: my: %f, ali: %f\n",dPtLeadTrack,jetSel->GetPtLeading());
-//        printf("TaskV0sInJets: Checking leading track pt > %.2f for pt %.2f of track %d in jet %d\n",fdCutPtTrackMin,dPtLeadTrack,iLeadTrack,iJet);
-        if(dPtLeadTrack < fdCutPtTrackMin)  // selection of high-pt jet-track events
+        if(fJetsCont->GetLeadingHadronPt(jetSel) < fdCutPtTrackMin)  // selection of high-pt jet-track events
         {
           if(bPrintJetSelection)
             if(fDebug > 7) printf("rejected (track pt)\n");
@@ -1586,33 +1508,22 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
       }
       if(bPrintJetSelection)
         if(fDebug > 7) printf("accepted\n");
-      if(fDebug > 5) printf("TaskV0sInJets: Jet %d with pt %.2f passed selection\n", iJet, jetSel->Pt());
-/*
-      if (fbTreeOutput)
-      {
-//      new ((*fBranchJet)[iNJetAll++]) AliAODJet(*((AliAODJet*)jetSel));
-        objectJet = new ((*fBranchJet)[iNJetAll++]) AliJetObject(jetSel); // copy selected jet to the array
-//      objectJet->SetPtLeadingTrack(dPtLeadTrack);
-        objectJet->SetRadius(fdRadiusJet);
-        objectJet = 0;
-      }
-*/
-      TLorentzVector vecPerpPlus(*(jetSel->MomentumVector()));
-      vecPerpPlus.RotateZ(TMath::Pi() / 2.); // rotate vector by 90 deg around z
-      TLorentzVector vecPerpMinus(*(jetSel->MomentumVector()));
+      if(fDebug > 5) printf("TaskV0sInJetsEmcal: Jet %d with pt %.2f passed selection\n", iJet, dPtJetCorr);
+
+      vecJetSel.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
+      vecPerpPlus.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
+      vecPerpMinus.SetPtEtaPhiM(dPtJetCorr, jetSel->Eta(), jetSel->Phi(), 0.);
+      vecPerpPlus.RotateZ(TMath::Pi() / 2.); // rotate vector by +90 deg around z
       vecPerpMinus.RotateZ(-TMath::Pi() / 2.); // rotate vector by -90 deg around z
-//      AliAODJet jetTmp = AliAODJet(vecPerp);
-      if(fDebug > 5) printf("TaskV0sInJets: Adding perp. cones number %d, %d\n", iNJetPerp, iNJetPerp + 1);
-//      printf("TaskV0sInJets: Adding perp. cone number %d: pT %f, phi %f, eta %f, pT %f, phi %f, eta %f\n",iNJetSel,vecPerp.Pt(),vecPerp.Phi(),vecPerp.Eta(),jetTmp.Pt(),jetTmp.Phi(),jetTmp.Eta());
+      if(fDebug > 5) printf("TaskV0sInJetsEmcal: Adding perp. cones number %d, %d\n", iNJetPerp, iNJetPerp + 1);
       new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpPlus);  // write perp. cone to the array
       new((*jetArrayPerp)[iNJetPerp++]) AliAODJet(vecPerpMinus);  // write perp. cone to the array
-      if(fDebug > 5) printf("TaskV0sInJets: Adding jet number %d\n", iNJetSel);
-//      printf("TaskV0sInJets: Adding jet number %d: pT %f, phi %f, eta %f\n",iNJetSel,jetSel->Pt(),jetSel->Phi(),jetSel->Eta());
-      new((*jetArraySel)[iNJetSel++]) AliAODJet(*((AliAODJet*)jetSel));  // copy selected jet to the array
+      if(fDebug > 5) printf("TaskV0sInJetsEmcal: Adding jet number %d\n", iNJetSel);
+      new((*jetArraySel)[iNJetSel++]) AliAODJet(vecJetSel);  // copy selected jet to the array
     }
-    if(fDebug > 5) printf("TaskV0sInJets: Added jets: %d\n", iNJetSel);
+    if(fDebug > 5) printf("TaskV0sInJetsEmcal: Added jets: %d\n", iNJetSel);
     iNJetSel = jetArraySel->GetEntriesFast();
-    if(fDebug > 2) printf("TaskV0sInJets: Selected jets in array: %d\n", iNJetSel);
+    if(fDebug > 2) printf("TaskV0sInJetsEmcal: Selected jets in array: %d\n", iNJetSel);
     fh1NJetPerEvent[iCentIndex]->Fill(iNJetSel);
     // fill jet spectra
     for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
@@ -1653,7 +1564,7 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
       fh1NRndConeCent->Fill(iCentIndex);
       fh2EtaPhiRndCone[iCentIndex]->Fill(jetRnd->Eta(), jetRnd->Phi());
     }
-    jetMed = GetMedianCluster(jetArrayBg, dJetEtaWindow);
+    jetMed = GetMedianCluster(fJetsBgCont, dJetEtaWindow);
     if(jetMed)
     {
       fh1NMedConeCent->Fill(iCentIndex);
@@ -1669,7 +1580,7 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
   fh2VtxXY[iCentIndex]->Fill(dPrimVtxPos[0], dPrimVtxPos[1]);
 
   //===== Start of loop over V0 candidates =====
-  if(fDebug > 2) printf("TaskV0sInJets: Start of V0 loop\n");
+  if(fDebug > 2) printf("TaskV0sInJetsEmcal: Start of V0 loop\n");
   for(Int_t iV0 = 0; iV0 < iNV0s; iV0++)
   {
     v0 = fAODIn->GetV0(iV0); // get next candidate from the list in AOD
@@ -1681,7 +1592,7 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
     // Initialization of status indicators
     Bool_t bIsCandidateK0s = kTRUE; // candidate for K0s
     Bool_t bIsCandidateLambda = kTRUE; // candidate for Lambda
-    Bool_t bIsCandidateALambda = kTRUE; // candidate for Lambda
+    Bool_t bIsCandidateALambda = kTRUE; // candidate for anti-Lambda
     Bool_t bIsInPeakK0s = kFALSE; // candidate within the K0s mass peak
     Bool_t bIsInPeakLambda = kFALSE; // candidate within the Lambda mass peak
     Bool_t bIsInConeJet = kFALSE; // candidate within the jet cones
@@ -1717,8 +1628,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
     // Sigma of the mass peak window
     Double_t dMassPeakWindowK0s = dNSigmaMassMax * MassPeakSigmaOld(dPtV0, 0);
     Double_t dMassPeakWindowLambda = dNSigmaMassMax * MassPeakSigmaOld(dPtV0, 1);
-//      Double_t dMassPeakWindowK0s = dNSigmaMassMax*MassPeakSigma(iCentIndex,dPtV0,0);
-//      Double_t dMassPeakWindowLambda = dNSigmaMassMax*MassPeakSigma(iCentIndex,dPtV0,1);
 
     // Invariant mass peak selection
     if(TMath::Abs(dMassV0K0s - dMassPDGK0s) < dMassPeakWindowK0s)
@@ -2020,11 +1929,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
       if(bPrintCuts) printf("Rec: Applying cut: Armenteros-Podolanski (K0S): pT > %f * |alpha|\n", 0.2);
       if(dPtArm < TMath::Abs(0.2 * dAlpha))
         bIsCandidateK0s = kFALSE;
-//      if(dPtArm < 0.025)
-//      {
-//        bIsCandidateLambda = kFALSE;
-//        bIsCandidateALambda = kFALSE;
-//      }
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     }
     iCutIndex++;
@@ -2057,47 +1961,32 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
     if(!bIsCandidateK0s && !bIsCandidateLambda && !bIsCandidateALambda)
       continue;
 
-/*
-    if(fDebug>5) printf("TaskV0sInJets: Adding selected V0 to branch\n");
-    // Add selected candidates to the output tree branch
-    if ((bIsCandidateK0s || bIsCandidateLambda || bIsCandidateALambda) && fbTreeOutput)
-      {
-        objectV0 = new ((*fBranchV0Rec)[iNV0SelV0Rec++]) AliV0Object(v0,primVtx);
-//        new ((*fBranchV0Rec)[iNV0SelV0Rec++]) AliAODv0(*((AliAODv0*)v0));
-        objectV0->SetIsCandidateK0S(bIsCandidateK0s);
-        objectV0->SetIsCandidateLambda(bIsCandidateLambda);
-        objectV0->SetIsCandidateALambda(bIsCandidateALambda);
-        objectV0->SetNSigmaPosProton(dNSigmaPosProton);
-        objectV0->SetNSigmaNegProton(dNSigmaNegProton);
-      }
-*/
-
     // Selection of V0s in jet cones, perpendicular cones, random cones, outside cones
     if(bJetEventGood && iNJetSel && (bIsCandidateK0s || bIsCandidateLambda || bIsCandidateALambda))
     {
       // Selection of V0s in jet cones
-      if(fDebug > 5) printf("TaskV0sInJets: Searching for V0 %d %d in %d jet cones\n", bIsCandidateK0s, bIsCandidateLambda, iNJetSel);
+      if(fDebug > 5) printf("TaskV0sInJetsEmcal: Searching for V0 %d %d in %d jet cones\n", bIsCandidateK0s, bIsCandidateLambda, iNJetSel);
       for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
       {
         jet = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
-        vecJetMomentum = TVector3(jet->Px(), jet->Py(), jet->Pz()); // set the vector of jet momentum
-        if(fDebug > 5) printf("TaskV0sInJets: Checking if V0 %d %d in jet cone %d\n", bIsCandidateK0s, bIsCandidateLambda, iJet);
+        vecJetMomentum.SetXYZ(jet->Px(), jet->Py(), jet->Pz()); // set the vector of jet momentum
+        if(fDebug > 5) printf("TaskV0sInJetsEmcal: Checking if V0 %d %d in jet cone %d\n", bIsCandidateK0s, bIsCandidateLambda, iJet);
         if(IsParticleInCone(v0, jet, fdRadiusJet)) // If good jet in event, find out whether V0 is in that jet
         {
-          if(fDebug > 5) printf("TaskV0sInJets: V0 %d %d found in jet cone %d\n", bIsCandidateK0s, bIsCandidateLambda, iJet);
+          if(fDebug > 5) printf("TaskV0sInJetsEmcal: V0 %d %d found in jet cone %d\n", bIsCandidateK0s, bIsCandidateLambda, iJet);
           bIsInConeJet = kTRUE;
           break;
         }
       }
       // Selection of V0s in perp. cones
-      if(fDebug > 5) printf("TaskV0sInJets: Searching for V0 %d %d in %d perp. cones\n", bIsCandidateK0s, bIsCandidateLambda, iNJetSel);
+      if(fDebug > 5) printf("TaskV0sInJetsEmcal: Searching for V0 %d %d in %d perp. cones\n", bIsCandidateK0s, bIsCandidateLambda, iNJetPerp);
       for(Int_t iJet = 0; iJet < iNJetPerp; iJet++)
       {
         jetPerp = (AliAODJet*)jetArrayPerp->At(iJet); // load a jet in the list
-        if(fDebug > 5) printf("TaskV0sInJets: Checking if V0 %d %d in perp. cone %d\n", bIsCandidateK0s, bIsCandidateLambda, iJet);
+        if(fDebug > 5) printf("TaskV0sInJetsEmcal: Checking if V0 %d %d in perp. cone %d\n", bIsCandidateK0s, bIsCandidateLambda, iJet);
         if(IsParticleInCone(v0, jetPerp, fdRadiusJet)) // V0 in perp. cone
         {
-          if(fDebug > 5) printf("TaskV0sInJets: V0 %d %d found in perp. cone %d\n", bIsCandidateK0s, bIsCandidateLambda, iJet);
+          if(fDebug > 5) printf("TaskV0sInJetsEmcal: V0 %d %d found in perp. cone %d\n", bIsCandidateK0s, bIsCandidateLambda, iJet);
           bIsInConePerp = kTRUE;
           break;
         }
@@ -2105,28 +1994,28 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
       // Selection of V0s in random cones
       if(jetRnd)
       {
-        if(fDebug > 5) printf("TaskV0sInJets: Searching for V0 %d %d in the rnd. cone\n", bIsCandidateK0s, bIsCandidateLambda);
+        if(fDebug > 5) printf("TaskV0sInJetsEmcal: Searching for V0 %d %d in the rnd. cone\n", bIsCandidateK0s, bIsCandidateLambda);
         if(IsParticleInCone(v0, jetRnd, fdRadiusJet)) // V0 in rnd. cone?
         {
-          if(fDebug > 5) printf("TaskV0sInJets: V0 %d %d found in the rnd. cone\n", bIsCandidateK0s, bIsCandidateLambda);
+          if(fDebug > 5) printf("TaskV0sInJetsEmcal: V0 %d %d found in the rnd. cone\n", bIsCandidateK0s, bIsCandidateLambda);
           bIsInConeRnd = kTRUE;
         }
       }
       // Selection of V0s in median-cluster cones
       if(jetMed)
       {
-        if(fDebug > 5) printf("TaskV0sInJets: Searching for V0 %d %d in the med. cone\n", bIsCandidateK0s, bIsCandidateLambda);
+        if(fDebug > 5) printf("TaskV0sInJetsEmcal: Searching for V0 %d %d in the med. cone\n", bIsCandidateK0s, bIsCandidateLambda);
         if(IsParticleInCone(v0, jetMed, fdRadiusJet)) // V0 in med. cone?
         {
-          if(fDebug > 5) printf("TaskV0sInJets: V0 %d %d found in the med. cone\n", bIsCandidateK0s, bIsCandidateLambda);
+          if(fDebug > 5) printf("TaskV0sInJetsEmcal: V0 %d %d found in the med. cone\n", bIsCandidateK0s, bIsCandidateLambda);
           bIsInConeMed = kTRUE;
         }
       }
       // Selection of V0s outside jet cones
-      if(fDebug > 5) printf("TaskV0sInJets: Searching for V0 %d %d outside jet cones\n", bIsCandidateK0s, bIsCandidateLambda);
+      if(fDebug > 5) printf("TaskV0sInJetsEmcal: Searching for V0 %d %d outside jet cones\n", bIsCandidateK0s, bIsCandidateLambda);
       if(!OverlapWithJets(jetArraySel, v0, dRadiusExcludeCone)) // V0 oustide jet cones
       {
-        if(fDebug > 5) printf("TaskV0sInJets: V0 %d %d found outside jet cones\n", bIsCandidateK0s, bIsCandidateLambda);
+        if(fDebug > 5) printf("TaskV0sInJetsEmcal: V0 %d %d found outside jet cones\n", bIsCandidateK0s, bIsCandidateLambda);
         bIsOutsideCones = kTRUE;
       }
     }
@@ -2152,7 +2041,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
       fh2CutCTauK0s[1]->Fill(dMassV0K0s, dMROverPtK0s / dCTauK0s);
       fh2CutPIDPosK0s[1]->Fill(dMassV0K0s, dNSigmaPosPion);
       fh2CutPIDNegK0s[1]->Fill(dMassV0K0s, dNSigmaNegPion);
-      fh1DeltaZK0s[iCentIndex]->Fill(dDecayPath[2]);
     }
     if(bIsCandidateLambda)
     {
@@ -2166,7 +2054,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
       fh2CutCTauLambda[1]->Fill(dMassV0Lambda, dMROverPtLambda / dCTauLambda);
       fh2CutPIDPosLambda[1]->Fill(dMassV0Lambda, dNSigmaPosProton);
       fh2CutPIDNegLambda[1]->Fill(dMassV0Lambda, dNSigmaNegPion);
-      fh1DeltaZLambda[iCentIndex]->Fill(dDecayPath[2]);
     }
     */
 
@@ -2429,17 +2316,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
 //          Double_t dResolutionV0Eta = particleMCMother->Eta()-v0->Eta();
 //          Double_t dResolutionV0Phi = particleMCMother->Phi()-v0->Phi();
 
-/*
-      if (fbTreeOutput)
-      {
-      objectV0->SetPtTrue(dPtV0Gen);
-      objectV0->SetEtaTrue(dEtaV0Gen);
-      objectV0->SetPhiTrue(dPhiV0Gen);
-      objectV0->SetPDGCode(iPdgCodeMother);
-      objectV0->SetPDGCodeMother(iPdgCodeMotherOfMother);
-      }
-*/
-
       // K0s
 //          if (bIsCandidateK0s && bIsInPeakK0s) // selected candidates in peak
       if(bIsCandidateK0s)  // selected candidates with any mass
@@ -2447,8 +2323,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
 //              if (bV0MCIsK0s && bV0MCIsPrimary) // well reconstructed candidates
         if(bV0MCIsK0s && bV0MCIsPrimaryDist)  // well reconstructed candidates
         {
-//                  if (fbTreeOutput)
-//                    objectV0->SetOrigin(1);
           fh2V0K0sPtMassMCRec[iCentIndex]->Fill(dPtV0Gen, dMassV0K0s);
           Double_t valueEtaK[3] = {dMassV0K0s, dPtV0Gen, dEtaV0Gen};
           fh3V0K0sEtaPtMassMCRec[iCentIndex]->Fill(valueEtaK);
@@ -2475,8 +2349,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
         }
         if(bV0MCIsK0s && !bV0MCIsPrimaryDist)  // not primary K0s
         {
-//                  if (fbTreeOutput)
-//                    objectV0->SetOrigin(-1);
           fh1V0K0sPtMCRecFalse[iCentIndex]->Fill(dPtV0Gen);
         }
       }
@@ -2487,8 +2359,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
 //              if (bV0MCIsLambda && bV0MCIsPrimaryLambda) // well reconstructed candidates
         if(bV0MCIsLambda && bV0MCIsPrimaryDist)  // well reconstructed candidates
         {
-//                  if (fbTreeOutput)
-//                    objectV0->SetOrigin(1);
           fh2V0LambdaPtMassMCRec[iCentIndex]->Fill(dPtV0Gen, dMassV0Lambda);
           Double_t valueEtaL[3] = {dMassV0Lambda, dPtV0Gen, dEtaV0Gen};
           fh3V0LambdaEtaPtMassMCRec[iCentIndex]->Fill(valueEtaL);
@@ -2516,8 +2386,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
         // Fill the feed-down histograms
         if(bV0MCIsLambda && bV0MCComesFromXi)
         {
-//                  if (fbTreeOutput)
-//                    objectV0->SetOrigin(2);
           Double_t valueFDLIncl[3] = {dPtV0Gen, particleMCMotherOfMother->Pt(), 0.};
           fhnV0LambdaInclMCFD[iCentIndex]->Fill(valueFDLIncl);
           if(bIsInConeRnd)
@@ -2532,8 +2400,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
         }
         if(bV0MCIsLambda && !bV0MCIsPrimaryDist && !bV0MCComesFromXi)  // not primary Lambda
         {
-//                  if (fbTreeOutput)
-//                    objectV0->SetOrigin(-1);
           fh1V0LambdaPtMCRecFalse[iCentIndex]->Fill(dPtV0Gen);
         }
       }
@@ -2544,8 +2410,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
 //              if (bV0MCIsALambda && bV0MCIsPrimaryALambda) // well reconstructed candidates
         if(bV0MCIsALambda && bV0MCIsPrimaryDist)  // well reconstructed candidates
         {
-//                  if (fbTreeOutput)
-//                    objectV0->SetOrigin(1);
           fh2V0ALambdaPtMassMCRec[iCentIndex]->Fill(dPtV0Gen, dMassV0ALambda);
           Double_t valueEtaAL[3] = {dMassV0ALambda, dPtV0Gen, dEtaV0Gen};
           fh3V0ALambdaEtaPtMassMCRec[iCentIndex]->Fill(valueEtaAL);
@@ -2573,8 +2437,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
         // Fill the feed-down histograms
         if(bV0MCIsALambda && bV0MCComesFromAXi)
         {
-//                  if (fbTreeOutput)
-//                    objectV0->SetOrigin(2);
           Double_t valueFDALIncl[3] = {dPtV0Gen, particleMCMotherOfMother->Pt(), 0.};
           fhnV0ALambdaInclMCFD[iCentIndex]->Fill(valueFDALIncl);
           if(bIsInConeRnd)
@@ -2589,8 +2451,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
         }
         if(bV0MCIsALambda && !bV0MCIsPrimaryDist && !bV0MCComesFromAXi)  // not primary anti-Lambda
         {
-//                  if (fbTreeOutput)
-//                    objectV0->SetOrigin(-1);
           fh1V0ALambdaPtMCRecFalse[iCentIndex]->Fill(dPtV0Gen);
         }
       }
@@ -2604,7 +2464,7 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
   fh1V0CandPerEventCentLambda[iCentIndex]->Fill(iNV0CandLambda);
   fh1V0CandPerEventCentALambda[iCentIndex]->Fill(iNV0CandALambda);
 
-  if(fDebug > 2) printf("TaskV0sInJets: End of V0 loop\n");
+  if(fDebug > 2) printf("TaskV0sInJetsEmcal: End of V0 loop\n");
 
   // Spectra of generated particles
   if(fbMCAnalysis)
@@ -2622,14 +2482,10 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
 //          if ( (iPdgCodeParticleMC==3322) || (iPdgCodeParticleMC==3312) )
       if((iPdgCodeParticleMC == 3312) && (TMath::Abs(particleMC->Y()) < 0.5))
       {
-//              if (fbTreeOutput)
-//                new ((*fBranchV0Gen)[iNV0SelV0Gen++]) AliAODMCParticle(*((AliAODMCParticle*)particleMC));
         fh1V0XiPtMCGen[iCentIndex]->Fill(particleMC->Pt());
       }
       if((iPdgCodeParticleMC == -3312) && (TMath::Abs(particleMC->Y()) < 0.5))
       {
-//              if (fbTreeOutput)
-//                new ((*fBranchV0Gen)[iNV0SelV0Gen++]) AliAODMCParticle(*((AliAODMCParticle*)particleMC));
         fh1V0AXiPtMCGen[iCentIndex]->Fill(particleMC->Pt());
       }
       // Skip not interesting particles
@@ -2662,26 +2518,26 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
         if((TMath::Abs(dEtaV0Gen) > dEtaMax))
           continue;
       }
-/*
-      // Is MC V0 particle physical primary? Attention!! Definition of IsPhysicalPrimary may change!!
-      Bool_t bV0MCIsPrimary = particleMC->IsPhysicalPrimary();
+      /*
+                // Is MC V0 particle physical primary? Attention!! Definition of IsPhysicalPrimary may change!!
+                Bool_t bV0MCIsPrimary = particleMC->IsPhysicalPrimary();
 
-      // Get the MC mother particle of the MC V0 particle
-      Int_t iIndexMotherOfMother = particleMC->GetMother();
-      AliAODMCParticle* particleMCMotherOfMother = 0;
-      if (iIndexMotherOfMother >= 0)
-        particleMCMotherOfMother = (AliAODMCParticle*)arrayMC->At(iIndexMotherOfMother);
-      // Get identity of the MC mother particle of the MC V0 particle if it exists
-      Int_t iPdgCodeMotherOfMother = 0;
-      if (particleMCMotherOfMother)
-        iPdgCodeMotherOfMother = particleMCMotherOfMother->GetPdgCode();
-      // Check if the MC mother particle is a physical primary Sigma
-      Bool_t bV0MCComesFromSigma = kFALSE;
-      if ((particleMCMotherOfMother && particleMCMotherOfMother->IsPhysicalPrimary()) && (TMath::Abs(iPdgCodeMotherOfMother)==3212) || (TMath::Abs(iPdgCodeMotherOfMother)==3224) || (TMath::Abs(iPdgCodeMotherOfMother)==3214) || (TMath::Abs(iPdgCodeMotherOfMother)==3114) )
-        bV0MCComesFromSigma = kTRUE;
-      // Should the MC V0 particle be considered as primary when it is Lambda?
-      Bool_t bV0MCIsPrimaryLambda = (bV0MCIsPrimary || bV0MCComesFromSigma);
-*/
+                // Get the MC mother particle of the MC V0 particle
+                Int_t iIndexMotherOfMother = particleMC->GetMother();
+                AliAODMCParticle* particleMCMotherOfMother = 0;
+                if (iIndexMotherOfMother >= 0)
+                  particleMCMotherOfMother = (AliAODMCParticle*)arrayMC->At(iIndexMotherOfMother);
+                // Get identity of the MC mother particle of the MC V0 particle if it exists
+                Int_t iPdgCodeMotherOfMother = 0;
+                if (particleMCMotherOfMother)
+                  iPdgCodeMotherOfMother = particleMCMotherOfMother->GetPdgCode();
+                // Check if the MC mother particle is a physical primary Sigma
+                Bool_t bV0MCComesFromSigma = kFALSE;
+                if ((particleMCMotherOfMother && particleMCMotherOfMother->IsPhysicalPrimary()) && (TMath::Abs(iPdgCodeMotherOfMother)==3212) || (TMath::Abs(iPdgCodeMotherOfMother)==3224) || (TMath::Abs(iPdgCodeMotherOfMother)==3214) || (TMath::Abs(iPdgCodeMotherOfMother)==3114) )
+                  bV0MCComesFromSigma = kTRUE;
+                // Should the MC V0 particle be considered as primary when it is Lambda?
+                Bool_t bV0MCIsPrimaryLambda = (bV0MCIsPrimary || bV0MCComesFromSigma);
+      */
       // Reject non primary particles
 //          if (!bV0MCIsPrimaryLambda)
 //            continue;
@@ -2698,14 +2554,14 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
       Bool_t bIsMCV0InJet = kFALSE;
       if(iNJetSel)
       {
-        if(fDebug > 5) printf("TaskV0sInJets: Searching for gen V0 in %d MC jets\n", iNJetSel);
+        if(fDebug > 5) printf("TaskV0sInJetsEmcal: Searching for gen V0 in %d MC jets\n", iNJetSel);
         for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
         {
           jetMC = (AliAODJet*)jetArraySel->At(iJet); // load a jet in the list
-          if(fDebug > 5) printf("TaskV0sInJets: Checking if gen V0 in MC jet %d\n", iJet);
+          if(fDebug > 5) printf("TaskV0sInJetsEmcal: Checking if gen V0 in MC jet %d\n", iJet);
           if(IsParticleInCone(particleMC, jetMC, fdRadiusJet)) // If good jet in event, find out whether V0 is in that jet
           {
-            if(fDebug > 5) printf("TaskV0sInJets: gen V0 found in MC jet %d\n", iJet);
+            if(fDebug > 5) printf("TaskV0sInJetsEmcal: gen V0 found in MC jet %d\n", iJet);
             bIsMCV0InJet = kTRUE;
             break;
           }
@@ -2717,8 +2573,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
 //          if (bV0MCIsK0s && bV0MCIsPrimary) // well reconstructed candidates
       if(bV0MCIsK0s && bV0MCIsPrimaryDist)  // well reconstructed candidates
       {
-//              if (fbTreeOutput)
-//                new ((*fBranchV0Gen)[iNV0SelV0Gen++]) AliAODMCParticle(*((AliAODMCParticle*)particleMC));
         fh1V0K0sPtMCGen[iCentIndex]->Fill(dPtV0Gen);
         fh2V0K0sEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
         if(bIsMCV0InJet)
@@ -2732,8 +2586,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
 //          if (bV0MCIsLambda && bV0MCIsPrimaryLambda) // well reconstructed candidates
       if(bV0MCIsLambda && bV0MCIsPrimaryDist)  // well reconstructed candidates
       {
-//              if (fbTreeOutput)
-//                new ((*fBranchV0Gen)[iNV0SelV0Gen++]) AliAODMCParticle(*((AliAODMCParticle*)particleMC));
         fh1V0LambdaPtMCGen[iCentIndex]->Fill(dPtV0Gen);
         fh2V0LambdaEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
         if(bIsMCV0InJet)
@@ -2747,8 +2599,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
 //          if (bV0MCIsALambda && bV0MCIsPrimaryALambda) // well reconstructed candidates
       if(bV0MCIsALambda && bV0MCIsPrimaryDist)  // well reconstructed candidates
       {
-//              if (fbTreeOutput)
-//                new ((*fBranchV0Gen)[iNV0SelV0Gen++]) AliAODMCParticle(*((AliAODMCParticle*)particleMC));
         fh1V0ALambdaPtMCGen[iCentIndex]->Fill(dPtV0Gen);
         fh2V0ALambdaEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
         if(bIsMCV0InJet)
@@ -2760,9 +2610,6 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
       }
     }
   }
-
-//  if (fbTreeOutput)
-//    ftreeOut->Fill();
 
   jetArraySel->Delete();
   delete jetArraySel;
@@ -2776,12 +2623,11 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t*)
   PostData(2, fOutputListQA);
   PostData(3, fOutputListCuts);
   PostData(4, fOutputListMC);
-//  if (fbTreeOutput)
-//    PostData(5,ftreeOut);
-//  if(fDebug>5) printf("TaskV0sInJets: UserExec: End\n");
+//  if(fDebug>5) printf("TaskV0sInJetsEmcal: FillHistograms: End\n");
+  return kFALSE;
 }
 
-void AliAnalysisTaskV0sInJets::FillQAHistogramV0(AliAODVertex* vtx, const AliAODv0* vZero, Int_t iIndexHisto, Bool_t IsCandK0s, Bool_t IsCandLambda, Bool_t IsInPeakK0s, Bool_t IsInPeakLambda)
+void AliAnalysisTaskV0sInJetsEmcal::FillQAHistogramV0(AliAODVertex* vtx, const AliAODv0* vZero, Int_t iIndexHisto, Bool_t IsCandK0s, Bool_t IsCandLambda, Bool_t IsInPeakK0s, Bool_t IsInPeakLambda)
 {
   if(!IsCandK0s && !IsCandLambda)
     return;
@@ -2882,7 +2728,7 @@ void AliAnalysisTaskV0sInJets::FillQAHistogramV0(AliAODVertex* vtx, const AliAOD
 
 }
 
-void AliAnalysisTaskV0sInJets::FillCandidates(Double_t mK, Double_t mL, Double_t mAL, Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut/*cut index*/, Int_t iCent/*cent index*/)
+void AliAnalysisTaskV0sInJetsEmcal::FillCandidates(Double_t mK, Double_t mL, Double_t mAL, Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut/*cut index*/, Int_t iCent/*cent index*/)
 {
   if(isK)
   {
@@ -2901,7 +2747,7 @@ void AliAnalysisTaskV0sInJets::FillCandidates(Double_t mK, Double_t mL, Double_t
   }
 }
 
-Bool_t AliAnalysisTaskV0sInJets::IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const
+Bool_t AliAnalysisTaskV0sInJetsEmcal::IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const
 {
 // decides whether a particle is inside a jet cone
   if(!part1 || !part2)
@@ -2915,23 +2761,23 @@ Bool_t AliAnalysisTaskV0sInJets::IsParticleInCone(const AliVParticle* part1, con
   return kFALSE;
 }
 
-Bool_t AliAnalysisTaskV0sInJets::OverlapWithJets(const TClonesArray* array, const AliVParticle* part, Double_t dDistance) const
+Bool_t AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets(const TClonesArray* array, const AliVParticle* part, Double_t dDistance) const
 {
 // decides whether a cone overlaps with other jets
   if(!part)
   {
-    if(fDebug > 0) printf("AliAnalysisTaskV0sInJets::OverlapWithJets: Error: No part\n");
+    if(fDebug > 0) printf("AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets: Error: No part\n");
     return kFALSE;
   }
   if(!array)
   {
-    if(fDebug > 0) printf("AliAnalysisTaskV0sInJets::OverlapWithJets: Error: No array\n");
+    if(fDebug > 0) printf("AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets: Error: No array\n");
     return kFALSE;
   }
   Int_t iNJets = array->GetEntriesFast();
   if(iNJets <= 0)
   {
-    if(fDebug > 2) printf("AliAnalysisTaskV0sInJets::OverlapWithJets: Warning: No jets\n");
+    if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets: Warning: No jets\n");
     return kFALSE;
   }
   AliVParticle* jet = 0;
@@ -2940,7 +2786,7 @@ Bool_t AliAnalysisTaskV0sInJets::OverlapWithJets(const TClonesArray* array, cons
     jet = (AliVParticle*)array->At(iJet);
     if(!jet)
     {
-      if(fDebug > 0) printf("AliAnalysisTaskV0sInJets::OverlapWithJets: Error: Failed to load jet %d/%d\n", iJet, iNJets);
+      if(fDebug > 0) printf("AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets: Error: Failed to load jet %d/%d\n", iJet, iNJets);
       continue;
     }
     if(IsParticleInCone(part, jet, dDistance))
@@ -2949,7 +2795,7 @@ Bool_t AliAnalysisTaskV0sInJets::OverlapWithJets(const TClonesArray* array, cons
   return kFALSE;
 }
 
-AliAODJet* AliAnalysisTaskV0sInJets::GetRandomCone(const TClonesArray* array, Double_t dEtaConeMax, Double_t dDistance) const
+AliAODJet* AliAnalysisTaskV0sInJetsEmcal::GetRandomCone(const TClonesArray* array, Double_t dEtaConeMax, Double_t dDistance) const
 {
 // generate a random cone which does not overlap with selected jets
 //  printf("Generating random cone...\n");
@@ -2979,34 +2825,28 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetRandomCone(const TClonesArray* array, Do
   return part;
 }
 
-AliAODJet* AliAnalysisTaskV0sInJets::GetMedianCluster(const TClonesArray* array, Double_t dEtaConeMax) const
+AliEmcalJet* AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster(AliJetContainer* cont, Double_t dEtaConeMax) const
 {
 // sort kt clusters by pT/area and return the middle one, based on code in AliAnalysisTaskJetChem
-  if(!array)
+  if(!cont)
   {
-    if(fDebug > 0) printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Error: No array\n");
+    if(fDebug > 0) printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: Error: No container\n");
     return NULL;
   }
-  Int_t iNClTot = array->GetEntriesFast(); // number of all clusters in the array
+  Int_t iNClTot = cont->GetNJets(); // number of all clusters in the array
   Int_t iNCl = 0; // number of accepted clusters
 
   // get list of densities
   std::vector<std::vector<Double_t> > vecListClusters; // vector that contains pairs [ index, density ]
-//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Loop over %d clusters.\n", iNClTot);
+//  printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: Loop over %d clusters.\n", iNClTot);
   for(Int_t ij = 0; ij < iNClTot; ij++)
   {
-    AliAODJet* clusterBg = (AliAODJet*)(array->At(ij));
+    AliEmcalJet* clusterBg = (AliEmcalJet*)(cont->GetAcceptJet(ij));
     if(!clusterBg)
-    {
-//      printf("AliAnalysisTaskV0sInJets::GetMedianCluster: cluster %d/%d not ok\n", ij, iNClTot);
-      return NULL;
-    }
-    if(TMath::Abs(clusterBg->Eta()) > 0.9 - fdRadiusJetBg)
       continue;
-//    fh2EtaPhiMedCone[0]->Fill(clusterBg->Eta(), clusterBg->Phi());
-//    printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Cluster %d/%d used as accepted cluster %d.\n", ij, iNClTot, int(vecListClusters.size()));
+//    printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: Cluster %d/%d used as accepted cluster %d.\n", ij, iNClTot, int(vecListClusters.size()));
     Double_t dPtBg = clusterBg->Pt();
-    Double_t dAreaBg = clusterBg->EffectiveAreaCharged();
+    Double_t dAreaBg = clusterBg->Area();
     Double_t dDensityBg = 0;
     if(dAreaBg > 0)
       dDensityBg = dPtBg / dAreaBg;
@@ -3018,41 +2858,41 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetMedianCluster(const TClonesArray* array,
   iNCl = vecListClusters.size();
   if(iNCl < 3) // need at least 3 clusters (skipping 2 highest)
   {
-//    if(fDebug > 2) printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Warning: Too little clusters\n");
+//    if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: Warning: Too little clusters\n");
     return NULL;
   }
 
-//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Original lists:\n");
+//  printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: Original lists:\n");
 //  for(Int_t i = 0; i < iNCl; i++)
 //    printf("%g %g\n", (vecListClusters[i])[0], (vecListClusters[i])[1]);
 
   // sort list of indeces by density in descending order
   std::sort(vecListClusters.begin(), vecListClusters.end(), CompareClusters);
 
-//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Sorted lists:\n");
+//  printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: Sorted lists:\n");
 //  for(Int_t i = 0; i < iNCl; i++)
 //    printf("%g %g\n", (vecListClusters[i])[0], (vecListClusters[i])[1]);
 
   // get median cluster with median density
-  AliAODJet* clusterMed = 0;
+  AliEmcalJet* clusterMed = 0;
   Int_t iIndex = 0; // index of the median cluster in the sorted list
   Int_t iIndexMed = 0; // index of the median cluster in the original array
   if(TMath::Odd(iNCl))  // odd number of clusters
   {
     iIndex = (Int_t)(0.5 * (iNCl + 1)); // = (n - skip + 1)/2 + 1, skip = 2
-//    printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Odd, median index = %d/%d\n", iIndex, iNCl);
+//    printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: Odd, median index = %d/%d\n", iIndex, iNCl);
   }
   else // even number: picking randomly one of the two closest to median
   {
     Int_t iIndex1 = (Int_t)(0.5 * iNCl); // = (n - skip)/2 + 1, skip = 2
     Int_t iIndex2 = (Int_t)(0.5 * iNCl + 1); // = (n - skip)/2 + 1 + 1, skip = 2
     iIndex = ((fRandom->Rndm() > 0.5) ? iIndex1 : iIndex2);
-//    printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Even, median index = %d or %d -> %d/%d\n", iIndex1, iIndex2, iIndex, iNCl);
+//    printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: Even, median index = %d or %d -> %d/%d\n", iIndex1, iIndex2, iIndex, iNCl);
   }
   iIndexMed = (vecListClusters[iIndex])[0];
 
-//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: getting median cluster %d/%d ok, rho = %g\n", iIndexMed, iNClTot, (vecListClusters[iIndex])[1]);
-  clusterMed = (AliAODJet*)(array->At(iIndexMed));
+//  printf("AliAnalysisTaskV0sInJetsEmcal::GetMedianCluster: getting median cluster %d/%d ok, rho = %g\n", iIndexMed, iNClTot, (vecListClusters[iIndex])[1]);
+  clusterMed = (AliEmcalJet*)(cont->GetAcceptJet(iIndexMed));
 
   if(TMath::Abs(clusterMed->Eta()) > dEtaConeMax)
     return NULL;
@@ -3060,7 +2900,7 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetMedianCluster(const TClonesArray* array,
   return clusterMed;
 }
 
-Double_t AliAnalysisTaskV0sInJets::AreaCircSegment(Double_t dRadius, Double_t dDistance) const
+Double_t AliAnalysisTaskV0sInJetsEmcal::AreaCircSegment(Double_t dRadius, Double_t dDistance) const
 {
 // calculate area of a circular segment defined by the circle radius and the (oriented) distance between the secant line and the circle centre
   Double_t dEpsilon = 1e-2;
@@ -3068,7 +2908,7 @@ Double_t AliAnalysisTaskV0sInJets::AreaCircSegment(Double_t dRadius, Double_t dD
   Double_t dD = dDistance;
   if(TMath::Abs(dR) < dEpsilon)
   {
-    if(fDebug > 0) printf("AliAnalysisTaskV0sInJets::AreaCircSegment: Error: Too small radius: %f < %f\n", dR, dEpsilon);
+    if(fDebug > 0) printf("AliAnalysisTaskV0sInJetsEmcal::AreaCircSegment: Error: Too small radius: %f < %f\n", dR, dEpsilon);
     return 0.;
   }
   if(dD >= dR)
@@ -3078,7 +2918,7 @@ Double_t AliAnalysisTaskV0sInJets::AreaCircSegment(Double_t dRadius, Double_t dD
   return dR * dR * TMath::ACos(dD / dR) - dD * TMath::Sqrt(dR * dR - dD * dD);
 }
 
-Bool_t AliAnalysisTaskV0sInJets::IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Bool_t bCutDeltaZ, Double_t dDeltaZMax)
+Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Bool_t bCutDeltaZ, Double_t dDeltaZMax)
 {
 // event selection
   AliAODVertex* vertex = fAOD->GetPrimaryVertex();
@@ -3136,7 +2976,7 @@ Bool_t AliAnalysisTaskV0sInJets::IsSelectedForJets(AliAODEvent* fAOD, Double_t d
   return kTRUE;
 }
 
-Int_t AliAnalysisTaskV0sInJets::GetCentralityBinIndex(Double_t centrality)
+Int_t AliAnalysisTaskV0sInJetsEmcal::GetCentralityBinIndex(Double_t centrality)
 {
 // returns index of the centrality bin corresponding to the provided value of centrality
   if(centrality < 0 || centrality > fgkiCentBinRanges[fgkiNBinsCent - 1])
@@ -3149,7 +2989,7 @@ Int_t AliAnalysisTaskV0sInJets::GetCentralityBinIndex(Double_t centrality)
   return -1;
 }
 
-Int_t AliAnalysisTaskV0sInJets::GetCentralityBinEdge(Int_t index)
+Int_t AliAnalysisTaskV0sInJetsEmcal::GetCentralityBinEdge(Int_t index)
 {
 // returns the upper edge of the centrality bin corresponding to the provided value of index
   if(index < 0 || index >= fgkiNBinsCent)
@@ -3157,7 +2997,7 @@ Int_t AliAnalysisTaskV0sInJets::GetCentralityBinEdge(Int_t index)
   return fgkiCentBinRanges[index];
 }
 
-TString AliAnalysisTaskV0sInJets::GetCentBinLabel(Int_t index)
+TString AliAnalysisTaskV0sInJetsEmcal::GetCentBinLabel(Int_t index)
 {
 // get string with centrality range for given bin
   TString lowerEdge = ((index == 0) ? "0" : Form("%d", GetCentralityBinEdge(index - 1)));
@@ -3165,7 +3005,7 @@ TString AliAnalysisTaskV0sInJets::GetCentBinLabel(Int_t index)
   return Form("%s-%s %%", lowerEdge.Data(), upperEdge.Data());
 }
 
-Double_t AliAnalysisTaskV0sInJets::MassPeakSigmaOld(Double_t pt, Int_t particle)
+Double_t AliAnalysisTaskV0sInJetsEmcal::MassPeakSigmaOld(Double_t pt, Int_t particle)
 {
 // estimation of the sigma of the invariant-mass peak as a function of pT and particle type
   switch(particle)
@@ -3182,7 +3022,7 @@ Double_t AliAnalysisTaskV0sInJets::MassPeakSigmaOld(Double_t pt, Int_t particle)
   }
 }
 
-bool AliAnalysisTaskV0sInJets::CompareClusters(const std::vector<Double_t> cluster1, const std::vector<Double_t> cluster2)
+bool AliAnalysisTaskV0sInJetsEmcal::CompareClusters(const std::vector<Double_t> cluster1, const std::vector<Double_t> cluster2)
 {
   return (cluster1[1] > cluster2[1]);
 }
