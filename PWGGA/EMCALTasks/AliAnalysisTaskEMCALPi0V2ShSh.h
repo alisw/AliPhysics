@@ -40,7 +40,6 @@ class AliAnalysisTaskEMCALPi0V2ShSh : public AliAnalysisTaskSE {
   Double_t               fCentralityV0M;
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
-  TRefArray             *fCaloClusters;          //!pointer to EMCal clusters
   AliESDCaloCells       *fESDCells;              //!pointer to EMCal cells, esd
   AliAODCaloCells       *fAODCells;              //!pointer to EMCal cells, aod  
   AliEMCALGeometry      *fGeom;                  // geometry utils

@@ -50,7 +50,6 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh() :
   fCentralityV0M(99.),
   fESDClusters(0),
   fAODClusters(0),
-  fCaloClusters(0),
   fESDCells(0),
   fAODCells(0),
   fGeom(0),
@@ -131,7 +130,6 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh(const char *name) :
   fCentralityV0M(99.), 
   fESDClusters(0),
   fAODClusters(0),
-  fCaloClusters(0), 
   fESDCells(0),
   fAODCells(0),
   fGeom(0),
@@ -217,7 +215,6 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
     
   fESDClusters = new TObjArray();
   fAODClusters = new TObjArray();
-  fCaloClusters = new TRefArray();
   fGeom = AliEMCALGeometry::GetInstance(fGeoName.Data());
   fOADBContainer = new AliOADBContainer("AliEMCALgeo");
   fOADBContainer->InitFromFile(Form("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
@@ -502,7 +499,6 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserExec(Option_t *)
   if(fESD)
     FillTrackHists();
 
-  fCaloClusters->Clear();
   PostData(1, fOutputList);
 }
 
