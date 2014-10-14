@@ -1264,7 +1264,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     }
     
     // Check if it was a decay
-    if(fFillTaggedDecayHistograms)
+    if(fFillTaggedDecayHistograms && m02 < 0.3)
     {
       Int_t decayTag = pCandidate->GetBtag(); // temporary
       if(decayTag < 0) decayTag = 0;    // temporary
