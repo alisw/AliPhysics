@@ -54,6 +54,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fIsMC(kFALSE),
   fIsEmbedding(kFALSE),
   fIsConstSub(kFALSE),
+  fPtThreshold(-9999.),
   fRMatching(0.3),
   fPhiJetCorr6(0x0), 
   fPhiJetCorr7(0x0),
@@ -62,6 +63,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fPtJetCorr(0x0),
   fPtJet(0x0),
   fTreeObservableTagging(0)
+
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -76,6 +78,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fIsMC(kFALSE),
   fIsEmbedding(kFALSE),
   fIsConstSub(kFALSE),
+  fPtThreshold(-9999.),
   fRMatching(0.3),
   fPhiJetCorr6(0x0), 
   fPhiJetCorr7(0x0),
@@ -84,6 +87,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fPtJetCorr(0x0),
   fPtJet(0x0),
   fTreeObservableTagging(0)
+  
 {
   // Standard constructor.
   
@@ -226,10 +230,15 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       else
 	fShapesVar[0] = 0.;
      
+      Double_t ptSubtracted = 0; 
 
-      if ((fJetShapeType==AliAnalysisTaskEmcalQGTagging::kRaw && fIsConstSub==kFALSE) || (fJetShapeType==AliAnalysisTaskEmcalQGTagging::kDeriv)) fShapesVar[1] = jet1->Pt() - GetRhoVal(0)*jet1->Area();
-      else fShapesVar[1] = jet1->Pt(); 
-     
+      if ((fJetShapeType==AliAnalysisTaskEmcalQGTagging::kRaw && fIsConstSub==kFALSE) || (fJetShapeType==AliAnalysisTaskEmcalQGTagging::kDeriv)) ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
+      else ptSubtracted = jet1->Pt(); 
+
+      if ((fJetShapeType==AliAnalysisTaskEmcalQGTagging::kRaw || fJetShapeType==AliAnalysisTaskEmcalQGTagging::kDeriv)) 
+	if ( ptSubtracted < fPtThreshold) continue;
+
+      fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1);
       fShapesVar[3] = GetJetMass(jet1);
       fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1);
