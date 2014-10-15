@@ -325,7 +325,7 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
   Int_t pdgCode = fmcPartCandidate->GetPdgCode();
  
   UInt_t pdgDaughCascade[2] = { static_cast<UInt_t>(fPDGbachelor),  static_cast<UInt_t>(fPDGneutrDaugh) };    // bachelor is first daughter of cascade
-  UInt_t pdgDaughBarCascade[2] = { static_cast<UInt_t>(fPDGneutrDaugh),  static_cast<UInt_t>(fPDGbachelor) }; // bachelor is second daughter in case of a cascade-bar 
+  UInt_t pdgDaughBarCascade[2] = { static_cast<UInt_t>(fPDGneutrDaugh),  static_cast<UInt_t>(fPDGbachelor) }; // bachelor is second daughter in case of a cascade-bar
 
   if (pdgCode > 0){
     cosThetaStar = neutrDaugh->CosThetaStar(1, fPDGneutrDaugh, fPDGneutrDaughPositive, fPDGneutrDaughNegative);
@@ -451,6 +451,7 @@ Bool_t AliCFVertexingHFCascade::EvaluateIfCorrectNeutrDaugh(AliAODMCParticle* ne
       return kFALSE;
     }
     else {
+      AliDebug(3, Form("The daughter of the resonant particle is a %d (we are looking for a %d)", resonanceDaugh->GetPdgCode(), fPDGneutrDaugh));
       if (TMath::Abs(resonanceDaugh->GetPdgCode()) != fPDGneutrDaugh){
 	return kFALSE;
       }
@@ -482,6 +483,7 @@ Bool_t AliCFVertexingHFCascade::EvaluateIfCorrectNeutrDaugh(AliAODMCParticle* ne
     return isHadronic;  
   }
   
+  AliDebug(3, Form("Daughter 0 has pdg = %d, daughter 1 has pdg = %d", mcPartDaughterNeutrDaugh0->GetPdgCode(), mcPartDaughterNeutrDaugh1->GetPdgCode()));
   if (!(TMath::Abs(mcPartDaughterNeutrDaugh0->GetPdgCode()) == fPDGneutrDaughPositive &&
 	TMath::Abs(mcPartDaughterNeutrDaugh1->GetPdgCode()) == fPDGneutrDaughNegative) && 
       !(TMath::Abs(mcPartDaughterNeutrDaugh0->GetPdgCode()) == fPDGneutrDaughNegative &&
@@ -496,6 +498,8 @@ Bool_t AliCFVertexingHFCascade::EvaluateIfCorrectNeutrDaugh(AliAODMCParticle* ne
   Double_t pxMother = neutralDaugh->Px();
   Double_t pyMother = neutralDaugh->Py();
   Double_t pzMother = neutralDaugh->Pz();
+  AliDebug(3, Form("pxMother = %f, pyMother = %f, pzMother = %f", pxMother, pyMother, pzMother));
+  AliDebug(3, Form("sumPxDau = %f, sumPyDau = %f, sumPzDau = %f", sumPxDau, sumPyDau, sumPzDau));
   if(TMath::Abs(pxMother-sumPxDau)/(TMath::Abs(pxMother)+1.e-13)>0.00001 ||
      TMath::Abs(pyMother-sumPyDau)/(TMath::Abs(pyMother)+1.e-13)>0.00001 ||
      TMath::Abs(pzMother-sumPzDau)/(TMath::Abs(pzMother)+1.e-13)>0.00001){
