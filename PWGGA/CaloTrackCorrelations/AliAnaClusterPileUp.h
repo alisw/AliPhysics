@@ -45,15 +45,11 @@ class AliAnaClusterPileUp : public AliAnaCaloTrackCorrBaseClass {
 
   // Analysis parameters setters getters
   
-  TString      GetCalorimeter()                 const { return fCalorimeter        ; }
-  void         SetCalorimeter(TString  & det)         { fCalorimeter = det         ; }
-  
   void         SetNCellCut(Int_t n)                   { fNCellsCut = n             ; }
   Double_t     GetNCellCut()                    const { return fNCellsCut          ; }
   
 private:
  
-  TString fCalorimeter ;                            // Calorimeter of the cluster;
   Int_t   fNCellsCut ;                              // Accept for the analysis clusters with more than fNCellsCut cells
 
   //Histograms

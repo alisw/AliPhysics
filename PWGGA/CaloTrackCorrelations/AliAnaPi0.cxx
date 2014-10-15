@@ -59,8 +59,8 @@ ClassImp(AliAnaPi0)
 
 //______________________________________________________
 AliAnaPi0::AliAnaPi0() : AliAnaCaloTrackCorrBaseClass(),
-fEventsList(0x0), 
-fCalorimeter(""),            fNModules(22),
+fEventsList(0x0),
+fNModules(22),
 fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(7.),
 fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),
 fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0),  
@@ -156,7 +156,6 @@ void AliAnaPi0::InitParameters()
   
   AddToHistogramsName("AnaPi0_");
   
-  fCalorimeter  = "PHOS";
   fUseAngleCut = kFALSE;
   fUseAngleEDepCut = kFALSE;
   fAngleCut    = 0.; 
@@ -164,7 +163,7 @@ void AliAnaPi0::InitParameters()
   
   fMultiCutAna = kFALSE;
   
-  fNPtCuts = 1;
+  fNPtCuts = 3;
   fPtCuts[0] = 0.; fPtCuts[1] = 0.3;   fPtCuts[2] = 0.5;
   for(Int_t i = fNPtCuts; i < 10; i++)fPtCuts[i] = 0.;
   
@@ -172,11 +171,11 @@ void AliAnaPi0::InitParameters()
   fAsymCuts[0] = 1.;  fAsymCuts[1] = 0.7; //fAsymCuts[2] = 0.6; //  fAsymCuts[3] = 0.1;    
   for(Int_t i = fNAsymCuts; i < 10; i++)fAsymCuts[i] = 0.;
   
-  fNCellNCuts = 1;
+  fNCellNCuts = 3;
   fCellNCuts[0] = 0; fCellNCuts[1] = 1;   fCellNCuts[2] = 2;   
   for(Int_t i = fNCellNCuts; i < 10; i++)fCellNCuts[i]  = 0;
   
-  fNPIDBits = 1;
+  fNPIDBits = 2;
   fPIDBits[0] = 0;   fPIDBits[1] = 2; //  fPIDBits[2] = 4; fPIDBits[3] = 6;// check, no cut,  dispersion, neutral, dispersion&&neutral
   for(Int_t i = fNPIDBits; i < 10; i++)fPIDBits[i] = 0;
   
@@ -212,7 +211,7 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Z vertex position: -%f < z < %f \n",GetZvertexCut(),GetZvertexCut()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Calorimeter: %s \n",fCalorimeter.Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s \n",GetCalorimeter().Data()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Number of modules: %d \n",fNModules) ;
   parList+=onePar ;
@@ -236,7 +235,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   // Init the number of modules, set in the class AliCalorimeterUtils
   fNModules = GetCaloUtils()->GetNumberOfSuperModulesUsed();
-  if(fCalorimeter=="PHOS" && fNModules > 4) fNModules = 4;
+  if(GetCalorimeter()=="PHOS" && fNModules > 4) fNModules = 4;
   
   //create event containers
   fEventsList = new TList*[GetNCentrBin()*GetNZvertBin()*GetNRPBin()] ;
@@ -260,7 +259,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   fhReMod                = new TH2F*[fNModules]   ;
   fhMiMod                = new TH2F*[fNModules]   ;
   
-  if(fCalorimeter == "PHOS")
+  if(GetCalorimeter() == "PHOS")
   {
     fhReDiffPHOSMod        = new TH2F*[fNModules]   ;  
     fhMiDiffPHOSMod        = new TH2F*[fNModules]   ;
@@ -1080,7 +1079,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhReMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhReMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
       outputContainer->Add(fhReMod[imod]) ;
-      if(fCalorimeter=="PHOS")
+      if(GetCalorimeter()=="PHOS")
       {
         snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
         snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
@@ -1119,7 +1118,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMiMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
         outputContainer->Add(fhMiMod[imod]) ;
         
-        if(fCalorimeter=="PHOS"){
+        if(GetCalorimeter()=="PHOS"){
           snprintf(key, buffersize,"hMiDiffPHOSMod_%d",imod) ;
           snprintf(title, buffersize,"Mixed pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
           fhMiDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -1311,7 +1310,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       //Photon kinematics
       primStack->Momentum(lvmeson);
       
-      mesonY = 0.5*TMath::Log((primStack->Energy()-primStack->Pz())/(primStack->Energy()+primStack->Pz())) ;
+      mesonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
     }
     else
     {
@@ -1335,7 +1334,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       //Photon kinematics
       lvmeson.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
       
-      mesonY = 0.5*TMath::Log((primAOD->E()-primAOD->Pz())/(primAOD->E()+primAOD->Pz())) ;
+      mesonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
     }
     
     // Select only pi0 or eta
@@ -1472,8 +1471,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
       // Check if photons hit the Calorimeter acceptance
       if(IsRealCaloAcceptanceOn())
       {
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( fCalorimeter, phot1 )) inacceptance1 = kFALSE ;
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( fCalorimeter, phot2 )) inacceptance2 = kFALSE ;
+        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot1 )) inacceptance1 = kFALSE ;
+        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot2 )) inacceptance2 = kFALSE ;
       }
     }
     
@@ -1493,8 +1492,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
       // Check if photons hit the Calorimeter acceptance
       if(IsRealCaloAcceptanceOn())
       {
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( fCalorimeter, phot1 )) inacceptance1 = kFALSE ;
-        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( fCalorimeter, phot2 )) inacceptance2 = kFALSE ;
+        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot1 )) inacceptance1 = kFALSE ;
+        if( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), phot2 )) inacceptance2 = kFALSE ;
       }
     }
     
@@ -1503,13 +1502,13 @@ void AliAnaPi0::FillAcceptanceHistograms()
     // Check if photons hit desired acceptance in the fidutial borders fixed in the analysis
     if(IsFiducialCutOn())
     {
-      if( inacceptance1 && !GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) ) inacceptance1 = kFALSE ;
-      if( inacceptance2 && !GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter) ) inacceptance2 = kFALSE ;
+      if( inacceptance1 && !GetFiducialCut()->IsInFiducialCut(lv1,GetCalorimeter()) ) inacceptance1 = kFALSE ;
+      if( inacceptance2 && !GetFiducialCut()->IsInFiducialCut(lv2,GetCalorimeter()) ) inacceptance2 = kFALSE ;
     }
     
     if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg,lvmeson,lv1,lv2);
 
-    if(fCalorimeter=="EMCAL" && inacceptance1 && inacceptance2 && fCheckAccInSector)
+    if(GetCalorimeter()=="EMCAL" && inacceptance1 && inacceptance2 && fCheckAccInSector)
     {
       Int_t absID1=0;
       Int_t absID2=0;
@@ -1546,7 +1545,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(GetDebug() > 2)
       printf("Accepted in %s?: m (%2.2f,%2.2f,%2.2f), p1 (%2.2f,%2.2f,%2.2f), p2 (%2.2f,%2.2f,%2.2f) : in1 %d, in2 %d\n",
-             fCalorimeter.Data(),
+             GetCalorimeter().Data(),
              mesonPt,mesonYeta,mesonPhi,
              lv1.Pt(),lv1.Eta(),lv1.Phi()*TMath::RadToDeg(),
              lv2.Pt(),lv2.Eta(),lv2.Phi()*TMath::RadToDeg(),
@@ -1968,8 +1967,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     
   //Get shower shape information of clusters
   TObjArray *clusters = 0;
-  if     (fCalorimeter=="EMCAL") clusters = GetEMCALClusters();
-  else if(fCalorimeter=="PHOS" ) clusters = GetPHOSClusters() ;
+  if     (GetCalorimeter()=="EMCAL") clusters = GetEMCALClusters();
+  else if(GetCalorimeter()=="PHOS" ) clusters = GetPHOSClusters() ;
   
   //---------------------------------
   //First loop on photons/clusters
@@ -2120,7 +2119,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(module1==module2 && module1 >=0 && module1<fNModules)
           fhReMod[module1]->Fill(pt,m) ;
         
-        if(fCalorimeter=="EMCAL")
+        if(GetCalorimeter()=="EMCAL")
         {
           // Same sector
           Int_t j=0;
@@ -2375,7 +2374,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             if(module1==module2 && module1 >=0 && module1<fNModules)
               fhMiMod[module1]->Fill(pt,m) ;
             
-            if(fCalorimeter=="EMCAL")
+            if(GetCalorimeter()=="EMCAL")
             {
               // Same sector
               Int_t j=0;

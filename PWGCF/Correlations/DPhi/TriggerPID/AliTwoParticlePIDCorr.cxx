@@ -99,6 +99,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   fFilterBit(768),
   fTrackStatus(0),
   fSharedClusterCut(-1),
+ fSharedTPCmapCut(-1),
   fVertextype(1),
  skipParticlesAbove(0),
   fzvtxcut(10.0),
@@ -142,6 +143,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   fmaxPtAsso(0),
  fmincentmult(0),
  fmaxcentmult(0), 
+ fPriHistShare(0),
   fhistcentrality(0),
   fEventCounter(0),
   fEtaSpectrasso(0),
@@ -343,6 +345,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fFilterBit(768),
   fTrackStatus(0),
   fSharedClusterCut(-1),
+  fSharedTPCmapCut(-1),
   fVertextype(1),
    skipParticlesAbove(0),
   fzvtxcut(10.0),
@@ -385,7 +388,8 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fminPtAsso(0),
   fmaxPtAsso(0),
    fmincentmult(0),
-   fmaxcentmult(0), 
+   fmaxcentmult(0),
+   fPriHistShare(0),
   fhistcentrality(0),
   fEventCounter(0),
   fEtaSpectrasso(0),
@@ -801,25 +805,25 @@ fHistoTOFbeta = new TH2F(Form("fHistoTOFbeta"), ";p_{T} (GeV/c);v/c",100, 0., fm
 
 if(ffillhistQAReco)
     {
-    fPionPt = new TH1F("fHistQAPionPt","p_{T} distribution",200,0.,10.);
+    fPionPt = new TH1F("fPionPt","p_{T} distribution",200,0.,10.);
  fOutputList->Add(fPionPt);
-    fPionEta= new TH1F("fHistQAPionEta","#eta distribution",360,-1.8,1.8);
+    fPionEta= new TH1F("fPionEta","#eta distribution",360,-1.8,1.8);
  fOutputList->Add(fPionEta);
-    fPionPhi = new TH1F("fHistQAPionPhi","#phi distribution",340,0,6.8);
+    fPionPhi = new TH1F("fPionPhi","#phi distribution",340,0,6.8);
  fOutputList->Add(fPionPhi);
   
-    fKaonPt = new TH1F("fHistQAKaonPt","p_{T} distribution",200,0.,10.);
+    fKaonPt = new TH1F("fKaonPt","p_{T} distribution",200,0.,10.);
  fOutputList->Add(fKaonPt);
-    fKaonEta= new TH1F("fHistQAKaonEta","#eta distribution",360,-1.8,1.8);
+    fKaonEta= new TH1F("fKaonEta","#eta distribution",360,-1.8,1.8);
  fOutputList->Add(fKaonEta);
-    fKaonPhi = new TH1F("fHistQAKaonPhi","#phi distribution",340,0,6.8);
+    fKaonPhi = new TH1F("fKaonPhi","#phi distribution",340,0,6.8);
  fOutputList->Add(fKaonPhi);
   
-    fProtonPt = new TH1F("fHistQAProtonPt","p_{T} distribution",200,0.,10.);
+    fProtonPt = new TH1F("fProtonPt","p_{T} distribution",200,0.,10.);
  fOutputList->Add(fProtonPt);
-    fProtonEta= new TH1F("fHistQAProtonEta","#eta distribution",360,-1.8,1.8);
+    fProtonEta= new TH1F("fProtonEta","#eta distribution",360,-1.8,1.8);
  fOutputList->Add(fProtonEta);
-    fProtonPhi= new TH1F("fHistQAProtonPhi","#phi distribution",340,0,6.8);
+    fProtonPhi= new TH1F("fProtonPhi","#phi distribution",340,0,6.8);
  fOutputList->Add(fProtonPhi);
     }
 
@@ -839,11 +843,14 @@ if(ffillhistQAReco)
  fHistQA[12] = new TH1F("fHistQANCls1","Number of TPC cluster1",200,0,200);
  fHistQA[14] = new TH1F("nCrossedRowsTPC","Number of TPC ccrossed rows",200,0,200);
  fHistQA[15] = new TH1F("ratioCrossedRowsOverFindableClustersTPC","Number of TPC ccrossed rows find clusters",200,0,2);
-
+    
 for(Int_t i = 0; i < 16; i++)
     {
       fOutput->Add(fHistQA[i]);
     }
+
+    fPriHistShare = new TH1F ("fPriHistShare","Shared clusters, primaries;#shared clusters;counts",160,0,160);
+    fOutput->Add(fPriHistShare);
 
    Int_t eventplaneaxis=0;
 
@@ -1254,8 +1261,8 @@ axisTitleTrig[dim_val_trig+1]=axisTitlePair[dim_val+2];
   //AliTHns for trigger counting(truth MC)
   fTHnTrigcountMCTruthPrim = new  AliTHn("fTHnTrigcountMCTruthPrim", "fTHnTrigcountMCTruthPrim", 2, dims, fBinst); //2 steps;;;;0->same event;;;;;1->mixed event
  for(Int_t i=0; i<dims;i++){
-    fTHnTrigcount->SetBinLimits(i, dBinsTrig[i]);
-    fTHnTrigcount->SetVarTitle(i, axisTitleTrig[i]);
+    fTHnTrigcountMCTruthPrim->SetBinLimits(i, dBinsTrig[i]);
+    fTHnTrigcountMCTruthPrim->SetVarTitle(i, axisTitleTrig[i]);
   } 
   fOutput->Add(fTHnTrigcountMCTruthPrim);
  }
@@ -2061,7 +2068,7 @@ fHistoTOFbeta->Fill(track->Pt(), beta);
 
 //do track identification(nsigma method)
   particletypeMC=GetParticle(track,fFIllPIDQAHistos);//******************************problem is here
-
+  cout<<particletypeMC<<endl;
 switch(TMath::Abs(pdgCode)){
   case 2212:
     if(fFIllPIDQAHistos){
@@ -2935,7 +2942,7 @@ if(mixcase==kTRUE && firstTime)   fTHnTrigcountMCTruthPrim->Fill(trigval,1,1.0/t
 
   if(!tracksasso && j==i) continue;
 
-   // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event,i.e. both Trig and asso TObjArray belongs to the same Pi range but say Trig is Unidentified but asso is identified then the serial no. wise particles are not same and and j==i doesn't aplly)
+   // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event,i.e. both Trig and asso TObjArray belongs to the same Pt range but say Trig is Unidentified but asso is identified then the serial no. wise particles are not same and and j==i doesn't aplly)
    // if (tracksasso && trig->IsEqual(asso))  continue;
 
   if (tracksasso && (trig->GetUniqueID()==asso->GetUniqueID())) continue;
@@ -3326,6 +3333,21 @@ Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,AliAODVertex* vert
 	  if (frac > fSharedClusterCut)
 	    return 0;
 	}
+
+   // Rejects tracks with shared clusters after filling a control histogram
+   // This overload is used for primaries
+
+     // Get the shared maps
+      const TBits sharedMap = track->GetTPCSharedMap();
+     // Fill a control histogram
+      fPriHistShare->Fill(sharedMap.CountBits());
+
+    // Reject shared clusters
+       if (fSharedTPCmapCut >= 0)
+	{     
+      if((sharedMap.CountBits()) >= 1)  return 0;// Bad track, has too many shared clusters!
+	}
+
      if (fill) fHistQA[8]->Fill(pt);
      if (fill) fHistQA[9]->Fill(track->Eta());
      if (fill) fHistQA[10]->Fill(track->Phi());

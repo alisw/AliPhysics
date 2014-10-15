@@ -1561,7 +1561,8 @@ void mergeBFPsi2D(TString momDirectory = "./",
 		  Double_t ptTriggerMax = -1.,
 		  Double_t ptAssociatedMin = -1.,
 		  Double_t ptAssociatedMax = -1.,
-		  Bool_t bReduceRangeForMoments = kFALSE
+		  Bool_t bReduceRangeForMoments = kFALSE,
+		  Bool_t bFWHM = kFALSE
 ) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis

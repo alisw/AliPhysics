@@ -91,6 +91,7 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fQgenIntegral(0), 
   fSplineArrayV0Agen(0),
   fSplineArrayV0Cgen(0),
+  fQvecMC(0),
   fNch(0),
   fQvecCalibType(0)
 {
@@ -731,7 +732,9 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side){
   }
   
   // 5. return q vector
-  return TMath::Sqrt((Qx2mc*Qx2mc + Qy2mc*Qy2mc)/mult2mc);
+  fQvecMC = TMath::Sqrt((Qx2mc*Qx2mc + Qy2mc*Qy2mc)/mult2mc);
+  
+  return fQvecMC;
   
 }
 

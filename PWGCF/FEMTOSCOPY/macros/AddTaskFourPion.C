@@ -142,9 +142,9 @@ AliFourPion *AddTaskFourPion(
     cout << "Requested file:" << inputFileFSI << " was not opened. ABORT." << endl;
     return NULL;
   }  
-  TH1D *FSIss[12];
-  TH1D *FSIos[12];
-  for(Int_t index=0; index<12; index++) {
+  TH1D *FSIss[13];
+  TH1D *FSIos[13];
+  for(Int_t index=0; index<13; index++) {
     TString *nameSS=new TString("K2ss_");
     *nameSS += index;
     FSIss[index] = (TH1D*)inputFileFSI->Get(nameSS->Data());

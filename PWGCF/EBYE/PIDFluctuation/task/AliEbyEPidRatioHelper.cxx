@@ -92,7 +92,10 @@ AliEbyEPidRatioHelper::AliEbyEPidRatioHelper() :
   fHCentralityPerAll(NULL),
   fNCentralityBins(11),
   
+  fSubSamples(25),
   fRandom(NULL),
+  fSubSampleIdx(1), 
+
   fIsRatio(kFALSE), 
   fIsPtBin(kFALSE), fIsDetectorWise(kFALSE) {
   // Constructor   
@@ -278,17 +281,30 @@ Int_t AliEbyEPidRatioHelper::SetupEvent(AliESDInputHandler *esdHandler, AliAODIn
     return -1;
   }
 
+  
+  // Int_t a = centrality->GetCentralityClass5("V0M");
+  // if (a < 0 || a >= 20 ) fCentralityBin = -2;
+  // else if (a <= 1) fCentralityBin = a;
+  // else fCentralityBin = 1 + centrality->GetCentralityClass10("V0M");
+  
+  
+  
   Int_t centBin = centrality->GetCentralityClass10("V0M");
   if (centBin == 0) { fCentralityBin = centrality->GetCentralityClass5("V0M"); }
   else if (centBin == 11 || centBin == -1.)           { fCentralityBin = -1; }
   else if (centBin > 0 && centBin < fNCentralityBins) { fCentralityBin = centBin + 1; }
   else {  fCentralityBin = -2; }
   
+  
   if (fCentralityBin >= fCentralityBinMax)
     fCentralityBin = -2;
+    
+  
 
   fCentralityPercentile = centrality->GetCentralityPercentile("V0M");
   
+  fSubSampleIdx = fRandom->Integer(fSubSamples);
+
   return 0;
 }
 //________________________________________________________________________
@@ -605,7 +621,6 @@ Bool_t AliEbyEPidRatioHelper::IsTrackAcceptedPID(AliVTrack *track, Double_t* pid
     if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) 
       isAcceptedTOF = kTRUE;
   }
-
   // -- Check TOF missmatch for MC
   
   //if (ESD)
@@ -800,6 +815,7 @@ Bool_t AliEbyEPidRatioHelper::FillEventStats(Int_t *aEventCuts) {
   // -- Fill event / centrality statistics 
 
   Bool_t isRejected = kFALSE;
+
 
   // -- Fill event statistics
   for (Int_t idx = 0; idx < fHEventStatMax ; ++idx) {

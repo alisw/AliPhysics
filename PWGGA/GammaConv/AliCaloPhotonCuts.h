@@ -168,19 +168,13 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		TH2F* fHistClusterEtavsPhiBeforeAcc; 		// eta-phi-distribution before acceptance cuts
 		TH2F* fHistClusterEtavsPhiAfterAcc; 		// eta-phi-distribution of all after acceptance cuts
 		TH2F* fHistClusterEtavsPhiAfterQA; 			// eta-phi-distribution of all after cluster quality cuts
-		TH1F* fHistDistanceToBadChannelBeforeAcc;   // distance to bad channel before acceptance cuts
-		TH1F* fHistDistanceToBadChannelAfterAcc;	// distance to bad channel after acceptance cuts
-		TH1F* fHistClusterRBeforeQA;				// cluster position in R=SQRT(x^2+y^2) (before QA)
-		TH1F* fHistClusterRAfterQA;					// cluster position in R=SQRT(x^2+y^2) for matched tracks (After QA)
-		TH2F* fHistClusterdEtadPhiBeforeQA;			// 2-dim plot dEta vs. dPhi
-		TH2F* fHistClusterdEtadPhiAfterQA;			// 2-dim plot dEta vs. dPhi for matched tracks (after QA)
+// 		TH1F* fHistDistanceToBadChannelBeforeAcc;   // distance to bad channel before acceptance cuts
+// 		TH1F* fHistDistanceToBadChannelAfterAcc;	// distance to bad channel after acceptance cuts
 		TH2F* fHistClusterTimevsEBeforeQA;			// Cluster time vs E before cluster quality cuts
 		TH2F* fHistClusterTimevsEAfterQA;			// Cluster time vs E after cluster quality cuts
-		TH2F* fHistExoticCellBeforeQA;				// Exotic cell: 1-Ecross/E cell vs Ecluster before acceptance cuts
-		TH2F* fHistExoticCellAfterQA;				// Exotic cell: 1-Ecross/E cell vs Ecluster after cluster quality cuts
-		TH1F* fHistNMatchedTracks;					// number of matched tracks
-		TH1F* fHistDistanceTrackToClusterBeforeQA;	// distance cluster to track before acceptance cuts
-		TH1F* fHistDistanceTrackToClusterAfterQA;	// distance cluster to track after cluster quality cuts
+// 		TH2F* fHistExoticCellBeforeQA;				// Exotic cell: 1-Ecross/E cell vs Ecluster before acceptance cuts
+// 		TH2F* fHistExoticCellAfterQA;				// Exotic cell: 1-Ecross/E cell vs Ecluster after cluster quality cuts
+// 		TH1F* fHistNMatchedTracks;					// number of matched tracks
 		TH1F* fHistEnergyOfClusterBeforeQA;			// enery per cluster before acceptance cuts
 		TH1F* fHistEnergyOfClusterAfterQA;			// enery per cluster after cluster quality cuts
 		TH1F* fHistNCellsBeforeQA;					// number of cells per cluster before acceptance cuts
@@ -191,9 +185,18 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		TH1F* fHistM20AfterQA;						// M20 after cluster quality cuts
 		TH1F* fHistDispersionBeforeQA;				// dispersion before acceptance cuts
 		TH1F* fHistDispersionAfterQA;				// dispersion after cluster quality cuts
-		TH1F* fHistNLMBeforeQA;						// number of local maxima in cluster before acceptance cuts
-		TH1F* fHistNLMAfterQA;						// number of local maxima in cluster after cluster quality cuts
-				
+// 		TH1F* fHistNLMBeforeQA;						// number of local maxima in cluster before acceptance cuts
+// 		TH1F* fHistNLMAfterQA;						// number of local maxima in cluster after cluster quality cuts
+
+        //Track matching histograms
+		TH1F* fHistClusterRBeforeQA;				// cluster position in R=SQRT(x^2+y^2) (before QA)
+		TH1F* fHistClusterRAfterQA;					// cluster position in R=SQRT(x^2+y^2) for matched tracks (After QA)
+		TH2F* fHistClusterdEtadPhiPosTracksBeforeQA;			// 2-dim plot dEta vs. dPhi
+		TH2F* fHistClusterdEtadPhiNegTracksBeforeQA;			// 2-dim plot dEta vs. dPhi
+		TH2F* fHistClusterdEtadPhiAfterQA;			// 2-dim plot dEta vs. dPhi for matched tracks (after QA)
+		TH1F* fHistDistanceTrackToClusterBeforeQA;	// distance cluster to track before acceptance cuts
+        TH1F* fHistDistanceTrackToClusterAfterQA;	// distance cluster to track after cluster quality cuts
+
 	private:
 
 		ClassDef(AliCaloPhotonCuts,2)

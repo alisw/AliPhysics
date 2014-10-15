@@ -234,6 +234,11 @@ public:
 
 	Bool_t ProcessLctoV0Bachelor(Int_t returnCodeDs) const;
 
+	void SetUseAdditionalCuts(Bool_t flag) { fDecayChannel == 22 ? fUseAdditionalCuts = flag : fUseAdditionalCuts = kFALSE;}
+	Bool_t GetUseAdditionalCuts() const { return fUseAdditionalCuts; }
+	void SetUseCutsForTMVA(Bool_t useCutsForTMVA) { fDecayChannel == 22 ? fUseCutsForTMVA = useCutsForTMVA : fUseAdditionalCuts = kFALSE;}
+	Bool_t GetUseCutsForTMVA() const {return fUseCutsForTMVA;}
+
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
@@ -287,8 +292,11 @@ protected:
 	Bool_t fZvtxCorrectedNtrkEstimator; // flag to use the z-vtx corrected (if not use uncorrected) multiplicity estimator
 	Bool_t fIsPPData; // flag for pp data (not checking centrality)
 	Bool_t fIsPPbData; // flag for pPb data (used for multiplicity corrections)
+	Bool_t fUseAdditionalCuts;  // flag to use additional cuts needed for Lc --> K0S + p, TMVA
+	Bool_t fUseCutsForTMVA;     // flag to use additional cuts needed for Lc --> K0S + p, TMVA
+	                            // these are the pre-selection cuts for the TMVA
    
-	ClassDef(AliCFTaskVertexingHF,20); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,21); // class for HF corrections as a function of many variables
 };
 
 #endif

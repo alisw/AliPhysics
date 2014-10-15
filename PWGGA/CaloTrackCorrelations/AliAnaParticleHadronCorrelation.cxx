@@ -69,7 +69,6 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fListMixTrackEvents(),          fListMixCaloEvents(),
     fUseMixStoredInReader(0),       fFillNeutralEventMixPool(0),
     fM02MaxCut(0),                  fM02MinCut(0),  
-    fFillPileUpHistograms(0),       fFillHighMultHistograms(0),
     fSelectLeadingHadronAngle(0),   fFillLeadHadOppositeHisto(0),
     fMinLeadHadPhi(0),              fMaxLeadHadPhi(0),
     fMinLeadHadPt(0),               fMaxLeadHadPt(0),
@@ -281,7 +280,7 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
   
   // Pile up studies
   
-  if(fFillPileUpHistograms)
+  if(IsPileUpAnalysisOn())
   {
     if     (outTOF==1)
     {
@@ -390,7 +389,7 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
   }
   
   //fill different multiplicity/centrality histogram
-  if(fFillHighMultHistograms && cen >= 0 && cen < GetNCentrBin())
+  if(IsHighMultiplicityAnalysisOn() && cen >= 0 && cen < GetNCentrBin())
   {
     fhDeltaPhiChargedMult[cen]->Fill(ptTrig,deltaPhi);
     fhDeltaEtaChargedMult[cen]->Fill(ptTrig,deltaEta);
@@ -607,7 +606,7 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   }
   
   // Pile up studies
-  if(fFillPileUpHistograms) 
+  if(IsPileUpAnalysisOn())
   {
     if     (outTOF==1)
     {
@@ -676,7 +675,7 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   }
   
   //fill different multiplicity/centrality histogram
-  if(fFillHighMultHistograms && cen >= 0 && cen < GetNCentrBin())
+  if(IsHighMultiplicityAnalysisOn() && cen >= 0 && cen < GetNCentrBin())
   {
     fhXEMult[cen]->Fill(ptTrig,xE);
     fhZTMult[cen]->Fill(ptTrig,zT);
@@ -709,7 +708,7 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float
   
   // Pile up studies
   
-  if(fFillPileUpHistograms)
+  if(IsPileUpAnalysisOn())
   {
     if     (outTOF==1)
     {
@@ -739,7 +738,7 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float
   }
   
   //fill different multiplicity/centrality histogram
-  if(fFillHighMultHistograms && cen >= 0 && cen < GetNCentrBin())
+  if(IsHighMultiplicityAnalysisOn() && cen >= 0 && cen < GetNCentrBin())
   {
     fhXEUeMult[cen]->Fill(ptTrig,uexE);
     fhZTUeMult[cen]->Fill(ptTrig,uezT);
@@ -1355,7 +1354,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   fhEtaTrigger->SetYTitle("#eta ");
   outputContainer->Add(fhEtaTrigger);
   
-  if(fFillHighMultHistograms)
+  if(IsHighMultiplicityAnalysisOn())
   {
     fhPtTriggerCentrality   = new TH2F("hPtTriggerCentrality","Trigger particle #it{p}_{T} vs centrality",nptbins,ptmin,ptmax,100,0.,100) ;
     fhPtTriggerCentrality->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
@@ -1722,7 +1721,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhPtHbpZTUeLeftCharged) ;
   }
   
-  if(fFillPileUpHistograms)
+  if(IsPileUpAnalysisOn())
   {
     fhDeltaPhiChargedOtherBC  = new TH2F
     ("hDeltaPhiChargedOtherBC","#phi_{trigger} - #phi_{h^{#pm}} vs #it{p}_{T trigger}, track BC!=0",
@@ -1951,7 +1950,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     }
   }
 
-  if(fFillHighMultHistograms)
+  if(IsHighMultiplicityAnalysisOn())
   {
     Int_t nMultiBins = GetNCentrBin();
     fhDeltaPhiChargedMult = new TH2F*[nMultiBins] ;
@@ -2977,7 +2976,7 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fM02MaxCut   = -1 ;
   
   fSelectLeadingHadronAngle = kFALSE;
-  fFillLeadHadOppositeHisto      = kFALSE;
+  fFillLeadHadOppositeHisto = kFALSE;
   fMinLeadHadPhi = 150*TMath::DegToRad();
   fMaxLeadHadPhi = 210*TMath::DegToRad();
 
@@ -3178,7 +3177,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   
   Float_t cen         = GetEventCentrality();
   Float_t ep          = GetEventPlaneAngle();
-  if(fFillHighMultHistograms) fhTriggerEventPlaneCentrality->Fill(cen,ep);
+  if(IsHighMultiplicityAnalysisOn()) fhTriggerEventPlaneCentrality->Fill(cen,ep);
 
   Int_t   mixEventBin = GetEventMixBin();
   Int_t   vzbin       = GetEventVzBin();
@@ -3340,7 +3339,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(fCorrelVzBin)
       fhPtTriggerVzBin->Fill(pt,vzbin);
     
-    if(fFillHighMultHistograms)
+    if(IsHighMultiplicityAnalysisOn())
     {
       fhPtTriggerCentrality->Fill(pt,cen);
       fhPtTriggerEventPlane->Fill(pt,ep);
@@ -3349,7 +3348,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     //----------------------------------
     // Trigger particle pT vs pile-up
     
-    if(fFillPileUpHistograms)
+    if(IsPileUpAnalysisOn())
     {
       Int_t vtxBC = GetReader()->GetVertexBC();
       if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA)     fhPtTriggerVtxBC0->Fill(pt);
@@ -3422,7 +3421,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   
   // Track multiplicity or cent bin
   Int_t cenbin = 0;
-  if(fFillHighMultHistograms) cenbin = GetEventCentralityBin();
+  if(IsHighMultiplicityAnalysisOn()) cenbin = GetEventCentralityBin();
 
   //
   // In case of pi0/eta trigger, we may want to check their decay correlation,

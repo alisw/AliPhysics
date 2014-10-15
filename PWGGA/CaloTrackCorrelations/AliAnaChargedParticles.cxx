@@ -45,8 +45,7 @@ ClassImp(AliAnaChargedParticles)
 //__________________________________________________
   AliAnaChargedParticles::AliAnaChargedParticles() :
     AliAnaCaloTrackCorrBaseClass(),
-    fFillPileUpHistograms(0),   fFillTrackBCHistograms(0),
-    fFillVertexBC0Histograms(0),
+    fFillTrackBCHistograms(0), fFillVertexBC0Histograms(0),
     //Histograms
     fhNtracks(0),      fhPt(0),            fhPtNoCut(0),
     fhPtCutDCA(0),     fhPtCutDCABCOK(0),
@@ -427,7 +426,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     outputContainer->Add(fhPtTOFSignalVtxInBC0);
   }
   
-  if(fFillPileUpHistograms)
+  if(IsPileUpAnalysisOn())
   {    
     TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
     
@@ -492,7 +491,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       fhEtaPhiTOFBCMinus->SetYTitle("#phi (rad)");
       outputContainer->Add(fhEtaPhiTOFBCMinus);
       
-      if(fFillPileUpHistograms)
+      if(IsPileUpAnalysisOn())
       {
         fhEtaPhiTOFBC0PileUpSPD  = new TH2F ("hEtaPhiTOFBC0PileUpSPD","eta-phi for tracks with hit on TOF, and tof corresponding to BC=0, SPD pile-up",netabins,etamin,etamax, nphibins,phimin,phimax);
         fhEtaPhiTOFBC0PileUpSPD->SetXTitle("#eta ");
@@ -614,7 +613,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       outputContainer->Add(fhPtDCAVtxInBC0NoTOFHit[i]);
     }
     
-    if(fFillPileUpHistograms)
+    if(IsPileUpAnalysisOn())
     {
       fhPtDCAPileUp[i]  = new TH2F(Form("hPtDCA%sPileUp",dcaName[i].Data()),
                              Form("Track DCA%s vs #it{p}_{T}distribution, SPD Pile-Up",dcaName[i].Data()),
@@ -819,7 +818,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   if(fFillVertexBC0Histograms)
   {
     fhProductionVertexBC->Fill(vtxBC);
-    if(fFillPileUpHistograms)
+    if(IsPileUpAnalysisOn())
     {
       if(GetReader()->IsPileUpFromSPD())               fhProductionVertexBCPileUp[0]->Fill(vtxBC);
       if(GetReader()->IsPileUpFromEMCal())             fhProductionVertexBCPileUp[1]->Fill(vtxBC);
@@ -941,7 +940,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       }
     }
     
-    if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+    if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD())
     {
       if(dcaCons == -999)
       {
@@ -1009,7 +1008,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         }
       }
       
-      if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+      if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD())
       {
         if(dcaCons == -999)
         {
@@ -1086,7 +1085,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
           else
             fhPtDCATOFBC0[2]->Fill(pt, dcaCons);
           
-          if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD())
+          if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD())
           {
             if(dcaCons == -999)
             {
@@ -1110,7 +1109,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         }
       }
       
-      if(fFillPileUpHistograms)
+      if(IsPileUpAnalysisOn())
       {
         if(GetReader()->IsPileUpFromSPD())               fhPtTOFSignalPileUp[0]->Fill(pt, tof);
         if(GetReader()->IsPileUpFromEMCal())             fhPtTOFSignalPileUp[1]->Fill(pt, tof);
@@ -1122,9 +1121,9 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         
         if(fFillTrackBCHistograms)
         {
-          if      (trackBC ==0)  { fhEtaPhiTOFBC0    ->Fill(eta,phi); if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBC0PileUpSPD    ->Fill(eta,phi); }
-          else if (trackBC < 0)  { fhEtaPhiTOFBCPlus ->Fill(eta,phi); if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCPlusPileUpSPD ->Fill(eta,phi); }
-          else if (trackBC > 0)  { fhEtaPhiTOFBCMinus->Fill(eta,phi); if(fFillPileUpHistograms && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCMinusPileUpSPD->Fill(eta,phi); }
+          if      (trackBC ==0)  { fhEtaPhiTOFBC0    ->Fill(eta,phi); if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBC0PileUpSPD    ->Fill(eta,phi); }
+          else if (trackBC < 0)  { fhEtaPhiTOFBCPlus ->Fill(eta,phi); if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCPlusPileUpSPD ->Fill(eta,phi); }
+          else if (trackBC > 0)  { fhEtaPhiTOFBCMinus->Fill(eta,phi); if(IsPileUpAnalysisOn() && GetReader()->IsPileUpFromSPD()) fhEtaPhiTOFBCMinusPileUpSPD->Fill(eta,phi); }
         }
         
         if(fFillVertexBC0Histograms)
@@ -1292,7 +1291,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       fhEtaPhiNeg->Fill(eta,phi);
     }
     
-    if(fFillPileUpHistograms)
+    if(IsPileUpAnalysisOn())
     {
       if(GetReader()->IsPileUpFromSPD())               {fhPtPileUp[0]->Fill(pt);}
       if(GetReader()->IsPileUpFromEMCal())             {fhPtPileUp[1]->Fill(pt);}

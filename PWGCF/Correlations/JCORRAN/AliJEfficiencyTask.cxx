@@ -152,9 +152,9 @@ void AliJEfficiencyTask::Init()
 void AliJEfficiencyTask::Terminate(Option_t *)
 {
 
-	fEfficiencyScanner->Terminate();
-	OpenFile(1);
-	fEffHistDir->Write();
+	//fEfficiencyScanner->Terminate();
+	//OpenFile(1);
+	//fEffHistDir->Write();
 	cout<<"JEfficiency Analysis DONE !!"<<endl; 
 
 }

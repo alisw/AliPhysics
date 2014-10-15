@@ -69,14 +69,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffTMHistoFill()                 { fFillTMHisto           = kFALSE ; }
 
   void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells) ;
-  
-  void         SwitchOnFillPileUpHistograms()         { fFillPileUpHistograms  = kTRUE  ; }
-  void         SwitchOffFillPileUpHistograms()        { fFillPileUpHistograms  = kFALSE ; }
-  
+ 
   // Analysis parameters setters getters
-  
-  TString      GetCalorimeter()                 const { return fCalorimeter        ; }
-  void         SetCalorimeter(TString  & det)         { fCalorimeter = det         ; }
     
   // ** Cluster selection methods **
   
@@ -95,7 +89,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
     fNLMCutMax = max                ; }
   Int_t        GetNLMCutMin()                   const { return fNLMCutMin          ; }
   Int_t        GetNLMCutMax()                   const { return fNLMCutMax          ; }	
-  
   
   Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
   void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
@@ -121,7 +114,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   private:
  
-  TString  fCalorimeter ;                           // Calorimeter where the gamma is searched;
   Float_t  fMinDist ;                               // Minimal distance to bad channel to accept cluster
   Float_t  fMinDist2;                               // Cuts on Minimal distance to study acceptance evaluation
   Float_t  fMinDist3;                               // One more cut on distance used for acceptance-efficiency study
@@ -134,7 +126,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNLMCutMax  ;                            // Remove clusters/cells with number of local maxima larger than this value
   Bool_t   fFillSSHistograms ;                      // Fill shower shape histograms
   Bool_t   fFillOnlySimpleSSHisto;                  // Fill selected cluster histograms, selected SS histograms
-  Bool_t   fFillPileUpHistograms;                   // Fill pile-up related histograms
   Int_t    fNOriginHistograms;                      // Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     // Fill only NPrimaryHistograms of the 7 defined types
   

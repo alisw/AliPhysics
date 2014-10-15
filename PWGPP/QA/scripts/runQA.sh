@@ -34,6 +34,7 @@ main()
   fi
 
   updateQA "$@"
+  return 0
 }
 
 updateQA()
@@ -327,16 +328,23 @@ updateQA()
 
   #remove lock
   rm -f ${lockFile}
+  return 0
 }
 
 executePlanB()
 {
   #in case of emergency
-  if [[ -n ${MAILTO} ]]; then 
+  #first check if we have the email of the detector expert defined,
+  #if yes, append to the mailing list
+  local mailTo=${MAILTO}
+  local detExpertEmailVar="MAILTO_${detector}"
+  [[ -n "${!detExpertEmailVar}" ]] && mailTo+=" ${!detExpertEmailVar}"
+  if [[ -n ${mailTo} ]]; then 
     echo
-    echo "trouble detected, sending email to ${MAILTO}"
-    cat ${logSummary} | mail -s "qa in need of assistance" ${MAILTO}
+    echo "trouble detected, sending email to ${mailTo}"
+    cat ${logSummary} | mail -s "${detector} QA in need of assistance" ${mailTo}
   fi
+  return 0
 }
 
 validate()
@@ -490,6 +498,7 @@ parseConfig()
     echo "${var}=${value}"
     export ${var}="${value}"
   done
+  return 0
 }
 
 guessRunData()
@@ -550,10 +559,10 @@ guessRunData()
   then
     #error condition
     return 1
-  else
-    #ALL OK
-    return 0
   fi
+  
+  #ALL OK
+  return 0
 }
 
 run2year()
@@ -580,6 +589,7 @@ substituteDetectorName()
   local dir=$2
   [[ ${dir} =~ \%det ]] && det=${det,,} && echo ${dir/\%det/${det}}
   [[ ${dir} =~ \%DET ]] && det=${det} && echo ${dir/\%DET/${det}}
+  return 0
 }
 
 get_realpath() 
@@ -697,6 +707,8 @@ hostInfo(){
         echo
         echo
         echo
+  
+  return 0
 }
 
 main "$@"

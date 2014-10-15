@@ -149,22 +149,6 @@ void AliEbyEPidRatioEffCont::CreateHistograms() {
   fHnEffRec->GetAxis(8)->SetTitle("#varphi_{Rec} (rad)");          //  phi  [ 0. , 2Pi]
   fHnEffRec->GetAxis(9)->SetTitle("#it{p}_{T,Rec} (GeV/#it{c})");  //  pt   [ 0.2, 2.3]
  
-
-  // fHnEff->GetAxis(0)->SetTitle("centrality");                   //  0-5|5-10|10-20|20-30|30-40|40-50|50-60|60-70|70-80|80-90 --> 10 bins
-  // fHnEff->GetAxis(1)->SetTitle("N_{ch}|N_{#pi}|N_{K}|N_{p}");                //  0 | 1 | 2 | 3
-  // fHnEff->GetAxis(2)->SetTitle("sign");                         //  -1 | 0 | +1 
-  // fHnEff->GetAxis(3)->SetTitle("findable");                     //  0 not findable      |  1 findable
-  // fHnEff->GetAxis(4)->SetTitle("recStatus");                    //  0 not reconstructed |  1 reconstructed
-  // fHnEff->GetAxis(5)->SetTitle("recPid");                       //  0 not accepted      |  1 accepted
-  // fHnEff->GetAxis(6)->SetTitle("#eta_{MC}-#eta_{Rec}");                      //  eta  [-0.9, 0.9]
-  // fHnEff->GetAxis(7)->SetTitle("#it{y}_{MC}-#it{y}_{Rec}");                  //  rapidity  [-0.5, 0.5]
-  // fHnEff->GetAxis(8)->SetTitle("#varphi_{MC}-#varphi_{Rec} (rad)");          //  phi  [ -2Pi , 2Pi]
-  // fHnEff->GetAxis(9)->SetTitle("#it{p}_{T,MC}-#it{p}_{T,Rec} (GeV/#it{c})"); //  pt   [ -2.3, 2.3]
-  //  fHnEff->GetAxis(10)->SetTitle("sign_{MC}-sign_{Rec}");                      //  -2 | 0 | +2 
-  
-  
-
- 
   fHelper->BinLogAxis(fHnEffMc, 9);
   fHelper->BinLogAxis(fHnEffRec, 9);
 
@@ -472,6 +456,8 @@ void AliEbyEPidRatioEffCont::FillMCEffHist() {
 
     // -- Get if particle is findable --- not availible for AODs yet
     Float_t findable  = (fESD) ? Float_t(fHelper->IsParticleFindable(idxMC)) : 1.;
+
+    // cout << findable << "  " << fHelper->IsParticleFindable(idxMC)<< endl;
 
     // -- Get recStatus and pidStatus
     Float_t recStatus = 0.;

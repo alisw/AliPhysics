@@ -35,10 +35,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   
   void    MakeAnalysisFillAOD()  ;
   
-  void    MakeAnalysisFillHistograms() ; 
-  
-  void    SwitchOnFillPileUpHistograms()     { fFillPileUpHistograms    = kTRUE  ; }
-  void    SwitchOffFillPileUpHistograms()    { fFillPileUpHistograms    = kFALSE ; }
+  void    MakeAnalysisFillHistograms() ;
   
   void    SwitchOnFillTrackBCHistograms()    { fFillTrackBCHistograms   = kTRUE  ; }
   void    SwitchOffFillTrackBCHistograms()   { fFillTrackBCHistograms   = kFALSE ; }
@@ -48,7 +45,6 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
 
  private:
   
-  Bool_t  fFillPileUpHistograms;            // Fill pile-up related histograms
   Bool_t  fFillTrackBCHistograms;           // Fill histograms for tracks with TOF BC=0 or not related histograms
   Bool_t  fFillVertexBC0Histograms;         // Fill histograms for tracks with vertex BC=0 or not related histograms
   

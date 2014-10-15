@@ -45,7 +45,7 @@ class AliJHistos {
   
 public:
   AliJHistos(AliJCard* cardP); //constructor
-  virtual ~AliJHistos(){;}    //destructor
+  virtual ~AliJHistos();    //destructor
   AliJHistos(const AliJHistos& obj);
   AliJHistos& operator=(const AliJHistos& obj);
   
@@ -175,11 +175,13 @@ public:
   AliJTH1D     fhJTPtaBgR;  // comment me
   
   //FK//mix2    inclusve spectra
-  TH1D *fhIetaTriggFromFile  [kMaxNoCentrBin][kPtDim];//FK//mix2
-  TH1D *fhIetaAssocFromFile  [kMaxNoCentrBin][kPtDim];//FK//mix2
-  TH1D *fhIphiTriggFromFile  [kMaxNoCentrBin][kPtDim];//FK//mix2
-  TH1D *fhIphiAssocFromFile  [kMaxNoCentrBin][kPtDim];//FK//mix2
-  TH1D *fhDphiAssocMixFromFile  [kMaxNoCentrBin][kPtDim][kPtDim];//FK//mix2
+
+  AliJHistManager * fHmgInclusive;
+  AliJTH1D fhIetaTriggFromFile; //FK//mix2
+  AliJTH1D fhIetaAssocFromFile  ;//FK//mix2
+  AliJTH1D fhIphiTriggFromFile  ;//FK//mix2
+  AliJTH1D fhIphiAssocFromFile  ;//FK//mix2
+  AliJTH1D fhDphiAssocMixFromFile  ;//FK//mix2
   
   TH1D *fhDEtaNearMixFromFile[kMaxNoCentrBin][kPtDim][kPtDim]; // comment me
   

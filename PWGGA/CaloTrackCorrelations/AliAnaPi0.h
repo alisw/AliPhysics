@@ -44,10 +44,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         MakeAnalysisFillHistograms();
   
   void         InitParameters();
-
-  //Calorimeter options
-  TString      GetCalorimeter()         const   { return fCalorimeter           ; }
-  void         SetCalorimeter(TString & det)    { fCalorimeter         = det    ; }
   
   //-------------------------------
   // EVENT Bin Methods
@@ -142,7 +138,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   TList ** fEventsList ;               //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for photons in stored events
 
-  TString  fCalorimeter ;              // Select Calorimeter for IM
   Int_t    fNModules ;                 // Number of EMCAL/PHOS modules, set as many histogras as modules 
   
   Bool_t   fUseAngleCut ;              // Select pairs depending on their opening angle

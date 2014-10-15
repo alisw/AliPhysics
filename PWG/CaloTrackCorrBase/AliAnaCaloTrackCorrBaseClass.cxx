@@ -47,6 +47,7 @@ ClassImp(AliAnaCaloTrackCorrBaseClass)
 AliAnaCaloTrackCorrBaseClass::AliAnaCaloTrackCorrBaseClass() : 
 TObject(), 
 fDataMC(0),                   fDebug(0),
+fCalorimeter(""),
 fCheckFidCut(0),              fCheckRealCaloAcc(0),
 fCheckCaloPID(0),             fRecalculateCaloPID(0), 
 fMinPt(0),                    fMaxPt(0),
@@ -54,6 +55,7 @@ fPairTimeCut(200),            fTRDSMCovered(-1),
 fNZvertBin(0),                fNrpBin(0),
 fNCentrBin(0),                fNmaxMixEv(0),
 fDoOwnMix(0),                 fUseTrackMultBins(0),
+fFillPileUpHistograms(0),     fFillHighMultHistograms(0),
 fMakePlots(kFALSE),
 fInputAODBranch(0x0),         fInputAODName(""),
 fOutputAODBranch(0x0),        fNewAOD(kFALSE),
@@ -211,10 +213,13 @@ AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, Int
   
   if(!clusters) return 0x0;
   
-  for(iclus = first; iclus < clusters->GetEntriesFast(); iclus++){
+  for(iclus = first; iclus < clusters->GetEntriesFast(); iclus++)
+  {
     AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-    if(cluster){
-      if     (cluster->GetID()==id) {
+    if(cluster)
+    {
+      if(cluster->GetID()==id)
+      {
         return cluster;
       }
     }      
@@ -224,8 +229,8 @@ AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, Int
   
 }
 
-//______________________________________________________________________________
-TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(TString aodName) const 
+//______________________________________________________________________________________
+TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(const TString & aodName) const
 {
 	//Recover ouput and input AOD pointers for each event in the maker
 	
@@ -562,6 +567,8 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   fMaxPt               = 300. ; //Max pt in particle analysis
   fNZvertBin           = 1;
   fNrpBin              = 1;
+  
+  fCalorimeter         = "EMCAL";
   
   fTrackMultBins[0] =  0;  fTrackMultBins[1] =  5;  fTrackMultBins[2] = 10;
   fTrackMultBins[3] = 15;  fTrackMultBins[4] = 20;  fTrackMultBins[5] = 30;

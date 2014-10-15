@@ -37,18 +37,18 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fOutput_sq(0x0),
     fnCentBins(20),
     fnQvecBins(40),
-    fIsQvecCalibMode(0),
     fQvecUpperLim(100),
     fCutLargeQperc(9.),
     fCutSmallQperc(10.),
     fEtaGapMin(-0.5),
     fEtaGapMax(0.5),
-    fTrkBit(272),
+    fTrkBit(128),
     fEtaCut(0.8),
     fMinPt(0),
     fMaxPt(20.0),
     fMinTPCNcls(70),
     fFillTHn(kTRUE),
+    fCentrality(0),
     fResSP(0),
     fResSP_vs_Cent(0),
     f2partCumQA_vs_Cent(0),
@@ -64,14 +64,24 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
     fResSP_vs_Cent_sq(0),
     f2partCumQA_vs_Cent_sq(0),
     f2partCumQB_vs_Cent_sq(0),
-    fv2SPGap1A_mb(0),
-    fv2SPGap1B_mb(0),
-    fResSP_mb(0),
-    fv2SPGap1Amc(0),
-    fv2SPGap1Bmc(0),
-    fResSPmc(0),
+    fResSP_inclusive(0),
+    fv2SPGap1A_inclusive_mb(0),
+    fv2SPGap1B_inclusive_mb(0),
+    fv2SPGap1A_inclusive_lq(0),
+    fv2SPGap1B_inclusive_lq(0),
+    fv2SPGap1A_inclusive_sq(0),
+    fv2SPGap1B_inclusive_sq(0),
+    fResSPmc_inclusive(0),
+    fv2SPGap1Amc_inclusive_mb(0),
+    fv2SPGap1Bmc_inclusive_mb(0),
+    fv2SPGap1Amc_inclusive_lq(0),
+    fv2SPGap1Bmc_inclusive_lq(0),
+    fv2SPGap1Amc_inclusive_sq(0),
+    fv2SPGap1Bmc_inclusive_sq(0),
     fIsRecoEff(0),
-    fRecoEffList(0)
+    fRecoEffList(0),
+    fQvecGen(0),
+    fnNchBins(400)
       {}
   AliAnalysisTaskV2AllChAOD(const char *name);
   virtual ~AliAnalysisTaskV2AllChAOD() {
@@ -99,7 +109,6 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   void SetEventCuts(AliSpectraAODEventCuts * vc)       { fEventCuts = vc; }
   void SetnCentBins(Int_t val)                             { fnCentBins = val; }
   void SetnQvecBins(Int_t val)                             { fnQvecBins = val; }
-  void SetQvecCalibMode(Bool_t mode)                  { fIsQvecCalibMode = mode; }
   void SetQvecUpperLimit(Double_t val)                { fQvecUpperLim = val; }
   
   void SetTrackBits(UInt_t TrackBits) {fTrkBit=TrackBits;}
@@ -109,7 +118,7 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   void SetMinTPCNcls(Double_t val) {fMinTPCNcls=val;}
   
   Bool_t GetDCA(const AliAODTrack* trk, Double_t * p);
-  void MCclosure();
+  void MCclosure(Double_t qvec);
   
   void EnableRecoEff (Bool_t val) { fIsRecoEff = val; }
   Double_t GetRecoEff(Double_t pt, Int_t iC);
@@ -127,6 +136,10 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   void     SetQvecCut(Float_t qmin,Float_t qmax)      { fCutSmallQperc = qmin; fCutLargeQperc = qmax; }
   void     SetFillTHn (Bool_t val) { fFillTHn = val; }
   
+  void GetQvecGen(Bool_t val) { fQvecGen = val; } //enable Qvec from generated
+
+  void SetnNchBins(Int_t val) { fnNchBins = val; }
+  
  private:
   
   AliAODEvent                   * fAOD;                         //! AOD object
@@ -140,7 +153,6 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   TList                          * fOutput_sq;                  // output list small Q
   Int_t                            fnCentBins;                  // number of bins for the centrality axis
   Int_t                            fnQvecBins;                 // number of bins for the q vector axis
-  Bool_t                           fIsQvecCalibMode;          //calib mode for Qvector percentile
   Double_t                         fQvecUpperLim;             //Upper limit for Qvector
   
   Int_t                            fCutLargeQperc; // cut on 10% large Q-vec events
@@ -156,6 +168,8 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   Double_t  fMinTPCNcls;
   
   Bool_t fFillTHn;
+  
+  TH1D * fCentrality;
   
   //output object
   TProfile*     fResSP;             //! resolution
@@ -211,21 +225,34 @@ class AliAnalysisTaskV2AllChAOD : public AliAnalysisTaskSE
   TProfile*     fSinGap1B_sq[9];      //! <sin> vs pT gap 1
   TProfile*     fCosGap1B_sq[9];      //! <cos> vs pT gap 1
   
-  TProfile*    fv2SPGap1A_mb;
-  TProfile* fv2SPGap1B_mb;
-  TProfile* fResSP_mb;
-  TProfile* fv2SPGap1Amc;
-  TProfile* fv2SPGap1Bmc;
-  TProfile* fResSPmc;
+  // MC closure test
+  
+  TProfile* fResSP_inclusive;
+  TProfile* fv2SPGap1A_inclusive_mb;
+  TProfile* fv2SPGap1B_inclusive_mb;
+  TProfile* fv2SPGap1A_inclusive_lq;
+  TProfile* fv2SPGap1B_inclusive_lq;
+  TProfile* fv2SPGap1A_inclusive_sq;
+  TProfile* fv2SPGap1B_inclusive_sq;
+  
+  TProfile* fResSPmc_inclusive;
+  TProfile* fv2SPGap1Amc_inclusive_mb;
+  TProfile* fv2SPGap1Bmc_inclusive_mb;
+  TProfile* fv2SPGap1Amc_inclusive_lq;
+  TProfile* fv2SPGap1Bmc_inclusive_lq;
+  TProfile* fv2SPGap1Amc_inclusive_sq;
+  TProfile* fv2SPGap1Bmc_inclusive_sq;
   
   Bool_t fIsRecoEff;
   TList * fRecoEffList; // reconstruction efficiency file
-
+  
+  Bool_t fQvecGen; //enable Qvec from generated
+  Int_t  fnNchBins; //Ncharged
   
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
   
-  ClassDef(AliAnalysisTaskV2AllChAOD, 9);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 11);
 };
 
 #endif

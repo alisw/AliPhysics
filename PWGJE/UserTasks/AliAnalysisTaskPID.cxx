@@ -597,25 +597,47 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
            11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
            26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };
   
-  const Int_t nCentBins = 12;
-  //-1 for pp (unless explicitely requested); 90-100 has huge electro-magnetic impurities
-  Double_t binsCent[nCentBins+1] =                {-1, 0,  5, 10, 20, 30, 40, 50, 60, 70, 80,  90, 100 };
+  const Bool_t useITSTPCtrackletsCentEstimatorWithNewBinning = fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0
+                                                               && fStoreCentralityPercentile;
   
-  // This centrality estimator deals with integers! This implies that the ranges are always [lowlim, uplim - 1]
-  Double_t binsCentITSTPCTracklets[nCentBins+1] = { 0, 7, 13, 20, 29, 40, 50, 60, 72, 83, 95, 105, 115 };
+  const Int_t nCentBinsGeneral = 12;
+  const Int_t nCentBinsNewITSTPCtracklets = 17;
+  
+  const Int_t nCentBins = useITSTPCtrackletsCentEstimatorWithNewBinning ? nCentBinsNewITSTPCtracklets : nCentBinsGeneral;
+
+  Double_t binsCent[nCentBins+1];
+  for (Int_t i = 0; i < nCentBins + 1; i++)
+    binsCent[i] = -1;
+  
+  //-1 for pp (unless explicitely requested); 90-100 has huge electro-magnetic impurities
+  Double_t binsCentV0[nCentBinsGeneral+1] = {-1, 0,  5, 10, 20, 30, 40, 50, 60, 70, 80,  90, 100 };
+  
+  // These centrality estimators deal with integers! This implies that the ranges are always [lowlim, uplim - 1]
+  Double_t binsCentITSTPCTracklets[nCentBinsNewITSTPCtracklets+1] = { -9999, 0, 1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 9999 };
+  Double_t binsCentITSTPCTrackletsOldPreliminary[nCentBinsGeneral+1] = { 0, 7, 13, 20, 29, 40, 50, 60, 72, 83, 95, 105, 115 };
   
   // Special centrality binning for pp
-  Double_t binsCentpp[nCentBins+1] =   { 0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+  Double_t binsCentpp[nCentBinsGeneral+1] =   { 0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
   
-  if (fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0 && fStoreCentralityPercentile) {
+  if (fCentralityEstimator.CompareTo("ITSTPCtrackletsOldPreliminaryBinning", TString::kIgnoreCase) == 0 && fStoreCentralityPercentile) {
     // Special binning for this centrality estimator; but keep number of bins!
-    for (Int_t i = 0; i < nCentBins+1; i++)
+    for (Int_t i = 0; i < nCentBinsGeneral+1; i++)
+      binsCent[i] = binsCentITSTPCTrackletsOldPreliminary[i];
+  }
+  else if (fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0 && fStoreCentralityPercentile) {
+    // Special binning for this centrality estimator and different number of bins!
+    for (Int_t i = 0; i < nCentBinsNewITSTPCtracklets+1; i++)
       binsCent[i] = binsCentITSTPCTracklets[i];
   }
   else if (fCentralityEstimator.Contains("ppMult", TString::kIgnoreCase) && fStoreCentralityPercentile) {
     // Special binning for this pp centrality estimator; but keep number of bins!
-    for (Int_t i = 0; i < nCentBins+1; i++)
+    for (Int_t i = 0; i < nCentBinsGeneral+1; i++)
       binsCent[i] = binsCentpp[i];
+  }
+  else {
+    // Take default binning for VZERO
+    for (Int_t i = 0; i < nCentBinsGeneral+1; i++)
+      binsCent[i] = binsCentV0[i];
   }
 
   const Int_t nJetPtBins = 11;
@@ -1054,7 +1076,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   
   Double_t centralityPercentile = -1;
   if (fStoreCentralityPercentile) {
-    if (fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0) {
+    if (fCentralityEstimator.Contains("ITSTPCtracklets", TString::kIgnoreCase)) {
       // Special pp centrality estimator
       AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(fEvent);
       if (!esdEvent) {
@@ -1877,6 +1899,7 @@ Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Double_t
   }
   
   if (absMotherPDG == 3122) { // Lambda
+  //if (absMotherPDG == 3122 || absMotherPDG == 3112 || absMotherPDG == 3222) { // Lambda / Sigma- / Sigma+
     if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.645162;
     else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.627431;
     else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.457136;

@@ -57,7 +57,7 @@ ClassImp(AliAnalysisTaskBFPsi)
 AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name) 
 : AliAnalysisTaskSE(name),
   fDebugLevel(kFALSE),
-  fArrayMC(0), //+++++++++++++
+  fArrayMC(0),
   fBalance(0),
   fRunShuffling(kFALSE),
   fShuffledBalance(0),
@@ -104,8 +104,9 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistProbTPCTOFvsPtbeforePID(NULL),
   fHistNSigmaTPCvsPtbeforePID(NULL), 
   fHistNSigmaTOFvsPtbeforePID(NULL), 
-  fHistBetaVsdEdXbeforePID(NULL), //+++++++ 
-  fHistNSigmaTPCTOFvsPtbeforePID(NULL), //++++++
+  fHistBetaVsdEdXbeforePID(NULL),
+  fHistNSigmaTPCTOFvsPtbeforePID(NULL),
+  fHistNSigmaTPCTOFPbefPID(NULL),
   fHistdEdxVsPTPCafterPID(NULL),
   fHistBetavsPTOFafterPID(NULL), 
   fHistProbTPCvsPtafterPID(NULL), 
@@ -113,12 +114,13 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistProbTPCTOFvsPtafterPID(NULL),
   fHistNSigmaTPCvsPtafterPID(NULL), 
   fHistNSigmaTOFvsPtafterPID(NULL),  
-  fHistBetaVsdEdXafterPID(NULL), //+++++++ 
-  fHistNSigmaTPCTOFvsPtafterPID(NULL), //+++++++
-  fHistdEdxVsPTPCbeforePIDelectron(NULL), //+++++++
-  fHistNSigmaTPCvsPtbeforePIDelectron(NULL), //+++++++
-  fHistdEdxVsPTPCafterPIDelectron(NULL), //+++++++
-  fHistNSigmaTPCvsPtafterPIDelectron(NULL), //+++++++
+  fHistBetaVsdEdXafterPID(NULL), 
+  fHistNSigmaTPCTOFvsPtafterPID(NULL),
+  fHistNSigmaTPCTOFPafterPID(NULL),
+  fHistdEdxVsPTPCbeforePIDelectron(NULL),
+  fHistNSigmaTPCvsPtbeforePIDelectron(NULL),
+  fHistdEdxVsPTPCafterPIDelectron(NULL),
+  fHistNSigmaTPCvsPtafterPIDelectron(NULL),
   fCentralityArrayBinsForCorrections(kCENTRALITY),
   fCentralityWeights(0x0),
   fPIDResponse(0x0),
@@ -547,18 +549,34 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fHistProbTPCTOFvsPtbeforePID =new TH2D ("ProbTPCTOFvsPtbefore","ProbTPCTOFvsPtbefore", 1000, -50, 50, 1000, 0, 2.0); 
     fHistListPIDQA->Add(fHistProbTPCTOFvsPtbeforePID);
     
-    fHistNSigmaTPCvsPtbeforePID = new TH2D ("NSigmaTPCvsPtbefore","NSigmaTPCvsPtbefore", 1000, -10, 10, 1000, 0, 500); 
+    fHistNSigmaTPCvsPtbeforePID = new TH2D ("NSigmaTPCvsPtbefore","NSigmaTPCvsPtbefore", 1000, -10, 10, 1000, -25, 25); 
     fHistListPIDQA->Add(fHistNSigmaTPCvsPtbeforePID);
     
-    fHistNSigmaTOFvsPtbeforePID = new TH2D ("NSigmaTOFvsPtbefore","NSigmaTOFvsPtbefore", 1000, -10, 10, 1000, 0, 500); 
+    fHistNSigmaTOFvsPtbeforePID = new TH2D ("NSigmaTOFvsPtbefore","NSigmaTOFvsPtbefore", 1000, -10, 10, 1000, -25, 25); 
     fHistListPIDQA->Add(fHistNSigmaTOFvsPtbeforePID); 
 
     fHistBetaVsdEdXbeforePID = new TH2D ("BetaVsdEdXbefore","BetaVsdEdXbefore", 1000, 0., 1000, 1000, 0, 1.2); 
-    fHistListPIDQA->Add(fHistBetaVsdEdXbeforePID); //++++++++
+    fHistListPIDQA->Add(fHistBetaVsdEdXbeforePID);
     
-    fHistNSigmaTPCTOFvsPtbeforePID = new TH2D ("NSigmaTPCTOFvsPtbefore","NSigmaTPCTOFvsPtbefore", 1000, -10., 10., 1000, 0, 500); 
-    fHistListPIDQA->Add(fHistNSigmaTPCTOFvsPtbeforePID); //++++++++
+    fHistNSigmaTPCTOFvsPtbeforePID = new TH2D ("NSigmaTPCTOFvsPtbefore","NSigmaTPCTOFvsPtbefore", 1000, -10., 10., 1000, -25, 25); 
+    fHistListPIDQA->Add(fHistNSigmaTPCTOFvsPtbeforePID);
     
+    //+++++++++++++++++//
+    //p array
+    const Int_t pBins = 36;
+    Double_t nArrayP[pBins+1]={0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 9.0, 10.0, 15.0, 20.0};
+    //nSigma Array
+    const Int_t nSigmaBins = 250;
+    Double_t nArrayS[nSigmaBins+1];
+    for (Int_t i = 0; i <= nSigmaBins; i++){
+      nArrayS[i]=i-125; //i+1
+      //Printf("nS: %lf - i: %d", nSigmaArray[i], i);
+    }
+ 
+    fHistNSigmaTPCTOFPbefPID = new TH3D ("fHistNSigmaTPCTOFPbefPID","fHistNSigmaTPCTOFPbefPID;#sigma_{TPC};#sigma_{TOF};p_{T} (GeV/c)", nSigmaBins, nArrayS, nSigmaBins, nArrayS, pBins,nArrayP); 
+    fHistListPIDQA->Add(fHistNSigmaTPCTOFPbefPID); 
+    //++++++++++++++//
+
     fHistdEdxVsPTPCafterPID = new TH2D ("dEdxVsPTPCafter","dEdxVsPTPCafter", 1000, -10, 10, 1000, 0, 1000); 
     fHistListPIDQA->Add(fHistdEdxVsPTPCafterPID);
     
@@ -574,17 +592,20 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fHistProbTPCTOFvsPtafterPID =new TH2D ("ProbTPCTOFvsPtafter","ProbTPCTOFvsPtafter", 1000, -50, 50, 1000, 0, 2.0); 
     fHistListPIDQA->Add(fHistProbTPCTOFvsPtafterPID);
 
-    fHistNSigmaTPCvsPtafterPID = new TH2D ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter", 1000, -10, 10, 1000, 0, 500); 
+    fHistNSigmaTPCvsPtafterPID = new TH2D ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter", 1000, -10, 10, 1000, -25, 25); 
     fHistListPIDQA->Add(fHistNSigmaTPCvsPtafterPID);
     
-    fHistNSigmaTOFvsPtafterPID = new TH2D ("NSigmaTOFvsPtafter","NSigmaTOFvsPtafter", 1000, -10, 10, 1000, 0, 500); 
+    fHistNSigmaTOFvsPtafterPID = new TH2D ("NSigmaTOFvsPtafter","NSigmaTOFvsPtafter", 1000, -10, 10, 1000, -25, 25); 
     fHistListPIDQA->Add(fHistNSigmaTOFvsPtafterPID);
 
     fHistBetaVsdEdXafterPID = new TH2D ("BetaVsdEdXafter","BetaVsdEdXafter", 1000, 0., 1000, 1000, 0, 1.2); 
-    fHistListPIDQA->Add(fHistBetaVsdEdXafterPID); //++++++++
+    fHistListPIDQA->Add(fHistBetaVsdEdXafterPID);
 
-    fHistNSigmaTPCTOFvsPtafterPID = new TH2D ("NSigmaTPCTOFvsPtafter","NSigmaTPCTOFvsPtafter", 1000, -10., 10., 1000, 0, 500); 
-    fHistListPIDQA->Add(fHistNSigmaTPCTOFvsPtafterPID); //++++++++
+    fHistNSigmaTPCTOFvsPtafterPID = new TH2D ("NSigmaTPCTOFvsPtafter","NSigmaTPCTOFvsPtafter", 1000, -10., 10., 1000, -25, 25); 
+    fHistListPIDQA->Add(fHistNSigmaTPCTOFvsPtafterPID);
+
+    fHistNSigmaTPCTOFPafterPID = new TH3D ("fHistNSigmaTPCTOFPafterPID","fHistNSigmaTPCTOFPafterPID;#sigma_{TPC};#sigma_{TOF};p_{T} (GeV/c)", nSigmaBins, nArrayS, nSigmaBins, nArrayS, pBins,nArrayP); 
+    fHistListPIDQA->Add(fHistNSigmaTPCTOFPafterPID); //++++++++++++++
   }
 
   // for electron rejection only TPC nsigma histograms
@@ -1405,16 +1426,19 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t probTPCTOF[AliPID::kSPECIES]={0.};
 	
 	Double_t nSigma = 0.;
-	Double_t nSigmaTPC = 0.; //++++
-	Double_t nSigmaTOF = 0.; //++++
-	Double_t nSigmaTPCTOF = 0.; //++++
+	Double_t nSigmaTPC = 0.;
+	Double_t nSigmaTOF = 0.; 
+	Double_t nSigmaTPCTOF = 0.;
 	UInt_t detUsedTPC = 0;
 	UInt_t detUsedTOF = 0;
 	UInt_t detUsedTPCTOF = 0;
 	
-	nSigmaTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest));
-	nSigmaTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,(AliPID::EParticleType)fParticleOfInterest));
+	nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest);
+	nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(aodTrack,(AliPID::EParticleType)fParticleOfInterest);
 	nSigmaTPCTOF = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);
+	if (nSigmaTOF == 999 ||  nSigmaTOF == -999){
+	  nSigmaTPCTOF = nSigmaTPC;
+	}
 
 	//Decide what detector configuration we want to use
 	switch(fPidDetectorConfig) {
@@ -1447,67 +1471,69 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t tofTime = -999., length = 999., tof = -999.;
 	Double_t c = TMath::C()*1.E-9;// m/ns
 	Double_t beta = -999.;
-	if ( (aodTrack->IsOn(AliAODTrack::kTOFin)) &&
-	     (aodTrack->IsOn(AliAODTrack::kTIME))  ) { 
-	  tofTime = aodTrack->GetTOFsignal();//in ps
-	  length = aodTrack->GetIntegratedLength();
-	  tof = tofTime*1E-3; // ns	
-	  
-	  if (tof <= 0) {
-	    //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
-	    continue;
-	  }
-	  if (length <= 0){
-	    //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
-	    continue;
-	  }
-	  
-	  length = length*0.01; // in meters
-	  tof = tof*c;
-	  beta = length/tof;
-	  
-	  fHistBetavsPTOFbeforePID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
-	  fHistProbTOFvsPtbeforePID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
-	  fHistNSigmaTOFvsPtbeforePID ->Fill(aodTrack->Pt(),nSigmaTOF);
-	}//TOF signal 
-	
-	fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
-	fHistProbTPCvsPtbeforePID -> Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
-	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPC);
-	
-	fHistProbTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
 
-	//combined TPC&TOF
-	fHistBetaVsdEdXbeforePID->Fill(aodTrack->GetTPCsignal(),beta); //+++++++++	
-	fHistNSigmaTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPCTOF);
-	//Printf("NSIGMA: %lf - nSigmaTOF: %lf - nSigmaTPC: %lf - nSigmaTPCTOF: %lf",nSigma,nSigmaTOF,nSigmaTPC,nSigmaTPCTOF);
-	
-	//end of QA-before pid
-	
-	if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
-	  //Make the decision based on the n-sigma
-	  if(fUsePIDnSigma) {
-	    if(nSigma > fPIDNSigma) continue;  
+	Float_t probMis = fPIDResponse->GetTOFMismatchProbability(aodTrack);
+	if (probMis < 0.01) { //if u want to reduce mismatch using also TPC
+
+	  if ((aodTrack->IsOn(AliAODTrack::kITSin)) &&  (aodTrack->IsOn(AliAODTrack::kTOFpid)) ) { //leonardo's analysis
 	    
-	    fHistNSigmaTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTOF);
-	    fHistNSigmaTPCvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPC);
-	    fHistNSigmaTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPCTOF);
-	  }
-	  //Make the decision based on the bayesian
-	  else if(fUsePIDPropabilities) {
-	    if(fParticleOfInterest != TMath::LocMax(AliPID::kSPECIES,prob)) continue;
-	    if (prob[fParticleOfInterest] < fMinAcceptedPIDProbability) continue;      
-	  
-	    fHistProbTOFvsPtafterPID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
-	    fHistProbTPCvsPtafterPID ->Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
-	    fHistProbTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
-	  
-	  }
+	    tofTime = aodTrack->GetTOFsignal();//in ps
+	    length = aodTrack->GetIntegratedLength();
+	    tof = tofTime*1E-3; // ns		      
+	    if (tof <= 0) {
+	      //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	      continue;
+	    }
+	    if (length <= 0){
+	      //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+	      continue;
+	    }	      
+	    length = length*0.01; // in meters
+	    tof = tof*c;
+	    beta = length/tof;
 	    
-	  //Fill QA after the PID
-	  fHistBetavsPTOFafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
-	  fHistdEdxVsPTPCafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
-	  fHistBetaVsdEdXafterPID->Fill(aodTrack->GetTPCsignal(),beta); //+++++++++	 
+	    fHistBetavsPTOFbeforePID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
+	    fHistProbTOFvsPtbeforePID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
+	    fHistNSigmaTOFvsPtbeforePID ->Fill(aodTrack->Pt(),nSigmaTOF);
+	  }//TOF signal 
+	  
+	  fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->GetTPCmomentum()*aodTrack->Charge(),aodTrack->GetTPCsignal()); //aodTrack->P()*aodTrack->Charge()
+	  fHistProbTPCvsPtbeforePID -> Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
+	  fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPC);	
+	  fHistProbTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
+	  
+	  //combined TPC&TOF
+	  fHistBetaVsdEdXbeforePID->Fill(aodTrack->GetTPCsignal(),beta); 	
+	  fHistNSigmaTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPCTOF);
+	  fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P()); //++++++++++++++
+	  //Printf("NSIGMA: %lf - nSigmaTOF: %lf - nSigmaTPC: %lf - nSigmaTPCTOF: %lf",nSigma,nSigmaTOF,nSigmaTPC,nSigmaTPCTOF); 
+	  //end of QA-before pid
+	  
+	  if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
+	    //Make the decision based on the n-sigma
+	    if(fUsePIDnSigma) {
+	      if(nSigma > fPIDNSigma || nSigma < -fPIDNSigma) continue;  
+	      
+	      fHistNSigmaTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTOF);
+	      fHistNSigmaTPCvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPC);
+	      fHistNSigmaTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPCTOF);
+	      fHistNSigmaTPCTOFPafterPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());  //++++++++++++++
+	    }
+	    //Make the decision based on the bayesian
+	    else if(fUsePIDPropabilities) {
+	      if(fParticleOfInterest != TMath::LocMax(AliPID::kSPECIES,prob)) continue;
+	      if (prob[fParticleOfInterest] < fMinAcceptedPIDProbability) continue;      
+	      
+	      fHistProbTOFvsPtafterPID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
+	      fHistProbTPCvsPtafterPID ->Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
+	      fHistProbTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
+	    }	   
+	    
+	    //Fill QA after the PID
+	    fHistBetavsPTOFafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
+	    fHistdEdxVsPTPCafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	    fHistBetaVsdEdXafterPID ->Fill(aodTrack->GetTPCsignal(),beta);
+	  }
 	}
       }
       //===========================PID===============================//

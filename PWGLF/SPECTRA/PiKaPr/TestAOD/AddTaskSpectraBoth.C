@@ -80,7 +80,7 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
   if(mc==1)evcuts->SetIsMC(kTRUE);
   evcuts->PrintCuts();
   
-  AliAnalysisTaskSpectraBoth *task = new AliAnalysisTaskSpectraBoth(Form("TaskBothSpectraCent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",	
+  AliAnalysisTaskSpectraBoth *task = new AliAnalysisTaskSpectraBoth(Form("TaskBothSpectraCent%.3fto%.3f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",	
   								       CentCutMin,
   								       CentCutMax,
   								       QvecCutMin,
@@ -99,9 +99,9 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   
   TString typeofdata=mc?"MC":"Data";
-  outputFileName += Form(":OutputBothSpectraTask_%s_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),evcuts->GetQVectorCutMin(), evcuts->GetQVectorCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax(),pid->GetNSigmaCut(),trcuts->GetTrackType(),opt.Data());
+  outputFileName += Form(":OutputBothSpectraTask_%s_Cent%.3fto%.3f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),evcuts->GetQVectorCutMin(), evcuts->GetQVectorCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax(),pid->GetNSigmaCut(),trcuts->GetTrackType(),opt.Data());
   
-  TString tmpstring= Form("OutputBothSpectraTask_%s_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),evcuts->GetQVectorCutMin(), evcuts->GetQVectorCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax(),pid->GetNSigmaCut(),trcuts->GetTrackType(),opt.Data());
+  TString tmpstring= Form("OutputBothSpectraTask_%s_Cent%.3fto%.3f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),evcuts->GetQVectorCutMin(), evcuts->GetQVectorCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax(),pid->GetNSigmaCut(),trcuts->GetTrackType(),opt.Data());
   
   cout<<"outputFileName:  "<<outputFileName<<endl;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();      
