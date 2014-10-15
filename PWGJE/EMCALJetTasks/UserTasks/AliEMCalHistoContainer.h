@@ -93,17 +93,17 @@ public:
 
   void CreateHistoGroup(const char *groupname, const char *parent = "/") throw(HistoContainerContentException);
 
-  void CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax) throw(HistoContainerContentException);
-  void CreateTH1(const char *name, const char *title, int nbins, const double *xbins) throw(HistoContainerContentException);
-  void CreateTH1(const char *name, const char *title, const TArrayD &xbins) throw(HistoContainerContentException);
-  void CreateTH2(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax) throw(HistoContainerContentException);
-  void CreateTH2(const char *name, const char *title, int nbinsx, const double *xbins, int nbinsy, const double *ybins) throw(HistoContainerContentException);
-  void CreateTH2(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins) throw(HistoContainerContentException);
-  void CreateTH3(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax) throw (HistoContainerContentException);
-  void CreateTH3(const char *name, const char *title, int nbinsx, const double *xbins, int nbinsy, const double *ybins, int nbinsz, const double *zbins) throw (HistoContainerContentException);
-  void CreateTH3(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins, const TArrayD &zbins) throw(HistoContainerContentException);
-  void CreateTHnSparse(const char *name, const char *title, int ndim, const int *nbins, const double *min, const double *max) throw(HistoContainerContentException);
-  void CreateTHnSparse(const char *name, const char *title, int ndim, const TAxis **axes) throw(HistoContainerContentException);
+  void CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTH1(const char *name, const char *title, int nbins, const double *xbins, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTH1(const char *name, const char *title, const TArrayD &xbins, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTH2(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTH2(const char *name, const char *title, int nbinsx, const double *xbins, int nbinsy, const double *ybins, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTH2(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTH3(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax, Option_t *opt = "") throw (HistoContainerContentException);
+  void CreateTH3(const char *name, const char *title, int nbinsx, const double *xbins, int nbinsy, const double *ybins, int nbinsz, const double *zbins, Option_t *opt = "") throw (HistoContainerContentException);
+  void CreateTH3(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins, const TArrayD &zbins, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTHnSparse(const char *name, const char *title, int ndim, const int *nbins, const double *min, const double *max, Option_t *opt = "") throw(HistoContainerContentException);
+  void CreateTHnSparse(const char *name, const char *title, int ndim, const TAxis **axes, Option_t *opt = "") throw(HistoContainerContentException);
   void SetObject(TObject * const o, const char *group = "/") throw(HistoContainerContentException);
   void FillTH1(const char *hname, double x, double weight = 1.) throw(HistoContainerContentException);
   void FillTH2(const char *hname, double x, double y, double weight = 1.) throw(HistoContainerContentException);
