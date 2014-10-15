@@ -123,7 +123,7 @@ void AliAnalysisNetParticleDCA::Process() {
       dca[0] = 1.; 
 
     // -- Fill THnSparse
-    Double_t hnDCA[9] = {fCentralityBin, track->Eta(), yP, track->Phi(), track->Pt(), track->Charge(), contIdx, isDCArAccepted, dca[0]};
+    Double_t hnDCA[9] = {fCentralityBin, track->Eta(), yP, track->Phi(), track->Pt(), static_cast<Double_t>(track->Charge()), static_cast<Double_t>(contIdx), static_cast<Double_t>(isDCArAccepted), dca[0]};
     fHnDCA->Fill(hnDCA);
 
   } // for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
