@@ -31,16 +31,16 @@ const Double_t AliMFTConstants::fCutForAttachingDigits = 1.;
 
 const Double_t AliMFTConstants::fElossPerElectron = 3.62e-09;
 
-const Double_t AliMFTConstants::fActiveSuperposition = 0.05;
+const Double_t AliMFTConstants::fActiveSuperposition = 0.45;
                                  
-const Double_t AliMFTConstants::fHeightActive = 0.5;
+const Double_t AliMFTConstants::fHeightActive = 1.3;
 const Double_t AliMFTConstants::fHeightReadout = 0.3;
 
 const Double_t AliMFTConstants::fSupportExtMargin = fHeightReadout + 0.3;
 
 const Double_t AliMFTConstants::fRadLengthSi = 9.37;
 
-const Double_t AliMFTConstants::fWidthChip = 1.0;
+const Double_t AliMFTConstants::fWidthChip = 3.0;
 
 const Double_t AliMFTConstants::fPrecisionPointOfClosestApproach = 10.e-4;  // 10 micron
 

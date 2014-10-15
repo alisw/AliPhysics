@@ -91,6 +91,7 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name
   fName(name)
   , fECSParams()
   , fUseHLTOUTComponentTypeGlobal(true)
+  , fDetMask(0)
 {
   // see header file for class documentation
   // or
@@ -103,7 +104,6 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name
     // AliHLTSystem is used in multiple instances for the kChain HLTOUT handler
     //HLTWarning("multiple instances of AliHLTSystem, you should not use more than one at a time");
   }
-
   SetGlobalLoggingLevel(loglevel);
   SetFrameworkLog(loglevel);
   if (fpComponentHandler) {
@@ -1388,8 +1388,12 @@ int AliHLTSystem::LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runl
   if (agents.GetEntries()) {
     TIter next(&agents);
     while ((pAgent = dynamic_cast<AliHLTModuleAgent*>(next()))) {
-      HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
-      pAgent->CreateConfigurations(fpConfigurationHandler, rawReader, runloader);
+      if(fDetMask && !(fDetMask & pAgent->GetDetectorMask())) {
+	HLTInfo("Skipping %s due to active detector mask.", pAgent->GetName());
+      } else {
+	HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
+	pAgent->CreateConfigurations(fpConfigurationHandler, rawReader, runloader);
+      }
     }
   }
 

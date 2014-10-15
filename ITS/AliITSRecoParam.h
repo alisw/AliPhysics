@@ -90,10 +90,6 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t  GetVertexerFastSmearY() const {return fVertexerFastSmearY;}
   Float_t  GetVertexerFastSmearZ() const {return fVertexerFastSmearZ;}
 
-  void     SetClusterFinder(Int_t cf=0) { fClusterFinder=cf; }
-  void     SetClusterFinderV2() { SetClusterFinder(0); }
-  void     SetClusterFinderSDDfast() { SetClusterFinder(1); }
-  Int_t    GetClusterFinder() const { return fClusterFinder; }
   void     SetPID(Int_t pid=0) {fPID=pid;}
   void     SetDefaultPID() {SetPID(0);}
   void     SetLandauFitPID() {SetPID(1);}
@@ -546,7 +542,6 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Int_t  fTracker;  // ITS tracker to be used (see AliITSReconstructor)
   Bool_t fITSonly;  // tracking only in ITS (no TPC)
   Int_t  fVertexer; // ITS vertexer to be used (see AliITSReconstructor)
-  Int_t  fClusterFinder; // ITS cf to be used (see AliITSReconstructor)
   Int_t  fPID;      // ITS PID method to be used (see AliITSReconstructor)
 
 
@@ -798,7 +793,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,53) // ITS reco parameters
+  ClassDef(AliITSRecoParam,54) // ITS reco parameters
 };
 
 #endif

@@ -106,6 +106,7 @@ AliTPCReconstructor::~AliTPCReconstructor()
 {
   if (fClusterer)   delete fClusterer;
   delete fArrSplines;
+  delete AliTPCcalibDB::Instance();
 }
 
 //_____________________________________________________________________________

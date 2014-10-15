@@ -1833,3 +1833,108 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, 
 
 }
 
+
+
+AliTPCSpaceCharge3D * AliTPCSpaceCharge3D::MakeCorrection22D(const char* fileName, Double_t multiplicity, Double_t intRate, Double_t epsIROC, Double_t epsOROC,
+							     Double_t gasfactor, 
+							     Double_t radialScaling){
+  //
+  // Origin: Christian Lippmann, CERN, Christian.Lippmann@cern.ch based on the internal note (xxx ...)
+  // adopted by Marian Ivanov (different epsilon in IROC and OROC)
+  //
+  // Charge distribution is splitted into two (RZ and RPHI) in order to speed up
+  // the needed calculation time.  
+  //
+  // Explanation of variables:
+  // 1) multiplicity: charghed particle dn/deta for top 80% centrality (660 for 2011,
+  //    expect 950 for full energy)
+  // 2) intRate: Total interaction rate (e.g. 50kHz for the upgrade)
+  // 3) eps: Number of backdrifting ions per primary electron (0 for MWPC, e.g.10 for GEM)
+  // 4) gasfactor: Use different gas. E.g. Ar/CO2 has twice the primary ionization, ion drift
+  //    velocity factor 2.5 slower, so  gasfactor = 5.
+  //
+
+
+  TFile *f = new TFile(fileName, "RECREATE");  
+  // some grid, not too coarse
+  const Int_t nr   = 350;
+  const Int_t nphi = 180;
+  const Int_t nz   = 500;
+  const Double_t kROROC=134;  // hardwired OROC radius 
+
+  Double_t dr = (fgkOFCRadius-fgkIFCRadius)/(nr+1);
+  Double_t dphi = TMath::TwoPi()/(nphi+1);
+  Double_t dz = 500./(nz+1);
+  Double_t safty = 0.; // due to a root bug which does not interpolate the boundary ..
+  // .. (first and last bin) correctly
+
+  // Charge distribution in ZR (rotational symmetric) ------------------
+
+  TH2F *histoZR = new TH2F("chargeZR", "chargeZR",
+                           nr, fgkIFCRadius-dr-safty, fgkOFCRadius+dr+safty,
+                           nz, -250-dz-safty, 250+dz+safty);
+
+  // For the normalization to same integral as radial exponent = 2
+  Double_t radialExponent             = -2.; // reference = 2
+  Double_t radiusInner                = histoZR->GetXaxis()->GetBinCenter(1) / 100.;//in [m]
+  Double_t radiusOuter                = histoZR->GetXaxis()->GetBinCenter(nr) / 100.;//in [m]
+  Double_t integralRadialExponent2    = TMath::Power(radiusOuter,radialExponent+1) * 1./(radialExponent+1) 
+    - TMath::Power(radiusInner,radialExponent+1) * 1./(radialExponent+1);
+  
+  radialExponent                      = -radialScaling; // user set   
+  Double_t integralRadialExponentUser = 0.;
+  if(radialScaling > 1 + 0.000001 || radialScaling < 1 - 0.000001 ) // to avoid n = -1
+    integralRadialExponentUser = TMath::Power(radiusOuter,radialExponent+1) * 1./(radialExponent+1) 
+      - TMath::Power(radiusInner,radialExponent+1) * 1./(radialExponent+1);
+  else
+    integralRadialExponentUser = TMath::Log(radiusOuter) - TMath::Log(radiusInner);
+    
+  Double_t normRadialExponent         = integralRadialExponent2 / integralRadialExponentUser;
+ 
+  for (Int_t ir=1;ir<=nr;++ir) {
+    Double_t rp = histoZR->GetXaxis()->GetBinCenter(ir);
+    for (Int_t iz=1;iz<=nz;++iz) {
+      Double_t zp = histoZR->GetYaxis()->GetBinCenter(iz);
+      Double_t eps = (rp <kROROC) ? epsIROC:epsOROC; 
+      // recalculation to meter
+      Double_t lZ = 2.5; // approx. TPC drift length
+      Double_t rpM = rp/100.; // in [m]
+      Double_t zpM = TMath::Abs(zp/100.); // in [m]
+ 
+      // calculation of "scaled" parameters
+      Double_t a = multiplicity*intRate/76628;
+      //Double_t charge = gasfactor * ( a / (rpM*rpM) * (1 - zpM/lZ) ); // charge in [C/m^3/e0], no IBF
+      Double_t charge = normRadialExponent * gasfactor * ( a / (TMath::Power(rpM,radialScaling)) * (1 - zpM/lZ + eps) ); // charge in [C/m^3/e0], with IBF
+      
+      charge = charge*fgke0;          // [C/m^3]
+      if (zp<0) charge *= 0.9; // Slightly less on C side due to front absorber
+
+      histoZR->SetBinContent(ir, iz, charge); 
+    }
+  }
+    
+  histoZR->Write("SpaceChargeInRZ");
+  //
+  // Charge distribution in RPhi (e.g. Floating GG wire) ------------
+  //
+  TH3F *histoRPhi = new TH3F("chargeRPhi", "chargeRPhi",
+                             nr, fgkIFCRadius-dr-safty, fgkOFCRadius+dr+safty,
+                             nphi, 0-dphi-safty, TMath::TwoPi()+dphi+safty,
+                             2, -1, 1); // z part - to allow A and C side differences  
+  histoRPhi->Write("SpaceChargeInRPhi");
+  f->Close();
+  //
+  //
+  //
+  AliTPCSpaceCharge3D *spaceCharge = new AliTPCSpaceCharge3D;
+  spaceCharge->SetSCDataFileName(fileName);
+  spaceCharge->SetOmegaTauT1T2(0.325,1,1); // Ne CO2
+  spaceCharge->InitSpaceCharge3DDistortion();
+  spaceCharge->AddVisualCorrection(spaceCharge,1);
+  //
+  f = new TFile(fileName, "update");
+  spaceCharge->Write("spaceCharge");
+  f->Close();
+  return spaceCharge;
+}
+

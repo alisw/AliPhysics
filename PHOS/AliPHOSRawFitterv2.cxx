@@ -136,7 +136,6 @@ Bool_t AliPHOSRawFitterv2::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
 
   
   //calculate rough quality of the sample and check for overflow
-  Int_t    maxBin=0 ;
   Int_t    maxAmp=0 ;
   Int_t    minAmp= signal[0] ;
   Int_t    nMax = 0 ; //number of points in plato
@@ -156,7 +155,6 @@ Bool_t AliPHOSRawFitterv2::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       if(signal[i] >  maxAmp){
         maxAmp = signal[i]; 
         nMax=0;
-	maxBin = i ;
       }
       if(signal[i] == maxAmp){
         nMax++;

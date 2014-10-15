@@ -188,8 +188,15 @@ AliEveConfigManager::AliEveConfigManager() :
   //Storage Manager:
   fStoragePopup = new TGPopupMenu(gClient->GetRoot());
 #ifdef ZMQ
-  fStoragePopup->AddEntry("&List events",kStorageListEvents);
+//  fStoragePopup->AddEntry("&List events",kStorageListEvents);
   fStoragePopup->AddEntry("&Mark event",kStorageMarkEvent);
+    
+    gEve->GetBrowser()->StartEmbedding(0);
+    fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+    gEve->GetBrowser()->StopEmbedding("List");
+    
+    fListEventsTab->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
+    
 #endif
 
   fStoragePopup->Connect("Activated(Int_t)","AliEveConfigManager",
@@ -1042,6 +1049,7 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
     }
 */
+          /*
       case kStorageListEvents:
       {
 #ifdef ZMQ
@@ -1053,6 +1061,7 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
           break;
           
       }
+           */
       case kStorageMarkEvent:
       {
 #ifdef ZMQ
@@ -1073,7 +1082,7 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 void AliEveConfigManager::SetEventInEventManager()
 {
     AliEveEventManager *manager = AliEveEventManager::GetMaster();
-    AliESDEvent *event = fListEventsWindow->GetSelectedEvent();
+    AliESDEvent *event = fListEventsTab->GetSelectedEvent();
     
     if(event)
     {

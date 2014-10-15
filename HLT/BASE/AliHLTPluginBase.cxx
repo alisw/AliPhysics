@@ -44,6 +44,7 @@ AliHLTPluginBase::~AliHLTPluginBase()
   // see header file for class documentation
   if (--fNofInstances<=0) {
     delete fpSystem;
+    fpSystem=NULL;
 
     // 2010-04-07 not sure whether this is the best place for
     // the global cleanup of memory pages. In case of AliReconstruction
@@ -53,7 +54,6 @@ AliHLTPluginBase::~AliHLTPluginBase()
     // when we arrive at this point.
     AliHLTDataBuffer::AliHLTRawPage::GlobalClean();
   }
-  fpSystem=NULL;
 }
 
 void AliHLTPluginBase::InitInstance()

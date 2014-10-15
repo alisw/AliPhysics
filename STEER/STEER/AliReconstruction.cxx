@@ -334,7 +334,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fMaxVMEM(0)
 {
 // create reconstruction object with default parameters
-  gGeoManager = NULL;
+  AliGeomManager::Destroy();
   
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     fReconstructor[iDet] = NULL;
@@ -3696,6 +3696,7 @@ void AliReconstruction::CleanUp()
 {
 // delete trackers and the run loader and close and delete the file
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    if (fReconstructor[iDet]) fReconstructor[iDet]->SetRecoParam(NULL);
     delete fReconstructor[iDet];
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;

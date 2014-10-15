@@ -459,6 +459,12 @@ class AliHLTSystem : public AliHLTLogging {
   AliHLTfctVoid FindDynamicSymbol(const char* library, const char* symbol);
 
   /**
+   * Set participating detectors
+   * @param detMask     detector mask
+   */
+  void SetDetectorMask(UInt_t detMask) {fDetMask=detMask;}
+
+  /**
    * Prepare the HLT system for running.
    * - module agents are requested to register configurations
    * - task lists are built from the reconstruction chains of the modules
@@ -665,6 +671,9 @@ class AliHLTSystem : public AliHLTLogging {
 
   /// indicate the argument 'hltout-type'
   bool fUseHLTOUTComponentTypeGlobal;                              //!transient
+
+  /// detector mask
+  UInt_t fDetMask;                                                 //!transient
 
   ClassDef(AliHLTSystem, 0);
 };

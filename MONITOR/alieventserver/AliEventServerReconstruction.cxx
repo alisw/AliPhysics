@@ -44,13 +44,15 @@ AliEventServerReconstruction::AliEventServerReconstruction()
 	  fIsListenning(kFALSE),
 	  fSettings(0),
 	  fHost(0),
-	  fRecoThread(0)
+	  fRecoThread(0),
+	  fRecoIsRunning(false)
 {}
 
 AliEventServerReconstruction::~AliEventServerReconstruction()
 {
 	Close();
 	if(fSettings){delete fSettings;fSettings=0;}
+	if(fAliReco){delete fAliReco;fAliReco=0;}
 }
 
 void AliEventServerReconstruction::Close()
@@ -67,27 +69,20 @@ Bool_t AliEventServerReconstruction::StartReconstruction(Int_t run, const char* 
 {
 	fCurrentRunId = run;
 
-	StopReconstruction();
-
 	// re-read settings
-	if(fSettings){delete fSettings;}
+	if(fSettings){delete fSettings;fSettings=0;}
 	fSettings = new TEnv(AliEventServerUtil::GetPathToServerConf());
 	
-	TString recoBaseDir = fSettings->GetValue("server.saveRecoDir",
-						  DEFAULT_SERVER_SAVE_RECO_DIR);
+	TString recoBaseDir = fSettings->GetValue("server.saveRecoDir",DEFAULT_SERVER_SAVE_RECO_DIR);
 	
 	// Create directories and logfile
-	TString logFile = Form("%s/log/run%d.log",
-			       recoBaseDir.Data(),
-			       run);
-	
+	TString logFile = Form("%s/log/run%d.log",recoBaseDir.Data(),run);
 	Info("DoStart","Reconstruction log will be written to %s",logFile.Data());
 	if( gSystem->RedirectOutput(logFile.Data())!=0)
 	{
 		printf(Form("AliRecoServer::StartReconstruction [] Error while trying to redirect output to [%s]. Exiting...", logFile.Data()) );
 		return kFALSE;
 	}
-
 	gSystem->cd(recoBaseDir.Data());
 
 	TString gdcs;
@@ -98,8 +93,7 @@ Bool_t AliEventServerReconstruction::StartReconstruction(Int_t run, const char* 
 
 	// Create Reco and Reco Thread
 	SetupReco(input);
- 	fAliReco->InitRun(input);
-
+	
 	fHost = (const char*)Form("%s:%d", fSettings->GetValue("server.host", DEFAULT_SERVER_HOST), fSettings->GetValue("server.port", DEFAULT_SERVER_PORT));
 	
 	fRecoThread = new TThread("AliEventServerReconstruction",
@@ -107,19 +101,43 @@ Bool_t AliEventServerReconstruction::StartReconstruction(Int_t run, const char* 
                               (void*)this);
 	fRecoThread->Run();
 	fIsListenning = kTRUE;
+	fRecoIsRunning=true;
 
 	return true;
 }
 
 void AliEventServerReconstruction::StopReconstruction()
 {
-	if(!fRecoThread) return;
-	delete fRecoThread;
-	fRecoThread=0;
-	Emit("Stopped()");
-  
- 	if(fAliReco){delete fAliReco;fAliReco=0;}
- 	if(fCDBmanager){delete fCDBmanager;fCDBmanager=0;}
+  cout<<"Reco server -- StopPeconstruction() called"<<endl;
+  if(!fRecoIsRunning)
+    {
+      cout<<"Reco is not running. Returning"<<endl;
+      return;
+    }
+  if(!fRecoThread) 
+    {
+      cout<<"Reco server -- no thread. Returning"<<endl;
+      return;
+    }
+  cout<<"killing thread"<<endl;
+  fRecoThread->Kill();
+  cout<<"thread killed"<<endl;
+  delete fRecoThread;
+  fRecoThread=0;
+  cout<<"Reco server -- thread removed"<<endl;
+  // Emit("Stopped()");
+
+  cout<<"Reco server -- terminating reconstruction"<<endl;	
+  fAliReco->SlaveTerminate();
+  if (fAliReco->GetAbort() != TSelector::kContinue) return;
+  fAliReco->Terminate();
+  if (fAliReco->GetAbort() != TSelector::kContinue) return; 
+	
+  if(fAliReco){delete fAliReco;fAliReco=0;}
+  cout<<"Reco server -- deleting CDBManager"<<endl;
+  if(fCDBmanager){delete fCDBmanager;fCDBmanager=0;}
+  cout<<"Reco server -- recontruction stopped"<<endl;
+  fRecoIsRunning=false;
 }
 
 void AliEventServerReconstruction::ReconstructionHandle()
@@ -165,7 +183,9 @@ void AliEventServerReconstruction::ReconstructionHandle()
 	fAliReco->SlaveTerminate();
 	if (fAliReco->GetAbort() != TSelector::kContinue) return;
 	fAliReco->Terminate();
-	if (fAliReco->GetAbort() != TSelector::kContinue) return;  
+	if (fAliReco->GetAbort() != TSelector::kContinue) return;
+	StopReconstruction();
+	fRecoIsRunning=false;
 }
 
 Int_t AliEventServerReconstruction::RetrieveGRP(UInt_t run, TString &gdc)
@@ -212,26 +232,29 @@ void AliEventServerReconstruction::SetupReco(const char* input)
 	fCDBmanager->SetSpecificStorage(fSettings->GetValue( "cdb.specificStoragePath3", DEFAULT_CDB_SPEC_STORAGE_PATH3),  
 				    fSettings->GetValue( "cdb.specificStorageValue3", DEFAULT_CDB_SPEC_STORAGE_VALUE3));
   
-	/* Reconstruction settings */
-	if(fAliReco) delete fAliReco;
-  
-	AliReconstruction* rec = new AliReconstruction;
-	
+	/* Reconstruction settings */  
+	if(!fAliReco)fAliReco = new AliReconstruction();
+
 	// QA options
-	rec->SetRunQA(fSettings->GetValue( "qa.runDetectors", DEFAULT_QA_RUN));
-	rec->SetRunGlobalQA(fSettings->GetValue( "qa.runGlobal", DEFAULT_QA_RUN_GLOBAL));
-	rec->SetQARefDefaultStorage(fSettings->GetValue( "qa.defaultStorage",DEFAULT_QAREF_STORAGE)) ;
-	rec->SetRunPlaneEff(fSettings->GetValue( "reco.runPlaneEff", DEFAULT_RECO_RUN_PLANE_EFF));
+	//rec->SetRunQA(fSettings->GetValue( "qa.runDetectors", DEFAULT_QA_RUN));
+	//rec->SetRunGlobalQA(fSettings->GetValue( "qa.runGlobal", DEFAULT_QA_RUN_GLOBAL));
+	fAliReco->SetQARefDefaultStorage(fSettings->GetValue( "qa.defaultStorage",DEFAULT_QAREF_STORAGE)) ;
+	//rec->SetRunPlaneEff(fSettings->GetValue( "reco.runPlaneEff", DEFAULT_RECO_RUN_PLANE_EFF));
+
+	fAliReco->SetRunQA(":");
+	fAliReco->SetRunGlobalQA(false);
+	fAliReco->SetRunPlaneEff(false);
 
 	// AliReconstruction settings
-	rec->SetWriteESDfriend(fSettings->GetValue( "reco.writeESDfriend", DEFAULT_RECO_WRITE_ESDF));
-	rec->SetWriteAlignmentData(fSettings->GetValue( "reco.writeAlignment",DEFAULT_RECO_WRITE_ALIGN));
-	rec->SetInput(input); // reconstruct data from this input
-	rec->SetRunReconstruction(fSettings->GetValue( "reco.detectors", DEFAULT_RECO_DETECTORS));
-	rec->SetUseTrackingErrorsForAlignment("ITS"); //-- !should be set from conf file!
+	fAliReco->SetWriteESDfriend(fSettings->GetValue( "reco.writeESDfriend", DEFAULT_RECO_WRITE_ESDF));
+	fAliReco->SetWriteAlignmentData(fSettings->GetValue( "reco.writeAlignment",DEFAULT_RECO_WRITE_ALIGN));
+	fAliReco->SetInput(input); // reconstruct data from this input
+	fAliReco->SetRunReconstruction(fSettings->GetValue( "reco.detectors", DEFAULT_RECO_DETECTORS));
+	fAliReco->SetUseTrackingErrorsForAlignment("ITS"); //-- !should be set from conf file!
 
 	// switch off cleanESD
-	rec->SetCleanESD(fSettings->GetValue( "reco.cleanESD",DEFAULT_RECO_CLEAN_ESD));
+	fAliReco->SetCleanESD(fSettings->GetValue( "reco.cleanESD",DEFAULT_RECO_CLEAN_ESD));
 
-	fAliReco = rec;
+	// init reco for given run
+ 	fAliReco->InitRun(input);
 }

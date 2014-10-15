@@ -1523,8 +1523,8 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
 
   graphNew->GetHistogram()->SetTitle("");
   graphNew->SetMarkerStyle(mstyle);
-  graphNew->SetMarkerColor(mcolor);
-  if (msize>0) graphNew->SetMarkerSize(msize);
+  graphNew->SetMarkerColor(mcolor);  graphNew->SetLineColor(mcolor);
+  if (msize>0) { graphNew->SetMarkerSize(msize); graphNew->SetLineWidth(msize); }
   delete [] unsortedX;
   delete [] runNumber;
   delete [] index;
@@ -1577,7 +1577,10 @@ Int_t  TStatToolkit::MakeStatAlias(TTree * tree, const char * expr, const char *
   }
   //
   TObjArray* oaAlias = TString(alias).Tokenize(":");
-  if (oaAlias->GetEntries()<2) return 0;
+  if (oaAlias->GetEntries()<2) {
+    printf("Alias must have 2 arguments:\t%s\n", alias);
+    return 0;
+  }
   Float_t entryFraction = atof( oaAlias->At(1)->GetName() );
   //
   Double_t median = TMath::Median(entries,tree->GetV1());
@@ -1631,10 +1634,17 @@ Int_t  TStatToolkit::SetStatusAlias(TTree * tree, const char * expr, const char 
   TObjArray* oaVar = TString(expr).Tokenize(":");
   char varname[50];
   snprintf(varname,50,"%s", oaVar->At(0)->GetName());
+  Float_t entryFraction = 0.8;
   //
   TObjArray* oaAlias = TString(alias).Tokenize(":");
-  if (oaAlias->GetEntries()<3) return 0;
-  Float_t entryFraction = atof( oaAlias->At(2)->GetName() );
+  if (oaAlias->GetEntries()<2) {
+    printf("Alias must have at least 2 arguments:\t%s\n", alias);
+    return 0;
+  }
+  else if (oaAlias->GetEntries()<3) {
+    //printf("Using default entryFraction if needed:\t%f\n", entryFraction);
+  }
+  else entryFraction = atof( oaAlias->At(2)->GetName() );
   //
   Double_t median = TMath::Median(entries,tree->GetV1());
   Double_t mean   = TMath::Mean(entries,tree->GetV1());
@@ -1671,15 +1681,24 @@ TMultiGraph*  TStatToolkit::MakeStatusMultGr(TTree * tree, const char * expr, co
   // Compute a trending multigraph that shows for which runs a variable has outliers.
   // (by MI, Patrick Reichelt)
   //
-  // format of expr :  varname:xaxis (e.g. meanTPCncl:run)
+  // format of expr :  varname:xaxis (e.g. meanTPCncl:run, but 'varname' can be any string that you need for seach-and-replace)
   // format of cut  :  char like in TCut
-  // format of alias:  (1):(varname_Out==0):(varname_Out)[:(varname_Warning):...]
+  // format of alias:  (1):(statisticOK):(varname_Warning):(varname_Out)[:(varname_PhysAcc):(varname_Extra)]
+  //
+  // function MakeGraphSparse() is called for each alias argument, which will be used as tree expression.
+  // each alias argument is supposed to be a Boolean statement which can be evaluated as tree expression.
+  // the order of these criteria should be kept, as the marker styles and colors are chosen to be meaningful this way!
+  // 'statisticOK' could e.g. be an alias for '(meanTPCncl>0)'.
+  // if you dont need e.g. a 'warning' condition, then just replace it by (0).
   // in the alias, 'varname' will be replaced by its content (e.g. varname_Out -> meanTPCncl_Out)
   // note: the aliases 'varname_Out' etc have to be defined by function TStatToolkit::SetStatusAlias(...)
   // counter igr is used to shift the multigraph in y when filling a TObjArray.
   //
   TObjArray* oaVar = TString(expr).Tokenize(":");
-  if (oaVar->GetEntries()<2) return 0;
+  if (oaVar->GetEntries()<2) {
+    printf("Expression has to be of type 'varname:xaxis':\t%s\n", expr);
+    return 0;
+  }
   char varname[50];
   char var_x[50];
   snprintf(varname,50,"%s", oaVar->At(0)->GetName());
@@ -1688,24 +1707,24 @@ TMultiGraph*  TStatToolkit::MakeStatusMultGr(TTree * tree, const char * expr, co
   TString sAlias(alias);
   sAlias.ReplaceAll("varname",varname);
   TObjArray* oaAlias = TString(sAlias.Data()).Tokenize(":");
-  if (oaAlias->GetEntries()<3) return 0;
-  //
+  if (oaAlias->GetEntries()<2) {
+    printf("Alias must have 2-6 arguments:\t%s\n", alias);
+    return 0;
+  }
   char query[200];
   TMultiGraph* multGr = new TMultiGraph();
-  Int_t marArr[6]    = {24+igr%2, 20+igr%2, 20+igr%2, 20+igr%2, 22, 23};
-  Int_t colArr[6]    = {kBlack, kBlack, kRed, kOrange, kMagenta, kViolet};
-  Double_t sizArr[6] = {1.2, 1.1, 1.0, 1.0, 1, 1};
+  Int_t marArr[6]      = {24+igr%2, 20+igr%2, 20+igr%2, 20+igr%2, 20+igr%2, 20+igr%2};
+  Int_t colArr[6]      = {kBlack, kBlack, kOrange, kRed, kGreen+1, kBlue};
+  Double_t sizeArr[6]  = {1.4, 1.1, 1.5, 1.1, 1.4, 0.8};
+  Double_t shiftArr[6] = {0., 0., 0.25, 0.25, -0.25, -0.25};
   const Int_t ngr = oaAlias->GetEntriesFast();
   for (Int_t i=0; i<ngr; i++){
-    if (i==2) continue; // the Fatal(Out) graph will be added in the end to be plotted on top!
     snprintf(query,200, "%f*(%s-0.5):%s", 1.+igr, oaAlias->At(i)->GetName(), var_x);
-    multGr->Add( (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,query,cut,marArr[i],colArr[i],sizArr[i]) );
+    multGr->Add( (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,query,cut,marArr[i],colArr[i],sizeArr[i],shiftArr[i]) );
   }
-  snprintf(query,200, "%f*(%s-0.5):%s", 1.+igr, oaAlias->At(2)->GetName(), var_x);
-  multGr->Add( (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,query,cut,marArr[2],colArr[2],sizArr[2]) );
   //
   multGr->SetName(varname);
-  multGr->SetTitle(varname); // used for y-axis labels. // details to be included!
+  multGr->SetTitle(varname); // used for y-axis labels of status bar, can be modified by calling function.
   delete oaVar;
   delete oaAlias;
   return multGr;
@@ -1752,10 +1771,11 @@ void  TStatToolkit::DrawStatusGraphs(TObjArray* oaMultGr)
   const Int_t nvars = oaMultGr->GetEntriesFast();
   TGraph* grAxis = (TGraph*) ((TMultiGraph*) oaMultGr->At(0))->GetListOfGraphs()->At(0);
   grAxis->SetMaximum(0.5*nvars+0.5);
-  grAxis->SetMinimum(0); 
+  grAxis->SetMinimum(0);
   grAxis->GetYaxis()->SetLabelSize(0);
+  grAxis->GetYaxis()->SetTitle("");
+  grAxis->SetTitle("");
   Int_t entries = grAxis->GetN();
-  printf("entries (via GetN()) = %d\n",entries);
   grAxis->GetXaxis()->SetLabelSize(5.7*TMath::Min(TMath::Max(5./entries,0.01),0.03));
   grAxis->GetXaxis()->LabelsOption("v");
   grAxis->Draw("ap");
@@ -1768,6 +1788,195 @@ void  TStatToolkit::DrawStatusGraphs(TObjArray* oaMultGr)
     ylabel->SetTextSize(0.025/gPad->GetHNDC());
     ylabel->Draw();
   }
+}
+
+
+TTree*  TStatToolkit::WriteStatusToTree(TObject* oStatusGr) 
+{
+  //
+  // Create Tree with Integers for each status variable flag (warning, outlier, physacc).
+  // (by Patrick Reichelt)
+  //
+  // input: either a TMultiGraph with status of single variable, which 
+  //        was computed by TStatToolkit::MakeStatusMultGr(),
+  //        or a TObjArray which contains up to 10 of such variables.
+  // 
+  // output tree: 1=flag is true, 0=flag is false, -1=flag was not computed.
+  //
+  
+  TObjArray* oaMultGr = NULL;
+  Bool_t needDeletion=kFALSE;
+  if (oStatusGr->IsA() == TObjArray::Class()) {
+    oaMultGr = (TObjArray*) oStatusGr;
+  }
+  else if (oStatusGr->IsA() == TMultiGraph::Class()) {
+    oaMultGr = new TObjArray(); needDeletion=kTRUE;
+    oaMultGr->Add((TMultiGraph*) oStatusGr);
+  }
+  else {
+    Printf("WriteStatusToTree(): Error! 'oStatusGr' must be a TMultiGraph or a TObjArray of them!");
+    return 0;
+  }
+  // variables for output tree
+  const int nvarsMax=10;
+  const int ncritMax=5;
+  Int_t    currentRun;
+  Int_t    treevars[nvarsMax*ncritMax];
+  TString  varnames[nvarsMax*ncritMax];
+  for (int i=0; i<nvarsMax*ncritMax; i++) treevars[i]=-1;
+  
+  Printf("WriteStatusToTree(): writing following variables to TTree (maybe only subset of listed criteria filled)");
+  for (Int_t vari=0; vari<nvarsMax; vari++) 
+  {
+    if (vari < oaMultGr->GetEntriesFast()) {
+      varnames[vari*ncritMax+0] = Form("%s_statisticOK", ((TMultiGraph*) oaMultGr->At(vari))->GetName());
+      varnames[vari*ncritMax+1] = Form("%s_Warning",     ((TMultiGraph*) oaMultGr->At(vari))->GetName());
+      varnames[vari*ncritMax+2] = Form("%s_Outlier",     ((TMultiGraph*) oaMultGr->At(vari))->GetName());
+      varnames[vari*ncritMax+3] = Form("%s_PhysAcc",     ((TMultiGraph*) oaMultGr->At(vari))->GetName());
+      varnames[vari*ncritMax+4] = Form("%s_Extra",       ((TMultiGraph*) oaMultGr->At(vari))->GetName());
+    }
+    else {
+      varnames[vari*ncritMax+0] = Form("dummy");
+      varnames[vari*ncritMax+1] = Form("dummy");
+      varnames[vari*ncritMax+2] = Form("dummy");
+      varnames[vari*ncritMax+3] = Form("dummy");
+      varnames[vari*ncritMax+4] = Form("dummy");
+    }
+    cout << "  " << varnames[vari*ncritMax+0].Data() << " " << varnames[vari*ncritMax+1].Data() << " " << varnames[vari*ncritMax+2].Data() << " " << varnames[vari*ncritMax+3].Data() << " " << varnames[vari*ncritMax+4].Data() << endl;
+  }
+  
+  TTree* statusTree = new TTree("statusTree","statusTree");
+  statusTree->Branch("run",                &currentRun  );
+  statusTree->Branch(varnames[ 0].Data(),  &treevars[ 0]);
+  statusTree->Branch(varnames[ 1].Data(),  &treevars[ 1]);
+  statusTree->Branch(varnames[ 2].Data(),  &treevars[ 2]);
+  statusTree->Branch(varnames[ 3].Data(),  &treevars[ 3]);
+  statusTree->Branch(varnames[ 4].Data(),  &treevars[ 4]);
+  statusTree->Branch(varnames[ 5].Data(),  &treevars[ 5]);
+  statusTree->Branch(varnames[ 6].Data(),  &treevars[ 6]);
+  statusTree->Branch(varnames[ 7].Data(),  &treevars[ 7]);
+  statusTree->Branch(varnames[ 8].Data(),  &treevars[ 8]);
+  statusTree->Branch(varnames[ 9].Data(),  &treevars[ 9]);
+  statusTree->Branch(varnames[10].Data(),  &treevars[10]);
+  statusTree->Branch(varnames[11].Data(),  &treevars[11]);
+  statusTree->Branch(varnames[12].Data(),  &treevars[12]);
+  statusTree->Branch(varnames[13].Data(),  &treevars[13]);
+  statusTree->Branch(varnames[14].Data(),  &treevars[14]);
+  statusTree->Branch(varnames[15].Data(),  &treevars[15]);
+  statusTree->Branch(varnames[16].Data(),  &treevars[16]);
+  statusTree->Branch(varnames[17].Data(),  &treevars[17]);
+  statusTree->Branch(varnames[18].Data(),  &treevars[18]);
+  statusTree->Branch(varnames[19].Data(),  &treevars[19]);
+  statusTree->Branch(varnames[20].Data(),  &treevars[20]);
+  statusTree->Branch(varnames[21].Data(),  &treevars[21]);
+  statusTree->Branch(varnames[22].Data(),  &treevars[22]);
+  statusTree->Branch(varnames[23].Data(),  &treevars[23]);
+  statusTree->Branch(varnames[24].Data(),  &treevars[24]);
+  statusTree->Branch(varnames[25].Data(),  &treevars[25]);
+  statusTree->Branch(varnames[26].Data(),  &treevars[26]);
+  statusTree->Branch(varnames[27].Data(),  &treevars[27]);
+  statusTree->Branch(varnames[28].Data(),  &treevars[28]);
+  statusTree->Branch(varnames[29].Data(),  &treevars[29]);
+  statusTree->Branch(varnames[30].Data(),  &treevars[30]);
+  statusTree->Branch(varnames[31].Data(),  &treevars[31]);
+  statusTree->Branch(varnames[32].Data(),  &treevars[32]);
+  statusTree->Branch(varnames[33].Data(),  &treevars[33]);
+  statusTree->Branch(varnames[34].Data(),  &treevars[34]);
+  statusTree->Branch(varnames[35].Data(),  &treevars[35]);
+  statusTree->Branch(varnames[36].Data(),  &treevars[36]);
+  statusTree->Branch(varnames[37].Data(),  &treevars[37]);
+  statusTree->Branch(varnames[38].Data(),  &treevars[38]);
+  statusTree->Branch(varnames[39].Data(),  &treevars[39]);
+  statusTree->Branch(varnames[40].Data(),  &treevars[40]);
+  statusTree->Branch(varnames[41].Data(),  &treevars[41]);
+  statusTree->Branch(varnames[42].Data(),  &treevars[42]);
+  statusTree->Branch(varnames[43].Data(),  &treevars[43]);
+  statusTree->Branch(varnames[44].Data(),  &treevars[44]);
+  statusTree->Branch(varnames[45].Data(),  &treevars[45]);
+  statusTree->Branch(varnames[46].Data(),  &treevars[46]);
+  statusTree->Branch(varnames[47].Data(),  &treevars[47]);
+  statusTree->Branch(varnames[48].Data(),  &treevars[48]);
+  statusTree->Branch(varnames[49].Data(),  &treevars[49]);
+  
+  // run loop
+  Double_t graphX; // x-position of marker (0.5, 1.5, ...)
+  Double_t graphY; // if >0 -> warning/outlier/physacc! if =-0.5 -> no warning/outlier/physacc
+  TList* arrRuns = (TList*) ((TGraph*) ((TMultiGraph*) oaMultGr->At(0))->GetListOfGraphs()->At(0))->GetXaxis()->GetLabels();
+  //'TAxis->GetLabels()' returns THashList of TObjString, but using THashList gives compilation error "... incomplete type 'struct THashList' "
+  for (Int_t runi=0; runi<arrRuns->GetSize(); runi++) 
+  {
+    currentRun = atoi( arrRuns->At(runi)->GetName() );
+    //Printf(" runi=%2i, name: %s \t run number: %i", runi, arrRuns->At(runi)->GetName(), currentRun);
+    
+    // status variable loop
+    for (Int_t vari=0; vari<oaMultGr->GetEntriesFast(); vari++) 
+    {
+      TMultiGraph* multGr = (TMultiGraph*) oaMultGr->At(vari);
+      
+      // criteria loop
+      // the order is given by TStatToolkit::MakeStatusMultGr().
+      // criterion #1 is 'statisticOK' and mandatory, the rest is optional. (#0 is always True, thus skipped)
+      for (Int_t criti=1; criti<multGr->GetListOfGraphs()->GetEntries(); criti++) 
+      {
+        TGraph* grCriterion = (TGraph*) multGr->GetListOfGraphs()->At(criti);
+        graphX = -1, graphY = -1;
+        grCriterion->GetPoint(runi, graphX, graphY);
+        treevars[(vari)*ncritMax+(criti-1)] = (graphY>0)?1:0;
+      }
+    }
+    statusTree->Fill();
+  }
+  
+  if (needDeletion) delete oaMultGr;
+  
+  return statusTree;
+}
+
+
+TMultiGraph*  TStatToolkit::MakeStatusLines(TTree * tree, const char * expr, const char * cut, const char * alias) 
+{
+  //
+  // Create status lines for trending using MakeGraphSparse(), very similar to MakeStatusMultGr().
+  // (by Patrick Reichelt)
+  //
+  // format of expr :  varname:xaxis (e.g. meanTPCncl:run, but 'varname' can be any string that you need for seach-and-replace)
+  // format of cut  :  char like in TCut
+  // format of alias:  varname_OutlierMin:varname_OutlierMax:varname_WarningMin:varname_WarningMax:varname_PhysAccMin:varname_PhysAccMax:varname_RobustMean
+  //
+  TObjArray* oaVar = TString(expr).Tokenize(":");
+  if (oaVar->GetEntries()<2) {
+    printf("Expression has to be of type 'varname:xaxis':\t%s\n", expr);
+    return 0;
+  }
+  char varname[50];
+  char var_x[50];
+  snprintf(varname,50,"%s", oaVar->At(0)->GetName());
+  snprintf(var_x  ,50,"%s", oaVar->At(1)->GetName());
+  //
+  TString sAlias(alias);
+  if (sAlias.IsNull()) { // alias for default usage set here:
+    sAlias = "varname_OutlierMin:varname_OutlierMax:varname_WarningMin:varname_WarningMax:varname_PhysAccMin:varname_PhysAccMax:varname_RobustMean";
+  }
+  sAlias.ReplaceAll("varname",varname);
+  TObjArray* oaAlias = TString(sAlias.Data()).Tokenize(":");
+  if (oaAlias->GetEntries()<2) {
+    printf("Alias must have 2-7 arguments:\t%s\n", alias);
+    return 0;
+  }
+  char query[200];
+  TMultiGraph* multGr = new TMultiGraph();
+  Int_t colArr[7] = {kRed, kRed, kOrange, kOrange, kGreen+1, kGreen+1, kGray+2};
+  const Int_t ngr = oaAlias->GetEntriesFast();
+  for (Int_t i=0; i<ngr; i++){
+    snprintf(query,200, "%s:%s", oaAlias->At(i)->GetName(), var_x);
+    multGr->Add( (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,query,cut,29,colArr[i],1.5) );
+  }
+  //
+  multGr->SetName(varname);
+  multGr->SetTitle(varname);
+  delete oaVar;
+  delete oaAlias;
+  return multGr;
 }
 
 
@@ -1817,7 +2026,7 @@ TH1* TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const ch
      TStatToolkit::EvaluateUni(entries, tree->GetV1(),meanY,rmsY, fraction*entries);
      TStatToolkit::EvaluateUni(entries, tree->GetV2(),meanX,rmsX, fraction*entries);
    }
-   TH1* hOut;
+   TH1* hOut=NULL;
    if(dim==1){
      hOut = new TH1F(histoname, histotitle, 200, meanX-nsigma*rmsX, meanX+nsigma*rmsX);
      for (Int_t i=0; i<entries; i++) hOut->Fill(tree->GetV1()[i]);

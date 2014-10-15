@@ -42,6 +42,7 @@
 #include <AliPID.h>
 #include <AliOADBContainer.h>
 #include <AliTRDPIDResponseObject.h>
+#include <AliTRDdEdxParams.h>
 #include <AliTOFPIDParams.h>
 #include <AliHMPIDPIDParams.h>
 
@@ -70,6 +71,7 @@ fIsMC(isMC),
 fCachePID(kFALSE),
 fOADBPath(),
 fCustomTPCpidResponse(),
+fCustomTPCetaMaps(),
 fBeamType("PP"),
 fLHCperiod(),
 fMCperiodTPC(),
@@ -89,6 +91,7 @@ fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(kFALSE),
 fUseTPCMultiplicityCorrection(kFALSE),
 fTRDPIDResponseObject(NULL),
+fTRDdEdxParams(NULL),
 fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
@@ -114,6 +117,7 @@ AliPIDResponse::~AliPIDResponse()
   //
   delete fArrPidResponseMaster;
   delete fTRDPIDResponseObject;
+  delete fTRDdEdxParams;
   delete fTOFPIDParams;
 }
 
@@ -134,6 +138,7 @@ fIsMC(other.fIsMC),
 fCachePID(other.fCachePID),
 fOADBPath(other.fOADBPath),
 fCustomTPCpidResponse(other.fCustomTPCpidResponse),
+fCustomTPCetaMaps(other.fCustomTPCetaMaps),
 fBeamType("PP"),
 fLHCperiod(),
 fMCperiodTPC(),
@@ -153,6 +158,7 @@ fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(other.fUseTPCEtaCorrection),
 fUseTPCMultiplicityCorrection(other.fUseTPCMultiplicityCorrection),
 fTRDPIDResponseObject(NULL),
+fTRDdEdxParams(NULL),
 fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
@@ -185,6 +191,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fITSPIDmethod=other.fITSPIDmethod;
     fOADBPath=other.fOADBPath;
     fCustomTPCpidResponse=other.fCustomTPCpidResponse;
+    fCustomTPCetaMaps=other.fCustomTPCetaMaps;
     fTuneMConData=other.fTuneMConData;
     fTuneMConDataMask=other.fTuneMConDataMask;
     fIsMC=other.fIsMC;
@@ -209,6 +216,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fUseTPCEtaCorrection=other.fUseTPCEtaCorrection;
     fUseTPCMultiplicityCorrection=other.fUseTPCMultiplicityCorrection;
     fTRDPIDResponseObject=NULL;
+    fTRDdEdxParams=NULL;
     fEMCALPIDParams=NULL;
     fTOFtail=0.9;
     fTOFPIDParams=NULL;
@@ -623,6 +631,8 @@ void AliPIDResponse::ExecNewRun()
   SetTPCEtaMaps();
 
   SetTRDPidResponseMaster(); 
+  //has to precede InitializeTRDResponse(), otherwise the read-out fTRDdEdxParams is not pased in TRDResponse!
+  SetTRDdEdxParams();
   InitializeTRDResponse();
 
   SetEMCALPidResponseMaster(); 
@@ -1013,17 +1023,20 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   fTPCResponse.SetEtaCorrMap(0x0);
   fTPCResponse.SetSigmaParams(0x0, 0);
   
+  
+  TString fileNameMaps(Form("%s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()));
+  if (!fCustomTPCetaMaps.IsNull()) fileNameMaps=fCustomTPCetaMaps;
+  
   // Load the eta correction maps
   AliOADBContainer etaMapsCont(Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass)); 
   
-  Int_t statusCont = etaMapsCont.InitFromFile(Form("%s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()),
-                                              Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass));
+  Int_t statusCont = etaMapsCont.InitFromFile(fileNameMaps.Data(), Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass));
   if (statusCont) {
     AliError("Failed initializing TPC eta correction maps from OADB -> Disabled eta correction");
     fUseTPCEtaCorrection = kFALSE;
   }
   else {
-    AliInfo(Form("Loading TPC eta correction map from %s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()));
+    AliInfo(Form("Loading TPC eta correction map from %s", fileNameMaps.Data()));
     
     TH2D* etaMap = 0x0;
     
@@ -1054,8 +1067,8 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
           fUseTPCEtaCorrection = kFALSE;
         }
         else {
-          AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s (MD5(map) = %s)", 
-                       refineFactorMapX, refineFactorMapY, fOADBPath.Data(), fTPCResponse.GetEtaCorrMap()->GetTitle(),
+          AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s: %s (MD5(map) = %s)", 
+                       refineFactorMapX, refineFactorMapY, fileNameMaps.Data(), fTPCResponse.GetEtaCorrMap()->GetTitle(),
                        GetChecksum(fTPCResponse.GetEtaCorrMap()).Data()));
         }
         
@@ -1077,13 +1090,12 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   // Load the sigma parametrisation (1/dEdx vs tanTheta_local (~eta))
   AliOADBContainer etaSigmaMapsCont(Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass)); 
   
-  statusCont = etaSigmaMapsCont.InitFromFile(Form("%s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()),
-                                             Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass));
+  statusCont = etaSigmaMapsCont.InitFromFile(fileNameMaps.Data(), Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass));
   if (statusCont) {
     AliError("Failed initializing TPC eta sigma maps from OADB -> Using old sigma parametrisation");
   }
   else {
-    AliInfo(Form("Loading TPC eta sigma map from %s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()));
+    AliInfo(Form("Loading TPC eta sigma map from %s", fileNameMaps.Data()));
     
     TObjArray* etaSigmaPars = 0x0;
     
@@ -1125,8 +1137,8 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
           fTPCResponse.SetSigmaParams(0x0, 0);
         }
         else {
-          AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s/COMMON/PID/data/TPCetaMaps.root: %s (MD5(map) = %s, sigmaPar0 = %f)", 
-                       refineFactorSigmaMapX, refineFactorSigmaMapY, fOADBPath.Data(), fTPCResponse.GetSigmaPar1Map()->GetTitle(),
+          AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s: %s (MD5(map) = %s, sigmaPar0 = %f)", 
+                       refineFactorSigmaMapX, refineFactorSigmaMapY, fileNameMaps.Data(), fTPCResponse.GetSigmaPar1Map()->GetTitle(),
                        GetChecksum(fTPCResponse.GetSigmaPar1Map()).Data(), sigmaPar0));
         }
         
@@ -1155,11 +1167,11 @@ void AliPIDResponse::SetTPCPidResponseMaster()
   delete fArrPidResponseMaster;
   fArrPidResponseMaster=NULL;
   
-  TString fileName(Form("%s/COMMON/PID/data/TPCPIDResponse.root", fOADBPath.Data()));
   TFile *f=NULL;
-  if (!fCustomTPCpidResponse.IsNull()) fileName=fCustomTPCpidResponse;
   
   TString fileNamePIDresponse(Form("%s/COMMON/PID/data/TPCPIDResponse.root", fOADBPath.Data()));
+  if (!fCustomTPCpidResponse.IsNull()) fileNamePIDresponse=fCustomTPCpidResponse;
+  
   f=TFile::Open(fileNamePIDresponse.Data());
   if (f && f->IsOpen() && !f->IsZombie()){
     fArrPidResponseMaster=dynamic_cast<TObjArray*>(f->Get("TPCPIDResponse"));
@@ -1565,6 +1577,7 @@ void AliPIDResponse::InitializeTRDResponse(){
   // Set PID Params and references to the TRD PID response
   // 
     fTRDResponse.SetPIDResponseObject(fTRDPIDResponseObject);
+    fTRDResponse.SetdEdxParams(fTRDdEdxParams);
 }
 
 //______________________________________________________________________________
@@ -1586,6 +1599,31 @@ void AliPIDResponse::SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::E
 	}
     }
     AliDebug(1,Form("Slice Range set to %d - %d",TRDslicesForPID[0],TRDslicesForPID[1]));
+}
+//______________________________________________________________________________ 
+void AliPIDResponse::SetTRDdEdxParams()
+{
+  if(fTRDdEdxParams) return;
+
+  const TString containerName = "TRDdEdxParamsContainer";
+  AliOADBContainer cont(containerName.Data()); 
+  
+  const TString filePathNamePackage=Form("%s/COMMON/PID/data/TRDdEdxParams.root", fOADBPath.Data());
+
+  const Int_t statusCont = cont.InitFromFile(filePathNamePackage.Data(), cont.GetName());
+  if (statusCont){
+    AliFatal("Failed initializing settings from OADB"); 
+  }
+  else{
+    AliInfo(Form("Loading %s from %s\n", cont.GetName(), filePathNamePackage.Data()));
+
+    fTRDdEdxParams = (AliTRDdEdxParams*)(cont.GetObject(fRun, "default"));
+    //fTRDdEdxParams->Print();
+
+    if(!fTRDdEdxParams){
+      AliError(Form("TRD dEdx Params default not found"));
+    }
+  }
 }
 
 //______________________________________________________________________________
@@ -2360,7 +2398,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
   return pidStatus;
 }
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],Bool_t kNoMism) const
 {
   //
   // Compute PID probabilities for TOF
@@ -2372,27 +2410,47 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
   // Beam type --> fBeamTypeNum
   // N TOF cluster --> TOF header --> to get the TOF header we need to add a virtual method in AliVTrack extended to ESD and AOD tracks
   // isMC --> fIsMC
-
+  Float_t pt = track->Pt();
+  Float_t mismPropagationFactor[10] = {1.,1.,1.,1.,1.,1.,1.,1.,1.,1.};
+  if(! kNoMism){ // this flag allows to disable mismatch for iterative procedure to get priors
+    mismPropagationFactor[3] = 1 + TMath::Exp(1 - 1.12*pt);// it has to be alligned with the one in AliPIDCombined
+    mismPropagationFactor[4] = 1 + 1./(4.71114 - 5.72372*pt + 2.94715*pt*pt);// it has to be alligned with the one in AliPIDCombined
+    
   Int_t nTOFcluster = 0;
   if(track->GetTOFHeader() && track->GetTOFHeader()->GetTriggerMask()){ // N TOF clusters available
     nTOFcluster = track->GetTOFHeader()->GetNumberOfTOFclusters();
-    if(fIsMC) nTOFcluster *= 1.5; // +50% in MC
+    if(fIsMC) nTOFcluster = Int_t(nTOFcluster * 1.5); // +50% in MC
   }
   else{
     switch(fBeamTypeNum){
-    case kPP: // pp 7 TeV
-      nTOFcluster = 50;
-      break;
-    case kPPB: // pPb 5.05 ATeV
-      nTOFcluster = 50 + (100-fCurrCentrality)*50;
-      break;
-    case kPBPB: // PbPb 2.76 ATeV
-      nTOFcluster = 50 + (100-fCurrCentrality)*150;
-      break;
+      case kPP: // pp
+	nTOFcluster = 80;
+	break;
+      case kPPB: // pPb 5.05 ATeV
+	nTOFcluster = Int_t(308 - 2.12*fCurrCentrality + TMath::Exp(4.917 -0.1604*fCurrCentrality));
+	break;
+      case kPBPB: // PbPb 2.76 ATeV
+	nTOFcluster = Int_t(TMath::Exp(9.4 - 0.022*fCurrCentrality));
+	break;
     }
   }
 
-  //fTOFResponse.GetMismatchProbability(track->GetTOFsignal(),track->Eta()) * 0.01; // for future implementation of mismatch (i.e. 1% mismatch that should be extended for PbPb, pPb)
+    switch(fBeamTypeNum){ // matching window factors for 3 cm and 10 cm (about (10/3)^2)
+    case kPP: // pp 7 TeV
+      nTOFcluster *= 10;
+      break;
+    case kPPB: // pPb 5.05 ATeV
+      nTOFcluster *= 10;
+      break;
+    case kPBPB: // pPb 5.05 ATeV
+      //       nTOFcluster *= 1;
+      break;
+    }
+    
+    
+    fgTOFmismatchProb=fTOFResponse.GetMismatchProbability(track->GetTOFsignal(),track->Eta()) * nTOFcluster *6E-6 * (1 + 2.90505e-01/pt/pt); // mism weight * tof occupancy (including matching window factor) * pt dependence
+    
+  }
 
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
@@ -2414,7 +2472,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
     else
       p[j] = TMath::Exp(-(nsigmas - fTOFtail*0.5)*fTOFtail)/sig;
     
-    p[j] += fgTOFmismatchProb;
+    p[j] += fgTOFmismatchProb*mismPropagationFactor[j];
   }
   
   return kDetPidOk;

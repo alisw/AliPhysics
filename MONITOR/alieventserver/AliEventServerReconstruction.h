@@ -48,6 +48,7 @@ private:
 	TEnv *fSettings;
 	TString fHost;
 	TThread *fRecoThread;
+	bool fRecoIsRunning;
 
 	AliEventServerReconstruction(const AliEventServerReconstruction&);
 	AliEventServerReconstruction& operator=(const AliEventServerReconstruction&);

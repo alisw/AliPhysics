@@ -427,19 +427,55 @@ Bool_t AliRawReaderDate::ReadHeader()
 
       // "read" the data header
       fHeader = (AliRawDataHeader*) fPosition;
-      if ((fPosition + fHeader->fSize) != fEnd) {
-	if ((fHeader->fSize != 0xFFFFFFFF) &&
-	    (fEquipment->equipmentId != 4352))
-	  Warning("ReadHeader",
-		  "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
-		  fHeader->fSize, fEnd - fPosition);
-	fHeader->fSize = fEnd - fPosition;
+      // Now check the version of the header
+      UChar_t version = 2;
+      if (fHeader) version=fHeader->GetVersion();
+
+      if (version==2) {
+	if ((fPosition + fHeader->fSize) != fEnd) {
+	  if ((fHeader->fSize != 0xFFFFFFFF) &&
+	      (fEquipment->equipmentId != 4352))
+	    Warning("ReadHeader",
+		    "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		    fHeader->fSize, fEnd - fPosition);
+	  fHeader->fSize = fEnd - fPosition;
+	}
+	fPosition += sizeof(AliRawDataHeader);
+	fHeaderV3 = 0;
+      } else if (version==3) {
+	fHeaderV3 = (AliRawDataHeaderV3*) fPosition;
+	if ((fPosition + fHeaderV3->fSize) != fEnd) {
+	  if ((fHeaderV3->fSize != 0xFFFFFFFF) &&
+	      (fEquipment->equipmentId != 4352))
+	    Warning("ReadHeader",
+		    "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		    fHeaderV3->fSize, fEnd - fPosition);
+	  fHeaderV3->fSize = fEnd - fPosition;
+	}
+	fPosition += sizeof(AliRawDataHeaderV3);
+	fHeader = 0;
       }
-      fPosition += sizeof(AliRawDataHeader);
     }
 
     if (fHeader && (fHeader->fSize != 0xFFFFFFFF)) {
       fCount = fHeader->fSize - sizeof(AliRawDataHeader);
+
+      // check consistency of data size in the header and in the sub event
+      if (fPosition + fCount > fEnd) {
+	Error("ReadHeader", "size in data header exceeds event size!");
+	Warning("ReadHeader", "skipping %d bytes\n"
+		" run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
+		fEnd - fPosition, fSubEvent->eventRunNb, 
+		fSubEvent->eventId[0], fSubEvent->eventId[1],
+		fSubEvent->eventLdcId, fSubEvent->eventGdcId);
+	fCount = 0;
+	fPosition = fEnd;
+	fErrorCode = kErrSize;
+	continue;
+      }
+
+    } else if (fHeaderV3 && (fHeaderV3->fSize != 0xFFFFFFFF)) {
+      fCount = fHeaderV3->fSize - sizeof(AliRawDataHeaderV3);
 
       // check consistency of data size in the header and in the sub event
       if (fPosition + fCount > fEnd) {
@@ -510,6 +546,8 @@ Bool_t AliRawReaderDate::Reset()
 #endif
   fCount = 0;
   fPosition = fEnd = NULL;
+  fHeader=NULL;
+  fHeaderV3=NULL;
   return kTRUE;
 }
 

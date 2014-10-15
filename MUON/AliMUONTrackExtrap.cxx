@@ -616,6 +616,7 @@ Bool_t AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Do
   Double_t atomicZoverA = 0.; // Z/A of material
   Double_t localPathLength = 0;
   Double_t remainingPathLength = pathLength;
+  Double_t sigmaELoss = 0.;
   Double_t zB = trackXYZIn[2];
   Double_t zE, dzB, dzE;
   do {
@@ -671,7 +672,7 @@ Bool_t AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Do
     f2 += (dzE*dzE*dzE - dzB*dzB*dzB) / b[2] / b[2] / b[2] / x0 / 3.;
     meanRho += localPathLength * rho;
     totalELoss += BetheBloch(pTotal, localPathLength, rho, atomicZ, atomicZoverA);
-    sigmaELoss2 += EnergyLossFluctuation2(pTotal, localPathLength, rho, atomicZoverA);
+    sigmaELoss += EnergyLossFluctuation(pTotal, localPathLength, rho, atomicZoverA);
     
     // prepare next step
     zB = zE;
@@ -679,6 +680,7 @@ Bool_t AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Do
   } while (remainingPathLength > TGeoShape::Tolerance());
   
   meanRho /= pathLength;
+  sigmaELoss2 = sigmaELoss*sigmaELoss;
   
   return kTRUE;
 }
@@ -963,7 +965,7 @@ Double_t AliMUONTrackExtrap::BetheBloch(Double_t pTotal, Double_t pathLength, Do
 }
 
 //__________________________________________________________________________
-Double_t AliMUONTrackExtrap::EnergyLossFluctuation2(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicZoverA)
+Double_t AliMUONTrackExtrap::EnergyLossFluctuation(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicZoverA)
 {
   /// Returns the total momentum energy loss fluctuation of muon with total momentum='pTotal'
   /// in the absorber layer of lenght='pathLength', density='rho', A='atomicA' and Z='atomicZ'
@@ -974,11 +976,11 @@ Double_t AliMUONTrackExtrap::EnergyLossFluctuation2(Double_t pTotal, Double_t pa
   Double_t beta2=p2/(p2 + muMass*muMass);
   
   Double_t fwhm = 2. * k * rho * pathLength * atomicZoverA / beta2; // FWHM of the energy loss Landau distribution
-  Double_t sigma2 = fwhm * fwhm / (8.*log(2.)); // gaussian: fwmh = 2 * srqt(2*ln(2)) * sigma (i.e. fwmh = 2.35 * sigma)
+  Double_t sigma = fwhm / TMath::Sqrt(8.*log(2.)); // gaussian: fwmh = 2 * srqt(2*ln(2)) * sigma (i.e. fwmh = 2.35 * sigma)
   
   //sigma2 = k * rho * pathLength * atomicZ / atomicA * eMass; // sigma2 of the energy loss gaussian distribution
   
-  return sigma2;
+  return sigma;
 }
 
 //__________________________________________________________________________

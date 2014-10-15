@@ -200,7 +200,7 @@ AliTRDcalibDB::~AliTRDcalibDB()
   }
 
   Invalidate();
-
+  fgInstance   = 0;
 }
 
 //_caching functions____________________________________________________________

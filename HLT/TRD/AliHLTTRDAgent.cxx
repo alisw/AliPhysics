@@ -23,6 +23,7 @@
 
 #include "AliHLTTRDAgent.h"
 #include "AliHLTTRDDefinitions.h"
+#include "AliDAQ.h"
 
 // #include "AliHLTOUT.h"
 // #include "AliHLTOUTHandlerChain.h"
@@ -64,6 +65,11 @@ ClassImp(AliHLTTRDAgent)
 AliHLTTRDAgent::~AliHLTTRDAgent()
 {
   // see header file for class documentation
+}
+
+UInt_t AliHLTTRDAgent::GetDetectorMask() const
+{
+  return AliDAQ::kTRD;
 }
 
 int AliHLTTRDAgent::CreateConfigurations(AliHLTConfigurationHandler* /*handler*/,

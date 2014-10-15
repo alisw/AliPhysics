@@ -141,12 +141,11 @@ void* GetNextEvent(void*)
   currentTree[0]=0;
   currentTree[1]=0;
   AliESDEvent *tmpEvent;
-  TTree *tmpTree = NULL;
   
   while(1)
   {
     //if(tmpEvent){delete tmpEvent;tmpEvent=0;}
-    tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,-1,&tmpTree);
+    tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB);
 
     if(tmpEvent)
     {
@@ -155,16 +154,13 @@ void* GetNextEvent(void*)
         myMutex.Lock();
         if(eventInUse == 0){writingToEventIndex = 1;}
         else if(eventInUse == 1){writingToEventIndex = 0;}
-        cout<<"Writing to:"<<writingToEventIndex<<endl;
+
         if(currentEvent[writingToEventIndex])
         {
-          cout<<"DELETING:"<<currentEvent[writingToEventIndex]<<endl;
           delete currentEvent[writingToEventIndex];
           currentEvent[writingToEventIndex]=0;
-          delete currentTree[writingToEventIndex];
         }
         currentEvent[writingToEventIndex] = tmpEvent;
-        currentTree[writingToEventIndex] = tmpTree;
         isNewEventAvaliable = true;
         myMutex.UnLock();
       }

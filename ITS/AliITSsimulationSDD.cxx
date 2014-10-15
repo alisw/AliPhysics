@@ -413,9 +413,6 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     if(!mod->LineSegmentL(ii,xL[0],dxL[0],xL[1],dxL[1],xL[2],dxL[2],
 			  depEnergy,itrack)) continue;
     Float_t xloc=xL[0];
-    if(xloc>0) iWing=0; // left side, carlos channel 0
-    else iWing=1; // right side
-    
     Float_t zloc=xL[2]+0.5*dxL[2];
     zAnode=seg->GetAnodeFromLocal(xloc,zloc); // anode number in the range 0.-511.
     driftSpeed = res->GetDriftSpeedAtAnode(zAnode);
@@ -478,6 +475,9 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
       theSteps+=1.;
       theAverage+=avAnode;
       zAnode = seg->GetAnodeFromLocal(avDrft,avAnode);
+      //      if(avDrft*xloc<0) AliDebug(1,Form("Swap of side xloc_orig=%f  xloc_now=%f",xloc,avDrft));
+      iWing = seg->GetSideFromLocalX(avDrft);
+    
       driftSpeed = res->GetDriftSpeedAtAnode(zAnode);	
       driftSpeed+= fDetType->GetResponseSDD()->GetDeltaVDrift(fModule,zAnode>255);
       driftPath = TMath::Abs(10000.*avDrft);
@@ -975,3 +975,4 @@ void AliITSsimulationSDD::PrintStatus() const {
     cout << "Scale size factor: " << fScaleSize << endl;
     cout << "**************************************************" << endl;
 }
+

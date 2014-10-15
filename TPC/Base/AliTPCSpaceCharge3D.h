@@ -64,6 +64,9 @@ public:
 
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 
+  static AliTPCSpaceCharge3D *MakeCorrection22D(const char * filename = "SpaceChargeMap.root", Double_t multiplicity = 950., Double_t intRate = 5e4, Double_t epsIROC = 10., Double_t epsOROC=10,
+						Double_t gasfactor = 1., 
+						Double_t radialScaling = 1.5);
 private:
 
   // maximum sizes of lookup tables

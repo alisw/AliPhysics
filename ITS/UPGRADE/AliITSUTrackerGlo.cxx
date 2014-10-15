@@ -312,6 +312,7 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
     fCurrESDtrMClb = fCurrESDtrack->GetLabel();
     // Start time integral and add distance from current position to vertex 
     if (fCurrESDtrack->IsOn(AliESDtrack::kITSout)) continue; // already done
+    if (!fCurrESDtrack->IsOn(AliESDtrack::kTPCin)) continue; // skip ITS s.a.
     //
     fCurrESDtrack->GetXYZ(xyzTrk); 
     Double_t dst = 0.;     // set initial track lenght, tof
@@ -399,6 +400,7 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
     UInt_t trStat = fCurrESDtrack->GetStatus();
     if ( !(trStat & AliESDtrack::kITSout) ) continue;
     if (   trStat & AliESDtrack::kITSrefit ) continue; // already done
+    if ( !(trStat & AliESDtrack::kTPCin)   ) continue; // skip ITS s.a.
     if (  (trStat & AliESDtrack::kTPCout) && !(trStat & AliESDtrack::kTPCrefit) ) continue;
     //
     fCurrHyp  = GetTrackHyp(itr);
@@ -443,12 +445,14 @@ void AliITSUTrackerGlo::UnloadClusters()
   //
   // Remove clusters from the memory 
   //
+  /*
   AliITSURecoDet *det=fReconstructor->GetITSInterface();
   Int_t nlayers=det->GetNLayersActive();
   for (Int_t i=0; i<nlayers; i++) {
       TClonesArray *clusters=*(det->GetLayerActive(i)->GetClustersAddress());
       clusters->Delete();
   }
+  */
 } 
 
 //_________________________________________________________________________

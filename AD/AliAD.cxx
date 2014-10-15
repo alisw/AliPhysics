@@ -52,9 +52,12 @@
 #include "AliADhit.h"
 #include "AliADLoader.h"
 #include "AliADDigitizer.h"
+#include "AliADBuffer.h"
+#include "AliADConst.h"
 #include "AliDigitizationInput.h"
 #include "AliADdigit.h"
 #include "AliADSDigit.h"
+#include "AliADCalibData.h"
 #include "AliDAQ.h"
 #include "AliRawReader.h"
 #include "AliCDBManager.h"
@@ -285,15 +288,98 @@ void AliAD::Hits2SDigits(){
 
 
 //_____________________________________________________________________________
-
 void AliAD::Digits2Raw()
 {
-	// produces raw data from digits
-	// for AD not implemented yet (needs detailed hardware info)
+   //
+   //  Converts digits of the current event to raw data
+   //
+   AliAD *fAD = (AliAD*)gAlice->GetDetector("AD");
+   fLoader->LoadDigits();
+   TTree* digits = fLoader->TreeD();
+   if (!digits) {
+      Error("Digits2Raw", "no digits tree");
+      return;
+   }
+   TClonesArray * ADdigits = new TClonesArray("AliADdigit",1000);
+   fAD->SetTreeAddress();  		
+   digits->GetBranch("ADDigit")->SetAddress(&ADdigits); 
+  
+   const char *fileName    = AliDAQ::DdlFileName("AD",0);
+   AliADBuffer* buffer  = new AliADBuffer(fileName);
+   //AliADBuffer* buffer  = new AliADBuffer("AD_0.ddl");
+   
+   // Get Trigger information first
+   // Read trigger inputs from trigger-detector object
+   AliDataLoader * dataLoader = fLoader->GetDigitsDataLoader();
+   if( !dataLoader->IsFileOpen() ) 
+        dataLoader->OpenFile( "READ" );
+   AliTriggerDetector* trgdet = (AliTriggerDetector*)dataLoader->GetDirectory()->Get( "Trigger" );
+   UInt_t triggerInfo = 0;
+   if(trgdet) {
+      triggerInfo = trgdet->GetMask() & 0xffff;
+   }
+   else {
+      AliError(Form("There is no trigger object for %s",fLoader->GetName()));
+   }
+
+   buffer->WriteTriggerInfo((UInt_t)triggerInfo); 
+   buffer->WriteTriggerScalers(); 
+   buffer->WriteBunchNumbers(); 
+  
+   // Now retrieve the channel information: charge smaples + time and 
+   // dump it into ADC and Time arrays
+   Int_t nEntries = Int_t(digits->GetEntries());
+   Short_t aADC[16][kNClocks];
+   Float_t aTime[16];
+   Float_t aWidth[16];
+   Bool_t  aIntegrator[16];
+  
+   for (Int_t i = 0; i < nEntries; i++) {
+     fAD->ResetDigits();
+     digits->GetEvent(i);
+     Int_t ndig = ADdigits->GetEntriesFast(); 
+   
+     if(ndig == 0) continue;
+     for(Int_t k=0; k<ndig; k++){
+         AliADdigit* fADDigit = (AliADdigit*) ADdigits->At(k);
+
+	 Int_t iChannel       = fADDigit->PMNumber();
+	 
+	 for(Int_t iClock = 0; iClock < kNClocks; ++iClock) aADC[iChannel][iClock] = fADDigit->ChargeADC(iClock);
+	 aTime[iChannel]      = fADDigit->Time(); //divide by resolution
+	 aWidth[iChannel]     = fADDigit->Width(); //divide by resolution
+	 aIntegrator[iChannel]= fADDigit->Integrator();
+	 
+         //AliDebug(1,Form("DDL: %s\tdigit number: %d\tPM number: %d\tADC: %d\tTime: %f",
+			 //fileName,k,fADDigit->PMNumber(),aADC[iChannel][AliADdigit::kNClocks/2],aTime[iChannel])); 
+     }        
+   }
+
+   // Now fill raw data	  
+   for (Int_t  iCIU = 0; iCIU < kNCIUBoards; iCIU++) { 
+   // decoding of one Channel Interface Unit numbered iCIU - there are 8 channels per CIU (and 2 CIUs) : 
+      for(Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) { 
+         for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
+             buffer->WriteChannel(iChannel, aADC[iChannel], aIntegrator[iChannel]);       
+         }
+         buffer->WriteBeamFlags(); 
+         buffer->WriteMBInfo(); 
+         buffer->WriteMBFlags();   
+         buffer->WriteBeamScalers(); 
+      } 
+
+      for(Int_t iChannel = iCIU*8 + 7; iChannel >= iCIU*8; iChannel--) {
+          buffer->WriteTiming(aTime[iChannel], aWidth[iChannel]); 
+      } // End of decoding of one CIU card    
+  } // end of decoding the eight CIUs
+
+     
+  delete buffer;
+  fLoader->UnloadDigits();  
+
 }
 
 //_____________________________________________________________________________
-
 Bool_t AliAD::Raw2SDigits(AliRawReader* /*rawReader*/)
 {
 	// reads raw data to produce digits

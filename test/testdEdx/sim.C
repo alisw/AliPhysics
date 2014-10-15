@@ -74,7 +74,7 @@ void sim(Int_t nev, Bool_t useIonTail, Double_t crossTalkCorrection) {
     AliTPCRecoParam* recoParam = ( AliTPCRecoParam*)recoArray->At(i);
     printf("ipar=%d\t%d\t%f\n",i,recoParam->GetUseIonTailCorrection(), recoParam->GetCrosstalkCorrection());
   } 
-
+  printf("End of the simulation\n");
 
    
 }

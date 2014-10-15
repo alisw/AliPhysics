@@ -30,7 +30,7 @@ public:
 	void SendAsXml(AliESDEvent *event,storageSockets socket);
 	
 	std::vector<serverListStruct> GetServerListVector(storageSockets socket);
-	AliESDEvent* GetEvent(storageSockets socket,int timeout=-1,TTree **tmpTree=0);
+	AliESDEvent* GetEvent(storageSockets socket,int timeout=-1);
 	struct serverRequestStruct* GetServerStruct(storageSockets socket);
 	struct clientRequestStruct* GetClientStruct(storageSockets socket);
 	long GetLong(storageSockets socket);

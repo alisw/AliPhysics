@@ -234,8 +234,8 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
       Error("ExecuteMacro", "The macro did not add any tasks to the manager");
       return -1;
    }
-   Long64_t ptrTask = (Long64_t)mgr->GetTasks()->At(ntasks0);
-   if (retval >= ptrTask) {
+//   Long64_t ptrTask = (Long64_t)mgr->GetTasks()->At(ntasks0);
+   if (retval) {
       TObject::SetBit(AliAnalysisTaskCfg::kLoaded, kTRUE);
       fRAddTask = reinterpret_cast<TObject*>(retval);
       if (fConfigDeps && dynamic_cast<TObject*>(fRAddTask)) {
@@ -290,7 +290,9 @@ Bool_t AliAnalysisTaskCfg::CheckLoadLibraries() const
    for (Int_t i=0; i<nlibs; i++) {
       library = GetLibrary(i);
       library.Prepend("lib");
-      Int_t loaded = strlen(gSystem->GetLibraries(library,"",kFALSE));
+      TString libext = library;
+      libext.Append(".");
+      Int_t loaded = strlen(gSystem->GetLibraries(libext,"",kFALSE));
       if (!loaded) loaded = gSystem->Load(library);
       if (loaded < 0) {
          Error("CheckLoadLibraries", "Cannot load library %s", library.Data());

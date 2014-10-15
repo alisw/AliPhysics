@@ -502,7 +502,7 @@ Bool_t AliTRDPreprocessorOffline::ReadStatusGlobal(const Char_t* fileName){
   // 
   if(fSparse) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
     fSparse = (THnSparseI *) array->FindObject("NumberOfEntries");
     if(!fSparse) return kFALSE;
@@ -532,7 +532,7 @@ Bool_t AliTRDPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   // 
   if(fCH2d) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
     TH2I *ch2d = (TH2I *) array->FindObject("CH2d");
     if(!ch2d) {
@@ -564,7 +564,7 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftT0Global(const Char_t* fileName){
   // 
   if(fPH2d) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
     TProfile2D *ph2d = (TProfile2D *) array->FindObject("PH2d");
     if(!ph2d) {
@@ -594,7 +594,7 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftLinearFitGlobal(const Char_t* fileNa
   // 
   if(fAliTRDCalibraVdriftLinearFit) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
     AliTRDCalibraVdriftLinearFit * dummy = (AliTRDCalibraVdriftLinearFit *) array->FindObject("AliTRDCalibraVdriftLinearFit");
     fAliTRDCalibraVdriftLinearFit = dummy ? (AliTRDCalibraVdriftLinearFit *) dummy->Clone() : 0x0;
@@ -618,7 +618,7 @@ Bool_t AliTRDPreprocessorOffline::ReadExbAltFitGlobal(const Char_t* fileName){
   // 
   if(fAliTRDCalibraExbAltFit) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
      AliTRDCalibraExbAltFit * dummy = (AliTRDCalibraExbAltFit *) array->FindObject("AliTRDCalibraExbAltFit");
      fAliTRDCalibraExbAltFit = dummy ? (AliTRDCalibraExbAltFit *)dummy->Clone() : 0x0;
@@ -643,7 +643,7 @@ Bool_t AliTRDPreprocessorOffline::ReadPRFGlobal(const Char_t* fileName){
   // 
   if(fPRF2d) return kTRUE;
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  TList * array = (TList*)fcalib.Get(fNameList);
   if (array){
     TProfile2D *prf2d = (TProfile2D *) array->FindObject("PRF2d");
     if(!prf2d) {

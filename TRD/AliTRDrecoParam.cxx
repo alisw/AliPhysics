@@ -354,8 +354,8 @@ void  AliTRDrecoParam::SetTrackletParams(Double_t *par)
     // y correction due to wrong tail cancellation. 
     fYcorrTailCancel[0][0] = par[5];fYcorrTailCancel[0][1] = par[6];fYcorrTailCancel[0][2] = par[7]; 
     fYcorrTailCancel[1][0] = par[8];fYcorrTailCancel[1][1] = par[9];fYcorrTailCancel[1][2] = par[10]; 
-    fYcorrTailCancel[2][0] = par[11];fYcorrTailCancel[2][1] = par[12];fYcorrTailCancel[2][3] = par[13];
-    fYcorrTailCancel[3][0] = par[14];fYcorrTailCancel[3][1] = par[15];fYcorrTailCancel[3][3] = par[16];
+    fYcorrTailCancel[2][0] = par[11];fYcorrTailCancel[2][1] = par[12];fYcorrTailCancel[2][2] = par[13];
+    fYcorrTailCancel[3][0] = par[14];fYcorrTailCancel[3][1] = par[15];fYcorrTailCancel[3][2] = par[16];
     // inflation factor of error parameterization in r-phi due to wrong estimation of residuals. 
     fS2Ycorr[0] = par[17];
     fS2Ycorr[1] = par[18];

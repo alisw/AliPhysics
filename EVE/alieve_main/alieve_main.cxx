@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
     // make sure logger is instantiated
     AliLog::GetRootLogger();
-    TRint  *app = new TRint("App", &argc, argv);
+    TApplication  *app = new TRint("App", &argc, argv);
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4) || defined XXX_LATEST_ROOT
     // Waiting for update by Pawel. Now GED in ROOT is better again :)

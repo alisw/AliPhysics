@@ -42,6 +42,7 @@
 #include "AliTRDPIDResponse.h"
 //#include "AliTRDTKDInterpolator.h"
 #include "AliTRDNDFast.h"
+#include "AliTRDdEdxParams.h"
 
 ClassImp(AliTRDPIDResponse)
 
@@ -49,6 +50,7 @@ ClassImp(AliTRDPIDResponse)
 AliTRDPIDResponse::AliTRDPIDResponse():
   TObject()
   ,fkPIDResponseObject(NULL)
+  ,fkTRDdEdxParams(NULL)
   ,fGainNormalisationFactor(1.)
 {
   //
@@ -60,6 +62,7 @@ AliTRDPIDResponse::AliTRDPIDResponse():
 AliTRDPIDResponse::AliTRDPIDResponse(const AliTRDPIDResponse &ref):
   TObject(ref)
   ,fkPIDResponseObject(NULL)
+  ,fkTRDdEdxParams(NULL)
   ,fGainNormalisationFactor(ref.fGainNormalisationFactor)
 {
   //
@@ -78,7 +81,8 @@ AliTRDPIDResponse &AliTRDPIDResponse::operator=(const AliTRDPIDResponse &ref){
   TObject::operator=(ref);
   fGainNormalisationFactor = ref.fGainNormalisationFactor;
   fkPIDResponseObject = ref.fkPIDResponseObject;
-  
+  fkTRDdEdxParams = ref.fkTRDdEdxParams;
+
   return *this;
 }
 
@@ -87,7 +91,10 @@ AliTRDPIDResponse::~AliTRDPIDResponse(){
   //
   // Destructor
   //
-    if(IsOwner()) delete fkPIDResponseObject;
+  if(IsOwner()) {
+    delete fkPIDResponseObject;
+    delete fkTRDdEdxParams;
+  }
 }
 
 //____________________________________________________________
@@ -148,50 +155,9 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
   //output other information in info[]
   //
 
-  //============================================================================================>>>>>>>>>>>>
-  //Data production dependent, in the end should go to OADB
-  //============================================================================================
-  //~/.task/TRDdEdx/2013output/resolution$ r bgmean.root
-  // hfit;1  1.521e+00 , 7.294e-01 , 8.066e+00 , 2.146e-02 , 3.137e+01 , 7.160e-15 , 2.838e+00 , 1.100e+01 , (14290.45/67) conv_runlist_LHC13b.pass3.root trdncls/trdnch>=18 && trdnch>=6 && tpcncls>120 && pidV0>=1          
-  // hscn0_wid;1     -4.122e-01 , 1.019e+00 , -1.319e-01 , (15071.70/120) conv_runlist_LHC13b.pass3.root tpcncls>120 && pidV0>=1
-
-  //mean signal parametrization
-  Double_t meanpars[]={1.521e+00 , 7.294e-01 , 8.066e+00 , 2.146e-02 , 3.137e+01 , 7.160e-15 , 2.838e+00 , 1.100e+01};
-  const Int_t nmp = sizeof(meanpars)/sizeof(Double_t);
-
-  if(type==AliPID::kProton){
-    const Double_t tmpproton[]={2.026e+00 , -1.462e-04 , 1.202e+00 , 1.162e-01 , 2.092e+00 , -3.018e-02 , 3.665e+00 , 3.487e-07};
-    for(Int_t ii=0; ii<nmp; ii++){
-      meanpars[ii] = tmpproton[ii];
-    }
-  }
-  else if(type==AliPID::kPion || type==AliPID::kElectron){
-    const Double_t tmppe[]={1.508e+00 , 7.356e-01 , 8.002e+00 , 1.932e-02 , 3.058e+01 , 5.114e-18 , 3.561e+00 , 1.408e+01};
-    for(Int_t ii=0; ii<nmp; ii++){
-      meanpars[ii] = tmppe[ii];
-    }
-  }
-
-  //resolution parametrization
-  const Double_t respars[]={-4.122e-01 , 1.019e+00 , -1.319e-01};
-
-  //cut on number of chambers
-  const Double_t cutch = 6;
-
-  //cut on mean number of clusters per chamber
-  const Double_t cutclsperch = 18;
-  //============================================================================================<<<<<<<<<<<<<
-
-
   const Double_t badval = -9999;
 
-  const Double_t nch = track->GetTRDNchamberdEdx();
-  if(nch < cutch){
-    return badval;
-  }
-
-  const Double_t ncls = track->GetTRDNclusterdEdx();
-  if( ncls/nch < cutclsperch){
+  if(!track){
     return badval;
   }
 
@@ -205,12 +171,35 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
     return badval;
   }
 
+  if(!fkTRDdEdxParams){
+    AliError("fkTRDdEdxParams null");
+    return -99999;
+  }
+
+  const Double_t nch = track->GetTRDNchamberdEdx();
+  const Double_t ncls = track->GetTRDNclusterdEdx();
+
+  const TVectorF meanvec = fkTRDdEdxParams->GetMeanParameter(type, nch, ncls);
+  if(meanvec.GetNrows()==0){
+    return badval;
+  }
+
+  const TVectorF resvec  = fkTRDdEdxParams->GetSigmaParameter(type, nch, ncls);
+  if(resvec.GetNrows()==0){
+    return badval;
+  }
+
+  const Float_t *meanpar = meanvec.GetMatrixArray();
+  const Float_t *respar  = resvec.GetMatrixArray();
+
+  //============================================================================================<<<<<<<<<<<<<
+
   const Double_t bg = pTRD/AliPID::ParticleMass(type);
-  const Double_t expsig = MeandEdxTR(&bg, meanpars);
+  const Double_t expsig = MeandEdxTR(&bg, meanpar);
 
   if(info){
     info[0]= expsig;
-    info[1]= ResolutiondEdxTR(&ncls, respars);
+    info[1]= ResolutiondEdxTR(&ncls, respar);
   }
 
   const Double_t eps = 1e-10;
@@ -224,7 +213,7 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
 }
 
 
-Double_t AliTRDPIDResponse::ResolutiondEdxTR(const Double_t * xx,  const Double_t * par)
+Double_t AliTRDPIDResponse::ResolutiondEdxTR(const Double_t * xx,  const Float_t * par)
 {
   //
   //resolution 
@@ -236,21 +225,21 @@ Double_t AliTRDPIDResponse::ResolutiondEdxTR(const Double_t * xx,  const Double_
   return par[0]+par[1]*TMath::Power(ncls, par[2]);
 }
 
-Double_t AliTRDPIDResponse::MeandEdxTR(const Double_t * xx,  const Double_t * pin)
+Double_t AliTRDPIDResponse::MeandEdxTR(const Double_t * xx,  const Float_t * pin)
 {
   //
   //ALEPH+LOGISTIC parametrization for dEdx+TR, in unit of MIP
   //npar = 8 = 3+5
   //
 
-  Double_t ptr[4]={0};
+  Float_t ptr[4]={0};
   for(int ii=0; ii<3; ii++){
     ptr[ii+1]=pin[ii];
   }
   return MeanTR(xx,ptr) + MeandEdx(xx,&(pin[3]));
 }
 
-Double_t AliTRDPIDResponse::MeanTR(const Double_t * xx,  const Double_t * par)
+Double_t AliTRDPIDResponse::MeanTR(const Double_t * xx,  const Float_t * par)
 {
   //
   //LOGISTIC parametrization for TR, in unit of MIP
@@ -270,7 +259,7 @@ Double_t AliTRDPIDResponse::MeanTR(const Double_t * xx,  const Double_t * par)
   return par[0]+tryield;
 }
 
-Double_t AliTRDPIDResponse::MeandEdx(const Double_t * xx,  const Double_t * par)
+Double_t AliTRDPIDResponse::MeandEdx(const Double_t * xx,  const Float_t * par)
 {
   //
   //ALEPH parametrization for dEdx
@@ -552,4 +541,12 @@ Bool_t AliTRDPIDResponse::SetPIDResponseObject(const AliTRDPIDResponseObject * o
     fkPIDResponseObject = obj;
     if((AliLog::GetDebugLevel("",IsA()->GetName()))>0)fkPIDResponseObject->Print("");
     return kTRUE;
+}
+
+
+//____________________________________________________________    
+Bool_t AliTRDPIDResponse::SetdEdxParams(const AliTRDdEdxParams * par)
+{
+  fkTRDdEdxParams = par;
+  return kTRUE;
 }
