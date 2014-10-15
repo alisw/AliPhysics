@@ -201,25 +201,25 @@ namespace EMCalTriggerPtAnalysis {
     try{
       std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
       for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
-        fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes);
-        fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes);
-        fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 4, patchampaxes);
+        fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
+        fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
+        fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 4, patchampaxes, "s");
       }
 
       // Create histogram for MC-truth
-      fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 5, trackaxes);
+      fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 5, trackaxes, "s");
       for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
         const std::string name = it->first, &title = it->second;
         // Create event-based histogram
         fHistos->CreateTH2(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), pileupaxis, zvertexBinning);
         // Create track-based histogram
-        fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes);
-        fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes);
-        fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes);
-        fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes);
+        fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes, "s");
+        fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes, "s");
         // Create cluster-based histogram (Uncalibrated and calibrated clusters)
-        fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes);
-        fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes);
+        fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes, "s");
+        fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes, "s");
       }
       fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
       fHistos->CreateTHnSparse("hEventsTriggerbit", "Trigger bits for the different events", 4, bitaxes);
