@@ -43,9 +43,11 @@ AliCFVertexingHF(mcArray, originDselection),
   fPDGcascade(0),
   fPDGbachelor(0),
   fPDGneutrDaugh(0),
+  fPDGneutrDaughForMC(0),
   fPDGneutrDaughPositive(0),
   fPDGneutrDaughNegative(0),
-  fPrimVtx(0x0)
+  fPrimVtx(0x0),
+  fUseCutsForTMVA(kFALSE)
 {
   // standard constructor
 
@@ -242,14 +244,14 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
 
   //ct
   Double_t cT = decay->Ct(fPDGneutrDaugh);
-  // get the pT of the daughters
-  Double_t pTNeutrDaugh= 0.;
-  Double_t pTBachelor = 0.;
+  // // get the pT of the daughters
+  // Double_t pTNeutrDaugh= 0.;
+  // Double_t pTBachelor = 0.;
 	
-  if (TMath::Abs(fmcPartCandidate->GetPdgCode()) == fPDGcascade) {
-    pTNeutrDaugh = mcPartDaughterNeutrDaugh->Pt();
-    pTBachelor = mcPartDaughterBachelor->Pt();
-  }
+  // if (TMath::Abs(fmcPartCandidate->GetPdgCode()) == fPDGcascade) {
+  //   pTNeutrDaugh = mcPartDaughterNeutrDaugh->Pt();
+  //   pTBachelor = mcPartDaughterBachelor->Pt();
+  // }
 
   AliDebug(3, Form("The candidate has pt = %f, y = %f", fmcPartCandidate->Pt(), fmcPartCandidate->Y()));
 
@@ -309,13 +311,13 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
 
   Double_t pt =  cascade->Pt();
   Double_t rapidity =  cascade->Y(fPDGcascade);
-  Double_t invMass = 0.;
+  // Double_t invMass = 0.;
   Double_t cosThetaStar = 9999.;
   Double_t pTneutrDaughPos = 0.;
   Double_t pTneutrDaughNeg = 0.;
   Double_t dca = neutrDaugh->GetDCA();
-  Double_t d0neutrDaughPos = 0.;
-  Double_t d0neutrDaughNeg = 0.;
+  // Double_t d0neutrDaughPos = 0.;
+  // Double_t d0neutrDaughNeg = 0.;
   Double_t d0xd0 = neutrDaugh->Prodd0d0();
   Double_t cosPointingAngle = neutrDaugh->CosPointingAngle(fPrimVtx);
   Double_t phi = cascade->Phi();
@@ -324,24 +326,24 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
 
   Int_t pdgCode = fmcPartCandidate->GetPdgCode();
  
-  UInt_t pdgDaughCascade[2] = { static_cast<UInt_t>(fPDGbachelor),  static_cast<UInt_t>(fPDGneutrDaugh) };    // bachelor is first daughter of cascade
-  UInt_t pdgDaughBarCascade[2] = { static_cast<UInt_t>(fPDGneutrDaugh),  static_cast<UInt_t>(fPDGbachelor) }; // bachelor is second daughter in case of a cascade-bar
+  // UInt_t pdgDaughCascade[2] = { static_cast<UInt_t>(fPDGbachelor),  static_cast<UInt_t>(fPDGneutrDaugh) };    // bachelor is first daughter of cascade
+  // UInt_t pdgDaughBarCascade[2] = { static_cast<UInt_t>(fPDGneutrDaugh),  static_cast<UInt_t>(fPDGbachelor) }; // bachelor is second daughter in case of a cascade-bar
 
   if (pdgCode > 0){
     cosThetaStar = neutrDaugh->CosThetaStar(1, fPDGneutrDaugh, fPDGneutrDaughPositive, fPDGneutrDaughNegative);
     pTneutrDaughPos = neutrDaugh->PtProng(0);
     pTneutrDaughNeg = neutrDaugh->PtProng(1);
-    d0neutrDaughPos = neutrDaugh->Getd0Prong(0);
-    d0neutrDaughNeg = neutrDaugh->Getd0Prong(1);
-    invMass = neutrDaugh->InvMass(2, pdgDaughCascade);
+    // d0neutrDaughPos = neutrDaugh->Getd0Prong(0);
+    // d0neutrDaughNeg = neutrDaugh->Getd0Prong(1);
+    // invMass = neutrDaugh->InvMass(2, pdgDaughCascade);
   }
   else {
     cosThetaStar = neutrDaugh->CosThetaStar(0, fPDGneutrDaugh, fPDGneutrDaughPositive, fPDGneutrDaughNegative);
     pTneutrDaughPos = neutrDaugh->PtProng(1);
     pTneutrDaughNeg = neutrDaugh->PtProng(0);
-    d0neutrDaughPos = neutrDaugh->Getd0Prong(1);
-    d0neutrDaughNeg = neutrDaugh->Getd0Prong(0);
-    invMass = neutrDaugh->InvMass(2, pdgDaughBarCascade);
+    // d0neutrDaughPos = neutrDaugh->Getd0Prong(1);
+    // d0neutrDaughNeg = neutrDaugh->Getd0Prong(0);
+    // invMass = neutrDaugh->InvMass(2, pdgDaughBarCascade);
   }
   
   Double_t cT = neutrDaugh->Ct(fPDGneutrDaugh, fPrimVtx);
