@@ -79,7 +79,6 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SetInputAODGammaConvName(TString name)      { fInputAODGammaConvName = name   ; }	
   
   //Only for pi0 SS identification case
-  void           SetCalorimeter(TString & det)               { fCalorimeter = det              ; }
   
   void           SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
                   fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3                                ; }
@@ -100,9 +99,6 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Bool_t         IsTrackMatchRejectionOn()             const { return fRejectTrackMatch        ; }
   void           SwitchOnTrackMatchRejection()               { fRejectTrackMatch      = kTRUE  ; }
   void           SwitchOffTrackMatchRejection()              { fRejectTrackMatch      = kFALSE ; }
-  
-  void           SwitchOnFillPileUpHistograms()              { fFillPileUpHistograms  = kTRUE  ; }
-  void           SwitchOffFillPileUpHistograms()             { fFillPileUpHistograms  = kFALSE ; }    
     
   void           SwitchOnFillWeightHistograms()              { fFillWeightHistograms  = kTRUE  ; }
   void           SwitchOffFillWeightHistograms()             { fFillWeightHistograms  = kFALSE ; }  
@@ -122,9 +118,6 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SwitchOnSplitClusterDistToBad()             { fCheckSplitDistToBad   = kTRUE  ; }
   void           SwitchOffSplitClusterDistToBad()            { fCheckSplitDistToBad   = kFALSE ; }
   
-  void           SwitchOnHighMultiplicityHistoFill()         { fFillHighMultHistograms = kTRUE ; }
-  void           SwitchOffHighMultiplicityHistoFill()        { fFillHighMultHistograms = kFALSE; }
-
   void           SwitchOnAllNLMHistoFill()                   { fFillAllNLMHistograms   = kTRUE ; }
   void           SwitchOffAllNLMHistoFill()                  { fFillAllNLMHistograms   = kFALSE; }
 
@@ -143,7 +136,6 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   anaTypes       fAnaType;                 // Select analysis type
     
   //Only for pi0 SS identification case, kSSCalo
-  TString        fCalorimeter ;            // Calorimeter where the gamma is searched;
   Float_t        fMinDist ;                // Minimal distance to bad channel to accept cluster
   Float_t        fMinDist2;                // Cuts on Minimal distance to study acceptance evaluation
   Float_t        fMinDist3;                // One more cut on distance used for acceptance-efficiency study
@@ -155,13 +147,11 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Bool_t         fRejectTrackMatch ;       // Remove clusters which have an associated TPC track
   Bool_t         fSelectIsolatedDecay;     // Select pairs where at least one is declared isolated (run first AliAnaParticleIsolation)
   
-  Bool_t         fFillPileUpHistograms;    // Fill pile-up related histograms
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   Bool_t         fFillTMHisto;             // Fill track matching plots
   Bool_t         fFillSelectClHisto;       // Fill selected cluster histograms
   Bool_t         fFillOnlySimpleSSHisto;   // Fill selected cluster histograms, selected SS histograms
   Bool_t         fFillEMCALBCHistograms;   // Fill eta-phi BC dependent histograms
-  Bool_t         fFillHighMultHistograms;  // Fill high multiplicity histograms
   Bool_t         fFillAllNLMHistograms;    // Fill all NLM dependent histograms
 
   //Only for combination of calorimeter and conversion photons, kIMCaloTracks

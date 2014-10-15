@@ -34,6 +34,7 @@ class AliEbyEPidRatioBase : public TNamed {
   void ResetEvent();
   virtual void Process() = 0;
 
+
  private:
 
   AliEbyEPidRatioBase(const AliEbyEPidRatioBase&); // not implemented

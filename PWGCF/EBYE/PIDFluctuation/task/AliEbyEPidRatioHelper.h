@@ -52,7 +52,7 @@ class AliEbyEPidRatioHelper : public TNamed {
   void SetNSigmaMaxTOF(Float_t f)              {fNSigmaMaxTOF        = f;}
   void SetMinPtForTOFRequired(Float_t f)       {fMinPtForTOFRequired = f;}
   void SetMaxPtForTPClow(Float_t f)            {fMaxPtForTPClow      = f;}
-
+  void SetNSubSamples(Int_t i)                 {fSubSamples         = i;}
   
   TH1F*    GetHEventStat0()                    {return fHEventStat0;     }
   TH1F*    GetHEventStat1()                    {return fHEventStat1;     }
@@ -77,6 +77,8 @@ class AliEbyEPidRatioHelper : public TNamed {
   void SetPhiRange(Float_t f1, Float_t f2);
   Float_t  GetCentralityPercentile()           {return fCentralityPercentile;}
   Float_t  GetMinPtForTOFRequired()            {return fMinPtForTOFRequired;}
+  Int_t    GetSubSampleIdx()                   {return fSubSampleIdx;}
+  Int_t    GetNSubSamples()                    {return fSubSamples;}
   /** Initialize Helper */
   Int_t Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Bool_t isRatio, Bool_t isPtBin, Bool_t isDetWise, Int_t trackCutBit, Int_t modeDistCreation);
 
@@ -118,7 +120,6 @@ class AliEbyEPidRatioHelper : public TNamed {
 
   /** Check if trackis  accepted for Phi */
   Bool_t IsTrackAcceptedPhi(AliVTrack *track);
- 
 
   /** Method for the correct logarithmic binning of histograms 
    *  and Update MinPtForTOFRequired, using the pT log-scale 
@@ -199,7 +200,11 @@ class AliEbyEPidRatioHelper : public TNamed {
   TH1F                 *fHCentralityPer;           //  Centrality Percentile
   TH1F                 *fHCentralityPerAll;        //  Centrality Percentile
   Int_t                 fNCentralityBins;          //  N centrality bins used
+
+  Int_t                 fSubSamples;              //  N subsamples
   TRandom3             *fRandom;                   //  Random generator
+  Int_t                 fSubSampleIdx;             //  Subsample idx for current event
+  
   Bool_t                fIsRatio;                  //  Is ratio
   Bool_t                fIsPtBin;                  //  Is Pt Bin
   Bool_t                fIsDetectorWise;           // is detector wise

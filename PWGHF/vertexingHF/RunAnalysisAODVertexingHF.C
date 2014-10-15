@@ -15,7 +15,7 @@ void RunAnalysisAODVertexingHF()
   //
 
 
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWG/FLOW/Base -I$ALICE_ROOT/PWG/FLOW/Tasks -g"); 
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWG/FLOW/Base -I$ALICE_ROOT/PWG/FLOW/Tasks -I$ALICE_ROOT/PWG -g"); 
   //
   TString trainName = "D2H";
   TString analysisMode = "grid"; // "local", "grid", or "proof"
@@ -65,12 +65,24 @@ void RunAnalysisAODVertexingHF()
     TString loadLibraries="LoadLibraries.C"; loadLibraries.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(loadLibraries.Data());
     LoadLibraries(useParFiles);
+    gSystem->Load("libGui.so");
+    gSystem->Load("libRAWDatabase.so");
+    gSystem->Load("libCDB.so");
+    gSystem->Load("libSTEER.so");
+    gSystem->Load("libTRDbase.so");
+    gSystem->Load("libPWGTRD.so");
   } else if (analysisMode=="proof") {
     gSystem->Load("libTree.so");
     gSystem->Load("libGeom.so");
     gSystem->Load("libPhysics.so");
     gSystem->Load("libVMC.so");    
     gSystem->Load("libMinuit.so");    
+    gSystem->Load("libGui.so");
+    gSystem->Load("libRAWDatabase.so");
+    gSystem->Load("libCDB.so");
+    gSystem->Load("libSTEER.so");
+    gSystem->Load("libTRDbase.so");
+    gSystem->Load("libPWGTRD.so");
     // Enable the needed packages
     //gProof->ClearPackages();
     TString parDir="/afs/cern.ch/user/d/dainesea/code/";
@@ -176,7 +188,7 @@ void RunAnalysisAODVertexingHF()
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   AliAnalysisTaskSE *setupTask = AddTaskPIDResponse(kFALSE,kTRUE);
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa..C");
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
   AliAnalysisTaskPIDqa *pidQA = AddTaskPIDqa();
 
 
@@ -190,7 +202,10 @@ void RunAnalysisAODVertexingHF()
   
   ////// OR ADD INDIVIDUAL TASKS
   
-  
+  taskName="AddTaskHFQA.C"; taskName.Prepend(loadMacroPath.Data());
+  gROOT->LoadMacro(taskName.Data());
+  AliAnalysisTaskSEHFQA *qaTask = AddTaskHFQA(0,"",kFALSE, kTRUE, 0 , "QApp",kTRUE,kTRUE,kFALSE, kTRUE, kFALSE,kTRUE);
+
   /*  taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
@@ -344,7 +359,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->SetAnalysisSource("AliDStarJets.cxx");
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("libPWGflowBase.so libPWGflowTasks.so libPWGHFbase.so libPWGHFvertexingHF.so");
+   plugin->SetAdditionalLibs("libPWGflowBase.so libPWGflowTasks.so libPWGHFbase.so libPWGHFvertexingHF.so libGui.so libRAWDatabase.so libCDB.so libSTEER.so libTRDbase.so libPWGTRD.so");
    // use par files
    if(useParFiles) {
      plugin->EnablePackage("STEERBase.par");
@@ -357,7 +372,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
      plugin->EnablePackage("PWGHFbase.par");
      plugin->EnablePackage("PWGHFvertexingHF.par");
    }
-   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWG/FLOW/Base -I$ALICE_ROOT/PWG/FLOW/Tasks -g");
+   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/STEER/ESD -I$ALICE_ROOT/STEER/AOD -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWGHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWG/FLOW/Base -I$ALICE_ROOT/PWG/FLOW/Tasks -I$ALICE_ROOT/PWG -g");
 
    plugin->SetDefaultOutputs(kTRUE);
    // merging via jdl

@@ -214,7 +214,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
 	fNumberOfESDTrackskBoth(0),
 	fNVirtualGammas(0),
 	fMoveParticleAccordingToVertex(kFALSE),
-	fIsHeavyIon(kFALSE),
+	fIsHeavyIon(0),
 	fDoMesonAnalysis(kTRUE),
 	fDoChicAnalysis(kFALSE),
 	fDoMesonQA(kFALSE),
@@ -383,7 +383,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
 	fNumberOfESDTrackskBoth(0),
 	fNVirtualGammas(0),
 	fMoveParticleAccordingToVertex(kFALSE),
-	fIsHeavyIon(kFALSE),
+	fIsHeavyIon(0),
 	fDoMesonAnalysis(kTRUE),
 	fDoChicAnalysis(kFALSE),
 	fDoMesonQA(kFALSE),
@@ -489,7 +489,8 @@ void AliAnalysisTaskGammaConvDalitzV1::InitBack(){
 		fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
 																collisionSystem,centMin,centMax,
 																((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->NumberOfRotationEvents(),
-																((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->UseTrackMultiplicity());
+																((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->UseTrackMultiplicity(),
+																1,8,5);
 		
 		if( ( (AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetBKGMethod() == 3 ){
 			fGammasPool[iCut] = new TList();
@@ -616,7 +617,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
 		fESDList[iCut]->Add(hNEvents[iCut]);
 
-		if(fIsHeavyIon) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",3000,0,3000);
+		if(fIsHeavyIon == 1 || fIsHeavyIon == 2) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",3000,0,3000);
 		else hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",200,0,200);
 		fESDList[iCut]->Add(hNGoodESDTracks[iCut]);
 		

@@ -4,7 +4,7 @@
 /* $Id$ */
 
 AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarCorrelations::CollSyst syst, 
-                                                            Bool_t theMCon, Bool_t mixing, Bool_t UseReco=kTRUE,Bool_t UseHadChannelinMC,Bool_t fullmode = kFALSE,Bool_t UseEffic=kFALSE,Bool_t UseDEffic = kFALSE,
+                                                            Bool_t theMCon, Bool_t mixing, Bool_t UseReco=kTRUE,Bool_t UseHadChannelinMC,Bool_t fullmode = kFALSE,Bool_t UseEffic=kFALSE,Bool_t UseDEffic = kFALSE, Bool_t useDStarSidebands = kFALSE,
                                                         AliAnalysisTaskDStarCorrelations::DEffVariable var,
                                                             Int_t trackselect =1, Int_t usedispl =0, Int_t nbins, Float_t DStarSigma, Float_t D0Sigma, Float_t D0SBSigmaLow, Float_t D0SBSigmaHigh, Float_t eta,
                                                                      TString DStarCutsFile, TString TrackCutsFile,
@@ -168,7 +168,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     task->SetEfficiencyVariable(var);
     task->SetMaxDStarEta(eta);
     task->SetUseHadronicChannelAtKineLevel(UseHadChannelinMC);
-	//task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDStarSB);
+	if(useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDStarSB);
+    if(!useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDZeroSB);
 
 	if(trackselect == 1) Info(" AliAnalysisTaskDStarCorrelations","Correlating D* with charged hadrons \n");
 	else if(trackselect == 2) Info(" AliAnalysisTaskDStarCorrelations","Correlating D* with charged kaons \n");

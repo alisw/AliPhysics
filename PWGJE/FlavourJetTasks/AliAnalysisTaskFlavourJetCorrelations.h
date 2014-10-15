@@ -31,6 +31,7 @@
 class TH3F;
 class TParticle ;
 class TClonesArray ;
+class THnSparse;
 class AliMCParticle;
 class AliAODMCParticle;
 class AliRDHFCuts;
@@ -38,6 +39,9 @@ class AliEmcalJet;
 class AliAODRecoDecayHF;
 class AliAODRecoCascadeHF;
 class AliAODEvent;
+class AliParticleContainer;
+class AliClusterContainer;
+class AliJetContainer;
 
 class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet 
 {
@@ -73,14 +77,19 @@ public:
    void SetMassLimits(Double_t range, Int_t pdg);
    void SetMassLimits(Double_t lowlimit, Double_t uplimit);
    
-   //jet reconstruction algorithm
-   void SetJetArrayName(TString jetArrName) {fJetArrName=jetArrName;};
-   TString GetJetArrayName() const {return fJetArrName;};
+   //jet and track arrays
+   void SetJetArrayName(TString jetArrName) {fJetArrName=jetArrName;}
+   TString GetJetArrayName() const {return fJetArrName;}
+   void SetTrackArrayName(TString trackArrName) {fTrackArrName=trackArrName;}
+   TString GetTrackArrayName() const {return fTrackArrName;}
    
    // trigger on jet events
    void SetTriggerOnLeadingJet(Bool_t triggerOnLeadingJet) {fLeadingJetOnly=triggerOnLeadingJet;};
    Bool_t GetTriggerOnLeadingJet() const {return fLeadingJetOnly;}
    
+   // resolution parameter used in this task
+   void SetRadius(Double_t r){fJetRadius=r;}
+   Double_t GetRadius() const {return fJetRadius;}
    
    // Array of D0 width for the Dstar
    Bool_t SetD0WidthForDStar(Int_t nptbins,Float_t* width);
@@ -148,6 +157,7 @@ private:
    Double_t fMaxMass;             // mass upper limit histogram
    
    TString  fJetArrName;          // name of the jet array, taken from the task running the jet finder
+   TString fTrackArrName;         // name of the array of tracks, default "PicoTracks"
    TString fCandArrName;          // string which correspond to the candidate type
    Bool_t fLeadingJetOnly;        // use only the leading jet in the event to make the correlations
    Double_t fJetRadius;           // jet radius (filled from the JetContainer)
@@ -165,8 +175,66 @@ private:
    Bool_t fSwitchOnSparses;     // turn on/off all THnSparse
     
    Int_t fNAxesBigSparse;      // number of axis
+   AliJetContainer      *fJetCont;      //! jets attachedto the task
+   AliParticleContainer *fTrackCont;    //! tracks attached to the jet container
+   AliClusterContainer  *fClusterCont;  //! Clusters  attached to the jet container 
+  
    
-   ClassDef(AliAnalysisTaskFlavourJetCorrelations,6); // class for charm-jet CorrelationsExch
+   // Histograms
+   TH1I* fhstat;                    //!
+   //generic jet and jet track distributions
+   TH1F* fhPtJetTrks;		    //!
+   TH1F* fhPhiJetTrks;              //!
+   TH1F* fhEtaJetTrks;              //!
+   TH1F* fhEjetTrks;                //!
+   TH1F* fhPtJet;                   //!
+   TH1F* fhPhiJet;                  //!
+   TH1F* fhEtaJet;                  //!
+   TH1F* fhEjet;                    //!
+   TH1F* fhNtrArr;                  //!
+   TH1F* fhNJetPerEv;               //!
+   TH1F* fhdeltaRJetTracks;         //!
+   THnSparse* fhsJet; //available in jet only mode
+   // event characteristics;        
+   TH1F* fhNDPerEvNoJet;            //!
+   TH1F* fhptDPerEvNoJet;           //!
+   TH1F* fhNJetPerEvNoD;            //!
+   TH1F* fhPtJetPerEvNoD;           //!
+   //D mesons                       
+   THnSparse* fhsDstandalone;       //!
+   TH2F* fhInvMassptD;              //!
+   TH2F* fhDiffSideBand;            //!
+   TH2F* fhInvMassptDbg;            //!
+   TH1F* fhPtPion;                  //!
+                                    //!
+   //histograms for checks          
+   TH1F* fhztracksinjet;            //!
+   TH1F* fhDiffPtTrPtJzNok;         //!
+   TH1F* fhDiffPtTrPtJzok;          //!
+   TH1F* fhDiffPzTrPtJzok;          //!
+   TH1F* fhDiffPzTrPtJzNok;         //!
+   TH1I* fhNtrkjzNok;               //!
+   TH1F* fhztracksinjetT;           //!
+   TH1I* fhControlDInJ;             //!
+   TH1I* fhIDddaugh   ;             //!
+   TH1I* fhIDddaughOut;             //!
+   TH1I* fhIDjetTracks;             //!
+   TH1F* fhDRdaughOut ;             //!
+   TH1F* fhzDinjet;                 //!
+   TH1F* fhmissingp;                //!
+   TH1F**fhMissPi;                  //!
+   TH1F* fhDeltaPtJet;              //!
+   TH1F* fhRelDeltaPtJet;           //!
+   // D-jet correlation histograms  
+   TH1F* fhzDT;                     //!
+   TH1F* fhDeltaRD;                 //!
+   TH3F* fhDeltaRptDptj;            //!
+   TH3F* fhDeltaRptDptjB;           //!
+   //main histograms                
+   THnSparse* fhsDphiz;             //!
+   
+
+   ClassDef(AliAnalysisTaskFlavourJetCorrelations,7); // class for charm-jet CorrelationsExch
 };
 
 #endif

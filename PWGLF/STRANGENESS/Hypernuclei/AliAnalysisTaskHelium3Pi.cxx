@@ -737,14 +737,14 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     eventtype=3;
   }
  
-  if(isSelectedAny){
+  if(!isSelectedCentral && !isSelectedSemiCentral && !isSelectedMB && isSelectedAny){
     fHistEventMultiplicity->Fill(9);
-    fHistTrackMultiplicityMB->Fill(TrackNumber,percentile); 
     fHistTrackMultiplicity->Fill(TrackNumber,percentile); //tracce per evento
     eventtype=4;
   }
 
-  if(isSelectedCentral || isSelectedSemiCentral || isSelectedMB || isSelectedAny){
+  //if(isSelectedCentral || isSelectedSemiCentral || isSelectedMB || isSelectedAny){
+  if(eventtype ==1  || eventtype ==2  || eventtype==3  || eventtype==4){
     
     // ANALISYS
     

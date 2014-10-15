@@ -392,11 +392,14 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
          fOutputContainer->Add(new TH1F(Form("hMCRecE_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecP_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPipm_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecKpm_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecN_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecCharg_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecNeutral_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecK0s_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecNoPRim_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
-         fOutputContainer->Add(new TH1F(Form("hMCRecUnknown_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
 
 	 //Decay photons	 
          fOutputContainer->Add(new TH1F(Form("hMCRecPhotPi0_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
@@ -1011,25 +1014,29 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	  break ;	  
 	case  211:
 	case -211:
+	  FillPIDHistograms("hMCRecPipm",p);  //Reconstructed with photon from antibaryon annihilation
+	  break ;	  
 	case 2212:
+	  FillPIDHistograms("hMCRecP",p);  //Reconstructed with photon from antibaryon annihilation
+	  break ;	  
 	case  321:
 	case -321:
-	  FillPIDHistograms("hMCRecCharg",p);  //Reconstructed with photon from conversion primary
+	  FillPIDHistograms("hMCRecKpm",p);  //Reconstructed with photon from conversion primary
 	  break ;
 	case 310:
 	  FillPIDHistograms("hMCRecK0s",p);  //Reconstructed with photon from conversion primary
 	  break ;
 	case 2112: //antineutron & antiproton conversion
-	case 130:
-	  FillPIDHistograms("hMCRecNeutral",p);  //Reconstructed with photon from antibaryon annihilation
-	  break ;
+	  FillPIDHistograms("hMCRecN",p);  //Reconstructed with photon from antibaryon annihilation
+	  break ;	  
 	case -1: //direct photon or no primary
 	  FillPIDHistograms("hMCRecNoPRim",p);
 	  break ;	  
 	default:  
-	  printf("Unknown PDG: %d \n",parentPDG) ;
-	  FillPIDHistograms("hMCRecUnknown",p);
-	  break ;
+	  if(parent->Charge()!=0)
+	    FillPIDHistograms("hMCRecCharg",p);  //Reconstructed with photon from antibaryon annihilation
+	  else 
+	    FillPIDHistograms("hMCRecNeutral",p);  //Reconstructed with photon from antibaryon annihilation
       }  
     
     
@@ -1574,10 +1581,14 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
 {
   //Parameterization of the pi0 peak region
   //for LHC13bcdef
-  Double_t mpi0mean =  0.13447 - 1.41259e-03 * TMath::Exp(-pt/1.30044) ;  
+//  Double_t mpi0mean =  0.13447 - 1.41259e-03 * TMath::Exp(-pt/1.30044) ;  
+  //Parameterization of data 30.08.2014
+  Double_t mpi0mean =  0.135 ;  
 
-  Double_t mpi0sigma=TMath::Sqrt(5.22245e-03*5.22245e-03 +2.86851e-03*2.86851e-03/pt) + 9.09932e-05*pt ;
- 
+  //Double_t mpi0sigma=TMath::Sqrt(5.22245e-03*5.22245e-03 +2.86851e-03*2.86851e-03/pt) + 9.09932e-05*pt ;
+  //Parameterization of data 30.08.2014
+  Double_t mpi0sigma=TMath::Sqrt(4.67491e-03*4.67491e-03 +3.42884e-03*3.42884e-03/pt) + 1.24324e-04*pt ;
+
   return TMath::Abs(m-mpi0mean)/mpi0sigma ;
 }
 //______________________________________________________________________________

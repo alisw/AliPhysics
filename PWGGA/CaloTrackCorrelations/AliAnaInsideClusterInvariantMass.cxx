@@ -52,7 +52,7 @@ ClassImp(AliAnaInsideClusterInvariantMass)
   
 //__________________________________________________________________
 AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() : 
-  AliAnaCaloTrackCorrBaseClass(),            fCalorimeter(""),
+  AliAnaCaloTrackCorrBaseClass(),
   fMinNCells(0),                             fMinBadDist(0),
   fHistoECut(0),                             fCheckSplitDistToBad(0),                   fFillAngleHisto(kFALSE),
   fFillTMHisto(kFALSE),                      fFillTMResidualHisto(kFALSE),              fFillSSExtraHisto(kFALSE),
@@ -608,7 +608,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 //      Int_t mcLabel   = GetEMCALCells()->GetCellMCLabel(absIdCell);
 //      GetReader()->RemapMCLabelForAODs(mcLabel);
 //      Int_t ietac=-1; Int_t iphic = 0; Int_t rcuc = 0;
-//      Int_t smc = GetModuleNumberCellIndexes(absIdCell,fCalorimeter, ietac, iphic, rcuc);
+//      Int_t smc = GetModuleNumberCellIndexes(absIdCell,GetCalorimeter(), ietac, iphic, rcuc);
 //
 //      printf(" \t cell i %d, abs %d, amp %2.3f, mclabel %d, (sm,ieta,iphi)=(%d,%d,%d)\n",icell,absIdCell,GetEMCALCells()->GetCellAmplitude(absIdCell),mcLabel,smc,ietac,iphic);
 //    }
@@ -905,17 +905,17 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 //    printf("Photon1 (eta,phi)=(%f,%f); Photon2 (eta,phi)=(%f,%f);\n",eta0,phi0*TMath::RadToDeg(),eta1,phi1*TMath::RadToDeg());
 //
 //    Int_t ieta0=-1; Int_t iphi0 = 0; Int_t rcu0 = 0;
-//    Int_t sm0 = GetModuleNumberCellIndexes(absId0,fCalorimeter, ieta0, iphi0, rcu0);
+//    Int_t sm0 = GetModuleNumberCellIndexes(absId0,GetCalorimeter(), ieta0, iphi0, rcu0);
 //    Int_t ieta1=-1; Int_t iphi1 = 0; Int_t rcu1 = 0;
-//    Int_t sm1 = GetModuleNumberCellIndexes(absId1,fCalorimeter, ieta1, iphi1, rcu1);
+//    Int_t sm1 = GetModuleNumberCellIndexes(absId1,GetCalorimeter(), ieta1, iphi1, rcu1);
 //    
 //    printf("Photon1 (id,sm,eta,phi)=(%d,%d,%d,%d), Photon2 (id,sm,eta,phi)=(%d,%d,%d,%d)\n",
 //           absId0,sm0,ieta0,iphi0,absId1,sm1,ieta1,iphi1);
 //    
 //    Int_t ietam0=-1; Int_t iphim0 = 0; Int_t rcum0 = 0; Int_t smm0 = -1 ;
-//    if(imax  >= 0) smm0 = GetModuleNumberCellIndexes(list[imax] ,fCalorimeter, ietam0, iphim0, rcum0);
+//    if(imax  >= 0) smm0 = GetModuleNumberCellIndexes(list[imax] ,GetCalorimeter(), ietam0, iphim0, rcum0);
 //    Int_t ietam1=-1; Int_t iphim1 = 0; Int_t rcum1 = 0; Int_t smm1 = -1 ;
-//    if(imax2 >= 0) smm1 = GetModuleNumberCellIndexes(list[imax2],fCalorimeter, ietam1, iphim1, rcum1);
+//    if(imax2 >= 0) smm1 = GetModuleNumberCellIndexes(list[imax2],GetCalorimeter(), ietam1, iphim1, rcum1);
 //    
 //    printf("Max (id, sm,eta,phi)=(%d,%d,%d,%d), Max2 (id, sm,eta,phi)=(%d,%d,%d,%d)\n",
 //           list[imax],smm0,ietam0,iphim0,list[imax2],smm1,ietam1,iphim1);
@@ -1088,18 +1088,18 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   if(!match0)
   {
-    if(imatch1!=imax  && GetCaloUtils()->AreNeighbours(fCalorimeter,absId0,list[imax]))   { match0 = kTRUE; imatch0 = imax  ; }
+    if(imatch1!=imax  && GetCaloUtils()->AreNeighbours(GetCalorimeter(),absId0,list[imax]))   { match0 = kTRUE; imatch0 = imax  ; }
     //printf("imax - match0? (%d-%d)=%d, (%d-%d)=%d\n",ieta0,ietam0,ieta0-ietam0, iphi0,iphim0,iphi0-iphim0);
-    if(imatch1!=imax2 && GetCaloUtils()->AreNeighbours(fCalorimeter,absId0,list[imax2]) ) { match0 = kTRUE; imatch0 = imax2 ; }
+    if(imatch1!=imax2 && GetCaloUtils()->AreNeighbours(GetCalorimeter(),absId0,list[imax2]) ) { match0 = kTRUE; imatch0 = imax2 ; }
     //printf("imax2 - match0? (%d-%d)=%d, (%d-%d)=%d\n",ieta0,ietam1,ieta0-ietam1, iphi0,iphim1,iphi0-iphim1);
   }
   
   if(!match1)
   {
-    if(imatch0!=imax  && GetCaloUtils()->AreNeighbours(fCalorimeter,absId1,list[imax]) ) { match1 = kTRUE; imatch1 = imax  ; }
+    if(imatch0!=imax  && GetCaloUtils()->AreNeighbours(GetCalorimeter(),absId1,list[imax]) ) { match1 = kTRUE; imatch1 = imax  ; }
     //printf("imax - match1? (%d-%d)=%d, (%d-%d)=%d\n",ieta1,ietam0,ieta1-ietam0, iphi1,iphim0,iphi1-iphim0);
   
-    if(imatch0!=imax2 && GetCaloUtils()->AreNeighbours(fCalorimeter,absId1,list[imax2])) { match1 = kTRUE; imatch1 = imax2 ; }
+    if(imatch0!=imax2 && GetCaloUtils()->AreNeighbours(GetCalorimeter(),absId1,list[imax2])) { match1 = kTRUE; imatch1 = imax2 ; }
     //printf("imax2 - match1? (%d-%d)=%d, (%d-%d)=%d\n",ieta1,ietam1,ieta1-ietam1, iphi1,iphim1,iphi1-iphim1);
   }
     
@@ -1155,7 +1155,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   // Decay photon cells are adjacent?
   
-  if( (match0 || match1) && GetCaloUtils()->AreNeighbours(fCalorimeter,absId0,absId1) )
+  if( (match0 || match1) && GetCaloUtils()->AreNeighbours(GetCalorimeter(),absId0,absId1) )
   {
 //   if((mass < 0.06 || mass > 1.8) && mcindex==kmcPi0 && noverlaps == 0)
 //      printf("c) Both Photons hit a local maxima and in adjacent cells \n");
@@ -1241,11 +1241,11 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
     for(Int_t i = 0; i < nmaxima; i++)
     {
       Int_t ieta=-1; Int_t iphi = 0; Int_t rcu = 0;
-      GetModuleNumberCellIndexes(list[i] ,fCalorimeter, ieta, iphi, rcu);
+      GetModuleNumberCellIndexes(list[i] ,GetCalorimeter(), ieta, iphi, rcu);
       
       //printf(" Other Max (eta,phi)=(%d,%d)\n",ieta,iphi);
       
-      if(GetCaloUtils()->AreNeighbours(fCalorimeter,absId1,list[i]) ) adjacentOther1 = kTRUE;
+      if(GetCaloUtils()->AreNeighbours(GetCalorimeter(),absId1,list[i]) ) adjacentOther1 = kTRUE;
       
       //printf("Other Maxima: adjacentOther1 %d\n",adjacentOther1);
     }
@@ -1257,11 +1257,11 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
     for(Int_t i = 0; i < nmaxima; i++)
     {
       Int_t ieta=-1; Int_t iphi = 0; Int_t rcu = 0;
-      GetModuleNumberCellIndexes(list[i] ,fCalorimeter, ieta, iphi, rcu);
+      GetModuleNumberCellIndexes(list[i] ,GetCalorimeter(), ieta, iphi, rcu);
       
       //printf(" Other Max (eta,phi)=(%d,%d)\n",ieta,iphi);
       
-      if(GetCaloUtils()->AreNeighbours(fCalorimeter,absId0,list[i]) ) adjacentOther0 = kTRUE;
+      if(GetCaloUtils()->AreNeighbours(GetCalorimeter(),absId0,list[i]) ) adjacentOther0 = kTRUE;
       
       //printf("Other Maxima: adjacentOther0 %d\n",adjacentOther0);
     }
@@ -2767,7 +2767,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   // Calculate weights and fill histograms
     
   AliVCaloCells* cells = 0;
-  if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
+  if(GetCalorimeter() == "EMCAL") cells = GetEMCALCells();
   else                        cells = GetPHOSCells();
   
   // First recalculate energy in case non linearity was applied
@@ -2788,9 +2788,9 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   
   //Get amplitude of  main local maxima, recalibrate if needed
   Float_t amp1 = cells->GetCellAmplitude(absId1);
-  GetCaloUtils()->RecalibrateCellAmplitude(amp1,fCalorimeter, absId1);
+  GetCaloUtils()->RecalibrateCellAmplitude(amp1,GetCalorimeter(), absId1);
   Float_t amp2 = cells->GetCellAmplitude(absId2);
-  GetCaloUtils()->RecalibrateCellAmplitude(amp2,fCalorimeter, absId2);
+  GetCaloUtils()->RecalibrateCellAmplitude(amp2,GetCalorimeter(), absId2);
 
   if(amp1 < amp2)        Info("FillSSWeightHistograms","Bad local maxima E ordering : id1 E %f, id2 E %f\n ",amp1,amp2);
   if(amp1==0 || amp2==0) Info("FillSSWeightHistograms","Null E local maxima : id1 E %f, id2 E %f\n "        ,amp1,amp2);
@@ -2812,7 +2812,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
     
     //Recalibrate cell energy if needed
     Float_t amp = cells->GetCellAmplitude(id);
-    GetCaloUtils()->RecalibrateCellAmplitude(amp,fCalorimeter, id);
+    GetCaloUtils()->RecalibrateCellAmplitude(amp,GetCalorimeter(), id);
     if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
     {
       //printf("eCell a) %f",amp);
@@ -2833,7 +2833,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   }
 
   //Recalculate shower shape for different W0
-  if(fCalorimeter=="EMCAL")
+  if(GetCalorimeter()=="EMCAL")
   {
     Float_t l0org = clus->GetM02();
     Float_t l1org = clus->GetM20();
@@ -2968,7 +2968,7 @@ TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
   snprintf(onePar,buffersize,"--- AliAnaInsideClusterInvariantMass ---\n") ;
   parList+=onePar ;	
   
-  snprintf(onePar,buffersize,"Calorimeter: %s\n",        fCalorimeter.Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s\n",        GetCalorimeter().Data()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fNLocMaxCutE =%2.2f \n",    GetCaloUtils()->GetLocalMaximaCutE()) ;
   parList+=onePar ;
@@ -6217,7 +6217,7 @@ void AliAnaInsideClusterInvariantMass::GetMCIndex(AliVCluster* cluster,
   
   // Assign mc index depending on MC bit set, to be used in histograms arrays
     
-  tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader(),fCalorimeter);
+  tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader(),GetCalorimeter());
   
   if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
            !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPi0;
@@ -6304,11 +6304,11 @@ void AliAnaInsideClusterInvariantMass::Init()
   //Init
   //Do some checks
   
-  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
+  if(GetCalorimeter() == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
   {
     AliFatal("!!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
   }
-  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
+  else  if(GetCalorimeter() == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
   {
     AliFatal("!!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
   }
@@ -6326,8 +6326,6 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
   //Initialize the parameters of the analysis.  
   AddToHistogramsName("AnaPi0InsideClusterInvariantMass_");
   
-  fCalorimeter = "EMCAL" ;
-
   fMinNCells   = 4 ;
   fMinBadDist  = 2 ;
   
@@ -6358,18 +6356,18 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
 //__________________________________________________________________
 void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() 
 {
-  //Search for pi0 in fCalorimeter with shower shape analysis 
+  //Search for pi0 in GetCalorimeter() with shower shape analysis 
   
   TObjArray * pl       = 0x0; 
   AliVCaloCells* cells = 0x0;
 
   //Select the Calorimeter of the photon
-  if(fCalorimeter == "PHOS")
+  if(GetCalorimeter() == "PHOS")
   {
     pl    = GetPHOSClusters();
     cells = GetPHOSCells();
   }
-  else if (fCalorimeter == "EMCAL")
+  else if (GetCalorimeter() == "EMCAL")
   {
     pl    = GetEMCALClusters();
     cells = GetEMCALCells();
@@ -6377,11 +6375,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   
   if(!pl || !cells) 
   {
-    Info("MakeAnalysisFillHistograms","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
+    Info("MakeAnalysisFillHistograms","TObjArray with %s clusters is NULL!\n",GetCalorimeter().Data());
     return;
   }  
   
-	if(fCalorimeter == "PHOS") return; // Not implemented for PHOS yet
+	if(GetCalorimeter() == "PHOS") return; // Not implemented for PHOS yet
 
   for(Int_t icluster = 0; icluster < pl->GetEntriesFast(); icluster++)
   {
@@ -6482,11 +6480,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     Float_t e2 = lv2.Energy();
     
     Double_t tof1  = cells->GetCellTime(absId1);
-    GetCaloUtils()->RecalibrateCellTime(tof1, fCalorimeter, absId1,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    GetCaloUtils()->RecalibrateCellTime(tof1, GetCalorimeter(), absId1,GetReader()->GetInputEvent()->GetBunchCrossNumber());
     tof1*=1.e9;
     
     Double_t tof2  = cells->GetCellTime(absId2);
-    GetCaloUtils()->RecalibrateCellTime(tof2, fCalorimeter, absId2,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+    GetCaloUtils()->RecalibrateCellTime(tof2, GetCalorimeter(), absId2,GetReader()->GetInputEvent()->GetBunchCrossNumber());
     tof2*=1.e9;
     
     Double_t t12diff = tof1-tof2;
@@ -6629,7 +6627,7 @@ void AliAnaInsideClusterInvariantMass::Print(const Option_t * opt) const
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print("");
-  printf("Calorimeter     =     %s\n",  fCalorimeter.Data()) ;
+  printf("Calorimeter     =     %s\n",  GetCalorimeter().Data()) ;
   if(GetCaloUtils()) printf("Loc. Max. E > %2.2f\n",       GetCaloUtils()->GetLocalMaximaCutE());
   if(GetCaloUtils()) printf("Loc. Max. E Diff > %2.2f\n",  GetCaloUtils()->GetLocalMaximaCutEDiff());
   printf("Min. N Cells =%d \n",         fMinNCells) ;
