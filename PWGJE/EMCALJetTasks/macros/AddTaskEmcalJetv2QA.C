@@ -7,6 +7,8 @@ AliAnalysisTaskEmcalJetv2QA* AddTaskEmcalJetv2QA(
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
   const char *nrho               = "Rho",
+  Double_t    jetv2              = 0.0,
+  Bool_t      ptweight           = kFALSE,
   Int_t       nCentBins          = 1,
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
@@ -42,10 +44,13 @@ AliAnalysisTaskEmcalJetv2QA* AddTaskEmcalJetv2QA(
     name += "_";
     name += njets;
   }
+  name += Form("_v%.2i",(Int_t)(10*jetv2));
   if (strcmp(nrho,"")) {
     name += "_";
     name += nrho;
   }
+  if (ptweight)
+    name += "_ptweight";
   if (strcmp(type,"")) {
     name += "_";
     name += type;
@@ -54,6 +59,10 @@ AliAnalysisTaskEmcalJetv2QA* AddTaskEmcalJetv2QA(
   Printf("name: %s",name.Data());
 
   AliAnalysisTaskEmcalJetv2QA* jetTask = new AliAnalysisTaskEmcalJetv2QA(name);
+
+  jetTask->SetJetv2(jetv2); // set your jet v2 here
+  jetTask->SetDoPtWeight(ptweight); // set doPtWeight
+
   jetTask->SetCentRange(0.,100.);
   jetTask->SetNCentBins(nCentBins);
 

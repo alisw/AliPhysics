@@ -90,7 +90,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPIDResponse * GetPIDResponse() { return fPIDResponse;}
 	
 	void PrintCuts();
-
+	void PrintCutsWithValues();
+	
 	void InitCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName="");
 	void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName=""){if(!fHistograms){InitCutHistograms(name,preCut,cutName);};}
 	TList *GetCutHistograms(){return fHistograms;}
@@ -166,6 +167,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	TH2F *fHistTrackDCAzPtafter;
 	TH2F *fHistTrackNFindClsPtTPCbefore;
 	TH2F *fHistTrackNFindClsPtTPCafter;
+	
+	TString fStringITSClusterCut;
 	
 	private:
 

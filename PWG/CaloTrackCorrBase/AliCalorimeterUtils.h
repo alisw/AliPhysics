@@ -104,6 +104,7 @@ class AliCalorimeterUtils : public TObject {
   
   Bool_t        IsMCParticleInCalorimeterAcceptance(TString calo, TParticle* particle);
   Bool_t        IsMCParticleInCalorimeterAcceptance(TString calo, AliAODMCParticle* particle);
+  Bool_t        IsMCParticleInCalorimeterAcceptance(TString calo, TLorentzVector particle, Int_t & absID);
   
   void          SwitchOnLoadOwnEMCALGeometryMatrices()     { fLoadEMCALMatrices = kTRUE   ; }
   void          SwitchOffLoadOwnEMCALGeometryMatrices()    { fLoadEMCALMatrices = kFALSE  ; }

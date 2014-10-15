@@ -5,6 +5,8 @@
 
 class TH2;
 class TF1;
+class AliParticleContainer;
+class AliClusterContainer;
 
 #include "AliAnalysisTaskEmcal.h"
 
@@ -56,9 +58,12 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   TH2                   *fHistScalevsScaleEmcal;       //!output histogram
   TH2                   *fHistScaleEmcalvsScale2Emcal; //!output histogram
 
+  AliParticleContainer  *fTracksCont;                  //!Tracks
+  AliClusterContainer   *fCaloClustersCont;            //!Clusters 
+
   AliAnalysisTaskScale(const AliAnalysisTaskScale&); // not implemented
   AliAnalysisTaskScale& operator=(const AliAnalysisTaskScale&); // not implemented
   
-  ClassDef(AliAnalysisTaskScale, 10); // Scale task
+  ClassDef(AliAnalysisTaskScale, 11); // Scale task
 };
 #endif

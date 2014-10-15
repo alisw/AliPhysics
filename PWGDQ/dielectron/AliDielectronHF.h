@@ -48,6 +48,7 @@ public:
   void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
   void SetStepForMCGenerated(Bool_t switcher=kTRUE)    {fStepGenerated = switcher;}
   void SetPairTypes(EPairType ptype) { fPairType=ptype; }
+  void SetEventArray(Bool_t switcher=kTRUE) {fEventArray=switcher;}
 
   // functions to add 1-dimensional objects
   void UserProfile(const char* histClass, UInt_t valTypeP,
@@ -97,7 +98,10 @@ public:
 
   Int_t GetNumberOfBins() const;
   const TObjArray * GetHistArray() const { return &fArrPairType; }
-  Bool_t GetStepForMCGenerated() const   { return fStepGenerated; }
+  Bool_t GetStepForMCGenerated()   const { return fStepGenerated; }
+  Bool_t IsEventArray()           const { return fEventArray; }
+  
+  
 
 private:
   TBits     *fUsedVars;             // list of used variables
@@ -114,14 +118,14 @@ private:
   
   Bool_t    fHasMC;                 // is mc array
   Bool_t    fStepGenerated;         // switcher for generated particles
-
+  Bool_t    fEventArray;            // switch OFF pair types and ON event array
   TObjArray fRefObj;               // reference object
 
   AliDielectronHF(const AliDielectronHF &c);
   AliDielectronHF &operator=(const AliDielectronHF &c);
 
   
-  ClassDef(AliDielectronHF,5)         // Dielectron HF
+  ClassDef(AliDielectronHF,6)         // Dielectron HF
 };
 
 

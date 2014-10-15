@@ -7,7 +7,7 @@
  * See cxx source for full Copyright notice                               */
   
 /**
- * Class for for NetParticle Distributions
+ * Class for NetParticle Distributions
  * -- Helper class for net particle istributions
  * Authors: Jochen Thaeder <jochen@thaeder.de>
  *          Michael Weber <m.weber@cern.ch>
@@ -17,11 +17,14 @@
 #include "THn.h"
 #include "TH1F.h"
 #include "TF1.h"
+#include "TProfile2D.h"
+#include "TRandom3.h"
 
 class AliESDtrack;
 class AliMCEvent;
 class AliStack;
 class AliPIDResponse;
+class AliESDtrackCuts;
 class AliInputEventHandler;
 class AliESDInputHandler;
 class AliAODInputHandler;
@@ -61,9 +64,15 @@ class AliAnalysisNetParticleHelper : public TNamed {
   void SetParticleSpecies(AliPID::EParticleType pid);
 
   void SetUsePID(Bool_t b);
+  void SetPIDStrategy(Int_t i)                       {fPIDStrategy         = i;}
+  void SetNSigmaMaxITS(Float_t f)                    {fNSigmaMaxITS        = f;}
   void SetNSigmaMaxTPC(Float_t f)                    {fNSigmaMaxTPC        = f;}
+  void SetNSigmaMaxTPClow(Float_t f)                 {fNSigmaMaxTPClow     = f;}
   void SetNSigmaMaxTOF(Float_t f)                    {fNSigmaMaxTOF        = f;}
   void SetMinPtForTOFRequired(Float_t f)             {fMinPtForTOFRequired = f;}
+  void SetMaxPtForTPClow(Float_t f)                  {fMaxPtForTPClow      = f;}
+
+  void SetNSubSamples(Int_t i)                       {fNSubSamples         = i;}
 
   /*
    * ---------------------------------------------------------------------------------
@@ -71,25 +80,36 @@ class AliAnalysisNetParticleHelper : public TNamed {
    * ---------------------------------------------------------------------------------
    */
   
-  AliPID::EParticleType GetParticleSpecies(){return fParticleSpecies;}
+  AliPID::EParticleType GetParticleSpecies()   {return fParticleSpecies;}
   TString  GetParticleName(Int_t idxPart);
   TString  GetParticleTitle(Int_t idxPart);
   TString  GetParticleTitleLatex(Int_t idxPart);
 
-  TH1F*    GetHEventStat0()                  {return fHEventStat0;}
-  TH1F*    GetHEventStat1()                  {return fHEventStat1;}
-  TH1F*    GetHTriggerStat()                 {return fHTriggerStat;}
-  TH1F*    GetHCentralityStat()              {return fHCentralityStat;}
+  TH1F*    GetHEventStat0()                    {return fHEventStat0;}
+  TH1F*    GetHEventStat1()                    {return fHEventStat1;}
+  TH1F*    GetHTriggerStat()                   {return fHTriggerStat;}
+  TH1F*    GetHCentralityStat()                {return fHCentralityStat;}
 
-  Int_t    GetCentralityBin()                {return fCentralityBin;}
-  Float_t  GetCentralityPercentile()         {return fCentralityPercentile;}
+  Int_t    GetCentralityBin()                  {return fCentralityBin;}
+  Float_t  GetCentralityPercentile()           {return fCentralityPercentile;}
 
-  Bool_t   GetUsePID()                       {return fUsePID;}
+  Bool_t   GetUsePID()                         {return fUsePID;}
 
-  Float_t  GetMinPtForTOFRequired()          {return fMinPtForTOFRequired;}
-  Float_t  GetRapidityMax()                  {return fRapidityMax;}
-  Float_t  GetPhiMin()                       {return fPhiMin;}
-  Float_t  GetPhiMax()                       {return fPhiMax;}
+  Float_t  GetMinPtForTOFRequired()            {return fMinPtForTOFRequired;}
+  Float_t  GetMaxPtForTPClow()                 {return fMaxPtForTPClow;}
+  Float_t  GetRapidityMax()                    {return fRapidityMax;}
+  Float_t  GetPhiMin()                         {return fPhiMin;}
+  Float_t  GetPhiMax()                         {return fPhiMax;}
+ 
+  AliESDtrackCuts* GetESDTrackCuts()           {return fESDTrackCuts;}
+  Bool_t           GetIsMC()                   {return fIsMC;}
+  Int_t            GetAODtrackCutBit()         {return fAODtrackCutBit;}
+
+  AliInputEventHandler* GetInputEventHandler() {return fInputEventHandler;}
+  AliMCEvent*           GetMCEvent()           {return fMCEvent;}
+
+  Int_t    GetSubSampleIdx()                   {return fSubSampleIdx;}
+  Int_t    GetNSubSamples()                    {return fNSubSamples;}
 
   /*
    * ---------------------------------------------------------------------------------
@@ -98,7 +118,7 @@ class AliAnalysisNetParticleHelper : public TNamed {
    */
 
   /** Initialize Helper */
-  Int_t Initialize(Bool_t isMC, Int_t modeDistCreation);
+  Int_t Initialize(AliESDtrackCuts *cuts, Bool_t isMC, Int_t trackCutBit, Int_t modeDistCreation);
 
   /** Setup Event */
   Int_t SetupEvent(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
@@ -162,14 +182,11 @@ class AliAnalysisNetParticleHelper : public TNamed {
    *                         Helper Methods
    * ---------------------------------------------------------------------------------
    */
-
-  /** Update eta corrected TPC pid */
-  void UpdateEtaCorrectedTPCPid();
   
   /** Method for the correct logarithmic binning of histograms 
    *  and Update MinPtForTOFRequired, using the pT log-scale 
    */
-  void BinLogAxis(const THnBase *h, Int_t axisNumber);
+  void BinLogAxis(const THnBase *h, Int_t axisNumber, AliESDtrackCuts* cuts = NULL);
 
   /*
    * ---------------------------------------------------------------------------------
@@ -221,9 +238,6 @@ class AliAnalysisNetParticleHelper : public TNamed {
   /**  Initialize centrality statistics */
   void InitializeCentralityStats();
 
-  /** Initialize eta correction maps for TPC pid */
-  Int_t InitializeEtaCorrection(Bool_t isMC);
-
   /*
    * ---------------------------------------------------------------------------------
    *                         Event / Trigger Statistics - private
@@ -243,7 +257,10 @@ class AliAnalysisNetParticleHelper : public TNamed {
   AliInputEventHandler *fInputEventHandler;        //! Ptr to input event handler (ESD or AOD)
   AliPIDResponse       *fPIDResponse;              //! Ptr to PID response Object
   AliESDEvent          *fESD;                      //! Ptr to ESD event
+  AliESDtrackCuts      *fESDTrackCuts;             //! Ptr to ESD cuts  
   AliAODEvent          *fAOD;                      //! Ptr to AOD event
+  Int_t                 fAODtrackCutBit;           //  Track filter bit for AOD tracks
+  Bool_t                fIsMC;                     //  Is MC event
   AliMCEvent           *fMCEvent;                  //! Ptr to MC event
   AliStack             *fStack;                    //! Ptr to stack
   // =======================================================================
@@ -265,9 +282,13 @@ class AliAnalysisNetParticleHelper : public TNamed {
   TString               fPartTitleLatex[2];        //  Particle title (LATEX) - particle/antiparticle
   // -----------------------------------------------------------------------
   Bool_t                fUsePID;                   //  Use PID, default is on
+  Int_t                 fPIDStrategy;              //  PID Strategy to be used
+  Float_t               fNSigmaMaxITS;             //  N Sigma for ITS PID
   Float_t               fNSigmaMaxTPC;             //  N Sigma for TPC PID
+  Float_t               fNSigmaMaxTPClow;          //  N Sigma for TPC PID lower part
   Float_t               fNSigmaMaxTOF;             //  N Sigma for TOF PID
   Float_t               fMinPtForTOFRequired;      //  Min pt from where TOF is required
+  Float_t               fMaxPtForTPClow;           //  Max pt until TPClow is used
   // =======================================================================
   TH1F                 *fHEventStat0;              //  Event cut statistics
   TH1F                 *fHEventStat1;              //  Event cut statistics - incremental
@@ -279,8 +300,9 @@ class AliAnalysisNetParticleHelper : public TNamed {
   TH1F                 *fHCentralityStat;          //  Centrality statistics
   Int_t                 fNCentralityBins;          //  N centrality bins used
   // =======================================================================
-  TF1                  *fEtaCorrFunc;              //! Eta correction function for TPC dE/dx  
-  // -----------------------------------------------------------------------
+  Int_t                 fNSubSamples;              //  N subsamples
+  Int_t                 fSubSampleIdx;             //  Subsample idx for current event
+  TRandom3             *fRandom;                   //  Random generator
 
   ClassDef(AliAnalysisNetParticleHelper, 1);
 };

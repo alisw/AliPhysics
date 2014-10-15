@@ -29,11 +29,20 @@ public:
   /// Set location of the default OCDB storage (if not set use "raw://")
   void SetDefaultStorage(const char* ocdbPath) { fDefaultStorage = ocdbPath; }
   
+  /// Set the OCDB path to the alignment file used in the reco (if not set use default storage)
+  void SetAlignStorage(const char* ocdbPath) { fAlignOCDBpath = ocdbPath; }
+  
+  /// Set the OCDB path to the recoParam file used in the reco (if not set use default storage)
+  void SetRecoParamStorage(const char* ocdbPath) { fRecoParamOCDBpath = ocdbPath; }
+  
   /// Set the sigma cut to associate clusters with TrackRefs by position (instead of using recoParam)
   void SetExternalTrkSigmaCut(Double_t cut) { fExternalTrkSigmaCut = cut; }
   
   /// Set the sigma cut to associate trigger to triggerable track by position (instead of using recoParam)
   void SetExternalTrgSigmaCut(Double_t cut) { fExternalTrgSigmaCut = cut; }
+  
+  /// Set the flag to consider decays as fake tracks or not
+  void DecayAsFake(Bool_t flag = kTRUE) { fDecayAsFake = flag; }
   
   
 private:
@@ -56,14 +65,17 @@ private:
 			  Bool_t &isReconstructible, Int_t &lastCh) const;
   
   TString  fDefaultStorage;       ///< location of the default OCDB storage
+  TString  fAlignOCDBpath;        ///< OCDB path to the alignment file
+  TString  fRecoParamOCDBpath;    ///< OCDB path to the recoParam file
   UInt_t   fRequestedStationMask; //!< mask of requested stations
   Bool_t   fRequest2ChInSameSt45; //!< 2 fired chambers requested in the same station (4 or 5) or not
   Double_t fExternalTrkSigmaCut;  ///< sigma cut to associate clusters with TrackRefs (instead of using recoParam)
   Double_t fSigmaCut;             //!< sigma cut to associate clusters with TrackRefs
   Double_t fExternalTrgSigmaCut;  ///< sigma cut to associate trigger to triggerable track (instead of using recoParam)
   Double_t fSigmaCutTrig;         //!< sigma cut to associate trigger to triggerable track
-      
-  ClassDef(AliAnalysisTaskESDMCLabelAddition, 3); // Analysis task for standard ESD filtering
+  Bool_t   fDecayAsFake;          ///< consider decays as fake tracks or not
+  
+  ClassDef(AliAnalysisTaskESDMCLabelAddition, 5); // Analysis task for standard ESD filtering
   
 };
 

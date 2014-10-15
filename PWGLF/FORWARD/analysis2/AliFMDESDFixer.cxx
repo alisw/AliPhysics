@@ -350,7 +350,7 @@ AliFMDESDFixer::Print(Option_t*) const
   AliForwardUtil::PrintTask(*this);
   gROOT->IncreaseDirLevel();
   PFB("Consider invalid null", fInvalidIsEmpty);
-  PFB("Has extra dead", fHasXtraDead);
+  PFB("Has extra dead", fHasXtraDead || fXtraDead.GetNbits() > 0);
   PFV("Reco noise factor", fRecoFactor);
   PFV("Max noise corr", fMaxNoiseCorr);
   PFB("Recalc. eta", fRecalculateEta);

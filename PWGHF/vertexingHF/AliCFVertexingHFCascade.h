@@ -34,6 +34,7 @@ class TClonesArray;
 class AliCFVertexingHF;
 class AliESDtrack;
 class TDatabasePDG;
+class AliPIDResponse;
 
 class AliCFVertexingHFCascade : public AliCFVertexingHF{
  public:
@@ -49,7 +50,8 @@ class AliCFVertexingHFCascade : public AliCFVertexingHF{
   Bool_t CheckMCChannelDecay()const;
   
   Bool_t SetRecoCandidateParam(AliAODRecoDecayHF *recoCand);
-  Bool_t EvaluateIfD0toKpi(AliAODMCParticle* neutralDaugh, Double_t* VectorD0)const;
+  //Bool_t EvaluateIfD0toKpi(AliAODMCParticle* neutralDaugh, Double_t* VectorD0)const;
+  Bool_t EvaluateIfCorrectNeutrDaugh(AliAODMCParticle* neutralDaugh, Double_t* VectorD0)const;
 
   void SetPtAccCut(Float_t* ptAccCut);
   void SetEtaAccCut(Float_t* etaAccCut);
@@ -59,14 +61,45 @@ class AliCFVertexingHFCascade : public AliCFVertexingHF{
   Double_t GetEtaProng(Int_t iProng)const;
   Double_t GetPtProng(Int_t iProng) const;
 
+  void SetPDGcascade(Int_t pdg)    {fPDGcascade = pdg;}
+  void SetPDGbachelor(Int_t pdg)   {fPDGbachelor = pdg;}
+  void SetPDGneutrDaugh(Int_t pdg)         {fPDGneutrDaugh = pdg;}
+  void SetPDGneutrDaughForMC(Int_t pdg)         {fPDGneutrDaughForMC = pdg;}
+  void SetPDGneutrDaughPositive(Int_t pdg) {fPDGneutrDaughPositive = pdg;}
+  void SetPDGneutrDaughNegative(Int_t pdg) {fPDGneutrDaughNegative = pdg;}
+  void SetPrimaryVertex(AliAODVertex* vtx) {fPrimVtx = vtx;}
+
+  Int_t GetPDGcascade()    const {return fPDGcascade;}
+  Int_t GetPDGbachelor()   const {return fPDGbachelor;}
+  Int_t GetPDGneutrDaugh()         const {return fPDGneutrDaugh;}
+  Int_t GetPDGneutrDaughForMC()         const {return fPDGneutrDaughForMC;}
+  Int_t GetPDGneutrDaughPositive() const {return fPDGneutrDaughPositive;}
+  Int_t GetPDGneutrDaughNegative() const {return fPDGneutrDaughNegative;}
+  AliAODVertex* GetPrimaryVertex() const {return fPrimVtx;}
+
+  Bool_t CheckAdditionalCuts(AliPIDResponse* pidResponse) const;
+
+  void SetUseCutsForTMVA(Bool_t useCutsForTMVA) {fUseCutsForTMVA = useCutsForTMVA;}
+  Bool_t GetUseCutsForTMVA() const {return fUseCutsForTMVA;}
+
  protected:
   
   
  private:	
   AliCFVertexingHFCascade(const AliCFVertexingHFCascade& c);
   AliCFVertexingHFCascade& operator= (const AliCFVertexingHFCascade& other);
-  
-  ClassDef(AliCFVertexingHFCascade, 2); // CF class for D* and other cascades
+
+  Int_t fPDGcascade;   // pdg code of the cascade
+  Int_t fPDGbachelor;  // pdg code of the bachelor
+  Int_t fPDGneutrDaugh;        // pdg code of the V0
+  Int_t fPDGneutrDaughForMC;        // pdg code of the V0
+  Int_t fPDGneutrDaughPositive;  // pdg code of the positive daughter of the V0
+  Int_t fPDGneutrDaughNegative;  // pdg code of the negative daughter of the V0
+  AliAODVertex* fPrimVtx;        // primaryVertex
+  Bool_t fUseCutsForTMVA;        // flag to decide whether to use or not the preselection
+                                 // cuts of the TMVA when filling the CF
+
+  ClassDef(AliCFVertexingHFCascade, 3); // CF class for D* and other cascades
   
 };
 

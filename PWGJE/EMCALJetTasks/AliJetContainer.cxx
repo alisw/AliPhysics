@@ -13,6 +13,7 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliLocalRhoParameter.h"
+#include "AliStackPartonInfo.h"
 
 #include "AliJetContainer.h"
 
@@ -26,6 +27,7 @@ AliJetContainer::AliJetContainer():
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
+  fPartonInfoName(),
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
@@ -52,6 +54,7 @@ AliJetContainer::AliJetContainer():
   fRho(0),
   fLocalRho(0),
   fRhoMass(0),
+  fPartonsInfo(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -68,6 +71,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
+  fPartonInfoName(),
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
@@ -94,6 +98,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fRho(0),
   fLocalRho(0),
   fRhoMass(0),
+  fPartonsInfo(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -170,6 +175,19 @@ void AliJetContainer::LoadRhoMass(AliVEvent *event)
     }
   }
 }
+//________________________________________________________________________
+void AliJetContainer::LoadPartonsInfo(AliVEvent *event)
+{
+    // Load parton info
+    
+    if (!fPartonInfoName.IsNull() && !fPartonsInfo) {
+        fPartonsInfo = dynamic_cast<AliStackPartonInfo*>(event->FindListObject(fPartonInfoName));
+        if (!fPartonsInfo) {
+           AliError(Form("%s: Could not retrieve parton infos! %s!", GetName(), fPartonInfoName.Data()));            return;
+        }
+    }
+}
+
 
 
 //________________________________________________________________________
@@ -508,7 +526,7 @@ void AliJetContainer::SetJetEtaPhiEMCAL()
     SetJetEtaLimits(fGeom->GetArm1EtaMin() + fJetRadius, fGeom->GetArm1EtaMax() - fJetRadius);
 
     if(fRunNumber>=177295 && fRunNumber<=197470) //small SM masked in 2012 and 2013
-      SetJetPhiLimits(1.4+fJetRadius,TMath::Pi()-fJetRadius);
+      SetJetPhiLimits(1.405+fJetRadius,3.135-fJetRadius);
     else
       SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
 

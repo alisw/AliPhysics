@@ -37,7 +37,11 @@ AliBaseESDTask::AliBaseESDTask(const char* name, const char* title,
     fCloneList(false),
     fCorrManager(0)
 {
-  SetTitle(title && title[0] != '\0' ? title : this->ClassName());
+  // The line below doesn't actually do the job - when we're
+  // constructing, the derived class ins't set yet and this explicitly
+  // points to an object of _this_ class.
+  // SetTitle(title && title[0] != '\0' ? title : this->ClassName());
+  SetTitle(title && title[0] != '\0' ? title : "");
   fCorrManager = manager;
   // if (!manager) 
   //   AliFatal("Must pass in a valid correction manager object!");
@@ -135,13 +139,13 @@ AliBaseESDTask::Configure(const char* macro)
     gROOT->SetMacroPath(macroPath);
   }
   TString mac(macro);
-  if (mac.EqualTo("-default-")) 
-    mac = "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/ForwardAODConfig.C";
+  if (mac.EqualTo("-default-")) mac = DefaultConfig();
   const char* config = gSystem->Which(gROOT->GetMacroPath(), mac.Data());
   if (!config) {
     AliWarningF("%s not found in %s", mac.Data(), gROOT->GetMacroPath());
     return false;
   }
+  if (fTitle.IsNull()) fTitle = this->ClassName();
 
   AliInfoF("Loading configuration of '%s' from %s",  ClassName(), config);
   gROOT->Macro(Form("%s((%s*)%p)", config, GetTitle(), this));

@@ -461,10 +461,10 @@ Double_t AliAnalysisMuMuJpsiResult::CountParticle(const TH1& hminv, const char* 
     return hminv.Integral();
   }
   
-  TAxis* x = hminv.GetXaxis();
+  const TAxis* x = hminv.GetXaxis();
 
-  Int_t b1 = x->FindBin(mass-sigma);
-  Int_t b2 = x->FindBin(mass+sigma);
+  Int_t b1 = x->FindFixBin(mass-sigma);
+  Int_t b2 = x->FindFixBin(mass+sigma);
   
   AliDebugClass(1,Form("hminv getentries %e integral %e",hminv.GetEntries(),hminv.Integral(b1,b2)));
   

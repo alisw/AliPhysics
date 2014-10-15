@@ -132,6 +132,22 @@ void AliDielectronMixingHandler::AddVariable(AliDielectronVarManager::ValueTypes
   fAxes.Add(binLimits);
 }
 
+//________________________________________________________________
+void AliDielectronMixingHandler::AddVariable(AliDielectronVarManager::ValueTypes type,
+                                             TVectorD * const bins)
+{
+  //
+  // Add a variable to the mixing handler with arbitrary binning 'bins'
+  //
+
+  // limit number of variables to kMaxCuts
+  if (fAxes.GetEntriesFast()>=kMaxCuts) return;
+
+  Int_t size=fAxes.GetEntriesFast();
+  fEventCuts[size]=(UShort_t)type;
+  fAxes.Add(bins);
+}
+
 //______________________________________________
 void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
 {

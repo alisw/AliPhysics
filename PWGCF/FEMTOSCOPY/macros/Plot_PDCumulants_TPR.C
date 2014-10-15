@@ -33,27 +33,28 @@
 #define FmToGeV 0.19733 // conversion to fm
 #define PI 3.1415926
 #define masspiC 0.1395702 // pi+ mass (GeV/c^2)
-double kappa3 = 0.1; // 0.16 (default), 0.05 or 0.3 as variations
-double kappa4 = 0.5; // 0.4 (default), 
+double kappa3 = 0.1; // 0.1 (default), 
+double kappa4 = 0.5; // 0.5 (default), 
 
 using namespace std;
 
-int CollisionType_def=1;// 0=PbPb, 1=pPb, 2=pp
+int CollisionType_def=2;// 0=PbPb, 1=pPb, 2=pp
 bool MCcase_def=0;// MC data?
 int CHARGE_def=-1;// -1 or +1: + or - pions for same-charge case, --+ or ++- for mixed-charge case
 bool SameCharge_def=kTRUE;// 3-pion same-charge?
 bool AddCC=kTRUE;
-bool Gaussian=1;// Gaussian or Exponential?
+bool Gaussian=0;// Gaussian or Exponential?
 bool UseC2Bkg=1;// use Pythia/DPMJET bkg?
 //
 bool MuonCorrection=1;// apply Muon correction?
 bool IncludeExpansion=kTRUE;// Include EdgeWorth coefficients?
 bool FixExpansionAvg=1;
-int Mbin_def=18;// 0-19 (0=1050-2000 pions, 19=0-5 pions)
+int Mbin_def=16;// 0-19 (0=1050-2000 pions, 19=0-5 pions)
 int EDbin_def=0;// 0-2: Kt3 bin
 int Ktbin_def=1;// 1-6, 10=full range
 double MRCShift=1.0;// 1.0=full Momentum Resolution Correction. 1.1 for 10% systematic increase
 bool FitRangeShift=0;// 30% reduction in Fit Range
+bool ExtremeFitRangeC2=0;// 1.2 GeV/c fit range for C2?
 //
 //
 bool SaveToFile_def=kFALSE;// Save outputs to file?
@@ -186,33 +187,32 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   SameCharge_def=SameCharge;// 3-pion same-charge
   Mbin_def=Mbin;
   //
+  if(CollisionType==0){
+    Q3Limit = 0.1 + 0.1*Mbin/16.;
+  }else{
+    Q3Limit = 0.3 + 0.2*fabs(Mbin-10)/9.;
+  }
+  if(FitRangeShift) Q3Limit -= 0.3*Q3Limit;
+  Q2Limit = Q3Limit/sqrt(2.);
+  if(ExtremeFitRangeC2) Q2Limit = 1.2;
+  //Q2Limit = (0.3 + 0.2*fabs(Mbin-10)/9.) / sqrt(2.);
+  //cout<<Q2Limit<<endl;
 
+  
   // PbPb then pPb then pp
   //double Nch_means[3][20]={{1828,1407,1071,896,757,619,496,402,324,252,171,117,83,63,50,36,   36,36,36,36},  {71,71,71,71,71,71,71,71,71,71,71,71,   71,57,45,32,23,16,9.7,5},   {47,47,47,47,47,47,47,47,47,47,47,47,47,   47,37,27,20,15,8.6,4.6}};
   
-  kappa3 = 0.1;
-  kappa4 = 0.5;
+  //kappa3 = 0.1;
+  //kappa4 = 0.5;
   //kappa3 = 0.05 + 0.25*(Mbin/19.);// linear dependence of kappa3
   
   //double MainFitParams[8]={0};
   //
-  //double RefMainFitParams[8]={3.58014,  2.84635,  0.652247,  0.831958,  3.13505,  2.33717,  0.761147,  0.909211};
+  //double RefMainFitParams[8]={6.71377,  5.39974,  1.3822,  1.82065,  6.71377,  5.39974,  1.3822,  1.82065};
 
   if(Gaussian) ExpPower=2.;
   else ExpPower=1.;
   
-  // old way v5 and before
-  /*if(Mbin==0) FSIindex = 0;// 0-5% Therm
-  else if(Mbin==1) FSIindex = 1;// 0-10% Therm
-  else if(Mbin<=3) FSIindex = 2;// 10-20% Therm
-  else if(Mbin<=5) FSIindex = 3;// 20-30% Therm
-  else if(Mbin<=7) FSIindex = 4;// 30-40% Therm
-  else if(Mbin<=9) FSIindex = 5;// 40-50% Therm
-  else if(Mbin<=11) FSIindex = 6;// Gauss R=3.5 fm
-  else if(Mbin<=14) FSIindex = 7;// Gauss R=3.0 fm
-  else if(Mbin<=16) FSIindex = 8;// Gauss R=2.5 fm
-  else FSIindex = 9;// Gauss R=2.0 fm*/
-
   if(CollisionType==0){
     if(Mbin==0) FSIindex = 0;// 0-5% Therm
     else if(Mbin==1) FSIindex = 1;// 0-10% Therm
@@ -304,23 +304,18 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   double BinCenterPbPbPeripheral[40]={0.00206385, 0.00818515, 0.0129022, 0.0177584, 0.0226881, 0.027647, 0.032622, 0.0376015, 0.042588, 0.0475767, 0.0525692, 0.0575625, 0.0625569, 0.0675511, 0.0725471, 0.0775436, 0.0825399, 0.0875364, 0.0925339, 0.0975321, 0.102529, 0.107527, 0.112525, 0.117523, 0.122522, 0.12752, 0.132519, 0.137518, 0.142516, 0.147515, 0.152514, 0.157513, 0.162513, 0.167512, 0.172511, 0.177511, 0.18251, 0.187509, 0.192509, 0.197509};
   double BinCenterpPbAndpp[40]={0.00359275, 0.016357, 0.0257109, 0.035445, 0.045297, 0.0552251, 0.0651888, 0.0751397, 0.0851088, 0.0951108, 0.105084, 0.115079, 0.12507, 0.135059, 0.145053, 0.155049, 0.16505, 0.175038, 0.185039, 0.195034, 0.205023, 0.215027, 0.225024, 0.235023, 0.245011, 0.255017, 0.265017, 0.275021, 0.285021, 0.295017, 0.305018, 0.315018, 0.325013, 0.335011, 0.345016, 0.355019, 0.365012, 0.375016, 0.385017, 0.395016};
   if(CollisionType==0){
-    Q3Limit = 0.1 + 0.1*Mbin/16.;
     for(int i=0; i<40; i++){
       if(Mbin<10) BinCenters[i] = BinCenterPbPbCentral[i];
       else BinCenters[i] = BinCenterPbPbPeripheral[i];
     }
     BinWidthQ2 = 0.005;
   }else{
-    Q3Limit = 0.3 + 0.2*fabs(Mbin-10)/9.;
     for(int i=0; i<40; i++){
       BinCenters[i] = BinCenterpPbAndpp[i];
     }
     BinWidthQ2 = 0.01;
   }
-  if(FitRangeShift) Q3Limit -= 0.3*Q3Limit;
-  Q2Limit = Q3Limit/sqrt(2.);
-  //Q2Limit = 1.2;
-  //cout<<Q2Limit<<"  "<<Q3Limit<<endl;
+  
 
   // extend BinCenters for high q
   for(int index=40; index<400; index++){
@@ -374,6 +369,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       //_file0 = new TFile("Results/PDC_10h_dEta0p025dPhi0p055.root","READ");
       //_file0 = new TFile("Results/PDC_11h_3Kt3bins_FB5and7overlap.root","READ");
       //_file0 = new TFile("Results/PDC_10h_11h_V0binning.root","READ");
+      //_file0 = new TFile("Results/PDC_10h_11h_lowerMultBins.root","READ");
       _file0 = new TFile("Results/PDC_10h_11h_NclsFix.root","READ");// standard
     }
   }else if(CollisionType==1){// pPb
@@ -397,6 +393,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       //_file0 = new TFile("Results/PDC_13e_kHighMult.root","READ");
       //_file0 = new TFile("Results/PDC_13bcd_kINT7_plus_kHighMult.root","READ");// v5 and before
       //_file0 = new TFile("Results/PDC_13bcde_kINT7_NclsFix.root","READ");
+      //_file0 = new TFile("Results/PDC_13e_kHighMult_NclsFix.root","READ");
       _file0 = new TFile("Results/PDC_13bcde_kINT7_kHighMult_NclsFix.root","READ");// standard
     }else{
       _file0 = new TFile("Results/PDC_13b2_efix_p1234_R2_2Ktbins.root","READ");// standard (gen level)
@@ -423,6 +420,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       _file0 = new TFile("Results/PDC_10cde_kMB_kHighMult_NclsFix.root","READ");// standard
     }else{
       _file0 = new TFile("Results/PDC_10f6a_R2_2Ktbins.root","READ");// standard
+      //_file0 = new TFile("Results/PDC_10f6a_R2_AOD161.root","READ");
       //_file0 = new TFile("Results/PDC_10f6a_R10_genLevel_2Ktbins.root","READ");
     }
   }
@@ -661,7 +659,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   gPad->SetRightMargin(0.025); gPad->SetLeftMargin(0.1); gPad->SetTopMargin(0.02); 
   gPad->SetGridx(0);
   gPad->SetGridy(0);
-  TLegend *legend1 = new TLegend(.6,.67,.87,.87,NULL,"brNDC");
+  TLegend *legend1 = new TLegend(.4,.67,.87,.87,NULL,"brNDC");
   legend1->SetBorderSize(1);
   legend1->SetTextSize(.04);// small .03; large .036 
   legend1->SetFillColor(0);
@@ -740,9 +738,14 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
     legend1->Draw("same");
   }
  
-  //for(int i=0; i<Two_ex_clone_mm->GetNbinsX(); i++){
-  //cout<<Two_ex_clone_mm->GetBinError(i+1)<<", ";
+  //for(int i=0; i<100; i++){
+  //cout<<Two_ex_clone_mm->GetBinContent(i+1)<<", ";
   //}
+
+  TF1 *C2osFit_CMS = new TF1("C2osFit_CMS","[0] + [1]*exp(-pow([2]*x,2))",0,2);
+  C2osFit_CMS->FixParameter(0, 9.93558e-01);
+  C2osFit_CMS->FixParameter(1, 5.19578e-02);
+  C2osFit_CMS->FixParameter(2, 1.89425e+00);
 
   /////////////////////////////////////////////////////
   // Global fitting C2os and C2ss
@@ -808,6 +811,8 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
     //
     // method with undilution for plotting purposes
     //C2ssFitting[i] = (C2ssFitting[i] - (1-lambda_PM)) / (CoulCorr2(+1, BinCenters[i]) * lambda_PM);
+    // divide CMS background
+    //C2ssFitting[i] /= C2osFit_CMS->Eval(BinCenters[i]);
     //
     K2SS[i] = CoulCorr2(+1, BinCenters[i]);
     K2OS[i] = CoulCorr2(-1, BinCenters[i]);
@@ -845,7 +850,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
     stepSize[0] = 0.01; stepSize[1] = 0.01;  stepSize[2] = 0.02; stepSize[3] = 0.2; stepSize[4] = 0.01; stepSize[5] = 0.001; stepSize[6] = 0.001; stepSize[7] = 0.001; stepSize[8]=0.001; stepSize[9]=0.01;
     minVal[0] = 0.955; minVal[1] = 0.5; minVal[2] = 0.; minVal[3] = 0.1; minVal[4] = 0.001; minVal[5] = -10.; minVal[6] = -10.; minVal[7] = -10.; minVal[8]=-10; minVal[9] = 0.995;// minVal[1] was 0.2
     maxVal[0] = 1.1; maxVal[1] = 1.3; maxVal[2] = 0.99; maxVal[3] = 15.; maxVal[4] = 2.; maxVal[5] = 10.; maxVal[6] = 10.; maxVal[7] = 10.; maxVal[8]=10.; maxVal[9]=1.1;// maxVal[1] was 1.0
-    if(Gaussian==kFALSE) maxVal[1]=2.0;
+    if(Gaussian==kFALSE) {maxVal[1]=2.0; maxVal[3]=20.0;}
     
     parName[0] = "Norm"; parName[1] = "#Lambda"; parName[2] = "G"; parName[3] = "Rch"; parName[4] = "Rcoh"; 
     parName[5] = "coeff_3"; parName[6] = "coeff_4"; parName[7] = "coeff_5"; parName[8]="coeff_6"; parName[9]="Norm_2";
@@ -867,9 +872,13 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       MyMinuit.DefineParameter(6, parName[6].c_str(), 0, stepSize[6], minVal[6], maxVal[6]); MyMinuit.FixParameter(6);// k4
     }else{// IncludeExpansion
       if(FixExpansionAvg){
-	MyMinuit.DefineParameter(5, parName[5].c_str(), kappa3, stepSize[5], minVal[5], maxVal[5]); MyMinuit.FixParameter(5);// k3 
-	MyMinuit.DefineParameter(6, parName[6].c_str(), kappa4, stepSize[6], minVal[6], maxVal[6]); MyMinuit.FixParameter(6);// k4
-	
+	if(Gaussian){ 
+	  MyMinuit.DefineParameter(5, parName[5].c_str(), kappa3, stepSize[5], minVal[5], maxVal[5]); MyMinuit.FixParameter(5);// k3 
+	  MyMinuit.DefineParameter(6, parName[6].c_str(), kappa4, stepSize[6], minVal[6], maxVal[6]); MyMinuit.FixParameter(6);// k4
+	}else{
+	  MyMinuit.DefineParameter(5, parName[5].c_str(), 0, stepSize[5], minVal[5], maxVal[5]); MyMinuit.FixParameter(5);// k3 
+	  MyMinuit.DefineParameter(6, parName[6].c_str(), 0, stepSize[6], minVal[6], maxVal[6]); MyMinuit.FixParameter(6);// k4
+	}
       }else{
 	Int_t err=0;
 	Double_t tmp[1];
@@ -909,6 +918,10 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 	fitC2ss_Base->FixParameter(i,OutputPar[i]);
 	fitC2ss_Base->SetParError(i,OutputPar_e[i]);
       }
+      for(int bin=1; bin<=Two_ex_clone_mm->GetNbinsX(); bin++){
+	double qinv = Two_ex_clone_mm->GetXaxis()->GetBinCenter(bin);
+	if(!MCcase) fitC2ss_h->SetBinContent(bin, fitC2ss_Base->Eval(qinv));// Base fit
+      }
       
     }else{// Edgeworth or Laguerre
       for(int i=0; i<npar; i++) {
@@ -916,8 +929,8 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 	fitC2ss_Expan->SetParError(i,OutputPar_e[i]);
       }
       for(int bin=1; bin<=Two_ex_clone_mm->GetNbinsX(); bin++){
-	double qinv = Two_ex_clone_mm->GetXaxis()->GetBinCenter(bin);
-	if(!MCcase) fitC2ss_h->SetBinContent(bin, fitC2ss_Expan->Eval(qinv));// uncomment to show expansion
+	//double qinv = Two_ex_clone_mm->GetXaxis()->GetBinCenter(bin);
+	//if(!MCcase) fitC2ss_h->SetBinContent(bin, fitC2ss_Expan->Eval(qinv));// uncomment to show expansion
       }
       
       double lambdaStar=0, lambdaStar_e=0;
@@ -985,7 +998,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   C2_ss->GetXaxis()->SetTitleOffset(.8);
   C2_ss->GetYaxis()->SetTitleOffset(.85);
   C2_ss->GetXaxis()->SetTitle("#font[12]{q} (GeV/c)");
-  C2_ss->GetYaxis()->SetTitle("#font[12]{C}_{2}^{#pm#pm}");
+  C2_ss->GetYaxis()->SetTitle("#font[12]{C}_{2}");
   C2_ss->GetXaxis()->SetTitleSize(0.05);
   C2_ss->GetYaxis()->SetTitleSize(0.05);
   C2_os->GetXaxis()->SetRangeUser(0,0.6);
@@ -1004,15 +1017,43 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   
   fitC2ss_h->SetLineWidth(2);
   fitC2ss_h->SetLineColor(2);
-  
 
+  TH1D *temp_hist_ss=new TH1D("temp_hist_ss","",100,0,0.5);
+  TH1D *temp_hist_os=new TH1D("temp_hist_os","",100,0,0.5);
+  TH1D *temp_fit=new TH1D("temp_fit","",100,0,0.5);
+  
+  // PbPb, M16
+  double temp_points_ss[100]={-1000, 1.31587, 1.40841, 1.4426, 1.36602, 1.37548, 1.34059, 1.30318, 1.27143, 1.28487, 1.26105, 1.21905, 1.2025, 1.19743, 1.15297, 1.16947, 1.14259, 1.13562, 1.13135, 1.10088, 1.10227, 1.08037, 1.0824, 1.08069, 1.0657, 1.06808, 1.05341, 1.0493, 1.05081, 1.04546, 1.04644, 1.03703, 1.03975, 1.04479, 1.03218, 1.02657, 1.02588, 1.02756, 1.02345, 1.02306, 1.02024, 1.01551, 1.01133, 1.01025, 1.00697, 1.01819, 1.00651, 1.01293, 1.00529, 0.997971, 1.00141, 1.00665, 1.01479, 1.01668, 1.00657, 1.01188, 1.0042, 0.995877, 1.01094, 1.0036, 1.00312, 0.994031, 1.0084, 1.00604, 1.00329, 1.00677, 0.997553, 0.992874, 0.993799, 0.995368, 0.999215, 1.00508, 0.993053, 0.996744, 0.990297, 0.990715, 1.00114, 0.996376, 0.984527, 0.99474, 0.993457, 1.00723, 0.999042, 0.996589, 0.988385, 0.9916, 0.995184, 0.988197, 1.00019, 0.998052, 0.985506, 0.99024, 0.996102, 0.995797, 0.991887, 0.99276, 0.992561, 0.991261, 0.996243};
+  double temp_points_ss_e[100]={1000, 0.206703, 0.0920405, 0.0637848, 0.0465513, 0.0380257, 0.0318382, 0.0270753, 0.0236593, 0.0216127, 0.0195971, 0.0176654, 0.0163346, 0.0153927, 0.0141902, 0.0136715, 0.0128887, 0.0124019, 0.0119795, 0.0113642, 0.0111615, 0.0106718, 0.0104775, 0.0102842, 0.0100296, 0.00990822, 0.00962737, 0.0094588, 0.00935572, 0.00923423, 0.0091266, 0.00897368, 0.00889453, 0.00883246, 0.00864815, 0.00853381, 0.00846384, 0.00839173, 0.00829825, 0.00822044, 0.00817065, 0.00805352, 0.00798793, 0.00791266, 0.00784862, 0.00788769, 0.00775376, 0.00772075, 0.00766719, 0.00757909, 0.00754696, 0.00755056, 0.00756756, 0.00754031, 0.00746571, 0.00745114, 0.00739226, 0.00729679, 0.00737659, 0.00730319, 0.00730321, 0.0072228, 0.00728131, 0.00726075, 0.0072364, 0.00723868, 0.00716992, 0.00712198, 0.00713157, 0.00713724, 0.00714391, 0.007175, 0.00708838, 0.00711573, 0.00709965, 0.00707786, 0.00713124, 0.00712164, 0.00703573, 0.00712383, 0.00709407, 0.00720098, 0.00713966, 0.00716466, 0.00710145, 0.00711087, 0.00714815, 0.00710751, 0.00717636, 0.00718936, 0.00712875, 0.00715855, 0.00718908, 0.00719846, 0.00719133, 0.00720147, 0.00721384, 0.00720763, 0.0072536};
+ 
+ 
+  for(int bin=1; bin<100; bin++){
+    //cout<<C2_ss->GetBinContent(bin)<<", ";
+    //cout<<C2_ss->GetBinError(bin)<<", ";
+    //cout<<fitC2ss_h->GetBinContent(bin)<<", ";
+    temp_hist_ss->SetBinContent(bin, temp_points_ss[bin-1]);
+    temp_hist_ss->SetBinError(bin, temp_points_ss_e[bin-1]);
+    //temp_hist_os->SetBinContent(bin, temp_points_os[bin-1]);
+    //temp_hist_os->SetBinError(bin, temp_points_os_e[bin-1]);
+    //temp_fit->SetBinContent(bin, temp_points_fit[bin-1]);
+  }
+  //cout<<endl;
+  temp_hist_ss->SetMarkerStyle(20);
+  temp_hist_ss->SetMarkerColor(1);
+  temp_hist_os->SetMarkerStyle(24);
+  temp_hist_os->SetMarkerColor(1);
+  temp_fit->SetLineColor(1);
+  C2_os->SetMarkerStyle(24);
+  C2_os->SetMarkerColor(2);
+  
   if(!MCcase){
 
+    //C2_ss->SetMaximum(1.6);
     C2_ss->DrawCopy();
-    legend1->AddEntry(C2_ss,"same-charge","p");
-    //C2_os->DrawCopy("same");
-    legend1->AddEntry(C2_os,"mixed-charge","p");
-    
+    //legend1->AddEntry(C2_ss,"same-charge","p");
+    C2_os->DrawCopy("same");
+    //legend1->AddEntry(C2_os,"mixed-charge","p");
+    /*
     Specif_System->Draw("same");
     Specif_kT->Draw("same");
     Specif_FSI->Draw("same");
@@ -1025,6 +1066,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
     TLatex *Stats2 = new TLatex(.5,.45, "R_{inv} = 1.59 #pm 0.01 fm");
     Stats2->SetNDC();
     Stats2->SetTextSize(0.06);
+    */
     //Stats2->Draw("same");
     /*TF1 *BkgFitC2 = new TF1("BkgFitC2","1+[0]*exp(-pow([1]*x/0.19733,2))",0,1);
     BkgFitC2->SetParameter(0,0.08);
@@ -1033,13 +1075,19 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
     C2_ss->Fit(BkgFitC2,"IME","",0.2,0.8);
     BkgFitC2->Draw("same");*/
     
+    //fitC2ss_h->SetLineColor(1);
     Unity->Draw("same");
-    //fitC2ss_h->Draw("C same");
+    fitC2ss_h->Draw("C same");
+    //temp_hist_ss->Draw("same");
+    //temp_hist_os->Draw("same");
+    //temp_fit->Draw("C same");
     //fitC2ss_Base->Draw("C same");
     //fitC2ss_Expan->Draw("C same");
-    //legend1->AddEntry(fitC2ss_Base,"Gaussian","l");
-    //legend1->AddEntry(fitC2ss_Expan,"Edgeworth","l");
-    //legend1->Draw("same");
+    //legend1->AddEntry(C2_ss,"p-Pb (++)","p");
+    //legend1->AddEntry(C2_os,"p-Pb (-+)","p");
+    //legend1->AddEntry(temp_hist_ss,"Pb-Pb (++), Mbin 16","p");
+    //legend1->AddEntry(temp_hist_os,"Pb-Pb (-+), <Nch>=36","p");
+    legend1->Draw("same");
   }
   
   
@@ -1295,7 +1343,8 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 	A_3[i-1][j-1][k-1] = value_num + TERM5;
 	B_3[i-1][j-1][k-1] = TERM5;
 	A_3_e[i-1][j-1][k-1] = sqrt(value_num_e + TERM5);
-	
+
+	//if(i==j && i==k && i==4) cout<<A_3[i-1][j-1][k-1]<<"  "<<B_3[i-1][j-1][k-1]<<"  "<<A_3_e[i-1][j-1][k-1]<<endl;
 	///////////////////////////////////////////////////////////
 	
       }
@@ -1455,17 +1504,19 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       maxVal_c3[0] = 1.1; maxVal_c3[1] = 2.5; maxVal_c3[2] = 15.; maxVal_c3[3] = +1; maxVal_c3[4] = +1;// was minVal_c3[3] = +1; minVal_c3[4] = +1;
       parName_c3[0] = "N"; parName_c3[1] = "#lambda_{3}"; parName_c3[2] = "R_{inv}"; parName_c3[3] = "coeff_{3}"; parName_c3[4] = "coeff_{4}";
       c3Fit1D_Base->SetParName(0,"N"); c3Fit1D_Base->SetParName(1,"#lambda_{3}"); c3Fit1D_Base->SetParName(2,"R_{inv}");
+      if(!Gaussian) {maxVal_c3[1] = 5.0; maxVal_c3[2] = 20.;}
       for (int i=0; i<npar_c3; i++){
 	MyMinuit_c3.DefineParameter(i, parName_c3[i].c_str(), par_c3[i], stepSize_c3[i], minVal_c3[i], maxVal_c3[i]);
       }
       //
       if(!FixExpansionAvg) {
 	maxVal_c3[1] = 2.0;
-	double RadiusFix;
+	/*double RadiusFix;
 	if(CollisionType==0) RadiusFix = 10 - 7*Mbin/15.;
 	else RadiusFix = 2.5 - 1.25*(Mbin-12)/7.;
 	MyMinuit_c3.DefineParameter(2, parName_c3[2].c_str(), RadiusFix, stepSize_c3[2], minVal_c3[2], maxVal_c3[2]); MyMinuit_c3.FixParameter(2);
 	MyMinuit_c3.DefineParameter(1, parName_c3[1].c_str(), 2.0, stepSize_c3[1], minVal_c3[1], maxVal_c3[1]); MyMinuit_c3.FixParameter(1);
+	*/
       }
       // kappa_3 and kappa_4 
       if(ft==0){// Gaussian
@@ -1473,9 +1524,14 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 	MyMinuit_c3.DefineParameter(4, parName_c3[4].c_str(), 0., stepSize_c3[4], minVal_c3[4], maxVal_c3[4]); MyMinuit_c3.FixParameter(4);
       }else{// Edgeworth
 	if(FixExpansionAvg){
-	  MyMinuit_c3.DefineParameter(3, parName_c3[3].c_str(), kappa3, stepSize_c3[3], minVal_c3[3], maxVal_c3[3]); MyMinuit_c3.FixParameter(3);
-	  MyMinuit_c3.DefineParameter(4, parName_c3[4].c_str(), kappa4, stepSize_c3[4], minVal_c3[4], maxVal_c3[4]); MyMinuit_c3.FixParameter(4);
-	}else{
+	  if(Gaussian){
+	    MyMinuit_c3.DefineParameter(3, parName_c3[3].c_str(), kappa3, stepSize_c3[3], minVal_c3[3], maxVal_c3[3]); MyMinuit_c3.FixParameter(3);
+	    MyMinuit_c3.DefineParameter(4, parName_c3[4].c_str(), kappa4, stepSize_c3[4], minVal_c3[4], maxVal_c3[4]); MyMinuit_c3.FixParameter(4);
+	  }else{
+	    MyMinuit_c3.DefineParameter(3, parName_c3[3].c_str(), 0, stepSize_c3[3], minVal_c3[3], maxVal_c3[3]); MyMinuit_c3.FixParameter(3);
+	    MyMinuit_c3.DefineParameter(4, parName_c3[4].c_str(), 0, stepSize_c3[4], minVal_c3[4], maxVal_c3[4]); MyMinuit_c3.FixParameter(4);
+	  }
+	  }else{
 	  Int_t err=0;
 	  Double_t tmp[1];
 	  tmp[0] = 3+1;
@@ -1493,7 +1549,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       cout<<"End Three-d fit"<<endl;
       /////////////////////////////////////////////////////////////
       MyMinuit_c3.mnexcm("SHOw PARameters", &arglist_c3, 1, ierflg);
-      cout<<"c3 Fit: Chi2/NDF = "<<Chi2_c3/(NFitPoints_c3-MyMinuit_c3.GetNumFreePars())<<endl;
+      cout<<"c3 Fit: Chi2 = "<<Chi2_c3<<"   NDF = "<<(NFitPoints_c3-MyMinuit_c3.GetNumFreePars())<<endl;
       
       for(int i=0; i<npar_c3; i++){
 	MyMinuit_c3.GetParameter(i,OutputPar_c3[i],OutputPar_c3_e[i]);
@@ -1511,7 +1567,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 	c3Fit1D_Expan->SetParameter(3,OutputPar_c3[3]); c3Fit1D_Expan->SetParError(3,OutputPar_c3_e[3]);
 	c3Fit1D_Expan->SetParameter(4,OutputPar_c3[4]); c3Fit1D_Expan->SetParError(4,OutputPar_c3_e[4]);
 	c3Fit1D_Expan->SetLineStyle(1);
-	c3Fit1D_Expan->Draw("same");
+	//c3Fit1D_Expan->Draw("same");
 	double lambdaStar=0, lambdaStar_e=0;
 	if(Gaussian){
 	  lambdaStar = OutputPar_c3[1]*pow(1 + OutputPar_c3[4]/8.,3);
@@ -1570,7 +1626,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 	  EW23 += c3Fit1D_Expan->GetParameter(4)/(24.*pow(2.,2))*(16.*pow(arg23,4) -48.*pow(arg23,2) + 12);
 	  //
 	  double cumulant_fitvalue=0;
-	  cumulant_fitvalue = c3Fit1D_Expan->GetParameter(0)*(c3Fit1D_Expan->GetParameter(1)*EW12*EW13*EW23*exp(-pow(radius_exp,2)/2. * (pow(Q12,2)+pow(Q13,2)+pow(Q23,2)))*TERM5 + TERM5);
+	  cumulant_fitvalue = c3Fit1D_Expan->GetParameter(0)*(c3Fit1D_Expan->GetParameter(1)*EW12*EW13*EW23*exp(-pow(radius_exp,ExpPower)/2. * (pow(Q12,ExpPower)+pow(Q13,ExpPower)+pow(Q23,ExpPower)))*TERM5 + TERM5);
 	  
 	  GenSignalExpected_num->Fill(Q3, cumulant_fitvalue);
 	  GenSignalExpected_den->Fill(Q3, TERM5);
@@ -1594,6 +1650,8 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   bool splineOnly=kFALSE;
   for(int iii=0; iii<1000; iii++){
     xpoints[iii] = 0 + (iii+0.5)*0.001;
+    if(!Gaussian && CollisionType!=0 && c3Fit1D_Expan->Eval(xpoints[iii]) < 2.2) splineOnly=kTRUE;
+    if(!Gaussian && CollisionType==0 && c3Fit1D_Expan->Eval(xpoints[iii]) < 2.0) splineOnly=kTRUE;// 2.0 or 1.4 for Mbin=3 in Fig 2
     if(!splineOnly){
       ypoints[iii] = c3Fit1D_Expan->Eval(xpoints[iii]);
       if(c3Fit1D_Expan->Eval(xpoints[iii])<2 && fabs(c3Fit1D_Expan->Eval(xpoints[iii])-c3Fit1D_ExpanSpline->Eval(xpoints[iii])) < 0.01) splineOnly=kTRUE;
@@ -1605,9 +1663,27 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   if(CollisionType==0) gr_c3Spline->SetLineColor(1);
   if(CollisionType==1) gr_c3Spline->SetLineColor(2);
   if(CollisionType==2) gr_c3Spline->SetLineColor(4);
-  gr_c3Spline->Draw("c same");
-  //c3Fit1D_ExpanSpline->Draw("same");
   
+  gr_c3Spline->Draw("c same");
+  
+  double ChiSqSum_1D=0, SumNDF_1D=0;
+  for(int bin=1; bin<=300; bin++){
+    double binCenter = c3_hist->GetXaxis()->GetBinCenter(bin);
+    if(binCenter > Q3Limit) continue;
+    if(c3_hist->GetBinError(bin)==0) continue;
+    int grIndex=1;
+    for(int gr=0; gr<999; gr++){
+      if(binCenter > xpoints[gr] && (binCenter < xpoints[gr+1])) {grIndex=gr; break;}
+    }
+
+    //ChiSqSum_1D += pow((c3_hist->GetBinContent(bin)-ypoints[grIndex]) / c3_hist->GetBinError(bin),2);
+    ChiSqSum_1D += pow((c3_hist->GetBinContent(bin)-c3Fit1D_Base->Eval(binCenter)) / c3_hist->GetBinError(bin),2);
+    //cout<<c3_hist->GetBinContent(bin)<<"  "<<c3Fit1D_Base->Eval(binCenter)<<"  "<<c3_hist->GetBinError(bin)<<endl;
+    //cout<<c3_hist->GetBinContent(bin)<<"  "<<ypoints[grIndex]<<"  "<<c3_hist->GetBinError(bin)<<endl;
+
+    SumNDF_1D++;
+  }
+  cout<<"1D Chi2/NDF = "<<ChiSqSum_1D / (SumNDF_1D-3.)<<endl;
 
   // uncomment to display fit box
   //c3_hist->GetListOfFunctions()->Add(c3Fit1D_Base);
@@ -1621,16 +1697,16 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   //cout<<endl;
   
   
-  /*TString *lamName=new TString("#lambda_{3}=");
-  TString *RName=new TString("#R_{inv,3}=");
-  *lamName += int(100*c3Fit1D_Base->GetParameter(1))/100.; lamName->Append(" #pm "); *lamName += int(100*c3Fit1D_Base->GetParError(1))/100.;
-  *RName += round(100*c3Fit1D_Base->GetParameter(2))/100; RName->Append(" #pm "); *RName += int(100*c3Fit1D_Base->GetParError(2))/100.; RName->Append(" fm");
-  TLatex *fitBox1=new TLatex(0.5,0.9,lamName->Data());
-  fitBox1->SetNDC(kTRUE);
-  fitBox1->Draw();
-  TLatex *fitBox2=new TLatex(0.5,0.8,RName->Data());
-  fitBox2->SetNDC(kTRUE);
-  fitBox2->Draw();*/
+  //TString *lamName=new TString("#lambda_{3}=");
+  //TString *RName=new TString("#R_{inv,3}=");
+  //*lamName += int(100*c3Fit1D_Base->GetParameter(1))/100.; lamName->Append(" #pm "); *lamName += int(100*c3Fit1D_Base->GetParError(1))/100.;
+  //*RName += round(100*c3Fit1D_Base->GetParameter(2))/100; RName->Append(" #pm "); *RName += int(100*c3Fit1D_Base->GetParError(2))/100.; RName->Append(" fm");
+  //TLatex *fitBox1=new TLatex(0.5,0.9,lamName->Data());
+  //fitBox1->SetNDC(kTRUE);
+  //fitBox1->Draw();
+  //TLatex *fitBox2=new TLatex(0.5,0.8,"R_{inv,3} = 2.62 #pm 0.12");
+  //fitBox2->SetNDC(kTRUE);
+  //fitBox2->Draw();
   //TLatex *fitBox3=new TLatex(0.5,0.5,"<N_{rec,pions}>=103");
   //fitBox3->SetNDC(kTRUE);
   //fitBox3->Draw();
@@ -1705,7 +1781,8 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   //for(int ii=0; ii<10; ii++) cout<<c3_hist->GetBinContent(ii+1)<<", ";
   //Coul_GRiverside->Draw();
   //Coul_Riverside->Draw("same");
-  /*TLegend *legend4 = new TLegend(.3,.8, .5,.95,NULL,"brNDC");
+  /*
+  TLegend *legend4 = new TLegend(.3,.8, .5,.95,NULL,"brNDC");
   legend4->SetBorderSize(0);
   legend4->SetTextFont(42);//42
   legend4->SetTextSize(.04);// small .03; large .06
@@ -1751,12 +1828,13 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   C3_Extended->SetMarkerColor(4);
   c3_Extended->GetXaxis()->SetRangeUser(0,2);
   c3_Extended->SetMarkerStyle(20);
-  c3_Extended->Draw();*/
+  c3_Extended->Draw();
+  //cout<<c3_Extended->GetBinError(40)<<"  "<<Three_1d[CB1][CB2][CB3][SCBin][0]->GetBinError(40)/Three_1d[CB1][CB2][CB3][SCBin][4]->GetBinContent(40)<<"  "<<Three_1d[CB1][CB2][CB3][SCBin][1]->GetBinError(40)/Three_1d[CB1][CB2][CB3][SCBin][4]->GetBinContent(40)<<endl;
   //legend4->AddEntry(c3_Extended,"c_{3}, #pi^{#pm}#pi^{#pm}#pi^{#pm}, Coulomb Uncorrected","p");
   //legend4->AddEntry(C3_Extended,"C_{3}, #pi^{#pm}#pi^{#pm}#pi^{#pm}, Coulomb Uncorrected","p");
   //legend4->Draw("same");
   //Unity->Draw("same");
-  
+  */
   //Specif_System->Draw("same");
   //Specif_KT3->Draw("same");
   //Specif_FSI->Draw("same");
@@ -1824,12 +1902,12 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   K0sProjection->Draw("same");
   K0sProjection_term1->Draw("same");
 
-  legend4->AddEntry(K0sProjection,"#font[12]{C_{3}^{#pm#pm#mp}} projection","p");
-  legend4->AddEntry(K0sProjection_term1,"#font[12]{#bf{c}_{3}^{#pm#pm#mp}} projection","p");
-  legend4->Draw("same");
-  
-  
+  //legend4->AddEntry(K0sProjection,"#font[12]{C_{3}^{#pm#pm#mp}} projection","p");
+  //legend4->AddEntry(K0sProjection_term1,"#font[12]{#bf{c}_{3}^{#pm#pm#mp}} projection","p");
+  //legend4->Draw("same");
   */
+  
+  
 
     
   //////////////////////////////////////////////////////////////////////////////////////
@@ -1841,6 +1919,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   
   if(SaveToFile){
     TString *savefilename = new TString("OutFiles/OutFile");
+    if(!Gaussian) savefilename->Append("ExpFit");
     if(CollisionType==0) savefilename->Append("PbPb");
     else if(CollisionType==1) savefilename->Append("pPb");
     else savefilename->Append("pp");
@@ -2140,6 +2219,7 @@ void fcn_c3(int& npar, double* deriv, double& f, double par[], int flag){
   double SumChi2=0;
   //double lnL=0, term1=0, term2=0;
   NFitPoints_c3=0;
+  //double SumChi2_test=0;
 
   for(int i=0; i<=BINLIMIT_3; i++){// q12
     for(int j=0; j<=BINLIMIT_3; j++){// q13
@@ -2175,6 +2255,7 @@ void fcn_c3(int& npar, double* deriv, double& f, double par[], int flag){
 	error += pow(sqrt(B_3[i][j][k])*A_3[i][j][k]/pow(B_3[i][j][k],2),2);
 	error = sqrt(error);
 	SumChi2 += pow( (C - A_3[i][j][k]/B_3[i][j][k])/error,2);
+	//if(q3<0.05) SumChi2_test += pow( (C - A_3[i][j][k]/B_3[i][j][k])/error,2);
 	//
 	/*if(A_3[i][j][k] >= 1) term1 = C*(A_3[i][j][k]+B_3[i][j][k])/(A_3[i][j][k]*(C+1));
 	else term1 = 0;
@@ -2186,10 +2267,10 @@ void fcn_c3(int& npar, double* deriv, double& f, double par[], int flag){
 	  lnL += B_3[i][j][k]*log(term2);
 	}else {cout<<"WARNING -- term1 and term2 are negative"<<endl;}
 	*/
-	float DegenerateCount=1;
-	if(i==j && i==k) DegenerateCount=1;
-	else if(i==j || i==k || j==k) DegenerateCount=3;
-	else DegenerateCount=6;
+	float DegenerateCount=1.;
+	//if(i==j && i==k) DegenerateCount=1;
+	//else if(i==j || i==k || j==k) DegenerateCount=3;//3
+	//else DegenerateCount=6;//6
 	NFitPoints_c3 += 1/DegenerateCount;
 	
       }
@@ -2198,6 +2279,7 @@ void fcn_c3(int& npar, double* deriv, double& f, double par[], int flag){
   //f = -2.0*lnL;// log-liklihood minimization
   f = SumChi2;// Chi2 minimization
   Chi2_c3 = f;
+  //Chi2_c3 = SumChi2_test;
   
 }
 //________________________________________________________________________

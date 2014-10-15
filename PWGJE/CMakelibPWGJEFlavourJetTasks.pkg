@@ -36,9 +36,11 @@ set ( SRCS
         FlavourJetTasks/AliPicoV0RD.cxx
         FlavourJetTasks/AliAnalysisTaskEmcalJetV0CF.cxx
         FlavourJetTasks/AliAnalysisTaskEmcalJetV0Filter.cxx
+        FlavourJetTasks/AliAnalysisTaskEmcalJetHF.cxx
         FlavourJetTasks/AliAnalysisTaskSEPicoV0Filter.cxx
         FlavourJetTasks/AliAnalysisTaskSEPicoV0Maker.cxx
         FlavourJetTasks/AliAnalysisTaskSEPicoV0MakerMC.cxx
+        FlavourJetTasks/AliAnalysisTaskEmcalJetFlavourTagExample.cxx
 )
 
 set ( DHDR  PWGJEFlavourJetTasksLinkDef.h)

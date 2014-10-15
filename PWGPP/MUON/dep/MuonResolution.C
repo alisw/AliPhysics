@@ -54,18 +54,32 @@
 #include "AliMUONPainterDataRegistry.h"
 #include "AliMUONTrackerDataWrapper.h"
 
+#include "AliMuonTrackCuts.h"
+
 #include "AddTaskMuonResolution.C"
 
 #endif
 
 enum {kLocal, kInteractif_xml, kInteractif_ESDList, kProof};
+Int_t nDE = 200;
 
-void    LoadAlirootOnProof(TString& aaf, TString alirootVersion, TString& extraLibs, Int_t iStep);
+Bool_t  Resume(Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[10],
+	       Double_t clusterResNBErr[10], Double_t clusterResBErr[10],
+	       Bool_t shiftHalfCh, Double_t halfChShiftNB[20], Double_t halfChShiftB[20],
+	       Double_t halfChShiftNBErr[20], Double_t halfChShiftBErr[20],
+	       Bool_t shiftDE, Double_t deShiftNB[200], Double_t deShiftB[200],
+	       TGraphErrors* clusterResXVsStep[10], TGraphErrors* clusterResYVsStep[10],
+	       TGraphErrors* halfChShiftXVsStep[20], TGraphErrors* halfChShiftYVsStep[20]);
+void    LoadAlirootOnProof(TString& aaf, TString rootVersion, TString alirootVersion, TString& extraLibs, Int_t iStep);
 AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool_t selectPhysics, Bool_t selectTrigger, Bool_t matchTrig,
 						   Bool_t applyAccCut, Double_t minMomentum, Bool_t correctForSystematics, Int_t extrapMode,
-						   Double_t clusterResNB[10], Double_t clusterResB[10]);
+						   Double_t clusterResNB[10], Double_t clusterResB[10],
+						   Bool_t shiftHalfCh, Double_t halfChShiftNB[20], Double_t halfChShiftB[20],
+						   Bool_t shiftDE, Double_t deShiftNB[200], Double_t deShiftB[200]);
 Bool_t  GetChamberResolution(Int_t iStep, Double_t clusterResNB[10], Double_t clusterResB[10],
 			     Double_t clusterResNBErr[10], Double_t clusterResBErr[10]);
+Bool_t  AddHalfChShift(Int_t iStep, Double_t halfChShiftNB[20], Double_t halfChShiftB[20], Double_t halfChShiftNBErr[20], Double_t halfChShiftBErr[20]);
+Bool_t  AddDEShift(Int_t iStep, Double_t deShiftNB[200], Double_t deShiftB[200]);
 void    AddMCHViews(TFile* file);
 AliMUONTrackerData* ConvertGraph(TGraphErrors& g, const char* name);
 Int_t   GetMode(TString smode, TString input);
@@ -75,8 +89,10 @@ TChain* CreateChainFromESDList(const char *esdList);
 TChain* CreateChain(Int_t mode, TString input);
 
 //______________________________________________________________________________
-void MuonResolution(TString smode, TString inputFileName, TString alirootVersion, Int_t nSteps, Bool_t selectPhysics, Bool_t selectTrigger, Bool_t matchTrig,
-		    Bool_t applyAccCut, Double_t minMomentum, Bool_t correctForSystematics, Int_t extrapMode, Int_t nevents, TString extraLibs)
+void MuonResolution(TString smode, TString inputFileName, TString rootVersion, TString alirootVersion, Int_t nSteps,
+		    Bool_t selectPhysics, Bool_t selectTrigger, Bool_t matchTrig, Bool_t applyAccCut,
+		    Double_t minMomentum, Bool_t correctForSystematics, Int_t extrapMode,
+		    Bool_t shiftHalfCh, Bool_t shiftDE, Int_t nevents, TString extraLibs)
 {
   /// Compute the cluster resolution by studying cluster-track residual, deconvoluting from track resolution
   
@@ -97,29 +113,21 @@ void MuonResolution(TString smode, TString inputFileName, TString alirootVersion
     return;
   }
   
-  // check for old output file to removed
-  char remove = '\0';
-  if (!gSystem->Exec("ls chamberResolution_step*[0-9].root")) {
-    cout<<"above files must be removed from the current directory. Delete? [y=yes, n=no] "<<flush;
-    while (remove != 'y' && remove != 'n') cin>>remove;
-    if (remove == 'y') gSystem->Exec("rm -f chamberResolution_step*[0-9].root");
-    else {
-      Error("MuonResolution","cannot proceed with these files there otherwise results will be mixed up!");
-      return;
-    }
-  }
-  
-  // Create input object
-  TObject* inputObj = 0x0;
-  if (mode == kProof) inputObj = new TObjString(inputFileName);
-  else inputObj = CreateChain(mode, inputFileName);
-  if (!inputObj) return;
-  
   // set starting chamber resolution (if -1 they will be loaded from recoParam in the task)
-  Double_t clusterResNB[10] ={-1., -1., -1., -1., -1., -1., -1., -1., -1., -1.};
-  Double_t clusterResB[10] ={-1., -1., -1., -1., -1., -1., -1., -1., -1., -1.};
-  Double_t clusterResNBErr[10] ={0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
-  Double_t clusterResBErr[10] ={0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+  Double_t clusterResNB[10] = {-1., -1., -1., -1., -1., -1., -1., -1., -1., -1.};
+  Double_t clusterResB[10] = {-1., -1., -1., -1., -1., -1., -1., -1., -1., -1.};
+  Double_t clusterResNBErr[10] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+  Double_t clusterResBErr[10] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+  Double_t halfChShiftNB[20] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+  Double_t halfChShiftB[20] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+  Double_t halfChShiftNBErr[20] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+  Double_t halfChShiftBErr[20] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+  Double_t deShiftNB[200];
+  Double_t deShiftB[200];
+  for (Int_t i=0; i<200; i++) {
+    deShiftNB[i] = 0.;
+    deShiftB[i] = 0.;
+  }
   
   // output graphs
   TMultiGraph* mgClusterResXVsStep = new TMultiGraph("mgClusterResXVsStep","cluster X-resolution versus step;step;#sigma_{X} (cm)");
@@ -139,24 +147,67 @@ void MuonResolution(TString smode, TString inputFileName, TString alirootVersion
     clusterResYVsStep[i]->SetMarkerColor(i+1+i/9);
     mgClusterResYVsStep->Add(clusterResYVsStep[i],"lp");
   }
+  TMultiGraph* mgHalfChShiftXVsStep = new TMultiGraph("mgHalfChShiftXVsStep","half-chamber displacement in X direction versus step;step;#Delta_{X} (cm)");
+  TMultiGraph* mgHalfChShiftYVsStep = new TMultiGraph("mgHalfChShiftYVsStep","half-chamber displacement in Y direction versus step;step;#Delta_{Y} (cm)");
+  TGraphErrors* halfChShiftXVsStep[20];
+  TGraphErrors* halfChShiftYVsStep[20];
+  for (Int_t i = 0; i < 20; i++) {
+    halfChShiftXVsStep[i] = new TGraphErrors(nSteps+1);
+    halfChShiftXVsStep[i]->SetName(Form("gShiftX_hch%d",i+1));
+    halfChShiftXVsStep[i]->SetMarkerStyle(kFullDotMedium);
+    halfChShiftXVsStep[i]->SetMarkerColor(i+1+i/9+i/18);
+    mgHalfChShiftXVsStep->Add(halfChShiftXVsStep[i],"lp");
+    halfChShiftXVsStep[i]->SetPoint(0, 0, halfChShiftNB[i]);
+    halfChShiftXVsStep[i]->SetPointError(0, 0., halfChShiftNBErr[i]);
+    
+    halfChShiftYVsStep[i] = new TGraphErrors(nSteps+1);
+    halfChShiftYVsStep[i]->SetName(Form("gShiftY_hch%d",i+1));
+    halfChShiftYVsStep[i]->SetMarkerStyle(kFullDotMedium);
+    halfChShiftYVsStep[i]->SetMarkerColor(i+1+i/9+i/18);
+    mgHalfChShiftYVsStep->Add(halfChShiftYVsStep[i],"lp");
+    halfChShiftYVsStep[i]->SetPoint(0, 0, halfChShiftB[i]);
+    halfChShiftYVsStep[i]->SetPointError(0, 0., halfChShiftBErr[i]);
+  }
+  
+  // check for old output files
+  Int_t firstStep = 0;
+  char remove = '\0';
+  if (!gSystem->Exec("ls chamberResolution_step*[0-9].root")) {
+    cout<<"Above files already exist in the current directory. [d=delete, r=resume, e=exit] "<<flush;
+    while (remove != 'd' && remove != 'r' && remove != 'e') cin>>remove;
+    if (remove == 'y') gSystem->Exec("rm -f chamberResolution_step*[0-9].root");
+    else if (remove == 'r' && !Resume(firstStep, clusterResNB, clusterResB, clusterResNBErr, clusterResBErr,
+				      shiftHalfCh, halfChShiftNB, halfChShiftB, halfChShiftNBErr, halfChShiftBErr,
+				      shiftDE, deShiftNB, deShiftB, clusterResXVsStep, clusterResYVsStep,
+				      halfChShiftXVsStep, halfChShiftYVsStep)) return;
+    else if (remove == 'e') return;
+  }
+  
+  // Create input object
+  TObject* inputObj = 0x0;
+  if (mode == kProof) inputObj = new TObjString(inputFileName);
+  else inputObj = CreateChain(mode, inputFileName);
+  if (!inputObj) return;
   
   // loop over step
-  for (Int_t iStep = 0; iStep < nSteps; iStep++) {
+  for (Int_t iStep = firstStep; iStep < nSteps; iStep++) {
     cout<<"step "<<iStep+1<<"/"<<nSteps<<endl;
     
     // Connect to proof if needed and prepare environment
-    if (mode == kProof) LoadAlirootOnProof(smode, alirootVersion, extraLibs, iStep);
+    if (mode == kProof) LoadAlirootOnProof(smode, rootVersion, alirootVersion, extraLibs, iStep-firstStep);
     
     // create the analysis train
-    AliAnalysisTaskMuonResolution *muonResolution = CreateAnalysisTrain(mode, iStep, selectPhysics, selectTrigger, matchTrig,
-				      applyAccCut, minMomentum, correctForSystematics, extrapMode, clusterResNB, clusterResB);
+    AliAnalysisTaskMuonResolution *muonResolution = CreateAnalysisTrain(mode, iStep, selectPhysics, selectTrigger,
+				                        matchTrig, applyAccCut, minMomentum, correctForSystematics,
+							extrapMode, clusterResNB, clusterResB, shiftHalfCh,
+							halfChShiftNB, halfChShiftB, shiftDE, deShiftNB, deShiftB);
     if (!muonResolution) return;
     
     // start analysis
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (mgr->InitAnalysis()) {
       mgr->PrintStatus();
-      if (mode == kProof) mgr->StartAnalysis("proof", Form("%s",static_cast<TObjString*>(inputObj)->GetName()), nevents);
+      if (mode == kProof) mgr->StartAnalysis("proof", static_cast<TObjString*>(inputObj)->GetName(), nevents);
       else mgr->StartAnalysis("local", static_cast<TChain*>(inputObj), nevents);
     }
     
@@ -168,10 +219,11 @@ void MuonResolution(TString smode, TString inputFileName, TString alirootVersion
 	muonResolution->GetCanvases()->Write();
 	AddMCHViews(outFile);
 	outFile->Close();
+	delete outFile;
       }
     }
     
-    // fill graph with starting resolutions from the task at first step
+    // fill graphs with starting resolutions from the task at very first step
     if (iStep == 0) {
       muonResolution->GetStartingResolution(clusterResNB, clusterResB);
       for (Int_t i = 0; i < 10; i++) {
@@ -193,7 +245,24 @@ void MuonResolution(TString smode, TString inputFileName, TString alirootVersion
       clusterResYVsStep[i]->SetPointError(iStep+1, 0., clusterResBErr[i]);
     }
     
+    // get the half-chamber displacements currently used and add the new measurements from the output file
+    muonResolution->GetHalfChShift(halfChShiftNB, halfChShiftB);
+    if (!AddHalfChShift(iStep, halfChShiftNB, halfChShiftB, halfChShiftNBErr, halfChShiftBErr)) return;
+    
+    // fill graphs with computed displacements
+    for (Int_t i = 0; i < 20; i++) {
+      halfChShiftXVsStep[i]->SetPoint(iStep+1, iStep+1, halfChShiftNB[i]);
+      halfChShiftXVsStep[i]->SetPointError(iStep+1, 0., halfChShiftNBErr[i]);
+      halfChShiftYVsStep[i]->SetPoint(iStep+1, iStep+1, halfChShiftB[i]);
+      halfChShiftYVsStep[i]->SetPointError(iStep+1, 0., halfChShiftBErr[i]);
+    }
+    
+    // get the DE displacements currently used and add the new measurements from the output file
+    muonResolution->GetDEShift(deShiftNB, deShiftB);
+    if (!AddDEShift(iStep, deShiftNB, deShiftB)) return;
+    
     // clean memory
+    mgr->SetAnalysisType(AliAnalysisManager::kLocalAnalysis); // to make sure that all output containers are deleted
     delete mgr;
     TObject::SetObjectStat(kFALSE);
     
@@ -202,13 +271,21 @@ void MuonResolution(TString smode, TString inputFileName, TString alirootVersion
   // copy final results in results.root file
   gSystem->Exec(Form("cp chamberResolution_step%d.root results.root", nSteps-1));
   
-  // display convergence
-  TCanvas* convergence = new TCanvas("convergence","convergence");
-  convergence->Divide(1,2);
-  convergence->cd(1);
+  // display convergence of cluster resolution
+  TCanvas* convergence1 = new TCanvas("convergenceRes","convergence of cluster resolution");
+  convergence1->Divide(1,2);
+  convergence1->cd(1);
   mgClusterResXVsStep->Draw("ap");
-  convergence->cd(2);
+  convergence1->cd(2);
   mgClusterResYVsStep->Draw("ap");
+  
+  // display convergence of half-chamber displacements
+  TCanvas* convergence2 = new TCanvas("convergenceShift","convergence of half-chamber displacements");
+  convergence2->Divide(1,2);
+  convergence2->cd(1);
+  mgHalfChShiftXVsStep->Draw("ap");
+  convergence2->cd(2);
+  mgHalfChShiftYVsStep->Draw("ap");
   
   // save convergence plots
   TFile* outFile = TFile::Open("results.root","UPDATE");
@@ -216,17 +293,139 @@ void MuonResolution(TString smode, TString inputFileName, TString alirootVersion
   outFile->cd();
   mgClusterResXVsStep->Write();
   mgClusterResYVsStep->Write();
-  convergence->Write();
+  convergence1->Write();
+  mgHalfChShiftXVsStep->Write();
+  mgHalfChShiftYVsStep->Write();
+  convergence2->Write();
   outFile->Close();
+  delete outFile;
+  
+  // print final half-chamber displacements
+  printf("\nhalf-chamber total displacements:\n");
+  printf(" - non-bending:");
+  for (Int_t i = 0; i < 20; i++) printf((i==0)?" %6.4f":", %6.4f", halfChShiftNB[i]);
+  printf("\n -     bending:");
+  for (Int_t i = 0; i < 20; i++) printf((i==0)?" %6.4f":", %6.4f", halfChShiftB[i]);
+  printf("\n\n");
+  
+  // print final DE displacements
+  printf("\nDE total displacements:\n");
+  printf(" - non-bending:");
+  for (Int_t i = 0; i < nDE; i++) printf((i==0)?" %6.4f":", %6.4f", deShiftNB[i]);
+  printf("\n -     bending:");
+  for (Int_t i = 0; i < nDE; i++) printf((i==0)?" %6.4f":", %6.4f", deShiftB[i]);
+  printf("\n\n");
   
   // ...timer stop
   localTimer->Stop();
   localTimer->Print();
+  delete localTimer;
   
 }
 
 //______________________________________________________________________________
-void LoadAlirootOnProof(TString& aaf, TString alirootVersion, TString& extraLibs, Int_t iStep)
+Bool_t Resume(Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[10],
+	      Double_t clusterResNBErr[10], Double_t clusterResBErr[10],
+	      Bool_t shiftHalfCh, Double_t halfChShiftNB[20], Double_t halfChShiftB[20],
+	      Double_t halfChShiftNBErr[20], Double_t halfChShiftBErr[20],
+	      Bool_t shiftDE, Double_t deShiftNB[200], Double_t deShiftB[200],
+	      TGraphErrors* clusterResXVsStep[10], TGraphErrors* clusterResYVsStep[10],
+	      TGraphErrors* halfChShiftXVsStep[20], TGraphErrors* halfChShiftYVsStep[20])
+{
+  /// resume analysis from desired step
+  
+  while (kTRUE) {
+    
+    // Get the step to restart from
+    cout<<"From which step (included) you want to resume? [#, e=exit] "<<flush;
+    TString step = "";
+    do {step.Gets(stdin,kTRUE);} while (!step.IsDigit() && step != "e");
+    if (step == "e") return kFALSE;
+    firstStep = step.Atoi();
+    
+    // restart from scratch if requested
+    if (firstStep == 0) {
+      gSystem->Exec("rm -f chamberResolution_step*[0-9].root");
+      return kTRUE;
+    }
+    
+    // look for results from the previous step
+    if (gSystem->AccessPathName(Form("chamberResolution_step%d.root", firstStep-1))) {
+      cout<<"No result found from the previous step ("<<firstStep-1<<"). Unable to resume from step "<<firstStep<<endl;
+      continue;
+    }
+    
+    // fill graph with starting resolutions
+    for (Int_t i = 0; i < 10; i++) {
+      clusterResXVsStep[i]->SetPoint(0, 0, clusterResNB[i]);
+      clusterResXVsStep[i]->SetPointError(0, 0., clusterResNBErr[i]);
+      clusterResYVsStep[i]->SetPoint(0, 0, clusterResB[i]);
+      clusterResYVsStep[i]->SetPointError(0, 0., clusterResBErr[i]);
+    }
+    
+    // loop over previous steps
+    Bool_t missingInfo = kFALSE;
+    for (Int_t iStep = 0; iStep < firstStep; iStep++) {
+      
+      // read the chamber resolution from the output file
+      if (!GetChamberResolution(iStep, clusterResNB, clusterResB, clusterResNBErr, clusterResBErr) && iStep == firstStep-1) {
+	missingInfo = kTRUE;
+	break;
+      }
+      
+      // fill graphs with computed resolutions
+      for (Int_t i = 0; i < 10; i++) {
+	clusterResXVsStep[i]->SetPoint(iStep+1, iStep+1, clusterResNB[i]);
+	clusterResXVsStep[i]->SetPointError(iStep+1, 0., clusterResNBErr[i]);
+	clusterResYVsStep[i]->SetPoint(iStep+1, iStep+1, clusterResB[i]);
+	clusterResYVsStep[i]->SetPointError(iStep+1, 0., clusterResBErr[i]);
+      }
+      
+      // reset the half-chamber displacements if not used and add the new measurements from the output file
+      if (!shiftHalfCh) for (Int_t i=0; i<20; i++) {
+	halfChShiftNB[i] = 0.; halfChShiftB[i] = 0.;
+	halfChShiftNBErr[i] = 0.; halfChShiftBErr[i] = 0.;
+      }
+      if (!AddHalfChShift(iStep, halfChShiftNB, halfChShiftB, halfChShiftNBErr, halfChShiftBErr) && shiftHalfCh) {
+	missingInfo = kTRUE;
+	break;
+      }
+      
+      // fill graphs with computed displacements
+      for (Int_t i = 0; i < 20; i++) {
+	halfChShiftXVsStep[i]->SetPoint(iStep+1, iStep+1, halfChShiftNB[i]);
+	halfChShiftXVsStep[i]->SetPointError(iStep+1, 0., halfChShiftNBErr[i]);
+	halfChShiftYVsStep[i]->SetPoint(iStep+1, iStep+1, halfChShiftB[i]);
+	halfChShiftYVsStep[i]->SetPointError(iStep+1, 0., halfChShiftBErr[i]);
+      }
+      
+      // add the new measurements of DE displacements from the output file if in use
+      if (shiftDE && !AddDEShift(iStep, deShiftNB, deShiftB)) {
+	missingInfo = kTRUE;
+	break;
+      }
+      
+    }
+    
+    // check if missing important results from previous steps
+    if (missingInfo) continue;
+    
+    // keep previous steps and remove the others
+    gSystem->Exec("mkdir __TMP__");
+    for (Int_t iStep = 0; iStep < firstStep; iStep++)
+      if (!gSystem->AccessPathName(Form("chamberResolution_step%d.root", iStep)))
+	gSystem->Exec(Form("mv chamberResolution_step%d.root __TMP__", iStep));
+    gSystem->Exec("rm -f chamberResolution_step*[0-9].root");
+    gSystem->Exec("mv __TMP__/chamberResolution_step*[0-9].root .");
+    gSystem->Exec("rm -rf __TMP__");
+    
+    return kTRUE;
+  }
+  
+}
+
+//______________________________________________________________________________
+void LoadAlirootOnProof(TString& aaf, TString rootVersion, TString alirootVersion, TString& extraLibs, Int_t iStep)
 {
   /// Load aliroot packages and set environment on Proof
   
@@ -235,11 +434,11 @@ void LoadAlirootOnProof(TString& aaf, TString alirootVersion, TString& extraLibs
   else gProof->Close("s");
   
   // connect
-  TString location = (aaf == "caf") ? "alice-caf.cern.ch" : "nansafmaster.in2p3.fr";
-  //TString location = (aaf == "caf") ? "alice-caf.cern.ch" : "localhost:1093";
-  TString nWorkers = (aaf == "caf") ? "workers=80" : "";
-  if (gSystem->Getenv("alien_API_USER") == NULL) TProof::Open(location.Data(), nWorkers.Data());
-  else TProof::Open(Form("%s@%s",gSystem->Getenv("alien_API_USER"), location.Data()), nWorkers.Data());
+  TString location = (aaf == "caf") ? "alice-caf.cern.ch" : "nansafmaster.in2p3.fr"; //"localhost:1093"
+  TString nWorkers = (aaf == "caf") ? "workers=80" : ""; //"workers=3x"
+  TString user = (gSystem->Getenv("alien_API_USER") == NULL) ? "" : Form("%s@",gSystem->Getenv("alien_API_USER"));
+  TProof::Mgr(Form("%s%s",user.Data(), location.Data()))->SetROOTVersion(Form("VO_ALICE@ROOT::%s",rootVersion.Data()));
+  TProof::Open(Form("%s%s/?N",user.Data(), location.Data()), nWorkers.Data());
   if (!gProof) return;
   
   // set environment and load libraries on workers
@@ -248,7 +447,7 @@ void LoadAlirootOnProof(TString& aaf, TString alirootVersion, TString& extraLibs
   list->Add(new TNamed("ALIROOT_EXTRA_LIBS", extraLibs.Data()));
   if (!gSystem->AccessPathName("AliAnalysisTaskMuonResolution.cxx"))
     list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES", "MUON:MUON/mapping"));
-  gProof->EnablePackage(alirootVersion.Data(), list, kTRUE);
+  gProof->EnablePackage(Form("VO_ALICE@AliRoot::%s",alirootVersion.Data()), list, kTRUE);
   
   // compile task on workers
   if (!gSystem->AccessPathName("AliAnalysisTaskMuonResolution.cxx"))
@@ -259,12 +458,15 @@ void LoadAlirootOnProof(TString& aaf, TString alirootVersion, TString& extraLibs
 //______________________________________________________________________________
 AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool_t selectPhysics, Bool_t selectTrigger, Bool_t matchTrig,
 						   Bool_t applyAccCut, Double_t minMomentum, Bool_t correctForSystematics, Int_t extrapMode,
-						   Double_t clusterResNB[10], Double_t clusterResB[10])
+						   Double_t clusterResNB[10], Double_t clusterResB[10],
+						   Bool_t shiftHalfCh, Double_t halfChShiftNB[20], Double_t halfChShiftB[20],
+						   Bool_t shiftDE, Double_t deShiftNB[200], Double_t deShiftB[200])
 {
   /// create the analysis train and configure it
   
   // Create the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("MuonResolutionAnalysis");
+  //mgr->SetNSysInfo(100);
   
   // ESD input handler
   AliESDInputHandler* esdH = new AliESDInputHandler();
@@ -297,15 +499,83 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
     Error("CreateAnalysisTrain","AliAnalysisTaskMuonResolution not created!");
     return 0x0;
   }
-  if (mode == kLocal) muonResolution->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  else muonResolution->SetDefaultStorage("alien://folder=/alice/data/2011/OCDB");
+  /*if (mode == kLocal) muonResolution->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  else */muonResolution->SetDefaultStorage("raw://");
   if (mode != kProof) muonResolution->ShowProgressBar();
   muonResolution->PrintClusterRes(kTRUE, kTRUE);
   muonResolution->SetStartingResolution(clusterResNB, clusterResB);
-  //muonResolution->RemoveMonoCathodClusters(kTRUE, kFALSE);
+  muonResolution->RemoveMonoCathodClusters(kTRUE, kFALSE);
 //  muonResolution->FitResiduals(kFALSE);
 //  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011","");
 //  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align2");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align2");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBVanik");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBJavier");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBVanik2");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBJavier2");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBTest");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBJavierI");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBJavier2St345");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestQuadrant");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_x_CDB");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_x_CDB");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00asCDB");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00asCDB");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_xypxvzyvz_x015y015_CDB");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_xypxvzyvz_x015y015_CDB");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_xypxvzyvz_x010y015_CDB");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_xypxvzyvz_x010y015_CDB");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_gc5_x015y015_fix24zIO_CDB");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_gc5_x015y015_fix24zIO_CDB");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBVanik2St345_B2");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBVanik2St345_B3");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBQuadrant_B2");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBQuadrant_B3");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align2bis");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB_BON_woConst");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB_BON_wConst");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB_BON_wConst_v2");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/s/shahoian/CorG4Fresmx05y015");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/s/shahoian/CorG4Gresmx05y015");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/s/shahoian/CorG4Gresmx05y015");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB_RubenB0");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/CorG4Fresmx05y015_BOff");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/CorG4Fresmx05y015");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/CorG4Gresmx05y015_BOff");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/CorG4Gresmx05y015");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/pbpb11wrk/CorG4Fresmx05y015_pp2PbPb");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/pp11wrk/CorG4Fresmx05y015_pp2pp");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/RAi00ab_p1_t1b_CDB");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/RAi00ab_p1_t2b_CDB");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC12h_3ce");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC12h_4cf");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC12h_5cf");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC11Boffp2");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC12h_8dh");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC12_ReAlign_0");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC12h_8di");
+//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC12_ReAlign_new_0");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2012", "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC12_ReAlign_new_1");
+  
+  muonResolution->SetAlignStorage("alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  
+  if (shiftHalfCh) {
+    muonResolution->SetHalfChShift(halfChShiftNB, halfChShiftB);
+    muonResolution->ShiftHalfCh();
+    muonResolution->PrintHalfChShift();
+  }
+  if (shiftDE) {
+    muonResolution->SetDEShift(deShiftNB, deShiftB);
+    muonResolution->ShiftDE();
+    muonResolution->PrintDEShift();
+  }
+//  muonResolution->ImproveTracks(kTRUE);
+  AliMuonTrackCuts trackCuts("stdCuts", "stdCuts");
+  trackCuts.SetAllowDefaultParams();
+  trackCuts.SetIsMC();
+  trackCuts.SetFilterMask(AliMuonTrackCuts::kMuPdca);
+  muonResolution->SetMuonTrackCuts(trackCuts);
   
   return muonResolution;
   
@@ -341,6 +611,80 @@ Bool_t GetChamberResolution(Int_t iStep, Double_t clusterResNB[10], Double_t clu
   }
   
   outFile->Close();
+  //delete outFile;
+  
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AddHalfChShift(Int_t iStep, Double_t halfChShiftNB[20], Double_t halfChShiftB[20], Double_t halfChShiftNBErr[20], Double_t halfChShiftBErr[20])
+{
+  /// read the chamber resolution from the output file
+  
+  TFile* outFile = TFile::Open(Form("chamberResolution_step%d.root", iStep),"READ");
+  
+  if (!outFile || !outFile->IsOpen()) {
+    Error("AddHalfChShift","output file does not exist!");
+    return kFALSE;
+  }
+  
+  TObjArray* summary = static_cast<TObjArray*>(outFile->FindObjectAny("ChamberRes"));
+  TGraphErrors* gResidualXPerHalfChMean = (summary) ? static_cast<TGraphErrors*>(summary->FindObject("gResidualXPerHalfChMean_ClusterIn")) : 0x0;
+  TGraphErrors* gResidualYPerHalfChMean = (summary) ? static_cast<TGraphErrors*>(summary->FindObject("gResidualYPerHalfChMean_ClusterIn")) : 0x0;
+  
+  if (!gResidualXPerHalfChMean || !gResidualYPerHalfChMean) {
+    Error("AddHalfChShift","half-chamber shift graphs do not exist!");
+    return kFALSE;
+  }
+  
+  Double_t dummy, dx, dy;
+  for (Int_t i = 0; i < 20; i++) {
+    gResidualXPerHalfChMean->GetPoint(i, dummy, dx);
+    halfChShiftNB[i] += dx;
+    halfChShiftNBErr[i] = gResidualXPerHalfChMean->GetErrorY(i);
+    gResidualYPerHalfChMean->GetPoint(i, dummy, dy);
+    halfChShiftB[i] += dy;
+    halfChShiftBErr[i] = gResidualYPerHalfChMean->GetErrorY(i);
+  }
+  
+  outFile->Close();
+  //delete outFile;
+  
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AddDEShift(Int_t iStep, Double_t deShiftNB[200], Double_t deShiftB[200])
+{
+  /// read the chamber resolution from the output file
+  
+  TFile* outFile = TFile::Open(Form("chamberResolution_step%d.root", iStep),"READ");
+  
+  if (!outFile || !outFile->IsOpen()) {
+    Error("AddDEShift","output file does not exist!");
+    return kFALSE;
+  }
+  
+  TObjArray* summary = static_cast<TObjArray*>(outFile->FindObjectAny("ChamberRes"));
+  TGraphErrors* gResidualXPerDEMean = (summary) ? static_cast<TGraphErrors*>(summary->FindObject("gResidualXPerDEMean_ClusterIn")) : 0x0;
+  TGraphErrors* gResidualYPerDEMean = (summary) ? static_cast<TGraphErrors*>(summary->FindObject("gResidualYPerDEMean_ClusterIn")) : 0x0;
+  
+  if (!gResidualXPerDEMean || !gResidualYPerDEMean) {
+    Error("AddDEShift","DE shift graphs do not exist!");
+    return kFALSE;
+  }
+  
+  Double_t dummy, dx, dy;
+  nDE = gResidualXPerDEMean->GetN();
+  for (Int_t i = 0; i < nDE; i++) {
+    gResidualXPerDEMean->GetPoint(i, dummy, dx);
+    deShiftNB[i] += dx;
+    gResidualYPerDEMean->GetPoint(i, dummy, dy);
+    deShiftB[i] += dy;
+  }
+  
+  outFile->Close();
+  //delete outFile;
   
   return kTRUE;
 }
@@ -369,25 +713,33 @@ void AddMCHViews(TFile* file)
   g = static_cast<TGraphErrors*>(summary->FindObject("gCombinedResidualXPerDESigma"));
   if (g) {
     file->cd();
-    ConvertGraph(*g, "resoX")->Write();
+    AliMUONTrackerData* data = ConvertGraph(*g, "resoX");
+    data->Write();
+    delete data;
   }
   
   g = static_cast<TGraphErrors*>(summary->FindObject("gCombinedResidualYPerDESigma"));
   if (g) {
     file->cd();
-    ConvertGraph(*g, "resoY")->Write();
+    AliMUONTrackerData* data = ConvertGraph(*g, "resoY");
+    data->Write();
+    delete data;
   }
   
   g = static_cast<TGraphErrors*>(summary->FindObject("gResidualXPerDEMean_ClusterOut"));
   if (g) {
     file->cd();
-    ConvertGraph(*g, "shiftX")->Write();
+    AliMUONTrackerData* data = ConvertGraph(*g, "shiftX");
+    data->Write();
+    delete data;
   }
   
   g = static_cast<TGraphErrors*>(summary->FindObject("gResidualYPerDEMean_ClusterOut"));
   if (g) {
     file->cd();
-    ConvertGraph(*g, "shiftY")->Write();
+    AliMUONTrackerData* data = ConvertGraph(*g, "shiftY");
+    data->Write();
+    delete data;
   }
 }
 

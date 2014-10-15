@@ -72,7 +72,7 @@ static Float_t ptMaxLP = 50.;               // Max cut for transverse momentum L
 static Float_t lMin = 0.0;                  // Limits in the histo for fidutial volume
 static Float_t lMax = 100.;                 // Limits in the fidutial volume
 
-//static Int_t   nMaxEvMix = 250;
+static Int_t   nMaxEvMix = 250;
 
 //
 //  
@@ -81,15 +81,15 @@ static Float_t lMax = 100.;                 // Limits in the fidutial volume
 AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *name) :
 AliAnalysisTaskSE(name),
 
-  fAOD(0),  fCollision("PbPb2010"), fIsMC(kFALSE), fUsePID(kFALSE), fCentMin(0.), fCentMax(90.), fDoQA(kFALSE), fDoMixEvt(kFALSE), fTrigPtMin(5.), fTrigPtMax(10.), fTrigPtMCMin(5.), fTrigPtMCMax(10000.), fTrigEtaMax(0.8), fCheckIDTrig(kFALSE), fSeparateInjPart(kTRUE), fEndOfHijingEvent(-1),  fPIDResponse(0),
+fAOD(0),  fCollision("PbPb2010"), fIsMC(kFALSE), fUsePID(kFALSE), fCentMin(0.), fCentMax(90.), fDoQA(kFALSE), fDoMixEvt(kFALSE), fTriggerFB(768), fTrigPtMin(5.), fTrigPtMax(10.), fTrigPtMCMin(5.), fTrigPtMCMax(10000.), fTrigEtaMax(0.8), fCheckIDTrig(kFALSE), fSeparateInjPart(kTRUE), fEndOfHijingEvent(-1),  fPIDResponse(0),
 
   fMinPtDaughter(0.160), fMaxEtaDaughter(0.8), fMaxDCADaughter(1.0), fUseEtaCut(kFALSE), fYMax(0.7), fDCAToPrimVtx(0.1), fMinCPA(0.998), fNSigma(3.0), fDaugNClsTPC(70.), fMinCtau(0.), fMaxCtau(3.), fIdTrigger(-1), fIsV0LP(0), fPtV0LP(0.), fIsSndCheck(0),
 
   fTPCRadius(125.), fDiffTrigDaugFracTPCSharedCls(0.06),
 
-  fOutput(0), fOutputQA(0), fOutputME(0), fMEList(0x0), fTriggerParticles(0x0), fTriggerPartMC(0x0), fAssocParticles(0x0), fAssocPartMC(0x0), fEvents(0), fCentrality(0),  fCentrality2(0), fCentralityTrig(0), fPrimayVtxGlobalvsSPD(0), fPrimaryVertexX(0), fPrimaryVertexY(0), fPrimaryVertexZ(0),
+fOutput(0), fOutputQA(0), fOutputME(0), fMEList(0x0), fTriggerParticles(0x0), fTriggerPartMC(0x0), fAssocParticles(0x0), fAssocPartMC(0x0), fEvents(0), fEvtPerCent(0), fCentrality(0),  fCentrality2(0), fCentralityTrig(0), fPrimayVtxGlobalvsSPD(0), fPrimaryVertexX(0), fPrimaryVertexY(0), fPrimaryVertexZ(0),
 
-  fTriggerEventPlane(0),  fTriggerMCPtCent(0), fTriggerMCResPt(0), fTriggerMCResEta(0), fTriggerMCResPhi(0), fTriggerPtCent(0),  fTriggerPtCentCh(0), fNTrigPerEvt(0), fTriggerWiSPDHit(0), fTriggerEtaPhi(0), fCheckTriggerFromV0Daug(0), fTriggerComingFromDaug(0), fTriggerIsV0(0), fCheckIDTrigPtK0s(0), fCheckIDTrigPhiK0s(0), fCheckIDTrigEtaK0s(0), fCheckIDTrigNclsK0s(0), fCheckIDTrigPtLambda(0), fCheckIDTrigPhiLambda(0), fCheckIDTrigEtaLambda(0),  fCheckIDTrigNclsLambda(0), fCheckIDTrigPtAntiLambda(0), fCheckIDTrigPhiAntiLambda(0), fCheckIDTrigEtaAntiLambda(0), fCheckIDTrigNclsAntiLambda(0), 
+fTriggerEventPlane(0),  fTriggerMCPtCent(0), fTriggerMCResPt(0), fTriggerMCResEta(0), fTriggerMCResPhi(0), fTriggerPtCent(0),  fTriggerPtCentCh(0), fNTrigPerEvt(0), fTriggerWiSPDHit(0), fTriggerEtaPhi(0), fTrigFracShTPCcls(0), fTriggerDCA(0), fCheckTriggerFromV0Daug(0), fTriggerComingFromDaug(0), fTriggerIsV0(0), fCheckIDTrigPtK0s(0), fCheckIDTrigPhiK0s(0), fCheckIDTrigEtaK0s(0), fCheckIDTrigNclsK0s(0), fCheckIDTrigPtLambda(0), fCheckIDTrigPhiLambda(0), fCheckIDTrigEtaLambda(0),  fCheckIDTrigNclsLambda(0), fCheckIDTrigPtAntiLambda(0), fCheckIDTrigPhiAntiLambda(0), fCheckIDTrigEtaAntiLambda(0), fCheckIDTrigNclsAntiLambda(0), 
 
   fInjectedParticles(0),
 
@@ -97,11 +97,11 @@ AliAnalysisTaskSE(name),
 
   fHistArmenterosPodolanski(0), fHistArmPodBckg(0),
   
-  fK0sMass(0), fK0sMassEmbeded(0), fK0sMassPtEta(0), fK0sMassPtPhi(0), fK0sDaughtersPt(0), fK0sDCADaugToPrimVtx(0), fK0sSpatialRes(0), fK0sBckgDecLength(0), fK0sBckgDCADaugToPrimVtx(0), fK0sBckgEtaPhi(0), fK0sBckgPhiRadio(0), fK0sBckgDCANegDaugToPrimVtx(0), fK0sBckgDCAPosDaugToPrimVtx(0), fV0MassCascade(0),
+fK0sMass(0), fK0sMassEmbeded(0), fK0sMassPtEta(0), fK0sMassPtPhi(0), fK0sPosDaugFracShTPCcls(0), fK0sNegDaugFracShTPCcls(0), fK0sDaughtersPt(0), fK0sPosDaugFracShTPCclsTrig(0), fK0sNegDaugFracShTPCclsTrig(0),  fK0sDCADaugToPrimVtx(0), fK0sSpatialRes(0), fK0sBckgDecLength(0), fK0sBckgDCADaugToPrimVtx(0), fK0sBckgEtaPhi(0), fK0sBckgPhiRadio(0), fK0sBckgDCANegDaugToPrimVtx(0), fK0sBckgDCAPosDaugToPrimVtx(0), fV0MassCascade(0),
   
-  fLambdaMass(0), fLambdaMassEmbeded(0), fLambdaMass2(0), fLambdaMass2Embeded(0), fLambdaMassPtEta(0), fLambdaMassPtPhi(0), fLambdaDaughtersPt(0), fLambdaDCADaugToPrimVtx(0), fLambdaSpatialRes(0), fLambdaBckgDecLength(0), fLambdaBckgDCADaugToPrimVtx(0), fLambdaBckgEtaPhi(0), fLambdaBckgPhiRadio(0), fLambdaBckgDCANegDaugToPrimVtx(0), fLambdaBckgDCAPosDaugToPrimVtx(0), 
+fLambdaMass(0), fLambdaMassEmbeded(0), fLambdaMass2(0), fLambdaMass2Embeded(0), fLambdaMassPtEta(0), fLambdaMassPtPhi(0), fLambdaPosDaugFracShTPCcls(0), fLambdaNegDaugFracShTPCcls(0), fLambdaDaughtersPt(0), fLambdaPosDaugFracShTPCclsTrig(0), fLambdaNegDaugFracShTPCclsTrig(0), fLambdaDCADaugToPrimVtx(0), fLambdaSpatialRes(0), fLambdaBckgDecLength(0), fLambdaBckgDCADaugToPrimVtx(0), fLambdaBckgEtaPhi(0), fLambdaBckgPhiRadio(0), fLambdaBckgDCANegDaugToPrimVtx(0), fLambdaBckgDCAPosDaugToPrimVtx(0), 
 
-  fAntiLambdaMass(0), fAntiLambdaMassEmbeded(0), fAntiLambdaMass2(0), fAntiLambdaMass2Embeded(0), fAntiLambdaMassPtEta(0), fAntiLambdaMassPtPhi(0), fAntiLambdaDaughtersPt(0), fAntiLambdaDCADaugToPrimVtx(0), fAntiLambdaSpatialRes(0), fAntiLambdaBckgDecLength(0), fAntiLambdaBckgDCADaugToPrimVtx(0), fAntiLambdaBckgEtaPhi(0), fAntiLambdaBckgPhiRadio(0), fAntiLambdaBckgDCANegDaugToPrimVtx(0), fAntiLambdaBckgDCAPosDaugToPrimVtx(0), 
+fAntiLambdaMass(0), fAntiLambdaMassEmbeded(0), fAntiLambdaMass2(0), fAntiLambdaMass2Embeded(0), fAntiLambdaMassPtEta(0), fAntiLambdaMassPtPhi(0), fAntiLambdaPosDaugFracShTPCcls(0), fAntiLambdaNegDaugFracShTPCcls(0), fAntiLambdaDaughtersPt(0),  fAntiLambdaPosDaugFracShTPCclsTrig(0), fAntiLambdaNegDaugFracShTPCclsTrig(0), fAntiLambdaDCADaugToPrimVtx(0), fAntiLambdaSpatialRes(0), fAntiLambdaBckgDecLength(0), fAntiLambdaBckgDCADaugToPrimVtx(0), fAntiLambdaBckgEtaPhi(0), fAntiLambdaBckgPhiRadio(0), fAntiLambdaBckgDCANegDaugToPrimVtx(0), fAntiLambdaBckgDCAPosDaugToPrimVtx(0), 
 
   fK0sPtPosDaug(0), fK0sPtNegDaug(0), fK0sBckgPtPosDaug(0), fK0sBckgPtNegDaug(0), fK0sPhiEtaPosDaug(0), fK0sPhiEtaNegDaug(0), fK0sBckgPhiEtaPosDaug(0), fK0sBckgPhiEtaNegDaug(0), fK0sDCAPosDaug(0), fK0sDCANegDaug(0), fK0sBckgDCAPosDaug(0), fK0sBckgDCANegDaug(0), fK0sDecayPos(0), fK0sBckgDecayPos(0), fK0sDecayVertex(0), fK0sBckgDecayVertex(0), fK0sCPA(0), fK0sBckgCPA(0), fK0sDCAV0Daug(0), fK0sBckgDCAV0Daug(0), fK0sNClustersTPC(0), fK0sBckgNClustersTPC(0), fK0sNClustersITSPos(0), fK0sNClustersITSNeg(0), fK0sBckgNClustersITSPos(0), fK0sBckgNClustersITSNeg(0),   
 
@@ -134,6 +134,7 @@ AliAnalysisTaskSE(name),
     fK0sAssocMassPtCPA[i] = 0;
     fK0sAssocMassPtDCAPV[i] = 0;
     fK0sAssocMassPtDaugNClsTPC[i] = 0;
+    fK0sAssocMassPtShTPCcls[i] = 0;
     // -- Embeded particles
     fK0sAssocPtMassArmEmbeded[i] = 0;
     fK0sAssocMassPtVtxEmbeded[i] = 0;
@@ -141,6 +142,7 @@ AliAnalysisTaskSE(name),
     fK0sAssocMassPtCPAEmbeded[i] = 0;
     fK0sAssocMassPtDCAPVEmbeded[i] = 0;
     fK0sAssocMassPtDaugNClsTPCEmbeded[i] = 0;
+    fK0sAssocMassPtShTPCclsEmbeded[i] = 0;
     // -- Mass vs rapidity vs pt vs centrlaity
     fK0sMassPtRap[i] = 0;
     // -- Splitting checks
@@ -164,6 +166,7 @@ AliAnalysisTaskSE(name),
     fLambdaAssocMassPtCPA[i] = 0;
     fLambdaAssocMassPtDCAPV[i] = 0;
     fLambdaAssocMassPtDaugNClsTPC[i] = 0;
+    fLambdaAssocMassPtShTPCcls[i] = 0;
     // -- Embeded particles
     fLambdaAssocMassPtRapEmbeded[i] = 0;
     fLambdaAssocMassPtRapEmbeded2[i] = 0;
@@ -172,6 +175,7 @@ AliAnalysisTaskSE(name),
     fLambdaAssocMassPtCPAEmbeded[i] = 0;
     fLambdaAssocMassPtDCAPVEmbeded[i] = 0;
     fLambdaAssocMassPtDaugNClsTPCEmbeded[i] = 0;
+    fLambdaAssocMassPtShTPCclsEmbeded[i] = 0;
     // -- Mass vs rapidity vs pt vs centrlaity
     fLambdaMassPtRap[i] = 0;
     // -- Splitting checks
@@ -195,6 +199,7 @@ AliAnalysisTaskSE(name),
     fAntiLambdaAssocMassPtCPA[i] = 0;
     fAntiLambdaAssocMassPtDCAPV[i] = 0;
     fAntiLambdaAssocMassPtDaugNClsTPC[i] = 0;
+    fAntiLambdaAssocMassPtShTPCcls[i] = 0;
     // -- Embeded particles
     fAntiLambdaAssocMassPtRapEmbeded[i] = 0;
     fAntiLambdaAssocMassPtRapEmbeded2[i] = 0;
@@ -203,6 +208,7 @@ AliAnalysisTaskSE(name),
     fAntiLambdaAssocMassPtCPAEmbeded[i] = 0;
     fAntiLambdaAssocMassPtDCAPVEmbeded[i] = 0;
     fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[i] = 0;
+    fAntiLambdaAssocMassPtShTPCclsEmbeded[i] = 0;
     // -- Mass vs rapidity vs pt vs centrlaity
     fAntiLambdaMassPtRap[i] = 0;
     // -- Splitting checks
@@ -317,7 +323,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   // ====== General characteristics of the event and tracks ====== //
 
   // Counter for the number of events in each step:
-  fEvents=new TH1F("fEvents","Number of events",14,-0.5,13.5);
+  fEvents =new TH1F("fEvents","Number of events",14,-0.5,13.5);
   fEvents->GetXaxis()->SetBinLabel(1,"calls to UserExec()");
   fEvents->GetXaxis()->SetBinLabel(2,"AOD available");
   fEvents->GetXaxis()->SetBinLabel(3,"CINT1B");
@@ -335,11 +341,14 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   fEvents->GetYaxis()->SetTitle("Counts"); 
   fOutput->Add(fEvents);
 
+  fEvtPerCent = new TH2F("fEvtPerCent","Events per centrality bin;Step;Centrality bin",5,-0.5,4.5,4,-0.5,3.5);
+  fOutput->Add(fEvtPerCent);
+
   // Centrality:
-  fCentrality = new TH1F("fCentrality","Centrality;Centrality (%);Events",100,0.,100.);
+  fCentrality = new TH1F("fCentrality","Centrality;Centrality (%);Events",500,0.,100.);
   fOutput->Add(fCentrality);
 
-  fCentrality2 = new TH1F("fCentrality2","Centrality in events with |VtxZ|<10 cm;Centrality (%);Events",100,0.,100.);
+  fCentrality2 = new TH1F("fCentrality2","Centrality in events with |VtxZ|<10 cm;Centrality (%);Events",500,0.,100.);
   fOutput->Add(fCentrality2);
 
   fCentralityTrig = new TH2F("fCentralityTrig","Centrality in events per trigger selection;Centrality (%);Triger Selection",100,0.,100.,3,0.5,3.5);
@@ -400,6 +409,18 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   fTriggerEtaPhi = new TH2F("fTriggerEtaPhi","Trigger particle;#varphi (rad);#eta",nbinsPhi,0.,2.*TMath::Pi(),100,-1.,1.);
   fOutput->Add(fTriggerEtaPhi);
   
+  // DCA to primary vertex:
+  fTriggerDCA = new TH2F("fTriggerDCA","Trigger particle;DCA (cm);",32,0.,3.2,2,0.5,2.5);
+  fTriggerDCA->GetYaxis()->SetBinLabel(1,"XY");
+  fTriggerDCA->GetYaxis()->SetBinLabel(2,"Z");
+  fOutput->Add(fTriggerDCA);
+
+  // Fraction of shared TPC cls
+  fTrigFracShTPCcls =
+    new TH2F("fTrigFracShTPCcls","Trigger particle: vs #it{p}_{T} vs fraction Shared TPC cls;#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+             nbinPtLP,pMin,ptMaxLP,50,0,1.);
+  fOutput->Add(fTrigFracShTPCcls);
+
   // Check if Trigger particle comes from a V0 daughter:
   fCheckTriggerFromV0Daug = 
     new TH1F("fCheckTriggerFromV0Daug","Trigger particle from a V0 daughter;;Counts",4,-0.5,3.5);
@@ -554,11 +575,12 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
     // Histogramas para estudios sistematicos de la eficiencia
     Int_t binsEff1[3] = {nbins,nbins,20};          Double_t xminEff1[3] = {0.398,pMin,-1.0};          Double_t xmaxEff1[3] = {0.598,pMax,1.0};             // gral efficiency
-    Int_t binsEff2[4] = {nbins,nbins,20,10};       Double_t xminEff2[4] = {0.398,pMin,-1.0,-10.};     Double_t xmaxEff2[4] = {0.598,pMax,1.0,10.};         // vtx cut
+    Int_t binsEff2[4] = {nbins,nbins,20,20};       Double_t xminEff2[4] = {0.398,pMin,-1.0,-10.};     Double_t xmaxEff2[4] = {0.598,pMax,1.0,10.};         // vtx cut
     Int_t binsEff3[4] = {nbins,nbins,20,60};       Double_t xminEff3[4] = {0.398,pMin,-1.0,0.};       Double_t xmaxEff3[4] = {0.598,pMax,1.0,1.2};         // dca between daughters
     Int_t binsEff4[4] = {nbins,nbins,20,50};       Double_t xminEff4[4] = {0.398,pMin,-1.0,0.9975};   Double_t xmaxEff4[4] = {0.598,pMax,1.0,1.};          // cpa
     Int_t binsEff5[5] = {nbins,nbins,20,99,99};    Double_t xminEff5[5] = {0.398,pMin,-1.0,0.,0.};    Double_t xmaxEff5[5] = {0.598,pMax,1.0,3.3,3.3};     // dca to prim. vtx
     Int_t binsEff6[5] = {nbins,nbins,20,170,170};  Double_t xminEff6[5] = {0.398,pMin,-1.0,0.5,0.5};  Double_t xmaxEff6[5] = {0.598,pMax,1.0,170.5,170};   // No. TPC Cls
+    Int_t binsEffKsh[5] = {nbins,nbins,20,50,50};  Double_t xminEffKsh[5] = {0.398,pMin,-1.0,0.,0.};  Double_t xmaxEffKsh[5] = {0.598,pMax,1.0,1.0,1.0};   //shared TPC cls
 
     for(Int_t i=0; i<kNCent; i++){
      
@@ -587,6 +609,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fK0sAssocMassPtDaugNClsTPC[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos # TPC Cls; Neg # TPC Cls;",5,binsEff6,xminEff6,xmaxEff6);
       fOutput->Add(fK0sAssocMassPtDaugNClsTPC[i]); 
 
+      snprintf(hNameHist,100, "fK0sAssocMassPtShTPCcls_Cent_%d",i);
+      fK0sAssocMassPtShTPCcls[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffKsh,xminEffKsh,xmaxEffKsh);
+      fOutput->Add(fK0sAssocMassPtShTPCcls[i]); 
+
       /// ----- Embeded particles 
       snprintf(hNameHist,100, "fK0sAssocPtMassArmEmbeded_Cent_%d",i);
       fK0sAssocPtMassArmEmbeded[i]    = new THnSparseD(hNameHist,"K^{0}_{S} Assoc Embeded;Mass (GeV/c^{2});#it{p}_{T} (GeV/#it{c});rap;",3,binsEff1,xminEff1,xmaxEff1);
@@ -611,6 +637,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       snprintf(hNameHist,100, "fK0sAssocMassPtDaugNClsTPCEmbeded_Cent_%d",i);
       fK0sAssocMassPtDaugNClsTPCEmbeded[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos # TPC Cls; Neg # TPC Cls;",5,binsEff6,xminEff6,xmaxEff6);
       fOutput->Add(fK0sAssocMassPtDaugNClsTPCEmbeded[i]); 
+
+     snprintf(hNameHist,100, "fK0sAssocMassPtShTPCclsEmbeded_Cent_%d",i);
+     fK0sAssocMassPtShTPCclsEmbeded[i]  = new THnSparseD(hNameHist, "K^{0}_{S}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffKsh,xminEffKsh,xmaxEffKsh);
+     fOutput->Add(fK0sAssocMassPtShTPCclsEmbeded[i]); 
 
     }
     
@@ -693,12 +723,13 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     }
     
     // Histogramas para estudios sistematicos de la eficiencia
-    Int_t binsEff7[3] = {nbins,nbins,20};          Double_t xminEff7[3] = {1.065,pMin,-1.0};           Double_t xmaxEff7[3] = {1.165,pMax,1.0};        // gral efficiency
-    Int_t binsEff8[4] = {nbins,nbins,20,10};       Double_t xminEff8[4] = {1.065,pMin,-1.0,-10.};      Double_t xmaxEff8[4] = {1.165,pMax,1.0,10.};    // vtx
-    Int_t binsEff9[4] = {nbins,nbins,20,60};       Double_t xminEff9[4] = {1.065,pMin,-1.0,0.};        Double_t xmaxEff9[4] = {1.165,pMax,1.0,1.2};    // dca between daughters
-    Int_t binsEff10[4] = {nbins,nbins,20,50};      Double_t xminEff10[4] = {1.065,pMin,-1.0,0.9975};   Double_t xmaxEff10[4] = {1.165,pMax,1.0,1.};    // cpa
-    Int_t binsEff11[5] = {nbins,nbins,20,99,99};   Double_t xminEff11[5] = {1.065,pMin,-1.0,0.,0.};    Double_t xmaxEff11[5] = {1.165,pMax,1.0,3.3,3.3};   // dca to prim. vtx
+    Int_t binsEff7[3] = {nbins,nbins,20};          Double_t xminEff7[3] = {1.065,pMin,-1.0};           Double_t xmaxEff7[3] = {1.165,pMax,1.0};               // gral efficiency
+    Int_t binsEff8[4] = {nbins,nbins,20,20};       Double_t xminEff8[4] = {1.065,pMin,-1.0,-10.};      Double_t xmaxEff8[4] = {1.165,pMax,1.0,10.};            // vtx
+    Int_t binsEff9[4] = {nbins,nbins,20,60};       Double_t xminEff9[4] = {1.065,pMin,-1.0,0.};        Double_t xmaxEff9[4] = {1.165,pMax,1.0,1.2};            // dca between daughters
+    Int_t binsEff10[4] = {nbins,nbins,20,50};      Double_t xminEff10[4] = {1.065,pMin,-1.0,0.9975};   Double_t xmaxEff10[4] = {1.165,pMax,1.0,1.};            // cpa
+    Int_t binsEff11[5] = {nbins,nbins,20,99,99};   Double_t xminEff11[5] = {1.065,pMin,-1.0,0.,0.};    Double_t xmaxEff11[5] = {1.165,pMax,1.0,3.3,3.3};       // dca to prim. vtx
     Int_t binsEff12[5] = {nbins,nbins,20,170,170}; Double_t xminEff12[5] = {1.065,pMin,-1.0,0.5,0.5};  Double_t xmaxEff12[5] = {1.165,pMax,1.0,170.5,170.5};   // No. TPC Cls
+    Int_t binsEffLsh[5] = {nbins,nbins,20,50,50};  Double_t xminEffLsh[5] = {1.065,pMin,-1.0,0.,0.};   Double_t xmaxEffLsh[5] = {1.165,pMax,1.0,1.0,1.0};      // shared TPC cls
 
     for(Int_t i=0; i<kNCent; i++){
 
@@ -731,6 +762,11 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fLambdaAssocMassPtDaugNClsTPC[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos # TPC Cls; Neg # TPC Cls;",5,binsEff12,xminEff12,xmaxEff12);
       fOutput->Add(fLambdaAssocMassPtDaugNClsTPC[i]); 
 
+      snprintf(hNameHist,100, "fLambdaAssocMassPtShTPCcls_Cent_%d",i);
+      fLambdaAssocMassPtShTPCcls[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffLsh,xminEffLsh,xmaxEffLsh);
+      fOutput->Add(fLambdaAssocMassPtShTPCcls[i]); 
+
+
       // ------------ Embeded particles
       snprintf(hNameHist,100, "fLambdaAssocMassPtRapEmbeded_Cent_%d",i);
       fLambdaAssocMassPtRapEmbeded[i]  = new THnSparseD(hNameHist, "#Lambda Embeded; Mass (GeV/c^{2}); #it{p}_{T}; rap;",3,binsEff7,xminEff7,xmaxEff7);
@@ -759,6 +795,11 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       snprintf(hNameHist,100, "fLambdaAssocMassPtDaugNClsTPCEmbeded_Cent_%d",i);
       fLambdaAssocMassPtDaugNClsTPCEmbeded[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap;  Pos # TPC Cls; Neg # TPC Cls;",5,binsEff12,xminEff12,xmaxEff12);
       fOutput->Add(fLambdaAssocMassPtDaugNClsTPCEmbeded[i]);
+
+      snprintf(hNameHist,100, "fLambdaAssocMassPtShTPCclsEmbeded_Cent_%d",i);
+      fLambdaAssocMassPtShTPCclsEmbeded[i]  = new THnSparseD(hNameHist, "#Lambda; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffLsh,xminEffLsh,xmaxEffLsh);
+      fOutput->Add(fLambdaAssocMassPtShTPCclsEmbeded[i]); 
+
     } 
 
     fLambdaMCResEta     = new TH3F("fLambdaMCResEta","#Lambda Assoc: #eta resolution; #eta_{MC}-#eta_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
@@ -841,12 +882,13 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
     // Histogramas para estudios sistematicos de la eficiencia
     Int_t binsEff13[3] = {nbins,nbins,20};          Double_t xminEff13[3] = {1.065,pMin,-1.0};          Double_t xmaxEff13[3] = {1.165,pMax,1.0};              // gral efficiency
-    Int_t binsEff14[4] = {nbins,nbins,20,10};       Double_t xminEff14[4] = {1.065,pMin,-1.0,-10.};     Double_t xmaxEff14[4] = {1.165,pMax,1.0,10.};          // vtx
+    Int_t binsEff14[4] = {nbins,nbins,20,20};       Double_t xminEff14[4] = {1.065,pMin,-1.0,-10.};     Double_t xmaxEff14[4] = {1.165,pMax,1.0,10.};          // vtx
     Int_t binsEff15[4] = {nbins,nbins,20,60};       Double_t xminEff15[4] = {1.065,pMin,-1.0,0.};       Double_t xmaxEff15[4] = {1.165,pMax,1.0,1.2};          // dca between daug
     Int_t binsEff16[4] = {nbins,nbins,20,50};       Double_t xminEff16[4] = {1.065,pMin,-1.0,0.9975};   Double_t xmaxEff16[4] = {1.165,pMax,1.0,1.};           // cpa
     Int_t binsEff17[5] = {nbins,nbins,20,99,99};    Double_t xminEff17[5] = {1.065,pMin,-1.0,0.,0.};    Double_t xmaxEff17[5] = {1.165,pMax,1.0,3.3,3.3};      // dca to prim. vtx
     Int_t binsEff18[5] = {nbins,nbins,20,170,170};  Double_t xminEff18[5] = {1.065,pMin,-1.0,0.5,0.5};  Double_t xmaxEff18[5] = {1.165,pMax,1.0,170.5,170.5};  // No. TPC Cls
-
+    Int_t binsEffALsh[5] = {nbins,nbins,20,50,50};  Double_t xminEffALsh[5] = {1.065,pMin,-1.0,0.,0.};  Double_t xmaxEffALsh[5] = {1.165,pMax,1.0,1.0,1.0};    // shared TPC cls
+  
     for(Int_t i=0; i<kNCent; i++){
       // --------- Natural particles
       snprintf(hNameHist,100, "fAntiLambdaAssocMassPtRap_Cent_%d",i);
@@ -877,6 +919,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fAntiLambdaAssocMassPtDaugNClsTPC[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap;  Pos # TPC Cls; Neg # TPC Cls;",5,binsEff18,xminEff18,xmaxEff18);
       fOutput->Add(fAntiLambdaAssocMassPtDaugNClsTPC[i]); 
 
+      snprintf(hNameHist,100, "fAntiLambdaAssocMassPtShTPCcls_Cent_%d",i);
+      fAntiLambdaAssocMassPtShTPCcls[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffALsh,xminEffALsh,xmaxEffALsh);
+      fOutput->Add(fAntiLambdaAssocMassPtShTPCcls[i]); 
+
       // ------------ Embeded particles
       snprintf(hNameHist,100, "fAntiLambdaAssocMassPtRapEmbeded_Cent_%d",i);
       fAntiLambdaAssocMassPtRapEmbeded[i]  = new THnSparseD(hNameHist, "#bar{#Lambda} Embeded; Mass (GeV/c^{2}); #it{p}_{T}; rap;",3,binsEff13,xminEff13,xmaxEff13);
@@ -905,7 +951,12 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       snprintf(hNameHist,100, "fAntiLambdaAssocMassPtDaugNClsTPCEmbeded_Cent_%d",i);
       fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap;  Pos # TPC Cls; Neg # TPC Cls;",5,binsEff18,xminEff18,xmaxEff18);
       fOutput->Add(fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[i]);
-    } 
+  
+       snprintf(hNameHist,100, "fAntiLambdaAssocMassPtShTPCclsEmbeded_Cent_%d",i);
+      fAntiLambdaAssocMassPtShTPCclsEmbeded[i]  = new THnSparseD(hNameHist, "#bar{#Lambda}; Mass (GeV/c^{2}); #it{p}_{T}; rap; Pos fraction shared TPC Cls; Neg fraction shared TPC Cls;",5,binsEffALsh,xminEffALsh,xmaxEffALsh);
+      fOutput->Add(fAntiLambdaAssocMassPtShTPCclsEmbeded[i]); 
+
+  } 
 
     fAntiLambdaMCResEta     = new TH3F("fAntiLambdaMCResEta","#bar{#Lambda} Assoc: #eta resolution; #eta_{MC}-#eta_{Rec};#it{p}_{T} (GeV/#it{c}); centrality",40,-0.1,0.1,nbins,pMin,pMax,100,0.,100.);
     fOutput->Add(fAntiLambdaMCResEta);
@@ -972,6 +1023,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   fK0sMassEmbeded->GetZaxis()->SetTitle("centrality");
   fOutput->Add(fK0sMassEmbeded);
 
+
   fK0sMassPtEta =
     new TH3F("fK0sMassPtEta","K^{0}_{s}: Mass vs #it{p}_{T} vs #eta;Mass (GeV/C^{2});#it{p}_{T} (GeV/#it{c});#eta",
 	     nbins,0.398,0.598,nbins,pMin,pMax,20,-1.0,1.0);
@@ -989,6 +1041,18 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
              nbins,0.398,0.598,nbins,pMin,pMax,nbinsPhi,0.,2.*TMath::Pi());
   fOutput->Add(fK0sMassPtPhi);
   
+  // ----- Fraction of shared TPC cls
+  fK0sPosDaugFracShTPCcls =
+    new TH3F("fK0sPosDaugFracShTPCcls","K^{0}_{s}: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+             nbins,0.398,0.598,nbins,pMin,pMax,50,0,1.);
+  fOutput->Add(fK0sPosDaugFracShTPCcls);
+
+  fK0sNegDaugFracShTPCcls =
+    new TH3F("fK0sNegDaugFracShTPCcls","K^{0}_{s}: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+             nbins,0.398,0.598,nbins,pMin,pMax,50,0,1.);
+  fOutput->Add(fK0sNegDaugFracShTPCcls);
+
+
   // ================== Correlations =================
 
   // ------------------------  Splitting:  
@@ -1001,9 +1065,9 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
      
   Int_t binsSplit[9] = {100,nbins,100,2,301,101,101,120,9};   Double_t xminSplit[9] = {pMin,0.398,pMin,-0.5,-0.001,-0.005,-0.005,0,-0.5}; Double_t xmaxSplit[9] = {pMax,0.598,pMax,1.5,0.3,1.005,1.005,10e+4,8.5};    
 
-  Int_t binsSplit2[12] = {100,nbins,100,2,10,20,101,101,100,120,99,2};   
-  Double_t xminSplit2[12] = {pMin,0.398,pMin,-0.5,0.,-0.1,-0.005,-0.005,-1.,0,0.,-0.5}; 
-  Double_t xmaxSplit2[12] = {pMax,0.598,pMax,1.5,0.1,0.1,1.005,1.005,1.,10e+4,3.3,1.5};    
+  Int_t binsSplit2[14] = {100,nbins,100,2,10,20,101,101,100,120,99,99,99,2};   
+  Double_t xminSplit2[14] = {pMin,0.398,pMin,-0.5,0.,-0.1,-0.005,-0.005,-1.,0,0.,0.,0.,-0.5}; 
+  Double_t xmaxSplit2[14] = {pMax,0.598,pMax,1.5,0.1,0.1,1.005,1.005,1.,10e+4,3.3,3.3,3.3,1.5};    
 
   Int_t binsSplit3[6] = {100,nbins,100,46,46,2};
   Double_t xminSplit3[6] = {pMin,0.398,pMin,-0.16,-0.16,-0.5};
@@ -1022,12 +1086,12 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     fOutput->Add(fK0sNegDaugSplCheckCovMat[j]); 
 
     // Positive daughter:
-    fK0sPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fK0sPosDaugdPhiSdEtaS_%d",j), "K^{0}_{S} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter; #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fK0sPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fK0sPosDaugdPhiSdEtaS_%d",j), "K^{0}_{S} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter; #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx; Trigger: DCA_{XY}; Trigger: DCA_{Z};same MC label;",14,binsSplit2,xminSplit2,xmaxSplit2);
     fK0sPosDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);    
     fOutput->Add(fK0sPosDaugdPhiSdEtaS[j]);  
     
     // Negative daughter:
-    fK0sNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fK0sNegDaugdPhiSdEtaS_%d",j), "K^{0}_{S} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter;  #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fK0sNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fK0sNegDaugdPhiSdEtaS_%d",j), "K^{0}_{S} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter;  #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx;  Trigger: DCA_{XY}; Trigger: DCA_{Z}; same MC label;",14,binsSplit2,xminSplit2,xmaxSplit2);
     fK0sNegDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);
     fOutput->Add(fK0sNegDaugdPhiSdEtaS[j]);  
 
@@ -1042,6 +1106,18 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     }
 
   }
+
+
+  // ----- Fraction of shared TPC cls
+  fK0sPosDaugFracShTPCclsTrig =
+    new TH3F("fK0sPosDaugFracShTPCclsTrig","K^{0}_{s}: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+             nbins,0.398,0.598,nbins,pMin,pMax,50,0,1.);
+  fOutput->Add(fK0sPosDaugFracShTPCclsTrig);
+
+  fK0sNegDaugFracShTPCclsTrig =
+    new TH3F("fK0sNegDaugFracShTPCclsTrig","K^{0}_{s}: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+             nbins,0.398,0.598,nbins,pMin,pMax,50,0,1.);
+  fOutput->Add(fK0sNegDaugFracShTPCclsTrig);
 
 
   //    DCA to prim vertex
@@ -1195,6 +1271,20 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 	     nbins,1.065,1.165,nbins,pMin,pMax,nbinsPhi,0.,2.*TMath::Pi());
   fOutput->Add(fLambdaMassPtPhi);
 
+  
+  // ----- Fraction of shared TPC cls
+  fLambdaPosDaugFracShTPCcls =
+    new TH3F("fLambdaPosDaugFracShTPCcls","#Lambda: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+         	     nbins,1.065,1.165,nbins,pMin,pMax,50,0,1.);
+  fOutput->Add(fLambdaPosDaugFracShTPCcls);
+
+  fLambdaNegDaugFracShTPCcls =
+    new TH3F("fLambdaNegDaugFracShTPCcls","#Lambda: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+          	     nbins,1.065,1.165,nbins,pMin,pMax,50,0,1.);
+  fOutput->Add(fLambdaNegDaugFracShTPCcls);
+
+
+
   // ================== Correlations =================
 
   // ----------------Splitting:
@@ -1215,12 +1305,12 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     fOutput->Add(fLambdaNegDaugSplCheckCovMat[j]); 
 
     // Positive daughter:
-    fLambdaPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fLambdaPosDaugdPhiSdEtaS_%d",j), "#Lambda Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  Correlation fraction of shared cls: Trigger - Daughter; #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fLambdaPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fLambdaPosDaugdPhiSdEtaS_%d",j), "#Lambda Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  Correlation fraction of shared cls: Trigger - Daughter; #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx;  Trigger: DCA_{XY}; Trigger: DCA_{Z}; same MC label;",14,binsSplit2,xminSplit2,xmaxSplit2);
     fLambdaPosDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);
     fOutput->Add(fLambdaPosDaugdPhiSdEtaS[j]);  
     
     // Negative daughter:
-    fLambdaNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fLambdaNegDaugdPhiSdEtaS_%d",j), "#Lambda Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  Correlation fraction of shared cls: Trigger - Daughter; #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fLambdaNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fLambdaNegDaugdPhiSdEtaS_%d",j), "#Lambda Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls;  Correlation fraction of shared cls: Trigger - Daughter; #sum_{x,y,z}(#it{p}_{i,Trig}-#it{p}_{i,Daug})^{2}/( #sigma_{i,Trig}^{2} + #sigma_{i,Daug}^{2} ); DCA to prim. vtx;  Trigger: DCA_{XY}; Trigger: DCA_{Z}; same MC label;",14,binsSplit2,xminSplit2,xmaxSplit2);
     fLambdaNegDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);
     fOutput->Add(fLambdaNegDaugdPhiSdEtaS[j]);  
 
@@ -1235,6 +1325,18 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     }
 
   }
+
+
+  // ----- Fraction of shared TPC cls
+  fLambdaPosDaugFracShTPCclsTrig =
+    new TH3F("fLambdaPosDaugFracShTPCclsTrig","#Lambda: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+         	     nbins,1.065,1.165,nbins,pMin,pMax,50,0,1.);
+  fOutput->Add(fLambdaPosDaugFracShTPCclsTrig);
+
+  fLambdaNegDaugFracShTPCclsTrig =
+    new TH3F("fLambdaNegDaugFracShTPCclsTrig","#Lambda: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+          	     nbins,1.065,1.165,nbins,pMin,pMax,50,0,1.);
+ fOutput->Add(fLambdaNegDaugFracShTPCclsTrig);
 
 
   //    DCA to prim vertex
@@ -1388,6 +1490,15 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 	     nbins,1.065,1.165,nbins,pMin,pMax,nbinsPhi,0.,2.*TMath::Pi());
   fOutput->Add(fAntiLambdaMassPtPhi);
 
+  fAntiLambdaPosDaugFracShTPCcls =
+    new TH3F("fAntiLambdaPosDaugFracShTPCcls","#bar{#Lambda}: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+         	     nbins,1.065,1.165,nbins,pMin,pMax,50,0,1.);
+  fOutput->Add(fAntiLambdaPosDaugFracShTPCcls);
+
+  fAntiLambdaNegDaugFracShTPCcls =
+    new TH3F("fAntiLambdaNegDaugFracShTPCcls","#bar{#Lambda}: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+          	     nbins,1.065,1.165,nbins,pMin,pMax,50,0,1.);
+  fOutput->Add(fAntiLambdaNegDaugFracShTPCcls);
 
 
   // ================== Correlations =================
@@ -1406,12 +1517,12 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     fOutput->Add(fAntiLambdaNegDaugSplCheckCovMat[j]); 
 
     // Positive daughter:
-    fAntiLambdaPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fAntiLambdaPosDaugdPhiSdEtaS_%d",j), "#bar{#Lambda} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fAntiLambdaPosDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fAntiLambdaPosDaugdPhiSdEtaS_%d",j), "#bar{#Lambda} Pos. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter;  Trigger: DCA_{XY}; Trigger: DCA_{Z}; same MC label;",14,binsSplit2,xminSplit2,xmaxSplit2);
     fAntiLambdaPosDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);  
       fOutput->Add(fAntiLambdaPosDaugdPhiSdEtaS[j]);  
     
     // Negative daughter:
-    fAntiLambdaNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fAntiLambdaNegDaugdPhiSdEtaS_%d",j), "#bar{#Lambda} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter; same MC label;",12,binsSplit2,xminSplit2,xmaxSplit2);
+    fAntiLambdaNegDaugdPhiSdEtaS[j]  = new THnSparseD(Form("fAntiLambdaNegDaugdPhiSdEtaS_%d",j), "#bar{#Lambda} Neg. daughter; #it{p}_{T,V0} (GeV/#it{c}); Mass (GeV/c^2); #it{p}_{Daug} (GeV/#it{c}); Same Sign as Trigger Particle; #Delta#varphi*; #Delta#eta*; Trigger: fraction of TPC shared cls; Daughter: fraction of TPC shared cls; Correlation fraction of shared cls: Trigger - Daughter;  Trigger: DCA_{XY}; Trigger: DCA_{Z}; same MC label;",14,binsSplit2,xminSplit2,xmaxSplit2);
     fAntiLambdaNegDaugdPhiSdEtaS[j]->SetBinEdges(9,binsDev);    
       fOutput->Add(fAntiLambdaNegDaugdPhiSdEtaS[j]);  
 
@@ -1428,6 +1539,17 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   }
 
   
+  // ----- Fraction of shared TPC cls
+  fAntiLambdaPosDaugFracShTPCclsTrig =
+    new TH3F("fAntiLambdaPosDaugFracShTPCclsTrig","#bar{#Lambda}: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+         	     nbins,1.065,1.165,nbins,pMin,pMax,50,0,1.);
+  fOutput->Add(fAntiLambdaPosDaugFracShTPCclsTrig);
+
+  fAntiLambdaNegDaugFracShTPCclsTrig =
+    new TH3F("fAntiLambdaNegDaugFracShTPCclsTrig","#bar{#Lambda}: mass vs #it{p}_{T} vs fraction Shared TPC cls;Mass (GeV/c^2);#it{p}_{T} (GeV/#it{c});fraction Shared TPC cls",
+          	     nbins,1.065,1.165,nbins,pMin,pMax,50,0,1.);
+ fOutput->Add(fAntiLambdaNegDaugFracShTPCclsTrig);
+
 
   //    DCA to prim vertex
   fAntiLambdaDCADaugToPrimVtx  
@@ -1539,9 +1661,9 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       for(Int_t j=0;j<kNVtxZ;j++){
       
 	snprintf(hNameHist,100,"fK0sdPhidEtaME_%.2f_%.2f_%.0f_%.0f_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[ll],kBinCent[ll+1],j);                  
-	fK0sdPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j] = new TH2F(hNameHist,"K^{0}_{S}: #Delta#varphi vs #Delta#eta in ME;#Delta#varphi (rad);#Delta#eta",
+	fK0sdPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j] = new TH3F(hNameHist,"K^{0}_{S}: #Delta#varphi vs #Delta#eta in ME;#Delta#varphi (rad);#Delta#eta",
 								nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
-								nbinsdEta,-1.5,1.5);
+								nbinsdEta,-1.5,1.5,nbins,0.398,0.598);
 	fOutputME->Add(fK0sdPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j]);
       }
     }
@@ -1553,9 +1675,9 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       for(Int_t j=0;j<kNVtxZ;j++){
 
 	snprintf(hNameHist,100,"fLambdadPhidEtaME_%.2f_%.2f_%.0lf_%.0lf_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[ll],kBinCent[ll+1],j);
-	fLambdadPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j] = new TH2F(hNameHist,"#Lambda: #Delta#varphi vs #Delta#eta in ME;#Delta#varphi (rad);#Delta#eta",
+	fLambdadPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j] = new TH3F(hNameHist,"#Lambda: #Delta#varphi vs #Delta#eta in ME;#Delta#varphi (rad);#Delta#eta",
 								   nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
-								   nbinsdEta,-1.5,1.5);
+								   nbinsdEta,-1.5,1.5,nbins,1.065,1.165);
 	fOutputME->Add(fLambdadPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j]);
       }
     }
@@ -1567,9 +1689,9 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       for(Int_t j=0;j<kNVtxZ;j++){
 
 	snprintf(hNameHist,100,"fAntiLambdadPhidEtaME_%.2f_%.2f_%.0lf_%.0lf_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[ll],kBinCent[ll+1],j);
-	fAntiLambdadPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j] = new TH2F(hNameHist,"#bar{#Lambda}: #Delta#varphi vs #Delta#eta in ME;#Delta#varphi (rad);#Delta#eta",
+	fAntiLambdadPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j] = new TH3F(hNameHist,"#bar{#Lambda}: #Delta#varphi vs #Delta#eta in ME;#Delta#varphi (rad);#Delta#eta",
 								       nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
-								       nbinsdEta,-1.5,1.5);
+								       nbinsdEta,-1.5,1.5,nbins,1.065,1.165);
 	fOutputME->Add(fAntiLambdadPhidEtaME[ll*kN1*kNVtxZ + k*kNVtxZ + j]);
       }
     }
@@ -2113,13 +2235,13 @@ static Int_t CentBin(Double_t cent)
 Bool_t AliAnalysisTaskLambdaOverK0sJets::AcceptTrack(const AliAODTrack *t) 
 {
   // Track criteria for primaries particles 
- 
+  //if(fTriggerFB!=128 && fTriggerFB!=272) return kFALSE; 
+  
   if (TMath::Abs(t->Eta())>0.8 )  return kFALSE; 
-  // TPC only tracks
   //if (!(t->TestFilterMask(1<<7))) return kFALSE; 
-  // Hybrid tracks
-  if( !(t->TestFilterBit(272)) )  return kFALSE;
-
+  //if( !(t->TestFilterBit(272)) )  return kFALSE;
+  if( !(t->TestFilterBit(fTriggerFB)) )  return kFALSE;
+ 
   Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1); 
   if (nCrossedRowsTPC < 70) return kFALSE;  
   
@@ -2749,11 +2871,10 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     
     Float_t dlK = 0.4977*lt/pt;
     Float_t dlL = 1.1157*lt/pt; 
-    /*
-      Float_t dlK  = v0->MassK0Short()*dl/p;
-      Float_t dlL  = v0->MassLambda()*dl/p;
-      Float_t dlAL = v0->MassAntiLambda()*dl/p;
-    */
+    
+    //Float_t dlK  = v0->MassK0Short()*dl/p;
+    //Float_t dlL  = v0->MassLambda()*dl/p;
+    //Float_t dlAL = v0->MassAntiLambda()*dl/p;
 
     // ctau
     Bool_t ctK=kTRUE;  if (dlK > fMaxCtau*2.68 || dlK < fMinCtau*2.68) ctK=kFALSE; 
@@ -2796,6 +2917,10 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // phi
     Float_t lPhi  = v0->Phi();
     //lPhi  = ( (lPhi < 0) ? lPhi + 2*TMath::Pi() : lPhi );    
+
+    // Fraction of TPC Shared Cluster 
+    Float_t fracPosDaugTPCSharedMap = GetFractionTPCSharedCls(ptrack);
+    Float_t fracNegDaugTPCSharedMap = GetFractionTPCSharedCls(ntrack);
 
     // rapidity
     Float_t rapK0s = v0->RapK0Short();
@@ -2903,7 +3028,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 
 	Int_t ntrkMC=stackMC->GetEntriesFast();
 	
-	Int_t nlab = TMath::Abs(ntrack->GetLabel());//** UInt_t
+	Int_t nlab = TMath::Abs(ntrack->GetLabel()); // ** UInt_t
 	Int_t plab = TMath::Abs(ptrack->GetLabel());
   
 	// To avoid futher problems 
@@ -3114,12 +3239,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effK0sVtx[4] = {v0->MassK0Short(),ptAs,rapAs,zv};
 		  Double_t effK0sDCA[4] = {v0->MassK0Short(),ptAs,rapAs,dca};
 		  Double_t effK0sCPA[4] = {v0->MassK0Short(),ptAs,rapAs,cpa};
-		  
+		  Double_t effK0sShTPCcls[5] = {v0->MassK0Short(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
+
 		  // Distributions for the efficiency (systematics chechks)
 		  fK0sAssocPtMassArm[curCentBin]->Fill(effK0sArm);
 		  fK0sAssocMassPtVtx[curCentBin]->Fill(effK0sVtx);
 		  fK0sAssocMassPtDCADaug[curCentBin]->Fill(effK0sDCA);
 		  fK0sAssocMassPtCPA[curCentBin]->Fill(effK0sCPA);
+		  fK0sAssocMassPtShTPCcls[curCentBin]->Fill(effK0sShTPCcls);
 		}
 	      
 		fK0sMCResEta->Fill(resEta,pt,centrality);
@@ -3170,12 +3297,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effK0sVtx[4] = {v0->MassK0Short(),ptAs,rapAs,zv};
 		  Double_t effK0sDCA[4] = {v0->MassK0Short(),ptAs,rapAs,dca};
 		  Double_t effK0sCPA[4] = {v0->MassK0Short(),ptAs,rapAs,cpa};
-		
+		  Double_t effK0sShTPCcls[5] = {v0->MassK0Short(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
+
 		  // Distributions for the efficiency (systematics chechks)
 		  fK0sAssocPtMassArmEmbeded[curCentBin]->Fill(effK0sArm);	
 		  fK0sAssocMassPtVtxEmbeded[curCentBin]->Fill(effK0sVtx);
 		  fK0sAssocMassPtDCADaugEmbeded[curCentBin]->Fill(effK0sDCA);
 		  fK0sAssocMassPtCPAEmbeded[curCentBin]->Fill(effK0sCPA);
+		  fK0sAssocMassPtShTPCclsEmbeded[curCentBin]->Fill(effK0sShTPCcls);
 		}
 
 	      } // End selection in the dca to prim. vtx and the number of clusters
@@ -3222,12 +3351,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effLambdaVtx[4] = {v0->MassLambda(),ptAs,rapAs,zv};
 		  Double_t effLambdaDCA[4] = {v0->MassLambda(),ptAs,rapAs,dca};
 		  Double_t effLambdaCPA[4] = {v0->MassLambda(),ptAs,rapAs,cpa};
+		  Double_t effLambdaShTPCcls[5] = {v0->MassLambda(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
 
 		  // Distributions for the efficiency (systematics chechks)
 		  fLambdaAssocMassPtRap[curCentBin]->Fill(effLambda);
 		  fLambdaAssocMassPtVtx[curCentBin]->Fill(effLambdaVtx);
 		  fLambdaAssocMassPtDCADaug[curCentBin]->Fill(effLambdaDCA);
 		  fLambdaAssocMassPtCPA[curCentBin]->Fill(effLambdaCPA);
+		  fLambdaAssocMassPtShTPCcls[curCentBin]->Fill(effLambdaShTPCcls);
 
 		  if( !isCandidate2K0s && !isCandidate2LambdaBar)
 		    fLambdaAssocMassPtRap2[curCentBin]->Fill(effLambda);
@@ -3279,12 +3410,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effLambdaVtx[4] = {v0->MassLambda(),ptAs,rapAs,zv};
 		  Double_t effLambdaDCA[4] = {v0->MassLambda(),ptAs,rapAs,dca};
 		  Double_t effLambdaCPA[4] = {v0->MassLambda(),ptAs,rapAs,cpa};
+		  Double_t effLambdaShTPCcls[5] = {v0->MassLambda(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
 
 		  // Distributions for the efficiency (systematics chechks)
 		  fLambdaAssocMassPtRapEmbeded[curCentBin]->Fill(effLambda);
 		  fLambdaAssocMassPtVtxEmbeded[curCentBin]->Fill(effLambdaVtx);
 		  fLambdaAssocMassPtDCADaugEmbeded[curCentBin]->Fill(effLambdaDCA);
 		  fLambdaAssocMassPtCPAEmbeded[curCentBin]->Fill(effLambdaCPA);
+		  fLambdaAssocMassPtShTPCclsEmbeded[curCentBin]->Fill(effLambdaShTPCcls);
 
 		  if( !isCandidate2K0s && !isCandidate2LambdaBar)
 		    fLambdaAssocMassPtRapEmbeded2[curCentBin]->Fill(effLambda);
@@ -3331,13 +3464,15 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effAntiLambdaVtx[4] = {v0->MassAntiLambda(),ptAs,rapAs,zv};
 		  Double_t effAntiLambdaDCA[4] = {v0->MassAntiLambda(),ptAs,rapAs,dca};
 		  Double_t effAntiLambdaCPA[4] = {v0->MassAntiLambda(),ptAs,rapAs,cpa};
+		  Double_t effAntiLambdaShTPCcls[5] = {v0->MassAntiLambda(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
 
 		  // Distributions for the efficiency (systematics chechks)
 		  fAntiLambdaAssocMassPtRap[curCentBin]->Fill(effAntiLambda);
 		  fAntiLambdaAssocMassPtVtx[curCentBin]->Fill(effAntiLambdaVtx);
 		  fAntiLambdaAssocMassPtDCADaug[curCentBin]->Fill(effAntiLambdaDCA);
 		  fAntiLambdaAssocMassPtCPA[curCentBin]->Fill(effAntiLambdaCPA);
-
+		  fAntiLambdaAssocMassPtShTPCcls[curCentBin]->Fill(effAntiLambdaShTPCcls);
+ 
 		  if( !isCandidate2K0s && !isCandidate2Lambda )
 		    fAntiLambdaAssocMassPtRap2[curCentBin]->Fill(effAntiLambda);
 		}
@@ -3386,12 +3521,14 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		  Double_t effAntiLambdaVtx[4] = {v0->MassAntiLambda(),ptAs,rapAs,zv};
 		  Double_t effAntiLambdaDCA[4] = {v0->MassAntiLambda(),ptAs,rapAs,dca};
 		  Double_t effAntiLambdaCPA[4] = {v0->MassAntiLambda(),ptAs,rapAs,cpa};
+		  Double_t effAntiLambdaShTPCcls[5] = {v0->MassAntiLambda(),ptAs,rapAs,fracPosDaugTPCSharedMap,fracNegDaugTPCSharedMap};
 
 		  // Distributions for the efficiency (systematics chechks)
 		  fAntiLambdaAssocMassPtRapEmbeded[curCentBin]->Fill(effAntiLambda);
 		  fAntiLambdaAssocMassPtVtxEmbeded[curCentBin]->Fill(effAntiLambdaVtx);
 		  fAntiLambdaAssocMassPtDCADaugEmbeded[curCentBin]->Fill(effAntiLambdaDCA);
 		  fAntiLambdaAssocMassPtCPAEmbeded[curCentBin]->Fill(effAntiLambdaCPA);
+		  fAntiLambdaAssocMassPtShTPCclsEmbeded[curCentBin]->Fill(effAntiLambdaShTPCcls);
 
 		  if( !isCandidate2K0s && !isCandidate2Lambda )
 		    fAntiLambdaAssocMassPtRapEmbeded2[curCentBin]->Fill(effAntiLambda);
@@ -3442,8 +3579,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     }// End Correlation Step
    
     // ************************************
-  
-  noas:
+    
+  noas:    
 
     // Comparing the pt of the trigger particle wrt the v0-candidate's daughter:
     // It is used as well for the side-band subtraction
@@ -3534,6 +3671,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && isNaturalPart )
 	    fAssocParticles->Add( new AliMiniParticle(centrality, zv, iV0, pt, lPhi, lEta, lMCAssocNegDaug, lMCAssocPosDaug, 3) );
 	  
+	  fK0sPosDaugFracShTPCcls->Fill(massK0s,pt,fracPosDaugTPCSharedMap);
+	  fK0sNegDaugFracShTPCcls->Fill(massK0s,pt,fracNegDaugTPCSharedMap);
 
 	}
 
@@ -3616,7 +3755,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
       }// End switch
 
     } // End K0s selection
-
+      
     // *******************
     // Lambda selection
     // *******************
@@ -3700,6 +3839,9 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	    fAssocParticles->Add( new AliMiniParticle(centrality, zv, iV0, pt, lPhi, lEta, lMCAssocNegDaug, lMCAssocPosDaug, 4) );
 	  
 	  
+	  fLambdaPosDaugFracShTPCcls->Fill(massLambda,pt,fracPosDaugTPCSharedMap);
+	  fLambdaNegDaugFracShTPCcls->Fill(massLambda,pt,fracNegDaugTPCSharedMap);
+
 	}
 	
 	// Invariant Mass cut
@@ -3865,7 +4007,10 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  
 	  if( (pt>kPtBinV0[0]) && (pt<kPtBinV0[kN1]) && isNaturalPart )
 	    fAssocParticles->Add( new AliMiniParticle(centrality, zv, iV0, pt, lPhi, lEta, lMCAssocNegDaug, lMCAssocPosDaug, 5) );
-	  
+	 
+	  fAntiLambdaPosDaugFracShTPCcls->Fill(massAntiLambda,pt,fracPosDaugTPCSharedMap);
+	  fAntiLambdaNegDaugFracShTPCcls->Fill(massAntiLambda,pt,fracNegDaugTPCSharedMap);
+ 
 	}
  
 	if( fDoQA && lCheckMcAntiLambda && isNaturalPart && (pt<10.) ){ // Quality Assurance
@@ -4074,29 +4219,36 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   if (!cent->IsEventInCentralityClass(fCentMin,fCentMax,"V0M")) return;
   fEvents->Fill(3);
 
+  Int_t curCentBin = CentBin(centrality);
+  if(curCentBin!=-1) fEvtPerCent->Fill(0.,curCentBin);
+
   // Global primary vertex 
   const AliAODVertex *vtx = fAOD->GetPrimaryVertex();
   if (vtx->GetNContributors()<3) return;
   fEvents->Fill(4);
+  if(curCentBin!=-1) fEvtPerCent->Fill(1,curCentBin);
 
   // SPD primary vertex 
   const AliAODVertex *vtxSPD = fAOD->GetPrimaryVertexSPD(); 
   if (vtxSPD->GetNContributors()<3) return;
   fEvents->Fill(5);
-  
+  if(curCentBin!=-1) fEvtPerCent->Fill(2,curCentBin);
+
   // Correlaiton between global Zvtx and SPD Zvtx
   Float_t zv=vtx->GetZ(), zvSPD=vtxSPD->GetZ();
   fPrimayVtxGlobalvsSPD->Fill(zv,zvSPD);
   
-  if( TMath::Abs( zv - zvSPD ) > 0.5) return;
-  fEvents->Fill(6);
-
   Float_t xv=vtx->GetX(), yv=vtx->GetY();
   const Float_t priVtx[3] = {xv,yv,zv};
 
   if (TMath::Abs(zv) > 10.) return;   
+  fEvents->Fill(6);
+  if(curCentBin!=-1) fEvtPerCent->Fill(3,curCentBin);
+
+  if( TMath::Abs( zv - zvSPD ) > 0.5) return;
   fEvents->Fill(7);
- 
+  if(curCentBin!=-1) fEvtPerCent->Fill(4,curCentBin);
+
   fPrimaryVertexX->Fill(xv);
   fPrimaryVertexY->Fill(yv);
   fPrimaryVertexZ->Fill(zv);
@@ -4125,7 +4277,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   fPIDResponse = hdr->GetPIDResponse();
 
   Int_t curVtxBin = VtxBin(zv);
-  Int_t curCentBin = CentBin(centrality);
+ 
  
   // **********************************************
   // Triggered Particle -  Trigger Particle
@@ -4464,6 +4616,8 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   Float_t dx=-100., dy=-100., lt=-100., res=-100.;
   Float_t dlK=-100., dlL=-100.;
   Float_t dPhi=-100., dEta=-100., radio=-100.;
+  Double_t xDCA[2], cov[3];
+  Bool_t  proptodca;
 
   // variables for track splititing checks:
   Float_t  posdPhiS = -9999., posdEtaS = -9999., negdPhiS = -9999., negdEtaS = -9999.; 
@@ -4473,11 +4627,21 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   Double_t trigCov[21], posDaugCov[21], negDaugCov[21];
   Double_t trigPos[6], posDaugPos[6], negDaugPos[6];
   Double_t trigXYZ[3], posDaugXYZ[3], negDaugXYZ[3];
-  Double_t devPosDaugTrig[9], devNegDaugTrig[9], splitCont[9],  splitCont2[12];
+  Double_t devPosDaugTrig[9], devNegDaugTrig[9], splitCont[9],  splitCont2[14];
   Int_t    sameSignPosDaug = -1, sameSignNegDaug = -1;
   Float_t  sameLabelPosDaug = 0., sameLabelNegDaug = 0.;
   Int_t    tlab, nlab, plab;
   Double_t resdEtsSdPhiS[6]; 
+
+  // --------------------------------
+  // weight to be used for the correlations due to the steps presenteed in the centrality distribution only for 2011 Pb-Pb data;
+  Double_t weight = 1.;
+  if( fCollision.Contains("PbPb2011") ){
+    if( centrality >= 9.0 && centrality < 10.0 ) weight = 1.0675;
+    else if( centrality >= 10.0 && centrality < 11.0 ) weight = 0.39188;
+    else if( centrality >= 11.0 && centrality < 12.0 ) weight = 0.68262;
+    else weight = 1.;
+  }
 
   // --------------------------------
   // h-V0 correlations
@@ -4487,10 +4651,18 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
     const AliAODTrack *tTrig = (AliAODTrack*)fAOD->GetTrack(trig->ID());
     ptTrig = tTrig->Pt();  pxTrig = tTrig->Px();  pyTrig = tTrig->Py(); 
+ 
+    proptodca = ((AliAODTrack*)fAOD->GetTrack(trig->ID()))->PropagateToDCA(vtx,bSign,100.0,xDCA,cov);
+    xDCA[0] = TMath::Abs(xDCA[0]);   xDCA[1] = TMath::Abs(xDCA[1]);
+
+    fTriggerDCA->Fill(xDCA[0],1.);
+    fTriggerDCA->Fill(xDCA[1],2.);
+    //Printf(" %lf    %lf",xDCA[0],xDCA[1]);
 
     // ---------------- Fraction of TPC Shared Cluster: 
     fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
-  
+    fTrigFracShTPCcls->Fill(ptTrig,fracTrigTPCSharedMap);
+
     for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
       AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
       AliAODv0 *tAssoc=fAOD->GetV0(trackAssocME->ID());
@@ -4769,13 +4941,13 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
 
 	// ================  FILLING THnSparse:  Classical track-splitting method: d(phi)* and d(eta)*
-	splitCont2[0] = pt;	splitCont2[6] = fracTrigTPCSharedMap; 
-
+	splitCont2[0] = pt;	    splitCont2[6] = fracTrigTPCSharedMap; 
+	splitCont2[11] = xDCA[0];   splitCont2[12] = xDCA[1];
 	// --------------------------
 	// -------- Positive daughter:
 	splitCont2[2] = ptrack->Pt();  splitCont2[3] = sameSignPosDaug;  splitCont2[4] = posdPhiS;  splitCont2[5] = posdEtaS; 
 	splitCont2[7] = fracPosDaugTPCSharedMap;   splitCont2[8] = fracTrigTPCSharedMap - fracPosDaugTPCSharedMap;
-	splitCont2[9] = devPosDaugTrig[7];  splitCont2[10] = tAssoc->DcaPosToPrimVertex(); splitCont2[11] = sameLabelPosDaug; 
+	splitCont2[9] = devPosDaugTrig[7];  splitCont2[10] = tAssoc->DcaPosToPrimVertex(); splitCont2[13] = sameLabelPosDaug; 
  
 	// ---- K0s
 	if( trackAssocME->WhichCandidate() == 3 ){
@@ -4800,7 +4972,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	// ------- Negative daughter:
 	splitCont2[2] = ntrack->Pt();  splitCont2[3] = sameSignNegDaug;  splitCont2[4] = negdPhiS;  splitCont2[5] = negdEtaS; 
 	splitCont2[7] = fracNegDaugTPCSharedMap;  splitCont2[8] = fracTrigTPCSharedMap - fracNegDaugTPCSharedMap;
-	splitCont2[9] = devNegDaugTrig[7];  splitCont2[10] = tAssoc->DcaNegToPrimVertex();  splitCont2[11] = sameLabelNegDaug;  
+	splitCont2[9] = devNegDaugTrig[7];  splitCont2[10] = tAssoc->DcaNegToPrimVertex();  splitCont2[13] = sameLabelNegDaug;  
 
 	// ---- K0s
 	if( trackAssocME->WhichCandidate() == 3 ){
@@ -4811,7 +4983,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	// ---- Lambda
  	if( trackAssocME->WhichCandidate() == 4 ){
 	  splitCont2[1] = massL;  	  
-	  // Negative daughter
+	  // Negative daughter	
 	  fLambdaNegDaugdPhiSdEtaS[curCentBin]->Fill(splitCont2);
 	}
 	// ---- AntiLambda
@@ -4852,7 +5024,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	
 	// ==== Correlations K0s invariant mass peak ==== //
 	// +++++++++++ Pt bin & centrality
-	fK0sdPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massK0s);
+	fK0sdPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massK0s,weight);
+
+	fK0sPosDaugFracShTPCclsTrig->Fill(massK0s,pt,fracPosDaugTPCSharedMap);
+	fK0sNegDaugFracShTPCclsTrig->Fill(massK0s,pt,fracNegDaugTPCSharedMap);
 
 	// ==== Correlations K0s invariant mass peak ==== //
 	if (TMath::Abs(mK0s-massK0s) < 3*sK0s) {
@@ -4912,7 +5087,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
 	// ==== Correlations Lambda invariant mass peak ==== //
         // +++++++++++ Pt bin & centrality
-	fLambdadPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massL);
+	fLambdadPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massL,weight);
+	
+	fLambdaPosDaugFracShTPCclsTrig->Fill(massL,pt,fracPosDaugTPCSharedMap);
+	fLambdaNegDaugFracShTPCclsTrig->Fill(massL,pt,fracNegDaugTPCSharedMap);
 
 	// ==== Correlations Lambda invariant mass peak ==== //
 	if (TMath::Abs(mL-massL) < 3*sL) {			  
@@ -4970,7 +5148,10 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	
 	// ==== Correlations Lambda invariant mass peak ==== //
         // +++++++++++ Pt bin & centrality
-	fAntiLambdadPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massAL);
+	fAntiLambdadPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massAL,weight);
+
+	fAntiLambdaPosDaugFracShTPCclsTrig->Fill(massAL,pt,fracPosDaugTPCSharedMap);
+	fAntiLambdaNegDaugFracShTPCclsTrig->Fill(massAL,pt,fracNegDaugTPCSharedMap);
 
 	// ==== Correlations AntiLambda invariant mass peak ==== //
 	if (TMath::Abs(mL-massAL) < 3*sL) {
@@ -5028,120 +5209,141 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
   } // End loop over trigger particles
  
- 
+
   //-------------------------------------------------------------
   // Mixing
   //-------------------------------------------------------------
-  /*
-    Double_t phiTrigME=0, etaTrigME=0, phiAssocME=0, etaAssocME=0;
-    Double_t deltaPhi=0, deltaEta=0;
+  
+  Double_t phiTrigME=0, etaTrigME=0, phiAssocME=0, etaAssocME=0;
+  Double_t deltaPhi=0, deltaEta=0;
 
-    TList *evMixList = fMEList[curCentBin*kNVtxZ+curVtxBin];
-    Int_t nMixed = evMixList->GetSize(); 
+  TList *evMixList = fMEList[curCentBin*kNVtxZ+curVtxBin];
+  Int_t nMixed = evMixList->GetSize(); 
  
-    if( nMixed>0 && fAssocParticles->GetEntriesFast() >= 0 ){
+  if( nMixed>0 && fAssocParticles->GetEntriesFast() >= 0 ){
     
     for(Int_t ii=0; ii<nMixed; ii++){     
       
-    AliMiniParticle* trackTriggerME = (AliMiniParticle*) (evMixList->At(ii));
-    phiTrigME = trackTriggerME->Phi();
-    etaTrigME = trackTriggerME->Eta();
-      
-    // --- V0 associated particles
-    for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
+      AliMiniParticle* trackTriggerME = (AliMiniParticle*) (evMixList->At(ii));
+      phiTrigME = trackTriggerME->Phi();
+      etaTrigME = trackTriggerME->Eta();
+
+      // --- V0 associated particles
+      for(Int_t j=0; j<fAssocParticles->GetEntriesFast(); j++){
 	
-    AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
-    if( CentBin(trackTriggerME->Centrality()) != CentBin(trackAssocME->Centrality()) ) continue;
-    if( VtxBin(trackTriggerME->VtxZ()) != VtxBin(trackAssocME->VtxZ()) ) continue;
-    if( trackAssocME->WhichCandidate() ==  2 ) continue;
+	AliMiniParticle* trackAssocME = (AliMiniParticle*) (fAssocParticles->At(j));
+	if( CentBin(trackTriggerME->Centrality()) != CentBin(trackAssocME->Centrality()) ) continue;
+	if( VtxBin(trackTriggerME->VtxZ()) != VtxBin(trackAssocME->VtxZ()) ) continue;
+	if( trackAssocME->WhichCandidate() ==  2 ) continue;
 
-    AliAODv0 *tAssoc=fAOD->GetV0(trackAssocME->ID());
-    pt = tAssoc->Pt();
+	AliAODv0 *tAssoc=fAOD->GetV0(trackAssocME->ID());
+	const AliAODTrack *ntrack=(AliAODTrack *)tAssoc->GetDaughter(1);
+	const AliAODTrack *ptrack=(AliAODTrack *)tAssoc->GetDaughter(0);
 
-    Bool_t IsSelected = kFALSE;
-    // K0s
-    if( trackAssocME->WhichCandidate() == 3 ){
-    massK0s = tAssoc->MassK0Short();
-    mK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-    if( fCollision.Contains("PbPb2010") )
-    sK0s = kCteK0s2010[curCentBin] + kLinearK0s2010[curCentBin]*pt;
-    else if( fCollision.Contains("PbPb2011") ) 
-    sK0s = kCteK0s2011[curCentBin] + kLinearK0s2011[curCentBin]*pt;
+	// Fraction of TPC Shared Cluster 
+	fracPosDaugTPCSharedMap=0; fracNegDaugTPCSharedMap=0;
+	fracPosDaugTPCSharedMap = GetFractionTPCSharedCls(ptrack);
+	fracNegDaugTPCSharedMap = GetFractionTPCSharedCls(ntrack);
+
+	if( (fracPosDaugTPCSharedMap > fFracTPCcls) || (fracNegDaugTPCSharedMap > fFracTPCcls) )
+	  continue;
+
+	pt = tAssoc->Pt();
+
+	massK0s = tAssoc->MassK0Short();
+	massL   = tAssoc->MassLambda();
+	massAL  = tAssoc->MassAntiLambda();
+
+	/*
+	Bool_t IsSelected = kFALSE;
+	// K0s
+	if( trackAssocME->WhichCandidate() == 3 ){
+	  massK0s = tAssoc->MassK0Short();
+	  mK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
+	  if( fCollision.Contains("PbPb2010") )
+	    sK0s = kCteK0s2010[curCentBin] + kLinearK0s2010[curCentBin]*pt;
+	  else if( fCollision.Contains("PbPb2011") ) 
+	    sK0s = kCteK0s2011[curCentBin] + kLinearK0s2011[curCentBin]*pt;
 	  
-    if (TMath::Abs(mK0s-massK0s) < 3*sK0s) IsSelected = kTRUE;
-    }
-    // Lambda
-    if( trackAssocME->WhichCandidate() == 4 ){
-    massL = tAssoc->MassLambda();
-    mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();	  
-    if( fCollision.Contains("PbPb2010") )
-    sL = kCteLambda2010[curCentBin] + kLinearLambda2010[curCentBin]*pt;
-    else if( fCollision.Contains("PbPb2011") ) 
-    sL = kCteLambda2011[curCentBin] + kLinearLambda2011[curCentBin]*pt;
+	  if (TMath::Abs(mK0s-massK0s) < 3*sK0s) IsSelected = kTRUE;
+	}
+	// Lambda
+	if( trackAssocME->WhichCandidate() == 4 ){
+	  massL = tAssoc->MassLambda();
+	  mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();	  
+	  if( fCollision.Contains("PbPb2010") )
+	    sL = kCteLambda2010[curCentBin] + kLinearLambda2010[curCentBin]*pt;
+	  else if( fCollision.Contains("PbPb2011") ) 
+	    sL = kCteLambda2011[curCentBin] + kLinearLambda2011[curCentBin]*pt;
 
-    if (TMath::Abs(mL-massL) < 3*sL) IsSelected = kTRUE;
-    }
-    // AntiLambda
-    if( trackAssocME->WhichCandidate() == 5 ){
-    massAL = tAssoc->MassAntiLambda();
-    mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-    if( fCollision.Contains("PbPb2010") )
-    sL = kCteAntiLambda2010[curCentBin] + kLinearAntiLambda2010[curCentBin]*pt;
-    else if( fCollision.Contains("PbPb2011") ) 
-    sL = kCteAntiLambda2011[curCentBin] + kLinearAntiLambda2011[curCentBin]*pt;
+	  if (TMath::Abs(mL-massL) < 3*sL) IsSelected = kTRUE;
+	}
+	// AntiLambda
+	if( trackAssocME->WhichCandidate() == 5 ){
+	  massAL = tAssoc->MassAntiLambda();
+	  mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
+	  if( fCollision.Contains("PbPb2010") )
+	    sL = kCteAntiLambda2010[curCentBin] + kLinearAntiLambda2010[curCentBin]*pt;
+	  else if( fCollision.Contains("PbPb2011") ) 
+	    sL = kCteAntiLambda2011[curCentBin] + kLinearAntiLambda2011[curCentBin]*pt;
 	  
-    if (TMath::Abs(mL-massAL) < 3*sL) IsSelected = kTRUE;
-    }
+	  if (TMath::Abs(mL-massAL) < 3*sL) IsSelected = kTRUE;
+	}
 
-    if(!IsSelected) continue;
+	if(!IsSelected) continue;*/
 
-    phiAssocME = trackAssocME->Phi();
-    etaAssocME = trackAssocME->Eta();
+	phiAssocME = trackAssocME->Phi();
+	etaAssocME = trackAssocME->Eta();
 	 
-    deltaPhi = dPHI(phiTrigME,phiAssocME);
-    deltaEta = etaTrigME - etaAssocME;
+	deltaPhi = dPHI(phiTrigME,phiAssocME);
+	deltaEta = etaTrigME - etaAssocME;
 
-    Int_t binPtv0 = PtBin( trackAssocME->Pt() );
-    if(binPtv0==-1) continue;
+	Int_t binPtv0 = PtBin( trackAssocME->Pt() );
+	if(binPtv0==-1) continue;
     
-    if( trackAssocME->WhichCandidate() == 3 ) {
-    fK0sdPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);}
-    else if( trackAssocME->WhichCandidate() == 4 )
-    fLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);
-    else if( trackAssocME->WhichCandidate() == 5 )
-    fAntiLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta);
+	if( trackAssocME->WhichCandidate() == 3 ) {
+	  fK0sdPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta,massK0s);}
+	else if( trackAssocME->WhichCandidate() == 4 )
+	  fLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta,massL);
+	else if( trackAssocME->WhichCandidate() == 5 )
+	  fAntiLambdadPhidEtaME[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(deltaPhi,deltaEta,massAL);
 	             
-    } // End loop over V0's
+      } // End loop over V0's
        
     }
     
-    }
-  */
+  }
+  
   //--------------------------------------------------------
   //Add the current event to the list of events for mixing
   //--------------------------------------------------------  
-  /*
+  
   //Add current  event to buffer and Remove redundant events 
   if(fTriggerParticles->GetEntriesFast()>=0){
     
-  for(Int_t ii=0; ii<(fTriggerParticles->GetEntriesFast()); ii++){
-  AliMiniParticle* trkTrig = (AliMiniParticle*) fTriggerParticles->At(ii);
-  //cout << trkTrig->Pt() << "          " << ii << endl;
+    for(Int_t ii=0; ii<(fTriggerParticles->GetEntriesFast()); ii++){
+      AliMiniParticle* trkTrig = (AliMiniParticle*) fTriggerParticles->At(ii);
+      //cout << trkTrig->Pt() << "          " << ii << endl;
     
-  if(evMixList->GetSize() < nMaxEvMix)
-  evMixList->AddFirst(trkTrig);
-  / *
-  if(evMixList->GetSize() >= nMaxEvMix) {
-  AliMiniParticle *tmp = (AliMiniParticle*) (evMixList->Last()) ;
-  evMixList->RemoveLast();
-  delete tmp;
-  }
-  * /
+      // Fraction of TPC Shared Cluster 
+      const AliAODTrack *tTrig = (AliAODTrack*)fAOD->GetTrack(trkTrig->ID());
+      fracTrigTPCSharedMap = GetFractionTPCSharedCls(tTrig);
+      if( (fracTrigTPCSharedMap > fFracTPCcls) ) continue;
+
+      if(evMixList->GetSize() < nMaxEvMix)
+	evMixList->AddFirst(trkTrig);
+      /*
+	  if(evMixList->GetSize() >= nMaxEvMix) {
+	    AliMiniParticle *tmp = (AliMiniParticle*) (evMixList->Last()) ;
+	    evMixList->RemoveLast();
+	    delete tmp;
+	  }
+      */
       
-  }// End loop over fTriggerParticles
+    }// End loop over fTriggerParticles
 
   }// End adding trigger particles to buffers
-  */
+  
 }
 
 //___________________________________________________________________________________________

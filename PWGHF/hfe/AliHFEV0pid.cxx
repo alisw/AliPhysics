@@ -767,9 +767,10 @@ void AliHFEV0pid::BenchmarkV0finder(){
     if(!esdV0) continue;
     if(!esdV0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
     // indetify the V0 candidate
-    Int_t idV0 = AliHFEV0cuts::kUndef;
+    //Int_t idV0 = AliHFEV0cuts::kUndef;
     Int_t idD[2] = {-1, -1};
-    idV0 = IdentifyV0(esdV0, idD);
+    //idV0 = IdentifyV0(esdV0, idD);
+    IdentifyV0(esdV0, idD);
   }
 }
 //____________________________________________________________

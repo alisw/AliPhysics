@@ -13,7 +13,7 @@
 // using Poisson statistics. 
 //
 // The input is assumed to be binned in @f$(x,y)@f$ as described by
-// the 2D histogram passwd to the Reset member function.
+// the 2D histogram passed to the Reset member function.
 //
 // The data is grouped in to regions as defined by the parameters
 // fXLumping and fYLumping.  The total number of cells and number of

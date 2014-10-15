@@ -1,4 +1,5 @@
-AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls             = 70,
+AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( TString  collidingSystem        = "pp",
+                                                            Int_t    minnTPCcls             = 70,
                                                             Float_t  vtxlim                 = 10.0,
                                                             Float_t  vtxlimmin              = 0.0,
                                                             Bool_t   fwithsdd               = kFALSE,
@@ -28,12 +29,15 @@ AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls 
    // Create and configure the task
    //==============================================================================
    TString taskname = Form("TaskCheckCascadepp276_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
-     if(fwithsdd) {
+     if(fwithsdd && collidingSystem == "pp") {
           if (ksddonselection)       taskname += "_wSDDon";
           else if (!ksddonselection) taskname += "_wSDDoff";
-     } else if (!fwithsdd)           taskname += "_woSDD";
+     } else if (!fwithsdd && collidingSystem == "pp") {
+          taskname += "_woSDD";
+     }
    AliAnalysisTaskCheckCascadepp276 *taskcheckcascadepp276 = new AliAnalysisTaskCheckCascadepp276(taskname);
      taskcheckcascadepp276->SetAnalysisType               (type);                   // "ESD" or "AOD"
+     taskcheckcascadepp276->SetCollidingSystem            (collidingSystem);        // choose the collidiond system to run on: "pp" and "pPb"
      taskcheckcascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);     // choose if reconstruct the vertex of V0 in the cascades
      taskcheckcascadepp276->SetSDDSelection               (fwithsdd);               // choose if apply SDD event selection
      taskcheckcascadepp276->SetQualityCutZprimVtxPos      (kTRUE);                  // choose if apply Z vtx PV position event selection
@@ -69,7 +73,7 @@ AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls 
       outputname3 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
       outputname4 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
       outputname5 += Form("_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",minnTPCcls,vtxlim,vtxlimmin,minptondaughtertracks,etacutondaughtertracks);
-      if(fwithsdd) {
+      if(fwithsdd && collidingSystem == "pp") {
           if (ksddonselection) {
               outputname0 += "_wSDDon";
               outputname1 += "_wSDDon";
@@ -77,7 +81,7 @@ AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls 
               outputname3 += "_wSDDon";
               outputname4 += "_wSDDon";
               outputname5 += "_wSDDon";
-          } else if (!ksddonselection) {
+          } else if (!ksddonselection && collidingSystem == "pp") {
               outputname0 += "_wSDDoff";
               outputname1 += "_wSDDoff";
               outputname2 += "_wSDDoff";
@@ -85,7 +89,7 @@ AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls 
               outputname4 += "_wSDDoff";
               outputname5 += "_wSDDoff";
           }
-      } else if (!fwithsdd) {
+      } else if (!fwithsdd && collidingSystem == "pp") {
           outputname0 += "_woSDD";
           outputname1 += "_woSDD";
           outputname2 += "_woSDD";
@@ -96,9 +100,9 @@ AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( Int_t    minnTPCcls 
 
    //Save objects into the train common file
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outputname0,
-							                                 TList::Class(),
-							                                 AliAnalysisManager::kOutputContainer,
-							                                 outputFileName );
+			                                     TList::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputFileName );
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(outputname1,
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,

@@ -83,6 +83,8 @@ fPcosEPCent(0),
 fPsinEPCent(0),
 fPcosPhiCent(0),
 fPsinPhiCent(0),
+// cross check for event plane determination
+fDeltaPhiCent(0),
 //global
 fIsMonteCarlo(0),
 fEPselector("Q"),
@@ -540,11 +542,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCutSettings->GetYaxis()->SetTitle("cut value");
   fCutSettings->SetBit(TH1::kCanRebin);
   
-  fEventplaneDist = new TH1F("fEventplaneDist","fEventplaneDist",200, -1./2.*TMath::Pi(), 1./2.*TMath::Pi());
+  fEventplaneDist = new TH1F("fEventplaneDist","fEventplaneDist",200, 0, 2.*TMath::Pi());
   fEventplaneDist->GetXaxis()->SetTitle("#phi (event plane)");
   fEventplaneDist->Sumw2();
   
-  fEventplaneRunDist = new TH2F("fEventplaneRunDist","fEventplaneRunDist",200, -1./2.*TMath::Pi(), 1./2.*TMath::Pi(),fRunNumberNbins-1, fBinsRunNumber );
+  fEventplaneRunDist = new TH2F("fEventplaneRunDist","fEventplaneRunDist",200, 0, 2.*TMath::Pi(),fRunNumberNbins-1, fBinsRunNumber );
   fEventplaneRunDist->GetXaxis()->SetTitle("#phi (event plane)");
   fEventplaneRunDist->GetYaxis()->SetTitle("runnumber");
   fEventplaneRunDist->Sumw2();
@@ -575,7 +577,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fEventplaneSubtractedPercentage->Sumw2();
   
   // cross check for event plane resolution
-  fEPDistCent = new TH2F("fEPDistCent","fEPDistCent",20, -1.*TMath::Pi(), TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
+  fEPDistCent = new TH2F("fEPDistCent","fEPDistCent",20, -2.*TMath::Pi(), 2.*TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
   fEPDistCent->GetXaxis()->SetTitle("#phi (#Psi_{EP})");
   fEPDistCent->GetYaxis()->SetTitle("Centrality");
   fEPDistCent->Sumw2();
@@ -604,6 +606,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fPsinPhiCent->GetXaxis()->SetTitle("Centrality");
   fPsinPhiCent->GetYaxis()->SetTitle("#LT sin 2 #phi #GT");
   fPsinPhiCent->Sumw2();
+  
+  fDeltaPhiCent = new TH2F("fDeltaPhiCent","fDeltaPhiCent",200, -2.*TMath::Pi(), 2.*TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
+  fDeltaPhiCent->GetXaxis()->SetTitle("#Delta #phi");
+  fDeltaPhiCent->GetYaxis()->SetTitle("Centrality");
+  fDeltaPhiCent->Sumw2();
   
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
@@ -656,6 +663,8 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fPcosPhiCent);
   fOutputList->Add(fPsinPhiCent);
   
+  fOutputList->Add(fDeltaPhiCent);
+    
   StoreCutSettingsToHistogram();
   
   PostData(1, fOutputList);
@@ -809,6 +818,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	if(GetEventplaneSelector().CompareTo("Q") == 0) 
 	{
 	  epQvector = ep->GetQVector(); 
+	  if(epQvector) dEventplaneAngle = epQvector->Phi();//MoveEventplane(epQvector->Phi());
 	}
   }
   
@@ -967,7 +977,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 		iSubtractedTracks++;
 	  }
 	  TVector2 epCorrected(dX, dY);
-	  dEventplaneAngleCorrected = MoveEventplane(epCorrected.Phi()/2.); // see AlEPSelectionTask.cxx:354
+	  dEventplaneAngleCorrected = epCorrected.Phi(); // see AlEPSelectionTask.cxx:354 - without dividing by 2!
 	}
 	else
 	{
@@ -985,6 +995,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	dTrackPhiPtEtaCent[1] = track->Pt();
 	dTrackPhiPtEtaCent[2] = track->Eta();
 	dTrackPhiPtEtaCent[3] = dCentrality;
+	
 	
 	if( fIsMonteCarlo )
 	{
@@ -1073,6 +1084,11 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  fPhiCent->Fill(track->Phi(), dCentrality);
 	  fPcosPhiCent->Fill(dCentrality, TMath::Cos(2.*track->Phi()));
 	  fPsinPhiCent->Fill(dCentrality, TMath::Sin(2.*track->Phi()));
+	  
+	  Double_t deltaphi = track->Phi() - dEventplaneAngleCorrected;
+// 	  if(deltaphi > TMath::Pi()) deltaphi -= 2.*TMath::Pi();
+	  
+	  fDeltaPhiCent->Fill(deltaphi, dCentrality);
 	}
   } // end track loop
   
@@ -1133,32 +1149,49 @@ Double_t AlidNdPtAnalysisPbPbAOD::MoveEventplane(Double_t dMCEP)
 Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP)
 {
   Double_t dPhi = 0;
-  dPhi = phiTrack - phiEP;
-  if ((dPhi >= -1./2. * TMath::Pi() ) && 
-	(dPhi <= 1./2. * TMath::Pi() ) )
+  dPhi = TMath::Abs(phiTrack - phiEP);
+  
+  if( dPhi <= TMath::Pi() )
   {
 	return dPhi;
   }
-  
-  if( (dPhi < 0) )
+  if( (dPhi > TMath::Pi()) && (dPhi <= 3./2.*TMath::Pi()) )
   {
-	dPhi += 2.*TMath::Pi();
-  }
-  
-  if ((dPhi > 0) && 
-	(dPhi > 1./2. * TMath::Pi() ) && 
-	(dPhi <= 3./2. * TMath::Pi() ) )
-  {
-	dPhi -= TMath::Pi();
-	return dPhi;
-  }	
-  
-  if ((dPhi > 0) && 
-	(dPhi > 3./2. * TMath::Pi() )) 
-  {
-	dPhi -= 2.*TMath::Pi();
+	dPhi = dPhi - TMath::Pi()/2.;
 	return dPhi;
   }
+  if( (dPhi > 3./2.*TMath::Pi()) )
+  {
+	dPhi = dPhi - 3./2.*TMath::Pi();
+	return dPhi;
+  }
+//   if( dPhi < 0 )
+//   
+//   if ((dPhi >= -1./2. * TMath::Pi() ) && 
+// 	(dPhi <= 1./2. * TMath::Pi() ) )
+//   {
+// 	return dPhi;
+//   }
+//   
+//   if( (dPhi < 0) )
+//   {
+// 	dPhi += 2.*TMath::Pi();
+//   }
+//   
+//   if ((dPhi > 0) && 
+// 	(dPhi > 1./2. * TMath::Pi() ) && 
+// 	(dPhi <= 3./2. * TMath::Pi() ) )
+//   {
+// 	dPhi -= TMath::Pi();
+// 	return dPhi;
+//   }	
+//   
+//   if ((dPhi > 0) && 
+// 	(dPhi > 3./2. * TMath::Pi() )) 
+//   {
+// 	dPhi -= 2.*TMath::Pi();
+// 	return dPhi;
+//   }
   
   //   Printf("[E] dphi = %.4f , phiTrack = %.4f, phiEP = %.4f", dPhi, phiTrack, phiEP);
   
@@ -1247,7 +1280,7 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   //
   
   if(!tr) return kFALSE;
-  
+   
   if(tr->Charge()==0) { return kFALSE; }
   
   //
